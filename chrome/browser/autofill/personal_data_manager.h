@@ -11,6 +11,7 @@
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
 #include "base/string16.h"
+#include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/credit_card.h"
 #include "chrome/browser/autofill/field_types.h"
@@ -23,7 +24,8 @@ class Profile;
 // Handles loading and saving AutoFill profile information to the web database.
 // This class also stores the profiles loaded from the database for use during
 // AutoFill.
-class PersonalDataManager : public WebDataServiceConsumer {
+class PersonalDataManager : public WebDataServiceConsumer,
+                            public AutoFillDialogObserver {
  public:
   // An interface the PersonalDataManager uses to notify its clients (observers)
   // when it has finished loading personal data from the web database.  Register
@@ -42,6 +44,11 @@ class PersonalDataManager : public WebDataServiceConsumer {
   // WebDataServiceConsumer implementation:
   virtual void OnWebDataServiceRequestDone(WebDataService::Handle h,
                                            const WDTypedResult* result);
+
+  // AutoFillDialogObserver implementation
+  virtual void OnAutoFillDialogApply(std::vector<AutoFillProfile>* profiles,
+                                     std::vector<CreditCard>* credit_cards);
+
 
   // Sets the listener to be notified of PersonalDataManager events.
   void SetObserver(PersonalDataManager::Observer* observer);

@@ -13,6 +13,8 @@
 #include "app/gfx/native_theme_win.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "chrome/browser/autofill/autofill_dialog.h"
+#include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
@@ -49,6 +51,7 @@ ContentPageView::ContentPageView(Profile* profile)
       passwords_group_(NULL),
       passwords_asktosave_radio_(NULL),
       passwords_neversave_radio_(NULL),
+      change_autofill_settings_button_(NULL),
       form_autofill_asktosave_radio_(NULL),
       form_autofill_neversave_radio_(NULL),
       themes_group_(NULL),
@@ -104,6 +107,11 @@ void ContentPageView::ButtonPressed(
   } else if (sender == passwords_exceptions_button_) {
     UserMetricsRecordAction("Options_ShowPasswordsExceptions", NULL);
     PasswordsExceptionsWindowView::Show(profile());
+  } else if (sender == change_autofill_settings_button_) {
+    ShowAutoFillDialog(
+        profile()->GetPersonalDataManager(),
+        profile()->GetPersonalDataManager()->profiles(),
+        profile()->GetPersonalDataManager()->credit_cards());
   } else if (sender == themes_reset_button_) {
     UserMetricsRecordAction("Options_ThemesReset", profile()->GetPrefs());
     profile()->ClearTheme();
@@ -307,6 +315,9 @@ void ContentPageView::InitFormAutofillGroup() {
   form_autofill_neversave_radio_->set_listener(this);
   form_autofill_neversave_radio_->SetMultiLine(true);
 
+  change_autofill_settings_button_ = new views::NativeButton(
+      this, l10n_util::GetString(IDS_OPTIONS_AUTOFILL_SETTINGS));
+
   using views::GridLayout;
   using views::ColumnSet;
 
@@ -314,16 +325,23 @@ void ContentPageView::InitFormAutofillGroup() {
   GridLayout* layout = new GridLayout(contents);
   contents->SetLayoutManager(layout);
 
-  const int single_column_view_set_id = 0;
-  ColumnSet* column_set = layout->AddColumnSet(single_column_view_set_id);
+  const int fill_column_view_set_id = 0;
+  const int leading_column_view_set_id = 1;
+  ColumnSet* column_set = layout->AddColumnSet(fill_column_view_set_id);
   column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
+  column_set = layout->AddColumnSet(leading_column_view_set_id);
+  column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 1,
+                        GridLayout::USE_PREF, 0, 0);
 
-  layout->StartRow(0, single_column_view_set_id);
+  layout->StartRow(0, fill_column_view_set_id);
   layout->AddView(form_autofill_asktosave_radio_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-  layout->StartRow(0, single_column_view_set_id);
+  layout->StartRow(0, fill_column_view_set_id);
   layout->AddView(form_autofill_neversave_radio_);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->StartRow(0, leading_column_view_set_id);
+  layout->AddView(change_autofill_settings_button_);
 
   form_autofill_group_ = new OptionsGroupView(
       contents, l10n_util::GetString(IDS_AUTOFILL_SETTING_WINDOWS_GROUP_NAME),

@@ -59,6 +59,20 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
   }
 }
 
+/////////////////////////////////////////////////////////////////////////////
+// PersonalDataManager,
+// views::ButtonListener implementations
+void PersonalDataManager::OnAutoFillDialogApply(
+    std::vector<AutoFillProfile>* profiles,
+    std::vector<CreditCard>* credit_cards) {
+  // |profiles| may be NULL
+  // |credit_cards| may be NULL
+  if (profiles)
+    SetProfiles(profiles);
+  if (credit_cards)
+    SetCreditCards(credit_cards);
+}
+
 void PersonalDataManager::SetObserver(PersonalDataManager::Observer* observer) {
   DCHECK(observer_ == NULL);
   observer_ = observer;

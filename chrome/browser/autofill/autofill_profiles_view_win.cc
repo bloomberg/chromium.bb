@@ -12,8 +12,11 @@
 #include "app/resource_bundle.h"
 #include "base/gfx/size.h"
 #include "base/message_loop.h"
+// TODO(georgey) remove this when resources available.
+#include "chrome/browser/theme_resources_util.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "views/controls/button/image_button.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/controls/scroll_view.h"
@@ -109,6 +112,44 @@ int AutoFillProfilesView::Show(AutoFillDialogObserver* observer,
 
 /////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView, protected:
+void AutoFillProfilesView::AddClicked(EditableSetType item_type) {
+  if (item_type == EDITABLE_SET_ADDRESS) {
+    AutoFillProfile address(std::wstring(), 0);
+    profiles_set_.push_back(EditableSetInfo(&address, true));
+  } else if (item_type == EDITABLE_SET_CREDIT_CARD) {
+    CreditCard credit_card(std::wstring(), 0);
+    credit_card_set_.push_back(EditableSetInfo(&credit_card, true));
+  } else {
+    NOTREACHED();
+  }
+  scroll_view_->RebuildView();
+}
+
+void AutoFillProfilesView::DeleteEditableSet(
+    std::vector<EditableSetInfo>::iterator field_set_iterator) {
+  if (field_set_iterator->is_address) {
+    string16 label = field_set_iterator->address.Label();
+    profiles_set_.erase(field_set_iterator);
+    for (std::vector<EditableSetInfo>::iterator it = credit_card_set_.begin();
+         it != credit_card_set_.end();
+         ++it) {
+      if (it->credit_card.shipping_address() == label)
+        it->credit_card.set_shipping_address(string16());
+      if (it->credit_card.billing_address() == label)
+        it->credit_card.set_billing_address(string16());
+    }
+  } else {
+    credit_card_set_.erase(field_set_iterator);
+  }
+  scroll_view_->RebuildView();
+}
+
+void AutoFillProfilesView::CollapseStateChanged(
+    std::vector<EditableSetInfo>::iterator field_set_iterator) {
+  scroll_view_->RebuildView();
+}
+
+
 /////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView, views::View implementations
 void AutoFillProfilesView::Layout() {
@@ -190,7 +231,9 @@ void AutoFillProfilesView::ButtonPressed(views::Button* sender,
 /////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView, private:
 void AutoFillProfilesView::Init() {
-  scroll_view_ = new AutoFillScrollView(&profiles_set_, &credit_card_set_);
+  scroll_view_ = new AutoFillScrollView(this,
+                                        &profiles_set_,
+                                        &credit_card_set_);
 
   views::GridLayout* layout = CreatePanelGridLayout(this);
   SetLayoutManager(layout);
@@ -319,10 +362,20 @@ AutoFillProfilesView::EditableSetViewContents::TextFieldToAutoFill
 /////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView::EditableSetViewContents, public:
 AutoFillProfilesView::EditableSetViewContents::EditableSetViewContents(
+    AutoFillProfilesView* observer,
+    AddressComboBoxModel* billing_model,
+    AddressComboBoxModel* shipping_model,
     std::vector<EditableSetInfo>::iterator field_set)
     : editable_fields_set_(field_set),
       delete_button_(NULL),
-      title_label_(NULL) {
+      expand_item_button_(NULL),
+      title_label_(NULL),
+      title_label_preview_(NULL),
+      observer_(observer),
+      billing_model_(billing_model),
+      shipping_model_(shipping_model),
+      combo_box_billing_(NULL),
+      combo_box_shipping_(NULL) {
   ZeroMemory(text_fields_, sizeof(text_fields_));
 }
 
@@ -354,10 +407,14 @@ void AutoFillProfilesView::EditableSetViewContents::ViewHierarchyChanged(
     InitLayoutGrid(layout);
     delete_button_ = new views::NativeButton(this,
         l10n_util::GetString(IDS_AUTOFILL_DELETE_BUTTON));
-    if (editable_fields_set_->is_address)
-      InitAddressFields(layout);
-    else
-      InitCreditCardFields(layout);
+
+    InitTitle(layout);
+    if (editable_fields_set_->is_opened) {
+      if (editable_fields_set_->is_address)
+        InitAddressFields(layout);
+      else
+        InitCreditCardFields(layout);
+    }
   }
 }
 
@@ -370,11 +427,16 @@ void AutoFillProfilesView::EditableSetViewContents::ContentsChanged(
     for (int field = 0; field < arraysize(address_fields_); ++field) {
       DCHECK(text_fields_[address_fields_[field].text_field]);
       if (text_fields_[address_fields_[field].text_field] == sender) {
-        if (address_fields_[field].text_field == TEXT_LABEL)
+        if (address_fields_[field].text_field == TEXT_LABEL) {
           editable_fields_set_->address.set_label(new_contents);
-        else
+          title_label_->SetText(new_contents);
+          // One of the address labels changed - update combo boxes
+          billing_model_->LabelChanged();
+          shipping_model_->LabelChanged();
+        } else {
           editable_fields_set_->address.SetInfo(
               AutoFillType(address_fields_[field].type), new_contents);
+        }
         return;
       }
     }
@@ -382,11 +444,13 @@ void AutoFillProfilesView::EditableSetViewContents::ContentsChanged(
     for (int field = 0; field < arraysize(credit_card_fields_); ++field) {
       DCHECK(text_fields_[credit_card_fields_[field].text_field]);
       if (text_fields_[credit_card_fields_[field].text_field] == sender) {
-        if (credit_card_fields_[field].text_field == TEXT_LABEL)
+        if (credit_card_fields_[field].text_field == TEXT_LABEL) {
           editable_fields_set_->credit_card.set_label(new_contents);
-        else
+          title_label_->SetText(new_contents);
+        } else {
           editable_fields_set_->credit_card.SetInfo(
               AutoFillType(credit_card_fields_[field].type), new_contents);
+        }
         return;
       }
     }
@@ -400,20 +464,121 @@ bool AutoFillProfilesView::EditableSetViewContents::HandleKeystroke(
 
 /////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView::EditableSetViewContents,
-// views::ButtonListener implementations
+// views::ButtonListener implementations:
 void AutoFillProfilesView::EditableSetViewContents::ButtonPressed(
-  views::Button* sender, const views::Event& event) {
+    views::Button* sender, const views::Event& event) {
+  if (sender == delete_button_) {
+    observer_->DeleteEditableSet(editable_fields_set_);
+  } else if (sender == expand_item_button_) {
+    editable_fields_set_->is_opened = !editable_fields_set_->is_opened;
+    observer_->CollapseStateChanged(editable_fields_set_);
+  }
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// AutoFillProfilesView::EditableSetViewContents,
+// views::Combobox::Listener implementations:
+void AutoFillProfilesView::EditableSetViewContents::ItemChanged(
+    views::Combobox* combo_box, int prev_index, int new_index) {
+  DCHECK(billing_model_);
+  DCHECK(shipping_model_);
+  if (combo_box == combo_box_billing_) {
+    if (new_index == -1) {
+      NOTREACHED();
+    } else {
+      editable_fields_set_->credit_card.set_billing_address(
+          billing_model_->GetItemAt(new_index));
+    }
+  } else if (combo_box == combo_box_shipping_) {
+    if (new_index == -1) {
+      NOTREACHED();
+    } else if (new_index == 0) {
+      editable_fields_set_->credit_card.set_shipping_address(
+          editable_fields_set_->credit_card.billing_address());
+    } else {
+      editable_fields_set_->credit_card.set_shipping_address(
+          shipping_model_->GetItemAt(new_index));
+    }
+  }
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView::EditableSetViewContents, private:
+void AutoFillProfilesView::EditableSetViewContents::InitTitle(
+    views::GridLayout* layout) {
+  std::wstring title;
+  std::wstring title_preview;
+  if (editable_fields_set_->is_address) {
+    title = editable_fields_set_->address.Label();
+    if (title.empty())
+      title = l10n_util::GetString(IDS_AUTOFILL_NEW_ADDRESS);
+    // TODO(georgey): build address preview  correctly
+    title_preview = editable_fields_set_->address.GetFieldText(
+        AutoFillType(NAME_FIRST));
+    title_preview.append(L" ");
+    std::wstring middle = editable_fields_set_->address.GetFieldText(
+        AutoFillType(NAME_MIDDLE));
+    if (!middle.empty()) {
+      title_preview.append(middle);
+      title_preview.append(L" ");
+    }
+    title_preview.append(editable_fields_set_->address.GetFieldText(
+        AutoFillType(NAME_LAST)));
+    title_preview.append(L" ");
+    title_preview.append(editable_fields_set_->address.GetFieldText(
+        AutoFillType(ADDRESS_HOME_LINE1)));
+  } else {
+    title = editable_fields_set_->credit_card.Label();
+    if (title.empty())
+      title = l10n_util::GetString(IDS_AUTOFILL_NEW_CREDITCARD);
+  }
+  expand_item_button_ = new views::ImageButton(this);
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  SkBitmap *image = NULL;
+  if (editable_fields_set_->is_opened) {
+    // TODO(georgey) fix this when resources available.
+    image = rb.GetBitmapNamed(ThemeResourcesUtil::GetId("app_droparrow"));
+  } else {
+    // TODO(georgey) fix this when resources available.
+    image = rb.GetBitmapNamed(ThemeResourcesUtil::GetId("arrow_right"));
+    title_label_preview_ = new views::Label(title_preview);
+  }
+  expand_item_button_->SetImage(views::CustomButton::BS_NORMAL, image);
+  title_label_ = new views::Label(title);
+  gfx::Font title_font =
+      rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
+  title_label_->SetFont(title_font);
+
+  SkColor title_color =
+      gfx::NativeTheme::instance()->GetThemeColorWithDefault(
+      gfx::NativeTheme::BUTTON, BP_GROUPBOX, GBS_NORMAL, TMT_TEXTCOLOR,
+      COLOR_WINDOWTEXT);
+  title_label_->SetColor(title_color);
+  SkColor bk_color =
+      gfx::NativeTheme::instance()->GetThemeColorWithDefault(
+      gfx::NativeTheme::BUTTON, BP_PUSHBUTTON, PBS_NORMAL, TMT_BTNFACE,
+      COLOR_BTNFACE);
+  if (editable_fields_set_->is_opened) {
+    expand_item_button_->set_background(
+        views::Background::CreateSolidBackground(bk_color));
+    title_label_->set_background(
+        views::Background::CreateSolidBackground(bk_color));
+  }
+  title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+
+  layout->StartRow(0, three_column_header_);
+  layout->AddView(expand_item_button_);
+  if (editable_fields_set_->is_opened) {
+    layout->AddView(title_label_, 3, 1);
+  } else {
+    layout->AddView(title_label_);
+    layout->AddView(title_label_preview_);
+  }
+}
+
 void AutoFillProfilesView::EditableSetViewContents::InitAddressFields(
     views::GridLayout* layout) {
   DCHECK(editable_fields_set_->is_address);
-  std::wstring title = editable_fields_set_->address.Label();
-  if (title.empty())
-    title = l10n_util::GetString(IDS_AUTOFILL_NEW_ADDRESS);
-  title_label_ = new views::Label(title);
 
   for (int field = 0; field < arraysize(address_fields_); ++field) {
     DCHECK(!text_fields_[address_fields_[field].text_field]);
@@ -430,26 +595,6 @@ void AutoFillProfilesView::EditableSetViewContents::InitAddressFields(
     }
   }
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::Font title_font =
-      rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
-  title_label_->SetFont(title_font);
-
-  SkColor title_color =
-      gfx::NativeTheme::instance()->GetThemeColorWithDefault(
-      gfx::NativeTheme::BUTTON, BP_GROUPBOX, GBS_NORMAL, TMT_TEXTCOLOR,
-      COLOR_WINDOWTEXT);
-  title_label_->SetColor(title_color);
-  SkColor bk_color =
-       gfx::NativeTheme::instance()->GetThemeColorWithDefault(
-       gfx::NativeTheme::BUTTON, BP_PUSHBUTTON, PBS_NORMAL, TMT_BTNFACE,
-       COLOR_BTNFACE);
-  title_label_->set_background(
-      views::Background::CreateSolidBackground(bk_color));
-  title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-
-  layout->StartRow(0, triple_column_fill_view_set_id_);
-  layout->AddView(title_label_, 5, 1);
   layout->StartRow(0, triple_column_leading_view_set_id_);
   layout->AddView(new views::Label(
       l10n_util::GetString(IDS_AUTOFILL_DIALOG_LABEL)));
@@ -527,46 +672,22 @@ void AutoFillProfilesView::EditableSetViewContents::InitAddressFields(
 void AutoFillProfilesView::EditableSetViewContents::InitCreditCardFields(
     views::GridLayout* layout) {
   DCHECK(!editable_fields_set_->is_address);
-  std::wstring title = editable_fields_set_->credit_card.Label();
-  if (title.empty())
-     title = l10n_util::GetString(IDS_AUTOFILL_NEW_CREDITCARD);
-  title_label_ = new views::Label(title);
+  DCHECK(billing_model_);
+  DCHECK(shipping_model_);
 
   for (int field = 0; field < arraysize(credit_card_fields_); ++field) {
     DCHECK(!text_fields_[credit_card_fields_[field].text_field]);
     text_fields_[credit_card_fields_[field].text_field] =
         new views::Textfield(views::Textfield::STYLE_DEFAULT);
     text_fields_[credit_card_fields_[field].text_field]->SetController(this);
-    if (credit_card_fields_[field].text_field == TEXT_LABEL) {
+    if (credit_card_fields_[field].text_field == TEXT_LABEL)
       text_fields_[TEXT_LABEL]->SetText(
           editable_fields_set_->credit_card.Label());
-    } else {
+    else
       text_fields_[credit_card_fields_[field].text_field]->SetText(
           editable_fields_set_->credit_card.GetFieldText(
           AutoFillType(credit_card_fields_[field].type)));
-    }
   }
-
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  gfx::Font title_font =
-      rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
-  title_label_->SetFont(title_font);
-
-  SkColor title_color =
-      gfx::NativeTheme::instance()->GetThemeColorWithDefault(
-      gfx::NativeTheme::BUTTON, BP_GROUPBOX, GBS_NORMAL, TMT_TEXTCOLOR,
-      COLOR_WINDOWTEXT);
-  title_label_->SetColor(title_color);
-  SkColor bk_color =
-      gfx::NativeTheme::instance()->GetThemeColorWithDefault(
-      gfx::NativeTheme::BUTTON, BP_PUSHBUTTON, PBS_NORMAL, TMT_BTNFACE,
-      COLOR_BTNFACE);
-  title_label_->set_background(
-      views::Background::CreateSolidBackground(bk_color));
-  title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-
-  layout->StartRow(0, triple_column_fill_view_set_id_);
-  layout->AddView(title_label_, 5, 1);
 
   layout->StartRow(0, triple_column_leading_view_set_id_);
   layout->AddView(CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_LABEL));
@@ -576,6 +697,40 @@ void AutoFillProfilesView::EditableSetViewContents::InitCreditCardFields(
   layout->AddView(CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_NAME_ON_CARD));
   layout->StartRow(0, double_column_fill_view_set_id_);
   layout->AddView(text_fields_[TEXT_CC_NAME]);
+  // Address combo boxes.
+  combo_box_billing_ = new views::Combobox(billing_model_);
+  combo_box_billing_->set_listener(this);
+  combo_box_billing_->SetSelectedItem(
+      billing_model_->GetIndex(
+      editable_fields_set_->credit_card.billing_address()));
+  billing_model_->UsedWithComboBox(combo_box_billing_);
+
+  layout->StartRow(0, double_column_fill_view_set_id_);
+  layout->AddView(CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_BILLING_ADDRESS));
+  layout->StartRow(0, double_column_fill_view_set_id_);
+  layout->AddView(combo_box_billing_);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+
+  combo_box_shipping_ = new views::Combobox(shipping_model_);
+  combo_box_shipping_->set_listener(this);
+  if (editable_fields_set_->credit_card.shipping_address() ==
+      editable_fields_set_->credit_card.billing_address()) {
+    // The addresses are the same, so use "the same address" label.
+    combo_box_shipping_->SetSelectedItem(0);
+  } else {
+    combo_box_shipping_->SetSelectedItem(
+        shipping_model_->GetIndex(
+        editable_fields_set_->credit_card.shipping_address()));
+  }
+  shipping_model_->UsedWithComboBox(combo_box_shipping_);
+
+  layout->StartRow(0, double_column_fill_view_set_id_);
+  layout->AddView(CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_SHIPPING_ADDRESS));
+  layout->StartRow(0, double_column_fill_view_set_id_);
+  layout->AddView(combo_box_shipping_);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+
+  // Layout credit card info
   layout->StartRow(0, four_column_ccnumber_expiration_cvc_);
   layout->AddView(
       CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_CREDIT_CARD_NUMBER));
@@ -592,12 +747,16 @@ void AutoFillProfilesView::EditableSetViewContents::InitCreditCardFields(
   layout->AddView(text_fields_[TEXT_CC_EXPIRATION_MONTH]);
   layout->AddView(text_fields_[TEXT_CC_EXPIRATION_YEAR]);
   layout->AddView(text_fields_[TEXT_CC_EXPIRATION_CVC]);
+
+  layout->StartRow(0, triple_column_leading_view_set_id_);
+  layout->AddView(delete_button_);
 }
 
 void AutoFillProfilesView::EditableSetViewContents::InitLayoutGrid(
     views::GridLayout* layout) {
   views::ColumnSet* column_set =
       layout->AddColumnSet(double_column_fill_view_set_id_);
+  column_set->AddPaddingColumn(0, kPanelHorizIndentation);
   int i;
   for (i = 0; i < 2; ++i) {
     if (i)
@@ -606,6 +765,7 @@ void AutoFillProfilesView::EditableSetViewContents::InitLayoutGrid(
                           views::GridLayout::USE_PREF, 0, 0);
   }
   column_set = layout->AddColumnSet(double_column_leading_view_set_id_);
+  column_set->AddPaddingColumn(0, kPanelHorizIndentation);
   for (i = 0; i < 2; ++i) {
     if (i)
       column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
@@ -613,6 +773,7 @@ void AutoFillProfilesView::EditableSetViewContents::InitLayoutGrid(
                           1, views::GridLayout::USE_PREF, 0, 0);
   }
   column_set = layout->AddColumnSet(triple_column_fill_view_set_id_);
+  column_set->AddPaddingColumn(0, kPanelHorizIndentation);
   for (i = 0; i < 3; ++i) {
     if (i)
       column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
@@ -620,6 +781,7 @@ void AutoFillProfilesView::EditableSetViewContents::InitLayoutGrid(
                           views::GridLayout::USE_PREF, 0, 0);
   }
   column_set = layout->AddColumnSet(triple_column_leading_view_set_id_);
+  column_set->AddPaddingColumn(0, kPanelHorizIndentation);
   for (i = 0; i < 3; ++i) {
     if (i)
       column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
@@ -627,6 +789,7 @@ void AutoFillProfilesView::EditableSetViewContents::InitLayoutGrid(
                           1, views::GridLayout::USE_PREF, 0, 0);
   }
   column_set = layout->AddColumnSet(four_column_city_state_zip_set_id_);
+  column_set->AddPaddingColumn(0, kPanelHorizIndentation);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                         1, views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
@@ -640,6 +803,7 @@ void AutoFillProfilesView::EditableSetViewContents::InitLayoutGrid(
                         1, views::GridLayout::USE_PREF, 0, 0);
 
   column_set = layout->AddColumnSet(four_column_ccnumber_expiration_cvc_);
+  column_set->AddPaddingColumn(0, kPanelHorizIndentation);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
                         1, views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
@@ -650,6 +814,16 @@ void AutoFillProfilesView::EditableSetViewContents::InitLayoutGrid(
                         1, views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
+                        1, views::GridLayout::USE_PREF, 0, 0);
+
+  column_set = layout->AddColumnSet(three_column_header_);
+  column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
+                        0, views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
+                        1, views::GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL,
                         1, views::GridLayout::USE_PREF, 0, 0);
 }
 
@@ -660,16 +834,79 @@ AutoFillProfilesView::EditableSetViewContents::CreateLeftAlignedLabel(
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   return label;
 }
+/////////////////////////////////////////////////////////////////////////////
+// AutoFillProfilesView::AddressComboBoxModel, public:
+AutoFillProfilesView::AddressComboBoxModel::AddressComboBoxModel(
+    bool is_billing)
+    : address_labels_(NULL),
+      is_billing_(is_billing) {
+}
+
+void AutoFillProfilesView::AddressComboBoxModel::set_address_labels(
+    const std::vector<EditableSetInfo>* address_labels) {
+  DCHECK(!address_labels_);
+  address_labels_ = address_labels;
+}
+
+void AutoFillProfilesView::AddressComboBoxModel::UsedWithComboBox(
+    views::Combobox *combo_box) {
+  DCHECK(address_labels_);
+  combo_boxes_.push_back(combo_box);
+}
+
+void AutoFillProfilesView::AddressComboBoxModel::LabelChanged() {
+  DCHECK(address_labels_);
+  for (std::list<views::Combobox *>::iterator it = combo_boxes_.begin();
+       it != combo_boxes_.end();
+       ++it)
+    (*it)->ModelChanged();
+}
+
+int AutoFillProfilesView::AddressComboBoxModel::GetIndex(const string16 &s) {
+  int shift = is_billing_ ? 0 : 1;
+  DCHECK(address_labels_);
+  for (size_t i = 0; i < address_labels_->size(); ++i) {
+    DCHECK(address_labels_->at(i).is_address);
+    if (address_labels_->at(i).address.Label() == s)
+      return i + shift;
+  }
+  return -1;
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// AutoFillProfilesView::AddressComboBoxModel,  ComboboxModel methods
+int AutoFillProfilesView::AddressComboBoxModel::GetItemCount() {
+  DCHECK(address_labels_);
+  int shift = is_billing_ ? 0 : 1;
+  return static_cast<int>(address_labels_->size()) + shift;
+}
+
+std::wstring AutoFillProfilesView::AddressComboBoxModel::GetItemAt(int index) {
+  DCHECK(address_labels_);
+  int shift = is_billing_ ? 0 : 1;
+  DCHECK(index < (static_cast<int>(address_labels_->size()) + shift));
+  if (!is_billing_ && !index)
+    return l10n_util::GetString(IDS_AUTOFILL_DIALOG_SAME_AS_BILLING);
+  DCHECK(address_labels_->at(index - shift).is_address);
+  std::wstring label = address_labels_->at(index - shift).address.Label();
+  if (label.empty())
+    label = l10n_util::GetString(IDS_AUTOFILL_NEW_ADDRESS);
+  return label;
+}
 
 /////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView::ScrollViewContents, public:
 AutoFillProfilesView::ScrollViewContents::ScrollViewContents(
+    AutoFillProfilesView* observer,
     std::vector<EditableSetInfo>* profiles,
     std::vector<EditableSetInfo>* credit_cards)
     : profiles_(profiles),
       credit_cards_(credit_cards),
       add_address_(NULL),
-      add_credit_card_(NULL) {
+      add_credit_card_(NULL),
+      observer_(observer),
+      billing_model_(true),
+      shipping_model_(false) {
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -707,67 +944,7 @@ void AutoFillProfilesView::ScrollViewContents::ViewHierarchyChanged(
       ResourceBundle& rb = ResourceBundle::GetSharedInstance();
       line_height_ = rb.GetFont(ResourceBundle::BaseFont).height();
     }
-
-    gfx::Rect lb = GetLocalBounds(false);
-    SetBounds(lb);
-
-    views::GridLayout* layout = new views::GridLayout(this);
-    SetLayoutManager(layout);
-
-    const int single_column_filled_view_set_id = 0;
-    views::ColumnSet* column_set =
-        layout->AddColumnSet(single_column_filled_view_set_id);
-    column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
-                          views::GridLayout::USE_PREF, 0, 0);
-    const int single_column_left_view_set_id = 1;
-    column_set = layout->AddColumnSet(single_column_left_view_set_id);
-    column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
-                          1, views::GridLayout::USE_PREF, 0, 0);
-    views::Label *title_label = new views::Label(
-        l10n_util::GetString(IDS_AUTOFILL_ADDRESSES_GROUP_NAME));
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    gfx::Font title_font =
-        rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
-    title_label->SetFont(title_font);
-    layout->StartRow(0, single_column_left_view_set_id);
-    layout->AddView(title_label);
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-
-    std::vector<EditableSetInfo>::iterator it;
-    for (it = profiles_->begin(); it != profiles_->end(); ++it) {
-      EditableSetViewContents *address_view =
-          new EditableSetViewContents(it);
-      layout->StartRow(0, single_column_filled_view_set_id);
-      layout->AddView(address_view);
-      layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-    }
-
-    add_address_ = new views::NativeButton(this,
-        l10n_util::GetString(IDS_AUTOFILL_ADD_ADDRESS_BUTTON));
-    layout->StartRow(0, single_column_left_view_set_id);
-    layout->AddView(add_address_);
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-
-    title_label = new views::Label(
-        l10n_util::GetString(IDS_AUTOFILL_CREDITCARDS_GROUP_NAME));
-    title_label->SetFont(title_font);
-    layout->StartRow(0, single_column_left_view_set_id);
-    layout->AddView(title_label);
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-
-    for (it = credit_cards_->begin(); it != credit_cards_->end(); ++it) {
-      EditableSetViewContents *address_view =
-          new EditableSetViewContents(it);
-      layout->StartRow(0, single_column_filled_view_set_id);
-      layout->AddView(address_view);
-      layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-    }
-
-    add_credit_card_ = new views::NativeButton(this,
-        l10n_util::GetString(IDS_AUTOFILL_ADD_CREDITCARD_BUTTON));
-
-    layout->StartRow(0, single_column_left_view_set_id);
-    layout->AddView(add_credit_card_);
+    Init();
   }
 }
 
@@ -776,20 +953,115 @@ void AutoFillProfilesView::ScrollViewContents::ViewHierarchyChanged(
 // views::ButtonListener implementations
 void AutoFillProfilesView::ScrollViewContents::ButtonPressed(
     views::Button* sender, const views::Event& event) {
-  NOTIMPLEMENTED();
+  if (sender == add_address_)
+    observer_->AddClicked(EDITABLE_SET_ADDRESS);
+  else if (sender == add_credit_card_)
+    observer_->AddClicked(EDITABLE_SET_CREDIT_CARD);
+}
+
+/////////////////////////////////////////////////////////////////////////////
+// AutoFillProfilesView::ScrollViewContents, private
+void AutoFillProfilesView::ScrollViewContents::Init() {
+  gfx::Rect lb = GetLocalBounds(false);
+  SetBounds(lb);
+
+  views::GridLayout* layout = new views::GridLayout(this);
+  SetLayoutManager(layout);
+
+  const int single_column_filled_view_set_id = 0;
+  views::ColumnSet* column_set =
+      layout->AddColumnSet(single_column_filled_view_set_id);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+      views::GridLayout::USE_PREF, 0, 0);
+  const int single_column_left_view_set_id = 1;
+  column_set = layout->AddColumnSet(single_column_left_view_set_id);
+  column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
+                        1, views::GridLayout::USE_PREF, 0, 0);
+  views::Label *title_label = new views::Label(
+      l10n_util::GetString(IDS_AUTOFILL_ADDRESSES_GROUP_NAME));
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  gfx::Font title_font =
+      rb.GetFont(ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD);
+  title_label->SetFont(title_font);
+  layout->StartRow(0, single_column_left_view_set_id);
+  layout->AddView(title_label);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+
+  std::vector<EditableSetInfo>::iterator it;
+  for (it = profiles_->begin(); it != profiles_->end(); ++it) {
+    EditableSetViewContents *address_view =
+        new EditableSetViewContents(observer_, &billing_model_,
+                                    &shipping_model_, it);
+    layout->StartRow(0, single_column_filled_view_set_id);
+    layout->AddView(address_view);
+    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  }
+
+  billing_model_.set_address_labels(profiles_);
+  shipping_model_.set_address_labels(profiles_);
+
+  add_address_ = new views::NativeButton(this,
+      l10n_util::GetString(IDS_AUTOFILL_ADD_ADDRESS_BUTTON));
+  layout->StartRow(0, single_column_left_view_set_id);
+  layout->AddView(add_address_);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+
+  title_label = new views::Label(
+      l10n_util::GetString(IDS_AUTOFILL_CREDITCARDS_GROUP_NAME));
+  title_label->SetFont(title_font);
+  layout->StartRow(0, single_column_left_view_set_id);
+  layout->AddView(title_label);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+
+  for (it = credit_cards_->begin(); it != credit_cards_->end(); ++it) {
+    EditableSetViewContents *address_view =
+        new EditableSetViewContents(observer_, &billing_model_,
+                                    &shipping_model_, it);
+    layout->StartRow(0, single_column_filled_view_set_id);
+    layout->AddView(address_view);
+    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  }
+
+  add_credit_card_ = new views::NativeButton(this,
+      l10n_util::GetString(IDS_AUTOFILL_ADD_CREDITCARD_BUTTON));
+
+  layout->StartRow(0, single_column_left_view_set_id);
+  layout->AddView(add_credit_card_);
 }
 
 /////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView::AutoFillScrollView, public:
 AutoFillProfilesView::AutoFillScrollView::AutoFillScrollView(
+    AutoFillProfilesView* observer,
     std::vector<EditableSetInfo>* profiles,
     std::vector<EditableSetInfo>* credit_cards)
     : scroll_view_(new views::ScrollView),
-      scroll_contents_view_(new ScrollViewContents(profiles, credit_cards)) {
+      scroll_contents_view_(
+          new ScrollViewContents(observer, profiles, credit_cards)),
+      profiles_(profiles),
+      credit_cards_(credit_cards),
+      observer_(observer) {
   AddChildView(scroll_view_);
+  // After the following call, |scroll_view_| owns |scroll_contents_view_|
+  // and deletes it when it gets deleted or reset.
   scroll_view_->SetContents(scroll_contents_view_);
   set_background(new ListBackground());
 }
+
+void AutoFillProfilesView::AutoFillScrollView::RebuildView() {
+  gfx::Rect visible_rectangle = scroll_view_->GetVisibleRect();
+  scroll_contents_view_ = new ScrollViewContents(observer_,
+                                                 profiles_,
+                                                 credit_cards_);
+  // Deletes the old contents view and takes ownership of
+  // |scroll_contents_view_|.
+  scroll_view_->SetContents(scroll_contents_view_);
+  scroll_contents_view_->ScrollRectToVisible(visible_rectangle.x(),
+                                             visible_rectangle.y(),
+                                             visible_rectangle.width(),
+                                             visible_rectangle.height());
+}
+
 
 /////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView::AutoFillScrollView, views::View implementations

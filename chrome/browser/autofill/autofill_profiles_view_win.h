@@ -6,17 +6,21 @@
 #define CHROME_BROWSER_AUTOFILL_AUTOFILL_PROFILES_VIEW_WIN_H_
 
 #include <vector>
+#include <list>
 
+#include "app/combobox_model.h"
 #include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/autofill_profile.h"
+#include "views/controls/combobox/combobox.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
 
 namespace views {
-class ScrollView;
-class Label;
 class GridLayout;
+class ImageButton;
+class Label;
+class ScrollView;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -49,6 +53,27 @@ class AutoFillProfilesView : public views::View,
                   const std::vector<CreditCard*>& credit_cards);
 
  protected:
+  enum EditableSetType {
+    EDITABLE_SET_ADDRESS,
+    EDITABLE_SET_CREDIT_CARD,
+  };
+  // forward declaration. This struct defined further down.
+  struct EditableSetInfo;
+  // Callbacks, called from EditableSetViewContents and ScrollViewContents.
+  // Called from ScrollViewContents when 'Add Address' (|item_type| is
+  // EDITABLE_SET_ADDRESS) or 'Add Credit Card' (|item_type| is
+  // EDITABLE_SET_CREDIT_CARD) is clicked.
+  void AddClicked(EditableSetType item_type);
+  // Called from EditableSetViewContents when 'Delete' is clicked.
+  // |field_set_iterator| is iterator to item being deleted
+  void DeleteEditableSet(
+      std::vector<EditableSetInfo>::iterator field_set_iterator);
+  // Called from EditableSetViewContents when header of the item is clicked
+  // either to collapse or expand. |field_set_iterator| is iterator to item
+  // being changed.
+  void CollapseStateChanged(
+      std::vector<EditableSetInfo>::iterator field_set_iterator);
+
   // views::View methods:
   virtual void Layout();
   virtual gfx::Size GetPreferredSize();
@@ -96,20 +121,6 @@ class AutoFillProfilesView : public views::View,
     }
   };
 
-  // Callbacks, called from EditableSetViewContents and ScrollViewContents.
-  // Called from ScrollViewContents when 'Add Address' (|address| is true) or
-  // 'Add Credit Card' (|address| is false) is clicked.
-  void AddClicked(bool address);
-  // Called from EditableSetViewContents when 'Delete' is clicked.
-  // |field_set_iterator| is iterator to item being deleted
-  void DeleteEditableSet(std::vector<EditableSetInfo>::iterator
-                         field_set_iterator);
-  // Called from EditableSetViewContents when header of the item is clicked
-  // either to collapse or expand. |field_set_iterator| is iterator to item
-  // being changed.
-  void CollapseStateChanged(std::vector<EditableSetInfo>::iterator
-                            field_set_iterator);
-
  private:
   AutoFillProfilesView(AutoFillDialogObserver* observer,
                        const std::vector<AutoFillProfile*>& profiles,
@@ -139,13 +150,19 @@ class AutoFillProfilesView : public views::View,
     DISALLOW_COPY_AND_ASSIGN(PhoneSubView);
   };
 
+  // forward declaration
+  class AddressComboBoxModel;
+
   // Sub-view dealing with addresses.
   class EditableSetViewContents : public views::View,
                                   public views::Textfield::Controller,
-                                  public views::ButtonListener {
+                                  public views::ButtonListener,
+                                  public views::Combobox::Listener {
    public:
-    explicit EditableSetViewContents(
-        std::vector<EditableSetInfo>::iterator field_set);
+    EditableSetViewContents(AutoFillProfilesView* observer,
+                            AddressComboBoxModel* billing_model,
+                            AddressComboBoxModel* shipping_model,
+                            std::vector<EditableSetInfo>::iterator field_set);
     virtual ~EditableSetViewContents() {}
 
    protected:
@@ -164,7 +181,12 @@ class AutoFillProfilesView : public views::View,
     // views::ButtonListener methods:
     virtual void ButtonPressed(views::Button* sender,
                                const views::Event& event);
+    // views::Combobox::Listener methods:
+    virtual void ItemChanged(views::Combobox* combo_box,
+                             int prev_index,
+                             int new_index);
    private:
+    void InitTitle(views::GridLayout* layout);
     void InitAddressFields(views::GridLayout* layout);
     void InitCreditCardFields(views::GridLayout* layout);
     void InitLayoutGrid(views::GridLayout* layout);
@@ -199,8 +221,15 @@ class AutoFillProfilesView : public views::View,
     };
     views::Textfield* text_fields_[MAX_TEXT_FIELD];
     std::vector<EditableSetInfo>::iterator editable_fields_set_;
+    views::ImageButton* expand_item_button_;
     views::Label* title_label_;
+    views::Label* title_label_preview_;
     views::Button* delete_button_;
+    AutoFillProfilesView* observer_;
+    AddressComboBoxModel* billing_model_;
+    AddressComboBoxModel* shipping_model_;
+    views::Combobox* combo_box_billing_;
+    views::Combobox* combo_box_shipping_;
 
     struct TextFieldToAutoFill {
       TextFields text_field;
@@ -216,15 +245,52 @@ class AutoFillProfilesView : public views::View,
     static const int triple_column_leading_view_set_id_ = 3;
     static const int four_column_city_state_zip_set_id_ = 4;
     static const int four_column_ccnumber_expiration_cvc_ = 5;
+    static const int three_column_header_ = 6;
 
     DISALLOW_COPY_AND_ASSIGN(EditableSetViewContents);
+  };
+
+  // Encapsulates ComboboxModel for address
+  class AddressComboBoxModel : public ComboboxModel {
+   public:
+    explicit AddressComboBoxModel(bool is_billing);
+    virtual ~AddressComboBoxModel() {}
+
+    // Should be called only once. No other function should be called before it.
+    // Does not own |address_labels|. To update the model text,
+    // update label in one of the profiles and call LabelChanged()
+    void set_address_labels(const std::vector<EditableSetInfo>* address_labels);
+
+    // When you add a CB view that relies on this model, call this function
+    // so the CB can be notified if strings change. Can be called multiple
+    // times if several combo boxes relying on the model.
+    // Model does not own |combo_box|.
+    void UsedWithComboBox(views::Combobox *combo_box);
+
+    // Call this function if one of the labels has changed
+    void LabelChanged();
+
+    // Gets index of the string in the model or -1 if not found.
+    int GetIndex(const string16 &s);
+
+    // ComboboxModel methods, public as they used from EditableSetViewContents
+    virtual int GetItemCount();
+    virtual std::wstring GetItemAt(int index);
+
+   private:
+    std::list<views::Combobox *> combo_boxes_;
+    const std::vector<EditableSetInfo>* address_labels_;
+    bool is_billing_;
+
+    DISALLOW_COPY_AND_ASSIGN(AddressComboBoxModel);
   };
 
   // Sub-view  for scrolling credit cards and addresses
   class ScrollViewContents : public views::View,
                              public views::ButtonListener {
    public:
-    ScrollViewContents(std::vector<EditableSetInfo>* profiles,
+    ScrollViewContents(AutoFillProfilesView* observer,
+                       std::vector<EditableSetInfo>* profiles,
                        std::vector<EditableSetInfo>* credit_cards);
     virtual ~ScrollViewContents() {}
 
@@ -240,10 +306,16 @@ class AutoFillProfilesView : public views::View,
     virtual void ButtonPressed(views::Button* sender,
                                const views::Event& event);
    private:
+    void Init();
+
     std::vector<EditableSetInfo>* profiles_;
     std::vector<EditableSetInfo>* credit_cards_;
     views::Button* add_address_;
     views::Button* add_credit_card_;
+    AutoFillProfilesView* observer_;
+
+    AddressComboBoxModel billing_model_;
+    AddressComboBoxModel shipping_model_;
 
     static int line_height_;
 
@@ -252,9 +324,13 @@ class AutoFillProfilesView : public views::View,
 
   class AutoFillScrollView : public views::View {
    public:
-    AutoFillScrollView(std::vector<EditableSetInfo>* profiles,
+    AutoFillScrollView(AutoFillProfilesView* observer,
+                       std::vector<EditableSetInfo>* profiles,
                        std::vector<EditableSetInfo>* credit_cards);
     virtual ~AutoFillScrollView() {}
+
+    // Rebuilds the view by deleting and re-creating sub-views
+    void RebuildView();
 
    protected:
     // views::View overrides:
@@ -264,6 +340,10 @@ class AutoFillProfilesView : public views::View,
     // The scroll view that contains list of the profiles.
     views::ScrollView* scroll_view_;
     ScrollViewContents* scroll_contents_view_;
+
+    std::vector<EditableSetInfo>* profiles_;
+    std::vector<EditableSetInfo>* credit_cards_;
+    AutoFillProfilesView* observer_;
 
     DISALLOW_COPY_AND_ASSIGN(AutoFillScrollView);
   };
