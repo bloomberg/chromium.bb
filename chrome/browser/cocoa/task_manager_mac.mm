@@ -59,7 +59,7 @@ static const struct ColumnWidth {
 - (void)setUpTableColumns;
 - (void)setUpTableHeaderContextMenu;
 - (void)toggleColumn:(id)sender;
-- (void)adjustEndProcessButton;
+- (void)adjustSelectionAndEndProcessButton;
 @end
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -90,7 +90,7 @@ static const struct ColumnWidth {
 
 - (void)reloadData {
   [tableView_ reloadData];
-  [self adjustEndProcessButton];
+  [self adjustSelectionAndEndProcessButton];
 }
 
 - (IBAction)statsLinkClicked:(id)sender {
@@ -116,7 +116,7 @@ static const struct ColumnWidth {
 - (void)awakeFromNib {
   [self setUpTableColumns];
   [self setUpTableHeaderContextMenu];
-  [self adjustEndProcessButton];
+  [self adjustSelectionAndEndProcessButton];
 
   [tableView_ setDoubleAction:@selector(selectDoubleClickedTab:)];
 }
@@ -232,17 +232,23 @@ static const struct ColumnWidth {
 
 // This function appropriately sets the enabled states on the table's editing
 // buttons.
-- (void)adjustEndProcessButton {
+- (void)adjustSelectionAndEndProcessButton {
   bool selectionContainsBrowserProcess = false;
 
+  // If a row is selected, make sure that all rows belonging to the same process
+  // are selected as well. Also, check if the selection contains the browser
+  // process.
   NSIndexSet* selection = [tableView_ selectedRowIndexes];
   for (NSUInteger i = [selection lastIndex];
        i != NSNotFound;
        i = [selection indexLessThanIndex:i]) {
-    if (taskManager_->IsBrowserProcess(i)) {
+    if (taskManager_->IsBrowserProcess(i))
       selectionContainsBrowserProcess = true;
-      break;
-    }
+
+    std::pair<int, int> rangePair = model_->GetGroupRangeForResource(i);
+    NSRange range = NSMakeRange(rangePair.first, rangePair.second);
+    NSIndexSet* rangeIndexSet = [NSIndexSet indexSetWithIndexesInRange:range];
+    [tableView_ selectRowIndexes:rangeIndexSet byExtendingSelection:YES];
   }
 
   bool enabled = [selection count] > 0 && !selectionContainsBrowserProcess;
@@ -250,8 +256,8 @@ static const struct ColumnWidth {
 }
 
 // Table view delegate method.
-- (void)tableViewSelectionDidChange:(NSNotification*)aNotification {
-  [self adjustEndProcessButton];
+- (void)tableViewSelectionIsChanging:(NSNotification*)aNotification {
+  [self adjustSelectionAndEndProcessButton];
 }
 
 @end
