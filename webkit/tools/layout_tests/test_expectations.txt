@@ -421,9 +421,10 @@ WONTFIX BUG21840 DEBUG : http/tests/loading/basic-auth-resend-wrong-credentials.
 WONTFIX BUG21840 LINUX RELEASE : http/tests/loading/basic-auth-resend-wrong-credentials.html = FAIL
 WONTFIX BUG21840 SLOW WIN RELEASE : http/tests/loading/basic-auth-resend-wrong-credentials.html = FAIL
 WONTFIX BUG21840 MAC RELEASE : http/tests/loading/basic-auth-resend-wrong-credentials.html = FAIL TIMEOUT
-WONTFIX BUG21840 WIN DEBUG : http/tests/loading/basic-credentials-sent-automatically.html = FAIL TIMEOUT
-WONTFIX BUG21840 SLOW WIN RELEASE : http/tests/loading/basic-credentials-sent-automatically.html = FAIL
-WONTFIX BUG21840 LINUX MAC : http/tests/loading/basic-credentials-sent-automatically.html = FAIL
+
+WONTFIX BUG21840 LINUX : http/tests/loading/basic-credentials-sent-automatically.html = FAIL CRASH
+WONTFIX BUG21840 WIN : http/tests/loading/basic-credentials-sent-automatically.html = FAIL TIMEOUT
+WONTFIX BUG21840 MAC : http/tests/loading/basic-credentials-sent-automatically.html = FAIL
 
 // This checks the IDN behavior of WebKit/WebKit on Mac, not WebKit/WebCore or
 // WebKit/JavaScriptCore. Chrome doesn't use WebKit/WebKit, and Chrome's IDN
@@ -931,7 +932,7 @@ BUG10295 MAC : fast/dom/prototype-chain.html = FAIL
 BUG10296 MAC : fast/text/international/bidi-menulist.html = FAIL
 BUG10296 LINUX : fast/transforms/transform-on-inline.html = FAIL
 BUG10296 LINUX : fast/transforms/transform-table-row.html = FAIL
-BUG10296 LINUX : svg/batik/paints/patternPreserveAspectRatioA.svg = FAIL
+BUG10296 LINUX : svg/batik/paints/patternPreserveAspectRatioA.svg = FAIL TIMEOUT
 // Needs to be rebaselined.
 BUG10296 LINUX : svg/custom/deep-dynamic-updates.svg = FAIL
 BUG10296 LINUX : svg/custom/foreign-object-skew.svg = FAIL
