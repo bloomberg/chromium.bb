@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/time.h"
+#include "chrome/common/content_permission_types.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/renderer/user_script_idle_scheduler.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDataSource.h"
@@ -207,6 +208,13 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   void set_was_fetched_via_spdy(bool value) { was_fetched_via_spdy_ = value; }
   bool was_fetched_via_spdy() const { return was_fetched_via_spdy_; }
 
+  void set_content_permissions(const ContentPermissions& value) {
+    content_permissions_ = value;
+  }
+  ContentPermissions content_permissions() const {
+    return content_permissions_;
+  }
+
  private:
   NavigationState(PageTransition::Type transition_type,
                   const base::Time& request_time,
@@ -253,6 +261,8 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   scoped_ptr<UserScriptIdleScheduler> user_script_idle_scheduler_;
 
   bool was_fetched_via_spdy_;
+
+  ContentPermissions content_permissions_;
 
   DISALLOW_COPY_AND_ASSIGN(NavigationState);
 };
