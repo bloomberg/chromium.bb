@@ -78,7 +78,7 @@ class LoginManagerWindow : public views::WindowGtk {
         new LoginManagerWindow();
     login_manager_window->GetNonClientView()->SetFrameView(
         new LoginManagerNonClientFrameView());
-    login_manager_window->Init(NULL, gfx::Rect(0, 0, 1024,768));
+    login_manager_window->Init(NULL, gfx::Rect());
     return login_manager_window;
   }
 
