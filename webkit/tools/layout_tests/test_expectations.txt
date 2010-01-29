@@ -2925,3 +2925,6 @@ BUG33486 LINUX : svg/text/text-intro-05-t.svg = IMAGE
 
 // WebKit roll 54045 -> 54059
 BUG33497 : storage/domstorage/sessionstorage/window-open.html = TEXT
+
+// WebKit roll 54059 -> 54075
+BUG33538 : fast/dom/Window/anonymous-slot-with-changes.html = TEXT
