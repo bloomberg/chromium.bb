@@ -82,37 +82,6 @@ function dispatch(method, var_args) {
   DevToolsAgentHost.dispatch(call);
 };
 
-
-// TODO(yurys): remove once injected script lives in the inspected context
-if (this.InjectedScript) {
-
-// Plugging into upstreamed support.
-InjectedScript._window = function() {
-  return contentWindow;
-};
-
-
-// Plugging into upstreamed support.
-InjectedScript.evaluateOnSelf = function(funcBody) {
-  return DevToolsAgentHost.evaluateOnSelf("(" + funcBody + ")();");
-};
-
-
-// TODO(pfeldman): Remove once Object.getOwnPropertyNames is implemented.
-InjectedScript._getPropertyNames = function(object, resultSet)
-{
-    for (var name in object)
-        resultSet[name] = true;
-}
-
-}
-
-// Plugging into upstreamed support.
-Object.className = function(obj) {
-  return (obj == null) ? "null" : obj.constructor.name;
-};
-
-
 /**
  * A no-op function that is called by debugger agent just to trigger v8
  * execution.
