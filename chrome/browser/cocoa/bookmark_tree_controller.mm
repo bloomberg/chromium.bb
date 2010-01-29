@@ -249,17 +249,23 @@ static NSString* const kFolderColIdent = @"folder";
     NSBeep();
 }
 
-- (IBAction)newFolder:(id)sender {
+- (BookmarkItem*)newFolderWithTitle:(NSString*)title {
   BookmarkItem* parent;
   NSUInteger index;
   if (![self getInsertionParent:&parent index:&index]) {
     NSBeep();
-    return;
+    return nil;
   }
   // Create the folder, then select it and make the title editable:
-  BookmarkItem* folder = [parent addFolderWithTitle:@"" atIndex:index];
-  [self expandItem:folder];
-  [self editTitleOfItem:folder];
+  BookmarkItem* folder = [parent addFolderWithTitle:title atIndex:index];
+  [self revealItem:folder];
+  return folder;
+}
+
+- (IBAction)newFolder:(id)sender {
+  BookmarkItem* folder = [self newFolderWithTitle:@""];
+  if (folder)
+    [self editTitleOfItem:folder];
 }
 
 - (IBAction)revealSelectedItem:(id)sender {
@@ -451,7 +457,8 @@ static void addItem(NSMenu* menu, int command, SEL action) {
 }
 
 // Updates the tree after the data model has changed.
-- (void)itemChanged:(id)nodeItem childrenChanged:(BOOL)childrenChanged {
+- (void)itemChanged:(BookmarkItem*)nodeItem
+    childrenChanged:(BOOL)childrenChanged {
   if (nodeItem == group_)
     nodeItem = nil;
   NSArray* sel = [self selectedItems];

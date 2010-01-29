@@ -90,6 +90,7 @@
 // Exposed only for unit tests.
 @interface BookmarkTreeController (UnitTesting)
 @property (readonly) NSOutlineView* outline;
+- (BookmarkItem*)newFolderWithTitle:(NSString*)title;
 - (NSArray*)readPropertyListFromPasteboard:(NSPasteboard*)pb;
 - (BOOL)copyToPasteboard:(NSPasteboard*)pb;
 - (BOOL)pasteFromPasteboard:(NSPasteboard*)pb;

@@ -105,11 +105,11 @@ TEST_F(BookmarkTreeControllerTest, NewFolder) {
   EXPECT_TRUE([groupsController_ getInsertionParent:&parent index:&index]);
   EXPECT_EQ(bar, parent);
   EXPECT_EQ(0U, index);
-  [groupsController_ newFolder:nil];
+  BookmarkItem* newFolder = [groupsController_ newFolderWithTitle:@""];
 
   // Verify the new folder exists and is selected:
   ASSERT_EQ(1U, [bar numberOfChildren]);
-  BookmarkItem *newFolder = [bar childAtIndex:0];
+  EXPECT_EQ(newFolder, [bar childAtIndex:0]);
   EXPECT_EQ(newFolder, [groupsController_ selectedItem]);
 
   // Do New Folder again:
@@ -119,11 +119,11 @@ TEST_F(BookmarkTreeControllerTest, NewFolder) {
   EXPECT_TRUE([listController_ getInsertionParent:&parent index:&index]);
   EXPECT_EQ(newFolder, parent);
   EXPECT_EQ(0U, index);
-  [groupsController_ newFolder:nil];
+  newFolder = [groupsController_ newFolderWithTitle:@""];
 
   // Verify the new folder exists and is selected:
   ASSERT_EQ(2U, [bar numberOfChildren]);
-  newFolder = [bar childAtIndex:0];
+  EXPECT_EQ(newFolder, [bar childAtIndex:0]);
   EXPECT_EQ(newFolder, [groupsController_ selectedItem]);
 
   // Verify it's possible to add to Other Bookmarks:
@@ -135,6 +135,21 @@ TEST_F(BookmarkTreeControllerTest, NewFolder) {
   [groupsController_ setSelectedItem:[manager_ recentGroup]];
   EXPECT_FALSE([groupsController_ canInsert]);
   EXPECT_FALSE([listController_ canInsert]);
+}
+
+TEST_F(BookmarkTreeControllerTest, Deletion) {
+  // Create a new folder in the bookmarks bar:
+  SelectBar();
+  BookmarkItem* newFolder = [groupsController_ newFolderWithTitle:@""];
+  ASSERT_TRUE(newFolder);
+  ASSERT_EQ(newFolder, [groupsController_ selectedItem]);
+
+  // Now delete the folder and make sure it's not still selected/shown:
+  [groupsController_ delete:nil];
+  ASSERT_EQ(0U, [[manager_ bookmarkBarItem] numberOfChildren]);
+  BookmarkItem* newSel = [groupsController_ selectedItem];
+  EXPECT_NE(newFolder, newSel);
+  EXPECT_EQ(newSel, [listController_ group]);
 }
 
 TEST_F(BookmarkTreeControllerTest, MoveItems) {
