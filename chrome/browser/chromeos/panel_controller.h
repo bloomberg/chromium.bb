@@ -9,11 +9,7 @@
 
 #include "views/controls/button/button.h"
 
-#if defined(TOOLKIT_VIEWS)
 class BrowserView;
-#else
-class BrowserWindowGtk;
-#endif
 typedef unsigned long XID;
 
 namespace views {
@@ -29,11 +25,7 @@ namespace chromeos {
 // Controls interactions with the WM for popups / panels.
 class PanelController : public views::ButtonListener {
  public:
-#if defined(TOOLKIT_VIEWS)
   explicit PanelController(BrowserView* browser_window);
-#else
-  explicit PanelController(BrowserWindowGtk* browser_window);
-#endif
   virtual ~PanelController() {}
 
   bool TitleMousePressed(const views::MouseEvent& event);
@@ -82,11 +74,7 @@ class PanelController : public views::ButtonListener {
   void Init(const gfx::Rect window_bounds);
 
   // Browser window containing content.
-#if defined(TOOLKIT_VIEWS)
   BrowserView* browser_window_;
-#else
-  BrowserWindowGtk* browser_window_;
-#endif
 
   // Gtk object for content.
   GtkWindow* panel_;
@@ -128,4 +116,3 @@ class PanelController : public views::ButtonListener {
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_PANEL_CONTROLLER_H_
-

@@ -12,11 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
-#if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/frame/browser_view.h"
-#else
-#include "chrome/browser/gtk/browser_window_gtk.h"
-#endif
 #include "chrome/browser/views/tabs/tab_overview_types.h"
 #include "chrome/common/x11_util.h"
 #include "grit/app_resources.h"
@@ -78,7 +74,6 @@ static void InitializeResources() {
 
 }  // namespace
 
-#if defined(TOOLKIT_VIEWS)
 PanelController::PanelController(BrowserView* browser_window)
     :  browser_window_(browser_window),
        panel_(browser_window->GetNativeHandle()),
@@ -89,18 +84,6 @@ PanelController::PanelController(BrowserView* browser_window)
        dragging_(false) {
   Init(browser_window->bounds());
 }
-#else
-PanelController::PanelController(BrowserWindowGtk* browser_window)
-    :  browser_window_(browser_window),
-       panel_(browser_window->window()),
-       panel_xid_(x11_util::GetX11WindowFromGtkWidget(GTK_WIDGET(panel_))),
-       title_window_(NULL),
-       expanded_(true),
-       mouse_down_(false),
-       dragging_(false) {
-  Init(browser_window->bounds());
-}
-#endif
 
 void PanelController::Init(const gfx::Rect window_bounds) {
   gfx::Rect title_bounds(
