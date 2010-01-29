@@ -715,7 +715,6 @@
         'browser/history/text_database_unittest.cc',
         'browser/history/thumbnail_database_unittest.cc',
         'browser/history/top_sites_unittest.cc',
-        'browser/host_content_settings_map_unittest.cc',
         'browser/thumbnail_store_unittest.cc',
         'browser/history/url_database_unittest.cc',
         'browser/history/visit_database_unittest.cc',

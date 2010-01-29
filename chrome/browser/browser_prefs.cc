@@ -17,7 +17,6 @@
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/form_field_history_manager.h"
 #include "chrome/browser/google_url_tracker.h"
-#include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/metrics/metrics_service.h"
@@ -94,7 +93,6 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   ExtensionsUI::RegisterUserPrefs(user_prefs);
   NewTabUI::RegisterUserPrefs(user_prefs);
   BlockedPopupContainer::RegisterUserPrefs(user_prefs);
-  HostContentSettingsMap::RegisterUserPrefs(user_prefs);
   HostZoomMap::RegisterUserPrefs(user_prefs);
   DevToolsManager::RegisterUserPrefs(user_prefs);
   Blacklist::RegisterUserPrefs(user_prefs);

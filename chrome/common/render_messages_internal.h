@@ -364,13 +364,6 @@ IPC_BEGIN_MESSAGES(View)
                        std::string /* host */,
                        int /* zoom_level */)
 
-  // Set the content settings for a particular hostname that the renderer is in
-  // the process of loading.  This will be stored, to be used if the load
-  // commits and ignored otherwise.
-  IPC_MESSAGE_ROUTED2(ViewMsg_SetContentSettingsForLoadingHost,
-                      std::string /* host */,
-                      int /* content_settings */)
-
   // Change encoding of page in the renderer.
   IPC_MESSAGE_ROUTED1(ViewMsg_SetPageEncoding,
                       std::string /*new encoding name*/)

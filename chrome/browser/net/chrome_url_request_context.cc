@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -779,7 +779,6 @@ ChromeURLRequestContext::ChromeURLRequestContext(
   extension_info_ = other->extension_info_;
   user_script_dir_path_ = other->user_script_dir_path_;
   appcache_service_ = other->appcache_service_;
-  host_content_settings_map_ = other->host_content_settings_map_;
   host_zoom_map_ = other->host_zoom_map_;
   privacy_blacklist_ = other->privacy_blacklist_;
   is_media_ = other->is_media_;
@@ -858,8 +857,6 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
   cookie_policy_type_ = net::CookiePolicy::FromInt(
       prefs->GetInteger(prefs::kCookieBehavior));
 
-  host_content_settings_map_ = profile->GetHostContentSettingsMap();
-
   host_zoom_map_ = profile->GetHostZoomMap();
 
   privacy_blacklist_ = profile->GetPrivacyBlacklist();
@@ -906,7 +903,6 @@ void ChromeURLRequestContextFactory::ApplyProfileParametersToContext(
   context->set_cookie_policy_type(cookie_policy_type_);
   context->set_extension_info(extension_info_);
   context->set_user_script_dir_path(user_script_dir_path_);
-  context->set_host_content_settings_map(host_content_settings_map_);
   context->set_host_zoom_map(host_zoom_map_);
   context->set_privacy_blacklist(privacy_blacklist_);
   context->set_transport_security_state(

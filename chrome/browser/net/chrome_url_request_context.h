@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 
 #include "base/file_path.h"
 #include "base/linked_ptr.h"
-#include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/common/appcache/chrome_appcache_service.h"
@@ -99,10 +98,6 @@ class ChromeURLRequestContext : public URLRequestContext {
   virtual bool InterceptResponseCookie(const URLRequest* request,
                                        const std::string& cookie) const;
 
-  const HostContentSettingsMap* host_content_settings_map() const {
-    return host_content_settings_map_;
-  }
-
   const HostZoomMap* host_zoom_map() const { return host_zoom_map_; }
 
   // Gets the Privacy Blacklist, if any for this context.
@@ -174,10 +169,6 @@ class ChromeURLRequestContext : public URLRequestContext {
   void set_is_media(bool is_media) {
     is_media_ = is_media;
   }
-  void set_host_content_settings_map(
-      HostContentSettingsMap* host_content_settings_map) {
-    host_content_settings_map_ = host_content_settings_map;
-  }
   void set_host_zoom_map(HostZoomMap* host_zoom_map) {
     host_zoom_map_ = host_zoom_map;
   }
@@ -202,7 +193,6 @@ class ChromeURLRequestContext : public URLRequestContext {
   FilePath user_script_dir_path_;
 
   scoped_refptr<ChromeAppCacheService> appcache_service_;
-  HostContentSettingsMap* host_content_settings_map_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
 
   const Blacklist* privacy_blacklist_;
@@ -373,7 +363,6 @@ class ChromeURLRequestContextFactory {
   // TODO(aa): I think this can go away now as we no longer support standalone
   // user scripts.
   FilePath user_script_dir_path_;
-  HostContentSettingsMap* host_content_settings_map_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
   const Blacklist* privacy_blacklist_;
   net::TransportSecurityState* transport_security_state_;
