@@ -159,16 +159,20 @@ class RenderView : public RenderWidget,
     return host_window_;
   }
 
-  int browser_window_id() {
+  int browser_window_id() const {
     return browser_window_id_;
   }
 
-  ViewType::Type view_type() {
+  ViewType::Type view_type() const {
     return view_type_;
   }
 
-  PrintWebViewHelper* print_helper() {
+  PrintWebViewHelper* print_helper() const {
     return print_helper_.get();
+  }
+
+  int page_id() const {
+    return page_id_;
   }
 
   // IPC::Channel::Listener
@@ -689,6 +693,11 @@ class RenderView : public RenderWidget,
 
   // Execute custom context menu action.
   void OnCustomContextMenuAction(unsigned action);
+
+  // Tells the renderer to translate the page contents.
+  void OnTranslatePage(int page_id,
+                       const std::string& source_lang,
+                       const std::string& target_lang);
 
   // Message that provides the translated text for a request.
   void OnTranslateTextResponse(int work_id,

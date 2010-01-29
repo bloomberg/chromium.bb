@@ -441,6 +441,12 @@ class RenderViewHost : public RenderWidgetHost {
   // Tells the render view that a custom context action has been selected.
   void PerformCustomContextMenuAction(unsigned action);
 
+  // Tells the renderer to translate the current page from one language to
+  // another.  If the current page id is not |page_id|, the request is ignored.
+  void TranslatePage(int page_id,
+                     const std::string& source_lang,
+                     const std::string& target_lang);
+
  protected:
   // RenderWidgetHost protected overrides.
   virtual bool PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,

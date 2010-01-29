@@ -10,6 +10,8 @@
 #ifndef CHROME_BROWSER_NET_URL_FETCHER_H_
 #define CHROME_BROWSER_NET_URL_FETCHER_H_
 
+#include <string>
+
 #include "base/leak_tracker.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
@@ -147,6 +149,9 @@ class URLFetcher {
  protected:
   // Returns the delegate.
   Delegate* delegate() const;
+
+  // Used by tests.
+  const std::string& upload_data() const;
 
  private:
   class Core;

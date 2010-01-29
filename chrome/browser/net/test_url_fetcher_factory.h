@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_NET_TEST_URL_FETCHER_FACTORY_H_
 
 #include <map>
+#include <string>
 
 #include "chrome/browser/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
@@ -47,6 +48,9 @@ class TestURLFetcher : public URLFetcher {
   // always returns an empty URL. Chances are you'll want to use original_url()
   // in your tests.
   const GURL& original_url() const { return original_url_; }
+
+  // Returns the data uploaded on this URLFetcher.
+  const std::string& upload_data() const { return URLFetcher::upload_data(); }
 
  private:
   const GURL original_url_;

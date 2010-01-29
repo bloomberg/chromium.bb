@@ -764,6 +764,7 @@
         'browser/renderer_host/resource_queue_unittest.cc',
         'browser/renderer_host/test/render_view_host_unittest.cc',
         'browser/renderer_host/test/site_instance_unittest.cc',
+        'browser/renderer_host/translation_service_unittest.cc',
         'browser/renderer_host/web_cache_manager_unittest.cc',
         'browser/rlz/rlz_unittest.cc',
         'browser/safe_browsing/bloom_filter_unittest.cc',

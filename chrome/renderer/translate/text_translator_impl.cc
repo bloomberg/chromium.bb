@@ -28,6 +28,7 @@ int TextTranslatorImpl::Translate(const std::vector<string16>& text,
                                   TextTranslator::Delegate* delegate) {
   ViewHostMsg_TranslateTextParam param;
   param.routing_id = render_view_->routing_id();
+  param.page_id = render_view_->page_id();
   param.work_id = work_id_counter_++;
   param.from_language = from_lang;
   param.to_language = to_lang;

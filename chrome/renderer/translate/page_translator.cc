@@ -16,6 +16,8 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebNodeList.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 
+namespace {
+
 // The following elements are not supposed to be translated.
 const char* const kSkippedTags[] = { "APPLET", "AREA", "BASE", "FRAME",
     "FRAMESET", "HR", "IFRAME", "IMG", "INPUT", "LINK", "META", "MAP",
@@ -25,6 +27,7 @@ const char* const kSkippedTags[] = { "APPLET", "AREA", "BASE", "FRAME",
 // Notes: does SPAN belong to this list?
 const char* const kInlineTags[] = { "A", "ABBR", "ACRONYM", "B", "BIG", "DEL",
     "EM", "I", "INS", "S", "SPAN", "STRIKE", "STRONG", "SUB", "SUP", "U" };
+}
 
 // Returns true when s1 < s2.
 bool PageTranslator::WebStringCompare::operator()(
@@ -115,7 +118,8 @@ void PageTranslator::TextTranslated(
     int work_id, const std::vector<string16>& translated_text_chunks) {
   std::map<int, NodeList*>::iterator iter = pending_translations_.find(work_id);
   if (iter == pending_translations_.end()) {
-    NOTREACHED() << "Translation results received for unknown node zone";
+    // We received some translated text we were not expecting.  It could be we
+    // navigated away from the page or that the translation was undone.
     return;
   }
 

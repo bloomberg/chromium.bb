@@ -568,6 +568,7 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
                         OnExecuteCode)
     IPC_MESSAGE_HANDLER(ViewMsg_CustomContextMenuAction,
                         OnCustomContextMenuAction)
+    IPC_MESSAGE_HANDLER(ViewMsg_TranslatePage, OnTranslatePage)
     IPC_MESSAGE_HANDLER(ViewMsg_TranslateTextReponse, OnTranslateTextResponse)
 
     // Have the super handle all other messages.
@@ -3315,13 +3316,21 @@ void RenderView::OnCustomContextMenuAction(unsigned action) {
   webview()->performCustomContextMenuAction(action);
 }
 
+void RenderView::OnTranslatePage(int page_id,
+                                 const std::string& source_lang,
+                                 const std::string& target_lang) {
+  if (page_id != page_id_)
+    return;  // Not the page we expected, nothing to do.
+
+  WebFrame* main_frame = webview()->mainFrame();
+  if (!main_frame)
+    return;
+  page_translator_->Translate(main_frame, source_lang, target_lang);
+}
+
 void RenderView::OnTranslateTextResponse(
     int work_id, int error_id, const std::vector<string16>& text_chunks) {
-  if (error_id) {
-    page_translator_->TranslationError(work_id, error_id);
-    return;
-  }
-  page_translator_->TextTranslated(work_id, text_chunks);
+  text_translator_.OnTranslationResponse(work_id, error_id, text_chunks);
 }
 
 void RenderView::OnInstallMissingPlugin() {

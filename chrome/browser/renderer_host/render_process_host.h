@@ -273,7 +273,7 @@ class RenderProcessHost : public IPC::Channel::Sender,
   bool fast_shutdown_started_;
 
  private:
-  // The globally-uniqe identifier for this RPH.
+  // The globally-unique identifier for this RPH.
   int id_;
 
   Profile* profile_;

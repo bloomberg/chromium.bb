@@ -303,6 +303,10 @@ void URLFetcher::set_upload_data(const std::string& upload_content_type,
   core_->upload_content_ = upload_content;
 }
 
+const std::string& URLFetcher::upload_data() const {
+  return core_->upload_content_;
+}
+
 void URLFetcher::set_load_flags(int load_flags) {
   core_->load_flags_ = load_flags;
 }
