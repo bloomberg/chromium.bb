@@ -108,6 +108,8 @@ TEST_F(AutomatedUITestBase, DISABLED_RestoreTab) {
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=14774
+// TODO(aa): http://crbug.com/33451
+#if !defined(OS_MACOSX)
 TEST_F(AutomatedUITestBase, FLAKY_CloseTab) {
   int num_browser_windows;
   int tab_count;
@@ -151,6 +153,7 @@ TEST_F(AutomatedUITestBase, FLAKY_CloseTab) {
   active_browser()->GetTabCount(&tab_count);
   ASSERT_EQ(1, tab_count);
 }
+#endif
 
 TEST_F(AutomatedUITestBase, OpenBrowserWindow) {
   int num_browser_windows;
