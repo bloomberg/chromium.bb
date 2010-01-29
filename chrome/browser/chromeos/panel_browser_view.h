@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_PANEL_BROWSER_VIEW_H_
 
 #include "base/scoped_ptr.h"
+#include "chrome/browser/chromeos/panel_controller.h"
 #include "chrome/browser/views/frame/browser_view.h"
 
 class Browser;
@@ -15,16 +16,22 @@ namespace chromeos {
 class PanelController;
 
 // A browser view that implements Panel specific behavior.
-class PanelBrowserView : public BrowserView {
+class PanelBrowserView : public BrowserView,
+                         public PanelController::Delegate {
  public:
   explicit PanelBrowserView(Browser* browser);
 
-  // BrowserViews overrides.
+  // BrowserView overrides.
   virtual void Init();
   virtual void Show();
   virtual void Close();
   virtual void UpdateTitleBar();
   virtual void ActivationChanged(bool activated);
+
+  // PanelController::Delegate overrides
+  virtual string16 GetPanelTitle();
+  virtual SkBitmap GetPanelIcon();
+  virtual void ClosePanel();
 
  private:
   // Controls interactions with the window manager for popup panels.

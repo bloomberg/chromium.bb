@@ -10,6 +10,7 @@
 #include "views/controls/button/button.h"
 
 class BrowserView;
+class SkBitmap;
 typedef unsigned long XID;
 
 namespace views {
@@ -25,7 +26,22 @@ namespace chromeos {
 // Controls interactions with the WM for popups / panels.
 class PanelController : public views::ButtonListener {
  public:
-  explicit PanelController(BrowserView* browser_window);
+  // Delegate to control panel's appearance and behavior.
+  class Delegate {
+   public:
+    // Retrieves the title string of the panel.
+    virtual string16 GetPanelTitle() = 0;
+
+    // Retrieves the icon to use in the panel's titlebar.
+    virtual SkBitmap GetPanelIcon() = 0;
+
+    // Close the panel. Called when a close button is pressed.
+    virtual void ClosePanel() = 0;
+  };
+
+  PanelController(Delegate* delegate_window,
+                  GtkWindow* window,
+                  const gfx::Rect& init_bounds);
   virtual ~PanelController() {}
 
   bool TitleMousePressed(const views::MouseEvent& event);
@@ -73,8 +89,8 @@ class PanelController : public views::ButtonListener {
   // Initializes the panel controller with the window bounds.
   void Init(const gfx::Rect window_bounds);
 
-  // Browser window containing content.
-  BrowserView* browser_window_;
+  // Panel's delegate.
+  Delegate* delegate_;
 
   // Gtk object for content.
   GtkWindow* panel_;

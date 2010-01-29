@@ -13,6 +13,9 @@ PanelBrowserView::PanelBrowserView(Browser* browser)
     : BrowserView(browser) {
 }
 
+////////////////////////////////////////////////////////////////////////////////
+// BrowserView overrides.
+
 void PanelBrowserView::Init() {
   BrowserView::Init();
   // The visibility of toolbar is controlled in
@@ -31,7 +34,8 @@ void PanelBrowserView::Init() {
 }
 
 void PanelBrowserView::Show() {
-  panel_controller_.reset(new chromeos::PanelController(this));
+  panel_controller_.reset(
+      new chromeos::PanelController(this, GetNativeHandle(), bounds()));
   BrowserView::Show();
 }
 
@@ -55,6 +59,21 @@ void PanelBrowserView::ActivationChanged(bool activated) {
     else
       panel_controller_->OnFocusOut();
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// PanelController::Delegate overrides.
+
+string16 PanelBrowserView::GetPanelTitle() {
+  return browser()->GetWindowTitleForCurrentTab();
+}
+
+SkBitmap PanelBrowserView::GetPanelIcon() {
+  return browser()->GetCurrentPageIcon();
+}
+
+void PanelBrowserView::ClosePanel() {
+  Close();
 }
 
 }  // namespace chromeos

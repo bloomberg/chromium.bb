@@ -12,7 +12,6 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/tabs/tab_overview_types.h"
 #include "chrome/common/x11_util.h"
 #include "grit/app_resources.h"
@@ -74,15 +73,17 @@ static void InitializeResources() {
 
 }  // namespace
 
-PanelController::PanelController(BrowserView* browser_window)
-    :  browser_window_(browser_window),
-       panel_(browser_window->GetNativeHandle()),
+PanelController::PanelController(Delegate* delegate,
+                                 GtkWindow* window,
+                                 const gfx::Rect& init_bounds)
+    :  delegate_(delegate),
+       panel_(window),
        panel_xid_(x11_util::GetX11WindowFromGtkWidget(GTK_WIDGET(panel_))),
        title_window_(NULL),
        expanded_(true),
        mouse_down_(false),
        dragging_(false) {
-  Init(browser_window->bounds());
+  Init(init_bounds);
 }
 
 void PanelController::Init(const gfx::Rect window_bounds) {
@@ -110,7 +111,7 @@ void PanelController::Init(const gfx::Rect window_bounds) {
       &type_params);
 
   g_signal_connect(
-      panel_, "client-event", G_CALLBACK(OnPanelClientEvent), this);
+      G_OBJECT(panel_), "client-event", G_CALLBACK(OnPanelClientEvent), this);
 
   title_content_ = new TitleContentView(this);
   title_window_->SetContentsView(title_content_);
@@ -118,12 +119,11 @@ void PanelController::Init(const gfx::Rect window_bounds) {
 }
 
 void PanelController::UpdateTitleBar() {
-  if (!browser_window_ || !title_window_)
+  if (!delegate_ || !title_window_)
     return;
-  Browser* browser = browser_window_->browser();
   title_content_->title_label()->SetText(
-      UTF16ToWideHack(browser->GetWindowTitleForCurrentTab()));
-  title_content_->title_icon()->SetImage(browser->GetCurrentPageIcon());
+      UTF16ToWideHack(delegate_->GetPanelTitle()));
+  title_content_->title_icon()->SetImage(delegate_->GetPanelIcon());
 }
 
 bool PanelController::TitleMousePressed(const views::MouseEvent& event) {
@@ -249,7 +249,7 @@ void PanelController::Close() {
 void PanelController::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (title_window_ && sender == title_content_->close_button()) {
-    browser_window_->Close();
+    delegate_->ClosePanel();
     Close();
   }
 }
