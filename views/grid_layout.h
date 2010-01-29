@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -275,6 +275,11 @@ class ColumnSet {
   // with no explicit alignment. fixed_width gives a specific width for the
   // column, and is only used if size_type == FIXED. min_width gives the
   // minimum width for the column.
+  //
+  // If none of the columns in a columnset are resizable, the views are only
+  // made as wide as the widest views in each column, even if extra space is
+  // provided. In other words, GridLayout does not automatically resize views
+  // unless the column is marked as resizable.
   void AddColumn(GridLayout::Alignment h_align,
                  GridLayout::Alignment v_align,
                  float resize_percent,
