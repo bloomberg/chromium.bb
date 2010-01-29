@@ -152,6 +152,8 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
       WebKit::WebFrame*, WebKit::WebWorkerClient*);
   virtual WebKit::WebMediaPlayer* createMediaPlayer(
       WebKit::WebFrame*, WebKit::WebMediaPlayerClient*);
+  virtual bool allowPlugins(WebKit::WebFrame* frame, bool enabled_per_settings);
+  virtual bool allowImages(WebKit::WebFrame* frame, bool enabled_per_settings);
   virtual void loadURLExternally(
       WebKit::WebFrame*, const WebKit::WebURLRequest&,
       WebKit::WebNavigationPolicy);
@@ -203,6 +205,7 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
   virtual void didDisplayInsecureContent(WebKit::WebFrame* frame);
   virtual void didRunInsecureContent(
       WebKit::WebFrame* frame, const WebKit::WebSecurityOrigin& origin);
+  virtual bool allowScript(WebKit::WebFrame* frame, bool enabled_per_settings);
 
   // webkit_glue::WebPluginPageDelegate
   virtual webkit_glue::WebPluginDelegate* CreatePluginDelegate(

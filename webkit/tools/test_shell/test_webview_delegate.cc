@@ -663,6 +663,16 @@ WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
   return new webkit_glue::WebMediaPlayerImpl(client, factory);
 }
 
+bool TestWebViewDelegate::allowPlugins(WebFrame* frame,
+                                       bool enabled_per_settings) {
+  return shell_->allow_plugins();
+}
+
+bool TestWebViewDelegate::allowImages(WebFrame* frame,
+                                      bool enabled_per_settings) {
+  return shell_->allow_images();
+}
+
 void TestWebViewDelegate::loadURLExternally(
     WebFrame* frame, const WebURLRequest& request,
     WebNavigationPolicy policy) {
@@ -996,6 +1006,11 @@ void TestWebViewDelegate::didRunInsecureContent(
     WebFrame* frame, const WebSecurityOrigin& origin) {
   if (shell_->ShouldDumpFrameLoadCallbacks())
     printf("didRunInsecureContent\n");
+}
+
+bool TestWebViewDelegate::allowScript(WebFrame* frame,
+                                      bool enabled_per_settings) {
+  return shell_->allow_scripts();
 }
 
 void TestWebViewDelegate::focusAccessibilityObject(

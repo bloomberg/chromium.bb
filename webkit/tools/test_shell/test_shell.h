@@ -110,6 +110,15 @@ public:
     bool is_loading() const { return is_loading_; }
     void set_is_loading(bool is_loading) { is_loading_ = is_loading; }
 
+    bool allow_images() const { return allow_images_; }
+    void set_allow_images(bool allow) { allow_images_ = allow; }
+
+    bool allow_plugins() const { return allow_plugins_; }
+    void set_allow_plugins(bool allow) { allow_plugins_ = allow; }
+
+    bool allow_scripts() const { return allow_scripts_; }
+    void set_allow_scripts(bool allow) { allow_scripts_ = allow; }
+
     void UpdateNavigationControls();
 
     // A new TestShell window will be opened with devtools url.
@@ -390,6 +399,10 @@ private:
 
     // True if the page is loading.
     bool is_loading_;
+
+    bool allow_images_;
+    bool allow_plugins_;
+    bool allow_scripts_;
 
     // The preferences for the test shell.
     static WebPreferences* web_prefs_;

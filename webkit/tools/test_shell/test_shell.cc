@@ -119,6 +119,10 @@ TestShell::TestShell()
 #endif
       test_params_(NULL),
       is_modal_(false),
+      is_loading_(false),
+      allow_images_(true),
+      allow_plugins_(true),
+      allow_scripts_(true),
       dump_stats_table_on_exit_(false) {
     accessibility_controller_.reset(new AccessibilityController(this));
     delegate_.reset(new TestWebViewDelegate(this));

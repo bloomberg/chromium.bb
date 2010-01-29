@@ -584,6 +584,27 @@ LRESULT CALLBACK TestShell::WndProc(HWND hwnd, UINT message, WPARAM wParam,
       case IDM_DUMP_RENDER_TREE:
         shell->DumpRenderTree();
         break;
+      case IDM_ENABLE_IMAGES:
+      case IDM_ENABLE_PLUGINS:
+      case IDM_ENABLE_SCRIPTS: {
+        HMENU menu = GetSubMenu(GetMenu(hwnd), 1);
+        bool was_checked =
+            (GetMenuState(menu, wmId, MF_BYCOMMAND) & MF_CHECKED) != 0;
+        CheckMenuItem(menu, wmId,
+                      MF_BYCOMMAND | (was_checked ? MF_UNCHECKED : MF_CHECKED));
+        switch (wmId) {
+          case IDM_ENABLE_IMAGES:
+            shell->set_allow_images(!was_checked);
+            break;
+          case IDM_ENABLE_PLUGINS:
+            shell->set_allow_plugins(!was_checked);
+            break;
+          case IDM_ENABLE_SCRIPTS:
+            shell->set_allow_scripts(!was_checked);
+            break;
+        }
+        break;
+      }
       case IDM_SHOW_DEV_TOOLS:
         shell->ShowDevTools();
         break;

@@ -46,7 +46,12 @@ BEGIN
     BEGIN
         MENUITEM "Dump body text...",     IDM_DUMP_BODY_TEXT
         MENUITEM "Dump render tree...",   IDM_DUMP_RENDER_TREE
-        MENUITEM "Show Developer Tools", IDM_SHOW_DEV_TOOLS
+        MENUITEM SEPARATOR
+        MENUITEM "Enable images",         IDM_ENABLE_IMAGES, CHECKED
+        MENUITEM "Enable plugins",        IDM_ENABLE_PLUGINS, CHECKED
+        MENUITEM "Enable scripts",        IDM_ENABLE_SCRIPTS, CHECKED
+        MENUITEM SEPARATOR
+        MENUITEM "Show developer tools...",  IDM_SHOW_DEV_TOOLS
     END
     POPUP "&Help"
     BEGIN
