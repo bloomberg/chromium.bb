@@ -110,32 +110,21 @@ goog.inherits(devtools.profiler.JsProfile, devtools.profiler.Profile);
 
 
 /**
- * RegExp that leaves only JS functions.
+ * RegExp that leaves only non-native JS functions.
  * @type {RegExp}
  */
-devtools.profiler.JsProfile.JS_FUNC_RE = /^(LazyCompile|Function|Script|Callback):/;
-
-/**
- * RegExp that filters out native code (ending with "native src.js:xxx").
- * @type {RegExp}
- */
-devtools.profiler.JsProfile.JS_NATIVE_FUNC_RE = /\ native\ \w+\.js:\d+$/;
-
-/**
- * RegExp that filters out native scripts.
- * @type {RegExp}
- */
-devtools.profiler.JsProfile.JS_NATIVE_SCRIPT_RE = /^Script:\ native/;
+devtools.profiler.JsProfile.JS_NON_NATIVE_RE = new RegExp(
+    '^' +
+      '(?:Callback:)|' +
+      '(?:Script: (?!native))|' +
+      '(?:(?:LazyCompile|Function): [^ ]*(?: (?!native )[^ ]+:\\d+)?$)');
 
 
 /**
  * @override
  */
 devtools.profiler.JsProfile.prototype.skipThisFunction = function(name) {
-  return !devtools.profiler.JsProfile.JS_FUNC_RE.test(name) ||
-      // To profile V8's natives comment out two lines below and '||' above.
-      devtools.profiler.JsProfile.JS_NATIVE_FUNC_RE.test(name) ||
-      devtools.profiler.JsProfile.JS_NATIVE_SCRIPT_RE.test(name);
+  return !devtools.profiler.JsProfile.JS_NON_NATIVE_RE.test(name);
 };
 
 
