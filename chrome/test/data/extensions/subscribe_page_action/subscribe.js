@@ -114,7 +114,7 @@ function main() {
   req.open("GET", feedUrl, !synchronousRequest);
   req.send(null);
 
-  document.getElementById('feedUrl').href = feedUrl;
+  document.getElementById('feedUrl').href = 'view-source:' + feedUrl;
 }
 
 // Sets the title for the feed.

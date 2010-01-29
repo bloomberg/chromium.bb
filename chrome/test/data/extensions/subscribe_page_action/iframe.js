@@ -13,7 +13,7 @@
 var maxFeedItems = 10;
 
 /* The maximum number of characters to show in the feed item title. */
-var maxTitleCount = 64;
+var maxTitleCount = 1024;
 
 window.addEventListener("message", function(e) {
   var parser = new DOMParser();
@@ -87,7 +87,8 @@ function buildPreview(doc) {
     anchor.id = "anchor_" + String(i);
     if (link != "")
       anchor.href = link;
-    anchor.appendChild(document.createTextNode(itemTitle));
+    anchor.innerHTML = itemTitle;
+    anchor.target = "_top";
     anchor.className = "item_title";
 
     var span = document.createElement("span");

@@ -428,7 +428,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed4) {
   HTTPTestServer* server = StartHTTPServer();
   GetParsedFeedData(server, kValidFeed4, browser(),
                     "Feed for 'Title chars <script> %23 stop'",
-                    "Title chars <script> %23 stop",
+                    "Title chars ",
                     "My dear content",
                     "No error");
 }
