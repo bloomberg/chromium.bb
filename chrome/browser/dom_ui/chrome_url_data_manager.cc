@@ -104,12 +104,6 @@ void RegisterURLRequestChromeJob() {
 
   FilePath inspector_dir;
   if (PathService::Get(chrome::DIR_INSPECTOR, &inspector_dir)) {
-    // TODO(yurys): remove "inspector" source when new developer tools support
-    // all features of in-process Web Inspector and Console Debugger. For the
-    // time being we need to serve the same content from chrome://inspector
-    // for the Console Debugger and in-process Web Inspector.
-    Singleton<ChromeURLDataManager>()->AddFileSource("inspector",
-                                                     inspector_dir);
     Singleton<ChromeURLDataManager>()->AddFileSource(
         chrome::kChromeUIDevToolsHost, inspector_dir);
   }
@@ -123,7 +117,6 @@ void RegisterURLRequestChromeJob() {
 void UnregisterURLRequestChromeJob() {
   FilePath inspector_dir;
   if (PathService::Get(chrome::DIR_INSPECTOR, &inspector_dir)) {
-    Singleton<ChromeURLDataManager>()->RemoveFileSource("inspector");
     Singleton<ChromeURLDataManager>()->RemoveFileSource(
         chrome::kChromeUIDevToolsHost);
   }

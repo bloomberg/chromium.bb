@@ -218,7 +218,7 @@ TEST_F(ChildProcessSecurityPolicyTest, CanUploadFiles) {
 TEST_F(ChildProcessSecurityPolicyTest, CanServiceInspectElement) {
   ChildProcessSecurityPolicy* p = ChildProcessSecurityPolicy::GetInstance();
 
-  GURL url("chrome://inspector/inspector.html");
+  GURL url("chrome://devtools/devtools.html");
 
   p->Add(kRendererID);
 
