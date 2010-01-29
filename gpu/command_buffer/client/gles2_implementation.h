@@ -63,6 +63,9 @@ class GLES2Implementation {
     return *static_cast<T*>(result_buffer_);
   }
 
+  // Copies the result.
+  void CopyResult(void* dst);
+
   // Waits for all commands to execute.
   void WaitForCmd();
 

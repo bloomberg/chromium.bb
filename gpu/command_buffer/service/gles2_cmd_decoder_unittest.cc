@@ -50,6 +50,7 @@ class GLES2DecoderTest : public testing::Test {
   static const uint32 kSharedMemoryOffset = 132;
   static const int32 kInvalidSharedMemoryId = 402;
   static const uint32 kInvalidSharedMemoryOffset = kSharedBufferSize + 1;
+  static const uint32 kInitialResult = 0xDEADBEEFu;
 
   static const uint32 kNewClientId = 501;
   static const uint32 kNewServiceId = 502;
@@ -144,6 +145,11 @@ class GLES2DecoderTest : public testing::Test {
     }
 
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+    result_ = GetSharedMemoryAs<SizedResult*>();
+    GLuint* result_value = result_->GetDataAs<GLuint*>();
+    result_->size = kInitialResult;
+    *result_value = kInitialResult;
   }
 
   virtual void TearDown() {
@@ -203,6 +209,7 @@ class GLES2DecoderTest : public testing::Test {
   uint32 shared_memory_id_;
   uint32 shared_memory_offset_;
   void* shared_memory_address_;
+  SizedResult* result_;
 
   int8 immediate_buffer_[256];
 
@@ -694,6 +701,61 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsOutOfRangeIndicesFails) {
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 #endif
+
+TEST_F(GLES2DecoderWithShaderTest, GetVertexAttribPointervSucceeds) {
+  const float dummy = 0;
+  const GLuint kOffsetToTestFor = sizeof(dummy) * 4;
+  const GLuint kIndexToTest = 1;
+  const GLuint* result_value = result_->GetDataAs<const GLuint*>();
+  // Test that initial value is 0.
+  GetVertexAttribPointerv cmd;
+  cmd.Init(kIndexToTest, GL_VERTEX_ATTRIB_ARRAY_POINTER,
+           shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(sizeof(*result_value), result_->size);
+  EXPECT_EQ(0u, *result_value);
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+
+  // Set the value and see that we get it.
+  SetupVertexBuffer();
+  DoVertexAttribPointer(kIndexToTest, 2, GL_FLOAT, 0, kOffsetToTestFor);
+  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(sizeof(*result_value), result_->size);
+  EXPECT_EQ(kOffsetToTestFor, *result_value);
+  EXPECT_EQ(GL_NO_ERROR, GetGLError());
+}
+
+TEST_F(GLES2DecoderWithShaderTest, GetVertexAttribPointervBadArgsFails) {
+  const GLuint kIndexToTest = 1;
+  const GLuint* result_value = result_->GetDataAs<const GLuint*>();
+  // Test pname invalid fails.
+  GetVertexAttribPointerv cmd;
+  cmd.Init(kIndexToTest, GL_VERTEX_ATTRIB_ARRAY_POINTER + 1,
+           shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(0u, result_->size);
+  EXPECT_EQ(kInitialResult, *result_value);
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+
+  // Test index out of range fails.
+  cmd.Init(kNumVertexAttribs, GL_VERTEX_ATTRIB_ARRAY_POINTER,
+           shared_memory_id_, shared_memory_offset_);
+  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(0u, result_->size);
+  EXPECT_EQ(kInitialResult, *result_value);
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+
+  // Test memory id bad fails.
+  cmd.Init(kIndexToTest, GL_VERTEX_ATTRIB_ARRAY_POINTER,
+           kInvalidSharedMemoryId, shared_memory_offset_);
+  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
+
+  // Test memory offset bad fails.
+  cmd.Init(kIndexToTest, GL_VERTEX_ATTRIB_ARRAY_POINTER,
+           shared_memory_id_, kInvalidSharedMemoryOffset);
+  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
+}
+
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_autogen.h"
 

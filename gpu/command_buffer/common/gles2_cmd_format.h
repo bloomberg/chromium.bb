@@ -32,6 +32,18 @@ namespace gles2 {
 
 #pragma pack(push, 1)
 
+// Used for some glGetXXX commands that return a result through a pointer. We
+// need to know if the command succeeded or not and the size of the result. If
+// the command failed its result size will 0.
+struct SizedResult {
+  template <typename T>
+  T GetDataAs() {
+    return static_cast<T>(static_cast<void*>(&data));
+  }
+  uint32 size;  // in bytes.
+  int32 data;  // this is just here to get an offset.
+};
+
 #include "gpu/command_buffer/common/gles2_cmd_format_autogen.h"
 
 // These are hand written commands.

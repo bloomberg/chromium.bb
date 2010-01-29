@@ -141,7 +141,6 @@
       'sources': [
         'command_buffer/client/gles2_implementation_autogen.h',
         'command_buffer/client/gles2_implementation.cc',
-        'command_buffer/client/gles2_implementation_gen.h',
         'command_buffer/client/gles2_implementation.h',
       ],
     },

@@ -5,8 +5,6 @@
 // A class to emluate GLES2 over command buffers.
 
 #include "gpu/command_buffer/client/gles2_implementation.h"
-// TODO(gman): remove when all functions have been implemented.
-#include "gpu/command_buffer/client/gles2_implementation_gen.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 
 namespace gpu {
@@ -56,6 +54,11 @@ void GLES2Implementation::FreeIds(GLsizei n, const GLuint* ids) {
   }
 }
 
+void GLES2Implementation::CopyResult(void* dst) {
+  SizedResult* result = static_cast<SizedResult*>(result_buffer_);
+  memcpy(dst, result->GetDataAs<void*>(), result->size);
+}
+
 void GLES2Implementation::WaitForCmd() {
   int32 token = helper_->InsertToken();
   helper_->WaitForToken(token);
@@ -75,6 +78,14 @@ void GLES2Implementation::SwapBuffers() {
   helper_->SwapBuffers();
   Finish();
 }
+
+void GLES2Implementation::GetVertexAttribPointerv(
+    GLuint index, GLenum pname, void** ptr) {
+  helper_->GetVertexAttribPointerv(
+    index, pname, result_shm_id(), result_shm_offset());
+  WaitForCmd();
+  CopyResult(ptr);
+};
 
 GLint GLES2Implementation::GetAttribLocation(
     GLuint program, const char* name) {
@@ -269,6 +280,69 @@ void GLES2Implementation::TexSubImage2D(
   }
 }
 
+
+GLenum GLES2Implementation::CheckFramebufferStatus(GLenum target) {
+  // TODO(gman): implement.
+  return 0;
+}
+
+void GLES2Implementation::GetActiveAttrib(
+    GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size,
+    GLenum* type, char* name) {
+  // TODO(gman): implement.
+}
+
+void GLES2Implementation::GetActiveUniform(
+    GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size,
+    GLenum* type, char* name) {
+  // TODO(gman): implement.
+}
+
+void GLES2Implementation::GetAttachedShaders(
+    GLuint program, GLsizei maxcount, GLsizei* count, GLuint* shaders) {
+  // TODO(gman): implement.
+}
+
+void GLES2Implementation::GetProgramInfoLog(
+    GLuint program, GLsizei bufsize, GLsizei* length, char* infolog) {
+  // TODO(gman): implement.
+}
+
+void GLES2Implementation::GetShaderInfoLog(
+    GLuint shader, GLsizei bufsize, GLsizei* length, char* infolog) {
+  // TODO(gman): implement.
+}
+
+void GLES2Implementation::GetShaderPrecisionFormat(
+    GLenum shadertype, GLenum precisiontype, GLint* range, GLint* precision) {
+  // TODO(gman): implement.
+}
+
+void GLES2Implementation::GetShaderSource(
+    GLuint shader, GLsizei bufsize, GLsizei* length, char* source) {
+  // TODO(gman): implement.
+}
+
+const GLubyte* GLES2Implementation::GetString(GLenum name) {
+  // TODO(gman): implement.
+  return 0;
+}
+
+void GLES2Implementation::GetUniformfv(
+    GLuint program, GLint location, GLfloat* params) {
+  // TODO(gman): implement.
+}
+
+void GLES2Implementation::GetUniformiv(
+    GLuint program, GLint location, GLint* params) {
+  // TODO(gman): implement.
+}
+
+void GLES2Implementation::ReadPixels(
+    GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,
+    void* pixels) {
+  // TODO(gman): implement.
+}
 
 }  // namespace gles2
 }  // namespace gpu

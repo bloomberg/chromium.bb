@@ -413,6 +413,10 @@ class GLES2DecoderImpl : public GLES2Decoder {
       return buffer_;
     }
 
+    GLsizei offset() const {
+      return offset_;
+    }
+
     void Clear() {
       buffer_ = 0;
       SetBufferSize(0);
@@ -1726,7 +1730,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleCompressedTexImage2D(
   }
   // TODO(gman): Validate internal_format
   if (!ValidateGLenumTextureTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   scoped_array<int8> zero;
@@ -1756,7 +1760,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleCompressedTexImage2DImmediate(
   }
   // TODO(gman): Validate internal_format
   if (!ValidateGLenumTextureTarget(target)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glCompressedTexImage2D(
@@ -1790,7 +1794,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleTexImage2D(
       !ValidateGLenumTextureFormat(internal_format) ||
       !ValidateGLenumTextureFormat(format) ||
       !ValidateGLenumPixelType(type)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   scoped_array<int8> zero;
@@ -1826,7 +1830,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleTexImage2DImmediate(
       !ValidateGLenumTextureFormat(internal_format) ||
       !ValidateGLenumTextureFormat(format) ||
       !ValidateGLenumPixelType(type)) {
-    SetGLError(GL_INVALID_VALUE);
+    SetGLError(GL_INVALID_ENUM);
     return parse_error::kParseNoError;
   }
   glTexImage2D(
@@ -1837,43 +1841,66 @@ parse_error::ParseError GLES2DecoderImpl::HandleTexImage2DImmediate(
 
 parse_error::ParseError GLES2DecoderImpl::HandleGetVertexAttribPointerv(
     uint32 immediate_data_size, const gles2::GetVertexAttribPointerv& c) {
-  // TODO(gman): Implement.
+  GLuint index = static_cast<GLuint>(c.index);
+  GLenum pname = static_cast<GLenum>(c.pname);
+  SizedResult* result = GetSharedMemoryAs<SizedResult*>(
+      c.pointer_shm_id, c.pointer_shm_offset, sizeof(SizedResult));
+  if (!result) {
+    return parse_error::kParseOutOfBounds;
+  }
+  result->size = 0;
+  if (!ValidateGLenumVertexPointer(pname)) {
+    SetGLError(GL_INVALID_ENUM);
+    return parse_error::kParseNoError;
+  }
+  if (index >= max_vertex_attribs_) {
+    SetGLError(GL_INVALID_VALUE);
+    return parse_error::kParseNoError;
+  }
+  result->size = sizeof(GLuint);
+  *result->GetDataAs<GLuint*>() = vertex_attrib_infos_[index].offset();
   return parse_error::kParseNoError;
 }
 
 parse_error::ParseError GLES2DecoderImpl::HandleGetUniformiv(
     uint32 immediate_data_size, const gles2::GetUniformiv& c) {
   // TODO(gman): Implement.
+  NOTREACHED();
   return parse_error::kParseNoError;
 }
 
 parse_error::ParseError GLES2DecoderImpl::HandleGetUniformfv(
     uint32 immediate_data_size, const gles2::GetUniformfv& c) {
   // TODO(gman): Implement.
+  NOTREACHED();
   return parse_error::kParseNoError;
 }
 
 parse_error::ParseError GLES2DecoderImpl::HandleGetShaderPrecisionFormat(
     uint32 immediate_data_size, const gles2::GetShaderPrecisionFormat& c) {
   // TODO(gman): Implement.
+  NOTREACHED();
   return parse_error::kParseNoError;
 }
 
 parse_error::ParseError GLES2DecoderImpl::HandleGetAttachedShaders(
     uint32 immediate_data_size, const gles2::GetAttachedShaders& c) {
   // TODO(gman): Implement.
+  NOTREACHED();
   return parse_error::kParseNoError;
 }
 
 parse_error::ParseError GLES2DecoderImpl::HandleGetActiveUniform(
     uint32 immediate_data_size, const gles2::GetActiveUniform& c) {
   // TODO(gman): Implement.
+  NOTREACHED();
   return parse_error::kParseNoError;
 }
 
 parse_error::ParseError GLES2DecoderImpl::HandleGetActiveAttrib(
     uint32 immediate_data_size, const gles2::GetActiveAttrib& c) {
   // TODO(gman): Implement.
+  NOTREACHED();
   return parse_error::kParseNoError;
 }
 

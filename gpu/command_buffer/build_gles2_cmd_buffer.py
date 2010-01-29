@@ -1344,17 +1344,6 @@ TEST_F(GLES2DecoderTest, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
                   func.MakeTypedOriginalArgString("")))
       file.Write("\n")
 
-  def WriteGLES2ImplementationImpl(self, func, file):
-    """Writes the GLES2 Implemention definition."""
-    if not func.can_auto_generate:
-      file.Write("%s GLES2Implementation::%s(%s) {\n" %
-                 (func.return_type, func.original_name,
-                  func.MakeTypedOriginalArgString("")))
-      if not func.return_type == "void":
-        file.Write("  return 0;\n")
-      file.Write("}\n")
-      file.Write("\n")
-
   def WriteImmediateCmdComputeSize(self, func, file):
     """Writes the size computation code for the immediate version of a cmd."""
     file.Write("  static uint32 ComputeSize(uint32 size_in_bytes) {\n")
@@ -1484,10 +1473,6 @@ class HandWrittenHandler(CustomHandler):
     """Overrriden from TypeHandler."""
     pass
 
-  def WriteGLES2ImplementationImpl(self, func, file):
-    """Overrriden from TypeHandler."""
-    pass
-
   def WriteImmediateCmdHelper(self, func, file):
     """Overrriden from TypeHandler."""
     pass
@@ -1537,10 +1522,6 @@ class ManualHandler(CustomHandler):
                (func.return_type, func.original_name,
                 func.MakeTypedOriginalArgString("")))
     file.Write("\n")
-
-  def WriteGLES2ImplementationImpl(self, func, file):
-    """Overrriden from TypeHandler."""
-    pass
 
   def WriteImmediateCmdGetTotalSize(self, func, file):
     """Overrriden from TypeHandler."""
@@ -1646,10 +1627,6 @@ class DataHandler(TypeHandler):
     file.Write("// TODO(gman): Implement test for %s\n" % func.name)
     return
 
-  def WriteGLES2ImplementationImpl(self, func, file):
-    """Overrriden from TypeHandler."""
-    pass
-
   def WriteServiceUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
     file.Write("// TODO(gman): %s\n\n" % func.name)
@@ -1697,10 +1674,6 @@ class GENnHandler(TypeHandler):
                (func.name, func.MakeOriginalArgString("")))
     file.Write("}\n")
     file.Write("\n")
-
-  def WriteGLES2ImplementationImpl(self, func, file):
-    """Overrriden from TypeHandler."""
-    pass
 
   def WriteServiceUnitTest(self, func, file):
     """Overrriden from TypeHandler."""
@@ -1919,10 +1892,6 @@ TEST_F(GLES2DecoderTest, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     file.Write("}\n")
     file.Write("\n")
 
-  def WriteGLES2ImplementationImpl(self, func, file):
-    """Overrriden from TypeHandler."""
-    pass
-
 
 class DELnHandler(TypeHandler):
   """Handler for glDelete___ type functions."""
@@ -2023,10 +1992,6 @@ TEST_F(GLES2DecoderTest, %(name)sInvalidArgs) {
                (func.name, func.MakeOriginalArgString("")))
     file.Write("}\n")
     file.Write("\n")
-
-  def WriteGLES2ImplementationImpl(self, func, file):
-    """Overrriden from TypeHandler."""
-    pass
 
   def WriteImmediateCmdComputeSize(self, func, file):
     """Overrriden from TypeHandler."""
@@ -2177,10 +2142,6 @@ class GETnHandler(TypeHandler):
     file.Write("}\n")
     file.Write("\n")
 
-  def WriteGLES2ImplementationImpl(self, func, file):
-    """Overrriden from TypeHandler."""
-    pass
-
 
 class PUTHandler(TypeHandler):
   """Handler for glTexParameter_v, glVertexAttrib_v functions."""
@@ -2247,10 +2208,6 @@ TEST_F(GLES2DecoderTest, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
                (func.name, func.MakeOriginalArgString("")))
     file.Write("}\n")
     file.Write("\n")
-
-  def WriteGLES2ImplementationImpl(self, func, file):
-    """Overrriden from TypeHandler."""
-    pass
 
   def WriteImmediateCmdComputeSize(self, func, file):
     """Overrriden from TypeHandler."""
@@ -2422,10 +2379,6 @@ TEST_F(GLES2DecoderTest, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
                (func.name, func.MakeOriginalArgString("")))
     file.Write("}\n")
     file.Write("\n")
-
-  def WriteGLES2ImplementationImpl(self, func, file):
-    """Overrriden from TypeHandler."""
-    pass
 
   def WriteImmediateCmdComputeSize(self, func, file):
     """Overrriden from TypeHandler."""
@@ -2611,10 +2564,6 @@ class GLcharHandler(TypeHandler):
                (func.name, func.MakeOriginalArgString("")))
     file.Write("}\n")
     file.Write("\n")
-
-  def WriteGLES2ImplementationImpl(self, func, file):
-    """Overrriden from TypeHandler."""
-    pass
 
   def WriteImmediateCmdComputeSize(self, func, file):
     """Overrriden from TypeHandler."""
@@ -2810,10 +2759,6 @@ class GetGLcharHandler(GLcharHandler):
     file.Write("}\n")
     file.Write("\n")
 
-  def WriteGLES2ImplementationImpl(self, func, file):
-    """Overrriden from TypeHandler."""
-    pass
-
   def WriteImmediateCmdComputeSize(self, func, file):
     """Overrriden from TypeHandler."""
     file.Write("  static uint32 ComputeDataSize(const char* s) {\n")
@@ -2979,10 +2924,6 @@ TEST_F(GLES2DecoderTest, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
                func.return_type)
     file.Write("}\n")
     file.Write("\n")
-
-  def WriteGLES2ImplementationImpl(self, func, file):
-    """Overrriden from TypeHandler."""
-    pass
 
 
 class STRnHandler(TypeHandler):
@@ -3511,10 +3452,6 @@ class Function(object):
     """Writes the GLES2 Implemention declaration."""
     self.type_handler.WriteGLES2ImplementationHeader(self, file)
 
-  def WriteGLES2ImplementationImpl(self, file):
-    """Writes the GLES2 Implemention definition."""
-    self.type_handler.WriteGLES2ImplementationImpl(self, file)
-
   def WriteFormatTest(self, file):
     """Writes the cmd's format test."""
     self.type_handler.WriteFormatTest(self, file)
@@ -3897,21 +3834,6 @@ class GLGenerator(object):
       func.WriteGLES2ImplementationHeader(file)
     file.Close()
 
-  def WriteGLES2ImplementationImpl(self, filename):
-    """Writes the gles2 helper implementation."""
-    file = CHeaderWriter(
-        filename,
-        "// A class to emluate GLES2 over command buffers.\n")
-    file.Write(
-        "#include \"gpu/command_buffer/client/gles2_implementation.h\"\n")
-    self.WriteNamespaceOpen(file)
-    for func in self.original_functions:
-      func.WriteGLES2ImplementationImpl(file)
-    file.Write("\n")
-
-    self.WriteNamespaceClose(file)
-    file.Close()
-
   def WriteServiceUtilsHeader(self, filename):
     """Writes the gles2 auto generated utility header."""
     file = CHeaderWriter(filename)
@@ -3965,9 +3887,6 @@ def main(argv):
   gen.WriteServiceUtilsHeader("service/gles2_cmd_validation_autogen.h")
   gen.WriteServiceUtilsImplementation(
       "service/gles2_cmd_validation_implementation_autogen.h")
-
-  if options.generate_implementation_templates:
-    gen.WriteGLES2ImplementationImpl("client/gles2_implementation_gen.h")
 
   if options.generate_command_id_tests:
     gen.WriteCommandIdTest("common/gles2_cmd_id_test_autogen.h")
