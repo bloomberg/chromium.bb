@@ -202,6 +202,8 @@ TEST_F(AutomatedUITestBase, OpenBrowserWindow) {
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=14774
+// TODO(aa): http://crbug.com/33451
+#if !defined(OS_MACOSX)
 TEST_F(AutomatedUITestBase, FLAKY_CloseBrowserWindow) {
   int tab_count;
   NewTab();
@@ -237,6 +239,7 @@ TEST_F(AutomatedUITestBase, FLAKY_CloseBrowserWindow) {
 
   ASSERT_FALSE(CloseActiveWindow());
 }
+#endif
 
 TEST_F(AutomatedUITestBase, MAYBE_IncognitoWindow) {
   int num_browser_windows;
