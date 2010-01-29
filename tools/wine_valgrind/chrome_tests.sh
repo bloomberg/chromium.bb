@@ -176,18 +176,19 @@ unit_tests            crash-valgrind       DnsMasterTest.MassiveConcurrentLookup
 unit_tests            crash-valgrind       NullModelTableViewTest.*                             http://bugs.winehq.org/show_bug.cgi?id=20553
 unit_tests            crash-valgrind       RenderViewTest.OnPrintPageAsBitmap                   http://bugs.winehq.org/show_bug.cgi?id=20657 (for wine oom)
 unit_tests            crash-valgrind       TableViewTest.*                                      http://bugs.winehq.org/show_bug.cgi?id=20553
-unit_tests            dontcare-hangwin     UtilityProcessHostTest.ExtensionUnpacker
 unit_tests            dontcare             FirefoxImporterTest.Firefox2NSS3Decryptor            # FF2 dlls without symbols cause leaks
 unit_tests            dontcare             ImporterTest.Firefox2Importer                        # FF2 dlls without symbols cause leaks
 unit_tests            dontcare             SpellCheckTest.SpellCheckText
+unit_tests            dontcare-hangwin     UtilityProcessHostTest.ExtensionUnpacker
 unit_tests            fail                 EncryptorTest.EncryptionDecryption                   http://bugs.winehq.org/show_bug.cgi?id=20495
 unit_tests            fail                 EncryptorTest.String16EncryptionDecryption           http://bugs.winehq.org/show_bug.cgi?id=20495
-unit_tests            hang-valgrind        ExtensionAPIClientTest.*                             Not really a hang, just takes 30 minutes
 unit_tests            fail                 ImporterTest.IEImporter                              http://bugs.winehq.org/show_bug.cgi?id=20625
 unit_tests            fail                 RenderViewTest.InsertCharacters                      http://bugs.winehq.org/show_bug.cgi?id=20624
 unit_tests            fail                 SafeBrowsingProtocolParsingTest.TestVerifyChunkMac   http://bugs.winehq.org/show_bug.cgi?id=20340
 unit_tests            fail                 SafeBrowsingProtocolParsingTest.TestVerifyUpdateMac  http://bugs.winehq.org/show_bug.cgi?id=20340
 unit_tests            fail_wine_vmware     RenderProcessTest.TestTransportDIBAllocation
+unit_tests            hang-valgrind        ExtensionAPIClientTest.*                             Not really a hang, just takes 30 minutes
+unit_tests            hang-valgrind        Win32WifiDataProviderTest.*                          http://crbug.com/33446
 _EOF_
 }
 
