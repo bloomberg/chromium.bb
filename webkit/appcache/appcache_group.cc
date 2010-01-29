@@ -245,16 +245,18 @@ void AppCacheGroup::SetUpdateStatus(UpdateStatus status) {
   } else {
     update_job_ = NULL;
 
-    // Check member variable before notifying observers about update finishing.
-    // Observers may remove reference to group, causing group to be deleted
-    // after the notifications. If there are queued updates, then the group
-    // will continue to exist.
-    bool restart_update = !queued_updates_.empty();
-
-    FOR_EACH_OBSERVER(UpdateObserver, observers_, OnUpdateComplete(this));
-
-    if (restart_update)
-      ScheduleUpdateRestart(kUpdateRestartDelayMs);
+    // Note, this method may be called from within our destructor so we have
+    // to be careful about calling addref and release in here. If there are
+    // any observers, this will not be the case since each observer will have
+    // a reference to us.
+    if (observers_.size() || queued_observers_.size()) {
+      // Observers may release us in these callbacks, so we protect against
+      // deletion by adding an extra ref in this scope.
+      scoped_refptr<AppCacheGroup> protect(this);
+      FOR_EACH_OBSERVER(UpdateObserver, observers_, OnUpdateComplete(this));
+      if (!queued_updates_.empty())
+        ScheduleUpdateRestart(kUpdateRestartDelayMs);
+    }
   }
 }
 
