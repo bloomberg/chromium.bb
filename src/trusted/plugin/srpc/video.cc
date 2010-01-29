@@ -20,6 +20,7 @@
 #include <X11/keysym.h>
 #endif  // NACL_LINUX && defined(MOZ_X11)
 
+#include "native_client/src/include/checked_cast.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/npapi_native.h"
@@ -29,6 +30,9 @@
 #include "native_client/src/trusted/plugin/srpc/portable_handle.h"
 
 #include "native_client/src/trusted/plugin/srpc/video.h"
+
+using nacl::can_cast;
+using nacl::saturate_cast;
 
 namespace nacl_srpc {
   class Plugin;
@@ -667,7 +671,7 @@ void VideoMap::Redraw() {
 #endif  // NACL_OSX
 
 #if NACL_WINDOWS
-static int WinKeyToNacl(int vk) {
+static int WinKeyToNacl(WPARAM vk) {
   switch (vk) {
     case VK_ADD: return NACL_KEY_KP_PLUS;
     case VK_BACK: return NACL_KEY_BACKSPACE;
@@ -793,7 +797,7 @@ LRESULT CALLBACK VideoMap::WindowProcedure(HWND hwnd,
   const int KEY_REPEAT_BIT = (1 << 30);
   const int KEY_EXTENDED_BIT = (1 << 24);
   VideoMap *video = reinterpret_cast<VideoMap*>(
-      GetWindowLong(hwnd, GWL_USERDATA));
+      GetWindowLongPtr(hwnd, GWLP_USERDATA));
   if ((NULL == video) || (NULL == video->untrusted_video_share_)) {
     return DefWindowProc(hwnd, msg, wparam, lparam);
   }
@@ -922,7 +926,7 @@ void VideoMap::RedrawAsync(void *platform_parm) {
     uint32_t* untrusted_pixel_bits = reinterpret_cast<uint32_t*>
       (&untrusted_video_share_->video_pixels[0]);
 
-    size_t dibSize = window_->width * window_->height * 4;
+    DWORD dibSize = window_->width * window_->height * 4;
 
     // TODO(ilewis): Find some other way to make this work!
     // SetDIBitsToDevice() has an undocumented issue--it is
@@ -1115,7 +1119,7 @@ bool VideoMap::SetWindow(PluginWindow *window) {
       HWND hwnd = static_cast<HWND>(window->window);
       original_window_procedure_ = SubclassWindow(hwnd,
           reinterpret_cast<WNDPROC>(VideoMap::WindowProcedure));
-      SetWindowLong(hwnd, GWL_USERDATA, reinterpret_cast<LONG>(this));
+      SetWindowLongPtr(hwnd, GWLP_USERDATA, reinterpret_cast<LONG>(this));
 #endif  // NACL_WINDOWS
 #if NACL_LINUX && defined(MOZ_X11)
       // open X11 display, add X11 event listener
@@ -1251,7 +1255,7 @@ int VideoMap::InitializeSharedMemory(PluginWindow *window) {
   int height = window->height;
   const int bytes_per_pixel = 4;
   int image_size = width * height * bytes_per_pixel;
-  int vps_size = sizeof(struct NaClVideoShare) + image_size;
+  size_t vps_size = sizeof(struct NaClVideoShare) + image_size;
 
   dprintf(("VideoMap::Initialize(%p)  this: %p\n",
            static_cast<void *>(window),
@@ -1274,8 +1278,15 @@ int VideoMap::InitializeSharedMemory(PluginWindow *window) {
              static_cast<void *>(this)));
     // map video & event shared memory structure between trusted & untrusted
     window_ = window;
+
+    if(!can_cast<uint32_t>(vps_size)) {
+      // overflow
+      video_size_ = 0;
+      return -1;
+    }
+    video_size_ = saturate_cast<uint32_t>(vps_size);
+
     vps_size = NaClRoundAllocPage(vps_size);
-    video_size_ = vps_size;
     nacl_srpc::Plugin* plugin =
         reinterpret_cast<nacl_srpc::Plugin*>(
             plugin_interface_->plugin()->get_handle());
@@ -1287,13 +1298,20 @@ int VideoMap::InitializeSharedMemory(PluginWindow *window) {
     dprintf(("VideoMap::Initialize about to Map...\n"));
 
     void* map_addr;
-    if (0 > video_handle_->Map(&map_addr, &video_size_)) {
+    size_t mem_size = video_size_;
+    if (0 > video_handle_->Map(&map_addr, &mem_size)) {
       untrusted_video_share_ = NULL;
       video_handle_->Delete();
       untrusted_video_share_ = NULL;
       video_size_ = 0;
       window_ = NULL;
       return -1;
+    } else {
+      // would mem_size ever be greater than the original video_size_?
+      // maybe, if it were subject to strange alignment rules. But we won't
+      // ever need to use more than video_size_, so it seems safe to
+      // saturate here.
+      video_size_ = saturate_cast<uint32_t>(mem_size);
     }
     untrusted_video_share_ = reinterpret_cast<NaClVideoShare*>(map_addr);
 

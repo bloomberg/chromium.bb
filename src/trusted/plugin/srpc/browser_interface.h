@@ -49,7 +49,7 @@ class PortablePluginInterface {
   // browser-specific class, such as SRPC_Plugin
   static uintptr_t GetStrIdentifierCallback(const char *method_name);
   static bool Alert(nacl_srpc::PluginIdentifier plugin_identifier,
-                    std::string text);
+                    const std::string& text);
 
   static bool GetOrigin(nacl_srpc::PluginIdentifier plugin_identifier,
                         std::string **origin);
@@ -74,31 +74,31 @@ class PortablePluginInterface {
   static bool CheckExecutableVersionCommon(nacl_srpc::PluginIdentifier instance,
                                            const char *version);
  public:
-  static int kConnectIdent;
-  static int kHeightIdent;
-  static int kInvokeIdent;
-  static int kLengthIdent;
-  static int kMapIdent;
-  static int kOnfailIdent;
-  static int kOnloadIdent;
-  static int kModuleReadyIdent;
-  static int kNaClMultimediaBridgeIdent;
-  static int kNullNpapiMethodIdent;
-  static int kPrintIdent;
-  static int kReadIdent;
-  static int kSetCommandLogIdent;
-  static int kShmFactoryIdent;
-  static int kSignaturesIdent;
-  static int kSrcIdent;
-  static int kToStringIdent;
-  static int kUrlAsNaClDescIdent;
-  static int kValueOfIdent;
-  static int kVideoUpdateModeIdent;
-  static int kWidthIdent;
-  static int kWriteIdent;
+  static uintptr_t kConnectIdent;
+  static uintptr_t kHeightIdent;
+  static uintptr_t kInvokeIdent;
+  static uintptr_t kLengthIdent;
+  static uintptr_t kMapIdent;
+  static uintptr_t kOnfailIdent;
+  static uintptr_t kOnloadIdent;
+  static uintptr_t kModuleReadyIdent;
+  static uintptr_t kNaClMultimediaBridgeIdent;
+  static uintptr_t kNullNpapiMethodIdent;
+  static uintptr_t kPrintIdent;
+  static uintptr_t kReadIdent;
+  static uintptr_t kSetCommandLogIdent;
+  static uintptr_t kShmFactoryIdent;
+  static uintptr_t kSignaturesIdent;
+  static uintptr_t kSrcIdent;
+  static uintptr_t kToStringIdent;
+  static uintptr_t kUrlAsNaClDescIdent;
+  static uintptr_t kValueOfIdent;
+  static uintptr_t kVideoUpdateModeIdent;
+  static uintptr_t kWidthIdent;
+  static uintptr_t kWriteIdent;
 
-  static int kLocationIdent;
-  static int kHrefIdent;
+  static uintptr_t kLocationIdent;
+  static uintptr_t kHrefIdent;
  private:
   static bool identifiers_initialized;
   static uint8_t const kInvalidAbiVersion;

@@ -13,6 +13,7 @@
 #include <string>
 #include <set>
 
+#include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/nacl_macros.h"
 #include "native_client/src/include/portability.h"
 
@@ -32,6 +33,8 @@
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 
+using nacl::assert_cast;
+
 std::set<const nacl_srpc::ScriptableHandleBase*>*
     nacl_srpc::ScriptableHandleBase::valid_handles = NULL;
 
@@ -48,7 +51,7 @@ static int32_t stringToInt32(char* src) {
 StreamBuffer::StreamBuffer(NPStream* stream): buffer_(NULL),
                                               current_size_(0),
                                               stream_id_(stream) {
-  size_t rounded_size = NaClRoundAllocPage(stream->end);
+  int32_t rounded_size = assert_cast<int32_t>(NaClRoundAllocPage(stream->end));
   buffer_ = malloc(rounded_size);
   if (NULL != buffer_) {
     current_size_ = rounded_size;

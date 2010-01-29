@@ -52,7 +52,7 @@ bool SrpcClient::Init(PortablePluginInterface *portable_plugin,
   if (can_use_proxied_npapi_) {
     // TODO(sehr): this needs to be revisited when we allow groups of instances
     // in one NaCl module.
-    int npapi_ident =
+    uintptr_t npapi_ident =
         PortablePluginInterface::GetStrIdentifierCallback("NP_Initialize");
     if (methods_.find(npapi_ident) != methods_.end()) {
       dprintf(("SrpcClient::SrpcClient: Is an NPAPI plugin\n"));
@@ -96,7 +96,7 @@ void SrpcClient::GetMethods() {
                                                &name,
                                                &input_types,
                                                &output_types);
-    int ident = PortablePluginInterface::GetStrIdentifierCallback(name);
+    uintptr_t ident = PortablePluginInterface::GetStrIdentifierCallback(name);
     MethodInfo* method_info = new(std::nothrow) MethodInfo(NULL,
                                                            name,
                                                            input_types,
@@ -134,7 +134,7 @@ NaClSrpcArg* SrpcClient::GetSignatureObject() {
                                                &name,
                                                &input_types,
                                                &output_types);
-    int ident = PortablePluginInterface::GetStrIdentifierCallback(name);
+    uintptr_t ident = PortablePluginInterface::GetStrIdentifierCallback(name);
     methods_[ident]->Signature(&ret_array->u.vaval.varr[i]);
   }
   return ret_array;

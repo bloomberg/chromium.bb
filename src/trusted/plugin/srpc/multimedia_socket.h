@@ -34,7 +34,7 @@ class MultimediaSocket {
 
   // Not really constants.  Do not modify.  Use only after at least
   // one MultimediaSocket instance has been constructed.
-  static int kNaClMultimediaBridgeIdent;
+  static uintptr_t kNaClMultimediaBridgeIdent;
 
   void UpcallThreadExiting();
   bool UpcallThreadShouldExit();

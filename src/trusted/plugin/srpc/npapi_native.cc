@@ -7,10 +7,20 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "native_client/src/include/checked_cast.h"
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/npapi_native.h"
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
+
+using nacl::assert_cast;
+
+#define STRINGZ_TO_NPVARIANT_ASSERT(_val, _v)                   \
+  NP_BEGIN_MACRO                                                \
+  (_v).type = NPVariantType_String;                             \
+  NPString str = { _val, assert_cast<uint32_t>(strlen(_val)) }; \
+  (_v).value.stringValue = str;                                 \
+  NP_END_MACRO
 
 namespace nacl_srpc {
 
@@ -39,14 +49,14 @@ template<> bool ScalarToNPVariant<const char*>(const char* value,
   if (NULL == value) {
     return false;
   }
-  size_t length = strlen(value) + 1;
+  uint32_t length = assert_cast<uint32_t>(strlen(value) + 1);
   char *tmpstr = reinterpret_cast<char*>(NPN_MemAlloc(length));
   if (NULL == tmpstr) {
     return false;
   }
   strncpy(tmpstr, value, length);
   // Make result available to the caller.
-  STRINGZ_TO_NPVARIANT(tmpstr, *var);
+  STRINGZ_TO_NPVARIANT_ASSERT(tmpstr, *var);
   return true;
 }
 

@@ -143,7 +143,7 @@ class VideoMap {
   PortablePluginInterface* plugin_interface_;
   NaClVideoShare*          untrusted_video_share_;
   DescWrapper*             video_handle_;
-  size_t                   video_size_;
+  uint32_t                 video_size_;
   bool                     video_enabled_;
   VideoCallbackData*       video_callback_data_;
   nacl_srpc::ScriptableHandle<nacl_srpc::SharedMemory>* video_shared_memory_;

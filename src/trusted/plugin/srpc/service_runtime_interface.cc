@@ -383,13 +383,14 @@ ScriptableHandle<SocketAddress>* ServiceRuntimeInterface::GetSocketAddress(
   header.ndescv_length = NACL_ARRAY_SIZE(descs);
   header.flags = 0;
   // Receive the message.
-  int ret = imc_desc->RecvMsg(&header, 0);
+  ssize_t ret = imc_desc->RecvMsg(&header, 0);
   // Check that there was exactly one descriptor passed.
   if (0 > ret || 1 != header.ndescv_length) {
     dprintf(("ServiceRuntimeInterface::GetSocketAddress: "
-             "message receive failed %d %u %u\n", ret,
-             (unsigned) header.ndescv_length,
-             (unsigned) header.iov_length));
+             "message receive failed %" PRIdS " %" PRIdNACL_SIZE
+             " %" PRIdNACL_SIZE "\n", ret,
+             header.ndescv_length,
+             header.iov_length));
     goto cleanup;
   }
   dprintf(("ServiceRuntimeInterface::GetSocketAddress: "

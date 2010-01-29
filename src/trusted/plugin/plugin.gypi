@@ -62,13 +62,9 @@
     '../../../build/common.gypi',
   ],
   'target_defaults': {
-    'dependencies': [
-      '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
-      '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
-      '<(DEPTH)/native_client/src/shared/imc/imc.gyp:libgoogle_nacl_imc_c',
-      '<(DEPTH)/native_client/src/trusted/gio/gio.gyp:gio',
-      '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:expiration',
-      ],
+    'variables': {
+      'target_platform': 'none',
+    },
     'conditions': [
       ['OS=="linux"', {
         'defines': [

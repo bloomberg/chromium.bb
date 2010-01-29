@@ -31,58 +31,110 @@
   'includes': [
     'plugin.gypi',
   ],
+  'target_defaults': {
+    'target_conditions': [
+      ['target_base=="npNaClPlugin"', {
+        'sources': [
+          '<@(common_sources)',
+          'srpc/video.cc',
+        ],
+        'xcode_settings': {
+          'WARNING_CFLAGS!': [
+            # TODO(bradnelson): remove -pedantic when --std=c++98 in common.gypi
+            '-pedantic',
+          ],
+          'WARNING_CFLAGS': [
+            '-Wno-deprecated',
+            '-Wno-deprecated-declarations',
+          ],
+        },
+        'conditions': [
+          ['OS=="win"', {
+            'sources': [
+              'nacl_plugin.rc',
+            ],
+            'msvs_settings': {
+              'VCCLCompilerTool': {
+                'ExceptionHandling': '2',  # /EHsc
+              },
+              'VCLinkerTool': {
+                'AdditionalLibraryDirectories': [
+                   '$(OutDir)/lib',
+                ],
+              },
+            },
+          }],
+          ['OS=="linux"', {
+            'link_settings': {
+              'libraries': [
+                '-lXt',
+                '-lX11',
+              ],
+            },
+          }],
+        ],
+      }],
+    ],
+  },
   'targets': [
+    # ----------------------------------------------------------------------
     {
       'target_name': 'npGoogleNaClPlugin',
       'type': 'shared_library',
+      'variables': {
+        'target_base': 'npNaClPlugin',
+      },
       'dependencies': [
+        '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
+        '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
+        '<(DEPTH)/native_client/src/shared/imc/imc.gyp:libgoogle_nacl_imc_c',
+        '<(DEPTH)/native_client/src/trusted/gio/gio.gyp:gio',
+        '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:expiration',
         '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util',
         '<(DEPTH)/native_client/src/shared/npruntime/npruntime.gyp:google_nacl_npruntime',
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
       ],
-      'sources': [
-        '<@(common_sources)',
-        'srpc/video.cc',
-      ],
-      'xcode_settings': {
-        'WARNING_CFLAGS!': [
-          # TODO(bradnelson): remove -pedantic when --std=c++98 in common.gypi
-          '-pedantic',
-        ],
-        'WARNING_CFLAGS': [
-          '-Wno-deprecated',
-          '-Wno-deprecated-declarations',
-        ],
-      },
       'conditions': [
         ['OS=="win"', {
           'sources': [
             'nacl_plugin.def',
-            'nacl_plugin.rc',
           ],
-          'msvs_settings': {
-            'VCCLCompilerTool': {
-              'ExceptionHandling': '2',  # /EHsc
-            },
-            'VCLinkerTool': {
-              'AdditionalLibraryDirectories': [
-                 '$(OutDir)/lib',
-              ],
-            },
-          },
-        }],
-        ['OS=="linux"', {
-          'link_settings': {
-            'libraries': [
-              '-lXt',
-              '-lX11',
-            ],
-          },
         }],
       ],
     },
   ],
   'conditions': [
+    ['OS=="win"', {
+      'targets': [
+        # ---------------------------------------------------------------------
+        {
+          'target_name': 'npGoogleNaClPlugin64',
+          'type': 'shared_library',
+          'variables': {
+            'target_base': 'npNaClPlugin',
+            'win_target': 'x64',
+          },
+          'sources': [
+            'nacl_plugin64.def',
+          ],
+          'dependencies': [
+            '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc64',
+            '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
+            '<(DEPTH)/native_client/src/shared/imc/imc.gyp:libgoogle_nacl_imc_c64',
+            '<(DEPTH)/native_client/src/trusted/gio/gio.gyp:gio64',
+            '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:expiration64',
+            '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util64',
+            '<(DEPTH)/native_client/src/shared/npruntime/npruntime.gyp:google_nacl_npruntime64',
+            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
+          ],
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
+        },
+      ],
+    }],
     ['nacl_standalone==0', {
       'targets': [
         {

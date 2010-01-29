@@ -14,6 +14,7 @@
 #include <map>
 #include <string>
 
+#include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/nacl_elf.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_string.h"
@@ -22,29 +23,31 @@
 #include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 
+using nacl::assert_cast;
+
 bool PortablePluginInterface::identifiers_initialized = false;
-int PortablePluginInterface::kConnectIdent;
-int PortablePluginInterface::kHeightIdent;
-int PortablePluginInterface::kHrefIdent;
-int PortablePluginInterface::kLengthIdent;
-int PortablePluginInterface::kLocationIdent;
-int PortablePluginInterface::kMapIdent;
-int PortablePluginInterface::kModuleReadyIdent;
-int PortablePluginInterface::kNaClMultimediaBridgeIdent;
-int PortablePluginInterface::kNullNpapiMethodIdent;
-int PortablePluginInterface::kOnfailIdent;
-int PortablePluginInterface::kOnloadIdent;
-int PortablePluginInterface::kReadIdent;
-int PortablePluginInterface::kSetCommandLogIdent;
-int PortablePluginInterface::kShmFactoryIdent;
-int PortablePluginInterface::kSignaturesIdent;
-int PortablePluginInterface::kSrcIdent;
-int PortablePluginInterface::kToStringIdent;
-int PortablePluginInterface::kUrlAsNaClDescIdent;
-int PortablePluginInterface::kValueOfIdent;
-int PortablePluginInterface::kVideoUpdateModeIdent;
-int PortablePluginInterface::kWidthIdent;
-int PortablePluginInterface::kWriteIdent;
+uintptr_t PortablePluginInterface::kConnectIdent;
+uintptr_t PortablePluginInterface::kHeightIdent;
+uintptr_t PortablePluginInterface::kHrefIdent;
+uintptr_t PortablePluginInterface::kLengthIdent;
+uintptr_t PortablePluginInterface::kLocationIdent;
+uintptr_t PortablePluginInterface::kMapIdent;
+uintptr_t PortablePluginInterface::kModuleReadyIdent;
+uintptr_t PortablePluginInterface::kNaClMultimediaBridgeIdent;
+uintptr_t PortablePluginInterface::kNullNpapiMethodIdent;
+uintptr_t PortablePluginInterface::kOnfailIdent;
+uintptr_t PortablePluginInterface::kOnloadIdent;
+uintptr_t PortablePluginInterface::kReadIdent;
+uintptr_t PortablePluginInterface::kSetCommandLogIdent;
+uintptr_t PortablePluginInterface::kShmFactoryIdent;
+uintptr_t PortablePluginInterface::kSignaturesIdent;
+uintptr_t PortablePluginInterface::kSrcIdent;
+uintptr_t PortablePluginInterface::kToStringIdent;
+uintptr_t PortablePluginInterface::kUrlAsNaClDescIdent;
+uintptr_t PortablePluginInterface::kValueOfIdent;
+uintptr_t PortablePluginInterface::kVideoUpdateModeIdent;
+uintptr_t PortablePluginInterface::kWidthIdent;
+uintptr_t PortablePluginInterface::kWriteIdent;
 
 uint8_t const PortablePluginInterface::kInvalidAbiVersion = UINT8_MAX;
 
@@ -98,7 +101,7 @@ static void CleanString(std::string* text) {
 
 bool PortablePluginInterface::Alert(
     nacl_srpc::PluginIdentifier plugin_identifier,
-    std::string text) {
+    const std::string& text) {
   NPObject* window;
   NPP npp = plugin_identifier;
   NPN_GetValue(npp, NPNVWindowNPObject, &window);
@@ -106,15 +109,17 @@ bool PortablePluginInterface::Alert(
   // usually these messages are important enough to call attention to them
   puts(text.c_str());
 
-  CleanString(&text);
-  std::string command = "alert('" + text + "');";
-  char* buffer = reinterpret_cast<char*>(NPN_MemAlloc(command.size()));
+  std::string command = text;
+  CleanString(&command);
+  command = "alert('" + command + "');";
+  uint32_t size = assert_cast<uint32_t>(command.size());
+  char* buffer = reinterpret_cast<char*>(NPN_MemAlloc(size));
   memcpy(buffer, command.c_str(), command.size());
 
   // TODO(sehr): write a stand-alone function that converts
   //             between std::string and NPString, and put it in utility.cc.
   NPString script;
-  script.UTF8Length = command.size();
+  script.UTF8Length = size;
   script.UTF8Characters = buffer;
   NPVariant result;
   bool success = NPN_Evaluate(npp, window, &script, &result);
@@ -180,7 +185,7 @@ bool PortablePluginInterface::GetOrigin(
 namespace {
 bool RunHandler(
     nacl_srpc::PluginIdentifier plugin_identifier,
-    int handler_identifier) {
+    uintptr_t handler_identifier) {
   NPP instance = plugin_identifier;
   NPVariant attr_value;
   NPVariant dummy_return;
@@ -310,7 +315,7 @@ bool PortablePluginInterface::CheckExecutableVersion(
 }
 
 char *PortablePluginInterface::MemAllocStrdup(const char *str) {
-  int lenz = strlen(str) + 1;
+  size_t lenz = strlen(str) + 1;
   char *dup = static_cast<char *>(malloc(lenz));
   if (NULL != dup) {
     strncpy(dup, str, lenz);

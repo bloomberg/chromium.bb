@@ -7,9 +7,12 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include "native_client/src/include/checked_cast.h"
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
 #include "native_client/src/trusted/plugin/srpc/ret_array.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
+
+using nacl::assert_cast;
 
 // TODO(sehr): this whole module should probably be replaced by
 // a call to javascript eval to create an array object.
@@ -30,7 +33,7 @@ RetArray::RetArray(NPP npp) : npp_(npp) {
 
   NPString script;
   script.UTF8Characters = "new Array();";
-  script.UTF8Length = strlen(script.UTF8Characters);
+  script.UTF8Length = assert_cast<uint32_t>(strlen(script.UTF8Characters));
 
   if (!NPN_Evaluate(npp, window, &script, &array_) ||
       !NPVARIANT_IS_OBJECT(array_)) {

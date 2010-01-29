@@ -15,6 +15,7 @@
 
 #include <set>
 
+#include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/portability.h"
 #include "third_party/npapi/bindings/npapi.h"
 #include "native_client/src/trusted/plugin/srpc/npapi_native.h"
@@ -701,8 +702,9 @@ class ScriptableHandle: public ScriptableHandleBase {
         break;
       case NACL_SRPC_ARG_TYPE_STRING:
         /* SCOPE */ {
-          size_t len = strlen(outs[i]->u.sval) + 1;
-          char* tmpstr= reinterpret_cast<char*>(NPN_MemAlloc(len));
+          uint32_t len =
+            nacl::saturate_cast<uint32_t>(strlen(outs[i]->u.sval) + 1);
+          char* tmpstr = reinterpret_cast<char*>(NPN_MemAlloc(len));
           strncpy(tmpstr, outs[i]->u.sval, len);
           ScalarToNPVariant(tmpstr, retvalue);
         }

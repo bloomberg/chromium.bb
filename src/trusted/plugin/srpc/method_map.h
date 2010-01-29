@@ -85,15 +85,16 @@ class SrpcParams {
   }
 
   bool FillVec(NaClSrpcArg* vec[], const char* types) {
-    const int kLength = strlen(types);
+    const size_t kLength = strlen(types);
     if (kLength > NACL_SRPC_MAX_ARGS + 1)
       return false;
     NaClSrpcArg* args = new(std::nothrow) NaClSrpcArg[kLength];
     if (NULL == args) {
       return false;
     }
+
     memset(static_cast<void*>(args), 0, kLength * sizeof(NaClSrpcArg));
-    for (int i = 0; i < kLength; ++i) {
+    for (size_t i = 0; i < kLength; ++i) {
       vec[i] = &args[i];
       args[i].tag = static_cast<NaClSrpcArgType>(types[i]);
     }
@@ -164,7 +165,8 @@ class MethodMap {
   void AddMethod(uintptr_t method_id, MethodInfo *info);
 
  private:
-  std::map<int, MethodInfo*> method_map_;
+  typedef std::map<uintptr_t, MethodInfo*> MethodMapStorage;
+  MethodMapStorage method_map_;
 };
 
 

@@ -16,12 +16,12 @@
 
 namespace nacl_srpc {
 
-int SrtSocket::kHardShutdownIdent;
-int SrtSocket::kSetOriginIdent;
-int SrtSocket::kStartModuleIdent;
-int SrtSocket::kLogIdent;
-int SrtSocket::kLoadModule;
-int SrtSocket::kInitHandlePassing;
+uintptr_t SrtSocket::kHardShutdownIdent;
+uintptr_t SrtSocket::kSetOriginIdent;
+uintptr_t SrtSocket::kStartModuleIdent;
+uintptr_t SrtSocket::kLogIdent;
+uintptr_t SrtSocket::kLoadModule;
+uintptr_t SrtSocket::kInitHandlePassing;
 
 // NB: InitializeIdentifiers is not thread-safe.
 void SrtSocket::InitializeIdentifiers(

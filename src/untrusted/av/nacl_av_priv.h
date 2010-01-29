@@ -26,7 +26,7 @@ struct NaClVideoShare {
     struct {
       /* misc */
       int                  revision;
-      int                  map_size;                      /* rev 0x100 */
+      uint32_t             map_size;                      /* rev 0x100 */
       /* event queue */
       volatile int         event_read_index;              /* rev 0x100 */
       volatile int         event_write_index;             /* rev 0x100 */

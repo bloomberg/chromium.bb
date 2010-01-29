@@ -8,6 +8,7 @@
 #ifndef NATIVE_CLIENT_NPAPI_PLUGIN_SRPC_NPAPI_NATIVE_H_
 #define NATIVE_CLIENT_NPAPI_PLUGIN_SRPC_NPAPI_NATIVE_H_
 
+#include "native_client/src/include/checked_cast.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
@@ -120,7 +121,8 @@ template<typename T> bool NPVariantToArray(
   // Get the elements of the object into the allocated array.
   T array_element_pointer = tmp_array_data;
   for (size_t i = 0; i < element_count; ++i) {
-    NPIdentifier index_id = NPN_GetIntIdentifier(i);
+    int32_t index = nacl::assert_cast<int32_t>(i);
+    NPIdentifier index_id = NPN_GetIntIdentifier(index);
     NPVariant val;
     // Get the array object property for index i.
     if (!NPN_GetProperty(npp, nparray_object, index_id, &val)) {
@@ -139,7 +141,7 @@ template<typename T> bool NPVariantToArray(
     ++array_element_pointer;
   }
   // Make the element count and data available to the caller.
-  *array_length = element_count;
+  *array_length = nacl::assert_cast<uint32_t>(element_count);
   *array_data = tmp_array_data;
   return true;
 }
@@ -178,7 +180,7 @@ template<typename T> bool NPVariantToAllocatedArray(const NPVariant* var,
     return false;
   }
   // Make the element count and data available to the caller.
-  *array_length = element_count;
+  *array_length = nacl::assert_cast<uint32_t>(element_count);
   *array_data = tmp_array_data;
   return true;
 }

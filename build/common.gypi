@@ -95,6 +95,27 @@
     'include_dirs': [
       '../..',
     ],
+    'variables': {
+      'win_target': 'x32'
+    },
+    'target_conditions': [
+      ['win_target=="x64"', {
+        'target_arch': 'x64',
+        'defines!': [
+          'NACL_TARGET_SUBARCH=32',
+          'NACL_BUILD_SUBARCH=32',
+        ],
+        'defines': [
+          'NACL_TARGET_SUBARCH=64',
+          'NACL_BUILD_SUBARCH=64',
+        ],
+        'configurations': {
+          'Common_Base': {
+            'msvs_target_platform': 'x64',
+          },
+        },
+      }],
+    ],
     'conditions': [
       ['nacl_standalone==1', {
         'defines': [

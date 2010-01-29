@@ -25,7 +25,7 @@
 
 namespace nacl_srpc {
 
-int MultimediaSocket::kNaClMultimediaBridgeIdent;
+uintptr_t MultimediaSocket::kNaClMultimediaBridgeIdent;
 
 // NB: InitializeIdentifiers is not thread-safe.
 void MultimediaSocket::InitializeIdentifiers(

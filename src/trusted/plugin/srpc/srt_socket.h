@@ -37,12 +37,12 @@ class SrtSocket {
 
   // Not really constants.  Do not modify.  Use only after at least
   // one SrtSocket instance has been constructed.
-  static int kHardShutdownIdent;
-  static int kSetOriginIdent;
-  static int kStartModuleIdent;
-  static int kLogIdent;
-  static int kLoadModule;
-  static int kInitHandlePassing;
+  static uintptr_t kHardShutdownIdent;
+  static uintptr_t kSetOriginIdent;
+  static uintptr_t kStartModuleIdent;
+  static uintptr_t kLogIdent;
+  static uintptr_t kLoadModule;
+  static uintptr_t kInitHandlePassing;
  private:
   ScriptableHandle<ConnectedSocket> *connected_socket_;
   PortablePluginInterface *plugin_interface_;

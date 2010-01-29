@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 
+#include "native_client/src/include/checked_cast.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
@@ -17,6 +18,8 @@
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
 #include "native_client/src/trusted/plugin/srpc/srpc_client.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
+
+using nacl::assert_cast;
 
 #ifdef TEXT_COMMAND_LOGGING
 #define LOGCOMMAND(fp, args) \
@@ -147,7 +150,10 @@ bool MethodInfo::Signature(NaClSrpcArg* toplevel) {
   STRINGZ_TO_SRPCARG(temp_name, *name_arg);
 
   NaClSrpcArg *args = &toplevel->u.vaval.varr[1];
-  uint32_t ins_length = strlen(ins_);
+
+  // Using int rather than uint32_t here (and on outs_length and i, below) to
+  // match the signature of InitSrpcArray.
+  int ins_length = assert_cast<int>(strlen(ins_));
 
   if (!InitSrpcArgArray(args, ins_length)) {
     free(temp_name);
@@ -158,7 +164,7 @@ bool MethodInfo::Signature(NaClSrpcArg* toplevel) {
            static_cast<void *>(toplevel),
            static_cast<void *>(args)));
 
-  uint32_t i;
+  int i;
   for (i = 0; i < ins_length; ++i) {
     dprintf(("Signature: %p->[1][%d] = %p (%s)\n",
              static_cast<void *>(&args->u.vaval.varr[i]),
@@ -171,7 +177,7 @@ bool MethodInfo::Signature(NaClSrpcArg* toplevel) {
   }
 
   NaClSrpcArg *rets = &toplevel->u.vaval.varr[2];
-  uint32_t const outs_length = strlen(outs_);
+  int const outs_length = assert_cast<int>(strlen(outs_));
 
   if (!InitSrpcArgArray(rets, outs_length)) {
     FreeSrpcArg(args);
@@ -202,7 +208,7 @@ void MethodInfo::PrintType(Plugin* plugin, NaClSrpcArgType type) {
 }
 
 MethodMap::~MethodMap() {
-  std::map<int, MethodInfo*>::iterator it;
+  MethodMapStorage::iterator it;
   while ((it = method_map_.begin()) != method_map_.end()) {
     delete(it->second);
     method_map_.erase(it);

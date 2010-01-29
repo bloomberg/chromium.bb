@@ -9,6 +9,7 @@
 #include <signal.h>
 #include <string.h>
 
+#include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/nacl_platform.h"
 
 #include "native_client/src/shared/platform/nacl_host_desc.h"
@@ -145,7 +146,7 @@ bool SharedMemory::RpcWrite(void *obj, SrpcParams *params) {
   NaClSrpcArg *str_param = params->Input(2);
   const unsigned char* str =
     reinterpret_cast<unsigned const char*>(str_param->u.sval);
-  const unsigned int utf_bytes = strlen(str_param->u.sval);
+  uint32_t utf_bytes = nacl::saturate_cast<uint32_t>(strlen(str_param->u.sval));
   unsigned char* shm_addr =
     reinterpret_cast<unsigned char*>(shared_memory->map_addr_) + offset;
 

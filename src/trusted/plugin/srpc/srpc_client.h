@@ -53,7 +53,8 @@ class SrpcClient {
   static void SignalHandler(int value);
   void GetMethods();
 
-  std::map<int, MethodInfo*> methods_;
+  typedef std::map<uintptr_t, MethodInfo*> Methods;
+  Methods methods_;
   NaClSrpcChannel srpc_channel_;
   PortablePluginInterface* portable_plugin_;
   bool can_use_proxied_npapi_;
