@@ -21,6 +21,8 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
+#include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/download_util.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/url_fetcher.h"
 #include "chrome/browser/history/history_types.h"
@@ -80,10 +82,15 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
                           public chromeos::MountLibrary::Observer,
 #endif
                           public base::SupportsWeakPtr<FilebrowseHandler>,
-                          public URLFetcher::Delegate {
+                          public URLFetcher::Delegate,
+                          public DownloadManager::Observer,
+                          public DownloadItem::Observer {
  public:
   FilebrowseHandler();
   virtual ~FilebrowseHandler();
+
+  // Init work after Attach.
+  void Init();
 
   // DirectoryLister::DirectoryListerDelegate methods:
   virtual void OnListFile(const file_util::FileEnumerator::FindInfo& data);
@@ -98,6 +105,15 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
                     chromeos::MountEventType evt,
                     const std::string& path);
 #endif
+
+  // DownloadItem::Observer interface
+  virtual void OnDownloadUpdated(DownloadItem* download);
+  virtual void OnDownloadFileCompleted(DownloadItem* download) { }
+  virtual void OnDownloadOpened(DownloadItem* download) { }
+
+  // DownloadManager::Observer interface
+  virtual void ModelChanged();
+  virtual void SetDownloads(std::vector<DownloadItem*>& downloads);
 
   // Callback for the "getRoots" message.
   void HandleGetRoots(const Value* value);
@@ -122,12 +138,23 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   // Callback for the "uploadToPicasaweb" message.
   void UploadToPicasaweb(const Value* value);
 
+  // Callback for the "getDownloads" message.
+  void HandleGetDownloads(const Value* value);
+
+  void HandleCreateNewFolder(const Value* value);
+
   void ReadInFile();
   void FireUploadComplete();
 
  private:
 
   void OpenNewWindow(const Value* value, bool popup);
+
+  // Clear all download items and their observers.
+  void ClearDownloadItems();
+
+  // Send the current list of downloads to the page.
+  void SendCurrentDownloads();
 
   scoped_ptr<ListValue> filelist_value_;
   FilePath currentpath_;
@@ -137,6 +164,10 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   int upload_response_code_;
   TaskProxy* CurrentTask_;
   scoped_refptr<net::DirectoryLister> lister_;
+
+  DownloadManager* download_manager_;
+  typedef std::vector<DownloadItem*> DownloadList;
+  DownloadList download_items_;
 
   DISALLOW_COPY_AND_ASSIGN(FilebrowseHandler);
 };
@@ -200,7 +231,8 @@ void FileBrowseUIHTMLSource::StartDataRequest(const std::string& path,
 //
 ////////////////////////////////////////////////////////////////////////////////
 FilebrowseHandler::FilebrowseHandler()
-    : profile_(NULL) {
+    : profile_(NULL),
+      download_manager_(NULL) {
   // TODO(dhg): Check to see if this is really necessary
 #if defined(OS_CHROMEOS)
   chromeos::MountLibrary* lib = chromeos::MountLibrary::Get();
@@ -218,6 +250,9 @@ FilebrowseHandler::~FilebrowseHandler() {
     lister_->Cancel();
     lister_->set_delegate(NULL);
   }
+
+  ClearDownloadItems();
+  download_manager_->RemoveObserver(this);
 }
 
 DOMMessageHandler* FilebrowseHandler::Attach(DOMUI* dom_ui) {
@@ -229,7 +264,13 @@ DOMMessageHandler* FilebrowseHandler::Attach(DOMUI* dom_ui) {
           &ChromeURLDataManager::AddDataSource,
           make_scoped_refptr(new DOMUIFavIconSource(dom_ui->GetProfile()))));
   profile_ = dom_ui->GetProfile();
+
   return DOMMessageHandler::Attach(dom_ui);
+}
+
+void FilebrowseHandler::Init() {
+  download_manager_ = profile_->GetOriginalProfile()->GetDownloadManager();
+  download_manager_->AddObserver(this);
 }
 
 void FilebrowseHandler::RegisterMessages() {
@@ -245,6 +286,10 @@ void FilebrowseHandler::RegisterMessages() {
       NewCallback(this, &FilebrowseHandler::OpenNewFullWindow));
   dom_ui_->RegisterMessageCallback("uploadToPicasaweb",
       NewCallback(this, &FilebrowseHandler::UploadToPicasaweb));
+  dom_ui_->RegisterMessageCallback("getDownloads",
+      NewCallback(this, &FilebrowseHandler::HandleGetDownloads));
+  dom_ui_->RegisterMessageCallback("createNewFolder",
+      NewCallback(this, &FilebrowseHandler::HandleCreateNewFolder));
 }
 
 void FilebrowseHandler::FireUploadComplete() {
@@ -343,6 +388,29 @@ void FilebrowseHandler::HandleGetRoots(const Value* value) {
   info_value.SetString(kPropertyPath, "");
   dom_ui_->CallJavascriptFunction(L"browseFileResult",
                                   info_value, results_value);
+}
+
+void FilebrowseHandler::HandleCreateNewFolder(const Value* value) {
+#if defined(OS_CHROMEOS)
+  if (value && value->GetType() == Value::TYPE_LIST) {
+    const ListValue* list_value = static_cast<const ListValue*>(value);
+    std::string path;
+
+    // Get path string.
+    if (list_value->GetString(0, &path)) {
+
+      FilePath currentpath;
+      currentpath = FilePath(path);
+
+      if (!file_util::CreateDirectory(currentpath)) {
+        LOG(ERROR) << "unable to create directory";
+      }
+    } else {
+      LOG(ERROR) << "Unable to get string";
+      return;
+    }
+  }
+#endif
 }
 
 void FilebrowseHandler::OpenNewFullWindow(const Value* value) {
@@ -548,15 +616,76 @@ void FilebrowseHandler::OnListDone(int error) {
 void FilebrowseHandler::HandleGetMetadata(const Value* value) {
 }
 
+void FilebrowseHandler::HandleGetDownloads(const Value* value) {
+  ModelChanged();
+}
+
+void FilebrowseHandler::ModelChanged() {
+  ClearDownloadItems();
+  download_manager_->GetDownloads(this, std::wstring());
+}
+
+void FilebrowseHandler::SetDownloads(std::vector<DownloadItem*>& downloads) {
+  ClearDownloadItems();
+
+  // Scan for any in progress downloads and add ourself to them as an observer.
+  for (DownloadList::iterator it = downloads.begin();
+       it != downloads.end(); ++it) {
+    DownloadItem* download = *it;
+    // We want to know what happens as the download progresses and be notified
+    // when the user validates the dangerous download.
+    if (download->state() == DownloadItem::IN_PROGRESS ||
+        download->safety_state() == DownloadItem::DANGEROUS) {
+      download->AddObserver(this);
+      download_items_.push_back(download);
+    }
+  }
+
+  SendCurrentDownloads();
+}
+
+void FilebrowseHandler::OnDownloadUpdated(DownloadItem* download) {
+  DownloadList::iterator it = find(download_items_.begin(),
+                                   download_items_.end(),
+                                   download);
+  if (it == download_items_.end())
+    return;
+  const int id = static_cast<int>(it - download_items_.begin());
+
+  ListValue results_value;
+  results_value.Append(download_util::CreateDownloadItemValue(download, id));
+  dom_ui_->CallJavascriptFunction(L"downloadUpdated", results_value);
+}
+
+void FilebrowseHandler::ClearDownloadItems() {
+  for (DownloadList::iterator it = download_items_.begin();
+      it != download_items_.end(); ++it) {
+    (*it)->RemoveObserver(this);
+  }
+  download_items_.clear();
+}
+
+void FilebrowseHandler::SendCurrentDownloads() {
+  ListValue results_value;
+  for (DownloadList::iterator it = download_items_.begin();
+      it != download_items_.end(); ++it) {
+    int index = static_cast<int>(it - download_items_.begin());
+    results_value.Append(download_util::CreateDownloadItemValue(*it, index));
+  }
+
+  dom_ui_->CallJavascriptFunction(L"downloadsList", results_value);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //
 // FileBrowseUIContents
 //
 ////////////////////////////////////////////////////////////////////////////////
 
-FileBrowseUI::FileBrowseUI(TabContents* contents) : DOMUI(contents) {
+FileBrowseUI::FileBrowseUI(TabContents* contents) : HtmlDialogUI(contents) {
   FilebrowseHandler* handler = new FilebrowseHandler();
   AddMessageHandler((handler)->Attach(this));
+  handler->Init();
   FileBrowseUIHTMLSource* html_source = new FileBrowseUIHTMLSource();
 
   // Set up the chrome://filebrowse/ source.

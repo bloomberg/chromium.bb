@@ -9,14 +9,14 @@
 #include "base/scoped_ptr.h"
 #include "base/values.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
-#include "chrome/browser/dom_ui/dom_ui.h"
+#include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/history/history.h"
 #include "net/base/directory_lister.h"
 
 
 class GURL;
 
-class FileBrowseUI : public DOMUI {
+class FileBrowseUI : public HtmlDialogUI {
  public:
   explicit FileBrowseUI(TabContents* contents);
 

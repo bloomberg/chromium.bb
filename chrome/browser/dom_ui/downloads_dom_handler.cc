@@ -6,7 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
-#include "base/i18n/time_formatting.h"
 #include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/thread.h"
@@ -20,7 +19,6 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/jstemplate_builder.h"
-#include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"
 #include "grit/browser_resources.h"
 #include "grit/generated_resources.h"
@@ -106,7 +104,7 @@ void DownloadsDOMHandler::OnDownloadUpdated(DownloadItem* download) {
   const int id = static_cast<int>(it - download_items_.begin());
 
   ListValue results_value;
-  results_value.Append(CreateDownloadItemValue(download, id));
+  results_value.Append(download_util::CreateDownloadItemValue(download, id));
   dom_ui_->CallJavascriptFunction(L"downloadUpdated", results_value);
 }
 
@@ -221,61 +219,10 @@ void DownloadsDOMHandler::SendCurrentDownloads() {
     int index = static_cast<int>(it - download_items_.begin());
     if (index > kMaxDownloads)
       break;
-    results_value.Append(CreateDownloadItemValue(*it, index));
+    results_value.Append(download_util::CreateDownloadItemValue(*it, index));
   }
 
   dom_ui_->CallJavascriptFunction(L"downloadsList", results_value);
-}
-
-DictionaryValue* DownloadsDOMHandler::CreateDownloadItemValue(
-    DownloadItem* download, int id) {
-  DictionaryValue* file_value = new DictionaryValue();
-
-  file_value->SetInteger(L"started",
-    static_cast<int>(download->start_time().ToTimeT()));
-  file_value->SetString(L"since_string",
-    TimeFormat::RelativeDate(download->start_time(), NULL));
-  file_value->SetString(L"date_string",
-    base::TimeFormatShortDate(download->start_time()));
-  file_value->SetInteger(L"id", id);
-  file_value->SetString(L"file_path", download->full_path().ToWStringHack());
-  // Keep file names as LTR.
-  std::wstring file_name = download->GetFileName().ToWStringHack();
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
-    l10n_util::WrapStringWithLTRFormatting(&file_name);
-  file_value->SetString(L"file_name", file_name);
-  file_value->SetString(L"url", download->url().spec());
-
-  if (download->state() == DownloadItem::IN_PROGRESS) {
-    if (download->safety_state() == DownloadItem::DANGEROUS) {
-      file_value->SetString(L"state", L"DANGEROUS");
-    } else if (download->is_paused()) {
-      file_value->SetString(L"state", L"PAUSED");
-    } else {
-      file_value->SetString(L"state", L"IN_PROGRESS");
-    }
-
-    file_value->SetString(L"progress_status_text",
-       GetProgressStatusText(download));
-
-    file_value->SetInteger(L"percent",
-        static_cast<int>(download->PercentComplete()));
-    file_value->SetInteger(L"received",
-        static_cast<int>(download->received_bytes()));
-  } else if (download->state() == DownloadItem::CANCELLED) {
-    file_value->SetString(L"state", L"CANCELLED");
-  } else if (download->state() == DownloadItem::COMPLETE) {
-    if (download->safety_state() == DownloadItem::DANGEROUS) {
-      file_value->SetString(L"state", L"DANGEROUS");
-    } else {
-      file_value->SetString(L"state", L"COMPLETE");
-    }
-  }
-
-  file_value->SetInteger(L"total",
-      static_cast<int>(download->total_bytes()));
-
-  return file_value;
 }
 
 void DownloadsDOMHandler::ClearDownloadItems() {
@@ -304,57 +251,4 @@ DownloadItem* DownloadsDOMHandler::GetDownloadByValue(const Value* value) {
     return GetDownloadById(id);
   }
   return NULL;
-}
-
-std::wstring DownloadsDOMHandler::GetProgressStatusText(
-    DownloadItem* download) {
-  int64 total = download->total_bytes();
-  int64 size = download->received_bytes();
-  DataUnits amount_units = GetByteDisplayUnits(size);
-  std::wstring received_size = FormatBytes(size, amount_units, true);
-  std::wstring amount = received_size;
-
-  // Adjust both strings for the locale direction since we don't yet know which
-  // string we'll end up using for constructing the final progress string.
-  std::wstring amount_localized;
-  if (l10n_util::AdjustStringForLocaleDirection(amount, &amount_localized)) {
-    amount.assign(amount_localized);
-    received_size.assign(amount_localized);
-  }
-
-  if (total) {
-    amount_units = GetByteDisplayUnits(total);
-    std::wstring total_text = FormatBytes(total, amount_units, true);
-    std::wstring total_text_localized;
-    if (l10n_util::AdjustStringForLocaleDirection(total_text,
-                                                  &total_text_localized))
-      total_text.assign(total_text_localized);
-
-    amount = l10n_util::GetStringF(IDS_DOWNLOAD_TAB_PROGRESS_SIZE,
-                                   received_size,
-                                   total_text);
-  } else {
-    amount.assign(received_size);
-  }
-  amount_units = GetByteDisplayUnits(download->CurrentSpeed());
-  std::wstring speed_text = FormatSpeed(download->CurrentSpeed(),
-                                        amount_units, true);
-  std::wstring speed_text_localized;
-  if (l10n_util::AdjustStringForLocaleDirection(speed_text,
-                                                &speed_text_localized))
-    speed_text.assign(speed_text_localized);
-
-  base::TimeDelta remaining;
-  std::wstring time_remaining;
-  if (download->is_paused())
-    time_remaining = l10n_util::GetString(IDS_DOWNLOAD_PROGRESS_PAUSED);
-  else if (download->TimeRemaining(&remaining))
-    time_remaining = TimeFormat::TimeRemaining(remaining);
-
-  if (time_remaining.empty()) {
-    return l10n_util::GetStringF(IDS_DOWNLOAD_TAB_PROGRESS_STATUS_TIME_UNKNOWN,
-                                 speed_text, amount);
-  }
-  return l10n_util::GetStringF(IDS_DOWNLOAD_TAB_PROGRESS_STATUS, speed_text,
-                               amount, time_remaining);
 }

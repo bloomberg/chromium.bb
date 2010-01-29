@@ -34,11 +34,12 @@ div.header {
 .rowlink {
   height: 100%;
   width: 90%;
+  cursor: pointer;
 }
 
 a.iconlink {
   display: block;
-  font-family: helvetica;
+/*  font-family: helvetica; */
   font-weight: bold;
   font-size: 11px;
   color: white;
@@ -117,7 +118,7 @@ li.filebrowserow div.icon {
   width: 10px;
 }
 
-.uploadicon {
+.uploaicon {
   background: url('../../app/theme/filebrowse_upload.png');
   position: absolute;
   right: 0;
@@ -157,15 +158,34 @@ li.filebrowserow {
   padding: 8px 5px 5px 54px;
 /*  overflow: hidden; */
   font-size:.8em;
-  font-family: helvetica;
+/*  font-family: helvetica; */
   position: relative;
+}
+
+.downloadstatus {
+  width: 100%;
+  font-size:.6em;
+}
+
+li.filebrowserow:hover {
+  background: #ebeff9;
 }
 
 li.filebrowserow span.name {
   margin-top: 10px;
   margin-left: -22px;
   position: relative;
+}
+
+li.filebrowserow span.namelink {
+  margin-top: 10px;
+  margin-left: -22px;
+  position: relative;
   text-decoration:underline;
+}
+
+.selected {
+  background-color: #b1c8f2;
 }
 
 div.title {
@@ -188,6 +208,7 @@ div.controlbutton {
   padding-bottom: 4px;
   padding-right: 7px;
   height: 15px;
+  cursor: pointer;
 }
 
 div.column {
@@ -257,12 +278,100 @@ div.scanningcontainer {
   height: 100%;
 }
 
+div.filebutton {
+  width: 70px;
+  height: 20px;
+  cursor: pointer;
+  padding-top:2px;
+  border:1px solid #abb6ce;
+  background-color: #f5f7fc;
+  -webkit-border-radius: 5px;
+  text-align: center;
+  font-size:.8em;
+}
+
+.filenameprompt {
+  top: 10px;
+  left: 13px;
+  font-size:.8em;
+  position: absolute;
+}
+
+.filename {
+  left: 80px;
+  top:5px;
+  right:10px;
+  font-size:.8em;
+  position: absolute;
+}
+
+div.openbutton {
+  bottom: 5px;
+  left: 10px;
+  position: absolute;
+}
+
+div.cancelbutton {
+  bottom: 5px;
+  left: 90px;
+  position: absolute;
+}
+
+div.newfolderbutton {
+  bottom: 5px;
+  right: 10px;
+  position: absolute;
+}
+
+div.opencontainer {
+  width: 100%;
+  bottom: 0;
+  left:0;
+  height: 30px;
+  position: absolute;
+  background-image: -webkit-gradient(linear,
+                                     0% 0%,
+                                     0% 90%,
+                                     from(rgb(239, 242, 249)),
+                                     to(rgba(201, 212, 245, 1)));
+}
+
+div.savecontainer {
+  width: 100%;
+  bottom: 0;
+  left:0;
+  height: 60px;
+  position: absolute;
+  background-image: -webkit-gradient(linear,
+                                     0% 0%,
+                                     0% 90%,
+                                     from(rgb(239, 242, 249)),
+                                     to(rgba(201, 212, 245, 1)));
+}
+
+
 div.container {
   top: 0;
   position: absolute;
   width: 100%;
   left: 0;
   bottom: 0;
+}
+
+div.containerwithopenbuttons {
+  top: 0;
+  position: absolute;
+  width: 100%;
+  left: 0;
+  bottom: 30px;
+}
+
+div.containerwithsavebuttons {
+  top: 0;
+  position: absolute;
+  width: 100%;
+  left: 0;
+  bottom: 60px;
 }
 
 div.fullcontainer {
@@ -337,7 +446,7 @@ a:hover {
 }
 
 </style>
-<script src="local_strings.js"></script>
+<script src='local_strings.js'></script>
 <script>
 
 
@@ -351,11 +460,16 @@ var currentNode = -1;
 var foundImages = [];
 var currentImageMenu = '';
 var inFullMode = false;
+var inSelectMode = false;
 var videoPlaybackElement = null;
 var photoPreviewElement = null;
 var numColumns = 0;
 var divArray = [];
 var rootsDiv = null;
+var currentlySelectedItems = new Array();
+var currentlySelectedPaths = new Array();
+var multiSelect = false;
+var inSaveMode = false;
 
 function goBackInList() {
   if (currentNode > 0) {
@@ -389,7 +503,7 @@ function animateScrollRight() {
   // it stops growing, so clear it out and no more timeouts.
   if (lastScrollLeft != main.scrollLeft) {
     lastScrollLeft = main.scrollLeft;
-    setTimeout("animateScrollRight()", 15);
+    setTimeout('animateScrollRight()', 15);
   } else {
     lastScrollLeft = 0;
   }
@@ -516,14 +630,242 @@ function setUpForScanning() {
   main.textContent = 'Scanning Device...';
 };
 
+function dialogOkClick() {
+   if (!multiSelect) {
+     chrome.send('DialogClose', [JSON.stringify({'path' : currentlySelectedPaths[0]})]);
+   } else {
+     chrome.send('DialogClose', [JSON.stringify({'path' : currentlySelectedPaths})]);
+   }
+};
+
+function dialogCancelClick() {
+   chrome.send('DialogClose', ['']);
+};
+
+function dialogSaveClick() {
+  var filenameInput = $('filename');
+  var filename = filenameInput.value;
+  var currentPath = pathArray[pathArray.length - 1];
+  currentPath += '/';
+  currentPath += filename;
+  chrome.send('DialogClose', [JSON.stringify({'path' : currentPath})]);
+};
+
+
+function createNewFormItem(initialName, isDirectory, id, blurcallback, keypresscallback) {
+  var element = document.createElement('li');
+  element.className = 'filebrowserow';
+  element.id = 'listItem' + elementIdCounter;
+  elementIdCounter++;
+
+  var link;
+  link = document.createElement('div');
+  link.className = 'rowlink';
+
+  var icon = document.createElement('div');
+  icon.className = getClassForPath('', isDirectory);
+  link.appendChild(icon);
+  var input = document.createElement('input');
+  input.className = 'name';
+  input.id = 'newfoldername';
+  input.onblur = blurcallback;
+  input.onkeypress = keypresscallback;
+  input.focus();
+
+  input.value = initialName;
+  link.appendChild(input);
+
+  element.appendChild(link);
+  if (isDirectory) {
+    var rightarrow = document.createElement('div');
+    rightarrow.align = 'right';
+    rightarrow.innerHTML = '&raquo;';
+    rightarrow.className = 'rightarrow';
+    element.appendChild(rightarrow);
+  }
+
+  return element;
+};
+
+function createFolder(elementId) {
+  var currentPath = pathArray[pathArray.length - 1];
+  var element = $('newfoldername');
+  if (element) {
+    element.id = '';
+    var filename = element.value;
+    currentPath += '/';
+    currentPath += filename;
+    var parent = element.parentNode;
+    parent.removeChild(element);
+    listitem = parent.parentNode;
+
+    parent.onclick = new Function(getFunctionForItem(currentPath, listitem.id, true));
+
+    var span = document.createElement('span');
+    if (inSelectMode) {
+      span.className = 'name';
+    } else {
+      span.className = 'namelink';
+    }
+    span.textContent = filename;
+    parent.appendChild(span);
+
+    chrome.send('createNewFolder', [currentPath]);
+  }
+  return false;
+};
+
+function createFolderTyping(elementId) {
+   if (window.event.keyCode == 13) {
+     createFolder(elementId);
+   }
+};
+
+function getDirectoryForPath(path) {
+  var index = path.lastIndexOf('/');
+  if (index == -1) {
+    return path;
+  }
+  return path.substr(path, index);
+};
+
+function downloadsList(results) {
+//  alert(JSON.stringify(results));
+//  We might want to do something with this... For now assume that the update will get the necessary info
+};
+
+function downloadUpdated(results) {
+  for (var x = 0; x < results.length; x++) {
+    var element = $(results[x].file_path);
+    if (element) {
+      if (results[x].percent < 100) {
+        var progressDiv = null;
+        for (var y = 0; y < element.children.length; y++) {
+           if (element.children[y].className == 'downloadstatus') {
+             progressDiv = element.children[y];
+             break;
+           }
+        }
+        if (progressDiv == null) {
+          element.className = 'filebrowserow downloading';
+          var progressDiv = document.createElement('div');
+          progressDiv.className = 'downloadstatus';
+          element.appendChild(progressDiv);
+        }
+        progressDiv.textContent = results[x].progress_status_text;
+
+      } else {
+        for (var x = 0; x < element.children.length; x++) {
+           if (element.children[x].className == 'downloadstatus') {
+              var child = element.children[x];
+              element.removeChild(child);
+           }
+        }
+        element.className = 'filebrowserow';
+      }
+    } else {
+      // TODO(dhg):Get the new file
+    }
+  }
+};
+
+function dialogNewFolderClick() {
+
+
+  var main = divArray[divArray.length - 1];
+  var list;
+  for (var x = 0; x < main.childNodes.length; x++ ) {
+    if (main.childNodes[x].className == 'columnlist') {
+      list = main.childNodes[x].firstChild;
+      break;
+    }
+  }
+  var id = 'listItem' + elementIdCounter;
+  elementIdCounter++;
+  var element = createNewFormItem('',
+                                  true,
+                                  id,
+                                  new Function('createFolder("' + id + '")'),
+                                  new Function('createFolderTyping("' + id + '")'));
+  list.appendChild(element);
+  element.scrollIntoView();
+};
+
 ///////////////////////////////////////////////////////////////////////////////
 // Document Functions:
 /**
  * Window onload handler, sets up the page.
  */
 function load() {
-  if(document.documentElement.clientWidth <= 400) {
+  if(document.documentElement.clientWidth <= 600) {
     inFullMode = false;
+    if (chrome.dialogArguments) {
+      var args = JSON.parse(chrome.dialogArguments);
+      if (args.type == 'open') {
+        multiSelect = false;
+      } else if (args.type == 'save') {
+        inSaveMode = true;
+      } else if (args.type == 'open_multiple') {
+        multiSelect = true;
+      } else {
+        alert ('got unknown type');
+      }
+      inSelectMode = true;
+      if (inSaveMode) {
+        var main = $('main');
+        main.className = 'containerwithsavebuttons';
+        var savemenu = document.createElement('div');
+        savemenu.className = 'savecontainer';
+
+        var savebutton = document.createElement('div');
+        savebutton.className = 'filebutton openbutton';
+        savebutton.onclick = dialogSaveClick;
+        savebutton.textContent = 'Save';
+        savemenu.appendChild(savebutton);
+
+        var cancelbutton = document.createElement('div');
+        cancelbutton.className = 'filebutton cancelbutton';
+        savemenu.appendChild(cancelbutton);
+        cancelbutton.textContent = 'Cancel';
+        cancelbutton.onclick = dialogCancelClick;
+
+        var filenameprompt = document.createElement('div');
+        filenameprompt.className = 'filenameprompt';
+        filenameprompt.textContent = 'File name:';
+        savemenu.appendChild(filenameprompt);
+
+        var filename = document.createElement('input');
+        filename.className = 'filename';
+        filename.id = 'filename';
+        filename.value = args.current_file;
+        savemenu.appendChild(filename);
+
+        var newfolderbutton = document.createElement('div');
+        newfolderbutton.className = 'filebutton newfolderbutton';
+        newfolderbutton.textContent = 'New Folder';
+        newfolderbutton.onclick = dialogNewFolderClick;
+        savemenu.appendChild(newfolderbutton);
+
+        document.body.appendChild(savemenu);
+
+      } else {
+        var main = $('main');
+        main.className = 'containerwithopenbuttons';
+        var openmenu = document.createElement('div');
+        openmenu.className = 'opencontainer';
+        var openbutton = document.createElement('div');
+        openbutton.className = 'filebutton openbutton';
+        var cancelbutton = document.createElement('div');
+        cancelbutton.className = 'filebutton cancelbutton';
+        openmenu.appendChild(openbutton);
+        openbutton.onclick = dialogOkClick;
+        openmenu.appendChild(cancelbutton);
+        cancelbutton.onclick = dialogCancelClick;
+        openbutton.textContent = 'Open';
+        cancelbutton.textContent = 'Cancel';
+        document.body.appendChild(openmenu);
+      }
+    }
   } else {
     var main = $('main');
     main.className = 'fullcontainer';
@@ -553,6 +895,7 @@ function load() {
     pathArray.push('roots');
     getDataForPath('roots');
   }
+  chrome.send("getDownloads", []);
 };
 
 function jumpToNode(nodeNumber) {
@@ -669,35 +1012,77 @@ function uploadComplete(result) {
   }
 };
 
+function findInArray(arr, element) {
+  for (var x = 0; x < arr.length; x++) {
+    if (arr[x] == element) {
+      return x;
+    }
+  }
+  return -1;
+};
+
+function selectItem(elementid, path) {
+  var element = $(elementid);
+  var index;
+  if ((index = findInArray(currentlySelectedItems, element)) != -1) {
+    // the user must want to toggle
+    currentlySelectedItems.splice(index, 1);
+    element.classname = 'filebrowserow';
+    index = findInArray(currentlySelectedPaths, path);
+    currentlySelectedPaths.splice(index, 1);
+  } else {
+    if (!multiSelect) {
+      // clear out previous selected elements
+      for (var x = 0; x < currentlySelectedItems.length; x++) {
+        currentlySelectedItems[x].className = 'filebrowserow';
+      }
+    }
+    element.className = 'selected filebrowserow';
+    currentlySelectedItems.push(element);
+    currentlySelectedPaths.push(path);
+  }
+};
+
 // TODO(dhg): Do not use javascript: href, use onclick instead
-function createHrefForItem(path, isDirectory) {
+function getFunctionForItem(path, id, isDirectory) {
   if (isDirectory) {
-    return 'javascript:descend("' + path + '", ' + currentNode + ');';
+    return 'descend("' + path + '", ' + currentNode + ')';
+  } if(inSelectMode) {
+    return 'selectItem("' + id + '", "' + path + '")';
   } if (pathIsAudioFile(path)) {
-    return 'javascript:playMediaFile("' + path + '");';
+    return 'playMediaFile("' + path + '")';
   } if (pathIsVideoFile(path)) {
-    return 'javascript:playMediaFile("' + path + '");';
+    return 'playMediaFile("' + path + '")';
   } if (pathIsImageFile(path)) {
-    return 'javascript:showImage("' + path + '");';
+    return 'showImage("' + path + '")';
   } else {
     return '';
   }
 };
 
+var elementIdCounter = 0;
+
 function createNewItem(title, path, isDirectory) {
   var element = document.createElement('li');
   element.className = 'filebrowserow';
-
-  var link = document.createElement('a');
+  /*element.id = 'listItem' + elementIdCounter;*/
+  element.id = path;
+  elementIdCounter++;
+  var link;
+  link = document.createElement('div');
+  link.onclick = new Function(getFunctionForItem(path, element.id, isDirectory));
   link.className = 'rowlink';
-  link.href = createHrefForItem(path, isDirectory);
 
   var icon = document.createElement('div');
   icon.className = getClassForPath(path, isDirectory);
   link.appendChild(icon);
 
   var span = document.createElement('span');
-  span.className = 'name';
+  if (inSelectMode) {
+    span.className = 'name';
+  } else {
+    span.className = 'namelink';
+  }
   span.textContent = title;
   link.appendChild(span);
 
@@ -782,7 +1167,7 @@ function createNewList(title, results, main, path) {
 };
 
 </script>
-<body onload="load();" onclick='clearImageMenus()'>
+<body onload='load();' onclick='clearImageMenus()' onselectstart='return false'>
 <div id='header' class=''>
   <div id='back' class='backbutton controlbutton' onclick='goBackInList();return false;'>
     <img src="../../app/theme/filebrowse_back.png" width='100%' height='100%'>

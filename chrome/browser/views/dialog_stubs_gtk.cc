@@ -45,12 +45,6 @@ void ShowBookmarkManagerView(Profile* profile) {
   BookmarkManagerGtk::Show(profile);
 }
 
-void ShowHtmlDialogView(gfx::NativeWindow parent, Browser* browser,
-                        HtmlDialogUIDelegate* delegate) {
-  // Hasn't been implemented yet on linux.
-  NOTIMPLEMENTED();
-}
-
 void ShowPasswordsExceptionsWindowView(Profile* profile) {
   ShowPasswordsExceptionsWindow(profile);
 }

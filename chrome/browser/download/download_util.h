@@ -23,6 +23,7 @@ class Canvas;
 }
 
 class BaseDownloadItemModel;
+class DictionaryValue;
 class DownloadItem;
 class SkBitmap;
 
@@ -133,6 +134,15 @@ void DragDownload(const DownloadItem* download,
 
 // Determine if the specified extension is an executable extension.
 bool IsExecutableExtension(const std::string& extension);
+
+// Helpers ---------------------------------------------------------------------
+
+// Creates a representation of a download in a format that the downloads
+// HTML page can understand.
+DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id);
+
+// Get the localized status text for an in-progress download.
+std::wstring GetProgressStatusText(DownloadItem* download);
 
 }  // namespace download_util
 

@@ -7,7 +7,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "views/focus/focus_manager.h"
 
-DOMView::DOMView() : initialized_(false), tab_contents_(NULL) {
+DOMView::DOMView() : tab_contents_(NULL), initialized_(false) {
   SetFocusable(true);
 }
 
