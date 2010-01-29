@@ -202,14 +202,13 @@ IPC_BEGIN_MESSAGES(Plugin)
                              base::SharedMemoryHandle /* shared_memory*/,
                              size_t /* size */)
 
-  IPC_SYNC_MESSAGE_ROUTED0_2(PluginMsg_GetPluginScriptableObject,
-                             int /* route_id */,
-                             intptr_t /* npobject_ptr */)
+  IPC_SYNC_MESSAGE_ROUTED0_1(PluginMsg_GetPluginScriptableObject,
+                             int /* route_id */)
 
-  IPC_SYNC_MESSAGE_ROUTED3_0(PluginMsg_DidFinishLoadWithReason,
-                             GURL /* url */,
-                             int /* reason */,
-                             intptr_t /* notify_data */)
+  IPC_MESSAGE_ROUTED3(PluginMsg_DidFinishLoadWithReason,
+                      GURL /* url */,
+                      int /* reason */,
+                      int /* notify_id */)
 
   // Updates the plugin location.
   IPC_MESSAGE_ROUTED1(PluginMsg_UpdateGeometry,
@@ -244,12 +243,11 @@ IPC_BEGIN_MESSAGES(Plugin)
   IPC_MESSAGE_ROUTED1(PluginMsg_DidFail,
                       unsigned long /* id */)
 
-  IPC_MESSAGE_ROUTED5(PluginMsg_SendJavaScriptStream,
+  IPC_MESSAGE_ROUTED4(PluginMsg_SendJavaScriptStream,
                       GURL /* url */,
                       std::string /* result */,
                       bool /* success */,
-                      bool /* notify required */,
-                      intptr_t /* notify data */)
+                      int /* notify_id */)
 
   IPC_MESSAGE_ROUTED2(PluginMsg_DidReceiveManualResponse,
                       GURL /* url */,
@@ -264,8 +262,14 @@ IPC_BEGIN_MESSAGES(Plugin)
 
   IPC_MESSAGE_ROUTED0(PluginMsg_InstallMissingPlugin)
 
-  IPC_SYNC_MESSAGE_ROUTED1_0(PluginMsg_HandleURLRequestReply,
-                             PluginMsg_URLRequestReply_Params)
+  IPC_MESSAGE_ROUTED3(PluginMsg_HandleURLRequestReply,
+                      unsigned long /* resource_id */,
+                      GURL /* url */,
+                      int /* notify_id */)
+
+  IPC_MESSAGE_ROUTED2(PluginMsg_HTTPRangeRequestReply,
+                      unsigned long /* resource_id */,
+                      int /* range_request_id */)
 
   IPC_SYNC_MESSAGE_ROUTED0_1(PluginMsg_CreateCommandBuffer,
                              int /* route_id */)
@@ -307,15 +311,13 @@ IPC_BEGIN_MESSAGES(PluginHost)
   IPC_MESSAGE_ROUTED1(PluginHostMsg_InvalidateRect,
                       gfx::Rect /* rect */)
 
-  IPC_SYNC_MESSAGE_ROUTED1_2(PluginHostMsg_GetWindowScriptNPObject,
+  IPC_SYNC_MESSAGE_ROUTED1_1(PluginHostMsg_GetWindowScriptNPObject,
                              int /* route id */,
-                             bool /* success */,
-                             intptr_t /* npobject_ptr */)
+                             bool /* success */)
 
-  IPC_SYNC_MESSAGE_ROUTED1_2(PluginHostMsg_GetPluginElement,
+  IPC_SYNC_MESSAGE_ROUTED1_1(PluginHostMsg_GetPluginElement,
                              int /* route id */,
-                             bool /* success */,
-                             intptr_t /* npobject_ptr */)
+                             bool /* success */)
 
   IPC_MESSAGE_ROUTED3(PluginHostMsg_SetCookie,
                       GURL /* url */,
@@ -356,12 +358,10 @@ IPC_BEGIN_MESSAGES(PluginHost)
 
   IPC_MESSAGE_ROUTED0(PluginHostMsg_CancelDocumentLoad)
 
-  IPC_MESSAGE_ROUTED5(PluginHostMsg_InitiateHTTPRangeRequest,
+  IPC_MESSAGE_ROUTED3(PluginHostMsg_InitiateHTTPRangeRequest,
                       std::string /* url */,
                       std::string /* range_info */,
-                      intptr_t    /* existing_stream */,
-                      bool        /* notify_needed */,
-                      intptr_t    /* notify_data */)
+                      int         /* range_request_id */)
 
   IPC_MESSAGE_ROUTED2(PluginHostMsg_DeferResourceLoading,
                       unsigned long /* resource_id */,

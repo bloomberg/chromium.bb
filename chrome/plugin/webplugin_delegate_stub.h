@@ -24,7 +24,6 @@ class WebPluginProxy;
 struct PluginMsg_Init_Params;
 struct PluginMsg_DidReceiveResponseParams;
 struct PluginMsg_UpdateGeometry_Param;
-struct PluginMsg_URLRequestReply_Params;
 class WebCursor;
 
 namespace WebKit {
@@ -59,32 +58,25 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
   // Message handlers for the WebPluginDelegate calls that are proxied from the
   // renderer over the IPC channel.
   void OnInit(const PluginMsg_Init_Params& params, bool* result);
-
   void OnWillSendRequest(int id, const GURL& url);
   void OnDidReceiveResponse(const PluginMsg_DidReceiveResponseParams& params);
   void OnDidReceiveData(int id, const std::vector<char>& buffer,
                         int data_offset);
   void OnDidFinishLoading(int id);
   void OnDidFail(int id);
-
-  void OnDidFinishLoadWithReason(const GURL& url, int reason,
-                                 intptr_t notify_data);
+  void OnDidFinishLoadWithReason(const GURL& url, int reason, int notify_id);
   void OnSetFocus();
   void OnHandleInputEvent(const WebKit::WebInputEvent* event,
                           bool* handled, WebCursor* cursor);
-
   void OnPaint(const gfx::Rect& damaged_rect);
   void OnDidPaint();
-
   void OnPrint(base::SharedMemoryHandle* shared_memory, size_t* size);
-
   void OnUpdateGeometry(const PluginMsg_UpdateGeometry_Param& param);
-  void OnGetPluginScriptableObject(int* route_id, intptr_t* npobject_ptr);
+  void OnGetPluginScriptableObject(int* route_id);
   void OnSendJavaScriptStream(const GURL& url,
                               const std::string& result,
-                              bool success, bool notify_needed,
-                              intptr_t notify_data);
-
+                              bool success,
+                              int notify_id);
   void OnDidReceiveManualResponse(
       const GURL& url,
       const PluginMsg_DidReceiveResponseParams& params);
@@ -92,12 +84,11 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
   void OnDidFinishManualLoading();
   void OnDidManualLoadFail();
   void OnInstallMissingPlugin();
-
-  void OnHandleURLRequestReply(
-      const PluginMsg_URLRequestReply_Params& params);
-
+  void OnHandleURLRequestReply(unsigned long resource_id,
+                               const GURL& url,
+                               int notify_id);
+  void OnHTTPRangeRequestReply(unsigned long resource_id, int range_request_id);
   void OnCreateCommandBuffer(int* route_id);
-
   void CreateSharedBuffer(size_t size,
                           base::SharedMemory* shared_buf,
                           base::SharedMemoryHandle* remote_handle);

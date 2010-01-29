@@ -65,7 +65,7 @@ class WebPluginDelegateProxy
   virtual void Print(gfx::NativeDrawingContext context);
   virtual NPObject* GetPluginScriptableObject();
   virtual void DidFinishLoadWithReason(const GURL& url, NPReason reason,
-                                       intptr_t notify_data);
+                                       int notify_id);
   virtual void SetFocus();
   virtual bool HandleInputEvent(const WebKit::WebInputEvent& event,
                                 WebKit::WebCursorInfo* cursor);
@@ -80,8 +80,8 @@ class WebPluginDelegateProxy
 
   virtual void SendJavaScriptStream(const GURL& url,
                                     const std::string& result,
-                                    bool success, bool notify_needed,
-                                    intptr_t notify_data);
+                                    bool success,
+                                    int notify_id);
 
   virtual void DidReceiveManualResponse(const GURL& url,
                                         const std::string& mime_type,
@@ -93,11 +93,9 @@ class WebPluginDelegateProxy
   virtual void DidManualLoadFail();
   virtual void InstallMissingPlugin();
   virtual webkit_glue::WebPluginResourceClient* CreateResourceClient(
-      unsigned long resource_id,
-      const GURL& url,
-      bool notify_needed,
-      intptr_t notify_data,
-      intptr_t existing_stream);
+      unsigned long resource_id, const GURL& url, int notify_id);
+  virtual webkit_glue::WebPluginResourceClient* CreateSeekableResourceClient(
+      unsigned long resource_id, int range_request_id);
 
   CommandBufferProxy* CreateCommandBuffer();
 
@@ -117,9 +115,8 @@ class WebPluginDelegateProxy
   void OnHandleURLRequest(const PluginHostMsg_URLRequest_Params& params);
   void OnCancelResource(int id);
   void OnInvalidateRect(const gfx::Rect& rect);
-  void OnGetWindowScriptNPObject(int route_id, bool* success,
-                                 intptr_t* npobject_ptr);
-  void OnGetPluginElement(int route_id, bool* success, intptr_t* npobject_ptr);
+  void OnGetWindowScriptNPObject(int route_id, bool* success);
+  void OnGetPluginElement(int route_id, bool* success);
   void OnSetCookie(const GURL& url,
                    const GURL& first_party_for_cookies,
                    const std::string& cookie);
@@ -137,9 +134,7 @@ class WebPluginDelegateProxy
   void OnCancelDocumentLoad();
   void OnInitiateHTTPRangeRequest(const std::string& url,
                                   const std::string& range_info,
-                                  intptr_t existing_stream,
-                                  bool notify_needed,
-                                  intptr_t notify_data);
+                                  int range_request_id);
   void OnDeferResourceLoading(unsigned long resource_id, bool defer);
 
 #if defined(OS_MACOSX)

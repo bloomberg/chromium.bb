@@ -40,16 +40,16 @@ PluginInstance::PluginInstance(PluginLib *plugin, const std::string &mime_type)
       event_model_(0),
       currently_handled_event_(NULL),
 #endif
-      message_loop_(MessageLoop::current()),
       load_manually_(false),
       in_close_streams_(false),
-      next_timer_id_(1) {
+      next_timer_id_(1),
+      next_notify_id_(0),
+      next_range_request_id_(0) {
   npp_ = new NPP_t();
   npp_->ndata = 0;
   npp_->pdata = 0;
 
   memset(&zero_padding_, 0, sizeof(zero_padding_));
-  DCHECK(message_loop_);
 }
 
 PluginInstance::~PluginInstance() {
@@ -67,10 +67,13 @@ PluginInstance::~PluginInstance() {
 PluginStreamUrl* PluginInstance::CreateStream(unsigned long resource_id,
                                               const GURL& url,
                                               const std::string& mime_type,
-                                              bool notify_needed,
-                                              void* notify_data) {
+                                              int notify_id) {
+
+  bool notify;
+  void* notify_data;
+  GetNotifyData(notify_id, &notify, &notify_data);
   PluginStreamUrl* stream = new PluginStreamUrl(
-      resource_id, url, this, notify_needed, notify_data);
+      resource_id, url, this, notify, notify_data);
 
   AddStream(stream);
   return stream;
@@ -115,6 +118,19 @@ void PluginInstance::CloseStreams() {
   in_close_streams_ = false;
 }
 
+webkit_glue::WebPluginResourceClient* PluginInstance::GetRangeRequest(
+    int id) {
+  PendingRangeRequestMap::iterator iter = pending_range_requests_.find(id);
+  if (iter == pending_range_requests_.end()) {
+    NOTREACHED();
+    return NULL;
+  }
+
+  webkit_glue::WebPluginResourceClient* rv = iter->second->AsResourceClient();
+  pending_range_requests_.erase(iter);
+  return rv;
+}
+
 bool PluginInstance::Start(const GURL& url,
                            char** const param_names,
                            char** const param_values,
@@ -138,8 +154,16 @@ NPObject *PluginInstance::GetPluginScriptableObject() {
 }
 
 // WebPluginLoadDelegate methods
-void PluginInstance::DidFinishLoadWithReason(const GURL& url, NPReason reason,
-                                             void* notify_data) {
+void PluginInstance::DidFinishLoadWithReason(
+    const GURL& url, NPReason reason, int notify_id) {
+  bool notify;
+  void* notify_data;
+  GetNotifyData(notify_id, &notify, &notify_data);
+  if (!notify) {
+    NOTREACHED();
+    return;
+  }
+
   NPP_URLNotify(url.spec().c_str(), reason, notify_data);
 }
 
@@ -305,21 +329,21 @@ bool PluginInstance::NPP_Print(NPPrint* platform_print) {
 void PluginInstance::SendJavaScriptStream(const GURL& url,
                                           const std::string& result,
                                           bool success,
-                                          bool notify_needed,
-                                          intptr_t notify_data) {
+                                          int notify_id) {
+  bool notify;
+  void* notify_data;
+  GetNotifyData(notify_id, &notify, &notify_data);
+
   if (success) {
     PluginStringStream *stream =
-      new PluginStringStream(this, url, notify_needed,
-                             reinterpret_cast<void*>(notify_data));
+        new PluginStringStream(this, url, notify, notify_data);
     AddStream(stream);
     stream->SendToPlugin(result, "text/html");
   } else {
     // NOTE: Sending an empty stream here will crash MacroMedia
     // Flash 9.  Just send the URL Notify.
-    if (notify_needed) {
-      this->NPP_URLNotify(url.spec().c_str(), NPRES_DONE,
-                          reinterpret_cast<void*>(notify_data));
-    }
+    if (notify)
+      NPP_URLNotify(url.spec().c_str(), NPRES_DONE, notify_data);
   }
 }
 
@@ -330,8 +354,7 @@ void PluginInstance::DidReceiveManualResponse(const GURL& url,
                                               uint32 last_modified) {
   DCHECK(load_manually_);
 
-  plugin_data_stream_ = CreateStream(-1, url, mime_type, false, NULL);
-
+  plugin_data_stream_ = CreateStream(-1, url, mime_type, 0);
   plugin_data_stream_->DidReceiveResponse(mime_type, headers, expected_length,
                                           last_modified, true);
 }
@@ -362,8 +385,9 @@ void PluginInstance::DidManualLoadFail() {
 
 void PluginInstance::PluginThreadAsyncCall(void (*func)(void *),
                                            void *user_data) {
-  message_loop_->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &PluginInstance::OnPluginThreadAsyncCall, func, user_data));
+  MessageLoop::current()->PostTask(
+      FROM_HERE, NewRunnableMethod(
+          this, &PluginInstance::OnPluginThreadAsyncCall, func, user_data));
 }
 
 void PluginInstance::OnPluginThreadAsyncCall(void (*func)(void *),
@@ -389,13 +413,11 @@ uint32 PluginInstance::ScheduleTimer(uint32 interval,
   timers_[timer_id] = info;
 
   // Schedule the callback.
-  message_loop_->PostDelayedTask(FROM_HERE,
-                                 NewRunnableMethod(this,
-                                                   &PluginInstance::OnTimerCall,
-                                                   func,
-                                                   npp_,
-                                                   timer_id),
-                                 interval);
+  MessageLoop::current()->PostDelayedTask(
+      FROM_HERE,
+      NewRunnableMethod(
+          this, &PluginInstance::OnTimerCall, func, npp_, timer_id),
+      interval);
   return timer_id;
 }
 
@@ -434,14 +456,11 @@ void PluginInstance::OnTimerCall(void (*func)(NPP id, uint32 timer_id),
   // Reschedule repeating timers after invoking the callback so callback is not
   // re-entered if it pumps the messager loop.
   if (info.repeat) {
-    message_loop_->PostDelayedTask(FROM_HERE,
-                                   NewRunnableMethod(
-                                       this,
-                                       &PluginInstance::OnTimerCall,
-                                       func,
-                                       npp_,
-                                       timer_id),
-                                   info.interval);
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
+        NewRunnableMethod(
+            this, &PluginInstance::OnTimerCall, func, npp_, timer_id),
+        info.interval);
   } else {
     timers_.erase(it);
   }
@@ -490,14 +509,30 @@ void PluginInstance::RequestRead(NPStream* stream, NPByteRange* range_list) {
       // is called on it.
       plugin_stream->set_seekable(true);
 
+      pending_range_requests_[++next_range_request_id_] = plugin_stream;
       webplugin_->InitiateHTTPRangeRequest(
-          stream->url, range_info.c_str(),
-          reinterpret_cast<intptr_t>(plugin_stream),
-          plugin_stream->notify_needed(),
-          reinterpret_cast<intptr_t>(plugin_stream->notify_data()));
-      break;
+          stream->url, range_info.c_str(), next_range_request_id_);
+      return;
     }
   }
+  NOTREACHED();
+}
+
+void PluginInstance::RequestURL(const char* url,
+                                const char* method,
+                                const char* target,
+                                const char* buf,
+                                unsigned int len,
+                                bool notify,
+                                void* notify_data) {
+  int notify_id = 0;
+  if (notify) {
+    notify_id = ++next_notify_id_;
+    pending_requests_[notify_id] = notify_data;
+  }
+
+  webplugin_->HandleURLRequest(
+      url, method, target, buf, len, notify_id, popups_allowed());
 }
 
 bool PluginInstance::ConvertPoint(double source_x, double source_y,
@@ -564,6 +599,19 @@ bool PluginInstance::ConvertPoint(double source_x, double source_y,
   NOTIMPLEMENTED();
   return false;
 #endif
+}
+
+void PluginInstance::GetNotifyData(
+    int notify_id, bool* notify, void** notify_data) {
+  PendingRequestMap::iterator iter = pending_requests_.find(notify_id);
+  if (iter != pending_requests_.end()) {
+    *notify = true;
+    *notify_data = iter->second;
+    pending_requests_.erase(iter);
+  } else {
+    *notify = false;
+    *notify_data = NULL;
+  }
 }
 
 }  // namespace NPAPI

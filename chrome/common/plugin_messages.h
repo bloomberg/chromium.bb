@@ -42,23 +42,12 @@ struct PluginMsg_Init_Params {
 };
 
 struct PluginHostMsg_URLRequest_Params {
+  std::string url;
   std::string method;
-  bool is_javascript_url;
   std::string target;
   std::vector<char> buffer;
-  bool is_file_data;
-  bool notify;
-  std::string url;
-  intptr_t notify_data;
+  int notify_id;
   bool popups_allowed;
-};
-
-struct PluginMsg_URLRequestReply_Params {
-  unsigned long resource_id;
-  GURL url;
-  bool notify_needed;
-  intptr_t notify_data;
-  intptr_t stream;
 };
 
 struct PluginMsg_DidReceiveResponseParams {
@@ -163,80 +152,35 @@ template <>
 struct ParamTraits<PluginHostMsg_URLRequest_Params> {
   typedef PluginHostMsg_URLRequest_Params param_type;
   static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.url);
     WriteParam(m, p.method);
-    WriteParam(m, p.is_javascript_url);
     WriteParam(m, p.target);
     WriteParam(m, p.buffer);
-    WriteParam(m, p.is_file_data);
-    WriteParam(m, p.notify);
-    WriteParam(m, p.url);
-    WriteParam(m, p.notify_data);
+    WriteParam(m, p.notify_id);
     WriteParam(m, p.popups_allowed);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return
+      ReadParam(m, iter, &p->url) &&
       ReadParam(m, iter, &p->method) &&
-      ReadParam(m, iter, &p->is_javascript_url) &&
       ReadParam(m, iter, &p->target) &&
       ReadParam(m, iter, &p->buffer) &&
-      ReadParam(m, iter, &p->is_file_data) &&
-      ReadParam(m, iter, &p->notify) &&
-      ReadParam(m, iter, &p->url) &&
-      ReadParam(m, iter, &p->notify_data) &&
+      ReadParam(m, iter, &p->notify_id) &&
       ReadParam(m, iter, &p->popups_allowed);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
-    LogParam(p.method, l);
+    LogParam(p.url, l);
     l->append(L", ");
-    LogParam(p.is_javascript_url, l);
+    LogParam(p.method, l);
     l->append(L", ");
     LogParam(p.target, l);
     l->append(L", ");
     LogParam(p.buffer, l);
     l->append(L", ");
-    LogParam(p.is_file_data, l);
-    l->append(L", ");
-    LogParam(p.notify, l);
-    l->append(L", ");
-    LogParam(p.url, l);
-    l->append(L", ");
-    LogParam(p.notify_data, l);
+    LogParam(p.notify_id, l);
     l->append(L", ");
     LogParam(p.popups_allowed, l);
-    l->append(L")");
-  }
-};
-
-template <>
-struct ParamTraits<PluginMsg_URLRequestReply_Params> {
-  typedef PluginMsg_URLRequestReply_Params param_type;
-  static void Write(Message* m, const param_type& p) {
-    WriteParam(m, p.resource_id);
-    WriteParam(m, p.url);
-    WriteParam(m, p.notify_needed);
-    WriteParam(m, p.notify_data);
-    WriteParam(m, p.stream);
-  }
-  static bool Read(const Message* m, void** iter, param_type* p) {
-    return
-      ReadParam(m, iter, &p->resource_id) &&
-      ReadParam(m, iter, &p->url) &&
-      ReadParam(m, iter, &p->notify_needed) &&
-      ReadParam(m, iter, &p->notify_data) &&
-      ReadParam(m, iter, &p->stream);
-  }
-  static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"(");
-    LogParam(p.resource_id, l);
-    l->append(L", ");
-    LogParam(p.url, l);
-    l->append(L", ");
-    LogParam(p.notify_needed, l);
-    l->append(L", ");
-    LogParam(p.notify_data, l);
-    l->append(L", ");
-    LogParam(p.stream, l);
     l->append(L")");
   }
 };

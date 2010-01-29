@@ -66,31 +66,24 @@ class ResourceClientProxy : public webkit_glue::WebPluginResourceClient {
  public:
   ResourceClientProxy(PluginChannelHost* channel, int instance_id)
     : channel_(channel), instance_id_(instance_id), resource_id_(0),
-      notify_needed_(false), notify_data_(0),
       multibyte_response_expected_(false) {
   }
 
   ~ResourceClientProxy() {
   }
 
-  void Initialize(unsigned long resource_id, const GURL& url,
-                  bool notify_needed, intptr_t notify_data,
-                  intptr_t existing_stream) {
+  void Initialize(unsigned long resource_id, const GURL& url, int notify_id) {
     resource_id_ = resource_id;
-    url_ = url;
-    notify_needed_ = notify_needed;
-    notify_data_ = notify_data;
+    channel_->Send(new PluginMsg_HandleURLRequestReply(
+        instance_id_, resource_id, url, notify_id));
+  }
 
-    PluginMsg_URLRequestReply_Params params;
-    params.resource_id = resource_id;
-    params.url = url_;
-    params.notify_needed = notify_needed_;
-    params.notify_data = notify_data_;
-    params.stream = existing_stream;
-
-    multibyte_response_expected_ = (existing_stream != 0);
-
-    channel_->Send(new PluginMsg_HandleURLRequestReply(instance_id_, params));
+  void InitializeForSeekableStream(unsigned long resource_id,
+                                   int range_request_id) {
+    resource_id_ = resource_id;
+    multibyte_response_expected_ = true;
+    channel_->Send(new PluginMsg_HTTPRangeRequestReply(
+        instance_id_, resource_id, range_request_id));
   }
 
   // PluginResourceClient implementation:
@@ -154,9 +147,6 @@ class ResourceClientProxy : public webkit_glue::WebPluginResourceClient {
   scoped_refptr<PluginChannelHost> channel_;
   int instance_id_;
   unsigned long resource_id_;
-  GURL url_;
-  bool notify_needed_;
-  intptr_t notify_data_;
   // Set to true if the response expected is a multibyte response.
   // For e.g. response for a HTTP byte range request.
   bool multibyte_response_expected_;
@@ -314,13 +304,9 @@ bool WebPluginDelegateProxy::Send(IPC::Message* msg) {
 void WebPluginDelegateProxy::SendJavaScriptStream(const GURL& url,
                                                   const std::string& result,
                                                   bool success,
-                                                  bool notify_needed,
-                                                  intptr_t notify_data) {
-  PluginMsg_SendJavaScriptStream* msg =
-      new PluginMsg_SendJavaScriptStream(instance_id_, url, result,
-                                         success, notify_needed,
-                                         notify_data);
-  Send(msg);
+                                                  int notify_id) {
+  Send(new PluginMsg_SendJavaScriptStream(
+      instance_id_, url, result, success, notify_id));
 }
 
 void WebPluginDelegateProxy::DidReceiveManualResponse(
@@ -823,9 +809,7 @@ NPObject* WebPluginDelegateProxy::GetPluginScriptableObject() {
     return WebBindings::retainObject(npobject_);
 
   int route_id = MSG_ROUTING_NONE;
-  intptr_t npobject_ptr;
-  Send(new PluginMsg_GetPluginScriptableObject(
-      instance_id_, &route_id, &npobject_ptr));
+  Send(new PluginMsg_GetPluginScriptableObject(instance_id_, &route_id));
   if (route_id == MSG_ROUTING_NONE)
     return NULL;
 
@@ -836,9 +820,9 @@ NPObject* WebPluginDelegateProxy::GetPluginScriptableObject() {
 }
 
 void WebPluginDelegateProxy::DidFinishLoadWithReason(
-    const GURL& url, NPReason reason, intptr_t notify_data) {
+    const GURL& url, NPReason reason, int notify_id) {
   Send(new PluginMsg_DidFinishLoadWithReason(
-      instance_id_, url, reason, notify_data));
+      instance_id_, url, reason, notify_id));
 }
 
 void WebPluginDelegateProxy::SetFocus() {
@@ -909,7 +893,7 @@ void WebPluginDelegateProxy::OnInvalidateRect(const gfx::Rect& rect) {
 }
 
 void WebPluginDelegateProxy::OnGetWindowScriptNPObject(
-    int route_id, bool* success, intptr_t* npobject_ptr) {
+    int route_id, bool* success) {
   *success = false;
   NPObject* npobject = NULL;
   if (plugin_)
@@ -923,11 +907,9 @@ void WebPluginDelegateProxy::OnGetWindowScriptNPObject(
   window_script_object_ = (new NPObjectStub(
       npobject, channel_host_.get(), route_id, 0, page_url_))->AsWeakPtr();
   *success = true;
-  *npobject_ptr = reinterpret_cast<intptr_t>(npobject);
 }
 
-void WebPluginDelegateProxy::OnGetPluginElement(
-    int route_id, bool* success, intptr_t* npobject_ptr) {
+void WebPluginDelegateProxy::OnGetPluginElement(int route_id, bool* success) {
   *success = false;
   NPObject* npobject = NULL;
   if (plugin_)
@@ -940,7 +922,6 @@ void WebPluginDelegateProxy::OnGetPluginElement(
   new NPObjectStub(
       npobject, channel_host_.get(), route_id, 0, page_url_);
   *success = true;
-  *npobject_ptr = reinterpret_cast<intptr_t>(npobject);
 }
 
 void WebPluginDelegateProxy::OnSetCookie(const GURL& url,
@@ -1155,24 +1136,33 @@ void WebPluginDelegateProxy::OnHandleURLRequest(
   if (params.target.length())
     target = params.target.c_str();
 
-  plugin_->HandleURLRequest(params.method.c_str(),
-                            params.is_javascript_url, target,
-                            static_cast<unsigned int>(params.buffer.size()),
-                            data, params.is_file_data, params.notify,
-                            params.url.c_str(), params.notify_data,
-                            params.popups_allowed);
+  plugin_->HandleURLRequest(
+      params.url.c_str(), params.method.c_str(), target, data,
+      static_cast<unsigned int>(params.buffer.size()), params.notify_id,
+      params.popups_allowed);
 }
 
 webkit_glue::WebPluginResourceClient*
 WebPluginDelegateProxy::CreateResourceClient(
-    unsigned long resource_id, const GURL& url, bool notify_needed,
-    intptr_t notify_data, intptr_t npstream) {
+    unsigned long resource_id, const GURL& url, int notify_id) {
   if (!channel_host_)
     return NULL;
 
   ResourceClientProxy* proxy = new ResourceClientProxy(channel_host_,
                                                        instance_id_);
-  proxy->Initialize(resource_id, url, notify_needed, notify_data, npstream);
+  proxy->Initialize(resource_id, url, notify_id);
+  return proxy;
+}
+
+webkit_glue::WebPluginResourceClient*
+WebPluginDelegateProxy::CreateSeekableResourceClient(
+    unsigned long resource_id, int range_request_id) {
+  if (!channel_host_)
+    return NULL;
+
+  ResourceClientProxy* proxy = new ResourceClientProxy(channel_host_,
+                                                       instance_id_);
+  proxy->InitializeForSeekableStream(resource_id, range_request_id);
   return proxy;
 }
 
@@ -1195,11 +1185,11 @@ void WebPluginDelegateProxy::OnCancelDocumentLoad() {
 }
 
 void WebPluginDelegateProxy::OnInitiateHTTPRangeRequest(
-    const std::string& url, const std::string& range_info,
-    intptr_t existing_stream, bool notify_needed, intptr_t notify_data) {
-  plugin_->InitiateHTTPRangeRequest(url.c_str(), range_info.c_str(),
-                                    existing_stream, notify_needed,
-                                    notify_data);
+    const std::string& url,
+    const std::string& range_info,
+    int range_request_id) {
+  plugin_->InitiateHTTPRangeRequest(
+      url.c_str(), range_info.c_str(), range_request_id);
 }
 
 void WebPluginDelegateProxy::OnDeferResourceLoading(unsigned long resource_id,

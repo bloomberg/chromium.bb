@@ -143,15 +143,14 @@ NPObject* WebPluginDelegateImpl::GetPluginScriptableObject() {
 
 void WebPluginDelegateImpl::DidFinishLoadWithReason(const GURL& url,
                                                     NPReason reason,
-                                                    intptr_t notify_data) {
+                                                    int notify_id) {
   if (quirks_ & PLUGIN_QUIRK_ALWAYS_NOTIFY_SUCCESS &&
       reason == NPRES_NETWORK_ERR) {
     // Flash needs this or otherwise it unloads the launching swf object.
     reason = NPRES_DONE;
   }
 
-  instance()->DidFinishLoadWithReason(
-      url, reason, reinterpret_cast<void*>(notify_data));
+  instance()->DidFinishLoadWithReason(url, reason, notify_id);
 }
 
 int WebPluginDelegateImpl::GetProcessId() {
@@ -162,10 +161,8 @@ int WebPluginDelegateImpl::GetProcessId() {
 void WebPluginDelegateImpl::SendJavaScriptStream(const GURL& url,
                                                  const std::string& result,
                                                  bool success,
-                                                 bool notify_needed,
-                                                 intptr_t notify_data) {
-  instance()->SendJavaScriptStream(url, result, success, notify_needed,
-                                   notify_data);
+                                                 int notify_id) {
+  instance()->SendJavaScriptStream(url, result, success, notify_id);
 }
 
 void WebPluginDelegateImpl::DidReceiveManualResponse(
@@ -209,20 +206,12 @@ void WebPluginDelegateImpl::WindowedUpdateGeometry(
 }
 
 WebPluginResourceClient* WebPluginDelegateImpl::CreateResourceClient(
-    unsigned long resource_id, const GURL& url, bool notify_needed,
-    intptr_t notify_data, intptr_t existing_stream) {
-  // Stream already exists. This typically happens for range requests
-  // initiated via NPN_RequestRead.
-  if (existing_stream) {
-    NPAPI::PluginStream* plugin_stream =
-        reinterpret_cast<NPAPI::PluginStream*>(existing_stream);
+    unsigned long resource_id, const GURL& url, int notify_id) {
+  return instance()->CreateStream(
+      resource_id, url, std::string(), notify_id);
+}
 
-    return plugin_stream->AsResourceClient();
-  }
-
-  std::string mime_type;
-  NPAPI::PluginStreamUrl *stream = instance()->CreateStream(
-      resource_id, url, mime_type, notify_needed,
-      reinterpret_cast<void*>(notify_data));
-  return stream;
+WebPluginResourceClient* WebPluginDelegateImpl::CreateSeekableResourceClient(
+    unsigned long resource_id, int range_request_id) {
+  return instance()->GetRangeRequest(range_request_id);
 }

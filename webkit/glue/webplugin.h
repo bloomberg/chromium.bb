@@ -105,23 +105,23 @@ class WebPlugin {
   virtual void OnMissingPluginStatus(int status) = 0;
 
   // Handles GetURL/GetURLNotify/PostURL/PostURLNotify requests initiated
-  // by plugins.
-  virtual void HandleURLRequest(const char *method,
-                                bool is_javascript_url,
-                                const char* target, unsigned int len,
-                                const char* buf, bool is_file_data,
-                                bool notify, const char* url,
-                                intptr_t notify_data, bool popups_allowed) = 0;
+  // by plugins.  If the plugin wants notification of the result, notify_id will
+  // be non-zero.
+  virtual void HandleURLRequest(const char* url,
+                                const char *method,
+                                const char* target,
+                                const char* buf,
+                                unsigned int len,
+                                int notify_id,
+                                bool popups_allowed) = 0;
 
   // Cancels document load.
   virtual void CancelDocumentLoad() = 0;
 
-  // Initiates a HTTP range request.
+  // Initiates a HTTP range request for an existing stream.
   virtual void InitiateHTTPRangeRequest(const char* url,
                                         const char* range_info,
-                                        intptr_t existing_stream,
-                                        bool notify_needed,
-                                        intptr_t notify_data) = 0;
+                                        int range_request_id) = 0;
 
   // Returns true iff in off the record (Incognito) mode.
   virtual bool IsOffTheRecord() = 0;

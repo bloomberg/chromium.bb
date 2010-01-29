@@ -354,7 +354,7 @@ void WebPluginImpl::didFinishLoadingFrameRequest(
     const WebURL& url, void* notify_data) {
   if (delegate_) {
     delegate_->DidFinishLoadWithReason(
-        url, NPRES_DONE, reinterpret_cast<intptr_t>(notify_data));
+        url, NPRES_DONE, reinterpret_cast<int>(notify_data));
   }
 }
 
@@ -366,7 +366,7 @@ void WebPluginImpl::didFailLoadingFrameRequest(
   NPReason reason =
       error.reason == net::ERR_ABORTED ? NPRES_USER_BREAK : NPRES_NETWORK_ERR;
   delegate_->DidFinishLoadWithReason(
-      url, reason, reinterpret_cast<intptr_t>(notify_data));
+      url, reason, reinterpret_cast<int>(notify_data));
 }
 
 // -----------------------------------------------------------------------------
@@ -478,15 +478,13 @@ bool WebPluginImpl::SetPostData(WebURLRequest* request,
 }
 
 WebPluginImpl::RoutingStatus WebPluginImpl::RouteToFrame(
-    const char *method,
-    bool is_javascript_url,
-    const char* target,
-    unsigned int len,
-    const char* buf,
-    bool is_file_data,
-    bool notify_needed,
-    intptr_t notify_data,
     const char* url,
+    bool is_javascript_url,
+    const char* method,
+    const char* target,
+    const char* buf,
+    unsigned int len,
+    int notify_id,
     Referrer referrer_flag) {
   // If there is no target, there is nothing to do
   if (!target)
@@ -534,23 +532,16 @@ WebPluginImpl::RoutingStatus WebPluginImpl::RouteToFrame(
 
   request.setHTTPMethod(WebString::fromUTF8(method));
   if (len > 0) {
-    if (!is_file_data) {
-      if (!SetPostData(&request, buf, len)) {
-        // Uhoh - we're in trouble.  There isn't a good way
-        // to recover at this point.  Break out.
-        NOTREACHED();
-        return ROUTED;
-      }
-    } else {
-      // TODO: Support "file" mode.  For now, just break out
-      // since proceeding may do something unintentional.
+    if (!SetPostData(&request, buf, len)) {
+      // Uhoh - we're in trouble.  There isn't a good way
+      // to recover at this point.  Break out.
       NOTREACHED();
       return ROUTED;
     }
   }
 
-  container_->loadFrameRequest(request, target_str, notify_needed,
-                               reinterpret_cast<void*>(notify_data));
+  container_->loadFrameRequest(
+      request, target_str, notify_id != 0, reinterpret_cast<void*>(notify_id));
   return ROUTED;
 }
 
@@ -603,9 +594,8 @@ void WebPluginImpl::InvalidateRect(const gfx::Rect& rect) {
 }
 
 void WebPluginImpl::OnDownloadPluginSrcUrl() {
-  HandleURLRequestInternal("GET", false, NULL, 0, NULL, false, false,
-                           plugin_url_.spec().c_str(), NULL, false,
-                           DOCUMENT_URL);
+  HandleURLRequestInternal(
+      plugin_url_.spec().c_str(), "GET", NULL, NULL, 0, 0, false, DOCUMENT_URL);
 }
 
 WebPluginResourceClient* WebPluginImpl::GetClientFromLoader(
@@ -683,8 +673,7 @@ void WebPluginImpl::didReceiveResponse(WebURLLoader* loader,
       for (size_t i = 0; i < clients_.size(); ++i) {
         if (clients_[i].loader.get() == loader) {
           WebPluginResourceClient* resource_client =
-              delegate_->CreateResourceClient(clients_[i].id, plugin_url_,
-                                              false, 0, NULL);
+              delegate_->CreateResourceClient(clients_[i].id, plugin_url_, 0);
           clients_[i].client = resource_client;
           client = resource_client;
           break;
@@ -816,24 +805,27 @@ void WebPluginImpl::SetContainer(WebPluginContainer* container) {
   container_ = container;
 }
 
-void WebPluginImpl::HandleURLRequest(const char *method,
-                                     bool is_javascript_url,
-                                     const char* target, unsigned int len,
-                                     const char* buf, bool is_file_data,
-                                     bool notify, const char* url,
-                                     intptr_t notify_data, bool popups_allowed) {
+void WebPluginImpl::HandleURLRequest(const char* url,
+                                     const char *method,
+                                     const char* target,
+                                     const char* buf,
+                                     unsigned int len,
+                                     int notify_id,
+                                     bool popups_allowed) {
   // GetURL/PostURL requests initiated explicitly by plugins should specify the
   // plugin SRC url as the referrer if it is available.
-  HandleURLRequestInternal(method, is_javascript_url, target, len, buf,
-                           is_file_data, notify, url, notify_data,
-                           popups_allowed, PLUGIN_SRC);
+  HandleURLRequestInternal(
+      url, method, target, buf, len, notify_id, popups_allowed, PLUGIN_SRC);
 }
 
-void WebPluginImpl::HandleURLRequestInternal(
-    const char *method, bool is_javascript_url, const char* target,
-    unsigned int len, const char* buf, bool is_file_data, bool notify,
-    const char* url, intptr_t notify_data, bool popups_allowed,
-    Referrer referrer_flag) {
+void WebPluginImpl::HandleURLRequestInternal(const char* url,
+                                             const char *method,
+                                             const char* target,
+                                             const char* buf,
+                                             unsigned int len,
+                                             int notify_id,
+                                             bool popups_allowed,
+                                             Referrer referrer_flag) {
   // For this request, we either route the output to a frame
   // because a target has been specified, or we handle the request
   // here, i.e. by executing the script if it is a javascript url
@@ -841,9 +833,10 @@ void WebPluginImpl::HandleURLRequestInternal(
   // case in that the request is a javascript url and the target is "_self",
   // in which case we route the output to the plugin rather than routing it
   // to the plugin's frame.
-  RoutingStatus routing_status =
-      RouteToFrame(method, is_javascript_url, target, len, buf, is_file_data,
-                   notify, notify_data, url, referrer_flag);
+  bool is_javascript_url = StartsWithASCII(url, "javascript:", false);
+  RoutingStatus routing_status = RouteToFrame(
+      url, is_javascript_url, method, target, buf, len, notify_id,
+      referrer_flag);
   if (routing_status == ROUTED)
     return;
 
@@ -855,37 +848,38 @@ void WebPluginImpl::HandleURLRequestInternal(
     // be deleted.
     if (delegate_) {
       delegate_->SendJavaScriptStream(
-          gurl, result.utf8(), !result.isNull(), notify, notify_data);
-    }
-  } else {
-    GURL complete_url = CompleteURL(url);
-
-    unsigned long resource_id = GetNextResourceId();
-    if (!resource_id)
-      return;
-
-    WebPluginResourceClient* resource_client = delegate_->CreateResourceClient(
-        resource_id, complete_url, notify, notify_data, NULL);
-    if (!resource_client)
-      return;
-
-    // If the RouteToFrame call returned a failure then inform the result
-    // back to the plugin asynchronously.
-    if ((routing_status == INVALID_URL) ||
-        (routing_status == GENERAL_FAILURE)) {
-      resource_client->DidFail();
-      return;
+          gurl, result.utf8(), !result.isNull(), notify_id);
     }
 
-    // CreateResourceClient() sends a synchronous IPC message so it's possible
-    // that TearDownPluginInstance() may have been called in the nested
-    // message loop.  If so, don't start the request.
-    if (!delegate_)
-      return;
-
-    InitiateHTTPRequest(resource_id, resource_client, method, buf, len,
-                        complete_url, NULL, referrer_flag);
+    return;
   }
+
+  unsigned long resource_id = GetNextResourceId();
+  if (!resource_id)
+    return;
+
+  GURL complete_url = CompleteURL(url);
+  WebPluginResourceClient* resource_client = delegate_->CreateResourceClient(
+      resource_id, complete_url, notify_id);
+  if (!resource_client)
+    return;
+
+  // If the RouteToFrame call returned a failure then inform the result
+  // back to the plugin asynchronously.
+  if ((routing_status == INVALID_URL) ||
+      (routing_status == GENERAL_FAILURE)) {
+    resource_client->DidFail();
+    return;
+  }
+
+  // CreateResourceClient() sends a synchronous IPC message so it's possible
+  // that TearDownPluginInstance() may have been called in the nested
+  // message loop.  If so, don't start the request.
+  if (!delegate_)
+    return;
+
+  InitiateHTTPRequest(resource_id, resource_client, complete_url, method, buf,
+                      len, NULL, referrer_flag);
 }
 
 unsigned long WebPluginImpl::GetNextResourceId() {
@@ -899,9 +893,10 @@ unsigned long WebPluginImpl::GetNextResourceId() {
 
 bool WebPluginImpl::InitiateHTTPRequest(unsigned long resource_id,
                                         WebPluginResourceClient* client,
-                                        const char* method, const char* buf,
-                                        int buf_len,
                                         const GURL& url,
+                                        const char* method,
+                                        const char* buf,
+                                        int buf_len,
                                         const char* range_info,
                                         Referrer referrer_flag) {
   if (!client) {
@@ -956,21 +951,18 @@ void WebPluginImpl::CancelDocumentLoad() {
   }
 }
 
-void WebPluginImpl::InitiateHTTPRangeRequest(const char* url,
-                                             const char* range_info,
-                                             intptr_t existing_stream,
-                                             bool notify_needed,
-                                             intptr_t notify_data) {
+void WebPluginImpl::InitiateHTTPRangeRequest(
+    const char* url, const char* range_info, int range_request_id) {
   unsigned long resource_id = GetNextResourceId();
   if (!resource_id)
     return;
 
   GURL complete_url = CompleteURL(url);
 
-  WebPluginResourceClient* resource_client = delegate_->CreateResourceClient(
-      resource_id, complete_url, notify_needed, notify_data, existing_stream);
+  WebPluginResourceClient* resource_client =
+      delegate_->CreateSeekableResourceClient(resource_id, range_request_id);
   InitiateHTTPRequest(
-      resource_id, resource_client, "GET", NULL, 0, complete_url, range_info,
+      resource_id, resource_client, complete_url, "GET", NULL, 0, range_info,
       load_manually_ ? NO_REFERRER : PLUGIN_SRC);
 }
 

@@ -79,13 +79,13 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   virtual bool HandleInputEvent(const WebKit::WebInputEvent& event,
                                 WebKit::WebCursorInfo* cursor);
   virtual NPObject* GetPluginScriptableObject();
-  virtual void DidFinishLoadWithReason(const GURL& url, NPReason reason,
-                                       intptr_t notify_data);
+  virtual void DidFinishLoadWithReason(
+      const GURL& url, NPReason reason, int notify_id);
   virtual int GetProcessId();
   virtual void SendJavaScriptStream(const GURL& url,
                                     const std::string& result,
-                                    bool success, bool notify_needed,
-                                    intptr_t notify_data);
+                                    bool success,
+                                    int notify_id);
   virtual void DidReceiveManualResponse(const GURL& url,
                                         const std::string& mime_type,
                                         const std::string& headers,
@@ -96,11 +96,9 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   virtual void DidManualLoadFail();
   virtual void InstallMissingPlugin();
   virtual webkit_glue::WebPluginResourceClient* CreateResourceClient(
-      unsigned long resource_id,
-      const GURL& url,
-      bool notify_needed,
-      intptr_t notify_data,
-      intptr_t stream);
+      unsigned long resource_id, const GURL& url, int notify_id);
+  virtual webkit_glue::WebPluginResourceClient* CreateSeekableResourceClient(
+      unsigned long resource_id, int range_request_id);
   // End of WebPluginDelegate implementation.
 
   bool IsWindowless() const { return windowless_ ; }

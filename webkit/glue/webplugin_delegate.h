@@ -94,7 +94,7 @@ class WebPluginDelegate : public WebPlugin2DDeviceDelegate,
   // Receives notification about a resource load that the plugin initiated
   // for a frame.
   virtual void DidFinishLoadWithReason(const GURL& url, NPReason reason,
-                                       intptr_t notify_data) = 0;
+                                       int notify_id) = 0;
 
   // Returns the process id of the process that is running the plugin.
   virtual int GetProcessId() = 0;
@@ -103,8 +103,8 @@ class WebPluginDelegate : public WebPlugin2DDeviceDelegate,
   // function.
   virtual void SendJavaScriptStream(const GURL& url,
                                     const std::string& result,
-                                    bool success, bool notify_needed,
-                                    intptr_t notify_data) = 0;
+                                    bool success,
+                                    int notify_id) = 0;
 
   // Receives notification about data being available.
   virtual void DidReceiveManualResponse(const GURL& url,
@@ -129,9 +129,12 @@ class WebPluginDelegate : public WebPlugin2DDeviceDelegate,
   virtual WebPluginResourceClient* CreateResourceClient(
       unsigned long resource_id,
       const GURL& url,
-      bool notify_needed,
-      intptr_t notify_data,
-      intptr_t stream) = 0;
+      int notify_id) = 0;
+
+  // Creates a WebPluginResourceClient instance for an existing stream that is
+  // has become seekable.
+  virtual WebPluginResourceClient* CreateSeekableResourceClient(
+      unsigned long resource_id, int range_request_id) = 0;
 };
 
 }  // namespace webkit_glue

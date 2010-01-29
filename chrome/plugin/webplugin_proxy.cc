@@ -26,7 +26,6 @@
 #include "chrome/plugin/npobject_util.h"
 #include "chrome/plugin/plugin_channel.h"
 #include "chrome/plugin/plugin_thread.h"
-#include "chrome/plugin/webplugin_delegate_stub.h"
 #include "skia/ext/platform_device.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
@@ -151,9 +150,8 @@ NPObject* WebPluginProxy::GetWindowScriptNPObject() {
 
   int npobject_route_id = channel_->GenerateRouteID();
   bool success = false;
-  intptr_t npobject_ptr = NULL;
   Send(new PluginHostMsg_GetWindowScriptNPObject(
-      route_id_, npobject_route_id, &success, &npobject_ptr));
+      route_id_, npobject_route_id, &success));
   if (!success)
     return NULL;
 
@@ -169,9 +167,7 @@ NPObject* WebPluginProxy::GetPluginElement() {
 
   int npobject_route_id = channel_->GenerateRouteID();
   bool success = false;
-  intptr_t npobject_ptr = NULL;
-  Send(new PluginHostMsg_GetPluginElement(
-      route_id_, npobject_route_id, &success, &npobject_ptr));
+  Send(new PluginHostMsg_GetPluginElement(route_id_, npobject_route_id, &success));
   if (!success)
     return NULL;
 
@@ -254,31 +250,20 @@ void WebPluginProxy::DidPaint() {
     InvalidateRect(damaged_rect_);
 }
 
-void WebPluginProxy::OnResourceCreated(int resource_id, HANDLE cookie) {
-  WebPluginResourceClient* resource_client =
-      reinterpret_cast<WebPluginResourceClient*>(cookie);
-  if (!resource_client) {
-    NOTREACHED();
-    return;
-  }
-
+void WebPluginProxy::OnResourceCreated(int resource_id,
+                                       WebPluginResourceClient* client) {
   DCHECK(resource_clients_.find(resource_id) == resource_clients_.end());
-  resource_clients_[resource_id] = resource_client;
+  resource_clients_[resource_id] = client;
 }
 
-void WebPluginProxy::HandleURLRequest(const char *method,
-                                      bool is_javascript_url,
-                                      const char* target, unsigned int len,
-                                      const char* buf, bool is_file_data,
-                                      bool notify, const char* url,
-                                      intptr_t notify_data,
+void WebPluginProxy::HandleURLRequest(const char* url,
+                                      const char *method,
+                                      const char* target,
+                                      const char* buf,
+                                      unsigned int len,
+                                      int notify_id,
                                       bool popups_allowed) {
-  if (!url) {
-    NOTREACHED();
-    return;
-  }
-
-  if (!target && (0 == base::strcasecmp(method, "GET"))) {
+ if (!target && (0 == base::strcasecmp(method, "GET"))) {
     // Please refer to https://bugzilla.mozilla.org/show_bug.cgi?id=366082
     // for more details on this.
     if (delegate_->GetQuirks() &
@@ -293,8 +278,8 @@ void WebPluginProxy::HandleURLRequest(const char *method,
   }
 
   PluginHostMsg_URLRequest_Params params;
+  params.url = url;
   params.method = method;
-  params.is_javascript_url = is_javascript_url;
   if (target)
     params.target = std::string(target);
 
@@ -303,10 +288,7 @@ void WebPluginProxy::HandleURLRequest(const char *method,
     memcpy(&params.buffer.front(), buf, len);
   }
 
-  params.is_file_data = is_file_data;
-  params.notify = notify;
-  params.url = url;
-  params.notify_data = notify_data;
+  params.notify_id = notify_id;
   params.popups_allowed = popups_allowed;
 
   Send(new PluginHostMsg_URLRequest(route_id_, params));
@@ -567,15 +549,10 @@ void WebPluginProxy::CancelDocumentLoad() {
   Send(new PluginHostMsg_CancelDocumentLoad(route_id_));
 }
 
-void WebPluginProxy::InitiateHTTPRangeRequest(const char* url,
-                                              const char* range_info,
-                                              intptr_t existing_stream,
-                                              bool notify_needed,
-                                              intptr_t notify_data) {
-
-  Send(new PluginHostMsg_InitiateHTTPRangeRequest(route_id_, url,
-                                                  range_info, existing_stream,
-                                                  notify_needed, notify_data));
+void WebPluginProxy::InitiateHTTPRangeRequest(
+    const char* url, const char* range_info, int range_request_id) {
+  Send(new PluginHostMsg_InitiateHTTPRangeRequest(
+      route_id_, url, range_info, range_request_id));
 }
 
 void WebPluginProxy::SetDeferResourceLoading(unsigned long resource_id,

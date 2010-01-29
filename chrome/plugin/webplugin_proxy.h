@@ -103,17 +103,17 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
   // Callback from the renderer to let us know that a paint occurred.
   void DidPaint();
 
-  // Notification received on a plugin issued resource request
-  // creation.
-  void OnResourceCreated(int resource_id, HANDLE cookie);
+  // Notification received on a plugin issued resource request creation.
+  void OnResourceCreated(int resource_id,
+                         webkit_glue::WebPluginResourceClient* client);
 
-  void HandleURLRequest(const char *method,
-                        bool is_javascript_url,
-                        const char* target, unsigned int len,
-                        const char* buf, bool is_file_data,
-                        bool notify, const char* url,
-                        intptr_t notify_data, bool popups_allowed);
-
+  void HandleURLRequest(const char* url,
+                        const char *method,
+                        const char* target,
+                        const char* buf,
+                        unsigned int len,
+                        int notify_id,
+                        bool popups_allowed);
   void UpdateGeometry(const gfx::Rect& window_rect,
                       const gfx::Rect& clip_rect,
                       const TransportDIB::Handle& windowless_buffer,
@@ -123,22 +123,13 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
                       int ack_key
 #endif
                       );
-
   void CancelDocumentLoad();
-
-  void InitiateHTTPRangeRequest(const char* url,
-                                const char* range_info,
-                                intptr_t existing_stream,
-                                bool notify_needed,
-                                intptr_t notify_data);
-
+  void InitiateHTTPRangeRequest(
+      const char* url, const char* range_info, int range_request_id);
   void SetDeferResourceLoading(unsigned long resource_id, bool defer);
-
   bool IsOffTheRecord();
-
   void ResourceClientDeleted(
       webkit_glue::WebPluginResourceClient* resource_client);
-
   gfx::NativeViewId containing_window() { return containing_window_; }
 
  private:

@@ -130,6 +130,8 @@ void WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginMsg_InstallMissingPlugin, OnInstallMissingPlugin)
     IPC_MESSAGE_HANDLER(PluginMsg_HandleURLRequestReply,
                         OnHandleURLRequestReply)
+    IPC_MESSAGE_HANDLER(PluginMsg_HTTPRangeRequestReply,
+                        OnHTTPRangeRequestReply)
     IPC_MESSAGE_HANDLER(PluginMsg_CreateCommandBuffer,
                         OnCreateCommandBuffer)
     IPC_MESSAGE_UNHANDLED_ERROR()
@@ -237,8 +239,8 @@ void WebPluginDelegateStub::OnDidFail(int id) {
 }
 
 void WebPluginDelegateStub::OnDidFinishLoadWithReason(
-    const GURL& url, int reason, intptr_t notify_data) {
-  delegate_->DidFinishLoadWithReason(url, reason, notify_data);
+    const GURL& url, int reason, int notify_id) {
+  delegate_->DidFinishLoadWithReason(url, reason, notify_id);
 }
 
 void WebPluginDelegateStub::OnSetFocus() {
@@ -304,9 +306,7 @@ void WebPluginDelegateStub::OnUpdateGeometry(
       );
 }
 
-void WebPluginDelegateStub::OnGetPluginScriptableObject(
-    int* route_id,
-    intptr_t* npobject_ptr) {
+void WebPluginDelegateStub::OnGetPluginScriptableObject(int* route_id) {
   NPObject* object = delegate_->GetPluginScriptableObject();
   if (!object) {
     *route_id = MSG_ROUTING_NONE;
@@ -314,7 +314,6 @@ void WebPluginDelegateStub::OnGetPluginScriptableObject(
   }
 
   *route_id = channel_->GenerateRouteID();
-  *npobject_ptr = reinterpret_cast<intptr_t>(object);
   // The stub will delete itself when the proxy tells it that it's released, or
   // otherwise when the channel is closed.
   new NPObjectStub(
@@ -328,10 +327,8 @@ void WebPluginDelegateStub::OnGetPluginScriptableObject(
 void WebPluginDelegateStub::OnSendJavaScriptStream(const GURL& url,
                                                    const std::string& result,
                                                    bool success,
-                                                   bool notify_needed,
-                                                   intptr_t notify_data) {
-  delegate_->SendJavaScriptStream(url, result, success, notify_needed,
-                                  notify_data);
+                                                   int notify_id) {
+  delegate_->SendJavaScriptStream(url, result, success, notify_id);
 }
 
 void WebPluginDelegateStub::OnDidReceiveManualResponse(
@@ -404,11 +401,15 @@ void WebPluginDelegateStub::CreateSharedBuffer(
 }
 
 void WebPluginDelegateStub::OnHandleURLRequestReply(
-    const PluginMsg_URLRequestReply_Params& params) {
+    unsigned long resource_id, const GURL& url, int notify_id) {
   WebPluginResourceClient* resource_client =
-      delegate_->CreateResourceClient(params.resource_id, params.url,
-                                      params.notify_needed,
-                                      params.notify_data,
-                                      params.stream);
-  webplugin_->OnResourceCreated(params.resource_id, resource_client);
+      delegate_->CreateResourceClient(resource_id, url, notify_id);
+  webplugin_->OnResourceCreated(resource_id, resource_client);
+}
+
+void WebPluginDelegateStub::OnHTTPRangeRequestReply(
+    unsigned long resource_id, int range_request_id) {
+  WebPluginResourceClient* resource_client =
+      delegate_->CreateSeekableResourceClient(resource_id, range_request_id);
+  webplugin_->OnResourceCreated(resource_id, resource_client);
 }
