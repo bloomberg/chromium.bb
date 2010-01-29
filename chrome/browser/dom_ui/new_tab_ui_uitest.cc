@@ -27,8 +27,6 @@ class NewTabUITest : public UITest {
   }
 };
 
-// TODO(aa): http://crbug.com/33451
-#if !defined(OS_MACOSX)
 TEST_F(NewTabUITest, NTPHasThumbnails) {
   // Switch to the "new tab" tab, which should be any new tab after the
   // first (the first is about:blank).
@@ -87,7 +85,6 @@ TEST_F(NewTabUITest, ChromeInternalLoadsNTP) {
       &thumbnails_count));
   EXPECT_GT(thumbnails_count, 0);
 }
-#endif
 
 TEST_F(NewTabUITest, UpdateUserPrefsVersion) {
   PrefService prefs((FilePath()));
@@ -111,8 +108,6 @@ TEST_F(NewTabUITest, UpdateUserPrefsVersion) {
   ASSERT_FALSE(migrated);
 }
 
-// TODO(aa): http://crbug.com/33451
-#if !defined(OS_MACOSX)
 TEST_F(NewTabUITest, HomePageLink) {
   scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
   ASSERT_TRUE(browser.get());
@@ -184,4 +179,3 @@ TEST_F(NewTabUITest, HomePageLink) {
               &is_home_page));
   ASSERT_TRUE(is_home_page);
 }
-#endif

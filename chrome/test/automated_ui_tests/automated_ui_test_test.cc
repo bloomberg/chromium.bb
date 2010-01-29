@@ -62,8 +62,6 @@ TEST_F(AutomatedUITestBase, Home) {
   EXPECT_EQ(L"", title);
 }
 
-// TODO(aa): http://crbug.com/33451
-#if !defined(OS_MACOSX)
 TEST_F(AutomatedUITestBase, OpenNewTab) {
   int tab_count;
   active_browser()->GetTabCount(&tab_count);
@@ -75,7 +73,6 @@ TEST_F(AutomatedUITestBase, OpenNewTab) {
   active_browser()->GetTabCount(&tab_count);
   ASSERT_EQ(3, tab_count);
 }
-#endif
 
 TEST_F(AutomatedUITestBase, DuplicateTab) {
   int tab_count;
@@ -108,8 +105,6 @@ TEST_F(AutomatedUITestBase, DISABLED_RestoreTab) {
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=14774
-// TODO(aa): http://crbug.com/33451
-#if !defined(OS_MACOSX)
 TEST_F(AutomatedUITestBase, FLAKY_CloseTab) {
   int num_browser_windows;
   int tab_count;
@@ -153,7 +148,6 @@ TEST_F(AutomatedUITestBase, FLAKY_CloseTab) {
   active_browser()->GetTabCount(&tab_count);
   ASSERT_EQ(1, tab_count);
 }
-#endif
 
 TEST_F(AutomatedUITestBase, OpenBrowserWindow) {
   int num_browser_windows;
@@ -202,8 +196,6 @@ TEST_F(AutomatedUITestBase, OpenBrowserWindow) {
 }
 
 // http://code.google.com/p/chromium/issues/detail?id=14774
-// TODO(aa): http://crbug.com/33451
-#if !defined(OS_MACOSX)
 TEST_F(AutomatedUITestBase, FLAKY_CloseBrowserWindow) {
   int tab_count;
   NewTab();
@@ -239,7 +231,6 @@ TEST_F(AutomatedUITestBase, FLAKY_CloseBrowserWindow) {
 
   ASSERT_FALSE(CloseActiveWindow());
 }
-#endif
 
 TEST_F(AutomatedUITestBase, MAYBE_IncognitoWindow) {
   int num_browser_windows;

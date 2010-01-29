@@ -486,8 +486,6 @@ TEST_F(AutomationProxyTest, NavigateToURLAsync) {
   ASSERT_STREQ("baz", value.c_str());
 }
 
-// TODO(aa): http://crbug.com/33451
-#if !defined(OS_MACOSX)
 TEST_F(AutomationProxyTest, AcceleratorNewTab) {
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
 
@@ -501,7 +499,6 @@ TEST_F(AutomationProxyTest, AcceleratorNewTab) {
   scoped_refptr<TabProxy> tab(window->GetTab(tab_count - 1));
   ASSERT_TRUE(tab.get());
 }
-#endif
 
 class AutomationProxyTest4 : public UITest {
  protected:
