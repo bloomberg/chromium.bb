@@ -354,7 +354,7 @@ void WebPluginImpl::didFinishLoadingFrameRequest(
     const WebURL& url, void* notify_data) {
   if (delegate_) {
     delegate_->DidFinishLoadWithReason(
-        url, NPRES_DONE, reinterpret_cast<int>(notify_data));
+        url, NPRES_DONE, reinterpret_cast<intptr_t>(notify_data));
   }
 }
 
@@ -366,7 +366,7 @@ void WebPluginImpl::didFailLoadingFrameRequest(
   NPReason reason =
       error.reason == net::ERR_ABORTED ? NPRES_USER_BREAK : NPRES_NETWORK_ERR;
   delegate_->DidFinishLoadWithReason(
-      url, reason, reinterpret_cast<int>(notify_data));
+      url, reason, reinterpret_cast<intptr_t>(notify_data));
 }
 
 // -----------------------------------------------------------------------------
