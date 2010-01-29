@@ -706,25 +706,30 @@ bool NPV8Bridge::Evaluate(const NPVariant* np_args, int numArgs,
   if (v8_code.IsEmpty() || !v8_code->IsString())
     return false;
 
-  // Newer versions of v8 doesn't like eval('function () { ... }') but wants
-  // instead eval('(function () { ... })'), so add a pair of ( ) around the
-  // given string.
-  Local<v8::String> v8_code_string = v8_code->ToString();
-  int length = v8_code_string->Utf8Length();
-  // Note: this string is not 0-terminated.
-  scoped_array<char> paren_string(new char[length + 2]);
-  v8_code_string->WriteUtf8(paren_string.get() + 1, length);
-  paren_string[0] = '(';
-  paren_string[length + 1] = ')';
-  v8_code_string = v8::String::New(paren_string.get(), length + 2);
-
-
   TryCatch tryCatch;
 
+  Local<v8::String> v8_code_string = v8_code->ToString();
   Local<Script> v8_script = v8::Script::Compile(v8_code_string);
+
   if (tryCatch.HasCaught()) {
-    ReportV8Exception(tryCatch);
-    return false;
+    // Newer version of v8 doesn't like eval('function () { ... }') but wants
+    // instead eval('(function () { ... })'). Old js code may still try to pass
+    // that in, so add a pair of ( ) around the given string, and try again.
+    tryCatch.Reset();
+    int length = v8_code_string->Utf8Length();
+    // Note: this string is not 0-terminated.
+    scoped_array<char> paren_string(new char[length + 2]);
+    v8_code_string->WriteUtf8(paren_string.get() + 1, length);
+    paren_string[0] = '(';
+    paren_string[length + 1] = ')';
+    v8_code_string = v8::String::New(paren_string.get(), length + 2);
+
+    v8_script = v8::Script::Compile(v8_code_string);
+
+    if (tryCatch.HasCaught()) {
+      ReportV8Exception(tryCatch);
+      return false;
+    }
   }
   if (v8_script.IsEmpty())
     return false;
