@@ -32,6 +32,9 @@
     'plugin.gypi',
   ],
   'target_defaults': {
+    'variables': {
+      'target_base': 'none',
+    },
     'target_conditions': [
       ['target_base=="npNaClPlugin"', {
         'sources': [
