@@ -198,6 +198,18 @@
 }
 
 {
+   # This appears to be related to the bug_20653 suppression, the same
+   # header but written to the subjournal instead of at commit time.
+   bug_20653a
+   Memcheck:Param
+   write(buf)
+   ...
+   fun:sqlite3OsWrite
+   fun:subjournalPage
+   fun:pager_write
+}
+
+{
    # array of weak references freed but not processed?
    bug_16576
    Memcheck:Leak
