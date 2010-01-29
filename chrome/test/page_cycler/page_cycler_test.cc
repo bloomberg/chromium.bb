@@ -420,11 +420,13 @@ TEST_F(PageCyclerReferenceTest, name) { \
 
 // This macro simplifies setting up regular and reference build tests
 // for HTML5 database tests.
+// TODO(dumi): re-enable the DB perf tests once we figure out why
+// they're so slow on the release perf bots
 #define PAGE_CYCLER_DATABASE_TESTS(test, name) \
-TEST_F(PageCyclerDatabaseTest, Database##name##File) { \
+TEST_F(PageCyclerDatabaseTest, DISABLED_Database##name##File) { \
   RunTest(test, test, false); \
 } \
-TEST_F(PageCyclerDatabaseReferenceTest, Database##name##File) { \
+TEST_F(PageCyclerDatabaseReferenceTest, DISABLED_Database##name##File) { \
   RunTest(test, test, false); \
 }
 
