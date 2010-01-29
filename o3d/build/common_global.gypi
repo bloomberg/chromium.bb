@@ -31,6 +31,11 @@
           '-m64',
         ],
       }],
+      [ 'OS == "linux" and target_arch=="arm"', {
+        'cflags': [
+          '-fPIC',
+        ],
+      }],
       [ 'OS == "mac"', {
           'xcode_settings': {
             'MACOSX_DEPLOYMENT_TARGET': '10.5',

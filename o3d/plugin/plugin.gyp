@@ -209,8 +209,7 @@
               'linux/main_linux.cc',
             ],
             'ldflags': [
-              '-z',
-              'nodelete',
+              '-Wl,-znodelete',
               '-Wl,--gc-sections',
             ],
             'link_settings': {

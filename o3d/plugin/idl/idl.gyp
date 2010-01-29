@@ -43,19 +43,6 @@
           ],
         },
       ],
-      ['OS=="linux"',
-        {
-          'include_dirs': [
-            '/usr/include/cairo',
-            '/usr/include/glib-2.0',
-            '/usr/include/gtk-2.0',
-            '/usr/include/pango-1.0',
-            '/usr/lib/glib-2.0/include',
-            '/usr/lib/gtk-2.0/include',
-            '/usr/include/atk-1.0',
-          ],
-        },
-      ],
     ],
   },
   'targets': [
