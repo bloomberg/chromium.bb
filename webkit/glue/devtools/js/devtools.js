@@ -420,7 +420,7 @@ WebInspector.ConsoleMessage.prototype.setMessageBody = function(args) {
 var orig = InjectedScriptAccess.prototype.getCompletions;
 InjectedScriptAccess.prototype.getCompletions = function(expressionString,
     includeInspectorCommandLineAPI, callFrameId, reportCompletions) {
-  if (goog.isDef(callFrameId)) {
+  if (typeof callFrameId === "number") {
     devtools.tools.getDebuggerAgent().resolveCompletionsOnFrame(
         expressionString, callFrameId, reportCompletions);
   } else {
