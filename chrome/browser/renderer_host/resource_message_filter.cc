@@ -778,7 +778,9 @@ void ResourceMessageFilter::OnCheckNotificationPermission(
     return;
   }
 
-  *result = notification_prefs_->HasPermission(source_url);
+  // Fall back to the regular notification preferences, which works on an
+  // origin basis.
+  *result = notification_prefs_->HasPermission(source_url.GetOrigin());
 }
 
 void ResourceMessageFilter::OnGetMimeTypeFromExtension(
