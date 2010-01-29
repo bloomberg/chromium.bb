@@ -27,6 +27,8 @@ class NewTabUITest : public UITest {
   }
 };
 
+// TODO(aa): http://crbug.com/33451
+#if !defined(OS_MACOSX)
 TEST_F(NewTabUITest, NTPHasThumbnails) {
   // Switch to the "new tab" tab, which should be any new tab after the
   // first (the first is about:blank).
@@ -62,6 +64,7 @@ TEST_F(NewTabUITest, NTPHasThumbnails) {
   }
   EXPECT_EQ(0, filler_thumbnails_count);
 }
+#endif
 
 TEST_F(NewTabUITest, ChromeInternalLoadsNTP) {
   scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
