@@ -186,7 +186,8 @@ TEST(TextEliderTest, TestFilenameEliding) {
   }
 }
 
-TEST(TextEliderTest, ElideTextLongStrings) {
+// http://code.google.com/p/chromium/issues/detail?id=33489
+TEST(TextEliderTest, DISABLED_ElideTextLongStrings) {
   const std::wstring kEllipsisStr(kEllipsis);
   std::wstring data_scheme(L"data:text/plain,");
 

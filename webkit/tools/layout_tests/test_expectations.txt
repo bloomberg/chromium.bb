@@ -2915,3 +2915,9 @@ BUG33350 : fast/dom/location-hash.html = TEXT
 // WebKit roll 53941 -> 54015
 BUG33359 WIN LINUX : fast/css/button-height.html = TEXT
 BUG33358 : fast/dom/Window/window-postmessage-clone-frames.html = TEXT
+
+// WebKit roll 54016 -> 54045
+BUG33486 WIN LINUX : fast/text/international/hebrew-vowels.html = IMAGE+TEXT
+BUG33487 LINUX : fast/text/international/thai-baht-space.html = IMAGE
+BUG33487 LINUX : fast/text/international/thai-line-breaks.html = IMAGE
+BUG33488 LINUX : svg/text/text-intro-05-t.svg = IMAGE
