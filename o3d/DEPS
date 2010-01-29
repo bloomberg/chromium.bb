@@ -1,6 +1,6 @@
 vars = {
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
-  "nixysa_rev": "63",
+  "nixysa_rev": "64",
   "chromium_rev": "36817",
   "o3d_code_rev": "166",
   "skia_rev": "474",
