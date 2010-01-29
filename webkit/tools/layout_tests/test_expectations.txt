@@ -2725,9 +2725,6 @@ BUG30048 : svg/css/composite-shadow-with-opacity.html = IMAGE
 // Broke with http://trac.webkit.org/changeset/51939
 BUG30049 : platform/win/editing/selection/doubleclick-should-not-expand-across-lines.html = TEXT MISSING
 
-// Flaky.
-BUG30180 : fast/text/international/hindi-whitespace.html = IMAGE+TEXT PASS
-
 // evan's fix rolled out in http://trac.webkit.org/changeset/52071 due to compat issues.
 BUG30343 LINUX : fast/css/large-number-round-trip.html = TEXT
 
@@ -2835,8 +2832,6 @@ BUG32145 WIN : animations/3d/transform-origin-vs-functions.html = TEXT PASS
 BUG32149 WIN RELEASE : fast/dom/Document/early-document-access.html = TIMEOUT PASS
 
 BUG32195 : fast/repaint/renderer-destruction-by-invalidateSelection-crash.html = IMAGE+TEXT PASS
-
-BUG32201 LINUX : fast/text/atsui-spacing-features.html = IMAGE+TEXT
 
 // Expectations from roll to 53171:53194
 BUG32235 LINUX DEBUG : svg/W3C-SVG-1.1/filters-diffuse-01-f.svg = PASS TEXT

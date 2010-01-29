@@ -1,6 +1,6 @@
-layer at (0,0) size 13731x585
-  RenderView at (0,0) size 800x585
-layer at (0,0) size 13731x340
+layer at (0,0) size 800x600
+  RenderView at (0,0) size 800x600
+layer at (0,0) size 800x340
   RenderBlock {HTML} at (0,0) size 800x340
     RenderBody {BODY} at (8,16) size 784x316
       RenderBlock {P} at (0,0) size 784x40
@@ -35,8 +35,8 @@ layer at (0,0) size 13731x340
             RenderTableCell {TD} at (2,26) size 204x174 [r=1 c=0 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 202x172
                 RenderBlock {DIV} at (0,0) size 202x38 [border: (1px solid #0000FF)]
-                  RenderText {#text} at (47,1) size 154x37
-                    text run at (47,1) width 154 RTL: "\x{5D9}\x{5B0}\x{5D4}\x{5B4}\x{5D9}, \x{5D0}\x{5B8}\x{5D7}\x{5B4}\x{5D9}, \x{5DC}\x{5B0}\x{5DA}\x{5B8} \x{5E1}\x{5B5}\x{5E4}\x{5B6}\x{5E8} \x{5E9}\x{5C1}\x{5B0}\x{5DC}\x{5B7}\x{5D7}\x{5B0}\x{5EA}\x{5BC}\x{5B4}\x{5D9}\x{5D5}"
+                  RenderText {#text} at (63,1) size 151x37
+                    text run at (63,1) width 138 RTL: "\x{5D9}\x{5B0}\x{5D4}\x{5B4}\x{5D9}, \x{5D0}\x{5B8}\x{5D7}\x{5B4}\x{5D9}, \x{5DC}\x{5B0}\x{5DA}\x{5B8} \x{5E1}\x{5B5}\x{5E4}\x{5B6}\x{5E8} \x{5E9}\x{5C1}\x{5B0}\x{5DC}\x{5B7}\x{5D7}\x{5B0}\x{5EA}\x{5BC}\x{5B4}\x{5D9}\x{5D5}"
                     text run at (50,19) width 104 RTL: "\x{5E6}\x{5B0}\x{5DE}\x{5B4}\x{5D9}\x{5EA}\x{5D5}\x{5BC}\x{5EA} \x{5DC}\x{5B8}\x{5DA}\x{5B0} \x{5DE}\x{5B0}\x{5DB}\x{5B7}\x{5E8}\x{5B0}\x{5EA}\x{5BC}\x{5B4}\x{5D9}\x{5D5}."
                     text run at (154,19) width 47 RTL: "\x{5D5}\x{5BC}\x{5DE}\x{5B4}\x{5DE}\x{5B0}\x{5DB}\x{5BC}\x{5B6}\x{5E8}\x{5B6}\x{5EA} "
                 RenderBlock {DIV} at (0,43) size 202x62 [border: (1px solid #0000FF)]
@@ -52,8 +52,8 @@ layer at (0,0) size 13731x340
             RenderTableCell {TD} at (208,26) size 204x194 [r=1 c=1 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 202x192
                 RenderBlock {DIV} at (0,0) size 202x38 [border: (1px solid #0000FF)]
-                  RenderText {#text} at (0,1) size 201x37
-                    text run at (0,1) width 201 RTL: "\x{5D9}\x{5B0}\x{5D4}\x{5B4}\x{5D9}, \x{5D0}\x{5B8}\x{5D7}\x{5B4}\x{5D9}, \x{5DC}\x{5B0}\x{5DA}\x{5B8} \x{5E1}\x{5B5}\x{5E4}\x{5B6}\x{5E8} \x{5E9}\x{5C1}\x{5B0}\x{5DC}\x{5B7}\x{5D7}\x{5B0}\x{5EA}\x{5BC}\x{5B4}\x{5D9}\x{5D5} \x{5D5}\x{5BC}\x{5DE}\x{5B4}\x{5DE}\x{5B0}\x{5DB}\x{5BC}\x{5B6}\x{5E8}\x{5B6}\x{5EA}"
+                  RenderText {#text} at (16,1) size 185x37
+                    text run at (16,1) width 185 RTL: "\x{5D9}\x{5B0}\x{5D4}\x{5B4}\x{5D9}, \x{5D0}\x{5B8}\x{5D7}\x{5B4}\x{5D9}, \x{5DC}\x{5B0}\x{5DA}\x{5B8} \x{5E1}\x{5B5}\x{5E4}\x{5B6}\x{5E8} \x{5E9}\x{5C1}\x{5B0}\x{5DC}\x{5B7}\x{5D7}\x{5B0}\x{5EA}\x{5BC}\x{5B4}\x{5D9}\x{5D5} \x{5D5}\x{5BC}\x{5DE}\x{5B4}\x{5DE}\x{5B0}\x{5DB}\x{5BC}\x{5B6}\x{5E8}\x{5B6}\x{5EA}"
                     text run at (97,19) width 104 RTL: "\x{5E6}\x{5B0}\x{5DE}\x{5B4}\x{5D9}\x{5EA}\x{5D5}\x{5BC}\x{5EA} \x{5DC}\x{5B8}\x{5DA}\x{5B0} \x{5DE}\x{5B0}\x{5DB}\x{5B7}\x{5E8}\x{5B0}\x{5EA}\x{5BC}\x{5B4}\x{5D9}\x{5D5}."
                 RenderBlock {DIV} at (0,43) size 202x62 [border: (1px solid #0000FF)]
                   RenderText {#text} at (1,1) size 130x59
@@ -69,8 +69,8 @@ layer at (0,0) size 13731x340
             RenderTableCell {TD} at (414,26) size 204x134 [r=1 c=2 rs=1 cs=1]
               RenderBlock {DIV} at (1,1) size 202x132
                 RenderBlock {DIV} at (0,0) size 202x38 [border: (1px solid #0000FF)]
-                  RenderText {#text} at (1,1) size 13307x37
-                    text run at (1,1) width 13307 RTL: "\x{5D9}\x{5B0}\x{5D4}\x{5B4}\x{5D9}, \x{5D0}\x{5B8}\x{5D7}\x{5B4}\x{5D9}, \x{5DC}\x{5B0}\x{5DA}\x{5B8} \x{5E1}\x{5B5}\x{5E4}\x{5B6}\x{5E8} \x{5E9}\x{5C1}\x{5B0}\x{5DC}\x{5B7}\x{5D7}\x{5B0}\x{5EA}\x{5BC}\x{5B4}\x{5D9}\x{5D5} \x{5D5}\x{5BC}\x{5DE}\x{5B4}\x{5DE}\x{5B0}\x{5DB}\x{5BC}\x{5B6}\x{5E8}\x{5B6}\x{5EA}"
+                  RenderText {#text} at (1,1) size 200x37
+                    text run at (1,1) width 200 RTL: "\x{5D9}\x{5B0}\x{5D4}\x{5B4}\x{5D9}, \x{5D0}\x{5B8}\x{5D7}\x{5B4}\x{5D9}, \x{5DC}\x{5B0}\x{5DA}\x{5B8} \x{5E1}\x{5B5}\x{5E4}\x{5B6}\x{5E8} \x{5E9}\x{5C1}\x{5B0}\x{5DC}\x{5B7}\x{5D7}\x{5B0}\x{5EA}\x{5BC}\x{5B4}\x{5D9}\x{5D5} \x{5D5}\x{5BC}\x{5DE}\x{5B4}\x{5DE}\x{5B0}\x{5DB}\x{5BC}\x{5B6}\x{5E8}\x{5B6}\x{5EA}"
                     text run at (97,19) width 104 RTL: "\x{5E6}\x{5B0}\x{5DE}\x{5B4}\x{5D9}\x{5EA}\x{5D5}\x{5BC}\x{5EA} \x{5DC}\x{5B8}\x{5DA}\x{5B0} \x{5DE}\x{5B0}\x{5DB}\x{5B7}\x{5E8}\x{5B0}\x{5EA}\x{5BC}\x{5B4}\x{5D9}\x{5D5}."
                 RenderBlock {DIV} at (0,43) size 202x42 [border: (1px solid #0000FF)]
                   RenderText {#text} at (1,1) size 200x39
