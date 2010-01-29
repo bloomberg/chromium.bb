@@ -352,13 +352,15 @@ NPError WebPluginDelegatePepper::Device3DInitializeContext(
     if (command_buffer_.get()) {
       // Initialize the proxy command buffer.
       if (command_buffer_->Initialize(config->commandBufferEntries)) {
+        // Get the initial command buffer state.
+        gpu::CommandBuffer::State state = command_buffer_->GetState();
+
         // Initialize the 3D context.
         context->reserved = NULL;
         Buffer ring_buffer = command_buffer_->GetRingBuffer();
         context->commandBuffer = ring_buffer.ptr;
-        context->commandBufferEntries = command_buffer_->GetSize();
-        context->getOffset = command_buffer_->GetGetOffset();
-        context->putOffset = command_buffer_->GetPutOffset();
+        context->commandBufferEntries = state.size;
+        Synchronize3DContext(context, state);
 
         // Ensure the service knows the window size before rendering anything.
         nested_delegate_->UpdateGeometry(window_rect_, clip_rect_);
@@ -392,32 +394,7 @@ NPError WebPluginDelegatePepper::Device3DGetStateContext(
     NPDeviceContext3D* context,
     int32 state,
     int32* value) {
-#if defined(ENABLE_GPU)
-  if (!command_buffer_.get())
-    return NPERR_GENERIC_ERROR;
-
-  switch (state) {
-    case NPDeviceContext3DState_GetOffset:
-      context->getOffset = *value = command_buffer_->GetGetOffset();
-      break;
-    case NPDeviceContext3DState_PutOffset:
-      *value = command_buffer_->GetPutOffset();
-      break;
-    case NPDeviceContext3DState_Token:
-      *value = command_buffer_->GetToken();
-      break;
-    case NPDeviceContext3DState_ParseError:
-      *value = command_buffer_->ResetParseError();
-      break;
-    case NPDeviceContext3DState_ErrorStatus:
-      *value = command_buffer_->GetErrorStatus() ? 1 : 0;
-      break;
-    default:
-      return NPERR_GENERIC_ERROR;
-  };
-#endif  // ENABLE_GPU
-
-  return NPERR_NO_ERROR;
+  return NPERR_GENERIC_ERROR;
 }
 
 NPError WebPluginDelegatePepper::Device3DFlushContext(
@@ -426,8 +403,16 @@ NPError WebPluginDelegatePepper::Device3DFlushContext(
     NPDeviceFlushContextCallbackPtr callback,
     void* user_data) {
 #if defined(ENABLE_GPU)
-  DCHECK(callback == NULL);
-  context->getOffset = command_buffer_->SyncOffsets(context->putOffset);
+  gpu::CommandBuffer::State state;
+  // Only flush if new commands have been put in the command buffer. Otherwise
+  // update the state to the current service state.
+  if (context->putOffset == last_command_buffer_put_offset_) {
+    state = command_buffer_->GetState();
+  } else {
+    last_command_buffer_put_offset_ = context->putOffset;
+    state = command_buffer_->Flush(context->putOffset);
+  }
+  Synchronize3DContext(context, state);
 #endif  // ENABLE_GPU
   return NPERR_NO_ERROR;
 }
@@ -556,7 +541,8 @@ WebPluginDelegatePepper::WebPluginDelegatePepper(
     : render_view_(render_view),
       plugin_(NULL),
       instance_(instance),
-      nested_delegate_(NULL) {
+      nested_delegate_(NULL),
+      last_command_buffer_put_offset_(-1) {
   // For now we keep a window struct, although it isn't used.
   memset(&window_, 0, sizeof(window_));
   // All Pepper plugins are windowless and transparent.
@@ -720,3 +706,14 @@ bool WebPluginDelegatePepper::HandleInputEvent(const WebInputEvent& event,
   }
   return instance()->NPP_HandleEvent(&npevent) != 0;
 }
+
+#if defined(ENABLE_GPU)
+void WebPluginDelegatePepper::Synchronize3DContext(
+    NPDeviceContext3D* context,
+    gpu::CommandBuffer::State state) {
+  context->getOffset = state.get_offset;
+  context->putOffset = state.put_offset;
+  context->token = state.token;
+  context->error = static_cast<int32>(state.error);
+}
+#endif  // ENABLE_GPU

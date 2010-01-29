@@ -61,6 +61,10 @@ class BaseFencedAllocatorTest : public testing::Test {
     helper_->Initialize();
   }
 
+  int32 GetToken() {
+    return command_buffer_->GetState().token;
+  }
+
   virtual void TearDown() {
     helper_.release();
   }
@@ -187,7 +191,7 @@ TEST_F(FencedAllocatorTest, TestFreePendingToken) {
   // The way we hooked up the helper and engine, it won't process commands
   // until it has to wait for something. Which means the token shouldn't have
   // passed yet at this point.
-  EXPECT_GT(token, command_buffer_->GetToken());
+  EXPECT_GT(token, GetToken());
 
   // This allocation will need to reclaim the space freed above, so that should
   // process the commands until the token is passed.
@@ -196,7 +200,7 @@ TEST_F(FencedAllocatorTest, TestFreePendingToken) {
   EXPECT_GE(kBufferSize, offsets[0]+kSize);
   EXPECT_TRUE(allocator_->CheckConsistency());
   // Check that the token has indeed passed.
-  EXPECT_LE(token, command_buffer_->GetToken());
+  EXPECT_LE(token, GetToken());
 
   // Free up everything.
   for (unsigned int i = 0; i < kAllocCount; ++i) {
@@ -292,13 +296,13 @@ TEST_F(FencedAllocatorTest, TestGetLargestFreeOrPendingSize) {
   // The way we hooked up the helper and engine, it won't process commands
   // until it has to wait for something. Which means the token shouldn't have
   // passed yet at this point.
-  EXPECT_GT(token, command_buffer_->GetToken());
+  EXPECT_GT(token, GetToken());
   // This allocation will need to reclaim the space freed above, so that should
   // process the commands until the token is passed, but it will succeed.
   offset = allocator_->Alloc(kBufferSize);
   ASSERT_NE(FencedAllocator::kInvalidOffset, offset);
   // Check that the token has indeed passed.
-  EXPECT_LE(token, command_buffer_->GetToken());
+  EXPECT_LE(token, GetToken());
   allocator_->Free(offset);
 
   // Everything now has been freed...
@@ -443,7 +447,7 @@ TEST_F(FencedAllocatorWrapperTest, TestFreePendingToken) {
   // The way we hooked up the helper and engine, it won't process commands
   // until it has to wait for something. Which means the token shouldn't have
   // passed yet at this point.
-  EXPECT_GT(token, command_buffer_->GetToken());
+  EXPECT_GT(token, GetToken());
 
   // This allocation will need to reclaim the space freed above, so that should
   // process the commands until the token is passed.
@@ -451,7 +455,7 @@ TEST_F(FencedAllocatorWrapperTest, TestFreePendingToken) {
   EXPECT_TRUE(pointers[0]);
   EXPECT_TRUE(allocator_->CheckConsistency());
   // Check that the token has indeed passed.
-  EXPECT_LE(token, command_buffer_->GetToken());
+  EXPECT_LE(token, GetToken());
 
   // Free up everything.
   for (unsigned int i = 0; i < kAllocCount; ++i) {

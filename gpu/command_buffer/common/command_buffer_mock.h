@@ -23,20 +23,14 @@ class MockCommandBuffer : public CommandBuffer {
 
   MOCK_METHOD1(Initialize, bool(int32 size));
   MOCK_METHOD0(GetRingBuffer, Buffer());
-  MOCK_METHOD0(GetSize, int32());
-  MOCK_METHOD1(SyncOffsets, int32(int32 put_offset));
-  MOCK_METHOD0(GetGetOffset, int32());
+  MOCK_METHOD0(GetState, State());
+  MOCK_METHOD1(Flush, State(int32 put_offset));
   MOCK_METHOD1(SetGetOffset, void(int32 get_offset));
-  MOCK_METHOD0(GetPutOffset, int32());
   MOCK_METHOD1(CreateTransferBuffer, int32(size_t size));
   MOCK_METHOD1(DestroyTransferBuffer, void(int32 handle));
   MOCK_METHOD1(GetTransferBuffer, Buffer(int32 handle));
-  MOCK_METHOD0(GetToken, int32());
   MOCK_METHOD1(SetToken, void(int32 token));
-  MOCK_METHOD0(ResetParseError, int32());
-  MOCK_METHOD1(SetParseError, void(int32 parse_erro));
-  MOCK_METHOD0(GetErrorStatus, bool());
-  MOCK_METHOD0(RaiseErrorStatus, void());
+  MOCK_METHOD1(SetParseError, void(parse_error::ParseError parse_error));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCommandBuffer);

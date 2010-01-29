@@ -69,16 +69,13 @@ void CommandBufferStub::OnInitialize(int32 size,
   base::CloseProcessHandle(peer_handle);
 }
 
-void CommandBufferStub::OnSyncOffsets(int32 put_offset, int32* get_offset) {
-  *get_offset = command_buffer_->SyncOffsets(put_offset);
+void CommandBufferStub::OnGetState(gpu::CommandBuffer::State* state) {
+  *state = command_buffer_->GetState();
 }
 
-void CommandBufferStub::OnGetGetOffset(int32* get_offset) {
-  *get_offset = command_buffer_->GetGetOffset();
-}
-
-void CommandBufferStub::OnGetPutOffset(int32* put_offset) {
-  *put_offset = command_buffer_->GetPutOffset();
+void CommandBufferStub::OnFlush(int32 put_offset,
+                                gpu::CommandBuffer::State* state) {
+  *state = command_buffer_->Flush(put_offset);
 }
 
 void CommandBufferStub::OnCreateTransferBuffer(int32 size, int32* id) {
@@ -111,33 +108,17 @@ void CommandBufferStub::OnGetTransferBuffer(
   base::CloseProcessHandle(peer_handle);
 }
 
-void CommandBufferStub::OnGetToken(int32* token) {
-  *token = command_buffer_->GetToken();
-}
-
-void CommandBufferStub::OnResetParseError(int32* parse_error) {
-  *parse_error = command_buffer_->ResetParseError();
-}
-
-void CommandBufferStub::OnGetErrorStatus(bool* error_status) {
-  *error_status = command_buffer_->GetErrorStatus();
-}
-
 void CommandBufferStub::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(CommandBufferStub, msg)
     IPC_MESSAGE_HANDLER(CommandBufferMsg_Initialize, OnInitialize);
-    IPC_MESSAGE_HANDLER(CommandBufferMsg_SyncOffsets, OnSyncOffsets);
-    IPC_MESSAGE_HANDLER(CommandBufferMsg_GetGetOffset, OnGetGetOffset);
-    IPC_MESSAGE_HANDLER(CommandBufferMsg_GetPutOffset, OnGetPutOffset);
+    IPC_MESSAGE_HANDLER(CommandBufferMsg_GetState, OnGetState);
+    IPC_MESSAGE_HANDLER(CommandBufferMsg_Flush, OnFlush);
     IPC_MESSAGE_HANDLER(CommandBufferMsg_CreateTransferBuffer,
                         OnCreateTransferBuffer);
     IPC_MESSAGE_HANDLER(CommandBufferMsg_DestroyTransferBuffer,
                         OnDestroyTransferBuffer);
     IPC_MESSAGE_HANDLER(CommandBufferMsg_GetTransferBuffer,
                         OnGetTransferBuffer);
-    IPC_MESSAGE_HANDLER(CommandBufferMsg_GetToken, OnGetToken);
-    IPC_MESSAGE_HANDLER(CommandBufferMsg_ResetParseError, OnResetParseError);
-    IPC_MESSAGE_HANDLER(CommandBufferMsg_GetErrorStatus, OnGetErrorStatus);
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 }

@@ -103,7 +103,7 @@ class CommandBufferHelper {
     return *reinterpret_cast<T*>(data);
   }
 
-  parse_error::ParseError GetParseError();
+  parse_error::ParseError GetError();
 
   // Common Commands
   void Noop(uint32 skip_count) {
@@ -126,6 +126,9 @@ class CommandBufferHelper {
   int32 AvailableEntries() {
     return (get_ - put_ - 1 + entry_count_) % entry_count_;
   }
+
+  // Synchronize with current service state.
+  void SynchronizeState(CommandBuffer::State state);
 
   CommandBuffer* command_buffer_;
   Buffer ring_buffer_;

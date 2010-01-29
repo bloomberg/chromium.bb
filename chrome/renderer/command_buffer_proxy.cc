@@ -71,40 +71,23 @@ Buffer CommandBufferProxy::GetRingBuffer() {
   return buffer;
 }
 
-int32 CommandBufferProxy::GetSize() {
-  // Return locally cached size.
-  return size_;
+gpu::CommandBuffer::State CommandBufferProxy::GetState() {
+  gpu::CommandBuffer::State state;
+  Send(new CommandBufferMsg_GetState(route_id_, &state));
+  return state;
 }
 
-int32 CommandBufferProxy::SyncOffsets(int32 put_offset) {
-  int32 get_offset;
-  if (Send(new CommandBufferMsg_SyncOffsets(route_id_,
-                                            put_offset,
-                                            &get_offset)))
-    return get_offset;
-
-  return -1;
-}
-
-int32 CommandBufferProxy::GetGetOffset() {
-  int32 get_offset;
-  if (Send(new CommandBufferMsg_GetGetOffset(route_id_, &get_offset)))
-    return get_offset;
-
-  return -1;
+gpu::CommandBuffer::State CommandBufferProxy::Flush(int32 put_offset) {
+  gpu::CommandBuffer::State state;
+  Send(new CommandBufferMsg_Flush(route_id_,
+                                  put_offset,
+                                  &state));
+  return state;
 }
 
 void CommandBufferProxy::SetGetOffset(int32 get_offset) {
   // Not implemented in proxy.
   NOTREACHED();
-}
-
-int32 CommandBufferProxy::GetPutOffset() {
-  int put_offset;
-  if (Send(new CommandBufferMsg_GetPutOffset(route_id_, &put_offset)))
-    return put_offset;
-
-  return -1;
 }
 
 int32 CommandBufferProxy::CreateTransferBuffer(size_t size) {
@@ -176,41 +159,13 @@ Buffer CommandBufferProxy::GetTransferBuffer(int32 id) {
   return buffer;
 }
 
-int32 CommandBufferProxy::GetToken() {
-  int32 token;
-  if (Send(new CommandBufferMsg_GetToken(route_id_, &token)))
-    return token;
-
-  return -1;
-}
-
 void CommandBufferProxy::SetToken(int32 token) {
   // Not implemented in proxy.
   NOTREACHED();
 }
 
-int32 CommandBufferProxy::ResetParseError() {
-  int32 parse_error;
-  if (Send(new CommandBufferMsg_ResetParseError(route_id_, &parse_error)))
-    return parse_error;
-
-  return -1;
-}
-
-void CommandBufferProxy::SetParseError(int32 parse_error) {
-  // Not implemented in proxy.
-  NOTREACHED();
-}
-
-bool CommandBufferProxy::GetErrorStatus() {
-  bool status;
-  if (Send(new CommandBufferMsg_GetErrorStatus(route_id_, &status)))
-    return status;
-
-  return true;
-}
-
-void CommandBufferProxy::RaiseErrorStatus() {
+void CommandBufferProxy::SetParseError(
+    gpu::parse_error::ParseError parse_error) {
   // Not implemented in proxy.
   NOTREACHED();
 }

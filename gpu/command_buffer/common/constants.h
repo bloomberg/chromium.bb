@@ -12,18 +12,7 @@ namespace gpu {
 typedef int32 CommandBufferOffset;
 const CommandBufferOffset kInvalidCommandBufferOffset = -1;
 
-// Status of the command buffer service. It does not process commands
-// (meaning: get will not change) unless in kParsing state.
-namespace parser_status {
-  enum ParserStatus {
-    kNotConnected,  // The service is not connected - initial state.
-    kNoBuffer,      // The service is connected but no buffer was set.
-    kParsing,       // The service is connected, and parsing commands from the
-                    // buffer.
-    kParseError,    // Parsing stopped because a parse error was found.
-  };
-}
-
+// TODO(apatrick): rename to something more generic like just Error.
 namespace parse_error {
   enum ParseError {
     kParseNoError,
@@ -31,6 +20,7 @@ namespace parse_error {
     kParseOutOfBounds,
     kParseUnknownCommand,
     kParseInvalidArguments,
+    kParseGenericError,
   };
 }
 

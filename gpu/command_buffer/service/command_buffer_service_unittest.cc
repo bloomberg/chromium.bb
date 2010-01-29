@@ -23,6 +23,22 @@ class CommandBufferServiceTest : public testing::Test {
     command_buffer_.reset(new CommandBufferService);
   }
 
+  int32 GetGetOffset() {
+    return command_buffer_->GetState().get_offset;
+  }
+
+  int32 GetPutOffset() {
+    return command_buffer_->GetState().put_offset;
+  }
+
+  int32 GetToken() {
+    return command_buffer_->GetState().token;
+  }
+
+  int32 GetError() {
+    return command_buffer_->GetState().error;
+  }
+
   scoped_ptr<CommandBufferService> command_buffer_;
 };
 
@@ -33,9 +49,12 @@ TEST_F(CommandBufferServiceTest, NullRingBufferByDefault) {
 TEST_F(CommandBufferServiceTest, InitializesCommandBuffer) {
   EXPECT_TRUE(command_buffer_->Initialize(1024));
   EXPECT_TRUE(NULL != command_buffer_->GetRingBuffer().ptr);
-  EXPECT_EQ(1024, command_buffer_->GetSize());
-  EXPECT_EQ(1024 * sizeof(CommandBufferEntry),
-            command_buffer_->GetRingBuffer().size);
+  CommandBuffer::State state = command_buffer_->GetState();
+  EXPECT_EQ(1024, state.size);
+  EXPECT_EQ(0, state.get_offset);
+  EXPECT_EQ(0, state.put_offset);
+  EXPECT_EQ(0, state.token);
+  EXPECT_EQ(parse_error::kParseNoError, state.error);
 }
 
 TEST_F(CommandBufferServiceTest, InitializationSizeIsInEntriesNotBytes) {
@@ -51,11 +70,6 @@ TEST_F(CommandBufferServiceTest, InitializeFailsSecondTime) {
   EXPECT_FALSE(command_buffer_->Initialize(1024));
 }
 
-TEST_F(CommandBufferServiceTest, GetAndPutOffsetsDefaultToZero) {
-  EXPECT_EQ(0, command_buffer_->GetGetOffset());
-  EXPECT_EQ(0, command_buffer_->GetPutOffset());
-}
-
 class MockCallback : public CallbackRunner<Tuple0> {
  public:
   MOCK_METHOD1(RunWithParams, void(const Tuple0&));
@@ -69,20 +83,21 @@ TEST_F(CommandBufferServiceTest, CanSyncGetAndPutOffset) {
   command_buffer_->SetPutOffsetChangeCallback(put_offset_change_callback);
 
   EXPECT_CALL(*put_offset_change_callback, RunWithParams(_));
-  EXPECT_EQ(0, command_buffer_->SyncOffsets(2));
-  EXPECT_EQ(2, command_buffer_->GetPutOffset());
+  EXPECT_EQ(0, command_buffer_->Flush(2).get_offset);
+  EXPECT_EQ(2, GetPutOffset());
 
   EXPECT_CALL(*put_offset_change_callback, RunWithParams(_));
-  EXPECT_EQ(0, command_buffer_->SyncOffsets(4));
-  EXPECT_EQ(4, command_buffer_->GetPutOffset());
+  EXPECT_EQ(0, command_buffer_->Flush(4).get_offset);
+  EXPECT_EQ(4, GetPutOffset());
 
   command_buffer_->SetGetOffset(2);
-  EXPECT_EQ(2, command_buffer_->GetGetOffset());
+  EXPECT_EQ(2, GetGetOffset());
   EXPECT_CALL(*put_offset_change_callback, RunWithParams(_));
-  EXPECT_EQ(2, command_buffer_->SyncOffsets(6));
+  EXPECT_EQ(2, command_buffer_->Flush(6).get_offset);
 
-  EXPECT_EQ(-1, command_buffer_->SyncOffsets(-1));
-  EXPECT_EQ(-1, command_buffer_->SyncOffsets(1024));
+  EXPECT_NE(parse_error::kParseNoError, command_buffer_->Flush(-1).error);
+  EXPECT_NE(parse_error::kParseNoError,
+      command_buffer_->Flush(1024).error);
 }
 
 TEST_F(CommandBufferServiceTest, ZeroHandleMapsToNull) {
@@ -153,31 +168,20 @@ TEST_F(CommandBufferServiceTest, UnregistersTwoLastRegisteredHandles) {
 }
 
 TEST_F(CommandBufferServiceTest, DefaultTokenIsZero) {
-  EXPECT_EQ(0, command_buffer_->GetToken());
+  EXPECT_EQ(0, GetToken());
 }
 
 TEST_F(CommandBufferServiceTest, CanSetToken) {
   command_buffer_->SetToken(7);
-  EXPECT_EQ(7, command_buffer_->GetToken());
+  EXPECT_EQ(7, GetToken());
 }
 
 TEST_F(CommandBufferServiceTest, DefaultParseErrorIsNoError) {
-  EXPECT_EQ(0, command_buffer_->ResetParseError());
+  EXPECT_EQ(0, GetError());
 }
 
-TEST_F(CommandBufferServiceTest, CanSetAndResetParseError) {
-  command_buffer_->SetParseError(1);
-  EXPECT_EQ(1, command_buffer_->ResetParseError());
-  EXPECT_EQ(0, command_buffer_->ResetParseError());
+TEST_F(CommandBufferServiceTest, CanSetParseError) {
+  command_buffer_->SetParseError(parse_error::kParseInvalidSize);
+  EXPECT_EQ(1, GetError());
 }
-
-TEST_F(CommandBufferServiceTest, DefaultErrorStatusIsFalse) {
-  EXPECT_FALSE(command_buffer_->GetErrorStatus());
-}
-
-TEST_F(CommandBufferServiceTest, CanRaiseErrorStatus) {
-  command_buffer_->RaiseErrorStatus();
-  EXPECT_TRUE(command_buffer_->GetErrorStatus());
-}
-
 }  // namespace gpu

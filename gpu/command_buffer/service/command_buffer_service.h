@@ -26,20 +26,14 @@ class CommandBufferService : public CommandBuffer {
   // CommandBuffer implementation:
   virtual bool Initialize(int32 size);
   virtual Buffer GetRingBuffer();
-  virtual int32 GetSize();
-  virtual int32 SyncOffsets(int32 put_offset);
-  virtual int32 GetGetOffset();
+  virtual State GetState();
+  virtual State Flush(int32 put_offset);
   virtual void SetGetOffset(int32 get_offset);
-  virtual int32 GetPutOffset();
   virtual int32 CreateTransferBuffer(size_t size);
   virtual void DestroyTransferBuffer(int32 id);
   virtual Buffer GetTransferBuffer(int32 handle);
-  virtual int32 GetToken();
   virtual void SetToken(int32 token);
-  virtual int32 ResetParseError();
-  virtual void SetParseError(int32 parse_error);
-  virtual bool GetErrorStatus();
-  virtual void RaiseErrorStatus();
+  virtual void SetParseError(parse_error::ParseError);
 
   // Sets a callback that should be posted on another thread whenever the put
   // offset is changed. The callback must not return until some progress has
@@ -62,8 +56,7 @@ class CommandBufferService : public CommandBuffer {
   std::vector<linked_ptr< base::SharedMemory> > registered_objects_;
   std::set<int32> unused_registered_object_elements_;
   int32 token_;
-  int32 parse_error_;
-  bool error_status_;
+  parse_error::ParseError error_;
 };
 
 }  // namespace gpu

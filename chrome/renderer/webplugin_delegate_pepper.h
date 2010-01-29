@@ -164,6 +164,12 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   // Closes down and destroys our plugin instance.
   void DestroyInstance();
 
+#if defined(ENABLE_GPU)
+  // Synchronize a 3D context state with the service.
+  void Synchronize3DContext(NPDeviceContext3D* context,
+                            gpu::CommandBuffer::State state);
+#endif
+
   base::WeakPtr<RenderView> render_view_;
 
   webkit_glue::WebPlugin* plugin_;
@@ -189,6 +195,10 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
 #if defined(ENABLE_GPU)
   scoped_ptr<CommandBufferProxy> command_buffer_;
 #endif
+
+  // Used to track whether additional commands have been put in the command
+  // buffer since the last flush.
+  int32 last_command_buffer_put_offset_;
 
   DISALLOW_COPY_AND_ASSIGN(WebPluginDelegatePepper);
 };

@@ -13,23 +13,16 @@ IPC_BEGIN_MESSAGES(CommandBuffer)
                              int32 /* size */,
                              base::SharedMemoryHandle /* ring_buffer */)
 
-  // Get the number of command entries in the command buffer.
-  IPC_SYNC_MESSAGE_ROUTED0_1(CommandBufferMsg_GetSize,
-                             int32 /* size */)
+  // Get the current state of the command buffer, optionally reseting the
+  // parse error.
+  IPC_SYNC_MESSAGE_ROUTED0_1(CommandBufferMsg_GetState,
+                             gpu::CommandBuffer::State /* state */)
 
   // Synchronize the put and get offsets of both processes. Caller passes its
   // current put offset. Current get offset is returned.
-  IPC_SYNC_MESSAGE_ROUTED1_1(CommandBufferMsg_SyncOffsets,
+  IPC_SYNC_MESSAGE_ROUTED1_1(CommandBufferMsg_Flush,
                              int32 /* put_offset */,
-                             int32 /* get_offset */)
-
-  // Get the current get offset.
-  IPC_SYNC_MESSAGE_ROUTED0_1(CommandBufferMsg_GetGetOffset,
-                             int32 /* get_offset */)
-
-  // Get the current put offset.
-  IPC_SYNC_MESSAGE_ROUTED0_1(CommandBufferMsg_GetPutOffset,
-                             int32 /* put_offset */)
+                             gpu::CommandBuffer::State /* state */)
 
   // Create a shared memory transfer buffer. Returns an id that can be used to
   // identify the transfer buffer from a comment.
@@ -47,20 +40,5 @@ IPC_BEGIN_MESSAGES(CommandBuffer)
                              int32 /* id */,
                              base::SharedMemoryHandle /* transfer_buffer */,
                              size_t /* size */)
-
-  // Get the most recently processed token. Used for implementing fences.
-  IPC_SYNC_MESSAGE_ROUTED0_1(CommandBufferMsg_GetToken,
-                             int32 /* token */)
-
-  // Get the current parse error. Calling this resets the parse error if it is
-  // recoverable.
-  // TODO(apatrick): Switch to the parse_error::ParseError enum now that NPAPI
-  //    no longer limits to restricted set of datatypes.
-  IPC_SYNC_MESSAGE_ROUTED0_1(CommandBufferMsg_ResetParseError,
-                             int32 /* parse_error */)
-
-  // Get the current error status.
-  IPC_SYNC_MESSAGE_ROUTED0_1(CommandBufferMsg_GetErrorStatus,
-                             bool /* status */)
 
 IPC_END_MESSAGES(CommandBuffer)

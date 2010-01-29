@@ -111,6 +111,18 @@ class CommandBufferHelperTest : public testing::Test {
     }
   }
 
+  int32 GetGetOffset() {
+    return command_buffer_->GetState().get_offset;
+  }
+
+  int32 GetPutOffset() {
+    return command_buffer_->GetState().put_offset;
+  }
+
+  parse_error::ParseError GetError() {
+    return command_buffer_->GetState().error;
+  }
+
   CommandBufferOffset get_helper_put() { return helper_->put_; }
 
   base::AtExitManager at_exit_manager_;
@@ -128,9 +140,8 @@ TEST_F(CommandBufferHelperTest, TestCommandProcessing) {
   // Check initial state of the engine - it should have been configured by the
   // helper.
   EXPECT_TRUE(parser_ != NULL);
-  EXPECT_FALSE(command_buffer_->GetErrorStatus());
-  EXPECT_EQ(parse_error::kParseNoError, command_buffer_->ResetParseError());
-  EXPECT_EQ(0, command_buffer_->GetGetOffset());
+  EXPECT_EQ(parse_error::kParseNoError, GetError());
+  EXPECT_EQ(0, GetGetOffset());
 
   // Add 3 commands through the helper
   AddCommandWithExpect(parse_error::kParseNoError, 1, 0, NULL);
@@ -158,8 +169,7 @@ TEST_F(CommandBufferHelperTest, TestCommandProcessing) {
   Mock::VerifyAndClearExpectations(api_mock_.get());
 
   // Check the error status.
-  EXPECT_FALSE(command_buffer_->GetErrorStatus());
-  EXPECT_EQ(parse_error::kParseNoError, command_buffer_->ResetParseError());
+  EXPECT_EQ(parse_error::kParseNoError, GetError());
 }
 
 // Checks that commands in the buffer are properly executed when wrapping the
@@ -179,34 +189,7 @@ TEST_F(CommandBufferHelperTest, TestCommandWrapping) {
   Mock::VerifyAndClearExpectations(api_mock_.get());
 
   // Check the error status.
-  EXPECT_FALSE(command_buffer_->GetErrorStatus());
-  EXPECT_EQ(parse_error::kParseNoError, command_buffer_->ResetParseError());
-}
-
-
-// Checks that commands in the buffer are properly executed, even if they
-// generate a recoverable error. Check that the error status is properly set,
-// and reset when queried.
-TEST_F(CommandBufferHelperTest, TestRecoverableError) {
-  CommandBufferEntry args[2];
-  args[0].value_uint32 = 3;
-  args[1].value_float = 4.f;
-
-  // Create a command buffer with 3 commands, 2 of them generating errors
-  AddCommandWithExpect(parse_error::kParseNoError, 1, 2, args);
-  AddCommandWithExpect(parse_error::kParseUnknownCommand, 2, 2, args);
-  AddCommandWithExpect(parse_error::kParseInvalidArguments, 3, 2,
-                       args);
-
-  helper_->Finish();
-  // Check that the commands did happen.
-  Mock::VerifyAndClearExpectations(api_mock_.get());
-
-  // Check that the error status was set to the first error.
-  EXPECT_EQ(parse_error::kParseUnknownCommand,
-            command_buffer_->ResetParseError());
-  // Check that the error status was reset after the query.
-  EXPECT_EQ(parse_error::kParseNoError, command_buffer_->ResetParseError());
+  EXPECT_EQ(parse_error::kParseNoError, GetError());
 }
 
 // Checks that asking for available entries work, and that the parser
@@ -238,8 +221,7 @@ TEST_F(CommandBufferHelperTest, TestAvailableEntries) {
   Mock::VerifyAndClearExpectations(api_mock_.get());
 
   // Check the error status.
-  EXPECT_FALSE(command_buffer_->GetErrorStatus());
-  EXPECT_EQ(parse_error::kParseNoError, command_buffer_->ResetParseError());
+  EXPECT_EQ(parse_error::kParseNoError, GetError());
 }
 
 // Checks that the InsertToken/WaitForToken work.
@@ -261,15 +243,14 @@ TEST_F(CommandBufferHelperTest, TestToken) {
   AddCommandWithExpect(parse_error::kParseNoError, 4, 2, args);
   helper_->WaitForToken(token);
   // check that the get pointer is beyond the first command.
-  EXPECT_LE(command1_put, command_buffer_->GetGetOffset());
+  EXPECT_LE(command1_put, GetGetOffset());
   helper_->Finish();
 
   // Check that the commands did happen.
   Mock::VerifyAndClearExpectations(api_mock_.get());
 
   // Check the error status.
-  EXPECT_FALSE(command_buffer_->GetErrorStatus());
-  EXPECT_EQ(parse_error::kParseNoError, command_buffer_->ResetParseError());
+  EXPECT_EQ(parse_error::kParseNoError, GetError());
 }
 
 }  // namespace gpu

@@ -271,20 +271,6 @@ typedef struct _NPDeviceContext3DConfig {
   int32 commandBufferEntries;
 } NPDeviceContext3DConfig;
 
-typedef enum {
-  // The offset the command buffer service has read to.
-  NPDeviceContext3DState_GetOffset,
-  // The offset the plugin instance has written to.
-  NPDeviceContext3DState_PutOffset,
-  // The last token processed by the command buffer service.
-  NPDeviceContext3DState_Token,
-  // The most recent parse error. Getting this value resets the parse error
-  // if it recoverable.
-  NPDeviceContext3DState_ParseError,
-  // Wether the command buffer has encountered an unrecoverable error.
-  NPDeviceContext3DState_ErrorStatus
-} NPDeviceContext3DState;
-
 typedef struct _NPDeviceContext3D
 {
   void* reserved;
@@ -298,6 +284,12 @@ typedef struct _NPDeviceContext3D
 
   // Offset in command buffer writer has reached. Synchronized on flush.
   int32 putOffset;
+
+  // Last processed token. Synchronized on flush.
+  int32 token;
+
+  // Error status. Synchronized on flush.
+  int32 error;
 } NPDeviceContext3D;
 
 /* Audio --------------------------------------------------------------------*/

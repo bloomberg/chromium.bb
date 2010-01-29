@@ -17,8 +17,7 @@ CommandBufferService::CommandBufferService()
       get_offset_(0),
       put_offset_(0),
       token_(0),
-      parse_error_(0),
-      error_status_(false) {
+      error_(parse_error::kParseNoError) {
   // Element zero is always NULL.
   registered_objects_.push_back(linked_ptr<SharedMemory>());
 }
@@ -54,13 +53,22 @@ Buffer CommandBufferService::GetRingBuffer() {
   return buffer;
 }
 
-int32 CommandBufferService::GetSize() {
-  return size_;
+CommandBufferService::State CommandBufferService::GetState() {
+  State state;
+  state.size = size_;
+  state.get_offset = get_offset_;
+  state.put_offset = put_offset_;
+  state.token = token_;
+  state.error = error_;
+
+  return state;
 }
 
-int32 CommandBufferService::SyncOffsets(int32 put_offset) {
-  if (put_offset < 0 || put_offset >= size_)
-    return -1;
+CommandBufferService::State CommandBufferService::Flush(int32 put_offset) {
+  if (put_offset < 0 || put_offset >= size_) {
+    error_ = gpu::parse_error::kParseOutOfBounds;
+    return GetState();
+  }
 
   put_offset_ = put_offset;
 
@@ -68,20 +76,12 @@ int32 CommandBufferService::SyncOffsets(int32 put_offset) {
     put_offset_change_callback_->Run();
   }
 
-  return get_offset_;
-}
-
-int32 CommandBufferService::GetGetOffset() {
-  return get_offset_;
+  return GetState();
 }
 
 void CommandBufferService::SetGetOffset(int32 get_offset) {
   DCHECK(get_offset >= 0 && get_offset < size_);
   get_offset_ = get_offset;
-}
-
-int32 CommandBufferService::GetPutOffset() {
-  return put_offset_;
 }
 
 int32 CommandBufferService::CreateTransferBuffer(size_t size) {
@@ -150,32 +150,14 @@ Buffer CommandBufferService::GetTransferBuffer(int32 handle) {
   return buffer;
 }
 
-int32 CommandBufferService::GetToken() {
-  return token_;
-}
-
 void CommandBufferService::SetToken(int32 token) {
   token_ = token;
 }
 
-int32 CommandBufferService::ResetParseError() {
-  int32 last_error = parse_error_;
-  parse_error_ = 0;
-  return last_error;
-}
-
-void CommandBufferService::SetParseError(int32 parse_error) {
-  if (parse_error_ == 0) {
-    parse_error_ = parse_error;
+void CommandBufferService::SetParseError(parse_error::ParseError error) {
+  if (error_ == parse_error::kParseNoError) {
+    error_ = error;
   }
-}
-
-bool CommandBufferService::GetErrorStatus() {
-  return error_status_;
-}
-
-void CommandBufferService::RaiseErrorStatus() {
-  error_status_ = true;
 }
 
 void CommandBufferService::SetPutOffsetChangeCallback(

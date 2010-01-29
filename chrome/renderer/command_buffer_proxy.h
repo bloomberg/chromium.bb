@@ -35,20 +35,14 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   // CommandBuffer implementation:
   virtual bool Initialize(int32 size);
   virtual gpu::Buffer GetRingBuffer();
-  virtual int32 GetSize();
-  virtual int32 SyncOffsets(int32 put_offset);
-  virtual int32 GetGetOffset();
+  virtual State GetState();
+  virtual State Flush(int32 put_offset);
   virtual void SetGetOffset(int32 get_offset);
-  virtual int32 GetPutOffset();
   virtual int32 CreateTransferBuffer(size_t size);
   virtual void DestroyTransferBuffer(int32 id);
   virtual gpu::Buffer GetTransferBuffer(int32 handle);
-  virtual int32 GetToken();
   virtual void SetToken(int32 token);
-  virtual int32 ResetParseError();
-  virtual void SetParseError(int32 parse_error);
-  virtual bool GetErrorStatus();
-  virtual void RaiseErrorStatus();
+  virtual void SetParseError(gpu::parse_error::ParseError parse_error);
 
  private:
   // As with the service, the client takes ownership of the ring buffer.

@@ -32,7 +32,8 @@ GPUProcessor::~GPUProcessor() {
 }
 
 void GPUProcessor::ProcessCommands() {
-  if (command_buffer_->GetErrorStatus())
+  CommandBuffer::State state = command_buffer_->GetState();
+  if (state.error != parse_error::kParseNoError)
     return;
 
   if (decoder_.get()) {
@@ -41,26 +42,15 @@ void GPUProcessor::ProcessCommands() {
       return;
   }
 
-  parser_->set_put(command_buffer_->GetPutOffset());
+  parser_->set_put(state.put_offset);
 
   int commands_processed = 0;
   while (commands_processed < commands_per_update_ && !parser_->IsEmpty()) {
     parse_error::ParseError parse_error = parser_->ProcessCommand();
-    switch (parse_error) {
-      case parse_error::kParseUnknownCommand:
-      case parse_error::kParseInvalidArguments:
-        command_buffer_->SetParseError(parse_error);
-        break;
-
-      case parse_error::kParseInvalidSize:
-      case parse_error::kParseOutOfBounds:
-        command_buffer_->SetParseError(parse_error);
-        command_buffer_->RaiseErrorStatus();
-        return;
-      case gpu::parse_error::kParseNoError:
-        break;
+    if (parse_error != parse_error::kParseNoError) {
+      command_buffer_->SetParseError(parse_error);
+      return;
     }
-
     ++commands_processed;
   }
 

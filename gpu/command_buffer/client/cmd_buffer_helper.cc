@@ -24,12 +24,11 @@ bool CommandBufferHelper::Initialize() {
   if (!ring_buffer_.ptr)
     return false;
 
+  CommandBuffer::State state = command_buffer_->GetState();
   entries_ = static_cast<CommandBufferEntry*>(ring_buffer_.ptr);
-  entry_count_ = command_buffer_->GetSize();
-  get_ = command_buffer_->GetGetOffset();
-  put_ = command_buffer_->GetPutOffset();
-  last_token_read_ = command_buffer_->GetToken();
-
+  entry_count_ = state.size;
+  put_ = state.put_offset;
+  SynchronizeState(state);
   return true;
 }
 
@@ -37,8 +36,9 @@ CommandBufferHelper::~CommandBufferHelper() {
 }
 
 bool CommandBufferHelper::Flush() {
-  get_ = command_buffer_->SyncOffsets(put_);
-  return !command_buffer_->GetErrorStatus();
+  CommandBuffer::State state = command_buffer_->Flush(put_);
+  SynchronizeState(state);
+  return state.error == parse_error::kParseNoError;
 }
 
 // Calls Flush() and then waits until the buffer is empty. Break early if the
@@ -46,7 +46,7 @@ bool CommandBufferHelper::Flush() {
 bool CommandBufferHelper::Finish() {
   do {
     // Do not loop forever if the flush fails, meaning the command buffer reader
-    // has shutdown).
+    // has shutdown.
     if (!Flush())
       return false;
   } while (put_ != get_);
@@ -67,7 +67,6 @@ int32 CommandBufferHelper::InsertToken() {
   if (token_ == 0) {
     // we wrapped
     Finish();
-    last_token_read_ = command_buffer_->GetToken();
     DCHECK_EQ(token_, last_token_read_);
   }
   return token_;
@@ -82,7 +81,6 @@ void CommandBufferHelper::WaitForToken(int32 token) {
   if (last_token_read_ >= token) return;  // fast path.
   if (token > token_) return;  // we wrapped
   Flush();
-  last_token_read_ = command_buffer_->GetToken();
   while (last_token_read_ < token) {
     if (get_ == put_) {
       LOG(FATAL) << "Empty command buffer while waiting on a token.";
@@ -92,7 +90,6 @@ void CommandBufferHelper::WaitForToken(int32 token) {
     // has shutdown.
     if (!Flush())
       return;
-    last_token_read_ = command_buffer_->GetToken();
   }
 }
 
@@ -145,9 +142,15 @@ CommandBufferEntry* CommandBufferHelper::GetSpace(uint32 entries) {
   return space;
 }
 
-parse_error::ParseError CommandBufferHelper::GetParseError() {
-  int32 parse_error = command_buffer_->ResetParseError();
-  return static_cast<parse_error::ParseError>(parse_error);
+parse_error::ParseError CommandBufferHelper::GetError() {
+  CommandBuffer::State state = command_buffer_->GetState();
+  SynchronizeState(state);
+  return static_cast<parse_error::ParseError>(state.error);
+}
+
+void CommandBufferHelper::SynchronizeState(CommandBuffer::State state) {
+  get_ = state.get_offset;
+  last_token_read_ = state.token;
 }
 
 }  // namespace gpu
