@@ -200,7 +200,7 @@
    Memcheck:Param
    write(buf)
    ...
-   fun:unixWrite
+   fun:*Write
    fun:sqlite3OsWrite
    ...
    fun:pager_write
