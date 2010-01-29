@@ -303,9 +303,9 @@
    Memcheck:Leak
    ...
    fun:net::TCPClientSocketWin::Read
-   fun:net::HttpStreamParser::DoReadHeaders
+   fun:net::*::DoReadHeaders
    ...
-   fun:net::HttpNetworkTransaction::OnIOComplete
+   fun:net::*::OnIOComplete
 }
 {
    # This is a bit flaky, but it happens with both
