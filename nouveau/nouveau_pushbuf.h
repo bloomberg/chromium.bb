@@ -29,13 +29,6 @@
 #include "nouveau_bo.h"
 #include "nouveau_grobj.h"
 
-struct nouveau_pushbuf {
-	struct nouveau_channel *channel;
-
-	unsigned remaining;
-	uint32_t *cur;
-};
-
 int
 nouveau_pushbuf_flush(struct nouveau_channel *, unsigned min);
 
@@ -50,6 +43,10 @@ int
 nouveau_pushbuf_emit_reloc(struct nouveau_channel *, void *ptr,
 			   struct nouveau_bo *, uint32_t data, uint32_t data2,
 			   uint32_t flags, uint32_t vor, uint32_t tor);
+
+int
+nouveau_pushbuf_submit(struct nouveau_channel *chan, struct nouveau_bo *bo,
+		       unsigned offset, unsigned length);
 
 /* Push buffer access macros */
 static __inline__ int
@@ -67,14 +64,14 @@ MARK_UNDO(struct nouveau_channel *chan)
 static __inline__ void
 OUT_RING(struct nouveau_channel *chan, unsigned data)
 {
-	*(chan->pushbuf->cur++) = (data);
+	*(chan->cur++) = (data);
 }
 
 static __inline__ void
 OUT_RINGp(struct nouveau_channel *chan, const void *data, unsigned size)
 {
-	memcpy(chan->pushbuf->cur, data, size * 4);
-	chan->pushbuf->cur += size;
+	memcpy(chan->cur, data, size * 4);
+	chan->cur += size;
 }
 
 static __inline__ void
@@ -88,13 +85,13 @@ OUT_RINGf(struct nouveau_channel *chan, float f)
 static __inline__ unsigned
 AVAIL_RING(struct nouveau_channel *chan)
 {
-	return chan->pushbuf->remaining;
+	return chan->end - chan->cur;
 }
 
 static __inline__ void
 WAIT_RING(struct nouveau_channel *chan, unsigned size)
 {
-	if (chan->pushbuf->remaining < size)
+	if (chan->cur + size > chan->end)
 		nouveau_pushbuf_flush(chan, size);
 }
 
@@ -108,7 +105,6 @@ BEGIN_RING(struct nouveau_channel *chan, struct nouveau_grobj *gr,
 
 	WAIT_RING(chan, size + 1);
 	OUT_RING(chan, (gr->subc << 13) | (size << 18) | mthd);
-	chan->pushbuf->remaining -= (size + 1);
 }
 
 /* non-incrementing BEGIN_RING */
@@ -147,7 +143,7 @@ static __inline__ int
 OUT_RELOC(struct nouveau_channel *chan, struct nouveau_bo *bo,
 	  unsigned data, unsigned flags, unsigned vor, unsigned tor)
 {
-	return nouveau_pushbuf_emit_reloc(chan, chan->pushbuf->cur++, bo,
+	return nouveau_pushbuf_emit_reloc(chan, chan->cur++, bo,
 					  data, 0, flags, vor, tor);
 }
 
@@ -156,7 +152,7 @@ OUT_RELOC2(struct nouveau_channel *chan, struct nouveau_bo *bo,
 	   unsigned data, unsigned data2, unsigned flags,
 	   unsigned vor, unsigned tor)
 {
-	return nouveau_pushbuf_emit_reloc(chan, chan->pushbuf->cur++, bo,
+	return nouveau_pushbuf_emit_reloc(chan, chan->cur++, bo,
 					  data, data2, flags, vor, tor);
 }
 

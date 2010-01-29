@@ -30,13 +30,9 @@
 #define NOUVEAU_BO_WR     (1 << 3)
 #define NOUVEAU_BO_RDWR   (NOUVEAU_BO_RD | NOUVEAU_BO_WR)
 #define NOUVEAU_BO_MAP    (1 << 4)
-#define NOUVEAU_BO_PIN    (1 << 5)
 #define NOUVEAU_BO_LOW    (1 << 6)
 #define NOUVEAU_BO_HIGH   (1 << 7)
 #define NOUVEAU_BO_OR     (1 << 8)
-#define NOUVEAU_BO_LOCAL  (1 << 9)
-#define NOUVEAU_BO_TILED  (1 << 10)
-#define NOUVEAU_BO_ZTILE  (1 << 11)
 #define NOUVEAU_BO_INVAL  (1 << 12)
 #define NOUVEAU_BO_NOSYNC (1 << 13)
 #define NOUVEAU_BO_NOWAIT (1 << 14)
@@ -52,10 +48,6 @@ struct nouveau_bo {
 
 	uint32_t tile_mode;
 	uint32_t tile_flags;
-
-	/* Available when buffer is pinned *only* */
-	uint32_t flags;
-	uint64_t offset;
 };
 
 int
@@ -96,12 +88,6 @@ nouveau_bo_map(struct nouveau_bo *, uint32_t flags);
 
 void
 nouveau_bo_unmap(struct nouveau_bo *);
-
-int
-nouveau_bo_pin(struct nouveau_bo *, uint32_t flags);
-
-void
-nouveau_bo_unpin(struct nouveau_bo *);
 
 int
 nouveau_bo_busy(struct nouveau_bo *, uint32_t access);

@@ -18,7 +18,8 @@ libdrm_nouveau_la_SOURCES = \
 			    nouveau_notifier.c \
 			    nouveau_bo.c \
 			    nouveau_resource.c \
-			    nouveau_private.h
+			    nouveau_private.h \
+			    nouveau_reloc.c
 
 libdrm_nouveaucommonincludedir = ${includedir}/nouveau
 libdrm_nouveaucommoninclude_HEADERS = \
@@ -29,7 +30,8 @@ libdrm_nouveaucommoninclude_HEADERS = \
 				nouveau_pushbuf.h \
 				nouveau_bo.h \
 				nouveau_resource.h \
-				nouveau_class.h
+				nouveau_class.h \
+				nouveau_reloc.h
 
 
 libdrm_nouveauincludedir = ${includedir}/drm

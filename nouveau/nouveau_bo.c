@@ -201,14 +201,6 @@ nouveau_bo_new_tile(struct nouveau_device *dev, uint32_t flags, int align,
 			nouveau_bo_ref(NULL, (void *)nvbo);
 			return ret;
 		}
-
-		if (flags & NOUVEAU_BO_PIN) {
-			ret = nouveau_bo_pin((void *)nvbo, nvbo->flags);
-			if (ret) {
-				nouveau_bo_ref(NULL, (void *)nvbo);
-				return ret;
-			}
-		}
 	}
 
 	*bo = &nvbo->base;
@@ -219,16 +211,7 @@ int
 nouveau_bo_new(struct nouveau_device *dev, uint32_t flags, int align,
 	       int size, struct nouveau_bo **bo)
 {
-	uint32_t tile_flags = 0;
-
-	if (flags & NOUVEAU_BO_TILED) {
-		if (flags & NOUVEAU_BO_ZTILE)
-			tile_flags = 0x2800;
-		else
-			tile_flags = 0x7000;
-	}
-
-	return nouveau_bo_new_tile(dev, flags, align, size, 0, tile_flags, bo);
+	return nouveau_bo_new_tile(dev, flags, align, size, 0, 0, bo);
 }
 
 int
@@ -483,62 +466,6 @@ nouveau_bo_unmap(struct nouveau_bo *bo)
 }
 
 int
-nouveau_bo_pin(struct nouveau_bo *bo, uint32_t flags)
-{
-	struct nouveau_device_priv *nvdev = nouveau_device(bo->device);
-	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
-	struct drm_nouveau_gem_pin req;
-	int ret;
-
-	if (nvbo->pinned)
-		return 0;
-
-	if (!nvbo->handle)
-		return -EINVAL;
-
-	/* Now force it to stay put :) */
-	req.handle = nvbo->handle;
-	req.domain = 0;
-	if (flags & NOUVEAU_BO_VRAM)
-		req.domain |= NOUVEAU_GEM_DOMAIN_VRAM;
-	if (flags & NOUVEAU_BO_GART)
-		req.domain |= NOUVEAU_GEM_DOMAIN_GART;
-
-	ret = drmCommandWriteRead(nvdev->fd, DRM_NOUVEAU_GEM_PIN, &req,
-				  sizeof(struct drm_nouveau_gem_pin));
-	if (ret)
-		return ret;
-	nvbo->offset = req.offset;
-	nvbo->domain = req.domain;
-	nvbo->pinned = 1;
-
-	/* Fill in public nouveau_bo members */
-	if (nvbo->domain & NOUVEAU_GEM_DOMAIN_VRAM)
-		bo->flags = NOUVEAU_BO_VRAM;
-	if (nvbo->domain & NOUVEAU_GEM_DOMAIN_GART)
-		bo->flags = NOUVEAU_BO_GART;
-	bo->offset = nvbo->offset;
-
-	return 0;
-}
-
-void
-nouveau_bo_unpin(struct nouveau_bo *bo)
-{
-	struct nouveau_device_priv *nvdev = nouveau_device(bo->device);
-	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
-	struct drm_nouveau_gem_unpin req;
-
-	if (!nvbo->pinned)
-		return;
-
-	req.handle = nvbo->handle;
-	drmCommandWrite(nvdev->fd, DRM_NOUVEAU_GEM_UNPIN, &req, sizeof(req));
-
-	nvbo->pinned = bo->offset = bo->flags = 0;
-}
-
-int
 nouveau_bo_busy(struct nouveau_bo *bo, uint32_t access)
 {
 	return nouveau_bo_wait(bo, (access & NOUVEAU_BO_WR), 1, 1);
@@ -565,7 +492,7 @@ nouveau_bo_pending(struct nouveau_bo *bo)
 struct drm_nouveau_gem_pushbuf_bo *
 nouveau_bo_emit_buffer(struct nouveau_channel *chan, struct nouveau_bo *bo)
 {
-	struct nouveau_pushbuf_priv *nvpb = nouveau_pushbuf(chan->pushbuf);
+	struct nouveau_pushbuf_priv *nvpb = &nouveau_channel(chan)->pb;
 	struct nouveau_bo_priv *nvbo = nouveau_bo(bo);
 	struct drm_nouveau_gem_pushbuf_bo *pbbo;
 	struct nouveau_bo *ref = NULL;
@@ -607,8 +534,8 @@ nouveau_bo_emit_buffer(struct nouveau_channel *chan, struct nouveau_bo *bo)
 	pbbo->valid_domains = NOUVEAU_GEM_DOMAIN_VRAM | NOUVEAU_GEM_DOMAIN_GART;
 	pbbo->read_domains = 0;
 	pbbo->write_domains = 0;
-	pbbo->presumed_domain = nvbo->domain;
-	pbbo->presumed_offset = nvbo->offset;
-	pbbo->presumed_ok = 1;
+	pbbo->presumed.domain = nvbo->domain;
+	pbbo->presumed.offset = nvbo->offset;
+	pbbo->presumed.valid = 1;
 	return pbbo;
 }

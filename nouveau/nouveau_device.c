@@ -26,7 +26,7 @@
 
 #include "nouveau_private.h"
 
-#if NOUVEAU_DRM_HEADER_PATCHLEVEL != 15
+#if NOUVEAU_DRM_HEADER_PATCHLEVEL != 16
 #error nouveau_drm.h does not match expected patchlevel, update libdrm.
 #endif
 
@@ -53,12 +53,6 @@ nouveau_device_open_existing(struct nouveau_device **dev, int close,
 	nvdev->fd = fd;
 	nvdev->ctx = ctx;
 	nvdev->needs_close = close;
-
-	ret = drmCommandNone(nvdev->fd, DRM_NOUVEAU_CARD_INIT);
-	if (ret) {
-		nouveau_device_close((void *)&nvdev);
-		return ret;
-	}
 
 	ret = nouveau_device_get_param(&nvdev->base,
 				       NOUVEAU_GETPARAM_VM_VRAM_BASE, &value);

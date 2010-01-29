@@ -35,14 +35,11 @@
 #include "nouveau_bo.h"
 #include "nouveau_resource.h"
 #include "nouveau_pushbuf.h"
+#include "nouveau_reloc.h"
 
 #define CALPB_BUFFERS 4
 #define CALPB_BUFSZ   16384
 struct nouveau_pushbuf_priv {
-	struct nouveau_pushbuf base;
-
-	int no_aper_update;
-	int use_cal;
 	uint32_t cal_suffix0;
 	uint32_t cal_suffix1;
 	struct nouveau_bo *buffer[CALPB_BUFFERS];
@@ -50,15 +47,19 @@ struct nouveau_pushbuf_priv {
 	int current_offset;
 
 	unsigned *pushbuf;
-	unsigned  size;
+	unsigned size;
 
-	unsigned marker;
+	uint32_t *marker;
+	unsigned marker_offset;
 	unsigned marker_relocs;
+	unsigned marker_push;
 
 	struct drm_nouveau_gem_pushbuf_bo *buffers;
 	unsigned nr_buffers;
 	struct drm_nouveau_gem_pushbuf_reloc *relocs;
 	unsigned nr_relocs;
+	struct drm_nouveau_gem_pushbuf_push push[NOUVEAU_GEM_MAX_PUSH];
+	unsigned nr_push;
 };
 #define nouveau_pushbuf(n) ((struct nouveau_pushbuf_priv *)(n))
 

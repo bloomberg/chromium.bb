@@ -1,5 +1,5 @@
 /*
- * Copyright 2007 Nouveau Project
+ * Copyright 2010 Nouveau Project
  *
  * Permission is hereby granted, free of charge, to any person obtaining a
  * copy of this software and associated documentation files (the "Software"),
@@ -20,38 +20,13 @@
  * SOFTWARE.
  */
 
-#ifndef __NOUVEAU_CHANNEL_H__
-#define __NOUVEAU_CHANNEL_H__
-
-struct nouveau_subchannel {
-	struct nouveau_grobj *gr;
-	unsigned sequence;
-};
-
-struct nouveau_channel {
-	uint32_t *cur;
-	uint32_t *end;
-
-	struct nouveau_device *device;
-	int id;
-
-	struct nouveau_grobj *nullobj;
-	struct nouveau_grobj *vram;
-	struct nouveau_grobj *gart;
-
-	void *user_private;
-	void (*hang_notify)(struct nouveau_channel *);
-	void (*flush_notify)(struct nouveau_channel *);
-
-	struct nouveau_subchannel subc[8];
-	unsigned subc_sequence;
-};
+#ifndef __NOUVEAU_RELOC_H__
+#define __NOUVEAU_RELOC_H__
 
 int
-nouveau_channel_alloc(struct nouveau_device *, uint32_t fb, uint32_t tt,
-		      struct nouveau_channel **);
-
-void
-nouveau_channel_free(struct nouveau_channel **);
+nouveau_reloc_emit(struct nouveau_channel *chan, struct nouveau_bo *reloc_bo,
+		   uint32_t reloc_offset, uint32_t *reloc_ptr,
+		   struct nouveau_bo *bo, uint32_t data, uint32_t data2,
+		   uint32_t flags, uint32_t vor, uint32_t tor);
 
 #endif
