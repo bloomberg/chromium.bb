@@ -2288,14 +2288,7 @@ BUG16240 MAC DEBUG : http/tests/cache/subresource-expiration.html = PASS TIMEOUT
 BUG14752 LINUX SLOW : http/tests/cache/subresource-expiration.html = PASS
 
 // Failure since WebKit merge 45873:45916
-BUG17015 MAC : editing/pasteboard/4242293-1.html = FAIL
-BUG17015 MAC : editing/pasteboard/4242293.html = FAIL
-BUG17015 MAC : editing/pasteboard/4944770-1.html = FAIL
 BUG17015 MAC : editing/pasteboard/drag-drop-modifies-page.html = FAIL
-BUG17015 MAC : editing/pasteboard/paste-text-001.html = FAIL
-BUG17015 MAC : editing/pasteboard/paste-text-012.html = FAIL
-BUG17015 MAC : editing/pasteboard/paste-text-013.html = FAIL
-BUG17015 MAC : editing/pasteboard/paste-text-014.html = FAIL
 BUG17015 MAC : editing/selection/4895428-1.html = FAIL
 BUG17015 MAC : editing/selection/4895428-4.html = FAIL
 BUG17015 MAC : editing/selection/contains-boundaries.html = FAIL
@@ -2904,11 +2897,6 @@ BUG32949 WIN LINUX MAC : fast/dom/Window/invalid-protocol.html = TEXT
 // WebKit roll 53704:53787.  Not going to fix for now.
 BUG33099 : media/video-reverse-play-duration.html = TIMEOUT
 BUG33099 : media/video-timeupdate-reverse-play.html = TIMEOUT
-
-// Newly added tests from r53893
-BUG33288 : fast/forms/input-valueasnumber-date.html = TEXT
-BUG33288 : fast/forms/input-valueasnumber-datetime.html = TEXT
-BUG33288 : fast/forms/input-valueasnumber-month.html = TEXT
 
 // Flaky storage tests
 BUG33343 LINUX MAC : storage/database-lock-after-reload.html = CRASH TEXT PASS
