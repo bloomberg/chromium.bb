@@ -591,7 +591,7 @@
 
       <!-- The URL for About Google Translate. -->
       <message name="IDS_ABOUT_GOOGLE_TRANSLATE_URL" translateable="false">
-        http://translate.google.com/support/?hl=[GRITLANGCODE]
+        http://www.google.com/support/chrome/bin/answer.py?answer=173424&amp;hl=[GRITLANGCODE]
       </message>
     </messages>
   </release>
