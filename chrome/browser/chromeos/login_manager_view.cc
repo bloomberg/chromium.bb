@@ -78,7 +78,7 @@ class LoginManagerWindow : public views::WindowGtk {
         new LoginManagerWindow();
     login_manager_window->GetNonClientView()->SetFrameView(
         new LoginManagerNonClientFrameView());
-    login_manager_window->Init(NULL, gfx::Rect());
+    login_manager_window->Init(NULL, gfx::Rect(0, 0, 1024,768));
     return login_manager_window;
   }
 
@@ -186,8 +186,7 @@ void LoginManagerView::BuildWindow() {
   AddChildView(login_prompt);
 
   if (!chromeos::LoginLibrary::EnsureLoaded()) {
-    error_label->SetText(
-        l10n_util::GetStringUTF16(IDS_LOGIN_DISABLED_NO_LIBCROS));
+    error_label_->SetText(l10n_util::GetString(IDS_LOGIN_DISABLED_NO_LIBCROS));
     username_field_->SetReadOnly(true);
     password_field_->SetReadOnly(true);
   }
