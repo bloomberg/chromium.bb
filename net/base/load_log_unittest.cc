@@ -41,15 +41,16 @@ TEST(LoadLogTest, Basic) {
   EXPECT_EQ(3u, log->entries().size());
   EXPECT_EQ(0u, log->num_entries_truncated());
 
-  ExpectLogContains(log, 0, MakeTime(0), LoadLog::TYPE_HOST_RESOLVER_IMPL,
-                    LoadLog::PHASE_BEGIN);
+  EXPECT_TRUE(LogContainsEventAtTime(
+      *log, 0, MakeTime(0), LoadLog::TYPE_HOST_RESOLVER_IMPL,
+      LoadLog::PHASE_BEGIN));
 
-  ExpectLogContains(log, 1, MakeTime(2), LoadLog::TYPE_CANCELLED,
-                    LoadLog::PHASE_NONE);
+  EXPECT_TRUE(LogContainsEventAtTime(
+      *log, 1, MakeTime(2), LoadLog::TYPE_CANCELLED, LoadLog::PHASE_NONE));
 
-  ExpectLogContains(log, 2, MakeTime(11),
-                    LoadLog::TYPE_HOST_RESOLVER_IMPL_OBSERVER_ONSTART,
-                    LoadLog::PHASE_END);
+  EXPECT_TRUE(LogContainsEventAtTime(
+      *log, 2, MakeTime(11), LoadLog::TYPE_HOST_RESOLVER_IMPL_OBSERVER_ONSTART,
+      LoadLog::PHASE_END));
 }
 
 // Test that the log's size is strictly bounded.
@@ -68,9 +69,8 @@ TEST(LoadLogTest, Truncation) {
   EXPECT_EQ(0u, log->num_entries_truncated());
 
   // Check the last entry.
-  ExpectLogContains(log, 9, MakeTime(9),
-                    LoadLog::TYPE_CANCELLED,
-                    LoadLog::PHASE_NONE);
+  EXPECT_TRUE(LogContainsEventAtTime(
+      *log, 9, MakeTime(9), LoadLog::TYPE_CANCELLED, LoadLog::PHASE_NONE));
 
   // Add three entries while maxed out (will cause truncation)
   log->Add(LoadLog::Entry(MakeTime(0),
@@ -87,9 +87,8 @@ TEST(LoadLogTest, Truncation) {
   EXPECT_EQ(3u, log->num_entries_truncated());
 
   // Check the last entry -- it should be the final entry we added.
-  ExpectLogContains(log, 9, MakeTime(2),
-                    LoadLog::TYPE_CANCELLED,
-                    LoadLog::PHASE_NONE);
+  EXPECT_TRUE(LogContainsEventAtTime(
+      *log, 9, MakeTime(2), LoadLog::TYPE_CANCELLED, LoadLog::PHASE_NONE));
 }
 
 TEST(LoadLogTest, Append) {
@@ -117,14 +116,17 @@ TEST(LoadLogTest, Append) {
   EXPECT_EQ(3u, log1->entries().size());
   EXPECT_EQ(0u, log1->num_entries_truncated());
 
-  ExpectLogContains(log1, 0, MakeTime(0), LoadLog::TYPE_HOST_RESOLVER_IMPL,
-                    LoadLog::PHASE_BEGIN);
+  EXPECT_TRUE(LogContainsEventAtTime(
+      *log1, 0, MakeTime(0), LoadLog::TYPE_HOST_RESOLVER_IMPL,
+      LoadLog::PHASE_BEGIN));
 
-  ExpectLogContains(log1, 1, MakeTime(3), LoadLog::TYPE_CANCELLED,
-                    LoadLog::PHASE_NONE);
+  EXPECT_TRUE(LogContainsEventAtTime(
+      *log1, 1, MakeTime(3), LoadLog::TYPE_CANCELLED,
+      LoadLog::PHASE_NONE));
 
-  ExpectLogContains(log1, 2, MakeTime(9), LoadLog::TYPE_HOST_RESOLVER_IMPL,
-                    LoadLog::PHASE_END);
+  EXPECT_TRUE(LogContainsEventAtTime(
+      *log1, 2, MakeTime(9), LoadLog::TYPE_HOST_RESOLVER_IMPL,
+      LoadLog::PHASE_END));
 }
 
 TEST(LoadLogTest, AppendWithTruncation) {
@@ -152,8 +154,8 @@ TEST(LoadLogTest, AppendWithTruncation) {
   EXPECT_EQ(2u, log1->num_entries_truncated());
 
   // Combined log should end with the final entry of log2.
-  ExpectLogContains(log1, 9, MakeTime(10), LoadLog::TYPE_CANCELLED,
-                    LoadLog::PHASE_NONE);
+  EXPECT_TRUE(LogContainsEventAtTime(
+      *log1, 9, MakeTime(10), LoadLog::TYPE_CANCELLED, LoadLog::PHASE_NONE));
 }
 
 TEST(LoadLogTest, EventTypeToString) {

@@ -179,18 +179,17 @@ TEST(InitProxyResolverTest, CustomPacSucceeds) {
 
   // Check the LoadLog was filled correctly.
   EXPECT_EQ(9u, log->entries().size());
-  ExpectLogContains(log, 0, LoadLog::TYPE_INIT_PROXY_RESOLVER,
-                    LoadLog::PHASE_BEGIN);
-  ExpectLogContains(log, 1, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
-                    LoadLog::PHASE_BEGIN);
-  ExpectLogContains(log, 4, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
-                    LoadLog::PHASE_END);
-  ExpectLogContains(log, 5, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
-                    LoadLog::PHASE_BEGIN);
-  ExpectLogContains(log, 7, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
-                    LoadLog::PHASE_END);
-  ExpectLogContains(log, 8, LoadLog::TYPE_INIT_PROXY_RESOLVER,
-                    LoadLog::PHASE_END);
+  EXPECT_TRUE(LogContainsBeginEvent(
+      *log, 0, LoadLog::TYPE_INIT_PROXY_RESOLVER));
+  EXPECT_TRUE(LogContainsBeginEvent(
+      *log, 1, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
+  EXPECT_TRUE(LogContainsEndEvent(
+      *log, 4, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
+  EXPECT_TRUE(LogContainsBeginEvent(
+      *log, 5, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
+  EXPECT_TRUE(LogContainsEndEvent(
+      *log, 7, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
+  EXPECT_TRUE(LogContainsEndEvent(*log, 8, LoadLog::TYPE_INIT_PROXY_RESOLVER));
 }
 
 // Fail downloading the custom PAC script.
@@ -212,14 +211,13 @@ TEST(InitProxyResolverTest, CustomPacFails1) {
 
   // Check the LoadLog was filled correctly.
   EXPECT_EQ(6u, log->entries().size());
-  ExpectLogContains(log, 0, LoadLog::TYPE_INIT_PROXY_RESOLVER,
-                    LoadLog::PHASE_BEGIN);
-  ExpectLogContains(log, 1, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
-                    LoadLog::PHASE_BEGIN);
-  ExpectLogContains(log, 4, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
-                    LoadLog::PHASE_END);
-  ExpectLogContains(log, 5, LoadLog::TYPE_INIT_PROXY_RESOLVER,
-                    LoadLog::PHASE_END);
+  EXPECT_TRUE(LogContainsBeginEvent(
+      *log, 0, LoadLog::TYPE_INIT_PROXY_RESOLVER));
+  EXPECT_TRUE(LogContainsBeginEvent(
+      *log, 1, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
+  EXPECT_TRUE(LogContainsEndEvent(
+      *log, 4, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
+  EXPECT_TRUE(LogContainsEndEvent(*log, 5, LoadLog::TYPE_INIT_PROXY_RESOLVER));
 }
 
 // Fail parsing the custom PAC script.
@@ -312,26 +310,25 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess2) {
   // (Note that the Fetch and Set states are repeated since both WPAD and custom
   // PAC scripts are tried).
   EXPECT_EQ(17u, log->entries().size());
-  ExpectLogContains(log, 0, LoadLog::TYPE_INIT_PROXY_RESOLVER,
-                    LoadLog::PHASE_BEGIN);
-  ExpectLogContains(log, 1, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
-                    LoadLog::PHASE_BEGIN);
-  ExpectLogContains(log, 4, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
-                    LoadLog::PHASE_END);
-  ExpectLogContains(log, 5, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
-                    LoadLog::PHASE_BEGIN);
-  ExpectLogContains(log, 7, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
-                    LoadLog::PHASE_END);
-  ExpectLogContains(log, 9, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
-                    LoadLog::PHASE_BEGIN);
-  ExpectLogContains(log, 12, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT,
-                    LoadLog::PHASE_END);
-  ExpectLogContains(log, 13, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
-                    LoadLog::PHASE_BEGIN);
-  ExpectLogContains(log, 15, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT,
-                    LoadLog::PHASE_END);
-  ExpectLogContains(log, 16, LoadLog::TYPE_INIT_PROXY_RESOLVER,
-                    LoadLog::PHASE_END);
+  EXPECT_TRUE(LogContainsBeginEvent(
+      *log, 0, LoadLog::TYPE_INIT_PROXY_RESOLVER));
+  EXPECT_TRUE(LogContainsBeginEvent(
+      *log, 1, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
+  EXPECT_TRUE(LogContainsEndEvent(
+      *log, 4, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
+  EXPECT_TRUE(LogContainsBeginEvent(
+      *log, 5, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
+  EXPECT_TRUE(LogContainsEndEvent(
+      *log, 7, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
+  EXPECT_TRUE(LogContainsBeginEvent(
+      *log, 9, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
+  EXPECT_TRUE(LogContainsEndEvent(
+      *log, 12, LoadLog::TYPE_INIT_PROXY_RESOLVER_FETCH_PAC_SCRIPT));
+  EXPECT_TRUE(LogContainsBeginEvent(
+      *log, 13, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
+  EXPECT_TRUE(LogContainsEndEvent(
+      *log, 15, LoadLog::TYPE_INIT_PROXY_RESOLVER_SET_PAC_SCRIPT));
+  EXPECT_TRUE(LogContainsEndEvent(*log, 16, LoadLog::TYPE_INIT_PROXY_RESOLVER));
 }
 
 // Fails at WPAD (downloading), and fails at custom PAC (downloading).

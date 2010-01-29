@@ -18,36 +18,11 @@ inline base::TimeTicks MakeTime(int t) {
   return ticks;
 }
 
-// Call gtest's EXPECT_* to verify that |log| contains the specified entry
-// at index |i|.
-inline void ExpectLogContains(const LoadLog* log,
-                              size_t i,
-                              base::TimeTicks expected_time,
-                              LoadLog::EventType expected_event,
-                              LoadLog::EventPhase expected_phase) {
-  ASSERT_LT(i, log->entries().size());
-  const LoadLog::Entry& entry = log->entries()[i];
-  EXPECT_EQ(LoadLog::Entry::TYPE_EVENT, entry.type);
-  EXPECT_TRUE(expected_time == entry.time);
-  EXPECT_EQ(expected_event, entry.event.type);
-  EXPECT_EQ(expected_phase, entry.event.phase);
-}
-
-// Same as above, but without an expectation for the timestamp.
-inline void ExpectLogContains(const LoadLog* log,
-                              size_t i,
-                              LoadLog::EventType expected_event,
-                              LoadLog::EventPhase expected_phase) {
-  ASSERT_LT(i, log->entries().size());
-  const LoadLog::Entry& entry = log->entries()[i];
-  EXPECT_EQ(LoadLog::Entry::TYPE_EVENT, entry.type);
-  EXPECT_EQ(expected_event, entry.event.type);
-  EXPECT_EQ(expected_phase, entry.event.phase);
-}
-
-inline ::testing::AssertionResult LogContains(
+inline ::testing::AssertionResult LogContainsEventHelper(
     const LoadLog& log,
     int i,  // Negative indices are reverse indices.
+    const base::TimeTicks& expected_time,
+    bool check_time,
     LoadLog::EventType expected_event,
     LoadLog::EventPhase expected_phase) {
   // Negative indices are reverse indices.
@@ -69,7 +44,51 @@ inline ::testing::AssertionResult LogContains(
         << "Actual phase: " << entry.event.phase
         << ". Expected phase: " << expected_phase << ".";
   }
+  if (check_time) {
+    if (expected_time != entry.time) {
+      return ::testing::AssertionFailure()
+          << "Actual time: " << entry.time.ToInternalValue()
+          << ". Expected time: " << expected_time.ToInternalValue()
+          << ".";
+    }
+  }
   return ::testing::AssertionSuccess();
+}
+
+inline ::testing::AssertionResult LogContainsEventAtTime(
+    const LoadLog& log,
+    int i,  // Negative indices are reverse indices.
+    const base::TimeTicks& expected_time,
+    LoadLog::EventType expected_event,
+    LoadLog::EventPhase expected_phase) {
+  return LogContainsEventHelper(log, i, expected_time, true,
+                                expected_event, expected_phase);
+}
+
+// Version without timestamp.
+inline ::testing::AssertionResult LogContainsEvent(
+    const LoadLog& log,
+    int i,  // Negative indices are reverse indices.
+    LoadLog::EventType expected_event,
+    LoadLog::EventPhase expected_phase) {
+  return LogContainsEventHelper(log, i, base::TimeTicks(), false,
+                                expected_event, expected_phase);
+}
+
+// Version for PHASE_BEGIN (and no timestamp).
+inline ::testing::AssertionResult LogContainsBeginEvent(
+    const LoadLog& log,
+    int i,  // Negative indices are reverse indices.
+    LoadLog::EventType expected_event) {
+  return LogContainsEvent(log, i, expected_event, LoadLog::PHASE_BEGIN);
+}
+
+// Version for PHASE_END (and no timestamp).
+inline ::testing::AssertionResult LogContainsEndEvent(
+    const LoadLog& log,
+    int i,  // Negative indices are reverse indices.
+    LoadLog::EventType expected_event) {
+  return LogContainsEvent(log, i, expected_event, LoadLog::PHASE_END);
 }
 
 // Expect that the log contains an event, but don't care about where

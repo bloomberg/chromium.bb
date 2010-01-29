@@ -1053,9 +1053,8 @@ TEST_F(FlipNetworkTransactionTest, LoadLog) {
   EXPECT_LT(0u, log->entries().size());
   int pos = 0;
   // We know the first event at position 0.
-  net::ExpectLogContains(log, 0,
-      net::LoadLog::TYPE_FLIP_TRANSACTION_INIT_CONNECTION,
-      net::LoadLog::PHASE_BEGIN);
+  EXPECT_TRUE(net::LogContainsBeginEvent(
+      *log, 0, net::LoadLog::TYPE_FLIP_TRANSACTION_INIT_CONNECTION));
   // For the rest of the events, allow additional events in the middle,
   // but expect these to be logged in order.
   pos = net::ExpectLogContainsSomewhere(log, 0,
