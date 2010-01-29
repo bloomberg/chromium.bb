@@ -665,12 +665,12 @@ WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
 
 bool TestWebViewDelegate::allowPlugins(WebFrame* frame,
                                        bool enabled_per_settings) {
-  return shell_->allow_plugins();
+  return enabled_per_settings && shell_->allow_plugins();
 }
 
 bool TestWebViewDelegate::allowImages(WebFrame* frame,
                                       bool enabled_per_settings) {
-  return shell_->allow_images();
+  return enabled_per_settings && shell_->allow_images();
 }
 
 void TestWebViewDelegate::loadURLExternally(
@@ -1010,7 +1010,7 @@ void TestWebViewDelegate::didRunInsecureContent(
 
 bool TestWebViewDelegate::allowScript(WebFrame* frame,
                                       bool enabled_per_settings) {
-  return shell_->allow_scripts();
+  return enabled_per_settings && shell_->allow_scripts();
 }
 
 void TestWebViewDelegate::focusAccessibilityObject(
