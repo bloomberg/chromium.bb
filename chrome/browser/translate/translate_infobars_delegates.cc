@@ -177,6 +177,13 @@ void BeforeTranslateInfoBarDelegate::ToggleSiteBlacklist() {
     prefs_.RemoveSiteFromBlacklist(site_);
 }
 
+#if !defined(TOOLKIT_VIEWS)
+InfoBar* BeforeTranslateInfoBarDelegate::CreateInfoBar() {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+#endif  // !TOOLKIT_VIEWS
+
 // AfterTranslateInfoBarDelegate: public: --------------------------------------
 
 AfterTranslateInfoBarDelegate::AfterTranslateInfoBarDelegate(
@@ -212,3 +219,10 @@ void AfterTranslateInfoBarDelegate::ToggleAlwaysTranslate() {
     prefs_.RemoveLanguagePairFromWhitelist(original_language(),
         target_language());
 }
+
+#if !defined(TOOLKIT_VIEWS)
+InfoBar* AfterTranslateInfoBarDelegate::CreateInfoBar() {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+#endif  // !TOOLKIT_VIEWS
