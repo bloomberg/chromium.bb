@@ -186,7 +186,7 @@ void LoginManagerView::BuildWindow() {
   AddChildView(login_prompt);
 
   if (!chromeos::LoginLibrary::EnsureLoaded()) {
-    username_field_->SetText(
+    error_label->SetText(
         l10n_util::GetStringUTF16(IDS_LOGIN_DISABLED_NO_LIBCROS));
     username_field_->SetReadOnly(true);
     password_field_->SetReadOnly(true);
@@ -252,19 +252,6 @@ bool LoginManagerView::HandleKeystroke(views::Textfield* s,
       // Return true so that processing ends
       return true;
     } else {
-      chromeos::NetworkLibrary* network = chromeos::NetworkLibrary::Get();
-      if (!network || !network->EnsureLoaded()) {
-        error_label_->SetText(
-            l10n_util::GetString(IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY));
-        return true;
-      }
-
-      if (!network->Connected()) {
-        error_label_->SetText(
-            l10n_util::GetString(IDS_LOGIN_ERROR_NETWORK_NOT_CONNECTED));
-        return true;
-      }
-
       std::string username = UTF16ToUTF8(username_field_->text());
       // todo(cmasone) Need to sanitize memory used to store password.
       std::string password = UTF16ToUTF8(password_field_->text());
@@ -276,8 +263,17 @@ bool LoginManagerView::HandleKeystroke(views::Textfield* s,
 
       // Set up credentials to prepare for authentication.
       if (!Authenticate(username, password)) {
-        error_label_->SetText(
-            l10n_util::GetString(IDS_LOGIN_ERROR_AUTHENTICATING));
+        chromeos::NetworkLibrary* network = chromeos::NetworkLibrary::Get();
+        int errorID;
+        // Check networking after trying to login in case user is
+        // cached locally or the local admin account.
+        if (!network || !network->EnsureLoaded())
+          errorID = IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY;
+        else if (!network->Connected())
+          errorID = IDS_LOGIN_ERROR_NETWORK_NOT_CONNECTED;
+        else
+          errorID = IDS_LOGIN_ERROR_AUTHENTICATING;
+        error_label_->SetText(l10n_util::GetString(errorID));
         return true;
       }
       // TODO(cmasone): something sensible if errors occur.
