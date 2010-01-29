@@ -46,9 +46,7 @@
 
 #include "v8/include/v8-debug.h"
 
-using WebKit::WebDevToolsAgent;
-using WebKit::WebFrameImpl;
-using WebKit::WebViewImpl;
+namespace WebKit {
 
 WebDevToolsAgent::MessageLoopDispatchHandler DebuggerAgentManager::s_messageLoopDispatchHandler = 0;
 
@@ -317,3 +315,5 @@ DebuggerAgentImpl* DebuggerAgentManager::debuggerAgentForHostId(int hostId)
         return 0;
     return s_attachedAgentsMap->get(hostId);
 }
+
+} // namespace WebKit

@@ -33,6 +33,8 @@
 
 #include "webkit/glue/devtools/devtools_rpc.h"
 
+namespace WebKit {
+
 #define DEBUGGER_AGENT_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3, METHOD4, METHOD5) \
   /* Requests global context id of the inspected tab. */ \
   METHOD0(getContextId)
@@ -46,5 +48,7 @@ DEFINE_RPC_CLASS(DebuggerAgent, DEBUGGER_AGENT_STRUCT)
   METHOD1(setContextId, int /* context id */)
 
 DEFINE_RPC_CLASS(DebuggerAgentDelegate, DEBUGGER_AGENT_DELEGATE_STRUCT)
+
+} // namespace WebKit
 
 #endif  // WEBKIT_GLUE_DEVTOOLS_DEBUGGER_AGENT_H_

@@ -96,18 +96,8 @@ using WebCore::String;
 using WebCore::V8ClassIndex;
 using WebCore::V8DOMWrapper;
 using WebCore::V8Proxy;
-using WebKit::WebDataSource;
-using WebKit::WebDevToolsAgentClient;
-using WebKit::WebDevToolsMessageData;
-using WebKit::WebFrame;
-using WebKit::WebFrameImpl;
-using WebKit::WebPoint;
-using WebKit::WebString;
-using WebKit::WebURL;
-using WebKit::WebURLError;
-using WebKit::WebURLRequest;
-using WebKit::WebURLResponse;
-using WebKit::WebViewImpl;
+
+namespace WebKit {
 
 namespace {
 
@@ -551,34 +541,26 @@ void WebDevToolsAgentImpl::setTimelineProfilingEnabled(bool enabled)
         ic->stopTimelineProfiler();
 }
 
-
-namespace WebKit {
-
-// static
 WebDevToolsAgent* WebDevToolsAgent::create(WebView* webview, WebDevToolsAgentClient* client)
 {
     return new WebDevToolsAgentImpl(static_cast<WebViewImpl*>(webview), client);
 }
 
-// static
 void WebDevToolsAgent::executeDebuggerCommand(const WebString& command, int callerId)
 {
     DebuggerAgentManager::executeDebuggerCommand(webkit_glue::WebStringToString(command), callerId);
 }
 
-// static
 void WebDevToolsAgent::debuggerPauseScript()
 {
     DebuggerAgentManager::pauseScript();
 }
 
-// static
 void WebDevToolsAgent::setMessageLoopDispatchHandler(MessageLoopDispatchHandler handler)
 {
     DebuggerAgentManager::setMessageLoopDispatchHandler(handler);
 }
 
-// static
 bool WebDevToolsAgent::dispatchMessageFromFrontendOnIOThread(const WebDevToolsMessageData& data)
 {
     IoRpcDelegate transport;
@@ -586,6 +568,5 @@ bool WebDevToolsAgent::dispatchMessageFromFrontendOnIOThread(const WebDevToolsMe
     ProfilerAgentImpl agent(&stub);
     return ProfilerAgentDispatch::dispatch(&agent, data);
 }
-
 
 } // namespace WebKit

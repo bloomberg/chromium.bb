@@ -73,14 +73,8 @@
 #include "webkit/glue/webdevtoolsfrontend_impl.h"
 
 using namespace WebCore;
-using WebKit::WebDevToolsFrontend;
-using WebKit::WebDevToolsFrontendClient;
-using WebKit::WebFrame;
-using WebKit::WebFrameImpl;
-using WebKit::WebScriptSource;
-using WebKit::WebString;
-using WebKit::WebView;
-using WebKit::WebViewImpl;
+
+namespace WebKit {
 
 static v8::Local<v8::String> ToV8String(const String& s)
 {
@@ -408,3 +402,5 @@ v8::Handle<v8::Value> WebDevToolsFrontendImpl::jsShowContextMenu(const v8::Argum
 
     return v8::Undefined();
 }
+
+} // namespace WebKit

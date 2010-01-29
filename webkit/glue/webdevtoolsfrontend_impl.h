@@ -53,15 +53,14 @@ namespace WebCore {
 }
 
 namespace WebKit {
+
+    class JsDebuggerAgentBoundObj;
+    class JsNetAgentBoundObj;
+    class JsProfilerAgentBoundObj;
+    class JsToolsAgentBoundObj;
+    class WebDevToolsClientDelegate;
     class WebViewImpl;
     struct WebDevToolsMessageData;
-}
-
-class JsDebuggerAgentBoundObj;
-class JsNetAgentBoundObj;
-class JsProfilerAgentBoundObj;
-class JsToolsAgentBoundObj;
-class WebDevToolsClientDelegate;
 
 class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend
                               , public DevToolsRpc::Delegate
@@ -160,5 +159,7 @@ private:
     Vector<Vector<String> > m_pendingIncomingMessages;
     RefPtr<MenuProvider> m_menuProvider;
 };
+
+} // namespace WebKit
 
 #endif  // WEBKIT_GLUE_WEBDEVTOOLSFRONTEND_IMPL_H_

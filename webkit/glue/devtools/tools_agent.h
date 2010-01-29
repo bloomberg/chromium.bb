@@ -33,6 +33,8 @@
 
 #include "webkit/glue/devtools/devtools_rpc.h"
 
+namespace WebKit {
+
 // Tools agent provides API for enabling / disabling other agents as well as
 // API for auxiliary UI functions such as dom elements highlighting.
 #define TOOLS_AGENT_STRUCT(METHOD0, METHOD1, METHOD2, METHOD3, METHOD4, METHOD5) \
@@ -63,5 +65,7 @@ DEFINE_RPC_CLASS(ToolsAgent, TOOLS_AGENT_STRUCT)
   METHOD1(dispatchOnClient, String /* data */)
 
 DEFINE_RPC_CLASS(ToolsAgentDelegate, TOOLS_AGENT_DELEGATE_STRUCT)
+
+} // namespace WebKit
 
 #endif  // WEBKIT_GLUE_DEVTOOLS_TOOLS_AGENT_H_

@@ -41,6 +41,8 @@
 #include "webkit/glue/devtools/bound_object.h"
 #include "webkit/glue/devtools/devtools_rpc.h"
 
+namespace WebKit {
+
 ///////////////////////////////////////////////////////
 // JS RPC binds and stubs
 
@@ -140,5 +142,7 @@ private: \
         self->sendRpcMessage(#Class, method, args); \
     } \
 };
+
+} // namespace WebKit
 
 #endif  // WEBKIT_GLUE_DEVTOOLS_DEVTOOLS_RPC_JS_H_

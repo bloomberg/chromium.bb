@@ -35,6 +35,8 @@
 
 #include "v8.h"
 
+namespace WebKit {
+
 // BoundObject is a helper class that lets you map JavaScript method calls
 // directly to C++ method calls. It should be destroyed once JS object is
 // built.
@@ -53,5 +55,7 @@ private:
     v8::Persistent<v8::FunctionTemplate> m_hostTemplate;
     void* m_v8This;
 };
+
+} // namespace WebKit
 
 #endif  // WEBKIT_GLUE_DEVTOOLS_BOUND_OBJECT_H_

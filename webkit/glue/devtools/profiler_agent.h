@@ -33,6 +33,8 @@
 
 #include "webkit/glue/devtools/devtools_rpc.h"
 
+namespace WebKit {
+
 // Profiler agent provides API for retrieving profiler data.
 // These methods are handled on the IO thread, so profiler can
 // operate while a script on a page performs heavy work.
@@ -53,5 +55,7 @@ DEFINE_RPC_CLASS(ProfilerAgent, PROFILER_AGENT_STRUCT)
   METHOD2(didGetLogLines, int /* position */, String /* log */)
 
 DEFINE_RPC_CLASS(ProfilerAgentDelegate, PROFILER_AGENT_DELEGATE_STRUCT)
+
+} // namespace WebKit
 
 #endif  // WEBKIT_GLUE_DEVTOOLS_PROFILER_AGENT_H_

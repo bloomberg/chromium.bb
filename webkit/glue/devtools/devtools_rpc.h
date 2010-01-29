@@ -91,6 +91,8 @@ namespace WebCore {
 using WebCore::String;
 using WTF::Vector;
 
+namespace WebKit {
+
 ///////////////////////////////////////////////////////
 // RPC dispatch macro
 
@@ -390,5 +392,7 @@ protected:
 
     Delegate* m_delegate;
 };
+
+} // namespace WebKit
 
 #endif  // WEBKIT_GLUE_DEVTOOLS_DEVTOOLS_RPC_H_

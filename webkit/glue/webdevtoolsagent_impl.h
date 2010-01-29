@@ -50,6 +50,9 @@ namespace WebCore {
 }
 
 namespace WebKit {
+
+    class DebuggerAgentDelegateStub;
+    class DebuggerAgentImpl;
     class WebDevToolsAgentClient;
     class WebFrame;
     class WebFrameImpl;
@@ -59,11 +62,6 @@ namespace WebKit {
     class WebViewImpl;
     struct WebURLError;
     struct WebDevToolsMessageData;
-}
-
-class DebuggerAgentDelegateStub;
-class DebuggerAgentImpl;
-class Value;
 
 class WebDevToolsAgentImpl : public WebKit::WebDevToolsAgentPrivate,
                              public ToolsAgent,
@@ -149,5 +147,7 @@ private:
     v8::Persistent<v8::Context> m_utilityContext;
     OwnPtr<WebCore::ScriptState> m_inspectorFrontendScriptState;
 };
+
+} // namespace WebKit
 
 #endif  // WEBKIT_GLUE_WEBDEVTOOLSAGENT_IMPL_H_

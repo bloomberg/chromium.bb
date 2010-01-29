@@ -34,6 +34,8 @@
 
 #include "webkit/glue/devtools/profiler_agent_impl.h"
 
+namespace WebKit {
+
 void ProfilerAgentImpl::getActiveProfilerModules() {
   m_delegate->didGetActiveProfilerModules(v8::V8::GetActiveProfilerModules());
 }
@@ -45,3 +47,5 @@ void ProfilerAgentImpl::getLogLines(int position) {
   position += readSize;
   m_delegate->didGetLogLines(position, buffer);
 }
+
+} // namespace WebKit

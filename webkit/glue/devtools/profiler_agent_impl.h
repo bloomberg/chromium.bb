@@ -34,6 +34,8 @@
 #include "v8.h"
 #include "webkit/glue/devtools/profiler_agent.h"
 
+namespace WebKit {
+
 class ProfilerAgentImpl : public ProfilerAgent {
  public:
   ProfilerAgentImpl(ProfilerAgentDelegate* delegate) : m_delegate(delegate) { }
@@ -50,5 +52,7 @@ class ProfilerAgentImpl : public ProfilerAgent {
  private:
   ProfilerAgentDelegate* m_delegate;
 };
+
+} // namespace WebKit
 
 #endif  // WEBKIT_GLUE_DEVTOOLS_PROFILER_AGENT_IMPL_H_

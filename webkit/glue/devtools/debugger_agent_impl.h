@@ -37,8 +37,6 @@
 #include "v8.h"
 #include "webkit/glue/devtools/debugger_agent.h"
 
-class WebDevToolsAgentImpl;
-
 namespace WebCore {
     class Document;
     class Node;
@@ -47,8 +45,9 @@ namespace WebCore {
 }
 
 namespace WebKit {
+
+    class WebDevToolsAgentImpl;
     class WebViewImpl;
-}
 
 class DebuggerAgentImpl : public DebuggerAgent {
 public:
@@ -97,5 +96,7 @@ private:
     WebDevToolsAgentImpl* m_webdevtoolsAgent;
     bool m_autoContinueOnException;
 };
+
+} // namespace WebKit
 
 #endif  // WEBKIT_GLUE_DEVTOOLS_DEBUGGER_AGENT_IMPL_H_

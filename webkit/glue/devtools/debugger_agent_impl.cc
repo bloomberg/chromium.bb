@@ -62,6 +62,8 @@ using WebCore::V8DOMWrapper;
 using WebCore::V8Proxy;
 using WebKit::WebViewImpl;
 
+namespace WebKit {
+
 DebuggerAgentImpl::DebuggerAgentImpl(
     WebViewImpl* webViewImpl,
     DebuggerAgentDelegate* delegate,
@@ -210,3 +212,5 @@ WebCore::Page* DebuggerAgentImpl::page()
 {
   return m_webViewImpl->page();
 }
+
+} // namespace WebKit

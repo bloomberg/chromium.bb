@@ -33,6 +33,8 @@
 #include "V8Proxy.h"
 #include "webkit/glue/devtools/bound_object.h"
 
+namespace WebKit {
+
 BoundObject::BoundObject(v8::Handle<v8::Context> context, void* v8This, const char* objectName)
     : m_objectName(objectName)
     , m_context(context)
@@ -73,3 +75,5 @@ void BoundObject::build()
     v8::Handle<v8::Object> global = m_context->Global();
     global->Set(v8::String::New(m_objectName), boundObject);
 }
+
+} // namespace WebKit

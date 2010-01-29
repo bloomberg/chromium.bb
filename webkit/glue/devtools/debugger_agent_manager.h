@@ -42,12 +42,11 @@ namespace WebCore {
 }
 
 namespace WebKit {
+
+    class DebuggerAgentImpl;
+    class DictionaryValue;
     class WebFrameImpl;
     class WebViewImpl;
-}
-
-class DebuggerAgentImpl;
-class DictionaryValue;
 
 // There is single v8 instance per render process. Also there may be several
 // RenderViews and consequently devtools agents in the process that want to talk
@@ -118,5 +117,7 @@ private:
     static bool s_inUtilityContext;
     static bool s_debugBreakDelayed;
 };
+
+} // namespace WebKit
 
 #endif  // WEBKIT_GLUE_DEVTOOLS_DEBUGGER_AGENT_MANAGER_H_
