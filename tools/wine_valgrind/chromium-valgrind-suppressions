@@ -341,6 +341,6 @@
    fun:testing::internal::StrStreamToString
    fun:testing::Message::GetString
    fun:testing::AssertionResult::operator<<<enum net::LoadLog::EventPhase>
-   fun:net::LogContains
+   ...
    fun:SSLClientSocketTest_ConnectMismatched_Test::TestBody
 }
