@@ -230,7 +230,7 @@ const char kEnableMonitorProfile[]          = "enable-monitor-profile";
 // TODO(dspringer): NaCl is disabled on the Mac by default until the
 // NaClSyscallSeg relocatable code can be made secure.  Use this switch to
 // enable NaCl loading on the Mac for development.
-const char kEnableNaCl[]                    = "enable-nacl";
+const char kEnableNaClOnMac[]                    = "enable-nacl-on-mac";
 
 // Enable Native Web Worker support.
 const char kEnableNativeWebWorkers[]        = "enable-native-web-workers";

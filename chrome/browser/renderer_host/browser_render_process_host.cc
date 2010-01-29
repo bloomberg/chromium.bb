@@ -498,8 +498,11 @@ void BrowserRenderProcessHost::PropogateBrowserCommandLineToRenderer(
     // These are unsupported and not fully tested modes, so don't enable them
     // for official Google Chrome builds.
     switches::kInProcessPlugins,
-    switches::kEnableNaCl,
-#endif
+#if defined(OS_MACOSX)
+    // TODO(dspringer): remove this when NaCl x86-32 security issues are fixed
+    switches::kEnableNaClOnMac,
+#endif  // OS_MACOSX
+#endif  // GOOGLE_CHROME_BUILD
     switches::kDomAutomationController,
     switches::kUserAgent,
     switches::kJavaScriptFlags,

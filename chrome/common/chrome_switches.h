@@ -81,7 +81,10 @@ extern const char kDisableLocalStorage[];
 extern const char kEnableLogging[];
 extern const char kEnableMonitorProfile[];
 extern const char kEnableNativeWebWorkers[];
-extern const char kEnableNaCl[];
+#if defined(OS_MACOSX)
+// TODO(dspringer): remove this when NaCl x86-32 security issues are fixed
+extern const char kEnableNaClOnMac[];
+#endif
 extern const char kEnableNewAutoFill[];
 extern const char kEnablePrivacyBlacklists[];
 extern const char kEnableRendererAccessibility[];
