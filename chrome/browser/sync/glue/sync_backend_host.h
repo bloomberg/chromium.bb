@@ -76,9 +76,11 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // Called on |frontend_loop_| to kick off asynchronous initialization.
   // As a fallback when no cached auth information is available, try to
   // bootstrap authentication using |lsid|, if it isn't empty.
+  // Optionally delete the Sync Data folder (if it's corrupt).
   void Initialize(const GURL& service_url,
                   URLRequestContextGetter* baseline_context_getter,
-                  const std::string& lsid);
+                  const std::string& lsid,
+                  bool delete_sync_data_folder);
 
   // Called on |frontend_loop_| to kick off asynchronous authentication.
   void Authenticate(const std::string& username, const std::string& password,
@@ -117,7 +119,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // to a state suitable for testing but not production.
   void InitializeForTestMode(const std::wstring& test_user,
                              sync_api::HttpPostProviderFactory* factory,
-                             sync_api::HttpPostProviderFactory* auth_factory) {
+                             sync_api::HttpPostProviderFactory* auth_factory,
+                             bool delete_sync_data_folder) {
     if (!core_thread_.Start())
       return;
     registrar_.workers[GROUP_UI] = new UIModelWorker(frontend_loop_);
@@ -128,7 +131,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
         &SyncBackendHost::Core::DoInitializeForTest,
         test_user,
         factory,
-        auth_factory));
+        auth_factory,
+        delete_sync_data_folder));
   }
 #endif
 
@@ -162,7 +166,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
         bool attempt_last_user_authentication,
         sync_api::HttpPostProviderFactory* http_bridge_factory,
         sync_api::HttpPostProviderFactory* auth_http_bridge_factory,
-        const std::string& lsid);
+        const std::string& lsid,
+        bool delete_sync_data_folder);
 
     // Called on our SyncBackendHost's core_thread_ to perform authentication
     // on behalf of SyncBackendHost::Authenticate.
@@ -187,14 +192,21 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
     sync_api::SyncManager* syncapi() { return syncapi_.get(); }
 
+    // Delete the sync data folder to cleanup backend data.  Happens the first
+    // time sync is enabled for a user (to prevent accidentally reusing old
+    // sync databases), as well as shutdown when you're no longer syncing.
+    void DeleteSyncDataFolder();
+
 #if defined(UNIT_TEST)
     // Special form of initialization that does not try and authenticate the
     // last known user (since it will fail in test mode) and does some extra
     // setup to nudge the syncapi into a useable state.
     void DoInitializeForTest(const std::wstring& test_user,
                              sync_api::HttpPostProviderFactory* factory,
-                             sync_api::HttpPostProviderFactory* auth_factory) {
-        DoInitialize(GURL(), false, factory, auth_factory, std::string());
+                             sync_api::HttpPostProviderFactory* auth_factory,
+                             bool delete_sync_data_folder) {
+        DoInitialize(GURL(), false, factory, auth_factory, std::string(),
+            delete_sync_data_folder);
         syncapi_->SetupForTestMode(test_user);
     }
 #endif

@@ -135,9 +135,9 @@ std::string ProfileSyncService::GetLsidForAuthBootstraping() {
   return std::string();
 }
 
-void ProfileSyncService::InitializeBackend() {
+void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
   backend_->Initialize(sync_service_url_, profile_->GetRequestContext(),
-                       GetLsidForAuthBootstraping());
+                       GetLsidForAuthBootstraping(), delete_sync_data_folder);
 }
 
 void ProfileSyncService::StartUp() {
@@ -161,7 +161,10 @@ void ProfileSyncService::StartUp() {
   registrar_.Add(this, NotificationType::BOOKMARK_MODEL_LOADED,
                  Source<Profile>(profile_));
 
-  InitializeBackend();
+  // Initialize the backend.  Every time we start up a new SyncBackendHost,
+  // we'll want to start from a fresh SyncDB, so delete any old one that might
+  // be there.
+  InitializeBackend(!HasSyncSetupCompleted());
 }
 
 void ProfileSyncService::Shutdown(bool sync_disabled) {

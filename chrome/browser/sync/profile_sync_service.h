@@ -226,8 +226,10 @@ class ProfileSyncService : public NotificationObserver,
   void RegisterPreferences();
   void ClearPreferences();
 
-  // Tests need to override this.
-  virtual void InitializeBackend();
+  // Tests need to override this.  If |delete_sync_data_folder| is true, then
+  // this method will delete all previous "Sync Data" folders. (useful if the
+  // folder is partial/corrupt)
+  virtual void InitializeBackend(bool delete_sync_data_folder);
 
   template <class AssociatorImpl, class ChangeProcessorImpl>
   void InstallGlue() {

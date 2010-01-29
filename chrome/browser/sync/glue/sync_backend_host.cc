@@ -54,7 +54,8 @@ SyncBackendHost::~SyncBackendHost() {
 void SyncBackendHost::Initialize(
     const GURL& sync_service_url,
     URLRequestContextGetter* baseline_context_getter,
-    const std::string& lsid) {
+    const std::string& lsid,
+    bool delete_sync_data_folder) {
   if (!core_thread_.Start())
     return;
 
@@ -72,7 +73,8 @@ void SyncBackendHost::Initialize(
                         sync_service_url, true,
                         new HttpBridgeFactory(baseline_context_getter),
                         new HttpBridgeFactory(baseline_context_getter),
-                        lsid));
+                        lsid,
+                        delete_sync_data_folder));
 }
 
 void SyncBackendHost::Authenticate(const std::string& username,
@@ -208,8 +210,14 @@ void SyncBackendHost::Core::DoInitialize(
     bool attempt_last_user_authentication,
     sync_api::HttpPostProviderFactory* http_provider_factory,
     sync_api::HttpPostProviderFactory* auth_http_provider_factory,
-    const std::string& lsid) {
+    const std::string& lsid,
+    bool delete_sync_data_folder) {
   DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
+
+  // Blow away the partial or corrupt sync data folder before doing any more
+  // initialization, if necessary.
+  if (delete_sync_data_folder)
+    DeleteSyncDataFolder();
 
   // Make sure that the directory exists before initializing the backend.
   // If it already exists, this will do no harm.
@@ -257,12 +265,8 @@ void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
   syncapi_->RemoveObserver();
   host_->ui_worker()->OnSyncerShutdownComplete();
 
-  if (sync_disabled &&
-      file_util::DirectoryExists(host_->sync_data_folder_path())) {
-    // Delete the sync data folder to cleanup backend data.
-    bool success = file_util::Delete(host_->sync_data_folder_path(), true);
-    DCHECK(success);
-  }
+  if (sync_disabled)
+    DeleteSyncDataFolder();
 
   host_ = NULL;
 }
@@ -344,6 +348,13 @@ void SyncBackendHost::Core::StartSavingChanges() {
 
 void SyncBackendHost::Core::SaveChanges() {
   syncapi_->SaveChanges();
+}
+
+void SyncBackendHost::Core::DeleteSyncDataFolder() {
+  if (file_util::DirectoryExists(host_->sync_data_folder_path())) {
+    if (!file_util::Delete(host_->sync_data_folder_path(), true))
+      LOG(DFATAL) << "Could not delete the Sync Data folder.";
+  }
 }
 
 }  // namespace browser_sync

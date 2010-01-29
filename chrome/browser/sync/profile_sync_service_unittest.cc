@@ -6,7 +6,6 @@
 #include <vector>
 
 #include "testing/gtest/include/gtest/gtest.h"
-
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -20,6 +19,7 @@
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "chrome/test/sync/test_http_bridge_factory.h"
 
@@ -94,11 +94,12 @@ class TestProfileSyncService : public ProfileSyncService {
   virtual ~TestProfileSyncService() {
   }
 
-  virtual void InitializeBackend() {
+  virtual void InitializeBackend(bool delete_sync_data_folder) {
     InstallGlue<TestModelAssociator, BookmarkChangeProcessor>();
     TestHttpBridgeFactory* factory = new TestHttpBridgeFactory();
     TestHttpBridgeFactory* factory2 = new TestHttpBridgeFactory();
-    backend()->InitializeForTestMode(L"testuser", factory, factory2);
+    backend()->InitializeForTestMode(L"testuser", factory, factory2,
+        delete_sync_data_folder);
     // The SyncBackend posts a task to the current loop when initialization
     // completes.
     MessageLoop::current()->Run();
@@ -311,6 +312,7 @@ class ProfileSyncServiceTest : public testing::Test {
     if (!service_->HasSyncSetupCompleted())
       service_->EnableForUser();
   }
+
   void StopSyncService(SaveOption save) {
     if (save == DONT_SAVE_TO_STORAGE)
       service_->DisableForUser();
@@ -1315,4 +1317,59 @@ TEST_F(ProfileSyncServiceTestWithData, RecoverAfterDeletingSyncDataDirectory) {
   // is sidestepped.
   ExpectBookmarkModelMatchesTestData();
   ExpectModelMatch();
+}
+
+#if defined(OS_MACOSX)
+// TODO(dantasse) This test fails on the mac. See http://crbug.com/33443
+#define MAYBE_TestStartupWithOldSyncData DISABLED_TestStartupWithOldSyncData
+#else
+#define MAYBE_TestStartupWithOldSyncData TestStartupWithOldSyncData
+#endif
+
+// Make sure that things still work if sync is not enabled, but some old sync
+// databases are lingering in the "Sync Data" folder.
+TEST_F(ProfileSyncServiceTestWithData, MAYBE_TestStartupWithOldSyncData) {
+  const char* nonsense1 = "reginald";
+  const char* nonsense2 = "beartato";
+  const char* nonsense3 = "harrison";
+  FilePath temp_directory = profile_->GetPath().AppendASCII("Sync Data");
+  FilePath sync_file1 =
+      temp_directory.AppendASCII("BookmarkSyncSettings.sqlite3");
+  FilePath sync_file2 = temp_directory.AppendASCII("SyncData.sqlite3");
+  FilePath sync_file3 = temp_directory.AppendASCII("nonsense_file");
+  file_util::CreateDirectory(temp_directory);
+  file_util::WriteFile(sync_file1, nonsense1, strlen(nonsense1));
+  file_util::WriteFile(sync_file2, nonsense2, strlen(nonsense2));
+  file_util::WriteFile(sync_file3, nonsense3, strlen(nonsense3));
+
+  LoadBookmarkModel(LOAD_FROM_STORAGE, SAVE_TO_STORAGE);
+  if (!service_.get()) {
+    service_.reset(new TestProfileSyncService(profile_.get()));
+    profile_->GetPrefs()->SetBoolean(prefs::kSyncHasSetupCompleted, false);
+    service_->Initialize(); // will call disableForUser because sync setup
+                            // hasn't been completed.
+  }
+
+  ASSERT_FALSE(service_->backend());
+  ASSERT_FALSE(service_->HasSyncSetupCompleted());
+
+  // This will actually start up the sync service.
+  service_->EnableForUser();
+
+  // Stop the service so we can read the new Sync Data files that were created.
+  service_.reset();
+
+  // This file should have been deleted when the whole directory was nuked.
+  ASSERT_FALSE(file_util::PathExists(sync_file3));
+
+  // These two will still exist, but their texts should have changed.
+  ASSERT_TRUE(file_util::PathExists(sync_file1));
+  std::string file1text;
+  file_util::ReadFileToString(sync_file1, &file1text);
+  ASSERT_FALSE(file1text.compare(nonsense1) == 0);
+
+  ASSERT_TRUE(file_util::PathExists(sync_file2));
+  std::string file2text;
+  file_util::ReadFileToString(sync_file2, &file2text);
+  ASSERT_FALSE(file2text.compare(nonsense2) == 0);
 }
