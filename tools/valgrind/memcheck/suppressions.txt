@@ -177,7 +177,6 @@
    fun:sendmsg
    fun:_ZN3IPC7Channel11ChannelImpl4SendEPNS_7MessageE
 }
-
 {
    # "The section of the SQLite library identified works exactly as it should."
    # http://www.sqlite.org/cvstrac/tktview?tn=536,39
@@ -189,23 +188,21 @@
    # for no reason other than pleasing valgrind, but a patch might be accepted
    # under a macro like SQLITE_SECURE_DELETE which could be construed to apply
    # to cases like this. (Note that we compile with SQLITE_SECURE_DELETE.)
-   bug_20653
+   bug_20653a
    Memcheck:Param
    write(buf)
    ...
    fun:sqlite3OsWrite
    fun:pager_write_pagelist
 }
-
 {
-   # This appears to be related to the bug_20653 suppression, the same
-   # header but written to the subjournal instead of at commit time.
-   bug_20653a
+   bug_20653b
    Memcheck:Param
    write(buf)
    ...
+   fun:unixWrite
    fun:sqlite3OsWrite
-   fun:subjournalPage
+   ...
    fun:pager_write
 }
 

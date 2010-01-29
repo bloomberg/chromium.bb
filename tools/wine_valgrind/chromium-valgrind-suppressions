@@ -247,6 +247,16 @@
    fun:sqlite3OsWrite
    fun:pager_write_pagelist
 }
+{
+   bug_20653b
+   Memcheck:Param
+   write(buf)
+   ...
+   fun:unixWrite
+   fun:sqlite3OsWrite
+   ...
+   fun:pager_write
+}
 # End of suppressions that need de-duping.
 {
    bug_30547
