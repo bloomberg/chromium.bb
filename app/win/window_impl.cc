@@ -20,8 +20,10 @@ static const DWORD kWindowDefaultExStyle = 0;
 ///////////////////////////////////////////////////////////////////////////////
 // WindowImpl class tracking.
 
+// Several external scripts rely explicitly on this base class name for
+// acquiring the window handle and will break if this is modified!
 // static
-const wchar_t* const WindowImpl::kBaseClassName = L"Chrome_WindowImpl_";
+const wchar_t* const WindowImpl::kBaseClassName = L"Chrome_WidgetWin_";
 
 // WindowImpl class information used for registering unique windows.
 struct ClassInfo {
