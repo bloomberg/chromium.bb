@@ -29,7 +29,7 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
+#include "base/string_util.h"
 #include "core/cross/stream.h"
 #include "core/cross/types.h"
 #include "core/cross/gles2/utils_gles2.h"
@@ -65,9 +65,9 @@ bool SemanticNameToSemantic(
     { kColor, sizeof(kColor) - 1, Stream::COLOR, },
     { kTexcoord, sizeof(kTexcoord) - 1, Stream::TEXCOORD, },
   };
-  for (unsigned ii = 0; ii < arraysize(lookup); ++ii) {
+  for (unsigned ii = 0; ii < ARRAYSIZE_UNSAFE(lookup); ++ii) {
     const NameToSemantic& info = lookup[ii];
-    if (!_strnicmp(info.name, name.c_str(), info.length)) {
+    if (!base::strncasecmp(info.name, name.c_str(), info.length)) {
       *semantic = info.semantic;
       *semantic_index = atoi(name.c_str() + info.length);
       return true;
@@ -77,4 +77,3 @@ bool SemanticNameToSemantic(
 }
 
 }  // namespace o3d
-

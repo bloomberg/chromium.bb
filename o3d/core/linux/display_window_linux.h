@@ -33,7 +33,7 @@
 #ifndef O3D_CORE_LINUX_DISPLAY_WINDOW_LINUX_H_
 #define O3D_CORE_LINUX_DISPLAY_WINDOW_LINUX_H_
 
-#include <GL/glx.h>
+#include <X11/Xlib.h>
 
 #include "core/cross/display_window.h"
 

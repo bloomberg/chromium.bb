@@ -43,8 +43,12 @@
 #include <OpenGL/OpenGL.h>
 #include <AGL/agl.h>
 #elif defined(OS_LINUX)
+#if defined(RENDERER_GL)
 #include "core/cross/gl/gl_headers.h"
 #include <GL/glx.h>
+#elif defined(RENDERER_GLES2)
+#include "core/cross/gles2/gles2_headers.h"
+#endif
 #elif defined(OS_WIN) && defined(RENDERER_GL)
 #include "core/cross/gl/gl_headers.h"
 #include <gl/GL.h>

@@ -223,7 +223,7 @@ bool EffectGLES2::LoadFromFXString(const String& effect) {
                                  << "\" in Effect";
     return false;
   }
-  bool column_major = matrix_load_order_str.c_str() == "ColumnMajor";
+  bool column_major = matrix_load_order_str == "ColumnMajor";
   MatrixLoadOrder matrix_load_order = column_major ? COLUMN_MAJOR : ROW_MAJOR;
 
   // Split the effect
@@ -307,7 +307,6 @@ void EffectGLES2::GetShaderParamInfo(
     String name(name_buffer.get());
     // TODO(gman): Should we check for error?
     // TODO(gman): Should we skip uniforms that start with "gl_"?
-    GLint location = glGetUniformLocation(program, name_buffer.get());
     int num_elements = 0;
     if (size > 1) {
       // It's an array.
@@ -360,7 +359,6 @@ void EffectGLES2::GetVaryingVertexShaderParamInfo(
     glGetActiveAttrib(
         program, ii, max_len + 1, &length, &size, &type, name_buffer.get());
     // TODO(gman): Should we check for error?
-    GLint location = glGetAttribLocation(program, name_buffer.get());
     String name(name_buffer.get());
     // Since GLSL has no semantics just go by name.
     Stream::Semantic semantic;
@@ -442,4 +440,3 @@ void EffectGLES2::PostDraw(ParamCacheGLES2* param_cache_gles2) {
 }
 
 }  // namespace o3d
-
