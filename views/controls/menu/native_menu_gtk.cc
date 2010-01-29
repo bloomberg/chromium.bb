@@ -209,6 +209,7 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
   if (type == menus::MenuModel::TYPE_SUBMENU) {
     // TODO(beng): we're leaking these objects right now... consider some other
     //             arrangement.
+    // See http://crbug.com/33475.
     Menu2* submenu = new Menu2(model_->GetSubmenuModelAt(index));
     static_cast<NativeMenuGtk*>(submenu->wrapper_.get())->set_parent(this);
     g_object_set_data(G_OBJECT(menu_item), "submenu", submenu);

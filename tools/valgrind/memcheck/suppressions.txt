@@ -2294,3 +2294,14 @@
    fun:ChromeMain
    fun:main
 }
+{
+   bug_33475
+   Memcheck:Leak
+   fun:_Znw*
+   ...
+   fun:_ZN5views13NativeMenuGtk7RebuildEv
+   fun:_ZN5views5Menu27RebuildEv
+   fun:_ZN5views5Menu2C1EPN5menus9MenuModelE
+   fun:_ZN11ToolbarView15SetAppMenuModelEP12AppMenuModel
+   fun:_ZN8chromeos19ChromeosBrowserView4InitEv
+}
