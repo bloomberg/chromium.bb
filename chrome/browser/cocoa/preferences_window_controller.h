@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -38,7 +38,6 @@ class ProfileSyncService;
   // weak ref - Also obtained from profile_ for convenience.  May be NULL.
   ProfileSyncService* syncService_;
   scoped_ptr<PrefObserverBridge> observer_;  // Watches for pref changes.
-  bool pref_changing_; // Flag to ignore pref updates caused by ourselves.
 
   IBOutlet NSToolbar* toolbar_;
 

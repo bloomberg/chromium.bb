@@ -21,7 +21,6 @@
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/intranet_redirect_detector.h"
 #include "chrome/browser/metrics/metrics_service.h"
-#include "chrome/browser/net/chrome_cookie_policy.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/page_info_model.h"
 #include "chrome/browser/password_manager/password_manager.h"
@@ -99,7 +98,6 @@ void RegisterUserPrefs(PrefService* user_prefs) {
   HostZoomMap::RegisterUserPrefs(user_prefs);
   DevToolsManager::RegisterUserPrefs(user_prefs);
   Blacklist::RegisterUserPrefs(user_prefs);
-  ChromeCookiePolicy::RegisterUserPrefs(user_prefs);
 #if defined(TOOLKIT_VIEWS)  // TODO(port): whittle this down as we port.
   BrowserActionsContainer::RegisterUserPrefs(user_prefs);
 #if defined(OS_WIN)

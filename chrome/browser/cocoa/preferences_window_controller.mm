@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,7 +7,6 @@
 #include <algorithm>
 #include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
-#include "base/auto_reset.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
 #include "base/string16.h"
@@ -26,7 +25,6 @@
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/metrics/metrics_service.h"
 #include "chrome/browser/metrics/user_metrics.h"
-#include "chrome/browser/net/chrome_cookie_policy.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/options_window.h"
@@ -47,6 +45,7 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "net/base/cookie_policy.h"
 #import "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
@@ -457,7 +456,6 @@ class PrefObserverBridge : public NotificationObserver,
     // This needs to be done before awakeFromNib: because the bindings set up
     // in the nib rely on it.
     [self registerPrefObservers];
-    pref_changing_ = false;
 
     // Use one animation so we can stop it if the user clicks quickly, and
     // start the new animation.
@@ -816,7 +814,6 @@ class PrefObserverBridge : public NotificationObserver,
 // Cocoa Bindings.
 // Handles prefs for the "Basics" panel.
 - (void)basicsPrefChanged:(std::wstring*)prefName {
-  AutoReset auto_reset(&pref_changing_, true);
   if (*prefName == prefs::kRestoreOnStartup) {
     const SessionStartupPref startupPref =
         SessionStartupPref::GetStartupPref(prefs_);
@@ -1132,7 +1129,6 @@ const int kDisabledIndex = 1;
 // initializing, that's handled by Cocoa Bindings.
 // Handles prefs for the "Personal Stuff" panel.
 - (void)userDataPrefChanged:(std::wstring*)prefName {
-  AutoReset auto_reset(&pref_changing_, true);
   if (*prefName == prefs::kPasswordManagerEnabled) {
     [self setPasswordManagerEnabledIndex:askSavePasswords_.GetValue() ?
         kEnabledIndex : kDisabledIndex];
@@ -1285,7 +1281,6 @@ const int kDisabledIndex = 1;
 // initializing, that's handled by Cocoa Bindings.
 // Handles prefs for the "Under the hood" panel.
 - (void)underHoodPrefChanged:(std::wstring*)prefName {
-  AutoReset auto_reset(&pref_changing_, true);
   if (*prefName == prefs::kAlternateErrorPagesEnabled) {
     [self setShowAlternateErrorPages:
         alternateErrorPages_.GetValue() ? YES : NO];
@@ -1476,8 +1471,6 @@ const int kDisabledIndex = 1;
 
 // Sets the backend pref for whether or not to accept cookies based on |index|.
 - (void)setCookieBehavior:(NSInteger)index {
-  if (pref_changing_)
-    return;
   net::CookiePolicy::Type policy = net::CookiePolicy::ALLOW_ALL_COOKIES;
   if (net::CookiePolicy::ValidType(index))
     policy = net::CookiePolicy::FromInt(index);
@@ -1488,7 +1481,7 @@ const int kDisabledIndex = 1;
   };
   DCHECK(policy >= 0 && (unsigned int)policy < arraysize(kUserMetrics));
   [self recordUserAction:kUserMetrics[policy]];
-  profile_->GetCookiePolicy()->set_type(policy);
+  cookieBehavior_.SetValue(policy);
 }
 
 - (NSURL*)defaultDownloadLocation {

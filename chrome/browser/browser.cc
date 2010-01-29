@@ -1359,6 +1359,8 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterStringPref(prefs::kHomePage,
                             ASCIIToWide(chrome::kChromeUINewTabURL));
   prefs->RegisterBooleanPref(prefs::kHomePageIsNewTabPage, true);
+  prefs->RegisterIntegerPref(prefs::kCookieBehavior,
+                             net::CookiePolicy::ALLOW_ALL_COOKIES);
   prefs->RegisterBooleanPref(prefs::kShowHomeButton, false);
 #if defined(OS_MACOSX)
   // This really belongs in platform code, but there's no good place to

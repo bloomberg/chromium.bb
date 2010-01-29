@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/browser.h"
-#include "chrome/browser/net/chrome_cookie_policy.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
@@ -26,8 +25,8 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest, AllowFirstPartyCookies) {
   ASSERT_TRUE(server != NULL);
 
   PrefService* prefs = browser()->profile()->GetPrefs();
-  browser()->profile()->GetCookiePolicy()->set_type(
-      net::CookiePolicy::BLOCK_THIRD_PARTY_COOKIES);
+  prefs->SetInteger(prefs::kCookieBehavior,
+                    net::CookiePolicy::BLOCK_THIRD_PARTY_COOKIES);
   net::CookiePolicy::Type policy_type = net::CookiePolicy::FromInt(
       prefs->GetInteger(prefs::kCookieBehavior));
   ASSERT_EQ(net::CookiePolicy::BLOCK_THIRD_PARTY_COOKIES, policy_type);
@@ -55,8 +54,8 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest,
   ASSERT_TRUE(server != NULL);
 
   PrefService* prefs = browser()->profile()->GetPrefs();
-  browser()->profile()->GetCookiePolicy()->set_type(
-      net::CookiePolicy::BLOCK_THIRD_PARTY_COOKIES);
+  prefs->SetInteger(prefs::kCookieBehavior,
+                    net::CookiePolicy::BLOCK_THIRD_PARTY_COOKIES);
   net::CookiePolicy::Type policy_type = net::CookiePolicy::FromInt(
       prefs->GetInteger(prefs::kCookieBehavior));
   ASSERT_EQ(net::CookiePolicy::BLOCK_THIRD_PARTY_COOKIES, policy_type);

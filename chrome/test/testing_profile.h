@@ -15,7 +15,6 @@
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
-#include "chrome/browser/net/chrome_cookie_policy.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
@@ -189,11 +188,6 @@ class TestingProfile : public Profile {
     session_service_ = session_service;
   }
   virtual SessionService* GetSessionService() { return session_service_.get(); }
-  virtual ChromeCookiePolicy* GetCookiePolicy() {
-    if (!cookie_policy_.get())
-      cookie_policy_.reset(new ChromeCookiePolicy(this));
-    return cookie_policy_.get();
-  }
   virtual void ShutdownSessionService() {}
   virtual bool HasSessionService() const {
     return (session_service_.get() != NULL);
@@ -307,8 +301,6 @@ class TestingProfile : public Profile {
   scoped_refptr<WebKitContext> webkit_context_;
 
   scoped_ptr<HostContentSettingsMap> host_content_settings_map_;
-
-  scoped_ptr<ChromeCookiePolicy> cookie_policy_;
 };
 
 // A profile that derives from another profile.  This does not actually

@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,17 +14,13 @@ namespace net {
 // The CookiePolicy class implements third-party cookie blocking.
 class CookiePolicy {
  public:
-  virtual ~CookiePolicy() {}
-
   // Consult the user's third-party cookie blocking preferences to determine
   // whether the URL's cookies can be read.
-  virtual bool CanGetCookies(const GURL& url,
-                             const GURL& first_party_for_cookies);
+  bool CanGetCookies(const GURL& url, const GURL& first_party_for_cookies);
 
   // Consult the user's third-party cookie blocking preferences to determine
   // whether the URL's cookies can be set.
-  virtual bool CanSetCookie(const GURL& url,
-                            const GURL& first_party_for_cookies);
+  bool CanSetCookie(const GURL& url, const GURL& first_party_for_cookies);
 
   enum Type {
     ALLOW_ALL_COOKIES = 0,      // Do not perform any cookie blocking.
@@ -50,10 +46,9 @@ class CookiePolicy {
 
   CookiePolicy();
 
- protected:
+ private:
   Type type_;
 
- private:
   DISALLOW_COPY_AND_ASSIGN(CookiePolicy);
 };
 
