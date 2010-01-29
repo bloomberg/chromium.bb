@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
+// Copyright (c) 2010 The Chromium Authors. All rights reserved. Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
@@ -124,12 +124,6 @@ class AutocompleteResultView : public views::View {
   virtual void Paint(gfx::Canvas* canvas);
   virtual void Layout();
   virtual gfx::Size GetPreferredSize();
-  virtual void OnMouseEntered(const views::MouseEvent& event);
-  virtual void OnMouseMoved(const views::MouseEvent& event);
-  virtual void OnMouseExited(const views::MouseEvent& event);
-  virtual bool OnMousePressed(const views::MouseEvent& event);
-  virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
-  virtual bool OnMouseDragged(const views::MouseEvent& event);
 
  private:
   ResultViewState GetState() const;
@@ -386,44 +380,6 @@ gfx::Size AutocompleteResultView::GetPreferredSize() {
   return gfx::Size(0, std::max(icon_height, text_height));
 }
 
-void AutocompleteResultView::OnMouseEntered(const views::MouseEvent& event) {
-  model_->SetHoveredLine(model_index_);
-}
-
-void AutocompleteResultView::OnMouseMoved(const views::MouseEvent& event) {
-  model_->SetHoveredLine(model_index_);
-  if (event.IsLeftMouseButton())
-    model_->SetSelectedLine(model_index_, false);
-}
-
-void AutocompleteResultView::OnMouseExited(const views::MouseEvent& event) {
-  model_->SetHoveredLine(AutocompletePopupModel::kNoMatch);
-}
-
-bool AutocompleteResultView::OnMousePressed(const views::MouseEvent& event) {
-  if (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) {
-    model_->SetHoveredLine(model_index_);
-    if (event.IsLeftMouseButton())
-      model_->SetSelectedLine(model_index_, false);
-  }
-  return true;
-}
-
-void AutocompleteResultView::OnMouseReleased(const views::MouseEvent& event,
-                                             bool canceled) {
-  if (canceled)
-    return;
-  if (event.IsOnlyMiddleMouseButton())
-    model_->OpenIndex(model_index_, NEW_BACKGROUND_TAB);
-  else if (event.IsOnlyLeftMouseButton())
-    model_->OpenIndex(model_index_, CURRENT_TAB);
-}
-
-bool AutocompleteResultView::OnMouseDragged(const views::MouseEvent& event) {
-  // TODO(beng): move all message handling into the contents view and override
-  //             GetViewForPoint.
-  return false;
-}
 
 ResultViewState AutocompleteResultView::GetState() const {
   if (model_->IsSelectedIndex(model_index_))
@@ -718,34 +674,6 @@ bool AutocompletePopupContentsView::IsHoveredIndex(size_t index) const {
   return HasMatchAt(index) ? index == model_->hovered_line() : false;
 }
 
-void AutocompletePopupContentsView::OpenIndex(
-    size_t index,
-    WindowOpenDisposition disposition) {
-  if (!HasMatchAt(index))
-    return;
-
-  const AutocompleteMatch& match = model_->result().match_at(index);
-  // OpenURL() may close the popup, which will clear the result set and, by
-  // extension, |match| and its contents.  So copy the relevant strings out to
-  // make sure they stay alive until the call completes.
-  const GURL url(match.destination_url);
-  std::wstring keyword;
-  const bool is_keyword_hint = model_->GetKeywordForMatch(match, &keyword);
-  edit_view_->OpenURL(url, disposition, match.transition, GURL(), index,
-                      is_keyword_hint ? std::wstring() : keyword);
-}
-
-void AutocompletePopupContentsView::SetHoveredLine(size_t index) {
-  if (HasMatchAt(index))
-    model_->SetHoveredLine(index);
-}
-
-void AutocompletePopupContentsView::SetSelectedLine(size_t index,
-                                                    bool revert_to_default) {
-  if (HasMatchAt(index))
-    model_->SetSelectedLine(index, revert_to_default);
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // AutocompletePopupContentsView, AnimationDelegate implementation:
 
@@ -819,6 +747,65 @@ void AutocompletePopupContentsView::Layout() {
   SchedulePaint();
 }
 
+
+void AutocompletePopupContentsView::OnMouseEntered(
+    const views::MouseEvent& event) {
+  model_->SetHoveredLine(GetIndexForPoint(event.location()));
+}
+
+void AutocompletePopupContentsView::OnMouseMoved(
+    const views::MouseEvent& event) {
+  model_->SetHoveredLine(GetIndexForPoint(event.location()));
+}
+
+void AutocompletePopupContentsView::OnMouseExited(
+    const views::MouseEvent& event) {
+  model_->SetHoveredLine(AutocompletePopupModel::kNoMatch);
+}
+
+bool AutocompletePopupContentsView::OnMousePressed(
+    const views::MouseEvent& event) {
+  if (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) {
+    int index = GetIndexForPoint(event.location());
+    model_->SetHoveredLine(index);
+    if (HasMatchAt(index) && event.IsLeftMouseButton())
+      model_->SetSelectedLine(index, false);
+  }
+  return true;
+}
+
+void AutocompletePopupContentsView::OnMouseReleased(
+    const views::MouseEvent& event,
+    bool canceled) {
+  if (canceled)
+    return;
+
+  int index = GetIndexForPoint(event.location());
+  if (event.IsOnlyMiddleMouseButton())
+    OpenIndex(index, NEW_BACKGROUND_TAB);
+  else if (event.IsOnlyLeftMouseButton())
+    OpenIndex(index, CURRENT_TAB);
+}
+
+bool AutocompletePopupContentsView::OnMouseDragged(
+    const views::MouseEvent& event) {
+  if (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) {
+    int index = GetIndexForPoint(event.location());
+    model_->SetHoveredLine(index);
+    if (HasMatchAt(index) && event.IsLeftMouseButton())
+      model_->SetSelectedLine(index, false);
+  }
+  return true;
+}
+
+views::View* AutocompletePopupContentsView::GetViewForPoint(
+    const gfx::Point& /*point*/) {
+  // This View takes control of the mouse events, so it should be considered the
+  // active view for any point inside of it.
+  return this;
+}
+
+
 ////////////////////////////////////////////////////////////////////////////////
 // AutocompletePopupContentsView, private:
 
@@ -879,6 +866,39 @@ void AutocompletePopupContentsView::MakeCanvasTransparent(
       kGlassPopupAlpha : kOpaquePopupAlpha;
   canvas->drawColor(SkColorSetA(GetColor(NORMAL, BACKGROUND), alpha),
                     SkXfermode::kDstIn_Mode);
+}
+
+void AutocompletePopupContentsView::OpenIndex(
+    size_t index,
+    WindowOpenDisposition disposition) {
+  if (!HasMatchAt(index))
+    return;
+
+  const AutocompleteMatch& match = model_->result().match_at(index);
+  // OpenURL() may close the popup, which will clear the result set and, by
+  // extension, |match| and its contents.  So copy the relevant strings out to
+  // make sure they stay alive until the call completes.
+  const GURL url(match.destination_url);
+  std::wstring keyword;
+  const bool is_keyword_hint = model_->GetKeywordForMatch(match, &keyword);
+  edit_view_->OpenURL(url, disposition, match.transition, GURL(), index,
+                      is_keyword_hint ? std::wstring() : keyword);
+}
+
+int AutocompletePopupContentsView::GetIndexForPoint(const gfx::Point& point) {
+  if (!HitTest(point))
+    return AutocompletePopupModel::kNoMatch;
+
+  int nb_match = model_->result().size();
+  DCHECK(nb_match <= GetChildViewCount());
+  for (int i = 0; i < nb_match; ++i) {
+    views::View* child = GetChildViewAt(i);
+    gfx::Point point_in_child_coords(point);
+    View::ConvertPointToView(this, child, &point_in_child_coords);
+    if (child->HitTest(point_in_child_coords))
+      return i;
+  }
+  return AutocompletePopupModel::kNoMatch;
 }
 
 // static

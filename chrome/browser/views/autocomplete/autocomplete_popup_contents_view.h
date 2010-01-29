@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
+// Copyright (c) 2010 The Chromium Authors. All rights reserved. Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
@@ -33,16 +33,6 @@ class AutocompleteResultViewModel {
 
   // Returns true if the index is hovered.
   virtual bool IsHoveredIndex(size_t index) const = 0;
-
-  // Called when the line at the specified index should be opened with the
-  // provided disposition.
-  virtual void OpenIndex(size_t index, WindowOpenDisposition disposition) = 0;
-
-  // Called when the line at the specified index should be shown as hovered.
-  virtual void SetHoveredLine(size_t index) = 0;
-
-  // Called when the line at the specified index should be shown as selected.
-  virtual void SetSelectedLine(size_t index, bool revert_to_default) = 0;
 };
 
 // A view representing the contents of the autocomplete popup.
@@ -72,9 +62,6 @@ class AutocompletePopupContentsView : public views::View,
   // Overridden from AutocompleteResultViewModel:
   virtual bool IsSelectedIndex(size_t index) const;
   virtual bool IsHoveredIndex(size_t index) const;
-  virtual void OpenIndex(size_t index, WindowOpenDisposition disposition);
-  virtual void SetHoveredLine(size_t index);
-  virtual void SetSelectedLine(size_t index, bool revert_to_default);
 
   // Overridden from AnimationDelegate:
   virtual void AnimationProgressed(const Animation* animation);
@@ -85,6 +72,13 @@ class AutocompletePopupContentsView : public views::View,
     // We paint our children inside Paint().
   }
   virtual void Layout();
+  virtual void OnMouseEntered(const views::MouseEvent& event);
+  virtual void OnMouseMoved(const views::MouseEvent& event);
+  virtual void OnMouseExited(const views::MouseEvent& event);
+  virtual bool OnMousePressed(const views::MouseEvent& event);
+  virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
+  virtual bool OnMouseDragged(const views::MouseEvent& event);
+  virtual views::View* GetViewForPoint(const gfx::Point& point);
 
  private:
 #if defined(OS_WIN)
@@ -108,6 +102,14 @@ class AutocompletePopupContentsView : public views::View,
 
   // Makes the contents of the canvas slightly transparent.
   void MakeCanvasTransparent(gfx::Canvas* canvas);
+
+  // Called when the line at the specified index should be opened with the
+  // provided disposition.
+  void OpenIndex(size_t index, WindowOpenDisposition disposition);
+
+  // Find the index of the match under the given |point|, specified in window
+  // coordinates.
+  int GetIndexForPoint(const gfx::Point& point);
 
   // The popup that contains this view.
   scoped_ptr<AutocompletePopupClass> popup_;
