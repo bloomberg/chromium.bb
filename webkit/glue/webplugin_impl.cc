@@ -353,6 +353,11 @@ void WebPluginImpl::didFailLoading(const WebURLError& error) {
 void WebPluginImpl::didFinishLoadingFrameRequest(
     const WebURL& url, void* notify_data) {
   if (delegate_) {
+    // We're converting a void* into an arbitrary int id.  Though
+    // these types are the same size on all the platforms we support,
+    // the compiler may complain as though they are different, so to
+    // make the casting gods happy go through an intptr_t (the union
+    // of void* and int) rather than converting straight across.
     delegate_->DidFinishLoadWithReason(
         url, NPRES_DONE, reinterpret_cast<intptr_t>(notify_data));
   }
@@ -365,6 +370,7 @@ void WebPluginImpl::didFailLoadingFrameRequest(
 
   NPReason reason =
       error.reason == net::ERR_ABORTED ? NPRES_USER_BREAK : NPRES_NETWORK_ERR;
+  // See comment in didFinishLoadingFrameRequest about the cast here.
   delegate_->DidFinishLoadWithReason(
       url, reason, reinterpret_cast<intptr_t>(notify_data));
 }
