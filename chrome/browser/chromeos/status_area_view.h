@@ -12,6 +12,7 @@
 #include "views/controls/menu/menu_2.h"
 #include "views/view.h"
 
+class AppMenuModel;
 class BrowserView;
 
 namespace chromeos {
@@ -43,6 +44,9 @@ class StatusAreaView : public views::View,
   // toggle the app menu visibility.
   void Update();
 
+  // Creates an AppMenuModel for chromeos.
+  AppMenuModel* CreateAppMenuModel(menus::SimpleMenuModel::Delegate* delegate);
+
   // views::View* overrides.
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
@@ -51,7 +55,6 @@ class StatusAreaView : public views::View,
   static void SetOpenTabsMode(OpenTabsMode mode);
 
  private:
-  void CreateAppMenu();
 
   // menus::SimpleMenuModel::Delegate implementation.
   virtual bool IsCommandIdChecked(int command_id) const;

@@ -22,6 +22,7 @@
 #include "chrome/browser/views/tabs/tab.h"
 #include "chrome/browser/views/tabs/tab_overview_types.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
+#include "chrome/browser/views/toolbar_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/x11_util.h"
 #include "grit/generated_resources.h"
@@ -349,6 +350,8 @@ void ChromeosBrowserView::Init() {
   status_area_->SetID(VIEW_ID_STATUS_AREA);
   AddChildView(status_area_);
   status_area_->Init();
+  ToolbarView* toolbar_view = GetToolbarView();
+  toolbar_view->SetAppMenuModel(status_area_->CreateAppMenuModel(toolbar_view));
 
   SkBitmap* theme_toolbar = theme_provider->GetBitmapNamed(IDR_THEME_TOOLBAR);
   spacer_ = new Spacer(theme_toolbar);

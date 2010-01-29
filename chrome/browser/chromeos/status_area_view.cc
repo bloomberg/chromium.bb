@@ -11,6 +11,7 @@
 #include "app/theme_provider.h"
 #include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/app_menu_model.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/browser_theme_provider.h"
@@ -22,6 +23,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/theme_background.h"
+#include "chrome/browser/views/toolbar_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "grit/chromium_strings.h"
@@ -143,6 +145,9 @@ void StatusAreaView::Init() {
   AddChildView(menu_view_);
 
   set_background(new ThemeBackground(browser_view_));
+
+  app_menu_contents_.reset(CreateAppMenuModel(this));
+  app_menu_menu_.reset(new views::Menu2(app_menu_contents_.get()));
 }
 
 void StatusAreaView::Update() {
@@ -201,49 +206,28 @@ void StatusAreaView::SetOpenTabsMode(OpenTabsMode mode) {
   open_tabs_mode_ = mode;
 }
 
-void StatusAreaView::CreateAppMenu() {
-  if (app_menu_contents_.get())
-    return;
+AppMenuModel* StatusAreaView::CreateAppMenuModel(
+    menus::SimpleMenuModel::Delegate* delegate) {
+  Browser* browser = browser_view_->browser();
+  AppMenuModel* menu_model = new AppMenuModel(delegate, browser);
 
-  options_menu_contents_.reset(new OptionsMenuModel(browser_view_->browser()));
+  // Options menu always uses StatusAreaView as delegate, so
+  // we can reuse it.
+  if (!options_menu_contents_.get())
+    options_menu_contents_.reset(new OptionsMenuModel(browser));
 
-  app_menu_contents_.reset(new menus::SimpleMenuModel(this));
-  app_menu_contents_->AddItemWithStringId(IDC_NEW_TAB, IDS_NEW_TAB);
-  app_menu_contents_->AddItemWithStringId(IDC_NEW_WINDOW, IDS_NEW_WINDOW);
-  app_menu_contents_->AddItemWithStringId(IDC_NEW_INCOGNITO_WINDOW,
-                                          IDS_NEW_INCOGNITO_WINDOW);
-  app_menu_contents_->AddSeparator();
-  app_menu_contents_->AddCheckItemWithStringId(IDC_SHOW_BOOKMARK_BAR,
-                                               IDS_SHOW_BOOKMARK_BAR);
-  app_menu_contents_->AddItemWithStringId(IDC_FULLSCREEN, IDS_FULLSCREEN);
-  app_menu_contents_->AddSeparator();
-  app_menu_contents_->AddItemWithStringId(IDC_SHOW_HISTORY, IDS_SHOW_HISTORY);
-  app_menu_contents_->AddItemWithStringId(IDC_SHOW_BOOKMARK_MANAGER,
-                                          IDS_BOOKMARK_MANAGER);
-  app_menu_contents_->AddItemWithStringId(IDC_SHOW_DOWNLOADS,
-                                          IDS_SHOW_DOWNLOADS);
-  // Create the manage extensions menu item.
-  app_menu_contents_->AddItemWithStringId(IDC_MANAGE_EXTENSIONS,
-                                          IDS_SHOW_EXTENSIONS);
-  app_menu_contents_->AddSeparator();
-  app_menu_contents_->AddItemWithStringId(IDC_CLEAR_BROWSING_DATA,
-                                          IDS_CLEAR_BROWSING_DATA);
-  app_menu_contents_->AddItemWithStringId(IDC_IMPORT_SETTINGS,
-                                          IDS_IMPORT_SETTINGS);
-  app_menu_contents_->AddSeparator();
-  app_menu_contents_->AddItem(IDC_OPTIONS,
-                              l10n_util::GetStringFUTF16(
-                                  IDS_OPTIONS,
-                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-  app_menu_contents_->AddSubMenu(ASCIIToUTF16("Compact nav bar"),
-                                 options_menu_contents_.get());
-  app_menu_contents_->AddItem(IDC_ABOUT,
-                              l10n_util::GetStringFUTF16(
-                                  IDS_ABOUT,
-                                  l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)));
-  app_menu_contents_->AddItemWithStringId(IDC_HELP_PAGE, IDS_HELP_PAGE);
+  int sync_index = menu_model->GetIndexOfCommandId(IDC_SYNC_BOOKMARKS);
+  DCHECK_GE(sync_index, 0);
+  menu_model->InsertItemWithStringIdAt(
+      sync_index + 1, IDC_CLEAR_BROWSING_DATA, IDS_CLEAR_BROWSING_DATA);
+  menu_model->InsertSeparatorAt(sync_index + 1);
 
-  app_menu_menu_.reset(new views::Menu2(app_menu_contents_.get()));
+  int options_index = menu_model->GetIndexOfCommandId(IDC_OPTIONS);
+  DCHECK_GE(options_index, 0);
+  menu_model->InsertSubMenuAt(
+      options_index + 1,
+      ASCIIToUTF16("Compact nav bar"), options_menu_contents_.get());
+  return menu_model;
 }
 
 bool StatusAreaView::IsCommandIdChecked(int command_id) const {
@@ -271,7 +255,6 @@ void StatusAreaView::ExecuteCommand(int command_id) {
 }
 
 void StatusAreaView::RunMenu(views::View* source, const gfx::Point& pt) {
-  CreateAppMenu();
   app_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
 }
 
