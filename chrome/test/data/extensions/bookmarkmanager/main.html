@@ -409,7 +409,7 @@ function navigateTo(id) {
 function updateParentId(id) {
   list.parentId = id;
   if (id in bmm.treeLookup)
-    bmm.treeLookup[id].selected = true;
+    tree.selectedItem = bmm.treeLookup[id];
 }
 
 // We listen to hashchange so that we can update the currently shown folder when
@@ -546,6 +546,21 @@ function handleRemoved(id, removeInfo) {
   bookmarkCache.remove(id);
 }
 
+function handleImportBegan() {
+  chrome.bookmarks.onCreated.removeListener(handleCreated);
+}
+
+function handleImportEnded() {
+  chrome.bookmarks.onCreated.addListener(handleCreated);
+  chrome.bookmarks.getTree(function(node) {
+    var otherBookmarks = node[0].children[1].children;
+    var importedFolder = otherBookmarks[otherBookmarks.length - 1];
+    var importId = importedFolder.id;
+    tree.insertSubtree(importedFolder);
+    navigateTo(importId)
+  });
+}
+
 /**
  * Adds the listeners for the bookmark model change events.
  */
@@ -555,6 +570,10 @@ function addBookmarkModelListeners() {
   chrome.bookmarks.onCreated.addListener(handleCreated);
   chrome.bookmarks.onMoved.addListener(handleMoved);
   chrome.bookmarks.onRemoved.addListener(handleRemoved);
+  chrome.experimental.bookmarkManager.onImportBegan.addListener(
+      handleImportBegan);
+  chrome.experimental.bookmarkManager.onImportEnded.addListener(
+      handleImportEnded);
 }
 
 /**
@@ -593,7 +612,6 @@ tree.addEventListener('load', function(e) {
 
 tree.buildTree();
 addBookmarkModelListeners();
-
 </script>
 <script>
 
@@ -1346,6 +1364,11 @@ document.addEventListener('command', function(e) {
   var command = e.command;
   var commandId = command.id;
   console.log(command.id, 'executed', 'on', e.target);
+  if (commandId == 'import-menu-command') {
+    chrome.experimental.bookmarkManager.import();
+  } else if (command.id == 'export-menu-command') {
+    chrome.experimental.bookmarkManager.export();
+  }
 });
 
 /**

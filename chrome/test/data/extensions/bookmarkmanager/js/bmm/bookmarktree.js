@@ -124,6 +124,17 @@ cr.define('bmm', function() {
       }
     },
 
+    insertSubtree:function(folder) {
+      if (!bmm.isFolder(folder))
+        return;
+      var children = folder.children;
+      this.handleCreated(folder.id, folder);
+      for(var i = 0; i < children.length; i++) {
+        var child = children[i];
+        this.insertSubtree(child);
+      }
+    },
+
     /**
      * Returns the bookmark node with the given ID. The tree only maintains
      * folder nodes.
