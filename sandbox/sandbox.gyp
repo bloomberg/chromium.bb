@@ -76,6 +76,7 @@
             'src/sandbox.cc',
             'src/sandbox.h',
             'src/security_level.h',
+            'src/service_resolver.h',
             'src/shared_handles.cc',
             'src/shared_handles.h',
             'src/sid.cc',
@@ -207,7 +208,6 @@
             'src/registry_interception.cc',
             'src/registry_interception.h',
             'src/service_resolver.cc',
-            'src/service_resolver.h',
             'src/sharedmem_ipc_client.cc',
             'src/sharedmem_ipc_client.h',
             'src/sharedmem_ipc_server.cc',
@@ -263,6 +263,10 @@
             },
           },
           'msvs_guid': 'BE3468E6-B314-4310-B449-6FC0C52EE155',
+          'sources': [
+            # Files that are used by the 64-bit version of Windows sandbox only.
+            'src/service_resolver_64.cc',
+          ],
           'include_dirs': [
             '..',
           ],
