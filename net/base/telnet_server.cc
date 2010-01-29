@@ -10,6 +10,7 @@
 #include <winsock2.h>
 #elif defined(OS_POSIX)
 #include <errno.h>
+#include <sys/types.h>
 #include <sys/socket.h>
 #include "base/message_loop.h"
 #include "net/base/net_errors.h"

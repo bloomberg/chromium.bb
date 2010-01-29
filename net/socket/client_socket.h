@@ -8,7 +8,8 @@
 #include "build/build_config.h"
 
 // For struct sockaddr and socklen_t.
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_POSIX)
+#include <sys/types.h>
 #include <sys/socket.h>
 #elif defined(OS_WIN)
 #include <ws2tcpip.h>
