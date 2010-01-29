@@ -11,6 +11,7 @@
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/common/appcache/chrome_appcache_service.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/pref_service.h"
 #include "net/url_request/url_request_context.h"
@@ -40,14 +41,14 @@ class ChromeURLRequestContext : public URLRequestContext {
   // both threads. There is only a small amount of mutable state in Extension.
   struct ExtensionInfo {
     ExtensionInfo(const FilePath& path, const std::string& default_locale,
-                  const std::vector<GURL>& web_origins,
+                  const Extension::URLPatternList& extent,
                   const std::vector<std::string>& api_permissions)
         : path(path), default_locale(default_locale),
-          web_origins(web_origins), api_permissions(api_permissions) {
+          extent(extent), api_permissions(api_permissions) {
     }
     FilePath path;
     std::string default_locale;
-    std::vector<GURL> web_origins;
+    Extension::URLPatternList extent;
     std::vector<std::string> api_permissions;
   };
 

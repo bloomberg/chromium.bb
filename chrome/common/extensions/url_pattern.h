@@ -87,13 +87,16 @@ class URLPattern {
   // Get the scheme the pattern matches. This will always return a valid scheme
   // if is_valid() returns true.
   std::string scheme() const { return scheme_; }
+  void set_scheme(const std::string& scheme) { scheme_ = scheme; }
 
   // Gets the host the pattern matches. This can be an empty string if the
   // pattern matches all hosts (the input was <scheme>://*/<whatever>).
   std::string host() const { return host_; }
+  void set_host(const std::string& host) { host_ = host; }
 
   // Gets whether to match subdomains of host().
   bool match_subdomains() const { return match_subdomains_; }
+  void set_match_subdomains(bool val) { match_subdomains_ = val; }
 
   // Gets the path the pattern matches with the leading slash. This can have
   // embedded asterisks which are interpreted using glob rules.

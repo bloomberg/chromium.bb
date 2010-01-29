@@ -536,31 +536,38 @@ bool Extension::LoadAppHelper(const DictionaryValue* app, std::string* error) {
     *error = errors::kInvalidAppLaunchUrl;
     return false;
   }
-  // The launch URL is automatically an allowed origin.
-  app_origins_.push_back(app_launch_url_.GetOrigin());
 
-  // origins
-  ListValue* origins;
-  if (!app->GetList(keys::kAppOrigins, &origins) || origins->GetSize() == 0) {
-    *error = errors::kInvalidAppOrigin;
-    return false;
-  }
-  for (ListValue::const_iterator iter = origins->begin();
-       iter != origins->end(); ++iter) {
-    std::string url_str;
-    if (!(*iter)->GetAsString(&url_str) || url_str.empty()) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(
-          errors::kInvalidAppOrigin, url_str);
+  // The launch URL is automatically added to the extent.
+  URLPattern pattern;
+  pattern.set_scheme(app_launch_url_.scheme());
+  pattern.set_host(app_launch_url_.host());
+  pattern.set_path(app_launch_url_.path());
+  app_extent_.push_back(pattern);
+
+  // extent
+  if (app->HasKey(keys::kAppExtent)) {
+    ListValue* extent;
+    if (!app->GetList(keys::kAppExtent, &extent)) {
+      *error = errors::kInvalidAppExtent;
       return false;
     }
-    GURL url(url_str);
-    if (!url.is_valid() || url != url.GetOrigin()) {
-      *error = ExtensionErrorUtils::FormatErrorMessage(
-          errors::kInvalidAppOrigin, url_str);
-      return false;
+    for (ListValue::const_iterator iter = extent->begin();
+         iter != extent->end(); ++iter) {
+      std::string item;
+      if (!(*iter)->GetAsString(&item) || item.empty()) {
+        *error = ExtensionErrorUtils::FormatErrorMessage(
+            errors::kInvalidAppExtentPattern, item);
+        return false;
+      }
+      if (!pattern.Parse(item)) {
+        *error = ExtensionErrorUtils::FormatErrorMessage(
+            errors::kInvalidAppExtentPattern, item);
+        return false;
+      }
+      app_extent_.push_back(pattern);
     }
-    app_origins_.push_back(url);
   }
+
   return true;
 }
 
@@ -1357,7 +1364,7 @@ ExtensionResource Extension::GetIconPath(Icons icon) {
 }
 
 bool Extension::CanAccessHost(const GURL& url) const {
-  for (HostPermissions::const_iterator host = host_permissions_.begin();
+  for (URLPatternList::const_iterator host = host_permissions_.begin();
        host != host_permissions_.end(); ++host) {
     if (host->MatchesUrl(url))
       return true;
@@ -1369,7 +1376,7 @@ bool Extension::CanAccessHost(const GURL& url) const {
 const std::set<std::string> Extension::GetEffectiveHostPermissions() const {
   std::set<std::string> effective_hosts;
 
-  for (HostPermissions::const_iterator host = host_permissions_.begin();
+  for (URLPatternList::const_iterator host = host_permissions_.begin();
        host != host_permissions_.end(); ++host)
     effective_hosts.insert(host->host());
 
@@ -1385,7 +1392,7 @@ const std::set<std::string> Extension::GetEffectiveHostPermissions() const {
 }
 
 bool Extension::HasAccessToAllHosts() const {
-  for (HostPermissions::const_iterator host = host_permissions_.begin();
+  for (URLPatternList::const_iterator host = host_permissions_.begin();
        host != host_permissions_.end(); ++host) {
     if (host->match_subdomains() && host->host().empty())
       return true;

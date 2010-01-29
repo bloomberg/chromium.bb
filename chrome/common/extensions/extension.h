@@ -24,7 +24,7 @@
 // Represents a Chrome extension.
 class Extension {
  public:
-  typedef std::vector<URLPattern> HostPermissions;
+  typedef std::vector<URLPattern> URLPatternList;
   typedef std::map<const std::string, GURL> URLOverrideMap;
 
   // What an extension was loaded from.
@@ -211,7 +211,7 @@ class Extension {
   const std::vector<std::string>& api_permissions() const {
     return api_permissions_;
   }
-  const HostPermissions& host_permissions() const {
+  const URLPatternList& host_permissions() const {
     return host_permissions_;
   }
 
@@ -280,7 +280,7 @@ class Extension {
   void SetBackgroundPageReady();
 
   // App stuff.
-  const std::vector<GURL>& app_origins() const { return app_origins_; }
+  const URLPatternList& app_extent() const { return app_extent_; }
   const GURL& app_launch_url() const { return app_launch_url_; }
   bool IsApp() const { return !app_launch_url_.is_empty(); }
 
@@ -392,7 +392,7 @@ class Extension {
   std::vector<std::string> api_permissions_;
 
   // The sites this extension has permission to talk to (using XHR, etc).
-  HostPermissions host_permissions_;
+  URLPatternList host_permissions_;
 
   // The paths to the icons the extension contains mapped by their width.
   std::map<int, std::string> icons_;
@@ -410,8 +410,8 @@ class Extension {
   // which override the handling of those URLs.
   URLOverrideMap chrome_url_overrides_;
 
-  // The vector of origin URLs associated with an app.
-  std::vector<GURL> app_origins_;
+  // Describes the space of URLs that are displayed in the app's custom frame.
+  URLPatternList app_extent_;
 
   // The URL an app should launch to.
   GURL app_launch_url_;

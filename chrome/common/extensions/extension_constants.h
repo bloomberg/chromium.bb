@@ -9,7 +9,7 @@
 namespace extension_manifest_keys {
   extern const wchar_t* kAllFrames;
   extern const wchar_t* kApp;
-  extern const wchar_t* kAppOrigins;
+  extern const wchar_t* kAppExtent;
   extern const wchar_t* kAppLaunchUrl;
   extern const wchar_t* kBackground;
   extern const wchar_t* kBrowserAction;
@@ -73,7 +73,8 @@ namespace extension_manifest_errors {
   extern const char* kChromeVersionTooLow;
   extern const char* kInvalidAllFrames;
   extern const char* kInvalidApp;
-  extern const char* kInvalidAppOrigin;
+  extern const char* kInvalidAppExtent;
+  extern const char* kInvalidAppExtentPattern;
   extern const char* kInvalidAppLaunchUrl;
   extern const char* kInvalidBackground;
   extern const char* kInvalidBrowserAction;

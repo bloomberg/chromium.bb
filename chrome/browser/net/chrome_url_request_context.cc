@@ -690,10 +690,10 @@ bool ChromeURLRequestContext::CheckURLAccessToExtensionPermission(
   }
 
   // Check that the extension declares the source URL in its extent.
-  std::vector<GURL>& origins = info->second->web_origins;
-  for (std::vector<GURL>::iterator origin = origins.begin();
-       origin != origins.end(); ++origin) {
-    if (url.GetOrigin() == *origin)
+  Extension::URLPatternList& extent = info->second->extent;
+  for (Extension::URLPatternList::iterator pattern = extent.begin();
+       pattern != extent.end(); ++pattern) {
+    if (pattern->MatchesUrl(url))
       return true;
   }
 
@@ -877,7 +877,7 @@ ChromeURLRequestContextFactory::ChromeURLRequestContextFactory(Profile* profile)
               new ChromeURLRequestContext::ExtensionInfo(
                   (*iter)->path(),
                   (*iter)->default_locale(),
-                  (*iter)->app_origins(),
+                  (*iter)->app_extent(),
                   (*iter)->api_permissions()));
     }
   }
