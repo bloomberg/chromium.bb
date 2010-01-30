@@ -33,6 +33,7 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/page_navigator.h"
 #include "chrome/browser/tab_contents/render_view_host_manager.h"
+#include "chrome/common/content_settings_types.h"
 #include "chrome/common/extensions/url_pattern.h"
 #include "chrome/common/navigation_types.h"
 #include "chrome/common/notification_registrar.h"
@@ -229,6 +230,10 @@ class TabContents : public PageNavigator,
   // Returns whether the favicon should be displayed. If this returns false, no
   // space is provided for the favicon, and the favicon is never displayed.
   virtual bool ShouldDisplayFavIcon();
+
+  // Returns whether a particular kind of content has been blocked for this
+  // page.
+  bool IsContentBlocked(ContentSettingsType content_type) const;
 
   // Returns a human-readable description the tab's loading state.
   virtual std::wstring GetStatusText() const;

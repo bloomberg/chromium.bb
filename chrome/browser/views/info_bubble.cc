@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -248,11 +248,15 @@ void InfoBubble::Init(views::Window* parent,
 
   // Create a View to hold the contents of the main window.
   views::View* contents_view = new views::View;
+  // We add |contents_view| to ourselves before the AddChildView() call below so
+  // that when |contents| gets added, it will already have a widget, and thus
+  // any NativeButtons it creates in ViewHierarchyChanged() will be functional
+  // (e.g. calling SetChecked() on checkboxes is safe).
+  SetContentsView(contents_view);
   // Adding |contents| as a child has to be done before we call
   // contents->GetPreferredSize() below, since some supplied views don't
   // actually initialize themselves until they're added to a hierarchy.
   contents_view->AddChildView(contents);
-  SetContentsView(contents_view);
 
   // Calculate and set the bounds for all windows and views.
   gfx::Rect window_bounds;

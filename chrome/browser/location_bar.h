@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -49,6 +49,9 @@ class LocationBar {
   // Clears the location bar, inserts an annoying little "?" turd and sets
   // focus to it.
   virtual void FocusSearch() = 0;
+
+  // Updates the state of the images showing what content was blocked.
+  virtual void UpdateContentBlockedIcons() = 0;
 
   // Updates the state of the page actions.
   virtual void UpdatePageActions() = 0;

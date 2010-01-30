@@ -20,6 +20,7 @@
 #include "chrome/browser/views/browser_bubble.h"
 #include "chrome/browser/views/extensions/extension_action_context_menu.h"
 #include "chrome/browser/views/info_bubble.h"
+#include "chrome/common/content_settings_types.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "views/controls/image_view.h"
@@ -101,6 +102,10 @@ class LocationBarView : public LocationBar,
   void SetProfile(Profile* profile);
   Profile* profile() { return profile_; }
 
+  // Returns the display-formatted hostname for the current page.  This should
+  // only be used by the ContentBlockedImageView.
+  std::wstring GetHost() const;
+
   // Sets |preview_enabled| for the PageAction View associated with this
   // |page_action|. If |preview_enabled| is true, the view will display the
   // PageActions icon even though it has not been activated by the extension.
@@ -160,6 +165,7 @@ class LocationBarView : public LocationBar,
   virtual void AcceptInputWithDisposition(WindowOpenDisposition);
   virtual void FocusLocation();
   virtual void FocusSearch();
+  virtual void UpdateContentBlockedIcons();
   virtual void UpdatePageActions();
   virtual void InvalidatePageActions();
   virtual void SaveStateToContents(TabContents* contents);
@@ -355,6 +361,50 @@ class LocationBarView : public LocationBar,
     DISALLOW_COPY_AND_ASSIGN(SecurityImageView);
   };
 
+  class ContentBlockedImageView : public views::ImageView,
+                                  public InfoBubbleDelegate {
+   public:
+    ContentBlockedImageView(ContentSettingsType content_type,
+                            const LocationBarView* parent,
+                            Profile* profile,
+                            const BubblePositioner* bubble_positioner);
+    virtual ~ContentBlockedImageView();
+
+    ContentSettingsType content_type() const { return content_type_; }
+    void set_profile(Profile* profile) { profile_ = profile; }
+
+   private:
+    // views::ImageView overrides:
+    virtual bool OnMousePressed(const views::MouseEvent& event);
+    virtual void VisibilityChanged(View* starting_from, bool is_visible);
+
+    // InfoBubbleDelegate overrides:
+    virtual void InfoBubbleClosing(InfoBubble* info_bubble,
+                                   bool closed_by_escape);
+    virtual bool CloseOnEscape();
+
+    static SkBitmap* icons_[CONTENT_SETTINGS_NUM_TYPES];
+
+    // The type of content handled by this view.
+    ContentSettingsType content_type_;
+
+    // The owning LocationBarView.
+    const LocationBarView* parent_;
+
+    // The currently active profile.
+    Profile* profile_;
+
+    // The currently shown info bubble if any.
+    InfoBubble* info_bubble_;
+
+    // A positioner used to give the info bubble the correct target bounds.  The
+    // caller maintains ownership of this and must ensure it's kept alive.
+    const BubblePositioner* bubble_positioner_;
+
+    DISALLOW_IMPLICIT_CONSTRUCTORS(ContentBlockedImageView);
+  };
+  typedef std::vector<ContentBlockedImageView*> ContentBlockedViews;
+
   // PageActionImageView is used to display the icon for a given PageAction
   // and notify the extension when the icon is clicked.
   class PageActionImageView : public LocationBarImageView,
@@ -496,6 +546,10 @@ class LocationBarView : public LocationBar,
   // Sets the security icon to display.  Note that no repaint is done.
   void SetSecurityIcon(ToolbarModel::Icon icon);
 
+  // Update the visibility state of the Content Blocked icons to reflect what is
+  // actually blocked on the current page.
+  void RefreshContentBlockedViews();
+
   // Delete all page action views that we have created.
   void DeletePageActionViews();
 
@@ -573,6 +627,9 @@ class LocationBarView : public LocationBar,
 
   // The view that shows the lock/warning when in HTTPS mode.
   SecurityImageView security_image_view_;
+
+  // The content blocked views.
+  ContentBlockedViews content_blocked_views_;
 
   // The page action icon views.
   PageActionViews page_action_views_;

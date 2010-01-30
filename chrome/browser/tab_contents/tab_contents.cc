@@ -560,6 +560,11 @@ bool TabContents::ShouldDisplayFavIcon() {
   return true;
 }
 
+bool TabContents::IsContentBlocked(ContentSettingsType content_type) const {
+  // TODO(pkasting): Return meaningful values here.
+  return false;
+}
+
 std::wstring TabContents::GetStatusText() const {
   if (!is_loading() || load_state_ == net::LOAD_STATE_IDLE)
     return std::wstring();

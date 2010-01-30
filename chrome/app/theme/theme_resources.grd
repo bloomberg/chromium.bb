@@ -118,6 +118,11 @@
       <include name="IDR_FIND_BOX_BACKGROUND_LEFT" file="find_box_bg_left.png" type="BINDATA" />
       <include name="IDR_FIND_BOX_BACKGROUND_LEFT_RTL" file="find_box_bg_left_rtl.png" type="BINDATA" />
       <include name="IDR_APP_DROPARROW" file="app_droparrow.png" type="BINDATA" />
+      <include name="IDR_BLOCKED_COOKIES" file="blocked_cookies.png" type="BINDATA" />
+      <include name="IDR_BLOCKED_IMAGES" file="blocked_images.png" type="BINDATA" />
+      <include name="IDR_BLOCKED_JAVASCRIPT" file="blocked_javascript.png" type="BINDATA" />
+      <include name="IDR_BLOCKED_PLUGINS" file="blocked_plugins.png" type="BINDATA" />
+      <include name="IDR_BLOCKED_POPUPS" file="blocked_popups.png" type="BINDATA" />
       <include name="IDR_LOCK" file="lock_small.png" type="BINDATA" />
       <include name="IDR_WARNING" file="alert_small.png" type="BINDATA" />
       <include name="IDR_STOP" file="stop.png" type="BINDATA" />

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -508,6 +508,10 @@ void LocationBarViewGtk::FocusLocation() {
 void LocationBarViewGtk::FocusSearch() {
   location_entry_->SetFocus();
   location_entry_->SetForcedQuery();
+}
+
+void LocationBarViewGtk::UpdateContentBlockedIcons() {
+  // TODO(pkasting): Implement.
 }
 
 void LocationBarViewGtk::UpdatePageActions() {
