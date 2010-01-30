@@ -689,8 +689,8 @@ class NotificationType {
     EXTENSION_OVERINSTALL_ERROR,
 
     // Sent when an extension is unloaded. This happens when an extension is
-    // uninstalled. When we add a disable feature, it will also happen then.
-    // The details are an Extension, and the source is a Profile.
+    // uninstalled or disabled. The details are an Extension, and the source is
+    // a Profile.
     //
     // Note that when this notification is sent, ExtensionsService has already
     // removed the extension from its internal state.

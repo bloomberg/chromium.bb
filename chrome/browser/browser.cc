@@ -153,6 +153,8 @@ Browser::Browser(Type type, Profile* profile)
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UPDATE_DISABLED,
                  NotificationService::AllSources());
+  registrar_.Add(this, NotificationType::EXTENSION_LOADED,
+                 NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
@@ -2398,6 +2400,27 @@ void Browser::Observe(NotificationType type,
       ExtensionHost* extension_host = Details<ExtensionHost>(details).ptr();
       tab_contents->AddInfoBar(new CrashedExtensionInfoBarDelegate(
           tab_contents, extensions_service, extension_host->extension()));
+      break;
+    }
+
+    case NotificationType::EXTENSION_LOADED: {
+      // If any "This extension has crashed" InfoBarDelegates are around for
+      // this extension, it means that it has been reloaded in another window
+      // so just remove the remaining CrashedExtensionInfoBarDelegate objects.
+      TabContents* tab_contents = GetSelectedTabContents();
+      if (!tab_contents)
+        break;
+      Extension* extension = Details<Extension>(details).ptr();
+      int delegate_count = tab_contents->infobar_delegate_count();
+      CrashedExtensionInfoBarDelegate* delegate = NULL;
+      for (int i = 0; i < delegate_count; ++i) {
+        delegate = tab_contents->GetInfoBarDelegateAt(i)->
+            AsCrashedExtensionInfoBarDelegate();
+        if (!delegate)
+          continue;
+        if (extension->id() == delegate->extension_id())
+          tab_contents->RemoveInfoBar(delegate);
+      }
       break;
     }
 

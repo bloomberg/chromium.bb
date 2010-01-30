@@ -25,6 +25,13 @@ class CrashedExtensionInfoBarDelegate : public ConfirmInfoBarDelegate {
                                   ExtensionsService* extensions_service,
                                   const Extension* extension);
 
+  const std::string extension_id() { return extension_id_; }
+
+  // InfoBarDelegate
+  virtual CrashedExtensionInfoBarDelegate* AsCrashedExtensionInfoBarDelegate() {
+    return this;
+  }
+
   // ConfirmInfoBarDelegate
   virtual std::wstring GetMessageText() const;
   virtual void InfoBarClosed();
