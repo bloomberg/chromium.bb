@@ -47,6 +47,7 @@
 #include <string.h>
 #include <errno.h>
 #include <sys/poll.h>
+#include <sys/time.h>
 
 #include "xf86drm.h"
 #include "xf86drmMode.h"
@@ -255,9 +256,10 @@ void dump_framebuffers(void)
 				resources->fbs[i], strerror(errno));
 			continue;
 		}
-		printf("%d\t(%dx%d)\t%d\n",
+		printf("%u\t(%ux%u)\t%u\n",
 		       fb->fb_id,
-		       fb->width, fb->height);
+		       fb->width, fb->height,
+		       fb->pitch);
 
 		drmModeFreeFB(fb);
 	}
@@ -272,7 +274,7 @@ void dump_framebuffers(void)
  * can bind it with a free crtc.
  */
 struct connector {
-	int id;
+	uint32_t id;
 	char mode_str[64];
 	drmModeModeInfo *mode;
 	drmModeEncoder *encoder;
@@ -287,7 +289,7 @@ static void
 connector_find_mode(struct connector *c)
 {
 	drmModeConnector *connector;
-	int i, j, size, ret, width, height;
+	int i, j;
 
 	/* First, find the connector & mode */
 	c->mode = NULL;
@@ -358,7 +360,7 @@ create_test_buffer(drm_intel_bufmgr *bufmgr,
 {
 	drm_intel_bo *bo;
 	unsigned int *fb_ptr;
-	int size, ret, i, stride;
+	int size, i, stride;
 	div_t d;
 	cairo_surface_t *surface;
 	cairo_t *cr;
@@ -472,9 +474,7 @@ create_grey_buffer(drm_intel_bufmgr *bufmgr,
 		   int width, int height, int *stride_out, drm_intel_bo **bo_out)
 {
 	drm_intel_bo *bo;
-	unsigned int *fb_ptr;
-	int size, ret, i, stride;
-	div_t d;
+	int size, ret, stride;
 
 	/* Mode size at 32 bpp */
 	stride = width * 4;
@@ -509,7 +509,6 @@ page_flip_handler(int fd, unsigned int frame,
 {
 	struct connector *c;
 	unsigned int new_fb_id;
-	int len, ms;
 	struct timeval end;
 	double t;
 
@@ -536,13 +535,10 @@ page_flip_handler(int fd, unsigned int frame,
 static void
 set_mode(struct connector *c, int count, int page_flip)
 {
-	drmModeConnector *connector;
-	drmModeEncoder *encoder = NULL;
-	struct drm_mode_modeinfo *mode = NULL;
 	drm_intel_bufmgr *bufmgr;
 	drm_intel_bo *bo, *other_bo;
 	unsigned int fb_id, other_fb_id;
-	int i, j, ret, width, height, x, stride;
+	int i, ret, width, height, x, stride;
 	drmEventContext evctx;
 
 	width = 0;
@@ -611,9 +607,9 @@ set_mode(struct connector *c, int count, int page_flip)
 				DRM_MODE_PAGE_FLIP_EVENT, &c[i]);
 		gettimeofday(&c[i].start, NULL);
 		c[i].swap_count = 0;
- 		c[i].fb_id[0] = fb_id;
- 		c[i].fb_id[1] = other_fb_id;
- 		c[i].current_fb_id = fb_id;
+		c[i].fb_id[0] = fb_id;
+		c[i].fb_id[1] = other_fb_id;
+		c[i].current_fb_id = fb_id;
 	}
 
 	memset(&evctx, 0, sizeof evctx);
@@ -676,7 +672,7 @@ static int page_flipping_supported(int fd)
 		return 0;
 	}
 
-	return gp.value;
+	return *gp.value;
 }
 
 int main(int argc, char **argv)
@@ -685,8 +681,8 @@ int main(int argc, char **argv)
 	int encoders = 0, connectors = 0, crtcs = 0, framebuffers = 0;
 	int test_vsync = 0;
 	char *modules[] = { "i915", "radeon" };
-	char *modeset = NULL, *mode, *connector;
-	int i, connector_id, count = 0;
+	char *modeset = NULL;
+	int i, count = 0;
 	struct connector con_args[2];
 	
 	opterr = 0;
@@ -715,11 +711,11 @@ int main(int argc, char **argv)
 			con_args[count].crtc = -1;
 			if (sscanf(optarg, "%d:%64s",
 				   &con_args[count].id,
-				   &con_args[count].mode_str) != 2 &&
+				   con_args[count].mode_str) != 2 &&
 			    sscanf(optarg, "%d@%d:%64s",
 				   &con_args[count].id,
 				   &con_args[count].crtc,
-				   &con_args[count].mode_str) != 3)
+				   con_args[count].mode_str) != 3)
 				usage(argv[0]);
 			count++;				      
 			break;

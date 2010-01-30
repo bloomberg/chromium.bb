@@ -108,7 +108,8 @@ static void getvm(int fd)
 	flagname[6] = '\0';
 	
 	printf("    %4d 0x%08lx 0x%08lx %3.3s %6.6s 0x%08lx ",
-	       i, offset, (unsigned long)size, typename, flagname, handle);
+	       i, (unsigned long)offset, (unsigned long)size,
+	       typename, flagname, (unsigned long)handle);
 	if (mtrr < 0) printf("none\n");
 	else          printf("%4d\n", mtrr);
     }

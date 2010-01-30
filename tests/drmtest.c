@@ -25,9 +25,11 @@
  *
  */
 
+#include <string.h>
 #include <fcntl.h>
 #include <fnmatch.h>
 #include <sys/stat.h>
+#include <sys/ioctl.h>
 #include "drmtest.h"
 
 #define LIBUDEV_I_KNOW_THE_API_IS_SUBJECT_TO_CHANGE
@@ -60,7 +62,7 @@ int drm_open_matching(const char *pci_glob, int flags)
 	struct udev_device *device, *parent;
         struct udev_list_entry *entry;
 	const char *pci_id, *path;
-	int i, fd;
+	int fd;
 
 	udev = udev_new();
 	if (udev == NULL) {
