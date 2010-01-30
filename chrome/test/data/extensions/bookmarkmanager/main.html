@@ -1368,11 +1368,11 @@ function updateCommandsBasedOnSelection(e) {
   if (e.target == document.activeElement) {
     // Paste only needs to updated when the tree selection changes.
     var commandNames = ['copy', 'cut', 'delete', 'rename-folder', 'edit',
-        'sort', 'add-new-bookmark', 'new-folder', 'show-in-folder',
-        'open-in-new-tab', 'open-in-new-window', 'open-incognito-window']
+        'add-new-bookmark', 'new-folder', 'open-in-new-tab',
+        'open-in-new-window', 'open-incognito-window'];
 
     if (e.target == tree) {
-      commandNames.push('paste');
+      commandNames.push('paste', 'show-in-folder', 'sort');
     }
 
     commandNames.forEach(function(baseId) {
@@ -1567,6 +1567,9 @@ function handleCommand(e) {
       break;
     case 'paste-command':
       chrome.experimental.bookmarkManager.paste(list.parentId);
+      break;
+    case 'sort-command':
+      chrome.experimental.bookmarkManager.sortChildren(list.parentId);
       break;
   }
 }

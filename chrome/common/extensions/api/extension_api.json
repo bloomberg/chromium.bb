@@ -2001,6 +2001,15 @@
         ]
       },
       {
+        "name": "sortChildren",
+        "type": "function",
+        "description": "Sorts the children of a given folder",
+        "nodoc": "true",
+        "parameters": [
+          {"type": "string", "name": "parentId", "description": "The ID of the folder to sort the children of"}
+        ]
+      },
+      {
         "name": "getStrings",
         "type": "function",
         "description": "Gets the i18n strings for the bookmark manager",

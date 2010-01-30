@@ -88,6 +88,17 @@ class ExportBookmarksFunction : public BookmarkManagerIOFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("experimental.bookmarkManager.export");
 };
 
+class SortChildrenBookmarkManagerFunction
+    : public ClipboardBookmarkManagerFunction {
+ public:
+  // Override ClipboardBookmarkManagerFunction.
+  virtual bool RunImpl();
+
+ private:
+  DECLARE_EXTENSION_FUNCTION_NAME(
+      "experimental.bookmarkManager.sortChildren");
+};
+
 class BookmarkManagerGetStringsFunction : public AsyncExtensionFunction {
  public:
   // Override AsyncExtensionFunction.

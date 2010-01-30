@@ -78,6 +78,7 @@ bool CanPasteBookmarkManagerFunction::RunImpl() {
   SendResponse(true);
   return true;
 }
+
 void BookmarkManagerIOFunction::SelectFile(SelectFileDialog::Type type) {
   // Balanced in one of the three callbacks of SelectFileDialog:
   // either FileSelectionCanceled, MultiFilesSelected, or FileSelected
@@ -98,12 +99,12 @@ void BookmarkManagerIOFunction::SelectFile(SelectFileDialog::Type type) {
 }
 
 void BookmarkManagerIOFunction::FileSelectionCanceled(void* params) {
-  Release(); //Balanced in BookmarkManagerIOFunction::SelectFile()
+  Release();  // Balanced in BookmarkManagerIOFunction::SelectFile()
 }
 
 void BookmarkManagerIOFunction::MultiFilesSelected(
     const std::vector<FilePath>& files, void* params) {
-  Release(); //Balanced in BookmarkManagerIOFunction::SelectFile()
+  Release();  // Balanced in BookmarkManagerIOFunction::SelectFile()
   NOTREACHED() << "Should not be able to select multiple files";
 }
 
@@ -124,7 +125,7 @@ void ImportBookmarksFunction::FileSelected(const FilePath& path,
                             FAVORITES,
                             new ProfileWriter(profile()),
                             true);
-  Release(); //Balanced in BookmarkManagerIOFunction::SelectFile()
+  Release();  // Balanced in BookmarkManagerIOFunction::SelectFile()
 }
 
 bool ExportBookmarksFunction::RunImpl() {
@@ -136,7 +137,14 @@ void ExportBookmarksFunction::FileSelected(const FilePath& path,
                                                 int index,
                                                 void* params) {
   bookmark_html_writer::WriteBookmarks(profile()->GetBookmarkModel(), path);
-  Release(); //Balanced in BookmarkManagerIOFunction::SelectFile()
+  Release();  // Balanced in BookmarkManagerIOFunction::SelectFile()
+}
+
+bool SortChildrenBookmarkManagerFunction::RunImpl() {
+  const BookmarkNode* parent_node = GetNodeFromArguments();
+  BookmarkModel* model = profile()->GetBookmarkModel();
+  model->SortChildren(parent_node);
+  return true;
 }
 
 bool BookmarkManagerGetStringsFunction::RunImpl() {

@@ -9,12 +9,49 @@ const bookmarks = chrome.bookmarks;
 const bookmarkManager = chrome.experimental.bookmarkManager;
 const MAC = /Mac/.test(navigator.platform);
 var node, node2, count;
+var folder, nodeA, nodeB;
 
 var tests = [
   function getStrings() {
     bookmarkManager.getStrings(pass(function(strings) {
       assertEq('string', typeof strings['title']);
       assertEq('string', typeof strings['search_button']);
+    }));
+  },
+
+  function sortChildren() {
+    folder = {
+      parentId: '1',
+      title: 'Folder'
+    };
+    nodeA = {
+      title: 'a',
+      url: 'http://www.example.com/a'
+    };
+    nodeB = {
+      title: 'b',
+      url: 'http://www.example.com/b'
+    };
+    bookmarks.create(folder, pass(function(result) {
+      folder.id = result.id;
+      nodeA.parentId = folder.id;
+      nodeB.parentId = folder.id;
+
+      bookmarks.create(nodeB, pass(function(result) {
+        nodeB.id = result.id;
+      }));
+      bookmarks.create(nodeA, pass(function(result) {
+        nodeA.id = result.id;
+      }));
+    }));
+  },
+
+  function sortChildren2() {
+    bookmarkManager.sortChildren(folder.id);
+
+    bookmarks.getChildren(folder.id, pass(function(children) {
+      assertEq(nodeA.id, children[0].id);
+      assertEq(nodeB.id, children[1].id);
     }));
   }
 ];
