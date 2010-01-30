@@ -313,7 +313,6 @@
             'controls/hwnd_view.cc',
             'controls/table/group_table_view.cc',
             'controls/native_control.cc',
-            'controls/separator.cc',
             'controls/table/table_model.cc',
             'controls/table/table_view.cc',
             'controls/table/group_table_view.cc',
