@@ -275,21 +275,18 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual net::TransportSecurityState* GetTransportSecurityState() {
-    if (!transport_security_state_.get()) {
-      transport_security_state_ =
-          new net::TransportSecurityState();
-    }
+    if (!transport_security_state_.get())
+      transport_security_state_ = new net::TransportSecurityState();
 
     return transport_security_state_.get();
   }
 
   virtual HistoryService* GetHistoryService(ServiceAccessType sat) {
-    if (sat == EXPLICIT_ACCESS) {
+    if (sat == EXPLICIT_ACCESS)
       return profile_->GetHistoryService(sat);
-    } else {
-      NOTREACHED() << "This profile is OffTheRecord";
-      return NULL;
-    }
+
+    NOTREACHED() << "This profile is OffTheRecord";
+    return NULL;
   }
 
   virtual HistoryService* GetHistoryServiceWithoutCreating() {
@@ -297,12 +294,11 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual FaviconService* GetFaviconService(ServiceAccessType sat) {
-    if (sat == EXPLICIT_ACCESS) {
+    if (sat == EXPLICIT_ACCESS)
       return profile_->GetFaviconService(sat);
-    } else {
-      NOTREACHED() << "This profile is OffTheRecord";
-      return NULL;
-    }
+
+    NOTREACHED() << "This profile is OffTheRecord";
+    return NULL;
   }
 
   virtual SearchVersusNavigateClassifier* GetSearchVersusNavigateClassifier() {
@@ -310,12 +306,11 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual WebDataService* GetWebDataService(ServiceAccessType sat) {
-    if (sat == EXPLICIT_ACCESS) {
+    if (sat == EXPLICIT_ACCESS)
       return profile_->GetWebDataService(sat);
-    } else {
-      NOTREACHED() << "This profile is OffTheRecord";
-      return NULL;
-    }
+
+    NOTREACHED() << "This profile is OffTheRecord";
+    return NULL;
   }
 
   virtual WebDataService* GetWebDataServiceWithoutCreating() {
@@ -323,12 +318,11 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual PasswordStore* GetPasswordStore(ServiceAccessType sat) {
-    if (sat == EXPLICIT_ACCESS) {
+    if (sat == EXPLICIT_ACCESS)
       return profile_->GetPasswordStore(sat);
-    } else {
-      NOTREACHED() << "This profile is OffTheRecord";
-      return NULL;
-    }
+
+    NOTREACHED() << "This profile is OffTheRecord";
+    return NULL;
   }
 
   virtual PrefService* GetPrefs() {
@@ -361,27 +355,27 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual void InitThemes() {
-    GetOriginalProfile()->InitThemes();
+    profile_->InitThemes();
   }
 
   virtual void SetTheme(Extension* extension) {
-    GetOriginalProfile()->SetTheme(extension);
+    profile_->SetTheme(extension);
   }
 
   virtual void SetNativeTheme() {
-    GetOriginalProfile()->SetNativeTheme();
+    profile_->SetNativeTheme();
   }
 
   virtual void ClearTheme() {
-    GetOriginalProfile()->ClearTheme();
+    profile_->ClearTheme();
   }
 
   virtual Extension* GetTheme() {
-    return GetOriginalProfile()->GetTheme();
+    return profile_->GetTheme();
   }
 
   virtual BrowserThemeProvider* GetThemeProvider() {
-    return GetOriginalProfile()->GetThemeProvider();
+    return profile_->GetThemeProvider();
   }
 
   virtual URLRequestContextGetter* GetRequestContext() {
@@ -403,7 +397,7 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual net::SSLConfigService* GetSSLConfigService() {
-    return GetOriginalProfile()->GetSSLConfigService();
+    return profile_->GetSSLConfigService();
   }
 
   virtual HostContentSettingsMap* GetHostContentSettingsMap() {
@@ -419,7 +413,7 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual Blacklist* GetPrivacyBlacklist() {
-    return GetOriginalProfile()->GetPrivacyBlacklist();
+    return profile_->GetPrivacyBlacklist();
   }
 
   virtual SessionService* GetSessionService() {
@@ -457,9 +451,7 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual bool IsSameProfile(Profile* profile) {
-    if (profile == static_cast<Profile*>(this))
-      return true;
-    return profile == profile_;
+    return (profile == this) || (profile == profile_);
   }
 
   virtual Time GetStartTime() const {
@@ -984,7 +976,7 @@ Blacklist* ProfileImpl::GetPrivacyBlacklist() {
           switches::kEnablePrivacyBlacklists))
     return NULL;
   if (!privacy_blacklist_.get())
-    privacy_blacklist_.reset(new Blacklist(GetPrefs()));
+    privacy_blacklist_ = new Blacklist(GetPrefs());
   return privacy_blacklist_.get();
 }
 

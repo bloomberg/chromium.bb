@@ -9,6 +9,7 @@
 #include "base/linked_ptr.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"
+#include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/common/appcache/chrome_appcache_service.h"
 #include "chrome/common/extensions/extension.h"
@@ -16,7 +17,6 @@
 #include "chrome/common/pref_service.h"
 #include "net/url_request/url_request_context.h"
 
-class Blacklist;
 class CommandLine;
 class Profile;
 
@@ -182,7 +182,9 @@ class ChromeURLRequestContext : public URLRequestContext {
   void set_host_zoom_map(HostZoomMap* host_zoom_map) {
     host_zoom_map_ = host_zoom_map;
   }
-  void set_privacy_blacklist(const Blacklist* privacy_blacklist);
+  void set_privacy_blacklist(Blacklist* privacy_blacklist) {
+    privacy_blacklist_ = privacy_blacklist;
+  }
   void set_appcache_service(ChromeAppCacheService* service) {
     appcache_service_ = service;
   }
@@ -205,8 +207,7 @@ class ChromeURLRequestContext : public URLRequestContext {
   scoped_refptr<ChromeAppCacheService> appcache_service_;
   HostContentSettingsMap* host_content_settings_map_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
-
-  const Blacklist* privacy_blacklist_;
+  scoped_refptr<Blacklist> privacy_blacklist_;
 
   bool is_media_;
   bool is_off_the_record_;
@@ -376,7 +377,7 @@ class ChromeURLRequestContextFactory {
   FilePath user_script_dir_path_;
   HostContentSettingsMap* host_content_settings_map_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
-  const Blacklist* privacy_blacklist_;
+  scoped_refptr<Blacklist> privacy_blacklist_;
   net::TransportSecurityState* transport_security_state_;
   scoped_refptr<net::SSLConfigService> ssl_config_service_;
 

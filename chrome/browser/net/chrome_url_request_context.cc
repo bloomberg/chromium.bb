@@ -740,7 +740,7 @@ bool ChromeURLRequestContext::InterceptCookie(
 }
 
 const Blacklist* ChromeURLRequestContext::GetPrivacyBlacklist() const {
-  return privacy_blacklist_;
+  return privacy_blacklist_.get();
 }
 
 void ChromeURLRequestContext::OnNewExtensions(const std::string& id,
@@ -784,11 +784,6 @@ ChromeURLRequestContext::ChromeURLRequestContext(
   privacy_blacklist_ = other->privacy_blacklist_;
   is_media_ = other->is_media_;
   is_off_the_record_ = other->is_off_the_record_;
-}
-
-void ChromeURLRequestContext::set_privacy_blacklist(
-    const Blacklist* privacy_blacklist) {
-  privacy_blacklist_ = privacy_blacklist;
 }
 
 void ChromeURLRequestContext::OnAcceptLanguageChange(

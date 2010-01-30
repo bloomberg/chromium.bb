@@ -528,7 +528,7 @@ class ProfileImpl : public Profile,
 
   scoped_ptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
-  scoped_ptr<Blacklist> privacy_blacklist_;
+  scoped_refptr<Blacklist> privacy_blacklist_;
   scoped_refptr<DownloadManager> download_manager_;
   scoped_refptr<HistoryService> history_service_;
   scoped_refptr<FaviconService> favicon_service_;

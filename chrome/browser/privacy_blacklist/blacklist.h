@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/linked_ptr.h"
+#include "base/ref_counted.h"
 #include "googleurl/src/gurl.h"
 #include "net/url_request/url_request.h"
 
@@ -27,7 +28,7 @@ class PrefService;
 // attributes. Each time a resources matches a pattern the filter-attributes
 // are used to determine how the browser handles the matching resource.
 ////////////////////////////////////////////////////////////////////////////////
-class Blacklist {
+class Blacklist : public base::RefCountedThreadSafe<Blacklist> {
  public:
   class Entry;
   class Provider;
