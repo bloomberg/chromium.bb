@@ -210,10 +210,15 @@ void RenderThread::Init() {
 }
 
 RenderThread::~RenderThread() {
+  // Wait for all databases to be closed.
+  if (renderer_web_database_observer_.get())
+    renderer_web_database_observer_->WaitForAllDatabasesToClose();
+
   // Shutdown in reverse of the initialization order.
   RemoveFilter(devtools_agent_filter_.get());
   RemoveFilter(db_message_filter_.get());
   db_message_filter_ = NULL;
+
   if (webkit_client_.get())
     WebKit::shutdown();
 
