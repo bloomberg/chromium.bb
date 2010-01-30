@@ -65,7 +65,11 @@ void HostZoomMap::SetZoomLevel(const std::string& host, int level) {
 void HostZoomMap::ResetToDefaults() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
-  host_zoom_levels_.clear();
+  {
+    AutoLock auto_lock(lock_);
+    host_zoom_levels_.clear();
+  }
+
   profile_->GetPrefs()->ClearPref(prefs::kPerHostZoomLevels);
 }
 
