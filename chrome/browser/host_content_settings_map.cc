@@ -85,11 +85,11 @@ ContentSettings HostContentSettingsMap::GetContentSettings(
     return default_content_settings_;
 
   ContentSettings output;
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
-    if (i->second.settings[i] == CONTENT_SETTING_DEFAULT) {
-      output.settings[i] = default_content_settings_.settings[i];
+  for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j) {
+    if (i->second.settings[j] == CONTENT_SETTING_DEFAULT) {
+      output.settings[j] = default_content_settings_.settings[j];
     } else {
-      output.settings[i] = i->second.settings[i];
+      output.settings[j] = i->second.settings[j];
     }
   }
   return output;
