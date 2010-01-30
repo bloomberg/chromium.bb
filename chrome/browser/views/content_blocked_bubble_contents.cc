@@ -6,7 +6,6 @@
 
 #include "app/l10n_util.h"
 #include "chrome/browser/views/info_bubble.h"
-#include "chrome/browser/views/options/content_settings_window_view.h"
 #include "grit/generated_resources.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/button/radio_button.h"
@@ -14,6 +13,10 @@
 #include "views/controls/separator.h"
 #include "views/grid_layout.h"
 #include "views/standard_layout.h"
+
+#if defined(OS_WIN)
+#include "chrome/browser/views/options/content_settings_window_view.h"
+#endif
 
 ContentBlockedBubbleContents::ContentBlockedBubbleContents(
     ContentSettingsType content_type,
@@ -52,10 +55,14 @@ void ContentBlockedBubbleContents::ButtonPressed(views::Button* sender,
 void ContentBlockedBubbleContents::LinkActivated(views::Link* source,
                                                  int event_flags) {
   if (source == manage_link_) {
+#if defined(OS_WIN)
     ContentSettingsWindowView::Show(content_type_, profile_);
     // CAREFUL: Showing the settings window activates it, which deactivates the
     // info bubble, which causes it to close, which deletes us.
     return;
+#else
+    // TODO(pkasting): Linux views doesn't have the same options dialogs.
+#endif
   }
 
   // TODO(pkasting): A popup link was clicked, show the corresponding popup.
