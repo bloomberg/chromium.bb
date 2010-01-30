@@ -292,10 +292,12 @@ class DelayedInitTask : public Task {
   }
 
   static bool is_strict_organic(const std::wstring& brand) {
-    const wchar_t* kBrands[] = { L"CHOA", L"CHOB", L"CHOC", L"CHOT", L"CHOU",
-                                 L"CHOR", L"CHOQ", L"CHOP", L"CHON", L"CHOO",
-                                 L"CHPD", L"CHPE", L"CHPF", L"CHPG", L"GGLS",
-                                 L"GGLA" };
+    static const wchar_t* kBrands[] = {
+        L"CHFO", L"CHFT", L"CHMA", L"CHMB", L"CHME", L"CHMF", L"CHMG", L"CHMH",
+        L"CHMI", L"CHMQ", L"CHMV", L"CHNB", L"CHNC", L"CHNG", L"CHNH", L"CHNI",
+        L"CHOA", L"CHOB", L"CHOC", L"CHON", L"CHOO", L"CHOP", L"CHOQ", L"CHOR",
+        L"CHOS", L"CHOT", L"CHOU", L"CHOX", L"CHOY", L"CHOZ", L"CHPD", L"CHPE",
+        L"CHPF", L"CHPG", L"EUBB", L"EUBC", L"GGLA", L"GGLS" };
     const wchar_t** end = &kBrands[arraysize(kBrands)];
     const wchar_t** found = std::find(&kBrands[0], end, brand);
     if (found != end)
