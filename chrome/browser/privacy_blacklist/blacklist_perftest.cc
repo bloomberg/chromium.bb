@@ -117,20 +117,20 @@ class BlacklistPerfTest : public testing::Test {
     Blacklist::Provider* provider = new Blacklist::Provider("test",
                                                             "http://test.com",
                                                             L"test");
-    blacklist_.AddProvider(provider);
+    blacklist_->AddProvider(provider);
 
     // Create host.tld/ patterns.
     for (size_t i = 0; i < kNumHostEntries; ++i) {
       std::string pattern = "@" + GetRandomString(8) + "." +
                             GetRandomString(3) + "/@";
-      blacklist_.AddEntry(new Blacklist::Entry(pattern, provider, false));
+      blacklist_->AddEntry(new Blacklist::Entry(pattern, provider, false));
     }
 
     // Create /some/path/ patterns.
     for (size_t i = 0; i < kNumPathEntries; ++i) {
       std::string pattern = "@/" + GetRandomString(6) + "/" +
                             GetRandomString(6) + "/@";
-      blacklist_.AddEntry(new Blacklist::Entry(pattern, provider, false));
+      blacklist_->AddEntry(new Blacklist::Entry(pattern, provider, false));
     }
 
     // Create /some/path/script? patterns.
@@ -138,7 +138,7 @@ class BlacklistPerfTest : public testing::Test {
       std::string pattern = "@/" + GetRandomString(6) + "/" +
                             GetRandomString(6) + "/" + GetRandomString(6) +
                             "?@";
-      blacklist_.AddEntry(new Blacklist::Entry(pattern, provider, false));
+      blacklist_->AddEntry(new Blacklist::Entry(pattern, provider, false));
     }
 
     // Create host.tld/some/path patterns.
@@ -146,7 +146,7 @@ class BlacklistPerfTest : public testing::Test {
       std::string pattern = "@" + GetRandomString(8) + "." +
                             GetRandomString(3) + "/" + GetRandomString(6) +
                             "/" + GetRandomString(6) + "/@";
-      blacklist_.AddEntry(new Blacklist::Entry(pattern, provider, false));
+      blacklist_->AddEntry(new Blacklist::Entry(pattern, provider, false));
     }
 
     // Create host.tld/some/path/script? patterns.
@@ -154,15 +154,15 @@ class BlacklistPerfTest : public testing::Test {
       std::string pattern = "@" + GetRandomString(8) + "." +
                             GetRandomString(3) + "/" + GetRandomString(6) +
                             "/" + GetRandomString(6) + "?@";
-      blacklist_.AddEntry(new Blacklist::Entry(pattern, provider, false));
+      blacklist_->AddEntry(new Blacklist::Entry(pattern, provider, false));
     }
 
-    DCHECK_EQ(std::distance(blacklist_.entries_begin(),
-              blacklist_.entries_end()), static_cast<ptrdiff_t>(kNumPattern));
+    DCHECK_EQ(std::distance(blacklist_->entries_begin(),
+              blacklist_->entries_end()), static_cast<ptrdiff_t>(kNumPattern));
   }
 
   // Randomly generated benchmark blacklist.
-  Blacklist blacklist_;
+  scoped_refptr<Blacklist> blacklist_;
 };
 
 // Perf test for matching URLs which are contained in the blacklist.
@@ -170,7 +170,7 @@ TEST_F(BlacklistPerfTest, Match) {
   // Pick random patterns and generate matching URLs
   std::vector<std::string> urls;
   for (size_t i = 0; i < kNumUrls; ++i) {
-    const Blacklist::Entry* entry = (blacklist_.entries_begin() +
+    const Blacklist::Entry* entry = (blacklist_->entries_begin() +
                                      RandomIndex(kNumPattern))->get();
     urls.push_back(GetURL(entry->pattern(), false));
   }
@@ -179,7 +179,7 @@ TEST_F(BlacklistPerfTest, Match) {
   PerfTimeLogger timer("blacklist_match");
 
   for (size_t i = 0; i < kNumUrls; ++i) {
-    scoped_ptr<Blacklist::Match> match(blacklist_.FindMatch(GURL(urls[i])));
+    scoped_ptr<Blacklist::Match> match(blacklist_->FindMatch(GURL(urls[i])));
     ASSERT_TRUE(match.get());
   }
 
@@ -192,7 +192,7 @@ TEST_F(BlacklistPerfTest, Mismatch) {
   // are made so that they do NOT match any generated pattern
   std::vector<std::string> urls;
   for (size_t i = 0; i < kNumUrls; ++i) {
-    const Blacklist::Entry* entry = (blacklist_.entries_begin() +
+    const Blacklist::Entry* entry = (blacklist_->entries_begin() +
                                      RandomIndex(kNumPattern))->get();
     urls.push_back(GetURL(entry->pattern(), true));
   }
@@ -201,7 +201,7 @@ TEST_F(BlacklistPerfTest, Mismatch) {
   PerfTimeLogger timer("blacklist_mismatch");
 
   for (size_t i = 0; i < kNumUrls; ++i) {
-    scoped_ptr<Blacklist::Match> match(blacklist_.FindMatch(GURL(urls[i])));
+    scoped_ptr<Blacklist::Match> match(blacklist_->FindMatch(GURL(urls[i])));
     ASSERT_FALSE(match.get());
   }
 

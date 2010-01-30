@@ -31,9 +31,9 @@ class BlacklistTest : public testing::Test {
 };
 
 TEST_F(BlacklistTest, Generic) {
-  Blacklist blacklist(prefs_.get());
-  Blacklist::EntryList entries(blacklist.entries_begin(),
-                               blacklist.entries_end());
+  scoped_refptr<Blacklist> blacklist = new Blacklist(prefs_.get());
+  Blacklist::EntryList entries(blacklist->entries_begin(),
+                               blacklist->entries_end());
 
   ASSERT_EQ(7U, entries.size());
 
@@ -73,20 +73,21 @@ TEST_F(BlacklistTest, Generic) {
   EXPECT_TRUE(entries[6]->is_exception());
   EXPECT_EQ("www.site.com/bad/url/good", entries[6]->pattern());
 
-  Blacklist::ProviderList providers(blacklist.providers_begin(),
-                                    blacklist.providers_end());
+  Blacklist::ProviderList providers(blacklist->providers_begin(),
+                                    blacklist->providers_end());
 
   ASSERT_EQ(1U, providers.size());
   EXPECT_EQ("Sample", providers[0]->name());
   EXPECT_EQ("http://www.example.com", providers[0]->url());
 
   // No match for chrome, about or empty URLs.
-  EXPECT_FALSE(blacklist.FindMatch(GURL()));
-  EXPECT_FALSE(blacklist.FindMatch(GURL("chrome://new-tab")));
-  EXPECT_FALSE(blacklist.FindMatch(GURL("about:blank")));
+  EXPECT_FALSE(blacklist->FindMatch(GURL()));
+  EXPECT_FALSE(blacklist->FindMatch(GURL("chrome://new-tab")));
+  EXPECT_FALSE(blacklist->FindMatch(GURL("about:blank")));
 
   // Expected rule matches.
-  Blacklist::Match* match = blacklist.FindMatch(GURL("http://www.site.com/bad/url"));
+  Blacklist::Match* match =
+      blacklist->FindMatch(GURL("http://www.site.com/bad/url"));
   EXPECT_TRUE(match);
   if (match) {
     EXPECT_EQ(Blacklist::kBlockAll|0, match->attributes());
@@ -94,17 +95,17 @@ TEST_F(BlacklistTest, Generic) {
     delete match;
   }
 
-  match = blacklist.FindMatch(GURL("http://www.site.com/anonymous"));
+  match = blacklist->FindMatch(GURL("http://www.site.com/anonymous"));
   EXPECT_FALSE(match);
   if (match)
     delete match;
 
-  match = blacklist.FindMatch(GURL("http://www.site.com/anonymous/folder"));
+  match = blacklist->FindMatch(GURL("http://www.site.com/anonymous/folder"));
   EXPECT_FALSE(match);
   if (match)
     delete match;
 
-  match = blacklist.FindMatch(
+  match = blacklist->FindMatch(
       GURL("http://www.site.com/anonymous/folder/subfolder"));
   EXPECT_TRUE(match);
   if (match) {
@@ -115,18 +116,18 @@ TEST_F(BlacklistTest, Generic) {
   }
 
   // No matches for URLs without query string
-  match = blacklist.FindMatch(GURL("http://badparam.com/"));
+  match = blacklist->FindMatch(GURL("http://badparam.com/"));
   EXPECT_FALSE(match);
   if (match)
     delete match;
 
-  match = blacklist.FindMatch(GURL("http://script.bad.org/"));
+  match = blacklist->FindMatch(GURL("http://script.bad.org/"));
   EXPECT_FALSE(match);
   if (match)
     delete match;
 
   // Expected rule matches.
-  match = blacklist.FindMatch(GURL("http://host.com/script?q=x"));
+  match = blacklist->FindMatch(GURL("http://host.com/script?q=x"));
   EXPECT_TRUE(match);
   if (match) {
     EXPECT_EQ(Blacklist::kBlockAll, match->attributes());
@@ -134,7 +135,7 @@ TEST_F(BlacklistTest, Generic) {
     delete match;
   }
 
-  match = blacklist.FindMatch(GURL("http://host.com/img?badparam=x"));
+  match = blacklist->FindMatch(GURL("http://host.com/img?badparam=x"));
   EXPECT_TRUE(match);
   if (match) {
     EXPECT_EQ(Blacklist::kBlockAll, match->attributes());
@@ -143,7 +144,7 @@ TEST_F(BlacklistTest, Generic) {
   }
 
   // Whitelisting tests.
-  match = blacklist.FindMatch(GURL("http://www.site.com/bad/url/good"));
+  match = blacklist->FindMatch(GURL("http://www.site.com/bad/url/good"));
   EXPECT_TRUE(match);
   if (match) {
     EXPECT_EQ(0U, match->attributes());

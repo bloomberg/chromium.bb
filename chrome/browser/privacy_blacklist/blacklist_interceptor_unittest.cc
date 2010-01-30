@@ -56,17 +56,17 @@ TEST_F(BlacklistInterceptorTest, Basic) {
 TEST_F(BlacklistInterceptorTest, Intercepted) {
   EXPECT_FALSE(InterceptedTestRequest(kDataUrl, NULL));
 
-  Blacklist blacklist;
+  scoped_refptr<Blacklist> blacklist;
   Blacklist::Provider* provider = new Blacklist::Provider();
-  blacklist.AddProvider(provider);
+  blacklist->AddProvider(provider);
   Blacklist::Entry* entry =
       new Blacklist::Entry("@/annoying_ads/@", provider, false);
   entry->AddAttributes(Blacklist::kBlockAll);
-  blacklist.AddEntry(entry);
+  blacklist->AddEntry(entry);
 
   BlacklistRequestInfo* request_info =
       new BlacklistRequestInfo(GURL(kBlockedUrl), ResourceType::MAIN_FRAME,
-                               &blacklist);
+                               blacklist.get());
   EXPECT_TRUE(InterceptedTestRequest(kBlockedUrl, request_info));
 }
 
