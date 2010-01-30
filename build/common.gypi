@@ -127,12 +127,19 @@
         'defines': [
           'NACL_TARGET_SUBARCH=32',
           'NACL_BUILD_SUBARCH=32',
+          'NACL_BUILD_ARCH=x86',
         ],
       }],
       ['target_arch=="x64"', {
         'defines': [
           'NACL_TARGET_SUBARCH=64',
           'NACL_BUILD_SUBARCH=64',
+          'NACL_BUILD_ARCH=x86',
+        ],
+      }],
+      ['target_arch=="arm"', {
+        'defines': [
+          'NACL_BUILD_ARCH=arm',
         ],
       }],
       ['linux2==1', {
