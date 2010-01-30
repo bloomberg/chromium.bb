@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,7 @@
 #include "base/values.h"
 #include "base/weak_ptr.h"
 #include "build/build_config.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/edit_command.h"
 #include "chrome/common/navigation_gesture.h"
 #include "chrome/common/notification_type.h"
@@ -261,6 +262,10 @@ class RenderView : public RenderWidget,
     return notification_provider_.get();
   }
 
+  // Shortcut for calling allowImages(), allowScripts(), allowPlugins().
+  void ApplyContentSettings(WebKit::WebFrame* frame,
+                            const ContentSettings& settings);
+
   // WebKit::WebWidgetClient
   // Most methods are handled by RenderWidget.
   virtual void show(WebKit::WebNavigationPolicy policy);
@@ -478,6 +483,7 @@ class RenderView : public RenderWidget,
   FRIEND_TEST(RenderViewTest, MacTestCmdUp);
 #endif
 
+  typedef std::map<std::string, ContentSettings> HostContentSettings;
   typedef std::map<std::string, int> HostZoomLevels;
 
   explicit RenderView(RenderThreadBase* render_thread,
@@ -582,6 +588,8 @@ class RenderView : public RenderWidget,
   void OnCancelDownload(int32 download_id);
   void OnFind(int request_id, const string16&, const WebKit::WebFindOptions&);
   void OnDeterminePageLanguage();
+  void OnSetContentSettingsForLoadingHost(
+      std::string host, const ContentSettings& content_settings);
   void OnZoom(PageZoom::Function function);
   void OnSetZoomLevelForLoadingHost(std::string host, int zoom_level);
   void OnSetPageEncoding(const std::string& encoding_name);
@@ -1024,6 +1032,7 @@ class RenderView : public RenderWidget,
 
   typedef std::map<WebKit::WebView*, RenderView*> ViewMap;
 
+  HostContentSettings host_content_settings_;
   HostZoomLevels host_zoom_levels_;
 
   // The SessionStorage namespace that we're assigned to has an ID, and that ID

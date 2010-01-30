@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -177,6 +177,31 @@ bool ParamTraits<gfx::Size>::Read(const Message* m, void** iter, gfx::Size* r) {
 
 void ParamTraits<gfx::Size>::Log(const gfx::Size& p, std::wstring* l) {
   l->append(StringPrintf(L"(%d, %d)", p.width(), p.height()));
+}
+
+void ParamTraits<ContentSettings>::Write(
+    Message* m, const ContentSettings& settings) {
+  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i)
+    WriteParam(m, static_cast<int>(settings.settings[i]));
+}
+
+bool ParamTraits<ContentSettings>::Read(
+    const Message* m, void** iter, ContentSettings* r) {
+  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
+    int local_setting;
+    if (!m->ReadInt(iter, &local_setting))
+      return false;
+    if (local_setting < 0 ||
+        local_setting >= static_cast<int>(CONTENT_SETTING_NUM_SETTINGS))
+      return false;
+    r->settings[i] = static_cast<ContentSetting>(local_setting);
+  }
+  return true;
+}
+
+void ParamTraits<ContentSettings>::Log(
+    const ContentSettings& p, std::wstring* l) {
+  l->append(StringPrintf(L"<ContentSettings>"));
 }
 
 void ParamTraits<webkit_glue::WebApplicationInfo>::Write(

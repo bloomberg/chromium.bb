@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,6 +14,7 @@
 #include <vector>
 
 #include "app/gfx/native_widget_types.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/page_zoom.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/transport_dib.h"
@@ -88,6 +89,14 @@ struct ParamTraits<gfx::Size> {
 };
 
 template <>
+struct ParamTraits<ContentSettings> {
+  typedef ContentSettings param_type;
+  static void Write(Message* m, const param_type& p);
+  static bool Read(const Message* m, void** iter, param_type* r);
+  static void Log(const param_type& p, std::wstring* l);
+};
+
+template <>
 struct ParamTraits<gfx::NativeWindow> {
   typedef gfx::NativeWindow param_type;
   static void Write(Message* m, const param_type& p) {
@@ -104,7 +113,6 @@ struct ParamTraits<gfx::NativeWindow> {
     LogParam(reinterpret_cast<intptr_t>(p), l);
   }
 };
-
 
 template <>
 struct ParamTraits<PageZoom::Function> {
