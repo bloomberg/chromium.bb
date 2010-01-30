@@ -64,6 +64,8 @@ function bind(fn, selfObj, var_args) {
   }
 }
 
+const IS_MAC = /$Mac/.test(navigator.platform);
+
 var loading = true;
 var mostVisitedData = [];
 var gotMostVisited = false;
@@ -1067,9 +1069,8 @@ $('most-visited').addEventListener('click', function(e) {
 
 // Allow blacklisting most visited site using the keyboard.
 $('most-visited').addEventListener('keydown', function(e) {
-  var isMac = /$Mac/.test(navigator.platform);
-  if (!isMac && e.keyCode == 46 || // Del
-      isMac && e.metaKey && e.keyCode == 8) { // Cmd + Backspace
+  if (!IS_MAC && e.keyCode == 46 || // Del
+      IS_MAC && e.metaKey && e.keyCode == 8) { // Cmd + Backspace
     mostVisited.blacklist(e.target);
   }
 });
@@ -1335,6 +1336,12 @@ document.addEventListener('mouseover', function(e) {
 // DnD
 
 var dnd = {
+  /**
+   * Windows and Linux only support copy drag and drop.
+   * @see http://crbug.com/14654/
+   * @type {string}
+   */
+  DND_EFFECT: IS_MAC ? 'move' : 'copy',
   currentOverItem_: null,
   get currentOverItem() {
     return this.currentOverItem_;
@@ -1390,6 +1397,7 @@ var dnd = {
       this.dragItem = thumbnail;
       addClass(this.dragItem, 'dragging');
       this.dragItem.style.zIndex = 2;
+      e.dataTransfer.effectAllowed = this.DND_EFFECT;
     }
   },
 
@@ -1404,6 +1412,7 @@ var dnd = {
     this.currentOverItem = item;
     if (this.canDropOnElement(item)) {
       e.preventDefault();
+      e.dataTransfer.dropEffect = this.DND_EFFECT;
     }
   },
 
