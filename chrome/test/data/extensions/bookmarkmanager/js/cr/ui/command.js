@@ -36,13 +36,14 @@ cr.define('cr.ui', function() {
 
     /**
      * Executes the command. This dispatches a command event on the active
-     * element.
+     * element. If the command is {@code disabled} this does nothing.
      */
     execute: function() {
+      if (this.disabled)
+        return;
       var doc = this.ownerDocument;
       if (doc.activeElement) {
-        var e = doc.createEvent('Event');
-        e.initEvent('command', true, false);
+        var e = new cr.Event('command', true, false);
         e.command = this;
         doc.activeElement.dispatchEvent(e);
       }

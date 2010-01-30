@@ -329,10 +329,11 @@ var bookmarkCache = {
 
     var treeItem = bmm.treeLookup[id];
     if (treeItem) {
-      treeItem.items.forEach(function(item) {
+      var items = treeItem.items; // is an HTMLCollection
+      for (var i = 0, item; item = items[i]; i++) {
         var bookmarkNode = item.bookmarkNode;
         delete bmm.treeLookup[bookmarkNode.id];
-      });
+      }
       delete bmm.treeLookup[id];
     }
   },
@@ -612,6 +613,7 @@ tree.addEventListener('load', function(e) {
 
 tree.buildTree();
 addBookmarkModelListeners();
+
 </script>
 <script>
 
@@ -1201,6 +1203,27 @@ function updateOpenCommands(e, command, selectionCount) {
   e.canExecute = selectionCount > 0;
 }
 
+/**
+ * Calls the backend to figure out if we can paste the clipboard into the active
+ * folder.
+ * @param {Function=} opt_f Function to call after the state has been
+ *     updated.
+ */
+function updatePasteCommand(opt_f) {
+  function update(canPaste) {
+    var command = $('paste-command');
+    command.disabled = !canPaste;
+    if (opt_f)
+      opt_f();
+  }
+  // We cannot paste into search and recent view.
+  if (list.isSearch() || list.isRecent()) {
+    update(false);
+  } else {
+    chrome.experimental.bookmarkManager.canPaste(list.parentId, update);
+  }
+}
+
 // We can always execute the import-menu and export-menu commands.
 document.addEventListener('canExecute', function(e) {
   var command = e.command;
@@ -1265,8 +1288,7 @@ list.addEventListener('canExecute', function(e) {
       break;
 
     case 'paste-command':
-      // TODO(arv): has clipboard data
-      e.canExecute = false;
+      updatePasteCommand();
       break;
 
     case 'sort-command':
@@ -1319,12 +1341,7 @@ tree.addEventListener('canExecute', function(e) {
       break;
 
     case 'paste-command':
-      if (isRecentOrSearch()) {
-        e.canExecute = false;
-      } else {
-        // TODO(arv): has clipboard data
-        e.canExecute = false;
-      }
+      updatePasteCommand();
       break;
 
     case 'sort-command':
@@ -1349,9 +1366,16 @@ tree.addEventListener('canExecute', function(e) {
  */
 function updateCommandsBasedOnSelection(e) {
   if (e.target == document.activeElement) {
-    ['copy', 'cut', 'paste', 'delete', 'rename-folder', 'edit', 'sort',
-     'add-new-bookmark', 'new-folder', 'show-in-folder', 'open-in-new-tab',
-     'open-in-new-window', 'open-incognito-window'].forEach(function(baseId) {
+    // Paste only needs to updated when the tree selection changes.
+    var commandNames = ['copy', 'cut', 'delete', 'rename-folder', 'edit',
+        'sort', 'add-new-bookmark', 'new-folder', 'show-in-folder',
+        'open-in-new-tab', 'open-in-new-window', 'open-incognito-window']
+
+    if (e.target == tree) {
+      commandNames.push('paste');
+    }
+
+    commandNames.forEach(function(baseId) {
       $(baseId + '-command').canExecuteChange();
     });
   }
@@ -1452,6 +1476,15 @@ function getSelectedBookmarkNodes() {
 }
 
 /**
+ * @return {!Array.<string>} An array of the selected bookmark IDs.
+ */
+function getSelectedBookmarkIds() {
+  return getSelectedBookmarkNodes().map(function(node) {
+    return node.id;
+  });
+}
+
+/**
  * Opens the selected bookmarks.
  */
 function openBookmarks(kind) {
@@ -1502,9 +1535,8 @@ function openBookmarks(kind) {
  * Deletes the selected bookmarks.
  */
 function deleteBookmarks() {
-  var nodes = getSelectedBookmarkNodes();
-  nodes.forEach(function(node) {
-    chrome.bookmarks.removeTree(node.id);
+  getSelectedBookmarkIds().forEach(function(id) {
+    chrome.bookmarks.removeTree(id);
   });
 }
 
@@ -1526,6 +1558,16 @@ function handleCommand(e) {
       break;
     case 'delete-command':
       deleteBookmarks();
+      break;
+    case 'copy-command':
+      chrome.experimental.bookmarkManager.copy(getSelectedBookmarkIds());
+      break;
+    case 'cut-command':
+      chrome.experimental.bookmarkManager.cut(getSelectedBookmarkIds());
+      break;
+    case 'paste-command':
+      chrome.experimental.bookmarkManager.paste(list.parentId);
+      break;
   }
 }
 
@@ -1536,6 +1578,23 @@ $('delete-command').shortcut = cr.isMac ? 'U+0008-meta' : 'U+007F';
 
 list.addEventListener('command', handleCommand);
 tree.addEventListener('command', handleCommand);
+
+// Listen to copy, cut and paste events and execute the associated commands.
+document.addEventListener('copy', function(e) {
+  $('copy-command').execute();
+});
+
+document.addEventListener('cut', function(e) {
+  $('cut-command').execute();
+});
+
+document.addEventListener('paste', function(e) {
+  // Paste is a bit special since we need to do an async call to see if we can
+  // paste because the paste command might not be up to date.
+  updatePasteCommand(function() {
+    $('paste-command').execute();
+  });
+});
 
 </script>
 <script>
