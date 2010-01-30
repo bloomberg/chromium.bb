@@ -149,11 +149,8 @@ class RenderViewContentSettingsSetter : public RenderViewVisitor {
   }
 
   virtual bool Visit(RenderView* render_view) {
-    // |render_view->webview()| is guaranteed non-NULL.
-    WebFrame* frame = render_view->webview()->mainFrame();
-    if (GURL(frame->url()).host() == host_) {
-      render_view->ApplyContentSettings(frame, content_settings_);
-    }
+    if (GURL(render_view->webview()->mainFrame()->url()).host() == host_)
+      render_view->SetContentSettings(content_settings_);
     return true;
   }
 

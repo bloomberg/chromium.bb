@@ -262,9 +262,9 @@ class RenderView : public RenderWidget,
     return notification_provider_.get();
   }
 
-  // Shortcut for calling allowImages(), allowScripts(), allowPlugins().
-  void ApplyContentSettings(WebKit::WebFrame* frame,
-                            const ContentSettings& settings);
+  // Sets the content settings that back allowScripts(), allowImages(), and
+  // allowPlugins().
+  void SetContentSettings(const ContentSettings& settings);
 
   // WebKit::WebWidgetClient
   // Most methods are handled by RenderWidget.
@@ -1034,6 +1034,8 @@ class RenderView : public RenderWidget,
 
   HostContentSettings host_content_settings_;
   HostZoomLevels host_zoom_levels_;
+
+  ContentSettings current_content_settings_;
 
   // The SessionStorage namespace that we're assigned to has an ID, and that ID
   // is passed to us upon creation.  WebKit asks for this ID upon first use and
