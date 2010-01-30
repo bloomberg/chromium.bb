@@ -10,6 +10,16 @@
 
 namespace {
 
+bool SettingsEqual(const ContentSettings& settings1,
+                   const ContentSettings& settings2) {
+  for (int i = CONTENT_SETTINGS_FIRST_TYPE; i < CONTENT_SETTINGS_NUM_TYPES;
+       ++i) {
+    if (settings1.settings[i] != settings2.settings[i])
+      return false;
+  }
+  return true;
+}
+
 class HostContentSettingsMapTest : public testing::Test {
  public:
   HostContentSettingsMapTest()
@@ -25,71 +35,82 @@ TEST_F(HostContentSettingsMapTest, DefaultValues) {
   HostContentSettingsMap* host_content_settings_map =
       profile.GetHostContentSettingsMap();
 
-  // Check setting of default permissions.
-  ContentPermissions perm;
-  ASSERT_TRUE(host_content_settings_map->SetDefaultContentPermission(
-              CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_PERMISSION_TYPE_BLOCK));
-  ASSERT_TRUE(host_content_settings_map->SetDefaultContentPermission(
-              CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_PERMISSION_TYPE_ASK));
-  ASSERT_FALSE(host_content_settings_map->SetDefaultContentPermission(
-               CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-               CONTENT_PERMISSION_TYPE_DEFAULT));
-  ASSERT_TRUE(host_content_settings_map->SetDefaultContentPermission(
-              CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_PERMISSION_TYPE_ALLOW));
+  // Check setting defaults.
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_JAVASCRIPT));
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_IMAGES));
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_ASK);
+  EXPECT_EQ(CONTENT_SETTING_ASK,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_PLUGINS));
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_POPUPS, CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_POPUPS));
+  host_content_settings_map->ResetToDefaults();
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_POPUPS));
 
-  // Check per host permissions returned.
-  perm.permissions[CONTENT_SETTINGS_TYPE_IMAGES] =
-    CONTENT_PERMISSION_TYPE_DEFAULT;
-  perm.permissions[CONTENT_SETTINGS_TYPE_PLUGINS] =
-    CONTENT_PERMISSION_TYPE_ALLOW;
-  perm.permissions[CONTENT_SETTINGS_TYPE_JAVASCRIPT] =
-    CONTENT_PERMISSION_TYPE_ALLOW;
-  host_content_settings_map->SetPerHostContentSettings("example.com", perm);
-  perm = host_content_settings_map->GetPerHostContentSettings("example.com");
-  EXPECT_EQ(CONTENT_PERMISSION_TYPE_BLOCK,
-            perm.permissions[CONTENT_SETTINGS_TYPE_IMAGES]);
-  EXPECT_EQ(CONTENT_PERMISSION_TYPE_ALLOW,
-            perm.permissions[CONTENT_SETTINGS_TYPE_PLUGINS]);
-  EXPECT_EQ(CONTENT_PERMISSION_TYPE_ALLOW,
-            perm.permissions[CONTENT_SETTINGS_TYPE_JAVASCRIPT]);
-  perm = host_content_settings_map->GetPerHostContentSettings("example.org");
-  EXPECT_EQ(CONTENT_PERMISSION_TYPE_BLOCK,
-            perm.permissions[CONTENT_SETTINGS_TYPE_IMAGES]);
-  EXPECT_EQ(CONTENT_PERMISSION_TYPE_ASK,
-            perm.permissions[CONTENT_SETTINGS_TYPE_PLUGINS]);
-  EXPECT_EQ(CONTENT_PERMISSION_TYPE_ALLOW,
-            perm.permissions[CONTENT_SETTINGS_TYPE_JAVASCRIPT]);
+  // Check returning individual settings.
+  std::string host("example.com");
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            host_content_settings_map->GetContentSetting(
+                host, CONTENT_SETTINGS_TYPE_IMAGES));
+  host_content_settings_map->SetContentSetting(host,
+      CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_DEFAULT);
+  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+            host_content_settings_map->GetContentSetting(
+                host, CONTENT_SETTINGS_TYPE_IMAGES));
+  host_content_settings_map->SetContentSetting(host,
+      CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(CONTENT_SETTING_BLOCK,
+            host_content_settings_map->GetContentSetting(
+                host, CONTENT_SETTINGS_TYPE_IMAGES));
 
-  // Check returning settings for a given resource.
-  HostContentSettingsMap::HostContentPermissions permissions;
-  permissions = host_content_settings_map->GetAllPerHostContentPermissions(
-                    CONTENT_SETTINGS_TYPE_IMAGES);
-  EXPECT_EQ(0U, permissions.size());
-  permissions = host_content_settings_map->GetAllPerHostContentPermissions(
-                    CONTENT_SETTINGS_TYPE_PLUGINS);
-  EXPECT_EQ(1U, permissions.size());
-  EXPECT_EQ("example.com", permissions.begin()->first);
-  EXPECT_EQ(CONTENT_PERMISSION_TYPE_ALLOW, permissions.begin()->second);
-}
+  // Check returning all settings for a host.
+  ContentSettings desired_settings;
+  host_content_settings_map->SetContentSetting(host,
+      CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_DEFAULT);
+  host_content_settings_map->SetContentSetting(host,
+      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_ALLOW);
+  desired_settings.settings[CONTENT_SETTINGS_TYPE_PLUGINS] =
+      CONTENT_SETTING_ALLOW;
+  host_content_settings_map->SetContentSetting(host,
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_ALLOW);
+  desired_settings.settings[CONTENT_SETTINGS_TYPE_JAVASCRIPT] =
+      CONTENT_SETTING_ALLOW;
+  ContentSettings settings =
+      host_content_settings_map->GetContentSettings(host);
+  EXPECT_TRUE(SettingsEqual(desired_settings, settings));
 
-TEST_F(HostContentSettingsMapTest, ContentPermissions) {
-  ContentPermissions perm;
-  perm.permissions[CONTENT_SETTINGS_TYPE_IMAGES] =
-    CONTENT_PERMISSION_TYPE_BLOCK;
-  perm.permissions[CONTENT_SETTINGS_TYPE_PLUGINS] =
-    CONTENT_PERMISSION_TYPE_ASK;
-  perm.permissions[CONTENT_SETTINGS_TYPE_JAVASCRIPT] =
-    CONTENT_PERMISSION_TYPE_ALLOW;
-
-  int serialized = ContentPermissions::ToInteger(perm);
-  ContentPermissions result = ContentPermissions::FromInteger(serialized);
-
-  EXPECT_EQ(perm.permissions[CONTENT_SETTINGS_TYPE_IMAGES],
-            result.permissions[CONTENT_SETTINGS_TYPE_IMAGES]);
-  EXPECT_EQ(perm.permissions[CONTENT_SETTINGS_TYPE_PLUGINS],
-            result.permissions[CONTENT_SETTINGS_TYPE_PLUGINS]);
-  EXPECT_EQ(perm.permissions[CONTENT_SETTINGS_TYPE_JAVASCRIPT],
-            result.permissions[CONTENT_SETTINGS_TYPE_JAVASCRIPT]);
+  // Check returning all hosts for a setting.
+  std::string host2("example.org");
+  host_content_settings_map->SetContentSetting(host2,
+      CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_BLOCK);
+  host_content_settings_map->SetContentSetting(host2,
+      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
+  HostContentSettingsMap::HostContentSettingsForOneType host_settings;
+  host_content_settings_map->GetHostContentSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_IMAGES, &host_settings);
+  EXPECT_EQ(1U, host_settings.size());
+  host_content_settings_map->GetHostContentSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_PLUGINS, &host_settings);
+  EXPECT_EQ(2U, host_settings.size());
+  host_content_settings_map->GetHostContentSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_POPUPS, &host_settings);
+  EXPECT_EQ(0U, host_settings.size());
+  host_content_settings_map->ResetToDefaults();
+  host_content_settings_map->GetHostContentSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_PLUGINS, &host_settings);
+  EXPECT_EQ(0U, host_settings.size());
 }
 
 }  // namespace

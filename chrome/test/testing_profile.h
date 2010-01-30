@@ -180,7 +180,7 @@ class TestingProfile : public Profile {
   virtual Blacklist* GetPrivacyBlacklist() { return NULL; }
   virtual HostContentSettingsMap* GetHostContentSettingsMap() {
     if (!host_content_settings_map_.get())
-      host_content_settings_map_.reset(new HostContentSettingsMap(this));
+      host_content_settings_map_ = new HostContentSettingsMap(this);
     return host_content_settings_map_.get();
   }
   virtual HostZoomMap* GetHostZoomMap() { return NULL; }
@@ -300,7 +300,7 @@ class TestingProfile : public Profile {
   // WebKitContext, lazily initialized by GetWebKitContext().
   scoped_refptr<WebKitContext> webkit_context_;
 
-  scoped_ptr<HostContentSettingsMap> host_content_settings_map_;
+  scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 };
 
 // A profile that derives from another profile.  This does not actually

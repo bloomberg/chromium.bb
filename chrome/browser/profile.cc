@@ -401,11 +401,7 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual HostContentSettingsMap* GetHostContentSettingsMap() {
-    // Need to use a separate map from the normal one to avoid persisting
-    // content setting changes in OTR mode.
-    if (!host_content_settings_map_.get())
-      host_content_settings_map_.reset(new HostContentSettingsMap(this));
-    return host_content_settings_map_.get();
+    return profile_->GetHostContentSettingsMap();
   }
 
   virtual HostZoomMap* GetHostZoomMap() {
@@ -531,8 +527,6 @@ class OffTheRecordProfileImpl : public Profile,
   scoped_refptr<ChromeURLRequestContextGetter> request_context_;
 
   scoped_refptr<ChromeURLRequestContextGetter> extensions_request_context_;
-
-  scoped_ptr<HostContentSettingsMap> host_content_settings_map_;
 
   // The download manager that only stores downloaded items in memory.
   scoped_refptr<DownloadManager> download_manager_;
@@ -961,7 +955,7 @@ net::SSLConfigService* ProfileImpl::GetSSLConfigService() {
 
 HostContentSettingsMap* ProfileImpl::GetHostContentSettingsMap() {
   if (!host_content_settings_map_.get())
-    host_content_settings_map_.reset(new HostContentSettingsMap(this));
+    host_content_settings_map_ = new HostContentSettingsMap(this);
   return host_content_settings_map_.get();
 }
 

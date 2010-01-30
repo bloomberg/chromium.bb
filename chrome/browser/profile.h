@@ -548,7 +548,7 @@ class ProfileImpl : public Profile,
 
   scoped_ptr<SSLConfigServiceManager> ssl_config_service_manager_;
 
-  scoped_ptr<HostContentSettingsMap> host_content_settings_map_;
+  scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_refptr<Blacklist> privacy_blacklist_;
   scoped_refptr<DownloadManager> download_manager_;

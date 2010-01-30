@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_VIEWS_OPTIONS_CONTENT_SETTINGS_WINDOW_VIEW_H_
 #define CHROME_BROWSER_VIEWS_OPTIONS_CONTENT_SETTINGS_WINDOW_VIEW_H_
 
-#include "chrome/common/content_permission_types.h"
+#include "chrome/common/content_settings_types.h"
 #include "chrome/common/pref_member.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/view.h"

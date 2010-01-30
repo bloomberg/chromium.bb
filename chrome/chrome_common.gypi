@@ -201,7 +201,8 @@
         'common/command_buffer_messages.h',
         'common/command_buffer_messages_internal.h',
         'common/common_glue.cc',
-        'common/content_permission_types.h'
+        'common/content_settings.h'
+        'common/content_settings_types.h',
         'common/css_colors.h',
         'common/db_message_filter.cc',
         'common/db_message_filter.h',

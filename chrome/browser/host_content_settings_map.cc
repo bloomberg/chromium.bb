@@ -10,165 +10,178 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 
+// static
+const wchar_t* HostContentSettingsMap::kTypeNames[] = {
+  L"cookies",
+  L"images",
+  L"javascript",
+  L"plugins",
+  L"popups",
+};
+
 HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
     : profile_(profile) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(arraysize(kTypeNames) == CONTENT_SETTINGS_NUM_TYPES);
 
-  const DictionaryValue* host_content_dictionary =
+  const DictionaryValue* default_settings_dictionary =
+      profile_->GetPrefs()->GetDictionary(prefs::kDefaultContentSettings);
+  // Careful: The returned value could be NULL if the pref has never been set.
+  if (default_settings_dictionary != NULL) {
+    GetSettingsFromDictionary(default_settings_dictionary,
+                              &default_content_settings_);
+  }
+
+  const DictionaryValue* all_settings_dictionary =
       profile_->GetPrefs()->GetDictionary(prefs::kPerHostContentSettings);
   // Careful: The returned value could be NULL if the pref has never been set.
-  if (host_content_dictionary != NULL) {
-    for (DictionaryValue::key_iterator i(host_content_dictionary->begin_keys());
-         i != host_content_dictionary->end_keys(); ++i) {
+  if (all_settings_dictionary != NULL) {
+    for (DictionaryValue::key_iterator i(all_settings_dictionary->begin_keys());
+         i != all_settings_dictionary->end_keys(); ++i) {
       std::wstring wide_host(*i);
-      int content_settings = 0;
-      bool success = host_content_dictionary->GetIntegerWithoutPathExpansion(
-          wide_host, &content_settings);
-      DCHECK(success);
-      host_content_settings_[WideToUTF8(wide_host)] =
-        ContentPermissions::FromInteger(content_settings);
+      DictionaryValue* host_settings_dictionary = NULL;
+      bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
+          wide_host, &host_settings_dictionary);
+      DCHECK(found);
+      ContentSettings settings;
+      GetSettingsFromDictionary(host_settings_dictionary, &settings);
+      host_content_settings_[WideToUTF8(wide_host)] = settings;
     }
   }
-  default_content_settings_ = ContentPermissions::FromInteger(
-      profile_->GetPrefs()->GetInteger(prefs::kDefaultContentSettings));
 }
 
 // static
 void HostContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
+  prefs->RegisterDictionaryPref(prefs::kDefaultContentSettings);
   prefs->RegisterDictionaryPref(prefs::kPerHostContentSettings);
-  prefs->RegisterIntegerPref(prefs::kDefaultContentSettings,
-                             ContentPermissions::ToInteger(
-                             ContentPermissions()));
+}
+
+ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
+    ContentSettingsType content_type) const {
+  AutoLock auto_lock(lock_);
+  return default_content_settings_.settings[content_type];
+}
+
+ContentSetting HostContentSettingsMap::GetContentSetting(
+    const std::string& host,
+    ContentSettingsType content_type) const {
+  AutoLock auto_lock(lock_);
+  HostContentSettings::const_iterator i(host_content_settings_.find(host));
+  return (i == host_content_settings_.end()) ?
+      CONTENT_SETTING_DEFAULT : i->second.settings[content_type];
+}
+
+ContentSettings HostContentSettingsMap::GetContentSettings(
+    const std::string& host) const {
+  AutoLock auto_lock(lock_);
+  HostContentSettings::const_iterator i(host_content_settings_.find(host));
+  return (i == host_content_settings_.end()) ? ContentSettings() : i->second;
+}
+
+void HostContentSettingsMap::GetHostContentSettingsForOneType(
+    ContentSettingsType content_type,
+    HostContentSettingsForOneType* settings) const {
+  DCHECK(settings);
+  settings->clear();
+
+  AutoLock auto_lock(lock_);
+  for (HostContentSettings::const_iterator i(host_content_settings_.begin());
+       i != host_content_settings_.end(); ++i) {
+    ContentSetting setting = i->second.settings[content_type];
+    if (setting != CONTENT_SETTING_DEFAULT)
+      (*settings)[i->first] = setting;
+  }
+}
+
+void HostContentSettingsMap::SetDefaultContentSetting(
+    ContentSettingsType content_type,
+    ContentSetting setting) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  {
+    AutoLock auto_lock(lock_);
+    default_content_settings_.settings[content_type] = setting;
+  }
+
+  profile_->GetPrefs()->GetMutableDictionary(prefs::kDefaultContentSettings)->
+      SetWithoutPathExpansion(std::wstring(kTypeNames[content_type]),
+                              Value::CreateIntegerValue(setting));
+}
+
+void HostContentSettingsMap::SetContentSetting(const std::string& host,
+                                               ContentSettingsType content_type,
+                                               ContentSetting setting) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  bool all_default = true;
+  {
+    AutoLock auto_lock(lock_);
+    if (!host_content_settings_.count(host))
+      host_content_settings_[host] = ContentSettings();
+    HostContentSettings::iterator i(host_content_settings_.find(host));
+    ContentSettings& settings = i->second;
+    settings.settings[content_type] = setting;
+    for (int i = 0; i < arraysize(settings.settings); ++i) {
+      if (settings.settings[i] != CONTENT_SETTING_DEFAULT) {
+        all_default = false;
+        break;
+      }
+    }
+    if (all_default)
+      host_content_settings_.erase(i);
+  }
+
+  std::wstring wide_host(UTF8ToWide(host));
+  DictionaryValue* all_settings_dictionary =
+      profile_->GetPrefs()->GetMutableDictionary(
+          prefs::kPerHostContentSettings);
+  if (all_default) {
+    all_settings_dictionary->RemoveWithoutPathExpansion(wide_host, NULL);
+    return;
+  }
+  DictionaryValue* host_settings_dictionary;
+  bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
+      wide_host, &host_settings_dictionary);
+  if (!found) {
+    host_settings_dictionary = new DictionaryValue;
+    all_settings_dictionary->SetWithoutPathExpansion(
+        wide_host, host_settings_dictionary);
+  }
+  host_settings_dictionary->SetWithoutPathExpansion(
+      std::wstring(kTypeNames[content_type]),
+      Value::CreateIntegerValue(setting));
 }
 
 void HostContentSettingsMap::ResetToDefaults() {
-  default_content_settings_ = ContentPermissions();
-  host_content_settings_.clear();
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  {
+    AutoLock auto_lock(lock_);
+    default_content_settings_ = ContentSettings();
+    host_content_settings_.clear();
+  }
+
   profile_->GetPrefs()->ClearPref(prefs::kDefaultContentSettings);
   profile_->GetPrefs()->ClearPref(prefs::kPerHostContentSettings);
 }
 
-HostContentSettingsMap::HostContentPermissions
-    HostContentSettingsMap::GetAllPerHostContentPermissions(
-    ContentSettingsType content_type) const {
-  HostContentPermissions result;
-  for (HostContentSettings::const_iterator i(host_content_settings_.begin());
-       i != host_content_settings_.end(); ++i)
-    if (i->second.permissions[content_type] !=
-        CONTENT_PERMISSION_TYPE_DEFAULT)
-      result[i->first] = i->second.permissions[content_type];
-  return result;
+HostContentSettingsMap::~HostContentSettingsMap() {
 }
 
-ContentPermissions HostContentSettingsMap::GetPerHostContentSettings(
-    const std::string& host) const {
-  AutoLock auto_lock(lock_);
-  HostContentSettings::const_iterator i(host_content_settings_.find(host));
-  ContentPermissions result = default_content_settings_;
-  if (i != host_content_settings_.end()) {
-    for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j)
-      if (i->second.permissions[j] != CONTENT_PERMISSION_TYPE_DEFAULT)
-        result.permissions[j] = i->second.permissions[j];
-  }
-  return result;
-}
-
-bool HostContentSettingsMap::SetDefaultContentPermission(
-    ContentSettingsType type, ContentPermissionType permission) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-
-  if (permission == CONTENT_PERMISSION_TYPE_DEFAULT)
-    return false;
-
-  {
-    AutoLock auto_lock(lock_);
-    default_content_settings_.permissions[type] = permission;
-  }
-
-  // Persist new content settings if we're not off the record.
-  if (!profile_->IsOffTheRecord()) {
-    profile_->GetPrefs()->SetInteger(prefs::kDefaultContentSettings,
-        ContentPermissions::ToInteger(default_content_settings_));
-  }
-  return true;
-}
-
-void HostContentSettingsMap::SetPerHostContentPermission(
-    const std::string& host, ContentSettingsType type,
-    ContentPermissionType permission) {
-
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  if (host.empty())
-    return;
-
-  bool erase_entry = true;
-  ContentPermissions permissions;
-
-  {
-    AutoLock auto_lock(lock_);
-    HostContentSettings::const_iterator i(host_content_settings_.find(host));
-    if (i == host_content_settings_.end()) {
-      for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j)
-        permissions.permissions[j] = CONTENT_PERMISSION_TYPE_DEFAULT;
-    } else {
-      permissions = i->second;
-    }
-    permissions.permissions[type] = permission;
-    for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j)
-      if (permissions.permissions[j] != CONTENT_PERMISSION_TYPE_DEFAULT)
-        erase_entry = false;
-    if (erase_entry)
-      host_content_settings_.erase(host);
-    else
-      host_content_settings_[host] = permissions;
-  }
-
-  // Persist new content settings if we're not off the record.
-  if (!profile_->IsOffTheRecord()) {
-    DictionaryValue* host_content_dictionary =
-        profile_->GetPrefs()->GetMutableDictionary(
-            prefs::kPerHostContentSettings);
-    std::wstring wide_host(UTF8ToWide(host));
-    if (erase_entry) {
-      host_content_dictionary->RemoveWithoutPathExpansion(wide_host, NULL);
-    } else {
-      host_content_dictionary->SetWithoutPathExpansion(wide_host,
-        Value::CreateIntegerValue(ContentPermissions::ToInteger(permissions)));
-    }
-  }
-}
-
-void HostContentSettingsMap::SetPerHostContentSettings(const std::string& host,
-    const ContentPermissions& permissions) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  if (host.empty())
-    return;
-
-  bool erase_entry = true;
-
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i)
-    if (permissions.permissions[i] != CONTENT_PERMISSION_TYPE_DEFAULT)
-      erase_entry = false;
-
-  {
-    AutoLock auto_lock(lock_);
-    if (erase_entry)
-      host_content_settings_.erase(host);
-    else
-      host_content_settings_[host] = permissions;
-  }
-
-  // Persist new content settings if we're not off the record.
-  if (!profile_->IsOffTheRecord()) {
-    DictionaryValue* host_content_dictionary =
-        profile_->GetPrefs()->GetMutableDictionary(
-            prefs::kPerHostContentSettings);
-    std::wstring wide_host(UTF8ToWide(host));
-    if (erase_entry) {
-      host_content_dictionary->RemoveWithoutPathExpansion(wide_host, NULL);
-    } else {
-      host_content_dictionary->SetWithoutPathExpansion(wide_host,
-        Value::CreateIntegerValue(ContentPermissions::ToInteger(permissions)));
+void HostContentSettingsMap::GetSettingsFromDictionary(
+    const DictionaryValue* dictionary,
+    ContentSettings* settings) {
+  for (DictionaryValue::key_iterator i(dictionary->begin_keys());
+       i != dictionary->end_keys(); ++i) {
+    std::wstring content_type(*i);
+    int setting = CONTENT_SETTING_DEFAULT;
+    bool found = dictionary->GetIntegerWithoutPathExpansion(content_type,
+                                                            &setting);
+    DCHECK(found);
+    for (int type = 0; type < arraysize(kTypeNames); ++type) {
+      if (std::wstring(kTypeNames[type]) == content_type) {
+        settings->settings[type] = static_cast<ContentSetting>(setting);
+        break;
+      }
     }
   }
 }
