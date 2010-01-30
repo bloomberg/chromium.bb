@@ -17,6 +17,7 @@
 #include "chrome/browser/session_startup_pref.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/gtk_util.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/url_constants.h"
@@ -293,6 +294,7 @@ GtkWidget* GeneralPageGtk::InitHomepageGroup() {
                    G_CALLBACK(OnNewTabIsHomePageToggled), this);
   gtk_box_pack_start(GTK_BOX(homepage_hbox), homepage_use_url_radio_,
                      FALSE, FALSE, 0);
+
   homepage_use_url_entry_ = gtk_entry_new();
   g_signal_connect(G_OBJECT(homepage_use_url_entry_), "changed",
                    G_CALLBACK(OnHomepageUseUrlEntryChanged), this);
@@ -361,6 +363,7 @@ GtkWidget* GeneralPageGtk::InitDefaultBrowserGroup() {
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)).c_str());
   g_signal_connect(G_OBJECT(default_browser_use_as_default_button_), "clicked",
                    G_CALLBACK(OnBrowserUseAsDefaultClicked), this);
+
   gtk_box_pack_start(GTK_BOX(vbox), default_browser_use_as_default_button_,
                      FALSE, FALSE, 0);
 
@@ -377,6 +380,7 @@ void GeneralPageGtk::OnStartupRadioToggled(GtkToggleButton* toggle_button,
                                            GeneralPageGtk* general_page) {
   if (general_page->initializing_)
     return;
+
   if (!gtk_toggle_button_get_active(toggle_button)) {
     // When selecting a radio button, we get two signals (one for the old radio
     // being toggled off, one for the new one being toggled on.)  Ignore the

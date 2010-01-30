@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The chrome Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -550,6 +550,9 @@ var chrome = chrome || {};
 
   if (!chrome.experimental)
     chrome.experimental = {};
+
+  if (!chrome.experimental.accessibility)
+    chrome.experimental.accessibility = {};
 
   if (!chrome.experimental.history)
     chrome.experimental.history = {};
