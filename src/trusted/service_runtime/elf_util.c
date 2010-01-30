@@ -26,9 +26,9 @@
 
 /* private */
 struct NaClElfImage {
-  Elf32_Ehdr ehdr;
-  Elf32_Phdr phdrs[NACL_MAX_PROGRAM_HEADERS];
-  int loadable[NACL_MAX_PROGRAM_HEADERS];
+  Elf_Ehdr  ehdr;
+  Elf_Phdr  phdrs[NACL_MAX_PROGRAM_HEADERS];
+  int       loadable[NACL_MAX_PROGRAM_HEADERS];
 };
 
 
@@ -42,11 +42,11 @@ enum NaClPhdrCheckAction {
 
 
 struct NaClPhdrChecks {
-  Elf32_Word                p_type;
-  Elf32_Word                p_flags;  /* rwx */
+  Elf_Word                  p_type;
+  Elf_Word                  p_flags;  /* rwx */
   enum NaClPhdrCheckAction  action;
   int                       required;  /* only for text for now */
-  Elf32_Word                p_vaddr;  /* if non-zero, vaddr must be this */
+  Elf_Addr                  p_vaddr;  /* if non-zero, vaddr must be this */
 };
 
 /*
@@ -77,7 +77,7 @@ static const struct NaClPhdrChecks nacl_phdr_check_data[] = {
 
 
 
-static void NaClDumpElfHeader(int loglevel, Elf32_Ehdr *elf_hdr) {
+static void NaClDumpElfHeader(int loglevel, Elf_Ehdr *elf_hdr) {
 
 #define DUMP(m,f)    do { NaClLog(loglevel,                     \
                                   #m " = %" f "\n",             \
@@ -91,45 +91,46 @@ static void NaClDumpElfHeader(int loglevel, Elf32_Ehdr *elf_hdr) {
   DUMP(e_type, "#x");
   DUMP(e_machine, "#x");
   DUMP(e_version, "#x");
-  DUMP(e_entry, "#x");
-  DUMP(e_phoff, "#x");
-  DUMP(e_shoff, "#x");
-  DUMP(e_flags, "#x");
-  DUMP(e_ehsize, "#x");
-  DUMP(e_phentsize, "#x");
-  DUMP(e_phnum, "#x");
-  DUMP(e_shentsize, "#x");
-  DUMP(e_shnum, "#x");
-  DUMP(e_shstrndx, "#x");
+  DUMP(e_entry, "#"PRIxElf_Addr);
+  DUMP(e_phoff, "#"PRIxElf_Off);
+  DUMP(e_shoff, "#"PRIxElf_Off);
+  DUMP(e_flags, "#"PRIxElf_Word);
+  DUMP(e_ehsize, "#"PRIxElf_Half);
+  DUMP(e_phentsize, "#"PRIxElf_Half);
+  DUMP(e_phnum, "#"PRIxElf_Half);
+  DUMP(e_shentsize, "#"PRIxElf_Half);
+  DUMP(e_shnum, "#"PRIxElf_Half);
+  DUMP(e_shstrndx, "#"PRIxElf_Half);
 #undef DUMP
  NaClLog(loglevel, "sizeof(Elf32_Ehdr) = 0x%x\n", (int) sizeof *elf_hdr);
 }
 
 
-static void NaClDumpElfProgramHeader(int loglevel, Elf32_Phdr *phdr) {
- #define DUMP(mem) do {                                         \
-     NaClLog(loglevel, "%s: %x\n", #mem, phdr->mem);      \
-   } while (0)
+static void NaClDumpElfProgramHeader(int     loglevel,
+                                    Elf_Phdr *phdr) {
+#define DUMP(mem, f) do {                                \
+    NaClLog(loglevel, "%s: %" f "\n", #mem, phdr->mem);  \
+  } while (0)
 
-   DUMP(p_type);
-   DUMP(p_offset);
-   DUMP(p_vaddr);
-   DUMP(p_paddr);
-   DUMP(p_filesz);
-   DUMP(p_memsz);
-   DUMP(p_flags);
-   NaClLog(loglevel, " (%s %s %s)\n",
-           (phdr->p_flags & PF_R) ? "PF_R" : "",
-           (phdr->p_flags & PF_W) ? "PF_W" : "",
-           (phdr->p_flags & PF_X) ? "PF_X" : "");
-   DUMP(p_align);
- #undef  DUMP
-   NaClLog(loglevel, "\n");
- }
+  DUMP(p_type, PRIxElf_Word);
+  DUMP(p_offset, PRIxElf_Off);
+  DUMP(p_vaddr, PRIxElf_Addr);
+  DUMP(p_paddr, PRIxElf_Addr);
+  DUMP(p_filesz, PRIxElf_Xword);
+  DUMP(p_memsz, PRIxElf_Xword);
+  DUMP(p_flags, PRIxElf_Word);
+  NaClLog(2, " (%s %s %s)\n",
+          (phdr->p_flags & PF_R) ? "PF_R" : "",
+          (phdr->p_flags & PF_W) ? "PF_W" : "",
+          (phdr->p_flags & PF_X) ? "PF_X" : "");
+  DUMP(p_align, PRIxElf_Xword);
+#undef  DUMP
+  NaClLog(loglevel, "\n");
+}
 
 
 NaClErrorCode NaClElfImageValidateAbi(struct NaClElfImage *image) {
-  const Elf32_Ehdr *hdr = &image->ehdr;
+  const Elf_Ehdr *hdr = &image->ehdr;
 
   if (ELFOSABI_NACL != hdr->e_ident[EI_OSABI]) {
     NaClLog(LOG_ERROR, "Expected OSABI %d, got %d\n",
@@ -138,29 +139,49 @@ NaClErrorCode NaClElfImageValidateAbi(struct NaClElfImage *image) {
     return LOAD_BAD_ABI;
   }
 
+  /*
+   * TODO(bsy,khim): e_ident[EI_ABIVERSION] for nacl64 should match nacl32.
+   */
+#if NACL_TARGET_SUBARCH == 64
+  if (EF_NACL_ABIVERSION != hdr->e_ident[EI_ABIVERSION]
+      && 0 != hdr->e_ident[EI_ABIVERSION]) {
+    NaClLog(LOG_ERROR, "Expected ABIVERSION %d, got %d\n",
+            EF_NACL_ABIVERSION,
+            hdr->e_ident[EI_ABIVERSION]);
+      return LOAD_BAD_ABI;
+  }
+#else
   if (EF_NACL_ABIVERSION != hdr->e_ident[EI_ABIVERSION]) {
     NaClLog(LOG_ERROR, "Expected ABIVERSION %d, got %d\n",
             EF_NACL_ABIVERSION,
             hdr->e_ident[EI_ABIVERSION]);
       return LOAD_BAD_ABI;
   }
+#endif
 
   return LOAD_OK;
 }
 
 
 NaClErrorCode NaClElfImageValidateElfHeader(struct NaClElfImage *image) {
-  const Elf32_Ehdr *hdr = &image->ehdr;
+  const Elf_Ehdr *hdr = &image->ehdr;
 
   if (memcmp(hdr->e_ident, ELFMAG, SELFMAG)) {
     NaClLog(LOG_ERROR, "bad elf magic\n");
     return LOAD_BAD_ELF_MAGIC;
   }
 
+#if NACL_TARGET_SUBARCH == 64
+  if (ELFCLASS64 != hdr->e_ident[EI_CLASS]) {
+    NaClLog(LOG_ERROR, "bad elf class\n");
+    return LOAD_NOT_64_BIT;
+  }
+#else
   if (ELFCLASS32 != hdr->e_ident[EI_CLASS]) {
     NaClLog(LOG_ERROR, "bad elf class\n");
     return LOAD_NOT_32_BIT;
   }
+#endif
 
   if (ET_EXEC != hdr->e_type) {
     NaClLog(LOG_ERROR, "non executable\n");
@@ -168,12 +189,12 @@ NaClErrorCode NaClElfImageValidateElfHeader(struct NaClElfImage *image) {
   }
 
   if (EM_EXPECTED_BY_NACL != hdr->e_machine) {
-    NaClLog(LOG_ERROR, "bad machine\n");
+    NaClLog(LOG_ERROR, "bad machine: %"PRIxElf_Half"\n", hdr->e_machine);
     return LOAD_BAD_MACHINE;
   }
 
   if (EV_CURRENT != hdr->e_version) {
-    NaClLog(LOG_ERROR, "bad elf version\n");
+    NaClLog(LOG_ERROR, "bad elf version: %"PRIxElf_Word"\n", hdr->e_version);
     return LOAD_BAD_ELF_VERS;
   }
 
@@ -184,8 +205,8 @@ NaClErrorCode NaClElfImageValidateElfHeader(struct NaClElfImage *image) {
                    static_text_end and max_vaddr */
 NaClErrorCode NaClElfImageValidateProgramHeaders(
   struct NaClElfImage *image,
-  uint32_t            addr_bits,
-  uint32_t            *static_text_end,
+  uintptr_t           addr_bits,
+  uintptr_t           *static_text_end,
   uintptr_t           *rodata_start,
   uintptr_t           *rodata_end,
   uintptr_t           *data_start,
@@ -200,12 +221,12 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
      * of the address space.  Ensure that PT_GNU_STACK is present, and
      * that x is off.
      */
-  const Elf32_Ehdr *hdr = &image->ehdr;
-  int         seen_seg[NACL_ARRAY_SIZE(nacl_phdr_check_data)];
+  const Elf_Ehdr      *hdr = &image->ehdr;
+  int                 seen_seg[NACL_ARRAY_SIZE(nacl_phdr_check_data)];
 
-  int         segnum;
-  const Elf32_Phdr  *php;
-  size_t      j;
+  int                 segnum;
+  const Elf_Phdr      *php;
+  size_t              j;
 
   *max_vaddr = NACL_TRAMPOLINE_END;
 
@@ -240,22 +261,24 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
           if (0 != nacl_phdr_check_data[j].p_vaddr
               && (nacl_phdr_check_data[j].p_vaddr != php->p_vaddr)) {
             NaClLog(2,
-                    ("Segment %d: bad virtual address: 0x%08x,"
-                     " expected 0x%08x\n"),
+                    ("Segment %d: bad virtual address: 0x%08"PRIxElf_Addr","
+                     " expected 0x%08"PRIxElf_Addr"\n"),
                     segnum,
                     php->p_vaddr,
                     nacl_phdr_check_data[j].p_vaddr);
             return LOAD_SEGMENT_BAD_LOC;
           }
           if (php->p_vaddr < NACL_TRAMPOLINE_END) {
-            NaClLog(2, "Segment %d: virtual address (0x%08x) too low\n",
+            NaClLog(2,
+                    ("Segment %d: virtual address (0x%08"PRIxElf_Addr
+                     ") too low\n"),
                     segnum,
                     php->p_vaddr);
             return LOAD_SEGMENT_OUTSIDE_ADDRSPACE;
           }
           /*
-           * integer overflow?  Elf32_Addr and Elf32_Word are uint32_t,
-           * so the addition/comparison is well defined.
+           * integer overflow?  Elf_Addr and Elf_Word are uint32_t or
+           * uint64_t, so the addition/comparison is well defined.
            */
           if (php->p_vaddr + php->p_memsz < php->p_vaddr) {
             NaClLog(2,
@@ -263,17 +286,17 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
                     segnum);
             return LOAD_SEGMENT_OUTSIDE_ADDRSPACE;
           }
-          if (php->p_vaddr + php->p_memsz >= (1U << addr_bits)) {
+          if (php->p_vaddr + php->p_memsz >= ((Elf_Addr) 1U << addr_bits)) {
             NaClLog(2,
-                    "Segment %d: too large, ends at 0x%08x\n",
+                    "Segment %d: too large, ends at 0x%08"PRIxElf_Addr"\n",
                     segnum,
                     php->p_vaddr + php->p_memsz);
             return LOAD_SEGMENT_OUTSIDE_ADDRSPACE;
           }
           if (php->p_filesz > php->p_memsz) {
             NaClLog(2,
-                    ("Segment %d: file size 0x%08x larger"
-                     " than memory size 0x%08x\n"),
+                    ("Segment %d: file size 0x%08"PRIxElf_Xword" larger"
+                     " than memory size 0x%08"PRIxElf_Xword"\n"),
                     segnum,
                     php->p_filesz,
                     php->p_memsz);
@@ -286,7 +309,7 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
           /*
            * NACL_TRAMPOLINE_END <= p_vaddr
            *                     <= p_vaddr + p_memsz
-           *                     < (1U << nap->addr_bits)
+           *                     < ((uintptr_t) 1U << nap->addr_bits)
            */
           if (*max_vaddr < php->p_vaddr + php->p_memsz) {
             *max_vaddr = php->p_vaddr + php->p_memsz;
@@ -374,6 +397,10 @@ struct NaClElfImage *NaClElfImageNew(struct Gio  *gp) {
 
   if (image.ehdr.e_phentsize < sizeof image.phdrs[0]) {
     NaClLog(2, "bad prog headers size\n");
+    NaClLog(2, " image.ehdr.e_phentsize = 0x%"PRIxElf_Half"\n",
+            image.ehdr.e_phentsize);
+    NaClLog(2, "  sizeof image.phdrs[0] = 0x%"PRIxS"\n",
+            sizeof image.phdrs[0]);
     return 0;
   }
 
@@ -419,7 +446,7 @@ NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
   uintptr_t         end_vaddr;
 
   for (segnum = 0; segnum < image->ehdr.e_phnum; ++segnum) {
-    const Elf32_Phdr *php = &image->phdrs[segnum];
+    const Elf_Phdr *php = &image->phdrs[segnum];
 
     /* did we decide that we will load this segment earlier? */
     if (!image->loadable[segnum]) {
@@ -437,17 +464,27 @@ NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
      * address space?  if it is, it implies that the start virtual
      * address is also.
      */
-    if (end_vaddr >= (1U << addr_bits)) {
+    if (end_vaddr >= ((uintptr_t) 1U << addr_bits)) {
       NaClLog(LOG_FATAL, "parameter error should have been detected already\n");
     }
 
     paddr = mem_start + php->p_vaddr;
 
+    NaClLog(4,
+            "Seek to position %"PRIdElf_Off" (0x%"PRIxElf_Off").\n",
+            php->p_offset,
+            php->p_offset);
     if ((*gp->vtbl->Seek)(gp, php->p_offset, SEEK_SET) == (size_t) -1) {
       NaClLog(LOG_ERROR, "seek failure segment %d", segnum);
       return LOAD_SEGMENT_BAD_PARAM;
     }
-    if ((Elf32_Word) (*gp->vtbl->Read)(gp, (void *) paddr, php->p_filesz)
+    NaClLog(4,
+            "Reading %"PRIdElf_Xword" (0x%"PRIxElf_Xword") bytes to"
+            " address 0x%"PRIxPTR"\n",
+            php->p_filesz,
+            php->p_filesz,
+            paddr);
+    if ((Elf_Word) (*gp->vtbl->Read)(gp, (void *) paddr, php->p_filesz)
         != php->p_filesz) {
       NaClLog(LOG_ERROR, "load failure segment %d", segnum);
       return LOAD_SEGMENT_BAD_PARAM;

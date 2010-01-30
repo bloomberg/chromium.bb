@@ -20,7 +20,9 @@ void WINAPI NaClThreadLauncher(void *state) {
   NaClLog(4, "NaClThreadLauncher: entered\n");
   natp = (struct NaClAppThread *) state;
   NaClLog(4, "natp = 0x%08"PRIxPTR"\n", (uintptr_t) natp);
-  NaClLog(4, "prog_ctr  = 0x%08"PRIx32"\n", natp->user.prog_ctr);
+  NaClLog(4, "prog_ctr  = 0x%08"PRIxNACL_REG"\n", natp->user.prog_ctr);
+
+  NaClTlsSetIdx(NaClGetThreadIdx(natp));
 
   NaClLog(4, "Obtaining thread_num\n");
   /*
@@ -49,7 +51,8 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       int                   is_privileged,
                       uintptr_t             usr_entry,
                       uintptr_t             usr_stack_ptr,
-                      uint32_t              tls_idx) {
+                      uint32_t              tls_idx,
+                      uintptr_t             sys_tdb) {
   int                         rv;
   uint32_t                    thread_idx;
   struct NaClDescEffectorLdr  *effp;
@@ -92,6 +95,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
   natp->state = NACL_APP_THREAD_ALIVE;
 
   natp->thread_num = -1;  /* illegal index */
+  natp->sys_tdb = sys_tdb;
 
   thread_idx = NaClGetThreadIdx(natp);
 
@@ -149,7 +153,7 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
    * main or much of libc can run).  Other threads are spawned with the tdb
    * address and size as a parameter.
    */
-  tls_idx = NaClTlsAllocate(natp, (void *)sys_tdb_base, tdb_size);
+  tls_idx = NaClTlsAllocate(natp, (void *) sys_tdb_base, tdb_size);
 
   NaClLog(4,
         "NaClAppThreadAllocSegCtor: stack_ptr 0x%08"PRIxPTR", tls_idx 0x%02x\n",
@@ -165,7 +169,8 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
                            is_privileged,
                            usr_entry,
                            usr_stack_ptr,
-                           tls_idx);
+                           tls_idx,
+                           sys_tdb_base);
 }
 
 

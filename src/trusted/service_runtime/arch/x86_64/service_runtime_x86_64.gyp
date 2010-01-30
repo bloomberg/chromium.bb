@@ -36,9 +36,15 @@
       'target_name': 'service_runtime_x86_64',
       'type': 'static_library',
       'sources': [
-        'nacl_switch.S',
-        'nacl_syscall.S',
+        'nacl_app_64.c',
+        'nacl_switch_64.S',
+        'nacl_switch_to_app_64.c',
+        'nacl_syscall_64.S',
+        'nacl_tls_64.c',
+        'sel_addrspace_x86_64.c',
+        'sel_ldr_x86_64.c',
         'sel_rt_64.c',
+        'tramp_64.S',
       ],
       'conditions': [
         [ 'library=="shared_library"', {

@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
+ * Copyright 2008 The Native Client Authors.  All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
  * be found in the LICENSE file.
  */
@@ -82,7 +82,7 @@ uint16_t NaClGetSs(void) {
 }
 
 
-uint32_t NaClGetEsp(void) {
+uint32_t NaClGetStackPtr(void) {
   uint32_t stack_ptr;
 
   _asm mov stack_ptr, esp;
@@ -112,4 +112,3 @@ tick_t get_ticks() {
   t = (((tick_t) t_high) << 32) | t_low;
   return t;
 }
-

@@ -26,6 +26,7 @@ pql_inputs += ['nacl_cpuwhitelist.c']
 vcpuid_env = env.Clone()
 if env.Bit('mac'):
   vcpuid_env.Append(CCFLAGS = ['-mdynamic-no-pic'])
+  vcpuid_env.FilterOut(CCFLAGS = ['-fPIC'])
 if env.Bit('linux'):
   vcpuid_env.Append(CCFLAGS = ['-msse3'])
 nacl_vcpuid = vcpuid_env.ComponentLibrary('vcpuid', 'vcpuid.c')

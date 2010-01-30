@@ -59,6 +59,7 @@ struct NaClAppThread {
   struct NaClDescEffector   *effp;
 
   int                       thread_num;  /* index into nap->threads */
+  uintptr_t                 sys_tdb;  /* saved tdb ptr */
 
   struct NaClThread         thread;  /* low level thread representation */
 
@@ -121,7 +122,7 @@ struct NaClAppThread {
    * should be automatically released.
    */
 
-  uint32_t                  *x_sp;
+  uintptr_t                 *syscall_args;
   /*
    * user's sp translated to system address, used for accessing syscall
    * arguments
@@ -133,7 +134,8 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       int                   is_privileged,
                       uintptr_t             entry,
                       uintptr_t             stack_ptr,
-                      uint32_t              tls_idx) NACL_WUR;
+                      uint32_t              tls_idx,
+                      uintptr_t             sys_tdb) NACL_WUR;
 
 void NaClAppThreadDtor(struct NaClAppThread *natp);
 

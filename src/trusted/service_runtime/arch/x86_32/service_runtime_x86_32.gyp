@@ -36,8 +36,15 @@
       'target_name': 'service_runtime_x86_32',
       'type': 'static_library',
       'sources': [
-        'nacl_switch.S',
+        'nacl_app_32.c',
+        'nacl_switch_32.S',
+        'nacl_switch_to_app_32.c',
+        'nacl_tls_32.c',
+        'sel_addrspace_x86_32.c',
+        'sel_ldr_x86_32.c',
         'sel_rt_32.c',
+        'springboard.S',
+        'tramp_32.S',
       ],
       'conditions': [
         # TODO(dspringer): for now, official Chrome builds use the stubbed-out
@@ -49,7 +56,7 @@
           ],
         }, {  # All other builds use the NaClSyscallSeg code.
           'sources': [
-            'nacl_syscall.S'
+            'nacl_syscall_32.S'
           ],
         },
         ],
@@ -63,7 +70,7 @@
           'target_name': 'service_runtime_x86_32_chrome',
           'type': 'static_library',
           'sources': [
-            'nacl_syscall.S'
+            'nacl_syscall_32.S'
           ],
         },
       ],

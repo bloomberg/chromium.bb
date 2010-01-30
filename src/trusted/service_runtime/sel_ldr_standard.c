@@ -34,7 +34,6 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
-#include "native_client/src/trusted/service_runtime/tramp.h"
 
 #define PTR_ALIGN_MASK  ((sizeof(void *))-1)
 
@@ -60,11 +59,15 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
 
   /* temporay object will be deleted at end of function */
   image = NaClElfImageNew(gp);
+  if (NULL == image) {
+    NaClLog(LOG_FATAL, "Could not create NaClElfImage object\n");
+  }
+
 #if !defined(DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX)
   check_abi = NACL_ABI_CHECK_OPTION_CHECK;
 #endif
 
-  if (check_abi == NACL_ABI_CHECK_OPTION_CHECK) {
+  if (NACL_ABI_CHECK_OPTION_CHECK == check_abi) {
     subret = NaClElfImageValidateAbi(image);
     if (subret != LOAD_OK) {
       ret = subret;
@@ -108,11 +111,11 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   nap->entry_pt = NaClElfImageGetEntryPoint(image);
 
   NaClLog(2,
-          "static_text_end: %08x  "
-          "break_add: %08"PRIxPTR"  "
-          "data_end: %08"PRIxPTR"  "
-          "entry_pt: %08x  "
-          "bundle_size: %08x\n",
+          "static_text_end: 0x%016"PRIxPTR"  "
+          "break_add: 0x%016"PRIxPTR"  "
+          "data_end: 0x%016"PRIxPTR"  "
+          "entry_pt: 0x%016"PRIxPTR"  "
+          "bundle_size: 0x%x\n",
           nap->static_text_end,
           nap->break_addr,
           nap->data_end,
@@ -331,7 +334,7 @@ int NaClCreateMainThread(struct NaClApp     *nap,
 
   /* write strings and char * arrays to stack */
 
-  stack_ptr = (nap->mem_start + (1 << nap->addr_bits) - size);
+  stack_ptr = (nap->mem_start + ((uintptr_t) 1 << nap->addr_bits) - size);
   NaClLog(2, "setting stack to : %08"PRIxPTR"\n", stack_ptr);
 
   VCHECK(0 == (stack_ptr & PTR_ALIGN_MASK),
@@ -381,7 +384,7 @@ int NaClCreateMainThread(struct NaClApp     *nap,
                                  nap,
                                  1,
                                  nap->entry_pt,
-                                 NaClSysToUser(nap, stack_ptr),
+                                 NaClSysToUserStackAddr(nap, stack_ptr),
                                  NaClUserToSys(nap, nap->break_addr),
                                  1)) {
     retval = 0;

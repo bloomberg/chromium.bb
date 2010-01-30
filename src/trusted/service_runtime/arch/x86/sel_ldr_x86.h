@@ -20,7 +20,14 @@
 
 #define NACL_THREAD_MAX     LDT_ENTRIES
 
-#define NACL_MAX_ADDR_BITS  (8 + 20)
+#if NACL_BUILD_SUBARCH == 32
+# define NACL_MAX_ADDR_BITS  (30)
+#elif NACL_BUILD_SUBARCH == 64
+# define NACL_MAX_ADDR_BITS  (32)
+#else
+# error "Did Intel or AMD introduce the 128-bit x86?"
+#endif
+
 #define NACL_NOOP_OPCODE    0x90
 #define NACL_HALT_OPCODE    0xf4
 #define NACL_HALT_LEN       1           /* length of halt instruction */

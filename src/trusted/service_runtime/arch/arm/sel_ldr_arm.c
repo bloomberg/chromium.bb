@@ -8,8 +8,8 @@
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/springboard.h"
-#include "native_client/src/trusted/service_runtime/tramp.h"
 #include "native_client/src/trusted/service_runtime/arch/arm/sel_ldr_arm.h"
+#include "native_client/src/trusted/service_runtime/arch/arm/tramp_arm.h"
 
 
 /* NOTE(robertm): the trampoline organization for ARM is currenly assuming
@@ -32,9 +32,8 @@ void  NaClPatchOneTrampoline(struct NaClApp *nap,
    * by default we initialize the target for trampoline code as NaClSyscallSeg,
    * so there is no point to patch address of NaClSyscallSeg
    */
-  patch_info.num_abs16 = 0;
-  patch_info.num_rel32 = 0;
-  patch_info.num_abs32 = 0;
+
+  NaClPatchInfoCtor(&patch_info);
 
   patch_info.dst = target_addr;
   patch_info.src = (uintptr_t) &NaCl_trampoline_seg_code;
@@ -45,12 +44,12 @@ void  NaClPatchOneTrampoline(struct NaClApp *nap,
 }
 
 
-static void NaClFillMemoryRegionWithHalt(void *start, size_t size) {
+void NaClFillMemoryRegionWithHalt(void *start, size_t size) {
   uint32_t *inst = (uint32_t *) start;
   uint32_t i;
 
   CHECK(0 == size % NACL_HALT_LEN);
-  /* check that the region start is 4 bytes alligned */
+  /* check that the region start is 4 bytes aligned */
   CHECK(0 == (uint32_t)start % NACL_HALT_LEN);
 
   for (i = 0; i < (size / NACL_HALT_LEN); i++)
@@ -65,20 +64,15 @@ void NaClFillTrampolineRegion(struct NaClApp *nap) {
 
 
 /*
- * fill from static_text_end to end of that page with halt
- * instruction, which is NACL_HALT_LEN in size.
+ * Fill from static_text_end to end of that page with halt
+ * instruction, which is NACL_HALT_LEN in size.  Does not touch
+ * dynamic text region, which should be pre-filled with HLTs.
  */
 void NaClFillEndOfTextRegion(struct NaClApp *nap) {
   size_t page_pad;
 
-  if (nap->use_shm_for_dynamic_text) {
-    page_pad = (NaClRoundAllocPage(nap->static_text_end)
-                - nap->static_text_end);
-    page_pad += nap->dynamic_text_end - nap->dynamic_text_start;
-  } else {
-    page_pad = NaClRoundPage(nap->static_text_end) - nap->static_text_end;
-    CHECK(page_pad < NACL_PAGESIZE);
-  }
+  page_pad = NaClRoundPage(nap->static_text_end) - nap->static_text_end;
+  CHECK(page_pad < NACL_PAGESIZE);
 
   NaClLog(4,
           "Filling with halts: %08"PRIxPTR", %08"PRIxS" bytes\n",
@@ -98,17 +92,12 @@ void NaClFillEndOfTextRegion(struct NaClApp *nap) {
  */
 void NaClLoadTlsHook(struct NaClApp *nap) {
   struct NaClPatchInfo  patch_info;
-  struct NaClPatch      abs32;
   const uintptr_t       tls_hook_addr = NACL_TRAMPOLINE_END -
                                         2 * NACL_SYSCALL_BLOCK_SIZE;
   NaClLog(2, "Installing tls hook at 0x%08"PRIxPTR"\n", tls_hook_addr);
 
-  patch_info.rel32 = 0;
-  patch_info.num_rel32 = 0;
-  patch_info.abs32 = &abs32;
-  patch_info.num_abs32 = 0;
-  patch_info.abs16 = 0;
-  patch_info.num_abs16 = 0;
+  NaClPatchInfoCtor(&patch_info);
+
   patch_info.dst = nap->mem_start + tls_hook_addr;
   patch_info.src = (uintptr_t) &NaClReadTP_start;
   patch_info.nbytes = ((uintptr_t) &NaClReadTP_end
@@ -127,17 +116,12 @@ void NaClLoadTlsHook(struct NaClApp *nap) {
 
 void  NaClLoadSpringboard(struct NaClApp  *nap) {
   struct NaClPatchInfo  patch_info;
-  struct NaClPatch      abs32;
   const uintptr_t       springboard_addr = NACL_TRAMPOLINE_END -
                                            NACL_SYSCALL_BLOCK_SIZE;
   NaClLog(2, "Installing springboard at 0x%08"PRIxPTR"\n", springboard_addr);
 
-  patch_info.rel32 = 0;
-  patch_info.num_rel32 = 0;
-  patch_info.abs32 = &abs32;
-  patch_info.num_abs32 = 0;
-  patch_info.abs16 = 0;
-  patch_info.num_abs16 = 0;
+  NaClPatchInfoCtor(&patch_info);
+
   patch_info.dst = nap->mem_start + springboard_addr;
   patch_info.src = (uintptr_t) &NaCl_springboard;
   patch_info.nbytes = ((uintptr_t) &NaCl_springboard_end

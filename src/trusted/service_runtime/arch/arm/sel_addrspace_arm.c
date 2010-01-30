@@ -38,19 +38,31 @@ int NaClAllocateSpace(void **mem, size_t size) {
   return LOAD_OK;
 }
 
-NaClErrorCode NaClMprotectGuards(struct NaClApp *nap, uintptr_t start_addr) {
+/*
+ * In the ARM sandboxing scheme we put the NaCl module at low virtual
+ * address -- and thus there can only ever be one running NaCl app per
+ * sel_ldr process -- to simplify the address masking etc needed for
+ * the sandboxing.  All memory below ((uintptr_t) 1) << nap->addr_bits
+ * is accessible to the NaCl app, and modulo page protection,
+ * potentially writable.  Page protection is, of course, used to
+ * prevent writing to text and rodata, including the trusted
+ * trampoline code thunks.  To simplify write sandboxing, some
+ * additional guard pages outside of the address space is needed, so
+ * that we don't have to additionally check the effective address
+ * obtained by register-relative addressing modes.
+ */
+NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
   int err;
-  void *guard_base = (void *)(1 << nap->addr_bits);
+  void *guard_base = (void *) (((uintptr_t) 1) << nap->addr_bits);
   /*
    * In ARM implementation kernel does not allow us to mmap address space at
    * address 0x0, so we mmap it at the start of a trampoline region.
    * Therefore, there is not need to mprotect at the start_addr.
    */
-  UNREFERENCED_PARAMETER(start_addr);
 
   /*
-   * Instead, we create a two-page guard region at the base of trusted
-   * memory.
+   * However, we need to create a two-page guard region at the base of
+   * trusted memory, for write sandboxing.
    */
   if ((err = NaCl_mprotect(guard_base, 2 * NACL_PAGESIZE, PROT_NONE)) != 0) {
     NaClLog(LOG_ERROR, ("NaClMemoryProtection: failed to protect lower guard "
@@ -59,14 +71,20 @@ NaClErrorCode NaClMprotectGuards(struct NaClApp *nap, uintptr_t start_addr) {
     return LOAD_MPROTECT_FAIL;
   }
 
-  if (!NaClVmmapAdd(&nap->mem_map,
-                    ((uintptr_t) guard_base - nap->mem_start) >> NACL_PAGESHIFT,
-                    2 * NACL_PAGESIZE,
-                    PROT_NONE,
-                    (struct NaClMemObj *) NULL)) {
-    NaClLog(LOG_ERROR, ("NaClMemoryPRotection: NaClVmmapAdd failed"
-                        " (lower guard on trusted memory space)\n"));
-    return LOAD_MPROTECT_FAIL;
-  }
+  /*
+   * NB: the pages just mapped are OUTSIDE of the address space of the
+   * NaCl module.  We should not track them in the Vmmap structure,
+   * since that's to track addressable memory for mapping and unmapping.
+   *
+   * This means that because these pages are implicit and not tracked,
+   * we should have a hook to tear down these pages as part of the
+   * NaClApp dtor.
+   */
   return LOAD_OK;
+}
+
+void NaClTeardownMprotectGuards(struct NaClApp *nap) {
+  void *guard_base = (void *) (((uintptr_t) 1) << nap->addr_bits);
+
+  NaCl_page_free(guard_base, 2 * NACL_PAGESIZE);
 }

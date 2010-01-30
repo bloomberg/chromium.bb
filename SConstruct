@@ -847,7 +847,7 @@ mac_env = unix_like_env.Clone(
 )
 
 mac_env.Append(
-    CCFLAGS = ['-mmacosx-version-min=10.4', '-m32'],
+    CCFLAGS = ['-mmacosx-version-min=10.4', '-m32', '-fPIC'],
     # TODO(bradnelson): remove UNIX_LIKE_CFLAGS when scons bug is fixed
     CPPDEFINES = [['NACL_WINDOWS', '0'],
                   ['NACL_OSX', '1'],
@@ -1030,6 +1030,7 @@ nacl_env.Append(
     'tests/file/nacl.scons',
     'tests/hello_world/nacl.scons',
     'tests/imc_shm_mmap/nacl.scons',
+    'tests/libc_free_hello_world/nacl.scons',
     'tests/mandel/nacl.scons',
     'tests/mmap/nacl.scons',
     'tests/nanosleep/nacl.scons',

@@ -304,3 +304,13 @@ int   NaCl_madvise(void           *start,
   NaClLog(2, "NaCl_madvise: done\n");
   return 0;
 }
+
+
+void *NaClAllocatePow2AlignedMemory(size_t mem_sz, size_t log_alignment) {
+  UNREFERENCED_PARAMETER(mem_sz);
+  UNREFERENCED_PARAMETER(log_alignment);
+  /*
+   * TODO(bsy,ilewis): implement this function in terms of VirtualAlloc.
+   */
+  return NULL;
+}

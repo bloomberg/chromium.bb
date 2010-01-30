@@ -43,6 +43,17 @@ int   NaCl_mprotect(void          *addr,
 int   NaCl_madvise(void           *start,
                    size_t         length,
                    int            advice) NACL_WUR;
+
+/*
+ * NaClAllocatePow2AlignedMemory is for allocating a large amount of
+ * memory of mem_sz bytes that must be address aligned, so that
+ * log_alignment low-order address bits must be zero.
+ *
+ * Returns the aligned region on success, or NULL on failure.
+ */
+void *NaClAllocatePow2AlignedMemory(size_t mem_sz, size_t log_alignment);
+
+
 #ifdef __cplusplus
 }
 #endif /* __cplusplus */

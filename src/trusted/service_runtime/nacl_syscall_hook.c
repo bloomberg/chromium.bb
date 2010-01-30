@@ -97,13 +97,13 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
    *   sp+10: ....
    */
 
-  sp_sys = NaClUserToSys(nap, sp_user);
+  sp_sys = NaClUserToSysStackAddr(nap, sp_user);
   /*
    * sp_sys points to the top of user stack where there is a retaddr to
    * trampoline slot
    */
   tramp_ret = *(uintptr_t *)sp_sys;
-  tramp_ret = NaClUserToSys(nap, tramp_ret);
+  tramp_ret = NaClUserToSysStackAddr(nap, tramp_ret);
 
   sysnum = (tramp_ret - (nap->mem_start + NACL_SYSCALL_START_ADDR))
       >> NACL_SYSCALL_BLOCK_SHIFT;
@@ -116,14 +116,14 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
    * getting user return address (the address where we need to return after
    * system call) from the user stack. (see stack layout above)
    */
-  user_ret = *(uint32_t *) (sp_sys + NACL_USERRET_FIX);
+  user_ret = *(uintptr_t *) (sp_sys + NACL_USERRET_FIX);
   /*
    * Fix the user stack, throw away return addresses from the top of the stack.
    * After this fix, the first argument to a system call must be on the top of
    * the user stack (see user stack layout above)
    */
   sp_sys += NACL_SYSARGS_FIX;
-  sp_user += NACL_SYSARGS_FIX;
+  sp_user += NACL_SYSCALLRET_FIX;
   NaClSetThreadCtxSp(user, sp_user);
 
   if (sysnum >= NACL_MAX_SYSCALLS) {
@@ -135,13 +135,15 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
             sysnum, (uintptr_t) nacl_syscall[sysnum].handler);
 #endif
     /*
-     * x_sp is used by Decoder functions in nacl_syscall_handlers.c which is
-     * automatically generated file and placed in
-     * scons-out/.../gen/native_client/src/trusted/service_runtime. x_sp must
-     * point to the first argument of a system call. System call arguments are
-     * placed on the stack.
+     * syscall_args is used by Decoder functions in
+     * nacl_syscall_handlers.c which is automatically generated file
+     * and placed in the
+     * scons-out/.../gen/native_client/src/trusted/service_runtime/
+     * directory.  syscall_args must point to the first argument of a
+     * system call. System call arguments are placed on the untrusted
+     * user stack.
      */
-    natp->x_sp = (uint32_t *) sp_sys;
+    natp->syscall_args = (uintptr_t *) sp_sys;
     natp->sysret = (*nacl_syscall[sysnum].handler)(natp);
   }
 #if !BENCHMARK
@@ -178,4 +180,3 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
   fprintf(stderr, "NORETURN NaClSwitchToApp returned!?!\n");
   abort();
 }
-

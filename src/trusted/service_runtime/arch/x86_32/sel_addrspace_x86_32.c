@@ -1,5 +1,5 @@
 /*
- * Copyright 2009 The Native Client Authors. All rights reserved.
+ * Copyright 2009 The Native Client Authors.  All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
  * be found in the LICENSE file.
  */
@@ -11,7 +11,7 @@
 
 
 int NaClAllocateSpace(void **mem, size_t size) {
-  CHECK(mem);
+  CHECK(NULL != mem);
   if (NaCl_page_alloc(mem, size) != 0) {
     NaClLog(2, "NaClAlloccaterSpace: NaCl_page_alloc failed\n");
     return LOAD_NO_MEMORY;
@@ -20,8 +20,11 @@ int NaClAllocateSpace(void **mem, size_t size) {
 }
 
 
-NaClErrorCode NaClMprotectGuards(struct NaClApp *nap, uintptr_t start_addr) {
-  int err;
+NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
+  uintptr_t start_addr;
+  int       err;
+
+  start_addr = nap->mem_start;
 
   NaClLog(3,
           ("NULL detection region start 0x%08"PRIxPTR
@@ -49,4 +52,9 @@ NaClErrorCode NaClMprotectGuards(struct NaClApp *nap, uintptr_t start_addr) {
   }
 
   return LOAD_OK;
+}
+
+void NaClTeardownMprotectGuards(struct NaClApp *nap) {
+  UNREFERENCED_PARAMETER(nap);
+  return;
 }

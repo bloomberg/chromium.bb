@@ -25,6 +25,8 @@
 
 #include "native_client/tests/pepper_plugin/plugin_object.h"
 
+#include <limits>
+
 #include <assert.h>
 #include <math.h>
 #include <stdio.h>

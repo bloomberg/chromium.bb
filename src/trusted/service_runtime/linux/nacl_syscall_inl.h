@@ -15,9 +15,9 @@
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 
-static INLINE uint32_t NaClAppArg(struct NaClAppThread *natp,
-                                  int                  wordnum) {
-  return natp->x_sp[wordnum];
+static INLINE uintptr_t NaClAppArg(struct NaClAppThread *natp,
+                                   int                  wordnum) {
+  return natp->syscall_args[wordnum];
 }
 
 
@@ -35,7 +35,7 @@ static INLINE uint32_t NaClAppArg(struct NaClAppThread *natp,
  * wrappers on the NaCl app side will similarly follow the
  * negative-values-are-errors convention).
  */
-static INLINE int32_t NaClXlateSysRet(int32_t  rv) {
+static INLINE intptr_t NaClXlateSysRet(intptr_t rv) {
   return (rv != -1) ? rv : -NaClXlateErrno(errno);
 }
 
@@ -46,8 +46,8 @@ static INLINE int32_t NaClXlateSysRet(int32_t  rv) {
  * object.
  */
 
-static INLINE int32_t NaClXlateSysRetAddr(struct NaClApp  *nap,
-                                          int32_t         rv) {
+static INLINE intptr_t NaClXlateSysRetAddr(struct NaClApp *nap,
+                                           intptr_t       rv) {
   /* if rv is a bad address, we abort */
   return ((rv != -1)
           ? (int32_t) NaClSysToUser(nap, rv)

@@ -1,40 +1,24 @@
 #!/usr/bin/python
-# Copyright 2008, Google Inc.
-# All rights reserved.
 #
-# Redistribution and use in source and binary forms, with or without
-# modification, are permitted provided that the following conditions are
-# met:
-#
-#     * Redistributions of source code must retain the above copyright
-# notice, this list of conditions and the following disclaimer.
-#     * Redistributions in binary form must reproduce the above
-# copyright notice, this list of conditions and the following disclaimer
-# in the documentation and/or other materials provided with the
-# distribution.
-#     * Neither the name of Google Inc. nor the names of its
-# contributors may be used to endorse or promote products derived from
-# this software without specific prior written permission.
-#
-# THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
-# "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
-# LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
-# A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
-# OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-# SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
-# LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
-# DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
-# THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
-# (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-# OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-
+# Copyright 2008 The Native Client Authors.  All rights reserved.  Use
+# of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 #
 #  This script extracts  "nacl syscall" prototypes from a c file
 #  given on stdin and then produces wrapped versions of the syscalls.
 #
+#  Note that NaCl modules are always ILP32 and compiled with a
+#  compiler that passes all arguments on the stack, but the service
+#  runtime may be ILP32, LP64, or P64.  So we cannot use just char *
+#  in the structure that we overlay on top of the stack memory to
+#  extract system call arguments.  All syscall arguments are extracted
+#  as uint32_t first, then cast to the desired type -- pointers are
+#  not valid until they have been translated from user addresses to
+#  system addresses, and this is the responsibility of the actual
+#  system call handlers.
+#
 import getopt
 import re
-import string
 import StringIO
 import sys
 
@@ -72,35 +56,89 @@ static int32_t %(name)sDecoder(struct NaClAppThread *natp) {
 }
 """
 
+# Integer/pointer registers used in x86-64 calling convention.  NB:
+# the untrusted code is compiled using gcc, and follows the AMD64
+# calling covention, not the Windows x64 convention.  The service
+# runtime may be compiled with either compiler, so our assembly code
+# for context switch must take care to handle the differences.
+ARG_REGISTERS = {
+    'x86-32': [],
+    'x86-64': [],
+    # 'x86-64': ['rdi', 'rsi', 'rdx', 'rcx', 'r8', 'r9'],
+    'arm-32': [],
+    # 'arm-32': [ 'r0',  'r1',  'r2',  'r3'],
+    # while the arm calling convention passes arguments in registers,
+    # the arm trampoline code pushes them onto the untrusted stack first
+    # before transferring control to trusted code.  this uses up some
+    # more untrusted stack space / memory/cache bandwidth, but we had
+    # to save these arguments somewhere, either in a processor context
+    # or on-stack, anyway.
+    }
+
+# Our syscall handling code, in nacl_syscall.S, always pushes the
+# syscall arguments onto the untrusted user stack.  The syscall
+# arguments get snapshotted from there into a per-syscall structure,
+# to eliminate time-of-check vs time-of-use issues -- we always only
+# refer to syscall arguments from this snapshot, rather than from the
+# untrusted memory locations.
+
+
 def FunctionNameToSyscallDefine(name):
   assert name.startswith("NaClSys")
   name = name[7:]
   return "NACL_sys_" + name.lower()
 
-def ParamList(alist):
-  if not alist:
-    return ''
-  return ', ' + ', '.join(alist)
+
+# Syscall arguments MUST be declared in a simple-to-parse manner!
+# They must match the following regexp:
+
+ARG_RE = r'\s*((\w+\s+)+\**)\s*(\w+)'
+
+# where matchobj.group(1) is the type, and matchobj.group(3) is the
+# identifer.
+
+
+def CollapseWhitespaces(s):
+  return re.sub(r'\s+', ' ', s)
 
 
 def ExtractVariable(decl):
-  type_or_idents = re.findall(r'[a-zA-Z][-_a-zA-Z]*', decl)
-  return type_or_idents[len(type_or_idents)-1]
+  type_or_idents = re.match(ARG_RE, decl)
+  return type_or_idents.group(3)
 
 
-def ArgList(alist):
+def ExtractType(decl):
+  type_or_idents = re.match(ARG_RE, decl)
+  return CollapseWhitespaces(type_or_idents.group(1)).strip()
+
+
+def TypeIsPointer(typestr):
+  return '*' in typestr
+
+
+def ArgList(architecture, alist):
   if not alist:
     return ''
-  # Note: although this return value might be computed more
-  # concisely with a list comprehension, we instead use a
-  # for statement to maintain python 2.3 compatibility.
+
   extractedargs = []
-  for arg in alist:
-    extractedargs += ['p.' + ExtractVariable(arg)]
+  for argnum, arg in enumerate(alist):
+    t = ExtractType(arg)
+    extra_cast = ''
+    # avoid cast to pointer from integer of different size
+    if TypeIsPointer(t):
+      extra_cast = '(uintptr_t)'
+    if argnum >= len(ARG_REGISTERS[architecture]):
+      extractedargs += ['(' + t + ') ' + extra_cast
+                        + ' p.' + ExtractVariable(arg)]
+    else:
+      extractedargs += ['(' + t + ') ' + extra_cast
+                        +' natp->user.' +
+                        ARG_REGISTERS[architecture][argnum]]
+
   return ', ' + ', '.join(extractedargs)
 
 
-def MemberList(name, alist):
+def MemoryArgStruct(architecture, name, alist):
   if not alist:
     return ''
 
@@ -108,22 +146,26 @@ def MemberList(name, alist):
   # concisely with a list comprehension, we instead use a
   # for statement to maintain python 2.3 compatibility.
   margs = []
-  for arg in alist:
-    margs += ['    ' + arg]
+  for argnum, arg in enumerate(alist):
+    if argnum >= len(ARG_REGISTERS[architecture]):
+      margs += ['    uint32_t %s' % ExtractVariable(arg)]
   values = {
       'name': name,
       'members' : ';\n'.join(margs) + ';'
       }
 
+  if len(margs) == 0:
+    return ''
+
   return """\
   struct %(name)sArgs {
 %(members)s
-  } p = *(struct %(name)sArgs *) natp->x_sp;
+  } p = *(struct %(name)sArgs *) natp->syscall_args;
 
 """ % values
 
 
-def PrintSyscallTableIntializer(protos, ostr):
+def PrintSyscallTableInitializer(protos, ostr):
   assign = []
   for name, _ in protos:
     syscall = FunctionNameToSyscallDefine(name)
@@ -131,13 +173,12 @@ def PrintSyscallTableIntializer(protos, ostr):
   print >>ostr, TABLE_INITIALIZER % "\n".join(assign)
 
 
-def PrintImplSkel(protos, ostr):
+def PrintImplSkel(architecture, protos, ostr):
   print >>ostr, AUTOGEN_COMMENT;
   for name, alist in protos:
     values = { 'name' : name,
-               'paramlist' : ParamList(alist[1:]),
-               'arglist' : ArgList(alist[1:]),
-               'members' : MemberList(name, alist[1:]),
+               'arglist' : ArgList(architecture, alist[1:]),
+               'members' : MemoryArgStruct(architecture, name, alist[1:]),
                }
     print >>ostr, IMPLEMENTATION_SKELETON % values
 
@@ -174,45 +215,57 @@ def ParseFileToBeWrapped(fin, filter_regex):
 
 
 def main(argv):
-  usage='Usage: nacl_syscall_handlers_gen2.py [-f regex] [-c] [-d]'
+  usage='Usage: nacl_syscall_handlers_gen2.py [-f regex] [-c] [-d] [-a arch]'
   filter_regex = []
   mode = "dump"
-  input = sys.stdin
-  output = sys.stdout
+  input_src = sys.stdin
+  output_dst = sys.stdout
+  arch = 'x86'
+  subarch = '32'
   try:
-    opts, pargs = getopt.getopt(argv[1:], 'hcdf:i:o:')
+    opts, pargs = getopt.getopt(argv[1:], 'a:cdf:i:o:s:')
   except getopt.error, e:
     print >>sys.stderr, 'Illegal option:', str(e)
     print >>sys.stderr, usage
     return 1
 
   for opt, val in opts:
-    if opt == '-d':
+    if opt == '-a':
+      arch = val
+    elif opt == '-d':
       mode = "dump"
     elif opt == '-c':
       mode = "codegen"
     elif opt == '-f':
       filter_regex.append(val)
     elif opt == '-i':
-      input = open(val, 'r')
+      input_src = open(val, 'r')
     elif opt == '-o':
-      output = open(val, 'w')
+      output_dst = open(val, 'w')
+    elif opt == '-s':
+      subarch = val
     else:
       assert 0
 
-  data = input.read()
+  print 'arch =', arch, 'subarch =', subarch
+  if subarch != '':
+    arch = arch + '-' + subarch
+
+  print 'arch =', arch
+  if not ARG_REGISTERS.has_key(arch):
+    assert 0
+
+  data = input_src.read()
   protos = ParseFileToBeWrapped(StringIO.StringIO(data),
                                 "|".join(filter_regex))
   if mode == "dump":
     for f, a in  protos:
-      print >>output, f
-      print >>output, "\t", a
-  elif mode == "header":
-    PrintHeaderFile(protos, output)
+      print >>output_dst, f
+      print >>output_dst, "\t", a
   elif mode == "codegen":
-    print >>output, data
-    PrintImplSkel(protos, output)
-    PrintSyscallTableIntializer(protos, output)
+    print >>output_dst, data
+    PrintImplSkel(arch, protos, output_dst)
+    PrintSyscallTableInitializer(protos, output_dst)
 
 
   return 0

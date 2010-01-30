@@ -51,9 +51,17 @@
 #ifndef NATIVE_CLIENT_SRC_INCLUDE_ELF_H_
 #define NATIVE_CLIENT_SRC_INCLUDE_ELF_H_ 1
 
-#include "native_client/src/include/elf32.h"
 
 #include "native_client/src/include/portability.h"
+
+#if !defined(NACL_TARGET_SUBARCH)
+# error "NACL_TARGET_SUBARCH must be defined to be 32 or 64"
+#endif
+#if NACL_TARGET_SUBARCH == 64
+# include "native_client/src/include/elf64.h"
+#else
+# include "native_client/src/include/elf32.h"
+#endif
 
 EXTERN_C_BEGIN
 
@@ -64,9 +72,6 @@ EXTERN_C_BEGIN
  * is fixed, we conditionally include elf64 only if needed.
  */
 
-#if !defined(NACL_TARGET_SUBARCH)
-# error "NACL_TARGET_SUBARCH must be defined to be 32 or 64"
-#endif
 #if NACL_TARGET_SUBARCH == 64
 # define PRI_ADDR_ALL_WIDTH "016"
 # define NACL_ELF_CLASS ELFCLASS64
@@ -136,8 +141,6 @@ EXTERN_C_BEGIN
 #if NACL_TARGET_SUBARCH == 64
 
 /* __WORDSIZE == 64 */
-
-#include "native_client/src/include/elf64.h"
 
 /* Define sub architecture neutral types */
 typedef Elf64_Addr   Elf_Addr;

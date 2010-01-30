@@ -23,10 +23,11 @@ NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap) {
   size_t      hole_size;
   uintptr_t   stack_start;
 
-  NaClLog(2, "NaClAllocAddrSpace: calling NaClAllocateSpace(*,0x%x)\n",
-          (1U << nap->addr_bits));
+  NaClLog(2,
+          "NaClAllocAddrSpace: calling NaClAllocateSpace(*,0x%016"PRIxS")\n",
+          ((size_t) 1 << nap->addr_bits));
 
-  rv = NaClAllocateSpace(&mem, 1U << nap->addr_bits);
+  rv = NaClAllocateSpace(&mem, (size_t) 1U << nap->addr_bits);
   if (LOAD_OK != rv) {
     return rv;
   }
@@ -36,8 +37,10 @@ NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap) {
 
   hole_start = NaClRoundAllocPage(nap->data_end);
 
-  /* TODO(bsy): check for underflow?  only trusted code can set stack_size */
-  stack_start = (1U << nap->addr_bits) - nap->stack_size;
+  if (nap->stack_size >= ((uintptr_t) 1U) << nap->addr_bits) {
+    NaClLog(LOG_FATAL, "NaClAllocAddrSpace: stack too large!");
+  }
+  stack_start = (((uintptr_t) 1U) << nap->addr_bits) - nap->stack_size;
   stack_start = NaClTruncAllocPage(stack_start);
 
   if (stack_start < hole_start) {
@@ -87,18 +90,22 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
   uint32_t  region_size;
   int       err;
 
-  start_addr = nap->mem_start;
-
   /*
    * The first NACL_SYSCALL_START_ADDR bytes are mapped as PROT_NONE.
    * This enables NULL pointer checking, and provides additional protection
    * against addr16/data16 prefixed operations being used for attacks.
-   * Since NACL_SYSCALL_START_ADDR is a multiple of the page size, we don't
-   * need to round it to be so.
+   *
+   * NaClMprotectGuards also sets up guard pages outside of the
+   * virtual address space of the NaClApp -- for the ARM and x86-64
+   * where data sandboxing only sandbox memory writes and not reads,
+   * we need to ensure that certain addressing modes that might
+   * otherwise allow the NaCl app to write outside its address space
+   * (given how we using masking / base registers to implement data
+   * write sandboxing) won't affect the trusted data structures.
    */
 
-  NaClLog(3, "Protecting guard pages for 0x%08"PRIxPTR"\n", start_addr);
-  err = NaClMprotectGuards(nap, start_addr);
+  NaClLog(3, "Protecting guard pages for 0x%08"PRIxPTR"\n", nap->mem_start);
+  err = NaClMprotectGuards(nap);
   if (err != LOAD_OK) return err;
 
   start_addr = nap->mem_start + NACL_SYSCALL_START_ADDR;
@@ -128,7 +135,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                     (start_addr - nap->mem_start) >> NACL_PAGESHIFT,
                     region_size >> NACL_PAGESHIFT,
                     PROT_READ | PROT_EXEC,
-                    NaClMemObjMake(nap->text_mem,
+                    NaClMemObjMake(nap->text_shm,
                                    region_size,
                                    0))) {
     NaClLog(LOG_ERROR, ("NaClMemoryProtection: NaClVmmapAdd failed"
@@ -173,7 +180,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
   /* stack is read/write but not execute */
   region_size = nap->stack_size;
   start_addr = (nap->mem_start
-                + NaClTruncAllocPage((1U << nap->addr_bits)
+                + NaClTruncAllocPage(((uintptr_t) 1U << nap->addr_bits)
                                      - nap->stack_size));
   NaClLog(3,
           ("RW stack region start 0x%08"PRIxPTR", size 0x%08"PRIx32","

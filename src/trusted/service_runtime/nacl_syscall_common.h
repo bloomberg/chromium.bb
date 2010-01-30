@@ -180,6 +180,8 @@ int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
                                    void                 *tdb,
                                    size_t               tdb_size);
 
+int32_t NaClCommonSysTdbGet(struct NaClAppThread *natp);
+
 int32_t NaClCommonSysThread_Nice(struct NaClAppThread *natp,
                                  const int nice);
 

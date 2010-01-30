@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
+ * Copyright 2008 The Native Client Authors.  All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
  * be found in the LICENSE file.
  */
@@ -83,12 +83,25 @@ uint16_t NaClGetSs(void) {
 }
 
 
-uint32_t NaClGetEsp(void) {
-  uint32_t esp;
+#if NACL_BUILD_SUBARCH == 32
+nacl_reg_t NaClGetStackPtr(void) {
+  nacl_reg_t esp;
 
   asm("movl %%esp, %0" : "=r" (esp) : );
   return esp;
 }
+#elif NACL_BUILD_SUBARCH == 64
+
+nacl_reg_t NaClGetStackPtr(void) {
+  nacl_reg_t rsp;
+
+  asm("mov %%rsp, %0" : "=r" (rsp) : );
+  return rsp;
+}
+
+#else
+# error "Woe to the service runtime.  Is it running on a 128-bit machine?!?"
+#endif
 
 
 uint32_t NaClGetEbx(void) {
@@ -107,4 +120,3 @@ tick_t get_ticks() {
   asm volatile("rdtsc" : "=A" (t));
   return t;
 }
-

@@ -25,5 +25,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) NACL_WUR;
 
 int NaClAllocateSpace(void **mem, size_t size) NACL_WUR;
 
-NaClErrorCode NaClMprotectGuards(struct NaClApp *nap, uintptr_t start_addr);
+NaClErrorCode NaClMprotectGuards(struct NaClApp *nap);
+
+void NaClTeardownMprotectGuards(struct NaClApp *nap);
 #endif

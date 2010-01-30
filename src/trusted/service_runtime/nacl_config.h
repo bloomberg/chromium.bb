@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
+ * Copyright 2008 The Native Client Authors.  All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
  * be found in the LICENSE file.
  */
@@ -118,30 +118,37 @@
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 
-#if NACL_BUILD_SUBARCH == 32
-#define NACL_USERRET_FIX  0x8
-#elif NACL_BUILD_SUBARCH == 64
-#define NACL_USERRET_FIX  0xc
-#else /* NACL_BUILD_SUBARCH */
-#error Unknown platform!
-#endif /* NACL_BUILD_SUBARCH */
+# if NACL_BUILD_SUBARCH == 32
+#  define NACL_USERRET_FIX    (0x8)
+#  define NACL_SYSARGS_FIX    (NACL_USERRET_FIX + 0x4)
+#  define NACL_SYSCALLRET_FIX (NACL_USERRET_FIX + 0x4)
+
+# elif NACL_BUILD_SUBARCH == 64
+#  define NACL_USERRET_FIX    (0x8)
+#  define NACL_SYSARGS_FIX    (-0x18)
+#  define NACL_SYSCALLRET_FIX (0x10)
+# else /* NACL_BUILD_SUBARCH */
+#  error Unknown platform!
+# endif /* NACL_BUILD_SUBARCH */
 
 #elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
 
-#define NACL_HALT         mov pc, #0
+# define NACL_HALT         mov pc, #0
 /* 16-byte bundles, 256MB code segment*/
-#define NACL_CONTROL_FLOW_MASK      0xF000000F
+# define NACL_CONTROL_FLOW_MASK      0xF000000F
 
-#define NACL_USERRET_FIX  0x4
+# define NACL_USERRET_FIX     (0x4)
+# define NACL_SYSARGS_FIX     (NACL_USERRET_FIX + 0x4)
+# define NACL_SYSCALLRET_FIX  (NACL_USERRET_FIX + 0x4)
+
 /* TODO(robertm): unify this with NACL_BLOCK_SHIFT */
 /* 16 byte bundles */
-#define  NACL_ARM_BUNDLE_SIZE_LOG 4
+# define  NACL_ARM_BUNDLE_SIZE_LOG 4
 #else /* NACL_ARCH(NACL_BUILD_ARCH) */
 
-#error Unknown platform!
+# error Unknown platform!
 
 #endif /* NACL_ARCH(NACL_BUILD_ARCH) */
 
-#define NACL_SYSARGS_FIX  NACL_USERRET_FIX + 0x4
 
 #endif  /* NATIVE_CLIENT_SERVICE_RUNTIME_NACL_CONFIG_H_ */

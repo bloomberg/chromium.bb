@@ -10,6 +10,7 @@
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_string.h"
 
+#include "native_client/src/shared/platform/nacl_check.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 
 #include "native_client/src/shared/srpc/nacl_srpc.h"
@@ -24,6 +25,7 @@
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
+#include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/include/sys/stat.h"
@@ -56,7 +58,7 @@ int NaClAppCtor(struct NaClApp  *nap) {
   }
 
   nap->use_shm_for_dynamic_text = 0;
-  nap->text_mem = NULL;
+  nap->text_shm = NULL;
 
   nap->service_port = NULL;
   nap->service_address = NULL;
@@ -93,8 +95,10 @@ int NaClAppCtor(struct NaClApp  *nap) {
   nap->running = 0;
   nap->exit_status = -1;
 
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
   nap->code_seg_sel = 0;
   nap->data_seg_sel = 0;
+#endif
 
   nap->freeze_thread_ops = 0;
 
@@ -180,8 +184,8 @@ void NaClAppDtor(struct NaClApp  *nap) {
   free(nap->origin);
   nap->origin = (char *) NULL;
 
-  NaClDescSafeUnref(nap->text_mem);
-  nap->text_mem = NULL;
+  NaClDescSafeUnref(nap->text_shm);
+  nap->text_shm = NULL;
   NaClDescSafeUnref(nap->service_port);
   nap->service_port = NULL;
   NaClDescSafeUnref(nap->service_address);
@@ -216,44 +220,74 @@ size_t  NaClAlignPad(size_t val, size_t align) {
 }
 
 /*
- * unaligned little-endian load
+ * unaligned little-endian load.  precondition: nbytes should never be
+ * more than 8.
  */
-uint32_t  NaClLoad32(uintptr_t  addr) {
-  uint8_t *p = (uint8_t *) addr;
+static uint64_t NaClLoadMem(uintptr_t addr,
+                            size_t    user_nbytes) {
+  uint64_t      value = 0;
+  int           nbytes;
 
-  return p[0] | (p[1] << 8) | (p[2] << 16) | p[3] << 24;
+  CHECK(user_nbytes <= 8);
+
+  nbytes = user_nbytes;  /* rename register */
+
+  while (--nbytes >= 0) {  /* this is where we use signedness */
+    value = value << 8;
+    value |= ((uint8_t *) addr)[nbytes];
+  }
+  return value;
 }
+
+#define GENERIC_LOAD(bits) \
+  static uint ## bits ## _t NaClLoad ## bits(uintptr_t addr) { \
+    return (uint ## bits ## _t) NaClLoadMem(addr, sizeof(uint ## bits ## _t)); \
+  }
+
+GENERIC_LOAD(16)
+GENERIC_LOAD(32)
+GENERIC_LOAD(64)
+
+#undef GENERIC_LOAD
 
 /*
  * unaligned little-endian store
  */
-void  NaClStore32(uintptr_t addr,
-                  uint32_t  v) {
-  uint8_t *p = (uint8_t *) addr;
+static void NaClStoreMem(uintptr_t  addr,
+                         size_t     nbytes,
+                         uint64_t   value) {
+  size_t i;
 
-  p[0] = (uint8_t) (v >>  0);
-  p[1] = (uint8_t) (v >>  8);
-  p[2] = (uint8_t) (v >> 16);
-  p[3] = (uint8_t) (v >> 24);
+  CHECK(nbytes <= 8);
+
+  for (i = 0; i < nbytes; ++i) {
+    ((uint8_t *) addr)[i] = (uint8_t) value;
+    value = value >> 8;
+  }
 }
 
-uint16_t  NaClLoad16(uintptr_t  addr) {
-  uint8_t *p = (uint8_t *) addr;
+#define GENERIC_STORE(bits) \
+  static void NaClStore ## bits(uintptr_t addr, \
+                                uint ## bits ## _t v) { \
+    NaClStoreMem(addr, sizeof(uint ## bits ## _t), v); \
+  }
 
-  return p[0] | (p[1] << 8);
-}
+GENERIC_STORE(16)
+GENERIC_STORE(32)
+GENERIC_STORE(64)
 
-void  NaClStore16(uintptr_t addr,
-                  uint16_t  v) {
-  uint8_t *p = (uint8_t *) addr;
+#undef GENERIC_STORE
 
-  p[0] = (uint8_t) (v >> 0);
-  p[1] = (uint8_t) (v >> 8);
+struct NaClPatchInfo *NaClPatchInfoCtor(struct NaClPatchInfo *self) {
+  if (NULL != self) {
+    memset(self, 0, sizeof *self);
+  }
+  return self;
 }
 
 /*
  * This function is called by NaClLoadTrampoline and NaClLoadSpringboard to
- * patch a single memory location specified in NaClPathcInfo structure.
+ * patch a single memory location specified in NaClPatchInfo structure.
  */
 void  NaClApplyPatchToMemory(struct NaClPatchInfo  *patch) {
   size_t    i;
@@ -265,22 +299,40 @@ void  NaClApplyPatchToMemory(struct NaClPatchInfo  *patch) {
 
   reloc = patch->dst - patch->src;
 
-  for (i = 0; i < patch->num_rel32; ++i) {
-    offset = patch->rel32[i] - patch->src;
+  for (i = 0; i < patch->num_abs64; ++i) {
+    offset = patch->abs64[i].target - patch->src;
     target_addr = patch->dst + offset;
-    NaClStore32(target_addr, NaClLoad32(target_addr) - reloc);
+    NaClStore64(target_addr, patch->abs64[i].value);
   }
 
   for (i = 0; i < patch->num_abs32; ++i) {
     offset = patch->abs32[i].target - patch->src;
     target_addr = patch->dst + offset;
-    NaClStore32(target_addr, patch->abs32[i].value);
+    NaClStore32(target_addr, (uint32_t) patch->abs32[i].value);
   }
 
   for (i = 0; i < patch->num_abs16; ++i) {
     offset = patch->abs16[i].target - patch->src;
     target_addr = patch->dst + offset;
-    NaClStore16(target_addr, patch->abs16[i].value);
+    NaClStore16(target_addr, (uint16_t) patch->abs16[i].value);
+  }
+
+  for (i = 0; i < patch->num_rel64; ++i) {
+    offset = patch->rel64[i] - patch->src;
+    target_addr = patch->dst + offset;
+    NaClStore64(target_addr, NaClLoad64(target_addr) - reloc);
+  }
+
+  for (i = 0; i < patch->num_rel32; ++i) {
+    offset = patch->rel32[i] - patch->src;
+    target_addr = patch->dst + offset;
+    NaClStore32(target_addr, (uint32_t) NaClLoad32(target_addr) - reloc);
+  }
+
+  for (i = 0; i < patch->num_rel16; ++i) {
+    offset = patch->rel16[i] - patch->src;
+    target_addr = patch->dst + offset;
+    NaClStore16(target_addr, (uint16_t) NaClLoad16(target_addr) - reloc);
   }
 }
 
@@ -296,6 +348,11 @@ void  NaClLoadTrampoline(struct NaClApp *nap) {
   int         i;
   uintptr_t   addr;
 
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32 && __PIC__
+  if (!NaClMakePcrelThunk(nap)) {
+    NaClLog(LOG_FATAL, "NaClMakePcrelThunk failed!\n");
+  }
+#endif
   NaClFillTrampolineRegion(nap);
 
   /*
@@ -380,6 +437,8 @@ char const  *NaClErrorString(NaClErrorCode errcode) {
       return "Bad ELF header magic number";
     case LOAD_NOT_32_BIT:
       return "Not a 32-bit ELF file";
+    case LOAD_NOT_64_BIT:
+      return "Not a 64-bit ELF file";
     case LOAD_BAD_ABI:
       return "ELF file has unexpected OS ABI";
     case LOAD_NOT_EXEC:
@@ -1094,6 +1153,8 @@ static void NaClAppFreeWalker(void                  *state,
 void NaClAppFreeAllMemory(struct NaClApp  *nap) {
   struct NaClFreeState            state;
   struct NaClDescEffectorCleanup  eff;
+
+  NaClTeardownMprotectGuards(nap);
 
   state.nap = nap;
   state.effp = (struct NaClDescEffector *) &eff;

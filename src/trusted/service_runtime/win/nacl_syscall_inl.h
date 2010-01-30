@@ -11,9 +11,9 @@
 #ifndef NATIVE_CLIENT_SERVICE_RUNTIME_WIN_NACL_SYSCALL_INL_H_
 #define NATIVE_CLIENT_SERVICE_RUNTIME_WIN_NACL_SYSCALL_INL_H_
 
-static INLINE uint32_t NaClAppArg(struct NaClAppThread  *natp,
-                                  int                   wordnum) {
-  return natp->x_sp[wordnum];
+static INLINE uintptr_t NaClAppArg(struct NaClAppThread *natp,
+                                   int                  wordnum) {
+  return natp->syscall_args[wordnum];
 }
 
 /*
@@ -25,8 +25,8 @@ static INLINE uint32_t NaClAppArg(struct NaClAppThread  *natp,
  * NaCl app side will similarly follow the negative-values-are-errors
  * convention).
  */
-static INLINE int32_t NaClXlateSysRet(int32_t  rv) {
-  return (rv != -1) ? rv : -errno;
+static INLINE intptr_t NaClXlateSysRet(intptr_t rv) {
+  return (rv != -1) ? rv : -NaClXlateErrno(errno);
 }
 
 /*
@@ -35,10 +35,10 @@ static INLINE int32_t NaClXlateSysRet(int32_t  rv) {
  * object.
  */
 
-static INLINE int32_t NaClXlateSysRetAddr(struct NaClApp  *nap,
-                                          int32_t         rv) {
+static INLINE intptr_t NaClXlateSysRetAddr(struct NaClApp *nap,
+                                           intptr_t       rv) {
   /* if rv is a bad address, we abort */
-  return (rv != -1) ? NaClSysToUser(nap, rv) : -errno;
+  return (rv != -1) ? NaClSysToUser(nap, rv) : -NaClXlateErrno(errno);
 }
 
 #endif

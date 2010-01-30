@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
+ * Copyright 2008 The Native Client Authors.  All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
  * be found in the LICENSE file.
  */
@@ -16,8 +16,8 @@
 
 
 NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
-                                   uint32_t             new_prog_ctr) {
-  struct NaClApp  *nap;
+                                   nacl_reg_t           new_prog_ctr) {
+  struct NaClApp            *nap;
   struct NaClThreadContext  *context;
   /*
    * Save service runtime segment registers; fs/gs is used for TLS
@@ -37,13 +37,13 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
    * to %esp, then pushes the thread ID (LDT index) onto the stack as
    * argument to NaClSyscallCSegHook.  See nacl_syscall.S.
    */
-  NaClSetThreadCtxSp(&natp->sys, (NaClGetEsp() & ~0xf) + 4);
+  NaClSetThreadCtxSp(&natp->sys, (NaClGetStackPtr() & ~0xf) + 4);
 
   nap = natp->nap;
   context = &natp->user;
   context->spring_addr = NaClSysToUser(nap,
                                        nap->mem_start + nap->springboard_addr);
-  context->new_eip = new_prog_ctr;
+  context->new_prog_ctr = new_prog_ctr;
   context->sysret = 0; /* %eax not used to return */
 
   NaClSwitch(context);
@@ -54,15 +54,13 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
  * syscall return
  */
 NORETURN void NaClSwitchToApp(struct NaClAppThread *natp,
-                              uint32_t             new_prog_ctr) {
-  struct NaClApp  *nap;
+                              nacl_reg_t           new_prog_ctr) {
+  struct NaClApp            *nap;
   struct NaClThreadContext  *context;
 
   nap = natp->nap;
   context = &natp->user;
-  context->spring_addr = NaClSysToUser(nap,
-                                       nap->mem_start + nap->springboard_addr);
-  context->new_eip = new_prog_ctr;
+  context->new_prog_ctr = new_prog_ctr;
   context->sysret = natp->sysret;
 
   NaClSwitch(context);

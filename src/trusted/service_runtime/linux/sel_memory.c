@@ -22,6 +22,9 @@
 #include "native_client/src/include/nacl_platform.h"
 
 
+#define MSGWIDTH  "25"
+
+
 void NaCl_page_free(void     *p,
                     size_t   size) {
   if (p == 0 || size == 0)
@@ -43,7 +46,7 @@ int NaCl_page_alloc_intern(void   **p,
   void *addr;
   int map_flags = MAP_PRIVATE | MAP_ANONYMOUS;
 
-#ifdef NACL_LINUX
+#if NACL_LINUX
   /*
    * Indicate to the kernel that we just want these pages allocated, not
    * committed.  This is important for systems with relatively little RAM+swap.
@@ -59,7 +62,7 @@ int NaCl_page_alloc_intern(void   **p,
    * Currently this code is not guaranteed to work for non-x86-32 Mac OS X.
    */
 #else
-#error This file should be included only by Linux and (surprisingly) OS X.
+# error This file should be included only by Linux and (surprisingly) OS X.
 #endif
 
   if (NULL != *p) {
@@ -120,4 +123,81 @@ int NaCl_madvise(void           *start,
    * MADV_DONTNEED and MADV_NORMAL are needed
    */
   return ret == -1 ? -errno : ret;
+}
+
+
+void *NaClAllocatePow2AlignedMemory(size_t mem_sz, size_t log_alignment) {
+  uintptr_t pow2align;
+  size_t    request_sz;
+  void      *mem_ptr;
+  uintptr_t orig_addr;
+  uintptr_t rounded_addr;
+  size_t    extra;
+
+  pow2align = ((uintptr_t) 1) << log_alignment;
+
+  request_sz = mem_sz + pow2align;
+
+  NaClLog(LOG_INFO,
+          "%"MSGWIDTH"s %016zx\n",
+          " Ask:",
+          request_sz);
+
+  mem_ptr = mmap((void *) 0,
+           request_sz,
+           PROT_EXEC | PROT_READ | PROT_WRITE,
+           MAP_ANONYMOUS | MAP_PRIVATE | MAP_NORESERVE,
+           -1,
+           (off_t) 0);
+  if (MAP_FAILED == mem_ptr) {
+    return NULL;
+  }
+  orig_addr = (uintptr_t) mem_ptr;
+
+  NaClLog(LOG_INFO,
+          "%"MSGWIDTH"s %016"PRIxPTR"\n",
+          "orig memory at",
+          orig_addr);
+
+  rounded_addr = (orig_addr + (pow2align - 1)) & ~(pow2align - 1);
+  extra = rounded_addr - orig_addr;
+
+  if (0 != extra) {
+    NaClLog(LOG_INFO,
+            "%"MSGWIDTH"s %016"PRIxPTR", %016zx\n",
+            "Freeing front:",
+            orig_addr,
+            extra);
+    if (-1 == munmap((void *) orig_addr, extra)) {
+      perror("munmap (front)");
+      exit(2);
+    }
+  }
+
+  extra = pow2align - extra;
+  if (0 != extra) {
+    NaClLog(LOG_INFO,
+            "%"MSGWIDTH"s %016"PRIxPTR", %016zx\n",
+            "Freeing tail:",
+            rounded_addr + mem_sz,
+            extra);
+    if (-1 == munmap((void *) (rounded_addr + mem_sz),
+         extra)) {
+      perror("munmap (end)");
+      exit(3);
+    }
+  }
+  NaClLog(LOG_INFO,
+          "%"MSGWIDTH"s %016"PRIxPTR"\n",
+          "Aligned memory:",
+          rounded_addr);
+
+  /*
+   * we could also mmap again at rounded_addr w/o MAP_NORESERVE etc to
+   * ensure that we have the memory, but that's better done in another
+   * utility function.  the semantics here is no paging space
+   * reserved, as in Windows MEM_RESERVE without MEM_COMMIT.
+   */
+
+  return (void *) rounded_addr;
 }

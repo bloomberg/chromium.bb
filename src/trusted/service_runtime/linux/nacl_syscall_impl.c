@@ -509,6 +509,10 @@ int32_t NaClSysThread_Create(struct NaClAppThread *natp,
   return NaClCommonSysThread_Create(natp, prog_ctr, stack_ptr, tdb, tdb_size);
 }
 
+int32_t NaClSysTls_Get(struct NaClAppThread *natp) {
+  return NaClCommonSysTdbGet(natp);
+}
+
 int32_t NaClSysThread_Nice(struct NaClAppThread *natp, const int nice) {
   return NaClCommonSysThread_Nice(natp, nice);
 }

@@ -15,9 +15,18 @@
 
 uint32_t NaClGetSp(void);
 
+typedef uint32_t nacl_reg_t;
+
+#define PRIdNACL_REG PRId32
+#define PRIiNACL_REG PRIi32
+#define PRIoNACL_REG PRIo32
+#define PRIuNACL_REG PRIu32
+#define PRIxNACL_REG PRIx32
+#define PRIXNACL_REG PRIX32
+
 struct NaClThreadContext {
-  uint32_t  r4, r5, r6, r7, r8, r9, r10, fp, stack_ptr, prog_ctr;
-  /*         0   4   8   c  10  14   18  1c         20        24 */
+  nacl_reg_t  r4, r5, r6, r7, r8, r9, r10, fp, stack_ptr, prog_ctr;
+  /*           0   4   8   c  10  14   18  1c         20        24 */
   /*
    * spring_addr, sys_ret and new_eip are not a part of the thread's
    * register set, but are needed by NaClSwitch. By including them
@@ -32,4 +41,3 @@ struct NaClThreadContext {
 };
 
 #endif /* __NATIVE_CLIENT_SERVICE_RUNTIME_ARCH_ARM_SEL_RT_H___ */
-

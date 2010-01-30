@@ -23,8 +23,8 @@ NaClErrorCode NaClElfImageValidateElfHeader(struct NaClElfImage *image);
 
 NaClErrorCode NaClElfImageValidateProgramHeaders(
   struct NaClElfImage *image,
-  uint32_t            addr_bits,
-  uint32_t            *static_text_end,
+  uintptr_t           addr_bits,
+  uintptr_t           *static_text_end,
   uintptr_t           *rodata_start,
   uintptr_t           *rodata_end,
   uintptr_t           *data_start,

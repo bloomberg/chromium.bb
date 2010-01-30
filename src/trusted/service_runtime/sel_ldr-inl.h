@@ -100,7 +100,7 @@ static INLINE uintptr_t NaClUserToSys(struct NaClApp  *nap,
                                       uintptr_t       uaddr) {
   if (0 == uaddr || uaddr >= ((uintptr_t) 1U << nap->addr_bits)) {
     NaClLog(LOG_FATAL,
-            "NaClUserToSys: uaddr 0x%08"PRIxPTR", addr space %u bits\n",
+            "NaClUserToSys: uaddr 0x%08"PRIxPTR", addr space %"PRIdPTR" bits\n",
             uaddr, nap->addr_bits);
   }
   return uaddr + nap->mem_start;
@@ -112,11 +112,41 @@ static INLINE uintptr_t NaClSysToUser(struct NaClApp  *nap,
       sysaddr >= nap->mem_start + ((uintptr_t) 1U << nap->addr_bits)) {
     NaClLog(LOG_FATAL,
             "NaclSysToUser: sysaddr 0x%08"PRIxPTR", mem_start 0x%08"PRIxPTR","
-            " addr space %d bits\n",
+            " addr space %"PRIdPTR" bits\n",
             sysaddr, nap->mem_start, nap->addr_bits);
   }
   return sysaddr - nap->mem_start;
 }
+
+#if NACL_ARCH(NACL_BUID_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 64
+/*
+ * For x86-64 sandboxing, %rsp and %rbp are system addresses already.
+ */
+static INLINE uintptr_t NaClUserToSysStackAddr(struct NaClApp *nap,
+                                               uintptr_t      stackaddr) {
+  UNREFERENCED_PARAMETER(nap);
+  return stackaddr;
+}
+
+static INLINE uintptr_t NaClSysToUserStackAddr(struct NaClApp *nap,
+                                               uintptr_t      stackaddr) {
+  UNREFERENCED_PARAMETER(nap);
+  return stackaddr;
+}
+
+#else
+
+static INLINE uintptr_t NaClUserToSysStackAddr(struct NaClApp *nap,
+                                               uintptr_t      stackaddr) {
+  return NaClUserToSys(nap, stackaddr);
+}
+
+static INLINE uintptr_t NaClSysToUserStackAddr(struct NaClApp *nap,
+                                               uintptr_t      stackaddr) {
+  return NaClSysToUser(nap, stackaddr);
+}
+
+#endif
 
 static INLINE uintptr_t NaClEndOfText(struct NaClApp *nap) {
   return nap->static_text_end;

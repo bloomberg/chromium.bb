@@ -131,7 +131,7 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
 
   if (!nap->use_shm_for_dynamic_text) {
     NaClLog(4,
-            "NaClMakeTextShared:"
+            "NaClMakeDynamicTextShared:"
             "  rodata / data segments not allocation aligned\n");
     NaClLog(4,
             " not using shm for text\n");
@@ -145,11 +145,11 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
    */
   shm_vaddr_base = NaClEndOfText(nap);
   NaClLog(4,
-          "NaClMakeTextShared: shm_vaddr_base = %08"PRIxPTR"\n",
+          "NaClMakeDynamicTextShared: shm_vaddr_base = %08"PRIxPTR"\n",
           shm_vaddr_base);
   shm_vaddr_base = NaClRoundAllocPage(shm_vaddr_base);
   NaClLog(4,
-          "NaClMakeTextShared: shm_vaddr_base = %08"PRIxPTR"\n",
+          "NaClMakeDynamicTextShared: shm_vaddr_base = %08"PRIxPTR"\n",
           shm_vaddr_base);
   shm_upper_bound = nap->rodata_start;
   if (0 == shm_upper_bound) {
@@ -165,7 +165,7 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
 
   dynamic_text_size = shm_upper_bound - shm_vaddr_base;
   NaClLog(4,
-          "NaClMakeTextShared: dynamic_text_size = %"PRIxPTR"\n",
+          "NaClMakeDynamicTextShared: dynamic_text_size = %"PRIxPTR"\n",
           dynamic_text_size);
 
   if (0 == dynamic_text_size) {
@@ -181,19 +181,26 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
     /* cleanup invariant is if ptr is non-NULL, it's fully ctor'd */
     free(shm);
     shm = NULL;
-    NaClLog(4, "NaClMakeTextShared: shm creation for text failed\n");
+    NaClLog(4, "NaClMakeDynamicTextShared: shm creation for text failed\n");
     retval = LOAD_NO_MEMORY;
     goto cleanup;
   }
   if (!NaClDescEffectorShmCtor(&shm_effector)) {
-    NaClLog(4, "NaClMakeTextShared: shm effector initialization failed\n");
+    NaClLog(4,
+            "NaClMakeDynamicTextShared: shm effector"
+            " initialization failed\n");
     retval = LOAD_INTERNAL;
     goto cleanup;
   }
   shm_effector_initialized = 1;
 
   /*
-   * Map shm in place of text.
+   * Map shm in place of text.  We currently do this eagerly, which
+   * can result in excess memory/swap traffic.
+   *
+   * TODO(bsy): consider using NX and doing this lazily, or mapping a
+   * canonical HLT-filled 64K shm repeatedly, and only remapping with
+   * a "real" shm text as needed.
    */
   for (shm_offset = 0;
        shm_offset < dynamic_text_size;
@@ -202,13 +209,33 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
     uintptr_t text_sysaddr = NaClUserToSys(nap, text_vaddr);
 
     NaClLog(4,
-            "NaClMakeTextShared: Map(,,0x%"PRIxPTR",size = 0x%x,"
+            "NaClMakeDynamicTextShared: Map(,,0x%"PRIxPTR",size = 0x%x,"
             " prot=0x%x, flags=0x%x, offset=0x%"PRIxPTR"\n",
             text_sysaddr,
             NACL_MAP_PAGESIZE,
             NACL_ABI_PROT_READ | NACL_ABI_PROT_EXEC,
             NACL_ABI_MAP_SHARED,
             shm_offset);
+    mmap_ret = (*shm->base.vtbl->Map)((struct NaClDesc *) shm,
+                                      (struct NaClDescEffector *) &shm_effector,
+                                      (void *) text_sysaddr,
+                                      NACL_MAP_PAGESIZE,
+                                      NACL_ABI_PROT_WRITE,
+                                      NACL_ABI_MAP_SHARED,
+                                      shm_offset);
+    if (text_sysaddr != mmap_ret) {
+      NaClLog(LOG_FATAL,
+              "Could not map in shm for dynamic text region, HLT filling.\n");
+    }
+    NaClFillMemoryRegionWithHalt((void *) text_sysaddr, NACL_MAP_PAGESIZE);
+    if (-1 == (*shm->base.vtbl->UnmapUnsafe)((struct NaClDesc *) shm,
+                                             ((struct NaClDescEffector *)
+                                              &shm_effector),
+                                             (void *) text_sysaddr,
+                                             NACL_MAP_PAGESIZE)) {
+      NaClLog(LOG_FATAL,
+              "Could not unmap shm for dynamic text region, post HLT fill.\n");
+    }
     mmap_ret = (*shm->base.vtbl->Map)((struct NaClDesc *) shm,
                                       (struct NaClDescEffector *) &shm_effector,
                                       (void *) text_sysaddr,

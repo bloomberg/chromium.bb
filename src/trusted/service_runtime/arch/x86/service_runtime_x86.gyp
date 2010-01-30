@@ -33,141 +33,14 @@
   ],
   'targets': [
     {
-      'target_name': 'tramp_gen',
-      'type': 'executable',
-      'conditions': [
-        ['OS=="linux"', {
-          'asflags!': [
-            '-m64',
-          ],
-          'cflags!': [
-            '-m64',
-          ],
-          'ldflags!': [
-            '-m64',
-          ],
-          'asflags': [
-            '-m32',
-          ],
-          'cflags': [
-            '-m32',
-          ],
-          'ldflags': [
-            '-m32',
-          ],
-        }],
-      ],
-      'sources': [
-        '../x86_32/tramp.S',
-        '../x86_32/tramp_gen.c',
-      ],
-    },
-    {
-      'target_name': 'springboard_gen',
-      'type': 'executable',
-      'conditions': [
-        ['OS=="linux"', {
-          'asflags!': [
-            '-m64',
-          ],
-          'cflags!': [
-            '-m64',
-          ],
-          'ldflags!': [
-            '-m64',
-          ],
-          'asflags': [
-            '-m32',
-          ],
-          'cflags': [
-            '-m32',
-          ],
-          'ldflags': [
-            '-m32',
-          ],
-        }],
-      ],
-
-      'sources': [
-        '../x86_32/springboard.S',
-        '../x86_32/springboard_gen.c',
-      ],
-    },
-    {
       'target_name': 'service_runtime_x86',
       'type': 'static_library',
       'sources': [
-        'nacl_app.c',
         'nacl_ldt_x86.c',
-        'nacl_switch_to_app.c',
-        'sel_rt.c',
-        'nacl_tls.c',
-        'sel_ldr_x86.c',
-        'sel_addrspace_x86.c',
         'sel_validate_image.c',
       ],
       'include_dirs': [
         '<(INTERMEDIATE_DIR)',
-      ],
-      'conditions': [
-        ['target_arch=="ia32"', {
-          'dependencies': [
-            'tramp_gen',
-            'springboard_gen',
-          ],
-          'actions': [
-            {
-              'action_name': 'header_gen',
-              'conditions': [
-                ['OS=="win"', {
-                  'msvs_cygwin_shell': 0,
-                  'msvs_quote_cmd': 0,
-                }],
-                ['OS=="mac" or OS=="linux"', {
-                  # TODO(gregoryd): replace with a python script that
-                  # does not use redirection.
-                  'action':
-                    ['bash', 'output-wrapper.sh', '<@(_inputs)', '<@(_outputs)'],
-                }, {
-                  'action':
-                    ['<@(_inputs)', '>', '<@(_outputs)'],
-                }],
-              ],
-              'inputs': [
-                '<(PRODUCT_DIR)/tramp_gen',
-              ],
-              'outputs': [
-                '<(INTERMEDIATE_DIR)/gen/native_client/src/trusted/service_runtime/arch/x86/tramp_data.h',
-              ],
-              'process_outputs_as_sources': 1,
-              'message': 'Creating tramp_data.h',
-            },
-            {
-              'action_name': 'sheader_gen',
-              'conditions': [
-                ['OS=="win"', {
-                  'msvs_cygwin_shell': 0,
-                  'msvs_quote_cmd': 0,
-                }],
-                ['OS=="mac" or OS=="linux"', {
-                  'action':
-                    ['bash', 'output-wrapper.sh', '<@(_inputs)', '<@(_outputs)'],
-                }, {
-                  'action':
-                    ['<@(_inputs)', '>', '<@(_outputs)'],
-                }],
-              ],
-              'inputs': [
-                '<(PRODUCT_DIR)/springboard_gen',
-              ],
-              'outputs': [
-                '<(INTERMEDIATE_DIR)/gen/native_client/src/trusted/service_runtime/arch/x86/springboard_data.h',
-              ],
-              'process_outputs_as_sources': 1,
-              'message': 'Creating springboard_data.h',
-            },
-          ],
-        }],
       ],
     },
   ],

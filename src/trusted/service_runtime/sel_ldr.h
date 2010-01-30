@@ -74,9 +74,9 @@ struct NaClApp {
   /*
    * public, user settable.
    */
-  uint32_t                  addr_bits;
-  uint32_t                  max_data_alloc;
-  uint32_t                  stack_size;
+  uintptr_t                 addr_bits;
+  uintptr_t                 max_data_alloc;
+  uintptr_t                 stack_size;
   /*
    * max_data_alloc controls how much total data memory can be
    * allocated to the NaCl process; this is initialized data,
@@ -97,8 +97,12 @@ struct NaClApp {
   /* read-only */
   uintptr_t                 mem_start;
 
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32 && __PIC__
+  uintptr_t                 pcrel_thunk;
+#endif
+
   /* only used for ET_EXEC:  for CS restriction */
-  uint32_t                  static_text_end;  /* relative to mem_start */
+  uintptr_t                 static_text_end;  /* relative to mem_start */
   /* ro after app starts. memsz from phdr */
 
   uintptr_t                 dynamic_text_start;
@@ -119,7 +123,7 @@ struct NaClApp {
   uintptr_t                 data_end;
   /* see break_addr below */
 
-  uint32_t                  entry_pt;
+  uintptr_t                 entry_pt;
 
   /*
    * bundle_size is the bundle alignment boundary for validation (16
@@ -171,7 +175,7 @@ struct NaClApp {
    * may reject nexes that are incompatible w/ dynamic-text in the near future
    */
   int                       use_shm_for_dynamic_text;
-  struct NaClDesc           *text_mem;
+  struct NaClDesc           *text_shm;
 
   int                       running;
   int                       exit_status;
@@ -184,8 +188,10 @@ struct NaClApp {
   /* all threads enqueue the "special" syscalls to the work queue */
   struct NaClSyncQueue      work_queue;
 
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32
   uint16_t                  code_seg_sel;
   uint16_t                  data_seg_sel;
+#endif
 
   uintptr_t                 break_addr;   /* user addr */
   /* data_end <= break_addr is an invariant */
@@ -255,11 +261,6 @@ size_t  NaClAlignPad(size_t val,
 
 void  NaClAppPrintDetails(struct NaClApp  *nap,
                           struct Gio      *gp);
-
-uint32_t  NaClLoad32(uintptr_t    addr);
-
-void  NaClStore32(uintptr_t   addr,
-                  uint32_t    v);
 
 NaClErrorCode NaClLoadImage(struct Gio            *gp,
                             struct NaClApp        *nap) NACL_WUR;
@@ -399,9 +400,17 @@ void NaClDumpServiceAddressTo(struct NaClApp  *nap,
 
 void NaClWaitForModuleStartStatusCall(struct NaClApp *nap);
 
+void NaClFillMemoryRegionWithHalt(void *start, size_t size);
+
 void NaClFillTrampolineRegion(struct NaClApp *nap);
 
 void NaClFillEndOfTextRegion(struct NaClApp *nap);
+
+#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32 && __PIC__
+
+int NaClMakePcrelThunk(struct NaClApp *nap);
+
+#endif
 
 void NaClPatchOneTrampoline(struct NaClApp *nap,
                             uintptr_t target_addr);
@@ -413,29 +422,43 @@ void NaClPatchOneTrampoline(struct NaClApp *nap,
  * template.
  */
 struct NaClPatch {
-  uint32_t            target;
-  uint32_t            value;
+  uintptr_t           target;
+  uint64_t            value;
 };
 
 struct NaClPatchInfo {
   uintptr_t           dst;
   uintptr_t           src;
   size_t              nbytes;
-  uintptr_t           *rel32;
-  size_t              num_rel32;
-  struct NaClPatch    *abs32;
-  size_t              num_abs32;
+
   struct NaClPatch    *abs16;
   size_t              num_abs16;
+
+  struct NaClPatch    *abs32;
+  size_t              num_abs32;
+
+  struct NaClPatch    *abs64;
+  size_t              num_abs64;
+
+  uintptr_t           *rel16;
+  size_t              num_rel16;
+
+  uintptr_t           *rel32;
+  size_t              num_rel32;
+
+  uintptr_t           *rel64;
+  size_t              num_rel64;
 };
+
+struct NaClPatchInfo *NaClPatchInfoCtor(struct NaClPatchInfo *self);
 
 void NaClApplyPatchToMemory(struct NaClPatchInfo *patch);
 
 int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           struct NaClApp            *nap,
-                          uintptr_t                 prog_ctr,
-                          uintptr_t                 stack_ptr,
-                          uint32_t                  tls_idx);
+                          nacl_reg_t                prog_ctr,
+                          nacl_reg_t                stack_ptr,
+                          nacl_reg_t                tls_info);
 
 void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
 

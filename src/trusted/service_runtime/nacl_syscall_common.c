@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
+ * Copyright 2008 The Native Client Authors.  All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
  * be found in the LICENSE file.
  */
@@ -1173,7 +1173,7 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
   /*
    * Validate [usraddr, endaddr) is okay.
    */
-  if (usraddr >= (1U << natp->nap->addr_bits)) {
+  if (usraddr >= ((uintptr_t) 1 << natp->nap->addr_bits)) {
     NaClLog(2,
             ("NaClSysMmap: start address (0x%08"PRIxPTR") outside address"
              " space\n"),
@@ -1198,7 +1198,7 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
    * and it can equal the address space limit.  (of course, normally
    * the main thread's stack is there.)
    */
-  if (endaddr > (1U << natp->nap->addr_bits)) {
+  if (endaddr > ((uintptr_t) 1 << natp->nap->addr_bits)) {
     NaClLog(2,
             ("NaClSysMmap: end address (0x%08"PRIxPTR") is beyond"
              " the end of the address space\n"),
@@ -1908,15 +1908,18 @@ int32_t NaClCommonSysTls_Init(struct NaClAppThread  *natp,
    * nacl module address to service runtime address - a nop on ARM
    */
   sys_tdb = NaClUserToSysAddrRange(natp->nap, (uintptr_t) tdb, tdb_size);
+  NaClLog(4, "NaClCommonSysTls_Init: tdb 0x%p, sys_tdb 0x%"PRIxPTR"\n",
+          tdb, sys_tdb);
   if (kNaClBadAddress == sys_tdb) {
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
   }
 
-  if (0 == NaClTlsChange(natp, (void *)sys_tdb, tdb_size)) {
+  if (0 == NaClTlsChange(natp, (void *) sys_tdb, tdb_size)) {
     retval = -NACL_ABI_EINVAL;
     goto cleanup;
   }
+  natp->sys_tdb = sys_tdb;
   retval = 0;
 cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
@@ -1970,6 +1973,13 @@ int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
 cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
   return retval;
+}
+
+int32_t NaClCommonSysTdbGet(struct NaClAppThread *natp) {
+  uint32_t user_tdb;
+
+  user_tdb = (int32_t) NaClSysToUser(natp->nap, natp->sys_tdb);
+  return user_tdb;
 }
 
 int NaClCommonSysThread_Nice(struct NaClAppThread *natp,
@@ -2274,7 +2284,7 @@ cleanup:
 }
 
 int32_t NaClCommonSysMutex_Lock(struct NaClAppThread  *natp,
-                                   int32_t            mutex_handle) {
+                                int32_t               mutex_handle) {
   int32_t               retval = -NACL_ABI_EINVAL;
   struct NaClDesc       *desc;
 
@@ -2569,4 +2579,19 @@ int32_t NaClCommonSysSem_Get_Value(struct NaClAppThread *natp,
 cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
   return retval;
+}
+
+/*
+ * TODO(bsy): finish implementing this.
+ */
+int32_t NaClCommonSysInsertCode(struct NaClAppThread  *natp,
+                                void                  *code_target,
+                                void                  *code_buffer,
+                                size_t                code_size) {
+  UNREFERENCED_PARAMETER(natp);
+  UNREFERENCED_PARAMETER(code_target);
+  UNREFERENCED_PARAMETER(code_buffer);
+  UNREFERENCED_PARAMETER(code_size);
+
+  return -NACL_ABI_ENOSYS;
 }

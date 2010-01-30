@@ -1,5 +1,5 @@
 /*
- * Copyright 2008 The Native Client Authors. All rights reserved.
+ * Copyright 2008 The Native Client Authors.  All rights reserved.
  * Use of this source code is governed by a BSD-style license that can
  * be found in the LICENSE file.
  */
@@ -7,7 +7,7 @@
 /*
  * NaCl run time.
  */
-/* TODO: Is this needed */
+
 #include <fcntl.h>
 
 #include "native_client/src/shared/platform/nacl_check.h"
@@ -15,6 +15,7 @@
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 
 #include "native_client/src/trusted/service_runtime/arch/x86/nacl_ldt_x86.h"
+#include "native_client/src/trusted/service_runtime/nacl_app.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
@@ -28,7 +29,8 @@ static uint16_t NaClAllocateSegmentForCodeRegion(struct NaClApp *nap) {
          code_bytes));
 
   if (code_pages < 1) {
-    NaClLog(LOG_FATAL, "NaClAppPrepareToLaunch: fewer than one code pages?\n");
+    NaClLog(LOG_FATAL,
+            "NaClAllocateSegmentForCodeRegion: fewer than one code pages?\n");
   }
   NaClLog(2,
           "NaClLdtAllocatePageSelector(code, 1, 0x%08"PRIxPTR", 0x%"PRIxS"\n",
@@ -58,13 +60,15 @@ static uint16_t NaClAllocateSegmentForCodeRegion(struct NaClApp *nap) {
  */
 static uint16_t NaClAllocateSegmentForDataRegion(struct NaClApp *nap) {
   uintptr_t           data_start = nap->mem_start;
-  size_t              data_pages = 1 << (nap->addr_bits - NACL_PAGESHIFT);
+  size_t              data_pages = ((size_t) 1U <<
+                                    (nap->addr_bits - NACL_PAGESHIFT));
 
   CHECK(nap->addr_bits > NACL_PAGESHIFT);
 
   if (data_pages < 1) {
     NaClLog(LOG_FATAL,
-            "NaClAppPrepareToLaunch: address space is fewer than one page?\n");
+            "NaClAllocateSegmentForDataRegion: address space"
+            " is fewer than one page?\n");
   }
   NaClLog(2,
           "NaClLdtAllocatePageSelector(data, 1, 0x%08"PRIxPTR", 0x%"PRIxS"\n",
