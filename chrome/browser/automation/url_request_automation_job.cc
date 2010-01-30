@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "net/base/cookie_monster.h"
+#include "net/base/cookie_policy.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
 #include "net/http/http_util.h"
@@ -312,7 +313,7 @@ void URLRequestAutomationJob::OnRequestStarted(int tab, int id,
     }
 
     if (response_cookies.size()) {
-      if (ctx && ctx->cookie_store() &&
+      if (ctx && ctx->cookie_store() && ctx->cookie_policy() &&
           ctx->cookie_policy()->CanSetCookie(
               url_for_cookies, request_->first_party_for_cookies())) {
         net::CookieOptions options;
@@ -324,7 +325,8 @@ void URLRequestAutomationJob::OnRequestStarted(int tab, int id,
     }
   }
 
-  if (ctx && ctx->cookie_store() && !response.persistent_cookies.empty() &&
+  if (ctx && ctx->cookie_store() && ctx->cookie_policy() &&
+      !response.persistent_cookies.empty() &&
       ctx->cookie_policy()->CanSetCookie(
           url_for_cookies, request_->first_party_for_cookies())) {
     StringTokenizer cookie_parser(response.persistent_cookies, ";");

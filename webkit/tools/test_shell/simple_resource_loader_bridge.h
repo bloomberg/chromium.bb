@@ -8,7 +8,7 @@
 #include <string>
 
 class GURL;
-class URLRequestContext;
+class TestShellRequestContext;
 
 class SimpleResourceLoaderBridge {
  public:
@@ -22,7 +22,7 @@ class SimpleResourceLoaderBridge {
   // NOTE: If this function is not called, then a default request context will
   // be initialized lazily.
   //
-  static void Init(URLRequestContext* context);
+  static void Init(TestShellRequestContext* context);
 
   // Call this function to shutdown the simple resource loader bridge.
   static void Shutdown();

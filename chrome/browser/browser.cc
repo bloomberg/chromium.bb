@@ -75,9 +75,9 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/cookie_monster.h"
-#include "net/base/cookie_policy.h"
 #include "net/base/net_util.h"
 #include "net/base/registry_controlled_domain.h"
+#include "net/base/static_cookie_policy.h"
 #include "net/url_request/url_request_context.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -1362,7 +1362,7 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
                             ASCIIToWide(chrome::kChromeUINewTabURL));
   prefs->RegisterBooleanPref(prefs::kHomePageIsNewTabPage, true);
   prefs->RegisterIntegerPref(prefs::kCookieBehavior,
-                             net::CookiePolicy::ALLOW_ALL_COOKIES);
+                             net::StaticCookiePolicy::ALLOW_ALL_COOKIES);
   prefs->RegisterBooleanPref(prefs::kShowHomeButton, false);
 #if defined(OS_MACOSX)
   // This really belongs in platform code, but there's no good place to

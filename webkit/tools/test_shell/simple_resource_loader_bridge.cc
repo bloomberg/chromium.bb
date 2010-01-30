@@ -38,11 +38,11 @@
 #include "base/timer.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
-#include "net/base/cookie_policy.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
+#include "net/base/static_cookie_policy.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_service.h"
@@ -54,7 +54,7 @@
 #include "webkit/tools/test_shell/test_shell_request_context.h"
 
 using webkit_glue::ResourceLoaderBridge;
-using net::CookiePolicy;
+using net::StaticCookiePolicy;
 using net::HttpResponseHeaders;
 
 namespace {
@@ -654,7 +654,7 @@ bool FindProxyForUrl(const GURL& url, std::string* proxy_list) {
 //-----------------------------------------------------------------------------
 
 // static
-void SimpleResourceLoaderBridge::Init(URLRequestContext* context) {
+void SimpleResourceLoaderBridge::Init(TestShellRequestContext* context) {
   // Make sure to stop any existing IO thread since it may be using the
   // current request context.
   Shutdown();
@@ -728,7 +728,9 @@ bool SimpleResourceLoaderBridge::EnsureIOThread() {
 
 // static
 void SimpleResourceLoaderBridge::SetAcceptAllCookies(bool accept_all_cookies) {
-  CookiePolicy::Type policy_type = accept_all_cookies ?
-      CookiePolicy::ALLOW_ALL_COOKIES : CookiePolicy::BLOCK_THIRD_PARTY_COOKIES;
-  request_context->cookie_policy()->set_type(policy_type);
+  StaticCookiePolicy::Type policy_type = accept_all_cookies ?
+      StaticCookiePolicy::ALLOW_ALL_COOKIES :
+      StaticCookiePolicy::BLOCK_THIRD_PARTY_COOKIES;
+  static_cast<StaticCookiePolicy*>(request_context->cookie_policy())->
+      set_type(policy_type);
 }

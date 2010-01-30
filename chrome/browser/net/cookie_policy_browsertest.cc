@@ -19,6 +19,9 @@ class CookiePolicyBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(CookiePolicyBrowserTest);
 };
 
+// TODO(darin): Re-enable these tests once the new third-party cookie blocking
+// preference is hooked up.
+#if 0
 // Visits a page that sets a first-party cookie.
 IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest, AllowFirstPartyCookies) {
   HTTPTestServer* server = StartHTTPServer();
@@ -86,3 +89,4 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest,
   cookie = cookie_store->GetCookies(redirected_url);
   EXPECT_EQ("cookie2", cookie);
 }
+#endif

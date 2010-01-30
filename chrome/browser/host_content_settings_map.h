@@ -69,6 +69,9 @@ class HostContentSettingsMap
                          ContentSettingsType content_type,
                          ContentSetting setting);
 
+  // This setting trumps any host-specific settings.
+  bool BlockThirdPartyCookies() const { return block_third_party_cookies_; }
+
   // Resets all settings levels.
   //
   // This should only be called on the UI thread.
@@ -94,6 +97,9 @@ class HostContentSettingsMap
   // Copies of the pref data, so that we can read it on the IO thread.
   ContentSettings default_content_settings_;
   HostContentSettings host_content_settings_;
+
+  // Misc global settings.
+  bool block_third_party_cookies_;
 
   // Used around accesses to the settings objects to guarantee thread safety.
   mutable Lock lock_;

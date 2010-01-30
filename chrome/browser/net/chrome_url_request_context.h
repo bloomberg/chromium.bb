@@ -7,6 +7,7 @@
 
 #include "base/file_path.h"
 #include "base/linked_ptr.h"
+#include "net/base/cookie_policy.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
@@ -33,7 +34,8 @@ class IOThread;
 //
 // All methods of this class must be called from the IO thread,
 // including the constructor and destructor.
-class ChromeURLRequestContext : public URLRequestContext {
+class ChromeURLRequestContext : public URLRequestContext,
+                                public net::CookiePolicy {
  public:
   // Maintains some extension-related state we need on the IO thread.
   // TODO(aa): It would be cool if the Extension objects in ExtensionsService
@@ -111,12 +113,17 @@ class ChromeURLRequestContext : public URLRequestContext {
 
   // Callback for when new extensions are loaded. Takes ownership of
   // |extension_info|.
-  void OnNewExtensions(
-      const std::string& id,
-      ChromeURLRequestContext::ExtensionInfo* extension_info);
+  void OnNewExtensions(const std::string& id, ExtensionInfo* extension_info);
 
   // Callback for when an extension is unloaded.
   void OnUnloadedExtension(const std::string& id);
+
+  // False only if cookies are globally blocked without exception.
+  bool AreCookiesEnabled() const;
+
+  // CookiePolicy methods:
+  virtual bool CanGetCookies(const GURL& url, const GURL& first_party);
+  virtual bool CanSetCookie(const GURL& url, const GURL& first_party);
 
  protected:
   // Copies the dependencies from |other| into |this|. If you use this
@@ -136,9 +143,6 @@ class ChromeURLRequestContext : public URLRequestContext {
   }
   void set_referrer_charset(const std::string& referrer_charset) {
     referrer_charset_ = referrer_charset;
-  }
-  void set_cookie_policy_type(net::CookiePolicy::Type type) {
-    cookie_policy_.set_type(type);
   }
   void set_extension_info(
       const ChromeURLRequestContext::ExtensionInfoMap& info) {
@@ -191,9 +195,6 @@ class ChromeURLRequestContext : public URLRequestContext {
 
   // Callback for when the accept language changes.
   void OnAcceptLanguageChange(const std::string& accept_language);
-
-  // Callback for when the cookie policy changes.
-  void OnCookiePolicyChange(net::CookiePolicy::Type type);
 
   // Callback for when the default charset changes.
   void OnDefaultCharsetChange(const std::string& default_charset);
@@ -316,7 +317,6 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
   // These methods simply forward to the corresponding method on
   // ChromeURLRequestContext.
   void OnAcceptLanguageChange(const std::string& accept_language);
-  void OnCookiePolicyChange(net::CookiePolicy::Type type);
   void OnDefaultCharsetChange(const std::string& default_charset);
 
   // Saves the cookie store to |result| and signals |completion|.
@@ -370,7 +370,6 @@ class ChromeURLRequestContextFactory {
   std::string accept_language_;
   std::string accept_charset_;
   std::string referrer_charset_;
-  net::CookiePolicy::Type cookie_policy_type_;
   ChromeURLRequestContext::ExtensionInfoMap extension_info_;
   // TODO(aa): I think this can go away now as we no longer support standalone
   // user scripts.

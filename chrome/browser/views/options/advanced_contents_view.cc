@@ -44,7 +44,6 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/ssl_config_service_win.h"
-#include "net/base/cookie_policy.h"
 #include "skia/ext/skia_utils_win.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/background.h"
@@ -441,44 +440,6 @@ void AdvancedSection::InitControlLayout() {
 ////////////////////////////////////////////////////////////////////////////////
 // PrivacySection
 
-class CookieBehaviorComboModel : public ComboboxModel {
- public:
-  CookieBehaviorComboModel() {}
-
-  // Return the number of items in the combo box.
-  virtual int GetItemCount() {
-    return 3;
-  }
-
-  virtual std::wstring GetItemAt(int index) {
-    const int kStringIDs[] = {
-      IDS_OPTIONS_COOKIES_ACCEPT_ALL_COOKIES,
-      IDS_OPTIONS_COOKIES_RESTRICT_THIRD_PARTY_COOKIES,
-      IDS_OPTIONS_COOKIES_BLOCK_ALL_COOKIES
-    };
-    if (index >= 0 && index < arraysize(kStringIDs))
-      return l10n_util::GetString(kStringIDs[index]);
-
-    NOTREACHED();
-    return L"";
-  }
-
-  static int CookiePolicyToIndex(net::CookiePolicy::Type policy) {
-    return policy;
-  }
-
-  static net::CookiePolicy::Type IndexToCookiePolicy(int index) {
-    if (net::CookiePolicy::ValidType(index))
-      return net::CookiePolicy::FromInt(index);
-
-    NOTREACHED();
-    return net::CookiePolicy::ALLOW_ALL_COOKIES;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(CookieBehaviorComboModel);
-};
-
 class PrivacySection : public AdvancedSection,
                        public views::ButtonListener,
                        public views::LinkController {
@@ -511,9 +472,6 @@ class PrivacySection : public AdvancedSection,
   views::Checkbox* enable_safe_browsing_checkbox_;
   views::Checkbox* reporting_enabled_checkbox_;
   views::Link* learn_more_link_;
-
-  // Dummy for now. Used to populate cookies models.
-  scoped_ptr<CookieBehaviorComboModel> allow_cookies_model_;
 
   // Preferences for this section:
   BooleanPrefMember alternate_error_pages_;

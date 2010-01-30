@@ -20,7 +20,8 @@ const wchar_t* HostContentSettingsMap::kTypeNames[] = {
 };
 
 HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
-    : profile_(profile) {
+    : profile_(profile),
+      block_third_party_cookies_(false) {
   DCHECK_EQ(arraysize(kTypeNames),
             static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
 
@@ -48,12 +49,16 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
       host_content_settings_[WideToUTF8(wide_host)] = settings;
     }
   }
+
+  // TODO(darin): init third-party cookie pref
 }
 
 // static
 void HostContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kDefaultContentSettings);
   prefs->RegisterDictionaryPref(prefs::kPerHostContentSettings);
+
+  // TODO(darin): register third-party cookie pref
 }
 
 ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
@@ -68,14 +73,26 @@ ContentSetting HostContentSettingsMap::GetContentSetting(
   AutoLock auto_lock(lock_);
   HostContentSettings::const_iterator i(host_content_settings_.find(host));
   return (i == host_content_settings_.end()) ?
-      CONTENT_SETTING_DEFAULT : i->second.settings[content_type];
+      default_content_settings_.settings[content_type] :
+      i->second.settings[content_type];
 }
 
 ContentSettings HostContentSettingsMap::GetContentSettings(
     const std::string& host) const {
   AutoLock auto_lock(lock_);
   HostContentSettings::const_iterator i(host_content_settings_.find(host));
-  return (i == host_content_settings_.end()) ? ContentSettings() : i->second;
+  if (i == host_content_settings_.end())
+    return default_content_settings_;
+
+  ContentSettings output;
+  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
+    if (i->second.settings[i] == CONTENT_SETTING_DEFAULT) {
+      output.settings[i] = default_content_settings_.settings[i];
+    } else {
+      output.settings[i] = i->second.settings[i];
+    }
+  }
+  return output;
 }
 
 void HostContentSettingsMap::GetHostContentSettingsForOneType(
@@ -163,6 +180,8 @@ void HostContentSettingsMap::ResetToDefaults() {
 
   profile_->GetPrefs()->ClearPref(prefs::kDefaultContentSettings);
   profile_->GetPrefs()->ClearPref(prefs::kPerHostContentSettings);
+
+  // TODO(darin): clear third-party cookie pref
 }
 
 HostContentSettingsMap::~HostContentSettingsMap() {

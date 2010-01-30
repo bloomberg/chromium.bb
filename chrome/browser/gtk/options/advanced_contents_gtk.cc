@@ -36,7 +36,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "net/base/cookie_policy.h"
 
 namespace {
 
@@ -532,7 +531,6 @@ class PrivacySection : public OptionsPageBase {
   BooleanPrefMember dns_prefetch_enabled_;
   BooleanPrefMember safe_browsing_;
   BooleanPrefMember enable_metrics_recording_;
-  IntegerPrefMember cookie_behavior_;
 
   // Flag to ignore gtk callbacks while we are loading prefs, to avoid
   // then turning around and saving them again.
@@ -666,7 +664,6 @@ PrivacySection::PrivacySection(Profile* profile)
   safe_browsing_.Init(prefs::kSafeBrowsingEnabled, profile->GetPrefs(), this);
   enable_metrics_recording_.Init(prefs::kMetricsReportingEnabled,
                                  g_browser_process->local_state(), this);
-  cookie_behavior_.Init(prefs::kCookieBehavior, profile->GetPrefs(), this);
 
   NotifyPrefChanged(NULL);
 }
@@ -768,23 +765,7 @@ void PrivacySection::OnLoggingChange(GtkWidget* widget,
 // static
 void PrivacySection::OnCookieBehaviorChanged(GtkComboBox* combo_box,
                                              PrivacySection* privacy_section) {
-  if (privacy_section->pref_changing_)
-    return;
-  net::CookiePolicy::Type cookie_policy =
-      net::CookiePolicy::FromInt(gtk_combo_box_get_active(combo_box));
-  const char* kUserMetrics[] = {
-      "Options_AllowAllCookies",
-      "Options_BlockThirdPartyCookies",
-      "Options_BlockAllCookies"
-  };
-  if (cookie_policy < 0 ||
-      static_cast<size_t>(cookie_policy) >= arraysize(kUserMetrics)) {
-    NOTREACHED();
-    return;
-  }
-  privacy_section->UserMetricsRecordAction(
-      kUserMetrics[cookie_policy], privacy_section->profile()->GetPrefs());
-  privacy_section->cookie_behavior_.SetValue(cookie_policy);
+  // TODO(darin): Remove everything else related to this setter.
 }
 
 // static
@@ -825,11 +806,6 @@ void PrivacySection::NotifyPrefChanged(const std::wstring* pref_name) {
     ResolveMetricsReportingEnabled();
   }
 #endif
-  if (!pref_name || *pref_name == prefs::kCookieBehavior) {
-    gtk_combo_box_set_active(
-        GTK_COMBO_BOX(cookie_behavior_combobox_),
-        net::CookiePolicy::FromInt(cookie_behavior_.GetValue()));
-  }
   pref_changing_ = false;
 }
 
