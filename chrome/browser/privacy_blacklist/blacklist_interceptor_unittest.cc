@@ -56,7 +56,7 @@ TEST_F(BlacklistInterceptorTest, Basic) {
 TEST_F(BlacklistInterceptorTest, Intercepted) {
   EXPECT_FALSE(InterceptedTestRequest(kDataUrl, NULL));
 
-  scoped_refptr<Blacklist> blacklist;
+  scoped_refptr<Blacklist> blacklist = new Blacklist();
   Blacklist::Provider* provider = new Blacklist::Provider();
   blacklist->AddProvider(provider);
   Blacklist::Entry* entry =

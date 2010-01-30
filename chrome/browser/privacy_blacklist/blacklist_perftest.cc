@@ -109,6 +109,9 @@ static std::string GetURL(const std::string& pattern, bool invert) {
 }
 
 class BlacklistPerfTest : public testing::Test {
+ public:
+  BlacklistPerfTest() : blacklist_(new Blacklist()) {}
+
  protected:
   virtual void SetUp() {
     srand(kSeed);
