@@ -330,19 +330,6 @@ Here's what the extension looks like when it's internationalized
 
 <img src="images/i18n-after-1.gif" alt="In the manifest.json file, &quot;Hello World&quot; has been changed to &quot;__MSG_extName__&quot;, and a new &quot;default_locale&quot; item has the value &quot;en&quot;. In the JavaScript file, &quot;Hello World&quot; has been changed to chrome.i18n.getMessage(&quot;extName&quot;). A new file named _locales/en/messages.json defines &quot;extName&quot;." width="782" height="228">
 
-<p class="warning" id="namebug">
-<b>Bug workaround:</b>
-Substitute <code>name</code>
-wherever you see <code>extName</code>
-in the preceding figure.
-If you try to upload an internationalized extension
-that uses any message not named "name"
-to hold the value of the "name" manifest field,
-the gallery erroneously rejects the extension
-and displays the following error message:
-"Missing extension name in default locale."
-</p>
-
 <p class="note">
 <b>Important:</b>
 If an extension has a <code>_locales</code> directory,
@@ -423,13 +410,6 @@ with a new Spanish translation.
 
 <img src="images/i18n-after-2.gif" alt="This looks the same as the previous figure, but with a new file at _locales/es/messages.json that contains a Spanish translation of the messages." width="782" height="358">
 
-<p class="warning" id="namebug2">
-<b>Bug workaround:</b>
-Substitute <code>name</code>
-wherever you see <code>extName</code>
-in the preceding figure.
-<a href="#namebug">Details</a>.
-</p>
 
 <h2 id="overview-locales">Locales</h2>
 
