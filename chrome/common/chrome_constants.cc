@@ -52,6 +52,7 @@ const FilePath::CharType kHelperProcessExecutablePath[] =
 const FilePath::CharType kFrameworkName[] =
     FPL(PRODUCT_STRING " Framework.framework");
 #endif  // OS_MACOSX
+const wchar_t kNaClAppName[] = L"nacl";
 #if defined(GOOGLE_CHROME_BUILD)
 const wchar_t kBrowserAppName[] = L"Chrome";
 const char    kStatsFilename[] = "ChromeStats2";

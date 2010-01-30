@@ -21,7 +21,7 @@ bool SandboxInitWrapper::InitializeSandbox(const CommandLine& command_line,
   if ((process_type == switches::kRendererProcess) ||
       (process_type == switches::kExtensionProcess) ||
       (process_type == switches::kWorkerProcess) ||
-      (process_type == switches::kNaClProcess) ||
+      (process_type == switches::kNaClLoaderProcess) ||
       (process_type == switches::kUtilityProcess) ||
       (process_type == switches::kPluginProcess &&
        command_line.HasSwitch(switches::kSafePlugins))) {

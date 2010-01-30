@@ -35,10 +35,6 @@ int ZygoteMain(const MainFunctionParams& parameters) {
   return ResultCodes::BAD_PROCESS_TYPE;
 }
 
-int NaClBrokerMain(const MainFunctionParams& parameters) {
-  return ResultCodes::BAD_PROCESS_TYPE;
-}
-
 int DiagnosticsMain(const CommandLine& command_line) {
   return 1;
 }
