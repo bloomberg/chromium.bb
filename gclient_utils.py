@@ -28,12 +28,13 @@ import xml.parsers.expat
 
 class CheckCallError(OSError):
   """CheckCall() returned non-0."""
-  def __init__(self, command, cwd, retcode, stdout):
-    OSError.__init__(self, command, cwd, retcode, stdout)
+  def __init__(self, command, cwd, retcode, stdout, stderr=None):
+    OSError.__init__(self, command, cwd, retcode, stdout, stderr)
     self.command = command
     self.cwd = cwd
     self.retcode = retcode
     self.stdout = stdout
+    self.stderr = stderr
 
 
 def CheckCall(command, cwd=None, print_error=True):
@@ -50,12 +51,12 @@ def CheckCall(command, cwd=None, print_error=True):
                                shell=sys.platform.startswith('win'),
                                stdout=subprocess.PIPE,
                                stderr=stderr)
-    output = process.communicate()[0]
+    std_out, std_err = process.communicate()
   except OSError, e:
     raise CheckCallError(command, cwd, e.errno, None)
   if process.returncode:
-    raise CheckCallError(command, cwd, process.returncode, output)
-  return output
+    raise CheckCallError(command, cwd, process.returncode, std_out, std_err)
+  return std_out, std_err
 
 
 def SplitUrlRevision(url):

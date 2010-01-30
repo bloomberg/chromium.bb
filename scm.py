@@ -78,7 +78,7 @@ class GIT(object):
     else:
       command.extend(files)
 
-    status = GIT.Capture(command).rstrip()
+    status = GIT.Capture(command)[0].rstrip()
     results = []
     if status:
       for statusline in status.split('\n'):
@@ -126,7 +126,7 @@ class GIT(object):
     # We could want to look at the svn cred when it has a svn remote but it
     # should be fine for now, users should simply configure their git settings.
     return GIT.Capture(['config', 'user.email'],
-                       repo_root, error_ok=True).strip()
+                       repo_root, error_ok=True)[0].strip()
 
   @staticmethod
   def ShortBranchName(branch):
@@ -136,7 +136,7 @@ class GIT(object):
   @staticmethod
   def GetBranchRef(cwd):
     """Returns the full branch reference, e.g. 'refs/heads/master'."""
-    return GIT.Capture(['symbolic-ref', 'HEAD'], cwd).strip()
+    return GIT.Capture(['symbolic-ref', 'HEAD'], cwd)[0].strip()
 
   @staticmethod
   def GetBranch(cwd):
@@ -167,11 +167,11 @@ class GIT(object):
     # Get the refname and svn url for all refs/remotes/*.
     remotes = GIT.Capture(
         ['for-each-ref', '--format=%(refname)', 'refs/remotes'],
-        cwd).splitlines()
+        cwd)[0].splitlines()
     svn_refs = {}
     for ref in remotes:
       match = git_svn_re.search(
-          GIT.Capture(['cat-file', '-p', ref], cwd))
+          GIT.Capture(['cat-file', '-p', ref], cwd)[0])
       if match:
         svn_refs[match.group(1)] = ref
 
@@ -205,18 +205,18 @@ class GIT(object):
     branch = GIT.GetBranch(cwd)
     upstream_branch = None
     upstream_branch = GIT.Capture(
-        ['config', 'branch.%s.merge' % branch], error_ok=True).strip()
+        ['config', 'branch.%s.merge' % branch], error_ok=True)[0].strip()
     if upstream_branch:
       remote = GIT.Capture(
           ['config', 'branch.%s.remote' % branch],
-          error_ok=True).strip()
+          error_ok=True)[0].strip()
     else:
       # Fall back on trying a git-svn upstream branch.
       if GIT.IsGitSvn(cwd):
         upstream_branch = GIT.GetSVNBranch(cwd)
       # Fall back on origin/master if it exits.
       if not upstream_branch:
-        GIT.Capture(['branch', '-r']).split().count('origin/master')
+        GIT.Capture(['branch', '-r'])[0].split().count('origin/master')
         remote = 'origin'
         upstream_branch = 'refs/heads/master'
     return remote, upstream_branch
@@ -245,7 +245,7 @@ class GIT(object):
     if files:
       command.append('--')
       command.extend(files)
-    diff = GIT.Capture(command, cwd).splitlines(True)
+    diff = GIT.Capture(command, cwd)[0].splitlines(True)
     for i in range(len(diff)):
       # In the case of added files, replace /dev/null with the path to the
       # file being added.
@@ -259,19 +259,19 @@ class GIT(object):
     if not branch:
       branch = GIT.GetUpstream(cwd)
     command = ['diff', '--name-only', branch, branch_head]
-    return GIT.Capture(command, cwd).splitlines(False)
+    return GIT.Capture(command, cwd)[0].splitlines(False)
 
   @staticmethod
   def GetPatchName(cwd):
     """Constructs a name for this patch."""
-    short_sha = GIT.Capture(['rev-parse', '--short=4', 'HEAD'], cwd).strip()
+    short_sha = GIT.Capture(['rev-parse', '--short=4', 'HEAD'], cwd)[0].strip()
     return "%s-%s" % (GIT.GetBranch(cwd), short_sha)
 
   @staticmethod
   def GetCheckoutRoot(path):
     """Returns the top level directory of a git checkout as an absolute path.
     """
-    root = GIT.Capture(['rev-parse', '--show-cdup'], path).strip()
+    root = GIT.Capture(['rev-parse', '--show-cdup'], path)[0].strip()
     return os.path.abspath(os.path.join(path, root))
 
 

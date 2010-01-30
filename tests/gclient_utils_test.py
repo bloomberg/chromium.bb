@@ -35,7 +35,7 @@ class CheckCallTestCase(SuperMoxTestBase):
         stderr=None,
         stdout=gclient_utils.subprocess.PIPE,
         shell=gclient_utils.sys.platform.startswith('win')).AndReturn(process)
-    process.communicate().AndReturn(['bleh'])
+    process.communicate().AndReturn(['bleh', 'foo'])
     self.mox.ReplayAll()
     gclient_utils.CheckCall(command)
 
@@ -48,7 +48,7 @@ class CheckCallTestCase(SuperMoxTestBase):
         stderr=None,
         stdout=gclient_utils.subprocess.PIPE,
         shell=gclient_utils.sys.platform.startswith('win')).AndReturn(process)
-    process.communicate().AndReturn(['bleh'])
+    process.communicate().AndReturn(['bleh', 'foo'])
     self.mox.ReplayAll()
     try:
       gclient_utils.CheckCall(command)
@@ -58,6 +58,7 @@ class CheckCallTestCase(SuperMoxTestBase):
       self.assertEqual(e.cwd, None)
       self.assertEqual(e.retcode, 42)
       self.assertEqual(e.stdout, 'bleh')
+      self.assertEqual(e.stderr, 'foo')
 
 
 class SubprocessCallAndFilterTestCase(SuperMoxTestBase):

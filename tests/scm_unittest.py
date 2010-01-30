@@ -127,7 +127,7 @@ from :3
   def testGetEmail(self):
     self.mox.StubOutWithMock(scm.GIT, 'Capture')
     scm.GIT.Capture(['config', 'user.email'], self.fake_root, error_ok=True
-                    ).AndReturn('mini@me.com')
+                    ).AndReturn(['mini@me.com', ''])
     self.mox.ReplayAll()
     self.assertEqual(scm.GIT.GetEmail(self.fake_root), 'mini@me.com')
 

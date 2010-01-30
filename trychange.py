@@ -365,7 +365,7 @@ def _SendChangeSVN(options):
                                temp_file.name], print_error=False)
     except gclient_utils.CheckCallError, e:
       raise NoTryServerAccess(' '.join(e.command) + '\nOuput:\n' +
-                              e.stdout)
+                              e.stdout + e.stderr)
   finally:
     temp_file.close()
     shutil.rmtree(temp_dir, True)
