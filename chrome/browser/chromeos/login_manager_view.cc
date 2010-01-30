@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/login_manager_view.h"
 
+#include <gdk/gdk.h>
 #include <signal.h>
 #include <sys/types.h>
 
@@ -39,6 +40,10 @@ const int kTextfieldWidth = 286;
 const SkColor kVersionColor = 0xFF7691DA;
 const SkColor kErrorColor = 0xFF8F384F;
 const char *kDefaultDomain = "@gmail.com";
+
+// There's a GdkBlankCursor defined in a later version of gdk.
+// The version in cros is late enough to support it.
+#define BlankCursor static_cast<GdkCursorType>(-2)
 
 namespace browser {
 
@@ -79,6 +84,13 @@ class LoginManagerWindow : public views::WindowGtk {
     login_manager_window->GetNonClientView()->SetFrameView(
         new LoginManagerNonClientFrameView());
     login_manager_window->Init(NULL, gfx::Rect());
+
+    // This keeps the window from flashing at startup.
+    GdkWindow* gdk_window =
+        GTK_WIDGET(login_manager_window->GetNativeWindow())->window;
+    gdk_window_set_back_pixmap(gdk_window, NULL, false);
+    // Hide the cursor initially.
+    gdk_window_set_cursor(gdk_window, gdk_cursor_new(BlankCursor));
     return login_manager_window;
   }
 
