@@ -7,6 +7,9 @@
     '../../../build/common.gypi',
   ],
   'target_defaults': {
+    'variables': {
+      'target_base': 'none',
+    },
     'target_conditions': [
       ['target_base=="srpc"', {
         'sources': [

@@ -76,4 +76,44 @@
       ],
     }
   ],
+  'conditions': [
+    ['OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'handle_lookup64',
+          'type': 'static_library',
+          'sources': [
+            'handle_lookup.cc',
+            'handle_lookup.h',
+          ],
+        },
+        {
+          'target_name': 'browserhandle64',
+          'type': 'static_library',
+          'sources': [
+            'browser_handle.cc',
+            'browser_handle.h',
+          ],
+          'dependencies': [
+            'handle_lookup',
+            '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc64',
+            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
+          ],
+        },
+        {
+          'target_name': 'ldrhandle64',
+          'type': 'static_library',
+          'sources': [
+            'ldr_handle.cc',
+            'ldr_handle.h',
+          ],
+          'dependencies': [
+            'handle_lookup64',
+            '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc64',
+            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
+          ],
+        }
+      ],
+    }],
+  ],
 }

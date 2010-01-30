@@ -34,6 +34,9 @@
     'nonnacl_util.gypi',
   ],
   'target_defaults': {
+    'variables': {
+      'target_base': 'none',
+    },
     'target_conditions': [
       ['target_base=="sel_ldr_launcher"', {
         'sources': [
