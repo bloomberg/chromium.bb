@@ -96,8 +96,11 @@ bool SetDidRunState(const wchar_t* guid, const wchar_t* value) {
   if (::RegCreateKeyExW(HKEY_CURRENT_USER, key_path.c_str(), 0, NULL,
                         REG_OPTION_NON_VOLATILE, KEY_WRITE, NULL,
                         &reg_key, NULL) == ERROR_SUCCESS) {
+    // Note that the length here must be in bytes and must account for the
+    // terminating null char.
     ::RegSetValueExW(reg_key, google_update::kRegDidRunField, 0, REG_SZ,
-                     reinterpret_cast<const BYTE *>(value), ::lstrlenW(value));
+                     reinterpret_cast<const BYTE *>(value),
+                     (::lstrlenW(value) + 1) * sizeof(wchar_t));
     ::RegCloseKey(reg_key);
     return true;
   }
