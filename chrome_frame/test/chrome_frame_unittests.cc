@@ -247,6 +247,12 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabIE_MIMEFilterBasic) {
   const wchar_t kMIMEFilterBasicPage[] =
       L"files/chrome_frame_mime_filter_test.html";
 
+  // If this test fails for IE8 then it is possible that prebinding is enabled.
+  // A known workaround is to disable it until CF properly handles it.
+  //
+  // HKCU\Software\Microsoft\Internet Explorer\Main
+  // Value name: EnablePreBinding (REG_DWORD)
+  // Value: 0
   SimpleBrowserTest(IE, kMIMEFilterBasicPage, L"MIMEFilter");
 }
 
@@ -1331,9 +1337,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_WindowOpenInChrome) {
                   _, testing::Field(&VARIANT::bstrVal,
                   testing::StrCaseEq(kChromeFrameFullTabWindowOpenTestUrl)),
                   _, _, _, _, _))
-      .WillOnce(testing::Return(S_OK));
+      .Times(testing::AnyNumber()).WillOnce(testing::Return(S_OK));
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
-      .WillOnce(testing::Return());
+      .Times(testing::AnyNumber()).WillOnce(testing::Return());
 
   EXPECT_CALL(mock,
               OnLoad(testing::StrEq(kChromeFrameFullTabWindowOpenTestUrl)))
@@ -1389,9 +1395,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_AboutChromeFrame) {
       OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
                                           testing::StrCaseEq(kSubFrameUrl1)),
                                 _, _, _, _, _))
-      .Times(2).WillRepeatedly(testing::Return(S_OK));
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return(S_OK));
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
-      .Times(2).WillRepeatedly(testing::Return());
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return());
 
   EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl1)))
       .WillOnce(testing::InvokeWithoutArgs(
@@ -1460,7 +1466,8 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
   CComObjectStackEx<MockWebBrowserEventSink> mock;
   ::testing::InSequence sequence;   // Everything in sequence
 
-  // We will get two BeforeNavigate2/OnNavigateComplete2 notifications due to
+  // When the onhttpequiv patch is enabled, we will get two
+  // BeforeNavigate2/OnNavigateComplete2 notifications due to
   // switching from IE to CF.
   // Note that when going backwards, we don't expect that since the extra
   // navigational entries in the travel log should have been removed.
@@ -1478,10 +1485,10 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
       OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
                                           testing::StrCaseEq(kSubFrameUrl1)),
                                 _, _, _, _, _))
-      .WillOnce(testing::Return(S_OK));
+      .Times(testing::AnyNumber()).WillOnce(testing::Return(S_OK));
 
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
-      .WillOnce(testing::Return());
+      .Times(testing::AnyNumber()).WillOnce(testing::Return());
 
   // Navigate to url 2 after the previous navigation is complete.
   EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl1)))
@@ -1504,10 +1511,10 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
       OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
                                           testing::StrCaseEq(kSubFrameUrl2)),
                                 _, _, _, _, _))
-      .WillOnce(testing::Return(S_OK));
+      .Times(testing::AnyNumber()).WillOnce(testing::Return(S_OK));
 
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
-      .WillOnce(testing::Return());
+      .Times(testing::AnyNumber()).WillOnce(testing::Return());
 
   // Navigate to url 3 after the previous navigation is complete
   EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl2)))
@@ -1531,10 +1538,10 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
       OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
                                           testing::StrCaseEq(kSubFrameUrl3)),
                                 _, _, _, _, _))
-      .WillOnce(testing::Return(S_OK));
+      .Times(testing::AnyNumber()).WillOnce(testing::Return(S_OK));
 
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
-      .WillOnce(testing::Return());
+      .Times(testing::AnyNumber()).WillOnce(testing::Return());
 
   // Go back.
   EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl3)))
@@ -1630,7 +1637,8 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
   CComObjectStackEx<MockWebBrowserEventSink> mock;
   ::testing::InSequence sequence;   // Everything in sequence
 
-  // We will get two BeforeNavigate2/OnNavigateComplete2 notifications due to
+  // When the onhttpequiv patch is enabled, we will get two
+  // BeforeNavigate2/OnNavigateComplete2 notifications due to
   // switching from IE to CF.
   // Note that when going backwards, we don't expect that since the extra
   // navigational entries in the travel log should have been removed.
@@ -1648,9 +1656,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
   EXPECT_CALL(mock, OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
                                       testing::StrCaseEq(kAnchorUrl)),
                                       _, _, _, _, _))
-      .WillOnce(testing::Return(S_OK));
+      .Times(testing::AnyNumber()).WillOnce(testing::Return(S_OK));
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
-      .WillOnce(testing::Return());
+      .Times(testing::AnyNumber()).WillOnce(testing::Return());
 
   // Navigate to anchor 1:
   // - First set focus to chrome renderer window
@@ -1909,10 +1917,12 @@ TEST_F(ChromeFrameTestWithWebServer,
           _, testing::Field(&VARIANT::bstrVal,
           testing::StrCaseEq(kChromeFrameFullTabModeBeforeUnloadEventTest)),
           _, _, _, _, _))
-      .WillOnce(testing::Return(S_OK));
+      .Times(testing::AnyNumber()).WillOnce(testing::Return(S_OK));
 
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
-      .WillOnce(testing::Return());
+      .Times(testing::AnyNumber()).WillOnce(testing::Return());
+
+  EXPECT_CALL(mock, OnLoad(_)).WillOnce(testing::Return());
 
   // We will get two BeforeNavigate2/OnNavigateComplete2 notifications due to
   // switching from IE to CF.
@@ -1933,10 +1943,12 @@ TEST_F(ChromeFrameTestWithWebServer,
           _, testing::Field(&VARIANT::bstrVal,
           testing::StrCaseEq(kChromeFrameFullTabModeBeforeUnloadEventMain)),
           _, _, _, _, _))
-      .WillOnce(testing::Return(S_OK));
+      .Times(testing::AnyNumber()).WillOnce(testing::Return(S_OK));
 
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
-      .WillOnce(testing::Return());
+      .Times(testing::AnyNumber()).WillOnce(testing::Return());
+
+  EXPECT_CALL(mock, OnLoad(_)).WillOnce(testing::Return());
 
   EXPECT_CALL(mock, OnMessage(_))
       .WillOnce(testing::DoAll(

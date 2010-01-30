@@ -65,6 +65,10 @@ static const IID IID_IWebBrowserPriv2IE8 = { 0x3ED72303, 0x6FFC, 0x4214,
 static const IID IID_IWebBrowserPriv2IE8XP = { 0x486F6159, 0x9F3F, 0x4827,
     { 0x82, 0xD4, 0x28, 0x3C, 0xEF, 0x39, 0x77, 0x33 } };
 
+// {38339692-0BC9-46CB-8E5C-4677A5C83DD5}
+static const IID IID_IWebBrowserPriv2IE8XPBeta = { 0x38339692, 0x0BC9, 0x46CB,
+    { 0x8E, 0x5C, 0x46, 0x77, 0xA5, 0xC8, 0x3D, 0xD5 } };
+
 namespace {
 
 // A flag used to signal when an active browser instance on the current thread
@@ -678,6 +682,7 @@ HRESULT NavigateBrowserToMoniker(IUnknown* browser, IMoniker* moniker,
       &IID_IWebBrowserPriv2IE7,
       &IID_IWebBrowserPriv2IE8,
       &IID_IWebBrowserPriv2IE8XP,
+      &IID_IWebBrowserPriv2IE8XPBeta,
     };
 
     ScopedComPtr<IWebBrowserPriv2Common, NULL> browser_priv2;
