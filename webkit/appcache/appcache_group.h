@@ -136,6 +136,9 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
   CancelableTask* restart_update_task_;
   scoped_ptr<HostObserver> host_observer_;
 
+  // True if we're in our destructor.
+  bool is_in_dtor_;
+
   FRIEND_TEST(AppCacheGroupTest, StartUpdate);
   FRIEND_TEST(AppCacheGroupTest, CancelUpdate);
   FRIEND_TEST(AppCacheGroupTest, QueueUpdate);

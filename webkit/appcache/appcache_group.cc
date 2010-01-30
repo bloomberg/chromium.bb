@@ -44,7 +44,8 @@ AppCacheGroup::AppCacheGroup(AppCacheService* service,
       newest_complete_cache_(NULL),
       update_job_(NULL),
       service_(service),
-      restart_update_task_(NULL) {
+      restart_update_task_(NULL),
+      is_in_dtor_(false) {
   service_->storage()->working_set()->AddGroup(this);
   host_observer_.reset(new HostObserver(this));
 }
@@ -54,6 +55,8 @@ AppCacheGroup::~AppCacheGroup() {
   DCHECK(!newest_complete_cache_);
   DCHECK(!restart_update_task_);
   DCHECK(queued_updates_.empty());
+
+  is_in_dtor_ = true;
 
   if (update_job_)
     delete update_job_;
@@ -153,6 +156,9 @@ void AppCacheGroup::AddNewlyDeletableResponseIds(
 
 void AppCacheGroup::StartUpdateWithNewMasterEntry(
     AppCacheHost* host, const GURL& new_master_resource) {
+  if (is_in_dtor_)
+    return;
+
   if (!update_job_)
     update_job_ = new AppCacheUpdateJob(service_, this);
 
@@ -245,15 +251,12 @@ void AppCacheGroup::SetUpdateStatus(UpdateStatus status) {
   } else {
     update_job_ = NULL;
 
-    // Check member variable before notifying observers about update finishing.
-    // Observers may remove reference to group, causing group to be deleted
-    // after the notifications. If there are queued updates, then the group
-    // will continue to exist.
-    bool restart_update = !queued_updates_.empty();
-
+    // Observers may release us in these callbacks, so we protect against
+    // deletion by adding an extra ref in this scope (but only if we're not
+    // in our destructor).
+    scoped_refptr<AppCacheGroup> protect(is_in_dtor_ ? NULL : this);
     FOR_EACH_OBSERVER(UpdateObserver, observers_, OnUpdateComplete(this));
-
-    if (restart_update)
+    if (!queued_updates_.empty())
       ScheduleUpdateRestart(kUpdateRestartDelayMs);
   }
 }
