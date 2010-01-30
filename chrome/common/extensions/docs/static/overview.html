@@ -156,18 +156,20 @@ an invisible page
 that holds the main logic of the extension.
 </p>
 
-<img src="images/arch-1.gif">
+<img src="images/arch-1.gif"
+ width="232" height="168"
+ alt="Two windows and a box representing a background page (background.html). One window has a yellow icon; the other has both a yellow icon and a blue icon. The yellow icons are connected to the background page." />
 
 <p>
 The preceding figure shows a browser
 that has at least two extensions installed:
 a browser action (yellow icon)
 and a page action (blue icon).
-The background page,
+The browser action's background page,
 which is defined by an HTML file
 (<code>background.html</code>),
-has JavaScript code that controls both
-the browser action and the page action.
+has JavaScript code that controls
+the behavior of the browser action in both windows.
 </p>
 
 
@@ -202,7 +204,9 @@ that's in the background page
 because the popup can invoke functions on the background page.
 </p>
 
-<img src="images/arch-2.gif">
+<img src="images/arch-2.gif"
+ width="256" height="168"
+ alt="A browser window containing a browser action that's displaying a popup. The popup's HTML file (popup.html) can communicate with the extension's background page (background.html)." />
 
 <p>
 See the <a href="browserAction.html">Browser Actions</a> page and
@@ -243,7 +247,9 @@ the DOM for the displayed web page.
 It cannot, however, modify the DOM of its parent extension's background page.
 </p>
 
-<img src="images/arch-3.gif">
+<img src="images/arch-3.gif"
+ width="238" height="169"
+ alt="A browser window with a browser action (controlled by background.html) and a content script (controlled by contentscript.js)." />
 
 <p>
 Content scripts aren't completely cut off from their parent extensions.
@@ -255,7 +261,9 @@ Or a background page might send a message
 asking a content script to change the appearance of its browser page.
 </p>
 
-<img src="images/arch-cs.gif">
+<img src="images/arch-cs.gif"
+ width="238" height="194"
+ alt="Like the previous figure, but showing more of the parent extension's files, as well as a communication path between the content script and the parent extension." />
 
 <!-- [PENDING: Add overview of message passing.] -->
 
