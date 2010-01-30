@@ -175,6 +175,14 @@ class ExternalTabContainer : public TabContentsDelegate,
   // Handles the specified |accelerator| being pressed.
   bool AcceleratorPressed(const views::Accelerator& accelerator);
 
+  bool pending() const {
+    return pending_;
+  }
+
+  void set_pending(bool pending) {
+    pending_ = pending;
+  }
+
  protected:
   // Overridden from views::WidgetWin:
   virtual LRESULT OnCreate(LPCREATESTRUCT create_struct);
@@ -194,12 +202,34 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   ~ExternalTabContainer();
 
+  // Top level navigations received for a tab while it is waiting for an ack
+  // from the external host go here. Scenario is a window.open executes on a
+  // page in ChromeFrame. A new TabContents is created and the current
+  // ExternalTabContainer is notified via AddNewContents. At this point we
+  // send off an attach tab request to the host browser. Before the host
+  // browser sends over the ack, we receive a top level URL navigation for the
+  // new tab, which needs to be routed over the correct automation channel.
+  // We receive the automation channel only when the external host acks the
+  // attach tab request.
+  struct PendingTopLevelNavigation {
+    GURL url;
+    GURL referrer;
+    WindowOpenDisposition disposition;
+    PageTransition::Type transition;
+  };
+
   // Helper function for processing keystokes coming back from the renderer
   // process.
   bool ProcessUnhandledKeyStroke(HWND window, UINT message, WPARAM wparam,
                                  LPARAM lparam);
 
   void LoadAccelerators();
+
+  // Sends over pending Open URL requests to the external host.
+  void ServicePendingOpenURLRequests();
+
+  // Scheduled as a task in ExternalTabContainer::Reinitialize
+  void OnReinitialize();
 
   TabContents* tab_contents_;
   scoped_refptr<AutomationProvider> automation_;
@@ -254,6 +284,14 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   // Set to true if the tab is waiting for the unload event to complete.
   bool waiting_for_unload_event_;
+
+  // Contains the list of URL requests which are pending waiting for an ack
+  // from the external host.
+  std::vector<PendingTopLevelNavigation> pending_open_url_requests_;
+
+  // Set to true if the ExternalTabContainer instance is waiting for an ack
+  // from the host.
+  bool pending_;
 
   DISALLOW_COPY_AND_ASSIGN(ExternalTabContainer);
 };

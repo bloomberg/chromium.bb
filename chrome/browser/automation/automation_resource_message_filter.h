@@ -25,14 +25,20 @@ class AutomationResourceMessageFilter
  public:
   // Information needed to send IPCs through automation.
   struct AutomationDetails {
-    AutomationDetails() : tab_handle(0), ref_count(1) {}
-    AutomationDetails(int tab, AutomationResourceMessageFilter* flt)
-      : tab_handle(tab), ref_count(1), filter(flt) {
+    AutomationDetails() : tab_handle(0), ref_count(1),
+                          is_pending_render_view(false) {}
+    AutomationDetails(int tab, AutomationResourceMessageFilter* flt,
+                      bool pending_view)
+      : tab_handle(tab), ref_count(1), filter(flt),
+        is_pending_render_view(pending_view) {
     }
 
     int tab_handle;
     int ref_count;
     scoped_refptr<AutomationResourceMessageFilter> filter;
+    // Indicates whether network requests issued by this render view need to
+    // be executed later.
+    bool is_pending_render_view;
   };
 
   // Create the filter.
@@ -61,9 +67,19 @@ class AutomationResourceMessageFilter
   virtual void UnRegisterRequest(URLRequestAutomationJob* job);
 
   // Can be called from the UI thread.
+  // The pending_view parameter should be true if network requests initiated by
+  // this render view need to be paused waiting for an acknowledgement from
+  // the external host.
   static bool RegisterRenderView(int renderer_pid, int renderer_id,
-      int tab_handle, AutomationResourceMessageFilter* filter);
+      int tab_handle, AutomationResourceMessageFilter* filter,
+      bool pending_view);
   static void UnRegisterRenderView(int renderer_pid, int renderer_id);
+
+  // Can be called from the UI thread.
+  // Resumes pending render views, i.e. network requests issued by this view
+  // can now be serviced.
+  static bool ResumePendingRenderView(int renderer_pid, int renderer_id,
+      int tab_handle, AutomationResourceMessageFilter* filter);
 
   // Called only on the IO thread.
   static bool LookupRegisteredRenderView(
@@ -80,13 +96,25 @@ class AutomationResourceMessageFilter
   bool GetAutomationRequestId(int request_id, int* automation_request_id);
 
   static void RegisterRenderViewInIOThread(int renderer_pid, int renderer_id,
-      int tab_handle, AutomationResourceMessageFilter* filter);
+      int tab_handle, AutomationResourceMessageFilter* filter,
+      bool pending_view);
   static void UnRegisterRenderViewInIOThread(int renderer_pid, int renderer_id);
+
+  static bool ResumePendingRenderViewInIOThread(
+      int renderer_pid, int renderer_id, int tab_handle,
+      AutomationResourceMessageFilter* filter);
 
  private:
   void OnSetFilteredInet(bool enable);
   void OnGetFilteredInetHitCount(int* hit_count);
   void OnRecordHistograms(const std::vector<std::string>& histogram_list);
+
+  // Resumes pending jobs from the old AutomationResourceMessageFilter instance
+  // passed in.
+  static void ResumeJobsForPendingView(
+      int tab_handle,
+      AutomationResourceMessageFilter* old_filter,
+      AutomationResourceMessageFilter* new_filter);
 
   // A unique renderer id is a combination of renderer process id and
   // it's routing id.
@@ -114,6 +142,10 @@ class AutomationResourceMessageFilter
 
   // Map of outstanding requests.
   RequestMap request_map_;
+
+  // Map of pending requests, i.e. requests which were waiting for the external
+  // host to connect back.
+  RequestMap pending_request_map_;
 
   // Map of render views interested in diverting url requests over automation.
   static RenderViewMap filtered_render_views_;

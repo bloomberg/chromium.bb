@@ -84,7 +84,7 @@ URLRequestJob* TestAutomationProvider::Factory(URLRequest* request,
       static int new_id = 0x00100000;
       URLRequestAutomationJob* job = new URLRequestAutomationJob(request,
           g_provider_instance_->tab_handle_, new_id++,
-          g_provider_instance_->filter_);
+          g_provider_instance_->filter_, false);
       return job;
     }
   }

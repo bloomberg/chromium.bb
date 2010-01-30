@@ -48,7 +48,8 @@ ExternalTabContainer::ExternalTabContainer(
       handle_top_level_requests_(false),
       external_method_factory_(this),
       enabled_extension_automation_(false),
-      waiting_for_unload_event_(false) {
+      waiting_for_unload_event_(false),
+      pending_(false) {
 }
 
 ExternalTabContainer::~ExternalTabContainer() {
@@ -207,7 +208,7 @@ bool ExternalTabContainer::Reinitialize(
 
     RenderViewHost* rvh = tab_contents_->render_view_host();
     if (rvh) {
-      AutomationResourceMessageFilter::RegisterRenderView(
+      AutomationResourceMessageFilter::ResumePendingRenderView(
           rvh->process()->id(), rvh->routing_id(),
           tab_handle_, automation_resource_message_filter_);
     }
@@ -218,7 +219,7 @@ bool ExternalTabContainer::Reinitialize(
   MessageLoop::current()->PostTask(
       FROM_HERE,
       external_method_factory_.NewRunnableMethod(
-          &ExternalTabContainer::NavigationStateChanged, tab_contents_, 0));
+          &ExternalTabContainer::OnReinitialize));
   return true;
 }
 
@@ -276,6 +277,17 @@ void ExternalTabContainer::OpenURLFromTab(TabContents* source,
                            const GURL& referrer,
                            WindowOpenDisposition disposition,
                            PageTransition::Type transition) {
+  if (pending()) {
+    PendingTopLevelNavigation url_request;
+    url_request.disposition = disposition;
+    url_request.transition = transition;
+    url_request.url = url;
+    url_request.referrer = referrer;
+
+    pending_open_url_requests_.push_back(url_request);
+    return;
+  }
+
   switch (disposition) {
     case CURRENT_TAB:
     case SINGLETON_TAB:
@@ -333,6 +345,19 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
     pending_tabs_[reinterpret_cast<intptr_t>(new_container.get())] =
         new_container;
 
+    new_container->set_pending(true);
+
+    RenderViewHost* rvh = new_contents->render_view_host();
+    DCHECK(rvh != NULL);
+    if (rvh) {
+      // Register this render view as a pending render view, i.e. any network
+      // requests initiated by this render view would be serviced when the
+      // external host connects to the new external tab instance.
+      AutomationResourceMessageFilter::RegisterRenderView(
+          rvh->process()->id(), rvh->routing_id(),
+          tab_handle_, automation_resource_message_filter_,
+          true);
+    }
     automation_->Send(new AutomationMsg_AttachExternalTab(
         0,
         tab_handle_,
@@ -573,7 +598,7 @@ void ExternalTabContainer::Observe(NotificationType type,
         if (rvh) {
           AutomationResourceMessageFilter::RegisterRenderView(
               rvh->process()->id(), rvh->routing_id(),
-              tab_handle_, automation_resource_message_filter_);
+              tab_handle_, automation_resource_message_filter_, false);
         }
       }
       break;
@@ -818,3 +843,24 @@ void ExternalTabContainer::LoadAccelerators() {
     focus_manager->RegisterAccelerator(accelerator, this);
   }
 }
+
+void ExternalTabContainer::OnReinitialize() {
+  NavigationStateChanged(tab_contents_, 0);
+  ServicePendingOpenURLRequests();
+}
+
+void ExternalTabContainer::ServicePendingOpenURLRequests() {
+  DCHECK(pending());
+
+  set_pending(false);
+
+  for (size_t index = 0; index < pending_open_url_requests_.size();
+       index ++) {
+    const PendingTopLevelNavigation& url_request =
+        pending_open_url_requests_[index];
+    OpenURLFromTab(tab_contents_, url_request.url, url_request.referrer,
+                   url_request.disposition, url_request.transition);
+  }
+  pending_open_url_requests_.clear();
+}
+

@@ -68,13 +68,14 @@ bool IsParsedCookiePresentInCookieHeader(
 }  // end namespace
 
 URLRequestAutomationJob::URLRequestAutomationJob(URLRequest* request, int tab,
-    int request_id, AutomationResourceMessageFilter* filter)
+    int request_id, AutomationResourceMessageFilter* filter, bool is_pending)
     : URLRequestJob(request),
       tab_(tab),
       message_filter_(filter),
       pending_buf_size_(0),
       redirect_status_(0),
-      request_id_(request_id) {
+      request_id_(request_id),
+      is_pending_(is_pending) {
   DLOG(INFO) << "URLRequestAutomationJob create. Count: " << ++instance_count_;
   DCHECK(message_filter_ != NULL);
 
@@ -127,7 +128,8 @@ URLRequestJob* URLRequestAutomationJob::Factory(URLRequest* request,
       if (AutomationResourceMessageFilter::LookupRegisteredRenderView(
               child_id, route_id, &details)) {
         URLRequestAutomationJob* job = new URLRequestAutomationJob(request,
-            details.tab_handle, request_info->request_id(), details.filter);
+            details.tab_handle, request_info->request_id(), details.filter,
+            details.is_pending_render_view);
         return job;
       }
     }
@@ -142,16 +144,30 @@ URLRequestJob* URLRequestAutomationJob::Factory(URLRequest* request,
 
 // URLRequestJob Implementation.
 void URLRequestAutomationJob::Start() {
-  // Start reading asynchronously so that all error reporting and data
-  // callbacks happen as they would for network requests.
-  MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-      this, &URLRequestAutomationJob::StartAsync));
+  if (!is_pending()) {
+    // Start reading asynchronously so that all error reporting and data
+    // callbacks happen as they would for network requests.
+    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
+        this, &URLRequestAutomationJob::StartAsync));
+  } else {
+    // If this is a pending job, then register it immediately with the message
+    // filter so it can be serviced later when we receive a request from the
+    // external host to connect to the corresponding external tab.
+    message_filter_->RegisterRequest(this);
+  }
 }
 
 void URLRequestAutomationJob::Kill() {
-  if (message_filter_.get()) {
-    message_filter_->Send(new AutomationMsg_RequestEnd(0, tab_, id_,
-        URLRequestStatus(URLRequestStatus::CANCELED, net::ERR_ABORTED)));
+  if (!is_pending()) {
+    if (message_filter_.get()) {
+      message_filter_->Send(new AutomationMsg_RequestEnd(0, tab_, id_,
+          URLRequestStatus(URLRequestStatus::CANCELED, net::ERR_ABORTED)));
+    }
+  } else {
+    // If this is a pending job, then register it from the message filter to
+    // ensure that it is not serviced when the external host connects to the
+    // corresponding external tab.
+    message_filter_->UnRegisterRequest(this);
   }
   DisconnectFromMessageFilter();
   URLRequestJob::Kill();
@@ -161,6 +177,10 @@ bool URLRequestAutomationJob::ReadRawData(
     net::IOBuffer* buf, int buf_size, int* bytes_read) {
   DLOG(INFO) << "URLRequestAutomationJob: " <<
       request_->url().spec() << " - read pending: " << buf_size;
+
+  // We should not receive a read request for a pending job.
+  DCHECK(!is_pending());
+
   pending_buf_ = buf;
   pending_buf_size_ = buf_size;
 
@@ -428,6 +448,9 @@ void URLRequestAutomationJob::StartAsync() {
   if (is_done())
     return;
 
+  // We should not receive a Start request for a pending job.
+  DCHECK(!is_pending());
+
   if (!request_) {
     NotifyStartError(URLRequestStatus(URLRequestStatus::FAILED,
         net::ERR_FAILED));
@@ -484,6 +507,16 @@ void URLRequestAutomationJob::DisconnectFromMessageFilter() {
     message_filter_->UnRegisterRequest(this);
     message_filter_ = NULL;
   }
+}
+
+void URLRequestAutomationJob::StartPendingJob(
+    int new_tab_handle,
+    AutomationResourceMessageFilter* new_filter) {
+  DCHECK(new_filter != NULL);
+  tab_ = new_tab_handle;
+  message_filter_ = new_filter;
+  is_pending_ = false;
+  Start();
 }
 
 // static

@@ -6,6 +6,7 @@
 
 #include "base/histogram.h"
 #include "base/path_service.h"
+#include "base/stl_util-inl.h"
 #include "chrome/browser/automation/url_request_automation_job.h"
 #include "chrome/browser/net/url_request_failed_dns_job.h"
 #include "chrome/browser/net/url_request_mock_http_job.h"
@@ -111,23 +112,43 @@ bool AutomationResourceMessageFilter::RegisterRequest(
     NOTREACHED();
     return false;
   }
-
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  DCHECK(request_map_.end() == request_map_.find(job->id()));
-  request_map_[job->id()] = job;
+
+  // Register pending jobs in the pending request map for servicing later.
+  if (job->is_pending()) {
+    DCHECK(!ContainsKey(pending_request_map_, job->id()));
+    DCHECK(!ContainsKey(request_map_, job->id()));
+    pending_request_map_[job->id()] = job;
+  } else {
+    DCHECK(!ContainsKey(request_map_, job->id()));
+    DCHECK(!ContainsKey(pending_request_map_, job->id()));
+    request_map_[job->id()] = job;
+  }
+
   return true;
 }
 
 void AutomationResourceMessageFilter::UnRegisterRequest(
     URLRequestAutomationJob* job) {
+  if (!job) {
+    NOTREACHED();
+    return;
+  }
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  DCHECK(request_map_.find(job->id()) != request_map_.end());
-  request_map_.erase(job->id());
+
+  if (job->is_pending()) {
+    DCHECK(ContainsKey(pending_request_map_, job->id()));
+    pending_request_map_.erase(job->id());
+  } else {
+    DCHECK(ContainsKey(request_map_, job->id()));
+    request_map_.erase(job->id());
+  }
 }
 
 bool AutomationResourceMessageFilter::RegisterRenderView(
     int renderer_pid, int renderer_id, int tab_handle,
-    AutomationResourceMessageFilter* filter) {
+    AutomationResourceMessageFilter* filter,
+    bool pending_view) {
   if (!renderer_pid || !renderer_id || !tab_handle) {
     NOTREACHED();
     return false;
@@ -137,7 +158,7 @@ bool AutomationResourceMessageFilter::RegisterRenderView(
       ChromeThread::IO, FROM_HERE,
       NewRunnableFunction(
           AutomationResourceMessageFilter::RegisterRenderViewInIOThread,
-          renderer_pid, renderer_id, tab_handle, filter));
+          renderer_pid, renderer_id, tab_handle, filter, pending_view));
   return true;
 }
 
@@ -150,9 +171,26 @@ void AutomationResourceMessageFilter::UnRegisterRenderView(
           renderer_pid, renderer_id));
 }
 
+bool AutomationResourceMessageFilter::ResumePendingRenderView(
+    int renderer_pid, int renderer_id, int tab_handle,
+    AutomationResourceMessageFilter* filter) {
+  if (!renderer_pid || !renderer_id || !tab_handle) {
+    NOTREACHED();
+    return false;
+  }
+
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableFunction(
+          AutomationResourceMessageFilter::ResumePendingRenderViewInIOThread,
+          renderer_pid, renderer_id, tab_handle, filter));
+  return true;
+}
+
 void AutomationResourceMessageFilter::RegisterRenderViewInIOThread(
     int renderer_pid, int renderer_id,
-    int tab_handle, AutomationResourceMessageFilter* filter) {
+    int tab_handle, AutomationResourceMessageFilter* filter,
+    bool pending_view) {
   RenderViewMap::iterator automation_details_iter(
       filtered_render_views_.find(RendererId(renderer_pid, renderer_id)));
   if (automation_details_iter != filtered_render_views_.end()) {
@@ -160,10 +198,11 @@ void AutomationResourceMessageFilter::RegisterRenderViewInIOThread(
     automation_details_iter->second.ref_count++;
   } else {
     filtered_render_views_[RendererId(renderer_pid, renderer_id)] =
-        AutomationDetails(tab_handle, filter);
+        AutomationDetails(tab_handle, filter, pending_view);
   }
 }
 
+// static
 void AutomationResourceMessageFilter::UnRegisterRenderViewInIOThread(
     int renderer_pid, int renderer_id) {
   RenderViewMap::iterator automation_details_iter(
@@ -179,6 +218,36 @@ void AutomationResourceMessageFilter::UnRegisterRenderViewInIOThread(
   if (automation_details_iter->second.ref_count <= 0) {
     filtered_render_views_.erase(RendererId(renderer_pid, renderer_id));
   }
+}
+
+// static
+bool AutomationResourceMessageFilter::ResumePendingRenderViewInIOThread(
+    int renderer_pid, int renderer_id, int tab_handle,
+    AutomationResourceMessageFilter* filter) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+
+  RenderViewMap::iterator automation_details_iter(
+      filtered_render_views_.find(RendererId(renderer_pid, renderer_id)));
+
+  if (automation_details_iter == filtered_render_views_.end()) {
+    NOTREACHED() << "Failed to find pending view for renderer pid:"
+                 << renderer_pid
+                 << ", render view id:"
+                 << renderer_id;
+    return false;
+  }
+
+  DCHECK(automation_details_iter->second.is_pending_render_view);
+
+  AutomationResourceMessageFilter* old_filter =
+      automation_details_iter->second.filter;
+  DCHECK(old_filter != NULL);
+
+  filtered_render_views_[RendererId(renderer_pid, renderer_id)] =
+      AutomationDetails(tab_handle, filter, false);
+
+  ResumeJobsForPendingView(tab_handle, old_filter, filter);
+  return true;
 }
 
 bool AutomationResourceMessageFilter::LookupRegisteredRenderView(
@@ -242,3 +311,24 @@ void AutomationResourceMessageFilter::OnRecordHistograms(
   }
 }
 
+// static
+void AutomationResourceMessageFilter::ResumeJobsForPendingView(
+    int tab_handle,
+    AutomationResourceMessageFilter* old_filter,
+    AutomationResourceMessageFilter* new_filter) {
+  DCHECK(old_filter != NULL);
+  DCHECK(new_filter != NULL);
+
+  RequestMap pending_requests = old_filter->pending_request_map_;
+
+  for (RequestMap::iterator index = old_filter->pending_request_map_.begin();
+          index != old_filter->pending_request_map_.end(); index++) {
+    scoped_refptr<URLRequestAutomationJob> job = (*index).second;
+    DCHECK_EQ(job->message_filter(), old_filter);
+    DCHECK(job->is_pending());
+    // StartPendingJob will register the job with the new filter.
+    job->StartPendingJob(tab_handle, new_filter);
+  }
+
+  old_filter->pending_request_map_.clear();
+}

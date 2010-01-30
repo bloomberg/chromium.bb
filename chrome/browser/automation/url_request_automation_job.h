@@ -7,6 +7,8 @@
 #define CHROME_BROWSER_AUTOMATION_URL_REQUEST_AUTOMATION_JOB_H_
 
 #include <vector>
+
+#include "chrome/browser/automation/automation_resource_message_filter.h"
 #include "chrome/common/ref_counted_util.h"
 #include "net/http/http_response_headers.h"
 #include "net/url_request/url_request.h"
@@ -24,7 +26,8 @@ struct AutomationURLResponse;
 class URLRequestAutomationJob : public URLRequestJob {
  public:
   URLRequestAutomationJob(URLRequest* request, int tab, int request_id,
-                          AutomationResourceMessageFilter* filter);
+                          AutomationResourceMessageFilter* filter,
+                          bool is_pending);
 
   // Register our factory for HTTP/HTTPs requests.
   static bool EnsureProtocolFactoryRegistered();
@@ -61,6 +64,20 @@ class URLRequestAutomationJob : public URLRequestJob {
   // Parses a cookie string and if there's no path specified for the cookie
   // it appends "; path=/" to the cookie string.
   static void SetCookiePathToRootIfNotPresent(std::string* cookie_string);
+
+  bool is_pending() const {
+    return is_pending_;
+  }
+
+  AutomationResourceMessageFilter* message_filter() const {
+    return message_filter_;
+  }
+
+  // Resumes a job, which was waiting for the external host to connect to the
+  // automation channel. This is to ensure that this request gets routed to the
+  // external host.
+  void StartPendingJob(int new_tab_handle,
+                       AutomationResourceMessageFilter* new_filter);
 
  protected:
   // Protected URLRequestJob override.
@@ -99,6 +116,11 @@ class URLRequestAutomationJob : public URLRequestJob {
   // requests off to these factories
   static URLRequest::ProtocolFactory* old_http_factory_;
   static URLRequest::ProtocolFactory* old_https_factory_;
+
+  // Set to true if the job is waiting for the external host to connect to the
+  // automation channel, which will be used for routing the network requests to
+  // the host.
+  bool is_pending_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestAutomationJob);
 };
