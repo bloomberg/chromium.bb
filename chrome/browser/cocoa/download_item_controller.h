@@ -11,6 +11,7 @@ class BaseDownloadItemModel;
 @class ChromeUILocalizer;
 @class DownloadItemCell;
 class DownloadItem;
+@class DownloadItemButton;
 class DownloadItemMac;
 class DownloadShelfContextMenuMac;
 @class DownloadShelfController;
@@ -20,7 +21,7 @@ class DownloadShelfContextMenuMac;
 
 @interface DownloadItemController : NSViewController {
  @private
-  IBOutlet NSButton* progressView_;
+  IBOutlet DownloadItemButton* progressView_;
   IBOutlet DownloadItemCell* cell_;
 
   IBOutlet NSMenu* activeDownloadMenu_;

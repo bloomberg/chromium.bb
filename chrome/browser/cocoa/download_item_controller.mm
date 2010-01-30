@@ -9,6 +9,7 @@
 #include "app/resource_bundle.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
+#import "chrome/browser/cocoa/download_item_button.h"
 #import "chrome/browser/cocoa/download_item_cell.h"
 #include "chrome/browser/cocoa/download_item_mac.h"
 #import "chrome/browser/cocoa/download_shelf_controller.h"
@@ -161,11 +162,13 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
     return;
   }
 
-  // Set the correct popup menu.
-  if (downloadModel->download()->state() == DownloadItem::COMPLETE)
+  // Set correct popup menu. Also, set draggable download on completion.
+  if (downloadModel->download()->state() == DownloadItem::COMPLETE) {
     currentMenu_ = completeDownloadMenu_;
-  else
+    [progressView_ setDownload:downloadModel->download()->full_path()];
+  } else {
     currentMenu_ = activeDownloadMenu_;
+  }
 
   [progressView_ setMenu:currentMenu_];  // for context menu
   [cell_ setStateFromDownload:downloadModel];
