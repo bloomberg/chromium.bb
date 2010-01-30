@@ -2334,9 +2334,6 @@ BUG20345 : http/tests/security/cross-frame-access-getOwnPropertyDescriptor.html 
 
 BUG10480 LINUX : editing/selection/move-by-line-001.html = FAIL
 
-// MessageEvent.initMessageEvent() does not set the source attribute.
-BUG23607 : fast/events/init-events.html = FAIL
-
 // The linux layout result in build bot shows the changed method does not
 // executed.
 BUG21141 LINUX : fast/forms/select-double-onchange.html = FAIL
