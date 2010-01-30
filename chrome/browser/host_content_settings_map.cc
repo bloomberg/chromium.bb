@@ -120,7 +120,7 @@ void HostContentSettingsMap::SetContentSetting(const std::string& host,
     HostContentSettings::iterator i(host_content_settings_.find(host));
     ContentSettings& settings = i->second;
     settings.settings[content_type] = setting;
-    for (int i = 0; i < arraysize(settings.settings); ++i) {
+    for (size_t i = 0; i < arraysize(settings.settings); ++i) {
       if (settings.settings[i] != CONTENT_SETTING_DEFAULT) {
         all_default = false;
         break;
@@ -177,7 +177,7 @@ void HostContentSettingsMap::GetSettingsFromDictionary(
     bool found = dictionary->GetIntegerWithoutPathExpansion(content_type,
                                                             &setting);
     DCHECK(found);
-    for (int type = 0; type < arraysize(kTypeNames); ++type) {
+    for (size_t type = 0; type < arraysize(kTypeNames); ++type) {
       if (std::wstring(kTypeNames[type]) == content_type) {
         settings->settings[type] = static_cast<ContentSetting>(setting);
         break;
