@@ -12,8 +12,7 @@ namespace {
 
 bool SettingsEqual(const ContentSettings& settings1,
                    const ContentSettings& settings2) {
-  for (int i = CONTENT_SETTINGS_FIRST_TYPE; i < CONTENT_SETTINGS_NUM_TYPES;
-       ++i) {
+  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     if (settings1.settings[i] != settings2.settings[i])
       return false;
   }
@@ -36,7 +35,7 @@ TEST_F(HostContentSettingsMapTest, DefaultValues) {
       profile.GetHostContentSettingsMap();
 
   // Check setting defaults.
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetDefaultContentSetting(
                 CONTENT_SETTINGS_TYPE_JAVASCRIPT));
   host_content_settings_map->SetDefaultContentSetting(
@@ -55,18 +54,18 @@ TEST_F(HostContentSettingsMapTest, DefaultValues) {
             host_content_settings_map->GetDefaultContentSetting(
                 CONTENT_SETTINGS_TYPE_POPUPS));
   host_content_settings_map->ResetToDefaults();
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetDefaultContentSetting(
-                CONTENT_SETTINGS_TYPE_POPUPS));
+                CONTENT_SETTINGS_TYPE_PLUGINS));
 
   // Check returning individual settings.
   std::string host("example.com");
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
                 host, CONTENT_SETTINGS_TYPE_IMAGES));
   host_content_settings_map->SetContentSetting(host,
       CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_DEFAULT);
-  EXPECT_EQ(CONTENT_SETTING_DEFAULT,
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
             host_content_settings_map->GetContentSetting(
                 host, CONTENT_SETTINGS_TYPE_IMAGES));
   host_content_settings_map->SetContentSetting(host,
@@ -77,16 +76,22 @@ TEST_F(HostContentSettingsMapTest, DefaultValues) {
 
   // Check returning all settings for a host.
   ContentSettings desired_settings;
+  desired_settings.settings[CONTENT_SETTINGS_TYPE_COOKIES] =
+      CONTENT_SETTING_ALLOW;
   host_content_settings_map->SetContentSetting(host,
       CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_DEFAULT);
+  desired_settings.settings[CONTENT_SETTINGS_TYPE_IMAGES] =
+      CONTENT_SETTING_ALLOW;
+  host_content_settings_map->SetContentSetting(host,
+      CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_BLOCK);
+  desired_settings.settings[CONTENT_SETTINGS_TYPE_JAVASCRIPT] =
+      CONTENT_SETTING_BLOCK;
   host_content_settings_map->SetContentSetting(host,
       CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_ALLOW);
   desired_settings.settings[CONTENT_SETTINGS_TYPE_PLUGINS] =
       CONTENT_SETTING_ALLOW;
-  host_content_settings_map->SetContentSetting(host,
-      CONTENT_SETTINGS_TYPE_JAVASCRIPT, CONTENT_SETTING_ALLOW);
-  desired_settings.settings[CONTENT_SETTINGS_TYPE_JAVASCRIPT] =
-      CONTENT_SETTING_ALLOW;
+  desired_settings.settings[CONTENT_SETTINGS_TYPE_POPUPS] =
+      CONTENT_SETTING_BLOCK;
   ContentSettings settings =
       host_content_settings_map->GetContentSettings(host);
   EXPECT_TRUE(SettingsEqual(desired_settings, settings));

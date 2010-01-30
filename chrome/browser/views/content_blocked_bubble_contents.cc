@@ -5,6 +5,8 @@
 #include "chrome/browser/views/content_blocked_bubble_contents.h"
 
 #include "app/l10n_util.h"
+#include "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "grit/generated_resources.h"
 #include "views/controls/button/native_button.h"
@@ -20,10 +22,12 @@
 
 ContentBlockedBubbleContents::ContentBlockedBubbleContents(
     ContentSettingsType content_type,
-    const std::wstring& host,
+    const std::string& host,
+    const std::wstring& display_host,
     Profile* profile)
     : content_type_(content_type),
       host_(host),
+      display_host_(display_host),
       profile_(profile),
       info_bubble_(NULL),
       allow_radio_(NULL),
@@ -49,7 +53,9 @@ void ContentBlockedBubbleContents::ButtonPressed(views::Button* sender,
     return;
   }
 
-  // TODO(pkasting): Set block state for this host and content type.
+  DCHECK((sender == allow_radio_) || (sender == block_radio_));
+  profile_->GetHostContentSettingsMap()->SetContentSetting(host_, content_type_,
+      allow_radio_->checked() ? CONTENT_SETTING_ALLOW : CONTENT_SETTING_BLOCK);
 }
 
 void ContentBlockedBubbleContents::LinkActivated(views::Link* source,
@@ -124,7 +130,7 @@ void ContentBlockedBubbleContents::InitControlLayout() {
               static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
     const int radio_button_group = 0;
     allow_radio_ = new views::RadioButton(
-        l10n_util::GetStringF(kAllowIDs[content_type_], host_),
+        l10n_util::GetStringF(kAllowIDs[content_type_], display_host_),
         radio_button_group);
     allow_radio_->set_listener(this);
 

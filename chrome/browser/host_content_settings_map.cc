@@ -32,6 +32,7 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
     GetSettingsFromDictionary(default_settings_dictionary,
                               &default_content_settings_);
   }
+  ForceDefaultsToBeExplicit();
 
   const DictionaryValue* all_settings_dictionary =
       profile_->GetPrefs()->GetDictionary(prefs::kPerHostContentSettings);
@@ -50,15 +51,15 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
     }
   }
 
-  // TODO(darin): init third-party cookie pref
+  block_third_party_cookies_ =
+      profile_->GetPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies);
 }
 
 // static
 void HostContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kDefaultContentSettings);
   prefs->RegisterDictionaryPref(prefs::kPerHostContentSettings);
-
-  // TODO(darin): register third-party cookie pref
+  prefs->RegisterBooleanPref(prefs::kBlockThirdPartyCookies, false);
 }
 
 ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
@@ -84,13 +85,10 @@ ContentSettings HostContentSettingsMap::GetContentSettings(
   if (i == host_content_settings_.end())
     return default_content_settings_;
 
-  ContentSettings output;
+  ContentSettings output = i->second;
   for (int j = 0; j < CONTENT_SETTINGS_NUM_TYPES; ++j) {
-    if (i->second.settings[j] == CONTENT_SETTING_DEFAULT) {
+    if (output.settings[j] == CONTENT_SETTING_DEFAULT)
       output.settings[j] = default_content_settings_.settings[j];
-    } else {
-      output.settings[j] = i->second.settings[j];
-    }
   }
   return output;
 }
@@ -169,19 +167,32 @@ void HostContentSettingsMap::SetContentSetting(const std::string& host,
       Value::CreateIntegerValue(setting));
 }
 
+void HostContentSettingsMap::SetBlockThirdPartyCookies(bool block) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  {
+    AutoLock auto_lock(lock_);
+    block_third_party_cookies_ = block;
+  }
+
+  profile_->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies,
+                                   block_third_party_cookies_);
+}
+
 void HostContentSettingsMap::ResetToDefaults() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   {
     AutoLock auto_lock(lock_);
     default_content_settings_ = ContentSettings();
+    ForceDefaultsToBeExplicit();
     host_content_settings_.clear();
+    block_third_party_cookies_ = false;
   }
 
   profile_->GetPrefs()->ClearPref(prefs::kDefaultContentSettings);
   profile_->GetPrefs()->ClearPref(prefs::kPerHostContentSettings);
-
-  // TODO(darin): clear third-party cookie pref
+  profile_->GetPrefs()->ClearPref(prefs::kBlockThirdPartyCookies);
 }
 
 HostContentSettingsMap::~HostContentSettingsMap() {
@@ -203,5 +214,19 @@ void HostContentSettingsMap::GetSettingsFromDictionary(
         break;
       }
     }
+  }
+}
+
+void HostContentSettingsMap::ForceDefaultsToBeExplicit() {
+  static const ContentSetting kDefaultSettings[CONTENT_SETTINGS_NUM_TYPES] = {
+    CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_COOKIES
+    CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_IMAGES
+    CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_JAVASCRIPT
+    CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_PLUGINS
+    CONTENT_SETTING_BLOCK,  // CONTENT_SETTINGS_TYPE_POPUPS
+  };
+  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
+    if (default_content_settings_.settings[i] == CONTENT_SETTING_DEFAULT)
+      default_content_settings_.settings[i] = kDefaultSettings[i];
   }
 }

@@ -295,12 +295,16 @@ const wchar_t kDesktopNotificationAllowedOrigins[] =
 const wchar_t kDesktopNotificationDeniedOrigins[] =
     L"profile.notification_denied_sites";
 
-// Bitmask of content settings applied to hosts per default.
+// Dictionary of content settings applied to all hosts by default.
 const wchar_t kDefaultContentSettings[] = L"profile.default_content_settings";
 
 // Dictionary that maps hostnames to content related settings.  Default
 // settings will be applied to hosts not in this pref.
 const wchar_t kPerHostContentSettings[] = L"profile.per_host_content_settings";
+
+// Boolean that is true if we should unconditionally block third-party cookies,
+// regardless of other content settings.
+const wchar_t kBlockThirdPartyCookies[] = L"profile.block_third_party_cookies";
 
 // Dictionary that maps hostnames to zoom levels.  Hosts not in this pref will
 // be displayed at the default zoom level.

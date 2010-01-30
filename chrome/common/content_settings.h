@@ -10,8 +10,7 @@
 // Different settings that can be assigned for a particular content type.  We
 // give the user the ability to set these on a global and per-host basis.
 enum ContentSetting {
-  CONTENT_SETTING_FIRST_SETTING = 0,
-  CONTENT_SETTING_DEFAULT = CONTENT_SETTING_FIRST_SETTING,
+  CONTENT_SETTING_DEFAULT = 0,
   CONTENT_SETTING_ALLOW,
   CONTENT_SETTING_BLOCK,
   CONTENT_SETTING_ASK,
@@ -21,8 +20,7 @@ enum ContentSetting {
 // Aggregates the permissions for the different content types.
 struct ContentSettings {
   ContentSettings() {
-    for (int i = CONTENT_SETTINGS_FIRST_TYPE; i < CONTENT_SETTINGS_NUM_TYPES;
-         ++i)
+    for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i)
       settings[i] = CONTENT_SETTING_DEFAULT;
   }
 

@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VIEWS_OPTIONS_CONTENT_FILTER_PAGE_VIEW_H_
 
 #include "chrome/browser/views/options/options_page_view.h"
+#include "chrome/common/content_settings_types.h"
 #include "chrome/common/pref_member.h"
 #include "views/controls/button/button.h"
 #include "views/view.h"
@@ -18,49 +19,31 @@ class RadioButton;
 class PrefService;
 
 ////////////////////////////////////////////////////////////////////////////////
-// ContentFilterPageView class is used to render Images, JavaScript and
-// Plug-ins page in Content Settings dialog
+// The ContentFilterPageView class is used to render the Images, JavaScript,
+// Plug-ins and Pop-ups pages in the Content Settings window.
 
 class ContentFilterPageView : public OptionsPageView,
                               public views::ButtonListener {
  public:
-  ContentFilterPageView(Profile* profile,
-                        int label_message_id,
-                        int allow_radio_message_id,
-                        int block_radio_message_id);
+  ContentFilterPageView(Profile* profile, ContentSettingsType content_type);
   virtual ~ContentFilterPageView();
 
  protected:
+  // OptionsPageView implementation:
+  virtual void InitControlLayout();
+
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
-  // OptionsPageView implementation:
-  virtual void InitControlLayout();
-  virtual void NotifyPrefChanged(const std::wstring* pref_name) {}
-
-  // views::View overrides:
-  virtual void Layout();
-
-  // Signals that allowed radio button state has changed.
-  virtual void OnAllowedChanged(bool allowed) {}
-
-  // Signals that exceptions dialog should be shown.
-  virtual void OnShowExceptionsDialog() {}
-
  private:
+  ContentSettingsType content_type_;
+
   // Controls for the content filter tab page.
-  views::Label* caption_label_;
   views::RadioButton* allow_radio_;
   views::RadioButton* block_radio_;
   views::NativeButton* exceptions_button_;
-
-  // Message ids for above UI controls.
-  int label_message_id_;
-  int allow_radio_message_id_;
-  int block_radio_message_id_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentFilterPageView);
 };
 
 #endif  // CHROME_BROWSER_VIEWS_OPTIONS_CONTENT_FILTER_PAGE_VIEW_H_
-

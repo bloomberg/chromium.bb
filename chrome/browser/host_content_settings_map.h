@@ -72,6 +72,11 @@ class HostContentSettingsMap
   // This setting trumps any host-specific settings.
   bool BlockThirdPartyCookies() const { return block_third_party_cookies_; }
 
+  // Sets whether we block all third-party cookies.
+  //
+  // This should only be called on the UI thread.
+  void SetBlockThirdPartyCookies(bool block);
+
   // Resets all settings levels.
   //
   // This should only be called on the UI thread.
@@ -90,6 +95,10 @@ class HostContentSettingsMap
   // Sets the fields of |settings| based on the values in |dictionary|.
   void GetSettingsFromDictionary(const DictionaryValue* dictionary,
                                  ContentSettings* settings);
+
+  // Forces the default settings to be explicitly set instead of themselves
+  // being CONTENT_SETTING_DEFAULT.
+  void ForceDefaultsToBeExplicit();
 
   // The profile we're associated with.
   Profile* profile_;

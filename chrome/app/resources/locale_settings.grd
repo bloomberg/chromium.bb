@@ -280,7 +280,7 @@
       <!-- The height of the Content Settings dialog box, in lines (line height = character -->
       <!-- height for default dialog box font) -->
       <message name="IDS_CONTENT_SETTINGS_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        23
+        22
       </message>
 
       <!-- The width and height of the URL picker dialog box in characters and lines -->

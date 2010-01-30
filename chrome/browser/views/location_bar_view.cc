@@ -221,8 +221,7 @@ void LocationBarView::Init() {
   security_image_view_.SetVisible(false);
   security_image_view_.set_parent_owned(false);
 
-  for (int i = CONTENT_SETTINGS_FIRST_TYPE; i < CONTENT_SETTINGS_NUM_TYPES;
-       ++i) {
+  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     ContentBlockedImageView* content_blocked_view =
         new ContentBlockedImageView(static_cast<ContentSettingsType>(i), this,
                                     profile_, bubble_positioner_);
@@ -347,16 +346,9 @@ void LocationBarView::SetProfile(Profile* profile) {
   }
 }
 
-std::wstring LocationBarView::GetHost() const {
+GURL LocationBarView::GetURL() const {
   const TabContents* tab_contents = delegate_->GetTabContents();
-  if (!tab_contents)
-    return std::wstring();
-
-  std::wstring host;
-  net::AppendFormattedHost(tab_contents->GetURL(),
-      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages), &host, NULL,
-      NULL);
-  return host;
+  return tab_contents ? tab_contents->GetURL() : GURL();
 }
 
 void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction *page_action,
@@ -1340,7 +1332,7 @@ LocationBarView::ContentBlockedImageView::ContentBlockedImageView(
       profile_(profile),
       info_bubble_(NULL),
       bubble_positioner_(bubble_positioner) {
-  if (!icons_[CONTENT_SETTINGS_FIRST_TYPE]) {
+  if (!icons_[CONTENT_SETTINGS_TYPE_COOKIES]) {
     static const int kIconIDs[] = {
       IDR_BLOCKED_COOKIES,
       IDR_BLOCKED_IMAGES,
@@ -1351,8 +1343,7 @@ LocationBarView::ContentBlockedImageView::ContentBlockedImageView(
     DCHECK_EQ(arraysize(kIconIDs),
               static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    for (int i = CONTENT_SETTINGS_FIRST_TYPE; i < CONTENT_SETTINGS_NUM_TYPES;
-         ++i)
+    for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i)
       icons_[i] = rb.GetBitmapNamed(kIconIDs[i]);
   }
   SetImage(icons_[content_type_]);
@@ -1382,8 +1373,13 @@ bool LocationBarView::ContentBlockedImageView::OnMousePressed(
   bounds.set_x(location.x());
   bounds.set_width(width());
 
+  GURL url = parent_->GetURL();
+  std::wstring display_host;
+  net::AppendFormattedHost(url,
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages), &display_host,
+      NULL, NULL);
   ContentBlockedBubbleContents* bubble_contents =
-      new ContentBlockedBubbleContents(content_type_, parent_->GetHost(),
+      new ContentBlockedBubbleContents(content_type_, url.host(), display_host,
                                        profile_);
   DCHECK(!info_bubble_);
   info_bubble_ = InfoBubble::Show(GetWindow(), bounds, bubble_contents, this);

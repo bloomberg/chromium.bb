@@ -120,6 +120,7 @@ extern const wchar_t kDesktopNotificationAllowedOrigins[];
 extern const wchar_t kDesktopNotificationDeniedOrigins[];
 extern const wchar_t kDefaultContentSettings[];
 extern const wchar_t kPerHostContentSettings[];
+extern const wchar_t kBlockThirdPartyCookies[];
 extern const wchar_t kPerHostZoomLevels[];
 extern const wchar_t kAutoFillInfoBarShown[];
 extern const wchar_t kAutoFillEnabled[];

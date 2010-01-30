@@ -131,37 +131,25 @@ void ContentSettingsWindowView::Init() {
                        cookie_page, false);
 
   ContentFilterPageView* image_page =
-      new ContentFilterPageView(profile_,
-                                IDS_IMAGES_SETTING_LABEL,
-                                IDS_IMAGES_LOAD_RADIO,
-                                IDS_IMAGES_NOLOAD_RADIO);
+      new ContentFilterPageView(profile_, CONTENT_SETTINGS_TYPE_IMAGES);
   tabs_->AddTabAtIndex(tab_index++,
                        l10n_util::GetString(IDS_IMAGES_TAB_LABEL),
                        image_page, false);
 
   ContentFilterPageView* javascript_page =
-      new ContentFilterPageView(profile_,
-                                IDS_JS_SETTING_LABEL,
-                                IDS_JS_ALLOW_RADIO,
-                                IDS_JS_DONOTALLOW_RADIO);
+      new ContentFilterPageView(profile_, CONTENT_SETTINGS_TYPE_JAVASCRIPT);
   tabs_->AddTabAtIndex(tab_index++,
                        l10n_util::GetString(IDS_JAVASCRIPT_TAB_LABEL),
                        javascript_page, false);
 
   ContentFilterPageView* plugin_page =
-      new ContentFilterPageView(profile_,
-                                IDS_PLUGIN_SETTING_LABEL,
-                                IDS_PLUGIN_LOAD_RADIO,
-                                IDS_PLUGIN_NOLOAD_RADIO);
+      new ContentFilterPageView(profile_, CONTENT_SETTINGS_TYPE_PLUGINS);
   tabs_->AddTabAtIndex(tab_index++,
                        l10n_util::GetString(IDS_PLUGIN_TAB_LABEL),
                        plugin_page, false);
 
   ContentFilterPageView* popup_page =
-      new ContentFilterPageView(profile_,
-                                IDS_POPUP_SETTING_LABEL,
-                                IDS_POPUP_ALLOW_RADIO,
-                                IDS_POPUP_BLOCK_RADIO);
+      new ContentFilterPageView(profile_, CONTENT_SETTINGS_TYPE_POPUPS);
   tabs_->AddTabAtIndex(tab_index++,
                        l10n_util::GetString(IDS_POPUP_TAB_LABEL),
                        popup_page, false);
@@ -182,11 +170,11 @@ void ContentSettingsWindowView::ShowContentSettingsTab(
     // Remember the last visited page from local state.
     page = static_cast<ContentSettingsType>(last_selected_page_.GetValue());
     if (page == CONTENT_SETTINGS_TYPE_DEFAULT)
-      page = CONTENT_SETTINGS_FIRST_TYPE;
+      page = CONTENT_SETTINGS_TYPE_COOKIES;
   }
   // If the page number is out of bounds, reset to the first tab.
   if (page < 0 || page >= tabs_->GetTabCount())
-    page = CONTENT_SETTINGS_FIRST_TYPE;
+    page = CONTENT_SETTINGS_TYPE_COOKIES;
 
   tabs_->SelectTabAt(static_cast<int>(page));
 }

@@ -11,8 +11,7 @@ enum ContentSettingsType {
   // "DEFAULT" is only used as an argument to the Content Settings Window
   // opener; there it means "whatever was last shown".
   CONTENT_SETTINGS_TYPE_DEFAULT = -1,
-  CONTENT_SETTINGS_FIRST_TYPE = 0,
-  CONTENT_SETTINGS_TYPE_COOKIES = CONTENT_SETTINGS_FIRST_TYPE,
+  CONTENT_SETTINGS_TYPE_COOKIES = 0,
   CONTENT_SETTINGS_TYPE_IMAGES,
   CONTENT_SETTINGS_TYPE_JAVASCRIPT,
   CONTENT_SETTINGS_TYPE_PLUGINS,

@@ -30,6 +30,10 @@ class CookieFilterPageView : public OptionsPageView,
   explicit CookieFilterPageView(Profile* profile);
   virtual ~CookieFilterPageView();
 
+ private:
+  // OptionsPageView implementation:
+  virtual void InitControlLayout();
+
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
@@ -37,38 +41,7 @@ class CookieFilterPageView : public OptionsPageView,
   virtual void LinkActivated(views::Link* source, int event_flags);
 
  private:
-  typedef enum {
-    COOKIES_ALLOWED_DEFAULT = 0,
-    COOKIES_ALLOWED_ALLOW = 0,
-    COOKIES_ALLOWED_ASK,
-    COOKIES_ALLOWED_BLOCK,
-  } CookiesAllowed;
-
-  // OptionsPageView implementation:
-  virtual void InitControlLayout();
-  virtual void NotifyPrefChanged(const std::wstring* pref_name) {}
-
-  // Handles that allowed radio button state has changed.
-  void SetAllowCookies(CookiesAllowed allowed);
-
-  // Handles click on exceptions dialog.
-  void ShowCookieExceptionsDialog();
-
-  // Handles change in block 3rd party cookies checkbox.
-  void SetBlock3rdPartyCookies(bool block);
-
-  // Handles change in clean on close checkbox.
-  void SetClearCookiesOnClose(bool clear);
-
-  // Handles click on flash settings link.
-  void OpenFlashSettingsDialog();
-
-  // Opens cookie manager dialog.
-  void ShowCookieManagerDialog();
-
- private:
   // Controls for the cookie filter tab page view.
-  views::Label* caption_label_;
   views::RadioButton* allow_radio_;
   views::RadioButton* ask_radio_;
   views::RadioButton* block_radio_;
@@ -76,7 +49,6 @@ class CookieFilterPageView : public OptionsPageView,
   views::Checkbox* block_3rdparty_check_;
   views::Checkbox* clear_on_close_check_;
   views::NativeButton* show_cookies_button_;
-  views::Link* flash_settings_link_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieFilterPageView);
 };

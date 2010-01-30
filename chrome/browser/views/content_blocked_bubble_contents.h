@@ -34,7 +34,8 @@ class ContentBlockedBubbleContents : public views::View,
                                      public views::LinkController {
  public:
   ContentBlockedBubbleContents(ContentSettingsType content_type,
-                               const std::wstring& host,
+                               const std::string& host,
+                               const std::wstring& display_host,
                                Profile* profile);
   virtual ~ContentBlockedBubbleContents();
 
@@ -59,7 +60,8 @@ class ContentBlockedBubbleContents : public views::View,
   ContentSettingsType content_type_;
 
   // The hostname affected.
-  std::wstring host_;
+  std::string host_;
+  std::wstring display_host_;
 
   // The active profile.
   Profile* profile_;
