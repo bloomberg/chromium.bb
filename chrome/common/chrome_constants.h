@@ -31,7 +31,6 @@ extern const wchar_t kNotSignedInProfile[];
 extern const wchar_t kNotSignedInID[];
 extern const char    kStatsFilename[];
 extern const wchar_t kBrowserResourcesDll[];
-extern const wchar_t kNaClAppName[];
 extern const FilePath::CharType kExtensionFileExtension[];
 
 // filenames

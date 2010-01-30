@@ -2205,11 +2205,6 @@
             '../views/views.gyp:views',
           ],
           'sources': [
-            # NaCl broker is used on Windows only
-            'browser/nacl_host/nacl_broker_host.cc',
-            'browser/nacl_host/nacl_broker_host.h',
-            'browser/nacl_host/nacl_broker_service.cc',
-            'browser/nacl_host/nacl_broker_service.h',
             'browser/net/ssl_config_service_manager_system.cc',
             # Using built-in rule in vstudio for midl.
             'browser/history/history_indexer.idl',

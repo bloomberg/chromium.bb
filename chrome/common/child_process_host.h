@@ -116,8 +116,6 @@ class ChildProcessHost : public ResourceDispatcherHost::Receiver,
   bool opening_channel() { return opening_channel_; }
   const std::string& channel_id() { return channel_id_; }
 
-  virtual bool DidChildCrash();
-
  private:
   // Sends the given notification to the notification service on the UI thread.
   void Notify(NotificationType type);

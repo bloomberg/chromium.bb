@@ -86,10 +86,6 @@
             'chrome_strings',
             'common_nacl_win64',
           ],
-          'sources': [
-            'nacl/broker_thread.cc',
-            'nacl/broker_thread.h',
-          ],
           'defines': [
             '<@(nacl_win64_defines)',
           ],

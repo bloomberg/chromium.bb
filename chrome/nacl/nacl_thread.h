@@ -10,6 +10,8 @@
 #include "chrome/common/child_thread.h"
 #include "chrome/common/nacl_types.h"
 
+class NotificationService;
+
 // The NaClThread class represents a background thread where NaCl app gets
 // started.
 class NaClThread : public ChildThread {

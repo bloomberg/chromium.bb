@@ -6,23 +6,15 @@
 #ifndef CHROME_COMMON_NACL_TYPES_H_
 #define CHROME_COMMON_NACL_TYPES_H_
 
-#if defined(OS_POSIX)
-#include "base/file_descriptor_posix.h"
-#endif
-
-// TODO(gregoryd): add a Windows definition for base::FileDescriptor
+// TODO(gregoryd): add a Windows definition for base::FileDescriptor,
+// replace the macros with inline functions.
 namespace nacl {
 #if defined(OS_WIN)
-  // We assume that HANDLE always uses less than 32 bits
-  typedef int FileDescriptor;
-  inline HANDLE ToNativeHandle(const FileDescriptor& desc) {
-    return reinterpret_cast<HANDLE>(desc);
-  }
+typedef HANDLE FileDescriptor;
+#define NATIVE_HANDLE(desc) (desc)
 #elif defined(OS_POSIX)
-  typedef base::FileDescriptor FileDescriptor;
-  inline int ToNativeHandle(const FileDescriptor& desc) {
-    return desc.fd;
-  }
+typedef base::FileDescriptor FileDescriptor;
+#define NATIVE_HANDLE(desc) ((desc).fd)
 #endif
 }
 

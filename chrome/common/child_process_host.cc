@@ -177,13 +177,9 @@ void ChildProcessHost::Notify(NotificationType type) {
       ChromeThread::UI, FROM_HERE, new ChildNotificationTask(type, this));
 }
 
-bool ChildProcessHost::DidChildCrash() {
-  return child_process_->DidProcessCrash();
-}
-
 void ChildProcessHost::OnChildDied() {
-  if (handle() != base::kNullProcessHandle) {
-    bool did_crash = DidChildCrash();
+  if (child_process_->GetHandle()) {
+    bool did_crash = child_process_->DidProcessCrash();
     if (did_crash) {
       OnProcessCrashed();
       // Report that this child process crashed.

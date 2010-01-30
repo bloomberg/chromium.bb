@@ -93,7 +93,7 @@ extern int NaClMain(const MainFunctionParams&);
 extern int UtilityMain(const MainFunctionParams&);
 extern int ProfileImportMain(const MainFunctionParams&);
 extern int ZygoteMain(const MainFunctionParams&);
-#if defined(_WIN64)
+#ifdef NACL_WIN64
 extern int NaClBrokerMain(const MainFunctionParams&);
 #endif
 
@@ -261,7 +261,7 @@ static void AdjustLinuxOOMScore(const std::string& process_type) {
   } else if (process_type == switches::kProfileImportProcess) {
     NOTIMPLEMENTED();
 #ifndef DISABLE_NACL
-  } else if (process_type == switches::kNaClLoaderProcess) {
+  } else if (process_type == switches::kNaClProcess) {
     score = kPluginScore;
 #endif
   } else if (process_type == switches::kZygoteProcess ||
@@ -686,12 +686,8 @@ int ChromeMain(int argc, char** argv) {
   } else if (process_type == switches::kWorkerProcess) {
     rv = WorkerMain(main_params);
 #ifndef DISABLE_NACL
-  } else if (process_type == switches::kNaClLoaderProcess) {
+  } else if (process_type == switches::kNaClProcess) {
     rv = NaClMain(main_params);
-#endif
-#ifdef _WIN64  // The broker process is used only on Win64.
-  } else if (process_type == switches::kNaClBrokerProcess) {
-    rv = NaClBrokerMain(main_params);
 #endif
   } else if (process_type == switches::kZygoteProcess) {
 #if defined(OS_LINUX)

@@ -39,7 +39,7 @@ bool SandboxInitWrapper::InitializeSandbox(const CommandLine& command_line,
   } else if (process_type == switches::kWorkerProcess) {
     // Worker process sandbox.
     sandbox_process_type = sandbox::SANDBOX_TYPE_WORKER;
-  } else if ((process_type == switches::kNaClLoaderProcess) ||
+  } else if ((process_type == switches::kNaClProcess) ||
              (process_type == switches::kPluginProcess) ||
              (process_type == switches::kProfileImportProcess)) {
     return true;

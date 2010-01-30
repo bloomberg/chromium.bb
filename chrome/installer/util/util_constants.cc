@@ -113,7 +113,6 @@ const wchar_t kChromeExe[] = L"chrome.exe";
 const wchar_t kChromeOldExe[] = L"old_chrome.exe";
 const wchar_t kChromeNewExe[] = L"new_chrome.exe";
 const wchar_t kChromeDll[] = L"chrome.dll";
-const wchar_t kChromeNaCl64Dll[] = L"chrome_nacl_win64.dll";
 const wchar_t kChromeFrameDll[] = L"npchrome_frame.dll";
 const wchar_t kSetupExe[] = L"setup.exe";
 const wchar_t kInstallerDir[] = L"Installer";

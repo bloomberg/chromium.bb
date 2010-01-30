@@ -7,7 +7,6 @@
 
 #include "chrome/app/breakpad_win.h"
 #include "chrome/app/client_util.h"
-#include "chrome/common/chrome_switches.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/install_util.h"
@@ -84,22 +83,7 @@ bool EnvQueryStr(const wchar_t* key_name, std::wstring* value) {
 // value not being null to dermine if this path contains a valid dll.
 HMODULE LoadChromeWithDirectory(std::wstring* dir) {
   ::SetCurrentDirectoryW(dir->c_str());
-#ifdef _WIN64
-  const CommandLine& cmd_line = *CommandLine::ForCurrentProcess();
-  if ((cmd_line.GetSwitchValueASCII(switches::kProcessType) ==
-      switches::kNaClBrokerProcess) ||
-      (cmd_line.GetSwitchValueASCII(switches::kProcessType) ==
-      switches::kNaClLoaderProcess)) {
-    // Load the 64-bit DLL when running in a 64-bit process.
-    dir->append(installer_util::kChromeNaCl64Dll);
-  } else {
-    // Only NaCl broker and loader can be launched as Win64 processes.
-    NOTREACHED();
-    return NULL;
-  }
-#else
   dir->append(installer_util::kChromeDll);
-#endif
   return ::LoadLibraryExW(dir->c_str(), NULL,
                           LOAD_WITH_ALTERED_SEARCH_PATH);
 }

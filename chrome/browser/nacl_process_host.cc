@@ -10,12 +10,9 @@
 #include <fcntl.h>
 #endif
 
-#include "base/command_line.h"
-#include "chrome/browser/nacl_host/nacl_broker_service.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
-#include "chrome/common/nacl_cmd_line.h"
 #include "chrome/common/nacl_messages.h"
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_switches.h"
@@ -27,15 +24,11 @@
 NaClProcessHost::NaClProcessHost(
     ResourceDispatcherHost *resource_dispatcher_host,
     const std::wstring& url)
-    : ChildProcessHost(NACL_LOADER_PROCESS, resource_dispatcher_host),
+    : ChildProcessHost(NACL_PROCESS, resource_dispatcher_host),
       resource_dispatcher_host_(resource_dispatcher_host),
       reply_msg_(NULL),
-      descriptor_(0),
-      running_on_wow64_(false) {
+      descriptor_(0) {
   set_name(url);
-#if defined(OS_WIN)
-  CheckIsWow64();
-#endif
 }
 
 NaClProcessHost::~NaClProcessHost() {
@@ -84,53 +77,62 @@ bool NaClProcessHost::LaunchSelLdr() {
     return false;
 
   CommandLine* cmd_line = new CommandLine(exe_path);
-  nacl::CopyNaClCommandLineArguments(cmd_line);
+  if (logging::DialogsAreSuppressed())
+    cmd_line->AppendSwitch(switches::kNoErrorDialogs);
+
+  // Propagate the following switches to the plugin command line (along with
+  // any associated values) if present in the browser command line.
+  // TODO(gregoryd): check which flags of those below can be supported.
+  static const char* const switch_names[] = {
+    switches::kNoSandbox,
+    switches::kTestSandbox,
+    switches::kDisableBreakpad,
+    switches::kFullMemoryCrashReport,
+    switches::kEnableLogging,
+    switches::kDisableLogging,
+    switches::kLoggingLevel,
+    switches::kEnableDCHECK,
+    switches::kSilentDumpOnDCHECK,
+    switches::kMemoryProfiling,
+#if defined(OS_MACOSX)
+    // TODO(dspringer): remove this when NaCl x86-32 security issues are fixed
+    switches::kEnableNaClOnMac,
+#endif
+  };
+
+  const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
 
 #if defined(OS_MACOSX)
-  // TODO(dspringer): NaCl is temporalrily disabled on the Mac by default, but
-  // it can be enabled with the --enable-nacl cmd-line switch. Remove this check
-  // when the security issues in the Mac PIC code are resolved.
-  if (!cmd_line->HasSwitch(switches::kEnableNaCl))
+// TODO(dspringer): NaCl is temporalrily disabled on the Mac by default, but it
+// can be enabled with the --enable-nacl cmd-line switch.  Remove this check
+// when the security issues in the Mac PIC code are resolved.
+  if (!browser_command_line.HasSwitch(switches::kEnableNaClOnMac))
     return false;
 #endif
 
+  for (size_t i = 0; i < arraysize(switch_names); ++i) {
+    if (browser_command_line.HasSwitch(switch_names[i])) {
+      cmd_line->AppendSwitchWithValue(switch_names[i],
+          browser_command_line.GetSwitchValueASCII(switch_names[i]));
+    }
+  }
+
   cmd_line->AppendSwitchWithValue(switches::kProcessType,
-                                  switches::kNaClLoaderProcess);
+                                  switches::kNaClProcess);
 
   cmd_line->AppendSwitchWithValue(switches::kProcessChannelID,
                                   ASCIIToWide(channel_id()));
 
-  // On Windows we might need to start the broker process to launch a new loader
+  ChildProcessHost::Launch(
 #if defined(OS_WIN)
-  if (running_on_wow64_) {
-    NaClBrokerService::GetInstance()->Init(resource_dispatcher_host_);
-    NaClBrokerService::GetInstance()->LaunchLoader(this,
-                                                   ASCIIToWide(channel_id()));
-  } else
-#endif
-    ChildProcessHost::Launch(
-#if defined(OS_WIN)
-        FilePath(),
+      FilePath(),
 #elif defined(OS_POSIX)
-        false,
-        base::environment_vector(),
+      false,
+      base::environment_vector(),
 #endif
-        cmd_line);
+      cmd_line);
 
   return true;
-}
-
-void NaClProcessHost::OnProcessLaunchedByBroker(base::ProcessHandle handle) {
-  set_handle(handle);
-  OnProcessLaunched();
-}
-
-bool NaClProcessHost::DidChildCrash() {
-  if (running_on_wow64_) {
-    bool child_exited;
-    return base::DidProcessCrash(&child_exited, handle());
-  }
-  return ChildProcessHost::DidChildCrash();
 }
 
 void NaClProcessHost::OnProcessLaunched() {
@@ -138,13 +140,10 @@ void NaClProcessHost::OnProcessLaunched() {
   base::ProcessHandle nacl_process_handle;
 #if NACL_WINDOWS
   // Duplicate the IMC handle
-  // We assume the size of imc_handle has the same size as HANDLE, so the cast
-  // below is safe.
-  DCHECK(sizeof(HANDLE) == sizeof(imc_handle));
   DuplicateHandle(base::GetCurrentProcessHandle(),
                   reinterpret_cast<HANDLE>(pair_[0]),
                   resource_message_filter_->handle(),
-                  reinterpret_cast<HANDLE*>(&imc_handle),
+                  &imc_handle,
                   GENERIC_READ | GENERIC_WRITE,
                   FALSE,
                   DUPLICATE_CLOSE_SOURCE);
@@ -213,24 +212,3 @@ URLRequestContext* NaClProcessHost::GetRequestContext(
     const ViewHostMsg_Resource_Request& request_data) {
   return NULL;
 }
-
-#if defined(OS_WIN)
-// TODO(gregoryd): invoke CheckIsWow64 only once, not for each NaClProcessHost
-typedef BOOL (WINAPI *LPFN_ISWOW64PROCESS) (HANDLE, PBOOL);
-void NaClProcessHost::CheckIsWow64() {
-  LPFN_ISWOW64PROCESS fnIsWow64Process;
-
-  fnIsWow64Process = (LPFN_ISWOW64PROCESS) GetProcAddress(
-      GetModuleHandle(TEXT("kernel32")),
-      "IsWow64Process");
-
-  if (fnIsWow64Process != NULL) {
-    BOOL bIsWow64 = FALSE;
-    if (fnIsWow64Process(GetCurrentProcess(),&bIsWow64)) {
-      if (bIsWow64) {
-        running_on_wow64_ = true;
-      }
-    }
-  }
-}
-#endif

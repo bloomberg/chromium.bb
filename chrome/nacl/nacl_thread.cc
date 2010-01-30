@@ -36,5 +36,5 @@ void NaClThread::OnControlMessageReceived(const IPC::Message& msg) {
 
 void NaClThread::OnStartSelLdr(int channel_descriptor,
                                nacl::FileDescriptor handle) {
-  SelMain(channel_descriptor, nacl::ToNativeHandle(handle));
+  SelMain(channel_descriptor, NATIVE_HANDLE(handle));
 }

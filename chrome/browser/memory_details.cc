@@ -209,7 +209,7 @@ void MemoryDetails::UpdateHistograms() {
       case ChildProcessInfo::SANDBOX_HELPER_PROCESS:
         UMA_HISTOGRAM_MEMORY_KB("Memory.SandboxHelper", sample);
         break;
-      case ChildProcessInfo::NACL_LOADER_PROCESS:
+      case ChildProcessInfo::NACL_PROCESS:
         UMA_HISTOGRAM_MEMORY_KB("Memory.NativeClient", sample);
         break;
       default:

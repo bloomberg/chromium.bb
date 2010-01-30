@@ -33,11 +33,6 @@ class NaClProcessHost : public ChildProcessHost {
 
   virtual void OnMessageReceived(const IPC::Message& msg);
 
-  void OnProcessLaunchedByBroker(base::ProcessHandle handle);
-
- protected:
-  virtual bool DidChildCrash();
-
  private:
   bool LaunchSelLdr();
 
@@ -51,11 +46,6 @@ class NaClProcessHost : public ChildProcessHost {
       const ViewHostMsg_Resource_Request& request_data);
 
   virtual bool CanShutdown() { return true; }
-
-#if defined(OS_WIN)
-  // Check whether the browser process is running on WOW64 - Windows only
-  void CheckIsWow64();
-#endif
 
  private:
   ResourceDispatcherHost* resource_dispatcher_host_;
@@ -72,9 +62,6 @@ class NaClProcessHost : public ChildProcessHost {
 
   // The NaCl specific descriptor for this process.
   int descriptor_;
-
-  // Windows platform flag
-  bool running_on_wow64_;
 
   DISALLOW_COPY_AND_ASSIGN(NaClProcessHost);
 };
