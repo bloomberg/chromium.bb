@@ -79,6 +79,8 @@ void PageTranslator::Translate(WebKit::WebFrame* web_frame,
       string16 text = static_cast<string16>(text_nodes_iter->nodeValue());
       DCHECK(!ContainsOnlyWhitespace(text));
       text_chunks.push_back(text);
+      // Store the original text so we can undo the translation if requested.
+      text_nodes_.push_back(NodeTextPair(*text_nodes_iter, text));
     }
     // Send the text for translation.
     bool secure = static_cast<GURL>(web_frame->top()->url()).SchemeIsSecure();
@@ -87,6 +89,21 @@ void PageTranslator::Translate(WebKit::WebFrame* web_frame,
                                     this);
     pending_translations_[work_id] = *iter;
   }
+}
+
+void PageTranslator::NavigatedToNewPage() {
+  // We can drop all our states, they were related to the previous page.
+  ResetPageState();
+}
+
+void PageTranslator::UndoTranslation() {
+  // Revert all text nodes to their original contents.
+  std::vector<NodeTextPair>::iterator iter;
+  for (iter = text_nodes_.begin(); iter != text_nodes_.end(); ++iter)
+    iter->first.setNodeValue(iter->second);
+
+  // The page is back to its original content, we can dop all our states.
+  ResetPageState();
 }
 
 bool PageTranslator::ShouldElementBeTraversed(WebKit::WebElement element) {
@@ -106,6 +123,11 @@ void PageTranslator::ClearNodeZone(int work_id) {
   }
   delete iter->second;
   pending_translations_.erase(iter);
+}
+
+void PageTranslator::ResetPageState() {
+  pending_translations_.clear();
+  text_nodes_.clear();
 }
 
 void PageTranslator::TranslationError(int work_id, int error_id) {

@@ -41,6 +41,12 @@ class PageTranslator : public TextTranslator::Delegate {
                  std::string from_lang,
                  std::string to_lang);
 
+  // Notification that the associated RenderView has navigated to a new page.
+  void NavigatedToNewPage();
+
+  // Reverts the page to its original non-translated contents.
+  void UndoTranslation();
+
   // TextTranslator::Delegate implentation:
   virtual void TranslationError(int work_id, int error_id);
   virtual void TextTranslated(
@@ -73,6 +79,9 @@ class PageTranslator : public TextTranslator::Delegate {
   // Removes and deletes the NodeZone for |work_id| in pending_translations_.
   void ClearNodeZone(int work_id);
 
+  // Clears all the states related to the page's contents.
+  void ResetPageState();
+
   // The RenderView we are providing translations for.
   RenderView* render_view_;
 
@@ -88,6 +97,11 @@ class PageTranslator : public TextTranslator::Delegate {
 
   // Mapping from a translation engine work id to the associated nodes.
   std::map<int, NodeList*> pending_translations_;
+
+  // The list of text nodes in the current page with their original text.
+  // Used to undo the translation.
+  typedef std::pair<WebKit::WebNode, WebKit::WebString> NodeTextPair;
+  std::vector<NodeTextPair> text_nodes_;
 
   DISALLOW_COPY_AND_ASSIGN(PageTranslator);
 };

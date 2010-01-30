@@ -852,6 +852,10 @@ IPC_BEGIN_MESSAGES(View)
                       std::string /* BCP 47/RFC 5646 language code to translate
                                      to */)
 
+  // Tells the render to revert the translation of the page.
+  IPC_MESSAGE_ROUTED1(ViewMsg_UndoTranslate,
+                      int /* page id */)
+
   // Reply to the ViewHostMsg_TranslateText message with the actual translated
   // text chunks.
   IPC_MESSAGE_ROUTED3(ViewMsg_TranslateTextReponse,
