@@ -4,20 +4,25 @@
 
 // A test program that drives an OpenMAX video decoder module. This program
 // will take video in elementary stream and read into the decoder.
-// Usage of this program:
-// ./omx_test --file=<file> --component=<component> --codec=<codec>
-//     <file> = Input file name
-//     <component> = Name of the OpenMAX component
-//     <codec> = Codec to be used, available codecs: h264, vc1, mpeg4, h263.
+//
+// Run the following command to see usage:
+// ./omx_test
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
+#include "base/scoped_handle.h"
 #include "base/time.h"
+#include "media/base/media.h"
+#include "media/ffmpeg/ffmpeg_common.h"
+#include "media/ffmpeg/file_protocol.h"
+#include "media/filters/bitstream_converter.h"
 #include "media/omx/input_buffer.h"
 #include "media/omx/omx_codec.h"
+#include "media/tools/omx_test/color_space_util.h"
+#include "media/tools/omx_test/file_reader_util.h"
 
 // This is the driver object to feed the decoder with data from a file.
 // It also provides callbacks for the decoder to receive events from the
@@ -29,23 +34,54 @@ class TestApp {
           media::OmxCodec::OmxMediaFormat& input_format,
           media::OmxCodec::OmxMediaFormat& output_format,
           bool simulate_copy,
-          bool measure_fps,
           bool enable_csc,
+          bool use_ffmpeg,
           int loop_count)
-      : input_filename_(input_filename),
-        output_filename_(output_filename),
+      : output_filename_(output_filename),
         input_format_(input_format),
         output_format_(output_format),
         simulate_copy_(simulate_copy),
-        measure_fps_(measure_fps),
         enable_csc_(enable_csc),
         copy_buf_size_(0),
         csc_buf_size_(0),
-        input_file_(NULL),
         output_file_(NULL),
         stopped_(false),
-        error_(false),
-        loop_count_(loop_count) {
+        error_(false) {
+    // Creates the FileReader to read input file.
+    if (input_format_.codec == media::OmxCodec::kCodecRaw) {
+      file_reader_.reset(new media::YuvFileReader(
+          input_filename,
+          input_format.video_header.width,
+          input_format.video_header.height,
+          loop_count,
+          enable_csc));
+    } else if (use_ffmpeg) {
+      file_reader_.reset(
+          new media::FFmpegFileReader(input_filename));
+    } else {
+      // Creates a reader that reads in blocks of 32KB.
+      const int kReadSize = 32768;
+      file_reader_.reset(
+          new media::BlockFileReader(input_filename, kReadSize));
+    }
+  }
+
+  bool Initialize() {
+    if (!file_reader_->Initialize()) {
+      file_reader_.reset();
+      LOG(ERROR) << "can't initialize file reader";
+      return false;;
+    }
+
+    // Opens the output file for writing.
+    if (!output_filename_.empty()) {
+      output_file_.Set(file_util::OpenFile(output_filename_, "wb"));
+      if (!output_file_.get()) {
+        LOG(ERROR) << "can't open dump file %s" << output_filename_;
+        return false;
+      }
+    }
+    return true;
   }
 
   void StopCallback() {
@@ -61,7 +97,7 @@ class TestApp {
   void ErrorCallback() {
     // In case of error, this method is called. Mark the error flag and
     // exit the message loop because we have no more work to do.
-    printf("Error callback received!\n");
+    LOG(ERROR) << "Error callback received!";
     error_ = true;
     message_loop_.Quit();
   }
@@ -106,7 +142,7 @@ class TestApp {
     if (stopped_ || error_)
       return;
 
-    if (measure_fps_ && !frame_count_)
+    if (!frame_count_)
       first_sample_delivered_time_ = base::TimeTicks::HighResNow();
 
     // If we are readding to the end, then stop.
@@ -119,13 +155,13 @@ class TestApp {
     codec_->Read(NewCallback(this, &TestApp::ReadCompleteCallback));
 
     // Copy the output of the decoder to user memory.
-    if (simulate_copy_ || output_file_) {  // |output_file_| implies a copy.
+    if (simulate_copy_ || output_file_.get()) {  // Implies a copy.
       if (size > copy_buf_size_) {
         copy_buf_.reset(new uint8[size]);
         copy_buf_size_ = size;
       }
       memcpy(copy_buf_.get(), buffer, size);
-      if (output_file_)
+      if (output_file_.get())
         DumpOutputFile(copy_buf_.get(), size);
     }
 
@@ -134,148 +170,16 @@ class TestApp {
     bit_count_ += size << 3;
   }
 
-  void ReadInputFileYuv(uint8** output, int* size) {
-    while (true) {
-      uint8* data = NULL;
-      int bytes_read = 0;
-      // OMX require encoder input are delivered in frames (or planes).
-      // Assume the input file is I420 YUV file.
-      int width = input_format_.video_header.width;
-      int height = input_format_.video_header.height;
-      int frame_size = width * height * 3 / 2;
-      data = new uint8[frame_size];
-      if (enable_csc_) {
-        CHECK(csc_buf_size_ >= frame_size);
-        bytes_read = fread(csc_buf_.get(), 1,
-                           frame_size, input_file_);
-        // We do not convert partial frames.
-        if (bytes_read == frame_size)
-          IYUVtoNV21(csc_buf_.get(), data, width, height);
-        else
-          bytes_read = 0;  // force cleanup or loop around.
-      } else {
-        bytes_read = fread(data, 1, frame_size, input_file_);
-      }
-
-      if (bytes_read) {
-        *size = bytes_read;
-        *output = data;
-        break;
-      } else {
-        // Encounter the end of file.
-        if (loop_count_ == 1) {
-          // Signal end of stream.
-          *size = 0;
-          *output = data;
-          break;
-        } else {
-          --loop_count_;
-          delete [] data;
-          fseek(input_file_, 0, SEEK_SET);
-        }
-      }
-    }
-  }
-
-  void ReadInputFileArbitrary(uint8** data, int* size) {
-      // Feeds the decoder with 32KB of input data.
-      const int kSize = 32768;
-      *data = new uint8[kSize];
-      *size = fread(*data, 1, kSize, input_file_);
-  }
-
-  void ReadInputFileH264(uint8** data, int* size) {
-    const int kSize = 1024 * 1024;
-    static int current = 0;
-    static int used = 0;
-
-    // Allocate read buffer.
-    if (!read_buf_.get())
-      read_buf_.reset(new uint8[kSize]);
-
-    // Fill the buffer when it's less than half full.
-    int read = 0;
-    if (used < kSize / 2) {
-      read = fread(read_buf_.get(), 1, kSize - used, input_file_);
-      CHECK(read >= 0);
-      used += read;
-    }
-
-    // If we failed to read.
-    if (current == read) {
-      *data = new uint8[1];
-      *size = 0;
-      return;
-    } else {
-      // Try to find start code of 0x00, 0x00, 0x01.
-      bool found = false;
-      int pos = current + 3;
-      for (; pos < used - 2; ++pos) {
-        if (read_buf_[pos] == 0 &&
-            read_buf_[pos+1] == 0 &&
-            read_buf_[pos+2] == 1) {
-          found = true;
-          break;
-        }
-      }
-      if (found) {
-        CHECK(pos > current);
-        *size = pos - current;
-        *data = new uint8[*size];
-        memcpy(*data, read_buf_.get() + current, *size);
-        current = pos;
-      } else {
-        CHECK(used > current);
-        *size = used - current;
-        *data = new uint8[*size];
-        memcpy(*data, read_buf_.get() + current, *size);
-        current = used;
-      }
-      if (used - current < current) {
-        CHECK(used > current);
-        memcpy(read_buf_.get(),
-               read_buf_.get() + current,
-               used - current);
-        used = used - current;
-        current = 0;
-      }
-      return;
-    }
-  }
-
   void FeedInputBuffer() {
     uint8* data;
     int read;
-    if (input_format_.codec == media::OmxCodec::kCodecRaw)
-      ReadInputFileYuv(&data, &read);
-    else if (input_format_.codec == media::OmxCodec::kCodecH264)
-      ReadInputFileH264(&data, &read);
-    else
-      ReadInputFileArbitrary(&data, &read);
+    file_reader_->Read(&data, &read);
     codec_->Feed(new media::InputBuffer(data, read),
                  NewCallback(this, &TestApp::FeedCallback));
   }
 
   void Run() {
-    // Open the input file.
-    input_file_ = file_util::OpenFile(input_filename_, "rb");
-    if (!input_file_) {
-      printf("Error - can't open file %s\n", input_filename_);
-      return;
-    }
-
-    // Open the dump file.
-    if (strlen(output_filename_)) {
-      output_file_ = file_util::OpenFile(output_filename_, "wb");
-      if (!input_file_) {
-        fclose(input_file_);
-        printf("Error - can't open dump file %s\n", output_filename_);
-        return;
-      }
-    }
-
-    if (measure_fps_)
-      StartProfiler();
+    StartProfiler();
 
     // Setup the |codec_| with the message loop of the current thread. Also
     // setup component name, codec format and callbacks.
@@ -294,12 +198,7 @@ class TestApp {
     // will return when we call message_loop_.Quit().
     message_loop_.Run();
 
-    if (measure_fps_)
-      StopProfiler();
-
-    fclose(input_file_);
-    if (output_file_)
-      fclose(output_file_);
+    StopProfiler();
   }
 
   void StartProfiler() {
@@ -309,72 +208,21 @@ class TestApp {
   }
 
   void StopProfiler() {
+    base::TimeDelta duration = base::TimeTicks::HighResNow() - start_time_;
+    int64 duration_ms = duration.InMilliseconds();
+    int64 fps = 0;
+    if (duration_ms) {
+      fps = (static_cast<int64>(frame_count_) *
+             base::Time::kMillisecondsPerSecond) / duration_ms;
+    }
+    base::TimeDelta delay = first_sample_delivered_time_ - start_time_;
     printf("\n<<< frame delivered : %d >>>", frame_count_);
-    stop_time_ = base::TimeTicks::HighResNow();
-    base::TimeDelta duration = stop_time_ - start_time_;
-    int64 micro_sec = duration.InMicroseconds();
-    int64 fps = (static_cast<int64>(frame_count_) *
-                base::Time::kMicrosecondsPerSecond) / micro_sec;
-    printf("\n<<< time used(us) : %d >>>", static_cast<int>(micro_sec));
+    printf("\n<<< time used(ms) : %d >>>", static_cast<int>(duration_ms));
     printf("\n<<< fps : %d >>>", static_cast<int>(fps));
-    duration = first_sample_delivered_time_ - start_time_;
-    micro_sec = duration.InMicroseconds();
-    printf("\n<<< initial delay used(us): %d >>>", static_cast<int>(micro_sec));
+    printf("\n<<< initial delay used(us): %d >>>",
+           static_cast<int>(delay.InMicroseconds()));
     // printf("\n<<< bitrate>>> : %I64d\n", bit_count_ * 1000000 / micro_sec);
     printf("\n");
-  }
-
-  // Not intended to be used in production.
-  static void NV21toIYUV(uint8* nv21, uint8* i420, int width, int height) {
-    memcpy(i420, nv21, width * height * sizeof(uint8));
-    i420 += width * height;
-    nv21 += width * height;
-    uint8* u = i420;
-    uint8* v = i420 + width * height / 4;
-
-    for (int i = 0; i < width * height / 4; ++i) {
-      *v++ = *nv21++;
-      *u++ = *nv21++;
-    }
-  }
-
-  static void NV21toYV12(uint8* nv21, uint8* yv12, int width, int height) {
-    memcpy(yv12, nv21, width * height * sizeof(uint8));
-    yv12 += width * height;
-    nv21 += width * height;
-    uint8* v = yv12;
-    uint8* u = yv12 + width * height / 4;
-
-    for (int i = 0; i < width * height / 4; ++i) {
-      *v++ = *nv21++;
-      *u++ = *nv21++;
-    }
-  }
-
-  static void IYUVtoNV21(uint8* i420, uint8* nv21, int width, int height) {
-    memcpy(nv21, i420, width * height * sizeof(uint8));
-    i420 += width * height;
-    nv21 += width * height;
-    uint8* u = i420;
-    uint8* v = i420 + width * height / 4;
-
-    for (int i = 0; i < width * height / 4; ++i) {
-      *nv21++ = *v++;
-      *nv21++ = *u++;
-    }
-  }
-
-  static void YV12toNV21(uint8* yv12, uint8* nv21, int width, int height) {
-    memcpy(nv21, yv12, width * height * sizeof(uint8));
-    yv12 += width * height;
-    nv21 += width * height;
-    uint8* v = yv12;
-    uint8* u = yv12 + width * height / 4;
-
-    for (int i = 0; i < width * height / 4; ++i) {
-      *nv21++ = *v++;
-      *nv21++ = *u++;
-    }
   }
 
   void DumpOutputFile(uint8* in_buffer, int size) {
@@ -392,34 +240,30 @@ class TestApp {
       DCHECK_GE(csc_buf_size_, size);
       out_buffer = csc_buf_.get();
       // Now assume the raw output is NV21.
-      NV21toIYUV(in_buffer, out_buffer, width, height);
+      media::NV21toIYUV(in_buffer, out_buffer, width, height);
     }
-    fwrite(out_buffer, sizeof(uint8), size, output_file_);
+    fwrite(out_buffer, sizeof(uint8), size, output_file_.get());
   }
 
   scoped_refptr<media::OmxCodec> codec_;
   MessageLoop message_loop_;
-  const char* input_filename_;
-  const char* output_filename_;
+  std::string output_filename_;
   media::OmxCodec::OmxMediaFormat input_format_;
   media::OmxCodec::OmxMediaFormat output_format_;
   bool simulate_copy_;
-  bool measure_fps_;
   bool enable_csc_;
   scoped_array<uint8> copy_buf_;
   int copy_buf_size_;
   scoped_array<uint8> csc_buf_;
   int csc_buf_size_;
-  FILE *input_file_, *output_file_;
-  scoped_array<uint8> read_buf_;
+  ScopedStdioHandle output_file_;
   bool stopped_;
   bool error_;
   base::TimeTicks start_time_;
-  base::TimeTicks stop_time_;
   base::TimeTicks first_sample_delivered_time_;
   int frame_count_;
   int bit_count_;
-  int loop_count_;
+  scoped_ptr<media::FileReader> file_reader_;
 };
 
 int main(int argc, char** argv) {
@@ -433,31 +277,29 @@ int main(int argc, char** argv) {
     if (argc < 3) {
       printf("Usage: omx_test --input-file=FILE --codec=CODEC"
              " [--output-file=FILE] [--enable-csc]"
-             " [--copy] [--measure-fps]\n");
+             " [--copy] [--use-ffmpeg]\n");
       printf("    CODEC: h264/mpeg4/h263/vc1\n");
       printf("\n");
       printf("Optional Arguments\n");
       printf("    --output-file Dump raw OMX output to file.\n");
       printf("    --enable-csc  Dump the CSCed output to file.\n");
       printf("    --copy        Simulate a memcpy from the output.\n");
-      printf("    --measure-fps Measuring performance in fps\n");
-      printf("    --loop=COUNT  loop input stream\n");
+      printf("    --use-ffmpeg  Use ffmpeg demuxer\n");
       return 1;
     }
   } else {
     if (argc < 7) {
-      printf("Usage: omx_test --input-file=FILE --codec=CODEC"
+      printf("Usage: omx_test --encoder --input-file=FILE --codec=CODEC"
              " --width=PIXEL_WIDTH --height=PIXEL_HEIGHT"
              " --bitrate=BIT_PER_SECOND --framerate=FRAME_PER_SECOND"
              " [--output-file=FILE] [--enable-csc]"
-             " [--copy] [--measure-fps]\n");
+             " [--copy]\n");
       printf("    CODEC: h264/mpeg4/h263/vc1\n");
       printf("\n");
       printf("Optional Arguments\n");
       printf("    --output-file Dump raw OMX output to file.\n");
       printf("    --enable-csc  Dump the CSCed input from file.\n");
       printf("    --copy        Simulate a memcpy from the output.\n");
-      printf("    --measure-fps Measuring performance in fps\n");
       printf("    --loop=COUNT  loop input streams\n");
       return 1;
     }
@@ -467,12 +309,25 @@ int main(int argc, char** argv) {
   std::string output_filename = cmd_line->GetSwitchValueASCII("output-file");
   std::string codec = cmd_line->GetSwitchValueASCII("codec");
   bool copy = cmd_line->HasSwitch("copy");
-  bool measure_fps = cmd_line->HasSwitch("measure-fps");
   bool enable_csc = cmd_line->HasSwitch("enable-csc");
+  bool use_ffmpeg = cmd_line->HasSwitch("use-ffmpeg");
   int loop_count = 1;
   if (cmd_line->HasSwitch("loop"))
     loop_count = StringToInt(cmd_line->GetSwitchValueASCII("loop"));
   DCHECK_GE(loop_count, 1);
+
+  // If FFmpeg should be used for demuxing load the library here and do
+  // the initialization.
+  if (use_ffmpeg) {
+    if (!media::InitializeMediaLibrary(FilePath())) {
+      LOG(ERROR) << "Unable to initialize the media library.";
+      return 1;
+    }
+
+    avcodec_init();
+    av_register_all();
+    av_register_protocol(&kFFmpegFileProtocol);
+  }
 
   media::OmxCodec::OmxMediaFormat input, output;
   memset(&input, 0, sizeof(input));
@@ -496,16 +351,16 @@ int main(int argc, char** argv) {
     output.video_header.p_dist = 0;
   } else {
     input.codec = media::OmxCodec::kCodecNone;
-    if (codec == "h264")
+    if (codec == "h264") {
       input.codec = media::OmxCodec::kCodecH264;
-    else if (codec == "mpeg4")
+    } else if (codec == "mpeg4") {
       input.codec = media::OmxCodec::kCodecMpeg4;
-    else if (codec == "h263")
+    } else if (codec == "h263") {
       input.codec = media::OmxCodec::kCodecH263;
-    else if (codec == "vc1")
+    } else if (codec == "vc1") {
       input.codec = media::OmxCodec::kCodecVc1;
-    else {
-      printf("Unknown codec.\n");
+    } else {
+      LOG(ERROR) << "Unknown codec.";
       return 1;
     }
     output.codec = media::OmxCodec::kCodecRaw;
@@ -517,12 +372,16 @@ int main(int argc, char** argv) {
                input,
                output,
                copy,
-               measure_fps,
                enable_csc,
+               use_ffmpeg,
                loop_count);
 
   // This call will run the decoder until EOS is reached or an error
   // is encountered.
+  if (!test.Initialize()) {
+    LOG(ERROR) << "can't initialize this application";
+    return -1;
+  }
   test.Run();
   return 0;
 }
