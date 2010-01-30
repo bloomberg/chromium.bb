@@ -334,8 +334,6 @@ def _SendChangeSVN(options):
     try:
       command = ['svn', 'checkout', '--depth', 'empty', '-q',
                  options.svn_repo, temp_dir]
-      if options.email:
-        command.extend(['--username', options.email])
       gclient_utils.CheckCall(command)
 
       # TODO(maruel): Use a subdirectory per user?
