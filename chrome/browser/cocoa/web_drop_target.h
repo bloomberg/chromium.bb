@@ -54,9 +54,9 @@ typedef RenderViewHost* RenderViewHostIdentifier;
 // Public use only for unit tests.
 @interface WebDropTarget(Testing)
 // Populate the URL portion of |data|. There may be more than one, but we only
-// handle dropping the first. |data| must not be NULL. Assumes the caller has
-// already called |-containsURLData|.
-- (void)populateURLAndTitle:(WebDropData*)data
+// handle dropping the first. |data| must not be |NULL|. Returns |YES| if URL
+// data was obtained from the pasteboard, |NO| otherwise.
+- (BOOL)populateURLAndTitle:(WebDropData*)data
              fromPasteboard:(NSPasteboard*)pboard;
 // Given |data|, which should not be nil, fill it in using the contents of the
 // given pasteboard.

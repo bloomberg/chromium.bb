@@ -168,21 +168,28 @@ using WebKit::WebDragOperationsMask;
 }
 
 // Populate the URL portion of |data|. There may be more than one, but we only
-// handle dropping the first. |data| must not be NULL. Assumes the caller has
-// already called |-containsURLData|.
-- (void)populateURLAndTitle:(WebDropData*)data
+// handle dropping the first. |data| must not be |NULL|. Returns |YES| if URL
+// data was obtained from the pasteboard, |NO| otherwise.
+- (BOOL)populateURLAndTitle:(WebDropData*)data
              fromPasteboard:(NSPasteboard*)pboard {
   DCHECK(data);
-  DCHECK([pboard containsURLData]);
 
-  // The getURLs:andTitles: will already validate URIs so we don't need to
-  // again. However, if the URI is a local file, it won't be prefixed with
-  // file://, which is what GURL expects. We can detect that case because the
-  // resulting URI will have no valid scheme, and we'll assume it's a local
-  // file. The arrays returned are both of NSString's.
+  // Bail out early if there's no URL data.
+  if (![pboard containsURLData])
+    return NO;
+
+  // |-getURLs:andTitles:| will already validate URIs so we don't need to again.
+  // However, if the URI is a local file, it won't be prefixed with file://,
+  // which is what GURL expects. We can detect that case because the resulting
+  // URI will have no valid scheme, and we'll assume it's a local file. The
+  // arrays returned are both of NSString's.
   NSArray* urls = nil;
   NSArray* titles = nil;
   [pboard getURLs:&urls andTitles:&titles];
+  DCHECK_EQ([urls count], [titles count]);
+  // It's possible that no URLs were actually provided!
+  if (![urls count])
+    return NO;
   NSString* urlString = [urls objectAtIndex:0];
   if ([urlString length]) {
     NSURL* url = [NSURL URLWithString:urlString];
@@ -193,9 +200,12 @@ using WebKit::WebDragOperationsMask;
     const char* utf8Url = [urlString UTF8String];
     if (utf8Url) {
       data->url = GURL(utf8Url);
-      data->url_title = base::SysNSStringToUTF16([titles objectAtIndex:0]);
+      // Extra paranoia check.
+      if ([titles count])
+        data->url_title = base::SysNSStringToUTF16([titles objectAtIndex:0]);
     }
   }
+  return YES;
 }
 
 // Given |data|, which should not be nil, fill it in using the contents of the
@@ -206,9 +216,8 @@ using WebKit::WebDragOperationsMask;
   DCHECK(pboard);
   NSArray* types = [pboard types];
 
-  // Get URL.
-  if ([pboard containsURLData])
-    [self populateURLAndTitle:data fromPasteboard:pboard];
+  // Get URL if possible.
+  [self populateURLAndTitle:data fromPasteboard:pboard];
 
   // Get plain text.
   if ([types containsObject:NSStringPboardType]) {
