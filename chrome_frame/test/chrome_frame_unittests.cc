@@ -1354,8 +1354,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_WindowOpenInChrome) {
                   std::string("A")), 0))));
 
   EXPECT_CALL(mock,
-              OnNewWindow3(_, _, _, _, _))
-      .WillOnce(QUIT_LOOP(loop));
+              OnNewWindow3(_, _, _, _, _));
 
   HRESULT hr = mock.LaunchIEAndNavigate(kChromeFrameFullTabWindowOpenTestUrl);
   ASSERT_HRESULT_SUCCEEDED(hr);
