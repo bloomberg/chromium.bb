@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -51,18 +51,22 @@ void HostZoomMap::SetZoomLevel(const std::string& host, int level) {
       host_zoom_levels_[host] = level;
   }
 
-  // Persist new zoom level if we're not off the record.
-  if (!profile_->IsOffTheRecord()) {
-    DictionaryValue* host_zoom_dictionary =
-        profile_->GetPrefs()->GetMutableDictionary(prefs::kPerHostZoomLevels);
-    std::wstring wide_host(UTF8ToWide(host));
-    if (level == 0) {
-      host_zoom_dictionary->RemoveWithoutPathExpansion(wide_host, NULL);
-    } else {
-      host_zoom_dictionary->SetWithoutPathExpansion(wide_host,
-          Value::CreateIntegerValue(level));
-    }
+  DictionaryValue* host_zoom_dictionary =
+      profile_->GetPrefs()->GetMutableDictionary(prefs::kPerHostZoomLevels);
+  std::wstring wide_host(UTF8ToWide(host));
+  if (level == 0) {
+    host_zoom_dictionary->RemoveWithoutPathExpansion(wide_host, NULL);
+  } else {
+    host_zoom_dictionary->SetWithoutPathExpansion(wide_host,
+        Value::CreateIntegerValue(level));
   }
+}
+
+void HostZoomMap::ResetToDefaults() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  host_zoom_levels_.clear();
+  profile_->GetPrefs()->ClearPref(prefs::kPerHostZoomLevels);
 }
 
 HostZoomMap::~HostZoomMap() {

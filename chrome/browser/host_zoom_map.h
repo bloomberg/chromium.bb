@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 // Maps hostnames to custom zoom levels.  Written on the UI thread and read on
-// the IO thread.  One instance per profile.
+// any thread.  One instance per profile.
 
 #ifndef CHROME_BROWSER_HOST_ZOOM_MAP_H_
 #define CHROME_BROWSER_HOST_ZOOM_MAP_H_
@@ -37,6 +37,11 @@ class HostZoomMap : public base::RefCountedThreadSafe<HostZoomMap> {
   //
   // This should only be called on the UI thread.
   void SetZoomLevel(const std::string& host, int level);
+
+  // Resets all zoom levels.
+  //
+  // This should only be called on the UI thread.
+  void ResetToDefaults();
 
  private:
   friend class base::RefCountedThreadSafe<HostZoomMap>;

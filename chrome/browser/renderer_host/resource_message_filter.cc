@@ -899,10 +899,8 @@ void ResourceMessageFilter::UpdateHostZoomLevelsOnUIThread(
   for (RenderProcessHost::iterator i(RenderProcessHost::AllHostsIterator());
        !i.IsAtEnd(); i.Advance()) {
     RenderProcessHost* render_process_host = i.GetCurrentValue();
-    if (render_process_host->profile() == profile_) {
-      render_process_host->Send(
-          new ViewMsg_SetZoomLevelForCurrentHost(host, zoom_level));
-    }
+    render_process_host->Send(
+        new ViewMsg_SetZoomLevelForCurrentHost(host, zoom_level));
   }
 }
 

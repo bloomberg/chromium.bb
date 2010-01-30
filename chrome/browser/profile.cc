@@ -415,11 +415,7 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual HostZoomMap* GetHostZoomMap() {
-    // Need to use a separate map from the normal one to avoid persisting zoom
-    // changes in OTR mode.
-    if (!host_zoom_map_)
-      host_zoom_map_ = new HostZoomMap(this);
-    return host_zoom_map_.get();
+    return profile_->GetHostZoomMap();
   }
 
   virtual Blacklist* GetPrivacyBlacklist() {
@@ -545,8 +541,6 @@ class OffTheRecordProfileImpl : public Profile,
   scoped_refptr<ChromeURLRequestContextGetter> extensions_request_context_;
 
   scoped_ptr<HostContentSettingsMap> host_content_settings_map_;
-
-  scoped_refptr<HostZoomMap> host_zoom_map_;
 
   // The download manager that only stores downloaded items in memory.
   scoped_refptr<DownloadManager> download_manager_;
