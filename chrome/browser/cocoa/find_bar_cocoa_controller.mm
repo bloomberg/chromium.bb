@@ -19,8 +19,8 @@
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
 namespace {
-static float kFindBarOpenDuration = 0.2;
-static float kFindBarCloseDuration = 0.15;
+const float kFindBarOpenDuration = 0.2;
+const float kFindBarCloseDuration = 0.15;
 }
 
 @interface FindBarCocoaController (PrivateMethods)
