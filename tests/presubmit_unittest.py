@@ -734,13 +734,13 @@ class InputApiUnittest(PresubmitTestsBase):
         ],
         [
           # Expected.
-          'b.c/.git',
         ],
       ),
     ]
     input_api = presubmit.InputApi(None, './PRESUBMIT.py', False)
     self.mox.ReplayAll()
 
+    self.assertEqual(len(input_api.DEFAULT_WHITE_LIST), 20)
     self.assertEqual(len(input_api.DEFAULT_BLACK_LIST), 9)
     for item in files:
       results = filter(input_api.FilterSourceFile, item[0])
@@ -748,7 +748,8 @@ class InputApiUnittest(PresubmitTestsBase):
         self.assertEquals(results[i].LocalPath(),
                           presubmit.normpath(item[1][i]))
       # Same number of expected results.
-      self.assertEquals(len(results), len(item[1]))
+      self.assertEquals(sorted([f.LocalPath() for f in results]),
+                        sorted(item[1]))
 
   def testCustomFilter(self):
     def FilterSourceFile(affected_file):
