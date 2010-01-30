@@ -166,7 +166,7 @@ void ContentSettingsWindowView::Init() {
                        l10n_util::GetString(IDS_POPUP_TAB_LABEL),
                        popup_page, false);
 
-  DCHECK(tabs_->GetTabCount() == CONTENT_SETTINGS_NUM_TYPES);
+  DCHECK_EQ(tabs_->GetTabCount(), CONTENT_SETTINGS_NUM_TYPES);
 }
 
 void ContentSettingsWindowView::ShowContentSettingsTab(

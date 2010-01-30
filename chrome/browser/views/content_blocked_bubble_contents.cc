@@ -79,7 +79,8 @@ void ContentBlockedBubbleContents::InitControlLayout() {
     IDS_BLOCKED_PLUGINS_TITLE,
     IDS_BLOCKED_POPUPS_TITLE,
   };
-  DCHECK_EQ(arraysize(kTitleIDs), CONTENT_SETTINGS_NUM_TYPES);
+  DCHECK_EQ(arraysize(kTitleIDs),
+            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
   views::Label* title_label =
       new views::Label(l10n_util::GetString(kTitleIDs[content_type_]));
 
@@ -112,7 +113,8 @@ void ContentBlockedBubbleContents::InitControlLayout() {
       IDS_BLOCKED_PLUGINS_UNBLOCK,
       IDS_BLOCKED_POPUPS_UNBLOCK,
     };
-    DCHECK_EQ(arraysize(kAllowIDs), CONTENT_SETTINGS_NUM_TYPES);
+    DCHECK_EQ(arraysize(kAllowIDs),
+              static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
     const int radio_button_group = 0;
     allow_radio_ = new views::RadioButton(
         l10n_util::GetStringF(kAllowIDs[content_type_], host_),
@@ -126,7 +128,8 @@ void ContentBlockedBubbleContents::InitControlLayout() {
       IDS_BLOCKED_PLUGINS_NO_ACTION,
       IDS_BLOCKED_POPUPS_NO_ACTION,
     };
-    DCHECK_EQ(arraysize(kAllowIDs), CONTENT_SETTINGS_NUM_TYPES);
+    DCHECK_EQ(arraysize(kAllowIDs),
+              static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
     block_radio_ = new views::RadioButton(
         l10n_util::GetString(kBlockIDs[content_type_]), radio_button_group);
     block_radio_->set_listener(this);
@@ -163,7 +166,8 @@ void ContentBlockedBubbleContents::InitControlLayout() {
     IDS_BLOCKED_PLUGINS_LINK,
     IDS_BLOCKED_POPUPS_LINK,
   };
-  DCHECK_EQ(arraysize(kLinkIDs), CONTENT_SETTINGS_NUM_TYPES);
+  DCHECK_EQ(arraysize(kLinkIDs),
+            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
   manage_link_ = new views::Link(l10n_util::GetString(kLinkIDs[content_type_]));
   manage_link_->SetController(this);
 

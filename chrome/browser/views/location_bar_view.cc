@@ -1348,7 +1348,8 @@ LocationBarView::ContentBlockedImageView::ContentBlockedImageView(
       IDR_BLOCKED_PLUGINS,
       IDR_BLOCKED_POPUPS,
     };
-    DCHECK_EQ(arraysize(kIconIDs), CONTENT_SETTINGS_NUM_TYPES);
+    DCHECK_EQ(arraysize(kIconIDs),
+              static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
     for (int i = CONTENT_SETTINGS_FIRST_TYPE; i < CONTENT_SETTINGS_NUM_TYPES;
          ++i)
@@ -1363,7 +1364,8 @@ LocationBarView::ContentBlockedImageView::ContentBlockedImageView(
     IDS_BLOCKED_PLUGINS_TITLE,
     IDS_BLOCKED_POPUPS_TOOLTIP,
   };
-  DCHECK_EQ(arraysize(kTooltipIDs), CONTENT_SETTINGS_NUM_TYPES);
+  DCHECK_EQ(arraysize(kTooltipIDs),
+            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
   SetTooltipText(l10n_util::GetString(kTooltipIDs[content_type_]));
 }
 
@@ -1383,7 +1385,7 @@ bool LocationBarView::ContentBlockedImageView::OnMousePressed(
   ContentBlockedBubbleContents* bubble_contents =
       new ContentBlockedBubbleContents(content_type_, parent_->GetHost(),
                                        profile_);
-  DCHECK(info_bubble_ == NULL);
+  DCHECK(!info_bubble_);
   info_bubble_ = InfoBubble::Show(GetWindow(), bounds, bubble_contents, this);
   bubble_contents->set_info_bubble(info_bubble_);
   return true;
@@ -1542,10 +1544,10 @@ void LocationBarView::PageActionImageView::OnImageLoaded(SkBitmap* image,
                                                          size_t index) {
   // We loaded icons()->size() icons, plus one extra if the page action had
   // a default icon.
-  int total_icons = page_action_->icon_paths()->size();
+  size_t total_icons = page_action_->icon_paths()->size();
   if (!page_action_->default_icon_path().empty())
     total_icons++;
-  DCHECK(static_cast<int>(index) < total_icons);
+  DCHECK(index < total_icons);
 
   // Map the index of the loaded image back to its name. If we ever get an
   // index greater than the number of icons, it must be the default icon.
@@ -1557,7 +1559,7 @@ void LocationBarView::PageActionImageView::OnImageLoaded(SkBitmap* image,
   }
 
   // If we are done, release the tracker.
-  if (static_cast<int>(index) == (total_icons - 1))
+  if (index == total_icons - 1)
     tracker_ = NULL;
 
   owner_->UpdatePageActions();

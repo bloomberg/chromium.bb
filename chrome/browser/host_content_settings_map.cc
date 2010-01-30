@@ -21,7 +21,8 @@ const wchar_t* HostContentSettingsMap::kTypeNames[] = {
 
 HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
     : profile_(profile) {
-  DCHECK(arraysize(kTypeNames) == CONTENT_SETTINGS_NUM_TYPES);
+  DCHECK_EQ(arraysize(kTypeNames),
+            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
 
   const DictionaryValue* default_settings_dictionary =
       profile_->GetPrefs()->GetDictionary(prefs::kDefaultContentSettings);
