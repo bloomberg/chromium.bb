@@ -313,9 +313,9 @@ void URLRequestAutomationJob::OnRequestStarted(int tab, int id,
     }
 
     if (response_cookies.size()) {
-      if (ctx && ctx->cookie_store() && ctx->cookie_policy() &&
+      if (ctx && ctx->cookie_store() && (!ctx->cookie_policy() ||
           ctx->cookie_policy()->CanSetCookie(
-              url_for_cookies, request_->first_party_for_cookies())) {
+              url_for_cookies, request_->first_party_for_cookies()))) {
         net::CookieOptions options;
         options.set_include_httponly();
         ctx->cookie_store()->SetCookiesWithOptions(url_for_cookies,
@@ -325,10 +325,9 @@ void URLRequestAutomationJob::OnRequestStarted(int tab, int id,
     }
   }
 
-  if (ctx && ctx->cookie_store() && ctx->cookie_policy() &&
-      !response.persistent_cookies.empty() &&
-      ctx->cookie_policy()->CanSetCookie(
-          url_for_cookies, request_->first_party_for_cookies())) {
+  if (!response.persistent_cookies.empty() && ctx && ctx->cookie_store() &&
+      (!ctx->cookie_policy() || ctx->cookie_policy()->CanSetCookie(
+          url_for_cookies, request_->first_party_for_cookies()))) {
     StringTokenizer cookie_parser(response.persistent_cookies, ";");
 
     std::vector<net::CookieMonster::CanonicalCookie> existing_cookies;

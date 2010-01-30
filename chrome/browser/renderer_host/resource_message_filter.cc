@@ -483,6 +483,7 @@ void ResourceMessageFilter::OnSetCookie(const GURL& url,
                                         const std::string& cookie) {
   ChromeURLRequestContext* context = GetRequestContextForURL(url);
 
+  DCHECK(context->cookie_policy());
   if (!context->cookie_policy()->CanSetCookie(url, first_party_for_cookies))
     return;
   scoped_ptr<Blacklist::Match> match(
@@ -496,6 +497,7 @@ void ResourceMessageFilter::OnGetCookies(const GURL& url,
                                          const GURL& first_party_for_cookies,
                                          std::string* cookies) {
   URLRequestContext* context = GetRequestContextForURL(url);
+  DCHECK(context->cookie_policy());
   if (context->cookie_policy()->CanGetCookies(url, first_party_for_cookies))
     *cookies = context->cookie_store()->GetCookies(url);
 }
