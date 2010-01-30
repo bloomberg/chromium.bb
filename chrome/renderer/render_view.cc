@@ -2002,6 +2002,20 @@ void RenderView::willClose(WebFrame* frame) {
   navigation_state->user_script_idle_scheduler()->Cancel();
 }
 
+bool RenderView::allowPlugins(WebFrame* frame, bool enabled_per_settings) {
+  if (!enabled_per_settings)
+    return false;
+  // TODO(darin): Apply policy from content settings.
+  return true;
+}
+
+bool RenderView::allowImages(WebFrame* frame, bool enabled_per_settings) {
+  if (!enabled_per_settings)
+    return false;
+  // TODO(darin): Apply policy from content settings.
+  return true;
+}
+
 void RenderView::loadURLExternally(
     WebFrame* frame, const WebURLRequest& request,
     WebNavigationPolicy policy) {
@@ -2630,8 +2644,10 @@ void RenderView::didRunInsecureContent(
 }
 
 bool RenderView::allowScript(WebFrame* frame, bool enabled_per_settings) {
-  if (enabled_per_settings)
+  if (enabled_per_settings) {
+    // TODO(darin): Apply policy from content settings.
     return true;
+  }
 
   WebSecurityOrigin origin = frame->securityOrigin();
   if (origin.isEmpty())

@@ -278,6 +278,8 @@ class RenderView : public RenderWidget,
   virtual WebKit::WebMediaPlayer* createMediaPlayer(
       WebKit::WebFrame* frame, WebKit::WebMediaPlayerClient* client);
   virtual void willClose(WebKit::WebFrame* frame);
+  virtual bool allowPlugins(WebKit::WebFrame* frame, bool enabled_per_settings);
+  virtual bool allowImages(WebKit::WebFrame* frame, bool enabled_per_settings);
   virtual void loadURLExternally(
       WebKit::WebFrame* frame, const WebKit::WebURLRequest& request,
       WebKit::WebNavigationPolicy policy);
