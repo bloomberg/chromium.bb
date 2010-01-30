@@ -41,10 +41,13 @@ to the server by HTTP.
 
 Examples:
   Try a change against a particular revision:
-    %prog change_name -r 123
+    %prog -r 123
 
   A git patch off a web site (git inserts a/ and b/) and fix the base dir:
     %prog --url http://url/to/patch.diff --patchlevel 1 --root src
+
+  Or from rietveld:
+    %prog -R codereview.chromium.org/1337 --email me@example.com --root src
 
   Use svn to store the try job, specify an alternate email address and use a
   premade diff file on the local drive:
@@ -454,11 +457,14 @@ def TryChange(argv,
   group.add_option("--issue", type='int',
                    help="Update rietveld issue try job status")
   group.add_option("--patchset", type='int',
-                   help="Update rietveld issue try job status")
+                   help="Update rietveld issue try job status. This is "
+                        "optional if --issue is used, In that case, the "
+                        "latest patchset will be used.")
   group.add_option("--dry_run", action='store_true',
                    help="Just prints the diff and quits")
-  group.add_option("--rietveld_url",
-                   help="The code review url.")
+  group.add_option("-R", "--rietveld_url", default="codereview.appspot.com",
+                   metavar="URL",
+                   help="The root code review url. Default:%default")
   parser.add_option_group(group)
 
   group = optparse.OptionGroup(parser, "Try job options")
@@ -564,6 +570,17 @@ def TryChange(argv,
 
   logging.debug(argv)
 
+  if options.rietveld_url:
+    # Try to extract the review number if possible and fix the protocol.
+    if not '://' in options.rietveld_url:
+      options.rietveld_url = 'http://' + options.rietveld_url
+    match = re.match(r'^(.*)/(\d+)$', options.rietveld_url)
+    if match:
+      if options.issue or options.patchset:
+        parser.error('Cannot use both --issue and use a review number url')
+      options.issue = int(match.group(2))
+      options.rietveld_url = match.group(1)
+
   try:
     # Always include os.getcwd() in the checkout settings.
     checkouts = []
@@ -595,14 +612,17 @@ def TryChange(argv,
       options.diff = gclient_utils.FileRead(options.diff, 'rb')
     elif options.issue and options.patchset is None:
       # Retrieve the patch from rietveld when the diff is not specified.
+      # When patchset is specified, it's because it's done by gcl/git-try.
       try:
         import simplejson
       except ImportError:
         parser.error('simplejson library is missing, please install.')
-      api_url = 'http://%s/api/%d' % (options.rietveld_url, options.issue)
+      api_url = '%s/api/%d' % (options.rietveld_url, options.issue)
+      logging.debug(api_url)
       contents = simplejson.loads(urllib.urlopen(api_url).read())
-      diff_url = ('http://%s/download/issue%d_%d.diff' %
-          (options.rietveld_url,  options.issue, contents['patchsets'][-1]))
+      options.patchset = contents['patchsets'][-1]
+      diff_url = ('%s/download/issue%d_%d.diff' %
+          (options.rietveld_url,  options.issue, options.patchset))
       diff = GetMungedDiff('', urllib.urlopen(diff_url).readlines())
       options.diff = ''.join(diff)
     else:
