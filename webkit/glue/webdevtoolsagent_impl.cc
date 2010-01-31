@@ -323,6 +323,21 @@ void WebDevToolsAgentImpl::sendRpcMessage(const WebKit::WebDevToolsMessageData& 
     m_client->sendMessageToFrontend(data);
 }
 
+void WebDevToolsAgentImpl::compileUtilityScripts()
+{
+    v8::HandleScope handleScope;
+    v8::Context::Scope contextScope(m_utilityContext);
+    // Inject javascript into the context.
+    WebCString injectedScriptJs = m_client->injectedScriptSource();
+    v8::Script::Compile(v8::String::New(
+        injectedScriptJs.data(),
+        injectedScriptJs.length()))->Run();
+    WebCString injectDispatchJs = m_client->injectedScriptDispatcherSource();
+    v8::Script::Compile(v8::String::New(
+        injectDispatchJs.data(),
+        injectDispatchJs.length()))->Run();
+}
+
 void WebDevToolsAgentImpl::initDevToolsAgentHost()
 {
     BoundObject devtoolsAgentHost(m_utilityContext, this, "DevToolsAgentHost");
@@ -378,6 +393,7 @@ void WebDevToolsAgentImpl::resetInspectorFrontendProxy()
 {
     disposeUtilityContext();
     m_debuggerAgentImpl->createUtilityContext(m_webViewImpl->page()->mainFrame(), &m_utilityContext);
+    compileUtilityScripts();
     initDevToolsAgentHost();
 
     v8::HandleScope scope;

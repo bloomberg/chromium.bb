@@ -6,12 +6,15 @@
 #include "third_party/WebKit/WebKit/chromium/src/WebViewImpl.h"
 
 #undef LOG
+#include "grit/webkit_resources.h"
 #include "webkit/tools/test_shell/test_shell_devtools_agent.h"
 #include "webkit/tools/test_shell/test_shell_devtools_callargs.h"
 #include "webkit/tools/test_shell/test_shell_devtools_client.h"
+#include "webkit/glue/webkit_glue.h"
 
 #include "base/message_loop.h"
 
+using WebKit::WebCString;
 using WebKit::WebDevToolsAgent;
 using WebKit::WebDevToolsMessageData;
 using WebKit::WebString;
@@ -58,6 +61,18 @@ void TestShellDevToolsAgent::forceRepaint() {
 void TestShellDevToolsAgent::runtimeFeatureStateChanged(
     const WebKit::WebString& feature, bool enabled) {
   // TODO(loislo): implement this.
+}
+
+WebCString TestShellDevToolsAgent::injectedScriptSource() {
+  base::StringPiece injectjsWebkit =
+      webkit_glue::GetDataResource(IDR_DEVTOOLS_INJECT_WEBKIT_JS);
+  return WebCString(injectjsWebkit.as_string().c_str());
+}
+
+WebCString TestShellDevToolsAgent::injectedScriptDispatcherSource() {
+  base::StringPiece injectDispatchjs =
+      webkit_glue::GetDataResource(IDR_DEVTOOLS_INJECT_DISPATCH_JS);
+  return WebCString(injectDispatchjs.as_string().c_str());
 }
 
 void TestShellDevToolsAgent::AsyncCall(const TestShellDevToolsCallArgs &args) {
