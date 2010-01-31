@@ -119,6 +119,7 @@ private:
     void disposeUtilityContext();
     void unhideResourcesPanelIfNecessary();
 
+    void compileUtilityScripts();
     void initDevToolsAgentHost();
     void resetInspectorFrontendProxy();
     void setApuAgentEnabled(bool enabled);
