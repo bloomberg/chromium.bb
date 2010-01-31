@@ -11,7 +11,8 @@
 #include "chrome/common/pref_service.h"
 
 // static
-const wchar_t* HostContentSettingsMap::kTypeNames[] = {
+const wchar_t*
+    HostContentSettingsMap::kTypeNames[CONTENT_SETTINGS_NUM_TYPES] = {
   L"cookies",
   L"images",
   L"javascript",
@@ -24,7 +25,6 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
       block_third_party_cookies_(false) {
   DCHECK_EQ(arraysize(kTypeNames),
             static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
-
   const DictionaryValue* default_settings_dictionary =
       profile_->GetPrefs()->GetDictionary(prefs::kDefaultContentSettings);
   // Careful: The returned value could be NULL if the pref has never been set.
@@ -93,9 +93,9 @@ ContentSettings HostContentSettingsMap::GetContentSettings(
   return output;
 }
 
-void HostContentSettingsMap::GetHostContentSettingsForOneType(
+void HostContentSettingsMap::GetSettingsForOneType(
     ContentSettingsType content_type,
-    HostContentSettingsForOneType* settings) const {
+    SettingsForOneType* settings) const {
   DCHECK(settings);
   settings->clear();
 
@@ -103,8 +103,11 @@ void HostContentSettingsMap::GetHostContentSettingsForOneType(
   for (HostContentSettings::const_iterator i(host_content_settings_.begin());
        i != host_content_settings_.end(); ++i) {
     ContentSetting setting = i->second.settings[content_type];
-    if (setting != CONTENT_SETTING_DEFAULT)
-      (*settings)[i->first] = setting;
+    if (setting != CONTENT_SETTING_DEFAULT) {
+      // Use of push_back() relies on the map iterator traversing in order of
+      // ascending keys.
+      settings->push_back(std::make_pair(i->first, setting));
+    }
   }
 }
 
@@ -128,7 +131,7 @@ void HostContentSettingsMap::SetContentSetting(const std::string& host,
                                                ContentSetting setting) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
-  bool all_default = true;
+  bool all_default;
   {
     AutoLock auto_lock(lock_);
     if (!host_content_settings_.count(host))
@@ -136,12 +139,7 @@ void HostContentSettingsMap::SetContentSetting(const std::string& host,
     HostContentSettings::iterator i(host_content_settings_.find(host));
     ContentSettings& settings = i->second;
     settings.settings[content_type] = setting;
-    for (size_t i = 0; i < arraysize(settings.settings); ++i) {
-      if (settings.settings[i] != CONTENT_SETTING_DEFAULT) {
-        all_default = false;
-        break;
-      }
-    }
+    all_default = AllDefault(settings);
     if (all_default)
       host_content_settings_.erase(i);
   }
@@ -162,9 +160,42 @@ void HostContentSettingsMap::SetContentSetting(const std::string& host,
     all_settings_dictionary->SetWithoutPathExpansion(
         wide_host, host_settings_dictionary);
   }
-  host_settings_dictionary->SetWithoutPathExpansion(
-      std::wstring(kTypeNames[content_type]),
-      Value::CreateIntegerValue(setting));
+  std::wstring dictionary_path(kTypeNames[content_type]);
+  if (setting == CONTENT_SETTING_DEFAULT) {
+    host_settings_dictionary->RemoveWithoutPathExpansion(dictionary_path, NULL);
+  } else {
+    host_settings_dictionary->SetWithoutPathExpansion(
+        dictionary_path, Value::CreateIntegerValue(setting));
+  }
+}
+
+void HostContentSettingsMap::ClearSettingsForOneType(
+    ContentSettingsType content_type) {
+  AutoLock auto_lock(lock_);
+  for (HostContentSettings::iterator i(host_content_settings_.begin());
+       i != host_content_settings_.end(); ) {
+    if (i->second.settings[content_type] != CONTENT_SETTING_DEFAULT) {
+      i->second.settings[content_type] = CONTENT_SETTING_DEFAULT;
+      std::wstring wide_host(UTF8ToWide(i->first));
+      DictionaryValue* all_settings_dictionary =
+          profile_->GetPrefs()->GetMutableDictionary(
+              prefs::kPerHostContentSettings);
+      if (AllDefault(i->second)) {
+        all_settings_dictionary->RemoveWithoutPathExpansion(wide_host, NULL);
+        host_content_settings_.erase(i++);
+      } else {
+        DictionaryValue* host_settings_dictionary;
+        bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
+            wide_host, &host_settings_dictionary);
+        DCHECK(found);
+        host_settings_dictionary->RemoveWithoutPathExpansion(
+            kTypeNames[content_type], NULL);
+        ++i;
+      }
+    } else {
+      ++i;
+    }
+  }
 }
 
 void HostContentSettingsMap::SetBlockThirdPartyCookies(bool block) {
@@ -229,4 +260,13 @@ void HostContentSettingsMap::ForceDefaultsToBeExplicit() {
     if (default_content_settings_.settings[i] == CONTENT_SETTING_DEFAULT)
       default_content_settings_.settings[i] = kDefaultSettings[i];
   }
+}
+
+bool HostContentSettingsMap::AllDefault(const ContentSettings& settings) const {
+  for (size_t i = 0; i < arraysize(settings.settings); ++i) {
+    if (settings.settings[i] != CONTENT_SETTING_DEFAULT)
+      return false;
+  }
+
+  return true;
 }

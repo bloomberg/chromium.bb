@@ -10,6 +10,8 @@
 
 #include <map>
 #include <string>
+#include <utility>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "base/lock.h"
@@ -23,7 +25,8 @@ class Profile;
 class HostContentSettingsMap
     : public base::RefCountedThreadSafe<HostContentSettingsMap> {
  public:
-  typedef std::map<std::string, ContentSetting> HostContentSettingsForOneType;
+  typedef std::pair<std::string, ContentSetting> HostSettingPair;
+  typedef std::vector<HostSettingPair> SettingsForOneType;
 
   explicit HostContentSettingsMap(Profile* profile);
 
@@ -47,12 +50,12 @@ class HostContentSettingsMap
   ContentSettings GetContentSettings(const std::string& host) const;
 
   // For a given content type, returns all hosts with a non-default setting,
-  // mapped to their actual settings.  |settings| must be a non-NULL outparam.
+  // mapped to their actual settings, in lexicographical order.  |settings| must
+  // be a non-NULL outparam.
   //
   // This may be called on any thread.
-  void GetHostContentSettingsForOneType(
-      ContentSettingsType content_type,
-      HostContentSettingsForOneType* settings) const;
+  void GetSettingsForOneType(ContentSettingsType content_type,
+                             SettingsForOneType* settings) const;
 
   // Sets the default setting for a particular content type.
   //
@@ -68,6 +71,11 @@ class HostContentSettingsMap
   void SetContentSetting(const std::string& host,
                          ContentSettingsType content_type,
                          ContentSetting setting);
+
+  // Clears all host-specific settings for one content type.
+  //
+  // This should only be called on the UI thread.
+  void ClearSettingsForOneType(ContentSettingsType content_type);
 
   // This setting trumps any host-specific settings.
   bool BlockThirdPartyCookies() const { return block_third_party_cookies_; }
@@ -99,6 +107,9 @@ class HostContentSettingsMap
   // Forces the default settings to be explicitly set instead of themselves
   // being CONTENT_SETTING_DEFAULT.
   void ForceDefaultsToBeExplicit();
+
+  // Returns true if |settings| consists entirely of CONTENT_SETTING_DEFAULT.
+  bool AllDefault(const ContentSettings& settings) const;
 
   // The profile we're associated with.
   Profile* profile_;

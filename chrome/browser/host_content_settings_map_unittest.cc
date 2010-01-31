@@ -102,20 +102,39 @@ TEST_F(HostContentSettingsMapTest, DefaultValues) {
       CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_BLOCK);
   host_content_settings_map->SetContentSetting(host2,
       CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
-  HostContentSettingsMap::HostContentSettingsForOneType host_settings;
-  host_content_settings_map->GetHostContentSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_IMAGES, &host_settings);
+  HostContentSettingsMap::SettingsForOneType host_settings;
+  host_content_settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_IMAGES,
+                                                   &host_settings);
   EXPECT_EQ(1U, host_settings.size());
-  host_content_settings_map->GetHostContentSettingsForOneType(
+  host_content_settings_map->GetSettingsForOneType(
       CONTENT_SETTINGS_TYPE_PLUGINS, &host_settings);
   EXPECT_EQ(2U, host_settings.size());
-  host_content_settings_map->GetHostContentSettingsForOneType(
-      CONTENT_SETTINGS_TYPE_POPUPS, &host_settings);
+  host_content_settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_POPUPS,
+                                                   &host_settings);
   EXPECT_EQ(0U, host_settings.size());
   host_content_settings_map->ResetToDefaults();
-  host_content_settings_map->GetHostContentSettingsForOneType(
+  host_content_settings_map->GetSettingsForOneType(
       CONTENT_SETTINGS_TYPE_PLUGINS, &host_settings);
   EXPECT_EQ(0U, host_settings.size());
+
+  // Check clearing one type.
+  std::string host3("example.net");
+  host_content_settings_map->SetContentSetting(host,
+      CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_BLOCK);
+  host_content_settings_map->SetContentSetting(host2,
+      CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_BLOCK);
+  host_content_settings_map->SetContentSetting(host2,
+      CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_BLOCK);
+  host_content_settings_map->SetContentSetting(host3,
+      CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_BLOCK);
+  host_content_settings_map->ClearSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_IMAGES);
+  host_content_settings_map->GetSettingsForOneType(CONTENT_SETTINGS_TYPE_IMAGES,
+                                                   &host_settings);
+  EXPECT_EQ(0U, host_settings.size());
+  host_content_settings_map->GetSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_PLUGINS, &host_settings);
+  EXPECT_EQ(1U, host_settings.size());
 }
 
 }  // namespace

@@ -85,7 +85,7 @@ void ContentBlockedBubbleContents::InitControlLayout() {
   column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
 
-  static const int kTitleIDs[] = {
+  static const int kTitleIDs[CONTENT_SETTINGS_NUM_TYPES] = {
     IDS_BLOCKED_COOKIES_TITLE,
     IDS_BLOCKED_IMAGES_TITLE,
     IDS_BLOCKED_JAVASCRIPT_TITLE,
@@ -119,7 +119,7 @@ void ContentBlockedBubbleContents::InitControlLayout() {
   }
 
   if (content_type_ != CONTENT_SETTINGS_TYPE_COOKIES) {
-    static const int kAllowIDs[] = {
+    static const int kAllowIDs[CONTENT_SETTINGS_NUM_TYPES] = {
       0,  // Not displayed for cookies
       IDS_BLOCKED_IMAGES_UNBLOCK,
       IDS_BLOCKED_JAVASCRIPT_UNBLOCK,
@@ -134,7 +134,7 @@ void ContentBlockedBubbleContents::InitControlLayout() {
         radio_button_group);
     allow_radio_->set_listener(this);
 
-    static const int kBlockIDs[] = {
+    static const int kBlockIDs[CONTENT_SETTINGS_NUM_TYPES] = {
       0,  // Not displayed for cookies
       IDS_BLOCKED_IMAGES_NO_ACTION,
       IDS_BLOCKED_JAVASCRIPT_NO_ACTION,
@@ -172,7 +172,7 @@ void ContentBlockedBubbleContents::InitControlLayout() {
   double_column_set->AddColumn(GridLayout::TRAILING, GridLayout::CENTER, 0,
                         GridLayout::USE_PREF, 0, 0);
 
-  static const int kLinkIDs[] = {
+  static const int kLinkIDs[CONTENT_SETTINGS_NUM_TYPES] = {
     IDS_BLOCKED_COOKIES_LINK,
     IDS_BLOCKED_IMAGES_LINK,
     IDS_BLOCKED_JAVASCRIPT_LINK,

@@ -49,7 +49,7 @@ void ContentFilterPageView::InitControlLayout() {
                         GridLayout::USE_PREF, 0, 0);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
-  static const int kTitleIDs[] = {
+  static const int kTitleIDs[CONTENT_SETTINGS_NUM_TYPES] = {
     0,  // This dialog isn't used for cookies.
     IDS_IMAGES_SETTING_LABEL,
     IDS_JS_SETTING_LABEL,
@@ -67,7 +67,7 @@ void ContentFilterPageView::InitControlLayout() {
   layout->AddView(title_label);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
-  static const int kAllowIDs[] = {
+  static const int kAllowIDs[CONTENT_SETTINGS_NUM_TYPES] = {
     0,  // This dialog isn't used for cookies.
     IDS_IMAGES_LOAD_RADIO,
     IDS_JS_ALLOW_RADIO,
@@ -82,7 +82,7 @@ void ContentFilterPageView::InitControlLayout() {
   allow_radio_->set_listener(this);
   allow_radio_->SetMultiLine(true);
 
-  static const int kBlockIDs[] = {
+  static const int kBlockIDs[CONTENT_SETTINGS_NUM_TYPES] = {
     0,  // This dialog isn't used for cookies.
     IDS_IMAGES_NOLOAD_RADIO,
     IDS_JS_DONOTALLOW_RADIO,

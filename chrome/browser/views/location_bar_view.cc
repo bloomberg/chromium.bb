@@ -1333,7 +1333,7 @@ LocationBarView::ContentBlockedImageView::ContentBlockedImageView(
       info_bubble_(NULL),
       bubble_positioner_(bubble_positioner) {
   if (!icons_[CONTENT_SETTINGS_TYPE_COOKIES]) {
-    static const int kIconIDs[] = {
+    static const int kIconIDs[CONTENT_SETTINGS_NUM_TYPES] = {
       IDR_BLOCKED_COOKIES,
       IDR_BLOCKED_IMAGES,
       IDR_BLOCKED_JAVASCRIPT,
@@ -1348,7 +1348,7 @@ LocationBarView::ContentBlockedImageView::ContentBlockedImageView(
   }
   SetImage(icons_[content_type_]);
 
-  static const int kTooltipIDs[] = {
+  static const int kTooltipIDs[CONTENT_SETTINGS_NUM_TYPES] = {
     IDS_BLOCKED_COOKIES_TITLE,
     IDS_BLOCKED_IMAGES_TITLE,
     IDS_BLOCKED_JAVASCRIPT_TITLE,
