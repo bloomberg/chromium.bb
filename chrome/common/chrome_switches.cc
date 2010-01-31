@@ -31,10 +31,6 @@ const char kApp[]                           = "app";
 // automation-related messages on IPC channel with the given ID.
 const char kAutomationClientChannelID[]     = "automation-channel";
 
-// Makes Chrome translate any page loaded which is not in the locale Chrome
-// is running in.
-const char kAutoPageTranslate[]             = "auto-translate";
-
 // Enables the bookmark menu.
 const char kBookmarkMenu[]                  = "bookmark-menu";
 

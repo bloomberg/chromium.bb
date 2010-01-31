@@ -44,8 +44,11 @@ bool PageTranslator::WebStringCompare::operator()(
   return len1 < len2;
 }
 
-PageTranslator::PageTranslator(TextTranslator* text_translator)
-    : text_translator_(text_translator) {
+PageTranslator::PageTranslator(TextTranslator* text_translator,
+                               Delegate* delegate)
+    : delegate_(delegate),
+      text_translator_(text_translator),
+      page_id_(-1) {
   for (size_t i = 0; i < arraysize(kSkippedTags); ++i)
     ignored_tags_.insert(WebKit::WebString(ASCIIToUTF16(kSkippedTags[i])));
   for (size_t i = 0; i < arraysize(kInlineTags); ++i)
@@ -53,13 +56,35 @@ PageTranslator::PageTranslator(TextTranslator* text_translator)
 }
 
 PageTranslator::~PageTranslator() {
-  STLDeleteContainerPairSecondPointers(pending_translations_.begin(),
-                                       pending_translations_.end());
+  ResetPageStates();  // This deletes pending translations.
 }
 
-void PageTranslator::Translate(WebKit::WebFrame* web_frame,
-                               std::string from_lang,
-                               std::string to_lang) {
+void PageTranslator::Translate(int page_id,
+                               WebKit::WebFrame* web_frame,
+                               std::string source_lang,
+                               std::string target_lang) {
+  if (page_id != page_id_) {
+    // This is a new page, our states are invalid.
+    ResetPageStates();
+    page_id_ = page_id;
+  }
+  if (original_language_.empty()) {
+    original_language_ = source_lang;
+    current_language_ = source_lang;
+  }
+  if (original_language_ != current_language_) {
+    // The page has already been translated.
+    if (target_lang == current_language_) {
+      NOTREACHED();
+      return;
+    }
+    // TODO(jcampan): implement translation of an already translated page.
+    return;
+  }
+
+  // We are about to start the translation process.
+  current_language_ = target_lang;
+
   std::stack<NodeList*> node_list_stack;
   std::vector<NodeList*> text_node_lists;
   TraverseNode(web_frame->document(), &node_list_stack, &text_node_lists);
@@ -85,15 +110,15 @@ void PageTranslator::Translate(WebKit::WebFrame* web_frame,
     // Send the text for translation.
     bool secure = static_cast<GURL>(web_frame->top()->url()).SchemeIsSecure();
     int work_id =
-        text_translator_->Translate(text_chunks, from_lang, to_lang, secure,
-                                    this);
+        text_translator_->Translate(text_chunks, source_lang, target_lang,
+                                    secure, this);
     pending_translations_[work_id] = *iter;
   }
 }
 
 void PageTranslator::NavigatedToNewPage() {
   // We can drop all our states, they were related to the previous page.
-  ResetPageState();
+  ResetPageStates();
 }
 
 void PageTranslator::UndoTranslation() {
@@ -102,8 +127,11 @@ void PageTranslator::UndoTranslation() {
   for (iter = text_nodes_.begin(); iter != text_nodes_.end(); ++iter)
     iter->first.setNodeValue(iter->second);
 
-  // The page is back to its original content, we can dop all our states.
-  ResetPageState();
+  // The page is back to its original content, we can dop all our states but the
+  // page id.
+  int page_id = page_id_;
+  ResetPageStates();
+  page_id_ = page_id;
 }
 
 bool PageTranslator::ShouldElementBeTraversed(WebKit::WebElement element) {
@@ -123,11 +151,6 @@ void PageTranslator::ClearNodeZone(int work_id) {
   }
   delete iter->second;
   pending_translations_.erase(iter);
-}
-
-void PageTranslator::ResetPageState() {
-  pending_translations_.clear();
-  text_nodes_.clear();
 }
 
 void PageTranslator::TranslationError(int work_id, int error_id) {
@@ -152,6 +175,7 @@ void PageTranslator::TextTranslated(
     // anchor tags.
     // NOTREACHED() << "Translation results received are inconsistent with the "
     //    "request";
+    ClearNodeZone(work_id);
     return;
   }
 
@@ -159,6 +183,9 @@ void PageTranslator::TextTranslated(
     (*nodes)[i].setNodeValue(WebKit::WebString(translated_text_chunks[i]));
 
   ClearNodeZone(work_id);
+
+  if (delegate_ && pending_translations_.empty())
+    delegate_->PageTranslated(page_id_, original_language_, current_language_);
 }
 
 void PageTranslator::TraverseNode(WebKit::WebNode node,
@@ -207,4 +234,13 @@ void PageTranslator::TraverseNode(WebKit::WebNode node,
     if (text_nodes->empty())
       delete text_nodes;
   }
+}
+
+void PageTranslator::ResetPageStates() {
+  page_id_ = -1;
+  original_language_.clear();
+  current_language_.clear();
+  text_nodes_.clear();
+  // Remove pending translations.
+  STLDeleteValues(&pending_translations_);
 }

@@ -1677,6 +1677,8 @@
         'browser/translate/options_menu_model.h',
         'browser/translate/translate_infobars_delegates.cc',
         'browser/translate/translate_infobars_delegates.h',
+        'browser/translate/translate_manager.cc',
+        'browser/translate/translate_manager.h',
         'browser/translate/translate_prefs.cc',
         'browser/translate/translate_prefs.h',
         'browser/user_data_manager.cc',

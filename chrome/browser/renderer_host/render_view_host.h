@@ -606,6 +606,9 @@ class RenderViewHost : public RenderWidgetHost {
                       int32 page_id,
                       const std::wstring& contents,
                       const std::string& language);
+  void OnPageTranslated(int32 page_id,
+                        const std::string& original_lang,
+                        const std::string& translated_lang);
 
  private:
   friend class TestRenderViewHost;
