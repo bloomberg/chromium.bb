@@ -45,8 +45,6 @@ class DevToolsAgent : public WebKit::WebDevToolsAgentClient {
   virtual void forceRepaint();
   virtual void runtimeFeatureStateChanged(const WebKit::WebString& feature,
                                           bool enabled);
-  virtual WebKit::WebCString injectedScriptSource();
-  virtual WebKit::WebCString injectedScriptDispatcherSource();
 
   // Returns agent instance for its host id.
   static DevToolsAgent* FromHostId(int host_id);

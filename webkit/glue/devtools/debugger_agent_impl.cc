@@ -43,10 +43,12 @@
 #include "V8Proxy.h"
 #undef LOG
 
+#include "grit/webkit_resources.h"
 #include "third_party/WebKit/WebKit/chromium/src/WebViewImpl.h"
 #include "webkit/glue/devtools/debugger_agent_impl.h"
 #include "webkit/glue/devtools/debugger_agent_manager.h"
 #include "webkit/glue/webdevtoolsagent_impl.h"
+#include "webkit/glue/webkit_glue.h"
 
 using WebCore::DOMWindow;
 using WebCore::Document;
@@ -130,6 +132,12 @@ void DebuggerAgentImpl::createUtilityContext(Frame* frame, v8::Persistent<v8::Co
     // Give the code running in the new context a way to get access to the
     // original context.
     global->Set(v8::String::New("contentWindow"), windowGlobal);
+
+    // Inject javascript into the context.
+    base::StringPiece injectjsWebkit = webkit_glue::GetDataResource(IDR_DEVTOOLS_INJECT_WEBKIT_JS);
+    v8::Script::Compile(v8::String::New(injectjsWebkit.as_string().c_str()))->Run();
+    base::StringPiece injectDispatchjs = webkit_glue::GetDataResource(IDR_DEVTOOLS_INJECT_DISPATCH_JS);
+    v8::Script::Compile(v8::String::New(injectDispatchjs.as_string().c_str()))->Run();
 }
 
 String DebuggerAgentImpl::executeUtilityFunction(
