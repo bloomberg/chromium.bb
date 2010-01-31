@@ -289,6 +289,8 @@
         'browser/chromeos/login_library.h',
         'browser/chromeos/login_manager_view.cc',
         'browser/chromeos/login_manager_view.h',
+        'browser/chromeos/login_wizard_view.cc',
+        'browser/chromeos/login_wizard_view.h',
         'browser/chromeos/main_menu.cc',
         'browser/chromeos/main_menu.h',
         'browser/chromeos/mount_library.cc',

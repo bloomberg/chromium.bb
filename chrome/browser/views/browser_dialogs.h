@@ -89,8 +89,8 @@ void ShowNewProfileDialog();
 void ShowTaskManager();
 
 #if defined(OS_CHROMEOS)
-// Shows the Login Manager.
-void ShowLoginManager();
+// Shows the Login Wizard.
+void ShowLoginWizard();
 #endif
 
 // Shows a dialog box that allows a search engine to be edited. |template_url|

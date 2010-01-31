@@ -4,7 +4,6 @@
 
 #include "chrome/browser/chromeos/login_manager_view.h"
 
-#include <gdk/gdk.h>
 #include <signal.h>
 #include <sys/types.h>
 
@@ -33,106 +32,33 @@ using views::Textfield;
 using views::View;
 using views::Widget;
 
-const int kUsernameY = 386;
+const int kTitleY = 50;
 const int kPanelSpacing = 36;
 const int kVersionPad = 4;
 const int kTextfieldWidth = 286;
 const SkColor kVersionColor = 0xFF7691DA;
 const SkColor kErrorColor = 0xFF8F384F;
+const SkColor kBackground = SK_ColorWHITE;
 const char *kDefaultDomain = "@gmail.com";
 
-// There's a GdkBlankCursor defined in a later version of gdk.
-// The version in cros is late enough to support it.
-#define BlankCursor static_cast<GdkCursorType>(-2)
-
-namespace browser {
-
-// Acts as a frame view with no UI.
-class LoginManagerNonClientFrameView : public views::NonClientFrameView {
- public:
-  explicit LoginManagerNonClientFrameView() : views::NonClientFrameView() {}
-
-  // Returns just the bounds of the window.
-  virtual gfx::Rect GetBoundsForClientView() const { return bounds(); }
-
-  // Doesn't add any size to the client bounds.
-  virtual gfx::Rect GetWindowBoundsForClientBounds(
-      const gfx::Rect& client_bounds) const {
-    return client_bounds;
-  }
-
-  // There is no system menu.
-  virtual gfx::Point GetSystemMenuPoint() const { return gfx::Point(); }
-  // There is no non client area.
-  virtual int NonClientHitTest(const gfx::Point& point) { return 0; }
-
-  // There is no non client area.
-  virtual void GetWindowMask(const gfx::Size& size,
-                             gfx::Path* window_mask) {}
-  virtual void EnableClose(bool enable) {}
-  virtual void ResetWindowControls() {}
-
-  DISALLOW_COPY_AND_ASSIGN(LoginManagerNonClientFrameView);
-};
-
-// Subclass of WindowGtk, for use as the top level login window.
-class LoginManagerWindow : public views::WindowGtk {
- public:
-  static LoginManagerWindow* CreateLoginManagerWindow() {
-    LoginManagerWindow* login_manager_window =
-        new LoginManagerWindow();
-    login_manager_window->GetNonClientView()->SetFrameView(
-        new LoginManagerNonClientFrameView());
-    login_manager_window->Init(NULL, gfx::Rect());
-
-    // This keeps the window from flashing at startup.
-    GdkWindow* gdk_window =
-        GTK_WIDGET(login_manager_window->GetNativeWindow())->window;
-    gdk_window_set_back_pixmap(gdk_window, NULL, false);
-    // Hide the cursor initially.
-    gdk_window_set_cursor(gdk_window, gdk_cursor_new(BlankCursor));
-    return login_manager_window;
-  }
-
- private:
-  LoginManagerWindow() : views::WindowGtk(new LoginManagerView) {
-  }
-
-  DISALLOW_COPY_AND_ASSIGN(LoginManagerWindow);
-};
-
-// Declared in browser_dialogs.h so that others don't need to depend on our .h.
-void ShowLoginManager() {
-  // if we can't load the library, we'll tell the user in LoginManagerView.
-  views::WindowGtk* window =
-      LoginManagerWindow::CreateLoginManagerWindow();
-  window->Show();
-  if (chromeos::LoginLibrary::EnsureLoaded())
-    chromeos::LoginLibrary::Get()->EmitLoginPromptReady();
-  bool old_state = MessageLoop::current()->NestableTasksAllowed();
-  MessageLoop::current()->SetNestableTasksAllowed(true);
-  MessageLoop::current()->Run();
-  MessageLoop::current()->SetNestableTasksAllowed(old_state);
-}
-}  // namespace browser
-
-LoginManagerView::LoginManagerView() {
+LoginManagerView::LoginManagerView(int width, int height) {
+  dialog_dimensions_.SetSize(width, height);
   Init();
 }
 
 LoginManagerView::~LoginManagerView() {
-  MessageLoop::current()->Quit();
 }
 
 void LoginManagerView::Init() {
   username_field_ = new views::Textfield;
-  username_field_->RemoveBorder();
   password_field_ = new views::Textfield(views::Textfield::STYLE_PASSWORD);
-  password_field_->RemoveBorder();
 
   os_version_label_ = new views::Label();
   os_version_label_->SetColor(kVersionColor);
   os_version_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+
+  title_label_ = new views::Label();
+  title_label_->SetText(l10n_util::GetString(IDS_LOGIN_TITLE));
 
   error_label_ = new views::Label();
   error_label_->SetColor(kErrorColor);
@@ -155,26 +81,21 @@ gfx::Size LoginManagerView::GetPreferredSize() {
 }
 
 void LoginManagerView::BuildWindow() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  panel_pixbuf_ = rb.GetPixbufNamed(IDR_LOGIN_PANEL);
-  background_pixbuf_ = rb.GetPixbufNamed(IDR_LOGIN_BACKGROUND);
-
-  // --------------------- Get attributes of images -----------------------
-  dialog_dimensions_.SetSize(gdk_pixbuf_get_width(background_pixbuf_),
-                             gdk_pixbuf_get_height(background_pixbuf_));
-
-  int panel_height = gdk_pixbuf_get_height(panel_pixbuf_);
-  int panel_width = gdk_pixbuf_get_width(panel_pixbuf_);
-
-  // ---------------------- Set up root View ------------------------------
-  set_background(new views::ImageBackground(background_pixbuf_));
-
   View* login_prompt = new View();
-  login_prompt->set_background(new views::ImageBackground(panel_pixbuf_));
-  login_prompt->SetBounds(0, 0, panel_width, panel_height);
+  login_prompt->set_background(
+      views::Background::CreateSolidBackground(kBackground));
+  login_prompt->SetBounds(0,
+                          0,
+                          dialog_dimensions_.width(),
+                          dialog_dimensions_.height());
 
-  int x = (panel_width - kTextfieldWidth) / 2;
-  int y = kUsernameY;
+  int x = (dialog_dimensions_.width() - kTextfieldWidth) / 2;
+  int y = kTitleY;
+  title_label_->SetBounds(x,
+                          y,
+                          kTextfieldWidth,
+                          title_label_->GetPreferredSize().height());
+  y += kPanelSpacing;
   username_field_->SetBounds(x, y, kTextfieldWidth, kPanelSpacing);
   y += 2 * kPanelSpacing;
   password_field_->SetBounds(x, y, kTextfieldWidth, kPanelSpacing);
@@ -182,15 +103,16 @@ void LoginManagerView::BuildWindow() {
   os_version_label_->SetBounds(
       x,
       y,
-      panel_width - (x + kVersionPad),
+      dialog_dimensions_.width() - (x + kVersionPad),
       os_version_label_->GetPreferredSize().height());
   y += kPanelSpacing;
   error_label_->SetBounds(
       x,
       y,
-      panel_width - (x + kVersionPad),
+      dialog_dimensions_.width() - (x + kVersionPad),
       error_label_->GetPreferredSize().height());
 
+  login_prompt->AddChildView(title_label_);
   login_prompt->AddChildView(username_field_);
   login_prompt->AddChildView(password_field_);
   login_prompt->AddChildView(os_version_label_);
@@ -228,8 +150,8 @@ bool LoginManagerView::Authenticate(const std::string& username,
 }
 
 void LoginManagerView::SetupSession(const std::string& username) {
-  if (window()) {
-    window()->Close();
+  if (observer_) {
+    observer_->OnLogin();
   }
   if (username.find("@google.com") != std::string::npos) {
     // This isn't thread-safe.  However, the login window is specifically
@@ -240,6 +162,7 @@ void LoginManagerView::SetupSession(const std::string& username) {
   }
   if (chromeos::LoginLibrary::EnsureLoaded())
     chromeos::LoginLibrary::Get()->StartSession(username, "");
+
 }
 
 bool LoginManagerView::HandleKeystroke(views::Textfield* s,

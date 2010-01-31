@@ -15,13 +15,18 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_MANAGER_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_MANAGER_VIEW_H_
 
-class FilePath;
-
 class LoginManagerView : public views::View,
                          public views::WindowDelegate,
                          public views::Textfield::Controller {
  public:
-  LoginManagerView();
+  // Observer for login related events.
+  class LoginObserver {
+   public:
+    virtual ~LoginObserver() {}
+    virtual void OnLogin() = 0;
+  };
+
+  LoginManagerView(int width, int height);
   virtual ~LoginManagerView();
 
   // Initialize the controls on the dialog.
@@ -33,7 +38,6 @@ class LoginManagerView : public views::View,
   // Overridden from views::WindowDelegate:
   virtual views::View* GetContentsView();
 
-
   // Overridden from views::Textfield::Controller
   // Not thread-safe, by virtue of using SetupSession().
   virtual bool HandleKeystroke(views::Textfield* sender,
@@ -42,24 +46,28 @@ class LoginManagerView : public views::View,
   virtual void ContentsChanged(views::Textfield* sender,
                                const string16& new_contents) {}
 
+  void set_observer(LoginObserver* observer) {
+    observer_ = observer;
+  }
+
   // Creates all examples and start UI event loop.
  private:
   views::Textfield* username_field_;
   views::Textfield* password_field_;
   views::Label* os_version_label_;
+  views::Label* title_label_;
   views::Label* error_label_;
 
   // The dialog dimensions.
   gfx::Size dialog_dimensions_;
-
-  GdkPixbuf* background_pixbuf_;
-  GdkPixbuf* panel_pixbuf_;
 
   // Handles asynchronously loading the version.
   chromeos::VersionLoader loader_;
 
   // Used to request the version.
   CancelableRequestConsumer consumer_;
+
+  LoginObserver* observer_;
 
   // Helper functions to modularize class
   void BuildWindow();
