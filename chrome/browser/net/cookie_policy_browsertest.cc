@@ -3,10 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/browser.h"
+#include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/profile.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
 #include "net/base/mock_host_resolver.h"
@@ -19,20 +18,13 @@ class CookiePolicyBrowserTest : public InProcessBrowserTest {
   DISALLOW_COPY_AND_ASSIGN(CookiePolicyBrowserTest);
 };
 
-// TODO(darin): Re-enable these tests once the new third-party cookie blocking
-// preference is hooked up.
-#if 0
 // Visits a page that sets a first-party cookie.
 IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest, AllowFirstPartyCookies) {
   HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server != NULL);
 
-  PrefService* prefs = browser()->profile()->GetPrefs();
-  prefs->SetInteger(prefs::kCookieBehavior,
-                    net::CookiePolicy::BLOCK_THIRD_PARTY_COOKIES);
-  net::CookiePolicy::Type policy_type = net::CookiePolicy::FromInt(
-      prefs->GetInteger(prefs::kCookieBehavior));
-  ASSERT_EQ(net::CookiePolicy::BLOCK_THIRD_PARTY_COOKIES, policy_type);
+  browser()->profile()->GetHostContentSettingsMap()->
+      SetBlockThirdPartyCookies(true);
 
   net::CookieStore* cookie_store =
       browser()->profile()->GetRequestContext()->GetCookieStore();
@@ -56,12 +48,8 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest,
   HTTPTestServer* server = StartHTTPServer();
   ASSERT_TRUE(server != NULL);
 
-  PrefService* prefs = browser()->profile()->GetPrefs();
-  prefs->SetInteger(prefs::kCookieBehavior,
-                    net::CookiePolicy::BLOCK_THIRD_PARTY_COOKIES);
-  net::CookiePolicy::Type policy_type = net::CookiePolicy::FromInt(
-      prefs->GetInteger(prefs::kCookieBehavior));
-  ASSERT_EQ(net::CookiePolicy::BLOCK_THIRD_PARTY_COOKIES, policy_type);
+  browser()->profile()->GetHostContentSettingsMap()->
+      SetBlockThirdPartyCookies(true);
 
   net::CookieStore* cookie_store =
       browser()->profile()->GetRequestContext()->GetCookieStore();
@@ -89,4 +77,3 @@ IN_PROC_BROWSER_TEST_F(CookiePolicyBrowserTest,
   cookie = cookie_store->GetCookies(redirected_url);
   EXPECT_EQ("cookie2", cookie);
 }
-#endif
