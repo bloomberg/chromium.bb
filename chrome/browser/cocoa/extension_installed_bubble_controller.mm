@@ -159,7 +159,7 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
 - (NSPoint)calculateArrowPoint {
   BrowserWindowCocoa* window =
       static_cast<BrowserWindowCocoa*>(browser_->window());
-  NSPoint arrowPoint;
+  NSPoint arrowPoint = NSZeroPoint;
 
   switch(type_) {
     case extension_installed_bubble::kBrowserAction: {
