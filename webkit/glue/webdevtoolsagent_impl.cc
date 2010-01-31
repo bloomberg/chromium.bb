@@ -211,7 +211,6 @@ void WebDevToolsAgentImpl::detach()
     ic->hideHighlight();
     ic->close();
     disposeUtilityContext();
-    m_inspectorFrontendScriptState.clear();
     m_debuggerAgentImpl.set(0);
     m_attached = false;
     m_apuAgentEnabled = false;
@@ -383,11 +382,8 @@ void WebDevToolsAgentImpl::resetInspectorFrontendProxy()
 
     v8::HandleScope scope;
     v8::Context::Scope contextScope(m_utilityContext);
-    m_inspectorFrontendScriptState.set(new ScriptState(
-        m_webViewImpl->page()->mainFrame(),
-        m_utilityContext));
-
-    ScriptState* state = m_inspectorFrontendScriptState.get();
+    ScriptState* state = ScriptState::forContext(
+        v8::Local<v8::Context>::New(m_utilityContext));
     InspectorController* ic = inspectorController();
     ic->setFrontendProxyObject(state, ScriptObject(state, m_utilityContext->Global()));
 }

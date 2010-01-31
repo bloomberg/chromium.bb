@@ -45,7 +45,6 @@ namespace WebCore {
     class Document;
     class InspectorController;
     class Node;
-    class ScriptState;
     class String;
 }
 
@@ -145,7 +144,6 @@ private:
     // TODO(pfeldman): This should not be needed once GC styles issue is fixed
     // for matching rules.
     v8::Persistent<v8::Context> m_utilityContext;
-    OwnPtr<WebCore::ScriptState> m_inspectorFrontendScriptState;
 };
 
 } // namespace WebKit
