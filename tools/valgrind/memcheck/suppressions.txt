@@ -1087,24 +1087,6 @@
    fun:_ZN7WebCore14XMLHttpRequest28callReadyStateChangeListenerEv
 }
 {
-   bug_23197
-   Memcheck:Leak
-   fun:malloc
-   fun:_ZN3WTF10fastMallocEj
-   fun:_ZN7WebCore10StringImpl19createUninitializedEjRPt
-   fun:_ZN7WebCore10StringImpl6createEPKtj
-   fun:_ZN6WebKit9WebString6assignEPKtj
-   fun:_ZN6WebKit9WebStringC1ERKSbItN4base20string16_char_traitsESaItEE
-   fun:_ZNK14WebPreferences5ApplyEP7WebView
-   fun:_ZN10RenderView4InitEiPN4base13WaitableEventEiRK19RendererPreferencesPNS0_14RefCountedDataIiEEi
-   fun:_ZN10RenderView6CreateEP16RenderThreadBaseiPN4base13WaitableEventEiRK19RendererPreferencesRK14WebPreferencesPNS2_14RefCountedDataIiEEi
-   fun:_ZN12RenderThread15OnCreateNewViewEi16ModalDialogEventRK19RendererPreferencesRK14WebPreferencesi
-   ...
-   fun:_Z12RendererMainRK18MainFunctionParams
-   fun:ChromeMain
-   fun:main
-}
-{
    bug_23310
    Memcheck:Leak
    fun:_Znw*
