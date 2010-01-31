@@ -35,6 +35,10 @@
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #endif
 
+#if defined(OS_MACOSX)
+#include "chrome/browser/cocoa/extension_installed_bubble_bridge.h"
+#endif
+
 namespace {
 
 static std::wstring GetInstallWarning(Extension* extension) {
@@ -196,15 +200,26 @@ void ExtensionInstallUI::OnInstallSuccess(Extension* extension) {
     return;
 
   ExtensionInstalledBubble::Show(extension, browser, icon_);
+#elif defined(OS_MACOSX)
+  if (extension->browser_action() ||
+      (extension->page_action() &&
+      !extension->page_action()->default_icon_path().empty())) {
+    Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+    DCHECK(browser);
+    ExtensionInstalledBubbleCocoa::ShowExtensionInstalledBubble(
+        browser->window()->GetNativeHandle(),
+        extension, browser, icon_);
+  }  else {
+    // If the extension is of type GENERIC, launch infobar instead of popup
+    // bubble, because we have no guaranteed wrench menu button to point to.
+    ShowGenericExtensionInstalledInfoBar(extension);
+  }
 #elif defined(TOOLKIT_GTK)
   Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
   if (!browser)
     return;
-
   ExtensionInstalledBubbleGtk::Show(extension, browser, icon_);
-#else
-// TODO(port) crbug.com/26974 (mac)
-#endif
+#endif  // TOOLKIT_VIEWS
 }
 
 void ExtensionInstallUI::OnInstallFailure(const std::string& error) {
@@ -252,6 +267,26 @@ void ExtensionInstallUI::ShowThemeInfoBar(Extension* new_theme) {
   else
     tab_contents->AddInfoBar(new_delegate);
 }
+
+#if defined(OS_MACOSX)
+void ExtensionInstallUI::ShowGenericExtensionInstalledInfoBar(
+    Extension* new_extension) {
+  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
+  if (!browser)
+    return;
+
+  TabContents* tab_contents = browser->GetSelectedTabContents();
+  if (!tab_contents)
+    return;
+
+  std::wstring msg = l10n_util::GetStringF(IDS_EXTENSION_INSTALLED_HEADING,
+                                           UTF8ToWide(new_extension->name())) +
+         L" " + l10n_util::GetString(IDS_EXTENSION_INSTALLED_MANAGE_INFO_MAC);
+  InfoBarDelegate* delegate = new SimpleAlertInfoBarDelegate(
+      tab_contents, msg, new SkBitmap(icon_));
+  tab_contents->AddInfoBar(delegate);
+}
+#endif
 
 InfoBarDelegate* ExtensionInstallUI::GetNewInfoBarDelegate(
     Extension* new_theme, TabContents* tab_contents) {

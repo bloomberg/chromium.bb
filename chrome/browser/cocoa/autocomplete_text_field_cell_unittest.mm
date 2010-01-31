@@ -371,6 +371,13 @@ TEST_F(AutocompleteTextFieldCellTest, PageActionImageFrame) {
   EXPECT_TRUE(NSIsEmptyRect([cell pageActionFrameForIndex:0 inFrame:bounds]));
   EXPECT_TRUE(NSIsEmptyRect([cell pageActionFrameForIndex:1 inFrame:bounds]));
 
+  // Test preview page actions, as used by the extension installed bubble.
+  TestPageActionImageView preview_view;
+  list.Add(&preview_view);
+  EXPECT_TRUE(NSIsEmptyRect([cell pageActionFrameForIndex:2 inFrame:bounds]));
+  preview_view.set_preview_enabled(true);
+  EXPECT_FALSE(NSIsEmptyRect([cell pageActionFrameForIndex:2 inFrame:bounds]));
+
   // One page action, no security icon.
   page_action_view.SetVisible(true);
   NSRect iconRect0 = [cell pageActionFrameForIndex:0 inFrame:bounds];

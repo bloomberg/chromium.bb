@@ -340,10 +340,6 @@ class PrefObserverBridge : public NotificationObserver {
   return nil;
 }
 
-- (BrowserActionsController*)browserActionsController {
-  return browserActionsController_.get();
-}
-
 - (void)mouseMoved:(NSEvent*)theEvent {
   NSButton* targetView = [self hoverButtonForEvent:theEvent];
   if (hoveredButton_ != targetView) {
@@ -722,6 +718,10 @@ class PrefObserverBridge : public NotificationObserver {
     ToolbarView* toolbarView = (ToolbarView*)view;
     [toolbarView setDividerOpacity:opacity];
   }
+}
+
+- (BrowserActionsController*)browserActionsController {
+  return browserActionsController_.get();
 }
 
 - (NSString*)view:(NSView*)view

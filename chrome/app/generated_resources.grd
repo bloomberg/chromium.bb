@@ -2907,7 +2907,7 @@ each locale. -->
 
       <!-- Extension installed bubble -->
       <message name="IDS_EXTENSION_INSTALLED_HEADING" desc="First line in the content area of the extension installed bubble. Instructs that the extension was installed.">
-        <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> is now installed
+        <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> is now installed.
       </message>
 
       <message name="IDS_EXTENSION_INSTALLED_PAGE_ACTION_INFO" desc="Text displayed in the InfoBubble which explains that the UI of this extension is a Page Action icon which may appear for some pages.">
@@ -2917,8 +2917,11 @@ each locale. -->
       <message name="IDS_MANAGE_EXTENSIONS" desc="The 'Manage Extensions...' text in the context menu for when right-clicking on extension icons">
         Manage extensions...
       </message>
-      <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO" desc="Text displayed in the InfoBubble with instructives on how to find the chrome://extensions/ management page">
+      <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO" desc="Text displayed in the InfoBubble with instructions on how to find the chrome://extensions/ management page">
         You can manage your installed extensions by clicking Extensions in the Tools menu.
+      </message>
+      <message name="IDS_EXTENSION_INSTALLED_MANAGE_INFO_MAC" desc="Text displayed in the InfoBubble with instructions on how to find the chrome://extensions/ management page on MAC OS X">
+        You can manage your installed extensions by clicking Extensions in the Window menu.
       </message>
 
       <!-- chrome://extensions page -->

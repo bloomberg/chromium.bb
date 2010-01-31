@@ -280,6 +280,15 @@ class ExtensionsServiceObserverBridge : public NotificationObserver {
   return selected_tab->controller().session_id().id();
 }
 
+- (NSView*)browserActionViewForExtension:(Extension*)extension {
+  for (BrowserActionButton* button in buttonOrder_.get()) {
+    if ([button extension] == extension)
+      return button;
+  }
+  NOTREACHED();
+  return nil;
+}
+
 - (NSButton*)buttonWithIndex:(int)index {
   return [buttonOrder_ objectAtIndex:(NSUInteger)index];
 }

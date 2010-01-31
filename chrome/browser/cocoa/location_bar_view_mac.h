@@ -62,7 +62,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   }
   virtual LocationBarTesting* GetLocationBarForTesting() { return this; }
 
-  // Overriden from LocationBarTesting:
+  // Overridden from LocationBarTesting:
   virtual int PageActionCount();
   virtual int PageActionVisibleCount();
   virtual ExtensionAction* GetPageAction(size_t index);
@@ -73,6 +73,25 @@ class LocationBarViewMac : public AutocompleteEditController,
   // security style, and if |should_restore_state| is true, restores
   // saved state from the tab (for tab switching).
   void Update(const TabContents* tab, bool should_restore_state);
+
+  // Sets preview_enabled_ for the PageActionImageView associated with this
+  // |page_action|. If |preview_enabled|, the location bar will display the
+  // PageAction icon even if it has not been activated by the extension.
+  // This is used by the ExtensionInstalledBubble to preview what the icon
+  // will look like for the user upon installation of the extension.
+  void SetPreviewEnabledPageAction(ExtensionAction* page_action,
+                                   bool preview_enabled);
+
+  // Return the index of a given page_action.
+  size_t GetPageActionIndex(ExtensionAction* page_action);
+
+  // PageActionImageView is nested in LocationBarViewMac, and only needed
+  // here so that we can access the icon of a page action when preview_enabled_
+  // has been set.
+  class PageActionImageView;
+
+  // Return the PageActionImageView associated with |page_action|.
+  PageActionImageView* GetPageActionImageView(ExtensionAction* page_action);
 
   virtual void OnAutocompleteAccept(const GURL& url,
       WindowOpenDisposition disposition,
@@ -188,6 +207,12 @@ class LocationBarViewMac : public AutocompleteEditController,
 
     void set_preview_enabled(bool enabled) { preview_enabled_ = enabled; }
 
+    bool preview_enabled() { return preview_enabled_; }
+
+    // Return the size of the image, or a default size if no image available
+    // and preview is enabled.
+    virtual NSSize GetImageSize();
+
     // Either notify listeners or show a popup depending on the Page Action.
     // Virtual so it can be overridden for testing.
     virtual bool OnMousePressed(NSRect bounds);
@@ -255,7 +280,7 @@ class LocationBarViewMac : public AutocompleteEditController,
     scoped_nsobject<NSString> tooltip_;
 
     // This is used for post-install visual feedback. The page_action icon
-    // is briefly shown even if it hasn't been enabled by it's extension.
+    // is briefly shown even if it hasn't been enabled by its extension.
     bool preview_enabled_;
 
     // Used to register for notifications received by NotificationObserver.

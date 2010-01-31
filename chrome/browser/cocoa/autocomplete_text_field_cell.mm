@@ -307,7 +307,12 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   LocationBarViewMac::PageActionImageView* view =
       page_action_views_->ViewAt(index);
   const NSImage* icon = view->GetImage();
-  if (!icon || !view->IsVisible()) {
+
+  // If we are calculating space for a preview page action, the icon is still
+  // loading. We use this function only to get the correct x value for the
+  // extension installed bubble arrow.
+  if (!view->preview_enabled() &&
+      (!icon || !view->IsVisible())) {
     return NSZeroRect;
   }
 
@@ -333,7 +338,11 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   }
   widthUsed += kIconHorizontalPad;
 
-  return [self rightJustifyImage:[icon size]
+  // If we are calculating frame space for a preview, the icon is still
+  // loading -- use maximum size as a placeholder.
+  NSSize iconSize = view->GetImageSize();
+
+  return [self rightJustifyImage:iconSize
                           inRect:cellFrame
                       withMargin:widthUsed];
 }

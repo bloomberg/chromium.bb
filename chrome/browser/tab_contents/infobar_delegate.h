@@ -44,7 +44,7 @@ class ThemeInstalledInfoBarDelegate;
 // AddInfoBar!
 class InfoBarDelegate {
  public:
-  // The type of the infobar. It controls its appearence, such as its background
+  // The type of the infobar. It controls its appearance, such as its background
   // color.
   enum Type {
     INFO_TYPE,

@@ -159,6 +159,8 @@ class ToolbarModel;
 // Create and add the Browser Action buttons to the toolbar view.
 - (void)createBrowserActionButtons;
 
+// Return the BrowserActionsController for this toolbar.
+- (BrowserActionsController*)browserActionsController;
 @end
 
 // A set of private methods used by tests, in the absence of "friends" in ObjC.
@@ -170,7 +172,6 @@ class ToolbarModel;
 - (gfx::Rect)locationStackBounds;
 // Return a hover button for the current event.
 - (NSButton*)hoverButtonForEvent:(NSEvent*)theEvent;
-- (BrowserActionsController*)browserActionsController;
 @end
 
 #endif  // CHROME_BROWSER_COCOA_TOOLBAR_CONTROLLER_H_

@@ -81,6 +81,12 @@ class ExtensionInstallUI {
   // the user a choice to keep it or undo the installation.
   void ShowThemeInfoBar(Extension* new_theme);
 
+#if defined(OS_MACOSX)
+  // When an extension is installed on Mac with neither browser action nor
+  // page action icons, show an infobar instead of a popup bubble.
+  void ShowGenericExtensionInstalledInfoBar(Extension* new_extension);
+#endif
+
   // Returns the delegate to control the browser's info bar. This is within its
   // own function due to its platform-specific nature.
   InfoBarDelegate* GetNewInfoBarDelegate(Extension* new_theme,

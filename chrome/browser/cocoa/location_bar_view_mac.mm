@@ -328,6 +328,54 @@ int LocationBarViewMac::PageActionVisibleCount() {
   return static_cast<int>(page_action_views_->VisibleCount());
 }
 
+void LocationBarViewMac::SetPreviewEnabledPageAction(
+    ExtensionAction* page_action, bool preview_enabled) {
+  DCHECK(page_action);
+  Browser* browser = BrowserList::GetLastActive();
+  // GetLastActive returns NULL in current unit testing.
+  if (!browser)
+    return;
+  TabContents* contents = browser->GetSelectedTabContents();
+  DCHECK(contents);
+  page_action_views_->RefreshViews();
+
+  LocationBarViewMac::PageActionImageView* page_action_image_view =
+      GetPageActionImageView(page_action);
+  DCHECK(page_action_image_view);
+  if (!page_action_image_view)
+    return;
+
+  page_action_image_view->set_preview_enabled(preview_enabled);
+  page_action_image_view->UpdateVisibility(contents,
+      GURL(WideToUTF8(toolbar_model_->GetText())));
+
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
+      Source<ExtensionAction>(page_action),
+      Details<TabContents>(contents));
+}
+
+size_t LocationBarViewMac::GetPageActionIndex(ExtensionAction* page_action) {
+  DCHECK(page_action);
+  for (size_t i = 0; i < page_action_views_->Count(); ++i) {
+    if (page_action_views_->ViewAt(i)->page_action() == page_action)
+      return i;
+  }
+  NOTREACHED();
+  return 0;
+}
+
+LocationBarViewMac::PageActionImageView*
+    LocationBarViewMac::GetPageActionImageView(ExtensionAction* page_action) {
+  DCHECK(page_action);
+  for (size_t i = 0; i < page_action_views_->Count(); ++i) {
+    if (page_action_views_->ViewAt(i)->page_action() == page_action)
+      return page_action_views_->ViewAt(i);
+  }
+  NOTREACHED();
+  return NULL;
+}
+
 ExtensionAction* LocationBarViewMac::GetPageAction(size_t index) {
   if (index < page_action_views_->Count())
     return page_action_views_->ViewAt(index)->page_action();
@@ -544,6 +592,19 @@ LocationBarViewMac::PageActionImageView::~PageActionImageView() {
     tracker_->StopTrackingImageLoad();
 }
 
+NSSize LocationBarViewMac::PageActionImageView::GetImageSize() {
+  NSImage* image = GetImage();
+  if (preview_enabled_ && !image) {
+    return NSMakeSize(Extension::kPageActionIconMaxSize,
+                      Extension::kPageActionIconMaxSize);
+  } else if (image) {
+    return [image size];
+  }
+  // Default value for image size is undefined when preview is not enabled.
+  NOTREACHED();
+  return NSMakeSize(0, 0);
+}
+
 // Overridden from LocationBarImageView. Either notify listeners or show a
 // popup depending on the Page Action.
 bool LocationBarViewMac::PageActionImageView::OnMousePressed(NSRect bounds) {
@@ -603,6 +664,9 @@ void LocationBarViewMac::PageActionImageView::OnImageLoaded(SkBitmap* image,
     tracker_ = NULL;
 
   owner_->UpdatePageActions();
+
+  if (preview_enabled_)
+    [owner_->GetAutocompleteTextField() display];
 }
 
 void LocationBarViewMac::PageActionImageView::UpdateVisibility(
@@ -781,3 +845,4 @@ void LocationBarViewMac::PageActionViewList::OnMousePressed(NSRect iconFrame,
                                                             size_t index) {
   ViewAt(index)->OnMousePressed(iconFrame);
 }
+

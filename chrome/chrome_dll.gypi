@@ -191,6 +191,7 @@
                 'app/nibs/DownloadItem.xib',
                 'app/nibs/DownloadShelf.xib',
                 'app/nibs/EditSearchEngine.xib',
+                'app/nibs/ExtensionInstalledBubble.xib',
                 'app/nibs/FindBar.xib',
                 'app/nibs/FirstRunDialog.xib',
                 'app/nibs/FontLanguageSettings.xib',

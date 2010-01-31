@@ -78,6 +78,9 @@ extern NSString* const kBrowserActionsChangedNotification;
 // Executes the action designated by the extension.
 - (void)browserActionClicked:(BrowserActionButton*)sender;
 
+// Returns the NSView for the action button associated with an extension.
+- (NSView*)browserActionViewForExtension:(Extension*)extension;
+
 @end  // @interface BrowserActionsController
 
 @interface BrowserActionsController(TestingAPI)
