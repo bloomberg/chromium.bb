@@ -5,87 +5,109 @@
 #ifndef CHROME_FRAME_CRASH_REPORTING_VECTORED_HANDLER_H_
 #define CHROME_FRAME_CRASH_REPORTING_VECTORED_HANDLER_H_
 
-// Base class for VectoredHandlerT just to hold some members (independent of
-// template parameter)
-class VectoredHandlerBase {
- public:
-  // For RtlCaptureStackBackTrace MSDN says:
-  // Windows Server 2003 and Windows XP:  The sum of the FramesToSkip and
-  // FramesToCapture parameters must be less than 64.
-  // In practice (on XPSP2) it has to be less than 63, hence leaving us with
-  // max back trace of 62.
-  static const DWORD max_back_trace = 62;
-  static unsigned long g_exceptions_seen;
- protected:
-  static void* g_handler;
-};
 
-DECLSPEC_SELECTANY void* VectoredHandlerBase::g_handler;
-DECLSPEC_SELECTANY unsigned long VectoredHandlerBase::g_exceptions_seen;
+#if !defined(_M_IX86)
+#error only x86 is supported for now.
+#endif
 
-// The E class is supposed to provide external/API functions. Using template
-// make testability easier. It shall confirm the following concept/archetype:
-// void* Register(PVECTORED_EXCEPTION_HANDLER,
-//                const void* module_start, const void* module_end)
-// Registers Vectored Exception Handler, non-unittest implementation shall call
-// ::AddVectoredExceptionHandler Win32 API
-// ULONG Unregister(void*) - ::RemoveVectoredExceptionHandler Win32 API
-// int IsOurModule(const void* address) -
-// void WriteDump(EXCEPTION_POINTERS*) -
-// WORD RtlCaptureStackBackTrace(..) - same as Win32 API
-// EXCEPTION_REGISTRATION_RECORD* RtlpGetExceptionList() - same as Win32 API
-// You may want to derive own External class by deriving from
-// VEHExternalBase helper (see below).
 // Create dump policy:
 // 1. Scan SEH chain, if there is a handler/filter that belongs to our
 //    module - assume we expect this one and hence do nothing here.
 // 2. If the address of the exception is in our module - create dump.
 // 3. If our module is in somewhere in callstack - create dump.
-template <class E>
-class VectoredHandlerT : public VectoredHandlerBase {
+// The E class is supposed to provide external/API functions. Using template
+// make testability easier. It shall confirm the following concept/archetype:
+//struct E {
+//  void WriteDump(EXCEPTION_POINTERS* p) {
+//  }
+//
+//  // Used mainly to ignore exceptions from IsBadRead/Write/Ptr.
+//  bool ShouldIgnoreException(const EXCEPTION_POINTERS* exptr) {
+//    return 0;
+//  }
+//
+//  // Retrieve the SEH list head.
+//  EXCEPTION_REGISTRATION_RECORD* RtlpGetExceptionList() {
+//    return NULL;
+//  }
+//
+//  // Get the stack trace as correctly as possible.
+//  WORD RtlCaptureStackBackTrace(DWORD FramesToSkip, DWORD FramesToCapture,
+//                                void** BackTrace, DWORD* BackTraceHash) {
+//      return 0;
+//  }
+//
+//  // Check whether the stack guard page is in place.
+//  bool CheckForStackOverflow(EXCEPTION_POINTERS* p) {
+//    return 0;
+//  }
+//
+//  bool IsOurModule(const void* address) {
+//    return 0;
+//  }
+//};
+// The methods shall be placed in .text$veh_m
+template <typename E>
+class VectoredHandlerT {
  public:
-  static void* Register(const void* module_start, const void* module_end) {
-    g_exceptions_seen = 0;
-    g_handler = E::Register(&VectoredHandler, module_start, module_end);
-    return g_handler;
+  VectoredHandlerT(E* api);
+  ~VectoredHandlerT();
+
+  // TODO(stoyan): Come with better way to skip initial stack frames.
+  FORCEINLINE LONG Handler(EXCEPTION_POINTERS* exceptionInfo);
+  long get_exceptions_seen() const {
+    return exceptions_seen_;
   }
 
-  static ULONG Unregister() {
-    if (g_handler)
-      return E::Unregister(g_handler);
-    return 0;
-  }
-
-  static LONG WINAPI VectoredHandler(EXCEPTION_POINTERS* exceptionInfo);
  private:
-  static BOOL ModuleHasInstalledSEHFilter();
+  bool ModuleHasInstalledSEHFilter();
+  E* api_;
+  long exceptions_seen_;
 };
 
-// Handy class supposed to act as a base class for classes used as template
-// parameter of VectoredHandlerT<E>
-class VEHTraitsBase {
- public:
-  static const void* g_module_start;
-  static const void* g_module_end;
-
-  static inline int IsOurModule(const void* address) {
-    return (g_module_start <= address && address < g_module_end);
+// Maintains start and end address of a single module of interest. If we want
+// do check for multiple modules, this class has to be extended to support a
+// list of modules (DLLs).
+struct ModuleOfInterest {
+  // The callback from VectoredHandlerT::Handler().
+  inline bool IsOurModule(const void* address) {
+    return (start_ <= address && address < end_);
   }
 
-  static inline void SetModule(const void* module_start,
-                               const void* module_end) {
-    g_module_start = module_start;
-    g_module_end = module_end;
+  // Helpers.
+  inline void SetModule(const void* module_start, const void* module_end) {
+    start_ = module_start;
+    end_ = module_end;
   }
 
-  static bool ShouldIgnoreException(const EXCEPTION_POINTERS* exceptionInfo) {
-    return false;
+  inline void SetCurrentModule() {
+    // Find current module boundaries.
+    const void* start = &__ImageBase;
+    const char* s = reinterpret_cast<const char*>(start);
+    const IMAGE_NT_HEADERS32* nt = reinterpret_cast<const IMAGE_NT_HEADERS32*>
+        (s + __ImageBase.e_lfanew);
+    const void* end = s + nt->OptionalHeader.SizeOfImage;
+    SetModule(start, end);
   }
+
+  const void* start_;
+  const void* end_;
 };
 
-DECLSPEC_SELECTANY const void* VEHTraitsBase::g_module_start;
-DECLSPEC_SELECTANY const void* VEHTraitsBase::g_module_end;
+struct ModuleOfInterestWithExcludedRegion : public ModuleOfInterest {
+  inline bool IsOurModule(const void* address) {
+    return (start_ <= address && address < end_) &&
+           (address < special_region_start_ || special_region_end_ <= address);
+  }
 
-class Win32VEHTraits;
-typedef class VectoredHandlerT<Win32VEHTraits> VectoredHandler;
+  inline void SetExcludedRegion(const void* start, const void* end) {
+    special_region_start_ = start;
+    special_region_end_ = end;
+  }
+
+  const void* special_region_start_;
+  const void* special_region_end_;
+};
+
+
 #endif  // CHROME_FRAME_CRASH_REPORTING_VECTORED_HANDLER_H_

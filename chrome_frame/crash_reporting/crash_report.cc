@@ -8,18 +8,95 @@
 
 #include "base/basictypes.h"
 #include "breakpad/src/client/windows/handler/exception_handler.h"
-#include "chrome_frame/crash_reporting/vectored_handler.h"
 
 // TODO(joshia): factor out common code with chrome used for crash reporting
 const wchar_t kGoogleUpdatePipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\";
-google_breakpad::ExceptionHandler* g_breakpad = NULL;
+static google_breakpad::ExceptionHandler * g_breakpad = NULL;
 
-Win32VEHTraits::CodeBlock Win32VEHTraits::IgnoreExceptions[kIgnoreEntries] = {
-  { "kernel32.dll", "IsBadReadPtr", 0, 100, NULL },
-  { "kernel32.dll", "IsBadWritePtr", 0, 100, NULL },
-  { "kernel32.dll", "IsBadStringPtrA", 0, 100, NULL },
-  { "kernel32.dll", "IsBadStringPtrW", 0, 100, NULL },
+#pragma code_seg(push, ".text$va")
+static void veh_segment_start() {}
+#pragma code_seg(pop)
+
+#pragma code_seg(push, ".text$vz")
+static void veh_segment_end() {}
+#pragma code_seg(pop)
+
+// Place code in .text$veh_m.
+#pragma code_seg(push, ".text$vm")
+#include "chrome_frame/crash_reporting/vectored_handler-impl.h"
+
+// Use Win32 API; use breakpad for dumps; checks for single (current) module.
+class CrashHandlerTraits : public Win32VEHTraits,
+                           public ModuleOfInterestWithExcludedRegion {
+ public:
+  CrashHandlerTraits() : breakpad_(NULL) {}
+  void Init(google_breakpad::ExceptionHandler* breakpad) {
+    breakpad_ = breakpad;
+    Win32VEHTraits::InitializeIgnoredBlocks();
+    ModuleOfInterestWithExcludedRegion::SetCurrentModule();
+    // Pointers to static (non-extern) functions take the address of the
+    // function's first byte, as opposed to an entry in the compiler generated
+    // JMP table. In release builds /OPT:REF wipes away the JMP table, but debug
+    // builds are not so lucky.
+    ModuleOfInterestWithExcludedRegion::SetExcludedRegion(&veh_segment_start,
+                                                          &veh_segment_end);
+  }
+
+  void Shutdown() {
+    breakpad_ = 0;
+  }
+
+  inline bool WriteDump(EXCEPTION_POINTERS* p) {
+    return breakpad_->WriteMinidumpForException(p);
+  }
+
+ private:
+  google_breakpad::ExceptionHandler* breakpad_;
 };
+
+class CrashHandler {
+ public:
+  CrashHandler() : veh_id_(NULL), handler_(&crash_api_) {}
+  bool Init(google_breakpad::ExceptionHandler* breakpad);
+  void Shutdown();
+ private:
+  VectoredHandlerT<CrashHandlerTraits> handler_;
+  CrashHandlerTraits crash_api_;
+  void* veh_id_;
+
+  static LONG WINAPI VectoredHandlerEntryPoint(EXCEPTION_POINTERS* exptrs);
+};
+
+static CrashHandler g_crash_handler;
+
+LONG WINAPI CrashHandler::VectoredHandlerEntryPoint(
+    EXCEPTION_POINTERS* exptrs) {
+  return g_crash_handler.handler_.Handler(exptrs);
+}
+#pragma code_seg(pop)
+
+bool CrashHandler::Init(google_breakpad::ExceptionHandler* breakpad) {
+  if (veh_id_)
+    return true;
+
+  void* id = ::AddVectoredExceptionHandler(FALSE, &VectoredHandlerEntryPoint);
+  if (id != NULL) {
+    veh_id_ = id;
+    crash_api_.Init(breakpad);
+    return true;
+  }
+
+  return false;
+}
+
+void CrashHandler::Shutdown() {
+  if (veh_id_) {
+    ::RemoveVectoredExceptionHandler(veh_id_);
+    veh_id_ = NULL;
+  }
+
+  crash_api_.Shutdown();
+}
 
 std::wstring GetCrashServerPipeName(const std::wstring& user_sid) {
   std::wstring pipe_name = kGoogleUpdatePipeName;
@@ -46,17 +123,16 @@ bool InitializeVectoredCrashReportingWithPipeName(
       google_breakpad::ExceptionHandler::HANDLER_PURECALL, dump_type,
       pipe_name, client_info);
 
-  if (g_breakpad) {
-    // Find current module boundaries.
-    const void* start = &__ImageBase;
-    const char* s = reinterpret_cast<const char*>(start);
-    const IMAGE_NT_HEADERS32* nt = reinterpret_cast<const IMAGE_NT_HEADERS32*>
-        (s + __ImageBase.e_lfanew);
-    const void* end = s + nt->OptionalHeader.SizeOfImage;
-    VectoredHandler::Register(start, end);
+  if (!g_breakpad)
+    return false;
+
+  if (!g_crash_handler.Init(g_breakpad)) {
+    delete g_breakpad;
+    g_breakpad = NULL;
+    return false;
   }
 
-  return g_breakpad != NULL;
+  return true;
 }
 
 bool InitializeVectoredCrashReporting(
@@ -76,7 +152,7 @@ bool InitializeVectoredCrashReporting(
 }
 
 bool ShutdownVectoredCrashReporting() {
-  VectoredHandler::Unregister();
+  g_crash_handler.Shutdown();
   delete g_breakpad;
   g_breakpad = NULL;
   return true;

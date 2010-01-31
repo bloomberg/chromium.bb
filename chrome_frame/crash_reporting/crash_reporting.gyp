@@ -35,6 +35,8 @@
       'type': 'executable',
       'sources': [
         'vectored_handler_unittest.cc',
+        'veh_test.cc',
+        'veh_test.h',
       ],
       'dependencies': [
         'crash_report',
