@@ -647,8 +647,12 @@ void ExtensionHost::RenderViewCreated(RenderViewHost* render_view_host) {
   extension_function_dispatcher_.reset(
       new ExtensionFunctionDispatcher(render_view_host, this, url_));
 
-  render_view_host->Send(new ViewMsg_EnablePreferredSizeChangedMode(
-      render_view_host->routing_id()));
+  if (extension_host_type_ == ViewType::EXTENSION_TOOLSTRIP ||
+      extension_host_type_ == ViewType::EXTENSION_MOLE ||
+      extension_host_type_ == ViewType::EXTENSION_POPUP) {
+    render_view_host->Send(new ViewMsg_EnablePreferredSizeChangedMode(
+        render_view_host->routing_id()));
+  }
 }
 
 int ExtensionHost::GetBrowserWindowID() const {

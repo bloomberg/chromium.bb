@@ -746,6 +746,10 @@ class RenderView : public RenderWidget,
   void DidDownloadImage(webkit_glue::ImageResourceFetcher* fetcher,
                         const SkBitmap& image);
 
+  // Check whether the preferred size has changed. This is called periodically
+  // by preferred_size_change_timer_.
+  void CheckPreferredSize();
+
   enum ErrorPageType {
     DNS_ERROR,
     HTTP_404,
@@ -979,6 +983,11 @@ class RenderView : public RenderWidget,
 
   // If true, we send IPC messages when |preferred_size_| changes.
   bool send_preferred_size_changes_;
+
+  // Nasty hack. WebKit does not send us events when the preferred size changes,
+  // so we must poll it. See also:
+  // https://bugs.webkit.org/show_bug.cgi?id=32807.
+  base::RepeatingTimer<RenderView> preferred_size_change_timer_;
 
   // The text selection the last time DidChangeSelection got called.
   std::string last_selection_;

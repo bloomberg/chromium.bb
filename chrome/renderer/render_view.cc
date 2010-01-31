@@ -2709,6 +2709,10 @@ void RenderView::didCreateIsolatedScriptContext(WebFrame* frame) {
 }
 
 void RenderView::didChangeContentsSize(WebFrame* frame, const WebSize& size) {
+  CheckPreferredSize();
+}
+
+void RenderView::CheckPreferredSize() {
   // We don't always want to send the change messages over IPC, only if we've
   // be put in that mode by getting a |ViewMsg_EnablePreferredSizeChangedMode|
   // message.
@@ -3422,6 +3426,11 @@ void RenderView::OnEnableViewSourceMode() {
 
 void RenderView::OnEnablePreferredSizeChangedMode() {
   send_preferred_size_changes_ = true;
+  if (CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
+          switches::kProcessType) == switches::kExtensionProcess) {
+    preferred_size_change_timer_.Start(TimeDelta::FromMilliseconds(10), this,
+                                       &RenderView::CheckPreferredSize);
+  }
 }
 
 void RenderView::OnSetRendererPrefs(const RendererPreferences& renderer_prefs) {
