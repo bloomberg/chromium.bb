@@ -133,7 +133,7 @@ int main(int argc, char *argv[])
 	struct wl_display *display;
 	struct wl_visual *visual;
 	int fd;
-	cairo_drm_device_t *device;
+	cairo_device_t *device;
 	cairo_surface_t *s;
 	struct timespec ts;
 	GMainLoop *loop;

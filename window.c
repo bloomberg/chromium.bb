@@ -46,7 +46,7 @@ struct display {
 	struct wl_output *output;
 	struct wl_input_device *input_device;
 	struct rectangle screen_allocation;
-	cairo_drm_device_t *device;
+	cairo_device_t *device;
 	int fd;
 };
 
