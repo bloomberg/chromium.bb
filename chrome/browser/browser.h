@@ -315,10 +315,10 @@ class Browser : public TabStripModelDelegate,
   // Returns true if a tab can be restored.
   virtual bool CanRestoreTab();
 
-  // Show a DOMUI tab given a URL. If a tab with the same URL is already
-  // visible in this browser, it becomes selected. Otherwise a new tab is
-  // created.
-  void ShowSingleDOMUITab(const GURL& url);
+  // Show a given a URL. If a tab with the same URL (ignoring the ref) is
+  // already visible in this browser, it becomes selected. Otherwise a new tab
+  // is created.
+  void ShowSingletonTab(const GURL& url);
 
   // Update commands whose state depends on whether the window is in fullscreen
   // mode. This is a public function because on Linux, fullscreen mode is an
