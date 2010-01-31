@@ -14,6 +14,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
+#import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 
 namespace {
@@ -89,6 +90,9 @@ const int kCompleteAnimationDuration = 2.5;
 - (NSString*)elideTitle:(int)availableWidth;
 - (NSString*)elideStatus:(int)availableWidth;
 - (GTMTheme*)backgroundTheme:(NSView*)controlView;
+- (BOOL)pressedWithDefaultThemeOnPart:(DownloadItemMousePosition)part;
+- (NSColor*)titleColorForPart:(DownloadItemMousePosition)part;
+- (void)drawSecondaryTitleInRect:(NSRect)innerFrame;
 @end
 
 @implementation DownloadItemCell
@@ -365,6 +369,49 @@ const int kCompleteAnimationDuration = 2.5;
   return theme_.get();
 }
 
+// Returns if |part| was pressed while the default theme was active.
+- (BOOL)pressedWithDefaultThemeOnPart:(DownloadItemMousePosition)part {
+  GTMTheme* theme = [[self controlView] gtm_theme];
+  bool isDefaultTheme = [theme
+      backgroundImageForStyle:GTMThemeStyleToolBarButton state:YES] == nil;
+  return isDefaultTheme && [self isHighlighted] && mousePosition_ == part;
+}
+
+// Returns the text color that should be used to draw text on |part|.
+- (NSColor*)titleColorForPart:(DownloadItemMousePosition)part {
+  NSColor* themeTextColor = [[[self controlView] gtm_theme]
+      textColorForStyle:GTMThemeStyleBookmarksBarButton
+                  state:GTMThemeStateActiveWindow];
+  return [self pressedWithDefaultThemeOnPart:part]
+      ? [NSColor alternateSelectedControlTextColor] : themeTextColor;
+}
+
+- (void)drawSecondaryTitleInRect:(NSRect)innerFrame {
+  if (![self secondaryTitle] || statusAlpha_ <= 0)
+    return;
+
+  CGFloat textWidth = innerFrame.size.width -
+      (kTextPosLeft + kTextPaddingRight + kDropdownAreaWidth);
+  NSString* secondaryText = [self elideStatus:textWidth];
+  NSColor* secondaryColor =
+      [self titleColorForPart:kDownloadItemMouseOverButtonPart];
+
+  // If text is light-on-dark, lightening it alone will do nothing.
+  // Therefore we mute luminance a wee bit before drawing in this case.
+  if (![secondaryColor gtm_isDarkColor])
+    secondaryColor = [secondaryColor gtm_colorByAdjustingLuminance:-0.2];
+
+  NSDictionary* secondaryTextAttributes =
+      [NSDictionary dictionaryWithObjectsAndKeys:
+          secondaryColor, NSForegroundColorAttributeName,
+          [self secondaryFont], NSFontAttributeName,
+          nil];
+  NSPoint secondaryPos =
+      NSMakePoint(innerFrame.origin.x + kTextPosLeft, kSecondaryTextPosTop);
+  [secondaryText drawAtPoint:secondaryPos
+              withAttributes:secondaryTextAttributes];
+}
+
 - (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
   // Constants from Cole.  Will kConstant them once the feedback loop
   // is complete.
@@ -400,6 +447,14 @@ const int kCompleteAnimationDuration = 2.5;
   NSBezierPath* dropdownInnerPath = [self
       rightRoundedPath:radius inRect:dropdownDrawRect];
 
+  // Draw secondary title, if any. Do this before drawing the (transparent)
+  // fill so that the text becomes a bit lighter. The default theme's "pressed"
+  // gradient is not transparent, so only do this if a theme is active.
+  bool drawStatusOnTop =
+      [self pressedWithDefaultThemeOnPart:kDownloadItemMouseOverButtonPart];
+  if (!drawStatusOnTop)
+    [self drawSecondaryTitleInRect:innerFrame];
+
   // Stroke the borders and appropriate fill gradient.
   [self drawBorderAndFillForTheme:theme
                       controlView:controlView
@@ -422,6 +477,11 @@ const int kCompleteAnimationDuration = 2.5;
                   defaultGradient:bgGradient];
 
   [self drawInteriorWithFrame:innerFrame inView:controlView];
+
+  // For the default theme, draw the status text on top of the (opaque) button
+  // gradient.
+  if (drawStatusOnTop)
+    [self drawSecondaryTitleInRect:innerFrame];
 }
 
 - (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
@@ -430,41 +490,19 @@ const int kCompleteAnimationDuration = 2.5;
       (kTextPosLeft + kTextPaddingRight + kDropdownAreaWidth);
   [self setTitle:[self elideTitle:textWidth]];
 
-  NSColor* themeTextColor = [[[self controlView] gtm_theme]
-      textColorForStyle:GTMThemeStyleBookmarksBarButton
-                  state:GTMThemeStateActiveWindow];
-
-  NSColor* color = [self isButtonPartPressed]
-      ? [NSColor alternateSelectedControlTextColor] : themeTextColor;
+  NSColor* color = [self titleColorForPart:kDownloadItemMouseOverButtonPart];
   NSString* primaryText = [self title];
 
-  NSDictionary* primaryTextAttributes = [NSDictionary
-      dictionaryWithObjectsAndKeys:
-      color, NSForegroundColorAttributeName,
-      [self font], NSFontAttributeName,
-      nil];
+  NSDictionary* primaryTextAttributes =
+      [NSDictionary dictionaryWithObjectsAndKeys:
+          color, NSForegroundColorAttributeName,
+          [self font], NSFontAttributeName,
+          nil];
   NSPoint primaryPos = NSMakePoint(
       cellFrame.origin.x + kTextPosLeft,
       titleY_);
 
   [primaryText drawAtPoint:primaryPos withAttributes:primaryTextAttributes];
-
-  // Draw secondary title, if any
-  if ([self secondaryTitle] != nil && statusAlpha_ > 0) {
-    NSString* secondaryText = [self elideStatus:textWidth];
-    NSColor* secondaryColor = [NSColor colorWithDeviceWhite:kSecondaryTextColor
-                                                      alpha:statusAlpha_];
-    NSDictionary* secondaryTextAttributes = [NSDictionary
-        dictionaryWithObjectsAndKeys:
-        secondaryColor, NSForegroundColorAttributeName,
-        [self secondaryFont], NSFontAttributeName,
-        nil];
-    NSPoint secondaryPos = NSMakePoint(
-        cellFrame.origin.x + kTextPosLeft,
-        kSecondaryTextPosTop);
-    [secondaryText drawAtPoint:secondaryPos
-        withAttributes:secondaryTextAttributes];
-  }
 
   // Draw progress disk
   {
@@ -541,8 +579,7 @@ const int kCompleteAnimationDuration = 2.5;
   [shadow setShadowBlurRadius:0.0];
   [shadow set];
 
-  NSColor* fill = [self isDropdownPartPressed]
-      ? [NSColor alternateSelectedControlTextColor] : themeTextColor;
+  NSColor* fill = [self titleColorForPart:kDownloadItemMouseOverDropdownPart];
   [fill setFill];
 
   [triangle fill];
