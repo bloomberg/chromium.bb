@@ -66,37 +66,37 @@ namespace WebKit {
 
 #define TOOLS_RPC_JS_STUB_METHOD0(Method) \
     static v8::Handle<v8::Value> js##Method(const v8::Arguments& args) { \
-        sendRpcMessageFromJs(#Method, args, 0); \
+        sendRpcMessageFromJS(#Method, args, 0); \
         return v8::Undefined(); \
     }
 
 #define TOOLS_RPC_JS_STUB_METHOD1(Method, T1) \
     static v8::Handle<v8::Value> js##Method(const v8::Arguments& args) { \
-        sendRpcMessageFromJs(#Method, args, 1); \
+        sendRpcMessageFromJS(#Method, args, 1); \
         return v8::Undefined(); \
     }
 
 #define TOOLS_RPC_JS_STUB_METHOD2(Method, T1, T2) \
     static v8::Handle<v8::Value> js##Method(const v8::Arguments& args) { \
-        sendRpcMessageFromJs(#Method, args, 2); \
+        sendRpcMessageFromJS(#Method, args, 2); \
         return v8::Undefined(); \
     }
 
 #define TOOLS_RPC_JS_STUB_METHOD3(Method, T1, T2, T3) \
     static v8::Handle<v8::Value> js##Method(const v8::Arguments& args) { \
-        sendRpcMessageFromJs(#Method, args, 3); \
+        sendRpcMessageFromJS(#Method, args, 3); \
         return v8::Undefined(); \
     }
 
 #define TOOLS_RPC_JS_STUB_METHOD4(Method, T1, T2, T3, T4) \
     static v8::Handle<v8::Value> js##Method(const v8::Arguments& args) { \
-        sendRpcMessageFromJs(#Method, args, 4); \
+        sendRpcMessageFromJS(#Method, args, 4); \
         return v8::Undefined(); \
     }
 
 #define TOOLS_RPC_JS_STUB_METHOD5(Method, T1, T2, T3, T4, T5) \
     static v8::Handle<v8::Value> js##Method(const v8::Arguments& args) { \
-        sendRpcMessageFromJs(#Method, args, 5); \
+        sendRpcMessageFromJS(#Method, args, 5); \
         return v8::Undefined(); \
     }
 
@@ -104,9 +104,9 @@ namespace WebKit {
 // JS RPC main obj macro
 
 #define DEFINE_RPC_JS_BOUND_OBJ(Class, STRUCT, DClass, DELEGATE_STRUCT) \
-class Js##Class##BoundObj : public Class##Stub { \
+class JS##Class##BoundObj : public Class##Stub { \
 public: \
-    Js##Class##BoundObj(Delegate* rpcDelegate, \
+    JS##Class##BoundObj(Delegate* rpcDelegate, \
                         v8::Handle<v8::Context> context, \
                         const char* classname) \
         : Class##Stub(rpcDelegate) { \
@@ -120,8 +120,8 @@ public: \
           TOOLS_RPC_JS_BIND_METHOD5) \
       boundObj.build(); \
     } \
-    virtual ~Js##Class##BoundObj() {} \
-    typedef Js##Class##BoundObj OCLASS; \
+    virtual ~JS##Class##BoundObj() { } \
+    typedef JS##Class##BoundObj OCLASS; \
     STRUCT( \
         TOOLS_RPC_JS_STUB_METHOD0, \
         TOOLS_RPC_JS_STUB_METHOD1, \
@@ -130,7 +130,7 @@ public: \
         TOOLS_RPC_JS_STUB_METHOD4, \
         TOOLS_RPC_JS_STUB_METHOD5) \
 private: \
-    static void sendRpcMessageFromJs(const char* method, \
+    static void sendRpcMessageFromJS(const char* method, \
                                      const v8::Arguments& jsArguments, \
                                      size_t argsCount) \
     { \
@@ -138,7 +138,7 @@ private: \
         for (size_t i = 0; i < argsCount; i++) \
             args[i] = WebCore::toWebCoreStringWithNullCheck(jsArguments[i]); \
         void* selfPtr = v8::External::Cast(*jsArguments.Data())->Value(); \
-        Js##Class##BoundObj* self = static_cast<Js##Class##BoundObj*>(selfPtr); \
+        JS##Class##BoundObj* self = static_cast<JS##Class##BoundObj*>(selfPtr); \
         self->sendRpcMessage(#Class, method, args); \
     } \
 };

@@ -54,16 +54,15 @@ namespace WebCore {
 
 namespace WebKit {
 
-    class JsDebuggerAgentBoundObj;
-    class JsNetAgentBoundObj;
-    class JsProfilerAgentBoundObj;
-    class JsToolsAgentBoundObj;
+    class JSDebuggerAgentBoundObj;
+    class JSProfilerAgentBoundObj;
+    class JSToolsAgentBoundObj;
     class WebDevToolsClientDelegate;
     class WebViewImpl;
     struct WebDevToolsMessageData;
 
 class WebDevToolsFrontendImpl : public WebKit::WebDevToolsFrontend
-                              , public DevToolsRpc::Delegate
+                              , public DevToolsRPC::Delegate
                               , public Noncopyable {
 public:
     WebDevToolsFrontendImpl(
@@ -72,7 +71,7 @@ public:
         const String& applicationLocale);
     virtual ~WebDevToolsFrontendImpl();
 
-    // DevToolsRpc::Delegate implementation.
+    // DevToolsRPC::Delegate implementation.
     virtual void sendRpcMessage(const WebKit::WebDevToolsMessageData& data);
 
     // WebDevToolsFrontend implementation.
@@ -152,9 +151,9 @@ private:
     WebKit::WebViewImpl* m_webViewImpl;
     WebKit::WebDevToolsFrontendClient* m_client;
     String m_applicationLocale;
-    OwnPtr<JsDebuggerAgentBoundObj> m_debuggerAgentObj;
-    OwnPtr<JsProfilerAgentBoundObj> m_profilerAgentObj;
-    OwnPtr<JsToolsAgentBoundObj> m_toolsAgentObj;
+    OwnPtr<JSDebuggerAgentBoundObj> m_debuggerAgentObj;
+    OwnPtr<JSProfilerAgentBoundObj> m_profilerAgentObj;
+    OwnPtr<JSToolsAgentBoundObj> m_toolsAgentObj;
     bool m_loaded;
     Vector<Vector<String> > m_pendingIncomingMessages;
     RefPtr<MenuProvider> m_menuProvider;

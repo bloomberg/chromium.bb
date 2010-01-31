@@ -112,9 +112,9 @@ WebDevToolsFrontendImpl::WebDevToolsFrontendImpl(
     v8::HandleScope scope;
     v8::Handle<v8::Context> frameContext = V8Proxy::context(frame->frame());
 
-    m_debuggerAgentObj.set(new JsDebuggerAgentBoundObj(this, frameContext, "RemoteDebuggerAgent"));
-    m_profilerAgentObj.set(new JsProfilerAgentBoundObj(this, frameContext, "RemoteProfilerAgent"));
-    m_toolsAgentObj.set(new JsToolsAgentBoundObj(this, frameContext, "RemoteToolsAgent"));
+    m_debuggerAgentObj.set(new JSDebuggerAgentBoundObj(this, frameContext, "RemoteDebuggerAgent"));
+    m_profilerAgentObj.set(new JSProfilerAgentBoundObj(this, frameContext, "RemoteProfilerAgent"));
+    m_toolsAgentObj.set(new JSToolsAgentBoundObj(this, frameContext, "RemoteToolsAgent"));
 
     // Debugger commands should be sent using special method.
     BoundObject debuggerCommandExecutorObj(frameContext, this, "RemoteDebuggerCommandExecutor");

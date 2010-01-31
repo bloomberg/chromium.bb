@@ -126,10 +126,10 @@ static const char kApuAgentFeatureName[] = "apu-agent";
 static const char kTimelineFeatureName[] = "timeline-profiler";
 static const char kResourceTrackingFeatureName[] = "resource-tracking";
 
-class IoRpcDelegate : public DevToolsRpc::Delegate, public Noncopyable {
+class IORPCDelegate : public DevToolsRPC::Delegate, public Noncopyable {
 public:
-    IoRpcDelegate() {}
-    virtual ~IoRpcDelegate() {}
+    IORPCDelegate() { }
+    virtual ~IORPCDelegate() { }
     virtual void sendRpcMessage(const WebKit::WebDevToolsMessageData& data)
     {
         WebDevToolsAgentClient::sendMessageToFrontendOnIOThread(data);
@@ -563,7 +563,7 @@ void WebDevToolsAgent::setMessageLoopDispatchHandler(MessageLoopDispatchHandler 
 
 bool WebDevToolsAgent::dispatchMessageFromFrontendOnIOThread(const WebDevToolsMessageData& data)
 {
-    IoRpcDelegate transport;
+    IORPCDelegate transport;
     ProfilerAgentDelegateStub stub(&transport);
     ProfilerAgentImpl agent(&stub);
     return ProfilerAgentDispatch::dispatch(&agent, data);

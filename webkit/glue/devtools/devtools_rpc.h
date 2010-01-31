@@ -47,8 +47,8 @@
 //
 // class MyApi {
 // private:
-//     MyApi() {}
-//     ~MyApi() {}
+//     MyApi() { }
+//     ~MyApi() { }
 //     virtual void method1() = 0;
 //     virtual void method2(
 //         int param1,
@@ -60,7 +60,7 @@
 // 2. MyApiStub will implement MyApi interface and would serialize all calls
 // into the string-based calls of the underlying transport:
 //
-// DevToolsRpc::Delegate* transport;
+// DevToolsRPC::Delegate* transport;
 // myApi = new MyApiStub(transport);
 // myApi->method1();
 // myApi->method3(2);
@@ -322,9 +322,9 @@ public: \
 \
 class Class##Stub \
     : public Class \
-    , public DevToolsRpc { \
+    , public DevToolsRPC { \
 public: \
-    explicit Class##Stub(Delegate* delegate) : DevToolsRpc(delegate) { } \
+    explicit Class##Stub(Delegate* delegate) : DevToolsRPC(delegate) { } \
     virtual ~Class##Stub() { } \
     typedef Class CLASS; \
     STRUCT( \
@@ -364,7 +364,7 @@ public: \
 
 ///////////////////////////////////////////////////////
 // RPC base class
-class DevToolsRpc {
+class DevToolsRPC {
 public:
     class Delegate {
     public:
@@ -373,8 +373,8 @@ public:
         virtual void sendRpcMessage(const WebKit::WebDevToolsMessageData& data) = 0;
     };
 
-    explicit DevToolsRpc(Delegate* delegate) : m_delegate(delegate) { }
-    virtual ~DevToolsRpc() { };
+    explicit DevToolsRPC(Delegate* delegate) : m_delegate(delegate) { }
+    virtual ~DevToolsRPC() { };
 
 protected:
     void sendRpcMessage(const String& className,

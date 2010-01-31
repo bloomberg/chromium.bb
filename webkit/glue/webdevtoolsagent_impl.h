@@ -65,7 +65,7 @@ namespace WebKit {
 
 class WebDevToolsAgentImpl : public WebKit::WebDevToolsAgentPrivate,
                              public ToolsAgent,
-                             public DevToolsRpc::Delegate {
+                             public DevToolsRPC::Delegate {
 public:
     WebDevToolsAgentImpl(WebKit::WebViewImpl* webViewImpl, WebKit::WebDevToolsAgentClient* client);
     virtual ~WebDevToolsAgentImpl();
@@ -104,7 +104,7 @@ public:
     virtual void didFinishLoading(unsigned long);
     virtual void didFailLoading(unsigned long, const WebKit::WebURLError&);
 
-    // DevToolsRpc::Delegate implementation.
+    // DevToolsRPC::Delegate implementation.
     virtual void sendRpcMessage(const WebKit::WebDevToolsMessageData& data);
 
     void forceRepaint();
