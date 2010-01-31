@@ -897,7 +897,7 @@ bool DetectTabLanguageFunction::RunImpl() {
   // The tab contents does not know its language yet.  Let's  wait until it
   // receives it, or until the tab is closed/navigates to some other page.
   registrar_.Add(this, NotificationType::TAB_LANGUAGE_DETERMINED,
-                 Source<TabContents>(contents));
+                 Source<RenderViewHost>(contents->render_view_host()));
   registrar_.Add(this, NotificationType::TAB_CLOSING,
                  Source<NavigationController>(&(contents->controller())));
   registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,

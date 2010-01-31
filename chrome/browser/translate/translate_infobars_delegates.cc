@@ -93,7 +93,10 @@ void TranslateInfoBarDelegate::GetAvailableTargetLanguages(
 }
 
 void TranslateInfoBarDelegate::Translate() {
-  tab_contents_->TranslatePage(original_language_, target_language_);
+  // TODO(kuan): Call actual Translate method.
+/*
+  Translate(WideToUTF8(original_language()), WideToUTF8(target_language()));
+*/
 }
 
 bool TranslateInfoBarDelegate::IsLanguageBlacklisted() {

@@ -46,7 +46,6 @@
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/browser/translate/translate_manager.h"
 #include "chrome/browser/user_data_manager.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -803,13 +802,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
     return ResultCodes::MACHINE_LEVEL_INSTALL_EXISTS;
 
   process_singleton.Create();
-
-#if defined(OS_WIN)
-  // Create the TranslateManager singleton.
-  // TODO(jcampan): enable on non Windows platforms when the info-bars are
-  //                implemented.
-  Singleton<TranslateManager>::get();
-#endif
 
   // Show the First Run UI if this is the first time Chrome has been run on
   // this computer, or we're being compelled to do so by a command line flag.

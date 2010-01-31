@@ -772,16 +772,6 @@ void TabContents::ShowPageInfo(const GURL& url,
   delegate_->ShowPageInfo(profile(), url, ssl, show_history);
 }
 
-void TabContents::TranslatePage(const std::string& source_lang,
-                                const std::string& target_lang) {
-  NavigationEntry* entry = controller_.GetActiveEntry();
-  if (!entry) {
-    NOTREACHED();
-    return;
-  }
-  render_view_host()->TranslatePage(entry->page_id(), source_lang, target_lang);
-}
-
 ConstrainedWindow* TabContents::CreateConstrainedDialog(
       ConstrainedWindowDelegate* delegate) {
   ConstrainedWindow* window =
@@ -1823,22 +1813,24 @@ void TabContents::OnPageContents(const GURL& url,
     entry->set_language(language);
   }
 
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kAutoPageTranslate) &&
+      TranslationService::IsTranslationEnabled()) {
+    std::string locale = g_browser_process->GetApplicationLocale();
+    if (!locale.empty() && locale != language) {
+      // Don't translate the NTP, download page, history...
+      if (entry && !entry->url().SchemeIs("chrome") &&
+          TranslationService::ShouldTranslatePage(language, locale)) {
+        render_view_host()->TranslatePage(entry->page_id(), language, locale);
+      }
+    }
+  }
+
   std::string lang = language;
   NotificationService::current()->Notify(
       NotificationType::TAB_LANGUAGE_DETERMINED,
-      Source<TabContents>(this),
+      Source<RenderViewHost>(render_view_host()),
       Details<std::string>(&lang));
-}
-
-void TabContents::OnPageTranslated(int32 page_id,
-                                   const std::string& original_lang,
-                                   const std::string& translated_lang) {
-  std::pair<std::string, std::string> lang_pair =
-      std::make_pair(original_lang, translated_lang);
-  NotificationService::current()->Notify(
-      NotificationType::PAGE_TRANSLATED,
-      Source<TabContents>(this),
-      Details<std::pair<std::string, std::string> >(&lang_pair));
 }
 
 void TabContents::DidStartProvisionalLoadForFrame(

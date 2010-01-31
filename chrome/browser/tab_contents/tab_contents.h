@@ -350,10 +350,6 @@ class TabContents : public PageNavigator,
                     const NavigationEntry::SSLStatus& ssl,
                     bool show_history);
 
-  // Translates the page contents from |source_lang| to |target_lang|.
-  void TranslatePage(const std::string& source_lang,
-                     const std::string& target_lang);
-
   // Window management ---------------------------------------------------------
 
   // Create a new window constrained to this TabContents' clip and visibility.
@@ -831,9 +827,6 @@ class TabContents : public PageNavigator,
                               int32 page_id,
                               const std::wstring& contents,
                               const std::string& language);
-  virtual void OnPageTranslated(int32 page_id,
-                                const std::string& original_lang,
-                                const std::string& translated_lang);
 
   // RenderViewHostDelegate::Resource implementation.
   virtual void DidStartProvisionalLoadForFrame(RenderViewHost* render_view_host,

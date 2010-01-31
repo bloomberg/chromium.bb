@@ -223,11 +223,6 @@ class RenderViewHostDelegate {
                                 int32 page_id,
                                 const std::wstring& contents,
                                 const std::string& language) = 0;
-
-    // Notification that the page has been translated.
-    virtual void OnPageTranslated(int32 page_id,
-                                  const std::string& original_lang,
-                                  const std::string& translated_lang) = 0;
   };
 
   // Resource ------------------------------------------------------------------

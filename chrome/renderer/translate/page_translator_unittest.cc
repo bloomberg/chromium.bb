@@ -168,8 +168,8 @@ TEST_F(TranslatorTest, DISABLED_TranslatePages) {
 
     // Translate it.
     ReverseTextTranslator text_translator;
-    PageTranslator translator(&text_translator, NULL);
-    translator.Translate(0, web_frame, "en", "fr");
+    PageTranslator translator(&text_translator);
+    translator.Translate(web_frame, "en", "fr");
 
     // Translation is asynchronous, so we need to process the pending messages
     // to make it happen.

@@ -259,9 +259,10 @@ class SimpleNotificationObserver : public NotificationObserver {
 
 class LanguageDetectionNotificationObserver : public NotificationObserver {
  public:
-  explicit LanguageDetectionNotificationObserver(TabContents* tab) {
+  explicit LanguageDetectionNotificationObserver(
+      RenderViewHost* render_view_host) {
     registrar_.Add(this, NotificationType::TAB_LANGUAGE_DETERMINED,
-                  Source<TabContents>(tab));
+                  Source<RenderViewHost>(render_view_host));
     ui_test_utils::RunMessageLoop();
   }
 
@@ -521,7 +522,7 @@ void WaitForFocusInBrowser(Browser* browser) {
 }
 
 std::string WaitForLanguageDetection(TabContents* tab) {
-  LanguageDetectionNotificationObserver observer(tab);
+  LanguageDetectionNotificationObserver observer(tab->render_view_host());
   return observer.language();
 }
 
