@@ -950,11 +950,8 @@
           ],
           'sources!': [
             'browser/views/bookmark_context_menu_test.cc',
-            'browser/back_forward_menu_model_unittest.cc',
             'browser/gtk/go_button_gtk_unittest.cc',
             'browser/gtk/tabs/tab_renderer_gtk_unittest.cc',
-            'browser/tab_contents/navigation_controller_unittest.cc',
-            'browser/task_manager_unittest.cc',
             '../third_party/hunspell/google/hunspell_tests.cc',
           ],
           # TODO(mark): We really want this for all non-static library targets,

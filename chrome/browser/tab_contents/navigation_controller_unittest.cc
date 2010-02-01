@@ -142,8 +142,6 @@ void RegisterForAllNavNotifications(TestNotificationTracker* tracker,
                      Source<NavigationController>(controller));
 }
 
-}  // namespace
-
 // -----------------------------------------------------------------------------
 
 TEST_F(NavigationControllerTest, Defaults) {
@@ -1106,8 +1104,6 @@ TEST_F(NavigationControllerTest, InPage) {
             controller().GetActiveEntry()->url());
 }
 
-namespace {
-
 // NotificationObserver implementation used in verifying we've received the
 // NotificationType::NAV_LIST_PRUNED method.
 class PrunedListener : public NotificationObserver {
@@ -1138,8 +1134,6 @@ class PrunedListener : public NotificationObserver {
 
   DISALLOW_COPY_AND_ASSIGN(PrunedListener);
 };
-
-}  // namespace
 
 // Tests that we limit the number of navigation entries created correctly.
 TEST_F(NavigationControllerTest, EnforceMaxNavigationCount) {
@@ -1617,3 +1611,5 @@ TEST_F(NavigationControllerHistoryTest, NavigationPruning) {
                                          windows_[0]->tabs[0]->navigations[1]);
 }
 */
+
+}  // namespace
