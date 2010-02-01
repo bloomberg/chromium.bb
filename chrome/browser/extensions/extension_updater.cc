@@ -449,11 +449,7 @@ void ExtensionUpdater::OnCRXFetchComplete(const GURL& url,
                                           const URLRequestStatus& status,
                                           int response_code,
                                           const std::string& data) {
-  if (url != current_extension_fetch_.url) {
-    LOG(ERROR) << "Called with unexpected url:'" << url.spec()
-               << "' expected:'" << current_extension_fetch_.url.spec() << "'";
-    NOTREACHED();
-  } else if (status.status() == URLRequestStatus::SUCCESS &&
+  if (status.status() == URLRequestStatus::SUCCESS &&
              response_code == 200) {
     if (current_extension_fetch_.id == kBlacklistAppID) {
       ProcessBlacklist(data);
