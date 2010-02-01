@@ -14,5 +14,16 @@ IPC_BEGIN_MESSAGES(NaClProcess)
                        int /* descriptor id */,
                        nacl::FileDescriptor /* handle value */)
 
+  // Tells the NaCl broker to launch a NaCl loader process.
+  IPC_MESSAGE_CONTROL1(NaClProcessMsg_LaunchLoaderThroughBroker,
+                       std::wstring /* channel ID for the loader */)
+
+  // Notify the browser process that the loader was launched successfully.
+  IPC_MESSAGE_CONTROL2(NaClProcessMsg_LoaderLaunched,
+                       std::wstring,  /* channel ID for the loader */
+                       base::ProcessHandle /* loader process handle */)
+
+  // Notify the browser process that the broker is ready (sent by the broker)
+  IPC_MESSAGE_CONTROL0(NaClProcessMsg_BrokerReady)
 IPC_END_MESSAGES(NaClProcess)
 

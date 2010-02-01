@@ -150,7 +150,7 @@ bool RenderProcess::LaunchNaClProcess(const char* url,
         reinterpret_cast<base::ProcessId*>(nacl_process_id)))) {
     return false;
   }
-  *imc_handle = NATIVE_HANDLE(imc_descriptor);
+  *imc_handle = nacl::ToNativeHandle(imc_descriptor);
   *nacl_process_handle = nacl_process;
   return true;
 }

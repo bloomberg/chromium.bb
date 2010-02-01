@@ -380,8 +380,12 @@ const char kMessageLoopHistogrammer[]       = "message-loop-histogrammer";
 // and performance tests.
 const char kMetricsRecordingOnly[]          = "metrics-recording-only";
 
-// Causes the process to run as a NativeClient's sel_ldr subprocess.
-const char kNaClProcess[]                   = "nacl";
+// Causes the process to run as a NativeClient broker
+// (used for launching NaCl loader processes on 64-bit Windows).
+const char kNaClBrokerProcess[]             = "nacl-broker";
+
+// Causes the process to run as a NativeClient loader.
+const char kNaClLoaderProcess[]             = "nacl-loader";
 
 // Causes the Native Client process to display a dialog on launch.
 const char kNaClStartupDialog[]             = "nacl-startup-dialog";

@@ -23,6 +23,13 @@
 #include "sandbox/src/sandbox.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
+#ifdef NACL_WIN64
+  // The sandbox can be used also by the NaCl broker process. In this case we
+  // define a global variable g_broker_services instead of g_browser_process.
+  // This can be changed if we discover that the broker process needs to be more
+  // similar to the browser process.
+  extern sandbox::BrokerServices* g_broker_services;
+#endif
 namespace {
 
 // The DLLs listed here are known (or under strong suspicion) of causing crashes
@@ -372,10 +379,12 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     type = ChildProcessInfo::PLUGIN_PROCESS;
   } else if (type_str == switches::kWorkerProcess) {
     type = ChildProcessInfo::WORKER_PROCESS;
-  } else if (type_str == switches::kNaClProcess) {
-    type = ChildProcessInfo::NACL_PROCESS;
+  } else if (type_str == switches::kNaClLoaderProcess) {
+    type = ChildProcessInfo::NACL_LOADER_PROCESS;
   } else if (type_str == switches::kUtilityProcess) {
     type = ChildProcessInfo::UTILITY_PROCESS;
+  } else if (type_str == switches::kNaClBrokerProcess) {
+    type = ChildProcessInfo::NACL_BROKER_PROCESS;
   } else if (type_str == switches::kGpuProcess) {
     type = ChildProcessInfo::GPU_PROCESS;
   } else {
@@ -409,10 +418,15 @@ base::ProcessHandle StartProcessWithAccess(CommandLine* cmd_line,
     return process;
   }
 
+#ifdef NACL_WIN64
+  // When running in the broker we get the BrokerServices pointer from a global
+  // variable. It is initialized in NaClBrokerMain.
+  sandbox::BrokerServices* broker_service = g_broker_services;
+#else
   // spawn the child process in the sandbox
   sandbox::BrokerServices* broker_service =
       g_browser_process->broker_services();
-
+#endif
   sandbox::ResultCode result;
   PROCESS_INFORMATION target = {0};
   sandbox::TargetPolicy* policy = broker_service->CreatePolicy();
