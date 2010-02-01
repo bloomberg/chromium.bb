@@ -86,6 +86,7 @@
             '-tc', # Clean the tree
             '-b', # Don't produce a source build
             '-a<(ARCH)',
+            '-D', # -a suppresses build-dep checking, so turn it back on
             '-rfakeroot',
           ],
           'outputs': [
