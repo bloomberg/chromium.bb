@@ -105,13 +105,17 @@ class BrowserThemePackTest : public ::testing::Test {
     theme_pack_->BuildDisplayPropertiesFromJSON(value);
   }
 
-  void ParseImageNames(const std::string& json,
+  void ParseImageNamesJSON(const std::string& json,
                        std::map<int, FilePath>* out_file_paths) {
     scoped_ptr<Value> value(base::JSONReader::Read(json, false));
     ASSERT_TRUE(value->IsType(Value::TYPE_DICTIONARY));
-    theme_pack_->ParseImageNamesFromJSON(
-        static_cast<DictionaryValue*>(value.get()),
-        FilePath(), out_file_paths);
+    ParseImageNamesDictionary(static_cast<DictionaryValue*>(value.get()),
+                              out_file_paths);
+  }
+
+  void ParseImageNamesDictionary(DictionaryValue* value,
+                                 std::map<int, FilePath>* out_file_paths) {
+    theme_pack_->ParseImageNamesFromJSON(value, FilePath(), out_file_paths);
   }
 
   FilePath GetStarGazingPath() {
@@ -156,7 +160,14 @@ class BrowserThemePackTest : public ::testing::Test {
         BrowserThemeProvider::NTP_BACKGROUND_ALIGNMENT, &val));
     EXPECT_EQ(BrowserThemeProvider::ALIGN_TOP, val);
 
+    // Every theme should have the following images, because they need to be
+    // tinted.
     EXPECT_TRUE(pack->HasCustomImage(IDR_THEME_FRAME));
+    EXPECT_TRUE(pack->HasCustomImage(IDR_THEME_FRAME_INACTIVE));
+    EXPECT_TRUE(pack->HasCustomImage(IDR_THEME_FRAME_INCOGNITO));
+    EXPECT_TRUE(pack->HasCustomImage(IDR_THEME_FRAME_INCOGNITO_INACTIVE));
+    EXPECT_TRUE(pack->HasCustomImage(IDR_THEME_TAB_BACKGROUND));
+    EXPECT_TRUE(pack->HasCustomImage(IDR_THEME_TAB_BACKGROUND_INCOGNITO));
 
     // Make sure we don't have phantom data.
     EXPECT_FALSE(pack->GetColor(BrowserThemeProvider::COLOR_CONTROL_BACKGROUND,
@@ -270,16 +281,28 @@ TEST_F(BrowserThemePackTest, CanReadDisplayProperties) {
 }
 
 TEST_F(BrowserThemePackTest, CanParsePaths) {
-  std::string tint_json = "{ \"theme_button_background\": \"one\", "
+  std::string path_json = "{ \"theme_button_background\": \"one\", "
                           "  \"theme_toolbar\": \"two\" }";
   std::map<int, FilePath> out_file_paths;
-  ParseImageNames(tint_json, &out_file_paths);
+  ParseImageNamesJSON(path_json, &out_file_paths);
 
   EXPECT_EQ(2u, out_file_paths.size());
-  EXPECT_TRUE(FilePath(FILE_PATH_LITERAL("one")) == out_file_paths[
-      ThemeResourcesUtil::GetId("theme_button_background")]);
-  EXPECT_TRUE(FilePath(FILE_PATH_LITERAL("two")) ==
-            out_file_paths[ThemeResourcesUtil::GetId("theme_toolbar")]);
+  // "12" and "5" are internal constants to BrowserThemePack and are
+  // PRS_THEME_BUTTON_BACKGROUND and PRS_THEME_TOOLBAR, but they are
+  // implementation details that shouldn't be exported.
+  EXPECT_TRUE(FilePath(FILE_PATH_LITERAL("one")) == out_file_paths[12]);
+  EXPECT_TRUE(FilePath(FILE_PATH_LITERAL("two")) == out_file_paths[5]);
+}
+
+TEST_F(BrowserThemePackTest, InvalidPathNames) {
+  std::string path_json = "{ \"wrong\": [1], "
+                          "  \"theme_button_background\": \"one\", "
+                          "  \"not_a_thing\": \"blah\" }";
+  std::map<int, FilePath> out_file_paths;
+  ParseImageNamesJSON(path_json, &out_file_paths);
+
+  // We should have only parsed one valid path out of that mess above.
+  EXPECT_EQ(1u, out_file_paths.size());
 }
 
 TEST_F(BrowserThemePackTest, InvalidColors) {
@@ -312,6 +335,11 @@ TEST_F(BrowserThemePackTest, InvalidDisplayProperties) {
 }
 
 // These three tests should just not cause a segmentation fault.
+TEST_F(BrowserThemePackTest, NullPaths) {
+  std::map<int, FilePath> out_file_paths;
+  ParseImageNamesDictionary(NULL, &out_file_paths);
+}
+
 TEST_F(BrowserThemePackTest, NullTints) {
   LoadTintDictionary(NULL);
 }

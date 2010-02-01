@@ -36,7 +36,7 @@ namespace {
 
 // Version number of the current theme pack. We just throw out and rebuild
 // theme packs that aren't int-equal to this.
-const int kThemePackVersion = 1;
+const int kThemePackVersion = 2;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // int32_t. kHeaderID should always have the maximum value because we want the
@@ -57,6 +57,139 @@ const int kDisplayPropertySize = 3;
 // OpaqueBrowserFrameView.
 const int kRestoredTabVerticalOffset = 15;
 
+// Persistent constants for the main images that we need. These have the same
+// names as their IDR_* counterparts but these values will always stay the
+// same.
+const int PRS_THEME_FRAME = 1;
+const int PRS_THEME_FRAME_INACTIVE = 2;
+const int PRS_THEME_FRAME_INCOGNITO = 3;
+const int PRS_THEME_FRAME_INCOGNITO_INACTIVE = 4;
+const int PRS_THEME_TOOLBAR = 5;
+const int PRS_THEME_TAB_BACKGROUND = 6;
+const int PRS_THEME_TAB_BACKGROUND_INCOGNITO = 7;
+const int PRS_THEME_TAB_BACKGROUND_V = 8;
+const int PRS_THEME_NTP_BACKGROUND = 9;
+const int PRS_THEME_FRAME_OVERLAY = 10;
+const int PRS_THEME_FRAME_OVERLAY_INACTIVE = 11;
+const int PRS_THEME_BUTTON_BACKGROUND = 12;
+const int PRS_THEME_NTP_ATTRIBUTION = 13;
+const int PRS_THEME_WINDOW_CONTROL_BACKGROUND = 14;
+
+struct PersistingImagesTable {
+  // A non-changing integer ID meant to be saved in theme packs. This ID must
+  // not change between versions of chrome.
+  int persistent_id;
+
+  // The IDR that depends on the whims of GRIT and therefore changes whenever
+  // someone adds a new resource.
+  int idr_id;
+
+  // String to check for when parsing theme manifests or NULL if this isn't
+  // supposed to be changeable by the user.
+  const char* key;
+};
+
+// IDR_* resource names change whenever new resources are added; use persistent
+// IDs when storing to a cached pack.
+PersistingImagesTable kPersistingImages[] = {
+  { PRS_THEME_FRAME, IDR_THEME_FRAME,
+    "theme_frame" },
+  { PRS_THEME_FRAME_INACTIVE, IDR_THEME_FRAME_INACTIVE,
+    "theme_frame_inactive" },
+  { PRS_THEME_FRAME_INCOGNITO, IDR_THEME_FRAME_INCOGNITO,
+    "theme_frame_incognito" },
+  { PRS_THEME_FRAME_INCOGNITO_INACTIVE, IDR_THEME_FRAME_INCOGNITO_INACTIVE,
+    "theme_frame_incognito_inactive" },
+  { PRS_THEME_TOOLBAR, IDR_THEME_TOOLBAR,
+    "theme_toolbar" },
+  { PRS_THEME_TAB_BACKGROUND, IDR_THEME_TAB_BACKGROUND,
+    "theme_tab_background" },
+  { PRS_THEME_TAB_BACKGROUND_INCOGNITO, IDR_THEME_TAB_BACKGROUND_INCOGNITO,
+    "theme_tab_background_incognito" },
+  { PRS_THEME_TAB_BACKGROUND_V, IDR_THEME_TAB_BACKGROUND_V,
+    "theme_tab_background_v"},
+  { PRS_THEME_NTP_BACKGROUND, IDR_THEME_NTP_BACKGROUND,
+    "theme_ntp_background" },
+  { PRS_THEME_FRAME_OVERLAY, IDR_THEME_FRAME_OVERLAY,
+    "theme_frame_overlay" },
+  { PRS_THEME_FRAME_OVERLAY_INACTIVE, IDR_THEME_FRAME_OVERLAY_INACTIVE,
+    "theme_frame_overlay_inactive" },
+  { PRS_THEME_BUTTON_BACKGROUND, IDR_THEME_BUTTON_BACKGROUND,
+    "theme_button_background" },
+  { PRS_THEME_NTP_ATTRIBUTION, IDR_THEME_NTP_ATTRIBUTION,
+    "theme_ntp_attribution" },
+  { PRS_THEME_WINDOW_CONTROL_BACKGROUND, IDR_THEME_WINDOW_CONTROL_BACKGROUND,
+    "theme_window_control_background"},
+
+  // The rest of these entries have no key because they can't be overridden
+  // from the json manifest.
+  { 15, IDR_BACK, NULL },
+  { 16, IDR_BACK_D, NULL },
+  { 17, IDR_BACK_H, NULL },
+  { 18, IDR_BACK_P, NULL },
+  { 19, IDR_FORWARD, NULL },
+  { 20, IDR_FORWARD_D, NULL },
+  { 21, IDR_FORWARD_H, NULL },
+  { 22, IDR_FORWARD_P, NULL },
+  { 23, IDR_RELOAD, NULL },
+  { 24, IDR_RELOAD_H, NULL },
+  { 25, IDR_RELOAD_P, NULL },
+  { 26, IDR_HOME, NULL },
+  { 27, IDR_HOME_H, NULL },
+  { 28, IDR_HOME_P, NULL },
+  { 29, IDR_STAR, NULL },
+  { 30, IDR_STAR_NOBORDER, NULL },
+  { 31, IDR_STAR_NOBORDER_CENTER, NULL },
+  { 32, IDR_STAR_D, NULL },
+  { 33, IDR_STAR_H, NULL },
+  { 34, IDR_STAR_P, NULL },
+  { 35, IDR_STARRED, NULL },
+  { 36, IDR_STARRED_NOBORDER, NULL },
+  { 37, IDR_STARRED_NOBORDER_CENTER, NULL },
+  { 38, IDR_STARRED_H, NULL },
+  { 39, IDR_STARRED_P, NULL },
+  { 40, IDR_GO, NULL },
+  { 41, IDR_GO_NOBORDER, NULL },
+  { 42, IDR_GO_NOBORDER_CENTER, NULL },
+  { 43, IDR_GO_H, NULL },
+  { 44, IDR_GO_P, NULL },
+  { 45, IDR_STOP, NULL },
+  { 46, IDR_STOP_NOBORDER, NULL },
+  { 47, IDR_STOP_NOBORDER_CENTER, NULL },
+  { 48, IDR_STOP_H, NULL },
+  { 49, IDR_STOP_P, NULL },
+  { 50, IDR_MENU_BOOKMARK, NULL },
+  { 51, IDR_MENU_PAGE, NULL },
+  { 52, IDR_MENU_PAGE_RTL, NULL },
+  { 53, IDR_MENU_CHROME, NULL },
+  { 54, IDR_MENU_CHROME_RTL, NULL },
+  { 55, IDR_MENU_DROPARROW, NULL },
+  { 56, IDR_THROBBER, NULL },
+  { 57, IDR_THROBBER_WAITING, NULL },
+  { 58, IDR_THROBBER_LIGHT, NULL },
+  { 59, IDR_LOCATIONBG, NULL }
+};
+
+const int GetPersistentIDByName(const std::string& key) {
+  for (size_t i = 0; i < arraysize(kPersistingImages); ++i) {
+    if (kPersistingImages[i].key != NULL &&
+        base::strcasecmp(key.c_str(), kPersistingImages[i].key) == 0) {
+      return kPersistingImages[i].persistent_id;
+    }
+  }
+
+  return -1;
+}
+
+const int GetPersistentIDByIDR(int idr) {
+  for (size_t i = 0; i < arraysize(kPersistingImages); ++i) {
+    if (kPersistingImages[i].idr_id == idr) {
+      return kPersistingImages[i].persistent_id;
+    }
+  }
+
+  return -1;
+}
 
 struct StringToIntTable {
   const char* key;
@@ -136,32 +269,33 @@ struct IntToIntTable {
 // Mapping used in GenerateFrameImages() to associate frame images with the
 // tint ID that should maybe be applied to it.
 IntToIntTable kFrameTintMap[] = {
-  { IDR_THEME_FRAME, BrowserThemeProvider::TINT_FRAME },
-  { IDR_THEME_FRAME_INACTIVE, BrowserThemeProvider::TINT_FRAME_INACTIVE },
-  { IDR_THEME_FRAME_OVERLAY, BrowserThemeProvider::TINT_FRAME },
-  { IDR_THEME_FRAME_OVERLAY_INACTIVE,
+  { PRS_THEME_FRAME, BrowserThemeProvider::TINT_FRAME },
+  { PRS_THEME_FRAME_INACTIVE, BrowserThemeProvider::TINT_FRAME_INACTIVE },
+  { PRS_THEME_FRAME_OVERLAY, BrowserThemeProvider::TINT_FRAME },
+  { PRS_THEME_FRAME_OVERLAY_INACTIVE,
     BrowserThemeProvider::TINT_FRAME_INACTIVE },
-  { IDR_THEME_FRAME_INCOGNITO, BrowserThemeProvider::TINT_FRAME_INCOGNITO },
-  { IDR_THEME_FRAME_INCOGNITO_INACTIVE,
+  { PRS_THEME_FRAME_INCOGNITO, BrowserThemeProvider::TINT_FRAME_INCOGNITO },
+  { PRS_THEME_FRAME_INCOGNITO_INACTIVE,
     BrowserThemeProvider::TINT_FRAME_INCOGNITO_INACTIVE }
 };
 
 // Mapping used in GenerateTabBackgroundImages() to associate what frame image
 // goes with which tab background.
 IntToIntTable kTabBackgroundMap[] = {
-  { IDR_THEME_TAB_BACKGROUND, IDR_THEME_FRAME },
-  { IDR_THEME_TAB_BACKGROUND_INCOGNITO, IDR_THEME_FRAME_INCOGNITO }
+  { PRS_THEME_TAB_BACKGROUND, PRS_THEME_FRAME },
+  { PRS_THEME_TAB_BACKGROUND_INCOGNITO, PRS_THEME_FRAME_INCOGNITO }
 };
 
 // A list of images that don't need tinting or any other modification and can
-// be byte-copied directly into the finished DataPack. This should contain all
-// themeable image IDs that aren't in kFrameTintMap or kTabBackgroundMap.
+// be byte-copied directly into the finished DataPack. This should contain the
+// persistent IDs for all themeable image IDs that aren't in kFrameTintMap or
+// kTabBackgroundMap.
 const int kPreloadIDs[] = {
-  IDR_THEME_TOOLBAR,
-  IDR_THEME_NTP_BACKGROUND,
-  IDR_THEME_BUTTON_BACKGROUND,
-  IDR_THEME_NTP_ATTRIBUTION,
-  IDR_THEME_WINDOW_CONTROL_BACKGROUND
+  PRS_THEME_TOOLBAR,
+  PRS_THEME_NTP_BACKGROUND,
+  PRS_THEME_BUTTON_BACKGROUND,
+  PRS_THEME_NTP_ATTRIBUTION,
+  PRS_THEME_WINDOW_CONTROL_BACKGROUND
 };
 
 // Returns a piece of memory with the contents of the file |path|.
@@ -267,8 +401,10 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
   pack->header_ = reinterpret_cast<BrowserThemePackHeader*>(const_cast<char*>(
       pointer.data()));
 
-  if (pack->header_->version != kThemePackVersion)
+  if (pack->header_->version != kThemePackVersion) {
+    DLOG(ERROR) << "BuildFromDataPack failure! Version mismatch!";
     return NULL;
+  }
   // TODO(erg): Check endianess once DataPack works on the other endian.
   std::string theme_id(reinterpret_cast<char*>(pack->header_->theme_id),
                        Extension::kIdSize);
@@ -377,22 +513,24 @@ bool BrowserThemePack::GetDisplayProperty(int id, int* result) const {
   return false;
 }
 
-SkBitmap* BrowserThemePack::GetBitmapNamed(int id) const {
+SkBitmap* BrowserThemePack::GetBitmapNamed(int idr_id) const {
+  int prs_id = GetPersistentIDByIDR(idr_id);
+
   // Check our cache of prepared images, first.
-  ImageCache::const_iterator image_iter = prepared_images_.find(id);
+  ImageCache::const_iterator image_iter = prepared_images_.find(prs_id);
   if (image_iter != prepared_images_.end())
     return image_iter->second;
 
   // Check if we've already loaded this image.
-  image_iter = loaded_images_.find(id);
+  image_iter = loaded_images_.find(prs_id);
   if (image_iter != loaded_images_.end())
     return image_iter->second;
 
   scoped_refptr<RefCountedMemory> memory;
   if (data_pack_.get()) {
-    memory = data_pack_->GetStaticMemory(id);
+    memory = data_pack_->GetStaticMemory(prs_id);
   } else {
-    RawImages::const_iterator it = image_memory_.find(id);
+    RawImages::const_iterator it = image_memory_.find(prs_id);
     if (it != image_memory_.end()) {
       memory = it->second;
     }
@@ -403,13 +541,13 @@ SkBitmap* BrowserThemePack::GetBitmapNamed(int id) const {
     SkBitmap bitmap;
     if (!gfx::PNGCodec::Decode(memory->front(), memory->size(),
                                &bitmap)) {
-      NOTREACHED() << "Unable to decode theme image resource " << id
+      NOTREACHED() << "Unable to decode theme image resource " << idr_id
                    << " from saved DataPack.";
       return NULL;
     }
 
     SkBitmap* ret = new SkBitmap(bitmap);
-    loaded_images_[id] = ret;
+    loaded_images_[prs_id] = ret;
 
     return ret;
   }
@@ -417,28 +555,35 @@ SkBitmap* BrowserThemePack::GetBitmapNamed(int id) const {
   return NULL;
 }
 
-RefCountedMemory* BrowserThemePack::GetRawData(int id) const {
+RefCountedMemory* BrowserThemePack::GetRawData(int idr_id) const {
   RefCountedMemory* memory = NULL;
+  int prs_id = GetPersistentIDByIDR(idr_id);
 
-  if (data_pack_.get()) {
-    memory = data_pack_->GetStaticMemory(id);
-  } else {
-    RawImages::const_iterator it = image_memory_.find(id);
-    if (it != image_memory_.end()) {
-      memory = it->second;
+  if (prs_id != -1) {
+    if (data_pack_.get()) {
+      memory = data_pack_->GetStaticMemory(prs_id);
+    } else {
+      RawImages::const_iterator it = image_memory_.find(prs_id);
+      if (it != image_memory_.end()) {
+        memory = it->second;
+      }
     }
   }
 
   return memory;
 }
 
-bool BrowserThemePack::HasCustomImage(int id) const {
+bool BrowserThemePack::HasCustomImage(int idr_id) const {
+  int prs_id = GetPersistentIDByIDR(idr_id);
+  if (prs_id == -1)
+    return false;
+
   if (data_pack_.get()) {
     base::StringPiece ignored;
-    return data_pack_->GetStringPiece(id, &ignored);
+    return data_pack_->GetStringPiece(prs_id, &ignored);
   } else {
-    return prepared_images_.count(id) > 0 ||
-        image_memory_.count(id) > 0;
+    return prepared_images_.count(prs_id) > 0 ||
+        image_memory_.count(prs_id) > 0;
   }
 }
 
@@ -695,7 +840,7 @@ void BrowserThemePack::ParseImageNamesFromJSON(
        iter != images_value->end_keys(); ++iter) {
     std::string val;
     if (images_value->GetString(*iter, &val)) {
-      int id = ThemeResourcesUtil::GetId(WideToUTF8(*iter));
+      int id = GetPersistentIDByName(WideToUTF8(*iter));
       if (id != -1)
         (*file_paths)[id] = images_path.AppendASCII(val);
     }
@@ -743,33 +888,33 @@ void BrowserThemePack::GenerateFrameImages(ImageCache* bitmaps) const {
   ImageCache temp_output;
 
   for (size_t i = 0; i < arraysize(kFrameTintMap); ++i) {
-    int id = kFrameTintMap[i].key;
+    int prs_id = kFrameTintMap[i].key;
     scoped_ptr<SkBitmap> frame;
     // If there's no frame image provided for the specified id, then load
     // the default provided frame. If that's not provided, skip this whole
     // thing and just use the default images.
-    int base_id;
+    int prs_base_id;
 
-    if (id == IDR_THEME_FRAME_INCOGNITO_INACTIVE) {
-      base_id = bitmaps->count(IDR_THEME_FRAME_INCOGNITO) ?
-                IDR_THEME_FRAME_INCOGNITO : IDR_THEME_FRAME;
-    } else if (id == IDR_THEME_FRAME_OVERLAY_INACTIVE) {
-      base_id = IDR_THEME_FRAME_OVERLAY;
-    } else if (id == IDR_THEME_FRAME_INACTIVE) {
-      base_id = IDR_THEME_FRAME;
-    } else if (id == IDR_THEME_FRAME_INCOGNITO &&
-               !bitmaps->count(IDR_THEME_FRAME_INCOGNITO)) {
-      base_id = IDR_THEME_FRAME;
+    if (prs_id == PRS_THEME_FRAME_INCOGNITO_INACTIVE) {
+      prs_base_id = bitmaps->count(PRS_THEME_FRAME_INCOGNITO) ?
+                    PRS_THEME_FRAME_INCOGNITO : PRS_THEME_FRAME;
+    } else if (prs_id == PRS_THEME_FRAME_OVERLAY_INACTIVE) {
+      prs_base_id = PRS_THEME_FRAME_OVERLAY;
+    } else if (prs_id == PRS_THEME_FRAME_INACTIVE) {
+      prs_base_id = PRS_THEME_FRAME;
+    } else if (prs_id == PRS_THEME_FRAME_INCOGNITO &&
+               !bitmaps->count(PRS_THEME_FRAME_INCOGNITO)) {
+      prs_base_id = PRS_THEME_FRAME;
     } else {
-      base_id = id;
+      prs_base_id = prs_id;
     }
 
-    if (bitmaps->count(id)) {
-      frame.reset(new SkBitmap(*(*bitmaps)[id]));
-    } else if (base_id != id && bitmaps->count(base_id)) {
-      frame.reset(new SkBitmap(*(*bitmaps)[base_id]));
-    } else if (base_id == IDR_THEME_FRAME_OVERLAY &&
-               bitmaps->count(IDR_THEME_FRAME)) {
+    if (bitmaps->count(prs_id)) {
+      frame.reset(new SkBitmap(*(*bitmaps)[prs_id]));
+    } else if (prs_base_id != prs_id && bitmaps->count(prs_base_id)) {
+      frame.reset(new SkBitmap(*(*bitmaps)[prs_base_id]));
+    } else if (prs_base_id == PRS_THEME_FRAME_OVERLAY &&
+               bitmaps->count(PRS_THEME_FRAME)) {
       // If there is no theme overlay, don't tint the default frame,
       // because it will overwrite the custom frame image when we cache and
       // reload from disk.
@@ -781,7 +926,7 @@ void BrowserThemePack::GenerateFrameImages(ImageCache* bitmaps) const {
     }
 
     if (frame.get()) {
-      temp_output[id] = new SkBitmap(
+      temp_output[prs_id] = new SkBitmap(
           SkBitmapOperations::CreateHSLShiftedBitmap(
               *frame, GetTintInternal(kFrameTintMap[i].value)));
     }
@@ -795,12 +940,17 @@ void BrowserThemePack::GenerateTintedButtons(
     ImageCache* processed_bitmaps) const {
   if (button_tint.h != -1 || button_tint.s != -1 || button_tint.l != -1) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    const std::set<int>& ids =
+    const std::set<int>& idr_ids =
         BrowserThemeProvider::GetTintableToolbarButtons();
-    for (std::set<int>::const_iterator it = ids.begin(); it != ids.end();
-         ++it) {
+    for (std::set<int>::const_iterator it = idr_ids.begin();
+         it != idr_ids.end(); ++it) {
+      int prs_id = GetPersistentIDByIDR(*it);
+
+      // Fetch the image by IDR...
       scoped_ptr<SkBitmap> button(new SkBitmap(*rb.GetBitmapNamed(*it)));
-      (*processed_bitmaps)[*it] = new SkBitmap(
+
+      // but save a version with the persistent ID.
+      (*processed_bitmaps)[prs_id] = new SkBitmap(
           SkBitmapOperations::CreateHSLShiftedBitmap(*button, button_tint));
     }
   }
@@ -809,22 +959,23 @@ void BrowserThemePack::GenerateTintedButtons(
 void BrowserThemePack::GenerateTabBackgroundImages(ImageCache* bitmaps) const {
   ImageCache temp_output;
   for (size_t i = 0; i < arraysize(kTabBackgroundMap); ++i) {
-    int id = kTabBackgroundMap[i].key;
-    int base_id = kTabBackgroundMap[i].value;
+    int prs_id = kTabBackgroundMap[i].key;
+    int prs_base_id = kTabBackgroundMap[i].value;
 
     // We only need to generate the background tab images if we were provided
-    // with a IDR_THEME_FRAME.
-    ImageCache::const_iterator it = bitmaps->find(base_id);
+    // with a PRS_THEME_FRAME.
+    ImageCache::const_iterator it = bitmaps->find(prs_base_id);
     if (it != bitmaps->end()) {
       SkBitmap bg_tint = SkBitmapOperations::CreateHSLShiftedBitmap(
           *(it->second), GetTintInternal(
               BrowserThemeProvider::TINT_BACKGROUND_TAB));
-      int vertical_offset = bitmaps->count(id) ? kRestoredTabVerticalOffset : 0;
+      int vertical_offset = bitmaps->count(prs_id)
+                            ? kRestoredTabVerticalOffset : 0;
       SkBitmap* bg_tab = new SkBitmap(SkBitmapOperations::CreateTiledBitmap(
           bg_tint, 0, vertical_offset, bg_tint.width(), bg_tint.height()));
 
       // If they've provided a custom image, overlay it.
-      ImageCache::const_iterator overlay_it = bitmaps->find(id);
+      ImageCache::const_iterator overlay_it = bitmaps->find(prs_id);
       if (overlay_it != bitmaps->end()) {
         SkBitmap* overlay = overlay_it->second;
         SkCanvas canvas(*bg_tab);
@@ -832,7 +983,7 @@ void BrowserThemePack::GenerateTabBackgroundImages(ImageCache* bitmaps) const {
           canvas.drawBitmap(*overlay, static_cast<SkScalar>(x), 0, NULL);
       }
 
-      temp_output[id] = bg_tab;
+      temp_output[prs_id] = bg_tab;
     }
   }
 
