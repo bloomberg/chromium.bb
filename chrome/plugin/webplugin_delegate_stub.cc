@@ -121,6 +121,9 @@ void WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
     IPC_MESSAGE_HANDLER(PluginMsg_UpdateGeometrySync, OnUpdateGeometry)
     IPC_MESSAGE_HANDLER(PluginMsg_SendJavaScriptStream,
                         OnSendJavaScriptStream)
+#if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(PluginMsg_SetWindowFocus, OnSetWindowFocus)
+#endif
     IPC_MESSAGE_HANDLER(PluginMsg_DidReceiveManualResponse,
                         OnDidReceiveManualResponse)
     IPC_MESSAGE_HANDLER(PluginMsg_DidReceiveManualData, OnDidReceiveManualData)
@@ -330,6 +333,12 @@ void WebPluginDelegateStub::OnSendJavaScriptStream(const GURL& url,
                                                    int notify_id) {
   delegate_->SendJavaScriptStream(url, result, success, notify_id);
 }
+
+#if defined(OS_MACOSX)
+void WebPluginDelegateStub::OnSetWindowFocus(bool has_focus) {
+  delegate_->SetWindowHasFocus(has_focus);
+}
+#endif
 
 void WebPluginDelegateStub::OnDidReceiveManualResponse(
     const GURL& url,

@@ -71,6 +71,10 @@ class WebPluginDelegateProxy
                                 WebKit::WebCursorInfo* cursor);
   virtual int GetProcessId();
 
+#if defined(OS_MACOSX)
+  virtual void SetWindowFocus(bool window_has_focus);
+#endif
+
   // IPC::Channel::Listener implementation:
   virtual void OnMessageReceived(const IPC::Message& msg);
   void OnChannelError();

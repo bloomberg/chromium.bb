@@ -175,6 +175,10 @@ void WebPluginDelegateProxy::PluginDestroyed() {
   if (window_)
     WillDestroyWindow();
 
+#if defined(OS_MACOSX)
+  render_view_->UnregisterPluginDelegate(this);
+#endif
+
   if (channel_host_) {
     Send(new PluginMsg_DestroyInstance(instance_id_));
 
@@ -287,6 +291,10 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url,
   result = false;
   IPC::Message* msg = new PluginMsg_Init(instance_id_, params, &result);
   Send(msg);
+
+#if defined(OS_MACOSX)
+  render_view_->RegisterPluginDelegate(this);
+#endif
 
   return result;
 }
@@ -849,6 +857,12 @@ bool WebPluginDelegateProxy::HandleInputEvent(
 int WebPluginDelegateProxy::GetProcessId() {
   return channel_host_->peer_pid();
 }
+
+#if defined(OS_MACOSX)
+void WebPluginDelegateProxy::SetWindowFocus(bool window_has_focus) {
+  Send(new PluginMsg_SetWindowFocus(instance_id_, window_has_focus));
+}
+#endif  // OS_MACOSX
 
 void WebPluginDelegateProxy::OnSetWindow(gfx::PluginWindowHandle window) {
   windowless_ = !window;

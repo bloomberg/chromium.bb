@@ -450,9 +450,9 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
 
   NPError err = instance()->NPP_SetWindow(&window_);
 
-  // TODO(stuartmorgan): Once we are getting window information via IPC, use
-  // that to set the right value. For now, just pretend plugins are always in
-  // active windows so they don't throw away events.
+  // TODO(stuartmorgan): We need real window information when the plugin is
+  // initialized (location, window focus, visibility, etc.); for now, just
+  // start off assuming window focus.
   SetWindowHasFocus(true);
 
   DCHECK(err == NPERR_NO_ERROR);

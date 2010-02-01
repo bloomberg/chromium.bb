@@ -225,6 +225,11 @@ IPC_BEGIN_MESSAGES(Plugin)
                              bool /* handled */,
                              WebCursor /* cursor type*/)
 
+#if defined(OS_MACOSX)
+  IPC_SYNC_MESSAGE_ROUTED1_0(PluginMsg_SetWindowFocus,
+                             bool /* has_focus */)
+#endif
+
   IPC_SYNC_MESSAGE_ROUTED2_0(PluginMsg_WillSendRequest,
                              unsigned long /* id */,
                              GURL /* url */)

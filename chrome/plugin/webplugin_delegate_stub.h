@@ -77,6 +77,11 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
                               const std::string& result,
                               bool success,
                               int notify_id);
+
+#if defined(OS_MACOSX)
+  void OnSetWindowFocus(bool has_focus);
+#endif
+
   void OnDidReceiveManualResponse(
       const GURL& url,
       const PluginMsg_DidReceiveResponseParams& params);

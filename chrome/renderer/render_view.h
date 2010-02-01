@@ -399,6 +399,11 @@ class RenderView : public RenderWidget,
   // Called when a plugin has crashed.
   void PluginCrashed(const FilePath& plugin_path);
 
+#if defined(OS_MACOSX)
+  void RegisterPluginDelegate(WebPluginDelegateProxy* delegate);
+  void UnregisterPluginDelegate(WebPluginDelegateProxy* delegate);
+#endif
+
   // Called from JavaScript window.external.AddSearchProvider() to add a
   // keyword for a provider described in the given OpenSearch document.
   void AddSearchProvider(const std::string& url);
@@ -1060,6 +1065,13 @@ class RenderView : public RenderWidget,
   // Page translation related objects.
   TextTranslatorImpl text_translator_;
   scoped_ptr<PageTranslator> page_translator_;
+
+#if defined(OS_MACOSX)
+  // All the currently active plugin delegates for this RenderView; kept so that
+  // we can enumerate them to send updates about things like window location
+  // or tab focus and visibily. These are non-owning references.
+  std::set<WebPluginDelegateProxy*> plugin_delegates_;
+#endif
 
   DISALLOW_COPY_AND_ASSIGN(RenderView);
 };

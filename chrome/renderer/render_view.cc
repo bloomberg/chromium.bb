@@ -399,6 +399,16 @@ void RenderView::PluginCrashed(const FilePath& plugin_path) {
   Send(new ViewHostMsg_CrashedPlugin(routing_id_, plugin_path));
 }
 
+#if defined(OS_MACOSX)
+void RenderView::RegisterPluginDelegate(WebPluginDelegateProxy* delegate) {
+  plugin_delegates_.insert(delegate);
+}
+
+void RenderView::UnregisterPluginDelegate(WebPluginDelegateProxy* delegate) {
+  plugin_delegates_.erase(delegate);
+}
+#endif
+
 void RenderView::Init(gfx::NativeViewId parent_hwnd,
                       int32 opener_id,
                       const RendererPreferences& renderer_prefs,
@@ -3752,6 +3762,14 @@ void RenderView::OnSetBackground(const SkBitmap& background) {
 void RenderView::OnSetActive(bool active) {
   if (webview())
     webview()->setIsActive(active);
+
+#if defined(OS_MACOSX)
+  std::set<WebPluginDelegateProxy*>::iterator plugin_it;
+  for (plugin_it = plugin_delegates_.begin();
+       plugin_it != plugin_delegates_.end(); ++plugin_it) {
+    (*plugin_it)->SetWindowFocus(active);
+  }
+#endif
 }
 
 void RenderView::SendExtensionRequest(const std::string& name,
