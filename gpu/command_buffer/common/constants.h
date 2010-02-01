@@ -20,7 +20,7 @@ namespace parse_error {
     kParseOutOfBounds,
     kParseUnknownCommand,
     kParseInvalidArguments,
-    kParseGenericError,
+    kParseGenericError
   };
 }
 
