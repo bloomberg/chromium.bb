@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -145,6 +145,7 @@ void AutocompletePopupModel::ResetToDefaultMatch() {
   const AutocompleteResult& result = controller_->result();
   CHECK(!result.empty());
   SetSelectedLine(result.default_match() - result.begin(), true);
+  view_->OnDragCanceled();
 }
 
 GURL AutocompletePopupModel::URLsForCurrentSelection(

@@ -31,6 +31,7 @@ class AutocompletePopupViewGtk : public AutocompletePopupView {
   virtual void InvalidateLine(size_t line);
   virtual void UpdatePopupAppearance();
   virtual void PaintUpdatesNow();
+  virtual void OnDragCanceled() {}
   virtual AutocompletePopupModel* GetModel();
 
  private:

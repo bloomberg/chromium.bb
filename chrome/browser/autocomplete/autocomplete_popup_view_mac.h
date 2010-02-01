@@ -66,6 +66,8 @@ class AutocompletePopupViewMac : public AutocompletePopupView {
   // everything.  Popup should already be visible.
   virtual void PaintUpdatesNow();
 
+  virtual void OnDragCanceled() {}
+
   // Returns the popup's model.
   virtual AutocompletePopupModel* GetModel();
 

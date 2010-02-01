@@ -57,6 +57,7 @@ class AutocompletePopupContentsView : public views::View,
   virtual void InvalidateLine(size_t line);
   virtual void UpdatePopupAppearance();
   virtual void PaintUpdatesNow();
+  virtual void OnDragCanceled();
   virtual AutocompletePopupModel* GetModel();
 
   // Overridden from AutocompleteResultViewModel:
@@ -130,6 +131,14 @@ class AutocompletePopupContentsView : public views::View,
   // The font that we should use for result rows. This is based on the font used
   // by the edit that created us.
   gfx::Font result_font_;
+
+  // If the user cancels a dragging action (i.e. by pressing ESC), we don't have
+  // a convenient way to release mouse capture. Instead we use this flag to
+  // simply ignore all remaining drag events, and the eventual mouse release
+  // event. Since OnDragCanceled() can be called when we're not dragging, this
+  // flag is reset to false on a mouse pressed event, to make sure we don't
+  // erroneously ignore the next drag.
+  bool ignore_mouse_drag_;
 
   // The popup sizes vertically using an animation when the popup is getting
   // shorter (not larger, that makes it look "slow").

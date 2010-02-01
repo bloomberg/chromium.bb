@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -39,6 +39,12 @@ class AutocompletePopupView {
 
   // Paint any pending updates.
   virtual void PaintUpdatesNow() = 0;
+
+  // This method is called when the view should cancel any active drag (e.g.
+  // because the user pressed ESC). The view may or may not need to take any
+  // action (e.g. releasing mouse capture).  Note that this can be called when
+  // no drag is in progress.
+  virtual void OnDragCanceled() = 0;
 
   // Returns the popup's model.
   virtual AutocompletePopupModel* GetModel() = 0;

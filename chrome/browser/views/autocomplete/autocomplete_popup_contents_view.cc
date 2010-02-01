@@ -562,6 +562,7 @@ AutocompletePopupContentsView::AutocompletePopupContentsView(
       edit_view_(edit_view),
       bubble_positioner_(bubble_positioner),
       result_font_(font.DeriveFont(kEditFontAdjust)),
+      ignore_mouse_drag_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(size_animation_(this)) {
   // The following little dance is required because set_border() requires a
   // pointer to a non-const object.
@@ -657,6 +658,10 @@ void AutocompletePopupContentsView::UpdatePopupAppearance() {
 
 void AutocompletePopupContentsView::PaintUpdatesNow() {
   // TODO(beng): remove this from the interface.
+}
+
+void AutocompletePopupContentsView::OnDragCanceled() {
+  ignore_mouse_drag_ = true;
 }
 
 AutocompletePopupModel* AutocompletePopupContentsView::GetModel() {
@@ -765,6 +770,7 @@ void AutocompletePopupContentsView::OnMouseExited(
 
 bool AutocompletePopupContentsView::OnMousePressed(
     const views::MouseEvent& event) {
+  ignore_mouse_drag_ = false;  // See comment on |ignore_mouse_drag_| in header.
   if (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) {
     size_t index = GetIndexForPoint(event.location());
     model_->SetHoveredLine(index);
@@ -777,8 +783,10 @@ bool AutocompletePopupContentsView::OnMousePressed(
 void AutocompletePopupContentsView::OnMouseReleased(
     const views::MouseEvent& event,
     bool canceled) {
-  if (canceled)
+  if (canceled || ignore_mouse_drag_) {
+    ignore_mouse_drag_ = false;
     return;
+  }
 
   size_t index = GetIndexForPoint(event.location());
   if (event.IsOnlyMiddleMouseButton())
@@ -792,7 +800,7 @@ bool AutocompletePopupContentsView::OnMouseDragged(
   if (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) {
     size_t index = GetIndexForPoint(event.location());
     model_->SetHoveredLine(index);
-    if (HasMatchAt(index) && event.IsLeftMouseButton())
+    if (!ignore_mouse_drag_ && HasMatchAt(index) && event.IsLeftMouseButton())
       model_->SetSelectedLine(index, false);
   }
   return true;
