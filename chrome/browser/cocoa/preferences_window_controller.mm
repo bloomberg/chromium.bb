@@ -1151,11 +1151,7 @@ const int kDisabledIndex = 1;
 // Called to import data from other browsers (Safari, Firefox, etc).
 - (IBAction)importData:(id)sender {
   UserMetrics::RecordAction("Import_ShowDlg", profile_);
-
-  // Note that the dialog controller takes care of cleaning itself up
-  // upon dismissal so auto-scoping here is not necessary.
-  [[[ImportSettingsDialogController alloc]
-      initWithProfile:profile_ parentWindow:nil] runModalDialog];
+  [ImportSettingsDialogController showImportSettingsDialogForProfile:profile_];
 }
 
 // Called to clear user's browsing data. This puts up an application-modal

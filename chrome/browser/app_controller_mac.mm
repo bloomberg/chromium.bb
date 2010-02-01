@@ -580,10 +580,8 @@ static bool g_is_opening_new_window = false;
     }
     case IDC_IMPORT_SETTINGS: {
       UserMetrics::RecordAction("Import_ShowDlg", defaultProfile);
-      // Note that this dialog controller cleans itself up when closed
-      // so auto-scoping it here is not necessary.
-      [[[ImportSettingsDialogController alloc]
-          initWithProfile:defaultProfile parentWindow:nil] runModalDialog];
+      [ImportSettingsDialogController
+          showImportSettingsDialogForProfile:defaultProfile];
       break;
     }
     case IDC_SHOW_BOOKMARK_MANAGER:

@@ -33,17 +33,10 @@ class Profile;
   BOOL searchEnginesAvailable_;
 }
 
-// Initialize the dialog controller with either the default profile or
-// the profile for the current browser. If you wish to hang this dialog
-// off of another window (such as an open browser window) then pass in the
-// |parentWindow|, otherwise pass nil.
-- (id)initWithProfile:(Profile*)profile
-         parentWindow:(NSWindow*)parentWindow;
-
-// Present the sheet/dialog. If parentWindow_ is nil then this will be an
-// app modal dialog, otherwise this will be window modal presented as
-// a sheet.
-- (void)runModalDialog;
+// Show the import settings window.  Window is displayed as an app modal dialog.
+// If the dialog is already being displayed, this method whill return with
+// no error.
++ (void)showImportSettingsDialogForProfile:(Profile*)profile;
 
 // Called when the "Import" button is pressed.
 - (IBAction)ok:(id)sender;
@@ -74,9 +67,8 @@ class Profile;
 @interface ImportSettingsDialogController (TestingAPI)
 
 // Initialize by providing an array of profile dictionaries. Exposed for
-// unit testing but also called by -[initWithProfiles:parentWindow:].
-- (id)initWithProfiles:(NSArray*)profiles
-          parentWindow:(NSWindow*)parentWindow;
+// unit testing but also called by -[initWithProfile:].
+- (id)initWithProfiles:(NSArray*)profiles;
 
 // Return selected services to import as mapped by the ImportItem enum.
 - (uint16)servicesToImport;

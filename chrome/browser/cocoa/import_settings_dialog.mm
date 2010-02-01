@@ -9,6 +9,12 @@
 #include "chrome/browser/importer/importer_list.h"
 #include "chrome/browser/profile.h"
 
+namespace {
+
+bool importSettingsDialogVisible = false;
+
+}  // namespace
+
 @interface ImportSettingsDialogController ()
 
 @property(assign, readwrite, nonatomic) BOOL historyAvailable;
@@ -58,6 +64,20 @@
 
 @end
 
+@interface ImportSettingsDialogController (Private)
+
+// Initialize the dialog controller with either the default profile or
+// the profile for the current browser.
+- (id)initWithProfile:(Profile*)profile;
+
+// Present the app modal dialog.
+- (void)runModalDialog;
+
+// Close the modal dialog.
+- (void)closeDialog;
+
+@end
+
 @implementation ImportSettingsDialogController
 
 @synthesize sourceBrowserIndex = sourceBrowserIndex_;
@@ -76,8 +96,16 @@
           @"importPasswords", @"importSearchEngines", nil];
 }
 
-- (id)initWithProfile:(Profile*)profile
-         parentWindow:(NSWindow*)parentWindow {
++ (void)showImportSettingsDialogForProfile:(Profile*)profile {
+  // Don't display if already visible.
+  if (importSettingsDialogVisible)
+    return;
+  ImportSettingsDialogController* controller =
+      [[ImportSettingsDialogController alloc] initWithProfile:profile];
+  [controller runModalDialog];
+}
+
+- (id)initWithProfile:(Profile*)profile {
   // Collect profile information (profile name and the services which can
   // be imported from each) into an array of ImportSettingsProfile which
   // are bound to the Browser List array controller and the popup name
@@ -102,16 +130,13 @@
                                      services:browserServices];
     [browserProfiles addObject:settingsProfile];
   }
-  if ((self = [self initWithProfiles:browserProfiles
-                        parentWindow:parentWindow])) {
+  if ((self = [self initWithProfiles:browserProfiles])) {
     profile_ = profile;
-    parentWindow_ = parentWindow;
   }
   return self;
 }
 
-- (id)initWithProfiles:(NSArray*)profiles
-          parentWindow:(NSWindow*)parentWindow {
+- (id)initWithProfiles:(NSArray*)profiles {
   NSString* nibpath =
       [mac_util::MainAppBundle() pathForResource:@"ImportSettingsDialog"
                                           ofType:@"nib"];
@@ -128,7 +153,7 @@
 }
 
 - (id)init {
-  return [self initWithProfile:NULL parentWindow:nil];
+  return [self initWithProfile:NULL];
 }
 
 - (void)awakeFromNib {
@@ -136,17 +161,14 @@
   [self setSourceBrowserIndex:0];
 }
 
+// Run application modal.
 - (void)runModalDialog {
-  // If there is no parentWindow_ then this will present as a regular
-  // modal dialog not hanging off of any other window.
-  [NSApp beginSheet:[self window]
-     modalForWindow:parentWindow_
-      modalDelegate:self
-     didEndSelector:@selector(didEndSheet:returnCode:contextInfo:)
-        contextInfo:nil];
+  importSettingsDialogVisible = true;
+  [NSApp runModalForWindow:[self window]];
 }
 
 - (IBAction)ok:(id)sender {
+  [self closeDialog];
   const ProfileInfo& sourceProfile =
       importerList_.get()->GetSourceProfileInfoAt([self sourceBrowserIndex]);
   uint16 items = sourceProfile.services_supported;
@@ -165,20 +187,16 @@
     LOG(WARNING) << "There were no settings to import from '"
                  << sourceProfile.description << "'.";
   }
-  [NSApp endSheet:[self window]];
 }
 
 - (IBAction)cancel:(id)sender {
-  [NSApp endSheet:[self window]];
+  [self closeDialog];
 }
 
-- (void)didEndSheet:(NSWindow*)sheet
-         returnCode:(int)returnCode
-        contextInfo:(void*)contextInfo {
-  [sheet close];
-}
-
-- (void)windowWillClose:(NSNotification*)notification {
+- (void)closeDialog {
+  importSettingsDialogVisible = false;
+  [[self window] orderOut:self];
+  [NSApp stopModal];
   [self autorelease];
 }
 

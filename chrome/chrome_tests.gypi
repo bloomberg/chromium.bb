@@ -623,6 +623,7 @@
         'browser/cocoa/fullscreen_window_unittest.mm',
         'browser/cocoa/html_dialog_window_controller_unittest.mm',
         'browser/cocoa/hung_renderer_controller_unittest.mm',
+        'browser/cocoa/import_settings_dialog_unittest.mm',
         'browser/cocoa/info_bubble_view_unittest.mm',
         'browser/cocoa/info_bubble_window_unittest.mm',
         'browser/cocoa/infobar_container_controller_unittest.mm',

@@ -294,10 +294,8 @@ void BrowserWindowCocoa::ShowClearBrowsingDataDialog() {
 }
 
 void BrowserWindowCocoa::ShowImportDialog() {
-  // Note that the dialog controller takes care of cleaning itself up
-  // upon dismissal so auto-scoping here is not necessary.
-  [[[ImportSettingsDialogController alloc]
-    initWithProfile:browser_->profile() parentWindow:window()] runModalDialog];
+  [ImportSettingsDialogController
+          showImportSettingsDialogForProfile:browser_->profile()];
 }
 
 void BrowserWindowCocoa::ShowSearchEnginesDialog() {
