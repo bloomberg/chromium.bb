@@ -148,7 +148,8 @@ class ProxyFactory {
 class ChromeFrameAutomationClient
     : public CWindowImpl<ChromeFrameAutomationClient>,
       public TaskMarshallerThroughWindowsMessages<ChromeFrameAutomationClient>,
-      public PluginRequestHandler,
+      public base::RefCountedThreadSafe<ChromeFrameAutomationClient>,
+      public PluginUrlRequestDelegate,
       public TabProxy::TabProxyDelegate,
       public ProxyFactory::LaunchDelegate {
  public:
@@ -227,18 +228,6 @@ class ChromeFrameAutomationClient
   // the whole tab.
   void PrintTab();
 
-  // PluginRequestHandler
-  bool AddRequest(PluginUrlRequest* request);
-  void RemoveRequest(PluginUrlRequest* request);
-  virtual bool Send(IPC::Message* msg);
-
-  // URL request related
-  bool ReadRequest(int request_id, int bytes_to_read);
-  void RemoveRequest(int request_id, bool abort);
-  PluginUrlRequest* LookupRequest(int request_id) const;
-  bool IsValidRequest(PluginUrlRequest* request) const;
-  void CleanupRequests();
-
   void set_use_chrome_network(bool use_chrome_network) {
     use_chrome_network_ = use_chrome_network;
   }
@@ -258,7 +247,8 @@ class ChromeFrameAutomationClient
 
   // Called if the same instance of the ChromeFrameAutomationClient object
   // is reused.
-  bool Reinitialize(ChromeFrameDelegate* chrome_frame_delegate);
+  bool Reinitialize(ChromeFrameDelegate* chrome_frame_delegate,
+                    PluginUrlRequestManager* url_fetcher);
 
   // Attaches an existing external tab to this automation client instance.
   void AttachExternalTab(intptr_t external_tab_cookie);
@@ -280,8 +270,6 @@ class ChromeFrameAutomationClient
   void InitializeComplete(AutomationLaunchResult result);
 
  private:
-  typedef std::map<int, scoped_refptr<PluginUrlRequest> > RequestMap;
-
   // Usage: From bkgnd thread invoke:
   // CallDelegate(FROM_HERE, NewRunnableMethod(chrome_frame_delegate_,
   //                                           ChromeFrameDelegate::Something,
@@ -323,9 +311,6 @@ class ChromeFrameAutomationClient
   // Keeps track of the version of Chrome we're talking to.
   std::string automation_server_version_;
 
-  // Map of outstanding requests
-  RequestMap request_map_;
-
   typedef enum InitializationState {
     UNINITIALIZED = 0,
     INITIALIZING,
@@ -346,6 +331,31 @@ class ChromeFrameAutomationClient
   bool navigate_after_initialization_;
 
   ChromeFrameLaunchParams chrome_launch_params_;
+
+  // When host network stack is used, this object is in charge of
+  // handling network requests.
+  PluginUrlRequestManager* url_fetcher_;
+  bool thread_safe_url_fetcher_;
+
+  bool ProcessUrlRequestMessage(TabProxy* tab, const IPC::Message& msg,
+                                bool ui_thread);
+
+  // PluginUrlRequestDelegate implementation. Simply adds tab's handle
+  // as parameter and forwards to Chrome via IPC.
+  virtual void OnResponseStarted(int request_id, const char* mime_type,
+      const char* headers, int size, base::Time last_modified,
+      const std::string& peristent_cookies, const std::string& redirect_url,
+      int redirect_status);
+  virtual void OnReadComplete(int request_id, const void* buffer, int len);
+  virtual void OnResponseEnd(int request_id, const URLRequestStatus& status);
+
+ public:
+  void SetUrlFetcher(PluginUrlRequestManager* url_fetcher) {
+    DCHECK(url_fetcher != NULL);
+    url_fetcher_ = url_fetcher;
+    thread_safe_url_fetcher_ = url_fetcher->IsThreadSafe();
+    url_fetcher_->set_delegate(this);
+  }
 };
 
 #endif  // CHROME_FRAME_CHROME_FRAME_AUTOMATION_H_

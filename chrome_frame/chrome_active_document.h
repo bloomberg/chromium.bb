@@ -238,10 +238,6 @@ END_EXEC_COMMAND_MAP()
   bool PreProcessContextMenu(HMENU menu);
   bool HandleContextMenuCommand(UINT cmd, const IPC::ContextMenuParams& params);
 
-  // Should connections initiated by this class try to block
-  // responses served with the X-Frame-Options header?
-  bool is_frame_busting_enabled();
-
   // ChromeFramePlugin overrides.
   virtual void OnAutomationServerReady();
 

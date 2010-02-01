@@ -408,6 +408,7 @@ ChromeFrameAutomationClient::ChromeFrameAutomationClient()
       handle_top_level_requests_(false),
       tab_handle_(-1),
       external_tab_cookie_(NULL),
+      url_fetcher_(NULL),
       navigate_after_initialization_(false) {
 }
 
@@ -493,8 +494,10 @@ void ChromeFrameAutomationClient::Uninitialize() {
     tab_ = NULL;    // scoped_refptr::Release
   }
 
-  // Clean up any outstanding requests
-  CleanupRequests();
+  if (url_fetcher_) {
+    // Clean up any outstanding requests
+    url_fetcher_->StopAllRequests();
+  }
 
   // Wait for the background thread to exit.
   ReleaseAutomationServer();
@@ -850,9 +853,53 @@ void ChromeFrameAutomationClient::InitializeComplete(
 // kind of beings.
 // By default we marshal the IPC message to the main/GUI thread and from there
 // we safely invoke chrome_frame_delegate_->OnMessageReceived(msg).
+
+
+bool ChromeFrameAutomationClient::ProcessUrlRequestMessage(TabProxy* tab,
+    const IPC::Message& msg, bool ui_thread) {
+  // Either directly call appropriate url_fetcher function
+  // or postpone call to the UI thread.
+  bool invoke = ui_thread || thread_safe_url_fetcher_;
+  uint16 msg_type = msg.type();
+  switch (msg_type) {
+    default:
+      return false;
+
+    case AutomationMsg_RequestStart::ID:
+      if (invoke)
+        AutomationMsg_RequestStart::Dispatch(&msg, url_fetcher_,
+            &PluginUrlRequestManager::StartUrlRequest);
+      break;
+
+    case AutomationMsg_RequestRead::ID:
+      if (invoke)
+        AutomationMsg_RequestRead::Dispatch(&msg, url_fetcher_,
+            &PluginUrlRequestManager::ReadUrlRequest);
+      break;
+
+    case AutomationMsg_RequestEnd::ID:
+      if (invoke)
+        AutomationMsg_RequestEnd::Dispatch(&msg, url_fetcher_,
+            &PluginUrlRequestManager::EndUrlRequest);
+      break;
+  }
+
+  if (!invoke) {
+    PostTask(FROM_HERE, NewRunnableMethod(this,
+        &ChromeFrameAutomationClient::ProcessUrlRequestMessage,
+        tab, msg, true));
+  }
+
+  return true;
+}
+
 void ChromeFrameAutomationClient::OnMessageReceived(TabProxy* tab,
                                                     const IPC::Message& msg) {
   DCHECK(tab == tab_.get());
+
+  // Quickly process network related messages.
+  if (url_fetcher_ && ProcessUrlRequestMessage(tab, msg, false))
+    return;
 
   // Early check to avoid needless marshaling
   if (chrome_frame_delegate_ == NULL)
@@ -998,119 +1045,9 @@ void ChromeFrameAutomationClient::PrintTab() {
   tab_->PrintAsync();
 }
 
-// IPC:Message::Sender implementation
-bool ChromeFrameAutomationClient::Send(IPC::Message* msg) {
-  if (automation_server_) {
-    return automation_server_->Send(msg);
-  }
-  return false;
-}
-
-bool ChromeFrameAutomationClient::AddRequest(PluginUrlRequest* request) {
-  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
-
-  if (!request) {
-    NOTREACHED();
-    return false;
-  }
-
-#ifndef NDEBUG
-  RequestMap::const_iterator it = request_map_.find(request->id());
-  scoped_refptr<PluginUrlRequest> other(request_map_.end() == it ?
-                                        NULL : (*it).second);
-  DCHECK(other.get() == NULL);
-#endif
-  request_map_[request->id()] = request;
-  return true;
-}
-
-bool ChromeFrameAutomationClient::ReadRequest(
-    int request_id, int bytes_to_read) {
-  bool result = false;
-  PluginUrlRequest* request = LookupRequest(request_id);
-  if (request)
-    result = request->Read(bytes_to_read);
-
-  return result;
-}
-
-void ChromeFrameAutomationClient::RemoveRequest(PluginUrlRequest* request) {
-  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
-
-  // We check if the request pointer passed in is actually present in the map
-  // before going ahead and deleting it. This avoids the issue where we would
-  // incorrectly delete a different request with the same request id.
-  if (IsValidRequest(request)) {
-    request_map_.erase(request->id());
-  }
-}
-
-void ChromeFrameAutomationClient::RemoveRequest(int request_id, bool abort) {
-  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
-  PluginUrlRequest* request = LookupRequest(request_id);
-  if (request) {
-    if (abort) {
-      // The request object will get removed asynchronously.
-      request->Stop();
-    } else {
-      request_map_.erase(request_id);
-    }
-  }
-}
-
-PluginUrlRequest* ChromeFrameAutomationClient::LookupRequest(
-    int request_id) const {
-  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
-  PluginUrlRequest* request = NULL;
-  RequestMap::const_iterator it = request_map_.find(request_id);
-  if (request_map_.end() != it)
-    request = (*it).second;
-  return request;
-}
-
-bool ChromeFrameAutomationClient::IsValidRequest(
-    PluginUrlRequest* request) const {
-  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
-  bool is_valid = false;
-  // if request is invalid then request->id() won't work
-  // hence perform reverse map lookup for validity of the
-  // request pointer.
-  if (request) {
-    for (RequestMap::const_iterator it = request_map_.begin();
-         it != request_map_.end(); it++) {
-      if (request == (*it).second) {
-        is_valid = true;
-        break;
-      }
-    }
-  }
-
-  return is_valid;
-}
-
-void ChromeFrameAutomationClient::CleanupRequests() {
-  DCHECK_EQ(PlatformThread::CurrentId(), ui_thread_id_);
-
-  std::vector<scoped_refptr<PluginUrlRequest> > request_list;
-  // We copy the pending requests into a temporary vector as the Stop
-  // function in the request could also try to delete the request from
-  // the request map and the iterator could end up being invalid.
-  RequestMap::iterator index = request_map_.begin();
-  while (index != request_map_.end()) {
-    PluginUrlRequest* request = (*index).second;
-    DCHECK(request != NULL);
-    request_list.push_back(request);
-    index++;
-  }
-  request_map_.clear();
-
-  for (unsigned int index = 0; index < request_list.size(); ++index) {
-    request_list[index]->Stop();
-  }
-}
-
 bool ChromeFrameAutomationClient::Reinitialize(
-    ChromeFrameDelegate* delegate) {
+    ChromeFrameDelegate* delegate,
+    PluginUrlRequestManager* url_fetcher) {
   if (!tab_.get() || !::IsWindow(chrome_window_)) {
     NOTREACHED();
     DLOG(WARNING) << "ChromeFrameAutomationClient instance reused "
@@ -1123,8 +1060,9 @@ bool ChromeFrameAutomationClient::Reinitialize(
     return false;
   }
 
-  CleanupRequests();
+  url_fetcher_->StopAllRequests();
   chrome_frame_delegate_ = delegate;
+  SetUrlFetcher(url_fetcher);
   SetParentWindow(NULL);
   return true;
 }
@@ -1146,6 +1084,43 @@ void ChromeFrameAutomationClient::SetPageFontSize(
       return;
   }
 
-  Send(new AutomationMsg_SetPageFontSize(0, tab_handle_, font_size));
+  automation_server_->Send(
+      new AutomationMsg_SetPageFontSize(0, tab_handle_, font_size));
+}
+
+
+//////////////////////////////////////////////////////////////////////////
+// PluginUrlRequestDelegate implementation.
+// Forward network related responses to Chrome.
+
+void ChromeFrameAutomationClient::OnResponseStarted(int request_id,
+    const char* mime_type,  const char* headers, int size,
+    base::Time last_modified, const std::string& peristent_cookies,
+    const std::string& redirect_url, int redirect_status) {
+  const IPC::AutomationURLResponse response = {
+      mime_type,
+      headers ? headers : "",
+      size,
+      last_modified,
+      peristent_cookies,
+      redirect_url,
+      redirect_status
+  };
+
+  automation_server_->Send(new AutomationMsg_RequestStarted(0,
+      tab_->handle(), request_id, response));
+}
+
+void ChromeFrameAutomationClient::OnReadComplete(int request_id,
+                                                 const void* buffer, int len) {
+  std::string data(reinterpret_cast<const char*>(buffer), len);
+  automation_server_->Send(new AutomationMsg_RequestData(0, tab_->handle(),
+      request_id, data));
+}
+
+void ChromeFrameAutomationClient::OnResponseEnd(int request_id,
+    const URLRequestStatus& status) {
+  automation_server_->Send(new AutomationMsg_RequestEnd(0, tab_->handle(),
+      request_id, status));
 }
 

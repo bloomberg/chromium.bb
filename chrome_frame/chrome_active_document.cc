@@ -54,6 +54,7 @@ bool g_first_launch_by_process_ = true;
 ChromeActiveDocument::ChromeActiveDocument()
     : first_navigation_(true),
       is_automation_client_reused_(false) {
+  url_fetcher_.set_frame_busting(false);
   memset(&navigation_info_, 0, sizeof(navigation_info_));
 }
 
@@ -68,7 +69,7 @@ HRESULT ChromeActiveDocument::FinalConstruct() {
     DLOG(INFO) << "Reusing automation client instance from "
                << cached_document;
     DCHECK(automation_client_.get() != NULL);
-    automation_client_->Reinitialize(this);
+    automation_client_->Reinitialize(this, &url_fetcher_);
     is_automation_client_reused_ = true;
   } else {
     // The FinalConstruct implementation in the ChromeFrameActivexBase class
@@ -102,6 +103,8 @@ ChromeActiveDocument::~ChromeActiveDocument() {
   if (find_dialog_.IsWindow()) {
     find_dialog_.DestroyWindow();
   }
+  // ChromeFramePlugin
+  Base::Uninitialize();
 }
 
 // Override DoVerb
@@ -174,10 +177,6 @@ STDMETHODIMP ChromeActiveDocument::IsDirty() {
   return S_FALSE;
 }
 
-bool ChromeActiveDocument::is_frame_busting_enabled() {
-  return false;
-}
-
 void ChromeActiveDocument::OnAutomationServerReady() {
   Base::OnAutomationServerReady();
   Base::GiveFocusToChrome();
@@ -231,18 +230,7 @@ STDMETHODIMP ChromeActiveDocument::Load(BOOL fully_avalable,
   }
 
   if (!is_chrome_protocol) {
-    CComObject<UrlmonUrlRequest>* new_request = NULL;
-    CComObject<UrlmonUrlRequest>::CreateInstance(&new_request);
-    new_request->AddRef();
-
-    if (SUCCEEDED(new_request->ConnectToExistingMoniker(moniker_name,
-                                                        bind_context,
-                                                        url))) {
-      base_url_request_.swap(&new_request);
-      DCHECK(new_request == NULL);
-    } else {
-      new_request->Release();
-    }
+    url_fetcher_.UseMonikerForUrl(moniker_name, bind_context, url);
   }
 
   UMA_HISTOGRAM_CUSTOM_COUNTS("ChromeFrame.FullTabLaunchType",
@@ -883,12 +871,15 @@ bool ChromeActiveDocument::LaunchUrl(const std::wstring& url,
     }
   }
 
-  if (!is_automation_client_reused_ &&
-      !InitializeAutomation(GetHostProcessName(false), L"", IsIEInPrivate())) {
-    return false;
-  }
+  if (is_automation_client_reused_)
+    return true;
 
-  return true;
+  automation_client_->SetUrlFetcher(&url_fetcher_);
+
+  if (InitializeAutomation(GetHostProcessName(false), L"", IsIEInPrivate()))
+    return true;
+
+  return false;
 }
 
 HRESULT ChromeActiveDocument::SetPageFontSize(const GUID* cmd_group_guid,

@@ -52,6 +52,45 @@ BEGIN_VTABLE_PATCHES(IInternetProtocolSink)
                      HttpNegotiatePatch::ReportProgress)
 END_VTABLE_PATCHES()
 
+class SimpleBindStatusCallback : public CComObjectRootEx<CComSingleThreadModel>,
+                                 public IBindStatusCallback {
+ public:
+  BEGIN_COM_MAP(SimpleBindStatusCallback)
+    COM_INTERFACE_ENTRY(IBindStatusCallback)
+  END_COM_MAP()
+
+  // IBindStatusCallback implementation
+  STDMETHOD(OnStartBinding)(DWORD reserved, IBinding* binding) {
+    return E_NOTIMPL;
+  }
+
+  STDMETHOD(GetPriority)(LONG* priority) {
+    return E_NOTIMPL;
+  }
+  STDMETHOD(OnLowResource)(DWORD reserved) {
+    return E_NOTIMPL;
+  }
+
+  STDMETHOD(OnProgress)(ULONG progress, ULONG max_progress,
+                        ULONG status_code, LPCWSTR status_text) {
+    return E_NOTIMPL;
+  }
+  STDMETHOD(OnStopBinding)(HRESULT result, LPCWSTR error) {
+    return E_NOTIMPL;
+  }
+
+  STDMETHOD(GetBindInfo)(DWORD* bind_flags, BINDINFO* bind_info) {
+    return E_NOTIMPL;
+  }
+
+  STDMETHOD(OnDataAvailable)(DWORD flags, DWORD size, FORMATETC* formatetc,
+    STGMEDIUM* storage) {
+    return E_NOTIMPL;
+  }
+  STDMETHOD(OnObjectAvailable)(REFIID iid, IUnknown* object) {
+    return E_NOTIMPL;
+  }
+};
 
 HttpNegotiatePatch::HttpNegotiatePatch() {
 }
@@ -65,10 +104,9 @@ bool HttpNegotiatePatch::Initialize() {
     DLOG(WARNING) << __FUNCTION__ << " called more than once.";
     return true;
   }
-
-  // Use our UrlmonUrlRequest class as we need a temporary object that
+  // Use our SimpleBindStatusCallback class as we need a temporary object that
   // implements IBindStatusCallback.
-  CComObjectStackEx<UrlmonUrlRequest> request;
+  CComObjectStackEx<SimpleBindStatusCallback> request;
   ScopedComPtr<IBindCtx> bind_ctx;
   HRESULT hr = CreateAsyncBindCtx(0, &request, NULL, bind_ctx.Receive());
   DCHECK(SUCCEEDED(hr)) << "CreateAsyncBindCtx";

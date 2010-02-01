@@ -42,6 +42,9 @@ ChromeFrameActivex::~ChromeFrameActivex() {
   DCHECK(onload_.size() == 0);
   DCHECK(onreadystatechanged_.size() == 0);
   DCHECK(onextensionready_.size() == 0);
+
+  // ChromeFramePlugin::Uninitialize()
+  Base::Uninitialize();
 }
 
 LRESULT ChromeFrameActivex::OnCreate(UINT message, WPARAM wparam, LPARAM lparam,
@@ -315,6 +318,8 @@ HRESULT ChromeFrameActivex::IOleObject_SetClientSite(
         profile_name.assign(profile_name_arg, profile_name_arg.Length());
     }
 
+    url_fetcher_.set_frame_busting(!is_privileged_);
+    automation_client_->SetUrlFetcher(&url_fetcher_);
     if (!InitializeAutomation(profile_name, chrome_extra_arguments,
                               IsIEInPrivate())) {
       return E_FAIL;

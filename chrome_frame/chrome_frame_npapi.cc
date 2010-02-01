@@ -269,8 +269,12 @@ bool ChromeFrameNPAPI::Initialize(NPMIMEType mime_type, NPP instance,
 
     if (chrome_network_arg_set)
       automation_client_->set_use_chrome_network(chrome_network_arg);
-
   }
+
+  // Setup Url fetcher.
+  url_fetcher_.set_NPPInstance(instance_);
+  url_fetcher_.set_frame_busting(!is_privileged_);
+  automation_client_->SetUrlFetcher(&url_fetcher_);
 
   // TODO(joshia): Initialize navigation here and send proxy config as
   // part of LaunchSettings
@@ -434,12 +438,7 @@ void ChromeFrameNPAPI::UrlNotify(const char* url, NPReason reason,
     npapi::PopPopupsEnabledState(instance_);
   }
 
-  // It is now safe to release the additional reference on the request
-  NPAPIUrlRequest* request = RequestFromNotifyData(notify_data);
-  if (request) {
-    request->Stop();
-    request->Release();
-  }
+  url_fetcher_.UrlNotify(url, reason, notify_data);
 }
 
 void ChromeFrameNPAPI::OnAcceleratorPressed(int tab_handle,
@@ -511,32 +510,6 @@ void ChromeFrameNPAPI::OnOpenURL(int tab_handle,
   enabled_popups_ = true;
   npapi::PushPopupsEnabledState(instance_, TRUE);
   npapi::GetURLNotify(instance_, url.spec().c_str(), target.c_str(), NULL);
-}
-
-void ChromeFrameNPAPI::OnRequestStart(int tab_handle, int request_id,
-    const IPC::AutomationURLRequest& request) {
-  scoped_refptr<NPAPIUrlRequest> new_request(new NPAPIUrlRequest(instance_));
-  DCHECK(new_request);
-  if (new_request->Initialize(automation_client_.get(), tab_handle,
-                              request_id, request.url, request.method,
-                              request.referrer, request.extra_request_headers,
-                              request.upload_data.get(), !is_privileged_)) {
-    if (new_request->Start()) {
-      // Keep additional reference on request for NPSTREAM
-      // This will be released in NPP_UrlNotify
-      new_request->AddRef();
-    }
-  }
-}
-
-void ChromeFrameNPAPI::OnRequestRead(int tab_handle, int request_id,
-                                     int bytes_to_read) {
-  automation_client_->ReadRequest(request_id, bytes_to_read);
-}
-
-void ChromeFrameNPAPI::OnRequestEnd(int tab_handle, int request_id,
-                                    const URLRequestStatus& status) {
-  automation_client_->RemoveRequest(request_id, true);
 }
 
 void ChromeFrameNPAPI::OnSetCookieAsync(int tab_handle, const GURL& url,
@@ -1438,28 +1411,28 @@ bool ChromeFrameNPAPI::GetBrowserIncognitoMode() {
   return incognito_mode;
 }
 
-NPAPIUrlRequest* ChromeFrameNPAPI::ValidateRequest(
-    NPP instance, void* notify_data) {
-  ChromeFrameNPAPI* plugin_instance =
-      ChromeFrameNPAPI::ChromeFrameInstanceFromPluginInstance(instance);
-  if (plugin_instance) {
-    return plugin_instance->RequestFromNotifyData(notify_data);
-  }
-
-  return NULL;
-}
-
-NPAPIUrlRequest* ChromeFrameNPAPI::RequestFromNotifyData(
-    void* notify_data) const {
-  NPAPIUrlRequest* request = reinterpret_cast<NPAPIUrlRequest*>(notify_data);
-  DCHECK(request ? automation_client_->IsValidRequest(request) : 1);
-  return request;
-}
-
 bool ChromeFrameNPAPI::HandleContextMenuCommand(UINT cmd,
     const IPC::ContextMenuParams& params) {
   if (cmd == IDC_ABOUT_CHROME_FRAME) {
     // TODO: implement "About Chrome Frame"
   }
   return false;
+}
+
+bool ChromeFrameNPAPI::NewStream(NPMIMEType type, NPStream* stream,
+                                 NPBool seekable, uint16* stream_type) {
+  return url_fetcher_.NewStream(type, stream, seekable, stream_type);
+}
+
+int32 ChromeFrameNPAPI::WriteReady(NPStream* stream) {
+  return url_fetcher_.WriteReady(stream);
+}
+
+int32 ChromeFrameNPAPI::Write(NPStream* stream, int32 offset, int32 len,
+                              void* buffer) {
+  return url_fetcher_.Write(stream, offset, len, buffer);
+}
+
+NPError ChromeFrameNPAPI::DestroyStream(NPStream* stream, NPReason reason) {
+  return url_fetcher_.DestroyStream(stream, reason);
 }

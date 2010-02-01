@@ -11,9 +11,9 @@
 #include "base/string_util.h"
 #include "base/logging.h"
 #include "base/message_loop.h"
-#include "chrome_frame/chrome_frame_activex_base.h"
 #include "chrome_frame/extra_system_apis.h"
 #include "chrome_frame/html_utils.h"
+#include "chrome_frame/urlmon_url_request_private.h"
 #include "chrome_frame/urlmon_upload_data_stream.h"
 #include "chrome_frame/utils.h"
 #include "net/http/http_util.h"
@@ -21,7 +21,6 @@
 
 static const LARGE_INTEGER kZero = {0};
 static const ULARGE_INTEGER kUnsignedZero = {0};
-int UrlmonUrlRequest::instance_count_ = 0;
 
 // This class wraps the IBindCtx interface which is passed in when our active
 // document object is instantiated. The IBindCtx interface is created on
@@ -222,14 +221,25 @@ class WrappedBindContext : public IBindCtx,
   ScopedComPtr<IMarshal> standard_marshal_;
 };
 
+STDMETHODIMP UrlmonUrlRequest::SendStream::Write(const void * buffer,
+                                                 ULONG size,
+                                                 ULONG* size_written) {
+  DCHECK(request_);
+  int size_to_write = static_cast<int>(
+      std::min(static_cast<ULONG>(MAXINT), size));
+  request_->delegate_->OnReadComplete(request_->id(), buffer,
+                                      size_to_write);
+  if (size_written)
+    *size_written = size_to_write;
+  return S_OK;
+}
+
+int UrlmonUrlRequest::instance_count_ = 0;
+
 UrlmonUrlRequest::UrlmonUrlRequest()
     : pending_read_size_(0),
-      status_(URLRequestStatus::FAILED, net::ERR_FAILED),
-      thread_(PlatformThread::CurrentId()),
-      redirect_status_(0),
-      parent_window_(NULL),
-      worker_thread_(NULL),
-      ignore_redirect_stop_binding_error_(false) {
+      thread_(NULL),
+      parent_window_(NULL) {
   DLOG(INFO) << StringPrintf("Created request. Obj: %X", this)
       << " Count: " << ++instance_count_;
 }
@@ -240,141 +250,100 @@ UrlmonUrlRequest::~UrlmonUrlRequest() {
 }
 
 bool UrlmonUrlRequest::Start() {
-  DCHECK_EQ(PlatformThread::CurrentId(), thread_);
-
-  if (!worker_thread_ || !worker_thread_->message_loop()) {
-    NOTREACHED() << __FUNCTION__ << " Urlmon request thread not initialized";
-    return false;
+  thread_ = PlatformThread::CurrentId();
+  status_.Start();
+  HRESULT hr = StartAsyncDownload();
+  if (FAILED(hr)) {
+    status_.set_result(URLRequestStatus::FAILED, HresultToNetError(hr));
+    NotifyDelegateAndDie();
   }
-
-  Create(HWND_MESSAGE);
-  if (!IsWindow()) {
-    NOTREACHED() << "Failed to create urlmon message window: "
-                 << GetLastError();
-    return false;
-  }
-
-  // Take a self reference to maintain COM lifetime. This will be released
-  // in OnFinalMessage
-  AddRef();
-  request_handler()->AddRequest(this);
-
-  worker_thread_->message_loop()->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &UrlmonUrlRequest::StartAsync));
-
   return true;
 }
 
 void UrlmonUrlRequest::Stop() {
-  DCHECK_EQ(PlatformThread::CurrentId(), thread_);
+  DCHECK_EQ(thread_, PlatformThread::CurrentId());
+  DCHECK((status_.get_state() != Status::DONE) == (binding_ != NULL));
+  Status::State state = status_.get_state();
+  switch (state) {
+    case Status::WORKING:
+      status_.Cancel();
+      binding_->Abort();
+      break;
 
-  if (!worker_thread_ || !worker_thread_->message_loop()) {
-    NOTREACHED() << __FUNCTION__ << " Urlmon request thread not initialized";
-    return;
+    case Status::ABORTING:
+      status_.Cancel();
+      break;
+
+    case Status::DONE:
+      status_.Cancel();
+      NotifyDelegateAndDie();
+      break;
   }
-
-  // We can remove the request from the map safely here if it is still valid.
-  // There is an additional reference on the UrlmonUrlRequest instance which
-  // is released when the task scheduled by the EndRequest function executes.
-  request_handler()->RemoveRequest(this);
-
-  worker_thread_->message_loop()->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &UrlmonUrlRequest::StopAsync));
-}
-
-void UrlmonUrlRequest::StartAsync() {
-  DCHECK(worker_thread_ != NULL);
-
-  status_.set_status(URLRequestStatus::IO_PENDING);
-  HRESULT hr = StartAsyncDownload();
-  if (FAILED(hr)) {
-    // Do not call EndRequest() here since it will attempt to free references
-    // that have not been established.
-    status_.set_os_error(HresultToNetError(hr));
-    status_.set_status(URLRequestStatus::FAILED);
-    DLOG(ERROR) << "StartAsyncDownload failed";
-    EndRequest();
-    return;
-  }
-}
-
-void UrlmonUrlRequest::StopAsync() {
-  DCHECK(worker_thread_ != NULL);
-
-  if (binding_) {
-    binding_->Abort();
-  } else {
-    status_.set_status(URLRequestStatus::CANCELED);
-    status_.set_os_error(net::ERR_FAILED);
-    EndRequest();
-  }
-}
-
-void UrlmonUrlRequest::OnFinalMessage(HWND window) {
-  m_hWnd = NULL;
-  // Release the outstanding reference in the context of the UI thread to
-  // ensure that our instance gets deleted in the same thread which created it.
-  Release();
 }
 
 bool UrlmonUrlRequest::Read(int bytes_to_read) {
-  DCHECK_EQ(PlatformThread::CurrentId(), thread_);
-
-  DLOG(INFO) << StringPrintf("URL: %s Obj: %X", url().c_str(), this);
-
-  if (!worker_thread_ || !worker_thread_->message_loop()) {
-    NOTREACHED() << __FUNCTION__ << " Urlmon request thread not initialized";
+  DCHECK_EQ(thread_, PlatformThread::CurrentId());
+  // Re-entrancy check. Thou shall not call Read() while processOnReadComplete!!
+  DCHECK_EQ(0, pending_read_size_);
+  if (pending_read_size_ != 0)
     return false;
+
+  DCHECK((status_.get_state() != Status::DONE) == (binding_ != NULL));
+  if (status_.get_state() == Status::ABORTING) {
+    return true;
   }
 
-  worker_thread_->message_loop()->PostTask(
-      FROM_HERE, NewRunnableMethod(this, &UrlmonUrlRequest::ReadAsync,
-                                   bytes_to_read));
-  return true;
-}
-
-void UrlmonUrlRequest::TransferToHost(IUnknown* host) {
-  DCHECK_EQ(PlatformThread::CurrentId(), thread_);
-  DCHECK(host);
-  DCHECK(moniker_);
-  if (moniker_) {
-    ScopedComPtr<IBindCtx> bind_context;
-    CreateBindCtx(0, bind_context.Receive());
-    DCHECK(bind_context);
-    NavigateBrowserToMoniker(host, moniker_, NULL, bind_context, NULL);
-    moniker_.Release();
-  }
-}
-
-void UrlmonUrlRequest::ReadAsync(int bytes_to_read) {
   // Send cached data if available.
   CComObjectStackEx<SendStream> send_stream;
   send_stream.Initialize(this);
 
   size_t bytes_copied = 0;
-  if (cached_data_.is_valid() && cached_data_.Read(&send_stream, bytes_to_read,
-                                                   &bytes_copied)) {
+  if (delegate_ && cached_data_.is_valid() &&
+      cached_data_.Read(&send_stream, bytes_to_read, &bytes_copied)) {
     DLOG(INFO) << StringPrintf("URL: %s Obj: %X - bytes read from cache: %d",
-                               url().c_str(), this, bytes_copied);
-    return;
+        url().c_str(), this, bytes_copied);
+    return true;
   }
 
-  // if the request is finished or there's nothing more to read
-  // then end the request
-  if (!status_.is_io_pending() || !binding_) {
-    DLOG(INFO) << StringPrintf("URL: %s Obj: %X. Response finished. Status: %d",
-                               url().c_str(), this, status_.status());
-    EndRequest();
-    return;
+  if (status_.get_state() == Status::WORKING) {
+    DLOG(INFO) << StringPrintf("URL: %s Obj: %X", url().c_str(), this) <<
+        "- Read pending for: " << bytes_to_read;
+    pending_read_size_ = bytes_to_read;
+  } else {
+    DLOG(INFO) << StringPrintf("URL: %s Obj: %X. Response finished.",
+        url().c_str(), this);
+    NotifyDelegateAndDie();
   }
 
-  pending_read_size_ = bytes_to_read;
-  DLOG(INFO) << StringPrintf("URL: %s Obj: %X", url().c_str(), this) <<
-      "- Read pending for: " << bytes_to_read;
+  return true;
 }
 
-STDMETHODIMP UrlmonUrlRequest::OnStartBinding(
-    DWORD reserved, IBinding *binding) {
+HRESULT UrlmonUrlRequest::ConnectToExistingMoniker(IMoniker* moniker,
+                                                   IBindCtx* context,
+                                                   const std::wstring& url) {
+  if (!moniker || url.empty()) {
+    NOTREACHED() << "Invalid arguments";
+    return E_INVALIDARG;
+  }
+
+  DCHECK(moniker_.get() == NULL);
+  DCHECK(bind_context_.get() == NULL);
+
+  bind_context_ = context;
+  moniker_ = moniker;
+  set_url(WideToUTF8(url));
+  return S_OK;
+}
+
+void UrlmonUrlRequest::StealMoniker(IMoniker** moniker) {
+  // Could be called in any thread. There should be no race
+  // since moniker_ is not released while we are in manager's request map.
+  *moniker = moniker_.Detach();
+}
+
+STDMETHODIMP UrlmonUrlRequest::OnStartBinding(DWORD reserved,
+                                              IBinding *binding) {
+  DCHECK_EQ(thread_, PlatformThread::CurrentId());
   binding_ = binding;
   return S_OK;
 }
@@ -392,35 +361,16 @@ STDMETHODIMP UrlmonUrlRequest::OnLowResource(DWORD reserved) {
 
 STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
     ULONG status_code, LPCWSTR status_text) {
-  static const int kDefaultHttpRedirectCode = 302;
-
+  DCHECK_EQ(thread_, PlatformThread::CurrentId());
   switch (status_code) {
     case BINDSTATUS_REDIRECTING: {
+      DLOG(INFO) << "URL: " << url() << " redirected to " << status_text;
       // Fetch the redirect status as they aren't all equal (307 in particular
       // retains the HTTP request verb).
-      // We assume that valid redirect codes are 301, 302, 303 and 307. If we
-      // receive anything else we would abort the request which would
-      // eventually result in the request getting cancelled in Chrome.
-      int redirect_status = GetHttpResponseStatus();
-      DCHECK(status_text != NULL);
-      DLOG(INFO) << "URL: " << url() << " redirected to "
-                 << status_text;
-      redirect_url_ = status_text;
-      // At times we receive invalid redirect codes like 0, 200, etc. We
-      // default to 302 in this case.
-      if (!net::HttpResponseHeaders::IsRedirectResponseCode(redirect_status))
-        redirect_status = kDefaultHttpRedirectCode;
-      redirect_status_ = redirect_status;
-      // Chrome should decide whether a redirect has to be followed. To achieve
-      // this we send over a fake response to Chrome and abort the redirect.
-      std::string headers = GetHttpHeaders();
-      OnResponse(0, UTF8ToWide(headers).c_str(), NULL, NULL);
-      ignore_redirect_stop_binding_error_ = true;
-      DCHECK(binding_ != NULL);
-      if (binding_) {
-        binding_->Abort();
-        binding_ = NULL;
-      }
+      int http_code = GetHttpResponseStatus();
+      status_.SetRedirected(http_code, WideToUTF8(status_text));
+      // Abort. We will inform Chrome in OnStopBinding callback.
+      binding_->Abort();
       return E_ABORT;
     }
 
@@ -434,39 +384,51 @@ STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
 }
 
 STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
-  DCHECK(worker_thread_ != NULL);
-  DCHECK_EQ(PlatformThread::CurrentId(), worker_thread_->thread_id());
-
+  DCHECK_EQ(thread_, PlatformThread::CurrentId());
   DLOG(INFO) << StringPrintf("URL: %s Obj: %X", url().c_str(), this) <<
-      " - Request stopped, Result: " << std::hex << result <<
-      " Status: " << status_.status();
+      " - Request stopped, Result: " << std::hex << result;
+  DCHECK(status_.get_state() == Status::WORKING ||
+         status_.get_state() == Status::ABORTING);
+  Status::State state = status_.get_state();
 
-  if (FAILED(result)) {
-    status_.set_status(URLRequestStatus::FAILED);
-    status_.set_os_error(HresultToNetError(result));
-    EndRequest();
-  } else {
-    status_.set_status(URLRequestStatus::SUCCESS);
-    status_.set_os_error(0);
-    ReleaseBindings();
-    // In most cases we receive the end request notification from Chrome.
-    // However at times requests can complete without us receiving any
-    // data. In this case we need to inform Chrome that this request has been
-    // completed to prevent Chrome from waiting forever for data for this
-    // request.
-    if (pending_read_size_) {
-      pending_read_size_ = 0;
-      OnResponseEnd(status_);
+  // Mark we a are done.
+  status_.Done();
+
+  if (state == Status::WORKING) {
+    status_.set_result(result);
+
+    // The code below seems easy but it is not. :)
+    // we cannot have pending read and data_avail at the same time.
+    DCHECK(!(pending_read_size_ > 0 && cached_data_.is_valid()));
+
+    // We have some data, but Chrome has not yet read it. Wait until Chrome
+    // read the remaining of the data and then send the error/success code.
+    if (cached_data_.is_valid()) {
+      ReleaseBindings();
+      return S_OK;
     }
+
+    NotifyDelegateAndDie();
+    return S_OK;
   }
 
+  // Status::ABORTING
+  if (status_.was_redirected()) {
+    // Just release bindings here. Chrome will issue EndRequest(request_id)
+    // after processing headers we had provided.
+    std::string headers = GetHttpHeaders();
+    OnResponse(0, UTF8ToWide(headers).c_str(), NULL, NULL);
+    ReleaseBindings();
+    return S_OK;
+  }
+
+  // Stop invoked.
+  NotifyDelegateAndDie();
   return S_OK;
 }
 
 STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
     BINDINFO *bind_info) {
-  DCHECK(worker_thread_ != NULL);
-  DCHECK_EQ(PlatformThread::CurrentId(), worker_thread_->thread_id());
 
   if ((bind_info == NULL) || (bind_info->cbSize == 0) || (bind_flags == NULL))
     return E_INVALIDARG;
@@ -485,9 +447,8 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
     upload_data = true;
   } else {
     NOTREACHED() << "Unknown HTTP method.";
-    status_.set_status(URLRequestStatus::FAILED);
-    status_.set_os_error(net::ERR_METHOD_NOT_SUPPORTED);
-    EndRequest();
+    status_.set_result(URLRequestStatus::FAILED, net::ERR_METHOD_NOT_SUPPORTED);
+    NotifyDelegateAndDie();
     return E_FAIL;
   }
 
@@ -519,9 +480,6 @@ STDMETHODIMP UrlmonUrlRequest::GetBindInfo(DWORD* bind_flags,
 STDMETHODIMP UrlmonUrlRequest::OnDataAvailable(DWORD flags, DWORD size,
                                                FORMATETC* formatetc,
                                                STGMEDIUM* storage) {
-  DCHECK(worker_thread_ != NULL);
-  DCHECK_EQ(PlatformThread::CurrentId(), worker_thread_->thread_id());
-
   DLOG(INFO) << StringPrintf("URL: %s Obj: %X - Bytes available: %d",
                              url().c_str(), this, size);
 
@@ -563,7 +521,6 @@ STDMETHODIMP UrlmonUrlRequest::OnDataAvailable(DWORD flags, DWORD size,
   }
 
   if (BSCF_LASTDATANOTIFICATION & flags) {
-    status_.set_status(URLRequestStatus::SUCCESS);
     DLOG(INFO) << StringPrintf("URL: %s Obj: %X", url().c_str(), this) <<
         " - end of data.";
   }
@@ -581,9 +538,7 @@ STDMETHODIMP UrlmonUrlRequest::OnObjectAvailable(REFIID iid, IUnknown* object) {
 STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
     const wchar_t* current_headers, DWORD reserved,
     wchar_t** additional_headers) {
-  DCHECK(worker_thread_ != NULL);
-  DCHECK_EQ(PlatformThread::CurrentId(), worker_thread_->thread_id());
-
+  DCHECK_EQ(thread_, PlatformThread::CurrentId());
   if (!additional_headers) {
     NOTREACHED();
     return E_POINTER;
@@ -592,7 +547,7 @@ STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
   DLOG(INFO) << "URL: " << url << " Obj: " << std::hex << this <<
       " - Request headers: \n" << current_headers;
 
-  if (!binding_) {
+  if (status_.get_state() == Status::ABORTING) {
     // At times the BINDSTATUS_REDIRECTING notification which is sent to the
     // IBindStatusCallback interface does not have an accompanying HTTP
     // redirect status code, i.e. the attempt to query the HTTP status code
@@ -602,7 +557,6 @@ STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
     // However urlmon still tries to establish a transaction with the
     // redirected URL which confuses the web server.
     // Fix is to abort the attempted transaction.
-    DCHECK(ignore_redirect_stop_binding_error_);
     DLOG(WARNING) << __FUNCTION__
                   << ": Aborting connection to URL:"
                   << url
@@ -649,13 +603,10 @@ STDMETHODIMP UrlmonUrlRequest::BeginningTransaction(const wchar_t* url,
 STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
     const wchar_t* response_headers, const wchar_t* request_headers,
     wchar_t** additional_headers) {
-  DCHECK(worker_thread_ != NULL);
   DLOG(INFO) << __FUNCTION__ << " " << url() << std::endl << " headers: " <<
       std::endl << response_headers;
-  DCHECK_EQ(PlatformThread::CurrentId(), worker_thread_->thread_id());
-
+  DCHECK_EQ(thread_, PlatformThread::CurrentId());
   if (!binding_) {
-    DCHECK(redirect_url_.empty() == false);
     DLOG(WARNING) << __FUNCTION__
                   << ": Ignoring as the binding was aborted due to a redirect";
     return S_OK;
@@ -679,7 +630,7 @@ STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
 
   // NOTE(slightlyoff): We don't use net::HttpResponseHeaders here because
   //    of lingering ICU/base_noicu issues.
-  if (frame_busting_enabled_) {
+  if (enable_frame_busting_) {
     std::string http_headers = net::HttpUtil::AssembleRawHeaders(
         raw_headers.c_str(), raw_headers.length());
     if (http_utils::HasFrameBustingHeader(http_headers)) {
@@ -689,36 +640,44 @@ STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
     }
   }
 
-  std::wstring url_for_persistent_cookies =
-      redirect_url_.empty() ? UTF8ToWide(url()) : redirect_url_;
 
+  std::string url_for_persistent_cookies;
   std::string persistent_cookies;
 
-  DWORD cookie_size = 0;  // NOLINT
-  // Note that there's really no way for us here to distinguish session cookies
-  // from persistent cookies here.  Session cookies should get filtered
-  // out on the chrome side as to not be added again.
-  InternetGetCookie(url_for_persistent_cookies.c_str(), NULL, NULL,
-                    &cookie_size);
-  if (cookie_size) {
-    scoped_array<wchar_t> cookies(new wchar_t[cookie_size + 1]);
-    if (!InternetGetCookie(url_for_persistent_cookies.c_str(), NULL,
-                           cookies.get(), &cookie_size)) {
-      NOTREACHED() << "InternetGetCookie failed. Error: " << GetLastError();
-    } else {
-      persistent_cookies = WideToUTF8(cookies.get());
+  if (status_.was_redirected())
+    url_for_persistent_cookies = status_.get_redirection().utf8_url;
+
+  if (url_for_persistent_cookies.empty())
+    url_for_persistent_cookies = url();
+
+  // Grab cookies for the specific Url from WININET.
+  {
+    DWORD cookie_size = 0;  // NOLINT
+    std::wstring url = UTF8ToWide(url_for_persistent_cookies);
+
+    // Note that there's really no way for us here to distinguish session
+    // cookies from persistent cookies here.  Session cookies should get
+    // filtered out on the chrome side as to not be added again.
+    InternetGetCookie(url.c_str(), NULL, NULL, &cookie_size);
+    if (cookie_size) {
+      scoped_array<wchar_t> cookies(new wchar_t[cookie_size + 1]);
+      if (!InternetGetCookie(url.c_str(), NULL, cookies.get(), &cookie_size)) {
+        NOTREACHED() << "InternetGetCookie failed. Error: " << GetLastError();
+      } else {
+        persistent_cookies = WideToUTF8(cookies.get());
+      }
     }
   }
 
-  OnResponseStarted("",
-                    raw_headers.c_str(),
-                    0,
-                    base::Time(),
+  // Inform the delegate.
+  delegate_->OnResponseStarted(id(),
+                    "",                   // mime_type
+                    raw_headers.c_str(),  // headers
+                    0,                    // size
+                    base::Time(),         // last_modified
                     persistent_cookies,
-                    redirect_url_.empty() ? std::string() :
-                        WideToUTF8(redirect_url_),
-                    redirect_status_);
-
+                    status_.get_redirection().utf8_url,
+                    status_.get_redirection().http_code);
   return S_OK;
 }
 
@@ -818,41 +777,6 @@ STDMETHODIMP UrlmonUrlRequest::OnSecurityProblem(DWORD problem) {
   return hr;
 }
 
-HRESULT UrlmonUrlRequest::ConnectToExistingMoniker(IMoniker* moniker,
-                                                   IBindCtx* context,
-                                                   const std::wstring& url) {
-  if (!moniker || url.empty()) {
-    NOTREACHED() << "Invalid arguments";
-    return E_INVALIDARG;
-  }
-
-  DCHECK(moniker_.get() == NULL);
-  DCHECK(bind_context_.get() == NULL);
-
-  CComObject<WrappedBindContext>* bind_context = NULL;
-  HRESULT hr = CComObject<WrappedBindContext>::CreateInstance(&bind_context);
-  if (FAILED(hr)) {
-    NOTREACHED() << "Failed to instantiate wrapped bind context. Error:" << hr;
-    return hr;
-  }
-
-  bind_context->AddRef();
-  hr = bind_context->Initialize(context);
-  DCHECK(SUCCEEDED(hr));
-
-  hr = bind_context->QueryInterface(bind_context_.Receive());
-  bind_context->Release();
-
-  if (FAILED(hr)) {
-    NOTREACHED() << "Failed to QI for IBindCtx on wrapper. Error:" << hr;
-    return hr;
-  }
-
-  moniker_ = moniker;
-  set_url(WideToUTF8(url));
-  return S_OK;
-}
-
 HRESULT UrlmonUrlRequest::StartAsyncDownload() {
   HRESULT hr = E_FAIL;
   if (moniker_.get() == NULL) {
@@ -874,6 +798,12 @@ HRESULT UrlmonUrlRequest::StartAsyncDownload() {
     ScopedComPtr<IStream> stream;
     hr = moniker_->BindToStorage(bind_context_, NULL, __uuidof(IStream),
                                  reinterpret_cast<void**>(stream.Receive()));
+    // Even if hr == S_OK, binding_ could be NULL if the entire request
+    // finish synchronously but then we still get all the callbacks etc.
+    if (hr == S_OK) {
+      DCHECK(binding_ != NULL || status_.get_state() == Status::DONE);
+    }
+
     if (FAILED(hr)) {
       // TODO(joshia): Look into. This currently fails for:
       // http://user2:secret@localhost:1337/auth-basic?set-cookie-if-challenged
@@ -891,46 +821,15 @@ HRESULT UrlmonUrlRequest::StartAsyncDownload() {
   return hr;
 }
 
-void UrlmonUrlRequest::EndRequest() {
+void UrlmonUrlRequest::NotifyDelegateAndDie() {
+  DCHECK_EQ(thread_, PlatformThread::CurrentId());
   DLOG(INFO) << __FUNCTION__;
-
-  // In case of a redirect notification we prevent urlmon from following the
-  // redirect and rely on Chrome, in which case AutomationMsg_RequestEnd
-  // IPC will be sent over by Chrome to end this request.
-  if (!ignore_redirect_stop_binding_error_) {
-    // Special case.  If the last request was a redirect and the current OS
-    // error value is E_ACCESSDENIED, that means an unsafe redirect was
-    // attempted. In that case, correct the OS error value to be the more
-    // specific ERR_UNSAFE_REDIRECT error value.
-    if (!status_.is_success() && status_.os_error() == net::ERR_ACCESS_DENIED) {
-      int status = GetHttpResponseStatus();
-      if (status >= 300 && status < 400) {
-        redirect_status_ = status;  // store the latest redirect status value.
-        status_.set_os_error(net::ERR_UNSAFE_REDIRECT);
-      }
-    }
-    OnResponseEnd(status_);
-  } else {
-    ignore_redirect_stop_binding_error_ = false;
-  }
-
+  PluginUrlRequestDelegate* delegate = delegate_;
+  delegate_ = NULL;
   ReleaseBindings();
-  // Remove the request mapping and release the outstanding reference to us in
-  // the context of the UI thread.
-  // We should not access any members of the UrlmonUrlRequest object after this
-  // as the object would be deleted.
-  PostTask(FROM_HERE,
-           NewRunnableMethod(this, &UrlmonUrlRequest::EndRequestInternal));
-}
-
-void UrlmonUrlRequest::EndRequestInternal() {
-  // The request object could have been removed from the map in the
-  // OnRequestEnd callback which executes on receiving the
-  // AutomationMsg_RequestEnd IPC from Chrome.
-  request_handler()->RemoveRequest(this);
-  // The current instance could get destroyed in the context of DestroyWindow.
-  // We should not access the object after this.
-  DestroyWindow();
+  if (delegate) {
+    delegate->OnResponseEnd(id(), status_.get_result());
+  }
 }
 
 int UrlmonUrlRequest::GetHttpResponseStatus() const {
@@ -1095,4 +994,237 @@ net::Error UrlmonUrlRequest::HresultToNetError(HRESULT hr) {
       break;
   }
   return ret;
+}
+
+
+bool UrlmonUrlRequestManager::IsThreadSafe() {
+  return true;
+}
+
+void UrlmonUrlRequestManager::UseMonikerForUrl(IMoniker* moniker,
+                                               IBindCtx* bind_ctx,
+                                               const std::wstring& url) {
+  DCHECK(NULL == moniker_for_url_.get());
+  moniker_for_url_.reset(new MonikerForUrl());
+  moniker_for_url_->moniker = moniker;
+  moniker_for_url_->url = url;
+
+  CComObject<WrappedBindContext>* ctx = NULL;
+  CComObject<WrappedBindContext>::CreateInstance(&ctx);
+  ctx->Initialize(bind_ctx);
+  ctx->QueryInterface(moniker_for_url_->bind_ctx.Receive());
+  DCHECK(moniker_for_url_->bind_ctx.get());
+}
+
+void UrlmonUrlRequestManager::StartRequest(int request_id,
+    const IPC::AutomationURLRequest& request_info) {
+  if (stopping_) {
+    return;
+  }
+
+  if (!worker_thread_.IsRunning())
+    worker_thread_.Start();
+
+  MonikerForUrl* use_moniker = NULL;
+  if (moniker_for_url_.get()) {
+    if (GURL(moniker_for_url_->url) == GURL(request_info.url)) {
+      use_moniker = moniker_for_url_.release();
+    }
+  }
+
+  worker_thread_.message_loop()->PostTask(FROM_HERE,
+      NewRunnableMethod(this, &UrlmonUrlRequestManager::StartRequestWorker,
+                        request_id, request_info, use_moniker));
+}
+
+void UrlmonUrlRequestManager::StartRequestWorker(int request_id,
+    const IPC::AutomationURLRequest& request_info,
+    MonikerForUrl* use_moniker) {
+  DCHECK_EQ(worker_thread_.thread_id(), PlatformThread::CurrentId());
+  scoped_ptr<MonikerForUrl> moniker_for_url(use_moniker);
+
+  if (stopping_)
+    return;
+
+  DCHECK(LookupRequest(request_id).get() == NULL);
+
+  CComObject<UrlmonUrlRequest>* new_request = NULL;
+  CComObject<UrlmonUrlRequest>::CreateInstance(&new_request);
+
+  new_request->Initialize(static_cast<PluginUrlRequestDelegate*>(this),
+      request_id,
+      request_info.url,
+      request_info.method,
+      request_info.referrer,
+      request_info.extra_request_headers,
+      request_info.upload_data,
+      enable_frame_busting_);
+
+  // Shall we use an existing moniker?
+  if (moniker_for_url.get()) {
+    new_request->ConnectToExistingMoniker(moniker_for_url->moniker,
+                                          moniker_for_url->bind_ctx,
+                                          moniker_for_url->url);
+  }
+
+  DCHECK(LookupRequest(request_id).get() == NULL);
+  request_map_[request_id] = new_request;
+  map_empty_.Reset();
+
+  new_request->Start();
+}
+
+void UrlmonUrlRequestManager::ReadRequest(int request_id, int bytes_to_read) {
+  if (stopping_)
+    return;
+
+  worker_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &UrlmonUrlRequestManager::ReadRequestWorker, request_id, bytes_to_read));
+}
+
+void UrlmonUrlRequestManager::ReadRequestWorker(int request_id,
+                                                int bytes_to_read) {
+  DCHECK_EQ(worker_thread_.thread_id(), PlatformThread::CurrentId());
+  scoped_refptr<UrlmonUrlRequest> request = LookupRequest(request_id);
+  // if zero, it may just have had network error.
+  if (request) {
+    request->Read(bytes_to_read);
+  }
+}
+
+void UrlmonUrlRequestManager::EndRequest(int request_id) {
+  if (stopping_)
+    return;
+
+  worker_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &UrlmonUrlRequestManager::EndRequestWorker, request_id));
+}
+
+void UrlmonUrlRequestManager::EndRequestWorker(int request_id) {
+  DCHECK_EQ(worker_thread_.thread_id(), PlatformThread::CurrentId());
+  scoped_refptr<UrlmonUrlRequest> request = LookupRequest(request_id);
+  if (request) {
+    request->Stop();
+  }
+}
+
+void UrlmonUrlRequestManager::StopAll() {
+  if (stopping_)
+    return;
+
+  stopping_ = true;
+
+  if (!worker_thread_.IsRunning())
+    return;
+
+  worker_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &UrlmonUrlRequestManager::StopAllWorker));
+
+  // Note we may not call worker_thread_.Stop() here. The MessageLoop's quit
+  // task will be serialized after request::Stop tasks, but requests may
+  // not quit immediately. CoUninitialize has a modal message loop, but it
+  // does not help in this case.
+  // Normally we call binding->Abort() and expect OnStopBinding() callback
+  // where we inform UrlmonUrlRequestManager that request is dead.
+  // The problem is that while waiting for OnStopBinding(), Quit Task may be
+  // picked up and executed, thus exiting the thread.
+  map_empty_.Wait();
+  worker_thread_.Stop();
+  DCHECK_EQ(0, UrlmonUrlRequest::instance_count_);
+}
+
+void UrlmonUrlRequestManager::StopAllWorker() {
+  DCHECK_EQ(worker_thread_.thread_id(), PlatformThread::CurrentId());
+  DCHECK_EQ(true, stopping_);
+
+  std::vector<scoped_refptr<UrlmonUrlRequest> > request_list;
+  // We copy the pending requests into a temporary vector as the Stop
+  // function in the request could also try to delete the request from
+  // the request map and the iterator could end up being invalid.
+  for (RequestMap::iterator it = request_map_.begin();
+       it != request_map_.end(); ++it) {
+    DCHECK(it->second != NULL);
+    request_list.push_back(it->second);
+  }
+
+  for (std::vector<scoped_refptr<UrlmonUrlRequest> >::size_type index = 0;
+       index < request_list.size(); ++index) {
+    request_list[index]->Stop();
+  }
+}
+
+void UrlmonUrlRequestManager::OnResponseStarted(int request_id,
+    const char* mime_type, const char* headers, int size,
+    base::Time last_modified, const std::string& peristent_cookies,
+    const std::string& redirect_url, int redirect_status) {
+  DCHECK_EQ(worker_thread_.thread_id(), PlatformThread::CurrentId());
+  DCHECK(LookupRequest(request_id).get() != NULL);
+  delegate_->OnResponseStarted(request_id, mime_type, headers, size,
+      last_modified, peristent_cookies, redirect_url, redirect_status);
+}
+
+void UrlmonUrlRequestManager::OnReadComplete(int request_id, const void* buffer,
+                                             int len) {
+  DCHECK_EQ(worker_thread_.thread_id(), PlatformThread::CurrentId());
+  DCHECK(LookupRequest(request_id).get() != NULL);
+  delegate_->OnReadComplete(request_id, buffer, len);
+}
+
+void UrlmonUrlRequestManager::OnResponseEnd(int request_id,
+                                            const URLRequestStatus& status) {
+  DCHECK_EQ(worker_thread_.thread_id(), PlatformThread::CurrentId());
+  RequestMap::size_type n = request_map_.erase(request_id);
+  DCHECK_EQ(1, n);
+
+  if (request_map_.size() == 0)
+    map_empty_.Signal();
+
+  // Inform delegate unless the request has been explicitly cancelled.
+  if (status.status() != URLRequestStatus::CANCELED)
+    delegate_->OnResponseEnd(request_id, status);
+}
+
+scoped_refptr<UrlmonUrlRequest> UrlmonUrlRequestManager::LookupRequest(
+    int request_id) {
+  RequestMap::iterator it = request_map_.find(request_id);
+  if (request_map_.end() != it)
+    return it->second;
+  return NULL;
+}
+
+UrlmonUrlRequestManager::UrlmonUrlRequestManager()
+    : stopping_(false), worker_thread_("UrlMon fetch thread"),
+      map_empty_(true, true) {
+}
+
+UrlmonUrlRequestManager::~UrlmonUrlRequestManager() {
+  StopAll();
+}
+
+// Called from UI thread.
+void UrlmonUrlRequestManager::StealMonikerFromRequest(int request_id,
+                                                      IMoniker** moniker) {
+  if (stopping_)
+    return;
+
+  base::WaitableEvent done(true, false);
+  worker_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &UrlmonUrlRequestManager::StealMonikerFromRequestWorker,
+      request_id, moniker, &done));
+
+  // Wait until moniker is grabbed from a request in the worker thread.
+  done.Wait();
+}
+
+void UrlmonUrlRequestManager::StealMonikerFromRequestWorker(int request_id,
+    IMoniker** moniker, base::WaitableEvent* done) {
+  if (!stopping_) {
+    scoped_refptr<UrlmonUrlRequest> request = LookupRequest(request_id);
+    if (request) {
+      request->StealMoniker(moniker);
+      request->Stop();
+    }
+  }
+
+  done->Signal();
 }

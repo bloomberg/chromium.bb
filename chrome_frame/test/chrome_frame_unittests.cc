@@ -21,7 +21,6 @@
 #include "chrome_frame/test/chrome_frame_unittests.h"
 #include "chrome_frame/chrome_frame_automation.h"
 #include "chrome_frame/chrome_frame_delegate.h"
-#include "chrome_frame/crash_reporting/vectored_handler-impl.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 #include "chrome_frame/test_utils.h"
 #include "chrome/common/chrome_switches.h"
@@ -891,16 +890,6 @@ template <> struct RunnableMethodTraits<chrome_frame_test::TimedMsgLoop> {
   void RetainCallee(chrome_frame_test::TimedMsgLoop* obj) {}
   void ReleaseCallee(chrome_frame_test::TimedMsgLoop* obj) {}
 };
-
-// Saves typing. It's somewhat hard to create a wrapper around
-// testing::InvokeWithoutArgs since it returns a
-// non-public (testing::internal) type.
-#define QUIT_LOOP(loop) testing::InvokeWithoutArgs(\
-    CreateFunctor(&loop, &chrome_frame_test::TimedMsgLoop::Quit))
-
-#define QUIT_LOOP_SOON(loop, seconds) testing::InvokeWithoutArgs(\
-    CreateFunctor(&loop, &chrome_frame_test::TimedMsgLoop::QuitAfter, \
-                  seconds))
 
 // We mock ChromeFrameDelegate only. The rest is with real AutomationProxy
 TEST(CFACWithChrome, CreateTooFast) {

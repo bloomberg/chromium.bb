@@ -65,6 +65,9 @@ class ChromeFrameNPAPI
   void UrlNotify(const char* url, NPReason reason, void* notify_data);
   bool NewStream(NPMIMEType type, NPStream* stream, NPBool seekable,
                  uint16* stream_type);
+  int32 WriteReady(NPStream* stream);
+  int32 Write(NPStream* stream, int32 offset, int32 len, void* buffer);
+  NPError DestroyStream(NPStream* stream, NPReason reason);
 
   void Print(NPPrint* print_info);
 
@@ -98,10 +101,6 @@ class ChromeFrameNPAPI
   // Returns the ChromeFrameNPAPI object pointer from the NPObject structure
   // which represents our plugin class.
   static ChromeFrameNPAPI* ChromeFrameInstanceFromNPObject(void* object);
-
-  // Return a UrlRequest instance associated with the given instance and
-  // stream combination.
-  static NPAPIUrlRequest* ValidateRequest(NPP instance, void* notify_data);
 
 BEGIN_MSG_MAP(ChromeFrameNPAPI)
   MESSAGE_HANDLER(WM_SETFOCUS, OnSetFocus)
@@ -137,12 +136,6 @@ END_MSG_MAP()
                                         const std::string& message,
                                         const std::string& origin,
                                         const std::string& target);
-  virtual void OnRequestStart(int tab_handle, int request_id,
-                              const IPC::AutomationURLRequest& request);
-  virtual void OnRequestRead(int tab_handle, int request_id,
-                             int bytes_to_read);
-  virtual void OnRequestEnd(int tab_handle, int request_id,
-                            const URLRequestStatus& status);
   virtual void OnSetCookieAsync(int tab_handle, const GURL& url,
                                 const std::string& cookie);
 
@@ -283,9 +276,6 @@ END_MSG_MAP()
   // Host function to compile-time asserts over members of this class.
   static void CompileAsserts();
 
-  // Get request from the stream notify data
-  NPAPIUrlRequest* RequestFromNotifyData(void* notify_data) const;
-
   static LRESULT CALLBACK DropKillFocusHook(int code, WPARAM wparam,
                                             LPARAM lparam);  // NO_LINT
 
@@ -342,6 +332,8 @@ END_MSG_MAP()
 
   // The value of src property keeping the current URL.
   std::string src_;
+  // Used to fetch network resources when host network stack is in use.
+  NPAPIUrlRequestManager url_fetcher_;
 };
 
 #endif  // CHROME_FRAME_CHROME_FRAME_NPAPI_H_

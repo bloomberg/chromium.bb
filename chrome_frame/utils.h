@@ -12,6 +12,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/thread.h"
 
 // utils.h : Various utility functions and classes
 
@@ -314,6 +315,25 @@ STDMETHODIMP QueryInterfaceIfDelegateSupports(void* obj, REFIID iid,
     COM_INTERFACE_ENTRY_FUNC_BLIND(0, CheckOutgoingInterface<_ComMapClass>)
 
 extern const wchar_t kChromeFrameHeadlessMode[];
+
+// Thread that enters STA and has a UI message loop.
+class STAThread : public base::Thread {
+ public:
+  explicit STAThread(const char *name) : Thread(name) {}
+  bool Start() {
+    return StartWithOptions(Options(MessageLoop::TYPE_UI, 0));
+  }
+ protected:
+  // Called just prior to starting the message loop
+  virtual void Init() {
+    ::CoInitialize(0);
+  }
+
+  // Called just after the message loop ends
+  virtual void CleanUp() {
+    ::CoUninitialize();
+  }
+};
 
 // The urls retrieved from the IMoniker interface don't contain the anchor
 // portion of the actual url navigated to. This function checks whether the

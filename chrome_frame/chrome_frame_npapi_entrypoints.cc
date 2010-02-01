@@ -119,27 +119,23 @@ NPError NPP_SetWindow(NPP instance, NPWindow* window_info) {
 
 NPError NPP_NewStream(NPP instance, NPMIMEType type, NPStream* stream,
                       NPBool seekable, uint16* stream_type) {
-  NPAPIUrlRequest* url_request = ChromeFrameNPAPI::ValidateRequest(
-      instance, stream->notifyData);
-  if (url_request) {
-    if (!url_request->OnStreamCreated(type, stream))
-      return NPERR_GENERIC_ERROR;
+  ChromeFrameNPAPI* plugin_instance =
+      ChromeFrameNPAPI::ChromeFrameInstanceFromPluginInstance(instance);
+  if (plugin_instance == NULL) {
+    return NPERR_INVALID_INSTANCE_ERROR;
   }
 
-  // We need to return the requested stream mode if we are returning a success
-  // code. If we don't do this it causes Opera to blow up.
-  *stream_type = NP_NORMAL;
-  return NPERR_NO_ERROR;
+  return plugin_instance->NewStream(type, stream, seekable, stream_type);
 }
 
 NPError NPP_DestroyStream(NPP instance, NPStream* stream, NPReason reason) {
-  NPAPIUrlRequest* url_request = ChromeFrameNPAPI::ValidateRequest(
-      instance, stream->notifyData);
-  if (url_request) {
-    url_request->OnStreamDestroyed(reason);
+  ChromeFrameNPAPI* plugin_instance =
+      ChromeFrameNPAPI::ChromeFrameInstanceFromPluginInstance(instance);
+  if (plugin_instance == NULL) {
+    return NPERR_INVALID_INSTANCE_ERROR;
   }
 
-  return NPERR_NO_ERROR;
+  return plugin_instance->DestroyStream(stream, reason);
 }
 
 NPError NPP_GetValue(NPP instance, NPPVariable variable, void* value) {
@@ -163,24 +159,25 @@ NPError NPP_SetValue(NPP instance, NPNVariable variable, void* value) {
 int32 NPP_WriteReady(NPP instance, NPStream* stream) {
   static const int kMaxBytesForPluginConsumption = 0x7FFFFFFF;
 
-  NPAPIUrlRequest* url_request = ChromeFrameNPAPI::ValidateRequest(
-      instance, stream->notifyData);
-  if (url_request) {
-    return url_request->OnWriteReady();
+  ChromeFrameNPAPI* plugin_instance =
+      ChromeFrameNPAPI::ChromeFrameInstanceFromPluginInstance(instance);
+
+  if (plugin_instance == NULL) {
+    return kMaxBytesForPluginConsumption;
   }
 
-  return kMaxBytesForPluginConsumption;
+  return plugin_instance->WriteReady(stream);
 }
 
 int32 NPP_Write(NPP instance, NPStream* stream, int32 offset, int32 len,
                 void* buffer) {
-  NPAPIUrlRequest* url_request = ChromeFrameNPAPI::ValidateRequest(
-      instance, stream->notifyData);
-  if (url_request) {
-    return url_request->OnWrite(buffer, len);
-  }
+  ChromeFrameNPAPI* plugin_instance =
+      ChromeFrameNPAPI::ChromeFrameInstanceFromPluginInstance(instance);
 
-  return len;
+  if (plugin_instance == NULL)
+    return len;
+
+  return plugin_instance->Write(stream, offset, len, buffer);
 }
 
 void NPP_URLNotify(NPP instance, const char* url, NPReason reason,

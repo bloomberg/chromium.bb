@@ -130,6 +130,16 @@ class TimedMsgLoop {
   MessageLoopForUI loop_;
 };
 
+// Saves typing. It's somewhat hard to create a wrapper around
+// testing::InvokeWithoutArgs since it returns a
+// non-public (testing::internal) type.
+#define QUIT_LOOP(loop) testing::InvokeWithoutArgs(\
+  CreateFunctor(&loop, &chrome_frame_test::TimedMsgLoop::Quit))
+
+#define QUIT_LOOP_SOON(loop, seconds) testing::InvokeWithoutArgs(\
+  CreateFunctor(&loop, &chrome_frame_test::TimedMsgLoop::QuitAfter, \
+  seconds))
+
 // Launches IE as a COM server and returns the corresponding IWebBrowser2
 // interface pointer.
 // Returns S_OK on success.

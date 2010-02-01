@@ -165,8 +165,7 @@ class ATL_NO_VTABLE ChromeFrameActivexBase :  // NOLINT
 
  public:
   ChromeFrameActivexBase()
-      : ready_state_(READYSTATE_UNINITIALIZED),
-        worker_thread_("ChromeFrameWorker_Thread") {
+      : ready_state_(READYSTATE_UNINITIALIZED) {
     m_bWindowOnly = TRUE;
   }
 
@@ -467,59 +466,16 @@ END_MSG_MAP()
     web_browser2->put_Visible(VARIANT_TRUE);
   }
 
-  virtual void OnRequestStart(int tab_handle, int request_id,
-                              const IPC::AutomationURLRequest& request_info) {
-    // The worker thread may have been stopped. This could happen if the
-    // ActiveX instance was reused.
-    if (!worker_thread_.message_loop()) {
-      base::Thread::Options options;
-      options.message_loop_type = MessageLoop::TYPE_UI;
-      worker_thread_.StartWithOptions(options);
-      worker_thread_.message_loop()->PostTask(
-          FROM_HERE, NewRunnableMethod(this, &Base::OnWorkerStart));
-    }
-
-    scoped_refptr<CComObject<UrlmonUrlRequest> > request;
-    if (base_url_request_.get() &&
-        GURL(base_url_request_->url()) == GURL(request_info.url)) {
-      request.swap(base_url_request_);
-    } else {
-      CComObject<UrlmonUrlRequest>* new_request = NULL;
-      CComObject<UrlmonUrlRequest>::CreateInstance(&new_request);
-      request = new_request;
-    }
-
-    DCHECK(request.get() != NULL);
-
-    if (request->Initialize(
-        automation_client_.get(), tab_handle, request_id, request_info.url,
-        request_info.method, request_info.referrer,
-        request_info.extra_request_headers, request_info.upload_data.get(),
-        static_cast<T*>(this)->is_frame_busting_enabled())) {
-      request->set_worker_thread(&worker_thread_);
-      // If Start is successful, it will add a self reference.
-      request->Start();
-      request->set_parent_window(m_hWnd);
-    }
-  }
-
-  virtual void OnRequestRead(int tab_handle, int request_id,
-                             int bytes_to_read) {
-    automation_client_->ReadRequest(request_id, bytes_to_read);
-  }
-
-  virtual void OnRequestEnd(int tab_handle, int request_id,
-                            const URLRequestStatus& status) {
-    automation_client_->RemoveRequest(request_id, true);
-  }
-
   virtual void OnDownloadRequestInHost(int tab_handle, int request_id) {
     DLOG(INFO) << "TODO: Let the host browser handle this download";
-    PluginUrlRequest* request = automation_client_->LookupRequest(request_id);
-    if (request) {
-      static_cast<UrlmonUrlRequest*>(request)->TransferToHost(doc_site_);
+    ScopedComPtr<IBindCtx> bind_context;
+    ScopedComPtr<IMoniker> moniker;
+    url_fetcher_.StealMonikerFromRequest(request_id, moniker.Receive());
+    if (moniker) {
+      ::CreateBindCtx(0, bind_context.Receive());
+      DCHECK(bind_context);
+      NavigateBrowserToMoniker(doc_site_, moniker, NULL, bind_context, NULL);
     }
-    automation_client_->RemoveRequest(request_id, false);
   }
 
   virtual void OnSetCookieAsync(int tab_handle, const GURL& url,
@@ -569,26 +525,7 @@ END_MSG_MAP()
 
   LRESULT OnDestroy(UINT message, WPARAM wparam, LPARAM lparam,
                     BOOL& handled) {  // NO_LINT
-    if (worker_thread_.message_loop()) {
-      if (automation_client_.get())
-        automation_client_->CleanupRequests();
-
-      worker_thread_.message_loop()->PostTask(
-          FROM_HERE, NewRunnableMethod(this, &Base::OnWorkerStop));
-
-      MSG msg = {0};
-      while (GetMessage(&msg, NULL, WM_USER,
-                        WM_WORKER_THREAD_UNINITIALIZED_MSG)) {
-        if (msg.hwnd == m_hWnd &&
-            msg.message == WM_WORKER_THREAD_UNINITIALIZED_MSG) {
-          break;
-        }
-
-        TranslateMessage(&msg);
-        DispatchMessage(&msg);
-      }
-      worker_thread_.Stop();
-    }
+    DLOG(INFO) << __FUNCTION__;
     return 0;
   }
 
@@ -1111,17 +1048,6 @@ END_MSG_MAP()
   }
 
  protected:
-  // The following functions are called to initialize and uninitialize the
-  // worker thread.
-  void OnWorkerStart() {
-    CoInitialize(NULL);
-  }
-
-  void OnWorkerStop() {
-    CoUninitialize();
-    PostMessage(WM_WORKER_THREAD_UNINITIALIZED_MSG, 0, 0);
-  }
-
   ScopedBstr url_;
   ScopedComPtr<IOleDocumentSite> doc_site_;
 
@@ -1142,10 +1068,9 @@ END_MSG_MAP()
   EventHandlers onprivatemessage_;
   EventHandlers onextensionready_;
 
-  // The UrlmonUrlRequest instance instantiated for downloading the base URL.
-  scoped_refptr<CComObject<UrlmonUrlRequest> > base_url_request_;
-
-  base::Thread worker_thread_;
+  // Handle network requests when host network stack is used. Passed to the
+  // automation client on initialization.
+  UrlmonUrlRequestManager url_fetcher_;
 };
 
 #endif  // CHROME_FRAME_CHROME_FRAME_ACTIVEX_BASE_H_
