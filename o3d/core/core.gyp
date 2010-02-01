@@ -60,6 +60,11 @@
           ],
         },
       ],
+      ['disable_fbo == 1', {
+        'defines': [
+          'DISABLE_FBO',
+        ],
+      }],
     ],
   },
   'includes': [

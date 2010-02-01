@@ -85,6 +85,7 @@ RenderDepthStencilSurfaceGLES2::RenderDepthStencilSurfaceGLES2(
     int height)
     : RenderDepthStencilSurface(service_locator, width, height) {
 
+#ifndef DISABLE_FBO
   // If packed depth stencil is supported, create only one buffer for both
   // depth and stencil.
   if (GLEW_EXT_packed_depth_stencil) {
@@ -112,15 +113,17 @@ RenderDepthStencilSurfaceGLES2::RenderDepthStencilSurfaceGLES2(
                              height);
     CHECK_GL_ERROR();
   }
+#endif
 }
 
 RenderDepthStencilSurfaceGLES2::~RenderDepthStencilSurfaceGLES2() {
+#ifndef DISABLE_FBO
   if (GLEW_EXT_packed_depth_stencil) {
     glDeleteRenderbuffersEXT(1, render_buffers_);
   } else {
     glDeleteRenderbuffersEXT(2, render_buffers_);
   }
+#endif
 }
 
 }  // end namespace o3d
-

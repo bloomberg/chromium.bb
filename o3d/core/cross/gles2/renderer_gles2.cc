@@ -33,7 +33,6 @@
 // This file contains the definition of the RendererGLES2 class that
 // implements the abstract Renderer API using OpenGLES2.
 
-
 #include "core/cross/gles2/renderer_gles2.h"
 
 #include "core/cross/error.h"
@@ -168,6 +167,7 @@ GLenum ConvertStencilOp(State::StencilOperation stencil_func) {
   return GL_KEEP;
 }
 
+#ifndef DISABLE_FBO
 // Helper routine that will bind the surfaces stored in the RenderSurface and
 // RenderDepthStencilSurface arguments to the current OpenGLES2 context.
 // Returns true upon success.
@@ -241,6 +241,7 @@ bool InstallFramebufferObjects(const RenderSurface* surface,
   CHECK_GL_ERROR();
   return true;
 }
+#endif
 
 // Helper routine that returns a pointer to the non-NULL entry in the renderer's
 // stack of bound surfaces.
@@ -687,10 +688,12 @@ Renderer::InitStatus RendererGLES2::InitCommonGLES2() {
     return GPU_NOT_UP_TO_SPEC;
   }
 
+#ifndef DISABLE_FBO
   if (!GLEW_EXT_framebuffer_object) {
     DLOG(ERROR) << "GLES2 drivers do not support framebuffer objects.";
     return GPU_NOT_UP_TO_SPEC;
   }
+#endif
 
   SetSupportsNPOT(GLEW_ARB_texture_non_power_of_two != 0);
 
@@ -732,8 +735,10 @@ Renderer::InitStatus RendererGLES2::InitCommonGLES2() {
   SetClientSize(viewport[2], viewport[3]);
   CHECK_GL_ERROR();
 
+#ifndef DISABLE_FBO
   ::glGenFramebuffersEXT(1, &render_surface_framebuffer_);
   CHECK_GL_ERROR();
+#endif
 
   return SUCCESS;
 }
@@ -741,9 +746,11 @@ Renderer::InitStatus RendererGLES2::InitCommonGLES2() {
 // platform neutral destruction code
 void RendererGLES2::DestroyCommonGLES2() {
   MakeCurrentLazy();
+#ifndef DISABLE_FBO
   if (render_surface_framebuffer_) {
     ::glDeleteFramebuffersEXT(1, &render_surface_framebuffer_);
   }
+#endif
 }
 
 #ifdef OS_WIN
@@ -1283,12 +1290,14 @@ void RendererGLES2::SetRenderSurfacesPlatformSpecific(
   // of framebuffer objects with different attachment characterists and
   // switch between them here.
   MakeCurrentLazy();
+#ifndef DISABLE_FBO
   ::glBindFramebufferEXT(GL_FRAMEBUFFER, render_surface_framebuffer_);
   if (!InstallFramebufferObjects(surface, surface_depth)) {
     O3D_ERROR(service_locator())
         << "Failed to bind OpenGLES2 render target objects:"
         << surface->name() <<", "<< surface_depth->name();
   }
+#endif
   // RenderSurface rendering is performed with an inverted Y, so the front
   // face winding must be changed to clock-wise.  See comments for
   // UpdateHelperConstant.
@@ -1297,8 +1306,10 @@ void RendererGLES2::SetRenderSurfacesPlatformSpecific(
 
 void RendererGLES2::SetBackBufferPlatformSpecific() {
   MakeCurrentLazy();
+#ifndef DISABLE_FBO
   // Bind the default context, and restore the default front-face winding.
   ::glBindFramebufferEXT(GL_FRAMEBUFFER, 0);
+#endif
   glFrontFace(GL_CCW);
 }
 
@@ -1529,4 +1540,3 @@ Renderer* Renderer::CreateDefaultRenderer(ServiceLocator* service_locator) {
 }
 
 }  // namespace o3d
-

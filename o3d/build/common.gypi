@@ -65,6 +65,10 @@
     'o3d_developer%': '<!(python <(DEPTH)/o3d/build/file_exists.py '
                       '<(DEPTH)/o3d/o3d_assets/samples/convert_assets/teapot.zip)',
     'selenium_screenshots%': 0,
+
+    # Add a way to disable FBO support for GL implementations that don't have
+    # it.
+    'disable_fbo%': 0,
   },
   'target_defaults': {
     'defines': [
