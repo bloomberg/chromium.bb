@@ -432,6 +432,8 @@
         'browser/cocoa/custom_home_pages_model.mm',
         'browser/cocoa/delayedmenu_button.h',
         'browser/cocoa/delayedmenu_button.mm',
+        'browser/cocoa/dock_icon.h',
+        'browser/cocoa/dock_icon.mm',
         'browser/cocoa/download_item_button.h',
         'browser/cocoa/download_item_button.mm',
         'browser/cocoa/download_item_cell.h',

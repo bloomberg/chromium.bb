@@ -144,6 +144,15 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id);
 // Get the localized status text for an in-progress download.
 std::wstring GetProgressStatusText(DownloadItem* download);
 
+// Update the application icon to indicate overall download progress.
+// |download_count| is the number of downloads currently in progress. If
+// |progress_known| is false, then at least one download is of indeterminate
+// size and |progress| is invalid, otherwise |progress| indicates the overall
+// download progress (float value from 0..1).
+void UpdateAppIconDownloadProgress(int download_count,
+                                   bool progress_known,
+                                   float progress);
+
 }  // namespace download_util
 
 #endif  // CHROME_BROWSER_DOWNLOAD_DOWNLOAD_UTIL_H_

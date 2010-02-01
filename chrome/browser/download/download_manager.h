@@ -600,6 +600,9 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   // Checks whether a file represents a risk if downloaded.
   bool IsDangerous(const FilePath& file_name);
 
+  // Updates the app icon about the overall download progress.
+  void UpdateAppIcon();
+
   // Changes the paths and file name of the specified |download|, propagating
   // the change to the history system.
   void RenameDownload(DownloadItem* download, const FilePath& new_path);

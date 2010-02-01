@@ -400,4 +400,12 @@ std::wstring GetProgressStatusText(DownloadItem* download) {
                                amount, time_remaining);
 }
 
+#if !defined(OS_MACOSX)
+void UpdateAppIconDownloadProgress(int download_count,
+                                   bool progress_known,
+                                   float progress) {
+  // Win7 Superbar wants some pixel lovin! http://crbug.com/8039
+}
+#endif
+
 }  // namespace download_util

@@ -789,6 +789,8 @@ void DownloadManager::ContinueStartDownload(DownloadCreateInfo* info,
           NewCallback(this, &DownloadManager::OnCreateDownloadEntryComplete));
     }
   }
+
+  UpdateAppIcon();
 }
 
 // Convenience function for updating the history service for a download.
@@ -833,6 +835,7 @@ void DownloadManager::UpdateDownload(int32 download_id, int64 size) {
     download->Update(size);
     UpdateHistoryForDownload(download);
   }
+  UpdateAppIcon();
 }
 
 void DownloadManager::DownloadFinished(int32 download_id, int64 size) {
@@ -864,6 +867,8 @@ void DownloadManager::DownloadFinished(int32 download_id, int64 size) {
     in_progress_.erase(it);
     UpdateHistoryForDownload(download);
   }
+
+  UpdateAppIcon();
 
   // If this a dangerous download not yet validated by the user, don't do
   // anything. When the user notifies us, it will trigger a call to
@@ -1018,6 +1023,7 @@ void DownloadManager::DownloadCancelled(int32 download_id) {
   DownloadCancelledInternal(download_id,
                             download->render_process_id(),
                             download->request_id());
+  UpdateAppIcon();
 }
 
 void DownloadManager::DownloadCancelledInternal(int download_id,
@@ -1069,6 +1075,36 @@ void DownloadManager::OnPauseDownloadRequest(ResourceDispatcherHost* rdh,
 bool DownloadManager::IsDangerous(const FilePath& file_name) {
   // TODO(jcampan): Improve me.
   return IsExecutableFile(file_name);
+}
+
+void DownloadManager::UpdateAppIcon() {
+  int64 total_bytes = 0;
+  int64 received_bytes = 0;
+  int download_count = 0;
+  bool progress_known = true;
+
+  for (DownloadMap::iterator i = in_progress_.begin();
+       i != in_progress_.end();
+       ++i) {
+    ++download_count;
+    const DownloadItem* item = i->second;
+    if (item->total_bytes() > 0) {
+      total_bytes += item->total_bytes();
+      received_bytes += item->received_bytes();
+    } else {
+      // This download didn't specify a Content-Length, so the combined progress
+      // bar neeeds to be indeterminate.
+      progress_known = false;
+    }
+  }
+
+  float progress = 0;
+  if (progress_known && download_count)
+    progress = (float)received_bytes / total_bytes;
+
+  download_util::UpdateAppIconDownloadProgress(download_count,
+                                               progress_known,
+                                               progress);
 }
 
 void DownloadManager::RenameDownload(DownloadItem* download,
@@ -1640,6 +1676,8 @@ void DownloadManager::OnCreateDownloadEntryComplete(DownloadCreateInfo info,
     UpdateHistoryForDownload(download);
     download->UpdateObservers();
   }
+
+  UpdateAppIcon();
 }
 
 // Called when the history service has retrieved the list of downloads that
