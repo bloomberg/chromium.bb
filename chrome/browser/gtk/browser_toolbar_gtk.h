@@ -85,6 +85,9 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   // is in floating mode. Otherwise the bookmark bar will paint it for us.
   void UpdateForBookmarkBarVisibility(bool show_bottom_padding);
 
+  void ShowPageMenu();
+  void ShowAppMenu();
+
   // Overridden from CommandUpdater::CommandObserver:
   virtual void EnabledStateChangedForCommand(int id, bool enabled);
 
@@ -161,10 +164,6 @@ class BrowserToolbarGtk : public CommandUpdater::CommandObserver,
   static gboolean OnMenuButtonPressEvent(GtkWidget* button,
                                          GdkEventButton* event,
                                          BrowserToolbarGtk* toolbar);
-
-  // Gtk callback used when a hotkey activates the menu buttons.
-  static gboolean OnMenuClicked(GtkWidget* button,
-                                BrowserToolbarGtk* toolbar);
 
   // Used for drags onto home button.
   static void OnDragDataReceived(GtkWidget* widget,

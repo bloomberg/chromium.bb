@@ -919,15 +919,11 @@ void BrowserWindowGtk::ShowPageInfo(Profile* profile,
 }
 
 void BrowserWindowGtk::ShowPageMenu() {
-  // On Windows, this is used to show the page menu for a keyboard accelerator
-  // (Alt+e).  We connect the accelerator directly to the widget in
-  // BrowserToolbarGtk.
+  toolbar_->ShowPageMenu();
 }
 
 void BrowserWindowGtk::ShowAppMenu() {
-  // On Windows, this is used to show the page menu for a keyboard accelerator
-  // (Alt+f).  We connect the accelerator directly to the widget in
-  // BrowserToolbarGtk.
+  toolbar_->ShowAppMenu();
 }
 
 bool BrowserWindowGtk::PreHandleKeyboardEvent(

@@ -162,6 +162,8 @@ const struct AcceleratorMapping {
   { XF86XK_History, IDC_SHOW_HISTORY, GdkModifierType(0) },
   { GDK_q, IDC_EXIT, GdkModifierType(GDK_CONTROL_MASK | GDK_SHIFT_MASK) },
   { GDK_s, IDC_SAVE_PAGE, GDK_CONTROL_MASK },
+  { GDK_e, IDC_SHOW_PAGE_MENU, GDK_MOD1_MASK },
+  { GDK_f, IDC_SHOW_APP_MENU, GDK_MOD1_MASK },
 };
 
 }  // namespace
