@@ -87,7 +87,8 @@
         'browser/autofill/address.h',
         'browser/autofill/autofill_dialog_gtk.cc',
         'browser/autofill/autofill_dialog.cc',
-        'browser/autofill/autofill_dialog_win.cc',
+        # Windows version of autofill dialog is defined in
+        # 'browser/views/autofill_profiles_view_win.cc'
         'browser/autofill/autofill_dialog.h',
         'browser/autofill/autofill_field.cc',
         'browser/autofill/autofill_field.h',
@@ -97,8 +98,6 @@
         'browser/autofill/autofill_manager.h',
         'browser/autofill/autofill_profile.cc',
         'browser/autofill/autofill_profile.h',
-        'browser/autofill/autofill_profiles_view_win.cc',
-        'browser/autofill/autofill_profiles_view_win.h',
         'browser/autofill/autofill_type.cc',
         'browser/autofill/autofill_type.h',
         'browser/autofill/billing_address.h',
@@ -1706,6 +1705,8 @@
         'browser/views/autocomplete/autocomplete_popup_win.h',
         'browser/views/autocomplete/autocomplete_popup_gtk.cc',
         'browser/views/autocomplete/autocomplete_popup_gtk.h',
+        'browser/views/autofill_profiles_view_win.cc',
+        'browser/views/autofill_profiles_view_win.h',
         'browser/views/blocked_popup_container_view_views.cc',
         'browser/views/blocked_popup_container_view_views.h',
         'browser/views/bookmark_bar_instructions_view.cc',

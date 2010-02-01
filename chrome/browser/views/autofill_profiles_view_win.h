@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_AUTOFILL_AUTOFILL_PROFILES_VIEW_WIN_H_
-#define CHROME_BROWSER_AUTOFILL_AUTOFILL_PROFILES_VIEW_WIN_H_
+#ifndef CHROME_BROWSER_VIEWS_AUTOFILL_PROFILES_VIEW_WIN_H_
+#define CHROME_BROWSER_VIEWS_AUTOFILL_PROFILES_VIEW_WIN_H_
 
 #include <vector>
 #include <list>
@@ -360,5 +360,5 @@ class AutoFillProfilesView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(AutoFillProfilesView);
 };
 
-#endif  // CHROME_BROWSER_AUTOFILL_AUTOFILL_PROFILES_VIEW_WIN_H_
+#endif  // CHROME_BROWSER_VIEWS_AUTOFILL_PROFILES_VIEW_WIN_H_
 

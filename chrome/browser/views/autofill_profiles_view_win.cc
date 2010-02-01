@@ -1,7 +1,7 @@
 // Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#include "chrome/browser/autofill/autofill_profiles_view_win.h"
+#include "chrome/browser/views/autofill_profiles_view_win.h"
 
 #include <vsstyle.h>
 #include <vssym32.h>
@@ -1073,5 +1073,12 @@ void AutoFillProfilesView::AutoFillScrollView::Layout() {
   lb.Inset(border.width(), border.height());
   scroll_view_->SetBounds(lb);
   scroll_view_->Layout();
+}
+
+// Declared in "chrome/browser/autofill/autofill_dialog.h"
+void ShowAutoFillDialog(AutoFillDialogObserver* observer,
+                        const std::vector<AutoFillProfile*>& profiles,
+                        const std::vector<CreditCard*>& credit_cards) {
+  AutoFillProfilesView::Show(observer, profiles, credit_cards);
 }
 
