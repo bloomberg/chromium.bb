@@ -47,6 +47,9 @@ void BookmarkMenuBridge::UpdateMenu(NSMenu* bookmark_menu) {
   DCHECK(bookmark_menu);
   if (menuIsValid_)
     return;
+  BookmarkModel* model = GetBookmarkModel();
+  if (!model || !model->IsLoaded())
+    return;
 
   if (!folder_image_) {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -56,7 +59,8 @@ void BookmarkMenuBridge::UpdateMenu(NSMenu* bookmark_menu) {
   ClearBookmarkMenu(bookmark_menu);
 
   // Add bookmark bar items, if any.
-  const BookmarkNode* barNode = GetBookmarkModel()->GetBookmarkBarNode();
+  const BookmarkNode* barNode = model->GetBookmarkBarNode();
+  CHECK(barNode);
   if (barNode->GetChildCount()) {
     [bookmark_menu addItem:[NSMenuItem separatorItem]];
     AddNodeToMenu(barNode, bookmark_menu);
@@ -67,7 +71,7 @@ void BookmarkMenuBridge::UpdateMenu(NSMenu* bookmark_menu) {
     l10n_util::GetString(IDS_BOOMARK_BAR_OTHER_FOLDER_NAME));
   [bookmark_menu addItem:[NSMenuItem separatorItem]];
   AddNodeAsSubmenu(bookmark_menu,
-                   GetBookmarkModel()->other_node(),
+                   model->other_node(),
                    other_items_title);
 
   menuIsValid_ = true;
