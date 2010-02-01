@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -2368,21 +2368,18 @@ int GetCountryIDFromPrefs(PrefService* prefs) {
   if (!prefs)
     return GetCurrentCountryID();
 
-  if (!prefs->HasPrefPath(prefs::kCountryIDAtInstall)) {
-    int new_country_id;
+  int new_country_id = GetCurrentCountryID();
 #if defined(OS_WIN)
-    // Upgrade the old platform-specific value if it's present.
-    if (prefs->HasPrefPath(prefs::kGeoIDAtInstall)) {
-      int geo_id = prefs->GetInteger(prefs::kGeoIDAtInstall);
-      new_country_id = GeoIDToCountryID(geo_id);
-    } else {
-      new_country_id = GetCurrentCountryID();
-    }
-#else
-    new_country_id = GetCurrentCountryID();
-#endif
-    prefs->SetInteger(prefs::kCountryIDAtInstall, new_country_id);
+  // Migrate the old platform-specific value if it's present.
+  if (prefs->HasPrefPath(prefs::kGeoIDAtInstall)) {
+    int geo_id = prefs->GetInteger(prefs::kGeoIDAtInstall);
+    prefs->ClearPref(prefs::kGeoIDAtInstall);
+    new_country_id = GeoIDToCountryID(geo_id);
   }
+#endif
+
+  if (!prefs->HasPrefPath(prefs::kCountryIDAtInstall))
+    prefs->SetInteger(prefs::kCountryIDAtInstall, new_country_id);
 
   return prefs->GetInteger(prefs::kCountryIDAtInstall);
 }
@@ -2563,6 +2560,10 @@ void GetPrepopulationSetFromCountryID(PrefService* prefs,
     UNHANDLED_COUNTRY(A, D)  // Andorra
     END_UNHANDLED_COUNTRIES(E, S)
 
+    // Countries using the "Finland" engine set.
+    UNHANDLED_COUNTRY(A, X)  // Aland Islands
+    END_UNHANDLED_COUNTRIES(F, I)
+
     // Countries using the "France" engine set.
     UNHANDLED_COUNTRY(B, F)  // Burkina Faso
     UNHANDLED_COUNTRY(B, J)  // Benin
@@ -2604,6 +2605,10 @@ void GetPrepopulationSetFromCountryID(PrefService* prefs,
     UNHANDLED_COUNTRY(S, M)  // San Marino
     UNHANDLED_COUNTRY(V, A)  // Vatican
     END_UNHANDLED_COUNTRIES(I, T)
+
+    // Countries using the "Morocco" engine set.
+    UNHANDLED_COUNTRY(E, H)  // Western Sahara
+    END_UNHANDLED_COUNTRIES(M, A)
 
     // Countries using the "Netherlands" engine set.
     UNHANDLED_COUNTRY(A, N)  // Netherlands Antilles
@@ -2742,8 +2747,10 @@ void GetPrepopulationSetFromCountryID(PrefService* prefs,
 namespace TemplateURLPrepopulateData {
 
 void RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterIntegerPref(prefs::kGeoIDAtInstall, -1);
   prefs->RegisterIntegerPref(prefs::kCountryIDAtInstall, kCountryIDUnknown);
+
+  // Obsolete pref, for migration.
+  prefs->RegisterIntegerPref(prefs::kGeoIDAtInstall, -1);
 }
 
 int GetDataVersion() {
