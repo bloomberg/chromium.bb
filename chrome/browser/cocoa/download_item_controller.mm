@@ -100,11 +100,14 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [progressView_ setController:nil];
   [[self view] removeFromSuperview];
   [super dealloc];
 }
 
 - (void)awakeFromNib {
+  [progressView_ setController:self];
+
   [self setStateFromDownload:bridge_->download_model()];
 
   GTMUILocalizerAndLayoutTweaker* localizerAndLayoutTweaker =
@@ -164,13 +167,12 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
   // Set correct popup menu. Also, set draggable download on completion.
   if (downloadModel->download()->state() == DownloadItem::COMPLETE) {
-    currentMenu_ = completeDownloadMenu_;
+    [progressView_ setMenu:completeDownloadMenu_];
     [progressView_ setDownload:downloadModel->download()->full_path()];
   } else {
-    currentMenu_ = activeDownloadMenu_;
+    [progressView_ setMenu:activeDownloadMenu_];
   }
 
-  [progressView_ setMenu:currentMenu_];  // for context menu
   [cell_ setStateFromDownload:downloadModel];
 }
 
@@ -195,20 +197,11 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 }
 
 - (IBAction)handleButtonClick:(id)sender {
-  if ([cell_ isButtonPartPressed]) {
-    DownloadItem* download = bridge_->download_model()->download();
-    if (download->state() == DownloadItem::IN_PROGRESS)
-      download->set_open_when_complete(!download->open_when_complete());
-    else if (download->state() == DownloadItem::COMPLETE)
-      download_util::OpenDownload(download);
-  } else {
-    // Hold a reference to ourselves in case the download completes and we
-    // represent a file that's auto-removed (e.g. a theme).
-    scoped_nsobject<DownloadItemController> ref([self retain]);
-    [NSMenu popUpContextMenu:currentMenu_
-                   withEvent:[NSApp currentEvent]
-                     forView:progressView_];
-  }
+  DownloadItem* download = bridge_->download_model()->download();
+  if (download->state() == DownloadItem::IN_PROGRESS)
+    download->set_open_when_complete(!download->open_when_complete());
+  else if (download->state() == DownloadItem::COMPLETE)
+    download_util::OpenDownload(download);
 }
 
 - (NSSize)preferredSize {

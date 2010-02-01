@@ -27,8 +27,6 @@ class DownloadShelfContextMenuMac;
   IBOutlet NSMenu* activeDownloadMenu_;
   IBOutlet NSMenu* completeDownloadMenu_;
 
-  NSMenu* currentMenu_;  // points to one of the two menus above
-
   // This is shown instead of progressView_ for dangerous downloads.
   IBOutlet NSView* dangerousDownloadView_;
   IBOutlet NSTextField* dangerousDownloadLabel_;

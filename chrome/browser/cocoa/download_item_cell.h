@@ -52,9 +52,8 @@ enum DownloadItemMousePosition {
 @property (copy) NSString* secondaryTitle;
 @property (retain) NSFont* secondaryFont;
 
-// Valid to call in response to a click of the cell's button. Returns if the
-// button part of the cell was clicked.
-- (BOOL)isButtonPartPressed;
+// Returns if the mouse is over the button part of the cell.
+- (BOOL)isMouseOverButtonPart;
 
 @end
 
