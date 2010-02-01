@@ -1,0 +1,23 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+//
+// Sync protocol datatype extension for preferences.
+
+syntax = "proto2";
+
+option optimize_for = LITE_RUNTIME;
+
+package sync_pb;
+
+import "sync.proto";
+
+// Properties of preference sync objects.
+message PreferenceSpecifics {
+  required string name = 1;
+  required string value = 2;
+}
+
+extend EntitySpecifics {
+  optional PreferenceSpecifics preference = 37702;
+}
