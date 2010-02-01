@@ -60,7 +60,7 @@ class GIT(object):
       return gclient_utils.CheckCall(c, in_directory, print_error)
     except gclient_utils.CheckCallError:
       if error_ok:
-        return ''
+        return ('', '')
       raise
 
   @staticmethod
