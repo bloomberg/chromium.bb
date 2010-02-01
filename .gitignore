@@ -1,3 +1,10 @@
-git-cl-repo
-tests/pymox
 *.pyc
+/git-cl-repo
+/tests/pymox
+/python
+/python.bat
+/python_bin
+/svn
+/svn.bat
+/svn_bin
+/svnversion.bat
