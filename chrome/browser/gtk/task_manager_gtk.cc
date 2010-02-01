@@ -400,8 +400,6 @@ void TaskManagerGtk::Init() {
 
   CreateTaskManagerTreeview();
   gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(treeview_), TRUE);
-  gtk_tree_view_set_grid_lines(GTK_TREE_VIEW(treeview_),
-                               GTK_TREE_VIEW_GRID_LINES_HORIZONTAL);
   g_signal_connect(G_OBJECT(treeview_), "button-press-event",
                    G_CALLBACK(OnButtonPressEvent), this);
   gtk_widget_add_events(treeview_,
@@ -509,7 +507,8 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_CPU_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_NET_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_PROCESS_ID_COLUMN);
-  TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN);
+  TreeViewInsertColumn(treeview_,
+                       IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN);
   TreeViewInsertColumn(treeview_, IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN);
   TreeViewInsertColumn(treeview_,
                        IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN);
@@ -529,52 +528,55 @@ void TaskManagerGtk::CreateTaskManagerTreeview() {
   g_object_unref(process_list_sort_);
 }
 
+bool IsSharedByGroup(int col_id) {
+  switch (col_id) {
+    case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:
+    case IDS_TASK_MANAGER_SHARED_MEM_COLUMN:
+    case IDS_TASK_MANAGER_CPU_COLUMN:
+    case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:
+    case IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN:
+    case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
+    case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
+    case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
+      return true;
+    default:
+      return false;
+  }
+}
+
 std::string TaskManagerGtk::GetModelText(int row, int col_id) {
+  if (IsSharedByGroup(col_id) && !model_->IsResourceFirstInGroup(row))
+    return std::string();
+
   switch (col_id) {
     case IDS_TASK_MANAGER_PAGE_COLUMN:  // Process
       return WideToUTF8(model_->GetResourceTitle(row));
 
     case IDS_TASK_MANAGER_PRIVATE_MEM_COLUMN:  // Memory
-      if (!model_->IsResourceFirstInGroup(row))
-        return std::string();
       return WideToUTF8(model_->GetResourcePrivateMemory(row));
 
     case IDS_TASK_MANAGER_SHARED_MEM_COLUMN:  // Memory
-      if (!model_->IsResourceFirstInGroup(row))
-        return std::string();
       return WideToUTF8(model_->GetResourceSharedMemory(row));
 
     case IDS_TASK_MANAGER_CPU_COLUMN:  // CPU
-      if (!model_->IsResourceFirstInGroup(row))
-        return std::string();
       return WideToUTF8(model_->GetResourceCPUUsage(row));
 
     case IDS_TASK_MANAGER_NET_COLUMN:  // Net
       return WideToUTF8(model_->GetResourceNetworkUsage(row));
 
     case IDS_TASK_MANAGER_PROCESS_ID_COLUMN:  // Process ID
-      if (!model_->IsResourceFirstInGroup(row))
-        return std::string();
       return WideToUTF8(model_->GetResourceProcessId(row));
 
     case IDS_TASK_MANAGER_JAVASCRIPT_MEMORY_ALLOCATED_COLUMN:
-      if (!model_->IsResourceFirstInGroup(row))
-        return std::string();
       return WideToUTF8(model_->GetResourceV8MemoryAllocatedSize(row));
 
     case IDS_TASK_MANAGER_WEBCORE_IMAGE_CACHE_COLUMN:
-      if (!model_->IsResourceFirstInGroup(row))
-        return std::string();
       return WideToUTF8(model_->GetResourceWebCoreImageCacheSize(row));
 
     case IDS_TASK_MANAGER_WEBCORE_SCRIPTS_CACHE_COLUMN:
-      if (!model_->IsResourceFirstInGroup(row))
-        return std::string();
       return WideToUTF8(model_->GetResourceWebCoreScriptsCacheSize(row));
 
     case IDS_TASK_MANAGER_WEBCORE_CSS_CACHE_COLUMN:
-      if (!model_->IsResourceFirstInGroup(row))
-        return std::string();
       return WideToUTF8(model_->GetResourceWebCoreCSSCacheSize(row));
 
     case IDS_TASK_MANAGER_GOATS_TELEPORTED_COLUMN:  // Goats Teleported!
@@ -697,7 +699,34 @@ gint TaskManagerGtk::CompareImpl(GtkTreeModel* model, GtkTreeIter* a,
                                  GtkTreeIter* b, int id) {
   int row1 = gtk_tree::GetRowNumForIter(model, a);
   int row2 = gtk_tree::GetRowNumForIter(model, b);
-  return model_->CompareValues(row1, row2, id);
+
+  // When sorting by non-grouped attributes (e.g., Network), just do a normal
+  // sort.
+  if (!IsSharedByGroup(id))
+    return model_->CompareValues(row1, row2, id);
+
+  // Otherwise, make sure grouped resources are shown together.
+  std::pair<int, int> group_range1 = model_->GetGroupRangeForResource(row1);
+  std::pair<int, int> group_range2 = model_->GetGroupRangeForResource(row2);
+
+  if (group_range1 == group_range2) {
+    // Sort within groups.
+    // We want the first-in-group row at the top, whether we are sorting up or
+    // down.
+    GtkSortType sort_type;
+    gtk_tree_sortable_get_sort_column_id(GTK_TREE_SORTABLE(process_list_sort_),
+                                         NULL, &sort_type);
+    if (row1 == group_range1.first)
+      return sort_type == GTK_SORT_ASCENDING ? -1 : 1;
+    if (row2 == group_range2.first)
+      return sort_type == GTK_SORT_ASCENDING ? 1 : -1;
+
+    return model_->CompareValues(row1, row2, id);
+  } else {
+    // Sort between groups.
+    // Compare by the first-in-group rows so that the groups will stay together.
+    return model_->CompareValues(group_range1.first, group_range2.first, id);
+  }
 }
 
 // static
