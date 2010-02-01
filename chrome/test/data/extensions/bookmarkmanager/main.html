@@ -618,6 +618,9 @@ addBookmarkModelListeners();
 <script>
 
 var dnd = {
+
+  DND_EFFECT: cr.isMac ? 'move' : 'copy', // http://crbug.com/14654
+
   dragBookmarkNodes: [],
 
   getBookmarkElement: function(el) {
@@ -838,8 +841,10 @@ var dnd = {
 
     // console.log(draggedItems, this.dragBookmarkNodes)
 
+    // TODO(arv): Fix this once we expose DnD in the extension API
     // Mac requires setData to be called
     e.dataTransfer.setData('text/uri-list', 'http://www.google.com/');
+    e.dataTransfer.effectAllowed = this.DND_EFFECT;
 
     if (!this.dragBookmarkNodes.length) {
       e.preventDefault();
@@ -892,6 +897,8 @@ var dnd = {
 
     var dropPos;
     e.preventDefault();
+    // TODO(arv): Fix this once we expose DnD in the extension API
+    e.dataTransfer.dropEffect = this.DND_EFFECT;
 
     var rect;
     if (overElement instanceof TreeItem) {
@@ -987,6 +994,7 @@ var dnd = {
    * @private
    */
   showDropOverlay_: function(targetRect, overlayType) {
+    window.clearTimeout(this.hideDropOverlayTimer_);
     var overlay = $('drop-overlay');
     if (overlayType == 'on') {
       overlay.className = '';
@@ -1016,7 +1024,12 @@ var dnd = {
    * @private
    */
   hideDropOverlay_: function() {
-    $('drop-overlay').style.display = '';
+    // Hide the overlay in a timeout to reduce flickering as we move between
+    // valid drop targets.
+    window.clearTimeout(this.hideDropOverlayTimer_);
+    this.hideDropOverlayTimer_ = window.setTimeout(function() {
+      $('drop-overlay').style.display = '';
+    }, 100);
   },
 
   handleDragLeave: function(e) {
