@@ -260,7 +260,10 @@ static int cs_gem_end(struct radeon_cs_int *cs,
                 cs->section_file, cs->section_func, cs->section_line, cs->section_ndw, cs->section_cdw);
         fprintf(stderr, "CS section end at (%s,%s,%d)\n",
                 file, func, line);
-        return -EPIPE;
+
+	/* We must reset the section even when there is error. */
+	cs->section_ndw = 0;
+	return -EPIPE;
     }
     cs->section_ndw = 0;
     return 0;
