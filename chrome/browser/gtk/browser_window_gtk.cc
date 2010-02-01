@@ -262,7 +262,7 @@ GdkColor SkColorToGdkColor(const SkColor& color) {
 // where setting the window size to the screen size causes the WM to set the
 // EWMH for full screen mode.
 void SetWindowSize(GtkWindow* window, int width, int height) {
-  GdkScreen* screen = gdk_screen_get_default();
+  GdkScreen* screen = gtk_window_get_screen(window);
   if (width == gdk_screen_get_width(screen) &&
       height == gdk_screen_get_height(screen)) {
     // Adjust the height so we don't trigger the WM feature.
