@@ -81,7 +81,7 @@ class SelectFileDialogImpl : public SelectFileDialog {
 
     // The index of the default selected file filter.
     // Note: This starts from 1, not 0.
-    size_t file_type_index_;
+    int file_type_index_;
 
     // Default extension to be added to file if user does not type one.
     FilePath::StringType default_extension_;
