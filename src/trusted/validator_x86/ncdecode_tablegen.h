@@ -23,7 +23,7 @@ typedef enum {
 } RunMode;
 
 /* Change the current opcode prefix to the given value. */
-void DefineOpcodePrefix(OpcodePrefix prefix);
+void DefineOpcodePrefix(const OpcodePrefix prefix);
 
 /* Define the default prefix to use. Typical use is top-level
  * routine in file defines the default. All helping routines
@@ -32,12 +32,73 @@ void DefineOpcodePrefix(OpcodePrefix prefix);
  *
  * Note: automatically calls DefineOpcodePrefix on the given prefix.
  */
-void DefineDefaultOpcodePrefix(OpcodePrefix prefix);
+void DefineDefaultOpcodePrefix(const OpcodePrefix prefix);
 
 /* Resets the default opcode prefix to the value of the last
  * call to DefineDefaultOpcodePrefix.
  */
 void ResetToDefaultOpcodePrefix();
+
+/* By default, an opcode can only have either zero or one choice.
+ * If you want to define more that one entry for an opcode sequence,
+ * you must register the number expected with a call to this function.
+ * Note: Assumes the current opcode prefix should be applied.
+ */
+void DefineOpcodeChoices(const uint8_t opcode, const int count);
+
+/* Same as DefineOpcodeChoices, but extends the opcode with the
+ * opcode in the modrm byte.
+ */
+void DefineOpcodeMrmChoices(const uint8_t opcode,
+                            const OperandKind modrm_opcode,
+                            const int count);
+
+/* Same as DefineOpcodeChoices, but you can explicitly define the
+ * prefix associated with the opcode.
+ */
+void DefinePrefixOpcodeChoices(const OpcodePrefix prefix,
+                               const uint8_t opcode,
+                               const int count);
+
+/* Same as DefinePrefixOpcodeChoices, but extends the opcode with
+ * the opcode in the modrm byte.
+ */
+void DefinePrefixOpcodeMrmChoices(const OpcodePrefix prefix,
+                                  const uint8_t opcode,
+                                  const OperandKind modrm_opcode,
+                                  const int count);
+
+/* Same as DefineOpcodeChoices, except that the counts for
+ * the 32 and 64 bit models can be separately epressed.
+ */
+void DefineOpcodeChoices_32_64(const uint8_t opcode,
+                               const int count_32,
+                               const int count_64);
+
+/* Same as DefineOpcodeChoices_32_64, but extends the opcode with
+ * the opcode in the modrm byte.
+ */
+void DefineOpcodeMrmChoices_32_64(const uint8_t opcode,
+                                  const OperandKind modrm_opcode,
+                                  const int count_32,
+                                  const int count_64);
+
+/* Same as DefineOpcodeChoices_32_64, but you can explicitly define the
+ * prefix associated with the opcode.
+ */
+void DefinePrefixOpcodeChoices_32_64(const OpcodePrefix prefix,
+                                     const uint8_t opcode,
+                                     const int count_32,
+                                     const int count_64);
+
+/* Same as DefinePrefixOpcodeChoices_32_64, but extends the opcode with
+ * the opcode in the modrm byte.
+ */
+void DefinePrefixOpcodeMrmChoices_32_64(const OpcodePrefix prefix,
+                                        const uint8_t opcode,
+                                        const OperandKind modrm_opcode,
+                                        const int count_32,
+                                        const int count_64);
 
 /* Define the next opcode (instruction), initializing with
  * no operands.

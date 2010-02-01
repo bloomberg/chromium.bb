@@ -33,6 +33,12 @@
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
 #include "native_client/src/include/portability.h"
 
+/* Model an Opcode, sorted by OpcodeInModRm values. */
+typedef struct MrmOpcode {
+  Opcode opcode;
+  struct MrmOpcode* next;
+} MrmOpcode;
+
 /* Note: in general all errors in this module will be fatal.
  * To debug: use gdb or your favorite debugger.
  */
@@ -66,11 +72,31 @@ static OpcodePrefix default_opcode_prefix = NoPrefix;
 /* Holds the current opcode instruction being built. */
 Opcode* current_opcode = NULL;
 
+/* Holds the current opcode with mrm extention being built. */
+MrmOpcode* current_opcode_mrm = NULL;
+
 /* Holds the opcode to model instructions that can't be parsed. */
 static Opcode* undefined_opcode = NULL;
 
-/* Holds all opcodes that require a single byte to define */
+/* Holds all defined opcodes. */
 static Opcode* OpcodeTable[NCDTABLESIZE][OpcodePrefixEnumSize];
+
+#define DEFAULT_CHOICE_COUNT (-1)
+
+#define NO_MODRM_OPCODE Unknown_Operand
+
+#define NO_MODRM_OPCODE_INDEX 8
+
+#define MODRM_OPCODE_SIZE (NO_MODRM_OPCODE_INDEX + 1)
+
+/* Holds the expected number of entries in the defined opcodes.
+ * Note: the last index corresponds to the modrm opcode, or
+ * NO_MODRM_OPCODE if no modrm opcode.
+ */
+static int OpcodeCount[NCDTABLESIZE][OpcodePrefixEnumSize][MODRM_OPCODE_SIZE];
+
+static MrmOpcode* OpcodeMrmTable[NCDTABLESIZE]
+          [OpcodePrefixEnumSize][MODRM_OPCODE_SIZE];
 
 /* Holds encodings of prefix bytes. */
 const char* PrefixTable[NCDTABLESIZE];
@@ -108,11 +134,11 @@ static void EncodePrefixName(const uint8_t byte, const char* name) {
 }
 
 /* Change the current opcode prefix to the given value. */
-void DefineOpcodePrefix(OpcodePrefix prefix) {
+void DefineOpcodePrefix(const OpcodePrefix prefix) {
   current_opcode_prefix = prefix;
 }
 
-void DefineDefaultOpcodePrefix(OpcodePrefix prefix) {
+void DefineDefaultOpcodePrefix(const OpcodePrefix prefix) {
   default_opcode_prefix = prefix;
   DefineOpcodePrefix(prefix);
 }
@@ -422,6 +448,42 @@ static void DefineOperandInternal(
   current_opcode->operands[index].flags = flags;
 }
 
+static void InstallCurrentIntoOpcodeMrm(const OpcodePrefix prefix,
+                                        const uint8_t opcode,
+                                        int mrm_index) {
+  if (NULL == OpcodeMrmTable[opcode][prefix][mrm_index]) {
+    OpcodeMrmTable[opcode][prefix][mrm_index] = current_opcode_mrm;
+  } else {
+    MrmOpcode* next = OpcodeMrmTable[opcode][prefix][mrm_index];
+    while (NULL != next->next) {
+      next = next->next;
+    }
+    next->next = current_opcode_mrm;
+  }
+}
+
+static void MoveCurrentToMrmIndex(int mrm_index) {
+  /* First remove from default location. */
+  uint8_t opcode = current_opcode->opcode[current_opcode->num_opcode_bytes - 1];
+  MrmOpcode* prev = NULL;
+  MrmOpcode* next =
+      OpcodeMrmTable[opcode][current_opcode_prefix][NO_MODRM_OPCODE_INDEX];
+  while (current_opcode_mrm != next) {
+    if (next == NULL) return;
+    prev = next;
+    next = next->next;
+  }
+  if (NULL == prev) {
+    OpcodeMrmTable[opcode][current_opcode_prefix][NO_MODRM_OPCODE_INDEX] =
+        next->next;
+  } else {
+    prev->next = next->next;
+  }
+  current_opcode_mrm = next;
+  current_opcode_mrm->next = NULL;
+  InstallCurrentIntoOpcodeMrm(current_opcode_prefix, opcode, mrm_index);
+}
+
 /* Same as previous function, except that sanity checks
  * are applied to see if inconsistent information is
  * being defined.
@@ -438,6 +500,24 @@ void DefineOperand(
           }
         }
         printf("\n"));
+  /* Readjust counts if opcode appears in modrm. */
+  if (index == 0) {
+    switch (kind) {
+      case Opcode0:
+      case Opcode1:
+      case Opcode2:
+      case Opcode3:
+      case Opcode4:
+      case Opcode5:
+      case Opcode6:
+      case Opcode7:
+        MoveCurrentToMrmIndex(kind - Opcode0);
+        break;
+      default:
+        break;
+    }
+  }
+  /* Define and apply sanity checks. */
   DefineOperandInternal(kind, flags);
   ApplySanityChecksToOperand(index);
 }
@@ -581,6 +661,103 @@ static void DefineOpcodeBytes(uint8_t opcode) {
   current_opcode->num_opcode_bytes = index + 1;
 }
 
+static void PrintOpcodeDescriptor(FILE* out,
+                                  const OpcodePrefix prefix,
+                                  const int opcode,
+                                  const int modrm_index) {
+  if (NO_MODRM_OPCODE_INDEX == modrm_index) {
+    fprintf(out, "%s 0x%02x: ",
+            OpcodePrefixName(prefix), opcode);
+  } else {
+    fprintf(out, "%s 0x%02x /%x: ",
+            OpcodePrefixName(prefix), opcode, modrm_index);
+  }
+}
+
+void DefinePrefixOpcodeMrmChoices_32_64(const OpcodePrefix prefix,
+                                        const uint8_t opcode,
+                                        const OperandKind modrm_opcode,
+                                        const int count_32,
+                                        const int count_64) {
+  int modrm_index = NO_MODRM_OPCODE_INDEX;
+  switch (modrm_opcode) {
+    case Opcode0:
+    case Opcode1:
+    case Opcode2:
+    case Opcode3:
+    case Opcode4:
+    case Opcode5:
+    case Opcode6:
+    case Opcode7:
+      modrm_index = modrm_opcode - Opcode0;
+      break;
+    case Unknown_Operand:
+      break;
+    default:
+      fprintf(stderr, "%s: ", OperandKindName(modrm_opcode));
+      fatal(
+          "Illegal specification of modrm opcode when defining opcode choices");
+  }
+  if (OpcodeCount[opcode][prefix][modrm_index] != DEFAULT_CHOICE_COUNT) {
+    PrintOpcodeDescriptor(stderr, prefix, opcode, modrm_index);
+    fatal("Redefining Opcode choice count");
+  }
+  if (FLAGS_run_mode == X86_32) {
+    OpcodeCount[opcode][prefix][modrm_index] = count_32;
+  } else if (FLAGS_run_mode == X86_64) {
+    OpcodeCount[opcode][prefix][modrm_index] = count_64;
+  }
+}
+
+void DefineOpcodeChoices(const uint8_t opcode, const int count) {
+  DefinePrefixOpcodeChoices(current_opcode_prefix, opcode, count);
+}
+
+void DefineOpcodeMrmChoices(const uint8_t opcode,
+                            const OperandKind modrm_opcode,
+                            const int count) {
+  DefinePrefixOpcodeMrmChoices(current_opcode_prefix, opcode,
+                               modrm_opcode, count);
+}
+
+void DefinePrefixOpcodeChoices(const OpcodePrefix prefix,
+                               const uint8_t opcode,
+                               const int count) {
+  DefinePrefixOpcodeChoices_32_64(prefix, opcode,
+                                  count, count);
+}
+
+void DefinePrefixOpcodeMrmChoices(const OpcodePrefix prefix,
+                                  const uint8_t opcode,
+                                  const OperandKind modrm_opcode,
+                                  const int count) {
+  DefinePrefixOpcodeMrmChoices_32_64(prefix, opcode, modrm_opcode,
+                                     count, count);
+}
+
+void DefineOpcodeChoices_32_64(const uint8_t opcode,
+                               const int count_32,
+                               const int count_64) {
+  DefinePrefixOpcodeChoices_32_64(current_opcode_prefix, opcode,
+                                  count_32, count_64);
+}
+
+void DefineOpcodeMrmChoices_32_64(const uint8_t opcode,
+                                  const OperandKind modrm_opcode,
+                                  const int count_32,
+                                  const int count_64) {
+  DefinePrefixOpcodeMrmChoices_32_64(current_opcode_prefix, opcode,
+                                     modrm_opcode, count_32, count_64);
+}
+
+void DefinePrefixOpcodeChoices_32_64(const OpcodePrefix prefix,
+                                     const uint8_t opcode,
+                                     const int count_32,
+                                     const int count_64) {
+  DefinePrefixOpcodeMrmChoices_32_64(prefix, opcode, NO_MODRM_OPCODE,
+                                     count_32, count_64);
+}
+
 /* Define the next opcode (instruction), initializing with
  * no operands.
  */
@@ -621,10 +798,13 @@ void DefineOpcode(
   }
 
   /* Create opcode and initialize */
-  current_opcode = (Opcode*) malloc(sizeof(Opcode));
-  if (NULL == current_opcode) {
+  current_opcode_mrm = (MrmOpcode*) malloc(sizeof(MrmOpcode));
+  if (NULL == current_opcode_mrm) {
     fatal("DefineOpcode: malloc failed");
   }
+  DEBUG(printf("current = %p\n", (void*) current_opcode_mrm));
+  current_opcode_mrm->next = NULL;
+  current_opcode = &(current_opcode_mrm->opcode);
   DefineOpcodeBytes(opcode);
   current_opcode->insttype = insttype;
   current_opcode->flags = flags;
@@ -655,11 +835,15 @@ void DefineOpcode(
     }
     next->next_rule = current_opcode;
   }
+  /* Install assuming no modrm opcode. Let DefineOperand move if needed. */
+  InstallCurrentIntoOpcodeMrm(current_opcode_prefix, opcode,
+                              NO_MODRM_OPCODE_INDEX);
 }
 
 static void InitializeOpcodeTables() {
   int i;
   OpcodePrefix prefix;
+  int j;
   /* Before starting, verify that we have defined OpcodeFlags and OperandFlags
    * big enough to hold the flags associated with it.
    */
@@ -669,6 +853,9 @@ static void InitializeOpcodeTables() {
   for (i = 0; i < NCDTABLESIZE; ++i) {
     for (prefix = NoPrefix; prefix < OpcodePrefixEnumSize; ++prefix) {
       OpcodeTable[i][prefix] = NULL;
+      for (j = 0; j <= NO_MODRM_OPCODE_INDEX; ++j) {
+        OpcodeCount[i][prefix][j] = DEFAULT_CHOICE_COUNT;
+      }
     }
     PrefixTable[i] = "0";
   }
@@ -713,6 +900,79 @@ static void BuildOpcodeTables() {
   DefineX87Opcodes();
 }
 
+/* Return the number of opcode rules pointed to by the parameter. */
+static int OpcodeListLength(Opcode* next) {
+  int count = 0;
+  while (NULL != next) {
+    ++count;
+    next = next->next_rule;
+  }
+  return count;
+}
+
+static int OpcodeMrmListLength(MrmOpcode* next) {
+  int count = 0;
+  while (NULL != next) {
+    ++count;
+    next = next->next;
+  }
+  return count;
+}
+
+/* Collect the number of opcode (instructions) in the given table,
+ * and return the number found.
+ */
+static int CountNumberOpcodes() {
+  int i;
+  OpcodePrefix prefix;
+  int count = 0;
+  for (i = 0; i < NCDTABLESIZE; ++i) {
+    for (prefix = NoPrefix; prefix < OpcodePrefixEnumSize; ++prefix) {
+      count += OpcodeListLength(OpcodeTable[i][prefix]);
+    }
+  }
+  return count;
+}
+
+static void FatalChoiceCount(const int expected,
+                             const int found,
+                             const OpcodePrefix prefix,
+                             const int opcode,
+                             const int modrm_index,
+                             MrmOpcode* opcodes) {
+  PrintOpcodeDescriptor(stderr, prefix, opcode, modrm_index);
+  fprintf(stderr, "Expected %d rules but found %d:\n", expected, found);
+  while (NULL != opcodes) {
+    PrintOpcode(stderr, &(opcodes->opcode));
+    opcodes = opcodes->next;
+  }
+  fatal("fix before continuing...\n");
+}
+
+/* Verify that the number of possible choies for each prefix:opcode matches
+ * what was explicitly defined.
+ */
+static void VerifyOpcodeCounts() {
+  int i, j;
+  OpcodePrefix prefix;
+  for (i = 0; i < NCDTABLESIZE; ++i) {
+    for (prefix = NoPrefix; prefix < OpcodePrefixEnumSize; ++prefix) {
+      for (j = 0; j < MODRM_OPCODE_SIZE; ++j) {
+        MrmOpcode* opcodes = OpcodeMrmTable[i][prefix][j];
+        int found = OpcodeMrmListLength(opcodes);
+        int expected = OpcodeCount[i][prefix][j];
+        if (expected == DEFAULT_CHOICE_COUNT) {
+          if (found > 1) {
+            FatalChoiceCount(1, found, prefix, i, j, opcodes);
+          }
+        } else if (expected != found) {
+          FatalChoiceCount(expected, found, prefix, i, j, opcodes);
+        }
+      }
+    }
+  }
+}
+
 /* Generate header information, based on the executable name in argv0,
  * and the file to be generated (defined by fname).
  */
@@ -731,25 +991,6 @@ static void PrintHeader(FILE* f, const char* argv0, const char* fname) {
   fprintf(f, " *\n");
   fprintf(f, " * You must include ncopcode_desc.h before this file.\n");
   fprintf(f, " */\n\n");
-}
-
-/* Collect the number of opcode (instructions) in the given table,
- * and return the number found.
- */
-static int CountNumberOpcodes() {
-  int i;
-  OpcodePrefix prefix;
-  int count = 0;
-  for (i = 0; i < NCDTABLESIZE; ++i) {
-    for (prefix = NoPrefix; prefix < OpcodePrefixEnumSize; ++prefix) {
-      Opcode* next = OpcodeTable[i][prefix];
-      while (NULL != next) {
-        ++count;
-        next = next->next_rule;
-      }
-    }
-  }
-  return count;
 }
 
 /* Print out which bytes correspond to prefix bytes. */
@@ -881,6 +1122,8 @@ int main(const int argc, const char* argv[]) {
   }
 
   BuildOpcodeTables();
+
+  VerifyOpcodeCounts();
 
   f = mustopen(argv[1], "w");
   PrintHeader(f, argv[0], argv[1]);

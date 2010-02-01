@@ -737,6 +737,7 @@ static void DefineNarySseOpcodes() {
   /* Define other forms of MMX and XMM operations. */
 
   DefineOpcodePrefix(Prefix660F3A);
+  DefineOpcodeChoices(0x61, 2);
   DefineOpcode(0x61,
                NACLi_SSE42,
                InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeHasImmed_b) |
@@ -763,6 +764,7 @@ static void DefineNarySseOpcodes() {
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcodePrefix(Prefix660F3A);
+  DefineOpcodeChoices(0x60, 2);
   DefineOpcode(0x60,
                NACLi_SSE42,
                InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeHasImmed_b) |
@@ -789,6 +791,7 @@ static void DefineNarySseOpcodes() {
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcodePrefix(Prefix660F3A);
+  DefineOpcodeChoices(0x63, 2);
   DefineOpcode(0x63,
                NACLi_SSE42,
                InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeHasImmed_b)|
@@ -818,6 +821,8 @@ static void DefineNarySseOpcodes() {
   DefineOperand(Xmm_E_Operand, OpFlag(OpUse));
 
   DefineOpcodePrefix(Prefix660F3A);
+  /* Note: shares opcode with pextrw (uses different operand sizes). */
+  DefineOpcodeChoices(0x15, 2);
   DefineOpcode(0x15,
                NACLi_SSE41,
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_b) |
@@ -828,6 +833,7 @@ static void DefineNarySseOpcodes() {
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcodePrefix(Prefix660F3A);
+  DefineOpcodeChoices(0x16, 2);
   DefineOpcode(0x16,
                NACLi_SSE41,
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_v) |
@@ -886,6 +892,8 @@ static void DefineNarySseOpcodes() {
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcodePrefix(Prefix660F3A);
+  /* Note: opcode shares with pinsrq (uses different operand sizes). */
+  DefineOpcodeChoices(0x22, 2);
   DefineOpcode(0x22,
                NACLi_SSE41,
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_v) |

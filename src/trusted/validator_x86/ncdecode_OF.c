@@ -11,6 +11,7 @@
 #include "native_client/src/trusted/validator_x86/ncdecode_tablegen.h"
 
 static void DefineJmp0FPair(uint8_t opcode, InstMnemonic name) {
+  DefineOpcodeChoices_32_64(opcode, 2, 1);
   DefineOpcode(opcode, NACLi_JMPZ,
                InstFlag(OperandSize_w) | InstFlag(OpcodeHasImmed) |
                InstFlag(Opcode32Only),
@@ -28,6 +29,7 @@ static void DefineJmp0FPair(uint8_t opcode, InstMnemonic name) {
 }
 
 static void DefineSetCC(uint8_t opcode, InstMnemonic name) {
+  DefineOpcodeChoices_32_64(opcode, 1, 2);
   DefineOpcode(opcode, NACLi_386,
                InstFlag(OperandSize_b) | InstFlag(OpcodeUsesModRm),
                name);
@@ -41,6 +43,7 @@ static void DefineSetCC(uint8_t opcode, InstMnemonic name) {
 }
 
 static void DefineCmovCC(uint8_t opcode, InstMnemonic name) {
+  DefineOpcodeChoices_32_64(opcode, 1, 2);
   DefineOpcode(opcode, NACLi_CMOV,
                InstFlag(OperandSize_w) | InstFlag(OperandSize_v) |
                InstFlag(OpcodeUsesModRm), name);
@@ -58,6 +61,7 @@ static void DefineCmovCC(uint8_t opcode, InstMnemonic name) {
 static void DefineBswap() {
   uint8_t i;
   for (i = 0; i < 8; ++i) {
+    DefineOpcodeChoices_32_64(0xc8 + i, 1, 2);
     DefineOpcode(0xC8 + i, NACLi_386,
                  InstFlag(OperandSize_v) | InstFlag(OpcodePlusR),
                  InstBswap);
@@ -186,6 +190,7 @@ void Define0FOpcodes() {
   DefineOperand(RegEDX, OpFlag(OpSet) | OpFlag(OpImplicit));
 
   /* ISE reviewers suggested omitting bt. */
+  DefineOpcodeChoices_32_64(0xa3, 1, 2);
   DefineOpcode(0xa3, NACLi_ILLEGAL,
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) |
                InstFlag(OperandSize_v),
@@ -201,6 +206,7 @@ void Define0FOpcodes() {
   DefineOperand(G_Operand, OpFlag(OpUse));
 
   /* ISE reviewers suggested omitting btr. */
+  DefineOpcodeChoices_32_64(0xab, 1, 2);
   DefineOpcode(0xab, NACLi_ILLEGAL,
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) |
                InstFlag(OperandSize_v),
@@ -230,6 +236,7 @@ void Define0FOpcodes() {
                InstSfence);
   DefineOperand(Opcode7, OpFlag(OperandExtendsOpcode));
 
+  DefineOpcodeChoices_32_64(0xaf, 1, 2);
   DefineOpcode(0xaf, NACLi_386,
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) |
                InstFlag(OperandSize_v),
@@ -252,6 +259,7 @@ void Define0FOpcodes() {
   DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(G_Operand, OpFlag(OpUse));
 
+  DefineOpcodeChoices_32_64(0xb1, 1, 2);
   DefineOpcode(0xB1, NACLi_386L,
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) |
                InstFlag(OperandSize_v) | InstFlag(OpcodeLockable),
@@ -277,15 +285,8 @@ void Define0FOpcodes() {
   DefineOperand(E_Operand, OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
-  DefineOpcode(0xba, NACLi_ILLEGAL,
-               InstFlag(Opcode64Only) | InstFlag(OpcodeInModRm) |
-               InstFlag(OperandSize_o) | InstFlag(OpcodeHasImmed_b),
-               InstBtr);
-  DefineOperand(Opcode4, OpFlag(OperandExtendsOpcode));
-  DefineOperand(E_Operand, OpFlag(OpUse));
-  DefineOperand(I_Operand, OpFlag(OpUse));
-
   /* MOVZX */
+  DefineOpcodeChoices_32_64(0xb6, 1, 2);
   DefineOpcode(0xb6, NACLi_386,
                InstFlag(OperandSize_w) | InstFlag(OperandSize_v) |
                InstFlag(OpcodeUsesModRm),
@@ -300,6 +301,7 @@ void Define0FOpcodes() {
   DefineOperand(G_Operand, OpFlag(OpSet));
   DefineOperand(Eb_Operand, OpFlag(OpUse));
 
+  DefineOpcodeChoices_32_64(0xb7, 1, 2);
   DefineOpcode(0xb7, NACLi_386,
                InstFlag(OperandSize_v) | InstFlag(OpcodeUsesModRm),
                InstMovzx);
@@ -313,14 +315,24 @@ void Define0FOpcodes() {
   DefineOperand(G_Operand, OpFlag(OpSet));
   DefineOperand(Ew_Operand, OpFlag(OpUse));
 
-  DefineOpcode(0xbc, NACLi_386,
-               InstFlag(OpcodeUsesModRm) |
-               InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
-               InstBsf);
-  DefineOperand(G_Operand, OpFlag(OpSet));
-  DefineOperand(E_Operand, OpFlag(OpSet));
-
   /* ISE reviewers suggested omitting bt, btc, btr and bts. */
+  DefineOpcodeMrmChoices_32_64(0xba, Opcode4, 1, 4);
+  DefineOpcode(0xba, NACLi_ILLEGAL,
+               InstFlag(Opcode64Only) | InstFlag(OpcodeInModRm) |
+               InstFlag(OperandSize_o) | InstFlag(OpcodeHasImmed_b),
+               InstBtr);
+  DefineOperand(Opcode4, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(I_Operand, OpFlag(OpUse));
+
+  DefineOpcode(0xba, NACLi_ILLEGAL,
+               InstFlag(Opcode64Only) | InstFlag(OpcodeInModRm) |
+               InstFlag(OperandSize_o) | InstFlag(OpcodeHasImmed_b),
+               InstBtr);
+  DefineOperand(Opcode4, OpFlag(OperandExtendsOpcode));
+  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(I_Operand, OpFlag(OpUse));
+
   DefineOpcode(0xba, NACLi_ILLEGAL,
                InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) |
                InstFlag(OperandSize_v) | InstFlag(OpcodeHasImmed_b),
@@ -337,6 +349,7 @@ void Define0FOpcodes() {
   DefineOperand(E_Operand, OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
+  DefineOpcodeMrmChoices_32_64(0xba, Opcode5, 1, 2);
   DefineOpcode(0xba, NACLi_ILLEGAL,
                InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) |
                InstFlag(OperandSize_v) | InstFlag(OpcodeHasImmed_b),
@@ -353,6 +366,7 @@ void Define0FOpcodes() {
   DefineOperand(E_Operand, OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
+  DefineOpcodeMrmChoices_32_64(0xba, Opcode6, 1, 2);
   DefineOpcode(0xba, NACLi_ILLEGAL,
                InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) |
                InstFlag(OperandSize_v) | InstFlag(OpcodeHasImmed_b),
@@ -369,6 +383,7 @@ void Define0FOpcodes() {
   DefineOperand(E_Operand, OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
+  DefineOpcodeMrmChoices_32_64(0xba, Opcode7, 1, 2);
   DefineOpcode(0xba, NACLi_ILLEGAL,
                InstFlag(OpcodeInModRm) | InstFlag(OperandSize_w) |
                InstFlag(OperandSize_v) | InstFlag(OpcodeHasImmed_b),
@@ -386,6 +401,7 @@ void Define0FOpcodes() {
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   /* ISE reviewers suggested omitting btc */
+  DefineOpcodeChoices_32_64(0xbb, 1, 2);
   DefineOpcode(0xbb, NACLi_ILLEGAL,
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) |
                InstFlag(OperandSize_v),
@@ -400,6 +416,13 @@ void Define0FOpcodes() {
   DefineOperand(E_Operand, OpFlag(OpUse));
   DefineOperand(G_Operand, OpFlag(OpUse));
 
+  DefineOpcodeChoices_32_64(0xbc, 1, 2);
+  DefineOpcode(0xbc, NACLi_386,
+               InstFlag(OpcodeUsesModRm) |
+               InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+               InstBsf);
+  DefineOperand(G_Operand, OpFlag(OpSet));
+  DefineOperand(E_Operand, OpFlag(OpSet));
 
   DefineOpcode(0xbc, NACLi_386,
                InstFlag(OpcodeUsesModRm) | InstFlag(Opcode64Only) |
@@ -408,6 +431,7 @@ void Define0FOpcodes() {
   DefineOperand(G_Operand, OpFlag(OpSet));
   DefineOperand(E_Operand, OpFlag(OpSet));
 
+  DefineOpcodeChoices_32_64(0xbd, 1, 2);
   DefineOpcode(0xbd, NACLi_386,
                InstFlag(OpcodeUsesModRm) |
                InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
@@ -423,6 +447,7 @@ void Define0FOpcodes() {
   DefineOperand(E_Operand, OpFlag(OpSet));
 
   /* MOVSX */
+  DefineOpcodeChoices_32_64(0xbe, 1, 2);
   DefineOpcode(0xbe, NACLi_386,
                InstFlag(OperandSize_w) | InstFlag(OperandSize_v) |
                InstFlag(OpcodeUsesModRm),
@@ -437,6 +462,7 @@ void Define0FOpcodes() {
   DefineOperand(G_Operand, OpFlag(OpSet));
   DefineOperand(Eb_Operand, OpFlag(OpUse));
 
+  DefineOpcodeChoices_32_64(0xbf, 1, 2);
   DefineOpcode(0xbf, NACLi_386,
                InstFlag(OperandSize_w) | InstFlag(OperandSize_v) |
                InstFlag(OpcodeUsesModRm),
@@ -458,6 +484,7 @@ void Define0FOpcodes() {
   DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(G_Operand, OpFlag(OpSet) | OpFlag(OpUse));
 
+  DefineOpcodeChoices_32_64(0xc1, 1, 2);
   DefineOpcode(0xC1, NACLi_386L,
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) |
                InstFlag(OperandSize_v) | InstFlag(OpcodeLockable),
@@ -472,6 +499,7 @@ void Define0FOpcodes() {
   DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(G_Operand, OpFlag(OpSet) | OpFlag(OpUse));
 
+  DefineOpcodeChoices_32_64(0xc3, 1, 2);
   DefineOpcode(0xc3, NACLi_SSE2,
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_v),
                InstMovnti);

@@ -495,9 +495,10 @@ void DefineX87Opcodes() {
   DefineX87LtC0Mem(NoPrefix, 0xdf, Opcode5, InstFild, OpFlag(OpUse));
   DefineX87LtC0MoveMemSt0(NoPrefix, 0xdf, Opcode6, InstFbstp);
   DefineX87LtC0MoveMemSt0(NoPrefix, 0xdf, Opcode7, InstFistp);
+
   DefineX87Ax(PrefixDF, 0xe0, InstFnstsw, OpFlag(OpSet));
   DefineX87BinopSt0StiGroup(PrefixDF, 0xe8, InstFucomip);
-  DefineX87BinopSt0StiGroup(PrefixDF, 0xe8, InstFcomip);
+  DefineX87BinopSt0StiGroup(PrefixDF, 0xf0, InstFcomip);
 
   /* todo(karl) What about "9b db e2 Fclex" ? */
   /* todo(karl) What about "9b db e3 finit" ? */
