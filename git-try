@@ -19,13 +19,13 @@ import trychange
 def GetRietveldIssueNumber():
   return GIT.Capture(
       ['config', 'branch.%s.rietveldissue' % GIT.GetBranch(None)],
-      error_ok=True)
+      error_ok=True)[0]
 
 
 def GetRietveldPatchsetNumber():
   return GIT.Capture(
       ['config', 'branch.%s.rietveldpatchset' % GIT.GetBranch(None)],
-      error_ok=True)
+      error_ok=True)[0]
 
 
 def GetRietveldServerUrl():
