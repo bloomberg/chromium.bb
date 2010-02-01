@@ -68,8 +68,11 @@ cr.define('cr.ui', function() {
      * @private
      */
     positionMenu_: function(e, menu) {
-      // TODO(arv): Do scrolling and overflow.
+      // TODO(arv): Handle scrolled documents when needed.
+
       var x, y;
+      // When the user presses the context menu key (on the keyboard) we need
+      // to detect this.
       if (e.screenX == 0 && e.screenY == 0) {
         var rect = e.currentTarget.getBoundingClientRect();
         x = rect.left;
@@ -77,6 +80,35 @@ cr.define('cr.ui', function() {
       } else {
         x = e.clientX;
         y = e.clientY;
+      }
+
+      var menuRect = menu.getBoundingClientRect();
+      var bodyRect = menu.ownerDocument.body.getBoundingClientRect();
+
+      // Does menu fit below?
+      if (y + menuRect.height > bodyRect.height) {
+        // Does menu fit above?
+        if (y - menuRect.height >= 0) {
+          y -= menuRect.height;
+        } else {
+          // Menu did not fit above nor below.
+          y = 0;
+          // We could resize the menu here but lets not worry about that at this
+          // point.
+        }
+      }
+
+      // Does menu fit to the right?
+      if (x + menuRect.width > bodyRect.width) {
+        // Does menu fit to the left?
+        if (x - menuRect.width >= 0) {
+          x -= menuRect.width;
+        } else {
+          // Menu did not fit to the right nor to the left.
+          x = 0;
+          // We could resize the menu here but lets not worry about that at this
+          // point.
+        }
       }
 
       menu.style.left = x + 'px';
