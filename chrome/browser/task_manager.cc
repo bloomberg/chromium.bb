@@ -260,10 +260,12 @@ std::pair<int, int> TaskManagerModel::GetGroupRangeForResource(int index)
   if (group->size() == 1) {
     return std::make_pair(index, 1);
   } else {
-    ResourceList::const_iterator iter =
-        std::find(resources_.begin(), resources_.end(), (*group)[0]);
-    DCHECK(iter != resources_.end());
-    return std::make_pair(iter - resources_.begin(), group->size());
+    for (size_t i = index; i >= 0; --i) {
+      if (resources_[i] == (*group)[0])
+        return std::make_pair(i, group->size());
+    }
+    NOTREACHED();
+    return std::make_pair(-1, -1);
   }
 }
 
@@ -394,8 +396,6 @@ bool TaskManagerModel::GetPrivateMemory(int index, size_t* result) const {
   if (!GetProcessMetricsForRow(index, &process_metrics))
     return false;
   *result = process_metrics->GetPrivateBytes();
-  // On Linux (so far) and win XP, this is not supported and returns 0.
-  // Remove with crbug.com/23258
   if (*result == 0)
     return false;
   return true;
