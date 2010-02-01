@@ -22,17 +22,17 @@
 // to a no-op, because pageActions are not yet hooked up in the test browser.
 @interface ExtensionInstalledBubbleControllerForTest :
     ExtensionInstalledBubbleController {
-  }
+}
 
-  // Do nothing, because browser window is not set up with page actions
-  // for unit testing.
+// Do nothing, because browser window is not set up with page actions
+// for unit testing.
 - (void)removePageActionPreview;
 
 @end
 
 @implementation ExtensionInstalledBubbleControllerForTest
 
-  -(void)removePageActionPreview { }
+- (void)removePageActionPreview { }
 
 @end
 
@@ -112,19 +112,21 @@ class ExtensionInstalledBubbleControllerTest : public CocoaTest {
   // Required to initialize the extension installed bubble.
   Browser* browser_;  // weak, owned by BrowserTestHelper.
 
+  // Skeleton extension to be tested; reinitialized for each test.
+  scoped_ptr<Extension> extension_;
+
   // The icon_ to be loaded into the bubble window.
   SkBitmap icon_;
 };
 
 // Confirm that window sizes are set correctly for a page action extension.
 TEST_F(ExtensionInstalledBubbleControllerTest, PageActionTest) {
-  scoped_ptr<Extension> extension;
-  extension.reset(
+  extension_.reset(
       CreateExtension(extension_installed_bubble::kPageAction));
   ExtensionInstalledBubbleControllerForTest* controller =
       [[ExtensionInstalledBubbleControllerForTest alloc]
           initWithParentWindow:window_
-                     extension:extension.get()
+                     extension:extension_.get()
                        browser:browser_
                           icon:icon_];
   EXPECT_TRUE(controller);
@@ -162,13 +164,12 @@ TEST_F(ExtensionInstalledBubbleControllerTest, PageActionTest) {
 }
 
 TEST_F(ExtensionInstalledBubbleControllerTest, BrowserActionTest) {
-  scoped_ptr<Extension> extension;
-  extension.reset(
+  extension_.reset(
       CreateExtension(extension_installed_bubble::kBrowserAction));
   ExtensionInstalledBubbleControllerForTest* controller =
       [[ExtensionInstalledBubbleControllerForTest alloc]
           initWithParentWindow:window_
-                     extension:extension.get()
+                     extension:extension_.get()
                        browser:browser_
                           icon:icon_];
   EXPECT_TRUE(controller);
