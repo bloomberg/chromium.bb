@@ -44,7 +44,11 @@ if [ "X$DEPOT_TOOLS_UPDATE" != "X0" -a -e "$base_dir/.git" ]
 then
   cd $base_dir
   test_git_svn
-  git svn rebase -q -q
+  # work around a git-svn --quiet bug
+  OUTPUT=`git svn rebase -q -q`
+  if [[ ! "$OUTPUT" =~ Current.branch ]]; then
+    echo $OUTPUT
+  fi
   cd - > /dev/null
 fi
 
