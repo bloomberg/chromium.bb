@@ -9,6 +9,8 @@
 
 #include <algorithm>
 
+#include "app/clipboard/clipboard.h"
+#include "app/clipboard/scoped_clipboard_writer.h"
 #include "app/gfx/font.h"
 #include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
@@ -18,6 +20,7 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_model.h"
 #include "chrome/browser/autocomplete/autocomplete_popup_view_gtk.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/gtk/view_id_util.h"
@@ -27,6 +30,7 @@
 #include "chrome/common/notification_service.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
+#include "net/base/escape.h"
 
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/location_bar_view.h"
@@ -1094,6 +1098,40 @@ void AutocompleteEditViewGtk::HandleCopyOrCutClipboard() {
   DCHECK(clipboard);
   if (!clipboard)
     return;
+
+  GURL url;
+  if (IsSelectAll() && model_->GetURLForText(GetText(), &url)) {
+    // If the whole control is selected and the selected text is a valid URL,
+    // we assume the user is trying to copy a URL and write this to the
+    // clipboard as a hyperlink.
+    ScopedClipboardWriter scw(g_browser_process->clipboard());
+    string16 text16(WideToUTF16(GetText()));
+    string16 url_spec16(UTF8ToUTF16(url.spec()));
+    if (!model_->user_input_in_progress() &&
+        (url.SchemeIs("http") || url.SchemeIs("https"))) {
+      // If the scheme is http or https and the user isn't editing,
+      // we should copy the true URL instead of the (unescaped) display
+      // string to avoid encoding and escaping issues when pasting this text
+      // elsewhere.
+      scw.WriteText(url_spec16);
+    } else {
+      scw.WriteText(text16);
+    }
+
+    scw.WriteHyperlink(UTF16ToUTF8(EscapeForHTML(text16)), url.spec());
+
+    // Update PRIMARY selection if it is not owned by the text_buffer.
+    if (gtk_clipboard_get_owner(clipboard) != G_OBJECT(text_buffer_)) {
+      std::string utf8_text(UTF16ToUTF8(text16));
+      gtk_clipboard_set_text(clipboard, utf8_text.c_str(), utf8_text.length());
+    }
+
+    // Stop propagating the signal.
+    static guint signal_id =
+        g_signal_lookup("copy-clipboard", GTK_TYPE_TEXT_VIEW);
+    g_signal_stop_emission(text_view_, signal_id, 0);
+    return;
+  }
 
   // Passing gtk_text_buffer_copy_clipboard() a text buffer that already owns
   // the clipboard that's being updated clears the highlighted text, which we
