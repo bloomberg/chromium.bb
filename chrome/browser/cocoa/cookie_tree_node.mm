@@ -15,15 +15,7 @@
   if ((self = [super init])) {
     DCHECK(node);
     treeNode_ = node;
-
-    const int childCount = node->GetChildCount();
-    children_.reset([[NSMutableArray alloc] initWithCapacity:childCount]);
-    for (int i = 0; i < childCount; ++i) {
-      CookieTreeNode* child = node->GetChild(i);
-      scoped_nsobject<CocoaCookieTreeNode> childNode(
-          [[CocoaCookieTreeNode alloc] initWithNode:child]);
-      [children_ addObject:childNode.get()];
-    }
+    isLeaf_ = (node->GetChildCount() == 0);
 
     [self rebuild];
   }
@@ -67,7 +59,7 @@
 }
 
 - (BOOL)isLeaf {
-  return ([children_ count] == 0);
+  return isLeaf_;
 }
 
 - (NSString*)title {
@@ -75,6 +67,16 @@
 }
 
 - (NSMutableArray*)children {
+  if (!children_.get()) {
+    const int childCount = treeNode_->GetChildCount();
+    children_.reset([[NSMutableArray alloc] initWithCapacity:childCount]);
+    for (int i = 0; i < childCount; ++i) {
+      CookieTreeNode* child = treeNode_->GetChild(i);
+      scoped_nsobject<CocoaCookieTreeNode> childNode(
+          [[CocoaCookieTreeNode alloc] initWithNode:child]);
+      [children_ addObject:childNode.get()];
+    }
+  }
   return children_.get();
 }
 

@@ -306,6 +306,13 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
       children = [item childNodes];
       DCHECK_EQ([children count], 1U);
       [outlineView expandItem:[children lastObject]];
+      // Select the first node in that child set.
+      NSTreeNode* folderChild = [children lastObject];
+      if ([[folderChild childNodes] count] > 0) {
+        NSTreeNode* firstCookieChild =
+            [[folderChild childNodes] objectAtIndex:0];
+        [treeController_ setSelectionIndexPath:[firstCookieChild indexPath]];
+      }
     }
   }
 }

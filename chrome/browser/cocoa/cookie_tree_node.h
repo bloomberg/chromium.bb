@@ -12,6 +12,8 @@
 @interface CocoaCookieTreeNode : NSObject {
   scoped_nsobject<NSString> title_;
   scoped_nsobject<NSMutableArray> children_;
+  // We lazily create children, so we need to know if we are a leaf.
+  BOOL isLeaf_;
 
   // The platform-independent model node.
   CookieTreeNode* treeNode_;  // weak
@@ -39,7 +41,7 @@
 // Getters.
 - (NSString*)title;
 // |-children| is mutable so that the CookiesTreeModelObserverBridge can
-// operate on the children.
+// operate on the children. Note that this lazily creates children.
 - (NSMutableArray*)children;
 - (TreeModelNode*)treeNode;
 

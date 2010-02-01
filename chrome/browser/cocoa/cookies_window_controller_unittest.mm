@@ -54,7 +54,7 @@
 @end
 @implementation CocoaCookieTreeNode (UglyHacks)
 - (NSMutableArray*)childs {
-  return children_.get();
+  return (NSMutableArray*)[self children];
 }
 @end
 
