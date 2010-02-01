@@ -15,20 +15,17 @@ struct NotificationRegistrar::Record {
   NotificationObserver* observer;
   NotificationType type;
   NotificationSource source;
+  ChromeThread::ID thread_id;
 };
 
 bool NotificationRegistrar::Record::operator==(const Record& other) const {
   return observer == other.observer &&
          type == other.type &&
          source == other.source;
+  // thread_id is for debugging purpose and thus not compared here.
 }
 
 NotificationRegistrar::NotificationRegistrar() {
-  if (!ChromeThread::GetCurrentThreadIdentifier(&thread_id_)) {
-    // If we are not created in well known thread, GetCurrentThreadIdentifier
-    // fails. Assign thread_id_ to an ID not used.
-    thread_id_ = ChromeThread::ID_COUNT;
-  }
 }
 
 NotificationRegistrar::~NotificationRegistrar() {
@@ -38,20 +35,11 @@ NotificationRegistrar::~NotificationRegistrar() {
 void NotificationRegistrar::Add(NotificationObserver* observer,
                                 NotificationType type,
                                 const NotificationSource& source) {
-  Record record = { observer, type, source };
+  Record record = { observer, type, source, GetCurrentThreadIdentifier() };
+
   DCHECK(std::find(registered_.begin(), registered_.end(), record) ==
          registered_.end()) << "Duplicate registration.";
   registered_.push_back(record);
-
-  if (ChromeThread::IsWellKnownThread(thread_id_)) {
-    if (!ChromeThread::CurrentlyOn(thread_id_)) {
-      // We are created on a well known thread, but this function is called
-      // on a different thread. This could be a bug, or maybe the object is
-      // passed around.
-      // To be safe, reset thread_id_ so we don't call CHECK during remove.
-      thread_id_ = ChromeThread::ID_COUNT;
-    }
-  }
 
   NotificationService::current()->AddObserver(observer, type, source);
 }
@@ -67,9 +55,9 @@ void NotificationRegistrar::Remove(NotificationObserver* observer,
         type.value << " from list of size " << registered_.size() << ".";
     return;
   }
-  registered_.erase(found);
+  CheckCalledOnValidWellKnownThread(found->thread_id);
 
-  CheckCalledOnValidWellKnownThread();
+  registered_.erase(found);
 
   // This can be NULL if our owner outlives the NotificationService, e.g. if our
   // owner is a Singleton.
@@ -88,13 +76,13 @@ void NotificationRegistrar::RemoveAll() {
   if (registered_.empty())
     return;
 
-  CheckCalledOnValidWellKnownThread();
 
   // This can be NULL if our owner outlives the NotificationService, e.g. if our
   // owner is a Singleton.
   NotificationService* service = NotificationService::current();
   if (service) {
     for (size_t i = 0; i < registered_.size(); i++) {
+      CheckCalledOnValidWellKnownThread(registered_[i].thread_id);
       service->RemoveObserver(registered_[i].observer,
                               registered_[i].type,
                               registered_[i].source);
@@ -107,8 +95,19 @@ bool NotificationRegistrar::IsEmpty() const {
   return registered_.empty();
 }
 
-void NotificationRegistrar::CheckCalledOnValidWellKnownThread() {
-  if (ChromeThread::IsWellKnownThread(thread_id_)) {
-    CHECK(ChromeThread::CurrentlyOn(thread_id_));
+ChromeThread::ID NotificationRegistrar::GetCurrentThreadIdentifier() {
+  ChromeThread::ID thread_id;
+  if (!ChromeThread::GetCurrentThreadIdentifier(&thread_id)) {
+    // If we are not created in well known thread, GetCurrentThreadIdentifier
+    // fails. Assign thread_id to an ID not used.
+    thread_id = ChromeThread::ID_COUNT;
+  }
+  return thread_id;
+}
+
+void NotificationRegistrar::CheckCalledOnValidWellKnownThread(
+    ChromeThread::ID thread_id) {
+  if (ChromeThread::IsWellKnownThread(thread_id)) {
+    CHECK(ChromeThread::CurrentlyOn(thread_id));
   }
 }

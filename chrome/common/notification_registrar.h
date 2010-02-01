@@ -40,7 +40,8 @@ class NotificationRegistrar {
   bool IsEmpty() const;
 
  private:
-  void CheckCalledOnValidWellKnownThread();
+  ChromeThread::ID GetCurrentThreadIdentifier();
+  void CheckCalledOnValidWellKnownThread(ChromeThread::ID thread_id);
 
   struct Record;
 
@@ -52,9 +53,6 @@ class NotificationRegistrar {
 
   // Lists all notifications we're currently registered for.
   RecordVector registered_;
-
-  // The thread creating this object.
-  ChromeThread::ID thread_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NotificationRegistrar);
 };
