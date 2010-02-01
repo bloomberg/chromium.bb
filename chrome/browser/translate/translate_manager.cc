@@ -96,6 +96,17 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
     return;
   }
 
+  // If we already have an "after translate" infobar, it sometimes might be
+  // sticky when running in frames.  So we need to proactively remove any
+  // translate related infobars as they would prevent any new infobar from
+  // showing. (As TabContents will not add an infobar if there is already one
+  // showing equal to the one being added.)
+  for (int i = 0; i < tab->infobar_delegate_count(); ++i) {
+    InfoBarDelegate* info_bar = tab->GetInfoBarDelegateAt(i);
+    if (info_bar->AsTranslateInfoBarDelegate())
+      tab->RemoveInfoBar(info_bar);
+  }
+
   // Prompts the user if he/she wants the page translated.
   tab->AddInfoBar(new BeforeTranslateInfoBarDelegate(tab, prefs,
                                                      entry->url(),
