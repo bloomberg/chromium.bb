@@ -28,6 +28,7 @@
             'src/filesystem_dispatcher.h',
             'src/filesystem_policy.cc',
             'src/filesystem_policy.h',
+            'src/interceptors.h',
             'src/internal_types.h',
             'src/ipc_tags.h',
             'src/job.cc',
@@ -57,7 +58,6 @@
             'src/registry_dispatcher.h',
             'src/registry_policy.cc',
             'src/registry_policy.h',
-            'src/resolver.cc',
             'src/resolver.h',
             'src/restricted_token_utils.cc',
             'src/restricted_token_utils.h',
@@ -207,6 +207,7 @@
             'src/process_thread_interception.h',
             'src/registry_interception.cc',
             'src/registry_interception.h',
+            'src/resolver.cc',
             'src/service_resolver.cc',
             'src/sharedmem_ipc_client.cc',
             'src/sharedmem_ipc_client.h',
@@ -265,6 +266,9 @@
           'msvs_guid': 'BE3468E6-B314-4310-B449-6FC0C52EE155',
           'sources': [
             # Files that are used by the 64-bit version of Windows sandbox only.
+            'src/interceptors_64.cc',
+            'src/interceptors_64.h',
+            'src/resolver_64.cc',
             'src/service_resolver_64.cc',
           ],
           'include_dirs': [

@@ -36,7 +36,7 @@ class ResolverThunkTest : public T {
                         const char* interceptor_name,
                         const void* interceptor_entry_point,
                         void* thunk_storage,
-                        uint32 storage_bytes) {
+                        size_t storage_bytes) {
     NTSTATUS ret = STATUS_SUCCESS;
     ret = ResolverThunk::Init(target_module, interceptor_module, target_name,
                               interceptor_name, interceptor_entry_point,
@@ -86,7 +86,7 @@ NTSTATUS PatchNtdll(const char* function, bool relaxed) {
   void* function_entry = resolver;
   size_t thunk_size = resolver->GetThunkSize();
   scoped_array<char> thunk(new char[thunk_size]);
-  uint32 used;
+  size_t used;
 
   NTSTATUS ret = resolver->Setup(ntdll_base, NULL, function, NULL,
                                  function_entry, thunk.get(), thunk_size,
@@ -125,14 +125,16 @@ TEST(ServiceResolverTest, PatchesServices) {
 }
 
 TEST(ServiceResolverTest, FailsIfNotService) {
-  NTSTATUS ret = PatchNtdll("RtlUlongByteSwap", false);
-  EXPECT_NE(STATUS_SUCCESS, ret);
+#if !defined(_WIN64)
+  EXPECT_NE(STATUS_SUCCESS, PatchNtdll("RtlUlongByteSwap", false));
+#endif
 
-  ret = PatchNtdll("LdrLoadDll", false);
-  EXPECT_NE(STATUS_SUCCESS, ret);
+  EXPECT_NE(STATUS_SUCCESS, PatchNtdll("LdrLoadDll", false));
 }
 
 TEST(ServiceResolverTest, PatchesPatchedServices) {
+// We don't support "relaxed mode" for Win64 apps.
+#if !defined(_WIN64)
   NTSTATUS ret = PatchNtdll("NtClose", true);
   EXPECT_EQ(STATUS_SUCCESS, ret) << "NtClose, last error: " << ::GetLastError();
 
@@ -147,6 +149,7 @@ TEST(ServiceResolverTest, PatchesPatchedServices) {
   ret = PatchNtdll("NtMapViewOfSection", true);
   EXPECT_EQ(STATUS_SUCCESS, ret) << "NtMapViewOfSection, last error: " <<
     ::GetLastError();
+#endif
 }
 
 }  // namespace

@@ -2,50 +2,30 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "sandbox/wow_helper/service64_resolver.h"
+#include "sandbox/src/service_resolver.h"
 
+#include "base/logging.h"
+#include "base/pe_image.h"
 #include "base/scoped_ptr.h"
-#include "sandbox/wow_helper/target_code.h"
 
 namespace {
 #pragma pack(push, 1)
 
-const BYTE kMovEax = 0xB8;
-const BYTE kMovEdx = 0xBA;
-const USHORT kCallPtrEdx = 0x12FF;
-const BYTE kRet = 0xC2;
-const BYTE kNop = 0x90;
-const USHORT kJmpEdx = 0xE2FF;
-const USHORT kXorEcx = 0xC933;
-const ULONG kLeaEdx = 0x0424548D;
-const ULONG kCallFs1 = 0xC015FF64;
-const ULONG kCallFs2Ret = 0xC2000000;
-const BYTE kPopEdx = 0x5A;
-const BYTE kPushEdx = 0x52;
-const BYTE kPush32 = 0x68;
-
 const ULONG kMmovR10EcxMovEax = 0xB8D18B4C;
 const USHORT kSyscall = 0x050F;
 const BYTE kRetNp = 0xC3;
-const BYTE kPad = 0x66;
-const USHORT kNop16 = 0x9066;
-const BYTE kRelJmp = 0xE9;
-
-const ULONG kXorRaxMovEax = 0xB8C03148;
-const ULONG kSaveRcx = 0x10488948;
-const ULONG kMovRcxRaxJmp = 0xE9C88B48;
 
 // Service code for 64 bit systems.
 struct ServiceEntry {
-  // this struct contains roughly the following code:
-  // mov     r10,rcx
-  // mov     eax,52h
-  // syscall
-  // ret
-  // xchg    ax,ax
-  // xchg    ax,ax
+  // This struct contains roughly the following code:
+  // 00 mov     r10,rcx
+  // 03 mov     eax,52h
+  // 08 syscall
+  // 0a ret
+  // 0b xchg    ax,ax
+  // 0e xchg    ax,ax
 
-  ULONG mov_r10_ecx_mov_eax;  // = 4C 8B D1 B8
+  ULONG mov_r10_rcx_mov_eax;  // = 4C 8B D1 B8
   ULONG service_id;
   USHORT syscall;             // = 0F 05
   BYTE ret;                   // = C3
@@ -54,49 +34,9 @@ struct ServiceEntry {
   USHORT xchg_ax_ax2;         // = 66 90
 };
 
-struct Redirected {
-  // this struct contains roughly the following code:
-  // jmp    relative_32
-  // xchg   ax,ax       // 3 byte nop
-
-  Redirected() {
-    jmp = kRelJmp;
-    relative = 0;
-    pad = kPad;
-    xchg_ax_ax = kNop16;
-  };
-  BYTE jmp;             // = E9
-  ULONG relative;
-  BYTE pad;             // = 66
-  USHORT xchg_ax_ax;    // = 66 90
-};
-
-struct InternalThunk {
-  // this struct contains roughly the following code:
-  // xor rax,rax
-  // mov eax, 0x00080000              // Thunk storage.
-  // mov [rax]PatchInfo.service, rcx  // Save first argument.
-  // mov rcx, rax
-  // jmp relative_to_interceptor
-
-  InternalThunk() {
-    xor_rax_mov_eax = kXorRaxMovEax;
-    patch_info = 0;
-    save_rcx = kSaveRcx;
-    mov_rcx_rax_jmp = kMovRcxRaxJmp;
-    relative = 0;
-  };
-  ULONG xor_rax_mov_eax;  // = 48 31 C0 B8
-  ULONG patch_info;
-  ULONG save_rcx;         // = 48 89 48 10
-  ULONG mov_rcx_rax_jmp;  // = 48 8b c8 e9
-  ULONG relative;
-};
-
+// We don't have an internal thunk for x64.
 struct ServiceFullThunk {
-  sandbox::PatchInfo patch_info;
   ServiceEntry original;
-  InternalThunk internal_thunk;
 };
 
 #pragma pack(pop)
@@ -131,35 +71,18 @@ bool WriteProtectedChildMemory(HANDLE child_process,
   return ok;
 }
 
-// Get pointers to the functions that we need from ntdll.dll.
-NTSTATUS ResolveNtdll(sandbox::PatchInfo* patch_info) {
-  wchar_t* ntdll_name = L"ntdll.dll";
-  HMODULE ntdll = ::GetModuleHandle(ntdll_name);
-  if (!ntdll)
-    return STATUS_PROCEDURE_NOT_FOUND;
-
-  void* signal = ::GetProcAddress(ntdll, "NtSignalAndWaitForSingleObject");
-  if (!signal)
-    return STATUS_PROCEDURE_NOT_FOUND;
-
-  patch_info->signal_and_wait =
-      reinterpret_cast<NtSignalAndWaitForSingleObjectFunction>(signal);
-
-  return STATUS_SUCCESS;
-}
-
 };  // namespace
 
 namespace sandbox {
 
-NTSTATUS Service64ResolverThunk::Setup(const void* target_module,
-                                       const void* interceptor_module,
-                                       const char* target_name,
-                                       const char* interceptor_name,
-                                       const void* interceptor_entry_point,
-                                       void* thunk_storage,
-                                       size_t storage_bytes,
-                                       size_t* storage_used) {
+NTSTATUS ServiceResolverThunk::Setup(const void* target_module,
+                                     const void* interceptor_module,
+                                     const char* target_name,
+                                     const char* interceptor_name,
+                                     const void* interceptor_entry_point,
+                                     void* thunk_storage,
+                                     size_t storage_bytes,
+                                     size_t* storage_used) {
   NTSTATUS ret = Init(target_module, interceptor_module, target_name,
                       interceptor_name, interceptor_entry_point,
                       thunk_storage, storage_bytes);
@@ -182,7 +105,7 @@ NTSTATUS Service64ResolverThunk::Setup(const void* target_module,
   return ret;
 }
 
-NTSTATUS Service64ResolverThunk::ResolveInterceptor(
+NTSTATUS ServiceResolverThunk::ResolveInterceptor(
     const void* interceptor_module,
     const char* interceptor_name,
     const void** address) {
@@ -194,13 +117,15 @@ NTSTATUS Service64ResolverThunk::ResolveInterceptor(
 
 // In this case all the work is done from the parent, so resolve is
 // just a simple GetProcAddress.
-NTSTATUS Service64ResolverThunk::ResolveTarget(const void* module,
+NTSTATUS ServiceResolverThunk::ResolveTarget(const void* module,
                                              const char* function_name,
                                              void** address) {
+  DCHECK(address);
   if (NULL == module)
     return STATUS_UNSUCCESSFUL;
 
-  *address = ::GetProcAddress(bit_cast<HMODULE>(module), function_name);
+  PEImage module_image(module);
+  *address = module_image.GetProcAddress(function_name);
 
   if (NULL == *address)
     return STATUS_UNSUCCESSFUL;
@@ -208,11 +133,11 @@ NTSTATUS Service64ResolverThunk::ResolveTarget(const void* module,
   return STATUS_SUCCESS;
 }
 
-size_t Service64ResolverThunk::GetThunkSize() const {
+size_t ServiceResolverThunk::GetThunkSize() const {
   return sizeof(ServiceFullThunk);
 }
 
-bool Service64ResolverThunk::IsFunctionAService(void* local_thunk) const {
+bool ServiceResolverThunk::IsFunctionAService(void* local_thunk) const {
   ServiceEntry function_code;
   SIZE_T read;
   if (!::ReadProcessMemory(process_, target_, &function_code,
@@ -222,65 +147,32 @@ bool Service64ResolverThunk::IsFunctionAService(void* local_thunk) const {
   if (sizeof(function_code) != read)
     return false;
 
-  if (kMmovR10EcxMovEax != function_code.mov_r10_ecx_mov_eax ||
+  if (kMmovR10EcxMovEax != function_code.mov_r10_rcx_mov_eax ||
       kSyscall != function_code.syscall || kRetNp != function_code.ret)
     return false;
 
-  // Save the verified code
+  // Save the verified code.
   memcpy(local_thunk, &function_code, sizeof(function_code));
 
   return true;
 }
 
-NTSTATUS Service64ResolverThunk::PerformPatch(void* local_thunk,
-                                              void* remote_thunk) {
+NTSTATUS ServiceResolverThunk::PerformPatch(void* local_thunk,
+                                            void* remote_thunk) {
   ServiceFullThunk* full_local_thunk = reinterpret_cast<ServiceFullThunk*>(
                                            local_thunk);
   ServiceFullThunk* full_remote_thunk = reinterpret_cast<ServiceFullThunk*>(
-                                           remote_thunk);
-
-  // If the source or target are above 4GB we cannot do this relative jump.
-  if (reinterpret_cast<ULONG_PTR>(full_remote_thunk) >
-      static_cast<ULONG_PTR>(ULONG_MAX))
-    return STATUS_CONFLICTING_ADDRESSES;
-
-  if (reinterpret_cast<ULONG_PTR>(target_) > static_cast<ULONG_PTR>(ULONG_MAX))
-    return STATUS_CONFLICTING_ADDRESSES;
+                                            remote_thunk);
 
   // Patch the original code.
-  Redirected local_service;
-  Redirected* remote_service = reinterpret_cast<Redirected*>(target_);
-  ULONG_PTR diff = reinterpret_cast<BYTE*>(&full_remote_thunk->internal_thunk) -
-                   &remote_service->pad;
-  local_service.relative = static_cast<ULONG>(diff);
+  ServiceEntry local_service;
+  DCHECK_GE(GetInternalThunkSize(), sizeof(local_service));
+  if (!SetInternalThunk(&local_service, sizeof(local_service), NULL,
+                        interceptor_))
+    return STATUS_UNSUCCESSFUL;
 
-  // Setup the PatchInfo structure.
+  // Copy the local thunk buffer to the child.
   SIZE_T actual;
-  if (!::ReadProcessMemory(process_, remote_thunk, local_thunk,
-                           sizeof(PatchInfo), &actual))
-    return STATUS_UNSUCCESSFUL;
-  if (sizeof(PatchInfo) != actual)
-    return STATUS_UNSUCCESSFUL;
-
-  full_local_thunk->patch_info.orig_MapViewOfSection = reinterpret_cast<
-      NtMapViewOfSectionFunction>(&full_remote_thunk->original);
-  full_local_thunk->patch_info.patch_location = target_;
-  NTSTATUS ret = ResolveNtdll(&full_local_thunk->patch_info);
-  if (!NT_SUCCESS(ret))
-    return ret;
-
-  // Setup the thunk. The jump out is performed from right after the end of the
-  // thunk (full_remote_thunk + 1).
-  InternalThunk my_thunk;
-  ULONG_PTR patch_info = reinterpret_cast<ULONG_PTR>(remote_thunk);
-  my_thunk.patch_info = static_cast<ULONG>(patch_info);
-  diff = reinterpret_cast<const BYTE*>(interceptor_) -
-         reinterpret_cast<BYTE*>(full_remote_thunk + 1);
-  my_thunk.relative = static_cast<ULONG>(diff);
-
-  memcpy(&full_local_thunk->internal_thunk, &my_thunk, sizeof(my_thunk));
-
-  // copy the local thunk buffer to the child
   if (!::WriteProcessMemory(process_, remote_thunk, local_thunk,
                             sizeof(ServiceFullThunk), &actual))
     return STATUS_UNSUCCESSFUL;
@@ -288,12 +180,29 @@ NTSTATUS Service64ResolverThunk::PerformPatch(void* local_thunk,
   if (sizeof(ServiceFullThunk) != actual)
     return STATUS_UNSUCCESSFUL;
 
-  // and now change the function to intercept, on the child
-  if (!::WriteProtectedChildMemory(process_, target_, &local_service,
+  // And now change the function to intercept, on the child.
+  if (NULL != ntdll_base_) {
+    // Running a unit test.
+    if (!::WriteProcessMemory(process_, target_, &local_service,
+                              sizeof(local_service), &actual))
+      return STATUS_UNSUCCESSFUL;
+  } else {
+    if (!WriteProtectedChildMemory(process_, target_, &local_service,
                                    sizeof(local_service)))
-    return STATUS_UNSUCCESSFUL;
+      return STATUS_UNSUCCESSFUL;
+  }
 
   return STATUS_SUCCESS;
+}
+
+bool Wow64ResolverThunk::IsFunctionAService(void* local_thunk) const {
+  NOTREACHED();
+  return false;
+}
+
+bool Win2kResolverThunk::IsFunctionAService(void* local_thunk) const {
+  NOTREACHED();
+  return false;
 }
 
 }  // namespace sandbox
