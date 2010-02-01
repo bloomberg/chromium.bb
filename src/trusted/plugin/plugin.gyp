@@ -145,9 +145,10 @@
           'target_name': 'npGoogleNaClPluginChrome',
           'type': 'static_library',
           'dependencies': [
-            '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util_chrome',
             '<(DEPTH)/native_client/src/shared/npruntime/npruntime.gyp:google_nacl_npruntime',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
+            '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util_chrome',
+            '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:expiration',
             '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
           ],
           'sources': [
