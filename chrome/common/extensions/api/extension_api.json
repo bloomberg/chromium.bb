@@ -901,8 +901,7 @@
               "code": {"type": "string", "optional": true, "description": "JavaScript code to execute."},
               "file": {"type": "string", "optional": true, "description": "JavaScript file to execute."},
               "allFrames": {"type": "boolean", "optional": true, "description": "If allFrames is true, this function injects script into all frames of current page. By default, it's false and only inject script into top main frame."}
-            },
-            "optional": true
+            }
           },
           {
             "type": "function",
@@ -927,8 +926,7 @@
               "code": {"type": "string", "optional": true, "description": "CSS code to be injected."},
               "file": {"type": "string", "optional": true, "description": "CSS file to be injected."},
               "allFrames": {"type": "boolean", "optional": true, "description": "If allFrames is true, this function injects css text into all frames of current page. By default, it's false and only inject css text into top main frame."}
-            },
-            "optional": true
+            }
           },
           {
             "type": "function",
