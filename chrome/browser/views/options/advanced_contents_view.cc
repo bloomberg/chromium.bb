@@ -534,7 +534,8 @@ void PrivacySection::ButtonPressed(
         g_browser_process->resource_dispatcher_host()->safe_browsing_service();
     MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
         safe_browsing_service, &SafeBrowsingService::OnEnable, enabled));
-  } else if (sender == reporting_enabled_checkbox_) {
+  } else if (reporting_enabled_checkbox_ &&
+             (sender == reporting_enabled_checkbox_)) {
     bool enabled = reporting_enabled_checkbox_->checked();
     UserMetricsRecordAction(enabled ?
                                 "Options_MetricsReportingCheckbox_Enable" :
@@ -567,15 +568,17 @@ void PrivacySection::LinkActivated(views::Link* source, int event_flags) {
 }
 
 void PrivacySection::Layout() {
-  // We override this to try and set the width of the enable logging checkbox
-  // to the width of the parent less some fudging since the checkbox's
-  // preferred size calculation code is dependent on its width, and if we don't
-  // do this then it will return 0 as a preferred width when GridLayout (called
-  // from View::Layout) tries to access it.
-  views::View* parent = GetParent();
-  if (parent && parent->width()) {
-    const int parent_width = parent->width();
-    reporting_enabled_checkbox_->SetBounds(0, 0, parent_width - 20, 0);
+  if (reporting_enabled_checkbox_) {
+    // We override this to try and set the width of the enable logging checkbox
+    // to the width of the parent less some fudging since the checkbox's
+    // preferred size calculation code is dependent on its width, and if we
+    // don't do this then it will return 0 as a preferred width when GridLayout
+    // (called from View::Layout) tries to access it.
+    views::View* parent = GetParent();
+    if (parent && parent->width()) {
+      const int parent_width = parent->width();
+      reporting_enabled_checkbox_->SetBounds(0, 0, parent_width - 20, 0);
+    }
   }
   View::Layout();
 }
@@ -601,14 +604,12 @@ void PrivacySection::InitControlLayout() {
   enable_safe_browsing_checkbox_ = new views::Checkbox(
       l10n_util::GetString(IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION));
   enable_safe_browsing_checkbox_->set_listener(this);
+#if defined(GOOGLE_CHROME_BUILD)
   reporting_enabled_checkbox_ = new views::Checkbox(
       l10n_util::GetString(IDS_OPTIONS_ENABLE_LOGGING));
   reporting_enabled_checkbox_->SetMultiLine(true);
   reporting_enabled_checkbox_->set_listener(this);
-#if defined(GOOGLE_CHROME_BUILD)
   reporting_enabled_checkbox_->SetVisible(true);
-#else
-  reporting_enabled_checkbox_->SetVisible(false);
 #endif
   learn_more_link_ = new views::Link(l10n_util::GetString(IDS_LEARN_MORE));
   learn_more_link_->SetController(this);
@@ -651,8 +652,10 @@ void PrivacySection::InitControlLayout() {
   AddWrappingCheckboxRow(layout, enable_safe_browsing_checkbox_,
                          single_column_view_set_id, false);
   // The "Help make Google Chrome better" checkbox.
-  AddLeadingControl(layout, reporting_enabled_checkbox_,
-                    single_column_view_set_id, false);
+  if (reporting_enabled_checkbox_) {
+    AddLeadingControl(layout, reporting_enabled_checkbox_,
+                      single_column_view_set_id, false);
+  }
 
   // Init member prefs so we can update the controls if prefs change.
   alternate_error_pages_.Init(prefs::kAlternateErrorPagesEnabled,
@@ -681,7 +684,8 @@ void PrivacySection::NotifyPrefChanged(const std::wstring* pref_name) {
   }
   if (!pref_name || *pref_name == prefs::kSafeBrowsingEnabled)
     enable_safe_browsing_checkbox_->SetChecked(safe_browsing_.GetValue());
-  if (!pref_name || *pref_name == prefs::kMetricsReportingEnabled) {
+  if (reporting_enabled_checkbox_ &&
+      (!pref_name || *pref_name == prefs::kMetricsReportingEnabled)) {
     reporting_enabled_checkbox_->SetChecked(
         enable_metrics_recording_.GetValue());
     ResolveMetricsReportingEnabled();
@@ -689,6 +693,7 @@ void PrivacySection::NotifyPrefChanged(const std::wstring* pref_name) {
 }
 
 void PrivacySection::ResolveMetricsReportingEnabled() {
+  DCHECK(reporting_enabled_checkbox_);
   bool enabled = reporting_enabled_checkbox_->checked();
 
   enabled = OptionsUtil::ResolveMetricsReportingEnabled(enabled);
