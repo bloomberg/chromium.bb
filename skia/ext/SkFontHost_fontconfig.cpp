@@ -132,8 +132,6 @@ SkTypeface* SkFontHost::CreateTypeface(const SkTypeface* familyFace,
         }
     } else if (familyName) {
         resolved_family_name = familyName;
-    } else {
-        return NULL;
     }
 
     bool bold = style & SkTypeface::kBold;
