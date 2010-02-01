@@ -160,7 +160,8 @@ var RunAllTests = function() {
     }
   }
   if (0 == failing_count) {
-    // All tests passed -- set the selenium magic to success here.
+    // Set the magic Selenium variable to signal success.
+    document.cookie = 'status=OK';
   }
 }
 
@@ -171,35 +172,11 @@ var EnqueueAndRunTests = function() {
   // Run them all.
   RunAllTests();
 }
-
-// Before running tests we need to ensure the Native Client modules are loaded.
-var startupTimeout;
-
-var RunTestsAfterLoad = function() {
-  // Initialize the selenium magic to failure here.
-  if (server.__moduleReady) {
-    clearTimeout(startupTimeout);
-    EnqueueAndRunTests();
-  } else {
-    if (server.__moduleReady == undefined) {
-      alert('The Native Client plugin was unable to load');
-      return;
-    }
-    startupTimeout = setTimeout(RunTestsAfterLoad, 100);
-  }
-}
-
-// Init is called when the document has completed loading.
-var Init = function(boxsize) {
-  // Remember object to make access to the elements easier.
-  server = document.getElementById('nacl_server');
-  // Run the tests after ensuring loads have completed.
-  RunTestsAfterLoad();
-}
       -->
     </script>
   </head>
-  <body onload="Init();">
+  <body onload="nacllib.waitForModulesAndRunTests();"
+        onunload="nacllib.cleanUp();" >
     <h1> SRPC Plugin Properties Test </h1>
     <table cellspacing=5 cellpadding=5 border=5>
       <tr>
@@ -356,7 +333,31 @@ var Init = function(boxsize) {
       the above tests to spuriously report failure.
     </b>
     </p>
-    <embed type="application/x-nacl-srpc" id="nacl_server"
-            width="0" height="0" src="srpc_nrd_server.nexe" />
+
+    <div id=status>NO-STATUS</div>
+
+    <embed type="application/x-nacl-srpc" id="nacl_server" name="nacl_module"
+            width="0" height="0" src="srpc_test.nexe" />
+
+    <script type="text/javascript" src="nacl_js_lib.js"></script>
+    <script type="text/javascript">
+      //<![CDATA[
+      var nacllib = new NaclLib(document.getElementsByName("nacl_module"),
+                                document.getElementById("status"),
+                                100);
+
+      nacllib.test = function() {
+        server = document.getElementById("nacl_server");
+        EnqueueAndRunTests();
+        if (0 == testQueue.length) {
+          return "No tests run.";
+        } else if (0 != failing_count) {
+          return "Tests failed.";
+        } else {
+          return "";
+        }
+      }
+      //]]>
+    </script>
   </body>
 </html>

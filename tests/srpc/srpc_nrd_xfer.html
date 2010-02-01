@@ -13,6 +13,8 @@
       <!--
 var server = 0;
 var client = 0;
+var num_passing = 0;
+var num_failing = 0;
 
 var GeneralLog = function(str) {
   var output = document.getElementById('GeneralOutput');
@@ -28,8 +30,10 @@ var SetTestResult = function(element_id, result) {
   var element = document.getElementById(element_id);
   if ('pass' == result) {
     element.className = 'pass';
+    ++num_passing;
   } else {
     element.className = 'fail';
+    ++num_failing;
   }
 }
 var SocketAddressNaClToNacl = function() {
@@ -182,37 +186,11 @@ var RunAllTests = function() {
   SharedMemoryNaClToBrowser();
   SharedMemoryNaClToNaCl();
 }
-
-// Before running tests we need to ensure the Native Client modules are loaded.
-var startupTimeout;
-
-var RunTestsAfterLoad = function() {
-  if (client.__moduleReady && server.__moduleReady) {
-    clearTimeout(startupTimeout);
-    RunAllTests();
-  } else {
-    if (client.__moduleReady == undefined ||
-        server.__moduleReady == undefined) {
-      alert('The Native Client plugin was unable to load');
-      return;
-    }
-    GeneralLog('waiting for loads...');
-    startupTimeout = setTimeout(RunTestsAfterLoad, 100);
-  }
-}
-
-// Init is called when the document has completed loading.
-var Init = function(boxsize) {
-  // Remember objects to make access to the elements easier.
-  client = document.getElementById('nacl_client');
-  server = document.getElementById('nacl_server');
-  // Run the tests after ensuring loads have completed.
-  RunTestsAfterLoad();
-}
       -->
     </script>
   </head>
-  <body onload="Init();">
+  <body onload="nacllib.waitForModulesAndRunTests();"
+        onunload="nacllib.cleanUp();" >
     <h1> SRPC Descriptor Passing Test </h1>
     <table border=5 cellpadding=5%
            summary="A three-column table of test results">
@@ -289,9 +267,38 @@ var Init = function(boxsize) {
         <td valign=top id="SharedMemoryOutput"> </td>
       </tr>
     </table>
+
+    <div id=status>NO-STATUS</div>
+
     <embed type="application/x-nacl-srpc" id="nacl_client"
-            width="0" height="0" src="srpc_nrd_client.nexe" />
+           name="nacl_client_module" width="0" height="0"
+           src="srpc_nrd_client.nexe" />
     <embed type="application/x-nacl-srpc" id="nacl_server"
-            width="0" height="0" src="srpc_nrd_server.nexe" />
+           name="nacl_server_module" width="0" height="0"
+           src="srpc_nrd_server.nexe" />
+
+    <script type="text/javascript" src="nacl_js_lib.js"></script>
+    <script type="text/javascript">
+      //<![CDATA[
+      var nacllib = new NaclLib(document.getElementsByName("nacl_client"),
+                                document.getElementById("status"),
+                                100);
+
+      nacllib.test = function() {
+        server = document.getElementById("nacl_server");
+        client = document.getElementById("nacl_client");
+        RunAllTests();
+        if (0 == num_passing && 0 == num_failing) {
+          return "No tests run.";
+        } else if (0 != num_failing) {
+          return "Tests failed.";
+        } else {
+          // Set the magic Selenium variable to signal success.
+          document.cookie = 'status=OK';
+          return "";
+        }
+      }
+      //]]>
+    </script>
   </body>
 </html>

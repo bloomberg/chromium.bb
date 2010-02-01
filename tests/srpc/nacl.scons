@@ -34,32 +34,39 @@ Import('env')
 ######################################################################
 # Simple RPC basic methods tests
 ######################################################################
-env.ComponentProgram('srpc_test.nexe', 'srpc_test.c',
-                     EXTRA_LIBS=['srpc', 'm', 'pthread'])
-env.Publish('srpc_test.nexe', 'run', ['srpc_basic.html',
-                                      'srpcperf.html',
-                                      'srpc_shm.html',
-                                      'srpc_plugin.html'])
+srpc_test_nexe = env.ComponentProgram('srpc_test.nexe', 'srpc_test.c',
+                                      EXTRA_LIBS=['srpc', 'm', 'pthread'])
+env.Publish('srpc_test.nexe', 'run',
+            ['srpc_basic.html', 'srpcperf.html', 'srpc_shm.html',
+             'srpc_plugin.html',
+             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 
 
 
-env.ComponentProgram('srpc_shm.nexe', 'srpc_shm.c',
-                     EXTRA_LIBS=['srpc', 'm', 'pthread'])
-env.Publish('srpc_shm.nexe', 'run', [ 'srpc_shm.html' ])
+srpc_shm_nexe = env.ComponentProgram('srpc_shm.nexe', 'srpc_shm.c',
+                                     EXTRA_LIBS=['srpc', 'm', 'pthread'])
+env.Publish('srpc_shm.nexe', 'run',
+            [ 'srpc_shm.html',
+              env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 
 
 
-env.ComponentProgram('srpc_nrd_server.nexe', 'srpc_nrd_server.c',
-                     EXTRA_LIBS=['srpc', 'm', 'pthread'])
-env.Publish('srpc_nrd_server.nexe', 'run', ['examples.html',
-                                            '_README.txt',
-                                            'srpc_sockaddr.html'])
+srpc_nrd_server_nexe = env.ComponentProgram('srpc_nrd_server.nexe',
+                                            'srpc_nrd_server.c',
+                                            EXTRA_LIBS=['srpc', 'm',
+                                                        'pthread'])
+env.Publish('srpc_nrd_server.nexe', 'run',
+            ['examples.html', '_README.txt', 'srpc_sockaddr.html',
+             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 
 
 
-env.ComponentProgram('srpc_nrd_client.nexe', 'srpc_nrd_client.c',
-                     EXTRA_LIBS=['srpc', 'm', 'pthread'])
-env.Publish('srpc_nrd_client.nexe', 'run', ['srpc_nrd_xfer.html'])
+srpc_nrd_client_nexe = env.ComponentProgram('srpc_nrd_client.nexe',
+                                            'srpc_nrd_client.c',
+                                            EXTRA_LIBS=['srpc', 'm', 'pthread'])
+env.Publish('srpc_nrd_client.nexe', 'run',
+            ['srpc_nrd_xfer.html',
+             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 
 
 
@@ -119,3 +126,62 @@ node = env.CommandSelLdrTestNacl(
     exit_status='1'
     )
 env.AddNodeToTestSuite(node, TEST_SUITES, 'run_srpc_bad_service_test')
+
+# Run the example tests under Selenium.
+BROWSER_TESTS = ['browser_tests']
+node = env.BrowserTester(
+    'srpc_basic_browser_test.out',
+     url='srpc_basic.html',
+     files=[srpc_test_nexe,
+            env.File('srpc_basic.html'),
+            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
+            ],
+     browser='*firefox',
+     )
+env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_srpc_basic_browser_test')
+
+# TODO(msneck): This test fails on opt-mac.
+###node = env.BrowserTester(
+###    'srpc_plugin_browser_test.out',
+###     url='srpc_plugin.html',
+###     files=[srpc_test_nexe,
+###            env.File('srpc_plugin.html'),
+###            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
+###            ],
+###     browser='*firefox',
+###     )
+###env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_srpc_plugin_browser_test')
+
+node = env.BrowserTester(
+    'srpc_sockaddr_browser_test.out',
+     url='srpc_sockaddr.html',
+     files=[srpc_nrd_server_nexe,
+            env.File('srpc_sockaddr.html'),
+            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
+            ],
+     browser='*firefox',
+     )
+env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_srpc_sockaddr_browser_test')
+
+node = env.BrowserTester(
+    'srpc_shm_browser_test.out',
+     url='srpc_shm.html',
+     files=[srpc_shm_nexe,
+            env.File('srpc_shm.html'),
+            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
+            ],
+     browser='*firefox',
+     )
+env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_srpc_shm_browser_test')
+
+node = env.BrowserTester(
+    'srpc_nrd_xfer_browser_test.out',
+     url='srpc_nrd_xfer.html',
+     files=[srpc_nrd_client_nexe,
+            srpc_nrd_server_nexe,
+            env.File('srpc_nrd_xfer.html'),
+            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
+            ],
+     browser='*firefox',
+     )
+env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_srpc_nrd_xfer_browser_test')
