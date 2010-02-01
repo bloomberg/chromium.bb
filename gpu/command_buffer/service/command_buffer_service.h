@@ -33,7 +33,7 @@ class CommandBufferService : public CommandBuffer {
   virtual void DestroyTransferBuffer(int32 id);
   virtual Buffer GetTransferBuffer(int32 handle);
   virtual void SetToken(int32 token);
-  virtual void SetParseError(parse_error::ParseError);
+  virtual void SetParseError(error::Error error);
 
   // Sets a callback that should be posted on another thread whenever the put
   // offset is changed. The callback must not return until some progress has
@@ -56,7 +56,7 @@ class CommandBufferService : public CommandBuffer {
   std::vector<linked_ptr< base::SharedMemory> > registered_objects_;
   std::set<int32> unused_registered_object_elements_;
   int32 token_;
-  parse_error::ParseError error_;
+  error::Error error_;
 };
 
 }  // namespace gpu

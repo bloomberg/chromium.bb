@@ -17,7 +17,7 @@ CommandBufferService::CommandBufferService()
       get_offset_(0),
       put_offset_(0),
       token_(0),
-      error_(parse_error::kParseNoError) {
+      error_(error::kNoError) {
   // Element zero is always NULL.
   registered_objects_.push_back(linked_ptr<SharedMemory>());
 }
@@ -66,7 +66,7 @@ CommandBufferService::State CommandBufferService::GetState() {
 
 CommandBufferService::State CommandBufferService::Flush(int32 put_offset) {
   if (put_offset < 0 || put_offset >= size_) {
-    error_ = gpu::parse_error::kParseOutOfBounds;
+    error_ = gpu::error::kOutOfBounds;
     return GetState();
   }
 
@@ -154,8 +154,8 @@ void CommandBufferService::SetToken(int32 token) {
   token_ = token;
 }
 
-void CommandBufferService::SetParseError(parse_error::ParseError error) {
-  if (error_ == parse_error::kParseNoError) {
+void CommandBufferService::SetParseError(error::Error error) {
+  if (error_ == error::kNoError) {
     error_ = error;
   }
 }

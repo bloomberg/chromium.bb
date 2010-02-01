@@ -1194,7 +1194,7 @@ class TypeHandler(object):
   def WriteServiceImplementation(self, func, file):
     """Writes the service implementation for a command."""
     file.Write(
-        "parse_error::ParseError GLES2DecoderImpl::Handle%s(\n" % func.name)
+        "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
         "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
     if len(func.GetOriginalArgs()) > 0:
@@ -1206,14 +1206,14 @@ class TypeHandler(object):
       last_arg.WriteGetCode(file)
     func.WriteHandlerValidation(file)
     func.WriteHandlerImplementation(file)
-    file.Write("  return parse_error::kParseNoError;\n")
+    file.Write("  return error::kNoError;\n")
     file.Write("}\n")
     file.Write("\n")
 
   def WriteImmediateServiceImplementation(self, func, file):
     """Writes the service implementation for an immediate version of command."""
     file.Write(
-        "parse_error::ParseError GLES2DecoderImpl::Handle%s(\n" % func.name)
+        "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
         "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
     last_arg = func.GetLastOriginalArg()
@@ -1224,7 +1224,7 @@ class TypeHandler(object):
     last_arg.WriteGetCode(file)
     func.WriteHandlerValidation(file)
     func.WriteHandlerImplementation(file)
-    file.Write("  return parse_error::kParseNoError;\n")
+    file.Write("  return error::kNoError;\n")
     file.Write("}\n")
     file.Write("\n")
 
@@ -1258,7 +1258,7 @@ class TypeHandler(object):
       num_invalid_values = arg.GetNumInvalidValues()
       for value_index in range(0, num_invalid_values):
         arg_strings = []
-        parse_result = "kParseNoError"
+        parse_result = "kNoError"
         count = 0
         for arg in func.GetOriginalArgs():
           if count == arg_index:
@@ -1303,7 +1303,7 @@ TEST_F(GLES2DecoderTest, %(name)sValidArgs) {
   SpecializedSetup<%(name)s, 0>();
   %(name)s cmd;
   cmd.Init(%(args)s);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 """
     self.WriteValidUnitTest(func, file, valid_test)
@@ -1314,7 +1314,7 @@ TEST_F(GLES2DecoderTest, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   SpecializedSetup<%(name)s, 0>();
   %(name)s cmd;
   cmd.Init(%(args)s);
-  EXPECT_EQ(parse_error::%(parse_result)s, ExecuteCmd(cmd));
+  EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));
 }
 """
     self.WriteInvalidUnitTest(func, file, invalid_test)
@@ -1653,14 +1653,14 @@ class GENnHandler(TypeHandler):
   def WriteHandlerImplementation (self, func, file):
     """Overrriden from TypeHandler."""
     file.Write("  if (!GenGLObjects<GL%sHelper>(n, %s)) {\n"
-               "    return parse_error::kParseInvalidArguments;\n"
+               "    return error::kInvalidArguments;\n"
                "  }\n" %
                (func.name, func.GetLastOriginalArg().name))
 
   def WriteImmediateHandlerImplementation(self, func, file):
     """Overrriden from TypeHandler."""
     file.Write("  if (!GenGLObjects<GL%sHelper>(n, %s)) {\n"
-               "    return parse_error::kParseInvalidArguments;\n"
+               "    return error::kInvalidArguments;\n"
                "  }\n" %
                (func.original_name, func.GetLastOriginalArg().name))
 
@@ -1685,7 +1685,7 @@ TEST_F(GLES2DecoderTest, %(name)sValidArgs) {
   SpecializedSetup<%(name)s, 0>();
   %(name)s cmd;
   cmd.Init(%(args)s);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GetServiceId(kNewClientId), kNewServiceId);
 }
 """
@@ -1697,7 +1697,7 @@ TEST_F(GLES2DecoderTest, %(name)sInvalidArgs) {
   SpecializedSetup<%(name)s, 0>();
   %(name)s cmd;
   cmd.Init(%(args)s);
-  EXPECT_EQ(parse_error::kParseInvalidArguments, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
 }
 """
     self.WriteValidUnitTest(func, file, invalid_test, {
@@ -1714,7 +1714,7 @@ TEST_F(GLES2DecoderTest, %(name)sValidArgs) {
   GLuint temp = kNewClientId;
   SpecializedSetup<%(name)s, 0>();
   cmd.Init(1, &temp);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GetServiceId(kNewClientId), kNewServiceId);
 }
@@ -1726,7 +1726,7 @@ TEST_F(GLES2DecoderTest, %(name)sInvalidArgs) {
   %(name)s& cmd = *GetImmediateAs<%(name)s>();
   SpecializedSetup<%(name)s, 0>();
   cmd.Init(1, &client_%(resource_name)s_id_);
-  EXPECT_EQ(parse_error::kParseInvalidArguments,
+  EXPECT_EQ(error::kInvalidArguments,
             ExecuteImmediateCmd(cmd, sizeof(&client_%(resource_name)s_id_)));
 }
 """
@@ -1850,7 +1850,7 @@ TEST_F(GLES2DecoderTest, %(name)sValidArgs) {
   SpecializedSetup<%(name)s, 0>();
   %(name)s cmd;
   cmd.Init(%(args)s%(comma)skNewClientId);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GetServiceId(kNewClientId), kNewServiceId);
 }
 """
@@ -1866,7 +1866,7 @@ TEST_F(GLES2DecoderTest, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   SpecializedSetup<%(name)s, 0>();
   %(name)s cmd;
   cmd.Init(%(args)s%(comma)skNewClientId);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 """
     self.WriteInvalidUnitTest(func, file, invalid_test, {
@@ -1915,7 +1915,7 @@ TEST_F(GLES2DecoderTest, %(name)sValidArgs) {
   SpecializedSetup<%(name)s, 0>();
   %(name)s cmd;
   cmd.Init(%(args)s);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GetServiceId(kNewClientId), 0u);
 }
 """
@@ -1932,7 +1932,7 @@ TEST_F(GLES2DecoderTest, %(name)sInvalidArgs) {
   SpecializedSetup<%(name)s, 0>();
   %(name)s cmd;
   cmd.Init(%(args)s);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 """
     self.WriteValidUnitTest(func, file, invalid_test)
@@ -1948,7 +1948,7 @@ TEST_F(GLES2DecoderTest, %(name)sValidArgs) {
   %(name)s& cmd = *GetImmediateAs<%(name)s>();
   SpecializedSetup<%(name)s, 0>();
   cmd.Init(1, &client_%(resource_name)s_id_);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(client_%(resource_name)s_id_)));
   EXPECT_EQ(GetServiceId(kNewClientId), 0u);
 }
@@ -1966,7 +1966,7 @@ TEST_F(GLES2DecoderTest, %(name)sInvalidArgs) {
   SpecializedSetup<%(name)s, 0>();
   GLuint temp = kInvalidClientId;
   cmd.Init(1, &temp);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 """
@@ -2103,7 +2103,7 @@ class GETnHandler(TypeHandler):
   def WriteServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
     file.Write(
-        "parse_error::ParseError GLES2DecoderImpl::Handle%s(\n" % func.name)
+        "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
         "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
     last_arg = func.GetLastOriginalArg()
@@ -2119,7 +2119,7 @@ class GETnHandler(TypeHandler):
     file.Write("      c.params_shm_id, c.params_shm_offset, params_size);\n")
     func.WriteHandlerValidation(file)
     func.WriteHandlerImplementation(file)
-    file.Write("  return parse_error::kParseNoError;\n")
+    file.Write("  return error::kNoError;\n")
     file.Write("}\n")
     file.Write("\n")
 
@@ -2161,7 +2161,7 @@ TEST_F(GLES2DecoderTest, %(name)sValidArgs) {
   SpecializedSetup<%(name)s, 0>();
   %(data_type)s temp[%(data_count)s] = { 0, };
   cmd.Init(%(gl_args)s, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 """
@@ -2187,7 +2187,7 @@ TEST_F(GLES2DecoderTest, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   SpecializedSetup<%(name)s, 0>();
   %(data_type)s temp[%(data_count)s] = { 0, };
   cmd.Init(%(all_but_last_args)s, &temp[0]);
-  EXPECT_EQ(parse_error::%(parse_result)s,
+  EXPECT_EQ(error::%(parse_result)s,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 """
@@ -2332,7 +2332,7 @@ TEST_F(GLES2DecoderTest, %(name)sValidArgs) {
   SpecializedSetup<%(name)s, 0>();
   %(data_type)s temp[%(data_count)s * 2] = { 0, };
   cmd.Init(%(gl_args)s, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 """
@@ -2358,7 +2358,7 @@ TEST_F(GLES2DecoderTest, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   SpecializedSetup<%(name)s, 0>();
   %(data_type)s temp[%(data_count)s * 2] = { 0, };
   cmd.Init(%(all_but_last_args)s, &temp[0]);
-  EXPECT_EQ(parse_error::%(parse_result)s,
+  EXPECT_EQ(error::%(parse_result)s,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 """
@@ -2506,7 +2506,7 @@ class GLcharHandler(TypeHandler):
   def WriteServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
     file.Write(
-        "parse_error::ParseError GLES2DecoderImpl::Handle%s(\n" % func.name)
+        "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
         "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
     last_arg = func.GetLastOriginalArg()
@@ -2525,14 +2525,14 @@ class GLcharHandler(TypeHandler):
     file.Write("  String name_str(name, name_size);\n")
     file.Write("  %s(%s, name_str.c_str());\n" %
                (func.GetGLFunctionName(), arg_string))
-    file.Write("  return parse_error::kParseNoError;\n")
+    file.Write("  return error::kNoError;\n")
     file.Write("}\n")
     file.Write("\n")
 
   def WriteImmediateServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
     file.Write(
-        "parse_error::ParseError GLES2DecoderImpl::Handle%s(\n" % func.name)
+        "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
         "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
     last_arg = func.GetLastOriginalArg()
@@ -2550,7 +2550,7 @@ class GLcharHandler(TypeHandler):
     file.Write("  String name_str(name, name_size);\n")
     file.Write("  %s(%s, name_str.c_str());\n" %
               (func.GetGLFunctionName(), arg_string))
-    file.Write("  return parse_error::kParseNoError;\n")
+    file.Write("  return error::kNoError;\n")
     file.Write("}\n")
     file.Write("\n")
 
@@ -2687,7 +2687,7 @@ class GetGLcharHandler(GLcharHandler):
   def WriteServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
     file.Write(
-        "parse_error::ParseError GLES2DecoderImpl::Handle%s(\n" % func.name)
+        "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
         "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
     last_arg = func.GetLastOriginalArg()
@@ -2710,14 +2710,14 @@ class GetGLcharHandler(GLcharHandler):
     file.Write("  String name_str(name, name_size);\n")
     file.Write("  *location = %s(%s, name_str.c_str());\n" %
                (func.GetGLFunctionName(), arg_string))
-    file.Write("  return parse_error::kParseNoError;\n")
+    file.Write("  return error::kNoError;\n")
     file.Write("}\n")
     file.Write("\n")
 
   def WriteImmediateServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
     file.Write(
-        "parse_error::ParseError GLES2DecoderImpl::Handle%s(\n" % func.name)
+        "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
         "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
     last_arg = func.GetLastOriginalArg()
@@ -2739,7 +2739,7 @@ class GetGLcharHandler(GLcharHandler):
     file.Write("  String name_str(name, name_size);\n")
     file.Write("  *location = %s(%s, name_str.c_str());\n" %
               (func.GetGLFunctionName(), arg_string))
-    file.Write("  return parse_error::kParseNoError;\n")
+    file.Write("  return error::kNoError;\n")
     file.Write("}\n")
     file.Write("\n")
 
@@ -2864,7 +2864,7 @@ TEST_F(GLES2DecoderTest, %(name)sValidArgs) {
   SpecializedSetup<%(name)s, 0>();
   %(name)s cmd;
   cmd.Init(%(args)s%(comma)sshared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 """
     comma = ""
@@ -2880,7 +2880,7 @@ TEST_F(GLES2DecoderTest, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   SpecializedSetup<%(name)s, 0>();
   %(name)s cmd;
   cmd.Init(%(args)s%(comma)sshared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::%(parse_result)s, ExecuteCmd(cmd));
+  EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));
 }
 """
     self.WriteInvalidUnitTest(func, file, invalid_test, {
@@ -2890,7 +2890,7 @@ TEST_F(GLES2DecoderTest, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   def WriteServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
     file.Write(
-        "parse_error::ParseError GLES2DecoderImpl::Handle%s(\n" % func.name)
+        "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
         "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
     args = func.GetOriginalArgs()
@@ -2904,7 +2904,7 @@ TEST_F(GLES2DecoderTest, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
     func.WriteHandlerValidation(file)
     file.Write("  *result_dst = %s(%s);\n" %
                (func.GetGLFunctionName(), func.MakeOriginalArgString("")))
-    file.Write("  return parse_error::kParseNoError;\n")
+    file.Write("  return error::kNoError;\n")
     file.Write("}\n")
     file.Write("\n")
 
@@ -2948,7 +2948,7 @@ class STRnHandler(TypeHandler):
   def WriteServiceImplementation(self, func, file):
     """Overrriden from TypeHandler."""
     file.Write(
-        "parse_error::ParseError GLES2DecoderImpl::Handle%s(\n" % func.name)
+        "error::Error GLES2DecoderImpl::Handle%s(\n" % func.name)
     file.Write(
         "    uint32 immediate_data_size, const gles2::%s& c) {\n" % func.name)
     args = func.GetOriginalArgs()
@@ -2964,7 +2964,7 @@ class STRnHandler(TypeHandler):
                "    length = GetSharedMemoryAs<GLsizei*>(\n"
                "        size_shm_id, size_shm_offset, sizeof(*length));\n"
                "    if (!length) {\n"
-               "      return parse_error::kParseOutOfBounds;\n"
+               "      return error::kOutOfBounds;\n"
                "    }\n"
                "  }\n")
     dest_arg = args[-1]
@@ -2979,7 +2979,7 @@ class STRnHandler(TypeHandler):
       arg.WriteValidationCode(file)
     func.WriteValidationCode(file)
     func.WriteHandlerImplementation(file)
-    file.Write("  return parse_error::kParseNoError;\n")
+    file.Write("  return error::kNoError;\n")
     file.Write("}\n")
     file.Write("\n")
 
@@ -3071,7 +3071,7 @@ class EnumBaseArgument(Argument):
   def WriteValidationCode(self, file):
     file.Write("  if (!Validate%s(%s)) {\n" % (self.local_type, self.name))
     file.Write("    SetGLError(%s);\n" % self.gl_error)
-    file.Write("    return parse_error::kParseNoError;\n")
+    file.Write("    return error::kNoError;\n")
     file.Write("  }\n")
 
   def GetValidArg(self, offset, index):
@@ -3100,8 +3100,8 @@ class EnumBaseArgument(Argument):
       num_invalid = len(invalid)
       if index >= num_invalid:
         index = num_invalid - 1
-      return (invalid[index], "kParseNoError")
-    return ("---ERROR1---", "kParseNoError")
+      return (invalid[index], "kNoError")
+    return ("---ERROR1---", "kNoError")
 
 
 class EnumArgument(EnumBaseArgument):
@@ -3156,7 +3156,7 @@ class ImmediatePointerArgument(Argument):
   def WriteValidationCode(self, file):
     """Overridden from Argument."""
     file.Write("  if (%s == NULL) {\n" % self.name)
-    file.Write("    return parse_error::kParseOutOfBounds;\n")
+    file.Write("    return error::kOutOfBounds;\n")
     file.Write("  }\n")
 
   def GetImmediateVersion(self):
@@ -3189,10 +3189,10 @@ class PointerArgument(Argument):
   def GetInvalidArg(self, offset, index):
     """Overridden from Argument."""
     if index == 0:
-      return ("kInvalidSharedMemoryId, 0", "kParseOutOfBounds")
+      return ("kInvalidSharedMemoryId, 0", "kOutOfBounds")
     else:
       return ("shared_memory_id_, kInvalidSharedMemoryOffset",
-              "kParseOutOfBounds")
+              "kOutOfBounds")
 
   def AddCmdArgs(self, args):
     """Overridden from Argument."""
@@ -3220,7 +3220,7 @@ class PointerArgument(Argument):
   def WriteValidationCode(self, file):
     """Overridden from Argument."""
     file.Write("  if (%s == NULL) {\n" % self.name)
-    file.Write("    return parse_error::kParseOutOfBounds;\n")
+    file.Write("    return error::kOutOfBounds;\n")
     file.Write("  }\n")
 
   def GetImmediateVersion(self):
@@ -3258,7 +3258,7 @@ class ResourceIdArgument(Argument):
     file.Write("  if (!id_manager_->GetServiceId(c.%s, &%s)) {\n" %
                (self.name, self.name))
     file.Write("    SetGLError(GL_INVALID_VALUE);\n")
-    file.Write("    return parse_error::kParseNoError;\n")
+    file.Write("    return error::kNoError;\n")
     file.Write("  }\n")
 
   def GetValidArg(self, offset, index):
@@ -3837,7 +3837,7 @@ class GLGenerator(object):
   def WriteServiceUtilsHeader(self, filename):
     """Writes the gles2 auto generated utility header."""
     file = CHeaderWriter(filename)
-    for enum in _ENUM_LISTS:
+    for enum in sorted(_ENUM_LISTS.keys()):
       file.Write("bool Validate%s%s(GLenum value);\n" % (_ENUM_LISTS[enum]['type'], enum))
     file.Write("\n")
     file.Close()
@@ -3845,7 +3845,7 @@ class GLGenerator(object):
   def WriteServiceUtilsImplementation(self, filename):
     """Writes the gles2 auto generated utility implementation."""
     file = CHeaderWriter(filename)
-    for enum in _ENUM_LISTS:
+    for enum in sorted(_ENUM_LISTS.keys()):
       file.Write("bool Validate%s%s(GLenum value) {\n" % (_ENUM_LISTS[enum]['type'], enum))
       file.Write("  switch (value) {\n")
       for value in _ENUM_LISTS[enum]['valid']:

@@ -20,7 +20,7 @@ class CommandBuffer {
           get_offset(0),
           put_offset(0),
           token(-1),
-          error(parse_error::kParseNoError) {
+          error(error::kNoError) {
     }
 
     // Size of the command buffer in command buffer entries.
@@ -40,7 +40,7 @@ class CommandBuffer {
     int32 token;
 
     // Error status.
-    parse_error::ParseError error;
+    error::Error error;
   };
 
   CommandBuffer() {
@@ -81,7 +81,7 @@ class CommandBuffer {
   virtual void SetToken(int32 token) = 0;
 
   // Allows the reader to set the current parse error.
-  virtual void SetParseError(parse_error::ParseError) = 0;
+  virtual void SetParseError(error::Error) = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(CommandBuffer);

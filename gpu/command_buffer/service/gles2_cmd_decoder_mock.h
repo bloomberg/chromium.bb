@@ -26,9 +26,9 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD0(Destroy, void());
   MOCK_METHOD0(MakeCurrent, bool());
   MOCK_METHOD1(GetServiceIdForTesting, uint32(uint32 client_id));
-  MOCK_METHOD3(DoCommand, parse_error::ParseError(unsigned int command,
-                                                  unsigned int arg_count,
-                                                  const void* cmd_data));
+  MOCK_METHOD3(DoCommand, error::Error(unsigned int command,
+                                       unsigned int arg_count,
+                                       const void* cmd_data));
   MOCK_CONST_METHOD1(GetCommandName, const char*(unsigned int command_id));
 
   DISALLOW_COPY_AND_ASSIGN(MockGLES2Decoder);

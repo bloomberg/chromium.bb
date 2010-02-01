@@ -481,7 +481,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   GLES2DecoderImpl();
 
   // Overridden from AsyncAPIInterface.
-  virtual ParseError DoCommand(unsigned int command,
+  virtual Error DoCommand(unsigned int command,
                                unsigned int arg_count,
                                const void* args);
 
@@ -615,7 +615,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
   #define GLES2_CMD_OP(name) \
-     ParseError Handle ## name(             \
+     Error Handle ## name(             \
        uint32 immediate_data_size,          \
        const gles2::name& args);            \
 
@@ -1118,11 +1118,11 @@ const char* GLES2DecoderImpl::GetCommandName(unsigned int command_id) const {
 // Note: args is a pointer to the command buffer. As such, it could be changed
 // by a (malicious) client at any time, so if validation has to happen, it
 // should operate on a copy of them.
-parse_error::ParseError GLES2DecoderImpl::DoCommand(
+error::Error GLES2DecoderImpl::DoCommand(
     unsigned int command,
     unsigned int arg_count,
     const void* cmd_data) {
-  parse_error::ParseError result = parse_error::kParseNoError;
+  error::Error result = error::kNoError;
   if (debug()) {
     // TODO(gman): Change output to something useful for NaCl.
     printf("cmd: %s\n", GetCommandName(command));
@@ -1155,7 +1155,7 @@ parse_error::ParseError GLES2DecoderImpl::DoCommand(
         }
       }
     } else {
-      result = parse_error::kParseInvalidArguments;
+      result = error::kInvalidArguments;
     }
   } else {
     result = DoCommonCommand(command, arg_count, cmd_data);
@@ -1212,31 +1212,31 @@ void GLES2DecoderImpl::DoEnableVertexAttribArray(GLuint index) {
   }
 }
 
-parse_error::ParseError GLES2DecoderImpl::HandleDeleteShader(
+error::Error GLES2DecoderImpl::HandleDeleteShader(
     uint32 immediate_data_size, const gles2::DeleteShader& c) {
   GLuint shader = c.shader;
   GLuint service_id;
   if (!id_manager_->GetServiceId(shader, &service_id)) {
     SetGLError(GL_INVALID_VALUE);
-    return parse_error::kParseNoError;
+    return error::kNoError;
   }
   glDeleteShader(service_id);
   id_manager_->RemoveMapping(shader, service_id);
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError GLES2DecoderImpl::HandleDeleteProgram(
+error::Error GLES2DecoderImpl::HandleDeleteProgram(
     uint32 immediate_data_size, const gles2::DeleteProgram& c) {
   GLuint program = c.program;
   GLuint service_id;
   if (!id_manager_->GetServiceId(program, &service_id)) {
     SetGLError(GL_INVALID_VALUE);
-    return parse_error::kParseNoError;
+    return error::kNoError;
   }
   RemoveProgramInfo(service_id);
   glDeleteProgram(service_id);
   id_manager_->RemoveMapping(program, service_id);
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
 void GLES2DecoderImpl::DoDrawArrays(
@@ -1364,7 +1364,7 @@ bool GLES2DecoderImpl::IsDrawValid(GLuint max_vertex_accessed) {
   return false;
 };
 
-parse_error::ParseError GLES2DecoderImpl::HandleDrawElements(
+error::Error GLES2DecoderImpl::HandleDrawElements(
     uint32 immediate_data_size, const gles2::DrawElements& c) {
   if (bound_element_array_buffer_ != 0) {
     GLenum mode = c.mode;
@@ -1408,7 +1408,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleDrawElements(
   } else {
     SetGLError(GL_INVALID_VALUE);
   }
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
 namespace {
@@ -1417,7 +1417,7 @@ namespace {
 // Assumes that data / data_size points to a piece of memory that is in range
 // of whatever context it came from (shared memory, immediate memory, bucket
 // memory.)
-parse_error::ParseError ShaderSourceHelper(
+error::Error ShaderSourceHelper(
     GLuint shader, GLsizei count, const char* data, uint32 data_size) {
   std::vector<std::string> strings(count);
   scoped_array<const char*> string_pointers(new const char* [count]);
@@ -1425,60 +1425,60 @@ parse_error::ParseError ShaderSourceHelper(
   const uint32* ends = reinterpret_cast<const uint32*>(data);
   uint32 start_offset = count * sizeof(*ends);
   if (start_offset > data_size) {
-    return parse_error::kParseOutOfBounds;
+    return error::kOutOfBounds;
   }
   for (GLsizei ii = 0; ii < count; ++ii) {
     uint32 end_offset = ends[ii];
     if (end_offset > data_size || end_offset < start_offset) {
-      return parse_error::kParseOutOfBounds;
+      return error::kOutOfBounds;
     }
     strings[ii] = std::string(data + start_offset, end_offset - start_offset);
     string_pointers[ii] = strings[ii].c_str();
   }
 
   glShaderSource(shader, count, string_pointers.get(), NULL);
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
 }  // anonymous namespace.
 
-parse_error::ParseError GLES2DecoderImpl::HandleShaderSource(
+error::Error GLES2DecoderImpl::HandleShaderSource(
     uint32 immediate_data_size, const gles2::ShaderSource& c) {
   GLuint shader;
   if (!id_manager_->GetServiceId(c.shader, &shader)) {
     SetGLError(GL_INVALID_VALUE);
-    return parse_error::kParseNoError;
+    return error::kNoError;
   }
   GLsizei count = c.count;
   uint32 data_size = c.data_size;
   const char** data = GetSharedMemoryAs<const char**>(
       c.data_shm_id, c.data_shm_offset, data_size);
   if (!data) {
-    return parse_error::kParseOutOfBounds;
+    return error::kOutOfBounds;
   }
   return ShaderSourceHelper(
       shader, count, reinterpret_cast<const char*>(data), data_size);
 }
 
-parse_error::ParseError GLES2DecoderImpl::HandleShaderSourceImmediate(
+error::Error GLES2DecoderImpl::HandleShaderSourceImmediate(
   uint32 immediate_data_size, const gles2::ShaderSourceImmediate& c) {
   GLuint shader;
   if (!id_manager_->GetServiceId(c.shader, &shader)) {
     SetGLError(GL_INVALID_VALUE);
-    return parse_error::kParseNoError;
+    return error::kNoError;
   }
   GLsizei count = c.count;
   uint32 data_size = c.data_size;
   const char** data = GetImmediateDataAs<const char**>(
       c, data_size, immediate_data_size);
   if (!data) {
-    return parse_error::kParseOutOfBounds;
+    return error::kOutOfBounds;
   }
   return ShaderSourceHelper(
       shader, count, reinterpret_cast<const char*>(data), data_size);
 }
 
-parse_error::ParseError GLES2DecoderImpl::HandleVertexAttribPointer(
+error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
     uint32 immediate_data_size, const gles2::VertexAttribPointer& c) {
   if (bound_array_buffer_ != 0) {
     GLuint indx = c.indx;
@@ -1493,7 +1493,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleVertexAttribPointer(
         indx >= max_vertex_attribs_ ||
         stride < 0) {
       SetGLError(GL_INVALID_VALUE);
-      return parse_error::kParseNoError;
+      return error::kNoError;
     }
     const BufferManager::BufferInfo* buffer_info =
         GetBufferInfo(bound_array_buffer_);
@@ -1501,7 +1501,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleVertexAttribPointer(
     GLsizei real_stride = stride != 0 ? stride : component_size * size;
     if (offset % component_size > 0) {
       SetGLError(GL_INVALID_VALUE);
-      return parse_error::kParseNoError;
+      return error::kNoError;
     }
     vertex_attrib_infos_[indx].SetInfo(
         bound_array_buffer_,
@@ -1514,10 +1514,10 @@ parse_error::ParseError GLES2DecoderImpl::HandleVertexAttribPointer(
   } else {
     SetGLError(GL_INVALID_VALUE);
   }
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError GLES2DecoderImpl::HandleReadPixels(
+error::Error GLES2DecoderImpl::HandleReadPixels(
     uint32 immediate_data_size, const gles2::ReadPixels& c) {
   GLint x = c.x;
   GLint y = c.y;
@@ -1530,25 +1530,25 @@ parse_error::ParseError GLES2DecoderImpl::HandleReadPixels(
   void* pixels = GetSharedMemoryAs<void*>(
       c.pixels_shm_id, c.pixels_shm_offset, pixels_size);
   if (!pixels) {
-    return parse_error::kParseOutOfBounds;
+    return error::kOutOfBounds;
   }
   if (!ValidateGLenumReadPixelFormat(format) ||
       !ValidateGLenumPixelType(type)) {
     SetGLError(GL_INVALID_VALUE);
-    return parse_error::kParseNoError;
+    return error::kNoError;
   }
   glReadPixels(x, y, width, height, format, type, pixels);
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError GLES2DecoderImpl::HandlePixelStorei(
+error::Error GLES2DecoderImpl::HandlePixelStorei(
     uint32 immediate_data_size, const gles2::PixelStorei& c) {
   GLenum pname = c.pname;
   GLenum param = c.param;
   if (!ValidateGLenumPixelStore(pname) ||
       !ValidateGLintPixelStoreAlignment(param)) {
     SetGLError(GL_INVALID_VALUE);
-    return parse_error::kParseNoError;
+    return error::kNoError;
   }
   glPixelStorei(pname, param);
   switch (pname) {
@@ -1563,15 +1563,15 @@ parse_error::ParseError GLES2DecoderImpl::HandlePixelStorei(
       DCHECK(false);
       break;
   }
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError GLES2DecoderImpl::HandleGetAttribLocation(
+error::Error GLES2DecoderImpl::HandleGetAttribLocation(
     uint32 immediate_data_size, const gles2::GetAttribLocation& c) {
   GLuint program;
   if (!id_manager_->GetServiceId(c.program, &program)) {
     SetGLError(GL_INVALID_VALUE);
-    return parse_error::kParseNoError;
+    return error::kNoError;
   }
   uint32 name_size = c.data_size;
   const char* name = GetSharedMemoryAs<const char*>(
@@ -1579,19 +1579,19 @@ parse_error::ParseError GLES2DecoderImpl::HandleGetAttribLocation(
   GLint* location = GetSharedMemoryAs<GLint*>(
       c.location_shm_id, c.location_shm_offset, sizeof(GLint));
   if (!location || !name) {
-    return parse_error::kParseOutOfBounds;
+    return error::kOutOfBounds;
   }
   String name_str(name, name_size);
   *location = glGetAttribLocation(program, name_str.c_str());
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError GLES2DecoderImpl::HandleGetAttribLocationImmediate(
+error::Error GLES2DecoderImpl::HandleGetAttribLocationImmediate(
     uint32 immediate_data_size, const gles2::GetAttribLocationImmediate& c) {
   GLuint program;
   if (!id_manager_->GetServiceId(c.program, &program)) {
     SetGLError(GL_INVALID_VALUE);
-    return parse_error::kParseNoError;
+    return error::kNoError;
   }
   uint32 name_size = c.data_size;
   const char* name = GetImmediateDataAs<const char*>(
@@ -1599,19 +1599,19 @@ parse_error::ParseError GLES2DecoderImpl::HandleGetAttribLocationImmediate(
   GLint* location = GetSharedMemoryAs<GLint*>(
       c.location_shm_id, c.location_shm_offset, sizeof(GLint));
   if (!location || !name) {
-    return parse_error::kParseOutOfBounds;
+    return error::kOutOfBounds;
   }
   String name_str(name, name_size);
   *location = glGetAttribLocation(program, name_str.c_str());
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError GLES2DecoderImpl::HandleGetUniformLocation(
+error::Error GLES2DecoderImpl::HandleGetUniformLocation(
     uint32 immediate_data_size, const gles2::GetUniformLocation& c) {
   GLuint program;
   if (!id_manager_->GetServiceId(c.program, &program)) {
     SetGLError(GL_INVALID_VALUE);
-    return parse_error::kParseNoError;
+    return error::kNoError;
   }
   uint32 name_size = c.data_size;
   const char* name = GetSharedMemoryAs<const char*>(
@@ -1619,19 +1619,19 @@ parse_error::ParseError GLES2DecoderImpl::HandleGetUniformLocation(
   GLint* location = GetSharedMemoryAs<GLint*>(
       c.location_shm_id, c.location_shm_offset, sizeof(GLint));
   if (!location || !name) {
-    return parse_error::kParseOutOfBounds;
+    return error::kOutOfBounds;
   }
   String name_str(name, name_size);
   *location = glGetUniformLocation(program, name_str.c_str());
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError GLES2DecoderImpl::HandleGetUniformLocationImmediate(
+error::Error GLES2DecoderImpl::HandleGetUniformLocationImmediate(
     uint32 immediate_data_size, const gles2::GetUniformLocationImmediate& c) {
   GLuint program;
   if (!id_manager_->GetServiceId(c.program, &program)) {
     SetGLError(GL_INVALID_VALUE);
-    return parse_error::kParseNoError;
+    return error::kNoError;
   }
   uint32 name_size = c.data_size;
   const char* name = GetImmediateDataAs<const char*>(
@@ -1639,14 +1639,14 @@ parse_error::ParseError GLES2DecoderImpl::HandleGetUniformLocationImmediate(
   GLint* location = GetSharedMemoryAs<GLint*>(
       c.location_shm_id, c.location_shm_offset, sizeof(GLint));
   if (!location || !name) {
-    return parse_error::kParseOutOfBounds;
+    return error::kOutOfBounds;
   }
   String name_str(name, name_size);
   *location = glGetUniformLocation(program, name_str.c_str());
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError GLES2DecoderImpl::HandleBufferData(
+error::Error GLES2DecoderImpl::HandleBufferData(
     uint32 immediate_data_size, const gles2::BufferData& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLsizeiptr size = static_cast<GLsizeiptr>(c.size);
@@ -1657,13 +1657,13 @@ parse_error::ParseError GLES2DecoderImpl::HandleBufferData(
   if (data_shm_id != 0 || data_shm_offset != 0) {
     data = GetSharedMemoryAs<const void*>(data_shm_id, data_shm_offset, size);
     if (!data) {
-      return parse_error::kParseOutOfBounds;
+      return error::kOutOfBounds;
     }
   }
   if (!ValidateGLenumBufferTarget(target) ||
       !ValidateGLenumBufferUsage(usage)) {
     SetGLError(GL_INVALID_VALUE);
-    return parse_error::kParseNoError;
+    return error::kNoError;
   }
   // Clear the buffer to 0 if no initial data was passed in.
   scoped_array<int8> zero;
@@ -1680,23 +1680,23 @@ parse_error::ParseError GLES2DecoderImpl::HandleBufferData(
   } else {
     SetBufferInfo(GetBufferForTarget(target), size);
   }
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError GLES2DecoderImpl::HandleBufferDataImmediate(
+error::Error GLES2DecoderImpl::HandleBufferDataImmediate(
     uint32 immediate_data_size, const gles2::BufferDataImmediate& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLsizeiptr size = static_cast<GLsizeiptr>(c.size);
   const void* data = GetImmediateDataAs<const void*>(
       c, size, immediate_data_size);
   if (!data) {
-    return parse_error::kParseOutOfBounds;
+    return error::kOutOfBounds;
   }
   GLenum usage = static_cast<GLenum>(c.usage);
   if (!ValidateGLenumBufferTarget(target) ||
       !ValidateGLenumBufferUsage(usage)) {
     SetGLError(GL_INVALID_VALUE);
-    return parse_error::kParseNoError;
+    return error::kNoError;
   }
   CopyRealGLErrorsToWrapper();
   glBufferData(target, size, data, usage);
@@ -1706,10 +1706,10 @@ parse_error::ParseError GLES2DecoderImpl::HandleBufferDataImmediate(
   } else {
     SetBufferInfo(GetBufferForTarget(target), size);
   }
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError GLES2DecoderImpl::HandleCompressedTexImage2D(
+error::Error GLES2DecoderImpl::HandleCompressedTexImage2D(
     uint32 immediate_data_size, const gles2::CompressedTexImage2D& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
@@ -1725,13 +1725,13 @@ parse_error::ParseError GLES2DecoderImpl::HandleCompressedTexImage2D(
     data = GetSharedMemoryAs<const void*>(
         data_shm_id, data_shm_offset, image_size);
     if (!data) {
-      return parse_error::kParseOutOfBounds;
+      return error::kOutOfBounds;
     }
   }
   // TODO(gman): Validate internal_format
   if (!ValidateGLenumTextureTarget(target)) {
     SetGLError(GL_INVALID_ENUM);
-    return parse_error::kParseNoError;
+    return error::kNoError;
   }
   scoped_array<int8> zero;
   if (!data) {
@@ -1741,10 +1741,10 @@ parse_error::ParseError GLES2DecoderImpl::HandleCompressedTexImage2D(
   }
   glCompressedTexImage2D(
       target, level, internal_format, width, height, border, image_size, data);
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError GLES2DecoderImpl::HandleCompressedTexImage2DImmediate(
+error::Error GLES2DecoderImpl::HandleCompressedTexImage2DImmediate(
     uint32 immediate_data_size, const gles2::CompressedTexImage2DImmediate& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
@@ -1756,19 +1756,19 @@ parse_error::ParseError GLES2DecoderImpl::HandleCompressedTexImage2DImmediate(
   const void* data = GetImmediateDataAs<const void*>(
       c, image_size, immediate_data_size);
   if (!data) {
-    return parse_error::kParseOutOfBounds;
+    return error::kOutOfBounds;
   }
   // TODO(gman): Validate internal_format
   if (!ValidateGLenumTextureTarget(target)) {
     SetGLError(GL_INVALID_ENUM);
-    return parse_error::kParseNoError;
+    return error::kNoError;
   }
   glCompressedTexImage2D(
       target, level, internal_format, width, height, border, image_size, data);
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError GLES2DecoderImpl::HandleTexImage2D(
+error::Error GLES2DecoderImpl::HandleTexImage2D(
     uint32 immediate_data_size, const gles2::TexImage2D& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
@@ -1787,7 +1787,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleTexImage2D(
     pixels = GetSharedMemoryAs<const void*>(
         pixels_shm_id, pixels_shm_offset, pixels_size);
     if (!pixels) {
-      return parse_error::kParseOutOfBounds;
+      return error::kOutOfBounds;
     }
   }
   if (!ValidateGLenumTextureTarget(target) ||
@@ -1795,7 +1795,7 @@ parse_error::ParseError GLES2DecoderImpl::HandleTexImage2D(
       !ValidateGLenumTextureFormat(format) ||
       !ValidateGLenumPixelType(type)) {
     SetGLError(GL_INVALID_ENUM);
-    return parse_error::kParseNoError;
+    return error::kNoError;
   }
   scoped_array<int8> zero;
   if (!pixels) {
@@ -1806,10 +1806,10 @@ parse_error::ParseError GLES2DecoderImpl::HandleTexImage2D(
   glTexImage2D(
       target, level, internal_format, width, height, border, format, type,
       pixels);
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError GLES2DecoderImpl::HandleTexImage2DImmediate(
+error::Error GLES2DecoderImpl::HandleTexImage2DImmediate(
     uint32 immediate_data_size, const gles2::TexImage2DImmediate& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLint level = static_cast<GLint>(c.level);
@@ -1824,84 +1824,84 @@ parse_error::ParseError GLES2DecoderImpl::HandleTexImage2DImmediate(
   const void* pixels = GetImmediateDataAs<const void*>(
       c, size, immediate_data_size);
   if (!pixels) {
-    return parse_error::kParseOutOfBounds;
+    return error::kOutOfBounds;
   }
   if (!ValidateGLenumTextureTarget(target) ||
       !ValidateGLenumTextureFormat(internal_format) ||
       !ValidateGLenumTextureFormat(format) ||
       !ValidateGLenumPixelType(type)) {
     SetGLError(GL_INVALID_ENUM);
-    return parse_error::kParseNoError;
+    return error::kNoError;
   }
   glTexImage2D(
       target, level, internal_format, width, height, border, format, type,
       pixels);
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError GLES2DecoderImpl::HandleGetVertexAttribPointerv(
+error::Error GLES2DecoderImpl::HandleGetVertexAttribPointerv(
     uint32 immediate_data_size, const gles2::GetVertexAttribPointerv& c) {
   GLuint index = static_cast<GLuint>(c.index);
   GLenum pname = static_cast<GLenum>(c.pname);
   SizedResult* result = GetSharedMemoryAs<SizedResult*>(
       c.pointer_shm_id, c.pointer_shm_offset, sizeof(SizedResult));
   if (!result) {
-    return parse_error::kParseOutOfBounds;
+    return error::kOutOfBounds;
   }
   result->size = 0;
   if (!ValidateGLenumVertexPointer(pname)) {
     SetGLError(GL_INVALID_ENUM);
-    return parse_error::kParseNoError;
+    return error::kNoError;
   }
   if (index >= max_vertex_attribs_) {
     SetGLError(GL_INVALID_VALUE);
-    return parse_error::kParseNoError;
+    return error::kNoError;
   }
   result->size = sizeof(GLuint);
   *result->GetDataAs<GLuint*>() = vertex_attrib_infos_[index].offset();
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError GLES2DecoderImpl::HandleGetUniformiv(
+error::Error GLES2DecoderImpl::HandleGetUniformiv(
     uint32 immediate_data_size, const gles2::GetUniformiv& c) {
   // TODO(gman): Implement.
   NOTREACHED();
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError GLES2DecoderImpl::HandleGetUniformfv(
+error::Error GLES2DecoderImpl::HandleGetUniformfv(
     uint32 immediate_data_size, const gles2::GetUniformfv& c) {
   // TODO(gman): Implement.
   NOTREACHED();
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError GLES2DecoderImpl::HandleGetShaderPrecisionFormat(
+error::Error GLES2DecoderImpl::HandleGetShaderPrecisionFormat(
     uint32 immediate_data_size, const gles2::GetShaderPrecisionFormat& c) {
   // TODO(gman): Implement.
   NOTREACHED();
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError GLES2DecoderImpl::HandleGetAttachedShaders(
+error::Error GLES2DecoderImpl::HandleGetAttachedShaders(
     uint32 immediate_data_size, const gles2::GetAttachedShaders& c) {
   // TODO(gman): Implement.
   NOTREACHED();
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError GLES2DecoderImpl::HandleGetActiveUniform(
+error::Error GLES2DecoderImpl::HandleGetActiveUniform(
     uint32 immediate_data_size, const gles2::GetActiveUniform& c) {
   // TODO(gman): Implement.
   NOTREACHED();
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError GLES2DecoderImpl::HandleGetActiveAttrib(
+error::Error GLES2DecoderImpl::HandleGetActiveAttrib(
     uint32 immediate_data_size, const gles2::GetActiveAttrib& c) {
   // TODO(gman): Implement.
   NOTREACHED();
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
 // Include the auto-generated part of this file. We split this because it means

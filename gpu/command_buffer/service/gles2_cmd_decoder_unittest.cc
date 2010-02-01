@@ -62,7 +62,7 @@ class GLES2DecoderTest : public testing::Test {
     int8 buffer[sizeof(T) + sizeof(client_id)];
     T& cmd = *reinterpret_cast<T*>(&buffer);
     cmd.Init(1, &client_id);
-    EXPECT_EQ(parse_error::kParseNoError,
+    EXPECT_EQ(error::kNoError,
               ExecuteImmediateCmd(cmd, sizeof(client_id)));
   }
 
@@ -131,7 +131,7 @@ class GLES2DecoderTest : public testing::Test {
           .RetiresOnSaturation();
       CreateProgram cmd;
       cmd.Init(client_program_id_);
-      EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
     }
 
     {
@@ -141,7 +141,7 @@ class GLES2DecoderTest : public testing::Test {
           .RetiresOnSaturation();
       CreateShader cmd;
       cmd.Init(GL_VERTEX_SHADER, client_shader_id_);
-      EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
     }
 
     EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -161,7 +161,7 @@ class GLES2DecoderTest : public testing::Test {
   }
 
   template <typename T>
-  parse_error::ParseError ExecuteCmd(const T& cmd) {
+  error::Error ExecuteCmd(const T& cmd) {
     COMPILE_ASSERT(T::kArgFlags == cmd::kFixed, Cmd_kArgFlags_not_kFixed);
     return decoder_->DoCommand(cmd.kCmdId,
                                ComputeNumEntries(sizeof(cmd)) - 1,
@@ -169,7 +169,7 @@ class GLES2DecoderTest : public testing::Test {
   }
 
   template <typename T>
-  parse_error::ParseError ExecuteImmediateCmd(const T& cmd, size_t data_size) {
+  error::Error ExecuteImmediateCmd(const T& cmd, size_t data_size) {
     COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
     return decoder_->DoCommand(cmd.kCmdId,
                                ComputeNumEntries(sizeof(cmd) + data_size) - 1,
@@ -191,7 +191,7 @@ class GLES2DecoderTest : public testing::Test {
         .RetiresOnSaturation();
     GetError cmd;
     cmd.Init(shared_memory_id_, shared_memory_offset_);
-    EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
     return *GetSharedMemoryAs<GLenum*>();
   }
 
@@ -339,7 +339,7 @@ class GLES2DecoderWithShaderTest : public GLES2DecoderTest {
         }
       }
 
-      EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
     }
 
     {
@@ -348,7 +348,7 @@ class GLES2DecoderWithShaderTest : public GLES2DecoderTest {
           .RetiresOnSaturation();
       UseProgram cmd;
       cmd.Init(client_program_id_);
-      EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+      EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
     }
   }
 
@@ -366,7 +366,7 @@ class GLES2DecoderWithShaderTest : public GLES2DecoderTest {
         .RetiresOnSaturation();
     EnableVertexAttribArray cmd;
     cmd.Init(index);
-    EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   }
 
   void DoBindBuffer(GLenum target, GLuint client_id, GLuint service_id) {
@@ -375,7 +375,7 @@ class GLES2DecoderWithShaderTest : public GLES2DecoderTest {
         .RetiresOnSaturation();
     BindBuffer cmd;
     cmd.Init(target, client_id);
-    EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   }
 
   void DoBufferData(GLenum target, GLsizei size) {
@@ -384,7 +384,7 @@ class GLES2DecoderWithShaderTest : public GLES2DecoderTest {
         .RetiresOnSaturation();
     BufferData cmd;
     cmd.Init(target, size, 0, 0, GL_STREAM_DRAW);
-    EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   }
 
   void DoBufferSubData(
@@ -396,7 +396,7 @@ class GLES2DecoderWithShaderTest : public GLES2DecoderTest {
     memcpy(shared_memory_address_, data, size);
     BufferSubData cmd;
     cmd.Init(target, offset, size, shared_memory_id_, shared_memory_offset_);
-    EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   }
 
   void DoDeleteBuffer(GLuint client_id, GLuint service_id) {
@@ -406,7 +406,7 @@ class GLES2DecoderWithShaderTest : public GLES2DecoderTest {
     DeleteBuffers cmd;
     cmd.Init(1, shared_memory_id_, shared_memory_offset_);
     memcpy(shared_memory_address_, &client_id, sizeof(client_id));
-    EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   }
 
   void DoDeleteProgram(GLuint client_id, GLuint service_id) {
@@ -415,7 +415,7 @@ class GLES2DecoderWithShaderTest : public GLES2DecoderTest {
         .RetiresOnSaturation();
     DeleteProgram cmd;
     cmd.Init(client_id);
-    EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   }
 
   void DoVertexAttribPointer(
@@ -427,7 +427,7 @@ class GLES2DecoderWithShaderTest : public GLES2DecoderTest {
         .RetiresOnSaturation();
     VertexAttribPointer cmd;
     cmd.Init(index, size, GL_FLOAT, GL_FALSE, stride, offset);
-    EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   }
 
   void SetupVertexBuffer() {
@@ -466,7 +466,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysNoAttributesSucceeds) {
       .RetiresOnSaturation();
   DrawArrays cmd;
   cmd.Init(GL_TRIANGLES, 0, kNumVertices);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
@@ -477,7 +477,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysMissingAttributesFails) {
       .Times(0);
   DrawArrays cmd;
   cmd.Init(GL_TRIANGLES, 0, kNumVertices);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
@@ -490,7 +490,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysValidAttributesSucceeds) {
       .RetiresOnSaturation();
   DrawArrays cmd;
   cmd.Init(GL_TRIANGLES, 0, kNumVertices);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
@@ -503,7 +503,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysDeletedBufferFails) {
       .Times(0);
   DrawArrays cmd;
   cmd.Init(GL_TRIANGLES, 0, kNumVertices);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
@@ -516,7 +516,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysDeletedProgramFails) {
       .Times(0);
   DrawArrays cmd;
   cmd.Init(GL_TRIANGLES, 0, kNumVertices);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
@@ -528,10 +528,10 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysWithInvalidModeFails) {
       .Times(0);
   DrawArrays cmd;
   cmd.Init(GL_QUADS, 0, 1);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
   cmd.Init(GL_POLYGON, 0, 1);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
@@ -543,33 +543,33 @@ TEST_F(GLES2DecoderWithShaderTest, DrawArraysInvalidCountFails) {
   EXPECT_CALL(*gl_, DrawArrays(_, _, _)).Times(0);
   DrawArrays cmd;
   cmd.Init(GL_TRIANGLES, 1, kNumVertices);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   // Try with count > size
   cmd.Init(GL_TRIANGLES, 0, kNumVertices + 1);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   // Try with attrib offset > 0
   cmd.Init(GL_TRIANGLES, 0, kNumVertices);
   DoVertexAttribPointer(1, 2, GL_FLOAT, 0, 4);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   // Try with size > 2 (ie, vec3 instead of vec2)
   DoVertexAttribPointer(1, 3, GL_FLOAT, 0, 0);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   // Try with stride > 8 (vec2 + vec2 byte)
   GLfloat f;
   DoVertexAttribPointer(1, 2, GL_FLOAT, sizeof(f) * 2 + 1, 0);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -584,7 +584,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsNoAttributesSucceeds) {
   DrawElements cmd;
   cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
            kValidIndexRangeStart);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
@@ -597,7 +597,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsMissingAttributesFails) {
   DrawElements cmd;
   cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
            kValidIndexRangeStart);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
@@ -614,7 +614,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsValidAttributesSucceeds) {
   DrawElements cmd;
   cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
            kValidIndexRangeStart);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
 
@@ -629,7 +629,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsDeletedBufferFails) {
   DrawElements cmd;
   cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
            kValidIndexRangeStart);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
@@ -644,7 +644,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsDeleteProgramFails) {
   DrawElements cmd;
   cmd.Init(GL_TRIANGLES, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
            kValidIndexRangeStart);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
@@ -658,11 +658,11 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsWithInvalidModeFails) {
   DrawElements cmd;
   cmd.Init(GL_QUADS, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
            kValidIndexRangeStart);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
   cmd.Init(GL_POLYGON, kValidIndexRangeCount, GL_UNSIGNED_SHORT,
            kValidIndexRangeStart);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
@@ -675,13 +675,13 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsInvalidCountFails) {
   EXPECT_CALL(*gl_, DrawElements(_, _, _, _)).Times(0);
   DrawElements cmd;
   cmd.Init(GL_TRIANGLES, kNumIndices, GL_UNSIGNED_SHORT, 1);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 
   // Try with count > size
   cmd.Init(GL_TRIANGLES, kNumIndices + 1, GL_UNSIGNED_SHORT, 0);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -696,7 +696,7 @@ TEST_F(GLES2DecoderWithShaderTest, DrawElementsOutOfRangeIndicesFails) {
   DrawElements cmd;
   cmd.Init(GL_TRIANGLES, kInvalidIndexRangeCount, GL_UNSIGNED_SHORT,
            kInvalidIndexRangeStart);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
 }
@@ -711,7 +711,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetVertexAttribPointervSucceeds) {
   GetVertexAttribPointerv cmd;
   cmd.Init(kIndexToTest, GL_VERTEX_ATTRIB_ARRAY_POINTER,
            shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(sizeof(*result_value), result_->size);
   EXPECT_EQ(0u, *result_value);
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -719,7 +719,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetVertexAttribPointervSucceeds) {
   // Set the value and see that we get it.
   SetupVertexBuffer();
   DoVertexAttribPointer(kIndexToTest, 2, GL_FLOAT, 0, kOffsetToTestFor);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(sizeof(*result_value), result_->size);
   EXPECT_EQ(kOffsetToTestFor, *result_value);
   EXPECT_EQ(GL_NO_ERROR, GetGLError());
@@ -732,7 +732,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetVertexAttribPointervBadArgsFails) {
   GetVertexAttribPointerv cmd;
   cmd.Init(kIndexToTest, GL_VERTEX_ATTRIB_ARRAY_POINTER + 1,
            shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(0u, result_->size);
   EXPECT_EQ(kInitialResult, *result_value);
   EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
@@ -740,7 +740,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetVertexAttribPointervBadArgsFails) {
   // Test index out of range fails.
   cmd.Init(kNumVertexAttribs, GL_VERTEX_ATTRIB_ARRAY_POINTER,
            shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(0u, result_->size);
   EXPECT_EQ(kInitialResult, *result_value);
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
@@ -748,12 +748,12 @@ TEST_F(GLES2DecoderWithShaderTest, GetVertexAttribPointervBadArgsFails) {
   // Test memory id bad fails.
   cmd.Init(kIndexToTest, GL_VERTEX_ATTRIB_ARRAY_POINTER,
            kInvalidSharedMemoryId, shared_memory_offset_);
-  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 
   // Test memory offset bad fails.
   cmd.Init(kIndexToTest, GL_VERTEX_ATTRIB_ARRAY_POINTER,
            shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
 

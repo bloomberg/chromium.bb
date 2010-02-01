@@ -268,8 +268,17 @@ typedef struct _NPDeviceContext2D
 #define NPPepper3DDevice 2
 
 typedef struct _NPDeviceContext3DConfig {
-  int32 commandBufferEntries;
+  int32 commandBufferSize;
 } NPDeviceContext3DConfig;
+
+typedef enum _NPDeviceContext3DError {
+  NPDeviceContext3DError_NoError,
+  NPDeviceContext3DError_InvalidSize,
+  NPDeviceContext3DError_OutOfBounds,
+  NPDeviceContext3DError_UnknownCommand,
+  NPDeviceContext3DError_InvalidArguments,
+  NPDeviceContext3DError_GenericError,
+} NPDeviceContext3DError;
 
 typedef struct _NPDeviceContext3D
 {
@@ -277,7 +286,7 @@ typedef struct _NPDeviceContext3D
 
   // Buffer in which commands are stored.
   void* commandBuffer;
-  int32 commandBufferEntries;
+  int32 commandBufferSize;
 
   // Offset in command buffer reader has reached. Synchronized on flush.
   int32 getOffset;
@@ -289,7 +298,7 @@ typedef struct _NPDeviceContext3D
   int32 token;
 
   // Error status. Synchronized on flush.
-  int32 error;
+  NPDeviceContext3DError error;
 } NPDeviceContext3D;
 
 /* Audio --------------------------------------------------------------------*/

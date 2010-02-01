@@ -103,7 +103,7 @@ class CommandBufferHelper {
     return *reinterpret_cast<T*>(data);
   }
 
-  parse_error::ParseError GetError();
+  error::Error GetError();
 
   // Common Commands
   void Noop(uint32 skip_count) {

@@ -103,7 +103,7 @@ const CommandInfo g_command_info[] = {
 // Note: args is a pointer to the command buffer. As such, it could be changed
 // by a (malicious) client at any time, so if validation has to happen, it
 // should operate on a copy of them.
-parse_error::ParseError CommonDecoder::DoCommonCommand(
+error::Error CommonDecoder::DoCommonCommand(
     unsigned int command,
     unsigned int arg_count,
     const void* cmd_data) {
@@ -126,77 +126,77 @@ parse_error::ParseError CommonDecoder::DoCommonCommand(
         #undef COMMON_COMMAND_BUFFER_CMD_OP
       }
     } else {
-      return parse_error::kParseInvalidArguments;
+      return error::kInvalidArguments;
     }
   }
   return DoCommonCommand(command, arg_count, cmd_data);
-  return parse_error::kParseUnknownCommand;
+  return error::kUnknownCommand;
 }
 
-parse_error::ParseError CommonDecoder::HandleNoop(
+error::Error CommonDecoder::HandleNoop(
     uint32 immediate_data_size,
     const cmd::Noop& args) {
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError CommonDecoder::HandleSetToken(
+error::Error CommonDecoder::HandleSetToken(
     uint32 immediate_data_size,
     const cmd::SetToken& args) {
   engine_->set_token(args.token);
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError CommonDecoder::HandleJump(
+error::Error CommonDecoder::HandleJump(
     uint32 immediate_data_size,
     const cmd::Jump& args) {
   if (!engine_->SetGetOffset(args.offset)) {
-    return parse_error::kParseInvalidArguments;
+    return error::kInvalidArguments;
   }
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError CommonDecoder::HandleJumpRelative(
+error::Error CommonDecoder::HandleJumpRelative(
     uint32 immediate_data_size,
     const cmd::JumpRelative& args) {
   if (!engine_->SetGetOffset(engine_->GetGetOffset() + args.offset)) {
-    return parse_error::kParseInvalidArguments;
+    return error::kInvalidArguments;
   }
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError CommonDecoder::HandleCall(
+error::Error CommonDecoder::HandleCall(
     uint32 immediate_data_size,
     const cmd::Call& args) {
   if (!PushAddress(args.offset)) {
-    return parse_error::kParseInvalidArguments;
+    return error::kInvalidArguments;
   }
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError CommonDecoder::HandleCallRelative(
+error::Error CommonDecoder::HandleCallRelative(
     uint32 immediate_data_size,
     const cmd::CallRelative& args) {
   if (!PushAddress(engine_->GetGetOffset() + args.offset)) {
-    return parse_error::kParseInvalidArguments;
+    return error::kInvalidArguments;
   }
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError CommonDecoder::HandleReturn(
+error::Error CommonDecoder::HandleReturn(
     uint32 immediate_data_size,
     const cmd::Return& args) {
   if (call_stack_.empty()) {
-    return parse_error::kParseInvalidArguments;
+    return error::kInvalidArguments;
   }
   CommandAddress return_address = call_stack_.top();
   call_stack_.pop();
   if (!engine_->SetGetOffset(return_address.offset)) {
-    return parse_error::kParseInvalidArguments;
+    return error::kInvalidArguments;
   }
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError CommonDecoder::HandleSetBucketSize(
+error::Error CommonDecoder::HandleSetBucketSize(
     uint32 immediate_data_size,
     const cmd::SetBucketSize& args) {
   uint32 bucket_id = args.bucket_id;
@@ -209,10 +209,10 @@ parse_error::ParseError CommonDecoder::HandleSetBucketSize(
   }
 
   bucket->SetSize(size);
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError CommonDecoder::HandleSetBucketData(
+error::Error CommonDecoder::HandleSetBucketData(
     uint32 immediate_data_size,
     const cmd::SetBucketData& args) {
   uint32 bucket_id = args.bucket_id;
@@ -221,20 +221,20 @@ parse_error::ParseError CommonDecoder::HandleSetBucketData(
   const void* data = GetSharedMemoryAs<const void*>(
       args.shared_memory_id, args.shared_memory_offset, size);
   if (!data) {
-    return parse_error::kParseInvalidArguments;
+    return error::kInvalidArguments;
   }
   Bucket* bucket = GetBucket(bucket_id);
   if (!bucket) {
-    return parse_error::kParseInvalidArguments;
+    return error::kInvalidArguments;
   }
   if (!bucket->SetData(data, offset, size)) {
-    return parse_error::kParseInvalidArguments;
+    return error::kInvalidArguments;
   }
 
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError CommonDecoder::HandleSetBucketDataImmediate(
+error::Error CommonDecoder::HandleSetBucketDataImmediate(
     uint32 immediate_data_size,
     const cmd::SetBucketDataImmediate& args) {
   const void* data = GetImmediateDataAs<const void*>(args);
@@ -242,36 +242,36 @@ parse_error::ParseError CommonDecoder::HandleSetBucketDataImmediate(
   uint32 offset = args.offset;
   uint32 size = args.size;
   if (size > immediate_data_size) {
-    return parse_error::kParseInvalidArguments;
+    return error::kInvalidArguments;
   }
   Bucket* bucket = GetBucket(bucket_id);
   if (!bucket) {
-    return parse_error::kParseInvalidArguments;
+    return error::kInvalidArguments;
   }
   if (!bucket->SetData(data, offset, size)) {
-    return parse_error::kParseInvalidArguments;
+    return error::kInvalidArguments;
   }
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError CommonDecoder::HandleGetBucketSize(
+error::Error CommonDecoder::HandleGetBucketSize(
     uint32 immediate_data_size,
     const cmd::GetBucketSize& args) {
   uint32 bucket_id = args.bucket_id;
   uint32* data = GetSharedMemoryAs<uint32*>(
       args.shared_memory_id, args.shared_memory_offset, sizeof(*data));
   if (!data) {
-    return parse_error::kParseInvalidArguments;
+    return error::kInvalidArguments;
   }
   Bucket* bucket = GetBucket(bucket_id);
   if (!bucket) {
-    return parse_error::kParseInvalidArguments;
+    return error::kInvalidArguments;
   }
   *data = bucket->size();
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
-parse_error::ParseError CommonDecoder::HandleGetBucketData(
+error::Error CommonDecoder::HandleGetBucketData(
     uint32 immediate_data_size,
     const cmd::GetBucketData& args) {
   uint32 bucket_id = args.bucket_id;
@@ -280,18 +280,18 @@ parse_error::ParseError CommonDecoder::HandleGetBucketData(
   void* data = GetSharedMemoryAs<void*>(
       args.shared_memory_id, args.shared_memory_offset, size);
   if (!data) {
-    return parse_error::kParseInvalidArguments;
+    return error::kInvalidArguments;
   }
   Bucket* bucket = GetBucket(bucket_id);
   if (!bucket) {
-    return parse_error::kParseInvalidArguments;
+    return error::kInvalidArguments;
   }
   const void* src = bucket->GetData(offset, size);
   if (!src) {
-      return parse_error::kParseInvalidArguments;
+      return error::kInvalidArguments;
   }
   memcpy(data, src, size);
-  return parse_error::kParseNoError;
+  return error::kNoError;
 }
 
 }  // namespace gpu

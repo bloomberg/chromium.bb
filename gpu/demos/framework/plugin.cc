@@ -119,7 +119,7 @@ void Plugin::SetWindow(const NPWindow& window) {
   if (!pgl_context_) {
     // Initialize a 3D context.
     NPDeviceContext3DConfig config;
-    config.commandBufferEntries = kCommandBufferSize;
+    config.commandBufferSize = kCommandBufferSize;
     device3d_->initializeContext(npp_, &config, &context3d_);
 
     // Create a PGL context.

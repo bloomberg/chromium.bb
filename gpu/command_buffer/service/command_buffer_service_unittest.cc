@@ -54,7 +54,7 @@ TEST_F(CommandBufferServiceTest, InitializesCommandBuffer) {
   EXPECT_EQ(0, state.get_offset);
   EXPECT_EQ(0, state.put_offset);
   EXPECT_EQ(0, state.token);
-  EXPECT_EQ(parse_error::kParseNoError, state.error);
+  EXPECT_EQ(error::kNoError, state.error);
 }
 
 TEST_F(CommandBufferServiceTest, InitializationSizeIsInEntriesNotBytes) {
@@ -95,8 +95,8 @@ TEST_F(CommandBufferServiceTest, CanSyncGetAndPutOffset) {
   EXPECT_CALL(*put_offset_change_callback, RunWithParams(_));
   EXPECT_EQ(2, command_buffer_->Flush(6).get_offset);
 
-  EXPECT_NE(parse_error::kParseNoError, command_buffer_->Flush(-1).error);
-  EXPECT_NE(parse_error::kParseNoError,
+  EXPECT_NE(error::kNoError, command_buffer_->Flush(-1).error);
+  EXPECT_NE(error::kNoError,
       command_buffer_->Flush(1024).error);
 }
 
@@ -181,7 +181,7 @@ TEST_F(CommandBufferServiceTest, DefaultParseErrorIsNoError) {
 }
 
 TEST_F(CommandBufferServiceTest, CanSetParseError) {
-  command_buffer_->SetParseError(parse_error::kParseInvalidSize);
+  command_buffer_->SetParseError(error::kInvalidSize);
   EXPECT_EQ(1, GetError());
 }
 }  // namespace gpu

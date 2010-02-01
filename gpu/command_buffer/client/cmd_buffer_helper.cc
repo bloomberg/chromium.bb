@@ -38,7 +38,7 @@ CommandBufferHelper::~CommandBufferHelper() {
 bool CommandBufferHelper::Flush() {
   CommandBuffer::State state = command_buffer_->Flush(put_);
   SynchronizeState(state);
-  return state.error == parse_error::kParseNoError;
+  return state.error == error::kNoError;
 }
 
 // Calls Flush() and then waits until the buffer is empty. Break early if the
@@ -142,10 +142,10 @@ CommandBufferEntry* CommandBufferHelper::GetSpace(uint32 entries) {
   return space;
 }
 
-parse_error::ParseError CommandBufferHelper::GetError() {
+error::Error CommandBufferHelper::GetError() {
   CommandBuffer::State state = command_buffer_->GetState();
   SynchronizeState(state);
-  return static_cast<parse_error::ParseError>(state.error);
+  return static_cast<error::Error>(state.error);
 }
 
 void CommandBufferHelper::SynchronizeState(CommandBuffer::State state) {

@@ -52,13 +52,13 @@ class CommandParser {
 
   // Processes one command, updating the get pointer. This will return an error
   // if there are no commands in the buffer.
-  parse_error::ParseError ProcessCommand();
+  error::Error ProcessCommand();
 
   // Processes all commands until get == put.
-  parse_error::ParseError ProcessAllCommands();
+  error::Error ProcessAllCommands();
 
   // Reports an error.
-  void ReportError(unsigned int command_id, parse_error::ParseError result);
+  void ReportError(unsigned int command_id, error::Error result);
 
  private:
   CommandBufferOffset get_;
@@ -81,9 +81,9 @@ class AsyncAPIInterface {
   //    arg_count: the number of CommandBufferEntry arguments.
   //    cmd_data: the command data.
   // Returns:
-  //   parse_error::NO_ERROR if no error was found, one of
-  //   parse_error::ParseError otherwise.
-  virtual parse_error::ParseError DoCommand(
+  //   error::kNoError if no error was found, one of
+  //   error::Error otherwise.
+  virtual error::Error DoCommand(
       unsigned int command,
       unsigned int arg_count,
       const void* cmd_data) = 0;

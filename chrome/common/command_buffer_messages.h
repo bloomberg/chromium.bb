@@ -26,7 +26,7 @@ struct ParamTraits<gpu::CommandBuffer::State> {
         m->ReadInt(iter, &p->put_offset) &&
         m->ReadInt(iter, &p->token) &&
         m->ReadInt(iter, &temp)) {
-      p->error = static_cast<gpu::parse_error::ParseError>(temp);
+      p->error = static_cast<gpu::error::Error>(temp);
       return true;
     } else {
       return false;

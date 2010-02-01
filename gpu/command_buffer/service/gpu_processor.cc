@@ -33,7 +33,7 @@ GPUProcessor::~GPUProcessor() {
 
 void GPUProcessor::ProcessCommands() {
   CommandBuffer::State state = command_buffer_->GetState();
-  if (state.error != parse_error::kParseNoError)
+  if (state.error != error::kNoError)
     return;
 
   if (decoder_.get()) {
@@ -46,9 +46,9 @@ void GPUProcessor::ProcessCommands() {
 
   int commands_processed = 0;
   while (commands_processed < commands_per_update_ && !parser_->IsEmpty()) {
-    parse_error::ParseError parse_error = parser_->ProcessCommand();
-    if (parse_error != parse_error::kParseNoError) {
-      command_buffer_->SetParseError(parse_error);
+    error::Error error = parser_->ProcessCommand();
+    if (error != error::kNoError) {
+      command_buffer_->SetParseError(error);
       return;
     }
     ++commands_processed;

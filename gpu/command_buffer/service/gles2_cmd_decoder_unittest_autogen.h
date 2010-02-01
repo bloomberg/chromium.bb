@@ -14,7 +14,7 @@ TEST_F(GLES2DecoderTest, ActiveTextureValidArgs) {
   SpecializedSetup<ActiveTexture, 0>();
   ActiveTexture cmd;
   cmd.Init(1);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, AttachShaderValidArgs) {
@@ -22,7 +22,7 @@ TEST_F(GLES2DecoderTest, AttachShaderValidArgs) {
   SpecializedSetup<AttachShader, 0>();
   AttachShader cmd;
   cmd.Init(client_program_id_, client_shader_id_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 // TODO(gman): BindAttribLocation
 
@@ -34,7 +34,7 @@ TEST_F(GLES2DecoderTest, BindBufferValidArgs) {
   SpecializedSetup<BindBuffer, 0>();
   BindBuffer cmd;
   cmd.Init(GL_ARRAY_BUFFER, client_buffer_id_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, BindBufferInvalidArgs0_0) {
@@ -42,7 +42,7 @@ TEST_F(GLES2DecoderTest, BindBufferInvalidArgs0_0) {
   SpecializedSetup<BindBuffer, 0>();
   BindBuffer cmd;
   cmd.Init(GL_RENDERBUFFER, client_buffer_id_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, BindFramebufferValidArgs) {
@@ -50,7 +50,7 @@ TEST_F(GLES2DecoderTest, BindFramebufferValidArgs) {
   SpecializedSetup<BindFramebuffer, 0>();
   BindFramebuffer cmd;
   cmd.Init(GL_FRAMEBUFFER, client_framebuffer_id_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, BindRenderbufferValidArgs) {
@@ -59,7 +59,7 @@ TEST_F(GLES2DecoderTest, BindRenderbufferValidArgs) {
   SpecializedSetup<BindRenderbuffer, 0>();
   BindRenderbuffer cmd;
   cmd.Init(GL_RENDERBUFFER, client_renderbuffer_id_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, BindTextureValidArgs) {
@@ -67,7 +67,7 @@ TEST_F(GLES2DecoderTest, BindTextureValidArgs) {
   SpecializedSetup<BindTexture, 0>();
   BindTexture cmd;
   cmd.Init(GL_TEXTURE_2D, client_texture_id_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, BindTextureInvalidArgs0_0) {
@@ -75,7 +75,7 @@ TEST_F(GLES2DecoderTest, BindTextureInvalidArgs0_0) {
   SpecializedSetup<BindTexture, 0>();
   BindTexture cmd;
   cmd.Init(GL_TEXTURE_1D, client_texture_id_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, BindTextureInvalidArgs0_1) {
@@ -83,7 +83,7 @@ TEST_F(GLES2DecoderTest, BindTextureInvalidArgs0_1) {
   SpecializedSetup<BindTexture, 0>();
   BindTexture cmd;
   cmd.Init(GL_TEXTURE_3D, client_texture_id_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, BlendColorValidArgs) {
@@ -91,7 +91,7 @@ TEST_F(GLES2DecoderTest, BlendColorValidArgs) {
   SpecializedSetup<BlendColor, 0>();
   BlendColor cmd;
   cmd.Init(1, 2, 3, 4);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, BlendEquationValidArgs) {
@@ -99,7 +99,7 @@ TEST_F(GLES2DecoderTest, BlendEquationValidArgs) {
   SpecializedSetup<BlendEquation, 0>();
   BlendEquation cmd;
   cmd.Init(GL_FUNC_ADD);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, BlendEquationInvalidArgs0_0) {
@@ -107,7 +107,7 @@ TEST_F(GLES2DecoderTest, BlendEquationInvalidArgs0_0) {
   SpecializedSetup<BlendEquation, 0>();
   BlendEquation cmd;
   cmd.Init(GL_MIN);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, BlendEquationInvalidArgs0_1) {
@@ -115,7 +115,7 @@ TEST_F(GLES2DecoderTest, BlendEquationInvalidArgs0_1) {
   SpecializedSetup<BlendEquation, 0>();
   BlendEquation cmd;
   cmd.Init(GL_MAX);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, BlendEquationSeparateValidArgs) {
@@ -123,7 +123,7 @@ TEST_F(GLES2DecoderTest, BlendEquationSeparateValidArgs) {
   SpecializedSetup<BlendEquationSeparate, 0>();
   BlendEquationSeparate cmd;
   cmd.Init(GL_FUNC_ADD, GL_FUNC_ADD);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, BlendEquationSeparateInvalidArgs0_0) {
@@ -131,7 +131,7 @@ TEST_F(GLES2DecoderTest, BlendEquationSeparateInvalidArgs0_0) {
   SpecializedSetup<BlendEquationSeparate, 0>();
   BlendEquationSeparate cmd;
   cmd.Init(GL_MIN, GL_FUNC_ADD);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, BlendEquationSeparateInvalidArgs0_1) {
@@ -139,7 +139,7 @@ TEST_F(GLES2DecoderTest, BlendEquationSeparateInvalidArgs0_1) {
   SpecializedSetup<BlendEquationSeparate, 0>();
   BlendEquationSeparate cmd;
   cmd.Init(GL_MAX, GL_FUNC_ADD);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, BlendEquationSeparateInvalidArgs1_0) {
@@ -147,7 +147,7 @@ TEST_F(GLES2DecoderTest, BlendEquationSeparateInvalidArgs1_0) {
   SpecializedSetup<BlendEquationSeparate, 0>();
   BlendEquationSeparate cmd;
   cmd.Init(GL_FUNC_ADD, GL_MIN);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, BlendEquationSeparateInvalidArgs1_1) {
@@ -155,7 +155,7 @@ TEST_F(GLES2DecoderTest, BlendEquationSeparateInvalidArgs1_1) {
   SpecializedSetup<BlendEquationSeparate, 0>();
   BlendEquationSeparate cmd;
   cmd.Init(GL_FUNC_ADD, GL_MAX);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, BlendFuncValidArgs) {
@@ -163,7 +163,7 @@ TEST_F(GLES2DecoderTest, BlendFuncValidArgs) {
   SpecializedSetup<BlendFunc, 0>();
   BlendFunc cmd;
   cmd.Init(GL_ZERO, GL_ZERO);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, BlendFuncSeparateValidArgs) {
@@ -171,7 +171,7 @@ TEST_F(GLES2DecoderTest, BlendFuncSeparateValidArgs) {
   SpecializedSetup<BlendFuncSeparate, 0>();
   BlendFuncSeparate cmd;
   cmd.Init(GL_ZERO, GL_ZERO, GL_ZERO, GL_ZERO);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 // TODO(gman): BufferData
 
@@ -187,7 +187,7 @@ TEST_F(GLES2DecoderTest, CheckFramebufferStatusValidArgs) {
   SpecializedSetup<CheckFramebufferStatus, 0>();
   CheckFramebufferStatus cmd;
   cmd.Init(GL_FRAMEBUFFER);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, ClearValidArgs) {
@@ -195,7 +195,7 @@ TEST_F(GLES2DecoderTest, ClearValidArgs) {
   SpecializedSetup<Clear, 0>();
   Clear cmd;
   cmd.Init(1);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, ClearColorValidArgs) {
@@ -203,7 +203,7 @@ TEST_F(GLES2DecoderTest, ClearColorValidArgs) {
   SpecializedSetup<ClearColor, 0>();
   ClearColor cmd;
   cmd.Init(1, 2, 3, 4);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, ClearDepthfValidArgs) {
@@ -211,7 +211,7 @@ TEST_F(GLES2DecoderTest, ClearDepthfValidArgs) {
   SpecializedSetup<ClearDepthf, 0>();
   ClearDepthf cmd;
   cmd.Init(1);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, ClearStencilValidArgs) {
@@ -219,7 +219,7 @@ TEST_F(GLES2DecoderTest, ClearStencilValidArgs) {
   SpecializedSetup<ClearStencil, 0>();
   ClearStencil cmd;
   cmd.Init(1);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, ColorMaskValidArgs) {
@@ -227,7 +227,7 @@ TEST_F(GLES2DecoderTest, ColorMaskValidArgs) {
   SpecializedSetup<ColorMask, 0>();
   ColorMask cmd;
   cmd.Init(1, 2, 3, 4);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, CompileShaderValidArgs) {
@@ -235,7 +235,7 @@ TEST_F(GLES2DecoderTest, CompileShaderValidArgs) {
   SpecializedSetup<CompileShader, 0>();
   CompileShader cmd;
   cmd.Init(client_shader_id_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 // TODO(gman): CompressedTexImage2D
 
@@ -251,7 +251,7 @@ TEST_F(GLES2DecoderTest, CopyTexImage2DValidArgs) {
   SpecializedSetup<CopyTexImage2D, 0>();
   CopyTexImage2D cmd;
   cmd.Init(GL_TEXTURE_2D, 2, 3, 4, 5, 6, 7, 8);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, CopyTexImage2DInvalidArgs0_0) {
@@ -259,7 +259,7 @@ TEST_F(GLES2DecoderTest, CopyTexImage2DInvalidArgs0_0) {
   SpecializedSetup<CopyTexImage2D, 0>();
   CopyTexImage2D cmd;
   cmd.Init(GL_PROXY_TEXTURE_CUBE_MAP, 2, 3, 4, 5, 6, 7, 8);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, CopyTexSubImage2DValidArgs) {
@@ -267,7 +267,7 @@ TEST_F(GLES2DecoderTest, CopyTexSubImage2DValidArgs) {
   SpecializedSetup<CopyTexSubImage2D, 0>();
   CopyTexSubImage2D cmd;
   cmd.Init(GL_TEXTURE_2D, 2, 3, 4, 5, 6, 7, 8);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, CopyTexSubImage2DInvalidArgs0_0) {
@@ -275,7 +275,7 @@ TEST_F(GLES2DecoderTest, CopyTexSubImage2DInvalidArgs0_0) {
   SpecializedSetup<CopyTexSubImage2D, 0>();
   CopyTexSubImage2D cmd;
   cmd.Init(GL_PROXY_TEXTURE_CUBE_MAP, 2, 3, 4, 5, 6, 7, 8);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, CreateProgramValidArgs) {
@@ -284,7 +284,7 @@ TEST_F(GLES2DecoderTest, CreateProgramValidArgs) {
   SpecializedSetup<CreateProgram, 0>();
   CreateProgram cmd;
   cmd.Init(kNewClientId);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GetServiceId(kNewClientId), kNewServiceId);
 }
 
@@ -294,7 +294,7 @@ TEST_F(GLES2DecoderTest, CreateShaderValidArgs) {
   SpecializedSetup<CreateShader, 0>();
   CreateShader cmd;
   cmd.Init(GL_VERTEX_SHADER, kNewClientId);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GetServiceId(kNewClientId), kNewServiceId);
 }
 
@@ -303,7 +303,7 @@ TEST_F(GLES2DecoderTest, CullFaceValidArgs) {
   SpecializedSetup<CullFace, 0>();
   CullFace cmd;
   cmd.Init(GL_FRONT);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, DeleteBuffersValidArgs) {
@@ -315,7 +315,7 @@ TEST_F(GLES2DecoderTest, DeleteBuffersValidArgs) {
   SpecializedSetup<DeleteBuffers, 0>();
   DeleteBuffers cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GetServiceId(kNewClientId), 0u);
 }
 
@@ -326,7 +326,7 @@ TEST_F(GLES2DecoderTest, DeleteBuffersInvalidArgs) {
   SpecializedSetup<DeleteBuffers, 0>();
   DeleteBuffers cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, DeleteBuffersImmediateValidArgs) {
@@ -337,7 +337,7 @@ TEST_F(GLES2DecoderTest, DeleteBuffersImmediateValidArgs) {
   DeleteBuffersImmediate& cmd = *GetImmediateAs<DeleteBuffersImmediate>();
   SpecializedSetup<DeleteBuffersImmediate, 0>();
   cmd.Init(1, &client_buffer_id_);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(client_buffer_id_)));
   EXPECT_EQ(GetServiceId(kNewClientId), 0u);
 }
@@ -349,7 +349,7 @@ TEST_F(GLES2DecoderTest, DeleteBuffersImmediateInvalidArgs) {
   SpecializedSetup<DeleteBuffersImmediate, 0>();
   GLuint temp = kInvalidClientId;
   cmd.Init(1, &temp);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -362,7 +362,7 @@ TEST_F(GLES2DecoderTest, DeleteFramebuffersValidArgs) {
   SpecializedSetup<DeleteFramebuffers, 0>();
   DeleteFramebuffers cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GetServiceId(kNewClientId), 0u);
 }
 
@@ -373,7 +373,7 @@ TEST_F(GLES2DecoderTest, DeleteFramebuffersInvalidArgs) {
   SpecializedSetup<DeleteFramebuffers, 0>();
   DeleteFramebuffers cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, DeleteFramebuffersImmediateValidArgs) {
@@ -385,7 +385,7 @@ TEST_F(GLES2DecoderTest, DeleteFramebuffersImmediateValidArgs) {
       *GetImmediateAs<DeleteFramebuffersImmediate>();
   SpecializedSetup<DeleteFramebuffersImmediate, 0>();
   cmd.Init(1, &client_framebuffer_id_);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(client_framebuffer_id_)));
   EXPECT_EQ(GetServiceId(kNewClientId), 0u);
 }
@@ -398,7 +398,7 @@ TEST_F(GLES2DecoderTest, DeleteFramebuffersImmediateInvalidArgs) {
   SpecializedSetup<DeleteFramebuffersImmediate, 0>();
   GLuint temp = kInvalidClientId;
   cmd.Init(1, &temp);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 // TODO(gman): DeleteProgram
@@ -413,7 +413,7 @@ TEST_F(GLES2DecoderTest, DeleteRenderbuffersValidArgs) {
   SpecializedSetup<DeleteRenderbuffers, 0>();
   DeleteRenderbuffers cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GetServiceId(kNewClientId), 0u);
 }
 
@@ -424,7 +424,7 @@ TEST_F(GLES2DecoderTest, DeleteRenderbuffersInvalidArgs) {
   SpecializedSetup<DeleteRenderbuffers, 0>();
   DeleteRenderbuffers cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, DeleteRenderbuffersImmediateValidArgs) {
@@ -436,7 +436,7 @@ TEST_F(GLES2DecoderTest, DeleteRenderbuffersImmediateValidArgs) {
       *GetImmediateAs<DeleteRenderbuffersImmediate>();
   SpecializedSetup<DeleteRenderbuffersImmediate, 0>();
   cmd.Init(1, &client_renderbuffer_id_);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(client_renderbuffer_id_)));
   EXPECT_EQ(GetServiceId(kNewClientId), 0u);
 }
@@ -449,7 +449,7 @@ TEST_F(GLES2DecoderTest, DeleteRenderbuffersImmediateInvalidArgs) {
   SpecializedSetup<DeleteRenderbuffersImmediate, 0>();
   GLuint temp = kInvalidClientId;
   cmd.Init(1, &temp);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 // TODO(gman): DeleteShader
@@ -464,7 +464,7 @@ TEST_F(GLES2DecoderTest, DeleteTexturesValidArgs) {
   SpecializedSetup<DeleteTextures, 0>();
   DeleteTextures cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GetServiceId(kNewClientId), 0u);
 }
 
@@ -475,7 +475,7 @@ TEST_F(GLES2DecoderTest, DeleteTexturesInvalidArgs) {
   SpecializedSetup<DeleteTextures, 0>();
   DeleteTextures cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, DeleteTexturesImmediateValidArgs) {
@@ -486,7 +486,7 @@ TEST_F(GLES2DecoderTest, DeleteTexturesImmediateValidArgs) {
   DeleteTexturesImmediate& cmd = *GetImmediateAs<DeleteTexturesImmediate>();
   SpecializedSetup<DeleteTexturesImmediate, 0>();
   cmd.Init(1, &client_texture_id_);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(client_texture_id_)));
   EXPECT_EQ(GetServiceId(kNewClientId), 0u);
 }
@@ -498,7 +498,7 @@ TEST_F(GLES2DecoderTest, DeleteTexturesImmediateInvalidArgs) {
   SpecializedSetup<DeleteTexturesImmediate, 0>();
   GLuint temp = kInvalidClientId;
   cmd.Init(1, &temp);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -507,7 +507,7 @@ TEST_F(GLES2DecoderTest, DepthFuncValidArgs) {
   SpecializedSetup<DepthFunc, 0>();
   DepthFunc cmd;
   cmd.Init(GL_NEVER);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, DepthMaskValidArgs) {
@@ -515,7 +515,7 @@ TEST_F(GLES2DecoderTest, DepthMaskValidArgs) {
   SpecializedSetup<DepthMask, 0>();
   DepthMask cmd;
   cmd.Init(1);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, DepthRangefValidArgs) {
@@ -523,7 +523,7 @@ TEST_F(GLES2DecoderTest, DepthRangefValidArgs) {
   SpecializedSetup<DepthRangef, 0>();
   DepthRangef cmd;
   cmd.Init(1, 2);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, DetachShaderValidArgs) {
@@ -531,7 +531,7 @@ TEST_F(GLES2DecoderTest, DetachShaderValidArgs) {
   SpecializedSetup<DetachShader, 0>();
   DetachShader cmd;
   cmd.Init(client_program_id_, client_shader_id_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, DisableValidArgs) {
@@ -539,7 +539,7 @@ TEST_F(GLES2DecoderTest, DisableValidArgs) {
   SpecializedSetup<Disable, 0>();
   Disable cmd;
   cmd.Init(GL_BLEND);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, DisableInvalidArgs0_0) {
@@ -547,7 +547,7 @@ TEST_F(GLES2DecoderTest, DisableInvalidArgs0_0) {
   SpecializedSetup<Disable, 0>();
   Disable cmd;
   cmd.Init(GL_CLIP_PLANE0);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, DisableInvalidArgs0_1) {
@@ -555,7 +555,7 @@ TEST_F(GLES2DecoderTest, DisableInvalidArgs0_1) {
   SpecializedSetup<Disable, 0>();
   Disable cmd;
   cmd.Init(GL_POINT_SPRITE);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, DisableVertexAttribArrayValidArgs) {
@@ -563,7 +563,7 @@ TEST_F(GLES2DecoderTest, DisableVertexAttribArrayValidArgs) {
   SpecializedSetup<DisableVertexAttribArray, 0>();
   DisableVertexAttribArray cmd;
   cmd.Init(1);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 // TODO(gman): DrawArrays
 // TODO(gman): DrawElements
@@ -574,7 +574,7 @@ TEST_F(GLES2DecoderTest, EnableValidArgs) {
   SpecializedSetup<Enable, 0>();
   Enable cmd;
   cmd.Init(GL_BLEND);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, EnableInvalidArgs0_0) {
@@ -582,7 +582,7 @@ TEST_F(GLES2DecoderTest, EnableInvalidArgs0_0) {
   SpecializedSetup<Enable, 0>();
   Enable cmd;
   cmd.Init(GL_CLIP_PLANE0);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, EnableInvalidArgs0_1) {
@@ -590,7 +590,7 @@ TEST_F(GLES2DecoderTest, EnableInvalidArgs0_1) {
   SpecializedSetup<Enable, 0>();
   Enable cmd;
   cmd.Init(GL_POINT_SPRITE);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, EnableVertexAttribArrayValidArgs) {
@@ -598,7 +598,7 @@ TEST_F(GLES2DecoderTest, EnableVertexAttribArrayValidArgs) {
   SpecializedSetup<EnableVertexAttribArray, 0>();
   EnableVertexAttribArray cmd;
   cmd.Init(1);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, FinishValidArgs) {
@@ -606,7 +606,7 @@ TEST_F(GLES2DecoderTest, FinishValidArgs) {
   SpecializedSetup<Finish, 0>();
   Finish cmd;
   cmd.Init();
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, FlushValidArgs) {
@@ -614,7 +614,7 @@ TEST_F(GLES2DecoderTest, FlushValidArgs) {
   SpecializedSetup<Flush, 0>();
   Flush cmd;
   cmd.Init();
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, FramebufferRenderbufferValidArgs) {
@@ -627,7 +627,7 @@ TEST_F(GLES2DecoderTest, FramebufferRenderbufferValidArgs) {
   cmd.Init(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_RENDERBUFFER,
       client_renderbuffer_id_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, FramebufferTexture2DValidArgs) {
@@ -640,7 +640,7 @@ TEST_F(GLES2DecoderTest, FramebufferTexture2DValidArgs) {
   cmd.Init(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, client_texture_id_,
       5);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, FramebufferTexture2DInvalidArgs2_0) {
@@ -650,7 +650,7 @@ TEST_F(GLES2DecoderTest, FramebufferTexture2DInvalidArgs2_0) {
   cmd.Init(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_PROXY_TEXTURE_CUBE_MAP,
       client_texture_id_, 5);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, FrontFaceValidArgs) {
@@ -658,7 +658,7 @@ TEST_F(GLES2DecoderTest, FrontFaceValidArgs) {
   SpecializedSetup<FrontFace, 0>();
   FrontFace cmd;
   cmd.Init(GL_CW);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GenBuffersValidArgs) {
@@ -668,7 +668,7 @@ TEST_F(GLES2DecoderTest, GenBuffersValidArgs) {
   SpecializedSetup<GenBuffers, 0>();
   GenBuffers cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GetServiceId(kNewClientId), kNewServiceId);
 }
 
@@ -678,7 +678,7 @@ TEST_F(GLES2DecoderTest, GenBuffersInvalidArgs) {
   SpecializedSetup<GenBuffers, 0>();
   GenBuffers cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseInvalidArguments, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GenBuffersImmediateValidArgs) {
@@ -688,7 +688,7 @@ TEST_F(GLES2DecoderTest, GenBuffersImmediateValidArgs) {
   GLuint temp = kNewClientId;
   SpecializedSetup<GenBuffersImmediate, 0>();
   cmd.Init(1, &temp);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GetServiceId(kNewClientId), kNewServiceId);
 }
@@ -698,7 +698,7 @@ TEST_F(GLES2DecoderTest, GenBuffersImmediateInvalidArgs) {
   GenBuffersImmediate& cmd = *GetImmediateAs<GenBuffersImmediate>();
   SpecializedSetup<GenBuffersImmediate, 0>();
   cmd.Init(1, &client_buffer_id_);
-  EXPECT_EQ(parse_error::kParseInvalidArguments,
+  EXPECT_EQ(error::kInvalidArguments,
             ExecuteImmediateCmd(cmd, sizeof(&client_buffer_id_)));
 }
 
@@ -707,7 +707,7 @@ TEST_F(GLES2DecoderTest, GenerateMipmapValidArgs) {
   SpecializedSetup<GenerateMipmap, 0>();
   GenerateMipmap cmd;
   cmd.Init(GL_TEXTURE_2D);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GenerateMipmapInvalidArgs0_0) {
@@ -715,7 +715,7 @@ TEST_F(GLES2DecoderTest, GenerateMipmapInvalidArgs0_0) {
   SpecializedSetup<GenerateMipmap, 0>();
   GenerateMipmap cmd;
   cmd.Init(GL_TEXTURE_1D);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GenerateMipmapInvalidArgs0_1) {
@@ -723,7 +723,7 @@ TEST_F(GLES2DecoderTest, GenerateMipmapInvalidArgs0_1) {
   SpecializedSetup<GenerateMipmap, 0>();
   GenerateMipmap cmd;
   cmd.Init(GL_TEXTURE_3D);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GenFramebuffersValidArgs) {
@@ -733,7 +733,7 @@ TEST_F(GLES2DecoderTest, GenFramebuffersValidArgs) {
   SpecializedSetup<GenFramebuffers, 0>();
   GenFramebuffers cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GetServiceId(kNewClientId), kNewServiceId);
 }
 
@@ -743,7 +743,7 @@ TEST_F(GLES2DecoderTest, GenFramebuffersInvalidArgs) {
   SpecializedSetup<GenFramebuffers, 0>();
   GenFramebuffers cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseInvalidArguments, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GenFramebuffersImmediateValidArgs) {
@@ -753,7 +753,7 @@ TEST_F(GLES2DecoderTest, GenFramebuffersImmediateValidArgs) {
   GLuint temp = kNewClientId;
   SpecializedSetup<GenFramebuffersImmediate, 0>();
   cmd.Init(1, &temp);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GetServiceId(kNewClientId), kNewServiceId);
 }
@@ -763,7 +763,7 @@ TEST_F(GLES2DecoderTest, GenFramebuffersImmediateInvalidArgs) {
   GenFramebuffersImmediate& cmd = *GetImmediateAs<GenFramebuffersImmediate>();
   SpecializedSetup<GenFramebuffersImmediate, 0>();
   cmd.Init(1, &client_framebuffer_id_);
-  EXPECT_EQ(parse_error::kParseInvalidArguments,
+  EXPECT_EQ(error::kInvalidArguments,
             ExecuteImmediateCmd(cmd, sizeof(&client_framebuffer_id_)));
 }
 
@@ -774,7 +774,7 @@ TEST_F(GLES2DecoderTest, GenRenderbuffersValidArgs) {
   SpecializedSetup<GenRenderbuffers, 0>();
   GenRenderbuffers cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GetServiceId(kNewClientId), kNewServiceId);
 }
 
@@ -784,7 +784,7 @@ TEST_F(GLES2DecoderTest, GenRenderbuffersInvalidArgs) {
   SpecializedSetup<GenRenderbuffers, 0>();
   GenRenderbuffers cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseInvalidArguments, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GenRenderbuffersImmediateValidArgs) {
@@ -795,7 +795,7 @@ TEST_F(GLES2DecoderTest, GenRenderbuffersImmediateValidArgs) {
   GLuint temp = kNewClientId;
   SpecializedSetup<GenRenderbuffersImmediate, 0>();
   cmd.Init(1, &temp);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GetServiceId(kNewClientId), kNewServiceId);
 }
@@ -806,7 +806,7 @@ TEST_F(GLES2DecoderTest, GenRenderbuffersImmediateInvalidArgs) {
       *GetImmediateAs<GenRenderbuffersImmediate>();
   SpecializedSetup<GenRenderbuffersImmediate, 0>();
   cmd.Init(1, &client_renderbuffer_id_);
-  EXPECT_EQ(parse_error::kParseInvalidArguments,
+  EXPECT_EQ(error::kInvalidArguments,
             ExecuteImmediateCmd(cmd, sizeof(&client_renderbuffer_id_)));
 }
 
@@ -817,7 +817,7 @@ TEST_F(GLES2DecoderTest, GenTexturesValidArgs) {
   SpecializedSetup<GenTextures, 0>();
   GenTextures cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(GetServiceId(kNewClientId), kNewServiceId);
 }
 
@@ -827,7 +827,7 @@ TEST_F(GLES2DecoderTest, GenTexturesInvalidArgs) {
   SpecializedSetup<GenTextures, 0>();
   GenTextures cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseInvalidArguments, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kInvalidArguments, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GenTexturesImmediateValidArgs) {
@@ -837,7 +837,7 @@ TEST_F(GLES2DecoderTest, GenTexturesImmediateValidArgs) {
   GLuint temp = kNewClientId;
   SpecializedSetup<GenTexturesImmediate, 0>();
   cmd.Init(1, &temp);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
   EXPECT_EQ(GetServiceId(kNewClientId), kNewServiceId);
 }
@@ -847,7 +847,7 @@ TEST_F(GLES2DecoderTest, GenTexturesImmediateInvalidArgs) {
   GenTexturesImmediate& cmd = *GetImmediateAs<GenTexturesImmediate>();
   SpecializedSetup<GenTexturesImmediate, 0>();
   cmd.Init(1, &client_texture_id_);
-  EXPECT_EQ(parse_error::kParseInvalidArguments,
+  EXPECT_EQ(error::kInvalidArguments,
             ExecuteImmediateCmd(cmd, sizeof(&client_texture_id_)));
 }
 // TODO(gman): GetActiveAttrib
@@ -868,7 +868,7 @@ TEST_F(GLES2DecoderTest, GetBooleanvValidArgs) {
   SpecializedSetup<GetBooleanv, 0>();
   GetBooleanv cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetBooleanvInvalidArgs1_0) {
@@ -876,7 +876,7 @@ TEST_F(GLES2DecoderTest, GetBooleanvInvalidArgs1_0) {
   SpecializedSetup<GetBooleanv, 0>();
   GetBooleanv cmd;
   cmd.Init(1, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetBooleanvInvalidArgs1_1) {
@@ -884,7 +884,7 @@ TEST_F(GLES2DecoderTest, GetBooleanvInvalidArgs1_1) {
   SpecializedSetup<GetBooleanv, 0>();
   GetBooleanv cmd;
   cmd.Init(1, shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetBufferParameterivValidArgs) {
@@ -897,7 +897,7 @@ TEST_F(GLES2DecoderTest, GetBufferParameterivValidArgs) {
   cmd.Init(
       GL_ARRAY_BUFFER, GL_BUFFER_SIZE, shared_memory_id_,
       shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetBufferParameterivInvalidArgs0_0) {
@@ -907,7 +907,7 @@ TEST_F(GLES2DecoderTest, GetBufferParameterivInvalidArgs0_0) {
   cmd.Init(
       GL_RENDERBUFFER, GL_BUFFER_SIZE, shared_memory_id_,
       shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetBufferParameterivInvalidArgs1_0) {
@@ -917,7 +917,7 @@ TEST_F(GLES2DecoderTest, GetBufferParameterivInvalidArgs1_0) {
   cmd.Init(
       GL_ARRAY_BUFFER, GL_PIXEL_PACK_BUFFER, shared_memory_id_,
       shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetBufferParameterivInvalidArgs2_0) {
@@ -925,7 +925,7 @@ TEST_F(GLES2DecoderTest, GetBufferParameterivInvalidArgs2_0) {
   SpecializedSetup<GetBufferParameteriv, 0>();
   GetBufferParameteriv cmd;
   cmd.Init(GL_ARRAY_BUFFER, GL_BUFFER_SIZE, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetBufferParameterivInvalidArgs2_1) {
@@ -935,7 +935,7 @@ TEST_F(GLES2DecoderTest, GetBufferParameterivInvalidArgs2_1) {
   cmd.Init(
       GL_ARRAY_BUFFER, GL_BUFFER_SIZE, shared_memory_id_,
       kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetErrorValidArgs) {
@@ -943,7 +943,7 @@ TEST_F(GLES2DecoderTest, GetErrorValidArgs) {
   SpecializedSetup<GetError, 0>();
   GetError cmd;
   cmd.Init(shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetFloatvValidArgs) {
@@ -952,7 +952,7 @@ TEST_F(GLES2DecoderTest, GetFloatvValidArgs) {
   SpecializedSetup<GetFloatv, 0>();
   GetFloatv cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetFloatvInvalidArgs1_0) {
@@ -960,7 +960,7 @@ TEST_F(GLES2DecoderTest, GetFloatvInvalidArgs1_0) {
   SpecializedSetup<GetFloatv, 0>();
   GetFloatv cmd;
   cmd.Init(1, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetFloatvInvalidArgs1_1) {
@@ -968,7 +968,7 @@ TEST_F(GLES2DecoderTest, GetFloatvInvalidArgs1_1) {
   SpecializedSetup<GetFloatv, 0>();
   GetFloatv cmd;
   cmd.Init(1, shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetFramebufferAttachmentParameterivValidArgs) {
@@ -983,7 +983,7 @@ TEST_F(GLES2DecoderTest, GetFramebufferAttachmentParameterivValidArgs) {
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
       GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, shared_memory_id_,
       shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetFramebufferAttachmentParameterivInvalidArgs3_0) {
@@ -994,7 +994,7 @@ TEST_F(GLES2DecoderTest, GetFramebufferAttachmentParameterivInvalidArgs3_0) {
   cmd.Init(
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
       GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetFramebufferAttachmentParameterivInvalidArgs3_1) {
@@ -1006,7 +1006,7 @@ TEST_F(GLES2DecoderTest, GetFramebufferAttachmentParameterivInvalidArgs3_1) {
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
       GL_FRAMEBUFFER_ATTACHMENT_OBJECT_TYPE, shared_memory_id_,
       kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetIntegervValidArgs) {
@@ -1015,7 +1015,7 @@ TEST_F(GLES2DecoderTest, GetIntegervValidArgs) {
   SpecializedSetup<GetIntegerv, 0>();
   GetIntegerv cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetIntegervInvalidArgs1_0) {
@@ -1023,7 +1023,7 @@ TEST_F(GLES2DecoderTest, GetIntegervInvalidArgs1_0) {
   SpecializedSetup<GetIntegerv, 0>();
   GetIntegerv cmd;
   cmd.Init(1, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetIntegervInvalidArgs1_1) {
@@ -1031,7 +1031,7 @@ TEST_F(GLES2DecoderTest, GetIntegervInvalidArgs1_1) {
   SpecializedSetup<GetIntegerv, 0>();
   GetIntegerv cmd;
   cmd.Init(1, shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetProgramivValidArgs) {
@@ -1044,7 +1044,7 @@ TEST_F(GLES2DecoderTest, GetProgramivValidArgs) {
   cmd.Init(
       client_program_id_, GL_DELETE_STATUS, shared_memory_id_,
       shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetProgramivInvalidArgs2_0) {
@@ -1052,7 +1052,7 @@ TEST_F(GLES2DecoderTest, GetProgramivInvalidArgs2_0) {
   SpecializedSetup<GetProgramiv, 0>();
   GetProgramiv cmd;
   cmd.Init(client_program_id_, GL_DELETE_STATUS, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetProgramivInvalidArgs2_1) {
@@ -1062,7 +1062,7 @@ TEST_F(GLES2DecoderTest, GetProgramivInvalidArgs2_1) {
   cmd.Init(
       client_program_id_, GL_DELETE_STATUS, shared_memory_id_,
       kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 // TODO(gman): GetProgramInfoLog
 
@@ -1077,7 +1077,7 @@ TEST_F(GLES2DecoderTest, GetRenderbufferParameterivValidArgs) {
   cmd.Init(
       GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, shared_memory_id_,
       shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetRenderbufferParameterivInvalidArgs2_0) {
@@ -1085,7 +1085,7 @@ TEST_F(GLES2DecoderTest, GetRenderbufferParameterivInvalidArgs2_0) {
   SpecializedSetup<GetRenderbufferParameteriv, 0>();
   GetRenderbufferParameteriv cmd;
   cmd.Init(GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetRenderbufferParameterivInvalidArgs2_1) {
@@ -1095,7 +1095,7 @@ TEST_F(GLES2DecoderTest, GetRenderbufferParameterivInvalidArgs2_1) {
   cmd.Init(
       GL_RENDERBUFFER, GL_RENDERBUFFER_WIDTH, shared_memory_id_,
       kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetShaderivValidArgs) {
@@ -1108,7 +1108,7 @@ TEST_F(GLES2DecoderTest, GetShaderivValidArgs) {
   cmd.Init(
       client_shader_id_, GL_SHADER_TYPE, shared_memory_id_,
       shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetShaderivInvalidArgs2_0) {
@@ -1116,7 +1116,7 @@ TEST_F(GLES2DecoderTest, GetShaderivInvalidArgs2_0) {
   SpecializedSetup<GetShaderiv, 0>();
   GetShaderiv cmd;
   cmd.Init(client_shader_id_, GL_SHADER_TYPE, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetShaderivInvalidArgs2_1) {
@@ -1126,7 +1126,7 @@ TEST_F(GLES2DecoderTest, GetShaderivInvalidArgs2_1) {
   cmd.Init(
       client_shader_id_, GL_SHADER_TYPE, shared_memory_id_,
       kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 // TODO(gman): GetShaderInfoLog
 
@@ -1140,7 +1140,7 @@ TEST_F(GLES2DecoderTest, GetStringValidArgs) {
   SpecializedSetup<GetString, 0>();
   GetString cmd;
   cmd.Init(GL_VENDOR);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetTexParameterfvValidArgs) {
@@ -1153,7 +1153,7 @@ TEST_F(GLES2DecoderTest, GetTexParameterfvValidArgs) {
   cmd.Init(
       GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
       shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetTexParameterfvInvalidArgs0_0) {
@@ -1163,7 +1163,7 @@ TEST_F(GLES2DecoderTest, GetTexParameterfvInvalidArgs0_0) {
   cmd.Init(
       GL_PROXY_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
       shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetTexParameterfvInvalidArgs1_0) {
@@ -1173,7 +1173,7 @@ TEST_F(GLES2DecoderTest, GetTexParameterfvInvalidArgs1_0) {
   cmd.Init(
       GL_TEXTURE_2D, GL_GENERATE_MIPMAP, shared_memory_id_,
       shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetTexParameterfvInvalidArgs2_0) {
@@ -1181,7 +1181,7 @@ TEST_F(GLES2DecoderTest, GetTexParameterfvInvalidArgs2_0) {
   SpecializedSetup<GetTexParameterfv, 0>();
   GetTexParameterfv cmd;
   cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetTexParameterfvInvalidArgs2_1) {
@@ -1191,7 +1191,7 @@ TEST_F(GLES2DecoderTest, GetTexParameterfvInvalidArgs2_1) {
   cmd.Init(
       GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
       kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetTexParameterivValidArgs) {
@@ -1204,7 +1204,7 @@ TEST_F(GLES2DecoderTest, GetTexParameterivValidArgs) {
   cmd.Init(
       GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
       shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetTexParameterivInvalidArgs0_0) {
@@ -1214,7 +1214,7 @@ TEST_F(GLES2DecoderTest, GetTexParameterivInvalidArgs0_0) {
   cmd.Init(
       GL_PROXY_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
       shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetTexParameterivInvalidArgs1_0) {
@@ -1224,7 +1224,7 @@ TEST_F(GLES2DecoderTest, GetTexParameterivInvalidArgs1_0) {
   cmd.Init(
       GL_TEXTURE_2D, GL_GENERATE_MIPMAP, shared_memory_id_,
       shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetTexParameterivInvalidArgs2_0) {
@@ -1232,7 +1232,7 @@ TEST_F(GLES2DecoderTest, GetTexParameterivInvalidArgs2_0) {
   SpecializedSetup<GetTexParameteriv, 0>();
   GetTexParameteriv cmd;
   cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetTexParameterivInvalidArgs2_1) {
@@ -1242,7 +1242,7 @@ TEST_F(GLES2DecoderTest, GetTexParameterivInvalidArgs2_1) {
   cmd.Init(
       GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
       kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 // TODO(gman): GetUniformfv
 
@@ -1263,7 +1263,7 @@ TEST_F(GLES2DecoderTest, GetVertexAttribfvValidArgs) {
   cmd.Init(
       1, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, shared_memory_id_,
       shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetVertexAttribfvInvalidArgs2_0) {
@@ -1272,7 +1272,7 @@ TEST_F(GLES2DecoderTest, GetVertexAttribfvInvalidArgs2_0) {
   GetVertexAttribfv cmd;
   cmd.Init(
       1, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetVertexAttribfvInvalidArgs2_1) {
@@ -1282,7 +1282,7 @@ TEST_F(GLES2DecoderTest, GetVertexAttribfvInvalidArgs2_1) {
   cmd.Init(
       1, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, shared_memory_id_,
       kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetVertexAttribivValidArgs) {
@@ -1295,7 +1295,7 @@ TEST_F(GLES2DecoderTest, GetVertexAttribivValidArgs) {
   cmd.Init(
       1, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, shared_memory_id_,
       shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetVertexAttribivInvalidArgs2_0) {
@@ -1304,7 +1304,7 @@ TEST_F(GLES2DecoderTest, GetVertexAttribivInvalidArgs2_0) {
   GetVertexAttribiv cmd;
   cmd.Init(
       1, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, GetVertexAttribivInvalidArgs2_1) {
@@ -1314,7 +1314,7 @@ TEST_F(GLES2DecoderTest, GetVertexAttribivInvalidArgs2_1) {
   cmd.Init(
       1, GL_VERTEX_ATTRIB_ARRAY_BUFFER_BINDING, shared_memory_id_,
       kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 // TODO(gman): GetVertexAttribPointerv
 
@@ -1324,7 +1324,7 @@ TEST_F(GLES2DecoderTest, HintValidArgs) {
   SpecializedSetup<Hint, 0>();
   Hint cmd;
   cmd.Init(GL_GENERATE_MIPMAP_HINT, GL_FASTEST);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, HintInvalidArgs0_0) {
@@ -1332,7 +1332,7 @@ TEST_F(GLES2DecoderTest, HintInvalidArgs0_0) {
   SpecializedSetup<Hint, 0>();
   Hint cmd;
   cmd.Init(GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, IsBufferValidArgs) {
@@ -1340,7 +1340,7 @@ TEST_F(GLES2DecoderTest, IsBufferValidArgs) {
   SpecializedSetup<IsBuffer, 0>();
   IsBuffer cmd;
   cmd.Init(client_buffer_id_, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, IsEnabledValidArgs) {
@@ -1348,7 +1348,7 @@ TEST_F(GLES2DecoderTest, IsEnabledValidArgs) {
   SpecializedSetup<IsEnabled, 0>();
   IsEnabled cmd;
   cmd.Init(GL_BLEND, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, IsEnabledInvalidArgs0_0) {
@@ -1356,7 +1356,7 @@ TEST_F(GLES2DecoderTest, IsEnabledInvalidArgs0_0) {
   SpecializedSetup<IsEnabled, 0>();
   IsEnabled cmd;
   cmd.Init(GL_CLIP_PLANE0, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, IsEnabledInvalidArgs0_1) {
@@ -1364,7 +1364,7 @@ TEST_F(GLES2DecoderTest, IsEnabledInvalidArgs0_1) {
   SpecializedSetup<IsEnabled, 0>();
   IsEnabled cmd;
   cmd.Init(GL_POINT_SPRITE, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, IsFramebufferValidArgs) {
@@ -1372,7 +1372,7 @@ TEST_F(GLES2DecoderTest, IsFramebufferValidArgs) {
   SpecializedSetup<IsFramebuffer, 0>();
   IsFramebuffer cmd;
   cmd.Init(client_framebuffer_id_, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, IsProgramValidArgs) {
@@ -1380,7 +1380,7 @@ TEST_F(GLES2DecoderTest, IsProgramValidArgs) {
   SpecializedSetup<IsProgram, 0>();
   IsProgram cmd;
   cmd.Init(client_program_id_, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, IsRenderbufferValidArgs) {
@@ -1388,7 +1388,7 @@ TEST_F(GLES2DecoderTest, IsRenderbufferValidArgs) {
   SpecializedSetup<IsRenderbuffer, 0>();
   IsRenderbuffer cmd;
   cmd.Init(client_renderbuffer_id_, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, IsShaderValidArgs) {
@@ -1396,7 +1396,7 @@ TEST_F(GLES2DecoderTest, IsShaderValidArgs) {
   SpecializedSetup<IsShader, 0>();
   IsShader cmd;
   cmd.Init(client_shader_id_, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, IsTextureValidArgs) {
@@ -1404,7 +1404,7 @@ TEST_F(GLES2DecoderTest, IsTextureValidArgs) {
   SpecializedSetup<IsTexture, 0>();
   IsTexture cmd;
   cmd.Init(client_texture_id_, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, LineWidthValidArgs) {
@@ -1412,7 +1412,7 @@ TEST_F(GLES2DecoderTest, LineWidthValidArgs) {
   SpecializedSetup<LineWidth, 0>();
   LineWidth cmd;
   cmd.Init(1);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, LinkProgramValidArgs) {
@@ -1420,7 +1420,7 @@ TEST_F(GLES2DecoderTest, LinkProgramValidArgs) {
   SpecializedSetup<LinkProgram, 0>();
   LinkProgram cmd;
   cmd.Init(client_program_id_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 // TODO(gman): PixelStorei
 
@@ -1430,7 +1430,7 @@ TEST_F(GLES2DecoderTest, PolygonOffsetValidArgs) {
   SpecializedSetup<PolygonOffset, 0>();
   PolygonOffset cmd;
   cmd.Init(1, 2);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 // TODO(gman): ReadPixels
 
@@ -1440,7 +1440,7 @@ TEST_F(GLES2DecoderTest, RenderbufferStorageValidArgs) {
   SpecializedSetup<RenderbufferStorage, 0>();
   RenderbufferStorage cmd;
   cmd.Init(GL_RENDERBUFFER, GL_RGBA4, 3, 4);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, SampleCoverageValidArgs) {
@@ -1448,7 +1448,7 @@ TEST_F(GLES2DecoderTest, SampleCoverageValidArgs) {
   SpecializedSetup<SampleCoverage, 0>();
   SampleCoverage cmd;
   cmd.Init(1, 2);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, ScissorValidArgs) {
@@ -1456,7 +1456,7 @@ TEST_F(GLES2DecoderTest, ScissorValidArgs) {
   SpecializedSetup<Scissor, 0>();
   Scissor cmd;
   cmd.Init(1, 2, 3, 4);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 // TODO(gman): ShaderSource
 
@@ -1468,7 +1468,7 @@ TEST_F(GLES2DecoderTest, StencilFuncValidArgs) {
   SpecializedSetup<StencilFunc, 0>();
   StencilFunc cmd;
   cmd.Init(GL_NEVER, 2, 3);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, StencilFuncSeparateValidArgs) {
@@ -1476,7 +1476,7 @@ TEST_F(GLES2DecoderTest, StencilFuncSeparateValidArgs) {
   SpecializedSetup<StencilFuncSeparate, 0>();
   StencilFuncSeparate cmd;
   cmd.Init(GL_FRONT, GL_NEVER, 3, 4);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, StencilMaskValidArgs) {
@@ -1484,7 +1484,7 @@ TEST_F(GLES2DecoderTest, StencilMaskValidArgs) {
   SpecializedSetup<StencilMask, 0>();
   StencilMask cmd;
   cmd.Init(1);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, StencilMaskSeparateValidArgs) {
@@ -1492,7 +1492,7 @@ TEST_F(GLES2DecoderTest, StencilMaskSeparateValidArgs) {
   SpecializedSetup<StencilMaskSeparate, 0>();
   StencilMaskSeparate cmd;
   cmd.Init(GL_FRONT, 2);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, StencilOpValidArgs) {
@@ -1500,7 +1500,7 @@ TEST_F(GLES2DecoderTest, StencilOpValidArgs) {
   SpecializedSetup<StencilOp, 0>();
   StencilOp cmd;
   cmd.Init(GL_KEEP, GL_KEEP, GL_KEEP);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, StencilOpSeparateValidArgs) {
@@ -1508,7 +1508,7 @@ TEST_F(GLES2DecoderTest, StencilOpSeparateValidArgs) {
   SpecializedSetup<StencilOpSeparate, 0>();
   StencilOpSeparate cmd;
   cmd.Init(GL_FRONT, GL_KEEP, GL_KEEP, GL_KEEP);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 // TODO(gman): TexImage2D
 
@@ -1520,7 +1520,7 @@ TEST_F(GLES2DecoderTest, TexParameterfValidArgs) {
   SpecializedSetup<TexParameterf, 0>();
   TexParameterf cmd;
   cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, 3);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, TexParameterfInvalidArgs0_0) {
@@ -1528,7 +1528,7 @@ TEST_F(GLES2DecoderTest, TexParameterfInvalidArgs0_0) {
   SpecializedSetup<TexParameterf, 0>();
   TexParameterf cmd;
   cmd.Init(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, 3);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, TexParameterfInvalidArgs0_1) {
@@ -1536,7 +1536,7 @@ TEST_F(GLES2DecoderTest, TexParameterfInvalidArgs0_1) {
   SpecializedSetup<TexParameterf, 0>();
   TexParameterf cmd;
   cmd.Init(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, 3);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, TexParameterfInvalidArgs1_0) {
@@ -1544,7 +1544,7 @@ TEST_F(GLES2DecoderTest, TexParameterfInvalidArgs1_0) {
   SpecializedSetup<TexParameterf, 0>();
   TexParameterf cmd;
   cmd.Init(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, 3);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, TexParameterfvValidArgs) {
@@ -1557,7 +1557,7 @@ TEST_F(GLES2DecoderTest, TexParameterfvValidArgs) {
   cmd.Init(
       GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
       shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, TexParameterfvInvalidArgs0_0) {
@@ -1567,7 +1567,7 @@ TEST_F(GLES2DecoderTest, TexParameterfvInvalidArgs0_0) {
   cmd.Init(
       GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
       shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, TexParameterfvInvalidArgs0_1) {
@@ -1577,7 +1577,7 @@ TEST_F(GLES2DecoderTest, TexParameterfvInvalidArgs0_1) {
   cmd.Init(
       GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
       shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, TexParameterfvInvalidArgs1_0) {
@@ -1587,7 +1587,7 @@ TEST_F(GLES2DecoderTest, TexParameterfvInvalidArgs1_0) {
   cmd.Init(
       GL_TEXTURE_2D, GL_GENERATE_MIPMAP, shared_memory_id_,
       shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, TexParameterfvInvalidArgs2_0) {
@@ -1595,7 +1595,7 @@ TEST_F(GLES2DecoderTest, TexParameterfvInvalidArgs2_0) {
   SpecializedSetup<TexParameterfv, 0>();
   TexParameterfv cmd;
   cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, TexParameterfvInvalidArgs2_1) {
@@ -1605,7 +1605,7 @@ TEST_F(GLES2DecoderTest, TexParameterfvInvalidArgs2_1) {
   cmd.Init(
       GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
       kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, TexParameterfvImmediateValidArgs) {
@@ -1617,7 +1617,7 @@ TEST_F(GLES2DecoderTest, TexParameterfvImmediateValidArgs) {
   SpecializedSetup<TexParameterfvImmediate, 0>();
   GLfloat temp[1] = { 0, };
   cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -1627,7 +1627,7 @@ TEST_F(GLES2DecoderTest, TexParameterfvImmediateInvalidArgs0_0) {
   SpecializedSetup<TexParameterfvImmediate, 0>();
   GLfloat temp[1] = { 0, };
   cmd.Init(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -1637,7 +1637,7 @@ TEST_F(GLES2DecoderTest, TexParameterfvImmediateInvalidArgs0_1) {
   SpecializedSetup<TexParameterfvImmediate, 0>();
   GLfloat temp[1] = { 0, };
   cmd.Init(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -1647,7 +1647,7 @@ TEST_F(GLES2DecoderTest, TexParameterfvImmediateInvalidArgs1_0) {
   SpecializedSetup<TexParameterfvImmediate, 0>();
   GLfloat temp[1] = { 0, };
   cmd.Init(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -1656,7 +1656,7 @@ TEST_F(GLES2DecoderTest, TexParameteriValidArgs) {
   SpecializedSetup<TexParameteri, 0>();
   TexParameteri cmd;
   cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, 3);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, TexParameteriInvalidArgs0_0) {
@@ -1664,7 +1664,7 @@ TEST_F(GLES2DecoderTest, TexParameteriInvalidArgs0_0) {
   SpecializedSetup<TexParameteri, 0>();
   TexParameteri cmd;
   cmd.Init(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, 3);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, TexParameteriInvalidArgs0_1) {
@@ -1672,7 +1672,7 @@ TEST_F(GLES2DecoderTest, TexParameteriInvalidArgs0_1) {
   SpecializedSetup<TexParameteri, 0>();
   TexParameteri cmd;
   cmd.Init(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, 3);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, TexParameteriInvalidArgs1_0) {
@@ -1680,7 +1680,7 @@ TEST_F(GLES2DecoderTest, TexParameteriInvalidArgs1_0) {
   SpecializedSetup<TexParameteri, 0>();
   TexParameteri cmd;
   cmd.Init(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, 3);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, TexParameterivValidArgs) {
@@ -1693,7 +1693,7 @@ TEST_F(GLES2DecoderTest, TexParameterivValidArgs) {
   cmd.Init(
       GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
       shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, TexParameterivInvalidArgs0_0) {
@@ -1703,7 +1703,7 @@ TEST_F(GLES2DecoderTest, TexParameterivInvalidArgs0_0) {
   cmd.Init(
       GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
       shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, TexParameterivInvalidArgs0_1) {
@@ -1713,7 +1713,7 @@ TEST_F(GLES2DecoderTest, TexParameterivInvalidArgs0_1) {
   cmd.Init(
       GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
       shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, TexParameterivInvalidArgs1_0) {
@@ -1723,7 +1723,7 @@ TEST_F(GLES2DecoderTest, TexParameterivInvalidArgs1_0) {
   cmd.Init(
       GL_TEXTURE_2D, GL_GENERATE_MIPMAP, shared_memory_id_,
       shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, TexParameterivInvalidArgs2_0) {
@@ -1731,7 +1731,7 @@ TEST_F(GLES2DecoderTest, TexParameterivInvalidArgs2_0) {
   SpecializedSetup<TexParameteriv, 0>();
   TexParameteriv cmd;
   cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, TexParameterivInvalidArgs2_1) {
@@ -1741,7 +1741,7 @@ TEST_F(GLES2DecoderTest, TexParameterivInvalidArgs2_1) {
   cmd.Init(
       GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
       kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, TexParameterivImmediateValidArgs) {
@@ -1753,7 +1753,7 @@ TEST_F(GLES2DecoderTest, TexParameterivImmediateValidArgs) {
   SpecializedSetup<TexParameterivImmediate, 0>();
   GLint temp[1] = { 0, };
   cmd.Init(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -1763,7 +1763,7 @@ TEST_F(GLES2DecoderTest, TexParameterivImmediateInvalidArgs0_0) {
   SpecializedSetup<TexParameterivImmediate, 0>();
   GLint temp[1] = { 0, };
   cmd.Init(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -1773,7 +1773,7 @@ TEST_F(GLES2DecoderTest, TexParameterivImmediateInvalidArgs0_1) {
   SpecializedSetup<TexParameterivImmediate, 0>();
   GLint temp[1] = { 0, };
   cmd.Init(GL_TEXTURE_3D, GL_TEXTURE_MAG_FILTER, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -1783,7 +1783,7 @@ TEST_F(GLES2DecoderTest, TexParameterivImmediateInvalidArgs1_0) {
   SpecializedSetup<TexParameterivImmediate, 0>();
   GLint temp[1] = { 0, };
   cmd.Init(GL_TEXTURE_2D, GL_GENERATE_MIPMAP, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 // TODO(gman): TexSubImage2D
@@ -1796,7 +1796,7 @@ TEST_F(GLES2DecoderTest, Uniform1fValidArgs) {
   SpecializedSetup<Uniform1f, 0>();
   Uniform1f cmd;
   cmd.Init(1, 2);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform1fvValidArgs) {
@@ -1806,7 +1806,7 @@ TEST_F(GLES2DecoderTest, Uniform1fvValidArgs) {
   SpecializedSetup<Uniform1fv, 0>();
   Uniform1fv cmd;
   cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform1fvInvalidArgs2_0) {
@@ -1814,7 +1814,7 @@ TEST_F(GLES2DecoderTest, Uniform1fvInvalidArgs2_0) {
   SpecializedSetup<Uniform1fv, 0>();
   Uniform1fv cmd;
   cmd.Init(1, 2, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform1fvInvalidArgs2_1) {
@@ -1822,7 +1822,7 @@ TEST_F(GLES2DecoderTest, Uniform1fvInvalidArgs2_1) {
   SpecializedSetup<Uniform1fv, 0>();
   Uniform1fv cmd;
   cmd.Init(1, 2, shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform1fvImmediateValidArgs) {
@@ -1834,7 +1834,7 @@ TEST_F(GLES2DecoderTest, Uniform1fvImmediateValidArgs) {
   SpecializedSetup<Uniform1fvImmediate, 0>();
   GLfloat temp[1 * 2] = { 0, };
   cmd.Init(1, 2, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -1843,7 +1843,7 @@ TEST_F(GLES2DecoderTest, Uniform1iValidArgs) {
   SpecializedSetup<Uniform1i, 0>();
   Uniform1i cmd;
   cmd.Init(1, 2);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform1ivValidArgs) {
@@ -1853,7 +1853,7 @@ TEST_F(GLES2DecoderTest, Uniform1ivValidArgs) {
   SpecializedSetup<Uniform1iv, 0>();
   Uniform1iv cmd;
   cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform1ivInvalidArgs2_0) {
@@ -1861,7 +1861,7 @@ TEST_F(GLES2DecoderTest, Uniform1ivInvalidArgs2_0) {
   SpecializedSetup<Uniform1iv, 0>();
   Uniform1iv cmd;
   cmd.Init(1, 2, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform1ivInvalidArgs2_1) {
@@ -1869,7 +1869,7 @@ TEST_F(GLES2DecoderTest, Uniform1ivInvalidArgs2_1) {
   SpecializedSetup<Uniform1iv, 0>();
   Uniform1iv cmd;
   cmd.Init(1, 2, shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform1ivImmediateValidArgs) {
@@ -1881,7 +1881,7 @@ TEST_F(GLES2DecoderTest, Uniform1ivImmediateValidArgs) {
   SpecializedSetup<Uniform1ivImmediate, 0>();
   GLint temp[1 * 2] = { 0, };
   cmd.Init(1, 2, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -1890,7 +1890,7 @@ TEST_F(GLES2DecoderTest, Uniform2fValidArgs) {
   SpecializedSetup<Uniform2f, 0>();
   Uniform2f cmd;
   cmd.Init(1, 2, 3);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform2fvValidArgs) {
@@ -1900,7 +1900,7 @@ TEST_F(GLES2DecoderTest, Uniform2fvValidArgs) {
   SpecializedSetup<Uniform2fv, 0>();
   Uniform2fv cmd;
   cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform2fvInvalidArgs2_0) {
@@ -1908,7 +1908,7 @@ TEST_F(GLES2DecoderTest, Uniform2fvInvalidArgs2_0) {
   SpecializedSetup<Uniform2fv, 0>();
   Uniform2fv cmd;
   cmd.Init(1, 2, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform2fvInvalidArgs2_1) {
@@ -1916,7 +1916,7 @@ TEST_F(GLES2DecoderTest, Uniform2fvInvalidArgs2_1) {
   SpecializedSetup<Uniform2fv, 0>();
   Uniform2fv cmd;
   cmd.Init(1, 2, shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform2fvImmediateValidArgs) {
@@ -1928,7 +1928,7 @@ TEST_F(GLES2DecoderTest, Uniform2fvImmediateValidArgs) {
   SpecializedSetup<Uniform2fvImmediate, 0>();
   GLfloat temp[2 * 2] = { 0, };
   cmd.Init(1, 2, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -1937,7 +1937,7 @@ TEST_F(GLES2DecoderTest, Uniform2iValidArgs) {
   SpecializedSetup<Uniform2i, 0>();
   Uniform2i cmd;
   cmd.Init(1, 2, 3);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform2ivValidArgs) {
@@ -1947,7 +1947,7 @@ TEST_F(GLES2DecoderTest, Uniform2ivValidArgs) {
   SpecializedSetup<Uniform2iv, 0>();
   Uniform2iv cmd;
   cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform2ivInvalidArgs2_0) {
@@ -1955,7 +1955,7 @@ TEST_F(GLES2DecoderTest, Uniform2ivInvalidArgs2_0) {
   SpecializedSetup<Uniform2iv, 0>();
   Uniform2iv cmd;
   cmd.Init(1, 2, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform2ivInvalidArgs2_1) {
@@ -1963,7 +1963,7 @@ TEST_F(GLES2DecoderTest, Uniform2ivInvalidArgs2_1) {
   SpecializedSetup<Uniform2iv, 0>();
   Uniform2iv cmd;
   cmd.Init(1, 2, shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform2ivImmediateValidArgs) {
@@ -1975,7 +1975,7 @@ TEST_F(GLES2DecoderTest, Uniform2ivImmediateValidArgs) {
   SpecializedSetup<Uniform2ivImmediate, 0>();
   GLint temp[2 * 2] = { 0, };
   cmd.Init(1, 2, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -1984,7 +1984,7 @@ TEST_F(GLES2DecoderTest, Uniform3fValidArgs) {
   SpecializedSetup<Uniform3f, 0>();
   Uniform3f cmd;
   cmd.Init(1, 2, 3, 4);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform3fvValidArgs) {
@@ -1994,7 +1994,7 @@ TEST_F(GLES2DecoderTest, Uniform3fvValidArgs) {
   SpecializedSetup<Uniform3fv, 0>();
   Uniform3fv cmd;
   cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform3fvInvalidArgs2_0) {
@@ -2002,7 +2002,7 @@ TEST_F(GLES2DecoderTest, Uniform3fvInvalidArgs2_0) {
   SpecializedSetup<Uniform3fv, 0>();
   Uniform3fv cmd;
   cmd.Init(1, 2, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform3fvInvalidArgs2_1) {
@@ -2010,7 +2010,7 @@ TEST_F(GLES2DecoderTest, Uniform3fvInvalidArgs2_1) {
   SpecializedSetup<Uniform3fv, 0>();
   Uniform3fv cmd;
   cmd.Init(1, 2, shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform3fvImmediateValidArgs) {
@@ -2022,7 +2022,7 @@ TEST_F(GLES2DecoderTest, Uniform3fvImmediateValidArgs) {
   SpecializedSetup<Uniform3fvImmediate, 0>();
   GLfloat temp[3 * 2] = { 0, };
   cmd.Init(1, 2, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -2031,7 +2031,7 @@ TEST_F(GLES2DecoderTest, Uniform3iValidArgs) {
   SpecializedSetup<Uniform3i, 0>();
   Uniform3i cmd;
   cmd.Init(1, 2, 3, 4);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform3ivValidArgs) {
@@ -2041,7 +2041,7 @@ TEST_F(GLES2DecoderTest, Uniform3ivValidArgs) {
   SpecializedSetup<Uniform3iv, 0>();
   Uniform3iv cmd;
   cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform3ivInvalidArgs2_0) {
@@ -2049,7 +2049,7 @@ TEST_F(GLES2DecoderTest, Uniform3ivInvalidArgs2_0) {
   SpecializedSetup<Uniform3iv, 0>();
   Uniform3iv cmd;
   cmd.Init(1, 2, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform3ivInvalidArgs2_1) {
@@ -2057,7 +2057,7 @@ TEST_F(GLES2DecoderTest, Uniform3ivInvalidArgs2_1) {
   SpecializedSetup<Uniform3iv, 0>();
   Uniform3iv cmd;
   cmd.Init(1, 2, shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform3ivImmediateValidArgs) {
@@ -2069,7 +2069,7 @@ TEST_F(GLES2DecoderTest, Uniform3ivImmediateValidArgs) {
   SpecializedSetup<Uniform3ivImmediate, 0>();
   GLint temp[3 * 2] = { 0, };
   cmd.Init(1, 2, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -2078,7 +2078,7 @@ TEST_F(GLES2DecoderTest, Uniform4fValidArgs) {
   SpecializedSetup<Uniform4f, 0>();
   Uniform4f cmd;
   cmd.Init(1, 2, 3, 4, 5);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform4fvValidArgs) {
@@ -2088,7 +2088,7 @@ TEST_F(GLES2DecoderTest, Uniform4fvValidArgs) {
   SpecializedSetup<Uniform4fv, 0>();
   Uniform4fv cmd;
   cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform4fvInvalidArgs2_0) {
@@ -2096,7 +2096,7 @@ TEST_F(GLES2DecoderTest, Uniform4fvInvalidArgs2_0) {
   SpecializedSetup<Uniform4fv, 0>();
   Uniform4fv cmd;
   cmd.Init(1, 2, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform4fvInvalidArgs2_1) {
@@ -2104,7 +2104,7 @@ TEST_F(GLES2DecoderTest, Uniform4fvInvalidArgs2_1) {
   SpecializedSetup<Uniform4fv, 0>();
   Uniform4fv cmd;
   cmd.Init(1, 2, shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform4fvImmediateValidArgs) {
@@ -2116,7 +2116,7 @@ TEST_F(GLES2DecoderTest, Uniform4fvImmediateValidArgs) {
   SpecializedSetup<Uniform4fvImmediate, 0>();
   GLfloat temp[4 * 2] = { 0, };
   cmd.Init(1, 2, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -2125,7 +2125,7 @@ TEST_F(GLES2DecoderTest, Uniform4iValidArgs) {
   SpecializedSetup<Uniform4i, 0>();
   Uniform4i cmd;
   cmd.Init(1, 2, 3, 4, 5);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform4ivValidArgs) {
@@ -2135,7 +2135,7 @@ TEST_F(GLES2DecoderTest, Uniform4ivValidArgs) {
   SpecializedSetup<Uniform4iv, 0>();
   Uniform4iv cmd;
   cmd.Init(1, 2, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform4ivInvalidArgs2_0) {
@@ -2143,7 +2143,7 @@ TEST_F(GLES2DecoderTest, Uniform4ivInvalidArgs2_0) {
   SpecializedSetup<Uniform4iv, 0>();
   Uniform4iv cmd;
   cmd.Init(1, 2, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform4ivInvalidArgs2_1) {
@@ -2151,7 +2151,7 @@ TEST_F(GLES2DecoderTest, Uniform4ivInvalidArgs2_1) {
   SpecializedSetup<Uniform4iv, 0>();
   Uniform4iv cmd;
   cmd.Init(1, 2, shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, Uniform4ivImmediateValidArgs) {
@@ -2163,7 +2163,7 @@ TEST_F(GLES2DecoderTest, Uniform4ivImmediateValidArgs) {
   SpecializedSetup<Uniform4ivImmediate, 0>();
   GLint temp[4 * 2] = { 0, };
   cmd.Init(1, 2, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -2175,7 +2175,7 @@ TEST_F(GLES2DecoderTest, UniformMatrix2fvValidArgs) {
   SpecializedSetup<UniformMatrix2fv, 0>();
   UniformMatrix2fv cmd;
   cmd.Init(1, 2, false, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, UniformMatrix2fvInvalidArgs2_0) {
@@ -2183,7 +2183,7 @@ TEST_F(GLES2DecoderTest, UniformMatrix2fvInvalidArgs2_0) {
   SpecializedSetup<UniformMatrix2fv, 0>();
   UniformMatrix2fv cmd;
   cmd.Init(1, 2, true, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, UniformMatrix2fvInvalidArgs3_0) {
@@ -2191,7 +2191,7 @@ TEST_F(GLES2DecoderTest, UniformMatrix2fvInvalidArgs3_0) {
   SpecializedSetup<UniformMatrix2fv, 0>();
   UniformMatrix2fv cmd;
   cmd.Init(1, 2, false, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, UniformMatrix2fvInvalidArgs3_1) {
@@ -2199,7 +2199,7 @@ TEST_F(GLES2DecoderTest, UniformMatrix2fvInvalidArgs3_1) {
   SpecializedSetup<UniformMatrix2fv, 0>();
   UniformMatrix2fv cmd;
   cmd.Init(1, 2, false, shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, UniformMatrix2fvImmediateValidArgs) {
@@ -2212,7 +2212,7 @@ TEST_F(GLES2DecoderTest, UniformMatrix2fvImmediateValidArgs) {
   SpecializedSetup<UniformMatrix2fvImmediate, 0>();
   GLfloat temp[4 * 2] = { 0, };
   cmd.Init(1, 2, false, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -2223,7 +2223,7 @@ TEST_F(GLES2DecoderTest, UniformMatrix2fvImmediateInvalidArgs2_0) {
   SpecializedSetup<UniformMatrix2fvImmediate, 0>();
   GLfloat temp[4 * 2] = { 0, };
   cmd.Init(1, 2, true, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -2235,7 +2235,7 @@ TEST_F(GLES2DecoderTest, UniformMatrix3fvValidArgs) {
   SpecializedSetup<UniformMatrix3fv, 0>();
   UniformMatrix3fv cmd;
   cmd.Init(1, 2, false, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, UniformMatrix3fvInvalidArgs2_0) {
@@ -2243,7 +2243,7 @@ TEST_F(GLES2DecoderTest, UniformMatrix3fvInvalidArgs2_0) {
   SpecializedSetup<UniformMatrix3fv, 0>();
   UniformMatrix3fv cmd;
   cmd.Init(1, 2, true, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, UniformMatrix3fvInvalidArgs3_0) {
@@ -2251,7 +2251,7 @@ TEST_F(GLES2DecoderTest, UniformMatrix3fvInvalidArgs3_0) {
   SpecializedSetup<UniformMatrix3fv, 0>();
   UniformMatrix3fv cmd;
   cmd.Init(1, 2, false, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, UniformMatrix3fvInvalidArgs3_1) {
@@ -2259,7 +2259,7 @@ TEST_F(GLES2DecoderTest, UniformMatrix3fvInvalidArgs3_1) {
   SpecializedSetup<UniformMatrix3fv, 0>();
   UniformMatrix3fv cmd;
   cmd.Init(1, 2, false, shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, UniformMatrix3fvImmediateValidArgs) {
@@ -2272,7 +2272,7 @@ TEST_F(GLES2DecoderTest, UniformMatrix3fvImmediateValidArgs) {
   SpecializedSetup<UniformMatrix3fvImmediate, 0>();
   GLfloat temp[9 * 2] = { 0, };
   cmd.Init(1, 2, false, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -2283,7 +2283,7 @@ TEST_F(GLES2DecoderTest, UniformMatrix3fvImmediateInvalidArgs2_0) {
   SpecializedSetup<UniformMatrix3fvImmediate, 0>();
   GLfloat temp[9 * 2] = { 0, };
   cmd.Init(1, 2, true, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -2295,7 +2295,7 @@ TEST_F(GLES2DecoderTest, UniformMatrix4fvValidArgs) {
   SpecializedSetup<UniformMatrix4fv, 0>();
   UniformMatrix4fv cmd;
   cmd.Init(1, 2, false, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, UniformMatrix4fvInvalidArgs2_0) {
@@ -2303,7 +2303,7 @@ TEST_F(GLES2DecoderTest, UniformMatrix4fvInvalidArgs2_0) {
   SpecializedSetup<UniformMatrix4fv, 0>();
   UniformMatrix4fv cmd;
   cmd.Init(1, 2, true, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, UniformMatrix4fvInvalidArgs3_0) {
@@ -2311,7 +2311,7 @@ TEST_F(GLES2DecoderTest, UniformMatrix4fvInvalidArgs3_0) {
   SpecializedSetup<UniformMatrix4fv, 0>();
   UniformMatrix4fv cmd;
   cmd.Init(1, 2, false, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, UniformMatrix4fvInvalidArgs3_1) {
@@ -2319,7 +2319,7 @@ TEST_F(GLES2DecoderTest, UniformMatrix4fvInvalidArgs3_1) {
   SpecializedSetup<UniformMatrix4fv, 0>();
   UniformMatrix4fv cmd;
   cmd.Init(1, 2, false, shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, UniformMatrix4fvImmediateValidArgs) {
@@ -2332,7 +2332,7 @@ TEST_F(GLES2DecoderTest, UniformMatrix4fvImmediateValidArgs) {
   SpecializedSetup<UniformMatrix4fvImmediate, 0>();
   GLfloat temp[16 * 2] = { 0, };
   cmd.Init(1, 2, false, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -2343,7 +2343,7 @@ TEST_F(GLES2DecoderTest, UniformMatrix4fvImmediateInvalidArgs2_0) {
   SpecializedSetup<UniformMatrix4fvImmediate, 0>();
   GLfloat temp[16 * 2] = { 0, };
   cmd.Init(1, 2, true, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 // TODO(gman): UseProgram
@@ -2353,7 +2353,7 @@ TEST_F(GLES2DecoderTest, ValidateProgramValidArgs) {
   SpecializedSetup<ValidateProgram, 0>();
   ValidateProgram cmd;
   cmd.Init(client_program_id_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, VertexAttrib1fValidArgs) {
@@ -2361,7 +2361,7 @@ TEST_F(GLES2DecoderTest, VertexAttrib1fValidArgs) {
   SpecializedSetup<VertexAttrib1f, 0>();
   VertexAttrib1f cmd;
   cmd.Init(1, 2);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, VertexAttrib1fvValidArgs) {
@@ -2371,7 +2371,7 @@ TEST_F(GLES2DecoderTest, VertexAttrib1fvValidArgs) {
   SpecializedSetup<VertexAttrib1fv, 0>();
   VertexAttrib1fv cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, VertexAttrib1fvInvalidArgs1_0) {
@@ -2379,7 +2379,7 @@ TEST_F(GLES2DecoderTest, VertexAttrib1fvInvalidArgs1_0) {
   SpecializedSetup<VertexAttrib1fv, 0>();
   VertexAttrib1fv cmd;
   cmd.Init(1, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, VertexAttrib1fvInvalidArgs1_1) {
@@ -2387,7 +2387,7 @@ TEST_F(GLES2DecoderTest, VertexAttrib1fvInvalidArgs1_1) {
   SpecializedSetup<VertexAttrib1fv, 0>();
   VertexAttrib1fv cmd;
   cmd.Init(1, shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, VertexAttrib1fvImmediateValidArgs) {
@@ -2399,7 +2399,7 @@ TEST_F(GLES2DecoderTest, VertexAttrib1fvImmediateValidArgs) {
   SpecializedSetup<VertexAttrib1fvImmediate, 0>();
   GLfloat temp[1] = { 0, };
   cmd.Init(1, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -2408,7 +2408,7 @@ TEST_F(GLES2DecoderTest, VertexAttrib2fValidArgs) {
   SpecializedSetup<VertexAttrib2f, 0>();
   VertexAttrib2f cmd;
   cmd.Init(1, 2, 3);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, VertexAttrib2fvValidArgs) {
@@ -2418,7 +2418,7 @@ TEST_F(GLES2DecoderTest, VertexAttrib2fvValidArgs) {
   SpecializedSetup<VertexAttrib2fv, 0>();
   VertexAttrib2fv cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, VertexAttrib2fvInvalidArgs1_0) {
@@ -2426,7 +2426,7 @@ TEST_F(GLES2DecoderTest, VertexAttrib2fvInvalidArgs1_0) {
   SpecializedSetup<VertexAttrib2fv, 0>();
   VertexAttrib2fv cmd;
   cmd.Init(1, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, VertexAttrib2fvInvalidArgs1_1) {
@@ -2434,7 +2434,7 @@ TEST_F(GLES2DecoderTest, VertexAttrib2fvInvalidArgs1_1) {
   SpecializedSetup<VertexAttrib2fv, 0>();
   VertexAttrib2fv cmd;
   cmd.Init(1, shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, VertexAttrib2fvImmediateValidArgs) {
@@ -2446,7 +2446,7 @@ TEST_F(GLES2DecoderTest, VertexAttrib2fvImmediateValidArgs) {
   SpecializedSetup<VertexAttrib2fvImmediate, 0>();
   GLfloat temp[2] = { 0, };
   cmd.Init(1, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -2455,7 +2455,7 @@ TEST_F(GLES2DecoderTest, VertexAttrib3fValidArgs) {
   SpecializedSetup<VertexAttrib3f, 0>();
   VertexAttrib3f cmd;
   cmd.Init(1, 2, 3, 4);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, VertexAttrib3fvValidArgs) {
@@ -2465,7 +2465,7 @@ TEST_F(GLES2DecoderTest, VertexAttrib3fvValidArgs) {
   SpecializedSetup<VertexAttrib3fv, 0>();
   VertexAttrib3fv cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, VertexAttrib3fvInvalidArgs1_0) {
@@ -2473,7 +2473,7 @@ TEST_F(GLES2DecoderTest, VertexAttrib3fvInvalidArgs1_0) {
   SpecializedSetup<VertexAttrib3fv, 0>();
   VertexAttrib3fv cmd;
   cmd.Init(1, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, VertexAttrib3fvInvalidArgs1_1) {
@@ -2481,7 +2481,7 @@ TEST_F(GLES2DecoderTest, VertexAttrib3fvInvalidArgs1_1) {
   SpecializedSetup<VertexAttrib3fv, 0>();
   VertexAttrib3fv cmd;
   cmd.Init(1, shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, VertexAttrib3fvImmediateValidArgs) {
@@ -2493,7 +2493,7 @@ TEST_F(GLES2DecoderTest, VertexAttrib3fvImmediateValidArgs) {
   SpecializedSetup<VertexAttrib3fvImmediate, 0>();
   GLfloat temp[3] = { 0, };
   cmd.Init(1, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
@@ -2502,7 +2502,7 @@ TEST_F(GLES2DecoderTest, VertexAttrib4fValidArgs) {
   SpecializedSetup<VertexAttrib4f, 0>();
   VertexAttrib4f cmd;
   cmd.Init(1, 2, 3, 4, 5);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, VertexAttrib4fvValidArgs) {
@@ -2512,7 +2512,7 @@ TEST_F(GLES2DecoderTest, VertexAttrib4fvValidArgs) {
   SpecializedSetup<VertexAttrib4fv, 0>();
   VertexAttrib4fv cmd;
   cmd.Init(1, shared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, VertexAttrib4fvInvalidArgs1_0) {
@@ -2520,7 +2520,7 @@ TEST_F(GLES2DecoderTest, VertexAttrib4fvInvalidArgs1_0) {
   SpecializedSetup<VertexAttrib4fv, 0>();
   VertexAttrib4fv cmd;
   cmd.Init(1, kInvalidSharedMemoryId, 0);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, VertexAttrib4fvInvalidArgs1_1) {
@@ -2528,7 +2528,7 @@ TEST_F(GLES2DecoderTest, VertexAttrib4fvInvalidArgs1_1) {
   SpecializedSetup<VertexAttrib4fv, 0>();
   VertexAttrib4fv cmd;
   cmd.Init(1, shared_memory_id_, kInvalidSharedMemoryOffset);
-  EXPECT_EQ(parse_error::kParseOutOfBounds, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kOutOfBounds, ExecuteCmd(cmd));
 }
 
 TEST_F(GLES2DecoderTest, VertexAttrib4fvImmediateValidArgs) {
@@ -2540,7 +2540,7 @@ TEST_F(GLES2DecoderTest, VertexAttrib4fvImmediateValidArgs) {
   SpecializedSetup<VertexAttrib4fvImmediate, 0>();
   GLfloat temp[4] = { 0, };
   cmd.Init(1, &temp[0]);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 // TODO(gman): VertexAttribPointer
@@ -2551,7 +2551,7 @@ TEST_F(GLES2DecoderTest, ViewportValidArgs) {
   SpecializedSetup<Viewport, 0>();
   Viewport cmd;
   cmd.Init(1, 2, 3, 4);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
 // TODO(gman): SwapBuffers
 #endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_UNITTEST_AUTOGEN_H_

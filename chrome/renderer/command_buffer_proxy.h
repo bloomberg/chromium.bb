@@ -42,7 +42,7 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   virtual void DestroyTransferBuffer(int32 id);
   virtual gpu::Buffer GetTransferBuffer(int32 handle);
   virtual void SetToken(int32 token);
-  virtual void SetParseError(gpu::parse_error::ParseError parse_error);
+  virtual void SetParseError(gpu::error::Error error);
 
  private:
   // As with the service, the client takes ownership of the ring buffer.

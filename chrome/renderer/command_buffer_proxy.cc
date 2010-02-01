@@ -165,7 +165,7 @@ void CommandBufferProxy::SetToken(int32 token) {
 }
 
 void CommandBufferProxy::SetParseError(
-    gpu::parse_error::ParseError parse_error) {
+    gpu::error::Error error) {
   // Not implemented in proxy.
   NOTREACHED();
 }

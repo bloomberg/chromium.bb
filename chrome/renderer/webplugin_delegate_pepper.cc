@@ -337,7 +337,7 @@ NPError WebPluginDelegatePepper::Device3DInitializeContext(
     command_buffer_.reset(nested_delegate_->CreateCommandBuffer());
     if (command_buffer_.get()) {
       // Initialize the proxy command buffer.
-      if (command_buffer_->Initialize(config->commandBufferEntries)) {
+      if (command_buffer_->Initialize(config->commandBufferSize)) {
         // Get the initial command buffer state.
         gpu::CommandBuffer::State state = command_buffer_->GetState();
 
@@ -345,7 +345,7 @@ NPError WebPluginDelegatePepper::Device3DInitializeContext(
         context->reserved = NULL;
         Buffer ring_buffer = command_buffer_->GetRingBuffer();
         context->commandBuffer = ring_buffer.ptr;
-        context->commandBufferEntries = state.size;
+        context->commandBufferSize = state.size;
         Synchronize3DContext(context, state);
 
         // Ensure the service knows the window size before rendering anything.
@@ -700,6 +700,6 @@ void WebPluginDelegatePepper::Synchronize3DContext(
   context->getOffset = state.get_offset;
   context->putOffset = state.put_offset;
   context->token = state.token;
-  context->error = static_cast<int32>(state.error);
+  context->error = static_cast<NPDeviceContext3DError>(state.error);
 }
 #endif  // ENABLE_GPU

@@ -24,7 +24,7 @@ namespace gles2 {
 // commands and calling GL.
 class GLES2Decoder : public CommonDecoder {
  public:
-  typedef parse_error::ParseError ParseError;
+  typedef error::Error Error;
 
   // Creates a decoder.
   static GLES2Decoder* Create();

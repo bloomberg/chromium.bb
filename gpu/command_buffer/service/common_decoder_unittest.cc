@@ -56,7 +56,7 @@ class TestCommonDecoder : public CommonDecoder {
   }
 
   // Overridden from AsyncAPIInterface
-  parse_error::ParseError DoCommand(
+  error::Error DoCommand(
       unsigned int command,
       unsigned int arg_count,
       const void* cmd_data) {
@@ -149,7 +149,7 @@ class CommonDecoderTest : public testing::Test {
   }
 
   template <typename T>
-  parse_error::ParseError ExecuteCmd(const T& cmd) {
+  error::Error ExecuteCmd(const T& cmd) {
     COMPILE_ASSERT(T::kArgFlags == cmd::kFixed, Cmd_kArgFlags_not_kFixed);
     return decoder_.DoCommand(cmd.kCmdId,
                               ComputeNumEntries(sizeof(cmd)) - 1,
@@ -157,7 +157,7 @@ class CommonDecoderTest : public testing::Test {
   }
 
   template <typename T>
-  parse_error::ParseError ExecuteImmediateCmd(const T& cmd, size_t data_size) {
+  error::Error ExecuteImmediateCmd(const T& cmd, size_t data_size) {
     COMPILE_ASSERT(T::kArgFlags == cmd::kAtLeastN, Cmd_kArgFlags_not_kAtLeastN);
     return decoder_.DoCommand(cmd.kCmdId,
                               ComputeNumEntries(sizeof(cmd) + data_size) - 1,
@@ -176,7 +176,7 @@ TEST_F(CommonDecoderTest, HandleNoop) {
   cmd::Noop cmd;
   const uint32 kSkipCount = 5;
   cmd.Init(kSkipCount);
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(
                 cmd, kSkipCount * kCommandBufferEntrySize));
 }
@@ -186,7 +186,7 @@ TEST_F(CommonDecoderTest, SetToken) {
   const int32 kTokenId = 123;
   EXPECT_EQ(0, engine_.token());
   cmd.Init(kTokenId);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(kTokenId, engine_.token());
 }
 
@@ -194,12 +194,12 @@ TEST_F(CommonDecoderTest, Jump) {
   cmd::Jump cmd;
   // Check valid args succeed.
   cmd.Init(MockCommandBufferEngine::kValidOffset);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(MockCommandBufferEngine::kValidOffset,
             engine_.GetGetOffset());
   // Check invalid offset fails.
   cmd.Init(MockCommandBufferEngine::kInvalidOffset);
-  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(MockCommandBufferEngine::kValidOffset,
             engine_.GetGetOffset());
 }
@@ -214,19 +214,19 @@ TEST_F(CommonDecoderTest, JumpRelative) {
   const int32 kPositiveOffset = 16;
   cmd.Init(kPositiveOffset);
   uint32 read_pointer = engine_.GetGetOffset();
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   // See note above.
   EXPECT_EQ(read_pointer + kPositiveOffset, engine_.GetGetOffset());
   // Check valid negative offset succeeds.
   const int32 kNegativeOffset = -8;
   read_pointer = engine_.GetGetOffset();
   cmd.Init(kNegativeOffset);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   // See note above.
   EXPECT_EQ(read_pointer + kNegativeOffset, engine_.GetGetOffset());
   // Check invalid offset fails.
   cmd.Init(MockCommandBufferEngine::kInvalidOffset);
-  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
   // See note above.
   EXPECT_EQ(read_pointer + kNegativeOffset, engine_.GetGetOffset());
 }
@@ -235,25 +235,25 @@ TEST_F(CommonDecoderTest, Call) {
   cmd::Call cmd;
   // Check valid args succeed.
   cmd.Init(MockCommandBufferEngine::kValidOffset);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(MockCommandBufferEngine::kValidOffset,
             engine_.GetGetOffset());
   // Check invalid offset fails.
   cmd.Init(MockCommandBufferEngine::kInvalidOffset);
-  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(MockCommandBufferEngine::kValidOffset,
             engine_.GetGetOffset());
   // Check that the call values are on the stack.
   cmd::Return return_cmd;
   return_cmd.Init();
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(return_cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(return_cmd));
   EXPECT_EQ(0u, engine_.GetGetOffset());
   // Check that stack overflow fails.
   cmd.Init(MockCommandBufferEngine::kValidOffset);
   for (unsigned int ii = 0; ii < CommonDecoder::kMaxStackDepth; ++ii) {
-    EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   }
-  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(CommonDecoderTest, CallRelative) {
@@ -262,38 +262,38 @@ TEST_F(CommonDecoderTest, CallRelative) {
   const int32 kPositiveOffset = 16;
   cmd.Init(kPositiveOffset);
   uint32 read_pointer_1 = engine_.GetGetOffset();
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   // See note above.
   EXPECT_EQ(read_pointer_1 + kPositiveOffset, engine_.GetGetOffset());
   // Check valid negative offset succeeds.
   const int32 kNegativeOffset = -8;
   uint32 read_pointer_2 = engine_.GetGetOffset();
   cmd.Init(kNegativeOffset);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   // See note above.
   EXPECT_EQ(read_pointer_2 + kNegativeOffset, engine_.GetGetOffset());
   // Check invalid offset fails.
   cmd.Init(MockCommandBufferEngine::kInvalidOffset);
-  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
   // See note above.
   EXPECT_EQ(read_pointer_2 + kNegativeOffset, engine_.GetGetOffset());
 
   // Check that the call values are on the stack.
   cmd::Return return_cmd;
   return_cmd.Init();
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(return_cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(return_cmd));
   // See note above.
   EXPECT_EQ(read_pointer_1 + kPositiveOffset, engine_.GetGetOffset());
 
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(return_cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(return_cmd));
   // See note above.
   EXPECT_EQ(0u, engine_.GetGetOffset());
   // Check that stack overflow fails.
   cmd.Init(kPositiveOffset);
   for (unsigned int ii = 0; ii < CommonDecoder::kMaxStackDepth; ++ii) {
-    EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   }
-  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(CommonDecoderTest, Return) {
@@ -301,7 +301,7 @@ TEST_F(CommonDecoderTest, Return) {
   // Test that an empty stack fails.
   cmd::Return cmd;
   cmd.Init();
-  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(CommonDecoderTest, SetBucketSize) {
@@ -313,20 +313,20 @@ TEST_F(CommonDecoderTest, SetBucketSize) {
   EXPECT_TRUE(NULL == decoder_.GetBucket(kBucketId));
   // Check we can create one.
   cmd.Init(kBucketId, kBucketLength1);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   CommonDecoder::Bucket* bucket;
   bucket = decoder_.GetBucket(kBucketId);
   EXPECT_TRUE(NULL != bucket);
   EXPECT_EQ(kBucketLength1, bucket->size());
   // Check we can change it.
   cmd.Init(kBucketId, kBucketLength2);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   bucket = decoder_.GetBucket(kBucketId);
   EXPECT_TRUE(NULL != bucket);
   EXPECT_EQ(kBucketLength2, bucket->size());
   // Check we can delete it.
   cmd.Init(kBucketId, 0);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   bucket = decoder_.GetBucket(kBucketId);
   EXPECT_EQ(0, bucket->size());
 }
@@ -341,7 +341,7 @@ TEST_F(CommonDecoderTest, SetBucketData) {
   const uint32 kInvalidBucketId = 124;
 
   size_cmd.Init(kBucketId, sizeof(kData));
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(size_cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(size_cmd));
   CommonDecoder::Bucket* bucket = decoder_.GetBucket(kBucketId);
   // Check the data is not there.
   EXPECT_NE(0, memcmp(bucket->GetData(0, sizeof(kData)), kData, sizeof(kData)));
@@ -352,7 +352,7 @@ TEST_F(CommonDecoderTest, SetBucketData) {
   memcpy(memory, kData, sizeof(kData));
   cmd.Init(kBucketId, 0, sizeof(kData),
            MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(0, memcmp(bucket->GetData(0, sizeof(kData)), kData, sizeof(kData)));
 
   // Check we can set it partially.
@@ -361,7 +361,7 @@ TEST_F(CommonDecoderTest, SetBucketData) {
   memcpy(memory, kData2, sizeof(kData2));
   cmd.Init(kBucketId, kSomeOffsetInBucket, sizeof(kData2),
            MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(0, memcmp(bucket->GetData(kSomeOffsetInBucket, sizeof(kData2)),
                       kData2, sizeof(kData2)));
   const char* bucket_data = bucket->GetDataAs<const char*>(0, sizeof(kData));
@@ -374,17 +374,17 @@ TEST_F(CommonDecoderTest, SetBucketData) {
   // Check that it fails if the bucket_id is invalid
   cmd.Init(kInvalidBucketId, kSomeOffsetInBucket, sizeof(kData2),
            MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
-  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 
   // Check that it fails if the offset is out of range.
   cmd.Init(kBucketId, bucket->size(), 1,
            MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
-  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 
   // Check that it fails if the size is out of range.
   cmd.Init(kBucketId, 0, bucket->size() + 1,
            MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
-  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(CommonDecoderTest, SetBucketDataImmediate) {
@@ -399,7 +399,7 @@ TEST_F(CommonDecoderTest, SetBucketDataImmediate) {
   const uint32 kInvalidBucketId = 124;
 
   size_cmd.Init(kBucketId, sizeof(kData));
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(size_cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(size_cmd));
   CommonDecoder::Bucket* bucket = decoder_.GetBucket(kBucketId);
   // Check the data is not there.
   EXPECT_NE(0, memcmp(bucket->GetData(0, sizeof(kData)), kData, sizeof(kData)));
@@ -408,7 +408,7 @@ TEST_F(CommonDecoderTest, SetBucketDataImmediate) {
   void* memory = &buffer[0] + sizeof(cmd);
   memcpy(memory, kData, sizeof(kData));
   cmd.Init(kBucketId, 0, sizeof(kData));
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(kData)));
   EXPECT_EQ(0, memcmp(bucket->GetData(0, sizeof(kData)), kData, sizeof(kData)));
 
@@ -417,7 +417,7 @@ TEST_F(CommonDecoderTest, SetBucketDataImmediate) {
   const uint32 kSomeOffsetInBucket = 5;
   memcpy(memory, kData2, sizeof(kData2));
   cmd.Init(kBucketId, kSomeOffsetInBucket, sizeof(kData2));
-  EXPECT_EQ(parse_error::kParseNoError,
+  EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(kData2)));
   EXPECT_EQ(0, memcmp(bucket->GetData(kSomeOffsetInBucket, sizeof(kData2)),
                       kData2, sizeof(kData2)));
@@ -430,17 +430,17 @@ TEST_F(CommonDecoderTest, SetBucketDataImmediate) {
 
   // Check that it fails if the bucket_id is invalid
   cmd.Init(kInvalidBucketId, kSomeOffsetInBucket, sizeof(kData2));
-  EXPECT_NE(parse_error::kParseNoError,
+  EXPECT_NE(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(kData2)));
 
   // Check that it fails if the offset is out of range.
   cmd.Init(kBucketId, bucket->size(), 1);
-  EXPECT_NE(parse_error::kParseNoError,
+  EXPECT_NE(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(kData2)));
 
   // Check that it fails if the size is out of range.
   cmd.Init(kBucketId, 0, bucket->size() + 1);
-  EXPECT_NE(parse_error::kParseNoError,
+  EXPECT_NE(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(kData2)));
 }
 
@@ -453,7 +453,7 @@ TEST_F(CommonDecoderTest, GetBucketSize) {
   const uint32 kInvalidBucketId = 124;
 
   size_cmd.Init(kBucketId, kBucketSize);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(size_cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(size_cmd));
 
   // Check that the size is correct.
   const uint32 kSomeOffsetInSharedMemory = 50;
@@ -462,13 +462,13 @@ TEST_F(CommonDecoderTest, GetBucketSize) {
   *memory = 0xFFFFFFFF;
   cmd.Init(kBucketId,
            MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(kBucketSize, *memory);
 
   // Check that it fails if the bucket_id is invalid
   cmd.Init(kInvalidBucketId,
            MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
-  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(CommonDecoderTest, GetBucketData) {
@@ -483,20 +483,20 @@ TEST_F(CommonDecoderTest, GetBucketData) {
   const uint32 kInvalidBucketId = 124;
 
   size_cmd.Init(kBucketId, sizeof(kData));
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(size_cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(size_cmd));
   CommonDecoder::Bucket* bucket = decoder_.GetBucket(kBucketId);
   const uint32 kSomeOffsetInSharedMemory = 50;
   uint8* memory = engine_.GetSharedMemoryAs<uint8*>(kSomeOffsetInSharedMemory);
   memcpy(memory, kData, sizeof(kData));
   set_cmd.Init(kBucketId, 0, sizeof(kData),
                MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(set_cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(set_cmd));
 
   // Check we can get the whole thing.
   memset(memory, 0, sizeof(kData));
   cmd.Init(kBucketId, 0, sizeof(kData),
            MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(0, memcmp(memory, kData, sizeof(kData)));
 
   // Check we can get a piece.
@@ -507,7 +507,7 @@ TEST_F(CommonDecoderTest, GetBucketData) {
   memory[-1] = kSentinel;
   cmd.Init(kBucketId, kSomeOffsetInBucket, kLengthOfPiece,
            MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
-  EXPECT_EQ(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(0, memcmp(memory, kData + kSomeOffsetInBucket, kLengthOfPiece));
   EXPECT_EQ(0, memcmp(memory + kLengthOfPiece, zero,
                       sizeof(kData) - kLengthOfPiece));
@@ -516,17 +516,17 @@ TEST_F(CommonDecoderTest, GetBucketData) {
   // Check that it fails if the bucket_id is invalid
   cmd.Init(kInvalidBucketId, kSomeOffsetInBucket, sizeof(kData),
            MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
-  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 
   // Check that it fails if the offset is invalid
   cmd.Init(kBucketId, sizeof(kData) + 1, 1,
            MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
-  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 
   // Check that it fails if the size is invalid
   cmd.Init(kBucketId, 0, sizeof(kData) + 1,
            MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
-  EXPECT_NE(parse_error::kParseNoError, ExecuteCmd(cmd));
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
 }  // namespace gpu

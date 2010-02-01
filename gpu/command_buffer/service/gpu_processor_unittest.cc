@@ -68,7 +68,7 @@ class GPUProcessorTest : public testing::Test {
     MessageLoop::current()->RunAllPending();
   }
 
-  parse_error::ParseError GetError() {
+  error::Error GetError() {
     return command_buffer_->GetState().error;
   }
 
@@ -112,7 +112,7 @@ TEST_F(GPUProcessorTest, ProcessesOneCommand) {
   EXPECT_CALL(*command_buffer_, SetGetOffset(2));
 
   EXPECT_CALL(*async_api_, DoCommand(7, 1, &buffer_[0]))
-    .WillOnce(Return(parse_error::kParseNoError));
+    .WillOnce(Return(error::kNoError));
 
   EXPECT_CALL(*command_buffer_, SetParseError(_))
     .Times(0);
@@ -136,10 +136,10 @@ TEST_F(GPUProcessorTest, ProcessesTwoCommands) {
   EXPECT_CALL(*command_buffer_, SetGetOffset(3));
 
   EXPECT_CALL(*async_api_, DoCommand(7, 1, &buffer_[0]))
-    .WillOnce(Return(parse_error::kParseNoError));
+    .WillOnce(Return(error::kNoError));
 
   EXPECT_CALL(*async_api_, DoCommand(8, 0, &buffer_[2]))
-    .WillOnce(Return(parse_error::kParseNoError));
+    .WillOnce(Return(error::kNoError));
 
   processor_->ProcessCommands();
 }
@@ -175,10 +175,10 @@ TEST_F(GPUProcessorTest, PostsTaskToFinishRemainingCommands) {
     .WillOnce(Return(state));
 
   EXPECT_CALL(*async_api_, DoCommand(7, 1, &buffer_[0]))
-    .WillOnce(Return(parse_error::kParseNoError));
+    .WillOnce(Return(error::kNoError));
 
   EXPECT_CALL(*async_api_, DoCommand(8, 0, &buffer_[2]))
-    .WillOnce(Return(parse_error::kParseNoError));
+    .WillOnce(Return(error::kNoError));
 
   EXPECT_CALL(*command_buffer_, SetGetOffset(3));
 
@@ -191,7 +191,7 @@ TEST_F(GPUProcessorTest, PostsTaskToFinishRemainingCommands) {
     .WillOnce(Return(state));
 
   EXPECT_CALL(*async_api_, DoCommand(9, 0, &buffer_[3]))
-    .WillOnce(Return(parse_error::kParseNoError));
+    .WillOnce(Return(error::kNoError));
 
   EXPECT_CALL(*command_buffer_, SetGetOffset(4));
 
@@ -211,17 +211,17 @@ TEST_F(GPUProcessorTest, SetsErrorCodeOnCommandBuffer) {
 
   EXPECT_CALL(*async_api_, DoCommand(7, 0, &buffer_[0]))
     .WillOnce(Return(
-        parse_error::kParseUnknownCommand));
+        error::kUnknownCommand));
 
   EXPECT_CALL(*command_buffer_,
-      SetParseError(parse_error::kParseUnknownCommand));
+      SetParseError(error::kUnknownCommand));
 
   processor_->ProcessCommands();
 }
 
 TEST_F(GPUProcessorTest, ProcessCommandsDoesNothingAfterError) {
   CommandBuffer::State state;
-  state.error = parse_error::kParseGenericError;
+  state.error = error::kGenericError;
 
   EXPECT_CALL(*command_buffer_, GetState())
     .WillOnce(Return(state));

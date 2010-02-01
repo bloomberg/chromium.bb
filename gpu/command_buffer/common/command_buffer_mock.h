@@ -30,7 +30,7 @@ class MockCommandBuffer : public CommandBuffer {
   MOCK_METHOD1(DestroyTransferBuffer, void(int32 handle));
   MOCK_METHOD1(GetTransferBuffer, Buffer(int32 handle));
   MOCK_METHOD1(SetToken, void(int32 token));
-  MOCK_METHOD1(SetParseError, void(parse_error::ParseError parse_error));
+  MOCK_METHOD1(SetParseError, void(error::Error error));
 
  private:
   DISALLOW_COPY_AND_ASSIGN(MockCommandBuffer);

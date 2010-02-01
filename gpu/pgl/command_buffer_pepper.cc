@@ -36,13 +36,13 @@ bool CommandBufferPepper::Initialize(int32 size) {
 Buffer CommandBufferPepper::GetRingBuffer() {
   Buffer buffer;
   buffer.ptr = context_->commandBuffer;
-  buffer.size = context_->commandBufferEntries * sizeof(int32);
+  buffer.size = context_->commandBufferSize * sizeof(int32);
   return buffer;
 }
 
 CommandBuffer::State CommandBufferPepper::GetState() {
   if (NPERR_NO_ERROR != device_->flushContext(npp_, context_, NULL, NULL))
-    context_->error = gpu::parse_error::kParseGenericError;
+    context_->error = NPDeviceContext3DError_GenericError;
 
   return ConvertState();
 }
@@ -51,7 +51,7 @@ CommandBuffer::State CommandBufferPepper::Flush(int32 put_offset) {
   context_->putOffset = put_offset;
 
   if (NPERR_NO_ERROR != device_->flushContext(npp_, context_, NULL, NULL))
-    context_->error = gpu::parse_error::kParseGenericError;
+    context_->error = NPDeviceContext3DError_GenericError;
 
   return ConvertState();
 }
@@ -90,18 +90,18 @@ void CommandBufferPepper::SetToken(int32 token) {
 }
 
 void CommandBufferPepper::SetParseError(
-    gpu::parse_error::ParseError parse_error) {
+    gpu::error::Error error) {
   // Not implemented by proxy.
   NOTREACHED();
 }
 
 CommandBuffer::State CommandBufferPepper::ConvertState() {
   CommandBuffer::State state;
-  state.size = context_->commandBufferEntries;
+  state.size = context_->commandBufferSize;
   state.get_offset = context_->getOffset;
   state.put_offset = context_->putOffset;
   state.token = context_->token;
-  state.error = static_cast<gpu::parse_error::ParseError>(
+  state.error = static_cast<gpu::error::Error>(
       context_->error);
   return state;
 }

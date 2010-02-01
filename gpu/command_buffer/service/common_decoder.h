@@ -19,7 +19,7 @@ class CommandBufferEngine;
 // o3d/gl2 command buffer decoder.
 class CommonDecoder : public AsyncAPIInterface {
  public:
-  typedef parse_error::ParseError ParseError;
+  typedef error::Error Error;
 
   static const unsigned int kMaxStackDepth = 32;
 
@@ -100,9 +100,9 @@ class CommonDecoder : public AsyncAPIInterface {
   //    arg_count: the number of CommandBufferEntry arguments.
   //    cmd_data: the command data.
   // Returns:
-  //   parse_error::NO_ERROR if no error was found, one of
-  //   parse_error::ParseError otherwise.
-  parse_error::ParseError DoCommonCommand(
+  //   error::kNoError if no error was found, one of
+  //   error::Error otherwise.
+  error::Error DoCommonCommand(
       unsigned int command,
       unsigned int arg_count,
       const void* cmd_data);
@@ -138,7 +138,7 @@ class CommonDecoder : public AsyncAPIInterface {
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
   #define COMMON_COMMAND_BUFFER_CMD_OP(name)             \
-     parse_error::ParseError Handle ## name(             \
+     error::Error Handle ## name(             \
        uint32 immediate_data_size,                       \
        const cmd::name& args);                           \
 

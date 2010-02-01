@@ -12,15 +12,15 @@ namespace gpu {
 typedef int32 CommandBufferOffset;
 const CommandBufferOffset kInvalidCommandBufferOffset = -1;
 
-// TODO(apatrick): rename to something more generic like just Error.
-namespace parse_error {
-  enum ParseError {
-    kParseNoError,
-    kParseInvalidSize,
-    kParseOutOfBounds,
-    kParseUnknownCommand,
-    kParseInvalidArguments,
-    kParseGenericError
+// This enum must stay in sync with NPDeviceContext3DError.
+namespace error {
+  enum Error {
+    kNoError,
+    kInvalidSize,
+    kOutOfBounds,
+    kUnknownCommand,
+    kInvalidArguments,
+    kGenericError
   };
 }
 

@@ -22,8 +22,8 @@ namespace gpu {
 class AsyncAPIMock : public AsyncAPIInterface {
  public:
   AsyncAPIMock() {
-    testing::DefaultValue<parse_error::ParseError>::Set(
-        parse_error::kParseNoError);
+    testing::DefaultValue<error::Error>::Set(
+        error::kNoError);
   }
 
   // Predicate that matches args passed to DoCommand, by looking at the values.
@@ -48,7 +48,7 @@ class AsyncAPIMock : public AsyncAPIInterface {
     CommandBufferEntry *args_;
   };
 
-  MOCK_METHOD3(DoCommand, parse_error::ParseError(
+  MOCK_METHOD3(DoCommand, error::Error(
       unsigned int command,
       unsigned int arg_count,
       const void* cmd_data));
