@@ -16,8 +16,12 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 #include "chrome/browser/shell_dialogs.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/views/html_dialog_view.h"
 #include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
+#include "views/window/non_client_view.h"
+#include "views/window/window.h"
 
 namespace {
 
@@ -103,6 +107,22 @@ class SelectFileDialogImpl : public SelectFileDialog {
     virtual void OnDialogClosed(const std::string& json_retval);
 
     DISALLOW_COPY_AND_ASSIGN(FileBrowseDelegate);
+  };
+
+  class FileBrowseDelegateHandler : public DOMMessageHandler {
+   public:
+    explicit FileBrowseDelegateHandler(FileBrowseDelegate* delegate);
+
+    // DOMMessageHandler implementation.
+    virtual void RegisterMessages();
+
+    // Callback for the "setDialogTitle" message.
+    void HandleSetDialogTitle(const Value* value);
+
+   private:
+    FileBrowseDelegate* delegate_;
+
+    DISALLOW_COPY_AND_ASSIGN(FileBrowseDelegateHandler);
   };
 
   // Notification from FileBrowseDelegate when file browse UI is dismissed.
@@ -291,6 +311,8 @@ GURL SelectFileDialogImpl::FileBrowseDelegate::GetDialogContentURL() const {
 
 void SelectFileDialogImpl::FileBrowseDelegate::GetDOMMessageHandlers(
     std::vector<DOMMessageHandler*>* handlers) const {
+  handlers->push_back(new FileBrowseDelegateHandler(
+      const_cast<FileBrowseDelegate*>(this)));
   return;
 }
 
@@ -387,4 +409,36 @@ void SelectFileDialogImpl::FileBrowseDelegate::OnDialogClosed(
   owner_->OnDialogClosed(this, json_retval);
   delete this;
   return;
+}
+
+SelectFileDialogImpl::FileBrowseDelegateHandler::FileBrowseDelegateHandler(
+    FileBrowseDelegate* delegate)
+    : delegate_(delegate) {
+}
+
+void SelectFileDialogImpl::FileBrowseDelegateHandler::RegisterMessages() {
+  dom_ui_->RegisterMessageCallback("setDialogTitle",
+      NewCallback(this, &FileBrowseDelegateHandler::HandleSetDialogTitle));
+}
+
+void SelectFileDialogImpl::FileBrowseDelegateHandler::HandleSetDialogTitle(
+    const Value* value) {
+  std::wstring new_title = ExtractStringValue(value);
+  if (new_title != delegate_->title_) {
+    delegate_->title_ = new_title;
+
+    // Notify the containing view about the title change.
+    // The current HtmlDialogUIDelegate and HtmlDialogView does not support
+    // dynamic title change. We hijacked the mechanism between HTMLDialogUI
+    // and HtmlDialogView to get the HtmlDialgoView and forced it to update
+    // its title.
+    // TODO(xiyuan): Change this when the infrastructure is improved.
+    HtmlDialogUIDelegate** delegate = HtmlDialogUI::GetPropertyAccessor().
+        GetProperty(dom_ui_->tab_contents()->property_bag());
+    HtmlDialogView* containing_view = static_cast<HtmlDialogView*>(*delegate);
+    DCHECK(containing_view);
+
+    containing_view->GetWindow()->UpdateWindowTitle();
+    containing_view->GetWindow()->GetNonClientView()->SchedulePaint();
+  }
 }
