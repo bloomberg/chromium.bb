@@ -177,6 +177,8 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       have_focus_(false),
       focus_notifier_(NULL),
       containing_window_has_focus_(false),
+      container_is_visible_(false),
+      have_called_set_window_(false),
       handle_event_depth_(0),
       user_gesture_message_posted_(this),
       user_gesture_msg_factory_(this) {
@@ -267,13 +269,18 @@ void WebPluginDelegateImpl::PlatformInitialize() {
       break;
   }
 
+  // TODO(stuartmorgan): We need real plugin container visibility information
+  // when the plugin is initialized; for now, assume it's visible.
+  // None of the calls SetContainerVisibility would make are useful at this
+  // point, so we just set the initial state directly.
+  container_is_visible_ = true;
+
 #ifndef NP_NO_CARBON
   // If the plugin wants Carbon events, hook up to the source of idle events.
   if (instance()->event_model() == NPEventModelCarbon)
     UpdateIdleEventRate();
 #endif
   plugin_->SetWindow(NULL);
-
 }
 
 void WebPluginDelegateImpl::PlatformDestroyInstance() {
@@ -436,7 +443,7 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
   window_.clipRect.top = window_.y;
   window_.clipRect.right = window_.clipRect.left;
   window_.clipRect.bottom = window_.clipRect.top;
-  if (!clip_rect_.IsEmpty()) {
+  if (container_is_visible_ && !clip_rect_.IsEmpty()) {
     // We never tell plugins that they are only partially visible; because the
     // drawing target doesn't change size, the positioning of what plugins drew
     // would be wrong, as would any transforms they did on the context.
@@ -450,10 +457,14 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
 
   NPError err = instance()->NPP_SetWindow(&window_);
 
-  // TODO(stuartmorgan): We need real window information when the plugin is
-  // initialized (location, window focus, visibility, etc.); for now, just
-  // start off assuming window focus.
-  SetWindowHasFocus(true);
+  // Plugins expect to get an initial window focus call if they are in an active
+  // window when they get their first SetWindow call.
+  if (!have_called_set_window_) {
+    // TODO(stuartmorgan): We need real window information about the initial
+    // window state; for now, assume window focus.
+    SetWindowHasFocus(true);
+    have_called_set_window_ = true;
+  }
 
   DCHECK(err == NPERR_NO_ERROR);
 }
@@ -467,12 +478,15 @@ std::set<WebPluginDelegateImpl*> WebPluginDelegateImpl::GetActiveDelegates() {
   return *delegates;
 }
 
-void WebPluginDelegateImpl::FocusNotify(WebPluginDelegateImpl* delegate) {
-  have_focus_ = (delegate == this);
+void WebPluginDelegateImpl::FocusChanged(bool has_focus) {
+  if (has_focus == have_focus_)
+    return;
+  have_focus_ = has_focus;
 
   ScopedActiveDelegate active_delegate(this);
 
   switch (instance()->event_model()) {
+#ifndef NP_NO_CARBON
     case NPEventModelCarbon: {
       NPEvent focus_event = { 0 };
       if (have_focus_)
@@ -483,6 +497,7 @@ void WebPluginDelegateImpl::FocusNotify(WebPluginDelegateImpl* delegate) {
       instance()->NPP_HandleEvent(&focus_event);
       break;
     }
+#endif
     case NPEventModelCocoa: {
       NPCocoaEvent focus_event;
       memset(&focus_event, 0, sizeof(focus_event));
@@ -498,19 +513,59 @@ void WebPluginDelegateImpl::SetFocus() {
   if (focus_notifier_)
     focus_notifier_(this);
   else
-    FocusNotify(this);
+    FocusChanged(true);
 }
 
 void WebPluginDelegateImpl::SetWindowHasFocus(bool has_focus) {
+  if (has_focus == containing_window_has_focus_)
+    return;
   containing_window_has_focus_ = has_focus;
 
-  if (instance()->event_model() == NPEventModelCocoa) {
-    ScopedActiveDelegate active_delegate(this);
-    NPCocoaEvent focus_event;
-    memset(&focus_event, 0, sizeof(focus_event));
-    focus_event.type = NPCocoaEventWindowFocusChanged;
-    focus_event.data.focus.hasFocus = has_focus;
-    instance()->NPP_HandleEvent(reinterpret_cast<NPEvent*>(&focus_event));
+  ScopedActiveDelegate active_delegate(this);
+  switch (instance()->event_model()) {
+#ifndef NP_NO_CARBON
+    case NPEventModelCarbon: {
+      NPEvent focus_event = { 0 };
+      focus_event.what = activateEvt;
+      if (has_focus)
+        focus_event.modifiers |= activeFlag;
+      focus_event.message = reinterpret_cast<unsigned long>(cg_context_.window);
+      focus_event.when = TickCount();
+      instance()->NPP_HandleEvent(&focus_event);
+      break;
+    }
+#endif
+    case NPEventModelCocoa: {
+      NPCocoaEvent focus_event;
+      memset(&focus_event, 0, sizeof(focus_event));
+      focus_event.type = NPCocoaEventWindowFocusChanged;
+      focus_event.data.focus.hasFocus = has_focus;
+      instance()->NPP_HandleEvent(reinterpret_cast<NPEvent*>(&focus_event));
+    }
+  }
+}
+
+void WebPluginDelegateImpl::SetContainerVisibility(bool is_visible) {
+  if (is_visible == container_is_visible_)
+    return;
+  container_is_visible_ = is_visible;
+
+  // TODO(stuartmorgan): We may need to remember whether we had focus, and
+  // restore it ourselves when we become visible again. Revisit once SetFocus
+  // is actually being called in all the cases it should be, at which point
+  // we'll know whether or not that's handled for us by WebKit.
+  if (!is_visible)
+    FocusChanged(false);
+
+  // If the plugin is changing visibility, let the plugin know. If it's scrolled
+  // off screen (i.e., clip_rect_ is empty), then container visibility doesn't
+  // change anything.
+  if (!clip_rect_.IsEmpty()) {
+#ifndef NP_NO_CARBON
+    if (instance()->event_model() == NPEventModelCarbon)
+      UpdateIdleEventRate();
+#endif
+    WindowlessSetWindow(true);
   }
 }
 
@@ -571,10 +626,10 @@ void WebPluginDelegateImpl::UpdateDummyWindowBoundsWithOffset(
 }
 
 void WebPluginDelegateImpl::UpdateIdleEventRate() {
-  if (clip_rect_.IsEmpty())
-    CarbonIdleEventSource::SharedInstance()->RegisterHiddenDelegate(this);
-  else
+  if (container_is_visible_ && !clip_rect_.IsEmpty())
     CarbonIdleEventSource::SharedInstance()->RegisterVisibleDelegate(this);
+  else
+    CarbonIdleEventSource::SharedInstance()->RegisterHiddenDelegate(this);
 }
 #endif  // !NP_NO_CARBON
 

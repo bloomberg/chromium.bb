@@ -49,9 +49,8 @@ IPC_BEGIN_MESSAGES(PluginProcess)
 
 #if defined(OS_MACOSX)
   // Notifies a plugin process that keyboard focus has changed.  If another
-  // plugin instance has received focus, the process and instance IDs are
-  // passed as parameters; if focus has been taken away from a plugin, 0 is
-  // passed for both parameters.
+  // plugin instance has received focus, the instance IDs is passed as a
+  // parameter; if focus has been taken away from a plugin, 0 is passed.
   IPC_MESSAGE_CONTROL1(PluginProcessMsg_PluginFocusNotify,
                        uint32 /* instance ID */)
 #endif
@@ -226,8 +225,11 @@ IPC_BEGIN_MESSAGES(Plugin)
                              WebCursor /* cursor type*/)
 
 #if defined(OS_MACOSX)
-  IPC_SYNC_MESSAGE_ROUTED1_0(PluginMsg_SetWindowFocus,
-                             bool /* has_focus */)
+  IPC_MESSAGE_ROUTED1(PluginMsg_SetWindowFocus,
+                      bool /* has_focus */)
+
+  IPC_MESSAGE_ROUTED1(PluginMsg_SetContainerVisibility,
+                      bool /* is_visible */)
 #endif
 
   IPC_SYNC_MESSAGE_ROUTED2_0(PluginMsg_WillSendRequest,

@@ -119,14 +119,11 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   static WebPluginDelegateImpl* GetActiveDelegate();
   // Returns a vector of currently active delegates in this process.
   static std::set<WebPluginDelegateImpl*> GetActiveDelegates();
-  // Informs the delegate which plugin instance has just received keyboard focus
-  // so that it can notify the plugin as appropriate.  If |process_id| and
-  // |instance_id| are both 0, this signifies that no plugin has keyboard
-  // focus.
-  void FocusNotify(WebPluginDelegateImpl* focused_delegate);
+  // Informs the delegate that it has gained or lost focus.
+  void FocusChanged(bool has_focus);
   // Set a notifier function that gets called when the delegate is accepting
   // the focus.  If no notifier function has been set, the delegate will just
-  // call FocusNotify(this).  This is used in a multiprocess environment to
+  // call FocusChanged(true).  This is used in a multiprocess environment to
   // propagate focus notifications to all running plugin processes.
   void SetFocusNotifier(void (*notifier)(WebPluginDelegateImpl*)) {
     focus_notifier_ = notifier;
@@ -135,6 +132,8 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   void SetWindowHasFocus(bool has_focus);
   // Returns whether or not the window the plugin is in has focus.
   bool GetWindowHasFocus() const { return containing_window_has_focus_; }
+  // Informs the plugin that its tab has been hidden or shown.
+  void SetContainerVisibility(bool is_visible);
   // Informs the delegate that the plugin set a Carbon ThemeCursor.
   void SetThemeCursor(ThemeCursor cursor);
   // Informs the delegate that the plugin set a Carbon Cursor.
@@ -362,6 +361,8 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   void (*focus_notifier_)(WebPluginDelegateImpl* notifier);
 
   bool containing_window_has_focus_;
+  bool container_is_visible_;
+  bool have_called_set_window_;
 #endif
 
   // Called by the message filter hook when the plugin enters a modal loop.

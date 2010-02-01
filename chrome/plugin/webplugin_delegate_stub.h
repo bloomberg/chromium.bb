@@ -80,6 +80,7 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
 
 #if defined(OS_MACOSX)
   void OnSetWindowFocus(bool has_focus);
+  void OnSetContainerVisibility(bool is_visible);
 #endif
 
   void OnDidReceiveManualResponse(

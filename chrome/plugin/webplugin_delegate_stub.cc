@@ -123,6 +123,8 @@ void WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
                         OnSendJavaScriptStream)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(PluginMsg_SetWindowFocus, OnSetWindowFocus)
+    IPC_MESSAGE_HANDLER(PluginMsg_SetContainerVisibility,
+                        OnSetContainerVisibility)
 #endif
     IPC_MESSAGE_HANDLER(PluginMsg_DidReceiveManualResponse,
                         OnDidReceiveManualResponse)
@@ -338,7 +340,11 @@ void WebPluginDelegateStub::OnSendJavaScriptStream(const GURL& url,
 void WebPluginDelegateStub::OnSetWindowFocus(bool has_focus) {
   delegate_->SetWindowHasFocus(has_focus);
 }
-#endif
+
+void WebPluginDelegateStub::OnSetContainerVisibility(bool is_visible) {
+  delegate_->SetContainerVisibility(is_visible);
+}
+#endif  // OS_MACOSX
 
 void WebPluginDelegateStub::OnDidReceiveManualResponse(
     const GURL& url,

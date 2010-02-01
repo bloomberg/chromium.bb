@@ -860,7 +860,23 @@ int WebPluginDelegateProxy::GetProcessId() {
 
 #if defined(OS_MACOSX)
 void WebPluginDelegateProxy::SetWindowFocus(bool window_has_focus) {
-  Send(new PluginMsg_SetWindowFocus(instance_id_, window_has_focus));
+  IPC::Message* msg = new PluginMsg_SetWindowFocus(instance_id_,
+                                                   window_has_focus);
+  // Make sure visibility events are delivered in the right order relative to
+  // sync messages they might interact with (Paint, HandleEvent, etc.).
+  msg->set_unblock(true);
+  Send(msg);
+}
+
+void WebPluginDelegateProxy::SetContainerVisibility(bool is_visible) {
+  // TODO(stuartmorgan): Split this into two messages, and send location and
+  // focus information with the "became visible" version since the plugins in a
+  // hidden tab will not have been getting live updates.
+  IPC::Message* msg = new PluginMsg_SetWindowFocus(instance_id_, is_visible);
+  // Make sure visibility events are delivered in the right order relative to
+  // sync messages they might interact with (Paint, HandleEvent, etc.).
+  msg->set_unblock(true);
+  Send(msg);
 }
 #endif  // OS_MACOSX
 

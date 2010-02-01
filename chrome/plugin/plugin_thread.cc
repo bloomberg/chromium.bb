@@ -149,14 +149,15 @@ void PluginThread::OnPluginMessage(const std::vector<unsigned char> &data) {
 
 #if defined(OS_MACOSX)
 void PluginThread::OnPluginFocusNotify(uint32 instance_id) {
-  WebPluginDelegateImpl* instance =
+  WebPluginDelegateImpl* focused_instance =
       reinterpret_cast<WebPluginDelegateImpl*>(instance_id);
   std::set<WebPluginDelegateImpl*> active_delegates =
       WebPluginDelegateImpl::GetActiveDelegates();
   for (std::set<WebPluginDelegateImpl*>::iterator iter =
            active_delegates.begin();
        iter != active_delegates.end(); iter++) {
-    (*iter)->FocusNotify(instance);
+    WebPluginDelegateImpl* instance = *iter;
+    instance->FocusChanged(instance == focused_instance);
   }
 }
 #endif

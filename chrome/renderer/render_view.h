@@ -476,6 +476,10 @@ class RenderView : public RenderWidget,
                         const gfx::Rect& resizer_rect);
   virtual void DidPaint();
   virtual void DidHandleKeyEvent();
+#if OS_MACOSX
+  virtual void OnWasHidden();
+  virtual void OnWasRestored(bool needs_repainting);
+#endif
 
  private:
   // For unit tests.

@@ -140,8 +140,8 @@ class RenderWidget : public IPC::Channel::Listener,
   void OnCreatingNewAck(gfx::NativeViewId parent);
   virtual void OnResize(const gfx::Size& new_size,
                         const gfx::Rect& resizer_rect);
-  void OnWasHidden();
-  void OnWasRestored(bool needs_repainting);
+  virtual void OnWasHidden();
+  virtual void OnWasRestored(bool needs_repainting);
   void OnUpdateRectAck();
   void OnRequestMoveAck();
   void OnHandleInputEvent(const IPC::Message& message);

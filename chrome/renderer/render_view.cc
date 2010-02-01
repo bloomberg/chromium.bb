@@ -4179,6 +4179,30 @@ void RenderView::DidHandleKeyEvent() {
   edit_commands_.clear();
 }
 
+#if defined(OS_MACOSX)
+void RenderView::OnWasHidden() {
+  RenderWidget::OnWasHidden();
+
+  // Inform plugins that their container is no longer visible.
+  std::set<WebPluginDelegateProxy*>::iterator plugin_it;
+  for (plugin_it = plugin_delegates_.begin();
+       plugin_it != plugin_delegates_.end(); ++plugin_it) {
+    (*plugin_it)->SetContainerVisibility(false);
+  }
+}
+
+void RenderView::OnWasRestored(bool needs_repainting) {
+  RenderWidget::OnWasRestored(needs_repainting);
+
+  // Inform plugins that their container is now visible.
+  std::set<WebPluginDelegateProxy*>::iterator plugin_it;
+  for (plugin_it = plugin_delegates_.begin();
+       plugin_it != plugin_delegates_.end(); ++plugin_it) {
+    (*plugin_it)->SetContainerVisibility(true);
+  }
+}
+#endif  // OS_MACOSX
+
 void RenderView::EnsureDocumentTag() {
   // TODO(darin): There's actually no reason for this to be here.  We should
   // have the browser side manage the document tag.
