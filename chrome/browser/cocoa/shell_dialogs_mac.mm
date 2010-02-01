@@ -31,6 +31,9 @@ class SelectFileDialogImpl;
         withReturn:(int)returnCode
            context:(void *)context;
 
+// NSSavePanel delegate method
+- (BOOL)panel:(id)sender shouldShowFilename:(NSString *)filename;
+
 @end
 
 // Implementation of SelectFileDialog that shows Cocoa dialogs for choosing a
@@ -63,6 +66,8 @@ class SelectFileDialogImpl : public SelectFileDialog {
                        const std::vector<FilePath>& files,
                        int index);
 
+  bool ShouldEnableFilename(NSPanel* dialog, NSString* filename);
+
   struct SheetContext {
     Type type;
     NSWindow* owning_window;
@@ -84,6 +89,9 @@ class SelectFileDialogImpl : public SelectFileDialog {
 
   // The set of all parent windows for which we are currently running dialogs.
   std::set<NSWindow*> parents_;
+
+  // A map from file dialogs to their types.
+  std::map<NSPanel*, Type> type_map_;
 
   DISALLOW_COPY_AND_ASSIGN(SelectFileDialogImpl);
 };
@@ -175,6 +183,7 @@ void SelectFileDialogImpl::SelectFile(
     [dialog setRequiredFileType:base::SysUTF8ToNSString(default_extension)];
 
   params_map_[dialog] = params;
+  type_map_[dialog] = type;
 
   SheetContext* context = new SheetContext;
   context->type = type;
@@ -203,6 +212,7 @@ void SelectFileDialogImpl::SelectFile(
       [open_dialog setCanChooseDirectories:NO];
     }
 
+    [open_dialog setDelegate:bridge_.get()];
     [open_dialog beginSheetForDirectory:default_dir
                                    file:default_filename
                                   types:allowed_file_types
@@ -222,6 +232,7 @@ void SelectFileDialogImpl::FileWasSelected(NSPanel* dialog,
   void* params = params_map_[dialog];
   params_map_.erase(dialog);
   parents_.erase(parent_window);
+  type_map_.erase(dialog);
 
   if (!listener_)
     return;
@@ -293,6 +304,15 @@ NSView* SelectFileDialogImpl::GetAccessoryView(const FileTypeInfo* file_types,
   return accessory_view;
 }
 
+bool SelectFileDialogImpl::ShouldEnableFilename(NSPanel* dialog,
+                                                NSString* filename) {
+  // If this is a single open file dialog, disable selecting packages.
+  if (type_map_[dialog] != SELECT_OPEN_FILE)
+    return true;
+
+  return ![[NSWorkspace sharedWorkspace] isFilePackageAtPath:filename];
+}
+
 @implementation SelectFileDialogBridge
 
 - (id)initWithSelectFileDialogImpl:(SelectFileDialogImpl*)s {
@@ -346,6 +366,10 @@ NSView* SelectFileDialogImpl::GetAccessoryView(const FileTypeInfo* file_types,
                                          paths,
                                          index);
   [panel release];
+}
+
+- (BOOL)panel:(id)sender shouldShowFilename:(NSString *)filename {
+  return selectFileDialogImpl_->ShouldEnableFilename(sender, filename);
 }
 
 @end
