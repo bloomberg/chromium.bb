@@ -19,7 +19,7 @@ namespace views {
 // TODO(beng): rename to MenuGtk once the old class is dead.
 class NativeMenuGtk : public MenuWrapper {
  public:
-  explicit NativeMenuGtk(menus::MenuModel* model);
+  explicit NativeMenuGtk(Menu2* menu);
   virtual ~NativeMenuGtk();
 
   // Overridden from MenuWrapper:
@@ -61,6 +61,10 @@ class NativeMenuGtk : public MenuWrapper {
   // Notifies the model the user selected an item.
   void Activate();
 
+  // A callback to delete menu2 object when the native widget is
+  // destroyed first.
+  static void MenuDestroyed(GtkWidget* widget, Menu2* menu2);
+
   // If we're a submenu, this is the parent.
   NativeMenuGtk* parent_;
 
@@ -84,6 +88,11 @@ class NativeMenuGtk : public MenuWrapper {
   // The index of the item the user selected. This is set on the actual menu the
   // user selects and not the root.
   int activated_index_;
+
+  // A eference to the hosting menu2 object and signal handler id
+  // used to delete the menu2 when its native menu gtk is destroyed first.
+  Menu2* host_menu_;
+  gulong destroy_handler_id_;
 
   DISALLOW_COPY_AND_ASSIGN(NativeMenuGtk);
 };

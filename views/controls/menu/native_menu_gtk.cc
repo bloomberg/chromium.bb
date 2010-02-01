@@ -62,18 +62,23 @@ namespace views {
 ////////////////////////////////////////////////////////////////////////////////
 // NativeMenuGtk, public:
 
-NativeMenuGtk::NativeMenuGtk(menus::MenuModel* model)
+NativeMenuGtk::NativeMenuGtk(Menu2* menu)
     : parent_(NULL),
-      model_(model),
+      model_(menu->model()),
       menu_(NULL),
       menu_shown_(false),
       suppress_activate_signal_(false),
       activated_menu_(NULL),
-      activated_index_(-1) {
+      activated_index_(-1),
+      host_menu_(menu) {
 }
 
 NativeMenuGtk::~NativeMenuGtk() {
-  gtk_widget_destroy(menu_);
+  if (menu_) {
+    // Don't call MenuDestroyed because menu2 has already been destroyed.
+    g_signal_handler_disconnect(menu_, destroy_handler_id_);
+    gtk_widget_destroy(menu_);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -207,9 +212,6 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
   }
 
   if (type == menus::MenuModel::TYPE_SUBMENU) {
-    // TODO(beng): we're leaking these objects right now... consider some other
-    //             arrangement.
-    // See http://crbug.com/33475.
     Menu2* submenu = new Menu2(model_->GetSubmenuModelAt(index));
     static_cast<NativeMenuGtk*>(submenu->wrapper_.get())->set_parent(this);
     g_object_set_data(G_OBJECT(menu_item), "submenu", submenu);
@@ -232,9 +234,13 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
 }
 
 void NativeMenuGtk::ResetMenu() {
-  if (menu_)
+  if (menu_) {
+    g_signal_handler_disconnect(menu_, destroy_handler_id_);
     gtk_widget_destroy(menu_);
+  }
   menu_ = gtk_menu_new();
+  destroy_handler_id_ = g_signal_connect(
+      menu_, "destroy", G_CALLBACK(NativeMenuGtk::MenuDestroyed), host_menu_);
 }
 
 void NativeMenuGtk::UpdateMenuItemState(GtkWidget* menu_item) {
@@ -336,12 +342,21 @@ void NativeMenuGtk::Activate() {
   }
 }
 
+// static
+void NativeMenuGtk::MenuDestroyed(GtkWidget* widget, Menu2* menu2) {
+  NativeMenuGtk* native_menu =
+      static_cast<NativeMenuGtk*>(menu2->wrapper_.get());
+  // The native gtk widget has already been destroyed.
+  native_menu->menu_ = NULL;
+  delete menu2;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // MenuWrapper, public:
 
 // static
 MenuWrapper* MenuWrapper::CreateWrapper(Menu2* menu) {
-  return new NativeMenuGtk(menu->model());
+  return new NativeMenuGtk(menu);
 }
 
 }  // namespace views
