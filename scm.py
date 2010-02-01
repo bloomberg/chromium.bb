@@ -205,20 +205,16 @@ class GIT(object):
     branch = GIT.GetBranch(cwd)
     upstream_branch = None
     upstream_branch = GIT.Capture(
-        ['config', 'branch.%s.merge' % branch], error_ok=True)[0].strip()
+        ['config', 'branch.%s.merge' % branch], in_directory=cwd,
+        error_ok=True)[0].strip()
     if upstream_branch:
       remote = GIT.Capture(
           ['config', 'branch.%s.remote' % branch],
-          error_ok=True)[0].strip()
+          in_directory=cwd, error_ok=True)[0].strip()
     else:
       # Fall back on trying a git-svn upstream branch.
       if GIT.IsGitSvn(cwd):
         upstream_branch = GIT.GetSVNBranch(cwd)
-      # Fall back on origin/master if it exits.
-      if not upstream_branch:
-        GIT.Capture(['branch', '-r'])[0].split().count('origin/master')
-        remote = 'origin'
-        upstream_branch = 'refs/heads/master'
     return remote, upstream_branch
 
   @staticmethod
