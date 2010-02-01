@@ -1204,7 +1204,7 @@ bool SyncManager::SyncInternal::Init(
     attempting_auth = true;
     AuthenticateWithLsid(lsid);
   }
-  if (!attempting_auth)
+  if (attempt_last_user_authentication && !attempting_auth)
     RaiseAuthNeededEvent();
   return true;
 }
