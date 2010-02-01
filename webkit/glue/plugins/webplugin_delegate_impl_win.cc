@@ -695,6 +695,9 @@ bool WebPluginDelegateImpl::WindowedReposition(
   // We only set the plugin's size here.  Its position is moved elsewhere, which
   // allows the window moves/scrolling/clipping to be synchronized with the page
   // and other windows.
+  // If the plugin window has no parent, then don't focus it because it isn't
+  // being displayed anywhere. See:
+  // http://code.google.com/p/chromium/issues/detail?id=32658
   if (window_rect.size() != window_rect_.size()) {
     ::SetWindowPos(windowed_handle_,
                    NULL,
@@ -702,7 +705,7 @@ bool WebPluginDelegateImpl::WindowedReposition(
                    0,
                    window_rect.width(),
                    window_rect.height(),
-                   0);
+                   GetParent(windowed_handle_) ? 0 : SWP_NOACTIVATE);
   }
 
   window_rect_ = window_rect;
