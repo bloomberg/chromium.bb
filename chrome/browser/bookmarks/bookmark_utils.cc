@@ -354,7 +354,8 @@ void OpenAll(gfx::NativeWindow parent,
 void CopyToClipboard(BookmarkModel* model,
                      const std::vector<const BookmarkNode*>& nodes,
                      bool remove_nodes) {
-#if defined(OS_WIN) || defined(OS_LINUX)
+// Not implemented on mac yet.
+#if !defined(OS_MACOSX)
   if (nodes.empty())
     return;
 
@@ -366,15 +367,14 @@ void CopyToClipboard(BookmarkModel* model,
                     nodes[i]->GetParent()->IndexOfChild(nodes[i]));
     }
   }
-#else
-  // Not implemented on mac yet.
 #endif
 }
 
 void PasteFromClipboard(BookmarkModel* model,
                         const BookmarkNode* parent,
                         int index) {
-#if defined(OS_WIN) || defined(OS_LINUX)
+// Not implemented on mac yet.
+#if !defined(OS_MACOSX)
   if (!parent)
     return;
 
@@ -385,8 +385,6 @@ void PasteFromClipboard(BookmarkModel* model,
   if (index == -1)
     index = parent->GetChildCount();
   bookmark_utils::CloneDragData(model, bookmark_data.elements, parent, index);
-#else
-  // Not implemented on mac yet.
 #endif
 }
 

@@ -147,10 +147,10 @@ void SearchProviderTest::RunTillProviderDone() {
     return;
 
   quit_when_done_ = true;
-#if defined(OS_WIN) || defined(OS_LINUX)
-  message_loop_.Run(NULL);
-#else
+#if defined(OS_MACOSX)
   message_loop_.Run();
+#else
+  message_loop_.Run(NULL);
 #endif
 }
 

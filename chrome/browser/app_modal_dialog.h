@@ -14,9 +14,6 @@
 #if defined(OS_WIN)
 class JavascriptMessageBoxDialog;
 typedef JavascriptMessageBoxDialog* NativeDialog;
-#elif defined(OS_LINUX)
-typedef struct _GtkWidget GtkWidget;
-typedef GtkWidget* NativeDialog;
 #elif defined(OS_MACOSX)
 #if __OBJC__
 @class NSAlert;
@@ -24,6 +21,9 @@ typedef GtkWidget* NativeDialog;
 class NSAlert;
 #endif
 typedef NSAlert* NativeDialog;
+#elif defined(OS_POSIX)
+typedef struct _GtkWidget GtkWidget;
+typedef GtkWidget* NativeDialog;
 #endif
 
 class ExtensionHost;

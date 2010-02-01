@@ -84,7 +84,7 @@ bool SendMouseClick(MouseButton type);
 void MoveMouseToCenterAndPress(
 #if defined(TOOLKIT_VIEWS)
     views::View* view,
-#elif defined(OS_LINUX)
+#elif defined(TOOLKIT_GTK)
     GtkWidget* widget,
 #endif
     MouseButton button,

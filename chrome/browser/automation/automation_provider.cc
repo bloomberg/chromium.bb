@@ -313,11 +313,9 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowClick, WindowSimulateClick)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowMouseMove, WindowSimulateMouseMove)
     IPC_MESSAGE_HANDLER(AutomationMsg_WindowKeyPress, WindowSimulateKeyPress)
-#endif  // !defined(OS_MACOSX)
-#if defined(OS_WIN) || defined(OS_LINUX)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(AutomationMsg_WindowDrag,
                                     WindowSimulateDrag)
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
+#endif
     IPC_MESSAGE_HANDLER(AutomationMsg_TabCount, GetTabCount)
     IPC_MESSAGE_HANDLER(AutomationMsg_Type, GetType)
     IPC_MESSAGE_HANDLER(AutomationMsg_Tab, GetTab)
@@ -783,7 +781,7 @@ void AutomationProvider::GetLastActiveBrowserWindow(int* handle) {
     *handle = browser_tracker_->Add(browser);
 }
 
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+#if defined(OS_POSIX)
 // TODO(estade): use this implementation for all platforms?
 void AutomationProvider::GetActiveWindow(int* handle) {
   gfx::NativeWindow window =
@@ -861,7 +859,7 @@ class InvokeTaskLaterTask : public Task {
   DISALLOW_COPY_AND_ASSIGN(InvokeTaskLaterTask);
 };
 
-#if defined(OS_WIN) || defined(OS_LINUX)
+#if !defined(OS_MACOSX)
 void AutomationProvider::WindowSimulateClick(const IPC::Message& message,
                                              int handle,
                                              const gfx::Point& click,
@@ -896,7 +894,7 @@ void AutomationProvider::WindowSimulateKeyPress(const IPC::Message& message,
                             ((flags & views::Event::EF_ALT_DOWN) ==
                               views::Event::EF_ALT_DOWN));
 }
-#endif  // defined(OS_WIN) || defined(OS_LINUX)
+#endif  // !defined(OS_MACOSX)
 
 void AutomationProvider::IsWindowActive(int handle, bool* success,
                                         bool* is_active) {
