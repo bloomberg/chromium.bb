@@ -30,7 +30,7 @@ def GetRietveldPatchsetNumber():
 
 def GetRietveldServerUrl():
   return GIT.Capture(
-      ['config', 'rietveld.server'], error_ok=True).strip()
+      ['config', 'rietveld.server'], error_ok=True)[0].strip()
 
 
 if __name__ == '__main__':
