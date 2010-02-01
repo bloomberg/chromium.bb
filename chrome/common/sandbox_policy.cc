@@ -106,18 +106,20 @@ PluginPolicyCategory GetPolicyCategoryForPlugin(
   return PLUGIN_GROUP_UNTRUSTED;
 }
 
-// Adds the policy rules for the path and path\* with the semantic |access|.
-// We need to add the wildcard rules to also apply the rule to the subfiles
-// and subfolders.
-bool AddDirectoryAndChildren(int path, const wchar_t* sub_dir,
-                             sandbox::TargetPolicy::Semantics access,
-                             sandbox::TargetPolicy* policy) {
+// Adds the policy rules for the path and path\ with the semantic |access|.
+// If |children| is set to true, we need to add the wildcard rules to also
+// apply the rule to the subfiles and subfolders.
+bool AddDirectory(int path, const wchar_t* sub_dir, bool children,
+                  sandbox::TargetPolicy::Semantics access,
+                  sandbox::TargetPolicy* policy) {
   std::wstring directory;
   if (!PathService::Get(path, &directory))
     return false;
 
-  if (sub_dir)
+  if (sub_dir) {
     file_util::AppendToPath(&directory, sub_dir);
+    file_util::AbsolutePath(&directory);
+  }
 
   sandbox::ResultCode result;
   result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES, access,
@@ -125,7 +127,12 @@ bool AddDirectoryAndChildren(int path, const wchar_t* sub_dir,
   if (result != sandbox::SBOX_ALL_OK)
     return false;
 
-  file_util::AppendToPath(&directory, L"*");
+  if (children)
+    file_util::AppendToPath(&directory, L"*");
+  else
+    // Add the version of the path that ends with a separator.
+    file_util::AppendToPath(&directory, L"");
+
   result = policy->AddRule(sandbox::TargetPolicy::SUBSYS_FILES, access,
                            directory.c_str());
   if (result != sandbox::SBOX_ALL_OK)
@@ -219,27 +226,42 @@ bool ApplyPolicyForUntrustedPlugin(sandbox::TargetPolicy* policy) {
   policy->SetTokenLevel(initial_token, sandbox::USER_LIMITED);
   policy->SetDelayedIntegrityLevel(sandbox::INTEGRITY_LEVEL_LOW);
 
-  if (!AddDirectoryAndChildren(base::DIR_TEMP, NULL,
-                               sandbox::TargetPolicy::FILES_ALLOW_ANY, policy))
+  if (!AddDirectory(base::DIR_TEMP, NULL, true,
+                    sandbox::TargetPolicy::FILES_ALLOW_ANY, policy))
     return false;
 
-  if (!AddDirectoryAndChildren(base::DIR_IE_INTERNET_CACHE, NULL,
-                               sandbox::TargetPolicy::FILES_ALLOW_ANY, policy))
+  if (!AddDirectory(base::DIR_IE_INTERNET_CACHE, NULL, true,
+                    sandbox::TargetPolicy::FILES_ALLOW_ANY, policy))
     return false;
 
-  if (!AddDirectoryAndChildren(base::DIR_APP_DATA, NULL,
-                               sandbox::TargetPolicy::FILES_ALLOW_READONLY,
-                               policy))
+  if (!AddDirectory(base::DIR_APP_DATA, NULL, true,
+                    sandbox::TargetPolicy::FILES_ALLOW_READONLY,
+                    policy))
     return false;
 
-  if (!AddDirectoryAndChildren(base::DIR_APP_DATA, L"Macromedia",
-                               sandbox::TargetPolicy::FILES_ALLOW_ANY,
-                               policy))
+  if (!AddDirectory(base::DIR_PROFILE, NULL, false,  /*not recursive*/
+                    sandbox::TargetPolicy::FILES_ALLOW_READONLY,
+                    policy))
     return false;
 
-  if (!AddDirectoryAndChildren(base::DIR_LOCAL_APP_DATA, NULL,
-                               sandbox::TargetPolicy::FILES_ALLOW_READONLY,
-                               policy))
+  if (!AddDirectory(base::DIR_APP_DATA, L"Adobe", true,
+                    sandbox::TargetPolicy::FILES_ALLOW_ANY,
+                    policy))
+    return false;
+
+  if (!AddDirectory(base::DIR_APP_DATA, L"Macromedia", true,
+                    sandbox::TargetPolicy::FILES_ALLOW_ANY,
+                    policy))
+    return false;
+
+  if (!AddDirectory(base::DIR_LOCAL_APP_DATA, NULL, true,
+                    sandbox::TargetPolicy::FILES_ALLOW_READONLY,
+                    policy))
+    return false;
+
+  if (!AddKeyAndSubkeys(L"HKEY_CURRENT_USER\\SOFTWARE\\ADOBE",
+                        sandbox::TargetPolicy::REG_ALLOW_ANY,
+                        policy))
     return false;
 
   if (!AddKeyAndSubkeys(L"HKEY_CURRENT_USER\\SOFTWARE\\MACROMEDIA",
@@ -253,9 +275,17 @@ bool ApplyPolicyForUntrustedPlugin(sandbox::TargetPolicy* policy) {
                           policy))
       return false;
 
-    if (!AddDirectoryAndChildren(base::DIR_LOCAL_APP_DATA_LOW, NULL,
-                                 sandbox::TargetPolicy::FILES_ALLOW_ANY,
-                                 policy))
+    if (!AddDirectory(base::DIR_LOCAL_APP_DATA_LOW, NULL, true,
+                      sandbox::TargetPolicy::FILES_ALLOW_ANY,
+                      policy))
+      return false;
+
+    // DIR_APP_DATA is AppData\Roaming, but Adobe needs to do a directory
+    // listing in AppData directly, so we add a non-recursive policy for
+    // AppData itself.
+    if (!AddDirectory(base::DIR_APP_DATA, L"..", false,
+                      sandbox::TargetPolicy::FILES_ALLOW_READONLY,
+                      policy))
       return false;
   }
 
