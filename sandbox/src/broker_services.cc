@@ -227,6 +227,13 @@ ResultCode BrokerServicesBase::SpawnTarget(const wchar_t* exe_path,
   if (!policy)
     return SBOX_ERROR_BAD_PARAMS;
 
+  // Even though the resources touched by SpawnTarget can be accessed in
+  // multiple threads, the method itself cannot be called from more than
+  // 1 thread. This is to protect the global variables used while setting up
+  // the child process.
+  static DWORD thread_id = ::GetCurrentThreadId();
+  DCHECK(thread_id == ::GetCurrentThreadId());
+
   AutoLock lock(&lock_);
 
   // This downcast is safe as long as we control CreatePolicy()
