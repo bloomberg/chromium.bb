@@ -83,21 +83,25 @@ class MultiProcessTest : public PlatformTest {
   }
 #endif
 
- private:
-#if defined(OS_WIN)
-  base::ProcessHandle SpawnChildImpl(
-      const std::wstring& procname,
-      bool debug_on_start) {
+protected:
+  CommandLine MakeCmdLine(const std::wstring& procname, bool debug_on_start) {
     CommandLine cl(*CommandLine::ForCurrentProcess());
-    base::ProcessHandle handle = static_cast<base::ProcessHandle>(NULL);
     cl.AppendSwitchWithValue(kRunClientProcess, procname);
-
     if (debug_on_start)
       cl.AppendSwitch(switches::kDebugOnStart);
+    return cl;
+  }
 
-    base::LaunchApp(cl, false, true, &handle);
+ private:
+#if defined(OS_WIN)
+  base::ProcessHandle SpawnChildImpl(const std::wstring& procname,
+                                     bool debug_on_start) {
+    base::ProcessHandle handle = static_cast<base::ProcessHandle>(NULL);
+    base::LaunchApp(MakeCmdLine(procname, debug_on_start),
+                    false, true, &handle);
     return handle;
   }
+
 #elif defined(OS_POSIX)
   // TODO(port): with the CommandLine refactoring, this code is very similar
   // to the Windows code.  Investigate whether this can be made shorter.
@@ -105,14 +109,9 @@ class MultiProcessTest : public PlatformTest {
       const std::wstring& procname,
       const base::file_handle_mapping_vector& fds_to_map,
       bool debug_on_start) {
-    CommandLine cl(*CommandLine::ForCurrentProcess());
     base::ProcessHandle handle = base::kNullProcessHandle;
-    cl.AppendSwitchWithValue(kRunClientProcess, procname);
-
-    if (debug_on_start)
-      cl.AppendSwitch(switches::kDebugOnStart);
-
-    base::LaunchApp(cl.argv(), fds_to_map, false, &handle);
+    base::LaunchApp(MakeCmdLine(procname, debug_on_start).argv(),
+                    fds_to_map, false, &handle);
     return handle;
   }
 #endif
