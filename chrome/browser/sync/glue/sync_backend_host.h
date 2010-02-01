@@ -64,6 +64,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   typedef sync_api::UserShare* UserShareHandle;
   typedef sync_api::SyncManager::Status::Summary StatusSummary;
   typedef sync_api::SyncManager::Status Status;
+  typedef std::map<ModelSafeGroup,
+                   scoped_refptr<browser_sync::ModelSafeWorker> > WorkerMap;
 
   // Create a SyncBackendHost with a reference to the |frontend| that it serves
   // and communicates to via the SyncFrontend interface (on the same thread
@@ -287,10 +289,9 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // longer needed because all types that get routed to it have been disabled
     // (from syncing). In that case, we'll destroy on demand *after* routing
     // any dependent types to GROUP_PASSIVE, so that the syncapi doesn't call
-    // into garbage.  If an index is non-NULL, it means at least one ModelType
-    // that routes to that model safe group is being synced.
-    browser_sync::ModelSafeWorker*
-        workers[browser_sync::MODEL_SAFE_GROUP_COUNT];
+    // into garbage.  If a key is present, it means at least one ModelType that
+    // routes to that model safe group is being synced.
+    WorkerMap workers;
     browser_sync::ModelSafeRoutingInfo routing_info;
   } registrar_;
 

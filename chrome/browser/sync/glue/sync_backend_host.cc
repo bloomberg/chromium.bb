@@ -33,9 +33,6 @@ SyncBackendHost::SyncBackendHost(SyncFrontend* frontend,
       last_auth_error_(AuthError::None()) {
 
   // Init our registrar state.
-  for (int i = 0; i < MODEL_SAFE_GROUP_COUNT; i++)
-    registrar_.workers[i] = NULL;
-
   for (int i = 0; i < syncable::MODEL_TYPE_COUNT; i++) {
     syncable::ModelType t(syncable::ModelTypeFromInt(i));
     registrar_.routing_info[t] = GROUP_PASSIVE;  // Init to syncing 0 types.
@@ -46,9 +43,7 @@ SyncBackendHost::SyncBackendHost(SyncFrontend* frontend,
 
 SyncBackendHost::~SyncBackendHost() {
   DCHECK(!core_ && !frontend_) << "Must call Shutdown before destructor.";
-
-  for (int i = 0; i < MODEL_SAFE_GROUP_COUNT; ++i)
-    DCHECK(registrar_.workers[i] == NULL);
+  DCHECK(registrar_.workers.empty());
 }
 
 void SyncBackendHost::Initialize(
@@ -115,8 +110,8 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
   core_thread_.Stop();
 
   registrar_.routing_info.clear();
-  delete registrar_.workers[GROUP_UI];
   registrar_.workers[GROUP_UI] = NULL;
+  registrar_.workers.erase(GROUP_UI);
   frontend_ = NULL;
   core_ = NULL;  // Releases reference to core_.
 }
@@ -160,10 +155,9 @@ const GoogleServiceAuthError& SyncBackendHost::GetAuthError() const {
 void SyncBackendHost::GetWorkers(std::vector<ModelSafeWorker*>* out) {
   AutoLock lock(registrar_lock_);
   out->clear();
-  for (int i = 0; i < MODEL_SAFE_GROUP_COUNT; i++) {
-    if (registrar_.workers[i] == NULL)
-      continue;
-    out->push_back(registrar_.workers[i]);
+  for (WorkerMap::const_iterator it = registrar_.workers.begin();
+       it != registrar_.workers.end(); ++it) {
+    out->push_back((*it).second);
   }
 }
 
