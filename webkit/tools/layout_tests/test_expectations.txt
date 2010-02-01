@@ -2920,3 +2920,8 @@ BUG33497 : storage/domstorage/sessionstorage/window-open.html = TEXT
 
 // WebKit roll 54059 -> 54075
 BUG33538 : fast/dom/Window/anonymous-slot-with-changes.html = TEXT
+
+// WebKit roll 54103 -> 54127
+BUG33997 MAC : svg/custom/dominant-baseline-hanging.svg = IMAGE
+BUG33997 MAC : svg/custom/gradient-stop-corner-cases.svg = IMAGE
+BUG34001 MAC : fast/dom/Range/getClientRects.html = TEXT
