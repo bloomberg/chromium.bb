@@ -31,15 +31,29 @@ class WebString;
 // and delegates the actual text translation to a TextTranslator.
 class PageTranslator : public TextTranslator::Delegate {
  public:
+  // Note that we don't use the simpler name Delegate as it seems to freak-out
+  // the VisualStudio 2005 compiler in render_view.cc. (RenderView would be
+  // implementing PageTranslator::Delegate that somehow confuses the compiler
+  // into thinking we are talkin about TextTranslator::Delegate.)
+  class PageTranslatorDelegate {
+   public:
+     virtual ~PageTranslatorDelegate() {}
+     virtual void PageTranslated(int page_id,
+                                 const std::string& original_lang,
+                                 const std::string& target_lang) = 0;
+  };
+
   // The caller remains the owner of |text_translator|.
-  explicit PageTranslator(TextTranslator* text_translator);
+  PageTranslator(TextTranslator* text_translator,
+                 PageTranslatorDelegate* delegate);
   virtual ~PageTranslator();
 
-  // Starts the translation process of |web_frame| from |from_lang| to |to_lang|
-  // where the languages are the ISO codes (ex: en, fr...).
-  void Translate(WebKit::WebFrame* web_frame,
-                 std::string from_lang,
-                 std::string to_lang);
+  // Starts the translation process of |web_frame| from |source_lang| to
+  // |target_lang| where the languages are the ISO codes (ex: en, fr...).
+  void Translate(int page_id,
+                 WebKit::WebFrame* web_frame,
+                 std::string source_lang,
+                 std::string target_lang);
 
   // Notification that the associated RenderView has navigated to a new page.
   void NavigatedToNewPage();
@@ -80,10 +94,10 @@ class PageTranslator : public TextTranslator::Delegate {
   void ClearNodeZone(int work_id);
 
   // Clears all the states related to the page's contents.
-  void ResetPageState();
+  void ResetPageStates();
 
-  // The RenderView we are providing translations for.
-  RenderView* render_view_;
+  // Our delegate (notified when a page is translated).
+  PageTranslatorDelegate* delegate_;
 
   // The TextTranslator is responsible for translating the actual text chunks
   // from one language to another.
@@ -97,6 +111,15 @@ class PageTranslator : public TextTranslator::Delegate {
 
   // Mapping from a translation engine work id to the associated nodes.
   std::map<int, NodeList*> pending_translations_;
+
+  // The language the page was in originally.
+  std::string original_language_;
+
+  // The language the page was translated to.
+  std::string current_language_;
+
+  // The page id of the page last time we translated.
+  int page_id_;
 
   // The list of text nodes in the current page with their original text.
   // Used to undo the translation.

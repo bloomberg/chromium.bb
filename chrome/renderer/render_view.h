@@ -123,7 +123,8 @@ class RenderView : public RenderWidget,
                    public WebKit::WebFrameClient,
                    public WebKit::WebPageSerializerClient,
                    public webkit_glue::WebPluginPageDelegate,
-                   public base::SupportsWeakPtr<RenderView> {
+                   public base::SupportsWeakPtr<RenderView>,
+                   public PageTranslator::PageTranslatorDelegate {
  public:
   // Visit all RenderViews with a live WebView (i.e., RenderViews that have
   // been closed but not yet destroyed are excluded).
@@ -386,6 +387,11 @@ class RenderView : public RenderWidget,
       const gfx::Size& size,
       const std::string& json_arguments,
       std::string* json_retval);
+
+  // PageTranslator::PageTranslatorDelegate implementation:
+  virtual void PageTranslated(int page_id,
+                              const std::string& original_lang,
+                              const std::string& target_lang);
 
   // Do not delete directly.  This class is reference counted.
   virtual ~RenderView();
