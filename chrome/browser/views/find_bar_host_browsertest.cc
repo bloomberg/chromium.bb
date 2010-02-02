@@ -554,8 +554,7 @@ IN_PROC_BROWSER_TEST_F(FindInPageControllerTest,
 }
 
 // Make sure Find box moves out of the way if it is obscuring the active match.
-// Flaky, see http://crbug.com/16447.
-IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FLAKY_FindMovesWhenObscuring) {
+IN_PROC_BROWSER_TEST_F(FindInPageControllerTest, FindMovesWhenObscuring) {
   HTTPTestServer* server = StartHTTPServer();
 
   GURL url = server->TestServerPageW(kMoveIfOver);
