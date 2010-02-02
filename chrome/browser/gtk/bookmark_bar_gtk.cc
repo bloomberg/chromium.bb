@@ -299,10 +299,15 @@ void BookmarkBarGtk::Show(bool animate) {
   // Hide out behind the findbar. This is rather fragile code, it could
   // probably be improved.
   if (floating_) {
+    // This block is necessary for GTK+ theme mode.
     if (GTK_WIDGET_REALIZED(event_box_->parent))
       gdk_window_lower(event_box_->parent->window);
     if (GTK_WIDGET_REALIZED(event_box_.get()))
       gdk_window_lower(event_box_->window);
+
+    // This block is necessary for normal theme mode.
+    if (GTK_WIDGET_REALIZED(paint_box_))
+      gdk_window_lower(paint_box_->window);
   }
 
   if (sync_ui_util::ShouldShowSyncErrorButton(sync_service_)) {
