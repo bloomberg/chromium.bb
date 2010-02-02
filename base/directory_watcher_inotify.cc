@@ -272,7 +272,9 @@ InotifyReader::~InotifyReader() {
   if (valid_) {
     // Write to the self-pipe so that the select call in InotifyReaderTask
     // returns.
-    HANDLE_EINTR(write(shutdown_pipe_[1], "", 1));
+    ssize_t ret = HANDLE_EINTR(write(shutdown_pipe_[1], "", 1));
+    DPCHECK(ret > 0);
+    DCHECK_EQ(ret, 1);
     thread_.Stop();
   }
   if (inotify_fd_ >= 0)

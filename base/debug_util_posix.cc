@@ -203,7 +203,8 @@ bool DebugUtil::BeingDebugged() {
   char buf[1024];
 
   ssize_t num_read = HANDLE_EINTR(read(status_fd, buf, sizeof(buf)));
-  HANDLE_EINTR(close(status_fd));
+  if (HANDLE_EINTR(close(status_fd)) < 0)
+    return false;
 
   if (num_read <= 0)
     return false;

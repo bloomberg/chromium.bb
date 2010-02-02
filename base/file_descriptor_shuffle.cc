@@ -76,7 +76,8 @@ bool FileDescriptorTableInjection::Move(int src, int dest) {
 }
 
 void FileDescriptorTableInjection::Close(int fd) {
-  HANDLE_EINTR(close(fd));
+  int ret = HANDLE_EINTR(close(fd));
+  DPCHECK(ret == 0);
 }
 
 }  // namespace base
