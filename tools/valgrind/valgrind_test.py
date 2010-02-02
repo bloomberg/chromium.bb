@@ -149,7 +149,7 @@ class ValgrindTool(object):
     it looks like a fake_dsym.  A non-fake dsym that already exists is assumed
     to be up-to-date.
     """
-    if sys.platform != 'darwin':
+    if not common.IsMac():
       return
 
     test_command = self._args[0]
@@ -363,8 +363,9 @@ class Memcheck(ValgrindTool):
     # Glob all the files in the "valgrind.tmp" directory
     filenames = glob.glob(self.TMP_DIR + "/memcheck.*")
 
-    use_gdb = (sys.platform == 'darwin')
-    analyzer = memcheck_analyze.MemcheckAnalyze(self._source_dir, filenames, self._options.show_all_leaks,
+    use_gdb = common.IsMac()
+    analyzer = memcheck_analyze.MemcheckAnalyze(self._source_dir, filenames,
+                                                self._options.show_all_leaks,
                                                 use_gdb=use_gdb)
     ret = analyzer.Report()
     if ret != 0:
@@ -410,10 +411,7 @@ class ThreadSanitizer(ValgrindTool):
     ret = []
 
     ignore_files = ["ignores.txt"]
-    platform_suffix = {
-      'darwin': 'mac',
-      'linux2': 'linux'
-    }[sys.platform]
+    platform_suffix = common.PlatformName()
     ignore_files.append("ignores_%s.txt" % platform_suffix)
     for ignore_file in ignore_files:
       fullname =  os.path.join(self._source_dir,
@@ -443,7 +441,7 @@ class ThreadSanitizer(ValgrindTool):
 
   def Analyze(self):
     filenames = glob.glob(self.TMP_DIR + "/tsan.*")
-    use_gdb = (sys.platform == 'darwin')
+    use_gdb = common.IsMac()
     analyzer = tsan_analyze.TsanAnalyze(self._source_dir, filenames,
                                         use_gdb=use_gdb)
     ret = analyzer.Report()
@@ -458,15 +456,20 @@ class ToolFactory:
   def Create(self, tool_name):
     if tool_name == "memcheck":
       return Memcheck()
+    if tool_name == "memcheck_wine":
+      return Memcheck()
     if tool_name == "tsan":
-      if sys.platform != 'linux2':
+      if not IsLinux():
         logging.info("WARNING: ThreadSanitizer may be unstable on Mac.")
         logging.info("See http://code.google.com/p/data-race-test/wiki/"
                      "ThreadSanitizerOnMacOsx for the details")
       return ThreadSanitizer()
-    raise RuntimeError, "Unknown tool" \
-                        "(tool=%s, platform=%s)" % \
-                        (tool_name, sys.platform)
+    try:
+      platform_name = common.PlatformName()
+    except common.NotImplementedError:
+      platform_name = sys.platform + "(Unknown)"
+    raise RuntimeError, "Unknown tool (tool=%s, platform=%s)" % (tool_name,
+                                                                 platform_name)
 
 def RunTool(argv):
   # TODO(timurrrr): customize optparse instead

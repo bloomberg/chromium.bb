@@ -10,6 +10,10 @@ import sys
 import time
 
 
+class NotImplementedError(Exception):
+  pass
+
+
 class TimeoutError(Exception):
   pass
 
@@ -87,7 +91,7 @@ def RunSubprocess(proc, timeout=0, detach=False):
     logging.info("process ended, did not time out")
 
   if did_timeout:
-    if sys.platform == "win32":
+    if IsWindows():
       subprocess.call(["taskkill", "/T", "/F", "/PID", str(p.pid)])
     else:
       # Does this kill all children, too?
@@ -101,7 +105,7 @@ def RunSubprocess(proc, timeout=0, detach=False):
   elif not detach:
     for line in p.stdout.readlines():
       _print_line(line, False)
-    if sys.platform != 'darwin':   # stdout flush fails on Mac
+    if not IsMac():   # stdout flush fails on Mac
       logging.info("flushing stdout")
       p.stdout.flush()
 
@@ -110,3 +114,26 @@ def RunSubprocess(proc, timeout=0, detach=False):
   if result:
     logging.error("%s exited with non-zero result code %d" % (proc[0], result))
   return result
+
+
+def IsLinux():
+  return sys.platform.startswith('linux')
+
+
+def IsMac():
+  return sys.platform.startswith('darwin')
+
+
+def IsWindows():
+  return sys.platform == 'cygwin' or sys.platform.startswith('win')
+
+
+def PlatformName():
+  """Return a string to be used in paths for the platform."""
+  if IsLinux():
+    return 'linux'
+  if IsMac():
+    return 'mac'
+  if IsWindows():
+    return 'win32'
+  raise NotImplementedError('Unknown platform "%s".' % sys.platform)

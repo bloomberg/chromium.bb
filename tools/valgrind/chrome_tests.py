@@ -16,6 +16,7 @@ import sys
 
 import google.logging_utils
 import google.path_utils
+
 # Import the platform_utils up in the layout tests which have been modified to
 # work under non-Windows platforms instead of the ones that are in the
 # tools/python/google directory. (See chrome_tests.sh which sets PYTHONPATH
@@ -26,6 +27,7 @@ import google.path_utils
 # package. http://crbug.com/6164
 import layout_package.path_utils
 
+import common
 import valgrind_test
 
 class TestNotFound(Exception): pass
@@ -140,10 +142,7 @@ class ChromeTests:
       if os.path.exists(suppression_file):
         cmd.append("--suppressions=%s" % suppression_file)
       # Platform specific suppression
-      suppression_platform = {
-        'darwin': 'mac',
-        'linux2': 'linux'
-      }[sys.platform]
+      suppression_platform = common.PlatformName()
       suppression_file_platform = \
           os.path.join(directory,
               '%s/suppressions_%s.txt' % (tool_name, suppression_platform))
@@ -176,8 +175,7 @@ class ChromeTests:
     '''
     filters = []
     for directory in self._data_dirs:
-      platform_suffix = {'darwin': 'mac',
-                         'linux2': 'linux'}[sys.platform]
+      platform_suffix = common.PlatformName()
       gtest_filter_files = [
           os.path.join(directory, name + ".gtest.txt"),
           os.path.join(directory, name + ".gtest-%s.txt" % \
