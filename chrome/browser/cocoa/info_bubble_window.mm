@@ -115,9 +115,8 @@ const NSTimeInterval kOrderOutAnimationDuration = 0.15;
 // Called by InfoBubbleWindowCloser when the window is to be really closed
 // after the fading animation is complete.
 - (void)finishCloseAfterAnimation {
-  if (closing_) {
+  if (closing_)
     [super close];
-  }
 }
 
 // Adds animation for info bubbles being ordered to the front.
@@ -151,9 +150,8 @@ const NSTimeInterval kOrderOutAnimationDuration = 0.15;
 // If the window is currently animating a close, block all UI events to the
 // window.
 - (void)sendEvent:(NSEvent*)theEvent {
-  if (!closing_) {
+  if (!closing_)
     [super sendEvent:theEvent];
-  }
 }
 
 - (BOOL)isClosing {

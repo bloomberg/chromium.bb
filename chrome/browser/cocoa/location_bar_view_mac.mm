@@ -562,7 +562,6 @@ LocationBarViewMac::PageActionImageView::PageActionImageView(
     : owner_(owner),
       profile_(profile),
       page_action_(page_action),
-      popup_controller_(nil),
       current_tab_id_(-1),
       preview_enabled_(false) {
   Extension* extension = profile->GetExtensionsService()->GetExtensionById(
@@ -627,11 +626,10 @@ bool LocationBarViewMac::PageActionImageView::OnMousePressed(NSRect bounds) {
     // Adjust the anchor point to be at the center of the page action icon.
     arrowPoint.x += [GetImage() size].width / 2;
 
-    popup_controller_ = [ExtensionPopupController
-            showURL:page_action_->GetPopupUrl(current_tab_id_)
-          inBrowser:BrowserList::GetLastActive()
-         anchoredAt:arrowPoint
-      arrowLocation:kTopRight];
+    [ExtensionPopupController showURL:page_action_->GetPopupUrl(current_tab_id_)
+                            inBrowser:BrowserList::GetLastActive()
+                           anchoredAt:arrowPoint
+                        arrowLocation:kTopRight];
   } else {
     ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(
         profile_, page_action_->extension_id(), page_action_->id(),
@@ -738,21 +736,17 @@ void LocationBarViewMac::PageActionImageView::Observe(
     const NotificationSource& source,
     const NotificationDetails& details) {
   switch (type.value) {
-    case NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE:
-      if (popup_controller_ &&
-          Details<ExtensionHost>([popup_controller_ host]) == details) {
-        HidePopup();
-      }
+    case NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
+      ExtensionPopupController* popup = [ExtensionPopupController popup];
+      if (popup && ![popup isClosing])
+        [popup close];
+
       break;
+    }
     default:
       NOTREACHED() << "Unexpected notification";
       break;
   }
-}
-
-void LocationBarViewMac::PageActionImageView::HidePopup() {
-  [popup_controller_ close];
-  popup_controller_ = nil;
 }
 
 // PageActionViewList-----------------------------------------------------------

@@ -50,16 +50,16 @@ std::string BrowserActionTestUtil::GetTooltip(int index) {
 }
 
 bool BrowserActionTestUtil::HasPopup() {
-  return [GetController(browser_) popup] != nil;
+  return [ExtensionPopupController popup] != nil;
 }
 
 gfx::Rect BrowserActionTestUtil::GetPopupBounds() {
-  NSRect bounds = [[[GetController(browser_) popup] view] bounds];
+  NSRect bounds = [[[ExtensionPopupController popup] view] bounds];
   return gfx::Rect(NSRectToCGRect(bounds));
 }
 
 bool BrowserActionTestUtil::HidePopup() {
-  ExtensionPopupController* controller = [GetController(browser_) popup];
+  ExtensionPopupController* controller = [ExtensionPopupController popup];
   // The window must be gone or we'll fail a unit test with windows left open.
   [static_cast<InfoBubbleWindow*>([controller window]) setDelayOnClose:NO];
   [controller close];

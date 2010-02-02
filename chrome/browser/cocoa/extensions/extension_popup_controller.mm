@@ -27,6 +27,9 @@ const CGFloat kMaxHeight = 600;
 // The duration for any animations that might be invoked by this controller.
 const NSTimeInterval kAnimationDuration = 0.2;
 
+// There should only be one extension popup showing at one time. Keep a
+// reference to it here.
+static ExtensionPopupController* gPopup;
 }  // namespace
 
 @interface ExtensionPopupController(Private)
@@ -100,19 +103,16 @@ const NSTimeInterval kAnimationDuration = 0.2;
 
 - (void)windowWillClose:(NSNotification *)notification {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [self autorelease];
-}
-
-- (ExtensionHost*)host {
-  return host_.get();
+  [gPopup autorelease];
+  gPopup = nil;
 }
 
 - (void)windowDidResignKey:(NSNotification *)notification {
   NSWindow* window = [self window];
   DCHECK_EQ([notification object], window);
+  // If the window isn't visible, it is already closed, and this notification
+  // has been sent as part of the closing operation, so no need to close.
   if ([window isVisible]) {
-    // If the window isn't visible, it is already closed, and this notification
-    // has been sent as part of the closing operation, so no need to close.
     [self close];
   }
 }
@@ -122,10 +122,15 @@ const NSTimeInterval kAnimationDuration = 0.2;
   [super close];
 }
 
+- (BOOL)isClosing {
+  return [static_cast<InfoBubbleWindow*>([self window]) isClosing];
+}
+
 + (ExtensionPopupController*)showURL:(GURL)url
                            inBrowser:(Browser*)browser
                           anchoredAt:(NSPoint)anchoredAt
                        arrowLocation:(BubbleArrowLocation)arrowLocation {
+  DCHECK([NSThread isMainThread]);
   DCHECK(browser);
   if (!browser)
     return nil;
@@ -141,15 +146,29 @@ const NSTimeInterval kAnimationDuration = 0.2;
   if (!host)
     return nil;
 
+  // Make absolutely sure that no popups are leaked.
+  if (gPopup) {
+    if ([[gPopup window] isVisible])
+      [gPopup close];
+
+    [gPopup autorelease];
+    gPopup = nil;
+  }
+  DCHECK(!gPopup);
+
   // Takes ownership of |host|. Also will autorelease itself when the popup is
   // closed, so no need to do that here.
-  ExtensionPopupController* popup = [[ExtensionPopupController alloc]
+  gPopup = [[ExtensionPopupController alloc]
       initWithHost:host
       parentWindow:browser->window()->GetNativeHandle()
         anchoredAt:anchoredAt
      arrowLocation:arrowLocation];
 
-  return popup;
+  return gPopup;
+}
+
++ (ExtensionPopupController*)popup {
+  return gPopup;
 }
 
 - (void)extensionViewFrameChanged {

@@ -63,19 +63,18 @@ class ExtensionPopupControllerTest : public CocoaTest {
     profile_.reset(new ExtensionTestingProfile());
     profile_->InitExtensionProfile();
     browser_.reset(new Browser(Browser::TYPE_NORMAL, profile_.get()));
-    popup_controller_.reset(
-        [ExtensionPopupController showURL:GURL("http://google.com")
-                                inBrowser:browser_.get()
-                               anchoredAt:NSZeroPoint
-                            arrowLocation:kTopRight]);
+    [ExtensionPopupController showURL:GURL("http://google.com")
+                            inBrowser:browser_.get()
+                           anchoredAt:NSZeroPoint
+                        arrowLocation:kTopRight];
   }
   virtual void TearDown() {
     profile_->ShutdownExtensionProfile();
+    [[ExtensionPopupController popup] close];
     CocoaTest::TearDown();
   }
 
  protected:
-  scoped_nsobject<ExtensionPopupController> popup_controller_;
   scoped_ptr<Browser> browser_;
   scoped_ptr<ExtensionTestingProfile> profile_;
 };
@@ -84,7 +83,7 @@ TEST_F(ExtensionPopupControllerTest, DISABLED_Basics) {
   // TODO(andybons): Better mechanisms for mocking out the extensions service
   // and extensions for easy testing need to be implemented.
   // http://crbug.com/28316
-  EXPECT_TRUE(popup_controller_.get());
+  EXPECT_TRUE([ExtensionPopupController popup]);
 }
 
 }  // namespace

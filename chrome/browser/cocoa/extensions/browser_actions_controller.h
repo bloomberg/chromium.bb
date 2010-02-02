@@ -42,9 +42,6 @@ extern NSString* const kBrowserActionsChangedNotification;
 
   // The order of the BrowserActionButton objects within the dictionary.
   scoped_nsobject<NSMutableArray> buttonOrder_;
-
-  // The controller for the popup displayed if a browser action has one. Weak.
-  ExtensionPopupController* popupController_;
 }
 
 // Initializes the controller given the current browser and container view that
@@ -58,10 +55,6 @@ extern NSString* const kBrowserActionsChangedNotification;
 
 // Update the display of all buttons.
 - (void)update;
-
-// Returns the controller used to display the popup being shown. If no popup is
-// currently open, then nil is returned.
-- (ExtensionPopupController*)popup;
 
 // Marks the container view for redraw. Called by the extension service
 // notification bridge.

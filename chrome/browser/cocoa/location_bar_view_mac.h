@@ -237,7 +237,6 @@ class LocationBarViewMac : public AutocompleteEditController,
     PageActionImageView() : owner_(NULL),
                             profile_(NULL),
                             page_action_(NULL),
-                            popup_controller_(nil),
                             tracker_(NULL),
                             current_tab_id_(-1),
                             preview_enabled_(false) {}
@@ -247,7 +246,6 @@ class LocationBarViewMac : public AutocompleteEditController,
     virtual void Observe(NotificationType type,
                          const NotificationSource& source,
                          const NotificationDetails& details);
-    void HidePopup();
 
     // The location bar view that owns us.
     LocationBarViewMac* owner_;
@@ -262,9 +260,6 @@ class LocationBarViewMac : public AutocompleteEditController,
     // A cache of images the Page Actions might need to show, mapped by path.
     typedef std::map<std::string, SkBitmap> PageActionMap;
     PageActionMap page_action_icons_;
-
-    // The controller for the popup displayed if a page action has one. Weak.
-    ExtensionPopupController* popup_controller_;
 
     // The object that is waiting for the image loading to complete
     // asynchronously.

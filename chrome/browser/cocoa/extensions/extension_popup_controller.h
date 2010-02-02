@@ -21,7 +21,9 @@ class ExtensionHost;
 // user has clicked on a browser action button. It instantiates the extension
 // popup view showing the content and resizes the window to accomodate any size
 // changes as they occur.
-// There can only be one browser action popup open at a time.
+//
+// There can only be one browser action popup open at a time, so a static
+// variable holds a reference to the current popup.
 @interface ExtensionPopupController : NSWindowController<NSWindowDelegate> {
  @private
   // The native extension view retrieved from the extension host. Weak.
@@ -42,10 +44,6 @@ class ExtensionHost;
   scoped_ptr<ExtensionHost> host_;
 }
 
-// Returns a pointer to the extension host object associated with this
-// browser action.
-- (ExtensionHost*)host;
-
 // Starts the process of showing the given popup URL. Instantiates an
 // ExtensionPopupController with the parent window retrieved from |browser|, a
 // host for the popup created by the extension process manager specific to the
@@ -58,6 +56,14 @@ class ExtensionHost;
                            inBrowser:(Browser*)browser
                           anchoredAt:(NSPoint)anchoredAt
                        arrowLocation:(BubbleArrowLocation)arrowLocation;
+
+// Returns the controller used to display the popup being shown. If no popup is
+// currently open, then nil is returned. Static because only one extension popup
+// window can be open at a time.
++ (ExtensionPopupController*)popup;
+
+// Whether the popup is in the process of closing (via Core Animation).
+- (BOOL)isClosing;
 @end
 
 @interface ExtensionPopupController(TestingAPI)
