@@ -303,11 +303,13 @@ html[dir=rtl] .thumbnail-container > .title > div {
 .hide {
   opacity: 0 !important;
   visibility: hidden !important;
+  pointer-events: none;
 }
 
 .collapsed {
   height: 0 !important;
   opacity: 0;
+  pointer-events: none;
 }
 
 @-webkit-keyframes 'fade-in' {
@@ -337,8 +339,8 @@ html[dir=rtl] .thumbnail-container > .title > div {
   margin: -8px auto 5px auto;
   font-weight: bold;
   opacity: 0;
-  -webkit-transition: opacity .15s;
   pointer-events: none;
+  -webkit-transition: opacity .15s;
   z-index: 1;
   color: black;
 }
@@ -746,6 +748,7 @@ html[dir='rtl'] #option-menu > [command='hide']:before {
 
 .hide-promo-line {
   opacity: 0;
+  pointer-events: none;
 }
 
 #promo-line {
