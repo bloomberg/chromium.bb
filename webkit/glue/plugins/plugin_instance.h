@@ -24,6 +24,7 @@
 #include "googleurl/src/gurl.h"
 #include "third_party/npapi/bindings/npapi.h"
 
+class MessageLoop;
 
 namespace webkit_glue {
 class WebPlugin;
@@ -284,6 +285,7 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   gfx::Point                               plugin_origin_;
   NPCocoaEvent*                            currently_handled_event_;  // weak
 #endif
+  MessageLoop*                             message_loop_;
   scoped_refptr<PluginStreamUrl>           plugin_data_stream_;
 
   // This flag if true indicates that the plugin data would be passed from

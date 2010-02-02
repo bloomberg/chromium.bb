@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 #include "webkit/glue/plugins/test/plugin_thread_async_call_test.h"
+
+#include "base/thread.h"
 #include "webkit/glue/plugins/test/plugin_client.h"
 
 namespace NPAPIClient {
@@ -18,6 +20,19 @@ PluginThreadAsyncCallTest* g_long_lived_instance;
 void OnCallSucceededHelper(void* data) {
   static_cast<PluginThreadAsyncCallTest*>(data)->OnCallSucceeded();
 }
+
+class AsyncCallTask : public Task {
+ public:
+  AsyncCallTask(PluginThreadAsyncCallTest* test_class)
+    : test_class_(test_class) {}
+
+  void Run() {
+    test_class_->AsyncCall();
+  }
+
+ private:
+  PluginThreadAsyncCallTest* test_class_;
+};
 
 void OnCallFailed(void* data) {
   g_long_lived_instance->SetError("Async callback invoked after NPP_Destroy");
@@ -51,12 +66,20 @@ NPError PluginThreadAsyncCallTest::New(
     }
   }
 
-  // Schedule an async call that will succeed.
+  // Schedule an async call that will succeed.  Make sure to call that API from
+  // a different thread to fully test it.
   if (this == g_short_lived_instance) {
-    HostFunctions()->pluginthreadasynccall(id(), OnCallSucceededHelper, this);
+    at_exit_manager_.reset(new base::AtExitManager());
+    base::Thread random_thread("random_thread");
+    random_thread.Start();
+    random_thread.message_loop()->PostTask(FROM_HERE, new AsyncCallTask(this));
   }
 
   return NPERR_NO_ERROR;
+}
+
+void PluginThreadAsyncCallTest::AsyncCall() {
+  HostFunctions()->pluginthreadasynccall(id(), OnCallSucceededHelper, this);
 }
 
 void PluginThreadAsyncCallTest::OnCallSucceeded() {

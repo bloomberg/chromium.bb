@@ -7,6 +7,8 @@
 
 #include <vector>
 
+#include "base/at_exit.h"
+#include "base/scoped_ptr.h"
 #include "webkit/glue/plugins/test/plugin_test.h"
 
 namespace NPAPIClient {
@@ -22,8 +24,13 @@ class PluginThreadAsyncCallTest : public PluginTest {
 
   virtual NPError Destroy();
 
+  void AsyncCall();
   void OnCallSucceeded();
   void OnCallCompleted();
+
+ private:
+  // base::Thread needs one of these.
+  scoped_ptr<base::AtExitManager> at_exit_manager_;
 };
 
 }  // namespace NPAPIClient

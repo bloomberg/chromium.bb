@@ -40,6 +40,7 @@ PluginInstance::PluginInstance(PluginLib *plugin, const std::string &mime_type)
       event_model_(0),
       currently_handled_event_(NULL),
 #endif
+      message_loop_(MessageLoop::current()),
       load_manually_(false),
       in_close_streams_(false),
       next_timer_id_(1),
@@ -50,6 +51,7 @@ PluginInstance::PluginInstance(PluginLib *plugin, const std::string &mime_type)
   npp_->pdata = 0;
 
   memset(&zero_padding_, 0, sizeof(zero_padding_));
+  DCHECK(message_loop_);
 }
 
 PluginInstance::~PluginInstance() {
@@ -385,7 +387,7 @@ void PluginInstance::DidManualLoadFail() {
 
 void PluginInstance::PluginThreadAsyncCall(void (*func)(void *),
                                            void *user_data) {
-  MessageLoop::current()->PostTask(
+  message_loop_->PostTask(
       FROM_HERE, NewRunnableMethod(
           this, &PluginInstance::OnPluginThreadAsyncCall, func, user_data));
 }
