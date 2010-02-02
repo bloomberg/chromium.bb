@@ -1189,6 +1189,8 @@
         'browser/in_process_webkit/dom_storage_dispatcher_host.h',
         'browser/in_process_webkit/dom_storage_namespace.cc',
         'browser/in_process_webkit/dom_storage_namespace.h',
+        'browser/in_process_webkit/dom_storage_permission_request.cc',
+        'browser/in_process_webkit/dom_storage_permission_request.h',
         'browser/in_process_webkit/webkit_context.cc',
         'browser/in_process_webkit/webkit_context.h',
         'browser/in_process_webkit/webkit_thread.cc',

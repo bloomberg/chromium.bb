@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,6 +112,11 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
+
+  // Returns either the extension URLRequestContext or regular URLRequestContext
+  // depending on whether |url| is an extension URL.
+  // Only call on the IO thread.
+  ChromeURLRequestContext* GetRequestContextForURL(const GURL& url);
 
  private:
   friend class ChromeThread;
@@ -335,10 +340,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   // thread. This instance of the clipboard should be accessed only on the IO
   // thread.
   static Clipboard* GetClipboard();
-
-  // Returns either the extension URLRequestContext or regular URLRequestContext
-  // depending on whether |url| is an extension URL.
-  ChromeURLRequestContext* GetRequestContextForURL(const GURL& url);
 
   NotificationRegistrar registrar_;
 

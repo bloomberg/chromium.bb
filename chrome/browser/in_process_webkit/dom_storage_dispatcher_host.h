@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
@@ -15,6 +15,8 @@
 
 class DOMStorageContext;
 class GURL;
+class HostContentSettingsMap;
+class ResourceMessageFilter;
 class Task;
 class WebKitThread;
 struct ViewMsg_DOMStorageEvent_Params;
@@ -26,7 +28,8 @@ class DOMStorageDispatcherHost
     : public base::RefCountedThreadSafe<DOMStorageDispatcherHost> {
  public:
   // Only call the constructor from the UI thread.
-  DOMStorageDispatcherHost(IPC::Message::Sender* message_sender,
+  DOMStorageDispatcherHost(
+      ResourceMessageFilter* resource_message_filter_,
       WebKitContext* webkit_context, WebKitThread* webkit_thread);
 
   // Only call from ResourceMessageFilter on the IO thread.
@@ -70,6 +73,11 @@ class DOMStorageDispatcherHost
                     const GURL& url, IPC::Message* reply_msg);
   void OnClear(int64 storage_area_id, const GURL& url, IPC::Message* reply_msg);
 
+  // WebKit thread half of OnStorageAreaId
+  void OnStorageAreaIdWebKit(
+      int64 namespace_id, const string16& origin, IPC::Message* reply_msg,
+      HostContentSettingsMap* host_context_settings_map);
+
   // Only call on the IO thread.
   void OnStorageEvent(const ViewMsg_DOMStorageEvent_Params& params);
 
@@ -96,8 +104,8 @@ class DOMStorageDispatcherHost
   // ResourceDispatcherHost takes care of destruction.  Immutable.
   WebKitThread* webkit_thread_;
 
-  // Only set on the IO thread.
-  IPC::Message::Sender* message_sender_;
+  // Only set and use on the IO thread.
+  ResourceMessageFilter* resource_message_filter_;
 
   // If we get a corrupt message from a renderer, we need to kill it using this
   // handle.

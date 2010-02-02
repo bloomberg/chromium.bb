@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
@@ -54,7 +54,9 @@ DOMStorageNamespace::~DOMStorageNamespace() {
   }
 }
 
-DOMStorageArea* DOMStorageNamespace::GetStorageArea(const string16& origin) {
+DOMStorageArea* DOMStorageNamespace::GetStorageArea(
+    const string16& origin,
+    HostContentSettingsMap* host_content_settings_map) {
   // We may have already created it for another dispatcher host.
   OriginToStorageAreaMap::iterator iter = origin_to_storage_area_.find(origin);
   if (iter != origin_to_storage_area_.end())
@@ -63,7 +65,8 @@ DOMStorageArea* DOMStorageNamespace::GetStorageArea(const string16& origin) {
   // We need to create a new one.
   int64 id = dom_storage_context_->AllocateStorageAreaId();
   DCHECK(!dom_storage_context_->GetStorageArea(id));
-  DOMStorageArea* storage_area = new DOMStorageArea(origin, id, this);
+  DOMStorageArea* storage_area = new DOMStorageArea(origin, id, this,
+                                                    host_content_settings_map);
   origin_to_storage_area_[origin] = storage_area;
   dom_storage_context_->RegisterStorageArea(storage_area);
   return storage_area;

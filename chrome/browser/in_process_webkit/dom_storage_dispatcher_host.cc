@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
@@ -10,7 +10,9 @@
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
 #include "chrome/browser/in_process_webkit/dom_storage_namespace.h"
 #include "chrome/browser/in_process_webkit/webkit_thread.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
+#include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/render_messages.h"
 #include "googleurl/src/gurl.h"
 
@@ -39,23 +41,25 @@ ScopedStorageEventContext::~ScopedStorageEventContext() {
 }
 
 DOMStorageDispatcherHost::DOMStorageDispatcherHost(
-    IPC::Message::Sender* message_sender, WebKitContext* webkit_context,
+    ResourceMessageFilter* resource_message_filter,
+    WebKitContext* webkit_context,
     WebKitThread* webkit_thread)
     : webkit_context_(webkit_context),
       webkit_thread_(webkit_thread),
-      message_sender_(message_sender),
+      resource_message_filter_(resource_message_filter),
       process_handle_(0) {
   DCHECK(webkit_context_.get());
   DCHECK(webkit_thread_);
-  DCHECK(message_sender_);
+  DCHECK(resource_message_filter_);
 }
 
 DOMStorageDispatcherHost::~DOMStorageDispatcherHost() {
 }
 
-void DOMStorageDispatcherHost::Init(base::ProcessHandle process_handle) {
+void DOMStorageDispatcherHost::Init(
+    base::ProcessHandle process_handle) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  DCHECK(message_sender_);  // Make sure Shutdown() has not yet been called.
+  DCHECK(resource_message_filter_);  // Ensure Shutdown() has not been called.
   DCHECK(!process_handle_);  // Make sure Init() has not yet been called.
   DCHECK(process_handle);
   Context()->RegisterDispatcherHost(this);
@@ -66,7 +70,7 @@ void DOMStorageDispatcherHost::Shutdown() {
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
     if (process_handle_)  // Init() was called
       Context()->UnregisterDispatcherHost(this);
-    message_sender_ = NULL;
+    resource_message_filter_ = NULL;
 
     // The task will only execute if the WebKit thread is already running.
     ChromeThread::PostTask(
@@ -76,7 +80,7 @@ void DOMStorageDispatcherHost::Shutdown() {
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  DCHECK(!message_sender_);
+  DCHECK(!resource_message_filter_);
 
   // TODO(jorlow): Do stuff that needs to be run on the WebKit thread.  Locks
   //               and others will likely need this, so let's not delete this
@@ -131,13 +135,13 @@ int64 DOMStorageDispatcherHost::CloneSessionStorage(int64 original_id) {
 }
 
 void DOMStorageDispatcherHost::Send(IPC::Message* message) {
-  if (!message_sender_) {
+  if (!resource_message_filter_) {
     delete message;
     return;
   }
 
   if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    message_sender_->Send(message);
+    resource_message_filter_->Send(message);
     return;
   }
 
@@ -151,13 +155,17 @@ void DOMStorageDispatcherHost::Send(IPC::Message* message) {
 void DOMStorageDispatcherHost::OnStorageAreaId(int64 namespace_id,
                                                const string16& origin,
                                                IPC::Message* reply_msg) {
-  if (ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    ChromeThread::PostTask(ChromeThread::WEBKIT, FROM_HERE, NewRunnableMethod(
-        this, &DOMStorageDispatcherHost::OnStorageAreaId, namespace_id, origin,
-        reply_msg));
-    return;
-  }
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  ChromeURLRequestContext* url_request_context =
+      resource_message_filter_->GetRequestContextForURL(GURL(origin));
+  ChromeThread::PostTask(ChromeThread::WEBKIT, FROM_HERE, NewRunnableMethod(
+      this, &DOMStorageDispatcherHost::OnStorageAreaIdWebKit, namespace_id,
+      origin, reply_msg, url_request_context->host_content_settings_map()));
+}
 
+void DOMStorageDispatcherHost::OnStorageAreaIdWebKit(
+    int64 namespace_id, const string16& origin, IPC::Message* reply_msg,
+    HostContentSettingsMap* host_content_settings_map) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   DOMStorageNamespace* storage_namespace =
       Context()->GetStorageNamespace(namespace_id, true);
@@ -167,7 +175,8 @@ void DOMStorageDispatcherHost::OnStorageAreaId(int64 namespace_id,
     delete reply_msg;
     return;
   }
-  DOMStorageArea* storage_area = storage_namespace->GetStorageArea(origin);
+  DOMStorageArea* storage_area = storage_namespace->GetStorageArea(
+      origin, host_content_settings_map);
   ViewHostMsg_DOMStorageStorageAreaId::WriteReplyParams(reply_msg,
                                                         storage_area->id());
   Send(reply_msg);

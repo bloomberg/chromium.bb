@@ -1035,9 +1035,9 @@ Clipboard* ResourceMessageFilter::GetClipboard() {
   return clipboard;
 }
 
-ChromeURLRequestContext*
-ResourceMessageFilter::GetRequestContextForURL(
+ChromeURLRequestContext* ResourceMessageFilter::GetRequestContextForURL(
     const GURL& url) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   URLRequestContextGetter* context_getter =
       url.SchemeIs(chrome::kExtensionScheme) ?
           extensions_request_context_ : request_context_;

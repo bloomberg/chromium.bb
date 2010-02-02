@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
@@ -14,6 +14,7 @@
 class DOMStorageArea;
 class DOMStorageContext;
 class FilePath;
+class HostContentSettingsMap;
 
 namespace WebKit {
 class WebStorageArea;
@@ -30,7 +31,8 @@ class DOMStorageNamespace {
 
   ~DOMStorageNamespace();
 
-  DOMStorageArea* GetStorageArea(const string16& origin);
+  DOMStorageArea* GetStorageArea(const string16& origin,
+                                 HostContentSettingsMap* map);
   DOMStorageNamespace* Copy(int64 clone_namespace_id);
 
   void PurgeMemory();
@@ -39,6 +41,7 @@ class DOMStorageNamespace {
     return dom_storage_context_;
   }
   int64 id() const { return id_; }
+  const WebKit::WebString& data_dir_path() const { return data_dir_path_; }
   DOMStorageType dom_storage_type() const { return dom_storage_type_; }
 
   // Creates a WebStorageArea for the given origin.  This should only be called

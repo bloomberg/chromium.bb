@@ -102,7 +102,7 @@ class ChromeURLRequestContext : public URLRequestContext,
   virtual bool InterceptResponseCookie(const URLRequest* request,
                                        const std::string& cookie) const;
 
-  const HostContentSettingsMap* host_content_settings_map() const {
+  HostContentSettingsMap* host_content_settings_map() {
     return host_content_settings_map_;
   }
 
