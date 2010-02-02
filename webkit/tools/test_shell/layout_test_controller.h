@@ -234,6 +234,9 @@ class LayoutTestController : public CppBoundClass {
   void forceRedSelectionColors(const CppArgumentList& args,
                                CppVariant* result);
 
+  // Adds a user script to be injected into new documents.
+  void addUserScript(const CppArgumentList& args, CppVariant* result);
+
  public:
   // The following methods are not exposed to JavaScript.
   void SetWorkQueueFrozen(bool frozen) { work_queue_.set_frozen(frozen); }

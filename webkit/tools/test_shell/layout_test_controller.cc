@@ -126,6 +126,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("setDatabaseQuota", &LayoutTestController::setDatabaseQuota);
   BindMethod("setPOSIXLocale", &LayoutTestController::setPOSIXLocale);
   BindMethod("counterValueForElementById", &LayoutTestController::counterValueForElementById);
+  BindMethod("addUserScript", &LayoutTestController::addUserScript);
 
   // The following are stubs.
   BindMethod("dumpAsWebArchive", &LayoutTestController::dumpAsWebArchive);
@@ -447,6 +448,7 @@ void LayoutTestController::Reset() {
     shell_->webView()->setSelectionColors(
         0xff1e90ff, 0xff000000, 0xffc8c8c8, 0xff323232);
 #endif  // defined(OS_LINUX)
+    shell_->webView()->removeAllUserContent();
   }
   dump_as_text_ = false;
   dump_editing_callbacks_ = false;
@@ -913,7 +915,7 @@ bool LayoutTestController::CppVariantToBool(const CppVariant& value) {
 }
 
 int32 LayoutTestController::CppVariantToInt32(const CppVariant& value) {
-    if (value.isInt32())
+  if (value.isInt32())
     return value.ToInt32();
   else if (value.isString()) {
     int number;
@@ -1096,4 +1098,13 @@ void LayoutTestController::forceRedSelectionColors(const CppArgumentList& args,
   result->SetNull();
   shell_->webView()->setSelectionColors(0xffee0000, 0xff00ee00, 0xff000000,
                                         0xffc0c0c0);
+}
+
+void LayoutTestController::addUserScript(const CppArgumentList& args,
+                                         CppVariant* result) {
+  result->SetNull();
+  if (args.size() < 1 || !args[0].isString() || !args[1].isBool())
+    return;
+  shell_->webView()->addUserScript(WebString::fromUTF8(args[0].ToString()),
+                                   args[1].ToBoolean());
 }
