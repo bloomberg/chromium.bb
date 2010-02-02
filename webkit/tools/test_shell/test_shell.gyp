@@ -427,6 +427,7 @@
         '../webcore_unit_tests/ICOImageDecoder_unittest.cpp',
         '../webcore_unit_tests/UniscribeHelper_unittest.cpp',
         '../webcore_unit_tests/TransparencyWin_unittest.cpp',
+        'event_listener_unittest.cc',
         'image_decoder_unittest.cc',
         'image_decoder_unittest.h',
         'keyboard_unittest.cc',
