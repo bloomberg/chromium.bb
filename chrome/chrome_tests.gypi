@@ -927,13 +927,7 @@
              ['exclude', 'browser/gtk/options/cookies_view_unittest\\.cc$'],
              ['exclude', 'browser/gtk/options/languages_page_gtk_unittest\\.cc$'],
              ['exclude', 'browser/gtk/gtk_theme_provider_unittest\\.cc$'],
-          ],
-          'conditions': [
-            ['chromeos==0', {
-              'sources/': [
-                 ['include', 'browser/views/bookmark_context_menu_test.cc$'],
-              ],
-            }]
+             ['include', 'browser/views/bookmark_context_menu_test.cc$'],
           ],
         }],
         ['OS=="mac"', {
