@@ -8,6 +8,7 @@
 #include "chrome/installer/util/google_chrome_distribution.h"
 
 #include <windows.h>
+#include <wtsapi32.h>
 #include <msi.h>
 
 #include "base/file_path.h"
@@ -30,6 +31,8 @@
 
 #include "installer_util_strings.h"
 
+#pragma comment(lib, "wtsapi32.lib")
+
 namespace {
 const wchar_t kChromeGuid[] = L"{8A69D345-D564-463c-AFF1-A69D9E530F96}";
 
@@ -41,13 +44,18 @@ const wchar_t kToastExpCancelGroup[] =       L"T%lc02";
 const wchar_t kToastExpUninstallGroup[] =    L"T%lc04";
 const wchar_t kToastExpTriesOkGroup[] =      L"T%lc18";
 const wchar_t kToastExpTriesErrorGroup[] =   L"T%lc28";
+const wchar_t kToastActiveGroup[] =          L"T%lc41";
+const wchar_t kToastUDDirFailure[] =         L"T%lc42";
 const wchar_t kToastExpBaseGroup[] =         L"T%lc80";
 
 // Generates the actual group string that gets written in the registry.
 // |group| is one of the above kToast* strings and |flavor| is a number
 // between 0 and 5.
+//
+// The big experiment in Dec 2009 used TGxx and THxx.
+// The big experiment in Feb 2010 uses TKxx and TLxx .
 std::wstring GetExperimentGroup(const wchar_t* group, int flavor) {
-  wchar_t c = flavor < 5 ? L'G' + flavor : L'X';
+  wchar_t c = flavor < 5 ? L'K' + flavor : L'X';
   return StringPrintf(group, c);
 }
 
@@ -69,7 +77,7 @@ std::wstring GetUninstallSurveyUrl() {
 
 std::wstring GetWelcomeBackUrl() {
   const wchar_t kWelcomeUrl[] = L"http://www.google.com/chrome/intl/$1/"
-                                L"welcomeback.html";
+                                L"welcomeback-new.html";
   return LocalizeUrl(kWelcomeUrl);
 }
 
@@ -117,6 +125,29 @@ bool RelaunchSetup(const std::wstring& flag, int value) {
   CommandLine cmd_line(CommandLine::ForCurrentProcess()->GetProgram());
   cmd_line.AppendSwitchWithValue(WideToASCII(flag), IntToWString(value));
   return base::LaunchApp(cmd_line, false, false, NULL);
+}
+
+// This function launches setup as the currently logged-in interactive
+// user that is the user whose logon session is attached to winsta0\default.
+// It assumes that currently we are running as SYSTEM in a non-interactive
+// windowstation.
+// The function fails if there is no interactive session active, basically
+// the computer is on but nobody has logged in locally.
+bool RelaunchSetupAsConsoleUser(const std::wstring& flag) {
+  CommandLine cmd_line(CommandLine::ForCurrentProcess()->GetProgram());
+  cmd_line.AppendSwitch(WideToASCII(flag));
+
+  DWORD console_id = ::WTSGetActiveConsoleSessionId();
+  if (console_id == 0xFFFFFFFF)
+    return false;
+  HANDLE user_token;
+  if (!::WTSQueryUserToken(console_id, &user_token))
+    return false;
+  bool launched = base::LaunchAppAsUser(user_token,
+                                        cmd_line.command_line_string(),
+                                        false, NULL);
+  ::CloseHandle(user_token);
+  return launched;
 }
 
 }  // namespace
@@ -425,19 +456,37 @@ void GoogleChromeDistribution::UpdateDiffInstallStatus(bool system_install,
 // see the comment in google_chrome_distribution_dummy.cc
 #ifndef _WIN64
 // Currently we only have one experiment: the inactive user toast. Which only
-// applies for users doing upgrades and non-systemwide install.
+// applies for users doing upgrades.
+//
+// There are three scenarios when this function is called:
+// 1- Is a per-user-install and it updated: perform the experiment
+// 2- Is a system-install and it updated : relaunch as the interactive user
+// 3- It has been re-launched from the #2 case. In this case we enter
+//    this function with |system_install| false.
 void GoogleChromeDistribution::LaunchUserExperiment(
     installer_util::InstallStatus status, const installer::Version& version,
     bool system_install) {
-  if ((installer_util::NEW_VERSION_UPDATED != status) || system_install)
-    return;
+
+  if (system_install) {
+    if (installer_util::NEW_VERSION_UPDATED == status) {
+      // We need to relaunch as the interactive user.
+      RelaunchSetupAsConsoleUser(installer_util::switches::kSystemLevelToast);
+      return;
+    }
+  } else {
+    if ((installer_util::NEW_VERSION_UPDATED != status) &&
+        (installer_util::REENTRY_SYS_UPDATE != status)) {
+      // We are not updating or in re-launch. Exit.
+      return;
+    }
+  }
 
   // currently only two equal experiment groups. 90% get the welcome back url.
   int flavor = (base::RandDouble() > 0.1) ? 0 : 1;
 
   std::wstring brand;
   if (GoogleUpdateSettings::GetBrand(&brand) && (brand == L"CHXX")) {
-    // The user automatically qualifies for the experiment.
+    // Testing only: the user automatically qualifies for the experiment.
     LOG(INFO) << "Experiment qualification bypass";
   } else {
     // Time to verify the conditions for the experiment.
@@ -450,10 +499,20 @@ void GoogleChromeDistribution::LaunchUserExperiment(
     // Check browser usage inactivity by the age of the last-write time of the
     // chrome user data directory.
     std::wstring user_data_dir = installer::GetChromeUserDataPath();
-    const int kSixtyDays = 60 * 24;
+    const int kThirtyDays = 30 * 24;
     int dir_age_hours = GetDirectoryWriteAgeInHours(user_data_dir.c_str());
-    if (dir_age_hours < kSixtyDays) {
+    if (dir_age_hours < 0) {
+      // This means that we failed to find the user data dir. The most likey
+      // cause is that this user has not ever used chrome at all which can
+      // happen in a system-level install.
+      GoogleUpdateSettings::SetClient(
+          GetExperimentGroup(kToastUDDirFailure, flavor));
+      return;
+    } else if (dir_age_hours < kThirtyDays) {
+      // An active user, so it does not qualify.
       LOG(INFO) << "Chrome used in last " << dir_age_hours << " hours";
+      GoogleUpdateSettings::SetClient(
+          GetExperimentGroup(kToastActiveGroup, flavor));
       return;
     }
     // 1% are in the control group that qualifies but does not get drafted.

@@ -42,7 +42,8 @@ enum InstallStatus {
   INSTALL_DIR_IN_USE,    // Installation directory is in use by another process
   UNINSTALL_REQUIRES_REBOOT, // Uninstallation required a reboot.
   IN_USE_UPDATED,        // Chrome successfully updated but old version running
-  SAME_VERSION_REPAIR_FAILED // Chrome repair failed as Chrome was running
+  SAME_VERSION_REPAIR_FAILED, // Chrome repair failed as Chrome was running
+  REENTRY_SYS_UPDATE     // Setup has been re-lauched as the interactive user
 };
 
 namespace switches {
@@ -73,6 +74,7 @@ extern const wchar_t kVerboseLogging[];
 extern const wchar_t kShowEula[];
 extern const wchar_t kAltDesktopShortcut[];
 extern const wchar_t kInactiveUserToast[];
+extern const wchar_t kSystemLevelToast[];
 }  // namespace switches
 
 extern const wchar_t kInstallBinaryDir[];

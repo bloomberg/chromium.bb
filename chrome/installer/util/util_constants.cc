@@ -105,6 +105,9 @@ const wchar_t kAltDesktopShortcut[] = L"alt-desktop-shortcut";
 // Perform the inactive user toast experiment.
 const wchar_t kInactiveUserToast[] = L"inactive-user-toast";
 
+// User toast experiment switch from system context to user context.
+const wchar_t kSystemLevelToast[] = L"system-level-toast";
+
 }  // namespace switches
 
 const wchar_t kInstallBinaryDir[] = L"Application";
