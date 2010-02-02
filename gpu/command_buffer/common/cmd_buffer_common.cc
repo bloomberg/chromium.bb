@@ -8,6 +8,8 @@
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 
 namespace gpu {
+const int32 CommandHeader::kMaxSize = (1 << 21) - 1;
+
 namespace cmd {
 
 const char* GetCommandName(CommandId command_id) {

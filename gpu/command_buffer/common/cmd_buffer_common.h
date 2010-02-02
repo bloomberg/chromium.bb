@@ -38,7 +38,7 @@ struct CommandHeader {
   Uint32 size:21;
   Uint32 command:11;
 
-  static const int32 kMaxSize = (1 << 21) - 1;
+  static const int32 kMaxSize;
 
   void Init(uint32 _command, int32 _size) {
     DCHECK_LE(_size, kMaxSize);
