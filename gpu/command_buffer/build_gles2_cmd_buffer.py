@@ -869,6 +869,7 @@ _FUNCTION_INFO = {
   },
   'EnableVertexAttribArray': {'DecoderFunc': 'DoEnableVertexAttribArray'},
   'Finish': {'ImplFunc': False},
+  'Flush': {'ImplFunc': False},
   'FramebufferRenderbuffer': {'DecoderFunc': 'glFramebufferRenderbufferEXT'},
   'FramebufferTexture2D': {'DecoderFunc': 'glFramebufferTexture2DEXT'},
   'GenerateMipmap': {'DecoderFunc': 'glGenerateMipmapEXT'},
@@ -977,7 +978,7 @@ class CWriter(object):
 
   def __init__(self, filename):
     self.filename = filename
-    self.file = open(filename, "w")
+    self.file = open(filename, "wb")
 
   def Write(self, string):
     """Writes a string to a file spliting if it's > 80 characters."""
