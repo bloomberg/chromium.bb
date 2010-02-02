@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/chrome_thread.h"
@@ -304,18 +305,18 @@ TEST_F(BookmarkContextMenuTest, EmptyNodesNullParent) {
 TEST_F(BookmarkContextMenuTest, CutCopyPasteNode) {
   std::vector<const BookmarkNode*> nodes;
   nodes.push_back(model_->GetBookmarkBarNode()->GetChild(0));
-  BookmarkContextMenu* controller = new BookmarkContextMenu(
+  scoped_ptr<BookmarkContextMenu> controller(new BookmarkContextMenu(
       NULL, profile_.get(), NULL, nodes[0]->GetParent(), nodes,
-      BookmarkContextMenuController::BOOKMARK_BAR);
+      BookmarkContextMenuController::BOOKMARK_BAR));
   EXPECT_TRUE(controller->IsCommandEnabled(IDS_COPY));
   EXPECT_TRUE(controller->IsCommandEnabled(IDS_CUT));
 
   // Copy the URL.
   controller->ExecuteCommand(IDS_COPY);
 
-  controller = new BookmarkContextMenu(
+  controller.reset(new BookmarkContextMenu(
       NULL, profile_.get(), NULL, nodes[0]->GetParent(), nodes,
-      BookmarkContextMenuController::BOOKMARK_BAR);
+      BookmarkContextMenuController::BOOKMARK_BAR));
   int old_count = model_->GetBookmarkBarNode()->GetChildCount();
   controller->ExecuteCommand(IDS_PASTE);
 
@@ -324,15 +325,13 @@ TEST_F(BookmarkContextMenuTest, CutCopyPasteNode) {
   ASSERT_EQ(model_->GetBookmarkBarNode()->GetChild(0)->GetURL(),
             model_->GetBookmarkBarNode()->GetChild(1)->GetURL());
 
-  controller = new BookmarkContextMenu(
+  controller.reset(new BookmarkContextMenu(
       NULL, profile_.get(), NULL, nodes[0]->GetParent(), nodes,
-      BookmarkContextMenuController::BOOKMARK_BAR);
+      BookmarkContextMenuController::BOOKMARK_BAR));
   // Cut the URL.
   controller->ExecuteCommand(IDS_CUT);
   ASSERT_TRUE(model_->GetBookmarkBarNode()->GetChild(0)->is_url());
   ASSERT_TRUE(model_->GetBookmarkBarNode()->GetChild(1)->is_folder());
   ASSERT_EQ(old_count, model_->GetBookmarkBarNode()->GetChildCount());
-
-  delete controller;
 }
 
