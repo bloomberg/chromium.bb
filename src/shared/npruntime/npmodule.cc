@@ -1,4 +1,3 @@
-// Copyright (c) 2008 The Native Client Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -568,9 +567,6 @@ NaClSrpcError NPModule::Device3DInitialize(NPP npp,
 
   return NACL_SRPC_RESULT_APP_ERROR;
 #else
-  NPP npp = NPBridge::IntToNpp(int_npp);
-  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
-
   if (NULL == extensions_) {
     if (NPERR_NO_ERROR !=
         NPN_GetValue(npp, NPNVPepperExtensions, &extensions_)) {
@@ -594,7 +590,7 @@ NaClSrpcError NPModule::Device3DInitialize(NPP npp,
       return NACL_SRPC_RESULT_APP_ERROR;
     }
     static NPDeviceContext3DConfig config;
-    config.commandBufferEntries = inputs[1]->u.ival;
+    config.commandBufferSize = entries_requested;
     NPError retval =
         device3d_->initializeContext(npp, &config, context3d_);
     if (NPERR_NO_ERROR != retval) {
@@ -609,7 +605,7 @@ NaClSrpcError NPModule::Device3DInitialize(NPP npp,
     return NACL_SRPC_RESULT_APP_ERROR;
   }
   DescWrapperFactory factory;
-  size_t shm_size = context3d_->commandBufferEntries * sizeof(int32_t);
+  size_t shm_size = context3d_->commandBufferSize * sizeof(int32_t);
   DescWrapper* wrapper =
       factory.ImportSharedMemory(shm, static_cast<size_t>(shm_size));
   if (NULL == wrapper) {
@@ -620,7 +616,7 @@ NaClSrpcError NPModule::Device3DInitialize(NPP npp,
   *shm_desc = NaClDescRef(wrapper->desc());
   // Free the wrapper.
   wrapper->Delete();
-  entries_obtained = context3d_->commandBufferEntries;
+  *entries_obtained = context3d_->commandBufferSize;
   *get_offset = context3d_->getOffset;
   *put_offset = context3d_->putOffset;
 
@@ -659,22 +655,30 @@ NaClSrpcError NPModule::Device3DDestroy(NPP npp) {
 NaClSrpcError NPModule::Device3DGetState(NPP npp,
                                          int32_t state,
                                          int32_t* value) {
+  UNREFERENCED_PARAMETER(npp);
+  UNREFERENCED_PARAMETER(state);
+  UNREFERENCED_PARAMETER(value);
+  /* TODO(sehr): re-enable this.
   NPError retval = device3d_->getStateContext(npp, context3d_, state, value);
   if (NPERR_NO_ERROR != retval) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
-
+  */
   return NACL_SRPC_RESULT_OK;
 }
 
 NaClSrpcError NPModule::Device3DSetState(NPP npp,
                                          int32_t state,
                                          int32_t value) {
+  UNREFERENCED_PARAMETER(npp);
+  UNREFERENCED_PARAMETER(state);
+  UNREFERENCED_PARAMETER(value);
+  /* TODO(sehr): re-enable this.
   NPError retval = device3d_->setStateContext(npp, context3d_, state, value);
   if (NPERR_NO_ERROR != retval) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
-
+  */
   return NACL_SRPC_RESULT_OK;
 }
 
@@ -696,9 +700,6 @@ NaClSrpcError NPModule::Device3DCreateBuffer(NPP npp,
   UNREFERENCED_PARAMETER(id);
   return NACL_SRPC_RESULT_APP_ERROR;
 #else
-  NPP npp = NPBridge::IntToNpp(int_npp);
-  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
-
   // Call the Pepper API.
   NPError retval = device3d_->createBuffer(npp, context3d_, size, &buffer_id);
   if (NPERR_NO_ERROR != retval) {
