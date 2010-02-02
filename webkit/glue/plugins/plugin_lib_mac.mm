@@ -306,14 +306,13 @@ bool PluginLib::ReadWebPluginInfo(const FilePath &filename,
   //
   // Strictly speaking, only STR# 128 is required.
 
-  // We are accessing the bundle contained in the NativeLibrary but not
-  // unloading it.  We use a scoped_ptr to make sure the NativeLibraryStruct is
-  // not leaked.
-  scoped_ptr<base::NativeLibraryStruct> native_library(
-      base::LoadNativeLibrary(filename));
-  if (!native_library.get() || native_library->type != base::BUNDLE)
+  scoped_cftyperef<CFURLRef> bundle_url(CFURLCreateFromFileSystemRepresentation(
+      kCFAllocatorDefault, (const UInt8*)filename.value().c_str(),
+      filename.value().length(), true));
+  if (!bundle_url)
     return false;
-  scoped_cftyperef<CFBundleRef> bundle(native_library->bundle);
+  scoped_cftyperef<CFBundleRef> bundle(CFBundleCreate(kCFAllocatorDefault,
+                                                      bundle_url.get()));
   if (!bundle)
     return false;
 
