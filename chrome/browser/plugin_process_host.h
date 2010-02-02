@@ -129,6 +129,7 @@ class PluginProcessHost : public ChildProcessHost,
                           bool modal);
   void OnPluginHideWindow(uint32 window_id, gfx::Rect window_rect);
   void OnPluginReceivedFocus(int process_id, int instance_id);
+  void OnPluginSetCursorVisibility(bool visible);
 #endif
 
   virtual bool CanShutdown() { return sent_requests_.empty(); }
@@ -163,12 +164,14 @@ class PluginProcessHost : public ChildProcessHost,
   std::set<HWND> plugin_parent_windows_set_;
 #endif
 #if defined(OS_MACOSX)
-  // Tracks plugin windows currently visible
+  // Tracks plugin windows currently visible.
   std::set<uint32> plugin_visible_windows_set_;
-  // Tracks full screen windows currently visible
+  // Tracks full screen windows currently visible.
   std::set<uint32> plugin_fullscreen_windows_set_;
-  // Tracks modal windows currently visible
+  // Tracks modal windows currently visible.
   std::set<uint32> plugin_modal_windows_set_;
+  // Tracks the current visibility of the cursor.
+  bool plugin_cursor_visible_;
 #endif
 
   DISALLOW_COPY_AND_ASSIGN(PluginProcessHost);

@@ -155,10 +155,15 @@ IPC_BEGIN_MESSAGES(PluginProcessHost)
                        uint32 /* window ID */,
                        gfx::Rect /* window rect */)
 
-  // Notifies the browser that a plugin instance has received keyboard focus
+  // Notifies the browser that a plugin instance has received keyboard focus.
   IPC_MESSAGE_CONTROL2(PluginProcessHostMsg_PluginReceivedFocus,
                        uint32 /* process ID */,
                        uint32 /* instance ID */)
+
+  // Notifies the browser that a plugin instance has requested a cursor
+  // visibility change.
+  IPC_MESSAGE_CONTROL1(PluginProcessHostMsg_PluginSetCursorVisibility,
+                       bool /* cursor visibility */)
 #endif
 
 IPC_END_MESSAGES(PluginProcessHost)

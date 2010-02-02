@@ -81,6 +81,14 @@ void NotifyPluginOfSetCursor(WebPluginDelegateImpl* delegate,
   delegate->SetCursor(cursor);
 }
 
+void NotifyPluginOfSetCursorVisibility(bool visibility) {
+  PluginThread* plugin_thread = PluginThread::current();
+  if (plugin_thread) {
+    plugin_thread->Send(
+        new PluginProcessHostMsg_PluginSetCursorVisibility(visibility));
+  }
+}
+
 __attribute__((visibility("default")))
 bool GetPluginWindowHasFocus(const WebPluginDelegateImpl* delegate) {
   return delegate->GetWindowHasFocus();
@@ -181,6 +189,8 @@ static void OnPluginWindowShown(const WindowInfo& window_info, BOOL is_modal) {
 
 @interface NSCursor (ChromePluginInterposing)
 - (void)chromePlugin_set;
++ (void)chromePlugin_hide;
++ (void)chromePlugin_unhide;
 @end
 
 @implementation NSCursor (ChromePluginInterposing)
@@ -194,13 +204,31 @@ static void OnPluginWindowShown(const WindowInfo& window_info, BOOL is_modal) {
   [self chromePlugin_set];
 }
 
++ (void)chromePlugin_hide {
+  mac_plugin_interposing::NotifyPluginOfSetCursorVisibility(false);
+}
+
++ (void)chromePlugin_unhide {
+  mac_plugin_interposing::NotifyPluginOfSetCursorVisibility(true);
+}
+
 @end
 
 #pragma mark -
 
-static void ExchangeMethods(Class target_class, SEL original, SEL replacement) {
-  Method m1 = class_getInstanceMethod(target_class, original);
-  Method m2 = class_getInstanceMethod(target_class, replacement);
+static void ExchangeMethods(Class target_class,
+                            BOOL class_method,
+                            SEL original,
+                            SEL replacement) {
+  Method m1;
+  Method m2;
+  if (class_method) {
+    m1 = class_getClassMethod(target_class, original);
+    m2 = class_getClassMethod(target_class, replacement);
+  } else {
+    m1 = class_getInstanceMethod(target_class, original);
+    m2 = class_getInstanceMethod(target_class, replacement);
+  }
   if (m1 && m2)
     method_exchangeImplementations(m1, m2);
   else
@@ -211,20 +239,25 @@ namespace mac_plugin_interposing {
 
 void SetUpCocoaInterposing() {
   Class nswindow_class = [NSWindow class];
-  ExchangeMethods(nswindow_class, @selector(orderOut:),
+  ExchangeMethods(nswindow_class, NO, @selector(orderOut:),
                   @selector(chromePlugin_orderOut:));
-  ExchangeMethods(nswindow_class, @selector(orderFront:),
+  ExchangeMethods(nswindow_class, NO, @selector(orderFront:),
                   @selector(chromePlugin_orderFront:));
-  ExchangeMethods(nswindow_class, @selector(makeKeyAndOrderFront:),
+  ExchangeMethods(nswindow_class, NO, @selector(makeKeyAndOrderFront:),
                   @selector(chromePlugin_makeKeyAndOrderFront:));
-  ExchangeMethods(nswindow_class, @selector(_setWindowNumber:),
+  ExchangeMethods(nswindow_class, NO, @selector(_setWindowNumber:),
                   @selector(chromePlugin_setWindowNumber:));
 
-  ExchangeMethods([NSApplication class], @selector(runModalForWindow:),
+  ExchangeMethods([NSApplication class], NO, @selector(runModalForWindow:),
                   @selector(chromePlugin_runModalForWindow:));
 
-  ExchangeMethods([NSCursor class], @selector(set),
+  Class nscursor_class = [NSCursor class];
+  ExchangeMethods(nscursor_class, NO, @selector(set),
                   @selector(chromePlugin_set));
+  ExchangeMethods(nscursor_class, YES, @selector(hide),
+                  @selector(chromePlugin_hide));
+  ExchangeMethods(nscursor_class, YES, @selector(unhide),
+                  @selector(chromePlugin_unhide));
 }
 
 }  // namespace mac_plugin_interposing

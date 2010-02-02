@@ -325,6 +325,17 @@ PluginProcessHost::~PluginProcessHost() {
           NewRunnableFunction(mac_util::ReleaseFullScreen));
     }
   }
+  // If the plugin hid the cursor, reset that.
+  if (!plugin_cursor_visible_) {
+    if (ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+      mac_util::SetCursorVisibility(true);
+    } else {
+      ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableFunction(mac_util::SetCursorVisibility,
+                            true));
+    }
+  }
 #endif
 }
 
@@ -482,6 +493,8 @@ void PluginProcessHost::OnMessageReceived(const IPC::Message& msg) {
                         OnPluginHideWindow)
     IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginReceivedFocus,
                         OnPluginReceivedFocus)
+    IPC_MESSAGE_HANDLER(PluginProcessHostMsg_PluginSetCursorVisibility,
+                        OnPluginSetCursorVisibility)
 #endif
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()

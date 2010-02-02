@@ -167,6 +167,13 @@ void ReleaseFullScreen() {
     SetSystemUIMode(kUIModeNormal, 0);
 }
 
+void SetCursorVisibility(bool visible) {
+  if (visible)
+    [NSCursor unhide];
+  else
+    [NSCursor hide];
+}
+
 void GrabWindowSnapshot(NSWindow* window,
     std::vector<unsigned char>* png_representation) {
   // Make sure to grab the "window frame" view so we get current tab +

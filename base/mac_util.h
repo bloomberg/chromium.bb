@@ -87,6 +87,9 @@ void RequestFullScreen();
 // this will show the menu bar.  Must be called on main thread.
 void ReleaseFullScreen();
 
+// Set the visibility of the cursor.
+void SetCursorVisibility(bool visible);
+
 // Activates the process with the given PID.
 void ActivateProcess(pid_t);
 

@@ -111,3 +111,13 @@ void PluginProcessHost::OnPluginReceivedFocus(int process_id, int instance_id) {
     plugin->Send(new PluginProcessMsg_PluginFocusNotify(instance));
   }
 }
+
+void PluginProcessHost::OnPluginSetCursorVisibility(bool visible) {
+  if (plugin_cursor_visible_ != visible) {
+    plugin_cursor_visible_ = visible;
+    ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableFunction(mac_util::SetCursorVisibility,
+                            visible));
+  }
+}
