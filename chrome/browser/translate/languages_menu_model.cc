@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "chrome/browser/translate/languages_menu_model.h"
 
@@ -24,7 +24,7 @@ LanguagesMenuModel::LanguagesMenuModel(
   }
   std::vector<std::string>::const_iterator iter = languages.begin();
   for (int i = base_command_id; iter != languages.end(); ++i, ++iter) {
-    AddItem(i, ASCIIToUTF16(*iter));
+    AddItem(i, TranslateInfoBarDelegate::GetDisplayNameForLocale(*iter));
   }
 }
 

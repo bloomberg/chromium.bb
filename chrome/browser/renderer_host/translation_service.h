@@ -69,6 +69,10 @@ class TranslationService : public URLFetcher::Delegate {
   // Returns true if the TranslationService is enabled.
   static bool IsTranslationEnabled();
 
+  // Fills |languages| with the list of languages that the translate server can
+  // translate to and from.
+  static void GetSupportedLanguages(std::vector<std::string>* languages);
+
  protected:
   // The amount of time in ms after which a pending request is sent if no other
   // translation request has been received.

@@ -6,6 +6,8 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/renderer_host/translation_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -30,61 +32,19 @@ void TranslateInfoBarDelegate::InfoBarClosed() {
 
 // TranslateInfoBarDelegate: public: -------------------------------------------
 
-void TranslateInfoBarDelegate::ModifyOriginalLanguage(
-    const std::string& original_language) {
-  original_language_ = original_language;
+void TranslateInfoBarDelegate::ModifyOriginalLanguage(int lang_index) {
+  original_lang_index_ = lang_index;
   // TODO(kuan): Send stats to Google Translate that original language has been
   // modified.
 }
 
-void TranslateInfoBarDelegate::ModifyTargetLanguage(
-    const std::string& target_language) {
+void TranslateInfoBarDelegate::ModifyTargetLanguage(int lang_index) {
   NOTREACHED() << "Subclass should override";
 }
 
 void TranslateInfoBarDelegate::GetAvailableOriginalLanguages(
     std::vector<std::string>* languages) {
-  // TODO(kuan): Call backend when it's ready; hardcode a list for now.
-  languages->push_back("Arabic");
-  languages->push_back("Bengali");
-  languages->push_back("Bulgarian");
-  languages->push_back("Chinese (Simplified Han)");
-  languages->push_back("Chinese (Traditional Han)");
-  languages->push_back("Croatian");
-  languages->push_back("Czech");
-  languages->push_back("Danish");
-  languages->push_back("Dutch");
-  languages->push_back("English");
-  languages->push_back("Estonian");
-  languages->push_back("Filipino");
-  languages->push_back("Finnish");
-  languages->push_back("French");
-  languages->push_back("German");
-  languages->push_back("Greek");
-  languages->push_back("Hebrew");
-  languages->push_back("Hindi");
-  languages->push_back("Hungarian");
-  languages->push_back("Indonesian");
-  languages->push_back("Italian");
-  languages->push_back("Japanese");
-  languages->push_back("Korean");
-  languages->push_back("Latvian");
-  languages->push_back("Lithuanian");
-  languages->push_back("Norwegian");
-  languages->push_back("Polish");
-  languages->push_back("Portuguese");
-  languages->push_back("Romanian");
-  languages->push_back("Russian");
-  languages->push_back("Serbian");
-  languages->push_back("Slovak");
-  languages->push_back("Slovenian");
-  languages->push_back("Spanish");
-  languages->push_back("Swedish");
-  languages->push_back("Tamil");
-  languages->push_back("Thai");
-  languages->push_back("Turkish");
-  languages->push_back("Ukrainian");
-  languages->push_back("Vietnamese");
+  TranslationService::GetSupportedLanguages(languages);
 }
 
 void TranslateInfoBarDelegate::GetAvailableTargetLanguages(
@@ -93,7 +53,7 @@ void TranslateInfoBarDelegate::GetAvailableTargetLanguages(
 }
 
 void TranslateInfoBarDelegate::Translate() {
-  tab_contents_->TranslatePage(original_language_, target_language_);
+  tab_contents_->TranslatePage(original_lang_code(), target_lang_code());
 }
 
 bool TranslateInfoBarDelegate::IsLanguageBlacklisted() {
@@ -123,25 +83,46 @@ void TranslateInfoBarDelegate::ToggleAlwaysTranslate() {
   NOTREACHED() << "Subclass should override";
 }
 
+// TranslateInfoBarDelegate: static: -------------------------------------------
+
+string16 TranslateInfoBarDelegate::GetDisplayNameForLocale(
+    const std::string& language_code) {
+  return l10n_util::GetDisplayNameForLocale(
+      language_code, g_browser_process->GetApplicationLocale(), true);
+}
+
 // TranslateInfoBarDelegate: protected: ----------------------------------------
 
 TranslateInfoBarDelegate::TranslateInfoBarDelegate(TabContents* tab_contents,
-    PrefService* user_prefs, const std::string& original_language,
-    const std::string& target_language)
+    PrefService* user_prefs, const std::string& original_lang_code,
+    const std::string& target_lang_code)
     : InfoBarDelegate(tab_contents),
       tab_contents_(tab_contents),
-      original_language_(original_language),
-      target_language_(target_language),
+      original_lang_index_(0),
+      target_lang_index_(0),
       prefs_(user_prefs) {
+  TranslationService::GetSupportedLanguages(&supported_languages_);
+  for (size_t i = 0; i < supported_languages_.size(); ++i) {
+    if (original_lang_code == supported_languages_[i]) {
+      original_lang_index_ = i;
+      break;
+    }
+  }
+  for (size_t i = 0; i < supported_languages_.size(); ++i) {
+    if (target_lang_code == supported_languages_[i]) {
+      target_lang_index_ = i;
+      break;
+    }
+  }
 }
 
 // BeforeTranslateInfoBarDelegate: public: -------------------------------------
 
 BeforeTranslateInfoBarDelegate::BeforeTranslateInfoBarDelegate(
     TabContents* tab_contents, PrefService* user_prefs, const GURL& url,
-    const std::string& original_language, const std::string& target_language)
-    : TranslateInfoBarDelegate(tab_contents, user_prefs, original_language,
-          target_language),
+    const std::string& original_lang_code, const std::string& target_lang_code)
+    : TranslateInfoBarDelegate(tab_contents, user_prefs, original_lang_code,
+          target_lang_code),
       site_(url.HostNoBrackets()),
       never_translate_language_(false),
       never_translate_site_(false) {
@@ -149,16 +130,16 @@ BeforeTranslateInfoBarDelegate::BeforeTranslateInfoBarDelegate(
 
 bool BeforeTranslateInfoBarDelegate::IsLanguageBlacklisted() {
   never_translate_language_ =
-    prefs_.IsLanguageBlacklisted(original_language());
+    prefs_.IsLanguageBlacklisted(original_lang_code());
   return never_translate_language_;
 }
 
 void BeforeTranslateInfoBarDelegate::ToggleLanguageBlacklist() {
   never_translate_language_ = !never_translate_language_;
   if (never_translate_language_)
-    prefs_.BlacklistLanguage(original_language());
+    prefs_.BlacklistLanguage(original_lang_code());
   else
-    prefs_.RemoveLanguageFromBlacklist(original_language());
+    prefs_.RemoveLanguageFromBlacklist(original_lang_code());
 }
 
 bool BeforeTranslateInfoBarDelegate::IsSiteBlacklisted() {
@@ -185,36 +166,34 @@ InfoBar* BeforeTranslateInfoBarDelegate::CreateInfoBar() {
 
 AfterTranslateInfoBarDelegate::AfterTranslateInfoBarDelegate(
     TabContents* tab_contents, PrefService* user_prefs,
-    const std::string& original_language, const std::string& target_language)
-    : TranslateInfoBarDelegate(tab_contents, user_prefs, original_language,
-          target_language),
+    const std::string& original_lang_code, const std::string& target_lang_code)
+    : TranslateInfoBarDelegate(tab_contents, user_prefs, original_lang_code,
+          target_lang_code),
       always_translate_(false) {
 }
 
 void AfterTranslateInfoBarDelegate::GetAvailableTargetLanguages(
     std::vector<std::string>* languages) {
-  // TODO(kuan): Call backend when it's ready; hardcode a list for now.
-  GetAvailableOriginalLanguages(languages);
+  TranslationService::GetSupportedLanguages(languages);
 }
 
-void AfterTranslateInfoBarDelegate::ModifyTargetLanguage(
-    const std::string& target_language) {
-  target_language_ = target_language;
+void AfterTranslateInfoBarDelegate::ModifyTargetLanguage(int lang_index) {
+  target_lang_index_ = lang_index;
 }
 
 bool AfterTranslateInfoBarDelegate::ShouldAlwaysTranslate() {
-  always_translate_ = prefs_.IsLanguagePairWhitelisted(original_language(),
-      target_language());
+  always_translate_ = prefs_.IsLanguagePairWhitelisted(original_lang_code(),
+      target_lang_code());
   return always_translate_;
 }
 
 void AfterTranslateInfoBarDelegate::ToggleAlwaysTranslate() {
   always_translate_ = !always_translate_;
   if (always_translate_)
-    prefs_.WhitelistLanguagePair(original_language(), target_language());
+    prefs_.WhitelistLanguagePair(original_lang_code(), target_lang_code());
   else
-    prefs_.RemoveLanguagePairFromWhitelist(original_language(),
-        target_language());
+    prefs_.RemoveLanguagePairFromWhitelist(original_lang_code(),
+        target_lang_code());
 }
 
 #if !defined(TOOLKIT_VIEWS)

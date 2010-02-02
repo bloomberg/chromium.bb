@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "chrome/browser/translate/options_menu_model.h"
 
@@ -13,7 +13,8 @@ OptionsMenuModel::OptionsMenuModel(menus::SimpleMenuModel::Delegate* delegate,
     TranslateInfoBarDelegate* translate_delegate, bool before_translate)
     : menus::SimpleMenuModel(delegate) {
   string16 original_language =
-      ASCIIToUTF16(translate_delegate->original_language());
+      TranslateInfoBarDelegate::GetDisplayNameForLocale(
+          translate_delegate->original_lang_code());
   if (before_translate) {
     AddCheckItem(IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_LANG,
         l10n_util::GetStringFUTF16(
@@ -23,10 +24,12 @@ OptionsMenuModel::OptionsMenuModel(menus::SimpleMenuModel::Delegate* delegate,
         l10n_util::GetStringUTF16(
             IDS_TRANSLATE_INFOBAR_OPTIONS_NEVER_TRANSLATE_SITE));
   } else {
+    string16 target_language =
+        TranslateInfoBarDelegate::GetDisplayNameForLocale(
+            translate_delegate->target_lang_code());
     AddCheckItem(IDC_TRANSLATE_OPTIONS_ALWAYS,
         l10n_util::GetStringFUTF16(IDS_TRANSLATE_INFOBAR_OPTIONS_ALWAYS,
-            original_language,
-            ASCIIToUTF16(translate_delegate->target_language())));
+            original_language, target_language));
   }
   AddItemWithStringId(IDC_TRANSLATE_OPTIONS_ABOUT,
       IDS_TRANSLATE_INFOBAR_OPTIONS_ABOUT);

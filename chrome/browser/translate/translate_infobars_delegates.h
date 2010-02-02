@@ -18,8 +18,8 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
       std::vector<std::string>* languages);
   virtual void GetAvailableTargetLanguages(
       std::vector<std::string>* languages);
-  virtual void ModifyOriginalLanguage(const std::string& original_language);
-  virtual void ModifyTargetLanguage(const std::string& target_language);
+  virtual void ModifyOriginalLanguage(int lang_index);
+  virtual void ModifyTargetLanguage(int lang_index);
   virtual void Translate();
   virtual bool IsLanguageBlacklisted();
   virtual void ToggleLanguageBlacklist();
@@ -28,11 +28,14 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   virtual bool ShouldAlwaysTranslate();
   virtual void ToggleAlwaysTranslate();
 
-  const std::string& original_language() const {
-    return original_language_;
+  const std::string& original_lang_code() const {
+    return supported_languages_[original_lang_index_];
   }
-  const std::string& target_language() const {
-    return target_language_;
+  const std::string& target_lang_code() const {
+    return supported_languages_[target_lang_index_];
+  }
+  const std::string& GetLocaleFromIndex(int lang_index) const {
+    return supported_languages_[lang_index];
   }
   TabContents* tab_contents() const {
     return tab_contents_;
@@ -49,14 +52,19 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   }
   virtual void InfoBarClosed();
 
+  // Returns the printable version of the language code |language_code|.
+  static string16 GetDisplayNameForLocale(const std::string& language_code);
+
  protected:
   TranslateInfoBarDelegate(TabContents* contents, PrefService* user_prefs,
       const std::string& original_language, const std::string& target_language);
 
   TabContents* tab_contents_;  // Weak.
-  std::string original_language_;
-  std::string target_language_;
+  int original_lang_index_;
+  int target_lang_index_;
   TranslatePrefs prefs_;
+  // The list of languages supported.
+  std::vector<std::string> supported_languages_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateInfoBarDelegate);
 };
@@ -92,7 +100,7 @@ class AfterTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
   // Overriden from TranslateInfoBar:
   virtual void GetAvailableTargetLanguages(
       std::vector<std::string>* languages);
-  virtual void ModifyTargetLanguage(const std::string& target_language);
+  virtual void ModifyTargetLanguage(int lang_index);
   virtual bool ShouldAlwaysTranslate();
   virtual void ToggleAlwaysTranslate();
 

@@ -45,6 +45,63 @@ LocaleToCLDLanguage kLocaleToCLDLanguages[] = {
     { "es-419", "es" },
 };
 
+// The list of languages the Google translation server supports.
+const char* kSupportedLanguages[] = {
+    "af",     // Afrikaans
+    "sq",     // Albanian
+    "ar",     // Arabic
+    "be",     // Belarusian
+    "bg",     // Bulgarian
+    "ca",     // Catalan
+    "zh-CN",  // Chinese (Simplified)
+    "zh-TW",  // Chinese (Traditional)
+    "hr",     // Croatian
+    "cs",     // Czech
+    "da",     // Danish
+    "nl",     // Dutch
+    "en",     // English
+    "et",     // Estonian
+    "tl",     // Tagalog (Filipino)
+    "fi",     // Finnish
+    "fr",     // French
+    "gl",     // Galician
+    "de",     // German
+    "el",     // Greek
+    "he",     // Hebrew
+    "hi",     // Hindi
+    "hu",     // Hungarian
+    "is",     // Icelandic
+    "id",     // Indonesian
+    "it",     // Italian
+    "ga",     // Irish
+    "ja",     // Japanese
+    "ko",     // Korean
+    "lv",     // Latvian
+    "lt",     // Lithuanian
+    "mk",     // Macedonian
+    "ms",     // Malay
+    "mt",     // Maltese
+    "no",     // Norwegian
+    "fa",     // Persian
+    "pl",     // Polish
+    "pt",     // Portuguese
+    "ro",     // Romanian
+    "ru",     // Russian
+    "sr",     // Serbian
+    "sk",     // Slovak
+    "sl",     // Slovenian
+    "es",     // Spanish
+    "sw",     // Swahili
+    "sv",     // Swedish
+    "th",     // Thai
+    "tr",     // Turkish
+    "uk",     // Ukrainian
+    "vi",     // Vietnamese
+    "cy",     // Welsh
+    "yi",     // Yiddish
+};
+
+
 // The maximum size in bytes after which the server will refuse the request.
 const size_t kTextRequestMaxSize = 1024 * 30;
 
@@ -345,6 +402,14 @@ bool TranslationService::ShouldTranslatePage(
 // static
 bool TranslationService::IsTranslationEnabled() {
   return GURL(kServiceURL).host() != "disabled";
+}
+
+// static
+void TranslationService::GetSupportedLanguages(
+    std::vector<std::string>* languages) {
+  DCHECK(languages && languages->empty());
+  for (size_t i = 0; i < arraysize(kSupportedLanguages); ++i)
+    languages->push_back(kSupportedLanguages[i]);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

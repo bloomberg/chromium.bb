@@ -49,7 +49,7 @@ class TranslateInfoBar : public InfoBar,
   gfx::Point DetermineMenuPositionAndAlignment(views::MenuButton* menu_button,
       views::Menu2::Alignment* alignment);
   void OnLanguageModified(views::MenuButton* menu_button,
-      const string16& new_language);
+      int new_language_index);
   TranslateInfoBarDelegate* GetDelegate() const;
 
   // Overridden from InfoBar:

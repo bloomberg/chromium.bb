@@ -204,8 +204,10 @@ TranslateInfoBar::TranslateInfoBar(TranslateInfoBarDelegate* delegate,
      label_3_ = NULL;
   }
 
+  string16 language_name = TranslateInfoBarDelegate::GetDisplayNameForLocale(
+      GetDelegate()->original_lang_code());
   original_language_menu_button_ = CreateMenuButton(kMenuIDOriginalLanguage,
-      ASCIIToWide(GetDelegate()->original_language()));
+      UTF16ToWideHack(language_name));
   AddChildView(original_language_menu_button_);
 
   options_menu_button_ = CreateMenuButton(kMenuIDOptions,
@@ -214,7 +216,6 @@ TranslateInfoBar::TranslateInfoBar(TranslateInfoBarDelegate* delegate,
 }
 
 TranslateInfoBar::~TranslateInfoBar() {
-
 }
 
 // TranslateInfoBar, views::View overrides: ------------------------------------
@@ -325,7 +326,7 @@ void TranslateInfoBar::RunMenu(views::View* source, const gfx::Point& pt) {
   if (menu_id == kMenuIDOptions) {
     if (!options_menu_model_.get()) {
       options_menu_model_.reset(new OptionsMenuModel(this, GetDelegate(),
-        before_translate_));
+          before_translate_));
       options_menu_menu_.reset(new views::Menu2(options_menu_model_.get()));
     }
     options_menu_menu_->RunMenuAt(pt,
@@ -379,9 +380,8 @@ bool TranslateInfoBar::GetAcceleratorForCommandId(int command_id,
 
 void TranslateInfoBar::ExecuteCommand(int command_id) {
   if (command_id >= IDC_TRANSLATE_ORIGINAL_LANGUAGE_BASE) {
-    string16 new_language = original_language_menu_model_->GetLabelAt(
+    OnLanguageModified(original_language_menu_button_,
         command_id - IDC_TRANSLATE_ORIGINAL_LANGUAGE_BASE);
-    OnLanguageModified(original_language_menu_button_, new_language);
   } else {
     switch (command_id) {
       case IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_LANG:
@@ -417,7 +417,7 @@ void TranslateInfoBar::ExecuteCommand(int command_id) {
 // TranslateInfoBar, protected: ------------------------------------------------
 
 views::MenuButton* TranslateInfoBar::CreateMenuButton(int menu_id,
-      const std::wstring& label) {
+    const std::wstring& label) {
   views::MenuButton* menu_button =
       new views::MenuButton(NULL, label, this, true);
   menu_button->SetID(menu_id);
@@ -453,16 +453,18 @@ gfx::Point TranslateInfoBar::DetermineMenuPositionAndAlignment(
 }
 
 void TranslateInfoBar::OnLanguageModified(views::MenuButton* menu_button,
-    const string16& new_language) {
+    int new_language_index) {
   // Only proceed if a different language has been selected.
+  string16 new_language = TranslateInfoBarDelegate::GetDisplayNameForLocale(
+      GetDelegate()->GetLocaleFromIndex(new_language_index));
   if (new_language == WideToUTF16(menu_button->text()))
     return;
-  std::string ascii_lang(UTF16ToUTF8(new_language));
   if (menu_button == original_language_menu_button_)
-    GetDelegate()->ModifyOriginalLanguage(ascii_lang);
+    GetDelegate()->ModifyOriginalLanguage(new_language_index);
   else
-    GetDelegate()->ModifyTargetLanguage(ascii_lang);
-  menu_button->SetText(UTF16ToWide(new_language));
+    GetDelegate()->ModifyTargetLanguage(new_language_index);
+
+  menu_button->SetText(UTF16ToWideHack(new_language));
   menu_button->ClearMaxTextSize();
   menu_button->SizeToPreferredSize();
   Layout();
@@ -539,8 +541,10 @@ void BeforeTranslateInfoBar::ButtonPressed(
 AfterTranslateInfoBar::AfterTranslateInfoBar(
     AfterTranslateInfoBarDelegate* delegate)
     : TranslateInfoBar(delegate, false, IDS_TRANSLATE_INFOBAR_AFTER_MESSAGE) {
+  string16 language_name = TranslateInfoBarDelegate::GetDisplayNameForLocale(
+      GetDelegate()->target_lang_code());
   target_language_menu_button_ = CreateMenuButton(kMenuIDTargetLanguage,
-      ASCIIToWide(GetDelegate()->target_language()));
+      UTF16ToWideHack(language_name));
   AddChildView(target_language_menu_button_);
 }
 
@@ -578,9 +582,8 @@ void AfterTranslateInfoBar::RunMenu(views::View* source, const gfx::Point& pt) {
 
 void AfterTranslateInfoBar::ExecuteCommand(int command_id) {
   if (command_id >= IDC_TRANSLATE_TARGET_LANGUAGE_BASE) {
-    string16 new_language = target_language_menu_model_->GetLabelAt(
+    OnLanguageModified(target_language_menu_button_,
         command_id - IDC_TRANSLATE_TARGET_LANGUAGE_BASE);
-    OnLanguageModified(target_language_menu_button_, new_language);
   } else {
     TranslateInfoBar::ExecuteCommand(command_id);
   }
