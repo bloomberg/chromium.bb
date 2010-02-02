@@ -102,6 +102,8 @@ END_SINK_MAP()
   // TLS.
   static Bho* GetCurrentThreadBhoInstance();
 
+  static void ProcessOptInUrls(IWebBrowser2* browser, BSTR url);
+
  protected:
   bool PatchProtocolHandler(const CLSID& handler_clsid);
 

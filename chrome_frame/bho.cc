@@ -91,34 +91,14 @@ STDMETHODIMP Bho::BeforeNavigate2(IDispatch* dispatch, VARIANT* url,
   if (dispatch)
     web_browser2.QueryFrom(dispatch);
 
-  if (!web_browser2) {
+  if (!web_browser2 || url->vt != VT_BSTR) {
     NOTREACHED() << "Can't find WebBrowser2 with given dispatch";
     return S_OK;  // Return success, we operate on best effort basis.
   }
 
   DLOG(INFO) << "BeforeNavigate2: " << url->bstrVal;
 
-  if (g_patch_helper.state() == PatchHelper::PATCH_IBROWSER) {
-    VARIANT_BOOL is_top_level = VARIANT_FALSE;
-    web_browser2->get_TopLevelContainer(&is_top_level);
-
-    std::wstring current_url;
-    bool is_chrome_protocol = false;
-    if (is_top_level && IsValidUrlScheme(url->bstrVal, false)) {
-      current_url.assign(url->bstrVal, SysStringLen(url->bstrVal));
-      is_chrome_protocol = StartsWith(current_url, kChromeProtocolPrefix,
-                                      false);
-
-      if (!is_chrome_protocol && IsOptInUrl(current_url.c_str())) {
-        DLOG(INFO) << "Opt-in URL. Switching to cf.";
-        ScopedComPtr<IBrowserService> browser_service;
-        DoQueryService(SID_SShellBrowser, web_browser2,
-                       browser_service.Receive());
-        DCHECK(browser_service) << "DoQueryService - SID_SShellBrowser failed.";
-        MarkBrowserOnThreadForCFNavigation(browser_service);
-      }
-    }
-  }
+  ProcessOptInUrls(web_browser2, url->bstrVal);
 
   referrer_.clear();
 
@@ -322,6 +302,30 @@ HRESULT Bho::OnHttpEquiv(IBrowserService_OnHttpEquiv_Fn original_httpequiv,
 Bho* Bho::GetCurrentThreadBhoInstance() {
   DCHECK(bho_current_thread_instance_.Pointer()->Get() != NULL);
   return bho_current_thread_instance_.Pointer()->Get();
+}
+
+// static
+void Bho::ProcessOptInUrls(IWebBrowser2* browser, BSTR url) {
+  if (!browser || !url) {
+    NOTREACHED();
+    return;
+  }
+
+  VARIANT_BOOL is_top_level = VARIANT_FALSE;
+  browser->get_TopLevelContainer(&is_top_level);
+  if (is_top_level) {
+    std::wstring current_url(url, SysStringLen(url));
+    if (IsValidUrlScheme(current_url, false)) {
+      bool cf_protocol = StartsWith(current_url, kChromeProtocolPrefix, false);
+      if (!cf_protocol && IsOptInUrl(current_url.c_str())) {
+        DLOG(INFO) << "Opt-in URL. Switching to cf.";
+        ScopedComPtr<IBrowserService> browser_service;
+        DoQueryService(SID_SShellBrowser, browser, browser_service.Receive());
+        DCHECK(browser_service) << "DoQueryService - SID_SShellBrowser failed.";
+        MarkBrowserOnThreadForCFNavigation(browser_service);
+      }
+    }
+  }
 }
 
 namespace {
