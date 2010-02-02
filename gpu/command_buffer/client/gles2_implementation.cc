@@ -60,8 +60,7 @@ void GLES2Implementation::CopyResult(void* dst) {
 }
 
 void GLES2Implementation::WaitForCmd() {
-  int32 token = helper_->InsertToken();
-  helper_->WaitForToken(token);
+  helper_->CommandBufferHelper::Finish();
 }
 
 void GLES2Implementation::DrawElements(
@@ -69,14 +68,26 @@ void GLES2Implementation::DrawElements(
   helper_->DrawElements(mode, count, type, ToGLuint(indices));
 }
 
+void GLES2Implementation::Flush() {
+  // Insert the cmd to call glFlush
+  helper_->Flush();
+  // Flush our command buffer
+  // (tell the service to execute upto the flush cmd.)
+  helper_->CommandBufferHelper::Flush();
+}
+
 void GLES2Implementation::Finish() {
+  // Insert the cmd to call glFinish
   helper_->Finish();
-  WaitForCmd();
+  // Flinish our command buffer
+  // (tell the service to execute upto the Finish cmd and wait for it to
+  // execute.)
+  helper_->CommandBufferHelper::Finish();
 }
 
 void GLES2Implementation::SwapBuffers() {
   helper_->SwapBuffers();
-  Finish();
+  Flush();
 }
 
 void GLES2Implementation::GetVertexAttribPointerv(
