@@ -54,6 +54,11 @@ AC_ARG_ENABLE(intel,
 	      [Enable support for intel's KMS API (default: auto)]),
 	      [INTEL=$enableval], [INTEL=auto])
 
+AC_ARG_ENABLE(radeon,
+	      AS_HELP_STRING([--disable-radeon],
+	      [Enable support for radeon's KMS API (default: enabled)]),
+	      [RADEON=$enableval], [RADEON=yes])
+
 AC_ARG_ENABLE(vmwgfx-experimental-api,
 	      AS_HELP_STRING([--enable-vmwgfx-experimental-api],
 	      [Install vmwgfx's experimental kernel API header (default: disabled)]),
@@ -64,10 +69,6 @@ AC_ARG_ENABLE(nouveau-experimental-api,
 	      [Enable support for nouveau's experimental API (default: disabled)]),
 	      [NOUVEAU=$enableval], [NOUVEAU=no])
 
-AC_ARG_ENABLE(radeon-experimental-api,
-	      AS_HELP_STRING([--enable-radeon-experimental-api],
-	      [Enable support for radeon's KMS API (default: disabled)]),
-	      [RADEON=$enableval], [RADEON=no])
 
 dnl ===========================================================================
 dnl check compiler flags
