@@ -331,6 +331,18 @@ willPositionSheet:(NSWindow*)sheet
     // Create the bridge for the status bubble.
     statusBubble_ = new StatusBubbleMac([self window], self);
 
+    // Register for application hide/unhide notifications.
+    [[NSNotificationCenter defaultCenter]
+         addObserver:self
+            selector:@selector(applicationDidHide:)
+                name:NSApplicationDidHideNotification
+              object:nil];
+    [[NSNotificationCenter defaultCenter]
+         addObserver:self
+            selector:@selector(applicationDidUnhide:)
+                name:NSApplicationDidUnhideNotification
+              object:nil];
+
     // We are done initializing now.
     initializing_ = NO;
   }
@@ -473,6 +485,48 @@ willPositionSheet:(NSWindow*)sheet
   if (TabContents* contents = browser_->GetSelectedTabContents()) {
     if (RenderWidgetHostView* rwhv = contents->render_widget_host_view())
       rwhv->SetActive(false);
+  }
+}
+
+// Called when we have been minimized.
+- (void)windowDidMiniaturize:(NSNotification *)notification {
+  // Let the selected RenderWidgetHostView know, so that it can tell plugins.
+  if (TabContents* contents = browser_->GetSelectedTabContents()) {
+    if (RenderWidgetHostView* rwhv = contents->render_widget_host_view())
+      rwhv->SetWindowVisibility(false);
+  }
+}
+
+// Called when we have been unminimized.
+- (void)windowDidDeminiaturize:(NSNotification *)notification {
+  // Let the selected RenderWidgetHostView know, so that it can tell plugins.
+  if (TabContents* contents = browser_->GetSelectedTabContents()) {
+    if (RenderWidgetHostView* rwhv = contents->render_widget_host_view())
+      rwhv->SetWindowVisibility(true);
+  }
+}
+
+// Called when the application has been hidden.
+- (void)applicationDidHide:(NSNotification *)notification {
+  // Let the selected RenderWidgetHostView know, so that it can tell plugins
+  // (unless we are minimized, in which case nothing has really changed).
+  if (![[self window] isMiniaturized]) {
+    if (TabContents* contents = browser_->GetSelectedTabContents()) {
+      if (RenderWidgetHostView* rwhv = contents->render_widget_host_view())
+        rwhv->SetWindowVisibility(false);
+    }
+  }
+}
+
+// Called when the application has been unhidden.
+- (void)applicationDidUnhide:(NSNotification *)notification {
+  // Let the selected RenderWidgetHostView know, so that it can tell plugins
+  // (unless we are minimized, in which case nothing has really changed).
+  if (![[self window] isMiniaturized]) {
+    if (TabContents* contents = browser_->GetSelectedTabContents()) {
+      if (RenderWidgetHostView* rwhv = contents->render_widget_host_view())
+        rwhv->SetWindowVisibility(true);
+    }
   }
 }
 

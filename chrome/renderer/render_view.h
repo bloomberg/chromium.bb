@@ -716,6 +716,10 @@ class RenderView : public RenderWidget,
   // accordingly, etc.).
   void OnSetActive(bool active);
 
+#if defined(OS_MACOSX)
+  void OnSetWindowVisibility(bool visible);
+#endif
+
   // Execute custom context menu action.
   void OnCustomContextMenuAction(unsigned action);
 

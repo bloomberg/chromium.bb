@@ -109,6 +109,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual gfx::Rect GetWindowRect();
   virtual gfx::Rect GetRootWindowRect();
   virtual void SetActive(bool active);
+  virtual void SetWindowVisibility(bool visible);
   virtual void SetBackground(const SkBitmap& background);
 
   void KillSelf();

@@ -376,7 +376,7 @@ IPC_BEGIN_MESSAGES(View)
   // displaying this host can update their content settings to match.
   IPC_MESSAGE_CONTROL2(ViewMsg_SetContentSettingsForCurrentHost,
                        std::string /* host */,
-                       ContentSettings /* content_settings */)  
+                       ContentSettings /* content_settings */)
 
   // Change encoding of page in the renderer.
   IPC_MESSAGE_ROUTED1(ViewMsg_SetPageEncoding,
@@ -752,6 +752,12 @@ IPC_BEGIN_MESSAGES(View)
   // accordingly, etc.).
   IPC_MESSAGE_ROUTED1(ViewMsg_SetActive,
                       bool /* active */)
+
+#if defined(OS_MACOSX)
+  // Let the RenderView know its window has changed visibility.
+  IPC_MESSAGE_ROUTED1(ViewMsg_SetWindowVisibility,
+                      bool /* visibile */)
+#endif
 
   // Response message to ViewHostMsg_CreateShared/DedicatedWorker.
   // Sent when the worker has started.

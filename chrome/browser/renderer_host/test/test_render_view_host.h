@@ -77,6 +77,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual gfx::Rect GetWindowRect();
   virtual gfx::Rect GetRootWindowRect();
   virtual void SetActive(bool active);
+  virtual void SetWindowVisibility(bool visible) {}
 #endif
 
 #if defined(OS_LINUX)

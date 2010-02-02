@@ -491,6 +491,13 @@ void RenderWidgetHostViewMac::SetActive(bool active) {
     render_widget_host_->SetActive(active);
 }
 
+void RenderWidgetHostViewMac::SetWindowVisibility(bool visible) {
+  if (render_widget_host_) {
+    render_widget_host_->Send(new ViewMsg_SetWindowVisibility(
+        render_widget_host_->routing_id(), visible));
+  }
+}
+
 void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
   RenderWidgetHostView::SetBackground(background);
   if (render_widget_host_)

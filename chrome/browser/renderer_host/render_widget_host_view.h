@@ -158,6 +158,14 @@ class RenderWidgetHostView {
 
   // Set the view's active state (i.e., tint state of controls).
   virtual void SetActive(bool active) = 0;
+
+  // Notifies the view that its enclosing window has changed visibility
+  // (minimized/unminimized, app hidden/unhidden, etc).
+  // TODO(stuartmorgan): This is a temporary plugin-specific workaround for
+  // <http://crbug.com/34266>. Once that is fixed, this (and the corresponding
+  // message and renderer-side handling) can be removed in favor of using
+  // WasHidden/DidBecomeSelected.
+  virtual void SetWindowVisibility(bool visible) = 0;
 #endif
 
 #if defined(OS_LINUX)

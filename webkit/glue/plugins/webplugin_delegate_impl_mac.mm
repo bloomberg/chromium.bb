@@ -342,8 +342,10 @@ void WebPluginDelegateImpl::WindowlessUpdateGeometry(
     const gfx::Rect& window_rect,
     const gfx::Rect& clip_rect) {
   bool old_clip_was_empty = clip_rect_.IsEmpty();
-  bool new_clip_is_empty = clip_rect.IsEmpty();
-  clip_rect_ = clip_rect;
+  cached_clip_rect_ = clip_rect;
+  if (container_is_visible_)  // Remove check when cached_clip_rect_ is removed.
+    clip_rect_ = clip_rect;
+  bool new_clip_is_empty = clip_rect_.IsEmpty();
 
   // Only resend to the instance if the geometry has changed (see note in
   // WindowlesSetWindow for why we only care about the clip rect switching
@@ -549,6 +551,16 @@ void WebPluginDelegateImpl::SetContainerVisibility(bool is_visible) {
   if (is_visible == container_is_visible_)
     return;
   container_is_visible_ = is_visible;
+
+  // TODO(stuartmorgan): This is a temporary workarond for
+  // <http://crbug.com/34266>. When that is fixed, the cached_clip_rect_ code
+  // should all be removed.
+  if (is_visible) {
+    clip_rect_ = cached_clip_rect_;
+  } else {
+    clip_rect_.set_width(0);
+    clip_rect_.set_height(0);
+  }
 
   // TODO(stuartmorgan): We may need to remember whether we had focus, and
   // restore it ourselves when we become visible again. Revisit once SetFocus

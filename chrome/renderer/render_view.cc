@@ -574,6 +574,9 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
                         OnNotifyRendererViewType)
     IPC_MESSAGE_HANDLER(ViewMsg_MediaPlayerActionAt, OnMediaPlayerActionAt)
     IPC_MESSAGE_HANDLER(ViewMsg_SetActive, OnSetActive)
+#if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(ViewMsg_SetWindowVisibility, OnSetWindowVisibility)
+#endif
     IPC_MESSAGE_HANDLER(ViewMsg_SetEditCommandsForNextKeyEvent,
                         OnSetEditCommandsForNextKeyEvent)
     IPC_MESSAGE_HANDLER(ViewMsg_ExecuteCode,
@@ -3764,6 +3767,17 @@ void RenderView::OnSetActive(bool active) {
   }
 #endif
 }
+
+#if defined(OS_MACOSX)
+void RenderView::OnSetWindowVisibility(bool visible) {
+  // Inform plugins that their container has changed visibility.
+  std::set<WebPluginDelegateProxy*>::iterator plugin_it;
+  for (plugin_it = plugin_delegates_.begin();
+       plugin_it != plugin_delegates_.end(); ++plugin_it) {
+    (*plugin_it)->SetContainerVisibility(visible);
+  }
+}
+#endif  // OS_MACOSX
 
 void RenderView::SendExtensionRequest(const std::string& name,
                                       const ListValue& args,

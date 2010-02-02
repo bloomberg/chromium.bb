@@ -132,7 +132,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   void SetWindowHasFocus(bool has_focus);
   // Returns whether or not the window the plugin is in has focus.
   bool GetWindowHasFocus() const { return containing_window_has_focus_; }
-  // Informs the plugin that its tab has been hidden or shown.
+  // Informs the plugin that its tab or window has been hidden or shown.
   void SetContainerVisibility(bool is_visible);
   // Informs the delegate that the plugin set a Carbon ThemeCursor.
   void SetThemeCursor(ThemeCursor cursor);
@@ -363,6 +363,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   bool containing_window_has_focus_;
   bool container_is_visible_;
   bool have_called_set_window_;
+  gfx::Rect cached_clip_rect_;
 #endif
 
   // Called by the message filter hook when the plugin enters a modal loop.
