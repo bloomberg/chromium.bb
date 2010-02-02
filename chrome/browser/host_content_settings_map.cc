@@ -7,6 +7,8 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "net/base/static_cookie_policy.h"
@@ -166,6 +168,8 @@ void HostContentSettingsMap::SetDefaultContentSetting(
           dictionary_path, Value::CreateIntegerValue(setting));
     }
   }
+
+  NotifyObservers(std::string());
 }
 
 void HostContentSettingsMap::SetContentSetting(const std::string& host,
@@ -207,35 +211,42 @@ void HostContentSettingsMap::SetContentSetting(const std::string& host,
     host_settings_dictionary->SetWithoutPathExpansion(
         dictionary_path, Value::CreateIntegerValue(setting));
   }
+
+  NotifyObservers(host);
 }
 
 void HostContentSettingsMap::ClearSettingsForOneType(
     ContentSettingsType content_type) {
-  AutoLock auto_lock(lock_);
-  for (HostContentSettings::iterator i(host_content_settings_.begin());
-       i != host_content_settings_.end(); ) {
-    if (i->second.settings[content_type] != CONTENT_SETTING_DEFAULT) {
-      i->second.settings[content_type] = CONTENT_SETTING_DEFAULT;
-      std::wstring wide_host(UTF8ToWide(i->first));
-      DictionaryValue* all_settings_dictionary =
-          profile_->GetPrefs()->GetMutableDictionary(
-              prefs::kPerHostContentSettings);
-      if (AllDefault(i->second)) {
-        all_settings_dictionary->RemoveWithoutPathExpansion(wide_host, NULL);
-        host_content_settings_.erase(i++);
+  {
+    AutoLock auto_lock(lock_);
+    for (HostContentSettings::iterator i(host_content_settings_.begin());
+         i != host_content_settings_.end(); ) {
+      if (i->second.settings[content_type] != CONTENT_SETTING_DEFAULT) {
+        i->second.settings[content_type] = CONTENT_SETTING_DEFAULT;
+        std::wstring wide_host(UTF8ToWide(i->first));
+        DictionaryValue* all_settings_dictionary =
+            profile_->GetPrefs()->GetMutableDictionary(
+                prefs::kPerHostContentSettings);
+        if (AllDefault(i->second)) {
+          all_settings_dictionary->RemoveWithoutPathExpansion(wide_host, NULL);
+          host_content_settings_.erase(i++);
+        } else {
+          DictionaryValue* host_settings_dictionary;
+          bool found =
+              all_settings_dictionary->GetDictionaryWithoutPathExpansion(
+                  wide_host, &host_settings_dictionary);
+          DCHECK(found);
+          host_settings_dictionary->RemoveWithoutPathExpansion(
+              kTypeNames[content_type], NULL);
+          ++i;
+        }
       } else {
-        DictionaryValue* host_settings_dictionary;
-        bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
-            wide_host, &host_settings_dictionary);
-        DCHECK(found);
-        host_settings_dictionary->RemoveWithoutPathExpansion(
-            kTypeNames[content_type], NULL);
         ++i;
       }
-    } else {
-      ++i;
     }
   }
+
+  NotifyObservers(std::string());
 }
 
 void HostContentSettingsMap::SetBlockThirdPartyCookies(bool block) {
@@ -268,6 +279,8 @@ void HostContentSettingsMap::ResetToDefaults() {
   prefs->ClearPref(prefs::kDefaultContentSettings);
   prefs->ClearPref(prefs::kPerHostContentSettings);
   prefs->ClearPref(prefs::kBlockThirdPartyCookies);
+
+  NotifyObservers(std::string());
 }
 
 HostContentSettingsMap::~HostContentSettingsMap() {
@@ -307,6 +320,13 @@ bool HostContentSettingsMap::AllDefault(const ContentSettings& settings) const {
     if (settings.settings[i] != CONTENT_SETTING_DEFAULT)
       return false;
   }
-
   return true;
+}
+
+void HostContentSettingsMap::NotifyObservers(const std::string& host) {
+  ContentSettingsDetails details(host);
+  NotificationService::current()->Notify(
+      NotificationType::CONTENT_SETTINGS_CHANGED,
+      Source<HostContentSettingsMap>(this),
+      Details<ContentSettingsDetails>(&details));
 }

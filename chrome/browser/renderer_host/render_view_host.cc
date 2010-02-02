@@ -1763,6 +1763,11 @@ void RenderViewHost::UndoTranslatePage(int page_id) {
   Send(new ViewMsg_UndoTranslate(routing_id(), page_id));
 }
 
+void RenderViewHost::SendContentSettings(const std::string& host,
+                                         const ContentSettings& settings) {
+  Send(new ViewMsg_SetContentSettingsForCurrentHost(host, settings));
+}
+
 void RenderViewHost::OnExtensionPostMessage(
     int port_id, const std::string& message) {
   if (process()->profile()->GetExtensionMessageService()) {

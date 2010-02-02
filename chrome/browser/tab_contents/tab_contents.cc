@@ -31,6 +31,7 @@
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/form_field_history_manager.h"
 #include "chrome/browser/google_util.h"
+#include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/hung_renderer_dialog.h"
 #include "chrome/browser/jsmessage_box_handler.h"
 #include "chrome/browser/load_from_memory_cache_details.h"
@@ -301,6 +302,10 @@ TabContents::TabContents(Profile* profile,
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
 #endif
+
+  // Register for notifications about content setting changes.
+  registrar_.Add(this, NotificationType::CONTENT_SETTINGS_CHANGED,
+                 NotificationService::AllSources());
 
   // Keep a global copy of the previous search string (if any).
   static string16 global_last_search = string16();
@@ -2717,6 +2722,22 @@ void TabContents::Observe(NotificationType type,
       break;
     }
 #endif
+
+    case NotificationType::CONTENT_SETTINGS_CHANGED: {
+      Details<HostContentSettingsMap::ContentSettingsDetails>
+          settings_details(details);
+      std::string host;
+      NavigationEntry* entry = controller_.GetActiveEntry();
+      if (entry)
+        host = entry->url().host();
+      Source<HostContentSettingsMap> content_settings(source);
+      if (settings_details.ptr()->host().empty() ||
+          settings_details.ptr()->host() == host) {
+        render_view_host()->SendContentSettings(host,
+            content_settings.ptr()->GetContentSettings(host));
+      }
+      break;
+    }
 
     default:
       NOTREACHED();

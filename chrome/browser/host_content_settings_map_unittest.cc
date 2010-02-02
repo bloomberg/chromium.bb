@@ -4,6 +4,8 @@
 
 #include "chrome/browser/host_content_settings_map.h"
 
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -18,6 +20,36 @@ bool SettingsEqual(const ContentSettings& settings1,
   }
   return true;
 }
+
+class StubSettingsObserver : public NotificationObserver {
+ public:
+  StubSettingsObserver()
+      : last_notifier(NULL), counter(0) {
+    registrar_.Add(this, NotificationType::CONTENT_SETTINGS_CHANGED,
+                 NotificationService::AllSources());
+  }
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    ++counter;
+    Source<HostContentSettingsMap> content_settings(source);
+    Details<HostContentSettingsMap::ContentSettingsDetails>
+        settings_details(details);
+    last_notifier = content_settings.ptr();
+    last_host = settings_details.ptr()->host();
+    // This checks that calling a Get function from an observer doesn't
+    // deadlock.
+    last_notifier->GetContentSettings("random-hostname");
+  }
+
+  HostContentSettingsMap* last_notifier;
+  std::string last_host;
+  int counter;
+
+ private:
+  NotificationRegistrar registrar_;
+};
 
 class HostContentSettingsMapTest : public testing::Test {
  public:
@@ -135,6 +167,37 @@ TEST_F(HostContentSettingsMapTest, DefaultValues) {
   host_content_settings_map->GetSettingsForOneType(
       CONTENT_SETTINGS_TYPE_PLUGINS, &host_settings);
   EXPECT_EQ(1U, host_settings.size());
+}
+
+TEST_F(HostContentSettingsMapTest, Observer) {
+  TestingProfile profile;
+  HostContentSettingsMap* host_content_settings_map =
+      profile.GetHostContentSettingsMap();
+  StubSettingsObserver observer;
+
+  std::string host("example.com");
+  host_content_settings_map->SetContentSetting(host,
+      CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_ALLOW);
+  EXPECT_EQ(host_content_settings_map, observer.last_notifier);
+  EXPECT_EQ(host, observer.last_host);
+  EXPECT_EQ(1, observer.counter);
+
+  host_content_settings_map->ClearSettingsForOneType(
+      CONTENT_SETTINGS_TYPE_IMAGES);
+  EXPECT_EQ(host_content_settings_map, observer.last_notifier);
+  EXPECT_EQ(std::string(), observer.last_host);
+  EXPECT_EQ(2, observer.counter);
+
+  host_content_settings_map->ResetToDefaults();
+  EXPECT_EQ(host_content_settings_map, observer.last_notifier);
+  EXPECT_EQ(std::string(), observer.last_host);
+  EXPECT_EQ(3, observer.counter);
+
+  host_content_settings_map->SetDefaultContentSetting(
+      CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_BLOCK);
+  EXPECT_EQ(host_content_settings_map, observer.last_notifier);
+  EXPECT_EQ(std::string(), observer.last_host);
+  EXPECT_EQ(4, observer.counter);
 }
 
 }  // namespace

@@ -25,6 +25,22 @@ class Profile;
 class HostContentSettingsMap
     : public base::RefCountedThreadSafe<HostContentSettingsMap> {
  public:
+  // Details for the CONTENT_SETTINGS_CHANGED notification. This is sent when
+  // content settings change for at least one host. If settings change for more
+  // than one host in one user interaction, this will usually send a single
+  // notification with a wildcard host field instead of one notification for
+  // each host.
+  class ContentSettingsDetails {
+   public:
+    ContentSettingsDetails(const std::string& host) : host_(host) {}
+    // The host whose settings have changed. Empty if many hosts are affected
+    // (e.g. if the default settings have changed).
+    const std::string& host() { return host_; }
+
+   private:
+    std::string host_;
+  };
+
   typedef std::pair<std::string, ContentSetting> HostSettingPair;
   typedef std::vector<HostSettingPair> SettingsForOneType;
 
@@ -113,6 +129,12 @@ class HostContentSettingsMap
 
   // Returns true if |settings| consists entirely of CONTENT_SETTING_DEFAULT.
   bool AllDefault(const ContentSettings& settings) const;
+
+  // Informs observers that content settings have changed. Make sure that
+  // |lock_| is not held when calling this, as listeners will usually call one
+  // of the GetSettings functions in response, which would then lead to a
+  // mutex deadlock.
+  void NotifyObservers(const std::string& host);
 
   // The profile we're associated with.
   Profile* profile_;

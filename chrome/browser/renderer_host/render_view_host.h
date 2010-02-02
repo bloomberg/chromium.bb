@@ -26,6 +26,7 @@ class RenderViewHostDelegate;
 class SiteInstance;
 class SkBitmap;
 class ViewMsg_Navigate;
+struct ContentSettings;
 struct ContextMenuParams;
 struct MediaPlayerAction;
 struct ThumbnailScore;
@@ -446,6 +447,10 @@ class RenderViewHost : public RenderWidgetHost {
   // Instructs the renderer to revert the page's text to its original
   // non translated content.
   void UndoTranslatePage(int page_id);
+
+  // Informs renderer of updated content settings.
+  void SendContentSettings(const std::string& host,
+                           const ContentSettings& settings);
 
  protected:
   // RenderWidgetHost protected overrides.
