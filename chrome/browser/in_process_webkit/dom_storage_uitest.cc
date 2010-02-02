@@ -6,44 +6,33 @@
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_layout_test.h"
 
-// TODO(jorlow): Enable all of these tests, eventually...
-static const char* kEventsFiles[] = {
-  //"complex-values.html",
-  //"iframe-events.html",
-  //"index-get-and-set.html",
-  //"onstorage-attribute-markup.html",
-  //"onstorage-attribute-setattribute.html",
-  //"onstorage-attribute-setwindow.html",
-  "simple-events.html",
-  //"string-conversion.html",
-  //"window-open.html",
-  NULL
-};
-
-static const char* kTopLevelFiles[] = {
+static const char* kRootFiles[] = {
   "clear.html",
+//  "complex-keys.html",  // Output too big for a cookie.  crbug.com/33472
+//  "complex-values.html",  // crbug.com/33472
   "quota.html",
   "remove-item.html",
-  //"window-attributes-exist.html",
+  "window-attributes-exist.html",
   NULL
 };
 
-static const char* kNoEventsFiles[] = {
-  //"complex-keys.html",
+static const char* kEventsFiles[] = {
+//  "basic-body-attribute.html",  // crbug.com/33472
+//  "basic.html",  // crbug.com/33472
+//  "basic-setattribute.html",  // crbug.com/33472
+  "case-sensitive.html",
+  "documentURI.html",
+  NULL
+};
+
+static const char* kStorageFiles[] = {
   "delete-removal.html",
   "enumerate-storage.html",
   "enumerate-with-length-and-key.html",
+  "index-get-and-set.html",
   "simple-usage.html",
-  NULL
-};
-
-static const char* kLocalStorageFiles[] = {
-  //  "quota.html",
-  NULL
-};
-
-static const char* kSessionStorageFiles[] = {
-  //  "no-quota.html",
+  "string-conversion.html",
+//  "window-open.html", // TODO(jorlow): Fix
   NULL
 };
 
@@ -63,14 +52,13 @@ class DOMStorageTest : public UILayoutTest {
     UILayoutTest::SetUp();
   }
 
-  // We require fast/js/resources and storage/domstorage/script-tests for most
-  // of the DOM Storage layout tests.  Add those to the list to be copied.
-  void AddResources() {
+  // We require fast/js/resources for most of the DOM Storage layout tests.
+  // Add those to the list to be copied.
+  void AddJSTestResources() {
     // Add other paths our tests require.
     FilePath js_dir = FilePath().AppendASCII("LayoutTests").
                       AppendASCII("fast").AppendASCII("js");
     AddResourceForLayoutTest(js_dir, FilePath().AppendASCII("resources"));
-    AddResourceForLayoutTest(test_dir_, FilePath().AppendASCII("script-tests"));
   }
 
   // This is somewhat of a hack because we're running a real browser that
@@ -102,28 +90,38 @@ class DOMStorageTest : public UILayoutTest {
 };
 
 
-TEST_F(DOMStorageTest, DOMStorageLayoutTests) {
+TEST_F(DOMStorageTest, RootLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath(), kNoHttpPort);
-  AddResources();
-  RunTests(kTopLevelFiles);
+  AddJSTestResources();
+  AddResourceForLayoutTest(test_dir_, FilePath().AppendASCII("script-tests"));
+  RunTests(kRootFiles);
 }
 
+TEST_F(DOMStorageTest, EventLayoutTests) {
+  InitializeForLayoutTest(test_dir_, FilePath().AppendASCII("events"),
+                          kNoHttpPort);
+  AddJSTestResources();
+  AddResourceForLayoutTest(test_dir_, FilePath().AppendASCII("events").
+                                      AppendASCII("resources"));
+  AddResourceForLayoutTest(test_dir_, FilePath().AppendASCII("events").
+                                      AppendASCII("script-tests"));
+  RunTests(kEventsFiles);
+}
 
-// http://crbug.com/27194
-TEST_F(DOMStorageTest, FLAKY_LocalStorageLayoutTests) {
+TEST_F(DOMStorageTest, LocalStorageLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath().AppendASCII("localstorage"),
                           kNoHttpPort);
-  AddResources();
-  RunTests(kNoEventsFiles);
-  RunTests(kEventsFiles);
-  RunTests(kLocalStorageFiles);
+  AddJSTestResources();
+  AddResourceForLayoutTest(test_dir_, FilePath().AppendASCII("localstorage").
+                                      AppendASCII("resources"));
+  RunTests(kStorageFiles);
 }
 
 TEST_F(DOMStorageTest, SessionStorageLayoutTests) {
   InitializeForLayoutTest(test_dir_, FilePath().AppendASCII("sessionstorage"),
                           kNoHttpPort);
-  AddResources();
-  RunTests(kNoEventsFiles);
-  //RunTests(kEventsFiles);
-  RunTests(kSessionStorageFiles);
+  AddJSTestResources();
+  AddResourceForLayoutTest(test_dir_, FilePath().AppendASCII("sessionstorage").
+                                      AppendASCII("resources"));
+  RunTests(kStorageFiles);
 }

@@ -12,3 +12,4 @@ Testing index setters
 Type/value for null is string/null
 Type/value for 0 is string/0
 Type/value for function(){} is string/function (){}
+
