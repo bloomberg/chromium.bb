@@ -34,6 +34,7 @@ NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap) {
 
   nap->mem_start = (uintptr_t) mem;
   NaClLog(2, "allocated memory at 0x%08"PRIxPTR"\n", nap->mem_start);
+  nap->guard_pages_initialized = 1;
 
   hole_start = NaClRoundAllocPage(nap->data_end);
 

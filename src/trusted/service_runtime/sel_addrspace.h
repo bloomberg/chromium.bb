@@ -23,7 +23,25 @@ NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap) NACL_WUR;
  */
 NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) NACL_WUR;
 
-int NaClAllocateSpace(void **mem, size_t size) NACL_WUR;
+/*
+ * Platform-specific routine to allocate memory space for the NaCl
+ * module.  mem is an out argument; addrsp_size is the requested
+ * address space size, currently always ((size_t) 1) <<
+ * nap->addr_bits.  On x86-64, there's a further requirement that this
+ * is 4G.
+ *
+ * The actual amount of memory allocated is larger than requested on
+ * x86-64 and on the ARM, since guard pages are also allocated to be
+ * contiguous with the allocated address space.
+ *
+ * If successful, the guard pages are not yet memory protected.  The
+ * function NaClMprotectGuards must be called for the guard pages to
+ * be active.  On cleanup, NaClTeardownMprotectGuards should be
+ * invoked.
+ *
+ * Returns LOAD_OK on success.
+ */
+NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) NACL_WUR;
 
 NaClErrorCode NaClMprotectGuards(struct NaClApp *nap);
 

@@ -17,7 +17,7 @@
  *
  * On x86-64, no segment is used either.  This API is (ab)used to
  * stash the tdb in a thread-local variable (TLS on NACL_LINUX and
- * NACL_WIN, and TSD on NACL_OSX since OSX does not implement
+ * NACL_WINDOWS, and TSD on NACL_OSX since OSX does not implement
  * __thread).
  */
 #include "native_client/src/include/portability.h"

@@ -199,7 +199,7 @@ uint32_t NaClTlsChange(struct NaClAppThread *natp,
 }
 
 
-#elif NACL_LINUX || NACL_WIN
+#elif NACL_LINUX || NACL_WINDOWS
 
 
 THREAD int nacl_thread_index;
@@ -285,5 +285,5 @@ uint32_t NaClTlsChange(struct NaClAppThread *natp,
 
 
 #else
-# error "Woe to the service runtime.  Is it running on a 128-bit machine?!?"
+# error "Woe to the service runtime.  What OS is it being compiled for?!?"
 #endif

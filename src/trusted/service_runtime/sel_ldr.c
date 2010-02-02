@@ -38,6 +38,7 @@ int NaClAppCtor(struct NaClApp  *nap) {
   nap->stack_size = NACL_DEFAULT_STACK_MAX;
 
   nap->mem_start = 0;
+  nap->guard_pages_initialized = 0;
   nap->static_text_end = 0;
   nap->dynamic_text_start = 0;
   nap->dynamic_text_end = 0;
@@ -172,36 +173,66 @@ void NaClAppDtor(struct NaClApp  *nap) {
     }
   }
 
+  NaClLog(4, "There are %d descriptor entries\n", nap->desc_tbl.num_entries);
+
   for (i = 0; i < nap->desc_tbl.num_entries; ++i) {
     ndp = (struct NaClDesc *) DynArrayGet(&nap->desc_tbl, i);
     NaClDescSafeUnref(ndp);
   }
 
+  NaClLog(4,
+          "Deallocating synchronization variables for"
+          " desc, thread, work_queue\n");
+
   NaClMutexDtor(&nap->desc_mu);
   NaClMutexDtor(&nap->threads_mu);
   NaClCondVarDtor(&nap->threads_cv);
   NaClSyncQueueDtor(&nap->work_queue);
+
+  NaClLog(4, "Freeing NaCl module origin\n");
+
   free(nap->origin);
   nap->origin = (char *) NULL;
 
+  NaClLog(4, "Freeing text_shm\n");
+
   NaClDescSafeUnref(nap->text_shm);
   nap->text_shm = NULL;
+
+  NaClLog(4, "Freeing service_port\n");
+
   NaClDescSafeUnref(nap->service_port);
   nap->service_port = NULL;
+
+  NaClLog(4, "Freeing service_address\n");
+
   NaClDescSafeUnref(nap->service_address);
   nap->service_address = NULL;
+
+  NaClLog(4, "Freeing secure channel\n");
+
   NaClDescSafeUnref(nap->secure_channel);
   nap->secure_channel = NULL;
+
+  NaClLog(4, "Freeing synchronization variables for the NaClApp\n");
 
   NaClCondVarDtor(&nap->cv);
   NaClMutexDtor(&nap->mu);
 
+  NaClLog(4, "Freeing memory\n");
+
   NaClAppFreeAllMemory(nap);
+
+  NaClLog(4, "Freeing vmmap\n");
 
   NaClVmmapDtor(&nap->mem_map);
 
+  NaClLog(4, "Freeing desc_tbl, threads\n");
+
   DynArrayDtor(&nap->desc_tbl);
   DynArrayDtor(&nap->threads);
+
+  NaClLog(4, "NaClAppDtor: Done\n");
 
   return;
 }
@@ -1154,7 +1185,9 @@ void NaClAppFreeAllMemory(struct NaClApp  *nap) {
   struct NaClFreeState            state;
   struct NaClDescEffectorCleanup  eff;
 
+  NaClLog(4, "NaClAppFreeAllMemory: invoking TeardownMprotectGuards\n");
   NaClTeardownMprotectGuards(nap);
+  NaClLog(4, "NaClAppFreeAllMemory: TeardownMprotectGuards done\n");
 
   state.nap = nap;
   state.effp = (struct NaClDescEffector *) &eff;

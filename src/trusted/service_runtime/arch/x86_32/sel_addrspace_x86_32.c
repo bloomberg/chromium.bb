@@ -10,9 +10,9 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 
 
-int NaClAllocateSpace(void **mem, size_t size) {
+NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
   CHECK(NULL != mem);
-  if (NaCl_page_alloc(mem, size) != 0) {
+  if (NaCl_page_alloc(mem, addrsp_size) != 0) {
     NaClLog(2, "NaClAlloccaterSpace: NaCl_page_alloc failed\n");
     return LOAD_NO_MEMORY;
   }

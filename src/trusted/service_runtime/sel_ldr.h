@@ -93,9 +93,18 @@ struct NaClApp {
    * incur page faults.
    */
 
-  /* determined at load time; OS-determined */
-  /* read-only */
+  /*
+   * Determined at load time; OS-determined.
+   * Read-only after load, so accesses do not require locking.
+   */
   uintptr_t                 mem_start;
+  /*
+   * Flag to remember whether guard pages may be present.  If true, then
+   * on tear down, NaClTeardownMprotectGuards should be invoked.
+   *
+   * This will probably go away when we remove the NaClAppDtor.
+   */
+  int                       guard_pages_initialized;
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86 && NACL_BUILD_SUBARCH == 32 && __PIC__
   uintptr_t                 pcrel_thunk;
@@ -219,7 +228,15 @@ void  NaClAppIncrVerbosity(void);
 
 int   NaClAppCtor(struct NaClApp  *nap) NACL_WUR;
 
-void  NaClAppDtor(struct NaClApp  *nap);
+/* DEPRECATED */
+void NaClAppDtor(struct NaClApp  *nap);
+/*
+ * TODO(bsy): remove NaClAppDtor.  This teardown/cleanup activity
+ * is better left to the OS.
+ *
+ * We expect *one* NaClApp per process, and having multiple NaClApp
+ * constructed / used is not supported (though some tests do this).
+ */
 
 void  NaClAppFreeAllMemory(struct NaClApp *nap);
 

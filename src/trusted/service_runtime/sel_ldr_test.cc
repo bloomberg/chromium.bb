@@ -5,6 +5,7 @@
  */
 
 #include "native_client/src/shared/platform/nacl_host_desc.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/service_runtime/nacl_app_thread.h"
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
@@ -26,8 +27,6 @@ void SelLdrTest::TearDown() {
   NaClLogModuleFini();
 }
 
-// TODO(bsy): figure out why this test fails on arm hardware.
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 // set, get, setavail operations on the descriptor table
 TEST_F(SelLdrTest, DescTable) {
   struct NaClApp app;
@@ -39,7 +38,12 @@ TEST_F(SelLdrTest, DescTable) {
   ret_code = NaClAppCtor(&app);
   ASSERT_EQ(1, ret_code);
 
-  host_desc = (struct NaClHostDesc *)malloc(sizeof *host_desc);
+  host_desc = (struct NaClHostDesc *) malloc(sizeof *host_desc);
+  if (NULL == host_desc) {
+    fprintf(stderr, "No memory\n");
+  }
+  ASSERT_TRUE(NULL != host_desc);
+
   io_desc = (struct NaClDesc *) NaClDescIoDescMake(host_desc);
 
   // 1st pos available is 0
@@ -59,6 +63,7 @@ TEST_F(SelLdrTest, DescTable) {
   // no desc at pos 1 -> pos 1 is available
   ret_code = NaClSetAvail(&app, io_desc);
   ASSERT_EQ(1, ret_code);
+
   // valid desc at pos 1
   ret_desc = NaClGetDesc(&app, 1);
   ASSERT_TRUE(NULL != ret_desc);
@@ -77,10 +82,7 @@ TEST_F(SelLdrTest, DescTable) {
 
   NaClAppDtor(&app);
 }
-#endif
 
-// TODO(bsy): figure out why this test fails on arm hardware.
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 // create service socket
 TEST_F(SelLdrTest, CreateServiceSocket) {
   struct NaClApp app;
@@ -101,7 +103,6 @@ TEST_F(SelLdrTest, CreateServiceSocket) {
   NaClAppDtor(&app);
   NaClNrdAllModulesFini();
 }
-#endif
 
 // add and remove operations on the threads table
 // Remove thread from an empty table is tested in a death test.
@@ -133,6 +134,9 @@ TEST_F(SelLdrTest, ThreadTableTest) {
   NaClRemoveThread(&app, 0);
   ASSERT_EQ(2, app.num_threads);
 
-  // calling the Dtor results into segfault
-//   NaClAppDtor(&app);
+  // NaClAppDtor is deprecated and will be removed soon; this test
+  // should be refactored so that NaClAppCtor is called at most once
+  // per run.
+
+  // NaClAppDtor(&app);
 }

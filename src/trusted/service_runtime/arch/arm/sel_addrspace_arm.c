@@ -16,18 +16,22 @@
  * This accomodates the guard region we require at the top end of untrusted
  * memory.
  */
-int NaClAllocateSpace(void **mem, size_t size) {
+NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
   CHECK(mem);
 
-  size += 2 * NACL_PAGESIZE;
+  addrsp_size += 2 * NACL_PAGESIZE;
+  addrsp_size -= NACL_TRAMPOLINE_START;
 
   *mem = (void *) NACL_TRAMPOLINE_START;
-  if (NaCl_page_alloc_at_addr(mem, size) != 0) {
+  if (NaCl_page_alloc_at_addr(mem, addrsp_size) != 0) {
     NaClLog(2,
-        "NaClAlloccaterSpace: NaCl_page_alloc_at_addr 0x%08"PRIxPTR" failed\n",
+        "NaClAllocateSpace: NaCl_page_alloc_at_addr 0x%08"PRIxPTR" failed\n",
         (uintptr_t) *mem);
     return LOAD_NO_MEMORY;
   }
+  NaClLog(4, "NaClAllocateSpace: %"PRIxPTR", %"PRIxS"\n",
+          (uintptr_t) *mem,
+          addrsp_size);
 
   /*
    * makes sel_ldr think that the module's address space is at 0x0, this where
@@ -64,6 +68,9 @@ NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
    * However, we need to create a two-page guard region at the base of
    * trusted memory, for write sandboxing.
    */
+  NaClLog(4, "NaClMprotectGuards: %"PRIxPTR", %"PRIxS"\n",
+          (uintptr_t) guard_base,
+          (size_t) (2 * NACL_PAGESIZE));
   if ((err = NaCl_mprotect(guard_base, 2 * NACL_PAGESIZE, PROT_NONE)) != 0) {
     NaClLog(LOG_ERROR, ("NaClMemoryProtection: failed to protect lower guard "
                         "on trusted memory space (error %d)\n"),
@@ -86,5 +93,14 @@ NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
 void NaClTeardownMprotectGuards(struct NaClApp *nap) {
   void *guard_base = (void *) (((uintptr_t) 1) << nap->addr_bits);
 
+  if (!nap->guard_pages_initialized) {
+    NaClLog(4, "No guard pages to tear down.\n");
+    return;
+  }
+  NaClLog(4, "NaClTeardownMprotectGuards: %"PRIxPTR", %"PRIxS"\n",
+          (uintptr_t) guard_base,
+          (size_t) (2 * NACL_PAGESIZE));
   NaCl_page_free(guard_base, 2 * NACL_PAGESIZE);
+
+  NaClLog(4, "NaClTeardownMprotectGuards: done\n");
 }

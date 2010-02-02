@@ -39,6 +39,7 @@ ACCEPTABLE_ARGUMENTS = {
     'dangerous_debug_disable_inner_sandbox': None,
     'loader': None,
     'nacl_ccflags': None,
+    'naclsdk_mode': None,
     'naclsdk_validate': None,
     'nocpp': None,
     'platform': None,

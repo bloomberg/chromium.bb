@@ -17,14 +17,15 @@
 #define FOURKAY     (((size_t) 1) << 12)
 #define MSGWIDTH    "25"
 
-int NaClAllocateSpace(void **mem, size_t size) {
+NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
   size_t  mem_sz = 21 * FOURGIG;  /* 40G guard on each side */
   size_t  log_align = ALIGN_BITS;
   void    *mem_ptr;
 
-  NaClLog(LOG_INFO, "NaClAllocateSpace(*, 0x%016"PRIxS" bytes).\n", size);
+  NaClLog(LOG_INFO, "NaClAllocateSpace(*, 0x%016"PRIxS" bytes).\n",
+          addrsp_size);
 
-  CHECK(size == FOURGIG);
+  CHECK(addrsp_size == FOURGIG);
 
   errno = 0;
   mem_ptr = NaClAllocatePow2AlignedMemory(mem_sz, log_align);
@@ -118,6 +119,10 @@ NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
 void NaClTeardownMprotectGuards(struct NaClApp *nap) {
   uintptr_t start_addr;
 
+  if (!nap->guard_pages_initialized) {
+    NaClLog(4, "No guard pages to tear down.\n");
+    return;
+  }
   start_addr = nap->mem_start;
 
   /*
