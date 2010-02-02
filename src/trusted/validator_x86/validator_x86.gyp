@@ -450,6 +450,7 @@
           'dependencies': [
             'ncdecode_table64',
             'ncdecode_tablegen',
+            'ncopcode_utils_gen',
           ],
         },
       ],
