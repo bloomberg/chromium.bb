@@ -1727,6 +1727,9 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 	unsigned long size;
 
 	bufmgr_gem = calloc(1, sizeof(*bufmgr_gem));
+	if (bufmgr_gem == NULL)
+		return NULL;
+
 	bufmgr_gem->fd = fd;
 
 	if (pthread_mutex_init(&bufmgr_gem->lock, NULL) != 0) {
