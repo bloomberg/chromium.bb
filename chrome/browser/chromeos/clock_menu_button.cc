@@ -12,9 +12,8 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/chromeos/status_area_host.h"
 #include "chrome/browser/profile.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "unicode/calendar.h"
 
@@ -24,9 +23,9 @@ namespace chromeos {
 // when the timer goes off.
 const int kTimerSlopSeconds = 1;
 
-ClockMenuButton::ClockMenuButton(Browser* browser)
+ClockMenuButton::ClockMenuButton(StatusAreaHost* host)
     : MenuButton(NULL, std::wstring(), this, false),
-      browser_(browser) {
+      host_(host) {
   set_border(NULL);
   SetFont(ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::BaseFont).DeriveFont(0, gfx::Font::BOLD));
@@ -38,20 +37,6 @@ ClockMenuButton::ClockMenuButton(Browser* browser)
   SetText(l10n_util::GetStringF(IDS_STATUSBAR_CLOCK_SHORT_TIME_PM, zero, zero));
   set_alignment(TextButton::ALIGN_RIGHT);
   UpdateTextAndSetNextTimer();
-  if (browser_ != NULL) {
-    // Init member prefs so we can update the controls if prefs change.
-    timezone_.Init(prefs::kTimeZone, browser_->profile()->GetPrefs(), this);
-  }
-}
-
-void ClockMenuButton::Observe(NotificationType type,
-                              const NotificationSource& source,
-                              const NotificationDetails& details) {
-  if (type == NotificationType::PREF_CHANGED) {
-    const std::wstring* pref_name = Details<std::wstring>(details).ptr();
-    if (!pref_name || *pref_name == prefs::kTimeZone)
-      UpdateText();
-  }
 }
 
 void ClockMenuButton::UpdateTextAndSetNextTimer() {
@@ -110,7 +95,7 @@ void ClockMenuButton::UpdateText() {
 // ClockMenuButton, menus::MenuModel implementation:
 
 int ClockMenuButton::GetItemCount() const {
-  return browser_ == NULL ? 1 : 3;
+  return 3;
 }
 
 menus::MenuModel::ItemType ClockMenuButton::GetTypeAt(int index) const {
@@ -132,8 +117,7 @@ bool ClockMenuButton::IsEnabledAt(int index) const {
 }
 
 void ClockMenuButton::ActivatedAt(int index) {
-  if (browser_ != NULL)
-    browser_->OpenSystemOptionsDialog();
+  host_->OpenSystemOptionsDialog();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

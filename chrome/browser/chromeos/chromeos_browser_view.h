@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_CHROMEOS_BROWSER_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_CHROMEOS_BROWSER_VIEW_H_
 
+#include "chrome/browser/chromeos/status_area_host.h"
 #include "chrome/browser/views/frame/browser_view.h"
 
 class TabStripModel;
@@ -20,10 +21,11 @@ class Menu2;
 
 namespace chromeos {
 
+class BrowserStatusAreaView;
 class CompactLocationBar;
 class CompactLocationBarHost;
 class CompactNavigationBar;
-class StatusAreaView;
+class StatusAreaButton;
 
 // ChromeosBrowserView adds ChromeOS specific controls and menus to a
 // BrowserView created with Browser::TYPE_NORMAL. This extender adds
@@ -34,7 +36,8 @@ class StatusAreaView;
 // and adds the system context menu to the remaining arae of the titlebar.
 class ChromeosBrowserView : public BrowserView,
                             public views::ButtonListener,
-                            public views::ContextMenuController {
+                            public views::ContextMenuController,
+                            public StatusAreaHost {
  public:
   // There are 3 ui styles, standard, compact and sidebar.
   // Standard uses the same layout as chromium/chrome browser.
@@ -49,7 +52,7 @@ class ChromeosBrowserView : public BrowserView,
   };
 
   explicit ChromeosBrowserView(Browser* browser);
-  virtual ~ChromeosBrowserView() {}
+  virtual ~ChromeosBrowserView();
 
   // BrowserView overrides.
   virtual void Init();
@@ -68,6 +71,11 @@ class ChromeosBrowserView : public BrowserView,
                                int x,
                                int y,
                                bool is_mouse_gesture);
+
+  // StatusAreaHost overrides.
+  virtual gfx::NativeWindow GetNativeWindow() const;
+  virtual void OpenSystemOptionsDialog() const;
+  virtual bool IsButtonVisible(views::View* button_view) const;
 
   // Shows the compact location bar under the selected tab.
   void ShowCompactLocationBarUnderSelectedTab();
@@ -89,7 +97,7 @@ class ChromeosBrowserView : public BrowserView,
   views::ImageButton* main_menu_;
 
   // Status Area view.
-  chromeos::StatusAreaView* status_area_;
+  BrowserStatusAreaView* status_area_;
 
   // System menus.
   scoped_ptr<menus::SimpleMenuModel> system_menu_contents_;
@@ -110,6 +118,9 @@ class ChromeosBrowserView : public BrowserView,
   // A spacer under the tap strip used when the compact navigation bar
   // is active.
   views::View* spacer_;
+
+  // Menu button shown in status area when browser is in compact mode.
+  StatusAreaButton* menu_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeosBrowserView);
 };

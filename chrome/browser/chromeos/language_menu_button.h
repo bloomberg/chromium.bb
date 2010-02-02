@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,10 +11,11 @@
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
-class Browser;
 class SkBitmap;
 
 namespace chromeos {
+
+class StatusAreaHost;
 
 // The language menu button in the status area.
 // This class will handle getting the IME/XKB status and populating the menu.
@@ -23,10 +24,7 @@ class LanguageMenuButton : public views::MenuButton,
                            public menus::MenuModel,
                            public LanguageLibrary::Observer {
  public:
-  // If |browser| is null, options are unavailable and corresponding menu
-  // item is not shown. This happens when the button is shown on login
-  // screen and browser is not loaded yet.
-  explicit LanguageMenuButton(Browser* browser);
+  explicit LanguageMenuButton(StatusAreaHost* host);
   virtual ~LanguageMenuButton();
 
   // menus::MenuModel implementation.
@@ -85,8 +83,8 @@ class LanguageMenuButton : public views::MenuButton,
 
   // The language menu which pops up when the button in status area is clicked.
   views::Menu2 language_menu_;
-  // The browser object. May be null if the button is on login screen.
-  Browser* browser_;
+
+  StatusAreaHost* host_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageMenuButton);
 };

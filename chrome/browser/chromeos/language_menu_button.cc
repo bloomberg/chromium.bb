@@ -9,7 +9,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/time.h"
-#include "chrome/browser/browser.h"
+#include "chrome/browser/chromeos/status_area_host.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
@@ -103,7 +103,7 @@ namespace chromeos {
 ////////////////////////////////////////////////////////////////////////////////
 // LanguageMenuButton
 
-LanguageMenuButton::LanguageMenuButton(Browser* browser)
+LanguageMenuButton::LanguageMenuButton(StatusAreaHost* host)
     : MenuButton(NULL, std::wstring(), this, false),
       language_list_(LanguageLibrary::Get()->GetActiveLanguages()),
       model_(NULL),
@@ -111,7 +111,7 @@ LanguageMenuButton::LanguageMenuButton(Browser* browser)
       // in this class. Therefore, GetItemCount() have to return 0 when
       // |model_| is NULL.
       ALLOW_THIS_IN_INITIALIZER_LIST(language_menu_(this)),
-      browser_(browser) {
+      host_(host) {
   DCHECK(language_list_.get() && !language_list_->empty());
   // Update the model
   RebuildModel();
@@ -266,8 +266,8 @@ void LanguageMenuButton::ActivatedAt(int index) {
   DCHECK_GE(index, 0);
   DCHECK(language_list_.get());
 
-  if (browser_ != NULL && IndexPointsToConfigureImeMenuItem(index)) {
-    browser_->OpenSystemOptionsDialog();
+  if (IndexPointsToConfigureImeMenuItem(index)) {
+    host_->OpenSystemOptionsDialog();
     return;
   }
 
@@ -369,14 +369,11 @@ void LanguageMenuButton::RebuildModel() {
     need_separator = true;
   }
 
-  // Can't configure IME if on login screen.
-  if (browser_ != NULL) {
-    // Note: We use AddSeparator() for separators, and AddRadioItem() for all
-    // other items even if an item is not actually a radio item.
-    if (need_separator)
-      model_->AddSeparator();
-    model_->AddRadioItem(COMMAND_ID_CONFIGURE_IME, dummy_label, 0 /* dummy */);
-  }
+  // Note: We use AddSeparator() for separators, and AddRadioItem() for all
+  // other items even if an item is not actually a radio item.
+  if (need_separator)
+    model_->AddSeparator();
+  model_->AddRadioItem(COMMAND_ID_CONFIGURE_IME, dummy_label, 0 /* dummy */);
 }
 
 bool LanguageMenuButton::IndexIsInLanguageList(int index) const {

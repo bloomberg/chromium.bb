@@ -7,27 +7,21 @@
 
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
-#include "chrome/common/notification_observer.h"
-#include "chrome/common/pref_member.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
-class Browser;
-
 namespace chromeos {
+
+class StatusAreaHost;
 
 // The clock menu button in the status area.
 // This button shows the current time.
 class ClockMenuButton : public views::MenuButton,
                         public views::ViewMenuDelegate,
-                        public menus::MenuModel,
-                        public NotificationObserver {
+                        public menus::MenuModel {
  public:
-  // Browser can be NULL in case we're showing the button from login
-  // manager. In this case timezone is initialized to PST and options dialog
-  // menu is absent.
-  explicit ClockMenuButton(Browser* browser);
+  explicit ClockMenuButton(StatusAreaHost* host);
   virtual ~ClockMenuButton() {}
 
   // menus::MenuModel implementation.
@@ -48,10 +42,9 @@ class ClockMenuButton : public views::MenuButton,
   virtual void ActivatedAt(int index);
   virtual void MenuWillShow() {}
 
-  // Overridden from NotificationObserver:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
+  // Updates the time on the menu button. Can be called by host if timezone
+  // changes.
+  void UpdateText();
 
  private:
   // views::ViewMenuDelegate implementation.
@@ -60,21 +53,14 @@ class ClockMenuButton : public views::MenuButton,
   // Updates text and schedules the timer to fire at the next minute interval.
   void UpdateTextAndSetNextTimer();
 
-  // Updates the time on the menu button.
-  void UpdateText();
-
   base::OneShotTimer<ClockMenuButton> timer_;
-
-  StringPrefMember timezone_;
 
   // The clock menu.
   // NOTE: we use a scoped_ptr here as menu calls into 'this' from the
   // constructor.
   scoped_ptr<views::Menu2> clock_menu_;
 
-  // The browser object. Can be NULL if the button is on the login manager
-  // screen.
-  Browser* browser_;
+  StatusAreaHost* host_;
 
   DISALLOW_COPY_AND_ASSIGN(ClockMenuButton);
 };

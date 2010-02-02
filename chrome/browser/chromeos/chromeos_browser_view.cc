@@ -4,16 +4,20 @@
 
 #include "chrome/browser/chromeos/chromeos_browser_view.h"
 
+#include <algorithm>
+#include <string>
+
 #include "app/gfx/canvas.h"
 #include "app/menus/simple_menu_model.h"
 #include "app/theme_provider.h"
 #include "base/command_line.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/chromeos/browser_status_area_view.h"
 #include "chrome/browser/chromeos/compact_location_bar_host.h"
 #include "chrome/browser/chromeos/compact_navigation_bar.h"
 #include "chrome/browser/chromeos/main_menu.h"
 #include "chrome/browser/chromeos/panel_browser_view.h"
-#include "chrome/browser/chromeos/status_area_view.h"
+#include "chrome/browser/chromeos/status_area_button.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/frame/browser_extender.h"
 #include "chrome/browser/views/frame/browser_frame_gtk.h"
@@ -324,6 +328,9 @@ ChromeosBrowserView::ChromeosBrowserView(Browser* browser)
       force_maximized_window_(false) {
 }
 
+ChromeosBrowserView::~ChromeosBrowserView() {
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ChromeosBrowserView, ChromeBrowserView overrides:
 
@@ -346,7 +353,7 @@ void ChromeosBrowserView::Init() {
   compact_navigation_bar_->SetID(VIEW_ID_COMPACT_NAV_BAR);
   AddChildView(compact_navigation_bar_);
   compact_navigation_bar_->Init();
-  status_area_ = new chromeos::StatusAreaView(this);
+  status_area_ = new BrowserStatusAreaView(this);
   status_area_->SetID(VIEW_ID_STATUS_AREA);
   AddChildView(status_area_);
   status_area_->Init();
@@ -434,6 +441,21 @@ void ChromeosBrowserView::ShowContextMenu(views::View* source,
                                           int y,
                                           bool is_mouse_gesture) {
   system_menu_menu_->RunMenuAt(gfx::Point(x, y), views::Menu2::ALIGN_TOPLEFT);
+}
+
+// StatusAreaHost overrides.
+gfx::NativeWindow ChromeosBrowserView::GetNativeWindow() const {
+  return GetWindow()->GetNativeWindow();
+}
+
+void ChromeosBrowserView::OpenSystemOptionsDialog() const {
+  browser()->OpenSystemOptionsDialog();
+}
+
+bool ChromeosBrowserView::IsButtonVisible(views::View* button_view) const {
+  if (button_view == status_area_->menu_view())
+    return !IsToolbarVisible();
+  return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
