@@ -368,6 +368,7 @@ static void AddRegisterJumpIndirect64(NcValidatorState* state,
     }
 
     /* If reached, indirect jump is properly masked. */
+    DEBUG(printf("Protect indirect jump instructions\n"));
     NcMarkInstructionJumpIllegal(state, middle_inst);
     NcMarkInstructionJumpIllegal(state, inst);
     return;
@@ -443,6 +444,7 @@ static void AddRegisterJumpIndirect32(NcValidatorState* state,
     if (ExprConstant != node->kind || mask != node->value) break;
 
     /* If reached, indirect jump is properly masked. */
+    DEBUG(printf("Protect register jump indirect\n"));
     NcMarkInstructionJumpIllegal(state, inst);
     return;
   } while(0);

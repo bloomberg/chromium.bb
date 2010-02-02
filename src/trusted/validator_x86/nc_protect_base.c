@@ -19,6 +19,13 @@
 #include "native_client/src/trusted/validator_x86/ncvalidate_iter_internal.h"
 #include "native_client/src/trusted/validator_x86/ncvalidate_utils.h"
 
+/* To turn on debugging of instruction decoding, change value of
+ * DEBUGGING to 1.
+ */
+#define DEBUGGING 0
+
+#include "native_client/src/shared/utils/debugging.h"
+
 /* Defines locals used by the NcBaseRegisterValidator. */
 typedef struct NcBaseRegisterLocals {
   /* Points to previous instruction that contains an
@@ -29,7 +36,21 @@ typedef struct NcBaseRegisterLocals {
    * report that ESP is incorrectly assigned).
    */
   NcInstState* esp_set_inst;
+  /* Points to the previous instruction that contains an
+   * assignment to register EBP, or NULL if the previous
+   * instruction doesn't set EBP. This is done so that
+   * for such instructions we can check if the next instruciton
+   * uses the value of EBP to update RBP (if not, we need ot
+   * report that EBP is incorrectly assigned).
+   */
+  NcInstState* ebp_set_inst;
 } NcBaseRegisterLocals;
+
+static void ReportIllegalChangeToRsp(NcValidatorState* state,
+                                     NcInstState* inst) {
+  NcValidatorInstMessage(LOG_ERROR, state, inst,
+                         "Illegal assignment to RSP\n");
+}
 
 /* Checks flags in the given locals, and reports any
  * previous instructions that were marked as bad.
@@ -48,6 +69,13 @@ static void MaybeReportPreviousBad(NcValidatorState* state,
                            "Illegal assignment to ESP\n");
     locals->esp_set_inst = NULL;
   }
+  if (NULL != locals->ebp_set_inst) {
+    NcValidatorInstMessage(LOG_ERROR,
+                           state,
+                           locals->ebp_set_inst,
+                           "Illegal assignment to EBP\n");
+    locals->ebp_set_inst = NULL;
+  }
 }
 
 NcBaseRegisterLocals* NcBaseRegisterMemoryCreate(NcValidatorState* state) {
@@ -58,6 +86,7 @@ NcBaseRegisterLocals* NcBaseRegisterMemoryCreate(NcValidatorState* state) {
                        "Out of memory, can't allocate NcBaseRegisterLocals\n");
   }
   locals->esp_set_inst = NULL;
+  locals->ebp_set_inst = NULL;
   return locals;
 }
 
@@ -98,6 +127,9 @@ void NcBaseRegisterValidator(struct NcValidatorState* state,
   Opcode* inst_opcode = NcInstStateOpcode(inst);
   ExprNodeVector* vector = NcInstStateNodeVector(inst);
 
+  DEBUG(NcValidatorInstMessage(
+      LOG_INFO, state, inst, "Checking base registers...\n"));
+
   /* Look for assignments to registers. */
   for (i = 0; i < vector->number_expr_nodes; ++i) {
     ExprNode* node = &vector->node[i];
@@ -120,10 +152,9 @@ void NcBaseRegisterValidator(struct NcValidatorState* state,
             case RegRSP:
               /* Only allow one of:
                * (1) mov %rsp, %rbp
-               *     Note: this is part of an exit from a function, and
-               *     is used in the pattern:
-               *        mov %rsp, %rbp
-               *        pop %rbp
+               *
+               *     Note: maintains RSP/RBP invariant, since RBP was already
+               *     meeting the invariant.
                * (2) %esp = zero extend 32-bit value
                *     or %rsp, %rbase
                * (3) One of the following instructions:
@@ -152,10 +183,12 @@ void NcBaseRegisterValidator(struct NcValidatorState* state,
                 case InstCall:
                   /* case 3 (simple). */
                   return;
-                case InstPop:
-                  { /* case (3) pop -- see above */
-                    int reg_operand_index = GetExprNodeParentIndex(vector, i);
-                    ExprNode* reg_operand = &vector->node[reg_operand_index];
+                case InstPop: {
+                    /* case (3) pop -- see above */
+                    int reg_operand_index;
+                    ExprNode* reg_operand;
+                    reg_operand_index = GetExprNodeParentIndex(vector, i);
+                    reg_operand = &vector->node[reg_operand_index];
                     if (OperandReference == reg_operand->kind &&
                         (inst_opcode->operands[reg_operand->value].flags &
                          OpFlag(OpImplicit))) {
@@ -183,6 +216,7 @@ void NcBaseRegisterValidator(struct NcValidatorState* state,
                          * assignment as legal, and report any other found
                          * problems on previous instructions.
                          */
+                        DEBUG(printf("nc protect base for or/add/sub\n"));
                         NcMarkInstructionJumpIllegal(state, inst);
                         locals->esp_set_inst = NULL;
                         MaybeReportPreviousBad(state, locals);
@@ -206,31 +240,52 @@ void NcBaseRegisterValidator(struct NcValidatorState* state,
                 default:
                   if (NcIsMovUsingRegisters(inst_opcode, vector,
                                                  RegRSP, RegRBP)) {
-                    /* case (1) -- see above */
-                    /* Matches, but we need to add that one can't branch into
-                     * the middle of this pattern. Then mark the assignment to
-                     * RSP as legal, and report any other found problems on
-                     * previous instructions.
+                    /* case (1) -- see above, matching
+                     *    mov %rsp, %rbp
                      */
-                    NcMarkInstructionJumpIllegal(state, inst);
                     MaybeReportPreviousBad(state, locals);
                     return;
                   }
                   break;
               }
               /* If reached, assume that not a special case. */
-              NcValidatorInstMessage(
-                  LOG_ERROR, state, inst,
-                  "Illegal change to register RSP\n");
+              ReportIllegalChangeToRsp(state, inst);
               MaybeReportPreviousBad(state, locals);
               break;
             case RegRBP:
-              /* Only allow: mov %rbp, %rsp. */
+              /* (1) mov %rbp, %rsp
+               *
+               *     Note: maintains RSP/RBP invariant, since RSP was already
+               *     meeting the invariant.
+               *
+               * (2) mov %ebp, ...
+               *     add %rbp, %r15
+               *
+               *     Typical use in the exit from a fucntion, restoring RBP.
+               *     The ... in the MOV is gotten from a stack pop in such
+               *     cases. However, for long jumps etc., the value may
+               *     be gotten from memory, or even a register.
+               *
+               *     Note: The code here allows any operation that zero extends
+               *     ebp, not just a move. The rationale is that the MOV does
+               *     a zero extend of rbp, and is the only property that is
+               *     needed to maintain the invarinat on ebp.
+               */
               if (!NcIsMovUsingRegisters(inst_opcode, vector,
                                          RegRBP, RegRSP)) {
+                NcInstState* prev_inst = NcInstIterGetLookbackState(iter, 1);
+                if (NcIsBinarySetUsingRegisters(inst_opcode, InstAdd, vector,
+                                                RegRBP, state->base_register) &&
+                    NcAssignsRegisterWithZeroExtends(prev_inst, RegEBP)) {
+                  /* case 6. */
+                  NcMarkInstructionJumpIllegal(state, inst);
+                  locals->ebp_set_inst = NULL;
+                  MaybeReportPreviousBad(state, locals);
+                  return;
+                }
+                /* If reached, not valid. */
                 NcValidatorInstMessage(
-                    LOG_ERROR, state, inst,
-                    "Illegal change to register RBP\n");
+                    LOG_ERROR, state, inst, "Illegal change to register RBP\n");
               }
               break;
             case RegESP:
@@ -239,6 +294,13 @@ void NcBaseRegisterValidator(struct NcValidatorState* state,
                */
               MaybeReportPreviousBad(state, locals);
               locals->esp_set_inst = inst;
+              return;
+            case RegEBP:
+              /* Record that we must recheck this after we have
+               * moved to the next instruction.
+               */
+              MaybeReportPreviousBad(state, locals);
+              locals->ebp_set_inst = inst;
               return;
             default:
               /* Don't allow any subregister assignments of the

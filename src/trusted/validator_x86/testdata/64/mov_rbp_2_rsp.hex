@@ -1,0 +1,2 @@
+# Check that we accept "mov %rsp, %rbp".
+48 89 ec

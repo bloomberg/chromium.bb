@@ -1,0 +1,5 @@
+Checking jump targets: 0 to 23
+Checking that basic blocks are aligned
+At address 20:
+ERROR: Bad basic block alignment.
+***MODULE IS UNSAFE***
