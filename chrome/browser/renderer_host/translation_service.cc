@@ -33,8 +33,8 @@ const char kFormatParam[] = "format";
 const char kSSLParam[] = "ssl";
 const char kTranslationCountParam[] = "tc";
 
-// Describes languages deemed equivalent from a translation point of view.
-// This is used to detect unnecessary translations.
+// Mapping from a locale name to a language code name.
+// Locale names not included are translated as is.
 struct LocaleToCLDLanguage {
   const char* locale_language;  // Language Chrome locale is in.
   const char* cld_language;     // Language the CLD reports.
@@ -43,6 +43,8 @@ LocaleToCLDLanguage kLocaleToCLDLanguages[] = {
     { "en-GB", "en" },
     { "en-US", "en" },
     { "es-419", "es" },
+    { "pt-PT", "pt" },
+    { "pt-BR", "pt" },
 };
 
 // The list of languages the Google translation server supports.
@@ -385,21 +387,6 @@ void TranslationService::OnURLFetchComplete(const URLFetcher* source,
 }
 
 // static
-bool TranslationService::ShouldTranslatePage(
-    const std::string& page_language, const std::string& chrome_language) {
-  // Most locale names are the actual ISO 639 codes that the Google translate
-  // API uses, but for the ones longer than 2 chars.
-  // See l10n_util.cc for the list.
-  for (size_t i = 0; i < arraysize(kLocaleToCLDLanguages); ++i) {
-    if (chrome_language == kLocaleToCLDLanguages[i].locale_language &&
-        page_language == kLocaleToCLDLanguages[i].cld_language) {
-      return false;
-    }
-  }
-  return true;
-}
-
-// static
 bool TranslationService::IsTranslationEnabled() {
   return GURL(kServiceURL).host() != "disabled";
 }
@@ -410,6 +397,16 @@ void TranslationService::GetSupportedLanguages(
   DCHECK(languages && languages->empty());
   for (size_t i = 0; i < arraysize(kSupportedLanguages); ++i)
     languages->push_back(kSupportedLanguages[i]);
+}
+
+// static
+std::string TranslationService::GetLanguageCode(
+    const std::string& chrome_locale) {
+  for (size_t i = 0; i < arraysize(kLocaleToCLDLanguages); ++i) {
+    if (chrome_locale == kLocaleToCLDLanguages[i].locale_language)
+      return kLocaleToCLDLanguages[i].cld_language;
+  }
+  return chrome_locale;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

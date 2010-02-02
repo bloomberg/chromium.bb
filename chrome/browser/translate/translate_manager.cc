@@ -80,13 +80,13 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
   }
 
   std::string chrome_lang = g_browser_process->GetApplicationLocale();
+  chrome_lang = TranslationService::GetLanguageCode(chrome_lang);
 
   // We don't want to translate:
   // - any Chrome specific page (New Tab Page, Download, History... pages).
   // - similar languages (ex: en-US to en).
   // - any user black-listed URLs or user selected language combination.
   if (entry->url().SchemeIs("chrome") || page_lang == chrome_lang ||
-      !TranslationService::ShouldTranslatePage(page_lang, chrome_lang) ||
       !TranslatePrefs::CanTranslate(prefs, page_lang, entry->url())) {
     return;
   }

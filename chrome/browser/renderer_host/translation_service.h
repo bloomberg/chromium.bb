@@ -59,19 +59,16 @@ class TranslationService : public URLFetcher::Delegate {
                                   const ResponseCookies& cookies,
                                   const std::string& data);
 
-  // Returns true if a page in the language |page_language| (as reported by the
-  // CLD) should be translated when Chrome is using |chrome_language|. Note that
-  // this returns false for similar languages, for example it returns false when
-  // given the values 'en' and 'en-US'.
-  static bool ShouldTranslatePage(const std::string& page_language,
-                                  const std::string& chrome_language);
-
   // Returns true if the TranslationService is enabled.
   static bool IsTranslationEnabled();
 
   // Fills |languages| with the list of languages that the translate server can
   // translate to and from.
   static void GetSupportedLanguages(std::vector<std::string>* languages);
+
+  // Returns the language code that can be used with the Translate method for a
+  // specified |chrome_locale|.
+  static std::string GetLanguageCode(const std::string& chrome_locale);
 
  protected:
   // The amount of time in ms after which a pending request is sent if no other
