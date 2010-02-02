@@ -10,8 +10,6 @@
     <output filename="grit/theme_resources_map.cc" type="resource_map_source" />
   </outputs>
   <release seq="1">
-    <!-- IF YOU ADD A RESOURCE MAKE SURE TO ADD IT TO THE END!!!!! (At least
-         until http://crbug.com/33416 is fixed) -->
     <includes>
       <include name="IDR_BACK" file="back.png" type="BINDATA" />
       <include name="IDR_BACK_NOBORDER" file="back_noborder.png" type="BINDATA" />
@@ -220,6 +218,7 @@
       <include name="IDR_INFOBAR_THEME" file="infobar_theme.png" type="BINDATA" />
       <include name="IDR_INFOBAR_PLUGIN_CRASHED" file="infobar_plugin_crashed.png" type="BINDATA" />
       <include name="IDR_INFOBAR_MULTIPLE_DOWNLOADS" file="infobar_multiple_downloads.png" type="BINDATA" />
+      <include name="IDR_INFOBAR_TRANSLATE" file="infobar_translate.png" type="BINDATA" />
       <include name="IDR_MENU_MARKER" file="menu_marker.png" type="BINDATA" />
       <include name="IDR_FROZEN_TAB_ICON" file="frozen_tab.png" type="BINDATA" />
       <include name="IDR_UPDATE_AVAILABLE" file="update_available.png" type="BINDATA" />
@@ -449,7 +448,6 @@
         <include name="IDR_THEME_FRAME_INACTIVE" file="theme_frame_default_inactive.png" type="BINDATA" />
       </if> 
 
-      <include name="IDR_INFOBAR_TRANSLATE" file="infobar_translate.png" type="BINDATA" />
     </includes>
   </release>
 </grit>
