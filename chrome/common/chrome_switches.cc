@@ -107,6 +107,9 @@ const char kDisableJavaScript[]             = "disable-javascript";
 // Prevent Java from running.
 const char kDisableJava[]                   = "disable-java";
 
+// Disable LocalStorage.
+const char kDisableLocalStorage[]            = "disable-local-storage";
+
 // Force logging to be disabled.  Logging is enabled by default in debug
 // builds.
 const char kDisableLogging[]                = "disable-logging";
@@ -207,11 +210,11 @@ const char kEnableFileCookies[]             = "enable-file-cookies";
 // Enable Geolocation support.
 const char kEnableGeolocation[]             = "enable-geolocation";
 
+// Enable the Indexed Database API.
+const char kEnableIndexedDatabase[]         = "enable-indexed-database";
+
 // Enable the GPU plugin and Pepper 3D rendering.
 const char kEnableGPUPlugin[]               = "enable-gpu-plugin";
-
-// Disable LocalStorage.
-const char kDisableLocalStorage[]            = "disable-local-storage";
 
 // Force logging to be enabled.  Logging is disabled by default in release
 // builds.

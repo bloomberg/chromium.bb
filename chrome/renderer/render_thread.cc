@@ -664,6 +664,9 @@ void RenderThread::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableSessionStorage(
       command_line.HasSwitch(switches::kEnableSessionStorage));
 
+  WebRuntimeFeatures::enableIndexedDatabase(
+      command_line.HasSwitch(switches::kEnableIndexedDatabase));
+
   WebRuntimeFeatures::enableGeolocation(
       command_line.HasSwitch(switches::kEnableGeolocation));
 }
