@@ -1221,10 +1221,19 @@ gboolean BookmarkManagerGtk::OnRightTreeViewButtonPress(
     return FALSE;
   }
 
+  if (event->window != gtk_tree_view_get_bin_window(GTK_TREE_VIEW(tree_view)))
+    return FALSE;
+
+  gint tree_x, tree_y;
+  gtk_tree_view_convert_bin_window_to_widget_coords(
+      GTK_TREE_VIEW(tree_view),
+      static_cast<gint>(event->x),
+      static_cast<gint>(event->y),
+      &tree_x, &tree_y);
+
   GtkTreePath* path;
   gtk_tree_view_get_path_at_pos(GTK_TREE_VIEW(tree_view),
-                                static_cast<gint>(event->x),
-                                static_cast<gint>(event->y),
+                                tree_x, tree_y,
                                 &path, NULL, NULL, NULL);
 
   if (path == NULL) {
