@@ -154,15 +154,9 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
 }
 
 BookmarkBarGtk::~BookmarkBarGtk() {
-  if (model_)
-    model_->RemoveObserver(this);
-
   RemoveAllBookmarkButtons();
   bookmark_toolbar_.Destroy();
   event_box_.Destroy();
-
-  if (sync_service_)
-    sync_service_->RemoveObserver(this);
 }
 
 void BookmarkBarGtk::SetProfile(Profile* profile) {
@@ -194,6 +188,8 @@ void BookmarkBarGtk::SetPageNavigator(PageNavigator* navigator) {
 
 void BookmarkBarGtk::Init(Profile* profile) {
   event_box_.Own(gtk_event_box_new());
+  g_signal_connect(event_box_.get(), "destroy",
+                   G_CALLBACK(&OnEventBoxDestroy), this);
   g_signal_connect(event_box_.get(), "button-press-event",
                    G_CALLBACK(&OnButtonPressed), this);
 
@@ -1220,6 +1216,16 @@ gboolean BookmarkBarGtk::OnEventBoxExpose(GtkWidget* widget,
   }
 
   return FALSE;  // Propagate expose to children.
+}
+
+// static
+void BookmarkBarGtk::OnEventBoxDestroy(GtkWidget* widget,
+                                       BookmarkBarGtk* bar) {
+  if (bar->model_)
+    bar->model_->RemoveObserver(bar);
+
+  if (bar->sync_service_)
+    bar->sync_service_->RemoveObserver(bar);
 }
 
 // static
