@@ -172,6 +172,7 @@ WONTFIX SKIP BUG19635 : fast/events/pageshow-pagehide-on-back-cached.html = TIME
 WONTFIX SKIP BUG19635 : fast/events/pageshow-pagehide-on-back-cached-with-frames.html = TIMEOUT
 WONTFIX SKIP BUG19635 : media/restore-from-page-cache.html = TIMEOUT
 WONTFIX SKIP BUG19635 : loader/go-back-to-different-window-size.html = TIMEOUT TEXT
+WONTFIX SKIP BUG19635 : fast/loader/crash-copying-backforwardlist.html = TEXT
 
 // Tests that rely on cross-process MessagePorts.  No point in running them in
 // test_shell, since we'd have to use a completely different implementation from
@@ -2927,7 +2928,6 @@ BUG33997 MAC : svg/custom/gradient-stop-corner-cases.svg = IMAGE
 
 // WebKit roll 54127 -> 54213
 BUG34221 : fast/js/math.html = TEXT
-BUG34222 : fast/loader/crash-copying-backforwardlist.html = TEXT
 BUG34219 : printing/page-break-always.html = TEXT
 BUG34219 : printing/pageNumerForElementById.html = TEXT
 BUG8635 WIN LINUX : svg/batik/filters/feTile.svg = IMAGE
