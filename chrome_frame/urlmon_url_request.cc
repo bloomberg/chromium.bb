@@ -828,7 +828,8 @@ void UrlmonUrlRequest::NotifyDelegateAndDie() {
   delegate_ = NULL;
   ReleaseBindings();
   if (delegate) {
-    delegate->OnResponseEnd(id(), status_.get_result());
+    URLRequestStatus result = status_.get_result();
+    delegate->OnResponseEnd(id(), result);
   }
 }
 
