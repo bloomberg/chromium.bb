@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -114,8 +114,6 @@ ProfileSyncServiceTestHarness::ProfileSyncServiceTestHarness(
   // Ensure the profile has enough prefs registered for use by sync.
   if (!p->GetPrefs()->FindPreference(prefs::kAcceptLanguages))
     TabContents::RegisterUserPrefs(p->GetPrefs());
-  if (!p->GetPrefs()->FindPreference(prefs::kCookieBehavior))
-    Browser::RegisterUserPrefs(p->GetPrefs());
 }
 
 bool ProfileSyncServiceTestHarness::SetupSync() {

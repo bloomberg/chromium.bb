@@ -114,7 +114,9 @@ const wchar_t kSafeBrowsingEnabled[] = L"safebrowsing.enabled";
 // Boolean that is true when Suggest support is enabled.
 const wchar_t kSearchSuggestEnabled[] = L"search.suggest_enabled";
 
-// Enum that specifies whether to enforce a third-party cookie blocking policy.
+// OBSOLETE.  Enum that specifies whether to enforce a third-party cookie
+// blocking policy.  This has been superseded by kDefaultContentSettings +
+// kBlockThirdPartyCookies.
 // 0 - allow all cookies.
 // 1 - block third-party cookies
 // 2 - block all cookies

@@ -9,6 +9,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
+#include "net/base/static_cookie_policy.h"
 
 // static
 const wchar_t*
@@ -20,13 +21,40 @@ const wchar_t*
   L"popups",
 };
 
+// static
+const ContentSetting
+    HostContentSettingsMap::kDefaultSettings[CONTENT_SETTINGS_NUM_TYPES] = {
+  CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_COOKIES
+  CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_IMAGES
+  CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_JAVASCRIPT
+  CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_PLUGINS
+  CONTENT_SETTING_BLOCK,  // CONTENT_SETTINGS_TYPE_POPUPS
+};
+
 HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
     : profile_(profile),
       block_third_party_cookies_(false) {
+  PrefService* prefs = profile_->GetPrefs();
+
+  // Migrate obsolete cookie pref.
+  if (prefs->HasPrefPath(prefs::kCookieBehavior)) {
+    int cookie_behavior = prefs->GetInteger(prefs::kCookieBehavior);
+    prefs->ClearPref(prefs::kCookieBehavior);
+    if (!prefs->HasPrefPath(prefs::kDefaultContentSettings)) {
+        SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES,
+            (cookie_behavior == net::StaticCookiePolicy::BLOCK_ALL_COOKIES) ?
+                CONTENT_SETTING_BLOCK : CONTENT_SETTING_ALLOW);
+    }
+    if (!prefs->HasPrefPath(prefs::kBlockThirdPartyCookies)) {
+      SetBlockThirdPartyCookies(cookie_behavior ==
+          net::StaticCookiePolicy::BLOCK_THIRD_PARTY_COOKIES);
+    }
+  }
+
   DCHECK_EQ(arraysize(kTypeNames),
             static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
   const DictionaryValue* default_settings_dictionary =
-      profile_->GetPrefs()->GetDictionary(prefs::kDefaultContentSettings);
+      prefs->GetDictionary(prefs::kDefaultContentSettings);
   // Careful: The returned value could be NULL if the pref has never been set.
   if (default_settings_dictionary != NULL) {
     GetSettingsFromDictionary(default_settings_dictionary,
@@ -35,7 +63,7 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
   ForceDefaultsToBeExplicit();
 
   const DictionaryValue* all_settings_dictionary =
-      profile_->GetPrefs()->GetDictionary(prefs::kPerHostContentSettings);
+      prefs->GetDictionary(prefs::kPerHostContentSettings);
   // Careful: The returned value could be NULL if the pref has never been set.
   if (all_settings_dictionary != NULL) {
     for (DictionaryValue::key_iterator i(all_settings_dictionary->begin_keys());
@@ -52,7 +80,7 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
   }
 
   block_third_party_cookies_ =
-      profile_->GetPrefs()->GetBoolean(prefs::kBlockThirdPartyCookies);
+      prefs->GetBoolean(prefs::kBlockThirdPartyCookies);
 }
 
 // static
@@ -60,6 +88,10 @@ void HostContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kDefaultContentSettings);
   prefs->RegisterDictionaryPref(prefs::kPerHostContentSettings);
   prefs->RegisterBooleanPref(prefs::kBlockThirdPartyCookies, false);
+
+  // Obsolete prefs, for migration:
+  prefs->RegisterIntegerPref(prefs::kCookieBehavior,
+                             net::StaticCookiePolicy::ALLOW_ALL_COOKIES);
 }
 
 ContentSetting HostContentSettingsMap::GetDefaultContentSetting(
@@ -116,14 +148,24 @@ void HostContentSettingsMap::SetDefaultContentSetting(
     ContentSetting setting) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
+  DictionaryValue* default_settings_dictionary =
+      profile_->GetPrefs()->GetMutableDictionary(
+          prefs::kDefaultContentSettings);
+  std::wstring dictionary_path(kTypeNames[content_type]);
   {
     AutoLock auto_lock(lock_);
-    default_content_settings_.settings[content_type] = setting;
+    if ((setting == CONTENT_SETTING_DEFAULT) ||
+        (setting == kDefaultSettings[content_type])) {
+      default_content_settings_.settings[content_type] =
+          kDefaultSettings[content_type];
+      default_settings_dictionary->RemoveWithoutPathExpansion(dictionary_path,
+                                                              NULL);
+    } else {
+      default_content_settings_.settings[content_type] = setting;
+      default_settings_dictionary->SetWithoutPathExpansion(
+          dictionary_path, Value::CreateIntegerValue(setting));
+    }
   }
-
-  profile_->GetPrefs()->GetMutableDictionary(prefs::kDefaultContentSettings)->
-      SetWithoutPathExpansion(std::wstring(kTypeNames[content_type]),
-                              Value::CreateIntegerValue(setting));
 }
 
 void HostContentSettingsMap::SetContentSetting(const std::string& host,
@@ -131,7 +173,10 @@ void HostContentSettingsMap::SetContentSetting(const std::string& host,
                                                ContentSetting setting) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
-  bool all_default;
+  std::wstring wide_host(UTF8ToWide(host));
+  DictionaryValue* all_settings_dictionary =
+      profile_->GetPrefs()->GetMutableDictionary(
+          prefs::kPerHostContentSettings);
   {
     AutoLock auto_lock(lock_);
     if (!host_content_settings_.count(host))
@@ -139,19 +184,13 @@ void HostContentSettingsMap::SetContentSetting(const std::string& host,
     HostContentSettings::iterator i(host_content_settings_.find(host));
     ContentSettings& settings = i->second;
     settings.settings[content_type] = setting;
-    all_default = AllDefault(settings);
-    if (all_default)
+    if (AllDefault(settings)) {
       host_content_settings_.erase(i);
+      all_settings_dictionary->RemoveWithoutPathExpansion(wide_host, NULL);
+      return;
+    }
   }
 
-  std::wstring wide_host(UTF8ToWide(host));
-  DictionaryValue* all_settings_dictionary =
-      profile_->GetPrefs()->GetMutableDictionary(
-          prefs::kPerHostContentSettings);
-  if (all_default) {
-    all_settings_dictionary->RemoveWithoutPathExpansion(wide_host, NULL);
-    return;
-  }
   DictionaryValue* host_settings_dictionary;
   bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
       wide_host, &host_settings_dictionary);
@@ -159,6 +198,7 @@ void HostContentSettingsMap::SetContentSetting(const std::string& host,
     host_settings_dictionary = new DictionaryValue;
     all_settings_dictionary->SetWithoutPathExpansion(
         wide_host, host_settings_dictionary);
+    DCHECK_NE(setting, CONTENT_SETTING_DEFAULT);
   }
   std::wstring dictionary_path(kTypeNames[content_type]);
   if (setting == CONTENT_SETTING_DEFAULT) {
@@ -206,8 +246,11 @@ void HostContentSettingsMap::SetBlockThirdPartyCookies(bool block) {
     block_third_party_cookies_ = block;
   }
 
-  profile_->GetPrefs()->SetBoolean(prefs::kBlockThirdPartyCookies,
-                                   block_third_party_cookies_);
+  PrefService* prefs = profile_->GetPrefs();
+  if (block)
+    prefs->SetBoolean(prefs::kBlockThirdPartyCookies, true);
+  else
+    prefs->ClearPref(prefs::kBlockThirdPartyCookies);
 }
 
 void HostContentSettingsMap::ResetToDefaults() {
@@ -221,9 +264,10 @@ void HostContentSettingsMap::ResetToDefaults() {
     block_third_party_cookies_ = false;
   }
 
-  profile_->GetPrefs()->ClearPref(prefs::kDefaultContentSettings);
-  profile_->GetPrefs()->ClearPref(prefs::kPerHostContentSettings);
-  profile_->GetPrefs()->ClearPref(prefs::kBlockThirdPartyCookies);
+  PrefService* prefs = profile_->GetPrefs();
+  prefs->ClearPref(prefs::kDefaultContentSettings);
+  prefs->ClearPref(prefs::kPerHostContentSettings);
+  prefs->ClearPref(prefs::kBlockThirdPartyCookies);
 }
 
 HostContentSettingsMap::~HostContentSettingsMap() {
@@ -249,13 +293,9 @@ void HostContentSettingsMap::GetSettingsFromDictionary(
 }
 
 void HostContentSettingsMap::ForceDefaultsToBeExplicit() {
-  static const ContentSetting kDefaultSettings[CONTENT_SETTINGS_NUM_TYPES] = {
-    CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_COOKIES
-    CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_IMAGES
-    CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_JAVASCRIPT
-    CONTENT_SETTING_ALLOW,  // CONTENT_SETTINGS_TYPE_PLUGINS
-    CONTENT_SETTING_BLOCK,  // CONTENT_SETTINGS_TYPE_POPUPS
-  };
+  DCHECK_EQ(arraysize(kDefaultSettings),
+            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
+
   for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
     if (default_content_settings_.settings[i] == CONTENT_SETTING_DEFAULT)
       default_content_settings_.settings[i] = kDefaultSettings[i];

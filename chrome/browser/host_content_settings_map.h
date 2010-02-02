@@ -96,7 +96,10 @@ class HostContentSettingsMap
   typedef std::map<std::string, ContentSettings> HostContentSettings;
 
   // The names of the ContentSettingsType values, for use with dictionary prefs.
-  static const wchar_t* kTypeNames[];
+  static const wchar_t* kTypeNames[CONTENT_SETTINGS_NUM_TYPES];
+
+  // The default setting for each content type.
+  static const ContentSetting kDefaultSettings[CONTENT_SETTINGS_NUM_TYPES];
 
   ~HostContentSettingsMap();
 
