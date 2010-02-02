@@ -42,8 +42,9 @@ GtkWidget* SettingsPageView::WrapInGtkWidget() {
 SettingsPageSection::SettingsPageSection(Profile* profile, int title_msg_id)
     : OptionsPageView(profile),
       title_msg_id_(title_msg_id),
-      single_column_view_set_id_(0),
-      double_column_view_set_id_(1) {
+      // Using 1000 so that it does not clash with ids defined in subclasses.
+      single_column_view_set_id_(1000),
+      double_column_view_set_id_(1001) {
 }
 
 void SettingsPageSection::InitControlLayout() {

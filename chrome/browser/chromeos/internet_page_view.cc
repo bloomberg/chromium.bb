@@ -10,6 +10,7 @@
 #include "chrome/browser/chromeos/network_library.h"
 #include "chrome/browser/chromeos/password_dialog_view.h"
 #include "grit/generated_resources.h"
+#include "views/controls/button/native_button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/window/window.h"
 
@@ -21,6 +22,7 @@ namespace chromeos {
 // Network section for wifi settings
 class NetworkSection : public SettingsPageSection,
                        public views::Combobox::Listener,
+                       public views::ButtonListener,
                        public PasswordDialogDelegate,
                        public NetworkLibrary::Observer {
  public:
@@ -31,6 +33,9 @@ class NetworkSection : public SettingsPageSection,
   virtual void ItemChanged(views::Combobox* sender,
                            int prev_index,
                            int new_index);
+
+  // Overriden from views::Button::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
 
   // PasswordDialogDelegate implementation.
   virtual bool OnPasswordDialogCancel();
@@ -87,6 +92,16 @@ class NetworkSection : public SettingsPageSection,
 
   // This method will change the combobox selection to the passed in wifi ssid.
   void SelectWifi(const std::string& wifi_ssid);
+
+  // Status labels
+  views::Label* ethernet_status_label_;
+  views::Label* wifi_status_label_;
+  views::Label* cellular_status_label_;
+
+  // Options buttons
+  views::NativeButton* ethernet_options_button_;
+  views::NativeButton* wifi_options_button_;
+  views::NativeButton* cellular_options_button_;
 
   // Controls for this section:
   views::Combobox* wifi_ssid_combobox_;
@@ -145,6 +160,15 @@ void NetworkSection::ItemChanged(views::Combobox* sender,
   }
 }
 
+void NetworkSection::ButtonPressed(views::Button* sender,
+                                   const views::Event& event) {
+  // TODO(chocobo): Open options dialog.
+  if (sender == ethernet_options_button_) {
+  } else if (sender == wifi_options_button_) {
+  } else if (sender == cellular_options_button_) {
+  }
+}
+
 bool NetworkSection::OnPasswordDialogCancel() {
   // Change combobox to previous setting.
   wifi_ssid_combobox_->SetSelectedItem(last_selected_wifi_ssid_index_);
@@ -159,20 +183,127 @@ bool NetworkSection::OnPasswordDialogAccept(const std::string& ssid,
 }
 
 void NetworkSection::NetworkChanged(NetworkLibrary* obj) {
+  // Ethernet status.
+  int status;
+  if (obj->ethernet_connecting())
+    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
+  else if (obj->ethernet_connected())
+    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
+  else if (obj->ethernet_enabled())
+    status = IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED;
+  else
+    status = IDS_STATUSBAR_NETWORK_DEVICE_DISABLED;
+  ethernet_status_label_->SetText(l10n_util::GetString(status));
+
+  // Wifi status.
+  if (obj->wifi_connecting())
+    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
+  else if (obj->wifi_connected())
+    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
+  else if (obj->wifi_enabled())
+    status = IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED;
+  else
+    status = IDS_STATUSBAR_NETWORK_DEVICE_DISABLED;
+  wifi_status_label_->SetText(l10n_util::GetString(status));
+
+  // Cellular status.
+  status = IDS_STATUSBAR_NETWORK_DEVICE_DISABLED;
+  if (obj->cellular_connecting())
+    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
+  else if (obj->cellular_connected())
+    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
+  else if (obj->cellular_enabled())
+    status = IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED;
+  else
+    status = IDS_STATUSBAR_NETWORK_DEVICE_DISABLED;
+  cellular_status_label_->SetText(l10n_util::GetString(status));
+
+  // Select wifi combo box.
   SelectWifi(obj->wifi_ssid());
 }
 
 void NetworkSection::InitContents(GridLayout* layout) {
+  int quad_column_view_set_id = 1;
+  ColumnSet* column_set = layout->AddColumnSet(quad_column_view_set_id);
+  // device
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                        GridLayout::USE_PREF, 0, 0);
+  // fill padding
+  column_set->AddPaddingColumn(10, 0);
+  // selection
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                        GridLayout::USE_PREF, 0, 0);
+  // padding
+  column_set->AddPaddingColumn(0, 10);
+  // options
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                        GridLayout::USE_PREF, 0, 0);
+
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+
+  // Ethernet
+  layout->StartRow(0, quad_column_view_set_id);
+  views::Label* label = new views::Label(l10n_util::GetString(
+      IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET));
+  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  layout->AddView(label);
+  layout->SkipColumns(1);
+  ethernet_options_button_ = new views::NativeButton(this,
+      l10n_util::GetString(IDS_OPTIONS_SETTINGS_OPTIONS));
+  layout->AddView(ethernet_options_button_, 1, 2);
+
+  layout->StartRow(0, quad_column_view_set_id);
+  ethernet_status_label_ = new views::Label();
+  ethernet_status_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
+  ethernet_status_label_->SetColor(SK_ColorLTGRAY);
+  ethernet_status_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  layout->AddView(ethernet_status_label_);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+
+  // Wifi
+  layout->StartRow(0, quad_column_view_set_id);
+  label = new views::Label(l10n_util::GetString(
+      IDS_STATUSBAR_NETWORK_DEVICE_WIFI));
+  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  layout->AddView(label);
   wifi_ssid_combobox_ = new views::Combobox(&wifi_ssid_model_);
   wifi_ssid_combobox_->SetSelectedItem(last_selected_wifi_ssid_index_);
   wifi_ssid_combobox_->set_listener(this);
+  // Select the initial connected wifi network.
+  layout->AddView(wifi_ssid_combobox_, 1, 2);
+  wifi_options_button_ = new views::NativeButton(this,
+      l10n_util::GetString(IDS_OPTIONS_SETTINGS_OPTIONS));
+  layout->AddView(wifi_options_button_, 1, 2);
 
-  layout->StartRow(0, single_column_view_set_id());
-  layout->AddView(wifi_ssid_combobox_);
+  layout->StartRow(0, quad_column_view_set_id);
+  wifi_status_label_ = new views::Label();
+  wifi_status_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
+  wifi_status_label_->SetColor(SK_ColorLTGRAY);
+  wifi_status_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  layout->AddView(wifi_status_label_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
-  // Select the initial connected wifi network.
-  SelectWifi(NetworkLibrary::Get()->wifi_ssid());
+  // Cellular
+  layout->StartRow(0, quad_column_view_set_id);
+  label = new views::Label(l10n_util::GetString(
+      IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR));
+  label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  layout->AddView(label);
+  layout->SkipColumns(1);
+  cellular_options_button_ = new views::NativeButton(this,
+      l10n_util::GetString(IDS_OPTIONS_SETTINGS_OPTIONS));
+  layout->AddView(cellular_options_button_, 1, 2);
+
+  layout->StartRow(0, quad_column_view_set_id);
+  cellular_status_label_ = new views::Label();
+  cellular_status_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
+  cellular_status_label_->SetColor(SK_ColorLTGRAY);
+  cellular_status_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  layout->AddView(cellular_status_label_);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+
+  // Call NetworkChanged to set initial values.
+  NetworkChanged(NetworkLibrary::Get());
 }
 
 void NetworkSection::SelectWifi(const std::string& wifi_ssid) {
