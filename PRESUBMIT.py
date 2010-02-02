@@ -85,19 +85,9 @@ def CheckChangeOnCommit(input_api, output_api):
   IGNORED_BUILDERS = [
     'Chromium XP',
     'Chromium Mac',
-    'Chromium Mac (valgrind)',
-    'Chromium Mac UI (valgrind)(1)',
-    'Chromium Mac UI (valgrind)(2)',
-    'Chromium Mac UI (valgrind)(3)',
-    'Chromium Mac (tsan)',
-    'Webkit Mac (valgrind)',
+    'Chromium Arm (dbg)',
     'Chromium Linux',
     'Chromium Linux x64',
-    'Linux Tests (valgrind)(1)',
-    'Linux Tests (valgrind)(2)',
-    'Linux Tests (valgrind)(3)',
-    'Linux Tests (valgrind)(4)',
-    'Webkit Linux (valgrind layout)',
   ]
   results.extend(CheckPendingBuilds(
       input_api,
