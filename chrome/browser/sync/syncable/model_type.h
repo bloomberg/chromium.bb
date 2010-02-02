@@ -21,6 +21,7 @@ enum ModelType {
   TOP_LEVEL_FOLDER,  // A permanent folder whose children may be of mixed
                      // datatypes (e.g. the "Google Chrome" folder).
   BOOKMARKS,         // A bookmark folder or a bookmark URL object.
+  PREFERENCES,       // A preference folder or a preference object.
   MODEL_TYPE_COUNT,
 };
 

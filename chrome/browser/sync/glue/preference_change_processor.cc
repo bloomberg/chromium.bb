@@ -42,9 +42,7 @@ void PreferenceChangeProcessor::Observe(NotificationType type,
       error_handler()->OnUnrecoverableError();
       return;
     }
-    // TODO(ncarter): Define and use a preferences model_type.
-    syncable::ModelType model_type = syncable::BOOKMARKS;
-    if (!sync_node.InitByCreation(model_type, root_node, NULL)) {
+    if (!sync_node.InitByCreation(syncable::PREFERENCES, root_node, NULL)) {
       LOG(ERROR) << "Preference node creation failed.";
       error_handler()->OnUnrecoverableError();
       return;

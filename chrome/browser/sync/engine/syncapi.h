@@ -67,6 +67,7 @@ class WriteTransaction;
 namespace sync_pb {
 class BookmarkSpecifics;
 class EntitySpecifics;
+class PreferenceSpecifics;
 }
 
 namespace sync_api {
@@ -134,6 +135,10 @@ class BaseNode {
   // that are invalid for whatever reason.
   // TODO(ncarter): Remove this datatype-specific accessor.
   void GetFaviconBytes(std::vector<unsigned char>* output) const;
+
+  // Getter specific to the PREFERENCE datatype.  Returns protobuf
+  // data.  Can only be called if GetModelType() == PREFERENCE.
+  const sync_pb::PreferenceSpecifics& GetPreferenceSpecifics() const;
 
   // Returns the local external ID associated with the node.
   int64 GetExternalId() const;
@@ -215,6 +220,10 @@ class WriteNode : public BaseNode {
   void SetURL(const GURL& url);
   void SetFaviconBytes(const std::vector<unsigned char>& bytes);
 
+  // Set the preference specifics (name and value).
+  // Should only be called if GetModelType() == PREFERENCE.
+  void SetPreferenceSpecifics(const sync_pb::PreferenceSpecifics& specifics);
+
   // Implementation of BaseNode's abstract virtual accessors.
   virtual const syncable::Entry* GetEntry() const;
 
@@ -233,6 +242,8 @@ class WriteNode : public BaseNode {
   // changes.
   void PutBookmarkSpecificsAndMarkForSyncing(
       const sync_pb::BookmarkSpecifics& new_value);
+  void PutPreferenceSpecificsAndMarkForSyncing(
+      const sync_pb::PreferenceSpecifics& new_value);
   void PutSpecificsAndMarkForSyncing(
       const sync_pb::EntitySpecifics& specifics);
 

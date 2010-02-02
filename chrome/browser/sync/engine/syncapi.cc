@@ -48,6 +48,7 @@
 #include "chrome/browser/sync/notifier/listener/talk_mediator.h"
 #include "chrome/browser/sync/notifier/listener/talk_mediator_impl.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
+#include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -471,6 +472,11 @@ const sync_pb::BookmarkSpecifics& BaseNode::GetBookmarkSpecifics() const {
   return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::bookmark);
 }
 
+const sync_pb::PreferenceSpecifics& BaseNode::GetPreferenceSpecifics() const {
+  DCHECK(GetModelType() == syncable::PREFERENCES);
+  return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::preference);
+}
+
 syncable::ModelType BaseNode::GetModelType() const {
   return GetEntry()->GetModelType();
 }
@@ -514,6 +520,19 @@ void WriteNode::PutBookmarkSpecificsAndMarkForSyncing(
     const sync_pb::BookmarkSpecifics& new_value) {
   sync_pb::EntitySpecifics entity_specifics;
   entity_specifics.MutableExtension(sync_pb::bookmark)->CopyFrom(new_value);
+  PutSpecificsAndMarkForSyncing(entity_specifics);
+}
+
+void WriteNode::SetPreferenceSpecifics(
+    const sync_pb::PreferenceSpecifics& new_value) {
+  DCHECK(GetModelType() == syncable::PREFERENCES);
+  PutPreferenceSpecificsAndMarkForSyncing(new_value);
+}
+
+void WriteNode::PutPreferenceSpecificsAndMarkForSyncing(
+    const sync_pb::PreferenceSpecifics& new_value) {
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.MutableExtension(sync_pb::preference)->CopyFrom(new_value);
   PutSpecificsAndMarkForSyncing(entity_specifics);
 }
 
@@ -585,6 +604,10 @@ bool WriteNode::InitByCreation(syncable::ModelType model_type,
     case syncable::BOOKMARKS:
       PutBookmarkSpecificsAndMarkForSyncing(
           sync_pb::BookmarkSpecifics::default_instance());
+      break;
+    case syncable::PREFERENCES:
+      PutPreferenceSpecificsAndMarkForSyncing(
+          sync_pb::PreferenceSpecifics::default_instance());
       break;
     default:
       NOTREACHED();

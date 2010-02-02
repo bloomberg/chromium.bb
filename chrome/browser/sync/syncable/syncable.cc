@@ -36,6 +36,7 @@
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
+#include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -1025,6 +1026,8 @@ syncable::ModelType Entry::GetServerModelType() const {
 syncable::ModelType Entry::GetModelType() const {
   if (Get(SPECIFICS).HasExtension(sync_pb::bookmark))
     return BOOKMARKS;
+  if (Get(SPECIFICS).HasExtension(sync_pb::preference))
+    return PREFERENCES;
   if (IsRoot())
     return TOP_LEVEL_FOLDER;
   // Loose check for server-created top-level folders that aren't

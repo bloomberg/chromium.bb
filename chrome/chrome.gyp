@@ -691,6 +691,7 @@
       'sources': [
         'browser/sync/protocol/sync.proto',
         'browser/sync/protocol/bookmark_specifics.proto',
+        'browser/sync/protocol/preference_specifics.proto',
       ],
       'rules': [
         {
@@ -837,6 +838,8 @@
         '<(protoc_out_dir)/chrome/browser/sync/protocol/sync.pb.h',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/bookmark_specifics.pb.cc',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/bookmark_specifics.pb.h',
+        '<(protoc_out_dir)/chrome/browser/sync/protocol/preference_specifics.pb.cc',
+        '<(protoc_out_dir)/chrome/browser/sync/protocol/preference_specifics.pb.h',
         'browser/sync/engine/all_status.cc',
         'browser/sync/engine/all_status.h',
         'browser/sync/engine/apply_updates_command.cc',
