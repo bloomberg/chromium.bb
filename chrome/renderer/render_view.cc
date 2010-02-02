@@ -3401,13 +3401,6 @@ void RenderView::OnTranslateTextResponse(
   text_translator_.OnTranslationResponse(work_id, error_id, text_chunks);
 }
 
-void RenderView::OnUndoTranslate(int page_id) {
-  if (page_id != page_id_)
-    return;  // Not the page we expected, nothing to do.
-
-  page_translator_->UndoTranslation();
-}
-
 void RenderView::OnInstallMissingPlugin() {
   // This could happen when the first default plugin is deleted.
   if (first_default_plugin_)

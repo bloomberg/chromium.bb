@@ -724,10 +724,6 @@ class RenderView : public RenderWidget,
                        const std::string& source_lang,
                        const std::string& target_lang);
 
-  // Tells the renderer to revert the page contents to its original
-  // non-translated content.
-  void OnUndoTranslate(int page_id);
-
   // Message that provides the translated text for a request.
   void OnTranslateTextResponse(int work_id,
                                int error_id,

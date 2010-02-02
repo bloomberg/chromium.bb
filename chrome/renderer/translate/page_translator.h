@@ -58,9 +58,6 @@ class PageTranslator : public TextTranslator::Delegate {
   // Notification that the associated RenderView has navigated to a new page.
   void NavigatedToNewPage();
 
-  // Reverts the page to its original non-translated contents.
-  void UndoTranslation();
-
   // TextTranslator::Delegate implentation:
   virtual void TranslationError(int work_id, int error_id);
   virtual void TextTranslated(
@@ -74,6 +71,7 @@ class PageTranslator : public TextTranslator::Delegate {
   };
 
   typedef std::vector<WebKit::WebNode> NodeList;
+  typedef std::vector<string16> TextChunks;
 
   // Traverses the tree starting at |node| and fills |nodes| with the
   // elements necessary for translation.
@@ -95,6 +93,10 @@ class PageTranslator : public TextTranslator::Delegate {
 
   // Clears all the states related to the page's contents.
   void ResetPageStates();
+
+  // Clears any pending translation requests.  Any response for a pending
+  // request received after this call will be ignored.
+  void ClearPendingTranslations();
 
   // Our delegate (notified when a page is translated).
   PageTranslatorDelegate* delegate_;
@@ -121,10 +123,14 @@ class PageTranslator : public TextTranslator::Delegate {
   // The page id of the page last time we translated.
   int page_id_;
 
-  // The list of text nodes in the current page with their original text.
-  // Used to undo the translation.
-  typedef std::pair<WebKit::WebNode, WebKit::WebString> NodeTextPair;
-  std::vector<NodeTextPair> text_nodes_;
+  // True if the page is served over HTTPS.
+  bool secure_page_;
+
+  // The list of text zones in the current page, grouped in text zones (text
+  // nodes grouped in a same context).
+  std::vector<NodeList*> text_nodes_;
+  // The original text of the text nodes in |text_nodes_|.
+  std::vector<TextChunks*> text_chunks_;
 
   DISALLOW_COPY_AND_ASSIGN(PageTranslator);
 };

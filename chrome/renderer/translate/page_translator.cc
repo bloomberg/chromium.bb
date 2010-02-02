@@ -48,7 +48,8 @@ PageTranslator::PageTranslator(TextTranslator* text_translator,
                                PageTranslatorDelegate* delegate)
     : delegate_(delegate),
       text_translator_(text_translator),
-      page_id_(-1) {
+      page_id_(-1),
+      secure_page_(false) {
   for (size_t i = 0; i < arraysize(kSkippedTags); ++i)
     ignored_tags_.insert(WebKit::WebString(ASCIIToUTF16(kSkippedTags[i])));
   for (size_t i = 0; i < arraysize(kInlineTags); ++i)
@@ -56,7 +57,7 @@ PageTranslator::PageTranslator(TextTranslator* text_translator,
 }
 
 PageTranslator::~PageTranslator() {
-  ResetPageStates();  // This deletes pending translations.
+  ResetPageStates();
 }
 
 void PageTranslator::Translate(int page_id,
@@ -67,18 +68,35 @@ void PageTranslator::Translate(int page_id,
     // This is a new page, our states are invalid.
     ResetPageStates();
     page_id_ = page_id;
+    secure_page_ = static_cast<GURL>(web_frame->top()->url()).SchemeIsSecure();
   }
   if (original_language_.empty()) {
     original_language_ = source_lang;
     current_language_ = source_lang;
   }
+
   if (original_language_ != current_language_) {
     // The page has already been translated.
     if (target_lang == current_language_) {
       NOTREACHED();
       return;
     }
-    // TODO(jcampan): implement translation of an already translated page.
+    // Any pending translation is now useless.
+    ClearPendingTranslations();
+    // No need to parse again the DOM, we have all the text nodes and their
+    // original text in |text_nodes_| and |text_chunks_|.
+    std::vector<NodeList*>::iterator text_nodes_iter = text_nodes_.begin();
+    std::vector<TextChunks*>::iterator text_chunks_iter = text_chunks_.begin();
+    for (;text_nodes_iter != text_nodes_.end();
+         ++text_nodes_iter, ++text_chunks_iter) {
+      DCHECK(text_chunks_iter != text_chunks_.end());
+      int work_id =
+          text_translator_->Translate(**text_chunks_iter,
+                                      source_lang, target_lang,
+                                      secure_page_, this);
+      pending_translations_[work_id] = *text_nodes_iter;
+    }
+    current_language_ = target_lang;
     return;
   }
 
@@ -93,45 +111,33 @@ void PageTranslator::Translate(int page_id,
   for (iter = text_node_lists.begin(); iter != text_node_lists.end(); ++iter) {
     if ((*iter)->empty()) {
       // Nothing to translate.
-      delete *iter;
       continue;
     }
-    std::vector<string16> text_chunks;  // The text chunks to translate.
-    std::vector<WebKit::WebNode>::iterator text_nodes_iter;
+    TextChunks* text_chunks = new TextChunks;  // The text chunks to translate.
+    NodeList::iterator text_nodes_iter;
     for (text_nodes_iter = (*iter)->begin();
          text_nodes_iter != (*iter)->end(); ++text_nodes_iter) {
       DCHECK(text_nodes_iter->isTextNode());
       string16 text = static_cast<string16>(text_nodes_iter->nodeValue());
       DCHECK(!ContainsOnlyWhitespace(text));
-      text_chunks.push_back(text);
-      // Store the original text so we can undo the translation if requested.
-      text_nodes_.push_back(NodeTextPair(*text_nodes_iter, text));
+      text_chunks->push_back(text);
     }
+
     // Send the text for translation.
-    bool secure = static_cast<GURL>(web_frame->top()->url()).SchemeIsSecure();
     int work_id =
-        text_translator_->Translate(text_chunks, source_lang, target_lang,
-                                    secure, this);
+        text_translator_->Translate(*text_chunks, source_lang, target_lang,
+                                    secure_page_, this);
     pending_translations_[work_id] = *iter;
+    // Also store the text nodes and their original text so we can translate to
+    // another language if necessary.
+    text_nodes_.push_back(*iter);
+    text_chunks_.push_back(text_chunks);
   }
 }
 
 void PageTranslator::NavigatedToNewPage() {
   // We can drop all our states, they were related to the previous page.
   ResetPageStates();
-}
-
-void PageTranslator::UndoTranslation() {
-  // Revert all text nodes to their original contents.
-  std::vector<NodeTextPair>::iterator iter;
-  for (iter = text_nodes_.begin(); iter != text_nodes_.end(); ++iter)
-    iter->first.setNodeValue(iter->second);
-
-  // The page is back to its original content, we can dop all our states but the
-  // page id.
-  int page_id = page_id_;
-  ResetPageStates();
-  page_id_ = page_id;
 }
 
 bool PageTranslator::ShouldElementBeTraversed(WebKit::WebElement element) {
@@ -149,7 +155,6 @@ void PageTranslator::ClearNodeZone(int work_id) {
         "work id=" << work_id;
     return;
   }
-  delete iter->second;
   pending_translations_.erase(iter);
 }
 
@@ -238,9 +243,14 @@ void PageTranslator::TraverseNode(WebKit::WebNode node,
 
 void PageTranslator::ResetPageStates() {
   page_id_ = -1;
+  secure_page_ = false;
+  STLDeleteElements(&text_nodes_);
+  STLDeleteElements(&text_chunks_);
   original_language_.clear();
   current_language_.clear();
-  text_nodes_.clear();
-  // Remove pending translations.
-  STLDeleteValues(&pending_translations_);
+  ClearPendingTranslations();
+}
+
+void PageTranslator::ClearPendingTranslations() {
+  pending_translations_.clear();
 }

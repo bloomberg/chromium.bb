@@ -444,10 +444,6 @@ class RenderViewHost : public RenderWidgetHost {
                      const std::string& source_lang,
                      const std::string& target_lang);
 
-  // Instructs the renderer to revert the page's text to its original
-  // non translated content.
-  void UndoTranslatePage(int page_id);
-
   // Informs renderer of updated content settings.
   void SendContentSettings(const std::string& host,
                            const ContentSettings& settings);
