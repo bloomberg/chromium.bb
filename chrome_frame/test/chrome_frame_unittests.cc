@@ -1880,8 +1880,10 @@ const wchar_t kChromeFrameFullTabModeBeforeUnloadEventTest[] =
 const wchar_t kChromeFrameFullTabModeBeforeUnloadEventMain[] =
     L"http://localhost:1337/files/fulltab_before_unload_event_main.html";
 
+// Disabled as it hangs on the builder.
+// http://code.google.com/p/chromium/issues/detail?id=34246
 TEST_F(ChromeFrameTestWithWebServer,
-       FullTabModeIE_ChromeFrameUnloadEventTest) {
+       DISABLED_FullTabModeIE_ChromeFrameUnloadEventTest) {
   chrome_frame_test::TimedMsgLoop loop;
   CComObjectStackEx<MockWebBrowserEventSink> mock;
   ::testing::InSequence sequence;   // Everything in sequence
