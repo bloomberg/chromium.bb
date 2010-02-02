@@ -7,6 +7,8 @@
 #include <gdk/gdk.h>
 #include <signal.h>
 #include <sys/types.h>
+#include <X11/cursorfont.h>
+#include <X11/Xcursor/Xcursor.h>
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
@@ -16,6 +18,7 @@
 #include "chrome/browser/chromeos/image_background.h"
 #include "chrome/browser/chromeos/login_library.h"
 #include "chrome/browser/views/browser_dialogs.h"
+#include "chrome/common/x11_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/window/non_client_view.h"
@@ -25,10 +28,6 @@
 using views::Background;
 using views::View;
 using views::Widget;
-
-// There's a GdkBlankCursor defined in a later version of gdk.
-// The version in cros is late enough to support it.
-#define BlankCursor static_cast<GdkCursorType>(-2)
 
 namespace browser {
 
@@ -74,9 +73,14 @@ class LoginWizardWindow : public views::WindowGtk {
     GdkWindow* gdk_window =
         GTK_WIDGET(login_wizard_window->GetNativeWindow())->window;
     gdk_window_set_back_pixmap(gdk_window, NULL, false);
-    // Hide the cursor initially.
-    // TODO(nkostylev): Fix cursor setting.
-    //gdk_window_set_cursor(gdk_window, gdk_cursor_new(BlankCursor));
+
+    // This gets rid of the ugly X default cursor.
+    Display* display = x11_util::GetXDisplay();
+    Cursor cursor = XCreateFontCursor(display, XC_left_ptr);
+    XID root_window = x11_util::GetX11RootWindow();
+    XSetWindowAttributes attr;
+    attr.cursor = cursor;
+    XChangeWindowAttributes(display, root_window, CWCursor, &attr);
     return login_wizard_window;
   }
 
