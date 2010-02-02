@@ -8,15 +8,18 @@
 #ifndef GPU_COMMAND_BUFFER_SERVICE_GL_UTILS_H_
 #define GPU_COMMAND_BUFFER_SERVICE_GL_UTILS_H_
 
+#include <build/build_config.h>
+
 #if defined(UNIT_TEST)
 #include "gpu/command_buffer/service/gl_mock.h"
 #else
 #include <GL/glew.h>
 #if defined(OS_WIN)
 #include <GL/wglew.h>
-#endif
-#include <build/build_config.h>
-#endif
+#elif defined(OS_LINUX)
+#include <GL/glxew.h>
+#endif  // OS_WIN
+#endif  // UNIT_TEST
 
 #define GL_GLEXT_PROTOTYPES 1
 

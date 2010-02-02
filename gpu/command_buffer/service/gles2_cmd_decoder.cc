@@ -17,7 +17,8 @@
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
-#if defined(OS_LINUX)
+#if defined(OS_LINUX) && !defined(UNIT_TEST)
+// XWindowWrapper is stubbed out for unit-tests.
 #include "gpu/command_buffer/service/x_utils.h"
 #endif
 
