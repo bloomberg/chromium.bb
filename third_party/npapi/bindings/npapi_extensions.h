@@ -277,7 +277,7 @@ typedef enum _NPDeviceContext3DError {
   NPDeviceContext3DError_OutOfBounds,
   NPDeviceContext3DError_UnknownCommand,
   NPDeviceContext3DError_InvalidArguments,
-  NPDeviceContext3DError_GenericError,
+  NPDeviceContext3DError_GenericError
 } NPDeviceContext3DError;
 
 typedef struct _NPDeviceContext3D
