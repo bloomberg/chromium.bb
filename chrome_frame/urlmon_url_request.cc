@@ -397,6 +397,18 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
   if (state == Status::WORKING) {
     status_.set_result(result);
 
+    // Special case. If the last request was a redirect and the current OS
+    // error value is E_ACCESSDENIED, that means an unsafe redirect was
+    // attempted. In that case, correct the OS error value to be the more
+    // specific ERR_UNSAFE_REDIRECT error value.
+    if (result == E_ACCESSDENIED) {
+      int http_code = GetHttpResponseStatus();
+      if (300 <= http_code && http_code < 400) {
+        status_.set_result(URLRequestStatus::FAILED,
+                          net::ERR_UNSAFE_REDIRECT);
+      }
+    }
+
     // The code below seems easy but it is not. :)
     // we cannot have pending read and data_avail at the same time.
     DCHECK(!(pending_read_size_ > 0 && cached_data_.is_valid()));
@@ -1033,9 +1045,9 @@ void UrlmonUrlRequestManager::StartRequest(int request_id,
     }
   }
 
-  worker_thread_.message_loop()->PostTask(FROM_HERE,
-      NewRunnableMethod(this, &UrlmonUrlRequestManager::StartRequestWorker,
-                        request_id, request_info, use_moniker));
+  ExecuteInWorkerThread(FROM_HERE, NewRunnableMethod(this,
+      &UrlmonUrlRequestManager::StartRequestWorker,
+      request_id, request_info, use_moniker));
 }
 
 void UrlmonUrlRequestManager::StartRequestWorker(int request_id,
@@ -1079,7 +1091,7 @@ void UrlmonUrlRequestManager::ReadRequest(int request_id, int bytes_to_read) {
   if (stopping_)
     return;
 
-  worker_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
+  ExecuteInWorkerThread(FROM_HERE, NewRunnableMethod(this,
       &UrlmonUrlRequestManager::ReadRequestWorker, request_id, bytes_to_read));
 }
 
@@ -1097,7 +1109,7 @@ void UrlmonUrlRequestManager::EndRequest(int request_id) {
   if (stopping_)
     return;
 
-  worker_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
+  ExecuteInWorkerThread(FROM_HERE, NewRunnableMethod(this,
       &UrlmonUrlRequestManager::EndRequestWorker, request_id));
 }
 
@@ -1118,7 +1130,7 @@ void UrlmonUrlRequestManager::StopAll() {
   if (!worker_thread_.IsRunning())
     return;
 
-  worker_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
+  ExecuteInWorkerThread(FROM_HERE, NewRunnableMethod(this,
       &UrlmonUrlRequestManager::StopAllWorker));
 
   // Note we may not call worker_thread_.Stop() here. The MessageLoop's quit
@@ -1130,7 +1142,10 @@ void UrlmonUrlRequestManager::StopAll() {
   // The problem is that while waiting for OnStopBinding(), Quit Task may be
   // picked up and executed, thus exiting the thread.
   map_empty_.Wait();
+
+  worker_thread_access_.Acquire();
   worker_thread_.Stop();
+  worker_thread_access_.Release();
   DCHECK_EQ(0, UrlmonUrlRequest::instance_count_);
 }
 
@@ -1209,10 +1224,10 @@ void UrlmonUrlRequestManager::StealMonikerFromRequest(int request_id,
     return;
 
   base::WaitableEvent done(true, false);
-  worker_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
+  bool posted = ExecuteInWorkerThread(FROM_HERE, NewRunnableMethod(this,
       &UrlmonUrlRequestManager::StealMonikerFromRequestWorker,
       request_id, moniker, &done));
-
+  DCHECK_EQ(true, posted);
   // Wait until moniker is grabbed from a request in the worker thread.
   done.Wait();
 }
@@ -1228,4 +1243,16 @@ void UrlmonUrlRequestManager::StealMonikerFromRequestWorker(int request_id,
   }
 
   done->Signal();
+}
+
+bool UrlmonUrlRequestManager::ExecuteInWorkerThread(
+    const tracked_objects::Location& from_here, Task* task) {
+  AutoLock lock(worker_thread_access_);
+  if (worker_thread_.IsRunning()) {
+    worker_thread_.message_loop()->PostTask(from_here, task);
+    return true;
+  }
+
+  delete task;
+  return false;
 }

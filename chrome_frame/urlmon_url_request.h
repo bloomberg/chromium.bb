@@ -10,6 +10,7 @@
 #include <atlcom.h>
 #include <string>
 
+#include "base/lock.h"
 #include "base/scoped_comptr_win.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
@@ -60,6 +61,8 @@ class UrlmonUrlRequestManager :
   virtual void OnReadComplete(int request_id, const void* buffer, int len);
   virtual void OnResponseEnd(int request_id, const URLRequestStatus& status);
 
+  bool ExecuteInWorkerThread(const tracked_objects::Location& from_here,
+                             Task* task);
   // Methods executed in worker thread.
   void StartRequestWorker(int request_id,
                           const IPC::AutomationURLRequest& request_info,
@@ -79,6 +82,7 @@ class UrlmonUrlRequestManager :
   STAThread worker_thread_;
   base::WaitableEvent map_empty_;
   bool stopping_;
+  Lock worker_thread_access_;
 };
 
 #endif  // CHROME_FRAME_URLMON_URL_REQUEST_H_
