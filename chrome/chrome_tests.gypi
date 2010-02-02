@@ -874,6 +874,7 @@
         'test/test_notification_tracker.h',
         'test/v8_unit_test.cc',
         'test/v8_unit_test.h',
+        'tools/convert_dict/convert_dict_unittest.cc',
         '../third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
       ],
       'conditions': [
@@ -952,6 +953,7 @@
             'browser/views/bookmark_context_menu_test.cc',
             'browser/gtk/go_button_gtk_unittest.cc',
             'browser/gtk/tabs/tab_renderer_gtk_unittest.cc',
+            'tools/convert_dict/convert_dict_unittest.cc',
             '../third_party/hunspell/google/hunspell_tests.cc',
           ],
           # TODO(mark): We really want this for all non-static library targets,

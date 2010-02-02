@@ -106,6 +106,13 @@ bool PopulateWordSet(WordSet* word_set, FILE* file, AffReader* aff_reader,
         affix_index = aff_reader->GetAFIndexForAFString(split[1]);
     }
 
+    // Discard the morphological description if it is attached to the first
+    // token. (It is attached to the first token if a word doesn't have affix
+    // rules.)
+    size_t word_tab_offset = utf8word.find('\t');
+    if (word_tab_offset != std::string::npos)
+      utf8word = utf8word.substr(0, word_tab_offset);
+
     WordSet::iterator found = word_set->find(utf8word);
     if (found == word_set->end()) {
       std::set<int> affix_vector;

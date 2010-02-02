@@ -20,10 +20,10 @@ void TrimLine(std::string* line) {
       static_cast<unsigned char>((*line)[2]) == 0xbf)
     *line = line->substr(3);
 
-  std::wstring line_input_wide = UTF8ToWide(*line);
-  std::wstring line_output_wide;
-  TrimWhitespace(line_input_wide, TRIM_ALL, &line_output_wide);
-  *line = WideToUTF8(line_output_wide);
+  // Treat this text as an ASCII text and trim whitespace characters as
+  // hunspell does. The returned text is to be converted into UTF-8 text with
+  // the encoding defined in an affix file.
+  TrimWhitespace(*line, TRIM_ALL, line);
 }
 
 std::string ReadLine(FILE* file) {

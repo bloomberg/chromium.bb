@@ -211,6 +211,23 @@ void AffReader::AddAffix(std::string* rule) {
         }
         part = rule->substr(part_start);  // From here to end.
 
+        if (part.find('-') != std::string::npos) {
+          // This rule has a morph rule used by old Hungarian dictionaries.
+          // When a line has a morph rule, its format becomes as listed below.
+          //   AFX D   0 d e - M
+          // To make hunspell work more happily, replace this morph rule with
+          // a compound flag as listed below.
+          //   AFX D   0 d/M e
+          std::vector<std::string> tokens;
+          SplitString(part, ' ', &tokens);
+          if (tokens.size() >= 5) {
+            part = StringPrintf("%s %s/%s %s",
+                                tokens[0].c_str(),
+                                tokens[1].c_str(), tokens[4].c_str(),
+                                tokens[2].c_str());
+          }
+        }
+
         size_t slash_index = part.find('/');
         if (slash_index != std::string::npos && !has_indexed_affixes()) {
           // This can also have a rule string associated with it following a
