@@ -878,11 +878,6 @@ BUG31363 DEBUG WIN LINUX MAC : platform/chromium/fast/dom/interval.html = TEXT P
 // -----------------------------------------------------------------
 
 // These are regressions from 1.0, but deemed DEFERable for 2.0.
-BUG8635 LINUX WIN : svg/custom/pattern-y-offset.svg = FAIL
-BUG8635 WIN : svg/batik/paints/patternRegions.svg = IMAGE
-BUG8635 LINUX : svg/batik/paints/patternRegions.svg = IMAGE+TEXT
-BUG8635 LINUX WIN RELEASE : svg/custom/pattern-cycle-detection.svg = FAIL
-BUG8635 LINUX WIN DEBUG : svg/custom/pattern-cycle-detection.svg = FAIL
 
 BUG8763 LINUX WIN MAC : svg/custom/use-on-g-containing-foreignObject-and-image.svg = IMAGE
 
@@ -903,16 +898,8 @@ BUG10284 MAC : svg/custom/path-bad-data.svg = FAIL
 // Merge 39744:39913? - regressions
 BUG10286 LINUX : svg/W3C-SVG-1.1/animate-elem-02-t.svg = FAIL
 
-BUG8635 WIN DEBUG : svg/W3C-SVG-1.1/coords-units-01-b.svg = IMAGE+TEXT
-BUG8635 SLOW WIN RELEASE : svg/W3C-SVG-1.1/coords-units-01-b.svg = IMAGE+TEXT
-BUG8635 LINUX : svg/W3C-SVG-1.1/coords-units-01-b.svg = IMAGE+TEXT
-
 
 // Bug in Skia, see https://bugs.webkit.org/show_bug.cgi?id=24534 .
-BUG8635 WIN LINUX : svg/W3C-SVG-1.1/pservers-grad-06-b.svg = FAIL
-BUG8635 WIN LINUX : svg/batik/paints/patternRegionA.svg = FAIL
-BUG8635 WIN LINUX : svg/W3C-SVG-1.1/pservers-pattern-01-b.svg = FAIL
-BUG8635 WIN LINUX : svg/custom/pattern-with-transformation.svg = FAIL
 
 // Text fails very rarely, 1/200 runs or fewer.
 BUG29737 LINUX DEBUG : svg/W3C-SVG-1.1/filters-light-01-f.svg = TEXT PASS
@@ -2108,7 +2095,7 @@ BUG9786 : http/tests/security/cross-frame-access-document-direct.html = TIMEOUT
 BUG10479 MAC : svg/hixie/perf/001.xml = FAIL
 BUG10479 MAC : svg/hixie/perf/002.xml = FAIL
 
-BUG9798 SLOW WIN DEBUG : fast/dom/Window/slow_unload_handler.html = PASS
+BUG9798 SLOW WIN DEBUG : fast/dom/Window/slow-unload-handler.html = PASS
 BUG9798 LINUX DEBUG SLOW : fast/frames/calculate-round.html = CRASH PASS
 
 // Was flaky. Became a consistent failure.
@@ -2930,7 +2917,3 @@ BUG33997 MAC : svg/custom/gradient-stop-corner-cases.svg = IMAGE
 BUG34221 : fast/js/math.html = TEXT
 BUG34219 : printing/page-break-always.html = TEXT
 BUG34219 : printing/pageNumerForElementById.html = TEXT
-BUG8635 WIN LINUX : svg/batik/filters/feTile.svg = IMAGE
-BUG8635 WIN LINUX : svg/custom/stroked-pattern.svg = IMAGE
-BUG8635 WIN LINUX : svg/filters/feTile.svg = IMAGE
-BUG8635 WIN LINUX : svg/filters/subRegion-in-userSpace.svg = IMAGE
