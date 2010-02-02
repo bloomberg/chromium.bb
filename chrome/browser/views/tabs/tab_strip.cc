@@ -52,7 +52,6 @@ using views::DropTargetEvent;
 static const int kDefaultAnimationDurationMs = 200;
 static const int kResizeLayoutAnimationDurationMs = 200;
 static const int kReorderAnimationDurationMs = 200;
-static const int kPinnedTabAnimationDurationMs = 200;
 
 static const int kNewTabButtonHOffset = -5;
 static const int kNewTabButtonVOffset = 5;
@@ -129,8 +128,6 @@ class TabStrip::TabAnimation : public AnimationDelegate {
     REMOVE,
     MOVE,
     RESIZE,
-    PIN,
-    PIN_MOVE
   };
 
   TabAnimation(TabStrip* tabstrip, Type type)
@@ -556,164 +553,6 @@ class TabStrip::ResizeLayoutAnimation : public TabStrip::TabAnimation {
   }
 
   DISALLOW_COPY_AND_ASSIGN(ResizeLayoutAnimation);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-
-// Handles a tabs pinned state changing while the tab does not change position
-// in the model.
-class TabStrip::PinnedTabAnimation : public TabStrip::TabAnimation {
- public:
-  explicit PinnedTabAnimation(TabStrip* tabstrip, int index)
-      : TabAnimation(tabstrip, PIN),
-        index_(index) {
-    int tab_count = tabstrip->GetTabCount();
-    int start_pinned_count = tabstrip->GetPinnedTabCount();
-    int end_pinned_count = start_pinned_count;
-    if (tabstrip->GetTabAt(index)->pinned())
-      start_pinned_count--;
-    else
-      start_pinned_count++;
-    tabstrip_->GetTabAt(index)->set_animating_pinned_change(true);
-    GenerateStartAndEndWidths(tab_count, tab_count, start_pinned_count,
-                              end_pinned_count);
-  }
-
- protected:
-  // Overridden from TabStrip::TabAnimation:
-  virtual int GetDuration() const {
-    return kPinnedTabAnimationDurationMs;
-  }
-
-  virtual double GetWidthForTab(int index) const {
-    Tab* tab = tabstrip_->GetTabAt(index);
-
-    if (index == index_) {
-      if (tab->pinned()) {
-        return AnimationPosition(
-            start_selected_width_,
-            static_cast<double>(Tab::GetPinnedWidth()));
-      } else {
-        return AnimationPosition(static_cast<double>(Tab::GetPinnedWidth()),
-                                 end_selected_width_);
-      }
-    } else if (tab->pinned()) {
-      return Tab::GetPinnedWidth();
-    }
-
-    if (tab->IsSelected())
-      return AnimationPosition(start_selected_width_, end_selected_width_);
-
-    return AnimationPosition(start_unselected_width_, end_unselected_width_);
-  }
-
- private:
-  // Index of the tab whose pinned state changed.
-  int index_;
-
-  DISALLOW_COPY_AND_ASSIGN(PinnedTabAnimation);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-
-// Handles the animation when a tabs pinned state changes and the tab moves as a
-// result.
-class TabStrip::PinAndMoveAnimation : public TabStrip::TabAnimation {
- public:
-  explicit PinAndMoveAnimation(TabStrip* tabstrip,
-                               int from_index,
-                               int to_index,
-                               const gfx::Rect& start_bounds)
-      : TabAnimation(tabstrip, PIN_MOVE),
-        tab_(tabstrip->GetTabAt(to_index)),
-        start_bounds_(start_bounds),
-        from_index_(from_index),
-        to_index_(to_index) {
-    int tab_count = tabstrip->GetTabCount();
-    int start_pinned_count = tabstrip->GetPinnedTabCount();
-    int end_pinned_count = start_pinned_count;
-    if (tabstrip->GetTabAt(to_index)->pinned())
-      start_pinned_count--;
-    else
-      start_pinned_count++;
-    GenerateStartAndEndWidths(tab_count, tab_count, start_pinned_count,
-                              end_pinned_count);
-    target_bounds_ = tabstrip->GetIdealBounds(to_index);
-    tab_->set_animating_pinned_change(true);
-  }
-
-  // Overridden from AnimationDelegate:
-  virtual void AnimationProgressed(const Animation* animation) {
-    // Do the normal layout.
-    TabAnimation::AnimationProgressed(animation);
-
-    // Then special case the position of the tab being moved.
-    int x = AnimationPosition(start_bounds_.x(), target_bounds_.x());
-    int width = AnimationPosition(start_bounds_.width(),
-                                  target_bounds_.width());
-    gfx::Rect tab_bounds(x, start_bounds_.y(), width,
-                         start_bounds_.height());
-    tab_->SetBounds(tab_bounds);
-  }
-
-  virtual void AnimationEnded(const Animation* animation) {
-    tabstrip_->needs_resize_layout_ = false;
-    TabStrip::TabAnimation::AnimationEnded(animation);
-  }
-
-  virtual double GetGapWidth(int index) {
-    if (to_index_ < from_index_) {
-      // The tab was pinned.
-      if (index == to_index_) {
-        double current_size = AnimationPosition(0, target_bounds_.width());
-        if (current_size < -kTabHOffset)
-          return -(current_size + kTabHOffset);
-      } else if (index == from_index_ + 1) {
-        return AnimationPosition(start_bounds_.width(), 0);
-      }
-    } else {
-      // The tab was unpinned.
-      if (index == from_index_) {
-        return AnimationPosition(Tab::GetPinnedWidth() + kTabHOffset, 0);
-      }
-    }
-    return 0;
-  }
-
- protected:
-  // Overridden from TabStrip::TabAnimation:
-  virtual int GetDuration() const { return kReorderAnimationDurationMs; }
-
-  virtual double GetWidthForTab(int index) const {
-    Tab* tab = tabstrip_->GetTabAt(index);
-
-    if (index == to_index_)
-      return AnimationPosition(0, target_bounds_.width());
-
-    if (tab->pinned())
-      return Tab::GetPinnedWidth();
-
-    if (tab->IsSelected())
-      return AnimationPosition(start_selected_width_, end_selected_width_);
-
-    return AnimationPosition(start_unselected_width_, end_unselected_width_);
-  }
-
- private:
-  // The tab being moved.
-  Tab* tab_;
-
-  // Initial bounds of tab_.
-  gfx::Rect start_bounds_;
-
-  // Target bounds.
-  gfx::Rect target_bounds_;
-
-  // Start and end indices of the tab.
-  int from_index_;
-  int to_index_;
-
-  DISALLOW_COPY_AND_ASSIGN(PinAndMoveAnimation);
 };
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1158,8 +997,7 @@ void TabStrip::TabSelectedAt(TabContents* old_contents,
     GetTabAt(old_index)->StopPinnedTabTitleAnimation();
 }
 
-void TabStrip::TabMoved(TabContents* contents, int from_index, int to_index,
-                        bool pinned_state_changed) {
+void TabStrip::TabMoved(TabContents* contents, int from_index, int to_index) {
   gfx::Rect start_bounds = GetIdealBounds(from_index);
   Tab* tab = GetTabAt(from_index);
   tab_data_.erase(tab_data_.begin() + from_index);
@@ -1169,12 +1007,8 @@ void TabStrip::TabMoved(TabContents* contents, int from_index, int to_index,
   tab_data_.insert(tab_data_.begin() + to_index, data);
   if (tab->phantom() != model_->IsPhantomTab(to_index))
     tab->set_phantom(!tab->phantom());
-  if (pinned_state_changed) {
-    StartPinAndMoveTabAnimation(from_index, to_index, start_bounds);
-  } else {
-    GenerateIdealBounds();
-    StartMoveTabAnimation(from_index, to_index);
-  }
+  GenerateIdealBounds();
+  StartMoveTabAnimation(from_index, to_index);
 }
 
 void TabStrip::TabChangedAt(TabContents* contents, int index,
@@ -1201,7 +1035,6 @@ void TabStrip::TabReplacedAt(TabContents* old_contents,
 
 void TabStrip::TabPinnedStateChanged(TabContents* contents, int index) {
   GetTabAt(index)->set_pinned(model_->IsTabPinned(index));
-  StartPinnedTabAnimation(index);
 }
 
 void TabStrip::TabBlockedStateChanged(TabContents* contents, int index) {
@@ -1891,23 +1724,6 @@ void TabStrip::StartMoveTabAnimation(int from_index, int to_index) {
   if (active_animation_.get())
     active_animation_->Stop();
   active_animation_.reset(new MoveTabAnimation(this, from_index, to_index));
-  active_animation_->Start();
-}
-
-void TabStrip::StartPinnedTabAnimation(int index) {
-  if (active_animation_.get())
-    active_animation_->Stop();
-  active_animation_.reset(new PinnedTabAnimation(this, index));
-  active_animation_->Start();
-}
-
-void TabStrip::StartPinAndMoveTabAnimation(int from_index,
-                                           int to_index,
-                                           const gfx::Rect& start_bounds) {
-  if (active_animation_.get())
-    active_animation_->Stop();
-  active_animation_.reset(
-      new PinAndMoveAnimation(this, from_index, to_index, start_bounds));
   active_animation_->Start();
 }
 

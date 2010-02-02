@@ -122,8 +122,7 @@ void CompactLocationBarHost::TabSelectedAt(TabContents* old_contents,
 
 void CompactLocationBarHost::TabMoved(TabContents* contents,
                                       int from_index,
-                                      int to_index,
-                                      bool pinned_state_changed) {
+                                      int to_index) {
   Update(to_index, false);
 }
 

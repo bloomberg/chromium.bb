@@ -59,21 +59,21 @@ class TabStripModelObserver {
   // (selected).
   virtual void TabInsertedAt(TabContents* contents,
                              int index,
-                             bool foreground) { }
+                             bool foreground) {}
 
   // The specified TabContents at |index| is being closed (and eventually
   // destroyed).
-  virtual void TabClosingAt(TabContents* contents, int index) { }
+  virtual void TabClosingAt(TabContents* contents, int index) {}
 
   // The specified TabContents at |index| is being detached, perhaps to be
   // inserted in another TabStripModel. The implementer should take whatever
   // action is necessary to deal with the TabContents no longer being present.
-  virtual void TabDetachedAt(TabContents* contents, int index) { }
+  virtual void TabDetachedAt(TabContents* contents, int index) {}
 
   // The selected TabContents is about to change from |old_contents| at |index|.
   // This gives observers a chance to prepare for an impending switch before it
   // happens.
-  virtual void TabDeselectedAt(TabContents* contents, int index) { }
+  virtual void TabDeselectedAt(TabContents* contents, int index) {}
 
   // The selected TabContents changed from |old_contents| to |new_contents| at
   // |index|. |user_gesture| specifies whether or not this was done by a user
@@ -82,14 +82,12 @@ class TabStripModelObserver {
   virtual void TabSelectedAt(TabContents* old_contents,
                              TabContents* new_contents,
                              int index,
-                             bool user_gesture) { }
+                             bool user_gesture) {}
 
-  // The specified TabContents at |from_index| was moved to |to_index|. If
-  // the pinned state of the tab is changing |pinned_state_changed| is true.
+  // The specified TabContents at |from_index| was moved to |to_index|.
   virtual void TabMoved(TabContents* contents,
                         int from_index,
-                        int to_index,
-                        bool pinned_state_changed) { }
+                        int to_index) {}
 
   // The specified TabContents at |index| changed in some way. |contents| may
   // be an entirely different object and the old value is no longer available
@@ -106,15 +104,12 @@ class TabStripModelObserver {
                              TabContents* new_contents, int index) {}
 
   // Invoked when the pinned state of a tab changes.
-  // NOTE: this is only invoked if the tab doesn't move as a result of its
-  // pinned state changing. If the tab moves as a result, the observer is
-  // notified by way of the TabMoved method with |pinned_state_changed| true.
-  virtual void TabPinnedStateChanged(TabContents* contents, int index) { }
+  virtual void TabPinnedStateChanged(TabContents* contents, int index) {}
 
   // Invoked when the blocked state of a tab changes.
   // NOTE: This is invoked when a tab becomes blocked/unblocked by a tab modal
   // window.
-  virtual void TabBlockedStateChanged(TabContents* contents, int index) { }
+  virtual void TabBlockedStateChanged(TabContents* contents, int index) {}
 
   // The TabStripModel now no longer has any phantom tabs. The implementer may
   // use this as a trigger to try and close the window containing the
@@ -234,22 +229,20 @@ class TabStripModelDelegate {
 //  tasks like adding new Tabs from just a URL, etc.
 //
 // Each tab may be any one of the following states:
-// . Pinned. The view typically renders pinned tabs differently. The model makes
-//   sure all pinned tabs are organized at the beginning of the tabstrip.
-//   Inserting a tab between pinned tabs implicitly makes the inserted tab
-//   pinned. Similarly moving a tab may pin or unpin the tab, again enforcing
-//   that all pinned tabs occur at the beginning of the tabstrip. Lastly,
-//   changing the pinned state of a tab moves the tab to be grouped with the
-//   pinned or unpinned tabs. For example, if the first two tabs are pinned, and
-//   the tenth tab is pinned, it is moved to become the third tab.
-// . App. An app tab corresponds to an app extension.
-// . Phantom. Only pinned app tabs may be made phantom (or if
-//   browser_defaults::kPinnedTabsActLikeApps is true then any pinned tab may be
-//   made phantom). When a tab that can be made phantom is closed the renderer
-//   is shutdown, a new TabContents/NavigationController is created that has
-//   not yet loaded the renderer and observers are notified via the
-//   TabReplacedAt method. When a phantom tab is selected the renderer is
-//   loaded and the tab is no longer phantom.
+// . App. Corresponds to an extension that wants an app tab. App tabs are
+//   rendered differently than non-app tabs. The model makes sure all app tabs
+//   are at the beginning of the tab strip. Requests to insert a non-app tab
+//   before app tabs or an app tab after the app tabs is ignored (the UI
+//   disallows this). Similarly requests to move an app tab to be with non-app
+//   tabs is ignored.
+// . Pinned. Only app tabs can be pinned. A pinned tab is made phantom when
+///  closed.
+// . Phantom. Only app pinned tabs may be made phantom. When a tab that can be
+//   made phantom is closed the renderer is shutdown, a new
+//   TabContents/NavigationController is created that has not yet loaded the
+//   renderer and observers are notified via the TabReplacedAt method. When a
+//   phantom tab is selected the renderer is loaded and the tab is no longer
+//   phantom.
 //   Phantom tabs do not prevent the tabstrip from closing, for example if the
 //   tabstrip has one phantom and one non-phantom tab and the non-phantom tab is
 //   closed, then the tabstrip/browser are closed.
@@ -326,8 +319,8 @@ class TabStripModel : public NotificationObserver {
 
   // Adds the specified TabContents in the specified location. If
   // |inherit_group| is true, the new contents is linked to the current tab's
-  // group. If there are pinned tabs at or before |index|, then the newly
-  // inserted tab is pinned.
+  // group. This adjusts the index such that all app tabs occur before non-app
+  // tabs.
   void InsertTabContentsAt(int index,
                            TabContents* contents,
                            bool foreground,
@@ -369,7 +362,8 @@ class TabStripModel : public NotificationObserver {
   // If |select_after_move| is false, whatever tab was selected before the move
   // will still be selected, but it's index may have incremented or decremented
   // one slot.
-  // See class description for how pinning is effected by this.
+  // NOTE: this does nothing if the move would result in app tabs and non-app
+  // tabs mixing.
   void MoveTabContentsAt(int index, int to_position, bool select_after_move);
 
   // Returns the currently selected TabContents, or NULL if there is none.
@@ -456,25 +450,24 @@ class TabStripModel : public NotificationObserver {
   void SetTabPinned(int index, bool pinned);
 
   // Returns true if the tab at |index| is pinned.
+  // See description above class for details on pinned tabs.
   bool IsTabPinned(int index) const;
 
   // Is the tab at |index| an app?
-  // See description above class for details on this.
-  // This is currently only true if browser_defaults::kPinnedTabsActLikeApps is
-  // true and the tab is pinned.
+  // See description above class for details on app tabs.
   bool IsAppTab(int index) const;
 
   // Returns true if the tab is a phantom tab. A phantom tab is one where the
   // renderer has not been loaded.
-  // See description above class for details on this.
+  // See description above class for details on phantom tabs.
   bool IsPhantomTab(int index) const;
 
   // Returns true if the tab at |index| is blocked by a tab modal dialog.
   bool IsTabBlocked(int index) const;
 
-  // Returns the index of the first tab that is not pinned. This returns
-  // |count()| if all of the tabs are pinned, and 0 if no tabs are pinned.
-  int IndexOfFirstNonPinnedTab() const;
+  // Returns the index of the first tab that is not an app. This returns
+  // |count()| if all of the tabs are apps, and 0 if none of the tabs are apps.
+  int IndexOfFirstNonAppTab() const;
 
   // Command level API /////////////////////////////////////////////////////////
 
@@ -575,10 +568,6 @@ class TabStripModel : public NotificationObserver {
   bool InternalCloseTabs(std::vector<int> indices,
                          bool create_historical_tabs);
 
-  void MoveTabContentsAtImpl(int index, int to_position,
-                             bool select_after_move,
-                             bool update_pinned_state);
-
   TabContents* GetContentsAt(int index) const;
 
   // The actual implementation of SelectTabContentsAt. Takes the previously
@@ -669,6 +658,7 @@ class TabStripModel : public NotificationObserver {
     bool reset_group_on_select;
 
     // Is the tab pinned?
+    // TODO(sky): decide if we really want this, or call it phantomable.
     bool pinned;
 
     // Is the tab interaction blocked by a modal dialog?

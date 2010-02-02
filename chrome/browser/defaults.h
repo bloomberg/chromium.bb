@@ -60,9 +60,6 @@ extern const bool kDownloadPageHasShowInFolder;
 // Should the tab strip be sized to the top of the tab strip?
 extern const bool kSizeTabButtonToTopOfTabStrip;
 
-// Should pinned tabs be treated as though they are apps as well?
-extern const bool kPinnedTabsActLikeApps;
-
 // Whether we should bootstrap the sync authentication using cookies instead of
 // asking the user for credentials.
 extern const bool kBootstrapSyncAuthentication;

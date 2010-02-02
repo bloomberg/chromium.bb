@@ -33,7 +33,6 @@ const int kDefaultAnimationDurationMs = 100;
 const int kResizeLayoutAnimationDurationMs = 166;
 const int kReorderAnimationDurationMs = 166;
 const int kAnimateToBoundsDurationMs = 150;
-const int kPinnedTabAnimationDurationMs = 166;
 
 const int kNewTabButtonHOffset = -5;
 const int kNewTabButtonVOffset = 5;
@@ -109,8 +108,6 @@ class TabStripGtk::TabAnimation : public AnimationDelegate {
     REMOVE,
     MOVE,
     RESIZE,
-    PIN,
-    PIN_MOVE
   };
 
   TabAnimation(TabStripGtk* tabstrip, Type type)
@@ -517,164 +514,6 @@ class ResizeLayoutAnimation : public TabStripGtk::TabAnimation {
 };
 
 ////////////////////////////////////////////////////////////////////////////////
-
-// Handles a tabs pinned state changing while the tab does not change position
-// in the model.
-class PinnedTabAnimation : public TabStripGtk::TabAnimation {
- public:
-  explicit PinnedTabAnimation(TabStripGtk* tabstrip, int index)
-      : TabAnimation(tabstrip, PIN),
-        index_(index) {
-    int tab_count = tabstrip->GetTabCount();
-    int start_pinned_count = tabstrip->GetPinnedTabCount();
-    int end_pinned_count = start_pinned_count;
-    if (tabstrip->GetTabAt(index)->is_pinned())
-      start_pinned_count--;
-    else
-      start_pinned_count++;
-    tabstrip_->GetTabAt(index)->set_animating_pinned_change(true);
-    GenerateStartAndEndWidths(tab_count, tab_count, start_pinned_count,
-                              end_pinned_count);
-  }
-
- protected:
-  // Overridden from TabStripGtk::TabAnimation:
-  virtual int GetDuration() const {
-    return kPinnedTabAnimationDurationMs;
-  }
-
-  virtual double GetWidthForTab(int index) const {
-    TabGtk* tab = tabstrip_->GetTabAt(index);
-
-    if (index == index_) {
-      if (tab->is_pinned()) {
-        return AnimationPosition(
-            start_selected_width_,
-            static_cast<double>(TabGtk::GetPinnedWidth()));
-      } else {
-        return AnimationPosition(static_cast<double>(TabGtk::GetPinnedWidth()),
-                                 end_selected_width_);
-      }
-    } else if (tab->is_pinned()) {
-      return TabGtk::GetPinnedWidth();
-    }
-
-    if (tab->IsSelected())
-      return AnimationPosition(start_selected_width_, end_selected_width_);
-
-    return AnimationPosition(start_unselected_width_, end_unselected_width_);
-  }
-
- private:
-  // Index of the tab whose pinned state changed.
-  int index_;
-
-  DISALLOW_COPY_AND_ASSIGN(PinnedTabAnimation);
-};
-
-////////////////////////////////////////////////////////////////////////////////
-
-// Handles the animation when a tabs pinned state changes and the tab moves as a
-// result.
-class PinAndMoveAnimation : public TabStripGtk::TabAnimation {
- public:
-  explicit PinAndMoveAnimation(TabStripGtk* tabstrip,
-                               int from_index,
-                               int to_index,
-                               const gfx::Rect& start_bounds)
-      : TabAnimation(tabstrip, PIN_MOVE),
-        tab_(tabstrip->GetTabAt(to_index)),
-        start_bounds_(start_bounds),
-        from_index_(from_index),
-        to_index_(to_index) {
-    int tab_count = tabstrip->GetTabCount();
-    int start_pinned_count = tabstrip->GetPinnedTabCount();
-    int end_pinned_count = start_pinned_count;
-    if (tabstrip->GetTabAt(to_index)->is_pinned())
-      start_pinned_count--;
-    else
-      start_pinned_count++;
-    GenerateStartAndEndWidths(tab_count, tab_count, start_pinned_count,
-                              end_pinned_count);
-    target_bounds_ = tabstrip->GetIdealBounds(to_index);
-    tab_->set_animating_pinned_change(true);
-  }
-
-  // Overridden from AnimationDelegate:
-  virtual void AnimationProgressed(const Animation* animation) {
-    // Do the normal layout.
-    TabAnimation::AnimationProgressed(animation);
-
-    // Then special case the position of the tab being moved.
-    int x = AnimationPosition(start_bounds_.x(), target_bounds_.x());
-    int width = AnimationPosition(start_bounds_.width(),
-                                  target_bounds_.width());
-    gfx::Rect tab_bounds(x, start_bounds_.y(), width,
-                         start_bounds_.height());
-    tabstrip_->SetTabBounds(tab_, tab_bounds);
-  }
-
-  virtual void AnimationEnded(const Animation* animation) {
-    tabstrip_->needs_resize_layout_ = false;
-    TabStripGtk::TabAnimation::AnimationEnded(animation);
-  }
-
-  virtual double GetGapWidth(int index) {
-    if (to_index_ < from_index_) {
-      // The tab was pinned.
-      if (index == to_index_) {
-        double current_size = AnimationPosition(0, target_bounds_.width());
-        if (current_size < -kTabHOffset)
-          return -(current_size + kTabHOffset);
-      } else if (index == from_index_ + 1) {
-        return AnimationPosition(start_bounds_.width(), 0);
-      }
-    } else {
-      // The tab was unpinned.
-      if (index == from_index_) {
-        return AnimationPosition(TabGtk::GetPinnedWidth() + kTabHOffset, 0);
-      }
-    }
-    return 0;
-  }
-
- protected:
-  // Overridden from TabStripGtk::TabAnimation:
-  virtual int GetDuration() const { return kReorderAnimationDurationMs; }
-
-  virtual double GetWidthForTab(int index) const {
-    TabGtk* tab = tabstrip_->GetTabAt(index);
-
-    if (index == to_index_)
-      return AnimationPosition(0, target_bounds_.width());
-
-    if (tab->is_pinned())
-      return TabGtk::GetPinnedWidth();
-
-    if (tab->IsSelected())
-      return AnimationPosition(start_selected_width_, end_selected_width_);
-
-    return AnimationPosition(start_unselected_width_, end_unselected_width_);
-  }
-
- private:
-  // The tab being moved.
-  TabGtk* tab_;
-
-  // Initial bounds of tab_.
-  gfx::Rect start_bounds_;
-
-  // Target bounds.
-  gfx::Rect target_bounds_;
-
-  // Start and end indices of the tab.
-  int from_index_;
-  int to_index_;
-
-  DISALLOW_COPY_AND_ASSIGN(PinAndMoveAnimation);
-};
-
-////////////////////////////////////////////////////////////////////////////////
 // TabStripGtk, public:
 
 // static
@@ -1003,8 +842,7 @@ void TabStripGtk::TabSelectedAt(TabContents* old_contents,
 
 void TabStripGtk::TabMoved(TabContents* contents,
                            int from_index,
-                           int to_index,
-                           bool pinned_state_changed) {
+                           int to_index) {
   gfx::Rect start_bounds = GetIdealBounds(from_index);
   TabGtk* tab = GetTabAt(from_index);
   tab_data_.erase(tab_data_.begin() + from_index);
@@ -1012,12 +850,8 @@ void TabStripGtk::TabMoved(TabContents* contents,
   tab->set_pinned(model_->IsTabPinned(to_index));
   tab->SetBlocked(model_->IsTabBlocked(to_index));
   tab_data_.insert(tab_data_.begin() + to_index, data);
-  if (pinned_state_changed) {
-    StartPinAndMoveTabAnimation(from_index, to_index, start_bounds);
-  } else {
-    GenerateIdealBounds();
-    StartMoveTabAnimation(from_index, to_index);
-  }
+  GenerateIdealBounds();
+  StartMoveTabAnimation(from_index, to_index);
 }
 
 void TabStripGtk::TabChangedAt(TabContents* contents, int index,
@@ -1037,13 +871,11 @@ void TabStripGtk::TabChangedAt(TabContents* contents, int index,
 
 void TabStripGtk::TabPinnedStateChanged(TabContents* contents, int index) {
   GetTabAt(index)->set_pinned(model_->IsTabPinned(index));
-  StartPinnedTabAnimation(index);
 }
 
 void TabStripGtk::TabBlockedStateChanged(TabContents* contents, int index) {
   GetTabAt(index)->SetBlocked(model_->IsTabBlocked(index));
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // TabStripGtk, TabGtk::TabDelegate implementation:
@@ -1770,21 +1602,6 @@ void TabStripGtk::StartMoveTabAnimation(int from_index, int to_index) {
 void TabStripGtk::StartResizeLayoutAnimation() {
   StopAnimation();
   active_animation_.reset(new ResizeLayoutAnimation(this));
-  active_animation_->Start();
-}
-
-void TabStripGtk::StartPinnedTabAnimation(int index) {
-  StopAnimation();
-  active_animation_.reset(new PinnedTabAnimation(this, index));
-  active_animation_->Start();
-}
-
-void TabStripGtk::StartPinAndMoveTabAnimation(int from_index,
-                                              int to_index,
-                                              const gfx::Rect& start_bounds) {
-  StopAnimation();
-  active_animation_.reset(
-      new PinAndMoveAnimation(this, from_index, to_index, start_bounds));
   active_animation_->Start();
 }
 

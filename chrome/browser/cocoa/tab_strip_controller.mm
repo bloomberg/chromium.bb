@@ -465,7 +465,8 @@ private:
   // Ask the model for the number of pinned tabs. Note that tabs which are in
   // the process of closing (i.e., whose controllers are in
   // |closingControllers_|) have already been removed from the model.
-  return static_cast<NSInteger>(tabStripModel_->IndexOfFirstNonPinnedTab());
+  // TODO: convert to apps.
+  return 0;
 }
 
 // (Private) Returns the number of open, unpinned tabs.

@@ -679,7 +679,7 @@ TabContents* Browser::AddRestoredTab(
                                          from_last_session);
 
   bool really_pin =
-      (pin && tab_index == tabstrip_model()->IndexOfFirstNonPinnedTab());
+      (pin && tab_index == tabstrip_model()->IndexOfFirstNonAppTab());
   tabstrip_model_.InsertTabContentsAt(tab_index, new_tab, select, false);
   if (really_pin)
     tabstrip_model_.SetTabPinned(tab_index, true);
@@ -1909,8 +1909,7 @@ void Browser::TabSelectedAt(TabContents* old_contents,
 
 void Browser::TabMoved(TabContents* contents,
                        int from_index,
-                       int to_index,
-                       bool pinned_state_changed) {
+                       int to_index) {
   DCHECK(from_index >= 0 && to_index >= 0);
   // Notify the history service.
   SyncHistoryWithTabs(std::min(from_index, to_index));

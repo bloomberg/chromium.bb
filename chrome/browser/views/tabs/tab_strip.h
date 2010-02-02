@@ -135,8 +135,7 @@ class TabStrip : public views::View,
                              TabContents* contents,
                              int index,
                              bool user_gesture);
-  virtual void TabMoved(TabContents* contents, int from_index, int to_index,
-                        bool pinned_state_changed);
+  virtual void TabMoved(TabContents* contents, int from_index, int to_index);
   virtual void TabChangedAt(TabContents* contents, int index,
                             TabChangeType change_type);
   virtual void TabReplacedAt(TabContents* old_contents,
@@ -181,8 +180,6 @@ class TabStrip : public views::View,
  private:
   class InsertTabAnimation;
   class MoveTabAnimation;
-  class PinAndMoveAnimation;
-  class PinnedTabAnimation;
   class RemoveTabAnimation;
   class ResizeLayoutAnimation;
   class TabAnimation;
@@ -190,8 +187,6 @@ class TabStrip : public views::View,
   friend class DraggedTabController;
   friend class InsertTabAnimation;
   friend class MoveTabAnimation;
-  friend class PinAndMoveAnimation;
-  friend class PinnedTabAnimation;
   friend class RemoveTabAnimation;
   friend class ResizeLayoutAnimation;
   friend class TabAnimation;
@@ -295,9 +290,6 @@ class TabStrip : public views::View,
   void StartInsertTabAnimation(int index);
   void StartRemoveTabAnimation(int index, TabContents* contents);
   void StartMoveTabAnimation(int from_index, int to_index);
-  void StartPinnedTabAnimation(int index);
-  void StartPinAndMoveTabAnimation(int from_index, int to_index,
-                                   const gfx::Rect& start_bounds);
 
   // Notifies the TabStrip that the specified TabAnimation has completed.
   // Optionally a full Layout will be performed, specified by |layout|.

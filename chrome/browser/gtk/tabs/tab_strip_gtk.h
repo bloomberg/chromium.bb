@@ -102,8 +102,7 @@ class TabStripGtk : public TabStripModelObserver,
                              bool user_gesture);
   virtual void TabMoved(TabContents* contents,
                         int from_index,
-                        int to_index,
-                        bool pinned_state_changed);
+                        int to_index);
   virtual void TabChangedAt(TabContents* contents, int index,
                             TabChangeType change_type);
   virtual void TabPinnedStateChanged(TabContents* contents, int index);
@@ -148,8 +147,6 @@ class TabStripGtk : public TabStripModelObserver,
   friend class InsertTabAnimation;
   friend class RemoveTabAnimation;
   friend class MoveTabAnimation;
-  friend class PinAndMoveAnimation;
-  friend class PinnedTabAnimation;
   friend class ResizeLayoutAnimation;
   friend class TabAnimation;
 
@@ -382,9 +379,6 @@ class TabStripGtk : public TabStripModelObserver,
   void StartRemoveTabAnimation(int index, TabContents* contents);
   void StartMoveTabAnimation(int from_index, int to_index);
   void StartResizeLayoutAnimation();
-  void StartPinnedTabAnimation(int index);
-  void StartPinAndMoveTabAnimation(int from_index, int to_index,
-                                   const gfx::Rect& start_bounds);
 
   // Notifies the TabStrip that the specified TabAnimation has completed.
   // Optionally a full Layout will be performed, specified by |layout|.

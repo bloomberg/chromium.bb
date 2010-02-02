@@ -120,6 +120,7 @@ class TabContents : public PageNavigator,
 
   // |base_tab_contents| is used if we want to size the new tab contents view
   // based on an existing tab contents view.  This can be NULL if not needed.
+  // TODO(sky): make constructor take Extension.
   TabContents(Profile* profile,
               SiteInstance* site_instance,
               int routing_id,
@@ -182,6 +183,11 @@ class TabContents : public PageNavigator,
   FavIconHelper& fav_icon_helper() {
     return fav_icon_helper_;
   }
+
+  // TODO(sky): whether a tab is an app should be determined by the constructor,
+  // not a setter, and should likely take the extension.
+  void set_app(bool app) { app_ = app; }
+  bool app() const { return app_; }
 
 #ifdef UNIT_TEST
   // Expose the render manager for testing.
@@ -1170,6 +1176,10 @@ class TabContents : public PageNavigator,
   // Can be NULL in which case we defer to the request context from the
   // profile
   scoped_refptr<URLRequestContextGetter> request_context_;
+
+  // This is temporary until wired to extensions.
+  // TODO(sky): fix this.
+  bool app_;
 
   // ---------------------------------------------------------------------------
 

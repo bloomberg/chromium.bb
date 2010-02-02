@@ -314,8 +314,7 @@ void ExtensionBrowserEventRouter::TabSelectedAt(TabContents* old_contents,
 
 void ExtensionBrowserEventRouter::TabMoved(TabContents* contents,
                                            int from_index,
-                                           int to_index,
-                                           bool pinned_state_changed) {
+                                           int to_index) {
   ListValue args;
   args.Append(Value::CreateIntegerValue(ExtensionTabUtil::GetTabId(contents)));
 

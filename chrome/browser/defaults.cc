@@ -6,12 +6,6 @@
 
 namespace browser_defaults {
 
-#if defined(TOOLKIT_VIEWS)
-const bool kPinnedTabsActLikeApps = true;
-#else
-const bool kPinnedTabsActLikeApps = false;
-#endif
-
 #if defined(OS_CHROMEOS)
 
 const double kAutocompleteEditFontPixelSize = 12.0;

@@ -266,7 +266,8 @@ TabContents::TabContents(Profile* profile,
       suppress_javascript_messages_(false),
       is_showing_before_unload_dialog_(false),
       renderer_preferences_(),
-      opener_dom_ui_type_(DOMUIFactory::kNoDOMUI) {
+      opener_dom_ui_type_(DOMUIFactory::kNoDOMUI),
+      app_(false) {
   renderer_preferences_util::UpdateFromSystemSettings(
       &renderer_preferences_, profile);
 
@@ -1216,7 +1217,7 @@ void TabContents::OnCloseStarted() {
 }
 
 TabContents* TabContents::CloneAndMakePhantom() {
-  // TODO: the initial URL, title and what not should come from the app.
+  // TODO(sky): the initial URL, title and what not should come from the app.
   NavigationEntry* entry = controller().GetActiveEntry();
 
   TabNavigation tab_nav;
@@ -1228,8 +1229,9 @@ TabContents* TabContents::CloneAndMakePhantom() {
   TabContents* new_contents =
       new TabContents(profile(), NULL, MSG_ROUTING_NONE, NULL);
   new_contents->controller().RestoreFromState(navigations, 0, false);
+  new_contents->app_ = app_;
   if (entry) {
-    // TODO: this should come from the app.
+    // TODO(sky): this should come from the app.
     new_contents->controller().GetActiveEntry()->favicon() = entry->favicon();
   }
 

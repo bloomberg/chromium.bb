@@ -71,6 +71,7 @@ class BrowserTest : public InProcessBrowserTest {
     TabStripModel* model = browser()->tabstrip_model();
 
     ui_test_utils::NavigateToURL(browser(), url);
+    model->GetTabContentsAt(0)->set_app(true);
     model->SetTabPinned(0, true);
 
     browser()->AddTabWithURL(GURL("about:blank"), GURL(), PageTransition::TYPED,
@@ -323,17 +324,13 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, FaviconOfOnloadRedirectToAnchorPage) {
   EXPECT_EQ(expected_favicon_url.spec(), entry->favicon().url().spec());
 }
 
+// TODO(sky): get these to run a Mac.
+#if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(BrowserTest, PhantomTab) {
-  if (!browser_defaults::kPinnedTabsActLikeApps)
-    return;
-
   PhantomTabTest();
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserTest, RevivePhantomTab) {
-  if (!browser_defaults::kPinnedTabsActLikeApps)
-    return;
-
   PhantomTabTest();
 
   if (HasFatalFailure())
@@ -349,6 +346,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RevivePhantomTab) {
   // The first tab should no longer be a phantom.
   EXPECT_FALSE(model->IsPhantomTab(0));
 }
+#endif
 
 // Tests that the CLD (Compact Language Detection) works properly.
 IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {

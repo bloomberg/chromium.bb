@@ -102,6 +102,13 @@ void TabStripModel::InsertTabContentsAt(int index,
                                         TabContents* contents,
                                         bool foreground,
                                         bool inherit_group) {
+  // Make sure the index maintains that all app tab occurs before non-app tabs.
+  int first_non_app = IndexOfFirstNonAppTab();
+  if (contents->app())
+    index = std::min(first_non_app, index);
+  else
+    index = std::max(first_non_app, index);
+
   // In tab dragging situations, if the last tab in the window was detached
   // then the user aborted the drag, we will have the |closing_all_| member
   // set (see DetachTabContentsAt) which will mess with our mojo here. We need
@@ -113,7 +120,6 @@ void TabStripModel::InsertTabContentsAt(int index,
   // since the old contents and the new contents will be the same...
   TabContents* selected_contents = GetSelectedTabContents();
   TabContentsData* data = new TabContentsData(contents);
-  data->pinned = (index != count() && index < IndexOfFirstNonPinnedTab());
   if (inherit_group && selected_contents) {
     if (foreground) {
       // Forget any existing relationships, we don't want to make things too
@@ -190,7 +196,33 @@ void TabStripModel::SelectTabContentsAt(int index, bool user_gesture) {
 
 void TabStripModel::MoveTabContentsAt(int index, int to_position,
                                       bool select_after_move) {
-  MoveTabContentsAtImpl(index, to_position, select_after_move, true);
+  DCHECK(ContainsIndex(index));
+  if (index == to_position)
+    return;
+
+  int first_non_app_tab = IndexOfFirstNonAppTab();
+  if ((index < first_non_app_tab && to_position >= first_non_app_tab) ||
+      (to_position < first_non_app_tab && index >= first_non_app_tab)) {
+    // This would result in app tabs mixed with non-app tabs. We don't allow
+    // that.
+    return;
+  }
+
+  TabContentsData* moved_data = contents_data_.at(index);
+  contents_data_.erase(contents_data_.begin() + index);
+  contents_data_.insert(contents_data_.begin() + to_position, moved_data);
+
+  // if !select_after_move, keep the same tab selected as was selected before.
+  if (select_after_move || index == selected_index_) {
+    selected_index_ = to_position;
+  } else if (index < selected_index_ && to_position >= selected_index_) {
+    selected_index_--;
+  } else if (index > selected_index_ && to_position <= selected_index_) {
+    selected_index_++;
+  }
+
+  FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
+                    TabMoved(moved_data->contents, index, to_position));
 }
 
 TabContents* TabStripModel::GetSelectedTabContents() const {
@@ -366,29 +398,19 @@ void TabStripModel::SetTabBlocked(int index, bool blocked) {
 
 void TabStripModel::SetTabPinned(int index, bool pinned) {
   DCHECK(ContainsIndex(index));
+  int first_non_app_tab = IndexOfFirstNonAppTab();
+  if (index >= first_non_app_tab)
+    return;  // Only allow pinning of app tabs.
+
   if (contents_data_[index]->pinned == pinned)
     return;
 
-  int first_non_pinned_tab = IndexOfFirstNonPinnedTab();
-
   contents_data_[index]->pinned = pinned;
 
-  if (pinned && index > first_non_pinned_tab) {
-    // The tab is being pinned but beyond the pinned tabs. Move it to the end
-    // of the pinned tabs.
-    MoveTabContentsAtImpl(index, first_non_pinned_tab,
-                          selected_index() == index, false);
-  } else if (!pinned && index < first_non_pinned_tab - 1) {
-    // The tab is being unpinned, but is within the pinned tabs, move it to
-    // be after the set of pinned tabs.
-    MoveTabContentsAtImpl(index, first_non_pinned_tab - 1,
-                          selected_index() == index, false);
-  } else {
-    // Tab didn't move, but it's pinned state changed. Notify observers.
-    FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
+  // Notify observers of new state.
+  FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
                       TabPinnedStateChanged(contents_data_[index]->contents,
                                             index));
-  }
 }
 
 bool TabStripModel::IsTabPinned(int index) const {
@@ -396,12 +418,11 @@ bool TabStripModel::IsTabPinned(int index) const {
 }
 
 bool TabStripModel::IsAppTab(int index) const {
-  // TODO (sky): this is temporary and should be integrated with real apps.
-  return browser_defaults::kPinnedTabsActLikeApps && IsTabPinned(index);
+  return GetTabContentsAt(index)->app();
 }
 
 bool TabStripModel::IsPhantomTab(int index) const {
-  return IsTabPinned(index) && IsAppTab(index) &&
+  return IsTabPinned(index) &&
          GetTabContentsAt(index)->controller().needs_reload();
 }
 
@@ -409,12 +430,12 @@ bool TabStripModel::IsTabBlocked(int index) const {
   return contents_data_[index]->blocked;
 }
 
-int TabStripModel::IndexOfFirstNonPinnedTab() const {
+int TabStripModel::IndexOfFirstNonAppTab() const {
   for (size_t i = 0; i < contents_data_.size(); ++i) {
-    if (!contents_data_[i]->pinned)
+    if (!contents_data_[i]->contents->app())
       return static_cast<int>(i);
   }
-  // No pinned tabs.
+  // No app tabs.
   return count();
 }
 
@@ -519,7 +540,8 @@ bool TabStripModel::IsContextMenuCommandEnabled(
   switch (command_id) {
     case CommandNewTab:
     case CommandCloseTab:
-      return true;
+      // Phantom tabs can't be closed.
+      return !IsPhantomTab(context_index);
     case CommandReload:
       if (TabContents* contents = GetTabContentsAt(context_index)) {
         return contents->delegate()->CanReloadContents(contents);
@@ -527,20 +549,24 @@ bool TabStripModel::IsContextMenuCommandEnabled(
         return false;
       }
     case CommandCloseOtherTabs:
-      return count() > 1;
+      // Close other doesn't effect app tabs.
+      return count() > IndexOfFirstNonAppTab();
     case CommandCloseTabsToRight:
-      return context_index < (count() - 1);
+      // Close doesn't effect app tabs.
+      return count() != IndexOfFirstNonAppTab() &&
+          context_index < (count() - 1);
     case CommandCloseTabsOpenedBy: {
       int next_index = GetIndexOfNextTabContentsOpenedBy(
           &GetTabContentsAt(context_index)->controller(), context_index, true);
-      return next_index != kNoTab;
+      return next_index != kNoTab && !IsAppTab(next_index);
     }
     case CommandDuplicate:
       return delegate_->CanDuplicateContentsAt(context_index);
     case CommandRestoreTab:
       return delegate_->CanRestoreTab();
     case CommandTogglePinned:
-      return true;
+      // Only app tabs can be pinned.
+      return IsAppTab(context_index);
     case CommandBookmarkAllTabs: {
       return delegate_->CanBookmarkAllTabs();
     }
@@ -575,7 +601,7 @@ void TabStripModel::ExecuteContextMenuCommand(
       TabContents* contents = GetTabContentsAt(context_index);
       std::vector<int> closing_tabs;
       for (int i = count() - 1; i >= 0; --i) {
-        if (GetTabContentsAt(i) != contents && !IsTabPinned(i))
+        if (GetTabContentsAt(i) != contents && !IsAppTab(i))
           closing_tabs.push_back(i);
       }
       InternalCloseTabs(closing_tabs, true);
@@ -585,7 +611,7 @@ void TabStripModel::ExecuteContextMenuCommand(
       UserMetrics::RecordAction("TabContextMenu_CloseTabsToRight", profile_);
       std::vector<int> closing_tabs;
       for (int i = count() - 1; i > context_index; --i) {
-        if (!IsTabPinned(i))
+        if (!IsAppTab(i))
           closing_tabs.push_back(i);
       }
       InternalCloseTabs(closing_tabs, true);
@@ -596,7 +622,7 @@ void TabStripModel::ExecuteContextMenuCommand(
       std::vector<int> closing_tabs = GetIndexesOpenedBy(context_index);
       for (std::vector<int>::iterator i = closing_tabs.begin();
            i != closing_tabs.end();) {
-        if (IsTabPinned(*i))
+        if (IsAppTab(*i))
           i = closing_tabs.erase(i);
         else
           ++i;
@@ -736,43 +762,6 @@ bool TabStripModel::InternalCloseTabs(std::vector<int> indices,
   return retval;
 }
 
-void TabStripModel::MoveTabContentsAtImpl(int index, int to_position,
-                                          bool select_after_move,
-                                          bool update_pinned_state) {
-  DCHECK(ContainsIndex(index));
-  if (index == to_position)
-    return;
-
-  bool pinned_state_changed = !update_pinned_state;
-
-  if (update_pinned_state) {
-    bool is_pinned = IsTabPinned(index);
-    if (is_pinned && to_position >= IndexOfFirstNonPinnedTab()) {
-      contents_data_[index]->pinned = false;
-    } else if (!is_pinned && to_position < IndexOfFirstNonPinnedTab()) {
-      contents_data_[index]->pinned = true;
-    }
-    pinned_state_changed = is_pinned != contents_data_[index]->pinned;
-  }
-
-  TabContentsData* moved_data = contents_data_.at(index);
-  contents_data_.erase(contents_data_.begin() + index);
-  contents_data_.insert(contents_data_.begin() + to_position, moved_data);
-
-  // if !select_after_move, keep the same tab selected as was selected before.
-  if (select_after_move || index == selected_index_) {
-    selected_index_ = to_position;
-  } else if (index < selected_index_ && to_position >= selected_index_) {
-    selected_index_--;
-  } else if (index > selected_index_ && to_position <= selected_index_) {
-    selected_index_++;
-  }
-
-  FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                    TabMoved(moved_data->contents, index, to_position,
-                             pinned_state_changed));
-}
-
 TabContents* TabStripModel::GetContentsAt(int index) const {
   CHECK(ContainsIndex(index)) <<
       "Failed to find: " << index << " in: " << count() << " entries.";
@@ -815,8 +804,7 @@ void TabStripModel::SelectRelativeTab(bool next) {
   int delta = next ? 1 : -1;
   do {
     index = (index + count() + delta) % count();
-  } while (index != selected_index_ && IsTabPinned(index) && IsAppTab(index) &&
-           IsPhantomTab(index));
+  } while (index != selected_index_ && IsPhantomTab(index));
   SelectTabContentsAt(index, true);
 }
 

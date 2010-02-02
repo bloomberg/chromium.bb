@@ -90,8 +90,7 @@ class TabOverviewController : public TabStripModelObserver {
   virtual void TabDetachedAt(TabContents* contents, int index);
   virtual void TabMoved(TabContents* contents,
                         int from_index,
-                        int to_index,
-                        bool pinned_state_changed);
+                        int to_index);
   virtual void TabChangedAt(TabContents* contents, int index,
                             TabChangeType change_type);
   virtual void TabStripEmpty();

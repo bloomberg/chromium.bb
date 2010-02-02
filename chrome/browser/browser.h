@@ -553,8 +553,7 @@ class Browser : public TabStripModelDelegate,
                              bool user_gesture);
   virtual void TabMoved(TabContents* contents,
                         int from_index,
-                        int to_index,
-                        bool pinned_state_changed);
+                        int to_index);
   virtual void TabReplacedAt(TabContents* old_contents,
                              TabContents* new_contents,
                              int index);

@@ -285,7 +285,7 @@ void CompactNavigationBar::AddTabWithURL(const GURL& url,
   switch (StatusAreaView::GetOpenTabsMode()) {
     case StatusAreaView::OPEN_TABS_ON_LEFT: {
       // Add the new tab at the first non-pinned location.
-      int index = browser->tabstrip_model()->IndexOfFirstNonPinnedTab();
+      int index = browser->tabstrip_model()->IndexOfFirstNonAppTab();
       browser->AddTabWithURL(url, GURL(), transition,
                               true, index, true, NULL);
       break;
