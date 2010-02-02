@@ -240,7 +240,6 @@ void BookmarkContextMenuController::BuildMenu() {
   } else {
     delegate_->AddItem(IDS_BOOKMARK_BAR_EDIT);
   }
-  delegate_->AddItem(IDS_BOOKMARK_BAR_REMOVE);
 
   if (configuration_ == BOOKMARK_MANAGER_TABLE ||
       configuration_ == BOOKMARK_MANAGER_TABLE_OTHER ||
@@ -249,16 +248,13 @@ void BookmarkContextMenuController::BuildMenu() {
     delegate_->AddItem(IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER);
   }
 
-  if (configuration_ == BOOKMARK_MANAGER_TABLE ||
-      configuration_ == BOOKMARK_MANAGER_TABLE_OTHER ||
-      configuration_ == BOOKMARK_MANAGER_TREE ||
-      configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU ||
-      configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER) {
-    delegate_->AddSeparator();
-    delegate_->AddItem(IDS_CUT);
-    delegate_->AddItem(IDS_COPY);
-    delegate_->AddItem(IDS_PASTE);
-  }
+  delegate_->AddSeparator();
+  delegate_->AddItem(IDS_CUT);
+  delegate_->AddItem(IDS_COPY);
+  delegate_->AddItem(IDS_PASTE);
+
+  delegate_->AddSeparator();
+  delegate_->AddItem(IDS_BOOKMARK_BAR_REMOVE);
 
   if (configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU) {
     delegate_->AddSeparator();
@@ -395,7 +391,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
 
     case IDS_CUT:
       delegate_->WillRemoveBookmarks(selection_);
-      bookmark_utils::CopyToClipboard(model, selection_, false);
+      bookmark_utils::CopyToClipboard(model, selection_, true);
       delegate_->DidRemoveBookmarks();
       break;
 
@@ -404,14 +400,14 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
       break;
 
     case IDS_PASTE: {
-      // Always paste to parent.
-      if (!parent_)
+      const BookmarkNode* paste_target = GetParentForNewNodes();
+      if (!paste_target)
         return;
 
-      int index = (selection_.size() == 1) ?
-          parent_->IndexOfChild(selection_[0]) : -1;
-      if (index != -1)
-        index++;
+      int index = -1;
+      if (selection_.size() == 1 && selection_[0]->is_url())
+        index = paste_target->IndexOfChild(selection_[0]) + 1;
+
       bookmark_utils::PasteFromClipboard(model, parent_, index);
       break;
     }
@@ -465,8 +461,10 @@ bool BookmarkContextMenuController::IsCommandEnabled(int id) const {
       return selection_.size() > 0 && !is_root_node;
 
     case IDS_PASTE:
-      // Always paste to parent.
-      return bookmark_utils::CanPasteFromClipboard(parent_);
+      // Paste to selection from the Bookmark Bar, to parent_ everywhere else
+      return (configuration_ == BOOKMARK_BAR && !selection_.empty() &&
+              bookmark_utils::CanPasteFromClipboard(selection_[0])) ||
+              bookmark_utils::CanPasteFromClipboard(parent_);
   }
   return true;
 }

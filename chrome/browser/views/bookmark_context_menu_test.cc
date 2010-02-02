@@ -300,3 +300,39 @@ TEST_F(BookmarkContextMenuTest, EmptyNodesNullParent) {
   EXPECT_FALSE(
       controller.IsCommandEnabled(IDS_BOOMARK_BAR_NEW_FOLDER));
 }
+
+TEST_F(BookmarkContextMenuTest, CutCopyPasteNode) {
+  std::vector<const BookmarkNode*> nodes;
+  nodes.push_back(model_->GetBookmarkBarNode()->GetChild(0));
+  BookmarkContextMenu* controller = new BookmarkContextMenu(
+      NULL, profile_.get(), NULL, nodes[0]->GetParent(), nodes,
+      BookmarkContextMenuController::BOOKMARK_BAR);
+  EXPECT_TRUE(controller->IsCommandEnabled(IDS_COPY));
+  EXPECT_TRUE(controller->IsCommandEnabled(IDS_CUT));
+
+  // Copy the URL.
+  controller->ExecuteCommand(IDS_COPY);
+
+  controller = new BookmarkContextMenu(
+      NULL, profile_.get(), NULL, nodes[0]->GetParent(), nodes,
+      BookmarkContextMenuController::BOOKMARK_BAR);
+  int old_count = model_->GetBookmarkBarNode()->GetChildCount();
+  controller->ExecuteCommand(IDS_PASTE);
+
+  ASSERT_TRUE(model_->GetBookmarkBarNode()->GetChild(1)->is_url());
+  ASSERT_EQ(old_count + 1, model_->GetBookmarkBarNode()->GetChildCount());
+  ASSERT_EQ(model_->GetBookmarkBarNode()->GetChild(0)->GetURL(),
+            model_->GetBookmarkBarNode()->GetChild(1)->GetURL());
+
+  controller = new BookmarkContextMenu(
+      NULL, profile_.get(), NULL, nodes[0]->GetParent(), nodes,
+      BookmarkContextMenuController::BOOKMARK_BAR);
+  // Cut the URL.
+  controller->ExecuteCommand(IDS_CUT);
+  ASSERT_TRUE(model_->GetBookmarkBarNode()->GetChild(0)->is_url());
+  ASSERT_TRUE(model_->GetBookmarkBarNode()->GetChild(1)->is_folder());
+  ASSERT_EQ(old_count, model_->GetBookmarkBarNode()->GetChildCount());
+
+  delete controller;
+}
+
