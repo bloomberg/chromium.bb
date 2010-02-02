@@ -267,7 +267,9 @@ void UrlmonUrlRequest::Stop() {
   switch (state) {
     case Status::WORKING:
       status_.Cancel();
-      binding_->Abort();
+      if (binding_) {
+        binding_->Abort();
+      }
       break;
 
     case Status::ABORTING:
