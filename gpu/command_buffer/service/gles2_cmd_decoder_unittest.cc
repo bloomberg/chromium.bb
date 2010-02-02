@@ -8,6 +8,7 @@
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+using ::gles2::MockGLInterface;
 using ::testing::_;
 using ::testing::DoAll;
 using ::testing::InSequence;
@@ -83,7 +84,7 @@ class GLES2DecoderTest : public testing::Test {
   }
 
   virtual void SetUp() {
-    gl_.reset(new ::gles2::MockGLInterface());
+    gl_.reset(new MockGLInterface());
     ::gles2::GLInterface::SetGLInterface(gl_.get());
 
     EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VERTEX_ATTRIBS, _))
@@ -185,17 +186,23 @@ class GLES2DecoderTest : public testing::Test {
     return decoder_->GetServiceIdForTesting(client_id);
   }
 
-  GLenum GetGLError() {
+  // Note that the error is returned as GLint instead of GLenum.
+  // This is because there is a mismatch in the types of GLenum and
+  // the error values GL_NO_ERROR, GL_INVALID_ENUM, etc. GLenum is
+  // typedef'd as unsigned int while the error values are defined as
+  // integers. This is problematic for template functions such as
+  // EXPECT_EQ that expect both types to be the same.
+  GLint GetGLError() {
     EXPECT_CALL(*gl_, GetError())
         .WillOnce(Return(GL_NO_ERROR))
         .RetiresOnSaturation();
     GetError cmd;
     cmd.Init(shared_memory_id_, shared_memory_offset_);
     EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-    return *GetSharedMemoryAs<GLenum*>();
+    return static_cast<GLint>(*GetSharedMemoryAs<GLenum*>());
   }
 
-  scoped_ptr<::gles2::MockGLInterface> gl_;
+  scoped_ptr<MockGLInterface> gl_;
   scoped_ptr<GLES2Decoder> decoder_;
 
   GLuint client_buffer_id_;
@@ -253,6 +260,24 @@ class GLES2DecoderTest : public testing::Test {
 
   scoped_ptr<MockCommandBufferEngine> engine_;
 };
+
+const GLint GLES2DecoderTest::kNumVertexAttribs;
+const GLuint GLES2DecoderTest::kServiceBufferId;
+const GLuint GLES2DecoderTest::kServiceFramebufferId;
+const GLuint GLES2DecoderTest::kServiceRenderbufferId;
+const GLuint GLES2DecoderTest::kServiceTextureId;
+const GLuint GLES2DecoderTest::kServiceProgramId;
+const GLuint GLES2DecoderTest::kServiceShaderId;
+const GLuint GLES2DecoderTest::kServiceElementBufferId;
+const int32 GLES2DecoderTest::kSharedMemoryId;
+const size_t GLES2DecoderTest::kSharedBufferSize;
+const uint32 GLES2DecoderTest::kSharedMemoryOffset;
+const int32 GLES2DecoderTest::kInvalidSharedMemoryId;
+const uint32 GLES2DecoderTest::kInvalidSharedMemoryOffset;
+const uint32 GLES2DecoderTest::kInitialResult;
+const uint32 GLES2DecoderTest::kNewClientId;
+const uint32 GLES2DecoderTest::kNewServiceId;
+const uint32 GLES2DecoderTest::kInvalidClientId;
 
 template <>
 void GLES2DecoderTest::SpecializedSetup<LinkProgram, 0>() {
@@ -456,6 +481,15 @@ class GLES2DecoderWithShaderTest : public GLES2DecoderTest {
   }
 };
 
+const GLint GLES2DecoderWithShaderTest::kNumAttribs;
+const GLint GLES2DecoderWithShaderTest::kMaxAttribLength;
+const GLsizei GLES2DecoderWithShaderTest::kNumVertices;
+const GLsizei GLES2DecoderWithShaderTest::kNumIndices;
+const int GLES2DecoderWithShaderTest::kValidIndexRangeStart;
+const int GLES2DecoderWithShaderTest::kValidIndexRangeCount;
+const int GLES2DecoderWithShaderTest::kInvalidIndexRangeStart;
+const int GLES2DecoderWithShaderTest::kInvalidIndexRangeCount;
+const int GLES2DecoderWithShaderTest::kOutOfRangeIndexRangeEnd;
 const char* GLES2DecoderWithShaderTest::kAttrib1Name = "attrib1";
 const char* GLES2DecoderWithShaderTest::kAttrib2Name = "attrib2";
 const char* GLES2DecoderWithShaderTest::kAttrib3Name = "attrib3";

@@ -65,7 +65,6 @@ TEST_F(CommandBufferServiceTest, InitializationSizeIsInEntriesNotBytes) {
 }
 
 TEST_F(CommandBufferServiceTest, InitializeFailsSecondTime) {
-  SharedMemory* ring_buffer = new SharedMemory;
   EXPECT_TRUE(command_buffer_->Initialize(1024));
   EXPECT_FALSE(command_buffer_->Initialize(1024));
 }
@@ -117,7 +116,7 @@ TEST_F(CommandBufferServiceTest, CanCreateTransferBuffers) {
   EXPECT_EQ(1, handle);
   Buffer buffer = command_buffer_->GetTransferBuffer(handle);
   ASSERT_TRUE(NULL != buffer.ptr);
-  EXPECT_EQ(1024, buffer.size);
+  EXPECT_EQ(1024u, buffer.size);
 }
 
 TEST_F(CommandBufferServiceTest, CreateTransferBufferReturnsDistinctHandles) {

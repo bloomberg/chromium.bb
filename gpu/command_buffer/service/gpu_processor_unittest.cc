@@ -75,7 +75,7 @@ class GPUProcessorTest : public testing::Test {
   base::AtExitManager at_exit_manager;
   MessageLoop message_loop;
   scoped_ptr<MockCommandBuffer> command_buffer_;
-  scoped_ptr<::base::SharedMemory> shared_memory_;
+  scoped_ptr<base::SharedMemory> shared_memory_;
   Buffer shared_memory_buffer_;
   int32* buffer_;
   gles2::MockGLES2Decoder* decoder_;
