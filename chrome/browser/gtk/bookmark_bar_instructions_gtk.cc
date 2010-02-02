@@ -25,8 +25,11 @@ BookmarkBarInstructionsGtk::BookmarkBarInstructionsGtk(Delegate* delegate,
       gtk_label_new(l10n_util::GetStringUTF8(IDS_BOOKMARKS_NO_ITEMS).c_str());
   instructions_label_ = gtk_label_new(
       l10n_util::GetStringUTF8(IDS_BOOKMARKS_NO_ITEMS).c_str());
-  gtk_util::CenterWidgetInHBox(instructions_hbox_, instructions_label_,
-                               false, 1);
+  gtk_label_set_ellipsize(GTK_LABEL(instructions_label_), PANGO_ELLIPSIZE_END);
+  gtk_widget_set_size_request(instructions_label_, 0, -1);
+  gtk_misc_set_alignment(GTK_MISC(instructions_label_), 0, 0.5);
+  gtk_box_pack_start(GTK_BOX(instructions_hbox_), instructions_label_,
+                     true, true, 1);
 
   instructions_link_ = gtk_chrome_link_button_new(
       l10n_util::GetStringUTF8(IDS_BOOKMARK_BAR_IMPORT_LINK).c_str());
@@ -38,7 +41,9 @@ BookmarkBarInstructionsGtk::BookmarkBarInstructionsGtk(Delegate* delegate,
   gtk_util::ForceFontSizePixels(
       GTK_CHROME_LINK_BUTTON(instructions_link_)->label, 13.4);
   gtk_util::CenterWidgetInHBox(instructions_hbox_, instructions_link_,
-                               false, 1);
+                               true, 1);
+
+  gtk_widget_show_all(instructions_hbox_);
 
   registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
