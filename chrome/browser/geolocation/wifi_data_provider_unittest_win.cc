@@ -9,7 +9,6 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/geolocation/wifi_data_provider_common.h"
-#include "chrome/test/ui_test_utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -42,7 +41,7 @@ class MessageLoopQuitListener
  public:
   explicit MessageLoopQuitListener(MessageLoop* message_loop)
       : message_loop_to_quit_(message_loop) {
-    assert(message_loop_to_quit_ != NULL);
+    DCHECK(message_loop_to_quit_ != NULL);
   }
   // ListenerInterface
   virtual void DeviceDataUpdateAvailable(
@@ -74,7 +73,7 @@ class Win32WifiDataProviderTest : public testing::Test {
     provider_.reset(CreateWin32WifiDataProvider(&wlan_api_));
   }
   virtual void TearDown() {
-    provider_.reset(NULL);
+    provider_.reset();
   }
 
  protected:
@@ -98,7 +97,7 @@ TEST_F(Win32WifiDataProviderTest, CreateDestroy) {
 
 TEST_F(Win32WifiDataProviderTest, StartThread) {
   EXPECT_TRUE(provider_->StartDataProvider());
-  provider_.reset(NULL);  // Stop()s the thread.
+  provider_.reset();  // Stop()s the thread.
   SUCCEED();
 }
 

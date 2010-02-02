@@ -30,10 +30,6 @@
 #include "chrome/browser/geolocation/wifi_data_provider_common.h"
 #include "chrome/browser/geolocation/wifi_data_provider_common_win.h"
 
-#ifdef _MSC_VER
-#pragma warning(disable:4355)  // 'this' : used in base member initializer list
-#endif
-
 // Taken from ndis.h for WinCE.
 #define NDIS_STATUS_INVALID_LENGTH   ((NDIS_STATUS)0xC0010014L)
 #define NDIS_STATUS_BUFFER_TOO_SHORT ((NDIS_STATUS)0xC0010016L)
@@ -166,7 +162,7 @@ WifiDataProviderImplBase *WifiDataProvider::DefaultFactoryFunction() {
 Win32WifiDataProvider::Win32WifiDataProvider()
     : Thread(__FILE__),
       is_first_scan_complete_(false),
-      task_factory_(this) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
 }
 
 Win32WifiDataProvider::~Win32WifiDataProvider() {
@@ -176,15 +172,15 @@ Win32WifiDataProvider::~Win32WifiDataProvider() {
 }
 
 void Win32WifiDataProvider::inject_mock_wlan_api(WlanApiInterface* wlan_api) {
-  assert(wlan_api_ == NULL);
-  assert(wlan_api);
+  DCHECK(wlan_api_ == NULL);
+  DCHECK(wlan_api);
   wlan_api_.reset(wlan_api);
 }
 
 void Win32WifiDataProvider::inject_mock_polling_policy(
     PollingPolicyInterface* policy) {
-  assert(polling_policy_ == NULL);
-  assert(policy);
+  DCHECK(polling_policy_ == NULL);
+  DCHECK(policy);
   polling_policy_.reset(policy);
 }
 
@@ -193,7 +189,7 @@ bool Win32WifiDataProvider::StartDataProvider() {
 }
 
 bool Win32WifiDataProvider::GetData(WifiData *data) {
-  assert(data);
+  DCHECK(data);
   AutoLock lock(data_mutex_);
   *data = wifi_data_;
   // If we've successfully completed a scan, indicate that we have all of the
@@ -223,17 +219,18 @@ void Win32WifiDataProvider::Init() {
                                  kNoChangePollingInterval,
                                  kTwoNoChangePollingInterval>);
   }
-  assert(polling_policy_ != NULL);
+  DCHECK(polling_policy_ != NULL);
 
   ScheduleNextScan();
 }
 
 void Win32WifiDataProvider::CleanUp() {
   // Destroy the wlan api instance in the thread in which it was created.
-  wlan_api_.reset(NULL);
+  wlan_api_.reset();
 }
 
 void Win32WifiDataProvider::DoWifiScanTask() {
+  // TODO(joth): Almost all of this is shareable across platforms.
   WifiData new_data;
   if (wlan_api_->GetAccessPointData(&new_data.access_point_data)) {
     bool update_available;
@@ -242,7 +239,7 @@ void Win32WifiDataProvider::DoWifiScanTask() {
     wifi_data_ = new_data;
     data_mutex_.Release();
     polling_policy_->UpdatePollingInterval(update_available);
-    if (update_available) {
+    if (update_available || !is_first_scan_complete_) {
       is_first_scan_complete_ = true;
       NotifyListeners();
     }
@@ -278,7 +275,7 @@ WindowsWlanApi* WindowsWlanApi::Create() {
   if (!GetSystemDirectory(&system_directory)) {
     return NULL;
   }
-  assert(!system_directory.empty());
+  DCHECK(!system_directory.empty());
   string16 dll_path = system_directory + L"wlanapi.dll";
   HINSTANCE library = LoadLibraryEx(dll_path.c_str(),
                                     NULL,
@@ -290,7 +287,7 @@ WindowsWlanApi* WindowsWlanApi::Create() {
 }
 
 void WindowsWlanApi::GetWLANFunctions(HINSTANCE wlan_library) {
-  assert(wlan_library);
+  DCHECK(wlan_library);
   WlanOpenHandle_function_ = reinterpret_cast<WlanOpenHandleFunction>(
       GetProcAddress(wlan_library, "WlanOpenHandle"));
   WlanEnumInterfaces_function_ = reinterpret_cast<WlanEnumInterfacesFunction>(
@@ -302,7 +299,7 @@ void WindowsWlanApi::GetWLANFunctions(HINSTANCE wlan_library) {
       GetProcAddress(wlan_library, "WlanFreeMemory"));
   WlanCloseHandle_function_ = reinterpret_cast<WlanCloseHandleFunction>(
       GetProcAddress(wlan_library, "WlanCloseHandle"));
-  assert(WlanOpenHandle_function_ &&
+  DCHECK(WlanOpenHandle_function_ &&
          WlanEnumInterfaces_function_ &&
          WlanGetNetworkBssList_function_ &&
          WlanFreeMemory_function_ &&
@@ -311,7 +308,7 @@ void WindowsWlanApi::GetWLANFunctions(HINSTANCE wlan_library) {
 
 bool WindowsWlanApi::GetAccessPointData(
     WifiData::AccessPointDataSet *data) {
-  assert(data);
+  DCHECK(data);
 
   // Get the handle to the WLAN API.
   DWORD negotiated_version;
@@ -326,7 +323,7 @@ bool WindowsWlanApi::GetAccessPointData(
                                   &wlan_handle) != ERROR_SUCCESS) {
     return false;
   }
-  assert(wlan_handle);
+  DCHECK(wlan_handle);
 
   // Get the list of interfaces. WlanEnumInterfaces allocates interface_list.
   WLAN_INTERFACE_INFO_LIST *interface_list = NULL;
@@ -334,7 +331,7 @@ bool WindowsWlanApi::GetAccessPointData(
       ERROR_SUCCESS) {
     return false;
   }
-  assert(interface_list);
+  DCHECK(interface_list);
 
   // Go through the list of interfaces and get the data for each.
   for (int i = 0; i < static_cast<int>(interface_list->dwNumberOfItems); ++i) {
@@ -360,7 +357,7 @@ int WindowsWlanApi::GetInterfaceDataWLAN(
     const HANDLE wlan_handle,
     const GUID &interface_id,
     WifiData::AccessPointDataSet *data) {
-  assert(data);
+  DCHECK(data);
   // WlanGetNetworkBssList allocates bss_list.
   WLAN_BSS_LIST *bss_list;
   if ((*WlanGetNetworkBssList_function_)(wlan_handle,
@@ -391,7 +388,7 @@ int WindowsWlanApi::GetInterfaceDataWLAN(
 WindowsNdisApi::WindowsNdisApi(
     std::vector<string16>* interface_service_names)
     : oid_buffer_size_(kInitialBufferSize) {
-  assert(!interface_service_names->empty());
+  DCHECK(!interface_service_names->empty());
   interface_service_names_.swap(*interface_service_names);
 }
 
@@ -407,7 +404,7 @@ WindowsNdisApi* WindowsNdisApi::Create() {
 }
 
 bool WindowsNdisApi::GetAccessPointData(WifiData::AccessPointDataSet *data) {
-  assert(data);
+  DCHECK(data);
   int interfaces_failed = 0;
   int interfaces_succeeded = 0;
 
@@ -452,7 +449,7 @@ bool WindowsNdisApi::GetInterfacesNDIS(
       &network_cards_key) != ERROR_SUCCESS) {
     return false;
   }
-  assert(network_cards_key);
+  DCHECK(network_cards_key);
 
   for (int i = 0; ; ++i) {
     TCHAR name[kStringLength];
@@ -473,7 +470,7 @@ bool WindowsNdisApi::GetInterfacesNDIS(
         ERROR_SUCCESS) {
       break;
     }
-    assert(hardware_key);
+    DCHECK(hardware_key);
 
     TCHAR service_name[kStringLength];
     DWORD service_name_size = kStringLength;
@@ -496,7 +493,7 @@ bool WindowsNdisApi::GetInterfacesNDIS(
 
 bool WindowsNdisApi::GetInterfaceDataNDIS(HANDLE adapter_handle,
                                           WifiData::AccessPointDataSet *data) {
-  assert(data);
+  DCHECK(data);
 
   scoped_ptr_malloc<BYTE> buffer(
       reinterpret_cast<BYTE*>(malloc(oid_buffer_size_)));
@@ -532,7 +529,7 @@ bool WindowsNdisApi::GetInterfaceDataNDIS(HANDLE adapter_handle,
       break;
     }
   }
-  assert(buffer.get());
+  DCHECK(buffer.get());
 
   if (result == ERROR_SUCCESS) {
     NDIS_802_11_BSSID_LIST* bssid_list =
@@ -553,7 +550,7 @@ bool IsRunningOnVistaOrNewer() {
 bool GetNetworkData(const WLAN_BSS_ENTRY &bss_entry,
                            AccessPointData *access_point_data) {
   // Currently we get only MAC address, signal strength and SSID.
-  assert(access_point_data);
+  DCHECK(access_point_data);
   access_point_data->mac_address = MacAddressAsString16(bss_entry.dot11Bssid);
   access_point_data->radio_signal_strength = bss_entry.lRssi;
   // bss_entry.dot11Ssid.ucSSID is not null-terminated.
@@ -635,10 +632,10 @@ int PerformQuery(HANDLE adapter_handle,
 }
 
 bool ResizeBuffer(int requested_size, scoped_ptr_malloc<BYTE>* buffer) {
-  assert(requested_size > 0);
-  assert(buffer);
+  DCHECK(requested_size > 0);
+  DCHECK(buffer);
   if (requested_size > kMaximumBufferSize) {
-    buffer->reset(NULL);
+    buffer->reset();
     return false;
   }
 
@@ -648,7 +645,7 @@ bool ResizeBuffer(int requested_size, scoped_ptr_malloc<BYTE>* buffer) {
 }
 
 bool GetSystemDirectory(string16 *path) {
-  assert(path);
+  DCHECK(path);
   // Return value includes terminating NULL.
   int buffer_size = ::GetSystemDirectory(NULL, 0);
   if (buffer_size == 0) {
@@ -661,7 +658,7 @@ bool GetSystemDirectory(string16 *path) {
   if (characters_written == 0) {
     return false;
   }
-  assert(characters_written == buffer_size - 1);
+  DCHECK(characters_written == buffer_size - 1);
 
   path->assign(buffer);
   delete[] buffer;

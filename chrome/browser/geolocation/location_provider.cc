@@ -1,73 +1,54 @@
-// Copyright 2008, Google Inc.
-//
-// Redistribution and use in source and binary forms, with or without
-// modification, are permitted provided that the following conditions are met:
-//
-//  1. Redistributions of source code must retain the above copyright notice,
-//     this list of conditions and the following disclaimer.
-//  2. Redistributions in binary form must reproduce the above copyright notice,
-//     this list of conditions and the following disclaimer in the documentation
-//     and/or other materials provided with the distribution.
-//  3. Neither the name of Google Inc. nor the names of its contributors may be
-//     used to endorse or promote products derived from this software without
-//     specific prior written permission.
-//
-// THIS SOFTWARE IS PROVIDED BY THE AUTHOR ``AS IS'' AND ANY EXPRESS OR IMPLIED
-// WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED WARRANTIES OF
-// MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO
-// EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
-// SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT LIMITED TO,
-// PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE, DATA, OR PROFITS;
-// OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY,
-// WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR
-// OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF
-// ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
-//
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // This file implements a mock location provider and the factory functions for
 // creating various types of location provider.
 
-// TODO(joth): port to chromium
-#if 0
-
-#include "gears/geolocation/location_provider.h"
+#include "chrome/browser/geolocation/location_provider.h"
 
 #include <assert.h>
-#include "gears/base/common/scoped_refptr.h"  // For RefCount
 
-void LocationProviderBase::RegisterListener(ListenerInterface *listener,
-                                            bool request_address) {
-  assert(listener);
-  MutexLock lock(&listeners_mutex_);
+LocationProviderBase::LocationProviderBase()
+    : client_loop_(MessageLoop::current()) {
+}
+
+LocationProviderBase::~LocationProviderBase() {
+  DCHECK_EQ(client_loop_, MessageLoop::current());
+}
+
+void LocationProviderBase::RegisterListener(ListenerInterface* listener) {
+  DCHECK(listener);
+  if (RunInClientThread(FROM_HERE,
+                        &LocationProviderBase::RegisterListener, listener))
+    return;
   ListenerMap::iterator iter = listeners_.find(listener);
   if (iter == listeners_.end()) {
     std::pair<ListenerMap::iterator, bool> result =
-        listeners_.insert(
-        std::make_pair(listener,
-        std::make_pair(request_address, new RefCount())));
-    assert(result.second);
+        listeners_.insert(std::make_pair(listener, 0));
+    DCHECK(result.second);
     iter = result.first;
   }
-  RefCount *count = iter->second.second;
-  assert(count);
-  count->Ref();
+  ++iter->second;
 }
 
 void LocationProviderBase::UnregisterListener(ListenerInterface *listener) {
-  assert(listener);
-  MutexLock lock(&listeners_mutex_);
+  DCHECK(listener);
+  if (RunInClientThread(FROM_HERE,
+                        &LocationProviderBase::UnregisterListener, listener))
+    return;
   ListenerMap::iterator iter = listeners_.find(listener);
   if (iter != listeners_.end()) {
-    RefCount *count = iter->second.second;
-    assert(count);
-    if (count->Unref()) {
-      delete count;
+    if (--iter->second == 0) {
       listeners_.erase(iter);
     }
   }
 }
 
 void LocationProviderBase::UpdateListeners() {
-  MutexLock lock(&listeners_mutex_);
+  // Currently we required location provider implementations to make
+  // notifications from the client thread. This could be relaxed if needed.
+  CheckRunningInClientLoop();
   for (ListenerMap::const_iterator iter = listeners_.begin();
        iter != listeners_.end();
        ++iter) {
@@ -76,7 +57,9 @@ void LocationProviderBase::UpdateListeners() {
 }
 
 void LocationProviderBase::InformListenersOfMovement() {
-  MutexLock lock(&listeners_mutex_);
+  // Currently we required location provider implementations to make
+  // notifications from the client thread. This could be relaxed if needed.
+  CheckRunningInClientLoop();
   for (ListenerMap::const_iterator iter = listeners_.begin();
        iter != listeners_.end();
        ++iter) {
@@ -84,27 +67,11 @@ void LocationProviderBase::InformListenersOfMovement() {
   }
 }
 
-LocationProviderBase::ListenerMap *LocationProviderBase::GetListeners() {
-  return &listeners_;
+void LocationProviderBase::CheckRunningInClientLoop() {
+  DCHECK_EQ(MessageLoop::current(), client_loop());
 }
 
-Mutex *LocationProviderBase::GetListenersMutex() {
-  return &listeners_mutex_;
-}
-
-// Win32, Linux and OSX do not have a GPS location provider.
-#if (defined(WIN32) && !defined(OS_WINCE)) || \
-    defined(LINUX) || \
-    defined(OS_MACOSX)
-
-LocationProviderBase *NewGpsLocationProvider(
-    BrowsingContext *browsing_context,
-    const std::string16 &reverse_geocode_url,
-    const std::string16 &host_name,
-    const std::string16 &address_language) {
+// Currently no platforms have a GPS location provider.
+LocationProviderBase* NewGpsLocationProvider() {
   return NULL;
 }
-
-#endif
-
-#endif  // if 0

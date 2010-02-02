@@ -124,7 +124,7 @@ struct AccessPointData {
         age(kint32min),
         channel(kint32min),
         signal_to_noise(kint32min) {}
-
+  // MAC address, formatted as per MacAddressAsString16.
   string16 mac_address;
   int radio_signal_strength;  // Measured in dBm
   int age;              // Milliseconds since this access point was detected
@@ -145,10 +145,17 @@ struct AccessPointDataLess : public std::less<AccessPointData> {
 // All data for wifi.
 struct WifiData {
   // Determines whether a new set of WiFi data differs significantly from this.
-  bool DiffersSignificantly(const WifiData &other) const {
-    // At least 5 or 50% of access points added or removed is significant.
-    static const size_t kMinChangedAccessPoints = 5;
-
+  bool DiffersSignificantly(const WifiData& other) const {
+    // More than 4 or 50% of access points added or removed is significant.
+    static const size_t kMinChangedAccessPoints = 4;
+    const size_t min_ap_count =
+        std::min(access_point_data.size(), other.access_point_data.size());
+    const size_t max_ap_count =
+        std::max(access_point_data.size(), other.access_point_data.size());
+    const size_t difference_threadhold = std::min(kMinChangedAccessPoints,
+                                                  min_ap_count / 2);
+    if (max_ap_count > min_ap_count + difference_threadhold)
+      return true;
     // Compute size of interesction of old and new sets.
     size_t num_common = 0;
     for (AccessPointDataSet::const_iterator iter = access_point_data.begin();
@@ -159,15 +166,10 @@ struct WifiData {
         ++num_common;
       }
     }
-    assert(num_common <= access_point_data.size());
-    assert(num_common <= other.access_point_data.size());
+    DCHECK(num_common <= min_ap_count);
 
     // Test how many have changed.
-    size_t added_or_removed = std::max(
-        other.access_point_data.size() - num_common,
-        access_point_data.size() - num_common);
-    return added_or_removed >=
-        std::min(kMinChangedAccessPoints, access_point_data.size() / 2);
+    return max_ap_count > num_common + difference_threadhold;
   }
 
   // Store access points as a set, sorted by MAC address. This allows quick
@@ -291,7 +293,7 @@ class DeviceDataProvider {
     if (!instance_) {
       instance_ = new DeviceDataProvider();
     }
-    assert(instance_);
+    DCHECK(instance_);
     instance_->Ref();
     instance_->AddListener(listener);
     return instance_;
@@ -322,11 +324,11 @@ class DeviceDataProvider {
   // Private constructor and destructor, callers access singleton through
   // Register and Unregister.
   DeviceDataProvider() : count_(0) {
-    assert(factory_function_);
+    DCHECK(factory_function_);
     impl_.reset((*factory_function_)());
     impl_->SetContainer(this);
     bool started = impl_->StartDataProvider();
-    assert(started);
+    DCHECK(started);
   }
   virtual ~DeviceDataProvider() {}
 
