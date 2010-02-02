@@ -1786,13 +1786,14 @@
         },
       ]},  # 'targets'
     ],  # OS=="win"
-    ['OS=="mac"', {
+    ['OS=="mac" or (OS=="linux" and linux_fpic==1)', {
       'targets': [
-        # TODO(nirnimesh): enable for linux,win - crbug.com/32285
+        # TODO(nirnimesh): enable for win - crbug.com/32285
         {
           # Documentation: http://dev.chromium.org/developers/pyauto
           'target_name': 'pyautolib',
           'type': 'shared_library',
+          'product_prefix': '_',
           'dependencies': [
             'chrome',
             'test_support_common',
@@ -1822,7 +1823,6 @@
             # that xcode would generate)
             # Change when gyp can support a platform-neutral way for this
             # (http://code.google.com/p/gyp/issues/detail?id=135)
-            'EXECUTABLE_PREFIX': '_',
             'EXECUTABLE_EXTENSION': 'so',
             # When generated, pyautolib_wrap.cc includes some swig support
             # files which, as of swig 1.3.31 that comes with 10.5 and 10.6,
@@ -1838,6 +1838,11 @@
               'dependencies': [
                 '../build/linux/system.gyp:gtk',
               ],
+              'link_settings': {
+                'libraries': [
+                  '-lpython2.5',
+                ],
+              },
             }],
             ['OS=="mac"', {
               'include_dirs': [
@@ -1875,7 +1880,7 @@
           ],  # actions
         },  # target 'pyautolib'
       ]  # targets
-    }],  # OS=='mac'
+    }],  # OS=='mac' or OS=='linux'
     ['coverage!=0',
       { 'targets': [
         {

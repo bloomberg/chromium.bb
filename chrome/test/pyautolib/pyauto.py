@@ -22,13 +22,19 @@ def _LocateBinDirs():
   script_dir = os.path.dirname(__file__)
   chrome_src = os.path.join(script_dir, os.pardir, os.pardir, os.pardir)
 
-  # TODO(nirnimesh): Expand this to include win/linux build dirs
-  #                  crbug.com/32285
-  bin_dirs = [ os.path.join(chrome_src, 'xcodebuild', 'Debug'),
-               os.path.join(chrome_src, 'xcodebuild', 'Release'),
-             ]
-  for d in bin_dirs:
-    sys.path.append(os.path.normpath(d))
+  bin_dirs = {
+      'linux2': [ os.path.join(chrome_src, 'out', 'Debug'),
+                  os.path.join(chrome_src, 'sconsbuild', 'Debug'),
+                  os.path.join(chrome_src, 'out', 'Release'),
+                  os.path.join(chrome_src, 'sconsbuild', 'Release')],
+      'darwin': [ os.path.join(chrome_src, 'xcodebuild', 'Debug'),
+                  os.path.join(chrome_src, 'xcodebuild', 'Release')],
+      'win32':  [ os.path.join(chrome_src, 'chrome', 'Debug'),
+                  os.path.join(chrome_src, 'chrome', 'Release')],
+      'cygwin': [ os.path.join(chrome_src, 'chrome', 'Debug'),
+                  os.path.join(chrome_src, 'chrome', 'Release')],
+  }
+  sys.path += bin_dirs.get(sys.platform, [])
 
 _LocateBinDirs()
 
