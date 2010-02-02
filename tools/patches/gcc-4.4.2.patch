@@ -1235,7 +1235,25 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
  })
  
  (define_insn "*addsi_2"
-@@ -9687,6 +9737,309 @@
+@@ -7562,7 +7612,16 @@
+ 		  (match_operand:DI 2 "x86_64_general_operand" "re,rm")))
+    (clobber (reg:CC FLAGS_REG))]
+   "TARGET_64BIT && ix86_binary_operator_ok (MINUS, DImode, operands)"
+-  "sub{q}\t{%2, %0|%0, %2}"
++{
++  rtx dst = operands[0];
++  rtx src1 = operands[1];
++  rtx src2 = operands[2];
++
++  if (dst == src1 && src1 == stack_pointer_rtx)
++    return "naclssp %k2, %%r15";
++
++  return "sub{q}\t{%2, %0|%0, %2}";
++}
+   [(set_attr "type" "alu")
+    (set_attr "mode" "DI")])
+ 
+@@ -9687,6 +9746,309 @@
    [(set_attr "type" "alu")
     (set_attr "mode" "SI")])
  
@@ -1545,7 +1563,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
  (define_insn "*iorsi_3"
    [(set (reg FLAGS_REG)
  	(compare (ior:SI (match_operand:SI 1 "nonimmediate_operand" "%0")
-@@ -14842,7 +15195,16 @@
+@@ -14842,7 +15204,16 @@
  (define_insn "*indirect_jump"
    [(set (pc) (match_operand:P 0 "nonimmediate_operand" "rm"))]
    ""
@@ -1563,7 +1581,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "ibr")
     (set_attr "length_immediate" "0")])
  
-@@ -15040,9 +15402,11 @@
+@@ -15040,9 +15411,11 @@
    [(call (mem:QI (match_operand:SI 0 "sibcall_insn_operand" "s,U"))
  	 (match_operand 1 "" ""))]
    "SIBLING_CALL_P (insn) && !TARGET_64BIT"
@@ -1578,7 +1596,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "call")])
  
  (define_insn "*call_1_rex64"
-@@ -15089,12 +15453,14 @@
+@@ -15089,12 +15462,14 @@
    [(set_attr "type" "call")])
  
  (define_insn "*sibcall_1_rex64"
@@ -1597,7 +1615,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "call")])
  
  ;; Call subroutine, returning value in operand 0
-@@ -15229,6 +15595,15 @@
+@@ -15229,6 +15604,15 @@
    if (crtl->args.pops_args)
      {
        rtx popc = GEN_INT (crtl->args.pops_args);
@@ -1613,7 +1631,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
        emit_jump_insn (gen_return_pop_internal (popc));
        DONE;
      }
-@@ -15237,9 +15612,17 @@
+@@ -15237,9 +15621,17 @@
  (define_insn "return_internal"
    [(return)]
    "reload_completed"
@@ -1634,7 +1652,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
     (set_attr "modrm" "0")])
  
  ;; Used by x86_machine_dependent_reorg to avoid penalty on single byte RET
-@@ -15249,9 +15632,17 @@
+@@ -15249,9 +15641,17 @@
    [(return)
     (unspec [(const_int 0)] UNSPEC_REP)]
    "reload_completed"
@@ -1655,7 +1673,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
     (set_attr "prefix_rep" "1")
     (set_attr "modrm" "0")])
  
-@@ -15259,9 +15650,17 @@
+@@ -15259,9 +15659,17 @@
    [(return)
     (use (match_operand:SI 0 "const_int_operand" ""))]
    "reload_completed"
@@ -1676,7 +1694,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
     (set_attr "modrm" "0")])
  
  (define_insn "return_indirect_internal"
-@@ -15944,6 +16343,30 @@
+@@ -15944,6 +16352,30 @@
    operands[2] = ix86_tls_get_addr ();
  })
  
@@ -1707,7 +1725,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
  (define_insn "*tls_local_dynamic_base_32_gnu"
    [(set (match_operand:SI 0 "register_operand" "=a")
  	(unspec:SI [(match_operand:SI 1 "register_operand" "b")
-@@ -19140,7 +19563,18 @@
+@@ -19140,7 +19572,18 @@
  	(mem:BLK (match_dup 4)))
     (use (match_dup 5))]
    "TARGET_64BIT"
@@ -1727,7 +1745,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "prefix_rep" "1")
     (set_attr "memory" "both")
-@@ -19178,7 +19612,18 @@
+@@ -19178,7 +19621,18 @@
  	(mem:BLK (match_dup 4)))
     (use (match_dup 5))]
    "TARGET_64BIT"
@@ -1747,7 +1765,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "prefix_rep" "1")
     (set_attr "memory" "both")
-@@ -19212,7 +19657,18 @@
+@@ -19212,7 +19666,18 @@
  	(mem:BLK (match_dup 4)))
     (use (match_dup 5))]
    "TARGET_64BIT"
@@ -1767,7 +1785,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "prefix_rep" "1")
     (set_attr "memory" "both")
-@@ -19294,7 +19750,17 @@
+@@ -19294,7 +19759,17 @@
  	(plus:DI (match_dup 1)
  		 (const_int 8)))]
    "TARGET_64BIT"
@@ -1786,7 +1804,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "memory" "store")
     (set_attr "mode" "DI")])
-@@ -19318,7 +19784,17 @@
+@@ -19318,7 +19793,17 @@
  	(plus:DI (match_dup 1)
  		 (const_int 4)))]
    "TARGET_64BIT"
@@ -1805,7 +1823,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "memory" "store")
     (set_attr "mode" "SI")])
-@@ -19342,7 +19818,17 @@
+@@ -19342,7 +19827,17 @@
  	(plus:DI (match_dup 1)
  		 (const_int 2)))]
    "TARGET_64BIT"
@@ -1824,7 +1842,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "memory" "store")
     (set_attr "mode" "HI")])
-@@ -19366,7 +19852,17 @@
+@@ -19366,7 +19861,17 @@
  	(plus:DI (match_dup 1)
  		 (const_int 1)))]
    "TARGET_64BIT"
@@ -1843,7 +1861,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "memory" "store")
     (set_attr "mode" "QI")])
-@@ -19392,7 +19888,17 @@
+@@ -19392,7 +19897,17 @@
     (use (match_operand:DI 2 "register_operand" "a"))
     (use (match_dup 4))]
    "TARGET_64BIT"
@@ -1862,7 +1880,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "prefix_rep" "1")
     (set_attr "memory" "store")
-@@ -19426,7 +19932,17 @@
+@@ -19426,7 +19941,17 @@
     (use (match_operand:SI 2 "register_operand" "a"))
     (use (match_dup 4))]
    "TARGET_64BIT"
@@ -1881,7 +1899,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "prefix_rep" "1")
     (set_attr "memory" "store")
-@@ -19458,7 +19974,17 @@
+@@ -19458,7 +19983,17 @@
     (use (match_operand:QI 2 "register_operand" "a"))
     (use (match_dup 4))]
    "TARGET_64BIT"
@@ -1900,7 +1918,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "prefix_rep" "1")
     (set_attr "memory" "store")
-@@ -19585,7 +20111,19 @@
+@@ -19585,7 +20120,19 @@
     (clobber (match_operand:DI 1 "register_operand" "=D"))
     (clobber (match_operand:DI 2 "register_operand" "=c"))]
    "TARGET_64BIT"
@@ -1921,7 +1939,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "mode" "QI")
     (set_attr "prefix_rep" "1")])
-@@ -19638,7 +20176,19 @@
+@@ -19638,7 +20185,19 @@
     (clobber (match_operand:DI 1 "register_operand" "=D"))
     (clobber (match_operand:DI 2 "register_operand" "=c"))]
    "TARGET_64BIT"
@@ -1942,7 +1960,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "mode" "QI")
     (set_attr "prefix_rep" "1")])
-@@ -19699,7 +20249,19 @@
+@@ -19699,7 +20258,19 @@
     (clobber (match_operand:DI 1 "register_operand" "=D"))
     (clobber (reg:CC FLAGS_REG))]
    "TARGET_64BIT"
@@ -1963,7 +1981,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "str")
     (set_attr "mode" "QI")
     (set_attr "prefix_rep" "1")])
-@@ -20241,13 +20803,27 @@
+@@ -20241,13 +20812,27 @@
  	          && INTVAL (operands[2]) != -128)))
  	{
  	  operands[2] = GEN_INT (-INTVAL (operands[2]));
@@ -1993,7 +2011,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
  
      default:
        gcc_unreachable ();
-@@ -21562,9 +22138,11 @@
+@@ -21562,9 +22147,11 @@
  	(call (mem:QI (match_operand:SI 1 "sibcall_insn_operand" "s,U"))
  	      (match_operand:SI 2 "" "")))]
    "SIBLING_CALL_P (insn) && !TARGET_64BIT"
@@ -2008,7 +2026,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "callv")])
  
  (define_insn "*call_value_1_rex64"
-@@ -21618,11 +22196,14 @@
+@@ -21618,11 +22205,14 @@
  	(call (mem:QI (match_operand:DI 1 "sibcall_insn_operand" "s,U"))
  	      (match_operand:DI 2 "" "")))]
    "SIBLING_CALL_P (insn) && TARGET_64BIT"
@@ -2026,7 +2044,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
  ;; We used to use "int $5", in honor of #BR which maps to interrupt vector 5.
  ;; That, however, is usually mapped by the OS to SIGSEGV, which is often
  ;; caught for use by garbage collectors and the like.  Using an insn that
-@@ -21664,7 +22245,7 @@
+@@ -21664,7 +22254,7 @@
     (use (match_operand:DI 1 "register_operand" "r"))
     (use (match_operand:DI 2 "const_int_operand" "i"))
     (use (label_ref:DI (match_operand 3 "" "X")))]
@@ -2035,7 +2053,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
     && INTVAL (operands[4]) + X86_64_SSE_REGPARM_MAX * 16 - 16 < 128
     && INTVAL (operands[4]) + INTVAL (operands[2]) * 16 >= -128"
  {
-@@ -21702,6 +22283,67 @@
+@@ -21702,6 +22292,67 @@
     (set_attr "prefix" "maybe_vex")
     (set_attr "mode" "DI")])
  
