@@ -280,14 +280,14 @@ class ChromeosBrowserViewLayoutManager : public ChromeBrowserViewLayoutManager {
     int remaining_width = bounds.width() - status_size.width();
 
     if (compact_navigation_bar_->IsVisible()) {
-      gfx::Size cnb_bounds = compact_navigation_bar_->GetPreferredSize();
+      gfx::Size cnb_size = compact_navigation_bar_->GetPreferredSize();
       // Adjust the size of the compact nativation bar to avoid creating
       // a fixed widget with its own gdk window. AutocompleteEditView
       // expects the parent view to be transparent, but a fixed with
       // its own window is not.
-      compact_navigation_bar_->SetBounds(curx, bounds.y() + 1,
-                                         cnb_bounds.width(),
-                                         bounds.height() - 1);
+      gfx::Rect cnb_bounds(curx, bounds.y(), cnb_size.width(), bounds.height());
+      compact_navigation_bar_->SetBounds(
+          cnb_bounds.Intersect(browser_view_->GetVisibleBounds()));
       curx += cnb_bounds.width();
       remaining_width -= cnb_bounds.width();
 
