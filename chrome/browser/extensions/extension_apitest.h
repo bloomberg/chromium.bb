@@ -8,6 +8,8 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/common/notification_service.h"
 
+class Extension;
+
 // The general flow of these API tests should work like this:
 // (1) Setup initial browser state (e.g. create some bookmarks for the
 //     bookmark test)
@@ -19,10 +21,11 @@
 
 class ExtensionApiTest : public ExtensionBrowserTest {
  protected:
-  // Helper class that observes tests failing or passing. Observation starts when
-  // the class is constructed. Get the next result by calling GetNextResult() and
-  // message() if GetNextResult() return false. If there are no results, this
-  // method will pump the UI message loop until one is received.
+  // Helper class that observes tests failing or passing. Observation starts
+  // when the class is constructed. Get the next result by calling
+  // GetNextResult() and message() if GetNextResult() return false. If there
+  // are no results, this method will pump the UI message loop until one is
+  // received.
   class ResultCatcher : public NotificationObserver {
    public:
     ResultCatcher();
@@ -34,7 +37,8 @@ class ExtensionApiTest : public ExtensionBrowserTest {
     const std::string& message() { return message_; }
 
    private:
-    virtual void Observe(NotificationType type, const NotificationSource& source,
+    virtual void Observe(NotificationType type,
+                         const NotificationSource& source,
                          const NotificationDetails& details);
 
     NotificationRegistrar registrar_;
@@ -50,6 +54,10 @@ class ExtensionApiTest : public ExtensionBrowserTest {
   // Load |extension_name| and wait for pass / fail notification.
   // |extension_name| is a directory in "test/data/extensions/api_test".
   bool RunExtensionTest(const char* extension_name);
+
+  // Test that exactly one extension loaded.  If so, return a pointer to
+  // the extension.  If not, return NULL and set message_.
+  Extension* GetSingleLoadedExtension();
 
   // All extensions tested by ExtensionApiTest are in the "api_test" dir.
   virtual void SetUpCommandLine(CommandLine* command_line);

@@ -46,14 +46,14 @@ class BrowserActionApiTest : public ExtensionApiTest {
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
   StartHTTPServer();
   ASSERT_TRUE(RunExtensionTest("browser_action/basics")) << message_;
+  Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
 
   // Test that there is a browser action in the toolbar.
   ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());
 
   // Tell the extension to update the browser action state.
   ResultCatcher catcher;
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
-  Extension* extension = service->extensions()->at(0);
   ui_test_utils::NavigateToURL(browser(),
       GURL(extension->GetResourceURL("update.html")));
   ASSERT_TRUE(catcher.GetNextResult());
@@ -86,6 +86,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, Basic) {
 
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
   ASSERT_TRUE(RunExtensionTest("browser_action/no_icon")) << message_;
+  Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
 
   // Test that there is a browser action in the toolbar and that it has no icon.
   ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());
@@ -93,8 +95,6 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
 
   // Tell the extension to update the icon using setIcon({imageData:...}).
   ResultCatcher catcher;
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
-  Extension* extension = service->extensions()->at(0);
   ui_test_utils::NavigateToURL(browser(),
       GURL(extension->GetResourceURL("update.html")));
   ASSERT_TRUE(catcher.GetNextResult());
@@ -116,6 +116,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, DynamicBrowserAction) {
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TabSpecificBrowserActionState) {
   ASSERT_TRUE(RunExtensionTest("browser_action/tab_specific_state")) <<
       message_;
+  Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
 
   // Test that there is a browser action in the toolbar and that it has an icon.
   ASSERT_EQ(1, GetBrowserActionsBar().NumberOfBrowserActions());
@@ -143,6 +145,8 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, TabSpecificBrowserActionState) {
 IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionPopup) {
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII(
       "browser_action/popup")));
+  Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
 
   // The extension's popup's size grows by |growFactor| each click.
   const int growFactor = 500;

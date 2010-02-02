@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 
 #include "chrome/browser/browser.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/test/ui_test_utils.h"
 
@@ -79,6 +80,23 @@ bool ExtensionApiTest::RunExtensionTest(const char* extension_name) {
   } else {
     return true;
   }
+}
+
+// Test that exactly one extension loaded.
+Extension* ExtensionApiTest::GetSingleLoadedExtension() {
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  if (service->extensions()->size() != 1u) {
+    message_ = StringPrintf(
+        "Expected only one extension to be present.  Found %u.",
+        static_cast<unsigned>(service->extensions()->size()));
+    return NULL;
+  }
+  Extension* extension = service->extensions()->at(0);
+  if (!extension) {
+    message_ = "extension pointer is NULL.";
+    return NULL;
+  }
+  return extension;
 }
 
 void ExtensionApiTest::SetUpCommandLine(CommandLine* command_line) {
