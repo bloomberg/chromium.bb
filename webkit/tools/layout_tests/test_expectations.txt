@@ -866,6 +866,7 @@ BUG20507 : http/tests/uri/resolve-encoding-relative.html = FAIL
 
 // Flaky: fails about 5% of the time.
 BUG31342 WIN RELEASE : security/block-test-no-port.html = TEXT PASS
+BUG31342 WIN RELEASE : security/block-test.html = TEXT PASS
 
 // Fails in debug. Windows used to be only flaky, but now fails consistently
 // starting with the 52554->52633 merge.
@@ -2923,15 +2924,13 @@ BUG33538 : fast/dom/Window/anonymous-slot-with-changes.html = TEXT
 // WebKit roll 54103 -> 54127
 BUG33997 MAC : svg/custom/dominant-baseline-hanging.svg = IMAGE
 BUG33997 MAC : svg/custom/gradient-stop-corner-cases.svg = IMAGE
-BUG34001 MAC : fast/dom/Range/getClientRects.html = TEXT
 
 // WebKit roll 54127 -> 54213
-BUG34200 : fast/js/math.html = TEXT
-BUG34200 : fast/loader/crash-copying-backforwardlist.html = TEXT
-BUG34200 : printing/page-break-always.html = TEXT
-BUG34200 : printing/pageNumerForElementById.html = TEXT
+BUG34221 : fast/js/math.html = TEXT
+BUG34222 : fast/loader/crash-copying-backforwardlist.html = TEXT
+BUG34219 : printing/page-break-always.html = TEXT
+BUG34219 : printing/pageNumerForElementById.html = TEXT
 BUG8635 WIN LINUX : svg/batik/filters/feTile.svg = IMAGE
 BUG8635 WIN LINUX : svg/custom/stroked-pattern.svg = IMAGE
 BUG8635 WIN LINUX : svg/filters/feTile.svg = IMAGE
 BUG8635 WIN LINUX : svg/filters/subRegion-in-userSpace.svg = IMAGE
-BUG34202 : security/block-test.html = TEXT
