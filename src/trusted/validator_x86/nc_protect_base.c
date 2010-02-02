@@ -139,7 +139,7 @@ void NcBaseRegisterValidator(struct NcValidatorState* state,
 
         /* If reached, found an assignment to a register.
          * Check if its one that we care about (i.e.
-         * the base register (r15), RSP, or RBP).
+         * the base register (RBASE), RSP, or RBP).
          */
         if (reg_name == state->base_register) {
           NcValidatorInstMessage(
@@ -166,17 +166,31 @@ void NcBaseRegisterValidator(struct NcValidatorState* state,
                *        mov %rbp, %rsp
                * (4) Allow stack updates of the form:
                *        OP %esp, C
-               *        add %rsp, %r15
+               *        add %rsp, %rbase
                *     where OP is in { add , sub }, and C is a constant.
                * (5) Allow "and $rsp, 0xXX" where 0xXX is an immediate 8 bit
                *     value that is negative. Used to realign the stack pointer.
+               * (6) mov %esp, ...
+               *     add %rsp, %rbase
                *
-               * Note: Cases 4 and 5 are maintaining the invariant that the top
-               * half of RSP is the same as R15, and the lower half of R15 is
-               * zero. Case (4) maintains this by first clearing the top half
-               * of RSP, and then setting the top half to match R15. Case (5)
-               * maintains the variant becaus the constant is small (-1 to -128)
-               * to that the invariant for $RSP (top half is unchanged).
+               *     Note: The code here allows any operation that zero extends
+               *     ebp, not just a move. The rationale is that the MOV does
+               *     a zero extend of RBP, and is the only property that is
+               *     needed to maintain the invariant on ESP.
+               *
+               * Note: Cases 2, 4, 5, and 6 are maintaining the invariant that
+               * the top half of RSP is the same as RBASE, and the lower half
+               * of RBASE is zero. Case (2) does this by seting the bottom 32
+               * bits with the first instruction (zeroing out the top 32 bits),
+               * and then copies (via or) the top 32 bits of RBASE into RSP
+               * (since the bottom 32 bits of RBASE are zero).
+               * Case (4) maintains this by first clearing the top half
+               * of RSP, and then setting the top half to match RBASE. Case (5)
+               * maintains the variant because the constant is small
+               * (-1 to -128) to that the invariant for $RSP (top half
+               * is unchanged). Case (6) is simular to case 2 (by filling
+               * the lower 32 bits and zero extending), followed by an add to
+               * set the top 32 bits.
                */
               switch (inst_name) {
                 case InstPush:
@@ -198,25 +212,18 @@ void NcBaseRegisterValidator(struct NcValidatorState* state,
                   }
                   break;
                 case InstOr:
-                case InstAdd:
-                case InstSub: {
-                    /* case 2/4 (depending on instruction name). */
-                    Bool or_case = (inst_name == InstOr);
+                case InstAdd: {
+                    /* case 2/4/6 (depending on instruction name). */
                     if (NcIsBinarySetUsingRegisters(
                             inst_opcode, inst_name, vector, RegRSP,
-                            (or_case ? state->base_register : RegR15)) &&
+                            state->base_register) &&
                         NcInstIterHasLookbackState(iter, 1)) {
                       NcInstState* prev_inst =
                           NcInstIterGetLookbackState(iter, 1);
-                      if (or_case
-                          ? NcAssignsRegisterWithZeroExtends(prev_inst, RegESP)
-                          : NcIsAddOrSubBoundedConstFromEsp(prev_inst)) {
-                        /* Matches, but we need to add that one can't branch
-                         * into the middle of this pattern. Then mark the
-                         * assignment as legal, and report any other found
-                         * problems on previous instructions.
-                         */
-                        DEBUG(printf("nc protect base for or/add/sub\n"));
+                      if (NcAssignsRegisterWithZeroExtends(prev_inst, RegESP) ||
+                          (inst_name == InstAdd &&
+                           NcIsAddOrSubBoundedConstFromEsp(prev_inst))) {
+                        DEBUG(printf("nc protect base for or/add/or\n"));
                         NcMarkInstructionJumpIllegal(state, inst);
                         locals->esp_set_inst = NULL;
                         MaybeReportPreviousBad(state, locals);
