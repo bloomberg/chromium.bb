@@ -11,6 +11,8 @@
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 
 
+#define POST_ADDR_SPACE_GUARD_SIZE  (2 * NACL_PAGESIZE)
+
 /*
  * On ARM, we cheat slightly: we add two pages to the requested allocation!
  * This accomodates the guard region we require at the top end of untrusted
@@ -19,7 +21,7 @@
 NaClErrorCode NaClAllocateSpace(void **mem, size_t addrsp_size) {
   CHECK(mem);
 
-  addrsp_size += 2 * NACL_PAGESIZE;
+  addrsp_size += POST_ADDR_SPACE_GUARD_SIZE;
   addrsp_size -= NACL_TRAMPOLINE_START;
 
   *mem = (void *) NACL_TRAMPOLINE_START;
@@ -70,8 +72,10 @@ NaClErrorCode NaClMprotectGuards(struct NaClApp *nap) {
    */
   NaClLog(4, "NaClMprotectGuards: %"PRIxPTR", %"PRIxS"\n",
           (uintptr_t) guard_base,
-          (size_t) (2 * NACL_PAGESIZE));
-  if ((err = NaCl_mprotect(guard_base, 2 * NACL_PAGESIZE, PROT_NONE)) != 0) {
+          (size_t) POST_ADDR_SPACE_GUARD_SIZE);
+  if ((err = NaCl_mprotect(guard_base,
+                           POST_ADDR_SPACE_GUARD_SIZE,
+                           PROT_NONE)) != 0) {
     NaClLog(LOG_ERROR, ("NaClMemoryProtection: failed to protect lower guard "
                         "on trusted memory space (error %d)\n"),
             err);
@@ -99,8 +103,8 @@ void NaClTeardownMprotectGuards(struct NaClApp *nap) {
   }
   NaClLog(4, "NaClTeardownMprotectGuards: %"PRIxPTR", %"PRIxS"\n",
           (uintptr_t) guard_base,
-          (size_t) (2 * NACL_PAGESIZE));
-  NaCl_page_free(guard_base, 2 * NACL_PAGESIZE);
+          (size_t) POST_ADDR_SPACE_GUARD_SIZE);
+  NaCl_page_free(guard_base, POST_ADDR_SPACE_GUARD_SIZE);
 
   NaClLog(4, "NaClTeardownMprotectGuards: done\n");
 }

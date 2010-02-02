@@ -32,6 +32,7 @@ ACCEPTABLE_ARGUMENTS = {
     'MODE': None,
     'PROFILE': None,
     'PROGRESS': None,
+    'SILENT': None,
     'SYMBOLS': None,
     'build_av_apps': None,
     'build_vim': None,
