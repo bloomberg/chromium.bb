@@ -162,12 +162,6 @@ deps_os = {
       "/trunk/deps/third_party/ffmpeg/patched-ffmpeg-mt@" +
       Var("ffmpeg_revision"),
 
-    "src/third_party/ffmpeg/binaries/chromium/mac/ia32":
-      "/trunk/deps/third_party/ffmpeg/binaries/mac@" + Var("ffmpeg_revision"),
-    "src/third_party/ffmpeg/binaries/chromium/mac/ia32_dbg":
-      "/trunk/deps/third_party/ffmpeg/binaries/mac_dbg@" +
-      Var("ffmpeg_revision"),
-
     "src/third_party/swig/mac":
       "/trunk/deps/third_party/swig/mac@" + Var("swig_revision"),
   },
@@ -184,20 +178,6 @@ deps_os = {
       "/trunk/deps/third_party/yasm/patched-yasm@29937",
     "src/third_party/ffmpeg/source/patched-ffmpeg-mt":
       "/trunk/deps/third_party/ffmpeg/patched-ffmpeg-mt@" +
-      Var("ffmpeg_revision"),
-
-    "src/third_party/ffmpeg/binaries/chromium/linux/ia32":
-      "/trunk/deps/third_party/ffmpeg/binaries/linux@" +
-      Var("ffmpeg_revision"),
-    "src/third_party/ffmpeg/binaries/chromium/linux/ia32_dbg":
-      "/trunk/deps/third_party/ffmpeg/binaries/linux_dbg@" +
-      Var("ffmpeg_revision"),
-
-    "src/third_party/ffmpeg/binaries/chromium/linux/x64":
-      "/trunk/deps/third_party/ffmpeg/binaries/linux_64@" +
-      Var("ffmpeg_revision"),
-    "src/third_party/ffmpeg/binaries/chromium/linux/x64_dbg":
-      "/trunk/deps/third_party/ffmpeg/binaries/linux_64_dbg@" +
       Var("ffmpeg_revision"),
 
     "src/third_party/swig/linux":
