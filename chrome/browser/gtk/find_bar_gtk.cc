@@ -180,10 +180,10 @@ FindBarGtk::FindBarGtk(Browser* browser)
   // widget will be realized.
   g_signal_connect(text_entry_, "changed",
                    G_CALLBACK(OnChanged), this);
-  g_signal_connect(text_entry_, "key-press-event",
-                   G_CALLBACK(OnKeyPressEvent), this);
-  g_signal_connect(text_entry_, "key-release-event",
-                   G_CALLBACK(OnKeyReleaseEvent), this);
+  g_signal_connect_after(text_entry_, "key-press-event",
+                         G_CALLBACK(OnKeyPressEvent), this);
+  g_signal_connect_after(text_entry_, "key-release-event",
+                         G_CALLBACK(OnKeyReleaseEvent), this);
   // When the user tabs to us or clicks on us, save where the focus used to
   // be.
   g_signal_connect(text_entry_, "focus",
