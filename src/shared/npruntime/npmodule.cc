@@ -487,10 +487,10 @@ struct Device3DImpl {
 
 // inputs:
 // (int) npp
-// (int) commandBufferEntries
+// (int) commandBufferSize
 // outputs:
 // (handle) shared memory
-// (int) commandBufferEntries
+// (int) commandBufferSize
 // (int) getOffset
 // (int) putOffset
 NaClSrpcError NPModule::Device3DInitialize(NaClSrpcChannel* channel,
@@ -537,7 +537,7 @@ NaClSrpcError NPModule::Device3DInitialize(NaClSrpcChannel* channel,
       return NACL_SRPC_RESULT_APP_ERROR;
     }
     static NPDeviceContext3DConfig config;
-    config.commandBufferEntries = inputs[1]->u.ival;
+    config.commandBufferSize = inputs[1]->u.ival;
     NPError retval =
         module->device3d_->initializeContext(npp, &config, module->context3d_);
     if (NPERR_NO_ERROR != retval) {
@@ -563,7 +563,7 @@ NaClSrpcError NPModule::Device3DInitialize(NaClSrpcChannel* channel,
   outputs[0]->u.hval = NaClDescRef(wrapper->desc());
   // Free the wrapper.
   wrapper->Delete();
-  outputs[1]->u.ival = module->context3d_->commandBufferEntries;
+  outputs[1]->u.ival = module->context3d_->commandBufferSize;
   outputs[2]->u.ival = module->context3d_->getOffset;
   outputs[3]->u.ival = module->context3d_->putOffset;
   return NACL_SRPC_RESULT_OK;
@@ -627,6 +627,9 @@ NaClSrpcError NPModule::Device3DGetState(NaClSrpcChannel* channel,
                                          NaClSrpcArg** inputs,
                                          NaClSrpcArg** outputs) {
   UNREFERENCED_PARAMETER(channel);
+  UNREFERENCED_PARAMETER(inputs);
+  UNREFERENCED_PARAMETER(outputs);
+  /*  TODO(sehr): update for 64-bit compatibility
   NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
   NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
   NPError retval = module->device3d_->getStateContext(npp,
@@ -636,6 +639,7 @@ NaClSrpcError NPModule::Device3DGetState(NaClSrpcChannel* channel,
   if (NPERR_NO_ERROR != retval) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
+  */
   return NACL_SRPC_RESULT_OK;
 }
 
