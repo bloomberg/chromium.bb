@@ -710,7 +710,7 @@ void BookmarkBarGtk::StartThrobbing(const BookmarkNode* node) {
   int idx = model_->GetBookmarkBarNode()->IndexOfChild(parent_on_bb);
   GtkWidget* widget_to_throb = NULL;
 
-  if (hidden >= idx) {
+  if (hidden >= 0 && hidden <= idx) {
     widget_to_throb = overflow_button_;
   } else {
     if (parent_on_bb->is_url())
