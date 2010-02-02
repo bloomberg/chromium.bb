@@ -10,7 +10,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "net/base/escape.h"
-#include "net/base/host_cache.h"
+#include "net/base/host_resolver_impl.h"
 #include "net/base/load_log_util.h"
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
@@ -46,6 +46,21 @@ void DrawCommandButton(const std::string& title,
                command.c_str());
 }
 
+//------------------------------------------------------------------------------
+// URLRequestContext helpers.
+//------------------------------------------------------------------------------
+
+net::HostResolverImpl* GetHostResolverImpl(URLRequestContext* context) {
+  if (context->host_resolver()->IsHostResolverImpl())
+    return static_cast<net::HostResolverImpl*> (context->host_resolver());
+  return NULL;
+}
+
+net::HostCache* GetHostCache(URLRequestContext* context) {
+  if (GetHostResolverImpl(context))
+    return GetHostResolverImpl(context)->cache();
+  return NULL;
+}
 
 //------------------------------------------------------------------------------
 // Subsection definitions.
@@ -157,7 +172,7 @@ class SubSection {
 
 class ProxyServiceCurrentConfigSubSection : public SubSection {
  public:
-  ProxyServiceCurrentConfigSubSection(SubSection* parent)
+  explicit ProxyServiceCurrentConfigSubSection(SubSection* parent)
       : SubSection(parent, "config", "Current configuration") {
   }
 
@@ -178,7 +193,7 @@ class ProxyServiceCurrentConfigSubSection : public SubSection {
 
 class ProxyServiceLastInitLogSubSection : public SubSection {
  public:
-  ProxyServiceLastInitLogSubSection(SubSection* parent)
+  explicit ProxyServiceLastInitLogSubSection(SubSection* parent)
       : SubSection(parent, "init_log", "Last initialized load log") {
   }
 
@@ -195,7 +210,7 @@ class ProxyServiceLastInitLogSubSection : public SubSection {
 
 class ProxyServiceBadProxiesSubSection : public SubSection {
  public:
-  ProxyServiceBadProxiesSubSection(SubSection* parent)
+  explicit ProxyServiceBadProxiesSubSection(SubSection* parent)
       : SubSection(parent, "bad_proxies", "Bad Proxies") {
   }
 
@@ -238,7 +253,7 @@ class ProxyServiceBadProxiesSubSection : public SubSection {
 
 class ProxyServiceSubSection : public SubSection {
  public:
-  ProxyServiceSubSection(SubSection* parent)
+  explicit ProxyServiceSubSection(SubSection* parent)
       : SubSection(parent, "proxyservice", "ProxyService") {
     AddSubSection(new ProxyServiceCurrentConfigSubSection(this));
     AddSubSection(new ProxyServiceLastInitLogSubSection(this));
@@ -248,12 +263,12 @@ class ProxyServiceSubSection : public SubSection {
 
 class HostResolverCacheSubSection : public SubSection {
  public:
-  HostResolverCacheSubSection(SubSection* parent)
+  explicit HostResolverCacheSubSection(SubSection* parent)
       : SubSection(parent, "hostcache", "HostCache") {
   }
 
   virtual void OutputBody(URLRequestContext* context, std::string* out) {
-    const net::HostCache* host_cache = context->host_resolver()->GetHostCache();
+    const net::HostCache* host_cache = GetHostCache(context);
 
     if (!host_cache || host_cache->caching_is_disabled()) {
       out->append("<i>Caching is disabled.</i>");
@@ -349,11 +364,43 @@ class HostResolverCacheSubSection : public SubSection {
   }
 };
 
+class HostResolverTraceSubSection : public SubSection {
+ public:
+  explicit HostResolverTraceSubSection(SubSection* parent)
+      : SubSection(parent, "trace", "Trace of requests") {
+  }
+
+  virtual void OutputBody(URLRequestContext* context, std::string* out) {
+    net::HostResolverImpl* resolver = GetHostResolverImpl(context);
+    if (!resolver) {
+      out->append("<i>Tracing is not supported by this resolver.</i>");
+      return;
+    }
+
+    DrawCommandButton("Clear", "clear-hostresolver-trace", out);
+
+    if (resolver->IsRequestsTracingEnabled()) {
+      DrawCommandButton("Disable tracing", "hostresolver-trace-disable", out);
+    } else {
+      DrawCommandButton("Enable tracing", "hostresolver-trace-enable", out);
+    }
+
+    scoped_refptr<net::LoadLog> log = resolver->GetRequestsTrace();
+
+    if (log) {
+      OutputTextInPre(net::LoadLogUtil::PrettyPrintAsEventTree(log), out);
+    } else {
+      out->append("<p><i>No trace information, must enable tracing.</i></p>");
+    }
+  }
+};
+
 class HostResolverSubSection : public SubSection {
  public:
-  HostResolverSubSection(SubSection* parent)
+  explicit HostResolverSubSection(SubSection* parent)
       : SubSection(parent, "hostresolver", "HostResolver") {
     AddSubSection(new HostResolverCacheSubSection(this));
+    AddSubSection(new HostResolverTraceSubSection(this));
   }
 };
 
@@ -372,7 +419,7 @@ void OutputURLAndLoadLog(const GURL& url,
 
 class URLRequestLiveSubSection : public SubSection {
  public:
-  URLRequestLiveSubSection(SubSection* parent)
+  explicit URLRequestLiveSubSection(SubSection* parent)
       : SubSection(parent, "outstanding", "Outstanding requests") {
   }
 
@@ -394,7 +441,7 @@ class URLRequestLiveSubSection : public SubSection {
 
 class URLRequestRecentSubSection : public SubSection {
  public:
-  URLRequestRecentSubSection(SubSection* parent)
+  explicit URLRequestRecentSubSection(SubSection* parent)
       : SubSection(parent, "recent", "Recently completed requests") {
   }
 
@@ -417,7 +464,7 @@ class URLRequestRecentSubSection : public SubSection {
 
 class URLRequestSubSection : public SubSection {
  public:
-  URLRequestSubSection(SubSection* parent)
+  explicit URLRequestSubSection(SubSection* parent)
       : SubSection(parent, "urlrequest", "URLRequest") {
     AddSubSection(new URLRequestLiveSubSection(this));
     AddSubSection(new URLRequestRecentSubSection(this));
@@ -426,7 +473,7 @@ class URLRequestSubSection : public SubSection {
 
 class HttpCacheStatsSubSection : public SubSection {
  public:
-  HttpCacheStatsSubSection(SubSection* parent)
+  explicit HttpCacheStatsSubSection(SubSection* parent)
       : SubSection(parent, "stats", "Statistics") {
   }
 
@@ -437,7 +484,7 @@ class HttpCacheStatsSubSection : public SubSection {
 
 class HttpCacheSection : public SubSection {
  public:
-  HttpCacheSection(SubSection* parent)
+  explicit HttpCacheSection(SubSection* parent)
       : SubSection(parent, "httpcache", "HttpCache") {
     AddSubSection(new HttpCacheStatsSubSection(this));
   }
@@ -452,7 +499,7 @@ class HttpCacheSection : public SubSection {
 
 class SocketStreamLiveSubSection : public SubSection {
  public:
-  SocketStreamLiveSubSection(SubSection* parent)
+  explicit SocketStreamLiveSubSection(SubSection* parent)
       : SubSection(parent, "live", "Live SocketStreams") {
   }
 
@@ -474,7 +521,7 @@ class SocketStreamLiveSubSection : public SubSection {
 
 class SocketStreamRecentSubSection : public SubSection {
  public:
-  SocketStreamRecentSubSection(SubSection* parent)
+  explicit SocketStreamRecentSubSection(SubSection* parent)
       : SubSection(parent, "recent", "Recently completed SocketStreams") {
   }
 
@@ -497,7 +544,7 @@ class SocketStreamRecentSubSection : public SubSection {
 
 class SocketStreamSubSection : public SubSection {
  public:
-  SocketStreamSubSection(SubSection* parent)
+  explicit SocketStreamSubSection(SubSection* parent)
       : SubSection(parent, "socketstream", "SocketStream") {
     AddSubSection(new SocketStreamLiveSubSection(this));
     AddSubSection(new SocketStreamRecentSubSection(this));
@@ -523,6 +570,13 @@ bool HandleCommand(const std::string& command, URLRequestContext* context) {
     return true;
   }
 
+  if (StartsWithASCII(command, "hostresolver-trace-", true)) {
+    bool enable_tracing = (command == "hostresolver-trace-enable");
+    if (GetHostResolverImpl(context)) {
+      GetHostResolverImpl(context)->EnableRequestsTracing(enable_tracing);
+    }
+  }
+
   if (command == "clear-urlrequest-graveyard") {
     context->url_request_tracker()->ClearRecentlyDeceased();
     return true;
@@ -534,7 +588,7 @@ bool HandleCommand(const std::string& command, URLRequestContext* context) {
   }
 
   if (command == "clear-hostcache") {
-    net::HostCache* host_cache = context->host_resolver()->GetHostCache();
+    net::HostCache* host_cache = GetHostCache(context);
     if (host_cache)
       host_cache->clear();
     return true;
@@ -543,6 +597,11 @@ bool HandleCommand(const std::string& command, URLRequestContext* context) {
   if (command == "clear-badproxies") {
     context->proxy_service()->ClearBadProxiesCache();
     return true;
+  }
+
+  if (command == "clear-hostresolver-trace") {
+    if (GetHostResolverImpl(context))
+      GetHostResolverImpl(context)->ClearRequestsTrace();
   }
 
   if (command == "reload-proxy-config") {
@@ -593,7 +652,8 @@ void DrawControlsHeader(URLRequestContext* context, std::string* data) {
                     "clear-badproxies,"
                     "clear-hostcache,"
                     "clear-urlrequest-graveyard,"
-                    "clear-socketstream-graveyard",
+                    "clear-socketstream-graveyard,"
+                    "clear-hostresolver-trace",
                     data);
 
   data->append("</div>");

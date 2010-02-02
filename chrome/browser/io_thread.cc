@@ -14,6 +14,7 @@
 #include "net/base/fixed_host_resolver.h"
 #include "net/base/host_cache.h"
 #include "net/base/host_resolver.h"
+#include "net/base/host_resolver_impl.h"
 #include "net/url_request/url_request.h"
 
 namespace {
@@ -177,7 +178,10 @@ void IOThread::ChangedToOnTheRecordOnIOThread() {
 
   // Clear the host cache to avoid showing entries from the OTR session
   // in about:net-internals.
-  net::HostCache* host_cache = host_resolver_->GetHostCache();
-  if (host_cache)
-    host_cache->clear();
+  if (host_resolver_->IsHostResolverImpl()) {
+    net::HostCache* host_cache = static_cast<net::HostResolverImpl*>(
+        host_resolver_)->cache();
+    if (host_cache)
+      host_cache->clear();
+  }
 }
