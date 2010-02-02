@@ -69,10 +69,14 @@ class CrashHandler {
 
 static CrashHandler g_crash_handler;
 
+// Turn off FPO optimization, so ::RtlCaptureStackBackTrace returns sane result.
+#pragma optimize("y", off)
 LONG WINAPI CrashHandler::VectoredHandlerEntryPoint(
     EXCEPTION_POINTERS* exptrs) {
   return g_crash_handler.handler_.Handler(exptrs);
 }
+#pragma optimize("y", on)
+
 #pragma code_seg(pop)
 
 bool CrashHandler::Init(google_breakpad::ExceptionHandler* breakpad) {

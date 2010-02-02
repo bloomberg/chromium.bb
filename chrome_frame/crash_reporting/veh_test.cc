@@ -13,7 +13,7 @@ static void ModuleStart() {}
 #pragma code_seg(pop)
 
 #pragma code_seg(push, ".m$_2")
-static void Undetectable(DWORD code) {
+DECLSPEC_NOINLINE static void Undetectable(DWORD code) {
   __try {
     ::RaiseException(code, 0, 0, NULL);
   } __except(EXCEPTION_EXECUTE_HANDLER) {
@@ -27,7 +27,7 @@ static void UndetectableEnd() {}
 #pragma code_seg(pop)
 
 #pragma code_seg(push, ".m$_4")
-static void CatchThis() {
+DECLSPEC_NOINLINE static void CatchThis() {
   __try {
     ::RaiseException(STATUS_ACCESS_VIOLATION, 0, 0, NULL);
   } __except(EXCEPTION_EXECUTE_HANDLER) {
@@ -37,7 +37,6 @@ static void CatchThis() {
   // this will be detected since we are on the stack!
   Undetectable(STATUS_ILLEGAL_INSTRUCTION);
 }
-
 #pragma code_seg(pop)
 
 #pragma code_seg(push, ".m$_9")
@@ -67,10 +66,12 @@ class MockApi : public Win32VEHTraits,
 
 typedef VectoredHandlerT<MockApi> VectoredHandlerMock;
 
+#pragma optimize("y", off)
 static VectoredHandlerMock* g_mock_veh = NULL;
 static LONG WINAPI VEH(EXCEPTION_POINTERS* exptrs) {
   return g_mock_veh->Handler(exptrs);
 }
+#pragma optimize("y", on)
 
 TEST(ChromeFrame, ExceptionExcludedCode) {
   MockApi api;
@@ -100,5 +101,3 @@ TEST(ChromeFrame, ExceptionExcludedCode) {
   ::RemoveVectoredExceptionHandler(id);
   g_mock_veh = NULL;
 }
-
-
