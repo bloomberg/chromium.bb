@@ -459,7 +459,7 @@ class ToolFactory:
     if tool_name == "memcheck_wine":
       return Memcheck()
     if tool_name == "tsan":
-      if not IsLinux():
+      if not common.IsLinux():
         logging.info("WARNING: ThreadSanitizer may be unstable on Mac.")
         logging.info("See http://code.google.com/p/data-race-test/wiki/"
                      "ThreadSanitizerOnMacOsx for the details")
