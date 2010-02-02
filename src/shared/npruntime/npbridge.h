@@ -23,7 +23,7 @@ namespace nacl {
 // Incomplete class declarations.
 class NPObjectStub;
 class NPObjectProxy;
-struct NPCapability;
+class NPCapability;
 
 // NPBridge provides two main services.
 // 1) It encapsulates one end of a connection between a NaCl NPAPI module
@@ -51,15 +51,15 @@ class NPBridge {
 #if NACL_BUILD_SUBARCH == 64
   // The map used for 64-bit plugins to convert NPP pointers to integers for
   // use by 32-bit NaCl modules.
-  static std::map<NPP, int>* npp_64_32_map;
+  static std::map<NPP, int32_t>* npp_64_32_map;
   // Convert back from integer to NPP.
-  static std::map<int, NPP>* npp_32_64_map;
+  static std::map<int32_t, NPP>* npp_32_64_map;
 
   // The map used for 64-bit plugins to convert NPIdentifiers to integers for
   // use by 32-bit NaCl modules.
-  static std::map<NPIdentifier, int>* npident_int_map;
+  static std::map<NPIdentifier, int32_t>* npident_int_map;
   // Convert back from integer to NPIdentifier.
-  static std::map<int, NPIdentifier>* int_npident_map;
+  static std::map<int32_t, NPIdentifier>* int_npident_map;
 #endif  // NACL_BUILD_SUBARCH == 64
 
  private:
@@ -101,12 +101,12 @@ class NPBridge {
   }
 
   // Converting NPPs to/from integers
-  static int NppToInt(NPP npp);
-  static NPP IntToNpp(int npp_int);
+  static int32_t NppToInt(NPP npp);
+  static NPP IntToNpp(int32_t npp_int);
 
   // Converting NPIdentifiers to/from integers
-  static int NpidentifierToInt(NPIdentifier npident);
-  static NPIdentifier IntToNpidentifier(int npident_int);
+  static int32_t NpidentifierToInt(NPIdentifier npident);
+  static NPIdentifier IntToNpidentifier(int32_t npident_int);
 
   int peer_pid() const {
     return peer_pid_;

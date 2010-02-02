@@ -8,6 +8,8 @@
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/shared/npruntime/npmodule.h"
 
+#include "gen/native_client/src/shared/npruntime/npmodule_rpc.h"
+#include "gen/native_client/src/shared/npruntime/npnavigator_rpc.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_process.h"
@@ -25,18 +27,8 @@
 
 namespace nacl {
 
-static void DebugPrintf(const char *fmt, ...) {
-  va_list argptr;
-  fprintf(stderr, "@@@ MODULE ");
-
-  va_start(argptr, fmt);
-  vfprintf(stderr, fmt, argptr);
-  va_end(argptr);
-  fflush(stderr);
-}
-
 // Class static variable declarations.
-bool NPModule::IsWebKit = false;
+bool NPModule::is_webkit = false;
 
 NPModule::NPModule(NaClSrpcChannel* channel)
     : proxy_(NULL),
@@ -58,16 +50,16 @@ NPModule::NPModule(NaClSrpcChannel* channel)
     DebugPrintf("Couldn't create upcall services.\n");
     return;
   }
-  if (!NaClSrpcServiceHandlerCtor(service, srpc_methods)) {
+  if (!NaClSrpcServiceHandlerCtor(service, NPModuleRpcs::srpc_methods)) {
     DebugPrintf("Couldn't construct upcall services.\n");
     return;
   }
   // Export the service on the channel.
   channel->server = service;
   // And inform the client of the available services.
-  if (NACL_SRPC_RESULT_OK != NaClSrpcInvokeByName(channel,
-                                                  "NP_SetUpcallServices",
-                                                  service->service_string)) {
+  char* str = const_cast<char*>(service->service_string);
+  if (NACL_SRPC_RESULT_OK !=
+      NPNavigatorRpcClient::NP_SetUpcallServices(channel, str)) {
     DebugPrintf("Couldn't set upcall services.\n");
   }
 }
@@ -77,674 +69,23 @@ NPModule::~NPModule() {
   if (proxy_) {
     NPN_ReleaseObject(proxy_);
   }
+  // TODO(sehr): release contexts, etc., here.
 }
 
-NACL_SRPC_METHOD_ARRAY(NPModule::srpc_methods) = {
-  // Exported from NPModule
-  { "NPN_GetValue:ii:iC", GetValue },
-  { "NPN_SetStatus:is:", SetStatus },
-  { "NPN_InvalidateRect:iC:", InvalidateRect },
-  { "NPN_ForceRedraw:i:", ForceRedraw },
-  { "NPN_CreateArray:i:iC", CreateArray },
-  { "NPN_OpenURL:is:i", OpenURL },
-  { "NPN_GetIntIdentifier:i:i", GetIntIdentifier },
-  { "NPN_UTF8FromIdentifier:i:is", Utf8FromIdentifier },
-  { "NPN_GetStringIdentifier:s:i", GetStringIdentifier },
-  { "NPN_IntFromIdentifier:i:i", IntFromIdentifier },
-  { "NPN_IdentifierIsString:i:i", IdentifierIsString },
-  // Exported from NPObjectStub
-  { "NPN_Deallocate:C:", NPObjectStub::Deallocate },
-  { "NPN_Invalidate:C:", NPObjectStub::Invalidate },
-  { "NPN_HasMethod:Ci:i", NPObjectStub::HasMethod },
-  { "NPN_Invoke:CiCCi:iCC", NPObjectStub::Invoke },
-  { "NPN_InvokeDefault:CCCi:iCC", NPObjectStub::InvokeDefault },
-  { "NPN_HasProperty:Ci:i", NPObjectStub::HasProperty },
-  { "NPN_GetProperty:Ci:iCC", NPObjectStub::GetProperty },
-  { "NPN_SetProperty:CiCC:i", NPObjectStub::SetProperty },
-  { "NPN_RemoveProperty:Ci:i", NPObjectStub::RemoveProperty },
-  { "NPN_Enumerate:C:iCi", NPObjectStub::Enumerate },
-  { "NPN_Construct:CCCi:iCC", NPObjectStub::Construct },
-  { "NPN_SetException:Cs:", NPObjectStub::SetException },
-  { "Device2DInitialize:i:hiiiii", Device2DInitialize },
-  { "Device2DFlush:i:iiiii", Device2DFlush },
-  { "Device2DDestroy:i:", Device2DDestroy },
-  { "Device3DInitialize:ii:hiii", Device3DInitialize },
-  { "Device3DFlush:ii:i", Device3DFlush },
-  { "Device3DDestroy:i:", Device3DDestroy },
-  { "Device3DGetState:ii:i", Device3DGetState },
-  { "Device3DSetState:iii:", Device3DSetState },
-  { "Device3DCreateBuffer:ii:hi", Device3DCreateBuffer },
-  { "Device3DDestroyBuffer:ii:", Device3DDestroyBuffer },
-  { NULL, NULL }
-};
-
-// inputs:
-// (int) npp
-// (int) variable
-// outputs:
-// (int) error_code
-// (char[]) result
-NaClSrpcError NPModule::GetValue(NaClSrpcChannel* channel,
-                                 NaClSrpcArg** inputs,
-                                 NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  DebugPrintf("GetValue\n");
-  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  NPNVariable variable = static_cast<NPNVariable>(inputs[1]->u.ival);
-  NPObject* object;
-  outputs[0]->u.ival = NPN_GetValue(npp, variable, &object);
-  RpcArg ret1(npp, outputs[1]);
-  ret1.PutObject(object);
-  return NACL_SRPC_RESULT_OK;
+NPModule* NPModule::GetModule(int32_t int_npp) {
+  NPP npp = NPBridge::IntToNpp(int_npp);
+  return static_cast<NPModule*>(NPBridge::LookupBridge(npp));
 }
 
-// inputs:
-// (int) npp
-// (char*) string
-// outputs:
-// (none)
-NaClSrpcError NPModule::SetStatus(NaClSrpcChannel* channel,
-                                  NaClSrpcArg** inputs,
-                                  NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  UNREFERENCED_PARAMETER(outputs);
-  DebugPrintf("SetStatus\n");
-  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  const char* status = inputs[1]->u.sval;
-  if (status) {
-    NPN_Status(npp, status);
-  }
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (int) npp
-// (char[]) rect
-// outputs:
-// (none)
-NaClSrpcError NPModule::InvalidateRect(NaClSrpcChannel* channel,
-                                       NaClSrpcArg** inputs,
-                                       NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  UNREFERENCED_PARAMETER(outputs);
-  DebugPrintf("InvalidateRect\n");
-  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
-  RpcArg arg1(npp, inputs[1]);
-  const NPRect* nprect = arg1.GetRect();
-
-  if (module->window_ && module->window_->window && nprect) {
+void NPModule::InvalidateRect(NPP npp, const NPRect* nprect) {
+  if (window_ && window_->window && nprect) {
     NPN_InvalidateRect(npp, const_cast<NPRect*>(nprect));
   }
-  return NACL_SRPC_RESULT_OK;
 }
 
-// inputs:
-// (int) npp
-// outputs:
-// (none)
-NaClSrpcError NPModule::ForceRedraw(NaClSrpcChannel* channel,
-                                    NaClSrpcArg** inputs,
-                                    NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  UNREFERENCED_PARAMETER(outputs);
-  DebugPrintf("ForceRedraw\n");
-  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
+// NPN_PluginThreadAsyncCall support
 
-  if (module->window_ && module->window_->window) {
-    NPN_ForceRedraw(npp);
-  }
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (int) npp
-// outputs:
-// (int) success
-// (char[]) capability
-NaClSrpcError NPModule::CreateArray(NaClSrpcChannel* channel,
-                                    NaClSrpcArg** inputs,
-                                    NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  DebugPrintf("CreateArray\n");
-  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  NPObject* window;
-  if (NPERR_NO_ERROR != NPN_GetValue(npp, NPNVWindowNPObject, &window)) {
-    DebugPrintf("NPNVWindowNPObject returned false\n");
-    outputs[0]->u.ival = 0;
-    return NACL_SRPC_RESULT_OK;
-  }
-  NPString script;
-  const char scriptText[] = "new Array();";
-  script.UTF8Characters = scriptText;
-  script.UTF8Length = nacl::assert_cast<uint32>(strlen(scriptText));
-  NPVariant result;
-  int success = NPN_Evaluate(npp, window, &script, &result) &&
-                NPVARIANT_IS_OBJECT(result);
-  if (success) {
-    RpcArg ret0(npp, outputs[1]);
-    ret0.PutObject(NPVARIANT_TO_OBJECT(result));
-    // TODO(sehr): We're leaking result here.
-  }
-  NPN_ReleaseObject(window);
-  outputs[0]->u.ival = success;
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (int) npp
-// (char*) url
-// outputs:
-// (int) error_code
-NaClSrpcError NPModule::OpenURL(NaClSrpcChannel* channel,
-                                NaClSrpcArg** inputs,
-                                NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  DebugPrintf("OpenURL\n");
-  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  const char* url = inputs[1]->u.sval;
-  NPError nperr;
-  if (url) {
-    nperr = NPN_GetURLNotify(npp, url, NULL, NULL);
-  } else {
-    nperr = NPERR_GENERIC_ERROR;
-  }
-  if (nperr == NPERR_NO_ERROR) {
-    // NPP_NewStream, NPP_DestroyStream, and NPP_URLNotify will be invoked
-    // later.
-  }
-  outputs[0]->u.ival = static_cast<int>(nperr);
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (int) value
-// outputs:
-// (int) NPIdentifier
-NaClSrpcError NPModule::GetIntIdentifier(NaClSrpcChannel* channel,
-                                         NaClSrpcArg** inputs,
-                                         NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  DebugPrintf("GetIntIdentifier\n");
-  int32_t value = static_cast<int32_t>(inputs[0]->u.ival);
-  NPIdentifier identifier;
-  if (IsWebKit) {
-    // Webkit needs to look up integer IDs as strings.
-    char index[11];
-    SNPRINTF(index, sizeof(index), "%u", static_cast<unsigned>(value));
-    identifier = NPN_GetStringIdentifier(index);
-  } else {
-    identifier = NPN_GetIntIdentifier(value);
-  }
-  outputs[0]->u.ival = NPBridge::NpidentifierToInt(identifier);
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (int) NPIdentifier
-// outputs:
-// (int) int
-NaClSrpcError NPModule::IntFromIdentifier(NaClSrpcChannel* channel,
-                                          NaClSrpcArg** inputs,
-                                          NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  NPIdentifier identifier = NPBridge::IntToNpidentifier(inputs[0]->u.ival);
-  outputs[0]->u.ival = NPN_IntFromIdentifier(identifier);
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (char*) name
-// outputs:
-// (int) NPIdentifier
-NaClSrpcError NPModule::GetStringIdentifier(NaClSrpcChannel* channel,
-                                            NaClSrpcArg** inputs,
-                                            NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  NPUTF8* name = inputs[0]->u.sval;
-  NPIdentifier identifier = NPN_GetStringIdentifier(name);
-  outputs[0]->u.ival = NPBridge::NpidentifierToInt(identifier);
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (int) NPIdentifier
-// outputs:
-// (int) bool
-NaClSrpcError NPModule::IdentifierIsString(NaClSrpcChannel* channel,
-                                           NaClSrpcArg** inputs,
-                                           NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  NPIdentifier identifier = NPBridge::IntToNpidentifier(inputs[0]->u.ival);
-  outputs[0]->u.ival = NPN_IdentifierIsString(identifier);
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (int) NPIdentifier
-// outputs:
-// (int) error code
-// (char*) name
-NaClSrpcError NPModule::Utf8FromIdentifier(NaClSrpcChannel* channel,
-                                           NaClSrpcArg** inputs,
-                                           NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  NPIdentifier identifier = NPBridge::IntToNpidentifier(inputs[0]->u.ival);
-  char* name = NPN_UTF8FromIdentifier(identifier);
-  if (NULL == name) {
-    outputs[0]->u.ival = NPERR_GENERIC_ERROR;
-    outputs[1]->u.sval = strdup("");
-  } else {
-    outputs[0]->u.ival = NPERR_NO_ERROR;
-    // Need to use NPN_MemFree on returned value, whereas srpc will do free().
-    outputs[1]->u.sval = strdup(name);
-    NPN_MemFree(name);
-  }
-  return NACL_SRPC_RESULT_OK;
-}
-
-// Device2D support
-class TransportDIB;
-struct Device2DImpl {
-  ::TransportDIB* dib;
-};
-
-// inputs:
-// (int) npp
-// outputs:
-// (handle) shared memory
-// (int) stride
-// (int) left
-// (int) top
-// (int) right
-// (int) bottom
-NaClSrpcError NPModule::Device2DInitialize(NaClSrpcChannel* channel,
-                                           NaClSrpcArg** inputs,
-                                           NaClSrpcArg** outputs) {
-  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
-  UNREFERENCED_PARAMETER(channel);
-  // Initialize the return values in case of failure.
-  outputs[0]->u.hval = NULL;
-  outputs[1]->u.ival = -1;
-  outputs[2]->u.ival = -1;
-  outputs[3]->u.ival = -1;
-  outputs[4]->u.ival = -1;
-  outputs[5]->u.ival = -1;
-
-  if (NULL == module->extensions_) {
-    if (NPERR_NO_ERROR !=
-        NPN_GetValue(npp, NPNVPepperExtensions, &module->extensions_)) {
-      // Because this variable is not implemented in other browsers, this path
-      // should always be taken except in Pepper-enabled browsers.
-      return NACL_SRPC_RESULT_APP_ERROR;
-    }
-    if (NULL == module->extensions_) {
-      return NACL_SRPC_RESULT_APP_ERROR;
-    }
-  }
-  if (NULL == module->device2d_) {
-    module->device2d_ =
-        module->extensions_->acquireDevice(npp, NPPepper2DDevice);
-    if (NULL == module->device2d_) {
-      return NACL_SRPC_RESULT_APP_ERROR;
-    }
-  }
-  if (NULL == module->context2d_) {
-    module->context2d_ = new(std::nothrow) NPDeviceContext2D;
-    if (NULL == module->context2d_) {
-      return NACL_SRPC_RESULT_APP_ERROR;
-    }
-    NPError retval =
-        module->device2d_->initializeContext(npp, NULL, module->context2d_);
-    if (NPERR_NO_ERROR != retval) {
-      return NACL_SRPC_RESULT_APP_ERROR;
-    }
-  }
-  DescWrapperFactory factory;
-  Device2DImpl* impl =
-      reinterpret_cast<Device2DImpl*>(module->context2d_->reserved);
-  DescWrapper* wrapper = factory.ImportTransportDIB(impl->dib);
-  if (NULL == wrapper) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  // Increase reference count for SRPC return value, since wrapper Delete
-  // would cause Dtor to fire.
-  outputs[0]->u.hval = NaClDescRef(wrapper->desc());
-  // Free the wrapper.
-  wrapper->Delete();
-  outputs[1]->u.ival = module->context2d_->stride;
-  outputs[2]->u.ival = module->context2d_->dirty.left;
-  outputs[3]->u.ival = module->context2d_->dirty.top;
-  outputs[4]->u.ival = module->context2d_->dirty.right;
-  outputs[5]->u.ival = module->context2d_->dirty.bottom;
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (int) npp
-// outputs:
-// (handle) shared memory
-// (int) stride
-// (int) left
-// (int) top
-// (int) right
-// (int) bottom
-NaClSrpcError NPModule::Device2DFlush(NaClSrpcChannel* channel,
-                                      NaClSrpcArg** inputs,
-                                      NaClSrpcArg** outputs) {
-  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
-  NPError retval;
-  UNREFERENCED_PARAMETER(channel);
-
-  if (NULL == module->extensions_) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  retval = module->device2d_->flushContext(npp, module->context2d_, NULL, NULL);
-  if (NPERR_NO_ERROR != retval) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  outputs[0]->u.ival = module->context2d_->stride;
-  outputs[1]->u.ival = module->context2d_->dirty.left;
-  outputs[2]->u.ival = module->context2d_->dirty.top;
-  outputs[3]->u.ival = module->context2d_->dirty.right;
-  outputs[4]->u.ival = module->context2d_->dirty.bottom;
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (int) npp
-// outputs:
-// none
-NaClSrpcError NPModule::Device2DDestroy(NaClSrpcChannel* channel,
-                                        NaClSrpcArg** inputs,
-                                        NaClSrpcArg** outputs) {
-  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
-  NPError retval;
-  UNREFERENCED_PARAMETER(channel);
-  UNREFERENCED_PARAMETER(outputs);
-
-  if (NULL == module->extensions_) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  retval = module->device2d_->destroyContext(npp, module->context2d_);
-  if (NPERR_NO_ERROR != retval) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  return NACL_SRPC_RESULT_OK;
-}
-
-namespace base {
-class SharedMemory;
-}  // namespace base
-
-struct Device3DImpl {
-  gpu::CommandBuffer* command_buffer;
-};
-
-// inputs:
-// (int) npp
-// (int) commandBufferSize
-// outputs:
-// (handle) shared memory
-// (int) commandBufferSize
-// (int) getOffset
-// (int) putOffset
-NaClSrpcError NPModule::Device3DInitialize(NaClSrpcChannel* channel,
-                                           NaClSrpcArg** inputs,
-                                           NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-
-  // Initialize the return values in case of failure.
-  outputs[0]->u.hval =
-      const_cast<NaClDesc*>(
-          reinterpret_cast<const NaClDesc*>(NaClDescInvalidMake()));
-  outputs[1]->u.ival = -1;
-  outputs[2]->u.ival = -1;
-  outputs[3]->u.ival = -1;
-
-#if defined(NACL_STANDALONE)
-  UNREFERENCED_PARAMETER(inputs);
-  return NACL_SRPC_RESULT_APP_ERROR;
-#else
-  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
-
-  if (NULL == module->extensions_) {
-    if (NPERR_NO_ERROR !=
-        NPN_GetValue(npp, NPNVPepperExtensions, &module->extensions_)) {
-      // Because this variable is not implemented in other browsers, this path
-      // should always be taken except in Pepper-enabled browsers.
-      return NACL_SRPC_RESULT_APP_ERROR;
-    }
-    if (NULL == module->extensions_) {
-      return NACL_SRPC_RESULT_APP_ERROR;
-    }
-  }
-  if (NULL == module->device3d_) {
-    module->device3d_ =
-        module->extensions_->acquireDevice(npp, NPPepper3DDevice);
-    if (NULL == module->device3d_) {
-      return NACL_SRPC_RESULT_APP_ERROR;
-    }
-  }
-  if (NULL == module->context3d_) {
-    module->context3d_ = new(std::nothrow) NPDeviceContext3D;
-    if (NULL == module->context3d_) {
-      return NACL_SRPC_RESULT_APP_ERROR;
-    }
-    static NPDeviceContext3DConfig config;
-    config.commandBufferSize = inputs[1]->u.ival;
-    NPError retval =
-        module->device3d_->initializeContext(npp, &config, module->context3d_);
-    if (NPERR_NO_ERROR != retval) {
-      return NACL_SRPC_RESULT_APP_ERROR;
-    }
-  }
-  Device3DImpl* impl =
-      reinterpret_cast<Device3DImpl*>(module->context3d_->reserved);
-  ::base::SharedMemory* shm =
-      impl->command_buffer->GetRingBuffer().shared_memory;
-  if (NULL == shm) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  DescWrapperFactory factory;
-  DescWrapper* wrapper =
-      factory.ImportSharedMemory(shm, static_cast<size_t>(inputs[1]->u.ival *
-                                                          sizeof(int32_t)));
-  if (NULL == wrapper) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  // Increase reference count for SRPC return value, since wrapper Delete
-  // would cause Dtor to fire.
-  outputs[0]->u.hval = NaClDescRef(wrapper->desc());
-  // Free the wrapper.
-  wrapper->Delete();
-  outputs[1]->u.ival = module->context3d_->commandBufferSize;
-  outputs[2]->u.ival = module->context3d_->getOffset;
-  outputs[3]->u.ival = module->context3d_->putOffset;
-  return NACL_SRPC_RESULT_OK;
-#endif  // defined(NACL_STANDALONE)
-}
-
-// inputs:
-// (int) npp
-// (int) putOffset
-// outputs:
-// (int) getOffset
-NaClSrpcError NPModule::Device3DFlush(NaClSrpcChannel* channel,
-                                      NaClSrpcArg** inputs,
-                                      NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
-
-  if (NULL == module->extensions_) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  module->context3d_->putOffset = inputs[1]->u.ival;
-  NPError retval =
-      module->device3d_->flushContext(npp, module->context3d_, NULL, NULL);
-  if (NPERR_NO_ERROR != retval) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  outputs[0]->u.ival = module->context3d_->getOffset;
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (int) npp
-// outputs:
-// none
-NaClSrpcError NPModule::Device3DDestroy(NaClSrpcChannel* channel,
-                                        NaClSrpcArg** inputs,
-                                        NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  UNREFERENCED_PARAMETER(outputs);
-  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
-
-  if (NULL == module->extensions_) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  NPError retval = module->device3d_->destroyContext(npp, module->context3d_);
-  if (NPERR_NO_ERROR != retval) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (int) npp
-// (int) state
-// outputs:
-// (int) value
-// none
-NaClSrpcError NPModule::Device3DGetState(NaClSrpcChannel* channel,
-                                         NaClSrpcArg** inputs,
-                                         NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  UNREFERENCED_PARAMETER(inputs);
-  UNREFERENCED_PARAMETER(outputs);
-  /*  TODO(sehr): update for 64-bit compatibility
-  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
-  NPError retval = module->device3d_->getStateContext(npp,
-                                                      module->context3d_,
-                                                      inputs[1]->u.ival,
-                                                      &(outputs[0]->u.ival));
-  if (NPERR_NO_ERROR != retval) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  */
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (int) npp
-// (int) state
-// (int) value
-// outputs:
-// none
-NaClSrpcError NPModule::Device3DSetState(NaClSrpcChannel* channel,
-                                         NaClSrpcArg** inputs,
-                                         NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  UNREFERENCED_PARAMETER(outputs);
-  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
-  NPError retval = module->device3d_->setStateContext(npp,
-                                                      module->context3d_,
-                                                      inputs[1]->u.ival,
-                                                      inputs[2]->u.ival);
-  if (NPERR_NO_ERROR != retval) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (int) npp
-// (int) size
-// outputs:
-// (handle) buffer
-// (int) id
-// none
-NaClSrpcError NPModule::Device3DCreateBuffer(NaClSrpcChannel* channel,
-                                             NaClSrpcArg** inputs,
-                                             NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-
-  // Initialize buffer id and returned handle to allow error returns.
-  int buffer_id = -1;
-  outputs[0]->u.hval =
-      const_cast<NaClDesc*>(
-          reinterpret_cast<const NaClDesc*>(NaClDescInvalidMake()));
-  outputs[1]->u.ival = buffer_id;
-
-#if defined(NACL_STANDALONE)
-  UNREFERENCED_PARAMETER(inputs);
-  return NACL_SRPC_RESULT_APP_ERROR;
-#else
-  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
-
-  // Call the Pepper API.
-  NPError retval = module->device3d_->createBuffer(npp,
-                                                   module->context3d_,
-                                                   inputs[1]->u.ival,
-                                                   &buffer_id);
-  if (NPERR_NO_ERROR != retval) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  // Look up the base::SharedMemory for the returned id.
-  Device3DImpl* impl =
-      reinterpret_cast<Device3DImpl*>(module->context3d_->reserved);
-  ::base::SharedMemory* shm =
-      impl->command_buffer->GetTransferBuffer(buffer_id).shared_memory;
-  if (NULL == shm) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  // Create a NaCl descriptor to return.
-  DescWrapperFactory factory;
-  DescWrapper* wrapper =
-      factory.ImportSharedMemory(shm, static_cast<size_t>(inputs[1]->u.ival));
-  if (NULL == wrapper) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  // Increase reference count for SRPC return value, since wrapper Delete
-  // would cause Dtor to fire.
-  outputs[0]->u.hval = NaClDescRef(wrapper->desc());
-  outputs[1]->u.ival = buffer_id;
-  // Clean up.
-  wrapper->Delete();
-  return NACL_SRPC_RESULT_OK;
-#endif  // defined(NACL_STANDALONE)
-}
-
-// inputs:
-// (int) npp
-// (int) id
-// outputs:
-// none
-NaClSrpcError NPModule::Device3DDestroyBuffer(NaClSrpcChannel* channel,
-                                              NaClSrpcArg** inputs,
-                                              NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  UNREFERENCED_PARAMETER(outputs);
-  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
-  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
-  NPError retval = module->device3d_->destroyBuffer(npp,
-                                                    module->context3d_,
-                                                    inputs[1]->u.ival);
-  if (NPERR_NO_ERROR != retval) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  return NACL_SRPC_RESULT_OK;
-}
+namespace {
 
 class NppClosure {
  public:
@@ -763,18 +104,12 @@ class NppClosure {
 static void doNppAsyncCall(void* arg) {
   NppClosure* closure = reinterpret_cast<NppClosure*>(arg);
   if (NULL != closure) {
-    NaClSrpcInvokeByName(closure->module()->channel(),
-                         "NPP_DoAsyncCall",
-                         closure->number());
+    NPNavigatorRpcClient::NPP_DoAsyncCall(closure->module()->channel(),
+                                          closure->number());
   }
   delete closure;
 }
 
-// inputs:
-// (int) npp
-// (int) plugin closure number to be invoked by callback.
-// outputs:
-// none
 static NaClSrpcError handleAsyncCall(NaClSrpcChannel* channel,
                                      NaClSrpcArg** inputs,
                                      NaClSrpcArg** outputs) {
@@ -795,6 +130,8 @@ static NaClSrpcError handleAsyncCall(NaClSrpcChannel* channel,
                             static_cast<void*>(closure));
   return NACL_SRPC_RESULT_OK;
 }
+
+}  // namespace
 
 // Structure for passing information to the thread.  Shares ownership of
 // the descriptor with the creating routine.  This allows passing ownership
@@ -854,11 +191,11 @@ NPError NPModule::Initialize() {
   // On success, ownership of info passes to the thread.
   info = NULL;
   // Invoke the NaCl module's NP_Initialize function.
-  retval = NaClSrpcInvokeByName(channel(),
-                                "NP_Initialize",
-                                GETPID(),
-                                static_cast<int>(sizeof(NPVariant)),
-                                pair[1]->desc());
+  retval =
+      NPNavigatorRpcClient::NP_Initialize(channel(),
+                                          GETPID(),
+                                          static_cast<int>(sizeof(NPVariant)),
+                                          pair[1]->desc());
   // Return the appropriate error code.
   if (NACL_SRPC_RESULT_OK != retval) {
     goto done;
@@ -931,16 +268,15 @@ NPError NPModule::New(char* mimetype,
     DebugPrintf("New: serialize failed\n");
     return NPERR_GENERIC_ERROR;
   }
-  NaClSrpcError retval = NaClSrpcInvokeByName(channel(),
-                                              "NPP_New",
-                                              mimetype,
-                                              NPBridge::NppToInt(npp),
-                                              argc,
-                                              argn_size,
-                                              argn_serial,
-                                              argv_size,
-                                              argv_serial,
-                                              &nperr);
+  NaClSrpcError retval = NPNavigatorRpcClient::NPP_New(channel(),
+                                                       mimetype,
+                                                       NPBridge::NppToInt(npp),
+                                                       argc,
+                                                       argn_size,
+                                                       argn_serial,
+                                                       argv_size,
+                                                       argv_serial,
+                                                       &nperr);
   if (NACL_SRPC_RESULT_OK != retval) {
     DebugPrintf("New: invocation returned %x, %d\n", retval, nperr);
     return NPERR_GENERIC_ERROR;
@@ -955,10 +291,10 @@ NPError NPModule::New(char* mimetype,
 NPError NPModule::Destroy(NPP npp, NPSavedData** save) {
   UNREFERENCED_PARAMETER(save);
   int nperr;
-  NaClSrpcError retval = NaClSrpcInvokeByName(channel(),
-                                              "NPP_Destroy",
-                                              NPBridge::NppToInt(npp),
-                                              &nperr);
+  NaClSrpcError retval =
+      NPNavigatorRpcClient::NPP_Destroy(channel(),
+                                        NPBridge::NppToInt(npp),
+                                        &nperr);
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
   }
@@ -970,12 +306,12 @@ NPError NPModule::SetWindow(NPP npp, NPWindow* window) {
     return NPERR_NO_ERROR;
   }
   int nperr;
-  NaClSrpcError retval = NaClSrpcInvokeByName(channel(),
-                                              "NPP_SetWindow",
-                                              NPBridge::NppToInt(npp),
-                                              window->height,
-                                              window->width,
-                                              &nperr);
+  NaClSrpcError retval =
+      NPNavigatorRpcClient::NPP_SetWindow(channel(),
+                                          NPBridge::NppToInt(npp),
+                                          window->height,
+                                          window->width,
+                                          &nperr);
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
   }
@@ -1009,12 +345,12 @@ int16_t NPModule::HandleEvent(NPP npp, void* event) {
       static_cast<uint32_t>(sizeof(NPPepperEvent));
   int32_t return_int16;
 
-  NaClSrpcError retval = NaClSrpcInvokeByName(channel(),
-                                              "NPP_HandleEvent",
-                                              NPBridge::NppToInt(npp),
-                                              kEventSize,
-                                              reinterpret_cast<char*>(event),
-                                              &return_int16);
+  NaClSrpcError retval =
+      NPNavigatorRpcClient::NPP_HandleEvent(channel(),
+                                            NPBridge::NppToInt(npp),
+                                            kEventSize,
+                                            reinterpret_cast<char*>(event),
+                                            &return_int16);
   if (NACL_SRPC_RESULT_OK == retval) {
     return static_cast<int16_t>(return_int16 & 0xffff);
   } else {
@@ -1027,11 +363,13 @@ NPObject* NPModule::GetScriptableInstance(NPP npp) {
   if (NULL == proxy_) {
     // TODO(sehr): Not clear we should be caching on the browser plugin side.
     NPCapability capability;
-    NaClSrpcError retval = NaClSrpcInvokeByName(channel(),
-                                                "NPP_GetScriptableInstance",
-                                                NPBridge::NppToInt(npp),
-                                                sizeof capability,
-                                                &capability);
+    nacl_abi_size_t cap_size = static_cast<nacl_abi_size_t>(sizeof(capability));
+    char* cap_ptr = reinterpret_cast<char*>(&capability);
+    NaClSrpcError retval =
+        NPNavigatorRpcClient::NPP_GetScriptableInstance(channel(),
+                                                        NPBridge::NppToInt(npp),
+                                                        &cap_size,
+                                                        cap_ptr);
     if (NACL_SRPC_RESULT_OK != retval) {
       DebugPrintf("    Got return code %x\n", retval);
       return NULL;
@@ -1084,7 +422,321 @@ void NPModule::URLNotify(NPP npp,
     return;
   }
   // TODO(sehr): Need to set the descriptor appropriately and call.
-  // NaClSrpcInvokeByName(channel(), "NPP_URLNotify", desc, reason);
+  // NPNavigatorRpcClient::NPP_URLNotify(channel(), desc, reason);
+}
+
+void NPModule::ForceRedraw(NPP npp) {
+  if (window_ && window_->window) {
+    NPN_ForceRedraw(npp);
+  }
+}
+
+class TransportDIB;
+
+struct Device2DImpl {
+  ::TransportDIB* dib;
+};
+
+NaClSrpcError NPModule::Device2DInitialize(NPP npp,
+                                           NaClSrpcImcDescType* shm_desc,
+                                           int32_t* stride,
+                                           int32_t* left,
+                                           int32_t* top,
+                                           int32_t* right,
+                                           int32_t* bottom) {
+  // Initialize the return values in case of failure.
+  *shm_desc =
+      const_cast<NaClDesc*>(
+          reinterpret_cast<const NaClDesc*>(NaClDescInvalidMake()));
+  *stride = -1;
+  *left = -1;
+  *top = -1;
+  *right = -1;
+  *bottom = -1;
+
+  if (NULL == extensions_) {
+    if (NPERR_NO_ERROR !=
+        NPN_GetValue(npp, NPNVPepperExtensions, &extensions_)) {
+      // Because this variable is not implemented in other browsers, this path
+      // should always be taken except in Pepper-enabled browsers.
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+    if (NULL == extensions_) {
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+  }
+  if (NULL == device2d_) {
+    device2d_ = extensions_->acquireDevice(npp, NPPepper2DDevice);
+    if (NULL == device2d_) {
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+  }
+  if (NULL == context2d_) {
+    context2d_ = new(std::nothrow) NPDeviceContext2D;
+    if (NULL == context2d_) {
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+    NPError retval = device2d_->initializeContext(npp, NULL, context2d_);
+    if (NPERR_NO_ERROR != retval) {
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+  }
+  DescWrapperFactory factory;
+  Device2DImpl* impl =
+      reinterpret_cast<Device2DImpl*>(context2d_->reserved);
+  DescWrapper* wrapper = factory.ImportTransportDIB(impl->dib);
+  if (NULL == wrapper) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  // Increase reference count for SRPC return value, since wrapper Delete
+  // would cause Dtor to fire.
+  *shm_desc = NaClDescRef(wrapper->desc());
+  // Free the wrapper.
+  wrapper->Delete();
+  *stride = context2d_->stride;
+  *left = context2d_->dirty.left;
+  *top = context2d_->dirty.top;
+  *right = context2d_->dirty.right;
+  *bottom = context2d_->dirty.bottom;
+
+  return NACL_SRPC_RESULT_OK;
+}
+
+NaClSrpcError NPModule::Device2DFlush(NPP npp,
+                                      int32_t* stride,
+                                      int32_t* left,
+                                      int32_t* top,
+                                      int32_t* right,
+                                      int32_t* bottom) {
+  if (NULL == extensions_) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  NPError retval = device2d_->flushContext(npp, context2d_, NULL, NULL);
+  if (NPERR_NO_ERROR != retval) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  *stride = context2d_->stride;
+  *left = context2d_->dirty.left;
+  *top = context2d_->dirty.top;
+  *right = context2d_->dirty.right;
+  *bottom = context2d_->dirty.bottom;
+
+  return NACL_SRPC_RESULT_OK;
+}
+
+NaClSrpcError NPModule::Device2DDestroy(NPP npp) {
+  if (NULL == extensions_) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  NPError retval = device2d_->destroyContext(npp, context2d_);
+  if (NPERR_NO_ERROR != retval) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+
+  return NACL_SRPC_RESULT_OK;
+}
+
+namespace base {
+class SharedMemory;
+}  // namespace base
+
+struct Device3DImpl {
+  gpu::CommandBuffer* command_buffer;
+};
+
+NaClSrpcError NPModule::Device3DInitialize(NPP npp,
+                                           int32_t entries_requested,
+                                           NaClSrpcImcDescType* shm_desc,
+                                           int32_t* entries_obtained,
+                                           int32_t* get_offset,
+                                           int32_t* put_offset) {
+  // Initialize the return values in case of failure.
+  *shm_desc =
+      const_cast<NaClDesc*>(
+          reinterpret_cast<const NaClDesc*>(NaClDescInvalidMake()));
+  *entries_obtained = -1;
+  *get_offset = -1;
+  *put_offset = -1;
+
+#if defined(NACL_STANDALONE)
+  UNREFERENCED_PARAMETER(npp);
+  UNREFERENCED_PARAMETER(entries_requested);
+  UNREFERENCED_PARAMETER(shm_desc);
+  UNREFERENCED_PARAMETER(entries_obtained);
+  UNREFERENCED_PARAMETER(get_offset);
+  UNREFERENCED_PARAMETER(put_offset);
+
+  return NACL_SRPC_RESULT_APP_ERROR;
+#else
+  NPP npp = NPBridge::IntToNpp(int_npp);
+  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
+
+  if (NULL == extensions_) {
+    if (NPERR_NO_ERROR !=
+        NPN_GetValue(npp, NPNVPepperExtensions, &extensions_)) {
+      // Because this variable is not implemented in other browsers, this path
+      // should always be taken except in Pepper-enabled browsers.
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+    if (NULL == extensions_) {
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+  }
+  if (NULL == device3d_) {
+    device3d_ = extensions_->acquireDevice(npp, NPPepper3DDevice);
+    if (NULL == device3d_) {
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+  }
+  if (NULL == context3d_) {
+    context3d_ = new(std::nothrow) NPDeviceContext3D;
+    if (NULL == context3d_) {
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+    static NPDeviceContext3DConfig config;
+    config.commandBufferEntries = inputs[1]->u.ival;
+    NPError retval =
+        device3d_->initializeContext(npp, &config, context3d_);
+    if (NPERR_NO_ERROR != retval) {
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+  }
+  Device3DImpl* impl =
+      reinterpret_cast<Device3DImpl*>(context3d_->reserved);
+  ::base::SharedMemory* shm =
+      impl->command_buffer->GetRingBuffer().shared_memory;
+  if (NULL == shm) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  DescWrapperFactory factory;
+  size_t shm_size = context3d_->commandBufferEntries * sizeof(int32_t);
+  DescWrapper* wrapper =
+      factory.ImportSharedMemory(shm, static_cast<size_t>(shm_size));
+  if (NULL == wrapper) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  // Increase reference count for SRPC return value, since wrapper Delete
+  // would cause Dtor to fire.
+  *shm_desc = NaClDescRef(wrapper->desc());
+  // Free the wrapper.
+  wrapper->Delete();
+  entries_obtained = context3d_->commandBufferEntries;
+  *get_offset = context3d_->getOffset;
+  *put_offset = context3d_->putOffset;
+
+  return NACL_SRPC_RESULT_OK;
+#endif  // defined(NACL_STANDALONE)
+}
+
+NaClSrpcError NPModule::Device3DFlush(NPP npp,
+                                      int32_t put_offset,
+                                      int32_t* get_offset) {
+  if (NULL == extensions_) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  context3d_->putOffset = put_offset;
+  NPError retval = device3d_->flushContext(npp, context3d_, NULL, NULL);
+  if (NPERR_NO_ERROR != retval) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  *get_offset = context3d_->getOffset;
+
+  return NACL_SRPC_RESULT_OK;
+}
+
+NaClSrpcError NPModule::Device3DDestroy(NPP npp) {
+  if (NULL == extensions_) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  NPError retval = device3d_->destroyContext(npp, context3d_);
+  if (NPERR_NO_ERROR != retval) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+
+  return NACL_SRPC_RESULT_OK;
+}
+
+NaClSrpcError NPModule::Device3DGetState(NPP npp,
+                                         int32_t state,
+                                         int32_t* value) {
+  NPError retval = device3d_->getStateContext(npp, context3d_, state, value);
+  if (NPERR_NO_ERROR != retval) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+
+  return NACL_SRPC_RESULT_OK;
+}
+
+NaClSrpcError NPModule::Device3DSetState(NPP npp,
+                                         int32_t state,
+                                         int32_t value) {
+  NPError retval = device3d_->setStateContext(npp, context3d_, state, value);
+  if (NPERR_NO_ERROR != retval) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+
+  return NACL_SRPC_RESULT_OK;
+}
+
+NaClSrpcError NPModule::Device3DCreateBuffer(NPP npp,
+                                             int32_t size,
+                                             NaClSrpcImcDescType* shm_desc,
+                                             int32_t* id) {
+  // Initialize buffer id and returned handle to allow error returns.
+  int buffer_id = -1;
+  *shm_desc =
+      const_cast<NaClDesc*>(
+          reinterpret_cast<const NaClDesc*>(NaClDescInvalidMake()));
+  *id = buffer_id;
+
+#if defined(NACL_STANDALONE)
+  UNREFERENCED_PARAMETER(npp);
+  UNREFERENCED_PARAMETER(size);
+  UNREFERENCED_PARAMETER(shm_desc);
+  UNREFERENCED_PARAMETER(id);
+  return NACL_SRPC_RESULT_APP_ERROR;
+#else
+  NPP npp = NPBridge::IntToNpp(int_npp);
+  NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
+
+  // Call the Pepper API.
+  NPError retval = device3d_->createBuffer(npp, context3d_, size, &buffer_id);
+  if (NPERR_NO_ERROR != retval) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  // Look up the base::SharedMemory for the returned id.
+  Device3DImpl* impl =
+      reinterpret_cast<Device3DImpl*>(context3d_->reserved);
+  ::base::SharedMemory* shm =
+      impl->command_buffer->GetTransferBuffer(buffer_id).shared_memory;
+  if (NULL == shm) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  // Create a NaCl descriptor to return.
+  DescWrapperFactory factory;
+  DescWrapper* wrapper =
+      factory.ImportSharedMemory(shm, static_cast<size_t>(size));
+  if (NULL == wrapper) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  // Increase reference count for SRPC return value, since wrapper Delete
+  // would cause Dtor to fire.
+  *shm_desc = NaClDescRef(wrapper->desc());
+  *id = buffer_id;
+  // Clean up.
+  wrapper->Delete();
+
+  return NACL_SRPC_RESULT_OK;
+#endif  // defined(NACL_STANDALONE)
+}
+
+NaClSrpcError NPModule::Device3DDestroyBuffer(NPP npp, int32_t id) {
+  NPError retval = device3d_->destroyBuffer(npp, context3d_, id);
+  if (NPERR_NO_ERROR != retval) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+
+  return NACL_SRPC_RESULT_OK;
 }
 
 }  // namespace nacl

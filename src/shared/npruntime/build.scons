@@ -5,6 +5,9 @@
 
 Import('env')
 
+# To get generated include files.
+env.Append(CPPPATH = [ '${TARGET_ROOT}' ])
+
 # TODO(gregoryd): eliminate the need for the next line
 #env.FilterOut(CCFLAGS=['-Wextra', '-Wswitch-enum'])
 
@@ -48,48 +51,38 @@ npmodule_specinputs = ['npmodule.srpc',
                        'device2d.srpc',
                        'device3d.srpc', ]
 
-npmodule_rpc_header = GENERATED + '/npmodule_rpc.h'
-npmodule_rpc_server = GENERATED + '/npmodule_rpc_server.cc'
-env.Command(target=env.File(npmodule_rpc_header),
+npmodule_rpc_h = GENERATED + '/npmodule_rpc.h'
+npmodule_rpc_cc = GENERATED + '/npmodule_rpc_server.cc'
+npmodule_rpc_files = [ npmodule_rpc_h, npmodule_rpc_cc ]
+
+env.Command(target=npmodule_rpc_files,
             source=[SRPCGEN, npmodule_specinputs],
-            action=[Action('${PYTHON} ${SOURCES[0]}'
-                           ' -o ${TARGET} -h '
+            action=[Action('${PYTHON} ${SOURCES[0]} '
+                           '-s '
                            'NPModuleRpcs '
-                           'GEN_NPRUNTIME_NPMODULE_RPC_H_'
-                           ' ${SOURCES[1:]}'),
-                   ],
-           )
-env.Command(target=env.File(npmodule_rpc_server),
-            source=[SRPCGEN, npmodule_specinputs],
-            action=[Action('${PYTHON} ${SOURCES[0]}'
-                           ' -o ${TARGET} -s '
-                           'NPModuleRpcs '
-                           + npmodule_rpc_header +
-                           ' ${SOURCES[1:]}'),
+                           'GEN_NPRUNTIME_NPMODULE_RPC_H_ '
+                           + npmodule_rpc_h + ' '
+                           + npmodule_rpc_cc + ' '
+                           '${SOURCES[1:]}'),
                    ],
            )
 
 npnavigator_specinputs = ['npnavigator.srpc',
                           'npobjectstub.srpc', ]
 
-npnavigator_rpc_header = GENERATED + '/npnavigator_rpc.h'
-npnavigator_rpc_client = GENERATED + '/npnavigator_rpc_client.cc'
-env.Command(target=env.File(npnavigator_rpc_header),
+npnavigator_rpc_h = GENERATED + '/npnavigator_rpc.h'
+npnavigator_rpc_cc = GENERATED + '/npnavigator_rpc_client.cc'
+npnavigator_rpc_files = [ npnavigator_rpc_h, npnavigator_rpc_cc ]
+
+env.Command(target=npnavigator_rpc_files,
             source=[SRPCGEN, npnavigator_specinputs],
-            action=[Action('${PYTHON} ${SOURCES[0]}'
-                           ' -o ${TARGET} -h '
+            action=[Action('${PYTHON} ${SOURCES[0]} '
+                           '-c '
                            'NPNavigatorRpcs '
-                           'GEN_NPRUNTIME_NPNAVIGATOR_RPC_H_'
-                           ' ${SOURCES[1:]}'),
-                   ],
-           )
-env.Command(target=env.File(npnavigator_rpc_client),
-            source=[SRPCGEN, npnavigator_specinputs],
-            action=[Action('${PYTHON} ${SOURCES[0]}'
-                           ' -o ${TARGET} -c '
-                           'NPNavigatorRpcs '
-                           + npnavigator_rpc_header +
-                           ' ${SOURCES[1:]}'),
+                           'GEN_NPRUNTIME_NPNAVIGATOR_RPC_H_ '
+                           + npnavigator_rpc_h + ' '
+                           + npnavigator_rpc_cc + ' '
+                           '${SOURCES[1:]}'),
                    ],
            )
 
@@ -100,7 +93,9 @@ NACL_NPRUNTIME_INPUTS = [
     'npobject_proxy.cc',
     'npobject_stub.cc',
     env_no_strict_aliasing.ComponentObject('nprpc.cc'),
-    npmodule_rpc_server,
-    npnavigator_rpc_client
+    npmodule_rpc_cc,
+    npnavigator_rpc_cc,
+    'npmodule_rpc_impl.cc',
+    'npstub_rpc_impl.cc',
 ]
 env.ComponentLibrary('google_nacl_npruntime', NACL_NPRUNTIME_INPUTS)

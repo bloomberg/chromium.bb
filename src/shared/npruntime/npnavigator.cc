@@ -12,6 +12,8 @@
 #include <utility>
 
 #include "native_client/src/include/portability_string.h"
+#include "gen/native_client/src/shared/npruntime/npmodule_rpc.h"
+#include "gen/native_client/src/shared/npruntime/npnavigator_rpc.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npcapability.h"
@@ -20,7 +22,46 @@
 #include "native_client/src/shared/npruntime/npobject_stub.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 
+namespace {
+
+static bool GetCharpArray(uint32_t count,
+                          char* str,
+                          nacl_abi_size_t total_len,
+                          char* array[]) {
+  char* p = str;
+  for (uint32_t i = 0; i < count; ++i) {
+    array[i] = p;
+    // Find the end of the current array element.
+    while ('\0' != *p) {
+      // We know that p >= str, so the cast preserves sign.
+      if (total_len <= static_cast<uint32_t>(p - str)) {
+        // Reached the end of the string before finding NUL.
+        nacl::DebugPrintf("  reached end of string\n");
+        return false;
+      }
+      ++p;
+    }
+    // And find the next starting point (if any).
+    // We know that p >= str, so the cast preserves sign.
+    if (total_len > static_cast<uint32_t>(p - str)) {
+      ++p;
+    }
+  }
+  return true;
+}
+
+}  // namespace
+
 namespace nacl {
+
+// We need a better way to make sure that SRPC method tables are exported from
+// servers.  Unfortunately, incorporating the generator exposes the possibility
+// that the tables are not referenced from outside of the SRPC library, and
+// hence they do not get included at all.  This hack makes sure they are
+// referenced.
+// TODO(sehr): make SRPC method table exporting explicit.
+void* hack =
+    reinterpret_cast<void*>(NPNavigatorRpcs::srpc_methods);
 
 // Class static member declarations.
 NPNavigator* NPNavigator::navigator = NULL;
@@ -36,18 +77,9 @@ uint32_t NPNavigator::next_pending_call = 0;
 
 NPPluginFuncs NPNavigator::plugin_funcs;
 
-static void DebugPrintf(const char *fmt, ...) {
-  va_list argptr;
-  fprintf(stderr, "@@@ NAVIGATOR ");
-
-  va_start(argptr, fmt);
-  vfprintf(stderr, fmt, argptr);
-  va_end(argptr);
-  fflush(stderr);
-}
-
-NPNavigator::NPNavigator(uint32_t peer_pid,
-                         size_t peer_npvariant_size)
+NPNavigator::NPNavigator(NaClSrpcChannel* channel,
+                         int32_t peer_pid,
+                         int32_t peer_npvariant_size)
     : NPBridge(),
       notify_(0),
       notify_data_(NULL),
@@ -56,6 +88,7 @@ NPNavigator::NPNavigator(uint32_t peer_pid,
   DebugPrintf("NPNavigator(%u, %u)\n",
               static_cast<unsigned>(peer_pid),
               static_cast<unsigned>(peer_npvariant_size));
+  set_channel(channel);
   set_peer_pid(peer_pid);
   set_peer_npvariant_size(peer_npvariant_size);
   navigator = this;
@@ -80,11 +113,12 @@ NPNavigator::~NPNavigator() {
   // shutdown.
 }
 
-NPP NPNavigator::GetNaClNPP(NPP plugin_npp, bool add_to_map) {
+NPP NPNavigator::GetNaClNPP(int32_t plugin_npp_int, bool add_to_map) {
   if (NULL == nacl_npp_map) {
     DebugPrintf("No NPP map allocated.\n");
     return NULL;
   }
+  NPP plugin_npp = NPBridge::IntToNpp(plugin_npp_int);
   std::map<NPP, NPP>::iterator i = nacl_npp_map->find(plugin_npp);
   if (nacl_npp_map->end() == i) {
     if (add_to_map) {
@@ -106,99 +140,22 @@ NPP NPNavigator::GetNaClNPP(NPP plugin_npp, bool add_to_map) {
   return (*nacl_npp_map)[plugin_npp];
 }
 
-NPP NPNavigator::GetPluginNPP(NPP nacl_npp) {
+int32_t NPNavigator::GetPluginNPP(NPP nacl_npp) {
   if (NULL == plugin_npp_map) {
     DebugPrintf("No NPP map allocated.\n");
-    return NULL;
+    return 0;
   }
   std::map<NPP, NPP>::iterator i = nacl_npp_map->find(nacl_npp);
   if (plugin_npp_map->end() == i) {
     DebugPrintf("No entry in NPP map.\n");
-    return NULL;
+    return 0;
   }
-  return (*plugin_npp_map)[nacl_npp];
+  return reinterpret_cast<int32_t>((*plugin_npp_map)[nacl_npp]);
 }
 
-NACL_SRPC_METHOD_ARRAY(NPNavigator::srpc_methods) = {
-  // Exported from NPNavigator.
-  { "NP_SetUpcallServices:s:", SetUpcallServices },
-  { "NP_Initialize:iih:", Initialize },
-  { "NPP_New:siiCC:i", New },
-  { "NPP_SetWindow:iii:i", SetWindow },
-  { "NPP_Destroy:i:i", Destroy },
-  { "NPP_GetScriptableInstance:i:C", GetScriptableInstance },
-  { "NPP_HandleEvent:iC:i", HandleEvent },
-  { "NPP_URLNotify:ihi:", URLNotify },
-  { "NPP_DoAsyncCall:i:", DoAsyncCall },
-  // Exported from NPObjectStub
-  { "NPN_Deallocate:C:", NPObjectStub::Deallocate },
-  { "NPN_Invalidate:C:", NPObjectStub::Invalidate },
-  { "NPN_HasMethod:Ci:i", NPObjectStub::HasMethod },
-  { "NPN_Invoke:CiCCi:iCC", NPObjectStub::Invoke },
-  { "NPN_InvokeDefault:CCCi:iCC", NPObjectStub::InvokeDefault },
-  { "NPN_HasProperty:Ci:i", NPObjectStub::HasProperty },
-  { "NPN_GetProperty:Ci:iCC", NPObjectStub::GetProperty },
-  { "NPN_SetProperty:CiCC:i", NPObjectStub::SetProperty },
-  { "NPN_RemoveProperty:Ci:i", NPObjectStub::RemoveProperty },
-  { "NPN_Enumerate:C:iCi", NPObjectStub::Enumerate },
-  { "NPN_Construct:CCCi:iCC", NPObjectStub::Construct },
-  { "NPN_SetException:Cs:", NPObjectStub::SetException },
-  { NULL, NULL }
-};
-
-//
-// The following methods are the SRPC dispatchers for the request handlers
-//
-
-NaClSrpcError NPNavigator::SetUpcallServices(NaClSrpcChannel *channel,
-                                             NaClSrpcArg **in_args,
-                                             NaClSrpcArg **out_args) {
-  const char* sd_string = (const char*) in_args[0]->u.sval;
-  printf("SetUpcallServices: %s\n", sd_string);
-  NaClSrpcService* service = new(std::nothrow) NaClSrpcService;
-  if (NULL == service)
-    return NACL_SRPC_RESULT_APP_ERROR;
-  if (!NaClSrpcServiceStringCtor(service, sd_string)) {
-    delete service;
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  channel->client = service;
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (int) peer_pid
-// (int) peer_npvariant_size
-// (desc) browser upcall service
-// outputs:
-// (none)
 NaClSrpcError NPNavigator::Initialize(NaClSrpcChannel* channel,
-                                      NaClSrpcArg** inputs,
-                                      NaClSrpcArg** outputs) {
-  uint32_t peer_pid = static_cast<uint32_t>(inputs[0]->u.ival);
-  uint32_t npvariant_size = static_cast<size_t>(inputs[1]->u.ival);
-
-  DebugPrintf("NP_Initialize: peer_pid=%d, size=%d\n",
-              peer_pid,
-              npvariant_size);
-  // There is only one NPNavigator per call to Initialize, and it is
-  // remembered on the SRPC channel that called it.
-  // Make sure it is only set once.
-  if (NULL != channel->server_instance_data) {
-    // Instance data already set.
-    DebugPrintf("  Error: instance data already set\n");
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  NPNavigator* navigator =
-      new(std::nothrow) NPNavigator(peer_pid, npvariant_size);
-  if (NULL == navigator) {
-    // Out of memory.
-    DebugPrintf("  Error: couldn't create navigator\n");
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  navigator->channel_ = channel;
+                                      NaClSrpcImcDescType upcall_desc) {
   // Remember the upcall service port on the navigator.
-  NaClSrpcImcDescType upcall_desc = inputs[2]->u.hval;
   NaClSrpcChannel* upcall_channel = new(std::nothrow) NaClSrpcChannel;
   if (NULL == upcall_channel) {
     DebugPrintf("  Error: couldn't create upcall_channel \n");
@@ -211,7 +168,6 @@ NaClSrpcError NPNavigator::Initialize(NaClSrpcChannel* channel,
     delete navigator;
     return NACL_SRPC_RESULT_APP_ERROR;
   }
-  channel->server_instance_data = static_cast<void*>(navigator);
   navigator->upcall_channel_ = upcall_channel;
   // Invoke the client NP_Initialize.
   memset(reinterpret_cast<void*>(&plugin_funcs), 0, sizeof(plugin_funcs));
@@ -219,66 +175,34 @@ NaClSrpcError NPNavigator::Initialize(NaClSrpcChannel* channel,
   plugin_funcs.version = (NP_VERSION_MAJOR << 8) | NP_VERSION_MINOR;
   NPNetscapeFuncs* browser_funcs =
       const_cast<NPNetscapeFuncs*>(GetBrowserFuncs());
-  NPError err = NP_Initialize(browser_funcs, &plugin_funcs);
+  NPError err = ::NP_Initialize(browser_funcs, &plugin_funcs);
   if (NPERR_NO_ERROR != err) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
   return NACL_SRPC_RESULT_OK;
 }
 
-static bool GetCharpArray(uint32_t count,
-                          NaClSrpcArg* arg,
-                          char* array[]) {
-  uint32_t total_len = arg->u.caval.count;
-  char* str = arg->u.caval.carr;
-  char* p = str;
-  for (uint32_t i = 0; i < count; ++i) {
-    array[i] = p;
-    // Find the end of the current array element.
-    while ('\0' != *p) {
-      // We know that p >= str, so the cast preserves sign.
-      if (total_len <= static_cast<uint32_t>(p - str)) {
-        // Reached the end of the string before finding NUL.
-        DebugPrintf("  reached end of string\n");
-        return false;
-      }
-      ++p;
-    }
-    // And find the next starting point (if any).
-    // We know that p >= str, so the cast preserves sign.
-    if (total_len > static_cast<uint32_t>(p - str)) {
-      ++p;
-    }
-  }
-  return true;
-}
-
-// inputs:
-// (char*) mimetype
-// (int) npp
-// (int) argc
-// (char[]) argn
-// (char[]) argv
-// outputs:
-// (int) NPERR
-NaClSrpcError NPNavigator::New(NaClSrpcChannel* channel,
-                               NaClSrpcArg** inputs,
-                               NaClSrpcArg** outputs) {
-  char* mimetype = inputs[0]->u.sval;
-  NPP npp = GetNaClNPP(NPBridge::IntToNpp(inputs[1]->u.ival), true);
-  uint32_t argc = static_cast<uint32_t>(inputs[2]->u.ival);
+NaClSrpcError NPNavigator::New(char* mimetype,
+                               NPP npp,
+                               uint32_t argc,
+                               nacl_abi_size_t argn_bytes,
+                               char* argn_in,
+                               nacl_abi_size_t argv_bytes,
+                               char* argv_in,
+                               int32_t* nperr) {
   DebugPrintf("NPP_New: npp=%p, mime=%s, argc=%"PRIu32"\n",
               reinterpret_cast<void*>(npp), mimetype, argc);
 
-  NPNavigator* nav = static_cast<NPNavigator*>(channel->server_instance_data);
+  *nperr = NPERR_NO_ERROR;
+
   // Build the argv and argn strutures.
   char* argn[kMaxArgc];
   char* argv[kMaxArgc];
   if (kMaxArgc < argc ||
-      !GetCharpArray(argc, inputs[3], argn) ||
-      !GetCharpArray(argc, inputs[4], argv)) {
+      !GetCharpArray(argc, argn_in, argn_bytes, argn) ||
+      !GetCharpArray(argc, argv_in, argv_bytes, argv)) {
     DebugPrintf("Range exceeded or array copy failed\n");
-    outputs[0]->u.ival = NPERR_GENERIC_ERROR;
+    *nperr = NPERR_GENERIC_ERROR;
     return NACL_SRPC_RESULT_OK;
   }
   for (uint32_t i = 0; i < argc; ++i) {
@@ -289,132 +213,48 @@ NaClSrpcError NPNavigator::New(NaClSrpcChannel* channel,
     DebugPrintf("  %"PRIu32": argn=%s argv=%s\n", i, argn[i], argv[i]);
   }
   // Invoke the implementation
-  outputs[0]->u.ival = nav->NewImpl(mimetype, npp, argc, argn, argv);
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (int) npp
-// (int) height
-// (int) width
-// outputs:
-// (int) NPERR
-NaClSrpcError NPNavigator::SetWindow(NaClSrpcChannel* channel,
-                                     NaClSrpcArg** inputs,
-                                     NaClSrpcArg** outputs) {
-  NPP npp = GetNaClNPP(NPBridge::IntToNpp(inputs[0]->u.ival), true);
-  int height = inputs[1]->u.ival;
-  int width = inputs[2]->u.ival;
-  DebugPrintf("NPP_SetWindow: npp=%d, height=%d, width=%d\n",
-              npp, height, width);
-  // Invoke the implementation.
-  NPNavigator* nav = static_cast<NPNavigator*>(channel->server_instance_data);
-  outputs[0]->u.ival = nav->SetWindowImpl(npp, height, width);
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (int) npp
-// outputs:
-// (int) NPERR
-NaClSrpcError NPNavigator::Destroy(NaClSrpcChannel* channel,
-                                   NaClSrpcArg** inputs,
-                                   NaClSrpcArg** outputs) {
-  DebugPrintf("NPP_Destroy\n");
-  NPP npp = GetNaClNPP(NPBridge::IntToNpp(inputs[0]->u.ival), false);
-  NPNavigator* nav =
-      static_cast<NPNavigator*>(channel->server_instance_data);
-  outputs[0]->u.ival = nav->DestroyImpl(npp);
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (int) npp
-// outputs:
-// (char[]) capability
-NaClSrpcError NPNavigator::GetScriptableInstance(NaClSrpcChannel* channel,
-                                                 NaClSrpcArg** inputs,
-                                                 NaClSrpcArg** outputs) {
-  NPP npp = GetNaClNPP(NPBridge::IntToNpp(inputs[0]->u.ival), false);
-  DebugPrintf("NPP_GetScriptableInstance(npp %p)\n", npp);
-  NPNavigator* nav =
-      reinterpret_cast<NPNavigator*>(channel->server_instance_data);
-  DebugPrintf("    navigator %p\n", nav);
-  NPCapability* capability = nav->GetScriptableInstanceImpl(npp);
-  DebugPrintf("    capability %p\n", capability);
-  RpcArg ret(npp, outputs[0]);
-  DebugPrintf("    set up rpcarg\n");
-  ret.PutCapability(capability);
-  DebugPrintf("    put the capability\n");
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (int) npp
-// (char[]) NPPepperEvent structure
-// outputs:
-// (int) return from invoking NPP_HandleEvent
-NaClSrpcError NPNavigator::HandleEvent(NaClSrpcChannel* channel,
-                                       NaClSrpcArg** inputs,
-                                       NaClSrpcArg** outputs) {
-  NPP npp = GetNaClNPP(NPBridge::IntToNpp(inputs[0]->u.ival), false);
-  NPPepperEvent* event =
-      reinterpret_cast<NPPepperEvent*>(inputs[1]->u.caval.carr);
-  DebugPrintf("NPP_HandleEvent(npp %p, %p)\n", npp, event);
-  if (NULL == plugin_funcs.event) {
-    // Event was not handled.
-    outputs[0]->u.ival = 0;
+  if (NULL == plugin_funcs.newp) {
+    *nperr = NPERR_GENERIC_ERROR;
   } else {
-    outputs[0]->u.ival =
-        plugin_funcs.event(npp, reinterpret_cast<void*>(event));
+    *nperr = plugin_funcs.newp(mimetype,
+                               npp,
+                               0,  // TODO(sehr): what to do with mode?
+                               argc,
+                               argn,
+                               argv,
+                               NULL);
   }
   return NACL_SRPC_RESULT_OK;
 }
 
-// inputs:
-// (int) npp
-// (handle) file
-// (int) reason
-// outputs:
-// (none)
-NaClSrpcError NPNavigator::URLNotify(NaClSrpcChannel* channel,
-                                     NaClSrpcArg** inputs,
-                                     NaClSrpcArg** outputs) {
-  // TODO(sehr): what happens when we fail to get a URL?
-  DebugPrintf("NPP_URLNotify\n");
-  NPP npp = GetNaClNPP(NPBridge::IntToNpp(inputs[0]->u.ival), false);
-  NPNavigator* nav =
-      reinterpret_cast<NPNavigator*>(channel->server_instance_data);
-  nav->URLNotifyImpl(npp, inputs[1]->u.hval, inputs[2]->u.ival);
+NaClSrpcError NPNavigator::HandleEvent(NPP npp,
+                                       nacl_abi_size_t npevent_bytes,
+                                       char* npevent,
+                                       int32_t* return_int16) {
+  // NPP_HandleEvent returns an int16, and SRPC only knows about int32_t.
+  DebugPrintf("NPP_HandleEvent(npp %p, %p)\n", npp, npevent);
+
+  NPPepperEvent* event = reinterpret_cast<NPPepperEvent*>(npevent);
+  if (NULL == plugin_funcs.event) {
+    // Event was not handled.
+    *return_int16 = 0;
+  } else {
+    *return_int16 = plugin_funcs.event(npp, reinterpret_cast<void*>(event));
+  }
+
   return NACL_SRPC_RESULT_OK;
 }
-
 
 //
 // The following methods handle requests from the browser to the NPAPI module
 //
 
-NPError NPNavigator::NewImpl(NPMIMEType mimetype,
-                             NPP npp,
-                             uint32_t argc,
-                             char* argn[],
-                             char* argv[]) {
-  if (NULL == plugin_funcs.newp) {
-    return NPERR_GENERIC_ERROR;
-  }
-  NPError retval = plugin_funcs.newp(mimetype,
-                                     npp,
-                                     0,  // TODO(sehr): what to do with mode?
-                                     argc,
-                                     argn,
-                                     argv,
-                                     NULL);
-  return retval;
-}
+NPError NPNavigator::SetWindow(NPP npp,
+                               int height,
+                               int width) {
+  DebugPrintf("NPP_SetWindow: npp=%d, height=%d, width=%d\n",
+              npp, height, width);
 
-NPError NPNavigator::SetWindowImpl(NPP npp,
-                                   int height,
-                                   int width) {
   if (NULL == plugin_funcs.setwindow) {
     return NPERR_GENERIC_ERROR;
   }
@@ -426,14 +266,15 @@ NPError NPNavigator::SetWindowImpl(NPP npp,
   return plugin_funcs.setwindow(npp, &window);
 }
 
-NPError NPNavigator::DestroyImpl(NPP npp) {
+NPError NPNavigator::Destroy(NPP npp) {
+  DebugPrintf("NPP_Destroy\n");
   if (NULL == plugin_funcs.destroy) {
     return NPERR_GENERIC_ERROR;
   }
   return plugin_funcs.destroy(npp, NULL);
 }
 
-NPCapability* NPNavigator::GetScriptableInstanceImpl(NPP npp) {
+NPCapability* NPNavigator::GetScriptableInstance(NPP npp) {
   DebugPrintf("SII:\n");
   NPObject* object = NPP_GetScriptableInstance(npp);
   DebugPrintf("SII: %p\n", reinterpret_cast<void*>(object));
@@ -448,9 +289,9 @@ NPCapability* NPNavigator::GetScriptableInstanceImpl(NPP npp) {
   return NULL;
 }
 
-void NPNavigator::URLNotifyImpl(NPP npp,
-                                NaClSrpcImcDescType received_handle,
-                                uint32_t reason) {
+void NPNavigator::URLNotify(NPP npp,
+                            NaClSrpcImcDescType received_handle,
+                            uint32_t reason) {
   if (NPRES_DONE != reason) {
     // Close(received_handle);
     received_handle = kNaClSrpcInvalidImcDesc;
@@ -473,24 +314,24 @@ void NPNavigator::URLNotifyImpl(NPP npp,
 //
 
 void NPNavigator::SetStatus(NPP npp, const char* message) {
-  NaClSrpcInvokeByName(channel(),
-                       "NPN_Status",
-                       GetPluginNPP(npp),
-                       const_cast<char*>(message));
+  NPModuleRpcClient::NPN_SetStatus(channel(),
+                                   GetPluginNPP(npp),
+                                   const_cast<char*>(message));
 }
 
 NPError NPNavigator::GetValue(NPP npp, NPNVariable variable, void* value) {
   char buf[sizeof(NPCapability)];
-  uint32_t bufsize = static_cast<uint32_t>(sizeof(buf));
-  int error_code;
+  nacl_abi_size_t bufsize = static_cast<nacl_abi_size_t>(sizeof(buf));
+  int32_t error_code;
 
-  if (NACL_SRPC_RESULT_OK != NaClSrpcInvokeByName(channel(),
-                                                  "NPN_GetValue",
-                                                  GetPluginNPP(npp),
-                                                  variable,
-                                                  &error_code,
-                                                  bufsize,
-                                                  buf)) {
+  if (NACL_SRPC_RESULT_OK !=
+      NPModuleRpcClient::NPN_GetValue(
+          channel(),
+          GetPluginNPP(npp),
+          static_cast<int32_t>(variable),
+          &error_code,
+          &bufsize,
+          buf)) {
     return NPERR_GENERIC_ERROR;
   }
   if (error_code == NPERR_NO_ERROR) {
@@ -502,27 +343,28 @@ NPError NPNavigator::GetValue(NPP npp, NPNVariable variable, void* value) {
 }
 
 void NPNavigator::InvalidateRect(NPP npp, NPRect* invalid_rect) {
-  NaClSrpcInvokeByName(channel(),
-                       "NPN_InvalidateRect",
-                       GetPluginNPP(npp),
-                       sizeof(*invalid_rect),
-                       reinterpret_cast<char*>(invalid_rect));
+  NPModuleRpcClient::NPN_InvalidateRect(
+      channel(),
+      GetPluginNPP(npp),
+      static_cast<nacl_abi_size_t>(sizeof(*invalid_rect)),
+      reinterpret_cast<char*>(invalid_rect));
 }
 
 void NPNavigator::ForceRedraw(NPP npp) {
-  NaClSrpcInvokeByName(channel(), "ForceRedraw", npp);
+  NPModuleRpcClient::NPN_ForceRedraw(channel(), GetPluginNPP(npp));
 }
 
 NPObject* NPNavigator::CreateArray(NPP npp) {
   char buf[sizeof(NPCapability)];
-  int success;
-  uint32_t bufsize = static_cast<uint32_t>(sizeof(buf));
-  if (NACL_SRPC_RESULT_OK != NaClSrpcInvokeByName(channel(),
-                                                  "NPN_CreateArray",
-                                                  GetPluginNPP(npp),
-                                                  &success,
-                                                  bufsize,
-                                                  buf)) {
+  int32_t success;
+  nacl_abi_size_t bufsize = static_cast<nacl_abi_size_t>(sizeof(buf));
+  if (NACL_SRPC_RESULT_OK !=
+      NPModuleRpcClient::NPN_CreateArray(
+          channel(),
+          GetPluginNPP(npp),
+          &success,
+          &bufsize,
+          buf)) {
     return NULL;
   }
   if (0 == success) {
@@ -541,12 +383,13 @@ NPError NPNavigator::OpenURL(NPP npp,
   if (NULL != notify_ || NULL == url || NULL == notify) {
     return NPERR_GENERIC_ERROR;
   }
-  int error_code;
-  if (NACL_SRPC_RESULT_OK != NaClSrpcInvokeByName(channel(),
-                                                  "NPN_OpenURL",
-                                                  GetPluginNPP(npp),
-                                                  const_cast<char*>(url),
-                                                  &error_code)) {
+  int32_t error_code;
+  if (NACL_SRPC_RESULT_OK !=
+      NPModuleRpcClient::NPN_OpenURL(
+          channel(),
+          GetPluginNPP(npp),
+          const_cast<char*>(url),
+          &error_code)) {
     return NPERR_GENERIC_ERROR;
   }
   NPError nperr = static_cast<NPError>(error_code);
@@ -600,15 +443,17 @@ NPIdentifier NPNavigator::GetStringIdentifier(const NPUTF8* name) {
   std::map<const NPUTF8*, NPIdentifier>::iterator i;
   i = string_id_map->find(name);
   if (string_id_map->end() == i) {
-    NPIdentifier identifier;
+    int32_t int_id;
     NPNavigator* nav = GetNavigator();
     // Failed to find id in the map, so ask the browser.
-    if (NACL_SRPC_RESULT_OK != NaClSrpcInvokeByName(nav->channel(),
-                                                    "NPN_GetStringIdentifier",
-                                                    canonical_name,
-                                                    &identifier)) {
+    if (NACL_SRPC_RESULT_OK !=
+        NPModuleRpcClient::NPN_GetStringIdentifier(
+            nav->channel(),
+            reinterpret_cast<char*>(const_cast<NPUTF8*>(canonical_name)),
+            &int_id)) {
       return NULL;
     }
+    NPIdentifier identifier = reinterpret_cast<NPIdentifier>(int_id);
     AddStringIdentifierMapping(canonical_name, identifier);
   }
   return (*string_id_map)[canonical_name];
@@ -618,11 +463,12 @@ bool NPNavigator::IdentifierIsString(NPIdentifier identifier) {
   if (id_string_map->end() == id_string_map->find(identifier)) {
     // Check to see if the identifier was interned in the browser.
     NPNavigator* nav = GetNavigator();
-    int isstring;
-    if (NACL_SRPC_RESULT_OK != NaClSrpcInvokeByName(nav->channel(),
-                                                    "NPN_IdentifierIsString",
-                                                    identifier,
-                                                    &isstring) ||
+    int32_t isstring;
+    if (NACL_SRPC_RESULT_OK !=
+        NPModuleRpcClient::NPN_IdentifierIsString(
+            nav->channel(),
+            reinterpret_cast<int32_t>(identifier),
+            &isstring) ||
         !isstring) {
       // Browser says it's not a string
       return false;
@@ -638,18 +484,20 @@ NPUTF8* NPNavigator::UTF8FromIdentifier(NPIdentifier identifier) {
     if (IdentifierIsString(identifier)) {
       // If it's not maintained locally, ask the browser.
       NPNavigator* nav = GetNavigator();
-      const NPUTF8* str;
-      int errcode;
-      if (NACL_SRPC_RESULT_OK != NaClSrpcInvokeByName(nav->channel(),
-                                                      "NPN_UTF8FromIdentifier",
-                                                      identifier,
-                                                      &errcode,
-                                                      &str) ||
+      int32_t errcode;
+      char* chr_str;
+      if (NACL_SRPC_RESULT_OK !=
+          NPModuleRpcClient::NPN_UTF8FromIdentifier(
+              nav->channel(),
+              reinterpret_cast<int32_t>(identifier),
+              &errcode,
+              &chr_str) ||
           NPERR_NO_ERROR != errcode) {
         // Is a string, but not found in the browser either.
         return NULL;
       }
       // Enter it into our cache if it was found.
+      const NPUTF8* str = reinterpret_cast<NPUTF8*>(chr_str);
       AddStringIdentifierMapping(str, identifier);
     } else {
       // Browser says it is not a string.  Return an error.
@@ -670,14 +518,14 @@ NPIdentifier NPNavigator::GetIntIdentifier(int32_t value) {
   i = int_id_map->find(value);
   if (int_id_map->end() == i) {
     NPNavigator* nav = GetNavigator();
-    NPIdentifier identifier;
+    int32_t int_id;
     // Failed to find id in the map, so ask the browser.
-    if (NACL_SRPC_RESULT_OK != NaClSrpcInvokeByName(nav->channel(),
-                                                    "NPN_GetIntIdentifier",
-                                                    value,
-                                                    &identifier)) {
+    NaClSrpcError ret =
+        NPModuleRpcClient::NPN_GetIntIdentifier(nav->channel(), value, &int_id);
+    if (NACL_SRPC_RESULT_OK != ret) {
       return NULL;
     }
+    NPIdentifier identifier = reinterpret_cast<NPIdentifier>(int_id);
     AddIntIdentifierMapping(value, identifier);
   }
   return (*int_id_map)[value];
@@ -689,15 +537,16 @@ int32_t NPNavigator::IntFromIdentifier(NPIdentifier identifier) {
   if (id_int_map->end() == i) {
     // If it's not maintained locally, ask the browser.
     NPNavigator* nav = GetNavigator();
-    int32_t intid;
-    if (NACL_SRPC_RESULT_OK != NaClSrpcInvokeByName(nav->channel(),
-                                                    "NPN_IntFromIdentifier",
-                                                    identifier,
-                                                    &intid)) {
+    int32_t int_id;
+    if (NACL_SRPC_RESULT_OK !=
+        NPModuleRpcClient::NPN_IntFromIdentifier(
+            nav->channel(),
+            reinterpret_cast<int32_t>(identifier),
+            &int_id)) {
       // Not found in the browser either.
       return -1;
     }
-    AddIntIdentifierMapping(intid, identifier);
+    AddIntIdentifierMapping(int_id, identifier);
   }
   return (*id_int_map)[identifier];
 }
@@ -751,31 +600,28 @@ void NPNavigator::PluginThreadAsyncCall(NPP instance,
   next_call = next_pending_call++;
   pending_calls_[next_call] = closure;
   // Send an RPC to the NPAPI upcall thread in the browser plugin.
-  NaClSrpcInvokeByName(upcall_channel_,
-                       "NPN_PluginThreadAsyncCall",
-                       GetPluginNPP(instance),
-                       static_cast<int>(next_call));
+  NaClSrpcInvokeByName(
+      upcall_channel_,
+      "NPN_PluginThreadAsyncCall",
+      GetPluginNPP(instance),
+      static_cast<int32_t>(next_call));
 }
 
-NaClSrpcError NPNavigator::DoAsyncCall(NaClSrpcChannel* channel,
-                                       NaClSrpcArg** inputs,
-                                       NaClSrpcArg** outputs) {
-  NPNavigator* nav =
-      reinterpret_cast<NPNavigator*>(channel->server_instance_data);
-  uint32_t key = static_cast<uint32_t>(inputs[0]->u.ival);
+NaClSrpcError NPNavigator::DoAsyncCall(int32_t number) {
+  uint32_t key = static_cast<uint32_t>(number);
   AsyncCallFunc func;
   void* user_data;
   {  /* SCOPE */
-    MutexLock ml(&(nav->pending_mu_));
+    MutexLock ml(&pending_mu_);
     std::map<uint32_t, NPPendingCallClosure*>::iterator i;
-    i = nav->pending_calls_.find(key);
-    if (nav->pending_calls_.end() == i)
+    i = pending_calls_.find(key);
+    if (pending_calls_.end() == i)
       return NACL_SRPC_RESULT_APP_ERROR;
     NPPendingCallClosure* closure = i->second;
     func = closure->func();
     user_data = closure->user_data();
     delete closure;
-    nav->pending_calls_.erase(i);
+    pending_calls_.erase(i);
   }
   // Invoke the function with the data.
   (*func)(user_data);

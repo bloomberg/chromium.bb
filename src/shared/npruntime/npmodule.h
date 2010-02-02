@@ -27,123 +27,65 @@ namespace nacl {
 // Represents the plugin end of the connection to the NaCl module. The opposite
 // end is the NPNavigator.
 class NPModule : public NPBridge {
-  // The proxy NPObject that represents the plugin's scriptable object.
-  NPObject* proxy_;
-
-  // The URL origin of the HTML page that started this module.
-  std::string origin_;
-
-  // The NPWindow of this plugin instance.
-  NPWindow* window_;
-  bool origin_valid_;
-
-  // The NaClThread that handles the upcalls for e.g., PluginThreadAsyncCall.
-  struct NaClThread upcall_thread_;
-
-  // There are some identifier differences if the browser is based on WebKit.
-  static bool IsWebKit;
-
-  // The SRPC methods exported visible to the NaCl module.
-  static NACL_SRPC_METHOD_ARRAY(srpc_methods);
-
-  // Extension state.
-  NPExtensions* extensions_;
-
-  // 2D graphics device state.
-  NPDevice* device2d_;
-  NPDeviceContext2D* context2d_;
-
-  // 3D graphics device state.
-  NPDevice* device3d_;
-  NPDeviceContext3D* context3d_;
-
  public:
   // Creates a new instance of NPModule.
   explicit NPModule(NaClSrpcChannel* channel);
   ~NPModule();
 
-  // Processes NPN_GetValue() request from the child process.
-  static NaClSrpcError GetValue(NaClSrpcChannel* channel,
-                                NaClSrpcArg** inputs,
-                                NaClSrpcArg** outputs);
-  // Processes NPN_Status() request from the child process.
-  static NaClSrpcError SetStatus(NaClSrpcChannel* channel,
-                                 NaClSrpcArg** inputs,
-                                 NaClSrpcArg** outputs);
-  // Processes NPN_InvalidateRect() request from the child process.
-  static NaClSrpcError InvalidateRect(NaClSrpcChannel* channel,
-                                      NaClSrpcArg** inputs,
-                                      NaClSrpcArg** outputs);
-  // Processes NPN_ForceRedraw() request from the child process.
-  static NaClSrpcError ForceRedraw(NaClSrpcChannel* channel,
-                                   NaClSrpcArg** inputs,
-                                   NaClSrpcArg** outputs);
-  // Processes NPN_CreateArray() request from the child process.
-  static NaClSrpcError CreateArray(NaClSrpcChannel* channel,
-                                   NaClSrpcArg** inputs,
-                                   NaClSrpcArg** outputs);
-  // Processes NPN_OpenURL() request from the child process.
-  static NaClSrpcError OpenURL(NaClSrpcChannel* channel,
-                               NaClSrpcArg** inputs,
-                               NaClSrpcArg** outputs);
-  // Processes NPN_GetIntIdentifier() request from the child process.
-  static NaClSrpcError GetIntIdentifier(NaClSrpcChannel* channel,
-                                        NaClSrpcArg** inputs,
-                                        NaClSrpcArg** outputs);
-  static NaClSrpcError IntFromIdentifier(NaClSrpcChannel* channel,
-                                         NaClSrpcArg** inputs,
-                                         NaClSrpcArg** outputs);
-  // Processes NPN_GetStringIdentifier() request from the child process.
-  static NaClSrpcError GetStringIdentifier(NaClSrpcChannel* channel,
-                                           NaClSrpcArg** inputs,
-                                           NaClSrpcArg** outputs);
-  static NaClSrpcError Utf8FromIdentifier(NaClSrpcChannel* channel,
-                                          NaClSrpcArg** inputs,
-                                          NaClSrpcArg** outputs);
-  static NaClSrpcError IdentifierIsString(NaClSrpcChannel* channel,
-                                          NaClSrpcArg** inputs,
-                                          NaClSrpcArg** outputs);
-  static NaClSrpcError Device2DInitialize(NaClSrpcChannel* channel,
-                                          NaClSrpcArg** inputs,
-                                          NaClSrpcArg** outputs);
-  static NaClSrpcError Device2DFlush(NaClSrpcChannel* channel,
-                                     NaClSrpcArg** inputs,
-                                     NaClSrpcArg** outputs);
-  static NaClSrpcError Device2DDestroy(NaClSrpcChannel* channel,
-                                       NaClSrpcArg** inputs,
-                                       NaClSrpcArg** outputs);
-  static NaClSrpcError Device3DInitialize(NaClSrpcChannel* channel,
-                                          NaClSrpcArg** inputs,
-                                          NaClSrpcArg** outputs);
-  static NaClSrpcError Device3DFlush(NaClSrpcChannel* channel,
-                                     NaClSrpcArg** inputs,
-                                     NaClSrpcArg** outputs);
-  static NaClSrpcError Device3DDestroy(NaClSrpcChannel* channel,
-                                       NaClSrpcArg** inputs,
-                                       NaClSrpcArg** outputs);
-  static NaClSrpcError Device3DGetState(NaClSrpcChannel* channel,
-                                        NaClSrpcArg** inputs,
-                                        NaClSrpcArg** outputs);
-  static NaClSrpcError Device3DSetState(NaClSrpcChannel* channel,
-                                        NaClSrpcArg** inputs,
-                                        NaClSrpcArg** outputs);
-  static NaClSrpcError Device3DCreateBuffer(NaClSrpcChannel* channel,
-                                            NaClSrpcArg** inputs,
-                                            NaClSrpcArg** outputs);
-  static NaClSrpcError Device3DDestroyBuffer(NaClSrpcChannel* channel,
-                                             NaClSrpcArg** inputs,
-                                             NaClSrpcArg** outputs);
+  static NPModule* GetModule(int32_t int_npp);
 
-  // Invokes NPP_Initialize() in the child process.
-  NPError Initialize();
+  static bool IsWebkit() { return is_webkit; }
 
-  // Invokes NPP_New() in the child process.
-  NPError New(char* mimetype, NPP npp, int argc, char* argn[], char* argv[]);
+  //
+  // Processing calls from the NaCl module to the browser.
+  //
+
+  void InvalidateRect(NPP npp, const NPRect* nprect);
+  void ForceRedraw(NPP npp);
+  NaClSrpcError Device2DInitialize(NPP npp,
+                                   NaClSrpcImcDescType* shm_desc,
+                                   int32_t* stride,
+                                   int32_t* left,
+                                   int32_t* top,
+                                   int32_t* right,
+                                   int32_t* bottom);
+  NaClSrpcError Device2DFlush(NPP npp,
+                              int32_t* stride,
+                              int32_t* left,
+                              int32_t* top,
+                              int32_t* right,
+                              int32_t* bottom);
+  NaClSrpcError Device2DDestroy(NPP npp);
+  NaClSrpcError Device3DInitialize(NPP npp,
+                                   int32_t entries_requested,
+                                   NaClSrpcImcDescType* shm_desc,
+                                   int32_t* entries_obtained,
+                                   int32_t* get_offset,
+                                   int32_t* put_offset);
+  NaClSrpcError Device3DFlush(NPP npp,
+                              int32_t put_offset,
+                              int32_t* get_offset);
+  NaClSrpcError Device3DDestroy(NPP npp);
+  NaClSrpcError Device3DGetState(NPP npp,
+                                 int32_t state,
+                                 int32_t* value);
+  NaClSrpcError Device3DSetState(NPP npp,
+                                 int32_t state,
+                                 int32_t value);
+  NaClSrpcError Device3DCreateBuffer(NPP npp,
+                                     int32_t size,
+                                     NaClSrpcImcDescType* shm_desc,
+                                     int32_t* id);
+  NaClSrpcError Device3DDestroyBuffer(NPP npp, int32_t id);
 
   //
   // NPInstance methods
   //
 
+  // Invokes NPP_Initialize() in the child process.
+  NPError Initialize();
+  // Invokes NPP_New() in the child process.
+  NPError New(char* mimetype, NPP npp, int argc, char* argn[], char* argv[]);
   // Processes NPP_Destroy() invocation from the browser.
   NPError Destroy(NPP npp, NPSavedData** save);
   // Processes NPP_SetWindow() invocation from the browser.
@@ -166,6 +108,37 @@ class NPModule : public NPBridge {
   NPError DestroyStream(NPP npp, NPStream *stream, NPError reason);
   // Processes NPP_URLNotify() invocation from the browser.
   void URLNotify(NPP npp, const char* url, NPReason reason, void* notify_data);
+
+ private:
+  // The proxy NPObject that represents the plugin's scriptable object.
+  NPObject* proxy_;
+
+  // The URL origin of the HTML page that started this module.
+  std::string origin_;
+
+  // The NPWindow of this plugin instance.
+  NPWindow* window_;
+  bool origin_valid_;
+
+  // The NaClThread that handles the upcalls for e.g., PluginThreadAsyncCall.
+  struct NaClThread upcall_thread_;
+
+  // There are some identifier differences if the browser is based on WebKit.
+  static bool is_webkit;
+
+  // The SRPC methods exported visible to the NaCl module.
+  static NACL_SRPC_METHOD_ARRAY(srpc_methods);
+
+  // Extension state.
+  NPExtensions* extensions_;
+
+  // 2D graphics device state.
+  NPDevice* device2d_;
+  NPDeviceContext2D* context2d_;
+
+  // 3D graphics device state.
+  NPDevice* device3d_;
+  NPDeviceContext3D* context3d_;
 };
 
 }  // namespace nacl

@@ -28,7 +28,19 @@
 # (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 # OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-"""Build "SRPC" interfaces from specifications."""
+"""Build "SRPC" interfaces from specifications.
+
+SRPC interfaces consist of one or more interface classes, typically defined
+in a set of .srpc files.  The specifications are Python dictionaries, with a
+top level 'name' element and an 'rpcs' element.  The rpcs element is a list
+containing a number of rpc methods, each of which has a 'name', an 'inputs',
+and an 'outputs' element.  These elements are lists of input or output
+parameters, which are lists pairs containing a name and type.  The set of
+types includes all the SRPC basic types.
+
+These SRPC specifications are used to generate a header file and either a
+server or client stub file, as determined by the command line flag -s or -c.
+"""
 
 import getopt
 #import re
@@ -122,22 +134,35 @@ def FormatRpcPrototype(class_name, indent, rpc):
   return  s
 
 
-def PrintHeaderFile(output, guard_name, class_name, rpcs):
+def PrintHeaderFile(output, is_server, guard_name, interface_name, specs):
   """Prints out the header file containing the prototypes for the RPCs."""
+  print >>output, AUTOGEN_COMMENT
   s = HEADER_START.replace('xyz', guard_name)
-  s += 'class %s {\n public:\n' % class_name
-  for rpc in rpcs:
-    s += '  static %s;\n' % FormatRpcPrototype('', '  ', rpc)
-  s += '\n private:\n  %s();\n' % class_name
-  s += '  %s(const %s&);\n' % (class_name, class_name)
-  s += '  void operator=(const %s);\n\n' % class_name
-  s += '  static NACL_SRPC_METHOD_ARRAY(srpc_methods);\n'
-  s += '};  // class %s' % class_name
+  # iterate over all the specified interfaces
+  if is_server:
+    suffix = 'Server'
+  else:
+    suffix = 'Client'
+  for spec in specs:
+    class_name = spec['name'] + suffix
+    rpcs = spec['rpcs']
+    s += 'class %s {\n public:\n' % class_name
+    for rpc in rpcs:
+      s += '  static %s;\n' % FormatRpcPrototype('', '  ', rpc)
+    s += '\n private:\n  %s();\n' % class_name
+    s += '  %s(const %s&);\n' % (class_name, class_name)
+    s += '  void operator=(const %s);\n\n' % class_name
+    s += '};  // class %s\n\n' % class_name
+  if is_server:
+    s += 'class %s {\n' % interface_name
+    s += ' public:\n'
+    s += '  static NACL_SRPC_METHOD_ARRAY(srpc_methods);\n'
+    s += '};  // class %s' % interface_name
   s += HEADER_END.replace('xyz', guard_name)
   print >>output, s
 
 
-def PrintServerFile(output, include_name, class_name, rpcs):
+def PrintServerFile(output, include_name, interface_name, specs):
   """Print the server (stub) .cc file."""
 
   def FormatDispatchPrototype(indent, rpc):
@@ -201,24 +226,35 @@ def PrintServerFile(output, include_name, class_name, rpcs):
     s += FormatArgs(True, rpc['outputs'])
     s += '\n%s)' % indent
     return s
+  print >>output, AUTOGEN_COMMENT
   s = 'namespace {\n\n'
-  for rpc in rpcs:
-    s += '%s {\n' % FormatDispatchPrototype('', rpc)
-    if rpc['inputs'] == []:
-      s += '  UNREFERENCED_PARAMETER(inputs);\n'
-    if rpc['outputs'] == []:
-      s += '  UNREFERENCED_PARAMETER(outputs);\n'
-    s += '  return %s;\n}\n\n' % FormatCall(class_name, '  ', rpc)
-  s += '}  // namespace\n\nNACL_SRPC_METHOD_ARRAY(%s' % class_name
+  for spec in specs:
+    class_name = spec['name'] + 'Server'
+    rpcs = spec['rpcs']
+    for rpc in rpcs:
+      s += '%s {\n' % FormatDispatchPrototype('', rpc)
+      if rpc['inputs'] == []:
+        s += '  UNREFERENCED_PARAMETER(inputs);\n'
+      if rpc['outputs'] == []:
+        s += '  UNREFERENCED_PARAMETER(outputs);\n'
+      s += '  NaClSrpcError retval;\n'
+      s += '  retval = %s;\n' % FormatCall(class_name, '  ', rpc)
+      s += '  return retval;\n'
+      s += '}\n\n'
+  s += '}  // namespace\n\n'
+  s += 'NACL_SRPC_METHOD_ARRAY(%s' % interface_name
   s += '::srpc_methods) = {\n'
-  for rpc in rpcs:
-    s += FormatMethodString(rpc)
+  for spec in specs:
+    class_name = spec['name'] + 'Server'
+    rpcs = spec['rpcs']
+    for rpc in rpcs:
+      s += FormatMethodString(rpc)
   s += '  { NULL, NULL }\n};  // NACL_SRPC_METHOD_ARRAY\n'
   print >>output, SOURCE_FILE_INCLUDES.replace('xyz', include_name)
   print >>output, s
 
 
-def PrintClientFile(output, include_name, class_name, rpcs):
+def PrintClientFile(output, include_name, specs):
   """Prints the client (proxy) .cc file."""
 
   def FormatCall(rpc):
@@ -243,61 +279,64 @@ def PrintClientFile(output, include_name, class_name, rpcs):
     s += FormatArgs(rpc['inputs'])
     s += FormatArgs(rpc['outputs']) + '\n  )'
     return s
-  s = ''
-  for rpc in rpcs:
-    s += '%s' % FormatRpcPrototype(class_name + '::', '', rpc)
-    s += ' {\n  return NaClSrpcInvokeByName%s;\n}\n\n' % FormatCall(rpc)
-  s += 'NACL_SRPC_METHOD_ARRAY(%s::srpc_methods) = {\n' % class_name
-  s += '  { NULL, NULL }\n};  // NACL_SRPC_METHOD_ARRAY\n'
+  print >>output, AUTOGEN_COMMENT
   print >>output, SOURCE_FILE_INCLUDES.replace('xyz', include_name)
+  s = ''
+  for spec in specs:
+    class_name = spec['name'] + 'Client'
+    rpcs = spec['rpcs']
+    for rpc in rpcs:
+      s += '%s  {\n' % FormatRpcPrototype(class_name + '::', '', rpc)
+      s += '  NaClSrpcError retval;\n'
+      s += '  retval = NaClSrpcInvokeByName%s;\n' % FormatCall(rpc)
+      s += '  return retval;\n'
+      s += '}\n\n'
   print >>output, s
 
 
 def main(argv):
-  usage = 'Usage: srpcgen.py [-h] [-c] [-s] <class_name> <guard> <spec files>'
+  usage = 'Usage: srpcgen.py [-c] [-s] <iname> <gname> <.h> <.cc> <specs>'
   mode = 'header'
-  output = sys.stdout
   try:
-    opts, pargs = getopt.getopt(argv[1:], 'hcso:')
+    opts, pargs = getopt.getopt(argv[1:], 'cs')
   except getopt.error, e:
     print >>sys.stderr, 'Illegal option:', str(e)
     print >>sys.stderr, usage
     return 1
 
-  # Get the class name, the guard token, and the list of specification files.
-  class_name = pargs[0]
-  spec_files = pargs[2:]
+  # Get the class name for the interface.
+  interface_name = pargs[0]
+  # Get the name for the token used as a multiple inclusion guard in the header.
+  include_guard_name = pargs[1]
+  # Get the name of the header file to be generated.
+  h_file_name = pargs[2]
+  h_file = open(h_file_name, 'w')
+  # Get the name of the source file to be generated.  Depending upon whether
+  # -c or -s is generated, this file contains either client or server methods.
+  cc_file = open(pargs[3], 'w')
+  # The remaining arguments are the spec files to be compiled.
+  spec_files = pargs[4:]
 
   for opt, val in opts:
     if opt == '-c':
       mode = 'client'
-    elif opt == '-g':
-      guard_name = val
-    elif opt == '-h':
-      mode = 'header'
     elif opt == '-s':
       mode = 'server'
-    elif opt == '-o':
-      output = open(val, 'w')
     else:
       assert 0
 
   # Combine the rpc specs from spec_files into rpcs.
-  rpcs = []
+  specs = []
   for spec_file in spec_files:
     code_obj = compile(open(spec_file, 'r').read(), 'file', 'eval')
-    rpcs.extend(eval(code_obj))
-  # Print out the requested file.
-  print >>output, AUTOGEN_COMMENT
-  if mode == 'header':
-    guard_name = pargs[1]
-    PrintHeaderFile(output, guard_name, class_name, rpcs)
-  elif mode == 'client':
-    include_name = pargs[1]
-    PrintClientFile(output, include_name, class_name, rpcs)
+    specs.append(eval(code_obj))
+  # Print out the requested files.
+  if mode == 'client':
+    PrintHeaderFile(h_file, False, include_guard_name, interface_name, specs)
+    PrintClientFile(cc_file, h_file_name, specs)
   elif mode == 'server':
-    include_name = pargs[1]
-    PrintServerFile(output, include_name, class_name, rpcs)
+    PrintHeaderFile(h_file, True, include_guard_name, interface_name, specs)
+    PrintServerFile(cc_file, h_file_name, interface_name, specs)
 
   return 0
 

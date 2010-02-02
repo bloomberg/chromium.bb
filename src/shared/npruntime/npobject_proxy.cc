@@ -12,20 +12,13 @@
 #include <stdarg.h>
 
 #include "native_client/src/include/portability.h"
+#include "gen/native_client/src/shared/npruntime/npmodule_rpc.h"
+#include "gen/native_client/src/shared/npruntime/npnavigator_rpc.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npbridge.h"
 
-static void DebugPrintf(const char *fmt, ...) {
-  va_list argptr;
-  fprintf(stderr, "@@@ PROXY ");
-
-  va_start(argptr, fmt);
-  vfprintf(stderr, fmt, argptr);
-  va_end(argptr);
-  fflush(stderr);
-}
-
 namespace {
+
 // TODO(sehr): This should be moved when it no longer conflicts with
 // the Pepper changelist.
 static const int kNPVariantOptionalMax = 16 * 1024;
@@ -44,7 +37,7 @@ NPObject* Alloc(NPP npp, NPClass* aClass) {
 
 void Deallocate(NPObject* object) {
   nacl::NPObjectProxy* npobj = static_cast<nacl::NPObjectProxy*>(object);
-  DebugPrintf("Deallocate(%p)\n", reinterpret_cast<void*>(object));
+  nacl::DebugPrintf("Deallocate(%p)\n", reinterpret_cast<void*>(object));
   delete npobj;
 }
 
@@ -168,10 +161,10 @@ NPObjectProxy::~NPObjectProxy() {
   if (NULL == bridge) {
     return;
   }
-  NaClSrpcInvokeByName(bridge->channel(),
-                       "NPN_Deallocate",
-                       sizeof capability_,
-                       &capability_);
+
+  NPObjectStubRpcClient::NPN_Deallocate(bridge->channel(),
+                                        capability_.size(),
+                                        capability_.char_addr());
   bridge->RemoveProxy(this);
 }
 
@@ -182,10 +175,9 @@ void NPObjectProxy::Deallocate() {
   if (NULL == bridge) {
     return;
   }
-  NaClSrpcInvokeByName(bridge->channel(),
-                       "NPN_Deallocate",
-                       sizeof capability_,
-                       &capability_);
+  NPObjectStubRpcClient::NPN_Deallocate(bridge->channel(),
+                                        capability_.size(),
+                                        capability_.char_addr());
 }
 
 void NPObjectProxy::Invalidate() {
@@ -196,10 +188,9 @@ void NPObjectProxy::Invalidate() {
   if (NULL == bridge) {
     return;
   }
-  NaClSrpcInvokeByName(bridge->channel(),
-                       "NPN_Invalidate",
-                       sizeof capability_,
-                       &capability_);
+  NPObjectStubRpcClient::NPN_Invalidate(bridge->channel(),
+                                        capability_.size(),
+                                        capability_.char_addr());
 }
 
 bool NPObjectProxy::HasMethod(NPIdentifier name) {
@@ -211,14 +202,13 @@ bool NPObjectProxy::HasMethod(NPIdentifier name) {
   if (NULL == bridge) {
     return false;
   }
-  int error_code;
+  int32_t error_code;
   if (NACL_SRPC_RESULT_OK !=
-      NaClSrpcInvokeByName(bridge->channel(),
-                           "NPN_HasMethod",
-                           sizeof capability_,
-                           &capability_,
-                           NPBridge::NpidentifierToInt(name),
-                           &error_code)) {
+      NPObjectStubRpcClient::NPN_HasMethod(bridge->channel(),
+                                           capability_.size(),
+                                           capability_.char_addr(),
+                                           NPBridge::NpidentifierToInt(name),
+                                           &error_code)) {
     return false;
   }
   return error_code ? true : false;
@@ -245,34 +235,37 @@ bool NPObjectProxy::Invoke(NPIdentifier name,
   }
   // TODO(sehr): this is really verbose.  New RpcArg constructor.
   char fixed[kNPVariantSizeMax * kParamMax];
-  uint32_t fixed_size = static_cast<uint32_t>(sizeof(fixed));
+  nacl_abi_size_t fixed_size =
+      static_cast<nacl_abi_size_t>(sizeof(fixed));
   char optional[kNPVariantSizeMax * kParamMax];
-  uint32_t optional_size = static_cast<uint32_t>(sizeof(optional));
+  nacl_abi_size_t optional_size =
+      static_cast<nacl_abi_size_t>(sizeof(optional));
   RpcArg vars(npp_, fixed, fixed_size, optional, optional_size);
   if (!vars.PutVariantArray(args, arg_count)) {
     return false;
   }
-  int ret_bool;
+  int32_t ret_bool;
   char ret_fixed[100 * kNPVariantSizeMax];
-  uint32_t ret_fixed_size = static_cast<uint32_t>(sizeof(ret_fixed));
+  nacl_abi_size_t ret_fixed_size =
+      static_cast<nacl_abi_size_t>(sizeof(ret_fixed));
   char ret_optional[100 * kNPVariantSizeMax];
-  uint32_t ret_optional_size = static_cast<uint32_t>(sizeof(ret_optional));
+  nacl_abi_size_t ret_optional_size =
+      static_cast<nacl_abi_size_t>(sizeof(ret_optional));
   if (NACL_SRPC_RESULT_OK !=
-      NaClSrpcInvokeByName(bridge->channel(),
-                           "NPN_Invoke",
-                           sizeof capability_,
-                           &capability_,
-                           NPBridge::NpidentifierToInt(name),
-                           fixed_size,
-                           fixed,
-                           optional_size,
-                           optional,
-                           arg_count,
-                           &ret_bool,
-                           ret_fixed_size,  // Need size set by return
-                           ret_fixed,
-                           ret_optional_size,  // Need size set by return
-                           ret_optional)) {
+      NPObjectStubRpcClient::NPN_Invoke(bridge->channel(),
+                                        capability_.size(),
+                                        capability_.char_addr(),
+                                        NPBridge::NpidentifierToInt(name),
+                                        fixed_size,
+                                        fixed,
+                                        optional_size,
+                                        optional,
+                                        static_cast<int32_t>(arg_count),
+                                        &ret_bool,
+                                        &ret_fixed_size,
+                                        ret_fixed,
+                                        &ret_optional_size,
+                                        ret_optional)) {
     DebugPrintf("    invoke error\n");
     return false;
   }
@@ -313,35 +306,37 @@ bool NPObjectProxy::InvokeDefault(const NPVariant* args,
     printf("bridge was NULL\n");
     return false;
   }
-  char      fixed[kNPVariantSizeMax * kParamMax];
-  uint32_t  fixed_size = static_cast<uint32_t>(sizeof(fixed));
-  char      optional[kNPVariantSizeMax * kParamMax];
-  uint32_t  optional_size = static_cast<uint32_t>(sizeof(optional));
+  char fixed[kNPVariantSizeMax * kParamMax];
+  nacl_abi_size_t fixed_size = static_cast<nacl_abi_size_t>(sizeof(fixed));
+  char optional[kNPVariantSizeMax * kParamMax];
+  nacl_abi_size_t optional_size =
+      static_cast<nacl_abi_size_t>(sizeof(optional));
   RpcArg vars(npp_, fixed, fixed_size, optional, optional_size);
   if (!vars.PutVariantArray(args, arg_count)) {
     printf("Args didn't fit\n");
     return false;
   }
-  int error_code;
+  int32_t error_code;
   char ret_fixed[kNPVariantSizeMax];
-  uint32_t ret_fixed_size = static_cast<uint32_t>(sizeof(ret_fixed));
+  nacl_abi_size_t ret_fixed_size =
+      static_cast<nacl_abi_size_t>(sizeof(ret_fixed));
   char ret_optional[kNPVariantOptionalMax];
-  uint32_t ret_optional_size = static_cast<uint32_t>(sizeof(ret_optional));
+  nacl_abi_size_t ret_optional_size =
+      static_cast<nacl_abi_size_t>(sizeof(ret_optional));
   if (NACL_SRPC_RESULT_OK !=
-      NaClSrpcInvokeByName(bridge->channel(),
-                           "NPN_InvokeDefault",
-                           sizeof capability_,
-                           &capability_,
-                           fixed_size,
-                           fixed,
-                           optional_size,
-                           optional,
-                           arg_count,
-                           &error_code,
-                           ret_fixed_size,  // Need size set by return
-                           ret_fixed,
-                           ret_optional_size,  // Need size set by return
-                           ret_optional)) {
+      NPObjectStubRpcClient::NPN_InvokeDefault(bridge->channel(),
+                                               capability_.size(),
+                                               capability_.char_addr(),
+                                               fixed_size,
+                                               fixed,
+                                               optional_size,
+                                               optional,
+                                               static_cast<int32_t>(arg_count),
+                                               &error_code,
+                                               &ret_fixed_size,
+                                               ret_fixed,
+                                               &ret_optional_size,
+                                               ret_optional)) {
     printf("RPC failed\n");
     return false;
   }
@@ -371,14 +366,13 @@ bool NPObjectProxy::HasProperty(NPIdentifier name) {
   if (NULL == bridge) {
     return false;
   }
-  int error_code;
+  int32_t error_code;
   if (NACL_SRPC_RESULT_OK !=
-      NaClSrpcInvokeByName(bridge->channel(),
-                           "NPN_HasProperty",
-                           sizeof capability_,
-                           &capability_,
-                           NPBridge::NpidentifierToInt(name),
-                           &error_code)) {
+      NPObjectStubRpcClient::NPN_HasProperty(bridge->channel(),
+                                             capability_.size(),
+                                             capability_.char_addr(),
+                                             NPBridge::NpidentifierToInt(name),
+                                             &error_code)) {
     return false;
   }
   return error_code ? true : false;
@@ -393,22 +387,21 @@ bool NPObjectProxy::GetProperty(NPIdentifier name, NPVariant* variant) {
   if (NULL == bridge) {
     return false;
   }
-  int error_code;
+  int32_t error_code;
   char ret_fixed[kNPVariantSizeMax];
   uint32_t ret_fixed_size = static_cast<uint32_t>(sizeof(ret_fixed));
   char ret_optional[kNPVariantOptionalMax];
   uint32_t ret_optional_size = static_cast<uint32_t>(sizeof(ret_optional));
   if (NACL_SRPC_RESULT_OK !=
-      NaClSrpcInvokeByName(bridge->channel(),
-                           "NPN_GetProperty",
-                           sizeof capability_,
-                           &capability_,
-                           NPBridge::NpidentifierToInt(name),
-                           &error_code,
-                           ret_fixed_size,  // Need size set by return
-                           ret_fixed,
-                           ret_optional_size,  // Need size set by return
-                           ret_optional)) {
+      NPObjectStubRpcClient::NPN_GetProperty(bridge->channel(),
+                                             capability_.size(),
+                                             capability_.char_addr(),
+                                             NPBridge::NpidentifierToInt(name),
+                                             &error_code,
+                                             &ret_fixed_size,
+                                             ret_fixed,
+                                             &ret_optional_size,
+                                             ret_optional)) {
     DebugPrintf("GetProperty failed\n");
     return false;
   }
@@ -443,18 +436,17 @@ bool NPObjectProxy::SetProperty(NPIdentifier name, const NPVariant* value) {
   if (!vars.PutVariant(value)) {
     return false;
   }
-  int error_code;
+  int32_t error_code;
   if (NACL_SRPC_RESULT_OK !=
-      NaClSrpcInvokeByName(bridge->channel(),
-                           "NPN_SetProperty",
-                           sizeof capability_,
-                           &capability_,
-                           NPBridge::NpidentifierToInt(name),
-                           fixed_size,
-                           fixed,
-                           optional_size,
-                           optional,
-                           &error_code)) {
+      NPObjectStubRpcClient::NPN_SetProperty(bridge->channel(),
+                                             capability_.size(),
+                                             capability_.char_addr(),
+                                             NPBridge::NpidentifierToInt(name),
+                                             fixed_size,
+                                             fixed,
+                                             optional_size,
+                                             optional,
+                                             &error_code)) {
     return false;
   }
   return error_code ? true : false;
@@ -469,14 +461,14 @@ bool NPObjectProxy::RemoveProperty(NPIdentifier name) {
   if (NULL == bridge) {
     return false;
   }
-  int error_code;
+  int32_t error_code;
   if (NACL_SRPC_RESULT_OK !=
-      NaClSrpcInvokeByName(bridge->channel(),
-                           "NPN_RemoveProperty",
-                           sizeof capability_,
-                           &capability_,
-                           NPBridge::NpidentifierToInt(name),
-                           &error_code)) {
+      NPObjectStubRpcClient::NPN_RemoveProperty(
+          bridge->channel(),
+          capability_.size(),
+          capability_.char_addr(),
+          NPBridge::NpidentifierToInt(name),
+          &error_code)) {
     return false;
   }
   return error_code ? true : false;
@@ -493,18 +485,22 @@ bool NPObjectProxy::Enumerate(NPIdentifier** identifiers,
   }
   // TODO(sehr): there are some identifier copying issues here, etc.
   char idents[kNPVariantSizeMax * kParamMax];
-  int error_code;
+  nacl_abi_size_t idents_size = static_cast<nacl_abi_size_t>(sizeof(idents));
+  int32_t error_code;
+  int32_t ident_count;
   if (NACL_SRPC_RESULT_OK !=
-      NaClSrpcInvokeByName(bridge->channel(),
-                           "NPN_Enumerate",
-                           sizeof capability_,
-                           &capability_,
-                           &error_code,
-                           sizeof(idents),
-                           idents,
-                           identifier_count)) {
+      NPObjectStubRpcClient::NPN_Enumerate(bridge->channel(),
+                                           capability_.size(),
+                                           capability_.char_addr(),
+                                           &error_code,
+                                           &idents_size,
+                                           idents,
+                                           &ident_count)) {
     return false;
   }
+  // TODO(sehr): we're still not copying the identifier list, etc.
+  // Again, SRPC only handles int32_t, so we need a cast.
+  *identifier_count = static_cast<uint32_t>(ident_count);
   return false;
 }
 
@@ -519,33 +515,37 @@ bool NPObjectProxy::Construct(const NPVariant* args,
   if (NULL == bridge) {
     return false;
   }
-  char      fixed[kNPVariantSizeMax * kParamMax];
-  uint32_t  fixed_size = static_cast<uint32_t>(sizeof(fixed));
-  char      optional[kNPVariantSizeMax * kParamMax];
-  uint32_t  optional_size = static_cast<uint32_t>(sizeof(optional));
-  RpcArg    vars(npp_, fixed, fixed_size, optional, optional_size);
+  char fixed[kNPVariantSizeMax * kParamMax];
+  nacl_abi_size_t fixed_size =
+      static_cast<nacl_abi_size_t>(sizeof(fixed));
+  char optional[kNPVariantSizeMax * kParamMax];
+  nacl_abi_size_t optional_size =
+      static_cast<nacl_abi_size_t>(sizeof(optional));
+  RpcArg vars(npp_, fixed, fixed_size, optional, optional_size);
   if (!vars.PutVariantArray(args, arg_count)) {
     return false;
   }
-  int       error_code;
-  char      ret_fixed[kNPVariantSizeMax];
-  uint32_t  ret_fixed_size = static_cast<uint32_t>(sizeof(optional));
-  char      ret_optional[kNPVariantSizeMax];
-  uint32_t  ret_optional_size = static_cast<uint32_t>(sizeof(optional));
+  int32_t error_code;
+  char ret_fixed[kNPVariantSizeMax];
+  nacl_abi_size_t ret_fixed_size =
+      static_cast<nacl_abi_size_t>(sizeof(optional));
+  char ret_optional[kNPVariantSizeMax];
+  nacl_abi_size_t ret_optional_size =
+      static_cast<nacl_abi_size_t>(sizeof(optional));
   if (NACL_SRPC_RESULT_OK !=
-      NaClSrpcInvokeByName(bridge->channel(),
-                           "NPN_Construct",
-                           sizeof capability_,
-                           &capability_,
-                           static_cast<uint32_t>(fixed_size),
-                           fixed,
-                           static_cast<uint32_t>(optional_size),
-                           optional,
-                           &error_code,
-                           ret_fixed_size,  // Need size set by return
-                           ret_fixed,
-                           ret_optional_size,  // Need size set by return
-                           ret_optional)) {
+      NPObjectStubRpcClient::NPN_Construct(bridge->channel(),
+                                           capability_.size(),
+                                           capability_.char_addr(),
+                                           fixed_size,
+                                           fixed,
+                                           optional_size,
+                                           optional,
+                                           static_cast<int32_t>(arg_count),
+                                           &error_code,
+                                           &ret_fixed_size,
+                                           ret_fixed,
+                                           &ret_optional_size,
+                                           ret_optional)) {
     return false;
   }
   if (NPERR_NO_ERROR != error_code) {
@@ -569,12 +569,10 @@ void NPObjectProxy::SetException(const NPUTF8* message) {
   if (NULL == bridge) {
     return;
   }
-  NaClSrpcInvokeByName(bridge->channel(),
-                       "NPN_SetException",
-                       sizeof capability_,
-                       &capability_,
-                       strlen(message) + 1,
-                       const_cast<NPUTF8*>(message));
+  NPObjectStubRpcClient::NPN_SetException(bridge->channel(),
+                                          capability_.size(),
+                                          capability_.char_addr(),
+                                          const_cast<NPUTF8*>(message));
 }
 
 }  // namespace nacl

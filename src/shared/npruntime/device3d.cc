@@ -17,6 +17,7 @@
 #include <utility>
 
 #include "native_client/src/include/portability_string.h"
+#include "gen/native_client/src/shared/npruntime/npmodule_rpc.h"
 #include "native_client/src/shared/npruntime/npnavigator.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
@@ -66,7 +67,7 @@ static NPError InitializeContext(NPP instance,
   // Initialize the context structure.
   context3d->reserved = NULL;
   context3d->commandBuffer = NULL;
-  context3d->commandBufferEntries = -1;
+  context3d->commandBufferSize = -1;
   context3d->getOffset = -1;
   context3d->putOffset = -1;
 
@@ -74,14 +75,14 @@ static NPError InitializeContext(NPP instance,
   nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
   NaClSrpcError retval =
-      NaClSrpcInvokeByName(channel,
-                           "Device3DInitialize",
-                           nacl::NPNavigator::GetPluginNPP(instance),
-                           config3d->commandBufferEntries,
-                           &shm_desc,
-                           &context3d->commandBufferEntries,
-                           &context3d->getOffset,
-                           &context3d->putOffset);
+      Device3DRpcClient::Device3DInitialize(
+          channel,
+          nacl::NPNavigator::GetPluginNPP(instance),
+          config3d->commandBufferSize,
+          &shm_desc,
+          &context3d->commandBufferSize,
+          &context3d->getOffset,
+          &context3d->putOffset);
   if (NACL_SRPC_RESULT_OK != retval) {
     goto cleanup;
   }
@@ -127,11 +128,11 @@ static NPError GetStateContext(NPP instance,
   nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
   NaClSrpcError retval =
-      NaClSrpcInvokeByName(channel,
-                           "Device3DGetState",
-                           nacl::NPNavigator::GetPluginNPP(instance),
-                           state,
-                           value);
+      Device3DRpcClient::Device3DGetState(
+          channel,
+          nacl::NPNavigator::GetPluginNPP(instance),
+          state,
+          value);
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
   }
@@ -145,11 +146,11 @@ static NPError SetStateContext(NPP instance,
   nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
   NaClSrpcError retval =
-      NaClSrpcInvokeByName(channel,
-                           "Device3DSetState",
-                           nacl::NPNavigator::GetPluginNPP(instance),
-                           state,
-                           value);
+      Device3DRpcClient::Device3DSetState(
+          channel,
+          nacl::NPNavigator::GetPluginNPP(instance),
+          state,
+          value);
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
   }
@@ -164,11 +165,11 @@ static NPError FlushContext(NPP instance,
   nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
   NaClSrpcError retval =
-      NaClSrpcInvokeByName(channel,
-                           "Device3DFlush",
-                           nacl::NPNavigator::GetPluginNPP(instance),
-                           context3d->putOffset,
-                           &context3d->getOffset);
+      Device3DRpcClient::Device3DFlush(
+          channel,
+          nacl::NPNavigator::GetPluginNPP(instance),
+          context3d->putOffset,
+          &context3d->getOffset);
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
   }
@@ -199,9 +200,9 @@ static NPError DestroyContext(NPP instance, NPDeviceContext* context) {
   nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
   NaClSrpcError retval =
-      NaClSrpcInvokeByName(channel,
-                           "Device3DDestroy",
-                           nacl::NPNavigator::GetPluginNPP(instance));
+      Device3DRpcClient::Device3DDestroy(
+          channel,
+          nacl::NPNavigator::GetPluginNPP(instance));
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
   }
@@ -225,12 +226,13 @@ NPError CreateBuffer(NPP instance,
   if (NULL == impl) {
     goto cleanup;
   }
-  retval = NaClSrpcInvokeByName(channel,
-                                "Device3DCreateBuffer",
-                                nacl::NPNavigator::GetPluginNPP(instance),
-                                static_cast<int32_t>(size),
-                                &shm_desc,
-                                id);
+  retval =
+      Device3DRpcClient::Device3DCreateBuffer(
+          channel,
+          nacl::NPNavigator::GetPluginNPP(instance),
+          static_cast<int32_t>(size),
+          &shm_desc,
+          id);
   if (NACL_SRPC_RESULT_OK != retval) {
     goto cleanup;
   }

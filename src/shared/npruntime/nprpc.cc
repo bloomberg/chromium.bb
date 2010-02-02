@@ -147,7 +147,7 @@ bool RpcArg::PutVariant(const NPVariant* variant) {
       void* str = optional_.Request(len);
       if (NULL == str) {
         // There aren't enough bytes to store the string.
-        printf("not enough bytes for string %d\n", (int) len);
+        printf("not enough bytes for string %d\n", static_cast<int>(len));
         return false;
       }
       optional_.Consume(len);
@@ -291,5 +291,185 @@ void* ConvertNPVariants(const NPVariant* variant,
   }
   return target;
 }
+
+//  Work in progress -- better serialization/deserialization of NPVariant.
+//  Needed for 64-bit.
+class NPVariantWrapper : public NPVariant {
+  struct Serialized {
+    uint32_t type_;
+    union {
+      bool bval_;
+      uint32_t uval_;
+      int32_t ival_;
+    } u1_;
+    union {
+      uint64_t pval_;
+      double dval_;
+      char sval_[1];
+    } u2_;
+  };
+
+ public:
+  NPVariantWrapper(nacl_abi_size_t length, char* bytes) :
+    length_(length), bytes_(bytes) {
+      // Note: because of sharing between the RPC system and the wrapper,
+      // the wrapper is never given sole ownership of the bytes_ array.
+  }
+
+  ~NPVariantWrapper() {
+  }
+  static NPVariantWrapper* MakeSerialized(NPVariant* variant, uint32_t argc) {
+    nacl_abi_size_t length = GetSize(variant, argc);
+    if (0 == length) {
+      return NULL;
+    }
+    char* bytes = new(std::nothrow) char[length];
+    if (NULL == bytes) {
+      return NULL;
+    }
+    NPVariantWrapper* wrapper =
+        new(std::nothrow) NPVariantWrapper(length, bytes);
+    if (NULL == wrapper) {
+      return NULL;
+    }
+    if (!wrapper->Serialize(variant, argc)) {
+      delete wrapper;
+      delete bytes;
+      return NULL;
+    }
+    return wrapper;
+  }
+
+  NPVariant* Deserialize(uint32_t argc) {
+    NPVariant* variant = new(std::nothrow) NPVariant[argc];
+    if (NULL == variant) {
+      return NULL;
+    }
+    if (!Deserialize(argc, variant)) {
+      delete variant;
+    }
+    return variant;
+  }
+
+ private:
+  static const size_t kNaClAbiSizeTMax =
+      static_cast<size_t>(~static_cast<nacl_abi_size_t>(0));
+
+  static size_t StringLength(const NPString& str) {
+    // NB: str.UTF8Length < kNaClAbiSizeTMax, because both are the same
+    // precision as uint32_t.
+    if (str.UTF8Length < sizeof(uint64_t)) {
+      return sizeof(uint64_t);
+    } else {
+      return str.UTF8Length - sizeof(uint64_t);
+    }
+  }
+
+  static nacl_abi_size_t GetSize(NPVariant* variant, uint32_t argc) {
+    size_t size = 0;
+
+    for (uint32_t i = 0; i < argc; ++i) {
+      if (size < kNaClAbiSizeTMax - sizeof(Serialized)) {
+        // Overflow.
+        return 0;
+      }
+      size += sizeof(Serialized);
+      if (NPVARIANT_IS_STRING(*variant)) {
+        NPString str = NPVARIANT_TO_STRING(*variant);
+        size_t len = StringLength(str);
+        if (size < kNaClAbiSizeTMax - len) {
+          // Overflow.
+          return 0;
+        }
+        size += len;
+      }
+    }
+    return static_cast<nacl_abi_size_t>(size);
+  }
+
+  bool Serialize(NPVariant* variant, uint32_t argc) {
+    char* p = bytes_;
+
+    for (uint32_t i = 0; i < argc; ++i) {
+      Serialized* s = reinterpret_cast<Serialized*>(p);
+
+      s->type_ = static_cast<uint32_t>(variant[i].type);
+      if (NPVARIANT_IS_STRING(variant[i])) {
+        // Strings require the fixed portion plus an optional variable-length
+        // portion.
+        NPString str = NPVARIANT_TO_STRING(variant[i]);
+        s->u1_.uval_ = str.UTF8Length;
+        memcpy(reinterpret_cast<void*>(s->u2_.sval_),
+               reinterpret_cast<void*>(const_cast<NPUTF8*>(str.UTF8Characters)),
+               str.UTF8Length);
+        p += sizeof(Serialized) - sizeof(uint64_t) + str.UTF8Length;
+      } else {
+        // All other sub-types use the same fixed portion, at some slight
+        // overhead for the smaller types.
+        if (NPVARIANT_IS_VOID(variant[i]) || NPVARIANT_IS_NULL(variant[i])) {
+        } else if (NPVARIANT_IS_BOOLEAN(variant[i])) {
+          s->u1_.bval_ = NPVARIANT_TO_BOOLEAN(variant[i]);
+        } else if (NPVARIANT_IS_INT32(variant[i])) {
+          s->u1_.ival_ = NPVARIANT_TO_BOOLEAN(variant[i]);
+        } else if (NPVARIANT_IS_DOUBLE(variant[i])) {
+          s->u2_.dval_ = NPVARIANT_TO_DOUBLE(variant[i]);
+        } else if (NPVARIANT_IS_OBJECT(variant[i])) {
+          // TODO(sehr): what do we do here?
+        } else {
+          // Bad type.
+          return false;
+        }
+        p += sizeof(Serialized);
+      }
+    }
+    return true;
+  }
+
+  bool Deserialize(uint32_t argc, NPVariant* variant) {
+    char* p = bytes_;
+
+    for (uint32_t i = 0; i < argc; ++i) {
+      if (p >= bytes_ + length_) {
+        // Not enough bytes to get the requested number of NPVariants.
+        return false;
+      }
+      Serialized* s = reinterpret_cast<Serialized*>(p);
+
+      variant[i].type = static_cast<NPVariantType>(s->type_);
+      if (NPVARIANT_IS_STRING(variant[i])) {
+        // Users of NPVariant always have to copy the string bytes if they
+        // wish to retain them, so it's ok to keep pointing into bytes_.
+        STRINGN_TO_NPVARIANT(
+            static_cast<const NPUTF8*>(s->u2_.sval_),
+            s->u1_.uval_,
+            variant[i]);
+        p += sizeof(Serialized) - sizeof(uint64_t) + s->u1_.uval_;
+      } else {
+        if (NPVARIANT_IS_VOID(variant[i]) || NPVARIANT_IS_NULL(variant[i])) {
+        } else if (NPVARIANT_IS_BOOLEAN(variant[i])) {
+          BOOLEAN_TO_NPVARIANT(s->u1_.bval_, variant[i]);
+        } else if (NPVARIANT_IS_INT32(variant[i])) {
+          INT32_TO_NPVARIANT(s->u1_.ival_, variant[i]);
+        } else if (NPVARIANT_IS_DOUBLE(variant[i])) {
+          DOUBLE_TO_NPVARIANT(s->u2_.dval_, variant[i]);
+        } else if (NPVARIANT_IS_OBJECT(variant[i])) {
+          // TODO(sehr): what do we do here?
+        } else {
+          // Bad type.
+          return false;
+        }
+        p += sizeof(Serialized);
+      }
+    }
+    return true;
+  }
+
+ private:
+  NPVariantWrapper(const NPVariantWrapper&);
+  void operator=(const NPVariantWrapper&);
+
+  int32_t length_;
+  char* bytes_;
+};
 
 }  // namespace nacl

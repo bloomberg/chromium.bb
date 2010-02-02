@@ -25,7 +25,7 @@ class NPObjectStub {
   // Returns true if this stub instance is created for the local NPObject
   // represented by the specified capability.
   bool IsMatch(const NPCapability& capability) const {
-    return object_ == capability.object;
+    return object_ == capability.object();
   }
 
   NPP npp() const {
@@ -42,44 +42,6 @@ class NPObjectStub {
   // need to be worked on here.
   static bool AddBridge();
   static bool RemoveBridge(bool release_objects);
-
-  // The SRPC methods for all of the NPObject interfaces.
-  static NaClSrpcError Deallocate(NaClSrpcChannel* channel,
-                                  NaClSrpcArg** inputs,
-                                  NaClSrpcArg** outputs);
-  static NaClSrpcError Invalidate(NaClSrpcChannel* channel,
-                                  NaClSrpcArg** inputs,
-                                  NaClSrpcArg** outputs);
-  static NaClSrpcError HasMethod(NaClSrpcChannel* channel,
-                                 NaClSrpcArg** inputs,
-                                 NaClSrpcArg** outputs);
-  static NaClSrpcError Invoke(NaClSrpcChannel* channel,
-                              NaClSrpcArg** inputs,
-                              NaClSrpcArg** outputs);
-  static NaClSrpcError InvokeDefault(NaClSrpcChannel* channel,
-                                     NaClSrpcArg** inputs,
-                                     NaClSrpcArg** outputs);
-  static NaClSrpcError HasProperty(NaClSrpcChannel* channel,
-                                   NaClSrpcArg** inputs,
-                                   NaClSrpcArg** outputs);
-  static NaClSrpcError GetProperty(NaClSrpcChannel* channel,
-                                   NaClSrpcArg** inputs,
-                                   NaClSrpcArg** outputs);
-  static NaClSrpcError SetProperty(NaClSrpcChannel* channel,
-                                   NaClSrpcArg** inputs,
-                                   NaClSrpcArg** outputs);
-  static NaClSrpcError RemoveProperty(NaClSrpcChannel* channel,
-                                      NaClSrpcArg** inputs,
-                                      NaClSrpcArg** outputs);
-  static NaClSrpcError Enumerate(NaClSrpcChannel* channel,
-                                 NaClSrpcArg** inputs,
-                                 NaClSrpcArg** outputs);
-  static NaClSrpcError Construct(NaClSrpcChannel* channel,
-                                 NaClSrpcArg** inputs,
-                                 NaClSrpcArg** outputs);
-  static NaClSrpcError SetException(NaClSrpcChannel* channel,
-                                    NaClSrpcArg** inputs,
-                                    NaClSrpcArg** outputs);
 
   // This implementation is an exception because it is also called from
   // npn_gate.cc
@@ -98,11 +60,10 @@ class NPObjectStub {
   // GetByCapability() returns NULL if no correspoing stub is found.
   static NPObjectStub* GetByCapability(const NPCapability& capability);
 
- private:
-  // Creates a new instance of NPObjectStub with the specified NPP for
-  // the specified local NPObject.
-  NPObjectStub(NPP npp, NPObject* object);
-  ~NPObjectStub();
+  // Gets the NPObjectStub corresponding to a particular capability passed
+  // in an RpcArg.  Used by the SRPC methods to determine the object stub to
+  // dispatch to.
+  static NPObjectStub* GetByArg(RpcArg* arg);
 
   // NPClass methods. NPObjectStub forwards these RPC requests received from
   // the remote NPObjectProxy object to object_;
@@ -126,10 +87,11 @@ class NPObjectStub {
                      uint32_t arg_count,
                      NPVariant* result);
 
-  // Gets the NPObjectStub corresponding to a particular capability passed
-  // in an RpcArg.  Used by the SRPC methods to determine the object stub to
-  // dispatch to.
-  static NPObjectStub* GetByArg(RpcArg* arg);
+ private:
+  // Creates a new instance of NPObjectStub with the specified NPP for
+  // the specified local NPObject.
+  NPObjectStub(NPP npp, NPObject* object);
+  ~NPObjectStub();
 
   // The mapping from NPObject to NPObjectStub.
   // Thread safe because it is only accessed from the NPAPI main thread.

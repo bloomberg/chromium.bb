@@ -1,52 +1,55 @@
-[
- {'name': 'notyetDevice3DInitialize',
-  'inputs': [['npp', 'int32_t'],
-              ['command_buffer_entries_requested', 'int32_t'],
-            ],
-  'outputs': [['shared_memory_desc', 'handle'],
-              ['command_buffer_entries_obtained', 'int32_t'],
-              ['get_offset', 'int32_t'],
-              ['put_offset', 'int32_t'],
-             ]
- },
- {'name': 'notyetDevice3DFlush',
-  'inputs': [['npp', 'int32_t'],
-             ['put_offset', 'int32_t'],
-            ],
-  'outputs': [['get_offset', 'int32_t'],
-             ]
- },
- {'name': 'notyetDevice3DDestroy',
-  'inputs': [['npp', 'int32_t'],
-            ],
-  'outputs': []
- },
- {'name': 'notyetDevice3DGetState',
-  'inputs': [['npp', 'int32_t'],
-             ['state', 'int32_t'],
-            ],
-  'outputs': [['value', 'int32_t'],
-             ]
- },
- {'name': 'notyetDevice3DSetState',
-  'inputs': [['npp', 'int32_t'],
-             ['state', 'int32_t'],
-             ['value', 'int32_t'],
-            ],
-  'outputs': []
- },
- {'name': 'notyetDevice3DCreateBuffer',
-  'inputs': [['npp', 'int32_t'],
-             ['size', 'int32_t'],
-            ],
-  'outputs': [['shared_memory_desc', 'handle'],
-              ['id', 'int32_t'],
-             ]
- },
- {'name': 'notyetDevice3DDestroyBuffer',
-  'inputs': [['npp', 'int32_t'],
-             ['id', 'int32_t'],
-            ],
-  'outputs': []
- },
-]
+{
+ 'name': 'Device3DRpc',
+ 'rpcs': [
+          {'name': 'Device3DInitialize',
+           'inputs': [['npp', 'int32_t'],
+                       ['command_buffer_entries_requested', 'int32_t'],
+                     ],
+           'outputs': [['shared_memory_desc', 'handle'],
+                       ['command_buffer_entries_obtained', 'int32_t'],
+                       ['get_offset', 'int32_t'],
+                       ['put_offset', 'int32_t'],
+                      ]
+          },
+          {'name': 'Device3DFlush',
+           'inputs': [['npp', 'int32_t'],
+                      ['put_offset', 'int32_t'],
+                     ],
+           'outputs': [['get_offset', 'int32_t'],
+                      ]
+          },
+          {'name': 'Device3DDestroy',
+           'inputs': [['npp', 'int32_t'],
+                     ],
+           'outputs': []
+          },
+          {'name': 'Device3DGetState',
+           'inputs': [['npp', 'int32_t'],
+                      ['state', 'int32_t'],
+                     ],
+           'outputs': [['value', 'int32_t'],
+                      ]
+          },
+          {'name': 'Device3DSetState',
+           'inputs': [['npp', 'int32_t'],
+                      ['state', 'int32_t'],
+                      ['value', 'int32_t'],
+                     ],
+           'outputs': []
+          },
+          {'name': 'Device3DCreateBuffer',
+           'inputs': [['npp', 'int32_t'],
+                      ['size', 'int32_t'],
+                     ],
+           'outputs': [['shared_memory_desc', 'handle'],
+                       ['id', 'int32_t'],
+                      ]
+          },
+          {'name': 'Device3DDestroyBuffer',
+           'inputs': [['npp', 'int32_t'],
+                      ['id', 'int32_t'],
+                     ],
+           'outputs': []
+          },
+         ]
+}

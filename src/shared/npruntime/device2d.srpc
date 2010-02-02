@@ -1,28 +1,31 @@
-[
- {'name': 'notyetDevice2DInitialize',
-  'inputs': [['npp', 'int32_t'],
-            ],
-  'outputs': [['shared_memory_desc', 'handle'],
-              ['stride', 'int32_t'],
-              ['left', 'int32_t'],
-              ['top', 'int32_t'],
-              ['right', 'int32_t'],
-              ['bottom', 'int32_t'],
-             ]
- },
- {'name': 'notyetDevice2DFlush',
-  'inputs': [['npp', 'int32_t'],
-            ],
-  'outputs': [['stride', 'int32_t'],
-              ['left', 'int32_t'],
-              ['top', 'int32_t'],
-              ['right', 'int32_t'],
-              ['bottom', 'int32_t'],
-             ]
- },
- {'name': 'notyetDevice2DDestroy',
-  'inputs': [['npp', 'int32_t'],
-            ],
-  'outputs': []
- },
-]
+{
+ 'name': 'Device2DRpc',
+ 'rpcs': [
+          {'name': 'Device2DInitialize',
+           'inputs': [['npp', 'int32_t'],
+                     ],
+           'outputs': [['shared_memory_desc', 'handle'],
+                       ['stride', 'int32_t'],
+                       ['left', 'int32_t'],
+                       ['top', 'int32_t'],
+                       ['right', 'int32_t'],
+                       ['bottom', 'int32_t'],
+                      ]
+          },
+          {'name': 'Device2DFlush',
+           'inputs': [['npp', 'int32_t'],
+                     ],
+           'outputs': [['stride', 'int32_t'],
+                       ['left', 'int32_t'],
+                       ['top', 'int32_t'],
+                       ['right', 'int32_t'],
+                       ['bottom', 'int32_t'],
+                      ]
+          },
+          {'name': 'Device2DDestroy',
+           'inputs': [['npp', 'int32_t'],
+                     ],
+           'outputs': []
+          },
+         ]
+}

@@ -1,72 +1,75 @@
-[
- {'name': 'notyetNPN_GetValue',
-  'inputs': [['npp', 'int32_t'],
-             ['var', 'int32_t'],
-            ],
-  'outputs': [['nperr', 'int32_t'],
-              ['result', 'char[]'],
-             ]
- },
- {'name': 'notyetNPN_SetStatus',
-  'inputs': [['npp', 'int32_t'],
-             ['status', 'string'],
-            ],
-  'outputs': []
- },
- {'name': 'notyetNPN_InvalidateRect',
-  'inputs': [['npp', 'int32_t'],
-             ['rect', 'char[]'],
-            ],
-  'outputs': []
- },
- {'name': 'notyetNPN_ForceRedraw',
-  'inputs': [['npp', 'int32_t'],
-            ],
-  'outputs': []
- },
- {'name': 'notyetNPN_CreateArray',
-  'inputs': [['npp', 'int32_t'],
-            ],
-  'outputs': [['success', 'int32_t'],
-              ['capability', 'char[]'],
-             ]
- },
- {'name': 'notyetNPN_OpenURL',
-  'inputs': [['npp', 'int32_t'],
-             ['url', 'string'],
-            ],
-  'outputs': [['success', 'int32_t'],
-             ]
- },
- {'name': 'notyetNPN_GetIntIdentifier',
-  'inputs': [['intval', 'int32_t'],
-            ],
-  'outputs': [['id', 'int32_t'],
-             ]
- },
- {'name': 'notyetNPN_UTF8FromIdentifier',
-  'inputs': [['id', 'int32_t'],
-            ],
-  'outputs': [['success', 'int32_t'],
-              ['str', 'string'],
-             ]
- },
- {'name': 'notyetNPN_GetStringIdentifier',
-  'inputs': [['strval', 'string'],
-            ],
-  'outputs': [['id', 'int32_t'],
-             ]
- },
- {'name': 'notyetNPN_IntFromIdentifier',
-  'inputs': [['id', 'int32_t'],
-            ],
-  'outputs': [['intval', 'int32_t'],
-             ]
- },
- {'name': 'notyetNPN_IdentifierIsString',
-  'inputs': [['id', 'int32_t'],
-            ],
-  'outputs': [['isstring', 'int32_t'],
-             ]
- },
-]
+{
+ 'name': 'NPModuleRpc',
+ 'rpcs': [
+          {'name': 'NPN_GetValue',
+           'inputs': [['npp', 'int32_t'],
+                      ['var', 'int32_t'],
+                     ],
+           'outputs': [['nperr', 'int32_t'],
+                       ['result', 'char[]'],
+                      ]
+          },
+          {'name': 'NPN_SetStatus',
+           'inputs': [['npp', 'int32_t'],
+                      ['status', 'string'],
+                     ],
+           'outputs': []
+          },
+          {'name': 'NPN_InvalidateRect',
+           'inputs': [['npp', 'int32_t'],
+                      ['rect', 'char[]'],
+                     ],
+           'outputs': []
+          },
+          {'name': 'NPN_ForceRedraw',
+           'inputs': [['npp', 'int32_t'],
+                     ],
+           'outputs': []
+          },
+          {'name': 'NPN_CreateArray',
+           'inputs': [['npp', 'int32_t'],
+                     ],
+           'outputs': [['success', 'int32_t'],
+                       ['capability', 'char[]'],
+                      ]
+          },
+          {'name': 'NPN_OpenURL',
+           'inputs': [['npp', 'int32_t'],
+                      ['url', 'string'],
+                     ],
+           'outputs': [['success', 'int32_t'],
+                      ]
+          },
+          {'name': 'NPN_GetIntIdentifier',
+           'inputs': [['intval', 'int32_t'],
+                     ],
+           'outputs': [['id', 'int32_t'],
+                      ]
+          },
+          {'name': 'NPN_UTF8FromIdentifier',
+           'inputs': [['id', 'int32_t'],
+                     ],
+           'outputs': [['success', 'int32_t'],
+                       ['str', 'string'],
+                      ]
+          },
+          {'name': 'NPN_GetStringIdentifier',
+           'inputs': [['strval', 'string'],
+                     ],
+           'outputs': [['id', 'int32_t'],
+                      ]
+          },
+          {'name': 'NPN_IntFromIdentifier',
+           'inputs': [['id', 'int32_t'],
+                     ],
+           'outputs': [['intval', 'int32_t'],
+                      ]
+          },
+          {'name': 'NPN_IdentifierIsString',
+           'inputs': [['id', 'int32_t'],
+                     ],
+           'outputs': [['isstring', 'int32_t'],
+                      ]
+          },
+         ]
+}

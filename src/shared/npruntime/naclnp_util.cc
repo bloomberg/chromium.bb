@@ -38,6 +38,19 @@ NPError NaClNPN_OpenURL(NPP npp,
 
 namespace nacl {
 
+void DebugPrintf(const char *fmt, ...) {
+  va_list argptr;
+#ifdef __native_client__
+  fprintf(stderr, "@@@ NACL ");
+#else
+  fprintf(stderr, "@@@ HOST ");
+#endif  // __native_client__
+  va_start(argptr, fmt);
+  vfprintf(stderr, fmt, argptr);
+  va_end(argptr);
+  fflush(stderr);
+}
+
 void PrintIdent(NPIdentifier ident) {
   if (NPN_IdentifierIsString(ident)) {
     const NPUTF8* name = NPN_UTF8FromIdentifier(ident);

@@ -175,7 +175,8 @@ NaClSrpcError NaClSrpcInvokeV(NaClSrpcChannel* channel,
     (arg)->u.field = (impl_type) 0;               \
     SKIP(va, impl_type *)
 #define ARRAY_RETINIT(arg, field, array_name, va, impl_type) \
-    ARRAY_ARG(arg, field, array_name, va, impl_type)
+    (arg)->u.field.count = *va_arg(in_va, uint32_t*);         \
+    (arg)->u.field.array_name = va_arg(in_va, impl_type)
 #define BOOL_RETINIT(arg, field, va, impl_type) \
     SKIP(va, impl_type *)
 

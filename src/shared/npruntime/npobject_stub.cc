@@ -9,19 +9,11 @@
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/include/portability_process.h"
+#include "gen/native_client/src/shared/npruntime/npmodule_rpc.h"
+#include "gen/native_client/src/shared/npruntime/npnavigator_rpc.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npbridge.h"
 #include "native_client/src/shared/npruntime/npobject_proxy.h"
-
-static void DebugPrintf(const char *fmt, ...) {
-  va_list argptr;
-  fprintf(stderr, "@@@ STUB ");
-
-  va_start(argptr, fmt);
-  vfprintf(stderr, fmt, argptr);
-  va_end(argptr);
-  fflush(stderr);
-}
 
 namespace nacl {
 
@@ -46,7 +38,6 @@ bool NPObjectStub::AddBridge() {
 }
 
 bool NPObjectStub::RemoveBridge(bool release_objects) {
-  DebugPrintf("Removing a bridge.\n");
   // Sanity check to make sure that we can't remove more bridges than we
   // added.
   if (0 >= bridge_ref_count) {
@@ -89,281 +80,6 @@ NPObjectStub::NPObjectStub(NPP npp, NPObject* object)
 
 NPObjectStub::~NPObjectStub() {
 }
-
-//
-// These methods provide dispatching to the implementation of the object stubs.
-//
-
-// inputs:
-// (char[]) capability
-// outputs:
-// (none)
-NaClSrpcError NPObjectStub::Deallocate(NaClSrpcChannel* channel,
-                                       NaClSrpcArg** inputs,
-                                       NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  UNREFERENCED_PARAMETER(outputs);
-  DebugPrintf("Deallocate\n");
-  RpcArg arg0(NULL, inputs[0]);
-  NPObjectStub* stub = GetByArg(&arg0);
-  stub->DeallocateImpl();
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (char[]) capability
-// outputs:
-// (none)
-NaClSrpcError NPObjectStub::Invalidate(NaClSrpcChannel* channel,
-                                       NaClSrpcArg** inputs,
-                                       NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  UNREFERENCED_PARAMETER(outputs);
-  DebugPrintf("Invalidate\n");
-  RpcArg arg0(NULL, inputs[0]);
-  NPObjectStub* stub = GetByArg(&arg0);
-  stub->InvalidateImpl();
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (char[]) capability
-// (int) name
-// outputs:
-// (int) success
-NaClSrpcError NPObjectStub::HasMethod(NaClSrpcChannel* channel,
-                                      NaClSrpcArg** inputs,
-                                      NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  DebugPrintf("HasMethod\n");
-  RpcArg arg0(NULL, inputs[0]);
-  NPObjectStub* stub = GetByArg(&arg0);
-  NPIdentifier name = NPBridge::IntToNpidentifier(inputs[1]->u.ival);
-  outputs[0]->u.ival = stub->HasMethodImpl(name);
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (char[]) capability
-// (int) name
-// (char[]) args fixed portion
-// (char[]) args optional portion
-// (int) argument count
-// outputs:
-// (int) NPError
-// (char[]) result fixed portion
-// (char[]) result optional portion
-NaClSrpcError NPObjectStub::Invoke(NaClSrpcChannel* channel,
-                                   NaClSrpcArg** inputs,
-                                   NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  DebugPrintf("Invoke\n");
-  RpcArg arg0(NULL, inputs[0]);
-  NPObjectStub* stub = GetByArg(&arg0);
-  NPIdentifier name = NPBridge::IntToNpidentifier(inputs[1]->u.ival);
-  RpcArg arg23(stub->npp(), inputs[2], inputs[3]);
-  uint32_t arg_count = inputs[4]->u.ival;
-  const NPVariant* args = arg23.GetVariantArray(arg_count);
-  NPVariant variant;
-  // Invoke the implementation.
-  outputs[0]->u.ival = stub->InvokeImpl(name, args, arg_count, &variant);
-  // Copy the resulting variant back to outputs.
-  RpcArg ret12(stub->npp(), outputs[1], outputs[2]);
-  if (!ret12.PutVariant(&variant)) {
-    return NACL_SRPC_RESULT_APP_ERROR;
-  }
-  // Free any allocated string in the result variant.
-  if (NPERR_NO_ERROR != outputs[0]->u.ival && NPVARIANT_IS_STRING(variant)) {
-    NPN_ReleaseVariantValue(&variant);
-  }
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (char[]) capability
-// (char[]) args fixed portion
-// (char[]) args optional portion
-// (int) argument count
-// outputs:
-// (int) NPError
-// (char[]) result fixed portion
-// (char[]) result optional portion
-NaClSrpcError NPObjectStub::InvokeDefault(NaClSrpcChannel* channel,
-                                          NaClSrpcArg** inputs,
-                                          NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  DebugPrintf("InvokeDefault\n");
-  RpcArg arg0(NULL, inputs[0]);
-  NPObjectStub* stub = GetByArg(&arg0);
-  RpcArg arg12(stub->npp(), inputs[1], inputs[2]);
-  const uint32_t arg_count = inputs[3]->u.ival;
-  const NPVariant* args = arg12.GetVariantArray(arg_count);
-  NPVariant variant;
-  // Invoke the implementation.
-  outputs[0]->u.ival = stub->InvokeDefaultImpl(args, arg_count, &variant);
-  // Copy the resulting variant back to outputs.
-  RpcArg ret12(stub->npp(), outputs[1], outputs[2]);
-  ret12.PutVariant(&variant);
-  // Free any allocated string in the result variant.
-  if (NPERR_NO_ERROR != outputs[0]->u.ival && NPVARIANT_IS_STRING(variant)) {
-    NPN_ReleaseVariantValue(&variant);
-  }
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (char[]) capability
-// (int) identifier
-// outputs:
-// (int) success
-NaClSrpcError NPObjectStub::HasProperty(NaClSrpcChannel* channel,
-                                        NaClSrpcArg** inputs,
-                                        NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  DebugPrintf("HasProperty\n");
-  RpcArg arg0(NULL, inputs[0]);
-  NPObjectStub* stub = GetByArg(&arg0);
-  NPIdentifier name = NPBridge::IntToNpidentifier(inputs[1]->u.ival);
-  outputs[0]->u.ival = stub->HasPropertyImpl(name);
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (char[]) capability
-// (int) identifier
-// outputs:
-// (int) success
-// (char[]) result fixed portion
-// (char[]) result optional portion
-NaClSrpcError NPObjectStub::GetProperty(NaClSrpcChannel* channel,
-                                        NaClSrpcArg** inputs,
-                                        NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  DebugPrintf("GetProperty\n");
-  RpcArg arg0(NULL, inputs[0]);
-  NPObjectStub* stub = GetByArg(&arg0);
-  NPIdentifier name = NPBridge::IntToNpidentifier(inputs[1]->u.ival);
-  NPVariant variant;
-  // Invoke the implementation.
-  outputs[0]->u.ival = stub->GetPropertyImpl(name, &variant);
-  // Copy the resulting variant back to outputs.
-  RpcArg ret12(stub->npp(), outputs[1], outputs[2]);
-  ret12.PutVariant(&variant);
-  // Free any allocated string in the result variant.
-  if (outputs[0]->u.ival && NPVARIANT_IS_STRING(variant)) {
-    NPN_ReleaseVariantValue(&variant);
-  }
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (char[]) capability
-// (int) identifier
-// (char[]) value fixed portion
-// (char[]) value optional portion
-// outputs:
-// (int) success
-NaClSrpcError NPObjectStub::SetProperty(NaClSrpcChannel* channel,
-                                        NaClSrpcArg** inputs,
-                                        NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  DebugPrintf("SetProperty\n");
-  RpcArg arg0(NULL, inputs[0]);
-  NPObjectStub* stub = GetByArg(&arg0);
-  NPIdentifier name = NPBridge::IntToNpidentifier(inputs[1]->u.ival);
-  RpcArg arg23(stub->npp(), inputs[2], inputs[3]);
-  const NPVariant* variant = arg23.GetVariant(true);
-  outputs[0]->u.ival = stub->SetPropertyImpl(name, variant);
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (char[]) capability
-// (int) identifier
-// outputs:
-// (int) success
-NaClSrpcError NPObjectStub::RemoveProperty(NaClSrpcChannel* channel,
-                                           NaClSrpcArg** inputs,
-                                           NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  DebugPrintf("RemoveProperty\n");
-  RpcArg arg0(NULL, inputs[0]);
-  NPObjectStub* stub = GetByArg(&arg0);
-  NPIdentifier name = NPBridge::IntToNpidentifier(inputs[1]->u.ival);
-  outputs[0]->u.ival = stub->RemovePropertyImpl(name);
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (char[]) capability
-// outputs:
-// (int) success
-// (char[]) identifier list
-// (int) identifier count
-NaClSrpcError NPObjectStub::Enumerate(NaClSrpcChannel* channel,
-                                      NaClSrpcArg** inputs,
-                                      NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  DebugPrintf("Enumerate\n");
-  RpcArg arg0(NULL, inputs[0]);
-  NPObjectStub* stub = GetByArg(&arg0);
-  RpcArg arg1(stub->npp(), inputs[1]);
-  NPIdentifier* identifiers;
-  uint32_t identifier_count;
-  outputs[0]->u.ival = stub->EnumerateImpl(&identifiers, &identifier_count);
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (char[]) capability
-// (char[]) args fixed portion
-// (char[]) args optional portion
-// (int) argument_count
-// outputs:
-// (int) success
-// (char[]) result fixed
-// (char[]) result optional
-NaClSrpcError NPObjectStub::Construct(NaClSrpcChannel* channel,
-                                      NaClSrpcArg** inputs,
-                                      NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  DebugPrintf("Construct\n");
-  RpcArg arg0(NULL, inputs[0]);
-  NPObjectStub* stub = GetByArg(&arg0);
-  RpcArg arg12(stub->npp(), inputs[1], inputs[2]);
-  const uint32_t arg_count = inputs[3]->u.ival;
-  const NPVariant* args = arg12.GetVariantArray(arg_count);
-  NPVariant variant;
-  // Invoke the implementation.
-  outputs[0]->u.ival = stub->ConstructImpl(args, inputs[1]->u.ival, &variant);
-  // Copy the resulting variant back to outputs.
-  RpcArg ret12(stub->npp(), outputs[1], outputs[2]);
-  ret12.PutVariant(&variant);
-  // Free any allocated string in the result variant.
-  if (NPERR_NO_ERROR != outputs[0]->u.ival && NPVARIANT_IS_STRING(variant)) {
-    NPN_ReleaseVariantValue(&variant);
-  }
-  return NACL_SRPC_RESULT_OK;
-}
-
-// inputs:
-// (char[]) capability
-// (char*) message
-// outputs:
-// (none)
-NaClSrpcError NPObjectStub::SetException(NaClSrpcChannel* channel,
-                                         NaClSrpcArg** inputs,
-                                         NaClSrpcArg** outputs) {
-  UNREFERENCED_PARAMETER(channel);
-  UNREFERENCED_PARAMETER(outputs);
-  DebugPrintf("SetException\n");
-  RpcArg arg0(NULL, inputs[0]);
-  NPObjectStub* stub = GetByArg(&arg0);
-  const NPUTF8* message = reinterpret_cast<NPUTF8*>(inputs[1]->u.sval);
-  stub->SetExceptionImpl(message);
-  return NACL_SRPC_RESULT_OK;
-}
-
 
 //
 // These methods provide the implementation of the object stubs.
@@ -515,7 +231,8 @@ int NPObjectStub::CreateStub(NPP npp, NPObject* object, NPCapability* cap) {
     if (NPObjectProxy::IsInstance(object)) {
       // The specified object is a proxy.
       NPObjectProxy* proxy = static_cast<NPObjectProxy*>(object);
-      if (NPBridge::LookupBridge(npp)->peer_pid() == proxy->capability().pid) {
+      if (NPBridge::LookupBridge(npp)->peer_pid() ==
+          proxy->capability().pid()) {
         // The proxy is for an object in the peer process for this npp.
         // Accesses to the object should be done by the existing capability.
         *cap = proxy->capability();
@@ -529,25 +246,25 @@ int NPObjectStub::CreateStub(NPP npp, NPObject* object, NPCapability* cap) {
     // Look up the object in the stub mapping.
     if (NULL != GetByObject(object)) {
       // There is already a stub for this object in the mapping.
-      cap->pid = GETPID();
-      cap->object = object;
+      cap->set_pid(GETPID());
+      cap->set_object(object);
       return 1;
     }
     // Create a new stub for the object.
     stub = new(std::nothrow) NPObjectStub(npp, object);
   }
   // Create a capability for NULL or the newly created stub.
-  cap->pid = GETPID();
+  cap->set_pid(GETPID());
   if (NULL == stub) {
     // If the stub was null, either the object was null or new failed.
     // In either case, we don't have a stub to give a capability to.
-    cap->object = NULL;
+    cap->set_object(NULL);
     return 0;
   }
   // Insert the newly created stub into the mapping for future reuse.
   assert(NULL != stub_map);
   (*stub_map)[object] = stub;
-  cap->object = object;
+  cap->set_object(object);
   return 1;
 }
 
@@ -564,11 +281,11 @@ NPObjectStub* NPObjectStub::GetByObject(NPObject* object) {
 }
 
 NPObjectStub* NPObjectStub::GetByCapability(const NPCapability& capability) {
-  if (GETPID() != capability.pid) {
+  if (GETPID() != capability.pid()) {
     // Only capabilities to objects in this process have stubs in the table.
     return NULL;
   }
-  return GetByObject(capability.object);
+  return GetByObject(capability.object());
 }
 
 NPObjectStub* NPObjectStub::GetByArg(RpcArg* arg) {

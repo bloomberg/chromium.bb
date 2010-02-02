@@ -7,6 +7,7 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_NPRUNTIME_NPRPC_H_
 #define NATIVE_CLIENT_SRC_SHARED_NPRUNTIME_NPRPC_H_
 
+#include <string>
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npcapability.h"
 
@@ -64,7 +65,7 @@ class RpcArgBuffer {
     }
   }
 
-  RpcArgBuffer(char* buf, uint32_t length) {
+  RpcArgBuffer(char* buf, nacl_abi_size_t length) {
     if (NULL != buf && 0 < length) {
       base_ = buf;
       limit_ = buf + length;
@@ -106,14 +107,14 @@ class RpcArg {
   RpcArg(NPP npp, NaClSrpcArg* fixed_arg, NaClSrpcArg* optional_arg)
       : npp_(npp), fixed_(fixed_arg), optional_(optional_arg) { }
 
-  RpcArg(NPP npp, char* fixed_buf, uint32_t fixed_length)
+  RpcArg(NPP npp, char* fixed_buf, nacl_abi_size_t fixed_length)
       : npp_(npp), fixed_(fixed_buf, fixed_length), optional_(NULL) { }
 
   RpcArg(NPP npp,
          char* fixed_buf,
-         uint32_t fixed_length,
+         nacl_abi_size_t fixed_length,
          char* optional_buf,
-         uint32_t optional_length)
+         nacl_abi_size_t optional_length)
       : npp_(npp),
         fixed_(fixed_buf, fixed_length),
         optional_(optional_buf, optional_length) { }

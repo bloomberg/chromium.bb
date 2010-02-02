@@ -33,6 +33,7 @@ NaClSrpcError SockAddrClient(NaClSrpcChannel *old_channel,
                              NaClSrpcArg **out_args) {
   NaClSrpcChannel channel;
   static char buf[1024];
+  size_t buf_size = sizeof(buf);
   int connected_socket;
   int socket_address = in_args[0]->u.hval;
   static char cmp_msg[] = "Quidquid id est, timeo Danaos et dona ferentes";
@@ -57,7 +58,7 @@ NaClSrpcError SockAddrClient(NaClSrpcChannel *old_channel,
   }
   /* Perform an RPC on the SRPC client, which returns a message. */
   if (NACL_SRPC_RESULT_OK
-      != NaClSrpcInvokeByName(&channel, "getmsg", sizeof(buf), buf)) {
+      != NaClSrpcInvokeByName(&channel, "getmsg", &buf_size, buf)) {
     printf("SockAddrClient: RPC FAILED.\n");
     ++errors_seen;
     return NACL_SRPC_RESULT_APP_ERROR;

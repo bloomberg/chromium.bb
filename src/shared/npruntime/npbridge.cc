@@ -8,6 +8,10 @@
 
 #include <assert.h>
 #include <errno.h>
+#ifdef __native_client__
+#include <inttypes.h>
+#include <nacl/nacl_inttypes.h>
+#endif  // __native_client__
 #include <stdarg.h>
 #include <stdio.h>
 #include <string.h>
@@ -21,10 +25,10 @@
 namespace nacl {
 
 #if NACL_BUILD_SUBARCH == 64
-std::map<NPP, int>* NPBridge::npp_64_32_map = NULL;
-std::map<int, NPP>* NPBridge::npp_32_64_map = NULL;
-std::map<NPIdentifier, int>* NPBridge::npident_int_map = NULL;
-std::map<int, NPIdentifier>* NPBridge::int_npident_map = NULL;
+std::map<NPP, int32_t>* NPBridge::npp_64_32_map = NULL;
+std::map<int32_t, NPP>* NPBridge::npp_32_64_map = NULL;
+std::map<NPIdentifier, int32_t>* NPBridge::npident_int_map = NULL;
+std::map<int32_t, NPIdentifier>* NPBridge::int_npident_map = NULL;
 #endif  // NACL_BUILD_SUBARCH
 
 NPBridge::NPBridge()
@@ -35,12 +39,12 @@ NPBridge::NPBridge()
   // The mappings from NPP to integers and back for interchange with NaCl
   // modules
   if (NULL == npp_64_32_map || NULL == npp_32_64_map) {
-    npp_64_32_map = new(std::nothrow) std::map<NPP, int>;
-    npp_32_64_map = new(std::nothrow) std::map<int, NPP>;
+    npp_64_32_map = new(std::nothrow) std::map<NPP, int32_t>;
+    npp_32_64_map = new(std::nothrow) std::map<int32_t, NPP>;
   }
   if (NULL == npident_int_map || NULL == int_npident_map) {
-    npident_int_map = new(std::nothrow) std::map<NPIdentifier, int>;
-    int_npident_map = new(std::nothrow) std::map<int, NPIdentifier>;
+    npident_int_map = new(std::nothrow) std::map<NPIdentifier, int32_t>;
+    int_npident_map = new(std::nothrow) std::map<int32_t, NPIdentifier>;
   }
 #endif  // NACL_BUILD_SUBARCH
   NPObjectStub::AddBridge();
@@ -52,9 +56,9 @@ NPBridge::~NPBridge() {
   NPObjectStub::RemoveBridge(false);
 }
 
-int NPBridge::NppToInt(NPP npp) {
+int32_t NPBridge::NppToInt(NPP npp) {
 #if NACL_BUILD_SUBARCH == 64
-  static int next_npp_int = 0;
+  static int32_t next_npp_int = 0;
   if (NULL == npp_64_32_map || NULL == npp_32_64_map) {
     // Translation called without proper setup.
     return -1;
@@ -69,11 +73,11 @@ int NPBridge::NppToInt(NPP npp) {
   }
   return (*npp_64_32_map)[npp];
 #else
-  return reinterpret_cast<int>(npp);
+  return reinterpret_cast<int32_t>(npp);
 #endif  // NACL_BUILD_SUBARCH
 }
 
-NPP NPBridge::IntToNpp(int npp_int) {
+NPP NPBridge::IntToNpp(int32_t npp_int) {
 #if NACL_BUILD_SUBARCH == 64
   if (NULL == npp_64_32_map || NULL == npp_32_64_map) {
     // Translation called without proper setup.
@@ -89,9 +93,9 @@ NPP NPBridge::IntToNpp(int npp_int) {
 #endif  // NACL_BUILD_SUBARCH
 }
 
-int NPBridge::NpidentifierToInt(NPIdentifier npident) {
+int32_t NPBridge::NpidentifierToInt(NPIdentifier npident) {
 #if NACL_BUILD_SUBARCH == 64
-  static int next_npident_int = 0;
+  static int32_t next_npident_int = 0;
   if (NULL == npident_int_map || NULL == int_npident_map) {
     // Translation called without proper setup.
     return -1;
@@ -106,11 +110,11 @@ int NPBridge::NpidentifierToInt(NPIdentifier npident) {
   }
   return (*npident_int_map)[npident];
 #else
-  return reinterpret_cast<int>(npident);
+  return reinterpret_cast<int32_t>(npident);
 #endif  // NACL_BUILD_SUBARCH
 }
 
-NPIdentifier NPBridge::IntToNpidentifier(int npident_int) {
+NPIdentifier NPBridge::IntToNpidentifier(int32_t npident_int) {
 #if NACL_BUILD_SUBARCH == 64
   if (NULL == npident_int_map || NULL == int_npident_map) {
     // Translation called without proper setup.
@@ -127,7 +131,7 @@ NPIdentifier NPBridge::IntToNpidentifier(int npident_int) {
 }
 
 NPObject* NPBridge::CreateProxy(NPP npp, const NPCapability& capability) {
-  NPObject* object = capability.object;
+  NPObject* object = capability.object();
   if (NULL == object) {
     // Do not create proxies for NULL objects.
     return NULL;
@@ -157,14 +161,14 @@ NPObject* NPBridge::CreateProxy(NPP npp, const NPCapability& capability) {
 }
 
 NPObjectProxy* NPBridge::LookupProxy(const NPCapability& capability) {
-  printf("LookupProxy(%p): %p %d\n",
+  printf("LookupProxy(%p): %p %"PRId32"\n",
          reinterpret_cast<const void*>(&capability),
-         reinterpret_cast<void*>(capability.object),
-         capability.pid);
-  if (NULL == capability.object) {
+         reinterpret_cast<void*>(capability.object()),
+         capability.pid());
+  if (NULL == capability.object()) {
     return NULL;
   }
-  if (GETPID() == capability.pid) {
+  if (GETPID() == capability.pid()) {
     return NULL;
   }
   std::map<const NPCapability, NPObjectProxy*>::iterator i;

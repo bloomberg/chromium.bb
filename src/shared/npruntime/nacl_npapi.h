@@ -93,6 +93,12 @@ NPObject* NPP_GetScriptableInstance(NPP instance);
 
 #ifdef __cplusplus
 namespace nacl {
+
+/*
+ *  Undocumented: Prints out a debug string.
+ */
+void DebugPrintf(const char *fmt, ...);
+
 /*
  *  Undocumented: Prints out an NPIdentifier.
  */

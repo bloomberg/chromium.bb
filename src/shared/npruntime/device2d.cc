@@ -16,6 +16,7 @@
 #include <utility>
 
 #include "native_client/src/include/portability_string.h"
+#include "gen/native_client/src/shared/npruntime/npmodule_rpc.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/npruntime/npnavigator.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
@@ -59,15 +60,15 @@ static NPError InitializeContext(NPP instance,
   nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
   NaClSrpcError retval =
-      NaClSrpcInvokeByName(channel,
-                           "Device2DInitialize",
-                           nacl::NPNavigator::GetPluginNPP(instance),
-                           &shm_desc,
-                           &context2d->stride,
-                           &context2d->dirty.left,
-                           &context2d->dirty.top,
-                           &context2d->dirty.right,
-                           &context2d->dirty.bottom);
+      Device2DRpcClient::Device2DInitialize(
+          channel,
+          nacl::NPNavigator::GetPluginNPP(instance),
+          &shm_desc,
+          &context2d->stride,
+          &context2d->dirty.left,
+          &context2d->dirty.top,
+          &context2d->dirty.right,
+          &context2d->dirty.bottom);
   if (NACL_SRPC_RESULT_OK != retval) {
     goto cleanup;
   }
@@ -128,14 +129,14 @@ static NPError FlushContext(NPP instance,
   nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
   NaClSrpcError retval =
-      NaClSrpcInvokeByName(channel,
-                           "Device2DFlush",
-                           nacl::NPNavigator::GetPluginNPP(instance),
-                           &context2d->stride,
-                           &context2d->dirty.left,
-                           &context2d->dirty.top,
-                           &context2d->dirty.right,
-                           &context2d->dirty.bottom);
+      Device2DRpcClient::Device2DFlush(
+          channel,
+          nacl::NPNavigator::GetPluginNPP(instance),
+          &context2d->stride,
+          &context2d->dirty.left,
+          &context2d->dirty.top,
+          &context2d->dirty.right,
+          &context2d->dirty.bottom);
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
   }
@@ -166,9 +167,9 @@ static NPError DestroyContext(NPP instance, NPDeviceContext* context) {
   nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
   NaClSrpcError retval =
-      NaClSrpcInvokeByName(channel,
-                           "Device2DDestroy",
-                           nacl::NPNavigator::GetPluginNPP(instance));
+      Device2DRpcClient::Device2DDestroy(
+          channel,
+          nacl::NPNavigator::GetPluginNPP(instance));
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
   }

@@ -91,10 +91,9 @@ class NPNavigator : public NPBridge {
   static NPPluginFuncs plugin_funcs;
 
  public:
-  // Creates a new instance of NPNavigator. argc and argv should be unmodified
-  // variables from NaClNP_Init(). npp must be a pointer to an NPP_t structure
-  // to be used for the NaCl module.
-  NPNavigator(uint32_t peer_pid, size_t peer_npvariant_size);
+  NPNavigator(NaClSrpcChannel* channel,
+              int32_t peer_pid,
+              int32_t peer_npvariant_size);
   ~NPNavigator();
 
   // Get the Navigator for the current module.
@@ -102,10 +101,14 @@ class NPNavigator : public NPBridge {
     return navigator;
   }
 
-  // Get the NaCl module NPP from the browser NPP.
-  static NPP GetNaClNPP(NPP plugin_npp, bool add_to_map);
-  // Get the plugin NPP from the NaCl module NPP.
-  static NPP GetPluginNPP(NPP nacl_npp);
+  // Get the NaCl module NPP from the browser NPP.  Since this is always used
+  // with an NPP passed from the plugin (NPModule), we take it in the form
+  // used by SRPC.
+  static NPP GetNaClNPP(int32_t plugin_npp_int, bool add_to_map);
+  // Get the plugin NPP from the NaCl module NPP.  Since this is always used
+  // to pass the NPP back to the plugin (NPModule), we return it in the form
+  // for use by SRPC.
+  static int32_t GetPluginNPP(NPP nacl_npp);
 
   // Sets up recognition of the services exported from the browser.
   static NaClSrpcError SetUpcallServices(NaClSrpcChannel *channel,
@@ -113,58 +116,33 @@ class NPNavigator : public NPBridge {
                                          NaClSrpcArg **out_args);
 
   // Processes NP_Initialize() request from the plugin.
-  static NaClSrpcError Initialize(NaClSrpcChannel* channel,
-                                  NaClSrpcArg** inputs,
-                                  NaClSrpcArg** outputs);
+  NaClSrpcError Initialize(NaClSrpcChannel* channel,
+                           NaClSrpcImcDescType upcall_desc);
   // Processes NPP_New() request from the plugin.
-  static NaClSrpcError New(NaClSrpcChannel* channel,
-                           NaClSrpcArg** inputs,
-                           NaClSrpcArg** outputs);
+  NaClSrpcError New(char* mimetype,
+                    NPP npp,
+                    uint32_t argc,
+                    nacl_abi_size_t argn_bytes,
+                    char* argn_in,
+                    nacl_abi_size_t argv_bytes,
+                    char* argv_in,
+                    int32_t* nperr);
+  // Processes NPP_HandleEvent request from the plugin.
+  NaClSrpcError HandleEvent(NPP npp,
+                            nacl_abi_size_t npevent_bytes,
+                            char* npevent,
+                            int32_t* return_int16);
+  // Processes responses to NPN_PluginThreadAsyncCall from the plugin.
+  NaClSrpcError DoAsyncCall(int32_t number);
   // Processes NPP_SetWindow() request from the plugin.
-  static NaClSrpcError SetWindow(NaClSrpcChannel* channel,
-                                 NaClSrpcArg** inputs,
-                                 NaClSrpcArg** outputs);
+  NPError SetWindow(NPP npp, int height, int width);
   // Processes NPP_Destroy() request from the plugin.
-  static NaClSrpcError Destroy(NaClSrpcChannel* channel,
-                               NaClSrpcArg** inputs,
-                               NaClSrpcArg** outputs);
-  // Processes NPP_GetScriptableInstance() request from the plugin.
-  static NaClSrpcError GetScriptableInstance(NaClSrpcChannel* channel,
-                                             NaClSrpcArg** inputs,
-                                             NaClSrpcArg** outputs);
-  // Processes NPP_HandleEvent() request from the plugin (Pepper only).
-  static NaClSrpcError HandleEvent(NaClSrpcChannel* channel,
-                                   NaClSrpcArg** inputs,
-                                   NaClSrpcArg** outputs);
+  NPError Destroy(NPP npp);
   // Processes NPP_URLNotify() request from the plugin.
-  static NaClSrpcError URLNotify(NaClSrpcChannel* channel,
-                                 NaClSrpcArg** inputs,
-                                 NaClSrpcArg** outputs);
+  void URLNotify(NPP npp, NaClSrpcImcDescType received_handle, uint32_t reason);
 
-  // Processes responses to NPN_PluginThreadAsyncCall by the browser.
-  static NaClSrpcError DoAsyncCall(NaClSrpcChannel* channel,
-                                   NaClSrpcArg** inputs,
-                                   NaClSrpcArg** outputs);
-
-  // Implements NPP_New() request from the plugin.
-  NPError NewImpl(NPMIMEType mimetype,
-                  NPP npp,
-                  uint32_t argc,
-                  char* argn[],
-                  char* argv[]);
-  // Implements NPP_SetWindow() request from the plugin.
-  NPError SetWindowImpl(NPP npp,
-                        int height,
-                        int width);
-  // Implements NPP_Destroy() request from the plugin.
-  NPError DestroyImpl(NPP npp);
-  // Implements NPP_URLNotify() request from the plugin.
-  void URLNotifyImpl(NPP npp,
-                     NaClSrpcImcDescType received_handle,
-                     uint32_t reason);
-
-  // Implements NPP_GetScriptableInstance() request from the plugin.
-  NPCapability* GetScriptableInstanceImpl(NPP npp);
+  // Processes NPP_GetScriptableInstance() request from the plugin.
+  NPCapability* GetScriptableInstance(NPP npp);
 
   // Sends NPN_Status() request to the plugin.
   void SetStatus(NPP npp, const char* message);
