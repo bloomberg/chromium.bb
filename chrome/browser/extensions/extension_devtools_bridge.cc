@@ -78,7 +78,7 @@ void ExtensionDevToolsBridge::SendMessageToClient(const IPC::Message& msg) {
 }
 
 static const char kApuAgentClassName[] = "ApuAgentDelegate";
-static const char kApuPageEventMessageName[] = "DispatchToApu";
+static const char kApuPageEventMessageName[] = "dispatchToApu";
 
 void ExtensionDevToolsBridge::OnRpcMessage(const DevToolsMessageData& data) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
