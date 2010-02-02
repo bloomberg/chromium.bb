@@ -32,6 +32,7 @@ HIDDEN(NaCl_tramp_cseg_patch)
 IDENTIFIER(NaCl_tramp_cseg_patch):
         hlt
         .globl   IDENTIFIER(NaCl_trampoline_seg_end)
+HIDDEN(NaCl_trampoline_seg_end)
 IDENTIFIER(NaCl_trampoline_seg_end):
 
         .globl  IDENTIFIER(NaCl_text_prot)
@@ -82,6 +83,7 @@ HIDDEN(NaCl_tramp_cseg_patch)
 IDENTIFIER(NaCl_tramp_cseg_patch):
         hlt
        .globl   IDENTIFIER(NaCl_trampoline_seg_end)
+HIDDEN(NaCl_trampoline_seg_end)
 IDENTIFIER(NaCl_trampoline_seg_end):
 
 .globl IDENTIFIER(NaCl_text_prot)
