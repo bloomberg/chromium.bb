@@ -866,7 +866,6 @@ BUG20507 : http/tests/uri/resolve-encoding-relative.html = FAIL
 
 // Flaky: fails about 5% of the time.
 BUG31342 WIN RELEASE : security/block-test-no-port.html = TEXT PASS
-BUG31342 WIN RELEASE : security/block-test.html = TEXT PASS
 
 // Fails in debug. Windows used to be only flaky, but now fails consistently
 // starting with the 52554->52633 merge.
