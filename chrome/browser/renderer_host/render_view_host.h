@@ -38,10 +38,6 @@ namespace gfx {
 class Point;
 }
 
-namespace net {
-enum LoadState;
-}
-
 namespace webkit_glue {
 class FormFieldValues;
 struct WebApplicationInfo;

@@ -40,7 +40,7 @@ std::string SysWideToNativeMB(const std::wstring& wide) {
     size_t res = src ? wcrtomb(buf, src, &ps) : 0;
     switch (res) {
       // Handle any errors and return an empty string.
-      case -1:
+      case static_cast<size_t>(-1):
         return std::string();
         break;
       case 0:
@@ -68,7 +68,7 @@ std::string SysWideToNativeMB(const std::wstring& wide) {
     size_t res = src ? wcrtomb(&out[j], src, &ps) : 0;
     switch (res) {
       // Handle any errors and return an empty string.
-      case -1:
+      case static_cast<size_t>(-1):
         return std::string();
         break;
       case 0:
@@ -96,8 +96,8 @@ std::wstring SysNativeMBToWide(const StringPiece& native_mb) {
     size_t res = mbrtowc(NULL, src, native_mb.size() - i, &ps);
     switch (res) {
       // Handle any errors and return an empty string.
-      case -2:
-      case -1:
+      case static_cast<size_t>(-2):
+      case static_cast<size_t>(-1):
         return std::wstring();
         break;
       case 0:
@@ -125,8 +125,8 @@ std::wstring SysNativeMBToWide(const StringPiece& native_mb) {
     size_t res = mbrtowc(dst, src, native_mb.size() - i, &ps);
     switch (res) {
       // Handle any errors and return an empty string.
-      case -2:
-      case -1:
+      case static_cast<size_t>(-2):
+      case static_cast<size_t>(-1):
         return std::wstring();
         break;
       case 0:

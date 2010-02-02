@@ -4,6 +4,7 @@
 
 #include "base/unix_domain_socket_posix.h"
 
+#include <errno.h>
 #include <unistd.h>
 #include <sys/uio.h>
 #include <sys/socket.h>
