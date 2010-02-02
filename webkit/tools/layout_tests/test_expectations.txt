@@ -2840,7 +2840,6 @@ BUG32572 WIN : svg/hixie/mixed/003.xml = CRASH PASS
 
 // WebKit roll 53341:53451
 BUG32670 LINUX : fast/css/zoom-body-scroll.html = TEXT
-BUG32671 WIN LINUX MAC : fast/dom/Window/timer-null-script-execution-context.html = TEXT
 BUG32673 WIN LINUX : fast/forms/textarea-scrollbar-height.html = TEXT
 BUG32675 LINUX : fast/repaint/trailing-floats-root-line-box-overflow.html = IMAGE
 
