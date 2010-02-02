@@ -18,6 +18,10 @@ namespace views {
 class NativeMenuGtk;
 
 // A menu. Populated from a model, and relies on a delegate to execute commands.
+//
+// WARNING: do NOT create and use Menu2 on the stack. Menu2 notifies the model
+// of selection AFTER a delay. This means that if use a Menu2 on the stack
+// ActivatedAt is never invoked.
 class Menu2 {
  public:
   // Creates a new menu populated with the contents of |model|.

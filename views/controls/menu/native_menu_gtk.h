@@ -7,6 +7,7 @@
 
 #include <gtk/gtk.h>
 
+#include "base/task.h"
 #include "views/controls/menu/menu_wrapper.h"
 
 namespace menus {
@@ -16,6 +17,13 @@ class MenuModel;
 namespace views {
 
 // A Gtk implementation of MenuWrapper.
+//
+// NOTE: On windows the activate message is not sent immediately when an item
+// is selected. Instead a message is added to the queue that is processed later.
+// To simulate that (and avoid having to deal with different behavior between
+// the platforms) we mimick that by posting a task after a menu item is selected
+// then notify.
+//
 // TODO(beng): rename to MenuGtk once the old class is dead.
 class NativeMenuGtk : public MenuWrapper {
  public:
@@ -58,6 +66,10 @@ class NativeMenuGtk : public MenuWrapper {
   // Returns the root of the menu tree.
   NativeMenuGtk* GetAncestor();
 
+  // Callback that we should really process the menu activation.
+  // See description above class for why we delay processing activation.
+  void ProcessActivate();
+
   // Notifies the model the user selected an item.
   void Activate();
 
@@ -88,6 +100,10 @@ class NativeMenuGtk : public MenuWrapper {
   // The index of the item the user selected. This is set on the actual menu the
   // user selects and not the root.
   int activated_index_;
+
+  // Used when a menu item is selected. See description above class as to why
+  // we do this.
+  ScopedRunnableMethodFactory<NativeMenuGtk> activate_factory_;
 
   // A eference to the hosting menu2 object and signal handler id
   // used to delete the menu2 when its native menu gtk is destroyed first.

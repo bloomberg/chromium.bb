@@ -70,6 +70,7 @@ NativeMenuGtk::NativeMenuGtk(Menu2* menu)
       suppress_activate_signal_(false),
       activated_menu_(NULL),
       activated_index_(-1),
+      activate_factory_(this),
       host_menu_(menu) {
 }
 
@@ -107,11 +108,11 @@ void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
   g_signal_handler_disconnect(G_OBJECT(menu_), handle_id);
   menu_shown_ = false;
 
-  // Call into the model after the nested message loop quits. This way if the
-  // model ends up deleting us, or MessageLoop::Quit takes a while, there aren't
-  // any problems.
-  if (activated_menu_)
-    activated_menu_->Activate();
+  if (activated_menu_) {
+    MessageLoop::current()->PostTask(FROM_HERE,
+                                     activate_factory_.NewRunnableMethod(
+                                         &NativeMenuGtk::ProcessActivate));
+  }
 }
 
 void NativeMenuGtk::CancelMenu() {
@@ -119,6 +120,8 @@ void NativeMenuGtk::CancelMenu() {
 }
 
 void NativeMenuGtk::Rebuild() {
+  activated_menu_ = NULL;
+
   ResetMenu();
 
   std::map<int, GtkRadioMenuItem*> radio_groups_;
@@ -333,6 +336,11 @@ NativeMenuGtk* NativeMenuGtk::GetAncestor() {
   while (ancestor->parent_)
     ancestor = ancestor->parent_;
   return ancestor;
+}
+
+void NativeMenuGtk::ProcessActivate() {
+  if (activated_menu_)
+    activated_menu_->Activate();
 }
 
 void NativeMenuGtk::Activate() {
