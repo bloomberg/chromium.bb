@@ -5983,36 +5983,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Continue
       </message>
 
-      <!-- Constrained Window -->
-      <message name="IDS_BLOCKED_POPUP" desc="Text on a blocked popup's window titlebar.">
-        Blocked Pop-up
-      </message>
-      <message name="IDS_POPUPS_BLOCKED_COUNT" desc="Message on the blocked popup window when there are blocked popups">
-        Pop-ups Blocked: <ph name="COUNT">$1<ex>2</ex></ph>
-      </message>
-      <message name="IDS_POPUPS_UNBLOCKED" desc="Message on the blocked popup window when there are only whitelisted popups">
-        Manage pop-ups
-      </message>
-      <message name="IDS_POPUP_TITLE_FORMAT" desc="Order of URL - Title on the popup">
-        <ph name="URL">$1</ph> - <ph name="WINDOW_TITLE">$2</ph>
-      </message>
-      <message name="IDS_NOTICE_TITLE_FORMAT" desc="Order of URL - Reason">
-        <ph name="URL">$1</ph> - <ph name="REASON">$2</ph>
-      </message>
-      <if expr="not pp_ifdef('use_titlecase')">
-        <message name="IDS_POPUP_HOST_FORMAT" desc="Checkable menu item to always allow popups from a particular hostname">
-          Always show pop-ups from <ph name="URL">$1</ph>
-        </message>
-      </if>
-      <if expr="pp_ifdef('use_titlecase')">
-        <message name="IDS_POPUP_HOST_FORMAT" desc="In Title Case: Checkable menu item to always allow popups from a particular hostname">
-          Always Show Pop-ups From <ph name="URL">$1</ph>
-        </message>
-      </if>
-      <message name="IDS_BLOCKED_NOTICE_COUNT" desc="Message shown in the corner of the content window when there are blocked items.">
-        Blocked Items: <ph name="COUNT">$1<ex>2</ex></ph>
-      </message>
-
       <!-- Multiple download warning-->
       <message name="IDS_MULTI_DOWNLOAD_WARNING" desc="Warning invoked if multiple downloads are attempted without user interaction.">
         This site is attempting to download multiple files. Do you want to allow this?

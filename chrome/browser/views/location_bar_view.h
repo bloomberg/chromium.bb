@@ -102,9 +102,9 @@ class LocationBarView : public LocationBar,
   void SetProfile(Profile* profile);
   Profile* profile() { return profile_; }
 
-  // Returns the URL for the current page.  This should only be used by the
+  // Returns the current TabContents.  This should only be used by the
   // ContentBlockedImageView.
-  GURL GetURL() const;
+  TabContents* GetTabContents() const;
 
   // Sets |preview_enabled| for the PageAction View associated with this
   // |page_action|. If |preview_enabled| is true, the view will display the

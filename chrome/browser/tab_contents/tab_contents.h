@@ -369,12 +369,6 @@ class TabContents : public PageNavigator,
                       const gfx::Rect& initial_pos,
                       bool user_gesture);
 
-  // Closes all constrained windows that represent web popups that have not yet
-  // been activated by the user and are as such auto-positioned in the bottom
-  // right of the screen. This is a quick way for users to "clean up" a flurry
-  // of unwanted popups.
-  void CloseAllSuppressedPopups();
-
   // Execute code in this tab. Returns true if the message was successfully
   // sent.
   bool ExecuteCode(int request_id, const std::string& extension_id,
@@ -671,10 +665,7 @@ class TabContents : public PageNavigator,
   // Used to access the child_windows_ (ConstrainedWindowList) for testing
   // automation purposes.
   friend class AutomationProvider;
-  friend class BlockedPopupContainerTest;
-  friend class BlockedPopupContainerControllerTest;
 
-  FRIEND_TEST(BlockedPopupContainerTest, TestReposition);
   FRIEND_TEST(TabContentsTest, NoJSMessageOnInterstitials);
   FRIEND_TEST(TabContentsTest, UpdateTitle);
   FRIEND_TEST(TabContentsTest, CrossSiteCantPreemptAfterUnload);
@@ -701,29 +692,9 @@ class TabContents : public PageNavigator,
   void SetIsLoading(bool is_loading,
                     LoadNotificationDetails* details);
 
-  // Constructs |blocked_popups_| if need be.
-  void CreateBlockedPopupContainerIfNecessary();
-
   // Adds the incoming |new_contents| to the |blocked_popups_| container.
   void AddPopup(TabContents* new_contents,
                 const gfx::Rect& initial_pos);
-
-  // Called by a derived class when the TabContents is resized, causing
-  // suppressed constrained web popups to be repositioned to the new bounds
-  // if necessary.
-  void RepositionSupressedPopupsToFit();
-
-  // Whether we have a notification AND the notification owns popups windows.
-  // (We keep the notification object around even when it's not shown since it
-  // determines whether to show itself).
-  bool ShowingBlockedPopupNotification() const;
-
-  // Only used during unit testing; otherwise |blocked_popups_| will be created
-  // on demand.
-  void set_blocked_popup_container(BlockedPopupContainer* container) {
-    DCHECK(blocked_popups_ == NULL);
-    blocked_popups_ = container;
-  }
 
   // Called by derived classes to indicate that we're no longer waiting for a
   // response. This won't actually update the throbber, but it will get picked
@@ -758,11 +729,8 @@ class TabContents : public PageNavigator,
       const NavigationController::LoadCommittedDetails& details,
       const ViewHostMsg_FrameNavigate_Params& params);
 
-  // Closes all child windows (constrained popups) when the domain changes.
-  // Supply the new and old URLs, and this function will figure out when the
-  // domain changing conditions are met.
-  void MaybeCloseChildWindows(const GURL& previous_url,
-                              const GURL& current_url);
+  // Closes all constrained windows.
+  void CloseConstrainedWindows();
 
   // Updates the starred state from the bookmark bar model. If the state has
   // changed, the delegate is notified.
@@ -874,7 +842,6 @@ class TabContents : public PageNavigator,
       GetFormFieldHistoryDelegate();
   virtual RenderViewHostDelegate::AutoFill* GetAutoFillDelegate();
   virtual TabContents* GetAsTabContents();
-  virtual void AddBlockedNotice(const GURL& url, const string16& reason);
   virtual ViewType::Type GetRenderViewType() const;
   virtual int GetBrowserWindowID() const;
   virtual void RenderViewCreated(RenderViewHost* render_view_host);
@@ -1092,11 +1059,13 @@ class TabContents : public PageNavigator,
   // Character encoding. TODO(jungshik) : convert to std::string
   std::string encoding_;
 
-  // Data for shelves and stuff ------------------------------------------------
-
-  // ConstrainedWindow with additional methods for managing blocked
-  // popups.
+  // Object that holds any blocked popups frmo the current page.
   BlockedPopupContainer* blocked_popups_;
+
+  // TODO(pkasting): Hack to try and fix Linux browser tests.
+  bool dont_notify_render_view_;
+
+  // Data for shelves and stuff ------------------------------------------------
 
   // Delegates for InfoBars associated with this TabContents.
   std::vector<InfoBarDelegate*> infobar_delegates_;

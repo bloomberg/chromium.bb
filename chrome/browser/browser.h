@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -373,10 +373,7 @@ class Browser : public TabStripModelDelegate,
   virtual bool SupportsWindowFeature(WindowFeature feature) const;
 
 // TODO(port): port these, and re-merge the two function declaration lists.
-#if defined(OS_WIN)
   // Page-related commands.
-  void ClosePopups();
-#endif
   void Print();
   void EmailPageLocation();
   void ToggleEncodingAutoDetect();
@@ -590,6 +587,7 @@ class Browser : public TabStripModelDelegate,
   virtual void ContentsMouseEvent(
       TabContents* source, const gfx::Point& location, bool motion);
   virtual void ContentsZoomChange(bool zoom_in);
+  virtual void OnBlockedContentChange(TabContents* source);
   virtual void SetTabContentBlocked(TabContents* contents, bool blocked);
   virtual void TabContentsFocused(TabContents* tab_content);
   virtual bool TakeFocus(bool reverse);

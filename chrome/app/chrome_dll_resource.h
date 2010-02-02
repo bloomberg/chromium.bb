@@ -118,11 +118,10 @@
 #define IDC_BOOKMARK_PAGE               35000
 #define IDC_BOOKMARK_ALL_TABS           35001
 #define IDC_VIEW_SOURCE                 35002
-#define IDC_CLOSE_POPUPS                35003
-#define IDC_PRINT                       35004
-#define IDC_SAVE_PAGE                   35005
-#define IDC_ENCODING_MENU               35006
-#define IDC_EMAIL_PAGE_LOCATION         35007
+#define IDC_PRINT                       35003
+#define IDC_SAVE_PAGE                   35004
+#define IDC_ENCODING_MENU               35005
+#define IDC_EMAIL_PAGE_LOCATION         35006
 
 // When adding a new encoding to this list, be sure to append it to the
 // EncodingMenuController::kValidEncodingIds array in

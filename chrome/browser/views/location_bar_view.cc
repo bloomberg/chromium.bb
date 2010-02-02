@@ -346,9 +346,8 @@ void LocationBarView::SetProfile(Profile* profile) {
   }
 }
 
-GURL LocationBarView::GetURL() const {
-  const TabContents* tab_contents = delegate_->GetTabContents();
-  return tab_contents ? tab_contents->GetURL() : GURL();
+TabContents* LocationBarView::GetTabContents() const {
+  return delegate_->GetTabContents();
 }
 
 void LocationBarView::SetPreviewEnabledPageAction(ExtensionAction *page_action,
@@ -1373,14 +1372,17 @@ bool LocationBarView::ContentBlockedImageView::OnMousePressed(
   bounds.set_x(location.x());
   bounds.set_width(width());
 
-  GURL url = parent_->GetURL();
+  TabContents* tab_contents = parent_->GetTabContents();
+  if (!tab_contents)
+    return true;
+  GURL url = tab_contents->GetURL();
   std::wstring display_host;
   net::AppendFormattedHost(url,
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages), &display_host,
       NULL, NULL);
   ContentBlockedBubbleContents* bubble_contents =
       new ContentBlockedBubbleContents(content_type_, url.host(), display_host,
-                                       profile_);
+                                       profile_, tab_contents);
   DCHECK(!info_bubble_);
   info_bubble_ = InfoBubble::Show(GetWindow(), bounds, bubble_contents, this);
   bubble_contents->set_info_bubble(info_bubble_);

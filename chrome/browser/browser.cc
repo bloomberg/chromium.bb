@@ -1075,13 +1075,6 @@ bool Browser::SupportsWindowFeature(WindowFeature feature) const {
   return !!(features & feature);
 }
 
-#if defined(OS_WIN)
-void Browser::ClosePopups() {
-  UserMetrics::RecordAction("CloseAllSuppressedPopups", profile_);
-  GetSelectedTabContents()->CloseAllSuppressedPopups();
-}
-#endif
-
 void Browser::EmailPageLocation() {
   UserMetrics::RecordAction("EmailPageLocation", profile_);
   GetSelectedTabContents()->EmailPageLocation();
@@ -1506,9 +1499,6 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_BOOKMARK_PAGE:         BookmarkCurrentPage();         break;
     case IDC_BOOKMARK_ALL_TABS:     BookmarkAllTabs();             break;
     case IDC_VIEW_SOURCE:           ViewSource();                  break;
-#if defined(OS_WIN)
-    case IDC_CLOSE_POPUPS:          ClosePopups();                 break;
-#endif
     case IDC_EMAIL_PAGE_LOCATION:   EmailPageLocation();           break;
     case IDC_PRINT:                 Print();                       break;
     case IDC_ENCODING_AUTO_DETECT:  ToggleEncodingAutoDetect();    break;
@@ -1610,7 +1600,6 @@ void Browser::ExecuteCommandWithDisposition(
 
 bool Browser::IsReservedCommand(int command_id) {
   return command_id == IDC_CLOSE_TAB ||
-         command_id == IDC_CLOSE_POPUPS ||
          command_id == IDC_CLOSE_WINDOW ||
          command_id == IDC_NEW_INCOGNITO_WINDOW ||
          command_id == IDC_NEW_TAB ||
@@ -2154,6 +2143,11 @@ void Browser::ContentsZoomChange(bool zoom_in) {
   ExecuteCommand(zoom_in ? IDC_ZOOM_PLUS : IDC_ZOOM_MINUS);
 }
 
+void Browser::OnBlockedContentChange(TabContents* source) {
+  if (source == GetSelectedTabContents())
+    window_->GetLocationBar()->UpdateContentBlockedIcons();
+}
+
 void Browser::SetTabContentBlocked(TabContents* contents, bool blocked) {
   int index = tabstrip_model()->GetIndexOfTabContents(contents);
   if (index == TabStripModel::kNoTab) {
@@ -2510,7 +2504,6 @@ void Browser::InitCommandState() {
 #endif
 
   // Page-related commands
-  command_updater_.UpdateCommandEnabled(IDC_CLOSE_POPUPS, true);
   command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION, true);
   command_updater_.UpdateCommandEnabled(IDC_PRINT, true);
   command_updater_.UpdateCommandEnabled(IDC_ENCODING_AUTO_DETECT, true);

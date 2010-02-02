@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -528,7 +528,6 @@
         'browser/autofill/personal_data_manager_unittest.cc',
         'browser/automation/automation_provider_unittest.cc',
         'browser/back_forward_menu_model_unittest.cc',
-        'browser/blocked_popup_container_unittest.cc',
         'browser/bookmarks/bookmark_codec_unittest.cc',
         'browser/bookmarks/bookmark_drag_data_unittest.cc',
         'browser/bookmarks/bookmark_folder_tree_model_unittest.cc',
@@ -568,7 +567,6 @@
         'browser/cocoa/base_view_unittest.mm',
         'browser/cocoa/background_gradient_view_unittest.mm',
         'browser/cocoa/background_tile_view_unittest.mm',
-        'browser/cocoa/blocked_popup_container_controller_unittest.mm',
         'browser/cocoa/bookmark_all_tabs_controller_unittest.mm',
         'browser/cocoa/bookmark_bar_bridge_unittest.mm',
         'browser/cocoa/bookmark_bar_controller_unittest.mm',

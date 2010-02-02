@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,7 +16,6 @@
 #include "base/string_util.h"
 #include "build/build_config.h"
 #include "chrome/browser/download/download_shelf.h"
-#include "chrome/browser/gtk/blocked_popup_container_view_gtk.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/constrained_window_gtk.h"
 #include "chrome/browser/gtk/gtk_expanded_container.h"
@@ -112,7 +111,6 @@ TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents)
     : TabContentsView(tab_contents),
       floating_(gtk_floating_container_new()),
       expanded_(gtk_expanded_container_new()),
-      popup_view_(NULL),
       constrained_window_(NULL) {
   gtk_widget_set_name(expanded_, "chrome-tab-contents-view");
   g_signal_connect(expanded_, "size-allocate",
@@ -132,21 +130,6 @@ TabContentsViewGtk::TabContentsViewGtk(TabContents* tab_contents)
 
 TabContentsViewGtk::~TabContentsViewGtk() {
   floating_.Destroy();
-}
-
-void TabContentsViewGtk::AttachBlockedPopupView(
-    BlockedPopupContainerViewGtk* popup_view) {
-  DCHECK(popup_view_ == NULL);
-  popup_view_ = popup_view;
-  gtk_floating_container_add_floating(GTK_FLOATING_CONTAINER(floating_.get()),
-                                      popup_view->widget());
-}
-
-void TabContentsViewGtk::RemoveBlockedPopupView(
-    BlockedPopupContainerViewGtk* popup_view) {
-  DCHECK(popup_view_ == popup_view);
-  gtk_container_remove(GTK_CONTAINER(floating_.get()), popup_view->widget());
-  popup_view_ = NULL;
 }
 
 void TabContentsViewGtk::AttachConstrainedWindow(
@@ -390,32 +373,6 @@ void TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
 void TabContentsViewGtk::OnSetFloatingPosition(
     GtkFloatingContainer* floating_container, GtkAllocation* allocation,
     TabContentsViewGtk* tab_contents_view) {
-  if (tab_contents_view->popup_view_) {
-    GtkWidget* widget = tab_contents_view->popup_view_->widget();
-
-    // Look at the size request of the status bubble and tell the
-    // GtkFloatingContainer where we want it positioned.
-    GtkRequisition requisition;
-    gtk_widget_size_request(widget, &requisition);
-
-    GValue value = { 0, };
-    g_value_init(&value, G_TYPE_INT);
-
-    int child_x = std::max(
-        allocation->x + allocation->width - requisition.width -
-        kScrollbarWidthHack, 0);
-    g_value_set_int(&value, child_x);
-    gtk_container_child_set_property(GTK_CONTAINER(floating_container),
-                                     widget, "x", &value);
-
-    int child_y = std::max(
-        allocation->y + allocation->height - requisition.height, 0);
-    g_value_set_int(&value, child_y);
-    gtk_container_child_set_property(GTK_CONTAINER(floating_container),
-                                     widget, "y", &value);
-    g_value_unset(&value);
-  }
-
   // Place each ConstrainedWindow in the center of the view.
   int half_view_width = std::max((allocation->x + allocation->width) / 2, 0);
   int half_view_height = std::max((allocation->y + allocation->height) / 2, 0);

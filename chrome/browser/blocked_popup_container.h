@@ -1,156 +1,42 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 // Defines the public interface for the blocked popup notifications. This
 // interface should only be used by TabContents. Users and subclasses of
 // TabContents should use the appropriate methods on TabContents to access
 // information about blocked popups.
 
-// TODO(idanan): Rename class to BlockedContentContainer.
-
 #ifndef CHROME_BROWSER_BLOCKED_POPUP_CONTAINER_H_
 #define CHROME_BROWSER_BLOCKED_POPUP_CONTAINER_H_
 
-#include <map>
-#include <set>
-#include <string>
-#include <vector>
-
-#include "app/gfx/native_widget_types.h"
-#include "base/gfx/rect.h"
-#include "base/string16.h"
-#include "chrome/browser/tab_contents/constrained_window.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
-#include "chrome/common/notification_registrar.h"
 
-class BlockedPopupContainer;
-class PrefService;
-class Profile;
-class TabContents;
-
-// Interface that the BlockedPopupContainer model/controller uses to
-// communicate with its platform specific view.
-class BlockedPopupContainerView {
+// Takes ownership of TabContents that are unrequested popup windows.
+class BlockedPopupContainer : public TabContentsDelegate {
  public:
-  // Platform specific constructor used by BlockedPopupContainer to create a
-  // view that is displayed to the user.
-  static BlockedPopupContainerView* Create(BlockedPopupContainer* container);
+  typedef std::vector<TabContents*> BlockedContents;
 
-  // Notification that the view should properly position itself in |view|.
-  virtual void SetPosition() = 0;
-
-  // Shows the blocked popup view / Animates the blocked popup view in.
-  virtual void ShowView() = 0;
-
-  // Sets the text in the blocked popup label.
-  virtual void UpdateLabel() = 0;
-
-  // Hides the blocked popup view / Animates the blocked popup view out.
-  virtual void HideView() = 0;
-
-  // Called by the BlockedPopupContainer that owns us. Destroys the view or
-  // starts a delayed Task to destroy the View at some later time.
-  virtual void Destroy() = 0;
-
-  virtual ~BlockedPopupContainerView() {}
-};
-
-// Takes ownership of TabContents that are unrequested popup windows and
-// presents an interface to the user for launching them. (Or never showing them
-// again). This class contains all the cross-platform bits that can be used in
-// all ports.
-//
-// +- BlockedPopupContainer ---+         +- BlockedPopupContainerView -----+
-// | All model logic           |    +--->| Abstract cross platform         |
-// |                           |    |    | interface                       |
-// |                           |    |    |                                 |
-// | Owns a platform view_     +----+    |                                 |
-// +---------------------------+         +---------------------------------+
-//                                                  ^
-//                                                  |
-//                  +-------------------------------+-----------+
-//                  |                                           |
-//  +- BPCViewGtk -----------+     +- BPCViewWin ----------------------+
-//  | Gtk UI                 |     | Views UI                          |
-//  |                        |     |                                   |
-//  +------------------------+     +-----------------------------------+
-//
-// Getting here will take multiple patches.
-class BlockedPopupContainer : public TabContentsDelegate,
-                              public NotificationObserver {
- public:
-  // Creates a BlockedPopupContainer, anchoring the container to the lower
-  // right corner.
-  static BlockedPopupContainer* Create(TabContents* owner, Profile* profile);
-
-  static void RegisterUserPrefs(PrefService* prefs);
-
-  // Returns the profile associated with the Browser this container exists in.
-  Profile* profile() const { return profile_; }
-
-  // Sets this BlockedPopupContainer's view. BlockedPopupContainer now owns
-  // |view| and is responsible for calling Destroy() on it.
-  void set_view(BlockedPopupContainerView* view) { view_ = view; }
+  // Creates a container for a certain TabContents:
+  explicit BlockedPopupContainer(TabContents* owner);
 
   // Adds a popup to this container. |bounds| are the window bounds requested by
   // the popup window.
   void AddTabContents(TabContents* tab_contents,
-                      const gfx::Rect& bounds,
-                      const std::string& host);
+                      const gfx::Rect& bounds);
 
-  // Shows the blocked popup at index |index|.
-  void LaunchPopupAtIndex(size_t index);
+  // Shows the blocked popup with TabContents |tab_contents|.
+  void LaunchPopupForContents(TabContents* tab_contents);
 
-  // Returns the number of blocked popups
+  // Returns the number of blocked popups.
   size_t GetBlockedPopupCount() const;
 
-  // Adds a blocked notice if one is not already there for the same host.
-  void AddBlockedNotice(const GURL& url, const string16& reason);
-
-  // Returns the hostname and reason for notice |index|.
-  void GetHostAndReasonForNotice(size_t index,
-                                 std::string* host,
-                                 string16* reason) const;
-
-  // Returns the number of blocked notices, popups don't count.
-  size_t GetBlockedNoticeCount() const;
-
-  // Returns true if host |index| is whitelisted.
-  // NOTE: Does not sanity-check; do not pass an invalid index!
-  bool IsHostWhitelisted(size_t index) const;
-
-  // If host |index| is currently whitelisted, un-whitelists it.  Otherwise,
-  // whitelists it and opens all blocked popups from it.
-  // NOTE: Does not sanity-check; do not pass an invalid index!
-  void ToggleWhitelistingForHost(size_t index);
-
-  // Deletes all popups and hides the interface parts.
-  void CloseAll();
+  // Returns the contained TabContents pointers.  |blocked_contents| must be
+  // non-NULL.
+  void GetBlockedContents(BlockedContents* blocked_contents) const;
 
   // Sets this object up to delete itself.
   void Destroy();
-
-  // Message called when a BlockedPopupContainer should move itself to the
-  // bottom right corner of our parent view.
-  void RepositionBlockedPopupContainer();
-
-  // Returns the TabContents for the blocked popup |index|.
-  TabContents* GetTabContentsAt(size_t index) const;
-
-  // Returns the names of hosts showing popups.
-  std::vector<std::string> GetHosts() const;
-
-  // Returns the number of popup hosts.
-  size_t GetPopupHostCount() const {
-    return popup_hosts_.size();
-  }
-
-  // Deletes all local state.
-  void ClearData();
-
-  // Called to force this container to never show itself again.
-  void set_dismissed() { has_been_dismissed_ = true; }
 
   // Overridden from TabContentsDelegate:
 
@@ -206,113 +92,21 @@ class BlockedPopupContainer : public TabContentsDelegate,
  protected:
   struct BlockedPopup {
     BlockedPopup(TabContents* tab_contents,
-                 const gfx::Rect& bounds,
-                 const std::string& host)
-        : tab_contents(tab_contents), bounds(bounds), host(host) {
+                 const gfx::Rect& bounds)
+        : tab_contents(tab_contents), bounds(bounds) {
     }
 
     TabContents* tab_contents;
     gfx::Rect bounds;
-    std::string host;
   };
   typedef std::vector<BlockedPopup> BlockedPopups;
 
-  // TabContents is the popup contents.  string is opener hostname.
-  typedef std::map<TabContents*, std::string> UnblockedPopups;
-
-  // string is hostname.  bool is whitelisted status.
-  typedef std::map<std::string, bool> PopupHosts;
-
-  struct BlockedNotice {
-    BlockedNotice(const GURL& url, const string16& reason)
-        : url_(url), reason_(reason) {}
-
-    GURL url_;
-    string16 reason_;
-  };
-  typedef std::vector<BlockedNotice> BlockedNotices;
-
-  // Hosts with notifications showing.
-  typedef std::set<std::string> NoticeHosts;
-
-  // Creates a BlockedPopupContainer, anchoring the container to the lower
-  // right corner using the given BlockedPopupContainerView. Use only for
-  // testing.
-  static BlockedPopupContainer* Create(TabContents* owner, Profile* profile,
-                                       BlockedPopupContainerView* view);
-
-  // Hides the UI portion of the container.
-  void HideSelf();
-
-  // Helper function to convert a host index (which the view uses) into an
-  // iterator into |popup_hosts_|.  Returns popup_hosts_.end() if |index| is
-  // invalid.
-  PopupHosts::const_iterator ConvertHostIndexToIterator(size_t index) const;
-
-  // Removes the popup at |i| from the blocked popup list.  If this popup's host
-  // is not otherwised referenced on either popup list, removes the host from
-  // the host list.  Updates the view's label to match the new state.
-  void EraseDataForPopupAndUpdateUI(BlockedPopups::iterator i);
-
-  // Same as above, but works on the unblocked popup list.
-  void EraseDataForPopupAndUpdateUI(UnblockedPopups::iterator i);
-
  private:
-  friend class BlockedPopupContainerImpl;
-  friend class BlockedPopupContainerTest;
-  friend class BlockedPopupContainerControllerTest;
-
-  // string is hostname.
-  typedef std::set<std::string> Whitelist;
-
-  // Creates a container for a certain TabContents:
-  BlockedPopupContainer(TabContents* owner, Profile* profile);
-
-  // Either hides the view if there are no popups, or updates the label if
-  // there are.
-  void UpdateView();
-
-  // Overridden from notificationObserver:
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
   // The TabContents that owns and constrains this BlockedPopupContainer.
   TabContents* owner_;
 
-  // The PrefService we can query to find out what's on the whitelist.  If the
-  // profile is off the record, this will be NULL.
-  PrefService* prefs_;
-
-  // Once the container is hidden, this is set to prevent it from reappearing.
-  bool has_been_dismissed_;
-
-  // Registrar to handle notifications we care about.
-  NotificationRegistrar registrar_;
-
-  // The whitelisted hosts, which we allow to open popups directly.
-  Whitelist whitelist_;
-
   // Information about all blocked popups.
   BlockedPopups blocked_popups_;
-
-  // Information about all unblocked popups.
-  UnblockedPopups unblocked_popups_;
-
-  // Information about all popup hosts.
-  PopupHosts popup_hosts_;
-
-  // Notices for all blocked resources.
-  BlockedNotices blocked_notices_;
-
-  // Hosts which had notifications shown.
-  NoticeHosts notice_hosts_;
-
-  // Our platform specific view.
-  BlockedPopupContainerView* view_;
-
-  // The profile for the browser associated with the container.
-  Profile* profile_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(BlockedPopupContainer);
 };

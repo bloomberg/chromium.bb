@@ -7,6 +7,7 @@
 #include "app/gfx/text_elider.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/auto_reset.h"
 #include "base/file_version_info.h"
 #include "base/process_util.h"
 #include "base/string16.h"
@@ -246,6 +247,7 @@ TabContents::TabContents(Profile* profile,
       contents_mime_type_(),
       encoding_(),
       blocked_popups_(NULL),
+      dont_notify_render_view_(false),
       infobar_delegates_(),
       find_ui_active_(false),
       find_op_aborted_(false),
@@ -336,15 +338,9 @@ TabContents::~TabContents() {
   // TODO(mpcomplete): handle case if MaybeCloseChildWindows() already asked
   // some of these to close.  CloseWindows is async, so it might get called
   // twice before it runs.
-  int size = static_cast<int>(child_windows_.size());
-  for (int i = size - 1; i >= 0; --i) {
-    ConstrainedWindow* window = child_windows_[i];
-    if (window) {
-      window->CloseConstrainedWindow();
-      BlockTabContent(false);
-    }
-  }
+  CloseConstrainedWindows();
 
+  // Close all blocked popups.
   if (blocked_popups_)
     blocked_popups_->Destroy();
 
@@ -566,6 +562,9 @@ bool TabContents::ShouldDisplayFavIcon() {
 }
 
 bool TabContents::IsContentBlocked(ContentSettingsType content_type) const {
+  if (content_type == CONTENT_SETTINGS_TYPE_POPUPS)
+    return blocked_popups_ != NULL;
+
   // TODO(pkasting): Return meaningful values here.
   return false;
 }
@@ -844,12 +843,9 @@ void TabContents::AddNewContents(TabContents* new_contents,
         Source<TabContentsDelegate>(delegate_),
         Details<TabContents>(this));
   }
-  PopupNotificationVisibilityChanged(ShowingBlockedPopupNotification());
-}
 
-void TabContents::CloseAllSuppressedPopups() {
-  if (blocked_popups_)
-    blocked_popups_->CloseAll();
+  // TODO(pkasting): Why is this necessary?
+  PopupNotificationVisibilityChanged(blocked_popups_ != NULL);
 }
 
 bool TabContents::ExecuteCode(int request_id, const std::string& extension_id,
@@ -863,7 +859,11 @@ bool TabContents::ExecuteCode(int request_id, const std::string& extension_id,
 }
 
 void TabContents::PopupNotificationVisibilityChanged(bool visible) {
-  render_view_host()->PopupNotificationVisibilityChanged(visible);
+  if (is_being_destroyed_)
+    return;
+  if (!dont_notify_render_view_)
+    render_view_host()->PopupNotificationVisibilityChanged(visible);
+  delegate_->OnBlockedContentChange(this);
 }
 
 gfx::NativeView TabContents::GetContentNativeView() const {
@@ -1053,6 +1053,7 @@ void TabContents::WillCloseBlockedPopupContainer(
     BlockedPopupContainer* container) {
   DCHECK(blocked_popups_ == container);
   blocked_popups_ = NULL;
+  PopupNotificationVisibilityChanged(false);
 }
 
 void TabContents::DidMoveOrResize(ConstrainedWindow* window) {
@@ -1268,33 +1269,18 @@ void TabContents::SetIsLoading(bool is_loading,
       det);
 }
 
-void TabContents::CreateBlockedPopupContainerIfNecessary() {
-  if (blocked_popups_)
-    return;
-
-  blocked_popups_ = BlockedPopupContainer::Create(this, profile());
-}
-
 void TabContents::AddPopup(TabContents* new_contents,
                            const gfx::Rect& initial_pos) {
-  CreateBlockedPopupContainerIfNecessary();
-  // A popup is associated with the toplevel site instead of a potential frame
-  // that spawns it.
-  const GURL& url = GetURL();
-  blocked_popups_->AddTabContents(
-      new_contents, initial_pos,
-      url.is_valid() ? url.host() : std::string());
-}
-
-// TODO(brettw) This should be on the TabContentsView.
-void TabContents::RepositionSupressedPopupsToFit() {
-  if (blocked_popups_)
-    blocked_popups_->RepositionBlockedPopupContainer();
-}
-
-bool TabContents::ShowingBlockedPopupNotification() const {
-  return blocked_popups_ != NULL &&
-      blocked_popups_->GetBlockedPopupCount() != 0;
+  GURL url(GetURL());
+  if (url.is_valid() &&
+      profile()->GetHostContentSettingsMap()->GetContentSetting(
+          url.host(), CONTENT_SETTINGS_TYPE_POPUPS) == CONTENT_SETTING_ALLOW) {
+    AddNewContents(new_contents, NEW_POPUP, initial_pos, true);
+  } else {
+    if (!blocked_popups_)
+      blocked_popups_ = new BlockedPopupContainer(this);
+    blocked_popups_->AddTabContents(new_contents, initial_pos);
+  }
 }
 
 namespace {
@@ -1432,8 +1418,16 @@ void TabContents::DidNavigateMainFramePostCommit(
     }
   }
 
-  // Close constrained popups if necessary.
-  MaybeCloseChildWindows(details.previous_url, details.entry->url());
+  // Close constrained windows if necessary.
+  if (!net::RegistryControlledDomainService::SameDomainOrHost(
+      details.previous_url, details.entry->url()))
+    CloseConstrainedWindows();
+
+  // Close blocked popups.
+  if (blocked_popups_) {
+    AutoReset auto_reset(&dont_notify_render_view_, true);
+    blocked_popups_->Destroy();
+  }
 
   // Update the starred state.
   UpdateStarredStateForCurrentURL();
@@ -1455,29 +1449,17 @@ void TabContents::DidNavigateAnyFramePostCommit(
     GetPasswordManager()->ProvisionallySavePassword(params.password_form);
 }
 
-void TabContents::MaybeCloseChildWindows(const GURL& previous_url,
-                                         const GURL& current_url) {
-  if (net::RegistryControlledDomainService::SameDomainOrHost(
-          previous_url, current_url))
-    return;
-
-  // Clear out any child windows since we are leaving this page entirely.
+void TabContents::CloseConstrainedWindows() {
+  // Clear out any constrained windows since we are leaving this page entirely.
   // We use indices instead of iterators in case CloseWindow does something
   // that may invalidate an iterator.
   int size = static_cast<int>(child_windows_.size());
   for (int i = size - 1; i >= 0; --i) {
     ConstrainedWindow* window = child_windows_[i];
     if (window) {
-      DCHECK(delegate_);
       window->CloseConstrainedWindow();
       BlockTabContent(false);
     }
-  }
-
-  // Close the popup container.
-  if (blocked_popups_) {
-    blocked_popups_->Destroy();
-    blocked_popups_ = NULL;
   }
 }
 
@@ -2010,11 +1992,6 @@ RendererPreferences TabContents::GetRendererPrefs(Profile* profile) const {
 
 TabContents* TabContents::GetAsTabContents() {
   return this;
-}
-
-void TabContents::AddBlockedNotice(const GURL& url, const string16& reason) {
-  CreateBlockedPopupContainerIfNecessary();
-  blocked_popups_->AddBlockedNotice(url, reason);
 }
 
 ViewType::Type TabContents::GetRenderViewType() const {

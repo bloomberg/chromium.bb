@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,6 @@ const AcceleratorMapping kAcceleratorMap[] = {
   { base::VKEY_W, false, true, false, IDC_CLOSE_TAB },
   { base::VKEY_T, true, true, false, IDC_RESTORE_TAB },
   { base::VKEY_W, true, true, false, IDC_CLOSE_WINDOW },
-  { base::VKEY_W, true, false, true, IDC_CLOSE_POPUPS },
 
   { base::VKEY_TAB, false, true, false, IDC_SELECT_NEXT_TAB },
   { base::VKEY_TAB, true, true, false, IDC_SELECT_PREVIOUS_TAB },

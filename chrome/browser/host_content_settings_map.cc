@@ -53,6 +53,21 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
     }
   }
 
+  // Migrate obsolete popups pref.
+  if (prefs->HasPrefPath(prefs::kPopupWhitelistedHosts)) {
+    const ListValue* whitelist_pref =
+        prefs->GetList(prefs::kPopupWhitelistedHosts);
+    for (ListValue::const_iterator i(whitelist_pref->begin());
+         i != whitelist_pref->end(); ++i) {
+      std::string host;
+      (*i)->GetAsString(&host);
+      SetContentSetting(host, CONTENT_SETTINGS_TYPE_POPUPS,
+                        CONTENT_SETTING_ALLOW);
+    }
+    prefs->ClearPref(prefs::kPopupWhitelistedHosts);
+  }
+
+  // Read global defaults.
   DCHECK_EQ(arraysize(kTypeNames),
             static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
   const DictionaryValue* default_settings_dictionary =
@@ -64,6 +79,7 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
   }
   ForceDefaultsToBeExplicit();
 
+  // Read host-specific exceptions.
   const DictionaryValue* all_settings_dictionary =
       prefs->GetDictionary(prefs::kPerHostContentSettings);
   // Careful: The returned value could be NULL if the pref has never been set.
@@ -81,6 +97,7 @@ HostContentSettingsMap::HostContentSettingsMap(Profile* profile)
     }
   }
 
+  // Read misc. global settings.
   block_third_party_cookies_ =
       prefs->GetBoolean(prefs::kBlockThirdPartyCookies);
 }
@@ -94,6 +111,7 @@ void HostContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
   // Obsolete prefs, for migration:
   prefs->RegisterIntegerPref(prefs::kCookieBehavior,
                              net::StaticCookiePolicy::ALLOW_ALL_COOKIES);
+  prefs->RegisterListPref(prefs::kPopupWhitelistedHosts);
 }
 
 ContentSetting HostContentSettingsMap::GetDefaultContentSetting(

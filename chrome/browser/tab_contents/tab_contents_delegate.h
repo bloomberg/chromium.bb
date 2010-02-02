@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -110,6 +110,12 @@ class TabContentsDelegate {
 
   // Request the delegate to change the zoom level of the current tab.
   virtual void ContentsZoomChange(bool zoom_in) { }
+
+  // Notifies the delegate that something has changed about what content the
+  // TabContents is blocking.  Interested parties should call
+  // TabContents::IsContentBlocked() to see if something they care about has
+  // changed.
+  virtual void OnBlockedContentChange(TabContents* source) { }
 
   // Check whether this contents is inside a window dedicated to running a web
   // application.

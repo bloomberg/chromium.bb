@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "chrome/browser/views/tab_contents/tab_contents_view_gtk.h"
 
@@ -23,7 +23,6 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/web_drag_dest_gtk.h"
-#include "chrome/browser/views/blocked_popup_container_view_views.h"
 #include "chrome/browser/views/sad_tab_view.h"
 #include "chrome/browser/views/tab_contents/render_view_context_menu_win.h"
 #include "views/controls/native/native_view_host.h"
@@ -392,9 +391,6 @@ void TabContentsViewGtk::WasSized(const gfx::Size& size) {
     tab_contents()->interstitial_page()->SetSize(size);
   if (tab_contents()->render_widget_host_view())
     tab_contents()->render_widget_host_view()->SetSize(size);
-
-  // TODO(brettw) this function can probably be moved to this class.
-  tab_contents()->RepositionSupressedPopupsToFit();
 
   SetFloatingPosition(size);
 }

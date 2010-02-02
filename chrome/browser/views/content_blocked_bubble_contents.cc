@@ -5,9 +5,13 @@
 #include "chrome/browser/views/content_blocked_bubble_contents.h"
 
 #include "app/l10n_util.h"
+#include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/info_bubble.h"
+#include "chrome/common/notification_source.h"
+#include "chrome/common/notification_type.h"
 #include "grit/generated_resources.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/button/radio_button.h"
@@ -24,16 +28,20 @@ ContentBlockedBubbleContents::ContentBlockedBubbleContents(
     ContentSettingsType content_type,
     const std::string& host,
     const std::wstring& display_host,
-    Profile* profile)
+    Profile* profile,
+    TabContents* tab_contents)
     : content_type_(content_type),
       host_(host),
       display_host_(display_host),
       profile_(profile),
+      tab_contents_(tab_contents),
       info_bubble_(NULL),
       allow_radio_(NULL),
       block_radio_(NULL),
       close_button_(NULL),
       manage_link_(NULL) {
+  registrar_.Add(this, NotificationType::TAB_CONTENTS_DESTROYED,
+                 Source<TabContents>(tab_contents));
 }
 
 ContentBlockedBubbleContents::~ContentBlockedBubbleContents() {
@@ -71,7 +79,18 @@ void ContentBlockedBubbleContents::LinkActivated(views::Link* source,
 #endif
   }
 
-  // TODO(pkasting): A popup link was clicked, show the corresponding popup.
+  PopupLinks::const_iterator i(popup_links_.find(source));
+  DCHECK(i != popup_links_.end());
+  if (tab_contents_ && tab_contents_->blocked_popup_container())
+    tab_contents_->blocked_popup_container()->LaunchPopupForContents(i->second);
+}
+
+void ContentBlockedBubbleContents::Observe(NotificationType type,
+                                           const NotificationSource& source,
+                                           const NotificationDetails& details) {
+  DCHECK(type == NotificationType::TAB_CONTENTS_DESTROYED);
+  DCHECK(source == Source<TabContents>(tab_contents_));
+  tab_contents_ = NULL;
 }
 
 void ContentBlockedBubbleContents::InitControlLayout() {
@@ -102,15 +121,21 @@ void ContentBlockedBubbleContents::InitControlLayout() {
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   if (content_type_ == CONTENT_SETTINGS_TYPE_POPUPS) {
-    /* TODO(pkasting): Show list of blocked popups as clickable links.
-    for (size_t i = 0; i < num_popups; ++i) {
-      if (i != 0)
+    BlockedPopupContainer::BlockedContents blocked_contents;
+    DCHECK(tab_contents_->blocked_popup_container());
+    tab_contents_->blocked_popup_container()->GetBlockedContents(
+        &blocked_contents);
+    for (BlockedPopupContainer::BlockedContents::const_iterator
+         i(blocked_contents.begin()); i != blocked_contents.end(); ++i) {
+      views::Link* link = new views::Link(UTF16ToWideHack((*i)->GetTitle()));
+      link->SetController(this);
+      popup_links_[link] = *i;
+      if (i != blocked_contents.begin())
         layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
       layout->StartRow(0, single_column_set_id);
-      layout->AddView(popup_link);
+      layout->AddView(link);
     }
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-    */
 
     views::Separator* separator = new views::Separator;
     layout->StartRow(0, single_column_set_id);

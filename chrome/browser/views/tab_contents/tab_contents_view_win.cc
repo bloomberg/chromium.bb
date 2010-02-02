@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -507,9 +507,6 @@ void TabContentsViewWin::WasSized(const gfx::Size& size) {
     tab_contents()->interstitial_page()->SetSize(size);
   if (tab_contents()->render_widget_host_view())
     tab_contents()->render_widget_host_view()->SetSize(size);
-
-  // TODO(brettw) this function can probably be moved to this class.
-  tab_contents()->RepositionSupressedPopupsToFit();
 }
 
 bool TabContentsViewWin::ScrollZoom(int scroll_type) {

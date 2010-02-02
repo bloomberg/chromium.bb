@@ -410,9 +410,6 @@ class RenderViewHostDelegate {
   // not a TabContents, returns NULL.
   virtual TabContents* GetAsTabContents();
 
-  // Adds a notice that something was blocked.
-  virtual void AddBlockedNotice(const GURL& url, const string16& reason);
-
   // Return id number of browser window which this object is attached to. If no
   // browser window is attached to, just return -1.
   virtual int GetBrowserWindowID() const = 0;

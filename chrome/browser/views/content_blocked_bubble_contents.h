@@ -5,9 +5,11 @@
 #ifndef CHROME_BROWSER_VIEWS_CONTENT_BLOCKED_BUBBLE_CONTENTS_H_
 #define CHROME_BROWSER_VIEWS_CONTENT_BLOCKED_BUBBLE_CONTENTS_H_
 
+#include <map>
 #include <string>
 
 #include "chrome/common/content_settings_types.h"
+#include "chrome/common/notification_registrar.h"
 #include "views/controls/button/button.h"
 #include "views/controls/link.h"
 
@@ -23,6 +25,7 @@
 
 class InfoBubble;
 class Profile;
+class TabContents;
 
 namespace views {
 class NativeButton;
@@ -31,13 +34,22 @@ class RadioButton;
 
 class ContentBlockedBubbleContents : public views::View,
                                      public views::ButtonListener,
-                                     public views::LinkController {
+                                     public views::LinkController,
+                                     public NotificationObserver {
  public:
   ContentBlockedBubbleContents(ContentSettingsType content_type,
                                const std::string& host,
                                const std::wstring& display_host,
-                               Profile* profile);
+                               Profile* profile,
+                               TabContents* tab_contents);
   virtual ~ContentBlockedBubbleContents();
+
+  // Sets |info_bubble_|, so we can close the bubble if needed.  The caller owns
+  // the bubble and must keep it alive.
+  void set_info_bubble(InfoBubble* info_bubble) { info_bubble_ = info_bubble; }
+
+ private:
+  typedef std::map<views::Link*, TabContents*> PopupLinks;
 
   // Overridden from views::View:
   virtual void ViewHierarchyChanged(bool is_add, View* parent, View* child);
@@ -48,11 +60,11 @@ class ContentBlockedBubbleContents : public views::View,
   // views::LinkController:
   virtual void LinkActivated(views::Link* source, int event_flags);
 
-  // Sets |info_bubble_|, so we can close the bubble if needed.  The caller owns
-  // the bubble and must keep it alive.
-  void set_info_bubble(InfoBubble* info_bubble) { info_bubble_ = info_bubble; }
+  // NotificationObserver:
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
- private:
   // Creates the child views.
   void InitControlLayout();
 
@@ -66,11 +78,18 @@ class ContentBlockedBubbleContents : public views::View,
   // The active profile.
   Profile* profile_;
 
+  // The active tab contents.
+  TabContents* tab_contents_;
+
+  // A registrar for listening for TAB_CONTENTS_DESTROYED notifications.
+  NotificationRegistrar registrar_;
+
   // The InfoBubble holding us.
   InfoBubble* info_bubble_;
 
   // Some of our controls, so we can tell what's been clicked when we get a
   // message.
+  PopupLinks popup_links_;
   views::RadioButton* allow_radio_;
   views::RadioButton* block_radio_;
   views::NativeButton* close_button_;
