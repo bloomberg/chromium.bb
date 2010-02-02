@@ -557,12 +557,31 @@ bool GetWindowManagerName(std::string* wm_name) {
                                 &wm_window)) {
     return false;
   }
-  if (!x11_util::GetStringProperty(static_cast<XID>(wm_window),
-                                   "_NET_WM_NAME",
-                                   wm_name)) {
+
+  // It's possible that a window manager started earlier in this X session left
+  // a stale _NET_SUPPORTING_WM_CHECK property when it was replaced by a
+  // non-EWMH window manager, so we trap errors in the following requests to
+  // avoid crashes (issue 23860).
+
+  // EWMH requires the supporting-WM window to also have a
+  // _NET_SUPPORTING_WM_CHECK property pointing to itself (to avoid a stale
+  // property referencing an ID that's been recycled for another window), so we
+  // check that too.
+  gdk_error_trap_push();
+  int wm_window_property = 0;
+  bool result = x11_util::GetIntProperty(
+      wm_window, "_NET_SUPPORTING_WM_CHECK", &wm_window_property);
+  gdk_flush();
+  bool got_error = gdk_error_trap_pop();
+  if (got_error || !result || wm_window_property != wm_window)
     return false;
-  }
-  return true;
+
+  gdk_error_trap_push();
+  result = x11_util::GetStringProperty(
+      static_cast<XID>(wm_window), "_NET_WM_NAME", wm_name);
+  gdk_flush();
+  got_error = gdk_error_trap_pop();
+  return !got_error && result;
 }
 
 static cairo_status_t SnapshotCallback(
