@@ -136,46 +136,4 @@ class CookiesView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(CookiesView);
 };
 
-///////////////////////////////////////////////////////////////////////////////
-// LocalStorageInfoView
-//
-//  Responsible for displaying a tabular grid of Local Storage information.
-class LocalStorageInfoView : public views::View {
- public:
-  LocalStorageInfoView();
-  virtual ~LocalStorageInfoView();
-
-  // Update the display from the specified Local Storage info.
-  void SetLocalStorageInfo(
-      const BrowsingDataLocalStorageHelper::LocalStorageInfo&
-      local_storage_info);
-
-  // Clears the cookie display to indicate that no or multiple local storages
-  // are selected.
-  void ClearLocalStorageDisplay();
-
-  // Enables or disables the local storate property text fields.
-  void EnableLocalStorageDisplay(bool enabled);
-
- protected:
-  // views::View overrides:
-  virtual void ViewHierarchyChanged(
-      bool is_add, views::View* parent, views::View* child);
-
- private:
-  // Set up the view layout
-  void Init();
-
-  // Individual property labels
-  views::Label* origin_label_;
-  views::Textfield* origin_value_field_;
-  views::Label* size_label_;
-  views::Textfield* size_value_field_;
-  views::Label* last_modified_label_;
-  views::Textfield* last_modified_value_field_;
-
-  DISALLOW_COPY_AND_ASSIGN(LocalStorageInfoView);
-};
-
-
 #endif  // CHROME_BROWSER_VIEWS_OPTIONS_COOKIES_VIEW_H_

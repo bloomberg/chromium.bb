@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/task.h"
+#include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/views/cookie_info_view.h"
 #include "net/base/cookie_monster.h"
 #include "views/controls/button/button.h"
@@ -17,24 +18,24 @@
 #include "views/window/window.h"
 
 namespace views {
-class Label;
 class NativeButton;
 class RadioButton;
 }
 
 class CookieInfoView;
+class LocalStorageInfoView;
 class Profile;
 class Timer;
 
 class CookiesPromptViewDelegate {
  public:
-  // Allow cookie to be set. If |remember| is true, record this decision
+  // Allow site data to be set. If |remember| is true, record this decision
   // for this host.
-  virtual void AllowCookie(bool remember, bool session_expire) = 0;
+  virtual void AllowSiteData(bool remember, bool session_expire) = 0;
 
-  // Block cookie from being stored. If |remember| is true, record this
+  // Block site data from being stored. If |remember| is true, record this
   // decision for this host.
-  virtual void BlockCookie(bool remember) = 0;
+  virtual void BlockSiteData(bool remember) = 0;
 
  protected:
   virtual ~CookiesPromptViewDelegate() {}
@@ -55,10 +56,23 @@ class CookiesPromptView : public views::View,
       const net::CookieMonster::CanonicalCookie& cookie,
       CookiesPromptViewDelegate* delegate);
 
+  static void CookiesPromptView::ShowLocalStoragePromptWindow(
+      gfx::NativeWindow parent,
+      Profile* profile,
+      const std::string& domain,
+      const BrowsingDataLocalStorageHelper::LocalStorageInfo&
+          local_storage_info,
+      CookiesPromptViewDelegate* delegate);
+
   virtual ~CookiesPromptView();
 
+  // Initializes component for displaying cookie information.
   void SetCookie(const std::string& domain,
                  const net::CookieMonster::CanonicalCookie& cookie_node);
+
+  // Initializes component for displaying locale storage information.
+  void SetLocalStorage(const std::string& domain,
+      const BrowsingDataLocalStorageHelper::LocalStorageInfo);
 
  protected:
   // views::View overrides.
@@ -96,19 +110,21 @@ class CookiesPromptView : public views::View,
   void Init();
 
   // Shows or hides cooke info view and changes parent.
-  void ToggleCookieViewExpand();
+  void ToggleDetailsViewExpand();
 
   // Calculates view size offset depending on visibility of cookie details.
   int GetExtendedViewHeight();
 
-  views::Label* description_label_;
+  // Initializes text resources needed to display this view.
+  void InitializeViewResources(const std::string& domain);
+
   views::RadioButton* remember_radio_;
   views::RadioButton* ask_radio_;
   views::NativeButton* allow_button_;
   views::NativeButton* block_button_;
   views::Link* show_cookie_link_;
   views::Link* manage_cookies_link_;
-  CookieInfoView* info_view_;
+  views::View* info_view_;
 
   // True if cookie should expire with this session.
   bool session_expire_;
@@ -119,8 +135,11 @@ class CookiesPromptView : public views::View,
   // True if the outcome of this dialog has been signaled to the delegate.
   bool signaled_;
 
-  // Cookie prompt window title.
+  // Prompt window title.
   std::wstring title_;
+
+  // Whether we're showing cookie UI as opposed to other site data.
+  bool cookie_ui_;
 
   CookiesPromptViewDelegate* delegate_;
 
@@ -130,8 +149,11 @@ class CookiesPromptView : public views::View,
   // Cookie domain formatted for displaying (removed leading '.').
   std::wstring display_domain_;
 
-  // Displayed cookie.
-  scoped_ptr<net::CookieMonster::CanonicalCookie> cookie_;
+  // Displayed cookie.  Only used when |cookie_ui_| is true.
+  net::CookieMonster::CanonicalCookie cookie_;
+
+  // Displayed local storage info.  Only used when |cookie_ui_| is false.
+  BrowsingDataLocalStorageHelper::LocalStorageInfo local_storage_info_;
 
   // The Profile for which Cookies are displayed.
   Profile* profile_;

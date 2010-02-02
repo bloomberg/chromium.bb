@@ -13,6 +13,8 @@
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/views/cookie_info_view.h"
+#include "chrome/browser/views/local_storage_info_view.h"
 #include "chrome/browser/views/options/content_settings_window_view.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -37,14 +39,27 @@ void CookiesPromptView::ShowCookiePromptWindow(
     const std::string& domain,
     const net::CookieMonster::CanonicalCookie& cookie,
     CookiesPromptViewDelegate* delegate) {
-
   CookiesPromptView* cookies_view = new CookiesPromptView(profile, delegate);
   cookies_view->SetCookie(domain, cookie);
-
   views::Window::CreateChromeWindow(parent,
                                     gfx::Rect(),
                                     cookies_view)->Show();
 }
+
+// static
+void CookiesPromptView::ShowLocalStoragePromptWindow(
+    gfx::NativeWindow parent,
+    Profile* profile,
+    const std::string& domain,
+    const BrowsingDataLocalStorageHelper::LocalStorageInfo& local_storage_info,
+    CookiesPromptViewDelegate* delegate) {
+  CookiesPromptView* cookies_view = new CookiesPromptView(profile, delegate);
+  cookies_view->SetLocalStorage(domain, local_storage_info);
+  views::Window::CreateChromeWindow(parent,
+                                    gfx::Rect(),
+                                    cookies_view)->Show();
+}
+
 
 CookiesPromptView::~CookiesPromptView() {
 }
@@ -52,26 +67,18 @@ CookiesPromptView::~CookiesPromptView() {
 void CookiesPromptView::SetCookie(
     const std::string& domain,
     const net::CookieMonster::CanonicalCookie& cookie) {
-
-  domain_ = domain;
-  std::string display_domain = domain;
-  if (!domain.empty() && domain[0] == '.')
-    display_domain = display_domain.substr(1);
-  display_domain_ = UTF8ToWide(display_domain);
-  title_ = l10n_util::GetStringF(IDS_COOKIE_ALERT_TITLE,
-                                 display_domain_);
-  cookie_.reset(new net::CookieMonster::CanonicalCookie(
-      cookie.Name(),
-      cookie.Value(),
-      cookie.Path(),
-      cookie.IsSecure(),
-      cookie.IsHttpOnly(),
-      cookie.CreationDate(),
-      cookie.LastAccessDate(),
-      cookie.DoesExpire(),
-      cookie.ExpiryDate()));
+  cookie_ui_ = true;
+  InitializeViewResources(domain);
+  cookie_ = cookie;
 }
 
+void CookiesPromptView::SetLocalStorage(
+    const std::string& domain,
+    const BrowsingDataLocalStorageHelper::LocalStorageInfo storage_info) {
+  cookie_ui_ = false;
+  InitializeViewResources(domain);
+  local_storage_info_ = storage_info;
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // CookiesPromptView, views::View overrides:
@@ -99,7 +106,7 @@ std::wstring CookiesPromptView::GetWindowTitle() const {
 
 void CookiesPromptView::WindowClosing() {
   if (!signaled_ && delegate_)
-    delegate_->BlockCookie(false);
+    delegate_->BlockSiteData(false);
 }
 
 views::View* CookiesPromptView::GetContentsView() {
@@ -119,13 +126,13 @@ void CookiesPromptView::ButtonPressed(views::Button* sender,
                                       const views::Event& event) {
   if (sender == allow_button_) {
     if (delegate_) {
-      delegate_->AllowCookie(remember_radio_->checked(), session_expire_);
+      delegate_->AllowSiteData(remember_radio_->checked(), session_expire_);
       signaled_ = true;
     }
     GetWindow()->Close();
   } else if (sender == block_button_) {
     if (delegate_) {
-      delegate_->BlockCookie(remember_radio_->checked());
+      delegate_->BlockSiteData(remember_radio_->checked());
       signaled_ = true;
     }
     GetWindow()->Close();
@@ -136,7 +143,7 @@ void CookiesPromptView::ButtonPressed(views::Button* sender,
 // CookiesPromptView, views::LinkController implementation:
 void CookiesPromptView::LinkActivated(views::Link* source, int event_flags) {
   if (source == show_cookie_link_)
-    ToggleCookieViewExpand();
+    ToggleDetailsViewExpand();
   else if (source == manage_cookies_link_)
     ContentSettingsWindowView::Show(CONTENT_SETTINGS_TYPE_COOKIES, profile_);
   else
@@ -148,8 +155,7 @@ void CookiesPromptView::LinkActivated(views::Link* source, int event_flags) {
 
 CookiesPromptView::CookiesPromptView(Profile* profile,
                                      CookiesPromptViewDelegate* delegate)
-    : description_label_(NULL),
-      remember_radio_(NULL),
+    : remember_radio_(NULL),
       ask_radio_(NULL),
       allow_button_(NULL),
       block_button_(NULL),
@@ -164,16 +170,12 @@ CookiesPromptView::CookiesPromptView(Profile* profile,
 }
 
 void CookiesPromptView::Init() {
-  DCHECK(cookie_.get());
-  // Ensure we don't run twice and leak memory.
-  DCHECK(!description_label_);
-
-  int radio_group_id = 1;
-  description_label_ = new views::Label(
-      l10n_util::GetStringF(IDS_COOKIE_ALERT_LABEL, display_domain_));
+  views::Label* description_label = new views::Label(l10n_util::GetStringF(
+      cookie_ui_ ? IDS_COOKIE_ALERT_LABEL : IDS_DATA_ALERT_LABEL,
+      display_domain_));
+  int radio_group_id = 0;
   remember_radio_ = new views::RadioButton(
-      l10n_util::GetStringF(IDS_COOKIE_ALERT_REMEMBER_RADIO,
-                            display_domain_),
+      l10n_util::GetStringF(IDS_COOKIE_ALERT_REMEMBER_RADIO, display_domain_),
       radio_group_id);
   remember_radio_->set_listener(this);
   ask_radio_ = new views::RadioButton(
@@ -190,11 +192,7 @@ void CookiesPromptView::Init() {
       l10n_util::GetString(IDS_COOKIE_MANAGE_ALERTS_LABEL));
   manage_cookies_link_->SetController(this);
 
-  info_view_ = new CookieInfoView(true);
-  info_view_->set_delegate(this);
-
   using views::GridLayout;
-  using views::ColumnSet;
 
   GridLayout* layout = CreatePanelGridLayout(this);
   layout->SetInsets(kCookiePromptViewInsetSize, kCookiePromptViewInsetSize,
@@ -202,14 +200,14 @@ void CookiesPromptView::Init() {
   SetLayoutManager(layout);
 
   const int one_column_layout_id = 0;
-  ColumnSet* one_column_set = layout->AddColumnSet(one_column_layout_id);
+  views::ColumnSet* one_column_set = layout->AddColumnSet(one_column_layout_id);
   one_column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   one_column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                             GridLayout::USE_PREF, 0, 0);
   one_column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, one_column_layout_id);
-  layout->AddView(description_label_);
+  layout->AddView(description_label);
   layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
   layout->StartRow(0, one_column_layout_id);
   layout->AddView(remember_radio_);
@@ -222,7 +220,7 @@ void CookiesPromptView::Init() {
   GridLayout* button_layout = new GridLayout(button_container);
   button_container->SetLayoutManager(button_layout);
   const int inner_column_layout_id = 1;
-  ColumnSet* inner_column_set = button_layout->AddColumnSet(
+  views::ColumnSet* inner_column_set = button_layout->AddColumnSet(
       inner_column_layout_id);
   inner_column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                               GridLayout::USE_PREF, 0, 0);
@@ -235,7 +233,8 @@ void CookiesPromptView::Init() {
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   int button_column_layout_id = 2;
-  ColumnSet* button_column_set = layout->AddColumnSet(button_column_layout_id);
+  views::ColumnSet* button_column_set =
+      layout->AddColumnSet(button_column_layout_id);
   button_column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   button_column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 0,
                                GridLayout::USE_PREF, 0, 0);
@@ -246,7 +245,8 @@ void CookiesPromptView::Init() {
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   int link_column_layout_id = 3;
-  ColumnSet* link_column_set = layout->AddColumnSet(link_column_layout_id);
+  views::ColumnSet* link_column_set =
+      layout->AddColumnSet(link_column_layout_id);
   link_column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   link_column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 0,
                              GridLayout::USE_PREF, 0, 0);
@@ -261,7 +261,21 @@ void CookiesPromptView::Init() {
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, one_column_layout_id);
-  layout->AddView(info_view_, 1, 1, GridLayout::FILL, GridLayout::CENTER);
+
+  if (cookie_ui_) {
+    CookieInfoView* cookie_info_view = new CookieInfoView(true);
+    cookie_info_view->set_delegate(this);
+    layout->AddView(cookie_info_view, 1, 1, GridLayout::FILL,
+                    GridLayout::CENTER);
+    cookie_info_view->SetCookie(domain_, cookie_);
+    info_view_ = cookie_info_view;
+  } else {
+    LocalStorageInfoView* local_storage_info_view = new LocalStorageInfoView();
+    layout->AddView(local_storage_info_view, 1, 1, GridLayout::FILL,
+                    GridLayout::CENTER);
+    local_storage_info_view->SetLocalStorageInfo(local_storage_info_);
+    info_view_ = local_storage_info_view;
+  }
   info_view_->SetVisible(false);
 
   // Set default values.
@@ -270,14 +284,12 @@ void CookiesPromptView::Init() {
 
 int CookiesPromptView::GetExtendedViewHeight() {
   DCHECK(info_view_);
-  return expanded_view_ ? kRelatedControlVerticalSpacing :
-                          -info_view_->GetPreferredSize().height();
+  return expanded_view_ ?
+      kRelatedControlVerticalSpacing : -info_view_->GetPreferredSize().height();
 }
 
-void CookiesPromptView::ToggleCookieViewExpand() {
+void CookiesPromptView::ToggleDetailsViewExpand() {
   expanded_view_ = !expanded_view_;
-  if (expanded_view_)
-    info_view_->SetCookie(domain_, *cookie_.get());
   views::Window* parent = GetWindow();
   gfx::Size non_client_size = parent->GetNonClientView()->GetPreferredSize();
   gfx::Rect bounds = parent->GetBounds();
@@ -286,5 +298,16 @@ void CookiesPromptView::ToggleCookieViewExpand() {
 
   info_view_->SetVisible(expanded_view_);
   Layout();
+}
+
+void CookiesPromptView::InitializeViewResources(const std::string& domain) {
+  domain_ = domain;
+  std::string display_domain = domain;
+  if (!domain.empty() && domain[0] == '.')
+  display_domain = display_domain.substr(1);
+  display_domain_ = UTF8ToWide(display_domain);
+  title_ = l10n_util::GetStringF(
+      cookie_ui_ ? IDS_COOKIE_ALERT_TITLE : IDS_DATA_ALERT_TITLE,
+      display_domain_);
 }
 

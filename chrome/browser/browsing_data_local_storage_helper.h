@@ -25,6 +25,7 @@ class BrowsingDataLocalStorageHelper
  public:
   // Contains detailed information about local storage.
   struct LocalStorageInfo {
+    LocalStorageInfo() {}
     LocalStorageInfo(
         const std::string& protocol,
         const std::string& host,

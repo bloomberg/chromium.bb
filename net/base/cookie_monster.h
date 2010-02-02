@@ -297,6 +297,7 @@ class CookieMonster::ParsedCookie {
 
 class CookieMonster::CanonicalCookie {
  public:
+  CanonicalCookie() { }
   CanonicalCookie(const std::string& name,
                   const std::string& value,
                   const std::string& path,
@@ -316,15 +317,6 @@ class CookieMonster::CanonicalCookie {
         secure_(secure),
         httponly_(httponly) {
   }
-
-#if defined(_MSC_VER) && _CPPLIB_VER == 505
-  // On Visual Studio 2008 Service Pack 1, std::vector<> do an early
-  // optimization in a way that requires the availability of a default
-  // constructor. It is because it sees std::pair<> as "swappable", so creates a
-  // dummy to swap with, which requires an empty constructor for any entry in
-  // the std::pair.
-  CanonicalCookie() { }
-#endif
 
   // Supports the default copy constructor.
 
