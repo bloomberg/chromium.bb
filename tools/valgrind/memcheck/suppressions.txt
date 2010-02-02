@@ -388,6 +388,32 @@
   fun:_ZN4flip10FlipFramer15DecompressFrameEPKNS_9FlipFrameE
   ...
 }
+{
+   bug_33394
+   Memcheck:Leak
+   fun:calloc
+   fun:PR_Calloc
+   fun:PR_NewLock
+   fun:_PR_UnixInit
+   fun:_PR_ImplicitInitialization
+   ...
+   fun:_ZN4base14EnsureNSPRInitEv
+   fun:ChromeMain
+   fun:main
+}
+{	
+   bug_33394_b	
+   Memcheck:Leak	
+   fun:calloc	
+   fun:PR_Calloc	
+   fun:PR_NewMonitor	
+   fun:_PR_UnixInit	
+   fun:_PR_ImplicitInitialization	
+   ...	
+   fun:_ZN4base14EnsureNSPRInitEv	
+   fun:ChromeMain	
+   fun:main	
+}
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing
@@ -2238,16 +2264,4 @@
    fun:_ZN11MessageLoop6DoWorkEv
    fun:_ZN4base18MessagePumpDefault3RunEPNS_11MessagePump8DelegateE
    fun:_ZN11MessageLoop11RunInternalEv
-}
-{
-  bug_33394
-  Memcheck:Leak
-  fun:calloc
-  fun:PR_Calloc
-  ...
-  fun:_PR_ImplicitInitialization
-  ...
-  fun:_ZN4base14EnsureNSPRInitEv
-  fun:ChromeMain
-  fun:main
 }
