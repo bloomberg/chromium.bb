@@ -12,6 +12,7 @@
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/options/cookies_view.h"
+#include "chrome/browser/views/options/exceptions_view.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -166,7 +167,9 @@ void CookieFilterPageView::ButtonPressed(
     settings_map->SetDefaultContentSetting(CONTENT_SETTINGS_TYPE_COOKIES,
                                            CONTENT_SETTING_BLOCK);
   } else if (sender == exceptions_button_) {
-    // TODO(pkasting): Show exceptions dialog.
+    ExceptionsView::ShowExceptionsWindow(GetWindow()->GetNativeWindow(),
+                                         settings_map,
+                                         CONTENT_SETTINGS_TYPE_COOKIES);
   } else if (sender == block_3rdparty_check_) {
     settings_map->SetBlockThirdPartyCookies(block_3rdparty_check_->checked());
   } else if (sender == clear_on_close_check_) {

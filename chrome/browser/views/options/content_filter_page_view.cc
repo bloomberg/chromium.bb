@@ -10,6 +10,7 @@
 #include "app/resource_bundle.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/views/options/exceptions_view.h"
 #include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -128,7 +129,9 @@ void ContentFilterPageView::InitControlLayout() {
 void ContentFilterPageView::ButtonPressed(views::Button* sender,
                                           const views::Event& event) {
   if (sender == exceptions_button_) {
-    // TODO(pkasting): Show exceptions dialog
+    ExceptionsView::ShowExceptionsWindow(GetWindow()->GetNativeWindow(),
+                                         profile()->GetHostContentSettingsMap(),
+                                         content_type_);
     return;
   }
 

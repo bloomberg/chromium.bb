@@ -1,0 +1,114 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_VIEWS_OPTIONS_EXCEPTION_EDITOR_VIEW_H_
+#define CHROME_BROWSER_VIEWS_OPTIONS_EXCEPTION_EDITOR_VIEW_H_
+
+#include <string>
+
+#include "app/combobox_model.h"
+#include "chrome/common/content_settings.h"
+#include "chrome/common/content_settings_types.h"
+#include "views/window/dialog_delegate.h"
+#include "views/controls/combobox/combobox.h"
+#include "views/controls/textfield/textfield.h"
+
+namespace views {
+class Label;
+}
+
+class ContentExceptionsTableModel;
+
+// ExceptionEditorView is responsible for showing a dialog that allows the user
+// to create or edit a single content exception. If the user clicks ok the
+// delegate is notified and completes the edit.
+//
+// To use an ExceptionEditorView create one and invoke Show on it.
+// ExceptionEditorView is deleted when the dialog closes.
+class ExceptionEditorView : public views::View,
+                            public views::Textfield::Controller,
+                            public views::DialogDelegate {
+ public:
+  class Delegate {
+   public:
+    // Invoked when the user accepts the edit.
+    virtual void AcceptExceptionEdit(const std::string& host,
+                                     ContentSetting setting,
+                                     int index,
+                                     bool is_new) = 0;
+
+   protected:
+    virtual ~Delegate() {}
+  };
+
+  // Creates a new ExceptionEditorView with the supplied args. |index| is the
+  // index into the ContentExceptionsTableModel of the exception. This is not
+  // used by ExceptionEditorView but instead passed to the delegate.
+  ExceptionEditorView(Delegate* delegate,
+                      ContentExceptionsTableModel* model,
+                      int index,
+                      const std::string& host,
+                      ContentSetting setting);
+  virtual ~ExceptionEditorView() {}
+
+  void Show(gfx::NativeWindow parent);
+
+  // views::DialogDelegate overrides.
+  virtual bool IsModal() const;
+  virtual std::wstring GetWindowTitle() const;
+  virtual bool IsDialogButtonEnabled(
+      MessageBoxFlags::DialogButton button) const;
+  virtual bool Cancel();
+  virtual bool Accept();
+  virtual views::View* GetContentsView();
+
+  // views::Textfield::Controller overrides. Updates whether the user can
+  // accept the dialog as well as updating image views showing whether value is
+  // valid.
+  virtual void ContentsChanged(views::Textfield* sender,
+                               const std::wstring& new_contents);
+  virtual bool HandleKeystroke(views::Textfield* sender,
+                               const views::Textfield::Keystroke& key);
+
+ private:
+  // Model for the combobox.
+  class ActionComboboxModel : public ComboboxModel {
+   public:
+    explicit ActionComboboxModel(bool show_ask) : show_ask_(show_ask) {}
+
+    virtual int GetItemCount();
+    virtual std::wstring GetItemAt(int index);
+
+    ContentSetting setting_for_index(int index);
+    int index_for_setting(ContentSetting);
+
+   private:
+    const bool show_ask_;
+
+    DISALLOW_COPY_AND_ASSIGN(ActionComboboxModel);
+  };
+
+  void Init();
+
+  views::Label* CreateLabel(int message_id);
+
+  // Returns true if we're adding a new item.
+  bool is_new() const { return index_ == -1; }
+
+  Delegate* delegate_;
+  ContentExceptionsTableModel* model_;
+  ActionComboboxModel cb_model_;
+
+  // Index of the item being edited. If -1, indices this is a new entry.
+  const int index_;
+  const std::string host_;
+  const ContentSetting setting_;
+
+  views::Textfield* host_tf_;
+  views::Combobox* action_cb_;
+
+  DISALLOW_COPY_AND_ASSIGN(ExceptionEditorView);
+};
+
+#endif  // CHROME_BROWSER_VIEWS_OPTIONS_EXCEPTION_EDITOR_VIEW_H_

@@ -3735,6 +3735,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXCEPTIONS_ADD_BUTTON" desc="A button in the cookie/image/javascript/plugins exceptions dialog for adding new exception rules.">
         Add...
       </message>
+      <message name="IDS_EXCEPTIONS_EDIT_BUTTON" desc="A button in the cookie/image/javascript/plugins exceptions dialog for editing an exception.">
+        Edit...
+      </message>
       <message name="IDS_EXCEPTIONS_REMOVE_BUTTON" desc="A button in exception dialogs for removing individual exception rules.">
         Remove
       </message>
@@ -3752,6 +3755,20 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_EXCEPTIONS_SAMPLE_HOST" desc="Exceptions page view's host entry field's watermark - example host name. Users will see this text before they start typing host name in the field.">
         example.com
+      </message>
+
+      <!-- Cookie/Images/JavaScript/Plugins exception editor dialogs -->
+      <message name="IDS_EXCEPTION_EDITOR_TITLE" desc="Title for exception editor">
+        Edit Exception
+      </message>
+      <message name="IDS_EXCEPTION_EDITOR_NEW_TITLE" desc="Title for exception editor">
+        New Exception
+      </message>
+      <message name="IDS_EXCEPTION_EDITOR_HOST_TITLE" desc="Title of the host field in the exception editor">
+        Host:
+      </message>
+      <message name="IDS_EXCEPTION_EDITOR_ACTION_TITLE" desc="Title of the action combobox in the exception editor">
+        Action:
       </message>
 
       <!-- Cookie alert dialog -->
