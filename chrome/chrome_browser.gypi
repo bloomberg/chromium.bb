@@ -330,6 +330,8 @@
         'browser/chromeos/system_page_view.h',
         'browser/chromeos/usb_mount_observer.cc',
         'browser/chromeos/usb_mount_observer.h',
+        'browser/chromeos/user_manager.cc',
+        'browser/chromeos/user_manager.h',
         'browser/chromeos/version_loader.cc',
         'browser/chromeos/version_loader.h',
         'browser/cocoa/about_ipc_bridge.h',

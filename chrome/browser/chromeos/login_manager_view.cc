@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/image_background.h"
 #include "chrome/browser/chromeos/login_library.h"
 #include "chrome/browser/chromeos/network_library.h"
+#include "chrome/browser/chromeos/user_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -40,6 +41,9 @@ const SkColor kVersionColor = 0xFF7691DA;
 const SkColor kErrorColor = 0xFF8F384F;
 const SkColor kBackground = SK_ColorWHITE;
 const char *kDefaultDomain = "@gmail.com";
+
+// Set to true to run on linux and test login.
+static const bool kStubOutLogin = false;
 
 LoginManagerView::LoginManagerView(int width, int height) {
   dialog_dimensions_.SetSize(width, height);
@@ -112,6 +116,11 @@ void LoginManagerView::BuildWindow() {
       dialog_dimensions_.width() - (x + kVersionPad),
       error_label_->GetPreferredSize().height());
 
+  std::vector<chromeos::UserManager::User> users =
+      chromeos::UserManager::Get()->GetUsers();
+  if (users.size() > 0) {
+    username_field_->SetText(UTF8ToUTF16(users[0].email()));
+  }
   login_prompt->AddChildView(title_label_);
   login_prompt->AddChildView(username_field_);
   login_prompt->AddChildView(password_field_);
@@ -119,7 +128,7 @@ void LoginManagerView::BuildWindow() {
   login_prompt->AddChildView(error_label_);
   AddChildView(login_prompt);
 
-  if (!chromeos::LoginLibrary::EnsureLoaded()) {
+  if (!kStubOutLogin && !chromeos::LoginLibrary::EnsureLoaded()) {
     error_label_->SetText(l10n_util::GetString(IDS_LOGIN_DISABLED_NO_LIBCROS));
     username_field_->SetReadOnly(true);
     password_field_->SetReadOnly(true);
@@ -134,6 +143,10 @@ views::View* LoginManagerView::GetContentsView() {
 
 bool LoginManagerView::Authenticate(const std::string& username,
                                     const std::string& password) {
+  if (kStubOutLogin) {
+    return true;
+  }
+
   base::ProcessHandle handle;
   std::vector<std::string> argv;
   // TODO(cmasone): we'll want this to be configurable.
@@ -167,7 +180,7 @@ void LoginManagerView::SetupSession(const std::string& username) {
 
 bool LoginManagerView::HandleKeystroke(views::Textfield* s,
     const views::Textfield::Keystroke& keystroke) {
-  if (!chromeos::LoginLibrary::EnsureLoaded())
+  if (!kStubOutLogin && !chromeos::LoginLibrary::EnsureLoaded())
     return false;
 
   if (keystroke.GetKeyboardCode() == base::VKEY_TAB) {
@@ -213,6 +226,7 @@ bool LoginManagerView::HandleKeystroke(views::Textfield* s,
       // TODO(cmasone): something sensible if errors occur.
 
       SetupSession(username);
+      chromeos::UserManager::Get()->UserLoggedIn(username);
       // Return true so that processing ends
       return true;
     }
