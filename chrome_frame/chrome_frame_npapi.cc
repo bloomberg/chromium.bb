@@ -1419,8 +1419,8 @@ bool ChromeFrameNPAPI::HandleContextMenuCommand(UINT cmd,
   return false;
 }
 
-bool ChromeFrameNPAPI::NewStream(NPMIMEType type, NPStream* stream,
-                                 NPBool seekable, uint16* stream_type) {
+NPError ChromeFrameNPAPI::NewStream(NPMIMEType type, NPStream* stream,
+                                    NPBool seekable, uint16* stream_type) {
   return url_fetcher_.NewStream(type, stream, seekable, stream_type);
 }
 

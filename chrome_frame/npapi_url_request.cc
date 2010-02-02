@@ -43,7 +43,7 @@ class NPAPIUrlRequest : public PluginUrlRequest {
   virtual bool Read(int bytes_to_read);
 
   // Called from NPAPI
-  bool OnStreamCreated(const char* mime_type, NPStream* stream);
+  NPError OnStreamCreated(const char* mime_type, NPStream* stream);
   NPError OnStreamDestroyed(NPReason reason);
   int OnWriteReady();
   int OnWrite(void* buffer, int len);
@@ -54,7 +54,6 @@ class NPAPIUrlRequest : public PluginUrlRequest {
   virtual unsigned long API_CALL Release();
 
  private:
-  PluginUrlRequestDelegate* delegate_;
   unsigned long ref_count_;
   NPP instance_;
   NPStream* stream_;
@@ -127,7 +126,8 @@ bool NPAPIUrlRequest::Read(int bytes_to_read) {
   return true;
 }
 
-bool NPAPIUrlRequest::OnStreamCreated(const char* mime_type, NPStream* stream) {
+NPError NPAPIUrlRequest::OnStreamCreated(const char* mime_type,
+                                         NPStream* stream) {
   stream_ = stream;
   status_.set_status(URLRequestStatus::IO_PENDING);
   // TODO(iyengar)
@@ -136,7 +136,7 @@ bool NPAPIUrlRequest::OnStreamCreated(const char* mime_type, NPStream* stream) {
   delegate_->OnResponseStarted(id(), mime_type, stream->headers, stream->end,
       base::Time::FromTimeT(stream->lastmodified), std::string(),
       std::string(), 0);
-  return true;
+  return NPERR_NO_ERROR;
 }
 
 NPError NPAPIUrlRequest::OnStreamDestroyed(NPReason reason) {
@@ -207,7 +207,7 @@ void NPAPIUrlRequestManager::StartRequest(int request_id,
         request_info.extra_request_headers, request_info.upload_data.get(),
         enable_frame_busting_)) {
     // Add to map.
-    DCHECK(NULL == request_map_[request_id].get());
+    DCHECK(request_map_.find(request_id) == request_map_.end());
     request_map_[request_id] = new_request;
     if (new_request->Start()) {
       // Keep additional reference on request for NPSTREAM
@@ -218,24 +218,31 @@ void NPAPIUrlRequestManager::StartRequest(int request_id,
 }
 
 void NPAPIUrlRequestManager::ReadRequest(int request_id, int bytes_to_read) {
-  scoped_refptr<NPAPIUrlRequest> request = request_map_[request_id];
-  DCHECK(request.get());
+  scoped_refptr<NPAPIUrlRequest> request = LookupRequest(request_id);
   if (request)
     request->Read(bytes_to_read);
 }
 
 void NPAPIUrlRequestManager::EndRequest(int request_id) {
-  scoped_refptr<NPAPIUrlRequest> request = request_map_[request_id];
+  scoped_refptr<NPAPIUrlRequest> request = LookupRequest(request_id);
   if (request)
     request->Stop();
 }
 
 void NPAPIUrlRequestManager::StopAll() {
-  for (RequestMap::iterator index = request_map_.begin();
-       index != request_map_.end();
-       ++index) {
-    scoped_refptr<NPAPIUrlRequest> request = (*index).second;
-    request->Stop();
+  std::vector<scoped_refptr<NPAPIUrlRequest> > request_list;
+  // We copy the pending requests into a temporary vector as the Stop
+  // function in the request could also try to delete the request from
+  // the request map and the iterator could end up being invalid.
+  for (RequestMap::iterator it = request_map_.begin();
+       it != request_map_.end(); ++it) {
+    DCHECK(it->second != NULL);
+    request_list.push_back(it->second);
+  }
+
+  for (std::vector<scoped_refptr<NPAPIUrlRequest> >::size_type index = 0;
+       index < request_list.size(); ++index) {
+    request_list[index]->Stop();
   }
 }
 
@@ -268,9 +275,14 @@ void NPAPIUrlRequestManager::OnResponseEnd(int request_id,
 }
 
 // Notifications from browser. Find the NPAPIUrlRequest and forward to it.
-bool NPAPIUrlRequestManager::NewStream(NPMIMEType type, NPStream* stream,
-                                       NPBool seekable, uint16* stream_type) {
+NPError NPAPIUrlRequestManager::NewStream(NPMIMEType type,
+                                          NPStream* stream,
+                                          NPBool seekable,
+                                          uint16* stream_type) {
   NPAPIUrlRequest* request = RequestFromNotifyData(stream->notifyData);
+  if (!request)
+    return NPERR_NO_ERROR;
+
   DCHECK(request_map_.find(request->id()) != request_map_.end());
   // We need to return the requested stream mode if we are returning a success
   // code. If we don't do this it causes Opera to blow up.
@@ -280,6 +292,8 @@ bool NPAPIUrlRequestManager::NewStream(NPMIMEType type, NPStream* stream,
 
 int32 NPAPIUrlRequestManager::WriteReady(NPStream* stream) {
   NPAPIUrlRequest* request = RequestFromNotifyData(stream->notifyData);
+  if (!request)
+    return 0x7FFFFFFF;
   DCHECK(request_map_.find(request->id()) != request_map_.end());
   return request->OnWriteReady();
 }
@@ -287,6 +301,8 @@ int32 NPAPIUrlRequestManager::WriteReady(NPStream* stream) {
 int32 NPAPIUrlRequestManager::Write(NPStream* stream, int32 offset,
                                     int32 len, void* buffer) {
   NPAPIUrlRequest* request = RequestFromNotifyData(stream->notifyData);
+  if (!request)
+    return len;
   DCHECK(request_map_.find(request->id()) != request_map_.end());
   return request->OnWrite(buffer, len);
 }
@@ -294,6 +310,8 @@ int32 NPAPIUrlRequestManager::Write(NPStream* stream, int32 offset,
 NPError NPAPIUrlRequestManager::DestroyStream(NPStream* stream,
                                               NPReason reason) {
   NPAPIUrlRequest* request = RequestFromNotifyData(stream->notifyData);
+  if (!request)
+    return NPERR_NO_ERROR;
   DCHECK(request_map_.find(request->id()) != request_map_.end());
   return request->OnStreamDestroyed(reason);
 }
@@ -301,8 +319,18 @@ NPError NPAPIUrlRequestManager::DestroyStream(NPStream* stream,
 void NPAPIUrlRequestManager::UrlNotify(const char* url, NPReason reason,
                                        void* notify_data) {
   NPAPIUrlRequest* request = RequestFromNotifyData(notify_data);
+  DCHECK(request != NULL);
   if (request) {
     request->Stop();
     request->Release();
   }
 }
+
+scoped_refptr<NPAPIUrlRequest> NPAPIUrlRequestManager::LookupRequest(
+    int request_id) {
+  RequestMap::iterator index = request_map_.find(request_id);
+  if (index != request_map_.end())
+    return index->second;
+  return NULL;
+}
+

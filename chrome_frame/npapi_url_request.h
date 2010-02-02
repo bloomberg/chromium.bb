@@ -24,8 +24,8 @@ class NPAPIUrlRequestManager : public PluginUrlRequestManager,
 
   // Notifications from the browser. We find the appropriate NPAPIUrlRequest
   // and forward the call.
-  bool NewStream(NPMIMEType type, NPStream* stream,
-                 NPBool seekable, uint16* stream_type);
+  NPError NewStream(NPMIMEType type, NPStream* stream,
+                    NPBool seekable, uint16* stream_type);
   int32 WriteReady(NPStream* stream);
   int32 Write(NPStream* stream, int32 offset, int32 len, void* buffer);
   NPError DestroyStream(NPStream* stream, NPReason reason);
@@ -43,6 +43,8 @@ class NPAPIUrlRequestManager : public PluginUrlRequestManager,
   // Outstanding requests map.
   typedef std::map<int, scoped_refptr<NPAPIUrlRequest> > RequestMap;
   RequestMap request_map_;
+
+  scoped_refptr<NPAPIUrlRequest> LookupRequest(int request_id);
 
   // PluginUrlRequestDelegate implementation. Forwards back to delegate.
   virtual void OnResponseStarted(int request_id, const char* mime_type,
