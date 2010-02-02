@@ -19,6 +19,7 @@ class ComboboxExample : public ExampleBase, public views::Combobox::Listener {
   explicit ComboboxExample(ExamplesMain* main) : ExampleBase(main) {
     combobox_ = new views::Combobox(new ComboboxModelExample());
     combobox_->set_listener(this);
+    combobox_->SetSelectedItem(3);
   }
   virtual ~ComboboxExample() {}
 
@@ -67,4 +68,3 @@ class ComboboxExample : public ExampleBase, public views::Combobox::Listener {
 }  // namespace examples
 
 #endif  // VIEWS_EXAMPLES_COMBOBOX_EXAMPLE_H_
-

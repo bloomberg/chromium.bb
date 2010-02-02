@@ -118,11 +118,10 @@ void NativeComboboxGtk::CreateNativeControl() {
 
 void NativeComboboxGtk::NativeControlCreated(GtkWidget* native_control) {
   NativeControlGtk::NativeControlCreated(native_control);
-
-  // Set the data from combobox
+  // Set the initial state of the combobox.
   UpdateFromModel();
-  // and show the 1st item by default.
-  gtk_combo_box_set_active(GTK_COMBO_BOX(native_control), 0);
+  UpdateEnabled();
+  UpdateSelectedItem();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

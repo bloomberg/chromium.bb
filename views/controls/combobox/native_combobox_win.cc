@@ -174,6 +174,7 @@ void NativeComboboxWin::NativeControlCreated(HWND native_control) {
 
   UpdateFont();
   UpdateFromModel();
+  UpdateSelectedItem();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

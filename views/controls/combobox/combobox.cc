@@ -98,8 +98,6 @@ void Combobox::ViewHierarchyChanged(bool is_add, View* parent,
                                     View* child) {
   if (is_add && !native_wrapper_ && GetWidget()) {
     native_wrapper_ = NativeComboboxWrapper::CreateWrapper(this);
-    native_wrapper_->UpdateFromModel();
-    native_wrapper_->UpdateEnabled();
     AddChildView(native_wrapper_->GetView());
   }
 }
