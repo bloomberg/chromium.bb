@@ -35,6 +35,7 @@
 #include <unistd.h>
 
 #include <cassert>
+#include <cerrno>
 #include <cstdio>
 #include <cstdlib>
 #include <cstring>
@@ -301,12 +302,18 @@ class MmapWrapper {
 // ELF_HEADER.
 const char *ElfArchitecture(const ElfW(Ehdr) *elf_header) {
   ElfW(Half) arch = elf_header->e_machine;
-  if (arch == EM_386)
-    return "x86";
-  else if (arch == EM_X86_64)
-    return "x86_64";
-  else
-    return NULL;
+  switch (arch) {
+    case EM_386:        return "x86";
+    case EM_ARM:        return "arm";
+    case EM_MIPS:       return "mips";
+    case EM_PPC64:      return "ppc64";
+    case EM_PPC:        return "ppc";
+    case EM_S390:       return "s390";
+    case EM_SPARC:      return "sparc";
+    case EM_SPARCV9:    return "sparcv9";
+    case EM_X86_64:     return "x86_64";
+    default: return NULL;
+  }
 }
 
 // Format the Elf file identifier in IDENTIFIER as a UUID with the
@@ -346,29 +353,45 @@ namespace google_breakpad {
 bool DumpSymbols::WriteSymbolFile(const std::string &obj_file,
                                   FILE *sym_file) {
   int obj_fd = open(obj_file.c_str(), O_RDONLY);
-  if (obj_fd < 0)
+  if (obj_fd < 0) {
+    fprintf(stderr, "Failed to open ELF file '%s': %s\n",
+            obj_file.c_str(), strerror(errno));
     return false;
+  }
   FDWrapper obj_fd_wrapper(obj_fd);
   struct stat st;
-  if (fstat(obj_fd, &st) != 0 && st.st_size <= 0)
+  if (fstat(obj_fd, &st) != 0 && st.st_size <= 0) {
+    fprintf(stderr, "Unable to fstat ELF file '%s': %s\n",
+            obj_file.c_str(), strerror(errno));
     return false;
+  }
   void *obj_base = mmap(NULL, st.st_size,
                         PROT_READ | PROT_WRITE, MAP_PRIVATE, obj_fd, 0);
-  if (obj_base == MAP_FAILED)
+  if (obj_base == MAP_FAILED) {
+    fprintf(stderr, "Failed to mmap ELF file '%s': %s\n",
+            obj_file.c_str(), strerror(errno));
     return false;
+  }
   MmapWrapper map_wrapper(obj_base, st.st_size);
   ElfW(Ehdr) *elf_header = reinterpret_cast<ElfW(Ehdr) *>(obj_base);
-  if (!IsValidElf(elf_header))
+  if (!IsValidElf(elf_header)) {
+    fprintf(stderr, "Not a valid ELF file: %s\n", obj_file.c_str());
     return false;
+  }
 
   unsigned char identifier[16];
   google_breakpad::FileID file_id(obj_file.c_str());
-  if (!file_id.ElfFileIdentifier(identifier))
+  if (!file_id.ElfFileIdentifier(identifier)) {
+    fprintf(stderr, "Unable to generate file identifier\n");
     return false;
+  }
 
   const char *architecture = ElfArchitecture(elf_header);
-  if (!architecture)
+  if (!architecture) {
+    fprintf(stderr, "Unrecognized ELF machine architecture: %d\n",
+            elf_header->e_machine);
     return false;
+  }
 
   std::string name = BaseFileName(obj_file);
   std::string os = "Linux";
