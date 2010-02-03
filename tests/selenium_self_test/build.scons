@@ -12,7 +12,7 @@ node = env.BrowserTester(
      files=[],
      browser='*firefox',
      )
-env.AddNodeToTestSuite(node, ['browser_tests'])
+env.AddNodeToTestSuite(node, ['browser_tests'], 'run_selenium_self_test')
 
 
 # Use an external page for testing

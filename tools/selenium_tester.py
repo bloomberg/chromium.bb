@@ -29,15 +29,24 @@ _SELENIUM_PATH = os.path.join(os.path.dirname(sys.argv[0]),
                              '../../third_party/selenium')
 _SELENIUM_PATH = os.path.abspath(_SELENIUM_PATH)
 
-sys.path.append(os.path.join(_SELENIUM_PATH,
-                             'selenium-python-client-driver-1.0.1'))
+sys.path.append(
+    os.path.join(_SELENIUM_PATH, 'selenium-python-client-driver-rev8252'))
+
 import selenium
 
-
-_DEFAULT_SELENIUM_JAR = os.path.join(_SELENIUM_PATH,
-                                     'selenium-server-1.0.1',
-                                     'selenium-server.jar'
-                                     )
+# NOTE: the selenium-server-standalone.jar reades /dev/random on
+#       Linux which can cause problems with some vmware base setups
+if 0:
+  _DEFAULT_SELENIUM_JAR = os.path.join(_SELENIUM_PATH,
+                                       'selenium-server-2.0a1',
+                                       'selenium-server-standalone.jar'
+                                       )
+else:
+  # TODO: phase out old server
+  _DEFAULT_SELENIUM_JAR = os.path.join(_SELENIUM_PATH,
+                                       'selenium-server-1.0.1',
+                                       'selenium-server.jar'
+                                       )
 
 if platform.system() == 'Windows':
   _DEFAULT_JAVA_ = 'java.exe'
@@ -48,9 +57,9 @@ else:
 # use --browser $BROWSER_NAME to run
 # tests for that browser
 _SELENIUM_BROWSERS = [
-    '*firefox',
-    '*iexplore',
-    '*googlechrome']
+    '*firefox [path]',
+    '*iexplore [path]',
+    '*googlechrome [path]']
 
 ######################################################################
 # Comandline Parsing
@@ -63,11 +72,10 @@ parser.add_option(
     metavar='FILE',
     help='write report to FILE')
 
-
 parser.add_option(
     '--log_level',
     type='int',
-    default=20,
+    default=10,
     help='controls tracing verbosity')
 
 parser.add_option(
@@ -84,8 +92,8 @@ parser.add_option(
     '--port_fileserver',
     type='int',
     default=0,
-    help='specifies the port number to be used by file server.'
-    'A value zero means pick an arbitrary port.')
+    help='specifies the port number to be used by file server.\n'
+    'A value zero means pick an arbitrary port on non-windows systems.')
 
 # TODO(robertm): There is bug filed to resolve the port issue
 # http://jira.openqa.org/browse/SRC-436
@@ -94,7 +102,7 @@ parser.add_option(
     type='int',
     default='4444',
     help='specifies the port number to be used by Selenium RC.\n'
-    'A value zero means pick an arbitrary port'
+    'A value zero means pick an arbitrary port on non-windows systems.\n'
     '- THIS FEATURE IS CURRENTLY BROKEN.')
 
 parser.add_option(
@@ -108,6 +116,12 @@ parser.add_option(
     type='int',
     default=0,
     help='time to wait before tear down')
+
+parser.add_option(
+    '--start_selenium_server',
+    type='int',
+    default=1,
+    help='automatically start selenium server')
 
 parser.add_option(
     '--browser',
@@ -168,6 +182,11 @@ var nacllib = new NaclLib();
 </html>
 """
 
+
+def RunningOnWindows():
+  return platform.system() == 'Windows'
+
+
 def GuessMimeType(filename):
   if filename.endswith('.html'):
     return 'text/html'
@@ -185,63 +204,77 @@ class MyRequestHandler(SimpleHTTPServer.SimpleHTTPRequestHandler):
 
   def log_message(self, format, *args):
     """Logging hook for HTTP server."""
-    logging.info(format % args)
+    logging.debug(format % args)
 
-  def SendData(self, data, type='text/html', code=200):
+  def SendData(self, data, type='text/html', code=200, send_body=1):
     try:
       self.send_response(code)
       self.send_header('Content-Type', type)
       self.send_header('Content-Length', len(data))
       self.end_headers()
-      self.wfile.write(data)
+      if send_body:
+        self.wfile.write(data)
     except Exception, err:
       logging.error(str(err))
       self.send_error(404, str(err))
     return
 
-  def SendFile(self, filename):
+  def SendFile(self, filename, send_body):
     type = GuessMimeType(filename)
     logging.info('sending %s (%s)', filename, type)
     try:
       data = open(filename).read()
-      self.SendData(data, type=type)
+      self.SendData(data, type=type, send_body=send_body)
     except Exception, err:
       logging.error(str(err))
       self.SendData(str(err), code=404)
     return
 
-  def SendToc(self, files):
+  def SendToc(self, files, send_body):
     logging.info("sending toc")
     try:
       s = ['<html><table border=1>']
       for f in files:
         s.append('<tr><td>%s<td>%s' % (f, os.path.basename(f)))
       s.append('</table></html>')
-      self.SendData("".join(s))
+      self.SendData("".join(s), send_body=send_body)
     except Exception, err:
       logging.error(str(err))
       self.SendData(str(err), code=404)
     return
 
-  def do_GET(self):
-    files = self.server._files
-    filename = os.path.basename(self.path)
-    logging.info("request %s -> %s", self.path, filename)
 
+  def HandleGetOrHeadRequest(self, filename, send_body):
     # built-in page
     if filename == 'self.test.html':
-      self.SendData(SPECIAL_PAGE_FOR_SELF_TEST)
+      self.SendData(SPECIAL_PAGE_FOR_SELF_TEST, send_body=send_body)
       return
 
     # check against set of available
-    for f in files:
+    for f in self.server._files:
       candidate = os.path.basename(f)
       if candidate == filename:
-        self.SendFile(f)
+        self.SendFile(f, send_body)
         return
 
+    if filename.endswith('favicon.ico'):
+      self.SendData('no such file', code=404)
+      return
+
     # default is the file listing
-    self.SendToc(files)
+    self.SendToc(self.server._files, send_body)
+    return
+
+  def do_HEAD(self):
+    filename = os.path.basename(self.path)
+    logging.info("HEAD request %s -> %s", self.path, filename)
+    self.HandleGetOrHeadRequest(filename, 0)
+    return
+
+  def do_GET(self):
+    filename = os.path.basename(self.path)
+    logging.info("GET request %s -> %s", self.path, filename)
+    self.HandleGetOrHeadRequest(filename, 1)
     return
 
 class LocalFileHTTPServer(threading.Thread):
@@ -265,10 +298,17 @@ class LocalFileHTTPServer(threading.Thread):
     logging.info('# creating file/page http server')
     logging.info('#' * 60)
 
+    if port == 0 and RunningOnWindows():
+      logging.fatal("zero ports do not work on windows")
+      sys.exit(-1)
+
     self._keep_going = True
     threading.Thread.__init__(self, name='fileserver')
     for f in files:
       logging.info('serving file %s', f)
+      if not os.access(f, os.R_OK):
+        logging.fatal('cannot access file %s', f)
+        sys.exit(-1)
 
     try:
       self._httpd = SocketServer.TCPServer(('', port), MyRequestHandler)
@@ -316,6 +356,24 @@ class LocalFileHTTPServer(threading.Thread):
 ######################################################################
 #  browser remote control server
 ######################################################################
+def KillProcess(process, msg):
+  try:
+    process.terminate()
+  except AttributeError, err:
+    # NOTE: terminate only supported for python 2.6  and above
+    pass
+  except Exception, err:
+    logging.error('problem terminating %s: %s', msg, str(err))
+
+
+  # NOTE: here is what we do in desperation for older python versions
+  try:
+    import signal
+    os.kill(process.pid, signal.SIGTERM)
+  except Exception, err:
+    logging.error('problem killing %s: %s', msg, str(err))
+
+
 
 class SeleniumRemoteControl(threading.Thread):
   """A thread that launches the Selenium Remote Control server.
@@ -338,21 +396,29 @@ class SeleniumRemoteControl(threading.Thread):
     self._alive = threading.Event()
     self._keep_going = True
     if port == 0:
-      logging.fatal("selenium is broken and does not support this yet")
+      logging.fatal("zero port does not work because of a selenium bug.")
+      sys.exit(-1)
+    if port == 0 and RunningOnWindows():
+      logging.fatal("zero ports do not work on windows")
       sys.exit(-1)
     threading.Thread.__init__(self, name='sel_rc')
 
-    self._process = subprocess.Popen(
-        [java,
-         '-jar', selenium_jar,
-         '-multiWindow',
-         '-port', str(port)],
-        stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+    cmd =  [java,
+            # NOTE: keep java from using the *blocking* /dev/random device
+            '-Djava.security.egd=file:/dev/urandom',
+            '-jar', selenium_jar,
+            '-multiWindow',
+            '-port', str(port)]
+    logging.info("launching rc server %s", repr(cmd))
+    self._process = subprocess.Popen(cmd,
+                                     stdout=subprocess.PIPE,
+                                     stderr=subprocess.STDOUT)
 
     self._port = self._GetPortNumber(self._process)
     if self._port is None:
-        logging.error("cannot launch selenium rc server")
-        sys.exit(-1)
+      KillProcess(self._process, "selenium server")
+      logging.error("cannot launch selenium rc server")
+      sys.exit(-1)
 
     logging.info('found active selenium server on port %d', self._port)
     logging.info('try it at %s', self.BaseUrl())
@@ -360,19 +426,8 @@ class SeleniumRemoteControl(threading.Thread):
   def StopServer(self):
     logging.info("shutting down selenium rc server")
     self._keep_going = False
-    # NOTE: this only supported for python 2.6  and above
-    try:
-      self._process.terminate()
-    except Exception, err:
-      logging.error('problem terminating selenium server: %s', str(err))
-      logging.info('This is normal for python version < 2.6')
 
-    # NOTE: here is what we do in desperation for older python versions
-    try:
-      import signal
-      os.kill(self._process.pid, signal.SIGTERM)
-    except Exception, err:
-      logging.error('problem killing selenium server: %s', str(err))
+    KillProcess(self._process, "selenium server")
 
     try:
       self._process.wait()
@@ -389,9 +444,11 @@ class SeleniumRemoteControl(threading.Thread):
 
   def _GetPortNumber(self, process):
     # Go through the log messages emitted by the server
-    # we expect the ready message to be within the first 10 lines
-    for _ in range(1, 10):
+    # we expect the ready message to be within the first 15 lines
+    for _ in range(1, 20):
+        # TODO: maybe use communicate()
         msg = process.stdout.readline().strip()
+        logging.debug("selenium server output: %s", msg)
         if not msg: continue
 
         logging.debug('sel_serv:' + msg)
@@ -406,6 +463,7 @@ class SeleniumRemoteControl(threading.Thread):
         colon = msg.rfind(":")
         assert colon > 0
         return int(msg[colon + 1:])
+    logging.error("could discern port number of selenium server")
     return None
 
   def run(self):
@@ -480,9 +538,9 @@ def RunTest(session, url, max_wait):
 
 def main(options):
   logging.info('browser list is %s:', options.browser)
-  logging.info('env is:')
+  logging.debug('env is:')
   for t in os.environ.items():
-    logging.info('%s=%s' % t)
+    logging.debug('%s=%s' % t)
   # install a cleanup handler if possible
   try:
     import signal
@@ -499,17 +557,21 @@ def main(options):
   http_server.start()
   GlobalCleanupList.append(http_server.StopServer)
   # Start up the Selenium Remote Control Server
-  selenium_server = SeleniumRemoteControl(options.java,
-                                          options.selenium_jar,
-                                          options.port_rcserver)
-  selenium_server.start()
-  GlobalCleanupList.append(selenium_server.StopServer)
+  if options.start_selenium_server:
+    selenium_server = SeleniumRemoteControl(options.java,
+                                            options.selenium_jar,
+                                            options.port_rcserver)
+    selenium_server.start()
+    GlobalCleanupList.append(selenium_server.StopServer)
+    selenium_server_port = selenium_server._port
+  else:
+    selenium_server_port = options.port_rcserver
 
   logging.info('#' * 60)
   logging.info('creating session for browser %s', options.browser)
   logging.info('#' * 60)
   session = selenium.selenium('localhost',
-                              selenium_server._port,
+                              selenium_server_port,
                               options.browser,
                               http_server.BaseUrl())
   logging.info('starting session')
