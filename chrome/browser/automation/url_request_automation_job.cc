@@ -330,11 +330,11 @@ void URLRequestAutomationJob::OnRequestStarted(int tab, int id,
           url_for_cookies, request_->first_party_for_cookies()))) {
     StringTokenizer cookie_parser(response.persistent_cookies, ";");
 
-    std::vector<net::CookieMonster::CanonicalCookie> existing_cookies;
+    net::CookieMonster::CookieList existing_cookies;
     net::CookieMonster* monster = ctx->cookie_store()->GetCookieMonster();
     DCHECK(monster);
     if (monster) {
-      monster->GetRawCookies(url_for_cookies, &existing_cookies);
+      existing_cookies = monster->GetRawCookies(url_for_cookies);
     }
 
     while (cookie_parser.GetNext()) {
@@ -350,9 +350,9 @@ void URLRequestAutomationJob::OnRequestStarted(int tab, int id,
         // Ignore duplicate cookies, i.e. cookies passed in from the host
         // browser which also exist in the response header.
         net::CookieMonster::ParsedCookie parsed_cookie(cookie_string);
-        std::vector<net::CookieMonster::CanonicalCookie>::const_iterator i;
+        net::CookieMonster::CookieList::const_iterator i;
         for (i = existing_cookies.begin(); i != existing_cookies.end(); ++i) {
-          if ((*i).Name() == parsed_cookie.Name())
+          if (i->second.Name() == parsed_cookie.Name())
             break;
         }
 

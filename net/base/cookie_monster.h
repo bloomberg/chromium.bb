@@ -93,17 +93,20 @@ class CookieMonster : public CookieStore {
   virtual std::string GetCookies(const GURL& url);
   virtual std::string GetCookiesWithOptions(const GURL& url,
                                             const CookieOptions& options);
-  virtual void GetRawCookies(const GURL& url,
-                             std::vector<CanonicalCookie>* raw_cookies);
   virtual void DeleteCookie(const GURL& url, const std::string& cookie_name);
 
   virtual CookieMonster* GetCookieMonster() {
     return this;
   }
 
-  // Returns all the cookies, for use in management UI, etc.  This does not mark
+  // Returns all the cookies, for use in management UI, etc. This does not mark
   // the cookies as having been accessed.
   CookieList GetAllCookies();
+
+  // Returns all the cookies, for use in management UI, etc. Filters results
+  // using given url scheme and host / domain. This does not mark the cookies
+  // as having been accessed.
+  CookieList GetRawCookies(const GURL& url);
 
   // Delete all of the cookies.
   int DeleteAll(bool sync_to_store);
@@ -163,6 +166,10 @@ class CookieMonster : public CookieStore {
                          const CookieOptions& options,
                          const base::Time& current,
                          std::vector<CanonicalCookie*>* cookies);
+
+  void FindRawCookies(const std::string& key,
+                      bool include_secure,
+                      CookieList* list);
 
   // Delete any cookies that are equivalent to |ecc| (same path, key, etc).
   // If |skip_httponly| is true, httponly cookies will not be deleted.  The

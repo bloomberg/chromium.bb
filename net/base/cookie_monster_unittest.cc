@@ -962,21 +962,62 @@ TEST(CookieMonsterTest, SetCookieableSchemes) {
 }
 
 TEST(CookieMonsterTest, GetRawCookies) {
-  scoped_refptr<net::CookieMonster> cm(new net::CookieMonster);
-  GURL url_google(kUrlGoogle);
 
+  GURL url_google(kUrlGoogle);
+  GURL url_google_secure(kUrlGoogleSecure);
+
+  scoped_refptr<net::CookieMonster> cm(
+      new net::CookieMonster(kLastAccessThresholdMilliseconds));
+
+  // Create an httponly cookie.
   net::CookieOptions options;
   options.set_include_httponly();
 
-  // Create a httponly cookie.
   EXPECT_TRUE(cm->SetCookieWithOptions(url_google, "A=B; httponly", options));
+  EXPECT_TRUE(cm->SetCookieWithOptions(url_google,
+                                       "C=D; domain=.google.izzle",
+                                       options));
+  EXPECT_TRUE(cm->SetCookieWithOptions(url_google_secure,
+                                       "E=F; domain=.google.izzle; secure",
+                                       options));
+  const Time last_access_date(GetFirstCookieAccessDate(cm));
 
-  // Get raw cookies.
-  std::vector<net::CookieMonster::CanonicalCookie> raw_cookies;
-  cm->GetRawCookies(url_google, &raw_cookies);
-  EXPECT_TRUE(raw_cookies.begin() != raw_cookies.end());
-  net::CookieMonster::CanonicalCookie cookie = *raw_cookies.begin();
-  EXPECT_EQ("A", cookie.Name());
+  PlatformThread::Sleep(kLastAccessThresholdMilliseconds + 20);
+
+  // Check raw cookies.
+  net::CookieMonster::CookieList raw_cookies = cm->GetRawCookies(url_google);
+  net::CookieMonster::CookieList::iterator it = raw_cookies.begin();
+
+  ASSERT_TRUE(it != raw_cookies.end());
+  EXPECT_EQ("www.google.izzle", it->first);
+  EXPECT_EQ("A", it->second.Name());
+
+  ASSERT_TRUE(++it != raw_cookies.end());
+  EXPECT_EQ(".google.izzle", it->first);
+  EXPECT_EQ("C", it->second.Name());
+
+  ASSERT_TRUE(++it == raw_cookies.end());
+
+  // Test secure cookies.
+  raw_cookies = cm->GetRawCookies(url_google_secure);
+  it = raw_cookies.begin();
+
+  ASSERT_TRUE(it != raw_cookies.end());
+  EXPECT_EQ("www.google.izzle", it->first);
+  EXPECT_EQ("A", it->second.Name());
+
+  ASSERT_TRUE(++it != raw_cookies.end());
+  EXPECT_EQ(".google.izzle", it->first);
+  EXPECT_EQ("C", it->second.Name());
+
+  ASSERT_TRUE(++it != raw_cookies.end());
+  EXPECT_EQ(".google.izzle", it->first);
+  EXPECT_EQ("E", it->second.Name());
+
+  ASSERT_TRUE(++it == raw_cookies.end());
+
+  // Reading after a short wait should not update the access date.
+  EXPECT_TRUE (last_access_date == GetFirstCookieAccessDate(cm));
 }
 
 TEST(CookieMonsterTest, DeleteCookieByName) {

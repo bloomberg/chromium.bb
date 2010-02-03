@@ -519,21 +519,21 @@ void ResourceMessageFilter::OnGetRawCookies(
   if (!context->cookie_policy()->CanGetCookies(url, first_party_for_cookies))
     return;
 
-  typedef std::vector<net::CookieMonster::CanonicalCookie> CanonicalCookieList;
-  CanonicalCookieList cookies;
-  cookie_monster->GetRawCookies(url, &cookies);
-  for (CanonicalCookieList::iterator it = cookies.begin();
-       it != cookies.end(); ++it) {
+  typedef net::CookieMonster::CookieList CookieList;
+  CookieList cookieList = cookie_monster->GetRawCookies(url);
+  for (CookieList::iterator it = cookieList.begin();
+       it != cookieList.end(); ++it) {
+     net::CookieMonster::CanonicalCookie& cookie = it->second;
      raw_cookies->push_back(
          webkit_glue::WebCookie(
-             it->Name(),
-             it->Value(),
-             url.host(),
-             it->Path(),
-             it->ExpiryDate().ToDoubleT() * 1000,
-             it->IsHttpOnly(),
-             it->IsSecure(),
-             !it->IsPersistent()));
+             cookie.Name(),
+             cookie.Value(),
+             it->first,
+             cookie.Path(),
+             cookie.ExpiryDate().ToDoubleT() * 1000,
+             cookie.IsHttpOnly(),
+             cookie.IsSecure(),
+             !cookie.IsPersistent()));
   }
 }
 

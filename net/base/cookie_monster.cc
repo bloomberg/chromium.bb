@@ -782,24 +782,6 @@ std::string CookieMonster::GetCookiesWithOptions(const GURL& url,
   return cookie_line;
 }
 
-void CookieMonster::GetRawCookies(const GURL& url,
-                                  std::vector<CanonicalCookie>* raw_cookies) {
-  raw_cookies->clear();
-  if (!HasCookieableScheme(url))
-    return;
-
-  CookieOptions options;
-  options.set_include_httponly();
-  // Get the cookies for this host and its domain(s).
-  std::vector<CanonicalCookie*> cookies;
-  FindCookiesForHostAndDomain(url, options, &cookies);
-  std::sort(cookies.begin(), cookies.end(), CookieSorter);
-
-  for (std::vector<CanonicalCookie*>::const_iterator it = cookies.begin();
-       it != cookies.end(); ++it)
-    raw_cookies->push_back(*(*it));
-}
-
 void CookieMonster::DeleteCookie(const GURL& url,
                                  const std::string& cookie_name) {
   if (!HasCookieableScheme(url))
@@ -849,6 +831,34 @@ CookieMonster::CookieList CookieMonster::GetAllCookies() {
   for (CookieMap::iterator it = cookies_.begin(); it != cookies_.end(); ++it)
     cookie_list.push_back(CookieListPair(it->first, *it->second));
 
+  return cookie_list;
+}
+
+CookieMonster::CookieList CookieMonster::GetRawCookies(const GURL& url) {
+  CookieList cookie_list;
+  if (!HasCookieableScheme(url))
+    return cookie_list;
+
+  bool secure = url.SchemeIsSecure();
+
+  // Query for the full host, For example: 'a.c.blah.com'.
+  std::string key(url.host());
+  FindRawCookies(key, secure, &cookie_list);
+
+  // See if we can search for domain cookies, i.e. if the host has a TLD + 1.
+  const std::string domain(GetEffectiveDomain(url.scheme(), key));
+  if (domain.empty())
+    return cookie_list;
+
+  // Use same logic as in FindCookiesForHostAndDomain.
+  DCHECK_LE(domain.length(), key.length());
+  DCHECK_EQ(0, key.compare(key.length() - domain.length(), domain.length(),
+                           domain));
+  for (key = "." + key; key.length() > domain.length(); ) {
+    FindRawCookies(key, secure, &cookie_list);
+    const size_t next_dot = key.find('.', 1);  // Skip over leading dot.
+    key.erase(0, next_dot);
+  }
   return cookie_list;
 }
 
@@ -920,6 +930,17 @@ void CookieMonster::FindCookiesForKey(
     // cookie, update its last access time.
     InternalUpdateCookieAccessTime(cc);
     cookies->push_back(cc);
+  }
+}
+
+void CookieMonster::FindRawCookies(const std::string& key,
+                                   bool include_secure,
+                                   CookieList* list) {
+  for (CookieMapItPair its = cookies_.equal_range(key);
+       its.first != its.second; ++its.first) {
+    CanonicalCookie* cc = its.first->second;
+    if (include_secure || !cc->IsSecure())
+      list->push_back(CookieListPair(key, *cc));
   }
 }
 
