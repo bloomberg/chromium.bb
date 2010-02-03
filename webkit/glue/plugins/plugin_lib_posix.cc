@@ -5,7 +5,11 @@
 #include "webkit/glue/plugins/plugin_lib.h"
 
 #include <dlfcn.h>
+#if defined(OS_OPENBSD)
+#include <sys/exec_elf.h>
+#else
 #include <elf.h>
+#endif
 
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"

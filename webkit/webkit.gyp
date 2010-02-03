@@ -276,13 +276,13 @@
         'glue/plugins/plugin_instance_mac.mm',
         'glue/plugins/plugin_lib.cc',
         'glue/plugins/plugin_lib.h',
-        'glue/plugins/plugin_lib_linux.cc',
         'glue/plugins/plugin_lib_mac.mm',
+        'glue/plugins/plugin_lib_posix.cc',
         'glue/plugins/plugin_lib_win.cc',
         'glue/plugins/plugin_list.cc',
         'glue/plugins/plugin_list.h',
-        'glue/plugins/plugin_list_linux.cc',
         'glue/plugins/plugin_list_mac.mm',
+        'glue/plugins/plugin_list_posix.cc',
         'glue/plugins/plugin_list_win.cc',
         'glue/plugins/plugin_stream.cc',
         'glue/plugins/plugin_stream.h',
@@ -407,7 +407,7 @@
       # own hard dependencies.
       'hard_dependency': 1,
       'conditions': [
-        ['OS=="linux" or OS=="freebsd"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../base/base.gyp:linux_versioninfo',
@@ -415,13 +415,15 @@
           'sources!': [
             'glue/plugins/plugin_stubs.cc',
           ],
-        }, { # else: OS!="linux" and OS!="freebsd"
+        }, { # else: OS!="linux" and OS!="freebsd" and OS!="openbsd"
           'sources/': [['exclude', '_(linux|gtk)(_data)?\\.cc$'],
                        ['exclude', r'/gtk_']],
         }],
         ['OS!="mac"', {
           'sources/': [['exclude', '_mac\\.(cc|mm)$'],
                        ['exclude', r'/mac_']],
+        }, {  # else: OS=="mac"
+          'sources/': [['exclude', 'plugin_(lib|list)_posix\\.cc$']],
         }],
         ['enable_gpu==1', {
           'dependencies': [
