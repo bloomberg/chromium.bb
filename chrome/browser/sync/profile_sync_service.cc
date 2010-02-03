@@ -67,7 +67,11 @@ void ProfileSyncService::Initialize() {
 
   if (!profile()->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted)) {
     DisableForUser();  // Clean up in case of previous crash / setup abort.
+    // If the LSID is empty, we're in a UI test that is not testing sync
+    // behavior, so we don't want the sync service to start.
+    // profile()->GetRequestContext() also checks if this is in a test.
     if (browser_defaults::kBootstrapSyncAuthentication &&
+        !GetLsidForAuthBootstraping().empty() &&
         profile()->GetRequestContext())
       StartUp();  // We always start sync for Chrome OS.
   } else {
