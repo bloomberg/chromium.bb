@@ -190,17 +190,17 @@ TEST_F(TranslationServiceTest, RemoveTag) {
 
 // Tests that we deal correctly with the various results the translation server
 // can return, including the buggy ones.
-TEST_F(TranslationServiceTest, SplitTestChunks) {
+TEST_F(TranslationServiceTest, SplitIntoTextChunks) {
   // Simple case.
   std::vector<string16> text_chunks;
-  TranslationService::SplitTextChunks(ASCIIToUTF16("Hello"), &text_chunks);
+  TranslationService::SplitIntoTextChunks(ASCIIToUTF16("Hello"), &text_chunks);
   ASSERT_EQ(1U, text_chunks.size());
   EXPECT_EQ(ASCIIToUTF16("Hello"), text_chunks[0]);
 
   text_chunks.clear();
 
   // Multiple chunks case, correct syntax.
-  TranslationService::SplitTextChunks(
+  TranslationService::SplitIntoTextChunks(
       ASCIIToUTF16("<a _CR_TR_ id='0'>Bonjour</a>"
                    "<a _CR_TR_ id='1'> mon nom</a>"
                    "<a _CR_TR_ id='2'> est</a>"
@@ -216,7 +216,7 @@ TEST_F(TranslationServiceTest, SplitTestChunks) {
   // For info, original input:
   // <a _CR_TRANSLATE_ id='0'> Experience </a><a _CR_TRANSLATE_ id='1'>Nexus One
   // </a><a _CR_TRANSLATE_ id='2'>, the new Android phone from Google</a>
-  TranslationService::SplitTextChunks(
+  TranslationService::SplitIntoTextChunks(
       ASCIIToUTF16("<a _CR_TR_ id='0'>Experience</a> <a _CR_TR_ id='1'>Nexus"
                    "<a _CR_TR_ id='2'> One,</a></a> <a _CR_TR_ id='2'>the new "
                    "Android Phone</a>"), &text_chunks);
@@ -402,7 +402,7 @@ TEST_F(TranslationServiceTest, MoreThanMaxSizeRequests) {
   std::string one_kb_string(1024U, 'A');
   TextChunks text_chunks;
   text_chunks.push_back(ASCIIToUTF16(one_kb_string));
-  // Send 2 small requests, than a big one.
+  // Send 2 small requests, then a big one.
   translation_service_.Translate(1, 0, 0, text_chunks, "en", "fr", false);
   translation_service_.Translate(1, 0, 1, text_chunks, "en", "fr", false);
   // We need a string big enough to be more than 30KB on top of the other 2

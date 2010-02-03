@@ -43,8 +43,8 @@ LocaleToCLDLanguage kLocaleToCLDLanguages[] = {
     { "en-GB", "en" },
     { "en-US", "en" },
     { "es-419", "es" },
-    { "pt-PT", "pt" },
     { "pt-BR", "pt" },
+    { "pt-PT", "pt" },
 };
 
 // The list of languages the Google translation server supports.
@@ -331,14 +331,14 @@ void TranslationService::OnURLFetchComplete(const URLFetcher* source,
 
   // If the response is a simple string, put it in an array.  (The JSONReader
   // requires an array or map at the root.)
-  std::string str;
+  std::string wrapped_data;
   if (data.size() > 1U && data[0] == '"') {
-    str.append("[");
-    str.append(data);
-    str.append("]");
+    wrapped_data.append("[");
+    wrapped_data.append(data);
+    wrapped_data.append("]");
   }
-  scoped_ptr<Value> value(base::JSONReader::Read(str.empty() ? data : str,
-                                                 true));
+  scoped_ptr<Value> value(base::JSONReader::Read(
+      wrapped_data.empty() ? data : wrapped_data, true));
   if (!value.get()) {
     NOTREACHED() << "Translation server returned invalid JSON response.";
     TranslationFailed(source);
@@ -349,15 +349,15 @@ void TranslationService::OnURLFetchComplete(const URLFetcher* source,
   // string.
   TextChunksList translated_chunks_list;
   if (value->IsType(Value::TYPE_STRING)) {
-    string16 str16;
-    if (!value->GetAsUTF16(&str16)) {
+    string16 translated_text;
+    if (!value->GetAsUTF16(&translated_text)) {
       NOTREACHED();
       TranslationFailed(source);
       return;
     }
-    TextChunks text_chunks;
-    text_chunks.push_back(str16);
-    translated_chunks_list.push_back(text_chunks);
+    TextChunks translated_text_chunks;
+    translated_text_chunks.push_back(translated_text);
+    translated_chunks_list.push_back(translated_text_chunks);
   } else {
     if (!value->IsType(Value::TYPE_LIST)) {
       NOTREACHED() << "Translation server returned unexpected JSON response "
@@ -365,19 +365,20 @@ void TranslationService::OnURLFetchComplete(const URLFetcher* source,
       TranslationFailed(source);
       return;
     }
-    ListValue* list = static_cast<ListValue*>(value.get());
-    for (size_t i = 0; i < list->GetSize(); ++i) {
+    ListValue* translated_text_list = static_cast<ListValue*>(value.get());
+    for (size_t i = 0; i < translated_text_list->GetSize(); ++i) {
       string16 translated_text;
-      if (!list->GetStringAsUTF16(i, &translated_text)) {
+      if (!translated_text_list->GetStringAsUTF16(i, &translated_text)) {
         NOTREACHED() << "Translation server returned unexpected JSON response "
             " (unexpected type in list).";
         TranslationFailed(source);
         return;
       }
       translated_text = UnescapeForHTML(translated_text);
-      TranslationService::TextChunks text_chunks;
-      TranslationService::SplitTextChunks(translated_text, &text_chunks);
-      translated_chunks_list.push_back(text_chunks);
+      TranslationService::TextChunks translated_text_chunks;
+      TranslationService::SplitIntoTextChunks(translated_text,
+                                              &translated_text_chunks);
+      translated_chunks_list.push_back(translated_text_chunks);
     }
   }
 
@@ -491,8 +492,8 @@ string16 TranslationService::MergeTextChunks(const TextChunks& text_chunks) {
 }
 
 // static
-void TranslationService::SplitTextChunks(const string16& translated_text,
-                                         TextChunks* text_chunks) {
+void TranslationService::SplitIntoTextChunks(const string16& translated_text,
+                                             TextChunks* text_chunks) {
   const string16 kOpenTag = ASCIIToUTF16("<a _CR_TR_ ");
   const string16 kCloseTag = ASCIIToUTF16("</a>");
   const size_t open_tag_len = kOpenTag.size();
