@@ -228,6 +228,10 @@
       right: 0;
       z-index: 1;
     }
+    .file-bug {
+      font-weight: bold;
+      font-size: 11px;
+    }
   </style>
 
   <script src="dashboards/dashboard_base.js"></script>
@@ -1342,6 +1346,18 @@
   function selectContents(element) {
     window.getSelection().selectAllChildren(element);
   }
+  
+  function getCreateBugHTML(test) {
+    var symptom = test.isFlaky ? 'flaky' : 'failing';
+    var title = 'Layout Test ' + test.test + ' is ' + symptom;
+    var description = 'The following layout test is ' + symptom + ' on ' +
+        '[insert platform]\n\n' + test.test + '\n\nProbable cause:\n\n' +
+        '[insert probable cause]';
+    return bugUrlPrefix + 'code.google.com/p/chromium/issues/entry?' +
+        'template=Layout%20Test%20Failure&summary=' + 
+        encodeURIComponent(title) + '&comment=' + 
+        encodeURIComponent(description) + '" class="file-bug">FILE BUG</a>';
+  }
 
   function getHTMLForSingleTestRow(test, opt_isCrossBuilderView) {
     if (!opt_isCrossBuilderView && shouldHideTest(test)) {
@@ -1364,7 +1380,8 @@
       // TODO(ojan): If a test is a chrome/ or a pending/ test, point to
       // src.chromium.org instead of trac.webkit.org.
       '"><td class=test-link>' + testCellHTML +
-      '</td><td class=options-container>' + test.bugsHTML +
+      '</td><td class=options-container>' + 
+      (test.bugsHTML ? test.bugsHTML : getCreateBugHTML(test)) +
       '</td><td class=options-container>' + test.modifiersHTML +
       '</td><td class=options-container>' + test.expectationsHTML +
       '</td><td>' + test.missing +
