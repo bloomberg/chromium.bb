@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,7 @@ class BrowserWindowCocoa;
 class ConstrainedWindowMac;
 @class DownloadShelfController;
 @class FindBarCocoaController;
+@class FullscreenController;
 @class GTMWindowSheetController;
 @class InfoBarContainerController;
 class LocationBar;
@@ -63,6 +64,7 @@ class TabStripModelObserverBridge;
   scoped_nsobject<InfoBarContainerController> infoBarContainerController_;
   scoped_nsobject<DownloadShelfController> downloadShelfController_;
   scoped_nsobject<BookmarkBarController> bookmarkBarController_;
+  scoped_nsobject<FullscreenController> fullscreenController_;
 
   // Strong. StatusBubble is a special case of a strong reference that
   // we don't wrap in a scoped_ptr because it is acting the same
@@ -92,6 +94,17 @@ class TabStripModelObserverBridge;
   // an in-progress pinch gesture.
   CGFloat totalMagnifyGestureAmount_;
   NSInteger currentZoomStepDelta_;
+
+  // Lazily created view which draws the background for the floating set of bars
+  // in fullscreen mode.
+  scoped_nsobject<NSView> floatingBarBackingView_;
+
+  // Tracks whether the floating bar is above or below the bookmark bar, in
+  // terms of z-order.
+  BOOL floatingBarAboveBookmarkBar_;
+
+  // The proportion of the floating bar which is shown (in fullscreen mode).
+  CGFloat floatingBarShownFraction_;
 }
 
 // Load the browser window nib and do any Cocoa-specific initialization.
@@ -189,6 +202,14 @@ class TabStripModelObserverBridge;
 // Returns fullscreen state.
 - (BOOL)isFullscreen;
 
+// Gets or sets the fraction of the floating bar (fullscreen overlay) that is
+// shown.  0 is completely hidden, 1 is fully shown.
+- (CGFloat)floatingBarShownFraction;
+- (void)setFloatingBarShownFraction:(CGFloat)fraction;
+
+// Returns YES if any of the views in the floating bar currently has focus.
+- (BOOL)floatingBarHasFocus;
+
 // The user changed the theme.
 - (void)userChangedTheme;
 
@@ -240,7 +261,7 @@ class TabStripModelObserverBridge;
 - (void)adjustWindowHeightBy:(CGFloat)deltaH;
 
 // Return an autoreleased NSWindow suitable for fullscreen use.
-- (NSWindow*)fullscreenWindow;
+- (NSWindow*)createFullscreenWindow;
 
 // Return a point suitable for the topLeft for a bookmark bubble.
 - (NSPoint)topLeftForBubble;

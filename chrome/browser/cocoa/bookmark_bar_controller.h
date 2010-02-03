@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -150,9 +150,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 // Update the visible state of the bookmark bar.
 - (void)updateVisibility;
 
-// Turn on or off the bookmark bar and prevent or reallow its
-// appearance.  On disable, toggle off if shown.  On enable, show only
-// if needed.  For fullscreen mode.
+// Turn on or off the bookmark bar and prevent or reallow its appearance. On
+// disable, toggle off if shown. On enable, show only if needed. App and popup
+// windows do not show a bookmark bar.
 - (void)setBookmarkBarEnabled:(BOOL)enabled;
 
 // Returns the amount by which the toolbar above should be compressed.

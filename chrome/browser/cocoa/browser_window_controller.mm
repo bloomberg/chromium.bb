@@ -1,6 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+
+#import "chrome/browser/cocoa/browser_window_controller.h"
 
 #include <Carbon/Carbon.h>
 
@@ -24,17 +26,20 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#import "chrome/browser/cocoa/autocomplete_text_field_editor.h"
 #import "chrome/browser/cocoa/background_gradient_view.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmark_editor_controller.h"
 #import "chrome/browser/cocoa/browser_window_cocoa.h"
-#import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/chrome_browser_window.h"
 #import "chrome/browser/cocoa/download_shelf_controller.h"
 #import "chrome/browser/cocoa/event_utils.h"
 #import "chrome/browser/cocoa/fast_resize_view.h"
 #import "chrome/browser/cocoa/find_bar_cocoa_controller.h"
 #include "chrome/browser/cocoa/find_bar_bridge.h"
+#import "chrome/browser/cocoa/floating_bar_backing_view.h"
+#import "chrome/browser/cocoa/focus_tracker.h"
+#import "chrome/browser/cocoa/fullscreen_controller.h"
 #import "chrome/browser/cocoa/fullscreen_window.h"
 #import "chrome/browser/cocoa/infobar_container_controller.h"
 #import "chrome/browser/cocoa/sad_tab_controller.h"
@@ -114,6 +119,15 @@
 // longer indicate that the window is shrinking from an apparent zoomed state)
 // and if it's set we continue to constrain the resize.
 
+namespace {
+// Insets for the location bar, used when the full toolbar is hidden.
+// TODO(viettrungluu): We can argue about the "correct" insetting; I like the
+// following best, though arguably 0 inset is better/more correct.
+const CGFloat kLocBarLeftRightInset = 1;
+const CGFloat kLocBarTopInset = 0;
+const CGFloat kLocBarBottomInset = 1;
+}  // end namespace
+
 @interface GTMTheme (BrowserThemeProviderInitialization)
 + (GTMTheme*)themeWithBrowserThemeProvider:(BrowserThemeProvider*)provider
                             isOffTheRecord:(BOOL)offTheRecord;
@@ -128,7 +142,6 @@
 - (NSRect)_growBoxRect;
 
 @end
-
 
 @interface BrowserWindowController(Private)
 
@@ -152,10 +165,25 @@ willPositionSheet:(NSWindow*)sheet
 // content area, download shelf (if any).
 - (void)layoutSubviews;
 
+// Find the total height of the floating bar (in fullscreen mode). Safe to call
+// even when not in fullscreen mode.
+- (CGFloat)floatingBarHeight;
+
+// Lays out the tab strip at the given maximum y-coordinate, with the given
+// width, possibly for fullscreen mode; returns the new maximum y (below the tab
+// strip). This is safe to call even when there is no tab strip.
+- (CGFloat)layoutTabStripAtMaxY:(CGFloat)maxY
+                          width:(CGFloat)width
+                     fullscreen:(BOOL)fullscreen;
+
 // Lays out the toolbar (or just location bar for popups) at the given maximum
 // y-coordinate, with the given width; returns the new maximum y (below the
 // toolbar).
 - (CGFloat)layoutToolbarAtMaxY:(CGFloat)maxY width:(CGFloat)width;
+
+// Returns YES if the bookmark bar should be placed below the infobar, NO
+// otherwise.
+- (BOOL)placeBookmarkBarBelowInfoBar;
 
 // Lays out the bookmark bar at the given maximum y-coordinate, with the given
 // width; returns the new maximum y (below the bookmark bar). Note that one must
@@ -164,13 +192,18 @@ willPositionSheet:(NSWindow*)sheet
 // |-placeBookmarkBarBelowInfoBar|).
 - (CGFloat)layoutBookmarkBarAtMaxY:(CGFloat)maxY width:(CGFloat)width;
 
+// Lay out the view which draws the background for the floating bar when in
+// fullscreen mode, with the given (minimum) y-coordinate, width, height, and
+// fullscreen-mode-status. Should be called even when not in fullscreen mode to
+// hide the backing view.
+- (void)layoutFloatingBarBackingViewAtY:(CGFloat)y
+                                  width:(CGFloat)width
+                                 height:(CGFloat)height
+                             fullscreen:(BOOL)fullscreen;
+
 // Lays out the infobar at the given maximum y-coordinate, with the given width;
 // returns the new maximum y (below the infobar).
 - (CGFloat)layoutInfoBarAtMaxY:(CGFloat)maxY width:(CGFloat)width;
-
-// Returns YES if the bookmark bar should be placed below the infobar, NO
-// otherwise.
-- (BOOL)placeBookmarkBarBelowInfoBar;
 
 // Lays out the download shelf, if there is one, at the given minimum
 // y-coordinate, with the given width; returns the new minimum y (above the
@@ -194,6 +227,9 @@ willPositionSheet:(NSWindow*)sheet
 // Also adjusts the bookmark bar's height by the opposite amount in order to
 // keep the total height of the two views constant.
 - (void)adjustToolbarAndBookmarkBarForCompression:(CGFloat)compression;
+
+// Adjust the UI when entering or leaving fullscreen mode.
+- (void)adjustUIForFullscreen:(BOOL)fullscreen;
 
 @end
 
@@ -267,6 +303,7 @@ willPositionSheet:(NSWindow*)sheet
 
     // Puts the incognito badge on the window frame, if necessary. Do this
     // before creating the tab strip to avoid redundant tab layout.
+    // TODO(viettrungluu): fullscreen mode
     [self installIncognitoBadge];
 
     // Create a controller for the tab strip, giving it the model object for
@@ -453,12 +490,20 @@ willPositionSheet:(NSWindow*)sheet
   // TODO(dmaclach): Instead of redrawing the whole window, views that care
   // about the active window state should be registering for notifications.
   [[self window] setViewsNeedDisplay:YES];
+
+  // TODO(viettrungluu): For some reason, the above doesn't suffice.
+  if ([self isFullscreen])
+    [floatingBarBackingView_ setNeedsDisplay:YES];
 }
 
 - (void)windowDidResignMain:(NSNotification*)notification {
   // TODO(dmaclach): Instead of redrawing the whole window, views that care
   // about the active window state should be registering for notifications.
   [[self window] setViewsNeedDisplay:YES];
+
+  // TODO(viettrungluu): For some reason, the above doesn't suffice.
+  if ([self isFullscreen])
+    [floatingBarBackingView_ setNeedsDisplay:YES];
 }
 
 // Called when we are activated (when we gain focus).
@@ -841,9 +886,6 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (BOOL)supportsFullscreen {
-  // Fullscreen mode disabled for Mstone-4 / ReleaseBlock-Beta.
-  return NO;
-
   // TODO(avi, thakis): GTMWindowSheetController has no api to move
   // tabsheets between windows. Until then, we have to prevent having to
   // move a tabsheet between windows, e.g. no fullscreen toggling
@@ -1197,6 +1239,14 @@ willPositionSheet:(NSWindow*)sheet
   return [tabStripController_ tabDraggingAllowed];
 }
 
+- (BOOL)tabTearingAllowed {
+  return ![self isFullscreen];
+}
+
+- (BOOL)windowMovementAllowed {
+  return ![self isFullscreen];
+}
+
 - (BOOL)isTabFullyVisible:(TabView*)tab {
   return [tabStripController_ isTabFullyVisible:tab];
 }
@@ -1244,80 +1294,117 @@ willPositionSheet:(NSWindow*)sheet
     positionFindBarView:[infoBarContainerController_ view]];
 }
 
-// Adjust the UI for fullscreen mode.  E.g. when going fullscreen,
-// remove the toolbar.  When stopping fullscreen, add it back in.
-- (void)adjustUIForFullscreen:(BOOL)fullscreen {
-  if (fullscreen) {
-    // Disable showing of the bookmark bar.  This does not toggle the
-    // preference.
-    [bookmarkBarController_ setBookmarkBarEnabled:NO];
-    // Make room for more content area.
-    [[toolbarController_ view] removeFromSuperview];
-    // Hide the menubar, and allow it to un-hide when moving the mouse
-    // to the top of the screen.  Does this eliminate the need for an
-    // info bubble describing how to exit fullscreen mode?
-    mac_util::RequestFullScreen();
-  } else {
-    mac_util::ReleaseFullScreen();
-    [[[self window] contentView] addSubview:[toolbarController_ view]];
-    [bookmarkBarController_ setBookmarkBarEnabled:[self supportsBookmarkBar]];
-  }
-
-  // Force a relayout.
-  [self layoutSubviews];
-}
-
-- (NSWindow*)fullscreenWindow {
+- (NSWindow*)createFullscreenWindow {
   return [[[FullscreenWindow alloc] initForScreen:[[self window] screen]]
            autorelease];
 }
 
 - (void)setFullscreen:(BOOL)fullscreen {
+  // The logic in this function is a bit complicated and very carefully
+  // arranged.  See the below comments for more details.
+
+  if (fullscreen == [self isFullscreen])
+    return;
+
   if (![self supportsFullscreen])
-      return;
+    return;
 
+  // Save the current first responder so we can restore after views are moved.
   NSWindow* window = [self window];
+  scoped_nsobject<FocusTracker> focusTracker(
+      [[FocusTracker alloc] initWithWindow:window]);
+  BOOL showDropdown = [self floatingBarHasFocus];
 
-  // Retain the contentView while we remove it from its superview.
-  scoped_nsobject<NSView> content([[window contentView] retain]);
+  // If we're entering fullscreen, create the fullscreen controller.  If we're
+  // exiting fullscreen, kill the controller.
+  if (fullscreen) {
+    fullscreenController_.reset([[FullscreenController alloc]
+                                  initWithBrowserController:self]);
+  } else {
+    [fullscreenController_ exitFullscreen];
+    fullscreenController_.reset(nil);
+  }
 
-  // Disable autoresizing of subviews while we move views around.  This
-  // prevents spurious renderer resizes.
-  [content setAutoresizesSubviews:NO];
-  [content removeFromSuperview];
+  // Retain the tab strip view while we remove it from its superview.
+  scoped_nsobject<NSView> tabStripView;
+  if ([self hasTabStrip]) {
+    tabStripView.reset([[self tabStripView] retain]);
+    [tabStripView removeFromSuperview];
+  }
 
-  NSWindow* dstWindow = nil;
+  // Ditto for the content view.
+  scoped_nsobject<NSView> contentView([[window contentView] retain]);
+  // Disable autoresizing of subviews while we move views around. This prevents
+  // spurious renderer resizes.
+  [contentView setAutoresizesSubviews:NO];
+  [contentView removeFromSuperview];
+
+  NSWindow* destWindow = nil;
   if (fullscreen) {
     DCHECK(!savedRegularWindow_);
     savedRegularWindow_ = [window retain];
-    dstWindow = [self fullscreenWindow];
+    destWindow = [self createFullscreenWindow];
   } else {
     DCHECK(savedRegularWindow_);
-    dstWindow = [savedRegularWindow_ autorelease];
+    destWindow = [savedRegularWindow_ autorelease];
     savedRegularWindow_ = nil;
   }
+  DCHECK(destWindow);
 
-  // With this call, valgrind yells at me about "Conditional jump or
-  // move depends on uninitialised value(s)".  The error happens in
-  // -[NSThemeFrame drawOverlayRect:].  I'm pretty convinced this is
-  // an Apple bug, but there is no visual impact.  I have been
-  // unable to tickle it away with other window or view manipulation
-  // Cocoa calls.  Stack added to suppressions_mac.txt.
-  [content setAutoresizesSubviews:YES];
-  [dstWindow setContentView:content];
-  [window setWindowController:nil];
+  // Have to do this here, otherwise later calls can crash because the window
+  // has no delegate.
   [window setDelegate:nil];
-  [self setWindow:dstWindow];
-  [dstWindow setWindowController:self];
-  [dstWindow setDelegate:self];
-  [self adjustUIForFullscreen:fullscreen];
-  [dstWindow makeKeyAndOrderFront:self];
+  [destWindow setDelegate:self];
 
+  // With this call, valgrind complains that a "Conditional jump or move depends
+  // on uninitialised value(s)".  The error happens in -[NSThemeFrame
+  // drawOverlayRect:].  I'm pretty convinced this is an Apple bug, but there is
+  // no visual impact.  I have been unable to tickle it away with other window
+  // or view manipulation Cocoa calls.  Stack added to suppressions_mac.txt.
+  [contentView setAutoresizesSubviews:YES];
+  [destWindow setContentView:contentView];
+
+  // Add the tabstrip after setting the content view, so that the tab strip will
+  // be on top (in the z-order).
+  if ([self hasTabStrip])
+    [[[destWindow contentView] superview] addSubview:tabStripView];
+
+  [window setWindowController:nil];
+  [self setWindow:destWindow];
+  [destWindow setWindowController:self];
+  [self adjustUIForFullscreen:fullscreen];
+
+  // When entering fullscreen mode, the controller forces a layout for us.  When
+  // exiting, we need to call layoutSubviews manually.
+  if (fullscreen) {
+    [fullscreenController_ enterFullscreenForContentView:contentView
+                                            showDropdown:showDropdown];
+  } else {
+    [self layoutSubviews];
+  }
+
+  // The window needs to be onscreen before we can set its first responder.
+  [destWindow makeKeyAndOrderFront:self];
+  [focusTracker restoreFocusInWindow:destWindow];
   [window orderOut:self];
 }
 
 - (BOOL)isFullscreen {
   return savedRegularWindow_ != nil;
+}
+
+- (CGFloat)floatingBarShownFraction {
+  return floatingBarShownFraction_;
+}
+
+- (void)setFloatingBarShownFraction:(CGFloat)fraction {
+  floatingBarShownFraction_ = fraction;
+  [self layoutSubviews];
+}
+
+- (BOOL)floatingBarHasFocus {
+  NSResponder* focused = [[self window] firstResponder];
+  return [focused isKindOfClass:[AutocompleteTextFieldEditor class]];
 }
 
 - (NSInteger)numberOfTabs {
@@ -1372,6 +1459,8 @@ willPositionSheet:(NSWindow*)sheet
   windowShim_->UpdateTitleBar();
 
   // Update the bookmark bar.
+  // TODO(viettrungluu): perhaps update to not terminate running animations (if
+  // applicable)?
   [self updateBookmarkBarVisibilityWithAnimation:NO];
 }
 
@@ -1701,16 +1790,20 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 }
 
 - (void)saveWindowPositionToPrefs:(PrefService*)prefs {
+  // If we're in fullscreen mode, save the position of the regular window
+  // instead.
+  NSWindow* window = [self isFullscreen] ? savedRegularWindow_ : [self window];
+
   // Window positions are stored relative to the origin of the primary monitor.
   NSRect monitorFrame = [[[NSScreen screens] objectAtIndex:0] frame];
 
   // Start with the window's frame, which is in virtual coordinates.
   // Do some y twiddling to flip the coordinate system.
-  gfx::Rect bounds(NSRectToCGRect([[self window] frame]));
+  gfx::Rect bounds(NSRectToCGRect([window frame]));
   bounds.set_y(monitorFrame.size.height - bounds.y() - bounds.height());
 
   // We also need to save the current work area, in flipped coordinates.
-  gfx::Rect workArea(NSRectToCGRect([[[self window] screen] visibleFrame]));
+  gfx::Rect workArea(NSRectToCGRect([[window screen] visibleFrame]));
   workArea.set_y(monitorFrame.size.height - workArea.y() - workArea.height());
 
   DictionaryValue* windowPreferences = prefs->GetMutableDictionary(
@@ -1771,19 +1864,37 @@ willPositionSheet:(NSWindow*)sheet
 }
 
 - (void)layoutSubviews {
+  // With the exception of the tab strip, the subviews which we lay out are
+  // subviews of the content view, so we mainly work in the content view's
+  // coordinate system. Note, however, that the content view's coordinate system
+  // and the window's base coordinate system should coincide.
   NSWindow* window = [self window];
   NSView* contentView = [window contentView];
-  NSRect contentFrame = [contentView frame];
-  CGFloat maxY = NSMaxY(contentFrame);
-  CGFloat minY = NSMinY(contentFrame);
-  CGFloat width = NSWidth(contentFrame);
-  if ([self hasTabStrip])
-    maxY = NSMinY([[self tabStripView] frame]);
-  DCHECK_GE(maxY, minY);
+  NSRect contentBounds = [contentView bounds];
+  CGFloat minY = NSMinY(contentBounds);
+  CGFloat width = NSWidth(contentBounds);
 
   // Suppress title drawing if necessary.
   if ([window respondsToSelector:@selector(setShouldHideTitle:)])
     [(id)window setShouldHideTitle:![self hasTitleBar]];
+
+  BOOL isFullscreen = [self isFullscreen];
+  CGFloat floatingBarHeight = [self floatingBarHeight];
+  CGFloat yOffset = floor(
+      isFullscreen ? (1 - floatingBarShownFraction_) * floatingBarHeight : 0);
+  CGFloat maxY = NSMaxY(contentBounds) + yOffset;
+  CGFloat startMaxY = maxY;
+
+  if ([self hasTabStrip]) {
+    // If we need to lay out the tab strip, replace |maxY| and |startMaxY| with
+    // higher values, and then lay out the tab strip.
+    startMaxY = maxY = NSHeight([window frame]) + yOffset;
+    maxY = [self layoutTabStripAtMaxY:maxY width:width fullscreen:isFullscreen];
+  }
+
+  // Sanity-check |maxY|.
+  DCHECK_GE(maxY, minY);
+  DCHECK_LE(maxY, NSMaxY(contentBounds) + yOffset);
 
   // Place the toolbar at the top of the reserved area.
   maxY = [self layoutToolbarAtMaxY:maxY width:width];
@@ -1793,6 +1904,19 @@ willPositionSheet:(NSWindow*)sheet
   BOOL placeBookmarkBarBelowInfoBar = [self placeBookmarkBarBelowInfoBar];
   if (!placeBookmarkBarBelowInfoBar)
     maxY = [self layoutBookmarkBarAtMaxY:maxY width:width];
+
+  // The floating bar backing view doesn't actually add any height.
+  [self layoutFloatingBarBackingViewAtY:maxY
+                                  width:width
+                                 height:floatingBarHeight
+                             fullscreen:isFullscreen];
+
+  [fullscreenController_ overlayFrameChanged:[floatingBarBackingView_ frame]];
+
+  // If in fullscreen mode, reset |maxY| to top of screen, so that the floating
+  // bar slides over the things which appear to be in the content area.
+  if (isFullscreen)
+    maxY = NSMaxY(contentBounds);
 
   // Place the infobar container in place below the toolbar.
   maxY = [self layoutInfoBarAtMaxY:maxY width:width];
@@ -1820,6 +1944,51 @@ willPositionSheet:(NSWindow*)sheet
       setDividerOpacity:[bookmarkBarController_ toolbarDividerOpacity]];
 }
 
+- (CGFloat)floatingBarHeight {
+  if (![self isFullscreen])
+    return 0;
+
+  CGFloat totalHeight = 0;
+
+  if ([self hasTabStrip])
+    totalHeight += NSHeight([[self tabStripView] frame]);
+
+  if ([self hasToolbar]) {
+    totalHeight += NSHeight([[toolbarController_ view] frame]);
+  } else if ([self hasLocationBar]) {
+    totalHeight += NSHeight([[toolbarController_ view] frame]) +
+        kLocBarTopInset + kLocBarBottomInset;
+  }
+
+  if (![self placeBookmarkBarBelowInfoBar])
+    totalHeight += NSHeight([[bookmarkBarController_ view] frame]);
+
+  return totalHeight;
+}
+
+- (CGFloat)layoutTabStripAtMaxY:(CGFloat)maxY
+                          width:(CGFloat)width
+                     fullscreen:(BOOL)fullscreen {
+  // Nothing to do if no tab strip.
+  if (![self hasTabStrip])
+    return maxY;
+
+  NSView* tabStripView = [self tabStripView];
+  CGFloat tabStripHeight = NSHeight([tabStripView frame]);
+  maxY -= tabStripHeight;
+  [tabStripView setFrame:NSMakeRect(0, maxY, width, tabStripHeight)];
+
+  // Set indentation.
+  [tabStripController_ setIndentForControls:(fullscreen ? 0 :
+      [[tabStripController_ class] defaultIndentForControls])];
+
+  // TODO(viettrungluu): Seems kind of bad -- shouldn't |-layoutSubviews| do
+  // this? Moreover, |-layoutTabs| will try to animate....
+  [tabStripController_ layoutTabs];
+
+  return maxY;
+}
+
 - (CGFloat)layoutToolbarAtMaxY:(CGFloat)maxY width:(CGFloat)width {
   NSView* toolbarView = [toolbarController_ view];
   NSRect toolbarFrame = [toolbarView frame];
@@ -1838,11 +2007,6 @@ willPositionSheet:(NSWindow*)sheet
       // really be aware of what its height should be (the way the toolbar
       // compression stuff is currently set up messes things up).
       DCHECK(![toolbarView isHidden]);
-      // TODO(viettrungluu): We can argue about the "correct" insetting; I like
-      // the following best, though arguably 0 inset is better/more correct.
-      const CGFloat kLocBarLeftRightInset = 1;
-      const CGFloat kLocBarTopInset = 0;
-      const CGFloat kLocBarBottomInset = 1;
       toolbarFrame.origin.x = kLocBarLeftRightInset;
       toolbarFrame.origin.y = maxY - NSHeight(toolbarFrame) - kLocBarTopInset;
       toolbarFrame.size.width = width - 2 * kLocBarLeftRightInset;
@@ -1853,6 +2017,15 @@ willPositionSheet:(NSWindow*)sheet
   }
   [toolbarView setFrame:toolbarFrame];
   return maxY;
+}
+
+- (BOOL)placeBookmarkBarBelowInfoBar {
+  // If we are currently displaying the NTP detached bookmark bar or animating
+  // to/from it (from/to anything else), we display the bookmark bar below the
+  // infobar.
+  return [bookmarkBarController_ isInState:bookmarks::kDetachedState] ||
+      [bookmarkBarController_ isAnimatingToState:bookmarks::kDetachedState] ||
+      [bookmarkBarController_ isAnimatingFromState:bookmarks::kDetachedState];
 }
 
 - (CGFloat)layoutBookmarkBarAtMaxY:(CGFloat)maxY width:(CGFloat)width {
@@ -1874,6 +2047,38 @@ willPositionSheet:(NSWindow*)sheet
   return maxY;
 }
 
+- (void)layoutFloatingBarBackingViewAtY:(CGFloat)y
+                                  width:(CGFloat)width
+                                 height:(CGFloat)height
+                             fullscreen:(BOOL)fullscreen {
+  // Only display when in fullscreen mode.
+  if (fullscreen) {
+    DCHECK(floatingBarBackingView_.get());
+    BOOL aboveBookmarkBar = [self placeBookmarkBarBelowInfoBar];
+
+    // Insert it into the view hierarchy if necessary.
+    if (![floatingBarBackingView_ superview] ||
+        aboveBookmarkBar != floatingBarAboveBookmarkBar_) {
+      NSView* contentView = [[self window] contentView];
+      // z-order gets messed up unless we explicitly remove the floatingbar view
+      // and re-add it.
+      [floatingBarBackingView_ removeFromSuperview];
+      [contentView addSubview:floatingBarBackingView_
+                   positioned:(aboveBookmarkBar ?
+                                   NSWindowAbove : NSWindowBelow)
+                   relativeTo:[bookmarkBarController_ view]];
+      floatingBarAboveBookmarkBar_ = aboveBookmarkBar;
+    }
+
+    // Set its frame.
+    [floatingBarBackingView_ setFrame:NSMakeRect(0, y, width, height)];
+  } else {
+    // Okay to call even if |floatingBarBackingView_| is nil.
+    if ([floatingBarBackingView_ superview])
+      [floatingBarBackingView_ removeFromSuperview];
+  }
+}
+
 - (CGFloat)layoutInfoBarAtMaxY:(CGFloat)maxY width:(CGFloat)width {
   NSView* infoBarView = [infoBarContainerController_ view];
   NSRect infoBarFrame = [infoBarView frame];
@@ -1882,15 +2087,6 @@ willPositionSheet:(NSWindow*)sheet
   [infoBarView setFrame:infoBarFrame];
   maxY -= NSHeight(infoBarFrame);
   return maxY;
-}
-
-- (BOOL)placeBookmarkBarBelowInfoBar {
-  // If we are currently displaying the NTP detached bookmark bar or animating
-  // to/from it (from/to anything else), we display the bookmark bar below the
-  // infobar.
-  return [bookmarkBarController_ isInState:bookmarks::kDetachedState] ||
-      [bookmarkBarController_ isAnimatingToState:bookmarks::kDetachedState] ||
-      [bookmarkBarController_ isAnimatingFromState:bookmarks::kDetachedState];
 }
 
 - (CGFloat)layoutDownloadShelfAtMinY:(CGFloat)minY width:(CGFloat)width {
@@ -1943,6 +2139,20 @@ willPositionSheet:(NSWindow*)sheet
   [[toolbarController_ view] setFrame:toolbarFrame];
   [[bookmarkBarController_ view] setFrame:bookmarkFrame];
   [self layoutSubviews];
+}
+
+- (void)adjustUIForFullscreen:(BOOL)fullscreen {
+  if (fullscreen) {
+    mac_util::RequestFullScreen();
+
+    // Create the floating bar backing view if necessary.
+    if (!floatingBarBackingView_.get()) {
+      floatingBarBackingView_.reset(
+          [[FloatingBarBackingView alloc] initWithFrame:NSZeroRect]);
+    }
+  } else {
+    mac_util::ReleaseFullScreen();
+  }
 }
 
 @end  // @implementation BrowserWindowController (Private)

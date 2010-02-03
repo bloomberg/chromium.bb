@@ -34,6 +34,13 @@
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
 
+
+const NSString* kLocationBarGainedFocusNotification =
+    @"kLocationBarGainedFocusNotification_Chrome";
+const NSString* kLocationBarLostFocusNotification =
+    @"kLocationBarLostFocusNotification_Chrome";
+
+
 // TODO(shess): This code is mostly copied from the gtk
 // implementation.  Make sure it's all appropriate and flesh it out.
 
@@ -139,10 +146,12 @@ void LocationBarViewMac::AcceptInputWithDisposition(
 }
 
 void LocationBarViewMac::FocusLocation() {
+  PostNotification(kLocationBarGainedFocusNotification);
   edit_view_->FocusLocation();
 }
 
 void LocationBarViewMac::FocusSearch() {
+  PostNotification(kLocationBarGainedFocusNotification);
   edit_view_->SetForcedQuery();
   // TODO(pkasting): Focus the edit a la Linux/Win
 }
@@ -299,10 +308,12 @@ void LocationBarViewMac::OnInputInProgress(bool in_progress) {
   Update(NULL, false);
 }
 
-void LocationBarViewMac::OnKillFocus() {
+void LocationBarViewMac::OnSetFocus() {
+  PostNotification(kLocationBarGainedFocusNotification);
 }
 
-void LocationBarViewMac::OnSetFocus() {
+void LocationBarViewMac::OnKillFocus() {
+  PostNotification(kLocationBarLostFocusNotification);
 }
 
 SkBitmap LocationBarViewMac::GetFavIcon() const {
@@ -317,6 +328,7 @@ std::wstring LocationBarViewMac::GetTitle() const {
 
 void LocationBarViewMac::Revert() {
   edit_view_->RevertAll();
+  PostNotification(kLocationBarLostFocusNotification);
 }
 
 // TODO(pamg): Change all these, here and for other platforms, to size_t.
@@ -471,6 +483,11 @@ void LocationBarViewMac::Observe(NotificationType type,
       NOTREACHED() << "Unexpected notification";
       break;
   }
+}
+
+void LocationBarViewMac::PostNotification(const NSString* notification) {
+  [[NSNotificationCenter defaultCenter] postNotificationName:notification
+                                        object:[NSValue valueWithPointer:this]];
 }
 
 // LocationBarImageView---------------------------------------------------------

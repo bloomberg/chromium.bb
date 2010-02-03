@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -91,9 +91,9 @@ TEST_F(BrowserWindowControllerTest, TestSaveWindowPosition) {
 }
 
 TEST_F(BrowserWindowControllerTest, TestFullScreenWindow) {
-  // Confirm the fullscreen command doesn't return nil.
+  // Confirm that |-createFullscreenWindow| doesn't return nil.
   // See BrowserWindowFullScreenControllerTest for more fullscreen tests.
-  EXPECT_TRUE([controller_ fullscreenWindow]);
+  EXPECT_TRUE([controller_ createFullscreenWindow]);
 }
 
 TEST_F(BrowserWindowControllerTest, TestNormal) {
@@ -166,9 +166,10 @@ TEST_F(BrowserWindowControllerTest, TestIncognitoWidthSpace) {
 
 namespace {
 // Verifies that the toolbar, infobar, tab content area, and download shelf
-// completely fill their window's contentView.
+// completely fill the area under the tabstrip.
 void CheckViewPositions(BrowserWindowController* controller) {
   NSRect contentView = [[[controller window] contentView] bounds];
+  NSRect tabstrip = [[controller tabStripView] frame];
   NSRect toolbar = [[controller toolbarView] frame];
   NSRect infobar = [[controller infoBarContainerView] frame];
   NSRect contentArea = [[controller tabContentArea] frame];
@@ -189,7 +190,9 @@ void CheckViewPositions(BrowserWindowController* controller) {
     EXPECT_TRUE([[controller bookmarkView] isHidden]);
   }
 
-  EXPECT_EQ(NSMaxY(contentView), NSMaxY(toolbar));
+  // Toolbar should start immediately under the tabstrip, but the tabstrip is
+  // not necessarily fixed with respect to the content view.
+  EXPECT_EQ(NSMinY(tabstrip), NSMaxY(toolbar));
 }
 }  // end namespace
 
@@ -582,13 +585,7 @@ class BrowserWindowFullScreenControllerTest : public CocoaTest {
 - (BOOL)supportsFullscreen;
 @end
 
-// Fullscreen mode disabled for Mstone-4 / ReleaseBlock-Beta.
-// Confirm we don't accidentally turn it back on.
-TEST_F(BrowserWindowFullScreenControllerTest, ConfirmFullscreenDisabled) {
-  EXPECT_FALSE([controller_ supportsFullscreen]);
-}
-
-TEST_F(BrowserWindowFullScreenControllerTest, DISABLED_TestFullscreen) {
+TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreen) {
   EXPECT_FALSE([controller_ isFullscreen]);
   [controller_ setFullscreen:YES];
   EXPECT_TRUE([controller_ isFullscreen]);
@@ -596,7 +593,7 @@ TEST_F(BrowserWindowFullScreenControllerTest, DISABLED_TestFullscreen) {
   EXPECT_FALSE([controller_ isFullscreen]);
 }
 
-TEST_F(BrowserWindowFullScreenControllerTest, DISABLED_TestActivate) {
+TEST_F(BrowserWindowFullScreenControllerTest, TestActivate) {
   EXPECT_FALSE([controller_ isFullscreen]);
 
   [controller_ activate];
@@ -606,19 +603,19 @@ TEST_F(BrowserWindowFullScreenControllerTest, DISABLED_TestActivate) {
   [controller_ setFullscreen:YES];
   [controller_ activate];
   frontmostWindow = [[NSApp orderedWindows] objectAtIndex:0];
-  EXPECT_EQ(frontmostWindow, [controller_ fullscreenWindow]);
+  EXPECT_EQ(frontmostWindow, [controller_ createFullscreenWindow]);
 
   // We have to cleanup after ourselves by unfullscreening.
   [controller_ setFullscreen:NO];
 }
 
 @implementation BrowserWindowControllerFakeFullscreen
-// Override fullscreenWindow to return a dummy window.  This isn't needed to
-// pass the test, but because the dummy window is only 100x100, it prevents the
-// real fullscreen window from flashing up and taking over the whole screen..
-// We have to return an actual window because layoutSubviews: looks at the
-// window's frame.
-- (NSWindow*)fullscreenWindow {
+// Override |-createFullscreenWindow| to return a dummy window. This isn't
+// needed to pass the test, but because the dummy window is only 100x100, it
+// prevents the real fullscreen window from flashing up and taking over the
+// whole screen. We have to return an actual window because |-layoutSubviews|
+// looks at the window's frame.
+- (NSWindow*)createFullscreenWindow {
   if (fullscreenWindow_.get())
     return fullscreenWindow_.get();
 

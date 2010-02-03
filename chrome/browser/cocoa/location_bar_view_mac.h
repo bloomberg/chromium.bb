@@ -27,6 +27,10 @@ class CommandUpdater;
 class Profile;
 class ToolbarModel;
 
+// Notifications sent when this location bar gains or loses focus.
+extern const NSString* kLocationBarGainedFocusNotification;
+extern const NSString* kLocationBarLostFocusNotification;
+
 // A C++ bridge class that represents the location bar UI element to
 // the portable code.  Wires up an AutocompleteEditViewMac instance to
 // the location bar text field, which handles most of the work.
@@ -326,6 +330,9 @@ class LocationBarViewMac : public AutocompleteEditController,
 
   // Sets the label for the SSL icon.
   void SetSecurityIconLabel();
+
+  // Posts |notification| to the default notification center.
+  void PostNotification(const NSString* notification);
 
   scoped_ptr<AutocompleteEditViewMac> edit_view_;
 
