@@ -16,7 +16,7 @@ class AppMenuModel;
 
 namespace chromeos {
 
-class ChromeosBrowserView;
+class BrowserView;
 class StatusAreaButton;
 
 // StatusAreView specialization specific for Chrome browser.
@@ -25,7 +25,7 @@ class BrowserStatusAreaView : public StatusAreaView,
                               public menus::SimpleMenuModel::Delegate,
                               public views::ViewMenuDelegate {
  public:
-  explicit BrowserStatusAreaView(ChromeosBrowserView* browser_view);
+  explicit BrowserStatusAreaView(BrowserView* browser_view);
   virtual ~BrowserStatusAreaView() {}
 
   virtual void Init();
@@ -48,7 +48,7 @@ class BrowserStatusAreaView : public StatusAreaView,
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
   // The browser window that owns us.
-  ChromeosBrowserView* browser_view_;
+  BrowserView* browser_view_;
 
   StatusAreaButton* menu_view_;
 

@@ -12,7 +12,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/browser_theme_provider.h"
-#include "chrome/browser/chromeos/chromeos_browser_view.h"
+#include "chrome/browser/chromeos/browser_view.h"
 #include "chrome/browser/chromeos/status_area_button.h"
 #include "chrome/browser/chromeos/status_area_view.h"
 #include "chrome/browser/profile.h"
@@ -88,7 +88,7 @@ class OptionsMenuModel : public menus::SimpleMenuModel,
   DISALLOW_COPY_AND_ASSIGN(OptionsMenuModel);
 };
 
-BrowserStatusAreaView::BrowserStatusAreaView(ChromeosBrowserView* browser_view)
+BrowserStatusAreaView::BrowserStatusAreaView(BrowserView* browser_view)
     : StatusAreaView(browser_view),
       browser_view_(browser_view),
       menu_view_(NULL) {
