@@ -103,7 +103,6 @@ const char* kSupportedLanguages[] = {
     "yi",     // Yiddish
 };
 
-
 // The maximum size in bytes after which the server will refuse the request.
 const size_t kTextRequestMaxSize = 1024 * 30;
 
@@ -133,6 +132,10 @@ class SendTranslationRequestTask : public CancelableTask {
 };
 
 }  // namespace
+
+// static
+base::LazyInstance<std::set<std::string> >
+    TranslationService::supported_languages_(base::LINKER_INITIALIZED);
 
 // Contains the information necessary to send a request to the translation
 // server.  It is used to group several renderer queries, as to limit the
@@ -408,6 +411,16 @@ std::string TranslationService::GetLanguageCode(
       return kLocaleToCLDLanguages[i].cld_language;
   }
   return chrome_locale;
+}
+
+// static
+bool TranslationService::IsSupportedLanguage(const std::string& page_language) {
+  if (supported_languages_.Pointer()->empty()) {
+    for (size_t i = 0; i < arraysize(kSupportedLanguages); ++i)
+      supported_languages_.Pointer()->insert(kSupportedLanguages[i]);
+  }
+  return supported_languages_.Pointer()->find(page_language) !=
+      supported_languages_.Pointer()->end();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

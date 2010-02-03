@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_RENDERER_HOST_TRANSLATION_SERVICE_H_
 
 #include <map>
+#include <set>
 #include <string>
 #include <vector>
 
+#include "base/lazy_instance.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "chrome/browser/net/url_fetcher.h"
@@ -69,6 +71,9 @@ class TranslationService : public URLFetcher::Delegate {
   // Returns the language code that can be used with the Translate method for a
   // specified |chrome_locale|.
   static std::string GetLanguageCode(const std::string& chrome_locale);
+
+  // Returns true if |page_language| is supported by the translation server.
+  static bool IsSupportedLanguage(const std::string& page_language);
 
  protected:
   // The amount of time in ms after which a pending request is sent if no other
@@ -154,6 +159,9 @@ class TranslationService : public URLFetcher::Delegate {
 
   TranslationRequestMap pending_translation_requests_;
   TranslationRequestMap pending_secure_translation_requests_;
+
+  // The language supported by the translation server.
+  static base::LazyInstance<std::set<std::string> > supported_languages_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslationService);
 };

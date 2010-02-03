@@ -79,6 +79,9 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
     return;
   }
 
+  if (!TranslationService::IsSupportedLanguage(page_lang))
+    return;  // Nothing to do, we don't support that language.
+
   std::string ui_lang = TranslationService::GetLanguageCode(
       g_browser_process->GetApplicationLocale());
 
