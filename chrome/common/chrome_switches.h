@@ -180,6 +180,7 @@ extern const char kTrustedPlugins[];
 extern const char kTryChromeAgain[];
 extern const char kUninstall[];
 extern const char kUseFlip[];
+extern const char kUseNSSForSSL[];
 extern const char kFixedHost[];
 extern const char kFixedHttpPort[];
 extern const char kFixedHttpsPort[];

@@ -65,6 +65,7 @@
 #include "net/base/cookie_monster.h"
 #include "net/base/net_module.h"
 #include "net/http/http_network_session.h"
+#include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_pool_base.h"
 
 #if defined(OS_POSIX)
@@ -716,6 +717,14 @@ int BrowserMain(const MainFunctionParams& parameters) {
       return ResultCodes::SHELL_INTEGRATION_FAILED;
     }
   }
+
+#if defined(OS_WIN)
+  if (parsed_command_line.HasSwitch(switches::kUseNSSForSSL) ||
+      parsed_command_line.HasSwitch(switches::kUseFlip)) {
+    net::ClientSocketFactory::SetSSLClientSocketFactory(
+        net::SSLClientSocketNSSFactory);
+  }
+#endif
 
   // Try to create/load the profile.
   ProfileManager* profile_manager = browser_process->profile_manager();

@@ -619,6 +619,10 @@ const char kUninstall[]                     = "uninstall";
 // This is a temporary testing flag.
 const char kUseFlip[]                       = "use-flip";
 
+// Use NSS instead of the system SSL library for SSL.
+// This is a temporary testing flag.
+const char kUseNSSForSSL[]                  = "use-nss-for-ssl";
+
 // Force all requests to go to this server.  This commandline is provided
 // for testing purposes only, and will likely be removed soon.  It can also
 // hurt startup performance as it does a synchronous name resolution on the
