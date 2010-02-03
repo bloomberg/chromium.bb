@@ -291,7 +291,6 @@ void GLES2Implementation::TexSubImage2D(
   }
 }
 
-
 GLenum GLES2Implementation::CheckFramebufferStatus(GLenum target) {
   // TODO(gman): implement.
   return 0;
@@ -341,12 +340,18 @@ const GLubyte* GLES2Implementation::GetString(GLenum name) {
 
 void GLES2Implementation::GetUniformfv(
     GLuint program, GLint location, GLfloat* params) {
-  // TODO(gman): implement.
+  helper_->GetUniformfv(
+      program, location, result_shm_id(), result_shm_offset());
+  WaitForCmd();
+  CopyResult(params);
 }
 
 void GLES2Implementation::GetUniformiv(
     GLuint program, GLint location, GLint* params) {
-  // TODO(gman): implement.
+  helper_->GetUniformiv(
+      program, location, result_shm_id(), result_shm_offset());
+  WaitForCmd();
+  CopyResult(params);
 }
 
 void GLES2Implementation::ReadPixels(

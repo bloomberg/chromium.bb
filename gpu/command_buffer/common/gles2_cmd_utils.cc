@@ -343,6 +343,47 @@ uint32 GLES2Util::ComputeImageDataSize(
   return height * row_size;
 }
 
+uint32 GLES2Util::GetGLDataTypeSize(int type) {
+  switch (type) {
+    case GL_FLOAT:
+      return sizeof(GLfloat);              // NOLINT
+    case GL_FLOAT_VEC2:
+      return sizeof(GLfloat) * 2;          // NOLINT
+    case GL_FLOAT_VEC3:
+      return sizeof(GLfloat) * 3;          // NOLINT
+    case GL_FLOAT_VEC4:
+      return sizeof(GLfloat) * 4;          // NOLINT
+    case GL_INT:
+      return sizeof(GLint);                // NOLINT
+    case GL_INT_VEC2:
+      return sizeof(GLint) * 2;            // NOLINT
+    case GL_INT_VEC3:
+      return sizeof(GLint) * 3;            // NOLINT
+    case GL_INT_VEC4:
+      return sizeof(GLint) * 4;            // NOLINT
+    case GL_BOOL:
+      return sizeof(GLint);                // NOLINT
+    case GL_BOOL_VEC2:
+      return sizeof(GLint) * 1;            // NOLINT
+    case GL_BOOL_VEC3:
+      return sizeof(GLint) * 2;            // NOLINT
+    case GL_BOOL_VEC4:
+      return sizeof(GLint) * 3;            // NOLINT
+    case GL_FLOAT_MAT2:
+      return sizeof(GLfloat) * 2 * 2;      // NOLINT
+    case GL_FLOAT_MAT3:
+      return sizeof(GLfloat) * 3 * 3;      // NOLINT
+    case GL_FLOAT_MAT4:
+      return sizeof(GLfloat) * 4 * 4;      // NOLINT
+    case GL_SAMPLER_2D:
+      return sizeof(GLint);                // NOLINT
+    case GL_SAMPLER_CUBE:
+      return sizeof(GLint);                // NOLINT
+    default:
+      return 0;
+  }
+}
+
 }  // namespace gles2
 }  // namespace gpu
 

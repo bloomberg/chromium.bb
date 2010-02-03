@@ -40,9 +40,21 @@ struct SizedResult {
   T GetDataAs() {
     return static_cast<T>(static_cast<void*>(&data));
   }
+
+  // Returns the size of the SizedResult for a given size of result.
+  static size_t GetSize(size_t size_of_result) {
+    return size_of_result + sizeof(uint32);  // NOLINT
+  }
+
   uint32 size;  // in bytes.
   int32 data;  // this is just here to get an offset.
 };
+
+COMPILE_ASSERT(sizeof(SizedResult) == 8, SizedResult_size_not_8);
+COMPILE_ASSERT(offsetof(SizedResult, size) == 0,
+               OffsetOf_SizedResult_size_not_0);
+COMPILE_ASSERT(offsetof(SizedResult, data) == 4,
+               OffsetOf_SizedResult_data_not_4);
 
 #include "gpu/command_buffer/common/gles2_cmd_format_autogen.h"
 

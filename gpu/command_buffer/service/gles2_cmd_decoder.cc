@@ -35,6 +35,8 @@ COMPILE_ASSERT(sizeof(GLint) == sizeof(uint32),  // NOLINT
                GLint_not_same_size_as_uint32);
 COMPILE_ASSERT(sizeof(GLsizei) == sizeof(uint32),  // NOLINT
                GLint_not_same_size_as_uint32);
+COMPILE_ASSERT(sizeof(GLfloat) == sizeof(float),  // NOLINT
+               GLfloat_not_same_size_as_float);
 
 namespace {
 
@@ -309,6 +311,15 @@ class ProgramManager {
   // or if enabled that it points to a valid source.
   class ProgramInfo {
    public:
+    struct UniformInfo {
+      GLsizei GetSizeInBytes() const;
+
+      GLsizei size;
+      GLenum type;
+      GLint location;
+    };
+
+    typedef std::vector<UniformInfo> UniformInfoVector;
     typedef std::vector<GLuint> AttribLocationVector;
 
     ProgramInfo() {
@@ -326,8 +337,34 @@ class ProgramManager {
     const AttribLocationVector& GetAttribLocations() const {
       return attrib_locations_;
     }
+
+    void SetNumUniforms(int num_uniforms) {
+      uniform_infos_.resize(num_uniforms);
+    }
+
+    void SetUniformInfo(
+        GLint index, GLsizei size, GLenum type, GLint location) {
+      UniformInfo& info = uniform_infos_[index];
+      info.size = size;
+      info.type = type;
+      info.location = location;
+    }
+
+    const UniformInfo* GetUniformInfoByLocation(GLint location) {
+      for (GLuint ii = 0; ii < uniform_infos_.size(); ++ii) {
+        if (uniform_infos_[ii].location == location) {
+          return &uniform_infos_[ii];
+        }
+      }
+      return NULL;
+    }
+
+
    private:
     AttribLocationVector attrib_locations_;
+
+    // Uniform info by info.
+    UniformInfoVector uniform_infos_;
   };
 
   ProgramInfo* GetProgramInfo(GLuint program);
@@ -344,6 +381,10 @@ class ProgramManager {
   typedef std::map<GLuint, ProgramInfo> ProgramInfoMap;
   ProgramInfoMap program_infos_;
 };
+
+GLsizei ProgramManager::ProgramInfo::UniformInfo::GetSizeInBytes() const {
+  return GLES2Util::GetGLDataTypeSize(type) * size;
+}
 
 ProgramManager::ProgramInfo* ProgramManager::GetProgramInfo(GLuint program) {
   ProgramInfoMap::iterator it = program_infos_.find(program);
@@ -364,16 +405,31 @@ void ProgramManager::UpdateProgramInfo(GLuint program) {
   info->SetNumAttributes(num_attribs);
   glGetProgramiv(program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_len);
   // TODO(gman): Should we check for error?
-  scoped_array<char> name_buffer(new char[max_len + 1]);
+  scoped_array<char> name_buffer(new char[max_len]);
   for (GLint ii = 0; ii < num_attribs; ++ii) {
     GLsizei length;
     GLsizei size;
     GLenum type;
     glGetActiveAttrib(
-        program, ii, max_len + 1, &length, &size, &type, name_buffer.get());
+        program, ii, max_len, &length, &size, &type, name_buffer.get());
     // TODO(gman): Should we check for error?
     GLint location = glGetAttribLocation(program, name_buffer.get());
     info->SetAttributeLocation(ii, location);
+  }
+  GLint num_uniforms;
+  glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &num_uniforms);
+  info->SetNumUniforms(num_uniforms);
+  glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_len);
+  name_buffer.reset(new char[max_len]);
+  for (GLint ii = 0; ii < num_uniforms; ++ii) {
+    GLsizei length;
+    GLsizei size;
+    GLenum type;
+    glGetActiveUniform(
+        program, ii, max_len, &length, &size, &type, name_buffer.get());
+    // TODO(gman): Should we check for error?
+    GLint location = glGetUniformLocation(program, name_buffer.get());
+    info->SetUniformInfo(ii, size, type, location);
   }
 }
 
@@ -612,6 +668,14 @@ class GLES2DecoderImpl : public GLES2Decoder {
     return target == GL_ARRAY_BUFFER ? bound_array_buffer_ :
                                        bound_element_array_buffer_;
   }
+
+  // Validates the program and location for a glGetUniform call and returns
+  // a SizeResult setup to receive the result. Returns true if glGetUniform
+  // should be called.
+  bool GetUniformSetup(
+      GLuint program, GLint location,
+      uint32 shm_id, uint32 shm_offset,
+      error::Error* error, GLuint* service_id, SizedResult** result);
 
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
@@ -1863,18 +1927,80 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribPointerv(
   return error::kNoError;
 }
 
+bool GLES2DecoderImpl::GetUniformSetup(
+    GLuint program, GLint location,
+    uint32 shm_id, uint32 shm_offset,
+    error::Error* error, GLuint* service_id, SizedResult** result) {
+  *error = error::kNoError;
+  // Make sure we have enough room for the result on failure.
+  *result = GetSharedMemoryAs<SizedResult*>(
+      shm_id, shm_offset, SizedResult::GetSize(0));
+  if (!*result) {
+    *error = error::kOutOfBounds;
+    return false;
+  }
+  // Set the result size to 0 so the client does not have to check for success.
+  (*result)->size = 0;
+  if (!id_manager_->GetServiceId(program, service_id)) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  ProgramManager::ProgramInfo* info = GetProgramInfo(*service_id);
+  if (!info) {
+    // Program was not linked successfully. (ie, glLinkProgram)
+    SetGLError(GL_INVALID_OPERATION);
+    return false;
+  }
+  const ProgramManager::ProgramInfo::UniformInfo* uniform_info =
+      info->GetUniformInfoByLocation(location);
+  if (!uniform_info) {
+    // No such location.
+    SetGLError(GL_INVALID_OPERATION);
+    return false;
+  }
+  GLsizei size = uniform_info->GetSizeInBytes();
+  if (size == 0) {
+    SetGLError(GL_INVALID_OPERATION);
+    return false;
+  }
+  *result = GetSharedMemoryAs<SizedResult*>(
+      shm_id, shm_offset, SizedResult::GetSize(size));
+  if (!*result) {
+    *error = error::kOutOfBounds;
+    return false;
+  }
+  (*result)->size = size;
+  return true;
+}
+
 error::Error GLES2DecoderImpl::HandleGetUniformiv(
     uint32 immediate_data_size, const gles2::GetUniformiv& c) {
-  // TODO(gman): Implement.
-  NOTREACHED();
-  return error::kNoError;
+  GLuint program = c.program;
+  GLint location = c.location;
+  GLuint service_id;
+  Error error;
+  SizedResult* result;
+  if (GetUniformSetup(
+      program, location, c.params_shm_id, c.params_shm_offset,
+      &error, &service_id, &result)) {
+    glGetUniformiv(service_id, location, result->GetDataAs<GLint*>());
+  }
+  return error;
 }
 
 error::Error GLES2DecoderImpl::HandleGetUniformfv(
     uint32 immediate_data_size, const gles2::GetUniformfv& c) {
-  // TODO(gman): Implement.
-  NOTREACHED();
-  return error::kNoError;
+  GLuint program = c.program;
+  GLint location = c.location;
+  GLuint service_id;
+  Error error;
+  SizedResult* result;
+  if (GetUniformSetup(
+      program, location, c.params_shm_id, c.params_shm_offset,
+      &error, &service_id, &result)) {
+    glGetUniformfv(service_id, location, result->GetDataAs<GLfloat*>());
+  }
+  return error;
 }
 
 error::Error GLES2DecoderImpl::HandleGetShaderPrecisionFormat(

@@ -30,6 +30,8 @@ class GLES2Util {
   static uint32 ComputeImageDataSize(
     int width, int height, int format, int type, int unpack_alignment);
 
+  static uint32 GetGLDataTypeSize(int type);
+
  private:
   int num_compressed_texture_formats_;
 };
