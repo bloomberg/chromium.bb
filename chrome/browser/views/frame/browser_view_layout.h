@@ -51,7 +51,7 @@ class BrowserViewLayout : public views::LayoutManager {
   // of the bottom of the control, for laying out the next control.
   int LayoutToolbar(int top);
   int LayoutBookmarkAndInfoBars(int top);
-  int LayoutTopBar(int top);
+  int LayoutBookmarkBar(int top);
   int LayoutInfoBar(int top);
 
   // Layout the TabContents container, between the coordinates |top| and

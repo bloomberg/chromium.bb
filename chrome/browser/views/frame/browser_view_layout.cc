@@ -314,30 +314,20 @@ int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top) {
     // need to show any Info bar _above_ the Bookmark bar, since the
     // Bookmark bar is styled to look like it's part of the page.
     if (active_bookmark_bar_->IsDetached())
-      return LayoutTopBar(LayoutInfoBar(top));
+      return LayoutBookmarkBar(LayoutInfoBar(top));
     // Otherwise, Bookmark bar first, Info bar second.
-    top = LayoutTopBar(top);
+    top = LayoutBookmarkBar(top);
   }
   find_bar_y_ = top + browser_view_->y() - 1;
   return LayoutInfoBar(top);
 }
 
-int BrowserViewLayout::LayoutTopBar(int top) {
-  // This method lays out the the bookmark bar, and, if required,
-  // the extension shelf by its side. The bookmark bar appears on
-  // the right of the extension shelf. If there are too many
-  // bookmark items and extension toolstrips to fit in the single
-  // bar, some compromises are made as follows: 1. The bookmark bar
-  // is shrunk till it reaches the minimum width.  2. After reaching
-  // the minimum width, the bookmark bar width is kept fixed - the
-  // extension shelf bar width is reduced.
+int BrowserViewLayout::LayoutBookmarkBar(int top) {
   DCHECK(active_bookmark_bar_);
   int y = top, x = 0;
   if (!browser_view_->IsBookmarkBarVisible()) {
     active_bookmark_bar_->SetVisible(false);
     active_bookmark_bar_->SetBounds(0, y, browser_view_->width(), 0);
-    if (extension_shelf_->IsOnTop())
-      extension_shelf_->SetVisible(false);
     return y;
   }
 
@@ -345,31 +335,6 @@ int BrowserViewLayout::LayoutTopBar(int top) {
   y -= kSeparationLineHeight + (
       active_bookmark_bar_->IsDetached() ?
       0 : active_bookmark_bar_->GetToolbarOverlap(false));
-
-  if (extension_shelf_->IsOnTop()) {
-    if (!active_bookmark_bar_->IsDetached()) {
-      int extension_shelf_width =
-          extension_shelf_->GetPreferredSize().width();
-      int bookmark_bar_given_width =
-          browser_view_->width() - extension_shelf_width;
-      int minimum_allowed_bookmark_bar_width =
-          active_bookmark_bar_->GetMinimumSize().width();
-      if (bookmark_bar_given_width < minimum_allowed_bookmark_bar_width) {
-        // The bookmark bar cannot compromise on its width any more. The
-        // extension shelf needs to shrink now.
-        extension_shelf_width =
-            browser_view_->width() - minimum_allowed_bookmark_bar_width;
-      }
-      extension_shelf_->SetVisible(true);
-      extension_shelf_->SetBounds(x, y, extension_shelf_width,
-                                  bookmark_bar_height);
-      x += extension_shelf_width;
-    } else {
-      // TODO(sidchat): For detached style bookmark bar, set the extensions
-      // shelf in a better position. Issue = 20741.
-      extension_shelf_->SetVisible(false);
-    }
-  }
 
   active_bookmark_bar_->SetVisible(true);
   active_bookmark_bar_->SetBounds(x, y,
@@ -429,9 +394,6 @@ int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
 }
 
 int BrowserViewLayout::LayoutExtensionShelf(int bottom) {
-  if (!extension_shelf_ || extension_shelf_->IsOnTop())
-    return bottom;
-
   if (extension_shelf_) {
     bool visible = browser()->SupportsWindowFeature(
         Browser::FEATURE_EXTENSIONSHELF);

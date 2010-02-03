@@ -455,14 +455,7 @@ void ExtensionShelf::Toolstrip::LayoutWindow() {
   // level widget, we need to do some coordinate conversion to get this right.
   gfx::Point origin(-kToolstripPadding, 0);
   if (expanded_ || mole_animation_->IsAnimating()) {
-    if (shelf_->IsOnTop()) {
-      if (handle_visible_)
-        origin.set_y(-GetHandlePreferredSize().height());
-      else
-        origin.set_y(0);
-    } else {
-      origin.set_y(GetShelfView()->height() - window_size.height());
-    }
+    origin.set_y(GetShelfView()->height() - window_size.height());
     views::View::ConvertPointToView(GetShelfView(), shelf_->GetRootView(),
                                     &origin);
   } else {
@@ -692,10 +685,7 @@ ExtensionShelf::ExtensionShelf(Browser* browser)
       fullscreen_(false) {
   SetID(VIEW_ID_DEV_EXTENSION_SHELF);
 
-  if (IsOnTop())
-    top_margin_ = kTopMarginWhenExtensionsOnTop;
-  else
-    top_margin_ = kTopMarginWhenExtensionsOnBottom;
+  top_margin_ = kTopMarginWhenExtensionsOnBottom;
 
   model_->AddObserver(this);
   LoadFromModel();
@@ -1103,12 +1093,6 @@ gfx::Size ExtensionShelf::LayoutItems(bool compute_bounds_only) {
   return prefsize;
 }
 
-bool ExtensionShelf::IsOnTop() const {
-  static bool is_on_top = CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kShowExtensionsOnTop);
-  return is_on_top;
-}
-
 bool ExtensionShelf::IsDetached() const {
   return OnNewTabPage() && (size_animation_->GetCurrentValue() != 1);
 }
@@ -1127,7 +1111,7 @@ void ExtensionShelf::OnFullscreenToggled(bool fullscreen) {
   if (fullscreen == fullscreen_)
     return;
   fullscreen_ = fullscreen;
-  if (!IsAlwaysShown() || IsOnTop())
+  if (!IsAlwaysShown())
     return;
   size_animation_->Reset(fullscreen ? 0 : 1);
 }

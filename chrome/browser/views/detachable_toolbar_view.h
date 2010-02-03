@@ -25,9 +25,6 @@ class DetachableToolbarView : public AccessibleToolbarView {
   // Whether the view is currently detached from the Chrome frame.
   virtual bool IsDetached() const = 0;
 
-  // Whether the shelf/bar is above the page or below it.
-  virtual bool IsOnTop() const = 0;
-
   // Gets the current state of the resize animation (show/hide).
   virtual double GetAnimationValue() const = 0;
 

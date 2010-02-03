@@ -39,7 +39,6 @@ class ExtensionShelf : public DetachableToolbarView,
   int top_margin() { return top_margin_; }
 
   // DetachableToolbarView methods:
-  virtual bool IsOnTop() const;
   virtual bool IsDetached() const;
   virtual double GetAnimationValue() const {
     return size_animation_->GetCurrentValue();

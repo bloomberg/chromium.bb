@@ -56,9 +56,8 @@ void DetachableToolbarView::CalculateContentArea(
 void DetachableToolbarView::PaintHorizontalBorder(gfx::Canvas* canvas,
                                                   DetachableToolbarView* view) {
   // Border can be at the top or at the bottom of the view depending on whether
-  // the view (bar/shelf) is at the top/at the bottom and whether it is attached
-  // or detached.
-  int y = view->IsOnTop() == !view->IsDetached() ? view->height() - 1 : 0;
+  // the view (bar/shelf) is attached or detached.
+  int y = !view->IsDetached() ? view->height() - 1 : 0;
   canvas->FillRectInt(ResourceBundle::toolbar_separator_color,
       0, y, view->width(), 1);
 }

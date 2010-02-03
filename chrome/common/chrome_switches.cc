@@ -551,9 +551,6 @@ const char kSearchInOmniboxHint[]           = "search-in-omnibox-hint";
 // See kHideIcons.
 const char kShowIcons[]                     = "show-icons";
 
-// Show extensions on top with toolbar.
-const char kShowExtensionsOnTop[]           = "show-extensions-on-top";
-
 // Visibly render a border around paint rects in the web page to help debug
 // and study painting behavior.
 const char kShowPaintRects[]                = "show-paint-rects";

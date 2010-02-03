@@ -1249,10 +1249,6 @@ void Browser::ToggleBookmarkBar() {
 }
 
 void Browser::ToggleExtensionShelf() {
-  if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kShowExtensionsOnTop)) {
-    return;
-  }
   UserMetrics::RecordAction("ToggleExtensionShelf", profile_);
   window_->ToggleExtensionShelf();
 }

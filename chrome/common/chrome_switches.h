@@ -162,7 +162,6 @@ extern const char kRestoreLastSession[];
 extern const char kSafePlugins[];
 extern const char kSdchFilter[];
 extern const char kSearchInOmniboxHint[];
-extern const char kShowExtensionsOnTop[];
 extern const char kShowIcons[];
 extern const char kShowPaintRects[];
 extern const char kSilentDumpOnDCHECK[];
