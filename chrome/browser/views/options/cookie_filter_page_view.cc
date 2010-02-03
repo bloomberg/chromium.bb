@@ -14,6 +14,7 @@
 #include "chrome/browser/views/options/cookies_view.h"
 #include "chrome/browser/views/options/exceptions_view.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/pref_service.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "views/controls/button/checkbox.h"
@@ -32,6 +33,8 @@ CookieFilterPageView::CookieFilterPageView(Profile* profile)
       clear_on_close_check_(NULL),
       show_cookies_button_(NULL),
       OptionsPageView(profile) {
+  clear_site_data_on_exit_.Init(prefs::kClearSiteDataOnExit,
+                                profile->GetPrefs(), NULL);
 }
 
 CookieFilterPageView::~CookieFilterPageView() {
@@ -128,8 +131,6 @@ void CookieFilterPageView::InitControlLayout() {
       l10n_util::GetString(IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX));
   clear_on_close_check_->set_listener(this);
 
-  // TODO(pkasting): Set clear-on-close checkbox to be checked or not.
-
   layout->StartRow(0, single_column_set_id);
   layout->AddView(clear_on_close_check_);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
@@ -149,6 +150,13 @@ void CookieFilterPageView::InitControlLayout() {
   layout->StartRow(0, single_column_set_id);
   layout->AddView(flash_settings_link, 1, 1, GridLayout::LEADING,
                   GridLayout::FILL);
+}
+
+void CookieFilterPageView::NotifyPrefChanged(const std::wstring* pref_name) {
+  if (!pref_name || *pref_name == prefs::kClearSiteDataOnExit) {
+    clear_on_close_check_->SetChecked(
+        clear_site_data_on_exit_.GetValue());
+  }
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -173,7 +181,7 @@ void CookieFilterPageView::ButtonPressed(
   } else if (sender == block_3rdparty_check_) {
     settings_map->SetBlockThirdPartyCookies(block_3rdparty_check_->checked());
   } else if (sender == clear_on_close_check_) {
-    // TODO(pkasting): Set clear-on-close setting.
+    clear_site_data_on_exit_.SetValue(clear_on_close_check_->checked());
   } else {
     DCHECK_EQ(sender, show_cookies_button_);
     UserMetricsRecordAction("Options_ShowCookies", NULL);

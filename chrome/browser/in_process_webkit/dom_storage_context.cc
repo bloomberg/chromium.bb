@@ -1,17 +1,21 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
 
 #include "base/file_path.h"
 #include "base/file_util.h"
+#include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/in_process_webkit/dom_storage_area.h"
 #include "chrome/browser/in_process_webkit/dom_storage_namespace.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/common/dom_storage_common.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "webkit/glue/glue_util.h"
+#include "webkit/glue/webkit_glue.h"
 
 const FilePath::CharType DOMStorageContext::kLocalStorageDirectory[] =
     FILE_PATH_LITERAL("Local Storage");
@@ -235,4 +239,21 @@ void DOMStorageContext::CompleteCloningSessionStorage(
   // If nothing exists, then there's nothing to clone.
   if (existing_namespace)
     context->RegisterStorageNamespace(existing_namespace->Copy(clone_id));
+}
+
+// static
+void DOMStorageContext::ClearLocalState(const FilePath& profile_path,
+                                        const char* url_scheme_to_be_skip) {
+  file_util::FileEnumerator file_enumerator(profile_path.Append(
+      kLocalStorageDirectory), false, file_util::FileEnumerator::FILES);
+  for (FilePath file_path = file_enumerator.Next(); !file_path.empty();
+       file_path = file_enumerator.Next()) {
+    if (file_path.Extension() == kLocalStorageExtension) {
+      scoped_ptr<WebKit::WebSecurityOrigin> web_security_origin(
+          WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
+              webkit_glue::FilePathToWebString(file_path.BaseName())));
+      if (!EqualsASCII(web_security_origin->protocol(), url_scheme_to_be_skip))
+        file_util::Delete(file_path, false);
+    }
+  }
 }
