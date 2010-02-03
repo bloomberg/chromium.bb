@@ -24,14 +24,6 @@ class AutocompleteTextFieldObserver;
   // start-up time regression.
   scoped_nsobject<URLDropTargetHandler> dropHandler_;
 }
-
-// Copy contents of the TextView to the designated clipboard as plain
-// text.
-- (void)performCopy:(NSPasteboard*)pb;
-
-// Same as above, note that this calls through to performCopy.
-- (void)performCut:(NSPasteboard*)pb;
-
 @end
 
 @interface AutocompleteTextFieldEditor(PrivateTestMethods)

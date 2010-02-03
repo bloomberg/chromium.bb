@@ -35,6 +35,7 @@ namespace {
 class MockAutocompleteTextFieldObserver : public AutocompleteTextFieldObserver {
  public:
   MOCK_METHOD1(OnControlKeyChanged, void(bool pressed));
+  MOCK_METHOD0(OnCopy, void());
   MOCK_METHOD0(OnPaste, void());
   MOCK_METHOD0(CanPasteAndGo, bool());
   MOCK_METHOD0(GetPasteActionStringId, int());

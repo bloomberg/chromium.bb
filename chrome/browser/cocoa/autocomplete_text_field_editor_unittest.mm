@@ -27,26 +27,11 @@ void ClearPasteboard(NSPasteboard* pb) {
   [pb declareTypes:[NSArray array] owner:nil];
 }
 
-bool NoRichTextOnClipboard(NSPasteboard* pb) {
-  return ([pb dataForType:NSRTFPboardType] == nil) &&
-      ([pb dataForType:NSRTFDPboardType] == nil) &&
-      ([pb dataForType:NSHTMLPboardType] == nil);
-}
-
-bool ClipboardContainsText(NSPasteboard* pb, NSString* cmp) {
-  NSString* clipboard_text = [pb stringForType:NSStringPboardType];
-  return [clipboard_text isEqualToString:cmp];
-}
-
 // TODO(shess): Very similar to AutocompleteTextFieldTest.  Maybe
 // those can be shared.
 
 class AutocompleteTextFieldEditorTest : public CocoaTest {
  public:
-  AutocompleteTextFieldEditorTest()
-      : pb_([NSPasteboard pasteboardWithUniqueName]) {
-  }
-
   virtual void SetUp() {
     CocoaTest::SetUp();
     NSRect frame = NSMakeRect(0, 0, 50, 30);
@@ -69,21 +54,9 @@ class AutocompleteTextFieldEditorTest : public CocoaTest {
     EXPECT_TRUE([editor_ isKindOfClass:[AutocompleteTextFieldEditor class]]);
   }
 
-  virtual ~AutocompleteTextFieldEditorTest() {
-    [pb_ releaseGlobally];
-  }
-
-  NSPasteboard *clipboard() {
-    DCHECK(pb_);
-    return pb_;
-  }
-
   AutocompleteTextFieldEditor* editor_;
   AutocompleteTextField* field_;
   scoped_nsobject<AutocompleteTextFieldWindowTestDelegate> window_delegate_;
-
- private:
-  NSPasteboard* pb_;
 };
 
 TEST_VIEW(AutocompleteTextFieldEditorTest, field_);
@@ -117,36 +90,6 @@ TEST_F(AutocompleteTextFieldEditorTest, FirstResponder) {
   EXPECT_EQ([editor_ observer], [field_ observer]);
 }
 
-TEST_F(AutocompleteTextFieldEditorTest, CutCopyTest) {
-  // Make sure pasteboard is empty before we start.
-  ASSERT_EQ(NumTypesOnPasteboard(clipboard()), 0);
-
-  NSString* test_string_1 = @"astring";
-  NSString* test_string_2 = @"another string";
-
-  [editor_ setRichText:YES];
-
-  // Put some text on the clipboard.
-  [editor_ setString:test_string_1];
-  [editor_ selectAll:nil];
-  [editor_ alignRight:nil];  // Add a rich text attribute.
-  ASSERT_TRUE(NoRichTextOnClipboard(clipboard()));
-
-  // Check that copying it works and we only get plain text.
-  [editor_ performCopy:clipboard()];
-  ASSERT_TRUE(NoRichTextOnClipboard(clipboard()));
-  ASSERT_TRUE(ClipboardContainsText(clipboard(), test_string_1));
-
-  // Check that cutting it works and we only get plain text.
-  [editor_ setString:test_string_2];
-  [editor_ selectAll:nil];
-  [editor_ alignLeft:nil];  // Add a rich text attribute.
-  [editor_ performCut:clipboard()];
-  ASSERT_TRUE(NoRichTextOnClipboard(clipboard()));
-  ASSERT_TRUE(ClipboardContainsText(clipboard(), test_string_2));
-  ASSERT_EQ([[editor_ textStorage] length], 0U);
-}
-
 // Test drawing, mostly to ensure nothing leaks or crashes.
 TEST_F(AutocompleteTextFieldEditorTest, Display) {
   [field_ display];
@@ -157,6 +100,30 @@ TEST_F(AutocompleteTextFieldEditorTest, Display) {
 TEST_F(AutocompleteTextFieldEditorObserverTest, Paste) {
   EXPECT_CALL(field_observer_, OnPaste());
   [editor_ paste:nil];
+}
+
+// Test that -copy: is correctly delegated to the observer.
+TEST_F(AutocompleteTextFieldEditorObserverTest, Copy) {
+  EXPECT_CALL(field_observer_, OnCopy());
+  [editor_ copy:nil];
+}
+
+// Test that -cut: is correctly delegated to the observer and clears
+// the text field.
+TEST_F(AutocompleteTextFieldEditorObserverTest, Cut) {
+  // Sets a string in the field.
+  NSString* test_string = @"astring";
+  EXPECT_CALL(field_observer_, OnDidBeginEditing());
+  EXPECT_CALL(field_observer_, OnDidChange());
+  [editor_ setString:test_string];
+  [editor_ selectAll:nil];
+
+  // Calls cut.
+  EXPECT_CALL(field_observer_, OnCopy());
+  [editor_ cut:nil];
+
+  // Check if the field is cleared.
+  ASSERT_EQ([[editor_ textStorage] length], 0U);
 }
 
 // Test that -pasteAndGo: is correctly delegated to the observer.

@@ -39,6 +39,9 @@ class AutocompleteTextFieldObserver {
   // Called when the user pastes into the field.
   virtual void OnPaste() = 0;
 
+  // Called when the user copies the text.
+  virtual void OnCopy() = 0;
+
   // Returns true if the current clipboard text supports paste and go
   // (or paste and search).
   virtual bool CanPasteAndGo() = 0;

@@ -34,23 +34,15 @@ class Extension;
 }
 
 - (void)copy:(id)sender {
-  NSPasteboard* pb = [NSPasteboard generalPasteboard];
-  [self performCopy:pb];
+  AutocompleteTextFieldObserver* observer = [self observer];
+  DCHECK(observer);
+  if (observer) {
+    observer->OnCopy();
+  }
 }
 
 - (void)cut:(id)sender {
-  NSPasteboard* pb = [NSPasteboard generalPasteboard];
-  [self performCut:pb];
-}
-
-- (void)performCopy:(NSPasteboard*)pb {
-  [pb declareTypes:[NSArray array] owner:nil];
-  [self writeSelectionToPasteboard:pb types:
-      [NSArray arrayWithObject:NSStringPboardType]];
-}
-
-- (void)performCut:(NSPasteboard*)pb {
-  [self performCopy:pb];
+  [self copy:sender];
   [self delete:nil];
 }
 

@@ -34,7 +34,7 @@ namespace {
 
 bool ClipboardContentsIsExpected(const string16& copied_markup,
                                  const string16& pasted_markup) {
-#if defined(OS_LINUX)
+#if defined(OS_POSIX)
   return pasted_markup.find(copied_markup) != string16::npos;
 #else
   return copied_markup == pasted_markup;
@@ -353,4 +353,3 @@ TEST_F(ClipboardTest, WriteEverything) {
 
   // Passes if we don't crash.
 }
-

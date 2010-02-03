@@ -7,6 +7,7 @@
 #include <Carbon/Carbon.h>  // kVK_Return
 
 #include "app/clipboard/clipboard.h"
+#include "app/clipboard/scoped_clipboard_writer.h"
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -18,6 +19,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/toolbar_model.h"
 #include "grit/generated_resources.h"
+#include "net/base/escape.h"
 
 // Focus-handling between |field_| and |model_| is a bit subtle.
 // Other platforms detect change of focus, which is inconvenient
@@ -677,6 +679,34 @@ bool AutocompleteEditViewMac::OnDoCommandBySelector(SEL cmd) {
 
 void AutocompleteEditViewMac::OnDidResignKey() {
   ClosePopup();
+}
+
+void AutocompleteEditViewMac::OnCopy() {
+  const NSRange selection = GetSelectedRange();
+  if (selection.length == 0)
+    return;
+
+  const std::wstring& text = GetText();
+  const string16 text16 = WideToUTF16(text);
+
+  ScopedClipboardWriter scw(g_browser_process->clipboard());
+  // If the entire contents are being copied and it looks like an URL,
+  // copy as a hyperlink.
+  if (IsSelectAll()) {
+    GURL url;
+    if (model_->GetURLForText(text, &url)) {
+      if ((url.SchemeIs("http") || url.SchemeIs("https")) &&
+          !model_->user_input_in_progress())
+        scw.WriteText(UTF8ToUTF16(url.spec()));
+      else
+        scw.WriteText(text16);
+      scw.WriteBookmark(text16, url.spec());
+      scw.WriteHyperlink(EscapeForHTML(WideToUTF8(text)), url.spec());
+      return;
+    }
+  }
+
+  scw.WriteText(text16.substr(selection.location, selection.length));
 }
 
 void AutocompleteEditViewMac::OnPaste() {

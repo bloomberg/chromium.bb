@@ -64,7 +64,9 @@ void Clipboard::WriteHTML(const char* markup_data,
                           size_t markup_len,
                           const char* url_data,
                           size_t url_len) {
-  std::string html_fragment_str(markup_data, markup_len);
+  // We need to mark it as utf-8. (see crbug.com/11957)
+  std::string html_fragment_str("<meta charset='utf-8'>");
+  html_fragment_str.append(markup_data, markup_len);
   NSString *html_fragment = base::SysUTF8ToNSString(html_fragment_str);
 
   // TODO(avi): url_data?
