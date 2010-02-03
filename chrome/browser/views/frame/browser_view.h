@@ -36,7 +36,7 @@ class BookmarkBarView;
 class Browser;
 class BrowserBubble;
 class BrowserExtender;
-class BrowserViewLayoutManager;
+class BrowserViewLayout;
 class DownloadShelfView;
 class EncodingMenuModel;
 class ExtensionShelf;
@@ -388,8 +388,9 @@ class BrowserView : public BrowserWindow,
   // Creates the system menu.
   void InitSystemMenu();
 #endif
-  // Returns the BrowserViewLayoutManager.
-  BrowserViewLayoutManager* GetBrowserViewLayoutManager() const;
+
+  // Returns the BrowserViewLayout.
+  BrowserViewLayout* GetBrowserViewLayout() const;
 
   // Prepare to show the Bookmark Bar for the specified TabContents. Returns
   // true if the Bookmark Bar can be shown (i.e. it's supported for this
