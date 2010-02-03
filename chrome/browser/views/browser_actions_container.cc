@@ -19,6 +19,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/detachable_toolbar_view.h"
+#include "chrome/browser/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/views/extensions/browser_action_overflow_menu_controller.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
 #include "chrome/browser/views/toolbar_view.h"
@@ -40,6 +41,7 @@ static const int kButtonSize = 29;
 
 // The padding between the browser actions and the OmniBox/page menu.
 static const int kHorizontalPadding = 4;
+static const int kHorizontalPaddingRtl = 8;
 
 // The padding between browser action buttons. Visually, the actual number of
 // empty (non-drawing) pixels is this value + 2 when adjacent browser icons
@@ -65,6 +67,16 @@ static const int kChevronRightMargin = 4;
 
 // Extra hit-area for the resize gripper.
 static const int kExtraResizeArea = 4;
+
+// Width of the drop indicator.
+static const int kDropIndicatorWidth = 2;
+
+// Color of the drop indicator.
+static const SkColor kDropIndicatorColor = SK_ColorBLACK;
+
+// The x offset for the drop indicator (how much we shift it by).
+static const int kDropIndicatorOffsetLtr = 3;
+static const int kDropIndicatorOffsetRtl = 9;
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionButton
@@ -258,6 +270,7 @@ BrowserActionView::BrowserActionView(Extension* extension,
                                      BrowserActionsContainer* panel)
     : panel_(panel) {
   button_ = new BrowserActionButton(extension, panel);
+  button_->SetDragController(panel_);
   AddChildView(button_);
   button_->UpdateState();
 }
@@ -291,6 +304,7 @@ BrowserActionsContainer::BrowserActionsContainer(
       suppress_chevron_(false),
       resize_amount_(0),
       animation_target_size_(0),
+      drop_indicator_position_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
   SetID(VIEW_ID_BROWSER_ACTION_TOOLBAR);
 
@@ -321,6 +335,12 @@ BrowserActionsContainer::BrowserActionsContainer(
 
   int predefined_width =
       profile_->GetPrefs()->GetInteger(prefs::kBrowserActionContainerWidth);
+  if (predefined_width == 0) {
+    // The width will never be 0 (due to container min size restriction)
+    // except when no width has been saved. So, in that case ask the model
+    // how many icons we'll show and set initial size to that.
+    predefined_width = IconCountToWidth(model_->size());
+  }
   container_size_ = gfx::Size(predefined_width, kButtonSize);
 }
 
@@ -366,6 +386,16 @@ void BrowserActionsContainer::CloseOverflowMenu() {
   // Close the overflow menu if open (and the context menu off of that).
   if (overflow_menu_.get())
     overflow_menu_->CancelMenu();
+}
+
+void BrowserActionsContainer::CreateBrowserActionViews() {
+  DCHECK(browser_action_views_.empty());
+  for (ExtensionList::iterator iter = model_->begin();
+       iter != model_->end(); ++iter) {
+    BrowserActionView* view = new BrowserActionView(*iter, this);
+    browser_action_views_.push_back(view);
+    AddChildView(view);
+  }
 }
 
 void BrowserActionsContainer::DeleteBrowserActionViews() {
@@ -473,7 +503,7 @@ gfx::Size BrowserActionsContainer::GetPreferredSize() {
   // other words: ContainerMinSize() < width() - resize < ClampTo(MAX).
   int width = std::max(ContainerMinSize(),
                        container_size_.width() - resize_amount_);
-  int max_width = ClampToNearestIconCount(-1);  // -1 gives max width.
+  int max_width = ClampToNearestIconCount(-1, false);  // -1 gives max width.
   width = std::min(width, max_width);
 
   return gfx::Size(width, kButtonSize);
@@ -498,7 +528,7 @@ void BrowserActionsContainer::Layout() {
     x += sz.width();
   }
 
-  x += kHorizontalPadding;
+  x += UILayoutIsRightToLeft() ? kHorizontalPaddingRtl : kHorizontalPadding;
 
   // Calculate if all icons fit without showing the chevron. We need to know
   // this beforehand, because showing the chevron will decrease the space that
@@ -549,6 +579,21 @@ void BrowserActionsContainer::Paint(gfx::Canvas* canvas) {
       DetachableToolbarView::kEdgeDividerColor,
       DetachableToolbarView::kMiddleDividerColor,
       GetThemeProvider()->GetColor(BrowserThemeProvider::COLOR_TOOLBAR));
+
+  // The two-pixel width drop indicator.
+  if (drop_indicator_position_ > -1) {
+    x = drop_indicator_position_;
+    int y = kDividerVerticalPadding;
+    gfx::Rect indicator_bounds(x - kDropIndicatorWidth / 2,
+                               y,
+                               kDropIndicatorWidth,
+                               height() - (2 * kDividerVerticalPadding));
+
+    // TODO(sky/glen): make me pretty!
+    canvas->FillRectInt(kDropIndicatorColor, indicator_bounds.x(),
+                        indicator_bounds.y(), indicator_bounds.width(),
+                        indicator_bounds.height());
+  }
 }
 
 void BrowserActionsContainer::ViewHierarchyChanged(bool is_add,
@@ -563,13 +608,107 @@ void BrowserActionsContainer::ViewHierarchyChanged(bool is_add,
     // We do this here instead of in the constructor because AddBrowserAction
     // calls Layout on the Toolbar, which needs this object to be constructed
     // before its Layout function is called.
-    for (ExtensionList::iterator iter = model_->begin();
-        iter != model_->end(); ++iter) {
-      BrowserActionView* view = new BrowserActionView(*iter, this);
-      browser_action_views_.push_back(view);
-      AddChildView(view);
+    CreateBrowserActionViews();
+  }
+}
+
+bool BrowserActionsContainer::GetDropFormats(
+    int* formats, std::set<OSExchangeData::CustomFormat>* custom_formats) {
+  custom_formats->insert(BrowserActionDragData::GetBrowserActionCustomFormat());
+  return true;
+}
+
+bool BrowserActionsContainer::AreDropTypesRequired() {
+  return true;
+}
+
+bool BrowserActionsContainer::CanDrop(const OSExchangeData& data) {
+  BrowserActionDragData drop_data;
+  if (!drop_data.Read(data))
+    return false;
+  return drop_data.IsFromProfile(profile_);
+}
+
+void BrowserActionsContainer::OnDragEntered(
+    const views::DropTargetEvent& event) {
+}
+
+int BrowserActionsContainer::OnDragUpdated(
+    const views::DropTargetEvent& event) {
+  // Modifying the x value before clamping affects how far you have to drag to
+  // get the drop indicator to shift to another position. Modifying after
+  // clamping affects where the drop indicator is drawn.
+
+  // We add half a button size so that when you drag a button to the right and
+  // you are half-way dragging across a button the drop indicator moves from the
+  // left of that button to the right of that button.
+  int x = event.x() + (kButtonSize / 2) + (2 * kBrowserActionButtonPadding);
+  if (chevron_->IsVisible())
+    x += chevron_->bounds().width();
+  x = ClampToNearestIconCount(x, false);
+
+  if (!UILayoutIsRightToLeft() && chevron_->IsVisible()) {
+    // The clamping function includes the chevron width. In LTR locales, the
+    // chevron is on the right and we never want to account for its width. In
+    // RTL it is on the left and we always want to count the width.
+    x -= chevron_->width();
+  }
+
+  // Clamping gives us a value where the next button will be drawn, but we want
+  // to subtract the padding (and then some) to make it appear in-between the
+  // buttons.
+  drop_indicator_position_ = x - kBrowserActionButtonPadding -
+      (UILayoutIsRightToLeft() ? kDropIndicatorOffsetRtl :
+                                 kDropIndicatorOffsetLtr);
+
+  SchedulePaint();
+  return DragDropTypes::DRAG_MOVE;
+}
+
+void BrowserActionsContainer::OnDragExited() {
+  drop_indicator_position_ = -1;
+  SchedulePaint();
+}
+
+int BrowserActionsContainer::OnPerformDrop(
+    const views::DropTargetEvent& event) {
+  BrowserActionDragData data;
+  if (!data.Read(event.GetData()))
+    return DragDropTypes::DRAG_NONE;
+
+  // Make sure we have the same view as we started with.
+  DCHECK(browser_action_views_[data.index()]->button()->extension()->id() ==
+         data.id());
+
+  Extension* dragging =
+      browser_action_views_[data.index()]->button()->extension();
+
+  int target_x = drop_indicator_position_;
+
+  size_t i = 0;
+  for (; i < browser_action_views_.size(); ++i) {
+    int view_x =
+        browser_action_views_[i]->GetBounds(APPLY_MIRRORING_TRANSFORMATION).x();
+    if (!browser_action_views_[i]->IsVisible() ||
+        (UILayoutIsRightToLeft() ? view_x < target_x : view_x >= target_x)) {
+      // We have reached the end of the visible icons or found one that has a
+      // higher x position than the drop point.
+      break;
     }
   }
+
+  // |i| now points to the item to the right of the drop indicator*, which is
+  // correct when dragging an icon to the left. When dragging to the right,
+  // however, we want the icon being dragged to get the index of the item to
+  // the left of the drop indicator, so we subtract one.
+  // * Well, it can also point to the end, but not when dragging to the left. :)
+  if (i > data.index())
+    --i;
+
+  model_->MoveBrowserAction(dragging, i);
+
+  OnDragExited();  // Perform clean up after dragging.
+  return DragDropTypes::DRAG_MOVE;
 }
 
 void BrowserActionsContainer::Observe(NotificationType type,
@@ -639,7 +778,31 @@ void BrowserActionsContainer::RunMenu(View* source, const gfx::Point& pt) {
   }
 }
 
-int BrowserActionsContainer::ClampToNearestIconCount(int pixelWidth) const {
+void BrowserActionsContainer::WriteDragData(
+    View* sender, int press_x, int press_y, OSExchangeData* data) {
+  DCHECK(data);
+
+  for (size_t i = 0; i < browser_action_views_.size(); ++i) {
+    if (browser_action_views_[i]->button() == sender) {
+      BrowserActionDragData drag_data(
+          browser_action_views_[i]->button()->extension()->id(), i);
+      drag_data.Write(profile_, data);
+      break;
+    }
+  }
+}
+
+int BrowserActionsContainer::GetDragOperations(View* sender, int x, int y) {
+  return DragDropTypes::DRAG_MOVE;
+}
+
+bool BrowserActionsContainer::CanStartDrag(
+    View* sender, int press_x, int press_y, int x, int y) {
+  return true;
+}
+
+int BrowserActionsContainer::ClampToNearestIconCount(
+    int pixelWidth, bool allow_shrink_to_minimum) const {
   // Calculate the width of one icon.
   int icon_width = (kButtonSize + kBrowserActionButtonPadding);
 
@@ -660,19 +823,19 @@ int BrowserActionsContainer::ClampToNearestIconCount(int pixelWidth) const {
     // Count the number of icons that fit within that area.
     icon_count = icon_area / icon_width;
 
-    // No use allowing more than what we have.
-    if (icon_count > browser_action_views_.size())
-      icon_count = browser_action_views_.size();
-    else if (icon_count == 0)
+    if (icon_count == 0 && allow_shrink_to_minimum) {
       extras = ContainerMinSize();  // Allow very narrow width if no icons.
+    } else if (icon_count > browser_action_views_.size()) {
+      // No use allowing more than what we have.
+      icon_count = browser_action_views_.size();
+    }
   } else {
     // A negative |pixels| count indicates caller wants to know the max width
     // that fits all icons;
     icon_count = browser_action_views_.size();
   }
 
-  int returning = extras + (icon_count * icon_width);
-  return returning;
+  return extras + (icon_count * icon_width);
 }
 
 void BrowserActionsContainer::BrowserActionAdded(Extension* extension,
@@ -745,7 +908,7 @@ void BrowserActionsContainer::BrowserActionRemoved(Extension* extension) {
       // because we want the container to stay the same size (clamping will take
       // care of shrinking the container if there aren't enough icons to show).
       animation_target_size_ =
-          ClampToNearestIconCount(IconCountToWidth(visible_actions));
+          ClampToNearestIconCount(IconCountToWidth(visible_actions), true);
 
       // Animate!
       resize_animation_->Reset();
@@ -756,10 +919,21 @@ void BrowserActionsContainer::BrowserActionRemoved(Extension* extension) {
   }
 }
 
+void BrowserActionsContainer::BrowserActionMoved(Extension* extension,
+                                                 int index) {
+  DCHECK(index >= 0 && index < static_cast<int>(browser_action_views_.size()));
+
+  DeleteBrowserActionViews();
+  CreateBrowserActionViews();
+  Layout();
+}
+
 int BrowserActionsContainer::WidthOfNonIconArea() const {
   int chevron_size = (chevron_->IsVisible()) ?
                      chevron_->GetPreferredSize().width() : 0;
-  return resize_gripper_->GetPreferredSize().width() + kHorizontalPadding +
+  int padding = UILayoutIsRightToLeft() ? kHorizontalPaddingRtl :
+                                          kHorizontalPadding;
+  return resize_gripper_->GetPreferredSize().width() + padding +
          chevron_size + kChevronRightMargin + kDividerHorizontalMargin;
 }
 
@@ -798,14 +972,14 @@ void BrowserActionsContainer::OnResize(int resize_amount, bool done_resizing) {
     // Clamp lower limit to 0 and upper limit to the amount that allows enough
     // room for all icons to show.
     int new_width = std::max(0, container_size_.width() - resize_amount);
-    int max_width = ClampToNearestIconCount(-1);
+    int max_width = ClampToNearestIconCount(-1, false);
     new_width = std::min(new_width, max_width);
 
     // Up until now we've only been modifying the resize_amount, but now it is
     // time to set the container size to the size we have resized to, but then
     // animate to the nearest icon count size (or down to min size if no icon).
     container_size_.set_width(new_width);
-    animation_target_size_ = ClampToNearestIconCount(new_width);
+    animation_target_size_ = ClampToNearestIconCount(new_width, true);
     resize_animation_->Reset();
     resize_animation_->SetTweenType(SlideAnimation::EASE_OUT);
     resize_animation_->Show();

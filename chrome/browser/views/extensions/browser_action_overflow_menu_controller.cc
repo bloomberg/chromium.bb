@@ -29,10 +29,14 @@ BrowserActionOverflowMenuController::BrowserActionOverflowMenuController(
   size_t command_id = 0;
   for (size_t i = start_index; i < views_->size(); ++i) {
     BrowserActionView* view = (*views_)[i];
+    SkBitmap icon =
+        view->button()->extension()->browser_action()->GetIcon(tab_id);
+    if (icon.isNull())
+      icon = view->button()->default_icon();
     menu_->AppendMenuItemWithIcon(
         command_id,
         UTF8ToWide(view->button()->extension()->name()),
-        view->button()->extension()->browser_action()->GetIcon(tab_id));
+        icon);
     ++command_id;
   }
 }

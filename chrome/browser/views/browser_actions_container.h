@@ -19,8 +19,8 @@
 #include "views/controls/resize_gripper.h"
 #include "views/view.h"
 
-class BrowserActionsContainer;
 class BrowserActionOverflowMenuController;
+class BrowserActionsContainer;
 class Extension;
 class ExtensionAction;
 class ExtensionPopup;
@@ -48,6 +48,9 @@ class BrowserActionButton : public views::MenuButton,
 
   // Called to update the display to match the browser action's state.
   void UpdateState();
+
+  // Returns the default icon, if any.
+  const SkBitmap& default_icon() const { return default_icon_; }
 
   // Overridden from views::View. Return a 0-inset so the icon can draw all the
   // way to the edge of the view if it wants.
@@ -137,6 +140,8 @@ class BrowserActionView : public views::View {
 
   // The button this view contains.
   BrowserActionButton* button_;
+
+  DISALLOW_COPY_AND_ASSIGN(BrowserActionView);
 };
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -217,6 +222,7 @@ class BrowserActionsContainer
     public NotificationObserver,
     public BrowserBubble::Delegate,
     public views::ViewMenuDelegate,
+    public views::DragController,
     public views::ResizeGripper::ResizeGripperDelegate,
     public AnimationDelegate,
     public ExtensionToolbarModel::Observer {
@@ -249,6 +255,9 @@ class BrowserActionsContainer
   // Update the views to reflect the state of the browser action icons.
   void RefreshBrowserActionViews();
 
+  // Sets up the browser action view vector.
+  void CreateBrowserActionViews();
+
   // Delete all browser action views.
   void DeleteBrowserActionViews();
 
@@ -265,6 +274,14 @@ class BrowserActionsContainer
   virtual void ViewHierarchyChanged(bool is_add,
                                     views::View* parent,
                                     views::View* child);
+  virtual bool GetDropFormats(
+      int* formats, std::set<OSExchangeData::CustomFormat>* custom_formats);
+  virtual bool AreDropTypesRequired();
+  virtual bool CanDrop(const OSExchangeData& data);
+  virtual void OnDragEntered(const views::DropTargetEvent& event);
+  virtual int OnDragUpdated(const views::DropTargetEvent& event);
+  virtual void OnDragExited();
+  virtual int OnPerformDrop(const views::DropTargetEvent& event);
 
   // Overridden from NotificationObserver:
   virtual void Observe(NotificationType type,
@@ -280,6 +297,18 @@ class BrowserActionsContainer
 
   // Overridden from views::ViewMenuDelegate:
   virtual void RunMenu(View* source, const gfx::Point& pt);
+
+  // Overridden from views::DragController:
+  virtual void WriteDragData(View* sender,
+                             int press_x,
+                             int press_y,
+                             OSExchangeData* data);
+  virtual int GetDragOperations(View* sender, int x, int y);
+  virtual bool CanStartDrag(View* sender,
+                            int press_x,
+                            int press_y,
+                            int x,
+                            int y);
 
   // Overridden from ResizeGripper::ResizeGripperDelegate:
   virtual void OnResize(int resize_amount, bool done_resizing);
@@ -302,14 +331,19 @@ class BrowserActionsContainer
   // ExtensionToolbarModel::Observer implementation.
   virtual void BrowserActionAdded(Extension* extension, int index);
   virtual void BrowserActionRemoved(Extension* extension);
+  virtual void BrowserActionMoved(Extension* extension, int index);
 
   // Closes the overflow menu if open.
   void CloseOverflowMenu();
 
   // Takes a width in pixels, calculates how many icons fit within that space
   // (up to the maximum number of icons in our vector) and shaves off the
-  // excess pixels.
-  int ClampToNearestIconCount(int pixels) const;
+  // excess pixels. |allow_shrink_to_minimum| specifies whether this function
+  // clamps the size down further (down to ContainerMinSize()) if there is not
+  // room for even one icon. When determining how large the container should be
+  // this should be |true|. When determining where to place items, such as the
+  // drop indicator, this should be |false|.
+  int ClampToNearestIconCount(int pixels, bool allow_shrink_to_minimum) const;
 
   // Calculates the width of the container area NOT used to show the icons (the
   // controls to the left and to the right of the icons).
@@ -373,6 +407,9 @@ class BrowserActionsContainer
   // Keeps track of the absolute pixel width the container should have when we
   // are done animating.
   int animation_target_size_;
+
+  // The x position for where to draw the drop indicator. -1 if no indicator.
+  int drop_indicator_position_;
 
   ScopedRunnableMethodFactory<BrowserActionsContainer> task_factory_;
 

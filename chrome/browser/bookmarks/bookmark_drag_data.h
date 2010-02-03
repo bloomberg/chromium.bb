@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/file_path.h"
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 
@@ -141,11 +142,7 @@ struct BookmarkDragData {
 
  private:
   // Path of the profile we originated from.
-#if defined(WCHAR_T_IS_UTF16)
-  std::wstring profile_path_;
-#elif defined(WCHAR_T_IS_UTF32)
-  std::string profile_path_;
-#endif
+  FilePath::StringType profile_path_;
 };
 
 #endif  // CHROME_BROWSER_BOOKMARKS_BOOKMARK_DRAG_DATA_H_

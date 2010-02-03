@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -190,16 +190,8 @@ bool BookmarkDragData::Read(const OSExchangeData& data) {
 #endif
 
 void BookmarkDragData::WriteToPickle(Profile* profile, Pickle* pickle) const {
-#if defined(WCHAR_T_IS_UTF16)
-  pickle->WriteWString(
-      profile ? profile->GetPath().ToWStringHack() : std::wstring());
-#elif defined(WCHAR_T_IS_UTF32)
-  pickle->WriteString(
-      profile ? profile->GetPath().value() : std::string());
-#else
-  NOTIMPLEMENTED() << "Impossible encoding situation!";
-#endif
-
+  FilePath path = profile ? profile->GetPath() : FilePath();
+  FilePath::WriteStringTypeToPickle(pickle, path.value());
   pickle->WriteSize(elements.size());
 
   for (size_t i = 0; i < elements.size(); ++i)
@@ -209,14 +201,8 @@ void BookmarkDragData::WriteToPickle(Profile* profile, Pickle* pickle) const {
 bool BookmarkDragData::ReadFromPickle(Pickle* pickle) {
   void* data_iterator = NULL;
   size_t element_count;
-#if defined(WCHAR_T_IS_UTF16)
-  if (pickle->ReadWString(&data_iterator, &profile_path_) &&
-#elif defined(WCHAR_T_IS_UTF32)
-  if (pickle->ReadString(&data_iterator, &profile_path_) &&
-#else
-  NOTIMPLEMENTED() << "Impossible encoding situation!";
-  if (false &&
-#endif
+  if (FilePath::ReadStringTypeFromPickle(pickle, &data_iterator,
+                                         &profile_path_) &&
       pickle->ReadSize(&data_iterator, &element_count)) {
     std::vector<Element> tmp_elements;
     tmp_elements.resize(element_count);
