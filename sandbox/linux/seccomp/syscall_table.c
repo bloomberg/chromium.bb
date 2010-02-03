@@ -37,6 +37,8 @@ const struct SyscallTable syscallTable[] __attribute__((
   [ __NR_clock_gettime   ] = { UNRESTRICTED_SYSCALL,     0                   },
   [ __NR_clone           ] = { (void*)&sandbox_clone,    process_clone       },
   [ __NR_close           ] = { UNRESTRICTED_SYSCALL,     0                   },
+  [ __NR_dup             ] = { UNRESTRICTED_SYSCALL,     0                   },
+  [ __NR_dup2            ] = { UNRESTRICTED_SYSCALL,     0                   },
   [ __NR_epoll_create    ] = { UNRESTRICTED_SYSCALL,     0                   },
   [ __NR_epoll_ctl       ] = { UNRESTRICTED_SYSCALL,     0                   },
   [ __NR_epoll_wait      ] = { UNRESTRICTED_SYSCALL,     0                   },
