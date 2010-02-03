@@ -172,3 +172,92 @@ IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionPopup) {
   EXPECT_EQ(maxSize, bounds.size());
   EXPECT_TRUE(GetBrowserActionsBar().HidePopup());
 }
+
+// Test that calling chrome.browserAction.setPopup() can enable and change
+// a popup.
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionAddPopup) {
+  ASSERT_TRUE(RunExtensionTest("browser_action/add_popup")) << message_;
+  Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
+
+  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedTabContents());
+
+  ExtensionAction* browser_action = extension->browser_action();
+  ASSERT_TRUE(browser_action)
+      << "Browser action test extension should have a browser action.";
+
+  ASSERT_FALSE(browser_action->HasPopup(tab_id));
+  ASSERT_FALSE(browser_action->HasPopup(ExtensionAction::kDefaultTabId));
+
+  // Simulate a click on the browser action icon.  The onClicked handler
+  // will add a popup.
+  {
+    ResultCatcher catcher;
+    GetBrowserActionsBar().Press(0);
+    ASSERT_TRUE(catcher.GetNextResult());
+  }
+
+  // The call to setPopup in background.html set a tab id, so the
+  // current tab's setting should have changed, but the default setting
+  // should not have changed.
+  ASSERT_TRUE(browser_action->HasPopup(tab_id))
+      << "Clicking on the browser action should have caused a popup to "
+      << "be added.";
+  ASSERT_FALSE(browser_action->HasPopup(ExtensionAction::kDefaultTabId))
+      << "Clicking on the browser action should not have set a default "
+      << "popup.";
+
+  ASSERT_STREQ("/a_popup.html",
+               browser_action->GetPopupUrl(tab_id).path().c_str());
+
+  // Now change the popup from a_popup.html to another_popup.html by loading
+  // a page which removes the popup using chrome.browserAction.setPopup().
+  {
+    ResultCatcher catcher;
+    ui_test_utils::NavigateToURL(
+        browser(),
+        GURL(extension->GetResourceURL("change_popup.html")));
+    ASSERT_TRUE(catcher.GetNextResult());
+  }
+
+  // The call to setPopup in change_popup.html did not use a tab id,
+  // so the default setting should have changed as well as the current tab.
+  ASSERT_TRUE(browser_action->HasPopup(tab_id));
+  ASSERT_TRUE(browser_action->HasPopup(ExtensionAction::kDefaultTabId));
+  ASSERT_STREQ("/another_popup.html",
+               browser_action->GetPopupUrl(tab_id).path().c_str());
+}
+
+// Test that calling chrome.browserAction.setPopup() can remove a popup.
+IN_PROC_BROWSER_TEST_F(BrowserActionApiTest, BrowserActionRemovePopup) {
+  // Load the extension, which has a browser action with a default popup.
+  ASSERT_TRUE(RunExtensionTest("browser_action/remove_popup")) << message_;
+  Extension* extension = GetSingleLoadedExtension();
+  ASSERT_TRUE(extension) << message_;
+
+  int tab_id = ExtensionTabUtil::GetTabId(browser()->GetSelectedTabContents());
+
+  ExtensionAction* browser_action = extension->browser_action();
+  ASSERT_TRUE(browser_action)
+      << "Browser action test extension should have a browser action.";
+
+  ASSERT_TRUE(browser_action->HasPopup(tab_id))
+      << "Expect a browser action popup before the test removes it.";
+  ASSERT_TRUE(browser_action->HasPopup(ExtensionAction::kDefaultTabId))
+      << "Expect a browser action popup is the default for all tabs.";
+
+  // Load a page which removes the popup using chrome.browserAction.setPopup().
+  {
+    ResultCatcher catcher;
+    ui_test_utils::NavigateToURL(
+        browser(),
+        GURL(extension->GetResourceURL("remove_popup.html")));
+    ASSERT_TRUE(catcher.GetNextResult());
+  }
+
+  ASSERT_FALSE(browser_action->HasPopup(tab_id))
+      << "Browser action popup should have been removed.";
+  ASSERT_TRUE(browser_action->HasPopup(ExtensionAction::kDefaultTabId))
+      << "Browser action popup default should not be changed by setting "
+      << "a specific tab id.";
+}

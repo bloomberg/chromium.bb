@@ -61,6 +61,18 @@ bool BrowserActionSetTitleFunction::RunBrowserAction() {
   return true;
 }
 
+bool BrowserActionSetPopupFunction::RunBrowserAction() {
+  std::string popup_string;
+  EXTENSION_FUNCTION_VALIDATE(details_->GetString(L"popup", &popup_string));
+
+  GURL popup_url;
+  if (!popup_string.empty())
+    popup_url = dispatcher()->GetExtension()->GetResourceURL(popup_string);
+
+  browser_action_->SetPopupUrl(tab_id_, popup_url);
+  return true;
+}
+
 bool BrowserActionSetBadgeTextFunction::RunBrowserAction() {
   std::string badge_text;
   EXTENSION_FUNCTION_VALIDATE(details_->GetString(L"text", &badge_text));

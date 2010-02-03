@@ -10,6 +10,7 @@
 
 class ExtensionAction;
 
+// Base class for chrome.browserAction.* APIs.
 class BrowserActionFunction : public SyncExtensionFunction {
  protected:
   BrowserActionFunction() : tab_id_(ExtensionAction::kDefaultTabId) {}
@@ -29,24 +30,35 @@ class BrowserActionFunction : public SyncExtensionFunction {
   ExtensionAction* browser_action_;
 };
 
+// Implement chrome.browserAction.setIcon().
 class BrowserActionSetIconFunction : public BrowserActionFunction {
   ~BrowserActionSetIconFunction() {}
   virtual bool RunBrowserAction();
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setIcon")
 };
 
+// Implement chrome.browserAction.setTitle().
 class BrowserActionSetTitleFunction : public BrowserActionFunction {
   ~BrowserActionSetTitleFunction() {}
   virtual bool RunBrowserAction();
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setTitle")
 };
 
+// Implement chrome.browserActions.setPopup().
+class BrowserActionSetPopupFunction : public BrowserActionFunction {
+  ~BrowserActionSetPopupFunction() {}
+  virtual bool RunBrowserAction();
+  DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setPopup")
+};
+
+// Implement chrome.browserAction.setBadgeText().
 class BrowserActionSetBadgeTextFunction : public BrowserActionFunction {
   ~BrowserActionSetBadgeTextFunction() {}
   virtual bool RunBrowserAction();
   DECLARE_EXTENSION_FUNCTION_NAME("browserAction.setBadgeText")
 };
 
+// Implement chrome.browserAction.setBadgeBackgroundColor().
 class BrowserActionSetBadgeBackgroundColorFunction
     : public BrowserActionFunction {
   ~BrowserActionSetBadgeBackgroundColorFunction() {}

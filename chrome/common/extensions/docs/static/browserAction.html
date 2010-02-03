@@ -8,7 +8,7 @@
   a browser action can also have
   a <a href="#tooltip">tooltip</a>,
   a <a href="#badge">badge</a>,
-  and a <a href="#popup">popup</a>.
+  and a <a href="#popups">popup</a>.
   </p>
 
 <p>
@@ -44,7 +44,7 @@ like this:
   <b>"browser_action": {
     "default_icon": "images/icon19.png", <em>// <b>required</b></em>
     "default_title": "Google Mail",      <em>// optional; shown in tooltip</em>
-    "popup": "popup.html"                <em>// optional</em>
+    "default_popup": "popup.html"        <em>// optional</em>
   }</b>,
   ...
 }</pre>
@@ -56,7 +56,7 @@ A browser action must have an <a href="#icon">icon</a>.
 It can also have
 a <a href="#tooltip">tooltip</a>,
 a <a href="#badge">badge</a>,
-and a <a href="#popup">popup</a>.
+and a <a href="#popups">popup</a>.
 </p>
 
 <h3 id="icon">Icon</h3>
@@ -127,9 +127,9 @@ respectively.
 <p>
 To add a popup to your browser action,
 create an HTML file with the popup's contents.
-Then specify the HTML file in
-the <a href="#manifest">manifest</a>,
-using the <b>popup</b> field of <b>browser_action</b>.
+Specify the HTML file in the <b>default_popup</b> field of <b>browser_action</b>
+in the <a href="#manifest">manifest</a>, or call the
+<a href="#method-setPopup">setPopup()</a> method.
 </p>
 
 <h2>Tips</h2>

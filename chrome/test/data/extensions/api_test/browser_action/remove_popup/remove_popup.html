@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <script>
+      chrome.tabs.getSelected(null, function(tab) {
+        chrome.browserAction.setPopup({
+          tabId: tab.id,
+          popup: ''  // No popup.
+        });
+        chrome.test.notifyPass();
+      });
+    </script>
+  </body>
+</html>

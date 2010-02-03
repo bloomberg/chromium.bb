@@ -122,6 +122,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<BrowserActionSetTitleFunction>();
   RegisterFunction<BrowserActionSetBadgeTextFunction>();
   RegisterFunction<BrowserActionSetBadgeBackgroundColorFunction>();
+  RegisterFunction<BrowserActionSetPopupFunction>();
 
   // Bookmarks.
   RegisterFunction<GetBookmarksFunction>();

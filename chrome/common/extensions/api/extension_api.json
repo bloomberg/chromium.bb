@@ -1201,7 +1201,7 @@
       {
         "name": "onClicked",
         "type": "function",
-        "description": "Fired when a page action icon is clicked if the page action doesn't show a popup.",
+        "description": "Fired when a page action icon is clicked.  This event will not fire if the page action has a popup.",
         "parameters": [
           {
             "name": "tab",
@@ -1269,6 +1269,29 @@
         ]
       },
       {
+        "name": "setPopup",
+        "type": "function",
+        "description": "Sets the html document to be opened as a popup when the user clicks on the browser action's icon.",
+        "parameters": [
+          {
+            "name": "details",
+            "type": "object",
+            "properties": {
+              "tabId": {
+                "type": "integer",
+                "optional": true,
+                "minimum": 0,
+                "description": "Limits the change to when a particular tab is selected. Automatically resets when the tab is closed."
+              },
+              "popup": {
+                "type": "string",
+                "description": "The html file to show in a popup.  If set to the empty string (''), no popup is shown."
+              }
+            }
+          }
+        ]
+      },
+      {
         "name": "setBadgeText",
         "type": "function",
         "description": "Sets the badge text for the browser action. The badge is displayed on top of the icon.",
@@ -1324,7 +1347,7 @@
       {
         "name": "onClicked",
         "type": "function",
-        "description": "Fired when a browser action icon is clicked.",
+        "description": "Fired when a browser action icon is clicked.  This event will not fire if the browser action has a popup.",
         "parameters": [
           {
             "name": "tab",

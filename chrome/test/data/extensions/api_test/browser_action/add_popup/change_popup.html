@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html>
+  <body>
+    <script>
+      chrome.tabs.getSelected(null, function(tab) {
+        chrome.browserAction.setPopup({
+          popup: 'another_popup.html'
+        });
+        chrome.test.notifyPass();
+      });
+    </script>
+  </body>
+</html>
