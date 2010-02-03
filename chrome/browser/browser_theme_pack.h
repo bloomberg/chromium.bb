@@ -85,6 +85,9 @@ class BrowserThemePack : public base::RefCountedThreadSafe<BrowserThemePack> {
   // The type passed to base::DataPack::WritePack.
   typedef std::map<uint32, base::StringPiece> RawDataForWriting;
 
+  // An association between an id and the FilePath that has the image data.
+  typedef std::map<int, FilePath> FilePathMap;
+
   // Default. Everything is empty.
   BrowserThemePack();
 
@@ -110,10 +113,13 @@ class BrowserThemePack : public base::RefCountedThreadSafe<BrowserThemePack> {
   // Parses the image names out of an extension.
   void ParseImageNamesFromJSON(DictionaryValue* images_value,
                                FilePath images_path,
-                               std::map<int, FilePath>* file_paths) const;
+                               FilePathMap* file_paths) const;
+
+  // Creates the data for |source_images_| from |file_paths|.
+  void BuildSourceImagesArray(const FilePathMap& file_paths);
 
   // Loads the unmodified bitmaps packed in the extension to SkBitmaps.
-  void LoadRawBitmapsTo(const std::map<int, FilePath>& file_paths,
+  void LoadRawBitmapsTo(const FilePathMap& file_paths,
                         ImageCache* raw_bitmaps);
 
   // Creates tinted and composited frame images. Source and destination is
@@ -184,6 +190,10 @@ class BrowserThemePack : public base::RefCountedThreadSafe<BrowserThemePack> {
     int32 id;
     int32 property;
   } *display_properties_;
+
+  // A list of included source images. A pointer to a -1 terminated array of
+  // our persistent IDs.
+  int* source_images_;
 #pragma pack(pop)
 
   // References to raw PNG data. This map isn't touched when |data_pack_| is
