@@ -112,16 +112,6 @@ extern int esGenCube ( float scale, GLfloat **vertices, GLfloat **normals,
                        GLfloat **texCoords, GLushort **indices );
 
 //
-/// \brief Loads a 24-bit TGA image from a file
-/// \param fileName Name of the file on disk
-/// \param width Width of loaded image in pixels
-/// \param height Height of loaded image in pixels
-///  \return Pointer to loaded image.  NULL on failure. 
-//
-extern char* esLoadTGA ( char *fileName, int *width, int *height );
-
-
-//
 /// \brief multiply matrix specified by result with a scaling matrix and return new matrix in result
 /// \param result Specifies the input matrix.  Scaled matrix is returned in result.
 /// \param sx, sy, sz Scale factors along the x, y and z axes respectively

@@ -5,12 +5,13 @@
 #ifndef GPU_DEMOS_FRAMEWORK_WINDOW_H_
 #define GPU_DEMOS_FRAMEWORK_WINDOW_H_
 
+#include "app/gfx/native_widget_types.h"
 #include "base/scoped_ptr.h"
-#include "gpu/demos/framework/demo.h"
-#include "gpu/demos/framework/platform.h"
 
 namespace gpu {
 namespace demos {
+
+class Demo;
 
 // Acts as a framework for standalone demos. It creates a window and delegates
 // all events to demo to perform rendering and other tasks.
@@ -28,7 +29,15 @@ class Window {
   void OnPaint();
 
  private:
-  NativeWindowHandle window_handle_;
+  // Creates and shows a native window with the given title and dimensions.
+  gfx::NativeWindow CreateNativeWindow(const wchar_t* title,
+                                       int width, int height);
+  // Converts native window handle to NPAPI plugin window handle.
+  gfx::PluginWindowHandle PluginWindow(gfx::NativeWindow hwnd);
+  // Creates an OpenGL ES 2.0 rendering context for the given window.
+  bool CreateRenderContext(gfx::PluginWindowHandle hwnd);
+
+  gfx::NativeWindow window_handle_;
   scoped_ptr<Demo> demo_;
 
   DISALLOW_COPY_AND_ASSIGN(Window);
@@ -37,3 +46,4 @@ class Window {
 }  // namespace demos
 }  // namespace gpu
 #endif  // GPU_DEMOS_FRAMEWORK_WINDOW_H_
+

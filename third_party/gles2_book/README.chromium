@@ -18,6 +18,7 @@ Local Modifications:
     - Common/Include/KD/*
     - Common/Lib/*
     - Common/Source/esUtil_win32.c
+    - Common/Source/Win32/esUtil_TGA.c
     - Lib/*
     - *.vcproj, *.sln
 
@@ -25,3 +26,9 @@ Local Modifications:
   static libraries:
     - Chapter_2/Hello_Triangle/Hello_Triangle.h
     - Chapter_8/Simple_VertexShader/Simple_VertexShader.h
+    - Chapter_9/MipMap2D/MipMap2D.h
+    - Chapter_9/Simple_Texture2D/Simple_Texture2D.h
+    - Chapter_9/Simple_TextureCubemap/Simple_TextureCubemap.h
+    - Chapter_9/TextureWrap/TextureWrap.h
+    - Chapter_11/Stencil_Test/Stencil_Test.h
+

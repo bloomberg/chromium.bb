@@ -25,7 +25,6 @@
         'Common/Source/esShapes.c',
         'Common/Source/esTransform.c',
         'Common/Source/esUtil.c',
-        'Common/Source/Win32/esUtil_TGA.c',
       ],
     },
     {

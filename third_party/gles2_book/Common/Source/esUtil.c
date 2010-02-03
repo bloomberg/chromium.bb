@@ -26,7 +26,6 @@
 #include <GLES2/gl2.h>
 
 #include "esUtil.h"
-#include "esUtil_win.h"
 
 ///
 //  esInitContext()
@@ -53,26 +52,10 @@ void esLogMessage ( const char *formatStr, ... )
     char buf[BUFSIZ];
 
     va_start ( params, formatStr );
-    vsprintf_s ( buf, sizeof(buf),  formatStr, params );
+    vsprintf ( buf, formatStr, params );
     
     printf ( "%s", buf );
     
     va_end ( params );
 }
 
-///
-// esLoadTGA()
-//
-//    Loads a 24-bit TGA image from a file
-//
-char* esLoadTGA ( char *fileName, int *width, int *height )
-{
-   char *buffer;
-
-   if ( WinTGALoad ( fileName, &buffer, width, height ) )
-   {
-      return buffer;
-   }
-
-   return NULL;
-}
