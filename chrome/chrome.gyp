@@ -690,6 +690,7 @@
       'type': 'none',
       'sources': [
         'browser/sync/protocol/sync.proto',
+        'browser/sync/protocol/autofill_specifics.proto',
         'browser/sync/protocol/bookmark_specifics.proto',
         'browser/sync/protocol/preference_specifics.proto',
       ],
