@@ -239,7 +239,7 @@ bool FontConfigDirect::Match(std::string* result_family,
         FcPatternGet(match, FC_EMBOLDEN, 0, &embolden) == 0;
 
     if (is_bold)
-      *is_bold = resulting_bold >= FC_WEIGHT_BOLD && !have_embolden;
+      *is_bold = resulting_bold > FC_WEIGHT_MEDIUM && !have_embolden;
     if (is_italic)
       *is_italic = resulting_italic > FC_SLANT_ROMAN && !have_matrix;
 
