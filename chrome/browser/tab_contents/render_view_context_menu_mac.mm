@@ -140,6 +140,7 @@ void RenderViewContextMenuMac::StartSubMenu(int command_id,
                                      action:nil
                               keyEquivalent:@""]);
   insert_menu_ = [[[NSMenu alloc] init] autorelease];
+  [insert_menu_ setAutoenablesItems:NO];
   [submenu_item setSubmenu:insert_menu_];
   [menu_ addItem:submenu_item];
 }

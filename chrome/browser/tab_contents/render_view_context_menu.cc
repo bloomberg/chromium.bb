@@ -504,6 +504,7 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
     case IDC_SPELLCHECK_SUGGESTION_3:
     case IDC_SPELLCHECK_SUGGESTION_4:
     case IDC_SPELLCHECK_MENU:
+    case IDC_SPELLPANEL_TOGGLE:
     case IDS_CONTENT_CONTEXT_LANGUAGE_SETTINGS:
     case IDS_CONTENT_CONTEXT_VIEWFRAMEINFO:
       return true;
