@@ -67,7 +67,7 @@ deps = {
     Var("webkit_trunk") + "/WebKitTools/pywebsocket@" + Var("webkit_revision"),
 
   "src/third_party/ots":
-    "http://ots.googlecode.com/svn/trunk@23",
+    "http://ots.googlecode.com/svn/trunk@26",
 
   "src/tools/page_cycler/acid3":
     "/trunk/deps/page_cycler/acid3@19546",
