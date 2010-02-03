@@ -322,6 +322,13 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 }
 
 - (IBAction)handleTogglePause:(id)sender {
+  if([sender state] == NSOnState) {
+    [sender setTitle:l10n_util::GetNSStringWithFixup(
+        IDS_DOWNLOAD_MENU_PAUSE_ITEM)];
+  } else {
+    [sender setTitle:l10n_util::GetNSStringWithFixup(
+        IDS_DOWNLOAD_MENU_RESUME_ITEM)];
+  }
   menuBridge_->ExecuteItemCommand(DownloadShelfContextMenuMac::TOGGLE_PAUSE);
 }
 
