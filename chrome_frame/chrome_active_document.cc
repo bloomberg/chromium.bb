@@ -40,8 +40,7 @@
 const wchar_t kChromeAttachExternalTabPrefix[] = L"attach_external_tab";
 
 static const wchar_t kUseChromeNetworking[] = L"UseChromeNetworking";
-static const wchar_t kHandleTopLevelRequests[] =
-    L"HandleTopLevelRequests";
+static const wchar_t kHandleTopLevelRequests[] = L"HandleTopLevelRequests";
 
 DEFINE_GUID(CGID_DocHostCmdPriv, 0x000214D4L, 0, 0, 0xC0, 0, 0, 0, 0, 0, 0,
             0x46);
@@ -819,6 +818,20 @@ bool ChromeActiveDocument::ParseUrl(const std::wstring& url,
                   << " Disallowing navigation to restricted url: "
                   << initial_url;
     return false;
+  }
+
+  if (*is_chrome_protocol) {
+    // Allow chrome protocol (gcf:) if -
+    // - explicitly enabled using registry
+    // - for gcf:attach_external_tab
+    // - for gcf:about and gcf:view-source
+    GURL crack_url(initial_url);
+    bool allow_gcf_protocol = !*is_new_navigation ||
+        GetConfigBool(false, kEnableGCFProtocol) ||
+        crack_url.SchemeIs(chrome::kAboutScheme) ||
+        crack_url.SchemeIs(chrome::kViewSourceScheme);
+    if (!allow_gcf_protocol)
+      return false;
   }
 
   *parsed_url = initial_url;

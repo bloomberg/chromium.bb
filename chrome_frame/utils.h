@@ -18,6 +18,8 @@
 
 extern const wchar_t kChromeContentPrefix[];
 extern const wchar_t kChromeProtocolPrefix[];
+extern const wchar_t kChromeFrameHeadlessMode[];
+extern const wchar_t kEnableGCFProtocol[];
 
 // This function is very similar to the AtlRegisterTypeLib function except
 // that it takes a parameter that specifies whether to register the typelib
@@ -313,8 +315,6 @@ STDMETHODIMP QueryInterfaceIfDelegateSupports(void* obj, REFIID iid,
 // Queries the delegated COM object for an interface, bypassing the wrapper.
 #define COM_INTERFACE_BLIND_DELEGATE() \
     COM_INTERFACE_ENTRY_FUNC_BLIND(0, CheckOutgoingInterface<_ComMapClass>)
-
-extern const wchar_t kChromeFrameHeadlessMode[];
 
 // Thread that enters STA and has a UI message loop.
 class STAThread : public base::Thread {

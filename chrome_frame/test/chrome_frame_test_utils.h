@@ -177,6 +177,7 @@ class WebBrowserEventSink
     Uninitialize();
   }
 
+  void Attach(IDispatch* browser_disp);
   void Uninitialize();
 
   // Helper function to launch IE and navigate to a URL.
@@ -205,8 +206,10 @@ BEGIN_SINK_MAP(WebBrowserEventSink)
                   OnNavigateComplete2Internal, &kNavigateComplete2Info)
   SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_NAVIGATEERROR,
                   OnNavigateError, &kNavigateErrorInfo)
+  SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_NEWWINDOW2,
+                  OnNewWindow2, &kNewWindow2Info)
   SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_NEWWINDOW3,
-                  OnNewWindow3, &kNewWindow3Info)
+                  OnNewWindow3Internal, &kNewWindow3Info)
   SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_DOCUMENTCOMPLETE,
                   OnDocumentCompleteInternal, &kDocumentCompleteInfo)
 END_SINK_MAP()
@@ -224,21 +227,11 @@ END_SINK_MAP()
     return S_OK;
   }
 
-  STDMETHOD(OnBeforeNavigate2Internal)(IDispatch* dispatch, VARIANT* url,
-                                       VARIANT* flags,
-                                       VARIANT* target_frame_name,
-                                       VARIANT* post_data, VARIANT* headers,
-                                       VARIANT_BOOL* cancel);
   STDMETHOD_(void, OnDownloadBegin)() {}
-  STDMETHOD_(void, OnNavigateComplete2Internal)(IDispatch* dispatch,
-                                                VARIANT* url);
   STDMETHOD_(void, OnNavigateComplete2)(IDispatch* dispatch, VARIANT* url) {}
-  STDMETHOD_(void, OnNewWindow3)(IDispatch** dispatch, VARIANT_BOOL* Cancel,
+  STDMETHOD_(void, OnNewWindow2)(IDispatch** dispatch, VARIANT_BOOL* cancel) {}
+  STDMETHOD_(void, OnNewWindow3)(IDispatch** dispatch, VARIANT_BOOL* cancel,
                                  DWORD flags, BSTR url_context, BSTR url) {}
-
-  STDMETHOD_(void, OnDocumentCompleteInternal)(IDispatch* dispatch,
-                                               VARIANT* url);
-
   STDMETHOD_(void, OnDocumentComplete)(IDispatch* dispatch,
                                        VARIANT* url) {}
 #ifdef _DEBUG
@@ -260,9 +253,24 @@ END_SINK_MAP()
     return web_browser2_.get();
   }
 
+  virtual void OnNewBrowserWindow(IDispatch* new_window, const wchar_t* url) {}
+
   HRESULT SetWebBrowser(IWebBrowser2* web_browser2);
 
  protected:
+  STDMETHOD(OnBeforeNavigate2Internal)(IDispatch* dispatch, VARIANT* url,
+                                       VARIANT* flags,
+                                       VARIANT* target_frame_name,
+                                       VARIANT* post_data, VARIANT* headers,
+                                       VARIANT_BOOL* cancel);
+  STDMETHOD_(void, OnNavigateComplete2Internal)(IDispatch* dispatch,
+                                                VARIANT* url);
+  STDMETHOD_(void, OnDocumentCompleteInternal)(IDispatch* dispatch,
+                                               VARIANT* url);
+  STDMETHOD_(void, OnNewWindow3Internal)(IDispatch** dispatch,
+                                         VARIANT_BOOL* Cancel, DWORD flags,
+                                         BSTR url_context, BSTR url);
+
   // IChromeFrame callbacks
   HRESULT OnLoadInternal(const VARIANT* param);
   HRESULT OnLoadErrorInternal(const VARIANT* param);
@@ -270,7 +278,7 @@ END_SINK_MAP()
 
   void ConnectToChromeFrame();
   void DisconnectFromChromeFrame();
-  HWND GetAttachedChromeRendererWindow();
+  HWND GetTabWindow();
 
  public:
   ScopedComPtr<IWebBrowser2> web_browser2_;
@@ -283,6 +291,7 @@ END_SINK_MAP()
   static _ATL_FUNC_INFO kBeforeNavigate2Info;
   static _ATL_FUNC_INFO kNavigateComplete2Info;
   static _ATL_FUNC_INFO kNavigateErrorInfo;
+  static _ATL_FUNC_INFO kNewWindow2Info;
   static _ATL_FUNC_INFO kNewWindow3Info;
   static _ATL_FUNC_INFO kVoidMethodInfo;
   static _ATL_FUNC_INFO kDocumentCompleteInfo;

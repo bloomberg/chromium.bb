@@ -41,6 +41,7 @@
 #include "chrome_frame/com_message_event.h"
 #include "chrome_frame/com_type_info_holder.h"
 #include "chrome_frame/urlmon_url_request.h"
+#include "chrome/common/url_constants.h"
 #include "grit/generated_resources.h"
 #include "net/base/cookie_monster.h"
 
@@ -387,12 +388,13 @@ END_MSG_MAP()
     // Check to see if the URL uses a "view-source:" prefix, if so, open it
     // using chrome frame full tab mode by using 'cf:' protocol handler.
     // Also change the disposition to NEW_WINDOW since IE6 doesn't have tabs.
-    if (url_to_open.has_scheme() && (url_to_open.SchemeIs("view-source") ||
-                                     url_to_open.SchemeIs("about"))) {
-      std::string chrome_url;
-      chrome_url.append("cf:");
-      chrome_url.append(url_to_open.spec());
-      url.Set(UTF8ToWide(chrome_url).c_str());
+    if (url_to_open.has_scheme() &&
+        (url_to_open.SchemeIs(chrome::kViewSourceScheme) ||
+        url_to_open.SchemeIs(chrome::kAboutScheme))) {
+      std::wstring chrome_url;
+      chrome_url.append(kChromeProtocolPrefix);
+      chrome_url.append(UTF8ToWide(url_to_open.spec()));
+      url.Set(chrome_url.c_str());
       open_disposition = NEW_WINDOW;
     } else {
       url.Set(UTF8ToWide(url_to_open.spec()).c_str());
@@ -506,7 +508,7 @@ END_MSG_MAP()
                                    intptr_t cookie,
                                    int disposition) {
     std::string url;
-    url = StringPrintf("cf:attach_external_tab&%d&%d",
+    url = StringPrintf("%lsattach_external_tab&%d&%d", kChromeProtocolPrefix,
                        cookie, disposition);
     OnOpenURL(tab_handle, GURL(url), GURL(), disposition);
   }

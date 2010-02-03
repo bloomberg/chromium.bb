@@ -29,7 +29,7 @@ HKLM {
     NoRemove Classes {
       NoRemove Protocols {
         NoRemove Handler {
-          NoRemove 'cf' {
+          'gcf' {
             val CLSID = s '{9875BFAF-B04D-445E-8A69-BE36838CDE3E}'
           }
         }

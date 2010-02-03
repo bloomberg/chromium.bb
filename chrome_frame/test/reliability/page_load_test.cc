@@ -133,9 +133,9 @@ class WebBrowserEventSinkImpl : public chrome_frame_test::WebBrowserEventSink {
   }
 
   virtual HRESULT Navigate(const std::wstring& navigate_url) {
-    if (StartsWith(navigate_url, L"cf:", true)) {
+    if (StartsWith(navigate_url, kChromeProtocolPrefix, true)) {
       is_chrome_frame_navigation_ = true;
-      url_ = navigate_url.substr(wcslen(L"cf:"));
+      url_ = navigate_url.substr(wcslen(kChromeProtocolPrefix));
     } else {
       url_ = navigate_url;
     }
@@ -349,7 +349,7 @@ class PageLoadTest : public testing::Test {
       // Every 3rd URL goes into the host browser.
       if (line_index % 3 != 0) {
         std::string actual_url;
-        actual_url = "cf:";
+        actual_url = WideToUTF8(kChromeProtocolPrefix);
         actual_url += url_str;
         url_str = actual_url;
       }
@@ -382,10 +382,12 @@ class PageLoadTest : public testing::Test {
     }
 
     SetConfigBool(kChromeFrameHeadlessMode, true);
+    SetConfigBool(kEnableGCFProtocol, true);
   }
 
   virtual void TearDown() {
     DeleteConfigValue(kChromeFrameHeadlessMode);
+    DeleteConfigValue(kEnableGCFProtocol);
   }
 
   FilePath ConstructSavedDebugLogPath(const FilePath& debug_log_path,

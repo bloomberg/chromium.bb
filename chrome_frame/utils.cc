@@ -33,11 +33,12 @@ const wchar_t kContentAttribName[] = L"content";
 const wchar_t kXUACompatValue[] = L"x-ua-compatible";
 const wchar_t kBodyTag[] = L"body";
 const wchar_t kChromeContentPrefix[] = L"chrome=";
-const wchar_t kChromeProtocolPrefix[] = L"cf:";
+const wchar_t kChromeProtocolPrefix[] = L"gcf:";
 
 static const wchar_t kChromeFrameConfigKey[] =
     L"Software\\Google\\ChromeFrame";
 static const wchar_t kChromeFrameOptinUrlsKey[] = L"OptinUrls";
+static const wchar_t kEnableGCFProtocol[] = L"EnableGCFProtocol";
 
 static const wchar_t kChromeFrameNPAPIKey[] =
     L"Software\\MozillaPlugins\\@google.com/ChromeFrame,version=1.0";

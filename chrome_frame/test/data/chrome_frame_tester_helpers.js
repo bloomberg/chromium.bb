@@ -139,7 +139,7 @@ function isRunningInMSIE() {
 }
 
 function reloadUsingCFProtocol() {
-  var redirect_location = "cf:";
+  var redirect_location = "gcf:";
   redirect_location += window.location;
   window.location = redirect_location;
 }

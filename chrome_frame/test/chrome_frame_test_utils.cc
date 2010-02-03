@@ -690,6 +690,13 @@ _ATL_FUNC_INFO WebBrowserEventSink::kBeforeNavigate2Info = {
   }
 };
 
+_ATL_FUNC_INFO WebBrowserEventSink::kNewWindow2Info = {
+  CC_STDCALL, VT_EMPTY, 2, {
+    VT_DISPATCH | VT_BYREF,
+    VT_BOOL | VT_BYREF,
+  }
+};
+
 _ATL_FUNC_INFO WebBrowserEventSink::kNewWindow3Info = {
   CC_STDCALL, VT_EMPTY, 5, {
     VT_DISPATCH | VT_BYREF,
@@ -711,6 +718,15 @@ _ATL_FUNC_INFO WebBrowserEventSink::kDocumentCompleteInfo = {
 };
 
 // WebBrowserEventSink member defines
+void WebBrowserEventSink::Attach(IDispatch* browser_disp) {
+  EXPECT_TRUE(NULL != browser_disp);
+  if(browser_disp) {
+    EXPECT_HRESULT_SUCCEEDED(web_browser2_.QueryFrom(browser_disp));
+    EXPECT_TRUE(S_OK == DispEventAdvise(web_browser2_,
+                                        &DIID_DWebBrowserEvents2));
+  }
+}
+
 void WebBrowserEventSink::Uninitialize() {
   DisconnectFromChromeFrame();
   if (web_browser2_.get()) {
@@ -743,6 +759,34 @@ STDMETHODIMP_(void) WebBrowserEventSink::OnDocumentCompleteInternal(
     IDispatch* dispatch, VARIANT* url) {
   DLOG(INFO) << __FUNCTION__;
   OnDocumentComplete(dispatch, url);
+}
+
+STDMETHODIMP_(void) WebBrowserEventSink::OnNewWindow3Internal(
+    IDispatch** dispatch, VARIANT_BOOL* cancel, DWORD flags, BSTR url_context,
+    BSTR url) {
+  DLOG(INFO) << __FUNCTION__;
+  if (!dispatch) {
+    NOTREACHED() << "Invalid argument - dispatch";
+    return;
+  }
+
+  // Call the OnNewWindow3 with original args
+  OnNewWindow3(dispatch, cancel, flags, url_context, url);
+
+  // Note that |dispatch| is an [in/out] argument. IE is asking listeners if
+  // they want to use a IWebBrowser2 of their choice for the new window.
+  // Since we need to listen on events on the new browser, we create one
+  // if needed.
+  if (!*dispatch) {
+    ScopedComPtr<IDispatch> new_browser;
+    HRESULT hr = new_browser.CreateInstance(CLSID_InternetExplorer, NULL,
+                                            CLSCTX_LOCAL_SERVER);
+    DCHECK(SUCCEEDED(hr) && new_browser);
+    *dispatch = new_browser.Detach();
+  }
+
+  if (*dispatch)
+    OnNewBrowserWindow(*dispatch, url);
 }
 
 HRESULT WebBrowserEventSink::OnLoadInternal(const VARIANT* param) {
@@ -788,14 +832,12 @@ HRESULT WebBrowserEventSink::Navigate(const std::wstring& navigate_url) {
 }
 
 void WebBrowserEventSink::SetFocusToChrome() {
-  chrome_frame_test::SetKeyboardFocusToWindow(
-      GetAttachedChromeRendererWindow(), 1, 1);
+  chrome_frame_test::SetKeyboardFocusToWindow(GetTabWindow(), 1, 1);
 }
 
 void WebBrowserEventSink::SendInputToChrome(
     const std::string& input_string) {
-  chrome_frame_test::SendInputToWindow(
-      GetAttachedChromeRendererWindow(), input_string);
+  chrome_frame_test::SendInputToWindow(GetTabWindow(), input_string);
 }
 
 void WebBrowserEventSink::ConnectToChromeFrame() {
@@ -833,7 +875,7 @@ void WebBrowserEventSink::DisconnectFromChromeFrame() {
   }
 }
 
-HWND WebBrowserEventSink::GetAttachedChromeRendererWindow() {
+HWND WebBrowserEventSink::GetTabWindow() {
   DCHECK(chrome_frame_);
   HWND renderer_window = NULL;
   ScopedComPtr<IOleWindow> ole_window;

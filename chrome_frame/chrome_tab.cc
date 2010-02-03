@@ -40,6 +40,9 @@ static const wchar_t kBhoRegistryPath[] =
 const wchar_t kInternetSettings[] =
     L"Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings";
 
+const wchar_t kProtocolHandlers[] =
+    L"Software\\Classes\\Protocols\\Handler";
+
 const wchar_t kBhoNoLoadExplorerValue[] = L"NoExplorer";
 
 // {0562BFC3-2550-45b4-BD8E-A310583D3A6F}
@@ -236,7 +239,6 @@ HRESULT RegisterChromeTabBHO() {
   DLOG(INFO) << "Registered ChromeTab BHO";
 
   // We now add the chromeframe user agent at runtime.
-  // SetClockUserAgent(L"1");
   RefreshElevationPolicy();
   return S_OK;
 }
@@ -267,6 +269,26 @@ HRESULT UnregisterChromeTabBHO() {
   }
 
   DLOG(INFO) << "Unregistered ChromeTab BHO";
+  return S_OK;
+}
+
+HRESULT CleanupCFProtocol() {
+  RegKey protocol_handlers_key;
+  if (protocol_handlers_key.Open(HKEY_LOCAL_MACHINE, kProtocolHandlers,
+                                 KEY_READ | KEY_WRITE)) {
+    RegKey cf_protocol_key;
+    if (cf_protocol_key.Open(protocol_handlers_key.Handle(), L"cf",
+                             KEY_QUERY_VALUE)) {
+      std::wstring protocol_clsid_string;
+      if (cf_protocol_key.ReadValue(L"CLSID", &protocol_clsid_string)) {
+        CLSID protocol_clsid = {0};
+        IIDFromString(protocol_clsid_string.c_str(), &protocol_clsid);
+        if (IsEqualGUID(protocol_clsid, CLSID_ChromeProtocol))
+          protocol_handlers_key.DeleteKey(L"cf");
+      }
+    }
+  }
+
   return S_OK;
 }
 
@@ -323,6 +345,8 @@ STDAPI DllUnregisterServer() {
     hr = _AtlModule.UpdateRegistryFromResourceS(IDR_CHROMEFRAME_NPAPI, FALSE);
   }
 
+  // TODO(joshia): Remove after 2 refresh releases
+  CleanupCFProtocol();
   return hr;
 }
 
