@@ -116,7 +116,7 @@ namespace chromeos {
 // main menu, stataus views.
 class BrowserViewLayout : public ::BrowserViewLayout {
  public:
-  BrowserViewLayout() : BrowserViewLayout() {}
+  BrowserViewLayout() : ::BrowserViewLayout() {}
   virtual ~BrowserViewLayout() {}
 
   //////////////////////////////////////////////////////////////////////////////
@@ -317,7 +317,7 @@ class BrowserViewLayout : public ::BrowserViewLayout {
 };
 
 BrowserView::BrowserView(Browser* browser)
-    : BrowserView(browser),
+    : ::BrowserView(browser),
       main_menu_(NULL),
       status_area_(NULL),
       compact_navigation_bar_(NULL),
