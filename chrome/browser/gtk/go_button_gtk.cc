@@ -153,11 +153,9 @@ gboolean GoButtonGtk::OnClicked(GtkButton* widget, GoButtonGtk* button) {
     button->ChangeMode(MODE_GO, true);
   } else if (button->visible_mode_ == MODE_GO && button->stop_timer_.empty()) {
     // If the go button is visible and not within the double click timer, go.
-    GdkEventButton* event =
-        reinterpret_cast<GdkEventButton*>(gtk_get_current_event());
     if (button->browser_) {
       button->browser_->ExecuteCommandWithDisposition(IDC_GO,
-          event_utils::DispositionFromEventFlags(event->state));
+          gtk_util::DispositionForCurrentButtonPressEvent());
     }
 
     // Figure out the system double-click time.

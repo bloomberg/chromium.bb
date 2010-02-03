@@ -632,8 +632,7 @@ void BrowserToolbarGtk::OnButtonClick(GtkWidget* button,
 
   DCHECK_NE(tag, -1) << "Unexpected button click callback";
   toolbar->browser_->ExecuteCommandWithDisposition(tag,
-      event_utils::DispositionFromEventFlags(
-      reinterpret_cast<GdkEventButton*>(gtk_get_current_event())->state));
+      gtk_util::DispositionForCurrentButtonPressEvent());
 }
 
 // static

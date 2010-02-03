@@ -959,12 +959,9 @@ void BookmarkBarGtk::OnClicked(GtkWidget* sender,
   DCHECK(node->is_url());
   DCHECK(bar->page_navigator_);
 
-  GdkEventButton* event =
-      reinterpret_cast<GdkEventButton*>(gtk_get_current_event());
-
   bar->page_navigator_->OpenURL(
       node->GetURL(), GURL(),
-      event_utils::DispositionFromEventFlags(event->state),
+      gtk_util::DispositionForCurrentButtonPressEvent(),
       PageTransition::AUTO_BOOKMARK);
 
   UserMetrics::RecordAction("ClickedBookmarkBarURLButton", bar->profile_);
@@ -1330,9 +1327,9 @@ void BookmarkBarGtk::PopupForButton(GtkWidget* button) {
                                      first_hidden : 0,
                                  false));
   menu_bar_helper_.MenuStartedShowing(button, current_menu_->widget());
-  GdkEventButton* event =
-      reinterpret_cast<GdkEventButton*>(gtk_get_current_event());
-  current_menu_->Popup(button, event->button, event->time);
+  GdkEvent* event = gtk_get_current_event();
+  current_menu_->Popup(button, event->button.button, event->button.time);
+  gdk_event_free(event);
 }
 
 void BookmarkBarGtk::PopupForButtonNextTo(GtkWidget* button,

@@ -692,4 +692,16 @@ void WrapLabelAtAllocationHack(GtkWidget* label) {
                    G_CALLBACK(OnLabelAllocate), NULL);
 }
 
+WindowOpenDisposition DispositionForCurrentButtonPressEvent() {
+  GdkEvent* event = gtk_get_current_event();
+  if (!event) {
+    NOTREACHED();
+    return NEW_FOREGROUND_TAB;
+  }
+
+  guint state = event->button.state;
+  gdk_event_free(event);
+  return event_utils::DispositionFromEventFlags(state);
+}
+
 }  // namespace gtk_util

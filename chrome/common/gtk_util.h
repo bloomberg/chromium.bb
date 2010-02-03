@@ -242,6 +242,11 @@ void SuppressDefaultPainting(GtkWidget* container);
 // proper width.
 void WrapLabelAtAllocationHack(GtkWidget* label);
 
+// Get the window open disposition from the state in gtk_get_current_event().
+// This is designed to be called inside a "clicked" event handler. It is an
+// error to call it when gtk_get_current_event() won't return a GdkEventButton*.
+WindowOpenDisposition DispositionForCurrentButtonPressEvent();
+
 }  // namespace gtk_util
 
 #endif  // CHROME_COMMON_GTK_UTIL_H_

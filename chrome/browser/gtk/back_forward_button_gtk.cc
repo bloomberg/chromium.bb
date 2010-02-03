@@ -100,12 +100,10 @@ void BackForwardButtonGtk::ShowBackForwardMenu() {
 void BackForwardButtonGtk::OnClick(GtkWidget* widget,
                                    BackForwardButtonGtk* button) {
   button->show_menu_factory_.RevokeAll();
-  GdkEventButton* event =
-      reinterpret_cast<GdkEventButton*>(gtk_get_current_event());
 
   button->browser_->ExecuteCommandWithDisposition(
       button->is_forward_ ? IDC_FORWARD : IDC_BACK,
-      event_utils::DispositionFromEventFlags(event->state));
+      gtk_util::DispositionForCurrentButtonPressEvent());
 }
 
 // static

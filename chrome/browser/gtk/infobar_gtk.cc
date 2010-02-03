@@ -257,16 +257,8 @@ class LinkInfoBar : public InfoBar {
 
  private:
   static void OnLinkClick(GtkWidget* button, LinkInfoBar* link_info_bar) {
-    const GdkEventButton* button_click_event =
-        reinterpret_cast<GdkEventButton*>(gtk_get_current_event());
-    WindowOpenDisposition disposition = CURRENT_TAB;
-    if (button_click_event) {
-      disposition = event_utils::DispositionFromEventFlags(
-          button_click_event->state);
-    }
-
     if (link_info_bar->delegate_->AsLinkInfoBarDelegate()->
-        LinkClicked(disposition)) {
+        LinkClicked(gtk_util::DispositionForCurrentButtonPressEvent())) {
       link_info_bar->RemoveInfoBar();
     }
   }

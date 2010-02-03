@@ -460,8 +460,8 @@ void BrowserTitlebar::ShowFaviconMenu(GdkEventButton* event) {
 }
 
 void BrowserTitlebar::MaximizeButtonClicked() {
-  GdkEventButton* event = &gtk_get_current_event()->button;
-  if (event->button == 1) {
+  GdkEvent* event = gtk_get_current_event();
+  if (event->button.button == 1) {
     gtk_window_maximize(window_);
   } else {
     GtkWidget* widget = GTK_WIDGET(window_);
@@ -475,16 +475,17 @@ void BrowserTitlebar::MaximizeButtonClicked() {
     gint width = widget->allocation.width;
     gint height = widget->allocation.height;
 
-    if (event->button == 3) {
+    if (event->button.button == 3) {
       x = 0;
       width = screen_rect.width;
-    } else if (event->button == 2) {
+    } else if (event->button.button == 2) {
       y = 0;
       height = screen_rect.height;
     }
 
     browser_window_->SetBounds(gfx::Rect(x, y, width, height));
   }
+  gdk_event_free(event);
 }
 
 // static
