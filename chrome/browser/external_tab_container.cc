@@ -35,6 +35,8 @@
 static const wchar_t kWindowObjectKey[] = L"ChromeWindowObject";
 
 ExternalTabContainer::PendingTabs ExternalTabContainer::pending_tabs_;
+ExternalTabContainer* ExternalTabContainer::innermost_tab_for_unload_event_
+    = NULL;
 
 ExternalTabContainer::ExternalTabContainer(
     AutomationProvider* automation, AutomationResourceMessageFilter* filter)
@@ -164,11 +166,20 @@ void ExternalTabContainer::Uninitialize() {
 
   registrar_.RemoveAll();
   if (tab_contents_) {
+    waiting_for_unload_event_ = true;
     if (Browser::RunUnloadEventsHelper(tab_contents_)) {
-      waiting_for_unload_event_ = true;
+      // Maintain a local global stack of Externa;TabCotainers waiting for the
+      // unload event listeners to finish. We need this as we only want to
+      // handle the CloseContents call from the TabContents when the current
+      // ExternalTabContainers message loop is active. This ensures that nested
+      // ExternalTabContainer message loops terminate correctly.
+      ExternalTabContainer* current_tab = innermost_tab_for_unload_event_;
+      innermost_tab_for_unload_event_ = this;
       MessageLoop::current()->Run();
-      waiting_for_unload_event_ = false;
+      innermost_tab_for_unload_event_ = current_tab;
     }
+
+    waiting_for_unload_event_ = false;
 
     RenderViewHost* rvh = tab_contents_->render_view_host();
     if (rvh && DevToolsManager::GetInstance()) {
@@ -375,7 +386,19 @@ void ExternalTabContainer::LoadingStateChanged(TabContents* source) {
 }
 
 void ExternalTabContainer::CloseContents(TabContents* source) {
+  static const int kExternalTabCloseContentsDelayMS = 100;
+
   if (waiting_for_unload_event_) {
+    // If we are not the innermost tab waiting for the unload event to return
+    // then don't handle this notification right away as we need the inner
+    // message loop to terminate.
+    if (this != innermost_tab_for_unload_event_) {
+      ChromeThread::PostDelayedTask(
+          ChromeThread::UI, FROM_HERE,
+          NewRunnableMethod(this, &ExternalTabContainer::CloseContents,
+                            source), kExternalTabCloseContentsDelayMS);
+      return;
+    }
     MessageLoop::current()->Quit();
   }
 }
