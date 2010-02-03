@@ -219,7 +219,11 @@ InstallMiscTools() {
      ${INSTALL_ROOT}/tools-arm
 
    SubBanner "validator"
-   ./scons MODE=opt-linux targetplatform=arm sysinfo= arm-ncval-core
+   ./scons MODE=opt-linux \
+           naclsdk_mode=manual \
+           targetplatform=arm \
+           sysinfo= \
+           arm-ncval-core
    rm -rf  ${INSTALL_ROOT}/tools-x86
    mkdir ${INSTALL_ROOT}/tools-x86
    cp scons-out/opt-linux-x86-32-to-arm/obj/src/trusted/validator_arm/v2/arm-ncval-core\
@@ -364,6 +368,7 @@ fi
 #@
 #@   install misc tools
 if [ ${MODE} = 'misc-tools' ] ; then
+  source tools/llvm/setup_arm_untrusted_toolchain.sh
   source tools/llvm/setup_arm_trusted_toolchain.sh
   InstallMiscTools
   exit 0
