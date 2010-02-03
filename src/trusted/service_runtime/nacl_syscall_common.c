@@ -971,7 +971,7 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
   NaClSysCommonThreadSyscallEnter(natp);
 
   if (0 != (flags & ~allowed_flags)) {
-    NaClLog(LOG_WARNING, "invalid mmap flags 0%o, ignoring extraneous bits",
+    NaClLog(LOG_WARNING, "invalid mmap flags 0%o, ignoring extraneous bits\n",
             flags);
     flags &= allowed_flags;
   }
