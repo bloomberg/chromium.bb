@@ -98,7 +98,7 @@ static void LaunchNaClChildProcess(bool no_sandbox,
     target_services->LowerToken();
   MessageLoop::current()->Run();
 }
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) || defined(OS_LINUX)
 static void LaunchNaClChildProcess() {
   ChildProcess nacl_process;
   nacl_process.set_main_thread(new NaClThread());
@@ -149,7 +149,7 @@ int NaClMain(const MainFunctionParams& parameters) {
   }
   LaunchNaClChildProcess(no_sandbox, target_services);
 
-#elif defined(OS_MACOSX)
+#elif defined(OS_MACOSX) || defined(OS_LINUX)
   LaunchNaClChildProcess();
 
 #else
