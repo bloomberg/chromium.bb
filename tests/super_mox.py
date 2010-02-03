@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -8,10 +8,13 @@
 import __builtin__
 import os
 import random
+import shutil
 import string
 import subprocess
 import sys
-from pymox import mox
+
+sys.path.append(os.path.dirname(os.path.dirname(__file__)))
+from third_party.pymox import mox
 
 
 class IsOneOf(mox.Comparator):
@@ -96,6 +99,7 @@ class SuperMoxTestBase(SuperMoxBaseTestBase):
     os_path_to_mock = ('abspath', 'exists', 'getsize', 'isdir', 'isfile',
       'islink', 'ismount', 'lexists', 'realpath', 'samefile', 'walk')
     self.MockList(os.path, os_path_to_mock)
+    self.MockList(shutil, ('rmtree'))
     self.MockList(subprocess, ('call', 'Popen'))
     # Don't mock stderr since it confuses unittests.
     self.MockList(sys, ('stdin', 'stdout'))
@@ -105,4 +109,7 @@ class SuperMoxTestBase(SuperMoxBaseTestBase):
       # Skip over items not present because of OS-specific implementation,
       # implemented only in later python version, etc.
       if hasattr(parent, item):
-        self.mox.StubOutWithMock(parent, item)
+        try:
+          self.mox.StubOutWithMock(parent, item)
+        except TypeError:
+          raise TypeError('Couldn\'t mock %s in %s' % (item, parent.__name__))

@@ -1,30 +1,21 @@
 #!/usr/bin/python
-#
-# Copyright 2008-2009 Google Inc.  All Rights Reserved.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#      http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 
 """Unit tests for gclient_scm.py."""
 
-import os
-import shutil
-# Import it before super_mox to keep a valid reference.
+# Import before super_mox to keep valid references.
+from os import rename
+from shutil import rmtree
 from subprocess import Popen, PIPE, STDOUT
 import tempfile
 
+# Fixes include path.
+from super_mox import mox, SuperMoxBaseTestBase
+
 import gclient_scm
 from gclient_test import BaseTestCase as GCBaseTestCase
-from super_mox import mox, SuperMoxBaseTestBase
 
 
 class BaseTestCase(GCBaseTestCase):
@@ -373,7 +364,7 @@ from :3
 
   def tearDown(self):
     SuperMoxBaseTestBase.tearDown(self)
-    shutil.rmtree(self.root_dir)
+    rmtree(self.root_dir)
 
   def testDir(self):
     members = [
@@ -503,7 +494,7 @@ from :3
       self.assertEquals(scm.revinfo(options, (), None),
                         '069c602044c5388d2d15c3f875b057c852003458')
     finally:
-      shutil.rmtree(root_dir)
+      rmtree(root_dir)
 
   def testUpdateUpdate(self):
     if not self.enabled:
@@ -549,7 +540,7 @@ from :3
     scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
                                 relpath=self.relpath)
     git_path = gclient_scm.os.path.join(self.base_path, '.git')
-    os.rename(git_path, git_path + 'foo')
+    rename(git_path, git_path + 'foo')
     exception = \
         '\n____ .\n' \
         '\tPath is not a git repo. No .git dir.\n' \

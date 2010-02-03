@@ -1,5 +1,5 @@
 #!/usr/bin/python
-# Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -7,10 +7,12 @@
 
 import StringIO
 
+# Fixes include path.
+from super_mox import mox, SuperMoxTestBase
+
 import presubmit_support as presubmit
 # Shortcut.
-from presubmit_support import presubmit_canned_checks
-from super_mox import mox, SuperMoxTestBase
+presubmit_canned_checks = presubmit.presubmit_canned_checks
 
 
 class PresubmitTestsBase(SuperMoxTestBase):

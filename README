@@ -7,10 +7,6 @@ the latest versions of these tools as found at:
 
 This package contains:
 
-  change-svn-wc-format.py
-    Tool to convert from a svn checkout format to another. Fetched from
-    http://svn.collab.net/repos/svn/trunk/tools/client-side/change-svn-wc-format.py
-
   chrome-update-create-task.bat
     Creates a scheduled task to do an automatic local chromium build every day.
 
@@ -22,7 +18,7 @@ This package contains:
     A tool for uploading and managing code reviews on the Chromium
     project, using the Rietveld code review tool.  More info at:
     http://code.google.com/p/rietveld/
-   
+
   gclient
     A script for managing a workspace with modular dependencies that
     are each checked out independently from different repositories.
@@ -33,9 +29,6 @@ This package contains:
     A wrapper script for building Chromium with the SCons software
     construction tool.  More info at:
     http://www.scons.org/
-
-  revert
-    A small tool to quickly revert a change.
 
 Note: svn and python will be installed automatically if not accessible (on
 Windows only).

@@ -15,7 +15,7 @@ import string
 import subprocess
 import sys
 import tempfile
-import upload
+from third_party import upload
 import urllib2
 
 import breakpad

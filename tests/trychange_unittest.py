@@ -1,15 +1,14 @@
 #!/usr/bin/python
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Unit tests for trychange.py."""
 
-import optparse
-
-# Local imports
-import trychange
+# Fixes include path.
 from super_mox import mox, SuperMoxTestBase
+
+import trychange
 
 
 class TryChangeTestsBase(SuperMoxTestBase):
@@ -28,7 +27,7 @@ class TryChangeTestsBase(SuperMoxTestBase):
     self.mox.StubOutWithMock(trychange.scm.SVN, 'GetEmail')
     self.fake_root = self.Dir()
     self.expected_files = ['foo.txt', 'bar.txt']
-    self.options = optparse.Values()
+    self.options = trychange.optparse.Values()
     self.options.files = self.expected_files
     self.options.diff = None
     self.options.name = None

@@ -1,16 +1,18 @@
 #!/usr/bin/python
-# Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
 """Unit tests for scm.py."""
 
-import shutil
+from shutil import rmtree
 import tempfile
+
+# Fixes include path.
+from super_mox import mox, SuperMoxBaseTestBase
 
 from gclient_test import BaseTestCase
 import scm
-from super_mox import mox, SuperMoxBaseTestBase
 
 
 class BaseSCMTestCase(BaseTestCase):
@@ -110,7 +112,7 @@ from :3
     self.fake_root = self.Dir()
 
   def tearDown(self):
-    shutil.rmtree(self.root_dir)
+    rmtree(self.root_dir)
     SuperMoxBaseTestBase.tearDown(self)
 
   def testMembersChanged(self):
