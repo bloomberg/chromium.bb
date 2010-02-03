@@ -89,7 +89,7 @@ bool NetworkLocationRequest::MakeRequest(const string16& access_token,
   timestamp_ = timestamp;
 
   url_fetcher_.reset(URLFetcher::Create(
-      wifi_data.access_point_data.size(),  // Used for testing
+      host_name_.size(),  // Used for testing
       url_, URLFetcher::POST, this));
   url_fetcher_->set_upload_data(kMimeApplicationJson, post_body);
   url_fetcher_->set_request_context(url_context_);

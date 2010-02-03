@@ -80,7 +80,7 @@ LinuxWifiDataProvider::~LinuxWifiDataProvider() {
 }
 
 bool LinuxWifiDataProvider::GetData(WifiData *data) {
-  DCHECK(data);
+  assert(data);
   MutexLock lock(&data_mutex_);
   *data = wifi_data_;
   // If we've successfully completed a scan, indicate that we have all of the
@@ -219,7 +219,7 @@ bool IssueCommandAndParseResult(const char *command,
 
 
   // Parse results.
-  DCHECK(access_points);
+  assert(access_points);
   access_points->clear();
   std::string::size_type start = result.find(delimiter);
   while (start != std::string::npos) {

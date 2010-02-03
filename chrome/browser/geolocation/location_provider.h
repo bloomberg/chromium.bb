@@ -49,14 +49,14 @@ class LocationProviderBase
     // Used to inform listener that a new position fix is available or that a
     // fatal error has occurred. Providers should call this for new listeners
     // as soon as a position is available.
-    virtual void LocationUpdateAvailable(LocationProviderBase* provider) = 0;
+    virtual bool LocationUpdateAvailable(LocationProviderBase* provider) = 0;
     // Used to inform listener that movement has been detected. If obtaining the
     // position succeeds, this will be followed by a call to
     // LocationUpdateAvailable. Some providers may not be able to detect
     // movement before a new fix is obtained, so will never call this method.
     // Note that this is not called in response to registration of a new
     // listener.
-    virtual void MovementDetected(LocationProviderBase* provider) = 0;
+    virtual bool MovementDetected(LocationProviderBase* provider) = 0;
 
    protected:
     virtual ~ListenerInterface() {}

@@ -6,15 +6,6 @@
 
 // static
 template<>
-RadioDataProviderImplBase* RadioDataProvider::DefaultFactoryFunction() {
+RadioDataProviderImplBase *RadioDataProvider::DefaultFactoryFunction() {
   return new EmptyDeviceDataProvider<RadioData>();
 }
-
-// Windows has a real wifi data provider.
-#if !defined(OS_WIN)
-// static
-template<>
-WifiDataProviderImplBase* WifiDataProvider::DefaultFactoryFunction() {
-  return new EmptyDeviceDataProvider<WifiData>();
-}
-#endif
