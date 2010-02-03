@@ -272,11 +272,26 @@ typedef struct _NPDeviceContext3DConfig {
 } NPDeviceContext3DConfig;
 
 typedef enum _NPDeviceContext3DError {
+  // No error has ocurred.
   NPDeviceContext3DError_NoError,
+
+  // The size of a command was invalid.
   NPDeviceContext3DError_InvalidSize,
+
+  // An offset was out of bounds.
   NPDeviceContext3DError_OutOfBounds,
+
+  // A command was not recognized.
   NPDeviceContext3DError_UnknownCommand,
+
+  // The arguments to a command were invalid.
   NPDeviceContext3DError_InvalidArguments,
+
+  // The 3D context was lost, for example due to a power management event. The
+  // context must be destroyed and a new one created.
+  NPDeviceContext3DError_LostContext,
+
+  // Any other error.
   NPDeviceContext3DError_GenericError
 } NPDeviceContext3DError;
 

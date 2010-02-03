@@ -83,6 +83,8 @@ bool GLES2Demo::Setup(void* hwnd, int32 size) {
                                               transfer_buffer.ptr,
                                               transfer_buffer_id));
 
+  GLFromCPPInit();
+
   return command_buffer.release() != NULL;
 }
 
@@ -97,8 +99,8 @@ LRESULT CALLBACK WindowProc(
       PostQuitMessage(0);
       break;
     case WM_PAINT: {
-      GLFromCPPTestFunction();
-      GLFromCTestFunction();
+      GLFromCPPDraw();
+      GLFromCDraw();
       // TODO(gman): Not sure how SwapBuffer should be exposed.
       gles2::GetGLContext()->SwapBuffers();
       break;

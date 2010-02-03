@@ -8,7 +8,7 @@
 #include <GLES2/gl2.h>
 #include "gpu/command_buffer/client/gles2_demo_c.h"
 
-void GLFromCTestFunction() {
+void GLFromCDraw() {
   // glClear(GL_COLOR_BUFFER_BIT);
 }
 

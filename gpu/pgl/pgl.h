@@ -8,12 +8,25 @@
 #include "npapi.h"
 #include "npapi_extensions.h"
 
+#define PGL_TRUE 1
+#define PGL_FALSE 0
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
 typedef void* PGLContext;
-typedef bool PGLBoolean;
+typedef unsigned int PGLBoolean;
+typedef int32 PGLInt;
+
+// These are the same error codes as used by EGL.
+enum {
+  PGL_SUCCESS = 0x3000,
+  PGL_NOT_INITIALIZED = 0x3001,
+  PGL_BAD_CONTEXT = 0x3006,
+  PGL_BAD_PARAMETER = 0x300C,
+  PGL_CONTEXT_LOST = 0x300E
+};
 
 // Initialize the PGL library. This must have completed before any other PGL
 // functions are invoked.
@@ -39,6 +52,9 @@ PGLBoolean pglSwapBuffers(void);
 
 // Destroy the given PGL context.
 PGLBoolean pglDestroyContext(PGLContext pgl_context);
+
+// Return the current PGL error.
+PGLInt pglGetError();
 
 #ifdef __cplusplus
 }  // extern "C"

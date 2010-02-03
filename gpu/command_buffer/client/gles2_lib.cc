@@ -16,6 +16,7 @@ void Initialize() {
 
 void Terminate() {
   gpu::ThreadLocalFree(g_gl_context_key);
+  g_gl_context_key = 0;
 }
 
 gpu::gles2::GLES2Implementation* GetGLContext() {

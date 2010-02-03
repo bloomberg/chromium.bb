@@ -1549,8 +1549,6 @@ void GLES2DecoderImpl::DoLinkProgram(GLuint program) {
   }
 };
 
-// NOTE: If you need to know the results of SwapBuffers (like losing
-//    the context) then add a new command. Do NOT make SwapBuffers synchronous.
 void GLES2DecoderImpl::DoSwapBuffers() {
 #if defined(UNIT_TEST)
 #elif defined(OS_WIN)

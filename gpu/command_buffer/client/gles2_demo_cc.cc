@@ -130,15 +130,43 @@ void InitShaders() {
   CheckGLError();
 }
 
-#define PI 3.1415926535897932384626433832795f
+GLuint CreateCheckerboardTexture() {
+  static unsigned char pixels[] = {
+    255, 255, 255,
+    0,   0,   0,
+    0,   0,   0,
+    255, 255, 255,
+  };
+  GLuint texture;
+  glGenTextures(1, &texture);
+  glBindTexture(GL_TEXTURE_2D, texture);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_UNSIGNED_BYTE,
+               pixels);
+  return texture;
+}
 
-void Draw() {
+}  // anonymous namespace.
+
+void GLFromCPPInit() {
+  glClearColor(0.f, 0.f, .7f, 1.f);
+  g_texture = CreateCheckerboardTexture();
+  InitShaders();
+}
+
+void GLFromCPPDraw() {
+  const float kPi = 3.1415926535897932384626433832795f;
+
   // TODO(kbr): base the angle on time rather than on ticks
   g_angle = (g_angle + 1) % 360;
   // Rotate about the Z axis
   GLfloat rot_matrix[16];
-  GLfloat cos_angle = cosf(static_cast<GLfloat>(g_angle) * PI / 180.0f);
-  GLfloat sin_angle = sinf(static_cast<GLfloat>(g_angle) * PI / 180.0f);
+  GLfloat cos_angle = cosf(static_cast<GLfloat>(g_angle) * kPi / 180.0f);
+  GLfloat sin_angle = sinf(static_cast<GLfloat>(g_angle) * kPi / 180.0f);
   // OpenGL matrices are column-major
   rot_matrix[0] = cos_angle;
   rot_matrix[1] = sin_angle;
@@ -187,41 +215,4 @@ void Draw() {
   glDrawArrays(GL_TRIANGLES, 0, 6);
   CheckGLError();
   glFlush();
-}
-
-GLuint CreateCheckerboardTexture() {
-  static unsigned char pixels[] = {
-    255, 255, 255,
-    0,   0,   0,
-    0,   0,   0,
-    255, 255, 255,
-  };
-  GLuint texture;
-  glGenTextures(1, &texture);
-  glBindTexture(GL_TEXTURE_2D, texture);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-  glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_UNSIGNED_BYTE,
-               pixels);
-  return texture;
-}
-
-void Init() {
-  glClearColor(0.f, 0.f, .7f, 1.f);
-  g_texture = CreateCheckerboardTexture();
-  InitShaders();
-}
-
-}  // anonymous namespace.
-
-void GLFromCPPTestFunction() {
-  static bool initialized = false;
-  if (!initialized) {
-    initialized = true;
-    Init();
-  }
-  Draw();
 }

@@ -309,6 +309,11 @@ PluginObject::PluginObject(NPP npp)
 }
 
 PluginObject::~PluginObject() {
+#if !defined(INDEPENDENT_PLUGIN)
+  if (pgl_context_)
+    Destroy3D();
+#endif
+
   // TODO(kbr): add audio portion of test
 #if !defined(OS_MACOSX)
   deviceaudio_->destroyContext(npp_, &context_audio_);
@@ -359,10 +364,10 @@ void PluginObject::New(NPMIMEType pluginType,
 }
 
 void PluginObject::SetWindow(const NPWindow& window) {
-  if (dimensions_ == 2) {
-    width_ = window.width;
-    height_ = window.height;
+  width_ = window.width;
+  height_ = window.height;
 
+  if (dimensions_ == 2) {
     NPDeviceContext2DConfig config;
     NPDeviceContext2D context;
     device2d_->initializeContext(npp_, &config, &context);
@@ -376,20 +381,8 @@ void PluginObject::SetWindow(const NPWindow& window) {
     device2d_->flushContext(npp_, &context, callback, NULL);
   } else {
 #if !defined(INDEPENDENT_PLUGIN)
-    if (!pgl_context_) {
-      // Initialize a 3D context.
-      NPDeviceContext3DConfig config;
-      config.commandBufferSize = kCommandBufferSize;
-      device3d_->initializeContext(npp_, &config, &context3d_);
-
-      // Create a PGL context.
-      pgl_context_ = pglCreateContext(npp_, device3d_, &context3d_);
-    }
-
-    // Reset the viewport to new window size.
-    pglMakeCurrent(pgl_context_);
-    glViewport(0, 0, window.width, window.height);
-    pglMakeCurrent(NULL);
+    if (!pgl_context_)
+      Initialize3D();
 
     // Schedule the first call to Draw.
     browser->pluginthreadasynccall(npp_, Draw3DCallback, this);
@@ -413,15 +406,52 @@ void PluginObject::SetWindow(const NPWindow& window) {
 #endif
 }
 
+void PluginObject::Initialize3D() {
+#if !defined(INDEPENDENT_PLUGIN)
+  DCHECK(!pgl_context_);
+
+  // Initialize a 3D context.
+  NPDeviceContext3DConfig config;
+  config.commandBufferSize = kCommandBufferSize;
+  device3d_->initializeContext(npp_, &config, &context3d_);
+
+  // Create a PGL context.
+  pgl_context_ = pglCreateContext(npp_, device3d_, &context3d_);
+
+  // Initialize the demo GL state.
+  pglMakeCurrent(pgl_context_);
+  GLFromCPPInit();
+  pglMakeCurrent(NULL);
+#endif  // INDEPENDENT_PLUGIN
+}
+
+void PluginObject::Destroy3D() {
+#if !defined(INDEPENDENT_PLUGIN)
+  DCHECK(pgl_context_);
+
+  // Destroy the PGL context.
+  pglDestroyContext(pgl_context_);
+  pgl_context_ = NULL;
+
+  // Destroy the Device3D context.
+  device3d_->destroyContext(npp_, &context3d_);
+#endif  // INDEPENDENT_PLUGIN
+}
+
 void PluginObject::Draw3D() {
 #if !defined(INDEPENDENT_PLUGIN)
-  // Render some stuff.
-  pglMakeCurrent(pgl_context_);
-  GLFromCPPTestFunction();
+  if (!pglMakeCurrent(pgl_context_) && pglGetError() == PGL_CONTEXT_LOST) {
+    Destroy3D();
+    Initialize3D();
+    pglMakeCurrent(pgl_context_);
+  }
+
+  glViewport(0, 0, width_, height_);
+  GLFromCPPDraw();
   pglSwapBuffers();
   pglMakeCurrent(NULL);
 
   // Schedule another call to Draw.
   browser->pluginthreadasynccall(npp_, Draw3DCallback, this);
-#endif
+#endif  // INDEPENDENT_PLUGIN
 }

@@ -20,6 +20,7 @@ namespace error {
     kOutOfBounds,
     kUnknownCommand,
     kInvalidArguments,
+    kLostContext,
     kGenericError
   };
 }

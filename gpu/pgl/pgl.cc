@@ -7,6 +7,7 @@
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
+#include "gpu/command_buffer/common/constants.h"
 #include "gpu/command_buffer/common/thread_local.h"
 #include "gpu/pgl/command_buffer_pepper.h"
 #include "gpu/pgl/pgl.h"
@@ -22,16 +23,19 @@ class PGLContextImpl {
   ~PGLContextImpl();
 
   // Initlaize a PGL context with a transfer buffer of a particular size.
-  bool Initialize(int32 transfer_buffer_size);
+  PGLBoolean Initialize(int32 transfer_buffer_size);
 
   // Destroy all resources associated with the PGL context.
   void Destroy();
 
   // Make a PGL context current for the calling thread.
-  static bool MakeCurrent(PGLContextImpl* pgl_context);
+  static PGLBoolean MakeCurrent(PGLContextImpl* pgl_context);
 
   // Display all content rendered since last call to SwapBuffers.
-  bool SwapBuffers();
+  PGLBoolean SwapBuffers();
+
+  // Get the current error code.
+  PGLInt GetError();
 
  private:
   PGLContextImpl(const PGLContextImpl&);
@@ -64,7 +68,7 @@ PGLContextImpl::~PGLContextImpl() {
   Destroy();
 }
 
-bool PGLContextImpl::Initialize(int32 transfer_buffer_size) {
+PGLBoolean PGLContextImpl::Initialize(int32 transfer_buffer_size) {
   // Create and initialize the objects required to issue GLES2 calls.
   command_buffer_ = new CommandBufferPepper(
       npp_, device_, device_context_);
@@ -80,13 +84,13 @@ bool PGLContextImpl::Initialize(int32 transfer_buffer_size) {
           transfer_buffer.size,
           transfer_buffer.ptr,
           transfer_buffer_id_);
-      return true;
+      return PGL_TRUE;
     }
   }
 
   // Tear everything down if initialization failed.
   Destroy();
-  return false;
+  return PGL_FALSE;
 }
 
 void PGLContextImpl::Destroy() {
@@ -105,22 +109,48 @@ void PGLContextImpl::Destroy() {
   command_buffer_ = NULL;
 }
 
-bool PGLContextImpl::MakeCurrent(PGLContextImpl* pgl_context) {
+PGLBoolean PGLContextImpl::MakeCurrent(PGLContextImpl* pgl_context) {
   if (!g_pgl_context_key)
-    return false;
+    return PGL_FALSE;
 
   gpu::ThreadLocalSetValue(g_pgl_context_key, pgl_context);
-  if (pgl_context)
+  if (pgl_context) {
     gles2::SetGLContext(pgl_context->gles2_implementation_);
-  else
-    gles2::SetGLContext(NULL);
 
-  return true;
+    // Don't request latest error status from service. Just use the locally
+    // cached information from the last flush.
+    // TODO(apatrick): I'm not sure if this should actually change the
+    // current context if it fails. For now it gets changed even if it fails
+    // becuase making GL calls with a NULL context crashes.
+    if (pgl_context->device_context_->error != NPDeviceContext3DError_NoError)
+      return PGL_FALSE;
+  }
+  else {
+    gles2::SetGLContext(NULL);
+  }
+
+  return PGL_TRUE;
 }
 
-bool PGLContextImpl::SwapBuffers() {
+PGLBoolean PGLContextImpl::SwapBuffers() {
+  // Don't request latest error status from service. Just use the locally cached
+  // information from the last flush.
+  if (device_context_->error != NPDeviceContext3DError_NoError)
+    return PGL_FALSE;
+
   gles2_implementation_->SwapBuffers();
-  return true;
+  return PGL_TRUE;
+}
+
+PGLInt PGLContextImpl::GetError() {
+  gpu::CommandBuffer::State state = command_buffer_->GetState();
+  if (state.error == gpu::error::kNoError) {
+    return PGL_SUCCESS;
+  } else {
+    // All command buffer errors are unrecoverable. The error is treated as a
+    // lost context: destroy the context and create another one.
+    return PGL_CONTEXT_LOST;
+  }
 }
 }  // namespace anonymous
 
@@ -128,20 +158,22 @@ extern "C" {
 
 PGLBoolean pglInitialize() {
   if (g_pgl_context_key)
-    return true;
+    return PGL_TRUE;
 
   gles2::Initialize();
   g_pgl_context_key = gpu::ThreadLocalAlloc();
-  return true;
+  return PGL_TRUE;
 }
 
 PGLBoolean pglTerminate() {
   if (!g_pgl_context_key)
-    return true;
+    return PGL_TRUE;
 
   gpu::ThreadLocalFree(g_pgl_context_key);
+  g_pgl_context_key = 0;
+
   gles2::Terminate();
-  return true;
+  return PGL_TRUE;
 }
 
 PGLContext pglCreateContext(NPP npp,
@@ -175,23 +207,34 @@ PGLBoolean pglSwapBuffers(void) {
   PGLContextImpl* context = static_cast<PGLContextImpl*>(
       pglGetCurrentContext());
   if (!context)
-    return false;
+    return PGL_FALSE;
 
   return context->SwapBuffers();
 }
 
 PGLBoolean pglDestroyContext(PGLContext pgl_context) {
   if (!g_pgl_context_key)
-    return NULL;
+    return PGL_FALSE;
 
   if (!pgl_context)
-    return false;
+    return PGL_FALSE;
 
   if (pgl_context == pglGetCurrentContext())
     pglMakeCurrent(NULL);
 
   delete static_cast<PGLContextImpl*>(pgl_context);
-  return true;
+  return PGL_TRUE;
 }
 
+PGLInt pglGetError() {
+  if (!g_pgl_context_key)
+    return PGL_NOT_INITIALIZED;
+
+  PGLContextImpl* context = static_cast<PGLContextImpl*>(
+      pglGetCurrentContext());
+  if (!context)
+    return PGL_BAD_CONTEXT;
+
+  return context->GetError();
+}
 }  // extern "C"

@@ -7,12 +7,13 @@
 #include "base/logging.h"
 #include "gpu/demos/framework/demo_factory.h"
 
+using gpu::demos::Plugin;
+
 namespace {
 const int32 kCommandBufferSize = 1024 * 1024;
 NPExtensions* g_extensions = NULL;
 
 // Plugin class functions.
-using gpu::demos::Plugin;
 NPObject* PluginAllocate(NPP npp, NPClass* the_class) {
   Plugin* plugin = new Plugin(npp);
   return plugin;
@@ -97,7 +98,7 @@ Plugin::~Plugin() {
   demo_.reset();
   pglMakeCurrent(NULL);
 
-  pglDestroyContext(pgl_context_);
+  DestroyContext();
 }
 
 NPClass* Plugin::GetPluginClass() {
@@ -116,20 +117,10 @@ void Plugin::New(NPMIMEType pluginType,
 }
 
 void Plugin::SetWindow(const NPWindow& window) {
+  demo_->InitWindowSize(window.width, window.height);
+
   if (!pgl_context_) {
-    // Initialize a 3D context.
-    NPDeviceContext3DConfig config;
-    config.commandBufferSize = kCommandBufferSize;
-    device3d_->initializeContext(npp_, &config, &context3d_);
-
-    // Create a PGL context.
-    pgl_context_ = pglCreateContext(npp_, device3d_, &context3d_);
-
-    // Initialize demo.
-    pglMakeCurrent(pgl_context_);
-    demo_->InitWindowSize(window.width, window.height);
-    CHECK(demo_->InitGL());
-    pglMakeCurrent(NULL);
+    CreateContext();
   }
 
   // Schedule the first call to Draw.
@@ -137,14 +128,44 @@ void Plugin::SetWindow(const NPWindow& window) {
 }
 
 void Plugin::Paint() {
-  // Render some stuff.
-  pglMakeCurrent(pgl_context_);
+  if (!pglMakeCurrent(pgl_context_) && pglGetError() == PGL_CONTEXT_LOST) {
+    DestroyContext();
+    CreateContext();
+    pglMakeCurrent(pgl_context_);
+  }
+
   demo_->Draw();
   pglSwapBuffers();
   pglMakeCurrent(NULL);
 
   // Schedule another call to Paint.
   g_browser->pluginthreadasynccall(npp_, PaintCallback, this);
+}
+
+void Plugin::CreateContext() {
+  DCHECK(!pgl_context_);
+
+  // Initialize a 3D context.
+  NPDeviceContext3DConfig config;
+  config.commandBufferSize = kCommandBufferSize;
+  device3d_->initializeContext(npp_, &config, &context3d_);
+
+  // Create a PGL context.
+  pgl_context_ = pglCreateContext(npp_, device3d_, &context3d_);
+
+  // Initialize demo.
+  pglMakeCurrent(pgl_context_);
+  CHECK(demo_->InitGL());
+  pglMakeCurrent(NULL);
+}
+
+void Plugin::DestroyContext() {
+  DCHECK(pgl_context_);
+
+  pglDestroyContext(pgl_context_);
+  pgl_context_ = NULL;
+
+  device3d_->destroyContext(npp_, &context3d_);
 }
 
 }  // namespace demos

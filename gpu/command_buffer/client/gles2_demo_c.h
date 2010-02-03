@@ -11,7 +11,7 @@
 extern "C" {
 #endif
 
-void GLFromCTestFunction();
+void GLFromCDraw();
 
 #ifdef __cplusplus
 }

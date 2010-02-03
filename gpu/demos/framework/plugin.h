@@ -31,6 +31,9 @@ class Plugin : public NPObject {
   void Paint();
 
  private:
+  void CreateContext();
+  void DestroyContext();
+
   // This class object needs to be safely casted to NPObject* and cross
   // c-c++ module boundaries. To accomplish that this class should not have
   // any virtual member function.
