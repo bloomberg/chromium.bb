@@ -218,6 +218,8 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_ROUTED0(ViewMsg_CopyToFindPboard)
 #endif
   IPC_MESSAGE_ROUTED0(ViewMsg_Paste)
+  // Replaces the selected region or a word around the cursor with the
+  // specified string.
   IPC_MESSAGE_ROUTED1(ViewMsg_Replace, string16)
   IPC_MESSAGE_ROUTED0(ViewMsg_ToggleSpellCheck)
   IPC_MESSAGE_ROUTED0(ViewMsg_Delete)
