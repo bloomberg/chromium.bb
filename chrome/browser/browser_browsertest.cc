@@ -39,7 +39,7 @@ std::wstring WindowCaptionFromPageTitle(std::wstring page_title) {
   if (page_title.empty())
     return l10n_util::GetString(IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED);
   return page_title;
-#elif defined(OS_WIN) || defined(OS_LINUX)
+#else
   if (page_title.empty())
     return l10n_util::GetString(IDS_PRODUCT_NAME);
 

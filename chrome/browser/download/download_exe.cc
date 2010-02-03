@@ -146,16 +146,16 @@ static const char* const g_executables[] = {
   "xml",
   "xsl",
   "xslt",
-#elif defined(OS_LINUX)
+#elif defined(OS_MACOSX)
+  // TODO(thakis): Figure out what makes sense here -- crbug.com/19096
+  "dmg",
+#elif defined(OS_POSIX)
   // TODO(estade): lengthen this list.
   "exe",
   "pl",
   "py",
   "rb",
   "sh",
-#elif defined(OS_MACOSX)
-  // TODO(thakis): Figure out what makes sense here -- crbug.com/19096
-  "dmg",
 #endif
 };
 

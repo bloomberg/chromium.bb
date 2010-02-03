@@ -9,7 +9,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include <locale.h>
 #endif
 
@@ -101,7 +101,7 @@ const struct {
   // This block tests whether we append extensions based on MIME types;
   // we don't do this on Linux, so we skip the tests rather than #ifdef
   // them up.
-#if !defined(OS_LINUX)
+#if !defined(OS_POSIX) || defined(OS_MACOSX)
   {"filename=my-cat",
    "http://www.example.com/my-cat",
    "image/jpeg",
@@ -123,7 +123,7 @@ const struct {
    "http://www.example.com/my-cat",
    "dance/party",
    L"my-cat"},
-#endif  // defined(OS_LINUX)
+#endif  // !defined(OS_POSIX) || defined(OS_MACOSX)
 
   {"filename=my-cat.jpg",
    "http://www.example.com/my-cat.jpg",
@@ -449,7 +449,7 @@ const struct {
 // Tests to ensure that the file names we generate from hints from the server
 // (content-disposition, URL name, etc) don't cause security holes.
 TEST_F(DownloadManagerTest, TestDownloadFilename) {
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   // This test doesn't run when the locale is not UTF-8 becuase some of the
   // string conversions fail. This is OK (we have the default value) but they
   // don't match our expectations.
@@ -572,8 +572,8 @@ const struct {
 
 }  // namespace
 
-#if !defined(OS_LINUX)
-// TODO(port): port to Linux.
+#if defined(OS_WIN) || defined(OS_MACOSX)
+// TODO(port): port to Linux/BSD.
 TEST_F(DownloadManagerTest, GetSafeFilename) {
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kSafeFilenameCases); ++i) {
     FilePath path(kSafeFilenameCases[i].path);
@@ -582,4 +582,4 @@ TEST_F(DownloadManagerTest, GetSafeFilename) {
     EXPECT_EQ(kSafeFilenameCases[i].expected_path, path.value());
   }
 }
-#endif  // OS_LINUX
+#endif  // defined(OS_WIN) || defined(OS_MACOSX)

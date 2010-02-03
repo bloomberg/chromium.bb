@@ -5,6 +5,9 @@
 #include "chrome/browser/debugger/devtools_remote_listen_socket_unittest.h"
 
 #include <fcntl.h>
+#if defined(OS_POSIX)
+#include <netinet/in.h>
+#endif
 
 #include "base/eintr_wrapper.h"
 #include "net/base/net_util.h"

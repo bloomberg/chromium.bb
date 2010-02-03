@@ -82,7 +82,7 @@
 #include "chrome/app/breakpad_linux.h"
 #endif
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 #include "chrome/common/gtk_util.h"
 #endif
 
@@ -160,7 +160,7 @@ void RunUIMessageLoop(BrowserProcess* browser_process) {
 #if defined(TOOLKIT_VIEWS)
   views::AcceleratorHandler accelerator_handler;
   MessageLoopForUI::current()->Run(&accelerator_handler);
-#elif defined(OS_LINUX)
+#elif defined(USE_X11)
   MessageLoopForUI::current()->Run(NULL);
 #elif defined(OS_POSIX)
   MessageLoopForUI::current()->Run();
@@ -582,7 +582,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
   }
 #endif  // OS_CHROMEOS
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   gtk_util::SetDefaultWindowIcon();
 #endif
 
@@ -781,7 +781,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
       break;
 
     case ProcessSingleton::PROCESS_NOTIFIED:
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
       printf("%s\n", base::SysWideToNativeMB(
                  l10n_util::GetString(IDS_USED_EXISTING_BROWSER)).c_str());
 #endif
@@ -928,7 +928,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #if defined(OS_WIN)
     if (InstallUtil::IsChromeFrameProcess())
       MetricsLog::set_version_extension("-F");
-#elif defined(OS_LINUX) && defined(ARCH_CPU_64_BITS)
+#elif defined(ARCH_CPU_64_BITS)
     MetricsLog::set_version_extension("-64");
 #endif  // defined(OS_WIN)
 

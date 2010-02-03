@@ -36,10 +36,10 @@
 
 #if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/bookmark_bar_view.h"
-#elif defined(OS_LINUX)
-#include "chrome/browser/gtk/bookmark_bar_gtk.h"
 #elif defined(OS_MACOSX)
 #include "chrome/browser/cocoa/bookmark_bar_constants.h"
+#elif defined(OS_POSIX)
+#include "chrome/browser/gtk/bookmark_bar_gtk.h"
 #endif
 
 namespace {
@@ -108,10 +108,10 @@ std::string GetNewTabBackgroundCSS(const ThemeProvider* theme_provider,
   // if it's a top-aligned bar.
 #if defined(OS_WIN) || defined(TOOLKIT_VIEWS)
   int offset = BookmarkBarView::kNewtabBarHeight;
-#elif defined(OS_LINUX)
-  int offset = BookmarkBarGtk::kBookmarkBarNTPHeight;
 #elif defined(OS_MACOSX)
   int offset = bookmarks::kNTPBookmarkBarHeight;
+#elif defined(OS_POSIX)
+  int offset = BookmarkBarGtk::kBookmarkBarNTPHeight;
 #else
   int offset = 0;
 #endif
