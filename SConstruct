@@ -34,20 +34,33 @@ ACCEPTABLE_ARGUMENTS = {
     'PROGRESS': None,
     'SILENT': None,
     'SYMBOLS': None,
+    # enable building of apps that use multi media function
     'build_av_apps': None,
+    # set build platform
+    'build_platform': None,
     'build_vim': None,
     'built_elsewhere': None,
+    # used for browser_tests
+    'chrome_browser_path': None,
+    # make sel_ldr less strict
     'dangerous_debug_disable_inner_sandbox': None,
+    # TODO(dpolukhin): remove this code when x86-64 has full sel_ldr.
     'loader': None,
+    # TODO(dpolukhin): document this
     'nacl_ccflags': None,
     'naclsdk_mode': None,
     'naclsdk_validate': None,
+    # TODO(khim): document this
     'nocpp': None,
+    # set both target_platform and build_platform
     'platform': None,
+    # enable pretty printing
     'pp': None,
     'prebuilt': None,
     'sdl': None,
+    # disable printing of sys info with sysinfo=
     'sysinfo': None,
+    'target_platform': None,
   }
 
 
@@ -145,7 +158,7 @@ pre_base_env.AddMethod(Banner)
 # which govern service runtime, validator, etc.
 #
 # "build" means the  platform the code is running on
-# "target" means the platform the validatir is checking for.
+# "target" means the platform the validator is checking for.
 # Typically they are the same but testing it useful to have flexibility.
 #
 # Various variables in the scons environment are related to this, e.g.
@@ -202,7 +215,8 @@ if BUILD_NAME == TARGET_NAME:
 else:
   TARGET_ROOT = '${DESTINATION_ROOT}/${BUILD_TYPE}-%s-to-%s' % (BUILD_NAME,
                                                                 TARGET_NAME)
-pre_base_env.Replace(TARGET_ROOT = TARGET_ROOT)
+pre_base_env.Replace(TARGET_ROOT=TARGET_ROOT)
+
 
 # ----------------------------------------------------------
 # PLUGIN PREREQUISITES
@@ -1013,8 +1027,16 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
       LINKFLAGS_FIRST = ['${NACL_SDK_LIB}/crt1.o','${NACL_SDK_LIB}/crti.o',],
       LIBS = [],
       # NOTE: order and replication is/may be important
-      LINKFLAGS_LAST = ['-lsrpc', '-lc', '-lnacl', '-lc',
-                        '-lgcc', '-lunimpl', '${NACL_SDK_LIB}/crtn.o',],
+      LINKFLAGS_LAST = ['-lsrpc',
+                        '-lc',
+                        '-lnacl',
+                        '-lstdc++',
+                        '-lc',
+                        '-lgcc',
+                        '-lgcc_eh',
+                        '-lunimpl',
+                        '${NACL_SDK_LIB}/crtn.o',
+                        '-static'],
       EMULATOR  = EMULATOR,
       )
 
@@ -1157,6 +1179,7 @@ if nacl_extra_sdk_env.Bit('host_windows'):
 else:
   nacl_extra_sdk_env.Replace(ASFLAGS = '$CCFLAGS',)
 
+# TODO(khim): document this
 if not ARGUMENTS.get('nocpp'):
   nacl_extra_sdk_env.Append(
       BUILD_SCONSCRIPTS = [
