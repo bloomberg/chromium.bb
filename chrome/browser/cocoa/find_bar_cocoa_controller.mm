@@ -304,6 +304,10 @@ const float kFindBarCloseDuration = 0.15;
   // is still on the stack.
   DCHECK(animation == currentAnimation_.get());
   [currentAnimation_.release() autorelease];
+
+  // If the find bar is not visible, make it actually hidden, so it'll no longer
+  // respond to key events.
+  [findBarView_ setHidden:![self isFindBarVisible]];
 }
 
 @end
@@ -328,9 +332,14 @@ const float kFindBarCloseDuration = 0.15;
 
   if (!animate) {
     [findBarView_ setFrame:endFrame];
+    [findBarView_ setHidden:![self isFindBarVisible]];
     currentAnimation_.reset(nil);
     return;
   }
+
+  // If animating, ensure that the find bar is not hidden. Hidden status will be
+  // updated at the end of the animation.
+  [findBarView_ setHidden:NO];
 
   // Reset the frame to what was saved above.
   [findBarView_ setFrame:startFrame];
