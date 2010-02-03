@@ -70,13 +70,11 @@ IDENTIFIER(NaClSyscallSeg):
 # error "What OS/compiler is the service runtime being compiled with?"
 #endif
         /* check NaClThreadContext in sel_rt_64.h for the offsets */
-#ifdef __PIC__
-        lea     IDENTIFIER(nacl_user)@GOTPCREL(%rip), %rdx
-        lea     0(%rdx,%eax,8), %rdx
-#else
-        lea     IDENTIFIER(nacl_user)(,%eax,8), %rdx
-#endif
+
+        leaq    IDENTIFIER(nacl_user)(%rip), %rdx
+        leaq    (%rdx,%rax,8), %rdx
         movq    0x0(%rdx), %rdx
+
         /* only save the callee saved registers */
         movq    %rbx, 0x8(%rdx)
         movq    %rbp, 0x20(%rdx)
@@ -89,13 +87,10 @@ IDENTIFIER(NaClSyscallSeg):
         /* r15 need not be saved, since it is immutable from user code */
 
         /* restore system registers needed to call into C code */
-#ifdef __PIC__
-        lea     IDENTIFIER(nacl_sys)@GOTPCREL(%rip), %rdx
-        lea     0(%rdx,%eax,8)@GOTPCREL(%rip), %rdx
-#else
-        lea     IDENTIFIER(nacl_sys)(,%eax,8), %rdx
-#endif
+        leaq    IDENTIFIER(nacl_sys)(%rip), %rdx
+        leaq    0x0(%rdx,%rax,8), %rdx
         movq    0x0(%rdx), %rdx
+
         movq    0x38(%rdx), %rsp
         /*
          * hic sunt dracones
