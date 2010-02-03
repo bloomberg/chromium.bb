@@ -835,6 +835,14 @@ CookieMonster::CookieList CookieMonster::GetAllCookies() {
 }
 
 CookieMonster::CookieList CookieMonster::GetRawCookies(const GURL& url) {
+  AutoLock autolock(lock_);
+  InitIfNecessary();
+
+  // Do not return removed cookies.
+  GarbageCollectExpired(Time::Now(),
+                        CookieMapItPair(cookies_.begin(), cookies_.end()),
+                        NULL);
+
   CookieList cookie_list;
   if (!HasCookieableScheme(url))
     return cookie_list;
