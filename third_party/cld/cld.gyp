@@ -43,9 +43,10 @@
         'bar/toolbar/cld/i18n/encodings/compact_lang_det/generated/compact_lang_det_generated_ctjkvz.cc',
         'bar/toolbar/cld/i18n/encodings/compact_lang_det/generated/compact_lang_det_generated_longwords8_0.cc',
         'bar/toolbar/cld/i18n/encodings/compact_lang_det/generated/compact_lang_det_generated_meanscore.h',
-        'bar/toolbar/cld/i18n/encodings/compact_lang_det/generated/compact_lang_det_generated_quads_128.cc',
-        # For now using the 128 bytes detection in order to save hundreds of KBs on the final package.
-        # 'bar/toolbar/cld/i18n/encodings/compact_lang_det/generated/compact_lang_det_generated_quads_256.cc',
+        # For now using the compact 34 bytes detection in order to save hundreds of KBs on the final package.
+        'bar/toolbar/cld/i18n/encodings/compact_lang_det/generated/compact_lang_det_generated_quads_34rr.cc',
+        #'bar/toolbar/cld/i18n/encodings/compact_lang_det/generated/compact_lang_det_generated_quads_128.cc',
+        #'bar/toolbar/cld/i18n/encodings/compact_lang_det/generated/compact_lang_det_generated_quads_256.cc',
         'bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_basictypes.h',
         'bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_commandlineflags.h',
         # We use the static table at this point, so we don't need to compile the following files:
@@ -67,7 +68,7 @@
         'bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_htmlutils_windows.cc',
         'bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_logging.h',
         'bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_macros.h',
-	# None of files we build require these two headers.
+        # None of files we build require these two headers.
         #'bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_scoped_ptr.h',
         #'bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_scopedptr.h',
         'bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_strtoint.h',
