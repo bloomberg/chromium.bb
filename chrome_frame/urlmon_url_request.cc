@@ -55,6 +55,7 @@ bool UrlmonUrlRequest::Start() {
   status_.Start();
   HRESULT hr = StartAsyncDownload();
   if (FAILED(hr)) {
+    status_.Done();
     status_.set_result(URLRequestStatus::FAILED, HresultToNetError(hr));
     NotifyDelegateAndDie();
   }
@@ -617,10 +618,14 @@ HRESULT UrlmonUrlRequest::StartAsyncDownload() {
 
   if (SUCCEEDED(hr)) {
     ScopedComPtr<IStream> stream;
+
+    // BindToStorage may complete synchronously.
+    // We still get all the callbacks - OnStart/StopBinding, this may result
+    // in destruction of our object. It's fine but we access some members
+    // below for debug info. :)
+    ScopedComPtr<IHttpSecurity> self(this);
     hr = moniker_->BindToStorage(bind_context_, NULL, __uuidof(IStream),
                                  reinterpret_cast<void**>(stream.Receive()));
-    // Even if hr == S_OK, binding_ could be NULL if the entire request
-    // finish synchronously but then we still get all the callbacks etc.
     if (hr == S_OK) {
       DCHECK(binding_ != NULL || status_.get_state() == Status::DONE);
     }
@@ -837,13 +842,6 @@ void UrlmonUrlRequestManager::UseMonikerForUrl(IMoniker* moniker,
 
 void UrlmonUrlRequestManager::StartRequest(int request_id,
     const IPC::AutomationURLRequest& request_info) {
-  if (stopping_) {
-    return;
-  }
-
-  if (!worker_thread_.IsRunning())
-    worker_thread_.Start();
-
   MonikerForUrl* use_moniker = NULL;
   if (moniker_for_url_.get()) {
     if (GURL(moniker_for_url_->url) == GURL(request_info.url)) {
@@ -851,9 +849,12 @@ void UrlmonUrlRequestManager::StartRequest(int request_id,
     }
   }
 
-  ExecuteInWorkerThread(FROM_HERE, NewRunnableMethod(this,
-      &UrlmonUrlRequestManager::StartRequestWorker,
-      request_id, request_info, use_moniker));
+  bool posted = ExecuteInWorkerThread(FROM_HERE, NewRunnableMethod(this,
+                    &UrlmonUrlRequestManager::StartRequestWorker,
+                    request_id, request_info, use_moniker));
+  if (!posted) {
+    delete use_moniker;
+  }
 }
 
 void UrlmonUrlRequestManager::StartRequestWorker(int request_id,
@@ -894,9 +895,6 @@ void UrlmonUrlRequestManager::StartRequestWorker(int request_id,
 }
 
 void UrlmonUrlRequestManager::ReadRequest(int request_id, int bytes_to_read) {
-  if (stopping_)
-    return;
-
   ExecuteInWorkerThread(FROM_HERE, NewRunnableMethod(this,
       &UrlmonUrlRequestManager::ReadRequestWorker, request_id, bytes_to_read));
 }
@@ -912,9 +910,6 @@ void UrlmonUrlRequestManager::ReadRequestWorker(int request_id,
 }
 
 void UrlmonUrlRequestManager::EndRequest(int request_id) {
-  if (stopping_)
-    return;
-
   ExecuteInWorkerThread(FROM_HERE, NewRunnableMethod(this,
       &UrlmonUrlRequestManager::EndRequestWorker, request_id));
 }
@@ -928,6 +923,7 @@ void UrlmonUrlRequestManager::EndRequestWorker(int request_id) {
 }
 
 void UrlmonUrlRequestManager::StopAll() {
+  AutoLock lock(worker_thread_access_);
   if (stopping_)
     return;
 
@@ -936,7 +932,9 @@ void UrlmonUrlRequestManager::StopAll() {
   if (!worker_thread_.IsRunning())
     return;
 
-  ExecuteInWorkerThread(FROM_HERE, NewRunnableMethod(this,
+  // ExecuteInWorkerThread will check for stopping_. Hence post directly
+  // to the worker thread.
+  worker_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
       &UrlmonUrlRequestManager::StopAllWorker));
 
   // Note we may not call worker_thread_.Stop() here. The MessageLoop's quit
@@ -1026,16 +1024,13 @@ UrlmonUrlRequestManager::~UrlmonUrlRequestManager() {
 // Called from UI thread.
 void UrlmonUrlRequestManager::StealMonikerFromRequest(int request_id,
                                                       IMoniker** moniker) {
-  if (stopping_)
-    return;
-
   base::WaitableEvent done(true, false);
   bool posted = ExecuteInWorkerThread(FROM_HERE, NewRunnableMethod(this,
       &UrlmonUrlRequestManager::StealMonikerFromRequestWorker,
       request_id, moniker, &done));
-  DCHECK_EQ(true, posted);
   // Wait until moniker is grabbed from a request in the worker thread.
-  done.Wait();
+  if (posted)
+    done.Wait();
 }
 
 void UrlmonUrlRequestManager::StealMonikerFromRequestWorker(int request_id,
@@ -1054,11 +1049,14 @@ void UrlmonUrlRequestManager::StealMonikerFromRequestWorker(int request_id,
 bool UrlmonUrlRequestManager::ExecuteInWorkerThread(
     const tracked_objects::Location& from_here, Task* task) {
   AutoLock lock(worker_thread_access_);
-  if (worker_thread_.IsRunning()) {
-    worker_thread_.message_loop()->PostTask(from_here, task);
-    return true;
+  if (stopping_) {
+    delete task;
+    return false;
   }
 
-  delete task;
-  return false;
+  if (!worker_thread_.IsRunning())
+    worker_thread_.Start();
+
+  worker_thread_.message_loop()->PostTask(from_here, task);
+  return true;
 }

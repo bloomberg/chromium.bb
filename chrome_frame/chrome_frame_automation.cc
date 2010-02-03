@@ -489,14 +489,14 @@ void ChromeFrameAutomationClient::Uninitialize() {
   // Otherwise the DLL may get unloaded while we have running threads.
   // Unfortunately in NPAPI case we cannot increase module lock count, hence
   // we stick with blocking/waiting
-  if (tab_.get()) {
-    tab_->RemoveObserver(this);
-    tab_ = NULL;    // scoped_refptr::Release
-  }
-
   if (url_fetcher_) {
     // Clean up any outstanding requests
     url_fetcher_->StopAllRequests();
+  }
+
+  if (tab_.get()) {
+    tab_->RemoveObserver(this);
+    tab_ = NULL;    // scoped_refptr::Release
   }
 
   // Wait for the background thread to exit.
