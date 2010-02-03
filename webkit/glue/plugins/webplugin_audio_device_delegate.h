@@ -29,11 +29,11 @@ class WebPluginAudioDeviceDelegate {
     return NPERR_GENERIC_ERROR;
   }
   virtual NPError DeviceAudioSetStateContext(NPDeviceContextAudio* context,
-                                             int32 state, int32 value) {
+                                             int32 state, intptr_t value) {
     return NPERR_GENERIC_ERROR;
   }
   virtual NPError DeviceAudioGetStateContext(NPDeviceContextAudio* context,
-                                             int32 state, int32* value) {
+                                             int32 state, intptr_t* value) {
     return NPERR_GENERIC_ERROR;
   }
   virtual NPError DeviceAudioFlushContext(

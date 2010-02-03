@@ -29,12 +29,12 @@ class WebPlugin2DDeviceDelegate {
   }
   virtual NPError Device2DSetStateContext(NPDeviceContext2D* context,
                                           int32 state,
-                                          int32 value) {
+                                          intptr_t value) {
     return NPERR_GENERIC_ERROR;
   }
   virtual NPError Device2DGetStateContext(NPDeviceContext2D* context,
                                           int32 state,
-                                          int32* value) {
+                                          intptr_t* value) {
     return NPERR_GENERIC_ERROR;
   }
   virtual NPError Device2DFlushContext(NPP id,

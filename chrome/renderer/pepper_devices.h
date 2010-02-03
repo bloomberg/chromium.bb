@@ -31,6 +31,8 @@ class Graphics2DDeviceContext {
                 NPDeviceFlushContextCallbackPtr callback, NPP id,
                 void* user_data);
 
+  TransportDIB* transport_dib() { return transport_dib_.get(); }
+
  private:
   static int32 next_buffer_id_;
   scoped_ptr<TransportDIB> transport_dib_;
@@ -62,6 +64,8 @@ class AudioDeviceContext : public AudioMessageFilter::Delegate {
   virtual void OnCreated(base::SharedMemoryHandle handle, size_t length);
   virtual void OnVolume(double volume);
   // End of AudioMessageFilter::Delegate implementation
+
+  base::SharedMemory* shared_memory() { return shared_memory_.get(); }
 
  private:
   void OnDestroy();

@@ -82,10 +82,10 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
       NPDeviceContext2D* context);
   virtual NPError Device2DSetStateContext(NPDeviceContext2D* context,
                                           int32 state,
-                                          int32 value);
+                                          intptr_t value);
   virtual NPError Device2DGetStateContext(NPDeviceContext2D* context,
                                           int32 state,
-                                          int32* value);
+                                          intptr_t* value);
   virtual NPError Device2DFlushContext(NPP id,
                                        NPDeviceContext2D* context,
                                        NPDeviceFlushContextCallbackPtr callback,
@@ -101,10 +101,10 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
       NPDeviceContext3D* context);
   virtual NPError Device3DSetStateContext(NPDeviceContext3D* context,
                                           int32 state,
-                                          int32 value);
+                                          intptr_t value);
   virtual NPError Device3DGetStateContext(NPDeviceContext3D* context,
                                           int32 state,
-                                          int32* value);
+                                          intptr_t* value);
   virtual NPError Device3DFlushContext(NPP id,
                                        NPDeviceContext3D* context,
                                        NPDeviceFlushContextCallbackPtr callback,
@@ -128,9 +128,9 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
       const NPDeviceContextAudioConfig* config,
       NPDeviceContextAudio* context);
   virtual NPError DeviceAudioSetStateContext(NPDeviceContextAudio* context,
-                                             int32 state, int32 value);
+                                             int32 state, intptr_t value);
   virtual NPError DeviceAudioGetStateContext(NPDeviceContextAudio* context,
-                                             int32 state, int32* value);
+                                             int32 state, intptr_t* value);
   virtual NPError DeviceAudioFlushContext(
       NPP id, NPDeviceContextAudio* context,
       NPDeviceFlushContextCallbackPtr callback, void* user_data);

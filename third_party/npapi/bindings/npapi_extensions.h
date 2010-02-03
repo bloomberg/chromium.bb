@@ -54,13 +54,13 @@ typedef NPError (*NPDeviceGetStateContextPtr) (
     NPP instance,
     NPDeviceContext* context,
     int32 state,
-    int32 *value);
+    intptr_t* value);
 /* poke device state */
 typedef NPError (*NPDeviceSetStateContextPtr) (
     NPP instance,
     NPDeviceContext* context,
     int32 state,
-    int32 value);
+    intptr_t value);
 /* flush context, if callback, userData are NULL */
 /* this becomes a blocking call */
 typedef NPError (*NPDeviceFlushContextPtr)(

@@ -20,6 +20,7 @@
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/webplugin_delegate_proxy.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
+#include "third_party/npapi/bindings/npapi_extensions_private.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "webkit/glue/plugins/plugin_constants_win.h"
 #include "webkit/glue/plugins/plugin_instance.h"
@@ -272,14 +273,24 @@ NPError WebPluginDelegatePepper::Device2DInitializeContext(
 NPError WebPluginDelegatePepper::Device2DSetStateContext(
     NPDeviceContext2D* context,
     int32 state,
-    int32 value) {
+    intptr_t value) {
   return NPERR_GENERIC_ERROR;
 }
 
 NPError WebPluginDelegatePepper::Device2DGetStateContext(
     NPDeviceContext2D* context,
     int32 state,
-    int32* value) {
+    intptr_t* value) {
+  if (state == NPExtensionsReservedStateSharedMemory) {
+    if (!context)
+      return NPERR_INVALID_PARAM;
+    Graphics2DDeviceContext* ctx = graphic2d_contexts_.Lookup(
+        reinterpret_cast<intptr_t>(context->reserved));
+    if (!ctx)
+      return NPERR_INVALID_PARAM;
+    *value = reinterpret_cast<intptr_t>(ctx->transport_dib());
+    return NPERR_NO_ERROR;
+  }
   return NPERR_GENERIC_ERROR;
 }
 
@@ -388,14 +399,14 @@ NPError WebPluginDelegatePepper::Device3DInitializeContext(
 NPError WebPluginDelegatePepper::Device3DSetStateContext(
     NPDeviceContext3D* context,
     int32 state,
-    int32 value) {
+    intptr_t value) {
   return NPERR_GENERIC_ERROR;
 }
 
 NPError WebPluginDelegatePepper::Device3DGetStateContext(
     NPDeviceContext3D* context,
     int32 state,
-    int32* value) {
+    intptr_t* value) {
   return NPERR_GENERIC_ERROR;
 }
 
@@ -504,7 +515,7 @@ NPError WebPluginDelegatePepper::DeviceAudioInitializeContext(
 NPError WebPluginDelegatePepper::DeviceAudioSetStateContext(
     NPDeviceContextAudio* context,
     int32 state,
-    int32 value) {
+    intptr_t value) {
   // TODO(neb,cpu) implement SetStateContext
   return NPERR_GENERIC_ERROR;
 }
@@ -512,8 +523,17 @@ NPError WebPluginDelegatePepper::DeviceAudioSetStateContext(
 NPError WebPluginDelegatePepper::DeviceAudioGetStateContext(
     NPDeviceContextAudio* context,
     int32 state,
-    int32* value) {
-  // TODO(neb,cpu) implement GetStateContext
+    intptr_t* value) {
+  if (state == NPExtensionsReservedStateSharedMemory) {
+    if (!context)
+      return NPERR_INVALID_PARAM;
+    AudioDeviceContext* ctx = audio_contexts_.Lookup(
+        reinterpret_cast<intptr_t>(context->reserved));
+    if (!ctx)
+      return NPERR_INVALID_PARAM;
+    *value = reinterpret_cast<intptr_t>(ctx->shared_memory());
+    return NPERR_NO_ERROR;
+  }
   return NPERR_GENERIC_ERROR;
 }
 

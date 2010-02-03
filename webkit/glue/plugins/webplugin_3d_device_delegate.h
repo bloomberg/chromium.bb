@@ -29,12 +29,12 @@ class WebPlugin3DDeviceDelegate {
   }
   virtual NPError Device3DSetStateContext(NPDeviceContext3D* context,
                                           int32 state,
-                                          int32 value) {
+                                          intptr_t value) {
     return NPERR_GENERIC_ERROR;
   }
   virtual NPError Device3DGetStateContext(NPDeviceContext3D* context,
                                           int32 state,
-                                          int32* value) {
+                                          intptr_t* value) {
     return NPERR_GENERIC_ERROR;
   }
   virtual NPError Device3DFlushContext(NPP id,

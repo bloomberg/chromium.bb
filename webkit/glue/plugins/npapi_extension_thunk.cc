@@ -61,7 +61,7 @@ static NPError Device2DInitializeContext(NPP id,
 static NPError Device2DSetStateContext(NPP id,
                                        NPDeviceContext* context,
                                        int32 state,
-                                       int32 value) {
+                                       intptr_t value) {
   scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
   if (plugin) {
     return plugin->webplugin()->delegate()->Device2DSetStateContext(
@@ -73,7 +73,7 @@ static NPError Device2DSetStateContext(NPP id,
 static NPError Device2DGetStateContext(NPP id,
                                        NPDeviceContext* context,
                                        int32 state,
-                                       int32* value) {
+                                       intptr_t* value) {
   scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
   if (plugin) {
     return plugin->webplugin()->delegate()->Device2DGetStateContext(
@@ -173,7 +173,7 @@ static NPError Device3DInitializeContext(NPP id,
 static NPError Device3DSetStateContext(NPP id,
                                        NPDeviceContext* context,
                                        int32 state,
-                                       int32 value) {
+                                       intptr_t value) {
   scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
   if (plugin) {
     return plugin->webplugin()->delegate()->Device3DSetStateContext(
@@ -185,7 +185,7 @@ static NPError Device3DSetStateContext(NPP id,
 static NPError Device3DGetStateContext(NPP id,
                                        NPDeviceContext* context,
                                        int32 state,
-                                       int32* value) {
+                                       intptr_t* value) {
   scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
   if (plugin) {
     return plugin->webplugin()->delegate()->Device3DGetStateContext(
@@ -292,7 +292,7 @@ static NPError DeviceAudioInitializeContext(NPP id,
 static NPError DeviceAudioSetStateContext(NPP id,
                                           NPDeviceContext* context,
                                           int32 state,
-                                          int32 value) {
+                                          intptr_t value) {
   scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
   if (plugin) {
     return plugin->webplugin()->delegate()->DeviceAudioSetStateContext(
@@ -304,7 +304,7 @@ static NPError DeviceAudioSetStateContext(NPP id,
 static NPError DeviceAudioGetStateContext(NPP id,
                                           NPDeviceContext* context,
                                           int32 state,
-                                          int32* value) {
+                                          intptr_t* value) {
   scoped_refptr<NPAPI::PluginInstance> plugin = FindInstance(id);
   return plugin->webplugin()->delegate()->DeviceAudioGetStateContext(
       static_cast<NPDeviceContextAudio*>(context), state, value);
