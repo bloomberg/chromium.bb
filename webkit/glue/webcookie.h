@@ -9,7 +9,7 @@
 #ifndef WEBKIT_GLUE_WEBCOOKIE_H_
 #define WEBKIT_GLUE_WEBCOOKIE_H_
 
-#include <string>
+#include "net/base/cookie_monster.h"
 
 namespace webkit_glue {
 
@@ -18,22 +18,34 @@ struct WebCookie {
   WebCookie(const std::string& name, const std::string& value,
             const std::string& domain, const std::string& path, double expires,
             bool http_only, bool secure, bool session)
-    : name(name),
-      value(value),
-      domain(domain),
-      path(path),
-      expires(expires),
-      http_only(http_only),
-      secure(secure),
-      session(session) {
+      : name(name),
+        value(value),
+        domain(domain),
+        path(path),
+        expires(expires),
+        http_only(http_only),
+        secure(secure),
+        session(session) {
+  }
+
+  WebCookie(const std::string& domain,
+            const net::CookieMonster::CanonicalCookie& c)
+      : name(c.Name()),
+        value(c.Value()),
+        domain(domain),
+        path(c.Path()),
+        expires(c.ExpiryDate().ToDoubleT() * 1000),
+        http_only(c.IsHttpOnly()),
+        secure(c.IsSecure()),
+        session(!c.IsPersistent()) {
   }
 
   // For default constructions.
-  WebCookie() :
-    expires(0),
-    http_only(false),
-    secure(false),
-    session(false) {
+  WebCookie()
+      : expires(0),
+        http_only(false),
+        secure(false),
+        session(false) {
   }
 
   // Cookie name.

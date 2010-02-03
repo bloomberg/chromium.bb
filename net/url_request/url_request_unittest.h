@@ -22,6 +22,7 @@
 #include "base/time.h"
 #include "base/waitable_event.h"
 #include "net/base/cookie_monster.h"
+#include "net/base/cookie_policy.h"
 #include "net/base/host_resolver.h"
 #include "net/base/io_buffer.h"
 #include "net/base/net_errors.h"
@@ -45,6 +46,83 @@ const std::string kDefaultHostName("localhost");
 
 using base::TimeDelta;
 
+//-----------------------------------------------------------------------------
+
+class TestCookiePolicy : public net::CookiePolicy {
+ public:
+  enum Options {
+    NO_GET_COOKIES = 1 << 0,
+    NO_SET_COOKIE  = 1 << 1,
+    ASYNC          = 1 << 2
+  };
+
+  explicit TestCookiePolicy(int options_bit_mask)
+      : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+        options_(options_bit_mask),
+        callback_(NULL) {
+  }
+
+  virtual int CanGetCookies(const GURL& url, const GURL& first_party,
+                            net::CompletionCallback* callback) {
+    if ((options_ & ASYNC) && callback) {
+      callback_ = callback;
+      MessageLoop::current()->PostTask(FROM_HERE,
+          method_factory_.NewRunnableMethod(
+              &TestCookiePolicy::DoGetCookiesPolicy, url, first_party));
+      return net::ERR_IO_PENDING;
+    }
+
+    if (options_ & NO_GET_COOKIES)
+      return net::ERR_ACCESS_DENIED;
+
+    return net::OK;
+  }
+
+  virtual int CanSetCookie(const GURL& url, const GURL& first_party,
+                           const std::string& cookie_line,
+                           net::CompletionCallback* callback) {
+    if ((options_ & ASYNC) && callback) {
+      callback_ = callback;
+      MessageLoop::current()->PostTask(FROM_HERE,
+          method_factory_.NewRunnableMethod(
+              &TestCookiePolicy::DoSetCookiePolicy, url, first_party,
+              cookie_line));
+      return net::ERR_IO_PENDING;
+    }
+
+    if (options_ & NO_SET_COOKIE)
+      return net::ERR_ACCESS_DENIED;
+
+    return net::OK;
+  }
+
+ private:
+  void DoGetCookiesPolicy(const GURL& url, const GURL& first_party) {
+    int policy = CanGetCookies(url, first_party, NULL);
+
+    DCHECK(callback_);
+    net::CompletionCallback* callback = callback_;
+    callback_ = NULL;
+    callback->Run(policy);
+  }
+
+  void DoSetCookiePolicy(const GURL& url, const GURL& first_party,
+                         const std::string& cookie_line) {
+    int policy = CanSetCookie(url, first_party, cookie_line, NULL);
+
+    DCHECK(callback_);
+    net::CompletionCallback* callback = callback_;
+    callback_ = NULL;
+    callback->Run(policy);
+  }
+
+  ScopedRunnableMethodFactory<TestCookiePolicy> method_factory_;
+  int options_;
+  net::CompletionCallback* callback_;
+};
+
+//-----------------------------------------------------------------------------
+
 class TestURLRequestContext : public URLRequestContext {
  public:
   TestURLRequestContext() {
@@ -59,6 +137,10 @@ class TestURLRequestContext : public URLRequestContext {
     proxy_config.proxy_rules.ParseFromString(proxy);
     proxy_service_ = net::ProxyService::CreateFixed(proxy_config);
     Init();
+  }
+
+  void set_cookie_policy(net::CookiePolicy* policy) {
+    cookie_policy_ = policy;
   }
 
  protected:
@@ -86,6 +168,8 @@ class TestURLRequestContext : public URLRequestContext {
 // TODO(phajdan.jr): Migrate callers to the new name and remove the typedef.
 typedef TestURLRequestContext URLRequestTestContext;
 
+//-----------------------------------------------------------------------------
+
 class TestURLRequest : public URLRequest {
  public:
   TestURLRequest(const GURL& url, Delegate* delegate)
@@ -93,6 +177,8 @@ class TestURLRequest : public URLRequest {
     set_context(new TestURLRequestContext());
   }
 };
+
+//-----------------------------------------------------------------------------
 
 class TestDelegate : public URLRequest::Delegate {
  public:
@@ -261,6 +347,8 @@ class TestDelegate : public URLRequest::Delegate {
   scoped_refptr<net::IOBuffer> buf_;
 };
 
+//-----------------------------------------------------------------------------
+
 // This object bounds the lifetime of an external python-based HTTP/FTP server
 // that can provide various responses useful for testing.
 class BaseTestServer : public base::RefCounted<BaseTestServer> {
@@ -372,6 +460,7 @@ class BaseTestServer : public base::RefCounted<BaseTestServer> {
   std::string port_str_;
 };
 
+//-----------------------------------------------------------------------------
 
 // HTTP
 class HTTPTestServer : public BaseTestServer {
@@ -522,6 +611,8 @@ class HTTPTestServer : public BaseTestServer {
   MessageLoop* loop_;
 };
 
+//-----------------------------------------------------------------------------
+
 class HTTPSTestServer : public HTTPTestServer {
  protected:
   explicit HTTPSTestServer() {
@@ -598,6 +689,7 @@ class HTTPSTestServer : public HTTPTestServer {
   virtual ~HTTPSTestServer() {}
 };
 
+//-----------------------------------------------------------------------------
 
 class FTPTestServer : public BaseTestServer {
  public:
