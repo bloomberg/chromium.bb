@@ -1182,14 +1182,18 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_MetaTag) {
   SimpleBrowserTest(IE, kMetaTagPage, L"meta_tag");
 }
 
+// Since gcf: protocol is disabled by default we need a better test for
+// this. Issue: http://code.google.com/p/chromium/issues/detail?id=34461
 const wchar_t kCFProtocolPage[] = L"files/cf_protocol.html";
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_CFProtocol) {
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_CFProtocol) {
   SimpleBrowserTest(IE, kCFProtocolPage, L"chrome_frame_protocol");
 }
 
 const wchar_t kPersistentCookieTest[] =
     L"files/persistent_cookie_test_page.html";
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_PersistentCookieTest) {
+// Since gcf: protocol is disabled by default we need a better test for
+// this. Issue: http://code.google.com/p/chromium/issues/detail?id=34461
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_PersistentCookieTest) {
   SimpleBrowserTest(IE, kPersistentCookieTest, L"PersistentCookieTest");
 }
 
@@ -1329,9 +1333,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_WindowOpenInChrome) {
                   _, testing::Field(&VARIANT::bstrVal,
                   testing::StrCaseEq(kChromeFrameFullTabWindowOpenTestUrl)),
                   _, _, _, _, _))
-      .Times(testing::AnyNumber()).WillOnce(testing::Return(S_OK));
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return(S_OK));
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
-      .Times(testing::AnyNumber()).WillOnce(testing::Return());
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return());
 
   EXPECT_CALL(mock,
               OnLoad(testing::StrEq(kChromeFrameFullTabWindowOpenTestUrl)))
@@ -1356,9 +1360,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_WindowOpenInChrome) {
 
   // Expect navigations on the new mock
   EXPECT_CALL(new_window_mock, OnBeforeNavigate2(_, _, _, _, _, _, _))
-      .Times(testing::AnyNumber()).WillOnce(testing::Return(S_OK));
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return(S_OK));
   EXPECT_CALL(new_window_mock, OnNavigateComplete2(_, _))
-      .Times(testing::AnyNumber()).WillOnce(testing::Return());
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return());
   EXPECT_CALL(new_window_mock,
               OnLoad(testing::StrEq(kChromeFrameFullTabWindowOpenPopupUrl)))
       .WillOnce(testing::DoAll(
@@ -1498,10 +1502,10 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
       OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
                                           testing::StrCaseEq(kSubFrameUrl1)),
                                 _, _, _, _, _))
-      .Times(testing::AnyNumber()).WillOnce(testing::Return(S_OK));
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return(S_OK));
 
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
-      .Times(testing::AnyNumber()).WillOnce(testing::Return());
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return());
 
   // Navigate to url 2 after the previous navigation is complete.
   EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl1)))
@@ -1524,10 +1528,10 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
       OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
                                           testing::StrCaseEq(kSubFrameUrl2)),
                                 _, _, _, _, _))
-      .Times(testing::AnyNumber()).WillOnce(testing::Return(S_OK));
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return(S_OK));
 
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
-      .Times(testing::AnyNumber()).WillOnce(testing::Return());
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return());
 
   // Navigate to url 3 after the previous navigation is complete
   EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl2)))
@@ -1551,10 +1555,10 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_BackForward) {
       OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
                                           testing::StrCaseEq(kSubFrameUrl3)),
                                 _, _, _, _, _))
-      .Times(testing::AnyNumber()).WillOnce(testing::Return(S_OK));
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return(S_OK));
 
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
-      .Times(testing::AnyNumber()).WillOnce(testing::Return());
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return());
 
   // Go back.
   EXPECT_CALL(mock, OnLoad(testing::StrEq(kSubFrameUrl3)))
@@ -1669,9 +1673,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
   EXPECT_CALL(mock, OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
                                       testing::StrCaseEq(kAnchorUrl)),
                                       _, _, _, _, _))
-      .Times(testing::AnyNumber()).WillOnce(testing::Return(S_OK));
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return(S_OK));
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
-      .Times(testing::AnyNumber()).WillOnce(testing::Return());
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return());
 
   // Navigate to anchor 1:
   // - First set focus to chrome renderer window
@@ -1840,9 +1844,9 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ViewSource) {
   EXPECT_CALL(mock, OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
                                       testing::StrCaseEq(kAnchorUrl)),
                                       _, _, _, _, _))
-      .Times(testing::AnyNumber()).WillOnce(testing::Return(S_OK));
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return(S_OK));
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
-      .Times(testing::AnyNumber()).WillOnce(testing::Return());
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return());
 
   VARIANT empty = ScopedVariant::kEmptyVariant;
   EXPECT_CALL(mock, OnLoad(testing::StrEq(kAnchorUrl)))
@@ -1872,7 +1876,7 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ViewSource) {
   EXPECT_CALL(view_source_mock, OnBeforeNavigate2(_,
               testing::Field(&VARIANT::bstrVal,
               testing::StrCaseEq(url_in_new_window)), _, _, _, _, _))
-      .Times(testing::AnyNumber()).WillOnce(testing::Return(S_OK));
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return(S_OK));
   EXPECT_CALL(view_source_mock, OnNavigateComplete2(_, _))
       .WillOnce(testing::Return());
   EXPECT_CALL(view_source_mock, OnLoad(testing::StrEq(view_source_url)))
@@ -2004,10 +2008,10 @@ TEST_F(ChromeFrameTestWithWebServer,
           _, testing::Field(&VARIANT::bstrVal,
           testing::StrCaseEq(kChromeFrameFullTabModeBeforeUnloadEventTest)),
           _, _, _, _, _))
-      .Times(testing::AnyNumber()).WillOnce(testing::Return(S_OK));
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return(S_OK));
 
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
-      .Times(testing::AnyNumber()).WillOnce(testing::Return());
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return());
 
   EXPECT_CALL(mock, OnLoad(_)).WillOnce(testing::Return());
 
@@ -2030,10 +2034,10 @@ TEST_F(ChromeFrameTestWithWebServer,
           _, testing::Field(&VARIANT::bstrVal,
           testing::StrCaseEq(kChromeFrameFullTabModeBeforeUnloadEventMain)),
           _, _, _, _, _))
-      .Times(testing::AnyNumber()).WillOnce(testing::Return(S_OK));
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return(S_OK));
 
   EXPECT_CALL(mock, OnNavigateComplete2(_, _))
-      .Times(testing::AnyNumber()).WillOnce(testing::Return());
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return());
 
   EXPECT_CALL(mock, OnLoad(_)).WillOnce(testing::Return());
 
