@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
+// source code is governed by a BSD-style license that can be found in the
+// LICENSE file.
 
 #ifndef CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_CONTEXT_H_
 #define CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_CONTEXT_H_
@@ -77,10 +77,6 @@ class DOMStorageContext {
 
   // The local storage file extension.
   static const FilePath::CharType kLocalStorageExtension[];
-
-  // Delete all non-extension local storage files.
-  static void ClearLocalState(const FilePath& profile_path,
-                              const char* url_scheme_to_be_skipped);
 
  private:
   // Get the local storage instance.  The object is owned by this class.

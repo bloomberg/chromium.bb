@@ -33,7 +33,6 @@ class CookieFilterPageView : public OptionsPageView,
  private:
   // OptionsPageView implementation:
   virtual void InitControlLayout();
-  virtual void NotifyPrefChanged(const std::wstring* pref_name);
 
   // views::ButtonListener implementation:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
@@ -50,9 +49,6 @@ class CookieFilterPageView : public OptionsPageView,
   views::Checkbox* block_3rdparty_check_;
   views::Checkbox* clear_on_close_check_;
   views::NativeButton* show_cookies_button_;
-
-  // Clear locally stored site data on exit pref.
-  BooleanPrefMember clear_site_data_on_exit_;
 
   DISALLOW_COPY_AND_ASSIGN(CookieFilterPageView);
 };

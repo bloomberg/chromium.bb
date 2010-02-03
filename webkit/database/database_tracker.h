@@ -116,9 +116,6 @@ class DatabaseTracker
                       const string16& database_name);
   bool DeleteOrigin(const string16& origin_identifier);
 
-  static void ClearLocalState(const FilePath& profile_path,
-                              const char* url_scheme_to_be_skipped);
-
  private:
   // Need this here to allow RefCountedThreadSafe to call ~DatabaseTracker().
   friend class base::RefCountedThreadSafe<DatabaseTracker>;
