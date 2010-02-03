@@ -28,6 +28,12 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   virtual bool ShouldAlwaysTranslate();
   virtual void ToggleAlwaysTranslate();
 
+  int original_lang_index() const {
+    return original_lang_index_;
+  }
+  int target_lang_index() const {
+    return target_lang_index_;
+  }
   const std::string& original_lang_code() const {
     return supported_languages_[original_lang_index_];
   }

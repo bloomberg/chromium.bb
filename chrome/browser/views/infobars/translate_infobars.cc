@@ -455,15 +455,18 @@ gfx::Point TranslateInfoBar::DetermineMenuPositionAndAlignment(
 void TranslateInfoBar::OnLanguageModified(views::MenuButton* menu_button,
     int new_language_index) {
   // Only proceed if a different language has been selected.
+  if (menu_button == original_language_menu_button_) {
+    if (new_language_index == GetDelegate()->original_lang_index())
+      return;
+    GetDelegate()->ModifyOriginalLanguage(new_language_index);
+  } else {
+    if (new_language_index == GetDelegate()->target_lang_index())
+      return;
+    GetDelegate()->ModifyTargetLanguage(new_language_index);
+  }
+
   string16 new_language = TranslateInfoBarDelegate::GetDisplayNameForLocale(
       GetDelegate()->GetLocaleFromIndex(new_language_index));
-  if (new_language == WideToUTF16(menu_button->text()))
-    return;
-  if (menu_button == original_language_menu_button_)
-    GetDelegate()->ModifyOriginalLanguage(new_language_index);
-  else
-    GetDelegate()->ModifyTargetLanguage(new_language_index);
-
   menu_button->SetText(UTF16ToWideHack(new_language));
   menu_button->ClearMaxTextSize();
   menu_button->SizeToPreferredSize();

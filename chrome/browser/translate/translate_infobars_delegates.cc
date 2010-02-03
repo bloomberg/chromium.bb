@@ -53,7 +53,8 @@ void TranslateInfoBarDelegate::GetAvailableTargetLanguages(
 }
 
 void TranslateInfoBarDelegate::Translate() {
-  tab_contents_->TranslatePage(original_lang_code(), target_lang_code());
+  if (original_lang_index_ != target_lang_index_)
+    tab_contents_->TranslatePage(original_lang_code(), target_lang_code());
 }
 
 bool TranslateInfoBarDelegate::IsLanguageBlacklisted() {
