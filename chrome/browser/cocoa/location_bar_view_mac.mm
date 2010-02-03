@@ -764,13 +764,6 @@ void LocationBarViewMac::PageActionViewList::RefreshViews() {
   if (!service)
     return;
 
-  // Remember the previous visibility of the Page Actions so that we can
-  // notify when this changes.
-  std::map<ExtensionAction*, bool> old_visibility;
-  for (size_t i = 0; i < views_.size(); ++i) {
-    old_visibility[views_[i]->page_action()] = views_[i]->IsVisible();
-  }
-
   for (size_t i = 0; i < service->extensions()->size(); ++i) {
     if (service->extensions()->at(i)->page_action())
       page_actions.push_back(service->extensions()->at(i)->page_action());
@@ -804,15 +797,17 @@ void LocationBarViewMac::PageActionViewList::RefreshViews() {
   GURL url = GURL(WideToUTF8(toolbar_model_->GetText()));
   for (size_t i = 0; i < views_.size(); ++i) {
     views_[i]->UpdateVisibility(contents, url);
-    // Check if the visibility of the action changed and notify if it did.
+    // Fire the notification regardless of the visibility changes to trigger a
+    // redraw and tooltip update.
+    // TODO(andybons): This notification is fired on all platforms but never
+    // actually used outside of the Mac implementation and one unit test. Either
+    // update it to reflect a change to the extension view as a whole, or remove
+    // it. http://crbug.com/34339
     ExtensionAction* action = views_[i]->page_action();
-    if (old_visibility.find(action) == old_visibility.end() ||
-        old_visibility[action] != views_[i]->IsVisible()) {
-      NotificationService::current()->Notify(
-          NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
-          Source<ExtensionAction>(action),
-          Details<TabContents>(contents));
-    }
+    NotificationService::current()->Notify(
+        NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
+        Source<ExtensionAction>(action),
+        Details<TabContents>(contents));
   }
 }
 
