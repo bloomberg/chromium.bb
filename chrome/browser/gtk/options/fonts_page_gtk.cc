@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/l10n_util_collator.h"
+#include "app/gfx/font.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/profile.h"
@@ -17,11 +18,16 @@ namespace {
 
 // Make a Gtk font name string from a font family name and pixel size.
 std::string MakeFontName(std::wstring family_name, int pixel_size) {
+  // The given font might not be available (the default fonts we use are not
+  // installed by default on some distros).  So figure out which font we are
+  // actually falling back to and display that.  (See crbug.com/31381.)
+  std::wstring actual_family_name = gfx::Font::CreateFont(
+      family_name, pixel_size).FontName();
   std::string fontname;
   // TODO(mattm): We can pass in the size in pixels (px), and the font button
   // actually honors it, but when you open the selector it interprets it as
   // points.  See crbug.com/17857
-  SStringPrintf(&fontname, "%s, %dpx", WideToUTF8(family_name).c_str(),
+  SStringPrintf(&fontname, "%s, %dpx", WideToUTF8(actual_family_name).c_str(),
                 pixel_size);
   return fontname;
 }
