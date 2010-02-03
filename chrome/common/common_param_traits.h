@@ -89,6 +89,26 @@ struct ParamTraits<gfx::Size> {
 };
 
 template <>
+struct ParamTraits<ContentSettingsType> {
+  typedef ContentSettingsType param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, static_cast<int>(p));
+  }
+  static bool Read(const Message* m, void** iter, param_type* r) {
+    int value;
+    if (!ReadParam(m, iter, &value))
+      return false;
+    if (value < 0 || value >= static_cast<int>(CONTENT_SETTINGS_NUM_TYPES))
+      return false;
+    *r = static_cast<param_type>(value);
+    return true;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    LogParam(static_cast<int>(p), l);
+  }
+};
+
+template <>
 struct ParamTraits<ContentSettings> {
   typedef ContentSettings param_type;
   static void Write(Message* m, const param_type& p);

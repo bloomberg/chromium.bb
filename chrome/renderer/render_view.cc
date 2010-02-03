@@ -312,6 +312,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       webkit_preferences_(webkit_preferences),
       session_storage_namespace_id_(session_storage_namespace_id),
       ALLOW_THIS_IN_INITIALIZER_LIST(text_translator_(this)) {
+  ClearBlockedContentSettings();
   page_translator_.reset(new PageTranslator(&text_translator_, this));
 }
 
@@ -2037,19 +2038,11 @@ void RenderView::willClose(WebFrame* frame) {
 }
 
 bool RenderView::allowPlugins(WebFrame* frame, bool enabled_per_settings) {
-  if (!enabled_per_settings)
-    return false;
-  // CONTENT_SETTING_ASK is only valid for cookies.
-  return current_content_settings_.settings[CONTENT_SETTINGS_TYPE_PLUGINS] !=
-      CONTENT_SETTING_BLOCK;
+  return allowContentType(CONTENT_SETTINGS_TYPE_PLUGINS, enabled_per_settings);
 }
 
 bool RenderView::allowImages(WebFrame* frame, bool enabled_per_settings) {
-  if (!enabled_per_settings)
-    return false;
-  // CONTENT_SETTING_ASK is only valid for cookies.
-  return current_content_settings_.settings[CONTENT_SETTINGS_TYPE_IMAGES] !=
-      CONTENT_SETTING_BLOCK;
+  return allowContentType(CONTENT_SETTINGS_TYPE_IMAGES, enabled_per_settings);
 }
 
 void RenderView::loadURLExternally(
@@ -2600,6 +2593,8 @@ void RenderView::didReceiveResponse(
   if (!frame->provisionalDataSource() || frame->parent())
     return;
 
+  // A new page is about to be loaded. Clear "block" flags.
+  ClearBlockedContentSettings();
   // If we are in view source mode, then just let the user see the source of
   // the server's 404 error page.
   if (frame->isViewSourceModeEnabled())
@@ -2681,10 +2676,8 @@ void RenderView::didRunInsecureContent(
 
 bool RenderView::allowScript(WebFrame* frame, bool enabled_per_settings) {
   if (enabled_per_settings) {
-    // CONTENT_SETTING_ASK is only valid for cookies.
-    return
-      current_content_settings_.settings[CONTENT_SETTINGS_TYPE_JAVASCRIPT] !=
-      CONTENT_SETTING_BLOCK;
+    return allowContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+                            enabled_per_settings);
   }
 
   WebSecurityOrigin origin = frame->securityOrigin();
@@ -3182,6 +3175,27 @@ std::string RenderView::DetermineTextLanguage(const std::wstring& text) {
     language = LanguageCode(cld_language);
   }
   return language;
+}
+
+bool RenderView::allowContentType(ContentSettingsType settings_type,
+                                  bool enabled_per_settings) {
+  if (!enabled_per_settings)
+    return false;
+  // CONTENT_SETTING_ASK is only valid for cookies.
+  if (current_content_settings_.settings[settings_type] == CONTENT_SETTING_BLOCK
+      && !content_blocked_[settings_type]) {
+    content_blocked_[settings_type] = true;
+    Send(new ViewHostMsg_ContentBlocked(routing_id_, settings_type));
+    return false;
+  }
+  return true;
+}
+
+void RenderView::ClearBlockedContentSettings() {
+  DCHECK_EQ(static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES),
+            arraysize(content_blocked_));
+  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i)
+    content_blocked_[i] = false;
 }
 
 void RenderView::DnsPrefetch(const std::vector<std::string>& host_names) {

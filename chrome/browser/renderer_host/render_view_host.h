@@ -10,6 +10,7 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
+#include "chrome/common/content_settings_types.h"
 #include "chrome/common/page_zoom.h"
 #include "chrome/common/view_types.h"
 #include "net/base/load_states.h"
@@ -606,7 +607,7 @@ class RenderViewHost : public RenderWidgetHost {
   void OnPageTranslated(int32 page_id,
                         const std::string& original_lang,
                         const std::string& translated_lang);
-
+  void OnContentBlocked(ContentSettingsType type);
  private:
   friend class TestRenderViewHost;
 

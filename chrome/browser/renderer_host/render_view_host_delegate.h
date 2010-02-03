@@ -10,6 +10,7 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
+#include "chrome/common/content_settings_types.h"
 #include "chrome/common/view_types.h"
 #include "net/base/load_states.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
@@ -287,6 +288,10 @@ class RenderViewHostDelegate {
 
     // Notification that a document has been loaded in a frame.
     virtual void DocumentLoadedInFrame() = 0;
+
+    // Called when content in the current page was blocked due to the user's
+    // content settings.
+    virtual void OnContentBlocked(ContentSettingsType type) = 0;
   };
 
   // Save ----------------------------------------------------------------------

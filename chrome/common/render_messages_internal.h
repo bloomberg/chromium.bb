@@ -1156,6 +1156,11 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED1(ViewHostMsg_UpdateSpellingPanelWithMisspelledWord,
                       string16 /* the word to update the panel with */)
 
+  // Tells the browser that content in the current page was blocked due to the
+  // user's content settings.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_ContentBlocked,
+                      ContentSettingsType /* type of blocked content */)
+
   // Initiates a download based on user actions like 'ALT+click'.
   IPC_MESSAGE_ROUTED2(ViewHostMsg_DownloadUrl,
                       GURL /* url */,

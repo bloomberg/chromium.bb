@@ -692,6 +692,9 @@ class TabContents : public PageNavigator,
   // TODO(brettw) TestTabContents shouldn't exist!
   friend class TestTabContents;
 
+  // Resets the |content_blocked_| array.
+  void ClearBlockedContentSettings();
+
   // Changes the IsLoading state and notifies delegate as needed
   // |details| is used to provide details on the load that just finished
   // (but can be null if not applicable). Can be overridden.
@@ -833,6 +836,7 @@ class TabContents : public PageNavigator,
       const GURL& url,
       bool showing_repost_interstitial);
   virtual void DocumentLoadedInFrame();
+  virtual void OnContentBlocked(ContentSettingsType type);
 
   // RenderViewHostDelegate implementation.
   virtual RenderViewHostDelegate::View* GetViewDelegate();
@@ -1070,6 +1074,9 @@ class TabContents : public PageNavigator,
 
   // TODO(pkasting): Hack to try and fix Linux browser tests.
   bool dont_notify_render_view_;
+
+  // Stores which content setting types actually have blocked content.
+  bool content_blocked_[CONTENT_SETTINGS_NUM_TYPES];
 
   // Data for shelves and stuff ------------------------------------------------
 
