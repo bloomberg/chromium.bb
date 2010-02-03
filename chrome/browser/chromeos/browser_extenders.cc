@@ -9,7 +9,7 @@
 #include "app/theme_provider.h"
 #include "base/command_line.h"
 #include "chrome/app/chrome_dll_resource.h"
-#include "chrome/browser/chromeos/chromeos_browser_view.h"
+#include "chrome/browser/chromeos/browser_view.h"
 #include "chrome/browser/chromeos/compact_location_bar_host.h"
 #include "chrome/browser/chromeos/compact_navigation_bar.h"
 #include "chrome/browser/chromeos/main_menu.h"
@@ -40,7 +40,7 @@ namespace {
 // For Browser::TYPE_POPUP type of BrowserView, see PopupExtender class below.
 class NormalExtender : public BrowserExtender {
  public:
-  explicit NormalExtender(chromeos::ChromeosBrowserView* browser_view)
+  explicit NormalExtender(chromeos::BrowserView* browser_view)
       : BrowserExtender(),
         browser_view_(browser_view) {
   }
@@ -57,7 +57,7 @@ class NormalExtender : public BrowserExtender {
   }
 
  private:
-  chromeos::ChromeosBrowserView* browser_view_;
+  chromeos::BrowserView* browser_view_;
 
   DISALLOW_COPY_AND_ASSIGN(NormalExtender);
 };
@@ -96,5 +96,5 @@ BrowserExtender* BrowserExtender::Create(BrowserView* browser_view) {
     return new PopupExtender();
   else
     return new NormalExtender(
-        static_cast<chromeos::ChromeosBrowserView*>(browser_view));
+        static_cast<chromeos::BrowserView*>(browser_view));
 }

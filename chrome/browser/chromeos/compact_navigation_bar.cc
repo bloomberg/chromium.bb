@@ -49,7 +49,7 @@ static const int kURLPadding = 2;
 ////////////////////////////////////////////////////////////////////////////////
 // CompactNavigationBar public:
 
-CompactNavigationBar::CompactNavigationBar(BrowserView* browser_view)
+CompactNavigationBar::CompactNavigationBar(::BrowserView* browser_view)
     : browser_view_(browser_view),
       initialized_(false) {
   SetFocusable(true);

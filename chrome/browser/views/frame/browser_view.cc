@@ -38,7 +38,7 @@
 #include "chrome/browser/views/chrome_views_delegate.h"
 #include "chrome/browser/views/download_shelf_view.h"
 #include "chrome/browser/views/extensions/extension_shelf.h"
-#include "chrome/browser/views/frame/chrome_browser_view_layout_manager.h"
+#include "chrome/browser/views/frame/browser_view_layout.h"
 #include "chrome/browser/views/frame/browser_extender.h"
 #include "chrome/browser/views/frame/browser_frame.h"
 #include "chrome/browser/views/fullscreen_exit_bubble.h"
@@ -524,7 +524,7 @@ bool BrowserView::ShouldFindBarBlendWithBookmarksBar() const {
 }
 
 gfx::Rect BrowserView::GetFindBarBoundingBox() const {
-  return GetBrowserViewLayoutManager()->GetFindBarBoundingBox();
+  return GetBrowserViewLayout()->GetFindBarBoundingBox();
 }
 
 int BrowserView::GetTabStripHeight() const {
@@ -658,7 +658,7 @@ void BrowserView::DetachBrowserBubble(BrowserBubble* bubble) {
 }
 
 bool BrowserView::IsPositionInWindowCaption(const gfx::Point& point) {
-  return GetBrowserViewLayoutManager()->IsPositionInWindowCaption(point);
+  return GetBrowserViewLayout()->IsPositionInWindowCaption(point);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1532,11 +1532,11 @@ int BrowserView::NonClientHitTest(const gfx::Point& point) {
   }
 #endif
 
-  return GetBrowserViewLayoutManager()->NonClientHitTest(point);
+  return GetBrowserViewLayout()->NonClientHitTest(point);
 }
 
 gfx::Size BrowserView::GetMinimumSize() {
-  return GetBrowserViewLayoutManager()->GetMinimumSize();
+  return GetBrowserViewLayout()->GetMinimumSize();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1590,7 +1590,7 @@ void BrowserView::SetAccessibleName(const std::wstring& name) {
 }
 
 views::LayoutManager* BrowserView::CreateLayoutManager() const {
-  return new ChromeBrowserViewLayoutManager();
+  return new BrowserViewLayout;
 }
 
 TabStrip* BrowserView::CreateTabStrip(TabStripModel* model) {
@@ -1692,8 +1692,8 @@ void BrowserView::InitSystemMenu() {
 }
 #endif
 
-BrowserViewLayoutManager* BrowserView::GetBrowserViewLayoutManager() const {
-  return static_cast<BrowserViewLayoutManager*>(GetLayoutManager());
+BrowserViewLayout* BrowserView::GetBrowserViewLayout() const {
+  return static_cast<BrowserViewLayout*>(GetLayoutManager());
 }
 
 void BrowserView::LayoutStatusBubble(int top) {

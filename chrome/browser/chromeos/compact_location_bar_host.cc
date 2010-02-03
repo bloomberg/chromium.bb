@@ -33,7 +33,7 @@ const int kHideTimeoutInSeconds = 2;
 // BrowserView's content area and hide the location bar.
 class MouseObserver : public MessageLoopForUI::Observer {
  public:
-  MouseObserver(CompactLocationBarHost* host, BrowserView* view)
+  MouseObserver(CompactLocationBarHost* host, ::BrowserView* view)
       : host_(host),
         browser_view_(view) {
     top_level_window_ = browser_view_->GetWidget()->GetNativeView()->window;
@@ -84,7 +84,7 @@ class MouseObserver : public MessageLoopForUI::Observer {
   }
 
   CompactLocationBarHost* host_;
-  BrowserView* browser_view_;
+  ::BrowserView* browser_view_;
   GdkWindow* top_level_window_;
 
   DISALLOW_COPY_AND_ASSIGN(MouseObserver);
@@ -93,7 +93,7 @@ class MouseObserver : public MessageLoopForUI::Observer {
 ////////////////////////////////////////////////////////////////////////////////
 // CompactLocationBarHost, public:
 
-CompactLocationBarHost::CompactLocationBarHost(BrowserView* browser_view)
+CompactLocationBarHost::CompactLocationBarHost(::BrowserView* browser_view)
     : DropdownBarHost(browser_view),
       current_tab_index_(-1) {
   auto_hide_timer_.reset(new base::OneShotTimer<CompactLocationBarHost>());

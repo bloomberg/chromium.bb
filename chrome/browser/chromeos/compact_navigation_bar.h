@@ -33,7 +33,7 @@ class CompactNavigationBar : public views::View,
                              public BubblePositioner,
                              public CommandUpdater::CommandObserver {
  public:
-  explicit CompactNavigationBar(BrowserView* browser_view);
+  explicit CompactNavigationBar(::BrowserView* browser_view);
   virtual ~CompactNavigationBar();
 
   // Must be called before anything else, but after adding this view to the
@@ -75,7 +75,7 @@ class CompactNavigationBar : public views::View,
   // controlled by the method |StatusAreaView::GetOpenTabsMode()|.
   void AddTabWithURL(const GURL& url, PageTransition::Type transition);
 
-  BrowserView* browser_view_;
+  ::BrowserView* browser_view_;
 
   bool initialized_;
 

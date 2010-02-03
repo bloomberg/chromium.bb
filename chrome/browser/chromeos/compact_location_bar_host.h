@@ -39,7 +39,7 @@ class MouseObserver;
 class CompactLocationBarHost : public DropdownBarHost,
                                public TabStripModelObserver {
  public:
-  explicit CompactLocationBarHost(BrowserView* browser_view);
+  explicit CompactLocationBarHost(::BrowserView* browser_view);
   virtual ~CompactLocationBarHost();
 
   // Returns the bounds to locale the compact location bar under the tab.
