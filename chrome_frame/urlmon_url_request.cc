@@ -519,7 +519,7 @@ STDMETHODIMP UrlmonUrlRequest::GetWindow(const GUID& guid_reason,
         (guid_reason == IID_IWindowForBindingUI ? L"IWindowForBindingUI" :
                                                   guid)));
 #endif
-
+  // We should return a non-NULL HWND as parent. Otherwise no dialog is shown.
   // TODO(iyengar): This hits when running the URL request tests.
   DLOG_IF(ERROR, !::IsWindow(parent_window_))
       << "UrlmonUrlRequest::GetWindow - no window!";
@@ -923,19 +923,21 @@ void UrlmonUrlRequestManager::EndRequestWorker(int request_id) {
 }
 
 void UrlmonUrlRequestManager::StopAll() {
-  AutoLock lock(worker_thread_access_);
-  if (stopping_)
-    return;
+  do {
+    AutoLock lock(worker_thread_access_);
+    if (stopping_)
+      return;
 
-  stopping_ = true;
+    stopping_ = true;
 
-  if (!worker_thread_.IsRunning())
-    return;
+    if (!worker_thread_.IsRunning())
+      return;
 
-  // ExecuteInWorkerThread will check for stopping_. Hence post directly
-  // to the worker thread.
-  worker_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
-      &UrlmonUrlRequestManager::StopAllWorker));
+    // ExecuteInWorkerThread will check for stopping_. Hence post directly
+    // to the worker thread.
+    worker_thread_.message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
+        &UrlmonUrlRequestManager::StopAllWorker));
+  } while(0);
 
   // Note we may not call worker_thread_.Stop() here. The MessageLoop's quit
   // task will be serialized after request::Stop tasks, but requests may
