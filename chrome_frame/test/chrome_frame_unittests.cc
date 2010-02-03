@@ -1198,7 +1198,9 @@ TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_PersistentCookieTest
 }
 
 const wchar_t kNavigateOutPage[] = L"files/navigate_out.html";
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_NavigateOut) {
+// Since gcf: protocol is disabled by default we need a better test for
+// this. Issue: http://code.google.com/p/chromium/issues/detail?id=34461
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_NavigateOut) {
   SimpleBrowserTest(IE, kNavigateOutPage, L"navigate_out");
 }
 
