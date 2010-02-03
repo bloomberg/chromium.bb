@@ -96,16 +96,20 @@ class FindBarHost : public DropdownBarHost,
   // sized, and should not be redrawn to reduce update flicker.
   virtual void SetDialogPosition(const gfx::Rect& new_pos, bool no_redraw);
 
- private:
-  // The find bar widget needs rounded edges, so we create a polygon
-  // that corresponds to the background images for this window (and
-  // make the polygon only contain the pixels that we want to
-  // draw). The polygon is then given to SetWindowRgn which changes
-  // the window from being a rectangle in shape, to being a rect with
-  // curved edges. We also check to see if the region should be
-  // truncated to prevent from drawing onto Chrome's window border.
-  void UpdateWindowEdges(const gfx::Rect& new_pos);
+  // Retrieves the boundaries that the find bar widget has to work with
+  // within the Chrome frame window. The resulting rectangle will be a
+  // rectangle that overlaps the bottom of the Chrome toolbar by one
+  // pixel (so we can create the illusion that the dropdown widget is
+  // part of the toolbar) and covers the page area, except that we
+  // deflate the rect width by subtracting (from both sides) the width
+  // of the toolbar and some extra pixels to account for the width of
+  // the Chrome window borders. |bounds| is relative to the browser
+  // window. If the function fails to determine the browser
+  // window/client area rectangle or the rectangle for the page area
+  // then |bounds| will be an empty rectangle.
+  virtual void GetWidgetBounds(gfx::Rect* bounds);
 
+ private:
   // Allows implementation to tweak widget position.
   void GetWidgetPositionNative(gfx::Rect* avoid_overlapping_rect);
 

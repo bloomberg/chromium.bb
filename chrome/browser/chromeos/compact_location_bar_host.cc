@@ -137,8 +137,6 @@ gfx::Rect CompactLocationBarHost::GetDialogPosition(
 
   if (animation_offset() > 0)
     new_pos.Offset(0, std::min(0, -animation_offset()));
-
-  // TODO(oshima): Animate the window clipping like find-bar.
   return new_pos;
 }
 
@@ -146,6 +144,11 @@ void CompactLocationBarHost::SetDialogPosition(const gfx::Rect& new_pos,
                                                bool no_redraw) {
   if (new_pos.IsEmpty())
     return;
+
+  // Make sure the window edges are clipped to just the visible region. We need
+  // to do this before changing position, so that when we animate the closure
+  // of it it doesn't look like the window crumbles into the toolbar.
+  UpdateWindowEdges(new_pos);
 
   // TODO(oshima): Animate the window clipping like find-bar.
   SetWidgetPositionNative(new_pos, no_redraw);
@@ -215,7 +218,18 @@ gfx::Rect CompactLocationBarHost::GetBoundsUnderTab(int index) const {
   // Try to center around the tab, or align to the left of the window.
   // TODO(oshima): handle RTL
   int x = std::max(tab_left_bottom.x() - ((width - bounds.width()) / 2), 0);
-  return gfx::Rect(x, tab_left_bottom.y(), width, 28);
+  int y;
+  if (browser_view()->IsBookmarkBarVisible() &&
+      !browser_view()->GetBookmarkBarView()->IsDetached()) {
+    // Adjust the location to create the illusion that the compact location bar
+    // is a part of boolmark bar.
+    // TODO(oshima): compact location bar does not have right background
+    // image yet, so -2 is tentative. Fix this once UI is settled.
+    y = browser_view()->GetBookmarkBarView()->bounds().bottom() - 2;
+  } else {
+    y  = tab_left_bottom.y();
+  }
+  return gfx::Rect(x, y, width, 28);
 }
 
 void CompactLocationBarHost::Update(int index, bool animate_x) {
