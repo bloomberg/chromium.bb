@@ -14,46 +14,58 @@
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
 
+#include <vector>
+
 namespace keys = extension_bookmarks_module_constants;
 
-bool ClipboardBookmarkManagerFunction::CopyOrCut(bool cut) {
-  EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
-  const ListValue* ids = args_as_list();
-  size_t count = ids->GetSize();
-  EXTENSION_FUNCTION_VALIDATE(count > 0);
+namespace {
 
-  BookmarkModel* model = profile()->GetBookmarkModel();
-  std::vector<const BookmarkNode*> nodes;
+// Returns a single bookmark node from the argument ID.
+// This returns NULL in case of failure.
+const BookmarkNode* GetNodeFromArguments(BookmarkModel* model,
+    const Value* args) {
+  std::string id_string;
+  if (!args->GetAsString(&id_string))
+    return NULL;
+  int64 id;
+  if (!StringToInt64(id_string, &id))
+    return NULL;
+  return model->GetNodeByID(id);
+}
+
+// Gets a vector of bookmark nodes from the argument list of IDs.
+// This returns false in the case of failure.
+bool GetNodesFromArguments(BookmarkModel* model, const ListValue* ids,
+    std::vector<const BookmarkNode*>* nodes) {
+  size_t count = ids->GetSize();
+  if (count == 0)
+    return false;
 
   for (size_t i = 0; i < count; ++i) {
-    int64 id;
     std::string id_string;
-    EXTENSION_FUNCTION_VALIDATE(ids->GetString(i, &id_string));
-    if (!GetBookmarkIdAsInt64(id_string, &id))
+    if (!ids->GetString(i, &id_string))
+      return false;
+    int64 id;
+    if (!StringToInt64(id_string, &id))
       return false;
     const BookmarkNode* node = model->GetNodeByID(id);
-    if (!node) {
-      error_ = keys::kNoNodeError;
+    if (!node)
       return false;
-    } else {
-      nodes.push_back(node);
-    }
+    nodes->push_back(node);
   }
-
-  bookmark_utils::CopyToClipboard(model, nodes, cut);
 
   return true;
 }
 
-const BookmarkNode* ClipboardBookmarkManagerFunction::GetNodeFromArguments() {
-  std::string id_string;
-  EXTENSION_FUNCTION_VALIDATE(args_->GetAsString(&id_string));
-  int64 id;
-  EXTENSION_FUNCTION_VALIDATE(StringToInt64(id_string, &id));
+}
+
+bool ClipboardBookmarkManagerFunction::CopyOrCut(bool cut) {
   BookmarkModel* model = profile()->GetBookmarkModel();
-  const BookmarkNode* node = model->GetNodeByID(id);
-  EXTENSION_FUNCTION_VALIDATE(node);
-  return node;
+  std::vector<const BookmarkNode*> nodes;
+  EXTENSION_FUNCTION_VALIDATE(GetNodesFromArguments(model, args_as_list(),
+                                                    &nodes));
+  bookmark_utils::CopyToClipboard(model, nodes, cut);
+  return true;
 }
 
 bool CopyBookmarkManagerFunction::RunImpl() {
@@ -66,13 +78,18 @@ bool CutBookmarkManagerFunction::RunImpl() {
 
 bool PasteBookmarkManagerFunction::RunImpl() {
   BookmarkModel* model = profile()->GetBookmarkModel();
-  const BookmarkNode* parent_node = GetNodeFromArguments();
+  const BookmarkNode* parent_node = GetNodeFromArguments(model, args_.get());
+  EXTENSION_FUNCTION_VALIDATE(parent_node);
+  bool can_paste = bookmark_utils::CanPasteFromClipboard(parent_node);
+  EXTENSION_FUNCTION_VALIDATE(can_paste);
   bookmark_utils::PasteFromClipboard(model, parent_node, -1);
   return true;
 }
 
 bool CanPasteBookmarkManagerFunction::RunImpl() {
-  const BookmarkNode* parent_node = GetNodeFromArguments();
+  BookmarkModel* model = profile()->GetBookmarkModel();
+  const BookmarkNode* parent_node = GetNodeFromArguments(model, args_.get());
+  EXTENSION_FUNCTION_VALIDATE(parent_node);
   bool can_paste = bookmark_utils::CanPasteFromClipboard(parent_node);
   result_.reset(Value::CreateBooleanValue(can_paste));
   SendResponse(true);
@@ -141,8 +158,9 @@ void ExportBookmarksFunction::FileSelected(const FilePath& path,
 }
 
 bool SortChildrenBookmarkManagerFunction::RunImpl() {
-  const BookmarkNode* parent_node = GetNodeFromArguments();
   BookmarkModel* model = profile()->GetBookmarkModel();
+  const BookmarkNode* parent_node = GetNodeFromArguments(model, args_.get());
+  EXTENSION_FUNCTION_VALIDATE(parent_node);
   model->SortChildren(parent_node);
   return true;
 }

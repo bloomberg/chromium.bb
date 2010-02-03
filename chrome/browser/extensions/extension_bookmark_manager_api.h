@@ -14,8 +14,6 @@ class BookmarkNode;
 class ClipboardBookmarkManagerFunction : public BookmarksFunction {
  protected:
   bool CopyOrCut(bool cut);
-  // Returns a single bookmark node from the ID passed as the first argument.
-  const BookmarkNode* GetNodeFromArguments();
 };
 
 class CopyBookmarkManagerFunction : public ClipboardBookmarkManagerFunction {
