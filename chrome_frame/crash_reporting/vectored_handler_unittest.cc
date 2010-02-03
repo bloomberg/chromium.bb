@@ -128,9 +128,9 @@ MATCHER_P(ExceptionCodeIs, code, "") {
   return (arg->ExceptionRecord->ExceptionCode == code);
 }
 
-void OverflowStack() {
-  char tmp[1024 * 2048];
-  ZeroMemory(tmp, sizeof(tmp));
+DECLSPEC_NOINLINE static void OverflowStack() {
+  char tmp[1024 * 2048] = {0};
+  GetSystemInfo(reinterpret_cast<SYSTEM_INFO*>(&tmp));
 }
 
 DWORD WINAPI CrashingThread(PVOID tmp) {
