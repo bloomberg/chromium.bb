@@ -34,8 +34,11 @@ class UrlmonUrlRequestManager :
 
  private:
    struct MonikerForUrl {
+     MonikerForUrl() {
+       memset(&bind_opts, 0, sizeof(bind_opts));
+     }
      ScopedComPtr<IMoniker> moniker;
-     ScopedComPtr<IBindCtx> bind_ctx;
+     BIND_OPTS bind_opts;
      std::wstring url;
    };
 

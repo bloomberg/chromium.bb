@@ -29,7 +29,8 @@ class UrlmonUrlRequest
   virtual bool Read(int bytes_to_read);
 
   // Special function needed by ActiveDocument::Load()
-  HRESULT ConnectToExistingMoniker(IMoniker* moniker, IBindCtx* context,
+  HRESULT ConnectToExistingMoniker(IMoniker* moniker,
+                                   BIND_OPTS* bind_opts,
                                    const std::wstring& url);
 
   // Used from "OnDownloadRequestInHost".
