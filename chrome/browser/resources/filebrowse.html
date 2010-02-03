@@ -323,6 +323,11 @@ div.newfolderbutton {
   position: absolute;
 }
 
+div.disabled {
+  color: gray;
+  cursor:default;
+}
+
 div.opencontainer {
   width: 100%;
   bottom: 0;
@@ -348,7 +353,6 @@ div.savecontainer {
                                      from(rgb(239, 242, 249)),
                                      to(rgba(201, 212, 245, 1)));
 }
-
 
 div.container {
   top: 0;
@@ -616,8 +620,16 @@ function getClassForPath(path, isDirectory) {
 
 function getDataForPath(path) {
   if (path == 'roots' ) {
+    var newfolderbutton = $('newfolderbutton');
+    newfolderbutton.className = 'filebutton newfolderbutton disabled';
+    var savebutton = $('savebutton');
+    savebutton.className = 'filebutton openbutton disabled';
     chrome.send('getRoots', []);
   } else {
+    var newfolderbutton = $('newfolderbutton');
+    newfolderbutton.className = 'filebutton newfolderbutton';
+    var savebutton = $('savebutton');
+    savebutton.className = 'filebutton openbutton';
     chrome.send('getChildren', [path]);
   }
 };
@@ -630,7 +642,11 @@ function setUpForScanning() {
   main.textContent = 'Scanning Device...';
 };
 
+
 function dialogOkClick() {
+   if (currentlySelectedPaths.length == 0) {
+     return;
+   }
    if (!multiSelect) {
      chrome.send('DialogClose', [JSON.stringify({'path' : currentlySelectedPaths[0]})]);
    } else {
@@ -646,6 +662,9 @@ function dialogSaveClick() {
   var filenameInput = $('filename');
   var filename = filenameInput.value;
   var currentPath = pathArray[pathArray.length - 1];
+  if (currentPath == 'roots') {
+    return;
+  }
   currentPath += '/';
   currentPath += filename;
   chrome.send('DialogClose', [JSON.stringify({'path' : currentPath})]);
@@ -770,7 +789,10 @@ function downloadUpdated(results) {
 };
 
 function dialogNewFolderClick() {
-
+  var newfolderbutton = $('newfolderbutton');
+  if (newfolderbutton.className.indexOf('disabled') != -1) {
+    return;
+  }
 
   var main = divArray[divArray.length - 1];
   var list;
@@ -799,6 +821,7 @@ function dialogNewFolderClick() {
 function load() {
   if(document.documentElement.clientWidth <= 600) {
     inFullMode = false;
+
     if (chrome.dialogArguments) {
       var args = JSON.parse(chrome.dialogArguments);
       if (args.type == 'open') {
@@ -818,7 +841,8 @@ function load() {
         savemenu.className = 'savecontainer';
 
         var savebutton = document.createElement('div');
-        savebutton.className = 'filebutton openbutton';
+        savebutton.id = 'savebutton';
+        savebutton.className = 'filebutton openbutton disabled';
         savebutton.onclick = dialogSaveClick;
         savebutton.textContent = 'Save';
         savemenu.appendChild(savebutton);
@@ -841,7 +865,8 @@ function load() {
         savemenu.appendChild(filename);
 
         var newfolderbutton = document.createElement('div');
-        newfolderbutton.className = 'filebutton newfolderbutton';
+        newfolderbutton.id = 'newfolderbutton';
+        newfolderbutton.className = 'filebutton newfolderbutton disabled';
         newfolderbutton.textContent = 'New Folder';
         newfolderbutton.onclick = dialogNewFolderClick;
         savemenu.appendChild(newfolderbutton);
@@ -854,7 +879,7 @@ function load() {
         var openmenu = document.createElement('div');
         openmenu.className = 'opencontainer';
         var openbutton = document.createElement('div');
-        openbutton.className = 'filebutton openbutton';
+        openbutton.className = 'filebutton openbutton disabled';
         var cancelbutton = document.createElement('div');
         cancelbutton.className = 'filebutton cancelbutton';
         openmenu.appendChild(openbutton);
