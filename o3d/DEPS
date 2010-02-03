@@ -1,7 +1,9 @@
 vars = {
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "nixysa_rev": "64",
-  "chromium_rev": "36817",
+  # When updating the chromium rev, you must also update the nss and sqlite
+  # revs to match the version pulled-in by Chromium's own DEPS in the new rev.
+  "chromium_rev": "37758",
   "o3d_code_rev": "166",
   "skia_rev": "474",
   "gyp_rev": "775",
@@ -146,6 +148,14 @@ deps_os = {
 
     "third_party/python_24":
       Var("chromium_trunk") + "/deps/third_party/python_24@19441",
+
+    # Dependency of chrome base
+    "third_party/nss":
+      Var("chromium_trunk") + "/deps/third_party/nss@36871",
+
+    # Dependency of nss, even though its DEPS fail to mention that.
+    "third_party/sqlite":
+      Var("chromium_trunk") + "/src/third_party/sqlite@31834",
   },
   "unix": {
     # Linux, really.
