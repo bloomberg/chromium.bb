@@ -20,6 +20,7 @@ class Tab;
 namespace chromeos {
 
 class CompactLocationBarView;
+class MouseObserver;
 
 ////////////////////////////////////////////////////////////////////////////////
 //
@@ -59,6 +60,10 @@ class CompactLocationBarHost : public DropdownBarHost,
   // Enable/disable the compact location bar.
   void SetEnabled(bool enabled);
 
+  // Overridehden from DropdownBarhost.
+  virtual void Show(bool animate);
+  virtual void Hide(bool animate);
+
   // Overridden from views::AcceleratorTarget in DropdownBarHost class.
   virtual bool AcceleratorPressed(const views::Accelerator& accelerator);
 
@@ -82,6 +87,8 @@ class CompactLocationBarHost : public DropdownBarHost,
                             TabChangeType change_type);
 
  private:
+  friend class MouseObserver;
+
   void HideCallback() {
     Hide(true);
   }
@@ -95,6 +102,8 @@ class CompactLocationBarHost : public DropdownBarHost,
   int current_tab_index_;
 
   scoped_ptr<base::OneShotTimer<CompactLocationBarHost> > auto_hide_timer_;
+
+  scoped_ptr<MouseObserver> mouse_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(CompactLocationBarHost);
 };

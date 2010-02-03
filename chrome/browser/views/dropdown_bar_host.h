@@ -48,14 +48,15 @@ class DropdownBarHost : public views::AcceleratorTarget,
   bool IsAnimating() const;
   // Returns true if the dropdown bar view is visible, or false otherwise.
   bool IsVisible() const;
-  // Shows the dropdown bar.
-  void Show(bool animate);
-  // Hides the dropdown bar.
-  void Hide(bool animate);
   // Selects text in the entry field and set focus.
   void SetFocusAndSelection();
   // Stops the animation.
   void StopAnimation();
+
+  // Shows the dropdown bar.
+  virtual void Show(bool animate);
+  // Hides the dropdown bar.
+  virtual void Hide(bool animate);
 
   // Returns the rectangle representing where to position the dropdown widget.
   virtual gfx::Rect GetDialogPosition(gfx::Rect avoid_overlapping_rect) = 0;

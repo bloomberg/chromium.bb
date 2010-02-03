@@ -14,6 +14,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/browser/view_ids.h"
+#include "chrome/browser/views/bookmark_bar_view.h"
 #include "chrome/browser/views/find_bar_view.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/tabs/tab.h"
@@ -25,9 +26,69 @@
 #include "views/widget/widget.h"
 
 namespace chromeos {
-
 const int kDefaultLocationBarWidth = 300;
 const int kHideTimeoutInSeconds = 2;
+
+// An mouse event observer to detect a mouse click on
+// BrowserView's content area and hide the location bar.
+class MouseObserver : public MessageLoopForUI::Observer {
+ public:
+  MouseObserver(CompactLocationBarHost* host, BrowserView* view)
+      : host_(host),
+        browser_view_(view) {
+    top_level_window_ = browser_view_->GetWidget()->GetNativeView()->window;
+  }
+
+  // MessageLoopForUI::Observer overrides.
+  virtual void WillProcessEvent(GdkEvent* event) {}
+  virtual void DidProcessEvent(GdkEvent* event) {
+    // Hide the location bar iff the mouse is pressed on the
+    // BrowserView's content area.
+    if (top_level_window_ == gdk_window_get_toplevel(event->any.window) &&
+        event->type == GDK_BUTTON_PRESS &&
+        HitContentArea(event)) {
+      host_->Hide(true);
+    }
+  }
+
+ private:
+  // Tests if the event occured on the content area, using
+  // root window's coordinates.
+  bool HitContentArea(GdkEvent* event) {
+    gfx::Point p(event->button.x_root, event->button.y_root);
+    DLOG(WARNING) << "point:" << p;
+    // First, exclude the location bar as it's shown on top of
+    // content area.
+    if (HitOnScreen(host_->GetClbView(), p)) {
+      return false;
+    }
+    // Treat the bookmark as a content area when it in detached mode.
+    if (browser_view_->GetBookmarkBarView()->IsDetached() &&
+        browser_view_->IsBookmarkBarVisible() &&
+        HitOnScreen(browser_view_->GetBookmarkBarView(), p)) {
+      return true;
+    }
+    if (HitOnScreen(browser_view_->GetContentsView(),
+                    p)) {
+      return true;
+    }
+    return false;
+  }
+
+  // Tests if |p| in the root window's coordinate is within the |view|'s bound.
+  bool HitOnScreen(const views::View* view, const gfx::Point& p) {
+    gfx::Point origin(0, 0);
+    views::View::ConvertPointToScreen(view, &origin);
+    gfx::Rect new_bounds(origin, view->size());
+    return new_bounds.Contains(p);
+  }
+
+  CompactLocationBarHost* host_;
+  BrowserView* browser_view_;
+  GdkWindow* top_level_window_;
+
+  DISALLOW_COPY_AND_ASSIGN(MouseObserver);
+};
 
 ////////////////////////////////////////////////////////////////////////////////
 // CompactLocationBarHost, public:
@@ -36,11 +97,13 @@ CompactLocationBarHost::CompactLocationBarHost(BrowserView* browser_view)
     : DropdownBarHost(browser_view),
       current_tab_index_(-1) {
   auto_hide_timer_.reset(new base::OneShotTimer<CompactLocationBarHost>());
+  mouse_observer_.reset(new MouseObserver(this, browser_view));
   Init(new CompactLocationBarView(this));
 }
 
 CompactLocationBarHost::~CompactLocationBarHost() {
   browser_view()->browser()->tabstrip_model()->RemoveObserver(this);
+  MessageLoopForUI::current()->RemoveObserver(mouse_observer_.get());
 }
 
 void CompactLocationBarHost::StartAutoHideTimer() {
@@ -113,10 +176,11 @@ void CompactLocationBarHost::TabSelectedAt(TabContents* old_contents,
                                            TabContents* new_contents,
                                            int index,
                                            bool user_gesture) {
-  Hide(false);
   if (user_gesture) {
     // Show the compact location bar only when a user selected the tab.
     Update(index, false);
+  } else {
+    Hide(false);
   }
 }
 
@@ -178,6 +242,16 @@ void CompactLocationBarHost::SetEnabled(bool enabled) {
   } else {
     browser_view()->browser()->tabstrip_model()->RemoveObserver(this);
   }
+}
+
+void CompactLocationBarHost::Show(bool a) {
+  MessageLoopForUI::current()->AddObserver(mouse_observer_.get());
+  DropdownBarHost::Show(a);
+}
+
+void CompactLocationBarHost::Hide(bool a) {
+  MessageLoopForUI::current()->RemoveObserver(mouse_observer_.get());
+  DropdownBarHost::Hide(a);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

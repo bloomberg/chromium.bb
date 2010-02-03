@@ -172,7 +172,6 @@ void CompactLocationBarView::OnChanged() {
 }
 
 void CompactLocationBarView::OnKillFocus() {
-  clb_host()->Hide(true);
 }
 
 void CompactLocationBarView::OnSetFocus() {
