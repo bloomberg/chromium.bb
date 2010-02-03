@@ -130,9 +130,6 @@ SUBSTRING : webframeloaderclient::dispatchdidchangelocationwithinpage___webcore:
 # 23281
 REGEX : tabcontents::washidden___.*___tabcontents::~tabcontents
 
-# 27190
-PREFIX : webcore::rendertextcontrol::calcheight___webcore::rendertextcontrolsingleline::layout
-
 # 29081
 REGEX : ^malloc$
 
