@@ -22,7 +22,7 @@
 #include "chrome/browser/views/frame/browser_extender.h"
 #include "chrome/browser/views/frame/browser_frame_gtk.h"
 #include "chrome/browser/views/frame/browser_view.h"
-#include "chrome/browser/views/frame/browser_view_layout.h"
+#include "chrome/browser/views/frame/chrome_browser_view_layout_manager.h"
 #include "chrome/browser/views/tabs/tab.h"
 #include "chrome/browser/views/tabs/tab_overview_types.h"
 #include "chrome/browser/views/tabs/tab_strip.h"

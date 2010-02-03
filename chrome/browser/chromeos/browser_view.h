@@ -34,7 +34,7 @@ class StatusAreaButton;
 //      [MainMenu] /    \   \  \     [StatusArea]
 //
 // and adds the system context menu to the remaining arae of the titlebar.
-class BrowserView : public ::BrowserView,
+class BrowserView : public BrowserView,
                     public views::ButtonListener,
                     public views::ContextMenuController,
                     public StatusAreaHost {
