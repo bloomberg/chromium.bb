@@ -135,6 +135,7 @@ BookmarkBarGtk::BookmarkBarGtk(BrowserWindowGtk* window,
       menu_bar_helper_(this),
       floating_(false),
       last_allocation_width_(-1),
+      throbbing_widget_(NULL),
       method_factory_(this) {
   if (profile->GetProfileSyncService()) {
     // Obtain a pointer to the profile sync service and add our instance as an
@@ -703,21 +704,23 @@ void BookmarkBarGtk::StartThrobbing(const BookmarkNode* node) {
     }
   }
 
-  // Descendant of "Other Bookmarks".
-  if (!parent_on_bb)
-    return;
-
-  int hidden = GetFirstHiddenBookmark(0, NULL);
-  int idx = model_->GetBookmarkBarNode()->IndexOfChild(parent_on_bb);
   GtkWidget* widget_to_throb = NULL;
 
-  if (hidden >= 0 && hidden <= idx) {
-    widget_to_throb = overflow_button_;
+  if (!parent_on_bb) {
+    // Descendant of "Other Bookmarks".
+    widget_to_throb = other_bookmarks_button_;
   } else {
-    if (parent_on_bb->is_url())
-      return;
-    widget_to_throb = gtk_bin_get_child(GTK_BIN(gtk_toolbar_get_nth_item(
-        GTK_TOOLBAR(bookmark_toolbar_.get()), idx)));
+    int hidden = GetFirstHiddenBookmark(0, NULL);
+    int idx = model_->GetBookmarkBarNode()->IndexOfChild(parent_on_bb);
+
+    if (hidden >= 0 && hidden <= idx) {
+      widget_to_throb = overflow_button_;
+    } else {
+      if (parent_on_bb->is_url())
+        return;
+      widget_to_throb = gtk_bin_get_child(GTK_BIN(gtk_toolbar_get_nth_item(
+          GTK_TOOLBAR(bookmark_toolbar_.get()), idx)));
+    }
   }
 
   SetThrobbingWidget(widget_to_throb);
