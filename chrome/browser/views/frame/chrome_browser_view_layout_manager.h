@@ -2,41 +2,33 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_FRAME_BROWSER_VIEW_LAYOUT_H_
-#define CHROME_BROWSER_VIEWS_FRAME_BROWSER_VIEW_LAYOUT_H_
+#ifndef CHROME_BROWSER_VIEWS_FRAME_CHROME_BROWSER_VIEW_LAYOUT_MANAGER_H_
+#define CHROME_BROWSER_VIEWS_FRAME_CHROME_BROWSER_VIEW_LAYOUT_MANAGER_H_
 
+#include "chrome/browser/views/frame/browser_view_layout_manager.h"
 #include "chrome/browser/views/frame/browser_view.h"
-#include "views/layout_manager.h"
 
 // The layout manager used in chrome browser.
-class BrowserViewLayout : public views::LayoutManager {
+class ChromeBrowserViewLayoutManager : public BrowserViewLayoutManager {
  public:
-  BrowserViewLayout();
-  virtual ~BrowserViewLayout() {}
+  ChromeBrowserViewLayoutManager();
+  virtual ~ChromeBrowserViewLayoutManager() {}
 
-  // Returns the minimum size of the browser view.
-  virtual gfx::Size GetMinimumSize();
-
-  // Returns the bounding box for the find bar.
-  virtual gfx::Rect GetFindBarBoundingBox() const;
-
-  // Returns true if the specified point(BrowserView coordinates) is in
-  // in the window caption area of the browser window.
-  virtual bool IsPositionInWindowCaption(const gfx::Point& point);
-
-  // Tests to see if the specified |point| (in nonclient view's coordinates)
-  // is within the views managed by the laymanager. Returns one of
-  // HitTestCompat enum defined in views/window/hit_test.h.
-  // See also ClientView::NonClientHitTest.
-  virtual int NonClientHitTest(const gfx::Point& point);
-
-  // views::LayoutManager overrides:
+  //////////////////////////////////////////////////////////////////////////////
+  // Overridden from LayoutManager.
   virtual void Installed(views::View* host);
   virtual void Uninstalled(views::View* host);
   virtual void ViewAdded(views::View* host, views::View* view);
   virtual void ViewRemoved(views::View* host, views::View* view);
   virtual void Layout(views::View* host);
   virtual gfx::Size GetPreferredSize(views::View* host);
+
+  //////////////////////////////////////////////////////////////////////////////
+  // Overridden from BrowserLayoutManager.
+  virtual gfx::Size GetMinimumSize();
+  virtual gfx::Rect GetFindBarBoundingBox() const;
+  virtual bool IsPositionInWindowCaption(const gfx::Point& point);
+  virtual int NonClientHitTest(const gfx::Point& point);
 
  protected:
   Browser* browser() {
@@ -82,8 +74,7 @@ class BrowserViewLayout : public views::LayoutManager {
   // The distance the FindBar is from the top of the window, in pixels.
   int find_bar_y_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserViewLayout);
+  DISALLOW_COPY_AND_ASSIGN(ChromeBrowserViewLayoutManager);
 };
 
-#endif  // CHROME_BROWSER_VIEWS_FRAME_BROWSER_VIEW_LAYOUT_H_
-
+#endif  // CHROME_BROWSER_VIEWS_FRAME_CHROME_BROWSER_VIEW_LAYOUT_MANAGER_H_

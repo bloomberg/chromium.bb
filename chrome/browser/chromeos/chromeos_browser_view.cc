@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/browser_view.h"
+#include "chrome/browser/chromeos/chromeos_browser_view.h"
 
 #include <algorithm>
 #include <string>
@@ -60,7 +60,7 @@ class Spacer : public views::View {
 // A chromeos implementation of Tab that shows the compact location bar.
 class ChromeosTab : public Tab {
  public:
-  ChromeosTab(TabStrip* tab_strip, chromeos::BrowserView* browser_view)
+  ChromeosTab(TabStrip* tab_strip, chromeos::ChromeosBrowserView* browser_view)
       : Tab(tab_strip),
         browser_view_(browser_view) {
   }
@@ -73,7 +73,7 @@ class ChromeosTab : public Tab {
   }
 
  private:
-  chromeos::BrowserView* browser_view_;
+  chromeos::ChromeosBrowserView* browser_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeosTab);
 };
@@ -81,7 +81,8 @@ class ChromeosTab : public Tab {
 // A Tabstrip that uses ChromeosTab as a Tab implementation.
 class ChromeosTabStrip : public TabStrip {
  public:
-  ChromeosTabStrip(TabStripModel* model, chromeos::BrowserView* browser_view)
+  ChromeosTabStrip(TabStripModel* model,
+                   chromeos::ChromeosBrowserView* browser_view)
       : TabStrip(model), browser_view_(browser_view) {
   }
   virtual ~ChromeosTabStrip() {}
@@ -93,7 +94,7 @@ class ChromeosTabStrip : public TabStrip {
   }
 
  private:
-  chromeos::BrowserView* browser_view_;
+  chromeos::ChromeosBrowserView* browser_view_;
 
   DISALLOW_COPY_AND_ASSIGN(ChromeosTabStrip);
 };
@@ -108,31 +109,27 @@ enum ChromeOSViewIds {
   VIEW_ID_SPACER,
 };
 
-}  // namespace
-
-namespace chromeos {
-
-// LayoutManager for BrowserView, which layouts extra components such as
+// LayoutManager for ChromeosBrowserView, which layouts extra components such as
 // main menu, stataus views.
-class BrowserViewLayout : public ::BrowserViewLayout {
+class ChromeosBrowserViewLayoutManager : public ChromeBrowserViewLayoutManager {
  public:
-  BrowserViewLayout() : BrowserViewLayout() {}
-  virtual ~BrowserViewLayout() {}
+  ChromeosBrowserViewLayoutManager() : ChromeBrowserViewLayoutManager() {}
+  virtual ~ChromeosBrowserViewLayoutManager() {}
 
   //////////////////////////////////////////////////////////////////////////////
-  // BrowserViewLayout overrides:
+  // ChromeBrowserViewLayoutManager overrides:
 
   void Installed(views::View* host) {
     main_menu_ = NULL;
     compact_navigation_bar_ = NULL;
     status_area_ = NULL;
     spacer_ = NULL;
-    BrowserViewLayout::Installed(host);
+    ChromeBrowserViewLayoutManager::Installed(host);
   }
 
   void ViewAdded(views::View* host,
                  views::View* view) {
-    BrowserViewLayout::ViewAdded(host, view);
+    ChromeBrowserViewLayoutManager::ViewAdded(host, view);
     switch (view->GetID()) {
       case VIEW_ID_SPACER:
         spacer_ = view;
@@ -179,7 +176,7 @@ class BrowserViewLayout : public ::BrowserViewLayout {
   }
 
   virtual bool IsPositionInWindowCaption(const gfx::Point& point) {
-    return BrowserViewLayout::IsPositionInWindowCaption(point)
+    return ChromeBrowserViewLayoutManager::IsPositionInWindowCaption(point)
         && !IsPointInViewsInTitleArea(point);
   }
 
@@ -191,12 +188,12 @@ class BrowserViewLayout : public ::BrowserViewLayout {
     if (IsPointInViewsInTitleArea(point_in_browser_view_coords)) {
       return HTCLIENT;
     }
-    return BrowserViewLayout::NonClientHitTest(point);
+    return ChromeBrowserViewLayoutManager::NonClientHitTest(point);
   }
 
  private:
-  chromeos::BrowserView* chromeos_browser_view() {
-    return static_cast<chromeos::BrowserView*>(browser_view_);
+  chromeos::ChromeosBrowserView* chromeos_browser_view() {
+    return static_cast<chromeos::ChromeosBrowserView*>(browser_view_);
   }
 
   // Test if the point is on one of views that are within the
@@ -313,10 +310,14 @@ class BrowserViewLayout : public ::BrowserViewLayout {
   views::View* compact_navigation_bar_;
   views::View* spacer_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserViewLayout);
+  DISALLOW_COPY_AND_ASSIGN(ChromeosBrowserViewLayoutManager);
 };
 
-BrowserView::BrowserView(Browser* browser)
+}  // namespace
+
+namespace chromeos {
+
+ChromeosBrowserView::ChromeosBrowserView(Browser* browser)
     : BrowserView(browser),
       main_menu_(NULL),
       status_area_(NULL),
@@ -327,13 +328,13 @@ BrowserView::BrowserView(Browser* browser)
       force_maximized_window_(false) {
 }
 
-BrowserView::~BrowserView() {
+ChromeosBrowserView::~ChromeosBrowserView() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserView, ::BrowserView overrides:
+// ChromeosBrowserView, ChromeBrowserView overrides:
 
-void BrowserView::Init() {
+void ChromeosBrowserView::Init() {
   BrowserView::Init();
   main_menu_ = new views::ImageButton(this);
   main_menu_->SetID(VIEW_ID_MAIN_MENU);
@@ -387,7 +388,7 @@ void BrowserView::Init() {
   }
 }
 
-void BrowserView::Show() {
+void ChromeosBrowserView::Show() {
   bool was_visible = frame()->GetWindow()->IsVisible();
   BrowserView::Show();
   if (!was_visible) {
@@ -398,13 +399,13 @@ void BrowserView::Show() {
   }
 }
 
-bool BrowserView::IsToolbarVisible() const {
+bool ChromeosBrowserView::IsToolbarVisible() const {
   if (is_compact_style())
     return false;
   return BrowserView::IsToolbarVisible();
 }
 
-void BrowserView::SetFocusToLocationBar() {
+void ChromeosBrowserView::SetFocusToLocationBar() {
   if (compact_navigation_bar_->IsFocusable()) {
     compact_navigation_bar_->FocusLocation();
   } else {
@@ -412,71 +413,73 @@ void BrowserView::SetFocusToLocationBar() {
   }
 }
 
-void BrowserView::ToggleCompactNavigationBar() {
+void ChromeosBrowserView::ToggleCompactNavigationBar() {
   ui_style_ = static_cast<UIStyle>((ui_style_ + 1) % 2);
   compact_navigation_bar_->SetFocusable(is_compact_style());
   compact_location_bar_host_->SetEnabled(is_compact_style());
   Layout();
 }
 
-views::LayoutManager* BrowserView::CreateLayoutManager() const {
-  return new BrowserViewLayout();
+views::LayoutManager* ChromeosBrowserView::CreateLayoutManager() const {
+  return new ChromeosBrowserViewLayoutManager();
 }
 
-TabStrip* BrowserView::CreateTabStrip(
+TabStrip* ChromeosBrowserView::CreateTabStrip(
     TabStripModel* tab_strip_model) {
   return new ChromeosTabStrip(tab_strip_model, this);
 }
 
 // views::ButtonListener overrides.
-void BrowserView::ButtonPressed(views::Button* sender,
-                                const views::Event& event) {
+void ChromeosBrowserView::ButtonPressed(views::Button* sender,
+                                        const views::Event& event) {
   chromeos::MainMenu::Show(browser());
 }
 
 // views::ContextMenuController overrides.
-void BrowserView::ShowContextMenu(views::View* source, int x, int y,
-                                  bool is_mouse_gesture) {
+void ChromeosBrowserView::ShowContextMenu(views::View* source,
+                                          int x,
+                                          int y,
+                                          bool is_mouse_gesture) {
   system_menu_menu_->RunMenuAt(gfx::Point(x, y), views::Menu2::ALIGN_TOPLEFT);
 }
 
 // StatusAreaHost overrides.
-gfx::NativeWindow BrowserView::GetNativeWindow() const {
+gfx::NativeWindow ChromeosBrowserView::GetNativeWindow() const {
   return GetWindow()->GetNativeWindow();
 }
 
-void BrowserView::OpenSystemOptionsDialog() const {
+void ChromeosBrowserView::OpenSystemOptionsDialog() const {
   browser()->OpenSystemOptionsDialog();
 }
 
-bool BrowserView::IsButtonVisible(views::View* button_view) const {
+bool ChromeosBrowserView::IsButtonVisible(views::View* button_view) const {
   if (button_view == status_area_->menu_view())
     return !IsToolbarVisible();
   return true;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserView public:
+// ChromeosBrowserView public:
 
-void BrowserView::ShowCompactLocationBarUnderSelectedTab() {
+void ChromeosBrowserView::ShowCompactLocationBarUnderSelectedTab() {
   if (!is_compact_style())
     return;
   int index = browser()->selected_index();
   compact_location_bar_host_->Update(index, true);
 }
 
-bool BrowserView::ShouldForceMaximizedWindow() const {
+bool ChromeosBrowserView::ShouldForceMaximizedWindow() const {
   return force_maximized_window_;
 }
 
-int BrowserView::GetMainMenuWidth() const {
+int ChromeosBrowserView::GetMainMenuWidth() const {
   return main_menu_->GetPreferredSize().width();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BrowserView private:
+// ChromeosBrowserView private:
 
-void BrowserView::InitSystemMenu() {
+void ChromeosBrowserView::InitSystemMenu() {
   system_menu_contents_.reset(new menus::SimpleMenuModel(this));
   system_menu_contents_->AddItemWithStringId(IDC_RESTORE_TAB,
                                                IDS_RESTORE_TAB);
@@ -496,7 +499,7 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
   if (browser->type() & Browser::TYPE_POPUP)
     view = new chromeos::PanelBrowserView(browser);
   else
-    view = new chromeos::BrowserView(browser);
+    view = new chromeos::ChromeosBrowserView(browser);
   BrowserFrame::Create(view, browser->profile());
   return view;
 }

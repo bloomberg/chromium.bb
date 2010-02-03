@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_BROWSER_VIEW_H_
-#define CHROME_BROWSER_CHROMEOS_BROWSER_VIEW_H_
+#ifndef CHROME_BROWSER_CHROMEOS_CHROMEOS_BROWSER_VIEW_H_
+#define CHROME_BROWSER_CHROMEOS_CHROMEOS_BROWSER_VIEW_H_
 
 #include "chrome/browser/chromeos/status_area_host.h"
 #include "chrome/browser/views/frame/browser_view.h"
@@ -27,17 +27,17 @@ class CompactLocationBarHost;
 class CompactNavigationBar;
 class StatusAreaButton;
 
-// chromeos::BrowserView adds ChromeOS specific controls and menus to a
-// BrowserView created with Browser::TYPE_NORMAL. This extender adds controls
-// to the title bar as follows:
+// ChromeosBrowserView adds ChromeOS specific controls and menus to a
+// BrowserView created with Browser::TYPE_NORMAL. This extender adds
+// controls to the title bar as follows:
 //                  ____  __ __
 //      [MainMenu] /    \   \  \     [StatusArea]
 //
 // and adds the system context menu to the remaining arae of the titlebar.
-class BrowserView : public BrowserView,
-                    public views::ButtonListener,
-                    public views::ContextMenuController,
-                    public StatusAreaHost {
+class ChromeosBrowserView : public BrowserView,
+                            public views::ButtonListener,
+                            public views::ContextMenuController,
+                            public StatusAreaHost {
  public:
   // There are 3 ui styles, standard, compact and sidebar.
   // Standard uses the same layout as chromium/chrome browser.
@@ -51,8 +51,8 @@ class BrowserView : public BrowserView,
     SidebarStyle,
   };
 
-  explicit BrowserView(Browser* browser);
-  virtual ~BrowserView();
+  explicit ChromeosBrowserView(Browser* browser);
+  virtual ~ChromeosBrowserView();
 
   // BrowserView overrides.
   virtual void Init();
@@ -122,10 +122,9 @@ class BrowserView : public BrowserView,
   // Menu button shown in status area when browser is in compact mode.
   StatusAreaButton* menu_view_;
 
-  DISALLOW_COPY_AND_ASSIGN(BrowserView);
+  DISALLOW_COPY_AND_ASSIGN(ChromeosBrowserView);
 };
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_BROWSER_VIEW_H_
-
+#endif  // CHROME_BROWSER_CHROMEOS_CHROMEOS_BROWSER_VIEW_H_
