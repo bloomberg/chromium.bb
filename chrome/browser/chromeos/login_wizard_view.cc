@@ -17,6 +17,7 @@
 #include "base/process_util.h"
 #include "chrome/browser/chromeos/image_background.h"
 #include "chrome/browser/chromeos/login_library.h"
+#include "chrome/browser/chromeos/status_area_view.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/common/x11_util.h"
 #include "grit/generated_resources.h"
@@ -63,10 +64,12 @@ class LoginWizardNonClientFrameView : public views::NonClientFrameView {
 class LoginWizardWindow : public views::WindowGtk {
  public:
   static LoginWizardWindow* CreateLoginWizardWindow() {
+    LoginWizardView* login_wizard = new LoginWizardView();
     LoginWizardWindow* login_wizard_window =
-        new LoginWizardWindow();
+        new LoginWizardWindow(login_wizard);
     login_wizard_window->GetNonClientView()->SetFrameView(
         new LoginWizardNonClientFrameView());
+    login_wizard->Init();
     login_wizard_window->Init(NULL, gfx::Rect());
 
     // This keeps the window from flashing at startup.
@@ -85,7 +88,8 @@ class LoginWizardWindow : public views::WindowGtk {
   }
 
  private:
-  LoginWizardWindow() : views::WindowGtk(new LoginWizardView) {
+  explicit LoginWizardWindow(LoginWizardView* login_wizard)
+      : views::WindowGtk(login_wizard) {
   }
 
   DISALLOW_COPY_AND_ASSIGN(LoginWizardWindow);
@@ -108,7 +112,6 @@ void ShowLoginWizard() {
 }  // namespace browser
 
 LoginWizardView::LoginWizardView() {
-  Init();
 }
 
 LoginWizardView::~LoginWizardView() {
@@ -151,10 +154,30 @@ void LoginWizardView::InitWizardWindow() {
   int height = gdk_pixbuf_get_height(background_pixbuf_);
   dimensions_.SetSize(width, height);
   set_background(new views::ImageBackground(background_pixbuf_));
-  // TODO(nkostylev): Add status bar (language, network, battery, clock).
+
+  status_area_ = new chromeos::StatusAreaView(this);
+  status_area_->Init();
+  gfx::Size status_area_size = status_area_->GetPreferredSize();
+  status_area_->SetBounds(dimensions_.width() - status_area_size.width(), 0,
+                          status_area_size.width(),
+                          status_area_size.height());
+  AddChildView(status_area_);
 }
 
 views::View* LoginWizardView::GetContentsView() {
   return this;
+}
+
+// StatusAreaHost overrides.
+gfx::NativeWindow LoginWizardView::GetNativeWindow() const {
+  return window()->GetNativeWindow();
+}
+
+void LoginWizardView::OpenSystemOptionsDialog() const {
+  // TODO(avayvod): Add some dialog for options or remove them completely.
+}
+
+bool LoginWizardView::IsButtonVisible(views::View* button_view) const {
+  return true;
 }
 

@@ -4,16 +4,22 @@
 
 #include "app/gfx/canvas.h"
 #include "chrome/browser/chromeos/login_manager_view.h"
+#include "chrome/browser/chromeos/status_area_host.h"
 #include "views/view.h"
 #include "views/window/window_delegate.h"
 
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_WIZARD_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_WIZARD_VIEW_H_
 
+namespace chromeos {
+class StatusAreaView;
+}  // namespace chromeos
+
 // View for the wizard that will launch OOBE steps or login screen.
 class LoginWizardView : public views::View,
                         public views::WindowDelegate,
-                        public LoginManagerView::LoginObserver {
+                        public LoginManagerView::LoginObserver,
+                        public chromeos::StatusAreaHost {
  public:
   LoginWizardView();
   virtual ~LoginWizardView();
@@ -30,6 +36,11 @@ class LoginWizardView : public views::View,
   // LoginObserver notification.
   virtual void OnLogin();
 
+  // Overriden from StatusAreaHost:
+  virtual gfx::NativeWindow GetNativeWindow() const;
+  virtual void OpenSystemOptionsDialog() const;
+  virtual bool IsButtonVisible(views::View* button_view) const;
+
  private:
    // Creates login window.
    void InitLoginWindow();
@@ -42,6 +53,9 @@ class LoginWizardView : public views::View,
 
   // Wizard view dimensions.
   gfx::Size dimensions_;
+
+  // Status area view.
+  chromeos::StatusAreaView* status_area_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginWizardView);
 };
