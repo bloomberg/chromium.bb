@@ -58,8 +58,12 @@ class AutomationCookieStore : public net::CookieStore {
   }
 
   // CookieStore implementation.
-  virtual bool SetCookie(const GURL& url, const std::string& cookie_line) {
-    bool cookie_set = original_cookie_store_->SetCookie(url, cookie_line);
+  virtual bool SetCookieWithOptions(const GURL& url,
+                                    const std::string& cookie_line,
+                                    const net::CookieOptions& options) {
+    bool cookie_set =
+        original_cookie_store_->SetCookieWithOptions(url, cookie_line,
+                                                     options);
     if (cookie_set) {
       // TODO(eroman): Should NOT be accessing the profile from here, as this
       // is running on the IO thread.
@@ -68,48 +72,14 @@ class AutomationCookieStore : public net::CookieStore {
     }
     return cookie_set;
   }
-  virtual bool SetCookieWithOptions(const GURL& url,
-                                    const std::string& cookie_line,
-                                    const net::CookieOptions& options) {
-    return original_cookie_store_->SetCookieWithOptions(url, cookie_line,
-                                                       options);
-  }
-  virtual bool SetCookieWithCreationTime(const GURL& url,
-                                         const std::string& cookie_line,
-                                         const base::Time& creation_time) {
-    return original_cookie_store_->SetCookieWithCreationTime(url, cookie_line,
-                                                            creation_time);
-  }
-  virtual bool SetCookieWithCreationTimeWithOptions(
-                                         const GURL& url,
-                                         const std::string& cookie_line,
-                                         const base::Time& creation_time,
-                                         const net::CookieOptions& options) {
-    return original_cookie_store_->SetCookieWithCreationTimeWithOptions(url,
-        cookie_line, creation_time, options);
-  }
-  virtual void SetCookies(const GURL& url,
-                          const std::vector<std::string>& cookies) {
-    original_cookie_store_->SetCookies(url, cookies);
-  }
-  virtual void SetCookiesWithOptions(const GURL& url,
-                                     const std::vector<std::string>& cookies,
-                                     const net::CookieOptions& options) {
-    original_cookie_store_->SetCookiesWithOptions(url, cookies, options);
-  }
-  virtual std::string GetCookies(const GURL& url) {
-    return original_cookie_store_->GetCookies(url);
-  }
   virtual std::string GetCookiesWithOptions(const GURL& url,
                                             const net::CookieOptions& options) {
     return original_cookie_store_->GetCookiesWithOptions(url, options);
   }
-
   virtual void DeleteCookie(const GURL& url,
                             const std::string& cookie_name) {
     return original_cookie_store_->DeleteCookie(url, cookie_name);
   }
-
   virtual net::CookieMonster* GetCookieMonster() {
     return original_cookie_store_->GetCookieMonster();
   }
