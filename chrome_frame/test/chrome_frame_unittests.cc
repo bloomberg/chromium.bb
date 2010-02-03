@@ -56,6 +56,9 @@ void ChromeFrameTestWithWebServer::SetUp() {
   // Make sure our playground is clean before we start.
   CloseAllBrowsers();
 
+  // Make sure that we are not accidently enabling gcf protocol.
+  SetConfigBool(kEnableGCFProtocol, false);
+
   server_.SetUp();
   results_dir_ = server_.GetDataDir();
   file_util::AppendToPath(&results_dir_, L"dump");
@@ -1182,25 +1185,25 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_MetaTag) {
   SimpleBrowserTest(IE, kMetaTagPage, L"meta_tag");
 }
 
-// Since gcf: protocol is disabled by default we need a better test for
-// this. Issue: http://code.google.com/p/chromium/issues/detail?id=34461
 const wchar_t kCFProtocolPage[] = L"files/cf_protocol.html";
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_CFProtocol) {
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_CFProtocol) {
+  // Temporarily enable  gcf: protocol for this test.
+  SetConfigBool(kEnableGCFProtocol, true);
   SimpleBrowserTest(IE, kCFProtocolPage, L"chrome_frame_protocol");
+  SetConfigBool(kEnableGCFProtocol, false);
 }
 
 const wchar_t kPersistentCookieTest[] =
     L"files/persistent_cookie_test_page.html";
-// Since gcf: protocol is disabled by default we need a better test for
-// this. Issue: http://code.google.com/p/chromium/issues/detail?id=34461
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_PersistentCookieTest) {
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_PersistentCookieTest) {
+  // Temporarily enable  gcf: protocol for this test.
+  SetConfigBool(kEnableGCFProtocol, true);
   SimpleBrowserTest(IE, kPersistentCookieTest, L"PersistentCookieTest");
+  SetConfigBool(kEnableGCFProtocol, false);
 }
 
 const wchar_t kNavigateOutPage[] = L"files/navigate_out.html";
-// Since gcf: protocol is disabled by default we need a better test for
-// this. Issue: http://code.google.com/p/chromium/issues/detail?id=34461
-TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_NavigateOut) {
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_NavigateOut) {
   SimpleBrowserTest(IE, kNavigateOutPage, L"navigate_out");
 }
 

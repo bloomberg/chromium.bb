@@ -1,12 +1,13 @@
 <html>
   <head><title>Test to make sure that navigations sent back to IE</title>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1" />
     <script type="text/javascript"
         src="chrome_frame_tester_helpers.js"></script>
-
     <script type="text/javascript">
       function test() {
+        var test_name = 'navigate_out';
         if (isRunningInMSIE()) {
-          reloadUsingCFProtocol();
+          onFailure(test_name, 1, 'Meta tag failed to load page in Chrome');
         } else {
           window.location = "back_to_ie.html";
         }
@@ -14,7 +15,9 @@
     </script>
   </head>
   <body onLoad="setTimeout(test, 100);">
-    <h2>Prepare to be redirected!</h2>
-    <p>Redirects the same page to its 'gcf:' version and </p>
+    <h2>Test navigations in and out of IE</h2>
+    <p>This page should be loaded in chrome and then we redirect to another
+      page that should get loaded in IE.
+    </p>
   </body>
 </html>
