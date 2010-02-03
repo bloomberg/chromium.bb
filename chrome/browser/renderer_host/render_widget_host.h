@@ -339,7 +339,8 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // Makes an IPC call to toggle the spelling panel.
   void ToggleSpellPanel(bool is_currently_visible);
 
-  // Makes an IPC call to tell webkit to replace the currently selected word.
+  // Makes an IPC call to tell webkit to replace the currently selected word
+  // or a word around the cursor.
   void Replace(const string16& word);
 
   // Makes an IPC call to tell webkit to advance to the next misspelling.
