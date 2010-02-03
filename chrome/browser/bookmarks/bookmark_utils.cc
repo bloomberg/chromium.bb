@@ -157,6 +157,7 @@ bool ShouldOpenAll(gfx::NativeWindow parent,
                     MB_YESNO | MB_ICONWARNING | MB_TOPMOST) == IDYES;
 #else
   // TODO(port): Display a dialog prompt.
+  // http://crbug.com/34481
   NOTIMPLEMENTED();
   return true;
 #endif
