@@ -39,7 +39,7 @@ OsxWifiDataProvider::~OsxWifiDataProvider() {
 }
 
 bool OsxWifiDataProvider::GetData(WifiData *data) {
-  assert(data);
+  DCHECK(data);
   MutexLock lock(&data_mutex_);
   *data = wifi_data_;
   // If we've successfully completed a scan, indicate that we have all of the
@@ -63,7 +63,7 @@ void OsxWifiDataProvider::Run() {
       dlsym(apple_80211_library, "WirelessScanSplit"));
   WirelessDetach_function_ = reinterpret_cast<WirelessDetachFunction>(
       dlsym(apple_80211_library, "WirelessDetach"));
-  assert(WirelessAttach_function_ &&
+  DCHECK(WirelessAttach_function_ &&
          WirelessScanSplit_function_ &&
          WirelessDetach_function_);
 
@@ -97,8 +97,8 @@ void OsxWifiDataProvider::Run() {
 
 void OsxWifiDataProvider::GetAccessPointData(
     WifiData::AccessPointDataSet *access_points) {
-  assert(access_points);
-  assert(WirelessScanSplit_function_);
+  DCHECK(access_points);
+  DCHECK(WirelessScanSplit_function_);
   CFArrayRef managed_access_points = NULL;
   CFArrayRef adhoc_access_points = NULL;
   if ((*WirelessScanSplit_function_)(wifi_context_,
