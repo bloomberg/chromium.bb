@@ -66,7 +66,7 @@
   return title_.get();
 }
 
-- (NSMutableArray*)children {
+- (NSMutableArray*)mutableChildren {
   if (!children_.get()) {
     const int childCount = treeNode_->GetChildCount();
     children_.reset([[NSMutableArray alloc] initWithCapacity:childCount]);
@@ -78,6 +78,10 @@
     }
   }
   return children_.get();
+}
+
+- (NSArray*)children {
+  return [self mutableChildren];
 }
 
 - (TreeModelNode*)treeNode {

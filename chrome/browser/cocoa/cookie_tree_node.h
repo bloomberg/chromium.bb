@@ -40,9 +40,12 @@
 
 // Getters.
 - (NSString*)title;
-// |-children| is mutable so that the CookiesTreeModelObserverBridge can
+
+// |-mutableChildren| exists so that the CookiesTreeModelObserverBridge can
 // operate on the children. Note that this lazily creates children.
-- (NSMutableArray*)children;
+- (NSMutableArray*)mutableChildren;
+- (NSArray*)children;
+
 - (TreeModelNode*)treeNode;
 
 // Used only by cookies. Nil for non-cookie nodes.

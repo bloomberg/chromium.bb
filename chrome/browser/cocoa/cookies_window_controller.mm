@@ -38,7 +38,7 @@ void CookiesTreeModelObserverBridge::TreeNodesAdded(TreeModel* model,
     return;
 
   CocoaCookieTreeNode* cocoa_parent = FindCocoaNode(parent, nil);
-  NSMutableArray* cocoa_children = [cocoa_parent children];
+  NSMutableArray* cocoa_children = [cocoa_parent mutableChildren];
 
   [window_controller_ willChangeValueForKey:kCocoaTreeModel];
   CookieTreeNode* cookie_parent = static_cast<CookieTreeNode*>(parent);
@@ -61,7 +61,7 @@ void CookiesTreeModelObserverBridge::TreeNodesRemoved(TreeModel* model,
 
   CocoaCookieTreeNode* cocoa_parent = FindCocoaNode(parent, nil);
   [window_controller_ willChangeValueForKey:kCocoaTreeModel];
-  NSMutableArray* cocoa_children = [cocoa_parent children];
+  NSMutableArray* cocoa_children = [cocoa_parent mutableChildren];
   for (int i = start + count - 1; i >= start; --i) {
     [cocoa_children removeObjectAtIndex:i];
   }
@@ -77,7 +77,7 @@ void CookiesTreeModelObserverBridge::TreeNodeChildrenReordered(TreeModel* model,
     return;
 
   CocoaCookieTreeNode* cocoa_parent = FindCocoaNode(parent, nil);
-  NSMutableArray* cocoa_children = [cocoa_parent children];
+  NSMutableArray* cocoa_children = [cocoa_parent mutableChildren];
 
   CookieTreeNode* cookie_parent = static_cast<CookieTreeNode*>(parent);
   const int child_count = cookie_parent->GetChildCount();
@@ -117,7 +117,7 @@ void CookiesTreeModelObserverBridge::TreeNodeChanged(TreeModel* model,
 }
 
 void CookiesTreeModelObserverBridge::InvalidateCocoaModel() {
-  [[[window_controller_ cocoaTreeModel] children] removeAllObjects];
+  [[[window_controller_ cocoaTreeModel] mutableChildren] removeAllObjects];
 }
 
 CocoaCookieTreeNode* CookiesTreeModelObserverBridge::CocoaNodeFromTreeNode(

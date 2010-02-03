@@ -42,22 +42,6 @@
 }
 @end
 
-// For some utterly inexplicable reason, |-children| returns an NSArray rather
-// than an NSMutableArray, BUT ONLY IN THIS UNIT TEST, and not in the actual
-// window controller. This leads to errors for |-addObject:| messages. Maybe
-// it's a compiler bug? Or there's something strange happening via swizzling in
-// the test environment? Or did somebody forget to sacrifice a lamb on the new
-// moon? After investigating for long time, the easiest/best solution was to
-// create this hacky secondary getter.
-@interface CocoaCookieTreeNode (UglyHacks)
-- (NSMutableArray*)childs;
-@end
-@implementation CocoaCookieTreeNode (UglyHacks)
-- (NSMutableArray*)childs {
-  return (NSMutableArray*)[self children];
-}
-@end
-
 namespace {
 
 class CookiesWindowControllerTest : public CocoaTest {
@@ -116,8 +100,8 @@ TEST_F(CookiesWindowControllerTest, FindCocoaNodeImmediateChild) {
       [[FakeCocoaCookieTreeNode alloc] initWithTreeNode:child1.get()]);
   scoped_nsobject<FakeCocoaCookieTreeNode> cocoaChild2(
       [[FakeCocoaCookieTreeNode alloc] initWithTreeNode:child2.get()]);
-  [[cocoaParent childs] addObject:cocoaChild1.get()];
-  [[cocoaParent childs] addObject:cocoaChild2.get()];
+  [[cocoaParent mutableChildren] addObject:cocoaChild1.get()];
+  [[cocoaParent mutableChildren] addObject:cocoaChild2.get()];
 
   EXPECT_EQ(cocoaChild2.get(), FindCocoaNode(child2.get(), cocoaParent.get()));
 }
@@ -132,8 +116,8 @@ TEST_F(CookiesWindowControllerTest, FindCocoaNodeRecursive) {
       [[FakeCocoaCookieTreeNode alloc] initWithTreeNode:child1.get()]);
   scoped_nsobject<FakeCocoaCookieTreeNode> cocoaChild2(
       [[FakeCocoaCookieTreeNode alloc] initWithTreeNode:child2.get()]);
-  [[cocoaParent childs] addObject:cocoaChild1.get()];
-  [[cocoaChild1 childs] addObject:cocoaChild2.get()];
+  [[cocoaParent mutableChildren] addObject:cocoaChild1.get()];
+  [[cocoaChild1 mutableChildren] addObject:cocoaChild2.get()];
 
   EXPECT_EQ(cocoaChild2.get(), FindCocoaNode(child2.get(), cocoaParent.get()));
 }
@@ -153,7 +137,7 @@ TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeCookie) {
   EXPECT_TRUE([@"A" isEqualToString:[cookie title]]);
   EXPECT_TRUE([@"A" isEqualToString:[cookie name]]);
   EXPECT_TRUE([@"/" isEqualToString:[cookie path]]);
-  EXPECT_EQ(0U, [[cookie childs] count]);
+  EXPECT_EQ(0U, [[cookie children] count]);
   EXPECT_TRUE([cookie created]);
   EXPECT_TRUE([cookie isLeaf]);
   EXPECT_EQ(node, [cookie treeNode]);
@@ -167,20 +151,20 @@ TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeRecursive) {
   // Root --> foo.com --> Cookies --> A. Create node for 'foo.com'.
   CookieTreeNode* node = model.GetRoot()->GetChild(0);
   CocoaCookieTreeNode* domain = CocoaNodeFromTreeNode(node);
-  CocoaCookieTreeNode* cookies = [[domain childs] objectAtIndex:0];
-  CocoaCookieTreeNode* cookie = [[cookies childs] objectAtIndex:0];
+  CocoaCookieTreeNode* cookies = [[domain children] objectAtIndex:0];
+  CocoaCookieTreeNode* cookie = [[cookies children] objectAtIndex:0];
 
   // Test domain-level node.
   EXPECT_TRUE([@"foo.com" isEqualToString:[domain title]]);
 
   EXPECT_FALSE([domain isLeaf]);
-  EXPECT_EQ(1U, [[domain childs] count]);
+  EXPECT_EQ(1U, [[domain children] count]);
   EXPECT_EQ(node, [domain treeNode]);
 
   // Test "Cookies" folder node.
   EXPECT_TRUE([@"Cookies" isEqualToString:[cookies title]]);
   EXPECT_FALSE([cookies isLeaf]);
-  EXPECT_EQ(1U, [[cookies childs] count]);
+  EXPECT_EQ(1U, [[cookies children] count]);
   EXPECT_EQ(node->GetChild(0), [cookies treeNode]);
 
   // Test cookie node. This is the same as CocoaNodeFromTreeNodeCookie.
@@ -191,7 +175,7 @@ TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeRecursive) {
   EXPECT_TRUE([@"A" isEqualToString:[cookie name]]);
   EXPECT_TRUE([@"/" isEqualToString:[cookie path]]);
   EXPECT_TRUE([@"foo.com" isEqualToString:[cookie domain]]);
-  EXPECT_EQ(0U, [[cookie childs] count]);
+  EXPECT_EQ(0U, [[cookie children] count]);
   EXPECT_TRUE([cookie created]);
   EXPECT_TRUE([cookie isLeaf]);
   EXPECT_EQ(node->GetChild(0)->GetChild(0), [cookie treeNode]);
@@ -209,8 +193,8 @@ TEST_F(CookiesWindowControllerTest, TreeNodesAdded) {
 
   // Root --> foo.com --> Cookies.
   NSMutableArray* cocoa_children =
-      [[[[[[controller_ cocoaTreeModel] childs] objectAtIndex:0]
-          childs] objectAtIndex:0] childs];
+      [[[[[[controller_ cocoaTreeModel] children] objectAtIndex:0]
+          children] objectAtIndex:0] mutableChildren];
   EXPECT_EQ(1U, [cocoa_children count]);
 
   // Create some cookies.
@@ -251,8 +235,8 @@ TEST_F(CookiesWindowControllerTest, TreeNodesRemoved) {
 
   // Root --> foo.com --> Cookies.
   NSMutableArray* cocoa_children =
-      [[[[[[controller_ cocoaTreeModel] childs] objectAtIndex:0]
-          childs] objectAtIndex:0] childs];
+      [[[[[[controller_ cocoaTreeModel] children] objectAtIndex:0]
+          children] objectAtIndex:0] mutableChildren];
   EXPECT_EQ(3U, [cocoa_children count]);
 
   CookiesTreeModel* model = [controller_ treeModel];
@@ -282,8 +266,8 @@ TEST_F(CookiesWindowControllerTest, TreeNodeChildrenReordered) {
 
   // Root --> foo.com --> Cookies.
   NSMutableArray* cocoa_children =
-      [[[[[[controller_ cocoaTreeModel] childs] objectAtIndex:0]
-          childs] objectAtIndex:0] childs];
+      [[[[[[controller_ cocoaTreeModel] children] objectAtIndex:0]
+          children] objectAtIndex:0] mutableChildren];
   EXPECT_EQ(3U, [cocoa_children count]);
 
   // Check default ordering.
@@ -332,8 +316,8 @@ TEST_F(CookiesWindowControllerTest, TreeNodeChanged) {
 
   // Root --> foo.com --> Cookies.
   CocoaCookieTreeNode* cocoa_node =
-      [[[[[controller_ cocoaTreeModel] childs] objectAtIndex:0]
-          childs] objectAtIndex:0];
+      [[[[[controller_ cocoaTreeModel] children] objectAtIndex:0]
+          children] objectAtIndex:0];
 
   EXPECT_TRUE([@"Cookies" isEqualToString:[cocoa_node title]]);
 
@@ -370,8 +354,8 @@ TEST_F(CookiesWindowControllerTest, TestDeleteCookie) {
   [controller deleteCookie:nil];
 
   // Root --> foo.com --> Cookies.
-  NSArray* cookies = [[[[[[controller cocoaTreeModel] childs] objectAtIndex:0]
-      childs] objectAtIndex:0] childs];
+  NSArray* cookies = [[[[[[controller cocoaTreeModel] children]
+      objectAtIndex:0] children] objectAtIndex:0] children];
   EXPECT_EQ(1U, [cookies count]);
   EXPECT_TRUE([@"C" isEqualToString:[[cookies lastObject] title]]);
   EXPECT_TRUE([indexPath isEqual:[treeController selectionIndexPath]]);
@@ -392,13 +376,13 @@ TEST_F(CookiesWindowControllerTest, TestDidExpandItem) {
 
   // Root --> foo.com.
   CocoaCookieTreeNode* foo =
-      [[[controller_ cocoaTreeModel] childs] objectAtIndex:0];
+      [[[controller_ cocoaTreeModel] children] objectAtIndex:0];
 
   // Create the objects we are going to be testing with.
   id outlineView = [OCMockObject mockForClass:[NSOutlineView class]];
   id treeNode = [OCMockObject mockForClass:[NSTreeNode class]];
   NSTreeNode* childTreeNode =
-      [NSTreeNode treeNodeWithRepresentedObject:[[foo childs] lastObject]];
+      [NSTreeNode treeNodeWithRepresentedObject:[[foo children] lastObject]];
   NSArray* fakeChildren = [NSArray arrayWithObject:childTreeNode];
 
   // Set up the mock object.
@@ -516,7 +500,7 @@ TEST_F(CookiesWindowControllerTest, UpdateFilter)
                                          storageHelper:local_storage_helper_]);
 
   // Make sure we registered all five cookies.
-  EXPECT_EQ(5U, [[[controller_ cocoaTreeModel] childs] count]);
+  EXPECT_EQ(5U, [[[controller_ cocoaTreeModel] children] count]);
 
   NSSearchField* field =
       [[NSSearchField alloc] initWithFrame:NSMakeRect(0, 0, 100, 100)];
@@ -524,32 +508,32 @@ TEST_F(CookiesWindowControllerTest, UpdateFilter)
   // Make sure we still have five cookies.
   [field setStringValue:@""];
   [controller_ updateFilter:field];
-  EXPECT_EQ(5U, [[[controller_ cocoaTreeModel] childs] count]);
+  EXPECT_EQ(5U, [[[controller_ cocoaTreeModel] children] count]);
 
   // Search for "a".
   [field setStringValue:@"a"];
   [controller_ updateFilter:field];
-  EXPECT_EQ(2U, [[[controller_ cocoaTreeModel] childs] count]);
+  EXPECT_EQ(2U, [[[controller_ cocoaTreeModel] children] count]);
 
   // Search for "b".
   [field setStringValue:@"b"];
   [controller_ updateFilter:field];
-  EXPECT_EQ(1U, [[[controller_ cocoaTreeModel] childs] count]);
+  EXPECT_EQ(1U, [[[controller_ cocoaTreeModel] children] count]);
 
   // Search for "d".
   [field setStringValue:@"d"];
   [controller_ updateFilter:field];
-  EXPECT_EQ(2U, [[[controller_ cocoaTreeModel] childs] count]);
+  EXPECT_EQ(2U, [[[controller_ cocoaTreeModel] children] count]);
 
   // Search for "e".
   [field setStringValue:@"e"];
   [controller_ updateFilter:field];
-  EXPECT_EQ(0U, [[[controller_ cocoaTreeModel] childs] count]);
+  EXPECT_EQ(0U, [[[controller_ cocoaTreeModel] children] count]);
 
   // Search for "aa".
   [field setStringValue:@"aa"];
   [controller_ updateFilter:field];
-  EXPECT_EQ(1U, [[[controller_ cocoaTreeModel] childs] count]);
+  EXPECT_EQ(1U, [[[controller_ cocoaTreeModel] children] count]);
 }
 
 }  // namespace
