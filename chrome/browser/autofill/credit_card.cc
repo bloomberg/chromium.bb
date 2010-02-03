@@ -4,11 +4,13 @@
 
 #include "chrome/browser/autofill/credit_card.h"
 
+#include "app/l10n_util.h"
 #include "base/basictypes.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/field_types.h"
+#include "grit/generated_resources.h"
 
 static const string16 kCreditCardSeparators = ASCIIToUTF16(" -");
 
@@ -182,9 +184,14 @@ void CreditCard::SetInfo(const AutoFillType& type, const string16& value) {
       set_type(value);
       break;
 
-    case CREDIT_CARD_NUMBER:
+    case CREDIT_CARD_NUMBER: {
       set_number(value);
-      break;
+      // Update last four digits as well.
+      if (value.length() > 4)
+        set_last_four_digits(value.substr(value.length() - 4));
+      else
+        set_last_four_digits(string16());
+    }  break;
 
     case CREDIT_CARD_VERIFICATION_CODE:
       set_verification_code(value);
@@ -254,6 +261,26 @@ void CreditCard::set_expiration_year(int expiration_year) {
   }
 
   expiration_year_ = expiration_year;
+}
+
+std::wstring CreditCard::PreviewSummary() const {
+  // TODO(georgey): add unit-test
+  std::wstring preview;
+  if (number().empty())
+    return preview;  // No CC number, means empty preview.
+  std::wstring obfuscated_cc_number(L"************");
+  obfuscated_cc_number.append(UTF16ToWide(last_four_digits()));
+  if (!expiration_month() || !expiration_year())
+    return obfuscated_cc_number;  // no expiration date set
+  // TODO(georgey): internationalize date
+  std::wstring formatted_date(UTF16ToWide(ExpirationMonthAsString()));
+  formatted_date.append(L"/");
+  formatted_date.append(UTF16ToWide(Expiration4DigitYearAsString()));
+
+  preview = l10n_util::GetStringF(IDS_CREDIT_CARD_NUMBER_PREVIEW_FORMAT,
+                                  obfuscated_cc_number,
+                                  formatted_date);
+  return preview;
 }
 
 
