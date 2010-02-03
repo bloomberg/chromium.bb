@@ -184,9 +184,6 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
     context->set_cookie_store(new net::CookieMonster(cookie_db.get()));
   }
 
-  context->set_cookie_policy(
-      new ChromeCookiePolicy(host_content_settings_map_));
-
   // Create a new AppCacheService (issues fetches through the
   // main URLRequestContext that we just created).
   context->set_appcache_service(
@@ -265,8 +262,6 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
       new net::HttpCache(context->host_resolver(), context->proxy_service(),
                          context->ssl_config_service(), 0);
   context->set_cookie_store(new net::CookieMonster);
-  context->set_cookie_policy(
-      new ChromeCookiePolicy(host_content_settings_map_));
   context->set_http_transaction_factory(cache);
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(
@@ -305,7 +300,6 @@ ChromeURLRequestContext* FactoryForOffTheRecordExtensions::Create() {
   const char* schemes[] = {chrome::kExtensionScheme};
   cookie_monster->SetCookieableSchemes(schemes, 1);
   context->set_cookie_store(cookie_monster);
-  // No dynamic cookie policy for extensions.
 
   return context;
 }
@@ -347,8 +341,6 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
   context->set_proxy_service(main_context->proxy_service());
   // Also share the cookie store of the common profile.
   context->set_cookie_store(main_context->cookie_store());
-  context->set_cookie_policy(
-      static_cast<ChromeCookiePolicy*>(main_context->cookie_policy()));
 
   // Create a media cache with default size.
   // TODO(hclam): make the maximum size of media cache configurable.
@@ -614,6 +606,8 @@ void ChromeURLRequestContextGetter::GetCookieStoreAsyncHelper(
 ChromeURLRequestContext::ChromeURLRequestContext() {
   CheckCurrentlyOnIOThread();
 
+  cookie_policy_ = this;  // We implement CookiePolicy
+
   url_request_tracker()->SetGraveyardFilter(
       &ChromeURLRequestContext::ShouldTrackRequest);
 }
@@ -646,9 +640,6 @@ ChromeURLRequestContext::~ChromeURLRequestContext() {
   delete ftp_transaction_factory_;
   delete http_transaction_factory_;
 
-  // cookie_policy_'s lifetime is auto-managed by chrome_cookie_policy_.  We
-  // null this out here to avoid a dangling reference to chrome_cookie_policy_
-  // when ~URLRequestContext runs.
   cookie_policy_ = NULL;
 }
 
@@ -765,9 +756,47 @@ bool ChromeURLRequestContext::AreCookiesEnabled() const {
   return setting != CONTENT_SETTING_BLOCK;
 }
 
+bool ChromeURLRequestContext::CanGetCookies(const GURL& url,
+                                            const GURL& first_party) {
+  if (host_content_settings_map_->BlockThirdPartyCookies()) {
+    net::StaticCookiePolicy policy(
+        net::StaticCookiePolicy::BLOCK_THIRD_PARTY_COOKIES);
+    if (!policy.CanGetCookies(url, first_party))
+      return false;
+  }
+
+  ContentSetting setting = host_content_settings_map_->GetContentSetting(
+      url.host(), CONTENT_SETTINGS_TYPE_COOKIES);
+  if (setting == CONTENT_SETTING_BLOCK)
+    return false;
+
+  // TODO(darin): Implement CONTENT_SETTING_ASK
+  return true;
+}
+
+bool ChromeURLRequestContext::CanSetCookie(const GURL& url,
+                                           const GURL& first_party) {
+  if (host_content_settings_map_->BlockThirdPartyCookies()) {
+    net::StaticCookiePolicy policy(
+        net::StaticCookiePolicy::BLOCK_THIRD_PARTY_COOKIES);
+    if (!policy.CanSetCookie(url, first_party))
+      return false;
+  }
+
+  ContentSetting setting = host_content_settings_map_->GetContentSetting(
+      url.host(), CONTENT_SETTINGS_TYPE_COOKIES);
+  if (setting == CONTENT_SETTING_BLOCK)
+    return false;
+
+  // TODO(darin): Implement CONTENT_SETTING_ASK
+  return true;
+}
+
 ChromeURLRequestContext::ChromeURLRequestContext(
     ChromeURLRequestContext* other) {
   CheckCurrentlyOnIOThread();
+
+  cookie_policy_ = this;  // We implement CookiePolicy
 
   // Set URLRequestContext members
   host_resolver_ = other->host_resolver_;
@@ -776,7 +805,6 @@ ChromeURLRequestContext::ChromeURLRequestContext(
   http_transaction_factory_ = other->http_transaction_factory_;
   ftp_transaction_factory_ = other->ftp_transaction_factory_;
   cookie_store_ = other->cookie_store_;
-  cookie_policy_ = other->cookie_policy_;
   transport_security_state_ = other->transport_security_state_;
   accept_language_ = other->accept_language_;
   accept_charset_ = other->accept_charset_;
@@ -786,7 +814,6 @@ ChromeURLRequestContext::ChromeURLRequestContext(
   extension_info_ = other->extension_info_;
   user_script_dir_path_ = other->user_script_dir_path_;
   appcache_service_ = other->appcache_service_;
-  chrome_cookie_policy_ = other->chrome_cookie_policy_;
   host_content_settings_map_ = other->host_content_settings_map_;
   host_zoom_map_ = other->host_zoom_map_;
   privacy_blacklist_ = other->privacy_blacklist_;

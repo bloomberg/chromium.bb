@@ -133,10 +133,10 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                    const std::string& cookie);
   void OnGetCookies(const GURL& url,
                     const GURL& first_party_for_cookies,
-                    IPC::Message* reply_msg);
+                    std::string* cookies);
   void OnGetRawCookies(const GURL& url,
                        const GURL& first_party_for_cookies,
-                       IPC::Message* reply_msg);
+                       std::vector<webkit_glue::WebCookie>* raw_cookies);
   void OnDeleteCookie(const GURL& url,
                       const std::string& cookieName);
   void OnGetCookiesEnabled(const GURL& url,

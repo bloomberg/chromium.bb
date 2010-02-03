@@ -404,11 +404,44 @@ void CookieMonster::SetCookieableSchemes(
                              schemes, schemes + num_schemes);
 }
 
-bool CookieMonster::SetCookieWithCreationTimeAndOptions(
-    const GURL& url,
-    const std::string& cookie_line,
-    const Time& creation_time_or_null,
-    const CookieOptions& options) {
+bool CookieMonster::SetCookie(const GURL& url,
+                              const std::string& cookie_line) {
+  CookieOptions options;
+  return SetCookieWithOptions(url, cookie_line, options);
+}
+
+bool CookieMonster::SetCookieWithOptions(const GURL& url,
+                                         const std::string& cookie_line,
+                                         const CookieOptions& options) {
+  Time creation_date;
+  {
+    AutoLock autolock(lock_);
+    creation_date = CurrentTime();
+    last_time_seen_ = creation_date;
+  }
+  return SetCookieWithCreationTimeWithOptions(url,
+                                              cookie_line,
+                                              creation_date,
+                                              options);
+}
+
+bool CookieMonster::SetCookieWithCreationTime(const GURL& url,
+                                              const std::string& cookie_line,
+                                              const Time& creation_time) {
+  CookieOptions options;
+  return SetCookieWithCreationTimeWithOptions(url,
+                                              cookie_line,
+                                              creation_time,
+                                              options);
+}
+
+bool CookieMonster::SetCookieWithCreationTimeWithOptions(
+                                              const GURL& url,
+                                              const std::string& cookie_line,
+                                              const Time& creation_time,
+                                              const CookieOptions& options) {
+  DCHECK(!creation_time.is_null());
+
   if (!HasCookieableScheme(url)) {
     return false;
   }
@@ -417,12 +450,6 @@ bool CookieMonster::SetCookieWithCreationTimeAndOptions(
   InitIfNecessary();
 
   COOKIE_DLOG(INFO) << "SetCookie() line: " << cookie_line;
-
-  Time creation_time = creation_time_or_null;
-  if (creation_time.is_null()) {
-    creation_time = CurrentTime();
-    last_time_seen_ = creation_time;
-  }
 
   // Parse the cookie.
   ParsedCookie pc(cookie_line);
@@ -479,6 +506,21 @@ bool CookieMonster::SetCookieWithCreationTimeAndOptions(
   GarbageCollect(creation_time, cookie_domain);
 
   return true;
+}
+
+void CookieMonster::SetCookies(const GURL& url,
+                               const std::vector<std::string>& cookies) {
+  CookieOptions options;
+  SetCookiesWithOptions(url, cookies, options);
+}
+
+void CookieMonster::SetCookiesWithOptions(
+    const GURL& url,
+    const std::vector<std::string>& cookies,
+    const CookieOptions& options) {
+  for (std::vector<std::string>::const_iterator iter = cookies.begin();
+       iter != cookies.end(); ++iter)
+    SetCookieWithOptions(url, *iter, options);
 }
 
 void CookieMonster::InternalInsertCookie(const std::string& key,
@@ -694,12 +736,6 @@ static bool CookieSorter(CookieMonster::CanonicalCookie* cc1,
   return cc1->Path().length() > cc2->Path().length();
 }
 
-bool CookieMonster::SetCookieWithOptions(const GURL& url,
-                                         const std::string& cookie_line,
-                                         const CookieOptions& options) {
-  return SetCookieWithCreationTimeAndOptions(url, cookie_line, Time(), options);
-}
-
 // Currently our cookie datastructure is based on Mozilla's approach.  We have a
 // hash keyed on the cookie's domain, and for any query we walk down the domain
 // components and probe for cookies until we reach the TLD, where we stop.
@@ -712,6 +748,11 @@ bool CookieMonster::SetCookieWithOptions(const GURL& url,
 // search/prefix trie, where we reverse the hostname and query for all
 // keys that are a prefix of our hostname.  I think the hash probing
 // should be fast and simple enough for now.
+std::string CookieMonster::GetCookies(const GURL& url) {
+  CookieOptions options;
+  return GetCookiesWithOptions(url, options);
+}
+
 std::string CookieMonster::GetCookiesWithOptions(const GURL& url,
                                                  const CookieOptions& options) {
   if (!HasCookieableScheme(url)) {
@@ -793,7 +834,7 @@ CookieMonster::CookieList CookieMonster::GetAllCookies() {
   return cookie_list;
 }
 
-CookieMonster::CookieList CookieMonster::GetAllCookiesForURL(const GURL& url) {
+CookieMonster::CookieList CookieMonster::GetRawCookies(const GURL& url) {
   AutoLock autolock(lock_);
   InitIfNecessary();
 

@@ -961,7 +961,7 @@ TEST(CookieMonsterTest, SetCookieableSchemes) {
   EXPECT_FALSE(cm_foo->SetCookie(http_url, "x=1"));
 }
 
-TEST(CookieMonsterTest, GetAllCookiesForURL) {
+TEST(CookieMonsterTest, GetRawCookies) {
 
   GURL url_google(kUrlGoogle);
   GURL url_google_secure(kUrlGoogleSecure);
@@ -985,8 +985,7 @@ TEST(CookieMonsterTest, GetAllCookiesForURL) {
   PlatformThread::Sleep(kLastAccessThresholdMilliseconds + 20);
 
   // Check raw cookies.
-  net::CookieMonster::CookieList raw_cookies =
-      cm->GetAllCookiesForURL(url_google);
+  net::CookieMonster::CookieList raw_cookies = cm->GetRawCookies(url_google);
   net::CookieMonster::CookieList::iterator it = raw_cookies.begin();
 
   ASSERT_TRUE(it != raw_cookies.end());
@@ -1000,7 +999,7 @@ TEST(CookieMonsterTest, GetAllCookiesForURL) {
   ASSERT_TRUE(++it == raw_cookies.end());
 
   // Test secure cookies.
-  raw_cookies = cm->GetAllCookiesForURL(url_google_secure);
+  raw_cookies = cm->GetRawCookies(url_google_secure);
   it = raw_cookies.begin();
 
   ASSERT_TRUE(it != raw_cookies.end());

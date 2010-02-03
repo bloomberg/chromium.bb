@@ -11,7 +11,6 @@
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
-#include "chrome/browser/net/chrome_cookie_policy.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/common/appcache/chrome_appcache_service.h"
 #include "chrome/common/extensions/extension.h"
@@ -35,7 +34,8 @@ class IOThread;
 //
 // All methods of this class must be called from the IO thread,
 // including the constructor and destructor.
-class ChromeURLRequestContext : public URLRequestContext {
+class ChromeURLRequestContext : public URLRequestContext,
+                                public net::CookiePolicy {
  public:
   // Maintains some extension-related state we need on the IO thread.
   // TODO(aa): It would be cool if the Extension objects in ExtensionsService
@@ -121,6 +121,10 @@ class ChromeURLRequestContext : public URLRequestContext {
   // False only if cookies are globally blocked without exception.
   bool AreCookiesEnabled() const;
 
+  // CookiePolicy methods:
+  virtual bool CanGetCookies(const GURL& url, const GURL& first_party);
+  virtual bool CanSetCookie(const GURL& url, const GURL& first_party);
+
  protected:
   // Copies the dependencies from |other| into |this|. If you use this
   // constructor, then you should hold a reference to |other|, as we
@@ -163,10 +167,6 @@ class ChromeURLRequestContext : public URLRequestContext {
   void set_cookie_store(net::CookieStore* cookie_store) {
     cookie_store_ = cookie_store;
   }
-  void set_cookie_policy(ChromeCookiePolicy* cookie_policy) {
-    chrome_cookie_policy_ = cookie_policy;  // Take a strong reference.
-    cookie_policy_ = cookie_policy;
-  }
   void set_proxy_service(net::ProxyService* service) {
     proxy_service_ = service;
   }
@@ -206,7 +206,6 @@ class ChromeURLRequestContext : public URLRequestContext {
   FilePath user_script_dir_path_;
 
   scoped_refptr<ChromeAppCacheService> appcache_service_;
-  scoped_refptr<ChromeCookiePolicy> chrome_cookie_policy_;
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
   scoped_refptr<HostZoomMap> host_zoom_map_;
   scoped_refptr<Blacklist> privacy_blacklist_;
