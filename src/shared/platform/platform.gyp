@@ -115,7 +115,7 @@
       'target_base': 'none',
     },
     'conditions': [
-      ['OS=="linux"', {
+      ['OS=="linux" and nacl_standalone==1', {
         'link_settings': {
           'libraries': [
             '-lssl',
@@ -124,7 +124,7 @@
           ],
         },
       }],
-      ['OS=="mac"', {
+      ['OS=="mac" and nacl_standalone==1', {
         'link_settings': {
           'libraries': [
             '$(SDKROOT)/usr/lib/libcrypto.dylib',
