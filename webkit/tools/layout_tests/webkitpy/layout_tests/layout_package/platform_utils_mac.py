@@ -42,7 +42,8 @@ def platform_version():
 def get_num_cores():
     """Returns the number of cores on the machine. For hyperthreaded machines,
     this will be double the number of actual processors."""
-    return int(os.popen2("sysctl -n hw.ncpu")[1].read())
+    cmd = ['/usr/sbin/sysctl', '-n', 'hw.ncpu']
+    return int(subprocess.Popen(cmd, stdout=subprocess.PIPE).stdout.read())
 
 
 def baseline_path(platform=None):
