@@ -17,9 +17,18 @@
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 #include "gpu/command_buffer/service/gles2_cmd_validation.h"
-#if defined(OS_LINUX) && !defined(UNIT_TEST)
+#if defined(UNIT_TEST)
+#elif defined(OS_LINUX)
 // XWindowWrapper is stubbed out for unit-tests.
 #include "gpu/command_buffer/service/x_utils.h"
+#elif defined(OS_MACOSX)
+// The following two #includes CAN NOT go above the inclusion of
+// gl_utils.h and therefore glew.h regardless of what the Google C++
+// style guide says.
+#include <CoreFoundation/CoreFoundation.h>  // NOLINT
+#include <OpenGL/OpenGL.h>  // NOLINT
+#include "base/scoped_cftyperef.h"
+#include "chrome/common/io_surface_support_mac.h"
 #endif
 
 namespace gpu {
@@ -38,9 +47,11 @@ COMPILE_ASSERT(sizeof(GLsizei) == sizeof(uint32),  // NOLINT
 COMPILE_ASSERT(sizeof(GLfloat) == sizeof(float),  // NOLINT
                GLfloat_not_same_size_as_float);
 
-namespace {
+// TODO(kbr): the use of this anonymous namespace core dumps the
+// linker on Mac OS X 10.6 when the symbol ordering file is used
+// namespace {
 
-size_t GetGLTypeSize(GLenum type) {
+static size_t GetGLTypeSize(GLenum type) {
   switch (type) {
     case GL_BYTE:
       return sizeof(GLbyte);  // NOLINT
@@ -147,7 +158,7 @@ GLenum GLErrorBitToGLError(uint32 error_bit) {
   }
 }
 
-}  // anonymous namespace.
+// }  // anonymous namespace.
 
 #if defined(UNIT_TEST)
 GLES2Decoder::GLES2Decoder()
@@ -551,6 +562,13 @@ class GLES2DecoderImpl : public GLES2Decoder {
   virtual bool MakeCurrent();
   virtual uint32 GetServiceIdForTesting(uint32 client_id);
 
+#if !defined(UNIT_TEST) && defined(OS_MACOSX)
+  // Overridden from GLES2Decoder.
+  virtual uint64 SetWindowSize(int32 width, int32 height);
+#endif
+
+  virtual void SetSwapBuffersCallback(Callback0::Type* callback);
+
   // Removes any buffers in the VertexAtrribInfos and BufferInfos. This is used
   // on glDeleteBuffers so we can make sure the user does not try to render
   // with deleted buffers.
@@ -729,9 +747,24 @@ class GLES2DecoderImpl : public GLES2Decoder {
 #elif defined(OS_WIN)
   HDC device_context_;
   HGLRC gl_context_;
+#elif defined(OS_MACOSX)
+  CGLContextObj gl_context_;
+  CGLPBufferObj pbuffer_;
+  scoped_cftyperef<CFTypeRef> io_surface_;
+  int32 surface_width_;
+  int32 surface_height_;
+  GLuint texture_;
+  GLuint fbo_;
+  GLuint depth_renderbuffer_;
+  // For tracking whether the default framebuffer / renderbuffer or
+  // ones created by the end user are currently bound
+  GLuint bound_fbo_;
+  GLuint bound_renderbuffer_;
 #endif
 
   bool anti_aliased_;
+
+  scoped_ptr<Callback0::Type> swap_buffers_callback_;
 
   DISALLOW_COPY_AND_ASSIGN(GLES2DecoderImpl);
 };
@@ -754,6 +787,16 @@ GLES2DecoderImpl::GLES2DecoderImpl()
 #elif defined(OS_WIN)
       device_context_(NULL),
       gl_context_(NULL),
+#elif defined(OS_MACOSX)
+      gl_context_(NULL),
+      pbuffer_(NULL),
+      surface_width_(0),
+      surface_height_(0),
+      texture_(0),
+      fbo_(0),
+      depth_renderbuffer_(0),
+      bound_fbo_(0),
+      bound_renderbuffer_(0),
 #endif
       anti_aliased_(false) {
 }
@@ -790,7 +833,9 @@ bool GLES2DecoderImpl::Initialize() {
   return success;
 }
 
-namespace {
+// TODO(kbr): the use of this anonymous namespace core dumps the
+// linker on Mac OS X 10.6 when the symbol ordering file is used
+// namespace {
 
 #if defined(UNIT_TEST)
 #elif defined(OS_WIN)
@@ -1007,7 +1052,7 @@ void GLDeleteTexturesHelper(
   glDeleteTextures(n, ids);
 }
 
-}  // anonymous namespace
+// }  // anonymous namespace
 
 bool GLES2DecoderImpl::MakeCurrent() {
 #if defined(UNIT_TEST)
@@ -1024,6 +1069,14 @@ bool GLES2DecoderImpl::MakeCurrent() {
   return true;
 #elif defined(OS_LINUX)
   return window()->MakeCurrent();
+#elif defined(OS_MACOSX)
+  if (CGLGetCurrentContext() != gl_context_) {
+    if (CGLSetCurrentContext(gl_context_) != kCGLNoError) {
+      DLOG(ERROR) << "Unable to make gl context current.";
+      return false;
+    }
+  }
+  return true;
 #else
   NOTREACHED();
   return false;
@@ -1103,6 +1156,49 @@ bool GLES2DecoderImpl::InitPlatformSpecific() {
   DCHECK(window());
   if (!window()->Initialize())
     return false;
+#elif defined(OS_MACOSX)
+  // Create a 1x1 pbuffer and associated context to bootstrap things
+  static const CGLPixelFormatAttribute attribs[] = {
+    (CGLPixelFormatAttribute) kCGLPFAPBuffer,
+    (CGLPixelFormatAttribute) 0
+  };
+  CGLPixelFormatObj pixelFormat;
+  GLint numPixelFormats;
+  if (CGLChoosePixelFormat(attribs,
+                           &pixelFormat,
+                           &numPixelFormats) != kCGLNoError) {
+    DLOG(ERROR) << "Error choosing pixel format.";
+    return false;
+  }
+  if (!pixelFormat) {
+    return false;
+  }
+  CGLContextObj context;
+  CGLError res = CGLCreateContext(pixelFormat, 0, &context);
+  CGLDestroyPixelFormat(pixelFormat);
+  if (res != kCGLNoError) {
+    DLOG(ERROR) << "Error creating context.";
+    return false;
+  }
+  CGLPBufferObj pbuffer;
+  if (CGLCreatePBuffer(1, 1,
+                       GL_TEXTURE_2D, GL_RGBA,
+                       0, &pbuffer) != kCGLNoError) {
+    CGLDestroyContext(context);
+    DLOG(ERROR) << "Error creating pbuffer.";
+    return false;
+  }
+  if (CGLSetPBuffer(context, pbuffer, 0, 0, 0) != kCGLNoError) {
+    CGLDestroyContext(context);
+    CGLDestroyPBuffer(pbuffer);
+    DLOG(ERROR) << "Error attaching pbuffer to context.";
+    return false;
+  }
+  gl_context_ = context;
+  pbuffer_ = pbuffer;
+  // Now we're ready to handle SetWindowSize calls, which will
+  // allocate and/or reallocate the IOSurface and associated offscreen
+  // OpenGL structures for rendering.
 #endif
 
   return true;
@@ -1164,11 +1260,141 @@ bool GLES2DecoderImpl::InitGlew() {
   return true;
 }
 
+#if !defined(UNIT_TEST) && defined(OS_MACOSX)
+static void AddBooleanValue(CFMutableDictionaryRef dictionary,
+                            const CFStringRef key,
+                            bool value) {
+  CFDictionaryAddValue(dictionary, key,
+                       (value ? kCFBooleanTrue : kCFBooleanFalse));
+}
+
+static void AddIntegerValue(CFMutableDictionaryRef dictionary,
+                            const CFStringRef key,
+                            int32 value) {
+  CFNumberRef number = CFNumberCreate(NULL, kCFNumberSInt32Type, &value);
+  CFDictionaryAddValue(dictionary, key, number);
+}
+
+uint64 GLES2DecoderImpl::SetWindowSize(int32 width, int32 height) {
+  if (surface_width_ == width && surface_height_ == height) {
+    // Return 0 to indicate to the caller that no new backing store
+    // allocation occurred.
+    return 0;
+  }
+
+  IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
+  if (!io_surface_support)
+    return 0;
+
+  if (!MakeCurrent())
+    return 0;
+
+  // GL_TEXTURE_RECTANGLE_ARB is the best supported render target on
+  // Mac OS X and is required for IOSurface interoperability.
+  GLenum target = GL_TEXTURE_RECTANGLE_ARB;
+
+  if (!texture_) {
+    // Generate the texture object.
+    glGenTextures(1, &texture_);
+    glBindTexture(target, texture_);
+    glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // Generate and bind the framebuffer object.
+    glGenFramebuffersEXT(1, &fbo_);
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_);
+    bound_fbo_ = fbo_;
+    // Generate (but don't bind) the depth buffer -- we don't need
+    // this bound in order to do offscreen rendering.
+    glGenRenderbuffersEXT(1, &depth_renderbuffer_);
+  }
+
+  // Allocate a new IOSurface, which is the GPU resource that can be
+  // shared across processes.
+  scoped_cftyperef<CFMutableDictionaryRef> properties;
+  properties.reset(CFDictionaryCreateMutable(kCFAllocatorDefault,
+                                             0,
+                                             &kCFTypeDictionaryKeyCallBacks,
+                                             &kCFTypeDictionaryValueCallBacks));
+  AddIntegerValue(properties,
+                  io_surface_support->GetKIOSurfaceWidth(), width);
+  AddIntegerValue(properties,
+                  io_surface_support->GetKIOSurfaceHeight(), height);
+  AddIntegerValue(properties,
+                  io_surface_support->GetKIOSurfaceBytesPerElement(), 4);
+  AddBooleanValue(properties,
+                  io_surface_support->GetKIOSurfaceIsGlobal(), true);
+  // I believe we should be able to unreference the IOSurfaces without
+  // synchronizing with the browser process because they are
+  // ultimately reference counted by the operating system.
+  io_surface_.reset(io_surface_support->IOSurfaceCreate(properties));
+
+  // Reallocate the depth buffer.
+  glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depth_renderbuffer_);
+  glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT,
+                           GL_DEPTH_COMPONENT,
+                           width,
+                           height);
+  glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, bound_renderbuffer_);
+
+  // Reallocate the texture object.
+  glBindTexture(target, texture_);
+  // Don't think we need to identify a plane.
+  GLuint plane = 0;
+  io_surface_support->CGLTexImageIOSurface2D(gl_context_,
+                                             target,
+                                             GL_RGBA,
+                                             width,
+                                             height,
+                                             GL_BGRA,
+                                             GL_UNSIGNED_INT_8_8_8_8_REV,
+                                             io_surface_.get(),
+                                             plane);
+
+  // Set up the frame buffer object.
+  if (bound_fbo_ != fbo_) {
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_);
+  }
+  glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
+                            GL_COLOR_ATTACHMENT0_EXT,
+                            target,
+                            texture_,
+                            0);
+  glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
+                               GL_DEPTH_ATTACHMENT_EXT,
+                               GL_RENDERBUFFER_EXT,
+                               depth_renderbuffer_);
+  if (bound_fbo_ != fbo_) {
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, bound_fbo_);
+  }
+
+  surface_width_ = width;
+  surface_height_ = height;
+
+  // Now send back an identifier for the IOSurface. We originally
+  // intended to send back a mach port from IOSurfaceCreateMachPort
+  // but it looks like Chrome IPC would need to be modified to
+  // properly send mach ports between processes. For the time being we
+  // make our IOSurfaces global and send back their identifiers. On
+  // the browser process side the identifier is reconstituted into an
+  // IOSurface for on-screen rendering.
+  return io_surface_support->IOSurfaceGetID(io_surface_);
+}
+#endif  // !defined(UNIT_TEST) && defined(OS_MACOSX)
+
+void GLES2DecoderImpl::SetSwapBuffersCallback(Callback0::Type* callback) {
+  swap_buffers_callback_.reset(callback);
+}
+
 void GLES2DecoderImpl::Destroy() {
 #if defined(UNIT_TEST)
 #elif defined(OS_LINUX)
   DCHECK(window());
   window()->Destroy();
+#elif defined(OS_MACOSX)
+  if (gl_context_)
+    CGLDestroyContext(gl_context_);
+  if (pbuffer_)
+    CGLDestroyPBuffer(pbuffer_);
 #endif
 }
 
@@ -1332,7 +1558,18 @@ void GLES2DecoderImpl::DoSwapBuffers() {
 #elif defined(OS_LINUX)
   DCHECK(window());
   window()->SwapBuffers();
+#elif defined(OS_MACOSX)
+  if (bound_fbo_ == fbo_) {
+    // Bind and unbind the framebuffer to make changes to the
+    // IOSurface show up in the other process.
+    glFlush();
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_);
+  }
 #endif
+  if (swap_buffers_callback_.get()) {
+    swap_buffers_callback_->Run();
+  }
 }
 
 void GLES2DecoderImpl::DoUseProgram(GLuint program) {
@@ -1476,7 +1713,9 @@ error::Error GLES2DecoderImpl::HandleDrawElements(
   return error::kNoError;
 }
 
-namespace {
+// TODO(kbr): the use of this anonymous namespace core dumps the
+// linker on Mac OS X 10.6 when the symbol ordering file is used
+// namespace {
 
 // Calls glShaderSource for the various versions of the ShaderSource command.
 // Assumes that data / data_size points to a piece of memory that is in range
@@ -1505,7 +1744,7 @@ error::Error ShaderSourceHelper(
   return error::kNoError;
 }
 
-}  // anonymous namespace.
+// }  // anonymous namespace.
 
 error::Error GLES2DecoderImpl::HandleShaderSource(
     uint32 immediate_data_size, const gles2::ShaderSource& c) {

@@ -1781,6 +1781,41 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // renderer is finished with them.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_FreeTransportDIB,
                        TransportDIB::Id /* DIB id */)
+
+  //---------------------------------------------------------------------------
+  // Messages related to the GPU plugin on Mac OS X 10.6 and later
+
+  // This is sent from the renderer to the browser to allocate a fake
+  // PluginWindowHandle on the browser side which is used to identify
+  // the plugin to the browser later when backing store is allocated
+  // or reallocated.
+  IPC_SYNC_MESSAGE_ROUTED0_1(ViewHostMsg_AllocateFakePluginWindowHandle,
+                             gfx::PluginWindowHandle /* id */)
+
+  // Destroys a fake window handle previously allocated using
+  // AllocateFakePluginWindowHandle.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_DestroyFakePluginWindowHandle,
+                      gfx::PluginWindowHandle /* id */)
+
+  // This message is sent from the renderer to the browser on behalf
+  // of the GPU plugin to indicate that a new backing store was
+  // allocated for that GPU plugin instance.
+  //
+  // NOTE: the original intent was to pass a mach port as the
+  // IOSurface identifier but it looks like that will be a lot of
+  // work. For now we pass an ID from IOSurfaceGetID.
+  IPC_MESSAGE_ROUTED4(ViewHostMsg_GPUPluginSetIOSurface,
+                      gfx::PluginWindowHandle /* window */,
+                      int32 /* width */,
+                      int32 /* height */,
+                      uint64 /* identifier for IOSurface */)
+
+  // This message notifies the browser process that the GPU plugin
+  // swapped the buffers associated with the given "window", which
+  // should cause the browser to redraw the various GPU plugins'
+  // contents.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_GPUPluginBuffersSwapped,
+                      gfx::PluginWindowHandle /* window */)
 #endif
 
   // A renderer sends this to the browser process when it wants to create a

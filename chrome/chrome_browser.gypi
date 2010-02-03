@@ -2179,6 +2179,7 @@
             'libraries': [
               '$(SDKROOT)/System/Library/Frameworks/SecurityInterface.framework',
               '$(SDKROOT)/System/Library/Frameworks/QuartzCore.framework',
+              '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
             ],
             'mac_bundle_resources': [
               'browser/utility.sb',

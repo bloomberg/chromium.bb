@@ -4,4 +4,8 @@ include_rules = [
 
   # For gfx::PluginWindowHandle
   "+app/gfx",
+
+  # For IOSurfaceSupport on Mac OS X, service-side code only.
+  # Can consider moving these files if this dependency is undesirable.
+  "+chrome/common",
 ]

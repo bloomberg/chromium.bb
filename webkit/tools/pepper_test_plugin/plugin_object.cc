@@ -34,8 +34,9 @@
 #define CHECK(x)
 #else
 #include "base/logging.h"
+#include "build/build_config.h"
 #include "gpu/command_buffer/client/gles2_demo_cc.h"
-#include "gpu/command_buffer/common/GLES2/gl2.h"
+#include <GLES2/gl2.h>  // NOLINT
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkCanvas.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
@@ -308,7 +309,10 @@ PluginObject::PluginObject(NPP npp)
 }
 
 PluginObject::~PluginObject() {
+  // TODO(kbr): add audio portion of test
+#if !defined(OS_MACOSX)
   deviceaudio_->destroyContext(npp_, &context_audio_);
+#endif
   // FIXME(brettw) destroy the context.
   browser->releaseobject(test_object_);
 }
@@ -347,8 +351,11 @@ void PluginObject::New(NPMIMEType pluginType,
   device3d_ = extensions->acquireDevice(npp_, NPPepper3DDevice);
   CHECK(device3d_);
 
+  // TODO(kbr): add audio portion of test
+#if !defined(OS_MACOSX)
   deviceaudio_ =  extensions->acquireDevice(npp_, NPPepperAudioDevice);
   CHECK(deviceaudio_);
+#endif
 }
 
 void PluginObject::SetWindow(const NPWindow& window) {
@@ -389,6 +396,8 @@ void PluginObject::SetWindow(const NPWindow& window) {
 #endif
   }
 
+  // TODO(kbr): put back in audio portion of test
+#if !defined(OS_MACOSX)
   // testing any field would do
   if (!context_audio_.config.callback) {
     NPDeviceContextAudioConfig cfg;
@@ -401,6 +410,7 @@ void PluginObject::SetWindow(const NPWindow& window) {
     cfg.callback         = &SineWaveCallback<200, int16>;
     deviceaudio_->initializeContext(npp_, &cfg, &context_audio_);
   }
+#endif
 }
 
 void PluginObject::Draw3D() {

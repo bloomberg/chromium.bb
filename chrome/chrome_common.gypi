@@ -57,6 +57,8 @@
           'common/devtools_messages_internal.h',
           'common/gpu_messages.h',
           'common/gpu_messages_internal.h',
+          'common/io_surface_support_mac.cc',
+          'common/io_surface_support_mac.h',
           'common/logging_chrome.cc',
           'common/logging_chrome.h',
           'common/main_function_params.h',

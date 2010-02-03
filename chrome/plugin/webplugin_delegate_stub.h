@@ -115,6 +115,14 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
   // If this is the GPU plugin, the stub object that forwards to the
   // command buffer service.
   scoped_ptr<CommandBufferStub> command_buffer_stub_;
+
+#if defined(OS_MACOSX)
+  // If this is the GPU plugin, we need to be receive a fake window
+  // handle which is used for subsequent communication back to the
+  // browser.
+  void OnSetFakeGPUPluginWindowHandle(gfx::PluginWindowHandle window);
+#endif
+
 #endif
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(WebPluginDelegateStub);

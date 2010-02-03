@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_MAC_H_
 
 #import <Cocoa/Cocoa.h>
+#import <QuartzCore/CALayer.h>
 
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "webkit/glue/webcursor.h"
 #include "webkit/glue/webmenuitem.h"
+#include "webkit/glue/plugins/mac_gpu_plugin_container_manager.h"
 
 class RenderWidgetHostViewMac;
 class RWHVMEditCommandHelper;
@@ -112,6 +114,17 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void SetWindowVisibility(bool visible);
   virtual void SetBackground(const SkBitmap& background);
 
+  // Methods associated with GPU plugin instances
+  virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle();
+  virtual void DestroyFakePluginWindowHandle(gfx::PluginWindowHandle window);
+  virtual void GPUPluginSetIOSurface(gfx::PluginWindowHandle window,
+                                     int32 width,
+                                     int32 height,
+                                     uint64 io_surface_identifier);
+  virtual void GPUPluginBuffersSwapped(gfx::PluginWindowHandle window);
+  // Draws the current GPU plugin instances into the given context.
+  virtual void DrawGPUPluginInstances(CGLContextObj context);
+
   void KillSelf();
 
   void set_parent_view(BaseView* parent_view) { parent_view_ = parent_view; }
@@ -181,6 +194,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   // methods needs it.
   NSRect im_caret_rect_;
 
+  // The Core Animation layer, if any, hosting the GPU plugins' output.
+  scoped_nsobject<CALayer> gpu_plugin_layer_;
+
  private:
   // Updates the display cursor to the current cursor if the cursor is over this
   // render view.
@@ -219,6 +235,9 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
 
   // Used for positioning a popup menu.
   BaseView* parent_view_;
+
+  // Helper class for managing instances of the GPU plugin.
+  MacGPUPluginContainerManager plugin_container_manager_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewMac);
 };

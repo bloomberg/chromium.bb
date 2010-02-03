@@ -291,6 +291,15 @@ IPC_BEGIN_MESSAGES(Plugin)
 
   IPC_MESSAGE_CONTROL1(PluginMsg_ResetModalDialogEvent,
                        gfx::NativeViewId /* containing_window */)
+
+#if defined(OS_MACOSX)
+  // This message, used only on 10.6 and later, transmits the "fake"
+  // window handle allocated by the browser on behalf of the renderer
+  // to the GPU plugin.
+  IPC_MESSAGE_ROUTED1(PluginMsg_SetFakeGPUPluginWindowHandle,
+                      gfx::PluginWindowHandle /* window */)
+#endif
+
 IPC_END_MESSAGES(Plugin)
 
 
@@ -385,6 +394,29 @@ IPC_BEGIN_MESSAGES(PluginHost)
 #if defined(OS_MACOSX)
   IPC_MESSAGE_ROUTED1(PluginHostMsg_UpdateGeometry_ACK,
                       int /* ack_key */)
+
+  // This message, used only on 10.6 and later, is sent from the
+  // plug-in process to the renderer process to indicate that the GPU
+  // plugin allocated a new IOSurface object of the given width and
+  // height. This information is then forwarded on to the browser
+  // process.
+  //
+  // NOTE: the original intent was to pass a mach port as the
+  // IOSurface identifier but it looks like that will be a lot of
+  // work. For now we pass an ID from IOSurfaceGetID.
+  IPC_MESSAGE_ROUTED4(PluginHostMsg_GPUPluginSetIOSurface,
+                      gfx::PluginWindowHandle /* window */,
+                      int32 /* width */,
+                      int32 /* height */,
+                      uint64 /* identifier for IOSurface */)
+
+  // This message, currently used only on 10.6 and later, notifies the
+  // renderer process (and from there the browser process) that the
+  // GPU plugin swapped the buffers associated with the given
+  // "window", which should cause the browser to redraw the various
+  // GPU plugins' contents.
+  IPC_MESSAGE_ROUTED1(PluginHostMsg_GPUPluginBuffersSwapped,
+                      gfx::PluginWindowHandle /* window */)
 #endif
 
 IPC_END_MESSAGES(PluginHost)

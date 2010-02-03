@@ -169,3 +169,10 @@ void CommandBufferProxy::SetParseError(
   // Not implemented in proxy.
   NOTREACHED();
 }
+
+#if defined(OS_MACOSX)
+void CommandBufferProxy::SetWindowSize(int32 width, int32 height) {
+  Send(new CommandBufferMsg_SetWindowSize(route_id_, width, height));
+}
+#endif
+

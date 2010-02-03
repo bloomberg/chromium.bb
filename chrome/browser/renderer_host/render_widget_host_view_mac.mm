@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <QuartzCore/CAOpenGLLayer.h>
+
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
 
 #import "base/chrome_application_mac.h"
@@ -20,6 +22,7 @@
 #include "chrome/common/edit_command.h"
 #include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/io_surface_support_mac.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/mac/WebInputEventFactory.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
@@ -52,6 +55,35 @@ namespace {
 const size_t kMaxTooltipLength = 1024;
 
 }
+
+// GPUPluginLayer --------------------------------------------------------------
+
+// This subclass of CAOpenGLLayer hosts the output of the GPU plugins
+// on the page.
+
+@interface GPUPluginLayer : CAOpenGLLayer {
+  RenderWidgetHostViewMac* renderWidgetHostView_;  // weak
+}
+
+- (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r;
+@end
+
+@implementation GPUPluginLayer
+- (id)initWithRenderWidgetHostViewMac:(RenderWidgetHostViewMac*)r {
+  self = [super init];
+  if (self != nil) {
+    renderWidgetHostView_ = r;
+  }
+  return self;
+}
+
+-(void)drawInCGLContext:(CGLContextObj)glContext
+       pixelFormat:(CGLPixelFormatObj)pixelFormat
+       forLayerTime:(CFTimeInterval)timeInterval
+       displayTime:(const CVTimeStamp *)timeStamp {
+  renderWidgetHostView_->DrawGPUPluginInstances(glContext);
+}
+@end
 
 // RenderWidgetHostView --------------------------------------------------------
 
@@ -174,6 +206,26 @@ gfx::NativeView RenderWidgetHostViewMac::GetNativeView() {
 
 void RenderWidgetHostViewMac::MovePluginWindows(
     const std::vector<webkit_glue::WebPluginGeometry>& moves) {
+  // The only case we need to notice plugin window moves is the case
+  // of the GPU plugin. As soon as the GPU plugin becomes the GPU
+  // process all of this code will go away.
+  if (moves.size() > 0) {
+    for (std::vector<webkit_glue::WebPluginGeometry>::const_iterator iter =
+             moves.begin();
+         iter != moves.end();
+         ++iter) {
+      webkit_glue::WebPluginGeometry geom = *iter;
+      // Ignore bogus moves which claim to move the plugin to (0, 0)
+      // with width and height (0, 0)
+      if (geom.window_rect.x() != 0 ||
+          geom.window_rect.y() != 0 ||
+          geom.window_rect.width() != 0 ||
+          geom.window_rect.height() != 0) {
+        plugin_container_manager_.MovePluginContainer(geom);
+      }
+    }
+  }
+
   // All plugin stuff is TBD. TODO(avi,awalker): fill in
   // http://crbug.com/8192
 }
@@ -438,6 +490,73 @@ void RenderWidgetHostViewMac::KillSelf() {
         shutdown_factory_.NewRunnableMethod(
             &RenderWidgetHostViewMac::ShutdownHost));
   }
+}
+
+gfx::PluginWindowHandle
+RenderWidgetHostViewMac::AllocateFakePluginWindowHandle() {
+  // We currently only support the GPU plugin on 10.6 and later.
+  if (!IOSurfaceSupport::Initialize())
+    return 0;
+
+  // If we don't already have a GPUPluginLayer allocated for our view,
+  // set one up now.
+  if (gpu_plugin_layer_.get() == nil) {
+    RenderWidgetHostViewCocoa* our_view = native_view();
+    // Try to get AppKit to allocate the layer
+    [our_view setWantsLayer:YES];
+    CALayer* root_layer = [our_view layer];
+    if (root_layer == nil) {
+      root_layer = [CALayer layer];
+      [our_view setLayer:root_layer];
+    }
+
+    GPUPluginLayer* gpu_layer =
+        [[GPUPluginLayer alloc] initWithRenderWidgetHostViewMac:this];
+
+    // Make our layer resize to fit the superlayer
+    gpu_layer.autoresizingMask = kCALayerWidthSizable | kCALayerHeightSizable;
+    // Set up its initial size
+    [gpu_layer setFrame:NSRectToCGRect([our_view bounds])];
+
+    [root_layer addSublayer:gpu_layer];
+    gpu_plugin_layer_.reset(gpu_layer);
+  }
+
+  return plugin_container_manager_.AllocateFakePluginWindowHandle();
+}
+
+void RenderWidgetHostViewMac::DestroyFakePluginWindowHandle(
+    gfx::PluginWindowHandle window) {
+  plugin_container_manager_.DestroyFakePluginWindowHandle(window);
+}
+
+void RenderWidgetHostViewMac::GPUPluginSetIOSurface(
+    gfx::PluginWindowHandle window,
+    int32 width,
+    int32 height,
+    uint64 io_surface_identifier) {
+  plugin_container_manager_.SetSizeAndBackingStore(window,
+                                                   width,
+                                                   height,
+                                                   io_surface_identifier);
+}
+
+void RenderWidgetHostViewMac::GPUPluginBuffersSwapped(
+    gfx::PluginWindowHandle window) {
+  [gpu_plugin_layer_.get() setNeedsDisplay];
+}
+
+void RenderWidgetHostViewMac::DrawGPUPluginInstances(CGLContextObj context) {
+  CGLSetCurrentContext(context);
+  gfx::Rect rect = GetWindowRect();
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+  // Note that we place the origin at the upper left corner with +y
+  // going down
+  glOrtho(0, rect.width(), rect.height(), 0, -1, 1);
+  glMatrixMode(GL_MODELVIEW);
+  glLoadIdentity();
+  plugin_container_manager_.Draw(context);
 }
 
 void RenderWidgetHostViewMac::ShutdownHost() {
@@ -870,6 +989,10 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
     if (renderWidgetHostView_->whiteout_start_time_.is_null())
       renderWidgetHostView_->whiteout_start_time_ = base::TimeTicks::Now();
   }
+
+  // This helps keep the GPU plugins' output in better sync with the
+  // window as it resizes.
+  [renderWidgetHostView_->gpu_plugin_layer_.get() setNeedsDisplay];
 }
 
 - (BOOL)canBecomeKeyView {

@@ -41,4 +41,15 @@ IPC_BEGIN_MESSAGES(CommandBuffer)
                              base::SharedMemoryHandle /* transfer_buffer */,
                              size_t /* size */)
 
+#if defined(OS_MACOSX)
+  // On Mac OS X the GPU plugin must be offscreen, because there is no
+  // true cross-process window hierarchy. For this reason we must send
+  // resize events explicitly to the command buffer stub so it can
+  // reallocate its backing store and send the new one back to the
+  // browser. This message is currently used only on 10.6 and later.
+  IPC_MESSAGE_ROUTED2(CommandBufferMsg_SetWindowSize,
+                      int32 /* width */,
+                      int32 /* height */)
+#endif
+
 IPC_END_MESSAGES(CommandBuffer)

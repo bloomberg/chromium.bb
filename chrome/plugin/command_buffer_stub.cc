@@ -5,14 +5,17 @@
 #include "base/process_util.h"
 #include "base/shared_memory.h"
 #include "chrome/common/command_buffer_messages.h"
+#include "chrome/common/plugin_messages.h"
 #include "chrome/plugin/command_buffer_stub.h"
 #include "chrome/plugin/plugin_channel.h"
 
 using gpu::Buffer;
 
 CommandBufferStub::CommandBufferStub(PluginChannel* channel,
+                                     int plugin_host_route_id,
                                      gfx::PluginWindowHandle window)
     : channel_(channel),
+      plugin_host_route_id_(plugin_host_route_id),
       window_(window) {
   route_id_ = channel->GenerateRouteID();
   channel->AddRoute(route_id_, this, false);
@@ -58,6 +61,11 @@ void CommandBufferStub::OnInitialize(int32 size,
         command_buffer_->SetPutOffsetChangeCallback(
             NewCallback(processor_.get(),
                         &gpu::GPUProcessor::ProcessCommands));
+#if defined(OS_MACOSX)
+        processor_->SetSwapBuffersCallback(
+            NewCallback(this,
+                        &CommandBufferStub::SwapBuffersCallback));
+#endif
         buffer.shared_memory->ShareToProcess(peer_handle, ring_buffer);
       } else {
         processor_ = NULL;
@@ -108,6 +116,24 @@ void CommandBufferStub::OnGetTransferBuffer(
   base::CloseProcessHandle(peer_handle);
 }
 
+#if defined(OS_MACOSX)
+void CommandBufferStub::OnSetWindowSize(int32 width, int32 height) {
+  uint64 new_backing_store = processor_->SetWindowSize(width, height);
+  if (new_backing_store) {
+    Send(new PluginHostMsg_GPUPluginSetIOSurface(plugin_host_route_id_,
+                                                 window_,
+                                                 width,
+                                                 height,
+                                                 new_backing_store));
+  }
+}
+
+void CommandBufferStub::SwapBuffersCallback() {
+  Send(new PluginHostMsg_GPUPluginBuffersSwapped(plugin_host_route_id_,
+                                                 window_));
+}
+#endif
+
 void CommandBufferStub::OnMessageReceived(const IPC::Message& msg) {
   IPC_BEGIN_MESSAGE_MAP(CommandBufferStub, msg)
     IPC_MESSAGE_HANDLER(CommandBufferMsg_Initialize, OnInitialize);
@@ -119,6 +145,9 @@ void CommandBufferStub::OnMessageReceived(const IPC::Message& msg) {
                         OnDestroyTransferBuffer);
     IPC_MESSAGE_HANDLER(CommandBufferMsg_GetTransferBuffer,
                         OnGetTransferBuffer);
+#if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(CommandBufferMsg_SetWindowSize, OnSetWindowSize);
+#endif
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 }

@@ -22,7 +22,9 @@ class CommandBufferService;
 class CommandBufferStub : public IPC::Channel::Listener,
                           public IPC::Message::Sender {
  public:
-  CommandBufferStub(PluginChannel* channel, gfx::PluginWindowHandle window);
+  CommandBufferStub(PluginChannel* channel,
+                    int plugin_host_route_id,
+                    gfx::PluginWindowHandle window);
 
   virtual ~CommandBufferStub();
 
@@ -45,8 +47,13 @@ class CommandBufferStub : public IPC::Channel::Listener,
   void OnGetTransferBuffer(int32 id,
                            base::SharedMemoryHandle* transfer_buffer,
                            size_t* size);
+#if defined(OS_MACOSX)
+  void OnSetWindowSize(int32 width, int32 height);
+  void SwapBuffersCallback();
+#endif
 
   scoped_refptr<PluginChannel> channel_;
+  int plugin_host_route_id_;
   gfx::PluginWindowHandle window_;
   int route_id_;
   scoped_ptr<gpu::CommandBufferService> command_buffer_;

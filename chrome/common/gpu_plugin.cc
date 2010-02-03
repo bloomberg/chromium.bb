@@ -27,7 +27,7 @@ void RegisterInternalGPUPlugin() {
     L"",
     L"",
     {
-#if !defined(OS_LINUX)
+#if !defined(OS_POSIX) || defined(OS_MACOSX)
       gpu_plugin::NP_GetEntryPoints,
 #endif
       gpu_plugin::NP_Initialize,

@@ -5,6 +5,10 @@
 #ifndef CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_H_
 #define CHROME_BROWSER_RENDERER_HOST_RENDER_WIDGET_HOST_VIEW_H_
 
+#if defined(OS_MACOSX)
+#include <OpenGL/OpenGL.h>
+#endif
+
 #include "app/gfx/native_widget_types.h"
 #include "base/shared_memory.h"
 #include "third_party/skia/include/core/SkBitmap.h"
@@ -166,6 +170,18 @@ class RenderWidgetHostView {
   // message and renderer-side handling) can be removed in favor of using
   // WasHidden/DidBecomeSelected.
   virtual void SetWindowVisibility(bool visible) = 0;
+
+  // Methods associated with GPU plugin instances
+  virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle() = 0;
+  virtual void DestroyFakePluginWindowHandle(
+      gfx::PluginWindowHandle window) = 0;
+  virtual void GPUPluginSetIOSurface(gfx::PluginWindowHandle window,
+                                     int32 width,
+                                     int32 height,
+                                     uint64 io_surface_identifier) = 0;
+  virtual void GPUPluginBuffersSwapped(gfx::PluginWindowHandle window) = 0;
+  // Draws the current GPU plugin instances into the given context.
+  virtual void DrawGPUPluginInstances(CGLContextObj context) = 0;
 #endif
 
 #if defined(OS_LINUX)

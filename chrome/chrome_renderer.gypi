@@ -185,7 +185,7 @@
             }],
           ],
         }],
-        ['OS=="win" or (OS=="linux" and target_arch!="arm")', {
+        ['enable_gpu==1', {
           'sources': [
             'renderer/command_buffer_proxy.cc',
             'renderer/command_buffer_proxy.h',

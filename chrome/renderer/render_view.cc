@@ -4234,3 +4234,30 @@ bool RenderView::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
 
   return rv;
 }
+
+#if defined(OS_MACOSX)
+gfx::PluginWindowHandle RenderView::AllocateFakePluginWindowHandle() {
+  gfx::PluginWindowHandle window = NULL;
+  Send(new ViewHostMsg_AllocateFakePluginWindowHandle(
+      routing_id(), &window));
+  return window;
+}
+
+void RenderView::DestroyFakePluginWindowHandle(gfx::PluginWindowHandle window) {
+  if (window)
+    Send(new ViewHostMsg_DestroyFakePluginWindowHandle(routing_id(), window));
+}
+
+void RenderView::GPUPluginSetIOSurface(gfx::PluginWindowHandle window,
+                                       int32 width,
+                                       int32 height,
+                                       uint64 io_surface_identifier) {
+  Send(new ViewHostMsg_GPUPluginSetIOSurface(
+      routing_id(), window, width, height, io_surface_identifier));
+}
+
+void RenderView::GPUPluginBuffersSwapped(gfx::PluginWindowHandle window) {
+  Send(new ViewHostMsg_GPUPluginBuffersSwapped(routing_id(), window));
+}
+#endif
+

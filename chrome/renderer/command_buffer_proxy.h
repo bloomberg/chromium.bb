@@ -44,6 +44,10 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   virtual void SetToken(int32 token);
   virtual void SetParseError(gpu::error::Error error);
 
+#if defined(OS_MACOSX)
+  virtual void SetWindowSize(int32 width, int32 height);
+#endif
+
  private:
   // As with the service, the client takes ownership of the ring buffer.
   int32 size_;

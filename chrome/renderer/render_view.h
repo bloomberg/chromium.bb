@@ -469,6 +469,18 @@ class RenderView : public RenderWidget,
   // 'zh-TW' for Traditional Chinse.
   std::string DetectLanguage();
 
+#if defined(OS_MACOSX)
+  // Helper routines for GPU plugin support. Used by the
+  // WebPluginDelegateProxy, which has a pointer to the RenderView.
+  gfx::PluginWindowHandle AllocateFakePluginWindowHandle();
+  void DestroyFakePluginWindowHandle(gfx::PluginWindowHandle window);
+  void GPUPluginSetIOSurface(gfx::PluginWindowHandle window,
+                             int32 width,
+                             int32 height,
+                             uint64 io_surface_identifier);
+  void GPUPluginBuffersSwapped(gfx::PluginWindowHandle window);
+#endif
+
  protected:
   // RenderWidget overrides:
   virtual void Close();

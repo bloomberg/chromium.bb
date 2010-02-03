@@ -8,8 +8,10 @@
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 
 namespace gpu {
-const int32 CommandHeader::kMaxSize = (1 << 21) - 1;
-
+#if !defined(OS_WIN)
+// gcc needs this to link, but MSVC requires it not be present
+const int32 CommandHeader::kMaxSize;
+#endif
 namespace cmd {
 
 const char* GetCommandName(CommandId command_id) {

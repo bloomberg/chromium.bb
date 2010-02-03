@@ -11,6 +11,7 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
+#include "base/task.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 
 namespace gpu {
@@ -55,6 +56,8 @@ class GLES2Decoder : public CommonDecoder {
   HWND hwnd() const {
     return hwnd_;
   }
+#elif !defined(UNIT_TEST) && defined(OS_MACOSX)
+  virtual uint64 SetWindowSize(int32 width, int32 height) = 0;
 #endif
 
   // Initializes the graphics context.
@@ -70,6 +73,9 @@ class GLES2Decoder : public CommonDecoder {
 
   // Gets a service id by client id.
   virtual uint32 GetServiceIdForTesting(uint32 client_id) = 0;
+
+  // Sets a callback which is called when a SwapBuffers command is processed.
+  virtual void SetSwapBuffersCallback(Callback0::Type* callback) = 0;
 
  protected:
   GLES2Decoder();

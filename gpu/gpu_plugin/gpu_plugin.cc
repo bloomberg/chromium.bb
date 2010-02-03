@@ -120,7 +120,7 @@ NPError API_CALL NP_GetEntryPoints(NPPluginFuncs* funcs) {
   return NPERR_NO_ERROR;
 }
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
 NPError API_CALL NP_Initialize(NPNetscapeFuncs *browser_funcs,
                                NPPluginFuncs* plugin_funcs) {
 #else
@@ -129,7 +129,7 @@ NPError API_CALL NP_Initialize(NPNetscapeFuncs *browser_funcs) {
   if (!browser_funcs)
     return NPERR_INVALID_FUNCTABLE_ERROR;
 
-#if defined(OS_LINUX)
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
   NP_GetEntryPoints(plugin_funcs);
 #endif
 

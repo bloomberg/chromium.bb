@@ -26,6 +26,7 @@ class MockGLES2Decoder : public GLES2Decoder {
   MOCK_METHOD0(Destroy, void());
   MOCK_METHOD0(MakeCurrent, bool());
   MOCK_METHOD1(GetServiceIdForTesting, uint32(uint32 client_id));
+  MOCK_METHOD1(SetSwapBuffersCallback, void(Callback0::Type*));
   MOCK_METHOD3(DoCommand, error::Error(unsigned int command,
                                        unsigned int arg_count,
                                        const void* cmd_data));

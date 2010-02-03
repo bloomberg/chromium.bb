@@ -262,6 +262,10 @@
         'glue/plugins/gtk_plugin_container.cc',
         'glue/plugins/gtk_plugin_container_manager.h',
         'glue/plugins/gtk_plugin_container_manager.cc',
+        'glue/plugins/mac_gpu_plugin_container.h',
+        'glue/plugins/mac_gpu_plugin_container.cc',
+        'glue/plugins/mac_gpu_plugin_container_manager.h',
+        'glue/plugins/mac_gpu_plugin_container_manager.cc',
         'glue/plugins/npapi_extension_thunk.cc',
         'glue/plugins/npapi_extension_thunk.h',
         'glue/plugins/plugin_constants_win.h',
@@ -416,9 +420,10 @@
                        ['exclude', r'/gtk_']],
         }],
         ['OS!="mac"', {
-          'sources/': [['exclude', '_mac\\.(cc|mm)$']],
+          'sources/': [['exclude', '_mac\\.(cc|mm)$'],
+                       ['exclude', r'/mac_']],
         }],
-        ['OS=="win" or (OS=="linux" and target_arch!="arm")', {
+        ['enable_gpu==1', {
           'dependencies': [
             '../gpu/gpu.gyp:gpu_plugin',
           ],

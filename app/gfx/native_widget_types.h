@@ -140,8 +140,15 @@ NativeViewId IdFromNativeView(NativeView view);
   // On OS X we don't have windowed plugins.
   // We use a NULL/0 PluginWindowHandle in shared code to indicate there
   // is no window present, so mirror that behavior here.
-  typedef bool PluginWindowHandle;
-  const PluginWindowHandle kNullPluginWindow = false;
+  //
+  // The GPU plugin is currently an exception to this rule. As of this
+  // writing it uses some NPAPI infrastructure, and minimally we need
+  // to identify the plugin instance via this window handle. When the
+  // GPU plugin becomes a full-on GPU process, this typedef can be
+  // returned to a bool. For now we use a type large enough to hold a
+  // pointer on 64-bit architectures in case we need this capability.
+  typedef uint64 PluginWindowHandle;
+  const PluginWindowHandle kNullPluginWindow = 0;
 #endif
 
 }  // namespace gfx

@@ -171,7 +171,7 @@ webkit_glue::WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
   WebWidgetHost *host = GetWidgetHost();
   if (!host)
     return NULL;
-  gfx::NativeView view = host->view_handle();
+  gfx::PluginWindowHandle containing_view = NULL;
 
   bool allow_wildcard = true;
   WebPluginInfo info;
@@ -181,9 +181,11 @@ webkit_glue::WebPluginDelegate* TestWebViewDelegate::CreatePluginDelegate(
   }
 
   if (actual_mime_type && !actual_mime_type->empty())
-    return WebPluginDelegateImpl::Create(info.path, *actual_mime_type, view);
+    return WebPluginDelegateImpl::Create(info.path, *actual_mime_type,
+                                         containing_view);
   else
-    return WebPluginDelegateImpl::Create(info.path, mime_type, view);
+    return WebPluginDelegateImpl::Create(info.path, mime_type,
+                                         containing_view);
 }
 
 void TestWebViewDelegate::CreatedPluginWindow(

@@ -143,6 +143,15 @@ void RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetScreenInfo, OnMsgGetScreenInfo)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetWindowRect, OnMsgGetWindowRect)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GetRootWindowRect, OnMsgGetRootWindowRect)
+    // The following messages are only used on 10.6 and later
+    IPC_MESSAGE_HANDLER(ViewHostMsg_AllocateFakePluginWindowHandle,
+                        OnAllocateFakePluginWindowHandle)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyFakePluginWindowHandle,
+                        OnDestroyFakePluginWindowHandle)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GPUPluginSetIOSurface,
+                        OnGPUPluginSetIOSurface)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GPUPluginBuffersSwapped,
+                        OnGPUPluginBuffersSwapped)
 #endif
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP_EX()
@@ -874,6 +883,41 @@ void RenderWidgetHost::OnMsgGetRootWindowRect(gfx::NativeViewId window_id,
   }
 }
 
+void RenderWidgetHost::OnAllocateFakePluginWindowHandle(
+    gfx::PluginWindowHandle* id) {
+  // TODO(kbr): similar potential issue here as in OnMsgCreatePluginContainer.
+  // Possibly less of an issue because this is only used for the GPU plugin.
+  if (view_) {
+    *id = view_->AllocateFakePluginWindowHandle();
+  } else {
+    NOTIMPLEMENTED();
+  }
+}
+
+void RenderWidgetHost::OnDestroyFakePluginWindowHandle(
+    gfx::PluginWindowHandle id) {
+  if (view_) {
+    view_->DestroyFakePluginWindowHandle(id);
+  } else {
+    NOTIMPLEMENTED();
+  }
+}
+
+void RenderWidgetHost::OnGPUPluginSetIOSurface(gfx::PluginWindowHandle window,
+                                               int32 width,
+                                               int32 height,
+                                               uint64 mach_port) {
+  if (view_) {
+    view_->GPUPluginSetIOSurface(window, width, height, mach_port);
+  }
+}
+
+void RenderWidgetHost::OnGPUPluginBuffersSwapped(
+    gfx::PluginWindowHandle window) {
+  if (view_) {
+    view_->GPUPluginBuffersSwapped(window);
+  }
+}
 #endif
 
 void RenderWidgetHost::PaintBackingStoreRect(

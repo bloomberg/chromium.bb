@@ -386,6 +386,11 @@ void WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(PluginHostMsg_UpdateGeometry_ACK,
                         OnUpdateGeometry_ACK)
+    // Used only on 10.6 and later
+    IPC_MESSAGE_HANDLER(PluginHostMsg_GPUPluginSetIOSurface,
+                        OnGPUPluginSetIOSurface)
+    IPC_MESSAGE_HANDLER(PluginHostMsg_GPUPluginBuffersSwapped,
+                        OnGPUPluginBuffersSwapped)
 #endif
 
     IPC_MESSAGE_UNHANDLED_ERROR()
@@ -891,6 +896,14 @@ void WebPluginDelegateProxy::OnSetWindow(gfx::PluginWindowHandle window) {
 void WebPluginDelegateProxy::WillDestroyWindow() {
   DCHECK(window_);
   plugin_->WillDestroyWindow(window_);
+#if defined(OS_MACOSX)
+  if (window_) {
+    // This is actually a "fake" window handle only for the GPU
+    // plugin. Deallocate it on the browser side.
+    if (render_view_)
+      render_view_->DestroyFakePluginWindowHandle(window_);
+  }
+#endif
   window_ = gfx::kNullPluginWindow;
 }
 
@@ -1199,6 +1212,23 @@ WebPluginDelegateProxy::CreateSeekableResourceClient(
 
 CommandBufferProxy* WebPluginDelegateProxy::CreateCommandBuffer() {
 #if defined(ENABLE_GPU)
+#if defined(OS_MACOSX)
+  // We need to synthesize a fake window handle for this nested
+  // delegate to identify the instance of the GPU plugin back to the
+  // browser.
+  gfx::PluginWindowHandle fake_window = NULL;
+  if (render_view_)
+    fake_window = render_view_->AllocateFakePluginWindowHandle();
+  // If we aren't running on 10.6, this allocation will fail.
+  if (!fake_window)
+    return NULL;
+  OnSetWindow(fake_window);
+  if (!Send(new PluginMsg_SetFakeGPUPluginWindowHandle(instance_id_,
+                                                       fake_window))) {
+    return NULL;
+  }
+#endif
+
   int command_buffer_id;
   if (!Send(new PluginMsg_CreateCommandBuffer(instance_id_,
                                               &command_buffer_id))) {
@@ -1246,5 +1276,21 @@ void WebPluginDelegateProxy::OnUpdateGeometry_ACK(int ack_key) {
   ReleaseTransportDIB(iterator->second.background_store.get());
 
   old_transport_dibs_.erase(iterator);
+}
+
+void WebPluginDelegateProxy::OnGPUPluginSetIOSurface(
+    gfx::PluginWindowHandle window,
+    int32 width,
+    int32 height,
+    uint64 io_surface_identifier) {
+  if (render_view_)
+    render_view_->GPUPluginSetIOSurface(window, width, height,
+                                        io_surface_identifier);
+}
+
+void WebPluginDelegateProxy::OnGPUPluginBuffersSwapped(
+    gfx::PluginWindowHandle window) {
+  if (render_view_)
+    render_view_->GPUPluginBuffersSwapped(window);
 }
 #endif

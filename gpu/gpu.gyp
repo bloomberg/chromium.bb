@@ -19,9 +19,6 @@
       'command_buffer/service/gl_utils.h',
     ],
   },
-  'includes': [
-    '../build/common.gypi',
-  ],
   'targets': [
     {
       'target_name': 'gl_libs',
@@ -138,6 +135,12 @@
       'dependencies': [
         'gles2_cmd_helper',
       ],
+      'all_dependent_settings': {
+        'include_dirs': [
+          # For GLES2/gl2.h
+          'command_buffer/common',
+        ],
+      },
       'sources': [
         'command_buffer/client/gles2_implementation_autogen.h',
         'command_buffer/client/gles2_implementation.cc',
@@ -263,6 +266,13 @@
           {
             'sources': [
               'command_buffer/service/gpu_processor_win.cc',
+            ],
+          },
+        ],
+        ['OS == "mac"',
+          {
+            'sources': [
+              'command_buffer/service/gpu_processor_mac.cc',
             ],
           },
         ],

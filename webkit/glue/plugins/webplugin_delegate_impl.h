@@ -147,9 +147,15 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 #endif
 #endif  // OS_MACOSX
 
-#if !defined(OS_MACOSX)
   gfx::PluginWindowHandle windowed_handle() const {
     return windowed_handle_;
+  }
+
+#if defined(OS_MACOSX)
+  // On Mac OS X and for the GPU plugin only, this handle is a fake
+  // one and comes in from the outside world.
+  void set_windowed_handle(gfx::PluginWindowHandle handle) {
+    windowed_handle_ = handle;
   }
 #endif
 
@@ -225,11 +231,15 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   // Closes down and destroys our plugin instance.
   void DestroyInstance();
 
-#if !defined(OS_MACOSX)
+
   // used for windowed plugins
+  // Note: on Mac OS X, the only time the windowed handle is non-zero
+  // is the case of the GPU plugin, which uses a fake window handle to
+  // identify itself back to the browser. It still performs all of its
+  // work offscreen.
   gfx::PluginWindowHandle windowed_handle_;
   gfx::Rect windowed_last_pos_;
-#endif
+
   bool windowed_did_set_window_;
 
   // TODO(dglazkov): No longer used by Windows, make sure the removal

@@ -44,6 +44,19 @@ class GPUProcessor : public base::RefCounted<GPUProcessor>,
   virtual bool SetGetOffset(int32 offset);
   virtual int32 GetGetOffset();
 
+#if defined(OS_MACOSX)
+  // Needed only on Mac OS X, which does not render into an on-screen
+  // window and therefore requires the backing store to be resized
+  // manually. Returns an opaque identifier for the new backing store.
+  virtual uint64 SetWindowSize(int32 width, int32 height);
+
+#endif
+
+  // Sets a callback which is called when a SwapBuffers command is processed.
+  // Must be called after Initialize().
+  // It is not defined on which thread this callback is called.
+  virtual void SetSwapBuffersCallback(Callback0::Type* callback);
+
  private:
   // The GPUProcessor holds a weak reference to the CommandBuffer. The
   // CommandBuffer owns the GPUProcessor and holds a strong reference to it

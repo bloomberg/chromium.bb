@@ -1,0 +1,98 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef WEBKIT_GLUE_PLUGINS_MAC_GPU_PLUGIN_CONTAINER_H_
+#define WEBKIT_GLUE_PLUGINS_MAC_GPU_PLUGIN_CONTAINER_H_
+
+// The "GPU plugin" is currently implemented as a special kind of
+// NPAPI plugin to provide high-performance on-screen 3D rendering for
+// Pepper 3D.
+//
+// On Windows and X11 platforms the GPU plugin relies on cross-process
+// parenting of windows, which is not supported via any public APIs in
+// the Mac OS X window system.
+//
+// To achieve full hardware acceleration we use the new IOSurface APIs
+// introduced in Mac OS X 10.6. The GPU plugin's process produces an
+// IOSurface and renders into it using OpenGL. It uses the
+// IOSurfaceGetID and IOSurfaceLookup APIs to pass a reference to this
+// surface to the browser process for on-screen rendering. The GPU
+// plugin essentially looks like a windowless plugin; the browser
+// process gets all of the mouse events, because the plugin process
+// does not have an on-screen window.
+//
+// This class encapsulates some of the management of these data
+// structures, in conjunction with the MacGPUPluginContainerManager.
+
+#include <CoreFoundation/CoreFoundation.h>
+#include <OpenGL/OpenGL.h>
+
+#include "app/gfx/native_widget_types.h"
+#include "base/basictypes.h"
+
+namespace webkit_glue {
+struct WebPluginGeometry;
+}
+
+class MacGPUPluginContainerManager;
+
+class MacGPUPluginContainer {
+ public:
+  MacGPUPluginContainer();
+  virtual ~MacGPUPluginContainer();
+
+  // Sets the backing store and size of this plugin container.
+  void SetSizeAndBackingStore(int32 width,
+                              int32 height,
+                              uint64 io_surface_identifier,
+                              MacGPUPluginContainerManager* manager);
+
+  // Tells the plugin container that it has moved relative to the
+  // origin of the window, for example because of a scroll event.
+  void MoveTo(const webkit_glue::WebPluginGeometry& geom);
+
+  // Draws this plugin's contents, texture mapped onto a quad in the
+  // given OpenGL context. TODO(kbr): figure out and define exactly
+  // how the coordinate system will work out.
+  void Draw(CGLContextObj context);
+
+  // Enqueue our texture for later deletion. Call this before deleting
+  // this object.
+  void EnqueueTextureForDeletion(MacGPUPluginContainerManager* manager);
+
+ private:
+  // We currently only have a viable implementation of this class on
+  // Snow Leopard. We need to think about fallback strategies that
+  // will work on Leopard.
+
+  // The x and y coordinates of the plugin window on the web page.
+  // TODO(kbr): see whether additional clipping information is
+  // necessary.
+  int x_;
+  int y_;
+
+  void ReleaseIOSurface();
+
+  // The IOSurfaceRef, if any, that has been handed from the GPU
+  // plugin process back to the browser process for drawing.
+  // This is held as a CFTypeRef because we can't refer to the
+  // IOSurfaceRef type when building on 10.5.
+  CFTypeRef surface_;
+
+  // The width and height of the surface.
+  int32 width_;
+  int32 height_;
+
+  // The "live" OpenGL texture referring to this IOSurfaceRef. Note
+  // that per the CGLTexImageIOSurface2D API we do not need to
+  // explicitly update this texture's contents once created. All we
+  // need to do is ensure it is re-bound before attempting to draw
+  // with it.
+  GLuint texture_;
+
+  DISALLOW_COPY_AND_ASSIGN(MacGPUPluginContainer);
+};
+
+#endif  // WEBKIT_GLUE_PLUGINS_MAC_GPU_PLUGIN_CONTAINER_H_
+

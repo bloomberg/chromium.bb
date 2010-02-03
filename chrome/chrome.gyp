@@ -526,7 +526,7 @@
             'third_party/wtl/include',
           ],
         }],
-        ['OS=="win" or (OS=="linux" and target_arch!="arm")', {
+        ['enable_gpu==1', {
           'dependencies': [
             '../gpu/gpu.gyp:command_buffer_service',
           ],

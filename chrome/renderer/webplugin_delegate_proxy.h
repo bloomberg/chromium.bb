@@ -145,6 +145,11 @@ class WebPluginDelegateProxy
 
 #if defined(OS_MACOSX)
   void OnUpdateGeometry_ACK(int ack_key);
+  void OnGPUPluginSetIOSurface(gfx::PluginWindowHandle window,
+                               int32 width,
+                               int32 height,
+                               uint64 io_surface_identifier);
+  void OnGPUPluginBuffersSwapped(gfx::PluginWindowHandle window);
 #endif
 
   // Draw a graphic indicating a crashed plugin.

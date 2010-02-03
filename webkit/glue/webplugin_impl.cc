@@ -406,6 +406,23 @@ WebPluginImpl::~WebPluginImpl() {
 }
 
 void WebPluginImpl::SetWindow(gfx::PluginWindowHandle window) {
+#if defined(OS_MACOSX)
+  // The only time this is called twice, and the second time with a
+  // non-zero PluginWindowHandle, is the case when this WebPluginImpl
+  // is created on behalf of the GPU plugin. This entire code path
+  // will go away soon, as soon as the GPU plugin becomes the GPU
+  // process, so it is being separated out for easy deletion.
+
+  // The logic we want here is: if (window) DCHECK(!window_);
+  DCHECK(!(window_ && window));
+  window_ = window;
+  // Lie to ourselves about being windowless even if we got a fake
+  // plugin window handle, so we continue to get input events.
+  windowless_ = true;
+  accepts_input_events_ = true;
+  // We do not really need to notify the page delegate that a plugin
+  // window was created -- so don't.
+#else
   if (window) {
     DCHECK(!windowless_);
     window_ = window;
@@ -420,6 +437,7 @@ void WebPluginImpl::SetWindow(gfx::PluginWindowHandle window) {
     windowless_ = true;
     accepts_input_events_ = true;
   }
+#endif
 }
 
 void WebPluginImpl::WillDestroyWindow(gfx::PluginWindowHandle window) {

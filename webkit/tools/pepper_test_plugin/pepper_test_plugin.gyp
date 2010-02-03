@@ -58,25 +58,19 @@
           'cflags': ['-fPIC'],
           'defines': ['INDEPENDENT_PLUGIN'],
         }, {
+          # Dependencies for all other OS/CPU combinations except the Linux ones above
           'dependencies': [
             '../../../base/base.gyp:base',
             '../../../skia/skia.gyp:skia',
+            '../../../gpu/gpu.gyp:gles2_demo_lib',
+            '../../../gpu/gpu.gyp:pgl',
           ],
-          'conditions': [
-            ['OS!="mac"', {
-              'dependencies': [
-                '../../../gpu/gpu.gyp:gles2_demo_lib',
-                '../../../gpu/gpu.gyp:pgl',
-              ],
-            }],
-          ]
         }],
         ['OS=="mac"', {
           'type': 'loadable_module',
           'mac_bundle': 1,
           'product_name': 'PepperTestPlugin',
           'product_extension': 'plugin',
-          'defines': ['INDEPENDENT_PLUGIN'],
           'sources+': [
             'Info.plist'
           ],

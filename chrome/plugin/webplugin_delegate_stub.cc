@@ -139,6 +139,10 @@ void WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
                         OnHTTPRangeRequestReply)
     IPC_MESSAGE_HANDLER(PluginMsg_CreateCommandBuffer,
                         OnCreateCommandBuffer)
+#if defined(OS_MACOSX)
+    IPC_MESSAGE_HANDLER(PluginMsg_SetFakeGPUPluginWindowHandle,
+                        OnSetFakeGPUPluginWindowHandle)
+#endif
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 
@@ -375,7 +379,8 @@ void WebPluginDelegateStub::OnInstallMissingPlugin() {
 void WebPluginDelegateStub::OnCreateCommandBuffer(int* route_id) {
 #if defined(ENABLE_GPU)
   command_buffer_stub_.reset(new CommandBufferStub(
-      static_cast<PluginChannel*>(PluginChannelBase::GetCurrentChannel()),
+      channel_,
+      instance_id_,
       delegate_->windowed_handle()));
 
   *route_id = command_buffer_stub_->route_id();
@@ -428,3 +433,11 @@ void WebPluginDelegateStub::OnHTTPRangeRequestReply(
       delegate_->CreateSeekableResourceClient(resource_id, range_request_id);
   webplugin_->OnResourceCreated(resource_id, resource_client);
 }
+
+#if defined(OS_MACOSX)
+void WebPluginDelegateStub::OnSetFakeGPUPluginWindowHandle(
+    gfx::PluginWindowHandle window) {
+  delegate_->set_windowed_handle(window);
+}
+#endif
+

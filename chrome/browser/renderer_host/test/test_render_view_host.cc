@@ -91,6 +91,29 @@ gfx::Rect TestRenderWidgetHostView::GetRootWindowRect() {
 void TestRenderWidgetHostView::SetActive(bool active) {
   // <viettrungluu@gmail.com>: Do I need to do anything here?
 }
+
+gfx::PluginWindowHandle
+TestRenderWidgetHostView::AllocateFakePluginWindowHandle() {
+  return NULL;
+}
+
+void TestRenderWidgetHostView::DestroyFakePluginWindowHandle(
+    gfx::PluginWindowHandle window) {
+}
+
+void TestRenderWidgetHostView::GPUPluginSetIOSurface(
+    gfx::PluginWindowHandle window,
+    int32 width,
+    int32 height,
+    uint64 io_surface_identifier) {
+}
+
+void TestRenderWidgetHostView::GPUPluginBuffersSwapped(
+    gfx::PluginWindowHandle window) {
+}
+
+void TestRenderWidgetHostView::DrawGPUPluginInstances(CGLContextObj context) {
+}
 #endif
 
 void RenderViewHostTestHarness::NavigateAndCommit(const GURL& url) {

@@ -82,4 +82,15 @@ int32 GPUProcessor::GetGetOffset() {
   return parser_->get();
 }
 
+#if defined(OS_MACOSX)
+uint64 GPUProcessor::SetWindowSize(int32 width, int32 height) {
+  return decoder_->SetWindowSize(width, height);
+}
+#endif
+
+void GPUProcessor::SetSwapBuffersCallback(
+    Callback0::Type* callback) {
+  decoder_->SetSwapBuffersCallback(callback);
+}
+
 }  // namespace gpu

@@ -5,6 +5,7 @@
 // This file is here so other GLES2 related files can have a common set of
 // includes where appropriate.
 
+#include <math.h>
 #include <GLES2/gl2.h>
 #include "gpu/command_buffer/client/gles2_demo_cc.h"
 
@@ -13,8 +14,10 @@ namespace {
 GLuint g_texture = 0;
 int g_textureLoc = -1;
 GLuint g_programObject = 0;
+GLuint g_worldMatrixLoc = 0;
 GLuint g_vbo = 0;
 GLsizei g_texCoordOffset = 0;
+int g_angle = 0;
 
 void CheckGLError() {
   GLenum error = glGetError();
@@ -49,12 +52,14 @@ GLuint LoadShader(GLenum type, const char* shaderSrc) {
 
 void InitShaders() {
   static const char* vShaderStr =
+    "uniform mat4 worldMatrix;\n"
     "attribute vec3 g_Position;\n"
     "attribute vec2 g_TexCoord0;\n"
     "varying vec2 texCoord;\n"
     "void main()\n"
     "{\n"
-    "   gl_Position = vec4(g_Position.x, g_Position.y, g_Position.z, 1.0);\n"
+    "   gl_Position = worldMatrix *\n"
+    "                 vec4(g_Position.x, g_Position.y, g_Position.z, 1.0);\n"
     "   texCoord = g_TexCoord0;\n"
     "}\n";
   static const char* fShaderStr =
@@ -94,6 +99,7 @@ void InitShaders() {
     return;
   }
   g_programObject = programObject;
+  g_worldMatrixLoc = glGetUniformLocation(g_programObject, "worldMatrix");
   g_textureLoc = glGetUniformLocation(g_programObject, "tex");
   glGenBuffers(1, &g_vbo);
   glBindBuffer(GL_ARRAY_BUFFER, g_vbo);
@@ -124,7 +130,36 @@ void InitShaders() {
   CheckGLError();
 }
 
+#define PI 3.1415926535897932384626433832795f
+
 void Draw() {
+  // TODO(kbr): base the angle on time rather than on ticks
+  g_angle = (g_angle + 1) % 360;
+  // Rotate about the Z axis
+  GLfloat rot_matrix[16];
+  GLfloat cos_angle = cosf(static_cast<GLfloat>(g_angle) * PI / 180.0f);
+  GLfloat sin_angle = sinf(static_cast<GLfloat>(g_angle) * PI / 180.0f);
+  // OpenGL matrices are column-major
+  rot_matrix[0] = cos_angle;
+  rot_matrix[1] = sin_angle;
+  rot_matrix[2] = 0.0f;
+  rot_matrix[3] = 0.0f;
+
+  rot_matrix[4] = -sin_angle;
+  rot_matrix[5] = cos_angle;
+  rot_matrix[6] = 0.0f;
+  rot_matrix[7] = 0.0f;
+
+  rot_matrix[8] = 0.0f;
+  rot_matrix[9] = 0.0f;
+  rot_matrix[10] = 1.0f;
+  rot_matrix[11] = 0.0f;
+
+  rot_matrix[12] = 0.0f;
+  rot_matrix[13] = 0.0f;
+  rot_matrix[14] = 0.0f;
+  rot_matrix[15] = 1.0f;
+
   // Note: the viewport is automatically set up to cover the entire Canvas.
   // Clear the color buffer
   glClear(GL_COLOR_BUFFER_BIT);
@@ -132,6 +167,9 @@ void Draw() {
   // Use the program object
   glUseProgram(g_programObject);
   CheckGLError();
+  // Set up the model matrix
+  glUniformMatrix4fv(g_worldMatrixLoc, 1, GL_FALSE, rot_matrix);
+
   // Load the vertex data
   glBindBuffer(GL_ARRAY_BUFFER, g_vbo);
   glEnableVertexAttribArray(0);

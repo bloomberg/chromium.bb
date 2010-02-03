@@ -444,6 +444,14 @@ class RenderWidgetHost : public IPC::Channel::Listener,
                           WebKit::WebScreenInfo* results);
   void OnMsgGetWindowRect(gfx::NativeViewId window_id, gfx::Rect* results);
   void OnMsgGetRootWindowRect(gfx::NativeViewId window_id, gfx::Rect* results);
+  // The following handlers are only used on 10.6 and later
+  void OnAllocateFakePluginWindowHandle(gfx::PluginWindowHandle* id);
+  void OnDestroyFakePluginWindowHandle(gfx::PluginWindowHandle id);
+  void OnGPUPluginSetIOSurface(gfx::PluginWindowHandle window,
+                               int32 width,
+                               int32 height,
+                               uint64 mach_port);
+  void OnGPUPluginBuffersSwapped(gfx::PluginWindowHandle window);
 #endif
 
   // Paints the given bitmap to the current backing store at the given location.

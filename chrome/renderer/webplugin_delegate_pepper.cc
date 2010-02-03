@@ -152,6 +152,18 @@ void WebPluginDelegatePepper::UpdateGeometry(
   if (nested_delegate_)
     nested_delegate_->UpdateGeometry(window_rect, clip_rect);
 
+#if defined(ENABLE_GPU)
+#if defined(OS_MACOSX)
+  // Send the new window size to the command buffer service code so it
+  // can allocate a new backing store. The handle to the new backing
+  // store is sent back to the browser asynchronously.
+  if (command_buffer_.get()) {
+    command_buffer_->SetWindowSize(window_rect_.width(),
+                                   window_rect_.height());
+  }
+#endif  // OS_MACOSX
+#endif  // ENABLE_GPU
+
   if (!instance())
     return;
 
@@ -350,6 +362,10 @@ NPError WebPluginDelegatePepper::Device3DInitializeContext(
 
         // Ensure the service knows the window size before rendering anything.
         nested_delegate_->UpdateGeometry(window_rect_, clip_rect_);
+#if defined(OS_MACOSX)
+        command_buffer_->SetWindowSize(window_rect_.width(),
+                                       window_rect_.height());
+#endif  // OS_MACOSX
         // Save the implementation information (the CommandBuffer).
         Device3DImpl* impl = new Device3DImpl;
         impl->command_buffer = command_buffer_.get();
