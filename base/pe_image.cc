@@ -7,7 +7,8 @@
 
 #include "base/pe_image.h"
 
-#ifdef _WIN64
+#if defined(_WIN64) && !defined(NACL_WIN64)
+// TODO(rvargas): Bug 27218. Make sure this is ok.
 #error This code is not tested on x64. Please make sure all the base unit tests\
  pass before doing any real work. The current unit tests don't test the\
  differences between 32- and 64-bits implementations. Bugs may slip through.\

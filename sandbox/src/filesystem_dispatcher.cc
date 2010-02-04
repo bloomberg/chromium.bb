@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "sandbox/src/filesystem_interception.h"
 #include "sandbox/src/filesystem_policy.h"
 #include "sandbox/src/interception.h"
+#include "sandbox/src/interceptors.h"
 #include "sandbox/src/ipc_tags.h"
 #include "sandbox/src/policy_broker.h"
 #include "sandbox/src/policy_params.h"
@@ -60,22 +61,21 @@ bool FilesystemDispatcher::SetupService(InterceptionManager* manager,
                                         int service) {
   switch (service) {
     case IPC_NTCREATEFILE_TAG:
-      return INTERCEPT_NT(manager, NtCreateFile, "_TargetNtCreateFile@48");
+      return INTERCEPT_NT(manager, NtCreateFile, CREATE_FILE_ID, 48);
 
     case IPC_NTOPENFILE_TAG:
-      return INTERCEPT_NT(manager, NtOpenFile, "_TargetNtOpenFile@28");
+      return INTERCEPT_NT(manager, NtOpenFile, OPEN_FILE_ID, 28);
 
     case IPC_NTQUERYATTRIBUTESFILE_TAG:
-      return INTERCEPT_NT(manager, NtQueryAttributesFile,
-                          "_TargetNtQueryAttributesFile@12");
+      return INTERCEPT_NT(manager, NtQueryAttributesFile, QUERY_ATTRIB_FILE_ID,
+                          12);
 
     case IPC_NTQUERYFULLATTRIBUTESFILE_TAG:
         return INTERCEPT_NT(manager, NtQueryFullAttributesFile,
-                            "_TargetNtQueryFullAttributesFile@12");
+                            QUERY_FULL_ATTRIB_FILE_ID, 12);
 
     case IPC_NTSETINFO_RENAME_TAG:
-      return INTERCEPT_NT(manager, NtSetInformationFile,
-                          "_TargetNtSetInformationFile@24");
+      return INTERCEPT_NT(manager, NtSetInformationFile, SET_INFO_FILE_ID, 24);
 
     default:
       return false;

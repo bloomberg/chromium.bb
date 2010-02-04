@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -85,6 +85,10 @@ bool TargetServicesBase::TestIPCPing(int version) {
     return false;
   }
 
+#if defined(_WIN64)
+  // Bug 27218: We don't have IPC yet.
+  return false;
+#else
   SharedMemIPCClient ipc(memory);
   CrossCallReturn answer = {0};
 
@@ -133,6 +137,7 @@ bool TargetServicesBase::TestIPCPing(int version) {
   }
 
   return true;
+#endif
 }
 
 bool ProcessState::IsKernel32Loaded() {

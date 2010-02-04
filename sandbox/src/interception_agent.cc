@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -200,11 +200,14 @@ ResolverThunk* InterceptionAgent::GetResolver(InterceptionType type) {
   if (!eat_resolver)
     eat_resolver = new(NT_ALLOC) EatResolverThunk;
 
+#if !defined(_WIN64)
+  // Sidestep is not supported for x64.
   if (!sidestep_resolver)
     sidestep_resolver = new(NT_ALLOC) SidestepResolverThunk;
 
   if (!smart_sidestep_resolver)
     smart_sidestep_resolver = new(NT_ALLOC) SmartSidestepResolverThunk;
+#endif
 
   switch (type) {
     case INTERCEPTION_EAT:

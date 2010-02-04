@@ -127,8 +127,10 @@ NTSTATUS ServiceResolverThunk::ResolveTarget(const void* module,
   PEImage module_image(module);
   *address = module_image.GetProcAddress(function_name);
 
-  if (NULL == *address)
+  if (NULL == *address) {
+    NOTREACHED();
     return STATUS_UNSUCCESSFUL;
+  }
 
   return STATUS_SUCCESS;
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,10 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace sandbox {
+
+#define BINDNTDLL(name) \
+    name ## Function name = reinterpret_cast<name ## Function>( \
+      ::GetProcAddress(::GetModuleHandle(L"ntdll.dll"), #name))
 
 // Reverts to self and verify that SetInformationToken was faked. Returns
 // SBOX_TEST_SUCCEEDED if faked and SBOX_TEST_FAILED if not faked.
@@ -67,6 +71,36 @@ SBOX_TESTS_COMMAND int PolicyTargetTest_token2(int argc, wchar_t **argv) {
   if (!OpenThreadToken(GetCurrentThread(), TOKEN_IMPERSONATE | TOKEN_DUPLICATE,
                        TRUE, &thread_token))
     return ::GetLastError();
+  ::CloseHandle(thread_token);
+  return SBOX_TEST_SUCCEEDED;
+}
+
+// Opens the thread token with and without impersonation, using
+// NtOpenThreadTokenEX.
+SBOX_TESTS_COMMAND int PolicyTargetTest_token3(int argc, wchar_t **argv) {
+  BINDNTDLL(NtOpenThreadTokenEx);
+  if (!NtOpenThreadTokenEx)
+    return SBOX_TEST_FAILED_TO_EXECUTE_COMMAND;
+
+  HANDLE thread_token;
+  // Get the thread token, using impersonation.
+  NTSTATUS status = NtOpenThreadTokenEx(GetCurrentThread(),
+                                        TOKEN_IMPERSONATE | TOKEN_DUPLICATE,
+                                        FALSE, 0, &thread_token);
+  if (status == STATUS_NO_TOKEN)
+    return ERROR_NO_TOKEN;
+  if (!NT_SUCCESS(status))
+    return SBOX_TEST_FAILED;
+
+  ::CloseHandle(thread_token);
+
+  // Get the thread token, without impersonation.
+  status = NtOpenThreadTokenEx(GetCurrentThread(),
+                               TOKEN_IMPERSONATE | TOKEN_DUPLICATE, TRUE, 0,
+                               &thread_token);
+  if (!NT_SUCCESS(status))
+    return SBOX_TEST_FAILED;
+
   ::CloseHandle(thread_token);
   return SBOX_TEST_SUCCEEDED;
 }
@@ -144,6 +178,20 @@ TEST(PolicyTargetTest, OpenThreadToken) {
   EXPECT_EQ(ERROR_NO_TOKEN, runner.RunTest(L"PolicyTargetTest_token2"));
 }
 
+TEST(PolicyTargetTest, OpenThreadTokenEx) {
+  TestRunner runner;
+  if (win_util::GetWinVersion() < win_util::WINVERSION_XP)
+    return;
+
+  runner.SetTestState(BEFORE_REVERT);
+  EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"PolicyTargetTest_token3"));
+
+  runner.SetTestState(AFTER_REVERT);
+  EXPECT_EQ(ERROR_NO_TOKEN, runner.RunTest(L"PolicyTargetTest_token3"));
+}
+
+#if !defined(_WIN64)
+// Bug 27218: We don't have IPC yet.
 TEST(PolicyTargetTest, OpenThread) {
   TestRunner runner;
   EXPECT_EQ(SBOX_TEST_SUCCEEDED, runner.RunTest(L"PolicyTargetTest_thread")) <<
@@ -286,5 +334,6 @@ TEST(PolicyTargetTest, WinstaPolicy) {
   temp_policy->DestroyAlternateDesktop();
   temp_policy->Release();
 }
+#endif  // _WIN64
 
 }  // namespace sandbox

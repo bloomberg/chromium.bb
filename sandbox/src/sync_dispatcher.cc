@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,6 +6,7 @@
 
 #include "sandbox/src/crosscall_client.h"
 #include "sandbox/src/interception.h"
+#include "sandbox/src/interceptors.h"
 #include "sandbox/src/ipc_tags.h"
 #include "sandbox/src/policy_broker.h"
 #include "sandbox/src/policy_params.h"
@@ -35,11 +36,11 @@ bool SyncDispatcher::SetupService(InterceptionManager* manager,
                                   int service) {
   if (IPC_CREATEEVENT_TAG == service)
       return INTERCEPT_EAT(manager, L"kernel32.dll", CreateEventW,
-                           L"_TargetCreateEventW@20");
+                           CREATE_EVENT_ID, 20);
 
   if (IPC_OPENEVENT_TAG == service)
     return INTERCEPT_EAT(manager, L"kernel32.dll", OpenEventW,
-                         L"_TargetOpenEventW@16");
+                         OPEN_EVENT_ID, 16);
 
   return false;
 }

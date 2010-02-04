@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,6 +22,7 @@
 namespace sandbox {
 
 class TargetProcess;
+enum InterceptorId;
 
 // Internal structures used for communication between the broker and the target.
 struct DllPatchInfo;
@@ -40,12 +41,12 @@ struct DllInterceptionData;
 // InterceptionManager interception_manager(child);
 // if (!interception_manager.AddToPatchedFunctions(
 //         L"ntdll.dll", "NtCreateFile",
-//         sandbox::INTERCEPTION_SERVICE_CALL, &MyNtCreateFile))
+//         sandbox::INTERCEPTION_SERVICE_CALL, &MyNtCreateFile, MY_ID_1))
 //   return false;
 //
 // if (!interception_manager.AddToPatchedFunctions(
 //         L"kernel32.dll", "CreateDirectoryW",
-//         sandbox::INTERCEPTION_EAT, L"MyCreateDirectoryW@12"))
+//         sandbox::INTERCEPTION_EAT, L"MyCreateDirectoryW@12", MY_ID_2))
 //   return false;
 //
 // if (!interception_manager.InitializeInterceptions()) {
@@ -77,28 +78,43 @@ class InterceptionManager {
   // The new function should match the prototype and calling convention of the
   // function to intercept except for one extra argument (the first one) that
   // contains a pointer to the original function, to simplify the development
-  // of interceptors.
+  // of interceptors (for IA32). In x64, there is no extra argument to the
+  // interceptor, so the provided InterceptorId is used to keep a table of
+  // intercepted functions so that the interceptor can index that table to get
+  // the pointer that would have been the first argument (g_originals[id]).
   //
   // For example, to intercept NtClose, the following code could be used:
   //
   // typedef NTSTATUS (WINAPI *NtCloseFunction) (IN HANDLE Handle);
-  // NTSTATUS WINAPI MyNtCose (IN NtCloseFunction OriginalClose,
-  //                           IN HANDLE Handle) {
+  // NTSTATUS WINAPI MyNtCose(IN NtCloseFunction OriginalClose,
+  //                          IN HANDLE Handle) {
   //   // do something
   //   // call the original function
+  //   return OriginalClose(Handle);
+  // }
+  //
+  // And in x64:
+  //
+  // typedef NTSTATUS (WINAPI *NtCloseFunction) (IN HANDLE Handle);
+  // NTSTATUS WINAPI MyNtCose64(IN HANDLE Handle) {
+  //   // do something
+  //   // call the original function
+  //   NtCloseFunction OriginalClose = g_originals[NT_CLOSE_ID];
   //   return OriginalClose(Handle);
   // }
   bool AddToPatchedFunctions(const wchar_t* dll_name,
                              const char* function_name,
                              InterceptionType interception_type,
-                             const void* replacement_code_address);
+                             const void* replacement_code_address,
+                             InterceptorId id);
 
   // Patches function_name inside dll_name to point to
   // replacement_function_name.
   bool AddToPatchedFunctions(const wchar_t* dll_name,
                              const char* function_name,
                              InterceptionType interception_type,
-                             const char* replacement_function_name);
+                             const char* replacement_function_name,
+                             InterceptorId id);
 
   // The interception agent will unload the dll with dll_name.
   bool AddToUnloadModules(const wchar_t* dll_name);
@@ -119,6 +135,7 @@ class InterceptionManager {
   // Used to store the interception information until the actual set-up.
   struct InterceptionData {
     InterceptionType type;            // Interception type.
+    InterceptorId id;                 // Interceptor id.
     std::wstring dll;                 // Name of dll to intercept.
     std::string function;             // Name of function to intercept.
     std::string interceptor;          // Name of interceptor function.
@@ -202,6 +219,54 @@ class InterceptionManager {
 
   DISALLOW_COPY_AND_ASSIGN(InterceptionManager);
 };
+
+// This macro simply calls interception_manager.AddToPatchedFunctions with
+// the given service to intercept (INTERCEPTION_SERVICE_CALL), and assumes that
+// the interceptor is called "TargetXXX", where XXX is the name of the service.
+// Note that num_params is the number of bytes to pop out of the stack for
+// the exported interceptor, following the calling convention of a service call
+// (WINAPI = with the "C" underscore).
+#if SANDBOX_EXPORTS
+#if defined(_WIN64)
+#define MAKE_SERVICE_NAME(service, params) Target ## service ## 64
+#else
+#define MAKE_SERVICE_NAME(service, params) "_Target" # service "@" # params
+#endif
+
+#define ADD_NT_INTERCEPTION(service, id, num_params) \
+  AddToPatchedFunctions(kNtdllName, #service, \
+                        sandbox::INTERCEPTION_SERVICE_CALL, \
+                        MAKE_SERVICE_NAME(service, num_params), id)
+
+#define INTERCEPT_NT(manager, service, id, num_params) \
+  ((&Target##service) ? \
+    manager->ADD_NT_INTERCEPTION(service, id, num_params) : false)
+
+#define INTERCEPT_EAT(manager, dll, function, id, num_params) \
+  ((&Target##function) ? \
+    manager->AddToPatchedFunctions(dll, #function, sandbox::INTERCEPTION_EAT, \
+                                   MAKE_SERVICE_NAME(function, num_params), \
+                                   id) : \
+    false)
+#else  // SANDBOX_EXPORTS
+#if defined(_WIN64)
+#define MAKE_SERVICE_NAME(service) &Target##service##64
+#else
+#define MAKE_SERVICE_NAME(service) &Target##service
+#endif
+
+#define ADD_NT_INTERCEPTION(service, id, num_params) \
+  AddToPatchedFunctions(kNtdllName, #service, \
+                        sandbox::INTERCEPTION_SERVICE_CALL, \
+                        MAKE_SERVICE_NAME(service), id)
+
+#define INTERCEPT_NT(manager, service, id, num_params) \
+  manager->ADD_NT_INTERCEPTION(service, id, num_params)
+
+#define INTERCEPT_EAT(manager, dll, function, id, num_params) \
+  manager->AddToPatchedFunctions(dll, #function, sandbox::INTERCEPTION_EAT, \
+                                 MAKE_SERVICE_NAME(function), id)
+#endif  // SANDBOX_EXPORTS
 
 }  // namespace sandbox
 

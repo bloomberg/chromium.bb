@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "base/pe_image.h"
 #include "base/win_util.h"
 #include "sandbox/src/interception.h"
+#include "sandbox/src/interceptors.h"
 #include "sandbox/src/policy_target.h"
 #include "sandbox/src/process_thread_interception.h"
 #include "sandbox/src/sandbox.h"
@@ -87,27 +88,32 @@ bool SetupNtdllImports(TargetProcess *child) {
 #undef INIT_GLOBAL_RTL
 
 bool SetupBasicInterceptions(InterceptionManager* manager) {
+#if !defined(_WIN64)
+  // Bug 27218: We don't have IPC yet.
   // Interceptions provided by process_thread_policy, without actual policy.
-  if (!INTERCEPT_NT(manager, NtOpenThread, "_TargetNtOpenThread@20") ||
-      !INTERCEPT_NT(manager, NtOpenProcess, "_TargetNtOpenProcess@20") ||
-      !INTERCEPT_NT(manager, NtOpenProcessToken,
-                    "_TargetNtOpenProcessToken@16"))
+  if (!INTERCEPT_NT(manager, NtOpenThread, OPEN_TREAD_ID, 20) ||
+      !INTERCEPT_NT(manager, NtOpenProcess, OPEN_PROCESS_ID, 20) ||
+      !INTERCEPT_NT(manager, NtOpenProcessToken, OPEN_PROCESS_TOKEN_ID, 16))
     return false;
+#endif
 
   // Interceptions with neither policy nor IPC.
-  if (!INTERCEPT_NT(manager, NtSetInformationThread,
-                    "_TargetNtSetInformationThread@20") ||
-      !INTERCEPT_NT(manager, NtOpenThreadToken, "_TargetNtOpenThreadToken@20"))
+  if (!INTERCEPT_NT(manager, NtSetInformationThread, SET_INFORMATION_THREAD_ID,
+                    20) ||
+      !INTERCEPT_NT(manager, NtOpenThreadToken, OPEN_THREAD_TOKEN_ID, 20))
     return false;
 
   if (win_util::GetWinVersion() >= win_util::WINVERSION_XP) {
+#if !defined(_WIN64)
+    // Bug 27218: We don't have IPC yet.
     // This one is also provided by process_thread_policy.
-    if (!INTERCEPT_NT(manager, NtOpenProcessTokenEx,
-                            "_TargetNtOpenProcessTokenEx@20"))
+    if (!INTERCEPT_NT(manager, NtOpenProcessTokenEx, OPEN_PROCESS_TOKEN_EX_ID,
+                      20))
       return false;
+#endif
 
-    return INTERCEPT_NT(manager, NtOpenThreadTokenEx,
-                        "_TargetNtOpenThreadTokenEx@24");
+    return INTERCEPT_NT(manager, NtOpenThreadTokenEx, OPEN_THREAD_TOKEN_EX_ID,
+                        24);
   }
 
   return true;

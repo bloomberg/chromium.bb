@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 
 #include "sandbox/src/crosscall_client.h"
 #include "sandbox/src/interception.h"
+#include "sandbox/src/interceptors.h"
 #include "sandbox/src/ipc_tags.h"
 #include "sandbox/src/named_pipe_interception.h"
 #include "sandbox/src/named_pipe_policy.h"
@@ -33,7 +34,7 @@ bool NamedPipeDispatcher::SetupService(InterceptionManager* manager,
                                        int service) {
   if (IPC_CREATENAMEDPIPEW_TAG == service)
     return INTERCEPT_EAT(manager, L"kernel32.dll", CreateNamedPipeW,
-                         L"_TargetCreateNamedPipeW@36");
+                         CREATE_NAMED_PIPE_ID, 36);
 
   return false;
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,7 +105,10 @@ TargetProcess::~TargetProcess() {
     return;
   }
 
+#if !defined(_WIN64)
+  // Bug 27218: We don't have IPC yet.
   delete ipc_server_;
+#endif
 
   ::CloseHandle(lockdown_token_);
   ::CloseHandle(initial_token_);
@@ -184,16 +187,16 @@ DWORD TargetProcess::Create(const wchar_t* exe_path,
   sandbox_thread_ = process_info.hThread;
   sandbox_process_id_ = process_info.dwProcessId;
 
-#ifndef _WIN64  // TODO(gregoryd): This code does not build for Win64.
-                // It is safe to disable it since base_address_ is used for
-                // interception that is not supported on Win64 yet.
+#if defined(_WIN64)
+  void* entry_point = reinterpret_cast<void*>(context.Rcx);
+#else
 #pragma warning(push)
 #pragma warning(disable: 4312)
   // This cast generates a warning because it is 32 bit specific.
   void* entry_point = reinterpret_cast<void*>(context.Eax);
 #pragma warning(pop)
-  base_address_ = GetBaseAddress(exe_path, entry_point);
 #endif  // _WIN64
+  base_address_ = GetBaseAddress(exe_path, entry_point);
   *target_info = process_info;
   return win_result;
 }
@@ -299,11 +302,14 @@ DWORD TargetProcess::Init(Dispatcher* ipc_dispatcher, void* policy,
            ::GetLastError() : ERROR_INVALID_FUNCTION;
   }
 
+#if !defined(_WIN64)
+  // Bug 27218: We don't have IPC yet.
   ipc_server_ = new SharedMemIPCServer(sandbox_process_, sandbox_process_id_,
                                        job_, thread_pool_, ipc_dispatcher);
 
   if (!ipc_server_->Init(shared_memory, shared_IPC_size, kIPCChannelSize))
     return ERROR_NOT_ENOUGH_MEMORY;
+#endif
 
   // After this point we cannot use this handle anymore.
   sandbox_thread_ = NULL;

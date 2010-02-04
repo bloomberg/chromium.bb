@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 
 #include "base/scoped_ptr.h"
 #include "sandbox/src/interception.h"
+#include "sandbox/src/interceptors.h"
 #include "sandbox/src/interception_internal.h"
 #include "sandbox/src/target_process.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -86,42 +87,49 @@ TEST(InterceptionManagerTest, BufferLayout1) {
   // Any pointer will do for a function pointer.
   void* function = &interceptions;
 
+  // We don't care about the interceptor id.
   interceptions.AddToPatchedFunctions(L"ntdll.dll", "NtCreateFile",
-    INTERCEPTION_SERVICE_CALL, function);
+                                      INTERCEPTION_SERVICE_CALL, function,
+                                      OPEN_KEY_ID);
   interceptions.AddToPatchedFunctions(L"kernel32.dll", "CreateFileEx",
-    INTERCEPTION_EAT, function);
+                                      INTERCEPTION_EAT, function, OPEN_KEY_ID);
   interceptions.AddToPatchedFunctions(L"kernel32.dll", "SomeFileEx",
-    INTERCEPTION_SMART_SIDESTEP, function);
+                                      INTERCEPTION_SMART_SIDESTEP, function,
+                                      OPEN_KEY_ID);
   interceptions.AddToPatchedFunctions(L"user32.dll", "FindWindow",
-    INTERCEPTION_EAT, function);
+                                      INTERCEPTION_EAT, function, OPEN_KEY_ID);
   interceptions.AddToPatchedFunctions(L"kernel32.dll", "CreateMutex",
-    INTERCEPTION_EAT, function);
+                                      INTERCEPTION_EAT, function, OPEN_KEY_ID);
   interceptions.AddToPatchedFunctions(L"user32.dll", "PostMsg",
-    INTERCEPTION_EAT, function);
+                                      INTERCEPTION_EAT, function, OPEN_KEY_ID);
   interceptions.AddToPatchedFunctions(L"user32.dll", "PostMsg",
-    INTERCEPTION_EAT, "replacement");
+                                      INTERCEPTION_EAT, "replacement",
+                                      OPEN_KEY_ID);
   interceptions.AddToPatchedFunctions(L"comctl.dll", "SaveAsDlg",
-    INTERCEPTION_EAT, function);
+                                      INTERCEPTION_EAT, function, OPEN_KEY_ID);
   interceptions.AddToPatchedFunctions(L"ntdll.dll", "NtClose",
-    INTERCEPTION_SERVICE_CALL, function);
+                                      INTERCEPTION_SERVICE_CALL, function,
+                                      OPEN_KEY_ID);
   interceptions.AddToPatchedFunctions(L"ntdll.dll", "NtOpenFile",
-    INTERCEPTION_SIDESTEP, function);
+                                      INTERCEPTION_SIDESTEP, function,
+                                      OPEN_KEY_ID);
   interceptions.AddToPatchedFunctions(L"some.dll", "Superfn",
-    INTERCEPTION_EAT, function);
+                                      INTERCEPTION_EAT, function, OPEN_KEY_ID);
   interceptions.AddToPatchedFunctions(L"comctl.dll", "SaveAsDlg",
-    INTERCEPTION_EAT, "a");
+                                      INTERCEPTION_EAT, "a", OPEN_KEY_ID);
   interceptions.AddToPatchedFunctions(L"comctl.dll", "SaveAsDlg",
-    INTERCEPTION_SIDESTEP, "ab");
+                                      INTERCEPTION_SIDESTEP, "ab", OPEN_KEY_ID);
   interceptions.AddToPatchedFunctions(L"comctl.dll", "SaveAsDlg",
-    INTERCEPTION_EAT, "abc");
+                                      INTERCEPTION_EAT, "abc", OPEN_KEY_ID);
   interceptions.AddToPatchedFunctions(L"a.dll", "p",
-    INTERCEPTION_EAT, function);
+                                      INTERCEPTION_EAT, function, OPEN_KEY_ID);
   interceptions.AddToPatchedFunctions(L"b.dll",
-    "TheIncredibleCallToSaveTheWorld", INTERCEPTION_EAT, function);
+                                      "TheIncredibleCallToSaveTheWorld",
+                                      INTERCEPTION_EAT, function, OPEN_KEY_ID);
   interceptions.AddToPatchedFunctions(L"a.dll", "BIsLame",
-    INTERCEPTION_EAT, function);
+                                      INTERCEPTION_EAT, function, OPEN_KEY_ID);
   interceptions.AddToPatchedFunctions(L"a.dll", "ARules",
-    INTERCEPTION_EAT, function);
+                                      INTERCEPTION_EAT, function, OPEN_KEY_ID);
 
   // Verify that all interceptions were added
   ASSERT_EQ(18, interceptions.interceptions_.size());
@@ -165,16 +173,17 @@ TEST(InterceptionManagerTest, BufferLayout2) {
 
   // Any pointer will do for a function pointer.
   void* function = &interceptions;
-
   interceptions.AddToUnloadModules(L"some01.dll");
+  // We don't care about the interceptor id.
   interceptions.AddToPatchedFunctions(L"ntdll.dll", "NtCreateFile",
-    INTERCEPTION_SERVICE_CALL, function);
+                                      INTERCEPTION_SERVICE_CALL, function,
+                                      OPEN_FILE_ID);
   interceptions.AddToPatchedFunctions(L"kernel32.dll", "CreateFileEx",
-    INTERCEPTION_EAT, function);
+                                      INTERCEPTION_EAT, function, OPEN_FILE_ID);
   interceptions.AddToUnloadModules(L"some02.dll");
   interceptions.AddToPatchedFunctions(L"kernel32.dll", "SomeFileEx",
-    INTERCEPTION_SMART_SIDESTEP, function);
-
+                                      INTERCEPTION_SMART_SIDESTEP, function,
+                                      OPEN_FILE_ID);
   // Verify that all interceptions were added
   ASSERT_EQ(5, interceptions.interceptions_.size());
 

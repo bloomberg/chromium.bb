@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "base/pe_image.h"
 #include "base/scoped_ptr.h"
 #include "sandbox/src/interception_internal.h"
+#include "sandbox/src/interceptors.h"
 #include "sandbox/src/sandbox.h"
 #include "sandbox/src/sandbox_utils.h"
 #include "sandbox/src/service_resolver.h"
@@ -31,6 +32,9 @@ namespace sandbox {
 
 SANDBOX_INTERCEPT SharedMemory* g_interceptions;
 
+// Table of the unpatched functions that we intercept. Mapped from the parent.
+SANDBOX_INTERCEPT OriginalFunctions g_originals = { NULL };
+
 // Magic constant that identifies that this function is not to be patched.
 const char kUnloadDLLDummyFunction[] = "@";
 
@@ -45,9 +49,11 @@ InterceptionManager::~InterceptionManager() {
 
 bool InterceptionManager::AddToPatchedFunctions(
     const wchar_t* dll_name, const char* function_name,
-    InterceptionType interception_type, const void* replacement_code_address) {
+    InterceptionType interception_type, const void* replacement_code_address,
+    InterceptorId id) {
   InterceptionData function;
   function.type = interception_type;
+  function.id = id;
   function.dll = dll_name;
   function.function = function_name;
   function.interceptor_address = replacement_code_address;
@@ -58,9 +64,11 @@ bool InterceptionManager::AddToPatchedFunctions(
 
 bool InterceptionManager::AddToPatchedFunctions(
     const wchar_t* dll_name, const char* function_name,
-    InterceptionType interception_type, const char* replacement_function_name) {
+    InterceptionType interception_type, const char* replacement_function_name,
+    InterceptorId id) {
   InterceptionData function;
   function.type = interception_type;
+  function.id = id;
   function.dll = dll_name;
   function.function = function_name;
   function.interceptor = replacement_function_name;
@@ -103,9 +111,10 @@ bool InterceptionManager::InitializeInterceptions() {
     return false;
 
   g_interceptions = reinterpret_cast<SharedMemory*>(remote_buffer);
-  child_->TransferVariable("sandbox::g_interceptions", &g_interceptions,
-                           sizeof(g_interceptions));
-  return true;
+  ResultCode rc = child_->TransferVariable("g_interceptions",
+                                           &g_interceptions,
+                                           sizeof(g_interceptions));
+  return (SBOX_ALL_OK == rc);
 }
 
 size_t InterceptionManager::GetBufferSize() const {
@@ -261,6 +270,7 @@ bool InterceptionManager::SetupInterceptionInfo(const InterceptionData& data,
 
   function->record_bytes = required;
   function->type = data.type;
+  function->id = data.id;
   function->interceptor_address = data.interceptor_address;
   char* names = function->function;
 
@@ -337,22 +347,16 @@ bool InterceptionManager::PatchNtdll(bool hot_patch_needed) {
   if (hot_patch_needed) {
 #if SANDBOX_EXPORTS
     // Make sure the functions are not excluded by the linker.
+#if defined(_WIN64)
+    #pragma comment(linker, "/include:TargetNtMapViewOfSection64")
+    #pragma comment(linker, "/include:TargetNtUnmapViewOfSection64")
+#else
     #pragma comment(linker, "/include:_TargetNtMapViewOfSection@44")
     #pragma comment(linker, "/include:_TargetNtUnmapViewOfSection@12")
-
-    AddToPatchedFunctions(kNtdllName, kMapViewOfSectionName,
-                          INTERCEPTION_SERVICE_CALL,
-                          "_TargetNtMapViewOfSection@44");
-    AddToPatchedFunctions(kNtdllName, kUnmapViewOfSectionName,
-                          INTERCEPTION_SERVICE_CALL,
-                          "_TargetNtUnmapViewOfSection@12");
-#else
-    AddToPatchedFunctions(kNtdllName, kMapViewOfSectionName,
-                          INTERCEPTION_SERVICE_CALL, &TargetNtMapViewOfSection);
-    AddToPatchedFunctions(kNtdllName, kUnmapViewOfSectionName,
-                          INTERCEPTION_SERVICE_CALL,
-                          &TargetNtUnmapViewOfSection);
 #endif
+#endif
+    ADD_NT_INTERCEPTION(NtMapViewOfSection, MAP_VIEW_OF_SECTION_ID, 44);
+    ADD_NT_INTERCEPTION(NtUnmapViewOfSection, UNMAP_VIEW_OF_SECTION_ID, 12);
   }
 
   size_t thunk_bytes = interceptions_.size() * sizeof(ThunkData) +
@@ -369,6 +373,9 @@ bool InterceptionManager::PatchNtdll(bool hot_patch_needed) {
   dll_data.data_bytes = thunk_bytes;
   dll_data.num_thunks = 0;
   dll_data.used_bytes = offsetof(DllInterceptionData, thunks);
+
+  // Reset all helpers for a new child.
+  memset(g_originals, 0, sizeof(g_originals));
 
   // this should write all the individual thunks to the child's memory
   if (!PatchClientFunctions(thunks, thunk_bytes, &dll_data))
@@ -388,7 +395,10 @@ bool InterceptionManager::PatchNtdll(bool hot_patch_needed) {
   ::VirtualProtectEx(child, thunks, thunk_bytes,
                      PAGE_EXECUTE_READ, &old_protection);
 
-  return true;
+  ResultCode ret = child_->TransferVariable("g_originals", g_originals,
+                                           sizeof(g_originals));
+
+  return SBOX_ALL_OK == ret ? true : false;
 }
 
 bool InterceptionManager::PatchClientFunctions(DllInterceptionData* thunks,
@@ -467,6 +477,9 @@ bool InterceptionManager::PatchClientFunctions(DllInterceptionData* thunks,
                                 NULL);
     if (!NT_SUCCESS(ret))
       break;
+
+    DCHECK(!g_originals[it->id]);
+    g_originals[it->id] = &thunks->thunks[dll_data->num_thunks];
 
     dll_data->num_thunks++;
     dll_data->used_bytes += sizeof(ThunkData);

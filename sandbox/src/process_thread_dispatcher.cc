@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,6 +9,7 @@
 #include "base/win_util.h"
 #include "sandbox/src/crosscall_client.h"
 #include "sandbox/src/interception.h"
+#include "sandbox/src/interceptors.h"
 #include "sandbox/src/ipc_tags.h"
 #include "sandbox/src/policy_broker.h"
 #include "sandbox/src/policy_params.h"
@@ -146,9 +147,9 @@ bool ThreadProcessDispatcher::SetupService(InterceptionManager* manager,
 
     case IPC_CREATEPROCESSW_TAG:
       return INTERCEPT_EAT(manager, L"kernel32.dll", CreateProcessW,
-                           L"_TargetCreateProcessW@44") &&
+                           CREATE_PROCESSW_ID, 44) &&
              INTERCEPT_EAT(manager, L"kernel32.dll", CreateProcessA,
-                           L"_TargetCreateProcessA@44");
+                           CREATE_PROCESSA_ID, 44);
 
     default:
       return false;

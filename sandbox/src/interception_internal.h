@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,8 @@ namespace sandbox {
 
 const int kMaxThunkDataBytes = 64;
 
+enum InterceptorId;
+
 // The following structures contain variable size fields at the end, and will be
 // used to transfer information between two processes. In order to guarantee
 // our ability to follow the chain of structures, the alignment should be fixed,
@@ -27,6 +29,7 @@ const int kMaxThunkDataBytes = 64;
 struct FunctionInfo {
   size_t record_bytes;            // rounded to sizeof(size_t) bytes
   InterceptionType type;
+  InterceptorId id;
   const void* interceptor_address;
   char function[1];               // placeholder for null terminated name
   // char interceptor[]           // followed by the interceptor function

@@ -12,15 +12,39 @@
 namespace sandbox {
 
 enum InterceptorId {
+  // Internal use:
   MAP_VIEW_OF_SECTION_ID = 0,
   UNMAP_VIEW_OF_SECTION_ID,
+  // Policy broker:
   SET_INFORMATION_THREAD_ID,
   OPEN_THREAD_TOKEN_ID,
   OPEN_THREAD_TOKEN_EX_ID,
-  MAX_ID
+  OPEN_TREAD_ID,
+  OPEN_PROCESS_ID,
+  OPEN_PROCESS_TOKEN_ID,
+  OPEN_PROCESS_TOKEN_EX_ID,
+  // Filesystem dispatcher:
+  CREATE_FILE_ID,
+  OPEN_FILE_ID,
+  QUERY_ATTRIB_FILE_ID,
+  QUERY_FULL_ATTRIB_FILE_ID,
+  SET_INFO_FILE_ID,
+  // Named pipe dispatcher:
+  CREATE_NAMED_PIPE_ID,
+  // Process-thread dispatcher:
+  CREATE_PROCESSW_ID,
+  CREATE_PROCESSA_ID,
+  // Registry dispatcher:
+  CREATE_KEY_ID,
+  OPEN_KEY_ID,
+  OPEN_KEY_EX_ID,
+  // Sync dispatcher:
+  CREATE_EVENT_ID,
+  OPEN_EVENT_ID,
+  INTERCEPTOR_MAX_ID
 };
 
-typedef void* OriginalFunctions[MAX_ID];
+typedef void* OriginalFunctions[INTERCEPTOR_MAX_ID];
 
 }  // namespace sandbox
 
