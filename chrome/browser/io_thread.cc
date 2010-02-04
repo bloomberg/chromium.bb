@@ -36,7 +36,7 @@ net::HostResolver* CreateGlobalHostResolver(
     global_host_resolver =
         net::CreateSystemHostResolver(network_change_notifier);
 
-//    if (command_line.HasSwitch(switches::kDisableIPv6))
+    if (command_line.HasSwitch(switches::kDisableIPv6))
       global_host_resolver->SetDefaultAddressFamily(net::ADDRESS_FAMILY_IPV4);
   }
 
