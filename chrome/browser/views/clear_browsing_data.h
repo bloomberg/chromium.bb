@@ -10,6 +10,7 @@
 #include "views/controls/button/button.h"
 #include "views/controls/combobox/combobox.h"
 #include "views/controls/label.h"
+#include "views/controls/link.h"
 #include "views/view.h"
 #include "views/window/dialog_delegate.h"
 
@@ -35,7 +36,8 @@ class ClearBrowsingDataView : public views::View,
                               public views::ButtonListener,
                               public ComboboxModel,
                               public views::Combobox::Listener,
-                              public BrowsingDataRemover::Observer {
+                              public BrowsingDataRemover::Observer,
+                              public views::LinkController {
  public:
   explicit ClearBrowsingDataView(Profile* profile);
   virtual ~ClearBrowsingDataView(void);
@@ -64,6 +66,7 @@ class ClearBrowsingDataView : public views::View,
   virtual std::wstring GetWindowTitle() const;
   virtual bool Accept();
   virtual views::View* GetContentsView();
+  views::ClientView* CreateClientView(views::Window* window);
 
   // Overridden from ComboboxModel:
   virtual int GetItemCount();
@@ -75,6 +78,9 @@ class ClearBrowsingDataView : public views::View,
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+
+  // Overriden from views::LinkController:
+  virtual void LinkActivated(views::Link* source, int event_flags);
 
  private:
   // Adds a new check-box as a child to the view.

@@ -112,7 +112,8 @@ DialogClientView::DialogClientView(Window* owner, View* contents_view)
       extra_view_(NULL),
       accepted_(false),
       listening_to_focus_(false),
-      saved_focus_manager_(NULL) {
+      saved_focus_manager_(NULL),
+      bottom_view_(NULL) {
   InitClass();
 }
 
@@ -237,6 +238,16 @@ void DialogClientView::CancelWindow() {
   Close();
 }
 
+void DialogClientView::SetBottomView(View* bottom_view) {
+  if (bottom_view_) {
+    RemoveChildView(bottom_view_);
+    delete bottom_view_;
+  }
+  bottom_view_ = bottom_view;
+  if (bottom_view_)
+    AddChildView(bottom_view_);
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // DialogClientView, View overrides:
 
@@ -304,6 +315,13 @@ void DialogClientView::PaintChildren(gfx::Canvas* canvas) {
 void DialogClientView::Layout() {
   if (has_dialog_buttons())
     LayoutDialogButtons();
+  if (bottom_view_) {
+    gfx::Rect bounds = GetLocalBounds(false);
+    gfx::Size pref = bottom_view_->GetPreferredSize();
+    bottom_view_->SetBounds(bounds.x(),
+        bounds.bottom() - pref.height() - kButtonVEdgeMargin,
+        bounds.width(), pref.height());
+  }
   LayoutContentsView();
 }
 
@@ -356,6 +374,10 @@ gfx::Size DialogClientView::GetPreferredSize() {
       width += 2 * kButtonHEdgeMargin;
       prefsize.set_width(std::max(prefsize.width(), width));
     }
+  }
+  if (bottom_view_) {
+    gfx::Size bottom_pref = bottom_view_->GetPreferredSize();
+    prefsize.Enlarge(0, bottom_pref.height() + kButtonVEdgeMargin);
   }
   prefsize.Enlarge(0, button_height);
   return prefsize;
@@ -437,14 +459,19 @@ int DialogClientView::GetButtonsHeight() const {
 }
 
 void DialogClientView::LayoutDialogButtons() {
+  gfx::Rect lb = GetLocalBounds(false);
   gfx::Rect extra_bounds;
+  int bottom_y = lb.bottom() - kButtonVEdgeMargin;
+  if (bottom_view_) {
+    gfx::Size bottom_pref = bottom_view_->GetPreferredSize();
+    bottom_y -= bottom_pref.height() + kButtonVEdgeMargin + kButtonVEdgeMargin;
+  }
   if (cancel_button_) {
     gfx::Size ps = cancel_button_->GetPreferredSize();
-    gfx::Rect lb = GetLocalBounds(false);
     int button_width = std::max(
         GetButtonWidth(MessageBoxFlags::DIALOGBUTTON_CANCEL), ps.width());
     int button_x = lb.right() - button_width - kButtonHEdgeMargin;
-    int button_y = lb.bottom() - ps.height() - kButtonVEdgeMargin;
+    int button_y = bottom_y - ps.height();
     cancel_button_->SetBounds(button_x, button_y, button_width, ps.height());
     // The extra view bounds are dependent on this button.
     extra_bounds.set_width(std::max(0, cancel_button_->x()));
@@ -452,14 +479,13 @@ void DialogClientView::LayoutDialogButtons() {
   }
   if (ok_button_) {
     gfx::Size ps = ok_button_->GetPreferredSize();
-    gfx::Rect lb = GetLocalBounds(false);
     int button_width = std::max(
         GetButtonWidth(MessageBoxFlags::DIALOGBUTTON_OK), ps.width());
     int ok_button_right = lb.right() - kButtonHEdgeMargin;
     if (cancel_button_)
       ok_button_right = cancel_button_->x() - kRelatedButtonHSpacing;
     int button_x = ok_button_right - button_width;
-    int button_y = lb.bottom() - ps.height() - kButtonVEdgeMargin;
+    int button_y = bottom_y - ps.height();
     ok_button_->SetBounds(button_x, button_y, ok_button_right - button_x,
                           ps.height());
     // The extra view bounds are dependent on this button.
@@ -468,7 +494,6 @@ void DialogClientView::LayoutDialogButtons() {
   }
   if (extra_view_) {
     gfx::Size ps = extra_view_->GetPreferredSize();
-    gfx::Rect lb = GetLocalBounds(false);
     extra_bounds.set_x(lb.x() + kButtonHEdgeMargin);
     extra_bounds.set_height(ps.height());
     extra_view_->SetBounds(extra_bounds);
@@ -495,16 +520,6 @@ DialogDelegate* DialogClientView::GetDialogDelegate() const {
   DialogDelegate* dd = window()->GetDelegate()->AsDialogDelegate();
   DCHECK(dd);
   return dd;
-}
-
-// static
-void DialogClientView::InitClass() {
-  static bool initialized = false;
-  if (!initialized) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    dialog_button_font_ = new gfx::Font(rb.GetFont(ResourceBundle::BaseFont));
-    initialized = true;
-  }
 }
 
 void DialogClientView::Close() {
@@ -534,5 +549,14 @@ void DialogClientView::UpdateFocusListener() {
   }
 }
 
+// static
+void DialogClientView::InitClass() {
+  static bool initialized = false;
+  if (!initialized) {
+    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+    dialog_button_font_ = new gfx::Font(rb.GetFont(ResourceBundle::BaseFont));
+    initialized = true;
+  }
+}
 
 }  // namespace views

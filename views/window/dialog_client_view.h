@@ -25,6 +25,9 @@ class Window;
 //  embedded contents view to provide extra UI to be shown in the row of
 //  buttons.
 //
+//  DialogClientView also provides the ability to set an arbitrary view that is
+//  positioned beneath the buttons.
+//
 class DialogClientView : public ClientView,
                          public ButtonListener,
                          public FocusChangeListener {
@@ -49,6 +52,11 @@ class DialogClientView : public ClientView,
   // Accessors in case the user wishes to adjust these buttons.
   NativeButton* ok_button() const { return ok_button_; }
   NativeButton* cancel_button() const { return cancel_button_; }
+
+  // Sets the view that is positioned along the bottom of the buttons. The
+  // bottom view is positioned beneath the buttons at the full width of the
+  // dialog. If there is an existing bottom view it is removed and deleted.
+  void SetBottomView(View* bottom_view);
 
   // Overridden from View:
   virtual void NativeViewHierarchyChanged(bool attached,
@@ -106,6 +114,8 @@ class DialogClientView : public ClientView,
   // Updates focus listener.
   void UpdateFocusListener();
 
+  static void InitClass();
+
   // The dialog buttons.
   NativeButton* ok_button_;
   NativeButton* cancel_button_;
@@ -128,8 +138,10 @@ class DialogClientView : public ClientView,
   // When ancestor gets changed focus manager gets changed as well.
   FocusManager* saved_focus_manager_;
 
+  // View positioned along the bottom, beneath the buttons.
+  View* bottom_view_;
+
   // Static resource initialization
-  static void InitClass();
   static gfx::Font* dialog_button_font_;
 
   DISALLOW_COPY_AND_ASSIGN(DialogClientView);

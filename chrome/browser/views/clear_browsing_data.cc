@@ -5,6 +5,8 @@
 #include "chrome/browser/views/clear_browsing_data.h"
 
 #include "app/l10n_util.h"
+#include "app/gfx/insets.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/pref_names.h"
@@ -15,9 +17,12 @@
 #include "views/background.h"
 #include "views/controls/button/checkbox.h"
 #include "views/controls/label.h"
+#include "views/controls/separator.h"
 #include "views/controls/throbber.h"
+#include "views/grid_layout.h"
 #include "views/standard_layout.h"
 #include "views/widget/widget.h"
+#include "views/window/dialog_client_view.h"
 #include "views/window/window.h"
 
 // The combo box is vertically aligned to the 'time-period' label, which makes
@@ -313,6 +318,32 @@ views::View* ClearBrowsingDataView::GetContentsView() {
   return this;
 }
 
+views::ClientView* ClearBrowsingDataView::CreateClientView(
+    views::Window* window) {
+  using views::GridLayout;
+
+  views::Link* flash_link =
+      new views::Link(l10n_util::GetString(IDS_FLASH_STORAGE_SETTINGS));
+  flash_link->SetController(this);
+
+  views::View* settings_view = new views::View();
+  GridLayout* layout = new GridLayout(settings_view);
+  layout->SetInsets(gfx::Insets(0, kPanelHorizMargin, 0, kButtonHEdgeMargin));
+  settings_view->SetLayoutManager(layout);
+  views::ColumnSet* column_set = layout->AddColumnSet(0);
+  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
+                        GridLayout::USE_PREF, 0, 0);
+  layout->StartRow(0, 0);
+  layout->AddView(new views::Separator());
+  layout->StartRowWithPadding(0, 0, 0, kRelatedControlVerticalSpacing);
+  layout->AddView(flash_link, 1, 1, GridLayout::LEADING, GridLayout::CENTER);
+
+  views::DialogClientView* client_view =
+      new views::DialogClientView(window, GetContentsView());
+  client_view->SetBottomView(settings_view);
+  return client_view;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // ClearBrowsingDataView, ComboboxModel implementation:
 
@@ -367,6 +398,13 @@ void ClearBrowsingDataView::ButtonPressed(
   // When no checkbox is checked we should not have the action button enabled.
   // This forces the button to evaluate what state they should be in.
   GetDialogClientView()->UpdateDialogButtons();
+}
+
+void ClearBrowsingDataView::LinkActivated(views::Link* source,
+                                          int event_flags) {
+  Browser* browser = Browser::Create(profile_);
+  browser->OpenURL(GURL(l10n_util::GetStringUTF8(IDS_FLASH_STORAGE_URL)),
+                   GURL(), NEW_WINDOW, PageTransition::LINK);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
