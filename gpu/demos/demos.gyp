@@ -43,17 +43,22 @@
         '../gpu.gyp:command_buffer_service',
       ],
       'sources': [
+        'framework/main_exe.cc',
         'framework/window.cc',
         'framework/window.h',
       ],
       'conditions': [
-        ['OS=="linux"', {'sources': ['framework/window_linux.cc']}],
-        ['OS=="mac"', {'sources': ['framework/window_mac.mm']}],
-        ['OS=="win"', {'sources': ['framework/window_win.cc']}],
+        ['OS=="linux"', {
+          'sources': ['framework/window_linux.cc'],
+          'dependencies': ['../../build/linux/system.gyp:gtk'],
+        }],
+        ['OS=="mac"', {
+          'sources': ['framework/window_mac.mm'],
+        }],
+        ['OS=="win"', {
+          'sources': ['framework/window_win.cc'],
+        }],
       ],
-      'direct_dependent_settings': {
-        'sources': ['framework/main_exe.cc'],
-      },
     },
     {
       'target_name': 'gpu_demo_framework_pepper',
