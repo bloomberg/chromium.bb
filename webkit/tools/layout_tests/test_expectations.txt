@@ -2913,3 +2913,13 @@ BUG33997 MAC : svg/custom/gradient-stop-corner-cases.svg = IMAGE
 BUG34221 : fast/js/math.html = TEXT
 BUG34219 : printing/page-break-always.html = TEXT
 BUG34219 : printing/pageNumerForElementById.html = TEXT
+
+// WebKit roll 54278 -> 54322
+BUG34546 WIN : fast/events/standalone-image-drag-to-editable.html = IMAGE+TEXT
+BUG34546 WIN : fast/events/onunload-not-on-body.html = CRASH
+BUG34546 WIN : storage/close-during-stress-test.html = CRASH
+BUG34546 LINUX : svg/W3C-SVG-1.1/filters-specular-01-f.svg = TEXT
+BUG34546 : fast/loader/document-with-fragment-url-1.html = TIMEOUT
+BUG34546 : fast/loader/document-with-fragment-url-2.html = TIMEOUT
+BUG34546 : fast/loader/document-with-fragment-url-3.html = TIMEOUT
+BUG34546 : fast/loader/document-with-fragment-url-4.html = TIMEOUT
