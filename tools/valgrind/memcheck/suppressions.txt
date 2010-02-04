@@ -2240,6 +2240,27 @@
    fun:clone
 }
 {
+   bug_32641_f
+   Memcheck:Addr4
+   fun:PL_HashTableLookupConst
+   fun:SECOID_FindOID_Util
+   fun:SECOID_FindOIDTag_Util
+   fun:SECOID_GetAlgorithmTag_Util
+   fun:DecryptSigBlock
+   fun:vfy_CreateContext
+   fun:vfy_VerifyData
+   fun:VFY_VerifyDataWithAlgorithmID
+   fun:CERT_VerifySignedDataWithPublicKey
+   fun:PKIX_PL_Cert_VerifySignature
+   fun:pkix_SignatureChecker_Check
+   fun:pkix_CheckChain
+   fun:pkix_Build_ValidateEntireChain
+   fun:pkix_BuildForwardDepthFirstSearch
+   fun:pkix_Build_InitiateBuildChain
+   fun:PKIX_BuildChain
+   fun:CERT_PKIXVerifyCert
+}
+{
    bug_33427
    Memcheck:Leak
    fun:malloc
