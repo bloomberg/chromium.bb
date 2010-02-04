@@ -980,45 +980,93 @@ TEST(CookieMonsterTest, GetAllCookiesForURL) {
   EXPECT_TRUE(cm->SetCookieWithOptions(url_google_secure,
                                        "E=F; domain=.google.izzle; secure",
                                        options));
+
   const Time last_access_date(GetFirstCookieAccessDate(cm));
 
   PlatformThread::Sleep(kLastAccessThresholdMilliseconds + 20);
 
-  // Check raw cookies.
-  net::CookieMonster::CookieList raw_cookies =
+  // Check cookies for url.
+  net::CookieMonster::CookieList cookies =
       cm->GetAllCookiesForURL(url_google);
-  net::CookieMonster::CookieList::iterator it = raw_cookies.begin();
+  net::CookieMonster::CookieList::iterator it = cookies.begin();
 
-  ASSERT_TRUE(it != raw_cookies.end());
+  ASSERT_TRUE(it != cookies.end());
   EXPECT_EQ("www.google.izzle", it->first);
   EXPECT_EQ("A", it->second.Name());
 
-  ASSERT_TRUE(++it != raw_cookies.end());
+  ASSERT_TRUE(++it != cookies.end());
   EXPECT_EQ(".google.izzle", it->first);
   EXPECT_EQ("C", it->second.Name());
 
-  ASSERT_TRUE(++it == raw_cookies.end());
+  ASSERT_TRUE(++it == cookies.end());
 
   // Test secure cookies.
-  raw_cookies = cm->GetAllCookiesForURL(url_google_secure);
-  it = raw_cookies.begin();
+  cookies = cm->GetAllCookiesForURL(url_google_secure);
+  it = cookies.begin();
 
-  ASSERT_TRUE(it != raw_cookies.end());
+  ASSERT_TRUE(it != cookies.end());
   EXPECT_EQ("www.google.izzle", it->first);
   EXPECT_EQ("A", it->second.Name());
 
-  ASSERT_TRUE(++it != raw_cookies.end());
+  ASSERT_TRUE(++it != cookies.end());
   EXPECT_EQ(".google.izzle", it->first);
   EXPECT_EQ("C", it->second.Name());
 
-  ASSERT_TRUE(++it != raw_cookies.end());
+  ASSERT_TRUE(++it != cookies.end());
   EXPECT_EQ(".google.izzle", it->first);
   EXPECT_EQ("E", it->second.Name());
 
-  ASSERT_TRUE(++it == raw_cookies.end());
+  ASSERT_TRUE(++it == cookies.end());
 
   // Reading after a short wait should not update the access date.
   EXPECT_TRUE (last_access_date == GetFirstCookieAccessDate(cm));
+}
+
+TEST(CookieMonsterTest, GetAllCookiesForURLPathMatching) {
+  GURL url_google(kUrlGoogle);
+  GURL url_google_foo("http://www.google.izzle/foo");
+  GURL url_google_bar("http://www.google.izzle/bar");
+
+  scoped_refptr<net::CookieMonster> cm(new net::CookieMonster());
+  net::CookieOptions options;
+
+  EXPECT_TRUE(cm->SetCookieWithOptions(url_google_foo,
+                                       "A=B; path=/foo;",
+                                       options));
+  EXPECT_TRUE(cm->SetCookieWithOptions(url_google_bar,
+                                       "C=D; path=/bar;",
+                                       options));
+  EXPECT_TRUE(cm->SetCookieWithOptions(url_google,
+                                       "E=F;",
+                                       options));
+
+  net::CookieMonster::CookieList cookies =
+      cm->GetAllCookiesForURL(url_google_foo);
+  net::CookieMonster::CookieList::iterator it = cookies.begin();
+
+  ASSERT_TRUE(it != cookies.end());
+  EXPECT_EQ("A", it->second.Name());
+  EXPECT_EQ("/foo", it->second.Path());
+
+  ASSERT_TRUE(++it != cookies.end());
+  EXPECT_EQ("E", it->second.Name());
+  EXPECT_EQ("/", it->second.Path());
+
+  ASSERT_TRUE(++it == cookies.end());
+
+  cookies = cm->GetAllCookiesForURL(url_google_bar);
+  it = cookies.begin();
+
+  ASSERT_TRUE(it != cookies.end());
+  EXPECT_EQ("C", it->second.Name());
+  EXPECT_EQ("/bar", it->second.Path());
+
+  ASSERT_TRUE(++it != cookies.end());
+  EXPECT_EQ("E", it->second.Name());
+  EXPECT_EQ("/", it->second.Path());
+
+  ASSERT_TRUE(++it == cookies.end());
+
 }
 
 TEST(CookieMonsterTest, DeleteCookieByName) {

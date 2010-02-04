@@ -810,7 +810,7 @@ CookieMonster::CookieList CookieMonster::GetAllCookiesForURL(const GURL& url) {
 
   // Query for the full host, For example: 'a.c.blah.com'.
   std::string key(url.host());
-  FindRawCookies(key, secure, &cookie_list);
+  FindRawCookies(key, secure, url.path(), &cookie_list);
 
   // See if we can search for domain cookies, i.e. if the host has a TLD + 1.
   const std::string domain(GetEffectiveDomain(url.scheme(), key));
@@ -822,7 +822,7 @@ CookieMonster::CookieList CookieMonster::GetAllCookiesForURL(const GURL& url) {
   DCHECK_EQ(0, key.compare(key.length() - domain.length(), domain.length(),
                            domain));
   for (key = "." + key; key.length() > domain.length(); ) {
-    FindRawCookies(key, secure, &cookie_list);
+    FindRawCookies(key, secure, url.path(), &cookie_list);
     const size_t next_dot = key.find('.', 1);  // Skip over leading dot.
     key.erase(0, next_dot);
   }
@@ -902,12 +902,16 @@ void CookieMonster::FindCookiesForKey(
 
 void CookieMonster::FindRawCookies(const std::string& key,
                                    bool include_secure,
+                                   const std::string& path,
                                    CookieList* list) {
   for (CookieMapItPair its = cookies_.equal_range(key);
        its.first != its.second; ++its.first) {
     CanonicalCookie* cc = its.first->second;
-    if (include_secure || !cc->IsSecure())
-      list->push_back(CookieListPair(key, *cc));
+    if (!include_secure && cc->IsSecure())
+      continue;
+    if (!cc->IsOnPath(path))
+      continue;
+    list->push_back(CookieListPair(key, *cc));
   }
 }
 

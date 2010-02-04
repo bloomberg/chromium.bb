@@ -99,8 +99,8 @@ class CookieMonster : public CookieStore {
   CookieList GetAllCookies();
 
   // Returns all the cookies, for use in management UI, etc. Filters results
-  // using given url scheme and host / domain. This does not mark the cookies
-  // as having been accessed.
+  // using given url scheme, host / domain and path. This does not mark the
+  // cookies as having been accessed.
   CookieList GetAllCookiesForURL(const GURL& url);
 
   // Delete all of the cookies.
@@ -164,6 +164,7 @@ class CookieMonster : public CookieStore {
 
   void FindRawCookies(const std::string& key,
                       bool include_secure,
+                      const std::string& path,
                       CookieList* list);
 
   // Delete any cookies that are equivalent to |ecc| (same path, key, etc).
