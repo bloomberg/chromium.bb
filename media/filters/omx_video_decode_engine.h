@@ -80,8 +80,9 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine {
   virtual void OnFeedDone(InputBuffer* buffer);
   virtual void OnHardwareError();
   virtual void OnReadComplete(uint8* buffer, int size);
-  virtual void OnFormatChange(OmxCodec::OmxMediaFormat* input_format,
-                              OmxCodec::OmxMediaFormat* output_format);
+  virtual void OnFormatChange(
+      const OmxConfigurator::MediaFormat& input_format,
+      const OmxConfigurator::MediaFormat& output_format);
 
   virtual bool DecodedFrameAvailable();
   virtual void MergeBytesFrameQueue(uint8* buffer, int size);

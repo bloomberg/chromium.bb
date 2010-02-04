@@ -19,7 +19,7 @@ namespace media {
 
 //////////////////////////////////////////////////////////////////////////////
 // BasicFileReader
-BasicFileReader::BasicFileReader(const char* filename)
+BasicFileReader::BasicFileReader(const std::string& filename)
     : filename_(filename),
       file_(NULL) {
 }
@@ -34,7 +34,7 @@ bool BasicFileReader::Initialize() {
 
 //////////////////////////////////////////////////////////////////////////////
 // YuvFileReader
-YuvFileReader::YuvFileReader(const char* filename,
+YuvFileReader::YuvFileReader(const std::string& filename,
                              int width,
                              int height,
                              int loop_count,
@@ -96,7 +96,7 @@ void YuvFileReader::Read(uint8** output, int* size) {
 
 //////////////////////////////////////////////////////////////////////////////
 // BlockFileReader
-BlockFileReader::BlockFileReader(const char* filename,
+BlockFileReader::BlockFileReader(const std::string& filename,
                                  int block_size)
     : BasicFileReader(filename),
       block_size_(block_size) {
@@ -110,7 +110,7 @@ void BlockFileReader::Read(uint8** output, int* size) {
 
 //////////////////////////////////////////////////////////////////////////////
 // FFmpegFileReader
-FFmpegFileReader::FFmpegFileReader(const char* filename)
+FFmpegFileReader::FFmpegFileReader(const std::string& filename)
     : filename_(filename),
       format_context_(NULL),
       codec_context_(NULL),
@@ -199,7 +199,7 @@ void FFmpegFileReader::Read(uint8** output, int* size) {
 // H264FileReader
 const int kH264ReadSize = 1024 * 1024;
 
-H264FileReader::H264FileReader(const char* filename)
+H264FileReader::H264FileReader(const std::string& filename)
     : BasicFileReader(filename),
       read_buf_(new uint8[kH264ReadSize]),
       current_(0),

@@ -45,15 +45,11 @@ OmxCodec::~OmxCodec() {
   DCHECK(output_queue_.empty());
 }
 
-void OmxCodec::Setup(
-    const OmxCodec::OmxMediaFormat& input_format,
-    const OmxCodec::OmxMediaFormat& output_format) {
+void OmxCodec::Setup(OmxConfigurator* configurator) {
   DCHECK_EQ(kEmpty, state_);
-  DCHECK_NE(input_format.codec, kCodecNone);
-  input_format_ = input_format;
-  output_format_ = output_format;
-  Codec codec = encoder() ? output_format_.codec : input_format_.codec;
-  role_name_ = SelectRole(codec, encoder());
+
+  CHECK(configurator);
+  configurator_.reset(configurator);
 }
 
 void OmxCodec::SetErrorCallback(Callback* callback) {
@@ -67,7 +63,7 @@ void OmxCodec::SetFormatCallback(FormatCallback* callback) {
 }
 
 void OmxCodec::Start() {
-  DCHECK_NE(kCodecNone, input_format_.codec);
+  CHECK(configurator_.get());
 
   message_loop_->PostTask(
       FROM_HERE,
@@ -115,8 +111,6 @@ void OmxCodec::SetNextState(State state) {
 
 void OmxCodec::StartTask() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-
-  next_sample_timestamp_ = 0;
 
   StateTransitionTask(kLoaded);
 }
@@ -278,10 +272,9 @@ void OmxCodec::FreeOutputQueue() {
 // 3. Get handle of the OMX component
 // 4. Get the port information.
 // 5. Set role for the component.
-// 6. Device specific configurations.
-// 7. Input/output ports media format configuration.
-// 8. Obtain the information about the input port.
-// 9. Obtain the information about the output port.
+// 6. Input/output ports media format configuration.
+// 7. Obtain the information about the input port.
+// 8. Obtain the information about the output port.
 void OmxCodec::Transition_EmptyToLoaded() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   DCHECK_EQ(kEmpty, GetState());
@@ -302,12 +295,13 @@ void OmxCodec::Transition_EmptyToLoaded() {
   }
 
   // 2. Map role name to component name.
+  std::string role_name = configurator_->GetRoleName();
   OMX_U32 roles = 0;
   omxresult = OMX_GetComponentsOfRole(
-                  const_cast<OMX_STRING>(role_name_.c_str()),
+                  const_cast<OMX_STRING>(role_name.c_str()),
                   &roles, 0);
   if (omxresult != OMX_ErrorNone || roles == 0) {
-    LOG(ERROR) << "Unsupported Role: " << role_name_.c_str();
+    LOG(ERROR) << "Unsupported Role: " << role_name.c_str();
     StateTransitionTask(kError);
     return;
   }
@@ -320,7 +314,7 @@ void OmxCodec::Transition_EmptyToLoaded() {
     component_names[i] = new OMX_U8[kMaxComponentNameLength];
 
   omxresult = OMX_GetComponentsOfRole(
-                  const_cast<OMX_STRING>(role_name_.c_str()),
+                  const_cast<OMX_STRING>(role_name.c_str()),
                   &roles, component_names);
 
   // Use first component only. Copy the name of the first component
@@ -333,7 +327,7 @@ void OmxCodec::Transition_EmptyToLoaded() {
   delete [] component_names;
 
   if (omxresult != OMX_ErrorNone || roles == 0) {
-    LOG(ERROR) << "Unsupported Role: " << role_name_.c_str();
+    LOG(ERROR) << "Unsupported Role: " << role_name.c_str();
     StateTransitionTask(kError);
     return;
   }
@@ -369,7 +363,7 @@ void OmxCodec::Transition_EmptyToLoaded() {
   OMX_PARAM_COMPONENTROLETYPE role_type;
   ResetPortHeader(*this, &role_type);
   base::strlcpy(reinterpret_cast<char*>(role_type.cRole),
-                role_name_.c_str(),
+                role_name.c_str(),
                 OMX_MAX_STRINGNAME_SIZE);
   role_type.cRole[OMX_MAX_STRINGNAME_SIZE - 1] = '\0';
   omxresult = OMX_SetParameter(component_handle_,
@@ -381,21 +375,14 @@ void OmxCodec::Transition_EmptyToLoaded() {
     return;
   }
 
-  // 6. Device specific configurations.
-  if (!DeviceSpecificConfig()) {
-    LOG(ERROR) << "Device specific configurations failed";
-    StateTransitionTask(kError);
-    return;
-  }
-
-  // 7. Input/output ports media format configuration.
+  // 6. Input/output ports media format configuration.
   if (!ConfigureIOPorts()) {
     LOG(ERROR) << "Media format configurations failed";
     StateTransitionTask(kError);
     return;
   }
 
-  // 8. Obtain the information about the input port.
+  // 7. Obtain the information about the input port.
   // This will have the new mini buffer count in |port_format.nBufferCountMin|.
   // Save this value to input_buf_count.
   OMX_PARAM_PORTDEFINITIONTYPE port_format;
@@ -417,7 +404,7 @@ void OmxCodec::Transition_EmptyToLoaded() {
   input_buffer_count_ = port_format.nBufferCountMin;
   input_buffer_size_ = port_format.nBufferSize;
 
-  // 9. Obtain the information about the output port.
+  // 8. Obtain the information about the output port.
   ResetPortHeader(*this, &port_format);
   port_format.nPortIndex = output_port_;
   omxresult = OMX_GetParameter(component_handle_,
@@ -490,6 +477,10 @@ void OmxCodec::Transition_IdleToExecuting() {
     StateTransitionTask(kError);
     return;
   }
+
+  // Simulate a format change.
+  ReportFormatChange(configurator_->input_format(),
+                     configurator_->output_format());
 }
 
 // Sequence of actions in this transition:
@@ -553,13 +544,14 @@ void OmxCodec::Transition_DisableToEnable() {
   // Update the output format.
   // TODO(jiesun): check if the format really change. ( we had omit some
   // information such as frame rate / bit rate / vbv buffer info now. )
-  output_format_.video_header.height = port_format.format.video.nFrameHeight;
-  output_format_.video_header.width = port_format.format.video.nFrameWidth;
-  output_format_.video_header.stride = port_format.format.video.nStride;
-  input_format_.video_header.height = output_format_.video_header.height;
-  input_format_.video_header.width = output_format_.video_header.width;
-  input_format_.video_header.stride = output_format_.video_header.stride;
-  ReportFormatChange();
+  OmxConfigurator::MediaFormat input_format, output_format;
+  output_format.video_header.height = port_format.format.video.nFrameHeight;
+  output_format.video_header.width = port_format.format.video.nFrameWidth;
+  output_format.video_header.stride = port_format.format.video.nStride;
+  input_format.video_header.height = output_format.video_header.height;
+  input_format.video_header.width = output_format.video_header.width;
+  input_format.video_header.stride = output_format.video_header.stride;
+  ReportFormatChange(input_format, output_format);
 
   // Update the ports in buffer.
   output_buffer_count_ = port_format.nBufferCountActual;
@@ -838,9 +830,8 @@ void OmxCodec::DoneStateTransitionTask() {
     StateTransitionTask(kPortSettingEnable);
   else if (old_state == kPortSettingDisable && GetState() == kPortSettingEnable)
     StateTransitionTask(kExecuting);
-  else if (old_state == kPortSettingEnable && GetState() == kExecuting) {
+  else if (old_state == kPortSettingEnable && GetState() == kExecuting)
     InitialFillBuffer();
-  }
   else if (old_state == kPortSettingDisable && GetState() == kIdle)
     StateTransitionTask(kLoaded);
   else if (old_state == kPortSettingEnable && GetState() == kIdle)
@@ -874,30 +865,14 @@ void OmxCodec::ReportError() {
   error_callback_.reset();
 }
 
-void OmxCodec::ReportFormatChange() {
+void OmxCodec::ReportFormatChange(
+    const OmxConfigurator::MediaFormat& input_format,
+    const OmxConfigurator::MediaFormat& output_format) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   if (!format_callback_.get())
     return;
-  format_callback_->Run(&input_format_, &output_format_);
-}
-
-std::string OmxCodec::SelectRole(Codec codec, bool encoder) {
-  std::string role_name = encoder ? "video_encoder." : "video_decoder.";
-  switch (codec) {
-    case kCodecH264:
-      return role_name + "avc";
-    case kCodecH263:
-      return role_name + "h263";
-    case kCodecMpeg4:
-      return role_name + "mpeg4";
-    case kCodecVc1:
-      return role_name + "vc1";
-    default:
-      break;
-  }
-  NOTREACHED();
-  return "";
+  format_callback_->Run(input_format, output_format);
 }
 
 bool OmxCodec::ConfigureIOPorts() {
@@ -935,158 +910,8 @@ bool OmxCodec::ConfigureIOPorts() {
     return false;
   }
 
-  return encoder() ?
-         ConfigureAsEncoder(&input_port_def, &output_port_def) :
-         ConfigureAsDecoder(&input_port_def, &output_port_def);
-}
-
-bool OmxCodec::ConfigureAsEncoder(
-    OMX_PARAM_PORTDEFINITIONTYPE* input_port_def,
-    OMX_PARAM_PORTDEFINITIONTYPE* output_port_def) {
-  // TODO(jiesun): Add support for other format than MPEG4.
-  DCHECK_EQ(kCodecMpeg4, output_format_.codec);
-  // Configure the input port.
-  input_port_def->format.video.nFrameWidth =
-      input_format_.video_header.width;
-  input_port_def->format.video.nFrameHeight =
-      input_format_.video_header.height;
-  OMX_ERRORTYPE omxresult = OMX_ErrorNone;
-  omxresult = OMX_SetParameter(component_handle_,
-                               OMX_IndexParamPortDefinition,
-                               input_port_def);
-  if (omxresult != OMX_ErrorNone) {
-    LOG(ERROR) << "SetParameter(OMX_IndexParamPortDefinition) "
-                  "for input port failed";
-    return false;
-  }
-
-  // Configure the output port
-  output_port_def->format.video.nFrameWidth =
-      input_format_.video_header.width;
-  output_port_def->format.video.nFrameHeight =
-      input_format_.video_header.height;
-  omxresult = OMX_SetParameter(component_handle_,
-                               OMX_IndexParamPortDefinition,
-                               output_port_def);
-  if (omxresult != OMX_ErrorNone) {
-    LOG(ERROR) << "SetParameter(OMX_IndexParamPortDefinition) "
-                  "for output port failed";
-    return false;
-  }
-
-  if (output_format_.codec == kCodecMpeg4) {
-    OMX_VIDEO_PARAM_MPEG4TYPE mp4_type;
-    omxresult = OMX_GetParameter(component_handle_,
-                                 OMX_IndexParamVideoMpeg4,
-                                 &mp4_type);
-    if (omxresult != OMX_ErrorNone) {
-      LOG(ERROR) << "GetParameter(OMX_IndexParamVideoMpeg4) failed";
-      return false;
-    }
-    // TODO(jiesun): verify if other vendors had the same definition.
-    // Specify the frame rate.
-    mp4_type.nTimeIncRes = output_format_.video_header.frame_rate * 2;
-    // Specify how many P frames between adjacent intra frames.
-    mp4_type.nPFrames = output_format_.video_header.i_dist - 1;
-    omxresult = OMX_SetParameter(component_handle_,
-                                 OMX_IndexParamVideoMpeg4,
-                                 &mp4_type);
-    if (omxresult != OMX_ErrorNone) {
-      LOG(ERROR) << "SetParameter(OMX_IndexParamVideoMpeg4) failed";
-      return false;
-    }
-  }
-
-  OMX_VIDEO_PARAM_BITRATETYPE bitrate;
-  omxresult = OMX_GetParameter(component_handle_,
-                               OMX_IndexParamVideoBitrate,
-                               &bitrate);
-  if (omxresult != OMX_ErrorNone) {
-    LOG(ERROR) << "GetParameter(OMX_IndexParamVideoBitrate) failed";
-    return false;
-  }
-  // TODO(jiesun): expose other rate control method that matters.
-  bitrate.eControlRate = OMX_Video_ControlRateConstant;
-  bitrate.nTargetBitrate = output_format_.video_header.bit_rate;
-  omxresult = OMX_SetParameter(component_handle_,
-                               OMX_IndexParamVideoBitrate,
-                               &bitrate);
-  if (omxresult != OMX_ErrorNone) {
-    LOG(ERROR) << "SetParameter(OMX_IndexParamVideoBitrate) failed";
-    return false;
-  }
-
-  OMX_CONFIG_FRAMERATETYPE framerate;
-  omxresult = OMX_GetConfig(component_handle_,
-                            OMX_IndexConfigVideoFramerate,
-                            &framerate);
-  if (omxresult != OMX_ErrorNone) {
-    LOG(ERROR) << "GetParameter(OMX_IndexConfigVideoFramerate) failed";
-    return false;
-  }
-
-  framerate.xEncodeFramerate =
-      output_format_.video_header.frame_rate << 16;  // Q16 format.
-  omxresult = OMX_SetConfig(component_handle_,
-                            OMX_IndexConfigVideoFramerate,
-                            &framerate);
-  if (omxresult != OMX_ErrorNone) {
-    LOG(ERROR) << "SetParameter(OMX_IndexConfigVideoFramerate) failed";
-    return false;
-  }
-
-  // Emulate a format change to conform with decoder case.
-  ReportFormatChange();
-  return true;
-}
-
-bool OmxCodec::ConfigureAsDecoder(
-    OMX_PARAM_PORTDEFINITIONTYPE* input_port_def,
-    OMX_PARAM_PORTDEFINITIONTYPE* output_port_def) {
-  // Configure the input port.
-  if (input_format_.codec == kCodecNone) {
-    LOG(ERROR) << "Unsupported codec " << input_format_.codec;
-    return false;
-  }
-  if (input_format_.codec == kCodecH264)
-    input_port_def->format.video.eCompressionFormat = OMX_VIDEO_CodingAVC;
-  else if (input_format_.codec == kCodecMpeg4)
-    input_port_def->format.video.eCompressionFormat = OMX_VIDEO_CodingMPEG4;
-  else if (input_format_.codec == kCodecH263)
-    input_port_def->format.video.eCompressionFormat = OMX_VIDEO_CodingH263;
-  else if (input_format_.codec == kCodecVc1)
-    input_port_def->format.video.eCompressionFormat = OMX_VIDEO_CodingWMV;
-  // Assume QCIF.
-  // TODO(ajwong): This MUST come from the client library somehow.
-  input_port_def->format.video.nFrameWidth  = 720;
-  input_port_def->format.video.nFrameHeight = 480;
-  OMX_ERRORTYPE omxresult = OMX_ErrorNone;
-  omxresult = OMX_SetParameter(component_handle_,
-                               OMX_IndexParamPortDefinition,
-                               input_port_def);
-  if (omxresult != OMX_ErrorNone) {
-    LOG(ERROR) << "SetParameter(OMX_IndexParamPortDefinition) "
-                  "for input port failed";
-    return false;
-  }
-
-  // Codec specific configurations.
-  // This sets the NAL length size. 0 means we are using a 3 byte start code.
-  // Other values specifies number of bytes of the NAL length.
-  if (input_format_.codec == kCodecH264) {
-    OMX_VIDEO_CONFIG_NALSIZE naluSize;
-    ResetPortHeader(*this, &naluSize);
-    naluSize.nPortIndex = input_port_;
-    naluSize.nNaluBytes = 0;
-    omxresult = OMX_SetConfig(component_handle_,
-                              OMX_IndexConfigVideoNalSize,
-                              (OMX_PTR)&naluSize);
-    if (omxresult != OMX_ErrorNone) {
-      LOG(ERROR) << "SetConfig(OMX_IndexConfigVideoNalSize) failed";
-      return false;
-    }
-  }
-  return true;
+  return configurator_->ConfigureIOPorts(component_handle_,
+                                         &input_port_def, &output_port_def);
 }
 
 bool OmxCodec::CanEmptyBuffer() {
@@ -1159,11 +984,7 @@ void OmxCodec::EmptyBufferTask() {
     omx_buffer->nFilledLen = filled;
     omx_buffer->pAppPrivate = this;
     omx_buffer->nFlags |= input_eos_ ? OMX_BUFFERFLAG_EOS : 0;
-    if (encoder()) {
-      next_sample_timestamp_ += base::Time::kMicrosecondsPerSecond /
-                                output_format_.video_header.frame_rate;
-      omx_buffer->nTimeStamp = next_sample_timestamp_;
-    }
+    // TODO(hclam): Get timestamp from the input buffer and fill in here.
 
     // Give this buffer to OMX.
     OMX_ERRORTYPE ret = OMX_EmptyThisBuffer(component_handle_, omx_buffer);

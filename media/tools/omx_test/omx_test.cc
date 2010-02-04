@@ -10,10 +10,8 @@
 
 #include "base/at_exit.h"
 #include "base/command_line.h"
-#include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
-#include "base/scoped_handle.h"
 #include "base/time.h"
 #include "media/base/media.h"
 #include "media/ffmpeg/ffmpeg_common.h"
@@ -23,47 +21,31 @@
 #include "media/omx/omx_codec.h"
 #include "media/tools/omx_test/color_space_util.h"
 #include "media/tools/omx_test/file_reader_util.h"
+#include "media/tools/omx_test/file_writer_util.h"
+
+using media::BlockFileReader;
+using media::FFmpegFileReader;
+using media::FileReader;
+using media::FileWriter;
+using media::H264FileReader;
+using media::OmxCodec;
+using media::OmxConfigurator;
+using media::OmxDecoderConfigurator;
+using media::OmxEncoderConfigurator;
+using media::YuvFileReader;
 
 // This is the driver object to feed the decoder with data from a file.
 // It also provides callbacks for the decoder to receive events from the
 // decoder.
 class TestApp {
  public:
-  TestApp(const char* input_filename,
-          const char* output_filename,
-          media::OmxCodec::OmxMediaFormat& input_format,
-          media::OmxCodec::OmxMediaFormat& output_format,
-          bool simulate_copy,
-          bool enable_csc,
-          bool use_ffmpeg,
-          int loop_count)
-      : output_filename_(output_filename),
-        input_format_(input_format),
-        output_format_(output_format),
-        simulate_copy_(simulate_copy),
-        enable_csc_(enable_csc),
-        copy_buf_size_(0),
-        csc_buf_size_(0),
-        output_file_(NULL),
+  TestApp(OmxConfigurator* configurator, FileReader* file_reader,
+          FileWriter* file_writer)
+      : configurator_(configurator),
+        file_reader_(file_reader),
+        file_writer_(file_writer),
         stopped_(false),
         error_(false) {
-    // Creates the FileReader to read input file.
-    if (input_format_.codec == media::OmxCodec::kCodecRaw) {
-      file_reader_.reset(new media::YuvFileReader(
-          input_filename,
-          input_format.video_header.width,
-          input_format.video_header.height,
-          loop_count,
-          enable_csc));
-    } else if (use_ffmpeg) {
-      file_reader_.reset(
-          new media::FFmpegFileReader(input_filename));
-    } else {
-      // Creates a reader that reads in blocks of 32KB.
-      const int kReadSize = 32768;
-      file_reader_.reset(
-          new media::BlockFileReader(input_filename, kReadSize));
-    }
   }
 
   bool Initialize() {
@@ -73,13 +55,9 @@ class TestApp {
       return false;;
     }
 
-    // Opens the output file for writing.
-    if (!output_filename_.empty()) {
-      output_file_.Set(file_util::OpenFile(output_filename_, "wb"));
-      if (!output_file_.get()) {
-        LOG(ERROR) << "can't open dump file %s" << output_filename_;
-        return false;
-      }
+    if (!file_writer_->Initialize()) {
+      LOG(ERROR) << "can't initialize output writer";
+      return false;
     }
     return true;
   }
@@ -103,25 +81,18 @@ class TestApp {
   }
 
   void FormatCallback(
-      media::OmxCodec::OmxMediaFormat* input_format,
-      media::OmxCodec::OmxMediaFormat* output_format) {
+      const OmxConfigurator::MediaFormat& input_format,
+      const OmxConfigurator::MediaFormat& output_format) {
     // This callback will be called when port reconfiguration is done.
     // Input format and output format will be used in the codec.
 
-    // Make a copy of the changed format.
-    input_format_ = *input_format;
-    output_format_ = *output_format;
+    DCHECK_EQ(input_format.video_header.width,
+              output_format.video_header.width);
+    DCHECK_EQ(input_format.video_header.height,
+              output_format.video_header.height);
 
-    DCHECK_EQ(input_format->video_header.width,
-              output_format->video_header.width);
-    DCHECK_EQ(input_format->video_header.height,
-              output_format->video_header.height);
-    int size = input_format_.video_header.width *
-               input_format_.video_header.height * 3 / 2;
-    if (enable_csc_ && size > csc_buf_size_) {
-      csc_buf_.reset(new uint8[size]);
-      csc_buf_size_ = size;
-    }
+    file_writer_->UpdateSize(input_format.video_header.width,
+                             input_format.video_header.height);
   }
 
   void FeedCallback(media::InputBuffer* buffer) {
@@ -154,16 +125,8 @@ class TestApp {
     // Read one more from the decoder.
     codec_->Read(NewCallback(this, &TestApp::ReadCompleteCallback));
 
-    // Copy the output of the decoder to user memory.
-    if (simulate_copy_ || output_file_.get()) {  // Implies a copy.
-      if (size > copy_buf_size_) {
-        copy_buf_.reset(new uint8[size]);
-        copy_buf_size_ = size;
-      }
-      memcpy(copy_buf_.get(), buffer, size);
-      if (output_file_.get())
-        DumpOutputFile(copy_buf_.get(), size);
-    }
+    if (file_writer_.get())
+      file_writer_->Write(buffer, size);
 
     // could OMX IL return patial sample for decoder?
     frame_count_++;
@@ -183,8 +146,8 @@ class TestApp {
 
     // Setup the |codec_| with the message loop of the current thread. Also
     // setup component name, codec format and callbacks.
-    codec_ = new media::OmxCodec(&message_loop_);
-    codec_->Setup(input_format_, output_format_);
+    codec_ = new OmxCodec(&message_loop_);
+    codec_->Setup(configurator_.release());
     codec_->SetErrorCallback(NewCallback(this, &TestApp::ErrorCallback));
     codec_->SetFormatCallback(NewCallback(this, &TestApp::FormatCallback));
 
@@ -225,163 +188,191 @@ class TestApp {
     printf("\n");
   }
 
-  void DumpOutputFile(uint8* in_buffer, int size) {
-    // Assume chroma format 4:2:0.
-    int width = input_format_.video_header.width;
-    int height = input_format_.video_header.height;
-    DCHECK_GT(width, 0);
-    DCHECK_GT(height, 0);
-
-    uint8* out_buffer = in_buffer;
-    // Color space conversion.
-    bool encoder = input_format_.codec == media::OmxCodec::kCodecRaw;
-    if (enable_csc_ && !encoder) {
-      DCHECK_EQ(size, width * height * 3 / 2);
-      DCHECK_GE(csc_buf_size_, size);
-      out_buffer = csc_buf_.get();
-      // Now assume the raw output is NV21.
-      media::NV21toIYUV(in_buffer, out_buffer, width, height);
-    }
-    fwrite(out_buffer, sizeof(uint8), size, output_file_.get());
-  }
-
-  scoped_refptr<media::OmxCodec> codec_;
+  scoped_refptr<OmxCodec> codec_;
   MessageLoop message_loop_;
-  std::string output_filename_;
-  media::OmxCodec::OmxMediaFormat input_format_;
-  media::OmxCodec::OmxMediaFormat output_format_;
-  bool simulate_copy_;
-  bool enable_csc_;
-  scoped_array<uint8> copy_buf_;
-  int copy_buf_size_;
-  scoped_array<uint8> csc_buf_;
-  int csc_buf_size_;
-  ScopedStdioHandle output_file_;
+  scoped_ptr<OmxConfigurator> configurator_;
+  scoped_ptr<FileReader> file_reader_;
+  scoped_ptr<FileWriter> file_writer_;
+
+  // Internal states for execution.
   bool stopped_;
   bool error_;
+
+  // Counters for performance.
   base::TimeTicks start_time_;
   base::TimeTicks first_sample_delivered_time_;
   int frame_count_;
   int bit_count_;
-  scoped_ptr<media::FileReader> file_reader_;
 };
+
+static std::string GetStringSwitch(const char* name) {
+  return CommandLine::ForCurrentProcess()->GetSwitchValueASCII(name);
+}
+
+static bool HasSwitch(const char* name) {
+  return CommandLine::ForCurrentProcess()->HasSwitch(name);
+}
+
+static int GetIntSwitch(const char* name) {
+  if (HasSwitch(name))
+    return StringToInt(GetStringSwitch(name));
+  return 0;
+}
+
+static bool PrepareDecodeFormats(OmxConfigurator::MediaFormat* input,
+                                 OmxConfigurator::MediaFormat* output) {
+  std::string codec = GetStringSwitch("codec");
+  input->codec = OmxConfigurator::kCodecNone;
+  if (codec == "h264") {
+    input->codec = OmxConfigurator::kCodecH264;
+  } else if (codec == "mpeg4") {
+    input->codec = OmxConfigurator::kCodecMpeg4;
+  } else if (codec == "h263") {
+    input->codec = OmxConfigurator::kCodecH263;
+  } else if (codec == "vc1") {
+    input->codec = OmxConfigurator::kCodecVc1;
+  } else {
+    LOG(ERROR) << "Unknown codec.";
+    return false;
+  }
+  output->codec = OmxConfigurator::kCodecRaw;
+  return true;
+}
+
+static bool PrepareEncodeFormats(OmxConfigurator::MediaFormat* input,
+                                 OmxConfigurator::MediaFormat* output) {
+  input->codec = OmxConfigurator::kCodecRaw;
+  input->video_header.width = GetIntSwitch("width");
+  input->video_header.height = GetIntSwitch("height");
+  input->video_header.frame_rate = GetIntSwitch("framerate");
+  // TODO(jiesun): make other format available.
+  output->codec = OmxConfigurator::kCodecMpeg4;
+  output->video_header.width = GetIntSwitch("width");
+  output->video_header.height = GetIntSwitch("height");
+  output->video_header.frame_rate = GetIntSwitch("framerate");
+  // TODO(jiesun): assume constant bitrate now.
+  output->video_header.bit_rate = GetIntSwitch("bitrate");
+  // TODO(jiesun): one I frame per second now. make it configurable.
+  output->video_header.i_dist = output->video_header.frame_rate;
+  // TODO(jiesun): disable B frame now. does they support it?
+  output->video_header.p_dist = 0;
+  return true;
+}
+
+static bool InitFFmpeg() {
+  if (!media::InitializeMediaLibrary(FilePath()))
+    return false;
+  avcodec_init();
+  av_register_all();
+  av_register_protocol(&kFFmpegFileProtocol);
+  return true;
+}
+
+static void PrintHelp() {
+  printf("Using for decoding...\n");
+  printf("\n");
+  printf("Usage: omx_test --input-file=FILE --codec=CODEC"
+             " [--output-file=FILE] [--enable-csc]"
+             " [--copy] [--use-ffmpeg]\n");
+  printf("    CODEC: h264/mpeg4/h263/vc1\n");
+  printf("\n");
+  printf("Optional Arguments\n");
+  printf("    --output-file Dump raw OMX output to file.\n");
+  printf("    --enable-csc  Dump the CSCed output to file.\n");
+  printf("    --copy        Simulate a memcpy from the output.\n");
+  printf("    --use-ffmpeg  Use ffmpeg demuxer\n");
+  printf("\n");
+  printf("Using for encoding...\n");
+  printf("\n");
+  printf("Usage: omx_test --encoder --input-file=FILE --codec=CODEC"
+         " --width=PIXEL_WIDTH --height=PIXEL_HEIGHT"
+         " --bitrate=BIT_PER_SECOND --framerate=FRAME_PER_SECOND"
+         " [--output-file=FILE] [--enable-csc]"
+         " [--copy]\n");
+  printf("    CODEC: h264/mpeg4/h263/vc1\n");
+  printf("\n");
+  printf("Optional Arguments\n");
+  printf("    --output-file Dump raw OMX output to file.\n");
+  printf("    --enable-csc  Dump the CSCed input from file.\n");
+  printf("    --copy        Simulate a memcpy from the output.\n");
+  printf("    --loop=COUNT  loop input streams\n");
+}
 
 int main(int argc, char** argv) {
   base::AtExitManager at_exit_manager;
-
   CommandLine::Init(argc, argv);
-  const CommandLine* cmd_line = CommandLine::ForCurrentProcess();
 
-  bool encoder = cmd_line->HasSwitch("encoder");
-  if (!encoder) {
-    if (argc < 3) {
-      printf("Usage: omx_test --input-file=FILE --codec=CODEC"
-             " [--output-file=FILE] [--enable-csc]"
-             " [--copy] [--use-ffmpeg]\n");
-      printf("    CODEC: h264/mpeg4/h263/vc1\n");
-      printf("\n");
-      printf("Optional Arguments\n");
-      printf("    --output-file Dump raw OMX output to file.\n");
-      printf("    --enable-csc  Dump the CSCed output to file.\n");
-      printf("    --copy        Simulate a memcpy from the output.\n");
-      printf("    --use-ffmpeg  Use ffmpeg demuxer\n");
-      return 1;
-    }
-  } else {
-    if (argc < 7) {
-      printf("Usage: omx_test --encoder --input-file=FILE --codec=CODEC"
-             " --width=PIXEL_WIDTH --height=PIXEL_HEIGHT"
-             " --bitrate=BIT_PER_SECOND --framerate=FRAME_PER_SECOND"
-             " [--output-file=FILE] [--enable-csc]"
-             " [--copy]\n");
-      printf("    CODEC: h264/mpeg4/h263/vc1\n");
-      printf("\n");
-      printf("Optional Arguments\n");
-      printf("    --output-file Dump raw OMX output to file.\n");
-      printf("    --enable-csc  Dump the CSCed input from file.\n");
-      printf("    --copy        Simulate a memcpy from the output.\n");
-      printf("    --loop=COUNT  loop input streams\n");
-      return 1;
-    }
+  // Print help if there is not enough arguments.
+  if (argc == 1) {
+    PrintHelp();
+    return -1;
   }
 
-  std::string input_filename = cmd_line->GetSwitchValueASCII("input-file");
-  std::string output_filename = cmd_line->GetSwitchValueASCII("output-file");
-  std::string codec = cmd_line->GetSwitchValueASCII("codec");
-  bool copy = cmd_line->HasSwitch("copy");
-  bool enable_csc = cmd_line->HasSwitch("enable-csc");
-  bool use_ffmpeg = cmd_line->HasSwitch("use-ffmpeg");
-  int loop_count = 1;
-  if (cmd_line->HasSwitch("loop"))
-    loop_count = StringToInt(cmd_line->GetSwitchValueASCII("loop"));
+  // Read a bunch of parameters.
+  std::string input_filename = GetStringSwitch("input-file");
+  std::string output_filename = GetStringSwitch("output-file");
+  bool encoder = HasSwitch("encoder");
+  bool copy = HasSwitch("copy");
+  bool enable_csc = HasSwitch("enable-csc");
+  bool use_ffmpeg = HasSwitch("use-ffmpeg");
+  int loop_count = GetIntSwitch("loop");
+  if (loop_count == 0)
+    loop_count = 1;
   DCHECK_GE(loop_count, 1);
 
   // If FFmpeg should be used for demuxing load the library here and do
   // the initialization.
-  if (use_ffmpeg) {
-    if (!media::InitializeMediaLibrary(FilePath())) {
-      LOG(ERROR) << "Unable to initialize the media library.";
-      return 1;
-    }
-
-    avcodec_init();
-    av_register_all();
-    av_register_protocol(&kFFmpegFileProtocol);
+  if (use_ffmpeg && !InitFFmpeg()) {
+    LOG(ERROR) << "Unable to initialize the media library.";
+    return -1;
   }
 
-  media::OmxCodec::OmxMediaFormat input, output;
+  // Set the media formats for I/O.
+  OmxConfigurator::MediaFormat input, output;
   memset(&input, 0, sizeof(input));
   memset(&output, 0, sizeof(output));
+  if (encoder)
+    PrepareEncodeFormats(&input, &output);
+  else
+    PrepareDecodeFormats(&input, &output);
+
+  // Creates the FileReader to read input file.
+  FileReader* file_reader;
   if (encoder) {
-    input.codec = media::OmxCodec::kCodecRaw;
-    // TODO(jiesun): make other format available.
-    output.codec = media::OmxCodec::kCodecMpeg4;
-    output.video_header.width = input.video_header.width =
-        StringToInt(cmd_line->GetSwitchValueASCII("width"));
-    output.video_header.height = input.video_header.height =
-        StringToInt(cmd_line->GetSwitchValueASCII("height"));
-    output.video_header.frame_rate = input.video_header.frame_rate =
-        StringToInt(cmd_line->GetSwitchValueASCII("framerate"));
-    // TODO(jiesun): assume constant bitrate now.
-    output.video_header.bit_rate =
-        StringToInt(cmd_line->GetSwitchValueASCII("bitrate"));
-    // TODO(jiesun): one I frame per second now. make it configurable.
-    output.video_header.i_dist = output.video_header.frame_rate;
-    // TODO(jiesun): disable B frame now. does they support it?
-    output.video_header.p_dist = 0;
+    file_reader = new YuvFileReader(
+        input_filename.c_str(), input.video_header.width,
+        input.video_header.height, loop_count, enable_csc);
+  } else if (use_ffmpeg) {
+    // Use ffmepg for reading.
+    file_reader = new FFmpegFileReader(input_filename.c_str());
+  } else if (EndsWith(input_filename, ".264", false)) {
+    file_reader = new H264FileReader(input_filename.c_str());
   } else {
-    input.codec = media::OmxCodec::kCodecNone;
-    if (codec == "h264") {
-      input.codec = media::OmxCodec::kCodecH264;
-    } else if (codec == "mpeg4") {
-      input.codec = media::OmxCodec::kCodecMpeg4;
-    } else if (codec == "h263") {
-      input.codec = media::OmxCodec::kCodecH263;
-    } else if (codec == "vc1") {
-      input.codec = media::OmxCodec::kCodecVc1;
-    } else {
-      LOG(ERROR) << "Unknown codec.";
-      return 1;
-    }
-    output.codec = media::OmxCodec::kCodecRaw;
+    // Creates a reader that reads in blocks of 32KB.
+    const int kReadSize = 32768;
+    file_reader = new BlockFileReader(input_filename.c_str(), kReadSize);
   }
 
-  // Create a TestApp object and run the decoder.
-  TestApp test(input_filename.c_str(),
-               output_filename.c_str(),
-               input,
-               output,
-               copy,
-               enable_csc,
-               use_ffmpeg,
-               loop_count);
+  // Create the configurator.
+  OmxConfigurator* configurator;
+  if (encoder)
+    configurator = new OmxEncoderConfigurator(input, output);
+  else
+    configurator = new OmxDecoderConfigurator(input, output);
 
-  // This call will run the decoder until EOS is reached or an error
-  // is encountered.
+  // Create a file writer.
+  FileWriter* file_writer =
+      new FileWriter(output_filename, copy, enable_csc);
+
+  // Create a test app object and initialize it.
+  TestApp test(configurator, file_reader, file_writer);
   if (!test.Initialize()) {
     LOG(ERROR) << "can't initialize this application";
     return -1;
   }
+
+  // This will run the decoder until EOS is reached or an error
+  // is encountered.
   test.Run();
   return 0;
 }

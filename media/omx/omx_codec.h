@@ -82,14 +82,15 @@
 // to another. When an error is received, this object will transition to
 // the error state.
 
-#ifndef MEDIA_OMX_CODEC_H_
-#define MEDIA_OMX_CODEC_H_
+#ifndef MEDIA_OMX_OMX_CODEC_H_
+#define MEDIA_OMX_OMX_CODEC_H_
 
 #include <queue>
 #include <vector>
 
 #include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "media/omx/omx_configurator.h"
 #include "third_party/openmax/il/OMX_Component.h"
 #include "third_party/openmax/il/OMX_Core.h"
 #include "third_party/openmax/il/OMX_Video.h"
@@ -101,83 +102,22 @@ namespace media {
 
 class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
  public:
-  struct OmxMediaFormat;  // forward declaration.
   // TODO(jiesun): remove callback parameters.
-  typedef Callback2<OmxMediaFormat*, OmxMediaFormat*>::Type FormatCallback;
+  typedef Callback2<
+      const OmxConfigurator::MediaFormat&,
+      const OmxConfigurator::MediaFormat&>::Type FormatCallback;
   typedef Callback1<InputBuffer*>::Type FeedCallback;
   typedef Callback2<uint8*, int>::Type ReadCallback;
   typedef Callback0::Type Callback;
-
-  enum Codec {
-    kCodecNone,
-    kCodecH264,
-    kCodecMpeg4,
-    kCodecH263,
-    kCodecVc1,
-    kCodecRaw,
-  };
-
-  // TODO(jiesun): figure out what other surface formats are.
-  enum OmxSurfaceFormat {
-    kOmxSurfaceFormatNV21,
-    kOmxSurfaceFormatNV21Tiled,
-    kOmxSurfaceFormatNV12,
-  };
-
-  struct OmxMediaFormatVideoHeader {
-    int width;
-    int height;
-    int stride;     // n/a to compressed stream.
-    int frame_rate;
-    int bit_rate;   // n/a to raw stream.
-    int profile;    // n/a to raw stream.
-    int level;      // n/a to raw stream.
-    int i_dist;     // i frame distance; >0 if p frame is enabled.
-    int p_dist;     // p frame distance; >0 if b frame is enabled.
-  };
-
-  struct OmxMediaFormatVideoRaw {
-    OmxSurfaceFormat color_space;
-  };
-
-  struct OmxMediaFormatVideoH264 {
-    int slice_enable;
-    int max_ref_frames;
-    int num_ref_l0, num_ref_l1;
-    int cabac_enable;
-    int cabac_init_idc;
-    int deblock_enable;
-    int frame_mbs_only_flags;
-    int mbaff_enable;
-    int bdirect_spatial_temporal;
-  };
-
-  struct OmxMediaFormatVideoMPEG4 {
-    int ac_pred_enable;
-    int time_inc_res;
-    int slice_enable;
-  };
-
-  struct OmxMediaFormat {
-    // TODO(jiesun): instead of codec type, we should have media format.
-    Codec codec;
-    OmxMediaFormatVideoHeader video_header;
-    union {
-      OmxMediaFormatVideoRaw raw;
-      OmxMediaFormatVideoH264 h264;
-      OmxMediaFormatVideoMPEG4 mpeg4;
-    };
-  };
 
   // Initialize an OmxCodec object that runs on |message_loop|. It is
   // guaranteed that callbacks are executed on this message loop.
   explicit OmxCodec(MessageLoop* message_loop);
   virtual ~OmxCodec();
 
-  // Set the component name and input/output media format.
-  // TODO(hclam): Remove |component|.
-  void Setup(const OmxMediaFormat& input_format,
-             const OmxMediaFormat& output_format);
+  // Setup OmxCodec using |configurator|. Ownership of |configurator|
+  // is passed to this class. It is then used for configuration.
+  void Setup(OmxConfigurator* configurator);
 
   // Set the error callback. In case of error the callback will be called.
   void SetErrorCallback(Callback* callback);
@@ -204,23 +144,8 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   // Flush the decoder and reset its end-of-stream state.
   void Flush(Callback* callback);
 
-  // Getters for private members.
-  OMX_COMPONENTTYPE* component_handle() { return component_handle_; }
-  int input_port() { return input_port_; }
-  int output_port() { return output_port_; }
-  bool encoder() const { return input_format_.codec == kCodecRaw; }
-
   // Subclass can provide a different value.
   virtual int current_omx_spec_version() const { return 0x00000101; }
-
- protected:
-  // Returns the component name given the codec.
-  virtual const char* GetComponentName(Codec codec) {
-    return component_name_.c_str();
-  }
-
-  // Inherit from subclass to allow device specific configurations.
-  virtual bool DeviceSpecificConfig() { return true; }
 
  private:
   enum State {
@@ -253,20 +178,15 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   // state is done.
   void ReportError();
 
-  // Helper method to call |start_callback_| after a foramt change.
+  // Helper method to call |format_callback_| after a format change.
   // used when decoder output port had done with port reconfigure and
   // return to enabled state.
-  void ReportFormatChange();
+  void ReportFormatChange(
+      const OmxConfigurator::MediaFormat& input_format,
+      const OmxConfigurator::MediaFormat& output_format);
 
   // Helper method to configure port format at LOADED state.
   bool ConfigureIOPorts();
-  bool ConfigureAsDecoder(OMX_PARAM_PORTDEFINITIONTYPE* input_port_def,
-                          OMX_PARAM_PORTDEFINITIONTYPE* output_port_def);
-  bool ConfigureAsEncoder(OMX_PARAM_PORTDEFINITIONTYPE* input_port_def,
-                          OMX_PARAM_PORTDEFINITIONTYPE* output_port_def);
-
-  // Helper to return predefined OpenMAX role name for specific codec type.
-  static std::string SelectRole(Codec codec, bool encoder);
 
   // Methods and free input and output buffers.
   bool AllocateInputBuffers();
@@ -378,14 +298,10 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   State state_;
   State next_state_;
 
-  // TODO(hclam): We should keep a list of component names.
   std::string role_name_;
   std::string component_name_;
   OMX_COMPONENTTYPE* component_handle_;
-  bool encoder_;
-  int64 next_sample_timestamp_;
-  OmxMediaFormat input_format_;
-  OmxMediaFormat output_format_;
+  scoped_ptr<OmxConfigurator> configurator_;
   MessageLoop* message_loop_;
 
   scoped_ptr<FormatCallback> format_callback_;
@@ -400,8 +316,11 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   // Input and output buffers that we can use to feed the decoder.
   std::queue<OMX_BUFFERHEADERTYPE*> available_input_buffers_;
   std::queue<OMX_BUFFERHEADERTYPE*> available_output_buffers_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(OmxCodec);
 };
 
 }  // namespace media
 
-#endif  // MEDIA_OMX_CODEC_H_
+#endif  // MEDIA_OMX_OMX_CODEC_H_

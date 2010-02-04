@@ -52,12 +52,12 @@ void OmxVideoDecodeEngine::Initialize(AVStream* stream, Task* done_cb) {
   v_buffer_.reset(new uint8[width_ * height_ / 4]);
 
   // TODO(ajwong): Find the right way to determine the Omx component name.
-  OmxCodec::OmxMediaFormat input_format, output_format;
+  OmxConfigurator::MediaFormat input_format, output_format;
   memset(&input_format, 0, sizeof(input_format));
   memset(&output_format, 0, sizeof(output_format));
-  input_format.codec = OmxCodec::kCodecH264;
-  output_format.codec = OmxCodec::kCodecRaw;
-  omx_codec_->Setup(input_format, output_format);
+  input_format.codec = OmxConfigurator::kCodecH264;
+  output_format.codec = OmxConfigurator::kCodecRaw;
+  omx_codec_->Setup(new OmxDecoderConfigurator(input_format, output_format));
   omx_codec_->SetErrorCallback(
       NewCallback(this, &OmxVideoDecodeEngine::OnHardwareError));
   omx_codec_->SetFormatCallback(
@@ -67,8 +67,8 @@ void OmxVideoDecodeEngine::Initialize(AVStream* stream, Task* done_cb) {
 }
 
 void OmxVideoDecodeEngine::OnFormatChange(
-    OmxCodec::OmxMediaFormat* input_format,
-    OmxCodec::OmxMediaFormat* output_format) {
+    const OmxConfigurator::MediaFormat& input_format,
+    const OmxConfigurator::MediaFormat& output_format) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   // TODO(jiesun): We should not need this for here, because width and height
   // are already known from upper layer of the stack.

@@ -33,7 +33,7 @@ class FileReader {
 
 class BasicFileReader : public FileReader {
  public:
-  explicit BasicFileReader(const char* filename);
+  explicit BasicFileReader(const std::string& filename);
   virtual bool Initialize();
   virtual void Read(uint8** output, int* size) = 0;
 
@@ -55,7 +55,7 @@ class YuvFileReader : public BasicFileReader {
   // NV21.
   // TODO(jiesun): Make color space more generic not a hard coded color
   // space conversion.
-  YuvFileReader(const char* filename,
+  YuvFileReader(const std::string& filename,
                 int width,
                 int height,
                 int loop_count,
@@ -74,7 +74,7 @@ class YuvFileReader : public BasicFileReader {
 
 class BlockFileReader : public BasicFileReader {
  public:
-  BlockFileReader(const char* filename,
+  BlockFileReader(const std::string& filename,
                   int block_size);
   virtual void Read(uint8** output, int* size);
 
@@ -86,7 +86,7 @@ class BlockFileReader : public BasicFileReader {
 
 class FFmpegFileReader : public FileReader {
  public:
-  explicit FFmpegFileReader(const char* filename);
+  explicit FFmpegFileReader(const std::string& filename);
   virtual ~FFmpegFileReader();
   virtual bool Initialize();
   virtual void Read(uint8** output, int* size);
@@ -103,7 +103,7 @@ class FFmpegFileReader : public FileReader {
 
 class H264FileReader : public BasicFileReader {
  public:
-  explicit H264FileReader(const char* filename);
+  explicit H264FileReader(const std::string& filename);
   virtual void Read(uint8** output, int* size);
 
  private:
