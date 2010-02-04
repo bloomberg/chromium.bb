@@ -220,7 +220,7 @@ OpaqueBrowserFrameView::~OpaqueBrowserFrameView() {
 // OpaqueBrowserFrameView, BrowserNonClientFrameView implementation:
 
 gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
-    TabStrip* tabstrip) const {
+    BaseTabStrip* tabstrip) const {
   int x_offset = browser_view_->browser_extender()->GetMainMenuWidth();
   int tabstrip_x = browser_view_->ShouldShowOffTheRecordAvatar() ?
       (otr_avatar_icon_->bounds().right() + kOTRSideSpacing) :

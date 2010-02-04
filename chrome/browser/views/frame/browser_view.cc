@@ -403,7 +403,6 @@ BrowserView::BrowserView(Browser* browser)
       browser_(browser),
       active_bookmark_bar_(NULL),
       tabstrip_(NULL),
-      side_tabstrip_(NULL),
       toolbar_(NULL),
       infobar_container_(NULL),
       contents_container_(NULL),
@@ -1595,8 +1594,13 @@ views::LayoutManager* BrowserView::CreateLayoutManager() const {
   return new BrowserViewLayout;
 }
 
-TabStrip* BrowserView::CreateTabStrip(TabStripModel* model) {
-  return new TabStrip(model);
+BaseTabStrip* BrowserView::CreateTabStrip(TabStripModel* model) {
+  BaseTabStrip* tabstrip = NULL;
+  if (SideTabStrip::Visible(browser_->profile()))
+    tabstrip = new SideTabStrip;
+  else
+    tabstrip = new TabStrip(model);
+  return tabstrip;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -1627,10 +1631,6 @@ void BrowserView::Init() {
   tabstrip_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_TABSTRIP));
   AddChildView(tabstrip_);
   frame_->TabStripCreated(tabstrip_);
-
-  side_tabstrip_ = new SideTabStrip;
-  side_tabstrip_->SetID(VIEW_ID_SIDE_TABSTRIP);
-  AddChildView(side_tabstrip_);
 
   toolbar_ = new ToolbarView(browser_.get());
   AddChildView(toolbar_);

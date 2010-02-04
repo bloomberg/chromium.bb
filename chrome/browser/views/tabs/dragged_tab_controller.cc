@@ -822,7 +822,7 @@ TabStrip* DraggedTabController::GetTabStripForPoint(
   if (!browser || !browser->IsBrowserTypeNormal())
     return NULL;
 
-  TabStrip* other_tabstrip = browser->tabstrip();
+  TabStrip* other_tabstrip = browser->tabstrip()->AsTabStrip();
   if (!other_tabstrip->IsCompatibleWith(source_tabstrip_))
     return NULL;
   return GetTabStripIfItContains(other_tabstrip, screen_point);

@@ -28,7 +28,6 @@ enum ViewID {
   VIEW_ID_TAB_LAST,
 
   VIEW_ID_TAB_STRIP,
-  VIEW_ID_SIDE_TABSTRIP,
 
   // Toolbar & toolbar elements.
   VIEW_ID_TOOLBAR = 1000,

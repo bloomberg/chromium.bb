@@ -18,7 +18,7 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/views/frame/browser_frame.h"
-#include "chrome/browser/views/tabs/tab_strip.h"
+#include "chrome/browser/views/tabs/base_tab_strip.h"
 #include "chrome/browser/views/unhandled_keyboard_event_handler.h"
 #include "views/window/client_view.h"
 #include "views/window/window_delegate.h"
@@ -136,7 +136,7 @@ class BrowserView : public BrowserWindow,
   gfx::Rect GetTabStripBounds() const;
 
   // Accessor for the TabStrip.
-  TabStrip* tabstrip() const { return tabstrip_; }
+  BaseTabStrip* tabstrip() const { return tabstrip_; }
 
   // Accessor for the ExtensionShelf.
   ExtensionShelf* extension_shelf() const { return extension_shelf_; }
@@ -382,7 +382,7 @@ class BrowserView : public BrowserWindow,
 
   // Returns a new TabStrip for the browser view. A subclass may
   // override to return a different TabStrip implementation.
-  virtual TabStrip* CreateTabStrip(TabStripModel* tab_strip_model);
+  virtual BaseTabStrip* CreateTabStrip(TabStripModel* tab_strip_model);
 
   // Browser window related initializations.
   virtual void Init();
@@ -466,8 +466,7 @@ class BrowserView : public BrowserWindow,
   views::View* active_bookmark_bar_;
 
   // The TabStrip.
-  TabStrip* tabstrip_;
-  SideTabStrip* side_tabstrip_;
+  BaseTabStrip* tabstrip_;
 
   // The Toolbar containing the navigation buttons, menus and the address bar.
   ToolbarView* toolbar_;

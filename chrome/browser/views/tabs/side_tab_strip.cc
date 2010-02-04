@@ -7,18 +7,21 @@
 #include "app/gfx/canvas.h"
 #include "base/command_line.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/view_ids.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 
 namespace {
 const int kVerticalTabSpacing = 2;
+const int kTabStripWidth = 127;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // SideTabStrip, public:
 
 SideTabStrip::SideTabStrip() {
+  SetID(VIEW_ID_TAB_STRIP);
 }
 
 SideTabStrip::~SideTabStrip() {
@@ -34,6 +37,39 @@ bool SideTabStrip::Available() {
 bool SideTabStrip::Visible(Profile* profile) {
   return Available() &&
       profile->GetPrefs()->GetBoolean(prefs::kUseVerticalTabs);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// SideTabStrip, BaseTabStrip implementation:
+
+int SideTabStrip::GetPreferredHeight() {
+  return 0;
+}
+
+void SideTabStrip::SetBackgroundOffset(const gfx::Point& offset) {
+}
+
+bool SideTabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
+  return false;
+}
+
+void SideTabStrip::SetDraggedTabBounds(int tab_index,
+                                       const gfx::Rect& tab_bounds) {
+}
+
+bool SideTabStrip::IsDragSessionActive() const {
+  return false;
+}
+
+void SideTabStrip::UpdateLoadingAnimations() {
+}
+
+bool SideTabStrip::IsAnimating() const {
+  return false;
+}
+
+TabStrip* SideTabStrip::AsTabStrip() {
+  return NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -53,7 +89,7 @@ void SideTabStrip::Paint(gfx::Canvas* canvas) {
 }
 
 gfx::Size SideTabStrip::GetPreferredSize() {
-  return gfx::Size(127, 0);
+  return gfx::Size(kTabStripWidth, 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

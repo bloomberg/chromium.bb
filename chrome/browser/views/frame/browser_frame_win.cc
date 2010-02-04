@@ -69,7 +69,7 @@ views::Window* BrowserFrameWin::GetWindow() {
   return this;
 }
 
-void BrowserFrameWin::TabStripCreated(TabStrip* tabstrip) {
+void BrowserFrameWin::TabStripCreated(BaseTabStrip* tabstrip) {
 }
 
 int BrowserFrameWin::GetMinimizeButtonOffset() const {
@@ -84,7 +84,7 @@ int BrowserFrameWin::GetMinimizeButtonOffset() const {
   return minimize_button_corner.x;
 }
 
-gfx::Rect BrowserFrameWin::GetBoundsForTabStrip(TabStrip* tabstrip) const {
+gfx::Rect BrowserFrameWin::GetBoundsForTabStrip(BaseTabStrip* tabstrip) const {
   return browser_frame_view_->GetBoundsForTabStrip(tabstrip);
 }
 

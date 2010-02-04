@@ -8,9 +8,9 @@
 #include "build/build_config.h"
 #include "views/window/non_client_view.h"
 
+class BaseTabStrip;
 class BrowserView;
 class Profile;
-class TabStrip;
 class ThemeProvider;
 
 namespace gfx {
@@ -43,7 +43,7 @@ class BrowserFrame {
 
   // Notification that the tab strip has been created. This should let the
   // BrowserRootView know about it so it can enable drag and drop.
-  virtual void TabStripCreated(TabStrip* tabstrip) = 0;
+  virtual void TabStripCreated(BaseTabStrip* tabstrip) = 0;
 
   // Determine the distance of the left edge of the minimize button from the
   // left edge of the window. Used in our Non-Client View's Layout.
@@ -51,7 +51,7 @@ class BrowserFrame {
 
   // Retrieves the bounds, in non-client view coordinates for the specified
   // TabStrip.
-  virtual gfx::Rect GetBoundsForTabStrip(TabStrip* tabstrip) const = 0;
+  virtual gfx::Rect GetBoundsForTabStrip(BaseTabStrip* tabstrip) const = 0;
 
   // Tells the frame to update the throbber.
   virtual void UpdateThrobber(bool running) = 0;

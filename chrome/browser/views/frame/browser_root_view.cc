@@ -126,7 +126,7 @@ views::DropTargetEvent* BrowserRootView::MapEventToTabStrip(
                                     event.GetSourceOperations());
 }
 
-TabStrip* BrowserRootView::tabstrip() const {
+BaseTabStrip* BrowserRootView::tabstrip() const {
   return browser_view_->tabstrip();
 }
 

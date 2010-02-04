@@ -73,8 +73,7 @@ class BrowserViewLayout : public views::LayoutManager {
   int LayoutExtensionShelf(int bottom);
 
   // Child views that the layout manager manages.
-  TabStrip* tabstrip_;
-  SideTabStrip* side_tabstrip_;
+  BaseTabStrip* tabstrip_;
   ToolbarView* toolbar_;
   views::View* contents_split_;
   views::View* contents_container_;

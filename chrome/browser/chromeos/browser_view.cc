@@ -423,7 +423,7 @@ views::LayoutManager* BrowserView::CreateLayoutManager() const {
   return new BrowserViewLayout();
 }
 
-TabStrip* BrowserView::CreateTabStrip(
+BaseTabStrip* BrowserView::CreateTabStrip(
     TabStripModel* tab_strip_model) {
   return new ChromeosTabStrip(tab_strip_model, this);
 }

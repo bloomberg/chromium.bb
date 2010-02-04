@@ -207,7 +207,7 @@ gfx::Rect CompactLocationBarHost::GetBoundsUnderTab(int index) const {
   // Get the position of the left-bottom corner of the tab on the
   // widget.  The widget of the tab is same as the widget of the
   // BrowserView which is the parent of the host.
-  TabStrip* tabstrip = browser_view()->tabstrip();
+  TabStrip* tabstrip = browser_view()->tabstrip()->AsTabStrip();
   gfx::Rect bounds = tabstrip->GetIdealBounds(index);
   gfx::Point tab_left_bottom(bounds.x(), bounds.height());
   views::View::ConvertPointToWidget(tabstrip, &tab_left_bottom);

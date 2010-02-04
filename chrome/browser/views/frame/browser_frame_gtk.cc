@@ -51,7 +51,7 @@ class PopupNonClientFrameView : public BrowserNonClientFrameView {
   virtual void ResetWindowControls() {}
 
   // BrowserNonClientFrameView:
-  virtual gfx::Rect GetBoundsForTabStrip(TabStrip* tabstrip) const {
+  virtual gfx::Rect GetBoundsForTabStrip(BaseTabStrip* tabstrip) const {
     return gfx::Rect(0, 0, width(), tabstrip->GetPreferredHeight());
   }
   virtual void UpdateThrobber(bool running) {}
@@ -102,7 +102,7 @@ views::Window* BrowserFrameGtk::GetWindow() {
   return this;
 }
 
-void BrowserFrameGtk::TabStripCreated(TabStrip* tabstrip) {
+void BrowserFrameGtk::TabStripCreated(BaseTabStrip* tabstrip) {
 }
 
 int BrowserFrameGtk::GetMinimizeButtonOffset() const {
@@ -110,7 +110,7 @@ int BrowserFrameGtk::GetMinimizeButtonOffset() const {
   return 0;
 }
 
-gfx::Rect BrowserFrameGtk::GetBoundsForTabStrip(TabStrip* tabstrip) const {
+gfx::Rect BrowserFrameGtk::GetBoundsForTabStrip(BaseTabStrip* tabstrip) const {
   return browser_frame_view_->GetBoundsForTabStrip(tabstrip);
 }
 

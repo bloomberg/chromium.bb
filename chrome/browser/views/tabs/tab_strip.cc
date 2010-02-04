@@ -645,15 +645,18 @@ void TabStrip::InitTabStripButtons() {
   AddChildView(newtab_button_);
 }
 
+bool TabStrip::IsCompatibleWith(TabStrip* other) const {
+  return model_->profile() == other->model()->profile();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// TabStrip, BaseTabStrip implementation:
+
 int TabStrip::GetPreferredHeight() {
   return GetPreferredSize().height();
 }
 
-bool TabStrip::IsAnimating() const {
-  return active_animation_.get() != NULL;
-}
-
-void TabStrip::SetBackgroundOffset(gfx::Point offset) {
+void TabStrip::SetBackgroundOffset(const gfx::Point& offset) {
   int tab_count = GetTabCount();
   for (int i = 0; i < tab_count; ++i)
     GetTabAt(i)->SetBackgroundOffset(offset);
@@ -683,15 +686,11 @@ bool TabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
   return false;
 }
 
+void TabStrip::SetDraggedTabBounds(int tab_index, const gfx::Rect& tab_bounds) {
+}
+
 bool TabStrip::IsDragSessionActive() const {
   return drag_controller_.get() != NULL;
-}
-
-bool TabStrip::IsCompatibleWith(TabStrip* other) const {
-  return model_->profile() == other->model()->profile();
-}
-
-void TabStrip::SetDraggedTabBounds(int tab_index, const gfx::Rect& tab_bounds) {
 }
 
 void TabStrip::UpdateLoadingAnimations() {
@@ -710,6 +709,14 @@ void TabStrip::UpdateLoadingAnimations() {
       }
     }
   }
+}
+
+bool TabStrip::IsAnimating() const {
+  return active_animation_.get() != NULL;
+}
+
+TabStrip* TabStrip::AsTabStrip() {
+  return this;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

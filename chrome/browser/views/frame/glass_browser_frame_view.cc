@@ -80,7 +80,7 @@ GlassBrowserFrameView::~GlassBrowserFrameView() {
 // GlassBrowserFrameView, BrowserNonClientFrameView implementation:
 
 gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
-    TabStrip* tabstrip) const {
+    BaseTabStrip* tabstrip) const {
   int minimize_button_offset = frame_->GetMinimizeButtonOffset();
   int tabstrip_x = browser_view_->ShouldShowOffTheRecordAvatar() ?
       (otr_avatar_bounds_.right() + kOTRSideSpacing) :

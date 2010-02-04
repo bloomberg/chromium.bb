@@ -37,9 +37,9 @@ class BrowserFrameWin : public BrowserFrame, public views::WindowWin {
 
   // BrowserFrame implementation.
   virtual views::Window* GetWindow();
-  virtual void TabStripCreated(TabStrip* tabstrip);
+  virtual void TabStripCreated(BaseTabStrip* tabstrip);
   virtual int GetMinimizeButtonOffset() const;
-  virtual gfx::Rect GetBoundsForTabStrip(TabStrip* tabstrip) const;
+  virtual gfx::Rect GetBoundsForTabStrip(BaseTabStrip* tabstrip) const;
   virtual void UpdateThrobber(bool running);
   virtual void ContinueDraggingDetachedTab();
   virtual ThemeProvider* GetThemeProviderForFrame() const;

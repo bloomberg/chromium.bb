@@ -7,6 +7,7 @@
 
 #include "chrome/browser/chromeos/status_area_host.h"
 #include "chrome/browser/views/frame/browser_view.h"
+#include "views/controls/button/button.h"
 
 class TabStripModel;
 
@@ -61,7 +62,7 @@ class BrowserView : public ::BrowserView,
   virtual void SetFocusToLocationBar();
   virtual void ToggleCompactNavigationBar();
   virtual views::LayoutManager* CreateLayoutManager() const;
-  virtual TabStrip* CreateTabStrip(TabStripModel* tab_strip_model);
+  virtual BaseTabStrip* CreateTabStrip(TabStripModel* tab_strip_model);
 
   // views::ButtonListener overrides.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
