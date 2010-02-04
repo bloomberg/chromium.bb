@@ -879,6 +879,7 @@ void UrlmonUrlRequestManager::StartRequestWorker(int request_id,
       request_info.extra_request_headers,
       request_info.upload_data,
       enable_frame_busting_);
+  new_request->set_parent_window(err_dialog_parent_wnd_);
 
   // Shall we use an existing moniker?
   if (moniker_for_url.get()) {
@@ -890,7 +891,6 @@ void UrlmonUrlRequestManager::StartRequestWorker(int request_id,
   DCHECK(LookupRequest(request_id).get() == NULL);
   request_map_[request_id] = new_request;
   map_empty_.Reset();
-
   new_request->Start();
 }
 
@@ -1016,7 +1016,7 @@ scoped_refptr<UrlmonUrlRequest> UrlmonUrlRequestManager::LookupRequest(
 
 UrlmonUrlRequestManager::UrlmonUrlRequestManager()
     : stopping_(false), worker_thread_("UrlMon fetch thread"),
-      map_empty_(true, true) {
+      map_empty_(true, true), err_dialog_parent_wnd_(NULL) {
 }
 
 UrlmonUrlRequestManager::~UrlmonUrlRequestManager() {
@@ -1061,4 +1061,8 @@ bool UrlmonUrlRequestManager::ExecuteInWorkerThread(
 
   worker_thread_.message_loop()->PostTask(from_here, task);
   return true;
+}
+
+void UrlmonUrlRequestManager::SetErrorDialogsParentWindow(HWND window) {
+  err_dialog_parent_wnd_ = window;
 }

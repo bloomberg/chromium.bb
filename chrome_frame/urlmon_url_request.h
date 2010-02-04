@@ -31,7 +31,7 @@ class UrlmonUrlRequestManager :
   void UseMonikerForUrl(IMoniker* moniker, IBindCtx* bind_ctx,
                         const std::wstring& url);
   void StealMonikerFromRequest(int request_id, IMoniker** moniker);
-
+  void SetErrorDialogsParentWindow(HWND window);
  private:
    struct MonikerForUrl {
      MonikerForUrl() {
@@ -86,6 +86,7 @@ class UrlmonUrlRequestManager :
   base::WaitableEvent map_empty_;
   bool stopping_;
   Lock worker_thread_access_;
+  HWND err_dialog_parent_wnd_;
 };
 
 #endif  // CHROME_FRAME_URLMON_URL_REQUEST_H_

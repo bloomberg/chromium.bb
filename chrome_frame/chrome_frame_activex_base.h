@@ -516,6 +516,7 @@ END_MSG_MAP()
   LRESULT OnCreate(UINT message, WPARAM wparam, LPARAM lparam,
                    BOOL& handled) {  // NO_LINT
     ModifyStyle(0, WS_CLIPCHILDREN | WS_CLIPSIBLINGS, 0);
+    url_fetcher_.SetErrorDialogsParentWindow(m_hWnd);
     automation_client_->SetParentWindow(m_hWnd);
     // Only fire the 'interactive' ready state if we aren't there already.
     if (ready_state_ < READYSTATE_INTERACTIVE) {
