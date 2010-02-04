@@ -5,12 +5,15 @@
 #ifndef CHROME_BROWSER_VIEWS_BROWSER_ACTIONS_CONTAINER_H_
 #define CHROME_BROWSER_VIEWS_BROWSER_ACTIONS_CONTAINER_H_
 
+#include <set>
+#include <string>
 #include <vector>
 
 #include "base/task.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/views/browser_bubble.h"
+#include "chrome/browser/views/extensions/browser_action_overflow_menu_controller.h"
 #include "chrome/browser/views/extensions/extension_action_context_menu.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -226,7 +229,9 @@ class BrowserActionsContainer
     public views::DragController,
     public views::ResizeGripper::ResizeGripperDelegate,
     public AnimationDelegate,
-    public ExtensionToolbarModel::Observer {
+    public ExtensionToolbarModel::Observer,
+    public BrowserActionOverflowMenuController::Observer {
+  friend class ShowFolderMenuTask;
  public:
   BrowserActionsContainer(Browser* browser, views::View* owner_view);
   virtual ~BrowserActionsContainer();
@@ -241,6 +246,9 @@ class BrowserActionsContainer
 
   // Returns the chevron, if any.
   const views::View* chevron() const { return chevron_; }
+
+  // Returns the profile this container is associated with.
+  Profile* profile() const { return profile_; }
 
   // Returns the current tab's ID, or -1 if there is no current tab.
   int GetCurrentTabId() const;
@@ -264,6 +272,9 @@ class BrowserActionsContainer
 
   // Called when a browser action becomes visible/hidden.
   void OnBrowserActionVisibilityChanged();
+
+  // Returns how many browser actions are visible.
+  size_t VisibleBrowserActions() const;
 
   // Called when the user clicks on the browser action icon.
   void OnBrowserActionExecuted(BrowserActionButton* button);
@@ -318,6 +329,13 @@ class BrowserActionsContainer
   virtual void AnimationProgressed(const Animation* animation);
   virtual void AnimationEnded(const Animation* animation);
 
+  // Overridden from BrowserActionOverflowMenuController::Observer:
+  virtual void NotifyMenuDeleted(
+      BrowserActionOverflowMenuController* controller);
+
+  // Moves a browser action with |id| to |new_index|.
+  void MoveBrowserAction(const std::string& extension_id, size_t new_index);
+
   // Hide the current popup.
   void HidePopup();
 
@@ -336,6 +354,19 @@ class BrowserActionsContainer
 
   // Closes the overflow menu if open.
   void CloseOverflowMenu();
+
+  // Cancels the timer for showing the drop down menu.
+  void StopShowFolderDropMenuTimer();
+
+  // Show the drop down folder after a slight delay.
+  void StartShowFolderDropMenuTimer();
+
+  // Show the overflow menu.
+  void ShowDropFolder();
+
+  // Sets the drop indicator position (and schedules paint if the position has
+  // changed).
+  void SetDropIndicator(int x_pos);
 
   // Takes a width in pixels, calculates how many icons fit within that space
   // (up to the maximum number of icons in our vector) and shaves off the
@@ -358,9 +389,6 @@ class BrowserActionsContainer
   // still show it. We account for the chevron and the resize gripper, but not
   // all the padding that we normally show if there are icons.
   int ContainerMinSize() const;
-
-  // Returns how many browser actions are visible.
-  size_t VisibleBrowserActions() const;
 
   // The vector of browser actions (icons/image buttons for each action).
   std::vector<BrowserActionView*> browser_action_views_;
@@ -394,8 +422,9 @@ class BrowserActionsContainer
   // The chevron for accessing the overflow items.
   views::MenuButton* chevron_;
 
-  // The menu to show for the overflow button (chevron).
-  scoped_ptr<BrowserActionOverflowMenuController> overflow_menu_;
+  // The menu to show for the overflow button (chevron). This class manages its
+  // own lifetime so that it can stay alive during drag and drop operations.
+  BrowserActionOverflowMenuController* overflow_menu_;
 
   // The animation that happens when the container snaps to place.
   scoped_ptr<SlideAnimation> resize_animation_;
@@ -416,6 +445,9 @@ class BrowserActionsContainer
   int drop_indicator_position_;
 
   ScopedRunnableMethodFactory<BrowserActionsContainer> task_factory_;
+
+  // Handles delayed showing of the overflow menu when hovering.
+  ScopedRunnableMethodFactory<BrowserActionsContainer> show_menu_task_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserActionsContainer);
 };

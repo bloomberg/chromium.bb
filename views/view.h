@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -142,6 +142,10 @@ class View : public AcceleratorTarget {
 
   // Returns the amount of time between double clicks, in milliseconds.
   static int GetDoubleClickTimeMS();
+
+  // Returns the amount of time to wait from hovering over a menu button until
+  // showing the menu.
+  static int GetMenuShowDelay();
 
   // Sizing functions
 
@@ -1280,6 +1284,10 @@ class View : public AcceleratorTarget {
   // is going to be flipped horizontally (using the appropriate transform) on
   // right-to-left locales for this View.
   bool flip_canvas_on_paint_for_rtl_ui_;
+
+  // The default value for how long to wait (in ms) before showing a menu
+  // button on hover. This value is used if the OS doesn't supply one.
+  static const int kShowFolderDropMenuDelay;
 
   DISALLOW_COPY_AND_ASSIGN(View);
 };

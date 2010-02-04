@@ -21,7 +21,6 @@
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/detachable_toolbar_view.h"
 #include "chrome/browser/views/extensions/browser_action_drag_data.h"
-#include "chrome/browser/views/extensions/browser_action_overflow_menu_controller.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
@@ -302,11 +301,13 @@ BrowserActionsContainer::BrowserActionsContainer(
       model_(NULL),
       resize_gripper_(NULL),
       chevron_(NULL),
+      overflow_menu_(NULL),
       suppress_chevron_(false),
       resize_amount_(0),
       animation_target_size_(0),
       drop_indicator_position_(-1),
-      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(show_menu_task_factory_(this)) {
   SetID(VIEW_ID_BROWSER_ACTION_TOOLBAR);
 
   ExtensionsService* extension_service = profile_->GetExtensionsService();
@@ -348,6 +349,7 @@ BrowserActionsContainer::BrowserActionsContainer(
 BrowserActionsContainer::~BrowserActionsContainer() {
   if (model_)
     model_->RemoveObserver(this);
+  StopShowFolderDropMenuTimer();
   CloseOverflowMenu();
   HidePopup();
   DeleteBrowserActionViews();
@@ -385,8 +387,35 @@ void BrowserActionsContainer::RefreshBrowserActionViews() {
 
 void BrowserActionsContainer::CloseOverflowMenu() {
   // Close the overflow menu if open (and the context menu off of that).
-  if (overflow_menu_.get())
+  if (overflow_menu_)
     overflow_menu_->CancelMenu();
+}
+
+void BrowserActionsContainer::StopShowFolderDropMenuTimer() {
+  show_menu_task_factory_.RevokeAll();
+}
+
+void BrowserActionsContainer::StartShowFolderDropMenuTimer() {
+  int delay = View::GetMenuShowDelay();
+  MessageLoop::current()->PostDelayedTask(FROM_HERE,
+      show_menu_task_factory_.NewRunnableMethod(
+          &BrowserActionsContainer::ShowDropFolder),
+      delay);
+}
+
+void BrowserActionsContainer::ShowDropFolder() {
+  DCHECK(!overflow_menu_);
+  overflow_menu_ = new BrowserActionOverflowMenuController(
+      this, chevron_, browser_action_views_, VisibleBrowserActions());
+  overflow_menu_->set_observer(this);
+  overflow_menu_->RunMenu(GetWindow()->GetNativeWindow(), true);
+}
+
+void BrowserActionsContainer::SetDropIndicator(int x_pos) {
+  if (drop_indicator_position_ != x_pos) {
+    drop_indicator_position_ = x_pos;
+    SchedulePaint();
+  }
 }
 
 void BrowserActionsContainer::CreateBrowserActionViews() {
@@ -636,6 +665,17 @@ void BrowserActionsContainer::OnDragEntered(
 
 int BrowserActionsContainer::OnDragUpdated(
     const views::DropTargetEvent& event) {
+  // First check if we are above the chevron (overflow) menu.
+  if (GetViewForPoint(event.location()) == chevron_) {
+    SetDropIndicator(-1);
+
+    if (show_menu_task_factory_.empty() && !overflow_menu_)
+      StartShowFolderDropMenuTimer();
+    return DragDropTypes::DRAG_MOVE;
+  } else {
+    StopShowFolderDropMenuTimer();
+  }
+
   // Modifying the x value before clamping affects how far you have to drag to
   // get the drop indicator to shift to another position. Modifying after
   // clamping affects where the drop indicator is drawn.
@@ -658,15 +698,14 @@ int BrowserActionsContainer::OnDragUpdated(
   // Clamping gives us a value where the next button will be drawn, but we want
   // to subtract the padding (and then some) to make it appear in-between the
   // buttons.
-  drop_indicator_position_ = x - kBrowserActionButtonPadding -
+  SetDropIndicator(x - kBrowserActionButtonPadding -
       (UILayoutIsRightToLeft() ? kDropIndicatorOffsetRtl :
-                                 kDropIndicatorOffsetLtr);
-
-  SchedulePaint();
+                                 kDropIndicatorOffsetLtr));
   return DragDropTypes::DRAG_MOVE;
 }
 
 void BrowserActionsContainer::OnDragExited() {
+  StopShowFolderDropMenuTimer();
   drop_indicator_position_ = -1;
   SchedulePaint();
 }
@@ -710,6 +749,14 @@ int BrowserActionsContainer::OnPerformDrop(
 
   OnDragExited();  // Perform clean up after dragging.
   return DragDropTypes::DRAG_MOVE;
+}
+
+void BrowserActionsContainer::MoveBrowserAction(
+    const std::string& extension_id, size_t new_index) {
+  ExtensionsService* service = profile_->GetExtensionsService();
+  Extension* extension = service->GetExtensionById(extension_id, false);
+  model_->MoveBrowserAction(extension, new_index);
+  SchedulePaint();
 }
 
 void BrowserActionsContainer::Observe(NotificationType type,
@@ -773,9 +820,10 @@ void BrowserActionsContainer::BubbleLostFocus(BrowserBubble* bubble,
 
 void BrowserActionsContainer::RunMenu(View* source, const gfx::Point& pt) {
   if (source == chevron_) {
-    overflow_menu_.reset(new BrowserActionOverflowMenuController(
-        this, chevron_, browser_action_views_, VisibleBrowserActions()));
-    overflow_menu_->RunMenu(GetWindow()->GetNativeWindow());
+    overflow_menu_ = new BrowserActionOverflowMenuController(
+        this, chevron_, browser_action_views_, VisibleBrowserActions());
+    overflow_menu_->set_observer(this);
+    overflow_menu_->RunMenu(GetWindow()->GetNativeWindow(), false);
   }
 }
 
@@ -1007,4 +1055,10 @@ void BrowserActionsContainer::AnimationEnded(const Animation* animation) {
 
   profile_->GetPrefs()->SetInteger(prefs::kBrowserActionContainerWidth,
                                    container_size_.width());
+}
+
+void BrowserActionsContainer::NotifyMenuDeleted(
+    BrowserActionOverflowMenuController* controller) {
+  DCHECK(controller == overflow_menu_);
+  overflow_menu_ = NULL;
 }
