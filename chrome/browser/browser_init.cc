@@ -58,8 +58,8 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/browser_notification_observers.h"
+#include "chrome/browser/chromeos/cros/mount_library.h"
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
-#include "chrome/browser/chromeos/mount_library.h"
 #include "chrome/browser/chromeos/usb_mount_observer.h"
 #include "chrome/browser/views/tabs/tab_overview_message_listener.h"
 #endif

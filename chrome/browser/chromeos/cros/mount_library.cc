@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/mount_library.h"
+#include "chrome/browser/chromeos/cros/mount_library.h"
 
 #include "base/message_loop.h"
 #include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/chromeos/cros_library.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 
 // Allows InvokeLater without adding refcounting. This class is a Singleton and
 // won't be deleted until it's last InvokeLater is run.

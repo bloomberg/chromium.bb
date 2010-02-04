@@ -2,13 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/network_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 
 #include <algorithm>
 
 #include "base/string_util.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/chromeos/cros_library.h"
+#include "chrome/browser/chromeos/cros/cros_library.h"
 #include "net/url_request/url_request_job.h"
 
 // Allows InvokeLater without adding refcounting. This class is a Singleton and

@@ -8,7 +8,7 @@
 #include <string>
 #include <vector>
 
-#include "chrome/browser/chromeos/mount_library.h"
+#include "chrome/browser/chromeos/cros/mount_library.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"

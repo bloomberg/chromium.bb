@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_STATUS_POWER_MENU_BUTTON_H_
 
 #include "app/menus/menu_model.h"
-#include "chrome/browser/chromeos/power_library.h"
+#include "chrome/browser/chromeos/cros/power_library.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"

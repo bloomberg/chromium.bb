@@ -5,7 +5,7 @@
 #include "chrome/browser/chromeos/preferences.h"
 
 #include "base/string_util.h"
-#include "chrome/browser/chromeos/synaptics_library.h"
+#include "chrome/browser/chromeos/cros/synaptics_library.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_member.h"
 #include "chrome/common/pref_names.h"

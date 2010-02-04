@@ -39,7 +39,7 @@
 #include "grit/locale_settings.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/mount_library.h"
+#include "chrome/browser/chromeos/cros/mount_library.h"
 #endif
 
 // Maximum number of search results to return in a given search. We should

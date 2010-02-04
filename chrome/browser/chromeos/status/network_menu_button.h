@@ -10,7 +10,7 @@
 
 #include "app/throb_animation.h"
 #include "base/timer.h"
-#include "chrome/browser/chromeos/network_library.h"
+#include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/status/password_dialog_view.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "views/controls/menu/menu_2.h"
