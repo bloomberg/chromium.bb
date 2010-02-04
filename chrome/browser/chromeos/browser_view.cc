@@ -416,6 +416,7 @@ void BrowserView::ToggleCompactNavigationBar() {
   ui_style_ = static_cast<UIStyle>((ui_style_ + 1) % 2);
   compact_navigation_bar_->SetFocusable(is_compact_style());
   compact_location_bar_host_->SetEnabled(is_compact_style());
+  compact_location_bar_host_->Hide(false);
   Layout();
 }
 

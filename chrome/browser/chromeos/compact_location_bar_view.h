@@ -15,6 +15,7 @@
 
 class AutocompleteEditViewGtk;
 class Browser;
+class BrowserActionsContainer;
 class BrowserView;
 class ToolbarStarToggleGtk;
 class Tab;
@@ -84,9 +85,7 @@ class CompactLocationBarView : public DropdownBarView,
   views::ImageButton* reload_;
   scoped_ptr<AutocompleteEditViewGtk> location_entry_;
   views::NativeViewHost* location_entry_view_;
-
-  // scoped_ptr<ToolbarStarToggleGtk> star_;
-  views::NativeViewHost* star_view_;
+  BrowserActionsContainer* browser_actions_;
 
   DISALLOW_COPY_AND_ASSIGN(CompactLocationBarView);
 };

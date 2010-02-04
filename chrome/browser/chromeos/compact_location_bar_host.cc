@@ -213,7 +213,8 @@ gfx::Rect CompactLocationBarHost::GetBoundsUnderTab(int index) const {
   views::View::ConvertPointToWidget(tabstrip, &tab_left_bottom);
 
   // The compact location bar must be smaller than browser_width.
-  int width = std::min(browser_view()->width(), kDefaultLocationBarWidth);
+  gfx::Size pref_size = view()->GetPreferredSize();
+  int width = std::min(browser_view()->width(), pref_size.width());
 
   // Try to center around the tab, or align to the left of the window.
   // TODO(oshima): handle RTL
@@ -229,7 +230,7 @@ gfx::Rect CompactLocationBarHost::GetBoundsUnderTab(int index) const {
   } else {
     y  = tab_left_bottom.y();
   }
-  return gfx::Rect(x, y, width, 28);
+  return gfx::Rect(x, y, width, pref_size.height());
 }
 
 void CompactLocationBarHost::Update(int index, bool animate_x) {

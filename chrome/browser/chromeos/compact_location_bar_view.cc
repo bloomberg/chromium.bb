@@ -8,6 +8,8 @@
 #include <algorithm>
 
 #include "app/l10n_util.h"
+#include "app/gfx/canvas.h"
+#include "app/resource_bundle.h"
 #include "base/gfx/point.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
@@ -16,6 +18,7 @@
 #include "chrome/browser/chromeos/compact_location_bar_host.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/view_ids.h"
+#include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/event_utils.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "grit/chromium_strings.h"
@@ -28,12 +31,19 @@
 #include "views/window/window.h"
 
 namespace chromeos {
-const int kCompactLocationBarDefaultWidth = 700;
+const int kAutocompletePopupWidth = 700;
+const int kDefaultLocationEntryWidth = 250;
+const int kCompactLocationLeftRightMargin = 5;
+const int kEntryLeftMargin = 2;
+// TODO(oshima): ToolbarView gets this from background image's height;
+// Find out the right way, value for compact location bar.
+const int kDefaultLocationBarHeight = 34;
 
 CompactLocationBarView::CompactLocationBarView(CompactLocationBarHost* host)
     : DropdownBarView(host),
-      reload_(NULL) {
-  set_background(views::Background::CreateStandardPanelBackground());
+      reload_(NULL),
+      location_entry_view_(NULL),
+      browser_actions_(NULL) {
   SetFocusable(true);
 }
 
@@ -50,6 +60,7 @@ void CompactLocationBarView::SetFocusAndSelection() {
 
 void CompactLocationBarView::Update(const TabContents* contents) {
   location_entry_->Update(contents);
+  browser_actions_->RefreshBrowserActionViews();
 }
 
 
@@ -67,6 +78,8 @@ void CompactLocationBarView::Init() {
 
   // Reload button.
   reload_ = new views::ImageButton(this);
+  reload_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
+                             views::ImageButton::ALIGN_MIDDLE);
   reload_->set_tag(IDC_RELOAD);
   reload_->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_RELOAD));
   reload_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_RELOAD));
@@ -100,6 +113,9 @@ void CompactLocationBarView::Init() {
 
   // TODO(oshima): Add Star Button
   location_entry_->Update(browser()->GetSelectedTabContents());
+
+  browser_actions_ = new BrowserActionsContainer(browser(), this);
+  AddChildView(browser_actions_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -109,30 +125,47 @@ gfx::Size CompactLocationBarView::GetPreferredSize() {
   if (!reload_)
     return gfx::Size();  // Not initialized yet, do nothing.
 
-  gfx::Size sz = reload_->GetPreferredSize();
-
-  return gfx::Size(500, sz.height());
+  gfx::Size reload_size = reload_->GetPreferredSize();
+  gfx::Size ba_size = browser_actions_->GetPreferredSize();
+  int width =
+      reload_size.width() +
+      std::max(kDefaultLocationEntryWidth,
+               location_entry_view_->GetPreferredSize().width()) +
+      ba_size.width();
+  return gfx::Size(width, kDefaultLocationBarHeight);
 }
 
 void CompactLocationBarView::Layout() {
   if (!reload_)
     return;  // Not initialized yet, do nothing.
 
-  int cur_x = 0;
+  int cur_x = kCompactLocationLeftRightMargin;
 
   gfx::Size sz = reload_->GetPreferredSize();
-  reload_->SetBounds(cur_x, 0, sz.width(), sz.height());
-  cur_x += sz.width();
+  reload_->SetBounds(cur_x, 0, sz.width(), height());
+  cur_x += sz.width() + kEntryLeftMargin;
 
-  cur_x += 2;
+  gfx::Size ba_size = browser_actions_->GetPreferredSize();
+  browser_actions_->SetBounds(
+      width() - ba_size.width(), 0, ba_size.width(), height());
+  int location_entry_width = browser_actions_->x() - cur_x;
+  if (ba_size.IsEmpty()) {
+    // BrowserActionsContainer has its own margin on right.
+    // Use the our margin when if the browser action is empty.
+    location_entry_width -= kCompactLocationLeftRightMargin;
+  }
 
   // The location bar gets the rest of the space in the middle.
-  location_entry_view_->SetBounds(cur_x, 0, width() - cur_x * 2 - 2, height());
-
-  cur_x = width() - sz.width();
+  location_entry_view_->SetBounds(cur_x, 0, location_entry_width, height());
 }
 
 void CompactLocationBarView::Paint(gfx::Canvas* canvas) {
+  gfx::Rect lb = GetLocalBounds(true);
+  ThemeProvider* tp = GetThemeProvider();
+  gfx::Rect bounds;
+  host()->GetThemePosition(&bounds);
+  canvas->TileImageInt(*tp->GetBitmapNamed(IDR_THEME_TOOLBAR),
+                       bounds.x(), bounds.y(), 0, 0, lb.width(), lb.height());
   View::Paint(canvas);
 }
 
@@ -194,7 +227,7 @@ gfx::Rect CompactLocationBarView::GetLocationStackBounds() const {
   gfx::Point lower_left(0, height());
   ConvertPointToScreen(this, &lower_left);
   gfx::Rect popup = gfx::Rect(lower_left.x(), lower_left.y(),
-                              kCompactLocationBarDefaultWidth, 0);
+                              kAutocompletePopupWidth, 0);
   return popup.AdjustToFit(GetWidget()->GetWindow()->GetBounds());
 }
 

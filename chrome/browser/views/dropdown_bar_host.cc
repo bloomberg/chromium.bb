@@ -201,14 +201,15 @@ void DropdownBarHost::UpdateWindowEdges(const gfx::Rect& new_pos) {
   // this to a CustomFrameWindow.
   int w = new_pos.width() - 6;  // -6 positions us at the left edge of the
                                 // rightmost background image of the view.
+  int h = new_pos.height();
 
   // This polygon array represents the outline of the background image for the
   // window. Basically, it encompasses only the visible pixels of the
   // concatenated find_dlg_LMR_bg images (where LMR = [left | middle | right]).
   const Path::Point polygon[] = {
-      {0, 0}, {0, 1}, {2, 3}, {2, 29}, {4, 31},
-        {4, 32}, {w+0, 32},
-      {w+0, 31}, {w+1, 31}, {w+3, 29}, {w+3, 3}, {w+6, 0}
+      {0, 0}, {0, 1}, {2, 3}, {2, h - 3}, {4, h - 1},
+        {4, h}, {w+0, h},
+      {w+0, h - 1}, {w+1, h - 1}, {w+3, h - 3}, {w+3, 3}, {w+6, 0}
   };
 
   // Find the largest x and y value in the polygon.
