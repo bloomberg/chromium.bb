@@ -4,7 +4,7 @@
 
 #include "app/gfx/canvas.h"
 #include "chrome/browser/chromeos/login_manager_view.h"
-#include "chrome/browser/chromeos/status_area_host.h"
+#include "chrome/browser/chromeos/status/status_area_host.h"
 #include "views/view.h"
 #include "views/window/window_delegate.h"
 

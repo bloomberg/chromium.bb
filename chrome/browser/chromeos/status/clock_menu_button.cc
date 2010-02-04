@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/clock_menu_button.h"
+#include "chrome/browser/chromeos/status/clock_menu_button.h"
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/font.h"
@@ -12,7 +12,7 @@
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/chromeos/status_area_host.h"
+#include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
 #include "unicode/calendar.h"

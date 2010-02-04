@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_BROWSER_STATUS_AREA_VIEW_H_
-#define CHROME_BROWSER_CHROMEOS_BROWSER_STATUS_AREA_VIEW_H_
+#ifndef CHROME_BROWSER_CHROMEOS_STATUS_BROWSER_STATUS_AREA_VIEW_H_
+#define CHROME_BROWSER_CHROMEOS_STATUS_BROWSER_STATUS_AREA_VIEW_H_
 
 #include "app/menus/simple_menu_model.h"
 #include "base/basictypes.h"
-#include "chrome/browser/chromeos/status_area_view.h"
+#include "chrome/browser/chromeos/status/status_area_view.h"
 #include "views/controls/menu/view_menu_delegate.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/view.h"
@@ -61,4 +61,4 @@ class BrowserStatusAreaView : public StatusAreaView,
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_BROWSER_STATUS_AREA_VIEW_H_
+#endif  // CHROME_BROWSER_CHROMEOS_STATUS_BROWSER_STATUS_AREA_VIEW_H_

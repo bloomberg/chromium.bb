@@ -2,16 +2,16 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/status_area_view.h"
+#include "chrome/browser/chromeos/status/status_area_view.h"
 
 #include <algorithm>
 
 #include "app/gfx/canvas.h"
-#include "chrome/browser/chromeos/clock_menu_button.h"
-#include "chrome/browser/chromeos/language_menu_button.h"
-#include "chrome/browser/chromeos/network_menu_button.h"
-#include "chrome/browser/chromeos/power_menu_button.h"
-#include "chrome/browser/chromeos/status_area_host.h"
+#include "chrome/browser/chromeos/status/clock_menu_button.h"
+#include "chrome/browser/chromeos/status/language_menu_button.h"
+#include "chrome/browser/chromeos/status/network_menu_button.h"
+#include "chrome/browser/chromeos/status/power_menu_button.h"
+#include "chrome/browser/chromeos/status/status_area_host.h"
 
 namespace chromeos {
 

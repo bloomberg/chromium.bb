@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_CHROMEOS_BROWSER_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_BROWSER_VIEW_H_
 
-#include "chrome/browser/chromeos/status_area_host.h"
+#include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "views/controls/button/button.h"
 

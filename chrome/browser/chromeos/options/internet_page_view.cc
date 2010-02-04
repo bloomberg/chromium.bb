@@ -8,7 +8,7 @@
 
 #include "app/combobox_model.h"
 #include "chrome/browser/chromeos/network_library.h"
-#include "chrome/browser/chromeos/password_dialog_view.h"
+#include "chrome/browser/chromeos/status/password_dialog_view.h"
 #include "grit/generated_resources.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/combobox/combobox.h"

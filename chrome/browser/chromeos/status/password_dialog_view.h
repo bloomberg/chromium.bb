@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_PASSWORD_DIALOG_VIEW_H_
-#define CHROME_BROWSER_CHROMEOS_PASSWORD_DIALOG_VIEW_H_
+#ifndef CHROME_BROWSER_CHROMEOS_STATUS_PASSWORD_DIALOG_VIEW_H_
+#define CHROME_BROWSER_CHROMEOS_STATUS_PASSWORD_DIALOG_VIEW_H_
 
 #include <string>
 
@@ -74,4 +74,4 @@ class PasswordDialogView : public views::View,
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_PASSWORD_DIALOG_VIEW_H_
+#endif  // CHROME_BROWSER_CHROMEOS_STATUS_PASSWORD_DIALOG_VIEW_H_

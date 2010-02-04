@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/browser_status_area_view.h"
+#include "chrome/browser/chromeos/status/browser_status_area_view.h"
 
 #include "app/l10n_util.h"
 #include "app/theme_provider.h"
@@ -13,8 +13,8 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/chromeos/browser_view.h"
-#include "chrome/browser/chromeos/status_area_button.h"
-#include "chrome/browser/chromeos/status_area_view.h"
+#include "chrome/browser/chromeos/status/status_area_button.h"
+#include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/theme_background.h"
 #include "chrome/browser/views/toolbar_view.h"

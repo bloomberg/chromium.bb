@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_STATUS_AREA_HOST_H_
-#define CHROME_BROWSER_CHROMEOS_STATUS_AREA_HOST_H_
+#ifndef CHROME_BROWSER_CHROMEOS_STATUS_STATUS_AREA_HOST_H_
+#define CHROME_BROWSER_CHROMEOS_STATUS_STATUS_AREA_HOST_H_
 
 #include "app/gfx/native_widget_types.h"
 
@@ -37,5 +37,5 @@ class StatusAreaHost {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_STATUS_AREA_HOST_H_
+#endif  // CHROME_BROWSER_CHROMEOS_STATUS_STATUS_AREA_HOST_H_
 

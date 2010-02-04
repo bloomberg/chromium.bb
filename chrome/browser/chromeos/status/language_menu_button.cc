@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/language_menu_button.h"
+#include "chrome/browser/chromeos/status/language_menu_button.h"
 
 #include <string>
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/time.h"
-#include "chrome/browser/chromeos/status_area_host.h"
+#include "chrome/browser/chromeos/status/status_area_host.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 

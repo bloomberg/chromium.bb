@@ -13,7 +13,7 @@
 #include "chrome/browser/chromeos/compact_location_bar_host.h"
 #include "chrome/browser/chromeos/compact_navigation_bar.h"
 #include "chrome/browser/chromeos/main_menu.h"
-#include "chrome/browser/chromeos/status_area_view.h"
+#include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/views/frame/browser_extender.h"
 #include "chrome/browser/views/frame/browser_frame_gtk.h"
 #include "chrome/browser/views/frame/browser_view.h"

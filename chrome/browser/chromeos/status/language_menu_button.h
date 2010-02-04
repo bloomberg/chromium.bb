@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_LANGUAGE_MENU_BUTTON_H_
-#define CHROME_BROWSER_CHROMEOS_LANGUAGE_MENU_BUTTON_H_
+#ifndef CHROME_BROWSER_CHROMEOS_STATUS_LANGUAGE_MENU_BUTTON_H_
+#define CHROME_BROWSER_CHROMEOS_STATUS_LANGUAGE_MENU_BUTTON_H_
 
 #include "app/menus/simple_menu_model.h"
 #include "chrome/browser/chromeos/language_library.h"
-#include "chrome/browser/chromeos/status_area_button.h"
+#include "chrome/browser/chromeos/status/status_area_button.h"
 #include "views/controls/menu/menu_2.h"
 #include "views/controls/menu/view_menu_delegate.h"
 
@@ -91,4 +91,4 @@ class LanguageMenuButton : public views::MenuButton,
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_LANGUAGE_MENU_BUTTON_H_
+#endif  // CHROME_BROWSER_CHROMEOS_STATUS_LANGUAGE_MENU_BUTTON_H_
