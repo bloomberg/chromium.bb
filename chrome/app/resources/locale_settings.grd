@@ -256,7 +256,7 @@
       <!-- The height of the Options dialog box, in lines (line height = character -->
       <!-- height for default dialog box font) -->
       <message name="IDS_OPTIONS_DIALOG_HEIGHT_LINES" use_name_for_id="true">
-        36
+        39
       </message>
 
       <!-- The width of the title column of the Options dialog box, in characters (see -->
