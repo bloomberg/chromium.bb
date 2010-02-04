@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login_manager_view.h"
+#include "chrome/browser/chromeos/login/login_manager_view.h"
 
 #include <signal.h>
 #include <sys/types.h>
@@ -16,8 +16,8 @@
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/image_background.h"
-#include "chrome/browser/chromeos/user_manager.h"
+#include "chrome/browser/chromeos/login/image_background.h"
+#include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"

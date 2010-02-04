@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/login_wizard_view.h"
+#include "chrome/browser/chromeos/login/login_wizard_view.h"
 
 #include <gdk/gdk.h>
 #include <signal.h>
@@ -16,7 +16,7 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
-#include "chrome/browser/chromeos/image_background.h"
+#include "chrome/browser/chromeos/login/image_background.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/views/browser_dialogs.h"

@@ -2,14 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_WIZARD_VIEW_H_
+#define CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_WIZARD_VIEW_H_
+
 #include "app/gfx/canvas.h"
-#include "chrome/browser/chromeos/login_manager_view.h"
+#include "chrome/browser/chromeos/login/login_manager_view.h"
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "views/view.h"
 #include "views/window/window_delegate.h"
-
-#ifndef CHROME_BROWSER_CHROMEOS_LOGIN_WIZARD_VIEW_H_
-#define CHROME_BROWSER_CHROMEOS_LOGIN_WIZARD_VIEW_H_
 
 namespace chromeos {
 class StatusAreaView;
@@ -61,4 +61,4 @@ class LoginWizardView : public views::View,
   DISALLOW_COPY_AND_ASSIGN(LoginWizardView);
 };
 
-#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_WIZARD_VIEW_H_
+#endif  // CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_WIZARD_VIEW_H_
