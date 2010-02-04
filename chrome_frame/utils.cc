@@ -601,8 +601,8 @@ bool GetConfigBool(bool default_value, const wchar_t* value_name) {
 
 bool SetConfigInt(const wchar_t* value_name, int value) {
   RegKey config_key;
-  if (config_key.Open(HKEY_CURRENT_USER, kChromeFrameConfigKey,
-                      KEY_SET_VALUE)) {
+  if (config_key.Create(HKEY_CURRENT_USER, kChromeFrameConfigKey,
+                        KEY_SET_VALUE)) {
     if (config_key.WriteValue(value_name, value)) {
       return true;
     }

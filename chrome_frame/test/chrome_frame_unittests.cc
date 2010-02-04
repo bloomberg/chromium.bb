@@ -33,6 +33,7 @@
 #include "testing/gmock_mutant.h"
 
 using testing::CreateFunctor;
+using testing::_;
 
 const wchar_t kDocRoot[] = L"chrome_frame\\test\\data";
 const int kLongWaitTimeout = 60 * 1000;
@@ -805,8 +806,26 @@ struct MockCFDelegate : public ChromeFrameDelegateImpl {
       const std::string& cookie));
 
   // Use for sending network responses
-  void SetAutomationSender(IPC::Message::Sender* automation) {
-    automation_ = automation;
+  void SetRequestDelegate(PluginUrlRequestDelegate* request_delegate) {
+    request_delegate_ = request_delegate;
+  }
+
+  void ReplyStarted(int request_id, const char* headers) {
+    request_delegate_->OnResponseStarted(request_id, "text/html", headers,
+        0, base::Time::Now(), EmptyString(), EmptyString(), 0);
+  }
+
+  void ReplyData(int request_id, const std::string* data) {
+    request_delegate_->OnReadComplete(request_id, data->c_str(), data->size());
+  }
+
+  void Reply(const URLRequestStatus& status, int request_id) {
+    request_delegate_->OnResponseEnd(request_id, status);
+  }
+
+  void Reply404(int request_id) {
+    ReplyStarted(request_id, "HTTP/1.1 404\r\n\r\n");
+    Reply(URLRequestStatus(), request_id);
   }
 
   // Set-expectation helpers
@@ -816,7 +835,7 @@ struct MockCFDelegate : public ChromeFrameDelegateImpl {
         .Times(testing::AnyNumber());
   }
 
-  IPC::Message::Sender* automation_;
+  PluginUrlRequestDelegate* request_delegate_;
 };
 
 class MockProxyFactory : public ProxyFactory {
@@ -996,36 +1015,40 @@ TEST(CFACWithChrome, NavigateOk) {
   client = NULL;
 }
 
-// Bug: http://b/issue?id=2033644
-TEST(CFACWithChrome, DISABLED_NavigateFailed) {
+TEST(CFACWithChrome, NavigateFailed) {
   MockCFDelegate cfd;
   chrome_frame_test::TimedMsgLoop loop;
   const std::wstring profile = L"Adam.N.Epilinter";
   const std::string url = "http://127.0.0.3:65412/";
-  int timeout = 10000;
+  const URLRequestStatus connection_failed(URLRequestStatus::FAILED,
+                                           net::ERR_INVALID_URL);
 
   scoped_refptr<ChromeFrameAutomationClient> client;
   client = new ChromeFrameAutomationClient;
+  cfd.SetRequestDelegate(client);
 
   EXPECT_CALL(cfd, OnAutomationServerReady())
       .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(CreateFunctor(
           client.get(), &ChromeFrameAutomationClient::InitiateNavigation,
           url, std::string(), false))));
 
-  EXPECT_CALL(cfd,
-    OnNavigationStateChanged(testing::_, testing::_))
-    .Times(testing::AnyNumber());
+  EXPECT_CALL(cfd, GetBounds(_)).Times(testing::AnyNumber());
+  EXPECT_CALL(cfd, OnNavigationStateChanged(_, _)).Times(testing::AnyNumber());
 
-  EXPECT_CALL(cfd, OnNavigationFailed(testing::_, testing::_, testing::_))
-      .Times(1);
+  EXPECT_CALL(cfd, OnRequestStart(_, _, _))
+      // Often there's another request for the error page
+      .Times(testing::Between(1, 2))
+      .WillRepeatedly(testing::WithArgs<1>(testing::Invoke(CreateFunctor(&cfd,
+          &MockCFDelegate::Reply, connection_failed))));
 
-  EXPECT_CALL(cfd, OnUpdateTargetUrl(testing::_, testing::_))
-      .Times(testing::AnyNumber());
+  EXPECT_CALL(cfd, OnUpdateTargetUrl(_, _)).Times(testing::AnyNumber());
+  EXPECT_CALL(cfd, OnLoad(_, _)).Times(testing::AtMost(1));
 
-  EXPECT_CALL(cfd, OnLoad(testing::_, testing::_))
-      .Times(0);
+  EXPECT_CALL(cfd, OnNavigationFailed(_, _, GURL(url)))
+      .Times(1)
+      .WillOnce(QUIT_LOOP_SOON(loop, 2));
 
-  EXPECT_TRUE(client->Initialize(&cfd, timeout, false, profile, L"", false));
+  EXPECT_TRUE(client->Initialize(&cfd, 10000, false, profile, L"", false));
 
   loop.RunFor(10);
   client->Uninitialize();
@@ -1271,8 +1294,6 @@ class MockWebBrowserEventSink : public chrome_frame_test::WebBrowserEventSink {
   MOCK_METHOD2(OnNewBrowserWindow, void (IDispatch* dispatch,  // NOLINT
                                          const wchar_t* url));
 };
-
-using testing::_;
 
 const wchar_t kChromeFrameFileUrl[] = L"gcf:file:///C:/";
 
