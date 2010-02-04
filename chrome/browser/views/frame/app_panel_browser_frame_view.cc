@@ -103,7 +103,7 @@ AppPanelBrowserFrameView::~AppPanelBrowserFrameView() {
 // AppPanelBrowserFrameView, BrowserNonClientFrameView implementation:
 
 gfx::Rect AppPanelBrowserFrameView::GetBoundsForTabStrip(
-    TabStrip* tabstrip) const {
+    BaseTabStrip* tabstrip) const {
   // App panels never show a tab strip.
   NOTREACHED();
   return gfx::Rect();
