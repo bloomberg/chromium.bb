@@ -71,8 +71,8 @@ void ProfileSyncService::Initialize() {
     // behavior, so we don't want the sync service to start.
     // profile()->GetRequestContext() also checks if this is in a test.
     if (browser_defaults::kBootstrapSyncAuthentication &&
-        !GetLsidForAuthBootstraping().empty() &&
-        profile()->GetRequestContext())
+        profile()->GetRequestContext() &&
+        !GetLsidForAuthBootstraping().empty())
       StartUp();  // We always start sync for Chrome OS.
   } else {
     StartUp();
