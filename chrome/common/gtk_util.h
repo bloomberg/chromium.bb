@@ -134,6 +134,8 @@ void EnumerateTopLevelWindows(x11_util::EnumerateWindowsDelegate* delegate);
 
 // Set that clicking the button with the given mouse buttons will cause a click
 // event.
+// NOTE: If you need to connect to the button-press-event or
+// button-release-event signals, do so before calling this function.
 void SetButtonClickableByMouseButtons(GtkWidget* button,
                                       bool left, bool middle, bool right);
 

@@ -858,9 +858,6 @@ GtkToolItem* BookmarkBarGtk::CreateBookmarkToolItem(const BookmarkNode* node) {
 }
 
 void BookmarkBarGtk::ConnectFolderButtonEvents(GtkWidget* widget) {
-  // Accept middle mouse clicking (which opens all).
-  gtk_util::SetButtonClickableByMouseButtons(widget, true, true, false);
-
   gtk_drag_dest_set(widget, GTK_DEST_DEFAULT_ALL, NULL, 0, kDragAction);
   GtkDndUtil::SetDestTargetList(widget, kDestTargetList);
   g_signal_connect(widget, "drag-data-received",
@@ -870,6 +867,11 @@ void BookmarkBarGtk::ConnectFolderButtonEvents(GtkWidget* widget) {
                    G_CALLBACK(OnButtonPressed), this);
   g_signal_connect(G_OBJECT(widget), "clicked",
                    G_CALLBACK(OnFolderClicked), this);
+
+  // Accept middle mouse clicking (which opens all). This must be called after
+  // connecting to "button-press-event" because the handler it attaches stops
+  // the propagation of that signal.
+  gtk_util::SetButtonClickableByMouseButtons(widget, true, true, false);
 }
 
 const BookmarkNode* BookmarkBarGtk::GetNodeForToolButton(GtkWidget* widget) {
