@@ -1240,6 +1240,7 @@ BUG10667 MAC : plugins/iframe-shims.html = FAIL
 // NEW FOR MERGE 36102:37604
 
 BUG32184 : fast/js/arguments.html = FAIL
+BUG32191 : fast/js/primitive-method-this.html = FAIL
 // See bug http://code.google.com/p/chromium/issues/detail?id=7868,
 // not urgent for current release.
 BUG24227 : http/tests/plugins/local-geturl-from-remote.html = FAIL
@@ -2805,6 +2806,7 @@ BUG32153 : svg/dynamic-updates/SVGTextElement-svgdom-rotate-prop.html = TEXT
 // a bunch of tests broken before the flakiness fix, i will deal with these
 // after the major flakiness goes away
 BUG32155 : fast/js/Object-getOwnPropertyNames.html = TEXT
+BUG32155 : http/tests/security/cross-frame-access-enumeration.html = TIMEOUT
 
 // New flakiness?
 BUG32144 WIN RELEASE : svg/webarchive/svg-script-subresouces.svg = CRASH TEXT PASS
@@ -2908,6 +2910,7 @@ BUG33997 MAC : svg/custom/dominant-baseline-hanging.svg = IMAGE
 BUG33997 MAC : svg/custom/gradient-stop-corner-cases.svg = IMAGE
 
 // WebKit roll 54127 -> 54213
+BUG34221 : fast/js/math.html = TEXT
 BUG34219 : printing/page-break-always.html = TEXT
 BUG34219 : printing/pageNumerForElementById.html = TEXT
 
