@@ -43,6 +43,11 @@ class BrowserViewLayout : public views::LayoutManager {
     return browser_view_->browser();
   }
 
+  // Layout the vertical tabstrip, adjusting |vertical_layout_rect_| for the
+  // available space for the remainder of the BrowserView contents. This must
+  // be called before any other element of the BrowserView is laid out.
+  void LayoutSideTabs();
+
   // Layout the TabStrip, returns the coordinate of the bottom of the TabStrip,
   // for laying out subsequent controls.
   virtual int LayoutTabStrip();
@@ -69,6 +74,7 @@ class BrowserViewLayout : public views::LayoutManager {
 
   // Child views that the layout manager manages.
   TabStrip* tabstrip_;
+  SideTabStrip* side_tabstrip_;
   ToolbarView* toolbar_;
   views::View* contents_split_;
   views::View* contents_container_;
@@ -78,6 +84,12 @@ class BrowserViewLayout : public views::LayoutManager {
   BookmarkBarView* active_bookmark_bar_;
 
   BrowserView* browser_view_;
+
+  // The bounds within which the vertically-stacked contents of the BrowserView
+  // should be laid out within. When the SideTabstrip is not visible, this is
+  // just the local bounds of the BrowserView, otherwise it's the local bounds
+  // of the BrowserView less the width of the SideTabstrip.
+  gfx::Rect vertical_layout_rect_;
 
   // The distance the FindBar is from the top of the window, in pixels.
   int find_bar_y_;

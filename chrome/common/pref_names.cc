@@ -326,6 +326,10 @@ const wchar_t kAutoFillEnabled[] = L"autofill.enabled";
 // Dictionary that maps providers to lists of filter rules.
 const wchar_t kPrivacyFilterRules[] = L"profile.privacy_filter_rules";
 
+// Boolean that is true when the tabstrip is to be laid out vertically down the
+// side of the browser window.
+const wchar_t kUseVerticalTabs[] = L"tabs.use_vertical_tabs";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

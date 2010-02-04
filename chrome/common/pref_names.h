@@ -126,6 +126,7 @@ extern const wchar_t kPerHostZoomLevels[];
 extern const wchar_t kAutoFillInfoBarShown[];
 extern const wchar_t kAutoFillEnabled[];
 extern const wchar_t kPrivacyFilterRules[];
+extern const wchar_t kUseVerticalTabs[];
 
 // Local state
 extern const wchar_t kMetricsClientID[];

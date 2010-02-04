@@ -93,6 +93,7 @@ extern const char kEnableSessionStorage[];
 extern const char kEnableStatsTable[];
 extern const char kEnableSync[];
 extern const char kEnableUserDataDirProfiles[];
+extern const char kEnableVerticalTabs[];
 extern const char kEnableWatchdog[];
 extern const char kExperimentalSpellcheckerFeatures[];
 extern const char kExplicitlyAllowedPorts[];

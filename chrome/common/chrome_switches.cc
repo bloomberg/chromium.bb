@@ -260,6 +260,10 @@ const char kEnableSync[]                    = "enable-sync";
 // enabled or not.
 const char kEnableUserDataDirProfiles[]     = "enable-udd-profiles";
 
+// Enables the option to show tabs as a vertical stack down the side of the
+// browser window.
+const char kEnableVerticalTabs[]            = "enable-vertical-tabs";
+
 // Spawn threads to watch for excessive delays in specified message loops.
 // User should set breakpoints on Alarm() to examine problematic thread.
 // Usage:   -enable-watchdog=[ui][io]

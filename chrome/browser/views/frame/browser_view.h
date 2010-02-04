@@ -47,6 +47,7 @@ class InfoBarContainer;
 class JumpList;
 #endif
 class LocationBarView;
+class SideTabStrip;
 class StatusBubbleViews;
 class TabContentsContainer;
 class ToolbarView;
@@ -462,6 +463,7 @@ class BrowserView : public BrowserWindow,
 
   // The TabStrip.
   TabStrip* tabstrip_;
+  SideTabStrip* side_tabstrip_;
 
   // The Toolbar containing the navigation buttons, menus and the address bar.
   ToolbarView* toolbar_;

@@ -45,6 +45,7 @@
 #include "chrome/browser/views/infobars/infobar_container.h"
 #include "chrome/browser/views/status_bubble_views.h"
 #include "chrome/browser/views/tab_contents/tab_contents_container.h"
+#include "chrome/browser/views/tabs/side_tab_strip.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/browser/views/theme_install_bubble_view.h"
 #include "chrome/browser/views/toolbar_star_toggle.h"
@@ -402,6 +403,7 @@ BrowserView::BrowserView(Browser* browser)
       browser_(browser),
       active_bookmark_bar_(NULL),
       tabstrip_(NULL),
+      side_tabstrip_(NULL),
       toolbar_(NULL),
       infobar_container_(NULL),
       contents_container_(NULL),
@@ -1625,6 +1627,10 @@ void BrowserView::Init() {
   tabstrip_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_TABSTRIP));
   AddChildView(tabstrip_);
   frame_->TabStripCreated(tabstrip_);
+
+  side_tabstrip_ = new SideTabStrip;
+  side_tabstrip_->SetID(VIEW_ID_SIDE_TABSTRIP);
+  AddChildView(side_tabstrip_);
 
   toolbar_ = new ToolbarView(browser_.get());
   AddChildView(toolbar_);

@@ -14,6 +14,7 @@
 #include "chrome/browser/views/frame/browser_extender.h"
 #include "chrome/browser/views/frame/browser_frame.h"
 #include "chrome/browser/views/frame/browser_view.h"
+#include "chrome/browser/views/tabs/side_tab_strip.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/browser/views/toolbar_view.h"
 #include "views/window/window.h"
@@ -232,6 +233,9 @@ void BrowserViewLayout::ViewAdded(views::View* host, views::View* view) {
     case VIEW_ID_TAB_STRIP:
       tabstrip_ = static_cast<TabStrip*>(view);
       break;
+    case VIEW_ID_SIDE_TABSTRIP:
+      side_tabstrip_ = static_cast<SideTabStrip*>(view);
+      break;
   }
 }
 
@@ -244,6 +248,7 @@ void BrowserViewLayout::ViewRemoved(views::View* host, views::View* view) {
 }
 
 void BrowserViewLayout::Layout(views::View* host) {
+  LayoutSideTabs();
   int top = LayoutTabStrip();
   top = LayoutToolbar(top);
   top = LayoutBookmarkAndInfoBars(top);
@@ -271,6 +276,15 @@ gfx::Size BrowserViewLayout::GetPreferredSize(views::View* host) {
 
 //////////////////////////////////////////////////////////////////////////////
 // BrowserViewLayout, private:
+
+void BrowserViewLayout::LayoutSideTabs() {
+  vertical_layout_rect_ = browser_view_->GetLocalBounds(true);
+  if (SideTabStrip::Visible(browser()->profile())) {
+    gfx::Size ps = side_tabstrip_->GetPreferredSize();
+    vertical_layout_rect_.Inset(ps.width(), 0, 0, 0);
+    side_tabstrip_->SetBounds(0, 0, ps.width(), browser_view_->height());
+  }
+}
 
 int BrowserViewLayout::LayoutTabStrip() {
   if (!browser_view_->IsTabStripVisible()) {
