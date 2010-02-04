@@ -81,6 +81,14 @@ TEST_F(BookmarkEditorControllerTest, EditAndFixPrefix) {
   EXPECT_TRUE(child->GetURL().is_valid());
 }
 
+TEST_F(BookmarkEditorControllerTest, NodeDeleted) {
+  // Delete the bookmark being edited and verify the sheet cancels itself:
+  ASSERT_TRUE([test_window() attachedSheet]);
+  BookmarkModel* model = browser_helper_.profile()->GetBookmarkModel();
+  model->Remove(default_parent_, 0);
+  ASSERT_FALSE([test_window() attachedSheet]);
+}
+
 TEST_F(BookmarkEditorControllerTest, EditAndConfirmOKButton) {
   // Confirm OK button enabled/disabled as appropriate:
   // First test the URL.

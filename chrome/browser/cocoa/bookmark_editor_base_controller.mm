@@ -17,12 +17,22 @@
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
 
-@interface BookmarkEditorBaseController (Private)
+@interface BookmarkEditorBaseController ()
 
 @property (retain, readwrite) NSArray* folderTreeArray;
 
 // Return the folder tree object for the given path.
 - (BookmarkFolderInfo*)folderForIndexPath:(NSIndexPath*)path;
+
+// (Re)build the folder tree from the BookmarkModel's current state.
+- (void)buildFolderTree;
+
+// Notifies the controller that the bookmark model has changed.
+- (void)modelChanged;
+
+// Notifies the controller that a node has been removed.
+- (void)nodeRemoved:(const BookmarkNode*)node
+         fromParent:(const BookmarkNode*)parent;
 
 // Given a folder node, collect an array containing BookmarkFolderInfos
 // describing its subchildren which are also folders.
@@ -66,6 +76,79 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
   [controller runAsModalSheet];
 }
 
+// Adapter to tell BookmarkEditorBaseController when bookmarks change.
+class BookmarkEditorBaseControllerBridge : public BookmarkModelObserver {
+ public:
+  BookmarkEditorBaseControllerBridge(BookmarkEditorBaseController* controller)
+      : controller_(controller),
+        importing_(false)
+  { }
+
+  virtual void Loaded(BookmarkModel* model) {
+    [controller_ modelChanged];
+  }
+
+  virtual void BookmarkNodeMoved(BookmarkModel* model,
+                                 const BookmarkNode* old_parent,
+                                 int old_index,
+                                 const BookmarkNode* new_parent,
+                                 int new_index) {
+    if (!importing_ && new_parent->GetChild(new_index)->is_folder())
+      [controller_ modelChanged];
+  }
+
+  virtual void BookmarkNodeAdded(BookmarkModel* model,
+                                 const BookmarkNode* parent,
+                                 int index) {
+    if (!importing_ && parent->GetChild(index)->is_folder())
+      [controller_ modelChanged];
+  }
+
+  virtual void BookmarkNodeRemoved(BookmarkModel* model,
+                                   const BookmarkNode* parent,
+                                   int old_index,
+                                   const BookmarkNode* node) {
+    [controller_ nodeRemoved:node fromParent:parent];
+    if (node->is_folder())
+      [controller_ modelChanged];
+  }
+
+  virtual void BookmarkNodeChanged(BookmarkModel* model,
+                                   const BookmarkNode* node) {
+    if (!importing_ && node->is_folder())
+      [controller_ modelChanged];
+  }
+
+  virtual void BookmarkNodeChildrenReordered(BookmarkModel* model,
+                                             const BookmarkNode* node) {
+    if (!importing_)
+      [controller_ modelChanged];
+  }
+
+  virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
+                                         const BookmarkNode* node) {
+    // I care nothing for these 'favicons': I only show folders.
+  }
+
+  virtual void BookmarkImportBeginning(BookmarkModel* model) {
+    importing_ = true;
+  }
+
+  // Invoked after a batch import finishes.  This tells observers to update
+  // themselves if they were waiting for the update to finish.
+  virtual void BookmarkImportEnding(BookmarkModel* model) {
+    importing_ = false;
+    [controller_ modelChanged];
+  }
+
+ private:
+  BookmarkEditorBaseController* controller_;  // weak
+  bool importing_;
+};
+
+
+#pragma mark -
+
 @implementation BookmarkEditorBaseController
 
 @synthesize initialName = initialName_;
@@ -88,11 +171,14 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
     configuration_ = configuration;
     handler_.reset(handler);
     initialName_ = [@"" retain];
+    observer_.reset(new BookmarkEditorBaseControllerBridge(self));
+    [self bookmarkModel]->AddObserver(observer_.get());
   }
   return self;
 }
 
 - (void)dealloc {
+  [self bookmarkModel]->RemoveObserver(observer_.get());
   [initialName_ release];
   [displayName_ release];
   [super dealloc];
@@ -115,11 +201,7 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
   }
 
   // Build up a tree of the current folder configuration.
-  BookmarkModel* model = profile_->GetBookmarkModel();
-  const BookmarkNode* rootNode = model->root_node();
-  NSMutableArray* baseArray = [self addChildFoldersFromNode:rootNode];
-  DCHECK(baseArray);
-  [self setFolderTreeArray:baseArray];
+  [self buildFolderTree];
 }
 
 - (void)windowDidLoad {
@@ -284,6 +366,7 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
   const BookmarkNode* rootNode = model->root_node();
   const BookmarkNode* node = desiredNode;
   while (node != rootNode) {
+    DCHECK(node);
     nodeStack.push(node);
     node = node->GetParent();
   }
@@ -330,6 +413,42 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
     }
   }
   return childFolders;
+}
+
+- (void)buildFolderTree {
+  // Build up a tree of the current folder configuration.
+  BookmarkModel* model = profile_->GetBookmarkModel();
+  const BookmarkNode* rootNode = model->root_node();
+  NSMutableArray* baseArray = [self addChildFoldersFromNode:rootNode];
+  DCHECK(baseArray);
+  [self setFolderTreeArray:baseArray];
+}
+
+- (void)modelChanged {
+  const BookmarkNode* selectedNode = [self selectedNode];
+  [self buildFolderTree];
+  if (selectedNode && configuration_ == BookmarkEditor::SHOW_TREE)
+    [self selectNodeInBrowser:selectedNode];
+}
+
+- (void)nodeRemoved:(const BookmarkNode*)node
+         fromParent:(const BookmarkNode*)parent {
+  if (node->is_folder()) {
+    if (parentNode_ == node || parentNode_->HasAncestor(node)) {
+      parentNode_ = [self bookmarkModel]->GetBookmarkBarNode();
+      if (configuration_ != BookmarkEditor::SHOW_TREE) {
+        // The user can't select a different folder, so just close up shop.
+        [self cancel:self];
+        return;
+      }
+    }
+
+    if (configuration_ == BookmarkEditor::SHOW_TREE) {
+      // For safety's sake, in case deleted node was an ancestor of selection,
+      // go back to a known safe place.
+      [self selectNodeInBrowser:parentNode_];
+    }
+  }
 }
 
 #pragma mark New Folder Handler
@@ -462,6 +581,13 @@ void BookmarkEditor::Show(gfx::NativeWindow parent_hwnd,
   [folderName_ release];
   [children_ release];
   [super dealloc];
+}
+
+// Implementing isEqual: allows the NSTreeController to preserve the selection
+// and open/shut state of outline items when the data changes.
+- (BOOL)isEqual:(id)other {
+  return [other isKindOfClass:[BookmarkFolderInfo class]] &&
+      folderNode_ == [(BookmarkFolderInfo*)other folderNode];
 }
 
 @end

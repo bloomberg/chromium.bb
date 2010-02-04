@@ -60,6 +60,16 @@
   [super awakeFromNib];
 }
 
+- (void)nodeRemoved:(const BookmarkNode*)node
+         fromParent:(const BookmarkNode*)parent
+{
+  if (node_ == node || node_->HasAncestor(node)) {
+    // The node I'm editing is being deleted. Just close.
+    node_ = NULL;
+    [self cancel:self];
+  }
+}
+
 #pragma mark Bookmark Editing
 
 // If possible, return a valid GURL from the URL text field.

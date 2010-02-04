@@ -12,6 +12,7 @@
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/bookmarks/bookmark_editor.h"
 
+class BookmarkEditorBaseControllerBridge;
 class BookmarkModel;
 @class BookmarkTreeBrowserCell;
 
@@ -42,6 +43,8 @@ class BookmarkModel;
   // Bound to the table view giving a path to the current selections, of which
   // there should only ever be one.
   scoped_nsobject<NSArray> tableSelectionPaths_;
+  // C++ bridge object that observes the BookmarkModel for me.
+  scoped_ptr<BookmarkEditorBaseControllerBridge> observer_;
 }
 
 @property (copy) NSString* initialName;
@@ -97,6 +100,11 @@ class BookmarkModel;
 
 // Notify the handler, if any, of a node creation.
 - (void)notifyHandlerCreatedNode:(const BookmarkNode*)node;
+
+// Notifications called when the BookmarkModel changes out from under me.
+- (void)nodeRemoved:(const BookmarkNode*)node
+         fromParent:(const BookmarkNode*)parent;
+- (void)modelChanged;
 
 // Accessors
 - (BookmarkModel*)bookmarkModel;

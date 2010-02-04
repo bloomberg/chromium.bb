@@ -417,8 +417,10 @@
 					<string>folderName</string>
 					<string>newFolder</string>
 				</object>
+				<string key="NSObjectClassName">BookmarkFolderInfo</string>
 				<object class="_NSManagedProxy" key="_NSManagedProxy"/>
 				<bool key="NSAvoidsEmptySelection">YES</bool>
+				<bool key="NSPreservesSelection">YES</bool>
 				<string key="NSTreeContentChildrenKey">children</string>
 			</object>
 		</object>

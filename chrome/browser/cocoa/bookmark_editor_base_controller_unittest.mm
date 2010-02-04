@@ -162,6 +162,43 @@ TEST_F(BookmarkEditorBaseControllerTest, CreateFolder) {
   [controller_ cancel:nil];
 }
 
+TEST_F(BookmarkEditorBaseControllerTest, SelectedFolderDeleted) {
+  BookmarkModel& model(*(browser_helper_.profile()->GetBookmarkModel()));
+  [controller_ selectTestNodeInBrowser:group_b_3_];
+  EXPECT_EQ(group_b_3_, [controller_ selectedNode]);
+
+  // Delete the selected node, and verify it's no longer selected:
+  model.Remove(group_b_, 3);
+  EXPECT_NE(group_b_3_, [controller_ selectedNode]);
+
+  [controller_ cancel:nil];
+}
+
+TEST_F(BookmarkEditorBaseControllerTest, SelectedFoldersParentDeleted) {
+  BookmarkModel& model(*(browser_helper_.profile()->GetBookmarkModel()));
+  const BookmarkNode* root = model.GetBookmarkBarNode();
+  [controller_ selectTestNodeInBrowser:group_b_3_];
+  EXPECT_EQ(group_b_3_, [controller_ selectedNode]);
+
+  // Delete the selected node's parent, and verify it's no longer selected:
+  model.Remove(root, 1);
+  EXPECT_NE(group_b_3_, [controller_ selectedNode]);
+
+  [controller_ cancel:nil];
+}
+
+TEST_F(BookmarkEditorBaseControllerTest, FolderAdded) {
+  BookmarkModel& model(*(browser_helper_.profile()->GetBookmarkModel()));
+  const BookmarkNode* root = model.GetBookmarkBarNode();
+
+  // Add a group node to the model, and verify it can be selected in the tree:
+  const BookmarkNode* group_added = model.AddGroup(root, 0, L"added");
+  [controller_ selectTestNodeInBrowser:group_added];
+  EXPECT_EQ(group_added, [controller_ selectedNode]);
+
+  [controller_ cancel:nil];
+}
+
 
 class BookmarkFolderInfoTest : public CocoaTest { };
 
