@@ -1,27 +1,13 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
-#ifndef CHROME_FRAME_TEST_CHROME_FRAME_UNITTESTS_H_
-#define CHROME_FRAME_TEST_CHROME_FRAME_UNITTESTS_H_
+#ifndef CHROME_FRAME_TEST_WITH_WEB_SERVER_H_
+#define CHROME_FRAME_TEST_WITH_WEB_SERVER_H_
 
-#include <atlbase.h>
-#include <atlcom.h>
+#include <windows.h>
 #include <string>
-#include <exdisp.h>
-#include <exdispid.h>
-#include <mshtml.h>
-#include <shlguid.h>
-#include <shobjidl.h>
 
-#include "base/compiler_specific.h"
-#include "base/ref_counted.h"
-#include "base/scoped_comptr_win.h"
-#include "base/scoped_variant_win.h"
-#include "base/scoped_handle_win.h"
-#include "googleurl/src/gurl.h"
 #include "chrome_frame/test/http_server.h"
-#include "chrome_frame/test_utils.h"
-#include "chrome_frame/utils.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Include without path to make GYP build see it.
@@ -104,5 +90,5 @@ class ChromeFrameTestWithWebServer: public testing::Test {
   ChromeFrameHTTPServer server_;
 };
 
-#endif  // CHROME_FRAME_TEST_CHROME_FRAME_UNITTESTS_H_
+#endif  // CHROME_FRAME_TEST_WITH_WEB_SERVER_H_
 

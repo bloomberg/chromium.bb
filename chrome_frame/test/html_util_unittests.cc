@@ -19,7 +19,6 @@
 #include "base/win_util.h"
 #include "net/base/net_util.h"
 
-#include "chrome_frame/test/chrome_frame_unittests.h"
 #include "chrome_frame/chrome_frame_automation.h"
 #include "chrome_frame/chrome_frame_delegate.h"
 #include "chrome_frame/html_utils.h"

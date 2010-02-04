@@ -3,8 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome_frame/function_stub.h"
-
-#include "chrome_frame/test/chrome_frame_unittests.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 #define NO_INLINE __declspec(noinline)
 
