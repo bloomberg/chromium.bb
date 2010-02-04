@@ -2072,6 +2072,9 @@
              # Windows-specific files.
             'browser/password_manager/password_store_win.cc',
             'browser/password_manager/password_store_win.h',
+             # Disabled while bookmark context menus are unforked.
+            'browser/bookmarks/bookmark_context_menu_controller.cc',
+            'browser/bookmarks/bookmark_context_menu_controller.h',
           ],
           'sources': [
             'browser/crash_handler_host_linux.h',
@@ -2083,13 +2086,6 @@
             ['include', '^browser/printing/page_(number|range|setup)\\.cc$'],
           ],
           'conditions': [
-            ['chromeos==0', {
-              'sources!': [
-                 # Disabled while bookmark context menus are unforked.
-                'browser/bookmarks/bookmark_context_menu_controller.cc',
-                'browser/bookmarks/bookmark_context_menu_controller.h',
-              ],
-            }],
             ['linux_breakpad==1', {
               'sources': [
                 'app/breakpad_linux.cc',
