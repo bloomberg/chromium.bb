@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -193,34 +193,40 @@ bool ClipboardUtil::GetUrl(IDataObject* data_object,
 
   if (SUCCEEDED(data_object->GetData(GetMozUrlFormat(), &store)) ||
       SUCCEEDED(data_object->GetData(GetUrlWFormat(), &store))) {
-    // Mozilla URL format or unicode URL
-    ScopedHGlobal<wchar_t> data(store.hGlobal);
-    SplitUrlAndTitle(data.get(), url, title);
+    {
+      // Mozilla URL format or unicode URL
+      ScopedHGlobal<wchar_t> data(store.hGlobal);
+      SplitUrlAndTitle(data.get(), url, title);
+    }
     ReleaseStgMedium(&store);
     return true;
   }
 
   if (SUCCEEDED(data_object->GetData(GetUrlFormat(), &store))) {
-    // URL using ascii
-    ScopedHGlobal<char> data(store.hGlobal);
-    SplitUrlAndTitle(UTF8ToWide(data.get()), url, title);
+    {
+      // URL using ascii
+      ScopedHGlobal<char> data(store.hGlobal);
+      SplitUrlAndTitle(UTF8ToWide(data.get()), url, title);
+    }
     ReleaseStgMedium(&store);
     return true;
   }
 
   if (SUCCEEDED(data_object->GetData(GetFilenameWFormat(), &store))) {
-    // filename using unicode
-    ScopedHGlobal<wchar_t> data(store.hGlobal);
     bool success = false;
-    if (data.get() && data.get()[0] &&
-        (PathFileExists(data.get()) || PathIsUNC(data.get()))) {
-      wchar_t file_url[INTERNET_MAX_URL_LENGTH];
-      DWORD file_url_len = arraysize(file_url);
-      if (SUCCEEDED(::UrlCreateFromPathW(data.get(), file_url, &file_url_len,
-                                         0))) {
-        url->assign(file_url);
-        title->assign(file_url);
-        success = true;
+    {
+      // filename using unicode
+      ScopedHGlobal<wchar_t> data(store.hGlobal);
+      if (data.get() && data.get()[0] &&
+          (PathFileExists(data.get()) || PathIsUNC(data.get()))) {
+        wchar_t file_url[INTERNET_MAX_URL_LENGTH];
+        DWORD file_url_len = arraysize(file_url);
+        if (SUCCEEDED(::UrlCreateFromPathW(data.get(), file_url, &file_url_len,
+                                           0))) {
+          url->assign(file_url);
+          title->assign(file_url);
+          success = true;
+        }
       }
     }
     ReleaseStgMedium(&store);
@@ -229,18 +235,20 @@ bool ClipboardUtil::GetUrl(IDataObject* data_object,
   }
 
   if (SUCCEEDED(data_object->GetData(GetFilenameFormat(), &store))) {
-    // filename using ascii
-    ScopedHGlobal<char> data(store.hGlobal);
     bool success = false;
-    if (data.get() && data.get()[0] && (PathFileExistsA(data.get()) ||
-                                        PathIsUNCA(data.get()))) {
-      char file_url[INTERNET_MAX_URL_LENGTH];
-      DWORD file_url_len = arraysize(file_url);
-      if (SUCCEEDED(::UrlCreateFromPathA(data.get(), file_url, &file_url_len,
-                                         0))) {
-        url->assign(UTF8ToWide(file_url));
-        title->assign(*url);
-        success = true;
+    {
+      // filename using ascii
+      ScopedHGlobal<char> data(store.hGlobal);
+      if (data.get() && data.get()[0] && (PathFileExistsA(data.get()) ||
+                                          PathIsUNCA(data.get()))) {
+        char file_url[INTERNET_MAX_URL_LENGTH];
+        DWORD file_url_len = arraysize(file_url);
+        if (SUCCEEDED(::UrlCreateFromPathA(data.get(), file_url, &file_url_len,
+                                           0))) {
+          url->assign(UTF8ToWide(file_url));
+          title->assign(*url);
+          success = true;
+        }
       }
     }
     ReleaseStgMedium(&store);
@@ -289,17 +297,21 @@ bool ClipboardUtil::GetPlainText(IDataObject* data_object,
 
   STGMEDIUM store;
   if (SUCCEEDED(data_object->GetData(GetPlainTextWFormat(), &store))) {
-    // Unicode text
-    ScopedHGlobal<wchar_t> data(store.hGlobal);
-    plain_text->assign(data.get());
+    {
+      // Unicode text
+      ScopedHGlobal<wchar_t> data(store.hGlobal);
+      plain_text->assign(data.get());
+    }
     ReleaseStgMedium(&store);
     return true;
   }
 
   if (SUCCEEDED(data_object->GetData(GetPlainTextFormat(), &store))) {
-    // ascii text
-    ScopedHGlobal<char> data(store.hGlobal);
-    plain_text->assign(UTF8ToWide(data.get()));
+    {
+      // ascii text
+      ScopedHGlobal<char> data(store.hGlobal);
+      plain_text->assign(UTF8ToWide(data.get()));
+    }
     ReleaseStgMedium(&store);
     return true;
   }
@@ -317,13 +329,14 @@ bool ClipboardUtil::GetHtml(IDataObject* data_object,
   STGMEDIUM store;
   if (SUCCEEDED(data_object->QueryGetData(GetHtmlFormat())) &&
       SUCCEEDED(data_object->GetData(GetHtmlFormat(), &store))) {
-    // MS CF html
-    ScopedHGlobal<char> data(store.hGlobal);
+    {
+      // MS CF html
+      ScopedHGlobal<char> data(store.hGlobal);
 
-    std::string html_utf8;
-    CFHtmlToHtml(std::string(data.get(), data.Size()), &html_utf8, base_url);
-    html->assign(UTF8ToWide(html_utf8));
-
+      std::string html_utf8;
+      CFHtmlToHtml(std::string(data.get(), data.Size()), &html_utf8, base_url);
+      html->assign(UTF8ToWide(html_utf8));
+    }
     ReleaseStgMedium(&store);
     return true;
   }
@@ -334,9 +347,11 @@ bool ClipboardUtil::GetHtml(IDataObject* data_object,
   if (FAILED(data_object->GetData(GetTextHtmlFormat(), &store)))
     return false;
 
-  // text/html
-  ScopedHGlobal<wchar_t> data(store.hGlobal);
-  html->assign(data.get());
+  {
+    // text/html
+    ScopedHGlobal<wchar_t> data(store.hGlobal);
+    html->assign(data.get());
+  }
   ReleaseStgMedium(&store);
   return true;
 }
@@ -362,10 +377,12 @@ bool ClipboardUtil::GetFileContents(IDataObject* data_object,
   STGMEDIUM description;
   if (SUCCEEDED(data_object->GetData(GetFileDescriptorFormat(),
                                      &description))) {
-    ScopedHGlobal<FILEGROUPDESCRIPTOR> fgd(description.hGlobal);
-    // We expect there to be at least one file in here.
-    DCHECK_GE(fgd->cItems, 1u);
-    filename->assign(fgd->fgd[0].cFileName);
+    {
+      ScopedHGlobal<FILEGROUPDESCRIPTOR> fgd(description.hGlobal);
+      // We expect there to be at least one file in here.
+      DCHECK_GE(fgd->cItems, 1u);
+      filename->assign(fgd->fgd[0].cFileName);
+    }
     ReleaseStgMedium(&description);
   }
   return true;
