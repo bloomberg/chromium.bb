@@ -2923,3 +2923,7 @@ BUG34546 : fast/loader/document-with-fragment-url-1.html = TIMEOUT
 BUG34546 : fast/loader/document-with-fragment-url-2.html = TIMEOUT
 BUG34546 : fast/loader/document-with-fragment-url-3.html = TIMEOUT
 BUG34546 : fast/loader/document-with-fragment-url-4.html = TIMEOUT
+
+BUG_SENORBLANCO WIN : css1/basic/contextual_selectors.html = CRASH
+BUG_SENORBLANCO WIN : fast/repaint/line-flow-with-floats-10.html = CRASH
+
