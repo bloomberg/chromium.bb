@@ -94,6 +94,7 @@ HRESULT ChromeActiveDocument::FinalConstruct() {
   enabled_commands_map_[OLECMDID_COPY] = true;
   enabled_commands_map_[OLECMDID_PASTE] = true;
   enabled_commands_map_[OLECMDID_SELECTALL] = true;
+  enabled_commands_map_[OLECMDID_SAVEAS] = true;
   return S_OK;
 }
 

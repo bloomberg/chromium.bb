@@ -370,10 +370,11 @@ class TabProxy : public AutomationResourceProxy {
   void Copy();
   void Paste();
 
-  // These handlers issue asynchronous Reload and Stop notifications to the
-  // chrome instance.
+  // These handlers issue asynchronous Reload, Stop and SaveAs notifications to
+  // the chrome instance.
   void ReloadAsync();
   void StopAsync();
+  void SaveAsAsync();
 
   // Calls delegates
   void AddObserver(TabProxyDelegate* observer);

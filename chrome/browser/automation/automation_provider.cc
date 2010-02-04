@@ -462,6 +462,7 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
                                     LoadExpandedExtension)
     IPC_MESSAGE_HANDLER(AutomationMsg_ShutdownSessionService,
                         ShutdownSessionService)
+    IPC_MESSAGE_HANDLER(AutomationMsg_SaveAsAsync, SaveAsAsync)
   IPC_END_MESSAGE_MAP()
 }
 
@@ -2236,3 +2237,11 @@ void AutomationProvider::LoadExpandedExtension(
     Send(reply_message);
   }
 }
+
+void AutomationProvider::SaveAsAsync(int tab_handle) {
+  NavigationController* tab = NULL;
+  TabContents* tab_contents = GetTabContentsForHandle(tab_handle, &tab);
+  if (tab_contents)
+    tab_contents->OnSavePage();
+}
+

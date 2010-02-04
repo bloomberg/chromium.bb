@@ -488,6 +488,7 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
 
   void ReloadAsync(int tab_handle);
   void StopAsync(int tab_handle);
+  void SaveAsAsync(int tab_handle);
 
   void WaitForBrowserWindowCountToBecome(int target_count,
                                          IPC::Message* reply_message);

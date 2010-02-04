@@ -734,6 +734,10 @@ void TabProxy::StopAsync() {
   sender_->Send(new AutomationMsg_StopAsync(0, handle_));
 }
 
+void TabProxy::SaveAsAsync() {
+  sender_->Send(new AutomationMsg_SaveAsAsync(0, handle_));
+}
+
 void TabProxy::AddObserver(TabProxyDelegate* observer) {
   AutoLock lock(list_lock_);
   observers_list_.AddObserver(observer);

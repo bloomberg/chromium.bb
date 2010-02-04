@@ -59,7 +59,8 @@ bool ChromeFrameAutomationProvider::IsValidMessage(uint32 type) {
     case AutomationMsg_HandleMessageFromExternalHost::ID:
     case AutomationMsg_RequestStarted::ID:
     case AutomationMsg_RequestData::ID:
-    case AutomationMsg_RequestEnd::ID: {
+    case AutomationMsg_RequestEnd::ID:
+    case AutomationMsg_SaveAsAsync::ID: {
       is_valid_message = true;
       break;
     }

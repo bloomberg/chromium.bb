@@ -1189,4 +1189,7 @@ IPC_BEGIN_MESSAGES(Automation)
                              int   /* browser_handle */,
                              bool  /* result */)
 
+  IPC_MESSAGE_ROUTED1(AutomationMsg_SaveAsAsync,
+                      int /* tab handle */)
+
 IPC_END_MESSAGES(Automation)
