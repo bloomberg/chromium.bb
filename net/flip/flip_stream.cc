@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -381,7 +381,7 @@ int FlipStream::DoSendBodyComplete(int result) {
 
   request_body_stream_->DidConsume(result);
 
-  if (request_body_stream_->position() < request_body_stream_->size())
+  if (!request_body_stream_->eof())
     io_state_ = STATE_SEND_BODY;
   else
     io_state_ = STATE_READ_HEADERS;
