@@ -55,17 +55,17 @@ void TestShellRequestContext::Init(
   scoped_ptr<net::ProxyConfigService> proxy_config_service(
       net::ProxyService::CreateSystemProxyConfigService(NULL, NULL));
 #endif
-  host_resolver_ = net::CreateSystemHostResolver();
+  host_resolver_ = net::CreateSystemHostResolver(NULL);
   proxy_service_ = net::ProxyService::Create(proxy_config_service.release(),
                                              false, NULL, NULL, NULL);
   ssl_config_service_ = net::SSLConfigService::CreateSystemSSLConfigService();
 
   net::HttpCache *cache;
   if (cache_path.empty()) {
-    cache = new net::HttpCache(host_resolver_, proxy_service_,
+    cache = new net::HttpCache(NULL, host_resolver_, proxy_service_,
                                ssl_config_service_, 0);
   } else {
-    cache = new net::HttpCache(host_resolver_, proxy_service_,
+    cache = new net::HttpCache(NULL, host_resolver_, proxy_service_,
                                ssl_config_service_, cache_path, 0);
   }
   cache->set_mode(cache_mode);

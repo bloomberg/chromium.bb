@@ -207,12 +207,11 @@ class TCPClientSocketPoolTest : public ClientSocketPoolTest {
   TCPClientSocketPoolTest()
       : ignored_request_info_("ignored", 80),
         host_resolver_(new MockHostResolver),
-        notifier_(new MockNetworkChangeNotifier),
         pool_(new TCPClientSocketPool(kMaxSockets,
                                       kMaxSocketsPerGroup,
                                       host_resolver_,
                                       &client_socket_factory_,
-                                      notifier_)) {
+                                      &notifier_)) {
   }
 
   int StartRequest(const std::string& group_name, RequestPriority priority) {
@@ -223,7 +222,7 @@ class TCPClientSocketPoolTest : public ClientSocketPoolTest {
   HostResolver::RequestInfo ignored_request_info_;
   scoped_refptr<MockHostResolver> host_resolver_;
   MockClientSocketFactory client_socket_factory_;
-  scoped_refptr<MockNetworkChangeNotifier> notifier_;
+  MockNetworkChangeNotifier notifier_;
   scoped_refptr<TCPClientSocketPool> pool_;
 };
 
@@ -623,7 +622,7 @@ TEST_F(TCPClientSocketPoolTest, ResetIdleSocketsOnIPAddressChange) {
   EXPECT_EQ(1, pool_->IdleSocketCount());
 
   // After an IP address change, we should have 0 idle sockets.
-  notifier_->NotifyIPAddressChange();
+  notifier_.NotifyIPAddressChange();
   EXPECT_EQ(0, pool_->IdleSocketCount());
 }
 

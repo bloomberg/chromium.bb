@@ -15,11 +15,13 @@
 #include "net/base/host_cache.h"
 #include "net/base/host_resolver.h"
 #include "net/base/host_resolver_impl.h"
+#include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request.h"
 
 namespace {
 
-net::HostResolver* CreateGlobalHostResolver() {
+net::HostResolver* CreateGlobalHostResolver(
+    net::NetworkChangeNotifier* network_change_notifier) {
   net::HostResolver* global_host_resolver = NULL;
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
@@ -31,7 +33,8 @@ net::HostResolver* CreateGlobalHostResolver() {
         command_line.GetSwitchValueASCII(switches::kFixedHost);
     global_host_resolver = new net::FixedHostResolver(host);
   } else {
-    global_host_resolver = net::CreateSystemHostResolver();
+    global_host_resolver =
+        net::CreateSystemHostResolver(network_change_notifier);
 
     if (command_line.HasSwitch(switches::kDisableIPv6))
       global_host_resolver->SetDefaultAddressFamily(net::ADDRESS_FAMILY_IPV4);
@@ -52,7 +55,7 @@ struct RunnableMethodTraits<IOThread> {
 
 IOThread::IOThread()
     : BrowserProcessSubThread(ChromeThread::IO),
-      host_resolver_(NULL),
+      globals_(NULL),
       prefetch_observer_(NULL),
       dns_master_(NULL) {}
 
@@ -60,11 +63,12 @@ IOThread::~IOThread() {
   // We cannot rely on our base class to stop the thread since we want our
   // CleanUp function to run.
   Stop();
+  DCHECK(!globals_);
 }
 
-net::HostResolver* IOThread::host_resolver() {
+IOThread::Globals* IOThread::globals() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  return host_resolver_;
+  return globals_;
 }
 
 void IOThread::InitDnsMaster(
@@ -95,9 +99,13 @@ void IOThread::ChangedToOnTheRecord() {
 void IOThread::Init() {
   BrowserProcessSubThread::Init();
 
-  DCHECK(!host_resolver_);
-  host_resolver_ = CreateGlobalHostResolver();
-  host_resolver_->AddRef();
+  DCHECK(!globals_);
+  globals_ = new Globals;
+
+  globals_->network_change_notifier.reset(
+      net::NetworkChangeNotifier::CreateDefaultNetworkChangeNotifier());
+  globals_->host_resolver =
+      CreateGlobalHostResolver(globals_->network_change_notifier.get());
 }
 
 void IOThread::CleanUp() {
@@ -116,18 +124,16 @@ void IOThread::CleanUp() {
 
   // Not initialized in Init().  May not be initialized.
   if (prefetch_observer_) {
-    host_resolver_->RemoveObserver(prefetch_observer_);
+    globals_->host_resolver->RemoveObserver(prefetch_observer_);
     delete prefetch_observer_;
     prefetch_observer_ = NULL;
   }
 
   // TODO(eroman): temp hack for http://crbug.com/15513
-  host_resolver_->Shutdown();
+  globals_->host_resolver->Shutdown();
 
-  // TODO(willchan): Stop reference counting HostResolver.  It's owned by
-  // IOThread now.
-  host_resolver_->Release();
-  host_resolver_ = NULL;
+  delete globals_;
+  globals_ = NULL;
 
   // URLFetcher and URLRequest instances must NOT outlive the IO thread.
   //
@@ -157,12 +163,12 @@ void IOThread::InitDnsMasterOnIOThread(
   chrome_browser_net::EnableDnsPrefetch(prefetching_enabled);
 
   dns_master_ = new chrome_browser_net::DnsMaster(
-      host_resolver_, max_queue_delay, max_concurrent);
+      globals_->host_resolver, max_queue_delay, max_concurrent);
   dns_master_->AddRef();
 
   DCHECK(!prefetch_observer_);
   prefetch_observer_ = chrome_browser_net::CreatePrefetchObserver();
-  host_resolver_->AddObserver(prefetch_observer_);
+  globals_->host_resolver->AddObserver(prefetch_observer_);
 
   FinalizeDnsPrefetchInitialization(
       dns_master_, prefetch_observer_, hostnames_to_prefetch, referral_list);
@@ -178,9 +184,9 @@ void IOThread::ChangedToOnTheRecordOnIOThread() {
 
   // Clear the host cache to avoid showing entries from the OTR session
   // in about:net-internals.
-  if (host_resolver_->IsHostResolverImpl()) {
+  if (globals_->host_resolver->IsHostResolverImpl()) {
     net::HostCache* host_cache = static_cast<net::HostResolverImpl*>(
-        host_resolver_)->cache();
+        globals_->host_resolver.get())->cache();
     if (host_cache)
       host_cache->clear();
   }

@@ -68,7 +68,8 @@ class SessionDependencies {
 };
 
 HttpNetworkSession* CreateSession(SessionDependencies* session_deps) {
-  return new HttpNetworkSession(session_deps->host_resolver,
+  return new HttpNetworkSession(NULL,
+                                session_deps->host_resolver,
                                 session_deps->proxy_service,
                                 &session_deps->socket_factory,
                                 session_deps->ssl_config_service,

@@ -171,7 +171,7 @@ TCPClientSocketPool::TCPClientSocketPool(
     int max_sockets_per_group,
     HostResolver* host_resolver,
     ClientSocketFactory* client_socket_factory,
-    const scoped_refptr<NetworkChangeNotifier>& network_change_notifier)
+    NetworkChangeNotifier* network_change_notifier)
     : base_(max_sockets, max_sockets_per_group,
             base::TimeDelta::FromSeconds(kUnusedIdleSocketTimeout),
             base::TimeDelta::FromSeconds(kUsedIdleSocketTimeout),

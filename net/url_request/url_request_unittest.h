@@ -126,13 +126,13 @@ class TestCookiePolicy : public net::CookiePolicy {
 class TestURLRequestContext : public URLRequestContext {
  public:
   TestURLRequestContext() {
-    host_resolver_ = net::CreateSystemHostResolver();
+    host_resolver_ = net::CreateSystemHostResolver(NULL);
     proxy_service_ = net::ProxyService::CreateNull();
     Init();
   }
 
   explicit TestURLRequestContext(const std::string& proxy) {
-    host_resolver_ = net::CreateSystemHostResolver();
+    host_resolver_ = net::CreateSystemHostResolver(NULL);
     net::ProxyConfig proxy_config;
     proxy_config.proxy_rules.ParseFromString(proxy);
     proxy_service_ = net::ProxyService::CreateFixed(proxy_config);
@@ -155,7 +155,8 @@ class TestURLRequestContext : public URLRequestContext {
     ssl_config_service_ = new net::SSLConfigServiceDefaults;
     http_transaction_factory_ =
         new net::HttpCache(
-          net::HttpNetworkLayer::CreateFactory(host_resolver_, proxy_service_,
+          net::HttpNetworkLayer::CreateFactory(NULL, host_resolver_,
+                                               proxy_service_,
                                                ssl_config_service_),
           disk_cache::CreateInMemoryCacheBackend(0));
     // In-memory cookie store.

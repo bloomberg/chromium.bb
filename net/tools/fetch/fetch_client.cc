@@ -132,7 +132,7 @@ int main(int argc, char**argv) {
   MessageLoop loop(MessageLoop::TYPE_IO);
 
   scoped_refptr<net::HostResolver> host_resolver(
-      net::CreateSystemHostResolver());
+      net::CreateSystemHostResolver(NULL));
 
   scoped_refptr<net::ProxyService> proxy_service(
       net::ProxyService::CreateNull());
@@ -140,11 +140,11 @@ int main(int argc, char**argv) {
       net::SSLConfigService::CreateSystemSSLConfigService());
   net::HttpTransactionFactory* factory = NULL;
   if (use_cache) {
-    factory = new net::HttpCache(host_resolver, proxy_service,
+    factory = new net::HttpCache(NULL, host_resolver, proxy_service,
                                  ssl_config_service, 0);
   } else {
     factory = new net::HttpNetworkLayer(
-        net::ClientSocketFactory::GetDefaultFactory(), host_resolver,
+        net::ClientSocketFactory::GetDefaultFactory(), NULL, host_resolver,
         proxy_service, ssl_config_service);
   }
 

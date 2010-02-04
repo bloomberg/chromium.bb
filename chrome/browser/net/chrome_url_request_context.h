@@ -10,6 +10,7 @@
 #include "net/base/cookie_policy.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"
+#include "chrome/browser/io_thread.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/net/chrome_cookie_policy.h"
 #include "chrome/browser/net/url_request_context_getter.h"
@@ -28,7 +29,6 @@ class ProxyConfig;
 
 class ChromeURLRequestContext;
 class ChromeURLRequestContextFactory;
-class IOThread;
 
 // Subclass of URLRequestContext which can be used to store extra information
 // for requests.

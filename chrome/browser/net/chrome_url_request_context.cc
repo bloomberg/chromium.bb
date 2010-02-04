@@ -141,7 +141,7 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
   ApplyProfileParametersToContext(context);
 
   // Global host resolver for the context.
-  context->set_host_resolver(io_thread()->host_resolver());
+  context->set_host_resolver(io_thread()->globals()->host_resolver);
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
@@ -152,7 +152,8 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
                          MessageLoop::current() /*io_loop*/));
 
   net::HttpCache* cache =
-      new net::HttpCache(context->host_resolver(),
+      new net::HttpCache(io_thread()->globals()->network_change_notifier.get(),
+                         context->host_resolver(),
                          context->proxy_service(),
                          context->ssl_config_service(),
                          disk_cache_path_, cache_size_);
@@ -262,7 +263,8 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
   context->set_proxy_service(original_context->proxy_service());
 
   net::HttpCache* cache =
-      new net::HttpCache(context->host_resolver(), context->proxy_service(),
+      new net::HttpCache(io_thread()->globals()->network_change_notifier.get(),
+                         context->host_resolver(), context->proxy_service(),
                          context->ssl_config_service(), 0);
   context->set_cookie_store(new net::CookieMonster);
   context->set_cookie_policy(
@@ -371,10 +373,12 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
   } else {
     // If original HttpCache doesn't exist, simply construct one with a whole
     // new set of network stack.
-    cache = new net::HttpCache(main_context->host_resolver(),
-                               main_context->proxy_service(),
-                               main_context->ssl_config_service(),
-                               disk_cache_path_, cache_size_);
+    cache = new net::HttpCache(
+        io_thread()->globals()->network_change_notifier.get(),
+        main_context->host_resolver(),
+        main_context->proxy_service(),
+        main_context->ssl_config_service(),
+        disk_cache_path_, cache_size_);
   }
 
   if (CommandLine::ForCurrentProcess()->HasSwitch(

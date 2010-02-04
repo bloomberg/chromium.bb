@@ -6,6 +6,8 @@
 #define CHROME_BROWSER_IO_THREAD_H_
 
 #include "base/basictypes.h"
+#include "base/ref_counted.h"
+#include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/browser_process_sub_thread.h"
 #include "chrome/common/net/dns.h"
@@ -17,13 +19,25 @@ namespace chrome_browser_net {
 class DnsMaster;
 }  // namespace chrome_browser_net
 
+namespace net {
+class NetworkChangeNotifier;
+}  // namespace net
+
 class IOThread : public BrowserProcessSubThread {
  public:
+  struct Globals {
+    scoped_ptr<net::NetworkChangeNotifier> network_change_notifier;
+    // TODO(willchan): Stop reference counting HostResolver.  It's owned by
+    // IOThread now.
+    scoped_refptr<net::HostResolver> host_resolver;
+  };
+
   IOThread();
 
   virtual ~IOThread();
 
-  net::HostResolver* host_resolver();
+  // Can only be called on the IO thread.
+  Globals* globals();
 
   // Initializes the DnsMaster.  |prefetching_enabled| indicates whether or
   // not dns prefetching should be enabled.  This should be called by the UI
@@ -56,10 +70,15 @@ class IOThread : public BrowserProcessSubThread {
   // These member variables are basically global, but their lifetimes are tied
   // to the IOThread.  IOThread owns them all, despite not using scoped_ptr.
   // This is because the destructor of IOThread runs on the wrong thread.  All
-  // member variables should be deleted in CleanUp().  Most of these will be
-  // initialized in Init().
+  // member variables should be deleted in CleanUp().
 
-  net::HostResolver* host_resolver_;
+  // These member variables are initialized in Init() and do not change for the
+  // lifetime of the IO thread.
+
+  Globals* globals_;
+
+  // These member variables are initialized by a task posted to the IO thread,
+  // which gets posted by calling certain member functions of IOThread.
 
   net::HostResolver::Observer* prefetch_observer_;
   chrome_browser_net::DnsMaster* dns_master_;
