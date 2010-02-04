@@ -975,6 +975,7 @@ void BrowserActionsContainer::BrowserActionMoved(Extension* extension,
   DeleteBrowserActionViews();
   CreateBrowserActionViews();
   Layout();
+  SchedulePaint();
 }
 
 int BrowserActionsContainer::WidthOfNonIconArea() const {
