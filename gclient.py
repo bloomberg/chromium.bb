@@ -72,6 +72,7 @@ import breakpad
 
 import gclient_scm
 import gclient_utils
+from third_party.repo.progress import Progress
 
 # default help text
 DEFAULT_USAGE_TEXT = (
@@ -684,7 +685,11 @@ class GClient(object):
     deps_to_process.sort()
 
     # First pass for direct dependencies.
+    if command == 'update' and not self._options.verbose:
+      pm = Progress('Syncing projects', len(deps_to_process))
     for d in deps_to_process:
+      if command == 'update' and not self._options.verbose:
+        pm.update()
       if type(deps[d]) == str:
         url = deps[d]
         entries[d] = url
@@ -693,6 +698,8 @@ class GClient(object):
           scm = gclient_scm.CreateSCM(url, self._root_dir, d)
           scm.RunCommand(command, self._options, args, file_list)
           self._options.revision = None
+    if command == 'update' and not self._options.verbose:
+      pm.end()
 
     # Second pass for inherited deps (via the From keyword)
     for d in deps_to_process:
