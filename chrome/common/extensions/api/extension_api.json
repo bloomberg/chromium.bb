@@ -2054,7 +2054,7 @@
       {
         "name": "onImportBegan",
         "type": "function",
-        "description": "Fired when a bookmark import session is begun.  Expensive observers should ignore updates until onImportEnded is fired.",
+        "description": "Fired when a bookmark import session is begun.  Expensive observers should ignore handleCreated updates until onImportEnded is fired.  Observers should still handle other notifications immediately.",
         "parameters": [
           {}
         ]
