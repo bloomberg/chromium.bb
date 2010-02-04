@@ -293,18 +293,17 @@ class ExtensionTestBrowserEvents : public ExtensionUITest {
   }
 
   // Fire an event of the given name to the test extension.
-  void FireEvent(const char* event_name) {
+  void FireEvent(const char* event_message) {
+    // JSON doesn't allow single quotes.
+    std::string event_message_strict(event_message);
+    ReplaceSubstringsAfterOffset(&event_message_strict, 0, "\'", "\\\"");
+
     namespace keys = extension_automation_constants;
 
     ASSERT_TRUE(tab_ != NULL);
 
-    // Build the event message to send to the extension.  The only important
-    // part is the name, as the payload is not used by the test extension.
-    std::string message;
-    message += event_name;
-
     tab_->HandleMessageFromExternalHost(
-        message,
+        event_message_strict,
         keys::kAutomationOrigin,
         keys::kAutomationBrowserEventRequestTarget);
   }
@@ -335,11 +334,11 @@ const char* ExtensionTestBrowserEvents::events_[] = {
   "[\"windows.onFocusChanged\", \"[42]\"]",
 
   // Tab events.
-  "[\"tabs.onCreated\", \"[{'id\':42,'index':1,'windowId':1,"
+  "[\"tabs.onCreated\", \"[{'id':42,'index':1,'windowId':1,"
       "'selected':true,'url':'http://www.google.com'}]\"]",
 
   "[\"tabs.onUpdated\", \"[42, {'status': 'complete',"
-      "'url':'http://www.google.com'}, {'id\':42,'index':1,'windowId':1,"
+      "'url':'http://www.google.com'}, {'id':42,'index':1,'windowId':1,"
       "'selected':true,'url':'http://www.google.com'}]\"]",
 
   "[\"tabs.onMoved\", \"[42, {'windowId':1,'fromIndex':1,'toIndex':2}]\"]",
@@ -353,7 +352,7 @@ const char* ExtensionTestBrowserEvents::events_[] = {
   "[\"tabs.onRemoved\", \"[43]\"]",
 
   // Bookmark events.
-  "[\"bookmarks.onCreated\", \"['42', {'id':'42','title':'foo',}]\"]",
+  "[\"bookmarks.onCreated\", \"['42', {'id':'42','title':'foo'}]\"]",
 
   "[\"bookmarks.onRemoved\", \"['42', {'parentId':'2','index':1}]\"]",
 
