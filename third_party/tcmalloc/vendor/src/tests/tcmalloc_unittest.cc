@@ -124,6 +124,9 @@
 using std::vector;
 using std::string;
 
+DECLARE_double(tcmalloc_release_rate);
+DECLARE_int32(max_free_queue_size);     // in debugallocation.cc
+
 namespace testing {
 
 static const int FLAGS_numtests = 50000;
@@ -747,6 +750,177 @@ static void TestHugeThreadCache() {
   delete[] array;
 }
 
+namespace {
+
+struct RangeCallbackState {
+  uintptr_t ptr;
+  base::MallocRange::Type expected_type;
+  size_t min_size;
+  bool matched;
+};
+
+static void RangeCallback(void* arg, const base::MallocRange* r) {
+  RangeCallbackState* state = reinterpret_cast<RangeCallbackState*>(arg);
+  if (state->ptr >= r->address &&
+      state->ptr < r->address + r->length) {
+    CHECK_EQ(r->type, state->expected_type);
+    CHECK_GE(r->length, state->min_size);
+    state->matched = true;
+  }
+}
+
+// Check that at least one of the callbacks from Ranges() contains
+// the specified address with the specified type, and has size
+// >= min_size.
+static void CheckRangeCallback(void* ptr, base::MallocRange::Type type,
+                               size_t min_size) {
+  RangeCallbackState state;
+  state.ptr = reinterpret_cast<uintptr_t>(ptr);
+  state.expected_type = type;
+  state.min_size = min_size;
+  state.matched = false;
+  MallocExtension::instance()->Ranges(&state, RangeCallback);
+  CHECK(state.matched);
+}
+
+}
+
+static void TestRanges() {
+  static const int MB = 1048576;
+  void* a = malloc(MB);
+  void* b = malloc(MB);
+  CheckRangeCallback(a, base::MallocRange::INUSE, MB);
+  CheckRangeCallback(b, base::MallocRange::INUSE, MB);
+  free(a);
+  CheckRangeCallback(a, base::MallocRange::FREE, MB);
+  CheckRangeCallback(b, base::MallocRange::INUSE, MB);
+  MallocExtension::instance()->ReleaseFreeMemory();
+  CheckRangeCallback(a, base::MallocRange::UNMAPPED, MB);
+  CheckRangeCallback(b, base::MallocRange::INUSE, MB);
+  free(b);
+  CheckRangeCallback(a, base::MallocRange::UNMAPPED, MB);
+  CheckRangeCallback(b, base::MallocRange::FREE, MB);
+}
+
+#ifndef DEBUGALLOCATION
+static size_t GetUnmappedBytes() {
+  size_t bytes;
+  CHECK(MallocExtension::instance()->GetNumericProperty(
+      "tcmalloc.pageheap_unmapped_bytes", &bytes));
+  return bytes;
+}
+#endif
+
+static void TestReleaseToSystem() {
+  // Debug allocation mode adds overhead to each allocation which
+  // messes up all the equality tests here.  I just disable the
+  // teset in this mode.  TODO(csilvers): get it to work for debugalloc?
+#ifndef DEBUGALLOCATION
+  const double old_tcmalloc_release_rate = FLAGS_tcmalloc_release_rate;
+  FLAGS_tcmalloc_release_rate = 0;
+
+  static const int MB = 1048576;
+  void* a = malloc(MB);
+  void* b = malloc(MB);
+  MallocExtension::instance()->ReleaseFreeMemory();
+  size_t starting_bytes = GetUnmappedBytes();
+
+  // Calling ReleaseFreeMemory() a second time shouldn't do anything.
+  MallocExtension::instance()->ReleaseFreeMemory();
+  EXPECT_EQ(starting_bytes, GetUnmappedBytes());
+
+  // ReleaseToSystem shouldn't do anything either.
+  MallocExtension::instance()->ReleaseToSystem(MB);
+  EXPECT_EQ(starting_bytes, GetUnmappedBytes());
+
+  free(a);
+
+  // The span to release should be 1MB.
+  MallocExtension::instance()->ReleaseToSystem(MB/2);
+  EXPECT_EQ(starting_bytes + MB, GetUnmappedBytes());
+
+  // Should do nothing since the previous call released too much.
+  MallocExtension::instance()->ReleaseToSystem(MB/4);
+  EXPECT_EQ(starting_bytes + MB, GetUnmappedBytes());
+
+  free(b);
+
+  // Use up the extra MB/4 bytes from 'a' and also release 'b'.
+  MallocExtension::instance()->ReleaseToSystem(MB/2);
+  EXPECT_EQ(starting_bytes + 2*MB, GetUnmappedBytes());
+
+  // Should do nothing since the previous call released too much.
+  MallocExtension::instance()->ReleaseToSystem(MB/2);
+  EXPECT_EQ(starting_bytes + 2*MB, GetUnmappedBytes());
+
+  // Nothing else to release.
+  MallocExtension::instance()->ReleaseFreeMemory();
+  EXPECT_EQ(starting_bytes + 2*MB, GetUnmappedBytes());
+
+  a = malloc(MB);
+  free(a);
+  EXPECT_EQ(starting_bytes + MB, GetUnmappedBytes());
+
+  // Releasing less than a page should still trigger a release.
+  MallocExtension::instance()->ReleaseToSystem(1);
+  EXPECT_EQ(starting_bytes + 2*MB, GetUnmappedBytes());
+
+  FLAGS_tcmalloc_release_rate = old_tcmalloc_release_rate;
+#endif   // #ifndef DEBUGALLOCATION
+}
+
+bool g_no_memory = false;
+std::new_handler g_old_handler = NULL;
+static void OnNoMemory() {
+  g_no_memory = true;
+  std::set_new_handler(g_old_handler);
+}
+
+static void TestSetNewMode() {
+  int old_mode = tc_set_new_mode(1);
+
+  // DebugAllocation will try to catch huge allocations.  We need to avoid this
+  // by requesting a smaller malloc block, that still can't be satisfied.
+  const size_t kHugeRequest = kTooBig - 1024;
+
+  g_old_handler = std::set_new_handler(&OnNoMemory);
+  g_no_memory = false;
+  void* ret = malloc(kHugeRequest);
+  EXPECT_EQ(NULL, ret);
+  EXPECT_TRUE(g_no_memory);
+
+  g_old_handler = std::set_new_handler(&OnNoMemory);
+  g_no_memory = false;
+  ret = calloc(1, kHugeRequest);
+  EXPECT_EQ(NULL, ret);
+  EXPECT_TRUE(g_no_memory);
+
+  g_old_handler = std::set_new_handler(&OnNoMemory);
+  g_no_memory = false;
+  ret = realloc(NULL, kHugeRequest);
+  EXPECT_EQ(NULL, ret);
+  EXPECT_TRUE(g_no_memory);
+
+  // Not really important, but must be small enough such that kAlignment +
+  // kHugeRequest does not overflow.
+  const int kAlignment = 1 << 5;
+
+  g_old_handler = std::set_new_handler(&OnNoMemory);
+  g_no_memory = false;
+  ret = memalign(kAlignment, kHugeRequest);
+  EXPECT_EQ(NULL, ret);
+  EXPECT_TRUE(g_no_memory);
+
+  g_old_handler = std::set_new_handler(&OnNoMemory);
+  g_no_memory = false;
+  EXPECT_EQ(ENOMEM,
+            posix_memalign(&ret, kAlignment, kHugeRequest));
+  EXPECT_EQ(NULL, ret);
+  EXPECT_TRUE(g_no_memory);
+
+  tc_set_new_mode(old_mode);
+}
+
 static int RunAllTests(int argc, char** argv) {
   // Optional argv[1] is the seed
   AllocatorState rnd(argc > 1 ? atoi(argv[1]) : 100);
@@ -1023,6 +1197,9 @@ static int RunAllTests(int argc, char** argv) {
 #endif
 
   TestHugeThreadCache();
+  TestRanges();
+  TestReleaseToSystem();
+  TestSetNewMode();
 
   return 0;
 }
@@ -1032,6 +1209,10 @@ static int RunAllTests(int argc, char** argv) {
 using testing::RunAllTests;
 
 int main(int argc, char** argv) {
+#ifdef DEBUGALLOCATION    // debug allocation takes forever for huge allocs
+  FLAGS_max_free_queue_size = 0;  // return freed blocks to tcmalloc immediately
+#endif
+
   RunAllTests(argc, argv);
 
   // Test tc_version()
