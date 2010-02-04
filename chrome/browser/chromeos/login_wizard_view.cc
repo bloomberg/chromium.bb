@@ -15,6 +15,7 @@
 #include "base/file_path.h"
 #include "base/logging.h"
 #include "base/process_util.h"
+#include "chrome/browser/chromeos/clock_menu_button.h"
 #include "chrome/browser/chromeos/image_background.h"
 #include "chrome/browser/chromeos/login_library.h"
 #include "chrome/browser/chromeos/status_area_view.h"
@@ -173,11 +174,19 @@ gfx::NativeWindow LoginWizardView::GetNativeWindow() const {
   return window()->GetNativeWindow();
 }
 
-void LoginWizardView::OpenSystemOptionsDialog() const {
+bool LoginWizardView::ShouldOpenButtonOptions(
+    const views::View* button_view) const {
+  if (button_view == status_area_->clock_view()) {
+    return false;
+  }
+  return true;
+}
+
+void LoginWizardView::OpenButtonOptions(const views::View* button_view) const {
   // TODO(avayvod): Add some dialog for options or remove them completely.
 }
 
-bool LoginWizardView::IsButtonVisible(views::View* button_view) const {
+bool LoginWizardView::IsButtonVisible(const views::View* button_view) const {
   return true;
 }
 

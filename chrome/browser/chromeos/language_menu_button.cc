@@ -267,7 +267,7 @@ void LanguageMenuButton::ActivatedAt(int index) {
   DCHECK(language_list_.get());
 
   if (IndexPointsToConfigureImeMenuItem(index)) {
-    host_->OpenSystemOptionsDialog();
+    host_->OpenButtonOptions(this);
     return;
   }
 
@@ -369,11 +369,13 @@ void LanguageMenuButton::RebuildModel() {
     need_separator = true;
   }
 
-  // Note: We use AddSeparator() for separators, and AddRadioItem() for all
-  // other items even if an item is not actually a radio item.
-  if (need_separator)
-    model_->AddSeparator();
-  model_->AddRadioItem(COMMAND_ID_CONFIGURE_IME, dummy_label, 0 /* dummy */);
+  if (host_->ShouldOpenButtonOptions(this)) {
+    // Note: We use AddSeparator() for separators, and AddRadioItem() for all
+    // other items even if an item is not actually a radio item.
+    if (need_separator)
+      model_->AddSeparator();
+    model_->AddRadioItem(COMMAND_ID_CONFIGURE_IME, dummy_label, 0 /* dummy */);
+  }
 }
 
 bool LanguageMenuButton::IndexIsInLanguageList(int index) const {

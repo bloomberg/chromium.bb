@@ -445,11 +445,16 @@ gfx::NativeWindow BrowserView::GetNativeWindow() const {
   return GetWindow()->GetNativeWindow();
 }
 
-void BrowserView::OpenSystemOptionsDialog() const {
+bool BrowserView::ShouldOpenButtonOptions(
+    const views::View* button_view) const {
+  return true;
+}
+
+void BrowserView::OpenButtonOptions(const views::View* button_view) const {
   browser()->OpenSystemOptionsDialog();
 }
 
-bool BrowserView::IsButtonVisible(views::View* button_view) const {
+bool BrowserView::IsButtonVisible(const views::View* button_view) const {
   if (button_view == status_area_->menu_view())
     return !IsToolbarVisible();
   return true;

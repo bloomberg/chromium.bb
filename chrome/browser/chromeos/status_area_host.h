@@ -20,11 +20,16 @@ class StatusAreaHost {
   // Returns native window hosting the status area.
   virtual gfx::NativeWindow GetNativeWindow() const = 0;
 
-  // Opens system options dialog.
-  virtual void OpenSystemOptionsDialog() const = 0;
+  // Indicates if options dialog related to the button specified should be
+  // shown.
+  virtual bool ShouldOpenButtonOptions(
+      const views::View* button_view) const = 0;
+
+  // Opens options dialog related to the button specified.
+  virtual void OpenButtonOptions(const views::View* button_view) const = 0;
 
   // Indicates if the button specified should be visible at the moment.
-  virtual bool IsButtonVisible(views::View* button_view) const = 0;
+  virtual bool IsButtonVisible(const views::View* button_view) const = 0;
 
  protected:
   virtual ~StatusAreaHost() {}

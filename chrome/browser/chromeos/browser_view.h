@@ -75,8 +75,10 @@ class BrowserView : public ::BrowserView,
 
   // StatusAreaHost overrides.
   virtual gfx::NativeWindow GetNativeWindow() const;
-  virtual void OpenSystemOptionsDialog() const;
-  virtual bool IsButtonVisible(views::View* button_view) const;
+  virtual bool ShouldOpenButtonOptions(
+      const views::View* button_view) const;
+  virtual void OpenButtonOptions(const views::View* button_view) const;
+  virtual bool IsButtonVisible(const views::View* button_view) const;
 
   // Shows the compact location bar under the selected tab.
   void ShowCompactLocationBarUnderSelectedTab();

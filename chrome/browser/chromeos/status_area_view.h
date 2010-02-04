@@ -42,6 +42,11 @@ class StatusAreaView : public views::View {
   static OpenTabsMode GetOpenTabsMode();
   static void SetOpenTabsMode(OpenTabsMode mode);
 
+  ClockMenuButton* clock_view() { return clock_view_; }
+  LanguageMenuButton* language_view() { return language_view_; }
+  NetworkMenuButton* network_view() { return network_view_; }
+  PowerMenuButton* power_view() { return power_view_; }
+
  private:
   StatusAreaHost* host_;
 

@@ -38,12 +38,13 @@ class LoginWizardView : public views::View,
 
   // Overriden from StatusAreaHost:
   virtual gfx::NativeWindow GetNativeWindow() const;
-  virtual void OpenSystemOptionsDialog() const;
-  virtual bool IsButtonVisible(views::View* button_view) const;
+  virtual bool ShouldOpenButtonOptions(const views::View* button_view) const;
+  virtual void OpenButtonOptions(const views::View* button_view) const;
+  virtual bool IsButtonVisible(const views::View* button_view) const;
 
  private:
-   // Creates login window.
-   void InitLoginWindow();
+  // Creates login window.
+  void InitLoginWindow();
 
   // Creates main wizard window with status bar.
   void InitWizardWindow();

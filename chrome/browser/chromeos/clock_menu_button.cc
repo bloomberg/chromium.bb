@@ -95,7 +95,9 @@ void ClockMenuButton::UpdateText() {
 // ClockMenuButton, menus::MenuModel implementation:
 
 int ClockMenuButton::GetItemCount() const {
-  return 3;
+  // If options dialog is unavailable, don't count a separator and configure
+  // menu item.
+  return host_->ShouldOpenButtonOptions(this) ? 3 : 1;
 }
 
 menus::MenuModel::ItemType ClockMenuButton::GetTypeAt(int index) const {
@@ -117,7 +119,7 @@ bool ClockMenuButton::IsEnabledAt(int index) const {
 }
 
 void ClockMenuButton::ActivatedAt(int index) {
-  host_->OpenSystemOptionsDialog();
+  host_->OpenButtonOptions(this);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
