@@ -6,6 +6,7 @@
 
 #include <atlbase.h>
 #include <atlcom.h>
+#include <htiframe.h>
 
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
@@ -52,6 +53,8 @@ BEGIN_VTABLE_PATCHES(IInternetProtocolSink)
                      HttpNegotiatePatch::ReportProgress)
 END_VTABLE_PATCHES()
 
+namespace {
+
 class SimpleBindStatusCallback : public CComObjectRootEx<CComSingleThreadModel>,
                                  public IBindStatusCallback {
  public:
@@ -91,6 +94,28 @@ class SimpleBindStatusCallback : public CComObjectRootEx<CComSingleThreadModel>,
     return E_NOTIMPL;
   }
 };
+
+// Attempts to get to the associated browser service for an active request.
+HRESULT GetBrowserServiceFromProtocolSink(IInternetProtocolSink* sink,
+                                          IBrowserService** browser_service) {
+  DCHECK(browser_service);
+  // When fetching a page for the first time (not cached), we can query the
+  // sink directly for IID_IShellBrowser to get the browser service.
+  HRESULT hr = DoQueryService(IID_IShellBrowser, sink, browser_service);
+  if (FAILED(hr)) {
+    // When the request is being served up from the cache, we have to take
+    // a different route via IID_ITargetFrame2.
+    ScopedComPtr<IWebBrowser2> browser2;
+    hr = DoQueryService(IID_ITargetFrame2, sink, browser2.Receive());
+    if (browser2) {
+      hr = DoQueryService(IID_IShellBrowser, browser2, browser_service);
+    }
+  }
+
+  return hr;
+}
+
+}  // end namespace
 
 HttpNegotiatePatch::HttpNegotiatePatch() {
 }
@@ -286,7 +311,7 @@ HRESULT HttpNegotiatePatch::ReportProgress(
 
     if (is_top_level_request) {
       ScopedComPtr<IBrowserService> browser;
-      DoQueryService(IID_IShellBrowser, me, browser.Receive());
+      GetBrowserServiceFromProtocolSink(me, browser.Receive());
       if (browser) {
         render_in_chrome_frame = CheckForCFNavigation(browser, true);
       }
