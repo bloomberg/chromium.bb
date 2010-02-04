@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,6 +11,7 @@
 
 #include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
+#include "app/menus/simple_menu_model.h"
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
@@ -191,15 +192,17 @@ void TreeViewColumnSetWidth(GtkTreeViewColumn* column, gint width) {
 
 }  // namespace
 
-class TaskManagerGtk::ContextMenuController : public MenuGtk::Delegate {
+class TaskManagerGtk::ContextMenuController
+    : public menus::SimpleMenuModel::Delegate {
  public:
   explicit ContextMenuController(TaskManagerGtk* task_manager)
       : task_manager_(task_manager) {
-    menu_.reset(new MenuGtk(this));
+    menu_model_.reset(new menus::SimpleMenuModel(this));
     for (int i = kTaskManagerPage; i < kTaskManagerColumnCount; i++) {
-      menu_->AppendCheckMenuItemWithLabel(
-          i, l10n_util::GetStringUTF8(TaskManagerColumnIDToResourceID(i)));
+      menu_model_->AddCheckItemWithStringId(
+          i, TaskManagerColumnIDToResourceID(i));
     }
+    menu_.reset(new MenuGtk(NULL, menu_model_.get()));
   }
 
   virtual ~ContextMenuController() {}
@@ -214,15 +217,15 @@ class TaskManagerGtk::ContextMenuController : public MenuGtk::Delegate {
   }
 
  private:
-  // MenuGtk::Delegate implementation:
-  virtual bool IsCommandEnabled(int command_id) const {
+  // menus::SimpleMenuModel::Delegate implementation:
+  virtual bool IsCommandIdEnabled(int command_id) const {
     if (!task_manager_)
       return false;
 
     return true;
   }
 
-  virtual bool IsItemChecked(int command_id) const {
+  virtual bool IsCommandIdChecked(int command_id) const {
     if (!task_manager_)
       return false;
 
@@ -230,7 +233,13 @@ class TaskManagerGtk::ContextMenuController : public MenuGtk::Delegate {
     return TreeViewColumnIsVisible(task_manager_->treeview_, colid);
   }
 
-  virtual void ExecuteCommandById(int command_id) {
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      menus::Accelerator* accelerator) {
+    return false;
+  }
+
+  virtual void ExecuteCommand(int command_id) {
     if (!task_manager_)
       return;
 
@@ -239,7 +248,8 @@ class TaskManagerGtk::ContextMenuController : public MenuGtk::Delegate {
     TreeViewColumnSetVisible(task_manager_->treeview_, colid, visible);
   }
 
-  // The context menu.
+  // The model and view for the right click context menu.
+  scoped_ptr<menus::SimpleMenuModel> menu_model_;
   scoped_ptr<MenuGtk> menu_;
 
   // The TaskManager the context menu was brought up for. Set to NULL when the
