@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/bookmarks/bookmark_context_menu_controller_gtk.h"
+#include "chrome/browser/gtk/bookmark_context_menu_gtk.h"
 
 #include "app/l10n_util.h"
 #include "base/compiler_specific.h"
@@ -10,10 +10,13 @@
 #include "chrome/browser/bookmarks/bookmark_manager.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/input_window_dialog.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/page_navigator.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "grit/generated_resources.h"
@@ -78,7 +81,7 @@ class EditFolderController : public InputWindowDialog::Delegate,
         l10n_util::GetString(IDS_BOOMARK_BAR_EDIT_FOLDER_LABEL);
     std::wstring contents = is_new_ ?
         l10n_util::GetString(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME) :
-        UTF16ToWide(node_->GetTitleAsString16());
+        node_->GetTitle();
 
     dialog_ = InputWindowDialog::Create(wnd, title, label, contents, this);
     model_->AddObserver(this);
@@ -192,112 +195,101 @@ class SelectOnCreationHandler : public BookmarkEditor::Handler {
 
 }  // namespace
 
-BookmarkContextMenuController::BookmarkContextMenuController(
-    gfx::NativeWindow parent_window,
-    BookmarkContextMenuControllerDelegate* delegate,
+// BookmarkContextMenuGtk -------------------------------------------
+
+BookmarkContextMenuGtk::BookmarkContextMenuGtk(
+    gfx::NativeWindow wnd,
     Profile* profile,
+    Browser* browser,
     PageNavigator* navigator,
     const BookmarkNode* parent,
     const std::vector<const BookmarkNode*>& selection,
-    ConfigurationType configuration)
-    : parent_window_(parent_window),
-      delegate_(delegate),
+    ConfigurationType configuration,
+    Delegate* delegate)
+    : wnd_(wnd),
       profile_(profile),
+      browser_(browser),
       navigator_(navigator),
       parent_(parent),
       selection_(selection),
+      model_(profile->GetBookmarkModel()),
       configuration_(configuration),
-      model_(profile->GetBookmarkModel()) {
+      delegate_(delegate),
+      model_changed_(false) {
   DCHECK(profile_);
   DCHECK(model_->IsLoaded());
   menu_model_.reset(new menus::SimpleMenuModel(this));
-  model_->AddObserver(this);
 
-  BuildMenu();
+  if (configuration != BOOKMARK_MANAGER_ORGANIZE_MENU) {
+    if (selection.size() == 1 && selection[0]->is_url()) {
+      AppendItem(IDS_BOOMARK_BAR_OPEN_ALL, IDS_BOOMARK_BAR_OPEN_IN_NEW_TAB);
+      AppendItem(IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW,
+                 IDS_BOOMARK_BAR_OPEN_IN_NEW_WINDOW);
+      AppendItem(IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO,
+                 IDS_BOOMARK_BAR_OPEN_INCOGNITO);
+    } else {
+      AppendItem(IDS_BOOMARK_BAR_OPEN_ALL, IDS_BOOMARK_BAR_OPEN_ALL);
+      AppendItem(IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW,
+                 IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW);
+      AppendItem(IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO,
+                 IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO);
+    }
+    AppendSeparator();
+  }
+
+  if (selection.size() == 1 && selection[0]->is_folder()) {
+    AppendItem(IDS_BOOKMARK_BAR_RENAME_FOLDER);
+  } else {
+    AppendItem(IDS_BOOKMARK_BAR_EDIT);
+  }
+
+  if (configuration == BOOKMARK_MANAGER_TABLE ||
+      configuration == BOOKMARK_MANAGER_TABLE_OTHER ||
+      configuration == BOOKMARK_MANAGER_ORGANIZE_MENU ||
+      configuration == BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER) {
+    AppendItem(IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER);
+  }
+
+  AppendSeparator();
+  AppendItem(IDS_CUT);
+  AppendItem(IDS_COPY);
+  AppendItem(IDS_PASTE);
+
+  AppendSeparator();
+  AppendItem(IDS_BOOKMARK_BAR_REMOVE);
+
+  if (configuration == BOOKMARK_MANAGER_ORGANIZE_MENU) {
+    AppendSeparator();
+    AppendItem(IDS_BOOKMARK_MANAGER_SORT);
+  }
+
+  AppendSeparator();
+
+  AppendItem(IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK);
+  AppendItem(IDS_BOOMARK_BAR_NEW_FOLDER);
+
+  if (configuration == BOOKMARK_BAR) {
+    AppendSeparator();
+    AppendItem(IDS_BOOKMARK_MANAGER);
+    AppendCheckboxItem(IDS_BOOMARK_BAR_ALWAYS_SHOW);
+  }
+
+  model_->AddObserver(this);
 }
 
-BookmarkContextMenuController::~BookmarkContextMenuController() {
+BookmarkContextMenuGtk::~BookmarkContextMenuGtk() {
   if (model_)
     model_->RemoveObserver(this);
 }
 
-void BookmarkContextMenuController::BuildMenu() {
-  if (configuration_ != BOOKMARK_MANAGER_ORGANIZE_MENU) {
-    if (selection_.size() == 1 && selection_[0]->is_url()) {
-      AddItem(IDS_BOOMARK_BAR_OPEN_ALL,
-              IDS_BOOMARK_BAR_OPEN_IN_NEW_TAB);
-      AddItem(IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW,
-              IDS_BOOMARK_BAR_OPEN_IN_NEW_WINDOW);
-      AddItem(IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO,
-              IDS_BOOMARK_BAR_OPEN_INCOGNITO);
-    } else {
-      AddItem(IDS_BOOMARK_BAR_OPEN_ALL);
-      AddItem(IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW);
-      AddItem(IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO);
-    }
-    AddSeparator();
-  }
-
-  if (selection_.size() == 1 && selection_[0]->is_folder()) {
-    AddItem(IDS_BOOKMARK_BAR_RENAME_FOLDER);
-  } else {
-    AddItem(IDS_BOOKMARK_BAR_EDIT);
-  }
-  AddItem(IDS_BOOKMARK_BAR_REMOVE);
-
-  if (configuration_ == BOOKMARK_MANAGER_TABLE ||
-      configuration_ == BOOKMARK_MANAGER_TABLE_OTHER ||
-      configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU ||
-      configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER) {
-    AddItem(IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER);
-  }
-
-  if (configuration_ == BOOKMARK_MANAGER_TABLE ||
-      configuration_ == BOOKMARK_MANAGER_TABLE_OTHER ||
-      configuration_ == BOOKMARK_MANAGER_TREE ||
-      configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU ||
-      configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER) {
-    AddSeparator();
-    AddItem(IDS_CUT);
-    AddItem(IDS_COPY);
-    AddItem(IDS_PASTE);
-  }
-
-  if (configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU) {
-    AddSeparator();
-    AddItem(IDS_BOOKMARK_MANAGER_SORT);
-  }
-
-  AddSeparator();
-
-  AddItem(IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK);
-  AddItem(IDS_BOOMARK_BAR_NEW_FOLDER);
-
-  if (configuration_ == BOOKMARK_BAR) {
-    AddSeparator();
-    AddItem(IDS_BOOKMARK_MANAGER);
-    AddCheckboxItem(IDS_BOOMARK_BAR_ALWAYS_SHOW);
-  }
+void BookmarkContextMenuGtk::DelegateDestroyed() {
+  delegate_ = NULL;
 }
 
-void BookmarkContextMenuController::AddItem(int id) {
-  menu_model_->AddItem(id, l10n_util::GetStringUTF16(id));
-}
+void BookmarkContextMenuGtk::ExecuteCommand(int id) {
+  if (model_changed_)
+    return;
 
-void BookmarkContextMenuController::AddItem(int id, int localization_id) {
-  menu_model_->AddItemWithStringId(id, localization_id);
-}
-
-void BookmarkContextMenuController::AddSeparator() {
-  menu_model_->AddSeparator();
-}
-
-void BookmarkContextMenuController::AddCheckboxItem(int id) {
-  menu_model_->AddCheckItemWithStringId(id, id);
-}
-
-void BookmarkContextMenuController::ExecuteCommand(int id) {
-  BookmarkModel* model = RemoveModelObserver();
   if (delegate_)
     delegate_->WillExecuteCommand();
 
@@ -305,6 +297,8 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
     case IDS_BOOMARK_BAR_OPEN_ALL:
     case IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO:
     case IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW: {
+      PageNavigator* navigator = browser_ ?
+          browser_->GetSelectedTabContents() : navigator_;
       WindowOpenDisposition initial_disposition;
       if (id == IDS_BOOMARK_BAR_OPEN_ALL) {
         initial_disposition = NEW_FOREGROUND_TAB;
@@ -319,7 +313,8 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
         UserMetrics::RecordAction("BookmarkBar_ContextMenu_OpenAllIncognito",
                                   profile_);
       }
-      bookmark_utils::OpenAll(parent_window_, profile_, navigator_, selection_,
+
+      bookmark_utils::OpenAll(wnd_, profile_, navigator, selection_,
                               initial_disposition);
       break;
     }
@@ -339,24 +334,23 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
           editor_config = BookmarkEditor::SHOW_TREE;
         else
           editor_config = BookmarkEditor::NO_TREE;
-        BookmarkEditor::Show(parent_window_, profile_, parent_,
+        BookmarkEditor::Show(wnd_, profile_, parent_,
                              BookmarkEditor::EditDetails(selection_[0]),
                              editor_config, NULL);
       } else {
-        EditFolderController::Show(profile_, parent_window_, selection_[0],
-                                   false, false);
+        EditFolderController::Show(profile_, wnd_, selection_[0], false,
+                                   false);
       }
       break;
 
     case IDS_BOOKMARK_BAR_REMOVE: {
       UserMetrics::RecordAction("BookmarkBar_ContextMenu_Remove", profile_);
+      BookmarkModel* model = RemoveModelObserver();
 
-      delegate_->WillRemoveBookmarks(selection_);
       for (size_t i = 0; i < selection_.size(); ++i) {
         model->Remove(selection_[i]->GetParent(),
                       selection_[i]->GetParent()->IndexOfChild(selection_[i]));
       }
-      delegate_->DidRemoveBookmarks();
       selection_.clear();
       break;
     }
@@ -373,7 +367,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
         // This is owned by the BookmarkEditorView.
         handler = new SelectOnCreationHandler(profile_);
       }
-      BookmarkEditor::Show(parent_window_, profile_, GetParentForNewNodes(),
+      BookmarkEditor::Show(wnd_, profile_, GetParentForNewNodes(),
                            BookmarkEditor::EditDetails(), editor_config,
                            handler);
       break;
@@ -382,9 +376,8 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
     case IDS_BOOMARK_BAR_NEW_FOLDER: {
       UserMetrics::RecordAction("BookmarkBar_ContextMenu_NewFolder",
                                 profile_);
-      EditFolderController::Show(profile_, parent_window_,
-                                 GetParentForNewNodes(), true,
-                                 configuration_ != BOOKMARK_BAR);
+      EditFolderController::Show(profile_, wnd_, GetParentForNewNodes(),
+                                 true, (configuration_ != BOOKMARK_BAR));
       break;
     }
 
@@ -411,29 +404,27 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
 
     case IDS_BOOKMARK_MANAGER_SORT:
       UserMetrics::RecordAction("BookmarkManager_Sort", profile_);
-      model->SortChildren(parent_);
-      break;
-
-    case IDS_CUT:
-      delegate_->WillRemoveBookmarks(selection_);
-      bookmark_utils::CopyToClipboard(model, selection_, false);
-      delegate_->DidRemoveBookmarks();
+      model_->SortChildren(parent_);
       break;
 
     case IDS_COPY:
-      bookmark_utils::CopyToClipboard(model, selection_, false);
+    case IDS_CUT:
+      bookmark_utils::CopyToClipboard(profile_->GetBookmarkModel(),
+                                      selection_, id == IDS_CUT);
       break;
 
     case IDS_PASTE: {
-      // Always paste to parent.
-      if (!parent_)
+      const BookmarkNode* paste_target = GetParentForNewNodes();
+      if (!paste_target)
         return;
 
-      int index = (selection_.size() == 1) ?
-          parent_->IndexOfChild(selection_[0]) : -1;
-      if (index != -1)
-        index++;
-      bookmark_utils::PasteFromClipboard(model, parent_, index);
+      int index = -1;
+      if (selection_.size() == 1 && selection_[0]->is_url()) {
+        index = paste_target->IndexOfChild(selection_[0]) + 1;
+      }
+
+      bookmark_utils::PasteFromClipboard(profile_->GetBookmarkModel(),
+                                         paste_target, index);
       break;
     }
 
@@ -442,16 +433,16 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
   }
 }
 
-bool BookmarkContextMenuController::IsCommandIdChecked(int command_id) const {
-  DCHECK(command_id == IDS_BOOMARK_BAR_ALWAYS_SHOW);
+bool BookmarkContextMenuGtk::IsCommandIdChecked(int id) const {
+  DCHECK(id == IDS_BOOMARK_BAR_ALWAYS_SHOW);
   return profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
 }
 
-bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
+bool BookmarkContextMenuGtk::IsCommandIdEnabled(int id) const {
   bool is_root_node =
       (selection_.size() == 1 &&
        selection_[0]->GetParent() == model_->root_node());
-  switch (command_id) {
+  switch (id) {
     case IDS_BOOMARK_BAR_OPEN_INCOGNITO:
       return !profile_->IsOffTheRecord();
 
@@ -486,65 +477,84 @@ bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
       return selection_.size() > 0 && !is_root_node;
 
     case IDS_PASTE:
-      // Always paste to parent.
-      return bookmark_utils::CanPasteFromClipboard(parent_);
+      // Paste to selection from the Bookmark Bar, to parent_ everywhere else
+      return (configuration_ == BOOKMARK_BAR &&
+              !selection_.empty() &&
+              bookmark_utils::CanPasteFromClipboard(selection_[0])) ||
+             bookmark_utils::CanPasteFromClipboard(parent_);
   }
   return true;
 }
 
-void BookmarkContextMenuController::BookmarkModelBeingDeleted(
-    BookmarkModel* model) {
+bool BookmarkContextMenuGtk::GetAcceleratorForCommandId(
+    int command_id,
+    menus::Accelerator* accelerator) {
+  return false;
+}
+
+void BookmarkContextMenuGtk::BookmarkModelBeingDeleted(BookmarkModel* model) {
   ModelChanged();
 }
 
-void BookmarkContextMenuController::BookmarkNodeMoved(
-    BookmarkModel* model,
-    const BookmarkNode* old_parent,
-    int old_index,
-    const BookmarkNode* new_parent,
-    int new_index) {
+void BookmarkContextMenuGtk::BookmarkNodeMoved(BookmarkModel* model,
+                                               const BookmarkNode* old_parent,
+                                               int old_index,
+                                               const BookmarkNode* new_parent,
+                                               int new_index) {
   ModelChanged();
 }
 
-void BookmarkContextMenuController::BookmarkNodeAdded(
-    BookmarkModel* model,
-    const BookmarkNode* parent,
-    int index) {
+void BookmarkContextMenuGtk::BookmarkNodeAdded(BookmarkModel* model,
+                                               const BookmarkNode* parent,
+                                               int index) {
   ModelChanged();
 }
 
-void BookmarkContextMenuController::BookmarkNodeRemoved(
-    BookmarkModel* model,
-    const BookmarkNode* parent,
-    int index,
-    const BookmarkNode* node) {
+void BookmarkContextMenuGtk::BookmarkNodeRemoved(BookmarkModel* model,
+                                                 const BookmarkNode* parent,
+                                                 int index,
+                                                 const BookmarkNode* node) {
   ModelChanged();
 }
 
-void BookmarkContextMenuController::BookmarkNodeChanged(
-    BookmarkModel* model,
-    const BookmarkNode* node) {
+void BookmarkContextMenuGtk::BookmarkNodeChanged(BookmarkModel* model,
+                                                 const BookmarkNode* node) {
   ModelChanged();
 }
 
-void BookmarkContextMenuController::BookmarkNodeChildrenReordered(
-    BookmarkModel* model,
-    const BookmarkNode* node) {
+void BookmarkContextMenuGtk::BookmarkNodeChildrenReordered(
+    BookmarkModel* model, const BookmarkNode* node) {
   ModelChanged();
 }
 
-void BookmarkContextMenuController::ModelChanged() {
-  delegate_->CloseMenu();
+void BookmarkContextMenuGtk::ModelChanged() {
+  model_changed_ = true;
 }
 
-BookmarkModel* BookmarkContextMenuController::RemoveModelObserver() {
+void BookmarkContextMenuGtk::AppendItem(int id) {
+  menu_model_->AddItem(id, l10n_util::GetStringUTF16(id));
+}
+
+void BookmarkContextMenuGtk::AppendItem(int id, int localization_id) {
+  menu_model_->AddItemWithStringId(id, localization_id);
+}
+
+void BookmarkContextMenuGtk::AppendSeparator() {
+  menu_model_->AddSeparator();
+}
+
+void BookmarkContextMenuGtk::AppendCheckboxItem(int id) {
+  menu_model_->AddCheckItemWithStringId(id, id);
+}
+
+BookmarkModel* BookmarkContextMenuGtk::RemoveModelObserver() {
   BookmarkModel* model = model_;
   model_->RemoveObserver(this);
   model_ = NULL;
   return model;
 }
 
-bool BookmarkContextMenuController::HasURLs() const {
+bool BookmarkContextMenuGtk::HasURLs() const {
   for (size_t i = 0; i < selection_.size(); ++i) {
     if (NodeHasURLs(selection_[i]))
       return true;
@@ -552,8 +562,7 @@ bool BookmarkContextMenuController::HasURLs() const {
   return false;
 }
 
-const BookmarkNode*
-    BookmarkContextMenuController::GetParentForNewNodes() const {
+const BookmarkNode* BookmarkContextMenuGtk::GetParentForNewNodes() const {
   return (selection_.size() == 1 && selection_[0]->is_folder()) ?
       selection_[0] : parent_;
 }

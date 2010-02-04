@@ -12,8 +12,8 @@
 #include "base/gfx/rect.h"
 #include "base/ref_counted.h"
 #include "base/task.h"
-#include "chrome/browser/bookmarks/bookmark_context_menu_controller_gtk.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
+#include "chrome/browser/gtk/bookmark_context_menu_gtk.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/common/gtk_tree.h"
@@ -27,8 +27,7 @@ class Profile;
 class BookmarkManagerGtk : public BookmarkModelObserver,
                            public ProfileSyncServiceObserver,
                            public gtk_tree::TableAdapter::Delegate,
-                           public SelectFileDialog::Listener,
-                           public BookmarkContextMenuControllerDelegate {
+                           public SelectFileDialog::Listener {
  public:
   virtual ~BookmarkManagerGtk();
 
@@ -74,9 +73,6 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
 
   // ProfileSyncServiceObserver implementation.
   virtual void OnStateChanged();
-
-  // BookmarkContextMenuController::Delegate implementation.
-  virtual void CloseMenu();
 
  private:
   friend class BookmarkManagerTest;
@@ -344,7 +340,7 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   GtkWidget* organize_;
   // The submenu the item pops up.
   // The controller.
-  scoped_ptr<BookmarkContextMenuController> organize_menu_controller_;
+  scoped_ptr<BookmarkContextMenuGtk> organize_menu_controller_;
   // The view.
   scoped_ptr<MenuGtk> organize_menu_;
   // Whether the menu refers to the left selection.

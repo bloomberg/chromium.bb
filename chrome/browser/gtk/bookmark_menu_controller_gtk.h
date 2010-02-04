@@ -11,7 +11,7 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/base_bookmark_model_observer.h"
-#include "chrome/browser/bookmarks/bookmark_context_menu_controller_gtk.h"
+#include "chrome/browser/gtk/bookmark_context_menu_gtk.h"
 #include "chrome/common/owned_widget_gtk.h"
 #include "webkit/glue/window_open_disposition.h"
 
@@ -24,7 +24,7 @@ class BookmarkNode;
 class MenuGtk;
 
 class BookmarkMenuController : public BaseBookmarkModelObserver,
-                               public BookmarkContextMenuControllerDelegate {
+                               public BookmarkContextMenuGtk::Delegate {
  public:
   // Creates a BookmarkMenuController showing the children of |node| starting
   // at index |start_child_index|.
@@ -47,9 +47,8 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   virtual void BookmarkNodeFavIconLoaded(BookmarkModel* model,
                                          const BookmarkNode* node);
 
-  // Overridden from BookmarkContextMenuController::Delegate:
+  // Overridden from BookmarkContextMenuGtk::Delegate:
   virtual void WillExecuteCommand();
-  virtual void CloseMenu();
 
  private:
   // Recursively change the bookmark hierarchy rooted in |parent| into a set of
@@ -126,7 +125,7 @@ class BookmarkMenuController : public BaseBookmarkModelObserver,
   std::map<const BookmarkNode*, GtkWidget*> node_to_menu_widget_map_;
 
   // The controller and view for the right click context menu.
-  scoped_ptr<BookmarkContextMenuController> context_menu_controller_;
+  scoped_ptr<BookmarkContextMenuGtk> context_menu_controller_;
   scoped_ptr<MenuGtk> context_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(BookmarkMenuController);

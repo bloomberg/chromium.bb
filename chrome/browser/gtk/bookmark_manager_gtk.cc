@@ -632,15 +632,10 @@ void BookmarkManagerGtk::ResetOrganizeMenu(bool left) {
   if (old_menu)
     MessageLoop::current()->DeleteSoon(FROM_HERE, old_menu);
 
-  BookmarkContextMenuController* old_controller =
-      organize_menu_controller_.release();
-  if (old_controller)
-    MessageLoop::current()->DeleteSoon(FROM_HERE, old_controller);
-
   organize_menu_controller_.reset(
-      new BookmarkContextMenuController(GTK_WINDOW(window_), this, profile_,
-        NULL, parent, nodes,
-        BookmarkContextMenuController::BOOKMARK_MANAGER_ORGANIZE_MENU));
+      new BookmarkContextMenuGtk(GTK_WINDOW(window_), profile_,
+        NULL, NULL, parent, nodes,
+        BookmarkContextMenuGtk::BOOKMARK_MANAGER_ORGANIZE_MENU, NULL));
   organize_menu_.reset(
       new MenuGtk(NULL, organize_menu_controller_->menu_model()));
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(organize_),
@@ -1486,10 +1481,6 @@ void BookmarkManagerGtk::FileSelected(const FilePath& path,
 
 void BookmarkManagerGtk::OnStateChanged() {
   UpdateSyncStatus();
-}
-
-void BookmarkManagerGtk::CloseMenu() {
-  organize_menu_->Cancel();
 }
 
 // static
