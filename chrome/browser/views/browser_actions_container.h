@@ -19,6 +19,8 @@
 #include "views/controls/resize_gripper.h"
 #include "views/view.h"
 
+class Browser;
+class BrowserActionsContainer;
 class BrowserActionOverflowMenuController;
 class BrowserActionsContainer;
 class Extension;
@@ -27,7 +29,6 @@ class ExtensionPopup;
 class PrefService;
 class Profile;
 class SlideAnimation;
-class ToolbarView;
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionButton
@@ -227,7 +228,7 @@ class BrowserActionsContainer
     public AnimationDelegate,
     public ExtensionToolbarModel::Observer {
  public:
-  BrowserActionsContainer(Profile* profile, ToolbarView* toolbar);
+  BrowserActionsContainer(Browser* browser, views::View* owner_view);
   virtual ~BrowserActionsContainer();
 
   static void RegisterUserPrefs(PrefService* prefs);
@@ -368,8 +369,11 @@ class BrowserActionsContainer
 
   Profile* profile_;
 
-  // The toolbar that owns us.
-  ToolbarView* toolbar_;
+  // The Browser object the contanier is associated with.
+  Browser* browser_;
+
+  // The view that owns us.
+  views::View* owner_view_;
 
   // The current popup and the button it came from.  NULL if no popup.
   ExtensionPopup* popup_;

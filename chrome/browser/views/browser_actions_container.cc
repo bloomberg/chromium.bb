@@ -17,12 +17,12 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/detachable_toolbar_view.h"
 #include "chrome/browser/views/extensions/browser_action_drag_data.h"
 #include "chrome/browser/views/extensions/browser_action_overflow_menu_controller.h"
 #include "chrome/browser/views/extensions/extension_popup.h"
-#include "chrome/browser/views/toolbar_view.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
@@ -83,7 +83,7 @@ static const int kDropIndicatorOffsetRtl = 9;
 
 BrowserActionButton::BrowserActionButton(Extension* extension,
                                          BrowserActionsContainer* panel)
-    : MenuButton(this, L"", NULL, false),
+    : ALLOW_THIS_IN_INITIALIZER_LIST(MenuButton(this, L"", NULL, false)),
       browser_action_(extension->browser_action()),
       extension_(extension),
       tracker_(NULL),
@@ -293,9 +293,10 @@ void BrowserActionView::PaintChildren(gfx::Canvas* canvas) {
 // BrowserActionsContainer
 
 BrowserActionsContainer::BrowserActionsContainer(
-    Profile* profile, ToolbarView* toolbar)
-    : profile_(profile),
-      toolbar_(toolbar),
+    Browser* browser, View* owner_view)
+    : profile_(browser->profile()),
+      browser_(browser),
+      owner_view_(owner_view),
       popup_(NULL),
       popup_button_(NULL),
       model_(NULL),
@@ -308,7 +309,7 @@ BrowserActionsContainer::BrowserActionsContainer(
       ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
   SetID(VIEW_ID_BROWSER_ACTION_TOOLBAR);
 
-  ExtensionsService* extension_service = profile->GetExtensionsService();
+  ExtensionsService* extension_service = profile_->GetExtensionsService();
   if (!extension_service)  // The |extension_service| can be NULL in Incognito.
     return;
 
@@ -358,7 +359,7 @@ void BrowserActionsContainer::RegisterUserPrefs(PrefService* prefs) {
 }
 
 int BrowserActionsContainer::GetCurrentTabId() const {
-  TabContents* tab_contents = toolbar_->browser()->GetSelectedTabContents();
+  TabContents* tab_contents = browser_->GetSelectedTabContents();
   if (!tab_contents)
     return -1;
 
@@ -411,8 +412,8 @@ void BrowserActionsContainer::DeleteBrowserActionViews() {
 void BrowserActionsContainer::OnBrowserActionVisibilityChanged() {
   resize_gripper_->SetVisible(browser_action_views_.size() > 0);
 
-  toolbar_->Layout();
-  toolbar_->SchedulePaint();
+  owner_view_->Layout();
+  owner_view_->SchedulePaint();
 }
 
 void BrowserActionsContainer::HidePopup() {
@@ -469,13 +470,13 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
     rect.set_y(origin.y());
 
     gfx::NativeWindow frame_window =
-        toolbar_->browser()->window()->GetNativeHandle();
+        browser_->window()->GetNativeHandle();
     BubbleBorder::ArrowLocation arrow_location = UILayoutIsRightToLeft() ?
         BubbleBorder::TOP_LEFT : BubbleBorder::TOP_RIGHT;
 
     popup_ = ExtensionPopup::Show(button->GetPopupUrl(),
-                                  toolbar_->browser(),
-                                  toolbar_->browser()->profile(),
+                                  browser_,
+                                  browser_->profile(),
                                   frame_window,
                                   rect,
                                   arrow_location,
@@ -488,7 +489,7 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
 
   // Otherwise, we send the action to the extension.
   ExtensionBrowserEventRouter::GetInstance()->BrowserActionExecuted(
-      profile_, browser_action->extension_id(), toolbar_->browser());
+      profile_, browser_action->extension_id(), browser_);
 }
 
 gfx::Size BrowserActionsContainer::GetPreferredSize() {
