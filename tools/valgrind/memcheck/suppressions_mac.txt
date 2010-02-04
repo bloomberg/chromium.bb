@@ -699,17 +699,6 @@
    fun:_ZN7WebCore9WebSocket7connectERKNS_4KURLERi
    fun:_ZN7WebCore8V8Custom30v8WebSocketConstructorCallbackERKN2v89ArgumentsE
    fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_9ArgumentsE
-   obj:*
-   obj:*
-   obj:*
-   obj:*
-   obj:*
-   obj:*
-   fun:_ZN2v88internalL6InvokeEbNS0_6HandleINS0_10JSFunctionEEENS1_INS0_6ObjectEEEiPPPS4_Pb
-   fun:_ZN2v88internal9Execution4CallENS0_6HandleINS0_10JSFunctionEEENS2_INS0_6ObjectEEEiPPPS5_Pb
-   fun:_ZN2v88Function4CallENS_6HandleINS_6ObjectEEEiPNS1_INS_5ValueEEE
-   fun:_ZN7WebCore28V8WorkerContextEventListener20callListenerFunctionEPNS_22ScriptExecutionContextEN2v86HandleINS3_5ValueEEEPNS_5EventE
-   fun:_ZN7WebCore23V8AbstractEventListener18invokeEventHandlerEPNS_22ScriptExecutionContextEPNS_5EventEN2v86HandleINS5_5ValueEEE
 }
 {
    bug_32644
