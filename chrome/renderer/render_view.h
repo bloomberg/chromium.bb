@@ -836,7 +836,7 @@ class RenderView : public RenderWidget,
   // Helper method that returns if the user wants to block content of type
   // |content_type| and sends an IPC message to the browser if content will be
   // blocked.
-  bool allowContentType(ContentSettingsType settings_type,
+  bool AllowContentType(ContentSettingsType settings_type,
                         bool enabled_per_settings);
 
   // Resets the |content_blocked_| array.

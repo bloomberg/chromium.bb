@@ -2038,11 +2038,11 @@ void RenderView::willClose(WebFrame* frame) {
 }
 
 bool RenderView::allowPlugins(WebFrame* frame, bool enabled_per_settings) {
-  return allowContentType(CONTENT_SETTINGS_TYPE_PLUGINS, enabled_per_settings);
+  return AllowContentType(CONTENT_SETTINGS_TYPE_PLUGINS, enabled_per_settings);
 }
 
 bool RenderView::allowImages(WebFrame* frame, bool enabled_per_settings) {
-  return allowContentType(CONTENT_SETTINGS_TYPE_IMAGES, enabled_per_settings);
+  return AllowContentType(CONTENT_SETTINGS_TYPE_IMAGES, enabled_per_settings);
 }
 
 void RenderView::loadURLExternally(
@@ -2676,7 +2676,7 @@ void RenderView::didRunInsecureContent(
 
 bool RenderView::allowScript(WebFrame* frame, bool enabled_per_settings) {
   if (enabled_per_settings) {
-    return allowContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
+    return AllowContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
                             enabled_per_settings);
   }
 
@@ -3177,15 +3177,16 @@ std::string RenderView::DetermineTextLanguage(const std::wstring& text) {
   return language;
 }
 
-bool RenderView::allowContentType(ContentSettingsType settings_type,
+bool RenderView::AllowContentType(ContentSettingsType settings_type,
                                   bool enabled_per_settings) {
   if (!enabled_per_settings)
     return false;
   // CONTENT_SETTING_ASK is only valid for cookies.
-  if (current_content_settings_.settings[settings_type] == CONTENT_SETTING_BLOCK
-      && !content_blocked_[settings_type]) {
-    content_blocked_[settings_type] = true;
-    Send(new ViewHostMsg_ContentBlocked(routing_id_, settings_type));
+  if (current_content_settings_.settings[settings_type] == CONTENT_SETTING_BLOCK) {
+    if (!content_blocked_[settings_type]) {
+      content_blocked_[settings_type] = true;
+      Send(new ViewHostMsg_ContentBlocked(routing_id_, settings_type));
+    }
     return false;
   }
   return true;
