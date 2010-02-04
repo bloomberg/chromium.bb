@@ -188,11 +188,9 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
   context->set_cookie_policy(
       new ChromeCookiePolicy(host_content_settings_map_));
 
-  // Create a new AppCacheService (issues fetches through the
-  // main URLRequestContext that we just created).
+  // Create a new AppCacheService.
   context->set_appcache_service(
-      new ChromeAppCacheService(profile_dir_path_, false));
-  context->appcache_service()->set_request_context(context);
+      new ChromeAppCacheService(profile_dir_path_, context));
 
 #if defined(OS_LINUX)
   // TODO(ukai): find a better way to set the URLRequestContext for OCSP.
@@ -280,8 +278,7 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
 
   // Create a separate AppCacheService for OTR mode.
   context->set_appcache_service(
-      new ChromeAppCacheService(profile_dir_path_, true));
-  context->appcache_service()->set_request_context(context);
+      new ChromeAppCacheService(profile_dir_path_, context));
 
   return context;
 }

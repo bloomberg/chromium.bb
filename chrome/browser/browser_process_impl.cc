@@ -34,6 +34,7 @@
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
+#include "chrome/common/appcache/chrome_appcache_service.h"
 #include "chrome/common/child_process_host.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -260,7 +261,7 @@ void BrowserProcessImpl::ClearLocalState(const FilePath& profile_path) {
   DOMStorageContext::ClearLocalState(profile_path, chrome::kExtensionScheme);
   webkit_database::DatabaseTracker::ClearLocalState(profile_path,
       chrome::kExtensionScheme);
-  // TODO(jochen): clear app cache local state.
+  ChromeAppCacheService::ClearLocalState(profile_path);
 }
 
 bool BrowserProcessImpl::ShouldClearLocalState(FilePath* profile_path) {

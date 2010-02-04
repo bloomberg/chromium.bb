@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,9 +6,11 @@
 #define CHROME_COMMON_APPCACHE_CHROME_APPCACHE_SERVICE_H_
 
 #include "base/ref_counted.h"
+#include "chrome/browser/host_content_settings_map.h"
 #include "chrome/common/notification_registrar.h"
 #include "webkit/appcache/appcache_service.h"
 
+class ChromeURLRequestContext;
 class FilePath;
 
 // An AppCacheService subclass used by the chrome. There is an instance
@@ -24,8 +26,11 @@ class ChromeAppCacheService
       public appcache::AppCacheService,
       public NotificationObserver {
  public:
-  ChromeAppCacheService(const FilePath& data_directory,
-                        bool is_incognito);
+  ChromeAppCacheService(const FilePath& profile_path,
+                        ChromeURLRequestContext* request_context);
+
+  static void ClearLocalState(const FilePath& profile_path);
+
  private:
   friend class base::RefCounted<ChromeAppCacheService>;
   virtual ~ChromeAppCacheService();
@@ -35,6 +40,7 @@ class ChromeAppCacheService
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  scoped_refptr<HostContentSettingsMap> host_contents_settings_map_;
   NotificationRegistrar registrar_;
 };
 
