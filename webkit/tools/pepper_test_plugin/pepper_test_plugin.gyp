@@ -45,7 +45,7 @@
             ],
           },
         }],
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'type': 'shared_library',
           'cflags': ['-fvisibility=hidden'],
           # -gstabs, used in the official builds, causes an ICE. Simply remove

@@ -458,7 +458,7 @@
         'browser/debugger/inspectable_tab_proxy.h',
       ],
       'conditions': [
-        ['OS=="linux" or OS=="freebsd"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
           ],
@@ -535,7 +535,7 @@
             'plugin/command_buffer_stub.h',
           ],
         },],
-        ['OS=="linux" or OS=="freebsd"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
           ],
@@ -824,7 +824,7 @@
         'sync_proto',
       ],
       'conditions': [
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk'
           ],
@@ -967,7 +967,7 @@
             'browser/sync/util/data_encryption.h',
           ],
         }],
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk'
           ],
@@ -1515,7 +1515,7 @@
         },
       ]},  # 'targets'
     ],  # OS=="win"
-    ['OS=="linux" or OS=="freebsd"', {
+    ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
       'targets': [{
         'target_name': 'packed_resources',
         'type': 'none',
@@ -1601,7 +1601,7 @@
           },
         ],
       }],  # targets
-    }],  # OS=="linux" or OS=="freebsd"
+    }],  # OS=="linux" or OS=="freebsd" or OS=="openbsd"
   ],  # 'conditions'
 }
 

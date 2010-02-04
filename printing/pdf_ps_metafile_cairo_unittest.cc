@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "printing/pdf_ps_metafile_linux.h"
+#include "printing/pdf_ps_metafile_cairo.h"
 
 #include <fcntl.h>
 #include <string>

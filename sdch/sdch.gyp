@@ -55,6 +55,7 @@
       },
       'conditions': [
         [ 'OS == "linux"', { 'include_dirs': [ 'linux' ] } ],
+        [ 'OS == "freebsd" or OS == "openbsd"', { 'include_dirs': [ 'bsd' ] } ],
         [ 'OS == "mac"', { 'include_dirs': [ 'mac' ] } ],
         [ 'OS == "win"', { 'include_dirs': [ 'open-vcdiff/vsprojects' ] } ],
       ],

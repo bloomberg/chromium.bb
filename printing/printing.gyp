@@ -39,12 +39,12 @@
         'page_setup.h',
         'pdf_metafile_mac.h',
         'pdf_metafile_mac.cc',
-        'pdf_ps_metafile_linux.h',
-        'pdf_ps_metafile_linux.cc',
+        'pdf_ps_metafile_cairo.h',
+        'pdf_ps_metafile_cairo.cc',
         'print_settings.cc',
         'print_settings.h',
         'printed_document.cc',
-        'printed_document_linux.cc',
+        'printed_document_cairo.cc',
         'printed_document_mac.cc',
         'printed_document_win.cc',
         'printed_document.h',
@@ -52,7 +52,7 @@
         'printed_page.h',
         'printed_pages_source.h',
         'printing_context.h',
-        'printing_context_linux.cc',
+        'printing_context_cairo.cc',
         'printing_context_mac.mm',
         'printing_context_win.cc',
         'units.cc',
@@ -64,13 +64,15 @@
         ],
       },
       'conditions': [
-        ['OS!="linux"', {'sources/': [['exclude', '_linux\\.cc$']]}],
+        ['OS!="linux" and OS!="freebsd" and OS!="openbsd"',{
+            'sources/': [['exclude', '_cairo\\.cc$']]
+        }],
         ['OS!="mac"', {'sources/': [['exclude', '_mac\\.(cc|mm?)$']]}],
         ['OS!="win"', {'sources/': [['exclude', '_win\\.cc$']]
           }, {  # else: OS=="win"
             'sources/': [['exclude', '_posix\\.cc$']]
         }],
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'dependencies': [
             # For FT_Init_FreeType and friends.
             '../build/linux/system.gyp:freetype2',
@@ -94,25 +96,25 @@
         'page_range_unittest.cc',
         'page_setup_unittest.cc',
         'pdf_metafile_mac_unittest.cc',
-        'pdf_ps_metafile_linux_unittest.cc',
+        'pdf_ps_metafile_cairo_unittest.cc',
         'printing_context_win_unittest.cc',
         'run_all_unittests.cc',
         'units_unittest.cc',
       ],
       'conditions': [
-        ['OS!="linux"', {'sources/': [['exclude', '_linux_unittest\\.cc$']]}],
+        ['OS!="linux"', {'sources/': [['exclude', '_cairo_unittest\\.cc$']]}],
         ['OS!="mac"', {'sources/': [['exclude', '_mac_unittest\\.(cc|mm?)$']]}],
         ['OS!="win"', {'sources/': [['exclude', '_win_unittest\\.cc$']]
           }, {  # else: OS=="win"
-            'sources/': [['exclude', '_posix_unittest\\.cc$']]
+            'sources/': [['exclude', '_cairo_unittest\\.cc$']]
           }
         ],
-        ['OS=="linux"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
             'dependencies': [
               '../build/linux/system.gyp:gtk',
            ],
         }],
-        ['OS=="linux" or OS=="freebsd"', {
+        ['OS=="linux"', {
           'conditions': [
             ['linux_use_tcmalloc==1', {
               'dependencies': [

@@ -566,7 +566,7 @@
             ['exclude', '_mac\\.(cc|cpp|mm?)$'],
             ['exclude', '/mac/'] ],
         }],
-        [ 'OS != "linux"', {
+        [ 'OS != "linux" and OS != "freebsd" and OS != "openbsd"', {
           'sources/': [ ['exclude', '_(linux|gtk)\\.(cc|cpp)$'] ],
           'sources!': [
             '../third_party/skia/src/ports/SkFontHost_FreeType.cpp',
@@ -590,7 +590,7 @@
             '../third_party/skia/src/opts/opts_check_SSE2.cpp'
           ],
         }],
-        [ 'OS == "linux" or OS == "freebsd"', {
+        [ 'OS == "linux" or OS == "freebsd" or OS == "openbsd"', {
           'dependencies': [
             '../build/linux/system.gyp:gdk',
             '../build/linux/system.gyp:fontconfig',

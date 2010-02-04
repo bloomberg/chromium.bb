@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef PRINTING_PDF_PS_METAFILE_LINUX_H_
-#define PRINTING_PDF_PS_METAFILE_LINUX_H_
+#ifndef PRINTING_PDF_PS_METAFILE_CAIRO_H_
+#define PRINTING_PDF_PS_METAFILE_CAIRO_H_
 
 #include <string>
 
@@ -107,4 +107,4 @@ class PdfPsMetafile {
 
 }  // namespace printing
 
-#endif  // PRINTING_PDF_PS_METAFILE_LINUX_H_
+#endif  // PRINTING_PDF_PS_METAFILE_CAIRO_H_
