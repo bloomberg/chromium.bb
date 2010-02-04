@@ -15,6 +15,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_theme_provider.h"
+#include "chrome/browser/views/frame/app_panel_browser_frame_view.h"
 #include "chrome/browser/views/frame/browser_non_client_frame_view.h"
 #include "chrome/browser/views/frame/browser_root_view.h"
 #include "chrome/browser/views/frame/browser_view.h"
@@ -34,6 +35,12 @@ BrowserFrame* BrowserFrame::Create(BrowserView* browser_view,
   BrowserFrameWin* frame = new BrowserFrameWin(browser_view, profile);
   frame->Init();
   return frame;
+}
+
+// static
+const gfx::Font& BrowserFrame::GetTitleFont() {
+  static gfx::Font* title_font = new gfx::Font(win_util::GetWindowTitleFont());
+  return *title_font;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -97,14 +104,19 @@ ThemeProvider* BrowserFrameWin::GetThemeProviderForFrame() const {
 }
 
 bool BrowserFrameWin::AlwaysUseNativeFrame() const {
-  // We use the native frame when we're told we should by the theme provider
-  // (e.g. no custom theme is active), or when we're a popup or app window. We
-  // don't theme popup or app windows, so regardless of whether or not a theme
-  // is active for normal browser windows, we don't want to use the custom frame
-  // for popups/apps.
-  return GetThemeProvider()->ShouldUseNativeFrame() ||
-      (!browser_view_->IsBrowserTypeNormal() &&
-      win_util::ShouldUseVistaFrame());
+  // App panel windows draw their own frame.
+  if (browser_view_->IsBrowserTypePanel())
+    return false;
+
+  // We don't theme popup or app windows, so regardless of whether or not a
+  // theme is active for normal browser windows, we don't want to use the custom
+  // frame for popups/apps.
+  if (!browser_view_->IsBrowserTypeNormal() && win_util::ShouldUseVistaFrame())
+    return true;
+
+  // Otherwise, we use the native frame when we're told we should by the theme
+  // provider (e.g. no custom theme is active).
+  return GetThemeProvider()->ShouldUseNativeFrame();
 }
 
 views::View* BrowserFrameWin::GetFrameView() const {
@@ -225,6 +237,8 @@ int BrowserFrameWin::GetShowState() const {
 views::NonClientFrameView* BrowserFrameWin::CreateFrameViewForWindow() {
   if (AlwaysUseNativeFrame())
     browser_frame_view_ = new GlassBrowserFrameView(this, browser_view_);
+  else if (browser_view_->IsBrowserTypePanel())
+    browser_frame_view_ = new AppPanelBrowserFrameView(this, browser_view_);
   else
     browser_frame_view_ = new OpaqueBrowserFrameView(this, browser_view_);
   return browser_frame_view_;

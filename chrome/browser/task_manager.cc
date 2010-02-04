@@ -923,15 +923,18 @@ void TaskManager::OpenAboutMemory() {
     browser->OpenURL(GURL(chrome::kAboutMemoryURL), GURL(), NEW_FOREGROUND_TAB,
                      PageTransition::LINK);
 
-    // In case the browser window is minimzed, show it. If this is an
-    // application or popup, we can only have one tab, hence we need to process
-    // this in a tabbed browser window. Currently, |browser| is pointing to the
-    // application, popup window. Therefore, we have to retrieve the last
-    // active tab again, since a new window has been used.
-    if (browser->type() & Browser::TYPE_APP_POPUP) {
+    // In case the browser window is minimzed, show it. If |browser| is a
+    // non-tabbed window, the call to OpenURL above will have opened a
+    // TabContents in a tabbed browser, so we need to grab it with GetLastActive
+    // before the call to show().
+    if (browser->type() & (Browser::TYPE_APP |
+                           Browser::TYPE_APP_PANEL |
+                           Browser::TYPE_DEVTOOLS |
+                           Browser::TYPE_POPUP)) {
       browser = BrowserList::GetLastActive();
       DCHECK(browser);
     }
+
     browser->window()->Show();
   }
 }

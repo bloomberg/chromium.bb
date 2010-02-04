@@ -21,6 +21,10 @@ const SkColor ResourceBundle::frame_color =
      SkColorSetRGB(77, 139, 217);
 const SkColor ResourceBundle::frame_color_inactive =
      SkColorSetRGB(184, 209, 240);
+const SkColor ResourceBundle::frame_color_app_panel =
+     SK_ColorWHITE;
+const SkColor ResourceBundle::frame_color_app_panel_inactive =
+     SK_ColorWHITE;
 const SkColor ResourceBundle::frame_color_incognito =
      SkColorSetRGB(83, 106, 139);
 const SkColor ResourceBundle::frame_color_incognito_inactive =

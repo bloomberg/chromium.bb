@@ -506,6 +506,9 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
 bool BrowserInit::LaunchWithProfile::OpenApplicationURL(Profile* profile) {
   if (!command_line_.HasSwitch(switches::kApp))
     return false;
+  bool launch_as_panel =
+      command_line_.HasSwitch(switches::kEnableExtensionApps) &&
+      command_line_.HasSwitch(switches::kAppLaunchAsPanel);
 
   std::string url_string(command_line_.GetSwitchValueASCII(switches::kApp));
 #if defined(OS_WIN)  // Fix up Windows shortcuts.
@@ -519,7 +522,7 @@ bool BrowserInit::LaunchWithProfile::OpenApplicationURL(Profile* profile) {
         ChildProcessSecurityPolicy::GetInstance();
     if (policy->IsWebSafeScheme(url.scheme()) ||
         url.SchemeIs(chrome::kFileScheme)) {
-      Browser::OpenApplicationWindow(profile, url);
+      Browser::OpenApplicationWindow(profile, url, launch_as_panel);
       return true;
     }
   }

@@ -14,6 +14,7 @@ class TabStrip;
 class ThemeProvider;
 
 namespace gfx {
+class Font;
 class Rect;
 }  // namespace gfx
 
@@ -33,6 +34,8 @@ class BrowserFrame {
   // Creates the appropriate BrowserFrame for this platform. The returned
   // object is owned by the caller.
   static BrowserFrame* Create(BrowserView* browser_view, Profile* profile);
+
+  static const gfx::Font& GetTitleFont();
 
   // Returns the Window associated with this frame. Guraranteed non-NULL after
   // construction.

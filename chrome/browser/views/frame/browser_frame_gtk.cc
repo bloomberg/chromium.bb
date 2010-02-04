@@ -4,10 +4,12 @@
 
 #include "chrome/browser/views/frame/browser_frame_gtk.h"
 
+#include "app/gfx/font.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/status_bubble.h"
+#include "chrome/browser/views/frame/app_panel_browser_frame_view.h"
 #include "chrome/browser/views/frame/browser_extender.h"
 #include "chrome/browser/views/frame/browser_root_view.h"
 #include "chrome/browser/views/frame/browser_view.h"
@@ -66,6 +68,12 @@ BrowserFrame* BrowserFrame::Create(BrowserView* browser_view,
   BrowserFrameGtk* frame = new BrowserFrameGtk(browser_view, profile);
   frame->Init();
   return frame;
+}
+
+// static
+const gfx::Font& BrowserFrame::GetTitleFont() {
+  static gfx::Font *title_font = new gfx::Font();
+  return *title_font;
 }
 
 BrowserFrameGtk::BrowserFrameGtk(BrowserView* browser_view, Profile* profile)

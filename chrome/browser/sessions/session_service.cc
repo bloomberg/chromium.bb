@@ -1183,6 +1183,8 @@ SessionService::WindowType SessionService::WindowTypeForBrowserType(
       return TYPE_APP_POPUP;
     case Browser::TYPE_DEVTOOLS:
       return TYPE_DEVTOOLS;
+    case Browser::TYPE_APP_PANEL:
+      return TYPE_APP_PANEL;
     case Browser::TYPE_NORMAL:
     default:
       return TYPE_NORMAL;
@@ -1200,6 +1202,8 @@ Browser::Type SessionService::BrowserTypeForWindowType(
       return Browser::TYPE_APP_POPUP;
     case TYPE_DEVTOOLS:
       return Browser::TYPE_DEVTOOLS;
+    case TYPE_APP_PANEL:
+      return Browser::TYPE_APP_PANEL;
     case TYPE_NORMAL:
     default:
       return Browser::TYPE_NORMAL;

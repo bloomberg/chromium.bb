@@ -23,6 +23,7 @@ extern const char kActivateOnLaunch[];
 extern const char kAllowSandboxDebugging[];
 extern const char kAlwaysEnableDevTools[];
 extern const char kApp[];
+extern const char kAppLaunchAsPanel[];
 extern const char kAutomationClientChannelID[];
 extern const char kBookmarkMenu[];
 extern const char kBrowserAssertTest[];

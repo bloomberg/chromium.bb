@@ -57,7 +57,12 @@ class Browser : public TabStripModelDelegate,
     TYPE_APP = 4,
     TYPE_APP_POPUP = TYPE_APP | TYPE_POPUP,
     TYPE_DEVTOOLS = TYPE_APP | 8,
-    TYPE_ANY = TYPE_NORMAL | TYPE_POPUP | TYPE_APP | TYPE_DEVTOOLS
+    TYPE_APP_PANEL = TYPE_APP | 16,
+    TYPE_ANY = TYPE_NORMAL |
+               TYPE_POPUP |
+               TYPE_APP |
+               TYPE_DEVTOOLS |
+               TYPE_APP_PANEL
   };
 
   // Possible elements of the Browser window.
@@ -101,8 +106,10 @@ class Browser : public TabStripModelDelegate,
   static Browser* CreateForPopup(Profile* profile);
 
   // Like Create, but creates a tabstrip-less and toolbar-less "app" window for
-  // the specified app.
-  static Browser* CreateForApp(const std::wstring& app_name, Profile* profile);
+  // the specified app. |is_panel| specifies whether the browser should be
+  // opened in an app panel window.
+  static Browser* CreateForApp(const std::wstring& app_name, Profile* profile,
+                               bool is_panel);
 
   // Like Create, but creates a tabstrip-less and toolbar-less
   // DevTools "app" window.
@@ -173,8 +180,12 @@ class Browser : public TabStripModelDelegate,
   // |profile|, that session is re-used.
   static void OpenURLOffTheRecord(Profile* profile, const GURL& url);
 
-  // Opens a new application ("thin frame") window for the specified url.
-  static void OpenApplicationWindow(Profile* profile, const GURL& url);
+  // Opens a new application window for the specified url. If |as_panel|
+  // is true, the application will be opened as a Browser::Type::APP_PANEL in
+  // app panel window, otherwise it will be opened as a Browser::Type::APP,
+  // a.k.a. "thin frame".
+  static void OpenApplicationWindow(Profile* profile, const GURL& url,
+                                    bool as_panel);
 
 #if defined(OS_MACOSX)
   // Open a new window with history/downloads/help (needed on Mac when there are

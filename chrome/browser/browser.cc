@@ -252,8 +252,9 @@ Browser* Browser::CreateForPopup(Profile* profile) {
 
 // static
 Browser* Browser::CreateForApp(const std::wstring& app_name,
-                               Profile* profile) {
-  Browser* browser = new Browser(TYPE_APP, profile);
+                               Profile* profile,
+                               bool is_panel) {
+  Browser* browser = new Browser(is_panel ? TYPE_APP_PANEL : TYPE_APP, profile);
   browser->app_name_ = app_name;
   browser->CreateBrowserWindow();
   return browser;
@@ -365,11 +366,12 @@ void Browser::OpenURLOffTheRecord(Profile* profile, const GURL& url) {
 }
 
 // static
-void Browser::OpenApplicationWindow(Profile* profile, const GURL& url) {
+void Browser::OpenApplicationWindow(Profile* profile, const GURL& url,
+                                    bool as_panel) {
   std::wstring app_name = web_app::GenerateApplicationNameFromURL(url);
   RegisterAppPrefs(app_name);
 
-  Browser* browser = Browser::CreateForApp(app_name, profile);
+  Browser* browser = Browser::CreateForApp(app_name, profile, as_panel);
   browser->AddTabWithURL(url, GURL(), PageTransition::START_PAGE, true, -1,
                          false, NULL);
 
@@ -1729,7 +1731,8 @@ void Browser::DuplicateContentsAt(int index) {
     Browser* browser = NULL;
     if (type_ & TYPE_APP) {
       DCHECK((type_ & TYPE_POPUP) == 0);
-      browser = Browser::CreateForApp(app_name_, profile_);
+      DCHECK(type_ != TYPE_APP_PANEL);
+      browser = Browser::CreateForApp(app_name_, profile_, false);
     } else if (type_ == TYPE_POPUP) {
       browser = Browser::CreateForPopup(profile_);
     }
@@ -2176,7 +2179,7 @@ void Browser::ConvertContentsToApplication(TabContents* contents) {
   RegisterAppPrefs(app_name);
 
   DetachContents(contents);
-  Browser* browser = Browser::CreateForApp(app_name, profile_);
+  Browser* browser = Browser::CreateForApp(app_name, profile_, false);
   browser->tabstrip_model()->AppendTabContents(contents, true);
   TabContents* tab_contents = browser->GetSelectedTabContents();
   tab_contents->GetMutableRendererPrefs()->can_accept_load_drops = false;

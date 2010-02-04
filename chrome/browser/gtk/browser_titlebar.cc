@@ -327,7 +327,10 @@ void BrowserTitlebar::UpdateTitleAndIcon() {
   string16 title = browser_window_->browser()->GetWindowTitleForCurrentTab();
   gtk_label_set_text(GTK_LABEL(app_mode_title_), UTF16ToUTF8(title).c_str());
 
-  if (browser_window_->browser()->type() == Browser::TYPE_APP) {
+  // Note: this isn't browser_window_->browser()->type() & Browser::TYPE_APP
+  // because we want to exclude Browser::TYPE_APP_POPUP.
+  if (browser_window_->browser()->type() == Browser::TYPE_APP ||
+      browser_window_->browser()->type() == Browser::TYPE_APP_PANEL) {
     // Update the system app icon.  We don't need to update the icon in the top
     // left of the custom frame, that will get updated when the throbber is
     // updated.
@@ -351,7 +354,11 @@ void BrowserTitlebar::UpdateThrobber(TabContents* tab_contents) {
     gtk_image_set_from_pixbuf(GTK_IMAGE(app_mode_favicon_), icon_pixbuf);
   } else {
     ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    if (browser_window_->browser()->type() == Browser::TYPE_APP) {
+
+    // Note: this isn't browser_window_->browser()->type() & Browser::TYPE_APP
+    // because we want to exclude Browser::TYPE_APP_POPUP.
+    if (browser_window_->browser()->type() == Browser::TYPE_APP ||
+        browser_window_->browser()->type() == Browser::TYPE_APP_PANEL) {
       SkBitmap icon = browser_window_->browser()->GetCurrentPageIcon();
       if (icon.empty()) {
         // Fallback to the Chromium icon if the page has no icon.

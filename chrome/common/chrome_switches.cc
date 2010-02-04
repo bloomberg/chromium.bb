@@ -27,6 +27,10 @@ const char kAlwaysEnableDevTools[]          = "always-enable-dev-tools";
 // Specifies that the associated value should be launched in "application" mode.
 const char kApp[]                           = "app";
 
+// Lacks meaning with out kApp. Causes the specified app to be launched in an
+// panel window.
+const char kAppLaunchAsPanel[]              = "app-launch-as-panel";
+
 // The value of this switch tells the app to listen for and broadcast
 // automation-related messages on IPC channel with the given ID.
 const char kAutomationClientChannelID[]     = "automation-channel";
