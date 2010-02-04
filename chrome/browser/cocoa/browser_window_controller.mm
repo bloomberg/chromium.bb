@@ -1287,11 +1287,18 @@ willPositionSheet:(NSWindow*)sheet
 
   // Create a controller for the findbar.
   findBarCocoaController_.reset([findBarCocoaController retain]);
-  [[[self window] contentView] addSubview:[findBarCocoaController_ view]
-                               positioned:NSWindowAbove
-                               relativeTo:[toolbarController_ view]];
-  [findBarCocoaController_
-    positionFindBarView:[infoBarContainerController_ view]];
+  NSView *contentView = [[self window] contentView];
+  [contentView addSubview:[findBarCocoaController_ view]
+               positioned:NSWindowAbove
+               relativeTo:[toolbarController_ view]];
+
+  // Place the find bar immediately below the toolbar/attached bookmark bar. In
+  // fullscreen mode, it hangs off the top of the screen when the bar is hidden.
+  CGFloat maxY = [self placeBookmarkBarBelowInfoBar] ?
+      NSMinY([[toolbarController_ view] frame]) :
+      NSMinY([[bookmarkBarController_ view] frame]);
+  CGFloat maxWidth = NSWidth([contentView frame]);
+  [findBarCocoaController_ positionFindBarViewAtMaxY:maxY maxWidth:maxWidth];
 }
 
 - (NSWindow*)createFullscreenWindow {
@@ -1913,15 +1920,20 @@ willPositionSheet:(NSWindow*)sheet
 
   [fullscreenController_ overlayFrameChanged:[floatingBarBackingView_ frame]];
 
+  // Place the find bar immediately below the toolbar/attached bookmark bar. In
+  // fullscreen mode, it hangs off the top of the screen when the bar is hidden.
+  [findBarCocoaController_ positionFindBarViewAtMaxY:maxY maxWidth:width];
+
   // If in fullscreen mode, reset |maxY| to top of screen, so that the floating
   // bar slides over the things which appear to be in the content area.
   if (isFullscreen)
     maxY = NSMaxY(contentBounds);
 
-  // Place the infobar container in place below the toolbar.
+  // Also place the infobar container immediate below the toolbar, except in
+  // fullscreen mode in which case it's at the top of the visual content area.
   maxY = [self layoutInfoBarAtMaxY:maxY width:width];
 
-  // If the bookmark bar is detached, place it at the bottom of the stack.
+  // If the bookmark bar is detached, place it next in the visual content area.
   if (placeBookmarkBarBelowInfoBar)
     maxY = [self layoutBookmarkBarAtMaxY:maxY width:width];
 
@@ -1930,10 +1942,6 @@ willPositionSheet:(NSWindow*)sheet
 
   // Finally, the content area takes up all of the remaining space.
   [self layoutTabContentAreaAtMinY:minY maxY:maxY width:width];
-
-  // Position the find bar relative to the infobar container.
-  [findBarCocoaController_
-      positionFindBarView:[infoBarContainerController_ view]];
 
   // Place the status bubble at the bottom of the content area.
   verticalOffsetForStatusBubble_ = minY;

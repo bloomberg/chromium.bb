@@ -99,27 +99,18 @@ const float kFindBarCloseDuration = 0.15;
              stopSearch:YES];
 }
 
-// Positions the find bar container view in the correct location based on the
-// current state of the window.  The find bar container is always positioned one
-// pixel above the infobar container.  Note that we are using the infobar
-// container location as a proxy for the toolbar location, but we cannot
-// position based on the toolbar because the toolbar is not always present (for
-// example in fullscreen windows).
-- (void)positionFindBarView:(NSView*)infoBarContainerView {
-  static const int kRightEdgeOffset = 25;
+- (void)positionFindBarViewAtMaxY:(CGFloat)maxY maxWidth:(CGFloat)maxWidth {
+  static const CGFloat kRightEdgeOffset = 25;
   NSView* containerView = [self view];
-  int containerHeight = NSHeight([containerView frame]);
-  int containerWidth = NSWidth([containerView frame]);
+  CGFloat containerHeight = NSHeight([containerView frame]);
+  CGFloat containerWidth = NSWidth([containerView frame]);
 
-  // Start by computing the upper right corner of the infobar container, then
-  // move left by a constant offset and up one pixel.  This gives us the upper
-  // right corner of our bounding box.  We move up one pixel to overlap with the
-  // toolbar area, which allows us to cover up the toolbar's border, if present.
-  NSRect windowRect = [infoBarContainerView frame];
-  int max_x = NSMaxX(windowRect) - kRightEdgeOffset;
-  int max_y = NSMaxY(windowRect) + 1;
+  // Adjust where we'll actually place the find bar.
+  CGFloat maxX = maxWidth - kRightEdgeOffset;
+  DLOG_IF(WARNING, maxX < 0) << "Window too narrow for find bar";
+  maxY += 1;
 
-  NSRect newFrame = NSMakeRect(max_x - containerWidth, max_y - containerHeight,
+  NSRect newFrame = NSMakeRect(maxX - containerWidth, maxY - containerHeight,
                                containerWidth, containerHeight);
   [containerView setFrame:newFrame];
 }

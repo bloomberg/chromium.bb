@@ -55,9 +55,11 @@ class FindNotificationDetails;
 
 - (IBAction)previousResult:(id)sender;
 
-// Positions the find bar based on the location of the infobar container.
-// TODO(rohitrao): Move this logic into BrowserWindowController.
-- (void)positionFindBarView:(NSView*)infoBarContainerView;
+// Position the find bar at the given maximum y-coordinate (the min-y of the
+// bar -- toolbar + possibly bookmark bar, but not including the infobars) with
+// the given maximum width (i.e., the find bar should fit between 0 and
+// |maxWidth|).
+- (void)positionFindBarViewAtMaxY:(CGFloat)maxY maxWidth:(CGFloat)maxWidth;
 
 // Methods called from FindBarBridge.
 - (void)showFindBar:(BOOL)animate;
