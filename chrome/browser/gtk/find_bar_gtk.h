@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use
 // of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -134,6 +134,10 @@ class FindBarGtk : public FindBar,
                           FindBarGtk* find_bar);
   static gboolean OnButtonPress(GtkWidget* text_entry, GdkEventButton* e,
                                 FindBarGtk* find_bar);
+
+  // Forwards ctrl-Home/End key bindings to the renderer.
+  static void OnMoveCursor(GtkEntry* entry, GtkMovementStep step, gint count,
+                           gboolean selection, FindBarGtk* bar);
 
   Browser* browser_;
   BrowserWindowGtk* window_;

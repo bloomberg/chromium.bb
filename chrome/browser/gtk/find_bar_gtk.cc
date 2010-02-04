@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -191,6 +191,7 @@ FindBarGtk::FindBarGtk(Browser* browser)
   gtk_widget_add_events(text_entry_, GDK_BUTTON_PRESS_MASK);
   g_signal_connect(text_entry_, "button-press-event",
                    G_CALLBACK(OnButtonPress), this);
+  g_signal_connect(text_entry_, "move-cursor", G_CALLBACK(OnMoveCursor), this);
   g_signal_connect(container_, "expose-event",
                    G_CALLBACK(OnExpose), this);
 }
@@ -823,4 +824,19 @@ gboolean FindBarGtk::OnButtonPress(GtkWidget* text_entry, GdkEventButton* e,
 
   // Continue propagating the event.
   return FALSE;
+}
+
+void FindBarGtk::OnMoveCursor(GtkEntry* entry, GtkMovementStep step, gint count,
+                              gboolean selection, FindBarGtk* bar) {
+  static guint signal_id = g_signal_lookup("move-cursor", GTK_TYPE_ENTRY);
+
+  GdkEvent* event = gtk_get_current_event();
+  if (event) {
+    if ((event->type == GDK_KEY_PRESS || event->type == GDK_KEY_RELEASE) &&
+        bar->MaybeForwardKeyEventToRenderer(&(event->key))) {
+      g_signal_stop_emission(entry, signal_id, 0);
+    }
+
+    gdk_event_free(event);
+  }
 }
