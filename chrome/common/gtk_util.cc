@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -272,6 +272,12 @@ gfx::Rect GetWidgetScreenBounds(GtkWidget* widget) {
   gfx::Point position = GetWidgetScreenPosition(widget);
   return gfx::Rect(position.x(), position.y(),
                    widget->allocation.width, widget->allocation.height);
+}
+
+gfx::Size GetWidgetSize(GtkWidget* widget) {
+  GtkRequisition size;
+  gtk_widget_size_request(widget, &size);
+  return gfx::Size(size.width, size.height);
 }
 
 void ConvertWidgetPointToScreen(GtkWidget* widget, gfx::Point* p) {

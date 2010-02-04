@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -630,6 +630,25 @@ void GrabWindowSnapshot(GtkWindow* gtk_window,
   cairo_surface_write_to_png_stream(
       surface, SnapshotCallback, png_representation);
   cairo_surface_destroy(surface);
+}
+
+bool ChangeWindowDesktop(XID window, XID destination) {
+  int desktop;
+  if (!GetIntProperty(destination, "_NET_WM_DESKTOP", &desktop))
+    return false;
+
+  XEvent event;
+  event.xclient.type = ClientMessage;
+  event.xclient.window = window;
+  event.xclient.message_type = gdk_x11_get_xatom_by_name_for_display(
+      gdk_display_get_default(), "_NET_WM_DESKTOP");
+  event.xclient.format = 32;
+  event.xclient.data.l[0] = desktop;
+  event.xclient.data.l[1] = 1;  // source indication
+
+  int result = XSendEvent(GetXDisplay(), GetX11RootWindow(), False,
+                          SubstructureNotifyMask, &event);
+  return result == Success;
 }
 
 }  // namespace x11_util

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -24,6 +24,7 @@
 #include "chrome/common/pref_member.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
+#include "chrome/common/x11_util.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 
@@ -79,6 +80,51 @@ class OptionsWindowGtk {
 
 // The singleton options window object.
 static OptionsWindowGtk* options_window = NULL;
+
+// Places |window| approximately over center of |parent|, it also moves window
+// to parent's desktop.
+// NOTE: It's better to use transient_for to center dialog but options dialog
+// is not modal so we don't want to set transient_for.
+static void CenterOverWindow(GtkWindow* window, GtkWindow* parent) {
+  gfx::Rect frame_bounds = gtk_util::GetWidgetScreenBounds(GTK_WIDGET(parent));
+  gfx::Point origin = frame_bounds.origin();
+  gfx::Size size = gtk_util::GetWidgetSize(GTK_WIDGET(window));
+  origin.Offset(
+      (frame_bounds.width() - size.width()) / 2,
+      (frame_bounds.height() - size.height()) / 2);
+
+  // Prevent moving window out of monitor bounds.
+  GdkScreen* screen = gtk_window_get_screen(parent);
+  if (screen) {
+    // It would be better to check against workarea for given monitor
+    // but getting workarea for particular monitor is tricky.
+    gint monitor = gdk_screen_get_monitor_at_window(screen,
+        GTK_WIDGET(parent)->window);
+    GdkRectangle rect;
+    gdk_screen_get_monitor_geometry(screen, monitor, &rect);
+
+    // Check the right bottom corner.
+    if (origin.x() > rect.x + rect.width - size.width())
+      origin.set_x(rect.x + rect.width - size.width());
+    if (origin.y() > rect.y + rect.height - size.height())
+      origin.set_y(rect.y + rect.height - size.height());
+
+    // Check the left top corner.
+    if (origin.x() < rect.x)
+      origin.set_x(rect.x);
+    if (origin.y() < rect.y)
+      origin.set_y(rect.y);
+  }
+
+  gtk_window_move(window, origin.x(), origin.y());
+
+  // Move to user expected desktop if window is already visible.
+  if (GTK_WIDGET(window)->window) {
+    x11_util::ChangeWindowDesktop(
+        x11_util::GetX11WindowFromGtkWidget(GTK_WIDGET(window)),
+        x11_util::GetX11WindowFromGtkWidget(GTK_WIDGET(parent)));
+  }
+}
 
 ///////////////////////////////////////////////////////////////////////////////
 // OptionsWindowGtk, public:
@@ -155,14 +201,9 @@ OptionsWindowGtk::OptionsWindowGtk(Profile* profile)
       gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook_)), OPTIONS_PAGE_COUNT);
 
   if (Browser* b = BrowserList::GetLastActive()) {
-    // Set temporary transient parent to align the windows before showing it.
-    // gtk_widget_show_all below shows options dialog before ShowOptionsPage
-    // is able to move the window to desired position. Therefor without
-    // gtk_window_set_transient_for(), the window initially appears at 0,0
-    // and then moves to the center. This trick eliminates blinking.
-    gtk_window_set_transient_for(GTK_WINDOW(dialog_),
-                                 b->window()->GetNativeHandle());
-    gtk_window_set_position(GTK_WINDOW(dialog_), GTK_WIN_POS_CENTER_ON_PARENT);
+    // Show container content so that we can compute full dialog size.
+    gtk_widget_show_all(notebook_);
+    CenterOverWindow(GTK_WINDOW(dialog_), b->window()->GetNativeHandle());
   }
 
   // Need to show the notebook before connecting switch-page signal, otherwise
@@ -182,33 +223,10 @@ OptionsWindowGtk::OptionsWindowGtk(Profile* profile)
 OptionsWindowGtk::~OptionsWindowGtk() {
 }
 
-static gfx::Rect GetWindowBounds(GtkWindow* window) {
-  gint x, y, width, height;
-  gtk_window_get_position(window, &x, &y);
-  gtk_window_get_size(window, &width, &height);
-  return gfx::Rect(x, y, width, height);
-}
-
-static gfx::Size GetWindowSize(GtkWindow* window) {
-  gint width, height;
-  gtk_window_get_size(window, &width, &height);
-  return gfx::Size(width, height);
-}
-
 void OptionsWindowGtk::ShowOptionsPage(OptionsPage page,
                                        OptionsGroup highlight_group) {
-  // Remove transient parent to detach window since it doesn't belong to
-  // any particular browser instance.
-  gtk_window_set_transient_for(GTK_WINDOW(dialog_), NULL);
   if (Browser* b = BrowserList::GetLastActive()) {
-    // Move dialog to user expected position.
-    gfx::Rect frame_bounds = GetWindowBounds(b->window()->GetNativeHandle());
-    gfx::Point origin = frame_bounds.origin();
-    gfx::Size size = GetWindowSize(GTK_WINDOW(dialog_));
-    origin.Offset(
-        (frame_bounds.width() - size.width()) / 2,
-        (frame_bounds.height() - size.height()) / 2);
-    gtk_window_move(GTK_WINDOW(dialog_), origin.x(), origin.y());
+    CenterOverWindow(GTK_WINDOW(dialog_), b->window()->GetNativeHandle());
   }
 
   // Bring options window to front if it already existed and isn't already

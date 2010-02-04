@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -105,6 +105,9 @@ gfx::Point GetWidgetScreenPosition(GtkWidget* widget);
 
 // Returns the bounds of the specified widget in screen coordinates.
 gfx::Rect GetWidgetScreenBounds(GtkWidget* widget);
+
+// Retuns size of the |widget| without window manager decorations.
+gfx::Size GetWidgetSize(GtkWidget* widget);
 
 // Converts a point in a widget to screen coordinates.  The point |p| is
 // relative to the widget's top-left origin.
