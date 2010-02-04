@@ -12,7 +12,7 @@
 #include "skia/ext/canvas_paint_win.h"
 #elif defined(__APPLE__)
 #include "skia/ext/canvas_paint_mac.h"
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 #include "skia/ext/canvas_paint_linux.h"
 #endif
 

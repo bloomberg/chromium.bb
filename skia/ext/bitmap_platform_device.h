@@ -12,7 +12,7 @@
 #include "skia/ext/bitmap_platform_device_win.h"
 #elif defined(__APPLE__)
 #include "skia/ext/bitmap_platform_device_mac.h"
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 #include "skia/ext/bitmap_platform_device_linux.h"
 #endif
 

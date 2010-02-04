@@ -9,7 +9,7 @@
 // VectorPlatformDevice header file for your platform.
 #if defined(WIN32)
 #include "skia/ext/vector_platform_device_win.h"
-#elif defined(__linux__)
+#elif defined(__linux__) || defined(__FreeBSD__) || defined(__OpenBSD__)
 #include "skia/ext/vector_platform_device_linux.h"
 #endif
 
