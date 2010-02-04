@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_SYSTEM_PAGE_VIEW_H_
-#define CHROME_BROWSER_CHROMEOS_SYSTEM_PAGE_VIEW_H_
+#ifndef CHROME_BROWSER_CHROMEOS_OPTIONS_SYSTEM_PAGE_VIEW_H_
+#define CHROME_BROWSER_CHROMEOS_OPTIONS_SYSTEM_PAGE_VIEW_H_
 
-#include "chrome/browser/chromeos/settings_page_view.h"
+#include "chrome/browser/chromeos/options/settings_page_view.h"
 
 namespace chromeos {
 
@@ -24,4 +24,4 @@ class SystemPageView : public SettingsPageView {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_SYSTEM_PAGE_VIEW_H_
+#endif  // CHROME_BROWSER_CHROMEOS_OPTIONS_SYSTEM_PAGE_VIEW_H_

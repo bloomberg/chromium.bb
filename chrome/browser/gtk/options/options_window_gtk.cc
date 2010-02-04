@@ -29,8 +29,8 @@
 #include "grit/generated_resources.h"
 
 #if defined(OS_CHROMEOS)
-#include "chrome/browser/chromeos/internet_page_view.h"
-#include "chrome/browser/chromeos/system_page_view.h"
+#include "chrome/browser/chromeos/options/internet_page_view.h"
+#include "chrome/browser/chromeos/options/system_page_view.h"
 #endif
 
 ///////////////////////////////////////////////////////////////////////////////

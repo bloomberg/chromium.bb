@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/settings_page_view.h"
+#include "chrome/browser/chromeos/options/settings_page_view.h"
 
 #include "skia/ext/skia_utils_gtk.h"
 #include "views/controls/label.h"

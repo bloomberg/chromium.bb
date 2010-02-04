@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/internet_page_view.h"
+#include "chrome/browser/chromeos/options/internet_page_view.h"
 
 #include <string>
 
