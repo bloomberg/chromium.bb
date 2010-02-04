@@ -2307,3 +2307,19 @@
   fun:_ZN7WebCore13MutationEvent6createERKNS_12AtomicStringEbN3WTF10PassRefPtrINS_4NodeEEERKNS_6StringESA_SA_t
   fun:_ZN7WebCore4Node28dispatchSubtreeModifiedEventEv
 }
+{
+  bug_34570
+  Memcheck:Leak
+  fun:_Znw*
+  fun:_ZN17URLRequestHttpJob7FactoryEP10URLRequestRKSs
+  fun:_ZNK20URLRequestJobManager9CreateJobEP10URLRequest
+  fun:_ZN10URLRequest5StartEv
+  fun:_ZN49URLRequestTest_CancelTest_DuringCookiePolicy_Test8TestBodyEv
+  fun:_ZN7testing4Test3RunEv
+  fun:_ZN7testing8internal12TestInfoImpl3RunEv
+  fun:_ZN7testing8TestCase3RunEv
+  fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+  fun:_ZN7testing8UnitTest3RunEv
+  fun:_ZN9TestSuite3RunEv
+  fun:main
+}
