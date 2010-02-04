@@ -2083,7 +2083,7 @@
             ['include', '^browser/printing/page_(number|range|setup)\\.cc$'],
           ],
           'conditions': [
-            ['chromeos==0 and toolkit_views==0', {
+            ['chromeos==0', {
               'sources!': [
                  # Disabled while bookmark context menus are unforked.
                 'browser/bookmarks/bookmark_context_menu_controller.cc',
