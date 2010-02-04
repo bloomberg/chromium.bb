@@ -167,6 +167,8 @@
         'browser/bookmarks/bookmark_codec.h',
         'browser/bookmarks/bookmark_context_menu_controller.cc',
         'browser/bookmarks/bookmark_context_menu_controller.h',
+        'browser/bookmarks/bookmark_context_menu_controller_gtk.cc',
+        'browser/bookmarks/bookmark_context_menu_controller_gtk.h',
         'browser/bookmarks/bookmark_drag_data.cc',
         'browser/bookmarks/bookmark_drag_data.h',
         'browser/bookmarks/bookmark_drop_info.cc',
@@ -908,8 +910,6 @@
         'browser/gtk/bookmark_bar_instructions_gtk.h',
         'browser/gtk/bookmark_bubble_gtk.cc',
         'browser/gtk/bookmark_bubble_gtk.h',
-        'browser/gtk/bookmark_context_menu_gtk.cc',
-        'browser/gtk/bookmark_context_menu_gtk.h',
         'browser/gtk/bookmark_editor_gtk.cc',
         'browser/gtk/bookmark_editor_gtk.h',
         'browser/gtk/bookmark_manager_gtk.cc',
@@ -2072,6 +2072,9 @@
              # Windows-specific files.
             'browser/password_manager/password_store_win.cc',
             'browser/password_manager/password_store_win.h',
+             # Disabled while bookmark context menus are unforked.
+            'browser/bookmarks/bookmark_context_menu_controller.cc',
+            'browser/bookmarks/bookmark_context_menu_controller.h',
           ],
           'sources': [
             'browser/crash_handler_host_linux.h',

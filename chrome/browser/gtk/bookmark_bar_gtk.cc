@@ -17,7 +17,6 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/gtk/bookmark_context_menu_gtk.h"
 #include "chrome/browser/gtk/bookmark_menu_controller_gtk.h"
 #include "chrome/browser/gtk/bookmark_tree_model.h"
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"
@@ -923,9 +922,9 @@ void BookmarkBarGtk::PopupMenuForNode(GtkWidget* sender,
 
   GtkWindow* window = GTK_WINDOW(gtk_widget_get_toplevel(sender));
   current_context_menu_controller_.reset(
-      new BookmarkContextMenuGtk(
-          window, profile_, browser_, page_navigator_, parent, nodes,
-          BookmarkContextMenuGtk::BOOKMARK_BAR, NULL));
+      new BookmarkContextMenuController(
+          window, this, profile_, page_navigator_, parent, nodes,
+          BookmarkContextMenuController::BOOKMARK_BAR));
   current_context_menu_.reset(
       new MenuGtk(NULL, current_context_menu_controller_->menu_model()));
   current_context_menu_->PopupAsContext(event->time);
@@ -1372,4 +1371,8 @@ void BookmarkBarGtk::PopupForButtonNextTo(GtkWidget* button,
   int shift = dir == GTK_MENU_DIR_PARENT ? -1 : 1;
   button_idx = (button_idx + shift + folder_list.size()) % folder_list.size();
   PopupForButton(folder_list[button_idx]);
+}
+
+void BookmarkBarGtk::CloseMenu() {
+  current_context_menu_->Cancel();
 }
