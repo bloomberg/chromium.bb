@@ -48,10 +48,16 @@ else:
                                        'selenium-server.jar'
                                        )
 
-if platform.system() == 'Windows':
-  _DEFAULT_JAVA_ = 'java.exe'
-else:
-  _DEFAULT_JAVA_ = 'java'
+
+def RunningOnWindows():
+  return platform.system() == 'Windows'
+
+
+def GetJavaExe():
+  if RunningOnWindows():
+    return 'java.exe'
+  else:
+    return 'java'
 
 # Browsers to choose from (for browser flag).
 # use --browser $BROWSER_NAME to run
@@ -80,7 +86,7 @@ parser.add_option(
 
 parser.add_option(
     '--java',
-    default=_DEFAULT_JAVA_,
+    default=GetJavaExe(),
     help='the name/path of the java loader')
 
 parser.add_option(
@@ -181,11 +187,6 @@ var nacllib = new NaclLib();
 </script>
 </html>
 """
-
-
-def RunningOnWindows():
-  return platform.system() == 'Windows'
-
 
 def GuessMimeType(filename):
   if filename.endswith('.html'):
@@ -395,6 +396,8 @@ class SeleniumRemoteControl(threading.Thread):
 
     self._alive = threading.Event()
     self._keep_going = True
+    self._port = None
+
     if port == 0:
       logging.fatal("zero port does not work because of a selenium bug.")
       sys.exit(-1)
@@ -413,15 +416,6 @@ class SeleniumRemoteControl(threading.Thread):
     self._process = subprocess.Popen(cmd,
                                      stdout=subprocess.PIPE,
                                      stderr=subprocess.STDOUT)
-
-    self._port = self._GetPortNumber(self._process)
-    if self._port is None:
-      KillProcess(self._process, "selenium server")
-      logging.error("cannot launch selenium rc server")
-      sys.exit(-1)
-
-    logging.info('found active selenium server on port %d', self._port)
-    logging.info('try it at %s', self.BaseUrl())
 
   def StopServer(self):
     logging.info("shutting down selenium rc server")
@@ -442,36 +436,50 @@ class SeleniumRemoteControl(threading.Thread):
     #return 'http://%s:%s' % (socket.gethostname(), self._port)
     return 'http://%s:%s' % ('localhost', self._port)
 
-  def _GetPortNumber(self, process):
-    # Go through the log messages emitted by the server
-    # we expect the ready message to be within the first 15 lines
-    for _ in range(1, 20):
-        # TODO: maybe use communicate()
-        msg = process.stdout.readline().strip()
-        logging.debug("selenium server output: %s", msg)
-        if not msg: continue
+  def GetPort(self):
+    MAX_SECS = 20
+    for i in range(MAX_SECS):
+      if self._port == 0:
+        logging.error("could discern port number of selenium server")
+        KillProcess(self._process, "selenium server")
+        sys.exit(-1)
 
-        logging.debug('sel_serv:' + msg)
-
-        # This status message indicates that the server has done
-        # a bind successfully.
-        # a message looks something like:
-        # 15:00:43.821 INFO - Started SocketListener on 0.0.0.0:40292
-        if msg.find('INFO - Started SocketListener') == -1:
-          continue
-
-        colon = msg.rfind(":")
-        assert colon > 0
-        return int(msg[colon + 1:])
-    logging.error("could discern port number of selenium server")
-    return None
+      if self._port:
+        return self._port
+      time.sleep(1)
+    logging.error("could determine selenium rc server port number within %d",
+                  MAX_SECS)
+    KillProcess(self._process, "selenium server")
+    sys.exit(-1)
 
   def run(self):
-    """echo selenium server messages in this thread."""
+    """echo selenium server messages in this thread.
+    Also, scan for a special regex to determine the port the server
+    is listening on.
+    """
+    line_count = 0
     while self._process.poll() is None and self._keep_going:
       msg = self._process.stdout.readline().strip()
-      if msg:
-        logging.debug('sel_serv:' + msg)
+      if not msg:
+        continue
+      line_count += 1
+      logging.debug('[%03d] sel_serv:' + msg, line_count)
+      if self._port != None:
+        continue
+      if line_count > 20:
+        # giving up
+        self._port = 0
+        continue
+      # This status message indicates that the server has done
+      # a bind successfully.
+      # a message looks something like:
+      # 15:00:43.821 INFO - Started SocketListener on 0.0.0.0:40292
+      if msg.find('INFO - Started SocketListener') == -1:
+          continue
+      colon = msg.rfind(":")
+      assert colon > 0
+      self._port = int(msg[colon + 1:])
+
     logging.info("seleniun thread terminating")
 
 ######################################################################
@@ -563,7 +571,10 @@ def main(options):
                                             options.port_rcserver)
     selenium_server.start()
     GlobalCleanupList.append(selenium_server.StopServer)
-    selenium_server_port = selenium_server._port
+    selenium_server_port = selenium_server.GetPort()
+    logging.info('found active selenium server on port %d',
+                 selenium_server_port)
+    logging.info('try it at %s', selenium_server.BaseUrl())
   else:
     selenium_server_port = options.port_rcserver
 

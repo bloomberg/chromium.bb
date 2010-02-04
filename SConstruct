@@ -357,11 +357,27 @@ def BrowserTester(env,
                 log_verbosity=2,
                 args=[]):
 
+  # NOTE: hack to enable chrome testing - only works with Linux so far
+  if ARGUMENTS.get('chrome_browser_path'):
+    browser = env.subst('"*googlechrome '
+                        '${SOURCE_ROOT}/native_client/tools/'
+                        'google-chrome-wrapper.py"')
+    # this env affects the behavior of google-chrome-wrapper.py
+    env['ENV']['CHROME_LINUX_EXE'] = ARGUMENTS.get('chrome_browser_path')
+
   deps = [SELENIUM_TEST_SCRIPT] + files
   command = ['${SOURCES[0].abspath}', '--url', url, '--browser', browser]
   for i in range(len(files)):
     command.append('--file')
     command.append('${SOURCES[%d].abspath}' % (i + 1))
+
+  # NOTE: additional hack to enable chrome testing
+  # use a more recent version of the selenium server
+  if ARGUMENTS.get('chrome_browser_path'):
+    command.append('--selenium_jar')
+    command.append(env.subst('${SOURCE_ROOT}/third_party/selenium/'
+                             'selenium-server-2.0a1/'
+                             'selenium-server-standalone.jar'))
 
   # NOTE: setting the PYTHONPATH is currently not necessary as the test
   #       script sets its own path
@@ -372,7 +388,6 @@ def BrowserTester(env,
     if val is None:
       if os.getenv(tag) is not None:
         env['ENV'][tag] = os.getenv(tag)
-
 
   # TODO(robertm): explain why this is necessary
   env['ENV']['NACL_DISABLE_SECURITY_FOR_SELENIUM_TEST'] = '1'
