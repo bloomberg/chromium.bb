@@ -20,6 +20,7 @@
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
 #include "views/controls/scroll_view.h"
+#include "views/controls/separator.h"
 #include "views/grid_layout.h"
 #include "views/standard_layout.h"
 #include "views/window/window.h"
@@ -282,14 +283,14 @@ void AutoFillProfilesView::PhoneSubView::ViewHierarchyChanged(
     column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1,
         views::GridLayout::USE_PREF, 0, 0);
     column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
-    column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 1,
+    column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER, 2,
          views::GridLayout::USE_PREF, 0, 0);
     layout->StartRow(0, triple_column_fill_view_set_id);
     layout->AddView(label_, 5, 1);
     layout->StartRow(0, triple_column_fill_view_set_id);
-    text_country_->set_default_width_in_chars(3);
-    text_area_->set_default_width_in_chars(3);
-    text_phone_->set_default_width_in_chars(7);
+    text_country_->set_default_width_in_chars(5);
+    text_area_->set_default_width_in_chars(5);
+    text_phone_->set_default_width_in_chars(10);
     layout->AddView(text_country_);
     layout->AddView(text_area_);
     layout->AddView(text_phone_);
@@ -346,7 +347,7 @@ AutoFillProfilesView::EditableSetViewContents::TextFieldToAutoFill
   { AutoFillProfilesView::EditableSetViewContents::TEXT_CC_EXPIRATION_MONTH,
     CREDIT_CARD_EXP_MONTH },
   { AutoFillProfilesView::EditableSetViewContents::TEXT_CC_EXPIRATION_YEAR,
-    CREDIT_CARD_EXP_2_DIGIT_YEAR },
+    CREDIT_CARD_EXP_4_DIGIT_YEAR },
   { AutoFillProfilesView::EditableSetViewContents::TEXT_CC_EXPIRATION_CVC,
     CREDIT_CARD_VERIFICATION_CODE },
   /* phone is disabled for now
@@ -531,6 +532,7 @@ void AutoFillProfilesView::EditableSetViewContents::InitTitle(
     title = editable_fields_set_->credit_card.Label();
     if (title.empty())
       title = l10n_util::GetString(IDS_AUTOFILL_NEW_CREDITCARD);
+    title_preview = editable_fields_set_->credit_card.PreviewSummary();
   }
   expand_item_button_ = new views::ImageButton(this);
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -609,9 +611,10 @@ void AutoFillProfilesView::EditableSetViewContents::InitAddressFields(
   layout->AddView(text_fields_[TEXT_MIDDLE_NAME]);
   layout->AddView(text_fields_[TEXT_LAST_NAME]);
 
-  layout->StartRow(0, triple_column_leading_view_set_id_);
+  layout->StartRow(0, triple_column_fill_view_set_id_);
   layout->AddView(CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_EMAIL));
-  layout->AddView(CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_COMPANY_NAME));
+  layout->AddView(CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_COMPANY_NAME),
+                  3, 1);
 
   layout->StartRow(0, triple_column_fill_view_set_id_);
   layout->AddView(text_fields_[TEXT_EMAIL]);
@@ -735,7 +738,7 @@ void AutoFillProfilesView::EditableSetViewContents::InitCreditCardFields(
   layout->AddView(
       CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_CREDIT_CARD_NUMBER));
   layout->AddView(
-      CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_EXPIRATION_DATE), 2, 1);
+      CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_EXPIRATION_DATE), 3, 1);
   layout->AddView(CreateLeftAlignedLabel(IDS_AUTOFILL_DIALOG_CVC));
   layout->StartRow(0, four_column_ccnumber_expiration_cvc_);
   // Number (20 chars), month(2 chars), year (4 chars), cvc (4 chars)
@@ -788,33 +791,35 @@ void AutoFillProfilesView::EditableSetViewContents::InitLayoutGrid(
     column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::CENTER,
                           1, views::GridLayout::USE_PREF, 0, 0);
   }
+  // City (33% - 16/48), state(33%), zip (12.7% - 5/42), country (21% - 11/48)
   column_set = layout->AddColumnSet(four_column_city_state_zip_set_id_);
   column_set->AddPaddingColumn(0, kPanelHorizIndentation);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                        1, views::GridLayout::USE_PREF, 0, 0);
+                        16, views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                        1, views::GridLayout::USE_PREF, 0, 0);
+                        16, views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                        1, views::GridLayout::USE_PREF, 0, 0);
+                        5, views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                        1, views::GridLayout::USE_PREF, 0, 0);
+                        11, views::GridLayout::USE_PREF, 0, 0);
 
   column_set = layout->AddColumnSet(four_column_ccnumber_expiration_cvc_);
   column_set->AddPaddingColumn(0, kPanelHorizIndentation);
+  // Number, expiration (month/year), and CVC are in ratio 20:2:4:4
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                        1, views::GridLayout::USE_PREF, 0, 0);
+                        20, views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                        1, views::GridLayout::USE_PREF, 0, 0);
+                        2, views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                        1, views::GridLayout::USE_PREF, 0, 0);
+                        4, views::GridLayout::USE_PREF, 0, 0);
   column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
-                        1, views::GridLayout::USE_PREF, 0, 0);
+                        4, views::GridLayout::USE_PREF, 0, 0);
 
   column_set = layout->AddColumnSet(three_column_header_);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
@@ -834,6 +839,7 @@ AutoFillProfilesView::EditableSetViewContents::CreateLeftAlignedLabel(
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   return label;
 }
+
 /////////////////////////////////////////////////////////////////////////////
 // AutoFillProfilesView::AddressComboBoxModel, public:
 AutoFillProfilesView::AddressComboBoxModel::AddressComboBoxModel(
@@ -971,12 +977,19 @@ void AutoFillProfilesView::ScrollViewContents::Init() {
   const int single_column_filled_view_set_id = 0;
   views::ColumnSet* column_set =
       layout->AddColumnSet(single_column_filled_view_set_id);
+  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
       views::GridLayout::USE_PREF, 0, 0);
   const int single_column_left_view_set_id = 1;
   column_set = layout->AddColumnSet(single_column_left_view_set_id);
+  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   column_set->AddColumn(views::GridLayout::LEADING, views::GridLayout::FILL,
                         1, views::GridLayout::USE_PREF, 0, 0);
+  const int single_column_filled_view_set_id_full_width = 2;
+  column_set =
+      layout->AddColumnSet(single_column_filled_view_set_id_full_width);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+      views::GridLayout::USE_PREF, 0, 0);
   views::Label *title_label = new views::Label(
       l10n_util::GetString(IDS_AUTOFILL_ADDRESSES_GROUP_NAME));
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
@@ -986,6 +999,10 @@ void AutoFillProfilesView::ScrollViewContents::Init() {
   layout->StartRow(0, single_column_left_view_set_id);
   layout->AddView(title_label);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->StartRow(0, single_column_filled_view_set_id_full_width);
+  layout->AddView(new views::Separator);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+
 
   std::vector<EditableSetInfo>::iterator it;
   for (it = profiles_->begin(); it != profiles_->end(); ++it) {
@@ -1011,6 +1028,9 @@ void AutoFillProfilesView::ScrollViewContents::Init() {
   title_label->SetFont(title_font);
   layout->StartRow(0, single_column_left_view_set_id);
   layout->AddView(title_label);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
+  layout->StartRow(0, single_column_filled_view_set_id_full_width);
+  layout->AddView(new views::Separator);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   for (it = credit_cards_->begin(); it != credit_cards_->end(); ++it) {
@@ -1070,6 +1090,7 @@ void AutoFillProfilesView::AutoFillScrollView::Layout() {
 
   gfx::Size border = gfx::NativeTheme::instance()->GetThemeBorderSize(
       gfx::NativeTheme::LIST);
+  border.set_width(border.width() + kPanelHorizMargin);
   lb.Inset(border.width(), border.height());
   scroll_view_->SetBounds(lb);
   scroll_view_->Layout();
