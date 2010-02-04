@@ -345,6 +345,12 @@ void FilterDisabledTests() {
     // TODO(ananta): This test has been consistently failing. Disabling it for
     // now.
     "URLRequestTestHTTP.GetTest_NoCache",
+
+    // These tests have been disabled as the Chrome cookie policies don't make
+    // sense for the host network stack.
+    "URLRequestTest.DoNotSaveCookies_ViaPolicy",
+    "URLRequestTest.DoNotSendCookies_ViaPolicy",
+    "URLRequestTest.DoNotSaveCookies_ViaPolicy_Async",
   };
 
   std::string filter("-");  // All following filters will be negative.
