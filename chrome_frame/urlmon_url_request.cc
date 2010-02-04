@@ -35,19 +35,15 @@ STDMETHODIMP UrlmonUrlRequest::SendStream::Write(const void * buffer,
   return S_OK;
 }
 
-int UrlmonUrlRequest::instance_count_ = 0;
-
 UrlmonUrlRequest::UrlmonUrlRequest()
     : pending_read_size_(0),
       thread_(NULL),
       parent_window_(NULL) {
-  DLOG(INFO) << StringPrintf("Created request. Obj: %X", this)
-      << " Count: " << ++instance_count_;
+  DLOG(INFO) << StringPrintf("Created request. Obj: %X", this);
 }
 
 UrlmonUrlRequest::~UrlmonUrlRequest() {
-  DLOG(INFO) << StringPrintf("Deleted request. Obj: %X", this)
-      << " Count: " << --instance_count_;
+  DLOG(INFO) << StringPrintf("Deleted request. Obj: %X", this);
 }
 
 bool UrlmonUrlRequest::Start() {
@@ -952,7 +948,6 @@ void UrlmonUrlRequestManager::StopAll() {
   worker_thread_access_.Acquire();
   worker_thread_.Stop();
   worker_thread_access_.Release();
-  DCHECK_EQ(0, UrlmonUrlRequest::instance_count_);
 }
 
 void UrlmonUrlRequestManager::StopAllWorker() {

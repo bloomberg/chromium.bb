@@ -23,7 +23,6 @@ class UrlmonUrlRequest
     public IAuthenticate,
     public IHttpSecurity {
  public:
-  static int instance_count_;
   virtual bool Start();
   virtual void Stop();
   virtual bool Read(int bytes_to_read);
