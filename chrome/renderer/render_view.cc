@@ -3170,9 +3170,11 @@ std::string RenderView::DetermineTextLanguage(const std::wstring& text) {
       cld_language != TG_UNKNOWN_LANGUAGE) {
     // We should not use LanguageCode_ISO_639_1 because it does not cover all
     // the languages CLD can detect. As a result, it'll return the invalid
-    // language code for tradtional Chinese among others. |LanguageCode| will go
-    // through ISO 639-1, ISO-639-2 and 'other' tables to do the 'right' thing.
-    language = LanguageCode(cld_language);
+    // language code for tradtional Chinese among others.
+    // |LanguageCodeWithDialect| will go through ISO 639-1, ISO-639-2 and
+    // 'other' tables to do the 'right' thing. In addition, it'll return zh-CN
+    // for Simplified Chinese.
+    language = LanguageCodeWithDialects(cld_language);
   }
   return language;
 }
@@ -4278,4 +4280,3 @@ void RenderView::GPUPluginBuffersSwapped(gfx::PluginWindowHandle window) {
   Send(new ViewHostMsg_GPUPluginBuffersSwapped(routing_id(), window));
 }
 #endif
-
