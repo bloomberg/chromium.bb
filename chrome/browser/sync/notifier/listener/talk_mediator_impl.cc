@@ -93,9 +93,7 @@ void TalkMediatorImpl::AuthWatcherEventHandler(
       // insure this code path is stable.
       break;
     case AuthWatcherEvent::AUTH_SUCCEEDED:
-      if (!state_.logged_in) {
-        DoLogin();
-      }
+      DoLogin();
       break;
     default:
       // Do nothing.
@@ -116,6 +114,7 @@ bool TalkMediatorImpl::Login() {
 }
 
 bool TalkMediatorImpl::DoLogin() {
+  mutex_.AssertAcquired();
   // Connect to the mediator thread and start processing messages.
   if (!state_.connected) {
     mediator_thread_->SignalStateChange.connect(
@@ -123,9 +122,9 @@ bool TalkMediatorImpl::DoLogin() {
         &TalkMediatorImpl::MediatorThreadMessageHandler);
     state_.connected = 1;
   }
-  if (state_.initialized && !state_.logged_in) {
+  if (state_.initialized && !state_.logging_in) {
     mediator_thread_->Login(xmpp_settings_);
-    state_.logged_in = 1;
+    state_.logging_in = 1;
     return true;
   }
   return false;
@@ -141,6 +140,7 @@ bool TalkMediatorImpl::Logout() {
   if (state_.started) {
     mediator_thread_->Logout();
     state_.started = 0;
+    state_.logging_in = 0;
     state_.logged_in = 0;
     state_.subscribed = 0;
     return true;
@@ -213,6 +213,8 @@ void TalkMediatorImpl::MediatorThreadMessageHandler(
 void TalkMediatorImpl::OnLogin() {
   LOG(INFO) << "P2P: Logged in.";
   AutoLock lock(mutex_);
+  state_.logging_in = 0;
+  state_.logged_in = 1;
   // ListenForUpdates enables the ListenTask.  This is done before
   // SubscribeForUpdates.
   mediator_thread_->ListenForUpdates();
@@ -225,6 +227,7 @@ void TalkMediatorImpl::OnLogout() {
   LOG(INFO) << "P2P: Logged off.";
   OnSubscriptionFailure();
   AutoLock lock(mutex_);
+  state_.logging_in = 0;
   state_.logged_in = 0;
   TalkMediatorEvent event = { TalkMediatorEvent::LOGOUT_SUCCEEDED };
   channel_->NotifyListeners(event);

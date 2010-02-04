@@ -1583,6 +1583,9 @@ void SyncManager::SyncInternal::HandleSyncerEvent(const SyncerEvent& event) {
         bool success = talk_mediator()->SendNotification();
         if (success) {
           notification_pending_ = false;
+          LOG(INFO) << "Sent XMPP notification";
+        } else {
+          LOG(INFO) << "Could not send XMPP notification";
         }
     } else {
       LOG(INFO) << "Didn't send XMPP notification!"

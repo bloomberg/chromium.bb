@@ -111,6 +111,7 @@ TEST_F(TalkMediatorImplTest, SendNotification) {
 
   ASSERT_TRUE(talk1->SetAuthToken("chromium@gmail.com", "token") == true);
   ASSERT_TRUE(talk1->Login() == true);
+  talk1->OnLogin();
   ASSERT_TRUE(mock->login_calls == 1);
 
   // Failure due to not being subscribed.
