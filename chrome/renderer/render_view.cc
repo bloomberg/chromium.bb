@@ -67,7 +67,7 @@
 #include "net/base/net_errors.h"
 #include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/image_operations.h"
-#include "third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/win/cld_unicodetext.h"
+#include "third_party/cld/encodings/compact_lang_det/win/cld_unicodetext.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCString.h"

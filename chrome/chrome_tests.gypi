@@ -875,7 +875,7 @@
         'test/v8_unit_test.cc',
         'test/v8_unit_test.h',
         'tools/convert_dict/convert_dict_unittest.cc',
-        '../third_party/cld/bar/toolbar/cld/i18n/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
+        '../third_party/cld/encodings/compact_lang_det/compact_lang_det_unittest_small.cc',
       ],
       'conditions': [
         ['chromeos==0', {
