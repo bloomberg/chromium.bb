@@ -142,17 +142,16 @@ class BlockableProxyResolver : public MockProxyResolver {
 
 TEST(SingleThreadedProxyResolverTest, Basic) {
   MockProxyResolver* mock = new MockProxyResolver;
-  scoped_ptr<SingleThreadedProxyResolver> resolver(
-      new SingleThreadedProxyResolver(mock));
+  SingleThreadedProxyResolver resolver(mock);
 
   int rv;
 
-  EXPECT_TRUE(resolver->expects_pac_bytes());
+  EXPECT_TRUE(resolver.expects_pac_bytes());
 
   // Call SetPacScriptByData() -- verify that it reaches the synchronous
   // resolver.
   TestCompletionCallback set_script_callback;
-  rv = resolver->SetPacScriptByData("pac script bytes", &set_script_callback);
+  rv = resolver.SetPacScriptByData("pac script bytes", &set_script_callback);
   EXPECT_EQ(ERR_IO_PENDING, rv);
   EXPECT_EQ(OK, set_script_callback.WaitForResult());
   EXPECT_EQ("pac script bytes", mock->last_pac_bytes());
@@ -161,7 +160,7 @@ TEST(SingleThreadedProxyResolverTest, Basic) {
   TestCompletionCallback callback0;
   scoped_refptr<LoadLog> log0(new LoadLog(LoadLog::kUnbounded));
   ProxyInfo results0;
-  rv = resolver->GetProxyForURL(
+  rv = resolver.GetProxyForURL(
       GURL("http://request0"), &results0, &callback0, NULL, log0);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
@@ -178,19 +177,19 @@ TEST(SingleThreadedProxyResolverTest, Basic) {
 
   TestCompletionCallback callback1;
   ProxyInfo results1;
-  rv = resolver->GetProxyForURL(
+  rv = resolver.GetProxyForURL(
       GURL("http://request1"), &results1, &callback1, NULL, NULL);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   TestCompletionCallback callback2;
   ProxyInfo results2;
-  rv = resolver->GetProxyForURL(
+  rv = resolver.GetProxyForURL(
       GURL("http://request2"), &results2, &callback2, NULL, NULL);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   TestCompletionCallback callback3;
   ProxyInfo results3;
-  rv = resolver->GetProxyForURL(
+  rv = resolver.GetProxyForURL(
       GURL("http://request3"), &results3, &callback3, NULL, NULL);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
@@ -212,12 +211,12 @@ TEST(SingleThreadedProxyResolverTest, Basic) {
   // Ensure that PurgeMemory() reaches the wrapped resolver and happens on the
   // right thread.
   EXPECT_EQ(0, mock->purge_count());
-  resolver->PurgeMemory();
+  resolver.PurgeMemory();
   // There is no way to get a callback directly when PurgeMemory() completes, so
   // we queue up a dummy request after the PurgeMemory() call and wait until it
   // finishes to ensure PurgeMemory() has had a chance to run.
   TestCompletionCallback dummy_callback;
-  rv = resolver->SetPacScriptByData("dummy", &dummy_callback);
+  rv = resolver.SetPacScriptByData("dummy", &dummy_callback);
   EXPECT_EQ(OK, dummy_callback.WaitForResult());
   EXPECT_EQ(1, mock->purge_count());
 }
@@ -292,8 +291,7 @@ TEST(SingleThreadedProxyResolverTest, UpdatesLoadLogWithThreadWait) {
 // is pending.
 TEST(SingleThreadedProxyResolverTest, CancelRequest) {
   BlockableProxyResolver* mock = new BlockableProxyResolver;
-  scoped_ptr<SingleThreadedProxyResolver> resolver(
-      new SingleThreadedProxyResolver(mock));
+  SingleThreadedProxyResolver resolver(mock);
 
   int rv;
 
@@ -304,7 +302,7 @@ TEST(SingleThreadedProxyResolverTest, CancelRequest) {
   ProxyResolver::RequestHandle request0;
   TestCompletionCallback callback0;
   ProxyInfo results0;
-  rv = resolver->GetProxyForURL(
+  rv = resolver.GetProxyForURL(
       GURL("http://request0"), &results0, &callback0, &request0, NULL);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
@@ -315,26 +313,26 @@ TEST(SingleThreadedProxyResolverTest, CancelRequest) {
 
   TestCompletionCallback callback1;
   ProxyInfo results1;
-  rv = resolver->GetProxyForURL(
+  rv = resolver.GetProxyForURL(
       GURL("http://request1"), &results1, &callback1, NULL, NULL);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   ProxyResolver::RequestHandle request2;
   TestCompletionCallback callback2;
   ProxyInfo results2;
-  rv = resolver->GetProxyForURL(
+  rv = resolver.GetProxyForURL(
       GURL("http://request2"), &results2, &callback2, &request2, NULL);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   TestCompletionCallback callback3;
   ProxyInfo results3;
-  rv = resolver->GetProxyForURL(
+  rv = resolver.GetProxyForURL(
       GURL("http://request3"), &results3, &callback3, NULL, NULL);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Cancel request0 (inprogress) and request2 (pending).
-  resolver->CancelRequest(request0);
-  resolver->CancelRequest(request2);
+  resolver.CancelRequest(request0);
+  resolver.CancelRequest(request2);
 
   // Unblock the worker thread so the requests can continue running.
   mock->Unblock();
@@ -416,8 +414,7 @@ TEST(SingleThreadedProxyResolverTest, CancelRequestByDeleting) {
 // Cancel an outstanding call to SetPacScriptByData().
 TEST(SingleThreadedProxyResolverTest, CancelSetPacScript) {
   BlockableProxyResolver* mock = new BlockableProxyResolver;
-  scoped_ptr<SingleThreadedProxyResolver> resolver(
-      new SingleThreadedProxyResolver(mock));
+  SingleThreadedProxyResolver resolver(mock);
 
   int rv;
 
@@ -428,7 +425,7 @@ TEST(SingleThreadedProxyResolverTest, CancelSetPacScript) {
   ProxyResolver::RequestHandle request0;
   TestCompletionCallback callback0;
   ProxyInfo results0;
-  rv = resolver->GetProxyForURL(
+  rv = resolver.GetProxyForURL(
       GURL("http://request0"), &results0, &callback0, &request0, NULL);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
@@ -436,18 +433,18 @@ TEST(SingleThreadedProxyResolverTest, CancelSetPacScript) {
   mock->WaitUntilBlocked();
 
   TestCompletionCallback set_pac_script_callback;
-  rv = resolver->SetPacScriptByData("data", &set_pac_script_callback);
+  rv = resolver.SetPacScriptByData("data", &set_pac_script_callback);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Cancel the SetPacScriptByData request (it can't have finished yet,
   // since the single-thread is currently blocked).
-  resolver->CancelSetPacScript();
+  resolver.CancelSetPacScript();
 
   // Start 1 more request.
 
   TestCompletionCallback callback1;
   ProxyInfo results1;
-  rv = resolver->GetProxyForURL(
+  rv = resolver.GetProxyForURL(
       GURL("http://request1"), &results1, &callback1, NULL, NULL);
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
