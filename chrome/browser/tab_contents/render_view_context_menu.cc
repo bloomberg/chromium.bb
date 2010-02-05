@@ -34,8 +34,9 @@
 #include "net/base/escape.h"
 #include "net/url_request/url_request.h"
 #include "webkit/glue/webmenuitem.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerAction.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebContextMenuData.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayerAction.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebTextDirection.h"
 
 using WebKit::WebContextMenuData;
 using WebKit::WebMediaPlayerAction;
@@ -337,6 +338,25 @@ void RenderViewContextMenu::AppendEditableItems() {
   }
   FinishSubMenu();
 
+#if defined(OS_MACOSX)
+  // OS X provides a contextual menu to set writing direction for BiDi
+  // languages.
+  // This functionality is exposed as a keyboard shortcut on Windows & Linux.
+
+  // Add writing direction sub menu.
+  StartSubMenu(IDC_WRITING_DIRECTION_MENU,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_MENU));
+
+  AppendCheckboxMenuItem(IDC_WRITING_DIRECTION_DEFAULT,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_DEFAULT));
+  AppendCheckboxMenuItem(IDC_WRITING_DIRECTION_LTR,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_LTR));
+  AppendCheckboxMenuItem(IDC_WRITING_DIRECTION_RTL,
+      l10n_util::GetStringUTF16(IDS_CONTENT_CONTEXT_WRITING_DIRECTION_RTL));
+
+  FinishSubMenu();
+#endif // OS_MACOSX
+
   AppendSeparator();
   AppendMenuItem(IDS_CONTENT_CONTEXT_SELECTALL);
 }
@@ -512,6 +532,18 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
     case IDC_CHECK_SPELLING_OF_THIS_FIELD:
       return profile_->GetPrefs()->GetBoolean(prefs::kEnableSpellCheck);
 
+#if defined(OS_MACOSX)
+    case IDC_WRITING_DIRECTION_DEFAULT:  // Provided to match OS defaults.
+      return params_.writing_direction_default &
+          WebContextMenuData::CheckableMenuItemEnabled;
+    case IDC_WRITING_DIRECTION_RTL:
+      return params_.writing_direction_right_to_left &
+          WebContextMenuData::CheckableMenuItemEnabled;
+    case IDC_WRITING_DIRECTION_LTR:
+      return params_.writing_direction_left_to_right &
+          WebContextMenuData::CheckableMenuItemEnabled;
+#endif  // OS_MACOSX
+
 #if defined(OS_LINUX)
     // Enable the input methods context menu if the content is editable.
     // TODO(suzhe): It should not be enabled in password boxes. Anyway,
@@ -534,6 +566,18 @@ bool RenderViewContextMenu::ItemIsChecked(int id) const {
     return (params_.media_flags &
             WebContextMenuData::MediaLoop) != 0;
   }
+
+#if defined(OS_MACOSX)
+    if (id == IDC_WRITING_DIRECTION_DEFAULT)
+      return params_.writing_direction_default &
+          WebContextMenuData::CheckableMenuItemChecked;
+    if (id == IDC_WRITING_DIRECTION_RTL)
+      return params_.writing_direction_right_to_left &
+          WebContextMenuData::CheckableMenuItemChecked;
+    if (id == IDC_WRITING_DIRECTION_LTR)
+      return params_.writing_direction_left_to_right &
+          WebContextMenuData::CheckableMenuItemChecked;
+#endif  // OS_MACOSX
 
   // Check box for 'Check the Spelling of this field'.
   if (id == IDC_CHECK_SPELLING_OF_THIS_FIELD) {
@@ -816,6 +860,23 @@ void RenderViewContextMenu::ExecuteItemCommand(int id) {
       source_tab_contents_->render_view_host()->ToggleSpellPanel(
           SpellCheckerPlatform::SpellingPanelVisible());
       break;
+
+#if defined(OS_MACOSX)
+    case IDC_WRITING_DIRECTION_DEFAULT:
+      // WebKit's current behavior is for this menu item to always be disabled.
+      NOTREACHED();
+      break;
+    case IDC_WRITING_DIRECTION_RTL:
+    case IDC_WRITING_DIRECTION_LTR: {
+      WebKit::WebTextDirection dir = WebKit::WebTextDirectionLeftToRight;
+      if (id == IDC_WRITING_DIRECTION_RTL)
+        dir = WebKit::WebTextDirectionRightToLeft;
+      source_tab_contents_->render_view_host()->UpdateTextDirection(dir);
+      source_tab_contents_->render_view_host()->NotifyTextDirection();
+      break;
+    }
+#endif  // OS_MACOSX
+
     case IDS_CONTENT_CONTEXT_ADDSEARCHENGINE:  // Not implemented.
     default:
       break;

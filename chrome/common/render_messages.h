@@ -1034,6 +1034,11 @@ struct ParamTraits<ContextMenuParams> {
     WriteParam(m, p.dictionary_suggestions);
     WriteParam(m, p.spellcheck_enabled);
     WriteParam(m, p.is_editable);
+#if defined(OS_MACOSX)
+    WriteParam(m, p.writing_direction_default);
+    WriteParam(m, p.writing_direction_left_to_right);
+    WriteParam(m, p.writing_direction_right_to_left);
+#endif  // OS_MACOSX
     WriteParam(m, p.edit_flags);
     WriteParam(m, p.security_info);
     WriteParam(m, p.frame_charset);
@@ -1055,6 +1060,11 @@ struct ParamTraits<ContextMenuParams> {
       ReadParam(m, iter, &p->dictionary_suggestions) &&
       ReadParam(m, iter, &p->spellcheck_enabled) &&
       ReadParam(m, iter, &p->is_editable) &&
+#if defined(OS_MACOSX)
+      ReadParam(m, iter, &p->writing_direction_default) &&
+      ReadParam(m, iter, &p->writing_direction_left_to_right) &&
+      ReadParam(m, iter, &p->writing_direction_right_to_left) &&
+#endif  // OS_MACOSX
       ReadParam(m, iter, &p->edit_flags) &&
       ReadParam(m, iter, &p->security_info) &&
       ReadParam(m, iter, &p->frame_charset) &&

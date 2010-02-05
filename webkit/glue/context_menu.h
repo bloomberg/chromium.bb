@@ -73,6 +73,14 @@ struct ContextMenuParams {
   // Whether context is editable.
   bool is_editable;
 
+#if defined(OS_MACOSX)
+  // Writing direction menu items.
+  // Currently only used on OS X.
+  int writing_direction_default;
+  int writing_direction_left_to_right;
+  int writing_direction_right_to_left;
+#endif  // OS_MACOSX
+
   // These flags indicate to the browser whether the renderer believes it is
   // able to perform the corresponding action.
   int edit_flags;
@@ -101,6 +109,11 @@ struct ContextMenuParams {
         misspelled_word(data.misspelledWord),
         spellcheck_enabled(data.isSpellCheckingEnabled),
         is_editable(data.isEditable),
+#if defined(OS_MACOSX)
+        writing_direction_default(data.writingDirectionDefault),
+        writing_direction_left_to_right(data.writingDirectionLeftToRight),
+        writing_direction_right_to_left(data.writingDirectionRightToLeft),
+#endif  // OS_MACOSX
         edit_flags(data.editFlags),
         security_info(data.securityInfo),
         frame_charset(data.frameEncoding.utf8()) {

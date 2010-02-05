@@ -230,6 +230,12 @@
 #define IDC_SYNC_BOOKMARKS              41108
 #define IDC_SPELLPANEL_TOGGLE           41109
 
+// Writing direction
+#define IDC_WRITING_DIRECTION_MENU       41120     // OSX only
+#define IDC_WRITING_DIRECTION_DEFAULT    41121     // OSX only
+#define IDC_WRITING_DIRECTION_LTR        41122     // OSX only
+#define IDC_WRITING_DIRECTION_RTL        41123     // OSX only
+
 // Translate
 #define IDC_TRANSLATE_OPTIONS_ALWAYS               42000
 #define IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_LANG 42001

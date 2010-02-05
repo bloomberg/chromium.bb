@@ -320,6 +320,20 @@ each locale. -->
       </message>
 
       <!-- content area context menus -->
+      <if expr="os == 'darwin'">
+          <message name="IDS_CONTENT_CONTEXT_WRITING_DIRECTION_MENU" desc="The name of the Writing Direction submenu in the content area context menu.  To translate, launch /Applications/Textedit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
+            Writing Direction
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_WRITING_DIRECTION_DEFAULT" desc="The name of the 'default' item from the Writing Direction submenu in the content area context menu.  To translate, launch /Applications/Textedit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
+            Default
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_WRITING_DIRECTION_LTR" desc="The name of the 'Left to Right' item from the Writing Direction submenu in the content area context menu.  To translate, launch /Applications/Textedit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
+            Left to Right
+          </message>
+          <message name="IDS_CONTENT_CONTEXT_WRITING_DIRECTION_RTL" desc="The name of the 'Right to Left' item from the Writing Direction submenu in the content area context menu.  To translate, launch /Applications/Textedit.app in an appropriately localized version of OS X, right-click on the text entry area and use the translation from there.">
+            Right to Left
+          </message>
+      </if>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_CONTENT_CONTEXT_BACK" desc="The name of the Back command in the content area context menu">
           &amp;Back
