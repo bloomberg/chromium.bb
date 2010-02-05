@@ -212,5 +212,5 @@ bool PhoneNumber::Validate(const string16& number) const {
 }
 
 void PhoneNumber::StripPunctuation(string16* number) const {
-  TrimString(*number, kPhoneNumberSeparators.c_str(), number);
+  RemoveChars(*number, kPhoneNumberSeparators.c_str(), number);
 }
