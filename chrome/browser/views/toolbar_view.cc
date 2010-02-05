@@ -4,6 +4,7 @@
 
 #include "chrome/browser/views/toolbar_view.h"
 
+#include <algorithm>
 #include <string>
 
 #include "app/drag_drop_types.h"
@@ -565,13 +566,12 @@ void ToolbarView::CreateLeftSideControls() {
 }
 
 void ToolbarView::CreateCenterStack(Profile *profile) {
-  star_ = new ToolbarStarToggle(this, this);
-  star_->set_tag(IDC_BOOKMARK_PAGE);
+  star_ = new ToolbarStarToggle(this);
   star_->SetDragController(this);
-  star_->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_STAR));
-  star_->SetToggledTooltipText(l10n_util::GetString(IDS_TOOLTIP_STARRED));
-  star_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_STAR));
-  star_->SetID(VIEW_ID_STAR_BUTTON);
+  star_->set_profile(profile);
+  star_->set_host_view(this);
+  star_->set_bubble_positioner(this);
+  star_->Init();
   AddChildView(star_);
 
   location_bar_ = new LocationBarView(profile, browser_->command_updater(),
@@ -668,21 +668,6 @@ void ToolbarView::LoadCenterStackImages() {
 
   SkColor color = tp->GetColor(BrowserThemeProvider::COLOR_BUTTON_BACKGROUND);
   SkBitmap* background = tp->GetBitmapNamed(IDR_THEME_BUTTON_BACKGROUND);
-
-  star_->SetImage(views::CustomButton::BS_NORMAL, tp->GetBitmapNamed(IDR_STAR));
-  star_->SetImage(views::CustomButton::BS_HOT, tp->GetBitmapNamed(IDR_STAR_H));
-  star_->SetImage(views::CustomButton::BS_PUSHED,
-      tp->GetBitmapNamed(IDR_STAR_P));
-  star_->SetImage(views::CustomButton::BS_DISABLED,
-      tp->GetBitmapNamed(IDR_STAR_D));
-  star_->SetToggledImage(views::CustomButton::BS_NORMAL,
-      tp->GetBitmapNamed(IDR_STARRED));
-  star_->SetToggledImage(views::CustomButton::BS_HOT,
-      tp->GetBitmapNamed(IDR_STARRED_H));
-  star_->SetToggledImage(views::CustomButton::BS_PUSHED,
-      tp->GetBitmapNamed(IDR_STARRED_P));
-  star_->SetBackground(color, background,
-      tp->GetBitmapNamed(IDR_STAR_MASK));
 
   go_->SetImage(views::CustomButton::BS_NORMAL, tp->GetBitmapNamed(IDR_GO));
   go_->SetImage(views::CustomButton::BS_HOT, tp->GetBitmapNamed(IDR_GO_H));

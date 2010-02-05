@@ -8,42 +8,42 @@
 #include <algorithm>
 
 #include "app/l10n_util.h"
-#include "app/gfx/canvas.h"
-#include "app/resource_bundle.h"
+#include "app/drag_drop_types.h"
 #include "base/gfx/point.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/browser/bookmarks/bookmark_drag_data.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/chromeos/compact_location_bar_host.h"
+#include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/view_ids.h"
-#include "chrome/browser/views/browser_actions_container.h"
 #include "chrome/browser/views/event_utils.h"
 #include "chrome/browser/views/frame/browser_view.h"
+#include "chrome/browser/views/toolbar_star_toggle.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/background.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/native/native_view_host.h"
+#include "views/drag_utils.h"
 #include "views/widget/widget.h"
 #include "views/window/window.h"
 
 namespace chromeos {
-const int kAutocompletePopupWidth = 700;
-const int kDefaultLocationEntryWidth = 250;
-const int kCompactLocationLeftRightMargin = 5;
-const int kEntryLeftMargin = 2;
-// TODO(oshima): ToolbarView gets this from background image's height;
-// Find out the right way, value for compact location bar.
-const int kDefaultLocationBarHeight = 34;
+
+const int kCompactLocationBarDefaultWidth = 700;
+const int kWidgetsSeparatorWidth = 2;
 
 CompactLocationBarView::CompactLocationBarView(CompactLocationBarHost* host)
     : DropdownBarView(host),
       reload_(NULL),
-      location_entry_view_(NULL),
-      browser_actions_(NULL) {
+      star_(NULL) {
+  set_background(views::Background::CreateStandardPanelBackground());
   SetFocusable(true);
 }
 
@@ -60,7 +60,6 @@ void CompactLocationBarView::SetFocusAndSelection() {
 
 void CompactLocationBarView::Update(const TabContents* contents) {
   location_entry_->Update(contents);
-  browser_actions_->RefreshBrowserActionViews();
 }
 
 
@@ -78,8 +77,6 @@ void CompactLocationBarView::Init() {
 
   // Reload button.
   reload_ = new views::ImageButton(this);
-  reload_->SetImageAlignment(views::ImageButton::ALIGN_CENTER,
-                             views::ImageButton::ALIGN_MIDDLE);
   reload_->set_tag(IDC_RELOAD);
   reload_->SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_RELOAD));
   reload_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_RELOAD));
@@ -111,11 +108,15 @@ void CompactLocationBarView::Init() {
   location_entry_view_->set_focus_view(this);
   location_entry_view_->Attach(location_entry_->widget());
 
-  // TODO(oshima): Add Star Button
-  location_entry_->Update(browser()->GetSelectedTabContents());
+  star_ = new ToolbarStarToggle(this);
+  star_->SetDragController(this);
+  star_->set_profile(browser()->profile());
+  star_->set_host_view(this);
+  star_->set_bubble_positioner(this);
+  star_->Init();
+  AddChildView(star_);
 
-  browser_actions_ = new BrowserActionsContainer(browser(), this);
-  AddChildView(browser_actions_);
+  location_entry_->Update(browser()->GetSelectedTabContents());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -126,46 +127,39 @@ gfx::Size CompactLocationBarView::GetPreferredSize() {
     return gfx::Size();  // Not initialized yet, do nothing.
 
   gfx::Size reload_size = reload_->GetPreferredSize();
-  gfx::Size ba_size = browser_actions_->GetPreferredSize();
-  int width =
-      reload_size.width() +
-      std::max(kDefaultLocationEntryWidth,
-               location_entry_view_->GetPreferredSize().width()) +
-      ba_size.width();
-  return gfx::Size(width, kDefaultLocationBarHeight);
+  gfx::Size star_size = star_->GetPreferredSize();
+  gfx::Size location_size = location_entry_view_->GetPreferredSize();
+
+  int max_height = std::max(reload_size.height(),
+                            std::max(star_size.height(),
+                                     location_size.height()));
+  return gfx::Size(500, max_height);
 }
 
 void CompactLocationBarView::Layout() {
   if (!reload_)
     return;  // Not initialized yet, do nothing.
 
-  int cur_x = kCompactLocationLeftRightMargin;
+  int cur_x = 0;
+  gfx::Size reload_size = reload_->GetPreferredSize();
+  int reload_height = std::min(reload_size.height(), height());
+  reload_->SetBounds(cur_x, (height() - reload_height) / 2,
+                     reload_size.width(), reload_height);
+  cur_x += reload_size.width() + kWidgetsSeparatorWidth;
 
-  gfx::Size sz = reload_->GetPreferredSize();
-  reload_->SetBounds(cur_x, 0, sz.width(), height());
-  cur_x += sz.width() + kEntryLeftMargin;
+  gfx::Size star_size = star_->GetPreferredSize();
+  int star_height = std::min(star_size.height(), height());
+  star_->SetBounds(cur_x, (height() - star_height) / 2,
+                   star_size.width(), star_height);
+  cur_x += star_size.width();
 
-  gfx::Size ba_size = browser_actions_->GetPreferredSize();
-  browser_actions_->SetBounds(
-      width() - ba_size.width(), 0, ba_size.width(), height());
-  int location_entry_width = browser_actions_->x() - cur_x;
-  if (ba_size.IsEmpty()) {
-    // BrowserActionsContainer has its own margin on right.
-    // Use the our margin when if the browser action is empty.
-    location_entry_width -= kCompactLocationLeftRightMargin;
-  }
-
-  // The location bar gets the rest of the space in the middle.
-  location_entry_view_->SetBounds(cur_x, 0, location_entry_width, height());
+  // The location bar is located exactly to the right of the star button and
+  // takes all the space to the right except for small margin at the end.
+  int location_width = width() - cur_x - kWidgetsSeparatorWidth;
+  location_entry_view_->SetBounds(cur_x, 0, location_width, height());
 }
 
 void CompactLocationBarView::Paint(gfx::Canvas* canvas) {
-  gfx::Rect lb = GetLocalBounds(true);
-  ThemeProvider* tp = GetThemeProvider();
-  gfx::Rect bounds;
-  host()->GetThemePosition(&bounds);
-  canvas->TileImageInt(*tp->GetBitmapNamed(IDR_THEME_TOOLBAR),
-                       bounds.x(), bounds.y(), 0, 0, lb.width(), lb.height());
   View::Paint(canvas);
 }
 
@@ -205,6 +199,7 @@ void CompactLocationBarView::OnChanged() {
 }
 
 void CompactLocationBarView::OnKillFocus() {
+  clb_host()->Hide(true);
 }
 
 void CompactLocationBarView::OnSetFocus() {
@@ -227,8 +222,59 @@ gfx::Rect CompactLocationBarView::GetLocationStackBounds() const {
   gfx::Point lower_left(0, height());
   ConvertPointToScreen(this, &lower_left);
   gfx::Rect popup = gfx::Rect(lower_left.x(), lower_left.y(),
-                              kAutocompletePopupWidth, 0);
+                              kCompactLocationBarDefaultWidth, 0);
   return popup.AdjustToFit(GetWidget()->GetWindow()->GetBounds());
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// views::DragController overrides:
+void CompactLocationBarView::WriteDragData(views::View* sender,
+                                           int press_x,
+                                           int press_y,
+                                           OSExchangeData* data) {
+  DCHECK(
+      GetDragOperations(sender, press_x, press_y) != DragDropTypes::DRAG_NONE);
+
+  UserMetrics::RecordAction("CompactLocationBar_DragStar",
+                            browser()->profile());
+
+  // If there is a bookmark for the URL, add the bookmark drag data for it. We
+  // do this to ensure the bookmark is moved, rather than creating an new
+  // bookmark.
+  TabContents* tab = browser()->GetSelectedTabContents();
+  if (tab) {
+    Profile* profile = browser()->profile();
+    if (profile && profile->GetBookmarkModel()) {
+      const BookmarkNode* node = profile->GetBookmarkModel()->
+          GetMostRecentlyAddedNodeForURL(tab->GetURL());
+      if (node) {
+        BookmarkDragData bookmark_data(node);
+        bookmark_data.Write(profile, data);
+      }
+    }
+
+    drag_utils::SetURLAndDragImage(tab->GetURL(),
+                                   UTF16ToWideHack(tab->GetTitle()),
+                                   tab->GetFavIcon(),
+                                   data);
+  }
+}
+
+int CompactLocationBarView::GetDragOperations(views::View* sender,
+                                              int x,
+                                              int y) {
+  DCHECK(sender == star_);
+  TabContents* tab = browser()->GetSelectedTabContents();
+  if (!tab || !tab->ShouldDisplayURL() || !tab->GetURL().is_valid()) {
+    return DragDropTypes::DRAG_NONE;
+  }
+  Profile* profile = browser()->profile();
+  if (profile && profile->GetBookmarkModel() &&
+      profile->GetBookmarkModel()->IsBookmarked(tab->GetURL())) {
+    return DragDropTypes::DRAG_MOVE | DragDropTypes::DRAG_COPY |
+           DragDropTypes::DRAG_LINK;
+  }
+  return DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_LINK;
 }
 
 }  // namespace chromeos
