@@ -16,8 +16,10 @@
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
+#include "chrome/browser/gtk/info_bubble_gtk.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/location_bar.h"
+#include "chrome/common/content_settings_types.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
@@ -29,6 +31,7 @@ class AutocompleteEditViewGtk;
 class BubblePositioner;
 class Browser;
 class CommandUpdater;
+class ContentBlockedBubbleGtk;
 class ExtensionAction;
 class ExtensionActionContextMenuModel;
 class GtkThemeProvider;
@@ -120,6 +123,52 @@ class LocationBarViewGtk : public AutocompleteEditController,
   static const GdkColor kBackgroundColorByLevel[3];
 
  private:
+  class ContentBlockedViewGtk : public InfoBubbleGtkDelegate {
+   public:
+    ContentBlockedViewGtk(ContentSettingsType content_type,
+                          const LocationBarViewGtk* parent,
+                          Profile* profile);
+    virtual ~ContentBlockedViewGtk();
+
+    GtkWidget* widget() { return event_box_.get(); }
+
+    ContentSettingsType content_type() const { return content_type_; }
+    void set_profile(Profile* profile) { profile_ = profile; }
+
+    bool IsVisible() { return GTK_WIDGET_VISIBLE(widget()); }
+    void SetVisible(bool visible);
+
+   private:
+    static gboolean OnButtonPressedThunk(GtkWidget* sender,
+                                         GdkEvent* event,
+                                         ContentBlockedViewGtk* view) {
+      return view->OnButtonPressed(sender, event);
+    }
+    gboolean OnButtonPressed(GtkWidget* sender, GdkEvent* event);
+
+    // InfoBubbleDelegate overrides:
+    virtual void InfoBubbleClosing(InfoBubbleGtk* info_bubble,
+                                   bool closed_by_escape);
+
+    // The widgets for this content blocked view.
+    OwnedWidgetGtk event_box_;
+    OwnedWidgetGtk image_;
+
+    // The type of content handled by this view.
+    ContentSettingsType content_type_;
+
+    // The owning LocationBarViewGtk.
+    const LocationBarViewGtk* parent_;
+
+    // The currently active profile.
+    Profile* profile_;
+
+    // The currently shown info bubble if any.
+    ContentBlockedBubbleGtk* info_bubble_;
+
+    DISALLOW_COPY_AND_ASSIGN(ContentBlockedViewGtk);
+  };
+
   class PageActionViewGtk : public ImageLoadingTracker::Observer {
    public:
     PageActionViewGtk(
@@ -260,6 +309,10 @@ class LocationBarViewGtk : public AutocompleteEditController,
   GtkWidget* security_warning_icon_image_;
   // Toolbar info text (EV cert info).
   GtkWidget* info_label_;
+
+  // Content blocking icons.
+  OwnedWidgetGtk content_blocking_hbox_;
+  ScopedVector<ContentBlockedViewGtk> content_blocked_views_;
 
   // Extension page action icons.
   OwnedWidgetGtk page_action_hbox_;

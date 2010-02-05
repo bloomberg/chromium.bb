@@ -166,7 +166,7 @@ void ContentBlockedBubbleContents::InitControlLayout() {
       IDS_BLOCKED_PLUGINS_NO_ACTION,
       IDS_BLOCKED_POPUPS_NO_ACTION,
     };
-    DCHECK_EQ(arraysize(kAllowIDs),
+    DCHECK_EQ(arraysize(kBlockIDs),
               static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
     block_radio_ = new views::RadioButton(
         l10n_util::GetString(kBlockIDs[content_type_]), radio_button_group);

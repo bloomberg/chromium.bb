@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -245,6 +245,10 @@ void BrowserToolbarGtk::Init(Profile* profile,
     if (actions_toolbar_->button_count() == 0)
       gtk_widget_hide(actions_toolbar_->widget());
   }
+
+  // Because the above does a recursive show all on all widgets we need to
+  // update the icon visibility to hide them.
+  location_bar_->UpdateContentBlockedIcons();
 
   SetViewIDs();
 }

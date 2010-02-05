@@ -25,6 +25,7 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
+#include "chrome/browser/gtk/content_blocked_bubble_gtk.h"
 #include "chrome/browser/gtk/extension_popup_gtk.h"
 #include "chrome/browser/gtk/first_run_bubble.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
@@ -39,8 +40,10 @@
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/page_transition_types.h"
+#include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "net/base/net_util.h"
 #include "webkit/glue/window_open_disposition.h"
 
 namespace {
@@ -167,6 +170,7 @@ LocationBarViewGtk::LocationBarViewGtk(
 LocationBarViewGtk::~LocationBarViewGtk() {
   // All of our widgets should have be children of / owned by the alignment.
   hbox_.Destroy();
+  content_blocking_hbox_.Destroy();
   page_action_hbox_.Destroy();
 }
 
@@ -322,6 +326,22 @@ void LocationBarViewGtk::Init(bool popup_window_mode) {
                       "chrome-security-icon-eventbox");
   gtk_box_pack_end(GTK_BOX(hbox_.get()), security_icon_event_box_,
                    FALSE, FALSE, 0);
+
+  content_blocking_hbox_.Own(gtk_hbox_new(FALSE, kInnerPadding));
+  gtk_widget_set_name(content_blocking_hbox_.get(),
+                      "chrome-content-blocking-hbox");
+  gtk_box_pack_end(GTK_BOX(hbox_.get()), content_blocking_hbox_.get(),
+                   FALSE, FALSE, 0);
+
+  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
+    ContentBlockedViewGtk* content_blocked_view =
+        new ContentBlockedViewGtk(static_cast<ContentSettingsType>(i), this,
+                                  profile_);
+    content_blocked_views_.push_back(content_blocked_view);
+    gtk_box_pack_end(GTK_BOX(content_blocking_hbox_.get()),
+                     content_blocked_view->widget(), FALSE, FALSE, 0);
+    content_blocked_view->SetVisible(false);
+  }
 
   page_action_hbox_.Own(gtk_hbox_new(FALSE, kInnerPadding));
   gtk_widget_set_name(page_action_hbox_.get(),
@@ -511,7 +531,13 @@ void LocationBarViewGtk::FocusSearch() {
 }
 
 void LocationBarViewGtk::UpdateContentBlockedIcons() {
-  // TODO(pkasting): Implement.
+  const TabContents* tab_contents = browser_->GetSelectedTabContents();
+  for (ScopedVector<ContentBlockedViewGtk>::iterator i(
+           content_blocked_views_.begin());
+       i != content_blocked_views_.end(); ++i) {
+    (*i)->SetVisible((!toolbar_model_->input_in_progress() && tab_contents) ?
+        tab_contents->IsContentBlocked((*i)->content_type()) : false);
+  }
 }
 
 void LocationBarViewGtk::UpdatePageActions() {
@@ -895,6 +921,97 @@ void LocationBarViewGtk::AdjustChildrenVisibility() {
     else if (requisition.width < available_width)
       gtk_widget_show(type_to_search_hint_);
   }
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// LocationBarViewGtk::ContentBlockedViewGtk
+LocationBarViewGtk::ContentBlockedViewGtk::ContentBlockedViewGtk(
+    ContentSettingsType content_type,
+    const LocationBarViewGtk* parent,
+    Profile* profile)
+    : content_type_(content_type),
+      parent_(parent),
+      profile_(profile),
+      info_bubble_(NULL) {
+  event_box_.Own(gtk_event_box_new());
+
+  // Make the event box not visible so it does not paint a background.
+  gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_.get()), FALSE);
+  g_signal_connect(event_box_.get(), "button-press-event",
+                   G_CALLBACK(&OnButtonPressedThunk), this);
+
+  image_.Own(gtk_image_new());
+  gtk_container_add(GTK_CONTAINER(event_box_.get()), image_.get());
+
+  static const int kIconIDs[CONTENT_SETTINGS_NUM_TYPES] = {
+    IDR_BLOCKED_COOKIES,
+    IDR_BLOCKED_IMAGES,
+    IDR_BLOCKED_JAVASCRIPT,
+    IDR_BLOCKED_PLUGINS,
+    IDR_BLOCKED_POPUPS,
+  };
+  DCHECK_EQ(arraysize(kIconIDs),
+            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
+  gtk_image_set_from_pixbuf(GTK_IMAGE(image_.get()),
+                            ResourceBundle::GetSharedInstance().GetPixbufNamed(
+                                kIconIDs[content_type]));
+
+  static const int kTooltipIDs[CONTENT_SETTINGS_NUM_TYPES] = {
+    IDS_BLOCKED_COOKIES_TITLE,
+    IDS_BLOCKED_IMAGES_TITLE,
+    IDS_BLOCKED_JAVASCRIPT_TITLE,
+    IDS_BLOCKED_PLUGINS_TITLE,
+    IDS_BLOCKED_POPUPS_TOOLTIP,
+  };
+  DCHECK_EQ(arraysize(kTooltipIDs),
+            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
+  gtk_widget_set_tooltip_text(
+      widget(),
+      l10n_util::GetStringUTF8(kTooltipIDs[content_type_]).c_str());
+}
+
+LocationBarViewGtk::ContentBlockedViewGtk::~ContentBlockedViewGtk() {
+  image_.Destroy();
+  event_box_.Destroy();
+
+  if (info_bubble_)
+    info_bubble_->Close();
+}
+
+void LocationBarViewGtk::ContentBlockedViewGtk::SetVisible(bool visible) {
+  if (visible)
+    gtk_widget_show(widget());
+  else
+    gtk_widget_hide(widget());
+}
+
+gboolean LocationBarViewGtk::ContentBlockedViewGtk::OnButtonPressed(
+    GtkWidget* sender, GdkEvent* event) {
+  gfx::Rect bounds =
+      gtk_util::GetWidgetRectRelativeToToplevel(sender);
+
+  TabContents* tab_contents =
+      BrowserList::GetLastActive()->GetSelectedTabContents();
+  if (!tab_contents)
+    return true;
+  GURL url = tab_contents->GetURL();
+  std::wstring display_host;
+  net::AppendFormattedHost(url,
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages), &display_host,
+      NULL, NULL);
+
+  GtkWindow* toplevel = GTK_WINDOW(gtk_widget_get_toplevel(sender));
+
+  info_bubble_ = new ContentBlockedBubbleGtk(
+      toplevel, bounds, this, content_type_, url.host(), display_host, profile_,
+      tab_contents);
+  return TRUE;
+}
+
+void LocationBarViewGtk::ContentBlockedViewGtk::InfoBubbleClosing(
+    InfoBubbleGtk* info_bubble,
+    bool closed_by_escape) {
+  info_bubble_ = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
