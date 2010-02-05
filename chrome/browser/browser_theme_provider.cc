@@ -38,12 +38,6 @@
 #include "app/win_util.h"
 #endif
 
-// No optimizations under windows until we know what's up with the crashing.
-#if defined(OS_WIN)
-#pragma optimize("", off)
-#pragma warning(disable:4748)
-#endif
-
 // Strings used in alignment properties.
 const char* BrowserThemeProvider::kAlignmentTop = "top";
 const char* BrowserThemeProvider::kAlignmentBottom = "bottom";
@@ -279,7 +273,7 @@ void BrowserThemeProvider::SetTheme(Extension* extension) {
   DCHECK(extension);
   DCHECK(extension->IsTheme());
 
-  BuildFromExtension(extension, false);
+  BuildFromExtension(extension);
   SaveThemeID(extension->id());
 
   NotifyThemeChanged();
@@ -528,7 +522,9 @@ void BrowserThemeProvider::LoadThemePrefs() {
       if (service) {
         Extension* extension = service->GetExtensionById(current_id, false);
         if (extension) {
-          MigrateTheme(extension, extension->name());
+          DLOG(ERROR) << "Migrating theme";
+          BuildFromExtension(extension);
+          UserMetrics::RecordAction("Themes.Migrated", profile_);
         } else {
           DLOG(ERROR) << "Theme is mysteriously gone.";
           ClearAllThemeData();
@@ -562,31 +558,7 @@ void BrowserThemeProvider::SaveThemeID(const std::string& id) {
   profile_->GetPrefs()->SetString(prefs::kCurrentThemeID, UTF8ToWide(id));
 }
 
-void BrowserThemeProvider::MigrateTheme(Extension* extension,
-                                        const std::string& name) {
-  FilePath::CharType full_name_on_stack[512 + 1];
-
-  // Copy names's backing string onto the stack because that's what get's
-  // stored in minidumps. :(
-  size_t i = 0;
-  for (i = 0; i < 512 && i < name.size(); ++i) {
-    full_name_on_stack[i] = name[i];
-  }
-  full_name_on_stack[i] = '\0';
-
-  // TODO(erg): Remove this hack.
-  //
-  // This is a hack to force the name of the theme into the stack
-  // frame. Hopefully.
-  BuildFromExtension(extension, true);
-  UserMetrics::RecordAction("Themes.Migrated", profile_);
-  LOG(INFO) << "Migrating theme: " << full_name_on_stack;
-}
-
-void BrowserThemeProvider::BuildFromExtension(Extension* extension,
-                                              bool synchronously) {
-  CHECK(extension);
-
+void BrowserThemeProvider::BuildFromExtension(Extension* extension) {
   scoped_refptr<BrowserThemePack> pack =
       BrowserThemePack::BuildFromExtension(extension);
   if (!pack.get()) {
@@ -598,16 +570,8 @@ void BrowserThemeProvider::BuildFromExtension(Extension* extension,
 
   // Write the packed file to disk.
   FilePath pack_path = extension->path().Append(chrome::kThemePackFilename);
-  if (synchronously) {
-    // Write to disk sychronously because we don't have a message loop yet.
-    if (!pack->WriteToDisk(pack_path)) {
-      NOTREACHED() << "Could not write theme pack to disk";
-    }
-  } else {
-    // Post a task to write to disk since we have a message loop to post from.
-    ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
-                           new WritePackToDiskTask(pack, pack_path));
-  }
+  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+                         new WritePackToDiskTask(pack, pack_path));
 
   SavePackName(pack_path);
   theme_pack_ = pack;
@@ -623,9 +587,3 @@ void BrowserThemeProvider::OnInfobarDestroyed() {
   if (number_of_infobars_ == 0)
     RemoveUnusedThemes();
 }
-
-// No optimizations under windows until we know what's up with the crashing.
-#if defined(OS_WIN)
-#pragma warning(default:4748)
-#pragma optimize("", on)
-#endif
