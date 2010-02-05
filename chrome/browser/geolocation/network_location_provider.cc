@@ -80,7 +80,7 @@ class NetworkLocationProvider::PositionCache {
     const string16 separator(ASCIIToUTF16("|"));
     for (WifiData::AccessPointDataSet::const_iterator iter =
          wifi_data.access_point_data.begin();
-         iter != wifi_data.access_point_data.begin();
+         iter != wifi_data.access_point_data.end();
          iter++) {
       *key += separator;
       *key += iter->mac_address;
