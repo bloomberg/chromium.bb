@@ -349,8 +349,15 @@ bool AutocompleteEditModel::OnEscapeKeyPressed() {
 void AutocompleteEditModel::OnControlKeyChanged(bool pressed) {
   // Don't change anything unless the key state is actually toggling.
   if (pressed == (control_key_state_ == UP)) {
+    ControlKeyState old_state = control_key_state_;
     control_key_state_ = pressed ? DOWN_WITHOUT_CHANGE : UP;
-    if (popup_->IsOpen()) {
+    if ((control_key_state_ == DOWN_WITHOUT_CHANGE) && has_temporary_text_) {
+      // Arrowing down and then hitting control accepts the temporary text as
+      // the input text.
+      InternalSetUserText(UserTextFromDisplayText(view_->GetText()));
+      has_temporary_text_ = false;
+    }
+    if ((old_state != DOWN_WITH_CHANGE) && popup_->IsOpen()) {
       // Autocomplete history provider results may change, so refresh the
       // popup.  This will force user_input_in_progress_ to true, but if the
       // popup is open, that should have already been the case.
@@ -423,6 +430,16 @@ void AutocompleteEditModel::OnPopupDataChanged(
       has_temporary_text_ = true;
       original_url_ = popup_->URLsForCurrentSelection(NULL, NULL, NULL);
       original_keyword_ui_state_ = keyword_ui_state_;
+    }
+    if (control_key_state_ == DOWN_WITHOUT_CHANGE) {
+      // Arrowing around the popup cancels control-enter.
+      control_key_state_ = DOWN_WITH_CHANGE;
+      // Now things are a bit screwy: the desired_tld has changed, but if we
+      // update the popup, the new order of entries won't match the old, so the
+      // user's selection gets screwy; and if we don't update the popup, and the
+      // user reverts, then the selected item will be as if control is still
+      // pressed, even though maybe it isn't any more.  There is no obvious
+      // right answer here :(
     }
     view_->OnTemporaryTextMaybeChanged(DisplayTextFromUserText(text),
                                        save_original_selection);
