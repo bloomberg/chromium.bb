@@ -115,6 +115,8 @@
 // TODO(port): these files are currently Windows only because they concern:
 //   * theming
 #include "app/gfx/native_theme_win.h"
+#elif defined(OS_LINUX)
+#include "third_party/WebKit/WebKit/chromium/public/linux/WebRenderTheme.h"
 #endif
 
 using appcache::WebApplicationCacheHostImpl;
@@ -3472,6 +3474,7 @@ void RenderView::OnSetRendererPrefs(const RendererPreferences& renderer_prefs) {
 #if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
   WebColorName name = WebKit::WebColorWebkitFocusRingColor;
   WebKit::setNamedColors(&name, &renderer_prefs.focus_ring_color, 1);
+  WebKit::setCaretBlinkInterval(renderer_prefs.caret_blink_interval);
 
   if (webview()) {
     webview()->setScrollbarColors(

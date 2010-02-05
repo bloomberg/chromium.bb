@@ -66,6 +66,11 @@ struct RendererPreferences {
   // Browser wants a look at all top level requests
   bool browser_handles_top_level_requests;
 
+  // Cursor blink rate in seconds.
+  // Currently only changed from default on Linux.  Uses |gtk-cursor-blink|
+  // from GtkSettings.
+  double caret_blink_interval;
+
   RendererPreferences()
       : can_accept_load_drops(true),
         should_antialias_text(true),
@@ -80,7 +85,8 @@ struct RendererPreferences {
         active_selection_fg_color(0),
         inactive_selection_bg_color(0),
         inactive_selection_fg_color(0),
-        browser_handles_top_level_requests(false) {
+        browser_handles_top_level_requests(false),
+        caret_blink_interval(0) {
   }
 };
 

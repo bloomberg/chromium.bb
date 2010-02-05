@@ -1627,6 +1627,7 @@ struct ParamTraits<RendererPreferences> {
     WriteParam(m, p.inactive_selection_bg_color);
     WriteParam(m, p.inactive_selection_fg_color);
     WriteParam(m, p.browser_handles_top_level_requests);
+    WriteParam(m, p.caret_blink_interval);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     if (!ReadParam(m, iter, &p->can_accept_load_drops))
@@ -1671,6 +1672,9 @@ struct ParamTraits<RendererPreferences> {
     p->inactive_selection_fg_color = inactive_selection_fg_color;
 
     if (!ReadParam(m, iter, &p->browser_handles_top_level_requests))
+      return false;
+
+    if (!ReadParam(m, iter, &p->caret_blink_interval))
       return false;
 
     return true;
