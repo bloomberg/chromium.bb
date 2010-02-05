@@ -5,7 +5,7 @@
   <head>
     <title> Simple RPC Performance Tests </title>
     <script type="application/x-javascript">
-      <!--
+      //<![CDATA[
 var ClearCanvas = function() {
   this.context.fillStyle = 'rgb(0,0,0)';
   this.context.fillRect(0, 0, this.xsize, this.ysize);
@@ -98,7 +98,7 @@ var Init = function(boxsize) {
   BenchNullNpapiTest =
     new Benchmark('NullNpapiTest', NullNpapiTestNativeClient);
 }
-      -->
+      //]]>
     </script>
   </head>
   <body onload="Init();">

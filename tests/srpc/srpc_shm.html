@@ -10,7 +10,7 @@
       td.fail { background-color: red }
     </style>
     <script type="application/x-javascript">
-      <!--
+      //<![CDATA[
 var SetTestResult = function(element_id, result) {
   var element = document.getElementById(element_id);
   element.className = result;
@@ -358,13 +358,13 @@ var EnqueueAndRunTests = function() {
   // Run them all.
   RunAllTests();
 }
-      -->
+      //]]>
     </script>
   </head>
   <body onload="nacllib.waitForModulesAndRunTests();"
         onunload="nacllib.cleanUp();" >
     <h1> SRPC Shared Memory API Test </h1>
-    <table cellspacing=5 cellpadding=5 border=5>
+    <table cellspacing=5 cellpadding=5 border=5 summary="Test status table">
       <tr>
         <td>
         </td>
@@ -384,9 +384,9 @@ var EnqueueAndRunTests = function() {
       <tr>
         <td>
           <b> Argument count tests </b>
-        </b>
+        </td>
         <td valign=top>
-          <table>
+          <table summary="Factory arugments tests">
             <tr>
               <td id="factory_too_few" class="notrun">
                 argc: too few
@@ -400,7 +400,7 @@ var EnqueueAndRunTests = function() {
           </table>
         </td>
         <td>
-          <table>
+          <table summary="Map arguments test">
             <tr>
               <td id="map_too_many" class="notrun">
                 argc: too many
@@ -409,7 +409,7 @@ var EnqueueAndRunTests = function() {
           </table>
         </td>
         <td>
-          <table>
+          <table summary="Write argument tests">
             <tr>
               <td id="write_too_few" class="notrun">
                 argc: too few
@@ -423,7 +423,7 @@ var EnqueueAndRunTests = function() {
           </table>
         </td>
         <td>
-          <table>
+          <table summary="Read arguments tests">
             <tr>
               <td id="read_too_few" class="notrun">
                 argc: too few
@@ -442,7 +442,7 @@ var EnqueueAndRunTests = function() {
           <b> Argument type tests </b>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Factory size tests">
             <tr>
               <td id="factory_size_null" class="notrun">
                 arg[0]: (size) undefined
@@ -463,7 +463,7 @@ var EnqueueAndRunTests = function() {
         <td valign=top>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Write offset tests">
             <tr>
               <td id="write_offset_null" class="notrun">
                 arg[0]: (offset) undefined
@@ -512,7 +512,7 @@ var EnqueueAndRunTests = function() {
           </table>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Read offset tests">
             <tr>
               <td id="read_offset_null" class="notrun">
                 arg[0]: (offset) undefined
@@ -552,7 +552,7 @@ var EnqueueAndRunTests = function() {
           <b> Argument range tests </b>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Factory invalid size test">
             <tr>
               <td id="factory_size_invalid" class="notrun">
                 arg[0]: (size) invalid/negative
@@ -561,7 +561,7 @@ var EnqueueAndRunTests = function() {
           </table>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Map invalid offset tests">
             <tr>
               <td id="map_offset_neg" class="notrun">
                 arg[0]: (offset) negative
@@ -585,7 +585,7 @@ var EnqueueAndRunTests = function() {
           </table>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Write invalid offset tests">
             <tr>
               <td id="write_offset_neg" class="notrun">
                 arg[0]: (offset) negative
@@ -609,7 +609,7 @@ var EnqueueAndRunTests = function() {
           </table>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Read invalid offset tests">
             <tr>
               <td id="read_offset_neg" class="notrun">
                 arg[0]: (offset) negative
@@ -641,7 +641,7 @@ var EnqueueAndRunTests = function() {
         <td>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Invalid map test">
             <tr>
               <td id="map_invalid" class="notrun">
                 NaCl module returns invalid handle
@@ -650,7 +650,7 @@ var EnqueueAndRunTests = function() {
           </table>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Write error tests">
             <tr>
               <td id="write_overlap" class="notrun">
                 Write overlaps end of region
@@ -664,7 +664,7 @@ var EnqueueAndRunTests = function() {
           </table>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Read error tests">
             <tr>
               <td id="read_overlap" class="notrun">
                 Read overlaps end of region
@@ -679,7 +679,7 @@ var EnqueueAndRunTests = function() {
           <b> Expected behavior </b>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Factory conforming test">
             <tr>
               <td id="factory_conforming" class="notrun">
                 Conforming usage
@@ -688,7 +688,7 @@ var EnqueueAndRunTests = function() {
           </table>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Map conforming tests">
             <tr>
               <td id="map_valid" class="notrun">
                 Conforming invocation of map
@@ -702,7 +702,7 @@ var EnqueueAndRunTests = function() {
           </table>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Write conforming test">
             <tr>
               <td id="write_conforming" class="notrun">
                 Conforming usage
@@ -711,7 +711,7 @@ var EnqueueAndRunTests = function() {
           </table>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Read conforming test">
             <tr>
               <td id="read_conforming" class="notrun">
                 Conforming usage

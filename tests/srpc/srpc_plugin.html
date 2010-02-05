@@ -10,8 +10,8 @@
       td.fail { background-color: red }
     </style>
     <script type="application/x-javascript">
-      <!--
-// The count of failing tests.  Set from the queue length, and decremented
+      //<![CDATA[
+// The count of failing tests.  Set from the queue length and decremented
 // whenever a test passes.
 var failing_count;
 
@@ -172,13 +172,13 @@ var EnqueueAndRunTests = function() {
   // Run them all.
   RunAllTests();
 }
-      -->
+      //]]>
     </script>
   </head>
   <body onload="nacllib.waitForModulesAndRunTests();"
         onunload="nacllib.cleanUp();" >
     <h1> SRPC Plugin Properties Test </h1>
-    <table cellspacing=5 cellpadding=5 border=5>
+    <table cellspacing=5 cellpadding=5 border=5 summary="Test status table">
       <tr>
         <td>
         </td>
@@ -200,7 +200,7 @@ var EnqueueAndRunTests = function() {
           <b> Argument type tests </b>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Height tests">
             <tr>
               <td id="plugin_height_null" class="notrun">
                 undefined
@@ -219,7 +219,7 @@ var EnqueueAndRunTests = function() {
           </table>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Width tests">
             <tr>
               <td id="plugin_width_null" class="notrun">
                 undefined
@@ -238,7 +238,7 @@ var EnqueueAndRunTests = function() {
           </table>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Video tests">
             <tr>
               <td id="plugin_video_null" class="notrun">
                 undefined
@@ -257,7 +257,7 @@ var EnqueueAndRunTests = function() {
           </table>
         </td>
         <td valign=top>
-          <table>
+          <table summary="src tests">
             <tr>
               <td id="plugin_src_null" class="notrun">
                 undefined
@@ -282,7 +282,7 @@ var EnqueueAndRunTests = function() {
           <b> Expected behavior </b>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Height conforming test">
             <tr>
               <td id="plugin_height_conforming" class="notrun">
                 integer
@@ -291,7 +291,7 @@ var EnqueueAndRunTests = function() {
           </table>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Width conforming test">
             <tr>
               <td id="plugin_width_conforming" class="notrun">
                 integer
@@ -300,7 +300,7 @@ var EnqueueAndRunTests = function() {
           </table>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Video conforming test">
             <tr>
               <td id="plugin_video_conforming" class="notrun">
                 integer
@@ -309,7 +309,7 @@ var EnqueueAndRunTests = function() {
           </table>
         </td>
         <td valign=top>
-          <table>
+          <table summary="src conforming test">
             <tr>
               <td id="plugin_src_conforming" class="notrun">
                 string

@@ -10,7 +10,7 @@
       td.fail { background-color: red }
     </style>
     <script type="application/x-javascript">
-      <!--
+      //<![CDATA[
 var SetTestResult = function(element_id, result) {
   var element = document.getElementById(element_id);
   element.className = result;
@@ -212,13 +212,13 @@ var EnqueueAndRunTests = function() {
   // Run them all.
   RunAllTests();
 }
-      -->
+      //]]>
     </script>
   </head>
   <body onload="nacllib.waitForModulesAndRunTests();"
         onunload="nacllib.cleanUp();" >
     <h1> SRPC Socket Address API Test </h1>
-    <table cellspacing=5 cellpadding=5 border=5>
+    <table cellspacing=5 cellpadding=5 border=5 summary="Test status table">
       <tr>
         <td>
         </td>
@@ -235,9 +235,9 @@ var EnqueueAndRunTests = function() {
       <tr>
         <td>
           <b> Argument count tests </b>
-        </b>
+        </td>
         <td>
-          <table>
+          <table summary="Default argument count test">
             <tr>
               <td id="default_too_many" class="notrun">
                 argc: too many
@@ -246,7 +246,7 @@ var EnqueueAndRunTests = function() {
           </table>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Factory argument count tests">
             <tr>
               <td id="factory_too_few" class="notrun">
                 argc: too few
@@ -260,7 +260,7 @@ var EnqueueAndRunTests = function() {
           </table>
         </td>
         <td>
-          <table>
+          <table summary="Connect argument count test">
             <tr>
               <td id="connect_too_many" class="notrun">
                 argc: too many
@@ -276,7 +276,7 @@ var EnqueueAndRunTests = function() {
         <td valign=top>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Factory argument type tests">
             <tr>
               <td id="factory_null" class="notrun">
                 arg[0]: (address) undefined
@@ -307,7 +307,7 @@ var EnqueueAndRunTests = function() {
         <td>
         </td>
         <td>
-          <table>
+          <table summary="Invalid connection test">
             <tr>
               <td id="connect_invalid" class="notrun">
                 to bad socket address
@@ -322,7 +322,7 @@ var EnqueueAndRunTests = function() {
           <b> Expected behavior </b>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Default behavior tests">
             <tr>
               <td id="default_conforming" class="notrun">
                 conforming invocation
@@ -336,7 +336,7 @@ var EnqueueAndRunTests = function() {
           </table>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Factory behavior tests">
             <tr>
               <td id="factory_conforming" class="notrun">
                 conforming invocation
@@ -350,7 +350,7 @@ var EnqueueAndRunTests = function() {
           </table>
         </td>
         <td valign=top>
-          <table>
+          <table summary="Connection behavior tests">
             <tr>
               <td id="connect_default" class="notrun">
                 to default

@@ -10,7 +10,7 @@
       td.fail { background-color: red }
     </style>
     <script type="application/x-javascript">
-      <!--
+      //<![CDATA[
 var server = 0;
 var client = 0;
 var num_passing = 0;
@@ -186,7 +186,7 @@ var RunAllTests = function() {
   SharedMemoryNaClToBrowser();
   SharedMemoryNaClToNaCl();
 }
-      -->
+      //]]>
     </script>
   </head>
   <body onload="nacllib.waitForModulesAndRunTests();"

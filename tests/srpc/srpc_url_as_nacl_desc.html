@@ -1,8 +1,9 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
   <!-- Copyright 2008 Google Inc.  All rights reserved. -->
   <!--
-    -- Much of this file is cribbed from srpc_nrd_xfer and
-    -- mandel_nav.
+     Much of this file is cribbed from srpc_nrd_xfer and mandel_nav.
     -->
   <head>
     <style type="text/css">
@@ -11,7 +12,7 @@
       pre.fail { background-color: red }
     </style>
     <script type="application/x-javascript">
-      <!--
+      //<![CDATA[
 var plugin = 0;
 var startupTimeout;
 var logElt;
@@ -88,15 +89,15 @@ var Init = function() {
   GeneralLog('loading module');
   PostLoadInit();
 }
-        -->
+      //]]>
     </script>
     <title>SRPC Open URL as NaCl Descriptor Test</title>
   </head>
   <body onload="Init();">
     <h1>SRPC Open URL as NaCl Descriptor Test</h1>
 
-    <h2> Output logs </h2> <p>
-      <table border=5 cellpadding=5%>
+    <h2> Output logs </h2>
+      <table border=5 cellpadding=5% summary="Test status table">
         <tr>
           <td> <b> General test output </b> </td>
         </tr>
@@ -105,8 +106,7 @@ var Init = function() {
         </tr>
       </table>
       <embed type="application/x-nacl-srpc" id="nacl" width="0" height="0"
-              src="cat.nexe">
-      </embed>
+              src="cat.nexe" />
   </body>
 </html>
 
