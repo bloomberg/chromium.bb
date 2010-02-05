@@ -88,7 +88,10 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveHTMLOnly) {
   SavePageFinishedObserver observer;
 
   EXPECT_EQ(url, observer.page_url());
-  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+
+  if (browser()->SupportsWindowFeature(Browser::FEATURE_DOWNLOADSHELF))
+    EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_FALSE(file_util::PathExists(dir));
   EXPECT_TRUE(file_util::ContentsEqual(
@@ -113,7 +116,10 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, SaveCompleteHTML) {
   SavePageFinishedObserver observer;
 
   EXPECT_EQ(url, observer.page_url());
-  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+
+  if (browser()->SupportsWindowFeature(Browser::FEATURE_DOWNLOADSHELF))
+    EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_TRUE(file_util::PathExists(dir));
   EXPECT_TRUE(file_util::TextContentsEqual(
@@ -153,7 +159,10 @@ IN_PROC_BROWSER_TEST_F(SavePageBrowserTest, FileNameFromPageTitle) {
   SavePageFinishedObserver observer;
 
   EXPECT_EQ(url, observer.page_url());
-  EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+
+  if (browser()->SupportsWindowFeature(Browser::FEATURE_DOWNLOADSHELF))
+    EXPECT_TRUE(browser()->window()->IsDownloadShelfVisible());
+
   EXPECT_TRUE(file_util::PathExists(full_file_name));
   EXPECT_TRUE(file_util::PathExists(dir));
   EXPECT_TRUE(file_util::TextContentsEqual(

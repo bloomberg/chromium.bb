@@ -52,7 +52,7 @@ class USBMountObserver : public chromeos::MountLibrary::Observer,
 
   // Used to create a window of a standard size, and add it to a list
   // of tracked browser windows in case that device goes away.
-  void PopUpWindow(const std::string& url, const std::string& device_path);
+  void OpenFileBrowse(const std::string& url, const std::string& device_path);
 
   Profile* profile_;
   std::vector<BrowserWithPath> browsers_;

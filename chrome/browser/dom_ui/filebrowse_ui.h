@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_DOM_UI_FILEBROWSE_UI_H_
 #define CHROME_BROWSER_DOM_UI_FILEBROWSE_UI_H_
 
+#include <string>
+
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
@@ -14,11 +16,14 @@
 #include "net/base/directory_lister.h"
 
 
-class GURL;
+class Browser;
+class Profile;
 
 class FileBrowseUI : public HtmlDialogUI {
  public:
   explicit FileBrowseUI(TabContents* contents);
+
+  static Browser *OpenPopup(Profile *profile, const std::string hashArgument);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(FileBrowseUI);

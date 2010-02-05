@@ -27,6 +27,7 @@
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_window.h"
+#include "chrome/browser/dom_ui/filebrowse_ui.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_shelf.h"
@@ -1061,7 +1062,14 @@ void Browser::ShowFindBar() {
 }
 
 bool Browser::SupportsWindowFeature(WindowFeature feature) const {
-  unsigned int features = FEATURE_INFOBAR | FEATURE_DOWNLOADSHELF;
+  unsigned int features = FEATURE_INFOBAR;
+
+#if !defined(OS_CHROMEOS)
+  // Chrome OS opens a FileBrowse pop up instead of using download shelf.
+  // So FEATURE_DOWNLOADSHELF is only added for non-chromeos platforms.
+  features |= FEATURE_DOWNLOADSHELF;
+#endif  // !defined(OS_CHROMEOS)
+
   if (type() == TYPE_NORMAL) {
     features |= FEATURE_BOOKMARKBAR;
     features |= FEATURE_EXTENSIONSHELF;
@@ -2252,6 +2260,12 @@ void Browser::OnStartDownload(DownloadItem* download) {
   if (!window())
     return;
 
+#if defined(OS_CHROMEOS)
+  // skip the download shelf and just open the file browser in chromeos
+  std::string arg = download->full_path().DirName().value();
+  FileBrowseUI::OpenPopup(profile_, arg);
+
+#else
   // GetDownloadShelf creates the download shelf if it was not yet created.
   window()->GetDownloadShelf()->AddDownload(new DownloadItemModel(download));
 
@@ -2267,8 +2281,10 @@ void Browser::OnStartDownload(DownloadItem* download) {
   TabContents* current_tab = GetSelectedTabContents();
   // We make this check for the case of minimized windows, unit tests, etc.
   if (platform_util::IsVisible(current_tab->GetNativeView()) &&
-      Animation::ShouldRenderRichAnimation())
+      Animation::ShouldRenderRichAnimation()) {
     DownloadStartedAnimation::Show(current_tab);
+  }
+#endif
 }
 
 void Browser::ConfirmAddSearchProvider(const TemplateURL* template_url,

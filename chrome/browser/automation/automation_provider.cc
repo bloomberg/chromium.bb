@@ -59,6 +59,7 @@
 #include "chrome/common/platform_util.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "net/proxy/proxy_service.h"
@@ -1118,10 +1119,28 @@ void AutomationProvider::GetShelfVisibility(int handle, bool* visible) {
   *visible = false;
 
   if (browser_tracker_->ContainsHandle(handle)) {
+#if defined(OS_CHROMEOS)
+    // Chromium OS shows FileBrowse ui rather than download shelf. So we
+    // enumerate all browsers and look for a chrome://filebrowse... pop up.
+    for (BrowserList::const_iterator it = BrowserList::begin();
+         it != BrowserList::end(); ++it) {
+      if ((*it)->type() == Browser::TYPE_POPUP) {
+        const GURL& url =
+            (*it)->GetTabContentsAt((*it)->selected_index())->GetURL();
+
+        if (url.SchemeIs(chrome::kChromeUIScheme) &&
+            url.host() == chrome::kChromeUIFileBrowseHost) {
+          *visible = true;
+          break;
+        }
+      }
+    }
+#else
     Browser* browser = browser_tracker_->GetResource(handle);
     if (browser) {
       *visible = browser->window()->IsDownloadShelfVisible();
     }
+#endif
   }
 }
 

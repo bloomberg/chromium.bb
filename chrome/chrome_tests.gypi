@@ -71,7 +71,7 @@
         #'browser/net/url_request_mock_http_job.cc',
         #'browser/net/url_request_mock_http_job.h',
         'browser/net/url_request_mock_net_error_job.cc',
-        'browser/net/url_request_mock_net_error_job.h',		
+        'browser/net/url_request_mock_net_error_job.h',
         'browser/renderer_host/mock_render_process_host.cc',
         'browser/renderer_host/mock_render_process_host.h',
         'browser/renderer_host/test/test_backing_store.cc',
@@ -340,6 +340,9 @@
         ['OS=="linux" and (toolkit_views==1 or chromeos==1)', {
           'dependencies': [
             '../views/views.gyp:views',
+          ],
+          'sources!': [
+            'browser/download/download_uitest.cc',
           ],
         }],
         ['OS=="mac"', {

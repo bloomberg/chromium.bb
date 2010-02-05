@@ -6,12 +6,13 @@
 
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/dom_ui/filebrowse_ui.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 
 namespace chromeos {
 
 const char* kFilebrowseURLHash = "chrome://filebrowse#";
-const char* kFilebrowseURLScanning = "chrome://filebrowse#scanningdevice";
+const char* kFilebrowseScanning = "scanningdevice";
 const int kPopupLeft = 0;
 const int kPopupTop = 0;
 const int kPopupWidth = 250;
@@ -33,20 +34,12 @@ void USBMountObserver::Observe(NotificationType type,
   }
 }
 
-void USBMountObserver::PopUpWindow(const std::string& url,
-                                   const std::string& device_path) {
-  Browser* browser = Browser::CreateForPopup(profile_);
-  browser->AddTabWithURL(
-      GURL(url), GURL(), PageTransition::LINK,
-      true, -1, false, NULL);
-  browser->window()->SetBounds(gfx::Rect(kPopupLeft,
-                                         kPopupTop,
-                                         kPopupWidth,
-                                         kPopupHeight));
+void USBMountObserver::OpenFileBrowse(const std::string& url,
+                                      const std::string& device_path) {
+  Browser *browser = FileBrowseUI::OpenPopup(profile_, url);
   registrar_.Add(this,
                  NotificationType::BROWSER_CLOSED,
                  Source<Browser>(browser));
-  browser->window()->Show();
   BrowserWithPath new_browser;
   new_browser.browser = browser;
   new_browser.device_path = device_path;
@@ -85,9 +78,7 @@ void USBMountObserver::MountChanged(chromeos::MountLibrary* obj,
               iter->device_path = path;
               iter->browser->Reload();
             } else {
-              std::string url = kFilebrowseURLHash;
-              url += disks[i].mount_path;
-              PopUpWindow(url, disks[i].device_path);
+              OpenFileBrowse(disks[i].mount_path, disks[i].device_path);
             }
           }
           return;
@@ -97,8 +88,7 @@ void USBMountObserver::MountChanged(chromeos::MountLibrary* obj,
   } else if (evt == chromeos::DEVICE_ADDED) {
     LOG(INFO) << "Got device added" << path;
     // TODO(dhg): Refactor once mole api is ready.
-    std::string url = kFilebrowseURLScanning;
-    PopUpWindow(url, path);
+    OpenFileBrowse(kFilebrowseScanning, path);
   } else if (evt == chromeos::DEVICE_SCANNED) {
     LOG(INFO) << "Got device scanned:" << path;
   }

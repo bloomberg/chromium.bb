@@ -54,6 +54,12 @@ static const std::string kPicasawebDefault = "/albumid/default";
 static const std::string kPicasawebDropBox = "/DropBox";
 static const std::string kPicasawebBaseUrl = "http://picasaweb.google.com/";
 
+static const char* kFilebrowseURLHash = "chrome://filebrowse#";
+static const int kPopupLeft = 0;
+static const int kPopupTop = 0;
+static const int kPopupWidth = 250;
+static const int kPopupHeight = 300;
+
 class FileBrowseUIHTMLSource : public ChromeURLDataManager::DataSource {
  public:
   FileBrowseUIHTMLSource();
@@ -678,7 +684,7 @@ void FilebrowseHandler::SendCurrentDownloads() {
 
 ////////////////////////////////////////////////////////////////////////////////
 //
-// FileBrowseUIContents
+// FileBrowseUI
 //
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -695,4 +701,25 @@ FileBrowseUI::FileBrowseUI(TabContents* contents) : HtmlDialogUI(contents) {
           Singleton<ChromeURLDataManager>::get(),
           &ChromeURLDataManager::AddDataSource,
           make_scoped_refptr(html_source)));
+}
+
+// static
+Browser *FileBrowseUI::OpenPopup(Profile *profile,
+                                 const std::string hashArgument) {
+  Browser* browser = Browser::CreateForPopup(profile);
+
+  std::string url(kFilebrowseURLHash);
+  url.append(hashArgument);
+
+  browser->AddTabWithURL(
+      GURL(url), GURL(), PageTransition::LINK,
+      true, -1, false, NULL);
+  browser->window()->SetBounds(gfx::Rect(kPopupLeft,
+                                         kPopupTop,
+                                         kPopupWidth,
+                                         kPopupHeight));
+
+  browser->window()->Show();
+
+  return browser;
 }
