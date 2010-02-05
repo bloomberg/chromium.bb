@@ -1,3 +1,5 @@
+// -*- mode: c++ -*- 
+
 // Copyright (c) 2006, Google Inc.
 // All rights reserved.
 //
@@ -42,6 +44,7 @@
 #include "google_breakpad/common/breakpad_types.h"
 #include "google_breakpad/common/minidump_format.h"
 #include "google_breakpad/processor/stackwalker.h"
+#include "google_breakpad/processor/stack_frame_cpu.h"
 
 namespace google_breakpad {
 
@@ -66,8 +69,22 @@ class StackwalkerX86 : public Stackwalker {
   // stack conventions (saved %ebp at [%ebp], saved %eip at 4[%ebp], or
   // alternate conventions as guided by any WindowsFrameInfo available for the
   // code in question.).
-  virtual StackFrame* GetContextFrame();
-  virtual StackFrame* GetCallerFrame(const CallStack *stack);
+  virtual StackFrame *GetContextFrame();
+  virtual StackFrame *GetCallerFrame(const CallStack *stack);
+
+  // Use windows_frame_info (derived from STACK WIN and FUNC records)
+  // to construct the frame that called frames.back(). The caller
+  // takes ownership of the returned frame. Return NULL on failure.
+  StackFrameX86 *GetCallerByWindowsFrameInfo(
+      const vector<StackFrame*> &frames,
+      WindowsFrameInfo *windows_frame_info);
+
+  // Assuming a traditional frame layout --- where the caller's %ebp
+  // has been pushed just after the return address and the callee's
+  // %ebp points to the saved %ebp --- construct the frame that called
+  // frames.back(). The caller takes ownership of the returned frame.
+  // Return NULL on failure.
+  StackFrameX86 *GetCallerByEBPAtBase(const vector<StackFrame*> &frames);
 
   // Scan the stack starting at location_start, looking for an address
   // that looks like a valid instruction pointer. Addresses must
