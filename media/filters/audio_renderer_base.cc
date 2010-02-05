@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -165,8 +165,8 @@ void AudioRendererBase::OnReadComplete(Buffer* buffer_in) {
   }
 }
 
-size_t AudioRendererBase::FillBuffer(uint8* dest,
-                                     size_t dest_len,
+uint32 AudioRendererBase::FillBuffer(uint8* dest,
+                                     uint32 dest_len,
                                      const base::TimeDelta& playback_delay) {
   // The timestamp of the last buffer written during the last call to
   // FillBuffer().
@@ -181,7 +181,7 @@ size_t AudioRendererBase::FillBuffer(uint8* dest,
       // zeros.  This gets around the tricky situation of pausing and resuming
       // the audio IPC layer in Chrome.  Ideally, we should return zero and then
       // the subclass can restart the conversation.
-      const size_t kZeroLength = 8192;
+      const uint32 kZeroLength = 8192;
       dest_written = std::min(kZeroLength, dest_len);
       memset(dest, 0, dest_written);
       return dest_written;

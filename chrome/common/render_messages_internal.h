@@ -6,38 +6,24 @@
 // header guard.
 // See ipc_message_macros.h for explanation of the macros and passes.
 
-#include <map>
-#include <string>
-#include <vector>
-
 #include "build/build_config.h"
 
-#include "app/clipboard/clipboard.h"
-#include "app/gfx/native_widget_types.h"
 #include "base/file_path.h"
 #include "base/nullable_string16.h"
-#include "base/platform_file.h"
 #include "base/gfx/rect.h"
-#include "base/shared_memory.h"
 #include "base/sync_socket.h"
 #include "base/values.h"
 #include "chrome/common/content_settings.h"
-#include "chrome/common/css_colors.h"
 #include "chrome/common/extensions/update_manifest.h"
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/page_zoom.h"
-#include "chrome/common/transport_dib.h"
-#include "chrome/common/view_types.h"
 #include "ipc/ipc_channel_handle.h"
 #include "ipc/ipc_message.h"
 #include "ipc/ipc_message_macros.h"
-#include "ipc/ipc_platform_file.h"
 #include "third_party/skia/include/core/SkBitmap.h"
-#include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/webcursor.h"
-#include "webkit/glue/webplugin.h"
 
 #if defined(OS_POSIX)
 #include "base/file_descriptor_posix.h"
@@ -636,7 +622,7 @@ IPC_BEGIN_MESSAGES(View)
   // Sent by AudioRendererHost to renderer to request an audio packet.
   IPC_MESSAGE_ROUTED3(ViewMsg_RequestAudioPacket,
                       int /* stream id */,
-                      size_t /* bytes in buffer */,
+                      uint32 /* bytes in buffer */,
                       int64 /* message timestamp */)
 
   // Tell the renderer process that the audio stream has been created, renderer
@@ -645,7 +631,7 @@ IPC_BEGIN_MESSAGES(View)
   IPC_MESSAGE_ROUTED3(ViewMsg_NotifyAudioStreamCreated,
                       int /* stream id */,
                       base::SharedMemoryHandle /* handle */,
-                      int /* length */)
+                      uint32 /* length */)
 
   // Tell the renderer process that a low latency audio stream has been created,
   // renderer process would be given a SyncSocket that it should write to from
@@ -654,13 +640,13 @@ IPC_BEGIN_MESSAGES(View)
                       int /* stream id */,
                       base::SharedMemoryHandle /* handle */,
                       base::SyncSocket::Handle /* socket handle */,
-                      int /* length */)
+                      uint32 /* length */)
 
   // Notification message sent from AudioRendererHost to renderer for state
   // update after the renderer has requested a Create/Start/Close.
   IPC_MESSAGE_ROUTED2(ViewMsg_NotifyAudioStreamStateChanged,
                       int /* stream id */,
-                      ViewMsg_AudioStreamState /* new state */)
+                      ViewMsg_AudioStreamState_Params /* new state */)
 
   IPC_MESSAGE_ROUTED2(ViewMsg_NotifyAudioStreamVolume,
                       int /* stream id */,
@@ -1729,13 +1715,13 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // Request that got sent to browser for creating an audio output stream
   IPC_MESSAGE_ROUTED2(ViewHostMsg_CreateAudioStream,
                       int /* stream_id */,
-                      ViewHostMsg_Audio_CreateStream)
+                      ViewHostMsg_Audio_CreateStream_Params)
 
   // Tell the browser the audio buffer prepared for stream
   // (render_view_id, stream_id) is filled and is ready to be consumed.
   IPC_MESSAGE_ROUTED2(ViewHostMsg_NotifyAudioPacketReady,
                       int /* stream_id */,
-                      size_t /* packet size */)
+                      uint32 /* packet size */)
 
   // Start buffering the audio stream specified by (render_view_id, stream_id).
   IPC_MESSAGE_ROUTED1(ViewHostMsg_PlayAudioStream,

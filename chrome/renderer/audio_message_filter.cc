@@ -1,10 +1,11 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/renderer/audio_message_filter.h"
+
 #include "base/message_loop.h"
 #include "chrome/common/render_messages.h"
-#include "chrome/renderer/audio_message_filter.h"
 #include "ipc/ipc_logging.h"
 
 AudioMessageFilter::AudioMessageFilter(int32 route_id)
@@ -58,7 +59,7 @@ void AudioMessageFilter::OnChannelClosing() {
 
 void AudioMessageFilter::OnRequestPacket(const IPC::Message& msg,
                                          int stream_id,
-                                         size_t bytes_in_buffer,
+                                         uint32 bytes_in_buffer,
                                          int64 message_timestamp) {
   Delegate* delegate = delegates_.Lookup(stream_id);
   if (!delegate) {
@@ -73,7 +74,7 @@ void AudioMessageFilter::OnRequestPacket(const IPC::Message& msg,
 
 void AudioMessageFilter::OnStreamCreated(int stream_id,
                                          base::SharedMemoryHandle handle,
-                                         int length) {
+                                         uint32 length) {
   Delegate* delegate = delegates_.Lookup(stream_id);
   if (!delegate) {
     DLOG(WARNING) << "Got audio stream event for a non-existent or removed"
@@ -83,8 +84,9 @@ void AudioMessageFilter::OnStreamCreated(int stream_id,
   delegate->OnCreated(handle, length);
 }
 
-void AudioMessageFilter::OnStreamStateChanged(int stream_id,
-                                              ViewMsg_AudioStreamState state) {
+void AudioMessageFilter::OnStreamStateChanged(
+    int stream_id,
+    const ViewMsg_AudioStreamState_Params& state) {
   Delegate* delegate = delegates_.Lookup(stream_id);
   if (!delegate) {
     DLOG(WARNING) << "Got audio stream event for a non-existent or removed"

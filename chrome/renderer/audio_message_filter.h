@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -12,22 +12,26 @@
 
 #include "base/id_map.h"
 #include "base/shared_memory.h"
+#include "base/time.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
+
+struct ViewMsg_AudioStreamState_Params;
 
 class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
  public:
   class Delegate {
    public:
     // Called when an audio packet is requested from the browser process.
-    virtual void OnRequestPacket(size_t bytes_in_buffer,
+    virtual void OnRequestPacket(uint32 bytes_in_buffer,
                                  const base::Time& message_timestamp) = 0;
 
     // Called when state of an audio stream has changed in the browser process.
-    virtual void OnStateChanged(ViewMsg_AudioStreamState state) = 0;
+    virtual void OnStateChanged(
+        const ViewMsg_AudioStreamState_Params& state) = 0;
 
     // Called when an audio stream has been created in the browser process.
-    virtual void OnCreated(base::SharedMemoryHandle handle, size_t length) = 0;
+    virtual void OnCreated(base::SharedMemoryHandle handle, uint32 length) = 0;
 
     // Called when notification of stream volume is received from the browser
     // process.
@@ -66,15 +70,16 @@ class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
 
   // Received when browser process wants more audio packet.
   void OnRequestPacket(const IPC::Message& msg, int stream_id,
-                       size_t bytes_in_buffer, int64 message_timestamp);
+                       uint32 bytes_in_buffer, int64 message_timestamp);
 
   // Received when browser process has created an audio output stream.
   void OnStreamCreated(int stream_id, base::SharedMemoryHandle handle,
-                       int length);
+                       uint32 length);
 
   // Received when internal state of browser process' audio output device has
   // changed.
-  void OnStreamStateChanged(int stream_id, ViewMsg_AudioStreamState state);
+  void OnStreamStateChanged(int stream_id,
+                            const ViewMsg_AudioStreamState_Params& state);
 
   // Notification of volume property of an audio output stream.
   void OnStreamVolume(int stream_id, double volume);

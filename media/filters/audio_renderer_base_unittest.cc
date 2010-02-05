@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -186,8 +186,8 @@ TEST_F(AudioRendererBaseTest, OneCompleteReadCycle) {
 
   // Now satisfy the read requests.  Our callback should be executed after
   // exiting this loop.
-  const size_t kDataSize = 1024;
-  size_t bytes_buffered = 0;
+  const uint32 kDataSize = 1024;
+  uint32 bytes_buffered = 0;
   while (!read_queue_.empty()) {
     scoped_refptr<DataBuffer> buffer = new DataBuffer(kDataSize);
     buffer->SetDataSize(kDataSize);

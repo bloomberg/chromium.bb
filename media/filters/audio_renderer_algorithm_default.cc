@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -14,12 +14,12 @@ AudioRendererAlgorithmDefault::AudioRendererAlgorithmDefault() {
 AudioRendererAlgorithmDefault::~AudioRendererAlgorithmDefault() {
 }
 
-size_t AudioRendererAlgorithmDefault::FillBuffer(uint8* dest, size_t length) {
+uint32 AudioRendererAlgorithmDefault::FillBuffer(uint8* dest, uint32 length) {
   if (playback_rate() == 0.0f) {
     return 0;
   }
 
-  size_t dest_written = 0;
+  uint32 dest_written = 0;
 
   if (playback_rate() == 1.0f) {
     // If we don't have enough data, copy what we have.
@@ -35,8 +35,8 @@ size_t AudioRendererAlgorithmDefault::FillBuffer(uint8* dest, size_t length) {
     memset(dest, 0, dest_written);
 
     // Calculate the number of bytes we "used".
-    size_t scaled_dest_length =
-        static_cast<size_t>(dest_written * playback_rate());
+    uint32 scaled_dest_length =
+        static_cast<uint32>(dest_written * playback_rate());
 
     // If this is more than we have, report the correct amount consumed.
     if (QueueSize() < scaled_dest_length) {

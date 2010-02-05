@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -55,8 +55,8 @@ class AudioOutputStream {
     // |dest| is platform and format specific.
     // |pending_bytes| is the number of bytes will be played before the
     // requested data is played.
-    virtual size_t OnMoreData(AudioOutputStream* stream, void* dest,
-                              size_t max_size, int pending_bytes) = 0;
+    virtual uint32 OnMoreData(AudioOutputStream* stream, void* dest,
+                              uint32 max_size, uint32 pending_bytes) = 0;
 
     // The stream is done with this callback. After this call the audio source
     // can go away or be destroyed.
@@ -80,7 +80,7 @@ class AudioOutputStream {
   //
   // TODO(ajwong): Streams are not reusable, so try to move packet_size into the
   // constructor.
-  virtual bool Open(size_t packet_size) = 0;
+  virtual bool Open(uint32 packet_size) = 0;
 
   // Starts playing audio and generating AudioSourceCallback::OnMoreData().
   // Since implementor of AudioOutputStream may have internal buffers, right
@@ -120,11 +120,11 @@ class AudioManager {
   };
 
   // Telephone quality sample rate, mostly for speech-only audio.
-  static const int kTelephoneSampleRate = 8000;
+  static const uint32 kTelephoneSampleRate = 8000;
   // CD sampling rate is 44.1 KHz or conveniently 2x2x3x3x5x5x7x7.
-  static const int kAudioCDSampleRate = 44100;
+  static const uint32 kAudioCDSampleRate = 44100;
   // Digital Audio Tape sample rate.
-  static const int kAudioDATSampleRate = 48000;
+  static const uint32 kAudioDATSampleRate = 48000;
 
   // Returns true if the OS reports existence of audio devices. This does not
   // guarantee that the existing devices support all formats and sample rates.

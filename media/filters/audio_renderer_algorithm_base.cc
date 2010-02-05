@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -11,7 +11,7 @@ namespace media {
 // The size in bytes we try to maintain for the |queue_|. Previous usage
 // maintained a deque of 16 Buffers, each of size 4Kb. This worked well, so we
 // maintain this number of bytes (16 * 4096).
-const size_t kDefaultMinQueueSizeInBytes = 65536;
+const uint32 kDefaultMinQueueSizeInBytes = 65536;
 
 AudioRendererAlgorithmBase::AudioRendererAlgorithmBase()
     : channels_(0),
@@ -82,18 +82,18 @@ bool AudioRendererAlgorithmBase::IsQueueFull() {
   return (queue_.SizeInBytes() >= kDefaultMinQueueSizeInBytes);
 }
 
-size_t AudioRendererAlgorithmBase::QueueSize() {
+uint32 AudioRendererAlgorithmBase::QueueSize() {
   return queue_.SizeInBytes();
 }
 
-void AudioRendererAlgorithmBase::AdvanceInputPosition(size_t bytes) {
+void AudioRendererAlgorithmBase::AdvanceInputPosition(uint32 bytes) {
   queue_.Consume(bytes);
 
   if (!IsQueueFull())
     request_read_callback_->Run();
 }
 
-size_t AudioRendererAlgorithmBase::CopyFromInput(uint8* dest, size_t bytes) {
+uint32 AudioRendererAlgorithmBase::CopyFromInput(uint8* dest, uint32 bytes) {
   return queue_.Copy(dest, bytes);
 }
 

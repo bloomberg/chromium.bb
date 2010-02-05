@@ -1,12 +1,13 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/renderer/media/audio_renderer_impl.h"
 
 #include <math.h>
 
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/audio_message_filter.h"
-#include "chrome/renderer/media/audio_renderer_impl.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/render_thread.h"
 #include "media/base/filter_host.h"
@@ -76,8 +77,8 @@ bool AudioRendererImpl::OnInitialize(const media::MediaFormat& media_format) {
 
   // Create the audio output stream in browser process.
   bytes_per_second_ = sample_rate_ * channels_ * sample_bits_ / 8;
-  size_t packet_size = bytes_per_second_ * kMillisecondsPerPacket / 1000;
-  size_t buffer_capacity = packet_size * kPacketsInBuffer;
+  uint32 packet_size = bytes_per_second_ * kMillisecondsPerPacket / 1000;
+  uint32 buffer_capacity = packet_size * kPacketsInBuffer;
 
   // Calculate the amount for prerolling.
   preroll_bytes_ = bytes_per_second_ * kMillisecondsPreroll / 1000;
@@ -161,7 +162,7 @@ void AudioRendererImpl::SetVolume(float volume) {
 }
 
 void AudioRendererImpl::OnCreated(base::SharedMemoryHandle handle,
-                                  size_t length) {
+                                  uint32 length) {
   DCHECK(MessageLoop::current() == io_loop_);
 
   AutoLock auto_lock(lock_);
@@ -173,7 +174,7 @@ void AudioRendererImpl::OnCreated(base::SharedMemoryHandle handle,
   shared_memory_size_ = length;
 }
 
-void AudioRendererImpl::OnRequestPacket(size_t bytes_in_buffer,
+void AudioRendererImpl::OnRequestPacket(uint32 bytes_in_buffer,
                                         const base::Time& message_timestamp) {
   DCHECK(MessageLoop::current() == io_loop_);
 
@@ -192,7 +193,8 @@ void AudioRendererImpl::OnRequestPacket(size_t bytes_in_buffer,
   OnNotifyPacketReady();
 }
 
-void AudioRendererImpl::OnStateChanged(ViewMsg_AudioStreamState state) {
+void AudioRendererImpl::OnStateChanged(
+    const ViewMsg_AudioStreamState_Params& state) {
   DCHECK(MessageLoop::current() == io_loop_);
 
   AutoLock auto_lock(lock_);
@@ -200,7 +202,7 @@ void AudioRendererImpl::OnStateChanged(ViewMsg_AudioStreamState state) {
     return;
 
   switch (state.state) {
-    case ViewMsg_AudioStreamState::kError:
+    case ViewMsg_AudioStreamState_Params::kError:
       // We receive this error if we counter an hardware error on the browser
       // side. We can proceed with ignoring the audio stream.
       // TODO(hclam): We need more handling of these kind of error. For example
@@ -209,8 +211,8 @@ void AudioRendererImpl::OnStateChanged(ViewMsg_AudioStreamState state) {
       host()->BroadcastMessage(media::kMsgDisableAudio);
       break;
     // TODO(hclam): handle these events.
-    case ViewMsg_AudioStreamState::kPlaying:
-    case ViewMsg_AudioStreamState::kPaused:
+    case ViewMsg_AudioStreamState_Params::kPlaying:
+    case ViewMsg_AudioStreamState_Params::kPaused:
       break;
     default:
       NOTREACHED();
@@ -225,7 +227,7 @@ void AudioRendererImpl::OnVolume(double volume) {
 
 void AudioRendererImpl::OnCreateStream(
     AudioManager::Format format, int channels, int sample_rate,
-    int bits_per_sample, size_t packet_size, size_t buffer_capacity) {
+    int bits_per_sample, uint32 packet_size, uint32 buffer_capacity) {
   DCHECK(MessageLoop::current() == io_loop_);
 
   AutoLock auto_lock(lock_);
@@ -237,7 +239,7 @@ void AudioRendererImpl::OnCreateStream(
   stream_id_ = filter_->AddDelegate(this);
   io_loop_->AddDestructionObserver(this);
 
-  ViewHostMsg_Audio_CreateStream params;
+  ViewHostMsg_Audio_CreateStream_Params params;
   params.format = format;
   params.channels = channels;
   params.sample_rate = sample_rate;
@@ -324,7 +326,7 @@ void AudioRendererImpl::OnNotifyPacketReady() {
                                   GetPlaybackRate())));
     }
 
-    size_t filled = FillBuffer(static_cast<uint8*>(shared_memory_->memory()),
+    uint32 filled = FillBuffer(static_cast<uint8*>(shared_memory_->memory()),
                                shared_memory_size_,
                                request_delay);
     // TODO(hclam): we should try to fill in the buffer as much as possible.

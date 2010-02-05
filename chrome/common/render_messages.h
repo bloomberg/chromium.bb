@@ -1,13 +1,13 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_COMMON_RENDER_MESSAGES_H_
 #define CHROME_COMMON_RENDER_MESSAGES_H_
 
+#include <map>
 #include <string>
 #include <vector>
-#include <map>
 
 #include "app/clipboard/clipboard.h"
 #include "app/gfx/native_widget_types.h"
@@ -107,7 +107,7 @@ struct ViewMsg_Navigate_Params {
 // Current status of the audio output stream in the browser process. Browser
 // sends information about the current playback state and error to the
 // renderer process using this type.
-struct ViewMsg_AudioStreamState {
+struct ViewMsg_AudioStreamState_Params {
   enum State {
     kPlaying,
     kPaused,
@@ -432,7 +432,7 @@ enum ViewHostMsg_ImeControl {
 };
 
 // Parameters for creating an audio output stream.
-struct ViewHostMsg_Audio_CreateStream {
+struct ViewHostMsg_Audio_CreateStream_Params {
   // Format request for the stream.
   AudioManager::Format format;
 
@@ -447,11 +447,11 @@ struct ViewHostMsg_Audio_CreateStream {
 
   // Number of bytes per packet. Determines the maximum number of bytes
   // transported for each audio packet request.
-  size_t packet_size;
+  uint32 packet_size;
 
   // Maximum number of bytes of audio packets that should be kept in the browser
   // process.
-  size_t buffer_capacity;
+  uint32 buffer_capacity;
 };
 
 // This message is used for supporting popup menus on Mac OS X using native
@@ -1842,10 +1842,10 @@ struct ParamTraits<AudioManager::Format> {
   }
 };
 
-// Traits for ViewHostMsg_Audio_CreateStream.
+// Traits for ViewHostMsg_Audio_CreateStream_Params.
 template <>
-struct ParamTraits<ViewHostMsg_Audio_CreateStream> {
-  typedef ViewHostMsg_Audio_CreateStream param_type;
+struct ParamTraits<ViewHostMsg_Audio_CreateStream_Params> {
+  typedef ViewHostMsg_Audio_CreateStream_Params param_type;
   static void Write(Message* m, const param_type& p) {
     WriteParam(m, p.format);
     WriteParam(m, p.channels);
@@ -1864,7 +1864,7 @@ struct ParamTraits<ViewHostMsg_Audio_CreateStream> {
       ReadParam(m, iter, &p->buffer_capacity);
   }
   static void Log(const param_type& p, std::wstring* l) {
-    l->append(L"<ViewHostMsg_Audio_CreateStream>(");
+    l->append(L"<ViewHostMsg_Audio_CreateStream_Params>(");
     LogParam(p.format, l);
     l->append(L", ");
     LogParam(p.channels, l);
@@ -1907,8 +1907,8 @@ struct ParamTraits<gfx::NativeView> {
 #endif  // defined(OS_POSIX)
 
 template <>
-struct ParamTraits<ViewMsg_AudioStreamState> {
-  typedef ViewMsg_AudioStreamState param_type;
+struct ParamTraits<ViewMsg_AudioStreamState_Params> {
+  typedef ViewMsg_AudioStreamState_Params param_type;
   static void Write(Message* m, const param_type& p) {
     m->WriteInt(p.state);
   }
@@ -1916,20 +1916,20 @@ struct ParamTraits<ViewMsg_AudioStreamState> {
     int type;
     if (!m->ReadInt(iter, &type))
       return false;
-    p->state = static_cast<ViewMsg_AudioStreamState::State>(type);
+    p->state = static_cast<ViewMsg_AudioStreamState_Params::State>(type);
     return true;
   }
   static void Log(const param_type& p, std::wstring* l) {
     std::wstring state;
     switch (p.state) {
-     case ViewMsg_AudioStreamState::kPlaying:
-       state = L"ViewMsg_AudioStreamState::kPlaying";
+     case ViewMsg_AudioStreamState_Params::kPlaying:
+       state = L"ViewMsg_AudioStreamState_Params::kPlaying";
        break;
-     case ViewMsg_AudioStreamState::kPaused:
-       state = L"ViewMsg_AudioStreamState::kPaused";
+     case ViewMsg_AudioStreamState_Params::kPaused:
+       state = L"ViewMsg_AudioStreamState_Params::kPaused";
        break;
-     case ViewMsg_AudioStreamState::kError:
-       state = L"ViewMsg_AudioStreamState::kError";
+     case ViewMsg_AudioStreamState_Params::kError:
+       state = L"ViewMsg_AudioStreamState_Params::kError";
        break;
      default:
        state = L"UNKNOWN";

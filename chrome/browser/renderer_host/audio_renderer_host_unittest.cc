@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,8 +23,8 @@ namespace {
 const int kInvalidId = -1;
 const int kProcessId = 100;
 const int kRouteId = 200;
-const int kBufferCapacity = 65536;
-const int kPacketSize = 16384;
+const uint32 kBufferCapacity = 65536;
+const uint32 kPacketSize = 16384;
 
 }  // namespace
 
@@ -37,14 +37,14 @@ class MockAudioRendererHost : public AudioRendererHost {
   // A list of mock methods.
   MOCK_METHOD4(OnRequestPacket,
                void(int routing_id, int stream_id,
-                    size_t bytes_in_buffer, int64 message_timestamp));
+                    uint32 bytes_in_buffer, int64 message_timestamp));
 
   MOCK_METHOD3(OnStreamCreated,
                void(int routing_id, int stream_id, int length));
 
   MOCK_METHOD3(OnStreamStateChanged,
                void(int routing_id, int stream_id,
-                    ViewMsg_AudioStreamState state));
+                    const ViewMsg_AudioStreamState_Params& state));
 
   MOCK_METHOD3(OnStreamVolume,
                void(int routing_id, int stream_id, double volume));
@@ -79,13 +79,13 @@ class MockAudioRendererHost : public AudioRendererHost {
 
   // These handler methods do minimal things and delegate to the mock methods.
   void OnRequestPacket(const IPC::Message& msg, int stream_id,
-                       size_t bytes_in_buffer, int64 message_timestamp) {
+                       uint32 bytes_in_buffer, int64 message_timestamp) {
     OnRequestPacket(msg.routing_id(), stream_id, bytes_in_buffer,
                     message_timestamp);
   }
 
   void OnStreamCreated(const IPC::Message& msg, int stream_id,
-                       base::SharedMemoryHandle handle, int length) {
+                       base::SharedMemoryHandle handle, uint32 length) {
     // Maps the shared memory.
     shared_memory_.reset(new base::SharedMemory(handle, true));
     CHECK(shared_memory_->Map(length));
@@ -96,7 +96,7 @@ class MockAudioRendererHost : public AudioRendererHost {
   }
 
   void OnStreamStateChanged(const IPC::Message& msg, int stream_id,
-                            ViewMsg_AudioStreamState state) {
+                            const ViewMsg_AudioStreamState_Params& state) {
     OnStreamStateChanged(msg.routing_id(), stream_id, state);
   }
 
@@ -210,7 +210,7 @@ TEST_F(AudioRendererHostTest, MockStreamDataConversation) {
                       2 * kPacketSize + 3 * kStep, _));
   EXPECT_CALL(*host_,
       OnRequestPacket(kRouteId, current_stream_id_, 3 * kPacketSize, _));
-  ViewMsg_AudioStreamState state;
+  ViewMsg_AudioStreamState_Params state;
   EXPECT_CALL(*host_, OnStreamStateChanged(kRouteId, current_stream_id_, _))
       .WillOnce(SaveArg<2>(&state));
 
@@ -221,6 +221,6 @@ TEST_F(AudioRendererHostTest, MockStreamDataConversation) {
   source->NotifyPacketReady(kStep);
   source->NotifyPacketReady(kStep);
   source->Play();
-  EXPECT_EQ(ViewMsg_AudioStreamState::kPlaying, state.state);
+  EXPECT_EQ(ViewMsg_AudioStreamState_Params::kPlaying, state.state);
   source->Close();
 }

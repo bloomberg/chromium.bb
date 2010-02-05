@@ -107,7 +107,7 @@ NPError AudioDeviceContext::Initialize(
   DCHECK_EQ(0, stream_id_);
   stream_id_ = filter_->AddDelegate(this);
 
-  ViewHostMsg_Audio_CreateStream params;
+  ViewHostMsg_Audio_CreateStream_Params params;
   params.format = AudioManager::AUDIO_PCM_LINEAR;
   params.channels = config->outputChannelMap;
   params.sample_rate = config->sampleRate;
@@ -146,18 +146,18 @@ void AudioDeviceContext::OnDestroy() {
 }
 
 void AudioDeviceContext::OnRequestPacket(
-    size_t bytes_in_buffer, const base::Time& message_timestamp) {
+    uint32 bytes_in_buffer, const base::Time& message_timestamp) {
   context_->config.callback(context_);
   filter_->Send(new ViewHostMsg_NotifyAudioPacketReady(0, stream_id_,
                                                         shared_memory_size_));
 }
 
 void AudioDeviceContext::OnStateChanged(
-    ViewMsg_AudioStreamState state) {
+    const ViewMsg_AudioStreamState_Params& state) {
 }
 
 void AudioDeviceContext::OnCreated(
-    base::SharedMemoryHandle handle, size_t length) {
+    base::SharedMemoryHandle handle, uint32 length) {
   shared_memory_.reset(new base::SharedMemory(handle, false));
   shared_memory_->Map(length);
   shared_memory_size_ = length;

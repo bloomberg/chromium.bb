@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,7 @@ class AudioRendererAlgorithmBase {
   // Implement this strategy method in derived classes. Tries to fill |length|
   // bytes of |dest| with possibly scaled data from our |queue_|. Returns the
   // number of bytes copied into |dest|.
-  virtual size_t FillBuffer(uint8* dest, size_t length) = 0;
+  virtual uint32 FillBuffer(uint8* dest, uint32 length) = 0;
 
   // Clears |queue_|.
   virtual void FlushBuffers();
@@ -75,15 +75,15 @@ class AudioRendererAlgorithmBase {
   virtual bool IsQueueFull();
 
   // Returns the number of bytes left in |queue_|.
-  virtual size_t QueueSize();
+  virtual uint32 QueueSize();
 
  protected:
   // Advances |queue_|'s internal pointer by |bytes|.
-  void AdvanceInputPosition(size_t bytes);
+  void AdvanceInputPosition(uint32 bytes);
 
   // Tries to copy |bytes| bytes from |queue_| to |dest|. Returns the number of
   // bytes successfully copied.
-  size_t CopyFromInput(uint8* dest, size_t bytes);
+  uint32 CopyFromInput(uint8* dest, uint32 bytes);
 
   // Number of audio channels.
   virtual int channels();

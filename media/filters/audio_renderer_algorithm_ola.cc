@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -29,13 +29,13 @@ AudioRendererAlgorithmOLA::AudioRendererAlgorithmOLA()
 AudioRendererAlgorithmOLA::~AudioRendererAlgorithmOLA() {
 }
 
-size_t AudioRendererAlgorithmOLA::FillBuffer(uint8* dest, size_t length) {
+uint32 AudioRendererAlgorithmOLA::FillBuffer(uint8* dest, uint32 length) {
   if (IsQueueEmpty())
     return 0;
   if (playback_rate() == 0.0f)
     return 0;
 
-  size_t dest_written = 0;
+  uint32 dest_written = 0;
 
   // Handle the simple case of normal playback.
   if (playback_rate() == 1.0f) {
@@ -61,15 +61,15 @@ size_t AudioRendererAlgorithmOLA::FillBuffer(uint8* dest, size_t length) {
         QueueSize() < window_size_) {
       // Calculate the ideal input/output steps based on the size of the
       // destination buffer.
-      size_t input_step = static_cast<size_t>(ceil(
+      uint32 input_step = static_cast<uint32>(ceil(
           static_cast<float>(length * playback_rate())));
-      size_t output_step = length;
+      uint32 output_step = length;
 
       // If the ideal size is too big, recalculate based on how much is left in
       // the queue.
       if (input_step > QueueSize()) {
         input_step = QueueSize();
-        output_step = static_cast<size_t>(ceil(
+        output_step = static_cast<uint32>(ceil(
             static_cast<float>(input_step / playback_rate())));
       }
 
@@ -98,7 +98,7 @@ size_t AudioRendererAlgorithmOLA::FillBuffer(uint8* dest, size_t length) {
     // Copy bulk of data to output (including some to crossfade to the next
     // copy), then add to our running sum of written data and subtract from
     // our tally of remaining requested.
-    size_t copied = CopyFromInput(dest, output_step_ + crossfade_size_);
+    uint32 copied = CopyFromInput(dest, output_step_ + crossfade_size_);
     dest_written += copied;
     length -= copied;
 
@@ -107,7 +107,7 @@ size_t AudioRendererAlgorithmOLA::FillBuffer(uint8* dest, size_t length) {
     AdvanceInputPosition(input_step_);
 
     // Prepare intermediate buffer.
-    size_t crossfade_size;
+    uint32 crossfade_size;
     scoped_array<uint8> src(new uint8[crossfade_size_]);
     crossfade_size = CopyFromInput(src.get(), crossfade_size_);
 
@@ -145,7 +145,7 @@ void AudioRendererAlgorithmOLA::set_playback_rate(float new_rate) {
   // Calculate the window size from our default length and our audio properties.
   // Precision is not an issue because we will round this to a sample boundary.
   // This will not overflow because each parameter is checked in Initialize().
-  window_size_ = static_cast<size_t>(sample_rate()
+  window_size_ = static_cast<uint32>(sample_rate()
                                      * sample_bytes()
                                      * channels()
                                      * kDefaultWindowLength);
@@ -153,10 +153,10 @@ void AudioRendererAlgorithmOLA::set_playback_rate(float new_rate) {
   // Adjusting step sizes to accommodate requested playback rate.
   if (playback_rate() > 1.0f) {
     input_step_ = window_size_;
-    output_step_ = static_cast<size_t>(ceil(
+    output_step_ = static_cast<uint32>(ceil(
         static_cast<float>(window_size_ / playback_rate())));
   } else {
-    input_step_ = static_cast<size_t>(ceil(
+    input_step_ = static_cast<uint32>(ceil(
         static_cast<float>(window_size_ * playback_rate())));
     output_step_ = window_size_;
   }
@@ -164,7 +164,7 @@ void AudioRendererAlgorithmOLA::set_playback_rate(float new_rate) {
   AlignToSampleBoundary(&output_step_);
 
   // Calculate length for crossfading.
-  crossfade_size_ = static_cast<size_t>(sample_rate()
+  crossfade_size_ = static_cast<uint32>(sample_rate()
                                         * sample_bytes()
                                         * channels()
                                         * kDefaultCrossfadeLength);
@@ -179,7 +179,7 @@ void AudioRendererAlgorithmOLA::set_playback_rate(float new_rate) {
   output_step_ -= crossfade_size_;
 }
 
-void AudioRendererAlgorithmOLA::AlignToSampleBoundary(size_t* value) {
+void AudioRendererAlgorithmOLA::AlignToSampleBoundary(uint32* value) {
   (*value) -= ((*value) % (channels() * sample_bytes()));
 }
 

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -20,12 +20,13 @@
 // variable. Writing to this variable needs to be protected in Play()
 // and Pause().
 
+#include "chrome/browser/renderer_host/audio_renderer_host.h"
+
 #include "base/histogram.h"
 #include "base/lock.h"
 #include "base/process.h"
 #include "base/shared_memory.h"
 #include "base/waitable_event.h"
-#include "chrome/browser/renderer_host/audio_renderer_host.h"
 #include "chrome/common/render_messages.h"
 #include "ipc/ipc_logging.h"
 
@@ -37,14 +38,14 @@ const int kSamplesPerHardwarePacket = 8192;
 
 // If the size of the buffer is less than this number, then the low latency
 // mode is to be used.
-const size_t kLowLatencyPacketThreshold = 1025;
+const uint32 kLowLatencyPacketThreshold = 1025;
 
-const size_t kMegabytes = 1024 * 1024;
+const uint32 kMegabytes = 1024 * 1024;
 
 // The following parameters limit the request buffer and packet size from the
 // renderer to avoid renderer from requesting too much memory.
-const size_t kMaxDecodedPacketSize = 2 * kMegabytes;
-const size_t kMaxBufferCapacity = 5 * kMegabytes;
+const uint32 kMaxDecodedPacketSize = 2 * kMegabytes;
+const uint32 kMaxBufferCapacity = 5 * kMegabytes;
 static const int kMaxChannels = 32;
 static const int kMaxBitsPerSample = 64;
 static const int kMaxSampleRate = 192000;
@@ -60,9 +61,9 @@ AudioRendererHost::IPCAudioSource::IPCAudioSource(
     int route_id,
     int stream_id,
     AudioOutputStream* stream,
-    size_t hardware_packet_size,
-    size_t decoded_packet_size,
-    size_t buffer_capacity)
+    uint32 hardware_packet_size,
+    uint32 decoded_packet_size,
+    uint32 buffer_capacity)
     : host_(host),
       process_id_(process_id),
       route_id_(route_id),
@@ -93,8 +94,8 @@ AudioRendererHost::IPCAudioSource::CreateIPCAudioSource(
     int channels,
     int sample_rate,
     char bits_per_sample,
-    size_t decoded_packet_size,
-    size_t buffer_capacity) {
+    uint32 decoded_packet_size,
+    uint32 buffer_capacity) {
   // Perform come preliminary checks on the parameters.
   // Make sure the renderer didn't ask for too much memory.
   if (buffer_capacity > kMaxBufferCapacity ||
@@ -119,7 +120,7 @@ AudioRendererHost::IPCAudioSource::CreateIPCAudioSource(
       AudioManager::GetAudioManager()->MakeAudioStream(
           format, channels, sample_rate, bits_per_sample);
 
-  size_t hardware_packet_size = kSamplesPerHardwarePacket * channels *
+  uint32 hardware_packet_size = kSamplesPerHardwarePacket * channels *
                                 bits_per_sample / 8;
   if (stream && !stream->Open(hardware_packet_size)) {
     stream->Close();
@@ -208,8 +209,8 @@ void AudioRendererHost::IPCAudioSource::Play() {
     state_ = kPlaying;
   }
 
-  ViewMsg_AudioStreamState state;
-  state.state = ViewMsg_AudioStreamState::kPlaying;
+  ViewMsg_AudioStreamState_Params state;
+  state.state = ViewMsg_AudioStreamState_Params::kPlaying;
   host_->Send(new ViewMsg_NotifyAudioStreamStateChanged(
       route_id_, stream_id_, state));
 }
@@ -225,8 +226,8 @@ void AudioRendererHost::IPCAudioSource::Pause() {
     state_ = kPaused;
   }
 
-  ViewMsg_AudioStreamState state;
-  state.state = ViewMsg_AudioStreamState::kPaused;
+  ViewMsg_AudioStreamState_Params state;
+  state.state = ViewMsg_AudioStreamState_Params::kPaused;
   host_->Send(new ViewMsg_NotifyAudioStreamStateChanged(
       route_id_, stream_id_, state));
 }
@@ -263,10 +264,10 @@ void AudioRendererHost::IPCAudioSource::GetVolume() {
                                                   volume));
 }
 
-size_t AudioRendererHost::IPCAudioSource::OnMoreData(AudioOutputStream* stream,
+uint32 AudioRendererHost::IPCAudioSource::OnMoreData(AudioOutputStream* stream,
                                                      void* dest,
-                                                     size_t max_size,
-                                                     int pending_bytes) {
+                                                     uint32 max_size,
+                                                     uint32 pending_bytes) {
   AutoLock auto_lock(lock_);
 
   // Record the callback time.
@@ -278,7 +279,7 @@ size_t AudioRendererHost::IPCAudioSource::OnMoreData(AudioOutputStream* stream,
     return 0;
   }
 
-  size_t size;
+  uint32 size;
   if (!shared_socket_.get()) {
     // Push source doesn't need to know the stream and number of pending bytes.
     // So just pass in NULL and 0 for them.
@@ -287,7 +288,7 @@ size_t AudioRendererHost::IPCAudioSource::OnMoreData(AudioOutputStream* stream,
     SubmitPacketRequest(&auto_lock);
   } else {
     // Low latency mode.
-    size = std::min(shared_memory_.max_size(), max_size);
+    size = std::min(static_cast<uint32>(shared_memory_.max_size()), max_size);
     memcpy(dest, shared_memory_.memory(), size);
     memset(shared_memory_.memory(), 0, shared_memory_.max_size());
     shared_socket_->Send(&pending_bytes, sizeof(pending_bytes));
@@ -313,7 +314,7 @@ void AudioRendererHost::IPCAudioSource::OnError(AudioOutputStream* stream,
 }
 
 void AudioRendererHost::IPCAudioSource::NotifyPacketReady(
-    size_t decoded_packet_size) {
+    uint32 decoded_packet_size) {
   // Packet ready notifications do not happen in low latency mode. If they
   // do something is horribly wrong.
   DCHECK(!shared_socket_.get());
@@ -324,8 +325,8 @@ void AudioRendererHost::IPCAudioSource::NotifyPacketReady(
   // If reported size is greater than capacity of the shared memory, we have
   // an error.
   if (decoded_packet_size <= decoded_packet_size_) {
-    for (size_t i = 0; i < decoded_packet_size; i += hardware_packet_size_) {
-      size_t size = std::min(decoded_packet_size - i, hardware_packet_size_);
+    for (uint32 i = 0; i < decoded_packet_size; i += hardware_packet_size_) {
+      uint32 size = std::min(decoded_packet_size - i, hardware_packet_size_);
       ok &= push_source_.Write(
           static_cast<char*>(shared_memory_.memory()) + i, size);
       // We have received a data packet but we didn't finish writing to push
@@ -353,7 +354,7 @@ void AudioRendererHost::IPCAudioSource::SubmitPacketRequest_Locked() {
     // This variable keeps track of the total amount of bytes buffered for
     // the associated AudioOutputStream. This value should consist of bytes
     // buffered in AudioOutputStream and those kept inside |push_source_|.
-    size_t buffered_bytes = pending_bytes_ + push_source_.UnProcessedBytes();
+    uint32 buffered_bytes = pending_bytes_ + push_source_.UnProcessedBytes();
     host_->Send(
         new ViewMsg_RequestAudioPacket(
             route_id_,
@@ -458,7 +459,7 @@ bool AudioRendererHost::IsAudioRendererHostMessage(
 
 void AudioRendererHost::OnCreateStream(
     const IPC::Message& msg, int stream_id,
-    const ViewHostMsg_Audio_CreateStream& params) {
+    const ViewHostMsg_Audio_CreateStream_Params& params) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   DCHECK(Lookup(msg.routing_id(), stream_id) == NULL);
 
@@ -535,7 +536,7 @@ void AudioRendererHost::OnGetVolume(const IPC::Message& msg, int stream_id) {
 }
 
 void AudioRendererHost::OnNotifyPacketReady(const IPC::Message& msg,
-                                            int stream_id, size_t packet_size) {
+                                            int stream_id, uint32 packet_size) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   IPCAudioSource* source = Lookup(msg.routing_id(), stream_id);
   if (source) {
@@ -604,8 +605,8 @@ void AudioRendererHost::Send(IPC::Message* message) {
 
 void AudioRendererHost::SendErrorMessage(int32 render_view_id,
                                          int32 stream_id) {
-  ViewMsg_AudioStreamState state;
-  state.state = ViewMsg_AudioStreamState::kError;
+  ViewMsg_AudioStreamState_Params state;
+  state.state = ViewMsg_AudioStreamState_Params::kError;
   Send(new ViewMsg_NotifyAudioStreamStateChanged(
       render_view_id, stream_id, state));
 }

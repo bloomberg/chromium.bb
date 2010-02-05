@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 //
 // Audio rendering unit utilizing audio output stream provided by browser
 // process through IPC.
@@ -118,10 +118,10 @@ class AudioRendererImpl : public media::AudioRendererBase,
 
   // Methods called on IO thread ----------------------------------------------
   // AudioMessageFilter::Delegate methods, called by AudioMessageFilter.
-  void OnRequestPacket(size_t bytes_in_buffer,
+  void OnRequestPacket(uint32 bytes_in_buffer,
                        const base::Time& message_timestamp);
-  void OnStateChanged(ViewMsg_AudioStreamState state);
-  void OnCreated(base::SharedMemoryHandle handle, size_t length);
+  void OnStateChanged(const ViewMsg_AudioStreamState_Params& state);
+  void OnCreated(base::SharedMemoryHandle handle, uint32 length);
   void OnVolume(double volume);
 
   // Methods called on pipeline thread ----------------------------------------
@@ -163,7 +163,7 @@ class AudioRendererImpl : public media::AudioRendererBase,
   // sends IPC messages on that thread.
   void OnCreateStream(AudioManager::Format format, int channels,
                       int sample_rate, int bits_per_sample,
-                      size_t packet_size, size_t buffer_capacity);
+                      uint32 packet_size, uint32 buffer_capacity);
   void OnPlay();
   void OnPause();
   void OnSetVolume(double volume);
@@ -177,7 +177,7 @@ class AudioRendererImpl : public media::AudioRendererBase,
   int channels_;
   int sample_rate_;
   int sample_bits_;
-  size_t bytes_per_second_;
+  uint32 bytes_per_second_;
 
   scoped_refptr<AudioMessageFilter> filter_;
 
@@ -186,7 +186,7 @@ class AudioRendererImpl : public media::AudioRendererBase,
 
   // Memory shared by the browser process for audio buffer.
   scoped_ptr<base::SharedMemory> shared_memory_;
-  size_t shared_memory_size_;
+  uint32 shared_memory_size_;
 
   // Message loop for the IO thread.
   MessageLoop* io_loop_;
@@ -214,7 +214,7 @@ class AudioRendererImpl : public media::AudioRendererBase,
   bool prerolling_;
 
   // Remaining bytes for prerolling to complete.
-  size_t preroll_bytes_;
+  uint32 preroll_bytes_;
 
   DISALLOW_COPY_AND_ASSIGN(AudioRendererImpl);
 };

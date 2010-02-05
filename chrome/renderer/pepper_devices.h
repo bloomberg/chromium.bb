@@ -58,10 +58,10 @@ class AudioDeviceContext : public AudioMessageFilter::Delegate {
                      NPDeviceContextAudio* context);
 
   // AudioMessageFilter::Delegate implementation
-  virtual void OnRequestPacket(size_t bytes_in_buffer,
+  virtual void OnRequestPacket(uint32 bytes_in_buffer,
                                const base::Time& message_timestamp);
-  virtual void OnStateChanged(ViewMsg_AudioStreamState state);
-  virtual void OnCreated(base::SharedMemoryHandle handle, size_t length);
+  virtual void OnStateChanged(const ViewMsg_AudioStreamState_Params& state);
+  virtual void OnCreated(base::SharedMemoryHandle handle, uint32 length);
   virtual void OnVolume(double volume);
   // End of AudioMessageFilter::Delegate implementation
 
@@ -74,7 +74,7 @@ class AudioDeviceContext : public AudioMessageFilter::Delegate {
   scoped_refptr<AudioMessageFilter> filter_;
   int32 stream_id_;
   scoped_ptr<base::SharedMemory> shared_memory_;
-  size_t shared_memory_size_;
+  uint32 shared_memory_size_;
 };
 
 #endif  // CHROME_RENDERER_PEPPER_DEVICES_H_

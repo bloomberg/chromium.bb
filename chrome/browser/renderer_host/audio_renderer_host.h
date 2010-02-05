@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -89,7 +89,7 @@
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class AudioManager;
-struct ViewHostMsg_Audio_CreateStream;
+struct ViewHostMsg_Audio_CreateStream_Params;
 
 class AudioRendererHost
     : public base::RefCountedThreadSafe<
@@ -179,8 +179,8 @@ class AudioRendererHost
         int channels,                        // Number of channels.
         int sample_rate,                     // Sampling frequency/rate.
         char bits_per_sample,                // Number of bits per sample.
-        size_t decoded_packet_size,          // Number of bytes per packet.
-        size_t buffer_capacity               // Number of bytes in the buffer.
+        uint32 decoded_packet_size,          // Number of bytes per packet.
+        uint32 buffer_capacity               // Number of bytes in the buffer.
     );
     ~IPCAudioSource();
 
@@ -211,11 +211,11 @@ class AudioRendererHost
 
     // Notify this source that buffer has been filled and is ready to be
     // consumed.
-    void NotifyPacketReady(size_t packet_size);
+    void NotifyPacketReady(uint32 packet_size);
 
     // AudioSourceCallback methods.
-    virtual size_t OnMoreData(AudioOutputStream* stream, void* dest,
-                              size_t max_size, int pending_bytes);
+    virtual uint32 OnMoreData(AudioOutputStream* stream, void* dest,
+                              uint32 max_size, uint32 pending_bytes);
     virtual void OnClose(AudioOutputStream* stream);
     virtual void OnError(AudioOutputStream* stream, int code);
 
@@ -229,10 +229,10 @@ class AudioRendererHost
                    int route_id,                // Routing ID to RenderView.
                    int stream_id,               // ID of this source.
                    AudioOutputStream* stream,   // Stream associated.
-                   size_t hardware_packet_size,
-                   size_t decoded_packet_size,  // Size of shared memory
+                   uint32 hardware_packet_size,
+                   uint32 decoded_packet_size,  // Size of shared memory
                                                 // buffer for writing.
-                   size_t buffer_capacity);     // Capacity of transportation
+                   uint32 buffer_capacity);     // Capacity of transportation
                                                 // buffer.
 
     // Check the condition of |outstanding_request_| and |push_source_| to
@@ -250,9 +250,9 @@ class AudioRendererHost
     int route_id_;
     int stream_id_;
     AudioOutputStream* stream_;
-    size_t hardware_packet_size_;
-    size_t decoded_packet_size_;
-    size_t buffer_capacity_;
+    uint32 hardware_packet_size_;
+    uint32 decoded_packet_size_;
+    uint32 buffer_capacity_;
 
     State state_;
 
@@ -266,7 +266,7 @@ class AudioRendererHost
     bool outstanding_request_;
 
     // Number of bytes copied in the last OnMoreData call.
-    int pending_bytes_;
+    uint32 pending_bytes_;
     base::Time last_callback_time_;
 
     // Protects:
@@ -288,7 +288,7 @@ class AudioRendererHost
   // required properties. See IPCAudioSource::CreateIPCAudioSource() for more
   // details.
   void OnCreateStream(const IPC::Message& msg, int stream_id,
-                      const ViewHostMsg_Audio_CreateStream& params);
+                      const ViewHostMsg_Audio_CreateStream_Params& params);
 
   // Starts buffering for the audio output stream. Delegates the start method
   // call to the corresponding IPCAudioSource::Play().
@@ -329,7 +329,7 @@ class AudioRendererHost
   // AudioOutputStream::AUDIO_STREAM_ERROR is sent back to renderer if the
   // required IPCAudioSource is not found.
   void OnNotifyPacketReady(const IPC::Message& msg, int stream_id,
-                           size_t packet_size);
+                           uint32 packet_size);
 
   // Called on IO thread when this object needs to be destroyed and after
   // Destroy() is called from owner of this class in UI thread.

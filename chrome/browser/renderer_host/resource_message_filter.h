@@ -43,7 +43,6 @@ class NotificationsPrefsCache;
 class Profile;
 class RenderWidgetHelper;
 class URLRequestContextGetter;
-struct ViewHostMsg_Audio_CreateStream;
 struct ViewHostMsg_CreateWorker_Params;
 struct WebPluginInfo;
 

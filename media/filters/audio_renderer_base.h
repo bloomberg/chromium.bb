@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,8 +76,8 @@ class AudioRendererBase : public AudioRenderer {
   // hardware plays the buffer, then |playback_delay| should be zero.
   //
   // Safe to call on any thread.
-  size_t FillBuffer(uint8* dest,
-                    size_t len,
+  uint32 FillBuffer(uint8* dest,
+                    uint32 len,
                     const base::TimeDelta& playback_delay);
 
   // Helper to parse a media format and return whether we were successful
