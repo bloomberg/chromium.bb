@@ -125,6 +125,10 @@ int FlipStream::SendRequest(UploadDataStream* upload_data,
   CHECK(!cancelled_);
   CHECK(response);
 
+  if (response_) {
+    *response = *response_;
+    delete response_;
+  }
   response_ = response;
 
   if (upload_data) {
@@ -139,8 +143,13 @@ int FlipStream::SendRequest(UploadDataStream* upload_data,
   DCHECK_EQ(io_state_, STATE_NONE);
   if (!pushed_)
     io_state_ = STATE_SEND_HEADERS;
-  else
-    io_state_ = STATE_READ_HEADERS;
+  else {
+    if (response_->headers) {
+      io_state_ = STATE_READ_BODY;
+    } else {
+      io_state_ = STATE_READ_HEADERS;
+    }
+  }
   int result = DoLoop(OK);
   if (result == ERR_IO_PENDING) {
     CHECK(!user_callback_);
@@ -168,8 +177,15 @@ void FlipStream::OnResponseReceived(const HttpResponseInfo& response) {
 
   if (io_state_ == STATE_NONE) {
     CHECK(pushed_);
+    io_state_ = STATE_READ_HEADERS;
   } else if (io_state_ == STATE_READ_HEADERS_COMPLETE) {
-    CHECK(!pushed_);
+    // This FlipStream could be in this state in both true and false pushed_
+    // conditions.
+    // The false pushed_ condition (client request) will always go through
+    // this state.
+    // The true pushed_condition (server push) can be in this state when the
+    // client requests an X-Associated-Content piece of content prior
+    // to when the server push happens.
   } else {
     NOTREACHED();
   }
@@ -224,10 +240,15 @@ bool FlipStream::OnDataReceived(const char* data, int length) {
   // ReadResponseBody(), therefore user_callback_ may be NULL.  This may often
   // happen for server initiated streams.
   if (user_callback_) {
-    int rv = ReadResponseBody(user_buffer_, user_buffer_len_, user_callback_);
-    CHECK(rv != ERR_IO_PENDING);
-    user_buffer_ = NULL;
-    user_buffer_len_ = 0;
+    int rv;
+    if (user_buffer_) {
+      rv = ReadResponseBody(user_buffer_, user_buffer_len_, user_callback_);
+      CHECK(rv != ERR_IO_PENDING);
+      user_buffer_ = NULL;
+      user_buffer_len_ = 0;
+    } else {
+      rv = OK;
+    }
     DoCallback(rv);
   }
 

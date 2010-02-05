@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -896,10 +896,6 @@ void FlipSession::OnSyn(const flip::FlipSynStreamControlFrame* frame,
   if (it != pending_streams_.end()) {
     stream = it->second;
     pending_streams_.erase(it);
-    if (stream)
-      pushed_streams_.push_back(stream);
-  } else {
-    pushed_streams_.push_back(stream);
   }
 
   if (stream) {
@@ -909,7 +905,19 @@ void FlipSession::OnSyn(const flip::FlipSynStreamControlFrame* frame,
   } else {
     // TODO(mbelshe): can we figure out how to use a LoadLog here?
     stream = new FlipStream(this, stream_id, true, NULL);
+
+    // A new HttpResponseInfo object needs to be generated so the call to
+    // OnResponseReceived below has something to fill in.
+    // When a FlipNetworkTransaction is created for this resource, the
+    // response_info is copied over and this version is destroyed.
+    //
+    // TODO(cbentzel): Minimize allocations and copies of HttpResponseInfo
+    // object. Should it just be part of FlipStream?
+    HttpResponseInfo* response_info = new HttpResponseInfo();
+    stream->set_response_info_pointer(response_info);
   }
+
+  pushed_streams_.push_back(stream);
 
   // Activate a stream and parse the headers.
   ActivateStream(stream);

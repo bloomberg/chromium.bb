@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -121,6 +121,10 @@ class FlipStream : public base::RefCounted<FlipStream> {
   void OnClose(int status);
 
   bool cancelled() const { return cancelled_; }
+
+  void set_response_info_pointer(HttpResponseInfo* response_info) {
+    response_ = response_info;
+  }
 
  private:
   friend class base::RefCounted<FlipStream>;
