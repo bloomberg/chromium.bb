@@ -2924,12 +2924,6 @@ BUG34546 : fast/loader/document-with-fragment-url-2.html = TIMEOUT
 BUG34546 : fast/loader/document-with-fragment-url-3.html = TIMEOUT
 BUG34546 : fast/loader/document-with-fragment-url-4.html = TIMEOUT
 
-// WebKit roll 54382:54340
 BUG_SENORBLANCO WIN : css1/basic/contextual_selectors.html = CRASH
 BUG_SENORBLANCO WIN : fast/repaint/line-flow-with-floats-10.html = CRASH
 
-// WebKit roll 54340:54361
-BUG_SENORBLANCO WIN : editing/deleting/merge-into-empty-block-2.html = CRASH
-BUG_SENORBLANCO LINUX : http/tests/misc/uncacheable-script-repeated.html = TIMEOUT
-// (this one might be related to WebKit r54345).
-BUG_SENORBLANCO MAC : fast/events/scrollbar-double-click.html = TEXT
