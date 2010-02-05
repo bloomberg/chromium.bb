@@ -5,6 +5,7 @@
 #include "net/http/http_auth_handler_negotiate.h"
 
 #include "base/logging.h"
+#include "net/base/net_errors.h"
 
 namespace net {
 
@@ -20,11 +21,19 @@ HttpAuthHandlerNegotiate::~HttpAuthHandlerNegotiate() {
 
 bool HttpAuthHandlerNegotiate::NeedsIdentity() {
   NOTREACHED();
+  LOG(ERROR) << ErrorToString(ERR_NOT_IMPLEMENTED);
   return false;
 }
 
 bool HttpAuthHandlerNegotiate::IsFinalRound() {
   NOTREACHED();
+  LOG(ERROR) << ErrorToString(ERR_NOT_IMPLEMENTED);
+  return false;
+}
+
+bool HttpAuthHandlerNegotiate::AllowDefaultCredentials() {
+  NOTREACHED();
+  LOG(ERROR) << ErrorToString(ERR_NOT_IMPLEMENTED);
   return false;
 }
 
@@ -33,13 +42,24 @@ bool HttpAuthHandlerNegotiate::Init(std::string::const_iterator challenge_begin,
   return false;
 }
 
-std::string HttpAuthHandlerNegotiate::GenerateCredentials(
+int HttpAuthHandlerNegotiate::GenerateAuthToken(
     const std::wstring& username,
     const std::wstring& password,
     const HttpRequestInfo* request,
-    const ProxyInfo* proxy) {
+    const ProxyInfo* proxy,
+    std::string* auth_token) {
   NOTREACHED();
-  return std::string();
+  LOG(ERROR) << ErrorToString(ERR_NOT_IMPLEMENTED);
+  return ERR_NOT_IMPLEMENTED;
+}
+
+int HttpAuthHandlerNegotiate::GenerateDefaultAuthToken(
+    const HttpRequestInfo* request,
+    const ProxyInfo* proxy,
+    std::string* auth_token) {
+  NOTREACHED();
+  LOG(ERROR) << ErrorToString(ERR_NOT_IMPLEMENTED);
+  return ERR_NOT_IMPLEMENTED;
 }
 
 }  // namespace net
