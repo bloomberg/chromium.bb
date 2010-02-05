@@ -94,6 +94,9 @@ class MockProxyResolver : public ProxyResolver {
 
 // A mock synchronous ProxyResolver which can be set to block upon reaching
 // GetProxyForURL().
+// TODO(eroman): WaitUntilBlocked() *must* be called before calling Unblock(),
+//               otherwise there will be a race on |should_block_| since it is
+//               read without any synchronization.
 class BlockableProxyResolver : public MockProxyResolver {
  public:
   BlockableProxyResolver()
@@ -221,7 +224,7 @@ TEST(SingleThreadedProxyResolverTest, Basic) {
 
 // Tests that the LoadLog is updated to include the time the request was waiting
 // to be scheduled to a thread.
-TEST(SingleThreadedProxyResolverTest, DISABLED_UpdatesLoadLogWithThreadWait) {
+TEST(SingleThreadedProxyResolverTest, UpdatesLoadLogWithThreadWait) {
   BlockableProxyResolver* mock = new BlockableProxyResolver;
   SingleThreadedProxyResolver resolver(mock);
 
@@ -257,6 +260,7 @@ TEST(SingleThreadedProxyResolverTest, DISABLED_UpdatesLoadLogWithThreadWait) {
   EXPECT_EQ(ERR_IO_PENDING, rv);
 
   // Unblock the worker thread so the requests can continue running.
+  mock->WaitUntilBlocked();
   mock->Unblock();
 
   // Check that request 0 completed as expected.
