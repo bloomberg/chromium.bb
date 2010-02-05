@@ -13,6 +13,24 @@
 const wchar_t kGoogleUpdatePipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\";
 static google_breakpad::ExceptionHandler * g_breakpad = NULL;
 
+// These minidump flag combinations have been tested safe agains the
+// DbgHelp.dll version that ships with Windows XP SP2.
+const MINIDUMP_TYPE kSmallDumpType = static_cast<MINIDUMP_TYPE>(
+    MiniDumpWithProcessThreadData |  // Get PEB and TEB.
+    MiniDumpWithUnloadedModules);  // Get unloaded modules when available.
+
+const MINIDUMP_TYPE kLargerDumpType = static_cast<MINIDUMP_TYPE>(
+    MiniDumpWithProcessThreadData |  // Get PEB and TEB.
+    MiniDumpWithUnloadedModules |  // Get unloaded modules when available.
+    MiniDumpWithIndirectlyReferencedMemory);  // Get memory referenced by stack.
+
+// Large dump with all process memory.
+const MINIDUMP_TYPE kFullDumpType = static_cast<MINIDUMP_TYPE>(
+    MiniDumpWithFullMemory |  // Full memory from process.
+    MiniDumpWithProcessThreadData |  // Get PEB and TEB.
+    MiniDumpWithHandleData |  // Get all handle information.
+    MiniDumpWithUnloadedModules);  // Get unloaded modules when available.
+
 #pragma code_seg(push, ".text$va")
 static void veh_segment_start() {}
 #pragma code_seg(pop)
@@ -120,7 +138,8 @@ bool InitializeVectoredCrashReportingWithPipeName(
     return false;
   }
 
-  MINIDUMP_TYPE dump_type = full_dump ? MiniDumpWithFullMemory : MiniDumpNormal;
+  // TODO(siggi): Consider switching to kSmallerDumpType post-beta.
+  MINIDUMP_TYPE dump_type = full_dump ? kFullDumpType : kLargerDumpType;
   g_breakpad = new google_breakpad::ExceptionHandler(
       dump_path, NULL, NULL, NULL,
       google_breakpad::ExceptionHandler::HANDLER_INVALID_PARAMETER |
