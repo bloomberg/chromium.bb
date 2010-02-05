@@ -128,18 +128,18 @@ class BasicSourceLineResolver::Module {
   friend class BasicSourceLineResolver;
   typedef map<int, string> FileMap;
 
-  // The types for stack_info_.  This is equivalent to MS DIA's
+  // The types for windows_frame_info_.  This is equivalent to MS DIA's
   // StackFrameTypeEnum.  Each identifies a different type of frame
   // information, although all are represented in the symbol file in the
-  // same format.  These are used as indices to the stack_info_ array.
-  enum StackInfoTypes {
-    STACK_INFO_FPO = 0,
-    STACK_INFO_TRAP,  // not used here
-    STACK_INFO_TSS,   // not used here
-    STACK_INFO_STANDARD,
-    STACK_INFO_FRAME_DATA,
-    STACK_INFO_LAST,  // must be the last sequentially-numbered item
-    STACK_INFO_UNKNOWN = -1
+  // same format.  These are used as indices to the windows_frame_info_ array.
+  enum WindowsFrameInfoTypes {
+    WINDOWS_FRAME_INFO_FPO = 0,
+    WINDOWS_FRAME_INFO_TRAP,  // not used here
+    WINDOWS_FRAME_INFO_TSS,   // not used here
+    WINDOWS_FRAME_INFO_STANDARD,
+    WINDOWS_FRAME_INFO_FRAME_DATA,
+    WINDOWS_FRAME_INFO_LAST,  // must be the last sequentially-numbered item
+    WINDOWS_FRAME_INFO_UNKNOWN = -1
   };
 
   // Splits line into at most max_tokens space-separated tokens, placing
@@ -167,7 +167,7 @@ class BasicSourceLineResolver::Module {
   // Returns false if an error occurs.
   bool ParsePublicSymbol(char *public_line);
 
-  // Parses a stack frame info declaration, storing it in stack_info_.
+  // Parses a stack frame info declaration, storing it in windows_frame_info_.
   bool ParseStackInfo(char *stack_info_line);
 
   string name_;
@@ -175,12 +175,12 @@ class BasicSourceLineResolver::Module {
   RangeMap< MemAddr, linked_ptr<Function> > functions_;
   AddressMap< MemAddr, linked_ptr<PublicSymbol> > public_symbols_;
 
-  // Each element in the array is a ContainedRangeMap for a type listed in
-  // StackInfoTypes.  These are split by type because there may be overlaps
-  // between maps of different types, but some information is only available
-  // as certain types.
+  // Each element in the array is a ContainedRangeMap for a type
+  // listed in WindowsFrameInfoTypes. These are split by type because
+  // there may be overlaps between maps of different types, but some
+  // information is only available as certain types.
   ContainedRangeMap< MemAddr, linked_ptr<WindowsFrameInfo> >
-      stack_info_[STACK_INFO_LAST];
+      windows_frame_info_[WINDOWS_FRAME_INFO_LAST];
 };
 
 BasicSourceLineResolver::BasicSourceLineResolver() : modules_(new ModuleMap) {
@@ -469,13 +469,16 @@ WindowsFrameInfo *BasicSourceLineResolver::Module::FindWindowsFrameInfo(
   MemAddr address = frame->instruction - frame->module->base_address();
   scoped_ptr<WindowsFrameInfo> result(new WindowsFrameInfo());
 
-  // We only know about STACK_INFO_FRAME_DATA and STACK_INFO_FPO.  Prefer
-  // them in this order.  STACK_INFO_FRAME_DATA is the newer type that
-  // includes its own program string.  STACK_INFO_FPO is the older type
-  // corresponding to the FPO_DATA struct.  See stackwalker_x86.cc.
+  // We only know about WINDOWS_FRAME_INFO_FRAME_DATA and
+  // WINDOWS_FRAME_INFO_FPO. Prefer them in this order.
+  // WINDOWS_FRAME_INFO_FRAME_DATA is the newer type that includes its
+  // own program string. WINDOWS_FRAME_INFO_FPO is the older type
+  // corresponding to the FPO_DATA struct. See stackwalker_x86.cc.
   linked_ptr<WindowsFrameInfo> frame_info;
-  if ((stack_info_[STACK_INFO_FRAME_DATA].RetrieveRange(address, &frame_info))
-      || (stack_info_[STACK_INFO_FPO].RetrieveRange(address, &frame_info))) {
+  if ((windows_frame_info_[WINDOWS_FRAME_INFO_FRAME_DATA]
+       .RetrieveRange(address, &frame_info))
+      || (windows_frame_info_[WINDOWS_FRAME_INFO_FPO]
+          .RetrieveRange(address, &frame_info))) {
     result->CopyFrom(*frame_info.get());
     return result.release();
   }
@@ -636,8 +639,9 @@ bool BasicSourceLineResolver::Module::ParseStackInfo(char *stack_info_line) {
   // Otherwise, the final token tells whether the stack info indicates that
   // a base pointer has been allocated.
   //
-  // Expect has_program_string to be 1 when type is STACK_INFO_FRAME_DATA and
-  // 0 when type is STACK_INFO_FPO, but don't enforce this.
+  // Expect has_program_string to be 1 when type is
+  // WINDOWS_FRAME_INFO_FRAME_DATA and 0 when type is WINDOWS_FRAME_INFO_FPO,
+  // but don't enforce this.
 
   // Skip "STACK " prefix.
   stack_info_line += 6;
@@ -652,7 +656,7 @@ bool BasicSourceLineResolver::Module::ParseStackInfo(char *stack_info_line) {
     return false;
 
   int type = strtol(tokens[1], NULL, 16);
-  if (type < 0 || type > STACK_INFO_LAST - 1)
+  if (type < 0 || type > WINDOWS_FRAME_INFO_LAST - 1)
     return false;
 
   u_int64_t rva                 = strtoull(tokens[2],  NULL, 16);
@@ -702,7 +706,7 @@ bool BasicSourceLineResolver::Module::ParseStackInfo(char *stack_info_line) {
                          max_stack_size,
                          allocates_base_pointer,
                          program_string));
-  stack_info_[type].StoreRange(rva, code_size, stack_frame_info);
+  windows_frame_info_[type].StoreRange(rva, code_size, stack_frame_info);
 
   return true;
 }
