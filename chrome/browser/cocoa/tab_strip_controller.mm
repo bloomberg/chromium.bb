@@ -226,7 +226,7 @@ private:
 #pragma mark -
 
 // TODO(pinkerton): document tab layout, placeholders, tab dragging on
-// dev.chromium.org
+// dev.chromium.org http://crbug.com/34659
 
 // In general, there is a one-to-one correspondence between TabControllers,
 // TabViews, TabContentsControllers, and the TabContents in the TabStripModel.
@@ -579,6 +579,7 @@ private:
       // Limit the width available for laying out tabs so that tabs are not
       // resized until a later time (when the mouse leaves the tab strip).
       // TODO(pinkerton): re-visit when handling tab overflow.
+      // http://crbug.com/188
       NSView* penultimateTab = [self viewAtIndex:numberOfOpenTabs - 2];
       availableResizeWidth_ = NSMaxX([penultimateTab frame]);
     } else {
@@ -640,11 +641,8 @@ private:
 // the ordering in the TabStripModel. This call isn't that expensive, though
 // it is O(n) in the number of tabs. Tabs will animate to their new position
 // if the window is visible and |animate| is YES.
-// TODO(pinkerton): Handle drag placeholders via proxy objects, perhaps a
-// subclass of TabContentsController with everything stubbed out or by
-// abstracting a base class interface.
 // TODO(pinkerton): Note this doesn't do too well when the number of min-sized
-// tabs would cause an overflow.
+// tabs would cause an overflow. http://crbug.com/188
 - (void)layoutTabsWithAnimation:(BOOL)animate
              regenerateSubviews:(BOOL)doUpdate {
   DCHECK([NSThread isMainThread]);
@@ -887,8 +885,6 @@ private:
   // Set the originating frame to just below the strip so that it animates
   // upwards as it's being initially layed out. Oddly, this works while doing
   // something similar in |-layoutTabs| confuses the window server.
-  // TODO(pinkerton): I'm not happy with this animiation either, but it's
-  // a little better that just sliding over (maybe?).
   [newView setFrame:NSOffsetRect([newView frame],
                                  0, -[[self class] defaultTabHeight])];
 

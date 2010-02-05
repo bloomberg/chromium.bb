@@ -131,17 +131,17 @@ TEST_F(TabStripControllerTest, AddRemoveTabs) {
 }
 
 TEST_F(TabStripControllerTest, SelectTab) {
-  // TODO(pinkerton): Implement
+  // TODO(pinkerton): Implement http://crbug.com/10899
 }
 
 TEST_F(TabStripControllerTest, RearrangeTabs) {
-  // TODO(pinkerton): Implement
+  // TODO(pinkerton): Implement http://crbug.com/10899
 }
 
 // Test that changing the number of tabs broadcasts a
 // kTabStripNumberOfTabsChanged notifiction.
 TEST_F(TabStripControllerTest, Notifications) {
-  // TODO(pinkerton): Implement
+  // TODO(pinkerton): Implement http://crbug.com/10899
 }
 
 }  // namespace

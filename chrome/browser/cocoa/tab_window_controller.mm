@@ -49,16 +49,6 @@
   }
 }
 
-// TODO(pinkerton): Nobody calls this, can we remove it?
-- (void)removeOverlayAfterDelay:(NSTimeInterval)delay {
-  [NSObject cancelPreviousPerformRequestsWithTarget:self
-                                           selector:@selector(removeOverlay)
-                                             object:nil];
-  [self performSelector:@selector(removeOverlay)
-             withObject:nil
-             afterDelay:delay];
-}
-
 - (void)showOverlay {
   [self setUseOverlay:YES];
 }

@@ -37,11 +37,6 @@ TEST_F(TabViewTest, Display) {
   }
 }
 
-// Test dragging and mouse tracking.
-TEST_F(TabViewTest, MouseTracking) {
-  // TODO(pinkerton): Test dragging out of window
-}
-
 // Test it doesn't crash when asked for its menu with no TabController set.
 TEST_F(TabViewTest, Menu) {
   EXPECT_FALSE([view_ menu]);

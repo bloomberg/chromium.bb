@@ -2169,7 +2169,6 @@ willPositionSheet:(NSWindow*)sheet
 + (GTMTheme*)themeWithBrowserThemeProvider:(BrowserThemeProvider*)provider
                             isOffTheRecord:(BOOL)isOffTheRecord {
   // First check if it's in the cache.
-  // TODO(pinkerton): This might be a good candidate for a singleton.
   typedef std::pair<std::string, BOOL> ThemeKey;
   static std::map<ThemeKey, GTMTheme*> cache;
   ThemeKey key(provider->GetThemeID(), isOffTheRecord);

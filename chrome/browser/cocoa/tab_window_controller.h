@@ -46,7 +46,6 @@
 // cause the controller to be autoreleased before returning.
 - (void)showOverlay;
 - (void)removeOverlay;
-- (void)removeOverlayAfterDelay:(NSTimeInterval)delay;
 - (NSWindow*)overlayWindow;
 
 // Returns YES if it is ok to constrain the window's frame to fit the screen.

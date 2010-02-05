@@ -422,11 +422,6 @@ TEST_F(StatusBubbleMacTest, StateTransitions) {
   EXPECT_EQ(StatusBubbleMac::kBubbleHidden, StateAt(0));
 }
 
-TEST_F(StatusBubbleMacTest, MouseMove) {
-  // TODO(pinkerton): Not sure what to do here since it relies on
-  // [NSEvent currentEvent] and the current mouse location.
-}
-
 TEST_F(StatusBubbleMacTest, Delete) {
   NSWindow* window = test_window();
   // Create and delete immediately.

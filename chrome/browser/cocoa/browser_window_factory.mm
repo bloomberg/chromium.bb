@@ -13,10 +13,6 @@
 // window from the nib. The controller takes ownership of |browser|.
 // static
 BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
-  // TODO(pinkerton): figure out ownership model. If BrowserList keeps track
-  // of the browser windows, it will probably tell us when it needs to go
-  // away, and it seems we need to feed back to that when we get a
-  // performClose: from the UI.
   BrowserWindowController* controller =
       [[BrowserWindowController alloc] initWithBrowser:browser];
   return [controller browserWindow];

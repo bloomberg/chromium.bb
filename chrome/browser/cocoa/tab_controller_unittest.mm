@@ -144,11 +144,6 @@ TEST_F(TabControllerTest, Loading) {
 
 // Tests selecting the tab with the mouse click and ensuring the target/action
 // get called.
-// TODO(pinkerton): It's yucky that TabView bakes in the dragging so that we
-// can't test this class w/out lots of extra effort. When cole finishes the
-// rewrite, we should move all that logic out into a separate controller which
-// we can dependency-inject/mock so it has very simple click behavior for unit
-// testing.
 TEST_F(TabControllerTest, UserSelection) {
   NSWindow* window = test_window();
 

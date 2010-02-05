@@ -114,7 +114,7 @@ NSString* const kHomepageEntryChangedNotification =
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kHomepageEntryChangedNotification object:nil];
 
-  // TODO(pinkerton): fetch favicon, convert to NSImage
+  // TODO(pinkerton): fetch favicon, convert to NSImage http://crbug.com/34642
 }
 
 - (NSString*)URL {

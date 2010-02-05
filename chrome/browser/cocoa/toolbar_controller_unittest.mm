@@ -130,13 +130,6 @@ TEST_F(ToolbarControllerTest, UpdateEnabledState) {
   CompareState(updater, [bar_ toolbarViews]);
 }
 
-TEST_F(ToolbarControllerTest, StarredState) {
-  // TODO(pinkerton): I'm not sure how to test this, as the only difference
-  // in internal state is in the image used. I tried using the name of the
-  // image on the button but it doesn't seem to stick to the NSImage, even
-  // when explicitly set.
-}
-
 // Focus the location bar and make sure that it's the first responder.
 TEST_F(ToolbarControllerTest, FocusLocation) {
   NSWindow* window = test_window();
@@ -149,8 +142,6 @@ TEST_F(ToolbarControllerTest, FocusLocation) {
 }
 
 TEST_F(ToolbarControllerTest, LoadingState) {
-  // TODO(pinkerton): Same problem testing this as the starred state above.
-
   // In its initial state, the go button has a tag of IDC_GO. When loading,
   // it should be IDC_STOP.
   NSButton* go = [[bar_ toolbarViews] objectAtIndex:kGoIndex];

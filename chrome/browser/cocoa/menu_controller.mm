@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
+// Copyright (c) 2010 The Chromium Authors. All rights reserved. Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
@@ -107,7 +107,8 @@
 }
 
 // Called before the menu is to be displayed to update the state (enabled,
-// radio, etc) of each item in the menu.
+// radio, etc) of each item in the menu. Also will update the title if
+// the item is marked as "dynamic".
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
   SEL action = [item action];
   if (action != @selector(itemSelected:))

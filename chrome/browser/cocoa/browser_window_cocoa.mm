@@ -165,8 +165,6 @@ void BrowserWindowCocoa::SetStarredState(bool is_starred) {
 }
 
 gfx::Rect BrowserWindowCocoa::GetRestoredBounds() const {
-  // TODO(pinkerton): not sure if we can get the non-zoomed bounds, or if it
-  // really matters. We may want to let Cocoa handle all this for us.
   // Flip coordinates based on the primary screen.
   NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
   NSRect frame = [window() frame];

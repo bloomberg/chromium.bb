@@ -652,6 +652,7 @@ class PrefObserverBridge : public NotificationObserver,
   [self switchToPage:initialPage_ animate:NO];
 
   // TODO(pinkerton): save/restore position based on prefs.
+  // http://crbug.com/34644
   [[self window] center];
 }
 
@@ -687,7 +688,6 @@ class PrefObserverBridge : public NotificationObserver,
   showHomeButton_.Init(prefs::kShowHomeButton, prefs_, observer_.get());
   showPageOptionButtons_.Init(prefs::kShowPageOptionsButtons, prefs_,
                               observer_.get());
-  // TODO(pinkerton): Register Default search.
 
   // Personal Stuff panel
   askSavePasswords_.Init(prefs::kPasswordManagerEnabled,
@@ -727,10 +727,7 @@ class PrefObserverBridge : public NotificationObserver,
   // Basics
   prefs_->RemovePrefObserver(prefs::kURLsToRestoreOnStartup, observer_.get());
 
-  // User Data panel
-  // Nothing to do here.
-
-  // TODO(pinkerton): do other panels...
+  // Nothing to do for other panels...
 }
 
 // Called when a key we're observing via KVO changes.
@@ -1455,7 +1452,7 @@ const int kDisabledIndex = 1;
   }
 
   // TODO(pinkerton): windows shows a dialog here telling the user they need to
-  // restart for this to take effect. Is that really necessary?
+  // restart for this to take effect. http://crbug.com/34653
   metricsRecording_.SetValue(enabled);
 }
 
@@ -1467,6 +1464,7 @@ const int kDisabledIndex = 1;
 // Sets the backend pref for whether or not to accept cookies based on |index|.
 - (void)setCookieBehavior:(NSInteger)index {
   // TODO(darin): Remove everything else related to this setter.
+  // http://crbug.com/34656
 }
 
 - (NSURL*)defaultDownloadLocation {

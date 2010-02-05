@@ -180,11 +180,10 @@ const CGFloat kRapidCloseDist = 2.5;
   if (chromeIsVisible_ == shouldBeVisible)
     return;
 
-  // TODO(pinkerton): There appears to be a race-condition in CoreAnimation
-  // where if we use animators to set the alpha values, we can't guarantee
-  // that we cancel them. This has the side effect of sometimes leaving
-  // the dragged window translucent or invisible. We should re-visit this,
-  // but for now, don't animate the alpha change.
+  // There appears to be a race-condition in CoreAnimation where if we use
+  // animators to set the alpha values, we can't guarantee that we cancel them.
+  // This has the side effect of sometimes leaving the dragged window
+  // translucent or invisible. As a result, don't animate the alpha change.
   [[draggedController_ overlayWindow] setAlphaValue:1.0];
   if (targetController_) {
     [dragWindow_ setAlphaValue:0.0];
@@ -200,9 +199,6 @@ const CGFloat kRapidCloseDist = 2.5;
 
 // Handle clicks and drags in this button. We get here because we have
 // overridden acceptsFirstMouse: and the click is within our bounds.
-// TODO(pinkerton/alcor): This routine needs *a lot* of work to marry Cole's
-// ideas of dragging cocoa views between windows and how the Browser and
-// TabStrip models want to manage tabs.
 - (void)mouseDown:(NSEvent*)theEvent {
   if ([self isClosing])
     return;
@@ -378,10 +374,6 @@ const CGFloat kRapidCloseDist = 2.5;
   for (TabWindowController* target in targets) {
     NSRect windowFrame = [[target window] frame];
     if (NSPointInRect(thisPoint, windowFrame)) {
-      // TODO(pinkerton): If bringing the window to the front immediately is too
-      // annoying, use another dwell date. Can't use |targetDwellDate| because
-      // this hasn't yet become the new target until the mouse is in the tab
-      // strip.
       [[target window] orderFront:self];
       NSRect tabStripFrame = [[target tabStripView] frame];
       tabStripFrame.origin = [[target window]
