@@ -21,7 +21,6 @@ class ToolbarStarToggleGtk;
 class Tab;
 class TabContents;
 class TabStrip;
-class ToolbarStarToggle;
 
 namespace views {
 class ImageButton;
@@ -36,8 +35,7 @@ namespace chromeos {
 class CompactLocationBarView : public DropdownBarView,
                                public views::ButtonListener,
                                public AutocompleteEditController,
-                               public BubblePositioner,
-                               public views::DragController {
+                               public BubblePositioner {
  public:
   explicit CompactLocationBarView(CompactLocationBarHost* host);
   ~CompactLocationBarView();
@@ -46,8 +44,6 @@ class CompactLocationBarView : public DropdownBarView,
   virtual void SetFocusAndSelection();
 
   void Update(const TabContents* contents);
-
-  ToolbarStarToggle* star_button() const { return star_; }
 
  private:
   Browser* browser() const;
@@ -82,20 +78,6 @@ class CompactLocationBarView : public DropdownBarView,
   // BubblePositioner implementation.
   virtual gfx::Rect GetLocationStackBounds() const;
 
-  // views::DragController implementation.
-  virtual void WriteDragData(View* sender,
-                             int press_x,
-                             int press_y,
-                             OSExchangeData* data);
-  virtual int GetDragOperations(View* sender, int x, int y);
-  virtual bool CanStartDrag(View* sender,
-                            int press_x,
-                            int press_y,
-                            int x,
-                            int y) {
-    return true;
-  }
-
   CompactLocationBarHost* clb_host() {
     return static_cast<CompactLocationBarHost*>(host());
   }
@@ -104,8 +86,6 @@ class CompactLocationBarView : public DropdownBarView,
   scoped_ptr<AutocompleteEditViewGtk> location_entry_;
   views::NativeViewHost* location_entry_view_;
   BrowserActionsContainer* browser_actions_;
-
-  ToolbarStarToggle* star_;
 
   DISALLOW_COPY_AND_ASSIGN(CompactLocationBarView);
 };

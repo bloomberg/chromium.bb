@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,30 +9,17 @@
 #include "chrome/browser/views/info_bubble.h"
 #include "views/controls/button/image_button.h"
 
-class BubblePositioner;
 class GURL;
-class Profile;
-
-namespace views {
-class ButtonListener;
-class View;
-}  // namespace views
+class ToolbarView;
 
 // ToolbarStarToggle is used for the star button on the toolbar, allowing the
 // user to star the current page. ToolbarStarToggle manages showing the
 // InfoBubble and rendering the appropriate state while the bubble is visible.
+
 class ToolbarStarToggle : public views::ToggleImageButton,
                           public InfoBubbleDelegate {
  public:
-  explicit ToolbarStarToggle(views::ButtonListener* button_listener);
-
-  void set_profile(Profile* profile) { profile_ = profile; }
-  void set_host_view(views::View* host_view) { host_view_ = host_view; }
-  void set_bubble_positioner(BubblePositioner* bubble_positioner) {
-    bubble_positioner_ = bubble_positioner;
-  }
-
-  void Init();
+  ToolbarStarToggle(views::ButtonListener* listener, ToolbarView* host);
 
   // If the bubble isn't showing, shows it.
   void ShowStarBubble(const GURL& url, bool newly_bookmarked);
@@ -58,14 +45,8 @@ class ToolbarStarToggle : public views::ToggleImageButton,
                                  bool closed_by_escape);
   virtual bool CloseOnEscape();
 
-  // Profile with bookmarks info.
-  Profile* profile_;
-
-  // View that hosts us.
-  views::View* host_view_;
-
-// Positioner for bookmark bubble.
-  BubblePositioner* bubble_positioner_;
+  // Contains us.
+  ToolbarView* host_;
 
   // Time the bubble last closed.
   base::TimeTicks bubble_closed_time_;
@@ -74,7 +55,7 @@ class ToolbarStarToggle : public views::ToggleImageButton,
   // the amount of time between when the bubble clicked and now.
   bool ignore_click_;
 
-  DISALLOW_COPY_AND_ASSIGN(ToolbarStarToggle);
+  DISALLOW_EVIL_CONSTRUCTORS(ToolbarStarToggle);
 };
 
 #endif  // CHROME_BROWSER_VIEWS_TOOLBAR_STAR_TOGGLE_H_

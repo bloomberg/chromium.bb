@@ -4,18 +4,12 @@
 
 #include "chrome/browser/views/toolbar_star_toggle.h"
 
-#include "app/l10n_util.h"
 #include "app/resource_bundle.h"
-#include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/browser_theme_provider.h"
-#include "chrome/browser/bubble_positioner.h"
-#include "chrome/browser/profile.h"
 #include "chrome/browser/views/browser_dialogs.h"
-#include "chrome/browser/view_ids.h"
+#include "chrome/browser/views/toolbar_view.h"
 #include "googleurl/src/gurl.h"
-#include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
 using base::TimeTicks;
@@ -33,42 +27,15 @@ using base::TimeTicks;
 // with the bubble because it has other native windows.
 static const int64 kDisallowClickMS = 40;
 
-ToolbarStarToggle::ToolbarStarToggle(views::ButtonListener* button_listener)
-    : ToggleImageButton(button_listener),
-      profile_(NULL),
-      host_view_(NULL),
-      bubble_positioner_(NULL),
+ToolbarStarToggle::ToolbarStarToggle(views::ButtonListener* listener,
+                                     ToolbarView* host)
+    : ToggleImageButton(listener),
+      host_(host),
       ignore_click_(false) {
 }
 
-void ToolbarStarToggle::Init() {
-  ThemeProvider* tp = profile_->GetThemeProvider();
-
-  set_tag(IDC_BOOKMARK_PAGE);
-  SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_STAR));
-  SetToggledTooltipText(l10n_util::GetString(IDS_TOOLTIP_STARRED));
-  SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_STAR));
-  SetID(VIEW_ID_STAR_BUTTON);
-
-  // Load images.
-  SkColor color = tp->GetColor(BrowserThemeProvider::COLOR_BUTTON_BACKGROUND);
-  SkBitmap* background = tp->GetBitmapNamed(IDR_THEME_BUTTON_BACKGROUND);
-
-  SetImage(views::CustomButton::BS_NORMAL, tp->GetBitmapNamed(IDR_STAR));
-  SetImage(views::CustomButton::BS_HOT, tp->GetBitmapNamed(IDR_STAR_H));
-  SetImage(views::CustomButton::BS_PUSHED, tp->GetBitmapNamed(IDR_STAR_P));
-  SetImage(views::CustomButton::BS_DISABLED, tp->GetBitmapNamed(IDR_STAR_D));
-  SetToggledImage(views::CustomButton::BS_NORMAL,
-      tp->GetBitmapNamed(IDR_STARRED));
-  SetToggledImage(views::CustomButton::BS_HOT,
-      tp->GetBitmapNamed(IDR_STARRED_H));
-  SetToggledImage(views::CustomButton::BS_PUSHED,
-      tp->GetBitmapNamed(IDR_STARRED_P));
-  SetBackground(color, background, tp->GetBitmapNamed(IDR_STAR_MASK));
-}
-
 void ToolbarStarToggle::ShowStarBubble(const GURL& url, bool newly_bookmarked) {
-  gfx::Rect bounds(bubble_positioner_->GetLocationStackBounds());
+  gfx::Rect bounds(host_->GetLocationStackBounds());
   gfx::Point star_location;
   views::View::ConvertPointToScreen(this, &star_location);
   // The visual center of the star is not centered within the bounds.  The star
@@ -82,12 +49,12 @@ void ToolbarStarToggle::ShowStarBubble(const GURL& url, bool newly_bookmarked) {
   // order to place the star's central pixel on the right side of the bounds'
   // center-line, so that the arrow's center will line up.
   //
-  // TODO(pkasting): If the InfoBubble used mirroring transformations maybe this
-  // could become symmetric (-1 : 1).
+  // TODO: If the InfoBubble used mirroring transformations maybe this could
+  // become symmetric (-1 : 1).
   bounds.set_x(star_location.x() + (UILayoutIsRightToLeft() ? -2 : 1));
   bounds.set_width(width());
-  browser::ShowBookmarkBubbleView(host_view_->GetWindow(), bounds, this,
-                                  profile_, url, newly_bookmarked);
+  browser::ShowBookmarkBubbleView(host_->GetWindow(), bounds, this,
+                                  host_->profile(), url, newly_bookmarked);
 }
 
 bool ToolbarStarToggle::OnMousePressed(const views::MouseEvent& e) {
