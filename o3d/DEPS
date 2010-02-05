@@ -5,7 +5,7 @@ vars = {
   # revs to match the version pulled-in by Chromium's own DEPS in the new rev.
   "chromium_rev": "37758",
   "o3d_code_rev": "166",
-  "skia_rev": "474",
+  "skia_rev": "488",
   "gyp_rev": "775",
   "gtest_rev": "359",
   "gflags_rev": "30",
