@@ -103,6 +103,10 @@ StackFrame* StackwalkerX86::GetCallerFrame(const CallStack *stack) {
   WindowsFrameInfo *last_frame_info
       = resolver_->FindWindowsFrameInfo(last_frame);
 
+  // Save the stack walking info we found, in case we need it later to
+  // find the callee of the frame we're constructing now.
+  last_frame->windows_frame_info = last_frame_info;
+
   // This stackwalker sets each frame's %esp to its value immediately prior
   // to the CALL into the callee.  This means that %esp points to the last
   // callee argument pushed onto the stack, which may not be where %esp points
@@ -441,9 +445,6 @@ StackFrame* StackwalkerX86::GetCallerFrame(const CallStack *stack) {
   // exact return address value may access the context.eip field of
   // StackFrameX86.
   frame->instruction = frame->context.eip - 1;
-
-  // Save the stack walking info we found for the callee.
-  last_frame->windows_frame_info = last_frame_info;
 
   return frame;
 }
