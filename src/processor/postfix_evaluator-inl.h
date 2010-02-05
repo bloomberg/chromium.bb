@@ -1,3 +1,5 @@
+// -*- mode: c++ -*-
+
 // Copyright (c) 2006, Google Inc.
 // All rights reserved.
 //
@@ -64,11 +66,9 @@ class AutoStackClearer {
 
 
 template<typename ValueType>
-bool PostfixEvaluator<ValueType>::Evaluate(const string &expression,
-                                           DictionaryValidityType *assigned) {
-  // Ensure that the stack is cleared before returning.
-  AutoStackClearer clearer(&stack_);
-
+bool PostfixEvaluator<ValueType>::EvaluateInternal(
+    const string &expression,
+    DictionaryValidityType *assigned) {
   // Tokenize, splitting on whitespace.
   istringstream stream(expression);
   string token;
@@ -194,13 +194,46 @@ bool PostfixEvaluator<ValueType>::Evaluate(const string &expression,
     }
   }
 
+  return true;
+}
+
+template<typename ValueType>
+bool PostfixEvaluator<ValueType>::Evaluate(const string &expression,
+                                           DictionaryValidityType *assigned) {
+  // Ensure that the stack is cleared before returning.
+  AutoStackClearer clearer(&stack_);
+
+  if (!EvaluateInternal(expression, assigned))
+    return false;
+
   // If there's anything left on the stack, it indicates incomplete execution.
   // This is a failure case.  If the stack is empty, evalution was complete
   // and successful.
-  BPLOG_IF(ERROR, !stack_.empty()) << "Incomplete execution: " << expression;
-  return stack_.empty();
+  if (stack_.empty())
+    return true;
+    
+  BPLOG(ERROR) << "Incomplete execution: " << expression;
+  return false;
 }
 
+template<typename ValueType>
+bool PostfixEvaluator<ValueType>::EvaluateForValue(const string &expression,
+                                                   ValueType *result) {
+  // Ensure that the stack is cleared before returning.
+  AutoStackClearer clearer(&stack_);
+
+  if (!EvaluateInternal(expression, NULL))
+    return false;
+
+  // A successful execution should leave exactly one value on the stack.
+  if (stack_.size() != 1) {
+    BPLOG(ERROR) << "Expression yielded bad number of results: "
+                 << "'" << expression << "'";
+    return false;
+  } 
+
+  return PopValue(result);
+}
 
 template<typename ValueType>
 typename PostfixEvaluator<ValueType>::PopResult

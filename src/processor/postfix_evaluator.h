@@ -1,3 +1,5 @@
+// -*- mode: C++ -*-
+
 // Copyright (c) 2010, Google Inc.
 // All rights reserved.
 //
@@ -93,14 +95,20 @@ class PostfixEvaluator {
   PostfixEvaluator(DictionaryType *dictionary, const MemoryRegion *memory)
       : dictionary_(dictionary), memory_(memory), stack_() {}
 
-  // Evaluate the expression.  The results of execution will be stored
-  // in one (or more) variables in the dictionary.  Returns false if any
-  // failures occure during execution, leaving variables in the dictionary
-  // in an indeterminate state.  If assigned is non-NULL, any keys set in
-  // the dictionary as a result of evaluation will also be set to true in
-  // assigned, providing a way to determine if an expression modifies any
-  // of its input variables.
+  // Evaluate the expression, starting with an empty stack. The results of
+  // execution will be stored in one (or more) variables in the dictionary.
+  // Returns false if any failures occur during execution, leaving
+  // variables in the dictionary in an indeterminate state. If assigned is
+  // non-NULL, any keys set in the dictionary as a result of evaluation
+  // will also be set to true in assigned, providing a way to determine if
+  // an expression modifies any of its input variables.
   bool Evaluate(const string &expression, DictionaryValidityType *assigned);
+
+  // Like Evaluate, but provides the value left on the stack to the
+  // caller. If evaluation succeeds and leaves exactly one value on
+  // the stack, pop that value, store it in *result, and return true.
+  // Otherwise, return false.
+  bool EvaluateForValue(const string &expression, ValueType *result);
 
   DictionaryType* dictionary() const { return dictionary_; }
 
@@ -136,6 +144,12 @@ class PostfixEvaluator {
 
   // Pushes a new value onto the stack.
   void PushValue(const ValueType &value);
+
+  // Evaluate expression, updating *assigned if it is non-zero. Return
+  // true if evaluation completes successfully. Do not clear the stack
+  // upon successful evaluation.
+  bool EvaluateInternal(const string &expression,
+                        DictionaryValidityType *assigned);
 
   // The dictionary mapping constant and variable identifiers (strings) to
   // values.  Keys beginning with '$' are treated as variable names, and
