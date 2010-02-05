@@ -1241,6 +1241,10 @@ CommandBufferProxy* WebPluginDelegateProxy::CreateCommandBuffer() {
 #endif  // ENABLE_GPU
 }
 
+gfx::PluginWindowHandle WebPluginDelegateProxy::GetPluginWindowHandle() {
+  return window_;
+}
+
 void WebPluginDelegateProxy::OnCancelDocumentLoad() {
   plugin_->CancelDocumentLoad();
 }

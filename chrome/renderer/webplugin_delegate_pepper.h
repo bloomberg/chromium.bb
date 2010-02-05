@@ -194,6 +194,11 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   scoped_ptr<CommandBufferProxy> command_buffer_;
 #endif
 
+  // Tells the browser out-of-band where the nested delegate lives on
+  // the page.
+  void SendNestedDelegateGeometryToBrowser(const gfx::Rect& window_rect,
+                                           const gfx::Rect& clip_rect);
+
   // Used to track whether additional commands have been put in the command
   // buffer since the last flush.
   int32 last_command_buffer_put_offset_;

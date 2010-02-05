@@ -377,6 +377,11 @@ NPError WebPluginDelegatePepper::Device3DInitializeContext(
         command_buffer_->SetWindowSize(window_rect_.width(),
                                        window_rect_.height());
 #endif  // OS_MACOSX
+
+        // Make sure the nested delegate shows up in the right place
+        // on the page.
+        SendNestedDelegateGeometryToBrowser(window_rect_, clip_rect_);
+
         // Save the implementation information (the CommandBuffer).
         Device3DImpl* impl = new Device3DImpl;
         impl->command_buffer = command_buffer_.get();
@@ -739,3 +744,28 @@ void WebPluginDelegatePepper::Synchronize3DContext(
   context->error = static_cast<NPDeviceContext3DError>(state.error);
 }
 #endif  // ENABLE_GPU
+
+void WebPluginDelegatePepper::SendNestedDelegateGeometryToBrowser(
+    const gfx::Rect& window_rect,
+    const gfx::Rect& clip_rect) {
+  // Inform the browser about the location of the plugin on the page.
+  // It appears that initially the plugin does not get laid out correctly --
+  // possibly due to lazy creation of the nested delegate.
+  if (!nested_delegate_ ||
+      !nested_delegate_->GetPluginWindowHandle() ||
+      !render_view_) {
+    return;
+  }
+
+  webkit_glue::WebPluginGeometry geom;
+  geom.window = nested_delegate_->GetPluginWindowHandle();
+  geom.window_rect = window_rect;
+  geom.clip_rect = clip_rect;
+  // Rects_valid must be true for this to work in the Gtk port;
+  // hopefully not having the cutout rects will not cause incorrect
+  // clipping.
+  geom.rects_valid = true;
+  geom.visible = true;
+  render_view_->DidMovePlugin(geom);
+}
+
