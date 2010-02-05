@@ -72,7 +72,7 @@ class UTObserver: public DiagnosticsModel::Observer {
 
 // We currently have more tests operational on windows.
 #if defined(OS_WIN)
-const int kDiagnosticsTestCount = 7;
+const int kDiagnosticsTestCount = 8;
 #else
 const int kDiagnosticsTestCount = 6;
 #endif

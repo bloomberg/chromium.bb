@@ -78,13 +78,14 @@ class DiagnosticsModelImpl : public DiagnosticsModel {
 class DiagnosticsModelWin : public DiagnosticsModelImpl {
  public:
   DiagnosticsModelWin() {
-    tests_.push_back(MakeWinOsIdTest());
+    tests_.push_back(MakeOperatingSystemTest());
     tests_.push_back(MakeInstallTypeTest());
+    tests_.push_back(MakeVersionTest());
     tests_.push_back(MakeUserDirTest());
-    tests_.push_back(MakeResourceFileTest());
     tests_.push_back(MakeLocalStateFileTest());
     tests_.push_back(MakeDictonaryDirTest());
     tests_.push_back(MakeInspectorDirTest());
+    tests_.push_back(MakeDiskSpaceTest());
   }
 
  private:
@@ -97,11 +98,12 @@ class DiagnosticsModelMac : public DiagnosticsModelImpl {
   DiagnosticsModelMac() {
     tests_.push_back(MakeInstallTypeTest());
     tests_.push_back(MakeUserDirTest());
-    tests_.push_back(MakeResourceFileTest());
     tests_.push_back(MakeLocalStateFileTest());
     tests_.push_back(MakeDictonaryDirTest());
     tests_.push_back(MakeInspectorDirTest());
+    tests_.push_back(MakeDiskSpaceTest());
   }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DiagnosticsModelMac);
 };
@@ -112,11 +114,12 @@ class DiagnosticsModelLinux : public DiagnosticsModelImpl {
   DiagnosticsModelLinux() {
     tests_.push_back(MakeInstallTypeTest());
     tests_.push_back(MakeUserDirTest());
-    tests_.push_back(MakeResourceFileTest());
     tests_.push_back(MakeLocalStateFileTest());
     tests_.push_back(MakeDictonaryDirTest());
     tests_.push_back(MakeInspectorDirTest());
+    tests_.push_back(MakeDiskSpaceTest());
   }
+
  private:
   DISALLOW_COPY_AND_ASSIGN(DiagnosticsModelLinux);
 };

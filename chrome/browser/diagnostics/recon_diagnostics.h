@@ -8,14 +8,13 @@
 #include "base/string16.h"
 #include "chrome/browser/diagnostics/diagnostics_test.h"
 
-#if defined(OS_WIN)
-DiagnosticTest* MakeWinOsIdTest();
-#endif
+DiagnosticTest* MakeOperatingSystemTest();
 DiagnosticTest* MakeInstallTypeTest();
+DiagnosticTest* MakeVersionTest();
 DiagnosticTest* MakeUserDirTest();
-DiagnosticTest* MakeResourceFileTest();
 DiagnosticTest* MakeLocalStateFileTest();
 DiagnosticTest* MakeDictonaryDirTest();
 DiagnosticTest* MakeInspectorDirTest();
+DiagnosticTest* MakeDiskSpaceTest();
 
 #endif  // CHROME_BROWSER_DIAGNOSTICS_RECON_DIAGNOSTICS_H_
