@@ -330,6 +330,7 @@
             },
             'xcode_settings': {
               'GCC_PREFIX_HEADER': 'cross/precompile.h',
+              'GCC_PFE_FILE_C_DIALECTS': 'c++',
             },
           },
         ],
@@ -348,6 +349,7 @@
           {
             'xcode_settings': {
               'GCC_PREFIX_HEADER': 'cross/precompile.h',
+              'GCC_PFE_FILE_C_DIALECTS': 'c++',
             },
           },
         ],
