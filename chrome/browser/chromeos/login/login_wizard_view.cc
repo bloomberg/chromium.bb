@@ -31,6 +31,9 @@ using views::Background;
 using views::View;
 using views::Widget;
 
+static const int kLoginWidth = 700;
+static const int kLoginHeight = 350;
+
 namespace browser {
 
 // Acts as a frame view with no UI.
@@ -134,15 +137,12 @@ void LoginWizardView::OnLogin() {
 }
 
 void LoginWizardView::InitLoginWindow() {
-  int login_width = dimensions_.width() / 2;
-  int login_height = dimensions_.height() / 2;
-  LoginManagerView* login_view = new LoginManagerView(login_width,
-                                                      login_height);
+  LoginManagerView* login_view = new LoginManagerView();
   login_view->set_observer(this);
-  login_view->SetBounds(dimensions_.width() / 4,
-                        dimensions_.height() / 4,
-                        login_width,
-                        login_height);
+  login_view->SetBounds((dimensions_.width() - kLoginWidth) / 2,
+                        (dimensions_.height() - kLoginHeight) / 2,
+                        kLoginWidth,
+                        kLoginHeight);
   AddChildView(login_view);
 }
 

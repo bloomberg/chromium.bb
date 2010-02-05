@@ -21,7 +21,9 @@
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
+#include "views/painter.h"
 #include "views/widget/widget.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
@@ -33,43 +35,131 @@ using views::Textfield;
 using views::View;
 using views::Widget;
 
-const int kTitleY = 50;
-const int kPanelSpacing = 36;
-const int kVersionPad = 4;
-const int kTextfieldWidth = 286;
-const SkColor kVersionColor = 0xFF7691DA;
-const SkColor kErrorColor = 0xFF8F384F;
-const SkColor kBackground = SK_ColorWHITE;
-const char *kDefaultDomain = "@gmail.com";
+static const int kTitleY = 50;
+static const int kPanelSpacing = 36;
+static const int kVersionPad = 4;
+static const int kTextfieldWidth = 286;
+static const int kRowPad = 10;
+static const int kLabelPad = 2;
+static const int kCornerPad = 6;
+static const int kCornerRadius = 12;
+static const int kShadowOffset = 4;
+static const SkColor kErrorColor = 0xFF8F384F;
+static const SkColor kBackground = SK_ColorWHITE;
+static const SkColor kLabelColor = 0xFF808080;
+static const SkColor kVersionColor = 0xFFA0A0A0;
+static const char *kDefaultDomain = "@gmail.com";
 
 // Set to true to run on linux and test login.
 static const bool kStubOutLogin = false;
 
-LoginManagerView::LoginManagerView(int width, int height) {
-  dialog_dimensions_.SetSize(width, height);
+// This Painter can be used to draw a background with a shadowed panel with
+// rounded corners.
+class PanelPainter : public views::Painter {
+  static void drawRoundedRect(
+      gfx::Canvas* canvas,
+      int x, int y,
+      int w, int h,
+      SkColor color) {
+    SkRect rect;
+    rect.set(
+        SkIntToScalar(x), SkIntToScalar(y),
+        SkIntToScalar(x + w), SkIntToScalar(y + h));
+    SkPath path;
+    path.addRoundRect(
+        rect, SkIntToScalar(kCornerRadius), SkIntToScalar(kCornerRadius));
+    SkPaint paint;
+    paint.setStyle(SkPaint::kFill_Style);
+    paint.setFlags(SkPaint::kAntiAlias_Flag);
+    paint.setColor(color);
+    canvas->drawPath(path, paint);
+  }
+
+  virtual void Paint(int w, int h, gfx::Canvas* canvas) {
+    // Draw shadow, with offset.
+    drawRoundedRect(
+        canvas,
+        kShadowOffset, kShadowOffset,
+        w, h,
+        SK_ColorBLACK);
+
+    // Draw background, 1 pixel smaller to allow shadow to show.
+    drawRoundedRect(
+        canvas,
+        0, 0,
+        w - 1, h - 1,
+        kBackground);
+  }
+};
+
+LoginManagerView::LoginManagerView() {
   Init();
 }
 
-LoginManagerView::~LoginManagerView() {
-}
-
 void LoginManagerView::Init() {
-  username_field_ = new views::Textfield;
-  password_field_ = new views::Textfield(views::Textfield::STYLE_PASSWORD);
+  // Use rounded rect background.
+  set_background(
+      views::Background::CreateBackgroundPainter(true, new PanelPainter()));
 
-  os_version_label_ = new views::Label();
-  os_version_label_->SetColor(kVersionColor);
-  os_version_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  // Set up fonts.
+  gfx::Font title_font =
+      gfx::Font::CreateFont(L"Droid Sans", 10).DeriveFont(0, gfx::Font::BOLD);
+  gfx::Font label_font = gfx::Font::CreateFont(L"Droid Sans", 8);
+  gfx::Font button_font = label_font;
+  gfx::Font field_font = label_font;
+  gfx::Font version_font = gfx::Font::CreateFont(L"Droid Sans", 6);
 
   title_label_ = new views::Label();
+  title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  title_label_->SetFont(title_font);
   title_label_->SetText(l10n_util::GetString(IDS_LOGIN_TITLE));
+  AddChildView(title_label_);
+
+  username_label_ = new views::Label();
+  username_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  username_label_->SetColor(kLabelColor);
+  username_label_->SetFont(label_font);
+  username_label_->SetText(l10n_util::GetString(IDS_LOGIN_USERNAME));
+  AddChildView(username_label_);
+
+  username_field_ = new views::Textfield;
+  username_field_->SetFont(field_font);
+  AddChildView(username_field_);
+
+  password_label_ = new views::Label();
+  password_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  password_label_->SetColor(kLabelColor);
+  password_label_->SetFont(label_font);
+  password_label_->SetText(l10n_util::GetString(IDS_LOGIN_PASSWORD));
+  AddChildView(password_label_);
+
+  password_field_ = new views::Textfield(views::Textfield::STYLE_PASSWORD);
+  password_field_->SetFont(field_font);
+  AddChildView(password_field_);
+
+  sign_in_button_ = new views::NativeButton(this, std::wstring());
+  sign_in_button_->set_font(button_font);
+  sign_in_button_->SetLabel(l10n_util::GetString(IDS_LOGIN_BUTTON));
+  AddChildView(sign_in_button_);
+
+  os_version_label_ = new views::Label();
+  os_version_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  os_version_label_->SetColor(kVersionColor);
+  os_version_label_->SetFont(version_font);
+  AddChildView(os_version_label_);
 
   error_label_ = new views::Label();
-  error_label_->SetColor(kErrorColor);
   error_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+  error_label_->SetColor(kErrorColor);
+  error_label_->SetFont(label_font);
+  AddChildView(error_label_);
 
-  // Creates the main window
-  BuildWindow();
+  // Restore previously logged in user.
+  std::vector<chromeos::UserManager::User> users =
+      chromeos::UserManager::Get()->GetUsers();
+  if (users.size() > 0) {
+    username_field_->SetText(UTF8ToUTF16(users[0].email()));
+  }
 
   // Controller to handle events from textfields
   username_field_->SetController(this);
@@ -77,68 +167,66 @@ void LoginManagerView::Init() {
   if (chromeos::LoginLibrary::EnsureLoaded()) {
     loader_.GetVersion(
         &consumer_, NewCallback(this, &LoginManagerView::OnOSVersion));
-  }
-}
-
-gfx::Size LoginManagerView::GetPreferredSize() {
-  return dialog_dimensions_;
-}
-
-void LoginManagerView::BuildWindow() {
-  View* login_prompt = new View();
-  login_prompt->set_background(
-      views::Background::CreateSolidBackground(kBackground));
-  login_prompt->SetBounds(0,
-                          0,
-                          dialog_dimensions_.width(),
-                          dialog_dimensions_.height());
-
-  int x = (dialog_dimensions_.width() - kTextfieldWidth) / 2;
-  int y = kTitleY;
-  title_label_->SetBounds(x,
-                          y,
-                          kTextfieldWidth,
-                          title_label_->GetPreferredSize().height());
-  y += kPanelSpacing;
-  username_field_->SetBounds(x, y, kTextfieldWidth, kPanelSpacing);
-  y += 2 * kPanelSpacing;
-  password_field_->SetBounds(x, y, kTextfieldWidth, kPanelSpacing);
-  y += 2 * kPanelSpacing;
-  os_version_label_->SetBounds(
-      x,
-      y,
-      dialog_dimensions_.width() - (x + kVersionPad),
-      os_version_label_->GetPreferredSize().height());
-  y += kPanelSpacing;
-  error_label_->SetBounds(
-      x,
-      y,
-      dialog_dimensions_.width() - (x + kVersionPad),
-      error_label_->GetPreferredSize().height());
-
-  std::vector<chromeos::UserManager::User> users =
-      chromeos::UserManager::Get()->GetUsers();
-  if (users.size() > 0) {
-    username_field_->SetText(UTF8ToUTF16(users[0].email()));
-  }
-  login_prompt->AddChildView(title_label_);
-  login_prompt->AddChildView(username_field_);
-  login_prompt->AddChildView(password_field_);
-  login_prompt->AddChildView(os_version_label_);
-  login_prompt->AddChildView(error_label_);
-  AddChildView(login_prompt);
-
-  if (!kStubOutLogin && !chromeos::LoginLibrary::EnsureLoaded()) {
+  } else if (!kStubOutLogin) {
     error_label_->SetText(l10n_util::GetString(IDS_LOGIN_DISABLED_NO_LIBCROS));
     username_field_->SetReadOnly(true);
     password_field_->SetReadOnly(true);
   }
+}
 
-  return;
+// Sets the bounds of the view, using x and y as the origin.
+// The width is determined by the min of width and the preferred size
+// of the view, unless force_width is true in which case it is always used.
+// The height is gotten from the preferred size and returned.
+static int setViewBounds(
+    views::View* view, int x, int y, int width, bool force_width) {
+  gfx::Size pref_size = view->GetPreferredSize();
+  if (!force_width) {
+    if (pref_size.width() < width) {
+      width = pref_size.width();
+    }
+  }
+  int height = pref_size.height();
+  view->SetBounds(x, y, width, height);
+  return height;
+}
+
+void LoginManagerView::Layout() {
+  // Center the text fields, and align the rest of the views with them.
+  int x = (width() - kTextfieldWidth) / 2;
+  int y = kTitleY;
+  int max_width = width() - (x + kVersionPad);
+
+  y += (setViewBounds(title_label_, x, y, max_width, false) + kRowPad);
+  y += (setViewBounds(username_label_, x, y, max_width, false) + kLabelPad);
+  y += (setViewBounds(username_field_, x, y, kTextfieldWidth, true) + kRowPad);
+  y += (setViewBounds(password_label_, x, y, max_width, false) + kLabelPad);
+  y += (setViewBounds(password_field_, x, y, kTextfieldWidth, true) + kRowPad);
+  y += (setViewBounds(sign_in_button_, x, y, max_width, false) + kRowPad);
+  y += (setViewBounds(error_label_, x, y, max_width, true) + kRowPad);
+
+  setViewBounds(
+      os_version_label_,
+      kCornerPad,
+      height() - (os_version_label_->GetPreferredSize().height() + kCornerPad),
+      width() - (2 * kCornerPad),
+      true);
+
+  SchedulePaint();
+}
+
+gfx::Size LoginManagerView::GetPreferredSize() {
+  return gfx::Size(width(), height());
 }
 
 views::View* LoginManagerView::GetContentsView() {
   return this;
+}
+
+// Sign in button causes a login attempt.
+void LoginManagerView::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
+  Login();
 }
 
 bool LoginManagerView::Authenticate(const std::string& username,
@@ -178,6 +266,41 @@ void LoginManagerView::SetupSession(const std::string& username) {
 
 }
 
+void LoginManagerView::Login() {
+  // Disallow 0 size username.
+  if (username_field_->text().empty()) {
+    // Return true so that processing ends
+    return;
+  }
+  std::string username = UTF16ToUTF8(username_field_->text());
+  // todo(cmasone) Need to sanitize memory used to store password.
+  std::string password = UTF16ToUTF8(password_field_->text());
+
+  if (username.find('@') == std::string::npos) {
+    username += kDefaultDomain;
+    username_field_->SetText(UTF8ToUTF16(username));
+  }
+
+  // Set up credentials to prepare for authentication.
+  if (Authenticate(username, password)) {
+    // TODO(cmasone): something sensible if errors occur.
+    SetupSession(username);
+    chromeos::UserManager::Get()->UserLoggedIn(username);
+  } else {
+    chromeos::NetworkLibrary* network = chromeos::NetworkLibrary::Get();
+    int errorID;
+    // Check networking after trying to login in case user is
+    // cached locally or the local admin account.
+    if (!network || !network->EnsureLoaded())
+      errorID = IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY;
+    else if (!network->Connected())
+      errorID = IDS_LOGIN_ERROR_NETWORK_NOT_CONNECTED;
+    else
+      errorID = IDS_LOGIN_ERROR_AUTHENTICATING;
+    error_label_->SetText(l10n_util::GetString(errorID));
+  }
+}
+
 bool LoginManagerView::HandleKeystroke(views::Textfield* s,
     const views::Textfield::Keystroke& keystroke) {
   if (!kStubOutLogin && !chromeos::LoginLibrary::EnsureLoaded())
@@ -194,42 +317,9 @@ bool LoginManagerView::HandleKeystroke(views::Textfield* s,
       return false;
     }
   } else if (keystroke.GetKeyboardCode() == base::VKEY_RETURN) {
-    // Disallow 0 size username.
-    if (username_field_->text().length() == 0) {
-      // Return true so that processing ends
-      return true;
-    } else {
-      std::string username = UTF16ToUTF8(username_field_->text());
-      // todo(cmasone) Need to sanitize memory used to store password.
-      std::string password = UTF16ToUTF8(password_field_->text());
-
-      if (username.find('@') == std::string::npos) {
-        username += kDefaultDomain;
-        username_field_->SetText(UTF8ToUTF16(username));
-      }
-
-      // Set up credentials to prepare for authentication.
-      if (!Authenticate(username, password)) {
-        chromeos::NetworkLibrary* network = chromeos::NetworkLibrary::Get();
-        int errorID;
-        // Check networking after trying to login in case user is
-        // cached locally or the local admin account.
-        if (!network || !network->EnsureLoaded())
-          errorID = IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY;
-        else if (!network->Connected())
-          errorID = IDS_LOGIN_ERROR_NETWORK_NOT_CONNECTED;
-        else
-          errorID = IDS_LOGIN_ERROR_AUTHENTICATING;
-        error_label_->SetText(l10n_util::GetString(errorID));
-        return true;
-      }
-      // TODO(cmasone): something sensible if errors occur.
-
-      SetupSession(username);
-      chromeos::UserManager::Get()->UserLoggedIn(username);
-      // Return true so that processing ends
-      return true;
-    }
+    Login();
+    // Return true so that processing ends
+    return true;
   }
   // Return false so that processing does not end
   return false;

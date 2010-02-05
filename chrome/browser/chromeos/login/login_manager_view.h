@@ -8,15 +8,21 @@
 #include <string>
 #include "chrome/browser/chromeos/version_loader.h"
 #include "views/accelerator.h"
-#include "views/controls/label.h"
+#include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield.h"
 #include "views/view.h"
 #include "views/widget/widget_gtk.h"
 #include "views/window/window_delegate.h"
 
+namespace views {
+class Label;
+class NativeButton;
+} // namespace views
+
 class LoginManagerView : public views::View,
                          public views::WindowDelegate,
-                         public views::Textfield::Controller {
+                         public views::Textfield::Controller,
+                         public views::ButtonListener {
  public:
   // Observer for login related events.
   class LoginObserver {
@@ -25,14 +31,15 @@ class LoginManagerView : public views::View,
     virtual void OnLogin() = 0;
   };
 
-  LoginManagerView(int width, int height);
-  virtual ~LoginManagerView();
+  LoginManagerView();
+  virtual ~LoginManagerView() {}
 
   // Initialize the controls on the dialog.
   void Init();
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
+  virtual void Layout();
 
   // Overridden from views::WindowDelegate:
   virtual views::View* GetContentsView();
@@ -41,6 +48,10 @@ class LoginManagerView : public views::View,
   // Not thread-safe, by virtue of using SetupSession().
   virtual bool HandleKeystroke(views::Textfield* sender,
                                const views::Textfield::Keystroke& keystroke);
+
+  // Overriden from views::ButtonListener.
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+
   // This method is called whenever the text in the field changes.
   virtual void ContentsChanged(views::Textfield* sender,
                                const string16& new_contents) {}
@@ -55,10 +66,10 @@ class LoginManagerView : public views::View,
   views::Textfield* password_field_;
   views::Label* os_version_label_;
   views::Label* title_label_;
+  views::Label* username_label_;
+  views::Label* password_label_;
   views::Label* error_label_;
-
-  // The dialog dimensions.
-  gfx::Size dialog_dimensions_;
+  views::NativeButton* sign_in_button_;
 
   // Handles asynchronously loading the version.
   chromeos::VersionLoader loader_;
@@ -67,9 +78,6 @@ class LoginManagerView : public views::View,
   CancelableRequestConsumer consumer_;
 
   LoginObserver* observer_;
-
-  // Helper functions to modularize class
-  void BuildWindow();
 
   // Given a |username| and |password|, this method attempts to authenticate to
   // the Google accounts servers.
@@ -91,6 +99,9 @@ class LoginManagerView : public views::View,
   // Callback from chromeos::VersionLoader giving the version.
   void OnOSVersion(chromeos::VersionLoader::Handle handle,
                    std::string version);
+
+  // Attempt to login with the current field values.
+  void Login();
 
   DISALLOW_COPY_AND_ASSIGN(LoginManagerView);
 };
