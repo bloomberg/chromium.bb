@@ -31,6 +31,7 @@
 #include "third_party/skia/include/effects/SkGradientShader.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/button/text_button.h"
+#include "views/drag_utils.h"
 #include "views/window/window.h"
 
 #include "grit/theme_resources.h"
@@ -272,6 +273,25 @@ BrowserActionView::BrowserActionView(Extension* extension,
   button_->SetDragController(panel_);
   AddChildView(button_);
   button_->UpdateState();
+}
+
+gfx::Canvas* BrowserActionView::GetIconWithBadge() {
+  int tab_id = panel_->GetCurrentTabId();
+
+  SkBitmap icon = button_->extension()->browser_action()->GetIcon(tab_id);
+  if (icon.isNull())
+    icon = button_->default_icon();
+
+  gfx::Canvas* canvas = new gfx::Canvas(icon.width(), icon.height(), false);
+  canvas->DrawBitmapInt(icon, 0, 0);
+
+  if (tab_id >= 0) {
+    gfx::Rect bounds =
+        gfx::Rect(icon.width(), icon.height() + kControlVertOffset);
+    button_->extension()->browser_action()->PaintBadge(canvas, bounds, tab_id);
+  }
+
+  return canvas;
 }
 
 void BrowserActionView::Layout() {
@@ -832,7 +852,14 @@ void BrowserActionsContainer::WriteDragData(
   DCHECK(data);
 
   for (size_t i = 0; i < browser_action_views_.size(); ++i) {
-    if (browser_action_views_[i]->button() == sender) {
+    BrowserActionButton* button = browser_action_views_[i]->button();
+    if (button == sender) {
+      // Set the dragging image for the icon.
+      scoped_ptr<gfx::Canvas> canvas(
+          browser_action_views_[i]->GetIconWithBadge());
+      drag_utils::SetDragImageOnDataObject(*canvas, button->width(),
+          button->height(), press_x, press_y, data);
+      // Fill in the remaining info.
       BrowserActionDragData drag_data(
           browser_action_views_[i]->button()->extension()->id(), i);
       drag_data.Write(profile_, data);

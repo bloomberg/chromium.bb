@@ -133,6 +133,11 @@ class BrowserActionView : public views::View {
   BrowserActionView(Extension* extension, BrowserActionsContainer* panel);
   BrowserActionButton* button() { return button_; }
 
+  // Allocates a canvas object on the heap and draws into it the icon for the
+  // view as well as the badge (if any). Caller is responsible for deleting the
+  // returned object.
+  gfx::Canvas* GetIconWithBadge();
+
  private:
   virtual void Layout();
 

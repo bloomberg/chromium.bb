@@ -4,6 +4,7 @@
 
 #include "chrome/browser/views/extensions/browser_action_overflow_menu_controller.h"
 
+#include "app/gfx/canvas.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -26,20 +27,14 @@ BrowserActionOverflowMenuController::BrowserActionOverflowMenuController(
   menu_.reset(new views::MenuItemView(this));
   menu_->set_has_icons(true);
 
-  TabContents* tab = BrowserList::GetLastActive()->GetSelectedTabContents();
-  int tab_id = tab->controller().session_id().id();
-
   size_t command_id = 0;
   for (size_t i = start_index; i < views_->size(); ++i) {
     BrowserActionView* view = (*views_)[i];
-    SkBitmap icon =
-        view->button()->extension()->browser_action()->GetIcon(tab_id);
-    if (icon.isNull())
-      icon = view->button()->default_icon();
+    scoped_ptr<gfx::Canvas> canvas(view->GetIconWithBadge());
     menu_->AppendMenuItemWithIcon(
         command_id,
         UTF8ToWide(view->button()->extension()->name()),
-        icon);
+        canvas->ExtractBitmap());
     ++command_id;
   }
 }
