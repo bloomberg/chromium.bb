@@ -16,6 +16,7 @@
 class BrowserView;
 class TabContents;
 class Tab;
+class ToolbarStarToggle;
 
 namespace chromeos {
 
@@ -60,7 +61,10 @@ class CompactLocationBarHost : public DropdownBarHost,
   // Enable/disable the compact location bar.
   void SetEnabled(bool enabled);
 
-  // Overridehden from DropdownBarhost.
+  // Returns the star button for compact location bar.
+  ToolbarStarToggle* GetStarButton();
+
+  // Overridden from DropdownBarhost.
   virtual void Show(bool animate);
   virtual void Hide(bool animate);
 

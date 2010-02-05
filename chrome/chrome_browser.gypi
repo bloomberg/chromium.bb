@@ -1951,8 +1951,6 @@
         'browser/views/select_profile_dialog.cc',
         'browser/views/select_profile_dialog.h',
         'browser/views/shell_dialogs_win.cc',
-        'browser/views/star_toggle.cc',
-        'browser/views/star_toggle.h',
         'browser/views/status_bubble_views.cc',
         'browser/views/status_bubble_views.h',
         'browser/views/tab_icon_view.cc',
