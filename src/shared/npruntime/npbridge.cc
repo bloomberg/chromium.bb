@@ -161,7 +161,7 @@ NPObject* NPBridge::CreateProxy(NPP npp, const NPCapability& capability) {
 }
 
 NPObjectProxy* NPBridge::LookupProxy(const NPCapability& capability) {
-  printf("LookupProxy(%p): %p %"PRId32"\n",
+  printf("LookupProxy(%p): %p %"PRId64"\n",
          reinterpret_cast<const void*>(&capability),
          reinterpret_cast<void*>(capability.object()),
          capability.pid());

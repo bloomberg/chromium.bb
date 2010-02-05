@@ -39,6 +39,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <nacl/nacl_npapi.h>
+#include <nacl/pgl.h>
 
 #include "native_client/tests/pepper_plugin/plugin_object.h"
 #include "native_client/tests/pepper_plugin/event_handler.h"
@@ -56,6 +57,7 @@ NPError NPAPI NP_Initialize(NPNetscapeFuncs* browser_funcs,
 NPError NPAPI NP_GetEntryPoints(NPPluginFuncs* plugin_funcs);
 
 NPError NPAPI NP_Shutdown() {
+  pglTerminate();
   return NPERR_NO_ERROR;
 }
 
@@ -71,6 +73,7 @@ NPError NPAPI NP_Initialize(NPNetscapeFuncs* browser_funcs,
          reinterpret_cast<void*>(browser_funcs),
          reinterpret_cast<void*>(plugin_funcs));
   browser = browser_funcs;
+  pglInitialize();
   return NP_GetEntryPoints(plugin_funcs);
 }
 

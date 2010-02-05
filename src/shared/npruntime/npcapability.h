@@ -26,11 +26,10 @@ class NPCapability {
     if (size == static_cast<nacl_abi_size_t>(sizeof(*this))) {
       *this = *reinterpret_cast<NPCapability*>(bytes);
     }
-    // TODO(sehr): what to do for mismatched sizes?
   }
 
-  int32_t pid() const { return pid_; }
-  void set_pid(int32_t pid) { pid_ = pid; }
+  int64_t pid() const { return pid_; }
+  void set_pid(int64_t pid) { pid_ = pid; }
 
   NPObject* object() const {
     // TODO(sehr,ilewis): when assert_cast is ready on NaCl, use it here.
@@ -52,7 +51,7 @@ class NPCapability {
 
  private:
   uint64_t object_;  // The pointer to the object in the owner process.
-  int32_t pid_;     // The process ID that has the object.
+  int64_t pid_;     // The process ID that has the object.
 };
 
 // Less (<) is required for the std::map template class.
