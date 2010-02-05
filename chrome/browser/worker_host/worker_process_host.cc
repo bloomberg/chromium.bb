@@ -287,7 +287,8 @@ void WorkerProcessHost::RelayMessage(
             &message, &msg, &sent_message_port_ids, &new_routing_ids)) {
       return;
     }
-    DCHECK(sent_message_port_ids.size() == new_routing_ids.size());
+    if (sent_message_port_ids.size() != new_routing_ids.size())
+      return;
 
     for (size_t i = 0; i < sent_message_port_ids.size(); ++i) {
       new_routing_ids[i] = next_route_id->Run();
