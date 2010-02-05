@@ -66,7 +66,6 @@ NetworkLocationRequest::NetworkLocationRequest(URLRequestContextGetter* context,
                                                ListenerInterface* listener)
     : url_context_(context), timestamp_(kint64min), listener_(listener),
       url_(url), host_name_(host_name) {
-//  DCHECK(url_context_);
   DCHECK(listener);
 }
 
@@ -89,7 +88,7 @@ bool NetworkLocationRequest::MakeRequest(const string16& access_token,
   timestamp_ = timestamp;
 
   url_fetcher_.reset(URLFetcher::Create(
-      host_name_.size(),  // Used for testing
+      wifi_data.access_point_data.size(),  // Used for testing
       url_, URLFetcher::POST, this));
   url_fetcher_->set_upload_data(kMimeApplicationJson, post_body);
   url_fetcher_->set_request_context(url_context_);
@@ -312,20 +311,31 @@ bool ParseServerResponse(const std::string& response_body,
   response_object->GetStringAsUTF16(kAccessTokenString, access_token);
 
   // Get the location
-  DictionaryValue* location_object;
-  if (!response_object->GetDictionary(kLocationString, &location_object)) {
-    Value* value = NULL;
-    // If the network provider was unable to provide a position fix, it should
-    // return a 200 with location == null. Otherwise it's an error.
-    return response_object->Get(kLocationString, &value)
-           && value && value->IsType(Value::TYPE_NULL);
+  Value* location_value = NULL;
+  if (!response_object->Get(kLocationString, &location_value)) {
+    LOG(INFO) << "ParseServerResponse() : Missing location attribute.\n";
+    return false;
   }
-  DCHECK(location_object);
+  DCHECK(location_value);
+
+  if (!location_value->IsType(Value::TYPE_DICTIONARY)) {
+    if (!location_value->IsType(Value::TYPE_NULL)) {
+      LOG(INFO) << "ParseServerResponse() : Unexpected location type"
+                << location_value->GetType() << ".\n";
+      // If the network provider was unable to provide a position fix, it should
+      // return a HTTP 200, with "location" : null. Otherwise it's an error.
+      return false;
+    }
+    return true;  // Successfully parsed response containing no fix.
+  }
+  DictionaryValue* location_object =
+      static_cast<DictionaryValue*>(location_value);
 
   // latitude and longitude fields are always required.
   double latitude, longitude;
   if (!GetAsDouble(*location_object, kLatitudeString, &latitude) ||
       !GetAsDouble(*location_object, kLongitudeString, &longitude)) {
+    LOG(INFO) << "ParseServerResponse() : location lacks lat and/or long.\n";
     return false;
   }
   // All error paths covered: now start actually modifying postion.
