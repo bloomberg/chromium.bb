@@ -6,7 +6,6 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_MANAGER_VIEW_H_
 
 #include <string>
-#include "chrome/browser/chromeos/login/ipc_message.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "views/accelerator.h"
 #include "views/controls/label.h"
