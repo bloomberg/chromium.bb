@@ -4332,9 +4332,16 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_PAGEINFO_WINDOW_TITLE" desc="Title of the page info window.">
         Security Information
       </message>
-      <message name="IDS_PAGEINFO_CERT_INFO_BUTTON" desc="Text of button in the page info that shows the SSL certificate.">
-        Certificate information...
-      </message>
+      <if expr="not pp_ifdef('use_titlecase')">
+        <message name="IDS_PAGEINFO_CERT_INFO_BUTTON" desc="Text of button in the page info that shows the SSL certificate.">
+          Certificate information
+        </message>
+      </if>
+      <if expr="pp_ifdef('use_titlecase')">
+        <message name="IDS_PAGEINFO_CERT_INFO_BUTTON" desc="In Title Case: Text of button in the page info that shows the SSL certificate.">
+          Certificate Information
+        </message>
+      </if>
       <message name="IDS_PAGEINFO_CLOSE_BUTTON" desc="Text of button in the page info that closes the window.">
         Close
       </message>

@@ -95,21 +95,16 @@ PageInfoWindowGtk::PageInfoWindowGtk(gfx::NativeWindow parent,
       parent,
       // Non-modal.
       GTK_DIALOG_NO_SEPARATOR,
-      GTK_STOCK_CLOSE,
-      GTK_RESPONSE_CLOSE,
       NULL);
-  gtk_dialog_set_default_response(GTK_DIALOG(dialog_), GTK_RESPONSE_CLOSE);
-
   if (cert_id_) {
-    GtkWidget* cert_info_button = gtk_dialog_add_button(
+    gtk_dialog_add_button(
         GTK_DIALOG(dialog_),
         l10n_util::GetStringUTF8(IDS_PAGEINFO_CERT_INFO_BUTTON).c_str(),
         RESPONSE_SHOW_CERT_INFO);
-    gtk_button_box_set_child_secondary(
-        GTK_BUTTON_BOX(GTK_DIALOG(dialog_)->action_area),
-        cert_info_button,
-        TRUE);
   }
+  gtk_dialog_add_button(GTK_DIALOG(dialog_), GTK_STOCK_CLOSE,
+                        GTK_RESPONSE_CLOSE);
+  gtk_dialog_set_default_response(GTK_DIALOG(dialog_), GTK_RESPONSE_CLOSE);
 
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
