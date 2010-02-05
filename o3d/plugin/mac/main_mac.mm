@@ -894,6 +894,12 @@ NPError NPP_SetWindow(NPP instance, NPWindow* window) {
       obj->mac_2d_context_ = np_qd->port;
       if (np_qd->port)
         new_window = GetWindowFromPort(np_qd->port);
+      // Safari 4 on Snow Leopard is sending us a spurious
+      // NPP_SetWindow where we can not determine the WindowRef from
+      // the port. Ignore this.
+      if (obj->mac_window_ != NULL &&
+          new_window == NULL)
+          return NPERR_NO_ERROR;
       break;
     }
     default:
