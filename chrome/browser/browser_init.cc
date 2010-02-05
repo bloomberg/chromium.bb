@@ -18,6 +18,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_creator.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/first_run.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/profile.h"
@@ -504,13 +505,42 @@ bool BrowserInit::LaunchWithProfile::Launch(Profile* profile,
 }
 
 bool BrowserInit::LaunchWithProfile::OpenApplicationURL(Profile* profile) {
-  if (!command_line_.HasSwitch(switches::kApp))
+  if (!command_line_.HasSwitch(switches::kApp) &&
+      !command_line_.HasSwitch(switches::kAppId))
     return false;
-  bool launch_as_panel =
-      command_line_.HasSwitch(switches::kEnableExtensionApps) &&
-      command_line_.HasSwitch(switches::kAppLaunchAsPanel);
 
   std::string url_string(command_line_.GetSwitchValueASCII(switches::kApp));
+  bool launch_as_panel = false;
+
+  if (command_line_.HasSwitch(switches::kEnableExtensionApps)) {
+    if (command_line_.HasSwitch(switches::kAppId)) {
+      // TODO(rafaelw): There are two legitimate cases where the extensions
+      // service could not be ready at this point which need to be handled:
+      // 1) The locale has changed and the manifests stored in the preferences
+      //    need to be relocalized.
+      // 2) An externally installed extension will be found and installed.
+      ExtensionsService* extensions_service = profile->GetExtensionsService();
+      if (!extensions_service->is_ready())
+        return false;
+
+      std::string app_id(command_line_.GetSwitchValueASCII(switches::kAppId));
+      Extension* extension_app =
+          extensions_service->GetExtensionById(app_id, false);
+
+      // The extension with |app_id| could't be found, most likely because it
+      // was uninstalled.
+      // TODO(rafaelw): Do something reasonable here. Pop up a warning panel?
+      // Open a URL to the gallery page of the extension id?
+      if (!extension_app)
+        return false;
+      url_string = extension_app->app_launch_url().spec();
+      launch_as_panel =
+          extension_app->app_launch_window_type() == Extension::PANEL;
+    } else {
+      launch_as_panel = command_line_.HasSwitch(switches::kAppLaunchAsPanel);
+    }
+  }
+
 #if defined(OS_WIN)  // Fix up Windows shortcuts.
   ReplaceSubstringsAfterOffset(&url_string, 0, "\\x", "%");
 #endif

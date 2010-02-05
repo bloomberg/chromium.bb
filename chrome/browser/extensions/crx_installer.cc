@@ -250,6 +250,7 @@ void CrxInstaller::CompleteInstall() {
 
     ShellIntegration::ShortcutInfo shortcut_info;
     shortcut_info.url = extension_->app_launch_url();
+    shortcut_info.extension_id = UTF8ToUTF16(extension_->id());
     shortcut_info.title = UTF8ToUTF16(extension_->name());
     shortcut_info.description = UTF8ToUTF16(extension_->description());
     shortcut_info.favicon = icon;

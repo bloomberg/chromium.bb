@@ -345,13 +345,9 @@ bool CreateShortcutTask::CreateShortcut() {
   // Working directory.
   std::wstring chrome_folder = file_util::GetDirectoryFromPath(chrome_exe);
 
-  // Gets the command line switches.
-  std::string switches;
-  if (CPB_GetCommandLineArgumentsCommon(shortcut_info_.url.spec().c_str(),
-      &switches) != CPERR_SUCCESS) {
-    NOTREACHED();
-    return false;
-  }
+  std::string switches =
+     ShellIntegration::GetCommandLineArgumentsCommon(shortcut_info_.url,
+     shortcut_info_.extension_id);
   std::wstring wide_switchs(UTF8ToWide(switches));
 
   // Generates app id from web app url and profile path.

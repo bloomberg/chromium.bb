@@ -135,8 +135,8 @@ class CreateDesktopShortcutTask : public Task {
     std::string icon_name = CreateIcon(shortcut_filename);
 
     std::string contents = ShellIntegration::GetDesktopFileContents(
-        template_contents, shortcut_info_.url, shortcut_info_.title,
-        icon_name);
+        template_contents, shortcut_info_.url, shortcut_info_.extension_id,
+        shortcut_info_.title, icon_name);
 
     if (shortcut_info_.create_on_desktop)
       CreateOnDesktop(shortcut_filename, contents);
@@ -327,7 +327,8 @@ FilePath ShellIntegration::GetDesktopShortcutFilename(const GURL& url) {
 
 std::string ShellIntegration::GetDesktopFileContents(
     const std::string& template_contents, const GURL& url,
-    const string16& title, const std::string& icon_name) {
+    const string16& extension_id, const string16& title,
+    const std::string& icon_name) {
   // See http://standards.freedesktop.org/desktop-entry-spec/latest/
   // Although not required by the spec, Nautilus on Ubuntu Karmic creates its
   // launchers with an xdg-open shebang. Follow that convention.
@@ -342,8 +343,8 @@ std::string ShellIntegration::GetDesktopFileContents(
         if (exec_tokenizer.token() != "%U")
           final_path += exec_tokenizer.token() + " ";
       }
-      std::string switches;
-      CPB_GetCommandLineArgumentsCommon(url.spec().c_str(), &switches);
+      std::string switches =
+          ShellIntegration::GetCommandLineArgumentsCommon(url, extension_id);
       output_buffer += std::string("Exec=") + final_path + switches + "\n";
     } else if (tokenizer.token().substr(0, 5) == "Name=") {
       std::string final_title = UTF16ToUTF8(title);

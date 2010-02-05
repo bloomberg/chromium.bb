@@ -27,6 +27,10 @@ const char kAlwaysEnableDevTools[]          = "always-enable-dev-tools";
 // Specifies that the associated value should be launched in "application" mode.
 const char kApp[]                           = "app";
 
+// Specifies that the extension-app with the specified id should be launched
+// according to its configuration.
+const char kAppId[]                         = "app-id";
+
 // Lacks meaning with out kApp. Causes the specified app to be launched in an
 // panel window.
 const char kAppLaunchAsPanel[]              = "app-launch-as-panel";

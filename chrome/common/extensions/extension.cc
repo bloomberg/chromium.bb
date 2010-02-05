@@ -537,6 +537,18 @@ bool Extension::LoadAppHelper(const DictionaryValue* app, std::string* error) {
     return false;
   }
 
+  // launch window type
+  app_launch_window_type_ = APP;
+  std::string window_type_string;
+  if (app->GetString(keys::kAppLaunchWindowType, &window_type_string)) {
+    if (window_type_string == std::string(values::kWindowTypePanel)) {
+      app_launch_window_type_ = PANEL;
+    } else if (window_type_string != std::string(values::kWindowTypeApp)) {
+      *error = errors::kInvalidAppLaunchWindowType;
+      return false;
+    }
+  }
+
   // The launch URL is automatically added to the extent.
   URLPattern pattern;
   pattern.set_scheme(app_launch_url_.scheme());
