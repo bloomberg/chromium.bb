@@ -120,13 +120,14 @@ void View::SetBounds(const gfx::Rect& bounds) {
 
   gfx::Rect prev = bounds_;
   bounds_ = bounds;
-  DidChangeBounds(prev, bounds_);
+  bool size_changed = prev.size() != bounds_.size();
+  bool position_changed = prev.origin() != bounds_.origin();
 
-  RootView* root = GetRootView();
-  if (root) {
-    bool size_changed = prev.size() != bounds_.size();
-    bool position_changed = prev.origin() != bounds_.origin();
-    if (size_changed || position_changed)
+  if (size_changed || position_changed) {
+    DidChangeBounds(prev, bounds_);
+
+    RootView* root = GetRootView();
+    if (root)
       root->ViewBoundsChanged(this, size_changed, position_changed);
   }
 }
