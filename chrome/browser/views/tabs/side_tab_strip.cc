@@ -85,7 +85,7 @@ void SideTabStrip::Layout() {
 }
 
 void SideTabStrip::Paint(gfx::Canvas* canvas) {
-  canvas->FillRectInt(SK_ColorBLUE, 0, 0, width(), height());
+  // canvas->FillRectInt(SK_ColorBLUE, 0, 0, width(), height());
 }
 
 gfx::Size SideTabStrip::GetPreferredSize() {

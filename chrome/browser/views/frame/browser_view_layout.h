@@ -43,11 +43,6 @@ class BrowserViewLayout : public views::LayoutManager {
     return browser_view_->browser();
   }
 
-  // Layout the vertical tabstrip, adjusting |vertical_layout_rect_| for the
-  // available space for the remainder of the BrowserView contents. This must
-  // be called before any other element of the BrowserView is laid out.
-  void LayoutSideTabs();
-
   // Layout the TabStrip, returns the coordinate of the bottom of the TabStrip,
   // for laying out subsequent controls.
   virtual int LayoutTabStrip();

@@ -245,7 +245,7 @@ void BrowserViewLayout::ViewRemoved(views::View* host, views::View* view) {
 }
 
 void BrowserViewLayout::Layout(views::View* host) {
-  LayoutSideTabs();
+  vertical_layout_rect_ = browser_view_->GetLocalBounds(true);
   int top = LayoutTabStrip();
   top = LayoutToolbar(top);
   top = LayoutBookmarkAndInfoBars(top);
@@ -274,47 +274,46 @@ gfx::Size BrowserViewLayout::GetPreferredSize(views::View* host) {
 //////////////////////////////////////////////////////////////////////////////
 // BrowserViewLayout, private:
 
-void BrowserViewLayout::LayoutSideTabs() {
-  vertical_layout_rect_ = browser_view_->GetLocalBounds(true);
-  if (SideTabStrip::Visible(browser()->profile())) {
-    gfx::Size ps = tabstrip_->GetPreferredSize();
-    vertical_layout_rect_.Inset(ps.width(), 0, 0, 0);
-    tabstrip_->SetBounds(0, 0, ps.width(), browser_view_->height());
-  }
-}
-
 int BrowserViewLayout::LayoutTabStrip() {
   if (!browser_view_->IsTabStripVisible()) {
     tabstrip_->SetVisible(false);
     tabstrip_->SetBounds(0, 0, 0, 0);
     return 0;
+  }
+  gfx::Rect layout_bounds =
+      browser_view_->frame()->GetBoundsForTabStrip(tabstrip_);
+
+  if (browser_view_->UsingSideTabs()) {
+    vertical_layout_rect_.Inset(layout_bounds.width(), 0, 0, 0);
   } else {
-    gfx::Rect layout_bounds =
-        browser_view_->frame()->GetBoundsForTabStrip(tabstrip_);
     gfx::Rect toolbar_bounds = browser_view_->GetToolbarBounds();
     tabstrip_->SetBackgroundOffset(
-        gfx::Point(layout_bounds.x() - toolbar_bounds.x(), layout_bounds.y()));
-
-    gfx::Point tabstrip_origin = layout_bounds.origin();
-    views::View::ConvertPointToView(browser_view_->GetParent(), browser_view_,
-                                  &tabstrip_origin);
-    layout_bounds.set_origin(tabstrip_origin);
-    tabstrip_->SetVisible(true);
-    tabstrip_->SetBounds(layout_bounds);
-    return layout_bounds.bottom();
+        gfx::Point(layout_bounds.x() - toolbar_bounds.x(),
+                   layout_bounds.y()));
   }
+
+  gfx::Point tabstrip_origin = layout_bounds.origin();
+  views::View::ConvertPointToView(browser_view_->GetParent(), browser_view_,
+                                  &tabstrip_origin);
+  layout_bounds.set_origin(tabstrip_origin);
+  tabstrip_->SetVisible(true);
+  tabstrip_->SetBounds(layout_bounds);
+  return browser_view_->UsingSideTabs() ? 0 : layout_bounds.bottom();
 }
 
 int BrowserViewLayout::LayoutToolbar(int top) {
-  int browser_view_width = browser_view_->width();
+  int browser_view_width = vertical_layout_rect_.width();
   bool visible = browser_view_->IsToolbarVisible();
   toolbar_->location_bar()->SetFocusable(visible);
-  int y = top -
+  int y = 0;
+  if (!browser_view_->UsingSideTabs()) {
+    y = top -
       ((visible && browser_view_->IsTabStripVisible())
        ? kToolbarTabStripVerticalOverlap : 0);
+  }
   int height = visible ? toolbar_->GetPreferredSize().height() : 0;
   toolbar_->SetVisible(visible);
-  toolbar_->SetBounds(0, y, browser_view_width, height);
+  toolbar_->SetBounds(vertical_layout_rect_.x(), y, browser_view_width, height);
   return y + height;
 }
 
@@ -335,7 +334,7 @@ int BrowserViewLayout::LayoutBookmarkAndInfoBars(int top) {
 
 int BrowserViewLayout::LayoutBookmarkBar(int top) {
   DCHECK(active_bookmark_bar_);
-  int y = top, x = 0;
+  int y = top;
   if (!browser_view_->IsBookmarkBarVisible()) {
     active_bookmark_bar_->SetVisible(false);
     active_bookmark_bar_->SetBounds(0, y, browser_view_->width(), 0);
@@ -348,8 +347,8 @@ int BrowserViewLayout::LayoutBookmarkBar(int top) {
       0 : active_bookmark_bar_->GetToolbarOverlap(false));
 
   active_bookmark_bar_->SetVisible(true);
-  active_bookmark_bar_->SetBounds(x, y,
-                                  browser_view_->width() - x,
+  active_bookmark_bar_->SetBounds(vertical_layout_rect_.x(), y,
+                                  vertical_layout_rect_.width(),
                                   bookmark_bar_height);
   return y + bookmark_bar_height;
 }
@@ -358,14 +357,16 @@ int BrowserViewLayout::LayoutInfoBar(int top) {
   bool visible = browser()->SupportsWindowFeature(Browser::FEATURE_INFOBAR);
   int height = visible ? infobar_container_->GetPreferredSize().height() : 0;
   infobar_container_->SetVisible(visible);
-  infobar_container_->SetBounds(0, top, browser_view_->width(), height);
+  infobar_container_->SetBounds(vertical_layout_rect_.x(), top,
+                                vertical_layout_rect_.width(), height);
   return top + height;
 }
 
 // Layout the TabContents container, between the coordinates |top| and
 // |bottom|.
 void BrowserViewLayout::LayoutTabContents(int top, int bottom) {
-  contents_split_->SetBounds(0, top, browser_view_->width(), bottom - top);
+  contents_split_->SetBounds(vertical_layout_rect_.x(), top,
+                             vertical_layout_rect_.width(), bottom - top);
 }
 
 int BrowserViewLayout::LayoutExtensionAndDownloadShelves() {
@@ -396,8 +397,8 @@ int BrowserViewLayout::LayoutDownloadShelf(int bottom) {
     DCHECK(download_shelf_);
     int height = visible ? download_shelf_->GetPreferredSize().height() : 0;
     download_shelf_->SetVisible(visible);
-    download_shelf_->SetBounds(0, bottom - height,
-                               browser_view_->width(), height);
+    download_shelf_->SetBounds(vertical_layout_rect_.x(), bottom - height,
+                               vertical_layout_rect_.width(), height);
     download_shelf_->Layout();
     bottom -= height;
   }
@@ -411,8 +412,8 @@ int BrowserViewLayout::LayoutExtensionShelf(int bottom) {
     int height =
         visible ? extension_shelf_->GetPreferredSize().height() : 0;
     extension_shelf_->SetVisible(visible);
-    extension_shelf_->SetBounds(0, bottom - height,
-                                browser_view_->width(), height);
+    extension_shelf_->SetBounds(vertical_layout_rect_.x(), bottom - height,
+                                vertical_layout_rect_.width(), height);
     extension_shelf_->Layout();
     bottom -= height;
   }

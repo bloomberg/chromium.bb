@@ -144,6 +144,9 @@ class BrowserView : public BrowserWindow,
   // Returns true if various window components are visible.
   bool IsTabStripVisible() const;
 
+  // Returns true if the vertical tabstrip is in use.
+  bool UsingSideTabs() const;
+
   // Returns true if the profile associated with this Browser window is
   // off the record.
   bool IsOffTheRecord() const;

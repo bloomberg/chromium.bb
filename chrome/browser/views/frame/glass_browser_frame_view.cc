@@ -10,6 +10,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/views/frame/browser_view.h"
+#include "chrome/browser/views/tabs/side_tab_strip.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "grit/app_resources.h"
 #include "grit/theme_resources.h"
@@ -81,6 +82,10 @@ GlassBrowserFrameView::~GlassBrowserFrameView() {
 
 gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
     BaseTabStrip* tabstrip) const {
+  if (browser_view_->UsingSideTabs()) {
+    gfx::Size ps = tabstrip->GetPreferredSize();
+    return gfx::Rect(0, 0, ps.width(), browser_view_->height());
+  }
   int minimize_button_offset = frame_->GetMinimizeButtonOffset();
   int tabstrip_x = browser_view_->ShouldShowOffTheRecordAvatar() ?
       (otr_avatar_bounds_.right() + kOTRSideSpacing) :
@@ -228,8 +233,11 @@ int GlassBrowserFrameView::NonClientTopBorderHeight() const {
   // We'd like to use FrameBorderThickness() here, but the maximized Aero glass
   // frame has a 0 frame border around most edges and a CXSIZEFRAME-thick border
   // at the top (see AeroGlassFrame::OnGetMinMaxInfo()).
+  const int kRestoredHeight = browser_view_->UsingSideTabs()
+      ? GetSystemMetrics(SM_CYCAPTION)
+      : kNonClientRestoredExtraThickness;
   return GetSystemMetrics(SM_CXSIZEFRAME) + (browser_view_->IsMaximized() ?
-      -kTabstripTopShadowThickness : kNonClientRestoredExtraThickness);
+      -kTabstripTopShadowThickness : kRestoredHeight);
 }
 
 void GlassBrowserFrameView::PaintDistributorLogo(gfx::Canvas* canvas) {
@@ -306,6 +314,11 @@ void GlassBrowserFrameView::PaintRestoredClientEdge(gfx::Canvas* canvas) {
       tp->GetBitmapNamed(IDR_CONTENT_TOP_LEFT_CORNER)->height();
 
   gfx::Rect client_area_bounds = CalculateClientAreaBounds(width(), height());
+  if (browser_view_->UsingSideTabs()) {
+    client_area_bounds.Inset(
+        GetBoundsForTabStrip(browser_view_->tabstrip()).width(), 0, 0, 0);
+  }
+
   int client_area_bottom =
       std::max(client_area_top, height() - NonClientBorderThickness());
   int client_area_height = client_area_bottom - client_area_top;

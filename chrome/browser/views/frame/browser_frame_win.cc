@@ -273,12 +273,20 @@ void BrowserFrameWin::UpdateDWMFrame() {
       margins.cxLeftWidth = kClientEdgeThickness + 1;
       margins.cxRightWidth = kClientEdgeThickness + 1;
       margins.cyBottomHeight = kClientEdgeThickness + 1;
+      margins.cyTopHeight = kClientEdgeThickness + 1;
     }
     // In maximized mode, we only have a titlebar strip of glass, no side/bottom
     // borders.
     if (!browser_view_->IsFullscreen()) {
-      margins.cyTopHeight =
-          GetBoundsForTabStrip(browser_view_->tabstrip()).bottom();
+      if (browser_view_->UsingSideTabs()) {
+        margins.cxLeftWidth +=
+            GetBoundsForTabStrip(browser_view_->tabstrip()).right();
+        margins.cyTopHeight +=
+            GetSystemMetrics(SM_CYSIZEFRAME) + GetSystemMetrics(SM_CYCAPTION);
+      } else {
+        margins.cyTopHeight =
+            GetBoundsForTabStrip(browser_view_->tabstrip()).bottom();
+      }
     }
   } else {
     // For popup and app windows we want to use the default margins.

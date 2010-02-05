@@ -544,6 +544,10 @@ bool BrowserView::IsTabStripVisible() const {
   return browser_->SupportsWindowFeature(Browser::FEATURE_TABSTRIP);
 }
 
+bool BrowserView::UsingSideTabs() const {
+  return SideTabStrip::Visible(browser_->profile());
+}
+
 bool BrowserView::IsOffTheRecord() const {
   return browser_->profile()->IsOffTheRecord();
 }
@@ -1595,12 +1599,9 @@ views::LayoutManager* BrowserView::CreateLayoutManager() const {
 }
 
 BaseTabStrip* BrowserView::CreateTabStrip(TabStripModel* model) {
-  BaseTabStrip* tabstrip = NULL;
-  if (SideTabStrip::Visible(browser_->profile()))
-    tabstrip = new SideTabStrip;
-  else
-    tabstrip = new TabStrip(model);
-  return tabstrip;
+  if (UsingSideTabs())
+    return new SideTabStrip;
+  return new TabStrip(model);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
