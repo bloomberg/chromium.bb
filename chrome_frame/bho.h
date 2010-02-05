@@ -5,14 +5,14 @@
 #ifndef CHROME_FRAME_BHO_H_
 #define CHROME_FRAME_BHO_H_
 
-#include <string>
-
 #include <atlbase.h>
 #include <atlcom.h>
 #include <exdisp.h>
 #include <exdispid.h>
 #include <mshtml.h>
 #include <shdeprecated.h>
+
+#include <string>
 
 #include "base/lazy_instance.h"
 #include "base/thread_local.h"
@@ -62,8 +62,8 @@ BEGIN_COM_MAP(Bho)
 END_COM_MAP()
 
 BEGIN_SINK_MAP(Bho)
- SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_BEFORENAVIGATE2,
-                 BeforeNavigate2, &kBeforeNavigate2Info)
+  SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_BEFORENAVIGATE2,
+                  BeforeNavigate2, &kBeforeNavigate2Info)
 END_SINK_MAP()
 
   // Lifetime management methods
@@ -77,6 +77,8 @@ END_SINK_MAP()
   STDMETHOD(BeforeNavigate2)(IDispatch* dispatch, VARIANT* url, VARIANT* flags,
       VARIANT* target_frame_name, VARIANT* post_data, VARIANT* headers,
       VARIANT_BOOL* cancel);
+
+  HRESULT NavigateToCurrentUrlInCF(IBrowserService* browser);
 
   // mshtml sends an IOleCommandTarget::Exec of OLECMDID_HTTPEQUIV
   // (and OLECMDID_HTTPEQUIV_DONE) as soon as it parses a meta tag.

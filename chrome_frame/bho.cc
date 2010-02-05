@@ -50,6 +50,13 @@ _ATL_FUNC_INFO Bho::kBeforeNavigate2Info = {
 Bho::Bho() {
 }
 
+HRESULT Bho::FinalConstruct() {
+  return S_OK;
+}
+
+void Bho::FinalRelease() {
+}
+
 STDMETHODIMP Bho::SetSite(IUnknown* site) {
   HRESULT hr = S_OK;
   if (site) {
@@ -122,11 +129,57 @@ STDMETHODIMP Bho::BeforeNavigate2(IDispatch* dispatch, VARIANT* url,
   return S_OK;
 }
 
-HRESULT Bho::FinalConstruct() {
-  return S_OK;
-}
+HRESULT Bho::NavigateToCurrentUrlInCF(IBrowserService* browser) {
+  DCHECK(browser);
+  MarkBrowserOnThreadForCFNavigation(browser);
+  ScopedComPtr<IBindCtx> bind_context;
+  ScopedComPtr<IMoniker> moniker;
+  HRESULT hr = ::CreateBindCtx(0, bind_context.Receive());
+  DCHECK(bind_context);
+  if (SUCCEEDED(hr) &&
+      SUCCEEDED(hr = ::CreateURLMonikerEx(NULL, url_.c_str(), moniker.Receive(),
+                                          URL_MK_UNIFORM))) {
+    DCHECK(SUCCEEDED(hr));
+    if (SUCCEEDED(hr)) {
+#ifndef NDEBUG
+      // We've just created a new moniker for a URL that has just been fetched.
+      // However, the moniker used for the current navigation should still
+      // be running.
+      // The documentation for IMoniker::IsRunning() states that if the
+      // moniker is already running (i.e. an equal moniker already exists),
+      // then the return value from IsRunning will be S_OK (or 0) and
+      // S_FALSE (1) when the moniker is not running.
+      // http://msdn.microsoft.com/en-us/library/ms678475(VS.85).aspx
+      // However, knowing that the IsRunning implementation relies on
+      // the bind context and that the bind context uses ole32's
+      // IRunningObjectTable::IsRunning to do its bidding, the return value
+      // is actually TRUE (or 1) when the moniker is running and FALSE (0)
+      // when it is not running.  Yup, the opposite of what you'd expect :-)
+      // http://msdn.microsoft.com/en-us/library/ms682169(VS.85).aspx
+      HRESULT running = moniker->IsRunning(bind_context, NULL, NULL);
+      DCHECK(running == TRUE) << "Moniker not already running?";
+#endif
 
-void Bho::FinalRelease() {
+      // If there's a referrer, preserve it.
+      std::wstring headers;
+      if (!referrer_.empty()) {
+        headers = StringPrintf(L"Referer: %ls\r\n\r\n",
+            ASCIIToWide(referrer_).c_str());
+      }
+
+      // Pass in URL fragments if applicable.
+      std::wstring fragment;
+      GURL parsed_moniker_url(url_);
+      if (parsed_moniker_url.has_ref()) {
+        fragment = UTF8ToWide(parsed_moniker_url.ref());
+      }
+
+      hr = NavigateBrowserToMoniker(browser, moniker, headers.c_str(),
+          bind_context, fragment.c_str());
+    }
+  }
+
+  return hr;
 }
 
 namespace {
@@ -173,26 +226,6 @@ bool DocumentHasEmbeddedItems(IUnknown* browser) {
   return has_embedded_items;
 }
 
-HRESULT DeletePreviousNavigationEntry(IBrowserService* browser) {
-  DCHECK(browser);
-
-  ScopedComPtr<ITravelLog> travel_log;
-  HRESULT hr = browser->GetTravelLog(travel_log.Receive());
-  DCHECK(travel_log);
-  if (travel_log) {
-    ScopedComPtr<ITravelLogEx> travel_log_ex;
-    if (SUCCEEDED(hr = travel_log_ex.QueryFrom(travel_log)) ||
-        SUCCEEDED(hr = travel_log.QueryInterface(__uuidof(IIEITravelLogEx),
-            reinterpret_cast<void**>(travel_log_ex.Receive())))) {
-      hr = travel_log_ex->DeleteIndexEntry(browser, -1);
-    } else {
-      NOTREACHED() << "ITravelLogEx";
-    }
-  }
-
-  return hr;
-}
-
 }  // end namespace
 
 HRESULT Bho::OnHttpEquiv(IBrowserService_OnHttpEquiv_Fn original_httpequiv,
@@ -206,83 +239,7 @@ HRESULT Bho::OnHttpEquiv(IBrowserService_OnHttpEquiv_Fn original_httpequiv,
   // being navigated to so we always have to wait for done to be TRUE
   // before re-initiating the navigation.
 
-  if (done) {
-    if (CheckForCFNavigation(browser, false)) {
-      // TODO(tommi): See if we can't figure out a cleaner way to avoid this.
-      // For small documents we can hit a problem here.  When we attempt to
-      // navigate the document again in CF, mshtml can "complete" the current
-      // navigation (if all data is available) and fire off script events such
-      // as onload and even render the page.  This will happen inside
-      // NavigateBrowserToMoniker below.
-      // To work around this, we clear the contents of the document before
-      // opening it up in CF.
-      ClearDocumentContents(browser);
-
-      ScopedComPtr<IOleObject> mshtml_ole_object;
-      HRESULT hr = shell_view->GetItemObject(SVGIO_BACKGROUND, IID_IOleObject,
-          reinterpret_cast<void**>(mshtml_ole_object.Receive()));
-      DCHECK(FAILED(hr) || mshtml_ole_object != NULL);
-      if (mshtml_ole_object) {
-        ScopedComPtr<IMoniker> moniker;
-        hr = mshtml_ole_object->GetMoniker(OLEGETMONIKER_ONLYIFTHERE,
-            OLEWHICHMK_OBJFULL, moniker.Receive());
-        DCHECK(FAILED(hr) || moniker != NULL);
-        if (moniker) {
-          DLOG(INFO) << "Navigating in CF";
-
-          ScopedComPtr<IBindCtx> bind_context;
-          // This bind context will be discarded by IE and a new one
-          // constructed, so it's OK to create a sync bind context.
-          ::CreateBindCtx(0, bind_context.Receive());
-
-          DCHECK(bind_context);
-
-          // If there's a referrer, preserve it.
-          std::wstring headers;
-          // Pass in URL fragments if applicable.
-          std::wstring fragment;
-
-          Bho* chrome_frame_bho = Bho::GetCurrentThreadBhoInstance();
-          if (chrome_frame_bho) {
-            if (!chrome_frame_bho->referrer().empty()) {
-              headers = StringPrintf(L"Referer: %ls\r\n\r\n",
-                ASCIIToWide(chrome_frame_bho->referrer()).c_str());
-            }
-            // If the original URL contains an anchor, then the URL queried
-            // from the moniker does not contain the anchor. To workaround
-            // this we retrieve the URL from our BHO.
-            std::wstring moniker_url = GetActualUrlFromMoniker(
-                moniker, NULL, chrome_frame_bho->url());
-
-            GURL parsed_moniker_url(moniker_url);
-            if (parsed_moniker_url.has_ref()) {
-              fragment = UTF8ToWide(parsed_moniker_url.ref());
-            }
-          }
-
-          hr = NavigateBrowserToMoniker(browser, moniker, headers.c_str(),
-                                        bind_context, fragment.c_str());
-
-          if (SUCCEEDED(hr)) {
-            // Now that we've reissued the request, we need to remove the
-            // original one from the travel log.
-            DeletePreviousNavigationEntry(browser);
-          }
-        } else {
-          DLOG(ERROR) << "Couldn't get the current moniker";
-        }
-      }
-
-      if (FAILED(hr)) {
-        NOTREACHED();
-        // Lower the flag.
-        CheckForCFNavigation(browser, true);
-      } else {
-        // The navigate-in-gcf flag will be cleared in
-        // HttpNegotiatePatch::ReportProgress when the mime type is reported.
-      }
-    }
-  } else if (in_arg && VT_BSTR == V_VT(in_arg)) {
+  if (!done && in_arg && VT_BSTR == V_VT(in_arg)) {
     if (StrStrI(V_BSTR(in_arg), kChromeContentPrefix)) {
       // OnHttpEquiv is invoked for meta tags within sub frames as well.
       // We want to switch renderers only for the top level frame.
@@ -291,8 +248,24 @@ HRESULT Bho::OnHttpEquiv(IBrowserService_OnHttpEquiv_Fn original_httpequiv,
       // notification is coming from those and not the top level document.
       // The embedded items should only be created once the top level
       // doc has been created.
-      if (!DocumentHasEmbeddedItems(browser))
-        MarkBrowserOnThreadForCFNavigation(browser);
+      if (!DocumentHasEmbeddedItems(browser)) {
+        Bho* bho = Bho::GetCurrentThreadBhoInstance();
+        DCHECK(bho);
+        DLOG(INFO) << "Found tag in page. Marking browser." << bho->url() <<
+            StringPrintf(" tid=0x%08X", ::GetCurrentThreadId());
+        if (bho) {
+          // TODO(tommi): See if we can't figure out a cleaner way to avoid
+          // this.  For some documents we can hit a problem here.  When we
+          // attempt to navigate the document again in CF, mshtml can "complete"
+          // the current navigation (if all data is available) and fire off
+          // script events such as onload and even render the page.
+          // This will happen inside NavigateBrowserToMoniker below.
+          // To work around this, we clear the contents of the document before
+          // opening it up in CF.
+          ClearDocumentContents(browser);
+          bho->NavigateToCurrentUrlInCF(browser);
+        }
+      }
     }
   }
 
@@ -357,7 +330,7 @@ bool PatchHelper::InitializeAndPatchProtocolsIfNeeded() {
 
     HttpNegotiatePatch::Initialize();
 
-    bool patch_protocol = GetConfigBool(true, kPatchProtocols);
+    bool patch_protocol = GetConfigBool(false, kPatchProtocols);
     if (patch_protocol) {
       ProtocolSinkWrap::PatchProtocolHandlers();
       state_ = PATCH_PROTOCOL;
