@@ -18,6 +18,7 @@
 class AppMenuModel;
 @class AutocompleteTextField;
 @class AutocompleteTextFieldEditor;
+@class BrowserActionsContainerView;
 @class BackForwardMenuController;
 class Browser;
 @class BrowserActionsController;
@@ -102,7 +103,7 @@ class ToolbarModel;
   IBOutlet MenuButton* pageButton_;
   IBOutlet MenuButton* wrenchButton_;
   IBOutlet AutocompleteTextField* locationBar_;
-  IBOutlet NSView* browserActionContainerView_;
+  IBOutlet BrowserActionsContainerView* browserActionsContainerView_;
 }
 
 // Initialize the toolbar and register for command updates. The profile is

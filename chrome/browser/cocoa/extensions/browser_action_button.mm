@@ -165,17 +165,29 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
 
 @implementation BrowserActionCell
 
-- (void)drawWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
-  [super drawWithFrame:cellFrame inView:controlView];
+- (void)drawInteriorWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
+  [NSGraphicsContext saveGraphicsState];
+
+  // Create the shadow below and to the right of the drawn image.
+  scoped_nsobject<NSShadow> imgShadow([[NSShadow alloc] init]);
+  [imgShadow setShadowOffset:NSMakeSize(2.0, -2.0)];
+  [imgShadow setShadowBlurRadius:2.0];
+  [imgShadow setShadowColor:[[NSColor blackColor] colorWithAlphaComponent:0.3]];
+  [imgShadow set];
+
+  [super drawInteriorWithFrame:cellFrame inView:controlView];
 
   // CanvasPaint draws its content to the current NSGraphicsContext in its
-  // destructor. If anything needs to be drawn afterwards, then enclose this
-  // in a nested block.
-  cellFrame.origin.y += kBrowserActionBadgeOriginYOffset;
-  gfx::CanvasPaint canvas(cellFrame, false);
-  canvas.set_composite_alpha(true);
-  gfx::Rect boundingRect(NSRectToCGRect(cellFrame));
-  extensionAction_->PaintBadge(&canvas, boundingRect, tabId_);
+  // destructor, so it is enclosed in a nested block.
+  {
+    cellFrame.origin.y += kBrowserActionBadgeOriginYOffset;
+    gfx::CanvasPaint canvas(cellFrame, false);
+    canvas.set_composite_alpha(true);
+    gfx::Rect boundingRect(NSRectToCGRect(cellFrame));
+    extensionAction_->PaintBadge(&canvas, boundingRect, tabId_);
+  }
+
+  [NSGraphicsContext restoreGraphicsState];
 }
 
 @synthesize tabId = tabId_;

@@ -12,6 +12,7 @@
 
 class Browser;
 @class BrowserActionButton;
+@class BrowserActionsContainerView;
 class Extension;
 @class ExtensionPopupController;
 class ExtensionsServiceObserverBridge;
@@ -27,7 +28,7 @@ extern NSString* const kBrowserActionsChangedNotification;
   Browser* browser_;
 
   // The view from Toolbar.xib we'll be rendering our browser actions in. Weak.
-  NSView* containerView_;
+  BrowserActionsContainerView* containerView_;
 
   // The current profile. Weak.
   Profile* profile_;
@@ -47,7 +48,7 @@ extern NSString* const kBrowserActionsChangedNotification;
 // Initializes the controller given the current browser and container view that
 // will hold the browser action buttons.
 - (id)initWithBrowser:(Browser*)browser
-        containerView:(NSView*)container;
+        containerView:(BrowserActionsContainerView*)container;
 
 // Creates and appends any existing browser action buttons present within the
 // extensions service to the toolbar.

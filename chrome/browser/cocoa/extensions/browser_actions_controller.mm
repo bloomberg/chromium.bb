@@ -9,6 +9,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/cocoa/extensions/browser_action_button.h"
+#include "chrome/browser/cocoa/extensions/browser_actions_container_view.h"
 #include "chrome/browser/cocoa/extensions/extension_popup_controller.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -90,7 +91,7 @@ class ExtensionsServiceObserverBridge : public NotificationObserver {
 @implementation BrowserActionsController
 
 - (id)initWithBrowser:(Browser*)browser
-        containerView:(NSView*)container {
+        containerView:(BrowserActionsContainerView*)container {
   DCHECK(browser && container);
 
   if ((self = [super init])) {

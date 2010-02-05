@@ -242,7 +242,7 @@ class PrefObserverBridge : public NotificationObserver {
                    button:forwardButton_]);
   browserActionsController_.reset([[BrowserActionsController alloc]
           initWithBrowser:browser_
-            containerView:browserActionContainerView_]);
+            containerView:browserActionsContainerView_]);
   // When new browser actions are added/removed, the container view for them is
   // resized, necessitating the probable resizing of surrounding elements
   // handled by this controller.
@@ -492,7 +492,7 @@ class PrefObserverBridge : public NotificationObserver {
 - (NSArray*)toolbarViews {
   return [NSArray arrayWithObjects:backButton_, forwardButton_, reloadButton_,
             homeButton_, starButton_, goButton_, pageButton_, wrenchButton_,
-            locationBar_, browserActionContainerView_, nil];
+            locationBar_, browserActionsContainerView_, nil];
 }
 
 // Moves |rect| to the right by |delta|, keeping the right side fixed by
@@ -584,8 +584,8 @@ class PrefObserverBridge : public NotificationObserver {
     moveX *= -1;  // Reverse the direction of the move.
 
   [self adjustLocationAndGoPositionsBy:moveX];
-  [browserActionContainerView_ setFrame:NSOffsetRect(
-      [browserActionContainerView_ frame], moveX, 0)];
+  [browserActionsContainerView_ setFrame:NSOffsetRect(
+      [browserActionsContainerView_ frame], moveX, 0)];
 
   [pageButton_ setHidden:hide];
   [wrenchButton_ setHidden:hide];
@@ -644,7 +644,7 @@ class PrefObserverBridge : public NotificationObserver {
     visibleCount = [browserActionsController_ visibleButtonCount];
     if (visibleCount == buttonCount && !hide)
       return;
-    BrowserActionButton* button = [[browserActionContainerView_ subviews]
+    BrowserActionButton* button = [[browserActionsContainerView_ subviews]
         objectAtIndex:visibleCount + arrayOffset];
     [button setHidden:hide];
     [self browserActionsChanged];
@@ -657,13 +657,10 @@ class PrefObserverBridge : public NotificationObserver {
   int buttonCount = [browserActionsController_ visibleButtonCount];
 
   CGFloat width = 0.0;
-  if (buttonCount > 0) {
-    width = (buttonCount *
-        (kBrowserActionWidth + kBrowserActionButtonPadding)) -
-            kBrowserActionButtonPadding;  // No padding after last button.
-  }
+  if (buttonCount > 0)
+    width = buttonCount * (kBrowserActionWidth + kBrowserActionButtonPadding);
 
-  NSRect containerFrame = [browserActionContainerView_ frame];
+  NSRect containerFrame = [browserActionsContainerView_ frame];
   CGFloat buttonSpacing = [self interButtonSpacing];
   CGFloat dX = containerFrame.size.width - width;
   containerFrame.size.width = width;
@@ -685,7 +682,7 @@ class PrefObserverBridge : public NotificationObserver {
     }
   }
 
-  [browserActionContainerView_ setFrame:NSOffsetRect(containerFrame, dX, 0)];
+  [browserActionsContainerView_ setFrame:NSOffsetRect(containerFrame, dX, 0)];
   [self adjustLocationAndGoPositionsBy:dX];
 }
 
