@@ -47,6 +47,17 @@
         '../../breakpad/breakpad.gyp:breakpad_handler',
       ],
     },
+    {
+      'target_name': 'minidump_test',
+      'type': 'executable',
+      'dependencies': [
+        '../../base/base.gyp:base',
+        '../../testing/gtest.gyp:gtest',
+      ],
+      'sources': [
+        'minidump_test.cc',
+      ],
+    },
   ],
 }
 
