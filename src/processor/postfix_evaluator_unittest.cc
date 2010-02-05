@@ -1,4 +1,4 @@
-// Copyright (c) 2006, Google Inc.
+// Copyright (c) 2010, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -56,21 +56,21 @@ using google_breakpad::PostfixEvaluator;
 // the value.
 class FakeMemoryRegion : public MemoryRegion {
  public:
-  virtual u_int64_t GetBase() { return 0; }
-  virtual u_int32_t GetSize() { return 0; }
-  virtual bool GetMemoryAtAddress(u_int64_t address, u_int8_t  *value) {
+  virtual u_int64_t GetBase() const { return 0; }
+  virtual u_int32_t GetSize() const { return 0; }
+  virtual bool GetMemoryAtAddress(u_int64_t address, u_int8_t  *value) const {
     *value = address + 1;
     return true;
   }
-  virtual bool GetMemoryAtAddress(u_int64_t address, u_int16_t *value) {
+  virtual bool GetMemoryAtAddress(u_int64_t address, u_int16_t *value) const {
     *value = address + 1;
     return true;
   }
-  virtual bool GetMemoryAtAddress(u_int64_t address, u_int32_t *value) {
+  virtual bool GetMemoryAtAddress(u_int64_t address, u_int32_t *value) const {
     *value = address + 1;
     return true;
   }
-  virtual bool GetMemoryAtAddress(u_int64_t address, u_int64_t *value) {
+  virtual bool GetMemoryAtAddress(u_int64_t address, u_int64_t *value) const {
     *value = address + 1;
     return true;
   }

@@ -1,4 +1,4 @@
-// Copyright (c) 2006, Google Inc.
+// Copyright (c) 2010, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -90,7 +90,7 @@ class PostfixEvaluator {
   // (^) will not be supported.  |dictionary| may be NULL, but evaluation
   // will fail in that case unless set_dictionary is used before calling
   // Evaluate.
-  PostfixEvaluator(DictionaryType *dictionary, MemoryRegion *memory)
+  PostfixEvaluator(DictionaryType *dictionary, const MemoryRegion *memory)
       : dictionary_(dictionary), memory_(memory), stack_() {}
 
   // Evaluate the expression.  The results of execution will be stored
@@ -144,7 +144,7 @@ class PostfixEvaluator {
 
   // If non-NULL, the MemoryRegion used for dereference (^) operations.
   // If NULL, dereferencing is unsupported and will fail.  Weak pointer.
-  MemoryRegion *memory_;
+  const MemoryRegion *memory_;
 
   // The stack contains state information as execution progresses.  Values
   // are pushed on to it as the expression string is read and as operations
