@@ -141,7 +141,8 @@ AutocompleteEditViewMac::AutocompleteEditViewMac(
       controller_(controller),
       toolbar_model_(toolbar_model),
       command_updater_(command_updater),
-      field_(field) {
+      field_(field),
+      line_height_(0) {
   DCHECK(controller);
   DCHECK(toolbar_model);
   DCHECK(profile);
@@ -151,6 +152,15 @@ AutocompleteEditViewMac::AutocompleteEditViewMac(
 
   // Needed so that editing doesn't lose the styling.
   [field_ setAllowsEditingTextAttributes:YES];
+
+  // Get the appropriate line height for the font that we use.
+  NSFont* font = ResourceBundle::GetSharedInstance().GetFont(
+      ResourceBundle::BaseFont).nativeFont();
+  scoped_nsobject<NSLayoutManager>
+      layoutManager([[NSLayoutManager alloc] init]);
+  [layoutManager setUsesScreenFonts:YES];
+  line_height_ = [layoutManager defaultLineHeightForFont:font];
+  DCHECK(line_height_ > 0);
 }
 
 AutocompleteEditViewMac::~AutocompleteEditViewMac() {
@@ -374,6 +384,14 @@ void AutocompleteEditViewMac::SetText(const std::wstring& display_text) {
   NSFont* font = ResourceBundle::GetSharedInstance().GetFont(
       ResourceBundle::BaseFont).nativeFont();
   [as addAttribute:NSFontAttributeName value:font
+             range:NSMakeRange(0, [as length])];
+
+  // Make a paragraph style locking in the standard line height as the maximum,
+  // otherwise the baseline may shift "downwards".
+  scoped_nsobject<NSMutableParagraphStyle>
+      paragraph_style([[NSMutableParagraphStyle alloc] init]);
+  [paragraph_style setMaximumLineHeight:line_height_];
+  [as addAttribute:NSParagraphStyleAttributeName value:paragraph_style
              range:NSMakeRange(0, [as length])];
 
   url_parse::Parsed parts;

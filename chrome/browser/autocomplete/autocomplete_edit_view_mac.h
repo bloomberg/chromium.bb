@@ -152,6 +152,9 @@ class AutocompleteEditViewMac : public AutocompleteEditView,
   NSRange selection_before_change_;
   std::wstring text_before_change_;
 
+  // The maximum/standard line height for the displayed text.
+  CGFloat line_height_;
+
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditViewMac);
 };
 
