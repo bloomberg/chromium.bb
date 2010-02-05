@@ -11,9 +11,10 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
+// Define NativeDialog type as platform specific dialog view.
 #if defined(OS_WIN)
-class JavascriptMessageBoxDialog;
-typedef JavascriptMessageBoxDialog* NativeDialog;
+class ModalDialogDelegate;
+typedef ModalDialogDelegate* NativeDialog;
 #elif defined(OS_MACOSX)
 #if __OBJC__
 @class NSAlert;
@@ -22,33 +23,25 @@ class NSAlert;
 #endif
 typedef NSAlert* NativeDialog;
 #elif defined(OS_POSIX)
+typedef struct _GtkDialog GtkDialog;
 typedef struct _GtkWidget GtkWidget;
+typedef int gint;
 typedef GtkWidget* NativeDialog;
 #endif
 
-class ExtensionHost;
-class JavaScriptMessageBoxClient;
 class TabContents;
 namespace IPC {
 class Message;
 }
 
-// A controller+model class for javascript alert, confirm, prompt, and
-// onbeforeunload dialog boxes.  |NativeDialog| is a platform specific
-// view.
-class AppModalDialog : public NotificationObserver {
+// A controller+model base class for modal dialogs.
+class AppModalDialog {
  public:
   // A union of data necessary to determine the type of message box to
-  // show.  |dialog_flags| is a MessageBox flag.
-  AppModalDialog(JavaScriptMessageBoxClient* client,
-                 const std::wstring& title,
-                 int dialog_flags,
-                 const std::wstring& message_text,
-                 const std::wstring& default_prompt_text,
-                 bool display_suppress_checkbox,
-                 bool is_before_unload_dialog,
-                 IPC::Message* reply_msg);
-  ~AppModalDialog();
+  // show. |tab_contents| parameter is optional, if provided that tab will be
+  // activated before the modal dialog is displayed.
+  AppModalDialog(TabContents* tab_contents, const std::wstring& title);
+  virtual ~AppModalDialog();
 
   // Called by the app modal window queue when it is time to show this window.
   void ShowModalDialog();
@@ -60,7 +53,15 @@ class AppModalDialog : public NotificationObserver {
   // NativeDialog is closed, it should call OnAccept or OnCancel to notify the
   // renderer of the user's action.  The NativeDialog is also expected to
   // delete the AppModalDialog associated with it.
-  void CreateAndShowDialog();
+  virtual void CreateAndShowDialog();
+
+#if defined(OS_LINUX)
+  virtual void HandleDialogResponse(GtkDialog* dialog, gint response_id) = 0;
+  // Callback for dialog response calls, passes results to specialized
+  // HandleDialogResponse() implementation.
+  static void OnDialogResponse(GtkDialog* dialog, gint response_id,
+                               AppModalDialog* app_modal_dialog);
+#endif
 
   // Close the dialog if it is showing.
   void CloseModalDialog();
@@ -68,72 +69,38 @@ class AppModalDialog : public NotificationObserver {
   // Called by the app modal window queue to activate the window.
   void ActivateModalDialog();
 
-  /////////////////////////////////////////////////////////////////////////////
-  // Getters so NativeDialog can get information about the message box.
-  JavaScriptMessageBoxClient* client() {
-    return client_;
-  }
-  int dialog_flags() {
-    return dialog_flags_;
-  }
+  // Completes dialog handling, shows next modal dialog from the queue.
+  void CompleteDialog();
+
+  // Dialog window title.
   std::wstring title() {
     return title_;
   }
-  bool is_before_unload_dialog() {
-    return is_before_unload_dialog_;
-  }
-
-  // Callbacks from NativeDialog when the user accepts or cancels the dialog.
-  void OnCancel();
-  void OnAccept(const std::wstring& prompt_text, bool suppress_js_messages);
-  void OnClose();
 
   // Helper methods used to query or control the dialog. This is used by
   // automation.
-  int GetDialogButtons();
-  void AcceptWindow();
-  void CancelWindow();
+  virtual int GetDialogButtons() = 0;
+  virtual void AcceptWindow() = 0;
+  virtual void CancelWindow() = 0;
 
- private:
-  void InitNotifications();
-
-  // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
-
-  // Cleans up after the dialog closes for any reason: sends close
-  // notification and re-enables input events.
-  void Cleanup();
-
-  NotificationRegistrar registrar_;
+ protected:
+  // Cleans up the dialog class.
+  virtual void Cleanup();
+  // Creates the actual platform specific dialog view class.
+  virtual NativeDialog CreateNativeDialog() = 0;
 
   // A reference to the platform native dialog box.
   NativeDialog dialog_;
 
-  // An implementation of the client interface to provide supporting methods
-  // and receive results.
-  JavaScriptMessageBoxClient* client_;
-
-  // The client_ as an ExtensionHost, cached for use during notifications that
-  // may arrive after the client has entered its destructor (and is thus
-  // treated as a base JavaScriptMessageBoxClient). This will be NULL if the
-  // client is not an ExtensionHost.
+  // Parent tab contents.
   TabContents* tab_contents_;
-  ExtensionHost* extension_host_;
+
+  // Information about the message box is held in the following variables.
+  std::wstring title_;
 
   // True if the dialog should no longer be shown, e.g. because the underlying
   // tab navigated away while the dialog was queued.
   bool skip_this_dialog_;
-
-  // Information about the message box is held in the following variables.
-  std::wstring title_;
-  int dialog_flags_;
-  std::wstring message_text_;
-  std::wstring default_prompt_text_;
-  bool display_suppress_checkbox_;
-  bool is_before_unload_dialog_;
-  IPC::Message* reply_msg_;
 };
 
 #endif  // CHROME_BROWSER_APP_MODAL_DIALOG_H_

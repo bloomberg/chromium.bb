@@ -13,13 +13,12 @@
 #include "views/controls/message_box_view.h"
 #include "views/window/window.h"
 
-JavascriptMessageBoxDialog::JavascriptMessageBoxDialog(
-    AppModalDialog* parent,
+JavaScriptMessageBoxDialog::JavaScriptMessageBoxDialog(
+    JavaScriptAppModalDialog* parent,
     const std::wstring& message_text,
     const std::wstring& default_prompt_text,
     bool display_suppress_checkbox)
     : parent_(parent),
-      dialog_(NULL),
       message_box_view_(new MessageBoxView(
           parent->dialog_flags() | MessageBoxFlags::kAutoDetectAlignment,
           message_text, default_prompt_text)) {
@@ -33,39 +32,17 @@ JavascriptMessageBoxDialog::JavascriptMessageBoxDialog(
   }
 }
 
-JavascriptMessageBoxDialog::~JavascriptMessageBoxDialog() {
+JavaScriptMessageBoxDialog::~JavaScriptMessageBoxDialog() {
 }
 
-void JavascriptMessageBoxDialog::ShowModalDialog() {
-  gfx::NativeWindow root_hwnd = client()->GetMessageBoxRootWindow();
-  // GetMessageBoxRootWindow() will be NULL if there's no selected tab (e.g.,
-  // during shutdown), in which case we simply skip showing this dialog.
-  if (!root_hwnd) {
-    Cancel();
-  } else {
-    dialog_ = views::Window::CreateChromeWindow(root_hwnd, gfx::Rect(), this);
-    dialog_->Show();
-  }
-}
-
-void JavascriptMessageBoxDialog::ActivateModalDialog() {
-  // Ensure that the dialog is visible and at the top of the z-order. These
-  // conditions may not be true if the dialog was opened on a different virtual
-  // desktop to the one the browser window is on.
-  dialog_->Show();
-  dialog_->Activate();
-}
-
-void JavascriptMessageBoxDialog::CloseModalDialog() {
-  // If the dialog is visible close it.
-  if (dialog_)
-    dialog_->Close();
+gfx::NativeWindow JavaScriptMessageBoxDialog::GetDialogRootWindow() {
+  return client()->GetMessageBoxRootWindow();
 }
 
 //////////////////////////////////////////////////////////////////////////////
-// JavascriptMessageBoxDialog, views::DialogDelegate implementation:
+// JavaScriptMessageBoxDialog, views::DialogDelegate implementation:
 
-int JavascriptMessageBoxDialog::GetDialogButtons() const {
+int JavaScriptMessageBoxDialog::GetDialogButtons() const {
   int dialog_buttons = 0;
   if (parent_->dialog_flags() & MessageBoxFlags::kFlagHasOKButton)
     dialog_buttons = MessageBoxFlags::DIALOGBUTTON_OK;
@@ -76,36 +53,36 @@ int JavascriptMessageBoxDialog::GetDialogButtons() const {
   return dialog_buttons;
 }
 
-std::wstring JavascriptMessageBoxDialog::GetWindowTitle() const {
+std::wstring JavaScriptMessageBoxDialog::GetWindowTitle() const {
   return parent_->title();
 }
 
 
-void JavascriptMessageBoxDialog::WindowClosing() {
+void JavaScriptMessageBoxDialog::WindowClosing() {
   dialog_ = NULL;
 }
 
-void JavascriptMessageBoxDialog::DeleteDelegate() {
+void JavaScriptMessageBoxDialog::DeleteDelegate() {
   delete parent_;
   delete this;
 }
 
-bool JavascriptMessageBoxDialog::Cancel() {
+bool JavaScriptMessageBoxDialog::Cancel() {
   parent_->OnCancel();
   return true;
 }
 
-bool JavascriptMessageBoxDialog::Accept() {
+bool JavaScriptMessageBoxDialog::Accept() {
   parent_->OnAccept(message_box_view_->GetInputText(),
                     message_box_view_->IsCheckBoxSelected());
   return true;
 }
 
-void JavascriptMessageBoxDialog::OnClose() {
+void JavaScriptMessageBoxDialog::OnClose() {
   parent_->OnClose();
 }
 
-std::wstring JavascriptMessageBoxDialog::GetDialogButtonLabel(
+std::wstring JavaScriptMessageBoxDialog::GetDialogButtonLabel(
     MessageBoxFlags::DialogButton button) const {
   if (parent_->is_before_unload_dialog()) {
     if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
@@ -119,13 +96,13 @@ std::wstring JavascriptMessageBoxDialog::GetDialogButtonLabel(
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// JavascriptMessageBoxDialog, views::WindowDelegate implementation:
+// JavaScriptMessageBoxDialog, views::WindowDelegate implementation:
 
-views::View* JavascriptMessageBoxDialog::GetContentsView() {
+views::View* JavaScriptMessageBoxDialog::GetContentsView() {
   return message_box_view_;
 }
 
-views::View* JavascriptMessageBoxDialog::GetInitiallyFocusedView() {
+views::View* JavaScriptMessageBoxDialog::GetInitiallyFocusedView() {
   if (message_box_view_->text_box())
     return message_box_view_->text_box();
   return views::DialogDelegate::GetInitiallyFocusedView();

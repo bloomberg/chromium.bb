@@ -23,7 +23,7 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
-#include "chrome/browser/jsmessage_box_handler.h"
+#include "chrome/browser/message_box_handler.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_process_host.h"

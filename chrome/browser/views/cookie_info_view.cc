@@ -89,6 +89,41 @@ void CookieInfoView::SetCookie(
   Layout();
 }
 
+void CookieInfoView::SetCookieString(
+    const std::string& domain,
+    const net::CookieMonster::ParsedCookie& cookie) {
+  name_value_field_->SetText(UTF8ToWide(cookie.Name()));
+  content_value_field_->SetText(UTF8ToWide(cookie.Value()));
+  domain_value_field_->SetText(UTF8ToWide(domain));
+  path_value_field_->SetText(UTF8ToWide(cookie.Path()));
+  created_value_field_->SetText(
+      base::TimeFormatFriendlyDateAndTime(base::Time::Now()));
+
+  std::wstring expire_text = cookie.HasExpires() ?
+      base::TimeFormatFriendlyDateAndTime(
+          net::CookieMonster::ParseCookieTime(cookie.Expires())) :
+      l10n_util::GetString(IDS_COOKIES_COOKIE_EXPIRES_SESSION);
+
+  if (editable_expiration_date_) {
+    expire_combo_values_.clear();
+    if (cookie.HasExpires())
+      expire_combo_values_.push_back(expire_text);
+    expire_combo_values_.push_back(
+      l10n_util::GetString(IDS_COOKIES_COOKIE_EXPIRES_SESSION));
+    expires_value_combobox_->ModelChanged();
+    expires_value_combobox_->SetSelectedItem(0);
+    expires_value_combobox_->SetEnabled(true);
+  } else {
+    expires_value_field_->SetText(expire_text);
+  }
+
+  send_for_value_field_->SetText(cookie.IsSecure() ?
+      l10n_util::GetString(IDS_COOKIES_COOKIE_SENDFOR_SECURE) :
+      l10n_util::GetString(IDS_COOKIES_COOKIE_SENDFOR_ANY));
+  EnableCookieDisplay(true);
+  Layout();
+}
+
 
 void CookieInfoView::ClearCookieDisplay() {
   std::wstring no_cookie_string =

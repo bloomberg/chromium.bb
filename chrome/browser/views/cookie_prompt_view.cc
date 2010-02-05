@@ -12,6 +12,7 @@
 #include "base/i18n/time_formatting.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "chrome/browser/cookie_modal_dialog.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/cookie_info_view.h"
 #include "chrome/browser/views/local_storage_info_view.h"
@@ -30,100 +31,94 @@
 static const int kCookiePromptViewInsetSize = 5;
 
 ///////////////////////////////////////////////////////////////////////////////
-// CookiesPromptView, public:
+// CookiePromptView, public:
 
-// static
-void CookiesPromptView::ShowCookiePromptWindow(
-    gfx::NativeWindow parent,
-    Profile* profile,
-    const std::string& domain,
-    const net::CookieMonster::CanonicalCookie& cookie,
-    CookiesPromptViewDelegate* delegate) {
-  CookiesPromptView* cookies_view = new CookiesPromptView(profile, delegate);
-  cookies_view->SetCookie(domain, cookie);
-  views::Window::CreateChromeWindow(parent,
-                                    gfx::Rect(),
-                                    cookies_view)->Show();
-}
-
-// static
-void CookiesPromptView::ShowLocalStoragePromptWindow(
-    gfx::NativeWindow parent,
-    Profile* profile,
-    const std::string& domain,
-    const BrowsingDataLocalStorageHelper::LocalStorageInfo& local_storage_info,
-    CookiesPromptViewDelegate* delegate) {
-  CookiesPromptView* cookies_view = new CookiesPromptView(profile, delegate);
-  cookies_view->SetLocalStorage(domain, local_storage_info);
-  views::Window::CreateChromeWindow(parent,
-                                    gfx::Rect(),
-                                    cookies_view)->Show();
-}
-
-
-CookiesPromptView::~CookiesPromptView() {
-}
-
-void CookiesPromptView::SetCookie(
-    const std::string& domain,
-    const net::CookieMonster::CanonicalCookie& cookie) {
+CookiePromptView::CookiePromptView(
+      CookiePromptModalDialog* parent,
+      gfx::NativeWindow root_window,
+      Profile* profile,
+      const GURL& url,
+      const std::string& cookie_line,
+      CookiePromptModalDialogDelegate* delegate)
+      : parent_(parent),
+        root_window_(root_window),
+        profile_(profile),
+        delegate_(delegate) {
   cookie_ui_ = true;
-  InitializeViewResources(domain);
-  cookie_ = cookie;
+  net::CookieMonster::ParsedCookie cookie(cookie_line);
+  InitializeViewResources(cookie.HasDomain() ? cookie.Domain() : url.host());
 }
 
-void CookiesPromptView::SetLocalStorage(
-    const std::string& domain,
-    const BrowsingDataLocalStorageHelper::LocalStorageInfo storage_info) {
+CookiePromptView::CookiePromptView(
+      CookiePromptModalDialog* parent,
+      gfx::NativeWindow root_window,
+      Profile* profile,
+      const BrowsingDataLocalStorageHelper::LocalStorageInfo& storage_info,
+      CookiePromptModalDialogDelegate* delegate)
+      : parent_(parent),
+        root_window_(root_window),
+        profile_(profile),
+        local_storage_info_(storage_info),
+        delegate_(delegate) {
   cookie_ui_ = false;
-  InitializeViewResources(domain);
-  local_storage_info_ = storage_info;
+  InitializeViewResources(storage_info.host);
+}
+
+CookiePromptView::~CookiePromptView() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CookiesPromptView, views::View overrides:
+// CookiePromptView, views::View overrides:
 
-gfx::Size CookiesPromptView::GetPreferredSize() {
+gfx::Size CookiePromptView::GetPreferredSize() {
   gfx::Size client_size = views::View::GetPreferredSize();
   return gfx::Size(client_size.width(),
                    client_size.height() + GetExtendedViewHeight());
 }
 
 
-void CookiesPromptView::ViewHierarchyChanged(bool is_add,
-                                             views::View* parent,
-                                             views::View* child) {
+void CookiePromptView::ViewHierarchyChanged(bool is_add,
+                                            views::View* parent,
+                                            views::View* child) {
   if (is_add && child == this)
     Init();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CookiesPromptView, views::DialogDelegate implementation:
+// CookiePromptView, ModalDialogDelegate implementation:
 
-std::wstring CookiesPromptView::GetWindowTitle() const {
+gfx::NativeWindow CookiePromptView::GetDialogRootWindow() {
+  return root_window_;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// CookiePromptView, views::DialogDelegate implementation:
+
+std::wstring CookiePromptView::GetWindowTitle() const {
   return title_;
 }
 
-void CookiesPromptView::WindowClosing() {
+void CookiePromptView::WindowClosing() {
   if (!signaled_ && delegate_)
     delegate_->BlockSiteData(false);
+  parent_->CompleteDialog();
 }
 
-views::View* CookiesPromptView::GetContentsView() {
+views::View* CookiePromptView::GetContentsView() {
   return this;
 }
 
 // CookieInfoViewDelegate overrides:
-void CookiesPromptView::ModifyExpireDate(bool session_expire) {
+void CookiePromptView::ModifyExpireDate(bool session_expire) {
   session_expire_ = session_expire;
 }
 
 
 ///////////////////////////////////////////////////////////////////////////////
-// CookiesPromptView, views::ButtonListener implementation:
+// CookiePromptView, views::ButtonListener implementation:
 
-void CookiesPromptView::ButtonPressed(views::Button* sender,
-                                      const views::Event& event) {
+void CookiePromptView::ButtonPressed(views::Button* sender,
+                                     const views::Event& event) {
   if (sender == allow_button_) {
     if (delegate_) {
       delegate_->AllowSiteData(remember_radio_->checked(), session_expire_);
@@ -140,8 +135,8 @@ void CookiesPromptView::ButtonPressed(views::Button* sender,
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CookiesPromptView, views::LinkController implementation:
-void CookiesPromptView::LinkActivated(views::Link* source, int event_flags) {
+// CookiePromptView, views::LinkController implementation:
+void CookiePromptView::LinkActivated(views::Link* source, int event_flags) {
   if (source == show_cookie_link_)
     ToggleDetailsViewExpand();
   else if (source == manage_cookies_link_)
@@ -151,10 +146,10 @@ void CookiesPromptView::LinkActivated(views::Link* source, int event_flags) {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// CookiesPromptView, private:
+// CookiePromptView, private:
 
-CookiesPromptView::CookiesPromptView(Profile* profile,
-                                     CookiesPromptViewDelegate* delegate)
+CookiePromptView::CookiePromptView(Profile* profile,
+                                   CookiePromptModalDialogDelegate* delegate)
     : remember_radio_(NULL),
       ask_radio_(NULL),
       allow_button_(NULL),
@@ -169,7 +164,7 @@ CookiesPromptView::CookiesPromptView(Profile* profile,
       profile_(profile) {
 }
 
-void CookiesPromptView::Init() {
+void CookiePromptView::Init() {
   views::Label* description_label = new views::Label(l10n_util::GetStringF(
       cookie_ui_ ? IDS_COOKIE_ALERT_LABEL : IDS_DATA_ALERT_LABEL,
       display_domain_));
@@ -267,7 +262,8 @@ void CookiesPromptView::Init() {
     cookie_info_view->set_delegate(this);
     layout->AddView(cookie_info_view, 1, 1, GridLayout::FILL,
                     GridLayout::CENTER);
-    cookie_info_view->SetCookie(domain_, cookie_);
+
+    cookie_info_view->SetCookieString(domain_, cookie_line_);
     info_view_ = cookie_info_view;
   } else {
     LocalStorageInfoView* local_storage_info_view = new LocalStorageInfoView();
@@ -282,13 +278,13 @@ void CookiesPromptView::Init() {
   ask_radio_->SetChecked(true);
 }
 
-int CookiesPromptView::GetExtendedViewHeight() {
+int CookiePromptView::GetExtendedViewHeight() {
   DCHECK(info_view_);
   return expanded_view_ ?
       kRelatedControlVerticalSpacing : -info_view_->GetPreferredSize().height();
 }
 
-void CookiesPromptView::ToggleDetailsViewExpand() {
+void CookiePromptView::ToggleDetailsViewExpand() {
   expanded_view_ = !expanded_view_;
   views::Window* parent = GetWindow();
   gfx::Size non_client_size = parent->GetNonClientView()->GetPreferredSize();
@@ -300,11 +296,11 @@ void CookiesPromptView::ToggleDetailsViewExpand() {
   Layout();
 }
 
-void CookiesPromptView::InitializeViewResources(const std::string& domain) {
+void CookiePromptView::InitializeViewResources(const std::string& domain) {
   domain_ = domain;
   std::string display_domain = domain;
   if (!domain.empty() && domain[0] == '.')
-  display_domain = display_domain.substr(1);
+    display_domain = display_domain.substr(1);
   display_domain_ = UTF8ToWide(display_domain);
   title_ = l10n_util::GetStringF(
       cookie_ui_ ? IDS_COOKIE_ALERT_TITLE : IDS_DATA_ALERT_TITLE,

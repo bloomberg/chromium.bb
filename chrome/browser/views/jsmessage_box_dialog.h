@@ -5,30 +5,28 @@
 #ifndef CHROME_BROWSER_VIEWS_JSMESSAGE_BOX_DIALOG_H_
 #define CHROME_BROWSER_VIEWS_JSMESSAGE_BOX_DIALOG_H_
 
+#include "chrome/browser/js_modal_dialog.h"
+
 #include <string>
 
-#include "chrome/browser/app_modal_dialog.h"
-#include "views/window/dialog_delegate.h"
+#include "app/message_box_flags.h"
+#include "chrome/browser/jsmessage_box_client.h"
+#include "chrome/browser/views/modal_dialog_delegate.h"
 
 class MessageBoxView;
 class JavaScriptMessageBoxClient;
-namespace views {
-class Window;
-}
 
-class JavascriptMessageBoxDialog : public views::DialogDelegate {
+class JavaScriptMessageBoxDialog : public ModalDialogDelegate {
  public:
-  JavascriptMessageBoxDialog(AppModalDialog* parent,
+  JavaScriptMessageBoxDialog(JavaScriptAppModalDialog* parent,
                              const std::wstring& message_text,
                              const std::wstring& default_prompt_text,
                              bool display_suppress_checkbox);
 
-  virtual ~JavascriptMessageBoxDialog();
+  virtual ~JavaScriptMessageBoxDialog();
 
-  // Methods called from AppModalDialog.
-  void ShowModalDialog();
-  void ActivateModalDialog();
-  void CloseModalDialog();
+  // ModalDialogDelegate overrides.
+  virtual gfx::NativeWindow GetDialogRootWindow();
 
   // views::DialogDelegate Methods:
   virtual int GetDialogButtons() const;
@@ -52,15 +50,12 @@ class JavascriptMessageBoxDialog : public views::DialogDelegate {
   }
 
   // A pointer to the AppModalDialog that owns us.
-  AppModalDialog* parent_;
+  JavaScriptAppModalDialog* parent_;
 
   // The message box view whose commands we handle.
   MessageBoxView* message_box_view_;
 
-  // The dialog if it is currently visible.
-  views::Window* dialog_;
-
-  DISALLOW_COPY_AND_ASSIGN(JavascriptMessageBoxDialog);
+  DISALLOW_COPY_AND_ASSIGN(JavaScriptMessageBoxDialog);
 };
 
 #endif  // CHROME_BROWSER_VIEWS_JSMESSAGE_BOX_DIALOG_H_

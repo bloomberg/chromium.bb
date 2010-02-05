@@ -34,7 +34,7 @@
 #include "chrome/browser/google_util.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/hung_renderer_dialog.h"
-#include "chrome/browser/jsmessage_box_handler.h"
+#include "chrome/browser/message_box_handler.h"
 #include "chrome/browser/load_from_memory_cache_details.h"
 #include "chrome/browser/load_notification_details.h"
 #include "chrome/browser/metrics/metric_event_duration_details.h"

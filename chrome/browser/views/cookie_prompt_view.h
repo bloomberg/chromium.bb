@@ -9,8 +9,10 @@
 
 #include "base/task.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
+#include "chrome/browser/cookie_prompt_modal_dialog_delegate.h"
 #include "chrome/browser/views/cookie_info_view.h"
-#include "net/base/cookie_monster.h"
+#include "chrome/browser/views/modal_dialog_delegate.h"
+#include "googleurl/src/gurl.h"
 #include "views/controls/button/button.h"
 #include "views/controls/link.h"
 #include "views/view.h"
@@ -23,56 +25,36 @@ class RadioButton;
 }
 
 class CookieInfoView;
+class CookiePromptModalDialog;
 class LocalStorageInfoView;
 class Profile;
 class Timer;
 
-class CookiesPromptViewDelegate {
- public:
-  // Allow site data to be set. If |remember| is true, record this decision
-  // for this host.
-  virtual void AllowSiteData(bool remember, bool session_expire) = 0;
-
-  // Block site data from being stored. If |remember| is true, record this
-  // decision for this host.
-  virtual void BlockSiteData(bool remember) = 0;
-
- protected:
-  virtual ~CookiesPromptViewDelegate() {}
-};
-
 // Cookie alert dialog UI.
-class CookiesPromptView : public views::View,
-                          public views::DialogDelegate,
+class CookiePromptView : public views::View,
+                          public ModalDialogDelegate,
                           public views::ButtonListener,
                           public views::LinkController,
                           public CookieInfoViewDelegate {
  public:
   // Show the Cookies Window, creating one if necessary.
-  static void ShowCookiePromptWindow(
-      gfx::NativeWindow parent,
+  CookiePromptView(
+      CookiePromptModalDialog* parent,
+      gfx::NativeWindow root_window,
       Profile* profile,
-      const std::string& domain,
-      const net::CookieMonster::CanonicalCookie& cookie,
-      CookiesPromptViewDelegate* delegate);
+      const GURL& url,
+      const std::string& cookie_line,
+      CookiePromptModalDialogDelegate* delegate);
 
-  static void CookiesPromptView::ShowLocalStoragePromptWindow(
-      gfx::NativeWindow parent,
+  CookiePromptView(
+      CookiePromptModalDialog* parent,
+      gfx::NativeWindow root_window,
       Profile* profile,
-      const std::string& domain,
       const BrowsingDataLocalStorageHelper::LocalStorageInfo&
           local_storage_info,
-      CookiesPromptViewDelegate* delegate);
+      CookiePromptModalDialogDelegate* delegate);
 
-  virtual ~CookiesPromptView();
-
-  // Initializes component for displaying cookie information.
-  void SetCookie(const std::string& domain,
-                 const net::CookieMonster::CanonicalCookie& cookie_node);
-
-  // Initializes component for displaying locale storage information.
-  void SetLocalStorage(const std::string& domain,
-      const BrowsingDataLocalStorageHelper::LocalStorageInfo);
+  virtual ~CookiePromptView();
 
  protected:
   // views::View overrides.
@@ -81,11 +63,15 @@ class CookiesPromptView : public views::View,
                                     views::View* parent,
                                     views::View* child);
 
+  // ModalDialogDelegate overrides.
+  virtual gfx::NativeWindow GetDialogRootWindow();
+
   // views::DialogDelegate overrides.
   virtual bool CanResize() const { return false; }
   virtual std::wstring GetWindowTitle() const;
   virtual void WindowClosing();
   virtual views::View* GetContentsView();
+  virtual bool IsModal() const { return true; }
 
   // views::ButtonListener overrides.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
@@ -103,8 +89,8 @@ class CookiesPromptView : public views::View,
 
  private:
   // Use the static factory method to show.
-  explicit CookiesPromptView(Profile* profile,
-                             CookiesPromptViewDelegate* delegate);
+  explicit CookiePromptView(Profile* profile,
+                             CookiePromptModalDialogDelegate* delegate);
 
   // Initialize the dialog layout.
   void Init();
@@ -141,24 +127,29 @@ class CookiesPromptView : public views::View,
   // Whether we're showing cookie UI as opposed to other site data.
   bool cookie_ui_;
 
-  CookiesPromptViewDelegate* delegate_;
+  // A pointer to the AppModalDialog that owns us.
+  CookiePromptModalDialog* parent_;
 
-  // Cookie domain.
-  std::string domain_;
-
-  // Cookie domain formatted for displaying (removed leading '.').
-  std::wstring display_domain_;
-
-  // Displayed cookie.  Only used when |cookie_ui_| is true.
-  net::CookieMonster::CanonicalCookie cookie_;
-
-  // Displayed local storage info.  Only used when |cookie_ui_| is false.
-  BrowsingDataLocalStorageHelper::LocalStorageInfo local_storage_info_;
+  gfx::NativeWindow root_window_;
 
   // The Profile for which Cookies are displayed.
   Profile* profile_;
 
-  DISALLOW_COPY_AND_ASSIGN(CookiesPromptView);
+  // Cookie / local storage domain.
+  std::string domain_;
+
+  // Domain name formatted for displaying (removed leading '.').
+  std::wstring display_domain_;
+
+  // Displayed cookie. Only used when |cookie_ui_| is true.
+  std::string cookie_line_;
+
+  // Displayed local storage info.  Only used when |cookie_ui_| is false.
+  BrowsingDataLocalStorageHelper::LocalStorageInfo local_storage_info_;
+
+  CookiePromptModalDialogDelegate* delegate_;
+
+  DISALLOW_COPY_AND_ASSIGN(CookiePromptView);
 };
 
 #endif  // CHROME_BROWSER_VIEWS_COOKIE_PROMPT_VIEW_H_

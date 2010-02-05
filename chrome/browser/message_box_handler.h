@@ -2,13 +2,17 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_JSMESSAGE_BOX_HANDLER_H_
-#define CHROME_BROWSER_JSMESSAGE_BOX_HANDLER_H_
+#ifndef CHROME_BROWSER_MESSAGE_BOX_HANDLER_H_
+#define CHROME_BROWSER_MESSAGE_BOX_HANDLER_H_
 
 #include <string>
 
+#include "chrome/browser/browsing_data_local_storage_helper.h"
+#include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
+#include "net/base/cookie_monster.h"
 
+class CookiePromptModalDialogDelegate;
 class GURL;
 class JavaScriptMessageBoxClient;
 class TabContents;
@@ -35,4 +39,24 @@ void RunBeforeUnloadDialog(TabContents* tab_contents,
                            const std::wstring& message_text,
                            IPC::Message* reply_msg);
 
-#endif  // CHROME_BROWSER_JSMESSAGE_BOX_HANDLER_H_
+// TODO(zelidrag): bug 32719, implement these modal dialogs on Linux and Mac.
+#if defined(OS_WIN)
+// This will display a modal dialog box with cookie information asking
+// user to accept or reject the cookie. The caller should pass |delegate|
+// that will handle the reply from the dialog.
+void RunCookiePrompt(TabContents* tab_contents,
+                     const GURL& url,
+                     const std::string& cookie_line,
+                     CookiePromptModalDialogDelegate* delegate);
+
+// This will display a modal dialog box with local storage information asking
+// user to accept or reject it. The caller should pass |delegate|
+// that will handle the reply from the dialog.
+void RunLocalStoragePrompt(
+    TabContents* tab_contents,
+    const BrowsingDataLocalStorageHelper::LocalStorageInfo& local_storage_info,
+    CookiePromptModalDialogDelegate* delegate);
+#endif
+
+#endif  // CHROME_BROWSER_MESSAGE_BOX_HANDLER_H_
+

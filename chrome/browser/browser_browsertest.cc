@@ -13,6 +13,7 @@
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/js_modal_dialog.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -260,7 +261,8 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, MAYBE_SingleBeforeUnloadAfterWindowClose) {
   alert->AcceptWindow();
 
   alert = ui_test_utils::WaitForAppModalDialog();
-  EXPECT_FALSE(alert->is_before_unload_dialog());
+  EXPECT_FALSE(static_cast<JavaScriptAppModalDialog*>(alert)->
+                   is_before_unload_dialog());
   alert->AcceptWindow();
 }
 
