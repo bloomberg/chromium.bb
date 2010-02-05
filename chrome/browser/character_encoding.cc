@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -112,12 +112,11 @@ class CanonicalEncodingMap {
   const IdToCanonicalEncodingNameMapType* GetIdToCanonicalEncodingNameMapData();
   const CanonicalEncodingNameToIdMapType* GetCanonicalEncodingNameToIdMapData();
   const CanonicalNameDisplayNameMapType* GetCanonicalNameDisplayNameMapData();
-  std::vector<int>* const locale_dependent_encoding_ids() {
+  std::vector<int>* locale_dependent_encoding_ids() {
     return &locale_dependent_encoding_ids_;
   }
 
-  std::vector<CharacterEncoding::EncodingInfo>* const
-      current_display_encodings() {
+  std::vector<CharacterEncoding::EncodingInfo>* current_display_encodings() {
     return &current_display_encodings_;
   }
 

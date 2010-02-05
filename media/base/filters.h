@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -157,7 +157,7 @@ class DataSource : public MediaFilter {
   typedef Callback1<size_t>::Type ReadCallback;
   static const size_t kReadError = static_cast<size_t>(-1);
 
-  static const FilterType filter_type() {
+  static FilterType filter_type() {
     return FILTER_DATA_SOURCE;
   }
 
@@ -194,7 +194,7 @@ class DataSource : public MediaFilter {
 
 class Demuxer : public MediaFilter {
  public:
-  static const FilterType filter_type() {
+  static FilterType filter_type() {
     return FILTER_DEMUXER;
   }
 
@@ -255,7 +255,7 @@ class DemuxerStream : public base::RefCountedThreadSafe<DemuxerStream> {
 
 class VideoDecoder : public MediaFilter {
  public:
-  static const FilterType filter_type() {
+  static FilterType filter_type() {
     return FILTER_VIDEO_DECODER;
   }
 
@@ -279,7 +279,7 @@ class VideoDecoder : public MediaFilter {
 
 class AudioDecoder : public MediaFilter {
  public:
-  static const FilterType filter_type() {
+  static FilterType filter_type() {
     return FILTER_AUDIO_DECODER;
   }
 
@@ -303,7 +303,7 @@ class AudioDecoder : public MediaFilter {
 
 class VideoRenderer : public MediaFilter {
  public:
-  static const FilterType filter_type() {
+  static FilterType filter_type() {
     return FILTER_VIDEO_RENDERER;
   }
 
@@ -323,7 +323,7 @@ class VideoRenderer : public MediaFilter {
 
 class AudioRenderer : public MediaFilter {
  public:
-  static const FilterType filter_type() {
+  static FilterType filter_type() {
     return FILTER_AUDIO_RENDERER;
   }
 

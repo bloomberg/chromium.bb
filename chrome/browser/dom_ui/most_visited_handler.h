@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -86,7 +86,7 @@ class MostVisitedHandler : public DOMMessageHandler,
 
   // Gets the page data for a pinned URL at a given index. This returns
   // true if found.
-  const bool GetPinnedURLAtIndex(const int index, MostVisitedPage* page);
+  bool GetPinnedURLAtIndex(int index, MostVisitedPage* page);
 
   void AddPinnedURL(const MostVisitedPage& page, int index);
   void RemovePinnedURL(const GURL& url);

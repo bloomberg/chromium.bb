@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -94,7 +94,7 @@ class BalloonCollectionImpl : public BalloonCollection {
     //
     // The size may be a height or length depending on the way that
     // balloons are laid out.
-    const void GetMaxLinearSize(int* max_balloon_size, int* total_size) const;
+    void GetMaxLinearSize(int* max_balloon_size, int* total_size) const;
 
     // Refresh the cached values for work area and drawing metrics.
     // The application should call this method to re-acquire metrics after

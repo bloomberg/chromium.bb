@@ -150,7 +150,8 @@ string16 ContactInfo::MiddleInitial() const {
 }
 
 ContactInfo::ContactInfo(const ContactInfo& contact_info)
-    : first_tokens_(contact_info.first_tokens_),
+    : FormGroup(),
+      first_tokens_(contact_info.first_tokens_),
       middle_tokens_(contact_info.middle_tokens_),
       last_tokens_(contact_info.last_tokens_),
       first_(contact_info.first_),

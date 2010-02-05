@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,11 +89,11 @@ class DOMUI {
 
   // Returns the transition type that should be used for link clicks on this
   // DOM UI. This will default to LINK but may be overridden.
-  const PageTransition::Type link_transition_type() const {
+  PageTransition::Type link_transition_type() const {
     return link_transition_type_;
   }
 
-  const int bindings() const {
+  int bindings() const {
     return bindings_;
   }
 

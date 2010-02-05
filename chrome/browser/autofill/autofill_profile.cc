@@ -32,7 +32,8 @@ AutoFillProfile::AutoFillProfile()
       use_billing_address_(true) {
 }
 
-AutoFillProfile::AutoFillProfile(const AutoFillProfile& source) {
+AutoFillProfile::AutoFillProfile(const AutoFillProfile& source)
+    : FormGroup() {
   operator=(source);
 }
 

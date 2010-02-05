@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -121,9 +121,8 @@ BalloonCollectionImpl::Layout::Layout() {
   RefreshSystemMetrics();
 }
 
-const void BalloonCollectionImpl::Layout::GetMaxLinearSize(
-    int* max_balloon_size,
-    int* total_size) const {
+void BalloonCollectionImpl::Layout::GetMaxLinearSize(int* max_balloon_size,
+                                                     int* total_size) const {
   DCHECK(max_balloon_size && total_size);
 
   switch (placement_) {

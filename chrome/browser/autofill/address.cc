@@ -153,7 +153,8 @@ void Address::set_line2(const string16& line2) {
 }
 
 Address::Address(const Address& address)
-    : line1_tokens_(address.line1_tokens_),
+    : FormGroup(),
+      line1_tokens_(address.line1_tokens_),
       line2_tokens_(address.line2_tokens_),
       line1_(address.line1_),
       line2_(address.line2_),

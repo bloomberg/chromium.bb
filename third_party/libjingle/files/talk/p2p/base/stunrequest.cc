@@ -146,7 +146,7 @@ StunRequest::~StunRequest() {
   delete msg_;
 }
 
-const StunMessageType StunRequest::type() {
+StunMessageType StunRequest::type() {
   assert(msg_);
   return msg_->type();
 }

@@ -70,7 +70,7 @@ class UserScript {
     void set_external_content(const base::StringPiece& content) {
       external_content_ = content;
     }
-    const void set_content(const base::StringPiece& content) {
+    void set_content(const base::StringPiece& content) {
       content_.assign(content.begin(), content.end());
     }
 

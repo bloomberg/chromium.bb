@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -264,8 +264,8 @@ void MostVisitedHandler::RemovePinnedURL(const GURL& url) {
   // Don't call HandleGetMostVisited. Let the client call this as needed.
 }
 
-const bool MostVisitedHandler::GetPinnedURLAtIndex(const int index,
-    MostVisitedPage* page) {
+bool MostVisitedHandler::GetPinnedURLAtIndex(int index,
+                                             MostVisitedPage* page) {
   // This iterates over all the pinned URLs. It might seem like it is worth
   // having a map from the index to the item but the number of items is limited
   // to the number of items the most visited section is showing on the NTP so

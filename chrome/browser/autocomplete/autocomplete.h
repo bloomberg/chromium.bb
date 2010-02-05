@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -233,19 +233,19 @@ class AutocompleteInput {
   const GURL& canonicalized_url() const { return canonicalized_url_; }
 
   // Returns whether inline autocompletion should be prevented.
-  const bool prevent_inline_autocomplete() const {
+  bool prevent_inline_autocomplete() const {
     return prevent_inline_autocomplete_;
   }
 
   // Returns whether, given an input string consisting solely of a substituting
   // keyword, we should score it like a non-substituting keyword.
-  const bool prefer_keyword() const { return prefer_keyword_; }
+  bool prefer_keyword() const { return prefer_keyword_; }
 
   // Returns whether providers should avoid scheduling asynchronous work.  If
   // this is true, providers should stop after returning all the
   // synchronously-available matches.  This also means any in-progress
   // asynchronous work should be canceled, so no later callbacks are fired.
-  const bool synchronous_only() const { return synchronous_only_; }
+  bool synchronous_only() const { return synchronous_only_; }
 
   // operator==() by another name.
   bool Equals(const AutocompleteInput& other) const;
@@ -778,7 +778,7 @@ class AutocompleteController : public ACProviderListener {
   // This next is temporary and should go away when
   // AutocompletePopup::URLsForCurrentSelection() moves to the controller.
   const AutocompleteResult& latest_result() const { return latest_result_; }
-  const bool done() const { return done_ && !update_delay_timer_.IsRunning(); }
+  bool done() const { return done_ && !update_delay_timer_.IsRunning(); }
 
   // From AutocompleteProvider::Listener
   virtual void OnProviderUpdate(bool updated_matches);

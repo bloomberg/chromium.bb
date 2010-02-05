@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -260,7 +260,7 @@ std::pair<int, int> TaskManagerModel::GetGroupRangeForResource(int index)
   if (group->size() == 1) {
     return std::make_pair(index, 1);
   } else {
-    for (size_t i = index; i >= 0; --i) {
+    for (int i = index; i >= 0; --i) {
       if (resources_[i] == (*group)[0])
         return std::make_pair(i, group->size());
     }

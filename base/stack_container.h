@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -72,7 +72,7 @@ class StackAllocator : public std::allocator<T> {
 
   // For the straight up copy c-tor, we can share storage.
   StackAllocator(const StackAllocator<T, stack_capacity>& rhs)
-      : source_(rhs.source_) {
+      : std::allocator<T>(), source_(rhs.source_) {
   }
 
   // ISO C++ requires the following constructor to be defined,

@@ -33,7 +33,7 @@ CreditCard::CreditCard(const string16& label, int unique_id)
       unique_id_(unique_id) {
 }
 
-CreditCard::CreditCard(const CreditCard& card) {
+CreditCard::CreditCard(const CreditCard& card) : FormGroup() {
   operator=(card);
 }
 

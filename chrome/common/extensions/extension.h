@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -194,7 +194,7 @@ class Extension {
   const FilePath& path() const { return path_; }
   void set_path(const FilePath& path) { path_ = path; }
   const GURL& url() const { return extension_url_; }
-  const Location location() const { return location_; }
+  Location location() const { return location_; }
   void set_location(Location location) { location_ = location; }
   const std::string& id() const { return id_; }
   const Version* version() const { return version_.get(); }

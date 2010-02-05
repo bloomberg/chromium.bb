@@ -49,7 +49,7 @@ class AppCacheGroup : public base::RefCounted<AppCacheGroup> {
   void AddUpdateObserver(UpdateObserver* observer);
   void RemoveUpdateObserver(UpdateObserver* observer);
 
-  const int64 group_id() const { return group_id_; }
+  int64 group_id() const { return group_id_; }
   const GURL& manifest_url() const { return manifest_url_; }
 
   bool is_obsolete() const { return is_obsolete_; }

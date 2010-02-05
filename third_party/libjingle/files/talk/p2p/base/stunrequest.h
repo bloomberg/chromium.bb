@@ -88,7 +88,7 @@ public:
   const std::string& id() { return id_; }
 
   // Returns the STUN type of the request message.
-  const StunMessageType type();
+  StunMessageType type();
 
   // Handles messages for sending and timeout.
   void OnMessage(talk_base::Message* pmsg);

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -161,7 +161,8 @@ AddressField::AddressField()
 }
 
 AddressField::AddressField(const AddressField& field)
-    : address1_(field.address1_),
+    : FormField(),
+      address1_(field.address1_),
       address2_(field.address2_),
       city_(field.city_),
       state_(field.state_),

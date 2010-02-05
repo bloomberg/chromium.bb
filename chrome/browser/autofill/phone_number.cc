@@ -130,7 +130,8 @@ void PhoneNumber::set_number(const string16& number) {
 }
 
 PhoneNumber::PhoneNumber(const PhoneNumber& phone_number)
-    : country_code_(phone_number.country_code_),
+    : FormGroup(),
+      country_code_(phone_number.country_code_),
       city_code_(phone_number.city_code_),
       number_(phone_number.number_),
       extension_(phone_number.extension_) {

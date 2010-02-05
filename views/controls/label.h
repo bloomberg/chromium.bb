@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -98,13 +98,13 @@ class Label : public View {
   virtual void SetColor(const SkColor& color);
 
   // Return a reference to the currently used color
-  virtual const SkColor GetColor() const;
+  virtual SkColor GetColor() const;
 
   // Set and Get the highlight color
   virtual void SetHighlightColor(const SkColor& color) {
     highlight_color_ = color;
   }
-  virtual const SkColor GetHighlightColor() const { return highlight_color_; }
+  virtual SkColor GetHighlightColor() const { return highlight_color_; }
 
   // Whether to draw highlighted text.
   virtual bool DrawHighlighted() const { return highlighted_; }

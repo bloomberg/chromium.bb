@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -96,7 +96,7 @@ class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
   const GURL& url() const { return immutable_.url_; }
   const std::wstring& date() const { return immutable_.date_; }
   const std::wstring& time() const { return immutable_.time_; }
-  const int cookie() const { return immutable_.cookie_; }
+  int cookie() const { return immutable_.cookie_; }
 
   // Sets a path where to dump printing output files for debugging. If never set
   // no files are generated.

@@ -49,7 +49,7 @@ public:
   void set_address(const talk_base::SocketAddress & address) 
     { address_ = address; }
 
-  const float preference() const { return preference_; }
+  float preference() const { return preference_; }
   void set_preference(const float preference) { preference_ = preference; }
   const std::string preference_str() const {
     std::ostringstream ost;
