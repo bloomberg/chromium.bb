@@ -23,7 +23,10 @@ GOOGLELOG_LIB=../../third_party/linux/lib/glog/libglog.a
 GOOGLEFLAGS_LIB=../../third_party/linux/lib/gflags/libgflags.a
 
 # Client exception handling & minidump writing library
-LIB_CC_SRC=handler/exception_handler.cc \
+LIB_CC_SRC= \
+	   crash_generation/crash_generation_client.cc \
+	   crash_generation/crash_generation_server.cc \
+	   handler/exception_handler.cc \
 	   minidump_writer/linux_dumper.cc \
 	   minidump_writer/minidump_writer.cc \
 	   ../minidump_file_writer.cc \
