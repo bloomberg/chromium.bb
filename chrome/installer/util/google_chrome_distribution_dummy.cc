@@ -37,6 +37,7 @@ void GoogleChromeDistribution::LaunchUserExperiment(
     bool system_install) {
   NOTREACHED();
 }
-void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor) {
+void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
+                                                           bool system_install) {
   NOTREACHED();
 }

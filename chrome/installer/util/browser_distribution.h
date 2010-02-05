@@ -68,7 +68,7 @@ class BrowserDistribution {
 
   // The user has qualified for the inactive user toast experiment and this
   // function just performs it.
-  virtual void InactiveUserToastExperiment(int flavor);
+  virtual void InactiveUserToastExperiment(int flavor, bool system_install);
 
  protected:
   BrowserDistribution() {}

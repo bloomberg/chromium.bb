@@ -86,7 +86,7 @@ class GoogleChromeDistribution : public BrowserDistribution {
   // Assuming that the user qualifies, this function performs the inactive user
   // toast experiment. It will use chrome to show the UI and it will record the
   // outcome in the registry.
-  virtual void InactiveUserToastExperiment(int flavor);
+  virtual void InactiveUserToastExperiment(int flavor, bool system_install);
 
  private:
   friend class BrowserDistribution;

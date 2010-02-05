@@ -489,7 +489,7 @@ bool HandleNonInstallCmdLineOptions(const CommandLine& cmd_line,
     // Launch the inactive user toast experiment.
     std::wstring flavor =
         cmd_line.GetSwitchValue(installer_util::switches::kInactiveUserToast);
-    dist->InactiveUserToastExperiment(StringToInt(flavor));
+    dist->InactiveUserToastExperiment(StringToInt(flavor), system_install);
     return true;
   } else if (cmd_line.HasSwitch(installer_util::switches::kSystemLevelToast)) {
     // We started as system-level and have been re-launched as user level

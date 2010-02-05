@@ -532,7 +532,8 @@ void GoogleChromeDistribution::LaunchUserExperiment(
 }
 
 // User qualifies for the experiment. Launch chrome with --try-chrome=flavor.
-void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor) {
+void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor,
+    bool system_install) {
   bool has_welcome_url = (flavor == 0);
   // Possibly add a url to launch depending on the experiment flavor.
   std::wstring options(StringPrintf(L"--%ls=%d",
@@ -544,7 +545,8 @@ void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor) {
   }
   // Launch chrome now. It will show the toast UI.
   int32 exit_code = 0;
-  if (!installer::LaunchChromeAndWaitForResult(false, options, &exit_code))
+  if (!installer::LaunchChromeAndWaitForResult(system_install,
+                                               options, &exit_code))
     return;
   // The chrome process has exited, figure out what happened.
   const wchar_t* outcome = NULL;
