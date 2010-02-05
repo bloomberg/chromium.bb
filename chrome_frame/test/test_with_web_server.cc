@@ -681,7 +681,9 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_NavigateOut) {
 }
 
 const wchar_t kReferrerMainTest[] = L"files/referrer_main.html";
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ReferrerTest) {
+// Marking this as FLAKY as this has been failing randomly on the builder.
+// http://code.google.com/p/chromium/issues/detail?id=34812
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ReferrerTest) {
   SimpleBrowserTest(IE, kReferrerMainTest, L"FullTab_ReferrerTest");
 }
 
