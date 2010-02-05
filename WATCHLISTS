@@ -108,6 +108,13 @@
     'gpu': {
       'filepath': 'gpu/.*',
     },
+    'locale_settings': {
+      'filepath': 'chrome/app/resources/locale_settings_.*',
+    },
+    'options_dialog_content': {
+      'filepath': 'chrome/browser/views/options/content_page_view.h|'\
+        'chrome/browser/views/options/general_page_view.h',
+    },
   },
 
   'WATCHLISTS': {
@@ -151,5 +158,7 @@
     'nacl' : ['native-client-reviews@googlegroups.com'],
     'appcache': ['michaeln@chromium.org'],
     'gpu': ['apatrick@chromium.org'],
+    'locale_settings': ['finnur@chromium.org'],
+    'options_dialog_content': ['finnur@chromium.org'],
   },
 }
