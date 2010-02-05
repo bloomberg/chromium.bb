@@ -1,0 +1,22 @@
+<script>
+function readCookie(name) {
+  var nameEQ = name + "=";
+  var cookies = document.cookie.split(';');
+  for(var i=0; i < cookies.length; i++) {
+    var c = cookies[i];
+    while (c.charAt(0)==' ')
+      c = c.substring(1);
+    if (c.indexOf(nameEQ) == 0)
+      return c.substring(nameEQ.length);
+  }
+  return null;
+}
+
+chrome.test.runTests([function readCookies() {
+  chrome.test.assertEq(readCookie("a"), "1");
+  chrome.test.assertEq(readCookie("b"), "2");
+  chrome.test.assertEq(readCookie("c"), "3");
+  chrome.test.assertEq(readCookie("nonexistant"), null);
+  chrome.test.succeed();
+}]);
+</script>

@@ -1,0 +1,7 @@
+{
+  "name": "chrome.cookies",
+  "version": "0.1",
+  "description": "sanity test that cookies can be set and read from extensions",
+  "background_page": "background.html",
+  "permissions": ["tabs"]
+}
