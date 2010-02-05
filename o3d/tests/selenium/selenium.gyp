@@ -176,6 +176,9 @@
           {
             'target_name': 'unpack_firefox',
             'type': 'none',
+            'dependencies': [
+              '../../plugin/plugin.gyp:npo3dautoplugin',
+            ],
             'actions': [
               {
                 'action_name': 'unpack_firefox',
