@@ -11,7 +11,7 @@ vars = {
   "gflags_rev": "30",
   "breakpad_rev": "391",
   "v8_rev": "3608",
-  "nacl_rev": "1377",
+  "nacl_rev": "1434",
 }
 
 deps = {
