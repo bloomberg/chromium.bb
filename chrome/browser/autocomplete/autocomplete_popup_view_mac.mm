@@ -254,6 +254,7 @@ NSAttributedString* AutocompletePopupViewMac::MatchText(
   NSMutableParagraphStyle* style =
       [[[NSMutableParagraphStyle alloc] init] autorelease];
   [style setLineBreakMode:NSLineBreakByTruncatingTail];
+  [style setTighteningFactorForTruncation:0.0];
   [as addAttribute:NSParagraphStyleAttributeName value:style
              range:NSMakeRange(0, [as length])];
 
