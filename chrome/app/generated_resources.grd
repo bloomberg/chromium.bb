@@ -6884,6 +6884,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY" desc="Couldn't log in because nework library couldn't be loaded">
         Can't access network library
       </message>
+      <message name="IDS_NOTIFICATION_PANEL_TITLE" desc="Text for the title of the notification panel.">
+        Notifications
+      </message>
     </if>
      <message name="IDS_BOOKMARK_BAR_IMPORT_LINK" desc="text shown for importing ">
        Import bookmarks now...

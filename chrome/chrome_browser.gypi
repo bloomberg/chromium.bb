@@ -255,6 +255,10 @@
         'browser/chrome_plugin_host.h',
         'browser/chrome_thread.cc',
         'browser/chrome_thread.h',
+        'browser/chromeos/notifications/balloon_view.h',
+        'browser/chromeos/notifications/balloon_view.cc',
+        'browser/chromeos/notifications/notification_panel.h',
+        'browser/chromeos/notifications/notification_panel.cc',
         'browser/chromeos/browser_notification_observers.cc',
         'browser/chromeos/browser_extenders.cc',
         'browser/chromeos/browser_view.cc',
@@ -2429,8 +2433,6 @@
                 ['include', '^browser/views/page_info_window_view.cc'],
                 ['include', '^browser/views/notifications/balloon_view_host.cc'],
                 ['include', '^browser/views/notifications/balloon_view_host.h'],
-                ['include', '^browser/views/notifications/balloon_view.cc'],
-                ['include', '^browser/views/notifications/balloon_view.h'],
                 # Not necessary unless you're trying to build ChromeOS+views.
                 #['include', '^browser/views/panels/panel_scroller.cc'],
                 #['include', '^browser/views/panels/panel_scroller.h'],
@@ -2568,6 +2570,8 @@
                 ['include', '^browser/views/frame/standard_extender.cc'],
                 ['include', '^browser/gtk/external_protocol_dialog_gtk.cc'],
                 ['include', '^browser/gtk/external_protocol_dialog_gtk.h'],
+                ['include', '^browser/views/notifications/balloon_view.cc'],
+                ['include', '^browser/views/notifications/balloon_view.h'],
               ],
             }],
             ['OS=="linux" and chromeos==0 and toolkit_views==0', {

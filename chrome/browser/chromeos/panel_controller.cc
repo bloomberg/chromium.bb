@@ -115,6 +115,7 @@ void PanelController::Init(const gfx::Rect window_bounds) {
 
   title_content_ = new TitleContentView(this);
   title_window_->SetContentsView(title_content_);
+  UpdateTitleBar();
   title_window_->Show();
 }
 
