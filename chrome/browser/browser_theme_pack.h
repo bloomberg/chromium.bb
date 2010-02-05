@@ -40,7 +40,8 @@ class BrowserThemePack : public base::RefCountedThreadSafe<BrowserThemePack> {
   ~BrowserThemePack();
 
   // Builds the theme pack from all data from |extension|. This is often done
-  // on a separate thread as it takes so long.
+  // on a separate thread as it takes so long. This can fail and return NULL in
+  // the case where the theme has invalid data.
   static BrowserThemePack* BuildFromExtension(Extension* extension);
 
   // Builds the theme pack from a previously performed WriteToDisk(). This
@@ -118,8 +119,9 @@ class BrowserThemePack : public base::RefCountedThreadSafe<BrowserThemePack> {
   // Creates the data for |source_images_| from |file_paths|.
   void BuildSourceImagesArray(const FilePathMap& file_paths);
 
-  // Loads the unmodified bitmaps packed in the extension to SkBitmaps.
-  void LoadRawBitmapsTo(const FilePathMap& file_paths,
+  // Loads the unmodified bitmaps packed in the extension to SkBitmaps. Returns
+  // true if all images loaded.
+  bool LoadRawBitmapsTo(const FilePathMap& file_paths,
                         ImageCache* raw_bitmaps);
 
   // Creates tinted and composited frame images. Source and destination is

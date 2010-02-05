@@ -369,7 +369,8 @@ BrowserThemePack* BrowserThemePack::BuildFromExtension(Extension* extension) {
                                 &file_paths);
   pack->BuildSourceImagesArray(file_paths);
 
-  pack->LoadRawBitmapsTo(file_paths, &pack->prepared_images_);
+  if (!pack->LoadRawBitmapsTo(file_paths, &pack->prepared_images_))
+    return NULL;
 
   pack->GenerateFrameImages(&pack->prepared_images_);
 
@@ -877,12 +878,17 @@ void BrowserThemePack::BuildSourceImagesArray(const FilePathMap& file_paths) {
   source_images_[ids.size()] = -1;
 }
 
-void BrowserThemePack::LoadRawBitmapsTo(
+bool BrowserThemePack::LoadRawBitmapsTo(
     const FilePathMap& file_paths,
     ImageCache* raw_bitmaps) {
   for (FilePathMap::const_iterator it = file_paths.begin();
        it != file_paths.end(); ++it) {
     scoped_refptr<RefCountedMemory> raw_data(ReadFileData(it->second));
+    if (!raw_data.get()) {
+      LOG(ERROR) << "Could not load theme image";
+      return false;
+    }
+
     int id = it->first;
 
     // Some images need to go directly into |image_memory_|. No modification is
@@ -908,6 +914,8 @@ void BrowserThemePack::LoadRawBitmapsTo(
       }
     }
   }
+
+  return true;
 }
 
 void BrowserThemePack::GenerateFrameImages(ImageCache* bitmaps) const {

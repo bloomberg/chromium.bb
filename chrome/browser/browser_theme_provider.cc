@@ -590,7 +590,9 @@ void BrowserThemeProvider::BuildFromExtension(Extension* extension,
   scoped_refptr<BrowserThemePack> pack =
       BrowserThemePack::BuildFromExtension(extension);
   if (!pack.get()) {
-    NOTREACHED() << "Could not load theme.";
+    // TODO(erg): We've failed to install the theme; perhaps we should tell the
+    // user? http://crbug.com/34780
+    LOG(ERROR) << "Could not load theme.";
     return;
   }
 
