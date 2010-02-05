@@ -2850,6 +2850,7 @@ BUG32680 WIN DEBUG : svg/filters/big-sized-filter.svg = TIMEOUT PASS
 BUG32682 LINUX : svg/W3C-SVG-1.1/filters-conv-01-f.svg = TEXT PASS
 BUG32683 LINUX DEBUG : svg/css/glyph-orientation-rounding-test.xhtml = TEXT PASS
 BUG32684 WIN DEBUG : inspector/timeline-layout.html = TEXT PASS
+BUG34759 WIN : inspector/console-log-before-inspector-open.html = TEXT PASS
 BUG32686 WIN DEBUG : fast/block/margin-collapse/block-inside-inline/006.html = CRASH PASS
 BUG32688 MAC DEBUG : fast/lists/inlineBoxWrapperNullCheck.html = TEXT PASS
 BUG32689 MAC LINUX DEBUG : http/tests/security/mixedContent/about-blank-iframe-in-main-frame.html = TEXT PASS
