@@ -64,8 +64,9 @@ class LoginHandlerWin : public LoginHandler,
   virtual void WindowClosing() {
     DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
-    GetTabContentsForLogin()->
-        render_view_host()->set_ignore_input_events(false);
+    TabContents* tab = GetTabContentsForLogin();
+    if (tab)
+      tab->render_view_host()->set_ignore_input_events(false);
 
     // Reference is no longer valid.
     dialog_ = NULL;
