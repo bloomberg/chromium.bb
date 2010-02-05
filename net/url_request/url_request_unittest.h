@@ -53,7 +53,8 @@ class TestCookiePolicy : public net::CookiePolicy {
   enum Options {
     NO_GET_COOKIES = 1 << 0,
     NO_SET_COOKIE  = 1 << 1,
-    ASYNC          = 1 << 2
+    ASYNC          = 1 << 2,
+    FORCE_SESSION  = 1 << 3,
   };
 
   explicit TestCookiePolicy(int options_bit_mask)
@@ -92,6 +93,9 @@ class TestCookiePolicy : public net::CookiePolicy {
 
     if (options_ & NO_SET_COOKIE)
       return net::ERR_ACCESS_DENIED;
+
+    if (options_ & FORCE_SESSION)
+      return net::OK_FOR_SESSION_ONLY;
 
     return net::OK;
   }

@@ -14,12 +14,22 @@ class CookieOptions {
   // Default is to exclude httponly, which means:
   // - reading operations will not return httponly cookies.
   // - writing operations will not write httponly cookies.
-  CookieOptions() : exclude_httponly_(true) {}
+  CookieOptions()
+      : exclude_httponly_(true),
+        force_session_(false) {
+  }
+
   void set_exclude_httponly() { exclude_httponly_ = true; }
   void set_include_httponly() { exclude_httponly_ = false; }
   bool exclude_httponly() const { return exclude_httponly_; }
+
+  // Forces a cookie to be saved as a session cookie.
+  void set_force_session() { force_session_ = true; }
+  bool force_session() const { return force_session_; }
+
  private:
   bool exclude_httponly_;
+  bool force_session_;
 };
 }  // namespace net
 

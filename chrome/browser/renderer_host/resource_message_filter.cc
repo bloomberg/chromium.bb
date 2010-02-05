@@ -163,8 +163,13 @@ class SetCookieCompletion : public net::CompletionCallback {
 
   virtual void RunWithParams(const Tuple1<int>& params) {
     int result = params.a;
-    if (result == net::OK)
-      context_->cookie_store()->SetCookie(url_, cookie_line_);
+    if (result >= 0) {
+      net::CookieOptions options;
+      if (result == net::OK_FOR_SESSION_ONLY)
+        options.set_force_session();
+      context_->cookie_store()->SetCookieWithOptions(url_, cookie_line_,
+                                                     options);
+    }
     delete this;
   }
 

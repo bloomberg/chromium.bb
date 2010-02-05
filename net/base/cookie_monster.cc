@@ -361,7 +361,11 @@ static std::string CanonPath(const GURL& url,
 }
 
 static Time CanonExpiration(const CookieMonster::ParsedCookie& pc,
-                            const Time& current) {
+                            const Time& current,
+                            const CookieOptions& options) {
+  if (options.force_session())
+    return Time();
+
   // First, try the Max-Age attribute.
   uint64 max_age = 0;
   if (pc.HasMaxAge() &&
@@ -445,7 +449,7 @@ bool CookieMonster::SetCookieWithCreationTimeAndOptions(
   std::string cookie_path = CanonPath(url, pc);
 
   scoped_ptr<CanonicalCookie> cc;
-  Time cookie_expires = CanonExpiration(pc, creation_time);
+  Time cookie_expires = CanonExpiration(pc, creation_time, options);
 
   cc.reset(new CanonicalCookie(pc.Name(), pc.Value(), cookie_path,
                                pc.IsSecure(), pc.IsHttpOnly(),
