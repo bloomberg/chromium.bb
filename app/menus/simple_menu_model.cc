@@ -200,4 +200,4 @@ MenuModel* SimpleMenuModel::GetSubmenuModelAt(int index) const {
   return items_.at(FlipIndex(index)).submenu;
 }
 
-}  // namespace views
+}  // namespace menus

@@ -44,12 +44,12 @@ class OptionsMenuModel : public menus::SimpleMenuModel,
     AddItemWithStringId(IDC_COMPACT_NAVBAR, IDS_COMPACT_NAVBAR);
     AddSeparator();
 
-    AddItem(static_cast<int>(StatusAreaView::OPEN_TABS_ON_LEFT),
-            ASCIIToUTF16("Open tabs on left"));
-    AddItem(static_cast<int>(StatusAreaView::OPEN_TABS_CLOBBER),
-            ASCIIToUTF16("Open tabs clobber"));
-    AddItem(static_cast<int>(StatusAreaView::OPEN_TABS_ON_RIGHT),
-            ASCIIToUTF16("Open tabs on right"));
+    AddCheckItem(static_cast<int>(StatusAreaView::OPEN_TABS_ON_LEFT),
+                 ASCIIToUTF16("Open tabs on left"));
+    AddCheckItem(static_cast<int>(StatusAreaView::OPEN_TABS_CLOBBER),
+                 ASCIIToUTF16("Open tabs clobber"));
+    AddCheckItem(static_cast<int>(StatusAreaView::OPEN_TABS_ON_RIGHT),
+                 ASCIIToUTF16("Open tabs on right"));
   }
   virtual ~OptionsMenuModel() {
   }
