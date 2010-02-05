@@ -101,7 +101,7 @@ GL_APICALL void         GL_APIENTRY glGetProgramInfoLog (GLidProgram program, GL
 GL_APICALL void         GL_APIENTRY glGetRenderbufferParameteriv (GLenumRenderBufferTarget target, GLenumRenderBufferParameter pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetShaderiv (GLidShader shader, GLenumShaderParameter pname, GLint* params);
 GL_APICALL void         GL_APIENTRY glGetShaderInfoLog (GLidShader shader, GLsizei bufsize, GLsizei* length, char* infolog);
-GL_APICALL void         GL_APIENTRY glGetShaderPrecisionFormat (GLenumShaderType shadertype, GLenumShaderPercision precisiontype, GLint* range, GLint* precision);
+GL_APICALL void         GL_APIENTRY glGetShaderPrecisionFormat (GLenumShaderType shadertype, GLenumShaderPrecision precisiontype, GLint* range, GLint* precision);
 GL_APICALL void         GL_APIENTRY glGetShaderSource (GLidShader shader, GLsizei bufsize, GLsizei* length, char* source);
 GL_APICALL const GLubyte* GL_APIENTRY glGetString (GLenumStringType name);
 GL_APICALL void         GL_APIENTRY glGetTexParameterfv (GLenumTextureTarget target, GLenumTextureParameter pname, GLfloat* params);
@@ -620,7 +620,7 @@ _ENUM_LISTS = {
       'GL_SHADER_SOURCE_LENGTH',
     ],
   },
-  'ShaderPercision': {
+  'ShaderPrecision': {
     'type': 'GLenum',
     'valid': [
       'GL_LOW_FLOAT',
@@ -877,9 +877,36 @@ _FUNCTION_INFO = {
   'GenFramebuffers': {'type': 'GENn', 'gl_test_func': 'glGenFramebuffersEXT'},
   'GenRenderbuffers': {'type': 'GENn', 'gl_test_func': 'glGenRenderbuffersEXT'},
   'GenTextures': {'type': 'GENn', 'gl_test_func': 'glGenTextures'},
-  'GetActiveAttrib': {'type': 'Custom'},
-  'GetActiveUniform': {'type': 'Custom'},
-  'GetAttachedShaders': {'type': 'Custom'},
+  'GetActiveAttrib': {
+    'type': 'Custom',
+    'immediate': False,
+    'cmd_args':
+        'GLidProgram program, GLuint index, uint32 name_bucket_id, '
+        'void* result',
+    'result': [
+      'int32 success',
+      'int32 size',
+      'int32 type',
+    ],
+  },
+  'GetActiveUniform': {
+    'type': 'Custom',
+    'immediate': False,
+    'cmd_args':
+        'GLidProgram program, GLuint index, uint32 name_bucket_id, '
+        'void* result',
+    'result': [
+      'int32 success',
+      'int32 size',
+      'int32 type',
+    ],
+  },
+  'GetAttachedShaders': {
+    'type': 'Custom',
+    'immediate': False,
+    'cmd_args': 'GLidProgram program, void* result, uint32 result_size',
+    'result': ['SizedResult<GLuint>'],
+  },
   'GetAttribLocation': {
     'type': 'HandWritten',
     'immediate': True,
@@ -904,12 +931,32 @@ _FUNCTION_INFO = {
   },
   'GetShaderiv': {'type': 'GETn'},
   'GetShaderInfoLog': {'type': 'STRn'},
-  'GetShaderPrecisionFormat': {'type': 'Custom'},
+  'GetShaderPrecisionFormat': {
+    'type': 'Custom',
+    'immediate': False,
+    'cmd_args':
+      'GLenumShaderType shadertype, GLenumShaderPrecision precisiontype, '
+      'void* result',
+    'result': [
+      'int32 success',
+      'int32 min_range',
+      'int32 max_range',
+      'int32 precision',
+    ],
+  },
   'GetShaderSource': {'type': 'STRn'},
   'GetTexParameterfv': {'type': 'GETn'},
   'GetTexParameteriv': {'type': 'GETn'},
-  'GetUniformfv': {'type': 'Custom', 'immediate': False},
-  'GetUniformiv': {'type': 'Custom', 'immediate': False},
+  'GetUniformfv': {
+    'type': 'Custom',
+    'immediate': False,
+    'result': ['SizedResult<GLfloat>'],
+  },
+  'GetUniformiv': {
+    'type': 'Custom',
+    'immediate': False,
+    'result': ['SizedResult<GLint>'],
+  },
   'GetUniformLocation': {
     'type': 'HandWritten',
     'immediate': True,
@@ -919,7 +966,11 @@ _FUNCTION_INFO = {
   },
   'GetVertexAttribfv': {'type': 'GETn'},
   'GetVertexAttribiv': {'type': 'GETn'},
-  'GetVertexAttribPointerv': {'type': 'Custom', 'immediate': False},
+  'GetVertexAttribPointerv': {
+    'type': 'Custom',
+    'immediate': False,
+    'result': ['SizedResult<GLuint>'],
+  },
   'IsBuffer': {'type': 'Is'},
   'IsEnabled': {'type': 'Is'},
   'IsFramebuffer': {'type': 'Is', 'DecoderFunc': 'glIsFramebufferEXT'},
@@ -1019,7 +1070,10 @@ class CWriter(object):
       i = self.__FindSplit(line)
       if i > 0:
         line1 = line[0:i + 1]
-        self.file.write(line1 + '\n')
+        nolint = ''
+        if len(line1) > 80:
+          nolint = '  // NOLINT'
+        self.file.write(line1 + nolint + '\n')
         match = re.match("( +)", line1)
         indent = ""
         if match:
@@ -1029,7 +1083,10 @@ class CWriter(object):
           indent = "    " + indent
         self.__WriteLine(indent + line[i + 1:].lstrip(), True)
         return
-    self.file.write(line)
+    nolint = ''
+    if len(line) > 80:
+      nolint = '  // NOLINT'
+    self.file.write(line + nolint)
     if ends_with_eol:
       self.file.write('\n')
 
@@ -1090,6 +1147,15 @@ class TypeHandler(object):
     file.Write("  static const CommandId kCmdId = k%s;\n" % func.name)
     func.WriteCmdArgFlag(file)
     file.Write("\n")
+    result = func.GetInfo('result')
+    if not result == None:
+      if len(result) == 1:
+        file.Write("  typedef %s Result;\n\n" % result[0])
+      else:
+        file.Write("  struct Result {\n")
+        for line in result:
+          file.Write("    %s;\n" % line)
+        file.Write("  };\n\n")
 
     func.WriteCmdComputeSize(file)
     func.WriteCmdSetHeader(file)
@@ -1115,6 +1181,21 @@ class TypeHandler(object):
       file.Write("               OffsetOf_%s_%s_not_%d);\n" %
                  (func.name, arg.name, offset))
       offset += _SIZE_OF_UINT32
+    if not result == None and len(result) > 1:
+      offset = 0;
+      for line in result:
+        parts = line.split()
+        name = parts[-1]
+        check = """
+COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
+               OffsetOf_%(cmd_name)s_Result_%(field_name)s_not_%(offset)d);
+"""
+        file.Write((check.strip() + "\n") % {
+              'cmd_name': func.name,
+              'field_name': name,
+              'offset': offset,
+            })
+        offset += _SIZE_OF_UINT32
     file.Write("\n")
 
   def WriteHandlerImplementation(self, func, file):

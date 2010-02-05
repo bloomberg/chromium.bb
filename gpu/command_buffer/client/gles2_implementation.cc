@@ -54,13 +54,69 @@ void GLES2Implementation::FreeIds(GLsizei n, const GLuint* ids) {
   }
 }
 
-void GLES2Implementation::CopyResult(void* dst) {
-  SizedResult* result = static_cast<SizedResult*>(result_buffer_);
-  memcpy(dst, result->GetDataAs<void*>(), result->size);
-}
-
 void GLES2Implementation::WaitForCmd() {
   helper_->CommandBufferHelper::Finish();
+}
+
+void GLES2Implementation::GetBucketContents(uint32 bucket_id,
+                                            std::vector<int8>* data) {
+  DCHECK(data);
+  helper_->GetBucketSize(bucket_id, result_shm_id(), result_shm_offset());
+  WaitForCmd();
+  uint32 size = GetResultAs<cmd::GetBucketSize::Result>();
+  data->resize(size);
+  if (size > 0u) {
+    uint32 max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
+    uint32 offset = 0;
+    while (size) {
+      uint32 part_size = std::min(max_size, size);
+      void* buffer = transfer_buffer_.Alloc(part_size);
+      helper_->GetBucketData(
+          bucket_id, offset, part_size,
+          transfer_buffer_id_, transfer_buffer_.GetOffset(buffer));
+      WaitForCmd();
+      memcpy(&(*data)[offset], buffer, part_size);
+      transfer_buffer_.Free(buffer);
+      offset += part_size;
+      size -= part_size;
+    }
+    // Free the bucket. This is not required but it does free up the memory.
+    // and we don't have to wait for the result so from the client's perspective
+    // it's cheap.
+    helper_->SetBucketSize(bucket_id, 0);
+  }
+}
+
+void GLES2Implementation::SetBucketContents(
+    uint32 bucket_id, const void* data, size_t size) {
+  DCHECK(data);
+  helper_->SetBucketSize(bucket_id, size);
+  if (size > 0u) {
+    uint32 max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
+    uint32 offset = 0;
+    while (size) {
+      uint32 part_size = std::min(static_cast<size_t>(max_size), size);
+      void* buffer = transfer_buffer_.Alloc(part_size);
+      memcpy(buffer, static_cast<const int8*>(data) + offset, part_size);
+      helper_->SetBucketData(
+          bucket_id, offset, part_size,
+          transfer_buffer_id_, transfer_buffer_.GetOffset(buffer));
+      transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
+      offset += part_size;
+      size -= part_size;
+    }
+  }
+}
+
+std::string GLES2Implementation::GetBucketAsString(uint32 bucket_id) {
+  std::vector<int8> data;
+  GetBucketContents(bucket_id, &data);
+  return std::string(reinterpret_cast<char*>(&data[0]), data.size());
+}
+
+void GLES2Implementation::SetBucketAsString(
+    uint32 bucket_id, const std::string& str) {
+  SetBucketContents(bucket_id, str.c_str(), str.size());
 }
 
 void GLES2Implementation::DrawElements(
@@ -79,7 +135,7 @@ void GLES2Implementation::Flush() {
 void GLES2Implementation::Finish() {
   // Insert the cmd to call glFinish
   helper_->Finish();
-  // Flinish our command buffer
+  // Finish our command buffer
   // (tell the service to execute upto the Finish cmd and wait for it to
   // execute.)
   helper_->CommandBufferHelper::Finish();
@@ -95,7 +151,8 @@ void GLES2Implementation::GetVertexAttribPointerv(
   helper_->GetVertexAttribPointerv(
     index, pname, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  CopyResult(ptr);
+  static_cast<gles2::GetVertexAttribPointerv::Result*>(
+      result_buffer_)->CopyResult(ptr);
 };
 
 GLint GLES2Implementation::GetAttribLocation(
@@ -299,18 +356,82 @@ GLenum GLES2Implementation::CheckFramebufferStatus(GLenum target) {
 void GLES2Implementation::GetActiveAttrib(
     GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size,
     GLenum* type, char* name) {
-  // TODO(gman): implement.
+  typedef gles2::GetActiveAttrib::Result Result;
+  Result* result = static_cast<Result*>(result_buffer_);
+  helper_->GetActiveAttrib(program, index, kResultBucketId,
+                           result_shm_id(), result_shm_offset());
+  WaitForCmd();
+  if (result->success) {
+    if (size) {
+      *size = result->size;
+    }
+    if (type) {
+      *type = result->type;
+    }
+    if (length || name) {
+      std::vector<int8> str;
+      GetBucketContents(kResultBucketId, &str);
+      GLsizei max_size = std::min(static_cast<size_t>(bufsize) - 1,
+                                  str.size());
+      if (length) {
+        *length = max_size;
+      }
+      if (name && bufsize > 0) {
+        memcpy(name, &str[0], max_size);
+        name[max_size] = '\0';
+      }
+    }
+  }
 }
 
 void GLES2Implementation::GetActiveUniform(
     GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size,
     GLenum* type, char* name) {
-  // TODO(gman): implement.
+  typedef gles2::GetActiveUniform::Result Result;
+  Result* result = static_cast<Result*>(result_buffer_);
+  helper_->GetActiveUniform(program, index, kResultBucketId,
+                            result_shm_id(), result_shm_offset());
+  WaitForCmd();
+  if (result->success) {
+    if (size) {
+      *size = result->size;
+    }
+    if (type) {
+      *type = result->type;
+    }
+    if (length || name) {
+      std::vector<int8> str;
+      GetBucketContents(kResultBucketId, &str);
+      GLsizei max_size = std::min(static_cast<size_t>(bufsize) - 1,
+                                  str.size());
+      if (length) {
+        *length = max_size;
+      }
+      if (name && bufsize > 0) {
+        memcpy(name, &str[0], max_size);
+        name[max_size] = '\0';
+      }
+    }
+  }
 }
 
 void GLES2Implementation::GetAttachedShaders(
     GLuint program, GLsizei maxcount, GLsizei* count, GLuint* shaders) {
-  // TODO(gman): implement.
+  typedef gles2::GetAttachedShaders::Result Result;
+  uint32 size = Result::ComputeSize(maxcount);
+  Result* result = transfer_buffer_.AllocTyped<Result>(size);
+  helper_->GetAttachedShaders(
+    program,
+    transfer_buffer_id_,
+    transfer_buffer_.GetOffset(result),
+    size);
+  int32 token = helper_->InsertToken();
+  WaitForCmd();
+  if (count) {
+    *count = result->GetNumResults();
+  }
+  result->CopyResult(shaders);
+  transfer_buffer_.FreePendingToken(result, token);
 }
 
 void GLES2Implementation::GetProgramInfoLog(
@@ -325,7 +446,20 @@ void GLES2Implementation::GetShaderInfoLog(
 
 void GLES2Implementation::GetShaderPrecisionFormat(
     GLenum shadertype, GLenum precisiontype, GLint* range, GLint* precision) {
-  // TODO(gman): implement.
+  typedef gles2::GetShaderPrecisionFormat::Result Result;
+  Result* result = static_cast<Result*>(result_buffer_);
+  helper_->GetShaderPrecisionFormat(
+    shadertype, precisiontype, result_shm_id(), result_shm_offset());
+  WaitForCmd();
+  if (result->success) {
+    if (range) {
+      range[0] = result->min_range;
+      range[1] = result->max_range;
+    }
+    if (precision) {
+      precision[0] = result->precision;
+    }
+  }
 }
 
 void GLES2Implementation::GetShaderSource(
@@ -343,7 +477,7 @@ void GLES2Implementation::GetUniformfv(
   helper_->GetUniformfv(
       program, location, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  CopyResult(params);
+  static_cast<gles2::GetUniformfv::Result*>(result_buffer_)->CopyResult(params);
 }
 
 void GLES2Implementation::GetUniformiv(
@@ -351,7 +485,7 @@ void GLES2Implementation::GetUniformiv(
   helper_->GetUniformiv(
       program, location, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  CopyResult(params);
+  static_cast<gles2::GetUniformfv::Result*>(result_buffer_)->CopyResult(params);
 }
 
 void GLES2Implementation::ReadPixels(

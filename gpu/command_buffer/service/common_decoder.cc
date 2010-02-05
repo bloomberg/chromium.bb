@@ -32,6 +32,11 @@ bool CommonDecoder::Bucket::SetData(
   return false;
 }
 
+void CommonDecoder::Bucket::SetFromString(const std::string& str) {
+  SetSize(str.size());
+  SetData(str.c_str(), 0, str.size());
+}
+
 void* CommonDecoder::GetAddressAndCheckSize(unsigned int shm_id,
                                             unsigned int offset,
                                             unsigned int size) {
@@ -64,6 +69,15 @@ const char* CommonDecoder::GetCommonCommandName(
 CommonDecoder::Bucket* CommonDecoder::GetBucket(uint32 bucket_id) const {
   BucketMap::const_iterator iter(buckets_.find(bucket_id));
   return iter != buckets_.end() ? &(*iter->second) : NULL;
+}
+
+CommonDecoder::Bucket* CommonDecoder::CreateBucket(uint32 bucket_id) {
+  Bucket* bucket = GetBucket(bucket_id);
+  if (!bucket) {
+    bucket = new Bucket();
+    buckets_[bucket_id] = linked_ptr<Bucket>(bucket);
+  }
+  return bucket;
 }
 
 namespace {
@@ -202,12 +216,7 @@ error::Error CommonDecoder::HandleSetBucketSize(
   uint32 bucket_id = args.bucket_id;
   uint32 size = args.size;
 
-  Bucket* bucket = GetBucket(bucket_id);
-  if (!bucket) {
-    bucket = new Bucket();
-    buckets_[bucket_id] = linked_ptr<Bucket>(bucket);
-  }
-
+  Bucket* bucket = CreateBucket(bucket_id);
   bucket->SetSize(size);
   return error::kNoError;
 }

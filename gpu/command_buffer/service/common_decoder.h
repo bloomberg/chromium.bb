@@ -7,6 +7,7 @@
 
 #include <map>
 #include <stack>
+#include <string>
 #include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
@@ -70,6 +71,9 @@ class CommonDecoder : public AsyncAPIInterface {
     // Returns false if offset or size is out of range.
     bool SetData(const void* src, size_t offset, size_t size);
 
+    // Sets the bucket data from a string.
+    void SetFromString(const std::string& str);
+
    private:
     bool OffsetSizeValid(size_t offset, size_t size) const {
       size_t temp = offset + size;
@@ -92,6 +96,9 @@ class CommonDecoder : public AsyncAPIInterface {
   void set_engine(CommandBufferEngine* engine) {
     engine_ = engine;
   }
+
+  // Gets a bucket. Returns NULL if the bucket does not exist.
+  Bucket* GetBucket(uint32 bucket_id) const;
 
  protected:
   // Executes a common command.
@@ -131,14 +138,14 @@ class CommonDecoder : public AsyncAPIInterface {
   // Gets an name for a common command.
   const char* GetCommonCommandName(cmd::CommandId command_id) const;
 
-  // Gets a bucket. Returns NULL if the bucket does not exist.
-  Bucket* GetBucket(uint32 bucket_id) const;
+  // Creates a bucket. If the bucket already exists returns that bucket.
+  Bucket* CreateBucket(uint32 bucket_id);
 
  private:
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
   #define COMMON_COMMAND_BUFFER_CMD_OP(name)             \
-     error::Error Handle ## name(             \
+     error::Error Handle##name(                          \
        uint32 immediate_data_size,                       \
        const cmd::name& args);                           \
 

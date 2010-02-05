@@ -425,37 +425,24 @@
   }
 
   void GetActiveAttrib(
-      GLuint program, GLuint index, GLsizei bufsize, uint32 length_shm_id,
-      uint32 length_shm_offset, uint32 size_shm_id, uint32 size_shm_offset,
-      uint32 type_shm_id, uint32 type_shm_offset, uint32 name_shm_id,
-      uint32 name_shm_offset) {
+      GLuint program, GLuint index, uint32 name_bucket_id, uint32 result_shm_id,
+      uint32 result_shm_offset) {
     gles2::GetActiveAttrib& c = GetCmdSpace<gles2::GetActiveAttrib>();
-    c.Init(
-        program, index, bufsize, length_shm_id, length_shm_offset, size_shm_id,
-        size_shm_offset, type_shm_id, type_shm_offset, name_shm_id,
-        name_shm_offset);
+    c.Init(program, index, name_bucket_id, result_shm_id, result_shm_offset);
   }
 
   void GetActiveUniform(
-      GLuint program, GLuint index, GLsizei bufsize, uint32 length_shm_id,
-      uint32 length_shm_offset, uint32 size_shm_id, uint32 size_shm_offset,
-      uint32 type_shm_id, uint32 type_shm_offset, uint32 name_shm_id,
-      uint32 name_shm_offset) {
+      GLuint program, GLuint index, uint32 name_bucket_id, uint32 result_shm_id,
+      uint32 result_shm_offset) {
     gles2::GetActiveUniform& c = GetCmdSpace<gles2::GetActiveUniform>();
-    c.Init(
-        program, index, bufsize, length_shm_id, length_shm_offset, size_shm_id,
-        size_shm_offset, type_shm_id, type_shm_offset, name_shm_id,
-        name_shm_offset);
+    c.Init(program, index, name_bucket_id, result_shm_id, result_shm_offset);
   }
 
   void GetAttachedShaders(
-      GLuint program, GLsizei maxcount, uint32 count_shm_id,
-      uint32 count_shm_offset, uint32 shaders_shm_id,
-      uint32 shaders_shm_offset) {
+      GLuint program, uint32 result_shm_id, uint32 result_shm_offset,
+      uint32 result_size) {
     gles2::GetAttachedShaders& c = GetCmdSpace<gles2::GetAttachedShaders>();
-    c.Init(
-        program, maxcount, count_shm_id, count_shm_offset, shaders_shm_id,
-        shaders_shm_offset);
+    c.Init(program, result_shm_id, result_shm_offset, result_size);
   }
 
   void GetBooleanv(
@@ -540,14 +527,11 @@
   }
 
   void GetShaderPrecisionFormat(
-      GLenum shadertype, GLenum precisiontype, uint32 range_shm_id,
-      uint32 range_shm_offset, uint32 precision_shm_id,
-      uint32 precision_shm_offset) {
+      GLenum shadertype, GLenum precisiontype, uint32 result_shm_id,
+      uint32 result_shm_offset) {
     gles2::GetShaderPrecisionFormat& c =
         GetCmdSpace<gles2::GetShaderPrecisionFormat>();
-    c.Init(
-        shadertype, precisiontype, range_shm_id, range_shm_offset,
-        precision_shm_id, precision_shm_offset);
+    c.Init(shadertype, precisiontype, result_shm_id, result_shm_offset);
   }
 
   void GetShaderSource(

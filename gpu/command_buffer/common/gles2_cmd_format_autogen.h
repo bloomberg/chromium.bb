@@ -2930,6 +2930,12 @@ struct GetActiveAttrib {
   static const CommandId kCmdId = kGetActiveAttrib;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
+  struct Result {
+    int32 success;
+    int32 size;
+    int32 type;
+  };
+
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
@@ -2939,83 +2945,66 @@ struct GetActiveAttrib {
   }
 
   void Init(
-      GLuint _program, GLuint _index, GLsizei _bufsize, uint32 _length_shm_id,
-      uint32 _length_shm_offset, uint32 _size_shm_id, uint32 _size_shm_offset,
-      uint32 _type_shm_id, uint32 _type_shm_offset, uint32 _name_shm_id,
-      uint32 _name_shm_offset) {
+      GLuint _program, GLuint _index, uint32 _name_bucket_id,
+      uint32 _result_shm_id, uint32 _result_shm_offset) {
     SetHeader();
     program = _program;
     index = _index;
-    bufsize = _bufsize;
-    length_shm_id = _length_shm_id;
-    length_shm_offset = _length_shm_offset;
-    size_shm_id = _size_shm_id;
-    size_shm_offset = _size_shm_offset;
-    type_shm_id = _type_shm_id;
-    type_shm_offset = _type_shm_offset;
-    name_shm_id = _name_shm_id;
-    name_shm_offset = _name_shm_offset;
+    name_bucket_id = _name_bucket_id;
+    result_shm_id = _result_shm_id;
+    result_shm_offset = _result_shm_offset;
   }
 
   void* Set(
-      void* cmd, GLuint _program, GLuint _index, GLsizei _bufsize,
-      uint32 _length_shm_id, uint32 _length_shm_offset, uint32 _size_shm_id,
-      uint32 _size_shm_offset, uint32 _type_shm_id, uint32 _type_shm_offset,
-      uint32 _name_shm_id, uint32 _name_shm_offset) {
+      void* cmd, GLuint _program, GLuint _index, uint32 _name_bucket_id,
+      uint32 _result_shm_id, uint32 _result_shm_offset) {
     static_cast<ValueType*>(
         cmd)->Init(
-            _program, _index, _bufsize, _length_shm_id, _length_shm_offset,
-            _size_shm_id, _size_shm_offset, _type_shm_id, _type_shm_offset,
-            _name_shm_id, _name_shm_offset);
+            _program, _index, _name_bucket_id, _result_shm_id,
+            _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
   uint32 program;
   uint32 index;
-  int32 bufsize;
-  uint32 length_shm_id;
-  uint32 length_shm_offset;
-  uint32 size_shm_id;
-  uint32 size_shm_offset;
-  uint32 type_shm_id;
-  uint32 type_shm_offset;
-  uint32 name_shm_id;
-  uint32 name_shm_offset;
+  uint32 name_bucket_id;
+  uint32 result_shm_id;
+  uint32 result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetActiveAttrib) == 48,
-               Sizeof_GetActiveAttrib_is_not_48);
+COMPILE_ASSERT(sizeof(GetActiveAttrib) == 24,
+               Sizeof_GetActiveAttrib_is_not_24);
 COMPILE_ASSERT(offsetof(GetActiveAttrib, header) == 0,
                OffsetOf_GetActiveAttrib_header_not_0);
 COMPILE_ASSERT(offsetof(GetActiveAttrib, program) == 4,
                OffsetOf_GetActiveAttrib_program_not_4);
 COMPILE_ASSERT(offsetof(GetActiveAttrib, index) == 8,
                OffsetOf_GetActiveAttrib_index_not_8);
-COMPILE_ASSERT(offsetof(GetActiveAttrib, bufsize) == 12,
-               OffsetOf_GetActiveAttrib_bufsize_not_12);
-COMPILE_ASSERT(offsetof(GetActiveAttrib, length_shm_id) == 16,
-               OffsetOf_GetActiveAttrib_length_shm_id_not_16);
-COMPILE_ASSERT(offsetof(GetActiveAttrib, length_shm_offset) == 20,
-               OffsetOf_GetActiveAttrib_length_shm_offset_not_20);
-COMPILE_ASSERT(offsetof(GetActiveAttrib, size_shm_id) == 24,
-               OffsetOf_GetActiveAttrib_size_shm_id_not_24);
-COMPILE_ASSERT(offsetof(GetActiveAttrib, size_shm_offset) == 28,
-               OffsetOf_GetActiveAttrib_size_shm_offset_not_28);
-COMPILE_ASSERT(offsetof(GetActiveAttrib, type_shm_id) == 32,
-               OffsetOf_GetActiveAttrib_type_shm_id_not_32);
-COMPILE_ASSERT(offsetof(GetActiveAttrib, type_shm_offset) == 36,
-               OffsetOf_GetActiveAttrib_type_shm_offset_not_36);
-COMPILE_ASSERT(offsetof(GetActiveAttrib, name_shm_id) == 40,
-               OffsetOf_GetActiveAttrib_name_shm_id_not_40);
-COMPILE_ASSERT(offsetof(GetActiveAttrib, name_shm_offset) == 44,
-               OffsetOf_GetActiveAttrib_name_shm_offset_not_44);
+COMPILE_ASSERT(offsetof(GetActiveAttrib, name_bucket_id) == 12,
+               OffsetOf_GetActiveAttrib_name_bucket_id_not_12);
+COMPILE_ASSERT(offsetof(GetActiveAttrib, result_shm_id) == 16,
+               OffsetOf_GetActiveAttrib_result_shm_id_not_16);
+COMPILE_ASSERT(offsetof(GetActiveAttrib, result_shm_offset) == 20,
+               OffsetOf_GetActiveAttrib_result_shm_offset_not_20);
+COMPILE_ASSERT(offsetof(GetActiveAttrib::Result, success) == 0,
+               OffsetOf_GetActiveAttrib_Result_success_not_0);
+COMPILE_ASSERT(offsetof(GetActiveAttrib::Result, size) == 4,
+               OffsetOf_GetActiveAttrib_Result_size_not_4);
+COMPILE_ASSERT(offsetof(GetActiveAttrib::Result, type) == 8,
+               OffsetOf_GetActiveAttrib_Result_type_not_8);
 
 struct GetActiveUniform {
   typedef GetActiveUniform ValueType;
   static const CommandId kCmdId = kGetActiveUniform;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
+  struct Result {
+    int32 success;
+    int32 size;
+    int32 type;
+  };
+
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
@@ -3025,82 +3014,61 @@ struct GetActiveUniform {
   }
 
   void Init(
-      GLuint _program, GLuint _index, GLsizei _bufsize, uint32 _length_shm_id,
-      uint32 _length_shm_offset, uint32 _size_shm_id, uint32 _size_shm_offset,
-      uint32 _type_shm_id, uint32 _type_shm_offset, uint32 _name_shm_id,
-      uint32 _name_shm_offset) {
+      GLuint _program, GLuint _index, uint32 _name_bucket_id,
+      uint32 _result_shm_id, uint32 _result_shm_offset) {
     SetHeader();
     program = _program;
     index = _index;
-    bufsize = _bufsize;
-    length_shm_id = _length_shm_id;
-    length_shm_offset = _length_shm_offset;
-    size_shm_id = _size_shm_id;
-    size_shm_offset = _size_shm_offset;
-    type_shm_id = _type_shm_id;
-    type_shm_offset = _type_shm_offset;
-    name_shm_id = _name_shm_id;
-    name_shm_offset = _name_shm_offset;
+    name_bucket_id = _name_bucket_id;
+    result_shm_id = _result_shm_id;
+    result_shm_offset = _result_shm_offset;
   }
 
   void* Set(
-      void* cmd, GLuint _program, GLuint _index, GLsizei _bufsize,
-      uint32 _length_shm_id, uint32 _length_shm_offset, uint32 _size_shm_id,
-      uint32 _size_shm_offset, uint32 _type_shm_id, uint32 _type_shm_offset,
-      uint32 _name_shm_id, uint32 _name_shm_offset) {
+      void* cmd, GLuint _program, GLuint _index, uint32 _name_bucket_id,
+      uint32 _result_shm_id, uint32 _result_shm_offset) {
     static_cast<ValueType*>(
         cmd)->Init(
-            _program, _index, _bufsize, _length_shm_id, _length_shm_offset,
-            _size_shm_id, _size_shm_offset, _type_shm_id, _type_shm_offset,
-            _name_shm_id, _name_shm_offset);
+            _program, _index, _name_bucket_id, _result_shm_id,
+            _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
   uint32 program;
   uint32 index;
-  int32 bufsize;
-  uint32 length_shm_id;
-  uint32 length_shm_offset;
-  uint32 size_shm_id;
-  uint32 size_shm_offset;
-  uint32 type_shm_id;
-  uint32 type_shm_offset;
-  uint32 name_shm_id;
-  uint32 name_shm_offset;
+  uint32 name_bucket_id;
+  uint32 result_shm_id;
+  uint32 result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetActiveUniform) == 48,
-               Sizeof_GetActiveUniform_is_not_48);
+COMPILE_ASSERT(sizeof(GetActiveUniform) == 24,
+               Sizeof_GetActiveUniform_is_not_24);
 COMPILE_ASSERT(offsetof(GetActiveUniform, header) == 0,
                OffsetOf_GetActiveUniform_header_not_0);
 COMPILE_ASSERT(offsetof(GetActiveUniform, program) == 4,
                OffsetOf_GetActiveUniform_program_not_4);
 COMPILE_ASSERT(offsetof(GetActiveUniform, index) == 8,
                OffsetOf_GetActiveUniform_index_not_8);
-COMPILE_ASSERT(offsetof(GetActiveUniform, bufsize) == 12,
-               OffsetOf_GetActiveUniform_bufsize_not_12);
-COMPILE_ASSERT(offsetof(GetActiveUniform, length_shm_id) == 16,
-               OffsetOf_GetActiveUniform_length_shm_id_not_16);
-COMPILE_ASSERT(offsetof(GetActiveUniform, length_shm_offset) == 20,
-               OffsetOf_GetActiveUniform_length_shm_offset_not_20);
-COMPILE_ASSERT(offsetof(GetActiveUniform, size_shm_id) == 24,
-               OffsetOf_GetActiveUniform_size_shm_id_not_24);
-COMPILE_ASSERT(offsetof(GetActiveUniform, size_shm_offset) == 28,
-               OffsetOf_GetActiveUniform_size_shm_offset_not_28);
-COMPILE_ASSERT(offsetof(GetActiveUniform, type_shm_id) == 32,
-               OffsetOf_GetActiveUniform_type_shm_id_not_32);
-COMPILE_ASSERT(offsetof(GetActiveUniform, type_shm_offset) == 36,
-               OffsetOf_GetActiveUniform_type_shm_offset_not_36);
-COMPILE_ASSERT(offsetof(GetActiveUniform, name_shm_id) == 40,
-               OffsetOf_GetActiveUniform_name_shm_id_not_40);
-COMPILE_ASSERT(offsetof(GetActiveUniform, name_shm_offset) == 44,
-               OffsetOf_GetActiveUniform_name_shm_offset_not_44);
+COMPILE_ASSERT(offsetof(GetActiveUniform, name_bucket_id) == 12,
+               OffsetOf_GetActiveUniform_name_bucket_id_not_12);
+COMPILE_ASSERT(offsetof(GetActiveUniform, result_shm_id) == 16,
+               OffsetOf_GetActiveUniform_result_shm_id_not_16);
+COMPILE_ASSERT(offsetof(GetActiveUniform, result_shm_offset) == 20,
+               OffsetOf_GetActiveUniform_result_shm_offset_not_20);
+COMPILE_ASSERT(offsetof(GetActiveUniform::Result, success) == 0,
+               OffsetOf_GetActiveUniform_Result_success_not_0);
+COMPILE_ASSERT(offsetof(GetActiveUniform::Result, size) == 4,
+               OffsetOf_GetActiveUniform_Result_size_not_4);
+COMPILE_ASSERT(offsetof(GetActiveUniform::Result, type) == 8,
+               OffsetOf_GetActiveUniform_Result_type_not_8);
 
 struct GetAttachedShaders {
   typedef GetAttachedShaders ValueType;
   static const CommandId kCmdId = kGetAttachedShaders;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  typedef SizedResult<GLuint> Result;
 
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
@@ -3111,54 +3079,42 @@ struct GetAttachedShaders {
   }
 
   void Init(
-      GLuint _program, GLsizei _maxcount, uint32 _count_shm_id,
-      uint32 _count_shm_offset, uint32 _shaders_shm_id,
-      uint32 _shaders_shm_offset) {
+      GLuint _program, uint32 _result_shm_id, uint32 _result_shm_offset,
+      uint32 _result_size) {
     SetHeader();
     program = _program;
-    maxcount = _maxcount;
-    count_shm_id = _count_shm_id;
-    count_shm_offset = _count_shm_offset;
-    shaders_shm_id = _shaders_shm_id;
-    shaders_shm_offset = _shaders_shm_offset;
+    result_shm_id = _result_shm_id;
+    result_shm_offset = _result_shm_offset;
+    result_size = _result_size;
   }
 
   void* Set(
-      void* cmd, GLuint _program, GLsizei _maxcount, uint32 _count_shm_id,
-      uint32 _count_shm_offset, uint32 _shaders_shm_id,
-      uint32 _shaders_shm_offset) {
+      void* cmd, GLuint _program, uint32 _result_shm_id,
+      uint32 _result_shm_offset, uint32 _result_size) {
     static_cast<ValueType*>(
-        cmd)->Init(
-            _program, _maxcount, _count_shm_id, _count_shm_offset,
-            _shaders_shm_id, _shaders_shm_offset);
+        cmd)->Init(_program, _result_shm_id, _result_shm_offset, _result_size);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
   uint32 program;
-  int32 maxcount;
-  uint32 count_shm_id;
-  uint32 count_shm_offset;
-  uint32 shaders_shm_id;
-  uint32 shaders_shm_offset;
+  uint32 result_shm_id;
+  uint32 result_shm_offset;
+  uint32 result_size;
 };
 
-COMPILE_ASSERT(sizeof(GetAttachedShaders) == 28,
-               Sizeof_GetAttachedShaders_is_not_28);
+COMPILE_ASSERT(sizeof(GetAttachedShaders) == 20,
+               Sizeof_GetAttachedShaders_is_not_20);
 COMPILE_ASSERT(offsetof(GetAttachedShaders, header) == 0,
                OffsetOf_GetAttachedShaders_header_not_0);
 COMPILE_ASSERT(offsetof(GetAttachedShaders, program) == 4,
                OffsetOf_GetAttachedShaders_program_not_4);
-COMPILE_ASSERT(offsetof(GetAttachedShaders, maxcount) == 8,
-               OffsetOf_GetAttachedShaders_maxcount_not_8);
-COMPILE_ASSERT(offsetof(GetAttachedShaders, count_shm_id) == 12,
-               OffsetOf_GetAttachedShaders_count_shm_id_not_12);
-COMPILE_ASSERT(offsetof(GetAttachedShaders, count_shm_offset) == 16,
-               OffsetOf_GetAttachedShaders_count_shm_offset_not_16);
-COMPILE_ASSERT(offsetof(GetAttachedShaders, shaders_shm_id) == 20,
-               OffsetOf_GetAttachedShaders_shaders_shm_id_not_20);
-COMPILE_ASSERT(offsetof(GetAttachedShaders, shaders_shm_offset) == 24,
-               OffsetOf_GetAttachedShaders_shaders_shm_offset_not_24);
+COMPILE_ASSERT(offsetof(GetAttachedShaders, result_shm_id) == 8,
+               OffsetOf_GetAttachedShaders_result_shm_id_not_8);
+COMPILE_ASSERT(offsetof(GetAttachedShaders, result_shm_offset) == 12,
+               OffsetOf_GetAttachedShaders_result_shm_offset_not_12);
+COMPILE_ASSERT(offsetof(GetAttachedShaders, result_size) == 16,
+               OffsetOf_GetAttachedShaders_result_size_not_16);
 
 struct GetBooleanv {
   typedef GetBooleanv ValueType;
@@ -3392,10 +3348,10 @@ COMPILE_ASSERT(offsetof(GetFramebufferAttachmentParameteriv, pname) == 12,
                OffsetOf_GetFramebufferAttachmentParameteriv_pname_not_12);
 COMPILE_ASSERT(
     offsetof(GetFramebufferAttachmentParameteriv, params_shm_id) == 16,
-               OffsetOf_GetFramebufferAttachmentParameteriv_params_shm_id_not_16);
+               OffsetOf_GetFramebufferAttachmentParameteriv_params_shm_id_not_16);  // NOLINT
 COMPILE_ASSERT(
     offsetof(GetFramebufferAttachmentParameteriv, params_shm_offset) == 20,
-               OffsetOf_GetFramebufferAttachmentParameteriv_params_shm_offset_not_20);
+               OffsetOf_GetFramebufferAttachmentParameteriv_params_shm_offset_not_20);  // NOLINT
 
 struct GetIntegerv {
   typedef GetIntegerv ValueType;
@@ -3726,6 +3682,13 @@ struct GetShaderPrecisionFormat {
   static const CommandId kCmdId = kGetShaderPrecisionFormat;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
+  struct Result {
+    int32 success;
+    int32 min_range;
+    int32 max_range;
+    int32 precision;
+  };
+
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
@@ -3735,54 +3698,51 @@ struct GetShaderPrecisionFormat {
   }
 
   void Init(
-      GLenum _shadertype, GLenum _precisiontype, uint32 _range_shm_id,
-      uint32 _range_shm_offset, uint32 _precision_shm_id,
-      uint32 _precision_shm_offset) {
+      GLenum _shadertype, GLenum _precisiontype, uint32 _result_shm_id,
+      uint32 _result_shm_offset) {
     SetHeader();
     shadertype = _shadertype;
     precisiontype = _precisiontype;
-    range_shm_id = _range_shm_id;
-    range_shm_offset = _range_shm_offset;
-    precision_shm_id = _precision_shm_id;
-    precision_shm_offset = _precision_shm_offset;
+    result_shm_id = _result_shm_id;
+    result_shm_offset = _result_shm_offset;
   }
 
   void* Set(
       void* cmd, GLenum _shadertype, GLenum _precisiontype,
-      uint32 _range_shm_id, uint32 _range_shm_offset, uint32 _precision_shm_id,
-      uint32 _precision_shm_offset) {
+      uint32 _result_shm_id, uint32 _result_shm_offset) {
     static_cast<ValueType*>(
         cmd)->Init(
-            _shadertype, _precisiontype, _range_shm_id, _range_shm_offset,
-            _precision_shm_id, _precision_shm_offset);
+            _shadertype, _precisiontype, _result_shm_id, _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
   uint32 shadertype;
   uint32 precisiontype;
-  uint32 range_shm_id;
-  uint32 range_shm_offset;
-  uint32 precision_shm_id;
-  uint32 precision_shm_offset;
+  uint32 result_shm_id;
+  uint32 result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(GetShaderPrecisionFormat) == 28,
-               Sizeof_GetShaderPrecisionFormat_is_not_28);
+COMPILE_ASSERT(sizeof(GetShaderPrecisionFormat) == 20,
+               Sizeof_GetShaderPrecisionFormat_is_not_20);
 COMPILE_ASSERT(offsetof(GetShaderPrecisionFormat, header) == 0,
                OffsetOf_GetShaderPrecisionFormat_header_not_0);
 COMPILE_ASSERT(offsetof(GetShaderPrecisionFormat, shadertype) == 4,
                OffsetOf_GetShaderPrecisionFormat_shadertype_not_4);
 COMPILE_ASSERT(offsetof(GetShaderPrecisionFormat, precisiontype) == 8,
                OffsetOf_GetShaderPrecisionFormat_precisiontype_not_8);
-COMPILE_ASSERT(offsetof(GetShaderPrecisionFormat, range_shm_id) == 12,
-               OffsetOf_GetShaderPrecisionFormat_range_shm_id_not_12);
-COMPILE_ASSERT(offsetof(GetShaderPrecisionFormat, range_shm_offset) == 16,
-               OffsetOf_GetShaderPrecisionFormat_range_shm_offset_not_16);
-COMPILE_ASSERT(offsetof(GetShaderPrecisionFormat, precision_shm_id) == 20,
-               OffsetOf_GetShaderPrecisionFormat_precision_shm_id_not_20);
-COMPILE_ASSERT(offsetof(GetShaderPrecisionFormat, precision_shm_offset) == 24,
-               OffsetOf_GetShaderPrecisionFormat_precision_shm_offset_not_24);
+COMPILE_ASSERT(offsetof(GetShaderPrecisionFormat, result_shm_id) == 12,
+               OffsetOf_GetShaderPrecisionFormat_result_shm_id_not_12);
+COMPILE_ASSERT(offsetof(GetShaderPrecisionFormat, result_shm_offset) == 16,
+               OffsetOf_GetShaderPrecisionFormat_result_shm_offset_not_16);
+COMPILE_ASSERT(offsetof(GetShaderPrecisionFormat::Result, success) == 0,
+               OffsetOf_GetShaderPrecisionFormat_Result_success_not_0);
+COMPILE_ASSERT(offsetof(GetShaderPrecisionFormat::Result, min_range) == 4,
+               OffsetOf_GetShaderPrecisionFormat_Result_min_range_not_4);
+COMPILE_ASSERT(offsetof(GetShaderPrecisionFormat::Result, max_range) == 8,
+               OffsetOf_GetShaderPrecisionFormat_Result_max_range_not_8);
+COMPILE_ASSERT(offsetof(GetShaderPrecisionFormat::Result, precision) == 12,
+               OffsetOf_GetShaderPrecisionFormat_Result_precision_not_12);
 
 struct GetShaderSource {
   typedef GetShaderSource ValueType;
@@ -3988,6 +3948,8 @@ struct GetUniformfv {
   static const CommandId kCmdId = kGetUniformfv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
+  typedef SizedResult<GLfloat> Result;
+
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
@@ -4038,6 +4000,8 @@ struct GetUniformiv {
   typedef GetUniformiv ValueType;
   static const CommandId kCmdId = kGetUniformiv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  typedef SizedResult<GLint> Result;
 
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
@@ -4191,6 +4155,8 @@ struct GetVertexAttribPointerv {
   typedef GetVertexAttribPointerv ValueType;
   static const CommandId kCmdId = kGetVertexAttribPointerv;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  typedef SizedResult<GLuint> Result;
 
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT

@@ -4,8 +4,8 @@
 
 // This file is auto-generated. DO NOT EDIT!
 
-#ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_VALIDATION_IMPLEMENTATION_AUTOGEN_H_
-#define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_VALIDATION_IMPLEMENTATION_AUTOGEN_H_
+#ifndef GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_VALIDATION_IMPLEMENTATION_AUTOGEN_H_  // NOLINT
+#define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_VALIDATION_IMPLEMENTATION_AUTOGEN_H_  // NOLINT
 
 bool ValidateGLenumAttachment(GLenum value) {
   switch (value) {
@@ -325,7 +325,7 @@ bool ValidateGLenumShaderParameter(GLenum value) {
   }
 }
 
-bool ValidateGLenumShaderPercision(GLenum value) {
+bool ValidateGLenumShaderPrecision(GLenum value) {
   switch (value) {
     case GL_LOW_FLOAT:
     case GL_MEDIUM_FLOAT:
@@ -509,5 +509,5 @@ bool ValidateGLenumVertexPointer(GLenum value) {
   }
 }
 
-#endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_VALIDATION_IMPLEMENTATION_AUTOGEN_H_
+#endif  // GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_VALIDATION_IMPLEMENTATION_AUTOGEN_H_  // NOLINT
 

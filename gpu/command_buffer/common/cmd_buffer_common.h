@@ -541,6 +541,8 @@ struct GetBucketSize {
   static const CommandId kCmdId = kGetBucketSize;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
+  typedef uint32 Result;
+
   void SetHeader() {
     header.SetCmd<ValueType>();
   }

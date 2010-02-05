@@ -1097,15 +1097,9 @@ TEST(GLES2FormatTest, GetActiveAttrib) {
       &cmd,
       static_cast<GLuint>(11),
       static_cast<GLuint>(12),
-      static_cast<GLsizei>(13),
+      static_cast<uint32>(13),
       static_cast<uint32>(14),
-      static_cast<uint32>(15),
-      static_cast<uint32>(16),
-      static_cast<uint32>(17),
-      static_cast<uint32>(18),
-      static_cast<uint32>(19),
-      static_cast<uint32>(20),
-      static_cast<uint32>(21));
+      static_cast<uint32>(15));
   EXPECT_EQ(static_cast<uint32>(GetActiveAttrib::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
@@ -1113,15 +1107,9 @@ TEST(GLES2FormatTest, GetActiveAttrib) {
             reinterpret_cast<char*>(&cmd) + sizeof(cmd));
   EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
   EXPECT_EQ(static_cast<GLuint>(12), cmd.index);
-  EXPECT_EQ(static_cast<GLsizei>(13), cmd.bufsize);
-  EXPECT_EQ(static_cast<uint32>(14), cmd.length_shm_id);
-  EXPECT_EQ(static_cast<uint32>(15), cmd.length_shm_offset);
-  EXPECT_EQ(static_cast<uint32>(16), cmd.size_shm_id);
-  EXPECT_EQ(static_cast<uint32>(17), cmd.size_shm_offset);
-  EXPECT_EQ(static_cast<uint32>(18), cmd.type_shm_id);
-  EXPECT_EQ(static_cast<uint32>(19), cmd.type_shm_offset);
-  EXPECT_EQ(static_cast<uint32>(20), cmd.name_shm_id);
-  EXPECT_EQ(static_cast<uint32>(21), cmd.name_shm_offset);
+  EXPECT_EQ(static_cast<uint32>(13), cmd.name_bucket_id);
+  EXPECT_EQ(static_cast<uint32>(14), cmd.result_shm_id);
+  EXPECT_EQ(static_cast<uint32>(15), cmd.result_shm_offset);
 }
 
 TEST(GLES2FormatTest, GetActiveUniform) {
@@ -1130,15 +1118,9 @@ TEST(GLES2FormatTest, GetActiveUniform) {
       &cmd,
       static_cast<GLuint>(11),
       static_cast<GLuint>(12),
-      static_cast<GLsizei>(13),
+      static_cast<uint32>(13),
       static_cast<uint32>(14),
-      static_cast<uint32>(15),
-      static_cast<uint32>(16),
-      static_cast<uint32>(17),
-      static_cast<uint32>(18),
-      static_cast<uint32>(19),
-      static_cast<uint32>(20),
-      static_cast<uint32>(21));
+      static_cast<uint32>(15));
   EXPECT_EQ(static_cast<uint32>(GetActiveUniform::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
@@ -1146,15 +1128,9 @@ TEST(GLES2FormatTest, GetActiveUniform) {
             reinterpret_cast<char*>(&cmd) + sizeof(cmd));
   EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
   EXPECT_EQ(static_cast<GLuint>(12), cmd.index);
-  EXPECT_EQ(static_cast<GLsizei>(13), cmd.bufsize);
-  EXPECT_EQ(static_cast<uint32>(14), cmd.length_shm_id);
-  EXPECT_EQ(static_cast<uint32>(15), cmd.length_shm_offset);
-  EXPECT_EQ(static_cast<uint32>(16), cmd.size_shm_id);
-  EXPECT_EQ(static_cast<uint32>(17), cmd.size_shm_offset);
-  EXPECT_EQ(static_cast<uint32>(18), cmd.type_shm_id);
-  EXPECT_EQ(static_cast<uint32>(19), cmd.type_shm_offset);
-  EXPECT_EQ(static_cast<uint32>(20), cmd.name_shm_id);
-  EXPECT_EQ(static_cast<uint32>(21), cmd.name_shm_offset);
+  EXPECT_EQ(static_cast<uint32>(13), cmd.name_bucket_id);
+  EXPECT_EQ(static_cast<uint32>(14), cmd.result_shm_id);
+  EXPECT_EQ(static_cast<uint32>(15), cmd.result_shm_offset);
 }
 
 TEST(GLES2FormatTest, GetAttachedShaders) {
@@ -1162,22 +1138,18 @@ TEST(GLES2FormatTest, GetAttachedShaders) {
   void* next_cmd = cmd.Set(
       &cmd,
       static_cast<GLuint>(11),
-      static_cast<GLsizei>(12),
+      static_cast<uint32>(12),
       static_cast<uint32>(13),
-      static_cast<uint32>(14),
-      static_cast<uint32>(15),
-      static_cast<uint32>(16));
+      static_cast<uint32>(14));
   EXPECT_EQ(static_cast<uint32>(GetAttachedShaders::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<char*>(next_cmd),
             reinterpret_cast<char*>(&cmd) + sizeof(cmd));
   EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
-  EXPECT_EQ(static_cast<GLsizei>(12), cmd.maxcount);
-  EXPECT_EQ(static_cast<uint32>(13), cmd.count_shm_id);
-  EXPECT_EQ(static_cast<uint32>(14), cmd.count_shm_offset);
-  EXPECT_EQ(static_cast<uint32>(15), cmd.shaders_shm_id);
-  EXPECT_EQ(static_cast<uint32>(16), cmd.shaders_shm_offset);
+  EXPECT_EQ(static_cast<uint32>(12), cmd.result_shm_id);
+  EXPECT_EQ(static_cast<uint32>(13), cmd.result_shm_offset);
+  EXPECT_EQ(static_cast<uint32>(14), cmd.result_size);
 }
 
 // TODO(gman): Write test for GetAttribLocation
@@ -1398,9 +1370,7 @@ TEST(GLES2FormatTest, GetShaderPrecisionFormat) {
       static_cast<GLenum>(11),
       static_cast<GLenum>(12),
       static_cast<uint32>(13),
-      static_cast<uint32>(14),
-      static_cast<uint32>(15),
-      static_cast<uint32>(16));
+      static_cast<uint32>(14));
   EXPECT_EQ(static_cast<uint32>(GetShaderPrecisionFormat::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
@@ -1408,10 +1378,8 @@ TEST(GLES2FormatTest, GetShaderPrecisionFormat) {
             reinterpret_cast<char*>(&cmd) + sizeof(cmd));
   EXPECT_EQ(static_cast<GLenum>(11), cmd.shadertype);
   EXPECT_EQ(static_cast<GLenum>(12), cmd.precisiontype);
-  EXPECT_EQ(static_cast<uint32>(13), cmd.range_shm_id);
-  EXPECT_EQ(static_cast<uint32>(14), cmd.range_shm_offset);
-  EXPECT_EQ(static_cast<uint32>(15), cmd.precision_shm_id);
-  EXPECT_EQ(static_cast<uint32>(16), cmd.precision_shm_offset);
+  EXPECT_EQ(static_cast<uint32>(13), cmd.result_shm_id);
+  EXPECT_EQ(static_cast<uint32>(14), cmd.result_shm_offset);
 }
 
 TEST(GLES2FormatTest, GetShaderSource) {

@@ -13,12 +13,22 @@
 #if defined(UNIT_TEST)
 #include "gpu/command_buffer/service/gl_mock.h"
 #else
-#include <GL/glew.h>
+#include <GL/glew.h>  // NOLINT
 #if defined(OS_WIN)
-#include <GL/wglew.h>
+#include <GL/wglew.h>  // NOLINT
 #elif defined(OS_LINUX)
-#include <GL/glxew.h>
+#include <GL/glxew.h>  // NOLINT
 #endif  // OS_WIN
+
+// GLES2 defines not part of Desktop GL
+// Shader Precision-Specified Types
+#define GL_LOW_FLOAT                      0x8DF0
+#define GL_MEDIUM_FLOAT                   0x8DF1
+#define GL_HIGH_FLOAT                     0x8DF2
+#define GL_LOW_INT                        0x8DF3
+#define GL_MEDIUM_INT                     0x8DF4
+#define GL_HIGH_INT                       0x8DF5
+
 #endif  // UNIT_TEST
 
 #define GL_GLEXT_PROTOTYPES 1

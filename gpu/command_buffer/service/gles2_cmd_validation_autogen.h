@@ -33,7 +33,7 @@ bool ValidateGLenumRenderBufferFormat(GLenum value);
 bool ValidateGLenumRenderBufferParameter(GLenum value);
 bool ValidateGLenumRenderBufferTarget(GLenum value);
 bool ValidateGLenumShaderParameter(GLenum value);
-bool ValidateGLenumShaderPercision(GLenum value);
+bool ValidateGLenumShaderPrecision(GLenum value);
 bool ValidateGLenumShaderType(GLenum value);
 bool ValidateGLenumSrcBlendFactor(GLenum value);
 bool ValidateGLenumStencilOp(GLenum value);

@@ -117,6 +117,78 @@ class CommandBufferHelper {
     cmd.Init(token);
   }
 
+  void Jump(uint32 offset) {
+    cmd::Jump& cmd = GetCmdSpace<cmd::Jump>();
+    cmd.Init(offset);
+  }
+
+  void JumpRelative(int32 offset) {
+    cmd::JumpRelative& cmd = GetCmdSpace<cmd::JumpRelative>();
+    cmd.Init(offset);
+  }
+
+  void Call(uint32 offset) {
+    cmd::Call& cmd = GetCmdSpace<cmd::Call>();
+    cmd.Init(offset);
+  }
+
+  void CallRelative(int32 offset) {
+    cmd::CallRelative& cmd = GetCmdSpace<cmd::CallRelative>();
+    cmd.Init(offset);
+  }
+
+  void Return() {
+    cmd::Return& cmd = GetCmdSpace<cmd::Return>();
+    cmd.Init();
+  }
+
+  void SetBucketSize(uint32 bucket_id, uint32 size) {
+    cmd::SetBucketSize& cmd = GetCmdSpace<cmd::SetBucketSize>();
+    cmd.Init(bucket_id, size);
+  }
+
+  void SetBucketData(uint32 bucket_id,
+                     uint32 offset,
+                     uint32 size,
+                     uint32 shared_memory_id,
+                     uint32 shared_memory_offset) {
+    cmd::SetBucketData& cmd = GetCmdSpace<cmd::SetBucketData>();
+    cmd.Init(bucket_id,
+             offset,
+             size,
+             shared_memory_id,
+             shared_memory_offset);
+  }
+
+  void SetBucketDataImmediate(
+      uint32 bucket_id, uint32 offset, const void* data, uint32 size) {
+    cmd::SetBucketDataImmediate& cmd =
+        GetImmediateCmdSpace<cmd::SetBucketDataImmediate>(size);
+    cmd.Init(bucket_id, offset, size);
+    memcpy(ImmediateDataAddress(&cmd), data, size);
+  }
+
+  void GetBucketSize(uint32 bucket_id,
+                     uint32 shared_memory_id,
+                     uint32 shared_memory_offset) {
+    cmd::GetBucketSize& cmd = GetCmdSpace<cmd::GetBucketSize>();
+    cmd.Init(bucket_id,
+             shared_memory_id,
+             shared_memory_offset);
+  }
+
+  void GetBucketData(uint32 bucket_id,
+                     uint32 offset,
+                     uint32 size,
+                     uint32 shared_memory_id,
+                     uint32 shared_memory_offset) {
+    cmd::GetBucketData& cmd = GetCmdSpace<cmd::GetBucketData>();
+    cmd.Init(bucket_id,
+             offset,
+             size,
+             shared_memory_id,
+             shared_memory_offset);
+  }
 
  private:
   // Waits until get changes, updating the value of get_.

@@ -13,12 +13,12 @@
 #if defined(UNIT_TEST)
 #include "gpu/command_buffer/service/gl_mock.h"
 #elif defined(GLES2_GPU_SERVICE)
-#include <GL/glew.h>
+#include <GL/glew.h>  // NOLINT
 #if defined(OS_WIN)
-#include <GL/wglew.h>
+#include <GL/wglew.h>   // NOLINT
 #endif
 #else
-#include <GLES2/gl2types.h>
+#include <GLES2/gl2types.h>  // NOLINT
 #endif
 
 #include "base/basictypes.h"
@@ -35,25 +35,52 @@ namespace gles2 {
 // Used for some glGetXXX commands that return a result through a pointer. We
 // need to know if the command succeeded or not and the size of the result. If
 // the command failed its result size will 0.
+template <typename T>
 struct SizedResult {
-  template <typename T>
-  T GetDataAs() {
-    return static_cast<T>(static_cast<void*>(&data));
+  T* GetData() {
+    return static_cast<T*>(static_cast<void*>(&data));
   }
 
-  // Returns the size of the SizedResult for a given size of result.
-  static size_t GetSize(size_t size_of_result) {
-    return size_of_result + sizeof(uint32);  // NOLINT
+  // Returns the total size in bytes of the SizedResult for a given number of
+  // results including the size field.
+  static size_t ComputeSize(size_t num_results) {
+    return sizeof(T) * num_results + sizeof(uint32);  // NOLINT
+  }
+
+  // Returns the total size in bytes of the SizedResult for a given size of
+  // results.
+  static size_t ComputeSizeFromBytes(size_t size_of_result_in_bytes) {
+    return size_of_result_in_bytes + sizeof(uint32);  // NOLINT
+  }
+
+  // Returns the maximum number of results for a given buffer size.
+  static uint32 ComputeMaxResults(size_t size_of_buffer) {
+    return (size_of_buffer - sizeof(uint32)) / sizeof(T);  // NOLINT
+  }
+
+  // Set the size for a given number of results.
+  void SetNumResults(size_t num_results) {
+    size = sizeof(T) * num_results;  // NOLINT
+  }
+
+  // Get the number of elements in the result
+  int32 GetNumResults() const {
+    return size / sizeof(T);  // NOLINT
+  }
+
+  // Copy the result.
+  void CopyResult(void* dst) const {
+    memcpy(dst, &data, size);
   }
 
   uint32 size;  // in bytes.
   int32 data;  // this is just here to get an offset.
 };
 
-COMPILE_ASSERT(sizeof(SizedResult) == 8, SizedResult_size_not_8);
-COMPILE_ASSERT(offsetof(SizedResult, size) == 0,
+COMPILE_ASSERT(sizeof(SizedResult<int8>) == 8, SizedResult_size_not_8);
+COMPILE_ASSERT(offsetof(SizedResult<int8>, size) == 0,
                OffsetOf_SizedResult_size_not_0);
-COMPILE_ASSERT(offsetof(SizedResult, data) == 4,
+COMPILE_ASSERT(offsetof(SizedResult<int8>, data) == 4,
                OffsetOf_SizedResult_data_not_4);
 
 #include "gpu/command_buffer/common/gles2_cmd_format_autogen.h"

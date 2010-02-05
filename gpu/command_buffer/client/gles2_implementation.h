@@ -5,6 +5,8 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_H_
 #define GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_H_
 
+#include <string>
+#include <vector>
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/client/gles2_cmd_helper.h"
 #include "gpu/command_buffer/client/id_allocator.h"
@@ -63,14 +65,28 @@ class GLES2Implementation {
     return *static_cast<T*>(result_buffer_);
   }
 
-  // Copies the result.
-  void CopyResult(void* dst);
-
   // Waits for all commands to execute.
   void WaitForCmd();
 
+  // TODO(gman): These bucket functions really seem like they belong in
+  // CommandBufferHelper (or maybe BucketHelper?). Unfortunately they need
+  // a transfer buffer to function which is currently managed by this class.
+
+  // Gets the contents of a bucket.
+  void GetBucketContents(uint32 bucket_id, std::vector<int8>* data);
+
+  // Sets the contents of a bucket.
+  void SetBucketContents(uint32 bucket_id, const void* data, size_t size);
+
+  // Gets the contents of a bucket as a string.
+  std::string GetBucketAsString(uint32 bucket_id);
+
+  // Sets the contents of a bucket as a string.
+  void SetBucketAsString(uint32 bucket_id, const std::string& str);
+
   // The maxiumum result size from simple GL get commands.
-  static const size_t kMaxSizeOfSimpleResult = 4 * sizeof(uint32);  // NOLINT.
+  static const size_t kMaxSizeOfSimpleResult = 16 * sizeof(uint32);  // NOLINT.
+  static const uint32 kResultBucketId = 1;
 
   GLES2Util util_;
   GLES2CmdHelper* helper_;

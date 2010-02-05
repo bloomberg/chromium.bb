@@ -9,8 +9,9 @@
 #include <vector>
 #include <string>
 #include <map>
-#include <build/build_config.h>
+#include <build/build_config.h>  // NOLINT
 #include "base/scoped_ptr.h"
+#include "base/string_util.h"
 #define GLES2_GPU_SERVICE 1
 #include "gpu/command_buffer/common/gles2_cmd_format.h"
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -66,6 +67,12 @@ static size_t GetGLTypeSize(GLenum type) {
     default:
       return 0;
   }
+}
+
+bool IsInvalidPrefix(const char* name, size_t length) {
+  static const char kInvalidPrefix[] = { 'g', 'l', '_' };
+  return (length >= sizeof(kInvalidPrefix) &&
+      memcmp(name, kInvalidPrefix, sizeof(kInvalidPrefix)) == 0);
 }
 
 // Returns the address of the first byte after a struct.
@@ -323,30 +330,142 @@ class ProgramManager {
   class ProgramInfo {
    public:
     struct UniformInfo {
-      GLsizei GetSizeInBytes() const;
-
+      GLsizei size;
+      GLenum type;
+      std::string name;
+      std::vector<GLint> element_locations;
+    };
+    struct VertexAttribInfo {
       GLsizei size;
       GLenum type;
       GLint location;
+      std::string name;
     };
 
     typedef std::vector<UniformInfo> UniformInfoVector;
-    typedef std::vector<GLuint> AttribLocationVector;
+    typedef std::vector<VertexAttribInfo> AttribInfoVector;
 
-    ProgramInfo() {
+    explicit ProgramInfo(GLuint program)
+        : program_(program) {
     }
 
+    void Update() {
+      GLint num_attribs = 0;
+      GLint max_len = 0;
+      glGetProgramiv(program_, GL_ACTIVE_ATTRIBUTES, &num_attribs);
+      SetNumAttributes(num_attribs);
+      glGetProgramiv(program_, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_len);
+      // TODO(gman): Should we check for error?
+      scoped_array<char> name_buffer(new char[max_len]);
+      for (GLint ii = 0; ii < num_attribs; ++ii) {
+        GLsizei length;
+        GLsizei size;
+        GLenum type;
+        glGetActiveAttrib(
+            program_, ii, max_len, &length, &size, &type, name_buffer.get());
+        // TODO(gman): Should we check for error?
+        GLint location = IsInvalidPrefix(name_buffer.get(), length) ? -1 :
+             glGetAttribLocation(program_, name_buffer.get());
+        SetAttributeInfo(ii, size, type, location, name_buffer.get());
+      }
+      GLint num_uniforms;
+      glGetProgramiv(program_, GL_ACTIVE_UNIFORMS, &num_uniforms);
+      SetNumUniforms(num_uniforms);
+      glGetProgramiv(program_, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_len);
+      name_buffer.reset(new char[max_len]);
+      for (GLint ii = 0; ii < num_uniforms; ++ii) {
+        GLsizei length;
+        GLsizei size;
+        GLenum type;
+        glGetActiveUniform(
+            program_, ii, max_len, &length, &size, &type, name_buffer.get());
+        // TODO(gman): Should we check for error?
+        GLint location = IsInvalidPrefix(name_buffer.get(), length) ? -1 :
+            glGetUniformLocation(program_, name_buffer.get());
+        SetUniformInfo(ii, size, type, location, name_buffer.get());
+      }
+    }
+
+    const AttribInfoVector& GetAttribInfos() const {
+      return attrib_infos_;
+    }
+
+    const VertexAttribInfo* GetAttribInfo(GLint index) const {
+      return (static_cast<size_t>(index) < attrib_infos_.size()) ?
+         &attrib_infos_[index] : NULL;
+    }
+
+    GLint GetAttribLocation(const std::string& name) {
+      for (GLuint ii = 0; ii < attrib_infos_.size(); ++ii) {
+        const VertexAttribInfo& info = attrib_infos_[ii];
+        if (info.name == name) {
+          return info.location;
+        }
+      }
+      return -1;
+    }
+
+    const UniformInfo* GetUniformInfo(GLint index) const {
+      return (static_cast<size_t>(index) < uniform_infos_.size()) ?
+         &uniform_infos_[index] : NULL;
+    }
+
+    GLint GetUniformLocation(const std::string& name) {
+      for (GLuint ii = 0; ii < uniform_infos_.size(); ++ii) {
+        const UniformInfo& info = uniform_infos_[ii];
+        if (info.name == name) {
+          return info.element_locations[0];
+        } else if (name.size() >= 3 && name[name.size() - 1] == ']') {
+          // Look for an array specfication.
+          size_t open_pos = name.find_last_of('[');
+          if (open_pos != std::string::npos && open_pos < name.size() - 2) {
+            GLuint index = 0;
+            size_t last = name.size() - 1;
+            bool bad = false;
+            for (size_t pos = open_pos + 1; pos < last; ++pos) {
+              int8 digit = name[pos] - '0';
+              if (digit < 0 || digit > 9) {
+                bad = true;
+                break;
+              }
+              index = index * 10 + digit;
+            }
+            if (!bad) {
+              return index;
+            }
+          }
+        }
+      }
+      return -1;
+    }
+
+    bool GetUniformTypeByLocation(GLint location, GLenum* type) const {
+      for (GLuint ii = 0; ii < uniform_infos_.size(); ++ii) {
+        const UniformInfo& info = uniform_infos_[ii];
+        for (GLsizei jj = 0; jj < info.size; ++jj) {
+          if (info.element_locations[jj] == location) {
+            *type = info.type;
+            return true;
+          }
+        }
+      }
+      return false;
+    }
+
+   private:
     void SetNumAttributes(int num_attribs) {
-      attrib_locations_.resize(num_attribs);
+      attrib_infos_.resize(num_attribs);
     }
 
-    void SetAttributeLocation(GLuint index, int location) {
-      DCHECK(index < attrib_locations_.size());
-      attrib_locations_[index] = location;
-    }
-
-    const AttribLocationVector& GetAttribLocations() const {
-      return attrib_locations_;
+    void SetAttributeInfo(
+        GLint index, GLsizei size, GLenum type, GLint location,
+        const std::string& name) {
+      DCHECK(static_cast<unsigned>(index) < attrib_infos_.size());
+      VertexAttribInfo& info = attrib_infos_[index];
+      info.size = size;
+      info.type = type;
+      info.name = name;
+      info.location = location;
     }
 
     void SetNumUniforms(int num_uniforms) {
@@ -354,28 +473,34 @@ class ProgramManager {
     }
 
     void SetUniformInfo(
-        GLint index, GLsizei size, GLenum type, GLint location) {
+        GLint index, GLsizei size, GLenum type, GLint location,
+        const std::string& name) {
+      DCHECK(static_cast<unsigned>(index) < uniform_infos_.size());
       UniformInfo& info = uniform_infos_[index];
       info.size = size;
       info.type = type;
-      info.location = location;
-    }
-
-    const UniformInfo* GetUniformInfoByLocation(GLint location) {
-      for (GLuint ii = 0; ii < uniform_infos_.size(); ++ii) {
-        if (uniform_infos_[ii].location == location) {
-          return &uniform_infos_[ii];
+      info.name = name;
+      info.element_locations.resize(size);
+      info.element_locations[0] = location;
+      // Go through the array element locations looking for a match.
+      // We can skip the first element because it's the same as the
+      // the location without the array operators.
+      if (size > 1) {
+        for (GLsizei ii = 1; ii < info.size; ++ii) {
+          std::string element_name(name + "[" + IntToString(ii) + "]");
+          info.element_locations[ii] =
+              glGetUniformLocation(program_, element_name.c_str());
         }
       }
-      return NULL;
     }
 
-
-   private:
-    AttribLocationVector attrib_locations_;
+    AttribInfoVector attrib_infos_;
 
     // Uniform info by info.
     UniformInfoVector uniform_infos_;
+
+    // The program this ProgramInfo is tracking.
+    GLuint program_;
   };
 
   ProgramInfo* GetProgramInfo(GLuint program);
@@ -393,10 +518,6 @@ class ProgramManager {
   ProgramInfoMap program_infos_;
 };
 
-GLsizei ProgramManager::ProgramInfo::UniformInfo::GetSizeInBytes() const {
-  return GLES2Util::GetGLDataTypeSize(type) * size;
-}
-
 ProgramManager::ProgramInfo* ProgramManager::GetProgramInfo(GLuint program) {
   ProgramInfoMap::iterator it = program_infos_.find(program);
   return it != program_infos_.end() ? &it->second : NULL;
@@ -406,42 +527,11 @@ void ProgramManager::UpdateProgramInfo(GLuint program) {
   ProgramInfo* info = GetProgramInfo(program);
   if (!info) {
     std::pair<ProgramInfoMap::iterator, bool> result =
-        program_infos_.insert(std::make_pair(program, ProgramInfo()));
+        program_infos_.insert(std::make_pair(program, ProgramInfo(program)));
     DCHECK(result.second);
     info = &result.first->second;
   }
-  GLint num_attribs = 0;
-  GLint max_len = 0;
-  glGetProgramiv(program, GL_ACTIVE_ATTRIBUTES, &num_attribs);
-  info->SetNumAttributes(num_attribs);
-  glGetProgramiv(program, GL_ACTIVE_ATTRIBUTE_MAX_LENGTH, &max_len);
-  // TODO(gman): Should we check for error?
-  scoped_array<char> name_buffer(new char[max_len]);
-  for (GLint ii = 0; ii < num_attribs; ++ii) {
-    GLsizei length;
-    GLsizei size;
-    GLenum type;
-    glGetActiveAttrib(
-        program, ii, max_len, &length, &size, &type, name_buffer.get());
-    // TODO(gman): Should we check for error?
-    GLint location = glGetAttribLocation(program, name_buffer.get());
-    info->SetAttributeLocation(ii, location);
-  }
-  GLint num_uniforms;
-  glGetProgramiv(program, GL_ACTIVE_UNIFORMS, &num_uniforms);
-  info->SetNumUniforms(num_uniforms);
-  glGetProgramiv(program, GL_ACTIVE_UNIFORM_MAX_LENGTH, &max_len);
-  name_buffer.reset(new char[max_len]);
-  for (GLint ii = 0; ii < num_uniforms; ++ii) {
-    GLsizei length;
-    GLsizei size;
-    GLenum type;
-    glGetActiveUniform(
-        program, ii, max_len, &length, &size, &type, name_buffer.get());
-    // TODO(gman): Should we check for error?
-    GLint location = glGetUniformLocation(program, name_buffer.get());
-    info->SetUniformInfo(ii, size, type, location);
-  }
+  info->Update();
 }
 
 void ProgramManager::RemoveProgramInfo(GLuint program) {
@@ -693,7 +783,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   bool GetUniformSetup(
       GLuint program, GLint location,
       uint32 shm_id, uint32 shm_offset,
-      error::Error* error, GLuint* service_id, SizedResult** result);
+      error::Error* error, GLuint* service_id, void** result);
 
   // Generate a member function prototype for each command in an automated and
   // typesafe way.
@@ -1647,11 +1737,14 @@ bool GLES2DecoderImpl::IsDrawValid(GLuint max_vertex_accessed) {
       return false;
     }
     // Validate that all attribs current program needs are setup correctly.
-    const ProgramManager::ProgramInfo::AttribLocationVector& locations =
-        info->GetAttribLocations();
-    for (size_t ii = 0; ii < locations.size(); ++ii) {
-      GLuint location = locations[ii];
-      DCHECK_LT(location, max_vertex_attribs_);
+    const ProgramManager::ProgramInfo::AttribInfoVector& infos =
+        info->GetAttribInfos();
+    for (size_t ii = 0; ii < infos.size(); ++ii) {
+      GLint location = infos[ii].location;
+      if (location < 0) {
+        return false;
+      }
+      DCHECK_LT(static_cast<GLuint>(location), max_vertex_attribs_);
       if (!vertex_attrib_infos_[location].CanAccess(max_vertex_accessed)) {
         SetGLError(GL_INVALID_OPERATION);
         return false;
@@ -1875,6 +1968,12 @@ error::Error GLES2DecoderImpl::HandleGetAttribLocation(
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
+  ProgramManager::ProgramInfo* info = GetProgramInfo(program);
+  if (!info) {
+    // Program was not linked successfully. (ie, glLinkProgram)
+    SetGLError(GL_INVALID_OPERATION);
+    return error::kNoError;
+  }
   uint32 name_size = c.data_size;
   const char* name = GetSharedMemoryAs<const char*>(
       c.name_shm_id, c.name_shm_offset, name_size);
@@ -1884,7 +1983,7 @@ error::Error GLES2DecoderImpl::HandleGetAttribLocation(
     return error::kOutOfBounds;
   }
   String name_str(name, name_size);
-  *location = glGetAttribLocation(program, name_str.c_str());
+  *location = info->GetAttribLocation(name_str);
   return error::kNoError;
 }
 
@@ -1895,6 +1994,12 @@ error::Error GLES2DecoderImpl::HandleGetAttribLocationImmediate(
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
+  ProgramManager::ProgramInfo* info = GetProgramInfo(program);
+  if (!info) {
+    // Program was not linked successfully. (ie, glLinkProgram)
+    SetGLError(GL_INVALID_OPERATION);
+    return error::kNoError;
+  }
   uint32 name_size = c.data_size;
   const char* name = GetImmediateDataAs<const char*>(
       c, name_size, immediate_data_size);
@@ -1904,7 +2009,7 @@ error::Error GLES2DecoderImpl::HandleGetAttribLocationImmediate(
     return error::kOutOfBounds;
   }
   String name_str(name, name_size);
-  *location = glGetAttribLocation(program, name_str.c_str());
+  *location = info->GetAttribLocation(name_str);
   return error::kNoError;
 }
 
@@ -1913,6 +2018,12 @@ error::Error GLES2DecoderImpl::HandleGetUniformLocation(
   GLuint program;
   if (!id_manager_->GetServiceId(c.program, &program)) {
     SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  ProgramManager::ProgramInfo* info = GetProgramInfo(program);
+  if (!info) {
+    // Program was not linked successfully. (ie, glLinkProgram)
+    SetGLError(GL_INVALID_OPERATION);
     return error::kNoError;
   }
   uint32 name_size = c.data_size;
@@ -1924,7 +2035,7 @@ error::Error GLES2DecoderImpl::HandleGetUniformLocation(
     return error::kOutOfBounds;
   }
   String name_str(name, name_size);
-  *location = glGetUniformLocation(program, name_str.c_str());
+  *location = info->GetUniformLocation(name_str);
   return error::kNoError;
 }
 
@@ -1933,6 +2044,12 @@ error::Error GLES2DecoderImpl::HandleGetUniformLocationImmediate(
   GLuint program;
   if (!id_manager_->GetServiceId(c.program, &program)) {
     SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  ProgramManager::ProgramInfo* info = GetProgramInfo(program);
+  if (!info) {
+    // Program was not linked successfully. (ie, glLinkProgram)
+    SetGLError(GL_INVALID_OPERATION);
     return error::kNoError;
   }
   uint32 name_size = c.data_size;
@@ -1944,7 +2061,7 @@ error::Error GLES2DecoderImpl::HandleGetUniformLocationImmediate(
     return error::kOutOfBounds;
   }
   String name_str(name, name_size);
-  *location = glGetUniformLocation(program, name_str.c_str());
+  *location = info->GetUniformLocation(name_str);
   return error::kNoError;
 }
 
@@ -2145,8 +2262,9 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribPointerv(
     uint32 immediate_data_size, const gles2::GetVertexAttribPointerv& c) {
   GLuint index = static_cast<GLuint>(c.index);
   GLenum pname = static_cast<GLenum>(c.pname);
-  SizedResult* result = GetSharedMemoryAs<SizedResult*>(
-      c.pointer_shm_id, c.pointer_shm_offset, sizeof(SizedResult));
+  typedef gles2::GetVertexAttribPointerv::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>(
+        c.pointer_shm_id, c.pointer_shm_offset, Result::ComputeSize(1));
   if (!result) {
     return error::kOutOfBounds;
   }
@@ -2159,25 +2277,27 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribPointerv(
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
-  result->size = sizeof(GLuint);
-  *result->GetDataAs<GLuint*>() = vertex_attrib_infos_[index].offset();
+  result->SetNumResults(1);
+  *result->GetData() = vertex_attrib_infos_[index].offset();
   return error::kNoError;
 }
 
 bool GLES2DecoderImpl::GetUniformSetup(
     GLuint program, GLint location,
     uint32 shm_id, uint32 shm_offset,
-    error::Error* error, GLuint* service_id, SizedResult** result) {
+    error::Error* error, GLuint* service_id, void** result_pointer) {
   *error = error::kNoError;
   // Make sure we have enough room for the result on failure.
-  *result = GetSharedMemoryAs<SizedResult*>(
-      shm_id, shm_offset, SizedResult::GetSize(0));
-  if (!*result) {
+  SizedResult<GLint>* result;
+  result = GetSharedMemoryAs<SizedResult<GLint>*>(
+      shm_id, shm_offset, SizedResult<GLint>::ComputeSize(0));
+  if (!result) {
     *error = error::kOutOfBounds;
     return false;
   }
+  *result_pointer = result;
   // Set the result size to 0 so the client does not have to check for success.
-  (*result)->size = 0;
+  result->SetNumResults(0);
   if (!id_manager_->GetServiceId(program, service_id)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
@@ -2188,25 +2308,24 @@ bool GLES2DecoderImpl::GetUniformSetup(
     SetGLError(GL_INVALID_OPERATION);
     return false;
   }
-  const ProgramManager::ProgramInfo::UniformInfo* uniform_info =
-      info->GetUniformInfoByLocation(location);
-  if (!uniform_info) {
+  GLenum type;
+  if (!info->GetUniformTypeByLocation(location, &type)) {
     // No such location.
     SetGLError(GL_INVALID_OPERATION);
     return false;
   }
-  GLsizei size = uniform_info->GetSizeInBytes();
+  GLsizei size = GLES2Util::GetGLDataTypeSize(type);
   if (size == 0) {
     SetGLError(GL_INVALID_OPERATION);
     return false;
   }
-  *result = GetSharedMemoryAs<SizedResult*>(
-      shm_id, shm_offset, SizedResult::GetSize(size));
-  if (!*result) {
+  result = GetSharedMemoryAs<SizedResult<GLint>*>(
+      shm_id, shm_offset, SizedResult<GLint>::ComputeSizeFromBytes(size));
+  if (!result) {
     *error = error::kOutOfBounds;
     return false;
   }
-  (*result)->size = size;
+  result->size = size;
   return true;
 }
 
@@ -2216,11 +2335,13 @@ error::Error GLES2DecoderImpl::HandleGetUniformiv(
   GLint location = c.location;
   GLuint service_id;
   Error error;
-  SizedResult* result;
+  void* result;
   if (GetUniformSetup(
       program, location, c.params_shm_id, c.params_shm_offset,
       &error, &service_id, &result)) {
-    glGetUniformiv(service_id, location, result->GetDataAs<GLint*>());
+    glGetUniformiv(
+        service_id, location,
+        static_cast<gles2::GetUniformiv::Result*>(result)->GetData());
   }
   return error;
 }
@@ -2231,40 +2352,156 @@ error::Error GLES2DecoderImpl::HandleGetUniformfv(
   GLint location = c.location;
   GLuint service_id;
   Error error;
-  SizedResult* result;
+  void* result;
+  typedef gles2::GetUniformfv::Result Result;
   if (GetUniformSetup(
       program, location, c.params_shm_id, c.params_shm_offset,
       &error, &service_id, &result)) {
-    glGetUniformfv(service_id, location, result->GetDataAs<GLfloat*>());
+    glGetUniformfv(
+        service_id,
+        location,
+        static_cast<gles2::GetUniformfv::Result*>(result)->GetData());
   }
   return error;
 }
 
 error::Error GLES2DecoderImpl::HandleGetShaderPrecisionFormat(
     uint32 immediate_data_size, const gles2::GetShaderPrecisionFormat& c) {
-  // TODO(gman): Implement.
-  NOTREACHED();
+  GLenum shader_type = static_cast<GLenum>(c.shadertype);
+  GLenum precision_type = static_cast<GLenum>(c.precisiontype);
+  typedef gles2::GetShaderPrecisionFormat::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.result_shm_id, c.result_shm_offset, sizeof(*result));
+  if (!result) {
+    return error::kOutOfBounds;
+  }
+  if (!ValidateGLenumShaderType(shader_type) ||
+      !ValidateGLenumShaderPrecision(precision_type)) {
+    result->success = 0;  // false
+    SetGLError(GL_INVALID_ENUM);
+  } else {
+    result->success = 1;  // true
+    switch (precision_type) {
+      case GL_LOW_INT:
+      case GL_MEDIUM_INT:
+      case GL_HIGH_INT:
+        result->min_range = -31;
+        result->max_range = 31;
+        result->precision = 0;
+      case GL_LOW_FLOAT:
+      case GL_MEDIUM_FLOAT:
+      case GL_HIGH_FLOAT:
+        result->min_range = -62;
+        result->max_range = 62;
+        result->precision = -16;
+        break;
+      default:
+        NOTREACHED();
+        break;
+    }
+  }
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleGetAttachedShaders(
     uint32 immediate_data_size, const gles2::GetAttachedShaders& c) {
-  // TODO(gman): Implement.
-  NOTREACHED();
+  GLuint service_id;
+  uint32 result_size = c.result_size;
+  if (!id_manager_->GetServiceId(c.program, &service_id)) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  typedef gles2::GetAttachedShaders::Result Result;
+  uint32 max_count = Result::ComputeMaxResults(result_size);
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.result_shm_id, c.result_shm_offset, Result::ComputeSize(max_count));
+  if (!result) {
+    return error::kOutOfBounds;
+  }
+  GLsizei count = 0;
+  glGetAttachedShaders(service_id, max_count, &count, result->GetData());
+  for (GLsizei ii = 0; ii < count; ++ii) {
+    if (!id_manager_->GetClientId(result->GetData()[ii],
+                                  &result->GetData()[ii])) {
+      NOTREACHED();
+      return error::kGenericError;
+    }
+  }
+  result->SetNumResults(count);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleGetActiveUniform(
     uint32 immediate_data_size, const gles2::GetActiveUniform& c) {
-  // TODO(gman): Implement.
-  NOTREACHED();
+  GLuint program = c.program;
+  GLuint index = c.index;
+  uint32 name_bucket_id = c.name_bucket_id;
+  GLuint service_id;
+  typedef gles2::GetActiveUniform::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.result_shm_id, c.result_shm_offset, sizeof(*result));
+  if (!result) {
+    return error::kOutOfBounds;
+  }
+  result->success = 0;  // false.
+  if (!id_manager_->GetServiceId(program, &service_id)) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  ProgramManager::ProgramInfo* info = GetProgramInfo(service_id);
+  if (!info) {
+    // Program was not linked successfully. (ie, glLinkProgram)
+    SetGLError(GL_INVALID_OPERATION);
+    return error::kNoError;
+  }
+  const ProgramManager::ProgramInfo::UniformInfo* uniform_info =
+      info->GetUniformInfo(index);
+  if (!uniform_info) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  result->success = 1;  // true.
+  result->size = uniform_info->size;
+  result->type = uniform_info->type;
+  Bucket* bucket = CreateBucket(name_bucket_id);
+  bucket->SetFromString(uniform_info->name);
   return error::kNoError;
 }
 
 error::Error GLES2DecoderImpl::HandleGetActiveAttrib(
     uint32 immediate_data_size, const gles2::GetActiveAttrib& c) {
-  // TODO(gman): Implement.
-  NOTREACHED();
+  GLuint program = c.program;
+  GLuint index = c.index;
+  uint32 name_bucket_id = c.name_bucket_id;
+  GLuint service_id;
+  typedef gles2::GetActiveAttrib::Result Result;
+  Result* result = GetSharedMemoryAs<Result*>(
+      c.result_shm_id, c.result_shm_offset, sizeof(*result));
+  if (!result) {
+    return error::kOutOfBounds;
+  }
+  result->success = 0;  // false.
+  if (!id_manager_->GetServiceId(program, &service_id)) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  ProgramManager::ProgramInfo* info = GetProgramInfo(service_id);
+  if (!info) {
+    // Program was not linked successfully. (ie, glLinkProgram)
+    SetGLError(GL_INVALID_OPERATION);
+    return error::kNoError;
+  }
+  const ProgramManager::ProgramInfo::VertexAttribInfo* attrib_info =
+      info->GetAttribInfo(index);
+  if (!attrib_info) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  result->success = 1;  // true.
+  result->size = attrib_info->size;
+  result->type = attrib_info->type;
+  Bucket* bucket = CreateBucket(name_bucket_id);
+  bucket->SetFromString(attrib_info->name);
   return error::kNoError;
 }
 
