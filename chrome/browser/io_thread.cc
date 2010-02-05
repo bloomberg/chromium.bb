@@ -129,8 +129,11 @@ void IOThread::CleanUp() {
     prefetch_observer_ = NULL;
   }
 
-  // TODO(eroman): temp hack for http://crbug.com/15513
-  globals_->host_resolver->Shutdown();
+  // TODO(eroman): hack for http://crbug.com/15513
+  if (globals_->host_resolver->IsHostResolverImpl()) {
+    static_cast<net::HostResolverImpl*>(
+        globals_->host_resolver.get())->Shutdown();
+  }
 
   delete globals_;
   globals_ = NULL;

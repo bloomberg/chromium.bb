@@ -28,7 +28,6 @@ class FixedHostResolver : public HostResolver {
   virtual void CancelRequest(RequestHandle req) {}
   virtual void AddObserver(Observer* observer) {}
   virtual void RemoveObserver(Observer* observer) {}
-  virtual void Shutdown() {}
 
  private:
   ~FixedHostResolver() {}
