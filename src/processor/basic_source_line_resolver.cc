@@ -170,6 +170,9 @@ class BasicSourceLineResolver::Module {
   // Parses a stack frame info declaration, storing it in windows_frame_info_.
   bool ParseStackInfo(char *stack_info_line);
 
+  // Parses a STACK WIN record, storing it in windows_frame_info_.
+  bool ParseWindowsFrameInfo(char *stack_info_line);
+
   string name_;
   FileMap files_;
   RangeMap< MemAddr, linked_ptr<Function> > functions_;
@@ -631,50 +634,57 @@ bool BasicSourceLineResolver::Module::ParsePublicSymbol(char *public_line) {
 }
 
 bool BasicSourceLineResolver::Module::ParseStackInfo(char *stack_info_line) {
-  // STACK WIN <type> <rva> <code_size> <prolog_size> <epliog_size>
-  // <parameter_size> <saved_register_size> <local_size> <max_stack_size>
-  // <has_program_string> <program_string_OR_allocates_base_pointer>
-  //
-  // If has_program_string is 1, the rest of the line is a program string.
-  // Otherwise, the final token tells whether the stack info indicates that
-  // a base pointer has been allocated.
-  //
-  // Expect has_program_string to be 1 when type is
-  // WINDOWS_FRAME_INFO_FRAME_DATA and 0 when type is WINDOWS_FRAME_INFO_FPO,
-  // but don't enforce this.
-
   // Skip "STACK " prefix.
   stack_info_line += 6;
 
+  // Find the token indicating what sort of stack frame walking
+  // information this is.
+  while (*stack_info_line == ' ')
+    stack_info_line++;
+  const char *platform = stack_info_line;
+  while (!strchr(" \r\n", *stack_info_line))
+    stack_info_line++;
+  *stack_info_line++ = '\0';
+
+  // MSVC stack frame info.
+  if (strcmp(platform, "WIN") == 0)
+    return ParseWindowsFrameInfo(stack_info_line);
+
+  // Something we don't recognize.
+  else
+    return false;
+}
+
+bool BasicSourceLineResolver::Module::ParseWindowsFrameInfo(
+    char *stack_info_line) {
+  // The format of a STACK WIN record is documented at: 
+  //
+  // http://code.google.com/p/google-breakpad/wiki/SymbolFiles
+
   vector<char*> tokens;
-  if (!Tokenize(stack_info_line, 12, &tokens))
+  if (!Tokenize(stack_info_line, 11, &tokens))
     return false;
 
-  // Only MSVC stack frame info is understood for now.
-  const char *platform = tokens[0];
-  if (strcmp(platform, "WIN") != 0)
-    return false;
-
-  int type = strtol(tokens[1], NULL, 16);
+  int type = strtol(tokens[0], NULL, 16);
   if (type < 0 || type > WINDOWS_FRAME_INFO_LAST - 1)
     return false;
 
-  u_int64_t rva                 = strtoull(tokens[2],  NULL, 16);
-  u_int64_t code_size           = strtoull(tokens[3],  NULL, 16);
-  u_int32_t prolog_size         =  strtoul(tokens[4],  NULL, 16);
-  u_int32_t epilog_size         =  strtoul(tokens[5],  NULL, 16);
-  u_int32_t parameter_size      =  strtoul(tokens[6],  NULL, 16);
-  u_int32_t saved_register_size =  strtoul(tokens[7],  NULL, 16);
-  u_int32_t local_size          =  strtoul(tokens[8],  NULL, 16);
-  u_int32_t max_stack_size      =  strtoul(tokens[9],  NULL, 16);
-  int has_program_string        =  strtoul(tokens[10], NULL, 16);
+  u_int64_t rva                 = strtoull(tokens[1], NULL, 16);
+  u_int64_t code_size           = strtoull(tokens[2], NULL, 16);
+  u_int32_t prolog_size         =  strtoul(tokens[3], NULL, 16);
+  u_int32_t epilog_size         =  strtoul(tokens[4], NULL, 16);
+  u_int32_t parameter_size      =  strtoul(tokens[5], NULL, 16);
+  u_int32_t saved_register_size =  strtoul(tokens[6], NULL, 16);
+  u_int32_t local_size          =  strtoul(tokens[7], NULL, 16);
+  u_int32_t max_stack_size      =  strtoul(tokens[8], NULL, 16);
+  int has_program_string        =  strtoul(tokens[9], NULL, 16);
 
   const char *program_string = "";
   int allocates_base_pointer = 0;
   if (has_program_string) {
-    program_string = tokens[11];
+    program_string = tokens[10];
   } else {
-    allocates_base_pointer = strtoul(tokens[11], NULL, 16);
+    allocates_base_pointer = strtoul(tokens[10], NULL, 16);
   }
 
   // TODO(mmentovai): I wanted to use StoreRange's return value as this
