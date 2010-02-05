@@ -41,6 +41,6 @@ NaClSrpcError HelloWorld(NaClSrpcChannel *channel,
 }
 
 /*
- * Export the method as taking no arguments and returning one integer.
+ * Export the method as taking no arguments and returning one string.
  */
 NACL_SRPC_METHOD("helloworld::s", HelloWorld);
