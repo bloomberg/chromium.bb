@@ -707,8 +707,6 @@
    fun:_ZN7WebCore26ThreadableWebSocketChannel6createEPNS_22ScriptExecutionContextEPNS_22WebSocketChannelClientERKNS_4KURLERKNS_6StringE
    fun:_ZN7WebCore9WebSocket7connectERKNS_4KURLERKNS_6StringERi
    fun:_ZN7WebCore9WebSocket7connectERKNS_4KURLERi
-   fun:_ZN7WebCore8V8Custom30v8WebSocketConstructorCallbackERKN2v89ArgumentsE
-   fun:_ZN2v88internalL21Builtin_HandleApiCallENS0_9ArgumentsE
 }
 {
    bug_32644
