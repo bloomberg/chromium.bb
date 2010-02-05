@@ -20,6 +20,7 @@
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/origin.h"
+#include "native_client/src/trusted/plugin/srpc/closure.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 #ifndef NACL_STANDALONE
 #include "base/shared_memory.h"
@@ -112,20 +113,29 @@ NaClSrpcError NPModuleRpcServer::NPN_CreateArray(NaClSrpcChannel* channel,
   return NACL_SRPC_RESULT_OK;
 }
 
-NaClSrpcError NPModuleRpcServer::NPN_OpenURL(NaClSrpcChannel* channel,
-                                             int32_t int_npp,
-                                             char* url,
-                                             int32_t* nperr) {
+NaClSrpcError NPModuleRpcServer::NPN_GetURL(NaClSrpcChannel* channel,
+                                            int32_t int_npp,
+                                            char* url,
+                                            char* target,
+                                            int32_t* nperr) {
   UNREFERENCED_PARAMETER(channel);
 
-  if (NULL == url) {
+  if (NULL == url || NULL == target || NULL == nperr) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  if (0 == strlen(url) || 0 != strlen(target)) {
     *nperr = NPERR_GENERIC_ERROR;
   } else {
-    *nperr = ::NPN_GetURLNotify(NPBridge::IntToNpp(int_npp), url, NULL, NULL);
-  }
-  if (*nperr == NPERR_NO_ERROR) {
-    // NPP_NewStream, NPP_DestroyStream, and NPP_URLNotify will be invoked
-    // later.
+    NPModule* module = nacl::NPModule::GetModule(int_npp);
+    std::string url_origin = nacl::UrlToOrigin(url);
+
+    nacl_srpc::NpGetUrlClosure* closure = new(std::nothrow)
+        nacl_srpc::NpGetUrlClosure(NPBridge::IntToNpp(int_npp), module, url);
+    if (NULL == closure) {
+      *nperr = NPERR_GENERIC_ERROR;
+    }
+    closure->StartDownload();
+    *nperr = NPERR_NO_ERROR;
   }
 
   return NACL_SRPC_RESULT_OK;

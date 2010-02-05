@@ -155,6 +155,11 @@ void SRPC_Plugin::set_module(nacl::NPModule* module) {
   dprintf(("Setting module pointer to %p\n", static_cast<void*>(module)));
   module_ = module;
   if (NULL != module) {
+    // Set the origins.
+    nacl_srpc::Plugin* plugin =
+        static_cast<nacl_srpc::Plugin*>(plugin_->get_handle());
+    module->set_nacl_module_origin(plugin->nacl_module_origin());
+    module->set_origin(plugin->origin());
     // Initialize the NaCl module's NPAPI interface.
     // This should only be done for the first instance in a given group.
     module->Initialize();
@@ -169,8 +174,6 @@ void SRPC_Plugin::set_module(nacl::NPModule* module) {
     // Remember the scriptable version of the NaCl instance.
     nacl_instance_ = module_->GetScriptableInstance(npp_);
     // Send an initial NPP_SetWindow to the plugin.
-    nacl_srpc::Plugin* plugin =
-        static_cast<nacl_srpc::Plugin*>(plugin_->get_handle());
     NPWindow window;
     window.height = plugin->height();
     window.width = plugin->width();

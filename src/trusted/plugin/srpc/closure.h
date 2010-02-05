@@ -10,6 +10,7 @@
 
 #include <string>
 
+#include "native_client/src/shared/npruntime/npmodule.h"
 #include "native_client/src/trusted/plugin/npinstance.h"
 #include "native_client/src/trusted/plugin/srpc/plugin.h"
 
@@ -29,11 +30,21 @@ namespace nacl_srpc {
 class Closure {
  public:
   Closure(Plugin* plugin, std::string url) :
-    plugin_(plugin), url_(url), buffer_(NULL) {}
+    plugin_(plugin), url_(url), buffer_(NULL) {
+    if (NULL != plugin_) {
+      plugin_identifier_ =
+          plugin_->GetPortablePluginInterface()->GetPluginIdentifier();
+    }
+  }
   virtual ~Closure() {}
   virtual void Run(NPStream *stream, const char *fname) = 0;
   virtual void Run(const char *url, const void* buffer, int32_t size) = 0;
   bool StartDownload();
+  void set_plugin(nacl_srpc::Plugin* plugin) {
+    plugin_ = plugin;
+    plugin_identifier_ =
+        plugin_->GetPortablePluginInterface()->GetPluginIdentifier();
+  }
   void set_buffer(nacl::StreamBuffer* buffer) { buffer_ = buffer; }
   nacl::StreamBuffer* buffer() { return buffer_; }
  protected:
@@ -42,6 +53,7 @@ class Closure {
   Plugin* plugin_;
   std::string url_;
   nacl::StreamBuffer *buffer_;
+  nacl_srpc::PluginIdentifier plugin_identifier_;
 };
 
 class LoadNaClAppNotify : public Closure {
@@ -61,6 +73,18 @@ class UrlAsNaClDescNotify : public Closure {
  private:
   NPObject* np_callback_;
 };
-}
+
+class NpGetUrlClosure : public Closure {
+ public:
+  NpGetUrlClosure(NPP npp, nacl::NPModule* module, std::string url);
+  virtual ~NpGetUrlClosure();
+  virtual void Run(NPStream* stream, const char* fname);
+  virtual void Run(const char* url, const void* buffer, int32_t size);
+
+ private:
+  nacl::NPModule* module_;
+  NPP npp_;
+};
+}  // namespace nacl_srpc
 
 #endif  // NATIVE_CLIENT_SRC_TRUSTED_PLUGIN_SRPC_CLOSURE_H_

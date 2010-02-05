@@ -110,14 +110,16 @@ cleanup:
 static NPError GetStateContext(NPP instance,
                                NPDeviceContext* context,
                                int32 state,
-                               int32 *value) {
+                               intptr_t *value) {
+  // TODO(sehr): Add an RPC for this when 2D trusted API implements it.
   return NPERR_GENERIC_ERROR;
 }
 
 static NPError SetStateContext(NPP instance,
                                NPDeviceContext* context,
                                int32 state,
-                               int32 value) {
+                               intptr_t value) {
+  // TODO(sehr): Add an RPC for this when 2D trusted API implements it.
   return NPERR_GENERIC_ERROR;
 }
 

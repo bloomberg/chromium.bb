@@ -74,7 +74,14 @@ const NPNetscapeFuncs* GetBrowserFuncs() {
 NPError NPN_GetURL(NPP instance,
                    const char* url,
                    const char* window) {
-  // TODO(sehr): implement this.
+  if (NULL == instance) {
+    return NPERR_INVALID_INSTANCE_ERROR;
+  }
+  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
+  if (NULL == navigator) {
+    return NPERR_INVALID_INSTANCE_ERROR;
+  }
+  navigator->GetUrl(instance, url, window);
   return NPERR_GENERIC_ERROR;
 }
 
@@ -165,7 +172,14 @@ NPError NPN_GetURLNotify(NPP instance,
                          const char* url,
                          const char* window,
                          void* notifyData) {
-  // TODO(sehr): implement this.
+  if (NULL == instance) {
+    return NPERR_INVALID_INSTANCE_ERROR;
+  }
+  nacl::NPNavigator* navigator = nacl::NPNavigator::GetNavigator();
+  if (NULL == navigator) {
+    return NPERR_INVALID_INSTANCE_ERROR;
+  }
+  navigator->GetUrlNotify(instance, url, window, notifyData);
   return NPERR_GENERIC_ERROR;
 }
 

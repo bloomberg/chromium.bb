@@ -138,9 +138,7 @@ bool RpcArg::PutVariant(const NPVariant* variant) {
   if (NPVARIANT_IS_STRING(*variant)) {
     if (0 == NPVARIANT_TO_STRING(*variant).UTF8Length ||
         NULL == NPVARIANT_TO_STRING(*variant).UTF8Characters) {
-      // Something's wrong with this string.
-      printf("malformed string\n");
-      return false;
+      // empty string.
     } else {
       size_t len = NPVARIANT_TO_STRING(*variant).UTF8Length;
       const char* npstr = NPVARIANT_TO_STRING(*variant).UTF8Characters;

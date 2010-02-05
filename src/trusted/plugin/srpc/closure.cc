@@ -8,8 +8,11 @@
 #include <string.h>
 #include <string>
 
+#include "native_client/src/shared/npruntime/npmodule.h"
 #include "native_client/src/shared/platform/nacl_host_desc.h"
 
+#include "native_client/src/trusted/desc/nacl_desc_invalid.h"
+#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/srpc/npapi_native.h"
 #include "native_client/src/trusted/plugin/srpc/scriptable_handle.h"
 
@@ -17,6 +20,7 @@
 #include "native_client/src/trusted/plugin/srpc/closure.h"
 #include "native_client/src/trusted/plugin/srpc/desc_based_handle.h"
 #include "native_client/src/trusted/plugin/srpc/shared_memory.h"
+#include "native_client/src/trusted/plugin/srpc/srpc.h"
 #include "native_client/src/trusted/service_runtime/include/sys/fcntl.h"
 
 struct NPObject;
@@ -24,11 +28,11 @@ struct NPObject;
 namespace nacl_srpc {
 
 bool Closure::StartDownload() {
-  NPError err = NPN_GetURLNotify(
-      plugin_->GetPortablePluginInterface()->GetPluginIdentifier(),
-      url_.c_str(),
-      NULL,
-      this);
+  dprintf(("StartDownload plugin_identifier_=%p, url_=%s, this=%p\n",
+           reinterpret_cast<void*>(plugin_identifier_),
+           url_.c_str(),
+           reinterpret_cast<void*>(this)));
+  NPError err = NPN_GetURLNotify(plugin_identifier_, url_.c_str(), NULL, this);
   return (NPERR_NO_ERROR == err);
 }
 
@@ -220,6 +224,132 @@ void UrlAsNaClDescNotify::Run(const char *url,
   dprintf(("releasing status %p\n", static_cast<void *>(&status)));
   NPN_ReleaseVariantValue(&status);
   NPN_ReleaseVariantValue(&retval);
+}
+
+NpGetUrlClosure::NpGetUrlClosure(NPP npp,
+                                 nacl::NPModule* module,
+                                 std::string url) :
+  Closure(NULL, url), module_(module), npp_(npp) {
+  nacl::SRPC_Plugin* srpc = reinterpret_cast<nacl::SRPC_Plugin*>(npp->pdata);
+  Plugin* plugin = static_cast<Plugin*>(srpc->plugin()->get_handle());
+  set_plugin(plugin);
+  dprintf(("NpGetUrlClosure ctor\n"));
+}
+
+NpGetUrlClosure::~NpGetUrlClosure() {
+  dprintf(("NpGetUrlClosure dtor\n"));
+  module_ = NULL;
+  npp_ = NULL;
+}
+
+void NpGetUrlClosure::Run(NPStream* stream, const char* fname) {
+  // open file in DescWrapper, make available via np_callback_
+  nacl::DescWrapperFactory factory;
+  nacl::DescWrapper* ndiod = NULL;
+
+  dprintf(("NpGetUrlClosure::Run(%p, %s)\n",
+           static_cast<void *>(stream),
+           fname));
+
+  // execute body once; construct to use break statement to exit body early
+  do {
+    if (NULL == fname) {
+      dprintf(("fetch failed\n"));
+      break;
+    }
+
+    dprintf(("fetched FQ URL %s\n", stream->url));
+    std::string url_origin = nacl::UrlToOrigin(stream->url);
+    if (url_origin != module_->origin()) {
+      dprintf(("same origin policy forbids access: "
+        " page from origin %s attempted to"
+        " fetch page with origin %s\n",
+        module_->origin().c_str(),
+        url_origin.c_str()));
+      break;
+    }
+
+    ndiod = factory.OpenHostFile(const_cast<char *>(fname),
+                                 NACL_ABI_O_RDONLY,
+                                 0);
+    if (NULL == ndiod) {
+      dprintf(("NaClHostDescOpen failed\n"));
+      break;
+    }
+    dprintf(("created ndiod %p\n", static_cast<void *>(ndiod)));
+  } while (0);
+
+  if (NULL == ndiod) {
+    NaClDesc* invalid =
+        const_cast<NaClDesc*>(
+            reinterpret_cast<const NaClDesc*>(NaClDescInvalidMake()));
+    module_->StreamAsFile(npp_, invalid, const_cast<char*>(stream->url));
+  } else {
+    module_->StreamAsFile(npp_, ndiod->desc(), const_cast<char*>(stream->url));
+    ndiod->Delete();
+  }
+}
+
+void NpGetUrlClosure::Run(const char* url, const void* buffer, int32_t size) {
+  // create a SharedMemory object, make it available via np_callback_
+  nacl::DescWrapperFactory factory;
+  nacl::DescWrapper* ndshm = NULL;
+  dprintf(("NpGetUrlClosure::Run(%s, %p, %x )\n", url, buffer, size));
+
+  // execute body once; construct to use break statement to exit body early
+  do {
+    if (NULL == buffer) {
+      dprintf(("bad buffer - stream handling failed\n"));
+      break;
+    }
+
+    dprintf(("fetched FQ URL %s\n", url));
+    std::string url_origin = nacl::UrlToOrigin(url);
+    if (url_origin != module_->origin()) {
+      dprintf(("same origin policy forbids access: "
+              " page from origin %s attempted to"
+              " fetch page with origin %s\n",
+              module_->origin().c_str(),
+              url_origin.c_str()));
+      break;
+    }
+
+    // Create SharedMemory and copy the data
+    ndshm = factory.MakeShm(static_cast<size_t>(size));
+    if (NULL == ndshm) {
+      dprintf(("NaClHostDescOpen failed\n"));
+      break;
+    }
+    dprintf(("created ndshm %p\n", static_cast<void *>(ndshm)));
+    void* map_addr = NULL;
+    size_t map_size = static_cast<size_t>(size);
+    static const size_t kNaClAbiSizeTMax =
+        static_cast<size_t>(~static_cast<nacl_abi_size_t>(0));
+    if (kNaClAbiSizeTMax < map_size) {
+      // There's no point in mapping a file that's larger than could be
+      // accessed by NaCl module with 4GB of range.
+      // TODO(sehr,bsy): this should probably be even tighter.
+      break;
+    }
+    if (0 > ndshm->Map(&map_addr, &map_size)) {
+      ndshm->Delete();
+      ndshm = NULL;
+      break;
+    }
+    memcpy(map_addr, buffer, size);
+    ndshm->Unmap(map_addr, static_cast<size_t>(size));
+    dprintf(("copied the data\n"));
+  } while (0);
+
+  if (NULL == ndshm) {
+    NaClDesc* invalid =
+        const_cast<NaClDesc*>(
+            reinterpret_cast<const NaClDesc*>(NaClDescInvalidMake()));
+    module_->StreamAsFile(npp_, invalid, const_cast<char*>(url));
+  } else {
+    module_->StreamAsFile(npp_, ndshm->desc(), const_cast<char*>(url));
+    ndshm->Delete();
+  }
 }
 
 }  // namespace nacl_srpc

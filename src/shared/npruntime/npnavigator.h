@@ -72,18 +72,6 @@ class NPNavigator : public NPBridge {
   static std::set<const NPUTF8*, StringCompare>* string_set;
 
  private:
-  // The following three member variables save the user parameters passed to
-  // OpenURL().
-  //
-  // The callback function to be called upon a successful OpenURL() invocation.
-  void (*notify_)(const char* url,
-                  void* notify_data,
-                  NaClSrpcImcDescType handle);
-  // The user supplied pointer to the user data.
-  void* notify_data_;
-  // The URL to open.
-  char* url_;
-
   // The SRPC service used to send upcalls to the browser plugin.
   // This is used, among other things, to implement NPN_PluginThreadAsyncCall.
   NaClSrpcChannel* upcall_channel_;
@@ -115,10 +103,10 @@ class NPNavigator : public NPBridge {
                                          NaClSrpcArg **in_args,
                                          NaClSrpcArg **out_args);
 
-  // Processes NP_Initialize() request from the plugin.
+  // Processes NP_Initialize request from the plugin.
   NaClSrpcError Initialize(NaClSrpcChannel* channel,
                            NaClSrpcImcDescType upcall_desc);
-  // Processes NPP_New() request from the plugin.
+  // Processes NPP_New request from the plugin.
   NaClSrpcError New(char* mimetype,
                     NPP npp,
                     uint32_t argc,
@@ -134,33 +122,35 @@ class NPNavigator : public NPBridge {
                             int32_t* return_int16);
   // Processes responses to NPN_PluginThreadAsyncCall from the plugin.
   NaClSrpcError DoAsyncCall(int32_t number);
-  // Processes NPP_SetWindow() request from the plugin.
+  // Processes NPP_SetWindow request from the plugin.
   NPError SetWindow(NPP npp, int height, int width);
-  // Processes NPP_Destroy() request from the plugin.
+  // Processes NPP_Destroy request from the plugin.
   NPError Destroy(NPP npp);
-  // Processes NPP_URLNotify() request from the plugin.
+  // Processes NPP_StreamAsFile request from the plugin.
+  void StreamAsFile(NPP npp, NaClSrpcImcDescType file, char* fname);
+  // Processes NPP_URLNotify request from the plugin.
   void URLNotify(NPP npp, NaClSrpcImcDescType received_handle, uint32_t reason);
 
-  // Processes NPP_GetScriptableInstance() request from the plugin.
+  // Processes NPP_GetScriptableInstance request from the plugin.
   NPCapability* GetScriptableInstance(NPP npp);
 
-  // Sends NPN_Status() request to the plugin.
+  // Sends NPN_Status request to the plugin.
   void SetStatus(NPP npp, const char* message);
-  // Sends NPN_GetValue() request to the plugin.
+  // Sends NPN_GetValue request to the plugin.
   NPError GetValue(NPP npp, NPNVariable var, void* value);
-  // Sends NaClNPN_CreateArray() request to the plugin.
+  // Sends NaClNPN_CreateArray request to the plugin.
   NPObject* CreateArray(NPP npp);
-  // Sends NaClNPN_OpenURL() request to the plugin.
-  NPError OpenURL(NPP npp,
-                  const char* url,
-                  void* notify_data,
-                  void (*notify)(const char* url,
-                                 void* notify_data,
-                                 NaClSrpcImcDescType handle));
-  // Sends NPN_InvalidateRect(NPP npp) request to the plugin.
+  // Sends NPN_InvalidateRect request to the plugin.
   void InvalidateRect(NPP npp, NPRect* invalid_rect);
-  // Sends NPN_ForceRedraw() request to the plugin.
+  // Sends NPN_ForceRedraw request to the plugin.
   void ForceRedraw(NPP npp);
+  // Sends NPN_GetURL request to the plugin.
+  NPError GetUrl(NPP npp, const char* url, const char* target);
+  // Sends NPN_GetURLNotify request to the plugin.
+  NPError GetUrlNotify(NPP npp,
+                       const char* url,
+                       const char* target,
+                       void* notifyData);
 
   // Signals the browser to invoke a function on the navigator thread.
   void PluginThreadAsyncCall(NPP instance,

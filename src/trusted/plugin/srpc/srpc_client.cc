@@ -57,8 +57,11 @@ bool SrpcClient::Init(PortablePluginInterface *portable_plugin,
     if (methods_.find(npapi_ident) != methods_.end()) {
       dprintf(("SrpcClient::SrpcClient: Is an NPAPI plugin\n"));
       // Start up NPAPI interaction.
-      portable_plugin->set_module(
-          new(std::nothrow) nacl::NPModule(&srpc_channel_));
+      nacl::NPModule* npmodule =
+          new(std::nothrow) nacl::NPModule(&srpc_channel_);
+      if (NULL != npmodule) {
+        portable_plugin->set_module(npmodule);
+      }
     }
   }
   return true;

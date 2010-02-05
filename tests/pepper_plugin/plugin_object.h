@@ -47,6 +47,8 @@ class PluginObject {
 
   void New(NPMIMEType pluginType, int16 argc, char* argn[], char* argv[]);
   void SetWindow(const NPWindow& window);
+  void Initialize3D();
+  void Destroy3D();
   void Draw3D();
 
  private:

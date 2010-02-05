@@ -1,0 +1,72 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+  <!-- Copyright 2010 Google Inc.  All rights reserved. -->
+  <head>
+    <style type="text/css">
+      pre.notrun { background-color: skyblue }
+      pre.pass { background-color: lime }
+      pre.fail { background-color: red }
+    </style>
+    <script type="application/x-javascript">
+      <!--
+var plugin = 0;
+var logElt;
+var testsNotRun = 2;
+var valid_url = 'npapi_geturl_success.html';
+var invalid_url = 'http://www.google.com/robots.txt';
+
+var GeneralLog = function(str) {
+  logElt.textContent += str + '\n';
+}
+
+var ReportResult = function(url, result, success) {
+  logElt.textContent += 'FULLY QUALIFIED URL:' + url + '\n';
+  logElt.textContent += 'RESULT:\n' + result + '\n';
+  --testsNotRun;
+  if (url.indexOf(valid_url) != -1) {
+    // It should pass.
+    if (!success) {
+      logElt.className = 'fail';
+    }
+  } else {
+    // It should fail.
+    if (success) {
+      logElt.className = 'fail';
+    }
+  }
+  if ((0 == testsNotRun) && ('notrun' == logElt.className)) {
+    logElt.className = 'pass';
+  }
+}
+
+var Init = function() {
+  plugin = document.getElementById('nacl');
+  logElt = document.getElementById('GeneralOutput');
+  GeneralLog('Loading URL ' + valid_url);
+  plugin.loadUrl(valid_url, '');
+  GeneralLog('Loading URL ' + invalid_url);
+  plugin.loadUrl(invalid_url, '');
+}
+        -->
+    </script>
+    <title>NPAPI GetURL Test</title>
+  </head>
+  <body>
+    <h1>NPAPI GetURL Test</h1>
+
+    <p> <h2> Output logs </h2> </p>
+      <table border=5 cellpadding=5% summary="A title and a result log">
+        <tr>
+          <td> <b> General test output </b> </td>
+        </tr>
+        <tr>
+          <td valign=top><pre id='GeneralOutput' class='notrun'></pre></td>
+        </tr>
+      </table>
+      <embed type="application/x-nacl-srpc" id="nacl" width="0" height="0"
+              src="npapi_geturl.nexe" onload="Init();">
+      </embed>
+  </body>
+</html>
+

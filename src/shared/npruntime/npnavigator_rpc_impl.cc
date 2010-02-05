@@ -140,6 +140,18 @@ NaClSrpcError NPNavigatorRpcServer::NPP_HandleEvent(
   return nav->HandleEvent(npp, npevent_bytes, npevent, return_int16);
 }
 
+NaClSrpcError NPNavigatorRpcServer::NPP_StreamAsFile(NaClSrpcChannel* channel,
+                                                     int32_t int_npp,
+                                                     NaClSrpcImcDescType file,
+                                                     char* fname) {
+  nacl::DebugPrintf("NPP_URLNotify\n");
+
+  NPNavigator* nav = NPNavigator::GetNavigator();
+  nav->StreamAsFile(NPNavigator::GetNaClNPP(int_npp, false), file, fname);
+
+  return NACL_SRPC_RESULT_OK;
+}
+
 NaClSrpcError NPNavigatorRpcServer::NPP_URLNotify(NaClSrpcChannel* channel,
                                                   int32_t int_npp,
                                                   NaClSrpcImcDescType str,

@@ -21,19 +21,6 @@ NPObject* NaClNPN_CreateArray(NPP npp) {
   }
   return navigator->CreateArray(npp);
 }
-
-NPError NaClNPN_OpenURL(NPP npp,
-                        const char* url,
-                        void* notify_data,
-                        void (*notify)(const char* url,
-                                       void* notify_data,
-                                       NaClSrpcImcDescType handle)) {
-  nacl::NPNavigator* navigator = static_cast<nacl::NPNavigator*>(npp->ndata);
-  if (NULL == navigator) {
-    return NPERR_GENERIC_ERROR;
-  }
-  return navigator->OpenURL(npp, url, notify_data, notify);
-}
 #endif  // __native_client__
 
 namespace nacl {

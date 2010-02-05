@@ -20,9 +20,13 @@
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/plugin/origin.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
+#include "third_party/npapi/bindings/npapi_extensions_private.h"
 #ifndef NACL_STANDALONE
 #include "base/shared_memory.h"
 #endif  // NACL_STANDALONE
+
+// Used to convey pixel BGRA values to the 2D API.
+class TransportDIB;
 
 namespace nacl {
 
@@ -395,11 +399,11 @@ NPError NPModule::NewStream(NPP npp,
   return NPERR_NO_ERROR;
 }
 
-void NPModule::StreamAsFile(NPP npp, NPStream* stream, const char* filename) {
-  UNREFERENCED_PARAMETER(npp);
-  UNREFERENCED_PARAMETER(stream);
-  UNREFERENCED_PARAMETER(filename);
-  // TODO(sehr): Implement using UrlAsNaClDesc.
+void NPModule::StreamAsFile(NPP npp, NaClDesc* file, char* fname) {
+  NPNavigatorRpcClient::NPP_StreamAsFile(channel(),
+                                         NPBridge::NppToInt(npp),
+                                         file,
+                                         fname);
 }
 
 NPError NPModule::DestroyStream(NPP npp, NPStream *stream, NPError reason) {
@@ -429,12 +433,6 @@ void NPModule::ForceRedraw(NPP npp) {
     NPN_ForceRedraw(npp);
   }
 }
-
-class TransportDIB;
-
-struct Device2DImpl {
-  ::TransportDIB* dib;
-};
 
 NaClSrpcError NPModule::Device2DInitialize(NPP npp,
                                            NaClSrpcImcDescType* shm_desc,
@@ -481,9 +479,14 @@ NaClSrpcError NPModule::Device2DInitialize(NPP npp,
     }
   }
   DescWrapperFactory factory;
-  Device2DImpl* impl =
-      reinterpret_cast<Device2DImpl*>(context2d_->reserved);
-  DescWrapper* wrapper = factory.ImportTransportDIB(impl->dib);
+  // Get the TransportDIB used for the context buffer.
+  intptr_t dib_intptr;
+  device2d_->getStateContext(npp,
+                             context2d_,
+                             NPExtensionsReservedStateSharedMemory,
+                             &dib_intptr);
+  TransportDIB* dib = reinterpret_cast<TransportDIB*>(dib_intptr);
+  DescWrapper* wrapper = factory.ImportTransportDIB(dib);
   if (NULL == wrapper) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }

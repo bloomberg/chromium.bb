@@ -81,9 +81,6 @@ NPNavigator::NPNavigator(NaClSrpcChannel* channel,
                          int32_t peer_pid,
                          int32_t peer_npvariant_size)
     : NPBridge(),
-      notify_(0),
-      notify_data_(NULL),
-      url_(NULL),
       upcall_channel_(NULL) {
   DebugPrintf("NPNavigator(%u, %u)\n",
               static_cast<unsigned>(peer_pid),
@@ -289,23 +286,69 @@ NPCapability* NPNavigator::GetScriptableInstance(NPP npp) {
   return NULL;
 }
 
+NPError NPNavigator::GetUrl(NPP npp, const char* url, const char* target) {
+  if (NULL == target) {
+    // We currently require the target to be a non-NULL value.  If the
+    // target is a zero-length string, then it means call back on
+    // NPP_StreamAsFile when the URL has been loaded.
+    return NPERR_GENERIC_ERROR;
+  }
+  int32_t nperr;
+  NaClSrpcError retval =
+      NPModuleRpcClient::NPN_GetURL(channel(),
+                                    GetPluginNPP(npp),
+                                    const_cast<char*>(url),
+                                    const_cast<char*>(target),
+                                    &nperr);
+  if (NACL_SRPC_RESULT_OK != retval) {
+    return NPERR_GENERIC_ERROR;
+  }
+  return static_cast<NPError>(nperr);
+}
+
+NPError NPNavigator::GetUrlNotify(NPP npp,
+                                  const char* url,
+                                  const char* target,
+                                  void* notify_data) {
+  if (NULL == target) {
+    // We currently require the target to be a non-NULL value.  If the
+    // target is a zero-length string, then it means call back on
+    // NPP_StreamAsFile when the URL has been loaded.
+    // TODO(sehr): Flesh this out to add NPN_WriteReady, etc.
+    return NPERR_GENERIC_ERROR;
+  }
+  int32_t nperr;
+  NaClSrpcError retval =
+      NPModuleRpcClient::NPN_GetURL(channel(),
+                                    GetPluginNPP(npp),
+                                    const_cast<char*>(url),
+                                    const_cast<char*>(target),
+                                    &nperr);
+  // TODO(sehr): add the GetURLNotify.
+  if (NACL_SRPC_RESULT_OK != retval) {
+    return NPERR_GENERIC_ERROR;
+  }
+  return NPERR_NO_ERROR;
+}
+
+void NPNavigator::StreamAsFile(NPP npp,
+                               NaClSrpcImcDescType file,
+                               char* fname) {
+  if (NULL != plugin_funcs.asfile) {
+    // Here we abuse the type system for now.  We are not actually returning an
+    // NPStream*, but rather a pointer to the file descriptor.
+    plugin_funcs.asfile(npp, reinterpret_cast<NPStream*>(&file), fname);
+  }
+}
+
 void NPNavigator::URLNotify(NPP npp,
                             NaClSrpcImcDescType received_handle,
                             uint32_t reason) {
   if (NPRES_DONE != reason) {
-    // Close(received_handle);
     received_handle = kNaClSrpcInvalidImcDesc;
-    // Cleanup, ensuring that the notify_ callback won't get a closed
-    // handle; This is also how the callback knows that there was a
-    // problem.
   }
   if (NULL != plugin_funcs.urlnotify) {
-    plugin_funcs.urlnotify(npp, url_, reason, notify_data_);
-    // TODO(sehr): remove these vestigial bits.
-    notify_ = NULL;
-    notify_data_ = NULL;
-    free(url_);
-    url_ = NULL;
+    plugin_funcs.urlnotify(npp, "Unimplemented", reason, NULL);
   }
 }
 
@@ -372,33 +415,6 @@ NPObject* NPNavigator::CreateArray(NPP npp) {
   }
   RpcArg ret(npp, buf, bufsize);
   return ret.GetObject();
-}
-
-NPError NPNavigator::OpenURL(NPP npp,
-                             const char* url,
-                             void* notify_data,
-                             void (*notify)(const char* url,
-                                            void* notify_data,
-                                            NaClSrpcImcDescType handle)) {
-  if (NULL != notify_ || NULL == url || NULL == notify) {
-    return NPERR_GENERIC_ERROR;
-  }
-  int32_t error_code;
-  if (NACL_SRPC_RESULT_OK !=
-      NPModuleRpcClient::NPN_OpenURL(
-          channel(),
-          GetPluginNPP(npp),
-          const_cast<char*>(url),
-          &error_code)) {
-    return NPERR_GENERIC_ERROR;
-  }
-  NPError nperr = static_cast<NPError>(error_code);
-  if (NPERR_NO_ERROR == nperr) {
-    notify_ = notify;
-    notify_data_ = notify_data;
-    url_ = STRDUP(url);
-  }
-  return nperr;
 }
 
 // Returns a canonical version of a string that can be used to lookup

@@ -33,9 +33,10 @@
                        ['capability', 'char[]'],
                       ]
           },
-          {'name': 'NPN_OpenURL',
+          {'name': 'NPN_GetURL',
            'inputs': [['npp', 'int32_t'],
                       ['url', 'string'],
+                      ['target', 'string'],
                      ],
            'outputs': [['success', 'int32_t'],
                       ]

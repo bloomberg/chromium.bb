@@ -36,6 +36,13 @@ class NPModule : public NPBridge {
 
   static bool IsWebkit() { return is_webkit; }
 
+  std::string origin() { return origin_; }
+  void set_origin(std::string origin) { origin_ = origin; }
+  std::string nacl_module_origin() { return nacl_module_origin_; }
+  void set_nacl_module_origin(std::string nacl_module_origin) {
+    nacl_module_origin_ = nacl_module_origin;
+  }
+
   //
   // Processing calls from the NaCl module to the browser.
   //
@@ -102,8 +109,8 @@ class NPModule : public NPBridge {
                     NPStream* stream,
                     NPBool seekable,
                     uint16_t* stype);
-  // Processes NPP_StreamAsFile() invocation from the browser.
-  void StreamAsFile(NPP npp, NPStream* stream, const char* filename);
+  // Send NPP_StreamAsFile to the child process.
+  void StreamAsFile(NPP npp, NaClDesc* file, char* fname);
   // Processes NPP_DestroyStream() invocation from the browser.
   NPError DestroyStream(NPP npp, NPStream *stream, NPError reason);
   // Processes NPP_URLNotify() invocation from the browser.
@@ -115,10 +122,11 @@ class NPModule : public NPBridge {
 
   // The URL origin of the HTML page that started this module.
   std::string origin_;
+  // The URL origin of the NaCl module implementing the plugin.
+  std::string nacl_module_origin_;
 
   // The NPWindow of this plugin instance.
   NPWindow* window_;
-  bool origin_valid_;
 
   // The NaClThread that handles the upcalls for e.g., PluginThreadAsyncCall.
   struct NaClThread upcall_thread_;

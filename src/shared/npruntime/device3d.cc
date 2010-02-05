@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <unistd.h>
+#include <limits>
 #include <map>
 #include <utility>
 
@@ -24,6 +25,9 @@
 
 namespace {
 static const int kInvalidDesc = -1;
+
+static const intptr_t kInt32Max = std::numeric_limits<int32_t>::max();
+static const intptr_t kInt32Min = std::numeric_limits<int32_t>::min();
 
 class Device3DBufferImpl {
  public:
@@ -124,33 +128,44 @@ cleanup:
 static NPError GetStateContext(NPP instance,
                                NPDeviceContext* context,
                                int32 state,
-                               int32 *value) {
+                               intptr_t *value) {
   nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
+  // Value is only intptr_t to allow passing of the TransportDIB function
+  // pointer.  Otherwise they're all int32_t.
+  int32_t value32;
   NaClSrpcError retval =
       Device3DRpcClient::Device3DGetState(
           channel,
           nacl::NPNavigator::GetPluginNPP(instance),
           state,
-          value);
+          &value32);
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
   }
+  *value = static_cast<intptr_t>(value32);
   return NPERR_NO_ERROR;
 }
 
 static NPError SetStateContext(NPP instance,
                                NPDeviceContext* context,
                                int32 state,
-                               int32 value) {
+                               intptr_t value) {
   nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
+  // Value is only intptr_t to allow passing of the TransportDIB function
+  // pointer.  Otherwise they're all int32_t.  Verify anyway.
+  // TODO(sehr,ilewis): use checked_cast<> here.
+  if (kInt32Max < value || kInt32Min > value) {
+    return NPERR_GENERIC_ERROR;
+  }
+  int32_t value32 = static_cast<int32_t>(value);
   NaClSrpcError retval =
       Device3DRpcClient::Device3DSetState(
           channel,
           nacl::NPNavigator::GetPluginNPP(instance),
           state,
-          value);
+          value32);
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
   }
