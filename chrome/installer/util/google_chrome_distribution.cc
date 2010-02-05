@@ -535,8 +535,8 @@ void GoogleChromeDistribution::LaunchUserExperiment(
 void GoogleChromeDistribution::InactiveUserToastExperiment(int flavor) {
   bool has_welcome_url = (flavor == 0);
   // Possibly add a url to launch depending on the experiment flavor.
-  std::wstring options(
-      StringPrintf(L"--%ls=%d", switches::kTryChromeAgain, flavor));
+  std::wstring options(StringPrintf(L"--%ls=%d",
+      ASCIIToUTF16(switches::kTryChromeAgain).c_str(), flavor));
   if (has_welcome_url) {
     const std::wstring url(GetWelcomeBackUrl());
     options.append(L" -- ");
