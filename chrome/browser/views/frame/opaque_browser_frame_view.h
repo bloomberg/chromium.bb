@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,7 +43,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual bool AlwaysUseNativeFrame() const;
   virtual gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const;
-  virtual gfx::Point GetSystemMenuPoint() const;
   virtual int NonClientHitTest(const gfx::Point& point);
   virtual void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask);
   virtual void EnableClose(bool enable);

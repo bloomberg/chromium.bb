@@ -44,7 +44,6 @@ class AppPanelBrowserFrameView : public BrowserNonClientFrameView,
   virtual bool AlwaysUseNativeFrame() const;
   virtual gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const;
-  virtual gfx::Point GetSystemMenuPoint() const;
   virtual int NonClientHitTest(const gfx::Point& point);
   virtual void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask);
   virtual void EnableClose(bool enable);

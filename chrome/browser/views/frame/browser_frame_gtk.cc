@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,11 +36,6 @@ class PopupNonClientFrameView : public BrowserNonClientFrameView {
   virtual gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const {
     return client_bounds;
-  }
-  virtual gfx::Point GetSystemMenuPoint() const {
-    // Never used on GTK.
-    // TODO: make this method windows specific.
-    return gfx::Point(0, 0);
   }
   virtual int NonClientHitTest(const gfx::Point& point) {
     return HTNOWHERE;

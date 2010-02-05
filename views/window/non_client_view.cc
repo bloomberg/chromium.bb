@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,10 +89,6 @@ void NonClientView::DisableInactiveRendering(bool disable) {
 gfx::Rect NonClientView::GetWindowBoundsForClientBounds(
     const gfx::Rect client_bounds) const {
   return frame_view_->GetWindowBoundsForClientBounds(client_bounds);
-}
-
-gfx::Point NonClientView::GetSystemMenuPoint() const {
-  return frame_view_->GetSystemMenuPoint();
 }
 
 int NonClientView::NonClientHitTest(const gfx::Point& point) {

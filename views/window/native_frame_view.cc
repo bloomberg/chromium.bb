@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -32,12 +32,6 @@ gfx::Rect NativeFrameView::GetWindowBoundsForClientBounds(
   AdjustWindowRectEx(&rect, frame_->window_style(), FALSE,
                      frame_->window_ex_style());
   return gfx::Rect(rect);
-}
-
-gfx::Point NativeFrameView::GetSystemMenuPoint() const {
-  POINT temp = {0, -kFrameShadowThickness };
-  MapWindowPoints(frame_->GetNativeView(), HWND_DESKTOP, &temp, 1);
-  return gfx::Point(temp);
 }
 
 int NativeFrameView::NonClientHitTest(const gfx::Point& point) {

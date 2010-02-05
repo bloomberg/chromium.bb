@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -281,15 +281,6 @@ gfx::Rect OpaqueBrowserFrameView::GetWindowBoundsForClientBounds(
                    std::max(0, client_bounds.y() - top_height),
                    client_bounds.width() + (2 * border_thickness),
                    client_bounds.height() + top_height + border_thickness);
-}
-
-gfx::Point OpaqueBrowserFrameView::GetSystemMenuPoint() const {
-  gfx::Point system_menu_point(
-      MirroredXCoordinateInsideView(FrameBorderThickness()),
-      NonClientTopBorderHeight() + browser_view_->GetTabStripHeight() -
-      (frame_->GetWindow()->IsFullscreen() ? 0 : kClientEdgeThickness));
-  ConvertPointToScreen(this, &system_menu_point);
-  return system_menu_point;
 }
 
 int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {

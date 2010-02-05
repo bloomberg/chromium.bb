@@ -153,15 +153,6 @@ gfx::Rect AppPanelBrowserFrameView::GetWindowBoundsForClientBounds(
                    client_bounds.height() + top_height + border_thickness);
 }
 
-gfx::Point AppPanelBrowserFrameView::GetSystemMenuPoint() const {
-  gfx::Point system_menu_point(
-      MirroredXCoordinateInsideView(FrameBorderThickness()),
-      NonClientTopBorderHeight() + browser_view_->GetTabStripHeight() -
-          kClientEdgeThickness);
-  ConvertPointToScreen(this, &system_menu_point);
-  return system_menu_point;
-}
-
 int AppPanelBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   if (!bounds().Contains(point))
     return HTNOWHERE;

@@ -47,8 +47,6 @@ class LoginWizardNonClientFrameView : public views::NonClientFrameView {
     return client_bounds;
   }
 
-  // There is no system menu.
-  virtual gfx::Point GetSystemMenuPoint() const { return gfx::Point(); }
   // There is no non client area.
   virtual int NonClientHitTest(const gfx::Point& point) { return 0; }
 

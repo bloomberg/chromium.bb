@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,7 +56,6 @@ class NonClientFrameView : public View {
 
   virtual gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const = 0;
-  virtual gfx::Point GetSystemMenuPoint() const = 0;
   virtual int NonClientHitTest(const gfx::Point& point) = 0;
   virtual void GetWindowMask(const gfx::Size& size,
                              gfx::Path* window_mask) = 0;
@@ -169,10 +168,6 @@ class NonClientView : public View {
   // Returns the bounds of the window required to display the content area at
   // the specified bounds.
   gfx::Rect GetWindowBoundsForClientBounds(const gfx::Rect client_bounds) const;
-
-  // Returns the point, in screen coordinates, where the system menu should
-  // be shown so it shows up anchored to the system menu icon.
-  gfx::Point GetSystemMenuPoint() const;
 
   // Determines the windows HT* code when the mouse cursor is at the
   // specified point, in window coordinates.

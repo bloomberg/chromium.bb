@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -169,7 +169,6 @@ class ConstrainedWindowFrameView
   virtual bool AlwaysUseCustomFrame() const;
   virtual gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const;
-  virtual gfx::Point GetSystemMenuPoint() const;
   virtual int NonClientHitTest(const gfx::Point& point);
   virtual void GetWindowMask(const gfx::Size& size, gfx::Path* window_mask);
   virtual void EnableClose(bool enable);
@@ -320,15 +319,6 @@ gfx::Rect ConstrainedWindowFrameView::GetWindowBoundsForClientBounds(
                    std::max(0, client_bounds.y() - top_height),
                    client_bounds.width() + (2 * border_thickness),
                    client_bounds.height() + top_height + border_thickness);
-}
-
-gfx::Point ConstrainedWindowFrameView::GetSystemMenuPoint() const {
-  // Doesn't really matter, since we never show system menus on constrained
-  // windows...
-  gfx::Point system_menu_point(FrameBorderThickness(),
-                               NonClientTopBorderHeight());
-  ConvertPointToScreen(this, &system_menu_point);
-  return system_menu_point;
 }
 
 int ConstrainedWindowFrameView::NonClientHitTest(const gfx::Point& point) {

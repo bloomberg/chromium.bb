@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -148,26 +148,6 @@ gfx::Rect GlassBrowserFrameView::GetWindowBoundsForClientBounds(
                    std::max(0, client_bounds.y() - top_height),
                    client_bounds.width() + (2 * border_thickness),
                    client_bounds.height() + top_height + border_thickness);
-}
-
-gfx::Point GlassBrowserFrameView::GetSystemMenuPoint() const {
-  views::Window* window = frame_->GetWindow();
-  gfx::Point system_menu_point;
-  if (browser_view_->IsBrowserTypeNormal()) {
-    // The X coordinate conditional is because in maximized mode the frame edge
-    // and the client edge are both offscreen, whereas in the opaque frame
-    // (where we don't do this trick) maximized windows have no client edge and
-    // only the frame edge is offscreen.
-    system_menu_point.SetPoint(NonClientBorderThickness() -
-        ((window->IsMaximized() || window->IsFullscreen()) ?
-         0 : kClientEdgeThickness),
-        NonClientTopBorderHeight() + browser_view_->GetTabStripHeight() -
-        (frame_->GetWindow()->IsFullscreen() ? 0 : kClientEdgeThickness));
-  } else {
-    system_menu_point.SetPoint(0, -kFrameShadowThickness);
-  }
-  ConvertPointToScreen(this, &system_menu_point);
-  return system_menu_point;
 }
 
 int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {

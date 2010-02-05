@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -499,7 +499,6 @@ WindowWin::WindowWin(WindowDelegate* window_delegate)
       ignore_pos_changes_factory_(this),
       force_hidden_count_(0),
       is_right_mouse_pressed_on_caption_(false),
-      last_time_system_menu_clicked_(0),
       last_monitor_(NULL) {
   is_window_ = true;
   InitClass();
@@ -574,23 +573,6 @@ gfx::Insets WindowWin::GetClientAreaInsets() const {
   // Note: this is only required for non-fullscreen windows. Note that
   // fullscreen windows are in restored state, not maximized.
   return gfx::Insets(0, 0, IsFullscreen() ? 0 : 1, 0);
-}
-
-void WindowWin::RunSystemMenu(const gfx::Point& point) {
-  // We need to reset and clean up any currently created system menu objects.
-  // We need to call this otherwise there's a small chance that we aren't going
-  // to get a system menu. We also can't take the return value of this
-  // function. We need to call it *again* to get a valid HMENU.
-  //::GetSystemMenu(GetNativeView(), TRUE);
-  UINT flags = TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD;
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
-    flags |= TPM_RIGHTALIGN;
-  HMENU system_menu = ::GetSystemMenu(GetNativeView(), FALSE);
-  int id = ::TrackPopupMenu(system_menu, flags,
-                            point.x(), point.y(), 0, GetNativeView(), NULL);
-  ExecuteSystemMenuCommand(id);
-  if (id)  // something was selected
-    last_time_system_menu_clicked_ = 0;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -962,23 +944,7 @@ void WindowWin::OnNCLButtonDown(UINT ht_component, const CPoint& point) {
     }
   }
 
-  // TODO(beng): figure out why we need to run the system menu manually
-  //             ourselves. This is wrong and causes many subtle bugs.
-  //             From my initial research, it looks like DefWindowProc tries
-  //             to run it but fails before sending the initial WM_MENUSELECT
-  //             for the sysmenu.
-  // TODO(georgey): Remove the fix for double click when we figure out why
-  //                system menu does not open automatically and pass it to
-  //                default processing.
-  if (ht_component == HTSYSMENU) {
-    // We use 0 as a special value. If user is "lucky" and double clicks on
-    // system icon exactly 49.7x days after PC was started we ignore that
-    // click.
-    last_time_system_menu_clicked_ = GetTickCount();
-    RunSystemMenu(non_client_view_->GetSystemMenuPoint());
-  } else {
-    WidgetWin::OnNCLButtonDown(ht_component, point);
-  }
+  WidgetWin::OnNCLButtonDown(ht_component, point);
 
   /* TODO(beng): Fix the standard non-client over-painting bug. This code
                  doesn't work but identifies the problem.
@@ -996,64 +962,36 @@ void WindowWin::OnNCLButtonDown(UINT ht_component, const CPoint& point) {
   */
 }
 
-void WindowWin::OnNCLButtonUp(UINT ht_component, const CPoint& point) {
-  // georgey : fix for double click on system icon not working
-  // As we do track on system menu, the following sequence occurs, when user
-  // double clicks:
-  //   1. Window gets WM_NCLBUTTONDOWN with ht_component == HTSYSMENU
-  //   2. We call TrackPopupMenu, that captures the mouse
-  //   3. Menu, not window, gets WM_NCLBUTTONUP
-  //   4. Menu gets WM_NCLBUTTONDOWN and closes returning 0 (canceled) from
-  //      TrackPopupMenu.
-  //   5. Window gets WM_NCLBUTTONUP with ht_component == HTSYSMENU
-  if (ht_component == HTSYSMENU) {
-    if (last_time_system_menu_clicked_) {
-      if ((GetTickCount() - last_time_system_menu_clicked_) <=
-          GetDoubleClickTime()) {
-        // User double clicked left mouse button on system menu - close
-        // window
-        ExecuteSystemMenuCommand(SC_CLOSE);
-      }
-      last_time_system_menu_clicked_ = 0;
-    }
-  }
-
-  WidgetWin::OnNCLButtonUp(ht_component, point);
-}
-
 void WindowWin::OnNCRButtonDown(UINT ht_component, const CPoint& point) {
   if (ht_component == HTCAPTION || ht_component == HTSYSMENU) {
     is_right_mouse_pressed_on_caption_ = true;
-    // Using SetCapture() here matches Windows native behavior for right-clicks
-    // on the title bar. It's not obvious why Windows does this.
+    // We SetCapture() to ensure we only show the menu when the button down and
+    // up are both on the caption.  Note: this causes the button up to be
+    // WM_RBUTTONUP instead of WM_NCRBUTTONUP.
     SetCapture();
   }
 
   WidgetWin::OnNCRButtonDown(ht_component, point);
 }
 
-void WindowWin::OnNCRButtonUp(UINT ht_component, const CPoint& point) {
-  if (is_right_mouse_pressed_on_caption_)
-    is_right_mouse_pressed_on_caption_ = false;
-
-  WidgetWin::OnNCRButtonUp(ht_component, point);
-}
-
 void WindowWin::OnRButtonUp(UINT ht_component, const CPoint& point) {
-  // We handle running the system menu on mouseup here because calling
-  // SetCapture() on mousedown makes the mouseup generate WM_RBUTTONUP instead
-  // of WM_NCRBUTTONUP.
   if (is_right_mouse_pressed_on_caption_) {
     is_right_mouse_pressed_on_caption_ = false;
     ReleaseCapture();
-    // |point| is in window coordinates, but WM_NCHITTEST and RunSystemMenu()
+    // |point| is in window coordinates, but WM_NCHITTEST and TrackPopupMenu()
     // expect screen coordinates.
     CPoint screen_point(point);
     MapWindowPoints(GetNativeView(), HWND_DESKTOP, &screen_point, 1);
-    ht_component = ::SendMessage(GetNativeView(), WM_NCHITTEST, 0,
-                                 MAKELPARAM(screen_point.x, screen_point.y));
+    ht_component = SendMessage(GetNativeView(), WM_NCHITTEST, 0,
+                               MAKELPARAM(screen_point.x, screen_point.y));
     if (ht_component == HTCAPTION || ht_component == HTSYSMENU) {
-      RunSystemMenu(gfx::Point(screen_point));
+      UINT flags = TPM_LEFTBUTTON | TPM_RIGHTBUTTON | TPM_RETURNCMD;
+      if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
+        flags |= TPM_RIGHTALIGN;
+      HMENU system_menu = GetSystemMenu(GetNativeView(), FALSE);
+      int id = TrackPopupMenu(system_menu, flags, screen_point.x,
+                              screen_point.y, 0, GetNativeView(), NULL);
+      ExecuteSystemMenuCommand(id);
       return;
     }
   }
@@ -1146,14 +1084,9 @@ void WindowWin::OnSysCommand(UINT notification_code, CPoint click) {
   if (window_delegate_->ExecuteWindowsCommand(notification_code))
     return;
 
-  if ((notification_code == SC_KEYMENU) && (click.x == VK_SPACE)) {
-    // Run the system menu at the NonClientView's desired location.
-    RunSystemMenu(non_client_view_->GetSystemMenuPoint());
-  } else {
-    // Use the default implementation for any other command.
-    DefWindowProc(GetNativeView(), WM_SYSCOMMAND, notification_code,
-                  MAKELPARAM(click.y, click.x));
-  }
+  // Use the default implementation for any other command.
+  DefWindowProc(GetNativeView(), WM_SYSCOMMAND, notification_code,
+                MAKELPARAM(click.x, click.y));
 }
 
 void WindowWin::OnWindowPosChanging(WINDOWPOS* window_pos) {
