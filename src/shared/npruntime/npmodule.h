@@ -71,7 +71,9 @@ class NPModule : public NPBridge {
                                    int32_t* put_offset);
   NaClSrpcError Device3DFlush(NPP npp,
                               int32_t put_offset,
-                              int32_t* get_offset);
+                              int32_t* get_offset,
+                              int32_t* token,
+                              int32_t* error);
   NaClSrpcError Device3DDestroy(NPP npp);
   NaClSrpcError Device3DGetState(NPP npp,
                                  int32_t state,

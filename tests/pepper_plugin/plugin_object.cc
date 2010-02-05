@@ -288,6 +288,9 @@ PluginObject::PluginObject(NPP npp)
 }
 
 PluginObject::~PluginObject() {
+  if (pgl_context_)
+    Destroy3D();
+
   browser->releaseobject(test_object_);
 }
 

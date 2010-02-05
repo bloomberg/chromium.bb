@@ -282,13 +282,17 @@ NaClSrpcError Device3DRpcServer::Device3DInitialize(
 NaClSrpcError Device3DRpcServer::Device3DFlush(NaClSrpcChannel* channel,
                                                int32_t int_npp,
                                                int32_t put_offset,
-                                               int32_t* get_offset) {
+                                               int32_t* get_offset,
+                                               int32_t* token,
+                                               int32_t* error) {
   UNREFERENCED_PARAMETER(channel);
   NPModule* module = nacl::NPModule::GetModule(int_npp);
 
   return module->Device3DFlush(NPBridge::IntToNpp(int_npp),
                                put_offset,
-                               get_offset);
+                               get_offset,
+                               token,
+                               error);
 }
 
 NaClSrpcError Device3DRpcServer::Device3DDestroy(NaClSrpcChannel* channel,

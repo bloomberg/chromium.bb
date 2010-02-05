@@ -629,7 +629,9 @@ NaClSrpcError NPModule::Device3DInitialize(NPP npp,
 
 NaClSrpcError NPModule::Device3DFlush(NPP npp,
                                       int32_t put_offset,
-                                      int32_t* get_offset) {
+                                      int32_t* get_offset,
+                                      int32_t* token,
+                                      int32_t* error) {
   if (NULL == extensions_) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
@@ -639,6 +641,8 @@ NaClSrpcError NPModule::Device3DFlush(NPP npp,
     return NACL_SRPC_RESULT_APP_ERROR;
   }
   *get_offset = context3d_->getOffset;
+  *token = context3d_->token;
+  *error = static_cast<int32_t>(context3d_->error);
 
   return NACL_SRPC_RESULT_OK;
 }
