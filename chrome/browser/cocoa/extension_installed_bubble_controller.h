@@ -52,6 +52,11 @@ typedef enum {
 
   extension_installed_bubble::ExtensionType type_;
 
+  // We need to remove the page action immediately when the browser window
+  // closes while this bubble is still open, so the bubble's closing animation
+  // doesn't overlap browser destruction.
+  BOOL pageActionRemoved_;
+
   // Lets us register for EXTENSION_LOADED notifications.  The actual
   // notifications are sent to the observer object, which proxies them
   // back to the controller.
@@ -67,6 +72,7 @@ typedef enum {
 }
 
 @property (readonly) Extension* extension;
+@property BOOL pageActionRemoved;
 
 // Initialize the window, and then create observers to wait for the extension
 // to complete loading, or the browser window to close.
@@ -86,7 +92,7 @@ typedef enum {
 
 @interface ExtensionInstalledBubbleController(ExposedForTesting)
 
-- (void)removePageActionPreview;
+- (void)removePageActionPreviewIfNecessary;
 - (NSWindow*)initializeWindow;
 - (int)calculateWindowHeight;
 - (void)setMessageFrames:(int)newWindowHeight;

@@ -33,7 +33,6 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
   ExtensionLoadedNotificationObserver(
       ExtensionInstalledBubbleController* controller)
           : controller_(controller) {
-    // Create a registrar and add ourselves to it.
     registrar_.Add(this, NotificationType::EXTENSION_LOADED,
         NotificationService::AllSources());
   }
@@ -63,6 +62,7 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
 @implementation ExtensionInstalledBubbleController
 
 @synthesize extension = extension_;
+@synthesize pageActionRemoved = pageActionRemoved_;  // Exposed for unit test.
 
 - (id)initWithParentWindow:(NSWindow*)parentWindow
                  extension:(Extension*)extension
@@ -72,10 +72,14 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
       [mac_util::MainAppBundle() pathForResource:@"ExtensionInstalledBubble"
                                           ofType:@"nib"];
   if ((self = [super initWithWindowNibPath:nibPath owner:self])) {
+    DCHECK(parentWindow);
     parentWindow_ = parentWindow;
+    DCHECK(extension);
     extension_ = extension;
+    DCHECK(browser);
     browser_ = browser;
     icon_.reset([gfx::SkBitmapToNSImage(icon) retain]);
+    pageActionRemoved_ = NO;
 
     if (extension->browser_action()) {
       type_ = extension_installed_bubble::kBrowserAction;
@@ -88,13 +92,6 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
 
     // Start showing window only after extension has fully loaded.
     extensionObserver_.reset(new ExtensionLoadedNotificationObserver(self));
-
-    // Watch to see if the parent window closes, and close this one if so.
-    NSNotificationCenter* center = [NSNotificationCenter defaultCenter];
-    [center addObserver:self
-               selector:@selector(parentWindowWillClose:)
-                   name:NSWindowWillCloseNotification
-                 object:parentWindow_];
   }
   return self;
 }
@@ -109,15 +106,13 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
   [super close];
 }
 
-- (void)parentWindowWillClose:(NSNotification*)notification {
-  [self close];
-}
-
 - (void)windowWillClose:(NSNotification*)notification {
-  // Turn off page action icon preview when the window closes.
-  if (extension_->page_action()) {
-    [self removePageActionPreview];
-  }
+  // Turn off page action icon preview when the window closes, unless we
+  // already removed it when the window resigned key status.
+  [self removePageActionPreviewIfNecessary];
+  extension_ = NULL;
+  browser_ = NULL;
+  parentWindow_ = nil;
   // We caught a close so we don't need to watch for the parent closing.
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [self autorelease];
@@ -129,6 +124,11 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
   NSWindow* window = [self window];
   DCHECK_EQ([notification object], window);
   DCHECK([window isVisible]);
+
+  // If the browser window is closing, we need to remove the page action
+  // immediately, otherwise the closing animation may overlap with
+  // browser destruction.
+  [self removePageActionPreviewIfNecessary];
   [self close];
 }
 
@@ -139,7 +139,11 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
 
 // Extracted to a function here so that it can be overwritten for unit
 // testing.
-- (void)removePageActionPreview {
+- (void)removePageActionPreviewIfNecessary {
+  DCHECK(extension_);
+  if (!extension_->page_action() || pageActionRemoved_)
+    return;
+  pageActionRemoved_ = YES;
   BrowserWindowCocoa* window = static_cast<BrowserWindowCocoa*>(
       browser_->window());
   LocationBarViewMac* locationBarView = static_cast<LocationBarViewMac*>(

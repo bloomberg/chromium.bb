@@ -160,6 +160,7 @@ TEST_F(ExtensionInstalledBubbleControllerTest, PageActionTest) {
             msg2Frame.origin.y + msg2Frame.size.height +
             extension_installed_bubble::kInnerVerticalMargin);
 
+  [controller setPageActionRemoved:YES];
   [controller close];
 }
 

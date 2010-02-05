@@ -348,7 +348,8 @@ void LocationBarViewMac::SetPreviewEnabledPageAction(
   if (!browser)
     return;
   TabContents* contents = browser->GetSelectedTabContents();
-  DCHECK(contents);
+  if (!contents)
+    return;
   page_action_views_->RefreshViews();
 
   LocationBarViewMac::PageActionImageView* page_action_image_view =
