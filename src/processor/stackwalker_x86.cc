@@ -317,7 +317,7 @@ StackFrame* StackwalkerX86::GetCallerFrame(const CallStack *stack) {
     // frame pointer.
     u_int32_t location_start = last_frame->context.esp;
     u_int32_t location, eip;
-    if (!ScanForReturnAddress(location_start, location, eip)) {
+    if (!ScanForReturnAddress(location_start, &location, &eip)) {
       // if we can't find an instruction pointer even with stack scanning,
       // give up.
       return NULL;
@@ -360,7 +360,7 @@ StackFrame* StackwalkerX86::GetCallerFrame(const CallStack *stack) {
       // looking one 32-bit word above that location.
       u_int32_t location_start = dictionary[".raSearchStart"] + 4;
       u_int32_t location;
-      if (ScanForReturnAddress(location_start, location, eip)) {
+      if (ScanForReturnAddress(location_start, &location, &eip)) {
         // This is a better return address that what program string
         // evaluation found.  Use it, and set %esp to the location above the
         // one where the return address was found.
@@ -450,8 +450,8 @@ StackFrame* StackwalkerX86::GetCallerFrame(const CallStack *stack) {
 }
 
 bool StackwalkerX86::ScanForReturnAddress(u_int32_t location_start,
-                                          u_int32_t &location_found,
-                                          u_int32_t &eip_found) {
+                                          u_int32_t *location_found,
+                                          u_int32_t *eip_found) {
   const int kRASearchWords = 15;
   for (u_int32_t location = location_start;
        location <= location_start + kRASearchWords * 4;
@@ -463,8 +463,8 @@ bool StackwalkerX86::ScanForReturnAddress(u_int32_t location_start,
     if (modules_ && modules_->GetModuleForAddress(eip) &&
         InstructionAddressSeemsValid(eip)) {
 
-      eip_found = eip;
-      location_found = location;
+      *eip_found = eip;
+      *location_found = location;
       return true;
     }
   }

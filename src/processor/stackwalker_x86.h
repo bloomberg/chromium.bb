@@ -79,8 +79,8 @@ class StackwalkerX86 : public Stackwalker {
   // the value was found, and eip_found to the value contained at that
   // location in memory.
   bool ScanForReturnAddress(u_int32_t location_start,
-                            u_int32_t &location_found,
-                            u_int32_t &eip_found);
+                            u_int32_t *location_found,
+                            u_int32_t *eip_found);
 
   // Stores the CPU context corresponding to the innermost stack frame to
   // be returned by GetContextFrame.
