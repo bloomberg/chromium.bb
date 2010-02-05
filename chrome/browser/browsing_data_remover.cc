@@ -17,6 +17,7 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/url_constants.h"
 #include "net/base/cookie_monster.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
@@ -112,7 +113,8 @@ void BrowsingDataRemover::Remove(int remove_mask) {
         profile_->GetRequestContext()->GetCookieStore()->GetCookieMonster();
     if (cookie_monster)
       cookie_monster->DeleteAllCreatedBetween(delete_begin_, delete_end_, true);
-    profile_->GetWebKitContext()->DeleteDataModifiedSince(delete_begin_);
+    profile_->GetWebKitContext()->DeleteDataModifiedSince(
+        delete_begin_, chrome::kExtensionScheme);
   }
 
   if (remove_mask & REMOVE_PASSWORDS) {

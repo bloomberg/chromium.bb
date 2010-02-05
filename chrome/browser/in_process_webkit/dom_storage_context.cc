@@ -155,7 +155,9 @@ void DOMStorageContext::PurgeMemory() {
     local_storage->PurgeMemory();
 }
 
-void DOMStorageContext::DeleteDataModifiedSince(const base::Time& cutoff) {
+void DOMStorageContext::DeleteDataModifiedSince(
+    const base::Time& cutoff,
+    const char* url_scheme_to_be_skipped) {
   // Make sure that we don't delete a database that's currently being accessed
   // by unloading all of the databases temporarily.
   PurgeMemory();
@@ -165,6 +167,11 @@ void DOMStorageContext::DeleteDataModifiedSince(const base::Time& cutoff) {
       file_util::FileEnumerator::FILES);
   for (FilePath path = file_enumerator.Next(); !path.value().empty();
        path = file_enumerator.Next()) {
+    scoped_ptr<WebKit::WebSecurityOrigin> web_security_origin(
+        WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
+            webkit_glue::FilePathToWebString(path.BaseName())));
+    if (EqualsASCII(web_security_origin->protocol(), url_scheme_to_be_skipped))
+      continue;
     file_util::FileEnumerator::FindInfo find_info;
     file_enumerator.GetFindInfo(&find_info);
     if (file_util::HasFileBeenModifiedSince(find_info, cutoff))
@@ -243,7 +250,7 @@ void DOMStorageContext::CompleteCloningSessionStorage(
 
 // static
 void DOMStorageContext::ClearLocalState(const FilePath& profile_path,
-                                        const char* url_scheme_to_be_skip) {
+                                        const char* url_scheme_to_be_skipped) {
   file_util::FileEnumerator file_enumerator(profile_path.Append(
       kLocalStorageDirectory), false, file_util::FileEnumerator::FILES);
   for (FilePath file_path = file_enumerator.Next(); !file_path.empty();
@@ -252,7 +259,8 @@ void DOMStorageContext::ClearLocalState(const FilePath& profile_path,
       scoped_ptr<WebKit::WebSecurityOrigin> web_security_origin(
           WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
               webkit_glue::FilePathToWebString(file_path.BaseName())));
-      if (!EqualsASCII(web_security_origin->protocol(), url_scheme_to_be_skip))
+      if (!EqualsASCII(web_security_origin->protocol(),
+                       url_scheme_to_be_skipped))
         file_util::Delete(file_path, false);
     }
   }

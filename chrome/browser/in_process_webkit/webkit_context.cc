@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 
@@ -38,17 +38,20 @@ void WebKitContext::PurgeMemory() {
   dom_storage_context_->PurgeMemory();
 }
 
-void WebKitContext::DeleteDataModifiedSince(const base::Time& cutoff) {
+void WebKitContext::DeleteDataModifiedSince(
+    const base::Time& cutoff,
+    const char* url_scheme_to_be_skipped) {
   if (!ChromeThread::CurrentlyOn(ChromeThread::WEBKIT)) {
     bool result = ChromeThread::PostTask(
         ChromeThread::WEBKIT, FROM_HERE,
         NewRunnableMethod(this, &WebKitContext::DeleteDataModifiedSince,
-                          cutoff));
+                          cutoff, url_scheme_to_be_skipped));
     DCHECK(result);
     return;
   }
 
-  dom_storage_context_->DeleteDataModifiedSince(cutoff);
+  dom_storage_context_->DeleteDataModifiedSince(cutoff,
+                                                url_scheme_to_be_skipped);
 }
 
 

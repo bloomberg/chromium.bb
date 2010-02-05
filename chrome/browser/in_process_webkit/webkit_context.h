@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_CONTEXT_H_
 #define CHROME_BROWSER_IN_PROCESS_WEBKIT_WEBKIT_CONTEXT_H_
@@ -43,7 +43,8 @@ class WebKitContext : public base::RefCountedThreadSafe<WebKitContext> {
 
   // Tell all children (where applicable) to delete any objects that were
   // last modified on or after the following time.
-  void DeleteDataModifiedSince(const base::Time& cutoff);
+  void DeleteDataModifiedSince(const base::Time& cutoff,
+                               const char* url_scheme_to_be_skipped);
 
   // Delete the session storage namespace associated with this id.  Called from
   // the UI thread.
