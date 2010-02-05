@@ -305,23 +305,18 @@ int TabStripModel::GetIndexOfNextTabContentsOpenedBy(
   DCHECK(opener);
   DCHECK(ContainsIndex(start_index));
 
-  TabContentsDataVector::const_iterator iter =
-      contents_data_.begin() + start_index;
-  TabContentsDataVector::const_iterator next;
-  for (; iter != contents_data_.end(); ++iter) {
-    next = iter + 1;
-    if (next == contents_data_.end())
-      break;
-    if (OpenerMatches(*next, opener, use_group) &&
-        !IsPhantomTab(static_cast<int>(next - contents_data_.begin()))) {
-      return static_cast<int>(next - contents_data_.begin());
+  // Check tabs after start_index first.
+  for (int i = start_index + 1; i < count(); ++i) {
+    if (OpenerMatches(contents_data_[i], opener, use_group) &&
+        !IsPhantomTab(i)) {
+      return i;
     }
   }
-  iter = contents_data_.begin() + start_index;
-  if (iter != contents_data_.begin()) {
-    for (--iter; iter != contents_data_.begin(); --iter) {
-      if (OpenerMatches(*iter, opener, use_group))
-        return static_cast<int>(iter - contents_data_.begin());
+  // Then check tabs before start_index, iterating backwards.
+  for (int i = start_index - 1; i >= 0; --i) {
+    if (OpenerMatches(contents_data_[i], opener, use_group) &&
+        !IsPhantomTab(i)) {
+      return i;
     }
   }
   return kNoTab;
