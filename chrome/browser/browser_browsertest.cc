@@ -25,6 +25,7 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
+#include "net/base/mock_host_resolver.h"
 
 const std::string BEFORE_UNLOAD_HTML =
     "<html><head><title>beforeunload</title></head><body>"
@@ -70,6 +71,7 @@ class BrowserTest : public ExtensionBrowserTest {
   void PhantomTabTest() {
     HTTPTestServer* server = StartHTTPServer();
     ASSERT_TRUE(server);
+    host_resolver()->AddRule("www.example.com", "127.0.0.1");
     GURL url(server->TestServerPage("empty.html"));
     TabStripModel* model = browser()->tabstrip_model();
 
