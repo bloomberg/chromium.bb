@@ -351,6 +351,7 @@ void FilterDisabledTests() {
     "URLRequestTest.DoNotSaveCookies_ViaPolicy",
     "URLRequestTest.DoNotSendCookies_ViaPolicy",
     "URLRequestTest.DoNotSaveCookies_ViaPolicy_Async",
+    "URLRequestTest.CookiePolicy_ForceSession",
   };
 
   std::string filter("-");  // All following filters will be negative.
