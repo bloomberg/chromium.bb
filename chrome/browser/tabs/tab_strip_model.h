@@ -592,6 +592,10 @@ class TabStripModel : public NotificationObserver {
   // |ignore_index|.
   int IndexOfNextNonPhantomTab(int index, int ignore_index);
 
+  // Returns true if the tab at the specified index should be made phantom when
+  // the tab is closing.
+  bool ShouldMakePhantomOnClose(int index);
+
   // Makes the tab a phantom tab.
   void MakePhantom(int index);
 

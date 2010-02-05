@@ -423,16 +423,17 @@ class Extension {
 
   // The URL an app should launch to.
   GURL app_launch_url_;
-  
+
   // The type of window to start when the application is launched.
   AppLaunchWindowType app_launch_window_type_;
-  
+
   // Runtime data:
 
   // True if the background page is ready.
   bool background_page_ready_;
 
   FRIEND_TEST(ExtensionTest, LoadPageActionHelper);
+  FRIEND_TEST(TabStripModelTest, Apps);
 
   DISALLOW_COPY_AND_ASSIGN(Extension);
 };

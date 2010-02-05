@@ -11,8 +11,13 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/test/in_process_browser_test.h"
@@ -58,38 +63,50 @@ int CountRenderProcessHosts() {
 
 }  // namespace
 
-class BrowserTest : public InProcessBrowserTest {
+class BrowserTest : public ExtensionBrowserTest {
  public:
   // Used by phantom tab tests. Creates two tabs, pins the first and makes it
   // a phantom tab (by closing it).
   void PhantomTabTest() {
-    static const wchar_t kDocRoot[] = L"chrome/test/data";
-    scoped_refptr<HTTPTestServer> server(
-        HTTPTestServer::CreateServer(kDocRoot, NULL));
-    ASSERT_TRUE(NULL != server.get());
+    HTTPTestServer* server = StartHTTPServer();
+    ASSERT_TRUE(server);
     GURL url(server->TestServerPage("empty.html"));
     TabStripModel* model = browser()->tabstrip_model();
 
-    ui_test_utils::NavigateToURL(browser(), url);
-    model->GetTabContentsAt(0)->set_app(true);
-    model->SetTabPinned(0, true);
+    ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app/")));
 
-    browser()->AddTabWithURL(GURL("about:blank"), GURL(), PageTransition::TYPED,
-                             true, 1, false, NULL);
+    Extension* app_extension = GetExtension();
+
+    ui_test_utils::NavigateToURL(browser(), url);
+
+    TabContents* app_contents = new TabContents(browser()->profile(), NULL,
+                                                MSG_ROUTING_NONE, NULL);
+    app_contents->SetAppExtension(app_extension);
+
+    model->AddTabContents(app_contents, 0, false, 0, false);
+    model->SetTabPinned(0, true);
     ui_test_utils::NavigateToURL(browser(), url);
 
     // Close the first, which should make it a phantom.
-    TabContents* initial_contents = model->GetTabContentsAt(0);
     model->CloseTabContentsAt(0);
+
     // There should still be two tabs.
     ASSERT_EQ(2, browser()->tab_count());
     // The first tab should be a phantom.
     EXPECT_TRUE(model->IsPhantomTab(0));
     // And the tab contents of the first tab should have changed.
-    EXPECT_TRUE(model->GetTabContentsAt(0) != initial_contents);
+    EXPECT_TRUE(model->GetTabContentsAt(0) != app_contents);
   }
 
+
  protected:
+  virtual void SetUpCommandLine(CommandLine* command_line) {
+    ExtensionBrowserTest::SetUpCommandLine(command_line);
+
+    // Needed for phantom tab tests.
+    command_line->AppendSwitch(switches::kEnableExtensionApps);
+  }
+
   // In RTL locales wrap the page title with RTL embedding characters so that it
   // matches the value returned by GetWindowTitle().
   std::wstring LocaleWindowCaptionFromPageTitle(
@@ -107,6 +124,18 @@ class BrowserTest : public InProcessBrowserTest {
     // Do we need to use the above code on POSIX as well?
     return page_title;
 #endif
+  }
+
+  // Returns the app extension installed by PhantomTabTest.
+  Extension* GetExtension() {
+    const ExtensionList* extensions =
+        browser()->profile()->GetExtensionsService()->extensions();
+    for (size_t i = 0; i < extensions->size(); ++i) {
+      if ((*extensions)[i]->name() == "App Test")
+        return (*extensions)[i];
+    }
+    NOTREACHED();
+    return NULL;
   }
 };
 
@@ -324,7 +353,7 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, FaviconOfOnloadRedirectToAnchorPage) {
   EXPECT_EQ(expected_favicon_url.spec(), entry->favicon().url().spec());
 }
 
-// TODO(sky): get these to run a Mac.
+// TODO(sky): get these to run on a Mac.
 #if !defined(OS_MACOSX)
 IN_PROC_BROWSER_TEST_F(BrowserTest, PhantomTab) {
   PhantomTabTest();
@@ -346,6 +375,17 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RevivePhantomTab) {
   // The first tab should no longer be a phantom.
   EXPECT_FALSE(model->IsPhantomTab(0));
 }
+
+IN_PROC_BROWSER_TEST_F(BrowserTest, AppTabRemovedWhenExtensionUninstalled) {
+  PhantomTabTest();
+
+  Extension* extension = GetExtension();
+  UninstallExtension(extension->id());
+
+  // The uninstall should have removed the tab.
+  ASSERT_EQ(1, browser()->tab_count());
+}
+
 #endif
 
 // Tests that the CLD (Compact Language Detection) works properly.

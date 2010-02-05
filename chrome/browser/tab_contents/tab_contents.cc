@@ -62,6 +62,7 @@
 #include "chrome/browser/search_engines/template_url_fetcher.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/platform_util.h"
@@ -267,7 +268,7 @@ TabContents::TabContents(Profile* profile,
       is_showing_before_unload_dialog_(false),
       renderer_preferences_(),
       opener_dom_ui_type_(DOMUIFactory::kNoDOMUI),
-      app_(false) {
+      app_extension_(NULL) {
   ClearBlockedContentSettings();
   renderer_preferences_util::UpdateFromSystemSettings(
       &renderer_preferences_, profile);
@@ -451,6 +452,11 @@ PluginInstaller* TabContents::GetPluginInstaller() {
   if (plugin_installer_.get() == NULL)
     plugin_installer_.reset(new PluginInstaller(this));
   return plugin_installer_.get();
+}
+
+void TabContents::SetAppExtension(Extension* extension) {
+  DCHECK(!extension || extension->IsApp());
+  app_extension_ = extension;
 }
 
 const GURL& TabContents::GetURL() const {
@@ -1224,23 +1230,17 @@ void TabContents::OnCloseStarted() {
 }
 
 TabContents* TabContents::CloneAndMakePhantom() {
-  // TODO(sky): the initial URL, title and what not should come from the app.
-  NavigationEntry* entry = controller().GetActiveEntry();
+  DCHECK(app_extension_);  // Should only be invoked on apps.
 
   TabNavigation tab_nav;
-  if (entry)
-    tab_nav.SetFromNavigationEntry(*entry);
+  tab_nav.set_url(app_extension_->app_launch_url());
   std::vector<TabNavigation> navigations;
   navigations.push_back(tab_nav);
 
   TabContents* new_contents =
       new TabContents(profile(), NULL, MSG_ROUTING_NONE, NULL);
+  new_contents->SetAppExtension(app_extension_);
   new_contents->controller().RestoreFromState(navigations, 0, false);
-  new_contents->app_ = app_;
-  if (entry) {
-    // TODO(sky): this should come from the app.
-    new_contents->controller().GetActiveEntry()->favicon() = entry->favicon();
-  }
 
   return new_contents;
 }

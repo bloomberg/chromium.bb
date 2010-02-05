@@ -1,0 +1,15 @@
+{
+  "name": "App Test",
+  "version": "1",
+  "permissions": [
+    "notifications"
+  ],
+  "app": {
+    "extent": [
+      "http://www.example.com/empty.html"
+    ],
+    "launch": {
+      "url": "http://www.example.com/empty.html"
+    }
+  }
+}

@@ -13,6 +13,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/defaults.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -23,6 +24,7 @@
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 
@@ -56,6 +58,9 @@ TabStripModel::TabStripModel(TabStripModelDelegate* delegate, Profile* profile)
   registrar_.Add(this,
       NotificationType::TAB_CONTENTS_DESTROYED,
       NotificationService::AllSources());
+  registrar_.Add(this,
+                 NotificationType::EXTENSION_UNLOADED,
+                 Source<Profile>(profile_));
   order_controller_ = new TabStripModelOrderController(this);
 }
 
@@ -104,7 +109,7 @@ void TabStripModel::InsertTabContentsAt(int index,
                                         bool inherit_group) {
   // Make sure the index maintains that all app tab occurs before non-app tabs.
   int first_non_app = IndexOfFirstNonAppTab();
-  if (contents->app())
+  if (contents->is_app())
     index = std::min(first_non_app, index);
   else
     index = std::max(first_non_app, index);
@@ -418,7 +423,7 @@ bool TabStripModel::IsTabPinned(int index) const {
 }
 
 bool TabStripModel::IsAppTab(int index) const {
-  return GetTabContentsAt(index)->app();
+  return GetTabContentsAt(index)->is_app();
 }
 
 bool TabStripModel::IsPhantomTab(int index) const {
@@ -432,7 +437,7 @@ bool TabStripModel::IsTabBlocked(int index) const {
 
 int TabStripModel::IndexOfFirstNonAppTab() const {
   for (size_t i = 0; i < contents_data_.size(); ++i) {
-    if (!contents_data_[i]->contents->app())
+    if (!contents_data_[i]->contents->is_app())
       return static_cast<int>(i);
   }
   // No app tabs.
@@ -670,22 +675,41 @@ std::vector<int> TabStripModel::GetIndexesOpenedBy(int index) const {
 void TabStripModel::Observe(NotificationType type,
                             const NotificationSource& source,
                             const NotificationDetails& details) {
-  DCHECK(type == NotificationType::TAB_CONTENTS_DESTROYED);
-  // Sometimes, on qemu, it seems like a TabContents object can be destroyed
-  // while we still have a reference to it. We need to break this reference
-  // here so we don't crash later.
-  int index = GetIndexOfTabContents(Source<TabContents>(source).ptr());
-  if (index != TabStripModel::kNoTab) {
-    // Note that we only detach the contents here, not close it - it's already
-    // been closed. We just want to undo our bookkeeping.
-    if (IsAppTab(index) && IsTabPinned(index) && !IsPhantomTab(index) &&
-        !closing_all_) {
-      // We don't actually allow pinned tabs to close. Instead they become
-      // phantom.
-      MakePhantom(index);
-    } else {
-      DetachTabContentsAt(index);
+  switch (type.value) {
+    case NotificationType::TAB_CONTENTS_DESTROYED: {
+      // Sometimes, on qemu, it seems like a TabContents object can be destroyed
+      // while we still have a reference to it. We need to break this reference
+      // here so we don't crash later.
+      int index = GetIndexOfTabContents(Source<TabContents>(source).ptr());
+      if (index != TabStripModel::kNoTab) {
+        // Note that we only detach the contents here, not close it - it's
+        // already been closed. We just want to undo our bookkeeping.
+        if (ShouldMakePhantomOnClose(index)) {
+          // We don't actually allow pinned tabs to close. Instead they become
+          // phantom.
+          MakePhantom(index);
+        } else {
+          DetachTabContentsAt(index);
+        }
+      }
+      break;
     }
+
+    case NotificationType::EXTENSION_UNLOADED: {
+      Extension* extension = Details<Extension>(details).ptr();
+      // Iterate backwards as we may remove items while iterating.
+      for (int i = count() - 1; i >= 0; i--) {
+        if (GetTabContentsAt(i)->app_extension() == extension) {
+          // The extension an app tab was created from has been nuked. Delete
+          // the TabContents.
+          delete GetTabContentsAt(i);
+        }
+      }
+      break;
+    }
+
+    default:
+      NOTREACHED();
   }
 }
 
@@ -826,6 +850,23 @@ int TabStripModel::IndexOfNextNonPhantomTab(int index,
 
   // All phantom tabs.
   return start;
+}
+
+bool TabStripModel::ShouldMakePhantomOnClose(int index) {
+  if (IsAppTab(index) && IsTabPinned(index) && !IsPhantomTab(index) &&
+      !closing_all_ && profile()) {
+    ExtensionsService* extension_service = profile()->GetExtensionsService();
+    if (!extension_service)
+      return false;
+
+    Extension* app_extension = GetTabContentsAt(index)->app_extension();
+    DCHECK(app_extension);
+
+    // Only allow the tab to be made phantom if the extension still exists.
+    return extension_service->GetExtensionById(app_extension->id(),
+                                               false) != NULL;
+  }
+  return false;
 }
 
 void TabStripModel::MakePhantom(int index) {

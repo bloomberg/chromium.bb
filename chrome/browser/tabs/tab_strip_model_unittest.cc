@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "app/system_monitor.h"
+#include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
@@ -16,6 +17,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/tabs/tab_strip_model_order_controller.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/property_bag.h"
 #include "chrome/common/url_constants.h"
@@ -1347,10 +1349,17 @@ TEST_F(TabStripModelTest, Apps) {
 
   typedef MockTabStripModelObserver::State State;
 
+#if defined(OS_WIN)
+  FilePath path(FILE_PATH_LITERAL("c:\\foo"));
+#elif defined(OS_POSIX)
+  FilePath path(FILE_PATH_LITERAL("/foo"));
+#endif
+  Extension app_extension(path);
+  app_extension.app_launch_url_ = GURL("http://www.google.com");
   TabContents* contents1 = CreateTabContents();
-  contents1->set_app(true);
+  contents1->SetAppExtension(&app_extension);
   TabContents* contents2 = CreateTabContents();
-  contents2->set_app(true);
+  contents2->SetAppExtension(&app_extension);
   TabContents* contents3 = CreateTabContents();
 
   SetID(contents1, 1);

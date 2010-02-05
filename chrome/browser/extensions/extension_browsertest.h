@@ -70,6 +70,8 @@ class ExtensionBrowserTest
 
   bool loaded_;
   bool installed_;
+
+  // test_data/extensions.
   FilePath test_data_dir_;
   std::string last_loaded_extension_id_;
   int extension_installs_observed_;

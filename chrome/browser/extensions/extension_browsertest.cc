@@ -30,8 +30,6 @@
 // minimize false positives.
 static const int kTimeoutMs = 60 * 1000;  // 1 minute
 
-// Base class for extension browser tests. Provides utilities for loading,
-// unloading, and installing extensions.
 void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   // This enables DOM automation for tab contentses.
   EnableDOMAutomation();

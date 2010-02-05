@@ -783,10 +783,10 @@ bool Extension::InitFromValue(const DictionaryValue& source, bool require_id,
   if (source.HasKey(keys::kPublicKey)) {
     std::string public_key_bytes;
     if (!source.GetString(keys::kPublicKey, &public_key_) ||
-      !ParsePEMKeyBytes(public_key_, &public_key_bytes) ||
-      !GenerateId(public_key_bytes, &id_)) {
-        *error = errors::kInvalidKey;
-        return false;
+        !ParsePEMKeyBytes(public_key_, &public_key_bytes) ||
+        !GenerateId(public_key_bytes, &id_)) {
+      *error = errors::kInvalidKey;
+      return false;
     }
   } else if (require_id) {
     *error = errors::kInvalidKey;

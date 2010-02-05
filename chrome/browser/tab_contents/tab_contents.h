@@ -73,6 +73,7 @@ class AutoFillManager;
 class BlockedPopupContainer;
 class DOMUI;
 class DownloadItem;
+class Extension;
 class FormFieldHistoryManager;
 class LoadNotificationDetails;
 class OmniboxSearchHint;
@@ -120,7 +121,6 @@ class TabContents : public PageNavigator,
 
   // |base_tab_contents| is used if we want to size the new tab contents view
   // based on an existing tab contents view.  This can be NULL if not needed.
-  // TODO(sky): make constructor take Extension.
   TabContents(Profile* profile,
               SiteInstance* site_instance,
               int routing_id,
@@ -184,10 +184,16 @@ class TabContents : public PageNavigator,
     return fav_icon_helper_;
   }
 
-  // TODO(sky): whether a tab is an app should be determined by the constructor,
-  // not a setter, and should likely take the extension.
-  void set_app(bool app) { app_ = app; }
-  bool app() const { return app_; }
+  // Sets the extension denoting this as an app. If |extension| is non-null this
+  // tab becomes an app-tab. TabContents does not listen for unload events for
+  // the extension. It's up to consumers of TabContents to do that.
+  //
+  // NOTE: this should only be manipulated before the tab is added to a browser.
+  // TODO(sky): resolve if this is the right way to identify an app tab. If it
+  // is, than this should be passed in the constructor.
+  void SetAppExtension(Extension* extension);
+  Extension* app_extension() const { return app_extension_; }
+  bool is_app() const { return app_extension_ != NULL; }
 
 #ifdef UNIT_TEST
   // Expose the render manager for testing.
@@ -1184,9 +1190,9 @@ class TabContents : public PageNavigator,
   // profile
   scoped_refptr<URLRequestContextGetter> request_context_;
 
-  // This is temporary until wired to extensions.
-  // TODO(sky): fix this.
-  bool app_;
+  // If non-null this tab is an app tab and this is the extension the tab was
+  // created for.
+  Extension* app_extension_;
 
   // ---------------------------------------------------------------------------
 
