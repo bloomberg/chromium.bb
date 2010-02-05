@@ -1044,7 +1044,10 @@ int TabStripGtk::GetPinnedTabCount() const {
 }
 
 int TabStripGtk::GetAvailableWidthForTabs(TabGtk* last_tab) const {
-  return last_tab->x() - bounds_.x() + last_tab->width();
+  if (l10n_util::GetTextDirection() == l10n_util::LEFT_TO_RIGHT)
+    return last_tab->x() - bounds_.x() + last_tab->width();
+  else
+    return bounds_.width() - last_tab->x();
 }
 
 int TabStripGtk::GetIndexOfTab(const TabGtk* tab) const {
