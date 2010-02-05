@@ -11,6 +11,17 @@
 
 // Holds information about a form to be filled and/or submitted.
 struct FormData {
+  FormData() {}
+  FormData(const FormData& data)
+      : name(data.name),
+        origin(data.origin),
+        action(data.action),
+        elements(data.elements),
+        values(data.values),
+        submit(data.submit) {}
+
+  // The name of the form.
+  string16 name;
   // The URL (minus query parameters) containing the form
   GURL origin;
   // The action target of the form

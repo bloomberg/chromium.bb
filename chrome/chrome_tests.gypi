@@ -847,6 +847,7 @@
         'common/worker_thread_ticker_unittest.cc',
         'common/zip_unittest.cc',
         'renderer/audio_message_filter_unittest.cc',
+        'renderer/form_manager_unittest.cc',
         'renderer/media/audio_renderer_impl_unittest.cc',
         'renderer/extensions/extension_api_client_unittest.cc',
         'renderer/extensions/json_schema_unittest.cc',
