@@ -300,15 +300,22 @@ void BookmarkBarGtk::Show(bool animate) {
   // Hide out behind the findbar. This is rather fragile code, it could
   // probably be improved.
   if (floating_) {
-    // This block is necessary for GTK+ theme mode.
-    if (GTK_WIDGET_REALIZED(event_box_->parent))
-      gdk_window_lower(event_box_->parent->window);
-    if (GTK_WIDGET_REALIZED(event_box_.get()))
-      gdk_window_lower(event_box_->window);
-
-    // This block is necessary for normal theme mode.
-    if (GTK_WIDGET_REALIZED(paint_box_))
-      gdk_window_lower(paint_box_->window);
+    if (theme_provider_->UseGtkTheme()) {
+      if (GTK_WIDGET_REALIZED(event_box_->parent))
+        gdk_window_lower(event_box_->parent->window);
+      if (GTK_WIDGET_REALIZED(event_box_.get()))
+        gdk_window_lower(event_box_->window);
+    } else {  // Chromium theme mode.
+      if (GTK_WIDGET_REALIZED(paint_box_)) {
+        gdk_window_lower(paint_box_->window);
+        // The event box won't stay below its children's GdkWindows unless we
+        // toggle the above-child property here. If the event box doesn't stay
+        // below its children then events will be routed to it rather than the
+        // children.
+        gtk_event_box_set_above_child(GTK_EVENT_BOX(event_box_.get()), TRUE);
+        gtk_event_box_set_above_child(GTK_EVENT_BOX(event_box_.get()), FALSE);
+      }
+    }
   }
 
   if (sync_ui_util::ShouldShowSyncErrorButton(sync_service_)) {
