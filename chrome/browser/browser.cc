@@ -682,7 +682,7 @@ TabContents* Browser::AddRestoredTab(
                                          from_last_session);
 
   bool really_pin =
-      (pin && tab_index == tabstrip_model()->IndexOfFirstNonAppTab());
+      (pin && tab_index == tabstrip_model()->IndexOfFirstNonMiniTab());
   tabstrip_model_.InsertTabContentsAt(tab_index, new_tab, select, false);
   if (really_pin)
     tabstrip_model_.SetTabPinned(tab_index, true);

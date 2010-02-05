@@ -106,13 +106,14 @@ void TabStripModel::AppendTabContents(TabContents* contents, bool foreground) {
 void TabStripModel::InsertTabContentsAt(int index,
                                         TabContents* contents,
                                         bool foreground,
-                                        bool inherit_group) {
+                                        bool inherit_group,
+                                        bool pinned) {
   // Make sure the index maintains that all app tab occurs before non-app tabs.
-  int first_non_app = IndexOfFirstNonAppTab();
-  if (contents->is_app())
-    index = std::min(first_non_app, index);
+  int first_non_mini_tab = IndexOfFirstNonMiniTab();
+  if (contents->is_app() || pinned)
+    index = std::min(first_non_mini_tab, index);
   else
-    index = std::max(first_non_app, index);
+    index = std::max(first_non_mini_tab, index);
 
   // In tab dragging situations, if the last tab in the window was detached
   // then the user aborted the drag, we will have the |closing_all_| member
@@ -125,6 +126,7 @@ void TabStripModel::InsertTabContentsAt(int index,
   // since the old contents and the new contents will be the same...
   TabContents* selected_contents = GetSelectedTabContents();
   TabContentsData* data = new TabContentsData(contents);
+  data->pinned = pinned;
   if (inherit_group && selected_contents) {
     if (foreground) {
       // Forget any existing relationships, we don't want to make things too
@@ -205,29 +207,15 @@ void TabStripModel::MoveTabContentsAt(int index, int to_position,
   if (index == to_position)
     return;
 
-  int first_non_app_tab = IndexOfFirstNonAppTab();
-  if ((index < first_non_app_tab && to_position >= first_non_app_tab) ||
-      (to_position < first_non_app_tab && index >= first_non_app_tab)) {
-    // This would result in app tabs mixed with non-app tabs. We don't allow
+  int first_non_mini_tab = IndexOfFirstNonMiniTab();
+  if ((index < first_non_mini_tab && to_position >= first_non_mini_tab) ||
+      (to_position < first_non_mini_tab && index >= first_non_mini_tab)) {
+    // This would result in mini tabs mixed with non-mini tabs. We don't allow
     // that.
     return;
   }
 
-  TabContentsData* moved_data = contents_data_.at(index);
-  contents_data_.erase(contents_data_.begin() + index);
-  contents_data_.insert(contents_data_.begin() + to_position, moved_data);
-
-  // if !select_after_move, keep the same tab selected as was selected before.
-  if (select_after_move || index == selected_index_) {
-    selected_index_ = to_position;
-  } else if (index < selected_index_ && to_position >= selected_index_) {
-    selected_index_--;
-  } else if (index > selected_index_ && to_position <= selected_index_) {
-    selected_index_++;
-  }
-
-  FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                    TabMoved(moved_data->contents, index, to_position));
+  MoveTabContentsAtImpl(index, to_position, select_after_move);
 }
 
 TabContents* TabStripModel::GetSelectedTabContents() const {
@@ -398,23 +386,40 @@ void TabStripModel::SetTabBlocked(int index, bool blocked) {
 
 void TabStripModel::SetTabPinned(int index, bool pinned) {
   DCHECK(ContainsIndex(index));
-  int first_non_app_tab = IndexOfFirstNonAppTab();
-  if (index >= first_non_app_tab)
-    return;  // Only allow pinning of app tabs.
-
   if (contents_data_[index]->pinned == pinned)
     return;
 
-  contents_data_[index]->pinned = pinned;
+  if (IsAppTab(index)) {
+    // Changing the pinned state of an app tab doesn't effect it's mini-tab
+    // status.
+    contents_data_[index]->pinned = pinned;
+  } else {
+    // The tab is not an app tab, it's position may have to change as the
+    // mini-tab state is changing.
+    int non_mini_tab_index = IndexOfFirstNonMiniTab();
+    contents_data_[index]->pinned = pinned;
+    if (pinned && index != non_mini_tab_index) {
+      MoveTabContentsAtImpl(index, non_mini_tab_index, false);
+      return;  // Don't send TabPinnedStateChanged notification.
+    } else if (!pinned && index + 1 != non_mini_tab_index) {
+      MoveTabContentsAtImpl(index, non_mini_tab_index - 1, false);
+      return;  // Don't send TabPinnedStateChanged notification.
+    }
+  }
 
-  // Notify observers of new state.
+  // else: the tab was at the boundary and it's position doesn't need to
+  // change.
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-                      TabPinnedStateChanged(contents_data_[index]->contents,
-                                            index));
+                    TabPinnedStateChanged(contents_data_[index]->contents,
+                                          index));
 }
 
 bool TabStripModel::IsTabPinned(int index) const {
   return contents_data_[index]->pinned;
+}
+
+bool TabStripModel::IsMiniTab(int index) const {
+  return IsTabPinned(index) || IsAppTab(index);
 }
 
 bool TabStripModel::IsAppTab(int index) const {
@@ -430,12 +435,12 @@ bool TabStripModel::IsTabBlocked(int index) const {
   return contents_data_[index]->blocked;
 }
 
-int TabStripModel::IndexOfFirstNonAppTab() const {
+int TabStripModel::IndexOfFirstNonMiniTab() const {
   for (size_t i = 0; i < contents_data_.size(); ++i) {
-    if (!contents_data_[i]->contents->is_app())
+    if (!contents_data_[i]->contents->is_app() && !contents_data_[i]->pinned)
       return static_cast<int>(i);
   }
-  // No app tabs.
+  // No mini-tabs.
   return count();
 }
 
@@ -477,6 +482,8 @@ void TabStripModel::AddTabContents(TabContents* contents,
     inherit_group = true;
   }
   InsertTabContentsAt(index, contents, foreground, inherit_group);
+  // Reset the index, just in case insert ended up moving it on us.
+  index = GetIndexOfTabContents(contents);
   if (inherit_group && transition == PageTransition::TYPED)
     contents_data_.at(index)->reset_group_on_select = true;
 
@@ -549,24 +556,23 @@ bool TabStripModel::IsContextMenuCommandEnabled(
         return false;
       }
     case CommandCloseOtherTabs:
-      // Close other doesn't effect app tabs.
-      return count() > IndexOfFirstNonAppTab();
+      // Close other doesn't effect mini-tabs.
+      return count() > IndexOfFirstNonMiniTab();
     case CommandCloseTabsToRight:
-      // Close doesn't effect app tabs.
-      return count() != IndexOfFirstNonAppTab() &&
+      // Close doesn't effect mini-tabs.
+      return count() != IndexOfFirstNonMiniTab() &&
           context_index < (count() - 1);
     case CommandCloseTabsOpenedBy: {
       int next_index = GetIndexOfNextTabContentsOpenedBy(
           &GetTabContentsAt(context_index)->controller(), context_index, true);
-      return next_index != kNoTab && !IsAppTab(next_index);
+      return next_index != kNoTab && !IsMiniTab(next_index);
     }
     case CommandDuplicate:
       return delegate_->CanDuplicateContentsAt(context_index);
     case CommandRestoreTab:
       return delegate_->CanRestoreTab();
     case CommandTogglePinned:
-      // Only app tabs can be pinned.
-      return IsAppTab(context_index);
+      return true;
     case CommandBookmarkAllTabs: {
       return delegate_->CanBookmarkAllTabs();
     }
@@ -601,7 +607,7 @@ void TabStripModel::ExecuteContextMenuCommand(
       TabContents* contents = GetTabContentsAt(context_index);
       std::vector<int> closing_tabs;
       for (int i = count() - 1; i >= 0; --i) {
-        if (GetTabContentsAt(i) != contents && !IsAppTab(i))
+        if (GetTabContentsAt(i) != contents && !IsMiniTab(i))
           closing_tabs.push_back(i);
       }
       InternalCloseTabs(closing_tabs, true);
@@ -611,7 +617,7 @@ void TabStripModel::ExecuteContextMenuCommand(
       UserMetrics::RecordAction("TabContextMenu_CloseTabsToRight", profile_);
       std::vector<int> closing_tabs;
       for (int i = count() - 1; i > context_index; --i) {
-        if (!IsAppTab(i))
+        if (!IsMiniTab(i))
           closing_tabs.push_back(i);
       }
       InternalCloseTabs(closing_tabs, true);
@@ -622,7 +628,7 @@ void TabStripModel::ExecuteContextMenuCommand(
       std::vector<int> closing_tabs = GetIndexesOpenedBy(context_index);
       for (std::vector<int>::iterator i = closing_tabs.begin();
            i != closing_tabs.end();) {
-        if (IsAppTab(*i))
+        if (IsMiniTab(*i))
           i = closing_tabs.erase(i);
         else
           ++i;
@@ -696,7 +702,9 @@ void TabStripModel::Observe(NotificationType type,
       for (int i = count() - 1; i >= 0; i--) {
         if (GetTabContentsAt(i)->app_extension() == extension) {
           // The extension an app tab was created from has been nuked. Delete
-          // the TabContents.
+          // the TabContents. Deleting a TabContents results in a notification
+          // of type TAB_CONTENTS_DESTROYED; we do the necessary cleanup in
+          // handling that notification.
           delete GetTabContentsAt(i);
         }
       }
@@ -848,8 +856,8 @@ int TabStripModel::IndexOfNextNonPhantomTab(int index,
 }
 
 bool TabStripModel::ShouldMakePhantomOnClose(int index) {
-  if (IsAppTab(index) && IsTabPinned(index) && !IsPhantomTab(index) &&
-      !closing_all_ && profile()) {
+  if (IsTabPinned(index) && !IsPhantomTab(index) && !closing_all_ &&
+      profile()) {
     ExtensionsService* extension_service = profile()->GetExtensionsService();
     if (!extension_service)
       return false;
@@ -885,6 +893,26 @@ void TabStripModel::MakePhantom(int index) {
   // And notify observers.
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
                     TabReplacedAt(old_contents, new_contents, index));
+}
+
+
+void TabStripModel::MoveTabContentsAtImpl(int index, int to_position,
+                                          bool select_after_move) {
+  TabContentsData* moved_data = contents_data_.at(index);
+  contents_data_.erase(contents_data_.begin() + index);
+  contents_data_.insert(contents_data_.begin() + to_position, moved_data);
+
+  // if !select_after_move, keep the same tab selected as was selected before.
+  if (select_after_move || index == selected_index_) {
+    selected_index_ = to_position;
+  } else if (index < selected_index_ && to_position >= selected_index_) {
+    selected_index_--;
+  } else if (index > selected_index_ && to_position <= selected_index_) {
+    selected_index_++;
+  }
+
+  FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
+                    TabMoved(moved_data->contents, index, to_position));
 }
 
 // static

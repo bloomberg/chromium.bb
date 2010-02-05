@@ -191,7 +191,6 @@ class MockTabStripModelObserver : public TabStripModelObserver {
           dst_index(a_dst_index),
           user_gesture(false),
           foreground(false),
-          pinned_state_changed(false),
           action(a_action) {
     }
 
@@ -201,7 +200,6 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     int dst_index;
     bool user_gesture;
     bool foreground;
-    bool pinned_state_changed;
     TabStripModelObserverAction action;
   };
 
@@ -222,7 +220,6 @@ class MockTabStripModelObserver : public TabStripModelObserver {
     EXPECT_EQ(s->dst_index, state.dst_index);
     EXPECT_EQ(s->user_gesture, state.user_gesture);
     EXPECT_EQ(s->foreground, state.foreground);
-    EXPECT_EQ(s->pinned_state_changed, state.pinned_state_changed);
     EXPECT_EQ(s->action, state.action);
     return (s->src_contents == state.src_contents &&
             s->dst_contents == state.dst_contents &&
@@ -230,7 +227,6 @@ class MockTabStripModelObserver : public TabStripModelObserver {
             s->dst_index == state.dst_index &&
             s->user_gesture == state.user_gesture &&
             s->foreground == state.foreground &&
-            s->pinned_state_changed == state.pinned_state_changed &&
             s->action == state.action);
   }
 
@@ -1458,6 +1454,164 @@ TEST_F(TabStripModelTest, Apps) {
     EXPECT_EQ("2a 1a 3", GetPinnedState(tabstrip));
 
     observer.ClearStates();
+  }
+
+  tabstrip.CloseAllTabs();
+}
+
+// Tests various permutations of pinning tabs.
+TEST_F(TabStripModelTest, Pinning) {
+  TabStripDummyDelegate delegate(NULL);
+  TabStripModel tabstrip(&delegate, profile());
+  MockTabStripModelObserver observer;
+  tabstrip.AddObserver(&observer);
+
+  EXPECT_TRUE(tabstrip.empty());
+
+  typedef MockTabStripModelObserver::State State;
+
+  TabContents* contents1 = CreateTabContents();
+  TabContents* contents2 = CreateTabContents();
+  TabContents* contents3 = CreateTabContents();
+
+  SetID(contents1, 1);
+  SetID(contents2, 2);
+  SetID(contents3, 3);
+
+  // Note! The ordering of these tests is important, each subsequent test
+  // builds on the state established in the previous. This is important if you
+  // ever insert tests rather than append.
+
+  // Initial state, three tabs, first selected.
+  tabstrip.AppendTabContents(contents1, true);
+  tabstrip.AppendTabContents(contents2, false);
+  tabstrip.AppendTabContents(contents3, false);
+
+  observer.ClearStates();
+
+  // Pin the first tab, this shouldn't visually reorder anything.
+  {
+    tabstrip.SetTabPinned(0, true);
+
+    // As the order didn't change, we should get a pinned notification.
+    ASSERT_EQ(1, observer.GetStateCount());
+    State state(contents1, 0, MockTabStripModelObserver::PINNED);
+    EXPECT_TRUE(observer.StateEquals(0, state));
+
+    // And verify the state.
+    EXPECT_EQ("1p 2 3", GetPinnedState(tabstrip));
+
+    observer.ClearStates();
+  }
+
+  // Unpin the first tab.
+  {
+    tabstrip.SetTabPinned(0, false);
+
+    // As the order didn't change, we should get a pinned notification.
+    ASSERT_EQ(1, observer.GetStateCount());
+    State state(contents1, 0, MockTabStripModelObserver::PINNED);
+    EXPECT_TRUE(observer.StateEquals(0, state));
+
+    // And verify the state.
+    EXPECT_EQ("1 2 3", GetPinnedState(tabstrip));
+
+    observer.ClearStates();
+  }
+
+  // Pin the 3rd tab, which should move it to the front.
+  {
+    tabstrip.SetTabPinned(2, true);
+
+    // The pinning should have resulted in a move.
+    ASSERT_EQ(1, observer.GetStateCount());
+    State state(contents3, 0, MockTabStripModelObserver::MOVE);
+    state.src_index = 2;
+    EXPECT_TRUE(observer.StateEquals(0, state));
+
+    // And verify the state.
+    EXPECT_EQ("3p 1 2", GetPinnedState(tabstrip));
+
+    observer.ClearStates();
+  }
+
+  // Pin the tab "1", which shouldn't move anything.
+  {
+    tabstrip.SetTabPinned(1, true);
+
+    // As the order didn't change, we should get a pinned notification.
+    ASSERT_EQ(1, observer.GetStateCount());
+    State state(contents1, 1, MockTabStripModelObserver::PINNED);
+    EXPECT_TRUE(observer.StateEquals(0, state));
+
+    // And verify the state.
+    EXPECT_EQ("3p 1p 2", GetPinnedState(tabstrip));
+
+    observer.ClearStates();
+  }
+
+  // Try to move tab "2" to the front, it should be ignored.
+  {
+    tabstrip.MoveTabContentsAt(2, 0, false);
+
+    // As the order didn't change, we should get a pinned notification.
+    ASSERT_EQ(0, observer.GetStateCount());
+
+    // And verify the state.
+    EXPECT_EQ("3p 1p 2", GetPinnedState(tabstrip));
+
+    observer.ClearStates();
+  }
+
+  // Unpin tab "3", which implicitly moves it to the end.
+  {
+    tabstrip.SetTabPinned(0, false);
+
+    ASSERT_EQ(1, observer.GetStateCount());
+    State state(contents3, 1, MockTabStripModelObserver::MOVE);
+    state.src_index = 0;
+    EXPECT_TRUE(observer.StateEquals(0, state));
+
+    // And verify the state.
+    EXPECT_EQ("1p 3 2", GetPinnedState(tabstrip));
+
+    observer.ClearStates();
+  }
+
+  // Unpin tab "3", nothing should happen.
+  {
+    tabstrip.SetTabPinned(1, false);
+
+    ASSERT_EQ(0, observer.GetStateCount());
+
+    EXPECT_EQ("1p 3 2", GetPinnedState(tabstrip));
+
+    observer.ClearStates();
+  }
+
+  // Pin "3" and "1".
+  {
+    tabstrip.SetTabPinned(0, true);
+    tabstrip.SetTabPinned(1, true);
+
+    EXPECT_EQ("1p 3p 2", GetPinnedState(tabstrip));
+
+    observer.ClearStates();
+  }
+
+  TabContents* contents4 = CreateTabContents();
+  SetID(contents4, 4);
+
+  // Insert "4" between "1" and "3". As "1" and "4" are pinned, "4" should end
+  // up after them.
+  {
+    tabstrip.InsertTabContentsAt(1, contents4, false, false);
+
+    ASSERT_EQ(1, observer.GetStateCount());
+    State state(contents4, 2, MockTabStripModelObserver::INSERT);
+    EXPECT_TRUE(observer.StateEquals(0, state));
+
+    EXPECT_EQ("1p 3p 4 2", GetPinnedState(tabstrip));
   }
 
   tabstrip.CloseAllTabs();

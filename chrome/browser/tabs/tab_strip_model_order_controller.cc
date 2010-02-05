@@ -27,7 +27,7 @@ int TabStripModelOrderController::DetermineInsertionIndex(
   if (!tab_count)
     return 0;
 
-  int first_non_app_tab = tabstrip_->IndexOfFirstNonAppTab();
+  int first_non_app_tab = tabstrip_->IndexOfFirstNonMiniTab();
   if (transition == PageTransition::LINK && tabstrip_->selected_index() != -1) {
     if (foreground) {
       // If the page was opened in the foreground by a link click in another

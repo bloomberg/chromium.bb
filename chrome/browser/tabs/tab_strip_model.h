@@ -103,7 +103,8 @@ class TabStripModelObserver {
   virtual void TabReplacedAt(TabContents* old_contents,
                              TabContents* new_contents, int index) {}
 
-  // Invoked when the pinned state of a tab changes.
+  // Invoked when the mini state of a tab changes. This is not invoked if the
+  // tab ends up moving as a result of the mini state changing.
   virtual void TabPinnedStateChanged(TabContents* contents, int index) {}
 
   // Invoked when the blocked state of a tab changes.
@@ -229,16 +230,21 @@ class TabStripModelDelegate {
 //  tasks like adding new Tabs from just a URL, etc.
 //
 // Each tab may be any one of the following states:
-// . App. Corresponds to an extension that wants an app tab. App tabs are
-//   rendered differently than non-app tabs. The model makes sure all app tabs
-//   are at the beginning of the tab strip. Requests to insert a non-app tab
-//   before app tabs or an app tab after the app tabs is ignored (the UI
-//   disallows this). Similarly requests to move an app tab to be with non-app
-//   tabs is ignored.
-// . Pinned. Only app tabs can be pinned. A pinned tab is made phantom when
-///  closed.
-// . Phantom. Only app pinned tabs may be made phantom. When a tab that can be
-//   made phantom is closed the renderer is shutdown, a new
+// . Mini-tab. Mini tabs are locked to the left side of the tab strip and
+//   rendered differently (small tabs with only a favicon). The model makes
+//   sure all mini-tabs are at the beginning of the tab strip. For example,
+//   if a non-mini tab is added it is forced to be with non-mini tabs. Requests
+//   to move tabs outside the range of the tab type are ignored. For example,
+//   a request to move a mini-tab after non-mini-tabs is ignored.
+//   You'll notice there is no explcit api for making a tab a mini-tab, rather
+//   there are two tab types that are implicitly mini-tabs:
+//   . App. Corresponds to an extension that wants an app tab. App tabs are
+//     identified by TabContents::is_app().
+//   . Pinned. Any tab can be pinned. A pinned tab is made phantom when closed.
+//     Non-app tabs whose pinned state is changed are moved to be with other
+//     mini-tabs or non-mini tabs.
+// . Phantom. Only pinned tabs may be made phantom. When a tab that can be made
+//   phantom is closed the renderer is shutdown, a new
 //   TabContents/NavigationController is created that has not yet loaded the
 //   renderer and observers are notified via the TabReplacedAt method. When a
 //   phantom tab is selected the renderer is loaded and the tab is no longer
@@ -317,6 +323,15 @@ class TabStripModel : public NotificationObserver {
   // foreground inherit the group of the previously selected tab.
   void AppendTabContents(TabContents* contents, bool foreground);
 
+  // TODO(sky): convert callers over to new variant, and consider using a
+  // bitmask rather than bools.
+  void InsertTabContentsAt(int index,
+                           TabContents* contents,
+                           bool foreground,
+                           bool inherit_group) {
+    InsertTabContentsAt(index, contents, foreground, inherit_group, false);
+  }
+
   // Adds the specified TabContents in the specified location. If
   // |inherit_group| is true, the new contents is linked to the current tab's
   // group. This adjusts the index such that all app tabs occur before non-app
@@ -324,7 +339,8 @@ class TabStripModel : public NotificationObserver {
   void InsertTabContentsAt(int index,
                            TabContents* contents,
                            bool foreground,
-                           bool inherit_group);
+                           bool inherit_group,
+                           bool pinned);
 
   // Closes the TabContents at the specified index. This causes the TabContents
   // to be destroyed, but it may not happen immediately (e.g. if it's a
@@ -453,6 +469,10 @@ class TabStripModel : public NotificationObserver {
   // See description above class for details on pinned tabs.
   bool IsTabPinned(int index) const;
 
+  // Is the tab a mini-tab?
+  // See description above class for details on this.
+  bool IsMiniTab(int index) const;
+
   // Is the tab at |index| an app?
   // See description above class for details on app tabs.
   bool IsAppTab(int index) const;
@@ -465,9 +485,10 @@ class TabStripModel : public NotificationObserver {
   // Returns true if the tab at |index| is blocked by a tab modal dialog.
   bool IsTabBlocked(int index) const;
 
-  // Returns the index of the first tab that is not an app. This returns
-  // |count()| if all of the tabs are apps, and 0 if none of the tabs are apps.
-  int IndexOfFirstNonAppTab() const;
+  // Returns the index of the first tab that is not a mini-tab. This returns
+  // |count()| if all of the tabs are mini-tabs, and 0 if none of the tabs are
+  // mini-tabs.
+  int IndexOfFirstNonMiniTab() const;
 
   // Command level API /////////////////////////////////////////////////////////
 
@@ -599,6 +620,12 @@ class TabStripModel : public NotificationObserver {
   // Makes the tab a phantom tab.
   void MakePhantom(int index);
 
+  // Does the work of MoveTabContentsAt. This has no checks to make sure the
+  // position is valid, those are done in MoveTabContentsAt.
+  void MoveTabContentsAtImpl(int index,
+                             int to_position,
+                             bool select_after_move);
+
   // Returns true if the tab represented by the specified data has an opener
   // that matches the specified one. If |use_group| is true, then this will
   // fall back to check the group relationship as well.
@@ -662,7 +689,6 @@ class TabStripModel : public NotificationObserver {
     bool reset_group_on_select;
 
     // Is the tab pinned?
-    // TODO(sky): decide if we really want this, or call it phantomable.
     bool pinned;
 
     // Is the tab interaction blocked by a modal dialog?

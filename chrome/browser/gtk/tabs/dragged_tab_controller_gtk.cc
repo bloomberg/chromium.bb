@@ -302,7 +302,7 @@ void DraggedTabControllerGtk::MoveTab(const gfx::Point& screen_point) {
       if (!dragged_tab_->is_pinned()) {
         // If the dragged tab isn't pinned, don't allow the drag to a pinned
         // tab.
-        to_index = std::max(to_index, attached_model->IndexOfFirstNonAppTab());
+        to_index = std::max(to_index, attached_model->IndexOfFirstNonMiniTab());
       }
       if (from_index != to_index) {
         last_move_screen_x_ = screen_point.x();
@@ -345,7 +345,7 @@ void DraggedTabControllerGtk::StartPinTimerIfNecessary(
     return;
 
   TabStripModel* attached_model = attached_tabstrip_->model();
-  int pinned_count = attached_model->IndexOfFirstNonAppTab();
+  int pinned_count = attached_model->IndexOfFirstNonMiniTab();
   if (pinned_count > 0)
     return;
 
@@ -368,7 +368,7 @@ void DraggedTabControllerGtk::AdjustDragPointForPinnedTabs(
     int* from_index,
     gfx::Point* dragged_tab_point) {
   TabStripModel* attached_model = attached_tabstrip_->model();
-  int pinned_count = attached_model->IndexOfFirstNonAppTab();
+  int pinned_count = attached_model->IndexOfFirstNonMiniTab();
   if (pinned_count == 0)
     return;
 
@@ -579,7 +579,7 @@ gfx::Point DraggedTabControllerGtk::ConvertScreenPointToTabStripPoint(
 }
 
 int DraggedTabControllerGtk::GetPinnedThreshold() {
-  int pinned_count = attached_tabstrip_->model()->IndexOfFirstNonAppTab();
+  int pinned_count = attached_tabstrip_->model()->IndexOfFirstNonMiniTab();
   if (pinned_count == 0)
     return 0;
   if (!dragged_tab_->is_pinned()) {
