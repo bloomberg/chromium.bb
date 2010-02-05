@@ -7,6 +7,7 @@
 
 #include <assert.h>
 
+#include "base/logging.h"
 #include "base/string16.h"
 #include "base/basictypes.h"
 
@@ -38,7 +39,7 @@ class GenericPollingPolicy : public PollingPolicyInterface {
     } else if (polling_interval_ == DEFAULT_INTERVAL) {
       polling_interval_ = NO_CHANGE_INTERVAL;
     } else {
-      assert(polling_interval_ == NO_CHANGE_INTERVAL ||
+      DCHECK(polling_interval_ == NO_CHANGE_INTERVAL ||
              polling_interval_ == TWO_NO_CHANGE_INTERVAL);
       polling_interval_ = TWO_NO_CHANGE_INTERVAL;
     }

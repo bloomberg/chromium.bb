@@ -14,7 +14,7 @@ bool ConvertToAccessPointData(const NDIS_WLAN_BSSID& data,
                               AccessPointData *access_point_data) {
   // Currently we get only MAC address, signal strength and SSID.
   // TODO(steveblock): Work out how to get age, channel and signal-to-noise.
-  assert(access_point_data);
+  DCHECK(access_point_data);
   access_point_data->mac_address = MacAddressAsString16(data.MacAddress);
   access_point_data->radio_signal_strength = data.Rssi;
   // Note that _NDIS_802_11_SSID::Ssid::Ssid is not null-terminated.
