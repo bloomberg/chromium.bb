@@ -17,7 +17,15 @@ class TabContents;
 class InfoBarContainer : public views::View,
                          public NotificationObserver {
  public:
-  explicit InfoBarContainer(BrowserView* browser_view);
+  // Implement this interface when you want to receive notifications from the
+  // InfoBarContainer
+  class Delegate {
+   public:
+    virtual ~Delegate() {}
+    virtual void InfoBarSizeChanged(bool is_animating) = 0;
+  };
+
+  explicit InfoBarContainer(Delegate* delegate);
   virtual ~InfoBarContainer();
 
   // Changes the TabContents for which this container is showing InfoBars. Can
@@ -73,8 +81,8 @@ class InfoBarContainer : public views::View,
 
   NotificationRegistrar registrar_;
 
-  // The BrowserView that hosts this InfoBarContainer.
-  BrowserView* browser_view_;
+  // The Delegate which receives notifications from the InfoBarContainer.
+  Delegate* delegate_;
 
   // The TabContents for which we are currently showing InfoBars.
   TabContents* tab_contents_;

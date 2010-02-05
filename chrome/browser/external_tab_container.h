@@ -13,6 +13,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "chrome/browser/views/infobars/infobar_container.h"
 #include "chrome/browser/views/unhandled_keyboard_event_handler.h"
 #include "chrome/common/navigation_types.h"
 #include "chrome/common/notification_observer.h"
@@ -37,7 +38,8 @@ class ExternalTabContainer : public TabContentsDelegate,
                              public NotificationObserver,
                              public views::WidgetWin,
                              public base::RefCounted<ExternalTabContainer>,
-                             public views::AcceleratorTarget {
+                             public views::AcceleratorTarget,
+                             public InfoBarContainer::Delegate {
  public:
   typedef std::map<intptr_t, scoped_refptr<ExternalTabContainer> > PendingTabs;
 
@@ -183,6 +185,9 @@ class ExternalTabContainer : public TabContentsDelegate,
     pending_ = pending;
   }
 
+  // InfoBarContainer::Delegate overrides
+  virtual void InfoBarSizeChanged(bool is_animating);
+
  protected:
   // Overridden from views::WidgetWin:
   virtual LRESULT OnCreate(LPCREATESTRUCT create_struct);
@@ -230,6 +235,9 @@ class ExternalTabContainer : public TabContentsDelegate,
 
   // Scheduled as a task in ExternalTabContainer::Reinitialize
   void OnReinitialize();
+
+  // Creates and initializes the view hierarchy for this ExternalTabContainer.
+  void SetupExternalTabView();
 
   TabContents* tab_contents_;
   scoped_refptr<AutomationProvider> automation_;

@@ -18,6 +18,8 @@
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/views/frame/browser_frame.h"
+#include "chrome/browser/views/infobars/infobar_container.h"
+#include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/browser/views/tabs/base_tab_strip.h"
 #include "chrome/browser/views/unhandled_keyboard_event_handler.h"
 #include "views/window/client_view.h"
@@ -71,7 +73,8 @@ class BrowserView : public BrowserWindow,
                     public TabStripModelObserver,
                     public menus::SimpleMenuModel::Delegate,
                     public views::WindowDelegate,
-                    public views::ClientView {
+                    public views::ClientView,
+                    public InfoBarContainer::Delegate {
  public:
   // The browser view's class name.
   static const char kViewClassName[];
@@ -361,6 +364,9 @@ class BrowserView : public BrowserWindow,
   virtual bool GetAccessibleRole(AccessibilityTypes::Role* role);
   virtual bool GetAccessibleName(std::wstring* name);
   virtual void SetAccessibleName(const std::wstring& name);
+
+  // InfoBarContainer::Delegate overrides
+  virtual void InfoBarSizeChanged(bool is_animating);
 
   // Returns BrowserExtender.
   BrowserExtender* browser_extender() const {

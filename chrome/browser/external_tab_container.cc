@@ -30,6 +30,8 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "grit/generated_resources.h"
+#include "views/grid_layout.h"
+#include "views/widget/root_view.h"
 #include "views/window/window.h"
 
 static const wchar_t kWindowObjectKey[] = L"ChromeWindowObject";
@@ -105,14 +107,6 @@ bool ExternalTabContainer::Init(Profile* profile,
         BindingsPolicy::EXTERNAL_HOST);
   }
 
-  // Create a TabContentsContainer to handle focus cycling using Tab and
-  // Shift-Tab.
-  tab_contents_container_ = new TabContentsContainer;
-  SetContentsView(tab_contents_container_);
-
-  // Note that SetTabContents must be called after AddChildView is called
-  tab_contents_container_->ChangeTabContents(tab_contents_);
-
   NavigationController* controller = &tab_contents_->controller();
   registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
                  Source<NavigationController>(controller));
@@ -156,6 +150,7 @@ bool ExternalTabContainer::Init(Profile* profile,
   disabled_context_menu_ids_.push_back(
       IDS_CONTENT_CONTEXT_OPENLINKOFFTHERECORD);
   LoadAccelerators();
+  SetupExternalTabView();
   return true;
 }
 
@@ -201,6 +196,7 @@ void ExternalTabContainer::Uninitialize() {
   }
 
   request_context_ = NULL;
+  tab_contents_container_ = NULL;
 }
 
 bool ExternalTabContainer::Reinitialize(
@@ -759,6 +755,12 @@ void ExternalTabContainer::SetEnableExtensionAutomation(
   }
 }
 
+void ExternalTabContainer::InfoBarSizeChanged(bool is_animating) {
+  if (GetRootView()) {
+    GetRootView()->Layout();
+  }
+}
+
 // ExternalTabContainer instances do not have a window.
 views::Window* ExternalTabContainer::GetWindow() {
   return NULL;
@@ -885,5 +887,38 @@ void ExternalTabContainer::ServicePendingOpenURLRequests() {
                    url_request.disposition, url_request.transition);
   }
   pending_open_url_requests_.clear();
+}
+
+void ExternalTabContainer::SetupExternalTabView() {
+  // Create a TabContentsContainer to handle focus cycling using Tab and
+  // Shift-Tab.
+  tab_contents_container_ = new TabContentsContainer;
+
+  // The views created here will be destroyed when the ExternalTabContainer
+  // widget is torn down.
+  views::View* external_tab_view = new views::View();
+
+  InfoBarContainer* info_bar_container = new InfoBarContainer(this);
+  info_bar_container->ChangeTabContents(tab_contents_);
+
+  views::GridLayout* layout = new views::GridLayout(external_tab_view);
+  views::ColumnSet* columns = layout->AddColumnSet(0);  // Give this column an
+                                                        // identifier of 0.
+  columns->AddColumn(views::GridLayout::FILL,
+                     views::GridLayout::FILL,
+                     1,
+                     views::GridLayout::USE_PREF,
+                     0,
+                     0);
+
+  external_tab_view->SetLayoutManager(layout);
+
+  layout->StartRow(0, 0);
+  layout->AddView(info_bar_container);
+  layout->StartRow(1, 0);
+  layout->AddView(tab_contents_container_);
+  SetContentsView(external_tab_view);
+  // Note that SetTabContents must be called after AddChildView is called
+  tab_contents_container_->ChangeTabContents(tab_contents_);
 }
 

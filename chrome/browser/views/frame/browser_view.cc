@@ -1594,6 +1594,10 @@ void BrowserView::SetAccessibleName(const std::wstring& name) {
   accessible_name_ = name;
 }
 
+void BrowserView::InfoBarSizeChanged(bool is_animating) {
+  SelectedTabToolbarSizeChanged(is_animating);
+}
+
 views::LayoutManager* BrowserView::CreateLayoutManager() const {
   return new BrowserViewLayout;
 }
