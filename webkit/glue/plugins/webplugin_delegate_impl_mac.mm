@@ -90,71 +90,77 @@ class CarbonIdleEventSource {
     return event_source;
   }
 
-  // Registers the plugin delegate as interested in receiving idle events
-  // suitable for a visible plugin.
-  // Registering a delegate as visible automatically unregisters it from the
-  // hidden event source.
-  void RegisterVisibleDelegate(WebPluginDelegateImpl* delegate) {
-    UnregisterDelegate(delegate);
-    if (visible_delegates_.empty()) {
-      visible_timer_.Start(
-          base::TimeDelta::FromMilliseconds(kVisibleIdlePeriodMs), this,
-          &CarbonIdleEventSource::SendVisiblePluginEvents);
+  // Registers the plugin delegate as interested in receiving idle events at
+  // a rate appropriate for the given visibility. A delegate can safely be
+  // re-registered any number of times, with the latest registration winning.
+  void RegisterDelegate(WebPluginDelegateImpl* delegate, bool visible) {
+    if (visible) {
+      visible_delegates_->RegisterDelegate(delegate);
+      hidden_delegates_->UnregisterDelegate(delegate);
+    } else {
+      hidden_delegates_->RegisterDelegate(delegate);
+      visible_delegates_->UnregisterDelegate(delegate);
     }
-    visible_delegates_.insert(delegate);
-  }
-
-  // Registers the plugin delegate as interested in receiving idle events
-  // suitable for a plugin that isn't visible.
-  // Registering a delegate as hidden automatically unregisters it from the
-  // visible event source.
-  void RegisterHiddenDelegate(WebPluginDelegateImpl* delegate) {
-    UnregisterDelegate(delegate);
-    if (hidden_delegates_.empty()) {
-      hidden_timer_.Start(
-          base::TimeDelta::FromMilliseconds(kHiddenIdlePeriodMs), this,
-          &CarbonIdleEventSource::SendHiddenPluginEvents);
-    }
-    hidden_delegates_.insert(delegate);
   }
 
   // Removes the plugin delegate from the list of plugins receiving idle events.
   void UnregisterDelegate(WebPluginDelegateImpl* delegate) {
-    size_t removed = visible_delegates_.erase(delegate);
-    if (removed > 0 && visible_delegates_.empty())
-      visible_timer_.Stop();
-    removed = hidden_delegates_.erase(delegate);
-    if (removed > 0 && hidden_delegates_.empty())
-      hidden_timer_.Stop();
+    visible_delegates_->UnregisterDelegate(delegate);
+    hidden_delegates_->UnregisterDelegate(delegate);
   }
 
  private:
-  CarbonIdleEventSource() {}
+  class VisibilityGroup {
+   public:
+    explicit VisibilityGroup(int timer_period)
+        : timer_period_(timer_period), iterator_(delegates_.end()) {}
 
-  void SendVisiblePluginEvents() {
-    SendIdleEventsToDelegates(visible_delegates_);
-  }
-
-  void SendHiddenPluginEvents() {
-    SendIdleEventsToDelegates(hidden_delegates_);
-  }
-
-  void SendIdleEventsToDelegates(
-      const std::set<WebPluginDelegateImpl*>& delegates) const {
-    for (std::set<WebPluginDelegateImpl*>::iterator i = delegates.begin();
-         i != delegates.end();) {
-      // If the plugin changes size or position during idle event handling, it
-      // may be removed from this set; increment the iterator before calling
-      // into the delegate to ensure that the iteration won't be corrupted.
-      WebPluginDelegateImpl* delegate = *(i++);
-      delegate->FireIdleEvent();
+    // Adds |delegate| to this visibility group.
+    void RegisterDelegate(WebPluginDelegateImpl* delegate) {
+      if (delegates_.empty()) {
+        timer_.Start(base::TimeDelta::FromMilliseconds(timer_period_),
+                     this, &VisibilityGroup::SendIdleEvents);
+      }
+      delegates_.insert(delegate);
     }
-  }
 
-  base::RepeatingTimer<CarbonIdleEventSource> visible_timer_;
-  base::RepeatingTimer<CarbonIdleEventSource> hidden_timer_;
-  std::set<WebPluginDelegateImpl*> visible_delegates_;
-  std::set<WebPluginDelegateImpl*> hidden_delegates_;
+    // Removes |delegate| from this visibility group.
+    void UnregisterDelegate(WebPluginDelegateImpl* delegate) {
+      // If a plugin changes visibility during idle event handling, it
+      // may be removed from this set while SendIdleEvents is still iterating;
+      // if that happens and it's next on the list, increment the iterator
+      // before erasing so that the iteration won't be corrupted.
+      if ((iterator_ != delegates_.end()) && (*iterator_ == delegate))
+        ++iterator_;
+      size_t removed = delegates_.erase(delegate);
+      if (removed > 0 && delegates_.empty())
+        timer_.Stop();
+    }
+
+   private:
+    // Fires off idle events for each delegate in the group.
+    void SendIdleEvents() {
+      for (iterator_ = delegates_.begin(); iterator_ != delegates_.end();) {
+        // Pre-increment so that the skip logic in UnregisterDelegates works.
+        WebPluginDelegateImpl* delegate = *(iterator_++);
+        delegate->FireIdleEvent();
+      }
+    }
+
+    int timer_period_;
+    base::RepeatingTimer<VisibilityGroup> timer_;
+    std::set<WebPluginDelegateImpl*> delegates_;
+    std::set<WebPluginDelegateImpl*>::iterator iterator_;
+  };
+
+  CarbonIdleEventSource()
+      : visible_delegates_(new VisibilityGroup(kVisibleIdlePeriodMs)),
+        hidden_delegates_(new VisibilityGroup(kHiddenIdlePeriodMs)) {}
+
+  scoped_ptr<VisibilityGroup> visible_delegates_;
+  scoped_ptr<VisibilityGroup> hidden_delegates_;
+
+  DISALLOW_COPY_AND_ASSIGN(CarbonIdleEventSource);
 };
 #endif  // !NP_NO_CARBON
 
@@ -638,10 +644,9 @@ void WebPluginDelegateImpl::UpdateDummyWindowBoundsWithOffset(
 }
 
 void WebPluginDelegateImpl::UpdateIdleEventRate() {
-  if (container_is_visible_ && !clip_rect_.IsEmpty())
-    CarbonIdleEventSource::SharedInstance()->RegisterVisibleDelegate(this);
-  else
-    CarbonIdleEventSource::SharedInstance()->RegisterHiddenDelegate(this);
+  bool plugin_visible = container_is_visible_ && !clip_rect_.IsEmpty();
+  CarbonIdleEventSource::SharedInstance()->RegisterDelegate(this,
+                                                            plugin_visible);
 }
 #endif  // !NP_NO_CARBON
 
