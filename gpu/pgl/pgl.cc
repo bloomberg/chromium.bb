@@ -51,6 +51,7 @@ class PGLContextImpl {
 };
 
 gpu::ThreadLocalKey g_pgl_context_key;
+bool g_pgl_context_key_allocated = false;
 
 PGLContextImpl::PGLContextImpl(NPP npp,
                                NPDevice* device,
@@ -110,7 +111,7 @@ void PGLContextImpl::Destroy() {
 }
 
 PGLBoolean PGLContextImpl::MakeCurrent(PGLContextImpl* pgl_context) {
-  if (!g_pgl_context_key)
+  if (!g_pgl_context_key_allocated)
     return PGL_FALSE;
 
   gpu::ThreadLocalSetValue(g_pgl_context_key, pgl_context);
@@ -157,19 +158,21 @@ PGLInt PGLContextImpl::GetError() {
 extern "C" {
 
 PGLBoolean pglInitialize() {
-  if (g_pgl_context_key)
+  if (g_pgl_context_key_allocated)
     return PGL_TRUE;
 
   gles2::Initialize();
   g_pgl_context_key = gpu::ThreadLocalAlloc();
+  g_pgl_context_key_allocated = true;
   return PGL_TRUE;
 }
 
 PGLBoolean pglTerminate() {
-  if (!g_pgl_context_key)
+  if (!g_pgl_context_key_allocated)
     return PGL_TRUE;
 
   gpu::ThreadLocalFree(g_pgl_context_key);
+  g_pgl_context_key_allocated = false;
   g_pgl_context_key = 0;
 
   gles2::Terminate();
@@ -179,7 +182,7 @@ PGLBoolean pglTerminate() {
 PGLContext pglCreateContext(NPP npp,
                             NPDevice* device,
                             NPDeviceContext3D* device_context) {
-  if (!g_pgl_context_key)
+  if (!g_pgl_context_key_allocated)
     return NULL;
 
   PGLContextImpl* pgl_context = new PGLContextImpl(
@@ -197,7 +200,7 @@ PGLBoolean pglMakeCurrent(PGLContext pgl_context) {
 }
 
 PGLContext pglGetCurrentContext(void) {
-  if (!g_pgl_context_key)
+  if (!g_pgl_context_key_allocated)
     return NULL;
 
   return static_cast<PGLContext>(gpu::ThreadLocalGetValue(g_pgl_context_key));
@@ -213,7 +216,7 @@ PGLBoolean pglSwapBuffers(void) {
 }
 
 PGLBoolean pglDestroyContext(PGLContext pgl_context) {
-  if (!g_pgl_context_key)
+  if (!g_pgl_context_key_allocated)
     return PGL_FALSE;
 
   if (!pgl_context)
