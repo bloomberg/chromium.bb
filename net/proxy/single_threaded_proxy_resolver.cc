@@ -146,6 +146,8 @@ class SingleThreadedProxyResolver::Job
   // Returns true if Cancel() has been called.
   bool was_cancelled() const { return callback_ == NULL; }
 
+  LoadLog* load_log() { return load_log_; }
+
  private:
   friend class base::RefCountedThreadSafe<SingleThreadedProxyResolver::Job>;
 
@@ -235,8 +237,19 @@ int SingleThreadedProxyResolver::GetProxyForURL(const GURL& url,
   DCHECK(callback);
 
   scoped_refptr<Job> job = new Job(this, url, results, callback, load_log);
-  pending_jobs_.push_back(job);
-  ProcessPendingJobs();  // Jobs can never finish synchronously.
+  bool is_first_job = pending_jobs_.empty();
+  pending_jobs_.push_back(job);  // Jobs can never finish synchronously.
+
+  if (is_first_job) {
+    // If there is nothing already running, start the job now.
+    EnsureThreadStarted();
+    job->Start();
+  } else {
+    // Otherwise the job will get started eventually by ProcessPendingJobs().
+    LoadLog::BeginEvent(
+        job->load_log(),
+        LoadLog::TYPE_WAITING_FOR_SINGLE_PROXY_RESOLVER_THREAD);
+  }
 
   // Completion will be notified through |callback|, unless the caller cancels
   // the request using |request|.
@@ -315,6 +328,10 @@ void SingleThreadedProxyResolver::ProcessPendingJobs() {
   Job* job = pending_jobs_.front().get();
   if (job->is_started())
     return;
+
+  LoadLog::EndEvent(
+      job->load_log(),
+      LoadLog::TYPE_WAITING_FOR_SINGLE_PROXY_RESOLVER_THREAD);
 
   EnsureThreadStarted();
   job->Start();

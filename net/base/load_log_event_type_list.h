@@ -60,7 +60,7 @@ EVENT_TYPE(PROXY_SERVICE_WAITING_FOR_INIT_PAC)
 EVENT_TYPE(PROXY_SERVICE_POLL_CONFIG_SERVICE_FOR_CHANGES)
 
 // ------------------------------------------------------------------------
-// ProxyResolverV8
+// Proxy Resolver
 // ------------------------------------------------------------------------
 
 // Measures the time taken to execute the "myIpAddress()" javascript binding.
@@ -74,6 +74,10 @@ EVENT_TYPE(PROXY_RESOLVER_V8_DNS_RESOLVE)
 
 // Measures the time taken to execute the "dnsResolveEx()" javascript binding.
 EVENT_TYPE(PROXY_RESOLVER_V8_DNS_RESOLVE_EX)
+
+// Measures the time that a proxy resolve request was stalled waiting for the
+// proxy resolver thread to free-up.
+EVENT_TYPE(WAITING_FOR_SINGLE_PROXY_RESOLVER_THREAD)
 
 // ------------------------------------------------------------------------
 // ClientSocket::Connect
