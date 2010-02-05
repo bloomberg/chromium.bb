@@ -221,7 +221,7 @@ TEST(SingleThreadedProxyResolverTest, Basic) {
 
 // Tests that the LoadLog is updated to include the time the request was waiting
 // to be scheduled to a thread.
-TEST(SingleThreadedProxyResolverTest, UpdatesLoadLogWithThreadWait) {
+TEST(SingleThreadedProxyResolverTest, DISABLED_UpdatesLoadLogWithThreadWait) {
   BlockableProxyResolver* mock = new BlockableProxyResolver;
   SingleThreadedProxyResolver resolver(mock);
 
