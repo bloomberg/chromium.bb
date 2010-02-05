@@ -8,8 +8,8 @@
 #include "base/message_loop.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
-#include "media/omx/input_buffer.h"
 #include "media/omx/omx_codec.h"
+#include "media/omx/omx_input_buffer.h"
 
 namespace media {
 
@@ -82,7 +82,7 @@ void OmxCodec::Read(ReadCallback* callback) {
       NewRunnableMethod(this, &OmxCodec::ReadTask, callback));
 }
 
-void OmxCodec::Feed(InputBuffer* buffer, FeedCallback* callback) {
+void OmxCodec::Feed(OmxInputBuffer* buffer, FeedCallback* callback) {
   message_loop_->PostTask(
       FROM_HERE,
       NewRunnableMethod(this, &OmxCodec::FeedTask, buffer, callback));
@@ -159,7 +159,8 @@ void OmxCodec::ReadTask(ReadCallback* callback) {
   FillBufferTask();
 }
 
-void OmxCodec::FeedTask(InputBuffer* buffer, FeedCallback* callback) {
+void OmxCodec::FeedTask(OmxInputBuffer* buffer,
+                        FeedCallback* callback) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   if (!CanAcceptInput()) {
@@ -246,7 +247,7 @@ void OmxCodec::FreeInputQueue() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   while (!input_queue_.empty()) {
-    InputBuffer* buffer = input_queue_.front().first;
+    OmxInputBuffer* buffer = input_queue_.front().first;
     FeedCallback* callback = input_queue_.front().second;
     callback->Run(buffer);
     delete callback;
@@ -964,7 +965,7 @@ void OmxCodec::EmptyBufferTask() {
   while (!input_queue_.empty() &&
          !available_input_buffers_.empty() &&
          !input_eos_) {
-    InputBuffer* buffer = input_queue_.front().first;
+    OmxInputBuffer* buffer = input_queue_.front().first;
     FeedCallback* callback = input_queue_.front().second;
     OMX_BUFFERHEADERTYPE* omx_buffer = available_input_buffers_.front();
     available_input_buffers_.pop();
@@ -984,7 +985,7 @@ void OmxCodec::EmptyBufferTask() {
     omx_buffer->nFilledLen = filled;
     omx_buffer->pAppPrivate = this;
     omx_buffer->nFlags |= input_eos_ ? OMX_BUFFERFLAG_EOS : 0;
-    // TODO(hclam): Get timestamp from the input buffer and fill in here.
+    omx_buffer->nTimeStamp = buffer->GetTimestamp().InMilliseconds();
 
     // Give this buffer to OMX.
     OMX_ERRORTYPE ret = OMX_EmptyThisBuffer(component_handle_, omx_buffer);

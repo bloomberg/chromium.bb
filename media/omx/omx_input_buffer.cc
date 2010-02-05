@@ -2,7 +2,7 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#include "media/omx/input_buffer.h"
+#include "media/omx/omx_input_buffer.h"
 
 #include <algorithm>
 
@@ -10,34 +10,30 @@
 
 namespace media {
 
-InputBuffer::InputBuffer()
+OmxInputBuffer::OmxInputBuffer()
     : size_(0),
       used_(0) {
 }
 
-InputBuffer::InputBuffer(uint8* data, int size)
+OmxInputBuffer::OmxInputBuffer(uint8* data, int size)
     : data_(data),
       size_(size),
       used_(0) {
   DCHECK_GE(size, 0);
 }
 
-InputBuffer::~InputBuffer() {
+OmxInputBuffer::~OmxInputBuffer() {
 }
 
-int InputBuffer::Read(uint8* output_data, int output_size) {
+int OmxInputBuffer::Read(uint8* output_data, int output_size) {
   int copy = std::min(output_size, size_ - used_);
   memcpy(output_data, data_.get() + used_, copy);
   used_ += copy;
   return copy;
 }
 
-bool InputBuffer::Used() {
+bool OmxInputBuffer::Used() {
   return used_ == size_;
-}
-
-bool InputBuffer::IsEndOfStream() {
-  return data_.get() == NULL || size_ == 0;
 }
 
 }  // namespace media

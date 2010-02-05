@@ -101,7 +101,8 @@ void OmxVideoDecodeEngine::DecodeFrame(const Buffer& buffer,
     uint8* data = new uint8[buffer.GetDataSize()];
     memcpy(data, buffer.GetData(), buffer.GetDataSize());
 
-    InputBuffer* input_buffer = new InputBuffer(data, buffer.GetDataSize());
+    OmxInputBuffer* input_buffer =
+        new OmxInputBuffer(data, buffer.GetDataSize());
 
     // Feed in the new buffer regardless.
     //
@@ -125,7 +126,7 @@ void OmxVideoDecodeEngine::DecodeFrame(const Buffer& buffer,
   omx_codec_->Read(NewCallback(this, &OmxVideoDecodeEngine::OnReadComplete));
 }
 
-void OmxVideoDecodeEngine::OnFeedDone(InputBuffer* buffer) {
+void OmxVideoDecodeEngine::OnFeedDone(OmxInputBuffer* buffer) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
   // TODO(ajwong): Add a DoNothingCallback or similar.
 }

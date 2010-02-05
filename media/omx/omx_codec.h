@@ -15,10 +15,10 @@
 // // Initialization.
 // MessageLoop message_loop;
 // OmxCodec* decoder = new OmxCodec(&message_loop);
-// OmxCodec::OmxMediaFormat input_format, output_format;
+// OmxConfigurator::MediaFormat input_format, output_format;
 // input_format.codec = OmxCodec::kCodecH264;
 // output_format.codec = OmxCodec::kCodecRaw;
-// decoder->Setup(input_format, output_format);
+// decoder->Setup(new OmxDecoderConfigurator(input_format, output_format));
 // decoder->SetErrorCallback(NewCallback(this, &Client::ErrorCallback));
 // decoder->SetFormatCallback(NewCallback(this, &Client::FormatCallback));
 //
@@ -29,7 +29,7 @@
 // // queue the input buffers and output requests and process them until
 // // the decoder can actually process them.
 // for (int i = 0; i < kInitialBuffers; ++i) {
-//   InputBuffer* buffer = PrepareInitialInputBuffer();
+//   OmxInputBuffer* buffer = PrepareInitialInputBuffer();
 //   decoder->Feed(buffer, NewCallback(this, &Client::FeedCallback));
 // }
 //
@@ -40,7 +40,7 @@
 // decoder->Stop(NewCallback(this, &Client::StopCallback));
 //
 // A typical FeedCallback will look like:
-// void Client::FeedCallback(InputBuffer* buffer) {
+// void Client::FeedCallback(OmxInputBuffer* buffer) {
 //   // We have read to the end so stop feeding.
 //   if (buffer->Eos())
 //     return;
@@ -95,10 +95,11 @@
 #include "third_party/openmax/il/OMX_Core.h"
 #include "third_party/openmax/il/OMX_Video.h"
 
-class InputBuffer;
 class MessageLoop;
 
 namespace media {
+
+class OmxInputBuffer;
 
 class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
  public:
@@ -106,7 +107,7 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   typedef Callback2<
       const OmxConfigurator::MediaFormat&,
       const OmxConfigurator::MediaFormat&>::Type FormatCallback;
-  typedef Callback1<InputBuffer*>::Type FeedCallback;
+  typedef Callback1<OmxInputBuffer*>::Type FeedCallback;
   typedef Callback2<uint8*, int>::Type ReadCallback;
   typedef Callback0::Type Callback;
 
@@ -139,7 +140,7 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
 
   // Feed the decoder with |buffer|. When the decoder has consumed the
   // buffer |callback| is called with |buffer| being the parameter.
-  void Feed(InputBuffer* buffer, FeedCallback* callback);
+  void Feed(OmxInputBuffer* buffer, FeedCallback* callback);
 
   // Flush the decoder and reset its end-of-stream state.
   void Flush(Callback* callback);
@@ -169,7 +170,7 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   void StartTask();
   void StopTask(Callback* callback);
   void ReadTask(ReadCallback* callback);
-  void FeedTask(InputBuffer* buffer, FeedCallback* callback);
+  void FeedTask(OmxInputBuffer* buffer, FeedCallback* callback);
 
   // Helper method to perform tasks when this object is stopped.
   void DoneStop();
@@ -309,7 +310,7 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   scoped_ptr<Callback> error_callback_;
 
   // Input and output queue for encoded data and decoded frames.
-  typedef std::pair<InputBuffer*, FeedCallback*> InputUnit;
+  typedef std::pair<OmxInputBuffer*, FeedCallback*> InputUnit;
   std::queue<InputUnit> input_queue_;
   std::queue<ReadCallback*> output_queue_;
 

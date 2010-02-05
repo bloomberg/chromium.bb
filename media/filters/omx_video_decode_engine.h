@@ -10,8 +10,8 @@
 #include "base/lock.h"
 #include "base/task.h"
 #include "media/filters/video_decode_engine.h"
-#include "media/omx/input_buffer.h"
 #include "media/omx/omx_codec.h"
+#include "media/omx/omx_input_buffer.h"
 
 class MessageLoop;
 
@@ -77,7 +77,7 @@ class OmxVideoDecodeEngine : public VideoDecodeEngine {
     Task* done_cb;
   };
 
-  virtual void OnFeedDone(InputBuffer* buffer);
+  virtual void OnFeedDone(OmxInputBuffer* buffer);
   virtual void OnHardwareError();
   virtual void OnReadComplete(uint8* buffer, int size);
   virtual void OnFormatChange(
