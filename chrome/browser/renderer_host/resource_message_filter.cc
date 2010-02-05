@@ -583,11 +583,13 @@ void ResourceMessageFilter::OnSetCookie(const GURL& url,
 
   SetCookieCompletion* callback = new SetCookieCompletion(url, cookie, context);
 
-  DCHECK(context->cookie_policy());
-  int policy = context->cookie_policy()->CanSetCookie(
-      url, first_party_for_cookies, cookie, callback);
-  if (policy == net::ERR_IO_PENDING)
-    return;
+  int policy = net::OK;
+  if (context->cookie_policy()) {
+    policy = context->cookie_policy()->CanSetCookie(
+        url, first_party_for_cookies, cookie, callback);
+    if (policy == net::ERR_IO_PENDING)
+      return;
+  }
   callback->Run(policy);
 }
 
@@ -599,11 +601,13 @@ void ResourceMessageFilter::OnGetCookies(const GURL& url,
   GetCookiesCompletion* callback =
       new GetCookiesCompletion(url, reply_msg, this, context);
 
-  DCHECK(context->cookie_policy());
-  int policy = context->cookie_policy()->CanGetCookies(
-      url, first_party_for_cookies, callback);
-  if (policy == net::ERR_IO_PENDING)
-    return;
+  int policy = net::OK;
+  if (context->cookie_policy()) {
+    policy = context->cookie_policy()->CanGetCookies(
+        url, first_party_for_cookies, callback);
+    if (policy == net::ERR_IO_PENDING)
+      return;
+  }
   callback->Run(policy);
 }
 
@@ -619,11 +623,13 @@ void ResourceMessageFilter::OnGetRawCookies(
   // We check policy here to avoid sending back cookies that would not normally
   // be applied to outbound requests for the given URL.  Since this cookie info
   // is visible in the developer tools, it is helpful to make it match reality.
-  DCHECK(context->cookie_policy());
-  int policy = context->cookie_policy()->CanGetCookies(
-      url, first_party_for_cookies, callback);
-  if (policy == net::ERR_IO_PENDING)
-    return;
+  int policy = net::OK;
+  if (context->cookie_policy()) {
+    policy = context->cookie_policy()->CanGetCookies(
+       url, first_party_for_cookies, callback);
+    if (policy == net::ERR_IO_PENDING)
+      return;
+  }
   callback->Run(policy);
 }
 
