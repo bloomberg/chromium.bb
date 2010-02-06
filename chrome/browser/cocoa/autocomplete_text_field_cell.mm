@@ -297,7 +297,9 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
 }
 
 - (size_t)pageActionCount {
-  // page_action_views_ may be NULL during testing.
+  // page_action_views_ may be NULL during testing, or if the
+  // containing LocationViewMac object has already been destructed
+  // (happens sometimes during window shutdown).
   if (!page_action_views_)
     return 0;
   return page_action_views_->Count();

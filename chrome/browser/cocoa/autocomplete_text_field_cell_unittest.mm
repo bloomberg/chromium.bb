@@ -30,6 +30,11 @@ class TestPageActionViewList : public LocationBarViewMac::PageActionViewList {
  public:
   TestPageActionViewList()
       : LocationBarViewMac::PageActionViewList(NULL, NULL, NULL) {}
+  ~TestPageActionViewList() {
+    // |~PageActionViewList()| calls delete on the contents of
+    // |views_|, which here are refs to stack objects.
+    views_.clear();
+  }
 
   void Add(LocationBarViewMac::PageActionImageView* view) {
     views_.push_back(view);

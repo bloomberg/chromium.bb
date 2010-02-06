@@ -99,13 +99,13 @@ LocationBarViewMac::LocationBarViewMac(
       field_(field),
       disposition_(CURRENT_TAB),
       security_image_view_(profile, toolbar_model),
-      page_action_views_(new PageActionViewList(this, profile, toolbar_model)),
+      page_action_views_(this, profile, toolbar_model),
       profile_(profile),
       toolbar_model_(toolbar_model),
       transition_(PageTransition::TYPED) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
   [cell setSecurityImageView:&security_image_view_];
-  [cell setPageActionViewList:page_action_views_];
+  [cell setPageActionViewList:&page_action_views_];
 
   registrar_.Add(this,
       NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
@@ -113,8 +113,10 @@ LocationBarViewMac::LocationBarViewMac(
 }
 
 LocationBarViewMac::~LocationBarViewMac() {
-  // TODO(shess): Placeholder for omnibox changes.
-  delete page_action_views_;
+  // Disconnect from cell in case it outlives us.
+  AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
+  [cell setPageActionViewList:NULL];
+  [cell setSecurityImageView:NULL];
 }
 
 std::wstring LocationBarViewMac::GetInputString() const {
@@ -161,12 +163,12 @@ void LocationBarViewMac::UpdateContentBlockedIcons() {
 }
 
 void LocationBarViewMac::UpdatePageActions() {
-  page_action_views_->RefreshViews();
+  page_action_views_.RefreshViews();
   [field_ resetFieldEditorFrameIfNeeded];
 }
 
 void LocationBarViewMac::InvalidatePageActions() {
-  page_action_views_->DeleteAll();
+  page_action_views_.DeleteAll();
 }
 
 void LocationBarViewMac::SaveStateToContents(TabContents* contents) {
@@ -177,7 +179,7 @@ void LocationBarViewMac::SaveStateToContents(TabContents* contents) {
 void LocationBarViewMac::Update(const TabContents* contents,
                                 bool should_restore_state) {
   SetSecurityIcon(toolbar_model_->GetIcon());
-  page_action_views_->RefreshViews();
+  page_action_views_.RefreshViews();
   // AutocompleteEditView restores state if the tab is non-NULL.
   edit_view_->Update(should_restore_state ? contents : NULL);
 }
@@ -333,11 +335,11 @@ void LocationBarViewMac::Revert() {
 
 // TODO(pamg): Change all these, here and for other platforms, to size_t.
 int LocationBarViewMac::PageActionCount() {
-  return static_cast<int>(page_action_views_->Count());
+  return static_cast<int>(page_action_views_.Count());
 }
 
 int LocationBarViewMac::PageActionVisibleCount() {
-  return static_cast<int>(page_action_views_->VisibleCount());
+  return static_cast<int>(page_action_views_.VisibleCount());
 }
 
 void LocationBarViewMac::SetPreviewEnabledPageAction(
@@ -350,7 +352,7 @@ void LocationBarViewMac::SetPreviewEnabledPageAction(
   TabContents* contents = browser->GetSelectedTabContents();
   if (!contents)
     return;
-  page_action_views_->RefreshViews();
+  page_action_views_.RefreshViews();
 
   LocationBarViewMac::PageActionImageView* page_action_image_view =
       GetPageActionImageView(page_action);
@@ -370,8 +372,8 @@ void LocationBarViewMac::SetPreviewEnabledPageAction(
 
 size_t LocationBarViewMac::GetPageActionIndex(ExtensionAction* page_action) {
   DCHECK(page_action);
-  for (size_t i = 0; i < page_action_views_->Count(); ++i) {
-    if (page_action_views_->ViewAt(i)->page_action() == page_action)
+  for (size_t i = 0; i < page_action_views_.Count(); ++i) {
+    if (page_action_views_.ViewAt(i)->page_action() == page_action)
       return i;
   }
   NOTREACHED();
@@ -381,27 +383,27 @@ size_t LocationBarViewMac::GetPageActionIndex(ExtensionAction* page_action) {
 LocationBarViewMac::PageActionImageView*
     LocationBarViewMac::GetPageActionImageView(ExtensionAction* page_action) {
   DCHECK(page_action);
-  for (size_t i = 0; i < page_action_views_->Count(); ++i) {
-    if (page_action_views_->ViewAt(i)->page_action() == page_action)
-      return page_action_views_->ViewAt(i);
+  for (size_t i = 0; i < page_action_views_.Count(); ++i) {
+    if (page_action_views_.ViewAt(i)->page_action() == page_action)
+      return page_action_views_.ViewAt(i);
   }
   NOTREACHED();
   return NULL;
 }
 
 ExtensionAction* LocationBarViewMac::GetPageAction(size_t index) {
-  if (index < page_action_views_->Count())
-    return page_action_views_->ViewAt(index)->page_action();
+  if (index < page_action_views_.Count())
+    return page_action_views_.ViewAt(index)->page_action();
   NOTREACHED();
   return NULL;
 }
 
 ExtensionAction* LocationBarViewMac::GetVisiblePageAction(size_t index) {
   size_t current = 0;
-  for (size_t i = 0; i < page_action_views_->Count(); ++i) {
-    if (page_action_views_->ViewAt(i)->IsVisible()) {
+  for (size_t i = 0; i < page_action_views_.Count(); ++i) {
+    if (page_action_views_.ViewAt(i)->IsVisible()) {
       if (current == index)
-        return page_action_views_->ViewAt(i)->page_action();
+        return page_action_views_.ViewAt(i)->page_action();
 
       ++current;
     }

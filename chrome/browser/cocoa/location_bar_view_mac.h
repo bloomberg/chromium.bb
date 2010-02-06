@@ -296,6 +296,9 @@ class LocationBarViewMac : public AutocompleteEditController,
         : owner_(location_bar),
           profile_(profile),
           toolbar_model_(toolbar_model) {}
+    ~PageActionViewList() {
+      DeleteAll();
+    }
 
     void DeleteAll();
     void RefreshViews();
@@ -310,8 +313,7 @@ class LocationBarViewMac : public AutocompleteEditController,
     void OnMousePressed(NSRect iconFrame, size_t index);
 
    protected:
-    // Any installed Page Actions (weak references: owned by the extensions
-    // service). Exposed for unit testing only.
+    // Any installed Page Actions.  Exposed for unit testing only.
     std::vector<PageActionImageView*> views_;
 
    private:
@@ -352,7 +354,7 @@ class LocationBarViewMac : public AutocompleteEditController,
   SecurityImageView security_image_view_;
 
   // Any installed Page Actions.
-  PageActionViewList* page_action_views_;
+  PageActionViewList page_action_views_;
 
   Profile* profile_;
 
