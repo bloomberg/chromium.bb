@@ -2920,6 +2920,17 @@ BUG34546 : fast/loader/document-with-fragment-url-2.html = TIMEOUT
 BUG34546 : fast/loader/document-with-fragment-url-3.html = TIMEOUT
 BUG34546 : fast/loader/document-with-fragment-url-4.html = TIMEOUT
 
+// WebKit roll 54328:54340
 BUG_SENORBLANCO WIN : css1/basic/contextual_selectors.html = CRASH
 BUG_SENORBLANCO WIN : fast/repaint/line-flow-with-floats-10.html = CRASH
 
+// WebKit roll 54340:54466
+BUG_SENORBLANCO WIN LINUX : editing/pasteboard/paste-text-012.html = TEXT
+BUG_SENORBLANCO WIN LINUX : editing/pasteboard/paste-text-013.html = TEXT
+BUG_SENORBLANCO WIN LINUX : editing/pasteboard/paste-text-017.html = TEXT
+BUG_SENORBLANCO : fast/frames/flattening/frameset-flattening-advanced.html = TIMEOUT
+BUG_SENORBLANCO : fast/frames/flattening/frameset-flattening-simple.html = TIMEOUT
+BUG_SENORBLANCO : fast/frames/flattening/frameset-flattening-subframe-resize.html = TIMEOUT
+BUG_SENORBLANCO : fast/frames/flattening/frameset-flattening-subframesets.html = TIMEOUT
+BUG_SENORBLANCO : fast/frames/flattening/frameset-flattening-grid.html = MISSING
+BUG_SENORBLANCO MAC : fast/events/scrollbar-double-click.html = TEXT
