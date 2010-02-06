@@ -24,6 +24,7 @@ AutoFillManager::AutoFillManager(TabContents* tab_contents)
 }
 
 AutoFillManager::~AutoFillManager() {
+  personal_data_->RemoveObserver(this);
 }
 
 // static
