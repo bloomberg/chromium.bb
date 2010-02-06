@@ -140,7 +140,6 @@ int BrowserViewLayout::NonClientHitTest(
   // Determine if the TabStrip exists and is capable of being clicked on. We
   // might be a popup window without a TabStrip.
   if (browser_view_->IsTabStripVisible()) {
-
     // See if the mouse pointer is within the bounds of the TabStrip.
     gfx::Point point_in_tabstrip_coords(point);
     views::View::ConvertPointToView(parent, tabstrip_,

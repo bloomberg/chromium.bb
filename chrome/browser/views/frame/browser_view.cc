@@ -45,6 +45,7 @@
 #include "chrome/browser/views/infobars/infobar_container.h"
 #include "chrome/browser/views/status_bubble_views.h"
 #include "chrome/browser/views/tab_contents/tab_contents_container.h"
+#include "chrome/browser/views/tabs/browser_tab_strip_controller.h"
 #include "chrome/browser/views/tabs/side_tab_strip.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/browser/views/theme_install_bubble_view.h"
@@ -1603,8 +1604,11 @@ views::LayoutManager* BrowserView::CreateLayoutManager() const {
 }
 
 BaseTabStrip* BrowserView::CreateTabStrip(TabStripModel* model) {
-  if (UsingSideTabs())
-    return new SideTabStrip;
+  if (UsingSideTabs()) {
+    SideTabStrip* tabstrip = new SideTabStrip;
+    tabstrip->SetModel(new BrowserTabStripController(model, tabstrip));
+    return tabstrip;
+  }
   return new TabStrip(model);
 }
 

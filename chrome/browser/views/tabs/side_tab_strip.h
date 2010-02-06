@@ -5,14 +5,28 @@
 #ifndef CHROME_BROWSER_VIEWS_TABS_SIDE_TAB_STRIP_H_
 #define CHROME_BROWSER_VIEWS_TABS_SIDE_TAB_STRIP_H_
 
+#include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/browser/views/tabs/base_tab_strip.h"
+#include "chrome/browser/views/tabs/side_tab.h"
 
 class Profile;
 
-class SideTabStrip : public BaseTabStrip {
+class SideTabStripModel {
+ public:
+  // Returns metadata about the tab at the specified index.
+  virtual SkBitmap GetIcon(int index) const = 0;
+  virtual std::wstring GetTitle(int index) const = 0;
+  virtual bool IsSelected(int index) const = 0;
+};
+
+class SideTabStrip : public BaseTabStrip,
+                     public SideTabModel {
  public:
   SideTabStrip();
   virtual ~SideTabStrip();
+
+  // Associate a model with this SideTabStrip. The SideTabStrip owns its model.
+  void SetModel(SideTabStripModel* model);
 
   // Whether or not the browser has been run with the "enable-vertical-tabs"
   // command line flag that allows the SideTabStrip to be optionally shown.
@@ -21,6 +35,24 @@ class SideTabStrip : public BaseTabStrip {
   // Whether or not the vertical tabstrip is shown. Only valid if Available()
   // returns true.
   static bool Visible(Profile* profile);
+
+  // Notifies the SideTabStrip that a tab was added in the model at |index|.
+  void AddTabAt(int index);
+
+  // Notifies the SideTabStrip that a tab was removed from the model at |index|.
+  void RemoveTabAt(int index);
+
+  // Notifies the SideTabStrip that a tab was selected in the model at |index|.
+  void SelectTabAt(int index);
+
+  // Notifies the SideTabStrip that the tab at |index| needs to be redisplayed
+  // since some of its metadata has changed.
+  void UpdateTabAt(int index);
+
+  // SideTabModel implementation:
+  virtual std::wstring GetTitle(SideTab* tab) const;
+  virtual SkBitmap GetIcon(SideTab* tab) const;
+  virtual bool IsSelected(SideTab* tab) const;
 
   // BaseTabStrip implementation:
   virtual int GetPreferredHeight();
@@ -39,6 +71,11 @@ class SideTabStrip : public BaseTabStrip {
   virtual gfx::Size GetPreferredSize();
 
  private:
+  // Returns the model index of the specified |tab|.
+  int GetIndexOfSideTab(SideTab* tab) const;
+
+  scoped_ptr<SideTabStripModel> model_;
+
   DISALLOW_COPY_AND_ASSIGN(SideTabStrip);
 };
 

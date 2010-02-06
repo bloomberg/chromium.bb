@@ -27,6 +27,10 @@ SideTabStrip::SideTabStrip() {
 SideTabStrip::~SideTabStrip() {
 }
 
+void SideTabStrip::SetModel(SideTabStripModel* model) {
+  model_.reset(model);
+}
+
 // static
 bool SideTabStrip::Available() {
   return CommandLine::ForCurrentProcess()->HasSwitch(
@@ -37,6 +41,42 @@ bool SideTabStrip::Available() {
 bool SideTabStrip::Visible(Profile* profile) {
   return Available() &&
       profile->GetPrefs()->GetBoolean(prefs::kUseVerticalTabs);
+}
+
+void SideTabStrip::AddTabAt(int index) {
+  SideTab* tab = new SideTab(this);
+  AddChildView(tab);
+  Layout();
+}
+
+void SideTabStrip::RemoveTabAt(int index) {
+  View* v = GetChildViewAt(index);
+  RemoveChildView(v);
+  delete v;
+  Layout();
+}
+
+void SideTabStrip::SelectTabAt(int index) {
+  GetChildViewAt(index)->SchedulePaint();
+}
+
+void SideTabStrip::UpdateTabAt(int index) {
+  GetChildViewAt(index)->SchedulePaint();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// SideTabStrip, SideTabModel implementation:
+
+std::wstring SideTabStrip::GetTitle(SideTab* tab) const {
+  return model_->GetTitle(GetIndexOfSideTab(tab));
+}
+
+SkBitmap SideTabStrip::GetIcon(SideTab* tab) const {
+  return model_->GetIcon(GetIndexOfSideTab(tab));
+}
+
+bool SideTabStrip::IsSelected(SideTab* tab) const {
+  return model_->IsSelected(GetIndexOfSideTab(tab));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -50,7 +90,7 @@ void SideTabStrip::SetBackgroundOffset(const gfx::Point& offset) {
 }
 
 bool SideTabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
-  return false;
+  return true;
 }
 
 void SideTabStrip::SetDraggedTabBounds(int tab_index,
@@ -85,7 +125,7 @@ void SideTabStrip::Layout() {
 }
 
 void SideTabStrip::Paint(gfx::Canvas* canvas) {
-  // canvas->FillRectInt(SK_ColorBLUE, 0, 0, width(), height());
+  // canvas->FillRectInt(SK_ColorGREEN, 0, 0, width(), height());
 }
 
 gfx::Size SideTabStrip::GetPreferredSize() {
@@ -94,4 +134,8 @@ gfx::Size SideTabStrip::GetPreferredSize() {
 
 ////////////////////////////////////////////////////////////////////////////////
 // SideTabStrip, private:
+
+int SideTabStrip::GetIndexOfSideTab(SideTab* tab) const {
+  return GetChildIndex(tab);
+}
 
