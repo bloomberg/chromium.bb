@@ -22,6 +22,8 @@ const char kStatusNotFound[] = "404 Not Found";
 const char kDefaultContentType[] = "text/html; charset=UTF-8";
 
 void Request::ParseHeaders(const std::string& headers) {
+  DCHECK(method_.length() == 0);
+
   size_t pos = headers.find("\r\n");
   DCHECK(pos != std::string::npos);
   if (pos != std::string::npos) {
@@ -47,24 +49,19 @@ void Request::ParseHeaders(const std::string& headers) {
   }
 }
 
-bool Connection::CheckRequestReceived() {
-  bool ready = false;
-  if (request_.method().length()) {
-    // Headers have already been parsed.  Just check content length.
-    ready = (data_.size() >= request_.content_length());
-  } else {
-    size_t index = data_.find("\r\n\r\n");
+void Request::OnDataReceived(const std::string& data) {
+  content_ += data;
+
+  if (method_.length() == 0) {
+    size_t index = content_.find("\r\n\r\n");
     if (index != std::string::npos) {
       // Parse the headers before returning and chop them of the
       // data buffer we've already received.
-      std::string headers(data_.substr(0, index + 2));
-      request_.ParseHeaders(headers);
-      data_.erase(0, index + 4);
-      ready = (data_.size() >= request_.content_length());
+      std::string headers(content_.substr(0, index + 2));
+      ParseHeaders(headers);
+      content_.erase(0, index + 4);
     }
   }
-
-  return ready;
 }
 
 bool FileResponse::GetContentType(std::string* content_type) const {
@@ -169,8 +166,9 @@ void SimpleWebServer::DidRead(ListenSocket* connection,
                               const std::string& data) {
   Connection* c = FindConnection(connection);
   DCHECK(c);
-  c->AddData(data);
-  if (c->CheckRequestReceived()) {
+  Request& r = c->request();
+  r.OnDataReceived(data);
+  if (r.AllContentReceived()) {
     const Request& request = c->request();
     Response* response = FindResponse(request);
     if (response) {

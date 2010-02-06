@@ -147,7 +147,7 @@ void QuitMessageLoop(QuitMessageHit* msg) {
 
 }  // end namespace
 
-TEST_F(TestServerTest, DISABLED_TestServer) {
+TEST_F(TestServerTest, TestServer) {
   // The web server needs a loop to exist on this thread during construction
   // the loop must be created before we construct the server.
   MessageLoopForUI loop;
