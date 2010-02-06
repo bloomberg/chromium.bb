@@ -20,7 +20,6 @@
 <translation id="4149882025268051530">Installijal ei õnnestunud arhiivi lahti pakkida. Palun laadige Google Chrome uuesti alla.</translation>
 <translation id="5744005218040929396">Google Chrome'i utiliit</translation>
 <translation id="4343226815564935778">Google Chrome'i installikataloog paistab olevat kasutusel. Taaskäivitage arvuti ja proovige uuesti.</translation>
-<translation id="4506896920521131223">Autoriõigus © 2006–2009 Google Inc. Kõik õigused kaitstud.</translation>
 <translation id="6817660909204164466">Aidake muuta Google Chrome'i paremaks, saates Google'ile automaatselt kasutusstatistikat ja veaaruandeid</translation>
 <translation id="8227755444512189073">Google Chrome peab käivitama välise rakenduse <ph name="SCHEME"/> linkide haldamiseks. Küsitud link on <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544">Google Chrome'i <ph name="TERMS_OF_SERVICE_LINK"/></translation>
@@ -47,7 +46,6 @@
 <translation id="911206726377975832">Kas kustutada ka teie sirvimisandmed?</translation>
 <translation id="2044287590254833138">Google Chrome'i tööriistariba</translation>
 <translation id="5074344184765391290">Chrome'i Plug-In Host</translation>
-<translation id="1473088902761932034">Tore, te olete tagasi! Kuid Google Chrome ei ole teie vaikebrauser.</translation>
 <translation id="6481075104394517441">Te proovisite jõuda aadressile &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, kuid server esitas veel mitte kehtiva serdi. Serdi usaldusväärsuse kohta andmed puuduvad. Google Chrome ei saa tagada, et teie suhtluspartneriks on &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; ja mitte ründaja. Veenduge, et teie arvuti kellaaeg ja ajavöönd on õiged. Kui need pole õiged, parandage need ja värskendage seda lehekülge. Kui need on õiged, ei tohiks te jätkata.</translation>
 <translation id="8862326446509486874">Teil ei ole süsteemi tasemel installimiseks sobivaid õigusi. Proovige installijat administraatorina uuesti käivitada.</translation>
 <translation id="595871952790078940">Chrome'i utiliit</translation>
@@ -69,6 +67,7 @@
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="8865765905101981392">Interneti-brauser</translation>
 <translation id="8776515774046280928">Google Chrome on juba installitud ja kõigile selle arvuti kasutajatele kättesaadav. Kui soovite installida Google Chrome'i kasutajatasandil, peate esmalt desinstallima administraatori installitud süsteemitasandil versiooni.</translation>
+<translation id="2189123953385179981">Google ChromeOS ei toeta väliste rakenduste käivitamist, et hallata rakenduse <ph name="SCHEME"/> linke. Soovitud link on <ph name="PROTOLINK"/>.</translation>
 <translation id="7196020411877309443">Miks mulle seda näidatakse?</translation>
 <translation id="2769762047821873045">Google Chrome ei ole vaikebrauser.</translation>
 <translation id="7825851276765848807">Installimine nurjus määramata vea tõttu. Laadige Google Chrome uuesti alla.</translation>
@@ -78,7 +77,6 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3396666154568987767">Profiili <ph name="PROFILE_NAME"/> Google Chrome</translation>
 <translation id="3360895254066713204">Chrome'i abistaja</translation>
-<translation id="1964682833763362793">Palun sulgege kõik Chrome'i aknad ja proovige uuesti.</translation>
 <translation id="1001534784610492198">Installija arhiiv on rikutud või kehtetu. Palun laadige Google Chrome uuesti alla.</translation>
 <translation id="6626317981028933585">Kahjuks pole teie Mozilla Firefoxi seaded saadaval samal ajal kui brauser töötab. Nende seadete Google Chrome'i importimiseks salvestage oma töö ja sulgege kõik Firefoxi aknad. Siis klõpsake Jätka.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

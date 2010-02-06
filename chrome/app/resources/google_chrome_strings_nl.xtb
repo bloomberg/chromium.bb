@@ -20,11 +20,10 @@
 <translation id="4149882025268051530">Het installatieprogramma kan het archief niet uitpakken. Download Google Chrome opnieuw.</translation>
 <translation id="5744005218040929396">Google Chrome</translation>
 <translation id="4343226815564935778">De installatiedirectory voor Google Chrome lijkt in gebruik te zijn. Start uw computer opnieuw op en probeer het opnieuw.</translation>
-<translation id="4506896920521131223">Copyright © 2006-2009 Google Inc. Alle rechten voorbehouden.</translation>
 <translation id="6817660909204164466">Help Google Chrome beter te maken door automatisch gebruiksstatistieken en crashmeldingen naar Google te verzenden</translation>
 <translation id="8227755444512189073"><ph name="SCHEME"/> De opgevraagde link is <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> van Google Chrome</translation>
-<translation id="8815061062167142136">O jee! Google Chrome is vastgelopen. Nu herstarten?</translation>
+<translation id="8815061062167142136">Oeps! Google Chrome is vastgelopen. Nu herstarten?</translation>
 <translation id="126024305903398738">Google Chrome Profile Importer</translation>
 <translation id="2653935705142821164">Chrome Renderer</translation>
 <translation id="7241541963706135274">Google Chrome voert deze taken uit:</translation>
@@ -47,7 +46,6 @@
 <translation id="911206726377975832">Ook browsegegevens wissen?</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
 <translation id="5074344184765391290">Invoegtoepassingshost van Chrome</translation>
-<translation id="1473088902761932034">Welkom terug! Maar Google Chrome is op dit moment niet uw standaardbrowser.</translation>
 <translation id="6481075104394517441">U probeert &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; te bereiken, maar de server heeft een certificaat geretourneerd dat nog niet geldig is. Er is nog geen informatie beschikbaar over de betrouwbaarheid van dit certificaat. Chrome kan niet met zekerheid garanderen dat u met &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; communiceert, en niet met een hacker. U moet ervoor zorgen dat uw klok en tijdzone correct zijn ingesteld op uw computer. Zo niet, dan moet u dit aanpassen en deze pagina vernieuwen. Als ze correct zijn, moet u niet verder gaan.</translation>
 <translation id="8862326446509486874">U heeft geen rechten om op systeemniveau te installeren. Meld u aan als beheerder en voer het installatieprogramma opnieuw uit.</translation>
 <translation id="595871952790078940">Chrome</translation>
@@ -69,6 +67,7 @@
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="8865765905101981392">Internetbrowser</translation>
 <translation id="8776515774046280928">Google Chrome is al geïnstalleerd en beschikbaar voor alle gebruikers van deze computer. Als u Google Chrome wilt installeren op gebruikersniveau, moet u eerst de versie op systeemniveau verwijderen die door een beheerder is geïnstalleerd.</translation>
+<translation id="2189123953385179981">Google Chrome OS biedt geen ondersteuning voor het starten van een externe toepassing om links van <ph name="SCHEME"/> te verwerken. De opgevraagde link is <ph name="PROTOLINK"/>.</translation>
 <translation id="7196020411877309443">Waarom zie ik dit venster?</translation>
 <translation id="2769762047821873045">Google Chrome is niet uw standaardbrowser.</translation>
 <translation id="7825851276765848807">De installatie is mislukt vanwege een onbekende fout. Download Google Chrome opnieuw.</translation>
@@ -78,7 +77,6 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3396666154568987767">Google Chrome voor <ph name="PROFILE_NAME"/></translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
-<translation id="1964682833763362793">Sluit alle Chrome-vensters en probeer het opnieuw.</translation>
 <translation id="1001534784610492198">Het archief van het installatieprogramma is beschadigd of ongeldig. Download Google Chrome opnieuw.</translation>
 <translation id="6626317981028933585">Uw instellingen voor Mozilla Firefox zijn helaas niet beschikbaar als deze browser is geopend. Sla uw werk op en sluit alle Firefox-vensters om de instellingen te kunnen importeren naar Google Chrome. Klik hierna op 'Doorgaan'.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

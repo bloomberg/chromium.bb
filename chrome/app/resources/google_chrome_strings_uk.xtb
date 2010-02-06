@@ -20,7 +20,6 @@
 <translation id="4149882025268051530">Не вдалося відкрити архів за допомогою програми встановлення. Завантажте Google Chrome ще раз.</translation>
 <translation id="5744005218040929396">Утиліта Google Chrome</translation>
 <translation id="4343226815564935778">Каталог встановлення Google Chrome наразі використовується. Перезавантажте свій комп'ютер і спробуйте ще раз.</translation>
-<translation id="4506896920521131223">Авторське право © 2006-2009 Google Inc. Усі права захищено.</translation>
 <translation id="6817660909204164466">Допоможіть покращити Google Chrome, автоматично надсилаючи статистику використання та звіти про аварійне завершення роботи до Google</translation>
 <translation id="8227755444512189073">Google Chrome потребує запуску зовнішньої прикладної програми для опрацювання посилань <ph name="SCHEME"/>. Посилання, на яке здійснено запит, - <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
@@ -47,7 +46,6 @@
 <translation id="911206726377975832">Також видалити дані веб-перегляду?</translation>
 <translation id="2044287590254833138">Панель інструментів Google Chrome</translation>
 <translation id="5074344184765391290">Хост модуля Chrome</translation>
-<translation id="1473088902761932034">Шкода, але Google Chrome не є вашим веб-переглядачем за умовчанням.</translation>
 <translation id="6481075104394517441">Ви спробували отримати доступ до &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, але сервер надав сертифікат, який ще не є дійсним. Немає доступної інформації, яка б вказувала на надійність сертифіката. Google Chrome не може гарантувати вам той факт, що ви працюєте з &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, а не зі зловмисником. Переконайтеся, що на комп’ютері правильно встановлено годинник і часовий пояс. Якщо ні, зробіть необхідні виправлення та поновіть цю сторінку. Якщо вони правильні, не слід продовжувати.</translation>
 <translation id="8862326446509486874">У вас немає відповідних прав для встановлення на рівні системи. Спробуйте запустити програму встановлення, увійшовши з правами адміністратора.</translation>
 <translation id="595871952790078940">Утиліта Chrome</translation>
@@ -69,6 +67,7 @@
 <translation id="9039578207253536065">Виконавець Google Chrome</translation>
 <translation id="8865765905101981392">Інтернет-переглядач</translation>
 <translation id="8776515774046280928">Google Chrome уже встановлено на комп'ютері, усі користувачі можуть його використовувати. Якщо потрібно встановити Google Chrome на рівні користувача, необхідно видалити версію рівня системи, установлену адміністратором.</translation>
+<translation id="2189123953385179981">Google Chrome OS не підтримує запуск зовнішньої програми для роботи з посиланнями типу <ph name="SCHEME"/>. Потрібний тип посилання: <ph name="PROTOLINK"/>.</translation>
 <translation id="7196020411877309443">Чому відображається це повідомлення?</translation>
 <translation id="2769762047821873045">Google Chrome не є веб-переглядачем за умовчанням.</translation>
 <translation id="7825851276765848807">Програму не вдалося встановити через невизначену помилку. Завантажте Google Chrome ще раз.</translation>
@@ -78,7 +77,6 @@
 <translation id="4407807842708586359">ОС Google Chrome</translation>
 <translation id="3396666154568987767">Google Chrome для <ph name="PROFILE_NAME"/></translation>
 <translation id="3360895254066713204">Помічник Chrome</translation>
-<translation id="1964682833763362793">Закрийте всі вікна Chrome і спробуйте ще раз.</translation>
 <translation id="1001534784610492198">Архів програми встановлення недійсний або пошкоджений. Завантажте Google Chrome знову.</translation>
 <translation id="6626317981028933585">Шкода, але ваші налаштування Mozilla Firefox не є доступні, коли переглядач запущено. Щоб імпортувати такі налаштування у Google Chrome, збережіть зроблені вами зміни та закрийте усі вікна Firefox. Потім натисніть &quot;Продовжити&quot;</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

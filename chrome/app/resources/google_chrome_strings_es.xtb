@@ -20,7 +20,6 @@
 <translation id="4149882025268051530">El programa de instalación no ha podido descomprimir el archivo. Vuelve a descargar Google Chrome.</translation>
 <translation id="5744005218040929396">Utilidades de Google Chrome</translation>
 <translation id="4343226815564935778">Parece que el directorio de instalación de Google Chrome se encuentra en uso. Reinicia el equipo y vuelve a intentarlo.</translation>
-<translation id="4506896920521131223">Copyright © 2006-2009 Google Inc. Todos los derechos reservados.</translation>
 <translation id="6817660909204164466">Colabora en la mejora de Google Chrome enviando automáticamente a Google estadísticas de uso e informes sobre fallos.</translation>
 <translation id="8227755444512189073">Google Chrome debe ejecutar una aplicación externa para admitir enlaces de <ph name="SCHEME"/>. El enlace solicitado es <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> de Google Chrome</translation>
@@ -47,7 +46,6 @@
 <translation id="911206726377975832">¿Quieres eliminar también los datos de navegación?</translation>
 <translation id="2044287590254833138">Barra de Google Chrome</translation>
 <translation id="5074344184765391290">Host del complemento de Chrome</translation>
-<translation id="1473088902761932034">Nos alegramos de verte de nuevo. Por cierto, Google Chrome no es tu navegador predeterminado.</translation>
 <translation id="6481075104394517441">Has intentado acceder a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, pero el servidor ha presentado un certificado que aún no es válido. No hay datos disponibles que indiquen que se puede confiar en el certificado. Google Chrome no puede garantizar la autenticidad de &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. Asegúrate de que el reloj y la zona horaria están configurados correctamente en tu equipo. Si no es así, corrige los errores y actualiza la página. Si los datos son correctos, no continúes.</translation>
 <translation id="8862326446509486874">No dispones de los derechos necesarios para la instalación en el sistema. Intenta ejecutar de nuevo el programa de instalación como administrador.</translation>
 <translation id="595871952790078940">Utilidades de Chrome</translation>
@@ -69,6 +67,7 @@
 <translation id="9039578207253536065">Worker de Google Chrome</translation>
 <translation id="8865765905101981392">Navegador de Internet</translation>
 <translation id="8776515774046280928">Google Chrome ya está instalado en este equipo y se encuentra disponible para todos los usuarios. Si quieres instalar Google Chrome de nivel de usuario, primero debes desinstalar la versión de nivel de sistema que instaló un administrador.</translation>
+<translation id="2189123953385179981">Google Chrome OS no puede iniciar una aplicación externa que administre enlaces <ph name="SCHEME"/>. El enlace solicitado es <ph name="PROTOLINK"/>.</translation>
 <translation id="7196020411877309443">¿Por qué aparece este mensaje?</translation>
 <translation id="2769762047821873045">Google Chrome no es tu navegador predeterminado.</translation>
 <translation id="7825851276765848807">La instalación no se ha podido realizar a causa de un error no especificado. Vuelve a descargar Google Chrome.</translation>
@@ -78,7 +77,6 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3396666154568987767">Google Chrome para <ph name="PROFILE_NAME"/></translation>
 <translation id="3360895254066713204">Ayudante de Chrome</translation>
-<translation id="1964682833763362793">Cierra todas las ventanas de Google Chrome e inténtalo de nuevo.</translation>
 <translation id="1001534784610492198">El archivo de instalación está dañado o no es válido. Vuelve a descargar Google Chrome.</translation>
 <translation id="6626317981028933585">Tu configuración de Mozilla Firefox no está disponible mientras el navegador se está ejecutando. Para importar esta configuración en Google Chrome, guarda los cambios y cierra todas las ventanas de Firefox. A continuación, haz clic en Continuar.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

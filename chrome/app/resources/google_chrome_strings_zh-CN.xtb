@@ -20,7 +20,6 @@
 <translation id="4149882025268051530">安装程序无法解压缩存档文件。请重新下载谷歌浏览器。</translation>
 <translation id="5744005218040929396">谷歌浏览器实用工具</translation>
 <translation id="4343226815564935778">谷歌浏览器的安装目录正在使用中。请重新启动计算机并重试。</translation>
-<translation id="4506896920521131223">版权 © 2006-2009 Google Inc. 保留所有权利。</translation>
 <translation id="6817660909204164466">将使用情况统计信息和崩溃报告自动发送给谷歌，帮助我们完善谷歌浏览器</translation>
 <translation id="8227755444512189073">谷歌浏览器必须启动外部应用程序才能处理 <ph name="SCHEME"/> 链接。请求的链接是 <ph name="PROTOLINK"/>。</translation>
 <translation id="1281036569101707544">谷歌浏览器<ph name="TERMS_OF_SERVICE_LINK"/></translation>
@@ -47,7 +46,6 @@
 <translation id="911206726377975832">同时删除您的浏览数据吗？</translation>
 <translation id="2044287590254833138">谷歌浏览器工具栏</translation>
 <translation id="5074344184765391290">浏览器插件主程序</translation>
-<translation id="1473088902761932034">太棒了，您又回来了！不过，谷歌浏览器目前还不是您的默认浏览器。</translation>
 <translation id="6481075104394517441">尝试访问的是 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但服务器出示的证书尚未生效。没有信息可以表明证书是否受信任。谷歌浏览器无法保证您正在与 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 进行通信，也无法保证该网站不是攻击网站。您应该确保计算机中的时钟和时区设置无误，否则就应该更正所有问题，然后刷新本页。如果时钟和时区设置无误，则应该停止操作。</translation>
 <translation id="8862326446509486874">您的权限不足，无法进行系统级安装。请尝试以管理员身份再次运行安装程序。</translation>
 <translation id="595871952790078940">浏览器实用工具</translation>
@@ -69,6 +67,7 @@
 <translation id="9039578207253536065">谷歌浏览器工作应用程序</translation>
 <translation id="8865765905101981392">互联网浏览器</translation>
 <translation id="8776515774046280928">此计算机已经安装了谷歌浏览器，并且所有用户均可使用它。若要安装仅供个别用户使用的谷歌浏览器，必须先卸载由管理员安装的供所有用户使用的版本。</translation>
+<translation id="2189123953385179981">谷歌浏览器操作系统不支持启动外部应用程序处理 <ph name="SCHEME"/> 链接。请求的链接是 <ph name="PROTOLINK"/>。</translation>
 <translation id="7196020411877309443">为何会出现这个窗口？</translation>
 <translation id="2769762047821873045">谷歌浏览器不是您的默认浏览器。</translation>
 <translation id="7825851276765848807">由于未指定的错误导致安装失败。请重新下载谷歌浏览器。</translation>
@@ -78,7 +77,6 @@
 <translation id="4407807842708586359">谷歌浏览器 OS</translation>
 <translation id="3396666154568987767">适用于“<ph name="PROFILE_NAME"/>”的谷歌浏览器</translation>
 <translation id="3360895254066713204">浏览器帮助应用程序</translation>
-<translation id="1964682833763362793">请关闭所有谷歌浏览器窗口，然后重试。</translation>
 <translation id="1001534784610492198">安装程序存档文件损坏或无效。请重新下载谷歌浏览器。</translation>
 <translation id="6626317981028933585">抱歉，无法在 Mozilla Firefox 浏览器运行时获取其设置。要将其设置导入谷歌浏览器，请保存您手头的工作并关闭所有 Firefox 窗口，然后点击“继续”。</translation>
 <translation id="8540666473246803645">谷歌浏览器</translation>

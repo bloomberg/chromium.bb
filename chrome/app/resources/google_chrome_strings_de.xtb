@@ -20,7 +20,6 @@
 <translation id="4149882025268051530">Das Installationsprogramm konnte das Archiv nicht dekomprimieren. Laden Sie Google Chrome erneut herunter.</translation>
 <translation id="5744005218040929396">Google Chrome-Dienstprogramm</translation>
 <translation id="4343226815564935778">Das Installationsverzeichnis von Google Chrome scheint bereits verwendet zu werden. Starten Sie Ihren Computer neu und versuchen Sie es erneut.</translation>
-<translation id="4506896920521131223">Copyright © 2006-2009 Google Inc. Alle Rechte vorbehalten.</translation>
 <translation id="6817660909204164466">Helfen Sie, Google Chrome zu verbessern, indem Sie automatisch Nutzungsstatistiken und Ausfallberichte an Google senden.</translation>
 <translation id="8227755444512189073">Google Chrome muss zum Verarbeiten von <ph name="SCHEME"/>-Links eine externe Anwendung starten. Der angeforderte Link lautet <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544">Google Chrome-<ph name="TERMS_OF_SERVICE_LINK"/></translation>
@@ -47,7 +46,6 @@
 <translation id="911206726377975832">Auch die Internetdaten löschen?</translation>
 <translation id="2044287590254833138">Google Chrome-Toolbar</translation>
 <translation id="5074344184765391290">Chrome-Plug-in-Host</translation>
-<translation id="1473088902761932034">Schön, dass Sie wieder da sind! Google Chrome ist jedoch nicht als Ihr Standardbrowser festgelegt.</translation>
 <translation id="6481075104394517441">Sie haben versucht auf &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; zuzugreifen. Der Server hat sich jedoch mit einem Zertifikat ausgewiesen, das noch nicht gültig ist. Es sind keine Informationen zur Vertrauenswürdigkeit des Zertifikats verfügbar. Google Chrome kann deshalb nicht zuverlässig garantieren, dass Sie mit &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; und nicht mit einem Hacker kommunizieren. Stellen Sie sicher, dass Uhrzeit und Zeitzone auf dem Computer richtig eingestellt sind. Ist dies nicht der Fall, korrigieren Sie diese Werte und aktualisieren Sie diese Seite. Sind sie korrekt, sollten Sie nicht fortfahren.</translation>
 <translation id="8862326446509486874">Sie verfügen nicht über die erforderlichen Rechte für eine systemweite Installation. Starten Sie das Installationsprogramm als Administrator.</translation>
 <translation id="595871952790078940">Chrome-Dienstprogramm</translation>
@@ -69,6 +67,7 @@
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="8865765905101981392">Internetbrowser</translation>
 <translation id="8776515774046280928">Google Chrome ist bereits installiert und für alle Nutzer dieses Computers verfügbar. Falls Sie Google Chrome auf Nutzerebene installieren möchten, muss erst die von einem Administrator installierte Version auf Systemebene deinstalliert werden.</translation>
+<translation id="2189123953385179981">Google Chrome OS unterstützt keine externe Anwendung zur Verarbeitung von <ph name="SCHEME"/>-Links. Der angeforderte Link ist <ph name="PROTOLINK"/>.</translation>
 <translation id="7196020411877309443">Warum wird diese Meldung angezeigt?</translation>
 <translation id="2769762047821873045">Google Chrome ist nicht als Ihr Standardbrowser festgelegt.</translation>
 <translation id="7825851276765848807">Die Installation ist aufgrund eines unbekannten Fehlers fehlgeschlagen. Laden Sie Google Chrome erneut herunter.</translation>
@@ -78,7 +77,6 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3396666154568987767">Google Chrome für <ph name="PROFILE_NAME"/></translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
-<translation id="1964682833763362793">Schließen Sie alle Chrome-Fenster und versuchen Sie es erneut.</translation>
 <translation id="1001534784610492198">Das Installationsarchiv ist beschädigt oder ungültig. Laden Sie Google Chrome erneut herunter.</translation>
 <translation id="6626317981028933585">Leider sind Ihre Mozilla Firefox-Einstellungen nicht verfügbar, wenn dieser Browser ausgeführt wird. Um diese Einstellungen in Google Chrome zu importieren, speichern Sie Ihre Arbeit und schließen Sie alle Firefox-Fenster. Klicken Sie anschließend auf &quot;Weiter&quot;.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

@@ -20,7 +20,6 @@
 <translation id="4149882025268051530">The installer failed to uncompress archive. Please download Google Chrome again.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Google Chrome installation directory seems to be in use. Please reboot your computer and try again.</translation>
-<translation id="4506896920521131223">Copyright © 2006-2009 Google Inc. All Rights Reserved.</translation>
 <translation id="6817660909204164466">Help to make Google Chrome better by sending usage statistics and crash reports to Google automatically</translation>
 <translation id="8227755444512189073">Google Chrome needs to launch an external application to handle <ph name="SCHEME"/> links. The link requested is <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
@@ -47,7 +46,6 @@
 <translation id="911206726377975832">Also delete your browsing data?</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
-<translation id="1473088902761932034">Hooray, you're back! But Google Chrome isn't your default browser.</translation>
 <translation id="6481075104394517441">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented a certificate that is not yet valid. No information is available to indicate whether that certificate can be trusted. Google Chrome cannot reliably guarantee that you are communicating with &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; and not an attacker. You should ensure that your clock and time zone are set correctly on your computer. If they are not, you should correct any issues and refresh this page. If they are correct, you should not proceed.</translation>
 <translation id="8862326446509486874">You do not have appropriate rights for system-level installation. Try running the installer again as Administrator.</translation>
 <translation id="595871952790078940">Chrome Utility</translation>
@@ -69,6 +67,7 @@
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="8865765905101981392">Internet Browser</translation>
 <translation id="8776515774046280928">Google Chrome is already installed and available to all users of this computer. If you want to install Google Chrome at user level, you must first uninstall the system-level version installed by an administrator.</translation>
+<translation id="2189123953385179981">Google ChromeOS does not support launching an external application to handle <ph name="SCHEME"/> links. The link requested is <ph name="PROTOLINK"/>.</translation>
 <translation id="7196020411877309443">Why am I seeing this?</translation>
 <translation id="2769762047821873045">Google Chrome isn't your default browser.</translation>
 <translation id="7825851276765848807">Installation failed due to unspecified error. Please download Google Chrome again.</translation>
@@ -78,7 +77,6 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3396666154568987767">Google Chrome for <ph name="PROFILE_NAME"/></translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
-<translation id="1964682833763362793">Please close all Chrome windows and try again.</translation>
 <translation id="1001534784610492198">The installer archive is corrupted or invalid. Please download Google Chrome again.</translation>
 <translation id="6626317981028933585">Sadly, your Mozilla Firefox settings are not available while that browser is running. To import those settings to Google Chrome, save your work and close all Firefox windows. Then click Continue.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

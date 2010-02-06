@@ -20,7 +20,6 @@
 <translation id="4149882025268051530">L'instal·lador no ha pogut descomprimir el fitxer. Torna a baixar Google Chrome.</translation>
 <translation id="5744005218040929396">Utilitat de Google Chrome</translation>
 <translation id="4343226815564935778">Sembla que s'està utilitzant el directori d'instal·lació de Google Chrome. Reinicieu l'equip i torneu-ho a provar.</translation>
-<translation id="4506896920521131223">Copyright © 2006-2009 Google Inc. Tots els drets reservats.</translation>
 <translation id="6817660909204164466">Per ajudar-nos a millorar Google Chrome, envia automàticament estadístiques d'ús i informes d'errors a Google</translation>
 <translation id="8227755444512189073">Google Chrome ha d'iniciar una aplicació externa per gestionar els enllaços <ph name="SCHEME"/>. L'enllaç sol·licitat és <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> de Google Chrome</translation>
@@ -47,7 +46,6 @@
 <translation id="911206726377975832">També voleu suprimir les dades de navegació?</translation>
 <translation id="2044287590254833138">Barra d'eines de Google Chrome</translation>
 <translation id="5074344184765391290">Amfitrió del connector de Chrome</translation>
-<translation id="1473088902761932034">Que bé que hàgiu tornat. Cal que tingueu en compte, però, que Google Chrome no és el vostre navegador predeterminat.</translation>
 <translation id="6481075104394517441">Heu intentat accedir a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, però el servidor ha presentat un certificat que encara no és vàlid. No hi ha informació disponible que indiqui si es pot confiar en el certificat o no. Google Chrome no pot garantir amb fiabilitat que us esteu comunicant amb &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; i no amb un atacant. Hauríeu d'assegurar-vos que el rellotge i el fus horari estan configurats correctament al vostre equip. Si no ho estan, hauríeu de corregir els problemes i actualitzar aquesta pàgina. Si són correctes, no hauríeu de continuar.</translation>
 <translation id="8862326446509486874">No disposeu dels drets necessaris per instal·lar aplicacions al sistema. Proveu de tornar a executar l'instal·lador com a administrador.</translation>
 <translation id="595871952790078940">Utilitat de Chrome</translation>
@@ -69,6 +67,7 @@
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="8865765905101981392">Navegador d'Internet</translation>
 <translation id="8776515774046280928">Google Chrome ja s'ha instal·lat i està disponible per a tots els usuaris d'aquest equip. Si vols instal·lar Google Chrome per als usuaris, primer hauràs de desinstal·lar la versió del sistema que va instal·lar un administrador.</translation>
+<translation id="2189123953385179981">Google ChromeOS no és compatible amb l'inici d'una aplicació externa per gestionar els enllaços <ph name="SCHEME"/>. L'enllaç sol·licitat és <ph name="PROTOLINK"/>.</translation>
 <translation id="7196020411877309443">Per què veig aquest missatge?</translation>
 <translation id="2769762047821873045">Google Chrome no és el navegador predeterminat.</translation>
 <translation id="7825851276765848807">La instal·lació ha fallat a causa d'un error no especificat. Torneu a baixar Google Chrome.</translation>
@@ -78,7 +77,6 @@
 <translation id="4407807842708586359">SO de Google Chrome</translation>
 <translation id="3396666154568987767">Google Chrome per a <ph name="PROFILE_NAME"/></translation>
 <translation id="3360895254066713204">Aplicació auxiliar de Chrome</translation>
-<translation id="1964682833763362793">Tanca totes les finestres de Chrome i torna-ho a provar.</translation>
 <translation id="1001534784610492198">El fitxer d'instal·lació està malmès o no és vàlid. Torna a baixar Google Chrome.</translation>
 <translation id="6626317981028933585">Lamentablement, la vostra configuració de Mozilla Firefox no estarà disponible mentre aquest navegador s'estigui executant. Per importar aquesta configuració a Google Chrome, deseu la feina que hagueu fet i tanqueu totes les finestres de Firefox. Seguidament, feu clic a &quot;Continua&quot;.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

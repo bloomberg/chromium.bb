@@ -20,7 +20,6 @@
 <translation id="4149882025268051530">Installasjonsprogrammet fikk ikke dekomprimert arkivet. Last ned Google Chrome på nytt.</translation>
 <translation id="5744005218040929396">Google Chromes verktøy</translation>
 <translation id="4343226815564935778">Det ser ut til at installasjonsmappen for Google Chrome er i bruk. Du må starte datamaskinen på nytt og prøve igjen.</translation>
-<translation id="4506896920521131223">Copyright © 2006–2009 Google Inc. Med enerett.</translation>
 <translation id="6817660909204164466">Bidra til å gjøre Google Chrome bedre ved å sende brukerstatistikk og programstopprapporter til Google automatisk</translation>
 <translation id="8227755444512189073">Google Chrome må starte et eksternt program for å behandle <ph name="SCHEME"/>-koblinger. Den forespurte koblingen er <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
@@ -47,7 +46,6 @@
 <translation id="911206726377975832">Vil du slette all nettleserdata også?</translation>
 <translation id="2044287590254833138">Google Chrome-verktøyraden</translation>
 <translation id="5074344184765391290">Chromes vert for programtillegg</translation>
-<translation id="1473088902761932034">Hurra, du er tilbake igjen! Men Google Chrome er ikke angitt som din standardnettleser.</translation>
 <translation id="6481075104394517441">Du forsøkte å bruke &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, men tjeneren presenterte et sertifikat som ennå ikke er gyldig. Det finnes ingen informasjon som kan angi om sertifikatet er pålitelig. Google Chrome kan ikke garantere at du kommuniserer med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, og ikke en angriper. Kontroller at klokka og tidssonen på datamaskinen er riktig innstilt. Hvis ikke må du korrigere disse innstillingene og oppdatere denne siden. Hvis innstillingene er riktige, skal du ikke fortsette.</translation>
 <translation id="8862326446509486874">Du har ikke de nødvendige rettighetene for å installere på systemnivå. Prøv å kjøre installasjonsprogrammet som administrator.</translation>
 <translation id="595871952790078940">Chromes verktøy</translation>
@@ -69,6 +67,7 @@
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="8865765905101981392">Nettleser</translation>
 <translation id="8776515774046280928">Google Chrome er allerede installert og tilgjengelig for alle som bruker denne datamaskinen. Hvis du vil installere Google Chrome på brukernivå, må du først avinstallere systemnivåversjonen som er installert av en administrator.</translation>
+<translation id="2189123953385179981">Google Chrome OS håndterer ikke eksterne programmer for administrasjon av koblinger i <ph name="SCHEME"/>. Den forespurte koblingen er <ph name="PROTOLINK"/>.</translation>
 <translation id="7196020411877309443">Hvorfor vises dette?</translation>
 <translation id="2769762047821873045">Google Chrome er ikke din standardnettleser.</translation>
 <translation id="7825851276765848807">Installeringen mislyktes på grunn av en uspesifisert feil. Last ned Google Chrome på nytt.</translation>
@@ -78,7 +77,6 @@
 <translation id="4407807842708586359">Google Chromes operativsystem</translation>
 <translation id="3396666154568987767">Google Chrome for <ph name="PROFILE_NAME"/></translation>
 <translation id="3360895254066713204">Chrome-hjelper</translation>
-<translation id="1964682833763362793">Lukk alle Chrome-vinduer og prøv på nytt.</translation>
 <translation id="1001534784610492198">Installasjonsarkivet er ødelagt. Last ned Google Chrome på nytt.</translation>
 <translation id="6626317981028933585">Mozilla Firefox-innstillingene er dessverre ikke tilgjengelige når nettleseren kjører. Hvis du vil importere disse innstillingene til Google Chrome, kan du lagre arbeidet ditt og lukke alle Firefox-vinduer. Deretter klikker du Fortsett.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

@@ -20,7 +20,6 @@
 <translation id="4149882025268051530">安裝程式無法解壓縮封存檔案，請再次下載「Google 瀏覽器」。</translation>
 <translation id="5744005218040929396">Google 瀏覽器公用程式</translation>
 <translation id="4343226815564935778">「Google 瀏覽器」安裝目錄使用中。請重新啟動電腦，然後再試一次。</translation>
-<translation id="4506896920521131223">版權所有 © 2006-2009 Google Inc。保留所有權利。</translation>
 <translation id="6817660909204164466">只要自動傳送使用統計資料及當機報告給 Google，就能助我們一臂之力，讓 Google 瀏覽器更臻完美。</translation>
 <translation id="8227755444512189073">Google 瀏覽器需要啟動外部應用程式以處理 <ph name="SCHEME"/> 連結。所要求的連結為 <ph name="PROTOLINK"/>。</translation>
 <translation id="1281036569101707544">Google 瀏覽器 <ph name="TERMS_OF_SERVICE_LINK"/></translation>
@@ -47,7 +46,6 @@
 <translation id="911206726377975832">您要一併刪除瀏覽資料嗎？</translation>
 <translation id="2044287590254833138">Google 瀏覽器工具列</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
-<translation id="1473088902761932034">您回來真是太好了！但是 Google 還不是您的預設瀏覽器。</translation>
 <translation id="6481075104394517441">您嘗試到達 &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;，但伺服器所提供的憑證尚未生效。沒有任何資訊顯示憑證是否可靠。Google 瀏覽器無法確切保證您聯絡的對象是 &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; 而非攻擊者。您必須確保您的電腦已正確設定時間和時區。如果設定不正確，請修改設定，然後重新整理本網頁。如果設定正確，您必須就此停住。</translation>
 <translation id="8862326446509486874">您沒有在系統層級進行安裝的權限，請以管理員的身分執行安裝檔。</translation>
 <translation id="595871952790078940">瀏覽器公用程式</translation>
@@ -69,6 +67,7 @@
 <translation id="9039578207253536065">Google 瀏覽器作業工具</translation>
 <translation id="8865765905101981392">網際網路瀏覽器</translation>
 <translation id="8776515774046280928">「Google 瀏覽器」已經安裝並提供此電腦的所有使用者使用。如果您想要於使用者層級安裝「Google 瀏覽器」，必須先移除由管理員安裝的系統層級版本。</translation>
+<translation id="2189123953385179981">「Google Chrome 作業系統」未支援啟動外部應用程式以處理 <ph name="SCHEME"/> 連結；要求的連結為 <ph name="PROTOLINK"/>。</translation>
 <translation id="7196020411877309443">為何出現這個對話框？</translation>
 <translation id="2769762047821873045">「Google 瀏覽器」並非您的預設瀏覽器。</translation>
 <translation id="7825851276765848807">不明錯誤導致安裝失敗，請再次下載「Google 瀏覽器」。</translation>
@@ -78,7 +77,6 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3396666154568987767"><ph name="PROFILE_NAME"/>的 Google 瀏覽器快捷</translation>
 <translation id="3360895254066713204">瀏覽器小幫手</translation>
-<translation id="1964682833763362793">請關閉所有 Google 瀏覽器視窗然後再試一次。</translation>
 <translation id="1001534784610492198">安裝程式封存檔案已經損壞或無效，請再次下載「Google 瀏覽器」。</translation>
 <translation id="6626317981028933585">抱歉，我們無法在 Mozilla Firefox 執行時取得其設定。如果要匯入這些設定至 Google 瀏覽器，請儲存您的工作，並關閉所有 Firefox 視窗。然後按一下 [繼續]。</translation>
 <translation id="8540666473246803645">Google 瀏覽器</translation>

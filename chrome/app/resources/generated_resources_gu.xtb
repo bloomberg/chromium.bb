@@ -47,9 +47,7 @@
 <translation id="8133676275609324831">ફોલ્ડરમાં બતાવો</translation>
 <translation id="4780321648949301421">પૃષ્ઠ આ રીતે સાચવો...</translation>
 <translation id="9154072353677278078"><ph name="REALM"/> પરનાં સર્વર <ph name="DOMAIN"/> ને વપરાશકર્તાનામ અને પાસવર્ડની જરૂર છે.</translation>
-<translation id="2193841602817119749">&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; પરની વેબસાઇટને “ફિશીંગ&quot; સાઈટ તરીકે જાણ કરવામાં આવી છે. ઘણીવાર બેન્ક્સ જેવી વિશ્વસનીય સંસ્થાઓનું પ્રતિનિધિત્વ કરતાં હોવાનો ઢોંગ કરીને ફિશીંગ સાઇટ્સ ઉપયોગકર્તાઓને વ્યક્તિગત અથવા નાણાંકીય માહિતી આપવા ફસાવે છે.</translation>
 <translation id="8178665534778830238">સામગ્રી:</translation>
-<translation id="1379170046778889619">સુરક્ષા માહિતી</translation>
 <translation id="4771019161370731727">તાજેતરની પ્રવૃત્તિઓ</translation>
 <translation id="8974161578568356045">સ્વતઃ શોધો</translation>
 <translation id="1818606096021558659">પૃષ્ઠ</translation>
@@ -122,7 +120,6 @@
 <translation id="1644574205037202324">ઇતિહાસ</translation>
 <translation id="2518917559152314023">ઉ&amp;મેરો...</translation>
 <translation id="6583406242234752719">તમે તમારા બુકમાર્ક્સને અન્ય કમ્પ્યુટર સાથે સમન્વય કરવા માટે સેટ નથી.</translation>
-<translation id="923693997520853947"><ph name="URL"/> - <ph name="REASON"/></translation>
 <translation id="4510290974676570902">MIME પ્રકાર</translation>
 <translation id="5565725983873655007">જ્યારે કોઈ મિશ્રિત સામગ્રી સુરક્ષિત (SSL) પૃષ્ઠો પર હોય:</translation>
 <translation id="5155055381903895958">પ્રોફાઇલ આયાત:</translation>
@@ -132,7 +129,6 @@
 <translation id="7767960058630128695">પાસવર્ડ્સ:</translation>
 <translation id="6518014396551869914">છબીની કૉ&amp;પિ બનાવો</translation>
 <translation id="542155483965056918"><ph name="NUMBER_ZERO"/> મિનિટ પહેલા</translation>
-<translation id="6363850194751762580">પૉપ-અપ્સ વ્યવસ્થિત કરો</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME"/> સહાય</translation>
 <translation id="4120898696391891645">પૃષ્ઠ લોડ થશે નહીં</translation>
 <translation id="5584537427775243893">આયાત કરી રહ્યું છે</translation>
@@ -257,7 +253,6 @@
 <translation id="3165657440747518774">પૃષ્ઠમાં &amp;શોધો</translation>
 <translation id="939736085109172342">નવું ફોલ્ડર</translation>
 <translation id="862750493060684461">CSS કેશ</translation>
-<translation id="5722599785390787673">અનાવરોધિત કરવા માટે ક્લિક કરો</translation>
 <translation id="2009541932026160416">થંબનેલને દૂર કરવા <ph name="CROSS_IMAGE"/> ને ક્લિક કરો</translation>
 <translation id="5641560969478423183">સર્વરનું પ્રમાણપત્ર URL સાથે મેળ ખાતું નથી</translation>
 <translation id="6474422710030751464">આ પૃષ્ઠમાંના કેટલાક ઘટકો SSL ભૂલોવાળા કનેક્શન પર પુનઃપ્રાપ્ત કરવામાં આવ્યા છે.</translation>
@@ -343,7 +338,6 @@
 <translation id="6178664161104547336">એક પ્રમાણપત્ર પસંદ કરો</translation>
 <translation id="5702898740348134351">&amp;શોધ એન્જિન્સ સંપાદિત કરો...</translation>
 <translation id="2365740070488517695">ટીપ્સ</translation>
-<translation id="772440777491435074">પ્રમાણપત્ર માહિતી...</translation>
 <translation id="2869459179306435079">અહીંથી સેટિંગ્સ આયાત કરો:</translation>
 <translation id="732677191631732447">ઑડિયો URL કૉ&amp;પિ કરો</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
@@ -370,7 +364,6 @@
 <translation id="5494362494988149300">&amp;પૂર્ણ થાય ત્યારે ખોલો</translation>
 <translation id="3234408098842461169">નીચલો એરો</translation>
 <translation id="825608351287166772">તમારી પાસેનાં ઓળખ દસ્તાવેજ (જેવા કે પાસપોર્ટ)ની જેમ પ્રમાણપત્રની માન્યતા અવધિ હોય છે.  તમારા બ્રાઉઝરને બતાવાયેલું પ્રમાણપત્ર હજી સુધી માન્ય નથી. જ્યારે કોઈ પ્રમાણપત્રની માન્યતા અવધિ સમાપ્ત થઈ જાય છે, ત્યારે પ્રમાણપત્રની સ્થિતિ વિષેની કેટલીક માહિતી (ભલે તે રદ કરવામાં આવ્યું હોય અને પછીથી વિશ્વનીય ન રહ્યું હોય) જાળવવાની જરૂર હોતી નથી. આથી, આ ચકાસવું પણ સંભવ નથી કે આ પ્રમાણપત્ર વિશ્વાસપાત્ર છે. તમારે આગળ વધવું ન જોઈએ.</translation>
-<translation id="2742457360514408037">પોપ-અપ્સ અવરોધિત: <ph name="COUNT"/></translation>
 <translation id="7154150278819212687">આ એક્સટેન્શન પાસે તમારા બ્રાઉઝિંગ ઇતિહાસની ઍક્સેસ હશે.</translation>
 <translation id="1516602185768225813">છેલ્લે ખોલેલા પૃષ્ઠોને ફરીથી ખોલો</translation>
 <translation id="4874539263382920044">શીર્ષકમાં ઓછામાં ઓછો એક અક્ષર હોવો જરૂરી છે</translation>
@@ -381,7 +374,6 @@
 <translation id="7905536804357499080">વર્તમાનનો ઉપયોગ કરો</translation>
 <translation id="8933960630081805351">ફાઇન્ડર માં &amp;બતાવો</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="1871540228654219948">&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; પરની વેબસાઇટમાં એવી સાઇટ્સનાં ઘટકો છે, જે એવા મૉલવેર-સૉફ્ટવેરને હોસ્ટ કરતા હોય તેવું લાગે છે કે જે તમારા કમ્પ્યુટરને નુકસાન કરી શકે છે અથવા તો તમારા સંદર્ભ વિના ઑપરેટ કરી શકે છે.  મૉલવેર ધરાવતી સાઇટની મુલાકાત  કરવા માત્રથી તમારું કમ્પ્યુટર દૂષિત થઈ શકે છે.</translation>
 <translation id="8899388739470541164">વિયેતનામીસ</translation>
 <translation id="6631671511957507878">સંપૂર્ણ ઇતિહાસ જુઓ</translation>
 <translation id="3335947283844343239">બંધ કરેલું ટૅબ ફરીથી ખોલો</translation>
@@ -421,11 +413,9 @@
 <translation id="6434309073475700221">કાઢી નાખો</translation>
 <translation id="1425127764082410430">'<ph name="SEARCH_TERMS"/>' માટે <ph name="SEARCH_ENGINE"/> &amp;શોધો</translation>
 <translation id="4551297183924943154">પ્રોફાઇલ <ph name="HOST_NAME"/>. હોસ્ટ પર <ph name="PROCESS_ID"/>  પ્રક્રિયા દ્વારા ઉપયોગમાં લેવાઈ રહી હોય તેમ લાગે છે.   જો તમને ખાતરી હોય કે આ પ્રોફાઇલ કોઈ અન્ય પ્રક્રિયા દ્વારા ઉપયોગમાં લેવાતી નથી, તો <ph name="LOCK_FILE"/>  ફાઇલ કાઢી નાખો અને <ph name="PRODUCT_NAME"/>. ને ફરી શરૂ કરો.</translation>
-<translation id="877010697526426622">&lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt; પરનાં વેબપેજ અસ્થાયી ધોરણે બંધ હોઈ શકે છે અથવા તે  કાયમ માટે નવા વેબ સરનામાં પર ખસેડવામાં આવ્યા હોઈ શકે છે.</translation>
 <translation id="4378551569595875038">કનેક્ટિંગ...</translation>
 <translation id="7029809446516969842">પાસવર્ડ્સ</translation>
 <translation id="3513979718339724672">થંબનેલ્સ બતાવો</translation>
-<translation id="7300965843904003671"><ph name="URL"/> થી હંમેશા પૉપ-અપ્સ બતાવો</translation>
 <translation id="8211437954284917092">તમારા બુકમાર્ક્સને શોધવા માટે ઉપરનાં ટેક્સ્ટ ફીલ્ડમાં એક ક્વેરી દાખલ કરો.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> ફાઇલ્સ</translation>
 <translation id="1291121346508216435">જોડણી આપમેળે સુધારો:</translation>
@@ -489,7 +479,6 @@
 <translation id="3994878504415702912">&amp;ઝૂમ કરો</translation>
 <translation id="9009369504041480176">અપલોડ થઈ રહ્યું છે (<ph name="PROGRESS_PERCENT"/>%)...</translation>
 <translation id="5602600725402519729">રિ&amp;લોડ કરો</translation>
-<translation id="4755559386248249812">તમે &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; સુધી પહોંચવાનો પ્રયાસ કર્યો,  પરંતુ સર્વરે પ્રસ્તુત કરેલ પ્રમાણપત્ર એક નબળા હસ્તાક્ષર અલ્ગોરિધમનો ઉપયોગ કરીને હસ્તાક્ષરિત કરેલું છે. આનો અર્થ એમ છે કે સર્વરે પ્રસ્તુત કરેલા સુરક્ષા પ્રમાણપત્રો બનાવટી હોઈ શકે છે, અને સર્વર તમારું અપેક્ષિત સર્વર નથી (તમે સંભવતઃ કોઈ હુમલાખોર સાથે વાતચીત કરતા હશો). તમારે આગળ વધવું ન જોઈએ.</translation>
 <translation id="9010612682952491200">નવું ટૅબ [<ph name="PROFILE_NAME"/>]</translation>
 <translation id="7965010376480416255">વહેંચેલી મેમરી</translation>
 <translation id="6248988683584659830">શોધ સેટિંગ્સ</translation>
@@ -533,17 +522,12 @@
 <translation id="1018656279737460067">રદ કરેલા</translation>
 <translation id="7910768399700579500">&amp;નવું ફોલ્ડર</translation>
 <translation id="6883611015375728278">બધી કૂકીઝને અવરોધિત કરો</translation>
-<translation id="3819791248093819058">વેબ સરનામાં માટે કોઈ વેબપેજ મળ્યું નથી: &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt;</translation>
 <translation id="7842346819602959665">એક્સ્ટેંશન &quot;<ph name="EXTENSION_NAME"/>&quot; ના નવા સંસ્કરણને વધુ પરવાનગીઓની જરૂર છે, તેથી તેને અક્ષમ કરવામાં આવ્યું છે.</translation>
 <translation id="8942948210663084792">ડેટા સાફ કરો:</translation>
 <translation id="208047771235602537">ડાઉનલોડ કાર્ય ચાલુ હોય ત્યારે તમે <ph name="PRODUCT_NAME"/> માંથી બહાર નીકળવા માંગો છો?</translation>
 <translation id="6710213216561001401">પહેલાનું</translation>
 <translation id="1567993339577891801">JavaScript કન્સોલ</translation>
 <translation id="583281660410589416">અજ્ઞાત</translation>
-<translation id="7635303043999550515">&lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt; પરનું વેબપેજ, 
-        ઘણાં બધા રીડાયરેક્ટ્સમાં પરિણમ્યું છે.  આ સાઇટ માટેની તમારી કૂકીઝને સાફ કરવાથી અથવા તૃતીય-પક્ષ કૂકીઝને મંજૂરી આપવાથી સમસ્યા ઉકલી શકે છે.  જો
-        આમ ન થાય, તો તે સંભવતઃ સર્વર ગોઠવણી સમસ્યા છે અને તમારા કમ્પ્યુટર
-        સાથેની કોઈ સમસ્યા નથી.</translation>
 <translation id="2485422356828889247">અનઇન્સ્ટોલ કરો</translation>
 <translation id="2621889926470140926"><ph name="DOWNLOAD_COUNT"/> ડાઉનલોડ્સની ક્રિયા ચાલુ હોય ત્યારે તમે <ph name="PRODUCT_NAME"/> થી બહાર નીકળવા માંગો છો?</translation>
 <translation id="5528368756083817449">બુકમાર્ક વ્યવસ્થાપક</translation>
@@ -562,7 +546,6 @@
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/>  ડિફૉલ્ટ બ્રાઉઝરને નિર્ધારિત અથવા સેટ કરી શક્તું નથી.</translation>
 <translation id="8898786835233784856">આગલું ટૅબ પસંદ કરો</translation>
 <translation id="2674170444375937751">શું તમે ખરેખર તમારા ઇતિહાસમાંથી આ પૃષ્ઠોને કાઢી નાખવા માંગો છો?</translation>
-<translation id="4203689580933736628">અવરોધિત આઇટમ્સ: <ph name="COUNT"/></translation>
 <translation id="2653166165688724436">વેબ ડેટાબેસ</translation>
 <translation id="7629827748548208700">ટૅબ: <ph name="TAB_NAME"/></translation>
 <translation id="8449008133205184768">શૈલી પેસ્ટ કરો અને મેળ બેસાડો</translation>
@@ -628,14 +611,11 @@
 <translation id="3664021239099029884">બધા ડાઉનલોડ્સ જુઓ</translation>
 <translation id="2207746515960750386"><ph name="MINUTE"/> મિનિટ પહેલા</translation>
 <translation id="7754704193130578113">ડાઉનલોડ કરતાં પહેલાં પ્રત્યેક ફાઇલને ક્યાં સાચવવી છે તે જણાવો</translation>
-<translation id="2838167480523328393">&quot;<ph name="EXTENSION_NAME"/>&quot; ઇન્સ્ટોલ કરીએ?</translation>
 <translation id="2497284189126895209">બધી ફાઇલો</translation>
 <translation id="5360606537916580043">છેલ્લો દિવસ</translation>
-<translation id="6589689504565594563">કૂકીઝ કાઢી નાખો</translation>
 <translation id="1682548588986054654">નવી છુપી વિંડો</translation>
 <translation id="6833901631330113163">દક્ષિણ યુરોપિયન</translation>
 <translation id="5110450810124758964"><ph name="NUMBER_ONE"/> day ago</translation>
-<translation id="5256138355144269748">અવરોધિત પોપ-અપ</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> સેકન્ડ</translation>
 <translation id="1077946062898560804">બધા વપરાશકર્તા માટે સ્વચાલિત અપડેટ્સ સેટ કરો</translation>
 <translation id="3122496702278727796">ડેટા ડાયરેક્ટરી બનાવવામાટે નિષ્ફળ</translation>
@@ -692,7 +672,6 @@
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (ડિફૉલ્ટ)</translation>
 <translation id="6543631358510643997">આ એક્સટેન્શનને તમારા કમ્પ્યુટર  અને ખાનગી ડેટાની ઍક્સેસ હશે.</translation>
 <translation id="111844081046043029">શું તમે ખરેખર આ પૃષ્ઠ છોડવા માંગો છો?</translation>
-<translation id="4497415007571823067">તમે &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; સુધી પહોંચવાનો પ્રયાસ કર્યો, પરંતુ તેના બદલે તમે વાસ્તવમાં તે સર્વર પર પહોંચ્યા કે જે પોતાને &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; તરીકે ઓળખાવે છે. આ સર્વર પરના મિસકન્ફિગરેશનને લીધે અથવા તેનાથી પણ કંઈક વધુ ગંભીર સમસ્યાને કારણે હોઈ શકે છે. કોઈ હુમલાખોર તમારા નેટવર્ક પર તમે &lt;strong&gt;<ph name="DOMAIN3"/>&lt;/strong&gt; ના કોઈ નકલી (અને સંભવતઃ નુકસાનકારક) વર્ઝન પર મુલાકાત લો તે માટેનો પ્રયાસ કરી રહ્યો હોઇ શકે છે. તમારે આગળ વધવું ન જોઈએ.</translation>
 <translation id="3202578601642193415">સૌથી નવું</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> કલાક</translation>
 <translation id="8739589585766515812">આ દિવસનો ઇતિહાસ કાઢી નાખો</translation>
@@ -752,7 +731,6 @@
 <translation id="5384051050210890146">વિશ્વસનીય SSL પ્રમાણપત્રો પસંદ કરો.</translation>
 <translation id="6865323153634004209">આ સેટિંગ્સને કસ્ટમાઇઝ કરો</translation>
 <translation id="7487067081878637334">તકનીક</translation>
-<translation id="4176463684765177261">અક્ષમ કરેલું</translation>
 <translation id="154603084978752493">શોધ એંજી&amp;ન તરીકે ઉમેરો...</translation>
 <translation id="2079545284768500474">પૂર્વવત્ કરો</translation>
 <translation id="114140604515785785">એક્સ્ટેંશન રૂટ ડાયરેક્ટરી:</translation>
@@ -865,7 +843,6 @@
 <translation id="3127919023693423797">પ્રમાણિત કરી રહ્યું છે...</translation>
 <translation id="4195643157523330669">નવા ટૅબમાં ખોલો</translation>
 <translation id="8030169304546394654">ડિસ્કનેક્ટેડ</translation>
-<translation id="3683878911947678690">તમે તમારા Google એકાઉન્ટનો ઉપયોગ કરીને તમારા બુકમાર્ક્સનો બધા કમ્પ્યુટર્સ વચ્ચે સમન્વય કરી શકો છો</translation>
 <translation id="4178055285485194276">સ્ટાર્ટઅપ પર:</translation>
 <translation id="1154228249304313899">આ પૃષ્ઠ ખોલો:</translation>
 <translation id="9074348188580488499">શું તમે ખરેખર બધાં પાસવર્ડ્સ દૂર કરવા માંગો છો?</translation>
@@ -966,11 +943,10 @@
 <translation id="7326526699920221209">બૅટરી: <ph name="PRECENTAGE"/>%</translation>
 <translation id="601778514741867265">હું મુલાકાત લઉં છું ફક્ત તે જ સાઇટ્સમાંની કૂકીઝને સ્વીકારો</translation>
 <translation id="8299269255470343364">જાપાનીઝ</translation>
-<translation id="5204993535447683655">આ વેબ પૃષ્ઠને પછી &lt;a jsvalues=&quot;href:reloadUrl&quot;&gt;ફરિથી લોડ કરો&lt;/a&gt;.</translation>
-<translation id="3635774677705394651">&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; પરની વેબસાઇટમાં તમારા કમ્પ્યુટરને નુકસાન કરી શકે અથવા તો તમારી મંજૂરી વિના ઑપરેટ થઈ શકે તેવા મૉલવેર ધરાવે છે તેવું દેખાય છે.  મૉલવેર હોસ્ટ કરતી સાઇટની મુલાકાત લેવા માત્રથી તમારું કમ્પ્યુટર અસરગ્રસ્ત થઈ શકે છે.</translation>
 <translation id="7280343984261969618">કોઈ વિશેષાધિકાર વિનાના sandbox માં પ્લગ-ઇન્સ ચલાવે છે. તેના કારણે કેટલાક પ્લગ-ઇન્સ બરાબર કાર્ય ન કરી શકે.</translation>
 <translation id="50030952220075532"><ph name="NUMBER_ONE"/> દિવસ બાકી</translation>
 <translation id="2885378588091291677">કાર્ય વ્યવસ્થાપક</translation>
+<translation id="5792852254658380406">એક્સટેંશન મેનેજ કરો</translation>
 <translation id="1215711112676250731">ક્વોટા:</translation>
 <translation id="2359808026110333948">ચાલુ રાખો</translation>
 <translation id="1618661679583408047">સર્વરનું સુરક્ષા પ્રમાણપત્ર હજી સુધી માન્ય નથી!</translation>
@@ -990,7 +966,6 @@
 <translation id="8261506727792406068">કાઢી નાખો</translation>
 <translation id="345693547134384690">નવા ટૅબમાં &amp;છબી ખોલો</translation>
 <translation id="7422192691352527311">પસંદગીઓ...</translation>
-<translation id="7220379225958650049">હવે શરૂ કરો</translation>
 <translation id="1375198122581997741">વર્ઝન વિશે</translation>
 <translation id="1474307029659222435">નવી &amp;વિંડોમાં ફ્રેમ ખોલો</translation>
 <translation id="7133850061938542637"><ph name="USER_EMAIL_ADDRESS"/> પર સમન્વય કરો\nછેલ્લે સમન્વય કરેલું: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1024,7 +999,6 @@
 <translation id="816095449251911490"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/>, <ph name="TIME_REMAINING"/></translation>
 <translation id="8200772114523450471">રિઝ્યુમે</translation>
 <translation id="6358975074282722691"><ph name="NUMBER_TWO"/> secs ago</translation>
-<translation id="5663016964925996918"><ph name="EXTENSION_NAME"/> હવે ઇન્સ્ટોલ થઈ ગયું છે</translation>
 <translation id="3009731429620355204">સત્રો</translation>
 <translation id="7658590191988721853">ઉભા કિનારાના સ્ક્રોલિંગને સક્ષમ કરો</translation>
 <translation id="5190835502935405962">બુકમાર્ક્સ બાર</translation>
@@ -1044,7 +1018,6 @@
 <translation id="6847541693235449912">જાઓ</translation>
 <translation id="5546865291508181392">શોધો</translation>
 <translation id="5333374927882515515">બુકમાર્કસ, પાસવર્ડ્સ અને સેટિંગ્સને <ph name="DEF_BROWSER"/> માંથી આયાત કરો</translation>
-<translation id="4239831617079978238">સત્ર સમાપ્ત</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE"/> - <ph name="FULL_DATE"/></translation>
 <translation id="5960889226412209189">કૉમ્પેક્ટ નેવિગેશન બારને ટૉગલ કરો</translation>
 <translation id="8954894007019320973">(ચાલુ.)</translation>
@@ -1053,9 +1026,6 @@
 <translation id="8831104962952173133">ફિશીંગ મળી!</translation>
 <translation id="2614223168876839822">આ કમ્પ્યુટરથી તમારો બ્રાઉઝિંગ ડેટા સાફ કરો. સાવધ રહો કેમ કે આ તમારા નવા ટૅબ પૃષ્ઠની સામગ્રી પર વિપરિત અસર કરી શકે છે.</translation>
 <translation id="6845383723252244143">ફોલ્ડર પસંદ કરો</translation>
-<translation id="4745142959976410383">જો તમે આ વિનંતિ કરી નહોતી, તો તે તમારી સિસ્ટમ પર હુમલાનો પ્રયાસ હોઇ શકે છે. જો તમે આ વિનંતિ કરવા માટેનાં સ્પષ્ટ પગલા લીધા નથી, તો તમારે રદ કરો દબાવવું જોઈએ.
-+++</translation>
-<translation id="1897258631034940238">&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; પરની વેબસાઇટમાં એવી સાઇટ્સનાં ઘટકો છે કે જે “ફિશીંગ” સાઇટ્સ તરીકે જાણ કરેલી છે.ઘણીવાર બેન્ક્સ જેવી વિશ્વસનીય સંસ્થાઓનું પ્રતિનિધિત્વ કરતાં હોવાનો ઢોંગ કરીને ફિશીંગ સાઇટ્સ ઉપયોગકર્તાઓને વ્યક્તિગત અથવા નાણાંકીય માહિતી આપવા ફસાવે છે.</translation>
 <translation id="8288345061925649502">શોધ એંજીન બદલો</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> સેકંડ</translation>
 <translation id="5139955368427980650">&amp;ખોલો</translation>
@@ -1065,20 +1035,16 @@
 <translation id="8562413501751825163">આયાત કરતાં પહેલા Firefox બંધ કરો</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES"/>K (<ph name="NUM_KILOBYTES_LIVE"/>K લાઇવ)</translation>
 <translation id="5034259512732355072">બીજી ડાયરેક્ટરી પસંદ કરો...</translation>
-<translation id="5074322878757699801">ડેટા આયાત કરો...</translation>
 <translation id="7505152414826719222">સ્થાનિક સ્ટોરેજ</translation>
 <translation id="5706242308519462060">ડિફૉલ્ટ એન્કોડિંગ</translation>
 <translation id="5280833172404792470">પૂર્ણ સ્ક્રીનથી બહાર નીકળો (<ph name="ACCELERATOR"/>)</translation>
-<translation id="4000986992587584088"><ph name="URL"/> થી હંમેશા પૉપ-અપ્સ બતાવો</translation>
 <translation id="129553762522093515">તાજેતરમાં બંધ કરેલા</translation>
 <translation id="8355915647418390920"><ph name="NUMBER_FEW"/> દિવસ</translation>
 <translation id="3891357445869647828">JavaScript સક્ષમ કરો</translation>
 <translation id="6451458296329894277">ફોર્મનાં ફરી સબમિશનની પુષ્ટિ કરો</translation>
-<translation id="3218545474413654570"><ph name="URL"/> - <ph name="WINDOW_TITLE"/></translation>
 <translation id="5116333507878097773"><ph name="NUMBER_ONE"/> કલાક</translation>
 <translation id="1851266746056575977">હવે અપડેટ કરો</translation>
 <translation id="3715099868207290855"><ph name="USER_EMAIL_ADDRESS"/> પર સમન્વય કરેલું</translation>
-<translation id="19901320010520290">&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; પરની વેબસાઇટમાં એવી સાઇટ્સનાં ઘટકો છે, જે એવા મૉલવેર-સૉફ્ટવેરને હોસ્ટ કરતા હોય તેવું લાગે છે કે જે તમારા કમ્પ્યુટરને નુકસાન કરી શકે છે અથવા તો તમારા સંદર્ભ વિના ઑપરેટ કરી શકે છે. મૉલવેર હોસ્ટ કરતી સાઇટની મુલાકાત લેવા માત્રથી તમારું કમ્પ્યુટર અસરગ્રસ્ત થઈ શકે છે. વેબસાઇટ એવી સાઇટ્સમાંની સામગ્રી પણ હોસ્ટ કરે છે જે “ફિશીંગ” સાઇટ્સ તરીકે જાણ કરેલી છે. ઘણીવાર બેન્ક્સ જેવી વિશ્વસનીય સંસ્થાઓનું પ્રતિનિધિત્વ કરતાં હોવાનો ઢોંગ કરીને ફિશીંગ સાઇટ્સ ઉપયોગકર્તાઓને વ્યક્તિગત અથવા નાણાંકીય માહિતી આપવા ફસાવે છે.</translation>
 <translation id="2679312662830811292"><ph name="NUMBER_ONE"/> min ago</translation>
 <translation id="9065203028668620118">સંપાદિત કરો</translation>
 <translation id="8788572795284305350"><ph name="NUMBER_ZERO"/> કલાક પહેલા</translation>
@@ -1129,7 +1095,6 @@
 <translation id="2749881179542288782">જોડણી સાથે વ્યાકરણ તપાસો</translation>
 <translation id="4943872375798546930">પરિણામો નથી</translation>
 <translation id="4910619056351738551">અહીં કેટલાક સૂચનો છે:</translation>
-<translation id="7451556917824271099">&lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; પરની વેબસાઇટમાં &lt;strong&gt;<ph name="ELEMENTS_HOST_NAME"/>&lt;/strong&gt; થી આવેલ ઘટકો છે, જે એવા મૉલવેર-સૉફ્ટવેરને હોસ્ટ કરતા હોય તેવું લાગે છે કે જે તમારા કમ્પ્યુટરને નુકસાન કરી શકે છે અથવા તો તમારા સંદર્ભ વિના ઑપરેટ કરી શકે છે.  મૉલવેર ધરાવતી સાઇટની મુલાકાત  કરવા માત્રથી તમારું કમ્પ્યુટર દૂષિત થઈ શકે છે.</translation>
 <translation id="5489059749897101717">જોડણી પૅનલ &amp;બતાવો</translation>
 <translation id="1232569758102978740">શીર્ષક વિનાનું</translation>
 <translation id="9149866541089851383">સંપાદિત કરો...</translation>
@@ -1159,7 +1124,6 @@
 <translation id="6227291405321948850">નામ વિનાની વેબ છબી</translation>
 <translation id="862542460444371744">&amp;એક્સ્ટેન્શન્સ</translation>
 <translation id="212019304961722056">એકાઉન્ટ લૉગિન વિગતો હજી દાખલ કરી નથી.</translation>
-<translation id="1684248949164455892">આ કિસ્સામાં, તમારું કમ્પ્યુટર જેના પર વિશ્વાસ કરે છે તે તૃતીય પક્ષ દ્વારા પ્રમાણપત્રની ચકાસણી કરવામાં આવી નથી. કોઈપણ એક પ્રમાણપત્ર બનાવીને એવો દાવો કરી શકે છે કે તે વેબસાઇટ છે, અને તેથી આની કોઈ વિશ્વસનીય તૃતીય પક્ષ દ્વારા ચકાસણી થવી આવશ્યક છે. તે ચકાસણી વગર, પ્રમાણપત્રમાંની ઓળખાણ માહિતી નિરર્થક છે. આથી તે ચકાસવું સંભવ નથી કે તમે વાસ્તવમાં &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; સાથે વાતચીત કરી રહ્યા છો કે કોઈ હુમલાખોર સાથે કે જેણે પોતાનું પ્રમાણપત્ર બનાવીને &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; હોવાનો દાવો કર્યો હોય. તમારે આ બિંદુથી આગળ વધવું ન જોઈએ.</translation>
 <translation id="8045462269890919536">રોમાનિયન</translation>
 <translation id="2927657246008729253">બદલો...</translation>
 <translation id="7978412674231730200">ખાનગી કી</translation>
@@ -1270,7 +1234,6 @@
 <translation id="715468010956678290">ફ્રેમ છુ&amp;પી વિંડોમાં ખોલો</translation>
 <translation id="7755167023778553803">જો કે, આ પૃષ્ઠમાં અન્ય વેબસાઇટ્સના કે જેની ઓળખ ચકાસી શકાઈ નથી, તેના સાધનો છે.</translation>
 <translation id="1273291576878293349">બધા બુકમાર્ક્સને છુપી વિંડોમાં ખોલો</translation>
-<translation id="3455546154539383562">તમે &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; સુધી પહોંચવાનો પ્રયાસ કર્યો, પરંતુ સર્વરે પ્રસ્તુત કરેલું પ્રમાણપત્ર તેના રજૂકર્તા દ્વારા રદ કરવામાં આવેલું હતું. આનો અર્થ એમ કે સર્વરે પ્રસ્તુત કરેલા સુરક્ષા પ્રમાણપત્રો સંપૂર્ણપણે વિશ્વસનીય નહોતા. શક્ય છે કે તમે કોઈ હુમલાખોર સાથે વાતચીત કરી રહ્યા છો. તમારે આગળ વધવું ન જોઈએ.</translation>
 <translation id="1177437665183591855">અજ્ઞાત સર્વર પ્રમાણપત્ર ભૂલ</translation>
 <translation id="3819800052061700452">&amp;પૂર્ણ સ્ક્રીન</translation>
 <translation id="3533943170037501541">તમારા હોમ પેજ પર સ્વાગત છે  !</translation>
@@ -1327,7 +1290,6 @@
 <translation id="6053401458108962351">&amp;બ્રાઉઝિંગ ડેટા સાફ કરો...</translation>
 <translation id="2339641773402824483">અપડેટ્સ માટે તપાસી રહ્યું છે...</translation>
 <translation id="8600200086690278232">ફીચર્ડ વેબ ક્લિપ્સ</translation>
-<translation id="8582728318425382804">કૂકીઝ અને વેબસાઇટ અનુમતિઓ</translation>
 <translation id="2766006623206032690">પે&amp;સ્ટ કરો અને જાઓ</translation>
 <translation id="9071050381089585305">પ્રતિભાવવિહીન સ્ક્રિપ્ટ</translation>
 <translation id="4394049700291259645">અક્ષમ કરો</translation>
@@ -1337,9 +1299,7 @@
 <translation id="5183088099396036950">સર્વર સાથે કનેક્ટ કરી શકાયું નથી</translation>
 <translation id="4469842253116033348"><ph name="SITE"/> તરફની સૂચનાઓ અક્ષમ કરો  </translation>
 <translation id="7999229196265990314">નીચેની ફાઇલો બનાવાઈ: એક્સટેન્શન: <ph name="EXTENSION_FILE"/>કી ફાઇલ: <ph name="KEY_FILE"/>તમારી કી ફાઇલને સુરક્ષિત સ્થાન પર મૂકો. તમને તેની જરૂરિયાત તમારા એક્સટેન્શનના નવા સંસ્કરણ બનાવવા માટે પડશે.</translation>
-<translation id="4477534650265381513">ઝડપી ઍક્સેસ માટે, બુકમાર્ક્સ બારમાં અહીં તમારા બુકમાર્ક્સ મુકો.</translation>
 <translation id="3036649622769666520">ફાઇલો ખોલો</translation>
-<translation id="7909652923456235549">કૂકીઝ મોકલાઈ નથી</translation>
 <translation id="7685049629764448582">JavaScript મેમરી</translation>
 <translation id="4508765956121923607">સ્રો&amp;ત જુઓ</translation>
 <translation id="8080048886850452639">ઑડિયો URL કૉ&amp;પિ કરો</translation>

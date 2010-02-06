@@ -20,7 +20,6 @@
 <translation id="4149882025268051530">Inštalátor pri dekomprimovaní archívu zlyhal. Prevezmite prehliadač Google Chrome znova.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Inštalačný adresár aplikácie Google Chrome sa používa. Reštartujte počítač a skúste to znova.</translation>
-<translation id="4506896920521131223">Copyright © 2006-2009 Google Inc. Všetky práva vyhradené.</translation>
 <translation id="6817660909204164466">Pomôžte nám vylepšiť prehliadač Google Chrome aktivovaním automatického odosielania štatistických údajov o používaní prehliadača a prehľadov chýb spoločnosti Google</translation>
 <translation id="8227755444512189073">Prehľadávač Google Chrome potrebuje spustiť externú aplikáciu na spracovanie odkazov <ph name="SCHEME"/>. Požadovaný odkaz je <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
@@ -47,7 +46,6 @@
 <translation id="911206726377975832">Chcete tiež odstrániť svoje údaje prehliadania?</translation>
 <translation id="2044287590254833138">Panel s nástrojmi Google Chrome</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
-<translation id="1473088902761932034">Vitajte späť! Google Chrome však nie je predvolený prehliadač.</translation>
 <translation id="6481075104394517441">Pokúšate sa otvoriť doménu &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ale server poskytol certifikát, ktorý ešte nie je platný. Nie sú k dispozícii žiadne údaje na posúdenie dôveryhodnosti certifikátu. Prehľadávač Google Chrome nemôže spoľahlivo zaručiť, že komunikujete s doménou &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, a nie s útočníkom. Mali by ste skontrolovať, či vo svojom počítači máte správne nastavené hodiny a časovú zónu. Ak je nastavenie nesprávne, upravte ho a obnovte túto stránku. Ak je nastavenie správne, nemali by ste pokračovať.</translation>
 <translation id="8862326446509486874">Nemáte potrebné práva na inštaláciu na úrovni systému. Skúste inštalátor spustiť znova ako správca.</translation>
 <translation id="595871952790078940">Chrome Utility</translation>
@@ -69,6 +67,7 @@
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="8865765905101981392">Internetový prehliadač</translation>
 <translation id="8776515774046280928">Prehliadač Google Chrome je už nainštalovaný a k dispozícii pre všetkých používateľov tohto počítača. Ak chcete prehliadač Google Chrome nainštalovať na úrovni používateľa, musíte najskôr odinštalovať verziu na úrovni systému, ktorú nainštaloval správca.</translation>
+<translation id="2189123953385179981">Systém Google ChromeOS nepodporuje spustenie externej aplikácie na spracovanie odkazov typu <ph name="SCHEME"/>. Typ požadovaného odkazu je <ph name="PROTOLINK"/>.</translation>
 <translation id="7196020411877309443">Prečo sa zobrazila táto výzva?</translation>
 <translation id="2769762047821873045">Google Chrome nie je váš predvolený prehliadač.</translation>
 <translation id="7825851276765848807">Inštalácia zlyhala kvôli neznámej chybe. Skúste aplikáciu Google Chrome prevziať znova.</translation>
@@ -78,7 +77,6 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3396666154568987767">Google Chrome pre <ph name="PROFILE_NAME"/></translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
-<translation id="1964682833763362793">Zatvorte všetky okná prehliadača Chrome a skúste to znova.</translation>
 <translation id="1001534784610492198">Archív inštalácie je poškodený alebo neplatný. Prevezmite prehliadač Google Chrome znova.</translation>
 <translation id="6626317981028933585">Ľutujeme, nastavenia prehľadávača Mozilla Firefox nie sú k dispozícii, kým je tento prehľadávač otvorený. Ak chcete importovať tieto nastavenia do prehľadávača Google Chrome, uložte svoju prácu a zatvorte všetky okná prehľadávača Firefox. Potom kliknite na tlačidlo Pokračovať.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

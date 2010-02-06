@@ -20,7 +20,6 @@
 <translation id="4149882025268051530">Det gick inte att packa upp arkivet med installationsfilen. Hämta Google Chrome igen.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Det verkar som om installationskatalogen för Google Chrome används. Starta om datorn och försök igen.</translation>
-<translation id="4506896920521131223">© 2006-2009 Google Inc. Med ensamrätt.</translation>
 <translation id="6817660909204164466">Hjälp till att göra Google Chrome bättre genom att automatiskt skicka användningsstatistik och felrapporter till Google</translation>
 <translation id="8227755444512189073">Google Chrome måste starta ett externt program för att hantera <ph name="SCHEME"/>-länkar. Den begärda länken är <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544">Google Chrome: <ph name="TERMS_OF_SERVICE_LINK"/></translation>
@@ -47,7 +46,6 @@
 <translation id="911206726377975832">Vill du även ta bort din webbinformation?</translation>
 <translation id="2044287590254833138">Verktygsfältet Google Chrome</translation>
 <translation id="5074344184765391290">Plugin-värd för Chrome</translation>
-<translation id="1473088902761932034">Hurra, du har kommit tillbaka! Men Google Chrome är inte din standardwebbläsare.</translation>
 <translation id="6481075104394517441">Du försökte nå &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; men certifikatet som servern angav är inte giltigt ännu. Det finns ingen information om huruvida certifikatet är tillförlitligt. Google Chrome kan inte garantera att du kommunicerar med &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; och inte en angripare. Kontrollera att klockan och tidszonen är korrekt angivna på datorn. I annat fall bör du korrigera dem och uppdatera den här sidan. Fortsätt inte om de är korrekta.</translation>
 <translation id="8862326446509486874">Du har inte behörighet att göra en installation på systemnivå. Försök köra installationsprogrammet igen som administratör.</translation>
 <translation id="595871952790078940">Chrome Utility</translation>
@@ -69,6 +67,7 @@
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="8865765905101981392">Webbläsare</translation>
 <translation id="8776515774046280928">Google Chrome är redan installerat och tillgängligt för alla användare på den här datorn. Om du vill installera Google Chrome på användarnivå måste du först avinstallera den systemnivåversion som installerats av en administratör.</translation>
+<translation id="2189123953385179981">Google ChromeOS stöder inte att ett externt program startas för att hantera <ph name="SCHEME"/>-länkar. Den begärda länken är <ph name="PROTOLINK"/>.</translation>
 <translation id="7196020411877309443">Varför visas det här?</translation>
 <translation id="2769762047821873045">Google Chrome är inte din standardwebbläsare.</translation>
 <translation id="7825851276765848807">Installationen misslyckades på grund av ett okänt fel. Hämta Google Chrome igen.</translation>
@@ -78,7 +77,6 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3396666154568987767">Google Chrome för <ph name="PROFILE_NAME"/></translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
-<translation id="1964682833763362793">Stäng alla Chrome-fönster och försök igen.</translation>
 <translation id="1001534784610492198">Arkivet för installationsfilen är skadat eller ogiltigt. Hämta Google Chrome igen.</translation>
 <translation id="6626317981028933585">Inställningarna för Mozilla Firefox är tyvärr inte tillgängliga medan webbläsaren körs. Om du vill importera dessa inställningar till Google Chrome måste du spara ditt arbete och stänga alla Firefox-fönster. Klicka sedan på Fortsätt.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

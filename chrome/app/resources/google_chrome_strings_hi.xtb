@@ -20,7 +20,6 @@
 <translation id="4149882025268051530">इंस्टॉलर, आर्काइव को अनकंप्रेस करने में असफल हुआ. कृपया Google Chrome को दोबारा डाउनलोड करें.</translation>
 <translation id="5744005218040929396">Google Chrome सुविधा</translation>
 <translation id="4343226815564935778">ऐसा प्रतीत होता है कि Google Chrome स्थापना निर्देशिका उपयोग में है. कृपया अपने कंप्यूटर को रीबूट करें और दोबारा प्रयास करें.</translation>
-<translation id="4506896920521131223">कॉपीराइट © 2006-2009 Google Inc. सर्वाधिकार सुरक्षित.</translation>
 <translation id="6817660909204164466">Google को प्रयोग के आँकड़े और क्रैश रिपोर्टें स्वत: ही भेजकर Google Chrome को बेहतर बनाने में मदद करें.</translation>
 <translation id="8227755444512189073"><ph name="SCHEME"/> लिंक्स प्रबंधित करने के लिए Google Chrome को एक बाहरी अनुप्रयोग आरंभ करने की आवश्यकता होती है. अनुरोध किया गया लिंक <ph name="PROTOLINK"/> है.</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
@@ -47,7 +46,6 @@
 <translation id="911206726377975832">अपने ब्राउज़िंग डेटा भी हटाएं?</translation>
 <translation id="2044287590254833138">Google Chrome टूलबार</translation>
 <translation id="5074344184765391290">Chrome प्लग-इन होस्ट</translation>
-<translation id="1473088902761932034">हुर्रे, आप वापस आप गए! लेकिन Google Chrome आपका डिफ़ॉल्ट ब्राउज़र नहीं है.</translation>
 <translation id="6481075104394517441">आपने &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; तक पहुँचने का प्रयास किया, परन्तु सर्वर द्वारा प्रस्तुत प्रमाणपत्र अभी मान्य नहीं है. यह इंगित करने हेतु कोई जानकारी उपलब्ध नहीं है कि इस प्रमाणपत्र पर विश्वास किया जा सकता है. Google Chrome इसकी गारंटी नहीं दे सकता कि आप &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;से संचार कर रहे हैं और किसी आक्रमणकारी से नहीं. आपको यह सुनिश्चत करना चाहिए कि आपके कंप्यूटर में आपकी घड़ी और समय क्षेत्र सही प्रकार सेट किए गए हों. यदि वे सही न हों, तो आपको त्रुटियाँ दूर करके इस पृष्ठ को पुन: ताज़ा करना चाहिए. यदि वे सही हों, तो आपको आगे नहीं जाना चाहिए.</translation>
 <translation id="8862326446509486874">सिस्टम-स्तर स्थापना के लिए आपके पास उचित अधिकार नहीं हैं. इंस्टॉलर को व्यवस्थापक के रूप में फिर से चलाने का प्रयास करें.</translation>
 <translation id="595871952790078940">Chrome सुविधा</translation>
@@ -69,6 +67,7 @@
 <translation id="9039578207253536065">Google Chrome कार्यकर्ता</translation>
 <translation id="8865765905101981392">इंटरनेट ब्राउज़र</translation>
 <translation id="8776515774046280928">Google Chrome इस कंप्यूटर में पहले ही इंस्टॉल हो गया है और सभी यूज़र्स को उपलब्ध है. यदि आप यूज़र लेवल पर Google Chrome को इंस्टॉल करना चाहते हैं, तो आपको पहले एक एडमिनिस्ट्रेटर द्वारा इंस्टॉल सिस्टम लेवल वर्ज़न को अनइंस्टॉल करना चाहिए.</translation>
+<translation id="2189123953385179981">Google ChromeOS <ph name="SCHEME"/> लिंक को प्रबंधित करने के लिए किसी बाह्य एप्लिकेशन को लॉन्च करने का समर्थन नहीं करता है. अनुरोध किया गया लिंक <ph name="PROTOLINK"/> है.</translation>
 <translation id="7196020411877309443">मैं यह क्यों देख रहा/रही हूं?</translation>
 <translation id="2769762047821873045">Google Chrome आपका डिफ़ॉल्ट ब्राउज़र नहीं है.</translation>
 <translation id="7825851276765848807">अनिर्दिष्ट त्रुटि के कारण डाउनलोड विफल हुआ. कृपया Google Chrome पुन: डाउनलोड करें.</translation>
@@ -78,7 +77,6 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3396666154568987767"><ph name="PROFILE_NAME"/> के लिए Google Chrome</translation>
 <translation id="3360895254066713204">Chrome सहायक</translation>
-<translation id="1964682833763362793">कृपया सभी क्रोम विंडोज़ बंद करें और पुन: प्रयास करें.</translation>
 <translation id="1001534784610492198">इंस्टॉलर आर्काइव करप्ट या अमान्य है. कृपया Google Chrome को दोबारा डाउनलोड करें.</translation>
 <translation id="6626317981028933585">खेद है, आपकी Mozilla फायरबॉक्स सेटिंग्स उपलब्ध नहीं हैं जबकि वह ब्राउजर चल रहा है. उन सेटिंग्स को Google Chrome पर इम्पोर्ट करने के लिए, अपने काम को सहेजें और सभी फायरबॉक्स विंडोज को बंद करें. फिर जारी रखें पर क्लिक करें.</translation>
 <translation id="8540666473246803645">Google क्रोम</translation>

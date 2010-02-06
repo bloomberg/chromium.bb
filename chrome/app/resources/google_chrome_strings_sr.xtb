@@ -20,7 +20,6 @@
 <translation id="4149882025268051530">Програм за инсталацију није успео да декомпримује архиву. Преузмите Google Chrome поново.</translation>
 <translation id="5744005218040929396">Google Chrome услужни програм</translation>
 <translation id="4343226815564935778">Изгледа да се инсталациони директоријум Google Chrome-а тренутно користи. Поново покрените рачунар и покушајте поново.</translation>
-<translation id="4506896920521131223">Copyright © 2006–2009. Google Inc. Сва права задржана.</translation>
 <translation id="6817660909204164466">Помози унапређивање Google Chrome прегледача шаљући аутоматски корисничку статистику и извештаје о отказивању Google-у 
 </translation>
 <translation id="8227755444512189073">Google Chrome мора да покрене спољну апликацију за управљање <ph name="SCHEME"/> везама. Тражена веза је <ph name="PROTOLINK"/>.</translation>
@@ -48,7 +47,6 @@
 <translation id="911206726377975832">Желите ли да избришете и податке прегледања?</translation>
 <translation id="2044287590254833138">Google Chrome Toolbar</translation>
 <translation id="5074344184765391290">Хост Chrome додатка</translation>
-<translation id="1473088902761932034">Јупи! Вратили сте се! Али Google Chrome није ваш подразумевани прегледач.</translation>
 <translation id="6481075104394517441">Покушали сте да дођете до домена &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, али сервер је представио сертификат који још увек није важећи. Нема расположивих информација које би указале на то да ли овај сертификат може да буде поуздан. Google Chrome не може да гарантује да комуницирате са сајтом &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; а не са нападачем. Требало би да проверите да ли су сат и временска зона исправно подешени на вашем рачунару. Ако нису, требало би да исправите све проблеме и освежите ову страницу. Ако су тачни, требало би да наставите.</translation>
 <translation id="8862326446509486874">Немате одговарајућа права за инсталацију на нивоу система. Покушајте поново да покренете програм за инсталацију, овога пута као администратор.</translation>
 <translation id="595871952790078940">Chrome услужни програм</translation>
@@ -70,6 +68,7 @@
 <translation id="9039578207253536065">Google Chrome радник</translation>
 <translation id="8865765905101981392">Интернет прегледач</translation>
 <translation id="8776515774046280928">Google Chrome је већ инсталиран и доступан свим корисницима овог рачунара. Ако желите да инсталирате Google Chrome са приступом на нивоу корисника, прво морате да деинсталирате верзију са приступом на нивоу система коју је инсталирао администратор.</translation>
+<translation id="2189123953385179981">Google ChromeOS не подржава покретање спољних апликација ради обраде <ph name="SCHEME"/> веза. Потребна веза је <ph name="PROTOLINK"/>.</translation>
 <translation id="7196020411877309443">Зашто видим ово?</translation>
 <translation id="2769762047821873045">Google Chrome није ваш подразумевани прегледач.</translation>
 <translation id="7825851276765848807">Инсталација није успела услед неутврђене грешке. Преузмите Google Chrome поново.</translation>
@@ -79,7 +78,6 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3396666154568987767">Google Chrome за <ph name="PROFILE_NAME"/></translation>
 <translation id="3360895254066713204">Chrome помоћник</translation>
-<translation id="1964682833763362793">Затворите све прозоре Chrome прегледача и покушајте поново.</translation>
 <translation id="1001534784610492198">Архива програма за инсталацију је оштећена или неважећа. Преузмите Google Chrome поново.</translation>
 <translation id="6626317981028933585">Нажалост, није могуће приступити подешавањима за Mozilla Firefox док се тај прегледач користи. Да бисте увезли ова подешавања у Google Chrome, сачувајте оно што се урадили и затворите све прозоре Firefox прегледача. Затим кликните на „Настави“.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

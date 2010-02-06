@@ -20,7 +20,6 @@
 <translation id="4149882025268051530">Trình cài đặt không thể giải nén lưu trữ được. Vui lòng tải xuống lại Google Chrome.</translation>
 <translation id="5744005218040929396">Tiện ích của Google Chrome</translation>
 <translation id="4343226815564935778">Thư mục cài đặt Google Chrome dường như đang được dùng. Hãy khởi động lại máy tính của bạn và thử lại.</translation>
-<translation id="4506896920521131223">Bản quyền © 2006-2009 Google Inc. Đã Đăng ký Bản quyền.</translation>
 <translation id="6817660909204164466">Trợ giúp cải thiện Google Chrome bằng cách tự động gửi cho Google thống kê sử dụng và báo cáo sự cố.</translation>
 <translation id="8227755444512189073">Google Chrome cần khởi chạy ứng dụng ngoài để xử lý các liên kết <ph name="SCHEME"/>. Liên kết được yêu cầu là <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> của Google Chrome</translation>
@@ -47,7 +46,6 @@
 <translation id="911206726377975832">Bạn cũng muốn xoá dữ liệu duyệt web của mình?</translation>
 <translation id="2044287590254833138">Thanh công cụ Google Chrome</translation>
 <translation id="5074344184765391290">Máy chủ lưu trữ Trình cắm của Chrome</translation>
-<translation id="1473088902761932034">Ồ, bạn đã trở lại! Nhưng Google Chrome không phải là trình duyệt mặc định của bạn.</translation>
 <translation id="6481075104394517441">Bạn đã cố truy cập vào &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, nhưng máy chủ xuất trình chứng chỉ chưa có hiệu lực. Không có thông tin nào cho biết chứng chỉ đáng tin cậy. Google Chrome không thể bảo đảm chắn chắn rằng bạn đang liên lạc với &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; và không phải là kẻ tấn công. Bạn nên chắc chắn cài đặt chính xác đồng hồ và múi giờ trên máy tính của mình. Nếu không đúng, bạn nên chỉnh sửa lại bất kỳ lỗi nào và làm mới trang đó. Nếu các cài đặt là đúng, bạn không nên tiếp tục.</translation>
 <translation id="8862326446509486874">Bạn không có quyền thích hợp để cài đặt cấp hệ thống. Thử chạy lại trình cài đặt với vai trò Quản trị viên.</translation>
 <translation id="595871952790078940">Tiện ích của Chrome</translation>
@@ -69,6 +67,7 @@
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="8865765905101981392">Trình duyệt Internet</translation>
 <translation id="8776515774046280928">Google Chrome đã được cài đặt và khả dụng cho tất cả người dùng máy tính này. Nếu bạn muốn cài đặt Google Chrome ở cấp độ người dùng, trước tiên bạn phải gỡ cài đặt phiên bản cấp hệ thống đã được quản trị viên cài đặt.</translation>
+<translation id="2189123953385179981">Hệ điều hành Google ChromeOS không hỗ trợ khởi chạy ứng dụng ngoài để xử lý các liên kết <ph name="SCHEME"/>. Liên kết được yêu cầu là <ph name="PROTOLINK"/>.</translation>
 <translation id="7196020411877309443">Tại sao tôi nhìn thấy thông báo này?</translation>
 <translation id="2769762047821873045">Google Chrome không phải là trình duyệt mặc định của bạn.</translation>
 <translation id="7825851276765848807">Không thể cài đặt do lỗi không xác định. Hãy tải xuống lại Google Chrome.</translation>
@@ -78,7 +77,6 @@
 <translation id="4407807842708586359">Hệ điều hành Google Chrome</translation>
 <translation id="3396666154568987767">Google Chrome dành cho <ph name="PROFILE_NAME"/></translation>
 <translation id="3360895254066713204">Trình trợ giúp của Chrome</translation>
-<translation id="1964682833763362793">Hãy đóng tất cả cửa sổ Chrome và thử lại.</translation>
 <translation id="1001534784610492198">Lưu trữ trình cài đặt bị lỗi hoặc không hợp lệ. Vui lòng tải xuống lại Google Chrome.</translation>
 <translation id="6626317981028933585">Thật đáng tiếc, cài đặt Mozilla Firefox của bạn không có sẵn khi trình duyệt đang chạy. Để nhập những cài đặt đó vào Google Chrome, hãy lưu công việc của bạn và đóng tất cả cửa sổ Firefox. Sau đó, nhấp Tiếp tục.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

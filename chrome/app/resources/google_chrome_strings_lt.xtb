@@ -20,7 +20,6 @@
 <translation id="4149882025268051530">Diegimo programai nepavyko išpakuoti archyvo. Atsisiųskite „Google Chrome“ dar kartą.</translation>
 <translation id="5744005218040929396">„Google Chrome“ paslaugų programa</translation>
 <translation id="4343226815564935778">Panašu, kad „Google Chrome“ diegimo katalogas yra naudojamas. Paleiskite kompiuterį iš naujo ir mėginkite dar kartą.</translation>
-<translation id="4506896920521131223">© „Google Inc.“, 2006–2009 m. Visos teisės saugomos.</translation>
 <translation id="6817660909204164466">Padėkite tobulinti „Google Chrome&quot; automatiškai siųsdami „Google“ naudojimo statistiką ir trikčių ataskaitas</translation>
 <translation id="8227755444512189073">„Google Chrome“ turi paleisti išorinę taikomąją programą <ph name="SCHEME"/> nuorodoms valdyti. Prašyta nuoroda: <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544">„Google Chrome“ <ph name="TERMS_OF_SERVICE_LINK"/></translation>
@@ -47,7 +46,6 @@
 <translation id="911206726377975832">Ar ištrinti naršymo duomenis?</translation>
 <translation id="2044287590254833138">„Google Chrome“ įrankių juosta</translation>
 <translation id="5074344184765391290">„Chrome“ papildinio priegloba</translation>
-<translation id="1473088902761932034">Valio, sugrįžote! Tačiau „Google Chrome“ nėra numatytoji naršyklė.</translation>
 <translation id="6481075104394517441">Bandėte pasiekti &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, tačiau serveris pateikė sertifikatą, kuris dar negalioja. Kol kas nėra informacijos, patvirtinančios, kad šis sertifikatas patikimas. „Google Chrome“ negali tvirtai užtikrinti, kad bendraujate su &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;, o ne užpuolėju. Turėtumėte įsitikinti, kad jūsų kompiuteryje tinkamai nustatytas laikas ir laiko zona. Jei jie nustatyti neteisingai, ištaisykite klaidas ir perkraukite šį puslapį. Jeigu jie nustatyti teisingai, kitų veiksmų atlikti neturėtumėte.</translation>
 <translation id="8862326446509486874">Neturite reikiamų teisių sistemai įdiegti. Pamėginkite įdiegimo priemonę dar kartą paleisti kaip administratorius.</translation>
 <translation id="595871952790078940">„Chrome“ paslaugų programa</translation>
@@ -69,6 +67,7 @@
 <translation id="9039578207253536065">„Google Chrome“ darbuotojas</translation>
 <translation id="8865765905101981392">Interneto naršyklė</translation>
 <translation id="8776515774046280928">„Google Chrome“ jau įdiegta ir prieinama visiems šio kompiuterio naudotojams. Jei norite įdiegti „Google Chrome“ naudotojo lygiu, pirmiausia turite išdiegti versiją sistemos lygiu, įdiegtą administratoriaus.</translation>
+<translation id="2189123953385179981">„Google Chrome“ operacinė sistema nepalaiko išorinės programos, skirtos tvarkyti <ph name="SCHEME"/> nuorodas, paleidimo. Nuoroda, dėl kurios pateikta užklausa, yra <ph name="PROTOLINK"/>.</translation>
 <translation id="7196020411877309443">Kodėl tai matau?</translation>
 <translation id="2769762047821873045">„Google Chrome“ nėra numatytoji naršyklė.</translation>
 <translation id="7825851276765848807">Nepavyko įdiegti dėl nenustatytos klaidos. Atsisiųskite „Google Chrome“ dar kartą.</translation>
@@ -78,7 +77,6 @@
 <translation id="4407807842708586359">„Google Chrome“ OS</translation>
 <translation id="3396666154568987767">„Google Chrome“, skirta <ph name="PROFILE_NAME"/></translation>
 <translation id="3360895254066713204">„Chrome“ pagalbos priemonė</translation>
-<translation id="1964682833763362793">Uždarykite visus „Chrome“ langus ir bandykite dar kartą.</translation>
 <translation id="1001534784610492198">Diegimo programos archyvas sugadintas arba negalioja. Atsisiųskite „Google Chrome“ dar kartą.</translation>
 <translation id="6626317981028933585">Deja, „Mozilla Firefox“ nustatymai negalimi tol, kol ši naršyklė nebus paleista. Norėdami importuoti šiuos nustatymus į „Google Chrome“, išsaugokite savo darbą ir uždarykite visus „Firefox“ langus. Spustelėkite Tęsti.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

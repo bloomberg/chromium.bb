@@ -20,7 +20,6 @@
 <translation id="4149882025268051530">Il programma di installazione non è riuscito a decomprimere il file. Scarica nuovamente Google Chrome.</translation>
 <translation id="5744005218040929396">Utilità Google Chrome</translation>
 <translation id="4343226815564935778">Sembra che sia in uso la directory di installazione di Google Chrome. Riavvia il computer e riprova.</translation>
-<translation id="4506896920521131223">Copyright © 2006-2009 Google Inc. Tutti i diritti riservati.</translation>
 <translation id="6817660909204164466">Aiutaci a migliorare Google Chrome inviando automaticamente a Google le statistiche sull'utilizzo e segnalazioni sugli arresti anomali</translation>
 <translation id="8227755444512189073">Google Chrome deve avviare un'applicazione esterna per gestire i link <ph name="SCHEME"/>. Il link richiesto è <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> Google Chrome</translation>
@@ -47,7 +46,6 @@
 <translation id="911206726377975832">Eliminare anche i tuoi dati di navigazione?</translation>
 <translation id="2044287590254833138">Barra degli strumenti di Google Chrome</translation>
 <translation id="5074344184765391290">Host plug-in Chrome</translation>
-<translation id="1473088902761932034">Evviva, sei tornato! Ma Google Chrome non è il tuo browser predefinito.</translation>
 <translation id="6481075104394517441">Hai tentato di accedere a &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, ma il certificato presentato dal server non è valido. Non sono disponibili informazioni che stabiliscano se il certificato è affidabile. Google Chrome non è in grado di garantire che tu stia comunicando con &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; e non con un hacker. Assicurati che l'orologio e il fuso orario siano impostati correttamente sul tuo computer. Qualora non lo fossero, prova a correggere le impostazioni e aggiorna la pagina. Se le impostazioni sono corrette, non procedere oltre.</translation>
 <translation id="8862326446509486874">Non disponi dei diritti appropriati per l'installazione a livello di sistema. Prova a eseguire nuovamente il programma di installazione come Amministratore.</translation>
 <translation id="595871952790078940">Utilità Chrome</translation>
@@ -69,6 +67,7 @@
 <translation id="9039578207253536065">Applicazione di lavoro Google Chrome</translation>
 <translation id="8865765905101981392">Browser Internet</translation>
 <translation id="8776515774046280928">Google Chrome è già installato ed è disponibile per tutti gli utenti di questo computer. Se desideri installare Google Chrome a livello di utente, innanzitutto devi disinstallare la versione a livello di sistema installata da un amministratore.</translation>
+<translation id="2189123953385179981">Google Chrome OS non supporta l'avvio di un'applicazione esterna per la gestione dei link <ph name="SCHEME"/>. Il link richiesto è <ph name="PROTOLINK"/>.</translation>
 <translation id="7196020411877309443">Perché visualizzo questo avviso?</translation>
 <translation id="2769762047821873045">Google Chrome non è il tuo browser predefinito.</translation>
 <translation id="7825851276765848807">Installazione non riuscita a causa di un errore non specificato. Scarica nuovamente Google Chrome.</translation>
@@ -78,7 +77,6 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3396666154568987767">Google Chrome per <ph name="PROFILE_NAME"/></translation>
 <translation id="3360895254066713204">Supporto Chrome</translation>
-<translation id="1964682833763362793">Chiudi tutte le finestre di Chrome e riprova.</translation>
 <translation id="1001534784610492198">Il file del programma di installazione è danneggiato oppure non è valido. Scarica nuovamente Google Chrome.</translation>
 <translation id="6626317981028933585">Le impostazioni di Mozilla Firefox non sono disponibili finché il browser è in esecuzione. Per importare queste impostazioni in Google Chrome, salva i tuoi file e chiudi tutte le finestre di Firefox, quindi fai clic su Continua.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

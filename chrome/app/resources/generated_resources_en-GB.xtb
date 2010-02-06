@@ -9,6 +9,7 @@
 <translation id="8418445294933751433">&amp;Show as tab</translation>
 <translation id="6985276906761169321">ID:</translation>
 <translation id="2160383474450212653">Fonts and Languages</translation>
+<translation id="1497897566809397301">Allow local data to be set (recommended)</translation>
 <translation id="4405141258442788789">The operation timed out.</translation>
 <translation id="5048179823246820836">Nordic</translation>
 <translation id="1763046204212875858">Create application shortcuts</translation>
@@ -26,6 +27,7 @@
 <translation id="8595062045771121608">In this case, the server certificate or an intermediate CA certificate presented to your browser is signed using a weak signature algorithm such as RSA-MD2. Recent research by computer scientists showed the signature algorithm is weaker than previously believed, and the signature algorithm is rarely used by trustworthy websites today. This certificate could have been forged. You should not proceed past this point.</translation>
 <translation id="7567293639574541773">I&amp;nspect element</translation>
 <translation id="36224234498066874">Clear Browsing Data...</translation>
+<translation id="7600965453749440009">Never translate <ph name="LANGUAGE"/></translation>
 <translation id="8571213806525832805">Last 4 weeks</translation>
 <translation id="6021004449668343960">Sans-Serif Font:</translation>
 <translation id="5341849548509163798"><ph name="NUMBER_MANY"/> hours ago</translation>
@@ -46,11 +48,10 @@
 <translation id="3496213124478423963">Zoom Out</translation>
 <translation id="8608043773967779744">The following Privacy Blacklists prevented this content from showing:</translation>
 <translation id="8133676275609324831">&amp;Show in folder</translation>
+<translation id="645705751491738698">Continue blocking JavaScript</translation>
 <translation id="4780321648949301421">Save Page As...</translation>
 <translation id="9154072353677278078">The server <ph name="DOMAIN"/> at <ph name="REALM"/> requires a username and password.</translation>
-<translation id="2193841602817119749">The website at &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; has been reported as a “phishing” site.  Phishing sites trick users into disclosing personal or financial information, often by pretending to represent trusted institutions, such as banks.</translation>
 <translation id="8178665534778830238">Content:</translation>
-<translation id="1379170046778889619">Security information</translation>
 <translation id="4771019161370731727">Recent activities</translation>
 <translation id="8974161578568356045">Auto Detect</translation>
 <translation id="1818606096021558659">Page</translation>
@@ -93,14 +94,17 @@
 <translation id="5613020302032141669">Left Arrow</translation>
 <translation id="3433489605821183222">Server's certificate contains errors</translation>
 <translation id="6479177161510354016">Alert <ph name="SITE"/></translation>
+<translation id="6831043979455480757">Translate</translation>
 <translation id="6698381487523150993">Created:</translation>
 <translation id="4684748086689879921">Skip Import</translation>
 <translation id="5516565854418269276">&amp;Always show bookmarks bar</translation>
 <translation id="6426222199977479699">SSL Error</translation>
+<translation id="4504497882859943663">Translation Warning</translation>
 <translation id="4194570336751258953">Enable tap-to-click</translation>
 <translation id="5111692334209731439">&amp;Bookmark Manager</translation>
 <translation id="443008484043213881">Tools</translation>
 <translation id="314605055819837597">User Data</translation>
+<translation id="7957054228628133943">Manage pop-up blocking...</translation>
 <translation id="8534801226027872331">In this case, the certificate presented to your browser has errors and cannot be understood. This may mean that we cannot understand the identity information within the certificate or that certain other information in the certificate used to secure the connection. You should not proceed.</translation>
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> now has <ph name="BEGIN_LINK"/>extensions<ph name="END_LINK"/> and <ph name="BEGIN_BUTTON"/>bookmark sync<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Your bookmarks will be merged.</translation>
@@ -111,6 +115,7 @@
 <translation id="801357260673640054">Bookmarks synced...</translation>
 <translation id="1399076603473531278">Login details are out of date.</translation>
 <translation id="3391060940042023865">The following plug-in has crashed: <ph name="PLUGIN_NAME"/></translation>
+<translation id="4755860829306298968">Manage plug-in blocking...</translation>
 <translation id="8879284080359814990">&amp;Show As Tab</translation>
 <translation id="3873139305050062481">I&amp;nspect Element</translation>
 <translation id="6370820475163108109"><ph name="ORGANIZATION_NAME"/> (<ph name="DOMAIN_NAME"/>)</translation>
@@ -123,7 +128,6 @@
 <translation id="1644574205037202324">History</translation>
 <translation id="2518917559152314023">A&amp;dd...</translation>
 <translation id="6583406242234752719">You are not set up to sync your bookmarks with your other computers.</translation>
-<translation id="923693997520853947"><ph name="URL"/> - <ph name="REASON"/></translation>
 <translation id="4510290974676570902">MIME Type</translation>
 <translation id="5565725983873655007">When there is mixed content on secure (SSL) pages:</translation>
 <translation id="5155055381903895958">Profile Import:</translation>
@@ -133,7 +137,6 @@
 <translation id="7767960058630128695">Passwords:</translation>
 <translation id="6518014396551869914">Cop&amp;y image</translation>
 <translation id="542155483965056918"><ph name="NUMBER_ZERO"/> mins ago</translation>
-<translation id="6363850194751762580">Manage pop-ups</translation>
 <translation id="3118319026408854581"><ph name="PRODUCT_NAME"/> Help</translation>
 <translation id="4120898696391891645">Page won't load</translation>
 <translation id="5584537427775243893">Importing</translation>
@@ -143,19 +146,24 @@
 <translation id="7121570032414343252"><ph name="NUMBER_TWO"/> secs</translation>
 <translation id="5098629044894065541">Hebrew</translation>
 <translation id="7751559664766943798">Always show bookmarks bar</translation>
+<translation id="6380224340023442078">Content settings...</translation>
 <translation id="144136026008224475">Get more extensions &gt;&gt;</translation>
 <translation id="8584280235376696778">&amp;Open video in new tab</translation>
 <translation id="2845382757467349449">Always Show Bookmarks Bar</translation>
 <translation id="6827094223626760756">preview</translation>
 <translation id="7511635910912978956"><ph name="NUMBER_FEW"/> hours left</translation>
+<translation id="2152580633399033274">Show all images (recommended)</translation>
 <translation id="1720675772864601791">Allow insecure images</translation>
 <translation id="471372654970523967">Turn <ph name="NETWORKDEVICE"/> On</translation>
+<translation id="6431347207794742960"><ph name="PRODUCT_NAME"/> will set up automatic updates for all users of this computer.</translation>
 <translation id="4001299999465067131">Enter the letters as they are shown in the image above.</translation>
 <translation id="2167276631610992935">JavaScript</translation>
 <translation id="5233638681132016545">New tab</translation>
 <translation id="5210365745912300556">Close tab</translation>
 <translation id="8806796506533854282">Enter a new profile name</translation>
 <translation id="2551763528995812091">Passwords and Exceptions</translation>
+<translation id="3314070176311241517">Allow all sites to run JavaScript (recommended)</translation>
+<translation id="5710740561465385694">Ask me when a site tries to set data</translation>
 <translation id="5948410903763073882">Alt+<ph name="KEY_COMBO_NAME"/></translation>
 <translation id="2263497240924215535">(Disabled)</translation>
 <translation id="6360709384096878403">Report Bug or Broken Website...</translation>
@@ -211,6 +219,7 @@
 <translation id="1388866984373351434">Browsing Data</translation>
 <translation id="7378627244592794276">Nope</translation>
 <translation id="68541483639528434">Close other tabs</translation>
+<translation id="4433862206975946675">Import data from another browser...</translation>
 <translation id="4022426551683927403">&amp;Add to Dictionary</translation>
 <translation id="2897878306272793870">Are you sure that you want to open <ph name="TAB_COUNT"/> tabs?</translation>
 <translation id="362276910939193118">Show Full History</translation>
@@ -243,9 +252,11 @@
 <translation id="8642489171979176277">Imported From Google Toolbar</translation>
 <translation id="5905978244564263718">Set up AutoFill...</translation>
 <translation id="7335374713830044009">Open Frame in Inco&amp;gnito Window</translation>
+<translation id="3586931643579894722">Hide details</translation>
 <translation id="2011110593081822050">Web Worker: <ph name="WORKER_NAME"/></translation>
 <translation id="350069200438440499">File name:</translation>
 <translation id="8494979374722910010">The attempt to connect to the server failed.</translation>
+<translation id="7810202088502699111">Pop-ups were blocked on this page.</translation>
 <translation id="8795916974678578410">New Window</translation>
 <translation id="3400618317772401692">Add your favourite sources to get news headlines, blog posts, RSS and Atom feeds, right in this box.
         <ph name="BEGIN_LINK"/>Learn more<ph name="END_LINK"/></translation>
@@ -258,7 +269,6 @@
 <translation id="3165657440747518774">&amp;Find in Page</translation>
 <translation id="939736085109172342">New folder</translation>
 <translation id="862750493060684461">CSS cache</translation>
-<translation id="5722599785390787673">Click to unblock</translation>
 <translation id="2009541932026160416">Click <ph name="CROSS_IMAGE"/> to remove the thumbnail</translation>
 <translation id="5641560969478423183">Server's certificate does not match the URL</translation>
 <translation id="6474422710030751464">Some content on this page was retrieved over a connection with SSL errors.</translation>
@@ -288,6 +298,8 @@
 <translation id="2142570832281562688">Enter a Profile Name</translation>
 <translation id="5904714272463161824">&amp;Report bug or broken website...</translation>
 <translation id="1608306110678187802">P&amp;rint frame...</translation>
+<translation id="323509738684635129">Cookie Exceptions</translation>
+<translation id="6622980291894852883">Continue blocking images</translation>
 <translation id="4948468046837535074">Open the following pages:</translation>
 <translation id="6978121630131642226">Search Engines</translation>
 <translation id="6745994589677103306">Do Nothing</translation>
@@ -306,6 +318,8 @@
 <translation id="5097982659374947325">Accept Cookies Only from Sites I Visit</translation>
 <translation id="14171126816530869">The identity of <ph name="ORGANIZATION"/> at <ph name="LOCALITY"/> has been verified by <ph name="ISSUER"/>.</translation>
 <translation id="1587275751631642843">&amp;JavaScript console</translation>
+<translation id="6880587130513028875">Images were blocked on this page.</translation>
+<translation id="851263357009351303">Always allow <ph name="HOST"/> to show images</translation>
 <translation id="5821894118254011366">Completely block third-party cookies</translation>
 <translation id="3511307672085573050">Copy Link Addr&amp;ess</translation>
 <translation id="1134009406053225289">Open in incognito window</translation>
@@ -332,6 +346,7 @@
 <translation id="3368922792935385530">Connected</translation>
 <translation id="8486154204771389705">Keep on this page</translation>
 <translation id="6824564591481349393">Copy &amp;Email Address</translation>
+<translation id="907148966137935206">Do not allow any site to show pop-ups (recommended)</translation>
 <translation id="5184063094292164363">&amp;JavaScript Console</translation>
 <translation id="333371639341676808">Prevent this page from creating additional dialogues.</translation>
 <translation id="5844183150118566785"><ph name="PRODUCT_NAME"/> is up to date (<ph name="VERSION"/>)</translation>
@@ -344,7 +359,6 @@
 <translation id="6178664161104547336">Select a certificate</translation>
 <translation id="5702898740348134351">&amp;Edit Search Engines...</translation>
 <translation id="2365740070488517695">Tips</translation>
-<translation id="772440777491435074">Certificate information...</translation>
 <translation id="2869459179306435079">Import settings from:</translation>
 <translation id="732677191631732447">C&amp;opy Audio URL</translation>
 <translation id="4999762576397546063">Ctrl+<ph name="KEY_COMBO_NAME"/></translation>
@@ -354,10 +368,12 @@
 <translation id="8800574954100068740">Default Search</translation>
 <translation id="6551701656367809067">Bookmark Sync is malfunctioning because too many requests are being sent to the server. <ph name="NAME_OF_EXTENSION"/> seems to be making too many changes to your bookmarks.</translation>
 <translation id="8249296373107784235">Abort</translation>
+<translation id="4206067298962112499">Allow all sites to use plug-ins (recommended)</translation>
 <translation id="3967132639560659870">There are several SSL errors on this page:</translation>
 <translation id="7770995925463083016"><ph name="NUMBER_TWO"/> mins ago</translation>
 <translation id="175196451752279553">R&amp;eopen closed tab</translation>
 <translation id="5039804452771397117">Allow</translation>
+<translation id="7564146504836211400">Cookies and Other Data</translation>
 <translation id="2266011376676382776">Page(s) Unresponsive</translation>
 <translation id="1805966933547717780">http://www.google.com/chrome/help/</translation>
 <translation id="5782620817391526544">Bookmark Bar</translation>
@@ -367,13 +383,15 @@
 <translation id="3371861036502301517">Extension Installation Failure</translation>
 <translation id="644038709730536388">Learn more about how to protect yourself from harmful software online.</translation>
 <translation id="4172706149171596436">Change proxy settings</translation>
+<translation id="2155931291251286316">Always allow pop-ups from <ph name="HOST"/></translation>
 <translation id="5650551054760837876">No search results found.</translation>
 <translation id="5494362494988149300">Open When &amp;Finished</translation>
+<translation id="9187787570099877815">Continue blocking plug-ins</translation>
 <translation id="3234408098842461169">Down Arrow</translation>
 <translation id="825608351287166772">Certificates have a validity period, much like any identity document (such as a passport) that you may have. The certificate presented to your browser is not yet valid. When a certificate is outside of its validity period, certain information about the status of the certificate (whether it has been revoked and should no longer be trusted) is not required to be maintained. As such, it is not possible to verify that this certificate is trustworthy. You should not proceed.</translation>
-<translation id="2742457360514408037">Pop-ups Blocked: <ph name="COUNT"/></translation>
 <translation id="7154150278819212687">This extension will have access to your browsing history.</translation>
 <translation id="1516602185768225813">Reopen the pages that were opened last</translation>
+<translation id="1538486363863290963">Block all third-party cookies without exception</translation>
 <translation id="4874539263382920044">Title must contain at least one character</translation>
 <translation id="3549657413697417275">Search your history</translation>
 <translation id="7344633671344536647">Browsing data:</translation>
@@ -382,7 +400,7 @@
 <translation id="7905536804357499080">Use Current</translation>
 <translation id="8933960630081805351">&amp;Show in Finder</translation>
 <translation id="7378810950367401542">/</translation>
-<translation id="1871540228654219948">The web site at &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; contains elements from sites which appear to host malware – software that can hurt your computer or otherwise operate without your consent.  Just visiting a site that contains malware can infect your computer.</translation>
+<translation id="4435256380245822831">Image Settings:</translation>
 <translation id="8899388739470541164">Vietnamese</translation>
 <translation id="6631671511957507878">View full history</translation>
 <translation id="3335947283844343239">Re-open Closed Tab</translation>
@@ -411,6 +429,7 @@
 <translation id="9027459031423301635">Open Link in New &amp;Tab</translation>
 <translation id="358344266898797651">Celtic</translation>
 <translation id="5055518462594137986">Remember my choice for all links of this type.</translation>
+<translation id="246059062092993255">Plug-ins were blocked on this page.</translation>
 <translation id="2870560284913253234">Site</translation>
 <translation id="7724603315864178912">Cut</translation>
 <translation id="4164507027399414915">Restore all removed thumbnails</translation>
@@ -422,11 +441,9 @@
 <translation id="6434309073475700221">Discard</translation>
 <translation id="1425127764082410430">&amp;Search <ph name="SEARCH_ENGINE"/> for '<ph name="SEARCH_TERMS"/>'</translation>
 <translation id="4551297183924943154">The profile appears to be in use by process <ph name="PROCESS_ID"/> on host <ph name="HOST_NAME"/>. If you are sure that no other processes are using this profile, delete the file <ph name="LOCK_FILE"/> and restart <ph name="PRODUCT_NAME"/>.</translation>
-<translation id="877010697526426622">The web page at &lt;strong jscontent=&quot;failedURL&quot;&gt;&lt;/strong&gt; might be temporarily down or it may have moved permanently to a new web address.</translation>
 <translation id="4378551569595875038">Connecting...</translation>
 <translation id="7029809446516969842">Passwords</translation>
 <translation id="3513979718339724672">Show thumbnails</translation>
-<translation id="7300965843904003671">Always show pop-ups from <ph name="URL"/></translation>
 <translation id="8211437954284917092">Enter a query in the text field above to search your bookmarks.</translation>
 <translation id="5958418293370246440"><ph name="SAVED_FILES"/> / <ph name="TOTAL_FILES"/> files</translation>
 <translation id="1291121346508216435">Correct spelling automatically:</translation>
@@ -448,6 +465,8 @@
 <translation id="2356762928523809690">Update server not available (error: <ph name="ERROR_NUMBER"/>)</translation>
 <translation id="6356865038429301391">Featured theme</translation>
 <translation id="219008588003277019">Native Client module: <ph name="NEXE_NAME"/></translation>
+<translation id="8295274277480637228">Data from <ph name="HOST"/></translation>
+<translation id="8719167808826224921">Remember my choice for all cookies and site data from <ph name="HOST"/></translation>
 <translation id="5436510242972373446">Search <ph name="SITE_NAME"/>:</translation>
 <translation id="6719684875142564568"><ph name="NUMBER_ZERO"/> hours</translation>
 <translation id="7616581516194661584">Duplicate</translation>
@@ -465,12 +484,14 @@
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> days</translation>
 <translation id="8453184121293348016">No revocation mechanism found</translation>
 <translation id="1199429765931693651">Hide list</translation>
+<translation id="3481915276125965083">The following pop-ups were blocked on this page:</translation>
 <translation id="7163503212501929773"><ph name="NUMBER_MANY"/> hours left</translation>
 <translation id="5586329397967040209">Make this my home page</translation>
 <translation id="3283719377675052581">unknown</translation>
 <translation id="374530189620960299">The site's security certificate is not trusted!</translation>
 <translation id="5048040498971143039">Search Results for '<ph name="SEARCH_STRING"/>'</translation>
 <translation id="7772127298218883077">About <ph name="PRODUCT_NAME"/></translation>
+<translation id="9219103736887031265">Images</translation>
 <translation id="5453632173748266363">Cyrillic</translation>
 <translation id="8415351664471761088">Wait for download to finish</translation>
 <translation id="1545775234664667895">Installed theme &quot;<ph name="THEME_NAME"/>&quot;</translation>
@@ -480,11 +501,11 @@
 <translation id="3994878504415702912">&amp;Zoom</translation>
 <translation id="9009369504041480176">Uploading (<ph name="PROGRESS_PERCENT"/>%)...</translation>
 <translation id="5602600725402519729">Re&amp;load</translation>
-<translation id="4755559386248249812">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the server presented a certificate signed using a weak signature algorithm. This means that the security credentials the server presented could have been forged, and the server may not be the server you expected (you may be communicating with an attacker). You should not proceed.</translation>
 <translation id="9010612682952491200">New Tab [<ph name="PROFILE_NAME"/>]</translation>
 <translation id="7965010376480416255">Shared Memory</translation>
 <translation id="6248988683584659830">Search settings</translation>
 <translation id="2242457451044347345">Bookmark sync</translation>
+<translation id="7053983685419859001">Block</translation>
 <translation id="2727712005121231835">Actual Size</translation>
 <translation id="8887733174653581061">Always on top</translation>
 <translation id="610886263749567451">JavaScript Alert</translation>
@@ -523,20 +544,18 @@
 <translation id="7926251226597967072"><ph name="PRODUCT_NAME"/> is now importing the following items from <ph name="IMPORT_BROWSER_NAME"/>:</translation>
 <translation id="1018656279737460067">Cancelled</translation>
 <translation id="7910768399700579500">&amp;New folder</translation>
+<translation id="6295535972717341389">Plug-ins</translation>
 <translation id="6883611015375728278">Block all cookies</translation>
-<translation id="3819791248093819058">No web page was found for the web address: &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt;</translation>
 <translation id="7842346819602959665">The newest version of the extension &quot;<ph name="EXTENSION_NAME"/>&quot; requires more permissions, so it has been disabled.</translation>
+<translation id="6979448128170032817">Exceptions...</translation>
 <translation id="8942948210663084792">Clear Data:</translation>
 <translation id="208047771235602537">Do you want to exit <ph name="PRODUCT_NAME"/> with a download in progress?</translation>
 <translation id="6710213216561001401">Previous</translation>
 <translation id="1567993339577891801">JavaScript Console</translation>
 <translation id="583281660410589416">Unknown</translation>
-<translation id="7635303043999550515">The web page at &lt;strong jscontent=&quot;failedUrl&quot;&gt;&lt;/strong&gt; has resulted in
-        too many redirects.  Clearing your cookies for this site or allowing third-party cookies may fix the problem.  If
-        not, it is possibly a server configuration issue and not a problem with your
-        computer.</translation>
 <translation id="2485422356828889247">Uninstall</translation>
 <translation id="2621889926470140926">Do you want to exit <ph name="PRODUCT_NAME"/> with <ph name="DOWNLOAD_COUNT"/> downloads in progress?</translation>
+<translation id="7279701417129455881">Manage cookie blocking...</translation>
 <translation id="5528368756083817449">Bookmark Manager</translation>
 <translation id="7275974018215686543"><ph name="NUMBER_MANY"/> secs ago</translation>
 <translation id="7849264908733290972">Open &amp;Image in New Tab</translation>
@@ -548,12 +567,12 @@
 <translation id="2665163749053788434">Visit history</translation>
 <translation id="7434509671034404296">Developer</translation>
 <translation id="6447842834002726250">Cookies</translation>
+<translation id="3876833929577368454">Ask me every time</translation>
 <translation id="5170568018924773124">Show in folder</translation>
 <translation id="883848425547221593">Other Bookmarks</translation>
 <translation id="4870177177395420201"><ph name="PRODUCT_NAME"/> cannot determine or set the default browser.</translation>
 <translation id="8898786835233784856">Select Next Tab</translation>
 <translation id="2674170444375937751">Are you sure that you want to delete these pages from your history?</translation>
-<translation id="4203689580933736628">Blocked Items: <ph name="COUNT"/></translation>
 <translation id="2653166165688724436">Web Database</translation>
 <translation id="7629827748548208700">Tab: <ph name="TAB_NAME"/></translation>
 <translation id="8449008133205184768">Paste and Match Style</translation>
@@ -563,6 +582,7 @@
 <translation id="290414493736480793">Acknowledgements</translation>
 <translation id="5463856536939868464">Menu containing hidden bookmarks</translation>
 <translation id="6261915643960475695">Business</translation>
+<translation id="1611175136450159394">Do not allow any site to use plug-ins</translation>
 <translation id="6449085810994685586">&amp;Check the spelling of this field</translation>
 <translation id="8789544147407756448">The following extension has crashed : <ph name="EXTENSION_NAME"/></translation>
 <translation id="50960180632766478"><ph name="NUMBER_FEW"/> mins left</translation>
@@ -579,6 +599,7 @@
 <translation id="1767991048059195456">Send report</translation>
 <translation id="7985242821674907985"><ph name="PRODUCT_NAME"/></translation>
 <translation id="4474155171896946103">Bookmark all tabs...</translation>
+<translation id="1190844492833803334">When I close my browser</translation>
 <translation id="5646376287012673985">Location</translation>
 <translation id="1110155001042129815">Wait</translation>
 <translation id="7071586181848220801">Unknown plug-in</translation>
@@ -586,8 +607,10 @@
 <translation id="6459488832681039634">Use Selection for Find</translation>
 <translation id="8235325155053717782">Error <ph name="ERROR_NUMBER"/> (<ph name="ERROR_NAME"/>): <ph name="ERROR_TEXT"/></translation>
 <translation id="5933965621105104639">Recommendations</translation>
+<translation id="7734729626860583526">Cookie from <ph name="HOST"/></translation>
 <translation id="1084824384139382525">Copy link addr&amp;ess</translation>
 <translation id="5042992464904238023">Web Content</translation>
+<translation id="6612130107286675225">Manage these alerts and exceptions</translation>
 <translation id="1261967938516962772">Hide even more</translation>
 <translation id="1181037720776840403">Remove</translation>
 <translation id="4006726980536015530">If you close <ph name="PRODUCT_NAME"/> now, these downloads will be cancelled.</translation>
@@ -605,6 +628,7 @@
 <translation id="4206968337478445915">Merge and sync</translation>
 <translation id="1205605488412590044">Create Application Shortcut...</translation>
 <translation id="2065985942032347596">Authentication Required</translation>
+<translation id="7186367841673660872">This page has been translated from<ph name="ORIGINAL_LANGUAGE"/>to<ph name="LANGUAGE_LANGUAGE"/></translation>
 <translation id="1175364870820465910">&amp;Print...</translation>
 <translation id="3866249974567520381">Description</translation>
 <translation id="6549689063733911810">Recent</translation>
@@ -619,15 +643,13 @@
 <translation id="3664021239099029884">View all downloads</translation>
 <translation id="2207746515960750386"><ph name="MINUTE"/> minute/minutes ago</translation>
 <translation id="7754704193130578113">Ask where to save each file before downloading</translation>
-<translation id="2838167480523328393">Install &quot;<ph name="EXTENSION_NAME"/>&quot;?</translation>
 <translation id="2497284189126895209">All Files</translation>
 <translation id="5360606537916580043">Last day</translation>
-<translation id="6589689504565594563">Delete cookies</translation>
 <translation id="1682548588986054654">New Incognito Window</translation>
 <translation id="6833901631330113163">South European</translation>
 <translation id="5110450810124758964"><ph name="NUMBER_ONE"/> day ago</translation>
-<translation id="5256138355144269748">Blocked Pop-up</translation>
 <translation id="2820806154655529776"><ph name="NUMBER_ONE"/> sec</translation>
+<translation id="1077946062898560804">Set Up Automatic Updates for All Users</translation>
 <translation id="3122496702278727796">Failed To Create Data Directory</translation>
 <translation id="8888930795132369495">Copy File &amp;Path</translation>
 <translation id="4517036173149081027">Close and cancel download</translation>
@@ -643,6 +665,7 @@
 <translation id="4692623383562244444">Search engines</translation>
 <translation id="2233040275795129413">Lifestyle</translation>
 <translation id="2526590354069164005">Desktop</translation>
+<translation id="7983301409776629893">Always translate <ph name="ORIGINAL_LANGUAGE"/> to <ph name="TARGET_LANGUAGE"/></translation>
 <translation id="4890284164788142455">Thai</translation>
 <translation id="3889424535448813030">Right Arrow</translation>
 <translation id="5435666907653217300">Other problem</translation>
@@ -656,12 +679,14 @@
 <translation id="1047726139967079566">Bookmark This Page...</translation>
 <translation id="2544782972264605588"><ph name="NUMBER_DEFAULT"/> secs left</translation>
 <translation id="4767443964295394154">Download Location</translation>
+<translation id="5031870354684148875">About Google Translate</translation>
 <translation id="720658115504386855">Letters are not case-sensitive</translation>
 <translation id="2454247629720664989">Keyword</translation>
 <translation id="3950820424414687140">Sign in</translation>
 <translation id="2840798130349147766">Web Databases</translation>
 <translation id="1628736721748648976">Encoding</translation>
 <translation id="6521850982405273806">Report an error</translation>
+<translation id="8026334261755873520">Clear browsing data</translation>
 <translation id="1769104665586091481">Open Link in New &amp;Window</translation>
 <translation id="8503813439785031346">Username</translation>
 <translation id="290555789621781773"><ph name="NUMBER_TWO"/> mins</translation>
@@ -682,7 +707,6 @@
 <translation id="7893393459573308604"><ph name="ENGINE_NAME"/> (Default)</translation>
 <translation id="6543631358510643997">This extension will have full access to your computer and private data.</translation>
 <translation id="111844081046043029">Are you sure that you want to leave this page?</translation>
-<translation id="4497415007571823067">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but instead you actually reached a server identifying itself as &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. This may be caused by a misconfiguration on the server or by something more serious. An attacker on your network could be trying to get you to visit a fake (and potentially harmful) version of &lt;strong&gt;<ph name="DOMAIN3"/>&lt;/strong&gt;. You should not proceed.</translation>
 <translation id="3202578601642193415">Newest</translation>
 <translation id="8112886015144590373"><ph name="NUMBER_FEW"/> hours</translation>
 <translation id="8739589585766515812">Delete history for this day</translation>
@@ -693,6 +717,7 @@
 <translation id="8053390638574070785">Reload This Page</translation>
 <translation id="3678156199662914018">Extension: <ph name="EXTENSION_NAME"/></translation>
 <translation id="5104499318017527547">Fun</translation>
+<translation id="7624267205732106503">Clear cookies and other site data when I close my browser</translation>
 <translation id="3577682619813191010">Copy &amp;file</translation>
 <translation id="10122177803156699">Show Me</translation>
 <translation id="5260878308685146029"><ph name="NUMBER_TWO"/> mins left</translation>
@@ -716,6 +741,7 @@
 <translation id="9107059250669762581"><ph name="NUMBER_DEFAULT"/> days</translation>
 <translation id="872451400847464257">Edit Search Engine</translation>
 <translation id="6463061331681402734"><ph name="NUMBER_MANY"/> mins</translation>
+<translation id="6408082614319501487">To translate web pages for you, Google Chrome will send the contents of those pages to Google.</translation>
 <translation id="8717266507183354698">See all pages in history containing <ph name="SEARCH_TERMS"/></translation>
 <translation id="2466804342846034717">Enter the correct password above and then type the characters that you see in the picture below.</translation>
 <translation id="2922560965807694149">hide</translation>
@@ -742,15 +768,17 @@
 <translation id="5384051050210890146">Select trusted SSL certificates.</translation>
 <translation id="6865323153634004209">Customise these settings</translation>
 <translation id="7487067081878637334">Technology</translation>
-<translation id="4176463684765177261">Disabled</translation>
 <translation id="154603084978752493">Add as search en&amp;gine...</translation>
 <translation id="2079545284768500474">Undo</translation>
+<translation id="340640192402082412">Modify how cookies and other site data are saved on your computer</translation>
 <translation id="114140604515785785">Extension root directory:</translation>
 <translation id="3254409185687681395">Bookmark this page</translation>
 <translation id="1384616079544830839">The identity of this website has been verified by <ph name="ISSUER"/>.</translation>
 <translation id="1800035677272595847">Phishing</translation>
 <translation id="8448317557906454022"><ph name="NUMBER_ZERO"/> secs ago</translation>
+<translation id="402759845255257575">Do not allow any site to run JavaScript</translation>
 <translation id="4610637590575890427">Did you mean to go to <ph name="SITE"/>?</translation>
+<translation id="3046388203776734202">Pop-up Settings:</translation>
 <translation id="5320331575990471017">from <ph name="SOURCE_ORIGIN"/></translation>
 <translation id="8349305172487531364">Bookmarks bar</translation>
 <translation id="7208899522964477531">Search <ph name="SITE_NAME"/> for <ph name="SEARCH_TERMS"/></translation>
@@ -764,6 +792,7 @@
 <translation id="3491001008184346538">removed</translation>
 <translation id="1234466194727942574">Tabstrip</translation>
 <translation id="4035758313003622889">&amp;Task manager</translation>
+<translation id="6356936121715252359">Adobe Flash Player storage settings...</translation>
 <translation id="558442360746014982">Below is the original error message</translation>
 <translation id="1768211415369530011">The following application will be launched if you accept this request:\n\n <ph name="APPLICATION"/></translation>
 <translation id="8793043992023823866">Importing...</translation>
@@ -808,8 +837,10 @@
 <translation id="4115153316875436289"><ph name="NUMBER_TWO"/> days</translation>
 <translation id="701080569351381435">View Source</translation>
 <translation id="5107325588313356747">To hide access to this programme, you need to uninstall it by using\n<ph name="CONTROL_PANEL_APPLET_NAME"/> in Control Panel.\n\nWould you like to start <ph name="CONTROL_PANEL_APPLET_NAME"/>?</translation>
+<translation id="6140948187512243695">Show details</translation>
 <translation id="7631887513477658702">&amp;Always Open Files of This Type</translation>
 <translation id="8627795981664801467">Secure connections only</translation>
+<translation id="3921544830490870178">Plug-in Settings:</translation>
 <translation id="2190355936436201913">(empty)</translation>
 <translation id="5868426874618963178">Send source of current page</translation>
 <translation id="5818003990515275822">Korean</translation>
@@ -820,8 +851,11 @@
 <translation id="8755376271068075440">&amp;Larger</translation>
 <translation id="8187473050234053012">The server's security certificate is revoked!</translation>
 <translation id="4273720809906836559">Bookmark Sync</translation>
+<translation id="6003177993629630467"><ph name="PRODUCT_NAME"/> may not be able to keep itself updated.</translation>
 <translation id="152482086482215392"><ph name="NUMBER_ONE"/> sec left</translation>
+<translation id="3308116878371095290">This page was prevented from setting cookies.</translation>
 <translation id="8447116497070723931">PgUp</translation>
+<translation id="7521387064766892559">JavaScript</translation>
 <translation id="1970746430676306437">View page &amp;info</translation>
 <translation id="8940262601983387853">Cookie Name</translation>
 <translation id="8053959338015477773">An additional plug-in is required to display some elements on this page.</translation>
@@ -837,12 +871,15 @@
 <translation id="2371076942591664043">Open when &amp;done</translation>
 <translation id="155865706765934889">Touchpad</translation>
 <translation id="6069278982995177296">Duplicate</translation>
+<translation id="6910239454641394402">JavaScript Exceptions</translation>
 <translation id="2979639724566107830">Open in new window</translation>
 <translation id="3381479211481266345">Speed Sensitivity:</translation>
 <translation id="2822854841007275488">Arabic</translation>
 <translation id="5178667623289523808">Find Previous</translation>
 <translation id="2815448242176260024">Never save passwords</translation>
 <translation id="2989805286512600854">Open in New Tab</translation>
+<translation id="1213999834285861200">Image Exceptions</translation>
+<translation id="2805707493867224476">Allow all sites to show pop-ups</translation>
 <translation id="2701236005765480329">Extension Alert</translation>
 <translation id="6503077044568424649">Most visited</translation>
 <translation id="3265459715026181080">Close Window</translation>
@@ -854,7 +891,6 @@
 <translation id="3127919023693423797">Authenticating...</translation>
 <translation id="4195643157523330669">Open in new tab</translation>
 <translation id="8030169304546394654">Disconnected</translation>
-<translation id="3683878911947678690">You can sync your bookmarks across computers using your Google account</translation>
 <translation id="4178055285485194276">On startup:</translation>
 <translation id="1154228249304313899">Open this page:</translation>
 <translation id="9074348188580488499">Are you sure that you want to remove all passwords?</translation>
@@ -871,6 +907,7 @@
 <translation id="1285631718404404702">Show recent activities</translation>
 <translation id="6783679543387074885">Report Bug or Broken Website</translation>
 <translation id="3494444535872870968">Save &amp;Frame As...</translation>
+<translation id="2356070529366658676">Ask</translation>
 <translation id="5731247495086897348">Pa&amp;ste and Go</translation>
 <translation id="3413103074007669042">This page contains some insecure content</translation>
 <translation id="4887833561977827087">There are no items to show here yet.
@@ -904,6 +941,7 @@
 <translation id="7646591409235458998">Email:</translation>
 <translation id="703748601351783580">Open all bookmarks in new window</translation>
 <translation id="8409023599530904397">Toolbar:</translation>
+<translation id="112343676265501403">Plug-in Exceptions</translation>
 <translation id="770273299705142744">Form Autofill</translation>
 <translation id="1293699935367580298">Esc</translation>
 <translation id="8414273245158967435"><ph name="NAME_OF_EXTENSION"/> has been disabled. If you turn off Bookmark Sync, you can re-enable this extension on the extensions page, accessible through the Tools menu.</translation>
@@ -912,11 +950,14 @@
         bookmarks on this machine. You can use the Bookmark Manager to organise
         your bookmarks after they have been merged.</translation>
 <translation id="8502249598105294518">Customise and control <ph name="PRODUCT_NAME"/></translation>
+<translation id="8590375307970699841">Set up automatic updates</translation>
 <translation id="2797524280730715045"><ph name="NUMBER_DEFAULT"/> hours ago</translation>
+<translation id="5419599333397336257"><ph name="HOST"/> wants to set data on your computer.</translation>
 <translation id="768570155019561996">This extension will have access to your private data on multiple websites.</translation>
 <translation id="7180865173735832675">Customise</translation>
 <translation id="1430594899542257414">Tips &amp; tricks</translation>
 <translation id="2115926821277323019">Must be a valid URL</translation>
+<translation id="527605982717517565">Always allow JavaScript on <ph name="HOST"/></translation>
 <translation id="7397054681783221164">Obliterate the following items:</translation>
 <translation id="4891251785049117953">Clear saved form data</translation>
 <translation id="1531836666020185856">Featured</translation>
@@ -940,6 +981,7 @@
 <translation id="4047345532928475040">N/A</translation>
 <translation id="5657156137487675418">Allow all cookies</translation>
 <translation id="5771816112378578655">Setup in progress...</translation>
+<translation id="8820901253980281117">Pop-up Exceptions</translation>
 <translation id="7796411525793830031">Extension Packaging Success</translation>
 <translation id="3228279582454007836">You have never visited this site before today.</translation>
 <translation id="4890855023395992542">Service URL:</translation>
@@ -956,11 +998,10 @@
 <translation id="7326526699920221209">Battery: <ph name="PRECENTAGE"/>%</translation>
 <translation id="601778514741867265">Accept cookies only from sites I visit</translation>
 <translation id="8299269255470343364">Japanese</translation>
-<translation id="5204993535447683655">&lt;a jsvalues=&quot;href:reloadUrl&quot;&gt;Reload&lt;/a&gt; this web page later.</translation>
-<translation id="3635774677705394651">The website at &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; appears to host malware - software that can hurt your computer or otherwise operate without your consent.  Just visiting a site that hosts malware can infect your computer.</translation>
 <translation id="7280343984261969618">Runs plug-ins in a sandbox with no privileges. Will cause some plug-ins to not work properly.</translation>
 <translation id="50030952220075532"><ph name="NUMBER_ONE"/> day left</translation>
 <translation id="2885378588091291677">Task Manager</translation>
+<translation id="5792852254658380406">Manage extensions...</translation>
 <translation id="1215711112676250731">Quota:</translation>
 <translation id="2359808026110333948">Continue</translation>
 <translation id="1618661679583408047">The server's security certificate is not yet valid!</translation>
@@ -980,7 +1021,6 @@
 <translation id="8261506727792406068">Delete</translation>
 <translation id="345693547134384690">Open &amp;image in new tab</translation>
 <translation id="7422192691352527311">Preferences...</translation>
-<translation id="7220379225958650049">Start now</translation>
 <translation id="1375198122581997741">About Version</translation>
 <translation id="1474307029659222435">Open frame in new &amp;window</translation>
 <translation id="7133850061938542637">Synced to <ph name="USER_EMAIL_ADDRESS"/>\nLast synced: <ph name="LAST_SYNC_TIME"/></translation>
@@ -1014,7 +1054,6 @@
 <translation id="816095449251911490"><ph name="SPEED"/> - <ph name="RECEIVED_AMOUNT"/>, <ph name="TIME_REMAINING"/></translation>
 <translation id="8200772114523450471">Resume</translation>
 <translation id="6358975074282722691"><ph name="NUMBER_TWO"/> secs ago</translation>
-<translation id="5663016964925996918"><ph name="EXTENSION_NAME"/> is now installed</translation>
 <translation id="3009731429620355204">Sessions</translation>
 <translation id="7658590191988721853">Enable vertical edge scrolling</translation>
 <translation id="5190835502935405962">Bookmarks Bar</translation>
@@ -1034,19 +1073,20 @@
 <translation id="6847541693235449912">Go</translation>
 <translation id="5546865291508181392">Find</translation>
 <translation id="5333374927882515515">Import bookmarks, passwords and other settings from <ph name="DEF_BROWSER"/></translation>
-<translation id="4239831617079978238">End of the session</translation>
 <translation id="7377249249140280793"><ph name="RELATIVE_DATE"/> - <ph name="FULL_DATE"/></translation>
 <translation id="5960889226412209189">Toggle Compact Navigation Bar</translation>
+<translation id="1285320974508926690">Never translate this site</translation>
 <translation id="8954894007019320973">(Cont.)</translation>
 <translation id="3748412725338508953">There were too many redirects.</translation>
 <translation id="8929159553808058020">Add the languages that you use to read websites, listing in order of preference. Only add the ones that you need, as some characters can be used to impersonate websites in other languages.</translation>
 <translation id="8831104962952173133">Phishing Detected!</translation>
 <translation id="2614223168876839822">Clear your browsing data from this computer. Be aware that this may adversely affect the contents of the New Tab Page.</translation>
+<translation id="2812989263793994277">Do not show any images</translation>
 <translation id="6845383723252244143">Select Folder</translation>
-<translation id="4745142959976410383">If you did not initiate this request, it may represent an attempted attack on your system. Unless you took an explicit action to initiate this request, you should press Cancel.</translation>
-<translation id="1897258631034940238">The web site at &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; contains elements from sites which have been reported as “phishing” sites.  Phishing sites trick users into disclosing personal or financial information, often by pretending to represent trusted institutions, such as banks.</translation>
+<translation id="8948393169621400698">Always allow plug-ins on <ph name="HOST"/></translation>
 <translation id="8288345061925649502">Change search engine</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> secs</translation>
+<translation id="7006788746334555276">Content Settings</translation>
 <translation id="5139955368427980650">&amp;Open</translation>
 <translation id="4643612240819915418">&amp;Open Video in New Tab</translation>
 <translation id="7088615885725309056">Older</translation>
@@ -1054,20 +1094,16 @@
 <translation id="8562413501751825163">Close Firefox Before Importing</translation>
 <translation id="4309420042698375243"><ph name="NUM_KILOBYTES"/>K (<ph name="NUM_KILOBYTES_LIVE"/>K live)</translation>
 <translation id="5034259512732355072">Choose Another Directory...</translation>
-<translation id="5074322878757699801">Import data...</translation>
 <translation id="7505152414826719222">Local Storage</translation>
 <translation id="5706242308519462060">Default Encoding:</translation>
 <translation id="5280833172404792470">Exit full screen (<ph name="ACCELERATOR"/>)</translation>
-<translation id="4000986992587584088">Always Show Pop-ups From <ph name="URL"/></translation>
 <translation id="129553762522093515">Recently closed</translation>
 <translation id="8355915647418390920"><ph name="NUMBER_FEW"/> days</translation>
 <translation id="3891357445869647828">Enable JavaScript</translation>
 <translation id="6451458296329894277">Confirm Form Resubmission</translation>
-<translation id="3218545474413654570"><ph name="URL"/> - <ph name="WINDOW_TITLE"/></translation>
 <translation id="5116333507878097773"><ph name="NUMBER_ONE"/> hour</translation>
 <translation id="1851266746056575977">Update Now</translation>
 <translation id="3715099868207290855">Synced to <ph name="USER_EMAIL_ADDRESS"/></translation>
-<translation id="19901320010520290">The web site at &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; contains elements from sites which appear to host malware – software that can hurt your computer or otherwise operate without your consent.  Just visiting a site that hosts malware can infect your computer. The web site also hosts contents from sites that have been reported as “phishing” sites.  Phishing sites trick users into disclosing personal or financial information, often by pretending to represent trusted institutions, such as banks.</translation>
 <translation id="2679312662830811292"><ph name="NUMBER_ONE"/> min ago</translation>
 <translation id="9065203028668620118">Edit</translation>
 <translation id="8788572795284305350"><ph name="NUMBER_ZERO"/> hours ago</translation>
@@ -1112,13 +1148,13 @@
 <translation id="8116972784401310538">&amp;Bookmark manager</translation>
 <translation id="1849632043866553433">Application Caches</translation>
 <translation id="4927301649992043040">Pack Extension</translation>
+<translation id="6458308652667395253">Manage JavaScript blocking...</translation>
 <translation id="6040143037577758943">Close</translation>
 <translation id="1101671447232096497"><ph name="NUMBER_MANY"/> mins ago</translation>
 <translation id="5116628073786783676">Sa&amp;ve Audio As...</translation>
 <translation id="2749881179542288782">Check Grammar With Spelling</translation>
 <translation id="4943872375798546930">No results</translation>
 <translation id="4910619056351738551">Here are some suggestions:</translation>
-<translation id="7451556917824271099">The website at &lt;strong&gt;<ph name="HOST_NAME"/>&lt;/strong&gt; contains elements from the site &lt;strong&gt;<ph name="ELEMENTS_HOST_NAME"/>&lt;/strong&gt;, which appears to host malware - software that can hurt your computer or otherwise operate without your consent.  Just visiting a site that contains malware can infect your computer.</translation>
 <translation id="5489059749897101717">&amp;Show Spelling Panel</translation>
 <translation id="1232569758102978740">Untitled</translation>
 <translation id="9149866541089851383">Edit...</translation>
@@ -1129,6 +1165,7 @@
 <translation id="7442246004212327644">C&amp;lear</translation>
 <translation id="281133045296806353">Created new window in existing browser session.</translation>
 <translation id="6314007596429871800">Application Cache</translation>
+<translation id="6537746030088321027">sample.co.uk</translation>
 <translation id="9002707937526687073">P&amp;rint...</translation>
 <translation id="5556459405103347317">Reload</translation>
 <translation id="8326395326942127023">Database Name:</translation>
@@ -1140,6 +1177,7 @@
 <translation id="3021678814754966447">&amp;View Frame Source</translation>
 <translation id="5271549068863921519">Save password</translation>
 <translation id="3251855518428926750">Add...</translation>
+<translation id="6929555043669117778">Continue blocking pop-ups</translation>
 <translation id="3508920295779105875">Choose Another Folder...</translation>
 <translation id="2987775926667433828">Chinese Traditional</translation>
 <translation id="3954582159466790312">Un&amp;mute</translation>
@@ -1148,7 +1186,6 @@
 <translation id="6227291405321948850">Untitled Web Image</translation>
 <translation id="862542460444371744">&amp;Extensions</translation>
 <translation id="212019304961722056">Account login details are not yet entered.</translation>
-<translation id="1684248949164455892">In this case, the certificate has not been verified by a third party trusted by your computer. Anyone can create a certificate claiming to be whatever website of their choice, which is why it must be verified by a trusted third party. Without that verification, the identity information in the certificate is meaningless. It is therefore not possible to verify that you are communicating with &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; instead of an attacker who generated his own certificate claiming to be &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;. You should not proceed past this point.</translation>
 <translation id="8045462269890919536">Romanian</translation>
 <translation id="2927657246008729253">Change...</translation>
 <translation id="7978412674231730200">Private key</translation>
@@ -1159,14 +1196,17 @@
 <translation id="7278870042769914968">Use GTK+ theme</translation>
 <translation id="2108475813351458355">Secure connection to <ph name="DOMAIN"/></translation>
 <translation id="942671148946453043">You have opened an incognito window. Pages that you open in this window won't appear in your history.</translation>
+<translation id="8778203255040611372">JavaScript Settings:</translation>
 <translation id="8912362522468806198">Google Account</translation>
 <translation id="3503975005768721305">Add a new web clip</translation>
 <translation id="6996505290426962909">&amp;Import bookmarks &amp;&amp; settings...</translation>
 <translation id="6165508094623778733">Learn more</translation>
 <translation id="822618367988303761"><ph name="NUMBER_TWO"/> days ago</translation>
+<translation id="7568593326407688803">This page is in<ph name="ORIGINAL_LANGUAGE"/>. Would you like to translate it?</translation>
 <translation id="8629974950076222828">Open All Bookmarks in Incognito Window</translation>
 <translation id="4745438305783437565"><ph name="NUMBER_FEW"/> mins</translation>
 <translation id="2649911884196340328">The server's security certificate has errors!</translation>
+<translation id="3828029223314399057">Search bookmarks</translation>
 <translation id="8906421963862390172">&amp;Spell-checker Options</translation>
 <translation id="1963692530539281474"><ph name="NUMBER_DEFAULT"/> days left</translation>
 <translation id="668171684555832681">Other...</translation>
@@ -1174,6 +1214,7 @@
 <translation id="7887455386323777409">Kill plug-in</translation>
 <translation id="3098216267279303060">Network Password</translation>
 <translation id="3761000923495507277">Show Home button on the toolbar</translation>
+<translation id="6708242697268981054">Origin:</translation>
 <translation id="8709969075297564489">Check for server certificate revocation</translation>
 <translation id="8698171900303917290">Problems installing?</translation>
 <translation id="4861833787540810454">&amp;Play</translation>
@@ -1194,6 +1235,7 @@
 <translation id="5757539081890243754">Homepage</translation>
 <translation id="6709133671862442373">News</translation>
 <translation id="5906719743126878045"><ph name="NUMBER_TWO"/> hours left</translation>
+<translation id="1753682364559456262">Manage image blocking...</translation>
 <translation id="6550675742724504774">Options</translation>
 <translation id="8959208747503200525"><ph name="NUMBER_TWO"/> hours ago</translation>
 <translation id="737801893573836157">Hide system title bar and use compact borders</translation>
@@ -1243,6 +1285,7 @@
 <translation id="2444683954290143042">Sync Error - please login again</translation>
 <translation id="5830720307094128296">Save Page &amp;As...</translation>
 <translation id="5822838715583768518">Launch Application</translation>
+<translation id="6735304988756581115">Show cookies and other site data...</translation>
 <translation id="2433507940547922241">Appearance</translation>
 <translation id="839072384475670817">Create Application &amp;Shortcuts...</translation>
 <translation id="6756161853376828318">Make <ph name="PRODUCT_NAME"/> my default browser</translation>
@@ -1259,7 +1302,6 @@
 <translation id="715468010956678290">Open frame in inco&amp;gnito window</translation>
 <translation id="7755167023778553803">However, this page includes resources from other websites whose identity cannot be verified.</translation>
 <translation id="1273291576878293349">Open all bookmarks in incognito window</translation>
-<translation id="3455546154539383562">You attempted to reach &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, but the certificate that the server presented has been revoked by its issuer. This means that the security credentials that the server presented should absolutely not be trusted. You may be communicating with an attacker. You should not proceed.</translation>
 <translation id="1177437665183591855">Unknown server certificate error</translation>
 <translation id="3819800052061700452">&amp;Full screen</translation>
 <translation id="3533943170037501541">Welcome to your homepage!</translation>
@@ -1270,6 +1312,8 @@
 <translation id="923467487918828349">Show All</translation>
 <translation id="5101042277149003567">Open all bookmarks</translation>
 <translation id="6349678711452810642">Make Default</translation>
+<translation id="6409731863280057959">Pop-ups</translation>
+<translation id="3459774175445953971">Last modified:</translation>
 <translation id="3741375896128849698">Server's certificate is not yet valid</translation>
 <translation id="3435738964857648380">Security</translation>
 <translation id="9112987648460918699">Find...</translation>
@@ -1279,6 +1323,8 @@
 <translation id="3943857333388298514">Paste</translation>
 <translation id="385051799172605136">Back</translation>
 <translation id="1208126399996836490">Don't reset</translation>
+<translation id="4085298594534903246">JavaScript was blocked on this page.</translation>
+<translation id="4341977339441987045">Block sites from setting any data</translation>
 <translation id="806812017500012252">Reorder by title</translation>
 <translation id="2960316970329790041">Stop import</translation>
 <translation id="5361734574074701223">Calculating remaining time</translation>
@@ -1304,10 +1350,12 @@
 <translation id="4759238208242260848">Downloads</translation>
 <translation id="1178581264944972037">Pause</translation>
 <translation id="6314919950468685344">Fixed-width Font:</translation>
+<translation id="6492313032770352219">Size on disk:</translation>
 <translation id="5233231016133573565">Process ID</translation>
 <translation id="5941711191222866238">Minimise</translation>
 <translation id="253434972992662860">&amp;Pause</translation>
 <translation id="335985608243443814">Browse...</translation>
+<translation id="6653385924798556138"><ph name="HOST"/> wants to create a cookie on your computer.</translation>
 <translation id="3812064265539952796">Note: As many of these feeds don't come from Google, we can't vouch for their content.</translation>
 <translation id="3569713929051927529">Add Folder...</translation>
 <translation id="7167486101654761064">&amp;Always open files of this type</translation>
@@ -1317,13 +1365,15 @@
 <translation id="6053401458108962351">&amp;Clear browsing data...</translation>
 <translation id="2339641773402824483">Checking for updates...</translation>
 <translation id="8600200086690278232">Featured web clips</translation>
-<translation id="8582728318425382804">Cookies and Website Permissions</translation>
 <translation id="2766006623206032690">Pa&amp;ste and go</translation>
 <translation id="9071050381089585305">Unresponsive Script</translation>
 <translation id="4394049700291259645">Disable</translation>
 <translation id="969892804517981540">Official Build</translation>
 <translation id="724208122063442954">You have chosen to open certain file types automatically after downloading. You can clear these settings so that downloaded files aren't automatically opened.</translation>
+<translation id="9087725134750123268">Delete cookies and other site data</translation>
 <translation id="5765491088802881382">No networks are available</translation>
+<translation id="21381969153622804">Action
+</translation>
 <translation id="5183088099396036950">Could not connect to the server</translation>
 <translation id="4469842253116033348">Disable notifications from <ph name="SITE"/></translation>
 <translation id="7999229196265990314">Created the following files:
@@ -1332,9 +1382,7 @@ Extension: <ph name="EXTENSION_FILE"/>
 Key File: <ph name="KEY_FILE"/>
 
 Keep your key file in a safe place. You will need it to create new versions of your extension.</translation>
-<translation id="4477534650265381513">For quick access, place your bookmarks here in the bookmarks bar.</translation>
 <translation id="3036649622769666520">Open Files</translation>
-<translation id="7909652923456235549">Cookies not sent</translation>
 <translation id="7685049629764448582">JavaScript memory</translation>
 <translation id="4508765956121923607">View S&amp;ource</translation>
 <translation id="8080048886850452639">C&amp;opy audio URL</translation>

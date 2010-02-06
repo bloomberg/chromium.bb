@@ -20,7 +20,6 @@
 <translation id="4149882025268051530">Инсталационната програма не успя да декомпресира архива. Моля, изтеглете Google Chrome отново.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Изглежда, че директорията за инсталиране на Google Chrome се използва. Моля, рестартирайте компютъра си и опитайте отново.</translation>
-<translation id="4506896920521131223">Авторски права © 2006–2009 Google Inc. Всички права запазени.</translation>
 <translation id="6817660909204164466">Помогнете за усъвършенстването на Google Chrome чрез автоматично изпращане до Google на статистически данни за употребата и сигнали за грешки.</translation>
 <translation id="8227755444512189073">Google Chrome трябва да стартира външно приложение, за да обработва връзки от тип <ph name="SCHEME"/>. Поисканата връзка е <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> на Google Chrome</translation>
@@ -48,7 +47,6 @@
 <translation id="911206726377975832">Да се изтрият ли и данните от сърфирането?</translation>
 <translation id="2044287590254833138">Лента с инструменти на Google Chrome</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
-<translation id="1473088902761932034">Ура! Върнахте се. Но Google Chrome не е браузърът ви по подразбиране.</translation>
 <translation id="6481075104394517441">Опитахте да се свържете с &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, но представеният от сървъра сертификат още не е валиден. Няма информация за това дали сертификатът е надежден. Това означава, че Google Chrome не може със сигурност да гарантира, че комуникирате с &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt;,  а не с хакер. Трябва да се уверите, че часовникът и часовата зона на компютъра са зададени правилно. Ако не са, трябва да отстраните нередностите и да обновите тази страница. Ако те са зададени правилно, не продължавайте по-нататък.</translation>
 <translation id="8862326446509486874">Нямате подходящи права за инсталация на ниво система. Опитайте да стартирате отново инсталационната програма като администратор.</translation>
 <translation id="595871952790078940">Chrome Utility</translation>
@@ -70,6 +68,8 @@
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="8865765905101981392">Интернет браузър</translation>
 <translation id="8776515774046280928">Google Chrome вече е инсталиран и достъпен за всички потребители на този компютър. Ако искате да инсталирате Google Chrome на потребителско ниво, трябва първо да деинсталирате версията на системно ниво, инсталирана от администратор.</translation>
+<translation id="2189123953385179981">Google ChromeOS не поддържа стартирането на външно приложение за обработване на връзки от тип <ph name="SCHEME"/>.
+Заявената връзка е <ph name="PROTOLINK"/>.</translation>
 <translation id="7196020411877309443">Защо се показва това?</translation>
 <translation id="2769762047821873045">Google Chrome не е браузърът ви по подразбиране.</translation>
 <translation id="7825851276765848807">Инсталацията не бе успешна поради неизвестна грешка. Моля, изтеглете отново Google Chrome.</translation>
@@ -79,7 +79,6 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3396666154568987767">Google Chrome за <ph name="PROFILE_NAME"/></translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
-<translation id="1964682833763362793">Моля, затворете всички прозорци на Chrome и опитайте отново.</translation>
 <translation id="1001534784610492198">Архивът на инсталационната програма е повреден или невалиден. Моля, изтеглете Google Chrome отново.</translation>
 <translation id="6626317981028933585">За съжаление настройките на Mozilla Firefox са недостъпни, докато този браузър работи. За да импортирате тези настройки в Google Chrome, запазете работата си и затворете всички прозорци на Firefox. След това кликнете върху „Напред”.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

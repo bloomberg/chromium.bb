@@ -20,7 +20,6 @@
 <translation id="4149882025268051530">Programul de instalare nu a putut decomprima arhiva. Descărcaţi din nou Google Chrome.</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Directorul de instalare al Google Chrome pare a fi utilizat. Reporniţi computerul şi încercaţi din nou.</translation>
-<translation id="4506896920521131223">Copyright © 2006-2009 Google Inc. Toate drepturile rezervate.</translation>
 <translation id="6817660909204164466">Ajutaţi la îmbunătăţirea Google Chrome prin trimiterea automată de statistici de utilizare şi rapoarte de avarie la Google</translation>
 <translation id="8227755444512189073">Google Chrome necesită lansarea unei aplicaţii externe pentru a gestiona link-uri <ph name="SCHEME"/>. Link-ul solicitat este <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544"><ph name="TERMS_OF_SERVICE_LINK"/> Google Chrome</translation>
@@ -47,7 +46,6 @@
 <translation id="911206726377975832">Ştergeţi şi datele de navigare?</translation>
 <translation id="2044287590254833138">Bara de instrumente Google Chrome</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
-<translation id="1473088902761932034">Suuuper, v-aţi întors! Dar Google Chrome nu este browserul dvs. prestabilit.</translation>
 <translation id="6481075104394517441">Aţi încercat să accesaţi &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, dar serverul a prezentat un certificat care încă nu este valabil. Nu sunt disponibile informaţii care să indice dacă acel certificat prezintă garanţie. Google Chrome nu vă poate garanta în mod sigur că dvs. comunicaţi cu &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; şi nu cu un atacator. Ar trebui să vă asiguraţi că ora şi fusul orar sunt setate corect pe computerul dvs. Dacă nu sunt, trebuie să corectaţi orice erori şi să actualizaţi această pagină. Dacă sunt corecte, nu trebuie să mergeţi mai departe.</translation>
 <translation id="8862326446509486874">Nu aveţi drepturile adecvate pentru instalarea la nivel de sistem. Încercaţi să rulaţi din nou programul de instalare ca Administrator.</translation>
 <translation id="595871952790078940">Chrome Utility</translation>
@@ -69,6 +67,7 @@
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="8865765905101981392">Browser de Internet</translation>
 <translation id="8776515774046280928">Google Chrome este deja instalat şi disponibil tuturor utilizatorilor de pe acest computer. Dacă doriţi să instalaţi Google Chrome la nivel de utilizator, trebuie să dezinstalaţi mai întâi versiunea disponibilă la nivel de sistem instalată de un administrator.</translation>
+<translation id="2189123953385179981">Google ChromeOS nu acceptă lansarea unei aplicaţii externe pentru a gestiona linkurile <ph name="SCHEME"/>. Linkul solicitat este <ph name="PROTOLINK"/>.</translation>
 <translation id="7196020411877309443">De ce primesc această notificare?</translation>
 <translation id="2769762047821873045">Google Chrome nu este browserul dvs. prestabilit.</translation>
 <translation id="7825851276765848807">Instalarea nu a reuşit din cauza unei erori neprecizate. Descărcaţi Google Chrome din nou.</translation>
@@ -78,7 +77,6 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3396666154568987767">Google Chrome pentru <ph name="PROFILE_NAME"/></translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
-<translation id="1964682833763362793">Închideţi toate ferestrele Chrome şi încercaţi din nou.</translation>
 <translation id="1001534784610492198">Arhiva programului de instalare este deteriorată sau nevalidă. Descărcaţi din nou Google Chrome.</translation>
 <translation id="6626317981028933585">Din păcate, setările dvs. Mozilla Firefox nu sunt disponibile în timp ce browser-ul respectiv rulează. Pentru a importa aceste setări în Google Chrome, salvaţi ceea ce lucraţi şi închideţi toate ferestrele Firefox. Apoi faceţi clic pe Continuaţi.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

@@ -20,7 +20,6 @@
 <translation id="4149882025268051530">インストーラー アーカイブを解凍できませんでした。Google Chrome をダウンロードし直してください。</translation>
 <translation id="5744005218040929396">Google Chrome Utility</translation>
 <translation id="4343226815564935778">Google Chrome のインストール先ディレクトリが現在使用中です。パソコンを再起動して、もう一度やり直してください。</translation>
-<translation id="4506896920521131223">Copyright © 2006-2009 Google Inc. All Rights Reserved.</translation>
 <translation id="6817660909204164466">使用統計データや障害レポートを Google に自動送信して Google Chrome の機能向上に役立てる</translation>
 <translation id="8227755444512189073"><ph name="SCHEME"/> リンクを処理するには外部アプリケーションの起動が必要です。リクエストされたリンクは <ph name="PROTOLINK"/> です。</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
@@ -47,7 +46,6 @@
 <translation id="911206726377975832">閲覧データも削除しますか？</translation>
 <translation id="2044287590254833138">Google Chrome ツールバー</translation>
 <translation id="5074344184765391290">Chrome Plug-In Host</translation>
-<translation id="1473088902761932034">Google Chrome はデフォルトのブラウザとして設定されていません。</translation>
 <translation id="6481075104394517441">&lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt; にアクセスしようとしましたが、サーバーの証明書が有効ではありません。この証明書の信頼性について有効な情報がないため、通信先が本当に <ph name="DOMAIN2"/> であるか Google Chrome で判断できず、なりすましの可能性を完全には否定できません。コンピュータの時刻とタイムゾーンが正しく設定されていることを確認してください。設定に問題がある場合は、設定を修正してからこのページを更新してください。正しく設定されているにも関わらずこの警告が表示される場合は、ここで操作を止めてください。</translation>
 <translation id="8862326446509486874">権限が不十分なためシステムレベルのインストールができません。管理者権限でインストールしてください。</translation>
 <translation id="595871952790078940">Chrome Utility</translation>
@@ -69,6 +67,7 @@
 <translation id="9039578207253536065">Google Chrome Worker</translation>
 <translation id="8865765905101981392">インターネット ブラウザ</translation>
 <translation id="8776515774046280928">このコンピュータには既に Google Chrome がインストールされており、コンピュータのすべてのユーザーが使用できます。ユーザー レベルで Google Chrome をインストールする場合は、管理者がインストールしたシステム レベルの Google Chrome を最初にアンインストールする必要があります。</translation>
+<translation id="2189123953385179981">Google Chrome OS では、<ph name="SCHEME"/> リンクの処理に必要な外部アプリケーションの起動がサポートされていません。リクエストされたリンクは <ph name="PROTOLINK"/> です。</translation>
 <translation id="7196020411877309443">このウィンドウが表示される理由</translation>
 <translation id="2769762047821873045">Google Chromeはデフォルトのブラウザとして設定されていません。</translation>
 <translation id="7825851276765848807">原因不明のエラーによりインストールに失敗しました。Google Chrome をもう一度ダウンロードしてください。</translation>
@@ -78,7 +77,6 @@
 <translation id="4407807842708586359">Google Chrome OS</translation>
 <translation id="3396666154568987767">Google Chrome - <ph name="PROFILE_NAME"/></translation>
 <translation id="3360895254066713204">Chrome Helper</translation>
-<translation id="1964682833763362793">すべての Chrome ウィンドウを終了してからやり直してください。</translation>
 <translation id="1001534784610492198">インストーラー アーカイブが壊れているか無効です。Google Chrome をダウンロードし直してください。</translation>
 <translation id="6626317981028933585">Mozilla Firefox の設定を Google Chrome にインポートするには、まず Firefox のウィンドウをすべて閉じてください。その後 [続行] をクリックしてください。</translation>
 <translation id="8540666473246803645">Google Chrome</translation>

@@ -20,7 +20,6 @@
 <translation id="4149882025268051530">Instalatur gagal mendekompresi arsip. Unduh kembali Google Chrome.</translation>
 <translation id="5744005218040929396">Utilitas Google Chrome</translation>
 <translation id="4343226815564935778">Direktori instalasi Google Chrome kelihatannya sedang digunakan. Nyalakan ulang komputer dan coba lagi.</translation>
-<translation id="4506896920521131223">Hak Cipta © 2006-2009 Google Inc. Semua Hak Dilindungi Undang-Undang.</translation>
 <translation id="6817660909204164466">Bantu Google Chrome menjadi lebih baik dengan mengirim statistik penggunaan dan laporan kerusakan secara otomatis ke Google</translation>
 <translation id="8227755444512189073">Google Chrome harus menjalankan aplikasi eksternal untuk menangani link <ph name="SCHEME"/>. Link yang diminta adalah <ph name="PROTOLINK"/>.</translation>
 <translation id="1281036569101707544">Google Chrome <ph name="TERMS_OF_SERVICE_LINK"/></translation>
@@ -47,7 +46,6 @@
 <translation id="911206726377975832">Hapus juga data rambanan Anda?</translation>
 <translation id="2044287590254833138">Toolbar Google Chrome</translation>
 <translation id="5074344184765391290">Inang Pengaya Chrome</translation>
-<translation id="1473088902761932034">Hore! Anda sudah balik :) Sayangnya Google Chrome bukan peramban bawaan Anda.</translation>
 <translation id="6481075104394517441">Anda berupaya membuka &lt;strong&gt;<ph name="DOMAIN"/>&lt;/strong&gt;, namun server memberikan sertifikat yang belum valid. Tidak ada informasi yang tersedia untuk menunjukkan bahwa sertifikat dapat dipercaya. Google Chrome tidak dapat menjamin secara pasti bahwa Anda berkomunikasi dengan &lt;strong&gt;<ph name="DOMAIN2"/>&lt;/strong&gt; dan bukan pengganggu. Anda harus memastikan bahwa jam dan zona waktu ditetapkan dengan benar di komputer. Jika belum, Anda harus mengatasi masalah dan me-refresh halaman ini. Jika sudah benar, Anda tidak boleh melanjutkan.</translation>
 <translation id="8862326446509486874">Anda tidak memiliki hak yang diperlukan untuk penginstalan tingkat sistem. Coba jalankan lagi penginstal saat masuk sebagai Administrator.</translation>
 <translation id="595871952790078940">Utilitas Chrome</translation>
@@ -69,6 +67,7 @@
 <translation id="9039578207253536065">Pekerja Google Chrome</translation>
 <translation id="8865765905101981392">Peramban Internet</translation>
 <translation id="8776515774046280928">Google Chrome telah terinstal dan tersedia bagi seluruh pengguna komputer ini. Jika Anda ingin menginstal Google Chrome pada tingkat pengguna, Anda harus terlebih dulu menghapus penginstalan versi tingkat sistem yang diinstal oleh administrator.</translation>
+<translation id="2189123953385179981">Google ChromeOS tidak mendukung peluncuran aplikasi eksternal untuk menangani tautan <ph name="SCHEME"/>. Tautan yang diminta adalah <ph name="PROTOLINK"/>.</translation>
 <translation id="7196020411877309443">Mengapa saya melihat ini?</translation>
 <translation id="2769762047821873045">Google Chrome bukan peramban bawaan.</translation>
 <translation id="7825851276765848807">Instalasi gagal karena galat yang tidak ditentukan. Silakan unduh Google Chrome lagi.</translation>
@@ -78,7 +77,6 @@
 <translation id="4407807842708586359">OS Google Chrome</translation>
 <translation id="3396666154568987767">Google Chrome untuk <ph name="PROFILE_NAME"/></translation>
 <translation id="3360895254066713204">Pembantu Chrome</translation>
-<translation id="1964682833763362793">Tutup semua jendela Chrome, lalu coba lagi.</translation>
 <translation id="1001534784610492198">Arsip instalatur rusak atau tidak valid. Unduh kembali Google Chrome.</translation>
 <translation id="6626317981028933585">Sayangnya, pengaturan Mozilla Firefox tidak tersedia sewaktu browser berjalan. Untuk mengimpor pengaturan ke Google Chrome, simpan pekerjaan dan tutup semua jendela Firefox. Kemudian klik Lanjutkan.</translation>
 <translation id="8540666473246803645">Google Chrome</translation>
