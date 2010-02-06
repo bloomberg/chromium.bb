@@ -5,9 +5,9 @@
 #include "base/scoped_ptr.h"
 #include "base/stats_counters.h"
 
-#include "flip_framer.h"  // cross-google3 directory naming.
-#include "flip_frame_builder.h"
-#include "flip_bitmasks.h"
+#include "net/spdy/spdy_framer.h"
+#include "net/spdy/spdy_frame_builder.h"
+#include "net/spdy/spdy_bitmasks.h"
 
 #if defined(USE_SYSTEM_ZLIB)
 #include <zlib.h>

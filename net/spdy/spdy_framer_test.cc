@@ -6,9 +6,9 @@
 #include <iostream>
 
 #include "base/scoped_ptr.h"
-#include "flip_framer.h"  // cross-google3 directory naming.
-#include "flip_protocol.h"
-#include "flip_frame_builder.h"
+#include "net/spdy/spdy_framer.h"
+#include "net/spdy/spdy_protocol.h"
+#include "net/spdy/spdy_frame_builder.h"
 #include "testing/platform_test.h"
 
 namespace flip {

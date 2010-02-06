@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_FLIP_FLIP_STREAM_H_
-#define NET_FLIP_FLIP_STREAM_H_
+#ifndef NET_SPDY_SPDY_STREAM_H_
+#define NET_SPDY_SPDY_STREAM_H_
 
 #include <string>
 #include <list>
@@ -16,8 +16,8 @@
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_log.h"
-#include "net/flip/flip_framer.h"
-#include "net/flip/flip_protocol.h"
+#include "net/spdy/spdy_framer.h"
+#include "net/spdy/spdy_protocol.h"
 
 namespace net {
 
@@ -208,4 +208,4 @@ class FlipStream : public base::RefCounted<FlipStream> {
 
 }  // namespace net
 
-#endif  // NET_FLIP_FLIP_STREAM_H_
+#endif  // NET_SPDY_SPDY_STREAM_H_

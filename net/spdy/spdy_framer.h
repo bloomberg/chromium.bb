@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_FLIP_FLIP_FRAMER_H_
-#define NET_FLIP_FLIP_FRAMER_H_
+#ifndef NET_SPDY_SPDY_FRAMER_H_
+#define NET_SPDY_SPDY_FRAMER_H_
 
 #ifdef _WIN32
 #include <winsock2.h>
@@ -16,8 +16,8 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
+#include "net/spdy/spdy_protocol.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
-#include "flip_protocol.h"    // cross-google3 directory naming.
 
 typedef struct z_stream_s z_stream;  // Forward declaration for zlib.
 
@@ -226,7 +226,7 @@ class FlipFramer {
   // Not used (yet)
   size_t BytesSafeToRead() const;
 
-  // Set the error code.
+  // Set the error code and moves the framer into the error state.
   void set_error(FlipError error);
 
   // Expands the control frame buffer to accomodate a particular payload size.
@@ -256,5 +256,5 @@ class FlipFramer {
 
 }  // namespace flip
 
-#endif  // NET_FLIP_FLIP_FRAMER_H_
+#endif  // NET_SPDY_SPDY_FRAMER_H_
 

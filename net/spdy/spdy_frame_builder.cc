@@ -4,8 +4,8 @@
 
 #include <limits>
 
-#include "flip_frame_builder.h"    // cross-google3 directory naming.
-#include "flip_protocol.h"
+#include "net/spdy/spdy_frame_builder.h"
+#include "net/spdy/spdy_protocol.h"
 
 namespace flip {
 

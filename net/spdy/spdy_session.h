@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_FLIP_FLIP_SESSION_H_
-#define NET_FLIP_FLIP_SESSION_H_
+#ifndef NET_SPDY_SPDY_SESSION_H_
+#define NET_SPDY_SPDY_SESSION_H_
 
 #include <deque>
 #include <list>
@@ -18,13 +18,13 @@
 #include "net/base/request_priority.h"
 #include "net/base/ssl_config_service.h"
 #include "net/base/upload_data_stream.h"
-#include "net/flip/flip_framer.h"
-#include "net/flip/flip_io_buffer.h"
-#include "net/flip/flip_protocol.h"
-#include "net/flip/flip_session_pool.h"
 #include "net/socket/client_socket.h"
 #include "net/socket/client_socket_handle.h"
 #include "testing/platform_test.h"
+#include "net/spdy/spdy_framer.h"
+#include "net/spdy/spdy_io_buffer.h"
+#include "net/spdy/spdy_protocol.h"
+#include "net/spdy/spdy_session_pool.h"
 
 namespace net {
 
@@ -234,4 +234,4 @@ class FlipSession : public base::RefCounted<FlipSession>,
 
 }  // namespace net
 
-#endif  // NET_FLIP_FLIP_SESSION_H_
+#endif  // NET_SPDY_SPDY_SESSION_H_

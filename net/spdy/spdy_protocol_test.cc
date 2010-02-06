@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "flip_protocol.h"
+#include "net/spdy/spdy_protocol.h"
 
 #include "base/scoped_ptr.h"
-#include "net/flip/flip_bitmasks.h"
-#include "net/flip/flip_framer.h"
+#include "net/spdy/spdy_bitmasks.h"
+#include "net/spdy/spdy_framer.h"
 #include "testing/platform_test.h"
 
 using flip::FlipDataFrame;

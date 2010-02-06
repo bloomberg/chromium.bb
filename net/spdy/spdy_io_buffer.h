@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_FLIP_FLIP_IO_BUFFER_H_
-#define NET_FLIP_FLIP_IO_BUFFER_H_
+#ifndef NET_SPDY_SPDY_IO_BUFFER_H_
+#define NET_SPDY_SPDY_IO_BUFFER_H_
 
 #include "base/ref_counted.h"
 #include "net/base/io_buffer.h"
@@ -52,4 +52,4 @@ class FlipIOBuffer {
 
 }  // namespace net
 
-#endif  // NET_FLIP_FLIP_IO_BUFFER_H_
+#endif  // NET_SPDY_SPDY_IO_BUFFER_H_

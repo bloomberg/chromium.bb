@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/flip/flip_network_transaction.h"
+#include "net/spdy/spdy_network_transaction.h"
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
@@ -12,11 +12,11 @@
 #include "net/base/ssl_config_service_defaults.h"
 #include "net/base/test_completion_callback.h"
 #include "net/base/upload_data.h"
-#include "net/flip/flip_protocol.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_transaction_unittest.h"
 #include "net/proxy/proxy_config_service_fixed.h"
 #include "net/socket/socket_test_util.h"
+#include "net/spdy/spdy_protocol.h"
 #include "testing/platform_test.h"
 
 //-----------------------------------------------------------------------------

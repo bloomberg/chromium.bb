@@ -4,8 +4,8 @@
 
 // This file contains some protocol structures for use with Flip.
 
-#ifndef NET_FLIP_FLIP_PROTOCOL_H_
-#define NET_FLIP_FLIP_PROTOCOL_H_
+#ifndef NET_SPDY_SPDY_PROTOCOL_H_
+#define NET_SPDY_SPDY_PROTOCOL_H_
 
 #ifdef WIN32
 #include <winsock2.h>
@@ -15,7 +15,7 @@
 
 #include "base/basictypes.h"
 #include "base/logging.h"
-#include "flip_bitmasks.h"  // cross-google3 directory naming.
+#include "spdy_bitmasks.h"  // cross-google3 directory naming.
 
 //  Data Frame Format
 //  +----------------------------------+
@@ -384,4 +384,4 @@ class FlipFinStreamControlFrame : public FlipControlFrame {
 
 }  // namespace flip
 
-#endif  // NET_FLIP_FLIP_PROTOCOL_H_
+#endif  // NET_SPDY_SPDY_PROTOCOL_H_

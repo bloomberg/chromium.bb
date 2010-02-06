@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/flip/flip_session.h"
+#include "net/spdy/spdy_session.h"
 
 #include "base/basictypes.h"
 #include "base/logging.h"
@@ -15,9 +15,6 @@
 #include "net/base/load_flags.h"
 #include "net/base/load_log.h"
 #include "net/base/net_util.h"
-#include "net/flip/flip_frame_builder.h"
-#include "net/flip/flip_protocol.h"
-#include "net/flip/flip_stream.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_headers.h"
@@ -25,6 +22,9 @@
 #include "net/socket/client_socket.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/socket/ssl_client_socket.h"
+#include "net/spdy/spdy_frame_builder.h"
+#include "net/spdy/spdy_protocol.h"
+#include "net/spdy/spdy_stream.h"
 #include "net/tools/dump_cache/url_to_filename_encoder.h"
 
 namespace {

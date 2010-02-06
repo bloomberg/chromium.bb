@@ -14,7 +14,7 @@
 #include <string>
 
 #include "base/logging.h"
-#include "flip_protocol.h"  // cross-google3 directory naming.
+#include "net/spdy/spdy_protocol.h"
 
 namespace flip {
 

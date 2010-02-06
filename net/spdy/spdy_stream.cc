@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/flip/flip_stream.h"
+#include "net/spdy/spdy_stream.h"
 
 #include "base/logging.h"
-#include "net/flip/flip_session.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_info.h"
+#include "net/spdy/spdy_session.h"
 
 namespace net {
 

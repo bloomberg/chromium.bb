@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/flip/flip_network_transaction.h"
+#include "net/spdy/spdy_network_transaction.h"
 
 #include "base/compiler_specific.h"
 #include "base/logging.h"
@@ -14,10 +14,10 @@
 #include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #include "net/base/upload_data_stream.h"
-#include "net/flip/flip_stream.h"
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_info.h"
+#include "net/spdy/spdy_stream.h"
 
 using base::Time;
 

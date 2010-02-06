@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/flip/flip_io_buffer.h"
-#include "net/flip/flip_stream.h"
+#include "net/spdy/spdy_io_buffer.h"
+#include "net/spdy/spdy_stream.h"
 
 namespace net {
 

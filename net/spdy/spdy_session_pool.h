@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_FLIP_FLIP_SESSION_POOL_H_
-#define NET_FLIP_FLIP_SESSION_POOL_H_
+#ifndef NET_SPDY_SPDY_SESSION_POOL_H_
+#define NET_SPDY_SPDY_SESSION_POOL_H_
 
 #include <map>
 #include <list>
@@ -73,4 +73,4 @@ class FlipSessionPool : public base::RefCounted<FlipSessionPool> {
 
 }  // namespace net
 
-#endif  // NET_FLIP_FLIP_SESSION_POOL_H_
+#endif  // NET_SPDY_SPDY_SESSION_POOL_H_

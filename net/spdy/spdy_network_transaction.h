@@ -14,9 +14,9 @@
 #include "base/time.h"
 #include "net/base/completion_callback.h"
 #include "net/base/load_states.h"
-#include "net/flip/flip_session.h"
 #include "net/http/http_response_info.h"
 #include "net/http/http_transaction.h"
+#include "net/spdy/spdy_session.h"
 
 namespace net {
 

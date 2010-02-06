@@ -2,10 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/flip/flip_session_pool.h"
+#include "net/spdy/spdy_session_pool.h"
 
 #include "base/logging.h"
-#include "net/flip/flip_session.h"
+#include "net/spdy/spdy_session.h"
 
 namespace net {
 

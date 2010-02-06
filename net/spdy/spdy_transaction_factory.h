@@ -2,11 +2,11 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_FLIP_FLIP_TRANSACTION_FACTORY_H__
-#define NET_FLIP_FLIP_TRANSACTION_FACTORY_H__
+#ifndef NET_SPDY_SPDY_TRANSACTION_FACTORY_H__
+#define NET_SPDY_SPDY_TRANSACTION_FACTORY_H__
 
-#include "net/flip/flip_network_transaction.h"
 #include "net/http/http_transaction_factory.h"
+#include "net/spdy/spdy_network_transaction.h"
 
 namespace net {
 
@@ -33,4 +33,4 @@ class FlipTransactionFactory : public HttpTransactionFactory {
 
 }  // namespace net
 
-#endif  // NET_FLIP_FLIP_TRANSACTION_FACTORY_H__
+#endif  // NET_SPDY_SPDY_TRANSACTION_FACTORY_H__

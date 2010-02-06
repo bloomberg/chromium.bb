@@ -2,12 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "net/flip/flip_io_buffer.h"
+#include "net/spdy/spdy_io_buffer.h"
 
 #include "net/base/test_completion_callback.h"
-#include "net/flip/flip_session.h"
-#include "net/flip/flip_stream.h"
 #include "net/socket/socket_test_util.h"
+#include "net/spdy/spdy_session.h"
+#include "net/spdy/spdy_stream.h"
 #include "testing/platform_test.h"
 
 namespace net {
