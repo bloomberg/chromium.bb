@@ -121,9 +121,11 @@ int GetDirectoryWriteAgeInHours(const wchar_t* path) {
 
 // Launches again this same process with a single switch --|flag|=|value|.
 // Does not wait for the process to terminate.
-bool RelaunchSetup(const std::wstring& flag, int value) {
+bool RelaunchSetup(const std::wstring& flag, int value, bool system_install) {
   CommandLine cmd_line(CommandLine::ForCurrentProcess()->GetProgram());
   cmd_line.AppendSwitchWithValue(WideToASCII(flag), IntToWString(value));
+  if (system_install)
+    cmd_line.AppendSwitch(WideToASCII(installer_util::switches::kSystemLevel));
   return base::LaunchApp(cmd_line, false, false, NULL);
 }
 
@@ -528,7 +530,8 @@ void GoogleChromeDistribution::LaunchUserExperiment(
       GetExperimentGroup(kToastExpBaseGroup, flavor));
   // The experiment needs to be performed in a different process because
   // google_update expects the upgrade process to be quick and nimble.
-  RelaunchSetup(installer_util::switches::kInactiveUserToast, flavor);
+  RelaunchSetup(installer_util::switches::kInactiveUserToast, flavor,
+                system_install);
 }
 
 // User qualifies for the experiment. Launch chrome with --try-chrome=flavor.
