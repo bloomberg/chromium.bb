@@ -2435,15 +2435,16 @@ void Browser::Observe(NotificationType type,
       if (!tab_contents)
         break;
       Extension* extension = Details<Extension>(details).ptr();
-      int delegate_count = tab_contents->infobar_delegate_count();
       CrashedExtensionInfoBarDelegate* delegate = NULL;
-      for (int i = 0; i < delegate_count; ++i) {
+      for (int i = 0; i < tab_contents->infobar_delegate_count();) {
         delegate = tab_contents->GetInfoBarDelegateAt(i)->
             AsCrashedExtensionInfoBarDelegate();
-        if (!delegate)
-          continue;
-        if (extension->id() == delegate->extension_id())
+        if (delegate && delegate->extension_id() == extension->id()) {
           tab_contents->RemoveInfoBar(delegate);
+          continue;
+        }
+        // Only increment |i| if we didn't remove an entry.
+        ++i;
       }
       break;
     }
