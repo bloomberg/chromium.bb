@@ -39,9 +39,9 @@ void SideTab::Paint(gfx::Canvas* canvas) {
   gfx::Rect text_rect = GetLocalBounds(false);
   text_rect.Inset(kTextPadding, kTextPadding, kTextPadding, kTextPadding);
 
-  canvas->DrawStringInt(model_->GetTitle(this), *font_, SK_ColorBLACK,
-                        text_rect.x(), text_rect.y(), text_rect.width(),
-                        text_rect.height());
+  canvas->DrawStringInt(UTF16ToWideHack(model_->GetTitle(this)), *font_,
+                        SK_ColorBLACK, text_rect.x(), text_rect.y(),
+                        text_rect.width(), text_rect.height());
 }
 
 gfx::Size SideTab::GetPreferredSize() {
