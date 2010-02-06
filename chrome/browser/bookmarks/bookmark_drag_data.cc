@@ -9,6 +9,9 @@
 #include "base/pickle.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#if defined(OS_MACOSX)
+#include "chrome/browser/bookmarks/bookmark_pasteboard_helper_mac.h"
+#endif
 #include "chrome/browser/profile.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/browser/browser_process.h"
@@ -139,6 +142,23 @@ bool BookmarkDragData::ReadFromClipboard() {
   }
 
   return false;
+}
+
+bool BookmarkDragData::ClipboardContainsBookmarks() {
+  return g_browser_process->clipboard()->IsFormatAvailableByString(
+      BookmarkDragData::kClipboardFormatString, Clipboard::BUFFER_STANDARD);
+}
+#else
+void BookmarkDragData::WriteToClipboard(Profile* profile) const {
+  bookmark_pasteboard_helper_mac::WriteToClipboard(elements);
+}
+
+bool BookmarkDragData::ReadFromClipboard() {
+  return bookmark_pasteboard_helper_mac::ReadFromClipboard(elements);
+}
+
+bool BookmarkDragData::ClipboardContainsBookmarks() {
+  return bookmark_pasteboard_helper_mac::ClipboardContainsBookmarks();
 }
 #endif  // !defined(OS_MACOSX)
 

@@ -182,6 +182,8 @@
         'browser/bookmarks/bookmark_model.cc',
         'browser/bookmarks/bookmark_model.h',
         'browser/bookmarks/bookmark_model_observer.h',
+        'browser/bookmarks/bookmark_pasteboard_helper_mac.h',
+        'browser/bookmarks/bookmark_pasteboard_helper_mac.mm',
         'browser/bookmarks/bookmark_service.h',
         'browser/bookmarks/bookmark_storage.cc',
         'browser/bookmarks/bookmark_storage.h',

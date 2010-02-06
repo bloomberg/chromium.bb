@@ -83,16 +83,12 @@ struct BookmarkDragData {
   explicit BookmarkDragData(const BookmarkNode* node);
   explicit BookmarkDragData(const std::vector<const BookmarkNode*>& nodes);
 
-  // TODO(estade): Port to mac. It should be as simple as removing this ifdef
-  // after the relevant Clipboard functions are implemetned.
-#if !defined(OS_MACOSX)
   // Writes elements to the clipboard.
   void WriteToClipboard(Profile* profile) const;
 
   // Reads bookmarks from the clipboard. Prefers data written via
   // WriteToClipboard but will also attempt to read a plain bookmark.
   bool ReadFromClipboard();
-#endif
 
 #if defined(TOOLKIT_VIEWS)
   // Writes elements to data. If there is only one element and it is a URL
@@ -139,6 +135,8 @@ struct BookmarkDragData {
 
   // The MIME type for the clipboard format for BookmarkDragData.
   static const char* kClipboardFormatString;
+
+  static bool ClipboardContainsBookmarks();
 
  private:
   // Path of the profile we originated from.

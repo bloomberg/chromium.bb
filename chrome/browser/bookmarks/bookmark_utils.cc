@@ -355,8 +355,6 @@ void OpenAll(gfx::NativeWindow parent,
 void CopyToClipboard(BookmarkModel* model,
                      const std::vector<const BookmarkNode*>& nodes,
                      bool remove_nodes) {
-// Not implemented on mac yet.
-#if !defined(OS_MACOSX)
   if (nodes.empty())
     return;
 
@@ -368,14 +366,11 @@ void CopyToClipboard(BookmarkModel* model,
                     nodes[i]->GetParent()->IndexOfChild(nodes[i]));
     }
   }
-#endif
 }
 
 void PasteFromClipboard(BookmarkModel* model,
                         const BookmarkNode* parent,
                         int index) {
-// Not implemented on mac yet.
-#if !defined(OS_MACOSX)
   if (!parent)
     return;
 
@@ -386,20 +381,12 @@ void PasteFromClipboard(BookmarkModel* model,
   if (index == -1)
     index = parent->GetChildCount();
   bookmark_utils::CloneDragData(model, bookmark_data.elements, parent, index);
-#endif
 }
 
 bool CanPasteFromClipboard(const BookmarkNode* node) {
   if (!node)
     return false;
-
-#if defined(OS_MACOSX)
-  NOTIMPLEMENTED();
-  return false;
-#else
-  return g_browser_process->clipboard()->IsFormatAvailableByString(
-      BookmarkDragData::kClipboardFormatString, Clipboard::BUFFER_STANDARD);
-#endif
+  return BookmarkDragData::ClipboardContainsBookmarks();
 }
 
 std::string GetNameForURL(const GURL& url) {
