@@ -2910,10 +2910,6 @@ BUG33538 : fast/dom/Window/anonymous-slot-with-changes.html = TEXT
 BUG33997 MAC : svg/custom/dominant-baseline-hanging.svg = IMAGE
 BUG33997 MAC : svg/custom/gradient-stop-corner-cases.svg = IMAGE
 
-// WebKit roll 54127 -> 54213
-BUG34219 : printing/page-break-always.html = TEXT
-BUG34219 : printing/pageNumerForElementById.html = TEXT
-
 // WebKit roll 54278 -> 54322
 BUG34546 WIN : fast/events/standalone-image-drag-to-editable.html = IMAGE+TEXT
 BUG34546 WIN : fast/events/onunload-not-on-body.html = CRASH

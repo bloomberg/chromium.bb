@@ -127,6 +127,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("setPOSIXLocale", &LayoutTestController::setPOSIXLocale);
   BindMethod("counterValueForElementById", &LayoutTestController::counterValueForElementById);
   BindMethod("addUserScript", &LayoutTestController::addUserScript);
+  BindMethod("pageNumberForElementById", &LayoutTestController::pageNumberForElementById);
 
   // The following are stubs.
   BindMethod("dumpAsWebArchive", &LayoutTestController::dumpAsWebArchive);
@@ -1067,6 +1068,36 @@ void LayoutTestController::counterValueForElementById(
                                                &counterValue))
     return;
   result->Set(WideToUTF8(counterValue));
+}
+
+void LayoutTestController::pageNumberForElementById(
+    const CppArgumentList& args, CppVariant* result) {
+  result->SetNull();
+  // WebKit is using the window width/height of DumpRenderTree as the
+  // default value of the page size.
+  // TODO(hamaji): Once chromium DumpRenderTree is implemented,
+  //               share these values with other ports.
+  float page_width_in_pixels = 800;
+  float page_height_in_pixels = 600;
+  switch (args.size()) {
+  case 3:
+    if (!args[1].isNumber() || !args[2].isNumber())
+      return;
+    page_width_in_pixels = static_cast<float>(args[1].ToInt32());
+    page_height_in_pixels = static_cast<float>(args[2].ToInt32());
+  case 1:  // fall through.
+    if (!args[0].isString())
+      return;
+    break;
+  default:
+    return;
+  }
+  int page_number = webkit_glue::PageNumberForElementById(
+      shell_->webView()->mainFrame(),
+      args[0].ToString(),
+      page_width_in_pixels,
+      page_height_in_pixels);
+  result->Set(page_number);
 }
 
 void LayoutTestController::LogErrorToConsole(const std::string& text) {

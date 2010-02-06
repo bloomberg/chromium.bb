@@ -133,6 +133,15 @@ bool CounterValueForElementById(WebFrame* web_frame, const std::string& id,
   return true;
 }
 
+int PageNumberForElementById(WebFrame* web_frame,
+                             const std::string& id,
+                             float page_width_in_pixels,
+                             float page_height_in_pixels) {
+  return web_frame->pageNumberForElementById(WebString::fromUTF8(id),
+                                             page_width_in_pixels,
+                                             page_height_in_pixels);
+}
+
 std::wstring DumpFrameScrollPosition(WebFrame* web_frame, bool recursive) {
   gfx::Size offset = web_frame->scrollOffset();
   std::wstring result;

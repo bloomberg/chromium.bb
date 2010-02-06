@@ -223,6 +223,10 @@ class LayoutTestController : public CppBoundClass {
   void counterValueForElementById(
       const CppArgumentList& args, CppVariant* result);
 
+  // Gets the number of page where the specified element will be put.
+  void pageNumberForElementById(
+      const CppArgumentList& args, CppVariant* result);
+
   // Allows layout tests to start Timeline profiling.
   void setTimelineProfilingEnabled(const CppArgumentList& args,
                                    CppVariant* result);

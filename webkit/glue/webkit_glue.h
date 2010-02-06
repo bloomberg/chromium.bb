@@ -64,6 +64,12 @@ bool CounterValueForElementById(WebKit::WebFrame* web_frame,
                                 const std::string& id,
                                 std::wstring* counter_value);
 
+// Returns the number of page where the specified element will be put.
+int PageNumberForElementById(WebKit::WebFrame* web_frame,
+                             const std::string& id,
+                             float page_width_in_pixels,
+                             float page_height_in_pixels);
+
 // Returns a dump of the scroll position of the webframe.
 std::wstring DumpFrameScrollPosition(WebKit::WebFrame* web_frame, bool recursive);
 
