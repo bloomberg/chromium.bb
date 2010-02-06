@@ -31,8 +31,8 @@ extern const bool kCanToggleSystemTitleBar;
 // The default value for session startup.
 extern const SessionStartupPref::Type kDefaultSessionStartupType;
 
-// Width of pinned tabs.
-extern const int kPinnedTabWidth;
+// Width of mini-tabs.
+extern const int kMiniTabWidth;
 
 // Should session restore restore popup windows?
 extern const bool kRestorePopups;

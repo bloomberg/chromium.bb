@@ -53,7 +53,7 @@ class Tab::TabContextMenuContents : public menus::SimpleMenuModel::Delegate {
   virtual bool IsCommandIdChecked(int command_id) const {
     if (!tab_ || command_id != TabStripModel::CommandTogglePinned)
       return false;
-    return tab_->pinned();
+    return tab_->delegate()->IsTabPinned(tab_);
   }
   virtual bool IsCommandIdEnabled(int command_id) const {
     return tab_ && tab_->delegate()->IsCommandEnabledForTab(

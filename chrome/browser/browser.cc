@@ -1651,7 +1651,7 @@ TabContents* Browser::AddBlankTabAt(int index, bool foreground) {
   // TabContents, but we want to include the time it takes to create the
   // TabContents object too.
   base::TimeTicks new_tab_start_time = base::TimeTicks::Now();
-  TabContents* tab_contents =  AddTabWithURL(GURL(chrome::kChromeUINewTabURL),
+  TabContents* tab_contents = AddTabWithURL(GURL(chrome::kChromeUINewTabURL),
       GURL(), PageTransition::TYPED, foreground, index, false, NULL);
   tab_contents->set_new_tab_start_time(new_tab_start_time);
   return tab_contents;

@@ -1230,10 +1230,14 @@ void TabContents::OnCloseStarted() {
 }
 
 TabContents* TabContents::CloneAndMakePhantom() {
-  DCHECK(app_extension_);  // Should only be invoked on apps.
-
   TabNavigation tab_nav;
-  tab_nav.set_url(app_extension_->app_launch_url());
+
+  NavigationEntry* entry = controller().GetActiveEntry();
+  if (app_extension_)
+    tab_nav.set_url(app_extension_->app_launch_url());
+  else if (entry)
+    tab_nav.SetFromNavigationEntry(*entry);
+
   std::vector<TabNavigation> navigations;
   navigations.push_back(tab_nav);
 
@@ -1241,6 +1245,9 @@ TabContents* TabContents::CloneAndMakePhantom() {
       new TabContents(profile(), NULL, MSG_ROUTING_NONE, NULL);
   new_contents->SetAppExtension(app_extension_);
   new_contents->controller().RestoreFromState(navigations, 0, false);
+
+  if (!app_extension_ && entry)
+    new_contents->controller().GetActiveEntry()->favicon() = entry->favicon();
 
   return new_contents;
 }

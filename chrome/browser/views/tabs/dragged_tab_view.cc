@@ -30,7 +30,8 @@ static const SkColor kDraggedTabBorderColor = SkColorSetRGB(103, 129, 162);
 
 DraggedTabView::DraggedTabView(TabContents* datasource,
                                const gfx::Point& mouse_tab_offset,
-                               const gfx::Size& contents_size)
+                               const gfx::Size& contents_size,
+                               bool mini)
     : renderer_(new TabRenderer),
       attached_(false),
       show_contents_on_drag_(true),
@@ -38,11 +39,11 @@ DraggedTabView::DraggedTabView(TabContents* datasource,
       attached_tab_size_(TabRenderer::GetMinimumSelectedSize()),
       photobooth_(NULL),
       contents_size_(contents_size),
-      close_animation_(this),
-      tab_width_(0) {
+      close_animation_(this) {
   set_parent_owned(false);
 
   renderer_->UpdateData(datasource, false, false);
+  renderer_->set_mini(mini);
 
 #if defined(OS_WIN)
   container_.reset(new views::WidgetWin);
@@ -121,23 +122,7 @@ void DraggedTabView::Resize(int width) {
   Update();
 }
 
-void DraggedTabView::set_pinned(bool pinned) {
-  renderer_->set_pinned(pinned);
-}
-
-bool DraggedTabView::pinned() const {
-  return renderer_->pinned();
-}
-
 void DraggedTabView::Detach(NativeViewPhotobooth* photobooth) {
-  // Detached tabs are never pinned.
-  renderer_->set_pinned(false);
-
-  if (attached_tab_size_.width() != tab_width_) {
-    // The attached tab size differs from current tab size. Resize accordingly.
-    Resize(tab_width_);
-  }
-
   attached_ = false;
   photobooth_ = photobooth;
 #if defined(OS_WIN)

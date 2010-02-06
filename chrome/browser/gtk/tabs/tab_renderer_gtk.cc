@@ -43,7 +43,7 @@ const int kInactiveTabBackgroundOffsetY = 20;
 // as a normal tab. This is done to avoid having the title immediately
 // disappear when transitioning a tab from normal to pinned.
 const int kPinnedTabRendererAsTabWidth =
-    browser_defaults::kPinnedTabWidth + 30;
+    browser_defaults::kMiniTabWidth + 30;
 
 // The tab images are designed to overlap the toolbar by 1 pixel. For now we
 // don't actually overlap the toolbar, so this is used to know how many pixels
@@ -445,7 +445,7 @@ gfx::Size TabRendererGtk::GetStandardSize() {
 
 // static
 int TabRendererGtk::GetPinnedWidth() {
-  return browser_defaults::kPinnedTabWidth;
+  return browser_defaults::kMiniTabWidth;
 }
 
 // static

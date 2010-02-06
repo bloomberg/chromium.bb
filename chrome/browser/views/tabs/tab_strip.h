@@ -126,11 +126,12 @@ class TabStrip : public BaseTabStrip,
   virtual void TabReplacedAt(TabContents* old_contents,
                              TabContents* new_contents,
                              int index);
-  virtual void TabPinnedStateChanged(TabContents* contents, int index);
+  virtual void TabMiniStateChanged(TabContents* contents, int index);
   virtual void TabBlockedStateChanged(TabContents* contents, int index);
 
   // Tab::Delegate implementation:
   virtual bool IsTabSelected(const Tab* tab) const;
+  virtual bool IsTabPinned(const Tab* tab) const;
   virtual void SelectTab(Tab* tab);
   virtual void CloseTab(Tab* tab);
   virtual bool IsCommandEnabledForTab(
@@ -159,11 +160,13 @@ class TabStrip : public BaseTabStrip,
   virtual void DidProcessEvent(GdkEvent* event);
 #endif
 
-  // Horizontal gap between pinned and non-pinned tabs.
-  static const int pinned_to_non_pinned_gap_;
+  // Horizontal gap between mini and non-mini-tabs.
+  static const int mini_to_non_mini_gap_;
 
  private:
   class InsertTabAnimation;
+  class MiniMoveAnimation;
+  class MiniTabAnimation;
   class MoveTabAnimation;
   class RemoveTabAnimation;
   class ResizeLayoutAnimation;
@@ -171,6 +174,8 @@ class TabStrip : public BaseTabStrip,
 
   friend class DraggedTabController;
   friend class InsertTabAnimation;
+  friend class MiniMoveAnimation;
+  friend class MiniTabAnimation;
   friend class MoveTabAnimation;
   friend class RemoveTabAnimation;
   friend class ResizeLayoutAnimation;
@@ -198,8 +203,8 @@ class TabStrip : public BaseTabStrip,
   // Gets the number of Tabs in the collection.
   int GetTabCount() const;
 
-  // Returns the number of pinned tabs.
-  int GetPinnedTabCount() const;
+  // Returns the number of mini-tabs.
+  int GetMiniTabCount() const;
 
   // -- Tab Resize Layout -----------------------------------------------------
 
@@ -211,10 +216,10 @@ class TabStrip : public BaseTabStrip,
   // desired strip width and number of tabs.  If
   // |width_of_tabs_for_mouse_close_| is nonnegative we use that value in
   // calculating the desired strip width; otherwise we use the current width.
-  // |pinned_tab_count| gives the number of pinned tabs, and |tab_count| the
-  // number of pinned and non-pinned tabs.
+  // |mini_tab_count| gives the number of mini-tabs, and |tab_count| the
+  // number of mini and non-mini-tabs.
   void GetDesiredTabWidths(int tab_count,
-                           int pinned_tab_count,
+                           int mini_tab_count,
                            double* unselected_width,
                            double* selected_width) const;
 
@@ -275,6 +280,10 @@ class TabStrip : public BaseTabStrip,
   void StartInsertTabAnimation(int index);
   void StartRemoveTabAnimation(int index, TabContents* contents);
   void StartMoveTabAnimation(int from_index, int to_index);
+  void StartMiniTabAnimation(int index);
+  void StartMiniMoveTabAnimation(int from_index,
+                                 int to_index,
+                                 const gfx::Rect& start_bounds);
 
   // Notifies the TabStrip that the specified TabAnimation has completed.
   // Optionally a full Layout will be performed, specified by |layout|.

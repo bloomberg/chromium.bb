@@ -33,6 +33,9 @@ class Tab : public TabRenderer,
     // Returns true if the specified Tab is selected.
     virtual bool IsTabSelected(const Tab* tab) const = 0;
 
+    // Returns true if the specified Tab is pinned.
+    virtual bool IsTabPinned(const Tab* tab) const = 0;
+
     // Selects the specified Tab.
     virtual void SelectTab(Tab* tab) = 0;
 

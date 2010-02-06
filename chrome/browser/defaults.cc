@@ -14,7 +14,7 @@ const double kAutocompleteEditFontPixelSizeInPopup = kAutocompletePopupFontSize;
 const int kAutocompletePopupFontSize = 7;
 const SessionStartupPref::Type kDefaultSessionStartupType =
     SessionStartupPref::LAST;
-const int kPinnedTabWidth = 64;
+const int kMiniTabWidth = 64;
 const bool kCanToggleSystemTitleBar = false;
 const bool kRestorePopups = true;
 const bool kShowImportOnBookmarkBar = false;
@@ -49,7 +49,7 @@ const bool kCanToggleSystemTitleBar = true;
 
 const SessionStartupPref::Type kDefaultSessionStartupType =
     SessionStartupPref::DEFAULT;
-const int kPinnedTabWidth = 56;
+const int kMiniTabWidth = 56;
 const bool kRestorePopups = false;
 const bool kShowImportOnBookmarkBar = true;
 const bool kDownloadPageHasShowInFolder = true;

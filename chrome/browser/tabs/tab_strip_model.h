@@ -105,7 +105,16 @@ class TabStripModelObserver {
 
   // Invoked when the mini state of a tab changes. This is not invoked if the
   // tab ends up moving as a result of the mini state changing.
+  // See note in TabMiniStateChanged as to how this relates to
+  // TabMiniStateChanged.
   virtual void TabPinnedStateChanged(TabContents* contents, int index) {}
+
+  // Invoked if the mini state of a tab changes.  This is not invoked if the
+  // tab ends up moving as a result of the mini state changing.
+  // NOTE: this is sent when the pinned state of a non-app tab changes and is
+  // sent in addition to TabPinnedStateChanged. UI code typically need not care
+  // about TabPinnedStateChanged, but instead this.
+  virtual void TabMiniStateChanged(TabContents* contents, int index) {}
 
   // Invoked when the blocked state of a tab changes.
   // NOTE: This is invoked when a tab becomes blocked/unblocked by a tab modal
@@ -293,9 +302,6 @@ class TabStripModel : public NotificationObserver {
 
   // Retrieve the index of the currently selected TabContents.
   int selected_index() const { return selected_index_; }
-
-  // See documentation for |next_selected_index_| below.
-  int next_selected_index() const { return next_selected_index_; }
 
   // Returns true if the tabstrip is currently closing all open tabs (via a
   // call to CloseAllTabs). As tabs close, the selection in the tabstrip
@@ -489,6 +495,13 @@ class TabStripModel : public NotificationObserver {
   // |count()| if all of the tabs are mini-tabs, and 0 if none of the tabs are
   // mini-tabs.
   int IndexOfFirstNonMiniTab() const;
+
+  // Returns a valid index for inserting a new tab into this model. |index| is
+  // the proposed index and |mini_tab| is true if inserting a tab will become
+  // mini (pinned or app). If |mini_tab| is true, the returned index is between
+  // 0 and IndexOfFirstNonMiniTab. If |mini_tab| is false, the returned index
+  // is between IndexOfFirstNonMiniTab and count().
+  int ConstrainInsertionIndex(int index, bool mini_tab);
 
   // Command level API /////////////////////////////////////////////////////////
 
@@ -701,14 +714,6 @@ class TabStripModel : public NotificationObserver {
 
   // The index of the TabContents in |contents_| that is currently selected.
   int selected_index_;
-
-  // The index of the TabContnets in |contents_| that will be selected when the
-  // current composite operation completes. A Tab Detach is an example of a
-  // composite operation - it not only removes a tab from the strip, but also
-  // causes the selection to shift. Some code needs to know what the next
-  // selected index will be. In other cases, this value is equal to
-  // selected_index_.
-  int next_selected_index_;
 
   // A profile associated with this TabStripModel, used when creating new Tabs.
   Profile* profile_;

@@ -43,12 +43,12 @@ static const int kStandardTitleWidth = 175;
 static const int kCloseButtonVertFuzz = 0;
 static const int kCloseButtonHorzFuzz = 5;
 static const int kSelectedTitleColor = SK_ColorBLACK;
-// When a non-pinned tab is pinned the width of the tab animates. If the width
-// of a pinned tab is >= kPinnedTabRendererAsTabWidth then the tab is rendered
-// as a normal tab. This is done to avoid having the title immediately
-// disappear when transitioning a tab from normal to pinned.
-static const int kPinnedTabRendererAsTabWidth =
-    browser_defaults::kPinnedTabWidth + 30;
+// When a non-mini-tab becomes a mini-tab the width of the tab animates. If
+// the width of a mini-tab is >= kMiniTabRendererAsNormalTabWidth then the tab
+// is rendered as a normal tab. This is done to avoid having the title
+// immediately disappear when transitioning a tab from normal to mini-tab.
+static const int kMiniTabRendererAsNormalTabWidth =
+    browser_defaults::kMiniTabWidth + 30;
 
 // How long the hover state takes.
 static const int kHoverDurationMs = 90;
@@ -80,11 +80,11 @@ TabRenderer::TabImage TabRenderer::tab_alpha = {0};
 TabRenderer::TabImage TabRenderer::tab_active = {0};
 TabRenderer::TabImage TabRenderer::tab_inactive = {0};
 
-// Max opacity for the pinned tab title change animation.
-const double kPinnedThrobOpacity = 0.75;
+// Max opacity for the mini-tab title change animation.
+const double kMiniTitleChangeThrobOpacity = 0.75;
 
-// Duration for when the title of an inactive pinned tab changes.
-const int kPinnedDuration = 1000;
+// Duration for when the title of an inactive mini-tab changes.
+const int kMiniTitleChangeThrobDuration = 1000;
 
 namespace {
 
@@ -255,11 +255,6 @@ TabRenderer::TabRenderer()
       theme_provider_(NULL) {
   InitResources();
 
-  data_.blocked = false;
-  data_.pinned = false;
-  data_.animating_pinned_change = false;
-  data_.phantom = false;
-
   // Add the Close Button.
   close_button_ = new TabCloseButton(this);
   close_button_->SetImage(views::CustomButton::BS_NORMAL, close_button_n);
@@ -330,8 +325,8 @@ void TabRenderer::UpdateFromModel() {
   }
 }
 
-void TabRenderer::set_animating_pinned_change(bool value) {
-  data_.animating_pinned_change = value;
+void TabRenderer::set_animating_mini_change(bool value) {
+  data_.animating_mini_change = value;
 }
 
 bool TabRenderer::IsSelected() const {
@@ -374,26 +369,26 @@ void TabRenderer::StopPulse() {
     pulse_animation_->Stop();
 }
 
-void TabRenderer::StartPinnedTabTitleAnimation() {
-  if (!pinned_title_animation_.get()) {
-    pinned_title_animation_.reset(new ThrobAnimation(this));
-    pinned_title_animation_->SetThrobDuration(kPinnedDuration);
+void TabRenderer::StartMiniTabTitleAnimation() {
+  if (!mini_title_animation_.get()) {
+    mini_title_animation_.reset(new ThrobAnimation(this));
+    mini_title_animation_->SetThrobDuration(kMiniTitleChangeThrobDuration);
   }
 
-  if (!pinned_title_animation_->IsAnimating()) {
-    pinned_title_animation_->StartThrobbing(2);
-  } else if (pinned_title_animation_->cycles_remaining() <= 2) {
+  if (!mini_title_animation_->IsAnimating()) {
+    mini_title_animation_->StartThrobbing(2);
+  } else if (mini_title_animation_->cycles_remaining() <= 2) {
     // The title changed while we're already animating. Add at most one more
     // cycle. This is done in an attempt to smooth out pages that continuously
     // change the title.
-    pinned_title_animation_->set_cycles_remaining(
-        pinned_title_animation_->cycles_remaining() + 2);
+    mini_title_animation_->set_cycles_remaining(
+        mini_title_animation_->cycles_remaining() + 2);
   }
 }
 
-void TabRenderer::StopPinnedTabTitleAnimation() {
-  if (pinned_title_animation_.get())
-    pinned_title_animation_->Stop();
+void TabRenderer::StopMiniTabTitleAnimation() {
+  if (mini_title_animation_.get())
+    mini_title_animation_->Stop();
 }
 
 // static
@@ -424,8 +419,8 @@ gfx::Size TabRenderer::GetStandardSize() {
 }
 
 // static
-int TabRenderer::GetPinnedWidth() {
-  return browser_defaults::kPinnedTabWidth;
+int TabRenderer::GetMiniWidth() {
+  return browser_defaults::kMiniTabWidth;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -451,7 +446,7 @@ void TabRenderer::OnMouseExited(const views::MouseEvent& e) {
 void TabRenderer::Paint(gfx::Canvas* canvas) {
   // Don't paint if we're narrower than we can render correctly. (This should
   // only happen during animations).
-  if (width() < GetMinimumUnselectedSize().width() && !pinned())
+  if (width() < GetMinimumUnselectedSize().width() && !mini())
     return;
 
   // See if the model changes whether the icons should be painted.
@@ -469,7 +464,7 @@ void TabRenderer::Paint(gfx::Canvas* canvas) {
           BrowserThemeProvider::COLOR_TAB_TEXT :
           BrowserThemeProvider::COLOR_BACKGROUND_TAB_TEXT);
 
-  if (!pinned() || width() > kPinnedTabRendererAsTabWidth)
+  if (!mini() || width() > kMiniTabRendererAsNormalTabWidth)
     PaintTitle(title_color, canvas);
 
   if (show_icon)
@@ -499,15 +494,17 @@ void TabRenderer::Layout() {
   if (showing_icon_) {
     int favicon_top = kTopPadding + (content_height - kFavIconSize) / 2;
     favicon_bounds_.SetRect(lb.x(), favicon_top, kFavIconSize, kFavIconSize);
-    if ((pinned() || data_.animating_pinned_change) &&
-        width() < kPinnedTabRendererAsTabWidth) {
-      int pin_delta = kPinnedTabRendererAsTabWidth - GetPinnedWidth();
-      int ideal_delta = width() - GetPinnedWidth();
-      if (ideal_delta < pin_delta) {
-        int ideal_x = (GetPinnedWidth() - kFavIconSize) / 2;
+    if ((mini() || data_.animating_mini_change) &&
+        width() < kMiniTabRendererAsNormalTabWidth) {
+      // Adjust the location of the favicon when transitioning from a normal
+      // tab to a mini-tab.
+      int mini_delta = kMiniTabRendererAsNormalTabWidth - GetMiniWidth();
+      int ideal_delta = width() - GetMiniWidth();
+      if (ideal_delta < mini_delta) {
+        int ideal_x = (GetMiniWidth() - kFavIconSize) / 2;
         int x = favicon_bounds_.x() + static_cast<int>(
             (1 - static_cast<float>(ideal_delta) /
-             static_cast<float>(pin_delta)) *
+             static_cast<float>(mini_delta)) *
             (ideal_x - favicon_bounds_.x()));
         favicon_bounds_.set_x(x);
       }
@@ -535,7 +532,7 @@ void TabRenderer::Layout() {
   int title_left = favicon_bounds_.right() + kFavIconTitleSpacing;
   int title_top = kTopPadding + (content_height - title_font_height) / 2;
   // Size the Title text to fill the remaining space.
-  if (!pinned() || width() >= kPinnedTabRendererAsTabWidth) {
+  if (!mini() || width() >= kMiniTabRendererAsNormalTabWidth) {
     // If the user has big fonts, the title will appear rendered too far down
     // on the y-axis if we use the regular top padding, so we need to adjust it
     // so that the text appears centered.
@@ -793,7 +790,7 @@ void TabRenderer::PaintLoadingAnimation(gfx::Canvas* canvas) {
   // loading animation also needs to be mirrored if the View's UI layout is
   // right-to-left.
   int dst_x;
-  if (pinned()) {
+  if (mini()) {
     dst_x = favicon_bounds_.x();
   } else {
     if (UILayoutIsRightToLeft()) {
@@ -814,7 +811,7 @@ int TabRenderer::IconCapacity() const {
 }
 
 bool TabRenderer::ShouldShowIcon() const {
-  if (pinned() && height() >= GetMinimumUnselectedSize().height())
+  if (mini() && height() >= GetMinimumUnselectedSize().height())
     return true;
   if (!data_.show_icon) {
     return false;
@@ -828,15 +825,16 @@ bool TabRenderer::ShouldShowIcon() const {
 
 bool TabRenderer::ShouldShowCloseBox() const {
   // The selected tab never clips close button.
-  return !pinned() && (IsSelected() || IconCapacity() >= 3);
+  return !mini() && (IsSelected() || IconCapacity() >= 3);
 }
 
 double TabRenderer::GetThrobValue() {
   if (pulse_animation_->IsAnimating())
     return pulse_animation_->GetCurrentValue() * kHoverOpacity;
 
-  if (pinned_title_animation_.get() && pinned_title_animation_->IsAnimating())
-    return pinned_title_animation_->GetCurrentValue() * kPinnedThrobOpacity;
+  if (mini_title_animation_.get() && mini_title_animation_->IsAnimating())
+    return mini_title_animation_->GetCurrentValue() *
+        kMiniTitleChangeThrobOpacity;
 
   return hover_animation_.get() ?
       kHoverOpacity * hover_animation_->GetCurrentValue() : 0;
