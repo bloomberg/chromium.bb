@@ -14,8 +14,7 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
+#include "net/base/net_errors.h"
 #include "webkit/database/databases_table.h"
 #include "webkit/database/quota_table.h"
 #include "webkit/glue/webkit_glue.h"
@@ -163,6 +162,8 @@ bool DatabaseTracker::DeleteDatabase(const string16& origin_identifier,
     return false;
 
   // Try to delete the file on the hard drive.
+  // TODO(jochen): Delete directory if this was the last database.
+  // TODO(jochen): Delete journal files associated with this database.
   FilePath db_file = GetFullDBFilePath(origin_identifier, database_name);
   if (file_util::PathExists(db_file) && !file_util::Delete(db_file, false))
     return false;
@@ -334,9 +335,45 @@ int64 DatabaseTracker::UpdateCachedDatabaseFileSize(
   return new_size;
 }
 
+int DatabaseTracker::DeleteDataModifiedSince(
+    const base::Time& cutoff,
+    net::CompletionCallback* callback) {
+  if (!LazyInit())
+    return net::ERR_FAILED;
+
+  std::vector<string16> origins;
+  if (!databases_table_->GetAllOrigins(&origins))
+    return net::ERR_FAILED;
+  int rv = net::OK;
+  for (std::vector<string16>::const_iterator ori = origins.begin();
+       ori != origins.end(); ++ori) {
+    if (StartsWith(*ori, ASCIIToUTF16(kExtensionOriginIdentifierPrefix), true))
+      continue;
+    std::vector<DatabaseDetails> details;
+    if (!databases_table_->GetAllDatabaseDetailsForOrigin(*ori, &details)) {
+      rv = net::ERR_FAILED;
+      continue;
+    }
+    for (std::vector<DatabaseDetails>::const_iterator db = details.begin();
+         db != details.end(); ++db) {
+      // Check if the database is opened by any renderer.
+      if (database_connections_.IsDatabaseOpened(*ori, db->database_name)) {
+        // TODO(jochen): make renderer close the database.
+        rv = net::ERR_FAILED;
+        continue;
+      }
+      FilePath db_file = GetFullDBFilePath(*ori, db->database_name);
+      file_util::FileInfo file_info;
+      file_util::GetFileInfo(db_file, &file_info);
+      if (file_info.last_modified >= cutoff)
+        DeleteDatabase(*ori, db->database_name);
+    }
+  }
+  return rv;
+}
+
 // static
-void DatabaseTracker::ClearLocalState(const FilePath& profile_path,
-                                      const char* url_scheme_to_be_skipped) {
+void DatabaseTracker::ClearLocalState(const FilePath& profile_path) {
   FilePath db_dir = profile_path.Append(FilePath(kDatabaseDirectoryName));
   FilePath db_tracker = db_dir.Append(FilePath(kTrackerDatabaseFileName));
   if (file_util::DirectoryExists(db_dir) &&
@@ -350,8 +387,8 @@ void DatabaseTracker::ClearLocalState(const FilePath& profile_path,
     } else {
       sql::Statement delete_statement(db_->GetCachedStatement(
             SQL_FROM_HERE, "DELETE FROM Databases WHERE origin NOT LIKE ?"));
-      std::string filter(url_scheme_to_be_skipped);
-      filter += "_%";
+      std::string filter(kExtensionOriginIdentifierPrefix);
+      filter += "%";
       delete_statement.BindString(0, filter);
       if (!delete_statement.Run()) {
         db_->Close();
@@ -365,11 +402,8 @@ void DatabaseTracker::ClearLocalState(const FilePath& profile_path,
   for (FilePath file_path = file_enumerator.Next(); !file_path.empty();
        file_path = file_enumerator.Next()) {
     if (file_path.BaseName() != FilePath(kTrackerDatabaseFileName)) {
-      scoped_ptr<WebKit::WebSecurityOrigin> web_security_origin(
-          WebKit::WebSecurityOrigin::createFromDatabaseIdentifier(
-              webkit_glue::FilePathToWebString(file_path.BaseName())));
-      if (!EqualsASCII(web_security_origin->protocol(),
-                       url_scheme_to_be_skipped))
+      if (!StartsWith(file_path.BaseName().ToWStringHack(),
+                      ASCIIToWide(kExtensionOriginIdentifierPrefix), true))
         file_util::Delete(file_path, true);
     }
   }

@@ -19,9 +19,11 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/cookie_monster.h"
+#include "net/base/net_errors.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_context.h"
+#include "webkit/database/database_tracker.h"
 #include "webkit/glue/password_form.h"
 
 // Done so that we can use PostTask on BrowsingDataRemovers and not have
@@ -40,6 +42,9 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
     : profile_(profile),
       delete_begin_(delete_begin),
       delete_end_(delete_end),
+      ALLOW_THIS_IN_INITIALIZER_LIST(database_cleared_callback_(
+          this, &BrowsingDataRemover::OnClearedDatabases)),
+      waiting_for_clear_databases_(false),
       waiting_for_clear_history_(false),
       waiting_for_clear_cache_(false) {
   DCHECK(profile);
@@ -51,6 +56,9 @@ BrowsingDataRemover::BrowsingDataRemover(Profile* profile,
     : profile_(profile),
       delete_begin_(CalculateBeginDeleteTime(time_period)),
       delete_end_(delete_end),
+      ALLOW_THIS_IN_INITIALIZER_LIST(database_cleared_callback_(
+          this, &BrowsingDataRemover::OnClearedDatabases)),
+      waiting_for_clear_databases_(false),
       waiting_for_clear_history_(false),
       waiting_for_clear_cache_(false) {
   DCHECK(profile);
@@ -115,6 +123,17 @@ void BrowsingDataRemover::Remove(int remove_mask) {
       cookie_monster->DeleteAllCreatedBetween(delete_begin_, delete_end_, true);
     profile_->GetWebKitContext()->DeleteDataModifiedSince(
         delete_begin_, chrome::kExtensionScheme);
+
+    database_tracker_ = profile_->GetDatabaseTracker();
+    if (database_tracker_.get()) {
+      waiting_for_clear_databases_ = true;
+      ChromeThread::PostTask(
+          ChromeThread::FILE, FROM_HERE,
+          NewRunnableMethod(
+              this,
+              &BrowsingDataRemover::ClearDatabasesOnFILEThread,
+              delete_begin_));
+    }
   }
 
   if (remove_mask & REMOVE_PASSWORDS) {
@@ -275,4 +294,29 @@ void BrowsingDataRemover::ClearCacheOnIOThread(
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE,
       NewRunnableMethod(this, &BrowsingDataRemover::ClearedCache));
+}
+
+void BrowsingDataRemover::OnClearedDatabases(int rv) {
+  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+    bool result = ChromeThread::PostTask(
+        ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this, &BrowsingDataRemover::OnClearedDatabases, rv));
+    DCHECK(result);
+    return;
+  }
+  // Notify the UI thread that we are done.
+  database_tracker_ = NULL;
+  waiting_for_clear_databases_ = false;
+
+  NotifyAndDeleteIfDone();
+}
+
+void BrowsingDataRemover::ClearDatabasesOnFILEThread(base::Time delete_begin) {
+  // This function should be called on the FILE thread.
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
+  int rv = database_tracker_->DeleteDataModifiedSince(
+      delete_begin, &database_cleared_callback_);
+  if (rv != net::ERR_IO_PENDING)
+    OnClearedDatabases(rv);
 }

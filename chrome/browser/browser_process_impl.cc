@@ -259,8 +259,7 @@ void BrowserProcessImpl::ClearLocalState(const FilePath& profile_path) {
   SQLitePersistentCookieStore::ClearLocalState(profile_path.Append(
       chrome::kCookieFilename));
   DOMStorageContext::ClearLocalState(profile_path, chrome::kExtensionScheme);
-  webkit_database::DatabaseTracker::ClearLocalState(profile_path,
-      chrome::kExtensionScheme);
+  webkit_database::DatabaseTracker::ClearLocalState(profile_path);
   ChromeAppCacheService::ClearLocalState(profile_path);
 }
 

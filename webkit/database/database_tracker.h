@@ -13,6 +13,8 @@
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/string_util.h"
+#include "base/time.h"
+#include "net/base/completion_callback.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "webkit/database/database_connections.h"
 
@@ -116,8 +118,14 @@ class DatabaseTracker
                       const string16& database_name);
   bool DeleteOrigin(const string16& origin_identifier);
 
-  static void ClearLocalState(const FilePath& profile_path,
-                              const char* url_scheme_to_be_skipped);
+  // Delete any databases that have been touched since the cutoff date that's
+  // supplied. Returns net::OK on success, net::FAILED if not all databases
+  // could be deleted, and net::ERR_IO_PENDING and |callback| is invoked upon
+  // completion.
+  int DeleteDataModifiedSince(const base::Time& cutoff,
+                              net::CompletionCallback* callback);
+
+  static void ClearLocalState(const FilePath& profile_path);
 
  private:
   // Need this here to allow RefCountedThreadSafe to call ~DatabaseTracker().

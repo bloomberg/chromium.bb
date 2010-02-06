@@ -6,9 +6,11 @@
 #define CHROME_BROWSER_BROWSING_DATA_REMOVER_H_
 
 #include "base/observer_list.h"
+#include "base/scoped_ptr.h"
 #include "base/time.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/common/notification_registrar.h"
+#include "webkit/database/database_tracker.h"
 
 class Profile;
 class URLRequestContextGetter;
@@ -94,13 +96,20 @@ class BrowsingDataRemover : public NotificationObserver {
                             base::Time delete_begin,
                             base::Time delete_end);
 
+  // Callback when HTML5 databases have been deleted. Invokes
+  // NotifyAndDeleteIfDone.
+  void OnClearedDatabases(int rv);
+
+  // Invoked on the FILE thread to delete HTML5 databases.
+  void ClearDatabasesOnFILEThread(base::Time delete_begin);
+
   // Calculate the begin time for the deletion range specified by |time_period|.
   base::Time CalculateBeginDeleteTime(TimePeriod time_period);
 
   // Returns true if we're all done.
   bool all_done() {
     return registrar_.IsEmpty() && !waiting_for_clear_cache_ &&
-           !waiting_for_clear_history_;
+           !waiting_for_clear_history_ && !waiting_for_clear_databases_;
   }
 
   NotificationRegistrar registrar_;
@@ -116,6 +125,14 @@ class BrowsingDataRemover : public NotificationObserver {
 
   // True if Remove has been invoked.
   static bool removing_;
+
+  // Reference to database tracker held while deleting databases.
+  scoped_refptr<webkit_database::DatabaseTracker> database_tracker_;
+
+  net::CompletionCallbackImpl<BrowsingDataRemover> database_cleared_callback_;
+
+  // True if we're waiting for HTML5 databases to be deleted.
+  bool waiting_for_clear_databases_;
 
   // True if we're waiting for the history to be deleted.
   bool waiting_for_clear_history_;
