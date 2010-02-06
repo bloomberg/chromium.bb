@@ -6,6 +6,7 @@
 
 #include "app/gfx/canvas.h"
 #include "app/resource_bundle.h"
+#include "base/string_util.h"
 
 namespace {
 const int kVerticalTabHeight = 27;
