@@ -333,10 +333,10 @@ void PluginObject::New(NPMIMEType pluginType,
 }
 
 void PluginObject::SetWindow(const NPWindow& window) {
-  if (dimensions_ == 2) {
-    width_ = window.width;
-    height_ = window.height;
+  width_ = window.width;
+  height_ = window.height;
 
+  if (dimensions_ == 2) {
     NPDeviceContext2DConfig config;
     NPDeviceContext2D context;
     device2d_->initializeContext(npp_, &config, &context);
