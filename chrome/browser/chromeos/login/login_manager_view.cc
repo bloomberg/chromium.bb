@@ -7,6 +7,8 @@
 #include <signal.h>
 #include <sys/types.h>
 
+#include <vector>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/file_path.h"
@@ -17,6 +19,7 @@
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/image_background.h"
+#include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
@@ -35,23 +38,25 @@ using views::Textfield;
 using views::View;
 using views::Widget;
 
-static const int kTitleY = 50;
-static const int kPanelSpacing = 36;
-static const int kVersionPad = 4;
-static const int kTextfieldWidth = 286;
-static const int kRowPad = 10;
-static const int kLabelPad = 2;
-static const int kCornerPad = 6;
-static const int kCornerRadius = 12;
-static const int kShadowOffset = 4;
-static const SkColor kErrorColor = 0xFF8F384F;
-static const SkColor kBackground = SK_ColorWHITE;
-static const SkColor kLabelColor = 0xFF808080;
-static const SkColor kVersionColor = 0xFFA0A0A0;
-static const char *kDefaultDomain = "@gmail.com";
+namespace {
+
+const int kTitleY = 50;
+const int kPanelSpacing = 36;
+const int kVersionPad = 4;
+const int kTextfieldWidth = 286;
+const int kRowPad = 10;
+const int kLabelPad = 2;
+const int kCornerPad = 6;
+const int kCornerRadius = 12;
+const int kShadowOffset = 4;
+const SkColor kErrorColor = 0xFF8F384F;
+const SkColor kBackground = SK_ColorWHITE;
+const SkColor kLabelColor = 0xFF808080;
+const SkColor kVersionColor = 0xFFA0A0A0;
+const char *kDefaultDomain = "@gmail.com";
 
 // Set to true to run on linux and test login.
-static const bool kStubOutLogin = false;
+const bool kStubOutLogin = false;
 
 // This Painter can be used to draw a background with a shadowed panel with
 // rounded corners.
@@ -92,8 +97,13 @@ class PanelPainter : public views::Painter {
   }
 };
 
-LoginManagerView::LoginManagerView() {
-  Init();
+}  // namespace
+
+LoginManagerView::LoginManagerView(chromeos::ScreenObserver* observer)
+    : observer_(observer) {
+}
+
+LoginManagerView::~LoginManagerView() {
 }
 
 void LoginManagerView::Init() {
@@ -252,7 +262,7 @@ bool LoginManagerView::Authenticate(const std::string& username,
 
 void LoginManagerView::SetupSession(const std::string& username) {
   if (observer_) {
-    observer_->OnLogin();
+    observer_->OnExit(chromeos::ScreenObserver::LOGIN_SIGN_IN_SELECTED);
   }
   if (username.find("@google.com") != std::string::npos) {
     // This isn't thread-safe.  However, the login window is specifically
@@ -263,7 +273,6 @@ void LoginManagerView::SetupSession(const std::string& username) {
   }
   if (chromeos::LoginLibrary::EnsureLoaded())
     chromeos::LoginLibrary::Get()->StartSession(username, "");
-
 }
 
 void LoginManagerView::Login() {

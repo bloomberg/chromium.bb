@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_VIEWS_BROWSER_DIALOGS_H_
 #define CHROME_BROWSER_VIEWS_BROWSER_DIALOGS_H_
 
+#include <string>
+
 #include "app/gfx/native_widget_types.h"
 
 // This file contains functions for running a variety of browser dialogs and
@@ -90,7 +92,7 @@ void ShowTaskManager();
 
 #if defined(OS_CHROMEOS)
 // Shows the Login Wizard.
-void ShowLoginWizard();
+void ShowLoginWizard(const std::string& start_screen);
 #endif
 
 // Shows a dialog box that allows a search engine to be edited. |template_url|

@@ -14,25 +14,22 @@
 #include "views/widget/widget_gtk.h"
 #include "views/window/window_delegate.h"
 
+namespace chromeos {
+class ScreenObserver;
+}  // namespace chromeos
+
 namespace views {
 class Label;
 class NativeButton;
-} // namespace views
+}  // namespace views
 
 class LoginManagerView : public views::View,
                          public views::WindowDelegate,
                          public views::Textfield::Controller,
                          public views::ButtonListener {
  public:
-  // Observer for login related events.
-  class LoginObserver {
-   public:
-    virtual ~LoginObserver() {}
-    virtual void OnLogin() = 0;
-  };
-
-  LoginManagerView();
-  virtual ~LoginManagerView() {}
+  explicit LoginManagerView(chromeos::ScreenObserver* observer);
+  virtual ~LoginManagerView();
 
   // Initialize the controls on the dialog.
   void Init();
@@ -56,29 +53,7 @@ class LoginManagerView : public views::View,
   virtual void ContentsChanged(views::Textfield* sender,
                                const string16& new_contents) {}
 
-  void set_observer(LoginObserver* observer) {
-    observer_ = observer;
-  }
-
-  // Creates all examples and start UI event loop.
  private:
-  views::Textfield* username_field_;
-  views::Textfield* password_field_;
-  views::Label* os_version_label_;
-  views::Label* title_label_;
-  views::Label* username_label_;
-  views::Label* password_label_;
-  views::Label* error_label_;
-  views::NativeButton* sign_in_button_;
-
-  // Handles asynchronously loading the version.
-  chromeos::VersionLoader loader_;
-
-  // Used to request the version.
-  CancelableRequestConsumer consumer_;
-
-  LoginObserver* observer_;
-
   // Given a |username| and |password|, this method attempts to authenticate to
   // the Google accounts servers.
   // Returns true upon success and false on failure.
@@ -102,6 +77,24 @@ class LoginManagerView : public views::View,
 
   // Attempt to login with the current field values.
   void Login();
+
+  views::Textfield* username_field_;
+  views::Textfield* password_field_;
+  views::Label* os_version_label_;
+  views::Label* title_label_;
+  views::Label* username_label_;
+  views::Label* password_label_;
+  views::Label* error_label_;
+  views::NativeButton* sign_in_button_;
+
+  // Handles asynchronously loading the version.
+  chromeos::VersionLoader loader_;
+
+  // Used to request the version.
+  CancelableRequestConsumer consumer_;
+
+  // Notifications receiver.
+  chromeos::ScreenObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginManagerView);
 };

@@ -10,6 +10,8 @@
 #include <X11/cursorfont.h>
 #include <X11/Xcursor/Xcursor.h>
 
+#include <string>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/file_path.h"
@@ -17,6 +19,7 @@
 #include "base/process_util.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/login/image_background.h"
+#include "chrome/browser/chromeos/login/login_manager_view.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/views/browser_dialogs.h"
@@ -31,8 +34,15 @@ using views::Background;
 using views::View;
 using views::Widget;
 
-static const int kLoginWidth = 700;
-static const int kLoginHeight = 350;
+namespace {
+
+const int kLoginWidth = 700;
+const int kLoginHeight = 350;
+
+// Names of screens to start login wizard with.
+const char kLoginManager[] = "login";
+
+}  // namespace
 
 namespace browser {
 
@@ -65,13 +75,14 @@ class LoginWizardNonClientFrameView : public views::NonClientFrameView {
 // Subclass of WindowGtk, for use as the top level login window.
 class LoginWizardWindow : public views::WindowGtk {
  public:
-  static LoginWizardWindow* CreateLoginWizardWindow() {
+  static LoginWizardWindow* CreateLoginWizardWindow(
+      const std::string start_screen_name) {
     LoginWizardView* login_wizard = new LoginWizardView();
     LoginWizardWindow* login_wizard_window =
         new LoginWizardWindow(login_wizard);
     login_wizard_window->GetNonClientView()->SetFrameView(
         new LoginWizardNonClientFrameView());
-    login_wizard->Init();
+    login_wizard->Init(start_screen_name);
     login_wizard_window->Init(NULL, gfx::Rect());
 
     // This keeps the window from flashing at startup.
@@ -98,9 +109,9 @@ class LoginWizardWindow : public views::WindowGtk {
 };
 
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
-void ShowLoginWizard() {
+void ShowLoginWizard(const std::string& start_screen_name) {
   views::WindowGtk* window =
-      LoginWizardWindow::CreateLoginWizardWindow();
+      LoginWizardWindow::CreateLoginWizardWindow(start_screen_name);
   window->Show();
   if (chromeos::LoginLibrary::EnsureLoaded()) {
     chromeos::LoginLibrary::Get()->EmitLoginPromptReady();
@@ -113,64 +124,107 @@ void ShowLoginWizard() {
 
 }  // namespace browser
 
-LoginWizardView::LoginWizardView() {
+///////////////////////////////////////////////////////////////////////////////
+// LoginWizardView, public:
+LoginWizardView::LoginWizardView()
+    : background_pixbuf_(NULL),
+      status_area_(NULL),
+      current_(NULL),
+      login_manager_(NULL) {
 }
 
 LoginWizardView::~LoginWizardView() {
   MessageLoop::current()->Quit();
 }
 
-void LoginWizardView::Init() {
-  InitWizardWindow();
-  // TODO(nkostylev): Select initial wizard view based on OOBE switch.
-  InitLoginWindow();
+void LoginWizardView::Init(const std::string& start_view_name) {
+  // Load and set the background.
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  background_pixbuf_ = rb.GetPixbufNamed(IDR_LOGIN_BACKGROUND);
+  set_background(new views::ImageBackground(background_pixbuf_));
+
+  // Store the dimensions of the background image to use it later.
+  int width = gdk_pixbuf_get_width(background_pixbuf_);
+  int height = gdk_pixbuf_get_height(background_pixbuf_);
+  dimensions_.SetSize(width, height);
+
+  InitStatusArea();
+
+  // Create and initialize all views, hidden.
+  InitLoginManager();
+
+  // Select the view to start with and show it.
+  if (start_view_name == kLoginManager) {
+    current_ = login_manager_;
+  } else {
+    // Default to login manager.
+    current_ = login_manager_;
+  }
+  current_->SetVisible(true);
 }
 
-gfx::Size LoginWizardView::GetPreferredSize() {
-  return dimensions_;
-}
-
-void LoginWizardView::OnLogin() {
+///////////////////////////////////////////////////////////////////////////////
+// LoginWizardView, ExitHandlers:
+void LoginWizardView::OnLoginSignInSelected() {
   if (window()) {
     window()->Close();
   }
 }
 
-void LoginWizardView::InitLoginWindow() {
-  LoginManagerView* login_view = new LoginManagerView();
-  login_view->set_observer(this);
-  login_view->SetBounds((dimensions_.width() - kLoginWidth) / 2,
-                        (dimensions_.height() - kLoginHeight) / 2,
-                        kLoginWidth,
-                        kLoginHeight);
-  AddChildView(login_view);
-}
-
-void LoginWizardView::InitWizardWindow() {
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  background_pixbuf_ = rb.GetPixbufNamed(IDR_LOGIN_BACKGROUND);
-  int width = gdk_pixbuf_get_width(background_pixbuf_);
-  int height = gdk_pixbuf_get_height(background_pixbuf_);
-  dimensions_.SetSize(width, height);
-  set_background(new views::ImageBackground(background_pixbuf_));
-
+///////////////////////////////////////////////////////////////////////////////
+// LoginWizardView, private:
+void LoginWizardView::InitStatusArea() {
   status_area_ = new chromeos::StatusAreaView(this);
   status_area_->Init();
   gfx::Size status_area_size = status_area_->GetPreferredSize();
+  // TODO(avayvod): Check this on RTL interface.
   status_area_->SetBounds(dimensions_.width() - status_area_size.width(), 0,
                           status_area_size.width(),
                           status_area_size.height());
   AddChildView(status_area_);
 }
 
+void LoginWizardView::InitLoginManager() {
+  login_manager_ = new LoginManagerView(this);
+  login_manager_->Init();
+  login_manager_->SetBounds((dimensions_.width() - kLoginWidth) / 2,
+                            (dimensions_.height() - kLoginHeight) / 2,
+                            kLoginWidth,
+                            kLoginHeight);
+  login_manager_->SetVisible(false);
+  AddChildView(login_manager_);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// LoginWizardView, chromeos::ScreenObserver overrides:
+void LoginWizardView::OnExit(ExitCodes exit_code) {
+  switch (exit_code) {
+    case LOGIN_SIGN_IN_SELECTED:
+      OnLoginSignInSelected();
+      break;
+    default:
+      NOTREACHED();
+  }
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// LoginWizardView, views::View overrides:
+gfx::Size LoginWizardView::GetPreferredSize() {
+  return dimensions_;
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// LoginWizardView, views::WindowDelegate overrides:
 views::View* LoginWizardView::GetContentsView() {
   return this;
 }
 
-// StatusAreaHost overrides.
+///////////////////////////////////////////////////////////////////////////////
+// LoginWizardView, StatusAreaHost overrides.
 gfx::NativeWindow LoginWizardView::GetNativeWindow() const {
   return window()->GetNativeWindow();
 }
+
 
 bool LoginWizardView::ShouldOpenButtonOptions(
     const views::View* button_view) const {

@@ -299,6 +299,7 @@
         'browser/chromeos/login/login_manager_view.h',
         'browser/chromeos/login/login_wizard_view.cc',
         'browser/chromeos/login/login_wizard_view.h',
+        'browser/chromeos/login/screen_observer.h',
         'browser/chromeos/login/user_manager.cc',
         'browser/chromeos/login/user_manager.h',
         'browser/chromeos/main_menu.cc',
