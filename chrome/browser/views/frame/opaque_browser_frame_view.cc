@@ -59,26 +59,15 @@ const int kTopResizeAdjust = 1;
 // In the window corners, the resize areas don't actually expand bigger, but the
 // 16 px at the end of each edge triggers diagonal resizing.
 const int kResizeAreaCornerSize = 16;
-// The titlebar never shrinks to less than 18 px tall, plus the height of the
-// frame border and any bottom edge.
-const int kTitlebarMinimumHeight = 18;
+// The titlebar never shrinks too short to show the caption button plus some
+// padding below it.
+const int kCaptionButtonHeightWithPadding = 19;
 // The icon is inset 2 px from the left frame border.
 const int kIconLeftSpacing = 2;
-// The icon takes up 16/25th of the available titlebar height.  (This is
-// expressed as two ints to avoid precision losses leading to off-by-one pixel
-// errors.)
-const int kIconHeightFractionNumerator = 16;
-const int kIconHeightFractionDenominator = 25;
-// The icon never shrinks below 16 px on a side.
-const int kIconMinimumSize = 16;
-// Because our frame border has a different "3D look" than Windows', with a less
-// cluttered top edge, we need to shift the icon up by 1 px in restored mode so
-// it looks more centered.
-const int kIconRestoredAdjust = 1;
+// The titlebar has a 2 px 3D edge along the top and bottom.
+const int kTitlebarTopAndBottomEdgeThickness = 2;
 // There is a 4 px gap between the icon and the title text.
 const int kIconTitleSpacing = 4;
-// The title text starts 2 px below the bottom of the top frame border.
-const int kTitleTopSpacing = 2;
 // There is a 5 px gap between the title text and the distributor logo (if
 // present) or caption buttons.
 const int kTitleLogoSpacing = 5;
@@ -246,8 +235,7 @@ gfx::Size OpaqueBrowserFrameView::GetMinimumSize() {
 
   views::WindowDelegate* d = frame_->GetWindow()->GetDelegate();
   int min_titlebar_width = (2 * FrameBorderThickness()) + kIconLeftSpacing +
-    (d->ShouldShowWindowIcon() ?
-        (IconSize(NULL, NULL, NULL) + kTitleLogoSpacing) : 0) +
+    (d->ShouldShowWindowIcon() ? (IconSize() + kTitleLogoSpacing) : 0) +
     ((distributor_logo_ && browser_view_->ShouldShowDistributorLogo()) ?
          (distributor_logo_->width() + kLogoCaptionSpacing) : 0);
 
@@ -485,8 +473,11 @@ int OpaqueBrowserFrameView::NonClientBorderThickness() const {
 
 int OpaqueBrowserFrameView::NonClientTopBorderHeight() const {
   views::Window* window = frame_->GetWindow();
-  if (window->GetDelegate()->ShouldShowWindowTitle())
-    return TitleCoordinates(NULL, NULL);
+  if (window->GetDelegate()->ShouldShowWindowTitle()) {
+    return std::max(IconSize() + FrameBorderThickness(),
+                    CaptionButtonY() + kCaptionButtonHeightWithPadding) +
+        TitlebarBottomThickness();
+  }
 
   if (browser_view_->IsTabStripVisible() && window->IsMaximized())
     return FrameBorderThickness() - kTabstripTopShadowThickness;
@@ -496,71 +487,46 @@ int OpaqueBrowserFrameView::NonClientTopBorderHeight() const {
        0 : kNonClientRestoredExtraThickness);
 }
 
-int OpaqueBrowserFrameView::UnavailablePixelsAtBottomOfNonClientHeight() const {
-  // Tricky: When a toolbar is edging the titlebar, it not only draws its own
-  // shadow and client edge, but an extra, light "shadow" pixel as well, which
-  // is treated as available space.  Thus the nonclient area actually _fails_ to
-  // include some available pixels, leading to a negative number here.
-  if (browser_view_->IsToolbarVisible())
-    return -kFrameShadowThickness;
-
-  return kFrameShadowThickness +
-      (frame_->GetWindow()->IsMaximized() ? 0 : kClientEdgeThickness);
+int OpaqueBrowserFrameView::CaptionButtonY() const {
+  // Maximized buttons start at window top so that even if their images aren't
+  // drawn flush with the screen edge, they still obey Fitts' Law.
+  return frame_->GetWindow()->IsMaximized() ?
+      FrameBorderThickness() : kFrameShadowThickness;
 }
 
-int OpaqueBrowserFrameView::TitleCoordinates(int* title_top_spacing_ptr,
-                                             int* title_thickness_ptr) const {
-  int frame_thickness = FrameBorderThickness();
-  int min_titlebar_height = kTitlebarMinimumHeight + frame_thickness;
-  int title_top_spacing = frame_thickness + kTitleTopSpacing;
-  // The bottom spacing should be the same apparent height as the top spacing.
-  // Because the actual top spacing height varies based on the system border
-  // thickness, we calculate this based on the restored top spacing and then
-  // adjust for maximized mode.  We also don't include the frame shadow here,
-  // since while it's part of the bottom spacing it will be added in at the end
-  // as necessary (when a toolbar is present, the "shadow" is actually drawn by
-  // the toolbar).
-  int title_bottom_spacing =
-      kFrameBorderThickness + kTitleTopSpacing - kFrameShadowThickness;
-  if (frame_->GetWindow()->IsMaximized()) {
-    // When we maximize, the top border appears to be chopped off; shift the
-    // title down to stay centered within the remaining space.
-    int title_adjust = (kFrameBorderThickness / 2);
-    title_top_spacing += title_adjust;
-    title_bottom_spacing -= title_adjust;
-  }
-  InitAppWindowResources();  // To make sure the title_font_ is loaded.
-  int title_thickness = std::max(title_font_->height(),
-      min_titlebar_height - title_top_spacing - title_bottom_spacing);
-  if (title_top_spacing_ptr)
-    *title_top_spacing_ptr = title_top_spacing;
-  if (title_thickness_ptr)
-    *title_thickness_ptr = title_thickness;
-  return title_top_spacing + title_thickness + title_bottom_spacing +
-      UnavailablePixelsAtBottomOfNonClientHeight();
+int OpaqueBrowserFrameView::TitlebarBottomThickness() const {
+  // When a toolbar is edging the titlebar, it draws its own bottom edge.
+  if (browser_view_->IsToolbarVisible())
+    return 0;
+
+  return kTitlebarTopAndBottomEdgeThickness +
+      (frame_->GetWindow()->IsMaximized() ? 0 : kClientEdgeThickness);
 }
 
 int OpaqueBrowserFrameView::RightEdge() const {
   return width() - FrameBorderThickness();
 }
 
-int OpaqueBrowserFrameView::IconSize(int* title_top_spacing_ptr,
-                                     int* title_thickness_ptr,
-                                     int* available_height_ptr) const {
-  // The usable height of the titlebar area is the total height minus the top
-  // resize border and any edge area we draw at its bottom.
-  int frame_thickness = FrameBorderThickness();
-  int top_height = TitleCoordinates(title_top_spacing_ptr, title_thickness_ptr);
-  int available_height = top_height - frame_thickness -
-      UnavailablePixelsAtBottomOfNonClientHeight();
-  if (available_height_ptr)
-    *available_height_ptr = available_height;
-
-  // The icon takes up a constant fraction of the available height, down to a
-  // minimum size, and is always an even number of pixels on a side (presumably
-  // to make scaled icons look better).  It's centered within the usable height.
-  return std::max((available_height * kIconHeightFractionNumerator /
-      kIconHeightFractionDenominator) / 2 * 2, kIconMinimumSize);
+int OpaqueBrowserFrameView::IconSize() const {
+#if defined(OS_WIN)
+  // This metric scales up if either the titlebar height or the titlebar font
+  // size are increased.
+  return GetSystemMetrics(SM_CYSMICON);
+#else
+  // Calculate the necessary height from the titlebar font size.
+  // The title text has 2 px of padding between it and the frame border on both
+  // top and bottom.
+  const int kTitleBorderSpacing = 2;
+  InitAppWindowResources();  // To make sure the title_font_ is loaded.
+  // The bottom spacing should be the same apparent height as the top spacing.
+  // The top spacing height is FrameBorderThickness() + kTitleBorderSpacing.  We
+  // omit the frame border portion because that's not part of the icon height.
+  // The bottom spacing, then, is kTitleBorderSpacing + kFrameBorderThickness to
+  // the bottom edge of the titlebar.  We omit TitlebarBottomThickness() because
+  // that's also not part of the icon height.
+  return kTitleBorderSpacing + title_font_->height() + kTitleBorderSpacing +
+      (kFrameBorderThickness - TitlebarBottomThickness());
+#endif
 }
 
 void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
@@ -936,10 +902,7 @@ void OpaqueBrowserFrameView::LayoutWindowControls() {
 #endif
   close_button_->SetImageAlignment(views::ImageButton::ALIGN_LEFT,
                                    views::ImageButton::ALIGN_BOTTOM);
-  // Maximized buttons start at window top so that even if their images aren't
-  // drawn flush with the screen edge, they still obey Fitts' Law.
-  int frame_thickness = FrameBorderThickness();
-  int caption_y = is_maximized ? frame_thickness : kFrameShadowThickness;
+  int caption_y = CaptionButtonY();
   // There should always be the same number of non-shadow pixels visible to the
   // side of the caption buttons.  In maximized mode we extend the rightmost
   // button to the screen corner to obey Fitts' Law.
@@ -1001,24 +964,30 @@ void OpaqueBrowserFrameView::LayoutTitleBar() {
   // window title based on its position.
   int frame_thickness = FrameBorderThickness();
   int icon_x = frame_thickness + kIconLeftSpacing;
-  int title_top_spacing, title_thickness, available_height;
-  int icon_size = 0;
+  int icon_size = IconSize();
+  // This next statement handles vertically centering the icon when the icon is
+  // shorter than the minimum space we reserve for the caption button.
+  // Practically, this never occurs except in maximized mode, since otherwise
+  // the minimum icon size supplied by Windows (16) + the frame border height
+  // (4) >= the minimum caption button space (19 + the frame shadow thickness
+  // (1)).  In maximized mode we want to bias rounding to put extra space above
+  // the icon, since below it is the 2 px 3D edge, which looks to the eye like
+  // additional space; hence the + 1 below.
+  int icon_y = frame_thickness + ((NonClientTopBorderHeight() -
+      frame_thickness - icon_size - TitlebarBottomThickness() + 1) / 2);
 
   views::WindowDelegate* d = frame_->GetWindow()->GetDelegate();
   if (d->ShouldShowWindowIcon()) {
-    icon_size =
-        IconSize(&title_top_spacing, &title_thickness, &available_height);
-    int icon_y = ((available_height - icon_size) / 2) + frame_thickness;
-
-    // Hack: Our frame border has a different "3D look" than Windows'.
-    // Theirs has a more complex gradient on the top that they push
-    // their icon/title below; then the maximized window cuts this off
-    // and the icon/title are centered in the remaining space.
-    // Because the apparent shape of our border is simpler, using the
-    // same positioning makes things look slightly uncentered with
-    // restored windows, so we come up to compensate.
+    // Hack: Our frame border has a different "3D look" than Windows'.  Theirs
+    // has a more complex gradient on the top that they push their icon/title
+    // below; then the maximized window cuts this off and the icon/title are
+    // centered in the remaining space.  Because the apparent shape of our
+    // border is simpler, using the same positioning makes things look slightly
+    // uncentered with restored windows, so we come up to compensate.  The frame
+    // border has a 2 px 3D edge plus some empty space, so we adjust by half the
+    // width of the empty space to center things.
     if (!frame_->GetWindow()->IsMaximized())
-      icon_y -= kIconRestoredAdjust;
+      icon_y -= (frame_thickness - kTitlebarTopAndBottomEdgeThickness) / 2;
 
     window_icon_->SetBounds(icon_x, icon_y, icon_size, icon_size);
   }
@@ -1026,12 +995,12 @@ void OpaqueBrowserFrameView::LayoutTitleBar() {
   // Size the title, if visible.
   if (d->ShouldShowWindowTitle()) {
     InitAppWindowResources();  // To make sure the title_font_ is loaded.
-    int title_x = icon_x + icon_size +
-        (d->ShouldShowWindowIcon() ? kIconTitleSpacing : 0);
-    title_bounds_.SetRect(title_x,
-        title_top_spacing + ((title_thickness - title_font_->height()) / 2),
+    int title_x = icon_x +
+        (d->ShouldShowWindowIcon() ? icon_size + kIconTitleSpacing : 0);
+    int title_height = title_font_->height();
+    title_bounds_.SetRect(title_x, icon_y + ((icon_size - title_height) / 2),
         std::max(0, logo_icon_->x() - kTitleLogoSpacing - title_x),
-        title_font_->height());
+        title_height);
   }
 }
 

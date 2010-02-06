@@ -83,26 +83,20 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // frame, any title area, and any connected client edge.
   int NonClientTopBorderHeight() const;
 
-  // The nonclient area at the top of the window may include some "unavailable"
-  // pixels at its bottom: a dark shadow along the bottom of the titlebar and a
-  // client edge.  These vary from mode to mode, so this function returns the
-  // number of such pixels the nonclient height includes.
-  int UnavailablePixelsAtBottomOfNonClientHeight() const;
+  // Returns the y-coordinate of the caption buttons.
+  int CaptionButtonY() const;
 
-  // Calculates multiple values related to title layout.  Returns the height of
-  // the entire titlebar including any connected client edge.
-  int TitleCoordinates(int* title_top_spacing_ptr,
-                       int* title_thickness_ptr) const;
+  // Returns the thickness of the nonclient portion of the 3D edge along the
+  // bottom of the titlebar.
+  int TitlebarBottomThickness() const;
 
   // Returns the right edge. This is the end the close button starts at (if a
   // close button is shown).
   int RightEdge() const;
 
-  // Calculates multiple values related to icon layout.  Returns the size of the
-  // icon (along one edge).
-  int IconSize(int* title_top_spacing_ptr,
-               int* title_thickness_ptr,
-               int* available_height_ptr) const;
+  // Returns the size of the titlebar icon.  This is used even when the icon is
+  // not shown, e.g. to set the titlebar height.
+  int IconSize() const;
 
   // Paint various sub-components of this view.  The *FrameBorder() functions
   // also paint the background of the titlebar area, since the top frame border
