@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef APP_MENUS_SIMPLE_MENU_MODEL_H_
 #define APP_MENUS_SIMPLE_MENU_MODEL_H_
@@ -74,6 +74,11 @@ class SimpleMenuModel : public MenuModel {
       int index, int command_id, int string_id, int group_id);
   void InsertSubMenuAt(int index, const string16& label, MenuModel* model);
   void InsertSubMenuWithStringIdAt(int index, int string_id, MenuModel* model);
+
+  // Clears all items. Note that it does not free MenuModel of submenu.
+  void Clear() {
+    items_.clear();
+  }
 
   // Returns the index of the item that has the given |command_id|. Returns
   // -1 if not found.

@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "views/controls/menu/native_menu_win.h"
 
@@ -334,6 +334,8 @@ void NativeMenuWin::CancelMenu() {
 
 void NativeMenuWin::Rebuild() {
   ResetNativeMenu();
+  items_.clear();
+
   owner_draw_ = model_->HasIcons() || owner_draw_;
   first_item_index_ = model_->GetFirstItemIndex(GetNativeMenu());
   for (int menu_index = first_item_index_;

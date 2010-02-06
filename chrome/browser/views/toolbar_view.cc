@@ -706,5 +706,7 @@ void ToolbarView::RunPageMenu(const gfx::Point& pt) {
 }
 
 void ToolbarView::RunAppMenu(const gfx::Point& pt) {
+  if (app_menu_model_->BuildProfileSubMenu())
+    app_menu_menu_->Rebuild();
   app_menu_menu_->RunMenuAt(pt, views::Menu2::ALIGN_TOPRIGHT);
 }
