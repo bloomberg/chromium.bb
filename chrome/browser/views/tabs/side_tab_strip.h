@@ -15,7 +15,7 @@ class SideTabStripModel {
  public:
   // Returns metadata about the tab at the specified index.
   virtual SkBitmap GetIcon(int index) const = 0;
-  virtual std::wstring GetTitle(int index) const = 0;
+  virtual string16 GetTitle(int index) const = 0;
   virtual bool IsSelected(int index) const = 0;
 };
 
@@ -50,7 +50,7 @@ class SideTabStrip : public BaseTabStrip,
   void UpdateTabAt(int index);
 
   // SideTabModel implementation:
-  virtual std::wstring GetTitle(SideTab* tab) const;
+  virtual string16 GetTitle(SideTab* tab) const;
   virtual SkBitmap GetIcon(SideTab* tab) const;
   virtual bool IsSelected(SideTab* tab) const;
 

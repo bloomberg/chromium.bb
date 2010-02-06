@@ -26,7 +26,7 @@ SkBitmap BrowserTabStripController::GetIcon(int index) const {
   return model_->GetTabContentsAt(index)->GetFavIcon();
 }
 
-std::wstring BrowserTabStripController::GetTitle(int index) const {
+string16 BrowserTabStripController::GetTitle(int index) const {
   return model_->GetTabContentsAt(index)->GetTitle();
 }
 

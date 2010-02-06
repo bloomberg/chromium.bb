@@ -67,7 +67,7 @@ void SideTabStrip::UpdateTabAt(int index) {
 ////////////////////////////////////////////////////////////////////////////////
 // SideTabStrip, SideTabModel implementation:
 
-std::wstring SideTabStrip::GetTitle(SideTab* tab) const {
+string16 SideTabStrip::GetTitle(SideTab* tab) const {
   return model_->GetTitle(GetIndexOfSideTab(tab));
 }
 

@@ -18,7 +18,7 @@ class BrowserTabStripController : public SideTabStripModel,
 
   // SideTabStripModel implementation:
   virtual SkBitmap GetIcon(int index) const;
-  virtual std::wstring GetTitle(int index) const;
+  virtual string16 GetTitle(int index) const;
   virtual bool IsSelected(int index) const;
 
   // TabStripModelObserver implementation:

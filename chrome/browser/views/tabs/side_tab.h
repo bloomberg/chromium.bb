@@ -14,7 +14,7 @@ class SideTab;
 class SideTabModel {
  public:
   // Returns metadata about the specified |tab|.
-  virtual std::wstring GetTitle(SideTab* tab) const = 0;
+  virtual string16 GetTitle(SideTab* tab) const = 0;
   virtual SkBitmap GetIcon(SideTab* tab) const = 0;
   virtual bool IsSelected(SideTab* tab) const = 0;
 };
