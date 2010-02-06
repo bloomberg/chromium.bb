@@ -26,6 +26,7 @@
 #include "chrome/common/x11_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "views/window/hit_test.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
 #include "views/window/window_gtk.h"
@@ -61,7 +62,9 @@ class LoginWizardNonClientFrameView : public views::NonClientFrameView {
   }
 
   // There is no non client area.
-  virtual int NonClientHitTest(const gfx::Point& point) { return 0; }
+  virtual int NonClientHitTest(const gfx::Point& point) {
+    return bounds().Contains(point) ? HTCLIENT : HTNOWHERE;
+  }
 
   // There is no non client area.
   virtual void GetWindowMask(const gfx::Size& size,

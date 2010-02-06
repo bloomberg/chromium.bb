@@ -92,18 +92,7 @@ gfx::Rect NonClientView::GetWindowBoundsForClientBounds(
 }
 
 int NonClientView::NonClientHitTest(const gfx::Point& point) {
-  // Sanity check.
-  if (!bounds().Contains(point))
-    return HTNOWHERE;
-
-  // The ClientView gets first crack, since it overlays the NonClientFrameView
-  // in the display stack.
-  int frame_component = client_view_->NonClientHitTest(point);
-  if (frame_component != HTNOWHERE)
-    return frame_component;
-
-  // Finally ask the NonClientFrameView. It's at the back of the display stack
-  // so it gets asked last.
+  // The NonClientFrameView is responsible for also asking the ClientView.
   return frame_view_->NonClientHitTest(point);
 }
 

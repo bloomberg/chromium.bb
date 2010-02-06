@@ -35,7 +35,7 @@ gfx::Rect NativeFrameView::GetWindowBoundsForClientBounds(
 }
 
 int NativeFrameView::NonClientHitTest(const gfx::Point& point) {
-  return HTNOWHERE;
+  return frame_->GetClientView()->NonClientHitTest(point);
 }
 
 void NativeFrameView::GetWindowMask(const gfx::Size& size,

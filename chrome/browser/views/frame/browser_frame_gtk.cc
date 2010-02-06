@@ -38,7 +38,7 @@ class PopupNonClientFrameView : public BrowserNonClientFrameView {
     return client_bounds;
   }
   virtual int NonClientHitTest(const gfx::Point& point) {
-    return HTNOWHERE;
+    return bounds().Contains(point) ? HTCLIENT : HTNOWHERE;
   }
   virtual void GetWindowMask(const gfx::Size& size,
                              gfx::Path* window_mask) {}

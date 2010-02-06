@@ -189,10 +189,8 @@ class BrowserViewLayout : public ::BrowserViewLayout {
     views::View::ConvertPointToView(
         browser_view_->GetParent(), browser_view_,
         &point_in_browser_view_coords);
-    if (IsPointInViewsInTitleArea(point_in_browser_view_coords)) {
-      return HTCLIENT;
-    }
-    return ::BrowserViewLayout::NonClientHitTest(point);
+    return IsPointInViewsInTitleArea(point_in_browser_view_coords) ?
+        HTCLIENT : ::BrowserViewLayout::NonClientHitTest(point);
   }
 
  private:

@@ -139,6 +139,15 @@ gfx::Rect CustomFrameView::GetWindowBoundsForClientBounds(
 }
 
 int CustomFrameView::NonClientHitTest(const gfx::Point& point) {
+  // Sanity check.
+  if (!bounds().Contains(point))
+    return HTNOWHERE;
+
+  // First check the ClientView.
+  int frame_component = frame_->GetClientView()->NonClientHitTest(point);
+  if (frame_component != HTNOWHERE)
+    return frame_component;
+
   // Then see if the point is within any of the window controls.
   if (close_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(point))
     return HTCLOSE;

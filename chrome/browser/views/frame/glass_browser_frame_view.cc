@@ -158,15 +158,25 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   if (!browser_view_->IsBrowserTypeNormal() || !bounds().Contains(point))
     return HTNOWHERE;
 
+  // See if we're in the sysmenu region.  We still have to check the tabstrip
+  // first so that clicks in a tab don't get treated as sysmenu clicks.
+  int frame_border_thickness = FrameBorderThickness();
+  int nonclient_border_thickness = NonClientBorderThickness();
+  gfx::Rect sysmenu_rect(nonclient_border_thickness, frame_border_thickness,
+                         GetSystemMetrics(SM_CXSMICON),
+                         GetSystemMetrics(SM_CYSMICON));
+  bool in_sysmenu = sysmenu_rect.Contains(point);
+
   int frame_component =
       frame_->GetWindow()->GetClientView()->NonClientHitTest(point);
+  if (in_sysmenu)
+    return (frame_component == HTCLIENT) ? HTCLIENT : HTSYSMENU;
   if (frame_component != HTNOWHERE)
     return frame_component;
 
-  int border_thickness = FrameBorderThickness();
-  int window_component = GetHTComponentForFrame(point, border_thickness,
-      NonClientBorderThickness(), border_thickness,
-      kResizeAreaCornerSize - border_thickness,
+  int window_component = GetHTComponentForFrame(point, frame_border_thickness,
+      nonclient_border_thickness, frame_border_thickness,
+      kResizeAreaCornerSize - frame_border_thickness,
       frame_->GetWindow()->GetDelegate()->CanResize());
   // Fall back to the caption if no other component matches.
   return (window_component == HTNOWHERE) ? HTCAPTION : window_component;

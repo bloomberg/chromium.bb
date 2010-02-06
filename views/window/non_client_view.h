@@ -56,6 +56,11 @@ class NonClientFrameView : public View {
 
   virtual gfx::Rect GetWindowBoundsForClientBounds(
       const gfx::Rect& client_bounds) const = 0;
+
+  // This function must ask the ClientView to do a hittest.  We don't do this in
+  // the parent NonClientView because that makes it more difficult to calculate
+  // hittests for regions that are partially obscured by the ClientView, e.g.
+  // HTSYSMENU.
   virtual int NonClientHitTest(const gfx::Point& point) = 0;
   virtual void GetWindowMask(const gfx::Size& size,
                              gfx::Path* window_mask) = 0;
