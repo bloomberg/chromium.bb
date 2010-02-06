@@ -16,9 +16,6 @@ export_tarball.py /foo/bar
 The above will create file /foo/bar.tar.bz2.
 """
 
-from __future__ import with_statement
-
-import contextlib
 import optparse
 import os
 import sys
@@ -74,9 +71,12 @@ def main(argv):
 
     return False
 
-  with contextlib.closing(tarfile.open(output_fullname, 'w:bz2')) as archive:
+  archive = tarfile.open(output_fullname, 'w:bz2')
+  try:
     archive.add(GetSourceDirectory(), arcname=output_basename,
                 exclude=ShouldExcludePath)
+  finally:
+    archive.close()
 
   return 0
 
