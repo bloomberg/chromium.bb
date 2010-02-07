@@ -222,21 +222,6 @@ class TabStripGtk::TabAnimation : public AnimationDelegate {
                                    &end_selected_width_);
   }
 
-  // Returns a value between |start| and |target| based on the current
-  // animation.
-  // TODO(sky): move this to animation.
-  int AnimationPosition(int start, int target) const {
-    return static_cast<int>(AnimationPosition(static_cast<double>(start),
-                                              static_cast<double>(target)));
-  }
-
-  // Returns a value between |start| and |target| based on the current
-  // animation.
-  // TODO(sky): move this to animation.
-  double AnimationPosition(double start, double target) const {
-    return start + (target - start) * animation_.GetCurrentValue();
-  }
-
   TabStripGtk* tabstrip_;
   SlideAnimation animation_;
 
@@ -355,8 +340,10 @@ class RemoveTabAnimation : public TabStripGtk::TabAnimation {
     if (index == index_) {
       // The tab(s) being removed are gradually shrunken depending on the state
       // of the animation.
-      if (tab->is_pinned())
-        return AnimationPosition(TabGtk::GetPinnedWidth(), -kTabHOffset);
+      if (tab->is_pinned()) {
+        return animation_.CurrentValueBetween(TabGtk::GetPinnedWidth(),
+                                              -kTabHOffset);
+      }
 
       // Removed animated Tabs are never selected.
       double start_width = start_unselected_width_;
@@ -365,7 +352,7 @@ class RemoveTabAnimation : public TabStripGtk::TabAnimation {
       double target_width =
           std::max(abs(kTabHOffset),
                    TabGtk::GetMinimumUnselectedSize().width() + kTabHOffset);
-      return AnimationPosition(start_width, target_width);
+      return animation_.CurrentValueBetween(start_width, target_width);
     }
 
     if (tab->is_pinned())
@@ -486,10 +473,13 @@ class ResizeLayoutAnimation : public TabStripGtk::TabAnimation {
     if (tab->is_pinned())
       return TabGtk::GetPinnedWidth();
 
-    if (tab->IsSelected())
-      return AnimationPosition(start_selected_width_, end_selected_width_);
+    if (tab->IsSelected()) {
+      return animation_.CurrentValueBetween(start_selected_width_,
+                                            end_selected_width_);
+    }
 
-    return AnimationPosition(start_unselected_width_, end_unselected_width_);
+    return animation_.CurrentValueBetween(start_unselected_width_,
+                                          end_unselected_width_);
   }
 
  private:

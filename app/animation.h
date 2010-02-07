@@ -11,6 +11,10 @@
 
 class Animation;
 
+namespace gfx {
+class Rect;
+}
+
 // AnimationDelegate
 //
 //  Implement this interface when you want to receive notifications about the
@@ -77,6 +81,13 @@ class Animation {
   // however subclasses can override this to provide others.
   virtual double GetCurrentValue() const;
 
+  // Convenience for returning a value between |start| and |target| based on
+  // the current value. This is (target - start) * GetCurrentValue() + start.
+  double CurrentValueBetween(double start, double target) const;
+  int CurrentValueBetween(int start, int target) const;
+  gfx::Rect CurrentValueBetween(const gfx::Rect& start_bounds,
+                                const gfx::Rect& target_bounds) const;
+
   // Start the animation.
   void Start();
 
@@ -97,6 +108,9 @@ class Animation {
   // Looks at session type (e.g. remote desktop) and accessibility settings
   // to give guidance for heavy animations such as "start download" arrow.
   static bool ShouldRenderRichAnimation();
+
+  // Sets the delegate.
+  void set_delegate(AnimationDelegate* delegate) { delegate_ = delegate; }
 
  protected:
   // Overriddable, called by Run.

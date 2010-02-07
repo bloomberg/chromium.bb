@@ -65,15 +65,8 @@ class Grid : public views::View, public AnimationDelegate {
   // Returns the bounds of the specified cell.
   gfx::Rect CellBounds(int index);
 
-  // Returns the value based on the current animation. |start| gives the
-  // starting coordinate and |target| the target coordinate. The resulting
-  // value is between |start| and |target| based on the current animation.
-  int AnimationPosition(int start, int target);
-
-  // Convenience for returning a rectangle between |start_bounds| and
-  // |target_bounds| based on the current animation.
-  gfx::Rect AnimationPosition(const gfx::Rect& start_bounds,
-                              const gfx::Rect& target_bounds);
+  // Returns the animation.
+  const SlideAnimation& animation() { return animation_; }
 
   // View overrides.
   virtual void ViewHierarchyChanged(bool is_add,

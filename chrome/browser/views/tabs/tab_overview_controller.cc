@@ -209,7 +209,7 @@ void TabOverviewController::GridAnimationProgressed() {
   // of the view shrinking in size.
   container_->SchedulePaint();
   container_->SetBounds(
-      grid_->AnimationPosition(start_bounds_, target_bounds_));
+      grid_->animation().CurrentValueBetween(start_bounds_, target_bounds_));
   container_->SchedulePaint();
 
   // Update the position of the dragged cell.

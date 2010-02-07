@@ -4,6 +4,7 @@
 
 #include "app/animation.h"
 
+#include "base/gfx/rect.h"
 #include "base/message_loop.h"
 
 #if defined(OS_WIN)
@@ -45,6 +46,25 @@ void Animation::Reset() {
 double Animation::GetCurrentValue() const {
   // Default is linear relationship, subclass to adapt.
   return state_;
+}
+
+double Animation::CurrentValueBetween(double start, double target) const {
+  return start + (target - start) * GetCurrentValue();
+}
+
+int Animation::CurrentValueBetween(int start, int target) const {
+  return static_cast<int>(CurrentValueBetween(static_cast<double>(start),
+                                              static_cast<double>(target)));
+}
+
+gfx::Rect Animation::CurrentValueBetween(const gfx::Rect& start_bounds,
+                                         const gfx::Rect& target_bounds) const {
+  return gfx::Rect(CurrentValueBetween(start_bounds.x(), target_bounds.x()),
+                   CurrentValueBetween(start_bounds.y(), target_bounds.y()),
+                   CurrentValueBetween(start_bounds.width(),
+                                       target_bounds.width()),
+                   CurrentValueBetween(start_bounds.height(),
+                                       target_bounds.height()));
 }
 
 void Animation::Start() {

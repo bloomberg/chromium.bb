@@ -241,21 +241,6 @@ class TabStrip::TabAnimation : public AnimationDelegate {
                                    &end_selected_width_);
   }
 
-  // Returns a value between |start| and |target| based on the current
-  // animation.
-  // TODO(sky): move this to animation.
-  int AnimationPosition(int start, int target) const {
-    return static_cast<int>(AnimationPosition(static_cast<double>(start),
-                                              static_cast<double>(target)));
-  }
-
-  // Returns a value between |start| and |target| based on the current
-  // animation.
-  // TODO(sky): move this to animation.
-  double AnimationPosition(double start, double target) const {
-    return start + (target - start) * animation_.GetCurrentValue();
-  }
-
   TabStrip* tabstrip_;
   SlideAnimation animation_;
 
@@ -376,8 +361,10 @@ class TabStrip::RemoveTabAnimation : public TabStrip::TabAnimation {
       // The tab(s) being removed are gradually shrunken depending on the state
       // of the animation.
       // Removed animated Tabs are never selected.
-      if (tab->mini())
-        return AnimationPosition(Tab::GetMiniWidth(), -kTabHOffset);
+      if (tab->mini()) {
+        return animation_.CurrentValueBetween(Tab::GetMiniWidth(),
+                                              -kTabHOffset);
+      }
 
       double start_width = start_unselected_width_;
       // Make sure target_width is at least abs(kTabHOffset), otherwise if
@@ -385,7 +372,7 @@ class TabStrip::RemoveTabAnimation : public TabStrip::TabAnimation {
       double target_width =
           std::max(abs(kTabHOffset),
                    Tab::GetMinimumUnselectedSize().width() + kTabHOffset);
-      return AnimationPosition(start_width, target_width);
+      return animation_.CurrentValueBetween(start_width, target_width);
     }
 
     if (tab->mini())
@@ -534,10 +521,13 @@ class TabStrip::ResizeLayoutAnimation : public TabStrip::TabAnimation {
     if (tab->mini())
       return Tab::GetMiniWidth();
 
-    if (tab->IsSelected())
-      return AnimationPosition(start_selected_width_, end_selected_width_);
+    if (tab->IsSelected()) {
+      return animation_.CurrentValueBetween(start_selected_width_,
+                                            end_selected_width_);
+    }
 
-    return AnimationPosition(start_unselected_width_, end_unselected_width_);
+    return animation_.CurrentValueBetween(start_unselected_width_,
+                                          end_unselected_width_);
   }
 
  private:
@@ -591,21 +581,25 @@ class TabStrip::MiniTabAnimation : public TabStrip::TabAnimation {
 
     if (index == index_) {
       if (tab->mini()) {
-        return AnimationPosition(
+        return animation_.CurrentValueBetween(
             start_selected_width_,
             static_cast<double>(Tab::GetMiniWidth()));
       } else {
-        return AnimationPosition(static_cast<double>(Tab::GetMiniWidth()),
-                                 end_selected_width_);
+        return animation_.CurrentValueBetween(
+            static_cast<double>(Tab::GetMiniWidth()),
+            end_selected_width_);
       }
     } else if (tab->mini()) {
       return Tab::GetMiniWidth();
     }
 
-    if (tab->IsSelected())
-      return AnimationPosition(start_selected_width_, end_selected_width_);
+    if (tab->IsSelected()) {
+      return animation_.CurrentValueBetween(start_selected_width_,
+                                            end_selected_width_);
+    }
 
-    return AnimationPosition(start_unselected_width_, end_unselected_width_);
+    return animation_.CurrentValueBetween(start_unselected_width_,
+                                          end_unselected_width_);
   }
 
  private:
@@ -649,9 +643,10 @@ class TabStrip::MiniMoveAnimation : public TabStrip::TabAnimation {
     TabAnimation::AnimationProgressed(animation);
 
     // Then special case the position of the tab being moved.
-    int x = AnimationPosition(start_bounds_.x(), target_bounds_.x());
-    int width = AnimationPosition(start_bounds_.width(),
-                                  target_bounds_.width());
+    int x = animation_.CurrentValueBetween(start_bounds_.x(),
+                                           target_bounds_.x());
+    int width = animation_.CurrentValueBetween(start_bounds_.width(),
+                                               target_bounds_.width());
     gfx::Rect tab_bounds(x, start_bounds_.y(), width,
                          start_bounds_.height());
     tab_->SetBounds(tab_bounds);
@@ -666,16 +661,18 @@ class TabStrip::MiniMoveAnimation : public TabStrip::TabAnimation {
     if (to_index_ < from_index_) {
       // The tab was mini.
       if (index == to_index_) {
-        double current_size = AnimationPosition(0, target_bounds_.width());
+        double current_size =
+            animation_.CurrentValueBetween(0, target_bounds_.width());
         if (current_size < -kTabHOffset)
           return -(current_size + kTabHOffset);
       } else if (index == from_index_ + 1) {
-        return AnimationPosition(start_bounds_.width(), 0);
+        return animation_.CurrentValueBetween(start_bounds_.width(), 0);
       }
     } else {
       // The tab was made a normal tab.
       if (index == from_index_) {
-        return AnimationPosition(Tab::GetMiniWidth() + kTabHOffset, 0);
+        return animation_.CurrentValueBetween(Tab::GetMiniWidth() +
+                                              kTabHOffset, 0);
       }
     }
     return 0;
@@ -689,15 +686,18 @@ class TabStrip::MiniMoveAnimation : public TabStrip::TabAnimation {
     Tab* tab = tabstrip_->GetTabAt(index);
 
     if (index == to_index_)
-      return AnimationPosition(0, target_bounds_.width());
+      return animation_.CurrentValueBetween(0, target_bounds_.width());
 
     if (tab->mini())
       return Tab::GetMiniWidth();
 
-    if (tab->IsSelected())
-      return AnimationPosition(start_selected_width_, end_selected_width_);
+    if (tab->IsSelected()) {
+      return animation_.CurrentValueBetween(start_selected_width_,
+                                            end_selected_width_);
+    }
 
-    return AnimationPosition(start_unselected_width_, end_unselected_width_);
+    return animation_.CurrentValueBetween(start_unselected_width_,
+                                          end_unselected_width_);
   }
 
  private:
