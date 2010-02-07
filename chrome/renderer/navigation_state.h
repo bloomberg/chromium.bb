@@ -19,12 +19,16 @@
 class NavigationState : public WebKit::WebDataSource::ExtraData {
  public:
   enum LoadType {
-    UNDEFINED_LOAD,  // Not yet initialized.
-    RELOAD,          // User pressed reload.
-    HISTORY_LOAD,    // Back or forward.
-    NORMAL_LOAD,     // User entered URL, or omnibox search.
-    LINK_LOAD,       // Includes links, submits, location.reload().
-    LOAD_TYPE_MAX    // Bounding value for this enum.
+    UNDEFINED_LOAD,            // Not yet initialized.
+    RELOAD,                    // User pressed reload.
+    HISTORY_LOAD,              // Back or forward.
+    NORMAL_LOAD,               // User entered URL, or omnibox search.
+    LINK_LOAD,                 // (deprecated) Included next 4 categories.
+    LINK_LOAD_NORMAL,          // Commonly following of link.
+    LINK_LOAD_RELOAD,          // JS/link directed reload.
+    LINK_LOAD_CACHE_STALE_OK,  // back/forward or encoding change.
+    LINK_LOAD_CACHE_ONLY,      // Allow stale data (avoid doing a re-post)
+    kLoadTypeMax               // Bounding value for this enum.
   };
 
   static NavigationState* CreateBrowserInitiated(

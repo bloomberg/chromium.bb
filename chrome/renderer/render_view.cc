@@ -2251,11 +2251,22 @@ void RenderView::didCreateDataSource(WebFrame* frame, WebDataSource* ds) {
   NavigationState* state = content_initiated ?
       NavigationState::CreateContentInitiated() :
       pending_navigation_state_.release();
-  // TODO(jar): We may need to split up LINK_LOAD into several categories, based
-  // on cache policy (not that location.reload() forces cache to be avoided).
-  // Without the distinction, the distribution may be significantly bimodal.
-  if (content_initiated)
-    state->set_load_type(NavigationState::LINK_LOAD);
+  if (content_initiated) {
+    switch (ds->request().cachePolicy()) {
+      case WebURLRequest::UseProtocolCachePolicy:  // normal load.
+        state->set_load_type(NavigationState::LINK_LOAD_NORMAL);
+        break;
+      case WebURLRequest::ReloadIgnoringCacheData:  // reload.
+        state->set_load_type(NavigationState::LINK_LOAD_RELOAD);
+        break;
+      case WebURLRequest::ReturnCacheDataElseLoad:  // allow stale data.
+        state->set_load_type(NavigationState::LINK_LOAD_CACHE_STALE_OK);
+        break;
+      case WebURLRequest::ReturnCacheDataDontLoad:  // Don't re-post.
+        state->set_load_type(NavigationState::LINK_LOAD_CACHE_ONLY);
+        break;
+    }
+  }
 
   state->set_user_script_idle_scheduler(
       new UserScriptIdleScheduler(this, frame));
@@ -3186,7 +3197,8 @@ bool RenderView::AllowContentType(ContentSettingsType settings_type,
   if (!enabled_per_settings)
     return false;
   // CONTENT_SETTING_ASK is only valid for cookies.
-  if (current_content_settings_.settings[settings_type] == CONTENT_SETTING_BLOCK) {
+  if (current_content_settings_.settings[settings_type] ==
+      CONTENT_SETTING_BLOCK) {
     if (!content_blocked_[settings_type]) {
       content_blocked_[settings_type] = true;
       Send(new ViewHostMsg_ContentBlocked(routing_id_, settings_type));
@@ -3880,7 +3892,7 @@ void RenderView::DumpLoadHistograms() const {
 
   NavigationState::LoadType load_type = navigation_state->load_type();
   UMA_HISTOGRAM_ENUMERATION("Renderer4.LoadType", load_type,
-                        NavigationState::LOAD_TYPE_MAX);
+                            NavigationState::kLoadTypeMax);
 
   Time request = navigation_state->request_time();
   Time start = navigation_state->start_load_time();
@@ -3909,34 +3921,80 @@ void RenderView::DumpLoadHistograms() const {
   static const TimeDelta kBeginToFinishDocMin(TimeDelta::FromMilliseconds(10));
   static const TimeDelta kBeginToFinishDocMax(TimeDelta::FromMinutes(10));
   static const size_t kBeginToFinishDocBucketCount(100);
-
   TimeDelta begin_to_finish_doc = finish_doc - begin;
   UMA_HISTOGRAM_MEDIUM_TIMES("Renderer4.BeginToFinishDoc", begin_to_finish_doc);
+
+  static const TimeDelta kBeginToFinishMin(TimeDelta::FromMilliseconds(10));
+  static const TimeDelta kBeginToFinishMax(TimeDelta::FromMinutes(10));
+  static const size_t kBeginToFinishBucketCount(100);
+  TimeDelta begin_to_finish = finish_doc - begin;
+  UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinish", begin_to_finish,
+      kBeginToFinishMin, kBeginToFinishMax, kBeginToFinishBucketCount);
+
   switch (load_type) {
     case NavigationState::UNDEFINED_LOAD:
       UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinishDoc_UndefLoad",
            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
            kBeginToFinishDocBucketCount);
+      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinish_UndefLoad",
+           begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
+           kBeginToFinishBucketCount);
       break;
     case NavigationState::RELOAD:
       UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinishDoc_Reload",
            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
            kBeginToFinishDocBucketCount);
+      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinish_Reload",
+           begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
+           kBeginToFinishBucketCount);
       break;
     case NavigationState::HISTORY_LOAD:
       UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinishDoc_HistoryLoad",
            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
            kBeginToFinishDocBucketCount);
+      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinish_HistoryLoad",
+           begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
+           kBeginToFinishBucketCount);
       break;
     case NavigationState::NORMAL_LOAD:
       UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinishDoc_NormalLoad",
            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
            kBeginToFinishDocBucketCount);
+      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinish_NormalLoad",
+           begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
+           kBeginToFinishBucketCount);
       break;
-    case NavigationState::LINK_LOAD:
-      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinishDoc_LinkLoad",
+    case NavigationState::LINK_LOAD_NORMAL:
+      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinishDoc_LinkLoadNormal",
            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
            kBeginToFinishDocBucketCount);
+      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinish_LinkLoadNormal",
+           begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
+           kBeginToFinishBucketCount);
+      break;
+    case NavigationState::LINK_LOAD_RELOAD:
+      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinishDoc_LinkLoadReload",
+           begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
+           kBeginToFinishDocBucketCount);
+      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinish_LinkLoadReload",
+           begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
+           kBeginToFinishBucketCount);
+      break;
+    case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinishDoc_LinkLoadStaleOk",
+           begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
+           kBeginToFinishDocBucketCount);
+      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinish_LinkLoadStaleOk",
+           begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
+           kBeginToFinishBucketCount);
+      break;
+    case NavigationState::LINK_LOAD_CACHE_ONLY:
+      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinishDoc_LinkLoadCacheOnly",
+           begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
+           kBeginToFinishDocBucketCount);
+      UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinish_LinkLoadCacheOnly",
+           begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
+           kBeginToFinishBucketCount);
       break;
     default:
       break;
@@ -3951,12 +4009,40 @@ void RenderView::DumpLoadHistograms() const {
             "Renderer4.BeginToFinishDoc_NormalLoad", "DnsImpact"),
             begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
             kBeginToFinishDocBucketCount);
-        break;
-      case NavigationState::LINK_LOAD:
         UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinishDoc_LinkLoad", "DnsImpact"),
+            "Renderer4.BeginToFinish_NormalLoad", "DnsImpact"),
+            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
+            kBeginToFinishBucketCount);
+        break;
+      case NavigationState::LINK_LOAD_NORMAL:
+        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
+            "Renderer4.BeginToFinishDoc_LinkLoadNormal", "DnsImpact"),
             begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
             kBeginToFinishDocBucketCount);
+        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
+            "Renderer4.BeginToFinish_LinkLoadNormal", "DnsImpact"),
+            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
+            kBeginToFinishBucketCount);
+        break;
+      case NavigationState::LINK_LOAD_RELOAD:
+        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
+            "Renderer4.BeginToFinishDoc_LinkLoadReload", "DnsImpact"),
+            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
+            kBeginToFinishDocBucketCount);
+        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
+            "Renderer4.BeginToFinish_LinkLoadReload", "DnsImpact"),
+            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
+            kBeginToFinishBucketCount);
+        break;
+      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
+            "Renderer4.BeginToFinishDoc_LinkLoadStaleOk", "DnsImpact"),
+            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
+            kBeginToFinishDocBucketCount);
+        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
+            "Renderer4.BeginToFinish_LinkLoadStaleOk", "DnsImpact"),
+            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
+            kBeginToFinishBucketCount);
         break;
       default:
         break;
@@ -3973,9 +4059,27 @@ void RenderView::DumpLoadHistograms() const {
             begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
             kBeginToFinishDocBucketCount);
         break;
-      case NavigationState::LINK_LOAD:
+      case NavigationState::LINK_LOAD_NORMAL:
         UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinishDoc_LinkLoad", "GlobalSdch"),
+            "Renderer4.BeginToFinishDoc_LinkLoadNormal", "GlobalSdch"),
+            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
+            kBeginToFinishDocBucketCount);
+        break;
+      case NavigationState::LINK_LOAD_RELOAD:
+        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
+            "Renderer4.BeginToFinishDoc_LinkLoadReload", "GlobalSdch"),
+            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
+            kBeginToFinishDocBucketCount);
+        break;
+      case NavigationState::LINK_LOAD_CACHE_STALE_OK:
+        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
+            "Renderer4.BeginToFinishDoc_LinkLoadCacheStaleOk", "GlobalSdch"),
+            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
+            kBeginToFinishDocBucketCount);
+        break;
+      case NavigationState::LINK_LOAD_CACHE_ONLY:
+        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
+            "Renderer4.BeginToFinishDoc_LinkLoadCacheOnly", "GlobalSdch"),
             begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
             kBeginToFinishDocBucketCount);
         break;
@@ -3995,9 +4099,15 @@ void RenderView::DumpLoadHistograms() const {
             begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
             kBeginToFinishDocBucketCount);
         break;
-      case NavigationState::LINK_LOAD:
+      case NavigationState::LINK_LOAD_NORMAL:
         UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinishDoc_LinkLoad", "SocketLateBinding"),
+            "Renderer4.BeginToFinishDoc_LinkLoadNormal", "SocketLateBinding"),
+            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
+            kBeginToFinishDocBucketCount);
+        break;
+      case NavigationState::LINK_LOAD_RELOAD:
+        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
+            "Renderer4.BeginToFinishDoc_LinkLoadReload", "SocketLateBinding"),
             begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
             kBeginToFinishDocBucketCount);
         break;
@@ -4008,19 +4118,13 @@ void RenderView::DumpLoadHistograms() const {
 
   static bool use_cache_histogram1(FieldTrialList::Find("CacheSize") &&
       !FieldTrialList::Find("CacheSize")->group_name().empty());
-  if (use_cache_histogram1 && NavigationState::LINK_LOAD == load_type)
+  if (use_cache_histogram1 && NavigationState::LINK_LOAD_NORMAL <= load_type &&
+      NavigationState::LINK_LOAD_CACHE_ONLY >= load_type)
     UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
         "Renderer4.BeginToFinishDoc_LinkLoad", "CacheSize"),
         begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
         kBeginToFinishDocBucketCount);
 
-  static const TimeDelta kBeginToFinishMin(TimeDelta::FromMilliseconds(10));
-  static const TimeDelta kBeginToFinishMax(TimeDelta::FromMinutes(10));
-  static const size_t kBeginToFinishBucketCount(100);
-
-  UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.BeginToFinish",
-      finish - begin, kBeginToFinishMin,
-      kBeginToFinishMax, kBeginToFinishBucketCount);
   UMA_HISTOGRAM_CUSTOM_TIMES("Renderer4.StartToFinish",
       finish - start, kBeginToFinishMin,
       kBeginToFinishMax, kBeginToFinishBucketCount);
