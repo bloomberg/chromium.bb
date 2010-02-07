@@ -9,7 +9,6 @@
 #include <algorithm>
 #include <string>
 
-#include "base/field_trial.h"
 #include "base/format_macros.h"
 #include "base/histogram.h"
 #include "base/logging.h"
@@ -121,18 +120,7 @@ void DnsHostInfo::SetFoundState() {
   state_ = FOUND;
   resolve_duration_ = GetDuration();
   if (kMaxNonNetworkDnsLookupDuration <= resolve_duration_) {
-    UMA_HISTOGRAM_CUSTOM_TIMES("DNS.PrefetchResolution", resolve_duration_,
-        kMaxNonNetworkDnsLookupDuration, TimeDelta::FromMinutes(15), 100);
-
-    static bool use_ipv6_histogram(FieldTrialList::Find("IPv6_Probe") &&
-        !FieldTrialList::Find("IPv6_Probe")->group_name().empty());
-    if (use_ipv6_histogram) {
-      UMA_HISTOGRAM_CUSTOM_TIMES(
-          FieldTrial::MakeName("DNS.PrefetchResolution", "IPv6_Probe"),
-          resolve_duration_, kMaxNonNetworkDnsLookupDuration,
-          TimeDelta::FromMinutes(15), 100);
-    }
-
+    UMA_HISTOGRAM_LONG_TIMES("DNS.PrefetchFoundNameL", resolve_duration_);
     // Record potential beneficial time, and maybe we'll get a cache hit.
     // We keep the maximum, as the warming we did earlier may still be
     // helping with a cache upstream in DNS resolution.
