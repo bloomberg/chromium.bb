@@ -1676,7 +1676,8 @@ BUG23498 MAC : tables/mozilla_expected_failures/marvin/table_overflow_dirty_refl
 BUG23498 MAC : tables/mozilla_expected_failures/marvin/table_overflow_style_reflow_row_sibling.html = IMAGE
 BUG23498 MAC : tables/mozilla_expected_failures/marvin/table_overflow_style_reflow_tbody_sibling.html = IMAGE
 BUG23498 MAC : tables/mozilla_expected_failures/other/empty_cells.html = IMAGE
-BUG23498 MAC : tables/mozilla_expected_failures/other/test4.html = IMAGE
+BUG23498 MAC DEBUG : tables/mozilla_expected_failures/other/test4.html = IMAGE
+BUG23498 MAC RELEASE : tables/mozilla_expected_failures/other/test4.html = IMAGE+TEXT
 BUG23498 MAC : webarchive/test-duplicate-resources.html = IMAGE
 
 // Missing "misspelled-word" dotted underline
