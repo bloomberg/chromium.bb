@@ -171,6 +171,10 @@ typedef unsigned uint32_t;
 
 #elif defined(SK_BUILD_FOR_UNIX)
 
+// Prefer FreeType's emboldening algorithm to Skia's (which does a hairline
+// outline and doesn't look very good).
+#define SK_USE_FREETYPE_EMBOLDEN
+
 #ifdef SK_CPU_BENDIAN
 // Above we set the order for ARGB channels in registers. I suspect that, on
 // big endian machines, you can keep this the same and everything will work.
