@@ -1,7 +1,7 @@
 vars = {
   "chromium_trunk": "http://src.chromium.org/svn/trunk",
   "nacl_trunk": "http://nativeclient.googlecode.com/svn/trunk",
-  "nacl_sdk_trunk": "http://nativeclient_sdk.googlecode.com/svn/trunk",
+  "nacl_sdk_trunk": "http://nativeclient-sdk.googlecode.com/svn/trunk",
   "chromium_rev": "37780",
   "trusted_rev": "1467",
   "compilers_rev": "2",
