@@ -48,8 +48,6 @@ void NativeButtonGtk::UpdateFont() {
 }
 
 void NativeButtonGtk::UpdateEnabled() {
-  if (!native_view())
-    return;
   SetEnabled(native_button_->IsEnabled());
 }
 
