@@ -76,6 +76,12 @@ class ExtensionToolbarModel : public NotificationObserver {
   // Ordered list of browser action buttons.
   ExtensionList toolitems_;
 
+  // Keeps track of what the last extension to get disabled was.
+  std::string last_extension_removed_;
+
+  // Keeps track of where the last extension to get disabled was in the list.
+  size_t last_extension_removed_index_;
+
   NotificationRegistrar registrar_;
 };
 

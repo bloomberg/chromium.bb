@@ -390,7 +390,7 @@ int BrowserActionsContainer::GetCurrentTabId() const {
 
 BrowserActionView* BrowserActionsContainer::GetBrowserActionView(
     Extension* extension) {
-  for (std::vector<BrowserActionView*>::iterator iter =
+  for (BrowserActionViews::iterator iter =
        browser_action_views_.begin(); iter != browser_action_views_.end();
        ++iter) {
     if ((*iter)->button()->extension() == extension)
@@ -859,6 +859,7 @@ void BrowserActionsContainer::WriteDragData(
           browser_action_views_[i]->GetIconWithBadge());
       drag_utils::SetDragImageOnDataObject(*canvas, button->width(),
           button->height(), press_x, press_y, data);
+
       // Fill in the remaining info.
       BrowserActionDragData drag_data(
           browser_action_views_[i]->button()->extension()->id(), i);
@@ -931,7 +932,7 @@ void BrowserActionsContainer::BrowserActionAdded(Extension* extension,
 
   // Add the new browser action to the vector and the view hierarchy.
   BrowserActionView* view = new BrowserActionView(extension, this);
-  browser_action_views_.push_back(view);
+  browser_action_views_.insert(browser_action_views_.begin() + index, view);
   AddChildView(index, view);
 
   // For details on why we do the following see the class comments in the
@@ -940,7 +941,8 @@ void BrowserActionsContainer::BrowserActionAdded(Extension* extension,
   // Determine if we need to increase (we only do that if the container was
   // showing all icons before the addition of this icon). We use -1 because
   // we don't want to count the view that we just added.
-  if (visible_actions < browser_action_views_.size() - 1) {
+  if (visible_actions < browser_action_views_.size() - 1 ||
+      extension->being_upgraded()) {
     // Some icons were hidden, don't increase the size of the container.
     OnBrowserActionVisibilityChanged();
   } else {
@@ -964,10 +966,7 @@ void BrowserActionsContainer::BrowserActionRemoved(Extension* extension) {
   if (popup_ && popup_->host()->extension() == extension)
     HidePopup();
 
-  // Before we change anything, determine the number of visible browser actions.
-  size_t visible_actions = VisibleBrowserActions();
-
-  for (std::vector<BrowserActionView*>::iterator iter =
+  for (BrowserActionViews::iterator iter =
        browser_action_views_.begin(); iter != browser_action_views_.end();
        ++iter) {
     if ((*iter)->button()->extension() == extension) {
@@ -975,8 +974,17 @@ void BrowserActionsContainer::BrowserActionRemoved(Extension* extension) {
       delete *iter;
       browser_action_views_.erase(iter);
 
+      // If the extension is being upgraded we don't want the bar to shrink
+      // because the icon is just going to get re-added to the same location.
+      if (extension->being_upgraded())
+        return;
+
       // For details on why we do the following see the class comments in the
       // header.
+
+      // Before we change anything, determine the number of visible browser
+      // actions.
+      size_t visible_actions = VisibleBrowserActions();
 
       // Calculate the target size we'll animate to (end state). This might be
       // the same size (if the icon we are removing is in the overflow bucket

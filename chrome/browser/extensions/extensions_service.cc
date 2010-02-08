@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -627,6 +627,13 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
             allow_privilege_increase || !Extension::IsPrivilegeIncrease(
                 old, extension);
 
+        // Extensions get upgraded if silent upgrades are allowed, otherwise
+        // they get disabled.
+        if (allow_silent_upgrade) {
+          old->set_being_upgraded(true);
+          extension->set_being_upgraded(true);
+        }
+
         // To upgrade an extension in place, unload the old one and
         // then load the new one.
         UnloadExtension(old->id());
@@ -689,6 +696,8 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
         break;
     }
   }
+
+  extension->set_being_upgraded(false);
 
   UpdateActiveExtensionsInCrashReporter();
 }

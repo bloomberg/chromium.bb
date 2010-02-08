@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -92,9 +92,19 @@ void ExtensionToolbarModel::AddExtension(Extension* extension) {
   if (!extension->browser_action())
     return;
 
-  toolitems_.push_back(extension);
-  FOR_EACH_OBSERVER(Observer, observers_,
-                    BrowserActionAdded(extension, toolitems_.size() - 1));
+  if (extension->id() == last_extension_removed_ &&
+      last_extension_removed_index_ < toolitems_.size()) {
+    toolitems_.insert(begin() + last_extension_removed_index_, extension);
+    FOR_EACH_OBSERVER(Observer, observers_,
+        BrowserActionAdded(extension, last_extension_removed_index_));
+  } else {
+    toolitems_.push_back(extension);
+    FOR_EACH_OBSERVER(Observer, observers_,
+                      BrowserActionAdded(extension, toolitems_.size() - 1));
+  }
+
+  last_extension_removed_ = "";
+  last_extension_removed_index_ = -1;
 
   UpdatePrefs();
 }
@@ -104,6 +114,9 @@ void ExtensionToolbarModel::RemoveExtension(Extension* extension) {
   if (pos == end()) {
     return;
   }
+
+  last_extension_removed_ = extension->id();
+  last_extension_removed_index_ = pos - begin();
 
   toolitems_.erase(pos);
   FOR_EACH_OBSERVER(Observer, observers_,

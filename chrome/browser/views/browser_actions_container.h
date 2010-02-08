@@ -352,6 +352,8 @@ class BrowserActionsContainer
   ExtensionPopup* TestGetPopup() { return popup_; }
 
  private:
+  typedef std::vector<BrowserActionView*> BrowserActionViews;
+
   // ExtensionToolbarModel::Observer implementation.
   virtual void BrowserActionAdded(Extension* extension, int index);
   virtual void BrowserActionRemoved(Extension* extension);
@@ -396,7 +398,7 @@ class BrowserActionsContainer
   int ContainerMinSize() const;
 
   // The vector of browser actions (icons/image buttons for each action).
-  std::vector<BrowserActionView*> browser_action_views_;
+  BrowserActionViews browser_action_views_;
 
   NotificationRegistrar registrar_;
 
