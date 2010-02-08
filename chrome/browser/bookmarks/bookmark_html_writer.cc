@@ -1,29 +1,31 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 
 #include "app/l10n_util.h"
+#include "base/base64.h"
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/time.h"
-#include "base/values.h"
 #include "chrome/browser/bookmarks/bookmark_codec.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/history/history_types.h"
+#include "chrome/browser/profile.h"
+#include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "net/base/escape.h"
 #include "net/base/file_stream.h"
 #include "net/base/net_errors.h"
 
-namespace bookmark_html_writer {
-
 namespace {
+
+static BookmarkFaviconFetcher* fetcher = NULL;
 
 // File header.
 const char kHeader[] =
@@ -47,6 +49,8 @@ const char kBookmarkStart[] = "<DT><A HREF=\"";
 // After kBookmarkStart.
 const char kAddDate[] = "\" ADD_DATE=\"";
 // After kAddDate.
+const char kIcon[] = "\" ICON=\"";
+// After kIcon.
 const char kBookmarkAttributeEnd[] = "\">";
 // End of a bookmark.
 const char kBookmarkEnd[] = "</A>";
@@ -71,17 +75,29 @@ const char kFolderChildrenEnd[] = "</DL><p>";
 // Number of characters to indent by.
 const size_t kIndentSize = 4;
 
-// Class responsible for the actual writing.
+// Class responsible for the actual writing. Takes ownership of favicons_map.
 class Writer : public Task {
  public:
-  Writer(Value* bookmarks, const FilePath& path)
+  Writer(Value* bookmarks,
+         const FilePath& path,
+         BookmarkFaviconFetcher::URLFaviconMap* favicons_map,
+         BookmarksExportObserver* observer)
       : bookmarks_(bookmarks),
-        path_(path) {
+        path_(path),
+        favicons_map_(favicons_map),
+        observer_(observer) {
   }
 
   virtual void Run() {
-    if (!OpenFile())
+    RunImpl();
+    NotifyOnFinish();
+  }
+
+  // Writing bookmarks and favicons data to file.
+  virtual void RunImpl() {
+    if (!OpenFile()) {
       return;
+    }
 
     Value* roots;
     if (!Write(kHeader) ||
@@ -119,6 +135,8 @@ class Writer : public Task {
 
     Write(kFolderChildrenEnd);
     Write(kNewline);
+    // File stream close is forced so that unit test could read it.
+    file_stream_.Close();
   }
 
  private:
@@ -148,6 +166,13 @@ class Writer : public Task {
   void DecrementIndent() {
     DCHECK(!indent_.empty());
     indent_.resize(indent_.size() - kIndentSize, ' ');
+  }
+
+  // Called at the end of the export process.
+  void NotifyOnFinish() {
+    if (observer_ != NULL) {
+      observer_->OnExportFinished();
+    }
   }
 
   // Writes raw text out returning true on success. This does not escape
@@ -215,11 +240,30 @@ class Writer : public Task {
         NOTREACHED();
         return false;
       }
+
+      std::string favicon_string;
+      BookmarkFaviconFetcher::URLFaviconMap::iterator itr =
+          favicons_map_->find(url_string);
+      if (itr != favicons_map_->end()) {
+        scoped_refptr<RefCountedBytes> data = itr->second.get();
+        std::string favicon_data;
+        favicon_data.assign(reinterpret_cast<char*>(&data->data.front()),
+                            data->data.size());
+        std::string favicon_base64_encoded;
+        if (base::Base64Encode(favicon_data, &favicon_base64_encoded)) {
+          GURL favicon_url("data:image/png;base64," + favicon_base64_encoded);
+          favicon_string = favicon_url.spec();
+        }
+      }
+
       if (!WriteIndent() ||
           !Write(kBookmarkStart) ||
           !Write(url_string, ATTRIBUTE_VALUE) ||
           !Write(kAddDate) ||
           !WriteTime(date_added_string) ||
+          (!favicon_string.empty() &&
+              (!Write(kIcon) ||
+               !Write(favicon_string, ATTRIBUTE_VALUE))) ||
           !Write(kBookmarkAttributeEnd) ||
           !Write(title, CONTENT) ||
           !Write(kBookmarkEnd) ||
@@ -301,6 +345,12 @@ class Writer : public Task {
   // Path we're writing to.
   FilePath path_;
 
+  // Map that stores favicon per URL.
+  scoped_ptr<BookmarkFaviconFetcher::URLFaviconMap> favicons_map_;
+
+  // Observer to be notified on finish.
+  BookmarksExportObserver* observer_;
+
   // File we're writing to.
   net::FileStream file_stream_;
 
@@ -311,13 +361,125 @@ class Writer : public Task {
 
 }  // namespace
 
-void WriteBookmarks(BookmarkModel* model, const FilePath& path) {
+BookmarkFaviconFetcher::BookmarkFaviconFetcher(
+    Profile* profile,
+    const FilePath& path,
+    BookmarksExportObserver* observer)
+    : profile_(profile),
+      path_(path),
+      observer_(observer) {
+  favicons_map_.reset(new URLFaviconMap());
+  registrar_.Add(this,
+                 NotificationType::PROFILE_DESTROYED,
+                 NotificationService::AllSources());
+}
+
+BookmarkFaviconFetcher::~BookmarkFaviconFetcher() {
+}
+
+void BookmarkFaviconFetcher::ExportBookmarks() {
+  ExtractUrls(profile_->GetBookmarkModel()->GetBookmarkBarNode());
+  ExtractUrls(profile_->GetBookmarkModel()->other_node());
+  if (!bookmark_urls_.empty()) {
+    FetchNextFavicon();
+  } else {
+    ExecuteWriter();
+  }
+}
+
+void BookmarkFaviconFetcher::Observe(NotificationType type,
+                                     const NotificationSource& source,
+                                     const NotificationDetails& details) {
+  if (NotificationType::PROFILE_DESTROYED == type && fetcher != NULL) {
+    MessageLoop::current()->DeleteSoon(FROM_HERE, fetcher);
+    fetcher = NULL;
+  }
+}
+
+void BookmarkFaviconFetcher::ExtractUrls(const BookmarkNode* node) {
+  if (BookmarkNode::URL == node->type()) {
+    std::string url = node->GetURL().spec();
+    if (!url.empty()) {
+      bookmark_urls_.push_back(url);
+    }
+  } else {
+    for (int i = 0; i < node->GetChildCount(); ++i) {
+      ExtractUrls(node->GetChild(i));
+    }
+  }
+}
+
+void BookmarkFaviconFetcher::ExecuteWriter() {
   // BookmarkModel isn't thread safe (nor would we want to lock it down
   // for the duration of the write), as such we make a copy of the
   // BookmarkModel using BookmarkCodec then write from that.
   BookmarkCodec codec;
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE, new Writer(codec.Encode(model), path));
+  ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+      new Writer(codec.Encode(profile_->GetBookmarkModel()),
+                 path_,
+                 favicons_map_.release(),
+                 observer_));
+  if (fetcher != NULL) {
+    MessageLoop::current()->DeleteSoon(FROM_HERE, fetcher);
+    fetcher = NULL;
+  }
+}
+
+bool BookmarkFaviconFetcher::FetchNextFavicon() {
+  if (bookmark_urls_.empty()) {
+    return false;
+  }
+  do {
+    std::string url = bookmark_urls_.front();
+    // Filter out urls that we've already got favicon for.
+    URLFaviconMap::const_iterator iter = favicons_map_->find(url);
+    if (favicons_map_->end() == iter) {
+      FaviconService* favicon_service =
+          profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
+      favicon_service->GetFaviconForURL(GURL(url), &fav_icon_consumer_,
+          NewCallback(this, &BookmarkFaviconFetcher::OnFavIconDataAvailable));
+      return true;
+    } else {
+      bookmark_urls_.pop_front();
+    }
+  } while (!bookmark_urls_.empty());
+  return false;
+}
+
+void BookmarkFaviconFetcher::OnFavIconDataAvailable(
+    FaviconService::Handle handle,
+    bool know_favicon,
+    scoped_refptr<RefCountedBytes> data,
+    bool expired,
+    GURL icon_url) {
+  GURL url;
+  if (!bookmark_urls_.empty()) {
+    url = GURL(bookmark_urls_.front());
+    bookmark_urls_.pop_front();
+  }
+  if (know_favicon && data.get() && !data->data.empty() && !url.is_empty()) {
+    favicons_map_->insert(make_pair(url.spec(), data));
+  }
+
+  if (FetchNextFavicon()) {
+    return;
+  }
+  ExecuteWriter();
+}
+
+namespace bookmark_html_writer {
+
+void WriteBookmarks(Profile* profile,
+                    const FilePath& path,
+                    BookmarksExportObserver* observer) {
+  // BookmarkModel isn't thread safe (nor would we want to lock it down
+  // for the duration of the write), as such we make a copy of the
+  // BookmarkModel using BookmarkCodec then write from that.
+  if (fetcher == NULL) {
+    fetcher = new BookmarkFaviconFetcher(profile, path, observer);
+    fetcher->ExportBookmarks();
+  }
 }
 
 }  // namespace bookmark_html_writer
+

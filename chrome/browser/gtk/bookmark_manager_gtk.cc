@@ -1473,7 +1473,7 @@ void BookmarkManagerGtk::FileSelected(const FilePath& path,
                          profile_info, profile_,
                          new ImportObserverImpl(profile()), false);
   } else if (id == IDS_BOOKMARK_MANAGER_EXPORT_MENU) {
-    bookmark_html_writer::WriteBookmarks(model_, path);
+    bookmark_html_writer::WriteBookmarks(profile(), path, NULL);
   } else {
     NOTREACHED();
   }

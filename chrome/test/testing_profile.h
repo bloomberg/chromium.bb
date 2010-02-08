@@ -33,6 +33,9 @@ class TestingProfile : public Profile {
 
   virtual ~TestingProfile();
 
+  // Creates the favicon service. Consequent calls would recreate the service.
+  void CreateFaviconService();
+
   // Creates the history service. If |delete_file| is true, the history file is
   // deleted first, then the HistoryService is created. As TestingProfile
   // deletes the directory containing the files used by HistoryService, this
@@ -101,7 +104,7 @@ class TestingProfile : public Profile {
     return NULL;
   }
   virtual FaviconService* GetFaviconService(ServiceAccessType access) {
-    return NULL;
+    return favicon_service_.get();
   }
   virtual HistoryService* GetHistoryService(ServiceAccessType access) {
     return history_service_.get();
@@ -246,6 +249,9 @@ class TestingProfile : public Profile {
   scoped_ptr<PrefService> prefs_;
 
  private:
+  // Destroys favicon service if it has been created.
+  void DestroyFaviconService();
+
   // If the history service has been created, it is destroyed. This is invoked
   // from the destructor.
   void DestroyHistoryService();
@@ -253,6 +259,9 @@ class TestingProfile : public Profile {
   // If the webdata service has been created, it is destroyed.  This is invoked
   // from the destructor.
   void DestroyWebDataService();
+
+  // The favicon service. Only created if CreateFaviconService is invoked.
+  scoped_refptr<FaviconService> favicon_service_;
 
   // The history service. Only created if CreateHistoryService is invoked.
   scoped_refptr<HistoryService> history_service_;

@@ -153,7 +153,7 @@ bool ExportBookmarksFunction::RunImpl() {
 void ExportBookmarksFunction::FileSelected(const FilePath& path,
                                                 int index,
                                                 void* params) {
-  bookmark_html_writer::WriteBookmarks(profile()->GetBookmarkModel(), path);
+  bookmark_html_writer::WriteBookmarks(profile(), path, NULL);
   Release();  // Balanced in BookmarkManagerIOFunction::SelectFile()
 }
 

@@ -1,10 +1,11 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "testing/gtest/include/gtest/gtest.h"
 
 #include "app/l10n_util.h"
+#include "app/gfx/codec/png_codec.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
@@ -15,7 +16,26 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/importer/firefox2_importer.h"
+#include "chrome/test/testing_profile.h"
 #include "grit/generated_resources.h"
+#include "third_party/skia/include/core/SkBitmap.h"
+
+namespace {
+
+static const int kIconWidth = 16;
+static const int kIconHeight = 16;
+
+void MakeTestSkBitmap(int w, int h, SkBitmap* bmp) {
+  bmp->setConfig(SkBitmap::kARGB_8888_Config, w, h);
+  bmp->allocPixels();
+
+  uint32_t* src_data = bmp->getAddr32(0, 0);
+  for (int i = 0; i < w * h; i++) {
+    src_data[i] = SkPreMultiplyARGB(i % 255, i % 250, i % 245, i % 240);
+  }
+}
+
+}  // namespace
 
 class BookmarkHTMLWriterTest : public testing::Test {
  protected:
@@ -100,9 +120,43 @@ class BookmarkHTMLWriterTest : public testing::Test {
   FilePath path_;
 };
 
+// Class that will notify message loop when file is written.
+class BookmarksObserver : public BookmarksExportObserver {
+ public:
+  explicit BookmarksObserver(MessageLoop* loop) : loop_(loop) {
+    DCHECK(loop);
+  }
+
+  virtual void OnExportFinished() {
+    loop_->Quit();
+  }
+
+ private:
+  MessageLoop* loop_;
+  DISALLOW_COPY_AND_ASSIGN(BookmarksObserver);
+};
+
 // Tests bookmark_html_writer by populating a BookmarkModel, writing it out by
 // way of bookmark_html_writer, then using the importer to read it back in.
 TEST_F(BookmarkHTMLWriterTest, Test) {
+  MessageLoop message_loop;
+  ChromeThread fake_ui_thread(ChromeThread::UI, &message_loop);
+  ChromeThread fake_file_thread(ChromeThread::FILE, &message_loop);
+
+  TestingProfile profile;
+  profile.CreateHistoryService(true, false);
+  profile.BlockUntilHistoryProcessesPendingRequests();
+  profile.CreateFaviconService();
+  profile.CreateBookmarkModel(true);
+  profile.BlockUntilBookmarkModelLoaded();
+  BookmarkModel* model = profile.GetBookmarkModel();
+
+  // Create test PNG representing favicon for url1.
+  SkBitmap bitmap;
+  MakeTestSkBitmap(kIconWidth, kIconHeight, &bitmap);
+  std::vector<unsigned char> icon_data;
+  gfx::PNGCodec::EncodeBGRASkBitmap(bitmap, false, &icon_data);
+
   // Populate the BookmarkModel. This creates the following bookmark structure:
   // Bookmarks bar
   //   F1
@@ -126,41 +180,65 @@ TEST_F(BookmarkHTMLWriterTest, Test) {
   std::wstring url3_title = L"url\"3";
   std::wstring url4_title = L"url\"&;";
   GURL url1("http://url1");
+  GURL url1_favicon("http://url1/icon.ico");
   GURL url2("http://url2");
   GURL url3("http://url3");
   GURL url4("http://\"&;\"");
-  BookmarkModel model(NULL);
   base::Time t1(base::Time::Now());
   base::Time t2(t1 + base::TimeDelta::FromHours(1));
   base::Time t3(t1 + base::TimeDelta::FromHours(1));
   base::Time t4(t1 + base::TimeDelta::FromHours(1));
-  const BookmarkNode* f1 = model.AddGroup(
-      model.GetBookmarkBarNode(), 0, f1_title);
-  model.AddURLWithCreationTime(f1, 0, url1_title, url1, t1);
-  const BookmarkNode* f2 = model.AddGroup(f1, 1, f2_title);
-  model.AddURLWithCreationTime(f2, 0, url2_title, url2, t2);
-  model.AddURLWithCreationTime(model.GetBookmarkBarNode(), 1, url3_title, url3,
-                               t3);
+  const BookmarkNode* f1 = model->AddGroup(
+      model->GetBookmarkBarNode(), 0, f1_title);
+  model->AddURLWithCreationTime(f1, 0, url1_title, url1, t1);
+  profile.GetHistoryService(Profile::EXPLICIT_ACCESS)->AddPage(url1);
+  profile.GetFaviconService(Profile::EXPLICIT_ACCESS)->SetFavicon(url1,
+                                                                  url1_favicon,
+                                                                  icon_data);
+  message_loop.RunAllPending();
+  const BookmarkNode* f2 = model->AddGroup(f1, 1, f2_title);
+  model->AddURLWithCreationTime(f2, 0, url2_title, url2, t2);
+  model->AddURLWithCreationTime(model->GetBookmarkBarNode(),
+                                1, url3_title, url3, t3);
 
-  model.AddURLWithCreationTime(model.other_node(), 0, url1_title, url1, t1);
-  model.AddURLWithCreationTime(model.other_node(), 1, url2_title, url2, t2);
-  const BookmarkNode* f3 = model.AddGroup(model.other_node(), 2, f3_title);
-  const BookmarkNode* f4 = model.AddGroup(f3, 0, f4_title);
-  model.AddURLWithCreationTime(f4, 0, url1_title, url1, t1);
-  model.AddURLWithCreationTime(model.GetBookmarkBarNode(), 2, url4_title,
-                              url4, t4);
+  model->AddURLWithCreationTime(model->other_node(), 0, url1_title, url1, t1);
+  model->AddURLWithCreationTime(model->other_node(), 1, url2_title, url2, t2);
+  const BookmarkNode* f3 = model->AddGroup(model->other_node(), 2, f3_title);
+  const BookmarkNode* f4 = model->AddGroup(f3, 0, f4_title);
+  model->AddURLWithCreationTime(f4, 0, url1_title, url1, t1);
+  model->AddURLWithCreationTime(model->GetBookmarkBarNode(), 2, url4_title,
+                                url4, t4);
 
   // Write to a temp file.
-  MessageLoop message_loop;
-  ChromeThread fake_file_thread(ChromeThread::FILE, &message_loop);
-  bookmark_html_writer::WriteBookmarks(&model, path_);
+  BookmarksObserver observer(&message_loop);
+  bookmark_html_writer::WriteBookmarks(&profile, path_, &observer);
+  message_loop.Run();
+
+  // Clear favicon so that it would be read from file.
+  std::vector<unsigned char> empty_data;
+  profile.GetFaviconService(Profile::EXPLICIT_ACCESS)->SetFavicon(url1,
+                                                                  url1_favicon,
+                                                                  empty_data);
   message_loop.RunAllPending();
 
   // Read the bookmarks back in.
   std::vector<ProfileWriter::BookmarkEntry> parsed_bookmarks;
+  std::vector<history::ImportedFavIconUsage> favicons;
   Firefox2Importer::ImportBookmarksFile(path_.ToWStringHack(), std::set<GURL>(),
                                         false, L"x", NULL, &parsed_bookmarks,
-                                        NULL, NULL);
+                                        NULL, &favicons);
+
+  // Check loaded favicon (url1 is represents by 3 separate bookmarks).
+  EXPECT_EQ(3U, favicons.size());
+  for (size_t i = 0; i < favicons.size(); i++) {
+    if (url1_favicon == favicons[i].favicon_url) {
+      EXPECT_EQ(1U, favicons[i].urls.size());
+      std::set<GURL>::const_iterator iter = favicons[i].urls.find(url1);
+      ASSERT_TRUE(iter != favicons[i].urls.end());
+      ASSERT_TRUE(*iter == url1);
+      ASSERT_TRUE(favicons[i].png_data == icon_data);
+    }
+  }
 
   // Verify we got back what we wrote.
   ASSERT_EQ(7U, parsed_bookmarks.size());

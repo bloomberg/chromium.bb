@@ -12,6 +12,7 @@
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/common/notification_service.h"
 #include "net/url_request/url_request_context.h"
 #include "webkit/database/database_tracker.h"
 
@@ -133,9 +134,20 @@ TestingProfile::TestingProfile(int count)
 }
 
 TestingProfile::~TestingProfile() {
+  NotificationService::current()->Notify(
+      NotificationType::PROFILE_DESTROYED,
+      Source<Profile>(this),
+      NotificationService::NoDetails());
   DestroyHistoryService();
+  // FaviconService depends on HistoryServce so destroying it later.
+  DestroyFaviconService();
   DestroyWebDataService();
   file_util::Delete(path_, true);
+}
+
+void TestingProfile::CreateFaviconService() {
+  favicon_service_ = NULL;
+  favicon_service_ = new FaviconService(this);
 }
 
 void TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
@@ -151,6 +163,12 @@ void TestingProfile::CreateHistoryService(bool delete_file, bool no_db) {
   }
   history_service_ = new HistoryService(this);
   history_service_->Init(GetPath(), bookmark_bar_model_.get(), no_db);
+}
+
+void TestingProfile::DestroyFaviconService() {
+  if (!favicon_service_.get())
+    return;
+  favicon_service_ = NULL;
 }
 
 void TestingProfile::DestroyHistoryService() {

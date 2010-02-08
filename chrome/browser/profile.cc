@@ -694,6 +694,11 @@ NTPResourceCache* ProfileImpl::GetNTPResourceCache() {
 }
 
 ProfileImpl::~ProfileImpl() {
+  NotificationService::current()->Notify(
+      NotificationType::PROFILE_DESTROYED,
+      Source<Profile>(this),
+      NotificationService::NoDetails());
+
   tab_restore_service_ = NULL;
 
   StopCreateSessionServiceTimer();

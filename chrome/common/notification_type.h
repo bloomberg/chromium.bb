@@ -541,6 +541,10 @@ class NotificationType {
     // browser window should notify the user of this error.
     PROFILE_ERROR,
 
+    // Sent before a Profile is destroyed. The details are
+    // none and the source is a Profile*.
+    PROFILE_DESTROYED,
+
     // Thumbnails---------------------------------------------------------------
 
     // Set by ThumbnailStore when it was finished loading data from disk on
