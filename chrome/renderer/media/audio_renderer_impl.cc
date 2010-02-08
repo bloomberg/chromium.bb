@@ -174,6 +174,12 @@ void AudioRendererImpl::OnCreated(base::SharedMemoryHandle handle,
   shared_memory_size_ = length;
 }
 
+void AudioRendererImpl::OnLowLatencyCreated(base::SharedMemoryHandle,
+                                            base::SyncSocket::Handle, uint32) {
+  // AudioRenderer should not have a low-latency audio channel.
+  NOTREACHED();
+}
+
 void AudioRendererImpl::OnRequestPacket(uint32 bytes_in_buffer,
                                         const base::Time& message_timestamp) {
   DCHECK(MessageLoop::current() == io_loop_);

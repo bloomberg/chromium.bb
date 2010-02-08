@@ -167,16 +167,19 @@ AudioRendererHost::IPCAudioSource::CreateIPCAudioSource(
         base::SyncSocket* sockets[2] = {0};
         if (base::SyncSocket::CreatePair(sockets)) {
           source->shared_socket_.reset(sockets[0]);
-          base::SyncSocket::Handle foreign_socket_handle = 0;
 #if defined(OS_WIN)
+          HANDLE foreign_socket_handle = 0;
           ::DuplicateHandle(GetCurrentProcess(), sockets[1]->handle(),
                             process_handle, &foreign_socket_handle,
                             0, FALSE, DUPLICATE_SAME_ACCESS);
+          bool valid = foreign_socket_handle != 0;
 #else
-          // TODO(cpu): Figure out what is the procedure for linux.
-          NOTIMPLEMENTED();
+          base::FileDescriptor foreign_socket_handle(sockets[1]->handle(),
+                                                     false);
+          bool valid = foreign_socket_handle.fd != -1;
 #endif
-          if (foreign_socket_handle) {
+
+          if (valid) {
             host->Send(new ViewMsg_NotifyLowLatencyAudioStreamCreated(
                 route_id, stream_id, foreign_memory_handle,
                 foreign_socket_handle, decoded_packet_size));

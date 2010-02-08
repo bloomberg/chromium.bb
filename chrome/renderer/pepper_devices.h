@@ -9,6 +9,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
+#include "base/simple_thread.h"
 #include "base/gfx/rect.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/transport_dib.h"
@@ -46,7 +47,8 @@ class Graphics2DDeviceContext {
 // Each instance of AudioDeviceContext corresponds to one host stream (and one
 // audio context). NPDeviceContextAudio contains the id of the context's
 // stream in the privatePtr member.
-class AudioDeviceContext : public AudioMessageFilter::Delegate {
+class AudioDeviceContext : public AudioMessageFilter::Delegate,
+                           public base::DelegateSimpleThread::Delegate {
  public:
   // TODO(neb): if plugin_delegate parameter is indeed unused, remove it
   explicit AudioDeviceContext() : stream_id_(0) {
@@ -57,24 +59,39 @@ class AudioDeviceContext : public AudioMessageFilter::Delegate {
                      const NPDeviceContextAudioConfig* config,
                      NPDeviceContextAudio* context);
 
+  base::SharedMemory* shared_memory() { return shared_memory_.get(); }
+
+ private:
+
   // AudioMessageFilter::Delegate implementation
   virtual void OnRequestPacket(uint32 bytes_in_buffer,
                                const base::Time& message_timestamp);
   virtual void OnStateChanged(const ViewMsg_AudioStreamState_Params& state);
   virtual void OnCreated(base::SharedMemoryHandle handle, uint32 length);
+  virtual void OnLowLatencyCreated(base::SharedMemoryHandle handle,
+                                   base::SyncSocket::Handle socket_handle,
+                                   uint32 length);
   virtual void OnVolume(double volume);
   // End of AudioMessageFilter::Delegate implementation
 
-  base::SharedMemory* shared_memory() { return shared_memory_.get(); }
+  // DelegateSimpleThread::Delegate implementation
+  virtual void Run();
+  // End of DelegateSimpleThread::Delegate implementation
 
- private:
   void OnDestroy();
+  void FireAudioCallback() {
+    if (context_ && context_->config.callback) {
+      context_->config.callback(context_);
+    }
+  }
 
   NPDeviceContextAudio* context_;
   scoped_refptr<AudioMessageFilter> filter_;
   int32 stream_id_;
   scoped_ptr<base::SharedMemory> shared_memory_;
   uint32 shared_memory_size_;
+  scoped_ptr<base::SyncSocket> socket_;
+  scoped_ptr<base::DelegateSimpleThread> audio_thread_;
 };
 
 #endif  // CHROME_RENDERER_PEPPER_DEVICES_H_

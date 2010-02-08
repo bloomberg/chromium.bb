@@ -636,11 +636,19 @@ IPC_BEGIN_MESSAGES(View)
   // Tell the renderer process that a low latency audio stream has been created,
   // renderer process would be given a SyncSocket that it should write to from
   // then on.
+#if defined(OS_WIN)
   IPC_MESSAGE_ROUTED4(ViewMsg_NotifyLowLatencyAudioStreamCreated,
                       int /* stream id */,
                       base::SharedMemoryHandle /* handle */,
                       base::SyncSocket::Handle /* socket handle */,
                       uint32 /* length */)
+#else
+IPC_MESSAGE_ROUTED4(ViewMsg_NotifyLowLatencyAudioStreamCreated,
+                    int /* stream id */,
+                    base::SharedMemoryHandle /* handle */,
+                    base::FileDescriptor /* socket handle */,
+                    uint32 /* length */)
+#endif
 
   // Notification message sent from AudioRendererHost to renderer for state
   // update after the renderer has requested a Create/Start/Close.

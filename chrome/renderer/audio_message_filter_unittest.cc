@@ -34,6 +34,11 @@ class MockAudioDelegate : public AudioMessageFilter::Delegate {
     length_ = length;
   }
 
+  virtual void OnLowLatencyCreated(base::SharedMemoryHandle handle,
+                                   base::SyncSocket::Handle,
+                                   uint32 length) {
+  }
+
   virtual void OnVolume(double volume) {
     volume_received_ = true;
     volume_ = volume;

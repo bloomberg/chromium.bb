@@ -98,14 +98,18 @@ AudioDeviceContext::~AudioDeviceContext() {
   }
 }
 
-NPError AudioDeviceContext::Initialize(
-        AudioMessageFilter* filter, const NPDeviceContextAudioConfig* config,
-        NPDeviceContextAudio* context) {
-  filter_ = filter;
-  context_= context;
+NPError AudioDeviceContext::Initialize(AudioMessageFilter* filter,
+                                       const NPDeviceContextAudioConfig* config,
+                                       NPDeviceContextAudio* context) {
+  DCHECK(filter);
   // Make sure we don't call init more than once.
   DCHECK_EQ(0, stream_id_);
-  stream_id_ = filter_->AddDelegate(this);
+
+  if (!config || !context) {
+    return NPERR_INVALID_PARAM;
+  }
+  filter_ = filter;
+  context_= context;
 
   ViewHostMsg_Audio_CreateStream_Params params;
   params.format = AudioManager::AUDIO_PCM_LINEAR;
@@ -133,6 +137,7 @@ NPError AudioDeviceContext::Initialize(
       config->sampleFrameCount << "Hz, " << params.bits_per_sample <<
       " bits, " << config->outputChannelMap << "channels";
 
+  stream_id_ = filter_->AddDelegate(this);
   filter->Send(new ViewHostMsg_CreateAudioStream(0, stream_id_, params));
   return NPERR_NO_ERROR;
 }
@@ -143,13 +148,17 @@ void AudioDeviceContext::OnDestroy() {
   filter_->RemoveDelegate(stream_id_);
   filter_->Send(new ViewHostMsg_CloseAudioStream(0, stream_id_));
   stream_id_ = 0;
+  if (audio_thread_.get()) {
+    socket_->Close();
+    audio_thread_->Join();
+  }
 }
 
 void AudioDeviceContext::OnRequestPacket(
     uint32 bytes_in_buffer, const base::Time& message_timestamp) {
-  context_->config.callback(context_);
+  FireAudioCallback();
   filter_->Send(new ViewHostMsg_NotifyAudioPacketReady(0, stream_id_,
-                                                        shared_memory_size_));
+                                                       shared_memory_size_));
 }
 
 void AudioDeviceContext::OnStateChanged(
@@ -158,15 +167,60 @@ void AudioDeviceContext::OnStateChanged(
 
 void AudioDeviceContext::OnCreated(
     base::SharedMemoryHandle handle, uint32 length) {
+#if defined(OS_WIN)
+  DCHECK(handle);
+#else
+  DCHECK_NE(-1, handle.fd);
+#endif
+  DCHECK(length);
+  DCHECK(context_);
+
   shared_memory_.reset(new base::SharedMemory(handle, false));
   shared_memory_->Map(length);
   shared_memory_size_ = length;
 
   context_->outBuffer = shared_memory_->memory();
-  // TODO(neb): call play after prefilling
+  FireAudioCallback();
+  filter_->Send(new ViewHostMsg_PlayAudioStream(0, stream_id_));
+}
+
+void AudioDeviceContext::OnLowLatencyCreated(
+    base::SharedMemoryHandle handle, base::SyncSocket::Handle socket_handle,
+    uint32 length) {
+#if defined(OS_WIN)
+  DCHECK(handle);
+  DCHECK(socket_handle);
+#else
+  DCHECK_NE(-1, handle.fd);
+  DCHECK_NE(-1, socket_handle);
+#endif
+  DCHECK(length);
+  DCHECK(context_);
+  DCHECK(!audio_thread_.get());
+  shared_memory_.reset(new base::SharedMemory(handle, false));
+  shared_memory_->Map(length);
+  shared_memory_size_ = length;
+
+  context_->outBuffer = shared_memory_->memory();
+  socket_.reset(new base::SyncSocket(socket_handle));
+  if (context_->config.callback) {
+    FireAudioCallback();
+    audio_thread_.reset(
+        new base::DelegateSimpleThread(this, "plugin_audio_thread"));
+    audio_thread_->Start();
+  }
   filter_->Send(new ViewHostMsg_PlayAudioStream(0, stream_id_));
 }
 
 void AudioDeviceContext::OnVolume(double volume) {
+}
+
+void AudioDeviceContext::Run() {
+  int pending_data;
+  while (sizeof(pending_data) == socket_->Receive(&pending_data,
+                                                  sizeof(pending_data)) &&
+      pending_data >= 0) {
+    FireAudioCallback();
+  }
 }
 

@@ -35,6 +35,8 @@ bool AudioMessageFilter::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(AudioMessageFilter, message)
     IPC_MESSAGE_HANDLER(ViewMsg_RequestAudioPacket, OnRequestPacket)
     IPC_MESSAGE_HANDLER(ViewMsg_NotifyAudioStreamCreated, OnStreamCreated)
+    IPC_MESSAGE_HANDLER(ViewMsg_NotifyLowLatencyAudioStreamCreated,
+                        OnLowLatencyStreamCreated)
     IPC_MESSAGE_HANDLER(ViewMsg_NotifyAudioStreamStateChanged,
                         OnStreamStateChanged)
     IPC_MESSAGE_HANDLER(ViewMsg_NotifyAudioStreamVolume, OnStreamVolume)
@@ -82,6 +84,27 @@ void AudioMessageFilter::OnStreamCreated(int stream_id,
     return;
   }
   delegate->OnCreated(handle, length);
+}
+
+void AudioMessageFilter::OnLowLatencyStreamCreated(
+    int stream_id,
+    base::SharedMemoryHandle handle,
+#if defined(OS_WIN)
+    base::SyncSocket::Handle socket_handle,
+#else
+    base::FileDescriptor socket_descriptor,
+#endif
+    uint32 length) {
+  Delegate* delegate = delegates_.Lookup(stream_id);
+  if (!delegate) {
+    DLOG(WARNING) << "Got audio stream event for a non-existent or removed"
+        " audio renderer.";
+    return;
+  }
+#if !defined(OS_WIN)
+  base::SyncSocket::Handle socket_handle = socket_descriptor.fd;
+#endif
+  delegate->OnLowLatencyCreated(handle, socket_handle, length);
 }
 
 void AudioMessageFilter::OnStreamStateChanged(

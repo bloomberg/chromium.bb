@@ -12,6 +12,7 @@
 
 #include "base/id_map.h"
 #include "base/shared_memory.h"
+#include "base/sync_socket.h"
 #include "base/time.h"
 #include "ipc/ipc_channel_proxy.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
@@ -32,6 +33,12 @@ class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
 
     // Called when an audio stream has been created in the browser process.
     virtual void OnCreated(base::SharedMemoryHandle handle, uint32 length) = 0;
+
+    // Called when a low-latency audio stream has been created in the browser
+    // process.
+    virtual void OnLowLatencyCreated(base::SharedMemoryHandle handle,
+                                     base::SyncSocket::Handle socket_handle,
+                                     uint32 length) = 0;
 
     // Called when notification of stream volume is received from the browser
     // process.
@@ -75,6 +82,17 @@ class AudioMessageFilter : public IPC::ChannelProxy::MessageFilter {
   // Received when browser process has created an audio output stream.
   void OnStreamCreated(int stream_id, base::SharedMemoryHandle handle,
                        uint32 length);
+
+  // Received when browser process has created an audio output stream of low
+  // latency.
+  void OnLowLatencyStreamCreated(int stream_id, base::SharedMemoryHandle handle,
+#if defined(OS_WIN)
+                                 base::SyncSocket::Handle socket_handle,
+#else
+                                 base::FileDescriptor socket_descriptor,
+#endif
+                                 uint32 length);
+
 
   // Received when internal state of browser process' audio output device has
   // changed.
