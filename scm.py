@@ -369,9 +369,7 @@ class SVN(object):
         if match:
           file_list.append(match.group(1))
         if line.startswith('svn: '):
-          # We can't raise an exception. We can't alias a variable. Use a cheap
-          # way.
-          failure.append(True)
+          failure.append(line)
 
       try:
         SVN.RunAndFilterOutput(args,
