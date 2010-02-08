@@ -294,7 +294,8 @@ TEST_F(WorkerTest, SharedWorkerFastLayoutTests) {
   }
 }
 
-TEST_F(WorkerTest, WorkerHttpLayoutTests) {
+// Flaky, http://crbug.com/16934.
+TEST_F(WorkerTest, FLAKY_WorkerHttpLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "shared-worker-importScripts.html",
     "shared-worker-redirect.html",
