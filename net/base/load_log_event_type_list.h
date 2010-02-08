@@ -166,39 +166,39 @@ EVENT_TYPE(HTTP_TRANSACTION_READ_BODY)
 EVENT_TYPE(HTTP_TRANSACTION_DRAIN_BODY_FOR_AUTH_RESTART)
 
 // ------------------------------------------------------------------------
-// FlipNetworkTransaction
+// SpdyNetworkTransaction
 // ------------------------------------------------------------------------
 
-// Measures the time taken to get a flip stream.
-EVENT_TYPE(FLIP_TRANSACTION_INIT_CONNECTION)
+// Measures the time taken to get a spdy stream.
+EVENT_TYPE(SPDY_TRANSACTION_INIT_CONNECTION)
 
 // Measures the time taken to send the request to the server.
-EVENT_TYPE(FLIP_TRANSACTION_SEND_REQUEST)
+EVENT_TYPE(SPDY_TRANSACTION_SEND_REQUEST)
 
 // Measures the time to read HTTP response headers from the server.
-EVENT_TYPE(FLIP_TRANSACTION_READ_HEADERS)
+EVENT_TYPE(SPDY_TRANSACTION_READ_HEADERS)
 
 // Measures the time to read the entity body from the server.
-EVENT_TYPE(FLIP_TRANSACTION_READ_BODY)
+EVENT_TYPE(SPDY_TRANSACTION_READ_BODY)
 
 // ------------------------------------------------------------------------
-// FlipStream
+// SpdyStream
 // ------------------------------------------------------------------------
 
 // Measures the time taken to send headers on a stream.
-EVENT_TYPE(FLIP_STREAM_SEND_HEADERS)
+EVENT_TYPE(SPDY_STREAM_SEND_HEADERS)
 
 // Measures the time taken to send the body (e.g. a POST) on a stream.
-EVENT_TYPE(FLIP_STREAM_SEND_BODY)
+EVENT_TYPE(SPDY_STREAM_SEND_BODY)
 
 // Measures the time taken to read headers on a stream.
-EVENT_TYPE(FLIP_STREAM_READ_HEADERS)
+EVENT_TYPE(SPDY_STREAM_READ_HEADERS)
 
 // Measures the time taken to read the body on a stream.
-EVENT_TYPE(FLIP_STREAM_READ_BODY)
+EVENT_TYPE(SPDY_STREAM_READ_BODY)
 
 // Logs that a stream attached to a pushed stream.
-EVENT_TYPE(FLIP_STREAM_ADOPTED_PUSH_STREAM)
+EVENT_TYPE(SPDY_STREAM_ADOPTED_PUSH_STREAM)
 
 // ------------------------------------------------------------------------
 // HttpStreamParser

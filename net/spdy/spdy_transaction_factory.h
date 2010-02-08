@@ -10,16 +10,16 @@
 
 namespace net {
 
-class FlipTransactionFactory : public HttpTransactionFactory {
+class SpdyTransactionFactory : public HttpTransactionFactory {
  public:
-  explicit FlipTransactionFactory(HttpNetworkSession* session)
+  explicit SpdyTransactionFactory(HttpNetworkSession* session)
      : session_(session) {
   }
-  virtual ~FlipTransactionFactory() {}
+  virtual ~SpdyTransactionFactory() {}
 
   // HttpTransactionFactory Interface.
   virtual HttpTransaction* CreateTransaction() {
-    return new FlipNetworkTransaction(session_);
+    return new SpdyNetworkTransaction(session_);
   }
   virtual HttpCache* GetCache() {
     return NULL;

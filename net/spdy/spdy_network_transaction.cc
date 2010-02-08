@@ -25,9 +25,9 @@ namespace net {
 
 //-----------------------------------------------------------------------------
 
-FlipNetworkTransaction::FlipNetworkTransaction(HttpNetworkSession* session)
+SpdyNetworkTransaction::SpdyNetworkTransaction(HttpNetworkSession* session)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
-        io_callback_(this, &FlipNetworkTransaction::OnIOComplete)),
+        io_callback_(this, &SpdyNetworkTransaction::OnIOComplete)),
       user_callback_(NULL),
       user_buffer_len_(0),
       session_(session),
@@ -36,19 +36,19 @@ FlipNetworkTransaction::FlipNetworkTransaction(HttpNetworkSession* session)
       stream_(NULL) {
 }
 
-FlipNetworkTransaction::~FlipNetworkTransaction() {
-  LOG(INFO) << "FlipNetworkTransaction dead. " << this;
+SpdyNetworkTransaction::~SpdyNetworkTransaction() {
+  LOG(INFO) << "SpdyNetworkTransaction dead. " << this;
   if (stream_.get())
     stream_->Cancel();
 }
 
-int FlipNetworkTransaction::Start(const HttpRequestInfo* request_info,
+int SpdyNetworkTransaction::Start(const HttpRequestInfo* request_info,
                                   CompletionCallback* callback,
                                   LoadLog* load_log) {
   CHECK(request_info);
   CHECK(callback);
 
-  SIMPLE_STATS_COUNTER("FlipNetworkTransaction.Count");
+  SIMPLE_STATS_COUNTER("SpdyNetworkTransaction.Count");
 
   load_log_ = load_log;
   request_ = request_info;
@@ -61,21 +61,21 @@ int FlipNetworkTransaction::Start(const HttpRequestInfo* request_info,
   return rv;
 }
 
-int FlipNetworkTransaction::RestartIgnoringLastError(
+int SpdyNetworkTransaction::RestartIgnoringLastError(
     CompletionCallback* callback) {
   // TODO(mbelshe): implement me.
   NOTIMPLEMENTED();
   return ERR_NOT_IMPLEMENTED;
 }
 
-int FlipNetworkTransaction::RestartWithCertificate(
+int SpdyNetworkTransaction::RestartWithCertificate(
     X509Certificate* client_cert, CompletionCallback* callback) {
   // TODO(mbelshe): implement me.
   NOTIMPLEMENTED();
   return ERR_NOT_IMPLEMENTED;
 }
 
-int FlipNetworkTransaction::RestartWithAuth(
+int SpdyNetworkTransaction::RestartWithAuth(
     const std::wstring& username,
     const std::wstring& password,
     CompletionCallback* callback) {
@@ -84,7 +84,7 @@ int FlipNetworkTransaction::RestartWithAuth(
   return 0;
 }
 
-int FlipNetworkTransaction::Read(IOBuffer* buf, int buf_len,
+int SpdyNetworkTransaction::Read(IOBuffer* buf, int buf_len,
                                  CompletionCallback* callback) {
   DCHECK(buf);
   DCHECK_GT(buf_len, 0);
@@ -100,15 +100,15 @@ int FlipNetworkTransaction::Read(IOBuffer* buf, int buf_len,
   return rv;
 }
 
-const HttpResponseInfo* FlipNetworkTransaction::GetResponseInfo() const {
+const HttpResponseInfo* SpdyNetworkTransaction::GetResponseInfo() const {
   return (response_.headers || response_.ssl_info.cert) ? &response_ : NULL;
 }
 
-LoadState FlipNetworkTransaction::GetLoadState() const {
+LoadState SpdyNetworkTransaction::GetLoadState() const {
   switch (next_state_) {
     case STATE_INIT_CONNECTION_COMPLETE:
-      if (flip_.get())
-        return flip_->GetLoadState();
+      if (spdy_.get())
+        return spdy_->GetLoadState();
       return LOAD_STATE_CONNECTING;
     case STATE_SEND_REQUEST_COMPLETE:
       return LOAD_STATE_SENDING_REQUEST;
@@ -121,14 +121,14 @@ LoadState FlipNetworkTransaction::GetLoadState() const {
   }
 }
 
-uint64 FlipNetworkTransaction::GetUploadProgress() const {
+uint64 SpdyNetworkTransaction::GetUploadProgress() const {
   if (!stream_.get())
     return 0;
 
   return stream_->GetUploadProgress();
 }
 
-void FlipNetworkTransaction::DoCallback(int rv) {
+void SpdyNetworkTransaction::DoCallback(int rv) {
   CHECK(rv != ERR_IO_PENDING);
   CHECK(user_callback_);
 
@@ -138,13 +138,13 @@ void FlipNetworkTransaction::DoCallback(int rv) {
   c->Run(rv);
 }
 
-void FlipNetworkTransaction::OnIOComplete(int result) {
+void SpdyNetworkTransaction::OnIOComplete(int result) {
   int rv = DoLoop(result);
   if (rv != ERR_IO_PENDING)
     DoCallback(rv);
 }
 
-int FlipNetworkTransaction::DoLoop(int result) {
+int SpdyNetworkTransaction::DoLoop(int result) {
   DCHECK(next_state_ != STATE_NONE);
   DCHECK(request_);
 
@@ -159,45 +159,45 @@ int FlipNetworkTransaction::DoLoop(int result) {
       case STATE_INIT_CONNECTION:
         DCHECK_EQ(OK, rv);
         LoadLog::BeginEvent(load_log_,
-                            LoadLog::TYPE_FLIP_TRANSACTION_INIT_CONNECTION);
+                            LoadLog::TYPE_SPDY_TRANSACTION_INIT_CONNECTION);
         rv = DoInitConnection();
         break;
       case STATE_INIT_CONNECTION_COMPLETE:
         LoadLog::EndEvent(load_log_,
-                          LoadLog::TYPE_FLIP_TRANSACTION_INIT_CONNECTION);
+                          LoadLog::TYPE_SPDY_TRANSACTION_INIT_CONNECTION);
         rv = DoInitConnectionComplete(rv);
         break;
       case STATE_SEND_REQUEST:
         DCHECK_EQ(OK, rv);
         LoadLog::BeginEvent(load_log_,
-                            LoadLog::TYPE_FLIP_TRANSACTION_SEND_REQUEST);
+                            LoadLog::TYPE_SPDY_TRANSACTION_SEND_REQUEST);
         rv = DoSendRequest();
         break;
       case STATE_SEND_REQUEST_COMPLETE:
         LoadLog::EndEvent(load_log_,
-                          LoadLog::TYPE_FLIP_TRANSACTION_SEND_REQUEST);
+                          LoadLog::TYPE_SPDY_TRANSACTION_SEND_REQUEST);
         rv = DoSendRequestComplete(rv);
         break;
       case STATE_READ_HEADERS:
         DCHECK_EQ(OK, rv);
         LoadLog::BeginEvent(load_log_,
-                            LoadLog::TYPE_FLIP_TRANSACTION_READ_HEADERS);
+                            LoadLog::TYPE_SPDY_TRANSACTION_READ_HEADERS);
         rv = DoReadHeaders();
         break;
       case STATE_READ_HEADERS_COMPLETE:
         LoadLog::EndEvent(load_log_,
-                          LoadLog::TYPE_FLIP_TRANSACTION_READ_HEADERS);
+                          LoadLog::TYPE_SPDY_TRANSACTION_READ_HEADERS);
         rv = DoReadHeadersComplete(rv);
         break;
       case STATE_READ_BODY:
         DCHECK_EQ(OK, rv);
         LoadLog::BeginEvent(load_log_,
-                            LoadLog::TYPE_FLIP_TRANSACTION_READ_BODY);
+                            LoadLog::TYPE_SPDY_TRANSACTION_READ_BODY);
         rv = DoReadBody();
         break;
       case STATE_READ_BODY_COMPLETE:
         LoadLog::EndEvent(load_log_,
-                          LoadLog::TYPE_FLIP_TRANSACTION_READ_BODY);
+                          LoadLog::TYPE_SPDY_TRANSACTION_READ_BODY);
         rv = DoReadBodyComplete(rv);
         break;
       case STATE_NONE:
@@ -213,7 +213,7 @@ int FlipNetworkTransaction::DoLoop(int result) {
   return rv;
 }
 
-int FlipNetworkTransaction::DoInitConnection() {
+int SpdyNetworkTransaction::DoInitConnection() {
   next_state_ = STATE_INIT_CONNECTION_COMPLETE;
 
   std::string host = request_->url.HostNoBrackets();
@@ -221,26 +221,26 @@ int FlipNetworkTransaction::DoInitConnection() {
 
   // Use the fixed testing ports if they've been provided.  This is useful for
   // debugging.
-  if (FlipSession::SSLMode()) {
+  if (SpdySession::SSLMode()) {
     if (session_->fixed_https_port() != 0)
       port = session_->fixed_https_port();
   } else if (session_->fixed_http_port() != 0) {
     port = session_->fixed_http_port();
   }
 
-  std::string connection_group = "flip.";
+  std::string connection_group = "spdy.";
   connection_group.append(host);
 
   HostResolver::RequestInfo resolve_info(host, port);
 
-  flip_ = session_->flip_session_pool()->Get(resolve_info, session_);
-  DCHECK(flip_);
+  spdy_ = session_->spdy_session_pool()->Get(resolve_info, session_);
+  DCHECK(spdy_);
 
-  return flip_->Connect(
+  return spdy_->Connect(
       connection_group, resolve_info, request_->priority, load_log_);
 }
 
-int FlipNetworkTransaction::DoInitConnectionComplete(int result) {
+int SpdyNetworkTransaction::DoInitConnectionComplete(int result) {
   if (result < 0)
     return result;
 
@@ -248,18 +248,18 @@ int FlipNetworkTransaction::DoInitConnectionComplete(int result) {
   return OK;
 }
 
-int FlipNetworkTransaction::DoSendRequest() {
+int SpdyNetworkTransaction::DoSendRequest() {
   next_state_ = STATE_SEND_REQUEST_COMPLETE;
   CHECK(!stream_.get());
   UploadDataStream* upload_data = request_->upload_data ?
       new UploadDataStream(request_->upload_data) : NULL;
-  stream_ = flip_->GetOrCreateStream(*request_, upload_data, load_log_.get());
-  // Release the reference to |flip_| since we don't need it anymore.
-  flip_ = NULL;
+  stream_ = spdy_->GetOrCreateStream(*request_, upload_data, load_log_.get());
+  // Release the reference to |spdy_| since we don't need it anymore.
+  spdy_ = NULL;
   return stream_->SendRequest(upload_data, &response_, &io_callback_);
 }
 
-int FlipNetworkTransaction::DoSendRequestComplete(int result) {
+int SpdyNetworkTransaction::DoSendRequestComplete(int result) {
   if (result < 0)
     return result;
 
@@ -267,24 +267,24 @@ int FlipNetworkTransaction::DoSendRequestComplete(int result) {
   return OK;
 }
 
-int FlipNetworkTransaction::DoReadHeaders() {
+int SpdyNetworkTransaction::DoReadHeaders() {
   next_state_ = STATE_READ_HEADERS_COMPLETE;
   return stream_->ReadResponseHeaders(&io_callback_);
 }
 
-int FlipNetworkTransaction::DoReadHeadersComplete(int result) {
+int SpdyNetworkTransaction::DoReadHeadersComplete(int result) {
   // TODO(willchan): Flesh out the support for HTTP authentication here.
   return result;
 }
 
-int FlipNetworkTransaction::DoReadBody() {
+int SpdyNetworkTransaction::DoReadBody() {
   next_state_ = STATE_READ_BODY_COMPLETE;
 
   return stream_->ReadResponseBody(
       user_buffer_, user_buffer_len_, &io_callback_);
 }
 
-int FlipNetworkTransaction::DoReadBodyComplete(int result) {
+int SpdyNetworkTransaction::DoReadBodyComplete(int result) {
   user_buffer_ = NULL;
   user_buffer_len_ = 0;
 

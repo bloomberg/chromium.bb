@@ -885,10 +885,10 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
     }
   }
 
-  if (command_line.HasSwitch(switches::kUseFlip)) {
-    std::string flip_mode =
-        command_line.GetSwitchValueASCII(switches::kUseFlip);
-    net::HttpNetworkLayer::EnableFlip(flip_mode);
+  if (command_line.HasSwitch(switches::kUseSpdy)) {
+    std::string spdy_mode =
+        command_line.GetSwitchValueASCII(switches::kUseSpdy);
+    net::HttpNetworkLayer::EnableSpdy(spdy_mode);
   }
 
   if (command_line.HasSwitch(switches::kExplicitlyAllowedPorts)) {

@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef NET_FLIP_NETWORK_TRANSACTION_H_
-#define NET_FLIP_NETWORK_TRANSACTION_H_
+#ifndef NET_SPDY_NETWORK_TRANSACTION_H_
+#define NET_SPDY_NETWORK_TRANSACTION_H_
 
 #include <string>
 #include <deque>
@@ -20,19 +20,19 @@
 
 namespace net {
 
-class FlipSession;
-class FlipStream;
+class SpdySession;
+class SpdyStream;
 class HttpNetworkSession;
 class HttpResponseInfo;
 class IOBuffer;
 class UploadDataStream;
 
-// A FlipNetworkTransaction can be used to fetch HTTP conent.
-// The FlipDelegate is the consumer of events from the FlipSession.
-class FlipNetworkTransaction : public HttpTransaction {
+// A SpdyNetworkTransaction can be used to fetch HTTP conent.
+// The SpdyDelegate is the consumer of events from the SpdySession.
+class SpdyNetworkTransaction : public HttpTransaction {
  public:
-  explicit FlipNetworkTransaction(HttpNetworkSession* session);
-  virtual ~FlipNetworkTransaction();
+  explicit SpdyNetworkTransaction(HttpNetworkSession* session);
+  virtual ~SpdyNetworkTransaction();
 
   // HttpTransaction methods:
   virtual int Start(const HttpRequestInfo* request_info,
@@ -51,10 +51,10 @@ class FlipNetworkTransaction : public HttpTransaction {
   virtual uint64 GetUploadProgress() const;
 
  protected:
-  friend class FlipNetworkTransactionTest;
+  friend class SpdyNetworkTransactionTest;
 
   // Provide access to the session for testing.
-  FlipSession* GetFlipSession() { return flip_.get(); }
+  SpdySession* GetSpdySession() { return spdy_.get(); }
 
  private:
   enum State {
@@ -90,12 +90,12 @@ class FlipNetworkTransaction : public HttpTransaction {
 
   scoped_refptr<LoadLog> load_log_;
 
-  scoped_refptr<FlipSession> flip_;
+  scoped_refptr<SpdySession> spdy_;
 
-  CompletionCallbackImpl<FlipNetworkTransaction> io_callback_;
+  CompletionCallbackImpl<SpdyNetworkTransaction> io_callback_;
   CompletionCallback* user_callback_;
 
-  // Used to pass onto the FlipStream
+  // Used to pass onto the SpdyStream
   scoped_refptr<IOBuffer> user_buffer_;
   int user_buffer_len_;
 
@@ -110,11 +110,11 @@ class FlipNetworkTransaction : public HttpTransaction {
   // The next state in the state machine.
   State next_state_;
 
-  scoped_refptr<FlipStream> stream_;
+  scoped_refptr<SpdyStream> stream_;
 
-  DISALLOW_COPY_AND_ASSIGN(FlipNetworkTransaction);
+  DISALLOW_COPY_AND_ASSIGN(SpdyNetworkTransaction);
 };
 
 }  // namespace net
 
-#endif  // NET_HTTP_NETWORK_TRANSACTION_H_
+#endif  // NET_SPDY_NETWORK_TRANSACTION_H_

@@ -624,13 +624,13 @@ const char kTryChromeAgain[]                = "try-chrome-again";
 // Runs un-installation steps that were done by chrome first-run.
 const char kUninstall[]                     = "uninstall";
 
-// Use Flip for the transport protocol instead of HTTP.
-// This is a temporary testing flag.
-const char kUseFlip[]                       = "use-flip";
-
 // Use NSS instead of the system SSL library for SSL.
 // This is a temporary testing flag.
 const char kUseNSSForSSL[]                  = "use-nss-for-ssl";
+
+// Use Spdy for the transport protocol instead of HTTP.
+// This is a temporary testing flag.
+const char kUseSpdy[]                       = "use-spdy";
 
 // Force all requests to go to this server.  This commandline is provided
 // for testing purposes only, and will likely be removed soon.  It can also

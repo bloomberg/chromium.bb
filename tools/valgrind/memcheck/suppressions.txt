@@ -385,7 +385,7 @@
   Memcheck:Value4
   ...
   fun:inflate
-  fun:_ZN4flip10FlipFramer15DecompressFrameEPKNS_9FlipFrameE
+  fun:_ZN4spdy10SpdyFramer15DecompressFrameEPKNS_9SpdyFrameE
   ...
 }
 {
@@ -1686,19 +1686,19 @@
    bug_29392a
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN3net15FlipSessionPool3GetERKNS_12HostResolver11RequestInfoEPNS_18HttpNetworkSessionE
-   fun:_ZN3net22FlipNetworkTransaction16DoInitConnectionEv
-   fun:_ZN3net22FlipNetworkTransaction6DoLoopEi
-   fun:_ZN3net22FlipNetworkTransaction5StartEPKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEEPNS_7LoadLogE
+   fun:_ZN3net15SpdySessionPool3GetERKNS_12HostResolver11RequestInfoEPNS_18HttpNetworkSessionE
+   fun:_ZN3net22SpdyNetworkTransaction16DoInitConnectionEv
+   fun:_ZN3net22SpdyNetworkTransaction6DoLoopEi
+   fun:_ZN3net22SpdyNetworkTransaction5StartEPKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEEPNS_7LoadLogE
 }
 {
    bug_29392b
    Memcheck:Leak
    fun:_Znw*
-   fun:_ZN3net11FlipSession17GetOrCreateStreamERKNS_15HttpRequestInfoEPKNS_16UploadDataStreamE
-   fun:_ZN3net22FlipNetworkTransaction13DoSendRequestEv
-   fun:_ZN3net22FlipNetworkTransaction6DoLoopEi
-   fun:_ZN3net22FlipNetworkTransaction5StartEPKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEEPNS_7LoadLogE
+   fun:_ZN3net11SpdySession17GetOrCreateStreamERKNS_15HttpRequestInfoEPKNS_16UploadDataStreamE
+   fun:_ZN3net22SpdyNetworkTransaction13DoSendRequestEv
+   fun:_ZN3net22SpdyNetworkTransaction6DoLoopEi
+   fun:_ZN3net22SpdyNetworkTransaction5StartEPKNS_15HttpRequestInfoEP14CallbackRunnerI6Tuple1IiEEPNS_7LoadLogE
 }
 {
    bug_29675
@@ -1731,7 +1731,7 @@
    bug_30667a
    Memcheck:Value4
    fun:inflate
-   fun:_ZN4flip10FlipFramer15DecompressFrameEPKNS_9FlipFrameE
+   fun:_ZN4spdy10SpdyFramer15DecompressFrameEPKNS_9SpdyFrameE
    ...
    fun:_ZN7testing4Test3RunEv
    fun:_ZN7testing8internal12TestInfoImpl3RunEv
@@ -1746,7 +1746,7 @@
    Memcheck:Cond
    fun:inflate_fast
    fun:inflate
-   fun:_ZN4flip10FlipFramer15DecompressFrameEPKNS_9FlipFrameE
+   fun:_ZN4spdy10SpdyFramer15DecompressFrameEPKNS_9SpdyFrameE
    ...
    fun:_ZN7testing4Test3RunEv
    fun:_ZN7testing8internal12TestInfoImpl3RunEv
@@ -1760,7 +1760,7 @@
    bug_30667c
    Memcheck:Cond
    fun:inflate
-   fun:_ZN4flip10FlipFramer15DecompressFrameEPKNS_9FlipFrameE
+   fun:_ZN4spdy10SpdyFramer15DecompressFrameEPKNS_9SpdyFrameE
    ...
    fun:_ZN7testing4Test3RunEv
    fun:_ZN7testing8internal12TestInfoImpl3RunEv

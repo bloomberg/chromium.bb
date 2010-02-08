@@ -721,7 +721,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
 #if defined(OS_WIN)
   if (parsed_command_line.HasSwitch(switches::kUseNSSForSSL) ||
-      parsed_command_line.HasSwitch(switches::kUseFlip)) {
+      parsed_command_line.HasSwitch(switches::kUseSpdy)) {
     net::ClientSocketFactory::SetSSLClientSocketFactory(
         net::SSLClientSocketNSSFactory);
   }
