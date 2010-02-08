@@ -31,6 +31,10 @@ void UserScriptIdleScheduler::DidFinishLoad() {
       method_factory_.NewRunnableMethod(&UserScriptIdleScheduler::MaybeRun));
 }
 
+void UserScriptIdleScheduler::DidChangeLocationWithinPage() {
+  DidFinishLoad();
+}
+
 void UserScriptIdleScheduler::Cancel() {
   view_ = NULL;
   frame_ = NULL;

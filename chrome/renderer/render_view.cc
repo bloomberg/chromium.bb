@@ -2570,6 +2570,10 @@ void RenderView::didChangeLocationWithinPage(
   didCommitProvisionalLoad(frame, is_new_navigation);
 
   UpdateTitle(frame, frame->view()->mainFrame()->dataSource()->pageTitle());
+
+  NavigationState* navigation_state = NavigationState::FromDataSource(
+      frame->dataSource());
+  navigation_state->user_script_idle_scheduler()->DidChangeLocationWithinPage();
 }
 
 void RenderView::didUpdateCurrentHistoryItem(WebFrame* frame) {

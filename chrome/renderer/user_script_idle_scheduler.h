@@ -35,6 +35,9 @@ class UserScriptIdleScheduler {
   // Called when the document has completed loading.
   void DidFinishLoad();
 
+  // Called when the document has navigated to a fragment.
+  void DidChangeLocationWithinPage();
+
   // Called when the client has gone away and we should no longer run scripts.
   void Cancel();
 
