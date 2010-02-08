@@ -73,9 +73,8 @@ class AutoFillProfilesView : public views::View,
   // being changed.
   void CollapseStateChanged(
       std::vector<EditableSetInfo>::iterator field_set_iterator);
-  // Validates data and sets data_valid_, to allow or deny save.
-  void ValidateDataAndUpdateButtons();
-  bool data_valid() const { return data_valid_; }
+  // Validates data and fixes invalid data.
+  void ValidateAndFixLabel();
 
   // views::View methods:
   virtual void Layout();
@@ -356,7 +355,6 @@ class AutoFillProfilesView : public views::View,
   AutoFillDialogObserver* observer_;
   std::vector<EditableSetInfo> profiles_set_;
   std::vector<EditableSetInfo> credit_card_set_;
-  bool data_valid_;
 
   views::Button* save_changes_;
   AutoFillScrollView* scroll_view_;

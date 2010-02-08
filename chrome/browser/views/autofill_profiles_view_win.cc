@@ -76,8 +76,7 @@ AutoFillProfilesView::AutoFillProfilesView(
     const std::vector<CreditCard*>& credit_cards)
     : observer_(observer),
       scroll_view_(NULL),
-      save_changes_(NULL),
-      data_valid_(true) {
+      save_changes_(NULL) {
   profiles_set_.reserve(profiles.size());
   for (std::vector<AutoFillProfile*>::const_iterator address_it =
            profiles.begin();
@@ -124,7 +123,6 @@ void AutoFillProfilesView::AddClicked(EditableSetType item_type) {
   } else {
     NOTREACHED();
   }
-  ValidateDataAndUpdateButtons();
   scroll_view_->RebuildView();
 }
 
@@ -144,7 +142,6 @@ void AutoFillProfilesView::DeleteEditableSet(
   } else {
     credit_card_set_.erase(field_set_iterator);
   }
-  ValidateDataAndUpdateButtons();
   scroll_view_->RebuildView();
 }
 
@@ -153,23 +150,19 @@ void AutoFillProfilesView::CollapseStateChanged(
   scroll_view_->RebuildView();
 }
 
-void AutoFillProfilesView::ValidateDataAndUpdateButtons() {
-  bool valid = true;
+void AutoFillProfilesView::ValidateAndFixLabel() {
+  std::wstring unset_label(l10n_util::GetString(IDS_AUTOFILL_UNTITLED_LABEL));
   for (std::vector<EditableSetInfo>::iterator it = profiles_set_.begin();
-       it != profiles_set_.end() && valid;
+       it != profiles_set_.end();
        ++it) {
     if (it->address.Label().empty())
-      valid = false;
+      it->address.set_label(unset_label);
   }
   for (std::vector<EditableSetInfo>::iterator it = credit_card_set_.begin();
-       it != credit_card_set_.end() && valid;
+       it != credit_card_set_.end();
        ++it) {
     if (it->credit_card.Label().empty())
-      valid = false;
-  }
-  if ((data_valid_ && !valid) || (!data_valid_ && valid)) {
-    data_valid_ = valid;
-    GetDialogClientView()->UpdateDialogButtons();
+      it->credit_card.set_label(unset_label);
   }
 }
 
@@ -219,7 +212,6 @@ bool AutoFillProfilesView::IsDialogButtonEnabled(
     MessageBoxFlags::DialogButton button) const {
   switch (button) {
   case MessageBoxFlags::DIALOGBUTTON_OK:
-    return data_valid();
   case MessageBoxFlags::DIALOGBUTTON_CANCEL:
     return true;
   default:
@@ -244,6 +236,7 @@ views::View* AutoFillProfilesView::GetContentsView() {
 
 bool AutoFillProfilesView::Accept() {
   DCHECK(observer_);
+  ValidateAndFixLabel();
   std::vector<AutoFillProfile> profiles;
   profiles.reserve(profiles_set_.size());
   std::vector<EditableSetInfo>::iterator it;
@@ -283,7 +276,7 @@ void AutoFillProfilesView::Init() {
     views::GridLayout::USE_PREF, 0, 0);
   layout->StartRow(1, single_column_view_set_id);
   layout->AddView(scroll_view_);
-  ValidateDataAndUpdateButtons();
+  ValidateAndFixLabel();
 }
 
 /////////////////////////////////////////////////////////////////////////////
@@ -467,16 +460,11 @@ void AutoFillProfilesView::EditableSetViewContents::ContentsChanged(
       DCHECK(text_fields_[address_fields_[field].text_field]);
       if (text_fields_[address_fields_[field].text_field] == sender) {
         if (address_fields_[field].text_field == TEXT_LABEL) {
-          bool need_to_revalidate_buttons =
-              editable_fields_set_->address.Label().empty() ||
-              new_contents.empty();
           editable_fields_set_->address.set_label(new_contents);
           title_label_->SetText(new_contents);
           // One of the address labels changed - update combo boxes
           billing_model_->LabelChanged();
           shipping_model_->LabelChanged();
-          if (need_to_revalidate_buttons)
-            observer_->ValidateDataAndUpdateButtons();
         } else {
           editable_fields_set_->address.SetInfo(
               AutoFillType(address_fields_[field].type), new_contents);
@@ -489,13 +477,8 @@ void AutoFillProfilesView::EditableSetViewContents::ContentsChanged(
       DCHECK(text_fields_[credit_card_fields_[field].text_field]);
       if (text_fields_[credit_card_fields_[field].text_field] == sender) {
         if (credit_card_fields_[field].text_field == TEXT_LABEL) {
-          bool need_to_revalidate_buttons =
-              editable_fields_set_->address.Label().empty() ||
-              new_contents.empty();
           editable_fields_set_->credit_card.set_label(new_contents);
           title_label_->SetText(new_contents);
-          if (need_to_revalidate_buttons)
-            observer_->ValidateDataAndUpdateButtons();
         } else {
           editable_fields_set_->credit_card.SetInfo(
               AutoFillType(credit_card_fields_[field].type), new_contents);

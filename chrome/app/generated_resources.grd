@@ -4874,6 +4874,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_NEW_CREDITCARD" desc="The profile label of a new credit card.">
         New credit card
       </message>
+      <message name="IDS_AUTOFILL_UNTITLED_LABEL" desc="The text substituted on empty label">
+        Untitled
+      </message>
       <message name="IDS_CREDIT_CARD_NUMBER_PREVIEW_FORMAT"
                desc="Credit card preview format">
         <ph name="OBFUSCATED_CC_NUMBER">$1<ex>************1234</ex>
