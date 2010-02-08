@@ -155,7 +155,7 @@ bool GetSystemDirectory(string16 *path);
 }  // namespace
 
 template<>
-WifiDataProviderImplBase *WifiDataProvider::DefaultFactoryFunction() {
+WifiDataProviderImplBase* WifiDataProvider::DefaultFactoryFunction() {
   return new Win32WifiDataProvider();
 }
 

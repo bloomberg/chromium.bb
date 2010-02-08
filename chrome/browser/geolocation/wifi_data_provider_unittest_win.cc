@@ -138,9 +138,9 @@ TEST_F(Win32WifiDataProviderTest, DoScanWithResults) {
   provider_->RemoveListener(&quit_listener);
 }
 
-TEST_F(Win32WifiDataProviderTest, DISABLED_StartThreadViaDeviceDataProvider) {
+TEST_F(Win32WifiDataProviderTest, StartThreadViaDeviceDataProvider) {
   MessageLoopQuitListener quit_listener(&main_message_loop_);
-  DeviceDataProvider<WifiData>::SetFactory(CreateWin32WifiDataProviderStatic);
+  WifiDataProvider::SetFactory(CreateWin32WifiDataProviderStatic);
   DeviceDataProvider<WifiData>::Register(&quit_listener);
   main_message_loop_.Run();
   DeviceDataProvider<WifiData>::Unregister(&quit_listener);

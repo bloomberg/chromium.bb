@@ -296,6 +296,10 @@ class DeviceDataProvider {
     DCHECK(instance_);
     instance_->Ref();
     instance_->AddListener(listener);
+    // Start the provider after adding the listener, to avoid any race in
+    // it receiving an early callback.
+    bool started = instance_->impl_->StartDataProvider();
+    DCHECK(started);
     return instance_;
   }
 
@@ -327,8 +331,6 @@ class DeviceDataProvider {
     DCHECK(factory_function_);
     impl_.reset((*factory_function_)());
     impl_->SetContainer(this);
-    bool started = impl_->StartDataProvider();
-    DCHECK(started);
   }
   virtual ~DeviceDataProvider() {}
 
