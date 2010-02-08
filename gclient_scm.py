@@ -179,8 +179,25 @@ class GitWrapper(SCMWrapper, scm.GIT):
       print("\n_____ %s%s" % (self.relpath, rev_str))
 
     if not os.path.exists(self.checkout_path):
-      self._Run(['clone', url, self.checkout_path],
-                cwd=self._root_dir, redirect_stdout=False)
+      # Cloning
+      for i in range(3):
+        try:
+          self._Run(['clone', url, self.checkout_path],
+                    cwd=self._root_dir, redirect_stdout=False)
+          break
+        except gclient_utils.Error, e:
+          # TODO(maruel): Hackish, should be fixed by moving _Run() to
+          # CheckCall().
+          # Too bad we don't have access to the actual output.
+          # We should check for "transfer closed with NNN bytes remaining to
+          # read". In the meantime, just make sure .git exists.
+          if (e.args[0] == 'git command clone returned 128' and
+              os.path.exists(os.path.join(self.checkout_path, '.git'))):
+            print str(e)
+            print "Retrying..."
+            continue
+          raise e
+
       if revision:
         self._Run(['reset', '--hard', revision], redirect_stdout=False)
       files = self._Run(['ls-files']).split()
@@ -209,14 +226,18 @@ class GitWrapper(SCMWrapper, scm.GIT):
                                 '\tSee man git-rebase for details.\n'
                                  % (self.relpath, rev_str))
 
+    # TODO(maruel): Do we need to do an automatic retry here? Probably overkill
     merge_base = self._Run(['merge-base', 'HEAD', new_base])
     self._Run(['remote', 'update'], redirect_stdout=False)
     files = self._Run(['diff', new_base, '--name-only']).split()
     file_list.extend([os.path.join(self.checkout_path, f) for f in files])
     if options.force:
       self._Run(['reset', '--hard', merge_base], redirect_stdout=False)
-    self._Run(['rebase', '-v', '--onto', new_base, merge_base, cur_branch],
-                redirect_stdout=False, checkrc=False)
+    try:
+      self._Run(['rebase', '-v', '--onto', new_base, merge_base, cur_branch],
+                  redirect_stdout=False)
+    except gclient_utils.Error:
+      pass
 
     # If the rebase generated a conflict, abort and ask user to fix
     if self._GetCurrentBranch() is None:
@@ -298,13 +319,13 @@ class GitWrapper(SCMWrapper, scm.GIT):
       return None
     return branch
 
-  def _Run(self, args, cwd=None, checkrc=True, redirect_stdout=True):
-    # TODO(maruel): Merge with Capture?
+  def _Run(self, args, cwd=None, redirect_stdout=True):
+    # TODO(maruel): Merge with Capture or better gclient_utils.CheckCall().
     if cwd is None:
         cwd = self.checkout_path
-    stdout=None
+    stdout = None
     if redirect_stdout:
-      stdout=subprocess.PIPE
+      stdout = subprocess.PIPE
     if cwd == None:
       cwd = self.checkout_path
     cmd = [self.COMMAND]
@@ -316,7 +337,7 @@ class GitWrapper(SCMWrapper, scm.GIT):
     except OSError:
       raise gclient_utils.Error("git command '%s' failed to run." %
               ' '.join(cmd) + "\nCheck that you have git installed.")
-    if checkrc and sp.returncode:
+    if sp.returncode:
       raise gclient_utils.Error('git command %s returned %d' %
                                 (args[0], sp.returncode))
     if output is not None:

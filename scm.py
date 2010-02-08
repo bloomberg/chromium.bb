@@ -380,14 +380,14 @@ class SVN(object):
                                True,
                                CaptureMatchingLines)
       except gclient_utils.Error:
-        # We enforce that some progress has been made.
-        if len(failure) and len(file_list) > previous_list_len:
+        # We enforce that some progress has been made or HTTP 502.
+        if ([True for f in failure if '502 Bad Gateway' in f] or
+            (len(failure) and len(file_list) > previous_list_len)):
           if args[0] == 'checkout':
-            args = args[:]
             # An aborted checkout is now an update.
-            args[0] = 'update'
+            args = ['update'] + args[1:]
           continue
-        # No progress was made, bail out.
+        # No progress was made or an unknown error we aren't sure, bail out.
         raise
       break
 
