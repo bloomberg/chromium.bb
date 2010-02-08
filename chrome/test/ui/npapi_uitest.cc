@@ -243,7 +243,8 @@ TEST_F(NPAPIVisiblePluginTester, AlertInWindowMessage) {
       MessageBoxFlags::DIALOGBUTTON_OK));
 }
 
-TEST_F(NPAPIVisiblePluginTester, VerifyNPObjectLifetimeTest) {
+// Flaky, http://crbug.com/34997.
+TEST_F(NPAPIVisiblePluginTester, FLAKY_VerifyNPObjectLifetimeTest) {
   if (UITest::in_process_renderer())
     return;
 
