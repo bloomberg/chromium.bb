@@ -106,6 +106,7 @@
     {
       'target_name': 'chrome_frame_unittests',
       'type': 'executable',
+      'msvs_guid': '17D98CCA-0F6A-470F-9DF9-56DC6CC1A0BE',
       'dependencies': [
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../chrome/chrome.gyp:browser',     
@@ -174,6 +175,7 @@
     },
     {
       'target_name': 'chrome_frame_tests',
+      'msvs_guid': '1D25715A-C8CE-4448-AFA3-8515AF22D235',
       'type': 'executable',
       'dependencies': [
         '../build/temp_gyp/googleurl.gyp:googleurl',
@@ -259,6 +261,7 @@
     },
     {
       'target_name': 'chrome_frame_perftests',
+      'msvs_guid': '3767888B-76ED-4D2A-B1F5-263CC56A12AA',
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:base_i18n',
@@ -317,6 +320,7 @@
 
     {
       'target_name': 'chrome_frame_net_tests',
+      'msvs_guid': '8FDA8275-0415-4B08-A1DC-C95B0D3708DB',
       'type': 'executable',
       'dependencies': [
         '../base/base.gyp:test_support_base',
@@ -381,6 +385,7 @@
     {
       'target_name': 'chrome_frame_reliability_tests',
       'type': 'executable',
+      'msvs_guid': 'A1440368-4089-4E14-8864-D84D3C5714A7',
       'dependencies': [
         '../build/temp_gyp/googleurl.gyp:googleurl',
         '../chrome/chrome.gyp:browser',
