@@ -59,6 +59,12 @@ class DialogDelegate : public WindowDelegate {
   // up to the buttons.
   virtual View* GetExtraView() { return NULL; }
 
+  // Returns whether the height of the extra view should be at least as tall as
+  // the buttons. The default (false) is to give the extra view it's preferred
+  // height. By returning true the height becomes
+  // max(extra_view preferred height, buttons preferred height).
+  virtual bool GetSizeExtraViewHeightToButtons() { return false; }
+
   // Returns the default dialog button. This should not be a mask as only
   // one button should ever be the default button.  Return
   // MessageBoxFlags::DIALOGBUTTON_NONE if there is no default.  Default

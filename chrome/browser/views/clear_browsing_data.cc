@@ -25,6 +25,8 @@
 #include "views/window/dialog_client_view.h"
 #include "views/window/window.h"
 
+using views::GridLayout;
+
 // The combo box is vertically aligned to the 'time-period' label, which makes
 // the combo box look a little too close to the check box above it when we use
 // standard layout to separate them. We therefore add a little extra margin to
@@ -73,13 +75,12 @@ ClearBrowsingDataView::~ClearBrowsingDataView(void) {
 void ClearBrowsingDataView::Init() {
   // Views we will add to the *parent* of this dialog, since it will display
   // next to the buttons which we don't draw ourselves.
-  throbber_.reset(new views::Throbber(50, true));
-  throbber_->set_parent_owned(false);
+  throbber_ = new views::Throbber(50, true);
   throbber_->SetVisible(false);
 
-  status_label_.SetText(l10n_util::GetString(IDS_CLEAR_DATA_DELETING));
-  status_label_.SetVisible(false);
-  status_label_.set_parent_owned(false);
+  status_label_ = new views::Label(
+      l10n_util::GetString(IDS_CLEAR_DATA_DELETING));
+  status_label_->SetVisible(false);
 
   // Regular view controls we draw by ourself. First, we add the dialog label.
   delete_all_label_ = new views::Label(
@@ -122,6 +123,28 @@ void ClearBrowsingDataView::Init() {
                                          prefs::kDeleteTimePeriod));
   time_period_combobox_->set_listener(this);
   AddChildView(time_period_combobox_);
+
+  // Create the throbber and related views. The throbber and status link are
+  // contained in throbber_view_, which is positioned by DialogClientView right
+  // next to the buttons.
+  throbber_view_ = new views::View();
+
+  GridLayout* layout = new GridLayout(throbber_view_);
+  throbber_view_->SetLayoutManager(layout);
+  views::ColumnSet* column_set = layout->AddColumnSet(0);
+  // DialogClientView positions the extra view at kButtonHEdgeMargin, but we
+  // put all our controls at kPanelHorizMargin. Add a padding column so things
+  // line up nicely.
+  if (kPanelHorizMargin - kButtonHEdgeMargin > 0)
+    column_set->AddPaddingColumn(0, kPanelHorizMargin - kButtonHEdgeMargin);
+  column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                        GridLayout::USE_PREF, 0, 0);
+  column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+  column_set->AddColumn(GridLayout::CENTER, GridLayout::CENTER, 0,
+                        GridLayout::USE_PREF, 0, 0);
+  layout->StartRow(1, 0);
+  layout->AddView(throbber_);
+  layout->AddView(status_label_);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -203,47 +226,6 @@ void ClearBrowsingDataView::Layout() {
                                    time_period_label_->y() -
                                        ((sz.height() - label_y_size) / 2),
                                    sz.width(), sz.height());
-
-  // Get the y-coordinate of our parent so we can position the throbber and
-  // status message at the bottom of the panel.
-  gfx::Rect parent_bounds = GetParent()->GetLocalBounds(false);
-
-  sz = throbber_->GetPreferredSize();
-  int throbber_topleft_x = kPanelHorizMargin;
-  int throbber_topleft_y = parent_bounds.bottom() - sz.height() -
-                           kButtonVEdgeMargin - 3;
-  throbber_->SetBounds(throbber_topleft_x, throbber_topleft_y, sz.width(),
-                       sz.height());
-
-  // The status label should be at the bottom of the screen, to the right of
-  // the throbber.
-  sz = status_label_.GetPreferredSize();
-  int status_label_x = throbber_->x() + throbber_->width() +
-                       kRelatedControlHorizontalSpacing;
-  status_label_.SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  status_label_.SetBounds(status_label_x,
-                          throbber_topleft_y + 1,
-                          sz.width(),
-                          sz.height());
-}
-
-void ClearBrowsingDataView::ViewHierarchyChanged(bool is_add,
-                                                 views::View* parent,
-                                                 views::View* child) {
-  // Since we want the some of the controls to show up in the same visual row
-  // as the buttons, which are provided by the framework, we must add the
-  // buttons to the non-client view, which is the parent of this view.
-  // Similarly, when we're removed from the view hierarchy, we must take care
-  // to remove these items as well.
-  if (child == this) {
-    if (is_add) {
-      parent->AddChildView(&status_label_);
-      parent->AddChildView(throbber_.get());
-    } else {
-      parent->RemoveChildView(&status_label_);
-      parent->RemoveChildView(throbber_.get());
-    }
-  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -320,8 +302,6 @@ views::View* ClearBrowsingDataView::GetContentsView() {
 
 views::ClientView* ClearBrowsingDataView::CreateClientView(
     views::Window* window) {
-  using views::GridLayout;
-
   views::Link* flash_link =
       new views::Link(l10n_util::GetString(IDS_FLASH_STORAGE_SETTINGS));
   flash_link->SetController(this);
@@ -430,7 +410,7 @@ void ClearBrowsingDataView::UpdateControlEnabledState() {
   del_form_data_checkbox_->SetEnabled(!delete_in_progress_);
   time_period_combobox_->SetEnabled(!delete_in_progress_);
 
-  status_label_.SetVisible(delete_in_progress_);
+  status_label_->SetVisible(delete_in_progress_);
   throbber_->SetVisible(delete_in_progress_);
   if (delete_in_progress_)
     throbber_->Start();
@@ -479,5 +459,5 @@ void ClearBrowsingDataView::OnBrowsingDataRemoverDone() {
   // No need to remove ourselves as an observer as BrowsingDataRemover deletes
   // itself after we return.
   remover_ = NULL;
-  window()->Close();
+  //  window()->Close();
 }

@@ -48,9 +48,6 @@ class ClearBrowsingDataView : public views::View,
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
-  void ViewHierarchyChanged(bool is_add,
-                            views::View* parent,
-                            views::View* child);
 
   // Overridden from views::DialogDelegate:
   virtual int GetDefaultDialogButton() const;
@@ -67,6 +64,8 @@ class ClearBrowsingDataView : public views::View,
   virtual bool Accept();
   virtual views::View* GetContentsView();
   views::ClientView* CreateClientView(views::Window* window);
+  virtual views::View* GetExtraView() { return throbber_view_; }
+  virtual bool GetSizeExtraViewHeightToButtons() { return true; }
 
   // Overridden from ComboboxModel:
   virtual int GetItemCount();
@@ -98,8 +97,9 @@ class ClearBrowsingDataView : public views::View,
   virtual void OnBrowsingDataRemoverDone();
 
   // UI elements we add to the parent view.
-  scoped_ptr<views::Throbber> throbber_;
-  views::Label status_label_;
+  views::View* throbber_view_;
+  views::Throbber* throbber_;
+  views::Label* status_label_;
   // Other UI elements.
   views::Label* delete_all_label_;
   views::Checkbox* del_history_checkbox_;

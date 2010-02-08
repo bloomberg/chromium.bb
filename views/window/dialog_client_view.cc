@@ -110,6 +110,7 @@ DialogClientView::DialogClientView(Window* owner, View* contents_view)
       cancel_button_(NULL),
       default_button_(NULL),
       extra_view_(NULL),
+      size_extra_view_height_to_buttons_(false),
       accepted_(false),
       listening_to_focus_(false),
       saved_focus_manager_(NULL),
@@ -462,6 +463,7 @@ void DialogClientView::LayoutDialogButtons() {
   gfx::Rect lb = GetLocalBounds(false);
   gfx::Rect extra_bounds;
   int bottom_y = lb.bottom() - kButtonVEdgeMargin;
+  int button_height = 0;
   if (bottom_view_) {
     gfx::Size bottom_pref = bottom_view_->GetPreferredSize();
     bottom_y -= bottom_pref.height() + kButtonVEdgeMargin + kButtonVEdgeMargin;
@@ -476,6 +478,7 @@ void DialogClientView::LayoutDialogButtons() {
     // The extra view bounds are dependent on this button.
     extra_bounds.set_width(std::max(0, cancel_button_->x()));
     extra_bounds.set_y(cancel_button_->y());
+    button_height = std::max(button_height, ps.height());
   }
   if (ok_button_) {
     gfx::Size ps = ok_button_->GetPreferredSize();
@@ -491,11 +494,14 @@ void DialogClientView::LayoutDialogButtons() {
     // The extra view bounds are dependent on this button.
     extra_bounds.set_width(std::max(0, ok_button_->x()));
     extra_bounds.set_y(ok_button_->y());
+    button_height = std::max(button_height, ps.height());
   }
   if (extra_view_) {
     gfx::Size ps = extra_view_->GetPreferredSize();
     extra_bounds.set_x(lb.x() + kButtonHEdgeMargin);
-    extra_bounds.set_height(ps.height());
+    int height = size_extra_view_height_to_buttons_ ?
+        std::max(ps.height(), button_height) : ps.height();
+    extra_bounds.set_height(height);
     extra_view_->SetBounds(extra_bounds);
   }
 }
@@ -513,6 +519,8 @@ void DialogClientView::CreateExtraView() {
     extra_view_ = extra_view;
     extra_view_->SetGroup(kButtonGroup);
     AddChildView(extra_view_);
+    size_extra_view_height_to_buttons_ =
+        GetDialogDelegate()->GetSizeExtraViewHeightToButtons();
   }
 }
 

@@ -126,6 +126,10 @@ class DialogClientView : public ClientView,
   // The button-level extra view, NULL unless the dialog delegate supplies one.
   View* extra_view_;
 
+  // See description of DialogDelegate::GetSizeExtraViewHeightToButtons for
+  // details on this.
+  bool size_extra_view_height_to_buttons_;
+
   // The layout rect of the size box, when visible.
   gfx::Rect size_box_bounds_;
 
