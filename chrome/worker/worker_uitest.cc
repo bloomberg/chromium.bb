@@ -388,7 +388,8 @@ TEST_F(WorkerTest, WorkerXhrHttpLayoutTests) {
   StopHttpServer();
 }
 
-TEST_F(WorkerTest, MessagePorts) {
+// Flaky, http://crbug.com/34996.
+TEST_F(WorkerTest, FLAKY_MessagePorts) {
   static const char* kLayoutTestFiles[] = {
     "message-channel-gc.html",
     "message-channel-gc-2.html",
