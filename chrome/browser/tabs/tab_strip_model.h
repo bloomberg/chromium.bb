@@ -602,6 +602,14 @@ class TabStripModel : public NotificationObserver {
   bool InternalCloseTabs(std::vector<int> indices,
                          bool create_historical_tabs);
 
+  // Invoked from InternalCloseTabs and when an extension is removed for an app
+  // tab. Notifies observers of TabClosingAt and deletes |contents|. If
+  // |create_historical_tabs| is true, CreateHistoricalTab is invoked on the
+  // delegate.
+  void InternalCloseTab(TabContents* contents,
+                        int index,
+                        bool create_historical_tabs);
+
   TabContents* GetContentsAt(int index) const;
 
   // The actual implementation of SelectTabContentsAt. Takes the previously

@@ -701,12 +701,14 @@ void TabStripModel::Observe(NotificationType type,
       Extension* extension = Details<Extension>(details).ptr();
       // Iterate backwards as we may remove items while iterating.
       for (int i = count() - 1; i >= 0; i--) {
-        if (GetTabContentsAt(i)->app_extension() == extension) {
+        TabContents* contents = GetTabContentsAt(i);
+        if (contents->app_extension() == extension) {
           // The extension an app tab was created from has been nuked. Delete
           // the TabContents. Deleting a TabContents results in a notification
           // of type TAB_CONTENTS_DESTROYED; we do the necessary cleanup in
           // handling that notification.
-          delete GetTabContentsAt(i);
+
+          InternalCloseTab(contents, i, false);
         }
       }
       break;
@@ -774,20 +776,26 @@ bool TabStripModel::InternalCloseTabs(std::vector<int> indices,
       continue;
     }
 
-    FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
-        TabClosingAt(detached_contents, indices[i]));
-
-    // Ask the delegate to save an entry for this tab in the historical tab
-    // database if applicable.
-    if (create_historical_tabs)
-      delegate_->CreateHistoricalTab(detached_contents);
-
-    // Deleting the TabContents will call back to us via NotificationObserver
-    // and detach it.
-    delete detached_contents;
+    InternalCloseTab(detached_contents, indices[i], create_historical_tabs);
   }
 
   return retval;
+}
+
+void TabStripModel::InternalCloseTab(TabContents* contents,
+                                     int index,
+                                     bool create_historical_tabs) {
+  FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
+                    TabClosingAt(contents, index));
+
+  // Ask the delegate to save an entry for this tab in the historical tab
+  // database if applicable.
+  if (create_historical_tabs)
+    delegate_->CreateHistoricalTab(contents);
+
+  // Deleting the TabContents will call back to us via NotificationObserver
+  // and detach it.
+  delete contents;
 }
 
 TabContents* TabStripModel::GetContentsAt(int index) const {

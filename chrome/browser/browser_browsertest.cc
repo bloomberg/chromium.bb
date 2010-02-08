@@ -23,7 +23,6 @@
 #include "chrome/common/page_transition_types.h"
 #include "chrome/test/in_process_browser_test.h"
 #include "chrome/test/ui_test_utils.h"
-#include "testing/gtest/include/gtest/gtest.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "net/base/mock_host_resolver.h"
@@ -62,6 +61,22 @@ int CountRenderProcessHosts() {
     ++result;
   return result;
 }
+
+class MockTabStripModelObserver : public TabStripModelObserver {
+ public:
+  MockTabStripModelObserver() : closing_count_(0) {}
+
+  virtual void TabClosingAt(TabContents* contents, int index) {
+    closing_count_++;
+  }
+
+  int closing_count() const { return closing_count_; }
+
+ private:
+  int closing_count_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockTabStripModelObserver);
+};
 
 }  // namespace
 
@@ -378,6 +393,43 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, RevivePhantomTab) {
   ASSERT_EQ(2, browser()->tab_count());
   // The first tab should no longer be a phantom.
   EXPECT_FALSE(model->IsPhantomTab(0));
+}
+
+// Makes sure TabClosing is sent when uninstalling an extension that is an app
+// tab.
+IN_PROC_BROWSER_TEST_F(BrowserTest, TabClosingWhenRemovingExtension) {
+  HTTPTestServer* server = StartHTTPServer();
+  ASSERT_TRUE(server);
+  host_resolver()->AddRule("www.example.com", "127.0.0.1");
+  GURL url(server->TestServerPage("empty.html"));
+  TabStripModel* model = browser()->tabstrip_model();
+
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("app/")));
+
+  Extension* app_extension = GetExtension();
+
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  TabContents* app_contents = new TabContents(browser()->profile(), NULL,
+                                              MSG_ROUTING_NONE, NULL);
+  app_contents->SetAppExtension(app_extension);
+
+  model->AddTabContents(app_contents, 0, false, 0, false);
+  model->SetTabPinned(0, true);
+  ui_test_utils::NavigateToURL(browser(), url);
+
+  MockTabStripModelObserver observer;
+  model->AddObserver(&observer);
+
+  // Uninstall the extension and make sure TabClosing is sent.
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  service->UninstallExtension(GetExtension()->id(), false);
+  EXPECT_EQ(1, observer.closing_count());
+
+  model->RemoveObserver(&observer);
+
+  // There should only be one tab now.
+  ASSERT_EQ(1, browser()->tab_count());
 }
 
 IN_PROC_BROWSER_TEST_F(BrowserTest, AppTabRemovedWhenExtensionUninstalled) {
