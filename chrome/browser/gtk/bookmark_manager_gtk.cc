@@ -626,6 +626,9 @@ void BookmarkManagerGtk::ResetOrganizeMenu(bool left) {
   else if (parent)
     nodes.push_back(parent);
 
+  // Whether the "recently added" or "search" options are selected on the left.
+  bool is_other = !parent;
+
   // We DeleteSoon on the old one to give any reference holders (e.g.
   // the event that caused this reset) a chance to release their refs.
   MenuGtk* old_menu = organize_menu_.release();
@@ -639,12 +642,25 @@ void BookmarkManagerGtk::ResetOrganizeMenu(bool left) {
 
   organize_menu_controller_.reset(
       new BookmarkContextMenuController(GTK_WINDOW(window_), this, profile_,
-        NULL, parent, nodes,
+        NULL, parent, nodes, is_other ?
+        BookmarkContextMenuController::BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER :
         BookmarkContextMenuController::BOOKMARK_MANAGER_ORGANIZE_MENU));
   organize_menu_.reset(
       new MenuGtk(NULL, organize_menu_controller_->menu_model()));
   gtk_menu_item_set_submenu(GTK_MENU_ITEM(organize_),
                             organize_menu_->widget());
+
+  // Also rebuild the context menu.
+  old_controller = context_menu_controller_.release();
+  if (old_controller)
+    MessageLoop::current()->DeleteSoon(FROM_HERE, old_controller);
+  context_menu_controller_.reset(
+      new BookmarkContextMenuController(GTK_WINDOW(window_), this, profile_,
+        NULL, parent, nodes, is_other ?
+        BookmarkContextMenuController::BOOKMARK_MANAGER_TABLE_OTHER :
+        BookmarkContextMenuController::BOOKMARK_MANAGER_TABLE));
+  context_menu_.reset(
+      new MenuGtk(NULL, context_menu_controller_->menu_model()));
 }
 
 void BookmarkManagerGtk::BuildLeftStore() {
@@ -1305,7 +1321,7 @@ gboolean BookmarkManagerGtk::OnTreeViewButtonPress(
     bm->ignore_rightclicks_ = false;
   }
 
-  bm->organize_menu_->PopupAsContext(button->time);
+  bm->context_menu_->PopupAsContext(button->time);
   return TRUE;
 }
 

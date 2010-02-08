@@ -245,23 +245,15 @@ void BookmarkContextMenuController::BuildMenu() {
   }
   AddItem(IDS_BOOKMARK_BAR_REMOVE);
 
-  if (configuration_ == BOOKMARK_MANAGER_TABLE ||
-      configuration_ == BOOKMARK_MANAGER_TABLE_OTHER ||
-      configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU ||
+  if (configuration_ == BOOKMARK_MANAGER_TABLE_OTHER ||
       configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER) {
     AddItem(IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER);
   }
 
-  if (configuration_ == BOOKMARK_MANAGER_TABLE ||
-      configuration_ == BOOKMARK_MANAGER_TABLE_OTHER ||
-      configuration_ == BOOKMARK_MANAGER_TREE ||
-      configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU ||
-      configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER) {
-    AddSeparator();
-    AddItem(IDS_CUT);
-    AddItem(IDS_COPY);
-    AddItem(IDS_PASTE);
-  }
+  AddSeparator();
+  AddItem(IDS_CUT);
+  AddItem(IDS_COPY);
+  AddItem(IDS_PASTE);
 
   if (configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU) {
     AddSeparator();

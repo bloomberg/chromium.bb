@@ -350,6 +350,10 @@ class BookmarkManagerGtk : public BookmarkModelObserver,
   // Whether the menu refers to the left selection.
   bool organize_is_for_left_;
 
+  // The context menu view and controller.
+  scoped_ptr<BookmarkContextMenuController> context_menu_controller_;
+  scoped_ptr<MenuGtk> context_menu_;
+
   // The sync status menu item that notifies the user about the current status
   // of bookmarks synchronization.
   GtkWidget* sync_status_menu_;
