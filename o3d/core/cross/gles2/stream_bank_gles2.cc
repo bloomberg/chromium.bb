@@ -67,7 +67,7 @@ GLenum GLDataType(const Field& field) {
 }
 
 String GetAttribName(GLuint gl_program, GLES2Parameter gl_param) {
-  GLchar buffer[1024];
+  char buffer[1024];
   GLsizei name_len;
   GLint size;
   GLenum type;
@@ -223,4 +223,3 @@ int StreamBankGLES2::FindVertexStream(Stream::Semantic semantic, int index) {
 }
 
 }  // namespace o3d
-

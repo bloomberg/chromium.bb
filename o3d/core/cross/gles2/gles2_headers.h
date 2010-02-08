@@ -32,11 +32,61 @@
 #ifndef O3D_CORE_CROSS_GLES2_GL_HEADERS_H_
 #define O3D_CORE_CROSS_GLES2_GL_HEADERS_H_
 
+#if defined(GLES2_BACKEND_DESKTOP_GL)
+
 #include <GL/glew.h>
 #if defined(OS_WIN)
 #include <GL/wglew.h>
 #elif defined(OS_LINUX)
 #include <GL/glx.h>
 #endif
+
+#elif defined(GLES2_BACKEND_NATIVE_GLES2)
+
+#include <EGL/egl.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
+
+#define glClearDepth glClearDepthf
+#define glDepthRange glDepthRangef
+
+// Buffer Objects
+#define glBindBufferARB glBindBuffer
+#define glBufferDataARB glBufferData
+#define glBufferSubDataARB glBufferSubData
+#define glDeleteBuffersARB glDeleteBuffers
+#define glGenBuffersARB glGenBuffers
+
+// Framebuffer Objects
+#define glBindFramebufferEXT glBindFramebuffer
+#define glBindRenderbufferEXT glBindRenderbuffer
+#define glCheckFramebufferStatusEXT glCheckFramebufferStatus
+#define glDeleteRenderbuffersEXT glDeleteRenderbuffers
+#define glDeleteFramebuffersEXT glDeleteFramebuffers
+#define glFramebufferRenderbufferEXT glFramebufferRenderbuffer
+#define glFramebufferTexture2DEXT glFramebufferTexture2D
+#define glGenFramebuffersEXT glGenFramebuffers
+#define glGenRenderbuffersEXT glGenRenderbuffers
+#define glRenderbufferStorageEXT glRenderbufferStorage
+
+#define GLEW_VERSION_2_0 true
+#define GLEW_VERSION_1_4 true
+
+// TODO(piman): handle gracefully the case where GL_EXT_bgra isn't present.
+#define GL_BGRA 0x80E1
+
+// TODO(piman): handle gracefully the case where GL_OES_half_float isn't
+// present.
+#define GL_HALF_FLOAT_ARB GL_HALF_FLOAT_OES
+
+#elif defined(GLES2_BACKEND_GLES2_COMMAND_BUFFERS)
+
+#include <GLES2/gl2.h>
+
+#else  // GLES2_BACKEND_xxx not defined
+
+#error "GLES2_BACKEND_xxx not defined"
+
+#endif  // GLES2_BACKEND_xxx
 
 #endif  // O3D_CORE_CROSS_GLES2_GL_HEADERS_H_

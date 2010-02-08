@@ -143,10 +143,18 @@ class RendererGLES2 : public Renderer {
       return true;
     }
 #elif defined(OS_LINUX)
+#if defined(GLES2_BACKEND_DESKTOP_GL)
     if ((context_ != NULL) &&
         (context_ == glXGetCurrentContext())) {
       return true;
     }
+#elif defined(GLES2_BACKEND_NATIVE_GLES2)
+    if (egl_context_ && egl_context_ == eglGetCurrentContext()) {
+      return true;
+    }
+#elif defined(GLES2_BACKEND_GLES2_COMMAND_BUFFERS)
+#error RendererGLES2::IsCurrent() Not implemented.
+#endif
 #else
     Error: must port RendererGLES2::IsCurrent() to your platform.
 #endif
@@ -267,7 +275,13 @@ class RendererGLES2 : public Renderer {
 #ifdef OS_LINUX
   Display *display_;
   Window window_;
+#if defined(GLES2_BACKEND_DESKTOP_GL)
   GLXContext context_;
+#elif defined(GLES2_BACKEND_NATIVE_GLES2)
+  EGLDisplay egl_display_;
+  EGLSurface egl_surface_;
+  EGLContext egl_context_;
+#endif
 #endif
 
   // Handle to the framebuffer-object used while rendering to off-screen
@@ -345,4 +359,3 @@ class RendererGLES2 : public Renderer {
 }  // namespace o3d
 
 #endif  // O3D_CORE_CROSS_GLES2_RENDERER_GLES2_H_
-

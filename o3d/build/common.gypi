@@ -27,6 +27,7 @@
     'variables': {
       # If the DEPS file exists two levels up, then we're in a Chrome tree.
       'o3d_in_chrome%': '<!(python <(DEPTH)/o3d/build/file_exists.py <(DEPTH)/DEPS)',
+      'gles2_backend%': 'desktop_gl',
       'conditions' : [
         # These have to come first because GYP doesn't like it when
         # they're part of the same conditional as a conditions clause that
@@ -57,6 +58,7 @@
     'o3d_in_chrome%': '<(o3d_in_chrome)',
     'renderer%': '<(renderer)',
     'cgdir%': '<(cgdir)',
+    'gles2_backend%': '<(gles2_backend)',
     'swiftshaderdir%': '<(swiftshaderdir)',
 
     # We default to building everything only if the assets exist.
@@ -88,6 +90,52 @@
           },
       }],
     ],
+    'conditions' : [
+      ['renderer == "d3d9"',
+        {
+          'defines': [
+            'RENDERER_D3D9',
+          ],
+        },
+      ],
+      ['renderer == "gl"',
+        {
+          'defines': [
+            'RENDERER_GL',
+          ],
+        },
+      ],
+      ['renderer == "gles2"',
+        {
+          'defines': [
+            'RENDERER_GLES2',
+          ],
+          'conditions': [
+            ['gles2_backend == "desktop_gl"',
+              {
+                'defines': [
+                  'GLES2_BACKEND_DESKTOP_GL',
+                ],
+              },
+            ],
+            ['gles2_backend == "native_gles2"',
+              {
+                'defines': [
+                  'GLES2_BACKEND_NATIVE_GLES2',
+                ],
+              },
+            ],
+            ['gles2_backend == "gles2_command_buffers"',
+              {
+                'defines': [
+                  'GLES2_BACKEND_GLES2_COMMAND_BUFFERS',
+                ],
+              },
+            ],
+          ],
+        },
+      ],
+    ],
   },
   'conditions' : [
     ['OS == "win"',
@@ -102,29 +150,6 @@
           ],
           # Disable warning: "'this' : used in base member initialization list."
           'msvs_disabled_warnings': [4355],
-          'conditions': [
-            ['renderer == "d3d9"',
-              {
-                'defines': [
-                  'RENDERER_D3D9',
-                ],
-              },
-            ],
-            ['renderer == "gl"',
-              {
-                'defines': [
-                  'RENDERER_GL',
-                ],
-              },
-            ],
-            ['renderer == "gles2"',
-              {
-                'defines': [
-                  'RENDERER_GLES2',
-                ],
-              },
-            ],
-          ],
         },
       },
     ],
@@ -155,22 +180,6 @@
             'WARNING_CXXFLAGS': ['-Wstrict-aliasing',
                                  '-Wno-deprecated',],
           },
-          'conditions': [
-            ['renderer == "gl"',
-              {
-                'defines': [
-                  'RENDERER_GL',
-                ],
-              },
-            ],
-            ['renderer == "gles2"',
-              {
-                'defines': [
-                  'RENDERER_GLES2',
-                ],
-              },
-            ],
-          ],
         },
       },
     ],
@@ -189,22 +198,6 @@
           'cflags': [
             '-fvisibility=hidden',
             '-Wstrict-aliasing',
-          ],
-          'conditions': [
-            ['renderer == "gl"',
-              {
-                'defines': [
-                  'RENDERER_GL',
-                ],
-              },
-            ],
-            ['renderer == "gles2"',
-              {
-                'defines': [
-                  'RENDERER_GLES2',
-                ],
-              },
-            ],
           ],
         },
       },

@@ -212,11 +212,6 @@
               '-Wl,-znodelete',
               '-Wl,--gc-sections',
             ],
-            'link_settings': {
-              'libraries': [
-                '-lGL',
-              ],
-            },
             'conditions' : [
               ['plugin_rpath != ""',
                 {

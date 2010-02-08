@@ -203,6 +203,15 @@ bool GetIdentifierAfterString(const String& original,
   return false;
 }
 
+#ifdef GLES2_BACKEND_DESKTOP_GL
+const char kVertexHeader[] = "";
+const char kFragmentHeader[] = "// ";
+#else
+const char kVertexHeader[] = "precision highp float; precision highp int;\n";
+const char kFragmentHeader[] =
+    "precision mediump float; precision mediump int;\n// ";
+#endif
+
 }  // anonymous namespace
 
 // Initializes the Effect object using the shaders found in an FX formatted
@@ -235,8 +244,8 @@ bool EffectGLES2::LoadFromFXString(const String& effect) {
     return false;
   }
 
-  String vertex_shader(effect.substr(0, split_pos));
-  String fragment_shader("// " + effect.substr(split_pos));
+  String vertex_shader(kVertexHeader + effect.substr(0, split_pos));
+  String fragment_shader(kFragmentHeader + effect.substr(split_pos));
 
   set_matrix_load_order(matrix_load_order);
 

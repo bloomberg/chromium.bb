@@ -81,6 +81,7 @@ GLenum ConvertCmpFunc(State::Comparison cmp) {
   return GL_ALWAYS;
 }
 
+#if defined(GLES2_BACKEND_DESKTOP_GL)
 GLenum ConvertFillMode(State::Fill mode) {
   switch (mode) {
     case State::POINT:
@@ -94,6 +95,7 @@ GLenum ConvertFillMode(State::Fill mode) {
   }
   return GL_FILL;
 }
+#endif
 
 GLenum ConvertBlendFunc(State::BlendingFunction blend_func) {
   switch (blend_func) {
@@ -133,10 +135,17 @@ GLenum ConvertBlendEquation(State::BlendingEquation blend_equation) {
       return GL_FUNC_SUBTRACT;
     case State::BLEND_REVERSE_SUBTRACT:
       return GL_FUNC_REVERSE_SUBTRACT;
+#if defined(GLES2_BACKEND_DESKTOP_GL)
     case State::BLEND_MIN:
       return GL_MIN;
     case State::BLEND_MAX:
       return GL_MAX;
+#else
+    case State::BLEND_MIN:
+    case State::BLEND_MAX:
+      NOTIMPLEMENTED() << "MIN/MAX blend equation";
+      break;
+#endif
     default:
       break;
   }
@@ -177,24 +186,24 @@ bool InstallFramebufferObjects(const RenderSurface* surface,
                                const RenderDepthStencilSurface* surface_depth) {
 #ifdef _DEBUG
   GLint bound_framebuffer;
-  ::glGetIntegerv(GL_FRAMEBUFFER_BINDING_EXT, &bound_framebuffer);
+  ::glGetIntegerv(GL_FRAMEBUFFER_BINDING, &bound_framebuffer);
   DCHECK(bound_framebuffer != 0);
 #endif
 
   // Reset the bound attachments to the current framebuffer object.
-  ::glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
-                                 GL_COLOR_ATTACHMENT0_EXT,
-                                 GL_RENDERBUFFER_EXT,
+  ::glFramebufferRenderbufferEXT(GL_FRAMEBUFFER,
+                                 GL_COLOR_ATTACHMENT0,
+                                 GL_RENDERBUFFER,
                                  0);
 
-  ::glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
-                                 GL_DEPTH_ATTACHMENT_EXT,
-                                 GL_RENDERBUFFER_EXT,
+  ::glFramebufferRenderbufferEXT(GL_FRAMEBUFFER,
+                                 GL_DEPTH_ATTACHMENT,
+                                 GL_RENDERBUFFER,
                                  0);
 
-  ::glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
-                                 GL_STENCIL_ATTACHMENT_EXT,
-                                 GL_RENDERBUFFER_EXT,
+  ::glFramebufferRenderbufferEXT(GL_FRAMEBUFFER,
+                                 GL_STENCIL_ATTACHMENT,
+                                 GL_RENDERBUFFER,
                                  0);
 
   if (surface) {
@@ -205,15 +214,15 @@ bool InstallFramebufferObjects(const RenderSurface* surface,
         texture->GetTextureHandle()));
     if (texture->IsA(Texture2D::GetApparentClass())) {
       ::glFramebufferTexture2DEXT(
-          GL_FRAMEBUFFER_EXT,
-          GL_COLOR_ATTACHMENT0_EXT,
+          GL_FRAMEBUFFER,
+          GL_COLOR_ATTACHMENT0,
           GL_TEXTURE_2D,
           handle,
           gl_surface->mip_level());
     } else if (texture->IsA(TextureCUBE::GetApparentClass())) {
       ::glFramebufferTexture2DEXT(
-          GL_FRAMEBUFFER_EXT,
-          GL_COLOR_ATTACHMENT0_EXT,
+          GL_FRAMEBUFFER,
+          GL_COLOR_ATTACHMENT0,
           gl_surface->cube_face(),
           handle,
           gl_surface->mip_level());
@@ -224,17 +233,17 @@ bool InstallFramebufferObjects(const RenderSurface* surface,
     // Bind both the depth and stencil attachments.
     const RenderDepthStencilSurfaceGLES2* gl_surface =
         down_cast<const RenderDepthStencilSurfaceGLES2*>(surface_depth);
-    ::glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
-                                   GL_DEPTH_ATTACHMENT_EXT,
-                                   GL_RENDERBUFFER_EXT,
+    ::glFramebufferRenderbufferEXT(GL_FRAMEBUFFER,
+                                   GL_DEPTH_ATTACHMENT,
+                                   GL_RENDERBUFFER,
                                    gl_surface->depth_buffer());
-    ::glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
-                                   GL_STENCIL_ATTACHMENT_EXT,
-                                   GL_RENDERBUFFER_EXT,
+    ::glFramebufferRenderbufferEXT(GL_FRAMEBUFFER,
+                                   GL_STENCIL_ATTACHMENT,
+                                   GL_RENDERBUFFER,
                                    gl_surface->stencil_buffer());
   }
-  GLenum framebuffer_status = ::glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
-  if (GL_FRAMEBUFFER_COMPLETE_EXT != framebuffer_status) {
+  GLenum framebuffer_status = ::glCheckFramebufferStatusEXT(GL_FRAMEBUFFER);
+  if (GL_FRAMEBUFFER_COMPLETE != framebuffer_status) {
     return false;
   }
 
@@ -284,6 +293,15 @@ class TypedStateHandler : public RendererGLES2::StateHandler {
     SetStateFromTypedParam(renderer_gl, down_cast<T*>(param));
   }
 };
+
+template <class T>
+class NoOpHandler : public TypedStateHandler<T> {
+ public:
+  virtual void SetStateFromTypedParam(RendererGLES2* renderer,
+                                      T* param) const {
+  }
+};
+
 
 // A template the generates a handler for enable/disable states.
 // Parameters:
@@ -385,8 +403,12 @@ class FillModeHandler : public TypedStateHandler<ParamInteger> {
  public:
   virtual void SetStateFromTypedParam(RendererGLES2* renderer,
                                       ParamInteger* param) const {
+#if defined(GLES2_BACKEND_DESKTOP_GL)
     ::glPolygonMode(GL_FRONT_AND_BACK,
                     ConvertFillMode(static_cast<State::Fill>(param->value())));
+#else
+    NOTIMPLEMENTED() << "Fill mode";
+#endif
   }
 };
 
@@ -503,6 +525,7 @@ class PointSpriteEnableHandler : public TypedStateHandler<ParamBoolean> {
  public:
   virtual void SetStateFromTypedParam(RendererGLES2* renderer,
                                       ParamBoolean* param) const {
+#if defined(GLES2_BACKEND_DESKTOP_GL)
     if (param->value()) {
       ::glEnable(GL_POINT_SPRITE);
       // TODO(o3d): It's not clear from D3D docs that point sprites affect
@@ -514,6 +537,9 @@ class PointSpriteEnableHandler : public TypedStateHandler<ParamBoolean> {
       ::glTexEnvi(GL_POINT_SPRITE, GL_COORD_REPLACE, GL_FALSE);
       ::glDisable(GL_POINT_SPRITE);
     }
+#else
+    NOTIMPLEMENTED() << "Point Sprites";
+#endif
   }
 };
 
@@ -521,7 +547,11 @@ class PointSizeHandler : public TypedStateHandler<ParamFloat> {
  public:
   virtual void SetStateFromTypedParam(RendererGLES2* renderer,
                                       ParamFloat* param) const {
+#if defined(GLES2_BACKEND_DESKTOP_GL)
     ::glPointSize(param->value());
+#else
+    NOTIMPLEMENTED() << "Point Size";
+#endif
   }
 };
 
@@ -539,8 +569,14 @@ RendererGLES2::RendererGLES2(ServiceLocator* service_locator)
 #ifdef OS_LINUX
       display_(NULL),
       window_(0),
+#if defined(GLES2_BACKEND_DESKTOP_GL)
       context_(0),
-#endif
+#elif defined(GLES2_BACKEND_NATIVE_GLES2)
+      egl_display_(NULL),
+      egl_surface_(NULL),
+      egl_context_(NULL),
+#endif  // GLES_BACKEND_xxx
+#endif  // OS_LINUX
 #ifdef OS_MACOSX
       mac_agl_context_(0),
       mac_cgl_context_(0),
@@ -572,8 +608,15 @@ RendererGLES2::RendererGLES2(ServiceLocator* service_locator)
   }
 
   // Setup state handlers
+#if defined(GLES2_BACKEND_DESKTOP_GL)
   AddStateHandler(State::kAlphaTestEnableParamName,
                   new StateEnableHandler<GL_ALPHA_TEST>);
+#else
+  // TODO(piman): Alpha test isn't supported in GLES2, because it can be done
+  // in a shader. Solution here would be to add instructions to the shader...
+  AddStateHandler(State::kAlphaTestEnableParamName,
+                  new NoOpHandler<ParamBoolean>);
+#endif
   AddStateHandler(State::kAlphaReferenceParamName,
                   new AlphaReferenceHandler);
   AddStateHandler(State::kAlphaComparisonFunctionParamName,
@@ -583,8 +626,13 @@ RendererGLES2::RendererGLES2(ServiceLocator* service_locator)
                   new CullModeHandler);
   AddStateHandler(State::kDitherEnableParamName,
                   new StateEnableHandler<GL_DITHER>);
+#if defined(GLES2_BACKEND_DESKTOP_GL)
   AddStateHandler(State::kLineSmoothEnableParamName,
                   new StateEnableHandler<GL_LINE_SMOOTH>);
+#else
+  AddStateHandler(State::kLineSmoothEnableParamName,
+                  new NoOpHandler<ParamBoolean>);
+#endif
   AddStateHandler(State::kPointSpriteEnableParamName,
                   new PointSpriteEnableHandler);
   AddStateHandler(State::kPointSizeParamName,
@@ -660,6 +708,7 @@ RendererGLES2::~RendererGLES2() {
 // platform neutral initialization code
 //
 Renderer::InitStatus RendererGLES2::InitCommonGLES2() {
+#if defined(GLES2_BACKEND_DESKTOP_GL)
   GLenum glew_error = glewInit();
   if (glew_error != GLEW_OK) {
     DLOG(ERROR) << "Unable to initialise GLEW : "
@@ -715,9 +764,13 @@ Renderer::InitStatus RendererGLES2::InitCommonGLES2() {
   if (!GLEW_VERSION_2_0 && !GLEW_EXT_blend_equation_separate) {
     DLOG(ERROR) << "Separate blend function extension missing.";
   }
+#elif defined(GLES2_BACKEND_NATIVE_GLES2)
+  // GLES specific initialization ?
+#endif  // GLES2_BACKEND
   DLOG(INFO) << "OpenGLES2 Vendor: " << ::glGetString(GL_VENDOR);
   DLOG(INFO) << "OpenGLES2 Renderer: " << ::glGetString(GL_RENDERER);
   DLOG(INFO) << "OpenGLES2 Version: " << ::glGetString(GL_VERSION);
+  DLOG(INFO) << "OpenGLES2 Extensions: " << ::glGetString(GL_EXTENSIONS);
   // get some limits for this profile.
   GLint max_vertex_attribs = 0;
   ::glGetIntegerv(GL_MAX_VERTEX_ATTRIBS, &max_vertex_attribs);
@@ -726,9 +779,14 @@ Renderer::InitStatus RendererGLES2::InitCommonGLES2() {
   // Tell GLES2 that texture buffers can be single-byte aligned.
   ::glPixelStorei(GL_PACK_ALIGNMENT, 1);
   ::glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+#if defined(GLES2_BACKEND_DESKTOP_GL)
   ::glHint(GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
   ::glHint(GL_POLYGON_SMOOTH_HINT, GL_NICEST);
+#endif
   CHECK_GL_ERROR();
+  // TODO(piman): by default, GLES2 has some minimal support for NPOT. Is it
+  // enough for what we use ?
+  SetSupportsNPOT(true);
 
   GLint viewport[4];
   ::glGetIntegerv(GL_VIEWPORT, &viewport[0]);
@@ -1032,6 +1090,7 @@ Renderer::InitStatus  RendererGLES2::InitPlatformSpecific(
       static_cast<const DisplayWindowLinux&>(display_window);
   Display *display = display_platform.display();
   Window window = display_platform.window();
+#if defined(GLES2_BACKEND_DESKTOP_GL)
   XWindowAttributes attributes;
   ::XGetWindowAttributes(display, window, &attributes);
   XVisualInfo visual_info_template;
@@ -1072,16 +1131,148 @@ Renderer::InitStatus  RendererGLES2::InitPlatformSpecific(
     window_ = 0;
   }
   return init_status;
+#elif defined(GLES2_BACKEND_NATIVE_GLES2)
+  EGLDisplay egl_display = eglGetDisplay(display);
+  if (eglGetError() != EGL_SUCCESS) {
+    DLOG(ERROR) << "eglGetDisplay failed.";
+    return INITIALIZATION_ERROR;
+  }
+
+  EGLint major;
+  EGLint minor;
+  // TODO(piman): is it ok to do this several times ?
+  if (!eglInitialize(egl_display, &major, &minor)) {
+    DLOG(ERROR) << "eglInitialize failed.";
+    return INITIALIZATION_ERROR;
+  }
+  DLOG(INFO) << "EGL vendor:" << eglQueryString(egl_display, EGL_VENDOR);
+  DLOG(INFO) << "EGL version:" << eglQueryString(egl_display, EGL_VERSION);
+  DLOG(INFO) << "EGL extensions:"
+             << eglQueryString(egl_display, EGL_EXTENSIONS);
+  DLOG(INFO) << "EGL client apis:"
+             << eglQueryString(egl_display, EGL_CLIENT_APIS);
+
+  EGLint attribs[] = {
+#if 0
+    // On some platforms X is started in 16-bit mode, and making a 32-bit
+    // framebuffer causes tons of problems.
+    // TODO(piman): fix this.
+    EGL_RED_SIZE,       8,
+    EGL_GREEN_SIZE,     8,
+    EGL_BLUE_SIZE,      8,
+    EGL_ALPHA_SIZE,     8,
+    EGL_DEPTH_SIZE,     24,
+    EGL_STENCIL_SIZE,   8,
+#else
+    EGL_RED_SIZE,       5,
+    EGL_GREEN_SIZE,     6,
+    EGL_BLUE_SIZE,      5,
+    EGL_DEPTH_SIZE,     16,
+    EGL_STENCIL_SIZE,   0,
+#endif
+    EGL_SURFACE_TYPE,   EGL_WINDOW_BIT,
+    EGL_NONE
+  };
+
+  EGLint num_configs = -1;
+  if (!eglGetConfigs(egl_display, NULL, 0, &num_configs)) {
+    DLOG(ERROR) << "eglGetConfigs failed.";
+    return INITIALIZATION_ERROR;
+  }
+
+  EGLConfig config;
+  if (!eglChooseConfig(egl_display, attribs, &config, 1, &num_configs)) {
+    DLOG(ERROR) << "eglChooseConfig failed.";
+    return INITIALIZATION_ERROR;
+  }
+
+  EGLint red_size, green_size, blue_size, alpha_size, depth_size, stencil_size;
+  eglGetConfigAttrib(egl_display, config, EGL_RED_SIZE, &red_size);
+  eglGetConfigAttrib(egl_display, config, EGL_GREEN_SIZE, &green_size);
+  eglGetConfigAttrib(egl_display, config, EGL_BLUE_SIZE, &blue_size);
+  eglGetConfigAttrib(egl_display, config, EGL_ALPHA_SIZE, &alpha_size);
+  eglGetConfigAttrib(egl_display, config, EGL_DEPTH_SIZE, &depth_size);
+  eglGetConfigAttrib(egl_display, config, EGL_STENCIL_SIZE, &stencil_size);
+  DLOG(INFO) << "R,G,B,A: " << red_size << "," << green_size
+             << "," << blue_size << "," << alpha_size << " bits";
+  DLOG(INFO) << "Depth: " << depth_size << " bits, Stencil:" << stencil_size
+             << "bits";
+
+  EGLSurface egl_surface = eglCreateWindowSurface(egl_display, config,
+                                                  window, NULL);
+  if (!egl_surface) {
+    DLOG(ERROR) << "eglCreateWindowSurface failed.";
+    return INITIALIZATION_ERROR;
+  }
+
+  EGLContext egl_context = eglCreateContext(egl_display, config, NULL, NULL);
+  if (!egl_context) {
+    DLOG(ERROR) << "eglCreateContext failed.";
+    eglDestroySurface(egl_display, egl_surface);
+    return INITIALIZATION_ERROR;
+  }
+
+  display_ = display;
+  window_ = window;
+  egl_display_ = egl_display;
+  egl_surface_ = egl_surface;
+  egl_context_ = egl_context;
+  if (!MakeCurrent()) {
+    eglDestroyContext(egl_display, egl_context);
+    eglDestroySurface(egl_display, egl_surface);
+    display_ = NULL;
+    window_ = 0;
+    egl_display_ = NULL;
+    egl_surface_ = NULL;
+    egl_context_ = NULL;
+    return INITIALIZATION_ERROR;
+  }
+
+  EGLint width;
+  EGLint height;
+  eglQuerySurface(egl_display, egl_surface, EGL_WIDTH, &width);
+  eglQuerySurface(egl_display, egl_surface, EGL_HEIGHT, &height);
+  glViewport(0, 0, width, height);
+
+  InitStatus init_status = InitCommonGLES2();
+  if (init_status != SUCCESS) {
+    Destroy();
+    return INITIALIZATION_ERROR;
+  }
+  return init_status;
+#else
+#error Not Implemented
+#endif
 }
 
 void RendererGLES2::Destroy() {
   DestroyCommonGLES2();
   if (display_) {
+#if defined(GLES2_BACKEND_DESKTOP_GL)
     ::glXMakeCurrent(display_, 0, 0);
     if (context_) {
       ::glXDestroyContext(display_, context_);
       context_ = 0;
     }
+#elif defined(GLES2_BACKEND_NATIVE_GLES2)
+    if (egl_display_) {
+      eglMakeCurrent(egl_display_, EGL_NO_SURFACE, EGL_NO_SURFACE,
+                     EGL_NO_CONTEXT);
+      if (egl_context_) {
+        eglDestroyContext(egl_display_, egl_context_);
+        egl_context_ = NULL;
+      }
+      if (egl_surface_) {
+        eglDestroySurface(egl_display_, egl_surface_);
+        egl_surface_ = NULL;
+      }
+      // TODO(piman): is it ok to do this if we have multiple clients ?
+      eglTerminate(egl_display_);
+      egl_display_ = NULL;
+    }
+#else
+#error Not Implemented
+#endif
     display_ = NULL;
     window_ = 0;
   }
@@ -1107,12 +1298,24 @@ bool RendererGLES2::MakeCurrent() {
   }
 #endif
 #ifdef OS_LINUX
+#if defined(GLES2_BACKEND_DESKTOP_GL)
   if (context_ != NULL) {
     bool result = ::glXMakeCurrent(display_, window_, context_) == True;
     return result;
   } else {
     return false;
   }
+#elif defined(GLES2_BACKEND_NATIVE_GLES2)
+  if (egl_context_ != NULL) {
+    EGLBoolean result = eglMakeCurrent(egl_display_, egl_surface_,
+                                       egl_surface_, egl_context_);
+    return result == EGL_TRUE;
+  } else {
+    return false;
+  }
+#else
+#error Not Implemented
+#endif
 #endif
 }
 
@@ -1140,22 +1343,7 @@ void RendererGLES2::UpdateHelperConstant(float width, float height) {
   // If render-targets are active, pass -1 to invert the Y axis.  OpenGLES2 uses
   // a different viewport orientation than DX.  Without the inversion, the
   // output of render-target rendering will be upside down.
-  if (RenderSurfaceActive()) {
-    ::glProgramEnvParameter4fARB(GL_VERTEX_PROGRAM_ARB,
-                                 0,
-                                 1.0f / width,
-                                 -1.0f / height,
-                                 2.0f,
-                                 -1.0f);
-  } else {
-    // Only apply the origin offset when rendering to the client area.
-    ::glProgramEnvParameter4fARB(GL_VERTEX_PROGRAM_ARB,
-                                 0,
-                                 (1.0f + (2.0f * -dest_x_offset())) / width,
-                                 (-1.0f + (2.0f * dest_y_offset())) / height,
-                                 2.0f,
-                                 1.0f);
-  }
+  // TODO(piman): actually implement this.
   CHECK_GL_ERROR();
 }
 
@@ -1341,7 +1529,13 @@ void RendererGLES2::PlatformSpecificPresent() {
 #endif
 #endif
 #ifdef OS_LINUX
+#if defined(GLES2_BACKEND_DESKTOP_GL)
   ::glXSwapBuffers(display_, window_);
+#elif defined(GLES2_BACKEND_NATIVE_GLES2)
+  eglSwapBuffers(egl_display_, egl_surface_);
+#else
+#error Not Implemented
+#endif  // GLES2_BACKEND_xxx
 #endif
 }
 
@@ -1379,7 +1573,9 @@ void RendererGLES2::SetStencilStates(GLenum face,
                           stencil_state.op_[StencilStates::PASS_OP]);
     ::glStencilMaskSeparate(face,
                             stencil_mask_[WRITE_MASK]);
-  } else if (GLEW_EXT_stencil_two_side) {
+  }
+#if defined(GLES2_BACKEND_DESKTOP_GL)
+  else if (GLEW_EXT_stencil_two_side) {
     ::glEnable(GL_STENCIL_TEST_TWO_SIDE_EXT);
     ::glActiveStencilFaceEXT(face);
     ::glStencilFunc(stencil_state.func_,
@@ -1391,6 +1587,7 @@ void RendererGLES2::SetStencilStates(GLenum face,
     ::glStencilMask(stencil_mask_[WRITE_MASK]);
     ::glDisable(GL_STENCIL_TEST_TWO_SIDE_EXT);
   }
+#endif
   CHECK_GL_ERROR();
 }
 
@@ -1405,33 +1602,43 @@ void RendererGLES2::ApplyDirtyStates() {
                               blend_function_[DST][RGB],
                               blend_function_[SRC][ALPHA],
                               blend_function_[DST][ALPHA]);
-      } else if (GLEW_EXT_blend_func_separate) {
+      }
+#if defined(GLES2_BACKEND_DESKTOP_GL)
+      else if (GLEW_EXT_blend_func_separate) {
         ::glBlendFuncSeparateEXT(blend_function_[SRC][RGB],
                                  blend_function_[DST][RGB],
                                  blend_function_[SRC][ALPHA],
                                  blend_function_[DST][ALPHA]);
       }
+#endif
       if (GLEW_VERSION_2_0) {
         ::glBlendEquationSeparate(blend_equation_[RGB],
                                   blend_equation_[ALPHA]);
-      } else if (GLEW_EXT_blend_equation_separate) {
+      }
+#if defined(GLES2_BACKEND_DESKTOP_GL)
+      else if (GLEW_EXT_blend_equation_separate) {
         ::glBlendEquationSeparateEXT(blend_equation_[RGB],
                                      blend_equation_[ALPHA]);
       }
+#endif
     } else {
       ::glBlendFunc(blend_function_[SRC][RGB],
                     blend_function_[DST][RGB]);
+#if defined(GLES2_BACKEND_DESKTOP_GL)
       if (::glBlendEquation != NULL)
+#endif
         ::glBlendEquation(blend_equation_[RGB]);
     }
     alpha_blend_settings_changed_ = false;
   }
 
+#if defined(GLES2_BACKEND_DESKTOP_GL)
   // Set alpha settings.
   if (alpha_function_ref_changed_) {
     ::glAlphaFunc(alpha_function_, alpha_ref_);
     alpha_function_ref_changed_ = false;
   }
+#endif
 
   // Set stencil settings.
   if (stencil_settings_changed_) {
@@ -1448,13 +1655,17 @@ void RendererGLES2::ApplyDirtyStates() {
     bool enable = (polygon_offset_factor_ != 0.f) ||
                   (polygon_offset_bias_ != 0.f);
     if (enable) {
+#if defined(GLES2_BACKEND_DESKTOP_GL)
       ::glEnable(GL_POLYGON_OFFSET_POINT);
       ::glEnable(GL_POLYGON_OFFSET_LINE);
+#endif
       ::glEnable(GL_POLYGON_OFFSET_FILL);
       ::glPolygonOffset(polygon_offset_factor_, polygon_offset_bias_);
     } else {
+#if defined(GLES2_BACKEND_DESKTOP_GL)
       ::glDisable(GL_POLYGON_OFFSET_POINT);
       ::glDisable(GL_POLYGON_OFFSET_LINE);
+#endif
       ::glDisable(GL_POLYGON_OFFSET_FILL);
     }
     polygon_offset_changed_ = false;

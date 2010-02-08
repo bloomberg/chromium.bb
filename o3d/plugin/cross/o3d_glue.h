@@ -41,7 +41,7 @@
 #endif
 
 #ifdef OS_LINUX
-#include <GL/glx.h>
+#include <X11/Xlib.h>
 #include <X11/Intrinsic.h>
 #include <gtk/gtk.h>
 #endif

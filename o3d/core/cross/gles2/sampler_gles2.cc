@@ -66,7 +66,12 @@ unsigned int GLAddressMode(Sampler::AddressMode o3d_mode,
       gl_mode = GL_CLAMP_TO_EDGE;
       break;
     case Sampler::BORDER:
+#if defined(GLES2_BACKEND_DESKTOP_GL)
       gl_mode = GL_CLAMP_TO_BORDER;
+#else
+      NOTIMPLEMENTED() << "Sampler::BORDER";
+      gl_mode = GL_CLAMP_TO_EDGE;
+#endif
       break;
     default:
       DLOG(ERROR) << "Unknown Address mode " << static_cast<int>(o3d_mode);
@@ -167,7 +172,7 @@ GLint SamplerGLES2::SetTextureAndStates(GLES2Parameter gl_param) {
         texture_unit_group_set_count_ = renderer_texture_unit_group_set_count;
         texture_unit_ = renderer_->GetNextTextureUnit();
       }
-      ::glActiveTextureARB(GL_TEXTURE0 + texture_unit_);
+      ::glActiveTexture(GL_TEXTURE0 + texture_unit_);
       glBindTexture(target, handle);
       glTexParameteri(target,
                       GL_TEXTURE_WRAP_S,
@@ -175,22 +180,26 @@ GLint SamplerGLES2::SetTextureAndStates(GLES2Parameter gl_param) {
       glTexParameteri(target,
                       GL_TEXTURE_WRAP_T,
                       GLAddressMode(address_mode_v(), GL_REPEAT));
-      if (texture_object->IsA(TextureCUBE::GetApparentClass())) {
-        glTexParameteri(target,
-                        GL_TEXTURE_WRAP_R,
-                        GLAddressMode(address_mode_w(), GL_REPEAT));
-      }
+      // disable mipmapping if we have only one level.
+      FilterType clamped_mip_filter =
+          texture_object->levels() == 1 ? NONE : mip_filter();
       glTexParameteri(target,
                       GL_TEXTURE_MIN_FILTER,
-                      GLMinFilter(min_filter(), mip_filter()));
+                      GLMinFilter(min_filter(), clamped_mip_filter));
       glTexParameteri(target,
                       GL_TEXTURE_MAG_FILTER,
                       GLMagFilter(mag_filter()));
 
+#if defined(GLES2_BACKEND_DESKTOP_GL)
       Float4 color = border_color();
       GLfloat gl_color[4] = {color[0], color[1], color[2], color[3]};
       glTexParameterfv(target, GL_TEXTURE_BORDER_COLOR, gl_color);
+#else
+      // Not implemented
+#endif
 
+
+#if defined(GLES2_BACKEND_DESKTOP_GL)
       // Check for anisotropic texture filtering.
       if (GLEW_EXT_texture_filter_anisotropic) {
         int gl_max_anisotropy =
@@ -198,6 +207,10 @@ GLint SamplerGLES2::SetTextureAndStates(GLES2Parameter gl_param) {
         glTexParameteri(target, GL_TEXTURE_MAX_ANISOTROPY_EXT,
                         gl_max_anisotropy);
       }
+#else
+      // TODO(piman): test for GL_EXT_texture_filter_anisotropic and implement
+      // as above.
+#endif
     }
   }
 
@@ -211,10 +224,9 @@ void SamplerGLES2::ResetTexture(GLES2Parameter gl_param) {
     //     time.
     GLenum target = GLTextureTarget(the_texture);
     if (target) {
-      glActiveTextureARB(GL_TEXTURE0 + texture_unit_);
+      glActiveTexture(GL_TEXTURE0 + texture_unit_);
       glBindTexture(target, 0);
     }
   }
 }
 }  // namespace o3d
-

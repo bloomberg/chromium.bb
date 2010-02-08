@@ -86,43 +86,56 @@ RenderDepthStencilSurfaceGLES2::RenderDepthStencilSurfaceGLES2(
     : RenderDepthStencilSurface(service_locator, width, height) {
 
 #ifndef DISABLE_FBO
+#if defined(GLES2_BACKEND_DESKTOP_GL)
   // If packed depth stencil is supported, create only one buffer for both
   // depth and stencil.
+  // TODO(piman): on GLES, test GL_OES_packed_depth_stencil
   if (GLEW_EXT_packed_depth_stencil) {
     glGenRenderbuffersEXT(1, render_buffers_);
-    glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, render_buffers_[0]);
-    glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT,
+    glBindRenderbufferEXT(GL_RENDERBUFFER, render_buffers_[0]);
+    glRenderbufferStorageEXT(GL_RENDERBUFFER,
                              GL_DEPTH24_STENCIL8_EXT,
                              width,
                              height);
     CHECK_GL_ERROR();
     render_buffers_[1] = render_buffers_[0];
-  } else {
-    glGenRenderbuffersEXT(2, render_buffers_);
-    glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, render_buffers_[0]);
-    glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT,
-                             GL_DEPTH_COMPONENT24,
-                             width,
-                             height);
-    CHECK_GL_ERROR();
-
-    glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, render_buffers_[1]);
-    glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT,
-                             GL_STENCIL_INDEX8_EXT,
-                             width,
-                             height);
-    CHECK_GL_ERROR();
+    return;
   }
+#endif
+  glGenRenderbuffersEXT(2, render_buffers_);
+  glBindRenderbufferEXT(GL_RENDERBUFFER, render_buffers_[0]);
+  glRenderbufferStorageEXT(GL_RENDERBUFFER,
+#if defined(GLES2_BACKEND_DESKTOP_GL)
+                           GL_DEPTH_COMPONENT24,
+#else
+                           // On GLES, only 16bit depth is available by default.
+                           // TODO(piman): test for GL_OES_depth24 or 32 and
+                           // use those.
+                           GL_DEPTH_COMPONENT16,
+#endif
+                           width,
+                           height);
+  CHECK_GL_ERROR();
+
+  glBindRenderbufferEXT(GL_RENDERBUFFER, render_buffers_[1]);
+  glRenderbufferStorageEXT(GL_RENDERBUFFER,
+                           GL_STENCIL_INDEX8,
+                           width,
+                           height);
+  CHECK_GL_ERROR();
 #endif
 }
 
 RenderDepthStencilSurfaceGLES2::~RenderDepthStencilSurfaceGLES2() {
 #ifndef DISABLE_FBO
+#if defined(GLES2_BACKEND_DESKTOP_GL)
+  // TODO(piman): on GLES, test GL_OES_packed_depth_stencil
   if (GLEW_EXT_packed_depth_stencil) {
     glDeleteRenderbuffersEXT(1, render_buffers_);
-  } else {
-    glDeleteRenderbuffersEXT(2, render_buffers_);
+    return;
   }
+#endif
+  glDeleteRenderbuffersEXT(2, render_buffers_);
 #endif
 }
 

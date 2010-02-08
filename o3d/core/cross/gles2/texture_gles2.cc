@@ -67,30 +67,52 @@ static GLenum GLFormatFromO3DFormat(Texture::Format format,
                                     GLenum *data_type) {
   switch (format) {
     case Texture::XRGB8: {
+#if defined(GLES2_BACKEND_DESKTOP_GL)
       *internal_format = GL_RGB;
+#else
+      // On GLES, the internal_format must match format.
+      *internal_format = GL_BGRA;
+#endif
       *data_type = GL_UNSIGNED_BYTE;
       return GL_BGRA;
     }
     case Texture::ARGB8: {
+#if defined(GLES2_BACKEND_DESKTOP_GL)
       *internal_format = GL_RGBA;
+#else
+      *internal_format = GL_BGRA;
+#endif
       *data_type = GL_UNSIGNED_BYTE;
       return GL_BGRA;
     }
     case Texture::ABGR16F: {
+#if defined(GLES2_BACKEND_DESKTOP_GL)
       *internal_format = GL_RGBA16F_ARB;
+#else
+      *internal_format = GL_RGBA;
+#endif
       *data_type = GL_HALF_FLOAT_ARB;
       return GL_RGBA;
     }
     case Texture::R32F: {
+#if defined(GLES2_BACKEND_DESKTOP_GL)
       *internal_format = GL_LUMINANCE32F_ARB;
+#else
+      *internal_format = GL_LUMINANCE;
+#endif
       *data_type = GL_FLOAT;
       return GL_LUMINANCE;
     }
     case Texture::ABGR32F: {
+#if defined(GLES2_BACKEND_DESKTOP_GL)
       *internal_format = GL_RGBA32F_ARB;
+#else
+      *internal_format = GL_BGRA;
+#endif
       *data_type = GL_FLOAT;
       return GL_BGRA;
     }
+#if defined(GLES2_BACKEND_DESKTOP_GL)
     case Texture::DXT1: {
       if (GL_EXT_texture_compression_s3tc) {
         *internal_format = GL_COMPRESSED_RGBA_S3TC_DXT1_EXT;
@@ -136,6 +158,15 @@ static GLenum GLFormatFromO3DFormat(Texture::Format format,
         return 0;
       }
     }
+#else
+    case Texture::DXT1:
+    case Texture::DXT3:
+    case Texture::DXT5:
+      NOTIMPLEMENTED() << "DXT textures";
+      *internal_format = 0;
+      *data_type = GL_BYTE;
+      return 0;
+#endif
     case Texture::UNKNOWN_FORMAT:
       break;
   }
@@ -184,8 +215,12 @@ static bool UpdateGLImageFromBitmap(GLenum target,
     glTexSubImage2D(target, level, 0, 0, mip_width, mip_height,
                     gl_format, gl_data_type, mip_data);
   } else {
+#if defined(GLES2_BACKEND_DESKTOP_GL)
     glCompressedTexSubImage2D(target, level, 0, 0, mip_width, mip_height,
                               gl_internal_format, mip_size, mip_data);
+#else
+    NOTIMPLEMENTED() << "DXT textures";
+#endif
   }
   return glGetError() == GL_NO_ERROR;
 }
@@ -226,6 +261,7 @@ static bool CreateGLImages(GLenum target,
         return false;
       }
     } else {
+#if defined(GLES2_BACKEND_DESKTOP_GL)
       size_t mip_size = image::ComputeBufferSize(mip_width, mip_height, format);
       glCompressedTexImage2DARB(target, i, internal_format, mip_width,
                                 mip_height, 0, mip_size, temp_data.get());
@@ -233,6 +269,10 @@ static bool CreateGLImages(GLenum target,
         DLOG(ERROR) << "glCompressedTexImage2D failed";
         return false;
       }
+#else
+      NOTIMPLEMENTED() << "DXT textures";
+      return false;
+#endif
     }
     mip_width = std::max(1U, mip_width >> 1);
     mip_height = std::max(1U, mip_height >> 1);
@@ -299,8 +339,16 @@ Texture2DGLES2* Texture2DGLES2::Create(ServiceLocator* service_locator,
   GLuint gl_texture = 0;
   glGenTextures(1, &gl_texture);
   glBindTexture(GL_TEXTURE_2D, gl_texture);
+#if defined(GLES2_BACKEND_DESKTOP_GL)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAX_LEVEL,
                   levels - 1);
+#else
+  // On GLES2, we can't specify GL_TEXTURE_MAX_LEVEL, so we either allocate
+  // only the base image, and clamp the min filter, or we allocate all of them.
+  if (levels > 1) {
+    levels = image::ComputeMipMapCount(width, height);
+  }
+#endif
 
   if (!CreateGLImages(GL_TEXTURE_2D, gl_internal_format, gl_format,
                       gl_data_type, TextureCUBE::FACE_POSITIVE_X,
@@ -316,13 +364,6 @@ Texture2DGLES2* Texture2DGLES2::Create(ServiceLocator* service_locator,
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
-  GLint gl_width;
-  GLint gl_height;
-  glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_WIDTH, &gl_width);
-  glGetTexLevelParameteriv(GL_TEXTURE_2D, 0, GL_TEXTURE_HEIGHT, &gl_height);
-
-  DLOG(INFO) << "Created 2D texture (size=" << gl_width << "x" << gl_height
-             << ", GLuint=" << gl_texture << ")";
   Texture2DGLES2 *texture = new Texture2DGLES2(service_locator,
                                                gl_texture,
                                                format,
@@ -478,6 +519,7 @@ bool Texture2DGLES2::PlatformSpecificLock(
   }
   if (mode != kWriteOnly && !HasLevel(level)) {
     DCHECK(!resize_to_pot_);
+#if defined(GLES2_BACKEND_DESKTOP_GL)
     GLenum gl_internal_format = 0;
     GLenum gl_data_type = 0;
     GLenum gl_format = GLFormatFromO3DFormat(format(),
@@ -485,6 +527,9 @@ bool Texture2DGLES2::PlatformSpecificLock(
                                              &gl_data_type);
     glBindTexture(GL_TEXTURE_2D, gl_texture_);
     glGetTexImage(GL_TEXTURE_2D, level, gl_format, gl_data_type, *data);
+#else
+    NOTIMPLEMENTED() << "Texture read back";
+#endif
     has_levels_ |= 1 << level;
   }
   locked_levels_ |= 1 << level;
@@ -617,8 +662,16 @@ TextureCUBEGLES2* TextureCUBEGLES2::Create(ServiceLocator* service_locator,
   GLuint gl_texture = 0;
   glGenTextures(1, &gl_texture);
   glBindTexture(GL_TEXTURE_CUBE_MAP, gl_texture);
+#if defined(GLES2_BACKEND_DESKTOP_GL)
   glTexParameteri(GL_TEXTURE_CUBE_MAP, GL_TEXTURE_MAX_LEVEL,
                   levels - 1);
+#else
+  // On GLES2, we can't specify GL_TEXTURE_MAX_LEVEL, so we either allocate
+  // only the base image, and clamp the min filter, or we allocate all of them.
+  if (levels > 1) {
+    levels = image::ComputeMipMapCount(edge_length, edge_length);
+  }
+#endif
 
   for (int face = 0; face < static_cast<int>(NUMBER_OF_FACES); ++face) {
     CreateGLImages(kCubemapFaceList[face], gl_internal_format,
@@ -816,18 +869,22 @@ bool TextureCUBEGLES2::PlatformSpecificLock(
     unsigned bytes_per_row = bytes_per_block * blocks_across;
     *pitch = bytes_per_row;
   }
-  GLenum gl_target = kCubemapFaceList[face];
   if (mode != kWriteOnly && !HasLevel(face, level)) {
     // TODO(o3d): add some API so we don't have to copy back the data if we
     // will rewrite it all.
     DCHECK(!resize_to_pot_);
+#if defined(GLES2_BACKEND_DESKTOP_GL)
     GLenum gl_internal_format = 0;
     GLenum gl_data_type = 0;
     GLenum gl_format = GLFormatFromO3DFormat(format(),
                                              &gl_internal_format,
                                              &gl_data_type);
     glBindTexture(GL_TEXTURE_CUBE_MAP, gl_texture_);
+    GLenum gl_target = kCubemapFaceList[face];
     glGetTexImage(gl_target, level, gl_format, gl_data_type, *data);
+#else
+    NOTIMPLEMENTED() << "Texture read back";
+#endif
     has_levels_[face] |= 1 << level;
   }
   CHECK_GL_ERROR();
@@ -875,4 +932,3 @@ const Texture::RGBASwizzleIndices&
 }
 
 }  // namespace o3d
-

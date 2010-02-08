@@ -75,54 +75,74 @@
     {
       'target_name': 'gles2_libs',
       'type': 'none',
-      'all_dependent_settings': {
-        'include_dirs': [
-          '../../<(glewdir)/include',
-        ],
-      },
       'conditions': [
-        [ 'OS=="linux"',
+        ['gles2_backend=="desktop_gl"',
           {
             'all_dependent_settings': {
-              'defines': [
-                'GL_GLEXT_PROTOTYPES',
-              ],
-              'ldflags': [
-                '-L<(PRODUCT_DIR)',
-              ],
-              'libraries': [
-                '-lGL',
-                '-lGLEW',
-                '-lX11',
+              'include_dirs': [
+                '../../<(glewdir)/include',
               ],
             },
-          },
-        ],
-        [ 'OS=="mac"',
-          {
-            'direct_dependent_settings': {
-              'libraries': [
-                '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
+            'conditions': [
+              [ 'OS=="linux"',
+                {
+                  'all_dependent_settings': {
+                    'defines': [
+                      'GL_GLEXT_PROTOTYPES',
+                    ],
+                    'ldflags': [
+                      '-L<(PRODUCT_DIR)',
+                    ],
+                    'libraries': [
+                      '-lGL',
+                      '-lGLEW',
+                      '-lX11',
+                    ],
+                  },
+                },
               ],
-            },
-          },
-        ],
-        [ 'OS=="win"',
-          {
-            'all_dependent_settings': {
-              'libraries': [
-                '-lOpenGL32.lib',
-                '../../<(glewdir)/lib/glew32.lib',
+              [ 'OS=="mac"',
+                {
+                  'direct_dependent_settings': {
+                    'libraries': [
+                      '$(SDKROOT)/System/Library/Frameworks/OpenGL.framework',
+                    ],
+                  },
+                },
               ],
-            },
-            'copies': [
-              {
-                'destination': '<(PRODUCT_DIR)',
-                'files': [
-                  "../../<(glewdir)/bin/glew32.dll",
-                ]
-              },
+              [ 'OS=="win"',
+                {
+                  'all_dependent_settings': {
+                    'libraries': [
+                      '-lOpenGL32.lib',
+                      '../../<(glewdir)/lib/glew32.lib',
+                    ],
+                  },
+                  'copies': [
+                    {
+                      'destination': '<(PRODUCT_DIR)',
+                      'files': [
+                        "../../<(glewdir)/bin/glew32.dll",
+                      ]
+                    },
+                  ],
+                },
+              ],
             ],
+          },
+        ],
+        #['gles2_backend=="gles2_command_buffers"',
+        # {
+        # },
+        #],
+        ['gles2_backend=="native_gles2"',
+          {
+            'all_dependent_settings': {
+              'libraries': [
+                '-lEGL',
+                '-lGLESv2',
+              ],
+            }
           },
         ],
       ],
