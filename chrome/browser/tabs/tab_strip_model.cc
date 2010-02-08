@@ -877,18 +877,6 @@ bool TabStripModel::ShouldMakePhantomOnClose(int index) {
 }
 
 void TabStripModel::MakePhantom(int index) {
-  if (selected_index_ == index) {
-    // Change the selection, otherwise we're going to force the phantom tab
-    // to become selected.
-    // NOTE: we must do this before switching the TabContents, otherwise
-    // observers are notified with the wrong tab contents.
-    int new_selected_index =
-        order_controller_->DetermineNewSelectedIndex(index, false);
-    new_selected_index = IndexOfNextNonPhantomTab(new_selected_index,
-                                                  index);
-    SelectTabContentsAt(new_selected_index, true);
-  }
-
   TabContents* old_contents = GetContentsAt(index);
   TabContents* new_contents = old_contents->CloneAndMakePhantom();
 
@@ -897,6 +885,22 @@ void TabStripModel::MakePhantom(int index) {
   // And notify observers.
   FOR_EACH_OBSERVER(TabStripModelObserver, observers_,
                     TabReplacedAt(old_contents, new_contents, index));
+
+  if (selected_index_ == index && HasNonPhantomTabs()) {
+    // Change the selection, otherwise we're going to force the phantom tab
+    // to become selected.
+    // NOTE: we must do this after the call to Replace otherwise browser's
+    // TabSelectedAt will send out updates for the old TabContents which we've
+    // already told observers has been closed (we sent out TabClosing at).
+    int new_selected_index =
+        order_controller_->DetermineNewSelectedIndex(index, false);
+    new_selected_index = IndexOfNextNonPhantomTab(new_selected_index,
+                                                  index);
+    SelectTabContentsAt(new_selected_index, true);
+  }
+
+  if (!HasNonPhantomTabs())
+    FOR_EACH_OBSERVER(TabStripModelObserver, observers_, TabStripEmpty());
 }
 
 
