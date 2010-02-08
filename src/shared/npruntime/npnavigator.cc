@@ -54,15 +54,6 @@ static bool GetCharpArray(uint32_t count,
 
 namespace nacl {
 
-// We need a better way to make sure that SRPC method tables are exported from
-// servers.  Unfortunately, incorporating the generator exposes the possibility
-// that the tables are not referenced from outside of the SRPC library, and
-// hence they do not get included at all.  This hack makes sure they are
-// referenced.
-// TODO(sehr): make SRPC method table exporting explicit.
-void* hack =
-    reinterpret_cast<void*>(NPNavigatorRpcs::srpc_methods);
-
 // Class static member declarations.
 NPNavigator* NPNavigator::navigator = NULL;
 std::map<NPP, NPP>* NPNavigator::nacl_npp_map = NULL;
