@@ -27,7 +27,13 @@ def _print_line(line, flush=True):
     sys.stdout.flush()
 
 
-def RunSubprocess(proc, timeout=0, detach=False):
+def RunSubprocessInBackground(proc):
+  """Runs a subprocess in the background. Returns a handle to the process."""
+  logging.info("running %s in the background" % " ".join(proc))
+  return subprocess.Popen(proc)
+
+
+def RunSubprocess(proc, timeout=0, detach=False, background=False):
   """ Runs a subprocess, until it finishes or |timeout| is exceeded and the
   process is killed with taskkill.  A |timeout| <= 0  means no timeout.
 
@@ -128,8 +134,19 @@ def IsWindows():
   return sys.platform == 'cygwin' or sys.platform.startswith('win')
 
 
+def IsWine():
+  """This needs to be set by the script that starts the buildbot, i.e.
+  /etc/init.d/buildbot, or manually on the command line."""
+  return (os.environ.get('WINE') and
+          os.environ.get('WINEPREFIX') and
+          os.environ.get('WINESERVER'))
+
+
 def PlatformName():
   """Return a string to be used in paths for the platform."""
+  # This has to be before IsLinux()
+  if IsWine():
+    return 'wine'
   if IsLinux():
     return 'linux'
   if IsMac():

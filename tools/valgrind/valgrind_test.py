@@ -19,6 +19,7 @@ import shutil
 import stat
 import sys
 import tempfile
+import time
 
 import common
 
@@ -128,7 +129,7 @@ class ValgrindTool(object):
     if self._options.gtest_repeat:
       self._args.append("--gtest_repeat=%s" % self._options.gtest_repeat)
     if self._options.gtest_print_time:
-      self._args.append("--gtest_print_time");
+      self._args.append("--gtest_print_time")
 
     return True
 
@@ -136,6 +137,12 @@ class ValgrindTool(object):
     return self.ParseArgv(args)
 
   def PrepareForTest(self):
+    if common.IsWine():
+      self.PrepareForTestWine()
+    elif common.IsMac():
+      self.PrepareForTestMac()
+
+  def PrepareForTestMac(self):
     """Runs dsymutil if needed.
 
     Valgrind for Mac OS X requires that debugging information be in a .dSYM
@@ -149,9 +156,6 @@ class ValgrindTool(object):
     it looks like a fake_dsym.  A non-fake dsym that already exists is assumed
     to be up-to-date.
     """
-    if not common.IsMac():
-      return
-
     test_command = self._args[0]
     dsym_bundle = self._args[0] + '.dSYM'
     dsym_file = os.path.join(dsym_bundle, 'Contents', 'Resources', 'DWARF',
@@ -201,6 +205,39 @@ class ValgrindTool(object):
                      "not be shown.  Either tell xcode to generate .dSYM "
                      "file, or use --generate_dsym option to this tool.")
 
+  def PrepareForTestWine(self):
+    """Set up the Wine environment.
+
+    We need to run some sanity checks, set up a Wine prefix, and make sure
+    wineserver is running by starting a dummy win32 program.
+    """
+    if not os.path.exists('/usr/share/ca-certificates/root_ca_cert.crt'):
+      logging.warning('WARNING: SSL certificate missing! SSL tests will fail.')
+      logging.warning('You need to run:')
+      logging.warning('sudo cp src/net/data/ssl/certificates/root_ca_cert.crt '
+                      '/usr/share/ca-certificates/')
+      logging.warning('sudo vi /etc/ca-certificates.conf')
+      logging.warning('  (and add the line root_ca_cert.crt)')
+      logging.warning('sudo update-ca-certificates')
+
+    # Shutdown the Wine server in case the last run got interrupted.
+    common.RunSubprocess([os.environ.get('WINESERVER'), '-k'])
+
+    # Yes, this can be dangerous if $WINEPREFIX is set incorrectly.
+    shutil.rmtree(os.environ.get('WINEPREFIX'), ignore_errors=True)
+
+    winetricks = os.path.join(self._source_dir, 'tools', 'valgrind',
+                              'wine_memcheck', 'winetricks')
+    common.RunSubprocess(['sh', winetricks,
+                          'nocrashdialog', 'corefonts', 'gecko'])
+    time.sleep(1)
+
+    # Start a dummy program like winemine so Valgrind won't run memcheck on
+    # the wineserver startup routine when it launches the test binary, which
+    # is slow and not interesting to us.
+    common.RunSubprocessInBackground([os.environ.get('WINE'), 'winemine'])
+    return
+
   def ValgrindCommand(self):
     """Get the valgrind command to run."""
     # Note that self._args begins with the exe to be run.
@@ -212,7 +249,7 @@ class ValgrindTool(object):
             "--num-callers=%i" % self._num_callers]
 
     if self._options.trace_children:
-      proc += ["--trace-children=yes"];
+      proc += ["--trace-children=yes"]
 
     proc += self.ToolSpecificFlags()
     proc += self._tool_flags
@@ -254,11 +291,15 @@ class ValgrindTool(object):
 
     proc = self.ValgrindCommand()
     os.putenv("G_SLICE", "always-malloc")
-    logging.info("export G_SLICE=always-malloc");
+    logging.info("export G_SLICE=always-malloc")
     os.putenv("NSS_DISABLE_ARENA_FREE_LIST", "1")
-    logging.info("export NSS_DISABLE_ARENA_FREE_LIST=1");
+    logging.info("export NSS_DISABLE_ARENA_FREE_LIST=1")
     os.putenv("GTEST_DEATH_TEST_USE_FORK", "1")
-    logging.info("export GTEST_DEATH_TEST_USE_FORK=1");
+    logging.info("export GTEST_DEATH_TEST_USE_FORK=1")
+
+    if common.IsWine():
+      os.putenv("CHROME_ALLOCATOR", "winheap")
+      logging.info("export CHROME_ALLOCATOR=winheap")
 
     return common.RunSubprocess(proc, self._timeout)
 
@@ -271,6 +312,10 @@ class ValgrindTool(object):
     # cleanup is still a TODO?
     if not self._nocleanup_on_exit:
       shutil.rmtree(self.TMP_DIR, ignore_errors=True)
+
+    if common.IsWine():
+      # Shutdown the Wine server.
+      common.RunSubprocess([os.environ.get('WINESERVER'), '-k'])
     return True
 
   def RunTestsAndAnalyze(self):
@@ -297,14 +342,14 @@ class ValgrindTool(object):
     with a magic wrapper.  Build the magic wrapper here.
     """
     (fd, indirect_fname) = tempfile.mkstemp(dir=self.TMP_DIR, prefix="browser_wrapper.", text=True)
-    f = os.fdopen(fd, "w");
+    f = os.fdopen(fd, "w")
     f.write("#!/bin/sh\n")
     f.write(command)
     f.write(' "$@"\n')
     f.close()
     os.chmod(indirect_fname, stat.S_IRUSR|stat.S_IXUSR)
     os.putenv("BROWSER_WRAPPER", indirect_fname)
-    logging.info('export BROWSER_WRAPPER=' + indirect_fname);
+    logging.info('export BROWSER_WRAPPER=' + indirect_fname)
 
   def Main(self, args):
     '''Call this to run through the whole process: Setup, Execute, Analyze'''
@@ -350,12 +395,12 @@ class Memcheck(ValgrindTool):
     ret = ["--leak-check=full", "--gen-suppressions=all", "--demangle=no"]
 
     if self._options.show_all_leaks:
-      ret += ["--show-reachable=yes"];
+      ret += ["--show-reachable=yes"]
     else:
-      ret += ["--show-possible=no"];
+      ret += ["--show-possible=no"]
 
     if self._options.track_origins:
-      ret += ["--track-origins=yes"];
+      ret += ["--track-origins=yes"]
 
     return ret
 
@@ -454,9 +499,9 @@ class ThreadSanitizer(ValgrindTool):
 
 class ToolFactory:
   def Create(self, tool_name):
-    if tool_name == "memcheck":
+    if tool_name == "memcheck" and not common.IsWine():
       return Memcheck()
-    if tool_name == "memcheck_wine":
+    if tool_name == "wine_memcheck" and common.IsWine():
       return Memcheck()
     if tool_name == "tsan":
       if not common.IsLinux():
