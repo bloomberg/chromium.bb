@@ -557,7 +557,9 @@ void TabStripGtk::Init() {
                     NULL, 0,
                     static_cast<GdkDragAction>(
                         GDK_ACTION_COPY | GDK_ACTION_MOVE | GDK_ACTION_LINK));
-  static const int targets[] = { GtkDndUtil::TEXT_URI_LIST, -1 };
+  static const int targets[] = { GtkDndUtil::TEXT_URI_LIST,
+                                 GtkDndUtil::NETSCAPE_URL,
+                                 -1 };
   GtkDndUtil::SetDestTargetList(tabstrip_.get(), targets);
 
   g_signal_connect(G_OBJECT(tabstrip_.get()), "expose-event",
@@ -1400,7 +1402,8 @@ bool TabStripGtk::CompleteDrop(guchar* data) {
   // Destroy the drop indicator.
   drop_info_.reset();
 
-  GURL url(reinterpret_cast<char*>(data));
+  std::string url_string(reinterpret_cast<char*>(data));
+  GURL url(url_string.substr(0, url_string.find_first_of('\n')));
   if (!url.is_valid())
     return false;
 
@@ -1742,7 +1745,8 @@ gboolean TabStripGtk::OnDragDataReceived(GtkWidget* widget,
                                          TabStripGtk* tabstrip) {
   bool success = false;
 
-  if (info == GtkDndUtil::TEXT_URI_LIST) {
+  if (info == GtkDndUtil::TEXT_URI_LIST ||
+      info == GtkDndUtil::NETSCAPE_URL) {
     success = tabstrip->CompleteDrop(data->data);
   }
 
