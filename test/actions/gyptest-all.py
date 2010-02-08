@@ -16,8 +16,13 @@ test.run_gyp('actions.gyp', chdir='src')
 
 test.relocate('src', 'relocate/src')
 
+# Test that an "always run" action increases a counter on multiple invocations.
 test.build('actions.gyp', test.ALL, chdir='relocate/src')
-
+test.must_match('relocate/src/subdir1/actions-out/action-counter.txt', '1')
+test.build('actions.gyp', test.ALL, chdir='relocate/src')
+test.must_match('relocate/src/subdir1/actions-out/action-counter.txt', '2')
+test.build('actions.gyp', test.ALL, chdir='relocate/src')
+test.must_match('relocate/src/subdir1/actions-out/action-counter.txt', '3')
 
 expect = """\
 Hello from program.c
