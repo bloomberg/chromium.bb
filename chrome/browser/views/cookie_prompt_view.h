@@ -42,7 +42,7 @@ class CookiePromptView : public views::View,
       CookiePromptModalDialog* parent,
       gfx::NativeWindow root_window,
       Profile* profile,
-      const GURL& url,
+      const std::string& host,
       const std::string& cookie_line,
       CookiePromptModalDialogDelegate* delegate);
 
@@ -135,11 +135,8 @@ class CookiePromptView : public views::View,
   // The Profile for which Cookies are displayed.
   Profile* profile_;
 
-  // Cookie / local storage domain.
-  std::string domain_;
-
-  // Domain name formatted for displaying (removed leading '.').
-  std::wstring display_domain_;
+  // Cookie / local storage host.
+  std::string host_;
 
   // Displayed cookie. Only used when |cookie_ui_| is true.
   std::string cookie_line_;

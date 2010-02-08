@@ -60,11 +60,11 @@ void RunBeforeUnloadDialog(TabContents* tab_contents,
 
 #if defined(OS_WIN)
 void RunCookiePrompt(TabContents* tab_contents,
-                     const GURL& url,
+                     const std::string& host,
                      const std::string& cookie_line,
                      CookiePromptModalDialogDelegate* delegate) {
   Singleton<AppModalDialogQueue>()->AddDialog(
-      new CookiePromptModalDialog(tab_contents, url, cookie_line, delegate));
+      new CookiePromptModalDialog(tab_contents, host, cookie_line, delegate));
 }
 
 

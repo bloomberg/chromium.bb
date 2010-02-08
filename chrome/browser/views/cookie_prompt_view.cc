@@ -34,33 +34,33 @@ static const int kCookiePromptViewInsetSize = 5;
 // CookiePromptView, public:
 
 CookiePromptView::CookiePromptView(
-      CookiePromptModalDialog* parent,
-      gfx::NativeWindow root_window,
-      Profile* profile,
-      const GURL& url,
-      const std::string& cookie_line,
-      CookiePromptModalDialogDelegate* delegate)
-      : parent_(parent),
-        root_window_(root_window),
-        profile_(profile),
-        delegate_(delegate) {
-  cookie_ui_ = true;
-  net::CookieMonster::ParsedCookie cookie(cookie_line);
-  InitializeViewResources(cookie.HasDomain() ? cookie.Domain() : url.host());
+    CookiePromptModalDialog* parent,
+    gfx::NativeWindow root_window,
+    Profile* profile,
+    const std::string& host,
+    const std::string& cookie_line,
+    CookiePromptModalDialogDelegate* delegate)
+    : cookie_ui_(true),
+      parent_(parent),
+      root_window_(root_window),
+      profile_(profile),
+      cookie_line_(cookie_line),
+      delegate_(delegate) {
+  InitializeViewResources(host);
 }
 
 CookiePromptView::CookiePromptView(
-      CookiePromptModalDialog* parent,
-      gfx::NativeWindow root_window,
-      Profile* profile,
-      const BrowsingDataLocalStorageHelper::LocalStorageInfo& storage_info,
-      CookiePromptModalDialogDelegate* delegate)
-      : parent_(parent),
-        root_window_(root_window),
-        profile_(profile),
-        local_storage_info_(storage_info),
-        delegate_(delegate) {
-  cookie_ui_ = false;
+    CookiePromptModalDialog* parent,
+    gfx::NativeWindow root_window,
+    Profile* profile,
+    const BrowsingDataLocalStorageHelper::LocalStorageInfo& storage_info,
+    CookiePromptModalDialogDelegate* delegate)
+    : cookie_ui_(false),
+      parent_(parent),
+      root_window_(root_window),
+      profile_(profile),
+      local_storage_info_(storage_info),
+      delegate_(delegate) {
   InitializeViewResources(storage_info.host);
 }
 
@@ -165,12 +165,13 @@ CookiePromptView::CookiePromptView(Profile* profile,
 }
 
 void CookiePromptView::Init() {
+  std::wstring display_host = UTF8ToWide(host_);
   views::Label* description_label = new views::Label(l10n_util::GetStringF(
       cookie_ui_ ? IDS_COOKIE_ALERT_LABEL : IDS_DATA_ALERT_LABEL,
-      display_domain_));
+      display_host));
   int radio_group_id = 0;
   remember_radio_ = new views::RadioButton(
-      l10n_util::GetStringF(IDS_COOKIE_ALERT_REMEMBER_RADIO, display_domain_),
+      l10n_util::GetStringF(IDS_COOKIE_ALERT_REMEMBER_RADIO, display_host),
       radio_group_id);
   remember_radio_->set_listener(this);
   ask_radio_ = new views::RadioButton(
@@ -263,7 +264,7 @@ void CookiePromptView::Init() {
     layout->AddView(cookie_info_view, 1, 1, GridLayout::FILL,
                     GridLayout::CENTER);
 
-    cookie_info_view->SetCookieString(domain_, cookie_line_);
+    cookie_info_view->SetCookieString(host_, cookie_line_);
     info_view_ = cookie_info_view;
   } else {
     LocalStorageInfoView* local_storage_info_view = new LocalStorageInfoView();
@@ -296,14 +297,11 @@ void CookiePromptView::ToggleDetailsViewExpand() {
   Layout();
 }
 
-void CookiePromptView::InitializeViewResources(const std::string& domain) {
-  domain_ = domain;
-  std::string display_domain = domain;
-  if (!domain.empty() && domain[0] == '.')
-    display_domain = display_domain.substr(1);
-  display_domain_ = UTF8ToWide(display_domain);
+void CookiePromptView::InitializeViewResources(const std::string& host) {
+  DCHECK(host.empty() || host[0] != '.');
+  host_ = host;
   title_ = l10n_util::GetStringF(
       cookie_ui_ ? IDS_COOKIE_ALERT_TITLE : IDS_DATA_ALERT_TITLE,
-      display_domain_);
+      UTF8ToWide(host_));
 }
 

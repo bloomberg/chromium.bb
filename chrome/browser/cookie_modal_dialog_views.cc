@@ -43,7 +43,7 @@ NativeDialog CookiePromptModalDialog::CreateNativeDialog() {
     return new CookiePromptView(this,
                                  tab_contents_->GetMessageBoxRootWindow(),
                                  tab_contents_->profile(),
-                                 url_, cookie_line_, delegate_);
+                                 host_, cookie_line_, delegate_);
   }
   return new CookiePromptView(this,
                                tab_contents_->GetMessageBoxRootWindow(),

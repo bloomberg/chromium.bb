@@ -16,7 +16,6 @@
 #include "chrome/browser/profile.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
-#include "net/base/cookie_monster.h"
 #include "views/border.h"
 #include "views/grid_layout.h"
 #include "views/controls/label.h"
@@ -90,38 +89,22 @@ void CookieInfoView::SetCookie(
 }
 
 void CookieInfoView::SetCookieString(
-    const std::string& domain,
-    const net::CookieMonster::ParsedCookie& cookie) {
-  name_value_field_->SetText(UTF8ToWide(cookie.Name()));
-  content_value_field_->SetText(UTF8ToWide(cookie.Value()));
-  domain_value_field_->SetText(UTF8ToWide(domain));
-  path_value_field_->SetText(UTF8ToWide(cookie.Path()));
-  created_value_field_->SetText(
-      base::TimeFormatFriendlyDateAndTime(base::Time::Now()));
-
-  std::wstring expire_text = cookie.HasExpires() ?
-      base::TimeFormatFriendlyDateAndTime(
-          net::CookieMonster::ParseCookieTime(cookie.Expires())) :
-      l10n_util::GetString(IDS_COOKIES_COOKIE_EXPIRES_SESSION);
-
-  if (editable_expiration_date_) {
-    expire_combo_values_.clear();
-    if (cookie.HasExpires())
-      expire_combo_values_.push_back(expire_text);
-    expire_combo_values_.push_back(
-      l10n_util::GetString(IDS_COOKIES_COOKIE_EXPIRES_SESSION));
-    expires_value_combobox_->ModelChanged();
-    expires_value_combobox_->SetSelectedItem(0);
-    expires_value_combobox_->SetEnabled(true);
-  } else {
-    expires_value_field_->SetText(expire_text);
-  }
-
-  send_for_value_field_->SetText(cookie.IsSecure() ?
-      l10n_util::GetString(IDS_COOKIES_COOKIE_SENDFOR_SECURE) :
-      l10n_util::GetString(IDS_COOKIES_COOKIE_SENDFOR_ANY));
-  EnableCookieDisplay(true);
-  Layout();
+    const std::string& host,
+    const std::string& cookie_line) {
+  net::CookieMonster::ParsedCookie pc(cookie_line);
+  net::CookieMonster::CanonicalCookie cookie(
+      pc.Name(),
+      pc.Value(),
+      pc.Path(),
+      pc.IsSecure(),
+      pc.IsHttpOnly(),
+      base::Time::Now(),  // creation time
+      base::Time(),       // last access time is unused
+      pc.HasExpires(),
+      pc.HasExpires() ?
+          net::CookieMonster::ParseCookieTime(pc.Expires()) :
+          base::Time());
+  SetCookie(pc.HasDomain() ? pc.Domain() : host, cookie);
 }
 
 

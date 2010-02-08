@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "chrome/browser/in_process_webkit/dom_storage_area.h"
 
@@ -132,11 +132,11 @@ bool DOMStorageArea::CheckContentSetting() {
       last_modified = file_info.last_modified;
     }
     DOMStoragePermissionRequest request(host_, file_exists, size,
-                                        last_modified);
-    // TODO(jorlow/darin): Do something useful instead of calling DoSomething.
+                                        last_modified,
+                                        host_content_settings_map_);
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
-        NewRunnableFunction(&DOMStoragePermissionRequest::DoSomething,
+        NewRunnableFunction(&DOMStoragePermissionRequest::PromptUser,
                             &request));
     content_setting = request.WaitOnResponse();
   }

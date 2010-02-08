@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -45,7 +45,7 @@ void RunBeforeUnloadDialog(TabContents* tab_contents,
 // user to accept or reject the cookie. The caller should pass |delegate|
 // that will handle the reply from the dialog.
 void RunCookiePrompt(TabContents* tab_contents,
-                     const GURL& url,
+                     const std::string& host,
                      const std::string& cookie_line,
                      CookiePromptModalDialogDelegate* delegate);
 

@@ -20,7 +20,7 @@ class CookiePromptModalDialog : public AppModalDialog {
   // A union of data necessary to determine the type of message box to
   // show.
   CookiePromptModalDialog(TabContents* tab_contents,
-                          const GURL& url,
+                          const std::string& host,
                           const std::string& cookie_line,
                           CookiePromptModalDialogDelegate* delegate);
   CookiePromptModalDialog(
@@ -42,8 +42,8 @@ class CookiePromptModalDialog : public AppModalDialog {
 #endif
 
  private:
-  // Cookie url.
-  GURL url_;
+  // Cookie host.
+  std::string host_;
 
   // Cookie to display.
   std::string cookie_line_;

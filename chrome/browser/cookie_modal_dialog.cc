@@ -5,15 +5,14 @@
 #include "chrome/browser/cookie_modal_dialog.h"
 
 #include "chrome/browser/views/cookie_prompt_view.h"
-#include "googleurl/src/gurl.h"
 
 CookiePromptModalDialog::CookiePromptModalDialog(
     TabContents* tab_contents,
-    const GURL& url,
+    const std::string& host,
     const std::string& cookie_line,
     CookiePromptModalDialogDelegate* delegate)
     : AppModalDialog(tab_contents, std::wstring()),
-      url_(url),
+      host_(host),
       cookie_line_(cookie_line),
       cookie_ui_(true),
       delegate_(delegate) {
