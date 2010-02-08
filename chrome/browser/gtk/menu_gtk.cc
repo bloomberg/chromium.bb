@@ -52,6 +52,28 @@ bool GetMenuItemID(GtkWidget* menu_item, int* menu_id) {
   return false;
 }
 
+menus::MenuModel* ModelForMenuItem(GtkMenuItem* menu_item) {
+  return reinterpret_cast<menus::MenuModel*>(
+      g_object_get_data(G_OBJECT(menu_item), "model"));
+}
+
+void OnSubmenuShow(GtkWidget* widget, gpointer user_data) {
+  gint index = GPOINTER_TO_INT(user_data);
+
+  GtkMenuItem* item =
+      GTK_MENU_ITEM(g_list_nth(GTK_MENU_SHELL(widget)->children, index)->data);
+  menus::MenuModel* model = ModelForMenuItem(item);
+  std::string label =
+      ConvertAcceleratorsFromWindowsStyle(
+          UTF16ToUTF8(model->GetLabelAt(index)));
+
+#if GTK_CHECK_VERSION(2, 16, 0)
+  gtk_menu_item_set_label(item, label.c_str());
+#else
+  gtk_label_set_label(GTK_LABEL(GTK_BIN(item)->child), label.c_str());
+#endif
+}
+
 }  // namespace
 
 MenuGtk::MenuGtk(MenuGtk::Delegate* delegate,
@@ -346,6 +368,11 @@ void MenuGtk::BuildSubmenuFromModel(menus::MenuModel* model, GtkWidget* menu) {
                       reinterpret_cast<void*>(model));
     AppendMenuItemToMenu(i, menu_item, menu);
 
+    if (model->IsLabelDynamicAt(i)) {
+      g_signal_connect(menu, "show", G_CALLBACK(OnSubmenuShow),
+                       GINT_TO_POINTER(i));
+    }
+
     menu_item = NULL;
   }
 }
@@ -371,9 +398,7 @@ void MenuGtk::OnMenuItemActivated(GtkMenuItem* menuitem, MenuGtk* menu) {
   if (!GetMenuItemID(GTK_WIDGET(menuitem), &id))
     return;
 
-  menus::MenuModel* model =
-      reinterpret_cast<menus::MenuModel*>(
-          g_object_get_data(G_OBJECT(menuitem), "model"));
+  menus::MenuModel* model = ModelForMenuItem(menuitem);
 
   // The menu item can still be activated by hotkeys even if it is disabled.
   if (menu->IsCommandEnabled(model, id))
@@ -493,9 +518,7 @@ void MenuGtk::SetMenuItemInfo(GtkWidget* widget, gpointer userdata) {
     return;
 
   MenuGtk* menu = reinterpret_cast<MenuGtk*>(userdata);
-  menus::MenuModel* model =
-      reinterpret_cast<menus::MenuModel*>(
-          g_object_get_data(G_OBJECT(widget), "model"));
+  menus::MenuModel* model = ModelForMenuItem(GTK_MENU_ITEM(widget));
 
   if (GTK_IS_CHECK_MENU_ITEM(widget)) {
     GtkCheckMenuItem* item = GTK_CHECK_MENU_ITEM(widget);
