@@ -132,7 +132,10 @@ void ContentBlockedBubbleGtk::BuildBubble() {
 
     // We must set the default value before we attach the signal handlers or
     // pain occurs.
-    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(block_radio_), TRUE);
+    gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(
+        (profile_->GetHostContentSettingsMap()->GetContentSetting(host_,
+            content_type_) == CONTENT_SETTING_ALLOW) ?
+        allow_radio_ : block_radio_), TRUE);
 
     g_signal_connect(G_OBJECT(allow_radio_), "toggled",
                      G_CALLBACK(OnAllowBlockToggled), this);

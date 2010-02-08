@@ -179,9 +179,13 @@ void ContentBlockedBubbleContents::InitControlLayout() {
     layout->AddView(block_radio_);
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
-    // Now that this has been added to the view hierarchy, it's safe to call
-    // SetChecked() on it.
-    block_radio_->SetChecked(true);
+    // Now that the buttons have been added to the view hierarchy, it's safe to
+    // call SetChecked() on them.
+    if (profile_->GetHostContentSettingsMap()->GetContentSetting(host_,
+            content_type_) == CONTENT_SETTING_ALLOW)
+      allow_radio_->SetChecked(true);
+    else
+      block_radio_->SetChecked(true);
 
     views::Separator* separator = new views::Separator;
     layout->StartRow(0, single_column_set_id);
