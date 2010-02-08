@@ -2,26 +2,45 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GTK_BOOKMARK_CONTEXT_MENU_GTK_H_
-#define CHROME_BROWSER_GTK_BOOKMARK_CONTEXT_MENU_GTK_H_
+#ifndef CHROME_BROWSER_VIEWS_BOOKMARK_CONTEXT_MENU_CONTROLLER_VIEWS_H_
+#define CHROME_BROWSER_VIEWS_BOOKMARK_CONTEXT_MENU_CONTROLLER_VIEWS_H_
 
 #include <vector>
 
 #include "app/gfx/native_widget_types.h"
-#include "app/menus/simple_menu_model.h"
 #include "base/basictypes.h"
-#include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 
 class Browser;
 class PageNavigator;
 class Profile;
 
-// BookmarkContextMenu manages the context menu shown for the
-// bookmark bar, items on the bookmark bar, submenus of the bookmark bar and
-// the bookmark manager.
-class BookmarkContextMenuGtk : public BookmarkModelObserver,
-                               public menus::SimpleMenuModel::Delegate {
+// An interface implemented by an object that performs actions on the actual
+// menu for the controller.
+class BookmarkContextMenuControllerViewsDelegate {
+ public:
+  virtual ~BookmarkContextMenuControllerViewsDelegate() {}
+
+  // Closes the bookmark context menu.
+  virtual void CloseMenu() = 0;
+
+  // Methods that add items to the underlying menu.
+  virtual void AddItem(int command_id) = 0;
+  virtual void AddItemWithStringId(int command_id, int string_id) = 0;
+  virtual void AddSeparator() = 0;
+  virtual void AddCheckboxItem(int command_id) = 0;
+
+  // Sent before bookmarks are removed.
+  virtual void WillRemoveBookmarks(
+      const std::vector<const BookmarkNode*>& bookmarks) {}
+
+  // Sent after bookmarks have been removed.
+  virtual void DidRemoveBookmarks() {}
+};
+
+// BookmarkContextMenuControllerViews creates and manages state for the context
+// menu shown for any bookmark item.
+class BookmarkContextMenuControllerViews : public BookmarkModelObserver {
  public:
   // Used to configure what the context menu shows.
   enum ConfigurationType {
@@ -37,12 +56,6 @@ class BookmarkContextMenuGtk : public BookmarkModelObserver,
     BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER
   };
 
-  class Delegate {
-   public:
-    // Called when one of the menu items is selected and executed.
-    virtual void WillExecuteCommand() = 0;
-  };
-
   // Creates the bookmark context menu.
   // |profile| is used for opening urls as well as enabling 'open incognito'.
   // |browser| is used to determine the PageNavigator and may be null.
@@ -50,31 +63,28 @@ class BookmarkContextMenuGtk : public BookmarkModelObserver,
   // |parent| is the parent for newly created nodes if |selection| is empty.
   // |selection| is the nodes the context menu operates on and may be empty.
   // |configuration| determines which items to show.
-  BookmarkContextMenuGtk(gfx::NativeWindow hwnd,
-                         Profile* profile,
-                         Browser* browser,
-                         PageNavigator* navigator,
-                         const BookmarkNode* parent,
-                         const std::vector<const BookmarkNode*>& selection,
-                         ConfigurationType configuration,
-                         Delegate* delegate);
-  virtual ~BookmarkContextMenuGtk();
+  BookmarkContextMenuControllerViews(
+      gfx::NativeWindow parent_window,
+      BookmarkContextMenuControllerViewsDelegate* delegate,
+      Profile* profile,
+      PageNavigator* navigator,
+      const BookmarkNode* parent,
+      const std::vector<const BookmarkNode*>& selection,
+      ConfigurationType configuration);
+  virtual ~BookmarkContextMenuControllerViews();
 
-  menus::MenuModel* menu_model() const { return menu_model_.get(); }
+  void BuildMenu();
 
-  // Should be called by the delegate when it is no longer valid.
-  void DelegateDestroyed();
+  void ExecuteCommand(int id);
+  bool IsItemChecked(int id) const;
+  bool IsCommandEnabled(int id) const;
 
-  // Menu::Delegate methods.
-  virtual bool IsCommandIdChecked(int command_id) const;
-  virtual bool IsCommandIdEnabled(int command_id) const;
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      menus::Accelerator* accelerator);
-  virtual void ExecuteCommand(int command_id);
+  // Accessors:
+  Profile* profile() const { return profile_; }
+  PageNavigator* navigator() const { return navigator_; }
 
  private:
-  // BookmarkModelObserver method. Any change to the model results in closing
+  // BookmarkModelObserver methods. Any change to the model results in closing
   // the menu.
   virtual void Loaded(BookmarkModel* model) {}
   virtual void BookmarkModelBeingDeleted(BookmarkModel* model);
@@ -100,15 +110,6 @@ class BookmarkContextMenuGtk : public BookmarkModelObserver,
   // Invoked from the various bookmark model observer methods. Closes the menu.
   void ModelChanged();
 
-  // Adds a IDS_* style command to the menu.
-  void AppendItem(int id);
-  // Adds a IDS_* style command to the menu with a different localized string.
-  void AppendItem(int id, int localization_id);
-  // Adds a separator to the menu.
-  void AppendSeparator();
-  // Adds a checkable item to the menu.
-  void AppendCheckboxItem(int id);
-
   // Removes the observer from the model and NULLs out model_.
   BookmarkModel* RemoveModelObserver();
 
@@ -120,23 +121,16 @@ class BookmarkContextMenuGtk : public BookmarkModelObserver,
   // parent_ is returned.
   const BookmarkNode* GetParentForNewNodes() const;
 
-  gfx::NativeWindow wnd_;
+  gfx::NativeWindow parent_window_;
+  BookmarkContextMenuControllerViewsDelegate* delegate_;
   Profile* profile_;
-  Browser* browser_;
   PageNavigator* navigator_;
   const BookmarkNode* parent_;
   std::vector<const BookmarkNode*> selection_;
-  BookmarkModel* model_;
   ConfigurationType configuration_;
-  Delegate* delegate_;
-  scoped_ptr<menus::SimpleMenuModel> menu_model_;
+  BookmarkModel* model_;
 
-  // Tracks whether the model has changed. For the most part the model won't
-  // change while a context menu is showing, but if it does, we'd better not
-  // try to execute any commands.
-  bool model_changed_;
-
-  DISALLOW_COPY_AND_ASSIGN(BookmarkContextMenuGtk);
+  DISALLOW_COPY_AND_ASSIGN(BookmarkContextMenuControllerViews);
 };
 
-#endif  // CHROME_BROWSER_GTK_BOOKMARK_CONTEXT_MENU_GTK_H_
+#endif  // CHROME_BROWSER_VIEWS_BOOKMARK_CONTEXT_MENU_CONTROLLER_VIEWS_H_

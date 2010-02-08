@@ -12,7 +12,6 @@
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
-#include "chrome/browser/gtk/bookmark_context_menu_gtk.h"
 #include "chrome/browser/gtk/bookmark_utils_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
@@ -106,8 +105,6 @@ BookmarkMenuController::BookmarkMenuController(Browser* browser,
 }
 
 BookmarkMenuController::~BookmarkMenuController() {
-  if (context_menu_controller_.get())
-    context_menu_controller_->DelegateDestroyed();
   profile_->GetBookmarkModel()->RemoveObserver(this);
   gtk_menu_popdown(GTK_MENU(menu_));
 }
@@ -138,6 +135,10 @@ void BookmarkMenuController::BookmarkNodeFavIconLoaded(
 
 void BookmarkMenuController::WillExecuteCommand() {
   gtk_menu_popdown(GTK_MENU(menu_));
+}
+
+void BookmarkMenuController::CloseMenu() {
+  context_menu_->Cancel();
 }
 
 void BookmarkMenuController::NavigateToMenuItem(
@@ -251,10 +252,10 @@ gboolean BookmarkMenuController::OnButtonPressed(
     if (node)
       nodes.push_back(node);
     controller->context_menu_controller_.reset(
-        new BookmarkContextMenuGtk(
-            controller->parent_window_, controller->profile_,
-            controller->browser_, controller->page_navigator_, parent, nodes,
-            BookmarkContextMenuGtk::BOOKMARK_BAR, controller));
+        new BookmarkContextMenuController(
+            controller->parent_window_, controller, controller->profile_,
+            controller->page_navigator_, parent, nodes,
+            BookmarkContextMenuController::BOOKMARK_BAR));
     controller->context_menu_.reset(
         new MenuGtk(NULL, controller->context_menu_controller_->menu_model()));
 

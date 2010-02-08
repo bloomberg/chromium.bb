@@ -556,8 +556,9 @@ void BookmarkManagerView::ShowContextMenu(views::View* source,
   DCHECK(source == table_view_ || source == tree_view_);
   bool is_table = (source == table_view_);
   ShowMenu(x, y,
-           is_table ? BookmarkContextMenuController::BOOKMARK_MANAGER_TABLE :
-                      BookmarkContextMenuController::BOOKMARK_MANAGER_TREE);
+           is_table ?
+               BookmarkContextMenuControllerViews::BOOKMARK_MANAGER_TABLE :
+               BookmarkContextMenuControllerViews::BOOKMARK_MANAGER_TREE);
 }
 
 void BookmarkManagerView::RunMenu(views::View* source, const gfx::Point& pt) {
@@ -572,7 +573,7 @@ void BookmarkManagerView::RunMenu(views::View* source, const gfx::Point& pt) {
                                       (-source->width() + 5);
   if (source->GetID() == kOrganizeMenuButtonID) {
     ShowMenu(menu_x, pt.y() + 2,
-             BookmarkContextMenuController::BOOKMARK_MANAGER_ORGANIZE_MENU);
+        BookmarkContextMenuControllerViews::BOOKMARK_MANAGER_ORGANIZE_MENU);
   } else if (source->GetID() == kToolsMenuButtonID) {
     ShowToolsMenu(menu_x, pt.y() + 2);
   } else {
@@ -717,22 +718,26 @@ BookmarkModel* BookmarkManagerView::GetBookmarkModel() const {
 }
 
 void BookmarkManagerView::ShowMenu(
-    int x, int y, BookmarkContextMenuController::ConfigurationType config) {
+    int x, int y,
+    BookmarkContextMenuControllerViews::ConfigurationType config) {
   if (!GetBookmarkModel()->IsLoaded())
     return;
 
-  if (config == BookmarkContextMenuController::BOOKMARK_MANAGER_TABLE ||
+  if (config == BookmarkContextMenuControllerViews::BOOKMARK_MANAGER_TABLE ||
       (config ==
-          BookmarkContextMenuController::BOOKMARK_MANAGER_ORGANIZE_MENU &&
+          BookmarkContextMenuControllerViews::BOOKMARK_MANAGER_ORGANIZE_MENU &&
        table_view_->HasFocus())) {
     std::vector<const BookmarkNode*> nodes = GetSelectedTableNodes();
     const BookmarkNode* parent = GetSelectedFolder();
     if (!parent) {
-      if (config == BookmarkContextMenuController::BOOKMARK_MANAGER_TABLE) {
-        config = BookmarkContextMenuController::BOOKMARK_MANAGER_TABLE_OTHER;
+      if (config ==
+          BookmarkContextMenuControllerViews::BOOKMARK_MANAGER_TABLE) {
+        config =
+            BookmarkContextMenuControllerViews::BOOKMARK_MANAGER_TABLE_OTHER;
       } else {
         config =
-            BookmarkContextMenuController::BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER;
+            BookmarkContextMenuControllerViews::
+                BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER;
       }
     }
     BookmarkContextMenu menu(GetWindow()->GetNativeWindow(), profile_, NULL,

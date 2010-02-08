@@ -1,11 +1,11 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_VIEWS_BOOKMARK_CONTEXT_MENU_H_
 #define CHROME_BROWSER_VIEWS_BOOKMARK_CONTEXT_MENU_H_
 
-#include "chrome/browser/bookmarks/bookmark_context_menu_controller.h"
+#include "chrome/browser/views/bookmark_context_menu_controller_views.h"
 #include "views/controls/menu/menu_delegate.h"
 
 // Observer for the BookmarkContextMenu.
@@ -19,7 +19,7 @@ class BookmarkContextMenuObserver {
   virtual void DidRemoveBookmarks() = 0;
 };
 
-class BookmarkContextMenu : public BookmarkContextMenuControllerDelegate,
+class BookmarkContextMenu : public BookmarkContextMenuControllerViewsDelegate,
                             public views::MenuDelegate {
  public:
   BookmarkContextMenu(
@@ -28,7 +28,7 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerDelegate,
       PageNavigator* page_navigator,
       const BookmarkNode* parent,
       const std::vector<const BookmarkNode*>& selection,
-      BookmarkContextMenuController::ConfigurationType configuration);
+      BookmarkContextMenuControllerViews::ConfigurationType configuration);
   virtual ~BookmarkContextMenu();
 
   // Shows the context menu at the specified point.
@@ -46,7 +46,7 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerDelegate,
   virtual bool IsCommandEnabled(int command_id) const;
   virtual bool ShouldCloseAllMenusOnExecute(int id);
 
-  // Overridden from BookmarkContextMenuControllerDelegate:
+  // Overridden from BookmarkContextMenuControllerViewsDelegate:
   virtual void CloseMenu();
   virtual void AddItem(int command_id);
   virtual void AddItemWithStringId(int command_id, int string_id);
@@ -57,7 +57,7 @@ class BookmarkContextMenu : public BookmarkContextMenuControllerDelegate,
   virtual void DidRemoveBookmarks();
 
  private:
-  scoped_ptr<BookmarkContextMenuController> controller_;
+  scoped_ptr<BookmarkContextMenuControllerViews> controller_;
 
   // The parent of dialog boxes opened from the context menu.
   gfx::NativeWindow parent_window_;

@@ -1255,7 +1255,7 @@ void BookmarkBarView::ShowContextMenu(View* source,
       browser() ? browser()->GetSelectedTabContents() : NULL;
   BookmarkContextMenu controller(GetWindow()->GetNativeWindow(), GetProfile(),
                                  navigator, parent, nodes,
-                                 BookmarkContextMenuController::BOOKMARK_BAR);
+                                 BookmarkContextMenuControllerViews::BOOKMARK_BAR);
   controller.RunMenuAt(gfx::Point(x, y));
 }
 

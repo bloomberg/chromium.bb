@@ -194,7 +194,7 @@ class BookmarkManagerView : public views::View,
   // Shows the menu. This is invoked to show the context menu for table/tree
   // as well as to show the menu from the organize button.
   void ShowMenu(int x, int y,
-                BookmarkContextMenuController::ConfigurationType config);
+                BookmarkContextMenuControllerViews::ConfigurationType config);
 
   // Invoked to handle cut/copy/paste from the table or tree. If |from_table|
   // is true the source is the table.

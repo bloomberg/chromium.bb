@@ -200,12 +200,13 @@ bool BookmarkMenuController::ShowContextMenu(MenuItemView* source,
   std::vector<const BookmarkNode*> nodes;
   nodes.push_back(menu_id_to_node_map_[id]);
   context_menu_.reset(
-      new BookmarkContextMenu(parent_,
-                              profile_,
-                              page_navigator_,
-                              nodes[0]->GetParent(),
-                              nodes,
-                              BookmarkContextMenuController::BOOKMARK_BAR));
+      new BookmarkContextMenu(
+          parent_,
+          profile_,
+          page_navigator_,
+          nodes[0]->GetParent(),
+          nodes,
+          BookmarkContextMenuControllerViews::BOOKMARK_BAR));
   context_menu_->set_observer(this);
   context_menu_->RunMenuAt(gfx::Point(x, y));
   context_menu_.reset(NULL);

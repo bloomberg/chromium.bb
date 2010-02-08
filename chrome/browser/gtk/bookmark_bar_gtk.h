@@ -13,6 +13,7 @@
 #include "app/slide_animation.h"
 #include "base/gfx/size.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/bookmarks/bookmark_context_menu_controller.h"
 #include "chrome/browser/bookmarks/bookmark_model_observer.h"
 #include "chrome/browser/gtk/bookmark_bar_instructions_gtk.h"
 #include "chrome/browser/gtk/menu_bar_helper.h"
@@ -23,7 +24,6 @@
 #include "chrome/common/owned_widget_gtk.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
-class BookmarkContextMenuGtk;
 class BookmarkMenuController;
 class Browser;
 class BrowserWindowGtk;
@@ -39,7 +39,8 @@ class BookmarkBarGtk : public AnimationDelegate,
                        public BookmarkModelObserver,
                        public MenuBarHelper::Delegate,
                        public NotificationObserver,
-                       public BookmarkBarInstructionsGtk::Delegate {
+                       public BookmarkBarInstructionsGtk::Delegate,
+                       public BookmarkContextMenuControllerDelegate {
   FRIEND_TEST(BookmarkBarGtkUnittest, DisplaysHelpMessageOnEmpty);
   FRIEND_TEST(BookmarkBarGtkUnittest, HidesHelpMessageWithBookmark);
   FRIEND_TEST(BookmarkBarGtkUnittest, BuildsButtons);
@@ -105,6 +106,9 @@ class BookmarkBarGtk : public AnimationDelegate,
 
   // The NTP needs to have access to this.
   static const int kBookmarkBarNTPHeight;
+
+  // BookmarkContextMenuController::Delegate implementation --------------------
+  virtual void CloseMenu();
 
  private:
   // Helper function which generates GtkToolItems for |bookmark_toolbar_|.
@@ -352,7 +356,7 @@ class BookmarkBarGtk : public AnimationDelegate,
   // The last displayed right click menu, or NULL if no menus have been
   // displayed yet.
   // The controller.
-  scoped_ptr<BookmarkContextMenuGtk> current_context_menu_controller_;
+  scoped_ptr<BookmarkContextMenuController> current_context_menu_controller_;
   // The view.
   scoped_ptr<MenuGtk> current_context_menu_;
 

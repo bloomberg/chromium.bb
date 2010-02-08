@@ -18,9 +18,9 @@ BookmarkContextMenu::BookmarkContextMenu(
     PageNavigator* page_navigator,
     const BookmarkNode* parent,
     const std::vector<const BookmarkNode*>& selection,
-    BookmarkContextMenuController::ConfigurationType configuration)
+    BookmarkContextMenuControllerViews::ConfigurationType configuration)
     : ALLOW_THIS_IN_INITIALIZER_LIST(
-          controller_(new BookmarkContextMenuController(parent_window, this,
+          controller_(new BookmarkContextMenuControllerViews(parent_window, this,
                                                         profile, page_navigator,
                                                         parent, selection,
                                                         configuration))),
@@ -62,7 +62,8 @@ bool BookmarkContextMenu::ShouldCloseAllMenusOnExecute(int id) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// BookmarkContextMenu, BookmarkContextMenuControllerDelegate implementation:
+// BookmarkContextMenu, BookmarkContextMenuControllerViewsDelegate
+// implementation:
 
 void BookmarkContextMenu::CloseMenu() {
   menu_->Cancel();

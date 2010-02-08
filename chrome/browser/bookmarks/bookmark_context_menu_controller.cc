@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -210,7 +210,10 @@ BookmarkContextMenuController::BookmarkContextMenuController(
       model_(profile->GetBookmarkModel()) {
   DCHECK(profile_);
   DCHECK(model_->IsLoaded());
+  menu_model_.reset(new menus::SimpleMenuModel(this));
   model_->AddObserver(this);
+
+  BuildMenu();
 }
 
 BookmarkContextMenuController::~BookmarkContextMenuController() {
@@ -221,60 +224,82 @@ BookmarkContextMenuController::~BookmarkContextMenuController() {
 void BookmarkContextMenuController::BuildMenu() {
   if (configuration_ != BOOKMARK_MANAGER_ORGANIZE_MENU) {
     if (selection_.size() == 1 && selection_[0]->is_url()) {
-      delegate_->AddItemWithStringId(IDS_BOOMARK_BAR_OPEN_ALL,
-                                     IDS_BOOMARK_BAR_OPEN_IN_NEW_TAB);
-      delegate_->AddItemWithStringId(IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW,
-                                     IDS_BOOMARK_BAR_OPEN_IN_NEW_WINDOW);
-      delegate_->AddItemWithStringId(IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO,
-                                     IDS_BOOMARK_BAR_OPEN_INCOGNITO);
+      AddItem(IDS_BOOMARK_BAR_OPEN_ALL,
+              IDS_BOOMARK_BAR_OPEN_IN_NEW_TAB);
+      AddItem(IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW,
+              IDS_BOOMARK_BAR_OPEN_IN_NEW_WINDOW);
+      AddItem(IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO,
+              IDS_BOOMARK_BAR_OPEN_INCOGNITO);
     } else {
-      delegate_->AddItem(IDS_BOOMARK_BAR_OPEN_ALL);
-      delegate_->AddItem(IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW);
-      delegate_->AddItem(IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO);
+      AddItem(IDS_BOOMARK_BAR_OPEN_ALL);
+      AddItem(IDS_BOOMARK_BAR_OPEN_ALL_NEW_WINDOW);
+      AddItem(IDS_BOOMARK_BAR_OPEN_ALL_INCOGNITO);
     }
-    delegate_->AddSeparator();
+    AddSeparator();
   }
 
   if (selection_.size() == 1 && selection_[0]->is_folder()) {
-    delegate_->AddItem(IDS_BOOKMARK_BAR_RENAME_FOLDER);
+    AddItem(IDS_BOOKMARK_BAR_RENAME_FOLDER);
   } else {
-    delegate_->AddItem(IDS_BOOKMARK_BAR_EDIT);
+    AddItem(IDS_BOOKMARK_BAR_EDIT);
   }
+  AddItem(IDS_BOOKMARK_BAR_REMOVE);
 
   if (configuration_ == BOOKMARK_MANAGER_TABLE ||
       configuration_ == BOOKMARK_MANAGER_TABLE_OTHER ||
       configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU ||
       configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER) {
-    delegate_->AddItem(IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER);
+    AddItem(IDS_BOOKMARK_MANAGER_SHOW_IN_FOLDER);
   }
 
-  delegate_->AddSeparator();
-  delegate_->AddItem(IDS_CUT);
-  delegate_->AddItem(IDS_COPY);
-  delegate_->AddItem(IDS_PASTE);
-
-  delegate_->AddSeparator();
-  delegate_->AddItem(IDS_BOOKMARK_BAR_REMOVE);
+  if (configuration_ == BOOKMARK_MANAGER_TABLE ||
+      configuration_ == BOOKMARK_MANAGER_TABLE_OTHER ||
+      configuration_ == BOOKMARK_MANAGER_TREE ||
+      configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU ||
+      configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER) {
+    AddSeparator();
+    AddItem(IDS_CUT);
+    AddItem(IDS_COPY);
+    AddItem(IDS_PASTE);
+  }
 
   if (configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU) {
-    delegate_->AddSeparator();
-    delegate_->AddItem(IDS_BOOKMARK_MANAGER_SORT);
+    AddSeparator();
+    AddItem(IDS_BOOKMARK_MANAGER_SORT);
   }
 
-  delegate_->AddSeparator();
+  AddSeparator();
 
-  delegate_->AddItem(IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK);
-  delegate_->AddItem(IDS_BOOMARK_BAR_NEW_FOLDER);
+  AddItem(IDS_BOOMARK_BAR_ADD_NEW_BOOKMARK);
+  AddItem(IDS_BOOMARK_BAR_NEW_FOLDER);
 
   if (configuration_ == BOOKMARK_BAR) {
-    delegate_->AddSeparator();
-    delegate_->AddItem(IDS_BOOKMARK_MANAGER);
-    delegate_->AddCheckboxItem(IDS_BOOMARK_BAR_ALWAYS_SHOW);
+    AddSeparator();
+    AddItem(IDS_BOOKMARK_MANAGER);
+    AddCheckboxItem(IDS_BOOMARK_BAR_ALWAYS_SHOW);
   }
+}
+
+void BookmarkContextMenuController::AddItem(int id) {
+  menu_model_->AddItem(id, l10n_util::GetStringUTF16(id));
+}
+
+void BookmarkContextMenuController::AddItem(int id, int localization_id) {
+  menu_model_->AddItemWithStringId(id, localization_id);
+}
+
+void BookmarkContextMenuController::AddSeparator() {
+  menu_model_->AddSeparator();
+}
+
+void BookmarkContextMenuController::AddCheckboxItem(int id) {
+  menu_model_->AddCheckItemWithStringId(id, id);
 }
 
 void BookmarkContextMenuController::ExecuteCommand(int id) {
   BookmarkModel* model = RemoveModelObserver();
+  if (delegate_)
+    delegate_->WillExecuteCommand();
 
   switch (id) {
     case IDS_BOOMARK_BAR_OPEN_ALL:
@@ -305,7 +330,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
 
       if (selection_.size() != 1) {
         NOTREACHED();
-        return;
+        break;
       }
 
       if (selection_[0]->is_url()) {
@@ -326,12 +351,10 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
     case IDS_BOOKMARK_BAR_REMOVE: {
       UserMetrics::RecordAction("BookmarkBar_ContextMenu_Remove", profile_);
 
-      delegate_->WillRemoveBookmarks(selection_);
       for (size_t i = 0; i < selection_.size(); ++i) {
         model->Remove(selection_[i]->GetParent(),
                       selection_[i]->GetParent()->IndexOfChild(selection_[i]));
       }
-      delegate_->DidRemoveBookmarks();
       selection_.clear();
       break;
     }
@@ -373,7 +396,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
 
       if (selection_.size() != 1) {
         NOTREACHED();
-        return;
+        break;
       }
 
       BookmarkManager::SelectInTree(profile_, selection_[0]);
@@ -390,9 +413,7 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
       break;
 
     case IDS_CUT:
-      delegate_->WillRemoveBookmarks(selection_);
       bookmark_utils::CopyToClipboard(model, selection_, true);
-      delegate_->DidRemoveBookmarks();
       break;
 
     case IDS_COPY:
@@ -415,18 +436,21 @@ void BookmarkContextMenuController::ExecuteCommand(int id) {
     default:
       NOTREACHED();
   }
+
+  if (delegate_)
+    delegate_->DidExecuteCommand();
 }
 
-bool BookmarkContextMenuController::IsItemChecked(int id) const {
-  DCHECK(id == IDS_BOOMARK_BAR_ALWAYS_SHOW);
+bool BookmarkContextMenuController::IsCommandIdChecked(int command_id) const {
+  DCHECK(command_id == IDS_BOOMARK_BAR_ALWAYS_SHOW);
   return profile_->GetPrefs()->GetBoolean(prefs::kShowBookmarkBar);
 }
 
-bool BookmarkContextMenuController::IsCommandEnabled(int id) const {
+bool BookmarkContextMenuController::IsCommandIdEnabled(int command_id) const {
   bool is_root_node =
       (selection_.size() == 1 &&
        selection_[0]->GetParent() == model_->root_node());
-  switch (id) {
+  switch (command_id) {
     case IDS_BOOMARK_BAR_OPEN_INCOGNITO:
       return !profile_->IsOffTheRecord();
 
@@ -463,8 +487,8 @@ bool BookmarkContextMenuController::IsCommandEnabled(int id) const {
     case IDS_PASTE:
       // Paste to selection from the Bookmark Bar, to parent_ everywhere else
       return (configuration_ == BOOKMARK_BAR && !selection_.empty() &&
-              bookmark_utils::CanPasteFromClipboard(selection_[0])) ||
-              bookmark_utils::CanPasteFromClipboard(parent_);
+             bookmark_utils::CanPasteFromClipboard(selection_[0])) ||
+             bookmark_utils::CanPasteFromClipboard(parent_);
   }
   return true;
 }
@@ -511,7 +535,8 @@ void BookmarkContextMenuController::BookmarkNodeChildrenReordered(
 }
 
 void BookmarkContextMenuController::ModelChanged() {
-  delegate_->CloseMenu();
+  if (delegate_)
+    delegate_->CloseMenu();
 }
 
 BookmarkModel* BookmarkContextMenuController::RemoveModelObserver() {
