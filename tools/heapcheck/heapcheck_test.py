@@ -49,6 +49,7 @@ class HeapcheckWrapper(object):
     self.PutEnvAndLog('PPROF_PATH',
         google.path_utils.ScriptDir() +
         '/../../third_party/tcmalloc/chromium/src/pprof')
+    self.PutEnvAndLog('LD_PRELOAD', '/usr/lib/debug/libstdc++.so')
 
     common.RunSubprocess(proc, self._timeout)
 
