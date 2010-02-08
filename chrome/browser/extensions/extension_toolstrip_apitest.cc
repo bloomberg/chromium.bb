@@ -4,11 +4,7 @@
 
 #include "chrome/browser/extensions/extension_apitest.h"
 
-#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
-// See http://crbug.com/30151.
-#define Toolstrip DISABLED_Toolstrip
-#endif
-
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Toolstrip) {
+// Disabled, http://crbug.com/30151.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_Toolstrip) {
   ASSERT_TRUE(RunExtensionTest("toolstrip")) << message_;
 }
