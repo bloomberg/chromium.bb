@@ -39,14 +39,71 @@ import sync_tgz
 
 
 NACL_PLATFORM_DIR_MAP = {
-    'win32': 'windows',
-    'cygwin': 'windows',
-    'posix': 'linux',
-    'linux': 'linux',
-    'linux2': 'linux',
-    'darwin': 'mac',
-}
+    'win32': { '32': 'windows',
+               '64': 'windows64',
+               },
+    'cygwin': { '32': 'windows',
+                '64': 'windows64',
+                },
+    'posix': { '32': 'linux',
+               '64': 'linux64',
+               },
+    'linux': { '32': 'linux',
+               '64': 'linux64',
+               },
+    'linux2': { '32': 'linux',
+                '64': 'linux64',
+                },
+    'darwin': { '32': 'mac',
+                # '64': 'mac64', # not supported!
+                },
+    }
 
+
+# TODO(bradnelson): make the snapshots be consistent, and eliminate the
+# need for this code.
+def _DefaultDownloadUrl(env):
+  """Returns the URL for downloading the SDK.
+
+  Unfortunately, the site URLs are (currently) woefully inconsistent:
+
+  http://build.chromium.org/buildbot/snapshots/nacl/
+   sdk-linux
+    naclsdk_linux.tgz
+    naclsdk_linux64.tgz
+   sdk-mac
+    naclsdk_mac.tgz
+   sdk-win
+    naclsdk_win.tgz
+   sdk-win64
+    naclsdk_win64.tgz
+
+  """
+
+  # return ('http://build.chromium.org/buildbot/snapshots/nacl/'
+  #         'naclsdk_${NATIVE_CLIENT_SDK_PLATFORM}.tgz')
+
+  canon_platform = { 'win32': 'win',
+                     'cygwin': 'win',
+                     'posix': 'linux',
+                     'linux': 'linux',
+                     'linux2': 'linux',
+                     'darwin': 'mac'}
+  plat_dir = { 'win': { '32': 'win',
+                        '64': 'win64'},
+               'linux': { '32': 'linux',
+                          '64': 'linux'},
+               'mac': {'32': 'mac'}}
+  plat_sdk = { 'win': { '32': 'win',
+                        '64': 'win64'},
+               'linux': { '32': 'linux',
+                          '64': 'linux64'},
+               'mac': {'32': 'mac'}}
+
+  p = canon_platform[env['PLATFORM']]
+  sa = env['BUILD_SUBARCH']
+  return ('http://build.chromium.org/buildbot/snapshots/nacl/sdk-'
+          + plat_dir[p][sa] + '/naclsdk_' + plat_sdk[p][sa] + '.tgz')
 
 def _GetNaclSdkRoot(env, sdk_mode):
   """Return the path to the sdk.
@@ -76,7 +133,7 @@ def _GetNaclSdkRoot(env, sdk_mode):
       return '/usr/local/nacl-sdk'
 
   elif sdk_mode == 'download':
-    platform = NACL_PLATFORM_DIR_MAP[env['PLATFORM']]
+    platform = NACL_PLATFORM_DIR_MAP[env['PLATFORM']][env['BUILD_SUBARCH']]
     root = os.path.join(env['MAIN_DIR'], 'src', 'third_party', 'nacl_sdk',
                         platform, 'sdk', 'nacl-sdk')
     return root
@@ -107,10 +164,12 @@ def DownloadSdk(env):
 
   # Get path to extract to.
   target = env.subst('$MAIN_DIR/src/third_party/nacl_sdk/' +
-                     NACL_PLATFORM_DIR_MAP[env['PLATFORM']])
+                     NACL_PLATFORM_DIR_MAP[env['PLATFORM']]
+                     [env['BUILD_SUBARCH']])
 
   # Set NATIVE_CLIENT_SDK_PLATFORM before substitution.
-  env['NATIVE_CLIENT_SDK_PLATFORM'] = NACL_PLATFORM_DIR_MAP[env['PLATFORM']]
+  env['NATIVE_CLIENT_SDK_PLATFORM'] = (NACL_PLATFORM_DIR_MAP[env['PLATFORM']]
+                                       [env['BUILD_SUBARCH']])
 
   # Allow sdk selection function to be used instead.
   if env.get('NATIVE_CLIENT_SDK_SOURCE'):
@@ -120,8 +179,7 @@ def DownloadSdk(env):
     url = [
         env.subst(env.get(
             'NATIVE_CLIENT_SDK_URL',
-            'http://build.chromium.org/buildbot/snapshots/nacl/'
-            'naclsdk_${NATIVE_CLIENT_SDK_PLATFORM}.tgz')),
+            _DefaultDownloadUrl(env))),
         env.get('NATIVE_CLIENT_SDK_USERNAME'),
         env.get('NATIVE_CLIENT_SDK_PASSWORD'),
     ]
@@ -134,17 +192,22 @@ def _SetEnvForX86Sdk(env, sdk_path):
   #       absolute path have been futile
   env.PrependENVPath('PATH', sdk_path + '/bin')
 
+  if env['BUILD_SUBARCH'] == '64':
+    naclvers = 'nacl64'
+  else:
+    naclvers = 'nacl'
+
   env.Replace(# replace hader and lib paths
-              NACL_SDK_INCLUDE=sdk_path + '/nacl/include',
-              NACL_SDK_LIB=sdk_path + '/nacl/lib',
+              NACL_SDK_INCLUDE=sdk_path + '/' + naclvers + '/include',
+              NACL_SDK_LIB=sdk_path + '/' + naclvers + '/lib',
               # Replace the normal unix tools with the NaCl ones.
-              CC='nacl-gcc',
-              CXX='nacl-g++',
-              AR='nacl-ar',
-              AS='nacl-as',
+              CC=naclvers + '-gcc',
+              CXX=naclvers + '-g++',
+              AR=naclvers + '-ar',
+              AS=naclvers + '-as',
               # NOTE: use g++ for linking so we can handle c AND c++
-              LINK='nacl-g++',
-              RANLIB='nacl-ranlib',
+              LINK=naclvers + '-g++',
+              RANLIB=naclvers + '-ranlib',
               )
 
 

@@ -152,7 +152,8 @@ def DiffStringsIgnoringWhiteSpace(a, b):
 
 
 def RegexpFilterLines(regexp, lines):
-  """Apply regexp to filter lines of text.
+  """Apply regexp to filter lines of text, keeping only those lines
+  that match.
 
   Any carriage return / newline sequence is turned into a newline.
 

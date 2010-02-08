@@ -17,7 +17,7 @@ uint32_t NaClElfImageGetEntryPoint(struct NaClElfImage *image);
 
 int NaClElfImageGetBundleSize(struct NaClElfImage *image);
 
-struct NaClElfImage *NaClElfImageNew(struct Gio *gp);
+struct NaClElfImage *NaClElfImageNew(struct Gio *gp, NaClErrorCode *err_code);
 
 NaClErrorCode NaClElfImageValidateElfHeader(struct NaClElfImage *image);
 

@@ -464,6 +464,10 @@ char const  *NaClErrorString(NaClErrorCode errcode) {
       return "Internal error";
     case LOAD_READ_ERROR:
       return "Cannot read file";
+    case LOAD_TOO_MANY_PROG_HDRS:
+      return "Too many program header entries in ELF file";
+    case LOAD_PROG_HDR_SIZE_TOO_SMALL:
+      return "ELF program header size too small";
     case LOAD_BAD_ELF_MAGIC:
       return "Bad ELF header magic number";
     case LOAD_NOT_32_BIT:

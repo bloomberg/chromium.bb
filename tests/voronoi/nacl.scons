@@ -45,7 +45,7 @@ node = env.CommandSelLdrTestNacl(
     command=[env.File('voronoi.nexe'), '-- -t -d'],
     stdout_golden=env.File('voronoi.stdout'),
     )
-env.AddNodeToTestSuite(node, ['small_tests'])
+env.AddNodeToTestSuite(node, ['small_tests'], 'run_voronoi')
 
 env.Publish('voronoi.nexe', 'run', ['voronoi.html',])
 

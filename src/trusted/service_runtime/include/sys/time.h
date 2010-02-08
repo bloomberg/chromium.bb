@@ -17,7 +17,11 @@
 extern "C" {
 #endif
 
+#ifdef __native_client__
 typedef long int  nacl_abi_suseconds_t;
+#else
+typedef int32_t   nacl_abi_suseconds_t;
+#endif
 
 #ifndef nacl_abi___clock_t_defined
 #define nacl_abi___clock_t_defined
@@ -31,7 +35,11 @@ struct nacl_abi_timeval {
 
 struct nacl_abi_timespec {
   nacl_abi_time_t    tv_sec;
+#ifdef __native_client__
   long int           tv_nsec;
+#else
+  int32_t            tv_nsec;
+#endif
 };
 
 /* obsolete.  should not be used */
@@ -46,7 +54,7 @@ struct nacl_abi_timezone {
  * never be used, and defines it by default as void *.  The Mac man page says
  * it is void *.
  */
-extern int nacl_abi_gettimeofday (struct nacl_abi_timeval *tv, void *tz);
+extern int nacl_abi_gettimeofday(struct nacl_abi_timeval *tv, void *tz);
 
 #ifdef __cplusplus
 }

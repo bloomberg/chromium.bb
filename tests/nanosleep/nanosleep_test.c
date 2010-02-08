@@ -23,6 +23,11 @@
  */
 #include <sys/nacl_syscalls.h>
 
+#define NANOS_PER_MICRO   (1000)
+#define MICROS_PER_MILLI  (1000)
+#define NANOS_PER_MILLI   (NANOS_PER_MICRO * MICROS_PER_MILLI)
+#define MICROS_PER_UNIT   (1000 * 1000)
+
 /*
  * Returns failure count.  t_suspend should not be shorter than 1us,
  * since elapsed time measurement cannot possibly be any finer in
@@ -66,8 +71,11 @@ int TestNanoSleep(struct timespec *t_suspend) {
   t_elapsed.tv_sec = t_end.tv_sec - t_start.tv_sec;
   t_elapsed.tv_usec = t_end.tv_usec - t_start.tv_usec;
   if (t_elapsed.tv_usec < 0) {
-    t_elapsed.tv_usec += 1000000;
+    t_elapsed.tv_usec += MICROS_PER_UNIT;
     t_elapsed.tv_sec -= 1;
+  }
+  if (t_elapsed.tv_usec >= MICROS_PER_UNIT) {
+    fprintf(stderr, "Microsecond field too large: %ld\n", t_elapsed.tv_usec);
   }
 
   printf("%40s: %ld.%06ld seconds\n",
@@ -76,7 +84,7 @@ int TestNanoSleep(struct timespec *t_suspend) {
          t_elapsed.tv_usec);
   if (t_elapsed.tv_sec < t_suspend->tv_sec ||
       (t_elapsed.tv_sec == t_suspend->tv_sec &&
-       (1000 * t_elapsed.tv_usec < t_suspend->tv_nsec))) {
+       (NANOS_PER_MICRO * t_elapsed.tv_usec < t_suspend->tv_nsec))) {
     printf("Elapsed time too short!\n");
     printf("Error\n");
     return 1;
@@ -85,10 +93,6 @@ int TestNanoSleep(struct timespec *t_suspend) {
     return 0;
   }
 }
-
-#define NANOS_PER_MICRO   (1000)
-#define MICROS_PER_MILLI  (1000)
-#define NANOS_PER_MILLI   (NANOS_PER_MICRO * MICROS_PER_MILLI)
 
 int main(void) {
   int                     num_errors = 0;

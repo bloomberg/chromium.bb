@@ -96,7 +96,7 @@ def DifferentFromGolden(actual, golden, output_type, fail_msg):
 
 GlobalSettings = {
     'exit_status': [0],
-    'osenv': None,
+    'osenv': '',
 
     'name': None,
     'report': None,
@@ -111,6 +111,8 @@ GlobalSettings = {
     'stdout_filter': None,
     'stderr_filter': None,
     'log_filter': None,
+
+    'filter_validator': 0,
 
     'time_warning': 0,
     'time_error': 0,
@@ -132,16 +134,15 @@ def SuccessMessage():
 #       returns  245 on a coredump. On unix the exit status is an 8 bit
 #       quantity, so 245 and -11 is the same number but python does not agree
 def MassageExitStatus(v):
+  status_map = {
+      'linux2': [245, -11],
+      'darwin': [-10],
+      'cygwin': [-1073741819],  # 0x3ffffffb
+      'win32':  [-1073741819],  # 0x3ffffffb
+      }
   if v == 'segfault':
-    if sys.platform in ['linux2']:
-        return [245, -11]
-    elif sys.platform in ['darwin']:
-      return [-10]
-    elif sys.platform in ['cygwin', 'win32']:
-      return [-1073741819]  # 0x3ffffffb
-    else:
-      assert 0
-      return [-1]
+    assert sys.platform in status_map.keys()
+    return status_map[sys.platform]
   else:
     return [int(v)]
 
@@ -158,6 +159,15 @@ def ProcessOptions(argv):
     # strip the leading '--'
     option = o[2:]
     assert option in GlobalSettings
+    # gross hack
+    # TODO(bradnelson,bsy): when the scons bug is fixed, remove this
+    if type(a) == str and ((a.startswith('\\') and os.path.sep == '/')
+                           or (a.startswith('\\c:'))):
+      print '*' * 70
+      print '*** WARNING: SCons bug workaround, stripping leading \\ in'
+      print '*** --' + option, a
+      print '*' * 70
+      a = a[1:]
     if option == 'exit_status':
       GlobalSettings[option] = MassageExitStatus(a)
     elif type(GlobalSettings[option]) == int:
@@ -180,9 +190,22 @@ def main(argv):
 
   if GlobalSettings['osenv']:
     Banner('setting environment')
+    # BUG(robertm): , is a legitimate character for an environment variable
+    # value.
     env = GlobalSettings['osenv'].split(',')
     for e in env:
-      key, val = e.split('=')
+      # = is valid in val of an env
+      eq_pos=e.find('=')
+      key = e[:eq_pos]
+      val = e[eq_pos+1:]
+      # gross hack
+      # TODO(bradnelson,bsy): when the scons bug is fixed, remove this
+      if val.startswith('\\') and os.path.sep == '/':
+        print '*' * 70
+        print '*** WARNING: SCons bug workaround, stripping leading \\ in'
+        print '*** ', key, '=', val
+        print '*' * 70
+        val = val[1:]
       Print('[%s] = [%s]' % (key, val))
       os.putenv(key, val)
 
@@ -216,30 +239,23 @@ def main(argv):
     Print(FailureMessage())
     return -1
 
-  if GlobalSettings['stdout_golden']:
-    stdout_golden = open(GlobalSettings['stdout_golden']).read()
-    if GlobalSettings['stdout_filter']:
-      stdout = test_lib.RegexpFilterLines(GlobalSettings['stdout_filter'],
-                                          stdout)
-    if DifferentFromGolden(stdout, stdout_golden, 'Stdout', FailureMessage()):
-      return -1
+  if GlobalSettings['filter_validator']:
+    stdout = test_lib.RegexpFilterLines(r'^(?!VALIDATOR)', stdout)
 
-  if GlobalSettings['stderr_golden']:
-    stderr_golden = open(GlobalSettings['stderr_golden']).read()
-    if GlobalSettings['stderr_filter']:
-      stderr = test_lib.RegexpFilterLines(GlobalSettings['stderr_filter'],
-                                          stderr)
-    if DifferentFromGolden(stderr, stderr_golden, 'Stderr', FailureMessage()):
-      return -1
-
-  if GlobalSettings['log_golden']:
-    log_golden = open(GlobalSettings['log_golden']).read()
-    if GlobalSettings['log_filter']:
-      log =  open(GlobalSettings['logout']).read()
-      log = test_lib.RegexpFilterLines(GlobalSettings['log_filter'],
-                                       log)
-    if DifferentFromGolden(log, log_golden, 'Log', FailureMessage()):
-      return -1
+  for (stream, getter) in [
+      ('stdout', lambda: stdout),
+      ('stderr', lambda: stderr),
+      ('log', lambda: open(GlobalSettings['logout']).read()),
+      ]:
+    golden = stream + '_golden'
+    if GlobalSettings[golden]:
+      golden_data = open(GlobalSettings[golden]).read()
+      filt = stream + '_filter'
+      actual = getter()
+      if GlobalSettings[filt]:
+        actual = test_lib.RegexpFilterLines(GlobalSettings[filt], actual)
+      if DifferentFromGolden(actual, golden_data, stream, FailureMessage()):
+        return -1
 
   Print('Test %s took %f secs' % (GlobalSettings['name'], total_time))
   if GlobalSettings['time_error']:

@@ -371,7 +371,8 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
 }
 
 
-struct NaClElfImage *NaClElfImageNew(struct Gio  *gp) {
+struct NaClElfImage *NaClElfImageNew(struct Gio     *gp,
+                                     NaClErrorCode  *err_code) {
   struct NaClElfImage *result;
   struct NaClElfImage image;
   int                 cur_ph;
@@ -381,7 +382,9 @@ struct NaClElfImage *NaClElfImageNew(struct Gio  *gp) {
                         &image.ehdr,
                         sizeof image.ehdr)
       != sizeof image.ehdr) {
-    /* Consider making this fatal */
+    if (NULL != err_code) {
+      *err_code = LOAD_READ_ERROR;
+    }
     NaClLog(2, "could not load elf headers\n");
     return 0;
   }
@@ -390,12 +393,16 @@ struct NaClElfImage *NaClElfImageNew(struct Gio  *gp) {
 
   /* read program headers */
   if (image.ehdr.e_phnum > NACL_MAX_PROGRAM_HEADERS) {
-    /* Consider making this fatal */
+    if (NULL != err_code)
+      *err_code = LOAD_TOO_MANY_PROG_HDRS;
     NaClLog(2, "too many prog headers\n");
     return 0;
   }
 
   if (image.ehdr.e_phentsize < sizeof image.phdrs[0]) {
+    if (NULL != err_code) {
+      *err_code = LOAD_PROG_HDR_SIZE_TOO_SMALL;
+    }
     NaClLog(2, "bad prog headers size\n");
     NaClLog(2, " image.ehdr.e_phentsize = 0x%"PRIxElf_Half"\n",
             image.ehdr.e_phentsize);
@@ -407,6 +414,9 @@ struct NaClElfImage *NaClElfImageNew(struct Gio  *gp) {
   if ((*gp->vtbl->Seek)(gp,
                         image.ehdr.e_phoff,
                         SEEK_SET) == (size_t) -1) {
+    if (NULL != err_code) {
+      *err_code = LOAD_READ_ERROR;
+    }
     NaClLog(2, "cannot seek tp prog headers\n");
     return 0;
   }
@@ -415,6 +425,9 @@ struct NaClElfImage *NaClElfImageNew(struct Gio  *gp) {
                         &image.phdrs[0],
                         image.ehdr.e_phnum * sizeof image.phdrs[0])
       != (image.ehdr.e_phnum * sizeof image.phdrs[0])) {
+    if (NULL != err_code) {
+      *err_code = LOAD_READ_ERROR;
+    }
     NaClLog(2, "cannot load tp prog headers\n");
     return 0;
   }
@@ -429,6 +442,9 @@ struct NaClElfImage *NaClElfImageNew(struct Gio  *gp) {
   /* we delay allocating till the end to avoid cleanup code */
   result = malloc(sizeof image);
   if (result == 0) {
+    if (NULL != err_code) {
+      *err_code = LOAD_NO_MEMORY;
+    }
     NaClLog(LOG_FATAL, "no enough memory for image meta data\n");
     return 0;
   }

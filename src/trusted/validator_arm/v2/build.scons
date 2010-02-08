@@ -94,7 +94,7 @@ if env.Bit('linux'):
         [ncval, env.File('testdata/' + test + '.nexe')],
         exit_status = str(exit_status),
         stdout_golden = env.File('testdata/' + test + '.out'),
-        stderr_filter = '^ncval',
+        stderr_filter = "'^ncval'",
         stderr_golden = env.File('testdata/' + test + '.err'))
 
     env.AddNodeToTestSuite(node, ['small_tests'], "run_arm_" + test)

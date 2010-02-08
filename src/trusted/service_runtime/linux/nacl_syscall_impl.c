@@ -380,9 +380,10 @@ int32_t NaClSysNanosleep(struct NaClAppThread     *natp,
    * If bogus values can cause the underlying OS to get into trouble,
    * then we need more checking here.
    */
-  retval = NaClNanosleep(&t_sleep, remptr);
   NaClLog(4, "NaClSysNanosleep(time = %"PRId64".%09"PRId64" S)\n",
           (int64_t) t_sleep.tv_sec, (int64_t) t_sleep.tv_nsec);
+  retval = NaClNanosleep(&t_sleep, remptr);
+  NaClLog(4, "NaClNanosleep returned %d\n", retval);
 
   if (-EINTR == retval && NULL != rem) {
     /* definitely different types, and shape may actually differ too. */

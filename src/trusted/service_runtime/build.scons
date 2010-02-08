@@ -578,7 +578,7 @@ if env['TARGET_ARCHITECTURE'] == 'x86' and env['BUILD_SUBARCH'] == '32':
 # ----------------------------------------------------------
 # Death Tests With Canned x86 Binaries
 # ----------------------------------------------------------
-ERROR_WHILE_LOADING = '"^(Error while loading).*' +  '(:[^:]*)"'
+ERROR_WHILE_LOADING = '"^(Error while loading).*' + '(:[^:]*)"'
 
 
 if env['TARGET_ARCHITECTURE'] == 'x86' and env['BUILD_SUBARCH'] == '32':

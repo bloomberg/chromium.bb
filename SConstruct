@@ -118,6 +118,20 @@ TEST_SUITES = {'all_tests': None}
 def AddNodeToTestSuite(env, node, suite_name, node_name=None):
   if not node:
     return
+
+  # TODO(bsy): these nacl64 tests are known to fail, and should be
+  # re-enabled as we get x86-64 version of sel_ldr fully operational.
+
+  known_bad_nacl64 = [ 'run_srpc_basic_test',
+                       'run_srpc_sysv_shm_test',
+                       'run_sysbasic_test',
+                       'run_thread_test',
+                       'run_simple_thread_test',
+                       'run_voronoi']
+  if node_name in known_bad_nacl64 and env['BUILD_SUBARCH'] == '64':
+    print '*** SKIPPING', node_name
+    return
+
   AlwaysBuild(node)
   env.Alias('all_tests', node)
   for s in suite_name:
@@ -444,12 +458,6 @@ def CommandSelLdrTestNacl(env, name, command,
                           loader='sel_ldr',
                           size='medium',
                           **extra):
-  # TODO(dpolukhin): remove this code when x86-64 has full sel_ldr.
-  if env['BUILD_SUBARCH'] == '64':
-    if ARGUMENTS.get('loader', 'none') != 'none':
-      loader = ARGUMENTS.get('loader')
-    else:
-      return []
 
   # NOTE: that the variable TRUSTED_ENV is set by ExportSpecialFamilyVars()
   if 'TRUSTED_ENV' not in env:
@@ -462,6 +470,13 @@ def CommandSelLdrTestNacl(env, name, command,
   trusted_env = env['TRUSTED_ENV']
   sel_ldr = trusted_env.File('${STAGING_DIR}/${PROGPREFIX}%s${PROGSUFFIX}' %
                              loader)
+
+  # TODO(bsy,kschimpf): when the validator stops producing spurious
+  # errors (bad block alignment, etc), remove the following code
+
+  if env['BUILD_SUBARCH'] == '64':
+    sel_ldr_flags = sel_ldr_flags + ['-d']
+    extra['filter_validator'] = '1'
 
   command = [sel_ldr] + sel_ldr_flags  + ['-f'] + command
 
@@ -481,7 +496,7 @@ pre_base_env.AddMethod(CommandSelLdrTestNacl)
 TEST_EXTRA_ARGS = ['stdin', 'logout',
                    'stdout_golden', 'stderr_golden', 'log_golden',
                    'stdout_filter', 'stderr_filter', 'log_filter',
-                   'osenv', 'exit_status']
+                   'osenv', 'exit_status', 'filter_validator']
 
 TEST_TIME_THRESHOLD = {
     'small':   2,
@@ -501,6 +516,7 @@ def CommandTestAgainstGoldenOutput(env, name, command, size='small',
   name = '${TARGET_ROOT}/test_results/' + name
   # NOTE: using the long version of 'name' helps distinguish opt vs dbg
   max_time = TEST_TIME_THRESHOLD[size]
+
   script_flags = ['--name', name,
                   '--report', name,
                   '--time_warning', str(max_time),

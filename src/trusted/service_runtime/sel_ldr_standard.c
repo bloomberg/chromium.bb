@@ -36,7 +36,9 @@
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 
 #define PTR_ALIGN_MASK  ((sizeof(void *))-1)
-
+#if !defined(SIZE_T_MAX)
+# define SIZE_T_MAX     (~(size_t) 0)
+#endif
 
 
 NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
@@ -58,9 +60,11 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   nap->stack_size = NaClRoundAllocPage(nap->stack_size);
 
   /* temporay object will be deleted at end of function */
-  image = NaClElfImageNew(gp);
+  image = NaClElfImageNew(gp, &subret);
   if (NULL == image) {
-    NaClLog(LOG_FATAL, "Could not create NaClElfImage object\n");
+    NaClLog(LOG_FATAL,
+            "Could not create NaClElfImage object: %s\n",
+            NaClErrorString(subret));
   }
 
 #if !defined(DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX)
@@ -278,6 +282,7 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   int                   envc;
   char const *const     *pp;
   size_t                size;
+  size_t                ptr_tbl_size;
   int                   i;
   char                  *p;
   char                  *strp;
@@ -314,6 +319,17 @@ int NaClCreateMainThread(struct NaClApp     *nap,
 
   size = 0;
 
+  /*
+   * The following two loops cannot overflow.  The reason for this is
+   * that they are counting the number of bytes used to hold the
+   * NUL-terminated strings that comprise the argv and envv tables.
+   * If the entire address space consisted of just those strings, then
+   * the size variable would overflow; however, since there's the code
+   * space required to hold the code below (and we are not targetting
+   * Harvard architecture machines), at least one page holds code, not
+   * data.  We are assuming that the caller is non-adversarial and the
+   * code does not look like string data....
+   */
   for (i = 0; i < argc; ++i) {
     argv_len[i] = strlen(argv[i]) + 1;
     size += argv_len[i];
@@ -323,7 +339,37 @@ int NaClCreateMainThread(struct NaClApp     *nap,
     size += envv_len[i];
   }
 
-  size += (argc + envc + 4) * sizeof(char *) + sizeof(int);
+  /*
+   * NaCl modules are ILP32, so the argv, envv pointers, as well as
+   * the terminating NULL pointers at the end of the argv/envv tables,
+   * are 32-bit values.  We also have the empty auxv to take into
+   * account, so that's 6 additional 32-bit values on top of the
+   * argv/envv contents.  Note that on nacl64, argc is popped, and
+   * is an 8-byte value!
+   *
+   * The argv and envv pointer tables came from trusted code and is
+   * part of memory.  Thus, by the same argument above, adding in
+   * (argc+envc+4)*sizeof(void *) cannot possibly overflow the size
+   * variable since it is a size_t object.  However, the two more
+   * pointers for auxv and the space for argv could cause an overflow.
+   * The fact that we used stack to get here etc means that
+   * ptr_tb_size could not have overflowed.
+   *
+   * NB: the underlying OS would have limited the amount of space used
+   * for argv and envv -- on linux, it is ARG_MAX, or 128KB -- and
+   * hence the overflow check is for obvious auditability rather than
+   * for correctness.
+   */
+  ptr_tbl_size = (argc + envc + 6) * sizeof(uint32_t) + sizeof(int);
+
+  if (SIZE_T_MAX - size < ptr_tbl_size) {
+    NaClLog(LOG_WARNING,
+            "NaClCreateMainThread: ptr_tb_size cause size of"
+            " argv / environment copy to overflow!?!\n");
+    retval = 0;
+    goto cleanup;
+  }
+  size += ptr_tbl_size;
 
   size = (size + PTR_ALIGN_MASK) & ~PTR_ALIGN_MASK;
 
@@ -335,40 +381,40 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   /* write strings and char * arrays to stack */
 
   stack_ptr = (nap->mem_start + ((uintptr_t) 1 << nap->addr_bits) - size);
-  NaClLog(2, "setting stack to : %08"PRIxPTR"\n", stack_ptr);
+  NaClLog(2, "setting stack to : %016"PRIxPTR"\n", stack_ptr);
 
   VCHECK(0 == (stack_ptr & PTR_ALIGN_MASK),
-          ("stack_ptr not aligned: %08x\n", stack_ptr));
+         ("stack_ptr not aligned: %016"PRIxPTR"\n", stack_ptr));
 
   p = (char *) stack_ptr;
-  strp = p + (argc + envc + 4) * sizeof(char *) + sizeof(int);
+  strp = p + ptr_tbl_size;
 
 #define BLAT(t, v) do { \
     *(t *) p = (t) v; p += sizeof(t);           \
   } while (0);
 
-  BLAT(int, argc);
+  BLAT(nacl_reg_t, argc);
 
   for (i = 0; i < argc; ++i) {
-    BLAT(char *, NaClSysToUser(nap, (uintptr_t) strp));
+    BLAT(uint32_t, NaClSysToUser(nap, (uintptr_t) strp));
     NaClLog(2, "copying arg %d  %p -> %p\n",
             i, argv[i], strp);
     strcpy(strp, argv[i]);
     strp += argv_len[i];
   }
-  BLAT(char *, 0);
+  BLAT(uint32_t, 0);
 
   for (i = 0; i < envc; ++i) {
-    BLAT(char *, NaClSysToUser(nap, (uintptr_t) strp));
+    BLAT(uint32_t, NaClSysToUser(nap, (uintptr_t) strp));
     NaClLog(2, "copying env %d  %p -> %p\n",
             i, envv[i], strp);
     strcpy(strp, envv[i]);
     strp += envv_len[i];
   }
-  BLAT(char *, 0);
+  BLAT(uint32_t, 0);
   /* Push an empty auxv for glibc support */
-  BLAT(char *, 0);
-  BLAT(char *, 0);
+  BLAT(uint32_t, 0);
+  BLAT(uint32_t, 0);
 #undef BLAT
 
   /* now actually spawn the thread */
@@ -378,6 +424,10 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   }
 
   nap->running = 1;
+
+  NaClLog(2, "system stack ptr : %016"PRIxPTR"\n", stack_ptr);
+  NaClLog(2, "  user stack ptr : %016"PRIxPTR"\n",
+          NaClSysToUserStackAddr(nap, stack_ptr));
 
   /* e_entry is user addr */
   if (!NaClAppThreadAllocSegCtor(natp,

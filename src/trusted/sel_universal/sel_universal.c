@@ -61,14 +61,18 @@ int main(int  argc, char *argv[]) {
   int                        module_argc;
   const char**               module_argv;
   static const char*         kFixedArgs[] = { "-P", "5", "-X", "5" };
+  int                        pass_debug = 0;
 
 
   /* Descriptor transfer requires the following. */
   NaClNrdAllModulesInit();
 
   /* command line parsing */
-  while ((opt = getopt(argc, argv, "f:v")) != -1) {
+  while ((opt = getopt(argc, argv, "df:v")) != -1) {
     switch (opt) {
+      case 'd':
+        pass_debug = 1;
+        break;
       case 'f':
         application_name = optarg;
         break;
@@ -119,13 +123,17 @@ int main(int  argc, char *argv[]) {
    * Prepend the fixed arguments to the command line.
    */
   sel_ldr_argv =
-    (const char**) malloc((sel_ldr_argc + NACL_ARRAY_SIZE(kFixedArgs)) *
-                            sizeof(*sel_ldr_argv));
+    (const char**) malloc((pass_debug + sel_ldr_argc
+                           + NACL_ARRAY_SIZE(kFixedArgs)) *
+                          sizeof(*sel_ldr_argv));
   for (n = 0; n < NACL_ARRAY_SIZE(kFixedArgs); ++n) {
     sel_ldr_argv[n] = kFixedArgs[n];
   }
   for (i = 0; i < sel_ldr_argc; ++i) {
     sel_ldr_argv[i + NACL_ARRAY_SIZE(kFixedArgs)] = tmp_ldr_argv[i];
+  }
+  if (pass_debug) {
+    sel_ldr_argv[sel_ldr_argc + NACL_ARRAY_SIZE(kFixedArgs)] = "-d";
   }
 
   /*
@@ -133,7 +141,8 @@ int main(int  argc, char *argv[]) {
    */
   launcher = NaClSelLdrStart(application_name,
                              5,
-                             sel_ldr_argc + NACL_ARRAY_SIZE(kFixedArgs),
+                             (pass_debug + sel_ldr_argc
+                              + NACL_ARRAY_SIZE(kFixedArgs)),
                              (const char**) sel_ldr_argv,
                              module_argc,
                              (const char**) module_argv);
