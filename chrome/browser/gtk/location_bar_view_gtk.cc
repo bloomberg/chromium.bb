@@ -479,6 +479,9 @@ void LocationBarViewGtk::OnSetFocus() {
       NotificationType::ACCESSIBILITY_CONTROL_FOCUSED,
       Source<Profile>(profile_),
       Details<AccessibilityTextBoxInfo>(&info));
+
+  // Update the keyword and search hint states.
+  OnChanged();
 }
 
 SkBitmap LocationBarViewGtk::GetFavIcon() const {
