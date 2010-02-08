@@ -1689,7 +1689,8 @@ void TabStrip::UpdateDropIndex(const DropTargetEvent& event) {
   // coordinates since we calculate the drop index based on the
   // original (and therefore non-mirrored) positions of the tabs.
   const int x = MirroredXCoordinateInsideView(event.x());
-  for (int i = 0; i < GetTabCount(); ++i) {
+  // We don't allow replacing the urls of mini-tabs.
+  for (int i = GetMiniTabCount(); i < GetTabCount(); ++i) {
     Tab* tab = GetTabAt(i);
     const int tab_max_x = tab->x() + tab->width();
     const int hot_width = tab->width() / 3;
