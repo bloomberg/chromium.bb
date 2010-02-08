@@ -5,9 +5,9 @@
 #include "chrome/browser/extensions/extension_apitest.h"
 #include "net/base/mock_host_resolver.h"
 
-// This test failed at times on the Vista dbg builder and has been marked as
-// flaky for now. Bug http://code.google.com/p/chromium/issues/detail?id=28630
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_ExecuteScript) {
+// EXTREMELY flaky, crashy, and bad. See http://crbug.com/28630 and don't dare
+// to re-enable without a real fix or at least adding more debugging info.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_ExecuteScript) {
   // We need a.com to be a little bit slow to trigger a race condition.
   host_resolver()->AddRuleWithLatency("a.com", "127.0.0.1", 500);
   host_resolver()->AddRule("b.com", "127.0.0.1");
