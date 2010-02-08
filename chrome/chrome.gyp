@@ -1402,7 +1402,6 @@
                 '<(template_input_path)',
                 '<(version_path)',
                 '<(branding_path)',
-                '<(lastchange_path)',
               ],
               'outputs': [
                 '<(SHARED_INTERMEDIATE_DIR)/chrome_dll_version/chrome_dll_version.rc',

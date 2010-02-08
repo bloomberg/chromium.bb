@@ -20,7 +20,6 @@
             './lastchange.py',
           ],
           'outputs': [
-            '<(lastchange_out_path)',
             '<(lastchange_out_path).always',
           ],
           'action': [

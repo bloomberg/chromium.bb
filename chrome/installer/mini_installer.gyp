@@ -111,11 +111,13 @@
             'inputs': [
               '<(template_input_path)',
               '<(version_path)',
-              '<(lastchange_path)',
               '<(branding_dir)/BRANDING',
             ],
             'outputs': [
               '<(INTERMEDIATE_DIR)/mini_installer_exe_version.rc',
+            ],
+            'dependencies': [
+              '../../build/util/build_util.gyp:lastchange',
             ],
             'action': [
               'python', '<(version_py)',
