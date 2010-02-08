@@ -128,3 +128,20 @@
    fun:IPC::Channel::Connect
    fun:IPC::ChannelProxy::Context::OnChannelOpened
 }
+{
+   bug_34570
+   Heapcheck:Leak
+   fun:URLRequestHttpJob::Factory
+   fun:URLRequestJobManager::CreateJob
+   fun:URLRequest::Start
+   fun:URLRequestTest_CancelTest_DuringCookiePolicy_Test::TestBody
+   fun:testing::Test::Run
+   fun:testing::internal::TestInfoImpl::Run
+   fun:testing::TestCase::Run
+   fun:testing::internal::UnitTestImpl::RunAllTests
+   fun:testing::UnitTest::Run
+   fun:TestSuite::Run
+   fun:main
+}
+
+
