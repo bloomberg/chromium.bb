@@ -15,6 +15,7 @@
 #include "net/base/host_cache.h"
 #include "net/base/host_resolver.h"
 #include "net/base/host_resolver_impl.h"
+#include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
 #include "net/url_request/url_request.h"
 
@@ -36,8 +37,24 @@ net::HostResolver* CreateGlobalHostResolver(
     global_host_resolver =
         net::CreateSystemHostResolver(network_change_notifier);
 
-    if (command_line.HasSwitch(switches::kDisableIPv6))
-      global_host_resolver->SetDefaultAddressFamily(net::ADDRESS_FAMILY_IPV4);
+    if (!command_line.HasSwitch(switches::kEnableIPv6)) {
+      // Measure impact of allowing IPv6 support without probing.
+      const FieldTrial::Probability kDivisor = 100;
+      const FieldTrial::Probability kProbability = 50;  // 50% probability.
+      FieldTrial* trial = new FieldTrial("IPv6_Probe", kDivisor);
+      int skip_group = trial->AppendGroup("_IPv6_probe_skipped", kProbability);
+      trial->AppendGroup("_IPv6_probe_done",
+                         FieldTrial::kAllRemainingProbability);
+      bool use_ipv6_probe = (trial->group() != skip_group);
+
+      // Perform probe, and then optionally use result to disable IPv6.
+      // Some users report confused OS handling of IPv6, leading to large
+      // latency.  If we can show that IPv6 is not supported, then disabliing it
+      // will work around such problems.
+      if ((!net::IPv6Supported() && use_ipv6_probe) ||
+          command_line.HasSwitch(switches::kDisableIPv6))
+        global_host_resolver->SetDefaultAddressFamily(net::ADDRESS_FAMILY_IPV4);
+    }
   }
 
   return global_host_resolver;

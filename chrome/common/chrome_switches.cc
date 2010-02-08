@@ -104,6 +104,7 @@ const char kDisableHangMonitor[]            = "disable-hang-monitor";
 // Don't resolve hostnames to IPv6 addresses. This can be used when debugging
 // issues relating to IPv6, but shouldn't otherwise be needed. Be sure to
 // file bugs if something isn't working properly in the presence of IPv6.
+// This flag can be overidden by the "enable-ipv6" flag.
 const char kDisableIPv6[]                   = "disable-ipv6";
 
 // Prevent images from loading.
@@ -220,6 +221,12 @@ const char kEnableGeolocation[]             = "enable-geolocation";
 
 // Enable the Indexed Database API.
 const char kEnableIndexedDatabase[]         = "enable-indexed-database";
+
+// Enable IPv6 support, even if probes suggest that it may not be fully
+// supported.  Some probes may require internet connections, and this flag will
+// allow support independent of application testing.
+// This flag overrides "disable-ipv6" which appears elswhere in this file.
+const char kEnableIPv6[]                    = "enable-ipv6";
 
 // Enable the GPU plugin and Pepper 3D rendering.
 const char kEnableGPUPlugin[]               = "enable-gpu-plugin";
