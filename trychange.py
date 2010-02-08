@@ -512,10 +512,18 @@ def TryChange(argv,
                         "revision/branch to diff against.")
   # Mostly chromium-specific
   try:
-    group.add_option("--webkit", action="append_const",
-                     const="third_party/WebKit",
-                     dest="PATH",
-                     help="Shorthand for -s third_party/WebKit")
+    def WebKitRevision(options, opt, value, parser):
+      if parser.rargs and not parser.rargs[0].startswith('-'):
+        options.sub_rep.append('third_party/WebKit@%s' % parser.rargs.pop(0))
+      else:
+        options.sub_rep.append('third_party/WebKit')
+
+    group.add_option("-W", "--webkit", action="callback",
+                     callback=WebKitRevision,
+                     metavar="BRANCH",
+                     help="Shorthand for -s third_party/WebKit@BRANCH. "
+                          "BRANCH is optional and is the branch the current "
+                          "checkout will be diff'ed against.")
   except optparse.OptionError:
     # append_const is not supported on 2.4. Too bad.
     pass
