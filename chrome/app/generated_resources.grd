@@ -5178,6 +5178,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COOKIES_DOMAIN_COLUMN_HEADER" desc="The label of the Domain header in the Cookies table">
         Site
       </message>
+      <message name="IDS_COOKIES_WEB_DATABASE_DESCRIPTION_LABEL" desc="The Database Description label">
+        Description:
+      </message>
       <message name="IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL" desc="The Local Storage Origin label">
         Origin:
       </message>
