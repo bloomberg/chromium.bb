@@ -54,6 +54,7 @@ only lowercase.
 
 import os
 import optparse
+import pipes
 import re
 import sys
 import copy
@@ -86,6 +87,9 @@ EXTRACT_INCLUDE_PATH = re.compile('[ \t]*#[ \t]*(?:include|import)[ \t]+"(.*)"')
 # In lowercase, using forward slashes as directory separators, ending in a
 # forward slash. Set by the command line options.
 BASE_DIRECTORY = ""
+
+# The directories which contain the sources managed by git.
+GIT_SOURCE_DIRECTORY = set()
 
 # Specifies a single rule for an include, which can be either allow or disallow.
 class Rule(object):
@@ -229,9 +233,11 @@ def ApplyDirectoryRules(existing_rules, dir_name):
            sub-tree, and (2) a list of all subdirectories that should NOT be
            checked, as specified in the DEPS file (if any).
   """
-  # Check for a .svn directory in this directory. This will tell us if it's
-  # a source directory and should be checked.
-  if not os.path.exists(os.path.join(dir_name, ".svn")):
+  # Check for a .svn directory in this directory or check this directory is
+  # contained in git source direcotries. This will tell us if it's a source
+  # directory and should be checked.
+  if not (os.path.exists(os.path.join(dir_name, ".svn")) or
+          (dir_name in GIT_SOURCE_DIRECTORY)):
     return (None, [])
 
   # Check the DEPS file in this directory.
@@ -395,6 +401,26 @@ def CheckDirectory(parent_rules, dir_name):
 
   return success
 
+
+def GetGitSourceDirectory(root):
+  """Returns a set of the directories to be checked.
+
+  Args:
+    root: The repository root where .git directory exists.
+
+  Returns:
+    A set of directories which contain sources managed by git.
+  """
+  git_source_directory = set()
+  popen_out = os.popen("cd %s && git ls-files --full-name ." %
+                       pipes.quote(root))
+  for line in popen_out.readlines():
+    dir_name = os.path.join(root, os.path.dirname(line))
+    git_source_directory.add(dir_name)
+  git_source_directory.add(root)
+  return git_source_directory
+
+
 def PrintUsage():
   print """Usage: python checkdeps.py [--root <root>] [tocheck]
   --root   Specifies the repository root. This defaults to "../../.." relative
@@ -447,6 +473,10 @@ def main(options, args):
   BASE_DIRECTORY = BASE_DIRECTORY.lower()
   BASE_DIRECTORY = BASE_DIRECTORY.replace("\\", "/")
   start_dir = start_dir.replace("\\", "/")
+
+  if os.path.exists(os.path.join(BASE_DIRECTORY, ".git")):
+    global GIT_SOURCE_DIRECTORY
+    GIT_SOURCE_DIRECTORY = GetGitSourceDirectory(BASE_DIRECTORY)
 
   success = CheckDirectory(base_rules, start_dir)
   if not success:
