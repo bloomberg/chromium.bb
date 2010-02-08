@@ -233,8 +233,16 @@ IPC_BEGIN_MESSAGES(Plugin)
   IPC_MESSAGE_ROUTED1(PluginMsg_SetWindowFocus,
                       bool /* has_focus */)
 
-  IPC_MESSAGE_ROUTED1(PluginMsg_SetContainerVisibility,
-                      bool /* is_visible */)
+  IPC_MESSAGE_ROUTED0(PluginMsg_ContainerHidden)
+
+  IPC_MESSAGE_ROUTED3(PluginMsg_ContainerShown,
+                      gfx::Rect /* window_frame */,
+                      gfx::Rect /* view_frame */,
+                      bool /* has_focus */)
+
+  IPC_MESSAGE_ROUTED2(PluginMsg_WindowFrameChanged,
+                      gfx::Rect /* window_frame */,
+                      gfx::Rect /* view_frame */)
 #endif
 
   IPC_SYNC_MESSAGE_ROUTED2_0(PluginMsg_WillSendRequest,

@@ -78,6 +78,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual gfx::Rect GetRootWindowRect();
   virtual void SetActive(bool active);
   virtual void SetWindowVisibility(bool visible) {}
+  virtual void WindowFrameChanged() {}
   virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle();
   virtual void DestroyFakePluginWindowHandle(gfx::PluginWindowHandle window);
   virtual void GPUPluginSetIOSurface(gfx::PluginWindowHandle window,

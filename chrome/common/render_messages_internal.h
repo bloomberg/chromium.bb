@@ -745,6 +745,11 @@ IPC_BEGIN_MESSAGES(View)
   // Let the RenderView know its window has changed visibility.
   IPC_MESSAGE_ROUTED1(ViewMsg_SetWindowVisibility,
                       bool /* visibile */)
+
+  // Let the RenderView know its window's frame has changed.
+  IPC_MESSAGE_ROUTED2(ViewMsg_WindowFrameChanged,
+                      gfx::Rect /* window frame */,
+                      gfx::Rect /* content view frame */)
 #endif
 
   // Response message to ViewHostMsg_CreateShared/DedicatedWorker.

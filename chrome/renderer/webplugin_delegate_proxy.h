@@ -75,6 +75,8 @@ class WebPluginDelegateProxy
   virtual void SetWindowFocus(bool window_has_focus);
   // Inform the plugin that its container (window/tab) has changed visibility.
   virtual void SetContainerVisibility(bool is_visible);
+  // Inform the plugin that its enclosing window's frame has changed.
+  virtual void WindowFrameChanged(gfx::Rect window_frame, gfx::Rect view_frame);
 #endif
 
   // IPC::Channel::Listener implementation:

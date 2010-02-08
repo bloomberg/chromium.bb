@@ -171,6 +171,9 @@ class RenderWidgetHostView {
   // WasHidden/DidBecomeSelected.
   virtual void SetWindowVisibility(bool visible) = 0;
 
+  // Informs the view that its containing window's frame changed.
+  virtual void WindowFrameChanged() = 0;
+
   // Methods associated with GPU plugin instances
   virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle() = 0;
   virtual void DestroyFakePluginWindowHandle(

@@ -283,6 +283,18 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url,
     params.arg_names.push_back("wmode");
     params.arg_values.push_back("opaque");
   }
+
+  params.containing_window_frame = render_view_->rootWindowRect();
+  // If the renderer isn't currently visible, don't bother asking for anything
+  // else; the plugin will get real data when its renderer becomes visible.
+  if (params.containing_window_frame.IsEmpty()) {
+    params.containing_content_frame = gfx::Rect();
+    params.containing_window_has_focus = false;
+  } else {
+    params.containing_content_frame = render_view_->windowRect();
+    WebKit::WebView* webview = render_view_->webview();
+    params.containing_window_has_focus = webview && webview->isActive();
+  }
 #endif
   params.load_manually = load_manually;
 
@@ -874,13 +886,29 @@ void WebPluginDelegateProxy::SetWindowFocus(bool window_has_focus) {
 }
 
 void WebPluginDelegateProxy::SetContainerVisibility(bool is_visible) {
-  // TODO(stuartmorgan): Split this into two messages, and send location and
-  // focus information with the "became visible" version since the plugins in a
-  // hidden tab will not have been getting live updates.
-  IPC::Message* msg = new PluginMsg_SetContainerVisibility(instance_id_,
-                                                           is_visible);
+  IPC::Message* msg;
+  if (is_visible) {
+    gfx::Rect window_frame = render_view_->rootWindowRect();
+    gfx::Rect view_frame = render_view_->windowRect();
+    WebKit::WebView* webview = render_view_->webview();
+    msg = new PluginMsg_ContainerShown(instance_id_, window_frame, view_frame,
+                                       webview && webview->isActive());
+  } else {
+    msg = new PluginMsg_ContainerHidden(instance_id_);
+  }
   // Make sure visibility events are delivered in the right order relative to
   // sync messages they might interact with (Paint, HandleEvent, etc.).
+  msg->set_unblock(true);
+  Send(msg);
+}
+
+void WebPluginDelegateProxy::WindowFrameChanged(gfx::Rect window_frame,
+                                                gfx::Rect view_frame) {
+  IPC::Message* msg = new PluginMsg_WindowFrameChanged(instance_id_,
+                                                       window_frame,
+                                                       view_frame);
+  // Make sure frame events are delivered in the right order relative to
+  // sync messages they might interact with (e.g., HandleEvent).
   msg->set_unblock(true);
   Send(msg);
 }

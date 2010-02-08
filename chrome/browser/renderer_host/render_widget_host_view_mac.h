@@ -46,6 +46,7 @@ class RWHVMEditCommandHelper;
   scoped_nsobject<NSString> toolTip_;
 
   scoped_nsobject<NSEvent> lastKeyPressedEvent_;
+  NSWindow* lastWindow_;  // weak
 }
 
 - (void)setCanBeKeyView:(BOOL)can;
@@ -112,6 +113,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual gfx::Rect GetRootWindowRect();
   virtual void SetActive(bool active);
   virtual void SetWindowVisibility(bool visible);
+  virtual void WindowFrameChanged();
   virtual void SetBackground(const SkBitmap& background);
 
   // Methods associated with GPU plugin instances

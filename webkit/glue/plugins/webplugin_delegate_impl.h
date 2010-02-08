@@ -134,6 +134,9 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   bool GetWindowHasFocus() const { return containing_window_has_focus_; }
   // Informs the plugin that its tab or window has been hidden or shown.
   void SetContainerVisibility(bool is_visible);
+  // Informs the plugin that its containing window's frame has changed.
+  // Frames are in screen coordinates.
+  void WindowFrameChanged(gfx::Rect window_frame, gfx::Rect view_frame);
   // Informs the delegate that the plugin set a Carbon ThemeCursor.
   void SetThemeCursor(ThemeCursor cursor);
   // Informs the delegate that the plugin set a Carbon Cursor.
@@ -336,45 +339,40 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
       LPWSTR class_name, LPDWORD class_size, PFILETIME last_write_time);
 
 #elif defined(OS_MACOSX)
-
-  // Updates the internal information about where the plugin is located on
-  // the screen.
-  void UpdatePluginLocation(const WebKit::WebMouseEvent& event);
+  // Sets window_rect_ to |rect|
+  void SetPluginRect(const gfx::Rect& rect);
+  // Sets content_area_origin to |origin|
+  void SetContentAreaOrigin(const gfx::Point& origin);
+  // Updates everything that depends on the plugin's absolute screen location.
+  void PluginScreenLocationChanged();
 
 #ifndef NP_NO_CARBON
-  // Moves our dummy window to the given offset relative to the last known
-  // location of the real renderer window's content view.
-  // If new_width or new_height is non-zero, the window size (content region)
-  // will be updated accordingly; if they are zero, the existing size will be
-  // preserved.
-  void UpdateDummyWindowBoundsWithOffset(int x_offset, int y_offset,
-                                         int new_width, int new_height);
+  // Moves our dummy window to match the current screen location of the plugin.
+  void UpdateDummyWindowBounds(const gfx::Point& plugin_origin);
 
   // Adjusts the idle event rate for a Carbon plugin based on its current
   // visibility.
   void UpdateIdleEventRate();
 #endif  // !NP_NO_CARBON
 
-  // The most recently seen offset between global and browser-window-local
-  // coordinates. We use this to keep the placeholder Carbon WindowRef's origin
-  // in sync with the actual browser window, without having to pass that
-  // geometry over IPC.
-  int last_window_x_offset_;
-  int last_window_y_offset_;
+  // Note: the following coordinates are all in screen coordinates, relative an
+  // upper-left (0,0).
+  // The frame of the window containing this plugin.
+  gfx::Rect containing_window_frame_;
+  // The upper-left corner of the web content area.
+  gfx::Point content_area_origin_;
 
-  // Last mouse position within the plugin's rect (used for null events).
-  int last_mouse_x_;
-  int last_mouse_y_;
   // True if the plugin thinks it has keyboard focus
   bool have_focus_;
   // A function to call when we want to accept keyboard focus
   void (*focus_notifier_)(WebPluginDelegateImpl* notifier);
 
   bool containing_window_has_focus_;
+  bool initial_window_focus_;
   bool container_is_visible_;
   bool have_called_set_window_;
   gfx::Rect cached_clip_rect_;
-#endif
+#endif  // OS_MACOSX
 
   // Called by the message filter hook when the plugin enters a modal loop.
   void OnModalLoopEntered();

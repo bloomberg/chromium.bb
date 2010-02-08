@@ -579,6 +579,7 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetActive, OnSetActive)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(ViewMsg_SetWindowVisibility, OnSetWindowVisibility)
+    IPC_MESSAGE_HANDLER(ViewMsg_WindowFrameChanged, OnWindowFrameChanged)
 #endif
     IPC_MESSAGE_HANDLER(ViewMsg_SetEditCommandsForNextKeyEvent,
                         OnSetEditCommandsForNextKeyEvent)
@@ -3812,6 +3813,16 @@ void RenderView::OnSetWindowVisibility(bool visible) {
     (*plugin_it)->SetContainerVisibility(visible);
   }
 }
+
+void RenderView::OnWindowFrameChanged(gfx::Rect window_frame,
+                                      gfx::Rect view_frame) {
+  // Inform plugins that their window's frame has changed.
+  std::set<WebPluginDelegateProxy*>::iterator plugin_it;
+  for (plugin_it = plugin_delegates_.begin();
+       plugin_it != plugin_delegates_.end(); ++plugin_it) {
+    (*plugin_it)->WindowFrameChanged(window_frame, view_frame);
+  }
+}
 #endif  // OS_MACOSX
 
 void RenderView::SendExtensionRequest(const std::string& name,
@@ -4333,6 +4344,20 @@ void RenderView::OnWasRestored(bool needs_repainting) {
   for (plugin_it = plugin_delegates_.begin();
        plugin_it != plugin_delegates_.end(); ++plugin_it) {
     (*plugin_it)->SetContainerVisibility(true);
+  }
+}
+
+void RenderView::OnSetFocus(bool enable) {
+  RenderWidget::OnSetFocus(enable);
+
+  // RenderWidget's call to setFocus can cause the underlying webview's
+  // activation state to change just like a call to setIsActive.
+  if (enable && webview() && webview()->isActive()) {
+    std::set<WebPluginDelegateProxy*>::iterator plugin_it;
+    for (plugin_it = plugin_delegates_.begin();
+         plugin_it != plugin_delegates_.end(); ++plugin_it) {
+      (*plugin_it)->SetWindowFocus(true);
+    }
   }
 }
 #endif  // OS_MACOSX

@@ -146,7 +146,7 @@ class RenderWidget : public IPC::Channel::Listener,
   void OnRequestMoveAck();
   void OnHandleInputEvent(const IPC::Message& message);
   void OnMouseCaptureLost();
-  void OnSetFocus(bool enable);
+  virtual void OnSetFocus(bool enable);
   void OnImeSetInputMode(bool is_active);
   void OnImeSetComposition(WebKit::WebCompositionCommand command,
                            int cursor_position,

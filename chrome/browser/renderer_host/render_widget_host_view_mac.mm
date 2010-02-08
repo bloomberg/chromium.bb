@@ -582,13 +582,20 @@ gfx::Rect RenderWidgetHostViewMac::GetWindowRect() {
   // TODO(shess): In case of !window, the view has been removed from
   // the view hierarchy because the tab isn't main.  Could retrieve
   // the information from the main tab for our window.
-  if (!cocoa_view_ || ![cocoa_view_ window]) {
+  NSWindow* enclosing_window = [cocoa_view_ window];
+  if (!cocoa_view_ || !enclosing_window) {
     return gfx::Rect();
   }
 
+  // During dragging of a torn-off tab, [cocoa_view_ window] is a floating panel
+  // attached to the actual browser window that the tab is visually part of; we
+  // want the bounds of the browser window rather than the panel.
+  if ([enclosing_window parentWindow])
+    enclosing_window = [enclosing_window parentWindow];
+
   NSRect bounds = [cocoa_view_ bounds];
   bounds = [cocoa_view_ convertRect:bounds toView:nil];
-  bounds.origin = [[cocoa_view_ window] convertBaseToScreen:bounds.origin];
+  bounds.origin = [enclosing_window convertBaseToScreen:bounds.origin];
   return NSRectToRect(bounds, [[cocoa_view_ window] screen]);
 }
 
@@ -596,12 +603,19 @@ gfx::Rect RenderWidgetHostViewMac::GetRootWindowRect() {
   // TODO(shess): In case of !window, the view has been removed from
   // the view hierarchy because the tab isn't main.  Could retrieve
   // the information from the main tab for our window.
-  if (!cocoa_view_ || ![cocoa_view_ window]) {
+  NSWindow* enclosing_window = [cocoa_view_ window];
+  if (!enclosing_window) {
     return gfx::Rect();
   }
 
-  NSRect bounds = [[cocoa_view_ window] frame];
-  return NSRectToRect(bounds, [[cocoa_view_ window] screen]);
+  // During dragging of a torn-off tab, [cocoa_view_ window] is a floating panel
+  // attached to the actual browser window that the tab is visually part of; we
+  // want the bounds of the browser window rather than the panel.
+  if ([enclosing_window parentWindow])
+    enclosing_window = [enclosing_window parentWindow];
+
+  NSRect bounds = [enclosing_window frame];
+  return NSRectToRect(bounds, [enclosing_window screen]);
 }
 
 void RenderWidgetHostViewMac::SetActive(bool active) {
@@ -613,6 +627,14 @@ void RenderWidgetHostViewMac::SetWindowVisibility(bool visible) {
   if (render_widget_host_) {
     render_widget_host_->Send(new ViewMsg_SetWindowVisibility(
         render_widget_host_->routing_id(), visible));
+  }
+}
+
+void RenderWidgetHostViewMac::WindowFrameChanged() {
+  if (render_widget_host_) {
+    render_widget_host_->Send(new ViewMsg_WindowFrameChanged(
+        render_widget_host_->routing_id(), GetRootWindowRect(),
+        GetWindowRect()));
   }
 }
 
@@ -1516,6 +1538,18 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
         UTF8ToUTF16([im_text UTF8String]));
   }
   renderWidgetHostView_->im_composing_ = false;
+}
+
+- (void)viewDidMoveToWindow {
+  // If we move into a new window, refresh the frame information. We don't need
+  // to do it if it was the same window as it used to be in, since that case
+  // is covered by DidBecomeSelected.
+  NSWindow* newWindow = [self window];
+  // Pointer comparison only, since we don't know if lastWindow_ is still valid.
+  if (newWindow && (newWindow != lastWindow_)) {
+    lastWindow_ = newWindow;
+    renderWidgetHostView_->WindowFrameChanged();
+  }
 }
 
 @end

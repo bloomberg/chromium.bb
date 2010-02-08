@@ -1701,6 +1701,12 @@ willPositionSheet:(NSWindow*)sheet
   if (statusBubble_) {
     statusBubble_->UpdateSizeAndPosition();
   }
+
+  // Let the selected RenderWidgetHostView know, so that it can tell plugins.
+  if (TabContents* contents = browser_->GetSelectedTabContents()) {
+    if (RenderWidgetHostView* rwhv = contents->render_widget_host_view())
+      rwhv->WindowFrameChanged();
+  }
 }
 
 // Handle the openLearnMoreAboutCrashLink: action from SadTabController when
@@ -1738,6 +1744,12 @@ willPositionSheet:(NSWindow*)sheet
       (windowTopGrowth_ > 0 && NSMinY(windowFrame) != NSMinY(workarea)) ||
       (windowBottomGrowth_ > 0 && NSMaxY(windowFrame) != NSMaxY(workarea)))
     [self resetWindowGrowthState];
+
+  // Let the selected RenderWidgetHostView know, so that it can tell plugins.
+  if (TabContents* contents = browser_->GetSelectedTabContents()) {
+    if (RenderWidgetHostView* rwhv = contents->render_widget_host_view())
+      rwhv->WindowFrameChanged();
+  }
 }
 
 // Delegate method called when window will be resized; not called for
@@ -2114,10 +2126,21 @@ willPositionSheet:(NSWindow*)sheet
                              width:(CGFloat)width {
   NSView* tabContentView = [self tabContentArea];
   NSRect tabContentFrame = [tabContentView frame];
+
+  bool contentShifted = NSMaxY(tabContentFrame) != maxY;
+
   tabContentFrame.origin.y = minY;
   tabContentFrame.size.height = maxY - minY;
   tabContentFrame.size.width = width;
   [tabContentView setFrame:tabContentFrame];
+
+  // If the relayout shifts the content area up or down, let the renderer know.
+  if (contentShifted) {
+    if (TabContents* contents = browser_->GetSelectedTabContents()) {
+      if (RenderWidgetHostView* rwhv = contents->render_widget_host_view())
+        rwhv->WindowFrameChanged();
+    }
+  }
 }
 
 - (BOOL)shouldShowBookmarkBar {

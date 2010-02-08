@@ -176,13 +176,10 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       instance_(instance),
       parent_(containing_view),
       quirks_(0),
-      last_window_x_offset_(0),
-      last_window_y_offset_(0),
-      last_mouse_x_(0),
-      last_mouse_y_(0),
       have_focus_(false),
       focus_notifier_(NULL),
       containing_window_has_focus_(false),
+      initial_window_focus_(false),
       container_is_visible_(false),
       have_called_set_window_(false),
       handle_event_depth_(0),
@@ -354,7 +351,7 @@ void WebPluginDelegateImpl::WindowlessUpdateGeometry(
   bool new_clip_is_empty = clip_rect_.IsEmpty();
 
   // Only resend to the instance if the geometry has changed (see note in
-  // WindowlesSetWindow for why we only care about the clip rect switching
+  // WindowlessSetWindow for why we only care about the clip rect switching
   // empty state).
   if (window_rect == window_rect_ && old_clip_was_empty == new_clip_is_empty)
     return;
@@ -367,7 +364,7 @@ void WebPluginDelegateImpl::WindowlessUpdateGeometry(
   }
 #endif
 
-  window_rect_ = window_rect;
+  SetPluginRect(window_rect);
   WindowlessSetWindow(true);
 }
 
@@ -459,19 +456,12 @@ void WebPluginDelegateImpl::WindowlessSetWindow(bool force_set_window) {
     window_.clipRect.bottom += window_.height;
   }
 
-  UpdateDummyWindowBoundsWithOffset(window_rect_.x(), window_rect_.y(),
-                                    window_rect_.width(),
-                                    window_rect_.height());
-
   NPError err = instance()->NPP_SetWindow(&window_);
 
-  // Plugins expect to get an initial window focus call if they are in an active
-  // window when they get their first SetWindow call.
+  // Send an appropriate window focus event after the first SetWindow.
   if (!have_called_set_window_) {
-    // TODO(stuartmorgan): We need real window information about the initial
-    // window state; for now, assume window focus.
-    SetWindowHasFocus(true);
     have_called_set_window_ = true;
+    SetWindowHasFocus(initial_window_focus_);
   }
 
   DCHECK(err == NPERR_NO_ERROR);
@@ -525,6 +515,13 @@ void WebPluginDelegateImpl::SetFocus() {
 }
 
 void WebPluginDelegateImpl::SetWindowHasFocus(bool has_focus) {
+  // If we get a window focus event before calling SetWindow, just remember the
+  // states (WindowlessSetWindow will then send it on the first call).
+  if (!have_called_set_window_) {
+    initial_window_focus_ = has_focus;
+    return;
+  }
+
   if (has_focus == containing_window_has_focus_)
     return;
   containing_window_has_focus_ = has_focus;
@@ -587,6 +584,12 @@ void WebPluginDelegateImpl::SetContainerVisibility(bool is_visible) {
   }
 }
 
+void WebPluginDelegateImpl::WindowFrameChanged(gfx::Rect window_frame,
+                                               gfx::Rect view_frame) {
+  containing_window_frame_ = window_frame;
+  SetContentAreaOrigin(gfx::Point(view_frame.x(), view_frame.y()));
+}
+
 void WebPluginDelegateImpl::SetThemeCursor(ThemeCursor cursor) {
   current_windowless_cursor_.InitFromThemeCursor(cursor);
 }
@@ -599,48 +602,52 @@ void WebPluginDelegateImpl::SetNSCursor(NSCursor* cursor) {
   current_windowless_cursor_.InitFromNSCursor(cursor);
 }
 
-void WebPluginDelegateImpl::UpdatePluginLocation(const WebMouseEvent& event) {
-  instance()->set_plugin_origin(gfx::Point(event.globalX - event.x,
-                                           event.globalY - event.y));
+void WebPluginDelegateImpl::SetPluginRect(const gfx::Rect& rect) {
+  window_rect_ = rect;
+  PluginScreenLocationChanged();
+}
 
-  if (instance()->event_model() == NPEventModelCarbon) {
-    last_window_x_offset_ = event.globalX - event.windowX;
-    last_window_y_offset_ = event.globalY - event.windowY;
-    last_mouse_x_ = event.globalX;
-    last_mouse_y_ = event.globalY;
+void WebPluginDelegateImpl::SetContentAreaOrigin(const gfx::Point& origin) {
+  content_area_origin_ = origin;
+  PluginScreenLocationChanged();
+}
+
+void WebPluginDelegateImpl::PluginScreenLocationChanged() {
+  gfx::Point plugin_origin(content_area_origin_.x() + window_rect_.x(),
+                           content_area_origin_.y() + window_rect_.y());
+  instance()->set_plugin_origin(plugin_origin);
 
 #ifndef NP_NO_CARBON
-    UpdateDummyWindowBoundsWithOffset(event.windowX - event.x,
-                                      event.windowY - event.y, 0, 0);
+  if (instance()->event_model() == NPEventModelCarbon) {
+    UpdateDummyWindowBounds(plugin_origin);
   }
 #endif
 }
 
 #ifndef NP_NO_CARBON
-void WebPluginDelegateImpl::UpdateDummyWindowBoundsWithOffset(
-    int x_offset, int y_offset, int new_width, int new_height) {
-  if (instance()->event_model() == NPEventModelCocoa)
-    return;
-
-  int target_x = last_window_x_offset_ + x_offset;
-  int target_y = last_window_y_offset_ + y_offset;
+void WebPluginDelegateImpl::UpdateDummyWindowBounds(
+    const gfx::Point& plugin_origin) {
   WindowRef window = reinterpret_cast<WindowRef>(cg_context_.window);
-  Rect window_bounds;
-  GetWindowBounds(window, kWindowContentRgn, &window_bounds);
-  int old_width = window_bounds.right - window_bounds.left;
-  int old_height = window_bounds.bottom - window_bounds.top;
-  if (window_bounds.left != target_x ||
-      window_bounds.top != target_y ||
-      (new_width && new_width != old_width) ||
-      (new_height && new_height != old_height)) {
-    int height = new_height ? new_height : old_height;
-    int width = new_width ? new_width : old_width;
-    window_bounds.left = target_x;
-    window_bounds.top = target_y;
-    window_bounds.right = window_bounds.left + width;
-    window_bounds.bottom = window_bounds.top + height;
-    SetWindowBounds(window, kWindowContentRgn, &window_bounds);
+  Rect current_bounds;
+  GetWindowBounds(window, kWindowContentRgn, &current_bounds);
+
+  Rect new_bounds;
+  // We never want to resize the window to 0x0, so if the plugin is 0x0 just
+  // move the window without resizing it.
+  if (window_rect_.width() > 0 && window_rect_.height() > 0) {
+    SetRect(&new_bounds, 0, 0, window_rect_.width(), window_rect_.height());
+    OffsetRect(&new_bounds, plugin_origin.x(), plugin_origin.y());
+  } else {
+    new_bounds = current_bounds;
+    OffsetRect(&new_bounds, plugin_origin.x() - current_bounds.left,
+               plugin_origin.y() - current_bounds.top);
   }
+
+  if (new_bounds.left != current_bounds.left ||
+      new_bounds.top != current_bounds.top ||
+      new_bounds.right != current_bounds.right ||
+      new_bounds.bottom != current_bounds.bottom)
+    SetWindowBounds(window, kWindowContentRgn, &new_bounds);
 }
 
 void WebPluginDelegateImpl::UpdateIdleEventRate() {
@@ -932,12 +939,19 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
 #endif
 
   if (WebInputEventIsWebMouseEvent(event)) {
-    // Make sure we update our plugin location tracking before we send the
-    // event to the plugin, so that any coordinate conversion the plugin does
-    // will work out.
+    // Check our plugin location before we send the event to the plugin, just
+    // in case we somehow missed a plugin frame change.
     const WebMouseEvent* mouse_event =
         static_cast<const WebMouseEvent*>(&event);
-    UpdatePluginLocation(*mouse_event);
+    gfx::Point content_origin(
+        mouse_event->globalX - mouse_event->x - window_rect_.x(),
+        mouse_event->globalY - mouse_event->y - window_rect_.y());
+    if (content_origin.x() != content_area_origin_.x() ||
+        content_origin.y() != content_area_origin_.y()) {
+      DLOG(WARNING) << "Stale plugin location: " << content_area_origin_
+                    << " instead of " << content_origin;
+      SetContentAreaOrigin(content_area_origin_);
+    }
 
     current_windowless_cursor_.GetCursorInfo(cursor);
   }
@@ -1057,8 +1071,10 @@ void WebPluginDelegateImpl::FireIdleEvent() {
     np_event.modifiers = GetCurrentKeyModifiers();
     if (!Button())
       np_event.modifiers |= btnState;
-    np_event.where.h = last_mouse_x_;
-    np_event.where.v = last_mouse_y_;
+    HIPoint mouse_location;
+    HIGetMousePosition(kHICoordSpaceScreenPixel, NULL, &mouse_location);
+    np_event.where.h = mouse_location.x;
+    np_event.where.v = mouse_location.y;
     instance()->NPP_HandleEvent(&np_event);
   }
 

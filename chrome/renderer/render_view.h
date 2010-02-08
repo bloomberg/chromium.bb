@@ -484,6 +484,7 @@ class RenderView : public RenderWidget,
   virtual void DidPaint();
   virtual void DidHandleKeyEvent();
 #if OS_MACOSX
+  virtual void OnSetFocus(bool enable);
   virtual void OnWasHidden();
   virtual void OnWasRestored(bool needs_repainting);
 #endif
@@ -725,6 +726,10 @@ class RenderView : public RenderWidget,
 
 #if defined(OS_MACOSX)
   void OnSetWindowVisibility(bool visible);
+
+  // Notifies the view that window frame has been updated. window_frame and
+  // view_frame are in screen coordinates.
+  void OnWindowFrameChanged(gfx::Rect window_frame, gfx::Rect view_frame);
 #endif
 
   // Execute custom context menu action.

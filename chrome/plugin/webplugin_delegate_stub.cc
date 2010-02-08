@@ -123,8 +123,9 @@ void WebPluginDelegateStub::OnMessageReceived(const IPC::Message& msg) {
                         OnSendJavaScriptStream)
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(PluginMsg_SetWindowFocus, OnSetWindowFocus)
-    IPC_MESSAGE_HANDLER(PluginMsg_SetContainerVisibility,
-                        OnSetContainerVisibility)
+    IPC_MESSAGE_HANDLER(PluginMsg_ContainerHidden, OnContainerHidden)
+    IPC_MESSAGE_HANDLER(PluginMsg_ContainerShown, OnContainerShown)
+    IPC_MESSAGE_HANDLER(PluginMsg_WindowFrameChanged, OnWindowFrameChanged)
 #endif
     IPC_MESSAGE_HANDLER(PluginMsg_DidReceiveManualResponse,
                         OnDidReceiveManualResponse)
@@ -195,6 +196,9 @@ void WebPluginDelegateStub::OnInit(const PluginMsg_Init_Params& params,
                                     params.load_manually);
 #if defined(OS_MACOSX)
     delegate_->SetFocusNotifier(FocusNotifier);
+    delegate_->WindowFrameChanged(params.containing_window_frame,
+                                  params.containing_content_frame);
+    delegate_->SetWindowHasFocus(params.containing_window_has_focus);
 #endif
   }
 }
@@ -345,8 +349,21 @@ void WebPluginDelegateStub::OnSetWindowFocus(bool has_focus) {
   delegate_->SetWindowHasFocus(has_focus);
 }
 
-void WebPluginDelegateStub::OnSetContainerVisibility(bool is_visible) {
-  delegate_->SetContainerVisibility(is_visible);
+void WebPluginDelegateStub::OnContainerHidden() {
+  delegate_->SetContainerVisibility(false);
+}
+
+void WebPluginDelegateStub::OnContainerShown(gfx::Rect window_frame,
+                                             gfx::Rect view_frame,
+                                             bool has_focus) {
+  delegate_->WindowFrameChanged(window_frame, view_frame);
+  delegate_->SetContainerVisibility(true);
+  delegate_->SetWindowHasFocus(has_focus);
+}
+
+void WebPluginDelegateStub::OnWindowFrameChanged(gfx::Rect window_frame,
+                                                 gfx::Rect view_frame) {
+  delegate_->WindowFrameChanged(window_frame, view_frame);
 }
 #endif  // OS_MACOSX
 
