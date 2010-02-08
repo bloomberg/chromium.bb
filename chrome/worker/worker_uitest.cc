@@ -216,27 +216,20 @@ TEST_F(WorkerTest, SharedWorkerHttpAuth) {
   // dialogs displayed by non-navigating tabs.
 }
 
-#if defined(OS_LINUX)
-// Crashes on Linux - http://crbug.com/22898
-#define WorkerFastLayoutTests0 DISABLED_WorkerFastLayoutTests0
-#define WorkerFastLayoutTests1 DISABLED_WorkerFastLayoutTests1
-#define WorkerFastLayoutTests2 DISABLED_WorkerFastLayoutTests2
-#elif defined(OS_MACOSX)
-// Flaky on Mac - http://crbug.com/28445
-#define WorkerFastLayoutTests0 FLAKY_WorkerFastLayoutTests0
-#endif
-
-TEST_F(WorkerTest, WorkerFastLayoutTests0) {
+// Crashy, see http://crbug.com/22898, http://crbug.com/35023.
+TEST_F(WorkerTest, DISABLED_WorkerFastLayoutTests0) {
   SCOPED_TRACE("");
   RunWorkerFastLayoutTests(0);
 }
 
-TEST_F(WorkerTest, WorkerFastLayoutTests1) {
+// Crashy, see http://crbug.com/22898, http://crbug.com/35023.
+TEST_F(WorkerTest, DISABLED_WorkerFastLayoutTests1) {
   SCOPED_TRACE("");
   RunWorkerFastLayoutTests(1);
 }
 
-TEST_F(WorkerTest, WorkerFastLayoutTests2) {
+// Crashy, see http://crbug.com/22898, http://crbug.com/35023.
+TEST_F(WorkerTest, DISABLED_WorkerFastLayoutTests2) {
   SCOPED_TRACE("");
   RunWorkerFastLayoutTests(2);
 }
