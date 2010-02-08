@@ -145,6 +145,12 @@ void FtpDirectoryListingResponseDelegate::ProcessReceivedEntries() {
 
   while (buffer_.EntryAvailable()) {
     FtpDirectoryListingEntry entry = buffer_.PopEntry();
+
+    // Skip the current and parent directory entries in the listing. Our header
+    // always includes them.
+    if (EqualsASCII(entry.name, ".") || EqualsASCII(entry.name, ".."))
+      continue;
+
     bool is_directory = (entry.type == FtpDirectoryListingEntry::DIRECTORY);
     int64 size = entry.size;
     if (entry.type != FtpDirectoryListingEntry::FILE)
