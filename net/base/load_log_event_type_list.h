@@ -112,10 +112,6 @@ EVENT_TYPE(SOCKET_POOL_CONNECT_JOB_TIMED_OUT)
 // The start/end of a client socket pool request for a socket.
 EVENT_TYPE(SOCKET_POOL)
 
-// The start/end of when a request is sitting in the queue waiting for
-// a connect job to finish. (Only applies to late_binding).
-EVENT_TYPE(SOCKET_POOL_WAITING_IN_QUEUE)
-
 // The request stalled because there are too many sockets in the pool.
 EVENT_TYPE(SOCKET_POOL_STALLED_MAX_SOCKETS)
 

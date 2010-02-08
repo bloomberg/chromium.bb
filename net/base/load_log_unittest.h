@@ -30,9 +30,8 @@ inline ::testing::AssertionResult LogContainsEventHelper(
   if (j >= log.entries().size())
     return ::testing::AssertionFailure() << j << " is out of bounds.";
   const LoadLog::Entry& entry = log.entries()[j];
-  if (entry.type != LoadLog::Entry::TYPE_EVENT) {
+  if (entry.type != LoadLog::Entry::TYPE_EVENT)
     return ::testing::AssertionFailure() << "Not a TYPE_EVENT entry";
-  }
   if (expected_event != entry.event.type) {
     return ::testing::AssertionFailure()
         << "Actual event: " << LoadLog::EventTypeToString(entry.event.type)
@@ -90,6 +89,21 @@ inline ::testing::AssertionResult LogContainsEndEvent(
     LoadLog::EventType expected_event) {
   return LogContainsEvent(log, i, expected_event, LoadLog::PHASE_END);
 }
+
+inline ::testing::AssertionResult LogContainsEntryWithType(
+    const LoadLog& log,
+    int i, // Negative indices are reverse indices.
+    LoadLog::Entry::Type type) {
+  // Negative indices are reverse indices.
+  size_t j = (i < 0) ? log.entries().size() + i : i;
+  if (j >= log.entries().size())
+    return ::testing::AssertionFailure() << j << " is out of bounds.";
+  const LoadLog::Entry& entry = log.entries()[j];
+  if (entry.type != type)
+    return ::testing::AssertionFailure() << "Type does not match.";
+  return ::testing::AssertionSuccess();
+}
+
 
 // Expect that the log contains an event, but don't care about where
 // as long as the index where it is found is greater than min_index.
