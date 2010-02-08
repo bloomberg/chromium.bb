@@ -46,10 +46,18 @@ class MockPageActionImageView : public LocationBarViewMac::PageActionImageView {
   bool mouse_was_pressed_;
 };
 
+// TODO(shess): Consider lifting this to
+// autocomplete_text_field_unittest_helper.h to share this with the
+// cell tests.
 class TestPageActionViewList : public LocationBarViewMac::PageActionViewList {
  public:
   TestPageActionViewList()
       : LocationBarViewMac::PageActionViewList(NULL, NULL, NULL) {}
+  ~TestPageActionViewList() {
+    // |~PageActionViewList()| calls delete on the contents of
+    // |views_|, which here are refs to stack objects.
+    views_.clear();
+  }
 
   void Add(LocationBarViewMac::PageActionImageView* view) {
     views_.push_back(view);
