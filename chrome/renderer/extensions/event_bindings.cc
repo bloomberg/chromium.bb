@@ -180,11 +180,6 @@ static void UnregisterContext(ContextList::iterator context_iter, bool in_gc) {
     }
   }
 
-  if (!(*context_iter)->parent_context.IsEmpty()) {
-    (*context_iter)->parent_context.Dispose();
-    (*context_iter)->parent_context.Clear();
-  }
-
   // Remove it from our registered contexts.
   (*context_iter)->context.ClearWeak();
   if (!in_gc) {
@@ -234,19 +229,18 @@ void EventBindings::HandleContextCreated(WebFrame* frame, bool content_script) {
     // care about content scripts and extension frames.
     // (Unless we're in unit tests, in which case we don't care what the URL
     // is).
-    DCHECK(frame_context == context);
+    DCHECK(frame_context.IsEmpty() || frame_context == context);
     if (!in_unit_tests)
       return;
   }
 
   v8::Persistent<v8::Context> persistent_context =
       v8::Persistent<v8::Context>::New(context);
-  v8::Persistent<v8::Context> parent_context;
+  WebFrame* parent_frame = NULL;
 
   if (content_script) {
     DCHECK(frame_context != context);
-
-    parent_context = v8::Persistent<v8::Context>::New(frame_context);
+    parent_frame = frame;
     // Content script contexts can get GCed before their frame goes away, so
     // set up a GC callback.
     persistent_context.MakeWeak(NULL, &ContextWeakReferenceCallback);
@@ -257,7 +251,7 @@ void EventBindings::HandleContextCreated(WebFrame* frame, bool content_script) {
     render_view = RenderView::FromWebView(frame->view());
 
   contexts.push_back(linked_ptr<ContextInfo>(
-      new ContextInfo(persistent_context, extension_id, parent_context,
+      new ContextInfo(persistent_context, extension_id, parent_frame,
                       render_view)));
 
   v8::Handle<v8::Value> argv[1];
@@ -272,18 +266,18 @@ void EventBindings::HandleContextDestroyed(WebFrame* frame) {
 
   v8::HandleScope handle_scope;
   v8::Local<v8::Context> context = frame->mainWorldScriptContext();
-  DCHECK(!context.IsEmpty());
-
-  ContextList::iterator context_iter = bindings_utils::FindContext(context);
-  if (context_iter != GetContexts().end())
-    UnregisterContext(context_iter, false);
+  if (!context.IsEmpty()) {
+    ContextList::iterator context_iter = bindings_utils::FindContext(context);
+    if (context_iter != GetContexts().end())
+      UnregisterContext(context_iter, false);
+  }
 
   // Unload any content script contexts for this frame.  Note that the frame
-  // itself might not be registered, but can still be a parent context.
+  // itself might not be registered, but can still be a parent frame.
   for (ContextList::iterator it = GetContexts().begin();
        it != GetContexts().end(); ) {
     ContextList::iterator current = it++;
-    if ((*current)->parent_context == context)
+    if ((*current)->parent_frame == frame)
       UnregisterContext(current, false);
   }
 }

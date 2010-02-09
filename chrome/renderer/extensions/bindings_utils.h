@@ -16,6 +16,10 @@
 
 class RenderView;
 
+namespace WebKit {
+class WebFrame;
+}
+
 namespace bindings_utils {
 
 // This is a base class for chrome extension bindings.  Common features that
@@ -66,8 +70,8 @@ struct ContextInfo {
   std::string extension_id;  // empty if the context is not an extension
 
   // If this context is a content script, parent will be the frame that it
-  // was injected in.  This is empty if the context is not a content script.
-  v8::Persistent<v8::Context> parent_context;
+  // was injected in.  This is NULL if the context is not a content script.
+  WebKit::WebFrame* parent_frame;
 
   // The RenderView that this context belongs to.  This is not guaranteed to be
   // a valid pointer, and is used for comparisons only.  Do not dereference.
@@ -79,10 +83,10 @@ struct ContextInfo {
 
   ContextInfo(v8::Persistent<v8::Context> context,
               const std::string& extension_id,
-              v8::Persistent<v8::Context> parent_context,
+              WebKit::WebFrame* parent_frame,
               RenderView* render_view)
       : context(context), extension_id(extension_id),
-        parent_context(parent_context), render_view(render_view),
+        parent_frame(parent_frame), render_view(render_view),
         num_connected_events(0) {}
 };
 typedef std::list< linked_ptr<ContextInfo> > ContextList;
