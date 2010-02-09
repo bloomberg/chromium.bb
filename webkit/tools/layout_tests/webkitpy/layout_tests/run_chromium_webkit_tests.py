@@ -419,7 +419,7 @@ class TestRunner:
             filename_queue = Queue.Queue()
             for test_file in test_files:
                 filename_queue.put(
-                    ('.', [self._GetTestInfoForFile(test_file)]))
+                    ('.', [self._get_test_info_for_file(test_file)]))
             return filename_queue
 
         tests_by_dir = {}
