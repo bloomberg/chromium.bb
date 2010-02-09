@@ -23,6 +23,15 @@ bool AudioMessageFilter::Send(IPC::Message* message) {
     delete message;
     return false;
   }
+
+  if (MessageLoop::current() != message_loop_) {
+    // Can only access the IPC::Channel on the IPC thread since it's not thread
+    // safe.
+    message_loop_->PostTask(
+        FROM_HERE, NewRunnableMethod(this, &AudioMessageFilter::Send, message));
+    return true;
+  }
+
   message->set_routing_id(route_id_);
   return channel_->Send(message);
 }
