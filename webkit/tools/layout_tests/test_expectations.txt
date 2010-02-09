@@ -2669,7 +2669,7 @@ BUG29748 WIN DEBUG : fast/forms/input-align-image.html = IMAGE+TEXT PASS
 BUG29737 MAC : svg/W3C-SVG-1.1/filters-blend-01-b.svg = IMAGE+TEXT
 BUG29737 MAC : svg/W3C-SVG-1.1/filters-color-01-b.svg = IMAGE+TEXT
 BUG29737 MAC : svg/W3C-SVG-1.1/filters-comptran-01-b.svg = IMAGE+TEXT
-BUG29737 MAC : svg/W3C-SVG-1.1/filters-gauss-01-b.svg = IMAGE+TEXT
+BUG29737 MAC : svg/W3C-SVG-1.1/filters-gauss-01-b.svg = IMAGE+TEXT CRASH
 BUG29737 MAC : svg/W3C-SVG-1.1/filters-morph-01-f.svg = IMAGE+TEXT CRASH
 BUG29737 MAC : svg/W3C-SVG-1.1/filters-offset-01-b.svg = IMAGE+TEXT
 BUG29737 MAC : svg/batik/filters/feTile.svg = IMAGE+TEXT
@@ -2918,18 +2918,13 @@ BUG34546 : fast/loader/document-with-fragment-url-4.html = TIMEOUT
 BUG35064 WIN DEBUG : fast/forms/restore-selection-after-layout.html = TEXT PASS
 
 // WebKit roll 54482 to 54493.
-BUG_TONY WIN LINUX : svg/W3C-SVG-1.1/animate-elem-80-t.svg = TEXT
 BUG_TONY WIN : svg/W3C-SVG-1.1/filters-conv-01-f.svg = TEXT
-BUG_TONY WIN : svg/W3C-SVG-1.1/fonts-elem-01-t.svg = TEXT
-BUG_TONY WIN : svg/W3C-SVG-1.1/fonts-elem-02-t.svg = TEXT
-BUG_TONY WIN : svg/W3C-SVG-1.1/fonts-elem-03-b.svg = TEXT
-BUG_TONY WIN : svg/W3C-SVG-1.1/fonts-elem-04-b.svg = TEXT
-BUG_TONY WIN : svg/W3C-SVG-1.1/fonts-elem-07-b.svg = TEXT
 BUG_TONY WIN : svg/W3C-SVG-1.1/text-intro-05-t.svg = TEXT
 BUG_TONY WIN : svg/batik/text/textFeatures.svg = TEXT
-BUG_TONY WIN : svg/custom/use-on-disallowed-foreign-object-3.svg = TEXT
-BUG_TONY WIN LINUX : svg/custom/use-on-disallowed-foreign-object-4.svg = TEXT
 BUG_TONY WIN : svg/text/text-intro-05-t.svg = TEXT
-BUG_TONY MAC : svg/batik/text/textEffect3.svg = IMAGE
 BUG_TONY MAC : svg/custom/use-clipped-hit.svg = IMAGE
 BUG_TONY MAC : svg/text/selection-background-color.xhtml = IMAGE
+
+// WebKit roll 54493 to 54530: new tests.
+BUG_TONY : fast/js/parser-syntax-check.html = TEXT
+BUG_TONY : plugins/netscape-plugin-property-access-exception.html = TEXT
