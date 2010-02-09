@@ -299,6 +299,8 @@
         'browser/chromeos/login/login_manager_view.h',
         'browser/chromeos/login/login_wizard_view.cc',
         'browser/chromeos/login/login_wizard_view.h',
+        'browser/chromeos/login/rounded_rect_painter.cc',
+        'browser/chromeos/login/rounded_rect_painter.h',
         'browser/chromeos/login/screen_observer.h',
         'browser/chromeos/login/user_manager.cc',
         'browser/chromeos/login/user_manager.h',

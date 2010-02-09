@@ -18,14 +18,15 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
-#include "chrome/browser/chromeos/login/image_background.h"
 #include "chrome/browser/chromeos/login/login_manager_view.h"
+#include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/common/x11_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "views/screen.h"
 #include "views/window/hit_test.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
@@ -39,6 +40,11 @@ namespace {
 
 const int kLoginWidth = 700;
 const int kLoginHeight = 350;
+const SkColor kBackgroundTopColor = SkColorSetRGB(82, 139, 224);
+const SkColor kBackgroundBottomColor = SkColorSetRGB(50, 102, 204);
+const int kCornerRadius = 12;
+const int kBackgroundPadding = 10;
+const SkColor kBackgroundPaddingColor = SK_ColorBLACK;
 
 // Names of screens to start login wizard with.
 const char kLoginManager[] = "login";
@@ -130,8 +136,7 @@ void ShowLoginWizard(const std::string& start_screen_name) {
 ///////////////////////////////////////////////////////////////////////////////
 // LoginWizardView, public:
 LoginWizardView::LoginWizardView()
-    : background_pixbuf_(NULL),
-      status_area_(NULL),
+    : status_area_(NULL),
       current_(NULL),
       login_manager_(NULL) {
 }
@@ -141,15 +146,18 @@ LoginWizardView::~LoginWizardView() {
 }
 
 void LoginWizardView::Init(const std::string& start_view_name) {
-  // Load and set the background.
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  background_pixbuf_ = rb.GetPixbufNamed(IDR_LOGIN_BACKGROUND);
-  set_background(new views::ImageBackground(background_pixbuf_));
+  views::Painter* painter = new chromeos::RoundedRectPainter(
+      kBackgroundPadding, kBackgroundPaddingColor,    // black padding
+      false, SK_ColorBLACK,                           // no shadow
+      kCornerRadius,                                  // corner radius
+      kBackgroundTopColor, kBackgroundBottomColor);   // gradient
+  set_background(
+      views::Background::CreateBackgroundPainter(true, painter));
 
-  // Store the dimensions of the background image to use it later.
-  int width = gdk_pixbuf_get_width(background_pixbuf_);
-  int height = gdk_pixbuf_get_height(background_pixbuf_);
-  dimensions_.SetSize(width, height);
+  // TODO(dpolukhin): add support for multiple monitors.
+  gfx::Rect monitor_bounds =
+      views::Screen::GetMonitorWorkAreaNearestWindow(NULL);
+  dimensions_ = monitor_bounds.size();
 
   InitStatusArea();
 
@@ -181,9 +189,12 @@ void LoginWizardView::InitStatusArea() {
   status_area_->Init();
   gfx::Size status_area_size = status_area_->GetPreferredSize();
   // TODO(avayvod): Check this on RTL interface.
-  status_area_->SetBounds(dimensions_.width() - status_area_size.width(), 0,
-                          status_area_size.width(),
-                          status_area_size.height());
+  status_area_->SetBounds(
+      dimensions_.width() - status_area_size.width() -
+          kCornerRadius - kBackgroundPadding,
+      kBackgroundPadding,
+      status_area_size.width(),
+      status_area_size.height());
   AddChildView(status_area_);
 }
 

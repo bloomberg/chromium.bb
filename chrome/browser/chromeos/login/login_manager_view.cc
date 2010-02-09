@@ -18,7 +18,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
-#include "chrome/browser/chromeos/login/image_background.h"
+#include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
 #include "chrome/common/chrome_switches.h"
@@ -26,7 +26,6 @@
 #include "grit/theme_resources.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
-#include "views/painter.h"
 #include "views/widget/widget.h"
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
@@ -48,7 +47,6 @@ const int kRowPad = 10;
 const int kLabelPad = 2;
 const int kCornerPad = 6;
 const int kCornerRadius = 12;
-const int kShadowOffset = 4;
 const SkColor kErrorColor = 0xFF8F384F;
 const SkColor kBackground = SK_ColorWHITE;
 const SkColor kLabelColor = 0xFF808080;
@@ -57,45 +55,6 @@ const char *kDefaultDomain = "@gmail.com";
 
 // Set to true to run on linux and test login.
 const bool kStubOutLogin = false;
-
-// This Painter can be used to draw a background with a shadowed panel with
-// rounded corners.
-class PanelPainter : public views::Painter {
-  static void drawRoundedRect(
-      gfx::Canvas* canvas,
-      int x, int y,
-      int w, int h,
-      SkColor color) {
-    SkRect rect;
-    rect.set(
-        SkIntToScalar(x), SkIntToScalar(y),
-        SkIntToScalar(x + w), SkIntToScalar(y + h));
-    SkPath path;
-    path.addRoundRect(
-        rect, SkIntToScalar(kCornerRadius), SkIntToScalar(kCornerRadius));
-    SkPaint paint;
-    paint.setStyle(SkPaint::kFill_Style);
-    paint.setFlags(SkPaint::kAntiAlias_Flag);
-    paint.setColor(color);
-    canvas->drawPath(path, paint);
-  }
-
-  virtual void Paint(int w, int h, gfx::Canvas* canvas) {
-    // Draw shadow, with offset.
-    drawRoundedRect(
-        canvas,
-        kShadowOffset, kShadowOffset,
-        w, h,
-        SK_ColorBLACK);
-
-    // Draw background, 1 pixel smaller to allow shadow to show.
-    drawRoundedRect(
-        canvas,
-        0, 0,
-        w - 1, h - 1,
-        kBackground);
-  }
-};
 
 }  // namespace
 
@@ -108,8 +67,13 @@ LoginManagerView::~LoginManagerView() {
 
 void LoginManagerView::Init() {
   // Use rounded rect background.
+  views::Painter* painter = new chromeos::RoundedRectPainter(
+      0, kBackground,             // no padding
+      true, SK_ColorBLACK,        // black shadow
+      kCornerRadius,              // corner radius
+      kBackground, kBackground);  // backgound without gradient
   set_background(
-      views::Background::CreateBackgroundPainter(true, new PanelPainter()));
+      views::Background::CreateBackgroundPainter(true, painter));
 
   // Set up fonts.
   gfx::Font title_font =

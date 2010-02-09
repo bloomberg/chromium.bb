@@ -54,9 +54,6 @@ class LoginWizardView : public views::View,
   void InitStatusArea();
   void InitLoginManager();
 
-  // Background for the wizard view.
-  GdkPixbuf* background_pixbuf_;
-
   // Wizard view dimensions.
   gfx::Size dimensions_;
 
