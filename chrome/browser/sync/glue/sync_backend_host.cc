@@ -50,7 +50,8 @@ void SyncBackendHost::Initialize(
     const GURL& sync_service_url,
     URLRequestContextGetter* baseline_context_getter,
     const std::string& lsid,
-    bool delete_sync_data_folder) {
+    bool delete_sync_data_folder,
+    bool invalidate_sync_login) {
   if (!core_thread_.Start())
     return;
 
@@ -69,7 +70,8 @@ void SyncBackendHost::Initialize(
                         new HttpBridgeFactory(baseline_context_getter),
                         new HttpBridgeFactory(baseline_context_getter),
                         lsid,
-                        delete_sync_data_folder));
+                        delete_sync_data_folder,
+                        invalidate_sync_login));
 }
 
 void SyncBackendHost::Authenticate(const std::string& username,
@@ -205,7 +207,8 @@ void SyncBackendHost::Core::DoInitialize(
     sync_api::HttpPostProviderFactory* http_provider_factory,
     sync_api::HttpPostProviderFactory* auth_http_provider_factory,
     const std::string& lsid,
-    bool delete_sync_data_folder) {
+    bool delete_sync_data_folder,
+    bool invalidate_sync_login) {
   DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
 
   // Blow away the partial or corrupt sync data folder before doing any more
@@ -230,6 +233,7 @@ void SyncBackendHost::Core::DoInitialize(
       auth_http_provider_factory,
       host_,  // ModelSafeWorkerRegistrar.
       attempt_last_user_authentication,
+      invalidate_sync_login,
       MakeUserAgentForSyncapi().c_str(),
       lsid.c_str());
   DCHECK(success) << "Syncapi initialization failed!";

@@ -29,7 +29,6 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/command_line.h"
 #include "base/lock.h"
 #include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
@@ -842,6 +841,7 @@ class SyncManager::SyncInternal {
             HttpPostProviderFactory* auth_post_factory,
             ModelSafeWorkerRegistrar* model_safe_worker_registrar,
             bool attempt_last_user_authentication,
+            bool invalidate_last_user_auth_token,
             const char* user_agent,
             const std::string& lsid);
 
@@ -1082,6 +1082,7 @@ bool SyncManager::Init(const FilePath& database_location,
                        HttpPostProviderFactory* auth_post_factory,
                        ModelSafeWorkerRegistrar* registrar,
                        bool attempt_last_user_authentication,
+                       bool invalidate_last_user_auth_token,
                        const char* user_agent,
                        const char* lsid) {
   DCHECK(post_factory);
@@ -1097,6 +1098,7 @@ bool SyncManager::Init(const FilePath& database_location,
                      auth_post_factory,
                      registrar,
                      attempt_last_user_authentication,
+                     invalidate_last_user_auth_token,
                      user_agent,
                      lsid);
 }
@@ -1122,6 +1124,7 @@ bool SyncManager::SyncInternal::Init(
     HttpPostProviderFactory* auth_post_factory,
     ModelSafeWorkerRegistrar* model_safe_worker_registrar,
     bool attempt_last_user_authentication,
+    bool invalidate_last_user_auth_token,
     const char* user_agent,
     const std::string& lsid) {
 
@@ -1216,12 +1219,9 @@ bool SyncManager::SyncInternal::Init(
   if (attempt_last_user_authentication &&
       auth_watcher()->settings()->GetLastUserAndServiceToken(
           SYNC_SERVICE_NAME, &username, &auth_token)) {
-#ifndef NDEBUG
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    if (command_line.HasSwitch(switches::kInvalidateSyncLogin)) {
+    if (invalidate_last_user_auth_token) {
       auth_token += "bogus";
     }
-#endif
     attempting_auth = AuthenticateForUser(username, auth_token);
   } else if (!lsid.empty()) {
     attempting_auth = true;

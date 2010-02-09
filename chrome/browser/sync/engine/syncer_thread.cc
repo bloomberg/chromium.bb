@@ -15,7 +15,6 @@
 #include <map>
 #include <queue>
 
-#include "base/command_line.h"
 #include "chrome/browser/sync/engine/auth_watcher.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"

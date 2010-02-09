@@ -82,7 +82,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   void Initialize(const GURL& service_url,
                   URLRequestContextGetter* baseline_context_getter,
                   const std::string& lsid,
-                  bool delete_sync_data_folder);
+                  bool delete_sync_data_folder,
+                  bool invalidate_sync_login);
 
   // Called on |frontend_loop_| to kick off asynchronous authentication.
   void Authenticate(const std::string& username, const std::string& password,
@@ -169,7 +170,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
         sync_api::HttpPostProviderFactory* http_bridge_factory,
         sync_api::HttpPostProviderFactory* auth_http_bridge_factory,
         const std::string& lsid,
-        bool delete_sync_data_folder);
+        bool delete_sync_data_folder,
+        bool invalidate_sync_login);
 
     // Called on our SyncBackendHost's core_thread_ to perform authentication
     // on behalf of SyncBackendHost::Authenticate.
@@ -208,7 +210,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
                              sync_api::HttpPostProviderFactory* auth_factory,
                              bool delete_sync_data_folder) {
         DoInitialize(GURL(), false, factory, auth_factory, std::string(),
-            delete_sync_data_folder);
+            delete_sync_data_folder, false);
         syncapi_->SetupForTestMode(test_user);
     }
 #endif

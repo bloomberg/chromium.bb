@@ -538,6 +538,10 @@ class SyncManager {
   // HTTP header. Used internally when collecting stats to classify clients.
   // As a fallback when no cached auth information is available, try to
   // bootstrap authentication using |lsid|, if it isn't empty.
+  //
+  // |invalidate_last_user_auth_token| makes it so that any auth token
+  // read from user settings is invalidated.  This is used for testing
+  // code paths related to authentication failures.
   bool Init(const FilePath& database_location,
             const char* sync_server_and_path,
             int sync_server_port,
@@ -548,6 +552,7 @@ class SyncManager {
             HttpPostProviderFactory* auth_post_factory,
             browser_sync::ModelSafeWorkerRegistrar* registrar,
             bool attempt_last_user_authentication,
+            bool invalidate_last_user_auth_token,
             const char* user_agent,
             const char* lsid);
 
