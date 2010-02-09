@@ -38,7 +38,7 @@ class ExceptionsView : public ExceptionEditorView::Delegate,
   // Shows the Exceptions window.
   static void ShowExceptionsWindow(gfx::NativeWindow parent,
                                    HostContentSettingsMap* map,
-                                   ContentSettingsType type);
+                                   ContentSettingsType content_type);
 
   virtual ~ExceptionsView();
 

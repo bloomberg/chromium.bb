@@ -18,16 +18,24 @@
 #include "views/window/window.h"
 
 static const int kExceptionsViewInsetSize = 5;
+static ExceptionsView* instances[CONTENT_SETTINGS_NUM_TYPES] = { NULL };
 
 // static
 void ExceptionsView::ShowExceptionsWindow(gfx::NativeWindow parent,
                                           HostContentSettingsMap* map,
-                                          ContentSettingsType type) {
-  views::Window::CreateChromeWindow(
-      parent, gfx::Rect(), new ExceptionsView(map, type))->Show();
+                                          ContentSettingsType content_type) {
+  if (!instances[content_type]) {
+    instances[content_type] = new ExceptionsView(map, content_type);
+    views::Window::CreateChromeWindow(parent, gfx::Rect(),
+                                      instances[content_type]);
+  }
+
+  // This will show invisible windows and bring visible windows to the front.
+  instances[content_type]->window()->Show();
 }
 
 ExceptionsView::~ExceptionsView() {
+  instances[model_.content_type()] = NULL;
   table_->SetModel(NULL);
 }
 
