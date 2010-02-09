@@ -1444,6 +1444,7 @@
         'browser/sync/engine/auth_watcher_unittest.cc',
         'browser/sync/engine/net/gaia_authenticator_unittest.cc',
         'browser/sync/engine/process_commit_response_command_unittest.cc',
+	'browser/sync/engine/syncapi_unittest.cc',
         'browser/sync/engine/syncer_proto_util_unittest.cc',
         'browser/sync/engine/syncer_thread_unittest.cc',
         'browser/sync/engine/syncer_unittest.cc',

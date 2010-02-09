@@ -43,6 +43,7 @@
 
 #include "base/basictypes.h"
 #include "base/file_path.h"
+#include "base/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/sync/syncable/model_type.h"
@@ -77,7 +78,23 @@ class BaseTransaction;
 class HttpPostProviderFactory;
 class SyncManager;
 class WriteTransaction;
-struct UserShare;
+
+// A UserShare encapsulates the syncable pieces that represent an authenticated
+// user and their data (share).
+// This encompasses all pieces required to build transaction objects on the
+// syncable share.
+struct UserShare {
+  // The DirectoryManager itself, which is the parent of Transactions and can
+  // be shared across multiple threads (unlike Directory).
+  scoped_ptr<syncable::DirectoryManager> dir_manager;
+
+  // The username of the sync user. This is empty until we have performed at
+  // least one successful GAIA authentication with this username, which means
+  // on first-run it is empty until an AUTH_SUCCEEDED event and on future runs
+  // it is set as soon as the client instructs us to authenticate for the last
+  // known valid user (AuthenticateForLastKnownUser()).
+  std::string authenticated_name;
+};
 
 // A valid BaseNode will never have an ID of zero.
 static const int64 kInvalidId = 0;
@@ -93,6 +110,11 @@ class BaseNode {
   // doing an ID lookup.  Returns false on failure.  An invalid or deleted
   // ID will result in failure.
   virtual bool InitByIdLookup(int64 id) = 0;
+
+  // All subclasses of BaseNode must also provide a way to initialize themselves
+  // by doing a client tag lookup. Returns false on failure. A deleted node
+  // will return FALSE.
+  virtual bool InitByClientTagLookup(const std::string& tag) = 0;
 
   // Each object is identified by a 64-bit id (internally, the syncable
   // metahandle).  These ids are strictly local handles.  They will persist
@@ -183,6 +205,7 @@ class WriteNode : public BaseNode {
 
   // BaseNode implementation.
   virtual bool InitByIdLookup(int64 id);
+  virtual bool InitByClientTagLookup(const std::string& tag);
 
   // Create a new node with the specified parent and predecessor.  |model_type|
   // dictates the type of the item, and controls which EntitySpecifics proto
@@ -193,6 +216,16 @@ class WriteNode : public BaseNode {
   bool InitByCreation(syncable::ModelType model_type,
                       const BaseNode& parent,
                       const BaseNode* predecessor);
+
+  // Create nodes using this function if they're unique items that
+  // you want to fetch using client_tag. Note that the behavior of these
+  // items is slightly different than that of normal items.
+  // Most importantly, if it exists locally, this function will
+  // actually undelete it
+  // Client unique tagged nodes must NOT be folders.
+  bool InitUniqueByCreation(syncable::ModelType model_type,
+                            const BaseNode& parent,
+                            const std::string& client_tag);
 
   // These Set() functions correspond to the Get() functions of BaseNode.
   void SetIsFolder(bool folder);
@@ -231,6 +264,9 @@ class WriteNode : public BaseNode {
 
  private:
   void* operator new(size_t size);  // Node is meant for stack use only.
+
+  // Helper to set model type. This will clear any specifics data.
+  void PutModelType(syncable::ModelType model_type);
 
   // Helper to set the previous node.
   void PutPredecessor(const BaseNode* predecessor);
@@ -274,6 +310,7 @@ class ReadNode : public BaseNode {
 
   // BaseNode implementation.
   virtual bool InitByIdLookup(int64 id);
+  virtual bool InitByClientTagLookup(const std::string& tag);
 
   // There is always a root node, so this can't fail.  The root node is
   // never mutable, so root lookup is only possible on a ReadNode.
@@ -283,6 +320,7 @@ class ReadNode : public BaseNode {
   // Look up the node with the particular tag.  If it does not exist,
   // return false.  Since these nodes are special, lookup is only
   // provided through ReadNode.
+  // TODO(chron): Rename this function.
   bool InitByTagLookup(const std::string& tag);
 
   // Implementation of BaseNode's abstract virtual accessors.

@@ -250,8 +250,12 @@ void MockConnectionManager::SetLastUpdateOriginatorFields(
   GetMutableLastUpdate()->set_originator_client_item_id(entry_id);
 }
 
-void MockConnectionManager::SetLastUpdateSingletonTag(const string& tag) {
-  GetMutableLastUpdate()->set_singleton_tag(tag);
+void MockConnectionManager::SetLastUpdateServerTag(const string& tag) {
+  GetMutableLastUpdate()->set_server_defined_unique_tag(tag);
+}
+
+void MockConnectionManager::SetLastUpdateClientTag(const string& tag) {
+  GetMutableLastUpdate()->set_client_defined_unique_tag(tag);
 }
 
 void MockConnectionManager::SetLastUpdatePosition(int64 server_position) {

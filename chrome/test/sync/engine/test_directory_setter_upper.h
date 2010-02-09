@@ -33,6 +33,7 @@
 #include <string>
 
 #include "base/scoped_ptr.h"
+#include "base/scoped_temp_dir.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/util/sync_types.h"
 
@@ -71,6 +72,7 @@ class TestDirectorySetterUpper {
   scoped_ptr<syncable::DirectoryManager> manager_;
   const std::string name_;
   FilePath file_path_;
+  ScopedTempDir temp_dir_;
 };
 
 // A variant of the above where SetUp does not actually open the directory.

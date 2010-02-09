@@ -68,7 +68,7 @@ class SyncEntity : public IdWrapper<sync_pb::SyncEntity> {
 
     // Loose check for server-created top-level folders that aren't
     // bound to a particular model type.
-    if (!singleton_tag().empty() && IsFolder())
+    if (!server_defined_unique_tag().empty() && IsFolder())
       return syncable::TOP_LEVEL_FOLDER;
 
     // This is an item of a datatype we can't understand. Maybe it's

@@ -161,6 +161,7 @@ Directory::Kernel::Kernel(const FilePath& db_path,
       metahandles_index(new Directory::MetahandlesIndex),
       ids_index(new Directory::IdsIndex),
       parent_id_child_index(new Directory::ParentIdChildIndex),
+      client_tag_index(new Directory::ClientTagIndex),
       extended_attributes(new ExtendedAttributes),
       unapplied_update_metahandles(new MetahandleSet),
       unsynced_metahandles(new MetahandleSet),
@@ -196,6 +197,7 @@ Directory::Kernel::~Kernel() {
   delete unapplied_update_metahandles;
   delete extended_attributes;
   delete parent_id_child_index;
+  delete client_tag_index;
   delete ids_index;
   for_each(metahandles_index->begin(), metahandles_index->end(), DeleteEntry);
   delete metahandles_index;
@@ -222,6 +224,9 @@ void Directory::InitializeIndices() {
     if (!entry->ref(IS_DEL))
       kernel_->parent_id_child_index->insert(entry);
     kernel_->ids_index->insert(entry);
+    if (!entry->ref(UNIQUE_CLIENT_TAG).empty()) {
+      kernel_->client_tag_index->insert(entry);
+    }
     if (entry->ref(IS_UNSYNCED))
       kernel_->unsynced_metahandles->insert(entry->ref(META_HANDLE));
     if (entry->ref(IS_UNAPPLIED_UPDATE))
@@ -278,17 +283,29 @@ EntryKernel* Directory::GetEntryById(const Id& id) {
 EntryKernel* Directory::GetEntryById(const Id& id,
                                      ScopedKernelLock* const lock) {
   DCHECK(kernel_);
-  // First look up in memory
+  // Find it in the in memory ID index.
   kernel_->needle.put(ID, id);
   IdsIndex::iterator id_found = kernel_->ids_index->find(&kernel_->needle);
   if (id_found != kernel_->ids_index->end()) {
-    // Found it in memory.  Easy.
     return *id_found;
   }
   return NULL;
 }
 
-EntryKernel* Directory::GetEntryByTag(const string& tag) {
+EntryKernel* Directory::GetEntryByClientTag(const string& tag) {
+  ScopedKernelLock lock(this);
+  DCHECK(kernel_);
+  // Find it in the ClientTagIndex.
+  kernel_->needle.put(UNIQUE_CLIENT_TAG, tag);
+  ClientTagIndex::iterator found = kernel_->client_tag_index->find(
+      &kernel_->needle);
+  if (found != kernel_->client_tag_index->end()) {
+    return *found;
+  }
+  return NULL;
+}
+
+EntryKernel* Directory::GetEntryByServerTag(const string& tag) {
   ScopedKernelLock lock(this);
   DCHECK(kernel_);
   // We don't currently keep a separate index for the tags.  Since tags
@@ -298,7 +315,7 @@ EntryKernel* Directory::GetEntryByTag(const string& tag) {
   // looking for a match.
   MetahandlesIndex& set = *kernel_->metahandles_index;
   for (MetahandlesIndex::iterator i = set.begin(); i != set.end(); ++i) {
-    if ((*i)->ref(SINGLETON_TAG) == tag) {
+    if ((*i)->ref(UNIQUE_SERVER_TAG) == tag) {
       return *i;
     }
   }
@@ -417,6 +434,9 @@ void Directory::InsertEntry(EntryKernel* entry, ScopedKernelLock* lock) {
     CHECK(kernel_->parent_id_child_index->insert(entry).second) << error;
   }
   CHECK(kernel_->ids_index->insert(entry).second) << error;
+
+  // Should NEVER be created with a client tag.
+  CHECK(entry->ref(UNIQUE_CLIENT_TAG).empty());
 }
 
 void Directory::Undelete(EntryKernel* const entry) {
@@ -548,6 +568,9 @@ void Directory::VacuumAfterSaveChanges(const SaveChangesSnapshot& snapshot) {
       DCHECK(1 == num_erased);
       num_erased = kernel_->metahandles_index->erase(entry);
       DCHECK(1 == num_erased);
+
+      num_erased = kernel_->client_tag_index->erase(entry);  // Might not be in it
+      DCHECK(!entry->ref(UNIQUE_CLIENT_TAG).empty() == num_erased);
       delete entry;
     }
   }
@@ -798,6 +821,7 @@ void Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
       ++entries_done;
       continue;
     }
+
     if (!e.Get(IS_DEL)) {
       CHECK(id != parentid) << e;
       CHECK(!e.Get(NON_UNIQUE_NAME).empty()) << e;
@@ -823,6 +847,11 @@ void Directory::CheckTreeInvariants(syncable::BaseTransaction* trans,
         CHECK(e.Get(IS_DEL)) << e;
         CHECK(id.ServerKnows()) << e;
       } else {
+        if (e.Get(IS_DIR)) {
+          // TODO(chron): Implement this mode if clients ever need it.
+          // For now, you can't combine a client tag and a directory.
+          CHECK(e.Get(UNIQUE_CLIENT_TAG).empty()) << e;
+        }
         // Uncommitted item.
         if (!e.Get(IS_DEL)) {
           CHECK(e.Get(IS_UNSYNCED)) << e;
@@ -967,9 +996,14 @@ Entry::Entry(BaseTransaction* trans, GetById, const Id& id)
   kernel_ = trans->directory()->GetEntryById(id);
 }
 
-Entry::Entry(BaseTransaction* trans, GetByTag, const string& tag)
+Entry::Entry(BaseTransaction* trans, GetByClientTag, const string& tag)
     : basetrans_(trans) {
-  kernel_ = trans->directory()->GetEntryByTag(tag);
+  kernel_ = trans->directory()->GetEntryByClientTag(tag);
+}
+
+Entry::Entry(BaseTransaction* trans, GetByServerTag, const string& tag)
+    : basetrans_(trans) {
+  kernel_ = trans->directory()->GetEntryByServerTag(tag);
 }
 
 Entry::Entry(BaseTransaction* trans, GetByHandle, int64 metahandle)
@@ -1007,7 +1041,7 @@ syncable::ModelType Entry::GetServerModelType() const {
     return TOP_LEVEL_FOLDER;
   // Loose check for server-created top-level folders that aren't
   // bound to a particular model type.
-  if (!Get(SINGLETON_TAG).empty() && Get(SERVER_IS_DIR))
+  if (!Get(UNIQUE_SERVER_TAG).empty() && Get(SERVER_IS_DIR))
     return TOP_LEVEL_FOLDER;
 
   // Otherwise, we don't have a server type yet.  That should only happen
@@ -1032,7 +1066,7 @@ syncable::ModelType Entry::GetModelType() const {
     return TOP_LEVEL_FOLDER;
   // Loose check for server-created top-level folders that aren't
   // bound to a particular model type.
-  if (!Get(SINGLETON_TAG).empty() && Get(IS_DIR))
+  if (!Get(UNIQUE_SERVER_TAG).empty() && Get(IS_DIR))
     return TOP_LEVEL_FOLDER;
 
   // Otherwise, we don't have a local type yet.  That should only happen
@@ -1081,7 +1115,7 @@ void MutableEntry::Init(WriteTransaction* trans, const Id& parent_id,
 
 MutableEntry::MutableEntry(WriteTransaction* trans, CreateNewUpdateItem,
                            const Id& id)
-  : Entry(trans), write_transaction_(trans) {
+    : Entry(trans), write_transaction_(trans) {
   Entry same_id(trans, GET_BY_ID, id);
   if (same_id.good()) {
     kernel_ = NULL;  // already have an item with this ID.
@@ -1100,13 +1134,19 @@ MutableEntry::MutableEntry(WriteTransaction* trans, CreateNewUpdateItem,
 }
 
 MutableEntry::MutableEntry(WriteTransaction* trans, GetById, const Id& id)
-  : Entry(trans, GET_BY_ID, id), write_transaction_(trans) {
+    : Entry(trans, GET_BY_ID, id), write_transaction_(trans) {
   trans->SaveOriginal(kernel_);
 }
 
 MutableEntry::MutableEntry(WriteTransaction* trans, GetByHandle,
                            int64 metahandle)
-  : Entry(trans, GET_BY_HANDLE, metahandle), write_transaction_(trans) {
+    : Entry(trans, GET_BY_HANDLE, metahandle), write_transaction_(trans) {
+  trans->SaveOriginal(kernel_);
+}
+
+MutableEntry::MutableEntry(WriteTransaction* trans, GetByClientTag,
+                           const std::string& tag)
+    : Entry(trans, GET_BY_CLIENT_TAG, tag), write_transaction_(trans) {
   trans->SaveOriginal(kernel_);
 }
 
@@ -1170,8 +1210,45 @@ bool MutableEntry::Put(StringField field, const string& value) {
   return PutImpl(field, value);
 }
 
+bool MutableEntry::PutUniqueClientTag(const string& new_tag) {
+  // There is no SERVER_UNIQUE_CLIENT_TAG. This field is similar to ID.
+  string old_tag = kernel_->ref(UNIQUE_CLIENT_TAG);
+  if (old_tag == new_tag) {
+    return true;
+  }
+
+  if (!new_tag.empty()) {
+    // Make sure your new value is not in there already.
+    EntryKernel lookup_kernel_ = *kernel_;
+    lookup_kernel_.put(UNIQUE_CLIENT_TAG, new_tag);
+    bool new_tag_conflicts =
+        (dir()->kernel_->client_tag_index->count(&lookup_kernel_) > 0);
+    if (new_tag_conflicts) {
+      return false;
+    }
+
+    // We're sure that the new tag doesn't exist now so,
+    // erase the old tag and finish up.
+    dir()->kernel_->client_tag_index->erase(kernel_);
+    kernel_->put(UNIQUE_CLIENT_TAG, new_tag);
+    kernel_->mark_dirty();
+    CHECK(dir()->kernel_->client_tag_index->insert(kernel_).second);
+  } else {
+    // The new tag is empty. Since the old tag is not equal to the new tag,
+    // The old tag isn't empty, and thus must exist in the index.
+    CHECK(dir()->kernel_->client_tag_index->erase(kernel_));
+    kernel_->put(UNIQUE_CLIENT_TAG, new_tag);
+    kernel_->mark_dirty();
+  }
+  return true;
+}
+
 bool MutableEntry::PutImpl(StringField field, const string& value) {
   DCHECK(kernel_);
+  if (field == UNIQUE_CLIENT_TAG) {
+    return PutUniqueClientTag(value);
+  }
+
   if (kernel_->ref(field) != value) {
     kernel_->put(field, value);
     kernel_->mark_dirty();

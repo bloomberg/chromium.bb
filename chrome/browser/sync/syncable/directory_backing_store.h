@@ -77,6 +77,7 @@ class DirectoryBackingStore {
  private:
   FRIEND_TEST(DirectoryBackingStoreTest, MigrateVersion67To68);
   FRIEND_TEST(DirectoryBackingStoreTest, MigrateVersion68To69);
+  FRIEND_TEST(DirectoryBackingStoreTest, MigrateVersion69To70);
   FRIEND_TEST(MigrationTest, ToCurrentVersion);
 
   // General Directory initialization and load helpers.
@@ -138,6 +139,7 @@ class DirectoryBackingStore {
   // Individual version migrations.
   bool MigrateVersion67To68();
   bool MigrateVersion68To69();
+  bool MigrateVersion69To70();
 
   // The handle to our sqlite on-disk store for initialization and loading, and
   // for saving changes periodically via SaveChanges, respectively.

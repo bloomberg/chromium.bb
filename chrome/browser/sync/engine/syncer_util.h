@@ -39,6 +39,12 @@ class SyncerUtil {
                                              syncable::MutableEntry* entry,
                                              const syncable::Id& new_id);
 
+  // If the server sent down a client tagged entry, we have to affix it to
+  // the correct local entry.
+  static void AttemptReuniteClientTag(
+      syncable::WriteTransaction* trans,
+      const SyncEntity& server_entry);
+
   static void AttemptReuniteLostCommitResponses(
       syncable::WriteTransaction* trans,
       const SyncEntity& server_entry,

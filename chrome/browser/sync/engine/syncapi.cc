@@ -382,23 +382,6 @@ static void ServerNameToSyncAPIName(const std::string& server_name,
   }
 }
 
-// A UserShare encapsulates the syncable pieces that represent an authenticated
-// user and their data (share).
-// This encompasses all pieces required to build transaction objects on the
-// syncable share.
-struct UserShare {
-  // The DirectoryManager itself, which is the parent of Transactions and can
-  // be shared across multiple threads (unlike Directory).
-  scoped_ptr<DirectoryManager> dir_manager;
-
-  // The username of the sync user. This is empty until we have performed at
-  // least one successful GAIA authentication with this username, which means
-  // on first-run it is empty until an AUTH_SUCCEEDED event and on future runs
-  // it is set as soon as the client instructs us to authenticate for the last
-  // known valid user (AuthenticateForLastKnownUser()).
-  std::string authenticated_name;
-};
-
 ////////////////////////////////////
 // BaseNode member definitions.
 
@@ -570,6 +553,35 @@ bool WriteNode::InitByIdLookup(int64 id) {
   return (entry_->good() && !entry_->Get(syncable::IS_DEL));
 }
 
+// Find a node by client tag, and bind this WriteNode to it.
+// Return true if the write node was found, and was not deleted.
+// Undeleting a deleted node is possible by ClientTag.
+bool WriteNode::InitByClientTagLookup(const std::string& tag) {
+  DCHECK(!entry_) << "Init called twice";
+  if (tag.empty())
+    return false;
+  entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
+                                      syncable::GET_BY_CLIENT_TAG, tag);
+  return (entry_->good() && !entry_->Get(syncable::IS_DEL));
+}
+
+void WriteNode::PutModelType(syncable::ModelType model_type) {
+  // Set an empty specifics of the appropriate datatype.  The presence
+  // of the specific extension will identify the model type.
+  switch (model_type) {
+    case syncable::BOOKMARKS:
+      PutBookmarkSpecificsAndMarkForSyncing(
+          sync_pb::BookmarkSpecifics::default_instance());
+      break;
+    case syncable::PREFERENCES:
+      PutPreferenceSpecificsAndMarkForSyncing(
+          sync_pb::PreferenceSpecifics::default_instance());
+    default:
+      NOTREACHED();
+  }
+  DCHECK(GetModelType() == model_type);
+}
+
 // Create a new node with default properties, and bind this WriteNode to it.
 // Return true on success.
 bool WriteNode::InitByCreation(syncable::ModelType model_type,
@@ -597,24 +609,86 @@ bool WriteNode::InitByCreation(syncable::ModelType model_type,
   // Entries are untitled folders by default.
   entry_->Put(syncable::IS_DIR, true);
 
-  // Set an empty specifics of the appropriate datatype.  The presence
-  // of the specific extension will identify the model type.
-  switch (model_type) {
-    case syncable::BOOKMARKS:
-      PutBookmarkSpecificsAndMarkForSyncing(
-          sync_pb::BookmarkSpecifics::default_instance());
-      break;
-    case syncable::PREFERENCES:
-      PutPreferenceSpecificsAndMarkForSyncing(
-          sync_pb::PreferenceSpecifics::default_instance());
-      break;
-    default:
-      NOTREACHED();
-  }
-  DCHECK(GetModelType() == model_type);
+  PutModelType(model_type);
 
   // Now set the predecessor, which sets IS_UNSYNCED as necessary.
   PutPredecessor(predecessor);
+
+  return true;
+}
+
+// Create a new node with default properties and a client defined unique tag,
+// and bind this WriteNode to it.
+// Return true on success. If the tag exists in the database, then
+// we will attempt to undelete the node.
+// TODO(chron): Code datatype into hash tag.
+// TODO(chron): Is model type ever lost?
+bool WriteNode::InitUniqueByCreation(syncable::ModelType model_type,
+                                     const BaseNode& parent,
+                                     const std::string& tag) {
+  DCHECK(!entry_) << "Init called twice";
+
+  syncable::Id parent_id = parent.GetEntry()->Get(syncable::ID);
+
+  // Start out with a dummy name.  We expect
+  // the caller to set a meaningful name after creation.
+  string dummy(kDefaultNameForNewNodes);
+
+  // Check if we have this locally and need to undelete it.
+  scoped_ptr<syncable::MutableEntry> existing_entry(
+      new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
+                                 syncable::GET_BY_CLIENT_TAG, tag));
+
+  if (existing_entry->good()) {
+    if (existing_entry->Get(syncable::IS_DEL)) {
+      // Rules for undelete:
+      // BASE_VERSION: Must keep the same.
+      // ID: Essential to keep the same.
+      // META_HANDLE: Must be the same, so we can't "split" the entry.
+      // IS_DEL: Must be set to false, will cause reindexing.
+      //         This one is weird because IS_DEL is true for "update only"
+      //         items. It should be OK to undelete an update only.
+      // MTIME/CTIME: Seems reasonable to just leave them alone.
+      // IS_UNSYNCED: Must set this to true or face database insurrection.
+      //              We do this below this block.
+      // IS_UNAPPLIED_UPDATE: Either keep it the same or also set BASE_VERSION
+      //                      to SERVER_VERSION. We keep it the same here.
+      // IS_DIR: We'll leave it the same.
+      // SPECIFICS: Reset it.
+
+      existing_entry->Put(syncable::IS_DEL, false);
+
+      // Client tags are immutable and must be paired with the ID.
+      // If a server update comes down with an ID and client tag combo,
+      // and it already exists, always overwrite it and store only one copy.
+      // We have to undelete entries because we can't disassociate IDs from
+      // tags and updates.
+
+      existing_entry->Put(syncable::NON_UNIQUE_NAME, dummy);
+      existing_entry->Put(syncable::PARENT_ID, parent_id);
+      entry_ = existing_entry.release();
+    } else {
+      return false;
+    }
+  } else {
+    entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
+                                        syncable::CREATE, parent_id, dummy);
+    if (!entry_->good()) {
+      return false;
+    }
+
+    // Only set IS_DIR for new entries. Don't bitflip undeleted ones.
+    entry_->Put(syncable::UNIQUE_CLIENT_TAG, tag);
+  }
+
+  // We don't support directory and tag combinations.
+  entry_->Put(syncable::IS_DIR, false);
+
+  // Will clear specifics data.
+  PutModelType(model_type);
+
+  // Now set the predecessor, which sets IS_UNSYNCED as necessary.
+  PutPredecessor(NULL);
 
   return true;
 }
@@ -715,6 +789,15 @@ bool ReadNode::InitByIdLookup(int64 id) {
   return true;
 }
 
+bool ReadNode::InitByClientTagLookup(const std::string& tag) {
+  DCHECK(!entry_) << "Init called twice";
+  if (tag.empty())
+    return false;
+  entry_ = new syncable::Entry(transaction_->GetWrappedTrans(),
+                               syncable::GET_BY_CLIENT_TAG, tag);
+  return (entry_->good() && !entry_->Get(syncable::IS_DEL));
+}
+
 const syncable::Entry* ReadNode::GetEntry() const {
   return entry_;
 }
@@ -728,7 +811,7 @@ bool ReadNode::InitByTagLookup(const std::string& tag) {
   if (tag.empty())
     return false;
   syncable::BaseTransaction* trans = transaction_->GetWrappedTrans();
-  entry_ = new syncable::Entry(trans, syncable::GET_BY_TAG, tag);
+  entry_ = new syncable::Entry(trans, syncable::GET_BY_SERVER_TAG, tag);
   if (!entry_->good())
     return false;
   if (entry_->Get(syncable::IS_DEL))

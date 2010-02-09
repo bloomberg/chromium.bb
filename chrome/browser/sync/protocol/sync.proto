@@ -121,14 +121,23 @@ message SyncEntity {
   // Present only in GetUpdatesResponse.
   optional int64 sync_timestamp = 9;
 
-  // If present, singleton_tag identifies this item as being a uniquely
+  // If present, this tag identifies this item as being a uniquely
   // instanced item.  The server ensures that there is never more
-  // than one entity in a user's store with the same singleton_tag value.
+  // than one entity in a user's store with the same tag value.
   // This value is used to identify and find e.g. the "Google Chrome" settings
   // folder without relying on it existing at a particular path, or having
   // a particular name, in the data store.
+  //
+  // This variant of the tag is created by the server, so clients can't create
+  // an item with a tag using this field.
+  //
+  // Use client_defined_unique_tag if you want to create one from the client.
+  //
+  // An item can't have both a client_defined_unique_tag and
+  // a server_defined_unique_tag.
+  //
   // Present only in GetUpdatesResponse.
-  optional string singleton_tag = 10;
+  optional string server_defined_unique_tag = 10;
 
   // If this group is present, it implies that this SyncEntity corresponds to
   // a bookmark or a bookmark folder.
@@ -197,6 +206,35 @@ message SyncEntity {
 
   // Indicate whether this is a folder or not. Available in version 23+.
   optional bool folder = 22 [default = false];
+
+  // A client defined unique hash for this entity.
+  // Similar to server_defined_unique_tag.
+  //
+  // When initially committing an entity, a client can request that the entity
+  // is unique per that account. To do so, the client should specify a 
+  // client_defined_unique_tag. At most one entity per tag value may exist.
+  // per account. The server will enforce uniqueness on this tag
+  // and fail attempts to create duplicates of this tag.
+  // Will be returned in any updates for this entity.
+  //
+  // The difference between server_defined_unique_tag and
+  // client_defined_unique_tag is the creator of the entity. Server defined
+  // tags are entities created by the server at account creation,
+  // while client defined tags are entities created by the client at any time.
+  //
+  // During GetUpdates, a sync entity update will come back with ONE of:
+  // a) Originator and cache id - If client committed the item as non "unique"
+  // b) Server tag - If server committed the item as unique
+  // c) Client tag - If client committed the item as unique
+  //
+  // May be present in CommitMessages for the initial creation of an entity.
+  // If present in Commit updates for the entity, it will be ignored.
+  //
+  // Available in version 24+.
+  //
+  // May be returned in GetUpdatesMessage and sent up in CommitMessage.
+  //
+  optional string client_defined_unique_tag = 23;
 };
 
 message CommitMessage {
@@ -252,7 +290,7 @@ message AuthenticateMessage {
 
 message ClientToServerMessage {
   required string share = 1;
-  optional int32 protocol_version = 2 [default = 23];
+  optional int32 protocol_version = 2 [default = 24];
   enum Contents {
     COMMIT = 1;
     GET_UPDATES = 2;

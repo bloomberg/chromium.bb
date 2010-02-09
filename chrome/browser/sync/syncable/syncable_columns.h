@@ -50,7 +50,8 @@ static const ColumnSpec g_metas_columns[] = {
   // Strings
   {"non_unique_name", "varchar"},
   {"server_non_unique_name", "varchar(255)"},
-  {"singleton_tag", "varchar"},
+  {"unique_server_tag", "varchar"},
+  {"unique_client_tag", "varchar"},
   //////////////////////////////////////
   // Blobs.
   {"specifics", "blob"},

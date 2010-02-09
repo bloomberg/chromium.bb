@@ -48,10 +48,30 @@ void VerifyUpdatesCommand::ExecuteImpl(sessions::SyncSession* session) {
     // ID in fact, there isn't actually a need for server_knows and not IDs.
     SyncerUtil::AttemptReuniteLostCommitResponses(&trans, entry,
         trans.directory()->cache_guid());
+
+    // Affix IDs properly prior to inputting data into server entry.
+    SyncerUtil::AttemptReuniteClientTag(&trans, entry);
+
     VerifyResult result = VerifyUpdate(&trans, entry);
     status->mutable_update_progress()->AddVerifyResult(result, entry);
   }
 }
+
+namespace {
+// In the event that IDs match, but tags differ AttemptReuniteClient tag
+// will have refused to unify the update.
+// We should not attempt to apply it at all since it violates consistency
+// rules.
+VerifyResult VerifyTagConsistency(const SyncEntity& entry,
+                                  const syncable::MutableEntry& same_id) {
+  if (entry.has_client_defined_unique_tag() &&
+      entry.client_defined_unique_tag() !=
+          same_id.Get(syncable::UNIQUE_CLIENT_TAG)) {
+    return VERIFY_FAIL;
+  }
+  return VERIFY_UNDECIDED;
+}
+}  // namespace
 
 VerifyResult VerifyUpdatesCommand::VerifyUpdate(
     syncable::WriteTransaction* trans, const SyncEntity& entry) {
@@ -80,6 +100,10 @@ VerifyResult VerifyUpdatesCommand::VerifyUpdate(
   syncable::MutableEntry same_id(trans, GET_BY_ID, id);
   VerifyResult result = VERIFY_UNDECIDED;
   result = SyncerUtil::VerifyNewEntry(entry, &same_id, deleted);
+
+  if (VERIFY_UNDECIDED == result) {
+    result = VerifyTagConsistency(entry, same_id);
+  }
 
   if (VERIFY_UNDECIDED == result) {
     if (deleted)

@@ -101,7 +101,8 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
                                    int xattr_count);
 
   void SetLastUpdateDeleted();
-  void SetLastUpdateSingletonTag(const string& tag);
+  void SetLastUpdateServerTag(const string& tag);
+  void SetLastUpdateClientTag(const string& tag);
   void SetLastUpdateOriginatorFields(const string& client_id,
                                      const string& entry_id);
   void SetLastUpdatePosition(int64 position_in_parent);

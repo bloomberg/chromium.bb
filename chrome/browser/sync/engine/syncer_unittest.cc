@@ -64,7 +64,8 @@ using syncable::CREATE;
 using syncable::CREATE_NEW_UPDATE_ITEM;
 using syncable::GET_BY_HANDLE;
 using syncable::GET_BY_ID;
-using syncable::GET_BY_TAG;
+using syncable::GET_BY_CLIENT_TAG;
+using syncable::GET_BY_SERVER_TAG;
 using syncable::ID;
 using syncable::IS_DEL;
 using syncable::IS_DIR;
@@ -82,7 +83,8 @@ using syncable::SERVER_PARENT_ID;
 using syncable::SERVER_POSITION_IN_PARENT;
 using syncable::SERVER_SPECIFICS;
 using syncable::SERVER_VERSION;
-using syncable::SINGLETON_TAG;
+using syncable::UNIQUE_CLIENT_TAG;
+using syncable::UNIQUE_SERVER_TAG;
 using syncable::SPECIFICS;
 using syncable::UNITTEST;
 
@@ -3525,11 +3527,14 @@ TEST_F(SyncerTest, TestUndeleteUpdate) {
   mock_server_->AddUpdateDirectory(2, 1, "bar", 2, 3);
   mock_server_->SetLastUpdateDeleted();
   syncer_->SyncShare(this);
+
+  int64 metahandle;
   {
     ReadTransaction trans(dir, __FILE__, __LINE__);
     Entry entry(&trans, GET_BY_ID, ids_.FromNumber(2));
     ASSERT_TRUE(entry.good());
     EXPECT_TRUE(entry.Get(IS_DEL));
+    metahandle = entry.Get(META_HANDLE);
   }
   mock_server_->AddUpdateDirectory(1, 0, "foo", 2, 4);
   mock_server_->SetLastUpdateDeleted();
@@ -3545,6 +3550,7 @@ TEST_F(SyncerTest, TestUndeleteUpdate) {
     EXPECT_TRUE(entry.Get(IS_DEL));
     EXPECT_FALSE(entry.Get(SERVER_IS_DEL));
     EXPECT_TRUE(entry.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_NE(entry.Get(META_HANDLE), metahandle);
   }
 }
 
@@ -3907,7 +3913,160 @@ TEST_F(SyncerTest, TestUndeleteIgnoreCorrectlyUnappliedUpdate) {
   syncer_->SyncShare(this);  // Now just don't explode.
 }
 
-TEST_F(SyncerTest, SingletonTagUpdates) {
+TEST_F(SyncerTest, ClientTagServerCreatedUpdatesWork) {
+  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
+  EXPECT_TRUE(dir.good());
+
+  mock_server_->AddUpdateDirectory(1, 0, "permitem1", 1, 10);
+  mock_server_->SetLastUpdateClientTag("permfolder");
+
+  syncer_->SyncShare(this);
+
+  {
+    ReadTransaction trans(dir, __FILE__, __LINE__);
+    Entry perm_folder(&trans, GET_BY_CLIENT_TAG, "permfolder");
+    ASSERT_TRUE(perm_folder.good());
+    EXPECT_FALSE(perm_folder.Get(IS_DEL));
+    EXPECT_FALSE(perm_folder.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(perm_folder.Get(IS_UNSYNCED));
+    EXPECT_EQ(perm_folder.Get(UNIQUE_CLIENT_TAG), "permfolder");
+    EXPECT_EQ(perm_folder.Get(NON_UNIQUE_NAME), "permitem1");
+  }
+
+  mock_server_->AddUpdateDirectory(1, 0, "permitem_renamed", 10, 100);
+  mock_server_->SetLastUpdateClientTag("permfolder");
+  syncer_->SyncShare(this);
+
+  {
+    ReadTransaction trans(dir, __FILE__, __LINE__);
+
+    Entry perm_folder(&trans, GET_BY_CLIENT_TAG, "permfolder");
+    ASSERT_TRUE(perm_folder.good());
+    EXPECT_FALSE(perm_folder.Get(IS_DEL));
+    EXPECT_FALSE(perm_folder.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(perm_folder.Get(IS_UNSYNCED));
+    EXPECT_EQ(perm_folder.Get(UNIQUE_CLIENT_TAG), "permfolder");
+    EXPECT_EQ(perm_folder.Get(NON_UNIQUE_NAME), "permitem_renamed");
+  }
+}
+
+TEST_F(SyncerTest, ClientTagIllegalUpdateIgnored) {
+  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
+  EXPECT_TRUE(dir.good());
+
+  mock_server_->AddUpdateDirectory(1, 0, "permitem1", 1, 10);
+  mock_server_->SetLastUpdateClientTag("permfolder");
+
+  syncer_->SyncShare(this);
+
+  {
+    ReadTransaction trans(dir, __FILE__, __LINE__);
+    Entry perm_folder(&trans, GET_BY_CLIENT_TAG, "permfolder");
+    ASSERT_TRUE(perm_folder.good());
+    EXPECT_FALSE(perm_folder.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(perm_folder.Get(IS_UNSYNCED));
+    EXPECT_EQ(perm_folder.Get(UNIQUE_CLIENT_TAG), "permfolder");
+    EXPECT_TRUE(perm_folder.Get(NON_UNIQUE_NAME) == "permitem1");
+    EXPECT_TRUE(perm_folder.Get(ID).ServerKnows());
+  }
+
+  mock_server_->AddUpdateDirectory(1, 0, "permitem_renamed", 10, 100);
+  mock_server_->SetLastUpdateClientTag("wrongtag");
+  syncer_->SyncShare(this);
+
+  {
+    ReadTransaction trans(dir, __FILE__, __LINE__);
+
+    // This update is rejected because it has the same ID, but a
+    // different tag than one that is already on the client.
+    // The client has a ServerKnows ID, which cannot be overwritten.
+    Entry rejected_update(&trans, GET_BY_CLIENT_TAG, "wrongtag");
+    EXPECT_FALSE(rejected_update.good());
+
+    Entry perm_folder(&trans, GET_BY_CLIENT_TAG, "permfolder");
+    ASSERT_TRUE(perm_folder.good());
+    EXPECT_FALSE(perm_folder.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(perm_folder.Get(IS_UNSYNCED));
+    EXPECT_EQ(perm_folder.Get(NON_UNIQUE_NAME), "permitem1");
+  }
+}
+
+TEST_F(SyncerTest, ClientTagClientCreatedConflictUpdate) {
+  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
+  EXPECT_TRUE(dir.good());
+  int64 original_metahandle;
+
+  {
+    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
+    MutableEntry perm_folder(&trans, CREATE, ids_.root(), "clientname");
+    ASSERT_TRUE(perm_folder.good());
+    perm_folder.Put(UNIQUE_CLIENT_TAG, "clientperm");
+    perm_folder.Put(IS_UNSYNCED, true);
+    EXPECT_FALSE(perm_folder.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(perm_folder.Get(ID).ServerKnows());
+    original_metahandle = perm_folder.Get(META_HANDLE);
+  }
+
+  mock_server_->AddUpdateDirectory(1, 0, "permitem_renamed", 10, 100);
+  mock_server_->SetLastUpdateClientTag("clientperm");
+  mock_server_->set_conflict_all_commits(true);
+
+  syncer_->SyncShare(this);
+  // This should cause client tag overwrite.
+  {
+    ReadTransaction trans(dir, __FILE__, __LINE__);
+
+    Entry perm_folder(&trans, GET_BY_CLIENT_TAG, "clientperm");
+    ASSERT_TRUE(perm_folder.good());
+    EXPECT_FALSE(perm_folder.Get(IS_DEL));
+    EXPECT_FALSE(perm_folder.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(perm_folder.Get(IS_UNSYNCED));
+    EXPECT_EQ(perm_folder.Get(BASE_VERSION), 10);
+    // Entry should have been moved aside.
+    EXPECT_NE(perm_folder.Get(META_HANDLE), original_metahandle);
+    EXPECT_EQ(perm_folder.Get(UNIQUE_CLIENT_TAG), "clientperm");
+    EXPECT_TRUE(perm_folder.Get(NON_UNIQUE_NAME) == "permitem_renamed");
+
+    Entry moved_aside(&trans, GET_BY_HANDLE, original_metahandle);
+    EXPECT_TRUE(moved_aside.good());
+    EXPECT_TRUE(moved_aside.Get(IS_DEL));
+  }
+}
+
+TEST_F(SyncerTest, ClientTagOverwitesDeletedClientEntry) {
+  ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
+  EXPECT_TRUE(dir.good());
+
+  {
+    WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
+    MutableEntry perm_folder(&trans, CREATE, ids_.root(), "clientname");
+    ASSERT_TRUE(perm_folder.good());
+    perm_folder.Put(UNIQUE_CLIENT_TAG, "clientperm");
+    perm_folder.Put(IS_UNSYNCED, true);
+    perm_folder.Put(IS_DEL, true);
+  }
+
+  mock_server_->AddUpdateDirectory(1, 0, "permitem_renamed", 10, 100);
+  mock_server_->SetLastUpdateClientTag("clientperm");
+  mock_server_->set_conflict_all_commits(true);
+
+  syncer_->SyncShare(this);
+  // This should cause client tag overwrite.
+  {
+    ReadTransaction trans(dir, __FILE__, __LINE__);
+
+    Entry perm_folder(&trans, GET_BY_CLIENT_TAG, "clientperm");
+    ASSERT_TRUE(perm_folder.good());
+    EXPECT_FALSE(perm_folder.Get(IS_DEL));
+    EXPECT_FALSE(perm_folder.Get(IS_UNAPPLIED_UPDATE));
+    EXPECT_FALSE(perm_folder.Get(IS_UNSYNCED));
+    EXPECT_EQ(perm_folder.Get(BASE_VERSION), 10);
+    EXPECT_EQ(perm_folder.Get(UNIQUE_CLIENT_TAG), "clientperm");
+    EXPECT_TRUE(perm_folder.Get(NON_UNIQUE_NAME) == "permitem_renamed");
+  }
+}
+
+TEST_F(SyncerTest, UniqueServerTagUpdates) {
   ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
   EXPECT_TRUE(dir.good());
   // As a hurdle, introduce an item whose name is the same as the tag value
@@ -3918,21 +4077,21 @@ TEST_F(SyncerTest, SingletonTagUpdates) {
     Entry hurdle(&trans, GET_BY_HANDLE, hurdle_handle);
     ASSERT_TRUE(hurdle.good());
     ASSERT_TRUE(!hurdle.Get(IS_DEL));
-    ASSERT_TRUE(hurdle.Get(SINGLETON_TAG).empty());
+    ASSERT_TRUE(hurdle.Get(UNIQUE_SERVER_TAG).empty());
     ASSERT_TRUE(hurdle.Get(NON_UNIQUE_NAME) == "bob");
 
     // Try to lookup by the tagname.  These should fail.
-    Entry tag_alpha(&trans, GET_BY_TAG, "alpha");
+    Entry tag_alpha(&trans, GET_BY_SERVER_TAG, "alpha");
     EXPECT_FALSE(tag_alpha.good());
-    Entry tag_bob(&trans, GET_BY_TAG, "bob");
+    Entry tag_bob(&trans, GET_BY_SERVER_TAG, "bob");
     EXPECT_FALSE(tag_bob.good());
   }
 
   // Now download some tagged items as updates.
   mock_server_->AddUpdateDirectory(1, 0, "update1", 1, 10);
-  mock_server_->SetLastUpdateSingletonTag("alpha");
+  mock_server_->SetLastUpdateServerTag("alpha");
   mock_server_->AddUpdateDirectory(2, 0, "update2", 2, 20);
-  mock_server_->SetLastUpdateSingletonTag("bob");
+  mock_server_->SetLastUpdateServerTag("bob");
   syncer_->SyncShare(this);
 
   {
@@ -3940,21 +4099,21 @@ TEST_F(SyncerTest, SingletonTagUpdates) {
 
     // The new items should be applied as new entries, and we should be able
     // to look them up by their tag values.
-    Entry tag_alpha(&trans, GET_BY_TAG, "alpha");
+    Entry tag_alpha(&trans, GET_BY_SERVER_TAG, "alpha");
     ASSERT_TRUE(tag_alpha.good());
     ASSERT_TRUE(!tag_alpha.Get(IS_DEL));
-    ASSERT_TRUE(tag_alpha.Get(SINGLETON_TAG) == "alpha");
+    ASSERT_TRUE(tag_alpha.Get(UNIQUE_SERVER_TAG) == "alpha");
     ASSERT_TRUE(tag_alpha.Get(NON_UNIQUE_NAME) == "update1");
-    Entry tag_bob(&trans, GET_BY_TAG, "bob");
+    Entry tag_bob(&trans, GET_BY_SERVER_TAG, "bob");
     ASSERT_TRUE(tag_bob.good());
     ASSERT_TRUE(!tag_bob.Get(IS_DEL));
-    ASSERT_TRUE(tag_bob.Get(SINGLETON_TAG) == "bob");
+    ASSERT_TRUE(tag_bob.Get(UNIQUE_SERVER_TAG) == "bob");
     ASSERT_TRUE(tag_bob.Get(NON_UNIQUE_NAME) == "update2");
     // The old item should be unchanged.
     Entry hurdle(&trans, GET_BY_HANDLE, hurdle_handle);
     ASSERT_TRUE(hurdle.good());
     ASSERT_TRUE(!hurdle.Get(IS_DEL));
-    ASSERT_TRUE(hurdle.Get(SINGLETON_TAG).empty());
+    ASSERT_TRUE(hurdle.Get(UNIQUE_SERVER_TAG).empty());
     ASSERT_TRUE(hurdle.Get(NON_UNIQUE_NAME) == "bob");
   }
 }

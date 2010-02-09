@@ -136,7 +136,8 @@ enum StringField {
   // A tag string which identifies this node as a particular top-level
   // permanent object.  The tag can be thought of as a unique key that
   // identifies a singleton instance.
-  SINGLETON_TAG,
+  UNIQUE_SERVER_TAG,  // Tagged by the server
+  UNIQUE_CLIENT_TAG,  // Tagged by the client
   STRING_FIELDS_END,
 };
 
@@ -192,8 +193,12 @@ enum GetById {
   GET_BY_ID
 };
 
-enum GetByTag {
-  GET_BY_TAG
+enum GetByClientTag {
+  GET_BY_CLIENT_TAG
+};
+
+enum GetByServerTag {
+  GET_BY_SERVER_TAG
 };
 
 enum GetByHandle {
@@ -325,7 +330,8 @@ class Entry {
   // succeeded.
   Entry(BaseTransaction* trans, GetByHandle, int64 handle);
   Entry(BaseTransaction* trans, GetById, const Id& id);
-  Entry(BaseTransaction* trans, GetByTag, const std::string& tag);
+  Entry(BaseTransaction* trans, GetByServerTag, const std::string& tag);
+  Entry(BaseTransaction* trans, GetByClientTag, const std::string& tag);
 
   bool good() const { return 0 != kernel_; }
 
@@ -431,6 +437,7 @@ class MutableEntry : public Entry {
   MutableEntry(WriteTransaction* trans, CreateNewUpdateItem, const Id& id);
   MutableEntry(WriteTransaction* trans, GetByHandle, int64);
   MutableEntry(WriteTransaction* trans, GetById, const Id&);
+  MutableEntry(WriteTransaction* trans, GetByClientTag, const std::string& tag);
 
   inline WriteTransaction* write_transaction() const {
     return write_transaction_;
@@ -510,6 +517,7 @@ class MutableEntry : public Entry {
   void* operator new(size_t size) { return (::operator new)(size); }
 
   bool PutImpl(StringField field, const std::string& value);
+  bool PutUniqueClientTag(const std::string& value);
 
   // Adjusts the successor and predecessor entries so that they no longer
   // refer to this entry.
@@ -723,7 +731,8 @@ class Directory {
   EntryKernel* GetEntryByHandle(const int64 handle);
   EntryKernel* GetEntryByHandle(const int64 metahandle, ScopedKernelLock* lock);
   EntryKernel* GetEntryById(const Id& id);
-  EntryKernel* GetEntryByTag(const std::string& tag);
+  EntryKernel* GetEntryByServerTag(const std::string& tag);
+  EntryKernel* GetEntryByClientTag(const std::string& tag);
   EntryKernel* GetRootEntry();
   bool ReindexId(EntryKernel* const entry, const Id& new_id);
   void ReindexParentId(EntryKernel* const entry, const Id& new_parent_id);
@@ -845,6 +854,7 @@ class Directory {
   // processed |snapshot| failed, for example, due to no disk space.
   void HandleSaveChangesFailure(const SaveChangesSnapshot& snapshot);
 
+  // For new entry creation only
   void InsertEntry(EntryKernel* entry, ScopedKernelLock* lock);
   void InsertEntry(EntryKernel* entry);
 
@@ -874,6 +884,13 @@ class Directory {
   // This index contains EntryKernels ordered by parent ID and metahandle.
   // It allows efficient lookup of the children of a given parent.
   typedef std::set<EntryKernel*, LessParentIdAndHandle> ParentIdChildIndex;
+
+  // Contains both deleted and existing entries with tags.
+  // We can't store only existing tags because the client would create
+  // items that had a duplicated ID in the end, resulting in a DB key
+  // violation. ID reassociation would fail after an attempted commit.
+  typedef std::set<EntryKernel*,
+                   LessField<StringField, UNIQUE_CLIENT_TAG> > ClientTagIndex;
   typedef std::vector<int64> MetahandlesToPurge;
 
  private:
@@ -907,6 +924,7 @@ class Directory {
     MetahandlesIndex* metahandles_index;  // Entries indexed by metahandle
     IdsIndex* ids_index;  // Entries indexed by id
     ParentIdChildIndex* parent_id_child_index;
+    ClientTagIndex* client_tag_index;
     // So we don't have to create an EntryKernel every time we want to
     // look something up in an index.  Needle in haystack metaphor.
     EntryKernel needle;

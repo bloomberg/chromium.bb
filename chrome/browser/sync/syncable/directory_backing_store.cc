@@ -38,7 +38,7 @@ namespace syncable {
 static const string::size_type kUpdateStatementBufferSize = 2048;
 
 // Increment this version whenever updating DB tables.
-extern const int32 kCurrentDBVersion = 69;  // Extern only for our unittest.
+extern const int32 kCurrentDBVersion = 70;  // Extern only for our unittest.
 
 namespace {
 
@@ -313,6 +313,11 @@ DirOpenResult DirectoryBackingStore::InitializeTables() {
   if (version_on_disk == 68) {
     if (MigrateVersion68To69())
       version_on_disk = 69;
+  }
+
+  if (version_on_disk == 69) {
+    if (MigrateVersion69To70())
+      version_on_disk = 70;
   }
 
   // If one of the migrations requested it, drop columns that aren't current.
@@ -657,6 +662,26 @@ bool DirectoryBackingStore::MigrateVersion67To68() {
   SetVersion(68);
   needs_column_refresh_ = true;
   return true;
+}
+
+bool DirectoryBackingStore::MigrateVersion69To70() {
+  // Added "unique_client_tag", renamed "singleton_tag" to unique_server_tag
+  SetVersion(70);
+  // We use these metas column names but if in the future
+  // we rename the column again, we need to inline the old
+  // intermediate name / column spec.
+  if (!AddColumn(&g_metas_columns[UNIQUE_SERVER_TAG])) {
+    return false;
+  }
+  if (!AddColumn(&g_metas_columns[UNIQUE_CLIENT_TAG])) {
+    return false;
+  }
+  needs_column_refresh_ = true;
+
+  SQLStatement statement;
+  statement.prepare(load_dbhandle_,
+      "UPDATE metas SET unique_server_tag = singleton_tag");
+  return statement.step() == SQLITE_DONE;
 }
 
 namespace {

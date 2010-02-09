@@ -55,7 +55,8 @@ using syncable::SERVER_PARENT_ID;
 using syncable::SERVER_POSITION_IN_PARENT;
 using syncable::SERVER_SPECIFICS;
 using syncable::SERVER_VERSION;
-using syncable::SINGLETON_TAG;
+using syncable::UNIQUE_CLIENT_TAG;
+using syncable::UNIQUE_SERVER_TAG;
 using syncable::SPECIFICS;
 using syncable::SYNCER;
 using syncable::WriteTransaction;
@@ -126,6 +127,61 @@ void SyncerUtil::ChangeEntryIDAndUpdateChildren(
     const syncable::Id& new_id) {
   syncable::Directory::ChildHandles children;
   ChangeEntryIDAndUpdateChildren(trans, entry, new_id, &children);
+}
+
+// static
+void SyncerUtil::AttemptReuniteClientTag(syncable::WriteTransaction* trans,
+                                         const SyncEntity& server_entry) {
+
+  // Expected entry points of this function:
+  // SyncEntity has NOT been applied to SERVER fields.
+  // SyncEntity has NOT been applied to LOCAL fields.
+  // DB has not yet been modified, no entries created for this update.
+
+  // When a server sends down a client tag, the following cases can occur:
+  // 1) Client has entry for tag already, ID is server style, matches
+  // 2) Client has entry for tag already, ID is server, doesn't match.
+  // 3) Client has entry for tag already, ID is local, (never matches)
+  // 4) Client has no entry for tag
+
+  // Case 1, we don't have to do anything since the update will
+  // work just fine. Update will end up in the proper entry, via ID lookup.
+  // Case 2 - Should never happen. We'd need to change the
+  // ID of the local entry, we refuse. We'll skip this in VERIFY.
+  // Case 3 - We need to replace the local ID with the server ID. Conflict
+  // resolution must occur, but this is prior to update application! This case
+  // should be rare. For now, clobber client changes entirely.
+  // Case 4 - Perfect. Same as case 1.
+
+  syncable::MutableEntry local_entry(trans, syncable::GET_BY_CLIENT_TAG,
+                                     server_entry.client_defined_unique_tag());
+
+  // The SyncAPI equivalent of this function will return !good if IS_DEL.
+  // The syncable version will return good even if IS_DEL.
+  // TODO(chron): Unit test the case with IS_DEL and make sure.
+  if (local_entry.good()) {
+    if (local_entry.Get(ID).ServerKnows()) {
+      // In release config, this will just continue and we'll
+      // throw VERIFY_FAIL later.
+      // This is Case 1 on success, Case 2 if it fails.
+      DCHECK(local_entry.Get(ID) == server_entry.id());
+    } else {
+      // Case 3: We have a local entry with the same client tag.
+      // We can't have two updates with the same client tag though.
+      // One of these has to go. Let's delete the client entry and move it
+      // aside. This will cause a delete + create. The client API user must
+      // handle this correctly. In this situation the client must have created
+      // this entry but not yet committed it for the first time. Usually the
+      // client probably wants the server data for this instead.
+      // Other strategies to handle this are a bit flaky.
+      DCHECK(local_entry.Get(IS_UNAPPLIED_UPDATE) == false);
+      local_entry.Put(IS_UNSYNCED, false);
+      local_entry.Put(IS_DEL, true);
+      // Needs to get out of the index before our update can be put in.
+      local_entry.Put(UNIQUE_CLIENT_TAG, "");
+    }
+  }
+  // Case 4: Client has no entry for tag, all green.
 }
 
 // static
@@ -288,9 +344,13 @@ void SyncerUtil::UpdateServerFieldsFromUpdate(
   local_entry->Put(SERVER_MTIME,
       ServerTimeToClientTime(server_entry.mtime()));
   local_entry->Put(SERVER_IS_DIR, server_entry.IsFolder());
-  if (server_entry.has_singleton_tag()) {
-    const string& tag = server_entry.singleton_tag();
-    local_entry->Put(SINGLETON_TAG, tag);
+  if (server_entry.has_server_defined_unique_tag()) {
+    const string& tag = server_entry.server_defined_unique_tag();
+    local_entry->Put(UNIQUE_SERVER_TAG, tag);
+  }
+  if (server_entry.has_client_defined_unique_tag()) {
+    const string& tag = server_entry.client_defined_unique_tag();
+    local_entry->Put(UNIQUE_CLIENT_TAG, tag);
   }
   // Store the datatype-specific part as a protobuf.
   if (server_entry.has_specifics()) {
@@ -300,7 +360,7 @@ void SyncerUtil::UpdateServerFieldsFromUpdate(
   } else if (server_entry.has_bookmarkdata()) {
     // Legacy protocol response for bookmark data.
     const SyncEntity::BookmarkData& bookmark = server_entry.bookmarkdata();
-    UpdateBookmarkSpecifics(server_entry.singleton_tag(),
+    UpdateBookmarkSpecifics(server_entry.server_defined_unique_tag(),
                             bookmark.bookmark_url(),
                             bookmark.bookmark_favicon(),
                             local_entry);
@@ -707,6 +767,7 @@ VerifyResult SyncerUtil::VerifyUndelete(syncable::WriteTransaction* trans,
   // back into a state that would pass CheckTreeInvariants().
   if (same_id->Get(IS_DEL)) {
     same_id->Put(ID, trans->directory()->NextId());
+    same_id->Put(UNIQUE_CLIENT_TAG, "");
     same_id->Put(BASE_VERSION, CHANGES_VERSION);
     same_id->Put(SERVER_VERSION, 0);
     return VERIFY_SUCCESS;

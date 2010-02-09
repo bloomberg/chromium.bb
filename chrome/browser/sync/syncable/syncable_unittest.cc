@@ -34,6 +34,7 @@
 #include "base/logging.h"
 #include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
+#include "base/scoped_temp_dir.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -77,11 +78,24 @@ void ExpectDataFromExtendedAttributeEquals(BaseTransaction* trans,
 }
 }  // namespace
 
-TEST(Syncable, General) {
-  remove("SimpleTest.sqlite3");
+class SyncableGeneralTest : public testing::Test {
+ public:
+  virtual void SetUp() {
+    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+    db_path_ = temp_dir_.path().Append(
+        FILE_PATH_LITERAL("SyncableTest.sqlite3"));
+  }
+
+  virtual void TearDown() {
+  }
+ protected:
+  ScopedTempDir temp_dir_;
+  FilePath db_path_;
+};
+
+TEST_F(SyncableGeneralTest, General) {
   Directory dir;
-  FilePath test_db(FILE_PATH_LITERAL("SimpleTest.sqlite3"));
-  dir.Open(test_db, "SimpleTest");
+  dir.Open(db_path_, "SimpleTest");
 
   int64 written_metahandle;
   const Id id = TestIdFactory::FromNumber(99);
@@ -157,8 +171,84 @@ TEST(Syncable, General) {
   }
 
   dir.SaveChanges();
-  remove("SimpleTest.sqlite3");
 }
+
+TEST_F(SyncableGeneralTest, ClientIndexRebuildsProperly) {
+  int64 written_metahandle;
+  TestIdFactory factory;
+  const Id id = factory.NewServerId();
+  string name = "cheesepuffs";
+  string tag = "dietcoke";
+
+  // Test creating a new meta entry.
+  {
+    Directory dir;
+    dir.Open(db_path_, "IndexTest");
+    {
+      WriteTransaction wtrans(&dir, UNITTEST, __FILE__, __LINE__);
+      MutableEntry me(&wtrans, CREATE, wtrans.root_id(), name);
+      ASSERT_TRUE(me.good());
+      me.Put(ID, id);
+      me.Put(BASE_VERSION, 1);
+      me.Put(UNIQUE_CLIENT_TAG, tag);
+      written_metahandle = me.Get(META_HANDLE);
+    }
+    dir.SaveChanges();
+  }
+
+  // The DB was closed. Now reopen it. This will cause index regeneration.
+  {
+    Directory dir;
+    dir.Open(db_path_, "IndexTest");
+
+    ReadTransaction trans(&dir, __FILE__, __LINE__);
+    Entry me(&trans, GET_BY_CLIENT_TAG, tag);
+    ASSERT_TRUE(me.good());
+    EXPECT_EQ(me.Get(ID), id);
+    EXPECT_EQ(me.Get(BASE_VERSION), 1);
+    EXPECT_EQ(me.Get(UNIQUE_CLIENT_TAG), tag);
+    EXPECT_EQ(me.Get(META_HANDLE), written_metahandle);
+  }
+}
+
+TEST_F(SyncableGeneralTest, ClientIndexRebuildsDeletedProperly) {
+  TestIdFactory factory;
+  const Id id = factory.NewServerId();
+  string tag = "dietcoke";
+
+  // Test creating a deleted, unsynced, server meta entry.
+  {
+    Directory dir;
+    dir.Open(db_path_, "IndexTest");
+    {
+      WriteTransaction wtrans(&dir, UNITTEST, __FILE__, __LINE__);
+      MutableEntry me(&wtrans, CREATE, wtrans.root_id(), "deleted");
+      ASSERT_TRUE(me.good());
+      me.Put(ID, id);
+      me.Put(BASE_VERSION, 1);
+      me.Put(UNIQUE_CLIENT_TAG, tag);
+      me.Put(IS_DEL, true);
+      me.Put(IS_UNSYNCED, true);  // Or it might be purged.
+    }
+    dir.SaveChanges();
+  }
+
+  // The DB was closed. Now reopen it. This will cause index regeneration.
+  // Should still be present and valid in the client tag index.
+  {
+    Directory dir;
+    dir.Open(db_path_, "IndexTest");
+
+    ReadTransaction trans(&dir, __FILE__, __LINE__);
+    Entry me(&trans, GET_BY_CLIENT_TAG, tag);
+    ASSERT_TRUE(me.good());
+    EXPECT_EQ(me.Get(ID), id);
+    EXPECT_EQ(me.Get(UNIQUE_CLIENT_TAG), tag);
+    EXPECT_TRUE(me.Get(IS_DEL));
+    EXPECT_TRUE(me.Get(IS_UNSYNCED));
+  }
+}
+
 
 namespace {
 
@@ -1129,6 +1219,101 @@ TEST_F(SyncableDirectoryTest, Bug1509232) {
   }
   // This call to SaveChanges used to CHECK fail.
   dir_.get()->SaveChanges();
+}
+
+class SyncableClientTagTest : public SyncableDirectoryTest {
+ public:
+  static const int kBaseVersion = 1;
+  const char* test_name_;
+  const char* test_tag_;
+
+  SyncableClientTagTest() : test_name_("test_name"), test_tag_("dietcoke") {}
+
+  bool CreateWithDefaultTag(Id id, bool deleted) {
+    return CreateWithTag(test_tag_, id, deleted);
+  }
+
+  // Attempt to create an entry with a default tag.
+  bool CreateWithTag(const char* tag, Id id, bool deleted) {
+    WriteTransaction wtrans(dir_.get(), UNITTEST, __FILE__, __LINE__);
+    MutableEntry me(&wtrans, CREATE, wtrans.root_id(), test_name_);
+    CHECK(me.good());
+    me.Put(ID, id);
+    if (id.ServerKnows()) {
+      me.Put(BASE_VERSION, kBaseVersion);
+    }
+    me.Put(IS_DEL, deleted);
+    me.Put(IS_UNSYNCED, true);
+    me.Put(IS_DIR, false);
+    return me.Put(UNIQUE_CLIENT_TAG, tag);
+  }
+
+  // Verify an entry exists with the default tag.
+  void VerifyTag(Id id, bool deleted) {
+    // Should still be present and valid in the client tag index.
+    ReadTransaction trans(dir_.get(), __FILE__, __LINE__);
+    Entry me(&trans, GET_BY_CLIENT_TAG, test_tag_);
+    CHECK(me.good());
+    EXPECT_EQ(me.Get(ID), id);
+    EXPECT_EQ(me.Get(UNIQUE_CLIENT_TAG), test_tag_);
+    EXPECT_EQ(me.Get(IS_DEL), deleted);
+    EXPECT_EQ(me.Get(IS_UNSYNCED), true);
+  }
+
+ protected:
+  TestIdFactory factory_;
+};
+
+TEST_F(SyncableClientTagTest, TestClientTagClear) {
+  Id server_id = factory_.NewServerId();
+  EXPECT_TRUE(CreateWithDefaultTag(server_id, false));
+  {
+    WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
+    MutableEntry me(&trans, GET_BY_CLIENT_TAG, test_tag_);
+    EXPECT_TRUE(me.good());
+    me.Put(UNIQUE_CLIENT_TAG, "");
+  }
+  {
+    ReadTransaction trans(dir_.get(), __FILE__, __LINE__);
+    Entry by_tag(&trans, GET_BY_CLIENT_TAG, test_tag_);
+    EXPECT_FALSE(by_tag.good());
+
+    Entry by_id(&trans, GET_BY_ID, server_id);
+    EXPECT_TRUE(by_id.good());
+    EXPECT_TRUE(by_id.Get(UNIQUE_CLIENT_TAG).empty());
+  }
+}
+
+TEST_F(SyncableClientTagTest, TestClientTagIndexServerId) {
+  Id server_id = factory_.NewServerId();
+  EXPECT_TRUE(CreateWithDefaultTag(server_id, false));
+  VerifyTag(server_id, false);
+}
+
+TEST_F(SyncableClientTagTest, TestClientTagIndexClientId) {
+  Id client_id = factory_.NewLocalId();
+  EXPECT_TRUE(CreateWithDefaultTag(client_id, false));
+  VerifyTag(client_id, false);
+}
+
+TEST_F(SyncableClientTagTest, TestDeletedClientTagIndexClientId) {
+  Id client_id = factory_.NewLocalId();
+  EXPECT_TRUE(CreateWithDefaultTag(client_id, true));
+  VerifyTag(client_id, true);
+}
+
+TEST_F(SyncableClientTagTest, TestDeletedClientTagIndexServerId) {
+  Id server_id = factory_.NewServerId();
+  EXPECT_TRUE(CreateWithDefaultTag(server_id, true));
+  VerifyTag(server_id, true);
+}
+
+TEST_F(SyncableClientTagTest, TestClientTagIndexDuplicateServer) {
+  EXPECT_TRUE(CreateWithDefaultTag(factory_.NewServerId(), true));
+  EXPECT_FALSE(CreateWithDefaultTag(factory_.NewServerId(), true));
+  EXPECT_FALSE(CreateWithDefaultTag(factory_.NewServerId(), false));
+  EXPECT_FALSE(CreateWithDefaultTag(factory_.NewLocalId(), false));
+  EXPECT_FALSE(CreateWithDefaultTag(factory_.NewLocalId(), true));
 }
 
 }  // namespace
