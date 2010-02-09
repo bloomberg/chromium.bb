@@ -66,6 +66,12 @@ deps = {
   "src/third_party/WebKit/WebKitTools/pywebsocket":
     Var("webkit_trunk") + "/WebKitTools/pywebsocket@" + Var("webkit_revision"),
 
+  "src/third_party/WebKit/WebKitTools/Scripts":
+    Var("webkit_trunk") + "/WebKitTools/Scripts@" + Var("webkit_revision"),
+
+  "src/third_party/WebKit/WebKitTools/simplejson":
+    Var("webkit_trunk") + "/WebKitTools/simplejson@" + Var("webkit_revision"),
+
   "src/third_party/ots":
     "http://ots.googlecode.com/svn/trunk@26",
 
