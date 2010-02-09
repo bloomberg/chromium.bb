@@ -118,7 +118,8 @@ bool SyncerProtoUtil::PostClientToServerMessage(ClientToServerMessage* msg,
   };
 
   ServerConnectionManager* scm = session->context()->connection_manager();
-  if (!scm->PostBufferWithCachedAuth(&params)) {
+  ScopedServerStatusWatcher server_status_watcher(scm, &http_response);
+  if (!scm->PostBufferWithCachedAuth(&params, &server_status_watcher)) {
     LOG(WARNING) << "Error posting from syncer:" << http_response;
   } else {
     rv = response->ParseFromString(rx);
@@ -143,9 +144,9 @@ bool SyncerProtoUtil::PostClientToServerMessage(ClientToServerMessage* msg,
       case ClientToServerResponse::USER_NOT_ACTIVATED:
       case ClientToServerResponse::AUTH_INVALID:
       case ClientToServerResponse::ACCESS_DENIED:
-        LOG(INFO) << "Authentication expired, re-requesting";
-        LOG(INFO) << "Not implemented in syncer yet!!!";
-        session->set_auth_failure_occurred();
+        LOG(INFO) << "SyncerProtoUtil: Authentication expired.";
+        // TODO(tim): This is an egregious layering violation (bug 35060).
+        http_response.server_status = HttpResponse::SYNC_AUTH_ERROR;
         rv = false;
         break;
       case ClientToServerResponse::NOT_MY_BIRTHDAY:

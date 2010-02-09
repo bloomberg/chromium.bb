@@ -39,8 +39,9 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
 
   // Overridden ServerConnectionManager functions.
   virtual bool PostBufferToPath(const PostBufferParams*,
-                                const string& path,
-                                const string& auth_token);
+      const string& path,
+      const string& auth_token,
+      browser_sync::ScopedServerStatusWatcher* watcher);
 
   virtual bool IsServerReachable();
   virtual bool IsUserAuthenticated();
@@ -116,15 +117,17 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   void FailNextPostBufferToPathCall() { fail_next_postbuffer_ = true; }
 
   // A visitor class to allow a test to change some monitoring state atomically
-  // with the action of throttling requests (for example, so you can say
-  // "ThrottleNextRequest, and assert no more requests are made once throttling
-  // is in effect" in one step.
-  class ThrottleRequestVisitor {
+  // with the action of overriding the response codes sent back to the Syncer
+  // (for example, so you can say "ThrottleNextRequest, and assert no more
+  // requests are made once throttling is in effect" in one step.
+  class ResponseCodeOverrideRequestor {
    public:
-    // Called with throttle parameter lock acquired.
-    virtual void VisitAtomically() = 0;
+    // Called with response_code_override_lock_ acquired.
+    virtual void OnOverrideComplete() = 0;
   };
-  void ThrottleNextRequest(ThrottleRequestVisitor* visitor);
+  void ThrottleNextRequest(ResponseCodeOverrideRequestor* visitor);
+  void FailWithAuthInvalid(ResponseCodeOverrideRequestor* visitor);
+  void StopFailingWithAuthInvalid(ResponseCodeOverrideRequestor* visitor);
   void FailNonPeriodicGetUpdates() { fail_non_periodic_get_updates_ = true; }
 
   // Simple inspectors.
@@ -222,9 +225,15 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   std::string valid_auth_token_;
 
   // Whether we are faking a server mandating clients to throttle requests.
-  // Protected by |throttle_lock_|.
+  // Protected by |response_code_override_lock_|.
   bool throttling_;
-  Lock throttle_lock_;
+
+  // Whether we are failing all requests by returning
+  // ClientToServerResponse::AUTH_INVALID.
+  // Protected by |response_code_override_lock_|.
+  bool fail_with_auth_invalid_;
+
+  Lock response_code_override_lock_;
 
   // True if we are only accepting GetUpdatesCallerInfo::PERIODIC requests.
   bool fail_non_periodic_get_updates_;

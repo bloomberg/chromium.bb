@@ -33,8 +33,18 @@ using base::TimeTicks;
 
 namespace browser_sync {
 
-const int SyncerThread::kDefaultShortPollIntervalSeconds = 60;
-const int SyncerThread::kDefaultLongPollIntervalSeconds = 3600;
+// We use high values here to ensure that failure to receive poll updates from
+// the server doesn't result in rapid-fire polling from the client due to low
+// local limits.
+const int SyncerThread::kDefaultShortPollIntervalSeconds = 3600 * 8;
+const int SyncerThread::kDefaultLongPollIntervalSeconds = 3600 * 12;
+
+// TODO(tim): This is used to regulate the short poll (when notifications are
+// disabled) based on user idle time.  If it is set to a smaller value than
+// the short poll interval, it basically does nothing; for now, this is what
+// we want and allows stronger control over the poll rate from the server. We
+// should probably re-visit this code later and figure out if user idle time
+// is really something we want and make sure it works, if it is.
 const int SyncerThread::kDefaultMaxPollIntervalMs = 30 * 60 * 1000;
 
 void SyncerThread::NudgeSyncer(int milliseconds_from_now, NudgeSource source) {
@@ -450,11 +460,24 @@ void SyncerThread::HandleDirectoryManagerEvent(
   }
 }
 
+// Sets |*connected| to false if it is currently true but |code| suggests that
+// the current network configuration and/or auth state cannot be used to make
+// forward progress, and user intervention (e.g changing server URL or auth
+// credentials) is likely necessary.  If |*connected| is false, set it to true
+// if |code| suggests that we just recently made healthy contact with the
+// server.
 static inline void CheckConnected(bool* connected,
                                   HttpResponse::ServerConnectionCode code,
                                   ConditionVariable* condvar) {
   if (*connected) {
-    if (HttpResponse::CONNECTION_UNAVAILABLE == code) {
+    // Note, be careful when adding cases here because if the SyncerThread
+    // thinks there is no valid connection as determined by this method, it
+    // will drop out of *all* forward progress sync loops (it won't poll and it
+    // will queue up Talk notifications but not actually call SyncShare) until
+    // some external action causes a ServerConnectionManager to broadcast that
+    // a valid connection has been re-established.
+    if (HttpResponse::CONNECTION_UNAVAILABLE == code ||
+        HttpResponse::SYNC_AUTH_ERROR == code) {
       *connected = false;
       condvar->Broadcast();
     }

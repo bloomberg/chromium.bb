@@ -108,38 +108,29 @@ int ServerConnectionManager::Post::ReadResponse(string* out_buffer,
   return bytes_read;
 }
 
-// A helper class that automatically notifies when the status changes.
-class WatchServerStatus {
- public:
-  WatchServerStatus(ServerConnectionManager* conn_mgr, HttpResponse* response)
-      : conn_mgr_(conn_mgr),
-        response_(response),
-        reset_count_(conn_mgr->reset_count_),
-        server_reachable_(conn_mgr->server_reachable_) {
-    response->server_status = conn_mgr->server_status_;
-  }
-  ~WatchServerStatus() {
-    // Don't update the status of the connection if it has been reset.
-    // TODO(timsteele): Do we need this? Is this used by multiple threads?
-    if (reset_count_ != conn_mgr_->reset_count_)
-      return;
-    if (conn_mgr_->server_status_ != response_->server_status) {
-      conn_mgr_->server_status_ = response_->server_status;
-      conn_mgr_->NotifyStatusChanged();
-      return;
-    }
-    // Notify if we've gone on or offline.
-    if (server_reachable_ != conn_mgr_->server_reachable_)
-      conn_mgr_->NotifyStatusChanged();
-  }
+ScopedServerStatusWatcher::ScopedServerStatusWatcher(
+    ServerConnectionManager* conn_mgr, HttpResponse* response)
+    : conn_mgr_(conn_mgr),
+      response_(response),
+      reset_count_(conn_mgr->reset_count_),
+      server_reachable_(conn_mgr->server_reachable_) {
+  response->server_status = conn_mgr->server_status_;
+}
 
- private:
-  ServerConnectionManager* const conn_mgr_;
-  HttpResponse* const response_;
-  // TODO(timsteele): Should this be Barrier:AtomicIncrement?
-  base::subtle::AtomicWord reset_count_;
-  bool server_reachable_;
-};
+ScopedServerStatusWatcher::~ScopedServerStatusWatcher() {
+  // Don't update the status of the connection if it has been reset.
+  // TODO(timsteele): Do we need this? Is this used by multiple threads?
+  if (reset_count_ != conn_mgr_->reset_count_)
+    return;
+  if (conn_mgr_->server_status_ != response_->server_status) {
+    conn_mgr_->server_status_ = response_->server_status;
+    conn_mgr_->NotifyStatusChanged();
+    return;
+  }
+  // Notify if we've gone on or offline.
+  if (server_reachable_ != conn_mgr_->server_reachable_)
+    conn_mgr_->NotifyStatusChanged();
+}
 
 ServerConnectionManager::ServerConnectionManager(
     const string& server,
@@ -175,24 +166,24 @@ void ServerConnectionManager::NotifyStatusChanged() {
 
 // Uses currently set auth token. Set by AuthWatcher.
 bool ServerConnectionManager::PostBufferWithCachedAuth(
-    const PostBufferParams* params) {
+    const PostBufferParams* params, ScopedServerStatusWatcher* watcher) {
   string path =
       MakeSyncServerPath(proto_sync_path(), MakeSyncQueryString(client_id_));
-  return PostBufferToPath(params, path, auth_token_);
+  return PostBufferToPath(params, path, auth_token_, watcher);
 }
 
 bool ServerConnectionManager::PostBufferWithAuth(const PostBufferParams* params,
-                                                 const string& auth_token) {
+    const string& auth_token, ScopedServerStatusWatcher* watcher) {
   string path = MakeSyncServerPath(proto_sync_path(),
                                    MakeSyncQueryString(client_id_));
 
-  return PostBufferToPath(params, path, auth_token);
+  return PostBufferToPath(params, path, auth_token, watcher);
 }
 
 bool ServerConnectionManager::PostBufferToPath(const PostBufferParams* params,
-                                               const string& path,
-                                               const string& auth_token) {
-  WatchServerStatus watcher(this, params->response);
+    const string& path, const string& auth_token,
+    ScopedServerStatusWatcher* watcher) {
+  DCHECK(watcher != NULL);
   scoped_ptr<Post> post(MakePost());
   post->set_timing_info(params->timing_info);
   bool ok = post->Init(path.c_str(), auth_token, params->buffer_in,
@@ -216,7 +207,7 @@ bool ServerConnectionManager::CheckTime(int32* out_time) {
   // to do this because of wifi interstitials that intercept messages from the
   // client and return HTTP OK instead of a redirect.
   HttpResponse response;
-  WatchServerStatus watcher(this, &response);
+  ScopedServerStatusWatcher watcher(this, &response);
   string post_body = "command=get_time";
 
   // We only retry the CheckTime call if we were reset during the CheckTime
@@ -286,12 +277,6 @@ void ServerConnectionManager::kill() {
     AutoLock lock(terminate_all_io_mutex_);
     terminate_all_io_ = true;
   }
-}
-
-void ServerConnectionManager::ResetAuthStatus() {
-  ResetConnection();
-  server_status_ = HttpResponse::NONE;
-  NotifyStatusChanged();
 }
 
 void ServerConnectionManager::ResetConnection() {

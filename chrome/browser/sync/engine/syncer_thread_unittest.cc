@@ -73,6 +73,20 @@ class SyncerThreadWithSyncerTest : public testing::Test,
       sync_cycle_ended_event_.Wait();
   }
 
+  void WaitForDisconnect() {
+    // Wait for the SyncerThread to detect loss of connection, up to a max of
+    // 10 seconds to timeout the test.
+    AutoLock lock(syncer_thread()->lock_);
+    TimeTicks start = TimeTicks::HighResNow();
+    TimeDelta ten_seconds = TimeDelta::FromSeconds(10);
+    while (syncer_thread()->vault_.connected_) {
+      syncer_thread()->vault_field_changed_.TimedWait(ten_seconds);
+      if (TimeTicks::HighResNow() - start > ten_seconds)
+        break;
+    }
+    EXPECT_FALSE(syncer_thread()->vault_.connected_);
+  }
+
  private:
 
   void HandleSyncerEvent(const SyncerEvent& event) {
@@ -90,8 +104,9 @@ class SyncerThreadWithSyncerTest : public testing::Test,
   DISALLOW_COPY_AND_ASSIGN(SyncerThreadWithSyncerTest);
 };
 
-class SyncShareIntercept : public MockConnectionManager::ThrottleRequestVisitor,
-                           public MockConnectionManager::MidCommitObserver {
+class SyncShareIntercept
+    : public MockConnectionManager::ResponseCodeOverrideRequestor,
+      public MockConnectionManager::MidCommitObserver {
  public:
   SyncShareIntercept() : sync_occured_(false, false),
                          allow_multiple_interceptions_(true) {}
@@ -103,9 +118,10 @@ class SyncShareIntercept : public MockConnectionManager::ThrottleRequestVisitor,
     sync_occured_.Signal();
   }
 
-  // ThrottleRequestVisitor implementation.
-  virtual void VisitAtomically() {
-    // Server has told the client to throttle.  We should not see any syncing.
+  // ResponseCodeOverrideRequestor implementation. This assumes any override
+  // requested is intended to silence the SyncerThread.
+  virtual void OnOverrideComplete() {
+    // We should not see any syncing.
     allow_multiple_interceptions_ = false;
     times_sync_occured_.clear();
   }
@@ -116,6 +132,12 @@ class SyncShareIntercept : public MockConnectionManager::ThrottleRequestVisitor,
   }
   std::vector<TimeTicks> times_sync_occured() const {
     return times_sync_occured_;
+  }
+
+  void Reset() {
+    allow_multiple_interceptions_ = true;
+    times_sync_occured_.clear();
+    sync_occured_.Reset();
   }
  private:
   std::vector<TimeTicks> times_sync_occured_;
@@ -634,6 +656,48 @@ TEST_F(SyncerThreadWithSyncerTest, Throttling) {
   // we may never halt.
   WaitForThrottle();
   EXPECT_TRUE(syncer_thread()->IsSyncingCurrentlySilenced());
+
+  EXPECT_TRUE(syncer_thread()->Stop(2000));
+}
+
+TEST_F(SyncerThreadWithSyncerTest, AuthInvalid) {
+  SyncShareIntercept interceptor;
+  connection()->SetMidCommitObserver(&interceptor);
+  const TimeDelta poll_interval = TimeDelta::FromMilliseconds(1);
+
+  syncer_thread()->SetSyncerShortPollInterval(poll_interval);
+  EXPECT_TRUE(syncer_thread()->Start());
+  metadb()->Open();
+
+  // Wait for some healthy syncing.
+  interceptor.WaitForSyncShare(2, TimeDelta::FromSeconds(10));
+  EXPECT_GE(interceptor.times_sync_occured().size(), 2U);
+
+  // Atomically start returning auth invalid and set the interceptor to fail
+  // on any sync.
+  connection()->FailWithAuthInvalid(&interceptor);
+  WaitForDisconnect();
+
+  // Try to trigger a sync (the interceptor will assert if one occurs).
+  syncer_thread()->NudgeSyncer(0, SyncerThread::kUnknown);
+  syncer_thread()->NudgeSyncer(0, SyncerThread::kUnknown);
+
+  // Wait several poll intervals but don't expect any syncing besides the cycle
+  // that lost the connection.
+  interceptor.WaitForSyncShare(1, TimeDelta::FromSeconds(1));
+  EXPECT_EQ(1U, interceptor.times_sync_occured().size());
+
+  // Simulate a valid re-authentication and expect resumption of syncing.
+  interceptor.Reset();
+  ASSERT_TRUE(interceptor.times_sync_occured().empty());
+  connection()->StopFailingWithAuthInvalid(NULL);
+  ServerConnectionEvent e = {ServerConnectionEvent::STATUS_CHANGED,
+                             HttpResponse::SERVER_CONNECTION_OK,
+                             true};
+  connection()->channel()->NotifyListeners(e);
+
+  interceptor.WaitForSyncShare(1, TimeDelta::FromSeconds(10));
+  EXPECT_FALSE(interceptor.times_sync_occured().empty());
 
   EXPECT_TRUE(syncer_thread()->Stop(2000));
 }

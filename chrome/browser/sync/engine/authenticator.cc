@@ -71,7 +71,9 @@ Authenticator::AuthenticationResult Authenticator::AuthenticateToken(
 
   ServerConnectionManager::PostBufferParams params =
     { tx, &rx, &http_response };
-  if (!server_connection_manager_->PostBufferWithAuth(&params, auth_token)) {
+  ScopedServerStatusWatcher watch(server_connection_manager_, &http_response);
+  if (!server_connection_manager_->PostBufferWithAuth(&params, auth_token,
+                                                      &watch)) {
     LOG(WARNING) << "Error posting from authenticator:" << http_response;
     return SERVICE_DOWN;
   }
@@ -90,6 +92,8 @@ Authenticator::AuthenticationResult Authenticator::AuthenticateToken(
       return USER_NOT_ACTIVATED;
     case sync_pb::ClientToServerResponse::AUTH_INVALID:
     case sync_pb::ClientToServerResponse::AUTH_EXPIRED:
+      // TODO(tim): This is an egregious layering violation (bug 35060).
+      http_response.server_status = HttpResponse::SYNC_AUTH_ERROR;
       return BAD_AUTH_TOKEN;
     // should never happen (no birthday in this request).
     case sync_pb::ClientToServerResponse::NOT_MY_BIRTHDAY:

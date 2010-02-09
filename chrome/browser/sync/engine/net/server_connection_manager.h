@@ -58,7 +58,11 @@ struct HttpResponse {
     SYNC_SERVER_ERROR,
 
     // SYNC_AUTH_ERROR is returned when the HTTP status code indicates that an
-    // auth error has occured (i.e. a 401)
+    // auth error has occured (i.e. a 401 or sync-specific AUTH_INVALID
+    // response)
+    // TODO(tim): Caring about AUTH_INVALID is a layering violation. But
+    // this app-specific logic is being added as a stable branch hotfix so
+    // minimal changes prevail for the moment.  Fix this! Bug 35060.
     SYNC_AUTH_ERROR,
 
     // All the following connection codes are valid responses from the server.
@@ -110,7 +114,23 @@ struct ServerConnectionEvent {
   bool server_reachable;
 };
 
-class WatchServerStatus;
+class ServerConnectionManager;
+// A helper class that automatically notifies when the status changes.
+// TODO(tim): This class shouldn't be exposed outside of the implementation,
+// bug 35060.
+class ScopedServerStatusWatcher {
+ public:
+  ScopedServerStatusWatcher(ServerConnectionManager* conn_mgr,
+                            HttpResponse* response);
+  ~ScopedServerStatusWatcher();
+ private:
+  ServerConnectionManager* const conn_mgr_;
+  HttpResponse* const response_;
+  // TODO(tim): Should this be Barrier:AtomicIncrement?
+  base::subtle::AtomicWord reset_count_;
+  bool server_reachable_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedServerStatusWatcher);
+};
 
 // Use this class to interact with the sync server.
 // The ServerConnectionManager currently supports POSTing protocol buffers.
@@ -191,14 +211,16 @@ class ServerConnectionManager {
   // set auth token in our headers.
   //
   // Returns true if executed successfully.
-  virtual bool PostBufferWithCachedAuth(const PostBufferParams* params);
+  virtual bool PostBufferWithCachedAuth(const PostBufferParams* params,
+                                        ScopedServerStatusWatcher* watcher);
 
   // POSTS buffer_in and reads a response into buffer_out. Add a specific auth
   // token to http headers.
   //
   // Returns true if executed successfully.
   virtual bool PostBufferWithAuth(const PostBufferParams* params,
-                                  const std::string& auth_token);
+                                  const std::string& auth_token,
+                                  ScopedServerStatusWatcher* watcher);
 
   // Checks the time on the server. Returns false if the request failed. |time|
   // is an out parameter that stores the value returned from the server.
@@ -230,12 +252,6 @@ class ServerConnectionManager {
   }
 
   inline bool server_reachable() const { return server_reachable_; }
-
-  void ResetAuthStatus();
-
-  void ResetConnection();
-
-  void NotifyStatusChanged();
 
   const std::string client_id() const { return client_id_; }
 
@@ -296,7 +312,8 @@ class ServerConnectionManager {
   // Internal PostBuffer base function.
   virtual bool PostBufferToPath(const PostBufferParams*,
                                 const std::string& path,
-                                const std::string& auth_token);
+                                const std::string& auth_token,
+                                ScopedServerStatusWatcher* watcher);
 
   // Protects access to sync_server_, sync_server_port_ and use_ssl_:
   mutable Lock server_parameters_mutex_;
@@ -339,7 +356,10 @@ class ServerConnectionManager {
 
  private:
   friend class Post;
-  friend class WatchServerStatus;
+  friend class ScopedServerStatusWatcher;
+
+  void NotifyStatusChanged();
+  void ResetConnection();
 
   mutable Lock terminate_all_io_mutex_;
   bool terminate_all_io_;  // When set to true, terminate all connections asap.

@@ -41,14 +41,6 @@ void SyncerCommand::SendNotifications(SyncSession* session) {
       session->context()->syncer_event_channel()->NotifyListeners(quota_event);
     }
   }
-  if (session->auth_failure_occurred()) {
-    ServerConnectionEvent event;
-    event.what_happened = ServerConnectionEvent::STATUS_CHANGED;
-    event.server_reachable = true;
-    event.connection_code = HttpResponse::SYNC_AUTH_ERROR;
-    session->context()->connection_manager()->channel()->NotifyListeners(event);
-    session->clear_auth_failure_occurred();
-  }
 }
 
 }  // namespace browser_sync

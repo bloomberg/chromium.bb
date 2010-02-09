@@ -72,8 +72,9 @@ void MockConnectionManager::SetMidCommitObserver(
 }
 
 bool MockConnectionManager::PostBufferToPath(const PostBufferParams* params,
-                                             const string& path,
-                                             const string& auth_token) {
+    const string& path,
+    const string& auth_token,
+    browser_sync::ScopedServerStatusWatcher* watcher) {
   ClientToServerMessage post;
   CHECK(post.ParseFromString(params->buffer_in));
   client_stuck_ = post.sync_problem_detected();
@@ -125,11 +126,14 @@ bool MockConnectionManager::PostBufferToPath(const PostBufferParams* params,
   }
 
   {
-    AutoLock throttle_lock(throttle_lock_);
+    AutoLock lock(response_code_override_lock_);
     if (throttling_) {
-        response.set_error_code(ClientToServerResponse::THROTTLED);
-        throttling_ = false;
+      response.set_error_code(ClientToServerResponse::THROTTLED);
+      throttling_ = false;
     }
+
+    if (fail_with_auth_invalid_)
+      response.set_error_code(ClientToServerResponse::AUTH_INVALID);
   }
 
   response.SerializeToString(params->buffer_out);
@@ -408,9 +412,25 @@ const CommitMessage& MockConnectionManager::last_sent_commit() const {
 }
 
 void MockConnectionManager::ThrottleNextRequest(
-    ThrottleRequestVisitor* visitor) {
-  AutoLock lock(throttle_lock_);
+    ResponseCodeOverrideRequestor* visitor) {
+  AutoLock lock(response_code_override_lock_);
   throttling_ = true;
   if (visitor)
-    visitor->VisitAtomically();
+    visitor->OnOverrideComplete();
+}
+
+void MockConnectionManager::FailWithAuthInvalid(
+    ResponseCodeOverrideRequestor* visitor) {
+  AutoLock lock(response_code_override_lock_);
+  fail_with_auth_invalid_ = true;
+  if (visitor)
+    visitor->OnOverrideComplete();
+}
+
+void MockConnectionManager::StopFailingWithAuthInvalid(
+    ResponseCodeOverrideRequestor* visitor) {
+  AutoLock lock(response_code_override_lock_);
+  fail_with_auth_invalid_ = false;
+  if (visitor)
+    visitor->OnOverrideComplete();
 }
