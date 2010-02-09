@@ -18,6 +18,7 @@ CommandBufferProxy::CommandBufferProxy(
     : size_(0),
       channel_(channel),
       route_id_(route_id) {
+  channel->AddRoute(route_id_, this, false);
 }
 
 CommandBufferProxy::~CommandBufferProxy() {
@@ -29,6 +30,18 @@ CommandBufferProxy::~CommandBufferProxy() {
     delete it->second.shared_memory;
     it->second.shared_memory = NULL;
   }
+
+  channel_->RemoveRoute(route_id_);
+}
+
+void CommandBufferProxy::OnMessageReceived(const IPC::Message& message) {
+  IPC_BEGIN_MESSAGE_MAP(CommandBufferProxy, message)
+    IPC_MESSAGE_HANDLER(CommandBufferMsg_UpdateState, OnUpdateState);
+    IPC_MESSAGE_UNHANDLED_ERROR()
+  IPC_END_MESSAGE_MAP()
+}
+
+void CommandBufferProxy::OnChannelError() {
 }
 
 bool CommandBufferProxy::Send(IPC::Message* msg) {
@@ -72,17 +85,15 @@ Buffer CommandBufferProxy::GetRingBuffer() {
 }
 
 gpu::CommandBuffer::State CommandBufferProxy::GetState() {
-  gpu::CommandBuffer::State state;
-  Send(new CommandBufferMsg_GetState(route_id_, &state));
-  return state;
+  Send(new CommandBufferMsg_GetState(route_id_, &last_state_));
+  return last_state_;
 }
 
 gpu::CommandBuffer::State CommandBufferProxy::Flush(int32 put_offset) {
-  gpu::CommandBuffer::State state;
   Send(new CommandBufferMsg_Flush(route_id_,
                                   put_offset,
-                                  &state));
-  return state;
+                                  &last_state_));
+  return last_state_;
 }
 
 void CommandBufferProxy::SetGetOffset(int32 get_offset) {
@@ -176,3 +187,42 @@ void CommandBufferProxy::SetWindowSize(int32 width, int32 height) {
 }
 #endif
 
+void CommandBufferProxy::AsyncGetState(Task* completion_task) {
+  IPC::Message* message = new CommandBufferMsg_AsyncGetState(route_id_);
+
+  // Do not let a synchronous flush hold up this message. If this handler is
+  // deferred until after the synchronous flush completes, it will overwrite the
+  // cached last_state_ with out-of-date data.
+  message->set_unblock(true);
+
+  if (Send(message))
+    pending_async_flush_tasks_.push(linked_ptr<Task>(completion_task));
+}
+
+void CommandBufferProxy::AsyncFlush(int32 put_offset, Task* completion_task) {
+  IPC::Message* message = new CommandBufferMsg_AsyncFlush(route_id_,
+                                                          put_offset);
+
+  // Do not let a synchronous flush hold up this message. If this handler is
+  // deferred until after the synchronous flush completes, it will overwrite the
+  // cached last_state_ with out-of-date data.
+  message->set_unblock(true);
+
+  if (Send(message))
+    pending_async_flush_tasks_.push(linked_ptr<Task>(completion_task));
+}
+
+void CommandBufferProxy::OnUpdateState(gpu::CommandBuffer::State state) {
+  last_state_ = state;
+
+  linked_ptr<Task> task = pending_async_flush_tasks_.front();
+  pending_async_flush_tasks_.pop();
+
+  if (task.get()) {
+    // Although we need need to update last_state_ while potentially waiting
+    // for a synchronous flush to complete, we do not need to invoke the
+    // callback synchonously. Also, post it as a non nestable task so it is
+    // always invoked by the outermost message loop.
+    MessageLoop::current()->PostNonNestableTask(FROM_HERE, task.release());
+  }
+}

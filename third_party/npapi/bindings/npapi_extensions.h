@@ -299,6 +299,16 @@ typedef struct _NPDeviceContext3D
 {
   void* reserved;
 
+  // If true, then a flush will only complete once the get offset has advanced
+  // on the GPU thread. If false, then the get offset might have changed but
+  // the GPU thread will respond as quickly as possible without guaranteeing
+  // having made any progress in executing pending commands. Set to true
+  // to ensure that progress is made or when flushing in a loop waiting for the
+  // GPU to reach a certain state, for example in advancing beyond a particular
+  // token. Set to false when flushing to query the current state, for example
+  // whether an error has occurred.
+  bool waitForProgress;
+
   // Buffer in which commands are stored.
   void* commandBuffer;
   int32 commandBufferSize;

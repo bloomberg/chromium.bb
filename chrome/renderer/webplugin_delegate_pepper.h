@@ -166,6 +166,13 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   // Synchronize a 3D context state with the service.
   void Synchronize3DContext(NPDeviceContext3D* context,
                             gpu::CommandBuffer::State state);
+
+  // Synchronize the 3D context state with the proxy and invoke the async
+  // flush callback.
+  void Device3DUpdateState(NPP npp,
+                           NPDeviceContext3D* context,
+                           NPDeviceFlushContextCallbackPtr callback,
+                           void* user_data);
 #endif
 
   base::WeakPtr<RenderView> render_view_;
@@ -188,9 +195,11 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   // The url with which the plugin was instantiated.
   std::string plugin_url_;
 
-  // The nested GPU plugin and its command buffer proxy.
+  // The nested GPU plugin.
   WebPluginDelegateProxy* nested_delegate_;
+
 #if defined(ENABLE_GPU)
+  // The command buffer used to issue commands to the nested GPU plugin.
   scoped_ptr<CommandBufferProxy> command_buffer_;
 #endif
 
@@ -199,10 +208,8 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
   void SendNestedDelegateGeometryToBrowser(const gfx::Rect& window_rect,
                                            const gfx::Rect& clip_rect);
 
-  // Used to track whether additional commands have been put in the command
-  // buffer since the last flush.
-  int32 last_command_buffer_put_offset_;
-
+  // Runnable methods that must be cancelled when the 3D context is destroyed.
+  ScopedRunnableMethodFactory<WebPluginDelegatePepper> method_factory3d_;
   DISALLOW_COPY_AND_ASSIGN(WebPluginDelegatePepper);
 };
 

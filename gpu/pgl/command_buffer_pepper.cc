@@ -41,13 +41,18 @@ Buffer CommandBufferPepper::GetRingBuffer() {
 }
 
 CommandBuffer::State CommandBufferPepper::GetState() {
+  context_->waitForProgress = false;
+
   if (NPERR_NO_ERROR != device_->flushContext(npp_, context_, NULL, NULL))
     context_->error = NPDeviceContext3DError_GenericError;
+
+  context_->waitForProgress = true;
 
   return ConvertState();
 }
 
 CommandBuffer::State CommandBufferPepper::Flush(int32 put_offset) {
+  context_->waitForProgress = true;
   context_->putOffset = put_offset;
 
   if (NPERR_NO_ERROR != device_->flushContext(npp_, context_, NULL, NULL))

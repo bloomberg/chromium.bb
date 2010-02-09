@@ -438,6 +438,14 @@ void PluginObject::Destroy3D() {
 #endif  // INDEPENDENT_PLUGIN
 }
 
+namespace {
+void AsyncFlushCallback(NPP npp,
+                        NPDeviceContext* context,
+                        NPError error,
+                        void* user_data) {
+}
+}
+
 void PluginObject::Draw3D() {
 #if !defined(INDEPENDENT_PLUGIN)
   if (!pglMakeCurrent(pgl_context_) && pglGetError() == PGL_CONTEXT_LOST) {
@@ -450,6 +458,18 @@ void PluginObject::Draw3D() {
   GLFromCPPDraw();
   pglSwapBuffers();
   pglMakeCurrent(NULL);
+
+  // Async flushes just to see them working.
+  context3d_.waitForProgress = true;
+  device3d_->flushContext(npp_,
+                          &context3d_,
+                          AsyncFlushCallback,
+                          reinterpret_cast<void*>(0x3D1));
+  context3d_.waitForProgress = false;
+  device3d_->flushContext(npp_,
+                          &context3d_,
+                          AsyncFlushCallback,
+                          reinterpret_cast<void*>(0x3D2));
 
   // Schedule another call to Draw.
   browser->pluginthreadasynccall(npp_, Draw3DCallback, this);

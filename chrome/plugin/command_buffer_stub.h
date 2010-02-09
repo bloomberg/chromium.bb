@@ -41,7 +41,9 @@ class CommandBufferStub : public IPC::Channel::Listener,
   // Message handlers:
   void OnInitialize(int32 size, base::SharedMemoryHandle* ring_buffer);
   void OnGetState(gpu::CommandBuffer::State* state);
+  void OnAsyncGetState();
   void OnFlush(int32 put_offset, gpu::CommandBuffer::State* state);
+  void OnAsyncFlush(int32 put_offset);
   void OnCreateTransferBuffer(int32 size, int32* id);
   void OnDestroyTransferBuffer(int32 id);
   void OnGetTransferBuffer(int32 id,

@@ -8,11 +8,13 @@
 #if defined(ENABLE_GPU)
 
 #include <map>
+#include <queue>
 
 #include "base/linked_ptr.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
+#include "base/task.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "ipc/ipc_channel.h"
 #include "ipc/ipc_message.h"
@@ -22,12 +24,17 @@ class PluginChannelHost;
 // Client side proxy that forwards messages synchronously to a
 // CommandBufferStub.
 class CommandBufferProxy : public gpu::CommandBuffer,
+                           public IPC::Channel::Listener,
                            public IPC::Message::Sender {
  public:
   explicit CommandBufferProxy(
       PluginChannelHost* channel,
       int route_id);
   virtual ~CommandBufferProxy();
+
+  // IPC::Channel::Listener implementation:
+  virtual void OnMessageReceived(const IPC::Message& message);
+  virtual void OnChannelError();
 
   // IPC::Message::Sender implementation:
   virtual bool Send(IPC::Message* msg);
@@ -48,7 +55,23 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   virtual void SetWindowSize(int32 width, int32 height);
 #endif
 
+  // Get the last state received from the service without synchronizing.
+  State GetLastState() {
+    return last_state_;
+  }
+
+  // Get the state asynchronously. The task is posted when the state is
+  // updated. Takes ownership of the task object.
+  void AsyncGetState(Task* completion_task);
+
+  // Flush the command buffer asynchronously. The task is posted when the flush
+  // completes. Takes ownership of the task object.
+  void AsyncFlush(int32 put_offset, Task* completion_task);
+
  private:
+  // Message handlers:
+  void OnUpdateState(gpu::CommandBuffer::State state);
+
   // As with the service, the client takes ownership of the ring buffer.
   int32 size_;
   scoped_ptr<base::SharedMemory> ring_buffer_;
@@ -57,8 +80,15 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   typedef std::map<int32, gpu::Buffer> TransferBufferMap;
   TransferBufferMap transfer_buffers_;
 
+  // The last cached state received from the service.
+  State last_state_;
+
   scoped_refptr<PluginChannelHost> channel_;
   int route_id_;
+
+  // Pending asynchronous flush callbacks.
+  typedef std::queue<linked_ptr<Task> > AsyncFlushTaskQueue;
+  AsyncFlushTaskQueue pending_async_flush_tasks_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferProxy);
 };

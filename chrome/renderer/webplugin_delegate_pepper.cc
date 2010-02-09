@@ -338,6 +338,9 @@ NPError WebPluginDelegatePepper::Device3DQueryConfig(
 NPError WebPluginDelegatePepper::Device3DInitializeContext(
     const NPDeviceContext3DConfig* config,
     NPDeviceContext3D* context) {
+  if (!context)
+    return NPERR_GENERIC_ERROR;
+
 #if defined(ENABLE_GPU)
   // Check to see if the GPU plugin is already initialized and fail if so.
   if (nested_delegate_)
@@ -366,6 +369,7 @@ NPError WebPluginDelegatePepper::Device3DInitializeContext(
 
         // Initialize the 3D context.
         context->reserved = NULL;
+        context->waitForProgress = true;
         Buffer ring_buffer = command_buffer_->GetRingBuffer();
         context->commandBuffer = ring_buffer.ptr;
         context->commandBufferSize = state.size;
@@ -420,24 +424,57 @@ NPError WebPluginDelegatePepper::Device3DFlushContext(
     NPDeviceContext3D* context,
     NPDeviceFlushContextCallbackPtr callback,
     void* user_data) {
+  if (!context)
+    return NPERR_GENERIC_ERROR;
+
 #if defined(ENABLE_GPU)
   gpu::CommandBuffer::State state;
-  // Only flush if new commands have been put in the command buffer. Otherwise
-  // update the state to the current service state.
-  if (context->putOffset == last_command_buffer_put_offset_) {
-    state = command_buffer_->GetState();
+
+  if (context->waitForProgress) {
+    if (callback) {
+      command_buffer_->AsyncFlush(
+          context->putOffset,
+          method_factory3d_.NewRunnableMethod(
+              &WebPluginDelegatePepper::Device3DUpdateState,
+              id,
+              context,
+              callback,
+              user_data));
+    } else {
+      state = command_buffer_->Flush(context->putOffset);
+      Synchronize3DContext(context, state);
+    }
   } else {
-    last_command_buffer_put_offset_ = context->putOffset;
-    state = command_buffer_->Flush(context->putOffset);
+    if (callback) {
+      command_buffer_->AsyncGetState(
+          method_factory3d_.NewRunnableMethod(
+              &WebPluginDelegatePepper::Device3DUpdateState,
+              id,
+              context,
+              callback,
+              user_data));
+    } else {
+      state = command_buffer_->GetState();
+      Synchronize3DContext(context, state);
+    }
   }
-  Synchronize3DContext(context, state);
 #endif  // ENABLE_GPU
   return NPERR_NO_ERROR;
 }
 
 NPError WebPluginDelegatePepper::Device3DDestroyContext(
     NPDeviceContext3D* context) {
+  if (!context)
+    return NPERR_GENERIC_ERROR;
+
 #if defined(ENABLE_GPU)
+  // Prevent any async flush callbacks from being invoked after the context
+  // has been destroyed.
+  method_factory3d_.RevokeAll();
+
+  delete static_cast<Device3DImpl*>(context->reserved);
+  context->reserved = NULL;
+
   command_buffer_.reset();
 
   if (nested_delegate_) {
@@ -453,6 +490,9 @@ NPError WebPluginDelegatePepper::Device3DCreateBuffer(
     NPDeviceContext3D* context,
     size_t size,
     int32* id) {
+  if (!context)
+    return NPERR_GENERIC_ERROR;
+
 #if defined(ENABLE_GPU)
   *id = command_buffer_->CreateTransferBuffer(size);
   if (*id < 0)
@@ -465,6 +505,9 @@ NPError WebPluginDelegatePepper::Device3DCreateBuffer(
 NPError WebPluginDelegatePepper::Device3DDestroyBuffer(
     NPDeviceContext3D* context,
     int32 id) {
+  if (!context)
+    return NPERR_GENERIC_ERROR;
+
 #if defined(ENABLE_GPU)
   command_buffer_->DestroyTransferBuffer(id);
 #endif  // ENABLE_GPU
@@ -475,6 +518,9 @@ NPError WebPluginDelegatePepper::Device3DMapBuffer(
     NPDeviceContext3D* context,
     int32 id,
     NPDeviceBuffer* np_buffer) {
+  if (!context)
+    return NPERR_GENERIC_ERROR;
+
 #if defined(ENABLE_GPU)
   Buffer gpu_buffer = command_buffer_->GetTransferBuffer(id);
   np_buffer->ptr = gpu_buffer.ptr;
@@ -569,7 +615,7 @@ WebPluginDelegatePepper::WebPluginDelegatePepper(
       plugin_(NULL),
       instance_(instance),
       nested_delegate_(NULL),
-      last_command_buffer_put_offset_(-1) {
+      method_factory3d_(ALLOW_THIS_IN_INITIALIZER_LIST(this)) {
   // For now we keep a window struct, although it isn't used.
   memset(&window_, 0, sizeof(window_));
   // All Pepper plugins are windowless and transparent.
@@ -742,6 +788,18 @@ void WebPluginDelegatePepper::Synchronize3DContext(
   context->putOffset = state.put_offset;
   context->token = state.token;
   context->error = static_cast<NPDeviceContext3DError>(state.error);
+}
+
+void WebPluginDelegatePepper::Device3DUpdateState(
+    NPP npp,
+    NPDeviceContext3D* context,
+    NPDeviceFlushContextCallbackPtr callback,
+    void* user_data) {
+  if (command_buffer_.get()) {
+    Synchronize3DContext(context, command_buffer_->GetLastState());
+    if (callback)
+      callback(npp, context, NPERR_NO_ERROR, user_data);
+  }
 }
 #endif  // ENABLE_GPU
 
