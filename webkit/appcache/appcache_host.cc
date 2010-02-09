@@ -5,6 +5,7 @@
 #include "webkit/appcache/appcache_host.h"
 
 #include "base/logging.h"
+#include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_request_handler.h"
 
 namespace appcache {

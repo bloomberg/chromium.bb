@@ -8,6 +8,7 @@
 
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "net/base/net_errors.h"
 #include "net/http/http_util.h"
 #include "net/url_request/url_request_status.h"
 

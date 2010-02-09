@@ -6,6 +6,7 @@
 #define WEBKIT_APPCACHE_APPCACHE_REQUEST_HANDLER_H_
 
 #include "net/url_request/url_request.h"
+#include "webkit/appcache/appcache_entry.h"
 #include "webkit/appcache/appcache_host.h"
 
 class URLRequest;

@@ -30,6 +30,7 @@
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell.h"
 #include "webkit/tools/test_shell/test_shell_devtools_agent.h"
+#include "webkit/tools/test_shell/test_webview_delegate.h"
 
 using std::string;
 using std::wstring;

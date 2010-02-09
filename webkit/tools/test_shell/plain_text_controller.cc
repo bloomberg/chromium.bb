@@ -8,6 +8,7 @@
 #include "webkit/tools/test_shell/test_shell.h"
 
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebRange.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 

@@ -38,11 +38,11 @@
 #endif
 #include "base/ref_counted.h"
 #include "base/weak_ptr.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebNavigationPolicy.h"
 #include "webkit/tools/test_shell/event_sending_controller.h"
 #include "webkit/tools/test_shell/layout_test_controller.h"
 #include "webkit/tools/test_shell/plain_text_controller.h"
 #include "webkit/tools/test_shell/text_input_controller.h"
-#include "webkit/tools/test_shell/test_webview_delegate.h"
 #include "webkit/tools/test_shell/webview_host.h"
 #include "webkit/tools/test_shell/webwidget_host.h"
 
@@ -51,10 +51,12 @@ typedef std::list<gfx::NativeWindow> WindowList;
 struct WebPreferences;
 class AccessibilityController;
 class FilePath;
+class GURL;
 class TestNavigationEntry;
 class TestNavigationController;
 class TestShellDevToolsAgent;
 class TestShellDevToolsClient;
+class TestWebViewDelegate;
 
 namespace base {
 class StringPiece;

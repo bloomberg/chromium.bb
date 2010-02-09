@@ -11,6 +11,7 @@
 #include "net/url_request/url_request_unittest.h"
 #include "webkit/appcache/appcache_group.h"
 #include "webkit/appcache/appcache_host.h"
+#include "webkit/appcache/appcache_response.h"
 #include "webkit/appcache/appcache_update_job.h"
 #include "webkit/appcache/mock_appcache_service.h"
 

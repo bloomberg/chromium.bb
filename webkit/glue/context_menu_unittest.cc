@@ -10,9 +10,11 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
+#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/tools/test_shell/test_shell_test.h"
+#include "webkit/tools/test_shell/test_webview_delegate.h"
 
 using WebKit::WebInputEvent;
 using WebKit::WebMouseEvent;

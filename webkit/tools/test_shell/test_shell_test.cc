@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
+#include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
 
 GURL TestShellTest::GetTestURL(const FilePath& test_case_path,

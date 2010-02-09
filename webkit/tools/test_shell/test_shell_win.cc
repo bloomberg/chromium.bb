@@ -35,6 +35,7 @@
 #include "webkit/tools/test_shell/resource.h"
 #include "webkit/tools/test_shell/test_navigation_controller.h"
 #include "webkit/tools/test_shell/test_shell_switches.h"
+#include "webkit/tools/test_shell/test_webview_delegate.h"
 
 using WebKit::WebWidget;
 

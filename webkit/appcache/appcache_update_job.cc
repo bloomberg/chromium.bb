@@ -10,6 +10,7 @@
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
 #include "webkit/appcache/appcache_group.h"
+#include "webkit/appcache/appcache_response.h"
 
 namespace appcache {
 

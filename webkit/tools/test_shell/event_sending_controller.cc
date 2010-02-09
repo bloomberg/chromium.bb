@@ -33,6 +33,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/tools/test_shell/test_shell.h"
+#include "webkit/tools/test_shell/test_webview_delegate.h"
 
 #if defined(OS_WIN)
 #include "third_party/WebKit/WebKit/chromium/public/win/WebInputEventFactory.h"

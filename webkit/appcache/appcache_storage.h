@@ -11,9 +11,9 @@
 #include "base/compiler_specific.h"
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
-#include "net/base/net_errors.h"
+#include "base/scoped_ptr.h"
+#include "net/base/completion_callback.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
-#include "webkit/appcache/appcache_response.h"
 #include "webkit/appcache/appcache_working_set.h"
 
 class GURL;
@@ -23,7 +23,10 @@ namespace appcache {
 class AppCache;
 class AppCacheEntry;
 class AppCacheGroup;
+class AppCacheResponseReader;
+class AppCacheResponseWriter;
 class AppCacheService;
+struct HttpResponseInfoIOBuffer;
 
 class AppCacheStorage {
  public:
@@ -216,16 +219,7 @@ class AppCacheStorage {
   class ResponseInfoLoadTask {
    public:
     ResponseInfoLoadTask(const GURL& manifest_url, int64 response_id,
-                         AppCacheStorage* storage)
-        : storage_(storage),
-          manifest_url_(manifest_url),
-          response_id_(response_id),
-          info_buffer_(new HttpResponseInfoIOBuffer),
-          ALLOW_THIS_IN_INITIALIZER_LIST(read_callback_(
-              this, &ResponseInfoLoadTask::OnReadComplete)) {
-      storage_->pending_info_loads_.insert(
-          PendingResponseInfoLoads::value_type(response_id, this));
-    }
+                         AppCacheStorage* storage);
 
     int64 response_id() const { return response_id_; }
     const GURL& manifest_url() const { return manifest_url_; }
@@ -234,27 +228,10 @@ class AppCacheStorage {
       delegates_.push_back(delegate_reference);
     }
 
-    void StartIfNeeded() {
-      if (reader_.get())
-        return;
-      reader_.reset(
-          storage_->CreateResponseReader(manifest_url_, response_id_));
-      reader_->ReadInfo(info_buffer_, &read_callback_);
-    }
+    void StartIfNeeded();
 
    private:
-    void OnReadComplete(int result) {
-      storage_->pending_info_loads_.erase(response_id_);
-      scoped_refptr<AppCacheResponseInfo> info;
-      if (result >= 0) {
-        info = new AppCacheResponseInfo(
-            storage_->service(), manifest_url_, response_id_,
-            info_buffer_->http_info.release());
-      }
-      FOR_EACH_DELEGATE(
-          delegates_, OnResponseInfoLoaded(info.get(), response_id_));
-      delete this;
-    }
+    void OnReadComplete(int result);
 
     AppCacheStorage* storage_;
     GURL manifest_url_;

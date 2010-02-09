@@ -5,6 +5,7 @@
 #include "webkit/appcache/appcache_storage.h"
 
 #include "base/stl_util-inl.h"
+#include "webkit/appcache/appcache_response.h"
 
 namespace appcache {
 
@@ -19,6 +20,40 @@ AppCacheStorage::AppCacheStorage(AppCacheService* service)
 AppCacheStorage::~AppCacheStorage() {
   STLDeleteValues(&pending_info_loads_);
   DCHECK(delegate_references_.empty());
+}
+
+AppCacheStorage::ResponseInfoLoadTask::ResponseInfoLoadTask(
+    const GURL& manifest_url,
+    int64 response_id,
+    AppCacheStorage* storage)
+    : storage_(storage),
+      manifest_url_(manifest_url),
+      response_id_(response_id),
+      info_buffer_(new HttpResponseInfoIOBuffer),
+      ALLOW_THIS_IN_INITIALIZER_LIST(read_callback_(
+          this, &ResponseInfoLoadTask::OnReadComplete)) {
+  storage_->pending_info_loads_.insert(
+      PendingResponseInfoLoads::value_type(response_id, this));
+}
+
+void AppCacheStorage::ResponseInfoLoadTask::StartIfNeeded() {
+  if (reader_.get())
+    return;
+  reader_.reset(
+      storage_->CreateResponseReader(manifest_url_, response_id_));
+  reader_->ReadInfo(info_buffer_, &read_callback_);
+}
+
+void AppCacheStorage::ResponseInfoLoadTask::OnReadComplete(int result) {
+  storage_->pending_info_loads_.erase(response_id_);
+  scoped_refptr<AppCacheResponseInfo> info;
+  if (result >= 0) {
+    info = new AppCacheResponseInfo(storage_->service(), manifest_url_,
+                                    response_id_,
+                                    info_buffer_->http_info.release());
+  }
+  FOR_EACH_DELEGATE(delegates_, OnResponseInfoLoaded(info.get(), response_id_));
+  delete this;
 }
 
 void AppCacheStorage::LoadResponseInfo(

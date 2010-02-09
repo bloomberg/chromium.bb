@@ -5,6 +5,7 @@
 #include "base/message_loop.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
+#include "net/base/net_errors.h"
 #include "net/url_request/url_request.h"
 #include "net/url_request/url_request_error_job.h"
 #include "testing/gtest/include/gtest/gtest.h"
