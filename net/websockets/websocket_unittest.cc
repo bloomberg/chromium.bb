@@ -148,7 +148,8 @@ TEST_F(WebSocketTest, Connect) {
               "WebSocket-Protocol: sample\r\n"
               "\r\n"),
   };
-  StaticSocketDataProvider data(data_reads, data_writes);
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
+                                data_writes, arraysize(data_writes));
   mock_socket_factory.AddSocketDataProvider(&data);
 
   WebSocket::Request* request(
@@ -208,7 +209,8 @@ TEST_F(WebSocketTest, ServerSentData) {
               "WebSocket-Protocol: sample\r\n"
               "\r\n"),
   };
-  StaticSocketDataProvider data(data_reads, data_writes);
+  StaticSocketDataProvider data(data_reads, arraysize(data_reads),
+                                data_writes, arraysize(data_writes));
   mock_socket_factory.AddSocketDataProvider(&data);
 
   WebSocket::Request* request(
