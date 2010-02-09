@@ -24,7 +24,8 @@ AutoFillManager::AutoFillManager(TabContents* tab_contents)
 }
 
 AutoFillManager::~AutoFillManager() {
-  personal_data_->RemoveObserver(this);
+  if (personal_data_)
+    personal_data_->RemoveObserver(this);
 }
 
 // static
@@ -52,7 +53,7 @@ void AutoFillManager::FormFieldValuesSubmitted(
   PrefService* prefs = tab_contents_->profile()->GetPrefs();
   bool autofill_enabled = prefs->GetBoolean(prefs::kAutoFillEnabled);
   bool infobar_shown = prefs->GetBoolean(prefs::kAutoFillInfoBarShown);
-  if (!infobar_shown) {
+  if (!infobar_shown && personal_data_) {
     // Ask the user for permission to save form information.
     infobar_.reset(new AutoFillInfoBarDelegate(tab_contents_, this));
   } else if (autofill_enabled) {
@@ -97,6 +98,10 @@ void AutoFillManager::DeterminePossibleFieldTypes(
 
   form_structure->GetHeuristicAutoFillTypes();
 
+  // OTR: We can't use the PersonalDataManager to help determine field types.
+  if (!personal_data_)
+    return;
+
   for (size_t i = 0; i < form_structure->field_count(); i++) {
     const AutoFillField* field = form_structure->field(i);
     FieldTypeSet field_types;
@@ -108,7 +113,8 @@ void AutoFillManager::DeterminePossibleFieldTypes(
 void AutoFillManager::HandleSubmit() {
   // If there wasn't enough data to import then we don't want to send an upload
   // to the server.
-  if (!personal_data_->ImportFormData(form_structures_.get(), this))
+  if (personal_data_ &&
+      !personal_data_->ImportFormData(form_structures_.get(), this))
     return;
 
   UploadFormData();
