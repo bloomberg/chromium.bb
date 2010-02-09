@@ -38,6 +38,12 @@ import subprocess
 import sync_tgz
 
 
+# NACL_PLATFORM_DIR_MAP is essentially a mapping from the PLATFORM and
+# BUILD_SUBARCH pair to a subdirectory name in the download target
+# directory, currently
+# native_client/src/third_party/nacl_sdk/<SUBDIR>/sdk/nacl-sdk. See
+# _GetNaclSdkRoot below.
+#
 NACL_PLATFORM_DIR_MAP = {
     'win32': { '32': 'windows',
                '64': 'windows64',
@@ -58,6 +64,12 @@ NACL_PLATFORM_DIR_MAP = {
                 # '64': 'mac64', # not supported!
                 },
     }
+
+
+def _PlatformSubdir(env):
+  platform = env['PLATFORM']
+  subarch = env['BUILD_SUBARCH']
+  return NACL_PLATFORM_DIR_MAP[platform][subarch]
 
 
 # TODO(bradnelson): make the snapshots be consistent, and eliminate the
@@ -102,8 +114,8 @@ def _DefaultDownloadUrl(env):
 
   p = canon_platform[env['PLATFORM']]
   sa = env['BUILD_SUBARCH']
-  return ('http://build.chromium.org/buildbot/snapshots/nacl/sdk-'
-          + plat_dir[p][sa] + '/naclsdk_' + plat_sdk[p][sa] + '.tgz')
+  return ('http://build.chromium.org/buildbot/snapshots'
+          '/nacl/sdk-%s/naclsdk_%s.tgz' % (plat_dir[p][sa], plat_sdk[p][sa]))
 
 def _GetNaclSdkRoot(env, sdk_mode):
   """Return the path to the sdk.
@@ -133,7 +145,7 @@ def _GetNaclSdkRoot(env, sdk_mode):
       return '/usr/local/nacl-sdk'
 
   elif sdk_mode == 'download':
-    platform = NACL_PLATFORM_DIR_MAP[env['PLATFORM']][env['BUILD_SUBARCH']]
+    platform = _PlatformSubdir(env)
     root = os.path.join(env['MAIN_DIR'], 'src', 'third_party', 'nacl_sdk',
                         platform, 'sdk', 'nacl-sdk')
     return root
@@ -163,13 +175,11 @@ def DownloadSdk(env):
     __builtin__.nacl_sdk_downloaded = True
 
   # Get path to extract to.
-  target = env.subst('$MAIN_DIR/src/third_party/nacl_sdk/' +
-                     NACL_PLATFORM_DIR_MAP[env['PLATFORM']]
-                     [env['BUILD_SUBARCH']])
+  target = env.subst('$MAIN_DIR/src/third_party/nacl_sdk/%s'
+                     % _PlatformSubdir(env))
 
   # Set NATIVE_CLIENT_SDK_PLATFORM before substitution.
-  env['NATIVE_CLIENT_SDK_PLATFORM'] = (NACL_PLATFORM_DIR_MAP[env['PLATFORM']]
-                                       [env['BUILD_SUBARCH']])
+  env['NATIVE_CLIENT_SDK_PLATFORM'] = _PlatformSubdir(env)
 
   # Allow sdk selection function to be used instead.
   if env.get('NATIVE_CLIENT_SDK_SOURCE'):

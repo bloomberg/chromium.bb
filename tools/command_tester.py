@@ -141,7 +141,7 @@ def MassageExitStatus(v):
       'win32':  [-1073741819],  # 0x3ffffffb
       }
   if v == 'segfault':
-    assert sys.platform in status_map.keys()
+    assert sys.platform in status_map
     return status_map[sys.platform]
   else:
     return [int(v)]
@@ -159,15 +159,6 @@ def ProcessOptions(argv):
     # strip the leading '--'
     option = o[2:]
     assert option in GlobalSettings
-    # gross hack
-    # TODO(bradnelson,bsy): when the scons bug is fixed, remove this
-    if type(a) == str and ((a.startswith('\\') and os.path.sep == '/')
-                           or (a.startswith('\\c:'))):
-      print '*' * 70
-      print '*** WARNING: SCons bug workaround, stripping leading \\ in'
-      print '*** --' + option, a
-      print '*' * 70
-      a = a[1:]
     if option == 'exit_status':
       GlobalSettings[option] = MassageExitStatus(a)
     elif type(GlobalSettings[option]) == int:
@@ -198,14 +189,6 @@ def main(argv):
       eq_pos=e.find('=')
       key = e[:eq_pos]
       val = e[eq_pos+1:]
-      # gross hack
-      # TODO(bradnelson,bsy): when the scons bug is fixed, remove this
-      if val.startswith('\\') and os.path.sep == '/':
-        print '*' * 70
-        print '*** WARNING: SCons bug workaround, stripping leading \\ in'
-        print '*** ', key, '=', val
-        print '*' * 70
-        val = val[1:]
       Print('[%s] = [%s]' % (key, val))
       os.putenv(key, val)
 
