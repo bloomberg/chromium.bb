@@ -871,7 +871,11 @@ class MakefileWriter:
       for configname in sorted(configs.keys()):
         config = configs[configname]
         self.WriteList(config.get('ldflags'), 'LDFLAGS_%s' % configname)
-      self.WriteList(spec.get('libraries'), 'LIBS')
+      libraries = spec.get('libraries')
+      if libraries:
+        # Remove duplicate entries
+        libraries = gyp.common.uniquer(libraries)
+      self.WriteList(libraries, 'LIBS')
       self.WriteLn('%s: GYP_LDFLAGS := $(LDFLAGS_$(BUILDTYPE))' % self.output)
       self.WriteLn('%s: LIBS := $(LIBS)' % self.output)
 
