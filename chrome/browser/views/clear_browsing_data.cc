@@ -459,5 +459,5 @@ void ClearBrowsingDataView::OnBrowsingDataRemoverDone() {
   // No need to remove ourselves as an observer as BrowsingDataRemover deletes
   // itself after we return.
   remover_ = NULL;
-  //  window()->Close();
+  window()->Close();
 }
