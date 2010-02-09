@@ -1769,6 +1769,19 @@ drm_intel_bufmgr_gem_init(int fd, int batch_size)
 			fprintf(stderr, "param: %d, val: %d\n", gp.param,
 				*gp.value);
 			bufmgr_gem->available_fences = 0;
+		} else {
+			/* XXX The kernel reports the total number of fences,
+			 * including any that may be pinned.
+			 *
+			 * We presume that there will be at least one pinned
+			 * fence for the scanout buffer, but there may be more
+			 * than one scanout and the user may be manually
+			 * pinning buffers. Let's move to execbuffer2 and
+			 * thereby forget the insanity of using fences...
+			 */
+			bufmgr_gem->available_fences -= 2;
+			if (bufmgr_gem->available_fences < 0)
+				bufmgr_gem->available_fences = 0;
 		}
 	}
 
