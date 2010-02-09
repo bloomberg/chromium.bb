@@ -355,8 +355,7 @@ std::string BaseFileName(const std::string &filename) {
 
 namespace google_breakpad {
 
-bool DumpSymbols::WriteSymbolFile(const std::string &obj_file,
-                                  FILE *sym_file) {
+bool WriteSymbolFile(const std::string &obj_file, FILE *sym_file) {
   int obj_fd = open(obj_file.c_str(), O_RDONLY);
   if (obj_fd < 0) {
     fprintf(stderr, "Failed to open ELF file '%s': %s\n",

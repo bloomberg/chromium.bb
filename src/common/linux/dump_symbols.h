@@ -1,4 +1,6 @@
-// Copyright (c) 2006, Google Inc.
+// -*- mode: c++ -*-
+
+// Copyright (c) 2010, Google Inc.
 // All rights reserved.
 //
 // Redistribution and use in source and binary forms, with or without
@@ -38,11 +40,10 @@
 
 namespace google_breakpad {
 
-class DumpSymbols {
- public:
-  bool WriteSymbolFile(const std::string &obj_file,
-                       FILE *sym_file);
-};
+// Find all the debugging information in OBJ_FILE, an ELF executable
+// or shared library, and write it to SYM_FILE in the Breakpad symbol
+// file format.
+bool WriteSymbolFile(const std::string &obj_file, FILE *sym_file);
 
 }  // namespace google_breakpad
 
