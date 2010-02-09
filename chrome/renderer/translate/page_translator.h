@@ -48,15 +48,27 @@ class PageTranslator : public TextTranslator::Delegate {
                  PageTranslatorDelegate* delegate);
   virtual ~PageTranslator();
 
-  // Starts the translation process of |web_frame| from |source_lang| to
-  // |target_lang| where the languages are the ISO codes (ex: en, fr...).
-  void Translate(int page_id,
-                 WebKit::WebFrame* web_frame,
-                 std::string source_lang,
-                 std::string target_lang);
+  // Translate the text in the page contained in |main_frame|.
+  // It is translated from |source_lang| to |target_lang| where the languages
+  // are the ISO codes (ex: en, fr...).
+  // All sub-frames contained in |main_frame| are translated.
+  void TranslatePage(int page_id,
+                     WebKit::WebFrame* main_frame,
+                     std::string source_lang,
+                     std::string target_lang);
 
-  // Notification that the associated RenderView has navigated to a new page.
-  void NavigatedToNewPage();
+  // Translates the contents of |frame| if it has not already been translated
+  // and if the main frame was previously translated.
+  // (Note this should not be called for the main frame, use TranslatePage for
+  // it).
+  void TranslateFrame(WebKit::WebFrame* frame);
+
+  // Notification that the main frame of the current page has navigated.
+  // This invalidates all our page states.
+  void MainFrameNavigated();
+
+  // Returns true if the current page has been translated.
+  bool IsPageTranslated();
 
   // TextTranslator::Delegate implentation:
   virtual void TranslationError(int work_id, int error_id);

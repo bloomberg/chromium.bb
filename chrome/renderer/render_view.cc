@@ -1184,9 +1184,6 @@ void RenderView::UpdateURL(WebFrame* frame) {
       host_zoom_levels_.erase(host_zoom);
     }
 
-    // Drop the translated nodes.
-    page_translator_->NavigatedToNewPage();
-
     // Update contents MIME type for main frame.
     params.contents_mime_type = ds->response().mimeType().utf8();
 
@@ -2409,6 +2406,12 @@ void RenderView::didCommitProvisionalLoad(WebFrame* frame,
   NavigationState* navigation_state =
       NavigationState::FromDataSource(frame->dataSource());
 
+  if (!frame->parent()) {  // Main frame case.
+    // Let the page translator know that the page has changed so it can clear
+    // its states.
+    page_translator_->MainFrameNavigated();
+  }
+
   navigation_state->set_commit_load_time(Time::Now());
   if (is_new_navigation) {
     // When we perform a new navigation, we need to update the previous session
@@ -2521,6 +2524,9 @@ void RenderView::didFinishDocumentLoad(WebFrame* frame) {
   }
 
   navigation_state->user_script_idle_scheduler()->DidFinishDocumentLoad();
+
+  if (page_translator_->IsPageTranslated())
+    page_translator_->TranslateFrame(frame);
 }
 
 void RenderView::OnUserScriptIdleTriggered(WebFrame* frame) {
@@ -3435,7 +3441,9 @@ void RenderView::OnTranslatePage(int page_id,
   WebFrame* main_frame = webview()->mainFrame();
   if (!main_frame)
     return;
-  page_translator_->Translate(page_id, main_frame, source_lang, target_lang);
+
+  page_translator_->TranslatePage(page_id, main_frame,
+                                  source_lang, target_lang);
 }
 
 void RenderView::OnTranslateTextResponse(

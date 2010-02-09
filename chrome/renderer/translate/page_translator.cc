@@ -9,7 +9,9 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/task.h"
+#include "chrome/renderer/navigation_state.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDocument.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebDataSource.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
@@ -60,15 +62,15 @@ PageTranslator::~PageTranslator() {
   ResetPageStates();
 }
 
-void PageTranslator::Translate(int page_id,
-                               WebKit::WebFrame* web_frame,
-                               std::string source_lang,
-                               std::string target_lang) {
+void PageTranslator::TranslatePage(int page_id,
+                                   WebKit::WebFrame* main_frame,
+                                   std::string source_lang,
+                                   std::string target_lang) {
   if (page_id != page_id_) {
     // This is a new page, our states are invalid.
     ResetPageStates();
     page_id_ = page_id;
-    secure_page_ = static_cast<GURL>(web_frame->top()->url()).SchemeIsSecure();
+    secure_page_ = static_cast<GURL>(main_frame->top()->url()).SchemeIsSecure();
   }
   if (original_language_.empty()) {
     original_language_ = source_lang;
@@ -103,6 +105,32 @@ void PageTranslator::Translate(int page_id,
   // We are about to start the translation process.
   current_language_ = target_lang;
 
+  // Translate all frames contained within the main-frame.
+  for (WebKit::WebFrame* frame = main_frame;
+       frame; frame = frame->traverseNext(false)) {
+    TranslateFrame(frame);
+  }
+}
+
+void PageTranslator::TranslateFrame(WebKit::WebFrame* web_frame) {
+  if (page_id_ == -1)
+    return;  // The page has not been translated, ignore.
+
+  DCHECK(!original_language_.empty() && !current_language_.empty());
+
+  WebKit::WebDataSource* ds = web_frame->dataSource();
+  NavigationState* navigation_state = NavigationState::FromDataSource(ds);
+  DCHECK(navigation_state);
+  if (navigation_state->was_translated())
+    return;  // This frame has already been translated, nothing to do.
+
+  // If the frame has no document or an empty document, it may not have been
+  // loaded yet.
+  if (web_frame->document().isNull() ||
+      web_frame->document().childNodes().length() == 0) {
+    return;
+  }
+
   std::stack<NodeList*> node_list_stack;
   std::vector<NodeList*> text_node_lists;
   TraverseNode(web_frame->document(), &node_list_stack, &text_node_lists);
@@ -125,7 +153,8 @@ void PageTranslator::Translate(int page_id,
 
     // Send the text for translation.
     int work_id =
-        text_translator_->Translate(*text_chunks, source_lang, target_lang,
+        text_translator_->Translate(*text_chunks,
+                                    original_language_, current_language_,
                                     secure_page_, this);
     pending_translations_[work_id] = *iter;
     // Also store the text nodes and their original text so we can translate to
@@ -133,11 +162,17 @@ void PageTranslator::Translate(int page_id,
     text_nodes_.push_back(*iter);
     text_chunks_.push_back(text_chunks);
   }
+
+  navigation_state->set_was_translated(true);
 }
 
-void PageTranslator::NavigatedToNewPage() {
+void PageTranslator::MainFrameNavigated() {
   // We can drop all our states, they were related to the previous page.
   ResetPageStates();
+}
+
+bool PageTranslator::IsPageTranslated() {
+  return original_language_ != current_language_;
 }
 
 bool PageTranslator::ShouldElementBeTraversed(WebKit::WebElement element) {
