@@ -157,3 +157,6 @@ prefix : modaldialogdelegate::activatemodaldialog___browserview::activateappmoda
 # 35027
 PREFIX : v8::internal::hashtable<v8::internal::stringdictionaryshape,v8::internal::string *>::findentry___v8::internal::jsobject::setnormalizedproperty___v8::internal::jsobject::definegettersetter___v8::internal::jsobject::defineaccessor___v8::internal::runtime_defineaccessor___v8::internal::invoke___v8::internal::execution::call___v8::script::run___webcore::v8proxy::runscript___webcore::v8proxy::evaluate
 
+# 35176
+PREFIX : std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wchar_t> >::assign___addressfield::parsezipcode___addressfield::parse___formfieldset::formfieldset___formstructure::getheuristicfieldinfo
+
