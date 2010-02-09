@@ -5,9 +5,6 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_USER_SCRIPT_MASTER_H_
 #define CHROME_BROWSER_EXTENSIONS_USER_SCRIPT_MASTER_H_
 
-#include <vector>
-
-#include "base/directory_watcher.h"
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
@@ -24,16 +21,11 @@ class StringPiece;
 // Manages a segment of shared memory that contains the user scripts the user
 // has installed.  Lives on the UI thread.
 class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
-                         public DirectoryWatcher::Delegate,
                          public NotificationObserver {
  public:
   // For testability, the constructor takes the path the scripts live in.
   // This is normally a directory inside the profile.
   explicit UserScriptMaster(const FilePath& script_dir, Profile* profile);
-
-  // Add a watched directory. All scripts will be reloaded when any file in
-  // this directory changes.
-  void AddWatchedPath(const FilePath& path);
 
   // Kicks off a process on the file thread to reload scripts from disk
   // into a new chunk of shared memory and notify renderers.
@@ -129,9 +121,6 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
   };
 
  private:
-  // DirectoryWatcher::Delegate implementation.
-  virtual void OnDirectoryChanged(const FilePath& path);
-
   // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
@@ -143,10 +132,6 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
   // The directories containing user scripts.
   FilePath user_script_dir_;
 
-  // The watcher watches the profile's user scripts directory for new scripts.
-  std::vector<DirectoryWatcher*> dir_watchers_;
-
-  // ScriptReloader (in another thread) reloads script off disk.
   // We hang on to our pointer to know if we've already got one running.
   scoped_refptr<ScriptReloader> script_reloader_;
 

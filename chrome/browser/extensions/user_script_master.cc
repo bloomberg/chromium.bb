@@ -289,9 +289,6 @@ UserScriptMaster::UserScriptMaster(const FilePath& script_dir, Profile* profile)
       extensions_service_ready_(false),
       pending_scan_(false),
       profile_(profile) {
-  if (!user_script_dir_.value().empty())
-    AddWatchedPath(script_dir);
-
   registrar_.Add(this, NotificationType::EXTENSIONS_READY,
                  Source<Profile>(profile_));
   registrar_.Add(this, NotificationType::EXTENSION_LOADED,
@@ -303,22 +300,6 @@ UserScriptMaster::UserScriptMaster(const FilePath& script_dir, Profile* profile)
 UserScriptMaster::~UserScriptMaster() {
   if (script_reloader_)
     script_reloader_->DisownMaster();
-
-// TODO(aa): Enable this when DirectoryWatcher is implemented for linux.
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  STLDeleteElements(&dir_watchers_);
-#endif
-}
-
-void UserScriptMaster::AddWatchedPath(const FilePath& path) {
-// TODO(aa): Enable this when DirectoryWatcher is implemented for linux.
-#if defined(OS_WIN) || defined(OS_MACOSX)
-  DirectoryWatcher* watcher = new DirectoryWatcher();
-  base::Thread* file_thread = g_browser_process->file_thread();
-  watcher->Watch(path, this, file_thread ? file_thread->message_loop() : NULL,
-                 true);
-  dir_watchers_.push_back(watcher);
-#endif
 }
 
 void UserScriptMaster::NewScriptsAvailable(base::SharedMemory* handle) {
@@ -341,17 +322,6 @@ void UserScriptMaster::NewScriptsAvailable(base::SharedMemory* handle) {
         Source<Profile>(profile_),
         Details<base::SharedMemory>(handle));
   }
-}
-
-void UserScriptMaster::OnDirectoryChanged(const FilePath& path) {
-  if (script_reloader_.get()) {
-    // We're already scanning for scripts.  We note that we should rescan when
-    // we get the chance.
-    pending_scan_ = true;
-    return;
-  }
-
-  StartScan();
 }
 
 void UserScriptMaster::Observe(NotificationType type,

@@ -91,30 +91,6 @@ TEST_F(UserScriptMasterTest, NoScripts) {
   ASSERT_TRUE(shared_memory_ != NULL);
 }
 
-// TODO(shess): Disabled on Linux because of missing DirectoryWatcher.
-#if defined(OS_WIN) || defined(OS_MACOSX)
-// Test that we get notified about new scripts after they're added.
-TEST_F(UserScriptMasterTest, NewScripts) {
-  TestingProfile profile;
-  scoped_refptr<UserScriptMaster> master(new UserScriptMaster(script_dir_,
-                                                              &profile));
-
-  FilePath path = script_dir_.AppendASCII("script.user.js");
-
-  const char content[] = "some content";
-  size_t written = file_util::WriteFile(path, content, sizeof(content));
-  ASSERT_EQ(written, sizeof(content));
-
-  // Post a delayed task so that we fail rather than hanging if things
-  // don't work.
-  message_loop_.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask, 5000);
-
-  message_loop_.Run();
-
-  ASSERT_TRUE(shared_memory_ != NULL);
-}
-#endif
-
 // Test that we get notified about scripts if they're already in the test dir.
 TEST_F(UserScriptMasterTest, ExistingScripts) {
   TestingProfile profile;

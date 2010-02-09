@@ -672,10 +672,6 @@ void ProfileImpl::InitExtensions() {
   if (command_line->HasSwitch(switches::kLoadExtension)) {
     FilePath path = command_line->GetSwitchValuePath(switches::kLoadExtension);
     extensions_service_->LoadExtension(path);
-
-    // Tell UserScriptMaser to watch this extension's directory for changes so
-    // you can live edit content scripts during development.
-    user_script_master_->AddWatchedPath(path);
   }
 }
 
