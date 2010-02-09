@@ -59,7 +59,6 @@ std::wstring JavaScriptMessageBoxDialog::GetWindowTitle() const {
 
 
 void JavaScriptMessageBoxDialog::WindowClosing() {
-  dialog_ = NULL;
 }
 
 void JavaScriptMessageBoxDialog::DeleteDelegate() {

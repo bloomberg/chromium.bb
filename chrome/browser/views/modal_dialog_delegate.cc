@@ -4,6 +4,7 @@
 
 #include "chrome/browser/views/modal_dialog_delegate.h"
 
+#include "base/logging.h"
 #include "views/window/window.h"
 
 void ModalDialogDelegate::ShowModalDialog() {
@@ -19,6 +20,7 @@ void ModalDialogDelegate::ShowModalDialog() {
 }
 
 void ModalDialogDelegate::ActivateModalDialog() {
+  DCHECK(dialog_);
   // Ensure that the dialog is visible and at the top of the z-order. These
   // conditions may not be true if the dialog was opened on a different virtual
   // desktop to the one the browser window is on.
