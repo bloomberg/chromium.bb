@@ -1205,12 +1205,12 @@ bool TabContents::IsActiveEntry(int32 page_id) {
           active_entry->page_id() == page_id);
 }
 
-void TabContents::override_encoding(const std::string& encoding) {
+void TabContents::SetOverrideEncoding(const std::string& encoding) {
   set_encoding(encoding);
   render_view_host()->SetPageEncoding(encoding);
 }
 
-void TabContents::reset_override_encoding() {
+void TabContents::ResetOverrideEncoding() {
   reset_encoding();
   render_view_host()->ResetPageEncodingToDefault();
 }

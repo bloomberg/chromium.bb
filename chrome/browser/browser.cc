@@ -1106,7 +1106,7 @@ void Browser::ToggleEncodingAutoDetect() {
   if (encoding_auto_detect_.GetValue()) {
     TabContents* contents = GetSelectedTabContents();
     if (contents)
-      contents->reset_override_encoding();
+      contents->ResetOverrideEncoding();
   }
 }
 
@@ -1116,7 +1116,7 @@ void Browser::OverrideEncoding(int encoding_id) {
       CharacterEncoding::GetCanonicalEncodingNameByCommandId(encoding_id);
   TabContents* contents = GetSelectedTabContents();
   if (!selected_encoding.empty() && contents)
-     contents->override_encoding(selected_encoding);
+     contents->SetOverrideEncoding(selected_encoding);
   // Update the list of recently selected encodings.
   std::string new_selected_encoding_list;
   if (CharacterEncoding::UpdateRecentlySelectdEncoding(

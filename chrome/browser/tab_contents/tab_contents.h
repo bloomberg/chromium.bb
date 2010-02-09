@@ -602,11 +602,11 @@ class TabContents : public PageNavigator,
   // the opposite of this, by which 'browser' is notified of
   // the encoding of the current tab from 'renderer' (determined by
   // auto-detect, http header, meta, bom detection, etc).
-  void override_encoding(const std::string& encoding);
+  void SetOverrideEncoding(const std::string& encoding);
 
   // Remove any user-defined override encoding and reload by sending down
   // ViewMsg_ResetPageEncodingToDefault to the renderer.
-  void reset_override_encoding();
+  void ResetOverrideEncoding();
 
   void WindowMoveOrResizeStarted();
 
