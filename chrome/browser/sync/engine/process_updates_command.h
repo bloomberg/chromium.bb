@@ -32,10 +32,11 @@ class ProcessUpdatesCommand : public ModelChangingSyncerCommand {
 
   // ModelChangingSyncerCommand implementation.
   virtual void ModelChangingExecuteImpl(sessions::SyncSession* session);
+
+ private:
   ServerUpdateProcessingResult ProcessUpdate(
       const syncable::ScopedDirLookup& dir,
       const sync_pb::SyncEntity& pb_entry);
- private:
   DISALLOW_COPY_AND_ASSIGN(ProcessUpdatesCommand);
 };
 

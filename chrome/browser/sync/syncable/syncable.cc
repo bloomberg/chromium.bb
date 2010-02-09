@@ -1142,14 +1142,18 @@ bool MutableEntry::Put(IdField field, const Id& value) {
       if (!dir()->ReindexId(kernel_, value))
         return false;
     } else if (PARENT_ID == field) {
-      dir()->ReindexParentId(kernel_, value);
-      PutPredecessor(Id());
+      PutParentIdPropertyOnly(value);  // Makes sibling order inconsistent.
+      PutPredecessor(Id());  // Fixes up the sibling order inconsistency.
     } else {
       kernel_->put(field, value);
     }
     kernel_->mark_dirty();
   }
   return true;
+}
+
+void MutableEntry::PutParentIdPropertyOnly(const Id& parent_id) {
+  dir()->ReindexParentId(kernel_, parent_id);
 }
 
 bool MutableEntry::Put(BaseVersion field, int64 value) {
@@ -1268,6 +1272,7 @@ bool MutableEntry::PutPredecessor(const Id& predecessor_id) {
   Put(NEXT_ID, successor_id);
   return true;
 }
+
 
 ///////////////////////////////////////////////////////////////////////////
 // High-level functions

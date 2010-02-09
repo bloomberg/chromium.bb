@@ -8,66 +8,32 @@
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 #include "chrome/browser/sync/syncable/syncable_id.h"
-#include "chrome/test/sync/engine/test_directory_setter_upper.h"
+#include "chrome/test/sync/engine/syncer_command_test.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
+namespace browser_sync {
+
+using sessions::SyncSession;
 using std::string;
-using syncable::ScopedDirLookup;
-using syncable::WriteTransaction;
-using syncable::ReadTransaction;
-using syncable::MutableEntry;
 using syncable::Entry;
 using syncable::Id;
+using syncable::MutableEntry;
+using syncable::ReadTransaction;
+using syncable::ScopedDirLookup;
 using syncable::UNITTEST;
-
-namespace browser_sync {
-using sessions::SyncSessionContext;
-using sessions::SyncSession;
+using syncable::WriteTransaction;
 
 // A test fixture for tests exercising ApplyUpdatesCommand.
-class ApplyUpdatesCommandTest : public testing::Test,
-                                public SyncSession::Delegate,
-                                public ModelSafeWorkerRegistrar {
+class ApplyUpdatesCommandTest : public SyncerCommandTest {
  public:
-  // SyncSession::Delegate implementation.
-  virtual void OnSilencedUntil(const base::TimeTicks& silenced_until) {
-   FAIL() << "Should not get silenced.";
-  }
-  virtual bool IsSyncingCurrentlySilenced() {
-   ADD_FAILURE() << "No requests for silenced state should be made.";
-   return false;
-  }
-  virtual void OnReceivedLongPollIntervalUpdate(
-     const base::TimeDelta& new_interval) {
-   FAIL() << "Should not get poll interval update.";
-  }
-  virtual void OnReceivedShortPollIntervalUpdate(
-     const base::TimeDelta& new_interval) {
-   FAIL() << "Should not get poll interval update.";
-  }
-
-  // ModelSafeWorkerRegistrar implementation.
-  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) {}
-  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {}
-
  protected:
   ApplyUpdatesCommandTest() : next_revision_(1) {}
   virtual ~ApplyUpdatesCommandTest() {}
-  virtual void SetUp() {
-    syncdb_.SetUp();
-    context_.reset(new SyncSessionContext(NULL, syncdb_.manager(), this));
-    context_->set_account_name(syncdb_.name());
-  }
-  virtual void TearDown() {
-    syncdb_.TearDown();
-  }
-
- protected:
 
   // Create a new unapplied update.
   void CreateUnappliedNewItemWithParent(const string& item_id,
                                         const string& parent_id) {
-    ScopedDirLookup dir(syncdb_.manager(), syncdb_.name());
+    ScopedDirLookup dir(syncdb().manager(), syncdb().name());
     ASSERT_TRUE(dir.good());
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     MutableEntry entry(&trans, syncable::CREATE_NEW_UPDATE_ITEM,
@@ -84,9 +50,8 @@ class ApplyUpdatesCommandTest : public testing::Test,
     entry.Put(syncable::SERVER_SPECIFICS, default_bookmark_specifics);
   }
 
-  TestDirectorySetterUpper syncdb_;
   ApplyUpdatesCommand apply_updates_command_;
-  scoped_ptr<SyncSessionContext> context_;
+
  private:
   int64 next_revision_;
   DISALLOW_COPY_AND_ASSIGN(ApplyUpdatesCommandTest);
@@ -97,10 +62,9 @@ TEST_F(ApplyUpdatesCommandTest, Simple) {
   CreateUnappliedNewItemWithParent("parent", root_server_id);
   CreateUnappliedNewItemWithParent("child", "parent");
 
-  SyncSession session(context_.get(), this);
-  apply_updates_command_.ModelChangingExecuteImpl(&session);
+  apply_updates_command_.ModelChangingExecuteImpl(session());
 
-  sessions::StatusController* status = session.status_controller();
+  sessions::StatusController* status = session()->status_controller();
   EXPECT_EQ(2, status->update_progress().AppliedUpdatesSize())
       << "All updates should have been attempted";
   EXPECT_EQ(0, status->conflict_progress()->ConflictingItemsSize())
@@ -119,10 +83,9 @@ TEST_F(ApplyUpdatesCommandTest, UpdateWithChildrenBeforeParents) {
   CreateUnappliedNewItemWithParent("a_child_created_second", "parent");
   CreateUnappliedNewItemWithParent("x_child_created_second", "parent");
 
-  SyncSession session(context_.get(), this);
-  apply_updates_command_.ModelChangingExecuteImpl(&session);
+  apply_updates_command_.ModelChangingExecuteImpl(session());
 
-  sessions::StatusController* status = session.status_controller();
+  sessions::StatusController* status = session()->status_controller();
   EXPECT_EQ(5, status->update_progress().AppliedUpdatesSize())
       << "All updates should have been attempted";
   EXPECT_EQ(0, status->conflict_progress()->ConflictingItemsSize())
@@ -136,10 +99,9 @@ TEST_F(ApplyUpdatesCommandTest, NestedItemsWithUnknownParent) {
   CreateUnappliedNewItemWithParent("some_item", "unknown_parent");
   CreateUnappliedNewItemWithParent("some_other_item", "some_item");
 
-  SyncSession session(context_.get(), this);
-  apply_updates_command_.ModelChangingExecuteImpl(&session);
+  apply_updates_command_.ModelChangingExecuteImpl(session());
 
-  sessions::StatusController* status = session.status_controller();
+  sessions::StatusController* status = session()->status_controller();
   EXPECT_EQ(2, status->update_progress().AppliedUpdatesSize())
       << "All updates should have been attempted";
   EXPECT_EQ(2, status->conflict_progress()->ConflictingItemsSize())
@@ -158,10 +120,9 @@ TEST_F(ApplyUpdatesCommandTest, ItemsBothKnownAndUnknown) {
   CreateUnappliedNewItemWithParent("third_known_item", "fourth_known_item");
   CreateUnappliedNewItemWithParent("fourth_known_item", root_server_id);
 
-  SyncSession session(context_.get(), this);
-  apply_updates_command_.ModelChangingExecuteImpl(&session);
+  apply_updates_command_.ModelChangingExecuteImpl(session());
 
-  sessions::StatusController* status = session.status_controller();
+  sessions::StatusController* status = session()->status_controller();
   EXPECT_EQ(6, status->update_progress().AppliedUpdatesSize())
       << "All updates should have been attempted";
   EXPECT_EQ(2, status->conflict_progress()->ConflictingItemsSize())

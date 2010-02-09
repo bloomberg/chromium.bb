@@ -96,7 +96,12 @@ void SyncerUtil::ChangeEntryIDAndUpdateChildren(
     while (i != children->end()) {
       MutableEntry child_entry(trans, GET_BY_HANDLE, *i++);
       CHECK(child_entry.good());
-      CHECK(child_entry.Put(PARENT_ID, new_id));
+      // Use the unchecked setter here to avoid touching the child's NEXT_ID
+      // and PREV_ID fields (which Put(PARENT_ID) would normally do to
+      // maintain linked-list invariants).  In this case, NEXT_ID and PREV_ID
+      // among the children will be valid after the loop, since we update all
+      // the children at once.
+      child_entry.PutParentIdPropertyOnly(new_id);
     }
   }
   // Update Id references on the previous and next nodes in the sibling

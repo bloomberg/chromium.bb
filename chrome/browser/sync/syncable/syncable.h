@@ -442,6 +442,18 @@ class MutableEntry : public Entry {
   // TODO(chron): Remove some of these unecessary return values.
   bool Put(Int64Field field, const int64& value);
   bool Put(IdField field, const Id& value);
+
+  // Do a simple property-only update if the PARENT_ID field.  Use with caution.
+  //
+  // The normal Put(IS_PARENT) call will move the item to the front of the
+  // sibling order to maintain the linked list invariants when the parent
+  // changes.  That's usually what you want to do, but it's inappropriate
+  // when the caller is trying to change the parent ID of a the whole set
+  // of children (e.g. because the ID changed during a commit).  For those
+  // cases, there's this function.  It will corrupt the sibling ordering
+  // if you're not careful.
+  void PutParentIdPropertyOnly(const Id& parent_id);
+
   bool Put(StringField field, const std::string& value);
   bool Put(BaseVersion field, int64 value);
 
@@ -474,7 +486,6 @@ class MutableEntry : public Entry {
   }
 
  protected:
-
   template <typename FieldType, typename ValueType>
   inline bool PutField(FieldType field, const ValueType& value) {
     DCHECK(kernel_);
