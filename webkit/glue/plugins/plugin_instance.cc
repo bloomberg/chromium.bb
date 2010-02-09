@@ -551,18 +551,20 @@ bool PluginInstance::ConvertPoint(double source_x, double source_y,
       flipped_screen_x += plugin_origin_.x();
       flipped_screen_y += plugin_origin_.y();
       break;
+    case NPCoordinateSpaceWindow:
+      flipped_screen_x += containing_window_frame_.x();
+      flipped_screen_y = containing_window_frame_.height() - source_y +
+          containing_window_frame_.y();
+      break;
+    case NPCoordinateSpaceFlippedWindow:
+      flipped_screen_x += containing_window_frame_.x();
+      flipped_screen_y += containing_window_frame_.y();
+      break;
     case NPCoordinateSpaceScreen:
       flipped_screen_y = main_display_bounds.size.height - flipped_screen_y;
+      break;
     case NPCoordinateSpaceFlippedScreen:
       break;
-    case NPCoordinateSpaceWindow:
-    case NPCoordinateSpaceFlippedWindow:
-      // Since a CG+Cocoa plugin has no way of getting a window reference, we
-      // may be able to get away without implementing this for now. If we do
-      // need to implement it later (e.g., for CALayer-based plugins) we'll need
-      // to get window bounds over IPC.
-      NOTIMPLEMENTED();
-      return false;
     default:
       NOTREACHED();
       return false;
@@ -575,18 +577,20 @@ bool PluginInstance::ConvertPoint(double source_x, double source_y,
       target_x -= plugin_origin_.x();
       target_y -= plugin_origin_.y();
       break;
+    case NPCoordinateSpaceWindow:
+      target_x -= containing_window_frame_.x();
+      target_y -= containing_window_frame_.y();
+      target_y = containing_window_frame_.height() - target_y;
+      break;
+    case NPCoordinateSpaceFlippedWindow:
+      target_x -= containing_window_frame_.x();
+      target_y -= containing_window_frame_.y();
+      break;
     case NPCoordinateSpaceScreen:
       target_y = main_display_bounds.size.height - flipped_screen_y;
+      break;
     case NPCoordinateSpaceFlippedScreen:
       break;
-    case NPCoordinateSpaceWindow:
-    case NPCoordinateSpaceFlippedWindow:
-      // Since a CG+Cocoa plugin has no way of getting a window reference, we
-      // may be able to get away without implementing this for now. If we do
-      // need to implement it later (e.g., for CALayer-based plugins) we'll need
-      // to get window bounds over IPC.
-      NOTIMPLEMENTED();
-      return false;
     default:
       NOTREACHED();
       return false;

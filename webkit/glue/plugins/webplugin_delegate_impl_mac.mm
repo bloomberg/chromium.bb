@@ -586,7 +586,7 @@ void WebPluginDelegateImpl::SetContainerVisibility(bool is_visible) {
 
 void WebPluginDelegateImpl::WindowFrameChanged(gfx::Rect window_frame,
                                                gfx::Rect view_frame) {
-  containing_window_frame_ = window_frame;
+  instance()->set_window_frame(window_frame);
   SetContentAreaOrigin(gfx::Point(view_frame.x(), view_frame.y()));
 }
 

@@ -18,6 +18,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/gfx/point.h"
+#include "base/gfx/rect.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "webkit/glue/plugins/nphostapi.h"
@@ -114,7 +115,12 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   void set_event_model(int value) { event_model_ = value; }
   // Updates the instance's tracking of the location of the plugin location
   // relative to the upper left of the screen.
-  void set_plugin_origin(gfx::Point origin) { plugin_origin_ = origin; }
+  void set_plugin_origin(const gfx::Point& origin) { plugin_origin_ = origin; }
+  // Updates the instance's tracking of the frame of the containing window
+  // relative to the upper left of the screen.
+  void set_window_frame(const gfx::Rect& frame) {
+    containing_window_frame_ = frame;
+  }
 #endif
 
   // Creates a stream for sending an URL.  If notify_id is non-zero, it will
@@ -283,6 +289,7 @@ class PluginInstance : public base::RefCountedThreadSafe<PluginInstance> {
   int                                      drawing_model_;
   int                                      event_model_;
   gfx::Point                               plugin_origin_;
+  gfx::Rect                                containing_window_frame_;
   NPCocoaEvent*                            currently_handled_event_;  // weak
 #endif
   MessageLoop*                             message_loop_;

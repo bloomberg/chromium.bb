@@ -428,3 +428,24 @@ TEST_F(NPAPIVisiblePluginTester, PluginReferrerTest) {
                 kTestCompleteSuccess, kShortWaitTimeout);
 }
 
+#if defined(OS_MACOSX)
+TEST_F(NPAPIVisiblePluginTester, PluginConvertPointTest) {
+  if (UITest::in_process_renderer())
+    return;
+
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  scoped_refptr<WindowProxy> window(browser->GetWindow());
+  window->SetBounds(gfx::Rect(100, 100, 600, 600));
+
+  GURL url(URLRequestMockHTTPJob::GetMockUrl(
+      FilePath(FILE_PATH_LITERAL("npapi/convert_point.html"))));
+  NavigateToURL(url);
+
+  // TODO(stuartmorgan): When the automation system supports sending clicks,
+  // change the test to trigger on mouse-down rather than window focus.
+  browser->BringToFront();
+  WaitForFinish("convert_point", "1", url, kTestCompleteCookie,
+                kTestCompleteSuccess, kShortWaitTimeout);
+}
+#endif
+

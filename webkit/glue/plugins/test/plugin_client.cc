@@ -130,7 +130,8 @@ NPError NPP_New(NPMIMEType pluginType, NPP instance, uint16 mode,
              test_name == "execute_script_delete_in_mouse_move" ||
              test_name == "delete_frame_test" ||
              test_name == "multiple_instances_sync_calls" ||
-             test_name == "no_hang_if_init_crashes") {
+             test_name == "no_hang_if_init_crashes" ||
+             test_name == "convert_point") {
     new_test = new NPAPIClient::WindowlessPluginTest(instance,
       NPAPIClient::PluginClient::HostFunctions(), test_name);
     windowless_plugin = true;

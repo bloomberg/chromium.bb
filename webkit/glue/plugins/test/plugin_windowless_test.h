@@ -24,6 +24,7 @@ class WindowlessPluginTest : public PluginTest {
       const std::string& script, NPVariant* result);
   void ExecuteScriptDeleteInPaint(NPNetscapeFuncs* browser);
   void MultipleInstanceSyncCalls(NPNetscapeFuncs* browser);
+  void ConvertPoint(NPNetscapeFuncs* browser);
 
  private:
   std::string test_name_;

@@ -355,11 +355,8 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   void UpdateIdleEventRate();
 #endif  // !NP_NO_CARBON
 
-  // Note: the following coordinates are all in screen coordinates, relative an
-  // upper-left (0,0).
-  // The frame of the window containing this plugin.
-  gfx::Rect containing_window_frame_;
-  // The upper-left corner of the web content area.
+  // The upper-left corner of the web content area in screen coordinates,
+  // relative to an upper-left (0,0).
   gfx::Point content_area_origin_;
 
   // True if the plugin thinks it has keyboard focus
