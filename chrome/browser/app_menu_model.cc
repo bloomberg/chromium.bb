@@ -87,7 +87,11 @@ void AppMenuModel::Build() {
   AddItemWithStringId(IDC_HELP_PAGE, IDS_HELP_PAGE);
   if (browser_defaults::kShowExitMenuItem) {
     AddSeparator();
+#if defined(OS_CHROMEOS)
+    AddItemWithStringId(IDC_EXIT, IDS_SIGN_OUT);
+#else
     AddItemWithStringId(IDC_EXIT, IDS_EXIT);
+#endif
   }
 }
 

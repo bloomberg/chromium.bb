@@ -1032,6 +1032,11 @@ each locale. -->
           E&amp;xit
         </message>
       </if>
+      <if expr="pp_ifdef('chromeos')">
+        <message name="IDS_SIGN_OUT" desc="The text label of the Sign Out menu item">
+          Sign Out
+        </message>
+      </if>
 
       <!-- Keywords -->
       <message name="IDS_KEYWORD_SEARCH"
