@@ -411,13 +411,16 @@ class TestGypMSVS(TestGypBase):
       # We didn't find 'devenv' on the path.  Just hard-code a default,
       # and revisit this if it becomes important.
       possible = [
-        ('C:\\Program Files',
-         'Microsoft Visual Studio 8', 'Common7', 'IDE', 'devenv.com'),
-
         # Note:  if you're using this, set GYP_MSVS_VERSION=2008
         # to get the tests to pass.
         ('C:\\Program Files (x86)',
          'Microsoft Visual Studio 9.0', 'Common7', 'IDE', 'devenv.com'),
+        ('C:\\Program Files',
+         'Microsoft Visual Studio 9.0', 'Common7', 'IDE', 'devenv.com'),
+        ('C:\\Program Files (x86)',
+         'Microsoft Visual Studio 8', 'Common7', 'IDE', 'devenv.com'),
+        ('C:\\Program Files',
+         'Microsoft Visual Studio 8', 'Common7', 'IDE', 'devenv.com'),
       ]
       for build_tool in possible:
         bt = os.path.join(*build_tool)
