@@ -11,6 +11,7 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
+#include "chrome/common/url_constants.h"
 #include "net/base/static_cookie_policy.h"
 
 // static
@@ -130,6 +131,13 @@ ContentSetting HostContentSettingsMap::GetContentSetting(
       i->second.settings[content_type];
 }
 
+ContentSetting HostContentSettingsMap::GetContentSetting(
+    const GURL& url,
+    ContentSettingsType content_type) const {
+  return ShouldAllowAllContent(url) ?
+      CONTENT_SETTING_ALLOW : GetContentSetting(url.host(), content_type);
+}
+
 ContentSettings HostContentSettingsMap::GetContentSettings(
     const std::string& host) const {
   AutoLock auto_lock(lock_);
@@ -143,6 +151,12 @@ ContentSettings HostContentSettingsMap::GetContentSettings(
       output.settings[j] = default_content_settings_.settings[j];
   }
   return output;
+}
+
+ContentSettings HostContentSettingsMap::GetContentSettings(
+    const GURL& url) const {
+  return ShouldAllowAllContent(url) ?
+      ContentSettings(CONTENT_SETTING_ALLOW) : GetContentSettings(url.host());
 }
 
 void HostContentSettingsMap::GetSettingsForOneType(
@@ -302,6 +316,15 @@ void HostContentSettingsMap::ResetToDefaults() {
 }
 
 HostContentSettingsMap::~HostContentSettingsMap() {
+}
+
+// static
+bool HostContentSettingsMap::ShouldAllowAllContent(const GURL& url) {
+  return url.SchemeIs(chrome::kChromeInternalScheme) ||
+         url.SchemeIs(chrome::kChromeUIScheme) ||
+         url.SchemeIs(chrome::kExtensionScheme) ||
+         url.SchemeIs(chrome::kGearsScheme) ||
+         url.SchemeIs(chrome::kUserScriptScheme);
 }
 
 void HostContentSettingsMap::GetSettingsFromDictionary(

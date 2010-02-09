@@ -17,6 +17,7 @@
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "chrome/common/content_settings.h"
+#include "googleurl/src/gurl.h"
 
 class DictionaryValue;
 class PrefService;
@@ -32,7 +33,7 @@ class HostContentSettingsMap
   // each host.
   class ContentSettingsDetails {
    public:
-    ContentSettingsDetails(const std::string& host) : host_(host) {}
+    explicit ContentSettingsDetails(const std::string& host) : host_(host) {}
     // The host whose settings have changed. Empty if many hosts are affected
     // (e.g. if the default settings have changed).
     const std::string& host() { return host_; }
@@ -60,10 +61,19 @@ class HostContentSettingsMap
   ContentSetting GetContentSetting(const std::string& host,
                                    ContentSettingsType content_type) const;
 
+  // Same as above, but for a URL instead of a host.  The difference is that
+  // URLs with particular internal schemes are whitelisted.
+  ContentSetting GetContentSetting(const GURL& url,
+                                   ContentSettingsType content_type) const;
+
   // Returns all ContentSettings which apply to a given host.
   //
   // This may be called on any thread.
   ContentSettings GetContentSettings(const std::string& host) const;
+
+  // Same as above, but for a URL instead of a host.  The difference is that
+  // URLs with particular internal schemes are whitelisted.
+  ContentSettings GetContentSettings(const GURL& url) const;
 
   // For a given content type, returns all hosts with a non-default setting,
   // mapped to their actual settings, in lexicographical order.  |settings| must
@@ -118,6 +128,11 @@ class HostContentSettingsMap
   static const ContentSetting kDefaultSettings[CONTENT_SETTINGS_NUM_TYPES];
 
   ~HostContentSettingsMap();
+
+  // Returns true if we should allow all content types for this URL.  This is
+  // true for various internal objects like chrome:// URLs, so UI and other
+  // things users think of as "not webpages" don't break.
+  static bool ShouldAllowAllContent(const GURL& url);
 
   // Sets the fields of |settings| based on the values in |dictionary|.
   void GetSettingsFromDictionary(const DictionaryValue* dictionary,

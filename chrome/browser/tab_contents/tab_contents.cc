@@ -1321,7 +1321,7 @@ void TabContents::AddPopup(TabContents* new_contents,
   GURL url(GetURL());
   if (url.is_valid() &&
       profile()->GetHostContentSettingsMap()->GetContentSetting(
-          url.host(), CONTENT_SETTINGS_TYPE_POPUPS) == CONTENT_SETTING_ALLOW) {
+          url, CONTENT_SETTINGS_TYPE_POPUPS) == CONTENT_SETTING_ALLOW) {
     AddNewContents(new_contents, NEW_POPUP, initial_pos, true);
   } else {
     if (!blocked_popups_)
@@ -2763,15 +2763,18 @@ void TabContents::Observe(NotificationType type,
     case NotificationType::CONTENT_SETTINGS_CHANGED: {
       Details<HostContentSettingsMap::ContentSettingsDetails>
           settings_details(details);
-      std::string host;
       NavigationEntry* entry = controller_.GetActiveEntry();
-      if (entry)
-        host = entry->url().host();
+      GURL entry_url;
+      std::string host;
+      if (entry) {
+        entry_url = entry->url();
+        host = entry_url.host();
+      }
       Source<HostContentSettingsMap> content_settings(source);
       if (settings_details.ptr()->host().empty() ||
           settings_details.ptr()->host() == host) {
         render_view_host()->SendContentSettings(host,
-            content_settings.ptr()->GetContentSettings(host));
+            content_settings.ptr()->GetContentSettings(entry_url));
       }
       break;
     }

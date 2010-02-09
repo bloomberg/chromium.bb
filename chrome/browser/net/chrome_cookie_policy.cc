@@ -10,7 +10,6 @@
 #include "chrome/browser/cookie_prompt_modal_dialog_delegate.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/message_box_handler.h"
-#include "googleurl/src/gurl.h"
 #include "net/base/net_errors.h"
 #include "net/base/static_cookie_policy.h"
 
@@ -74,9 +73,7 @@ int ChromeCookiePolicy::CanGetCookies(const GURL& url,
       return rv;
   }
 
-  const std::string& host = url.host();
-
-  int policy = CheckPolicy(host);
+  int policy = CheckPolicy(url);
   if (policy != net::ERR_IO_PENDING)
     return policy;
 
@@ -84,7 +81,7 @@ int ChromeCookiePolicy::CanGetCookies(const GURL& url,
 
   // If we are currently prompting the user for a 'set-cookie' matching this
   // host, then we need to defer reading cookies.
-  HostCompletionsMap::iterator it = host_completions_map_.find(host);
+  HostCompletionsMap::iterator it = host_completions_map_.find(url.host());
   if (it == host_completions_map_.end()) {
     policy = net::OK;
   } else if (it->second.size() >= kMaxCompletionsPerHost) {
@@ -111,9 +108,7 @@ int ChromeCookiePolicy::CanSetCookie(const GURL& url,
       return rv;
   }
 
-  const std::string& host = url.host();
-
-  int policy = CheckPolicy(host);
+  int policy = CheckPolicy(url);
   if (policy != net::ERR_IO_PENDING)
     return policy;
 
@@ -121,7 +116,7 @@ int ChromeCookiePolicy::CanSetCookie(const GURL& url,
 
   // Else, ask the user...
 
-  Completions& completions = host_completions_map_[host];
+  Completions& completions = host_completions_map_[url.host()];
 
   if (completions.size() >= kMaxCompletionsPerHost) {
     LOG(ERROR) << "Would exceed kMaxCompletionsPerHost";
@@ -131,13 +126,13 @@ int ChromeCookiePolicy::CanSetCookie(const GURL& url,
     policy = net::ERR_IO_PENDING;
   }
 
-  PromptForSetCookie(host, cookie_line);
+  PromptForSetCookie(url, cookie_line);
   return policy;
 }
 
-int ChromeCookiePolicy::CheckPolicy(const std::string& host) const {
+int ChromeCookiePolicy::CheckPolicy(const GURL& url) const {
   ContentSetting setting = host_content_settings_map_->GetContentSetting(
-      host, CONTENT_SETTINGS_TYPE_COOKIES);
+      url, CONTENT_SETTINGS_TYPE_COOKIES);
   if (setting == CONTENT_SETTING_BLOCK)
     return net::ERR_ACCESS_DENIED;
   if (setting == CONTENT_SETTING_ALLOW)
@@ -151,38 +146,37 @@ void ChromeCookiePolicy::ShowNextPrompt() {
   if (prompt_queue_.empty())
     return;
   PromptData data = prompt_queue_.front();
+  const std::string& host = data.url.host();
 
   // The policy may have changed (due to the "remember" option).
-  int policy = CheckPolicy(data.host);
+  int policy = CheckPolicy(data.url);
   if (policy != net::ERR_IO_PENDING) {
-    DidPromptForSetCookie(data.host, policy, false);
+    DidPromptForSetCookie(host, policy, false);
     return;
   }
 
   // Show the prompt on top of the current tab.
   Browser* browser = BrowserList::GetLastActive();
   if (!browser || !browser->GetSelectedTabContents()) {
-    DidPromptForSetCookie(data.host, net::ERR_ACCESS_DENIED, false);
+    DidPromptForSetCookie(host, net::ERR_ACCESS_DENIED, false);
     return;
   }
 
 #if defined(OS_WIN)
-  RunCookiePrompt(browser->GetSelectedTabContents(),
-                  data.host,
-                  data.cookie_line,
-                  new PromptDelegate(this, data.host));
+  RunCookiePrompt(browser->GetSelectedTabContents(), host, data.cookie_line,
+                  new PromptDelegate(this, host));
 #else
   // TODO(darin): Enable prompting for other ports.
-  DidPromptForSetCookie(data.host, net::ERR_ACCESS_DENIED, false);
+  DidPromptForSetCookie(host, net::ERR_ACCESS_DENIED, false);
 #endif
 }
 
-void ChromeCookiePolicy::PromptForSetCookie(const std::string &host,
+void ChromeCookiePolicy::PromptForSetCookie(const GURL& url,
                                             const std::string& cookie_line) {
   if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
-        NewRunnableMethod(this, &ChromeCookiePolicy::PromptForSetCookie, host,
+        NewRunnableMethod(this, &ChromeCookiePolicy::PromptForSetCookie, url,
                           cookie_line));
     return;
   }
@@ -190,12 +184,12 @@ void ChromeCookiePolicy::PromptForSetCookie(const std::string &host,
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   bool show_now = prompt_queue_.empty();
-  prompt_queue_.push(PromptData(host, cookie_line));
+  prompt_queue_.push(PromptData(url, cookie_line));
   if (show_now)
     ShowNextPrompt();
 }
 
-void ChromeCookiePolicy::DidPromptForSetCookie(const std::string &host,
+void ChromeCookiePolicy::DidPromptForSetCookie(const std::string& host,
                                                int policy, bool remember) {
   if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
     // Process the remember flag immediately.

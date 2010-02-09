@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/ref_counted.h"
+#include "googleurl/src/gurl.h"
 #include "net/base/cookie_policy.h"
 
 class HostContentSettingsMap;
@@ -66,20 +67,19 @@ class ChromeCookiePolicy
   typedef std::map<std::string, Completions> HostCompletionsMap;
 
   struct PromptData {
-    std::string host;
+    GURL url;
     std::string cookie_line;
 
-    PromptData(const std::string& host, const std::string& cookie_line)
-        : host(host),
+    PromptData(const GURL& url, const std::string& cookie_line)
+        : url(url),
           cookie_line(cookie_line) {
     }
   };
   typedef std::queue<PromptData> PromptQueue;
 
-  int CheckPolicy(const std::string& host) const;
+  int CheckPolicy(const GURL& url) const;
   void ShowNextPrompt();
-  void PromptForSetCookie(const std::string& host,
-                          const std::string& cookie_line);
+  void PromptForSetCookie(const GURL& url, const std::string& cookie_line);
   void DidPromptForSetCookie(const std::string& host, int result,
                              bool remember);
 

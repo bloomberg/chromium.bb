@@ -24,6 +24,11 @@ struct ContentSettings {
       settings[i] = CONTENT_SETTING_DEFAULT;
   }
 
+  explicit ContentSettings(ContentSetting default_setting) {
+    for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i)
+      settings[i] = default_setting;
+  }
+
   ContentSetting settings[CONTENT_SETTINGS_NUM_TYPES];
 };
 

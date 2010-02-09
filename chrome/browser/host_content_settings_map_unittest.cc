@@ -6,6 +6,7 @@
 
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/testing_profile.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -23,10 +24,9 @@ bool SettingsEqual(const ContentSettings& settings1,
 
 class StubSettingsObserver : public NotificationObserver {
  public:
-  StubSettingsObserver()
-      : last_notifier(NULL), counter(0) {
+  StubSettingsObserver() : last_notifier(NULL), counter(0) {
     registrar_.Add(this, NotificationType::CONTENT_SETTINGS_CHANGED,
-                 NotificationService::AllSources());
+                   NotificationService::AllSources());
   }
 
   virtual void Observe(NotificationType type,
@@ -53,8 +53,7 @@ class StubSettingsObserver : public NotificationObserver {
 
 class HostContentSettingsMapTest : public testing::Test {
  public:
-  HostContentSettingsMapTest()
-    : ui_thread_(ChromeThread::UI, &message_loop_) {}
+  HostContentSettingsMapTest() : ui_thread_(ChromeThread::UI, &message_loop_) {}
 
  protected:
   MessageLoop message_loop_;
@@ -74,6 +73,9 @@ TEST_F(HostContentSettingsMapTest, DefaultValues) {
       CONTENT_SETTINGS_TYPE_IMAGES, CONTENT_SETTING_BLOCK);
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetDefaultContentSetting(
+                CONTENT_SETTINGS_TYPE_IMAGES));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW, host_content_settings_map->GetContentSetting(
+                GURL(chrome::kChromeUINewTabURL),
                 CONTENT_SETTINGS_TYPE_IMAGES));
   host_content_settings_map->SetDefaultContentSetting(
       CONTENT_SETTINGS_TYPE_PLUGINS, CONTENT_SETTING_ASK);

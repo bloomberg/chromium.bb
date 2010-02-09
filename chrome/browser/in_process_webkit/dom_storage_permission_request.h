@@ -13,12 +13,13 @@
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/cookie_prompt_modal_dialog_delegate.h"
 #include "chrome/common/content_settings.h"
+#include "googleurl/src/gurl.h"
 
 // This class is used to request content setting related permission for local
 // storage.  It should only be used for one such event and then discarded.
 class DOMStoragePermissionRequest : public CookiePromptModalDialogDelegate {
  public:
-  DOMStoragePermissionRequest(const std::string& host,
+  DOMStoragePermissionRequest(const GURL& url,
                               bool file_exists,
                               int64 size,
                               base::Time last_modified,
@@ -28,21 +29,21 @@ class DOMStoragePermissionRequest : public CookiePromptModalDialogDelegate {
   ContentSetting WaitOnResponse();
   void SendResponse(ContentSetting content_setting, bool remember);
 
-  const std::string& host() const { return host_; }
+  const GURL& url() const { return url_; }
   bool file_exists() const { return file_exists_; }
   int64 size() const { return size_; }
   const base::Time last_modified() const { return last_modified_; }
 
   // Called on the UI thread.
-  static void PromptUser(DOMStoragePermissionRequest *request);
+  static void PromptUser(DOMStoragePermissionRequest* request);
 
   // CookiesPromptViewDelegate methods:
   virtual void AllowSiteData(bool remember, bool session_expire);
   virtual void BlockSiteData(bool remember);
 
  private:
-  // The host we need to get permission for.
-  const std::string host_;
+  // The URL we need to get permission for.
+  const GURL url_;
 
   // Is there any information on disk currently?
   bool file_exists_;

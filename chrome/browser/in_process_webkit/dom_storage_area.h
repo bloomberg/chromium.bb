@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_AREA_H_
 #define CHROME_BROWSER_IN_PROCESS_WEBKIT_DOM_STORAGE_AREA_H_
@@ -11,6 +11,7 @@
 #include "base/nullable_string16.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
+#include "googleurl/src/gurl.h"
 
 class DOMStorageNamespace;
 class HostContentSettingsMap;
@@ -47,6 +48,7 @@ class DOMStorageArea {
 
   // The origin this storage area represents.
   string16 origin_;
+  GURL origin_url_;
 
   // The storage area we wrap.
   scoped_ptr<WebKit::WebStorageArea> storage_area_;
@@ -58,9 +60,6 @@ class DOMStorageArea {
   DOMStorageNamespace* owner_;
 
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
-
-  // The host portion of the origin_.
-  const std::string host_;
 
   DISALLOW_IMPLICIT_CONSTRUCTORS(DOMStorageArea);
 };

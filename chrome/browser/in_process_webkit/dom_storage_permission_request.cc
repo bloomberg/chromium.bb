@@ -8,12 +8,12 @@
 #include "chrome/browser/message_box_handler.h"
 
 DOMStoragePermissionRequest::DOMStoragePermissionRequest(
-    const std::string& host,
+    const GURL& url,
     bool file_exists,
     int64 size,
     base::Time last_modified,
     HostContentSettingsMap* settings)
-    : host_(host),
+    : url_(url),
       file_exists_(file_exists),
       size_(size),
       last_modified_(last_modified),
@@ -31,20 +31,20 @@ void DOMStoragePermissionRequest::SendResponse(ContentSetting content_setting,
   response_content_setting_ = content_setting;
   if (remember) {
     host_content_settings_map_->SetContentSetting(
-        host_, CONTENT_SETTINGS_TYPE_COOKIES, content_setting);
+        url_.host(), CONTENT_SETTINGS_TYPE_COOKIES, content_setting);
   }
   event_.Signal();
 }
 
 // static
 void DOMStoragePermissionRequest::PromptUser(
-    DOMStoragePermissionRequest *dom_storage_permission_request) {
+    DOMStoragePermissionRequest* dom_storage_permission_request) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
   // Cookie settings may have changed.
   ContentSetting setting =
       dom_storage_permission_request->host_content_settings_map_->
-          GetContentSetting(dom_storage_permission_request->host(),
+          GetContentSetting(dom_storage_permission_request->url(),
                             CONTENT_SETTINGS_TYPE_COOKIES);
   if (setting != CONTENT_SETTING_ASK) {
     dom_storage_permission_request->SendResponse(setting, false);
@@ -60,13 +60,14 @@ void DOMStoragePermissionRequest::PromptUser(
 #if defined(OS_WIN)
   // TODO(darin): It seems like it would be interesting if the dialog actually
   // showed the name and value being stored (as is done for cookies).
+  const std::string& host = dom_storage_permission_request->url().host();
   RunLocalStoragePrompt(browser->GetSelectedTabContents(),
                         BrowsingDataLocalStorageHelper::LocalStorageInfo(
                             std::string(),
-                            dom_storage_permission_request->host(),
+                            host,
                             -1,
                             std::string(),
-                            dom_storage_permission_request->host(),
+                            host,
                             FilePath(),
                             dom_storage_permission_request->size(),
                             dom_storage_permission_request->last_modified()),

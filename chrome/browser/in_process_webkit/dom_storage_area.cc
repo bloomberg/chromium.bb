@@ -13,7 +13,6 @@
 #include "chrome/browser/in_process_webkit/dom_storage_namespace.h"
 #include "chrome/browser/in_process_webkit/dom_storage_permission_request.h"
 #include "chrome/browser/host_content_settings_map.h"
-#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageArea.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
@@ -31,10 +30,10 @@ DOMStorageArea::DOMStorageArea(
     DOMStorageNamespace* owner,
     HostContentSettingsMap* host_content_settings_map)
     : origin_(origin),
+      origin_url_(origin),
       id_(id),
       owner_(owner),
-      host_content_settings_map_(host_content_settings_map),
-      host_(GURL(origin).host()) {
+      host_content_settings_map_(host_content_settings_map) {
   DCHECK(owner_);
   DCHECK(host_content_settings_map_);
 }
@@ -111,7 +110,7 @@ void DOMStorageArea::CreateWebStorageAreaIfNecessary() {
 bool DOMStorageArea::CheckContentSetting() {
   ContentSetting content_setting =
       host_content_settings_map_->GetContentSetting(
-          host_, CONTENT_SETTINGS_TYPE_COOKIES);
+          origin_url_, CONTENT_SETTINGS_TYPE_COOKIES);
 
   if (content_setting == CONTENT_SETTING_ASK) {
     WebSecurityOrigin security_origin(
@@ -131,7 +130,7 @@ bool DOMStorageArea::CheckContentSetting() {
       size = file_info.size;
       last_modified = file_info.last_modified;
     }
-    DOMStoragePermissionRequest request(host_, file_exists, size,
+    DOMStoragePermissionRequest request(origin_url_, file_exists, size,
                                         last_modified,
                                         host_content_settings_map_);
     ChromeThread::PostTask(
