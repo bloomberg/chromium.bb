@@ -15,6 +15,7 @@
 #include "chrome/browser/dom_ui/html_dialog_tab_contents_delegate.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "ipc/ipc_message.h"
 
 // Thin bridge that routes notifications to
 // HtmlDialogWindowController's member variables.

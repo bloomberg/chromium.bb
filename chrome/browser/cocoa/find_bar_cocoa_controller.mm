@@ -15,6 +15,7 @@
 #import "chrome/browser/cocoa/find_pasteboard.h"
 #import "chrome/browser/cocoa/focus_tracker.h"
 #import "chrome/browser/cocoa/tab_strip_controller.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 

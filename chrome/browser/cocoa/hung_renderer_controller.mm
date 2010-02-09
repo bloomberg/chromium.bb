@@ -15,6 +15,7 @@
 #include "chrome/browser/hung_renderer_dialog.h"
 #import "chrome/browser/cocoa/multi_key_equivalent_button.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/result_codes.h"
@@ -80,8 +81,8 @@ HungRendererController* g_instance = NULL;
 
 - (IBAction)kill:(id)sender {
   if (hungContents_)
-    base::KillProcess(hungContents_->process()->GetHandle(), ResultCodes::HUNG,
-                      false);
+    base::KillProcess(hungContents_->GetRenderProcessHost()->GetHandle(),
+                      ResultCodes::HUNG, false);
   // Cannot call performClose:, because the close button is disabled.
   [self close];
 }
@@ -135,7 +136,7 @@ HungRendererController* g_instance = NULL;
   scoped_nsobject<NSMutableArray> titles([[NSMutableArray alloc] init]);
   scoped_nsobject<NSMutableArray> favicons([[NSMutableArray alloc] init]);
   for (TabContentsIterator it; !it.done(); ++it) {
-    if (it->process() == hungContents_->process()) {
+    if (it->GetRenderProcessHost() == hungContents_->GetRenderProcessHost()) {
       const string16 title = (*it)->GetTitle();
       if (title.empty()) {
         [titles addObject:
@@ -166,7 +167,8 @@ HungRendererController* g_instance = NULL;
 - (void)endForTabContents:(TabContents*)contents {
   DCHECK(contents);
   DCHECK(hungContents_);
-  if (hungContents_ && hungContents_->process() == contents->process()) {
+  if (hungContents_ && hungContents_->GetRenderProcessHost() ==
+      contents->GetRenderProcessHost()) {
     // Cannot call performClose:, because the close button is disabled.
     [self close];
   }

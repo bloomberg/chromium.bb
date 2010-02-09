@@ -10,6 +10,7 @@
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/net/url_request_context_getter.h"
+#include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/notification_service.h"
@@ -272,6 +273,10 @@ URLRequestContextGetter* TestingProfile::GetRequestContext() {
 void TestingProfile::CreateRequestContext() {
   if (!request_context_)
     request_context_ = new TestURLRequestContextGetter();
+}
+
+void TestingProfile::set_session_service(SessionService* session_service) {
+  session_service_ = session_service;
 }
 
 NTPResourceCache* TestingProfile::GetNTPResourceCache() {

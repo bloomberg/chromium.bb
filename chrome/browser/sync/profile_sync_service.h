@@ -13,15 +13,14 @@
 #include "base/file_path.h"
 #include "base/observer_list.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/google_service_auth_error.h"
-#include "chrome/browser/profile.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
 #include "chrome/common/notification_registrar.h"
 #include "googleurl/src/gurl.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 class CommandLine;
 class MessageLoop;

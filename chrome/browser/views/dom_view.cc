@@ -5,6 +5,7 @@
 #include "chrome/browser/views/dom_view.h"
 
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "ipc/ipc_message.h"
 #include "views/focus/focus_manager.h"
 
 DOMView::DOMView() : tab_contents_(NULL), initialized_(false) {

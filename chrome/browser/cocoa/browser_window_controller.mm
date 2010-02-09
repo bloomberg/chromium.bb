@@ -511,7 +511,7 @@ willPositionSheet:(NSWindow*)sheet
   // We need to activate the controls (in the "WebView"). To do this, get the
   // selected TabContents's RenderWidgetHostViewMac and tell it to activate.
   if (TabContents* contents = browser_->GetSelectedTabContents()) {
-    if (RenderWidgetHostView* rwhv = contents->render_widget_host_view())
+    if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetActive(true);
   }
 }
@@ -528,7 +528,7 @@ willPositionSheet:(NSWindow*)sheet
   // We need to deactivate the controls (in the "WebView"). To do this, get the
   // selected TabContents's RenderWidgetHostView and tell it to deactivate.
   if (TabContents* contents = browser_->GetSelectedTabContents()) {
-    if (RenderWidgetHostView* rwhv = contents->render_widget_host_view())
+    if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetActive(false);
   }
 }
@@ -537,7 +537,7 @@ willPositionSheet:(NSWindow*)sheet
 - (void)windowDidMiniaturize:(NSNotification *)notification {
   // Let the selected RenderWidgetHostView know, so that it can tell plugins.
   if (TabContents* contents = browser_->GetSelectedTabContents()) {
-    if (RenderWidgetHostView* rwhv = contents->render_widget_host_view())
+    if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetWindowVisibility(false);
   }
 }
@@ -546,7 +546,7 @@ willPositionSheet:(NSWindow*)sheet
 - (void)windowDidDeminiaturize:(NSNotification *)notification {
   // Let the selected RenderWidgetHostView know, so that it can tell plugins.
   if (TabContents* contents = browser_->GetSelectedTabContents()) {
-    if (RenderWidgetHostView* rwhv = contents->render_widget_host_view())
+    if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->SetWindowVisibility(true);
   }
 }
@@ -557,7 +557,7 @@ willPositionSheet:(NSWindow*)sheet
   // (unless we are minimized, in which case nothing has really changed).
   if (![[self window] isMiniaturized]) {
     if (TabContents* contents = browser_->GetSelectedTabContents()) {
-      if (RenderWidgetHostView* rwhv = contents->render_widget_host_view())
+      if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
         rwhv->SetWindowVisibility(false);
     }
   }
@@ -569,7 +569,7 @@ willPositionSheet:(NSWindow*)sheet
   // (unless we are minimized, in which case nothing has really changed).
   if (![[self window] isMiniaturized]) {
     if (TabContents* contents = browser_->GetSelectedTabContents()) {
-      if (RenderWidgetHostView* rwhv = contents->render_widget_host_view())
+      if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
         rwhv->SetWindowVisibility(true);
     }
   }
@@ -1704,7 +1704,7 @@ willPositionSheet:(NSWindow*)sheet
 
   // Let the selected RenderWidgetHostView know, so that it can tell plugins.
   if (TabContents* contents = browser_->GetSelectedTabContents()) {
-    if (RenderWidgetHostView* rwhv = contents->render_widget_host_view())
+    if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->WindowFrameChanged();
   }
 }
@@ -1747,7 +1747,7 @@ willPositionSheet:(NSWindow*)sheet
 
   // Let the selected RenderWidgetHostView know, so that it can tell plugins.
   if (TabContents* contents = browser_->GetSelectedTabContents()) {
-    if (RenderWidgetHostView* rwhv = contents->render_widget_host_view())
+    if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
       rwhv->WindowFrameChanged();
   }
 }
@@ -2137,7 +2137,7 @@ willPositionSheet:(NSWindow*)sheet
   // If the relayout shifts the content area up or down, let the renderer know.
   if (contentShifted) {
     if (TabContents* contents = browser_->GetSelectedTabContents()) {
-      if (RenderWidgetHostView* rwhv = contents->render_widget_host_view())
+      if (RenderWidgetHostView* rwhv = contents->GetRenderWidgetHostView())
         rwhv->WindowFrameChanged();
     }
   }

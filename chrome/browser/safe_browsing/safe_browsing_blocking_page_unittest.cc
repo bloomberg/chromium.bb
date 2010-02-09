@@ -153,7 +153,7 @@ class SafeBrowsingBlockingPageTest : public RenderViewHostTestHarness,
     resource->url = url;
     resource->resource_type = resource_type;
     resource->threat_type = SafeBrowsingService::URL_MALWARE;
-    resource->render_process_host_id = contents_->process()->id();
+    resource->render_process_host_id = contents_->GetRenderProcessHost()->id();
     resource->render_view_id = contents_->render_view_host()->routing_id();
   }
 

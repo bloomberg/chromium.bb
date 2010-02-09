@@ -6,6 +6,7 @@
 #include "chrome/browser/extensions/extension_browsertest.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/test/in_process_browser_test.h"
 
 // An InProcessBrowserTest for testing the ExtensionToolbarModel.

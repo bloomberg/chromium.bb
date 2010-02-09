@@ -6,10 +6,11 @@
 
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
-#include "chrome/browser/views/frame/browser_extender.h"
-#include "chrome/browser/views/frame/browser_view.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/thumbnail_generator.h"
+#include "chrome/browser/views/frame/browser_extender.h"
+#include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/tabs/tab_overview_cell.h"
 #include "chrome/browser/views/tabs/tab_overview_container.h"
 #include "chrome/browser/views/tabs/tab_overview_drag_controller.h"

@@ -7,7 +7,6 @@
 
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
-#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_observer.h"
@@ -18,6 +17,7 @@ class NavigationController;
 class NavigationEntry;
 class Profile;
 class RenderWidgetHostView;
+class RenderViewHost;
 class SiteInstance;
 
 // Manages RenderViewHosts for a TabContents. Normally there is only one and
@@ -86,11 +86,7 @@ class RenderViewHostManager
 
   // Returns the view associated with the current RenderViewHost, or NULL if
   // there is no current one.
-  RenderWidgetHostView* current_view() const {
-    if (!render_view_host_)
-      return NULL;
-    return render_view_host_->view();
-  }
+  RenderWidgetHostView* GetRenderWidgetHostView() const;
 
   // Returns the pending render view host, or NULL if there is no pending one.
   RenderViewHost* pending_render_view_host() const {

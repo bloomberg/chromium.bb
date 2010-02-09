@@ -18,9 +18,10 @@
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/browser/sessions/session_service.h"
 #include "chrome/common/pref_service.h"
 #include "net/base/cookie_monster.h"
+
+class SessionService;
 
 class TestingProfile : public Profile {
  public:
@@ -187,9 +188,7 @@ class TestingProfile : public Profile {
     return host_content_settings_map_.get();
   }
   virtual HostZoomMap* GetHostZoomMap() { return NULL; }
-  void set_session_service(SessionService* session_service) {
-    session_service_ = session_service;
-  }
+  void set_session_service(SessionService* session_service);
   virtual SessionService* GetSessionService() { return session_service_.get(); }
   virtual void ShutdownSessionService() {}
   virtual bool HasSessionService() const {

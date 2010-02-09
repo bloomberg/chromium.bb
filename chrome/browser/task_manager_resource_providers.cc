@@ -29,6 +29,7 @@
 #include "chrome/browser/extensions/extension_process_manager.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -57,7 +58,7 @@ TaskManagerTabContentsResource::TaskManagerTabContentsResource(
       pending_v8_memory_allocated_update_(false) {
   // We cache the process as when the TabContents is closed the process
   // becomes NULL and the TaskManager still needs it.
-  process_ = tab_contents_->process()->GetHandle();
+  process_ = tab_contents_->GetRenderProcessHost()->GetHandle();
   pid_ = base::GetProcId(process_);
   stats_.images.size = 0;
   stats_.cssStyleSheets.size = 0;
@@ -165,15 +166,17 @@ TaskManager::Resource* TaskManagerTabContentsResourceProvider::GetResource(
       tab_util::GetTabContentsByID(render_process_host_id, routing_id);
   if (!tab_contents)  // Not one of our resource.
     return NULL;
-
-  if (!tab_contents->process()->GetHandle()) {
+  
+  base::ProcessHandle process_handle =
+      tab_contents->GetRenderProcessHost()->GetHandle();
+  if (!process_handle) {
     // We should not be holding on to a dead tab (it should have been removed
     // through the NOTIFY_TAB_CONTENTS_DISCONNECTED notification.
     NOTREACHED();
     return NULL;
   }
 
-  int pid = base::GetProcId(tab_contents->process()->GetHandle());
+  int pid = base::GetProcId(process_handle);
   if (pid != origin_pid)
     return NULL;
 
@@ -245,7 +248,7 @@ void TaskManagerTabContentsResourceProvider::Add(TabContents* tab_contents) {
   // Don't add dead tabs or tabs that haven't yet connected.
   // Also ignore tabs which display extension content. We collapse
   // all of these into one extension row.
-  if (!tab_contents->process()->GetHandle() ||
+  if (!tab_contents->GetRenderProcessHost()->GetHandle() ||
       !tab_contents->notify_disconnection() ||
       tab_contents->HostsExtension()) {
     return;

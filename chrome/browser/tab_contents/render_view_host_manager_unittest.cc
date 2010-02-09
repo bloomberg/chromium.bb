@@ -144,7 +144,7 @@ TEST_F(RenderViewHostManagerTest, Init) {
   ASSERT_TRUE(host);
   EXPECT_TRUE(instance == host->site_instance());
   EXPECT_TRUE(&tab_contents == host->delegate());
-  EXPECT_TRUE(manager.current_view());
+  EXPECT_TRUE(manager.GetRenderWidgetHostView());
   EXPECT_FALSE(manager.pending_render_view_host());
 }
 

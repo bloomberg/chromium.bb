@@ -195,9 +195,10 @@ gfx::NativeView TabContentsViewGtk::GetNativeView() const {
 }
 
 gfx::NativeView TabContentsViewGtk::GetContentNativeView() const {
-  if (!tab_contents()->render_widget_host_view())
+  RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
+  if (!rwhv)
     return NULL;
-  return tab_contents()->render_widget_host_view()->GetNativeView();
+  return rwhv->GetNativeView();
 }
 
 gfx::NativeWindow TabContentsViewGtk::GetTopLevelNativeWindow() const {
@@ -239,8 +240,9 @@ void TabContentsViewGtk::SizeContents(const gfx::Size& size) {
   // need to pass the sizing information on to the RWHV which will pass the
   // sizing information on to the renderer.
   requested_size_ = size;
-  if (tab_contents()->render_widget_host_view())
-    tab_contents()->render_widget_host_view()->SetSize(size);
+  RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->SetSize(size);
 }
 
 void TabContentsViewGtk::Focus() {
@@ -363,8 +365,9 @@ void TabContentsViewGtk::OnSizeAllocate(GtkWidget* widget,
 
   // We manually tell our RWHV to resize the renderer content.  This avoids
   // spurious resizes from GTK+.
-  if (view->tab_contents()->render_widget_host_view())
-    view->tab_contents()->render_widget_host_view()->SetSize(size);
+  RenderWidgetHostView* rwhv = view->tab_contents()->GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->SetSize(size);
   if (view->tab_contents()->interstitial_page())
     view->tab_contents()->interstitial_page()->SetSize(size);
 }

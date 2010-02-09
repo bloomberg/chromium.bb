@@ -28,7 +28,7 @@ bool GetProcessForTabFunction::RunImpl() {
       &contents, &tab_index))
     return false;
 
-  int process_id = contents->process()->id();
+  int process_id = contents->GetRenderProcessHost()->id();
   result_.reset(CreateProcessValue(process_id));
   return true;
 }

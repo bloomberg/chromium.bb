@@ -18,6 +18,7 @@
 #include "chrome/browser/cocoa/html_dialog_window_controller_cppsafe.h"
 #endif
 #include "chrome/browser/google_service_auth_error.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"

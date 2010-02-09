@@ -162,16 +162,14 @@ class TabContents : public PageNavigator,
 
   // Return the currently active RenderProcessHost and RenderViewHost. Each of
   // these may change over time.
-  RenderProcessHost* process() const {
-    return render_manager_.current_host()->process();
-  }
+  RenderProcessHost* GetRenderProcessHost() const;
   RenderViewHost* render_view_host() const {
     return render_manager_.current_host();
   }
   // Returns the currently active RenderWidgetHostView. This may change over
   // time and can be NULL (during setup and teardown).
-  RenderWidgetHostView* render_widget_host_view() const {
-    return render_manager_.current_view();
+  RenderWidgetHostView* GetRenderWidgetHostView() const {
+    return render_manager_.GetRenderWidgetHostView();
   }
 
   // The TabContentsView will never change and is guaranteed non-NULL.
@@ -604,20 +602,13 @@ class TabContents : public PageNavigator,
   // the opposite of this, by which 'browser' is notified of
   // the encoding of the current tab from 'renderer' (determined by
   // auto-detect, http header, meta, bom detection, etc).
-  void override_encoding(const std::string& encoding) {
-    set_encoding(encoding);
-    render_view_host()->SetPageEncoding(encoding);
-  }
+  void override_encoding(const std::string& encoding);
+
   // Remove any user-defined override encoding and reload by sending down
   // ViewMsg_ResetPageEncodingToDefault to the renderer.
-  void reset_override_encoding() {
-    reset_encoding();
-    render_view_host()->ResetPageEncodingToDefault();
-  }
+  void reset_override_encoding();
 
-  void WindowMoveOrResizeStarted() {
-    render_view_host()->WindowMoveOrResizeStarted();
-  }
+  void WindowMoveOrResizeStarted();
 
   BlockedPopupContainer* blocked_popup_container() const {
     return blocked_popups_;

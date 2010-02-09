@@ -67,7 +67,7 @@ TabContents* RenderViewHostDelegateViewHelper::GetCreatedWindow(int route_id) {
   pending_contents_.erase(route_id);
 
   if (!new_tab_contents->render_view_host()->view() ||
-      !new_tab_contents->process()->HasConnection()) {
+      !new_tab_contents->GetRenderProcessHost()->HasConnection()) {
     // The view has gone away or the renderer crashed. Nothing to do.
     return NULL;
   }

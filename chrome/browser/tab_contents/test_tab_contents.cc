@@ -4,6 +4,7 @@
 
 #include "chrome/browser/tab_contents/test_tab_contents.h"
 
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 
 TestTabContents::TestTabContents(Profile* profile, SiteInstance* instance)
@@ -14,6 +15,13 @@ TestTabContents::TestTabContents(Profile* profile, SiteInstance* instance)
 TestRenderViewHost* TestTabContents::pending_rvh() {
   return static_cast<TestRenderViewHost*>(
       render_manager_.pending_render_view_host_);
+}
+
+bool TestTabContents::CreateRenderViewForRenderManager(
+    RenderViewHost* render_view_host) {
+  // This will go to a TestRenderViewHost.
+  render_view_host->CreateRenderView(profile()->GetRequestContext());
+  return true;
 }
 
 TabContents* TestTabContents::Clone() {

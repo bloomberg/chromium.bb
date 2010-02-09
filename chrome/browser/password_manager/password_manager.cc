@@ -10,6 +10,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/password_manager/password_form_manager.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"

@@ -5,6 +5,7 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 
 #include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -80,7 +81,7 @@ void TabContentsView::ShowCreatedWidgetInternal(
   if (tab_contents_->delegate())
     tab_contents_->delegate()->RenderWidgetShowing();
 
-  widget_host_view->InitAsPopup(tab_contents_->render_widget_host_view(),
+  widget_host_view->InitAsPopup(tab_contents_->GetRenderWidgetHostView(),
                                 initial_pos);
   widget_host_view->GetRenderWidgetHost()->Init();
 }

@@ -15,6 +15,7 @@
 #include "app/os_exchange_data.h"
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_theme_provider.h"

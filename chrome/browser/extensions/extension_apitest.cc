@@ -6,6 +6,7 @@
 
 #include "chrome/browser/browser.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/test/ui_test_utils.h"
 

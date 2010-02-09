@@ -28,14 +28,15 @@ void RenderViewContextMenuGtk::DoInit() {
   gtk_menu_.reset(new MenuGtk(this, menu_.data()));
 
   RenderWidgetHostViewGtk* rwhv = static_cast<RenderWidgetHostViewGtk*>(
-      source_tab_contents_->render_widget_host_view());
+      source_tab_contents_->GetRenderWidgetHostView());
   if (rwhv)
     rwhv->AppendInputMethodsContextMenu(gtk_menu_.get());
 }
 
 void RenderViewContextMenuGtk::Popup(const gfx::Point& point) {
-  if (source_tab_contents_->render_widget_host_view())
-    source_tab_contents_->render_widget_host_view()->ShowingContextMenu(true);
+  RenderWidgetHostView* rwhv = source_tab_contents_->GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->ShowingContextMenu(true);
   gtk_menu_->PopupAsContextAt(triggering_event_time_, point);
 }
 
@@ -61,8 +62,9 @@ std::string RenderViewContextMenuGtk::GetLabel(int id) const {
 }
 
 void RenderViewContextMenuGtk::StoppedShowing() {
-  if (source_tab_contents_->render_widget_host_view())
-    source_tab_contents_->render_widget_host_view()->ShowingContextMenu(false);
+  RenderWidgetHostView* rwhv = source_tab_contents_->GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->ShowingContextMenu(false);
 }
 
 void RenderViewContextMenuGtk::AppendMenuItem(int id) {

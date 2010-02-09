@@ -747,7 +747,7 @@ bool TabStripModel::InternalCloseTabs(std::vector<int> indices,
       }
 
       TabContents* detached_contents = GetContentsAt(indices[i]);
-      RenderProcessHost* process = detached_contents->process();
+      RenderProcessHost* process = detached_contents->GetRenderProcessHost();
       std::map<RenderProcessHost*, size_t>::iterator iter =
           processes.find(process);
       if (iter == processes.end()) {

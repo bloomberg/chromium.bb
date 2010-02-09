@@ -72,7 +72,7 @@ HungPagesTableModel::~HungPagesTableModel() {
 void HungPagesTableModel::InitForTabContents(TabContents* hung_contents) {
   tab_contentses_.clear();
   for (TabContentsIterator it; !it.done(); ++it) {
-    if (it->process() == hung_contents->process())
+    if (it->GetRenderProcessHost() == hung_contents->GetRenderProcessHost())
       tab_contentses_.push_back(*it);
   }
   // The world is different.
@@ -253,7 +253,8 @@ void HungRendererDialogView::ShowForTabContents(TabContents* contents) {
 
 void HungRendererDialogView::EndForTabContents(TabContents* contents) {
   DCHECK(contents);
-  if (contents_ && contents_->process() == contents->process()) {
+  if (contents_ && contents_->GetRenderProcessHost() ==
+      contents->GetRenderProcessHost()) {
     window()->Close();
     // Since we're closing, we no longer need this TabContents.
     contents_ = NULL;
@@ -316,7 +317,8 @@ void HungRendererDialogView::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender == kill_button_) {
     // Kill the process.
-    TerminateProcess(contents_->process()->GetHandle(), ResultCodes::HUNG);
+    TerminateProcess(contents_->GetRenderProcessHost()->GetHandle(),
+                     ResultCodes::HUNG);
   }
 }
 

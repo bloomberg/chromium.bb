@@ -41,11 +41,7 @@ class TestTabContents : public TabContents {
   }
 
   // Prevent interaction with views.
-  bool CreateRenderViewForRenderManager(RenderViewHost* render_view_host) {
-    // This will go to a TestRenderViewHost.
-    render_view_host->CreateRenderView(profile()->GetRequestContext());
-    return true;
-  }
+  bool CreateRenderViewForRenderManager(RenderViewHost* render_view_host);
   void UpdateRenderViewSizeForRenderManager() {}
 
   // Returns a clone of this TestTabContents. The returned object is also a

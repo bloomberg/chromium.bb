@@ -163,7 +163,7 @@ SavePackage::SavePackage(TabContents* web_content,
       save_type_(save_type),
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
-      tab_id_(web_content->process()->id()),
+      tab_id_(web_content->GetRenderProcessHost()->id()),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   DCHECK(web_content);
   const GURL& current_page_url = tab_contents_->GetURL();
@@ -188,7 +188,7 @@ SavePackage::SavePackage(TabContents* tab_contents)
       save_type_(SAVE_TYPE_UNKNOWN),
       all_save_items_count_(0),
       wait_state_(INITIALIZE),
-      tab_id_(tab_contents->process()->id()),
+      tab_id_(tab_contents->GetRenderProcessHost()->id()),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   const GURL& current_page_url = tab_contents_->GetURL();
   DCHECK(current_page_url.is_valid());
@@ -625,7 +625,7 @@ void SavePackage::CheckFinish() {
                         &SaveFileManager::RenameAllFiles,
                         final_names,
                         dir,
-                        tab_contents_->process()->id(),
+                        tab_contents_->GetRenderProcessHost()->id(),
                         tab_contents_->render_view_host()->routing_id()));
 }
 
@@ -773,7 +773,7 @@ void SavePackage::SaveNextFile(bool process_all_remaining_items) {
     save_item->Start();
     file_manager_->SaveURL(save_item->url(),
                            save_item->referrer(),
-                           tab_contents_->process()->id(),
+                           tab_contents_->GetRenderProcessHost()->id(),
                            tab_contents_->render_view_host()->routing_id(),
                            save_item->save_source(),
                            save_item->full_path(),

@@ -17,6 +17,7 @@
 #import "chrome/browser/cocoa/toolbar_controller.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/common/extensions/extension_action.h"
+#include "chrome/browser/profile.h"
 
 class Extension;
 

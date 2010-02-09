@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/google_service_auth_error.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/options_window.h"
 #include "grit/chromium_strings.h"

@@ -8,6 +8,7 @@
 #include "chrome/browser/automation/ui_controls.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/external_tab_container.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/bookmark_bar_view.h"
 #include "chrome/test/automation/automation_messages.h"

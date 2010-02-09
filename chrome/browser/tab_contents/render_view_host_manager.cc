@@ -63,6 +63,12 @@ void RenderViewHostManager::Init(Profile* profile,
       Details<RenderViewHost>(render_view_host_));
 }
 
+RenderWidgetHostView* RenderViewHostManager::GetRenderWidgetHostView() const {
+  if (!render_view_host_)
+    return NULL;
+  return render_view_host_->view();
+}
+
 RenderViewHost* RenderViewHostManager::Navigate(const NavigationEntry& entry) {
   // Create a pending RenderViewHost. It will give us the one we should use
   RenderViewHost* dest_render_view_host = UpdateRendererStateForNavigate(entry);

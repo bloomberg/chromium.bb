@@ -14,6 +14,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/convert_user_script.h"
 #include "chrome/browser/extensions/extension_file_util.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/browser/web_applications/web_app.h"
 #include "chrome/common/extensions/extension_error_reporter.h"

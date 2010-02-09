@@ -8,6 +8,7 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"

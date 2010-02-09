@@ -9,7 +9,6 @@
 #include "base/scoped_ptr.h"
 #include "base/shared_memory.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/profile.h"
 #include "chrome/common/extensions/user_script.h"
 #include "chrome/common/notification_registrar.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
@@ -17,6 +16,8 @@
 namespace base {
 class StringPiece;
 }
+
+class Profile;
 
 // Manages a segment of shared memory that contains the user scripts the user
 // has installed.  Lives on the UI thread.

@@ -95,7 +95,8 @@ class TabStripModelTest : public RenderViewHostTestHarness {
     TabContents* retval = new TabContents(profile(),
         tab_contents->render_view_host()->site_instance(), MSG_ROUTING_NONE,
         NULL);
-    EXPECT_EQ(retval->process(), tab_contents->process());
+    EXPECT_EQ(retval->GetRenderProcessHost(),
+              tab_contents->GetRenderProcessHost());
     return retval;
   }
 
@@ -1315,7 +1316,7 @@ TEST_F(TabStripModelTest, FastShutdown) {
     tabstrip.CloseAllTabs();
     // On a mock RPH this checks whether we *attempted* fast shutdown.
     // A real RPH would reject our attempt since there is an unload handler.
-    EXPECT_TRUE(contents1->process()->fast_shutdown_started());
+    EXPECT_TRUE(contents1->GetRenderProcessHost()->fast_shutdown_started());
     EXPECT_EQ(2, tabstrip.count());
 
     delegate.set_run_unload_listener(false);
@@ -1336,7 +1337,7 @@ TEST_F(TabStripModelTest, FastShutdown) {
     tabstrip.AppendTabContents(contents2, true);
 
     tabstrip.CloseTabContentsAt(1);
-    EXPECT_FALSE(contents1->process()->fast_shutdown_started());
+    EXPECT_FALSE(contents1->GetRenderProcessHost()->fast_shutdown_started());
     EXPECT_EQ(1, tabstrip.count());
 
     tabstrip.CloseAllTabs();

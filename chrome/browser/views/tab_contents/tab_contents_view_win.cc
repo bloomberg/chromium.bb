@@ -110,9 +110,10 @@ gfx::NativeView TabContentsViewWin::GetNativeView() const {
 }
 
 gfx::NativeView TabContentsViewWin::GetContentNativeView() const {
-  if (!tab_contents()->render_widget_host_view())
+  RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
+  if (!rwhv)
     return NULL;
-  return tab_contents()->render_widget_host_view()->GetNativeView();
+  return rwhv->GetNativeView();
 }
 
 gfx::NativeWindow TabContentsViewWin::GetTopLevelNativeWindow() const {
@@ -155,7 +156,7 @@ void TabContentsViewWin::SetPageTitle(const std::wstring& title) {
     // TODO(brettw) this call seems messy the way it reaches into the widget
     // view, and I'm not sure it's necessary. Maybe we should just remove it.
     ::SetWindowText(
-        tab_contents()->render_widget_host_view()->GetNativeView(),
+        tab_contents()->GetRenderWidgetHostView()->GetNativeView(),
         title.c_str());
   }
 }
@@ -187,7 +188,7 @@ void TabContentsViewWin::Focus() {
     return;
   }
 
-  RenderWidgetHostView* rwhv = tab_contents()->render_widget_host_view();
+  RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
   if (rwhv) {
     ::SetFocus(rwhv->GetNativeView());
     return;
@@ -505,8 +506,9 @@ void TabContentsViewWin::WasSized(const gfx::Size& size) {
   SetWindowPos(NULL, 0, 0, size.width(), size.height(), swp_flags);
   if (tab_contents()->interstitial_page())
     tab_contents()->interstitial_page()->SetSize(size);
-  if (tab_contents()->render_widget_host_view())
-    tab_contents()->render_widget_host_view()->SetSize(size);
+  RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->SetSize(size);
 }
 
 bool TabContentsViewWin::ScrollZoom(int scroll_type) {

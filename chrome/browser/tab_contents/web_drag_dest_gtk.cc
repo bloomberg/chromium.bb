@@ -7,6 +7,7 @@
 #include "app/gtk_dnd_util.h"
 #include "base/file_path.h"
 #include "base/string_util.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/gtk_util.h"
 #include "net/base/net_util.h"

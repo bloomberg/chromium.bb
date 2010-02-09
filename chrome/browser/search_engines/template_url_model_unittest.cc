@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/path_service.h"
+#include "base/string_util.h"
 #include "base/thread.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/history/history_notifications.h"

@@ -44,6 +44,7 @@
 #include "chrome/browser/plugin_installer.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/resource_request_details.h"
 #include "chrome/browser/renderer_host/site_instance.h"
@@ -454,6 +455,10 @@ PluginInstaller* TabContents::GetPluginInstaller() {
   return plugin_installer_.get();
 }
 
+RenderProcessHost* TabContents::GetRenderProcessHost() const {
+  return render_manager_.current_host()->process();
+}
+
 void TabContents::SetAppExtension(Extension* extension) {
   DCHECK(!extension || extension->IsApp());
   app_extension_ = extension;
@@ -508,7 +513,7 @@ void TabContents::UpdateMaxPageID(int32 page_id) {
   // testing.
   if (GetSiteInstance())
     GetSiteInstance()->UpdateMaxPageID(page_id);
-  process()->UpdateMaxPageID(page_id);
+  GetRenderProcessHost()->UpdateMaxPageID(page_id);
 }
 
 SiteInstance* TabContents::GetSiteInstance() const {
@@ -633,14 +638,15 @@ void TabContents::NotifyNavigationStateChanged(unsigned changed_flags) {
 
 void TabContents::DidBecomeSelected() {
   controller_.SetActive(true);
-  if (render_widget_host_view()) {
-    render_widget_host_view()->DidBecomeSelected();
+  RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
+  if (rwhv) {
+    rwhv->DidBecomeSelected();
 #if defined(OS_MACOSX)
-    render_widget_host_view()->SetActive(true);
+    rwhv->SetActive(true);
 #endif
   }
 
-  WebCacheManager::GetInstance()->ObserveActivity(process()->id());
+  WebCacheManager::GetInstance()->ObserveActivity(GetRenderProcessHost()->id());
 }
 
 void TabContents::WasHidden() {
@@ -650,8 +656,9 @@ void TabContents::WasHidden() {
     // is because closing the tab calls TabContents::Destroy(), which removes
     // the |render_view_host()|; then when we actually destroy the window,
     // OnWindowPosChanged() notices and calls HideContents() (which calls us).
-    if (render_widget_host_view())
-      render_widget_host_view()->WasHidden();
+    RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
+    if (rwhv)
+      rwhv->WasHidden();
   }
 
   NotificationService::current()->Notify(
@@ -666,8 +673,9 @@ void TabContents::Activate() {
 }
 
 void TabContents::ShowContents() {
-  if (render_widget_host_view())
-    render_widget_host_view()->DidBecomeSelected();
+  RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->DidBecomeSelected();
 }
 
 void TabContents::HideContents() {
@@ -1195,6 +1203,20 @@ bool TabContents::IsActiveEntry(int32 page_id) {
   return (active_entry != NULL &&
           active_entry->site_instance() == GetSiteInstance() &&
           active_entry->page_id() == page_id);
+}
+
+void TabContents::override_encoding(const std::string& encoding) {
+  set_encoding(encoding);
+  render_view_host()->SetPageEncoding(encoding);
+}
+
+void TabContents::reset_override_encoding() {
+  reset_encoding();
+  render_view_host()->ResetPageEncodingToDefault();
+}
+
+void TabContents::WindowMoveOrResizeStarted() {
+  render_view_host()->WindowMoveOrResizeStarted();
 }
 
 void TabContents::LogNewTabTime(const std::string& event_name) {
@@ -1834,7 +1856,7 @@ void TabContents::OnPageContents(const GURL& url,
   }
 
   NavigationEntry* entry = controller_.GetActiveEntry();
-  if (process()->id() == renderer_process_id &&
+  if (GetRenderProcessHost()->id() == renderer_process_id &&
       entry && entry->page_id() == page_id) {
     entry->set_language(language);
   }
@@ -1896,7 +1918,8 @@ void TabContents::DidLoadResourceFromMemoryCache(
                                       &cert_id, &cert_status,
                                       &security_bits);
   LoadFromMemoryCacheDetails details(url, frame_origin, main_frame_origin,
-                                     process()->id(), cert_id, cert_status);
+                                     GetRenderProcessHost()->id(), cert_id,
+                                     cert_status);
 
   NotificationService::current()->Notify(
       NotificationType::LOAD_FROM_MEMORY_CACHE,

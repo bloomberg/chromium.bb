@@ -12,6 +12,7 @@
 #include "base/process_util.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/logging_chrome.h"
@@ -149,7 +150,7 @@ void HungRendererDialogGtk::ShowForTabContents(TabContents* hung_contents) {
 
   GtkTreeIter tree_iter;
   for (TabContentsIterator it; !it.done(); ++it) {
-    if (it->process() == hung_contents->process()) {
+    if (it->GetRenderProcessHost() == hung_contents->GetRenderProcessHost()) {
       gtk_list_store_append(model_, &tree_iter);
       std::string title = UTF16ToUTF8(it->GetTitle());
       if (title.empty())
@@ -169,7 +170,8 @@ void HungRendererDialogGtk::ShowForTabContents(TabContents* hung_contents) {
 
 void HungRendererDialogGtk::EndForTabContents(TabContents* contents) {
   DCHECK(contents);
-  if (contents_ && contents_->process() == contents->process()) {
+  if (contents_ && contents_->GetRenderProcessHost() ==
+      contents->GetRenderProcessHost()) {
     gtk_widget_hide(GTK_WIDGET(dialog_));
     // Since we're closing, we no longer need this TabContents.
     contents_ = NULL;
@@ -183,8 +185,8 @@ void HungRendererDialogGtk::OnDialogResponse(gint response_id) {
   switch (response_id) {
     case kKillPagesButtonResponse:
       // Kill the process.
-      base::KillProcess(contents_->process()->GetHandle(), ResultCodes::HUNG,
-                        false);
+      base::KillProcess(contents_->GetRenderProcessHost()->GetHandle(),
+                        ResultCodes::HUNG, false);
       break;
 
     case GTK_RESPONSE_OK:

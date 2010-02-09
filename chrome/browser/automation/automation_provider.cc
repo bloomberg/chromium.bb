@@ -37,6 +37,7 @@
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/find_bar.h"
 #include "chrome/browser/find_bar_controller.h"
 #include "chrome/browser/find_notification_details.h"
@@ -1073,8 +1074,9 @@ void AutomationProvider::GetTabProcessID(int handle, int* process_id) {
     *process_id = 0;
     TabContents* tab_contents =
         tab_tracker_->GetResource(handle)->tab_contents();
-    if (tab_contents->process())
-      *process_id = base::GetProcId(tab_contents->process()->GetHandle());
+    RenderProcessHost* rph = tab_contents->GetRenderProcessHost();
+    if (rph)
+      *process_id = base::GetProcId(rph->GetHandle());
   }
 }
 

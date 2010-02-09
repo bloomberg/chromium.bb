@@ -1205,7 +1205,7 @@ void DownloadManager::DownloadUrl(const GURL& url,
                              referrer,
                              referrer_charset,
                              FilePath(),
-                             tab_contents->process()->id(),
+                             tab_contents->GetRenderProcessHost()->id(),
                              tab_contents->render_view_host()->routing_id(),
                              request_context_getter_);
 }
@@ -1220,7 +1220,7 @@ void DownloadManager::DownloadUrlToFile(const GURL& url,
                              referrer,
                              referrer_charset,
                              save_file_path,
-                             tab_contents->process()->id(),
+                             tab_contents->GetRenderProcessHost()->id(),
                              tab_contents->render_view_host()->routing_id(),
                              request_context_getter_);
 }

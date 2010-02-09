@@ -12,6 +12,7 @@
 #include "chrome/browser/gtk/tab_contents_container_gtk.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/gtk_util.h"
+#include "ipc/ipc_message.h"
 
 // static
 void HtmlDialogGtk::ShowHtmlDialogGtk(Browser* browser,
