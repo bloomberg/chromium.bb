@@ -489,7 +489,8 @@ bool HandleNonInstallCmdLineOptions(const CommandLine& cmd_line,
     // Launch the inactive user toast experiment.
     std::wstring flavor =
         cmd_line.GetSwitchValue(installer_util::switches::kInactiveUserToast);
-    dist->InactiveUserToastExperiment(StringToInt(flavor), system_install);
+    dist->InactiveUserToastExperiment(StringToInt(flavor),
+        cmd_line.HasSwitch(installer_util::switches::kSystemLevelToast));
     return true;
   } else if (cmd_line.HasSwitch(installer_util::switches::kSystemLevelToast)) {
     // We started as system-level and have been re-launched as user level
@@ -497,7 +498,7 @@ bool HandleNonInstallCmdLineOptions(const CommandLine& cmd_line,
     scoped_ptr<installer::Version>
         installed_version(InstallUtil::GetChromeVersion(system_install));
     dist->LaunchUserExperiment(installer_util::REENTRY_SYS_UPDATE,
-                               *installed_version, false);
+                               *installed_version, true);
     return true;
   }
   return false;
