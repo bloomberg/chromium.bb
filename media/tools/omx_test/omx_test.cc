@@ -103,7 +103,6 @@ class TestApp {
     // the last buffer is an end-of-stream buffer, when we have stopped, and
     // when we have received an error.
     bool eos = buffer->IsEndOfStream();
-    delete buffer;
     if (!eos && !stopped_ && !error_)
       FeedInputBuffer();
   }

@@ -170,7 +170,8 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   void StartTask();
   void StopTask(Callback* callback);
   void ReadTask(ReadCallback* callback);
-  void FeedTask(OmxInputBuffer* buffer, FeedCallback* callback);
+  void FeedTask(scoped_refptr<OmxInputBuffer> buffer,
+                FeedCallback* callback);
 
   // Helper method to perform tasks when this object is stopped.
   void DoneStop();
@@ -310,7 +311,7 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   scoped_ptr<Callback> error_callback_;
 
   // Input and output queue for encoded data and decoded frames.
-  typedef std::pair<OmxInputBuffer*, FeedCallback*> InputUnit;
+  typedef std::pair<scoped_refptr<OmxInputBuffer>, FeedCallback*> InputUnit;
   std::queue<InputUnit> input_queue_;
   std::queue<ReadCallback*> output_queue_;
 

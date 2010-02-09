@@ -83,9 +83,11 @@ void OmxCodec::Read(ReadCallback* callback) {
 }
 
 void OmxCodec::Feed(OmxInputBuffer* buffer, FeedCallback* callback) {
+  scoped_refptr<OmxInputBuffer> buffer_ref = buffer;
   message_loop_->PostTask(
       FROM_HERE,
-      NewRunnableMethod(this, &OmxCodec::FeedTask, buffer, callback));
+      NewRunnableMethod(this, &OmxCodec::FeedTask, buffer_ref,
+                        callback));
 }
 
 void OmxCodec::Flush(Callback* callback) {
@@ -159,7 +161,7 @@ void OmxCodec::ReadTask(ReadCallback* callback) {
   FillBufferTask();
 }
 
-void OmxCodec::FeedTask(OmxInputBuffer* buffer,
+void OmxCodec::FeedTask(scoped_refptr<OmxInputBuffer> buffer,
                         FeedCallback* callback) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
@@ -247,7 +249,7 @@ void OmxCodec::FreeInputQueue() {
   DCHECK_EQ(message_loop_, MessageLoop::current());
 
   while (!input_queue_.empty()) {
-    OmxInputBuffer* buffer = input_queue_.front().first;
+    scoped_refptr<OmxInputBuffer> buffer = input_queue_.front().first;
     FeedCallback* callback = input_queue_.front().second;
     callback->Run(buffer);
     delete callback;
@@ -965,7 +967,7 @@ void OmxCodec::EmptyBufferTask() {
   while (!input_queue_.empty() &&
          !available_input_buffers_.empty() &&
          !input_eos_) {
-    OmxInputBuffer* buffer = input_queue_.front().first;
+    scoped_refptr<OmxInputBuffer> buffer = input_queue_.front().first;
     FeedCallback* callback = input_queue_.front().second;
     OMX_BUFFERHEADERTYPE* omx_buffer = available_input_buffers_.front();
     available_input_buffers_.pop();
@@ -1027,13 +1029,13 @@ void OmxCodec::FillBufferTask() {
     available_output_buffers_.pop();
 
     // Give the output data to the callback but it doesn't own this buffer.
-    callback->RunWithParams(
-        MakeTuple(omx_buffer->pBuffer,
-                  static_cast<int>(omx_buffer->nFilledLen)));
-    delete callback;
-
-    if (omx_buffer->nFlags & OMX_BUFFERFLAG_EOS)
+    int filled = omx_buffer->nFilledLen;
+    if (omx_buffer->nFlags & OMX_BUFFERFLAG_EOS) {
       output_eos_ = true;
+      filled = 0;
+    }
+    callback->RunWithParams(MakeTuple(omx_buffer->pBuffer, filled));
+    delete callback;
 
     omx_buffer->nOutputPortIndex = output_port_;
     omx_buffer->pAppPrivate = this;
