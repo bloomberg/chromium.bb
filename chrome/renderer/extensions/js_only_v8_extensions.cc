@@ -6,7 +6,6 @@
 
 #include "chrome/renderer/extensions/bindings_utils.h"
 #include "grit/renderer_resources.h"
-#include "grit/webkit_resources.h"
 
 using bindings_utils::GetStringResource;
 
@@ -15,7 +14,7 @@ const char* BaseJsV8Extension::kName = "chrome/base";
 v8::Extension* BaseJsV8Extension::Get() {
   static v8::Extension* extension =
       new bindings_utils::ExtensionBase(
-          kName, GetStringResource<IDR_DEVTOOLS_BASE_JS>(), 0, NULL);
+          kName, GetStringResource<IDR_BASE_JS>(), 0, NULL);
   return extension;
 }
 
