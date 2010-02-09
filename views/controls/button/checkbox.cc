@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "views/controls/button/checkbox.h"
 
@@ -94,6 +94,12 @@ void Checkbox::Layout() {
         checkmark_prefsize.width(), checkmark_prefsize.height());
   }
   native_wrapper_->GetView()->Layout();
+}
+
+void Checkbox::SetEnabled(bool enabled) {
+  NativeButton::SetEnabled(enabled);
+  if (label_)
+    label_->SetEnabled(enabled);
 }
 
 void Checkbox::PaintFocusBorder(gfx::Canvas* canvas) {

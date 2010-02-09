@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef VIEWS_CONTROLS_BUTTON_CHECKBOX_H_
 #define VIEWS_CONTROLS_BUTTON_CHECKBOX_H_
@@ -41,6 +41,7 @@ class Checkbox : public NativeButton {
   // Overridden from View:
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
+  virtual void SetEnabled(bool enabled);
   virtual void PaintFocusBorder(gfx::Canvas* canvas);
   virtual View* GetViewForPoint(const gfx::Point& point);
   virtual View* GetViewForPoint(const gfx::Point& point,
