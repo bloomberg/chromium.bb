@@ -92,8 +92,6 @@ class ResourceRequestDetails {
   int ssl_cert_status_;
   ResourceType::Type resource_type_;
   FilterPolicy::Type filter_policy_;
-
-  DISALLOW_COPY_AND_ASSIGN(ResourceRequestDetails);
 };
 
 // Details about a redirection of a resource request.

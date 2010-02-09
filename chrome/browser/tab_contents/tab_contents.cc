@@ -580,10 +580,11 @@ bool TabContents::IsContentBlocked(ContentSettingsType content_type) const {
 
   if (content_type == CONTENT_SETTINGS_TYPE_IMAGES ||
       content_type == CONTENT_SETTINGS_TYPE_JAVASCRIPT ||
-      content_type == CONTENT_SETTINGS_TYPE_PLUGINS)
+      content_type == CONTENT_SETTINGS_TYPE_PLUGINS ||
+      content_type == CONTENT_SETTINGS_TYPE_COOKIES)
     return content_blocked_[content_type];
 
-  // TODO(pkasting): Return a meaningful values for cookies.
+  NOTREACHED();
   return false;
 }
 
@@ -1893,18 +1894,19 @@ void TabContents::DidStartProvisionalLoadForFrame(
 }
 
 void TabContents::DidStartReceivingResourceResponse(
-    ResourceRequestDetails* details) {
+    const ResourceRequestDetails& details) {
   NotificationService::current()->Notify(
       NotificationType::RESOURCE_RESPONSE_STARTED,
       Source<NavigationController>(&controller()),
-      Details<ResourceRequestDetails>(details));
+      Details<const ResourceRequestDetails>(&details));
 }
 
-void TabContents::DidRedirectResource(ResourceRequestDetails* details) {
+void TabContents::DidRedirectResource(
+    const ResourceRedirectDetails& details) {
   NotificationService::current()->Notify(
       NotificationType::RESOURCE_RECEIVED_REDIRECT,
       Source<NavigationController>(&controller()),
-      Details<ResourceRequestDetails>(details));
+      Details<const ResourceRequestDetails>(&details));
 }
 
 void TabContents::DidLoadResourceFromMemoryCache(

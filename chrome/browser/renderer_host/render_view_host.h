@@ -182,11 +182,6 @@ class RenderViewHost : public RenderWidgetHost {
   // hangs, in which case we need to swap to the pending RenderViewHost.
   int GetPendingRequestId();
 
-  // Called by ResourceDispatcherHost when a response for a pending cross-site
-  // request is received.  The ResourceDispatcherHost will pause the response
-  // until the onunload handler of the previous renderer is run.
-  void OnCrossSiteResponse(int new_render_process_host_id, int new_request_id);
-
   // Stops the current load.
   void Stop();
 

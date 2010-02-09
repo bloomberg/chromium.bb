@@ -26,6 +26,7 @@ class Profile;
 struct RendererPreferences;
 class RenderProcessHost;
 class RenderViewHost;
+class ResourceRedirectDetails;
 class ResourceRequestDetails;
 class SkBitmap;
 class TabContents;
@@ -247,10 +248,8 @@ class RenderViewHostDelegate {
     // DidStartProvisionalLoadForFrame above because this is called for every
     // resource (images, automatically loaded subframes, etc.) and provisional
     // loads are only for user-initiated navigations.
-    //
-    // The pointer ownership is NOT transferred.
     virtual void DidStartReceivingResourceResponse(
-        ResourceRequestDetails* details) = 0;
+        const ResourceRequestDetails& details) = 0;
 
     // Sent when a provisional load is redirected.
     virtual void DidRedirectProvisionalLoad(int32 page_id,
@@ -262,9 +261,8 @@ class RenderViewHostDelegate {
     // DidRedirectProvisionalLoad above because this is called for every
     // resource (images, automatically loaded subframes, etc.) and provisional
     // loads are only for user-initiated navigations.
-    //
-    // The pointer ownership is NOT transferred.
-    virtual void DidRedirectResource(ResourceRequestDetails* details) = 0;
+    virtual void DidRedirectResource(
+        const ResourceRedirectDetails& details) = 0;
 
     // The RenderView loaded a resource from an in-memory cache.
     // |security_info| contains the security info if this resource was

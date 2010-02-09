@@ -814,11 +814,12 @@ class TabContents : public PageNavigator,
                                                bool is_main_frame,
                                                const GURL& url);
   virtual void DidStartReceivingResourceResponse(
-      ResourceRequestDetails* details);
+      const ResourceRequestDetails& details);
   virtual void DidRedirectProvisionalLoad(int32 page_id,
                                           const GURL& source_url,
                                           const GURL& target_url);
-  virtual void DidRedirectResource(ResourceRequestDetails* details);
+  virtual void DidRedirectResource(
+      const ResourceRedirectDetails& details);
   virtual void DidLoadResourceFromMemoryCache(
       const GURL& url,
       const std::string& frame_origin,

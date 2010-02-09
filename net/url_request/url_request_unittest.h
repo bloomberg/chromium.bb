@@ -192,12 +192,16 @@ class TestDelegate : public URLRequest::Delegate {
         cancel_in_rs_(false),
         cancel_in_rd_(false),
         cancel_in_rd_pending_(false),
+        cancel_in_getcookiesblocked_(false),
+        cancel_in_setcookieblocked_(false),
         quit_on_complete_(true),
         quit_on_redirect_(false),
         allow_certificate_errors_(false),
         response_started_count_(0),
         received_bytes_count_(0),
         received_redirect_count_(0),
+        blocked_get_cookies_count_(0),
+        blocked_set_cookie_count_(0),
         received_data_before_response_(false),
         request_failed_(false),
         have_certificate_errors_(false),
@@ -300,11 +304,29 @@ class TestDelegate : public URLRequest::Delegate {
       request->Cancel();
   }
 
+  virtual void OnGetCookiesBlocked(URLRequest* request) {
+    blocked_get_cookies_count_++;
+    if (cancel_in_getcookiesblocked_)
+      request->Cancel();
+  }
+
+  virtual void OnSetCookieBlocked(URLRequest* request) {
+    blocked_set_cookie_count_++;
+    if (cancel_in_setcookieblocked_)
+      request->Cancel();
+  }
+
   void set_cancel_in_received_redirect(bool val) { cancel_in_rr_ = val; }
   void set_cancel_in_response_started(bool val) { cancel_in_rs_ = val; }
   void set_cancel_in_received_data(bool val) { cancel_in_rd_ = val; }
   void set_cancel_in_received_data_pending(bool val) {
     cancel_in_rd_pending_ = val;
+  }
+  void set_cancel_in_get_cookies_blocked(bool val) {
+    cancel_in_getcookiesblocked_ = val;
+  }
+  void set_cancel_in_set_cookie_blocked(bool val) {
+    cancel_in_setcookieblocked_ = val;
   }
   void set_quit_on_complete(bool val) { quit_on_complete_ = val; }
   void set_quit_on_redirect(bool val) { quit_on_redirect_ = val; }
@@ -319,6 +341,8 @@ class TestDelegate : public URLRequest::Delegate {
   int bytes_received() const { return static_cast<int>(data_received_.size()); }
   int response_started_count() const { return response_started_count_; }
   int received_redirect_count() const { return received_redirect_count_; }
+  int blocked_get_cookies_count() const { return blocked_get_cookies_count_; }
+  int blocked_set_cookie_count() const { return blocked_set_cookie_count_; }
   bool received_data_before_response() const {
     return received_data_before_response_;
   }
@@ -332,6 +356,8 @@ class TestDelegate : public URLRequest::Delegate {
   bool cancel_in_rs_;
   bool cancel_in_rd_;
   bool cancel_in_rd_pending_;
+  bool cancel_in_getcookiesblocked_;
+  bool cancel_in_setcookieblocked_;
   bool quit_on_complete_;
   bool quit_on_redirect_;
   bool allow_certificate_errors_;
@@ -343,6 +369,8 @@ class TestDelegate : public URLRequest::Delegate {
   int response_started_count_;
   int received_bytes_count_;
   int received_redirect_count_;
+  int blocked_get_cookies_count_;
+  int blocked_set_cookie_count_;
   bool received_data_before_response_;
   bool request_failed_;
   bool have_certificate_errors_;

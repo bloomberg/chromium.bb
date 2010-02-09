@@ -38,6 +38,7 @@
 #include "chrome/browser/renderer_host/global_request_id.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
+#include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/browser/renderer_host/resource_queue.h"
 #include "chrome/browser/renderer_host/resource_request_details.h"
@@ -107,89 +108,6 @@ const int kMaxPendingDataMessages = 20;
 // See delcaration of |max_outstanding_requests_cost_per_process_| for details.
 // This bound is 25MB, which allows for around 6000 outstanding requests.
 const int kMaxOutstandingRequestsCostPerProcess = 26214400;
-
-// Calls ClosePageIgnoringUnloadEvents on the UI thread for the given
-// RenderView.
-//
-// If there are more functions we need to call on RVH, we should generalize this
-// like the "Delegate" notification task below.
-class RVHCloseNotificationTask : public Task {
- public:
-  RVHCloseNotificationTask(int render_process_host_id,
-                           int render_view_host_id)
-      : render_process_host_id_(render_process_host_id),
-        render_view_host_id_(render_view_host_id) {
-  }
-
-  virtual void Run() {
-    RenderViewHost* rvh = RenderViewHost::FromID(render_process_host_id_,
-                                                 render_view_host_id_);
-    if (rvh)
-      rvh->ClosePageIgnoringUnloadEvents();
-  }
-
- private:
-  int render_process_host_id_;
-  int render_view_host_id_;
-
-  DISALLOW_COPY_AND_ASSIGN(RVHCloseNotificationTask);
-};
-
-// A RVHDelegateNotificationTask proxies a resource dispatcher notification
-// from the IO thread to the RenderViewHostDelegate on the UI thread. It should
-// be constructed on the IO thread and run in the UI thread.
-class RVHDelegateNotificationTask : public Task {
- public:
-  typedef void (RenderViewHostDelegate::Resource::* ResourceFunction)
-      (ResourceRequestDetails*);
-
-  // Supply the originating URLRequest, a function on RenderViewHostDelegate
-  // to call, and the details to use as the parameter to the given function.
-  //
-  // This object will take ownership of the details pointer, which must be
-  // allocated on the heap.
-  RVHDelegateNotificationTask(
-      URLRequest* request,
-      ResourceFunction function,
-      ResourceRequestDetails* details)
-      : render_process_host_id_(-1),
-        render_view_host_id_(-1),
-        function_(function),
-        details_(details) {
-    if (!ResourceDispatcherHost::RenderViewForRequest(request,
-                                                      &render_process_host_id_,
-                                                      &render_view_host_id_)) {
-      // Issue a warning here - this can happen during normal operation (for
-      // example, if a worker exits while a network operation is pending), but
-      // it should be fairly rare.
-      DLOG(WARNING) << "Trying to deliver a message to a RenderViewHost" <<
-                       " that has already exited or has never existed.";
-    }
-  }
-
-  virtual void Run() {
-    RenderViewHost* rvh = RenderViewHost::FromID(render_process_host_id_,
-                                                 render_view_host_id_);
-    if (rvh) {
-      RenderViewHostDelegate::Resource* resource_delegate =
-          rvh->delegate()->GetResourceDelegate();
-      if (resource_delegate)
-        (resource_delegate->*function_)(details_.get());
-    }
-  }
-
- private:
-  int render_process_host_id_;
-  int render_view_host_id_;
-
-  // The function to call on RenderViewHostDelegate::Resource on the UI thread.
-  ResourceFunction function_;
-
-  // The details for the notification.
-  scoped_ptr<ResourceRequestDetails> details_;
-
-  DISALLOW_COPY_AND_ASSIGN(RVHDelegateNotificationTask);
-};
 
 // Consults the RendererSecurity policy to determine whether the
 // ResourceDispatcherHost should service this request.  A request might be
@@ -635,10 +553,9 @@ void ResourceDispatcherHost::OnClosePageACK(
     // This is a tab close, so just forward the message to close it.
     DCHECK(params.new_render_process_host_id == -1);
     DCHECK(params.new_request_id == -1);
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
-        new RVHCloseNotificationTask(params.closing_process_id,
-                                     params.closing_route_id));
+    CallRenderViewHost(params.closing_process_id,
+                       params.closing_route_id,
+                       &RenderViewHost::ClosePageIgnoringUnloadEvents);
   }
 }
 
@@ -1057,6 +974,19 @@ void ResourceDispatcherHost::OnSSLCertificateError(
   SSLManager::OnSSLCertificateError(this, request, cert_error, cert);
 }
 
+void ResourceDispatcherHost::OnSetCookieBlocked(URLRequest* request) {
+  RESOURCE_LOG("OnSetCookieBlocked: " << request->url().spec());
+
+  int render_process_id, render_view_id;
+  if (!RenderViewForRequest(request, &render_process_id, &render_view_id))
+    return;
+
+  CallRenderViewHostResourceDelegate(
+      render_process_id, render_view_id,
+      &RenderViewHostDelegate::Resource::OnContentBlocked,
+      CONTENT_SETTINGS_TYPE_COOKIES);
+}
+
 void ResourceDispatcherHost::OnResponseStarted(URLRequest* request) {
   RESOURCE_LOG("OnResponseStarted: " << request->url().spec());
   ResourceDispatcherHostRequestInfo* info = InfoForRequest(request);
@@ -1448,20 +1378,20 @@ bool ResourceDispatcherHost::RenderViewForRequest(const URLRequest* request,
 
   // If the request is from the worker process, find a tab that owns the worker.
   if (info->process_type() == ChildProcessInfo::WORKER_PROCESS) {
-      const WorkerProcessHost::WorkerInstance* worker_instance =
-          WorkerService::GetInstance()->FindWorkerInstance(info->child_id());
-      if (!worker_instance) {
-        *render_process_host_id = -1;
-        *render_view_host_id = -1;
-        return false;
-      }
-      DCHECK(!worker_instance->worker_document_set()->IsEmpty());
-      const WorkerDocumentSet::DocumentInfoSet& parents =
-          worker_instance->worker_document_set()->documents();
-      // Need to display some related UI for this network request - pick an
-      // arbitrary parent to do so.
-      *render_process_host_id = parents.begin()->renderer_id();
-      *render_view_host_id = parents.begin()->render_view_route_id();
+    const WorkerProcessHost::WorkerInstance* worker_instance =
+        WorkerService::GetInstance()->FindWorkerInstance(info->child_id());
+    if (!worker_instance) {
+      *render_process_host_id = -1;
+      *render_view_host_id = -1;
+      return false;
+    }
+    DCHECK(!worker_instance->worker_document_set()->IsEmpty());
+    const WorkerDocumentSet::DocumentInfoSet& parents =
+        worker_instance->worker_document_set()->documents();
+    // Need to display some related UI for this network request - pick an
+    // arbitrary parent to do so.
+    *render_process_host_id = parents.begin()->renderer_id();
+    *render_view_host_id = parents.begin()->render_view_route_id();
   } else {
     *render_process_host_id = info->child_id();
     *render_view_host_id = info->route_id();
@@ -1511,13 +1441,15 @@ void ResourceDispatcherHost::NotifyResponseStarted(URLRequest* request,
   // Notify the observers on the IO thread.
   FOR_EACH_OBSERVER(Observer, observer_list_, OnRequestStarted(this, request));
 
+  int render_process_id, render_view_id;
+  if (!RenderViewForRequest(request, &render_process_id, &render_view_id))
+    return;
+
   // Notify the observers on the UI thread.
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      new RVHDelegateNotificationTask(
-          request,
-          &RenderViewHostDelegate::Resource::DidStartReceivingResourceResponse,
-          new ResourceRequestDetails(request, GetCertID(request, child_id))));
+  CallRenderViewHostResourceDelegate(
+      render_process_id, render_view_id,
+      &RenderViewHostDelegate::Resource::DidStartReceivingResourceResponse,
+      ResourceRequestDetails(request, GetCertID(request, child_id)));
 }
 
 void ResourceDispatcherHost::NotifyResponseCompleted(URLRequest* request,
@@ -1534,14 +1466,15 @@ void ResourceDispatcherHost::NotifyReceivedRedirect(URLRequest* request,
   FOR_EACH_OBSERVER(Observer, observer_list_,
                     OnReceivedRedirect(this, request, new_url));
 
-  int cert_id = GetCertID(request, child_id);
+  int render_process_id, render_view_id;
+  if (!RenderViewForRequest(request, &render_process_id, &render_view_id))
+    return;
 
   // Notify the observers on the UI thread.
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      new RVHDelegateNotificationTask(
-          request, &RenderViewHostDelegate::Resource::DidRedirectResource,
-          new ResourceRedirectDetails(request, cert_id, new_url)));
+  CallRenderViewHostResourceDelegate(
+      render_process_id, render_view_id,
+      &RenderViewHostDelegate::Resource::DidRedirectResource,
+      ResourceRedirectDetails(request, GetCertID(request, child_id), new_url));
 }
 
 namespace {

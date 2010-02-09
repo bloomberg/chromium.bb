@@ -356,16 +356,6 @@ int RenderViewHost::GetPendingRequestId() {
   return pending_request_id_;
 }
 
-void RenderViewHost::OnCrossSiteResponse(int new_render_process_host_id,
-                                         int new_request_id) {
-  RenderViewHostDelegate::RendererManagement* management_delegate =
-      delegate_->GetRendererManagementDelegate();
-  if (management_delegate) {
-    management_delegate->OnCrossSiteResponse(new_render_process_host_id,
-                                             new_request_id);
-  }
-}
-
 void RenderViewHost::Stop() {
   Send(new ViewMsg_Stop(routing_id()));
 }

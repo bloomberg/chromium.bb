@@ -11,65 +11,10 @@
 #include "chrome/browser/renderer_host/global_request_id.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
+#include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "net/base/io_buffer.h"
-
-namespace {
-
-// Task to notify the TabContents that a cross-site response has begun, so that
-// TabContents can tell the old page to run its onunload handler.
-class CrossSiteNotifyTask : public Task {
- public:
-  CrossSiteNotifyTask(int render_process_host_id,
-                      int render_view_id,
-                      int request_id)
-    : render_process_host_id_(render_process_host_id),
-      render_view_id_(render_view_id),
-      request_id_(request_id) {}
-
-  void Run() {
-    RenderViewHost* view =
-        RenderViewHost::FromID(render_process_host_id_, render_view_id_);
-    if (view) {
-      view->OnCrossSiteResponse(render_process_host_id_, request_id_);
-    } else {
-      // The view couldn't be found.
-      // TODO(creis): Should notify the IO thread to proceed anyway, using
-      // ResourceDispatcherHost::OnClosePageACK.
-    }
-  }
-
- private:
-  int render_process_host_id_;
-  int render_view_id_;
-  int request_id_;
-};
-
-class CancelPendingRenderViewTask : public Task {
- public:
-  CancelPendingRenderViewTask(int render_process_host_id,
-                              int render_view_id)
-    : render_process_host_id_(render_process_host_id),
-      render_view_id_(render_view_id) {}
-
-  void Run() {
-    RenderViewHost* view =
-        RenderViewHost::FromID(render_process_host_id_, render_view_id_);
-    if (view) {
-      RenderViewHostDelegate::RendererManagement* management_delegate =
-          view->delegate()->GetRendererManagementDelegate();
-      if (management_delegate)
-        management_delegate->OnCrossSiteNavigationCanceled();
-    }
-  }
-
- private:
-  int render_process_host_id_;
-  int render_view_id_;
-};
-
-}  // namespace
 
 CrossSiteResourceHandler::CrossSiteResourceHandler(
     ResourceHandler* handler,
@@ -162,10 +107,10 @@ bool CrossSiteResourceHandler::OnResponseCompleted(
         // Here the request was canceled, which happens when selecting "take me
         // back" from an interstitial.  Nothing to do but cancel the pending
         // render view host.
-        ChromeThread::PostTask(
-            ChromeThread::UI, FROM_HERE,
-            new CancelPendingRenderViewTask(
-                render_process_host_id_, render_view_id_));
+        CallRenderViewHostRendererManagementDelegate(
+            render_process_host_id_, render_view_id_,
+            &RenderViewHostDelegate::RendererManagement::
+                OnCrossSiteNavigationCanceled);
         return next_handler_->OnResponseCompleted(request_id, status,
                                                   security_info);
       } else {
@@ -265,8 +210,11 @@ void CrossSiteResourceHandler::StartCrossSiteTransition(
   // Tell the tab responsible for this request that a cross-site response is
   // starting, so that it can tell its old renderer to run its onunload
   // handler now.  We will wait to hear the corresponding ClosePage_ACK.
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      new CrossSiteNotifyTask(
-          render_process_host_id_, render_view_id_, request_id));
+  CallRenderViewHostRendererManagementDelegate(
+      render_process_host_id_, render_view_id_,
+      &RenderViewHostDelegate::RendererManagement::OnCrossSiteResponse,
+      render_process_host_id_, request_id);
+
+  // TODO(creis): If the above call should fail, then we need to notify the IO
+  // thread to proceed anyway, using ResourceDispatcherHost::OnClosePageACK.
 }

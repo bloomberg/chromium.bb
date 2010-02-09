@@ -649,7 +649,7 @@ typename Callback5<Arg1, Arg2, Arg3, Arg4, Arg5>::Type* NewCallback(
 template <class T, class Method, class Params>
 class UnboundMethod {
  public:
-  UnboundMethod(Method m, Params p) : m_(m), p_(p) {
+  UnboundMethod(Method m, const Params& p) : m_(m), p_(p) {
     COMPILE_ASSERT((MethodUsesScopedRefptrCorrectly<Method, Params>::value),
                    badunboundmethodparams);
   }

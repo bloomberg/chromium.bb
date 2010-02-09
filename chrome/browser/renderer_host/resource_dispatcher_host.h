@@ -206,6 +206,7 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   virtual void OnSSLCertificateError(URLRequest* request,
                                      int cert_error,
                                      net::X509Certificate* cert);
+  virtual void OnSetCookieBlocked(URLRequest* request);
   virtual void OnResponseStarted(URLRequest* request);
   virtual void OnReadCompleted(URLRequest* request, int bytes_read);
   void OnResponseCompleted(URLRequest* request);
