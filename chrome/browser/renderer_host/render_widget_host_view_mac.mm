@@ -124,9 +124,9 @@ RenderWidgetHostViewMac::~RenderWidgetHostViewMac() {
 void RenderWidgetHostViewMac::InitAsPopup(
     RenderWidgetHostView* parent_host_view,
     const gfx::Rect& pos) {
-  [parent_host_view->GetNativeView() addSubview:cocoa_view_];
   [cocoa_view_ setCloseOnDeactivate:YES];
   [cocoa_view_ setCanBeKeyView:activatable_ ? YES : NO];
+  [parent_host_view->GetNativeView() addSubview:cocoa_view_];
 
   // TODO(avi):Why the hell are these screen coordinates? The Windows code calls
   // ::MoveWindow() which indicates they should be local, but when running it I
@@ -1544,11 +1544,15 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // If we move into a new window, refresh the frame information. We don't need
   // to do it if it was the same window as it used to be in, since that case
   // is covered by DidBecomeSelected.
-  NSWindow* newWindow = [self window];
-  // Pointer comparison only, since we don't know if lastWindow_ is still valid.
-  if (newWindow && (newWindow != lastWindow_)) {
-    lastWindow_ = newWindow;
-    renderWidgetHostView_->WindowFrameChanged();
+  // We only want to do this for real browser views, not popups.
+  if (canBeKeyView_) {
+    NSWindow* newWindow = [self window];
+    // Pointer comparison only, since we don't know if lastWindow_ is still
+    // valid.
+    if (newWindow && (newWindow != lastWindow_)) {
+      lastWindow_ = newWindow;
+      renderWidgetHostView_->WindowFrameChanged();
+    }
   }
 }
 
