@@ -575,7 +575,7 @@ struct BufferData {
 
   gpu::CommandHeader header;
   uint32 target;
-  uint32 size;
+  int32 size;
   uint32 data_shm_id;
   uint32 data_shm_offset;
   uint32 usage;
@@ -627,7 +627,7 @@ struct BufferDataImmediate {
 
   gpu::CommandHeader header;
   uint32 target;
-  uint32 size;
+  int32 size;
   uint32 usage;
 };
 
@@ -676,8 +676,8 @@ struct BufferSubData {
 
   gpu::CommandHeader header;
   uint32 target;
-  uint32 offset;
-  uint32 size;
+  int32 offset;
+  int32 size;
   uint32 data_shm_id;
   uint32 data_shm_offset;
 };
@@ -728,8 +728,8 @@ struct BufferSubDataImmediate {
 
   gpu::CommandHeader header;
   uint32 target;
-  uint32 offset;
-  uint32 size;
+  int32 offset;
+  int32 size;
 };
 
 COMPILE_ASSERT(sizeof(BufferSubDataImmediate) == 16,
@@ -2933,7 +2933,7 @@ struct GetActiveAttrib {
   struct Result {
     int32 success;
     int32 size;
-    int32 type;
+    uint32 type;
   };
 
   static uint32 ComputeSize() {
@@ -3002,7 +3002,7 @@ struct GetActiveUniform {
   struct Result {
     int32 success;
     int32 size;
-    int32 type;
+    uint32 type;
   };
 
   static uint32 ComputeSize() {

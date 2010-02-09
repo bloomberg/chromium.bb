@@ -4,6 +4,7 @@
 
 #include "base/at_exit.h"
 #include "base/message_loop.h"
+#include "base/scoped_nsautorelease_pool.h"
 #include "gpu/command_buffer/common/command_buffer_mock.h"
 #include "gpu/command_buffer/service/mocks.h"
 #include "gpu/command_buffer/service/gpu_processor.h"
@@ -72,6 +73,7 @@ class GPUProcessorTest : public testing::Test {
     return command_buffer_->GetState().error;
   }
 
+  base::ScopedNSAutoreleasePool autorelease_pool_;
   base::AtExitManager at_exit_manager;
   MessageLoop message_loop;
   scoped_ptr<MockCommandBuffer> command_buffer_;

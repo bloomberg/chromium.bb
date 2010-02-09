@@ -652,7 +652,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   virtual bool MakeCurrent();
   virtual uint32 GetServiceIdForTesting(uint32 client_id);
 
-#if !defined(UNIT_TEST) && defined(OS_MACOSX)
+#if defined(OS_MACOSX)
   // Overridden from GLES2Decoder.
   virtual uint64 SetWindowSize(int32 width, int32 height);
 #endif
@@ -1350,7 +1350,8 @@ bool GLES2DecoderImpl::InitGlew() {
   return true;
 }
 
-#if !defined(UNIT_TEST) && defined(OS_MACOSX)
+#if defined(OS_MACOSX)
+#if !defined(UNIT_TEST)
 static void AddBooleanValue(CFMutableDictionaryRef dictionary,
                             const CFStringRef key,
                             bool value) {
@@ -1364,8 +1365,12 @@ static void AddIntegerValue(CFMutableDictionaryRef dictionary,
   CFNumberRef number = CFNumberCreate(NULL, kCFNumberSInt32Type, &value);
   CFDictionaryAddValue(dictionary, key, number);
 }
+#endif  // !defined(UNIT_TEST)
 
 uint64 GLES2DecoderImpl::SetWindowSize(int32 width, int32 height) {
+#if defined(UNIT_TEST)
+  return 0;
+#else
   if (surface_width_ == width && surface_height_ == height) {
     // Return 0 to indicate to the caller that no new backing store
     // allocation occurred.
@@ -1468,8 +1473,9 @@ uint64 GLES2DecoderImpl::SetWindowSize(int32 width, int32 height) {
   // the browser process side the identifier is reconstituted into an
   // IOSurface for on-screen rendering.
   return io_surface_support->IOSurfaceGetID(io_surface_);
+#endif  // !defined(UNIT_TEST)
 }
-#endif  // !defined(UNIT_TEST) && defined(OS_MACOSX)
+#endif  // defined(OS_MACOSX)
 
 void GLES2DecoderImpl::SetSwapBuffersCallback(Callback0::Type* callback) {
   swap_buffers_callback_.reset(callback);

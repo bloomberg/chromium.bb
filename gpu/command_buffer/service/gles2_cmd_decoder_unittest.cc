@@ -602,9 +602,33 @@ const int GLES2DecoderWithShaderTest::kOutOfRangeIndexRangeEnd;
 const char* GLES2DecoderWithShaderTest::kAttrib1Name = "attrib1";
 const char* GLES2DecoderWithShaderTest::kAttrib2Name = "attrib2";
 const char* GLES2DecoderWithShaderTest::kAttrib3Name = "attrib3";
+const GLint GLES2DecoderWithShaderTest::kAttrib1Size;
+const GLint GLES2DecoderWithShaderTest::kAttrib2Size;
+const GLint GLES2DecoderWithShaderTest::kAttrib3Size;
+const GLint GLES2DecoderWithShaderTest::kAttrib1Location;
+const GLint GLES2DecoderWithShaderTest::kAttrib2Location;
+const GLint GLES2DecoderWithShaderTest::kAttrib3Location;
+const GLenum GLES2DecoderWithShaderTest::kAttrib1Type;
+const GLenum GLES2DecoderWithShaderTest::kAttrib2Type;
+const GLenum GLES2DecoderWithShaderTest::kAttrib3Type;
+const GLint GLES2DecoderWithShaderTest::kInvalidAttribLocation;
+const GLint GLES2DecoderWithShaderTest::kBadAttribIndex;
+const GLint GLES2DecoderWithShaderTest::kMaxUniformLength;
 const char* GLES2DecoderWithShaderTest::kUniform1Name = "uniform1";
 const char* GLES2DecoderWithShaderTest::kUniform2Name = "uniform2";
 const char* GLES2DecoderWithShaderTest::kUniform3Name = "uniform3";
+const GLint GLES2DecoderWithShaderTest::kUniform1Size;
+const GLint GLES2DecoderWithShaderTest::kUniform2Size;
+const GLint GLES2DecoderWithShaderTest::kUniform3Size;
+const GLint GLES2DecoderWithShaderTest::kUniform1Location;
+const GLint GLES2DecoderWithShaderTest::kUniform2Location;
+const GLint GLES2DecoderWithShaderTest::kUniform2ElementLocation;
+const GLint GLES2DecoderWithShaderTest::kUniform3Location;
+const GLenum GLES2DecoderWithShaderTest::kUniform1Type;
+const GLenum GLES2DecoderWithShaderTest::kUniform2Type;
+const GLenum GLES2DecoderWithShaderTest::kUniform3Type;
+const GLint GLES2DecoderWithShaderTest::kInvalidUniformLocation;
+const GLint GLES2DecoderWithShaderTest::kBadUniformIndex;
 
 TEST_F(GLES2DecoderWithShaderTest, DrawArraysNoAttributesSucceeds) {
   EXPECT_CALL(*gl_, DrawArrays(GL_TRIANGLES, 0, kNumVertices))
@@ -941,7 +965,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformivBadProgramFails) {
   EXPECT_CALL(*gl_, GetUniformiv(_, _, _))
       .Times(0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(0, result->size);
+  EXPECT_EQ(0U, result->size);
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
   // Valid id that is not a program. The GL spec requires a different error for
   // this case.
@@ -949,7 +973,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformivBadProgramFails) {
   cmd.Init(client_texture_id_, kUniform2Location,
            kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(0, result->size);
+  EXPECT_EQ(0U, result->size);
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
   // Unlinked program
   EXPECT_CALL(*gl_, CreateProgram())
@@ -963,7 +987,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformivBadProgramFails) {
   cmd.Init(kNewClientId, kUniform2Location,
            kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(0, result->size);
+  EXPECT_EQ(0U, result->size);
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
@@ -977,7 +1001,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformivBadLocationFails) {
   EXPECT_CALL(*gl_, GetUniformiv(_, _, _))
       .Times(0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(0, result->size);
+  EXPECT_EQ(0U, result->size);
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
@@ -1028,7 +1052,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformfvBadProgramFails) {
   EXPECT_CALL(*gl_, GetUniformfv(_, _, _))
       .Times(0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(0, result->size);
+  EXPECT_EQ(0U, result->size);
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
   // Valid id that is not a program. The GL spec requires a different error for
   // this case.
@@ -1036,7 +1060,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformfvBadProgramFails) {
   cmd.Init(client_texture_id_, kUniform2Location,
            kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(0, result->size);
+  EXPECT_EQ(0U, result->size);
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
   // Unlinked program
   EXPECT_CALL(*gl_, CreateProgram())
@@ -1050,7 +1074,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformfvBadProgramFails) {
   cmd.Init(kNewClientId, kUniform2Location,
            kSharedMemoryId, kSharedMemoryOffset);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(0, result->size);
+  EXPECT_EQ(0U, result->size);
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
@@ -1064,7 +1088,7 @@ TEST_F(GLES2DecoderWithShaderTest, GetUniformfvBadLocationFails) {
   EXPECT_CALL(*gl_, GetUniformfv(_, _, _))
       .Times(0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(0, result->size);
+  EXPECT_EQ(0U, result->size);
   EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
 }
 
@@ -1104,14 +1128,13 @@ TEST_F(GLES2DecoderWithShaderTest, GetAttachedShadersBadProgramFails) {
   cmd.Init(kInvalidClientId, shared_memory_id_, shared_memory_offset_,
            Result::ComputeSize(1));
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(0, result->size);
+  EXPECT_EQ(0U, result->size);
   EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
 TEST_F(GLES2DecoderWithShaderTest, GetAttachedShadersBadSharedMemoryFails) {
   GetAttachedShaders cmd;
   typedef GetAttachedShaders::Result Result;
-  Result* result = static_cast<Result*>(shared_memory_address_);
   cmd.Init(client_program_id_, kInvalidSharedMemoryId, shared_memory_offset_,
            Result::ComputeSize(1));
   EXPECT_CALL(*gl_, GetAttachedShaders(_, _, _, _))
@@ -1140,8 +1163,6 @@ TEST_F(GLES2DecoderWithShaderTest, GetShaderPrecisionFormatSucceeds) {
 
 TEST_F(GLES2DecoderWithShaderTest, GetShaderPrecisionFormatBadArgsFails) {
   GetShaderPrecisionFormat cmd;
-  typedef GetShaderPrecisionFormat::Result Result;
-  Result* result = static_cast<Result*>(shared_memory_address_);
   cmd.Init(GL_TEXTURE_2D, GL_HIGH_FLOAT,
            shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -1155,8 +1176,6 @@ TEST_F(GLES2DecoderWithShaderTest, GetShaderPrecisionFormatBadArgsFails) {
 TEST_F(GLES2DecoderWithShaderTest,
        GetShaderPrecisionFormatBadSharedMemoryFails) {
   GetShaderPrecisionFormat cmd;
-  typedef GetShaderPrecisionFormat::Result Result;
-  Result* result = static_cast<Result*>(shared_memory_address_);
   cmd.Init(GL_VERTEX_SHADER, GL_HIGH_FLOAT,
            kInvalidSharedMemoryId, shared_memory_offset_);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));

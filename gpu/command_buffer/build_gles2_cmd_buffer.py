@@ -886,7 +886,7 @@ _FUNCTION_INFO = {
     'result': [
       'int32 success',
       'int32 size',
-      'int32 type',
+      'uint32 type',
     ],
   },
   'GetActiveUniform': {
@@ -898,7 +898,7 @@ _FUNCTION_INFO = {
     'result': [
       'int32 success',
       'int32 size',
-      'int32 type',
+      'uint32 type',
     ],
   },
   'GetAttachedShaders': {
@@ -3081,8 +3081,11 @@ class Argument(object):
   """A class that represents a function argument."""
 
   cmd_type_map_ = {
+    'GLenum': 'uint32',
     'GLint': 'int32',
+    'GLintptr': 'int32',
     'GLsizei': 'int32',
+    'GLsizeiptr': 'int32',
     'GLfloat': 'float',
     'GLclampf': 'float',
   }

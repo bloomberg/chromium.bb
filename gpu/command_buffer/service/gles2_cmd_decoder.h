@@ -56,7 +56,7 @@ class GLES2Decoder : public CommonDecoder {
   HWND hwnd() const {
     return hwnd_;
   }
-#elif !defined(UNIT_TEST) && defined(OS_MACOSX)
+#elif defined(OS_MACOSX)
   virtual uint64 SetWindowSize(int32 width, int32 height) = 0;
 #endif
 

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/scoped_nsautorelease_pool.h"
 #include "base/thread.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
@@ -39,6 +40,7 @@ class CommandBufferServiceTest : public testing::Test {
     return command_buffer_->GetState().error;
   }
 
+  base::ScopedNSAutoreleasePool autorelease_pool_;
   scoped_ptr<CommandBufferService> command_buffer_;
 };
 

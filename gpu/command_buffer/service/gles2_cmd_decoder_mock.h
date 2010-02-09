@@ -22,6 +22,9 @@ class MockGLES2Decoder : public GLES2Decoder {
       .WillByDefault(testing::Return(true));
   }
 
+#if defined(OS_MACOSX)
+  MOCK_METHOD2(SetWindowSize, uint64(int32 width, int32 height));
+#endif
   MOCK_METHOD0(Initialize, bool());
   MOCK_METHOD0(Destroy, void());
   MOCK_METHOD0(MakeCurrent, bool());
