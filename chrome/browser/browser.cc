@@ -2517,9 +2517,6 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_FULLSCREEN, true);
 #endif
   command_updater_.UpdateCommandEnabled(IDC_EXIT, true);
-#if defined(OS_CHROMEOS)
-  command_updater_.UpdateCommandEnabled(IDC_COMPACT_NAVBAR, true);
-#endif
 
   // Page-related commands
   command_updater_.UpdateCommandEnabled(IDC_EMAIL_PAGE_LOCATION, true);
@@ -2594,6 +2591,10 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_HELP_PAGE, true);
   command_updater_.UpdateCommandEnabled(IDC_IMPORT_SETTINGS, true);
 
+#if defined(OS_CHROMEOS)
+  command_updater_.UpdateCommandEnabled(IDC_COMPACT_NAVBAR, true);
+  command_updater_.UpdateCommandEnabled(IDC_PRINT, false);
+#endif
   ExtensionsService* extensions_service = profile()->GetExtensionsService();
   bool enable_extensions =
       extensions_service && extensions_service->extensions_enabled();

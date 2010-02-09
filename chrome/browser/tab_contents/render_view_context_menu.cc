@@ -516,7 +516,9 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
       return !params_.misspelled_word.empty();
 
     case IDS_CONTENT_CONTEXT_COPYIMAGE:
+#if !defined(OS_CHROMEOS)
     case IDS_CONTENT_CONTEXT_PRINT:
+#endif
     case IDS_CONTENT_CONTEXT_SEARCHWEBFOR:
     case IDS_CONTENT_CONTEXT_GOTOURL:
     case IDC_SPELLCHECK_SUGGESTION_0:

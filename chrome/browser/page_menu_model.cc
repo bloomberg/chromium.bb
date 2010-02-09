@@ -29,10 +29,8 @@ void PageMenuModel::Build() {
   AddItemWithStringId(IDC_PASTE, IDS_PASTE);
   AddSeparator();
   AddItemWithStringId(IDC_FIND, IDS_FIND);
-#if !defined(OS_CHROMEOS)
   AddItemWithStringId(IDC_SAVE_PAGE, IDS_SAVE_PAGE);
   AddItemWithStringId(IDC_PRINT, IDS_PRINT);
-#endif
   AddSeparator();
 
   zoom_menu_model_.reset(new ZoomMenuModel(delegate()));
@@ -162,9 +160,7 @@ void PopupPageMenuModel::Build() {
   AddItemWithStringId(IDC_PASTE, IDS_PASTE);
   AddSeparator();
   AddItemWithStringId(IDC_FIND, IDS_FIND);
-#if !defined(OS_CHROMEOS)
   AddItemWithStringId(IDC_PRINT, IDS_PRINT);
-#endif
   zoom_menu_model_.reset(new ZoomMenuModel(delegate()));
   AddSubMenuWithStringId(IDS_ZOOM_MENU, zoom_menu_model_.get());
 
