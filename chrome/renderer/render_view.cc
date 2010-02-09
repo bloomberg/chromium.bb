@@ -2511,8 +2511,10 @@ void RenderView::didFinishDocumentLoad(WebFrame* frame) {
 
   Send(new ViewHostMsg_DocumentLoadedInFrame(routing_id_));
 
-  // The document has now been fully loaded.  Scan for password forms to be
-  // sent up to the browser.
+  // The document has now been fully loaded.  Scan for forms to be sent up to
+  // the browser.
+  // TODO(jhawkins): Make these use the FormManager.
+  SendForms(frame);
   SendPasswordForms(frame);
 
   // Check whether we have new encoding name.
@@ -4233,6 +4235,25 @@ void RenderView::focusAccessibilityObject(
   // TODO(port): accessibility not yet implemented
   NOTIMPLEMENTED();
 #endif
+}
+
+void RenderView::SendForms(WebFrame* frame) {
+  WebVector<WebFormElement> web_forms;
+  frame->forms(web_forms);
+
+  std::vector<FormFieldValues> forms;
+  for (size_t i = 0; i < web_forms.size(); ++i) {
+    const WebFormElement& web_form = web_forms[i];
+
+    if (web_form.autoComplete()) {
+      scoped_ptr<FormFieldValues> form(FormFieldValues::Create(web_form));
+      if (form.get())
+        forms.push_back(*form);
+    }
+  }
+
+  if (!forms.empty())
+    Send(new ViewHostMsg_FormsSeen(routing_id_, forms));
 }
 
 void RenderView::SendPasswordForms(WebFrame* frame) {

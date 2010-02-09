@@ -392,6 +392,11 @@ class RenderViewHostDelegate {
     // Called when the user submits a form.
     virtual void FormFieldValuesSubmitted(
         const webkit_glue::FormFieldValues& form) = 0;
+
+    // Called when the frame has finished loading and there are forms in the
+    // frame.
+    virtual void FormsSeen(
+        const std::vector<webkit_glue::FormFieldValues>& forms) = 0;
   };
 
   // ---------------------------------------------------------------------------

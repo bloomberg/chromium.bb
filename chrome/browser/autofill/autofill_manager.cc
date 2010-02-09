@@ -60,6 +60,18 @@ void AutoFillManager::FormFieldValuesSubmitted(
   }
 }
 
+void AutoFillManager::FormsSeen(
+    const std::vector<webkit_glue::FormFieldValues>& forms) {
+  form_structures_.reset();
+  for (std::vector<webkit_glue::FormFieldValues>::const_iterator iter =
+           forms.begin();
+       iter != forms.end(); ++iter) {
+    FormStructure* form_structure = new FormStructure(*iter);
+    DeterminePossibleFieldTypes(form_structure);
+    form_structures_.push_back(form_structure);
+  }
+}
+
 void AutoFillManager::OnAutoFillDialogApply(
     std::vector<AutoFillProfile>* profiles,
     std::vector<CreditCard>* credit_cards) {
@@ -96,7 +108,7 @@ void AutoFillManager::DeterminePossibleFieldTypes(
 void AutoFillManager::HandleSubmit() {
   // If there wasn't enough data to import then we don't want to send an upload
   // to the server.
-  if (!personal_data_->ImportFormData(form_structures_, this))
+  if (!personal_data_->ImportFormData(form_structures_.get(), this))
     return;
 
   UploadFormData();

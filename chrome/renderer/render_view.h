@@ -803,7 +803,10 @@ class RenderView : public RenderWidget,
   void LogNavigationState(const NavigationState* state,
                           const WebKit::WebDataSource* ds) const;
 
-  // Scan the given frame for password forms and send them up to the browser.
+  // Scans the given frame for forms and sends them up to the browser.
+  void SendForms(WebKit::WebFrame* frame);
+
+  // Scans the given frame for password forms and sends them up to the browser.
   void SendPasswordForms(WebKit::WebFrame* frame);
 
   void Print(WebKit::WebFrame* frame, bool script_initiated);

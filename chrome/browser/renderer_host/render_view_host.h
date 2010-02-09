@@ -540,6 +540,8 @@ class RenderViewHost : public RenderWidgetHost {
   void OnMsgShowModalHTMLDialog(const GURL& url, int width, int height,
                                 const std::string& json_arguments,
                                 IPC::Message* reply_msg);
+  void OnMsgFormsSeen(
+      const std::vector<webkit_glue::FormFieldValues>& forms);
   void OnMsgPasswordFormsSeen(
       const std::vector<webkit_glue::PasswordForm>& forms);
   void OnMsgFormFieldValuesSubmitted(const webkit_glue::FormFieldValues& forms);
