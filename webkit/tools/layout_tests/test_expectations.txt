@@ -883,7 +883,6 @@ BUG31363 DEBUG WIN LINUX MAC : platform/chromium/fast/dom/interval.html = TEXT P
 BUG8763 LINUX WIN MAC : svg/custom/use-on-g-containing-foreignObject-and-image.svg = IMAGE
 
 // smiley.png should be shown with xml:base and xml:base on parent.
-BUG23463 MAC : svg/W3C-SVG-1.1/struct-image-07-t.svg = IMAGE
 BUG23463 WIN LINUX : svg/W3C-SVG-1.1/struct-image-07-t.svg = IMAGE+TEXT
 
 // We show reduced version of the entire SVN image rather than an image
@@ -995,7 +994,7 @@ BUG10304 LINUX : svg/W3C-SVG-1.1/animate-elem-04-t.svg = FAIL
 BUG10304 LINUX : svg/W3C-SVG-1.1/animate-elem-05-t.svg = FAIL
 BUG10304 LINUX : svg/W3C-SVG-1.1/animate-elem-06-t.svg = FAIL
 BUG10304 LINUX : svg/W3C-SVG-1.1/animate-elem-07-t.svg = FAIL
-BUG10304 LINUX RELEASE: svg/W3C-SVG-1.1/animate-elem-30-t.svg = IMAGE+TEXT
+BUG10304 LINUX RELEASE: svg/W3C-SVG-1.1/animate-elem-30-t.svg = IMAGE
 BUG10304 LINUX : svg/W3C-SVG-1.1/fonts-desc-02-t.svg = FAIL
 BUG10304 LINUX : svg/W3C-SVG-1.1/interact-zoom-01-t.svg = FAIL
 BUG10304 LINUX : svg/W3C-SVG-1.1/text-spacing-01-b.svg = FAIL
@@ -1550,7 +1549,6 @@ BUG23498 MAC DEBUG : http/tests/navigation/post-frames.html = IMAGE TIMEOUT
 BUG23498 MAC RELEASE : http/tests/navigation/post-frames.html = IMAGE
 BUG23498 MAC : http/tests/navigation/postredirect-frames.html = IMAGE
 BUG23498 MAC : svg/custom/altglyph.svg = IMAGE
-// BUG23498 MAC : svg/custom/junk-data.svg = IMAGE
 BUG23498 MAC : svg/custom/scrolling-embedded-svg-file-image-repaint-problem.html = IMAGE
 BUG23498 MAC : svg/hixie/links/003-broken.xml = IMAGE
 BUG23498 MAC : svg/text/kerning.svg = IMAGE
@@ -2792,7 +2790,7 @@ BUG31623 WIN: http/tests/appcache/remove-cache.html = PASS TEXT TIMEOUT
 
 // WebKit roll 52769 -> 52793
 BUG31642 WIN MAC DEBUG: svg/W3C-SVG-1.1/animate-elem-30-t.svg = CRASH PASS
-BUG31642 LINUX DEBUG: svg/W3C-SVG-1.1/animate-elem-30-t.svg = IMAGE+TEXT CRASH
+BUG31642 LINUX DEBUG: svg/W3C-SVG-1.1/animate-elem-30-t.svg = IMAGE CRASH
 
 // WebKit roll 52852 -> 52867
 BUG32018 : websocket/tests/frame-lengths.html = PASS TIMEOUT
@@ -2906,10 +2904,6 @@ BUG33497 : storage/domstorage/sessionstorage/window-open.html = TEXT
 // WebKit roll 54059 -> 54075
 BUG33538 : fast/dom/Window/anonymous-slot-with-changes.html = TEXT
 
-// WebKit roll 54103 -> 54127
-BUG33997 MAC : svg/custom/dominant-baseline-hanging.svg = IMAGE
-BUG33997 MAC : svg/custom/gradient-stop-corner-cases.svg = IMAGE
-
 // WebKit roll 54278 -> 54322
 BUG34546 WIN : fast/events/standalone-image-drag-to-editable.html = IMAGE+TEXT
 BUG34546 WIN : fast/events/onunload-not-on-body.html = CRASH
@@ -2922,3 +2916,20 @@ BUG34546 : fast/loader/document-with-fragment-url-4.html = TIMEOUT
 
 // Flaky test
 BUG35064 WIN DEBUG : fast/forms/restore-selection-after-layout.html = TEXT PASS
+
+// WebKit roll 54482 to 54493.
+BUG_TONY WIN LINUX : svg/W3C-SVG-1.1/animate-elem-80-t.svg = TEXT
+BUG_TONY WIN : svg/W3C-SVG-1.1/filters-conv-01-f.svg = TEXT
+BUG_TONY WIN : svg/W3C-SVG-1.1/fonts-elem-01-t.svg = TEXT
+BUG_TONY WIN : svg/W3C-SVG-1.1/fonts-elem-02-t.svg = TEXT
+BUG_TONY WIN : svg/W3C-SVG-1.1/fonts-elem-03-b.svg = TEXT
+BUG_TONY WIN : svg/W3C-SVG-1.1/fonts-elem-04-b.svg = TEXT
+BUG_TONY WIN : svg/W3C-SVG-1.1/fonts-elem-07-b.svg = TEXT
+BUG_TONY WIN : svg/W3C-SVG-1.1/text-intro-05-t.svg = TEXT
+BUG_TONY WIN : svg/batik/text/textFeatures.svg = TEXT
+BUG_TONY WIN : svg/custom/use-on-disallowed-foreign-object-3.svg = TEXT
+BUG_TONY WIN LINUX : svg/custom/use-on-disallowed-foreign-object-4.svg = TEXT
+BUG_TONY WIN : svg/text/text-intro-05-t.svg = TEXT
+BUG_TONY MAC : svg/batik/text/textEffect3.svg = IMAGE
+BUG_TONY MAC : svg/custom/use-clipped-hit.svg = IMAGE
+BUG_TONY MAC : svg/text/selection-background-color.xhtml = IMAGE
