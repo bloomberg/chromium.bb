@@ -1007,6 +1007,13 @@ gboolean BookmarkManagerGtk::OnLeftTreeViewDragMotion(
                                     &path, &pos);
 
   if (path) {
+    // Don't accept drops over the "Search" or "Recently added" folders.
+    GtkTreeIter iter;
+    GtkTreeModel* model = gtk_tree_view_get_model(GTK_TREE_VIEW(tree_view));
+    gtk_tree_model_get_iter(model, &iter, path);
+    if (bm->GetNodeAt(model, &iter) == NULL)
+      return FALSE;
+
     // Only allow INTO.
     if (pos == GTK_TREE_VIEW_DROP_BEFORE)
       pos = GTK_TREE_VIEW_DROP_INTO_OR_BEFORE;
