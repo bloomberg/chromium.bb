@@ -1,6 +1,32 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+/*
+ * Copyright (C) 2010 Google Inc. All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
 
 /**
  * @fileoverview Heap profiler panel implementation.
@@ -364,7 +390,7 @@ WebInspector.HeapSnapshotView.prototype = {
     {
         var list = WebInspector.HeapSnapshotProfileType.snapshots;
         // We're assuming that snapshots can only be added.
-        if (this.baseSelectElement.length == list.length)
+        if (this.baseSelectElement.length === list.length)
             return;
 
         for (var i = this.baseSelectElement.length, n = list.length; i < n; ++i) {
@@ -401,7 +427,7 @@ WebInspector.HeapSnapshotView.SearchHelper = {
     // In comparators, we assume that a value from a node is passed as the first parameter.
     operations: { LESS: function (a, b) { return a !== null && a < b; },
                   LESS_OR_EQUAL: function (a, b) { return a !== null && a <= b; },
-                  EQUAL: function (a, b) { return a !== null && a == b; },
+                  EQUAL: function (a, b) { return a !== null && a === b; },
                   GREATER_OR_EQUAL: function (a, b) { return a !== null && a >= b; },
                   GREATER: function (a, b) { return a !== null && a > b; } },
 
@@ -416,7 +442,7 @@ WebInspector.HeapSnapshotView.SearchHelper = {
         var parsers = WebInspector.HeapSnapshotView.SearchHelper.operationParsers;
         for (var operation in parsers) {
             var match = query.match(parsers[operation]);
-            if (match != null)
+            if (match !== null)
                 return [operations[operation], parseFloat(match[1])];
         }
         return [operations.EQUAL, parseFloat(query)];
@@ -482,8 +508,8 @@ WebInspector.HeapSummaryCountCalculator = function()
 
 WebInspector.HeapSummaryCountCalculator.prototype = {
     _highFromLow: function(type) {
-        if (type == "CODE_TYPE" || type == "SHARED_FUNCTION_INFO_TYPE" || type == "SCRIPT_TYPE") return "code";
-        if (type == "STRING_TYPE" || type == "HEAP_NUMBER_TYPE" || type.match(/^JS_/)) return "data";
+        if (type === "CODE_TYPE" || type === "SHARED_FUNCTION_INFO_TYPE" || type === "SCRIPT_TYPE") return "code";
+        if (type === "STRING_TYPE" || type === "HEAP_NUMBER_TYPE" || type.match(/^JS_/)) return "data";
         return null;
     },
 
@@ -501,8 +527,8 @@ WebInspector.HeapSummarySizeCalculator = function()
 
 WebInspector.HeapSummarySizeCalculator.prototype = {
     _highFromLow: function(type) {
-        if (type == "CODE_TYPE" || type == "SHARED_FUNCTION_INFO_TYPE" || type == "SCRIPT_TYPE") return "code";
-        if (type == "STRING_TYPE" || type == "HEAP_NUMBER_TYPE" || type.match(/^JS_/) || type.match(/_ARRAY_TYPE$/)) return "data";
+        if (type === "CODE_TYPE" || type === "SHARED_FUNCTION_INFO_TYPE" || type === "SCRIPT_TYPE") return "code";
+        if (type === "STRING_TYPE" || type === "HEAP_NUMBER_TYPE" || type.match(/^JS_/) || type.match(/_ARRAY_TYPE$/)) return "data";
         return null;
     },
 
@@ -610,7 +636,7 @@ WebInspector.HeapSnapshotDataGridNodeWithRetainers.prototype = {
     },
 
     signForDelta: function(delta) {
-        if (delta == 0)
+        if (delta === 0)
             return "";
         if (delta > 0)
             return "+";
@@ -703,7 +729,7 @@ WebInspector.HeapSnapshotDataGridNodeWithRetainers.prototype = {
         else
             data["countDelta"] = WebInspector.UIString("%s%d", this.signForDelta(this.countDelta), Math.abs(this.countDelta));
 
-        if (this.sizeDelta != null) {
+        if (this.sizeDelta !== null) {
             if (this.snapshotView.showSizeDeltaAsPercent)
                 data["sizeDelta"] = this.showDeltaAsPercent(this.sizeDeltaPercent);
             else
@@ -798,7 +824,7 @@ WebInspector.HeapSnapshotDataGridList.propertyComparators = [{}, {}];
 
 WebInspector.HeapSnapshotDataGridList.propertyComparator = function(property, property2, isAscending)
 {
-    var propertyHash = property + '#' + property2;
+    var propertyHash = property + "#" + property2;
     var comparator = this.propertyComparators[(isAscending ? 1 : 0)][propertyHash];
     if (!comparator) {
         comparator = function(lhs, rhs) {
