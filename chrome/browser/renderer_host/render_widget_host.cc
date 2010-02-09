@@ -489,12 +489,14 @@ void RenderWidgetHost::ForwardInputEvent(const WebInputEvent& input_event,
   input_event_start_time_ = TimeTicks::Now();
   Send(message);
 
-  // Any input event cancels a pending mouse move event.
-  next_mouse_move_.reset();
-
   // Any non-wheel input event cancels pending wheel events.
   if (input_event.type != WebInputEvent::MouseWheel)
     coalesced_mouse_wheel_events_.clear();
+
+  // Any input event cancels a pending mouse move event. Note that
+  // |next_mouse_move_| possibly owns |input_event|, so don't use |input_event|
+  // after this line.
+  next_mouse_move_.reset();
 
   StartHangMonitorTimeout(TimeDelta::FromMilliseconds(kHungRendererDelayMs));
 }
