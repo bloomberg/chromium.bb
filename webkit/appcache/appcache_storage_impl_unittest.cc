@@ -979,7 +979,8 @@ TEST_F(AppCacheStorageImplTest, BasicFindMainResponseInWorkingSet) {
       &AppCacheStorageImplTest::BasicFindMainResponseInWorkingSet);
 }
 
-TEST_F(AppCacheStorageImplTest, BasicFindMainFallbackResponseInDatabase) {
+// Flaky crash. http://code.google.com/p/chromium/issues/detail?id=35032
+TEST_F(AppCacheStorageImplTest, DISABLED_BasicFindMainFallbackResponseInDatabase) {
   RunTestOnIOThread(
       &AppCacheStorageImplTest::BasicFindMainFallbackResponseInDatabase);
 }
