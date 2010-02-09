@@ -203,12 +203,12 @@ void WebCursor::InitPlatformData() {
 bool WebCursor::SerializePlatformData(Pickle* pickle) const {
   // There are some issues with converting certain HCURSORS to bitmaps. The
   // HCURSOR being a user object can be marshaled as is.
-  return pickle->WriteIntPtr(reinterpret_cast<intptr_t>(external_cursor_));
+  // HCURSORs are always 32 bits on Windows, even on 64 bit systems.
+  return pickle->WriteUInt32(reinterpret_cast<uint32>(external_cursor_));
 }
 
 bool WebCursor::DeserializePlatformData(const Pickle* pickle, void** iter) {
-  return pickle->ReadIntPtr(iter,
-                            reinterpret_cast<intptr_t*>(&external_cursor_));
+  return pickle->ReadUInt32(iter, reinterpret_cast<uint32*>(&external_cursor_));
 }
 
 bool WebCursor::IsPlatformDataEqual(const WebCursor& other) const {

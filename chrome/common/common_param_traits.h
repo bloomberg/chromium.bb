@@ -120,17 +120,31 @@ template <>
 struct ParamTraits<gfx::NativeWindow> {
   typedef gfx::NativeWindow param_type;
   static void Write(Message* m, const param_type& p) {
-    WriteParam(m, reinterpret_cast<intptr_t>(p));
+#if defined(OS_WIN)
+    // HWNDs are always 32 bits on Windows, even on 64 bit systems.
+    m->WriteUInt32(reinterpret_cast<uint32>(p));
+#else
+    m->WriteData(reinterpret_cast<const char*>(&p), sizeof(p));
+#endif
   }
   static bool Read(const Message* m, void** iter, param_type* r) {
-    intptr_t value;
-    if (!ReadParam(m, iter, &value))
-      return false;
-    *r = reinterpret_cast<param_type>(value);
-    return true;
+#if defined(OS_WIN)
+    return m->ReadUInt32(iter, reinterpret_cast<uint32*>(r));
+#else
+    const char *data;
+    int data_size = 0;
+    bool result = m->ReadData(iter, &data, &data_size);
+    if (result && data_size == sizeof(gfx::NativeWindow)) {
+      memcpy(r, data, sizeof(gfx::NativeWindow));
+    } else {
+      result = false;
+      NOTREACHED();
+    }
+    return result;
+#endif
   }
   static void Log(const param_type& p, std::wstring* l) {
-    LogParam(reinterpret_cast<intptr_t>(p), l);
+    l->append(L"<gfx::NativeWindow>");
   }
 };
 

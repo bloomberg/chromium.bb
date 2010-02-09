@@ -70,12 +70,6 @@ class MessageIterator {
       NOTREACHED();
     return val;
   }
-  intptr_t NextIntPtr() const {
-    intptr_t val = 0;
-    if (!msg_.ReadIntPtr(&iter_, &val))
-      NOTREACHED();
-    return val;
-  }
   const std::string NextString() const {
     std::string val;
     if (!msg_.ReadString(&iter_, &val))
@@ -590,11 +584,13 @@ template <>
 struct ParamTraits<HANDLE> {
   typedef HANDLE param_type;
   static void Write(Message* m, const param_type& p) {
-    m->WriteIntPtr(reinterpret_cast<intptr_t>(p));
+    // Note that HWNDs/HANDLE/HCURSOR/HACCEL etc are always 32 bits, even on 64
+    // bit systems.
+    m->WriteUInt32(reinterpret_cast<uint32>(p));
   }
   static bool Read(const Message* m, void** iter, param_type* r) {
-    DCHECK_EQ(sizeof(param_type), sizeof(intptr_t));
-    return m->ReadIntPtr(iter, reinterpret_cast<intptr_t*>(r));
+    DCHECK_EQ(sizeof(param_type), sizeof(uint32));
+    return m->ReadUInt32(iter, reinterpret_cast<uint32*>(r));
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(StringPrintf(L"0x%X", p));
@@ -605,11 +601,11 @@ template <>
 struct ParamTraits<HCURSOR> {
   typedef HCURSOR param_type;
   static void Write(Message* m, const param_type& p) {
-    m->WriteIntPtr(reinterpret_cast<intptr_t>(p));
+    m->WriteUInt32(reinterpret_cast<uint32>(p));
   }
   static bool Read(const Message* m, void** iter, param_type* r) {
-    DCHECK_EQ(sizeof(param_type), sizeof(intptr_t));
-    return m->ReadIntPtr(iter, reinterpret_cast<intptr_t*>(r));
+    DCHECK_EQ(sizeof(param_type), sizeof(uint32));
+    return m->ReadUInt32(iter, reinterpret_cast<uint32*>(r));
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(StringPrintf(L"0x%X", p));
@@ -620,11 +616,11 @@ template <>
 struct ParamTraits<HACCEL> {
   typedef HACCEL param_type;
   static void Write(Message* m, const param_type& p) {
-    m->WriteIntPtr(reinterpret_cast<intptr_t>(p));
+    m->WriteUInt32(reinterpret_cast<uint32>(p));
   }
   static bool Read(const Message* m, void** iter, param_type* r) {
-    DCHECK_EQ(sizeof(param_type), sizeof(intptr_t));
-    return m->ReadIntPtr(iter, reinterpret_cast<intptr_t*>(r));
+    DCHECK_EQ(sizeof(param_type), sizeof(uint32));
+    return m->ReadUInt32(iter, reinterpret_cast<uint32*>(r));
   }
 };
 
