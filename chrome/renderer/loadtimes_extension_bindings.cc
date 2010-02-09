@@ -95,7 +95,7 @@ class LoadTimesExtensionWrapper : public v8::Extension {
   }
 
   static v8::Handle<v8::Value> GetLoadTimes(const v8::Arguments& args) {
-    WebFrame* frame = WebFrame::frameForEnteredContext();
+    WebFrame* frame = WebFrame::frameForCurrentContext();
     if (frame) {
       WebDataSource* data_source = frame->dataSource();
       if (data_source) {
@@ -138,7 +138,7 @@ class LoadTimesExtensionWrapper : public v8::Extension {
   }
 
   static v8::Handle<v8::Value> GetCSI(const v8::Arguments& args) {
-    WebFrame* frame = WebFrame::frameForEnteredContext();
+    WebFrame* frame = WebFrame::frameForCurrentContext();
     if (frame) {
       WebDataSource* data_source = frame->dataSource();
       if (data_source) {
