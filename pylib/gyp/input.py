@@ -45,6 +45,12 @@ path_sections = []
 
 
 def IsPathSection(section):
+  # If section ends in one of these characters, it's applied to a section
+  # without the trailing characters.  '/' is notably absent from this list,
+  # because there's no way for a regular expression to be treated as a path.
+  while section[-1:] in ('=', '+', '?', '!'):
+    section = section[0:-1]
+
   if section in path_sections or \
      section.endswith('_dir') or section.endswith('_dirs') or \
      section.endswith('_file') or section.endswith('_files') or \
