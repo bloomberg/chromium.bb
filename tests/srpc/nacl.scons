@@ -140,17 +140,17 @@ node = env.BrowserTester(
      )
 env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_srpc_basic_browser_test')
 
-# TODO(msneck): This test fails on opt-mac.
-###node = env.BrowserTester(
-###    'srpc_plugin_browser_test.out',
-###     url='srpc_plugin.html',
-###     files=[srpc_test_nexe,
-###            env.File('srpc_plugin.html'),
-###            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
-###            ],
-###     browser='*firefox',
-###     )
-###env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_srpc_plugin_browser_test')
+node = env.BrowserTester(
+    'srpc_plugin_browser_test.out',
+     url='srpc_plugin.html',
+     files=[srpc_test_nexe,
+            srpc_nrd_client_nexe,
+            env.File('srpc_plugin.html'),
+            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
+            ],
+     browser='*firefox',
+     )
+env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_srpc_plugin_browser_test')
 
 node = env.BrowserTester(
     'srpc_sockaddr_browser_test.out',

@@ -75,8 +75,13 @@ static INLINE int NaClIsNegErrno(int64_t val) {
    * NB: The runtime assumes that valid errno values can ALWAYS be
    * represented using no more than 16 bits. If this assumption
    * changes, all code dealing with error number should be reviewed.
+   *
+   * NB 2010-02-03: The original code for this function did not work:
+   *   return ((uint64_t) val) >= ~((uint64_t) 0xffff);
+   * Macintosh optimized builds were not able to recognize negative values.
+   * All other platforms as well as Macintosh debug builds worked fine.
    */
-  return ((uint64_t) val) >= ~((uint64_t) 0xffff);
+  return (val & ~((uint64_t) 0xffff)) == ~((uint64_t) 0xffff);
 }
 
 extern int NaClXlateErrno(int errnum);
@@ -261,6 +266,6 @@ extern int NaClProtMap(int abi_prot);
 
 EXTERN_C_END
 
-#endif // defined __native_client__
+#endif  // defined __native_client__
 
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_HOST_DESC_H__ */
