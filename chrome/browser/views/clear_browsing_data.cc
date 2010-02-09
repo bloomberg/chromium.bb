@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "app/gfx/insets.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/common/pref_names.h"
@@ -384,7 +385,8 @@ void ClearBrowsingDataView::LinkActivated(views::Link* source,
                                           int event_flags) {
   Browser* browser = Browser::Create(profile_);
   browser->OpenURL(GURL(l10n_util::GetStringUTF8(IDS_FLASH_STORAGE_URL)),
-                   GURL(), NEW_WINDOW, PageTransition::LINK);
+                   GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  browser->window()->Show();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

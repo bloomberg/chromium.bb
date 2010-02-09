@@ -9,6 +9,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/options/cookies_view.h"
@@ -197,5 +198,6 @@ void CookieFilterPageView::LinkActivated(views::Link* source, int event_flags) {
   // behind other windows.
   Browser* browser = Browser::Create(profile());
   browser->OpenURL(GURL(l10n_util::GetString(IDS_FLASH_STORAGE_URL)), GURL(),
-                   NEW_WINDOW, PageTransition::LINK);
+                   NEW_FOREGROUND_TAB, PageTransition::LINK);
+  browser->window()->Show();
 }
