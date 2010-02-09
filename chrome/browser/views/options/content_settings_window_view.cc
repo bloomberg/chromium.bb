@@ -88,6 +88,7 @@ views::View* ContentSettingsWindowView::GetContentsView() {
 // ContentSettingsWindowView, views::TabbedPane::Listener implementation:
 
 void ContentSettingsWindowView::TabSelectedAt(int index) {
+  last_selected_page_.SetValue(index);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
