@@ -398,6 +398,7 @@ typedef struct _NPDeviceContextAudioConfig {
   int32 outputChannelMap;
   int32 inputChannelMap;
   int32 sampleFrameCount;
+  uint32 startThread;
   uint32 flags;
   NPAudioCallback callback;
   void *userData;

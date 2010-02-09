@@ -399,6 +399,7 @@ void PluginObject::SetWindow(const NPWindow& window) {
     cfg.outputChannelMap = NPAudioChannelStereo;
     cfg.inputChannelMap  = NPAudioChannelNone;
     cfg.sampleFrameCount = 2048;
+    cfg.startThread      = 1;  // Start a thread for the audio producer.
     cfg.flags            = 0;
     cfg.callback         = &SineWaveCallback<200, int16>;
     deviceaudio_->initializeContext(npp_, &cfg, &context_audio_);

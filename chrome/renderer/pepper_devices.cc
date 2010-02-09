@@ -203,8 +203,9 @@ void AudioDeviceContext::OnLowLatencyCreated(
 
   context_->outBuffer = shared_memory_->memory();
   socket_.reset(new base::SyncSocket(socket_handle));
-  if (context_->config.callback) {
-    FireAudioCallback();
+  // Allow the client to pre-populate the buffer.
+  FireAudioCallback();
+  if (context_->config.startThread) {
     audio_thread_.reset(
         new base::DelegateSimpleThread(this, "plugin_audio_thread"));
     audio_thread_->Start();

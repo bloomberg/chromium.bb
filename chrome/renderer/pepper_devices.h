@@ -60,6 +60,7 @@ class AudioDeviceContext : public AudioMessageFilter::Delegate,
                      NPDeviceContextAudio* context);
 
   base::SharedMemory* shared_memory() { return shared_memory_.get(); }
+  base::SyncSocket* socket() { return socket_.get(); }
 
  private:
 
