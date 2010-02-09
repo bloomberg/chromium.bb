@@ -24,6 +24,8 @@
 
 namespace {
 
+const char kDetailsFontFamily[] = "monospace";
+
 ////////////////////////////////////////////////////////////////////////////////
 // NSS utility functions.
 
@@ -819,7 +821,6 @@ void CertificateViewer::InitDetailsPage() {
                      FALSE, FALSE, 0);
 
   // TODO(mattm): fix text view coloring (should have grey background).
-  // TODO(mattm): use fixed width font in field value text box.
   GtkWidget* field_value_view = gtk_text_view_new();
   gtk_text_view_set_editable(GTK_TEXT_VIEW(field_value_view), FALSE);
   gtk_text_view_set_wrap_mode(GTK_TEXT_VIEW(field_value_view), GTK_WRAP_NONE);
@@ -834,6 +835,13 @@ void CertificateViewer::InitDetailsPage() {
   gtk_container_add(GTK_CONTAINER(value_scroll_window), field_value_view);
   gtk_box_pack_start(GTK_BOX(value_vbox),
                      value_scroll_window, TRUE, TRUE, 0);
+
+  gtk_widget_ensure_style(field_value_view);
+  PangoFontDescription* font_desc = pango_font_description_copy(
+      gtk_widget_get_style(field_value_view)->font_desc);
+  pango_font_description_set_family(font_desc, kDetailsFontFamily);
+  gtk_widget_modify_font(field_value_view, font_desc);
+  pango_font_description_free(font_desc);
 
   // TODO(mattm): export certificate button.
 
