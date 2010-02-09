@@ -29,15 +29,9 @@ const int kInterBalloonMargin = 5;
 }  // namespace
 
 // static
-#if defined(OS_MACOSX)
-BalloonCollectionImpl::Layout::Placement
-    BalloonCollectionImpl::Layout::placement_ =
-        Layout::VERTICALLY_FROM_TOP_RIGHT;
-#else
 BalloonCollectionImpl::Layout::Placement
     BalloonCollectionImpl::Layout::placement_ =
         Layout::VERTICALLY_FROM_BOTTOM_RIGHT;
-#endif
 
 BalloonCollectionImpl::BalloonCollectionImpl()
     : space_change_listener_(NULL) {

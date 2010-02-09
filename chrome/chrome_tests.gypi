@@ -641,7 +641,6 @@
         'browser/cocoa/hyperlink_button_cell_unittest.mm',
         'browser/cocoa/menu_button_unittest.mm',
         'browser/cocoa/menu_controller_unittest.mm',
-        'browser/cocoa/notifications/balloon_controller_unittest.mm',
         'browser/cocoa/nsimage_cache_unittest.mm',
         'browser/cocoa/nsmenuitem_additions_unittest.mm',
         'browser/cocoa/objc_method_swizzle_unittest.mm',
