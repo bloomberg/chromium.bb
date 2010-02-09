@@ -198,9 +198,10 @@ gfx::NativeView TabContentsViewGtk::GetNativeView() const {
 }
 
 gfx::NativeView TabContentsViewGtk::GetContentNativeView() const {
-  if (!tab_contents()->render_widget_host_view())
+  RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
+  if (!rwhv)
     return NULL;
-  return tab_contents()->render_widget_host_view()->GetNativeView();
+  return rwhv->GetNativeView();
 }
 
 gfx::NativeWindow TabContentsViewGtk::GetTopLevelNativeWindow() const {
@@ -242,8 +243,9 @@ void TabContentsViewGtk::SizeContents(const gfx::Size& size) {
   gtk_widget_set_size_request(GetNativeView(), size.width(), size.height());
 
   // We need to send this immediately.
-  if (tab_contents()->render_widget_host_view())
-    tab_contents()->render_widget_host_view()->SetSize(size);
+  RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->SetSize(size);
 }
 
 void TabContentsViewGtk::Focus() {
@@ -257,7 +259,7 @@ void TabContentsViewGtk::Focus() {
     return;
   }
 
-  RenderWidgetHostView* rwhv = tab_contents()->render_widget_host_view();
+  RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
   gtk_widget_grab_focus(rwhv ? rwhv->GetNativeView() : GetNativeView());
 }
 
@@ -389,8 +391,9 @@ void TabContentsViewGtk::WasSized(const gfx::Size& size) {
   size_ = size;
   if (tab_contents()->interstitial_page())
     tab_contents()->interstitial_page()->SetSize(size);
-  if (tab_contents()->render_widget_host_view())
-    tab_contents()->render_widget_host_view()->SetSize(size);
+  RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->SetSize(size);
 
   SetFloatingPosition(size);
 }
