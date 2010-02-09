@@ -29,6 +29,13 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// Original author: Jim Blandy <jimb@mozilla.com> <jimb@red-bean.com>
+
+// Add DWARF debugging information to a Breakpad symbol file. This
+// file defines the DwarfCUToModule class, which accepts parsed DWARF
+// data and populates a google_breakpad::Module with the results; the
+// Module can then write its contents as a Breakpad symbol file.
+
 #ifndef COMMON_LINUX_DWARF_CU_TO_MODULE_H__
 #define COMMON_LINUX_DWARF_CU_TO_MODULE_H__
 

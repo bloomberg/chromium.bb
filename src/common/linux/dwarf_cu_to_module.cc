@@ -27,6 +27,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// Original author: Jim Blandy <jimb@mozilla.com> <jimb@red-bean.com>
+
+// Implement the DwarfCUToModule class; see dwarf_cu_to_module.h.
+
 #include <algorithm>
 #include <cassert>
 
@@ -168,6 +172,10 @@ class DwarfCUToModule::GenericDIEHandler: public dwarf2reader::DIEHandler {
   // DIE is a declaration DIE, to be cited by other DIEs'
   // DW_AT_specification attributes, record its enclosing name and
   // unqualified name in the specification table.
+  //
+  // Use this from EndAttributes member functions, not ProcessAttribute*
+  // functions; only the former can be sure that all the DIE's attributes
+  // have been seen.
   string ComputeQualifiedName();
 
   CUContext *cu_context_;
@@ -204,6 +212,11 @@ void DwarfCUToModule::GenericDIEHandler::ProcessAttributeReference(
     uint64 data) {
   switch (attr) {
     case dwarf2reader::DW_AT_specification: {
+      // Find the Specification to which this attribute refers, and
+      // set specification_ appropriately. We could do more processing
+      // here, but it's better to leave the real work to our
+      // EndAttribute member function, at which point we know we have
+      // seen all the DIE's attributes.
       FileContext *file_context = cu_context_->file_context;
       SpecificationByOffset *specifications
           = &file_context->file_private->specifications;

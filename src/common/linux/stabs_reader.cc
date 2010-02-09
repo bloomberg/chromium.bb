@@ -26,7 +26,10 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// Original author: Jim Blandy <jimb@mozilla.com> <jimb@red-bean.com>
+
 // This file implements the google_breakpad::StabsReader class.
+// See stabs_reader.h.
 
 #include <a.out.h>
 #include <stab.h>

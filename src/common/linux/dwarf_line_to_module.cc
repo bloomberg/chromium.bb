@@ -27,6 +27,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// Original author: Jim Blandy <jimb@mozilla.com> <jimb@red-bean.com>
+
+// dwarf_line_to_module.cc: Implementation of DwarfLineToModule class.
+// See dwarf_line_to_module.h for details. 
+
 #include "common/linux/dwarf_line_to_module.h"
 
 // Trying to support Windows paths in a reasonable way adds a lot of

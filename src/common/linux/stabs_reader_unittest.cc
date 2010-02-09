@@ -27,7 +27,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// stabs_reader_unittest.cc: Unit tests for StabsReader.
+// Original author: Jim Blandy <jimb@mozilla.com> <jimb@red-bean.com>
+
+// stabs_reader_unittest.cc: Unit tests for google_breakpad::StabsReader.
 
 #include <a.out.h>
 #include <cassert>

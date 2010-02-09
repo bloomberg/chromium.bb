@@ -28,6 +28,8 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// Original author: Jim Blandy <jimb@mozilla.com> <jimb@red-bean.com>
+
 // dwarf2reader::CompilationUnit is a simple and direct parser for
 // DWARF data, but its handler interface is not convenient to use.  In
 // particular:
@@ -56,7 +58,7 @@
 //   type DIEs don't.  It would be nice to be able to have separate
 //   handler classes for separate kinds of DIEs, each with the members
 //   appropriate to its role, instead of having one handler class that
-//   needs to hold data for all every DIE type.
+//   needs to hold data for every DIE type.
 //
 // - There should be a separate instance of the appropriate handler
 //   class for each DIE, instead of a single object with tables
@@ -184,6 +186,12 @@ class DIEHandler {
   // same restrictions as the corresponding member functions of
   // dwarf2reader::Dwarf2Handler.
   //
+  // Since DWARF does not specify in what order attributes must
+  // appear, avoid making decisions in these functions that would be
+  // affected by the presence of other attributes. The EndAttributes
+  // function is a more appropriate place for such work, as all the
+  // DIE's attributes have been seen at that point.
+  //
   // The default definitions ignore the values they are passed.
   virtual void ProcessAttributeUnsigned(enum DwarfAttribute attr,
                                         enum DwarfForm form,
@@ -207,6 +215,11 @@ class DIEHandler {
   // children.  If it returns true, we call FindChildHandler on each
   // child.  If that returns a handler object, we use that to visit
   // the child; otherwise, we skip the child.
+  //
+  // This is a good place to make decisions that depend on more than
+  // one attribute. DWARF does not specify in what order attributes
+  // must appear, so only when the EndAttributes function is called
+  // does the handler have a complete picture of the DIE's attributes.
   //
   // The default definition elects to ignore the DIE's children.
   // You'll need to override this if you override FindChildHandler,

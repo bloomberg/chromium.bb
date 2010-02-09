@@ -29,6 +29,12 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// Original author: Jim Blandy <jimb@mozilla.com> <jimb@red-bean.com>
+
+// The DwarfLineToModule class accepts line number information from a
+// DWARF parser and adds it to a google_breakpad::Module. The Module
+// can write that data out as a Breakpad symbol file.
+
 #ifndef COMMON_LINUX_DWARF_LINE_TO_MODULE_H
 #define COMMON_LINUX_DWARF_LINE_TO_MODULE_H
 

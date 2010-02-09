@@ -28,15 +28,20 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// This file contains definitions related to the STABS reader and
-// its handler interfaces.
-// A description of the STABS debugging format can be found at
-// http://sourceware.org/gdb/current/onlinedocs/stabs_toc.html
+// Original author: Jim Blandy <jimb@mozilla.com> <jimb@red-bean.com>
+
+// stabs_reader.h: Define StabsReader, a parser for STABS debugging
+// information. A description of the STABS debugging format can be
+// found at:
+//
+//    http://sourceware.org/gdb/current/onlinedocs/stabs_toc.html
+//
 // The comments here assume you understand the format.
 //
-// This reader assumes that the system's <a.out.h> and <stab.h>
+// This parser assumes that the system's <a.out.h> and <stab.h>
 // headers accurately describe the layout of the STABS data; this code
-// is not cross-platform safe.
+// will not parse STABS data for a system with a different address
+// size or endianness.
 
 #ifndef COMMON_LINUX_STABS_READER_H__
 #define COMMON_LINUX_STABS_READER_H__

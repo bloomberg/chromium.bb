@@ -29,7 +29,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// dump_stabs.h: A StabsHandler that populates a Module.
+// Original author: Jim Blandy <jimb@mozilla.com> <jimb@red-bean.com>
+
+// dump_stabs.h: Define the DumpStabsHandler class, which receives
+// STABS debugging information from a parser and adds it to a Breakpad
+// symbol file.
 
 #ifndef COMMON_LINUX_DUMP_STABS_H__
 #define COMMON_LINUX_DUMP_STABS_H__

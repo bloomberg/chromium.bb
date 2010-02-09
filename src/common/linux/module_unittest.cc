@@ -27,7 +27,9 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// module_unittest.cc: Unit tests for google_breakpad::Module
+// Original author: Jim Blandy <jimb@mozilla.com> <jimb@red-bean.com>
+
+// module_unittest.cc: Unit tests for google_breakpad::Module.
 
 #include <cerrno>
 #include <cstdio>

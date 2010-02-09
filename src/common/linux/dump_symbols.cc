@@ -27,6 +27,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
+// Restructured in 2009 by: Jim Blandy <jimb@mozilla.com> <jimb@red-bean.com>
+
+// dump_symbols.cc: implement google_breakpad::WriteSymbolFile:
+// Find all the debugging info in a file and dump it as a Breakpad symbol file.
+
 #include <elf.h>
 #include <fcntl.h>
 #include <link.h>

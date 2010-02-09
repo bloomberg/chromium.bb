@@ -29,8 +29,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// language.h: defines google_breakpad::Language, providing
-// language-specific operations for use by the dumper.
+// Original author: Jim Blandy <jimb@mozilla.com> <jimb@red-bean.com>
+
+// language.h: Define google_breakpad::Language. Instances of
+// subclasses of this class provide language-appropriate operations
+// for the Breakpad symbol dumper.
 
 #ifndef COMMON_LINUX_LANGUAGE_H__
 #define COMMON_LINUX_LANGUAGE_H__

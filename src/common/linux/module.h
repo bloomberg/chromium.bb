@@ -29,7 +29,11 @@
 // (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
 // OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
-// module.h: defines google_breakpad::Module, for writing breakpad symbol files
+// Original author: Jim Blandy <jimb@mozilla.com> <jimb@red-bean.com>
+
+// module.h: Define google_breakpad::Module. A Module holds debugging
+// information, and can write that information out as a Breakpad
+// symbol file.
 
 #ifndef COMMON_LINUX_MODULE_H__
 #define COMMON_LINUX_MODULE_H__
