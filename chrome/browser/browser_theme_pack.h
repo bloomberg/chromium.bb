@@ -116,9 +116,6 @@ class BrowserThemePack : public base::RefCountedThreadSafe<BrowserThemePack> {
                                FilePath images_path,
                                FilePathMap* file_paths) const;
 
-  // Creates the data for |source_images_| from |file_paths|.
-  void BuildSourceImagesArray(const FilePathMap& file_paths);
-
   // Loads the unmodified bitmaps packed in the extension to SkBitmaps. Returns
   // true if all images loaded.
   bool LoadRawBitmapsTo(const FilePathMap& file_paths,
@@ -192,10 +189,6 @@ class BrowserThemePack : public base::RefCountedThreadSafe<BrowserThemePack> {
     int32 id;
     int32 property;
   } *display_properties_;
-
-  // A list of included source images. A pointer to a -1 terminated array of
-  // our persistent IDs.
-  int* source_images_;
 #pragma pack(pop)
 
   // References to raw PNG data. This map isn't touched when |data_pack_| is
