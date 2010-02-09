@@ -270,12 +270,8 @@ willPositionSheet:(NSWindow*)sheet
     NSWindow* window = [self window];
     windowShim_.reset(new BrowserWindowCocoa(browser, self, window));
 
-    // By default, normal windows are marked as "opaque" which doesn't allow
-    // creative theme authors to play with transparency and alpha. Flip the
-    // switch.
-    [window setOpaque:NO];
 
-    // Sets the window to not have rounded bottom corners, which prevents
+    // Sets the window to not have rounded corners, which prevents
     // the resize control from being inset slightly and looking ugly.
     if ([window respondsToSelector:@selector(setBottomCornerRounded:)])
       [window setBottomCornerRounded:NO];
