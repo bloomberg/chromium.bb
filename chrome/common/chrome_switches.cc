@@ -631,10 +631,6 @@ const char kTryChromeAgain[]                = "try-chrome-again";
 // Runs un-installation steps that were done by chrome first-run.
 const char kUninstall[]                     = "uninstall";
 
-// Use NSS instead of the system SSL library for SSL.
-// This is a temporary testing flag.
-const char kUseNSSForSSL[]                  = "use-nss-for-ssl";
-
 // Use Spdy for the transport protocol instead of HTTP.
 // This is a temporary testing flag.
 const char kUseSpdy[]                       = "use-spdy";
@@ -728,6 +724,12 @@ const char kProfile[]                       = "profile";
 
 // Use the frame layout used in chromeos.
 const char kChromeosFrame[]                 = "chromeos-frame";
+#endif
+
+#if defined(OS_WIN)
+// Use NSS instead of the system SSL library for SSL.
+// This is a temporary testing flag.
+const char kUseNSSForSSL[]                  = "use-nss-for-ssl";
 #endif
 
 #if defined(OS_LINUX)

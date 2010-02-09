@@ -182,7 +182,6 @@ extern const char kThumbnailStore[];
 extern const char kTrustedPlugins[];
 extern const char kTryChromeAgain[];
 extern const char kUninstall[];
-extern const char kUseNSSForSSL[];
 extern const char kUseSpdy[];
 extern const char kFixedHost[];
 extern const char kFixedHttpPort[];
@@ -211,6 +210,10 @@ extern const char kSessionManagerPipe[];
 extern const char kTestLoadLibcros[];
 extern const char kProfile[];
 extern const char kChromeosFrame[];
+#endif
+
+#if defined(OS_WIN)
+extern const char kUseNSSForSSL[];
 #endif
 
 #if defined(OS_LINUX)

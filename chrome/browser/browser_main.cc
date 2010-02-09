@@ -65,7 +65,6 @@
 #include "net/base/cookie_monster.h"
 #include "net/base/net_module.h"
 #include "net/http/http_network_session.h"
-#include "net/socket/client_socket_factory.h"
 #include "net/socket/client_socket_pool_base.h"
 
 #if defined(OS_POSIX)
@@ -97,6 +96,7 @@
 #include <shellapi.h>
 
 #include "app/win_util.h"
+#include "base/nss_util.h"
 #include "base/registry.h"
 #include "base/win_util.h"
 #include "chrome/browser/browser.h"
@@ -114,7 +114,7 @@
 #include "net/base/net_util.h"
 #include "net/base/sdch_manager.h"
 #include "net/base/winsock_init.h"
-#include "net/http/http_network_layer.h"
+#include "net/socket/ssl_client_socket_nss_factory.h"
 #include "printing/printed_document.h"
 #include "sandbox/src/sandbox.h"
 #endif  // defined(OS_WIN)
@@ -396,6 +396,16 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Initialize Winsock.
   net::EnsureWinsockInit();
 #endif  // defined(OS_WIN)
+
+#if defined(OS_WIN)
+  if (parsed_command_line.HasSwitch(switches::kUseNSSForSSL) ||
+      parsed_command_line.HasSwitch(switches::kUseSpdy)) {
+    net::ClientSocketFactory::SetSSLClientSocketFactory(
+        net::SSLClientSocketNSSFactory);
+    // We want to be sure to init NSPR on the main thread.
+    base::EnsureNSPRInit();
+  }
+#endif
 
   // Do platform-specific things (such as finishing initializing Cocoa)
   // prior to instantiating the message loop. This could be turned into a
@@ -718,14 +728,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
       return ResultCodes::SHELL_INTEGRATION_FAILED;
     }
   }
-
-#if defined(OS_WIN)
-  if (parsed_command_line.HasSwitch(switches::kUseNSSForSSL) ||
-      parsed_command_line.HasSwitch(switches::kUseSpdy)) {
-    net::ClientSocketFactory::SetSSLClientSocketFactory(
-        net::SSLClientSocketNSSFactory);
-  }
-#endif
 
   // Try to create/load the profile.
   ProfileManager* profile_manager = browser_process->profile_manager();
