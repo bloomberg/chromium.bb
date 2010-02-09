@@ -94,6 +94,11 @@ class CookiesTreeModelObserverBridge : public TreeModelObserver {
   IBOutlet NSOutlineView* outlineView_;
   IBOutlet NSSearchField* searchField_;
 
+  // These views are laid out inside a NSBox and are shown/hidden to detail
+  // information about the selected node.
+  IBOutlet NSView* cookieInfo_;
+  IBOutlet NSView* localStorageInfo_;
+
   Profile* profile_;  // weak
   BrowsingDataLocalStorageHelper* storageHelper_;  // weak
 }
@@ -130,5 +135,7 @@ class CookiesTreeModelObserverBridge : public TreeModelObserver {
 - (void)clearBrowsingDataNotification:(NSNotification*)notif;
 - (CookiesTreeModelObserverBridge*)modelObserver;
 - (NSArray*)icons;
+- (NSView*)cookieInfoView;
+- (NSView*)localStorageInfoView;
 - (void)loadTreeModelFromProfile;
 @end

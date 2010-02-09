@@ -320,7 +320,8 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
 - (void)outlineViewSelectionDidChange:(NSNotification*)notif {
   // Multi-selection should be disabled in the UI, but for sanity, double-check
   // that they can't do it here.
-  NSUInteger count = [[treeController_ selectedObjects] count];
+  NSArray* selectedObjects = [treeController_ selectedObjects];
+  NSUInteger count = [selectedObjects count];
   if (count != 1U) {
     DCHECK_LT(count, 1U) << "User was able to select more than 1 cookie node!";
     [self setRemoveButtonEnabled:NO];
@@ -342,6 +343,14 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
   }
 
   [self setRemoveButtonEnabled:YES];
+  CocoaCookieTreeNodeType nodeType = [[selectedObjects lastObject] nodeType];
+  if (nodeType == kCocoaCookieTreeNodeTypeLocalStorage) {
+    [cookieInfo_ setHidden:YES];
+    [localStorageInfo_ setHidden:NO];
+  } else {
+    [cookieInfo_ setHidden:NO];
+    [localStorageInfo_ setHidden:YES];
+  }
 }
 
 #pragma mark Unit Testing
@@ -352,6 +361,14 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
 
 - (NSArray*)icons {
   return icons_.get();
+}
+
+- (NSView*)cookieInfoView {
+  return cookieInfo_;
+}
+
+- (NSView*)localStorageInfoView {
+  return localStorageInfo_;
 }
 
 // Re-initializes the |treeModel_|, creates a new observer for it, and re-

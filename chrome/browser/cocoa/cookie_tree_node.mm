@@ -7,6 +7,7 @@
 #include "app/l10n_util_mac.h"
 #import "base/i18n/time_formatting.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "grit/generated_resources.h"
 
 @implementation CocoaCookieTreeNode
@@ -15,8 +16,6 @@
   if ((self = [super init])) {
     DCHECK(node);
     treeNode_ = node;
-    isLeaf_ = (node->GetChildCount() == 0);
-
     [self rebuild];
   }
   return self;
@@ -24,11 +23,13 @@
 
 - (void)rebuild {
   title_.reset([base::SysWideToNSString(treeNode_->GetTitle()) retain]);
-  isCookie_ = NO;
+  children_.reset();
+  nodeType_ = kCocoaCookieTreeNodeTypeFolder;
 
   CookieTreeNode::DetailedInfo info = treeNode_->GetDetailedInfo();
-  if (info.node_type == CookieTreeNode::DetailedInfo::TYPE_COOKIE) {
-    isCookie_ = YES;
+  CookieTreeNode::DetailedInfo::NodeType nodeType = info.node_type;
+  if (nodeType == CookieTreeNode::DetailedInfo::TYPE_COOKIE) {
+    nodeType_ = kCocoaCookieTreeNodeTypeCookie;
     net::CookieMonster::CanonicalCookie cookie = info.cookie->second;
 
     name_.reset([base::SysUTF8ToNSString(cookie.Name()) retain]);
@@ -55,15 +56,29 @@
       sendFor_.reset([l10n_util::GetNSStringWithFixup(
           IDS_COOKIES_COOKIE_SENDFOR_ANY) retain]);
     }
+  } else if (nodeType == CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE) {
+    const BrowsingDataLocalStorageHelper::LocalStorageInfo* storageInfo =
+        info.local_storage_info;
+    nodeType_ = kCocoaCookieTreeNodeTypeLocalStorage;
+    domain_.reset([base::SysUTF8ToNSString(storageInfo->origin) retain]);
+    fileSize_.reset([base::SysWideToNSString(FormatBytes(storageInfo->size,
+        GetByteDisplayUnits(storageInfo->size), true)) retain]);
+    lastModified_.reset([base::SysWideToNSString(
+        base::TimeFormatFriendlyDateAndTime(
+            storageInfo->last_modified)) retain]);
   }
-}
-
-- (BOOL)isLeaf {
-  return isLeaf_;
 }
 
 - (NSString*)title {
   return title_.get();
+}
+
+- (CocoaCookieTreeNodeType)nodeType {
+  return nodeType_;
+}
+
+- (TreeModelNode*)treeNode {
+  return treeNode_;
 }
 
 - (NSMutableArray*)mutableChildren {
@@ -84,15 +99,18 @@
   return [self mutableChildren];
 }
 
-- (TreeModelNode*)treeNode {
-  return treeNode_;
+- (BOOL)isLeaf {
+  return nodeType_ != kCocoaCookieTreeNodeTypeFolder;
+}
+
+- (NSString*)description {
+  NSString* format =
+      @"<CocoaCookieTreeNode @ %p (title=%@, nodeType=%d, childCount=%u)";
+  return [NSString stringWithFormat:format, self, [self title],
+      [self nodeType], [[self children] count]];
 }
 
 #pragma mark Cookie Accessors
-
-- (BOOL)isCookie {
-  return isCookie_;
-}
 
 - (NSString*)name {
   return name_.get();
@@ -120,6 +138,16 @@
 
 - (NSString*)expires {
   return expires_.get();
+}
+
+#pragma mark Local Storage Accessors
+
+- (NSString*)fileSize {
+  return fileSize_.get();
+}
+
+- (NSString*)lastModified {
+  return lastModified_.get();
 }
 
 @end

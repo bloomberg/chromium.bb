@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -73,7 +73,7 @@ class CookiesWindowControllerTest : public CocoaTest {
  protected:
   BrowserTestHelper browser_helper_;
   scoped_nsobject<CookiesWindowController> controller_;
-  BrowsingDataLocalStorageHelper* local_storage_helper_;
+  MockBrowsingDataLocalStorageHelper* local_storage_helper_;
 };
 
 TEST_F(CookiesWindowControllerTest, Construction) {
@@ -437,9 +437,12 @@ TEST_F(CookiesWindowControllerTest, RemoveButtonEnabled) {
 
   // This will clean itself up when we call |-closeSheet:|. If we reset the
   // scoper, we'd get a double-free.
+  local_storage_helper_ = new MockBrowsingDataLocalStorageHelper(profile);
+  local_storage_helper_->AddLocalStorageSamples();
   CookiesWindowController* controller =
       [[CookiesWindowController alloc] initWithProfile:profile
                                          storageHelper:local_storage_helper_];
+  local_storage_helper_->Notify();
   [controller attachSheetTo:test_window()];
 
   // Nothing should be selected right now.
@@ -452,6 +455,8 @@ TEST_F(CookiesWindowControllerTest, RemoveButtonEnabled) {
     [[controller treeController] setSelectionIndexPath:indexPath];
     [controller outlineViewSelectionDidChange:nil];
     EXPECT_TRUE([controller removeButtonEnabled]);
+    EXPECT_FALSE([[controller cookieInfoView] isHidden]);
+    EXPECT_TRUE([[controller localStorageInfoView] isHidden]);
   }
 
   {
@@ -461,6 +466,19 @@ TEST_F(CookiesWindowControllerTest, RemoveButtonEnabled) {
     [[controller treeController] setSelectionIndexPath:indexPath];
     [controller outlineViewSelectionDidChange:nil];
     EXPECT_TRUE([controller removeButtonEnabled]);
+    EXPECT_FALSE([[controller cookieInfoView] isHidden]);
+    EXPECT_TRUE([[controller localStorageInfoView] isHidden]);
+  }
+
+  {
+    // Select a local storage node.
+    NSUInteger path[3] = {2, 0, 0};
+    NSIndexPath* indexPath = [NSIndexPath indexPathWithIndexes:path length:3];
+    [[controller treeController] setSelectionIndexPath:indexPath];
+    [controller outlineViewSelectionDidChange:nil];
+    EXPECT_TRUE([controller removeButtonEnabled]);
+    EXPECT_TRUE([[controller cookieInfoView] isHidden]);
+    EXPECT_FALSE([[controller localStorageInfoView] isHidden]);
   }
 
   {
@@ -474,7 +492,7 @@ TEST_F(CookiesWindowControllerTest, RemoveButtonEnabled) {
 
   {
     // Try selecting something that doesn't exist again.
-    NSUInteger path[3] = {3, 1, 4};
+    NSUInteger path[3] = {7, 1, 4};
     NSIndexPath* indexPath = [NSIndexPath indexPathWithIndexes:path length:3];
     [[controller treeController] setSelectionIndexPath:indexPath];
     [controller outlineViewSelectionDidChange:nil];
@@ -534,6 +552,63 @@ TEST_F(CookiesWindowControllerTest, UpdateFilter)
   [field setStringValue:@"aa"];
   [controller_ updateFilter:field];
   EXPECT_EQ(1U, [[[controller_ cocoaTreeModel] children] count]);
+}
+
+TEST_F(CookiesWindowControllerTest, CreateLocalStorageNodes) {
+  TestingProfile* profile = browser_helper_.profile();
+  net::CookieMonster* cm = profile->GetCookieMonster();
+  cm->SetCookie(GURL("http://google.com"), "A=B");
+  cm->SetCookie(GURL("http://dev.chromium.org"), "C=D");
+  local_storage_helper_ = new MockBrowsingDataLocalStorageHelper(profile);
+  local_storage_helper_->AddLocalStorageSamples();
+  controller_.reset(
+      [[CookiesWindowController alloc] initWithProfile:profile
+                                         storageHelper:local_storage_helper_]);
+  local_storage_helper_->Notify();
+
+  ASSERT_EQ(4U, [[[controller_ cocoaTreeModel] children] count]);
+
+  // Root --> host1.
+  CocoaCookieTreeNode* node =
+      [[[controller_ cocoaTreeModel] children] objectAtIndex:2];
+  EXPECT_TRUE([@"host1" isEqualToString:[node title]]);
+  EXPECT_EQ(kCocoaCookieTreeNodeTypeFolder, [node nodeType]);
+  EXPECT_EQ(1U, [[node children] count]);
+
+  // host1 --> Local Storage.
+  node = [[node children] lastObject];
+  EXPECT_TRUE([@"Local Storage" isEqualToString:[node title]]);
+  EXPECT_EQ(kCocoaCookieTreeNodeTypeFolder, [node nodeType]);
+  EXPECT_EQ(1U, [[node children] count]);
+
+  // Local Storage --> origin1.
+  node = [[node children] lastObject];
+  EXPECT_TRUE([@"origin1" isEqualToString:[node title]]);
+  EXPECT_EQ(kCocoaCookieTreeNodeTypeLocalStorage, [node nodeType]);
+  EXPECT_TRUE([@"origin1" isEqualToString:[node domain]]);
+  EXPECT_TRUE([node lastModified]);
+  EXPECT_TRUE([node fileSize]);
+
+  // Root --> host2.
+  node =
+      [[[controller_ cocoaTreeModel] children] objectAtIndex:3];
+  EXPECT_TRUE([@"host2" isEqualToString:[node title]]);
+  EXPECT_EQ(kCocoaCookieTreeNodeTypeFolder, [node nodeType]);
+  EXPECT_EQ(1U, [[node children] count]);
+
+  // host2 --> Local Storage.
+  node = [[node children] lastObject];
+  EXPECT_TRUE([@"Local Storage" isEqualToString:[node title]]);
+  EXPECT_EQ(kCocoaCookieTreeNodeTypeFolder, [node nodeType]);
+  EXPECT_EQ(1U, [[node children] count]);
+
+  // Local Storage --> origin2.
+  node = [[node children] lastObject];
+  EXPECT_TRUE([@"origin2" isEqualToString:[node title]]);
+  EXPECT_EQ(kCocoaCookieTreeNodeTypeLocalStorage, [node nodeType]);
+  EXPECT_TRUE([@"origin2" isEqualToString:[node domain]]);
+  EXPECT_TRUE([node lastModified]);
+  EXPECT_TRUE([node fileSize]);
 }
 
 }  // namespace
