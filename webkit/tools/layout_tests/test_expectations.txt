@@ -2926,5 +2926,5 @@ BUG_TONY MAC : svg/custom/use-clipped-hit.svg = IMAGE
 BUG_TONY MAC : svg/text/selection-background-color.xhtml = IMAGE
 
 // WebKit roll 54493 to 54530: new tests.
-BUG_TONY : fast/js/parser-syntax-check.html = TEXT
-BUG_TONY : plugins/netscape-plugin-property-access-exception.html = TEXT
+BUG35114 : fast/js/parser-syntax-check.html = TEXT
+BUG35115 : plugins/netscape-plugin-property-access-exception.html = TEXT
