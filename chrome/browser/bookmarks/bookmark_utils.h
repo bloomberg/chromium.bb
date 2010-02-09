@@ -149,9 +149,9 @@ bool DoesBookmarkContainText(const BookmarkNode* node,
                              const std::wstring& languages);
 
 // Modifies a bookmark node (assuming that there's no magic that needs to be
-// done regarding moving from one folder to another).  If the URL changed or a
-// new node is explicitly being added, returns a pointer to the new node that
-// was created.  Otherwise the return value is identically |node|.
+// done regarding moving from one folder to another).  If a new node is
+// explicitly being added, returns a pointer to the new node that was created.
+// Otherwise the return value is identically |node|.
 const BookmarkNode* ApplyEditsWithNoGroupChange(
     BookmarkModel* model,
     const BookmarkNode* parent,
@@ -161,9 +161,9 @@ const BookmarkNode* ApplyEditsWithNoGroupChange(
     BookmarkEditor::Handler* handler);
 
 // Modifies a bookmark node assuming that the parent of the node may have
-// changed and the node will need to be removed and reinserted.  If the URL
-// changed or a new node is explicitly being added, returns a pointer to the
-// new node that was created.  Otherwise the return value is identically |node|.
+// changed and the node will need to be removed and reinserted.  If a new node
+// is explicitly being added, returns a pointer to the new node that was
+// created.  Otherwise the return value is identically |node|.
 const BookmarkNode* ApplyEditsWithPossibleGroupChange(
     BookmarkModel* model,
     const BookmarkNode* new_parent,

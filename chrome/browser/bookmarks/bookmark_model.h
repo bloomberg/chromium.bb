@@ -61,6 +61,8 @@ class BookmarkNode : public TreeNode<BookmarkNode> {
 
   // Returns the URL.
   const GURL& GetURL() const { return url_; }
+  // Sets the URL to the given value.
+  void SetURL(const GURL& url) { url_ = url; }
 
   // Returns a unique id for this node.
   // For bookmark nodes that are managed by the bookmark model, the IDs are
@@ -144,8 +146,8 @@ class BookmarkNode : public TreeNode<BookmarkNode> {
   HistoryService::Handle favicon_load_handle_;
 
   // The URL. BookmarkModel maintains maps off this URL, it is important that
-  // it not change once the node has been created.
-  const GURL url_;
+  // changes to the URL is done through the bookmark model.
+  GURL url_;
 
   // Type of node.
   BookmarkNode::Type type_;
@@ -230,6 +232,9 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   void SetTitle(const BookmarkNode* node, const std::wstring& title);
 #endif
   void SetTitle(const BookmarkNode* node, const string16& title);
+
+  // Sets the URL of the specified bookmark node.
+  void SetURL(const BookmarkNode* node, const GURL& url);
 
   // Returns true if the model finished loading.
   bool IsLoaded() { return loaded_; }

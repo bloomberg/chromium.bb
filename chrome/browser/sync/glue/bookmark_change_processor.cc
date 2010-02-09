@@ -452,19 +452,10 @@ const BookmarkNode* BookmarkChangeProcessor::CreateOrUpdateBookmarkNode(
     // Handle reparenting and/or repositioning.
     model->Move(dst, parent, index);
 
-    // Handle title update and URL changes due to possible conflict resolution
-    // that can happen if both a local user change and server change occur
-    // within a sufficiently small time interval.
-    const BookmarkNode* old_dst = dst;
-    dst = bookmark_utils::ApplyEditsWithNoGroupChange(model, parent,
-        BookmarkEditor::EditDetails(dst),
-        src->GetTitle(),
-        src->GetIsFolder() ? GURL() : src->GetURL(),
-        NULL);  // NULL because we don't need a BookmarkEditor::Handler.
-    if (dst != old_dst) {  // dst was replaced with a new node with new URL.
-      model_associator_->Disassociate(src->GetId());
-      model_associator_->Associate(dst, src->GetId());
-    }
+    if (!src->GetIsFolder())
+      model->SetURL(dst, src->GetURL());
+    model->SetTitle(dst, src->GetTitle());
+
     SetBookmarkFavicon(src, dst, model->profile());
   }
 

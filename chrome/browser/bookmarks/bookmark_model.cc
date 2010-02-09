@@ -248,6 +248,46 @@ void BookmarkModel::SetTitle(const BookmarkNode* node, const string16& title) {
                     BookmarkNodeChanged(this, node));
 }
 
+void BookmarkModel::SetURL(const BookmarkNode* node, const GURL& url) {
+  if (!node) {
+    NOTREACHED();
+    return;
+  }
+
+  // We cannot change the URL of a folder.
+  if (node->is_folder()) {
+    NOTREACHED();
+    return;
+  }
+
+  if (url == node->GetURL())
+    return;
+
+  AsMutable(node)->InvalidateFavicon();
+  CancelPendingFavIconLoadRequests(AsMutable(node));
+
+  {
+    AutoLock url_lock(url_lock_);
+    NodesOrderedByURLSet::iterator i = nodes_ordered_by_url_set_.find(
+        AsMutable(node));
+    DCHECK(i != nodes_ordered_by_url_set_.end());
+    // i points to the first node with the URL, advance until we find the
+    // node we're removing.
+    while (*i != node)
+      ++i;
+    nodes_ordered_by_url_set_.erase(i);
+
+    AsMutable(node)->SetURL(url);
+    nodes_ordered_by_url_set_.insert(AsMutable(node));
+  }
+
+  if (store_.get())
+    store_->ScheduleSave();
+
+  FOR_EACH_OBSERVER(BookmarkModelObserver, observers_,
+                    BookmarkNodeChanged(this, node));
+}
+
 void BookmarkModel::GetNodesByURL(const GURL& url,
                                   std::vector<const BookmarkNode*>* nodes) {
   AutoLock url_lock(url_lock_);

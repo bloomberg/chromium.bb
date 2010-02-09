@@ -264,6 +264,21 @@ TEST_F(BookmarkModelTest, SetTitle) {
   EXPECT_EQ(title, node->GetTitle());
 }
 
+TEST_F(BookmarkModelTest, SetURL) {
+  const BookmarkNode* root = model.GetBookmarkBarNode();
+  const std::wstring title(L"foo");
+  GURL url("http://foo.com");
+  const BookmarkNode* node = model.AddURL(root, 0, title, url);
+
+  ClearCounts();
+
+  url = GURL("http://foo2.com");
+  model.SetURL(node, url);
+  AssertObserverCount(0, 0, 0, 1, 0);
+  observer_details.AssertEquals(node, NULL, -1, -1);
+  EXPECT_EQ(url, node->GetURL());
+}
+
 TEST_F(BookmarkModelTest, Move) {
   const BookmarkNode* root = model.GetBookmarkBarNode();
   std::wstring title(L"foo");

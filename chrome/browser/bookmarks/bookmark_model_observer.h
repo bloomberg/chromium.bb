@@ -39,7 +39,7 @@ class BookmarkModelObserver {
                                    int old_index,
                                    const BookmarkNode* node) = 0;
 
-  // Invoked when the title or favicon of a node has changed.
+  // Invoked when the title, url or favicon of a node has changed.
   virtual void BookmarkNodeChanged(BookmarkModel* model,
                                    const BookmarkNode* node) = 0;
 
