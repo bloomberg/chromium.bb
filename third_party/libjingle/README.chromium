@@ -45,3 +45,7 @@ Local Modifications:
   * Improved handling and error-checking of SSL adapters.
   * Changed uses of Windows-only debug variable _DEBUG to use the
     cross-platform NDEBUG variable instead.
+  * Fixed error-checking bugs in xmppclient.cc and physicalsocketserver.cc.
+  * Made some XmppTask member functions static.
+
+

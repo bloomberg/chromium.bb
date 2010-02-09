@@ -357,6 +357,11 @@ diff -r libjingle-0.4.0/talk/base/httpclient.cc libjingle/files/talk/base/httpcl
 ---
 >           context, response, auth_method);
 >         context_.reset(context);
+diff -r libjingle-0.4.0/talk/base/httpcommon.h libjingle/files/talk/base/httpcommon.h
+172c172
+< inline const uint16 UrlDefaultPort(bool secure) {
+---
+> inline uint16 UrlDefaultPort(bool secure) {
 diff -r libjingle-0.4.0/talk/base/logging.cc libjingle/files/talk/base/logging.cc
 27a28
 > #include <stdio.h>
@@ -495,6 +500,16 @@ diff -r libjingle-0.4.0/talk/base/physicalsocketserver.cc libjingle/files/talk/b
 > #ifdef WIN32
 >     EnsureWinsockInit();
 > #endif
+187c171,177
+<       addr2.Resolve(); // TODO: Do this async later?
+---
+>       // TODO: Do this async later?
+>       if (!addr2.Resolve()) {
+>         LOG(LS_ERROR) << "Resolving addr failed";
+>         UpdateLastError();
+>         Close();
+>         return SOCKET_ERROR;
+>       }
 diff -r libjingle-0.4.0/talk/base/proxydetect.cc libjingle/files/talk/base/proxydetect.cc
 205,206c205,206
 <   const char* list = slist.c_str();
@@ -1142,6 +1157,11 @@ Only in libjingle-0.4.0/talk: libjingle.sln
 Only in libjingle-0.4.0/talk: libjingle.vcproj
 Only in libjingle-0.4.0/talk/p2p: Makefile.in
 Only in libjingle-0.4.0/talk/p2p/base: Makefile.in
+diff -r libjingle-0.4.0/talk/p2p/base/candidate.h libjingle/files/talk/p2p/base/candidate.h
+52c52
+<   const float preference() const { return preference_; }
+---
+>   float preference() const { return preference_; }
 diff -r libjingle-0.4.0/talk/p2p/base/p2ptransport.cc libjingle/files/talk/p2p/base/p2ptransport.cc
 37c37
 < #include "talk/xmpp/constants.h"
@@ -1185,6 +1205,16 @@ diff -r libjingle-0.4.0/talk/p2p/base/sessionmanager.h libjingle/files/talk/p2p/
 diff -r libjingle-0.4.0/talk/p2p/base/stun.cc libjingle/files/talk/p2p/base/stun.cc
 31a32
 > #include <cstring>
+diff -r libjingle-0.4.0/talk/p2p/base/stunrequest.cc libjingle/files/talk/p2p/base/stunrequest.cc
+149c149
+< const StunMessageType StunRequest::type() {
+---
+> StunMessageType StunRequest::type() {
+diff -r libjingle-0.4.0/talk/p2p/base/stunrequest.h libjingle/files/talk/p2p/base/stunrequest.h
+91c91
+<   const StunMessageType type();
+---
+>   StunMessageType type();
 diff -r libjingle-0.4.0/talk/p2p/base/transport.cc libjingle/files/talk/p2p/base/transport.cc
 34c34
 < #include "talk/xmpp/constants.h"
@@ -1403,11 +1433,14 @@ diff -r libjingle-0.4.0/talk/xmpp/xmppclient.cc libjingle/files/talk/xmpp/xmppcl
 < #include "talk/xmpp/constants.h"
 ---
 > #include "talk/xmpp/xmppconstants.h"
-347c347
+261a262,263
+>     d_->pre_engine_error_ = XmppEngine::ERROR_SOCKET;
+>     d_->pre_engine_subcode_ = d_->socket_->GetError();
+347c349
 < //#ifdef _DEBUG
 ---
 > //#if !defined(NDEBUG)
-375c375
+375c377
 < //#ifdef _DEBUG
 ---
 > //#if !defined(NDEBUG)
@@ -1499,6 +1532,12 @@ diff -r libjingle-0.4.0/talk/xmpp/xmpptask.h libjingle/files/talk/xmpp/xmpptask.
 < #ifdef _DEBUG
 ---
 > #if !defined(NDEBUG)
+106,107c106,107
+<   XmlElement *MakeIqResult(const XmlElement* query);
+<   XmlElement *MakeIq(const std::string& type,
+---
+>   static XmlElement *MakeIqResult(const XmlElement* query);
+>   static XmlElement *MakeIq(const std::string& type,
 123c123
 < #ifdef _DEBUG
 ---

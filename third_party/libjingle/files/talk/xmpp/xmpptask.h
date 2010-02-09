@@ -103,8 +103,8 @@ class XmppTask :
 
   bool MatchRequestIq(const XmlElement* stanza, const std::string& type, 
                       const QName& qn);
-  XmlElement *MakeIqResult(const XmlElement* query);
-  XmlElement *MakeIq(const std::string& type,
+  static XmlElement *MakeIqResult(const XmlElement* query);
+  static XmlElement *MakeIq(const std::string& type,
     const Jid& to, const std::string task_id);
 
   // Returns true if the task is under the specified rate limit and updates the
