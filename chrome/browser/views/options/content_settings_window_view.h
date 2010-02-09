@@ -24,15 +24,13 @@ class ContentSettingsWindowView : public views::View,
                                   public views::DialogDelegate,
                                   public views::TabbedPane::Listener {
  public:
-  // Show the Content Settings window selecting the specified page.
-  // If a Content Settings window is currently open, this just activates it
-  // instead of opening a new one.
-  static void Show(ContentSettingsType page, Profile* profile);
-
   static void RegisterUserPrefs(PrefService* prefs);
 
   explicit ContentSettingsWindowView(Profile* profile);
   virtual ~ContentSettingsWindowView();
+
+  // Shows the Tab corresponding to the specified Content Settings page.
+  void ShowContentSettingsTab(ContentSettingsType page);
 
  protected:
   // views::View overrides:
@@ -57,9 +55,6 @@ class ContentSettingsWindowView : public views::View,
  private:
   // Initializes the view.
   void Init();
-
-  // Shows the Tab corresponding to the specified Content Settings page.
-  void ShowContentSettingsTab(ContentSettingsType page);
 
   // Returns the currently selected OptionsPageView.
   const OptionsPageView* GetCurrentContentSettingsTabView() const;

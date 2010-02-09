@@ -9,6 +9,7 @@
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/browser/views/info_bubble.h"
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
@@ -19,10 +20,6 @@
 #include "views/controls/separator.h"
 #include "views/grid_layout.h"
 #include "views/standard_layout.h"
-
-#if defined(OS_WIN)
-#include "chrome/browser/views/options/content_settings_window_view.h"
-#endif
 
 ContentBlockedBubbleContents::ContentBlockedBubbleContents(
     ContentSettingsType content_type,
@@ -69,14 +66,13 @@ void ContentBlockedBubbleContents::ButtonPressed(views::Button* sender,
 void ContentBlockedBubbleContents::LinkActivated(views::Link* source,
                                                  int event_flags) {
   if (source == manage_link_) {
-#if defined(OS_WIN)
-    ContentSettingsWindowView::Show(content_type_, profile_);
+    if (tab_contents_)
+      tab_contents_->delegate()->ShowContentSettingsWindow(content_type_);
+    else
+      browser::ShowContentSettingsWindow(NULL, content_type_, profile_);
     // CAREFUL: Showing the settings window activates it, which deactivates the
     // info bubble, which causes it to close, which deletes us.
     return;
-#else
-    // TODO(pkasting): Linux views doesn't have the same options dialogs.
-#endif
   }
 
   PopupLinks::const_iterator i(popup_links_.find(source));

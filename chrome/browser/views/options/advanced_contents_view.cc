@@ -32,6 +32,7 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 #include "chrome/browser/shell_dialogs.h"
+#include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/browser/views/clear_browsing_data.h"
 #include "chrome/browser/views/options/content_settings_window_view.h"
 #include "chrome/browser/views/options/fonts_languages_window_view.h"
@@ -547,7 +548,8 @@ void PrivacySection::ButtonPressed(
     enable_metrics_recording_.SetValue(enabled);
   } else if (sender == content_settings_button_) {
     UserMetricsRecordAction("Options_ContentSettings", NULL);
-    ContentSettingsWindowView::Show(CONTENT_SETTINGS_TYPE_DEFAULT, profile());
+    browser::ShowContentSettingsWindow(GetWindow()->GetNativeWindow(),
+        CONTENT_SETTINGS_TYPE_DEFAULT, profile());
   } else if (sender == clear_data_button_) {
     UserMetricsRecordAction("Options_ClearData", NULL);
     views::Window::CreateChromeWindow(

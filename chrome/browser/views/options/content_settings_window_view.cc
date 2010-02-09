@@ -27,12 +27,12 @@ static ContentSettingsWindowView* instance_ = NULL;
 // Content setting dialog bounds padding.
 static const int kDialogPadding = 7;
 
-///////////////////////////////////////////////////////////////////////////////
-// ContentSettingsWindowView, public:
+namespace browser {
 
-// static
-void ContentSettingsWindowView::Show(ContentSettingsType page,
-                                     Profile* profile) {
+// Declared in browser_dialogs.h so others don't have to depend on our header.
+void ShowContentSettingsWindow(gfx::NativeWindow parent_window,
+                               ContentSettingsType content_type,
+                               Profile* profile) {
   DCHECK(profile);
   // If there's already an existing options window, activate it and switch to
   // the specified page.
@@ -40,11 +40,15 @@ void ContentSettingsWindowView::Show(ContentSettingsType page,
   //             about this case this will have to be fixed.
   if (!instance_) {
     instance_ = new ContentSettingsWindowView(profile);
-    views::Window::CreateChromeWindow(NULL, gfx::Rect(), instance_);
-    // The window is alive by itself now...
+    views::Window::CreateChromeWindow(parent_window, gfx::Rect(), instance_);
   }
-  instance_->ShowContentSettingsTab(page);
+  instance_->ShowContentSettingsTab(content_type);
 }
+
+};
+
+///////////////////////////////////////////////////////////////////////////////
+// ContentSettingsWindowView, public:
 
 // static
 void ContentSettingsWindowView::RegisterUserPrefs(PrefService* prefs) {
@@ -63,6 +67,24 @@ ContentSettingsWindowView::ContentSettingsWindowView(Profile* profile)
 }
 
 ContentSettingsWindowView::~ContentSettingsWindowView() {
+}
+
+void ContentSettingsWindowView::ShowContentSettingsTab(
+    ContentSettingsType page) {
+  // This will show invisible windows and bring visible windows to the front.
+  window()->Show();
+
+  if (page == CONTENT_SETTINGS_TYPE_DEFAULT) {
+    // Remember the last visited page from local state.
+    page = static_cast<ContentSettingsType>(last_selected_page_.GetValue());
+    if (page == CONTENT_SETTINGS_TYPE_DEFAULT)
+      page = CONTENT_SETTINGS_TYPE_COOKIES;
+  }
+  // If the page number is out of bounds, reset to the first tab.
+  if (page < 0 || page >= tabs_->GetTabCount())
+    page = CONTENT_SETTINGS_TYPE_COOKIES;
+
+  tabs_->SelectTabAt(static_cast<int>(page));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -156,28 +178,6 @@ void ContentSettingsWindowView::Init() {
                        popup_page, false);
 
   DCHECK_EQ(tabs_->GetTabCount(), CONTENT_SETTINGS_NUM_TYPES);
-}
-
-void ContentSettingsWindowView::ShowContentSettingsTab(
-    ContentSettingsType page) {
-  // If the window is not yet visible, we need to show it (it will become
-  // active), otherwise just bring it to the front.
-  if (!window()->IsVisible())
-    window()->Show();
-  else
-    window()->Activate();
-
-  if (page == CONTENT_SETTINGS_TYPE_DEFAULT) {
-    // Remember the last visited page from local state.
-    page = static_cast<ContentSettingsType>(last_selected_page_.GetValue());
-    if (page == CONTENT_SETTINGS_TYPE_DEFAULT)
-      page = CONTENT_SETTINGS_TYPE_COOKIES;
-  }
-  // If the page number is out of bounds, reset to the first tab.
-  if (page < 0 || page >= tabs_->GetTabCount())
-    page = CONTENT_SETTINGS_TYPE_COOKIES;
-
-  tabs_->SelectTabAt(static_cast<int>(page));
 }
 
 const OptionsPageView*

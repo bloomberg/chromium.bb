@@ -2313,6 +2313,10 @@ void Browser::ShowRepostFormWarningDialog(TabContents *tab_contents) {
   window()->ShowRepostFormWarningDialog(tab_contents);
 }
 
+void Browser::ShowContentSettingsWindow(ContentSettingsType content_type) {
+  window()->ShowContentSettingsWindow(content_type, profile_);
+}
+
 bool Browser::ShouldAddNavigationsToHistory() const {
   // Don't update history if running as app.
   return !IsApplication();

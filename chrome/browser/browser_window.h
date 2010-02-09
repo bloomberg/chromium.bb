@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 
 #include "app/gfx/native_widget_types.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
+#include "chrome/common/content_settings_types.h"
 
 class Browser;
 class BrowserWindowTesting;
@@ -210,6 +211,10 @@ class BrowserWindow {
 
   // Shows the repost form confirmation dialog box.
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) = 0;
+
+  // Shows the Content Settings dialog box.
+  virtual void ShowContentSettingsWindow(ContentSettingsType content_type,
+                                         Profile* profile) = 0;
 
   // Shows a dialog to the user that something is wrong with the profile.
   // |message_id| is the ID for a string in the string table which will be

@@ -624,6 +624,7 @@ class Browser : public TabStripModelDelegate,
                                         bool* is_keyboard_shortcut);
   virtual void HandleKeyboardEvent(const NativeWebKeyboardEvent& event);
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents);
+  virtual void ShowContentSettingsWindow(ContentSettingsType content_type);
   virtual bool ShouldAddNavigationsToHistory() const;
   virtual void OnDidGetApplicationInfo(TabContents* tab_contents,
                                        int32 page_id);

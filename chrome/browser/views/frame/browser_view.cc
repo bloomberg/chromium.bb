@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1032,6 +1032,11 @@ void BrowserView::ShowNewProfileDialog() {
 
 void BrowserView::ShowRepostFormWarningDialog(TabContents* tab_contents) {
   browser::ShowRepostFormWarningDialog(GetNativeHandle(), tab_contents);
+}
+
+void BrowserView::ShowContentSettingsWindow(ContentSettingsType content_type,
+                                            Profile* profile) {
+  browser::ShowContentSettingsWindow(GetNativeHandle(), content_type, profile);
 }
 
 void BrowserView::ShowProfileErrorDialog(int message_id) {

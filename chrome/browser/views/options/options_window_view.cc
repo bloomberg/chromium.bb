@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -118,13 +118,8 @@ void OptionsWindowView::ShowOptionsPage(OptionsPage page,
     window()->SetBounds(gfx::Rect(origin, window()->GetBounds().size()), NULL);
   }
 
-  // If the window is not yet visible, we need to show it (it will become
-  // active), otherwise just bring it to the front.
-  if (!window()->IsVisible()) {
-    window()->Show();
-  } else {
-    window()->Activate();
-  }
+  // This will show invisible windows and bring visible windows to the front.
+  window()->Show();
 
   if (page == OPTIONS_PAGE_DEFAULT) {
     // Remember the last visited page from local state.
@@ -240,7 +235,6 @@ void ShowOptionsWindow(OptionsPage page,
   if (!instance_) {
     instance_ = new OptionsWindowView(profile);
     views::Window::CreateChromeWindow(NULL, gfx::Rect(), instance_);
-    // The window is alive by itself now...
   }
   instance_->ShowOptionsPage(page, highlight_group);
 }

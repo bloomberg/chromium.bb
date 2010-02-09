@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include <string>
 
 #include "app/gfx/native_widget_types.h"
+#include "chrome/common/content_settings_types.h"
 
 // This file contains functions for running a variety of browser dialogs and
 // popups. The dialogs here are the ones that the caller does not need to
@@ -108,6 +109,11 @@ void EditSearchEngine(gfx::NativeWindow parent,
 // Shows the repost form confirmation dialog box.
 void ShowRepostFormWarningDialog(gfx::NativeWindow parent_window,
                                  TabContents* tab_contents);
+
+// Shows the content settings dialog box.
+void ShowContentSettingsWindow(gfx::NativeWindow parent_window,
+                               ContentSettingsType content_type,
+                               Profile* profile);
 
 // Shows the create web app shortcut dialog box.
 void ShowCreateShortcutsDialog(gfx::NativeWindow parent_window,

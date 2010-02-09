@@ -131,7 +131,6 @@ void ShowFontsLanguagesWindow(gfx::NativeWindow window,
   if (!instance_) {
     instance_ = new FontsLanguagesWindowView(profile);
     views::Window::CreateChromeWindow(window, gfx::Rect(), instance_);
-    // The window is alive by itself now...
   }
   instance_->ShowTabPage(page);
 }

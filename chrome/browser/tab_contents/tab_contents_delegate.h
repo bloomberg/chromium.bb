@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/gfx/rect.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
+#include "chrome/common/content_settings_types.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/page_transition_types.h"
 #include "webkit/glue/context_menu.h"
@@ -253,6 +254,9 @@ class TabContentsDelegate {
 
   // Shows the repost form confirmation dialog box.
   virtual void ShowRepostFormWarningDialog(TabContents* tab_contents) {}
+
+  // Shows the Content Settings dialog for a given content type.
+  virtual void ShowContentSettingsWindow(ContentSettingsType content_type) {}
 
   // Allows delegate to override navigation to the history entries.
   // Returns true to allow TabContents to continue with the default processing.
