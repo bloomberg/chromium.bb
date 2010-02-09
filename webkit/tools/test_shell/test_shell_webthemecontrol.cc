@@ -33,18 +33,38 @@ const SkColor kBgColors[] = {
   SkColorSetRGB(0xa9, 0xff, 0x12)   // Pressed
 };
 
+SkIRect Validate(const SkIRect& rect, Control::Type ctype) {
+  SkIRect retval = rect;
+  if (ctype == Control::kUncheckedBox_Type ||
+      ctype == Control::kCheckedBox_Type ||
+      ctype == Control::kUncheckedRadio_Type ||
+      ctype == Control::kCheckedRadio_Type) {
+    // The maximum width and height is 13. Center the square in the passed
+    // rectangle.
+    const int kMaxControlSize = 13;
+    int control_size = std::min(rect.width(), rect.height());
+    control_size = std::min(control_size, kMaxControlSize);
+
+    retval.fLeft = rect.fLeft + (rect.width() / 2) - (control_size / 2);
+    retval.fRight = retval.fLeft + control_size - 1;
+    retval.fTop = rect.fTop + (rect.height() / 2) - (control_size / 2);
+    retval.fBottom = retval.fTop + control_size - 1;
+  }
+  return retval;
+}
+
 Control::Control(skia::PlatformCanvas *canvas, const SkIRect &irect,
                  Type ctype, State cstate)
     : canvas_(canvas),
-      irect_(irect),
+      irect_(Validate(irect, ctype)),
       type_(ctype),
       state_(cstate),
-      left_(irect.fLeft),
-      right_(irect.fRight),
-      top_(irect.fTop),
-      bottom_(irect.fBottom),
-      height_(irect.height()),
-      width_(irect.width()),
+      left_(irect_.fLeft),
+      right_(irect_.fRight),
+      top_(irect_.fTop),
+      bottom_(irect_.fBottom),
+      height_(irect_.height()),
+      width_(irect_.width()),
       edge_color_(kEdgeColor),
       bg_color_(kBgColors[cstate]),
       fg_color_(kFgColor) {
