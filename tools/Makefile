@@ -162,15 +162,47 @@ BUILD/stamp-newlib-$(NEWLIB_VERSION): Makefile
 # copy gcc, apply patches
 BUILD/gcc-$(GCC_VERSION): | BUILD
 	@echo "Unpacking gcc-$(GCC_VERSION)"
-	# Temporrary hack to workaround troubles with third_party
 	cd BUILD && tar xf $(SRCDIR)/gcc/gcc-core-$(GCC_VERSION).tar.bz2
 	cd BUILD && tar xf $(SRCDIR)/gcc/gcc-g++-$(GCC_VERSION).tar.bz2
 	if [ "x$(GCC_VERSION)" != "x4.2.2" ] ; then \
 	  cd BUILD && tar xf $(SRCDIR)/gcc/gcc-fortran-$(GCC_VERSION).tar.bz2 ; \
 	fi
 	if [ "x$(GCC_VERSION)" = "x4.4.2" ] ; then \
-	  cd BUILD && tar xf $(SRCDIR)/gmp/gmp-$(GMP_VERSION).tar.bz2 && mv gmp-$(GMP_VERSION) gcc-$(GCC_VERSION)/gmp && \
-		      tar xf $(SRCDIR)/mpfr/mpfr-$(MPFR_VERSION).tar.bz2 && mv mpfr-$(MPFR_VERSION) gcc-$(GCC_VERSION)/mpfr ; \
+	  GNU_MP_MAJOR=0 ; \
+	  if [ -f /usr/include/gmp.h ] ; then \
+	    GNU_MP_MAJOR="`grep '#[ 	]*define[ 	]*__GNU_MP_VERSION ' /usr/include/gmp.h | sed -e s'@[ 	]*#define[ 	]*__GNU_MP_VERSION[ 	]*@@'`" ; \
+	    GNU_MP_MINOR="`grep '#[ 	]*define[ 	]*__GNU_MP_VERSION_MINOR ' /usr/include/gmp.h | sed -e s'@[ 	]*#[ 	]*define[ 	]*__GNU_MP_VERSION_MINOR[ 	]*@@'`" ; \
+	    GNU_MP_PATCHLEVEL="`grep '#[ 	]*define[ 	]*__GNU_MP_VERSION_PATCHLEVEL ' /usr/include/gmp.h | sed -e s'@[ 	]*[ 	]*#define[ 	]*__GNU_MP_VERSION_PATCHLEVEL[ 	]*@@'`" ; \
+	  fi ; \
+	  if [ "$$GNU_MP_MAJOR" -lt 4 ] || \
+	     ( [ "$$GNU_MP_MAJOR" -eq 4 ] && \
+	       [ "$$GNU_MP_MINOR" -lt 3 ] ) || \
+	     ( [ "$$GNU_MP_MAJOR" -eq 4 ] && \
+	       [ "$$GNU_MP_MINOR" -eq 3 ] && \
+	       [ "$$GNU_MP_PATCHLEVEL" -lt 1 ] ) ; then \
+	    cd BUILD && \
+	      tar xf $(SRCDIR)/gmp/gmp-$(GMP_VERSION).tar.bz2 && \
+	      mv gmp-$(GMP_VERSION) gcc-$(GCC_VERSION)/gmp && \
+	    cd .. ; \
+	  fi ; \
+	  MPFR_VERSION_MAJOR=0 ; \
+	  if [ -f /usr/include/mpfr.h ] ; then \
+	    MPFR_VERSION_MAJOR="`grep '#[ 	]*define[ 	]*MPFR_VERSION_MAJOR ' /usr/include/mpfr.h | sed -e s'@[ 	]*#[ 	]*define[ 	]*MPFR_VERSION_MAJOR[ 	]*@@'`" ; \
+	    MPFR_VERSION_MINOR="`grep '#[ 	]*define[ 	]*MPFR_VERSION_MINOR ' /usr/include/mpfr.h | sed -e s'@[ 	]*#[ 	]*define[ 	]*MPFR_VERSION_MINOR[ 	]*@@'`" ; \
+	    MPFR_VERSION_PATCHLEVEL="`grep '#[ 	]*define[ 	]*MPFR_VERSION_PATCHLEVEL ' /usr/include/mpfr.h | sed -e s'@[ 	]*#[ 	]*define[ 	]*MPFR_VERSION_PATCHLEVEL[ 	]*@@'`" ; \
+	  fi ; \
+	  if [ ! -e /usr/include/mpfr.h ] || \
+	     [ "$$MPFR_VERSION_MAJOR" -lt 2 ] || \
+	     ( [ "$$MPFR_VERSION_MAJOR" -eq 2 ] && \
+	       [ "$$MPFR_VERSION_MINOR" -lt 4 ] ) || \
+	     ( [ "$$MPFR_VERSION_MAJOR" -eq 2 ] && \
+	       [ "$$MPFR_VERSION_MINOR" -eq 4 ] && \
+	       [ "$$MPFR_VERSION_PATCHLEVEL" -lt 1 ] ) ; then \
+	    cd BUILD && \
+	      tar xf $(SRCDIR)/mpfr/mpfr-$(MPFR_VERSION).tar.bz2 && \
+	      mv mpfr-$(MPFR_VERSION) gcc-$(GCC_VERSION)/mpfr && \
+	    cd .. ; \
+	  fi ; \
 	fi
 	cd BUILD && patch -p0 < ../patches/gcc-$(GCC_VERSION).patch
 
