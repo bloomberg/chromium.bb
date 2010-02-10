@@ -8,6 +8,7 @@
 #include "sandbox/src/interception_agent.h"
 
 #include "sandbox/src/interception_internal.h"
+#include "sandbox/src/interceptors.h"
 #include "sandbox/src/eat_resolver.h"
 #include "sandbox/src/sidestep_resolver.h"
 #include "sandbox/src/sandbox_nt_util.h"
@@ -26,6 +27,9 @@ namespace sandbox {
 
 // This is the list of all imported symbols from ntdll.dll.
 SANDBOX_INTERCEPT NtExports g_nt;
+
+// The list of intercepted functions back-pointers.
+SANDBOX_INTERCEPT OriginalFunctions g_originals;
 
 // Memory buffer mapped from the parent, with the list of interceptions.
 SANDBOX_INTERCEPT SharedMemory* g_interceptions = NULL;
@@ -105,7 +109,7 @@ bool InterceptionAgent::OnDllLoad(const UNICODE_STRING* full_path,
   size_t buffer_bytes = offsetof(DllInterceptionData, thunks) +
                         dll_info->num_functions * sizeof(ThunkData);
   dlls_[i] = reinterpret_cast<DllInterceptionData*>(
-                 new(NT_PAGE) char[buffer_bytes]);
+                 new(NT_PAGE, base_address) char[buffer_bytes]);
 
   DCHECK_NT(dlls_[i]);
   if (!dlls_[i])
@@ -180,6 +184,9 @@ bool InterceptionAgent::PatchDll(const DllPatchInfo* dll_info,
       NOTREACHED_NT();
       return false;
     }
+
+    DCHECK_NT(!g_originals[function->id]);
+    g_originals[function->id] = &thunks->thunks[i];
 
     thunks->num_thunks++;
     thunks->used_bytes += sizeof(ThunkData);

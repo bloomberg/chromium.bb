@@ -228,7 +228,7 @@ class InterceptionManager {
 // (WINAPI = with the "C" underscore).
 #if SANDBOX_EXPORTS
 #if defined(_WIN64)
-#define MAKE_SERVICE_NAME(service, params) Target ## service ## 64
+#define MAKE_SERVICE_NAME(service, params) "Target" # service "64"
 #else
 #define MAKE_SERVICE_NAME(service, params) "_Target" # service "@" # params
 #endif

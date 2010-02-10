@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,6 +26,17 @@ NTSTATUS EatResolverThunk::Setup(const void* target_module,
   if (!eat_entry_)
     return STATUS_INVALID_PARAMETER;
 
+  size_t thunk_bytes = GetInternalThunkSize();
+
+#if defined(_WIN64)
+  // We have two thunks, in order: the return path and the forward path.
+  if (!SetInternalThunk(thunk_storage, storage_bytes, NULL, target_))
+    return STATUS_BUFFER_TOO_SMALL;
+
+  storage_bytes -= thunk_bytes;
+  thunk_storage = reinterpret_cast<char*>(thunk_storage) + thunk_bytes;
+#endif
+
   if (!SetInternalThunk(thunk_storage, storage_bytes, target_, interceptor_))
     return STATUS_BUFFER_TOO_SMALL;
 
@@ -41,7 +52,7 @@ NTSTATUS EatResolverThunk::Setup(const void* target_module,
 #pragma warning(pop)
 
   if (NULL != storage_used)
-    *storage_used = GetInternalThunkSize();
+    *storage_used = GetThunkSize();
 
   return ret;
 }
@@ -68,7 +79,11 @@ NTSTATUS EatResolverThunk::ResolveTarget(const void* module,
 }
 
 size_t EatResolverThunk::GetThunkSize() const {
+#if defined(_WIN64)
+  return GetInternalThunkSize() * 2;
+#else
   return GetInternalThunkSize();
+#endif
 }
 
 }  // namespace sandbox

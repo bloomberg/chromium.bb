@@ -63,6 +63,9 @@ struct DllInterceptionData {
   size_t used_bytes;
   void* base;
   int num_thunks;
+#if defined(_WIN64)
+  int dummy;                      // Improve alignment.
+#endif
   ThunkData thunks[1];
 };
 

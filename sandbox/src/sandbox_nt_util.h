@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,7 +10,8 @@
 #include "sandbox/src/sandbox_nt_types.h"
 
 // Placement new and delete to be used from ntdll interception code.
-void* __cdecl operator new(size_t size, sandbox::AllocationType type);
+void* __cdecl operator new(size_t size, sandbox::AllocationType type,
+                           void* near_to = NULL);
 void __cdecl operator delete(void* memory, sandbox::AllocationType type);
 
 // Regular placement new and delete

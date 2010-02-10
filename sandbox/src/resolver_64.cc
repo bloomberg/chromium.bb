@@ -94,12 +94,26 @@ bool ResolverThunk::SetInternalThunk(void* storage, size_t storage_bytes,
 NTSTATUS ResolverThunk::ResolveInterceptor(const void* interceptor_module,
                                            const char* interceptor_name,
                                            const void** address) {
-  return STATUS_NOT_IMPLEMENTED;
+  DCHECK_NT(address);
+  if (!interceptor_module)
+    return STATUS_INVALID_PARAMETER;
+
+  PEImage pe(interceptor_module);
+  if (!pe.VerifyMagic())
+    return STATUS_INVALID_IMAGE_FORMAT;
+
+  *address = pe.GetProcAddress(interceptor_name);
+
+  if (!(*address))
+    return STATUS_PROCEDURE_NOT_FOUND;
+
+  return STATUS_SUCCESS;
 }
 
 NTSTATUS ResolverThunk::ResolveTarget(const void* module,
                                       const char* function_name,
                                       void** address) {
+  // We don't support sidestep & co.
   return STATUS_NOT_IMPLEMENTED;
 }
 
