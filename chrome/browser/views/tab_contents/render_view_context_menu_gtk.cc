@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/tab_contents/render_view_context_menu.h"
+#include "chrome/browser/views/tab_contents/render_view_context_menu_gtk.h"
 
 #include "app/l10n_util.h"
 #include "base/compiler_specific.h"
@@ -13,9 +13,9 @@
 #include "views/controls/menu/menu_2.h"
 
 ////////////////////////////////////////////////////////////////////////////////
-// RenderViewContextMenuWin, public:
+// RenderViewContextMenuGtk, public:
 
-RenderViewContextMenuWin::RenderViewContextMenuWin(
+RenderViewContextMenuGtk::RenderViewContextMenuGtk(
     TabContents* tab_contents,
     const ContextMenuParams& params)
     : RenderViewContextMenu(tab_contents, params),
@@ -24,25 +24,25 @@ RenderViewContextMenuWin::RenderViewContextMenuWin(
   menu_contents_.reset(new menus::SimpleMenuModel(this));
 }
 
-RenderViewContextMenuWin::~RenderViewContextMenuWin() {
+RenderViewContextMenuGtk::~RenderViewContextMenuGtk() {
 }
 
-void RenderViewContextMenuWin::RunMenuAt(int x, int y) {
+void RenderViewContextMenuGtk::RunMenuAt(int x, int y) {
   menu_->RunContextMenuAt(gfx::Point(x, y));
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RenderViewContextMenuWin, menus::SimpleMenuModel::Delegate implementation:
+// RenderViewContextMenuGtk, menus::SimpleMenuModel::Delegate implementation:
 
-bool RenderViewContextMenuWin::IsCommandIdChecked(int command_id) const {
+bool RenderViewContextMenuGtk::IsCommandIdChecked(int command_id) const {
   return ItemIsChecked(command_id);
 }
 
-bool RenderViewContextMenuWin::IsCommandIdEnabled(int command_id) const {
+bool RenderViewContextMenuGtk::IsCommandIdEnabled(int command_id) const {
   return IsItemCommandEnabled(command_id);
 }
 
-bool RenderViewContextMenuWin::GetAcceleratorForCommandId(
+bool RenderViewContextMenuGtk::GetAcceleratorForCommandId(
     int command_id,
     menus::Accelerator* accel) {
   // There are no formally defined accelerators we can query so we assume
@@ -78,47 +78,47 @@ bool RenderViewContextMenuWin::GetAcceleratorForCommandId(
   }
 }
 
-void RenderViewContextMenuWin::ExecuteCommand(int command_id) {
+void RenderViewContextMenuGtk::ExecuteCommand(int command_id) {
   ExecuteItemCommand(command_id);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RenderViewContextMenuWin, protected:
+// RenderViewContextMenuGtk, protected:
 
-void RenderViewContextMenuWin::DoInit() {
+void RenderViewContextMenuGtk::DoInit() {
   menu_.reset(new views::Menu2(menu_contents_.get()));
 }
 
-void RenderViewContextMenuWin::AppendMenuItem(int id) {
+void RenderViewContextMenuGtk::AppendMenuItem(int id) {
   current_radio_group_id_ = -1;
   GetTargetModel()->AddItemWithStringId(id, id);
 }
 
-void RenderViewContextMenuWin::AppendMenuItem(int id,
+void RenderViewContextMenuGtk::AppendMenuItem(int id,
                                               const string16& label) {
   current_radio_group_id_ = -1;
   GetTargetModel()->AddItem(id, label);
 }
 
-void RenderViewContextMenuWin::AppendRadioMenuItem(int id,
+void RenderViewContextMenuGtk::AppendRadioMenuItem(int id,
                                                    const string16& label) {
   if (current_radio_group_id_ < 0)
     current_radio_group_id_ = id;
   GetTargetModel()->AddRadioItem(id, label, current_radio_group_id_);
 }
 
-void RenderViewContextMenuWin::AppendCheckboxMenuItem(int id,
+void RenderViewContextMenuGtk::AppendCheckboxMenuItem(int id,
                                                       const string16& label) {
   current_radio_group_id_ = -1;
   GetTargetModel()->AddCheckItem(id, label);
 }
 
-void RenderViewContextMenuWin::AppendSeparator() {
+void RenderViewContextMenuGtk::AppendSeparator() {
   current_radio_group_id_ = -1;
   GetTargetModel()->AddSeparator();
 }
 
-void RenderViewContextMenuWin::StartSubMenu(int id, const string16& label) {
+void RenderViewContextMenuGtk::StartSubMenu(int id, const string16& label) {
   if (sub_menu_contents_) {
     NOTREACHED() << "nested submenus not supported yet";
     return;
@@ -129,15 +129,15 @@ void RenderViewContextMenuWin::StartSubMenu(int id, const string16& label) {
   submenu_models_.push_back(sub_menu_contents_);
 }
 
-void RenderViewContextMenuWin::FinishSubMenu() {
+void RenderViewContextMenuGtk::FinishSubMenu() {
   DCHECK(sub_menu_contents_);
   current_radio_group_id_ = -1;
   sub_menu_contents_ = NULL;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
-// RenderViewContextMenuWin, private:
+// RenderViewContextMenuGtk, private:
 
-menus::SimpleMenuModel* RenderViewContextMenuWin::GetTargetModel() const {
+menus::SimpleMenuModel* RenderViewContextMenuGtk::GetTargetModel() const {
   return sub_menu_contents_ ? sub_menu_contents_ : menu_contents_.get();
 }

@@ -24,7 +24,7 @@
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/browser/tab_contents/web_drag_dest_gtk.h"
 #include "chrome/browser/views/sad_tab_view.h"
-#include "chrome/browser/views/tab_contents/render_view_context_menu.h"
+#include "chrome/browser/views/tab_contents/render_view_context_menu_gtk.h"
 #include "views/controls/native/native_view_host.h"
 #include "views/focus/view_storage.h"
 #include "views/screen.h"
@@ -73,7 +73,7 @@ gboolean CallMouseMove(GtkWidget* widget, GdkEventMotion* event,
   return tab_contents_view->OnMouseMove(widget, event);
 }
 
-// See tab_contents_view_win.cc for discussion of mouse scroll zooming.
+// See tab_contents_view_gtk.cc for discussion of mouse scroll zooming.
 gboolean OnMouseScroll(GtkWidget* widget, GdkEventScroll* event,
                        TabContents* tab_contents) {
   if ((event->state & gtk_accelerator_get_default_mod_mask()) ==
@@ -335,7 +335,7 @@ void TabContentsViewGtk::ShowContextMenu(const ContextMenuParams& params) {
   if (tab_contents()->delegate()->HandleContextMenu(params))
     return;
 
-  context_menu_.reset(new RenderViewContextMenuWin(tab_contents(), params));
+  context_menu_.reset(new RenderViewContextMenuGtk(tab_contents(), params));
   context_menu_->Init();
 
   gfx::Point screen_point(params.x, params.y);
