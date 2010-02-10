@@ -30,7 +30,7 @@ class JSONGeneratorFromXML(object):
 
         # Check the results directory
         if not os.path.exists(self._options.results_directory):
-            os.mkdir(self._options.results_directory)
+            path_utils.maybe_make_directory(self._options.results_directory)
 
         results_xml_file = None
         try:
