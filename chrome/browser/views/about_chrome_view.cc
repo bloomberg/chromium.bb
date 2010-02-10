@@ -105,9 +105,9 @@ AboutChromeView::AboutChromeView(Profile* profile)
 #endif
   Init();
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
   google_updater_ = new GoogleUpdate();
-  google_updater_->AddStatusChangeListener(this);
+  google_updater_->set_status_listener(this);
 #endif
 
   if (kBackgroundBmp == NULL) {
@@ -117,11 +117,11 @@ AboutChromeView::AboutChromeView(Profile* profile)
 }
 
 AboutChromeView::~AboutChromeView() {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
   // The Google Updater will hold a pointer to us until it reports status, so we
   // need to let it know that we will no longer be listening.
   if (google_updater_)
-    google_updater_->RemoveStatusChangeListener();
+    google_updater_->set_status_listener(NULL);
 #endif
 }
 
@@ -648,7 +648,7 @@ void AboutChromeView::ViewHierarchyChanged(bool is_add,
       parent->AddChildView(&timeout_indicator_);
       timeout_indicator_.SetVisible(false);
 
-#if defined (OS_WIN)
+#if defined(OS_WIN)
       // On-demand updates for Chrome don't work in Vista RTM when UAC is turned
       // off. So, in this case we just want the About box to not mention
       // on-demand updates. Silent updates (in the background) should still
@@ -665,6 +665,10 @@ void AboutChromeView::ViewHierarchyChanged(bool is_add,
         // CheckForUpdate(false, ...) means don't upgrade yet.
         google_updater_->CheckForUpdate(false, window());
       }
+#elif defined(OS_CHROMEOS)
+      UpdateStatus(UPGRADE_CHECK_STARTED, GOOGLE_UPDATE_NO_ERROR);
+      // CheckForUpdate(false, ...) means don't upgrade yet.
+      google_updater_->CheckForUpdate(false, window());
 #endif
     } else {
       parent->RemoveChildView(&update_label_);
@@ -739,7 +743,7 @@ std::wstring AboutChromeView::GetWindowTitle() const {
 }
 
 bool AboutChromeView::Accept() {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
   UpdateStatus(UPGRADE_STARTED, GOOGLE_UPDATE_NO_ERROR);
 
   // The Upgrade button isn't available until we have received notification
@@ -747,7 +751,7 @@ bool AboutChromeView::Accept() {
   // null-ed out.
   DCHECK(!google_updater_);
   google_updater_ = new GoogleUpdate();
-  google_updater_->AddStatusChangeListener(this);
+  google_updater_->set_status_listener(this);
   // CheckForUpdate(true,...) means perform the upgrade if new version found.
   google_updater_->CheckForUpdate(true, window());
 #endif
@@ -790,7 +794,7 @@ void AboutChromeView::OnOSVersion(
 }
 #endif
 
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_CHROMEOS)
 ////////////////////////////////////////////////////////////////////////////////
 // AboutChromeView, GoogleUpdateStatusListener implementation:
 
@@ -805,13 +809,12 @@ void AboutChromeView::OnReportResults(GoogleUpdateUpgradeResult result,
   new_version_available_ = version;
   UpdateStatus(result, error_code);
 }
-
 ////////////////////////////////////////////////////////////////////////////////
 // AboutChromeView, private:
 
 void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
                                    GoogleUpdateErrorCode error_code) {
-#if !defined(GOOGLE_CHROME_BUILD)
+#if !defined(GOOGLE_CHROME_BUILD) && !defined(OS_CHROMEOS)
   // For Chromium builds it would show an error message.
   // But it looks weird because in fact there is no error,
   // just the update server is not available for non-official builds.
@@ -845,6 +848,12 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
       show_update_available_indicator = true;
       break;
     case UPGRADE_ALREADY_UP_TO_DATE: {
+      // The extra version check is necessary on Windows because the application
+      // may be already up to date on disk though the running app is still
+      // out of date. Chrome OS doesn't quite have this issue since the
+      // OS/App are updated together. If a newer version of the OS has been
+      // staged then UPGRADE_SUCESSFUL will be returned.
+#if defined(OS_WIN)
       // Google Update reported that Chrome is up-to-date. Now make sure that we
       // are running the latest version and if not, notify the user by falling
       // into the next case of UPGRADE_SUCCESSFUL.
@@ -854,6 +863,7 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
           installer::Version::GetVersionFromString(current_version_));
       if (!installed_version.get() ||
           !installed_version->IsHigherThan(running_version.get())) {
+#endif
         UserMetrics::RecordAction("UpgradeCheck_AlreadyUpToDate", profile_);
         check_button_status_ = CHECKBUTTON_HIDDEN;
         std::wstring update_label_text =
@@ -867,7 +877,9 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
         update_label_.SetText(update_label_text);
         show_success_indicator = true;
         break;
+#if defined(OS_WIN)
       }
+#endif
       // No break here as we want to notify user about upgrade if there is one.
     }
     case UPGRADE_SUCCESSFUL: {
@@ -884,7 +896,11 @@ void AboutChromeView::UpdateStatus(GoogleUpdateUpgradeResult result,
                                   new_version_available_);
       update_label_.SetText(update_string);
       show_success_indicator = true;
+      // TODO (seanparent) : Need to see if this code needs to change to
+      // force a machine restart.
+#if defined(OS_WIN)
       RestartMessageBox::ShowMessageBox(window()->GetNativeWindow());
+#endif
       break;
     }
     case UPGRADE_ERROR:

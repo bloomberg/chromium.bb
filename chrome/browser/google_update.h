@@ -9,7 +9,9 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
+#if defined(OS_WIN)
 #include "google_update_idl.h"
+#endif
 
 class MessageLoop;
 namespace views {
@@ -91,15 +93,27 @@ class GoogleUpdate : public base::RefCountedThreadSafe<GoogleUpdate> {
   // be null.
   void CheckForUpdate(bool install_if_newer, views::Window* window);
 
-  // Adds/removes a listener to report status back to. Only one listener is
-  // maintained at the moment.
-  void AddStatusChangeListener(GoogleUpdateStatusListener* listener);
-  void RemoveStatusChangeListener();
+  // Pass NULL to clear the listener
+  void set_status_listener(GoogleUpdateStatusListener* listener) {
+    listener_ = listener;
+  }
 
  private:
   friend class base::RefCountedThreadSafe<GoogleUpdate>;
 
   virtual ~GoogleUpdate();
+
+// The chromeos implementation is in browser/chromeos/google_update.cpp
+
+#if defined(OS_WIN)
+
+  // This function reports failure from the Google Update operation to the
+  // listener.
+  // Note, after this function completes, this object will have deleted itself.
+  bool ReportFailure(HRESULT hr, GoogleUpdateErrorCode error_code,
+                     MessageLoop* main_loop);
+
+#endif
 
   // We need to run the update check on another thread than the main thread, and
   // therefore CheckForUpdate will delegate to this function. |main_loop| points
@@ -116,18 +130,12 @@ class GoogleUpdate : public base::RefCountedThreadSafe<GoogleUpdate> {
   void ReportResults(GoogleUpdateUpgradeResult results,
                      GoogleUpdateErrorCode error_code);
 
-  // This function reports failure from the Google Update operation to the
-  // listener.
-  // Note, after this function completes, this object will have deleted itself.
-  bool ReportFailure(HRESULT hr, GoogleUpdateErrorCode error_code,
-                     MessageLoop* main_loop);
-
-  // The listener who is interested in finding out the result of the operation.
-  GoogleUpdateStatusListener* listener_;
-
   // Which version string Google Update found (if a new one was available).
   // Otherwise, this will be blank.
   std::wstring version_available_;
+
+  // The listener who is interested in finding out the result of the operation.
+  GoogleUpdateStatusListener* listener_;
 
   DISALLOW_EVIL_CONSTRUCTORS(GoogleUpdate);
 };

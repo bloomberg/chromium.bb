@@ -219,17 +219,6 @@ void GoogleUpdate::CheckForUpdate(bool install_if_newer, Window* window) {
           window, MessageLoop::current()));
 }
 
-// Adds/removes a listener. Only one listener is maintained at the moment.
-void GoogleUpdate::AddStatusChangeListener(
-    GoogleUpdateStatusListener* listener) {
-  DCHECK(!listener_);
-  listener_ = listener;
-}
-
-void GoogleUpdate::RemoveStatusChangeListener() {
-  listener_ = NULL;
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // GoogleUpdate, private:
 
