@@ -2873,7 +2873,6 @@ BUG21852 SKIP LINUX WIN : fast/canvas/webgl = CRASH
 BUG33350 : fast/dom/location-hash.html = TEXT
 
 // WebKit roll 53941 -> 54015
-BUG33359 WIN LINUX : fast/css/button-height.html = TEXT
 BUG33358 : fast/dom/Window/window-postmessage-clone-frames.html = TEXT
 
 // WebKit roll 54016 -> 54045
