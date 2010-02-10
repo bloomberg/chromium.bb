@@ -1423,18 +1423,15 @@ drm_intel_gem_bo_set_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
 
 	memset(&set_tiling, 0, sizeof(set_tiling));
 	set_tiling.handle = bo_gem->gem_handle;
-	set_tiling.tiling_mode = *tiling_mode;
-	set_tiling.stride = stride;
 
 	do {
+		set_tiling.tiling_mode = *tiling_mode;
+		set_tiling.stride = stride;
+
 		ret = ioctl(bufmgr_gem->fd,
 			    DRM_IOCTL_I915_GEM_SET_TILING,
 			    &set_tiling);
 	} while (ret == -1 && errno == EINTR);
-	if (ret != 0) {
-		*tiling_mode = bo_gem->tiling_mode;
-		return -errno;
-	}
 	bo_gem->tiling_mode = set_tiling.tiling_mode;
 	bo_gem->swizzle_mode = set_tiling.swizzle_mode;
 
@@ -1445,7 +1442,7 @@ drm_intel_gem_bo_set_tiling(drm_intel_bo *bo, uint32_t * tiling_mode,
 	drm_intel_bo_gem_set_in_aperture_size(bufmgr_gem, bo_gem);
 
 	*tiling_mode = bo_gem->tiling_mode;
-	return 0;
+	return ret == 0 ? 0 : -errno;
 }
 
 static int
