@@ -18,15 +18,17 @@
 #include "base/weak_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/dom_ui/dom_ui_favicon_source.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
+#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/metrics/user_metrics.h"
 #include "chrome/browser/net/url_fetcher.h"
-#include "chrome/browser/history/history_types.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/time_format.h"
@@ -704,22 +706,46 @@ FileBrowseUI::FileBrowseUI(TabContents* contents) : HtmlDialogUI(contents) {
 }
 
 // static
-Browser *FileBrowseUI::OpenPopup(Profile *profile,
-                                 const std::string hashArgument) {
-  Browser* browser = Browser::CreateForPopup(profile);
+Browser* FileBrowseUI::OpenPopup(Profile* profile,
+                                 const std::string& hashArgument) {
+  // Get existing pop up for given hashArgument.
+  Browser* browser = GetPopupForPath(hashArgument);
 
-  std::string url(kFilebrowseURLHash);
-  url.append(hashArgument);
+  // Create new browser if no matching pop up found.
+  if (browser == NULL) {
+    browser = Browser::CreateForPopup(profile);
 
-  browser->AddTabWithURL(
-      GURL(url), GURL(), PageTransition::LINK,
-      true, -1, false, NULL);
-  browser->window()->SetBounds(gfx::Rect(kPopupLeft,
-                                         kPopupTop,
-                                         kPopupWidth,
-                                         kPopupHeight));
+    std::string url(kFilebrowseURLHash);
+    url.append(hashArgument);
 
-  browser->window()->Show();
+    browser->AddTabWithURL(
+        GURL(url), GURL(), PageTransition::LINK,
+        true, -1, false, NULL);
+    browser->window()->SetBounds(gfx::Rect(kPopupLeft,
+                                           kPopupTop,
+                                           kPopupWidth,
+                                           kPopupHeight));
+
+    browser->window()->Show();
+  }
 
   return browser;
+}
+
+Browser* FileBrowseUI::GetPopupForPath(const std::string& path) {
+  for (BrowserList::const_iterator it = BrowserList::begin();
+       it != BrowserList::end(); ++it) {
+    if ((*it)->type() == Browser::TYPE_POPUP) {
+      const GURL& url =
+          (*it)->GetTabContentsAt((*it)->selected_index())->GetURL();
+
+      if (url.SchemeIs(chrome::kChromeUIScheme) &&
+          url.host() == chrome::kChromeUIFileBrowseHost &&
+          url.ref() == path) {
+        return (*it);
+      }
+    }
+  }
+
+  return NULL;
 }
