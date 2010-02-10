@@ -68,6 +68,16 @@ struct DwarfCUToModule::Specification {
   string unqualified_name;
 };
 
+// An abstract origin -- base definition of an inline function.
+struct AbstractOrigin {
+  AbstractOrigin() : name() {}
+  AbstractOrigin(const string& name) : name(name) {}
+
+  string name;
+};
+
+typedef map<uint64, AbstractOrigin> AbstractOriginByOffset;
+
 // Data global to the DWARF-bearing file that is private to the
 // DWARF-to-Module process.
 struct DwarfCUToModule::FilePrivate {
@@ -75,6 +85,8 @@ struct DwarfCUToModule::FilePrivate {
   // Specifications describing those DIEs. Specification references can
   // cross compilation unit boundaries.
   SpecificationByOffset specifications;
+
+  AbstractOriginByOffset origins;
 };
 
 DwarfCUToModule::FileContext::FileContext(const string &filename_arg,
@@ -230,7 +242,7 @@ void DwarfCUToModule::GenericDIEHandler::ProcessAttributeReference(
         // don't think any producers we care about ever emit such
         // things.
         cu_context_->reporter->UnknownSpecification(offset_, data);
-      }        
+      }
       break;
     }
     default: break;
@@ -287,10 +299,17 @@ class DwarfCUToModule::FuncHandler: public GenericDIEHandler {
   FuncHandler(CUContext *cu_context, DIEContext *parent_context,
               uint64 offset)
       : GenericDIEHandler(cu_context, parent_context, offset),
-        low_pc_(0), high_pc_(0) { }
+        low_pc_(0), high_pc_(0), abstract_origin_(NULL), inline_(false) { }
   void ProcessAttributeUnsigned(enum DwarfAttribute attr,
                                 enum DwarfForm form,
                                 uint64 data);
+  void ProcessAttributeSigned(enum DwarfAttribute attr,
+                              enum DwarfForm form,
+                              int64 data);
+  void ProcessAttributeReference(enum DwarfAttribute attr,
+                                 enum DwarfForm form,
+                                 uint64 data);
+
   bool EndAttributes();
   void Finish();
 
@@ -299,6 +318,8 @@ class DwarfCUToModule::FuncHandler: public GenericDIEHandler {
   // specification_, parent_context_.  Computed in EndAttributes.
   string name_;
   uint64 low_pc_, high_pc_; // DW_AT_low_pc, DW_AT_high_pc
+  const AbstractOrigin* abstract_origin_;
+  bool inline_;
 };
 
 void DwarfCUToModule::FuncHandler::ProcessAttributeUnsigned(
@@ -306,6 +327,16 @@ void DwarfCUToModule::FuncHandler::ProcessAttributeUnsigned(
     enum DwarfForm form,
     uint64 data) {
   switch (attr) {
+    case dwarf2reader::DW_AT_inline:
+      switch(data) {
+        case dwarf2reader::DW_INL_inlined:
+        case dwarf2reader::DW_INL_declared_not_inlined:
+        case dwarf2reader::DW_INL_declared_inlined:
+          inline_  = true; break;
+        default:
+          break;
+      }
+      break;
     case dwarf2reader::DW_AT_low_pc:      low_pc_  = data; break;
     case dwarf2reader::DW_AT_high_pc:     high_pc_ = data; break;
     default:
@@ -314,9 +345,54 @@ void DwarfCUToModule::FuncHandler::ProcessAttributeUnsigned(
   }
 }
 
+void DwarfCUToModule::FuncHandler::ProcessAttributeSigned(
+    enum DwarfAttribute attr,
+    enum DwarfForm form,
+    int64 data) {
+  switch (attr) {
+    case dwarf2reader::DW_AT_inline:
+      switch(data) {
+        case dwarf2reader::DW_INL_inlined:
+        case dwarf2reader::DW_INL_declared_not_inlined:
+        case dwarf2reader::DW_INL_declared_inlined:
+          inline_ = true; break;
+        default:
+          break;
+      }
+      break;
+    default:
+      break;
+  }
+}
+
+void DwarfCUToModule::FuncHandler::ProcessAttributeReference(
+    enum DwarfAttribute attr,
+    enum DwarfForm form,
+    uint64 data) {
+  switch(attr) {
+    case dwarf2reader::DW_AT_abstract_origin: {
+      const AbstractOriginByOffset& origins =
+          cu_context_->file_context->file_private->origins;
+      AbstractOriginByOffset::const_iterator origin = origins.find(data);
+      if (origin != origins.end()) {
+        abstract_origin_ = &(origin->second);
+      } else {
+        cu_context_->reporter->UnknownAbstractOrigin(offset_, data);
+      }
+      break;
+    }
+    default:
+      GenericDIEHandler::ProcessAttributeReference(attr, form, data);
+      break;
+  }
+}
+
 bool DwarfCUToModule::FuncHandler::EndAttributes() {
   // Compute our name, and record a specification, if appropriate.
   name_ = ComputeQualifiedName();
+  if (name_.empty() && abstract_origin_) {
+    name_ = abstract_origin_->name;
+  }
   return true;
 }
 
@@ -334,6 +410,9 @@ void DwarfCUToModule::FuncHandler::Finish() {
     func->size = high_pc_ - low_pc_;
     func->parameter_size = 0;
     cu_context_->functions.push_back(func);
+  } else if (inline_) {
+    AbstractOrigin origin(name_);
+    cu_context_->file_context->file_private->origins[offset_] = origin;
   }
 }
 
@@ -388,6 +467,15 @@ void DwarfCUToModule::WarningReporter::UnknownSpecification(uint64 offset,
   fprintf(stderr, "%s: the DIE at offset 0x%llx has a DW_AT_specification"
           " attribute referring to the die at offset 0x%llx, which either"
           " was not marked as a declaration, or comes later in the file",
+          filename_.c_str(), offset, target);
+}
+
+void DwarfCUToModule::WarningReporter::UnknownAbstractOrigin(uint64 offset,
+                                                             uint64 target) {
+  CUHeading();
+  fprintf(stderr, "%s: the DIE at offset 0x%llx has a DW_AT_abstract_origin"
+          " attribute referring to the die at offset 0x%llx, which either"
+          " was not marked as an inline, or comes later in the file",
           filename_.c_str(), offset, target);
 }
 

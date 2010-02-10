@@ -130,7 +130,11 @@ class DwarfCUToModule: public dwarf2reader::RootDIEHandler {
     // haven't processed yet, or that wasn't marked as a declaration,
     // at TARGET.
     virtual void UnknownSpecification(uint64 offset, uint64 target);
-    
+
+    // A DW_AT_abstract_origin in the DIE at OFFSET refers to a DIE we
+    // haven't processed yet, or that wasn't marked as inline, at TARGET.
+    virtual void UnknownAbstractOrigin(uint64 offset, uint64 target);
+
     // We were unable to find the DWARF section named SECTION_NAME.
     virtual void MissingSection(const string &section_name);
 

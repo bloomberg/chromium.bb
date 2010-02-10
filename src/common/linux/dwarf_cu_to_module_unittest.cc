@@ -43,6 +43,7 @@ using dwarf2reader::DIEHandler;
 using dwarf2reader::DwarfTag;
 using dwarf2reader::DwarfAttribute;
 using dwarf2reader::DwarfForm;
+using dwarf2reader::DwarfInline;
 using dwarf2reader::RootDIEHandler;
 using google_breakpad::DwarfCUToModule;
 using google_breakpad::Module;
@@ -74,6 +75,7 @@ class MockWarningReporter: public DwarfCUToModule::WarningReporter {
       : DwarfCUToModule::WarningReporter(filename, cu_offset) { }
   MOCK_METHOD1(SetCUName, void(const string &name));
   MOCK_METHOD2(UnknownSpecification, void(uint64 offset, uint64 target));
+  MOCK_METHOD2(UnknownAbstractOrigin, void(uint64 offset, uint64 target));
   MOCK_METHOD1(MissingSection, void(const string &section_name));
   MOCK_METHOD1(BadLineInfoOffset, void(uint64 offset));
   MOCK_METHOD1(UncoveredFunction, void(const Module::Function &function));
@@ -128,6 +130,7 @@ class CUFixtureBase {
     // these expectations.
     EXPECT_CALL(reporter_, SetCUName("compilation-unit-name")).Times(1);
     EXPECT_CALL(reporter_, UnknownSpecification(_, _)).Times(0);
+    EXPECT_CALL(reporter_, UnknownAbstractOrigin(_, _)).Times(0);
     EXPECT_CALL(reporter_, MissingSection(_)).Times(0);
     EXPECT_CALL(reporter_, BadLineInfoOffset(_)).Times(0);
     EXPECT_CALL(reporter_, UncoveredFunction(_)).Times(0);
@@ -209,6 +212,22 @@ class CUFixtureBase {
   void DefinitionDIE(DIEHandler *parent, DwarfTag tag,
                      uint64 specification, const string &name,
                      Module::Address address = 0, Module::Address size = 0);
+
+  // Create an inline DW_TAG_subprogram DIE as a child of PARENT.  If
+  // SPECIFICATION is non-zero, then the DIE refers to the declaration DIE at
+  // offset SPECIFICATION as its specification.  If Name is non-empty, pass it
+  // as the DW_AT_name attribute.
+  void AbstractInstanceDIE(DIEHandler *parent, uint64 offset,
+                           DwarfInline type, uint64 specification,
+                           const string &name,
+                           DwarfForm form = dwarf2reader::DW_FORM_data1);
+
+  // Create a DW_TAG_subprogram DIE as a child of PARENT that refers to
+  // ORIGIN in its DW_AT_abstract_origin attribute.  If NAME is the empty
+  // string, don't provide a DW_AT_name attribute.
+  void DefineInlineInstanceDIE(DIEHandler *parent, const string &name,
+                               uint64 origin, Module::Address address,
+                               Module::Address size);
 
   // The following Test* functions should be called after calling
   // this.root_handler_.Finish. After that point, no further calls
@@ -520,6 +539,83 @@ void CUFixtureBase::DefinitionDIE(DIEHandler *parent,
   delete die;
 }
 
+void CUFixtureBase::AbstractInstanceDIE(DIEHandler *parent,
+                                        uint64 offset,
+                                        DwarfInline type,
+                                        uint64 specification,
+                                        const string &name,
+                                        DwarfForm form) {
+  dwarf2reader::AttributeList attrs;
+  if (specification != 0ULL)
+    attrs.push_back(make_pair(dwarf2reader::DW_AT_specification,
+                              dwarf2reader::DW_FORM_ref4));
+  attrs.push_back(make_pair(dwarf2reader::DW_AT_inline, form));
+  if (!name.empty())
+    attrs.push_back(make_pair(dwarf2reader::DW_AT_name,
+                              dwarf2reader::DW_FORM_strp));
+  dwarf2reader::DIEHandler *die
+    = parent->FindChildHandler(offset, dwarf2reader::DW_TAG_subprogram, attrs);
+  ASSERT_TRUE(die != NULL);
+  if (specification != 0ULL)
+    die->ProcessAttributeReference(dwarf2reader::DW_AT_specification,
+                                   dwarf2reader::DW_FORM_ref4,
+                                   specification);
+  if (form == dwarf2reader::DW_FORM_sdata) {
+    die->ProcessAttributeSigned(dwarf2reader::DW_AT_inline, form, type);
+  } else {
+    die->ProcessAttributeUnsigned(dwarf2reader::DW_AT_inline, form, type);
+  }
+  if (!name.empty())
+    die->ProcessAttributeString(dwarf2reader::DW_AT_name,
+                                dwarf2reader::DW_FORM_strp,
+                                name);
+
+  EXPECT_TRUE(die->EndAttributes());
+  die->Finish();
+  delete die;
+}
+
+void CUFixtureBase::DefineInlineInstanceDIE(DIEHandler *parent,
+                                            const string &name,
+                                            uint64 origin, 
+                                            Module::Address address,
+                                            Module::Address size) {
+  dwarf2reader::AttributeList func_attrs;
+  if (!name.empty())
+    func_attrs.push_back(make_pair(dwarf2reader::DW_AT_name,
+                                   dwarf2reader::DW_FORM_strp));
+  func_attrs.push_back(make_pair(dwarf2reader::DW_AT_low_pc,
+                                 dwarf2reader::DW_FORM_addr));
+  func_attrs.push_back(make_pair(dwarf2reader::DW_AT_high_pc,
+                                 dwarf2reader::DW_FORM_addr));
+  func_attrs.push_back(make_pair(dwarf2reader::DW_AT_abstract_origin,
+                                 dwarf2reader::DW_FORM_ref4));
+  PushBackStrangeAttributes(&func_attrs);
+  dwarf2reader::DIEHandler *func
+      = parent->FindChildHandler(0x11c70f94c6e87ccdLL,
+                                 dwarf2reader::DW_TAG_subprogram,
+                                 func_attrs);
+  ASSERT_TRUE(func != NULL);
+  if (!name.empty()) {
+    func->ProcessAttributeString(dwarf2reader::DW_AT_name,
+                                 dwarf2reader::DW_FORM_strp,
+                                 name);
+  }
+  func->ProcessAttributeUnsigned(dwarf2reader::DW_AT_low_pc,
+                                 dwarf2reader::DW_FORM_addr,
+                                 address);
+  func->ProcessAttributeUnsigned(dwarf2reader::DW_AT_high_pc,
+                                 dwarf2reader::DW_FORM_addr,
+                                 address + size);
+  func->ProcessAttributeReference(dwarf2reader::DW_AT_abstract_origin,
+                                 dwarf2reader::DW_FORM_ref4,
+                                 origin);
+  ProcessStrangeAttributes(func);
+  EXPECT_TRUE(func->EndAttributes());
+  func->Finish();
+  delete func;
+}
+
 void CUFixtureBase::FillFunctions() {
   if (functions_filled_)
     return;
@@ -627,6 +723,53 @@ TEST_F(Simple, UnusedFileContext) {
 
   // Kludge: satisfy reporter_'s expectation.
   reporter_.SetCUName("compilation-unit-name");
+}
+
+TEST_F(Simple, InlineFunction) {
+  PushLine(0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL, "line-file", 75173118);
+
+  StartCU();
+  AbstractInstanceDIE(&root_handler_, 0x1e8dac5d507ed7abULL,
+                      dwarf2reader::DW_INL_inlined, 0, "inline-name");
+  DefineInlineInstanceDIE(&root_handler_, "", 0x1e8dac5d507ed7abULL,
+                       0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL);
+  root_handler_.Finish();
+
+  TestFunctionCount(1);
+  TestFunction(0, "inline-name",
+               0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL);
+}
+
+TEST_F(Simple, InlineFunctionSignedAttribute) {
+  PushLine(0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL, "line-file", 75173118);
+
+  StartCU();
+  AbstractInstanceDIE(&root_handler_, 0x1e8dac5d507ed7abULL,
+                      dwarf2reader::DW_INL_inlined, 0, "inline-name",
+                      dwarf2reader::DW_FORM_sdata);
+  DefineInlineInstanceDIE(&root_handler_, "", 0x1e8dac5d507ed7abULL,
+                       0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL);
+  root_handler_.Finish();
+
+  TestFunctionCount(1);
+  TestFunction(0, "inline-name",
+               0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL);
+}
+
+TEST_F(Simple, UnknownAbstractOrigin) {
+  EXPECT_CALL(reporter_, UnknownAbstractOrigin(_, 1ULL)).WillOnce(Return());
+  PushLine(0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL, "line-file", 75173118);
+
+  StartCU();
+  AbstractInstanceDIE(&root_handler_, 0x1e8dac5d507ed7abULL,
+                      dwarf2reader::DW_INL_inlined, 0, "inline-name");
+  DefineInlineInstanceDIE(&root_handler_, "", 1ULL,
+                       0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL);
+  root_handler_.Finish();
+
+  TestFunctionCount(1);
+  TestFunction(0, "",
+               0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL);
 }
 
 // An address range.
@@ -1112,6 +1255,24 @@ TEST_F(Specifications, NamedScopeDeclarationParent) {
   TestFunctionCount(1);
   TestFunction(0, "space_A::class-definition-name::function",
                0x5d13433d0df13d00ULL, 0x48ebebe5ade2cab4ULL);
+}
+
+// This test recreates bug 364.
+TEST_F(Specifications, InlineFunction) {
+  PushLine(0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL, "line-file", 75173118);
+
+  StartCU();
+  DeclarationDIE(&root_handler_, 0xcd3c51b946fb1eeeLL,
+                 dwarf2reader::DW_TAG_subprogram, "inline-name");
+  AbstractInstanceDIE(&root_handler_, 0x1e8dac5d507ed7abULL,
+                      dwarf2reader::DW_INL_inlined, 0xcd3c51b946fb1eeeLL, "");
+  DefineInlineInstanceDIE(&root_handler_, "", 0x1e8dac5d507ed7abULL,
+                       0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL);
+  root_handler_.Finish();
+
+  TestFunctionCount(1);
+  TestFunction(0, "inline-name",
+               0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL);
 }
 
 // Check name construction for a long chain containing each combination of:

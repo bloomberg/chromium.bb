@@ -50,6 +50,9 @@ COVERAGE=
 #    SOME_ENV_VAR=value valgrind ./some-test-executable test-args
 TEST_WRAPPER=
 
+# Arguments to pass to the test programs.
+TEST_ARGS=
+
 ### Variables used internally by this Makefile.
 
 # The top of the breakpad source tree.

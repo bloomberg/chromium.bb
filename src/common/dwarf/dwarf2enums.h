@@ -522,5 +522,13 @@ enum DwarfLanguage
     DW_LANG_Upc                      =0x8765 // Unified Parallel C
   };
 
+// Inline codes.  These are values for DW_AT_inline.
+enum DwarfInline {
+  DW_INL_not_inlined                 =0x0,
+  DW_INL_inlined                     =0x1,
+  DW_INL_declared_not_inlined        =0x2,
+  DW_INL_declared_inlined            =0x3,
+};
+
 }  // namespace dwarf2reader
 #endif  // COMMON_DWARF_DWARF2ENUMS_H__
