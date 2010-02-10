@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -227,15 +227,6 @@ GtkWidget* ContentPageGtk::InitFormAutofillGroup() {
 GtkWidget* ContentPageGtk::InitBrowsingDataGroup() {
   GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
-  // Browsing data label.
-  GtkWidget* browsing_data_label = gtk_label_new(
-      l10n_util::GetStringUTF8(IDS_OPTIONS_BROWSING_DATA_INFO).c_str());
-  gtk_util::WrapLabelAtAllocationHack(browsing_data_label);
-
-  gtk_label_set_line_wrap(GTK_LABEL(browsing_data_label), TRUE);
-  gtk_misc_set_alignment(GTK_MISC(browsing_data_label), 0, 0);
-  gtk_box_pack_start(GTK_BOX(vbox), browsing_data_label, FALSE, FALSE, 0);
-
   // Horizontal two button layout.
   GtkWidget* button_hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
   gtk_container_add(GTK_CONTAINER(vbox), button_hbox);
@@ -248,8 +239,10 @@ GtkWidget* ContentPageGtk::InitBrowsingDataGroup() {
   gtk_box_pack_start(GTK_BOX(button_hbox), import_button, FALSE, FALSE, 0);
 
   // Clear data button.
+  // TODO(pkasting): This should move to the advanced settings page (see
+  // Windows).
   GtkWidget* clear_data_button = gtk_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_OPTIONS_CLEAR_DATA_BUTTON).c_str());
+      l10n_util::GetStringUTF8(IDS_OPTIONS_PRIVACY_CLEAR_DATA_BUTTON).c_str());
   g_signal_connect(G_OBJECT(clear_data_button), "clicked",
                    G_CALLBACK(OnClearBrowsingDataButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(button_hbox), clear_data_button, FALSE, FALSE, 0);

@@ -58,7 +58,6 @@ ContentPageView::ContentPageView(Profile* profile)
       themes_group_(NULL),
       themes_reset_button_(NULL),
       themes_gallery_link_(NULL),
-      browsing_data_label_(NULL),
       browsing_data_group_(NULL),
       import_button_(NULL),
       sync_group_(NULL),
@@ -239,8 +238,6 @@ void ContentPageView::Layout() {
       0, 0, passwords_group_->GetContentsWidth(), 0);
   passwords_neversave_radio_->SetBounds(
       0, 0, passwords_group_->GetContentsWidth(), 0);
-  browsing_data_label_->SetBounds(
-      0, 0, browsing_data_group_->GetContentsWidth(), 0);
   if (is_initialized()) {
     sync_status_label_->SetBounds(
         0, 0, sync_group_->GetContentsWidth(), 0);
@@ -383,10 +380,6 @@ void ContentPageView::InitThemesGroup() {
 void ContentPageView::InitBrowsingDataGroup() {
   import_button_ = new views::NativeButton(this,
       l10n_util::GetString(IDS_OPTIONS_IMPORT_DATA_BUTTON));
-  browsing_data_label_ = new views::Label(
-      l10n_util::GetString(IDS_OPTIONS_BROWSING_DATA_INFO));
-  browsing_data_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  browsing_data_label_->SetMultiLine(true);
 
   using views::GridLayout;
   using views::ColumnSet;
@@ -395,17 +388,11 @@ void ContentPageView::InitBrowsingDataGroup() {
   GridLayout* layout = new GridLayout(contents);
   contents->SetLayoutManager(layout);
 
-  // Add the browsing data label component.
+  // Add the browsing data import button.
   const int single_column_view_set_id = 0;
   ColumnSet* column_set = layout->AddColumnSet(single_column_view_set_id);
   column_set->AddColumn(GridLayout::LEADING, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
-  layout->StartRow(0, single_column_view_set_id);
-  layout->AddView(browsing_data_label_);
-
-  // Add some padding for not making the next component close together.
-  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(import_button_);
 

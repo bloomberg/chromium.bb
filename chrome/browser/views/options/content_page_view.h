@@ -93,7 +93,6 @@ class ContentPageView : public OptionsPageView,
 
   // Controls for the browsing data group.
   OptionsGroupView* browsing_data_group_;
-  views::Label* browsing_data_label_;
   views::NativeButton* import_button_;
 
   // Controls for the Sync group.
