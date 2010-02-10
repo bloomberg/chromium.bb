@@ -144,6 +144,9 @@ class PageTranslator : public TextTranslator::Delegate {
   // The original text of the text nodes in |text_nodes_|.
   std::vector<TextChunks*> text_chunks_;
 
+  // A text node containing only the characters in this list is not translated.
+  string16 ignore_characters_;
+
   DISALLOW_COPY_AND_ASSIGN(PageTranslator);
 };
 

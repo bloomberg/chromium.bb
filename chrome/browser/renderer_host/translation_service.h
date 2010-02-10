@@ -160,6 +160,10 @@ class TranslationService : public URLFetcher::Delegate {
   TranslationRequestMap pending_translation_requests_;
   TranslationRequestMap pending_secure_translation_requests_;
 
+  // The size taken by the parameters and separators needed when adding text to
+  // a request string.
+  static size_t text_param_length_;
+
   // The language supported by the translation server.
   static base::LazyInstance<std::set<std::string> > supported_languages_;
 

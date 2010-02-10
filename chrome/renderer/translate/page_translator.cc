@@ -31,6 +31,10 @@ const char* const kInlineTags[] = { "A", "ABBR", "ACRONYM", "B", "BIG", "DEL",
     "EM", "I", "INS", "S", "SPAN", "STRIKE", "STRONG", "SUB", "SUP", "U" };
 }
 
+// A text node containing only characters in kIgnoredCharacters is not
+// translated.
+const char* const kIgnoredCharacters = ":,.[|]0123456789";
+
 // Returns true when s1 < s2.
 bool PageTranslator::WebStringCompare::operator()(
     const WebKit::WebString& s1, const WebKit::WebString& s2) const {
@@ -56,6 +60,8 @@ PageTranslator::PageTranslator(TextTranslator* text_translator,
     ignored_tags_.insert(WebKit::WebString(ASCIIToUTF16(kSkippedTags[i])));
   for (size_t i = 0; i < arraysize(kInlineTags); ++i)
     inline_tags_.insert(WebKit::WebString(ASCIIToUTF16(kInlineTags[i])));
+  ignore_characters_ = ASCIIToUTF16(kIgnoredCharacters);
+  ignore_characters_.append(kWhitespaceUTF16);
 }
 
 PageTranslator::~PageTranslator() {
@@ -211,10 +217,14 @@ void PageTranslator::TextTranslated(
   NodeList* nodes = iter->second;
   // Check the integrity of the response.
   if (translated_text_chunks.size() != nodes->size()) {
-    // TODO(jcampan) reenable when we figured out why the server messed up the
-    // anchor tags.
+    // The server might merge or split chunks in some cases.
+    // TODO(jcampan): once the issue is resolved on the server, reenable that
+    //                NOTREACHED().
     // NOTREACHED() << "Translation results received are inconsistent with the "
     //    "request";
+    LOG(ERROR) << "translation response for work id " << work_id <<
+        " length is " << translated_text_chunks.size() << " expected " <<
+        nodes->size();
     ClearNodeZone(work_id);
     return;
   }
@@ -232,8 +242,10 @@ void PageTranslator::TraverseNode(WebKit::WebNode node,
                                   std::stack<NodeList*>* element_stack,
                                   std::vector<NodeList*>* text_nodes_list) {
   if (node.isTextNode()) {
-    if (ContainsOnlyWhitespace(static_cast<string16>(node.nodeValue())))
-      return;  // Ignore text nodes with only white-spaces.
+    string16 text = static_cast<string16>(node.nodeValue());
+    if (ContainsOnlyChars(text, ignore_characters_))
+      return;  // Ignore text nodes which contains only white-spaces or
+               // separators.
 
     DCHECK(!element_stack->empty());
     NodeList* text_nodes = element_stack->top();

@@ -134,6 +134,10 @@ class SendTranslationRequestTask : public CancelableTask {
 }  // namespace
 
 // static
+// The string is: '&' + kTextParam + '='.
+size_t TranslationService::text_param_length_ = 1 + arraysize(kTextParam) + 1;
+
+// static
 base::LazyInstance<std::set<std::string> >
     TranslationService::supported_languages_(base::LINKER_INITIALIZED);
 
@@ -260,8 +264,8 @@ void TranslationService::Translate(int routing_id,
       // after we updated the request.
       translation_request->send_query_task->Cancel();
       translation_request->send_query_task = NULL;
-      if (translation_request->query.size() + text.size() >=
-          kTextRequestMaxSize) {
+      if (translation_request->query.size() + text.size() +
+              text_param_length_ >= kTextRequestMaxSize) {
         // The request would be too big with that last addition of text, send
         // the request now. (Single requests too big to be sent in 1 translation
         // request are dealt with below.)
@@ -616,6 +620,8 @@ void TranslationService::AddTextToRequestString(std::string* request,
       request->append("=1");
     }
   }
+  // IMPORTANT NOTE: if you make any change below, make sure to reflect them in
+  //                 text_param_length_ in TranslationService constructor.
   request->append("&");
   request->append(kTextParam);
   request->append("=");
