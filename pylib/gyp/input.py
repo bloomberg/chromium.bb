@@ -1304,57 +1304,6 @@ def BuildDependencyList(targets):
   return [dependency_nodes, flat_list]
 
 
-def VerifyNoGYPFileCircularDependencies(targets):
-  # Create a DependencyGraphNode for each gyp file containing a target.  Put
-  # it into a dict for easy access.
-  dependency_nodes = {}
-  for target in targets.iterkeys():
-    build_file = gyp.common.BuildFile(target)
-    if not build_file in dependency_nodes:
-      dependency_nodes[build_file] = DependencyGraphNode(build_file)
-
-  # Set up the dependency links.
-  for target, spec in targets.iteritems():
-    build_file = gyp.common.BuildFile(target)
-    build_file_node = dependency_nodes[build_file]
-    target_dependencies = spec.get('dependencies', [])
-    for dependency in target_dependencies:
-      try:
-        dependency_build_file = gyp.common.BuildFile(dependency)
-        if dependency_build_file == build_file:
-          # A .gyp file is allowed to refer back to itself.
-          continue
-        dependency_node = dependency_nodes[dependency_build_file]
-        if dependency_node not in build_file_node.dependencies:
-          build_file_node.dependencies.append(dependency_node)
-          dependency_node.dependents.append(build_file_node)
-      except KeyError, e:
-        gyp.common.ExceptionAppend(
-            e, 'while computing dependencies of .gyp file %s' % build_file)
-        raise
-
-  # Files that have no dependencies are treated as dependent on root_node.
-  root_node = DependencyGraphNode(None)
-  for build_file_node in dependency_nodes.itervalues():
-    if len(build_file_node.dependencies) == 0:
-      build_file_node.dependencies.append(root_node)
-      root_node.dependents.append(build_file_node)
-
-  flat_list = root_node.FlattenToList()
-
-  # If there's anything left unvisited, there must be a circular dependency
-  # (cycle).
-  if len(flat_list) != len(dependency_nodes):
-    bad_files = []
-    for file in dependency_nodes.iterkeys():
-      if not file in flat_list:
-        bad_files.append(file)
-    raise DependencyGraphNode.CircularException, \
-        'Some files not reachable, cycle in .gyp file dependency graph ' + \
-        'detected involving some or all of: ' + \
-        ' '.join(bad_files)
-
-
 def DoDependentSettings(key, flat_list, targets, dependency_nodes):
   # key should be one of all_dependent_settings, direct_dependent_settings,
   # or link_settings.
@@ -2072,10 +2021,6 @@ def Load(build_files, variables, includes, depth, generator_input_info, check):
 
   # Expand dependencies specified as build_file:*.
   ExpandWildcardDependencies(targets, data)
-
-  # Make sure that any targets in a.gyp don't contain dependencies in other
-  # .gyp files that further depend on a.gyp.
-  VerifyNoGYPFileCircularDependencies(targets)
 
   [dependency_nodes, flat_list] = BuildDependencyList(targets)
 
