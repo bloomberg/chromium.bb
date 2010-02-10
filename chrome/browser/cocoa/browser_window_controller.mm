@@ -246,6 +246,13 @@ willPositionSheet:(NSWindow*)sheet
 
 @implementation BrowserWindowController
 
++ (BrowserWindowController*)browserWindowControllerForView:(NSView*)view {
+  BrowserWindowController* controller = [[view window] windowController];
+  if (![controller isKindOfClass:[BrowserWindowController class]])
+    return nil;
+  return controller;
+}
+
 // Load the browser window nib and do any Cocoa-specific initialization.
 // Takes ownership of |browser|. Note that the nib also sets this controller
 // up as the window's delegate.
@@ -270,6 +277,9 @@ willPositionSheet:(NSWindow*)sheet
     NSWindow* window = [self window];
     windowShim_.reset(new BrowserWindowCocoa(browser, self, window));
 
+    // Create the bar visibility lock set; 10 is arbitrary, but should hopefully
+    // be big enough to hold all locks that'll ever be needed.
+    barVisibilityLocks_.reset([[NSMutableSet setWithCapacity:10] retain]);
 
     // Sets the window to not have rounded corners, which prevents
     // the resize control from being inset slightly and looking ugly.
@@ -1407,6 +1417,38 @@ willPositionSheet:(NSWindow*)sheet
 - (void)setFloatingBarShownFraction:(CGFloat)fraction {
   floatingBarShownFraction_ = fraction;
   [self layoutSubviews];
+}
+
+- (BOOL)isBarVisibilityLockedForOwner:(id)owner {
+  DCHECK(owner);
+  DCHECK(barVisibilityLocks_);
+  return [barVisibilityLocks_ containsObject:owner];
+}
+
+- (void)lockBarVisibilityForOwner:(id)owner
+                    withAnimation:(BOOL)animate
+                            delay:(BOOL)delay {
+  if (![self isBarVisibilityLockedForOwner:owner]) {
+    [barVisibilityLocks_ addObject:owner];
+
+    // Show the overlay if necessary (and if in fullscreen mode).
+    [fullscreenController_ ensureOverlayShownWithAnimation:animate
+                                                     delay:delay];
+  }
+}
+
+- (void)releaseBarVisibilityForOwner:(id)owner
+                       withAnimation:(BOOL)animate
+                               delay:(BOOL)delay {
+  if ([self isBarVisibilityLockedForOwner:owner]) {
+    [barVisibilityLocks_ removeObject:owner];
+
+    // Hide the overlay if necessary (and if in fullscreen mode).
+    if (![barVisibilityLocks_ count]) {
+      [fullscreenController_ ensureOverlayHiddenWithAnimation:animate
+                                                        delay:delay];
+    }
+  }
 }
 
 - (BOOL)floatingBarHasFocus {

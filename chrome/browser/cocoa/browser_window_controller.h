@@ -105,7 +105,19 @@ class TabStripModelObserverBridge;
 
   // The proportion of the floating bar which is shown (in fullscreen mode).
   CGFloat floatingBarShownFraction_;
+
+  // Various UI elements/events may want to ensure that the floating bar is
+  // visible (in fullscreen mode), e.g., because of where the mouse is or where
+  // keyboard focus is. Whenever an object requires bar visibility, it has
+  // itself added to |barVisibilityLocks_|. When it no longer requires bar
+  // visibility, it has itself removed.
+  scoped_nsobject<NSMutableSet> barVisibilityLocks_;
 }
+
+// A convenience class method which gets the controller for window containing
+// the given view, casted to a |BrowserWindowController|. Returns nil if the
+// window controller is not a |BrowserWindowController|.
++ (BrowserWindowController*)browserWindowControllerForView:(NSView*)view;
 
 // Load the browser window nib and do any Cocoa-specific initialization.
 // Takes ownership of |browser|.
@@ -206,6 +218,24 @@ class TabStripModelObserverBridge;
 // shown.  0 is completely hidden, 1 is fully shown.
 - (CGFloat)floatingBarShownFraction;
 - (void)setFloatingBarShownFraction:(CGFloat)fraction;
+
+// Query/lock/release the requirement that the tab strip/toolbar/attached
+// bookmark bar bar cluster is visible (e.g., when one of its elements has
+// focus). This is required for the floating bar in fullscreen mode, but should
+// also be called when not in fullscreen mode; see the comments for
+// |barVisibilityLocks_| for more details. Double locks/releases by the same
+// owner are ignored. If |animate:| is YES, then an animation may be performed,
+// possibly after a small delay if |delay:| is YES. If |animate:| is NO,
+// |delay:| will be ignored. In the case of multiple calls, later calls have
+// precedence with the rule that |animate:NO| has precedence over |animate:YES|,
+// and |delay:NO| has precedence over |delay:YES|.
+- (BOOL)isBarVisibilityLockedForOwner:(id)owner;
+- (void)lockBarVisibilityForOwner:(id)owner
+                    withAnimation:(BOOL)animate
+                            delay:(BOOL)delay;
+- (void)releaseBarVisibilityForOwner:(id)owner
+                       withAnimation:(BOOL)animate
+                               delay:(BOOL)delay;
 
 // Returns YES if any of the views in the floating bar currently has focus.
 - (BOOL)floatingBarHasFocus;

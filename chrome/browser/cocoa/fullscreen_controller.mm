@@ -4,14 +4,21 @@
 
 #import "chrome/browser/cocoa/fullscreen_controller.h"
 
+#include <algorithm>
+
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
 
 namespace {
-const CGFloat kDropdownAnimationDuration = 0.12;
-const CGFloat kDropdownShowDelay = 0.2;
-const CGFloat kDropdownHideDelay = 0.2;
+// The activation zone for the main menu is 4 pixels high; if we make it any
+// smaller, then the menu can be made to appear without the bar sliding down.
+const CGFloat kDropdownActivationZoneHeight = 4;
+const NSTimeInterval kDropdownAnimationDuration = 0.12;
+const NSTimeInterval kMouseExitCheckDelay = 0.1;
+// This show delay attempts to match the delay for the main menu.
+const NSTimeInterval kDropdownShowDelay = 0.3;
+const NSTimeInterval kDropdownHideDelay = 0.2;
 }  // end namespace
 
 
@@ -19,10 +26,15 @@ const CGFloat kDropdownHideDelay = 0.2;
 // back to [BrowserWindowController setFloatingBarShownFraction] once per
 // animation step.
 @interface DropdownAnimation : NSAnimation {
+ @private
   BrowserWindowController* controller_;
   CGFloat startFraction_;
   CGFloat endFraction_;
 }
+
+@property(readonly, nonatomic) CGFloat startFraction;
+@property(readonly, nonatomic) CGFloat endFraction;
+
 // Designated initializer.  Asks |controller| for the current shown fraction, so
 // if the bar is already partially shown or partially hidden, the animation
 // duration may be less than |fullDuration|.
@@ -30,9 +42,14 @@ const CGFloat kDropdownHideDelay = 0.2;
           fullDuration:(CGFloat)fullDuration
         animationCurve:(NSInteger)animationCurve
             controller:(BrowserWindowController*)controller;
+
 @end
 
 @implementation DropdownAnimation
+
+@synthesize startFraction = startFraction_;
+@synthesize endFraction = endFraction_;
+
 - (id)initWithFraction:(CGFloat)toFraction
           fullDuration:(CGFloat)fullDuration
         animationCurve:(NSInteger)animationCurve
@@ -58,19 +75,52 @@ const CGFloat kDropdownHideDelay = 0.2;
       startFraction_ + (progress * (endFraction_ - startFraction_));
   [controller_ setFloatingBarShownFraction:fraction];
 }
+
 @end
 
 
 @interface FullscreenController (PrivateMethods)
-// Shows or hides the overlay, with animation.  The overlay cannot be hidden if
-// any of its "subviews" currently has focus or if the mouse is currently over
-// the overlay.
-- (void)showOverlay;
-- (void)hideOverlayIfPossible;
 
-// Stops any running animations, removes tracking areas, etc.  Common cleanup
-// code shared by exitFullscreen: and dealloc:.
+// Change the overlay to the given fraction, with or without animation. Only
+// guaranteed to work properly with |fraction == 0| or |fraction == 1|. This
+// performs the show/hide (animation) immediately. It does not touch the timers.
+- (void)changeOverlayToFraction:(CGFloat)fraction
+                  withAnimation:(BOOL)animate;
+
+// Schedule the floating bar to be shown/hidden because of mouse position.
+- (void)scheduleShowForMouse;
+- (void)scheduleHideForMouse;
+
+// Returns YES if the mouse is currently in any current tracking rectangle, NO
+// otherwise.
+- (BOOL)mouseInsideTrackingRect;
+
+// The tracking area can "falsely" report exits when the menu slides down over
+// it. In that case, we have to monitor for a "real" mouse exit on a timer.
+// |-setupMouseExitCheck| schedules a check; |-cancelMouseExitCheck| cancels any
+// scheduled check.
+- (void)setupMouseExitCheck;
+- (void)cancelMouseExitCheck;
+
+// Called (after a delay) by |-setupMouseExitCheck|, to check whether the mouse
+// has exited or not; if it hasn't, it will schedule another check.
+- (void)checkForMouseExit;
+
+// Start timers for showing/hiding the floating bar.
+- (void)startShowTimer;
+- (void)startHideTimer;
+- (void)cancelShowTimer;
+- (void)cancelHideTimer;
+- (void)cancelAllTimers;
+
+// Methods called when the show/hide timers fire. Do not call directly.
+- (void)showTimerFire:(NSTimer*)timer;
+- (void)hideTimerFire:(NSTimer*)timer;
+
+// Stops any running animations, removes tracking areas, etc. Common cleanup
+// code shared by |-exitFullscreen| and |-dealloc|.
 - (void)cleanup;
+
 @end
 
 
@@ -84,8 +134,6 @@ const CGFloat kDropdownHideDelay = 0.2;
 }
 
 - (void)dealloc {
-  // Perform all the exit fullscreen steps, including stopping any running
-  // animations and cleaning up tracking areas.
   [self cleanup];
   [super dealloc];
 }
@@ -96,20 +144,6 @@ const CGFloat kDropdownHideDelay = 0.2;
   isFullscreen_ = YES;
   contentView_ = contentView;
   [browserController_ setFloatingBarShownFraction:(showDropdown ? 1 : 0)];
-
-  // Since there is no way to get a pointer to the correct LocationBarViewMac to
-  // pass as the |object| parameter, we register for all location bar focus
-  // notifications and filter for those from the same window once the
-  // notification is received.
-  NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
-  [nc addObserver:self
-         selector:@selector(gainedFocus:)
-             name:kLocationBarGainedFocusNotification
-           object:nil];
-  [nc addObserver:self
-         selector:@selector(lostFocus:)
-             name:kLocationBarLostFocusNotification
-           object:nil];
 }
 
 - (void)exitFullscreen {
@@ -122,61 +156,80 @@ const CGFloat kDropdownHideDelay = 0.2;
   if (!isFullscreen_)
     return;
 
-  if (!NSIntersectsRect(frame, [contentView_ bounds])) {
-    // Reset the tracking area to be a single pixel high at the top border of
-    // the content view.
-    frame = [contentView_ bounds];
-    frame.origin.y = NSMaxY(frame) - 1;
-    frame.size.height = 1;
-  }
+  // Make sure |trackingAreaBounds_| always reflects either the tracking area or
+  // the desired tracking area.
+  trackingAreaBounds_ = frame;
+  // The tracking area should always be at least the height of activation zone.
+  NSRect contentBounds = [contentView_ bounds];
+  trackingAreaBounds_.origin.y =
+      std::min(trackingAreaBounds_.origin.y,
+               NSMaxY(contentBounds) - kDropdownActivationZoneHeight);
+  trackingAreaBounds_.size.height =
+      NSMaxY(contentBounds) - trackingAreaBounds_.origin.y + 1;
 
-  // If an animation is currently running, do not set up a tracking area.
-  // Instead, save the bounds and we will create it in animationDidEnd:.
-  if (currentAnimation_.get()) {
-    trackingAreaBounds_ = frame;
+  // If an animation is currently running, do not set up a tracking area now.
+  // Instead, leave it to be created it in |-animationDidEnd:|.
+  if (currentAnimation_)
     return;
-  }
 
   NSWindow* window = [browserController_ window];
   NSPoint mouseLoc =
       [contentView_ convertPointFromBase:
                       [window mouseLocationOutsideOfEventStream]];
 
-  if (trackingArea_.get()) {
+  if (trackingArea_) {
     // If the tracking rectangle is already |rect|, quit early.
     NSRect oldRect = [trackingArea_ rect];
-    if (NSEqualRects(frame, oldRect))
+    if (NSEqualRects(trackingAreaBounds_, oldRect))
       return;
 
     // Otherwise, remove it.
-    [contentView_ removeTrackingArea:trackingArea_.get()];
+    [contentView_ removeTrackingArea:trackingArea_];
   }
 
   // Create and add a new tracking area for |frame|.
   trackingArea_.reset(
-      [[NSTrackingArea alloc] initWithRect:frame
+      [[NSTrackingArea alloc] initWithRect:trackingAreaBounds_
                                    options:NSTrackingMouseEnteredAndExited |
                                            NSTrackingActiveInKeyWindow
                                      owner:self
                                   userInfo:nil]);
-  [contentView_ addTrackingArea:trackingArea_.get()];
+  [contentView_ addTrackingArea:trackingArea_];
 }
 
-- (void)gainedFocus:(NSNotification*)notification {
-  LocationBarViewMac* bar =
-      static_cast<LocationBarViewMac*>([[notification object] pointerValue]);
-  if ([bar->location_entry()->GetNativeView() window] ==
-      [browserController_ window]) {
-    [self showOverlay];
+- (void)ensureOverlayShownWithAnimation:(BOOL)animate delay:(BOOL)delay {
+  if (!isFullscreen_)
+    return;
+
+  if (animate) {
+    if (delay) {
+      [self startShowTimer];
+    } else {
+      [self cancelAllTimers];
+      [self changeOverlayToFraction:1 withAnimation:YES];
+    }
+  } else {
+    DCHECK(!delay);
+    [self cancelAllTimers];
+    [self changeOverlayToFraction:1 withAnimation:NO];
   }
 }
 
-- (void)lostFocus:(NSNotification*)notification {
-  LocationBarViewMac* bar =
-      static_cast<LocationBarViewMac*>([[notification object] pointerValue]);
-  if ([bar->location_entry()->GetNativeView() window] ==
-      [browserController_ window]) {
-    [self hideOverlayIfPossible];
+- (void)ensureOverlayHiddenWithAnimation:(BOOL)animate delay:(BOOL)delay {
+  if (!isFullscreen_)
+    return;
+
+  if (animate) {
+    if (delay) {
+      [self startHideTimer];
+    } else {
+      [self cancelAllTimers];
+      [self changeOverlayToFraction:0 withAnimation:YES];
+    }
+  } else {
+    DCHECK(!delay);
+    [self cancelAllTimers];
+    [self changeOverlayToFraction:0 withAnimation:NO];
   }
 }
 
@@ -184,17 +237,14 @@ const CGFloat kDropdownHideDelay = 0.2;
 - (void)mouseEntered:(NSEvent*)event {
   DCHECK(isFullscreen_);
 
+  // Having gotten a mouse entered, we no longer need to do exit checks.
+  [self cancelMouseExitCheck];
+
   NSTrackingArea* trackingArea = [event trackingArea];
-  if (trackingArea == trackingArea_.get()) {
-    // Cancel any pending hides and set the bar to show after a delay.
-    [NSObject cancelPreviousPerformRequestsWithTarget:self];
-    if (currentAnimation_.get()) {
-      [self showOverlay];
-    } else {
-      [self performSelector:@selector(showOverlay)
-                 withObject:nil
-                 afterDelay:kDropdownShowDelay];
-    }
+  if (trackingArea == trackingArea_) {
+    // The tracking area shouldn't be active during animation.
+    DCHECK(!currentAnimation_);
+    [self scheduleShowForMouse];
   }
 }
 
@@ -203,36 +253,40 @@ const CGFloat kDropdownHideDelay = 0.2;
   DCHECK(isFullscreen_);
 
   NSTrackingArea* trackingArea = [event trackingArea];
-  if (trackingArea == trackingArea_.get()) {
-    // We can get a false mouse exit when the menu slides down, so if the mouse
-    // is where the menu would be, ignore the mouse exit.
-    CGFloat mainMenuHeight = [[NSApp mainMenu] menuBarHeight];
-    NSWindow* window = [browserController_ window];
-    NSPoint mouseLoc = [window mouseLocationOutsideOfEventStream];
-    if (mouseLoc.y >= NSHeight([window frame]) - mainMenuHeight)
-      return;
+  if (trackingArea == trackingArea_) {
+    // The tracking area shouldn't be active during animation.
+    DCHECK(!currentAnimation_);
 
-    // Cancel any pending shows and set the bar to hide after a delay.
-    [NSObject cancelPreviousPerformRequestsWithTarget:self];
-    if (currentAnimation_.get()) {
-      [self hideOverlayIfPossible];
-    } else {
-      [self performSelector:@selector(hideOverlayIfPossible)
-                 withObject:nil
-                 afterDelay:kDropdownHideDelay];
+    // We can get a false mouse exit when the menu slides down, so if the mouse
+    // is still actually over the tracking area, we ignore the mouse exit, but
+    // we set up to check the mouse position again after a delay.
+    if ([self mouseInsideTrackingRect]) {
+      [self setupMouseExitCheck];
+      return;
     }
+
+    [self scheduleHideForMouse];
   }
 }
 
-- (void)animationDidEnd:(NSAnimation*)animation {
-  // Reset the |currentAnimation_| pointer now that the animation is finished.
-  currentAnimation_.reset(nil);
+- (void)animationDidStop:(NSAnimation*)animation {
+  // Reset the |currentAnimation_| pointer now that the animation is over.
+  currentAnimation_.reset();
 
   // Invariant says that the tracking area is not installed while animations are
-  // in progress.  Check to make sure this is true.
-  DCHECK(!trackingArea_.get());
-  if (trackingArea_.get())
-    [contentView_ removeTrackingArea:trackingArea_.get()];
+  // in progress. Ensure this is true.
+  DCHECK(!trackingArea_);
+  if (trackingArea_) {
+    [contentView_ removeTrackingArea:trackingArea_];
+    trackingArea_.reset();
+  }
+  // Don't automatically set up a new tracking area. When explicitly stopped,
+  // either another animation is going to start immediately or the state will be
+  // changed immediately.
+}
+
+- (void)animationDidEnd:(NSAnimation*)animation {
+  [self animationDidStop:animation];
 
   // |trackingAreaBounds_| contains the correct tracking area bounds, including
   // |any updates that may have come while the animation was running.  Install a
@@ -243,7 +297,12 @@ const CGFloat kDropdownHideDelay = 0.2;
                                            NSTrackingActiveInKeyWindow
                                      owner:self
                                   userInfo:nil]);
-  [contentView_ addTrackingArea:trackingArea_.get()];
+  [contentView_ addTrackingArea:trackingArea_];
+
+  // TODO(viettrungluu): Better would be to check during the animation; doing it
+  // here means that the timing is slightly off.
+  if (![self mouseInsideTrackingRect])
+    [self scheduleHideForMouse];
 }
 
 @end
@@ -251,96 +310,169 @@ const CGFloat kDropdownHideDelay = 0.2;
 
 @implementation FullscreenController (PrivateMethods)
 
-- (void)showOverlay {
-  [NSObject cancelPreviousPerformRequestsWithTarget:self];
-
-  // This method can be called by LocationBarViewMac even when we're not in
-  // fullscreen mode.  Do nothing in that case.
-  if (!isFullscreen_)
-    return;
-
-  // Show the overlay with animation, first stopping any running animations.
-  if (currentAnimation_.get())
+- (void)changeOverlayToFraction:(CGFloat)fraction
+                  withAnimation:(BOOL)animate {
+  // The non-animated case is really simple, so do it and return.
+  if (!animate) {
     [currentAnimation_ stopAnimation];
-  currentAnimation_.reset(
-      [[DropdownAnimation alloc] initWithFraction:1
-                                     fullDuration:kDropdownAnimationDuration
-                                   animationCurve:NSAnimationEaseIn
-                                       controller:browserController_]);
-  [currentAnimation_ setAnimationBlockingMode:NSAnimationNonblocking];
-  [currentAnimation_ setDelegate:self];
-
-  // If there is an existing tracking area, remove it.  We do not track mouse
-  // movements during animations (see class comment in the .h file).
-  if (currentAnimation_ && trackingArea_.get()) {
-    [contentView_ removeTrackingArea:trackingArea_.get()];
-    trackingArea_.reset(nil);
-  }
-  [currentAnimation_ startAnimation];
-}
-
-- (void)hideOverlayIfPossible {
-  [NSObject cancelPreviousPerformRequestsWithTarget:self];
-
-  if (!isFullscreen_)
-    return;
-
-  NSWindow* window = [browserController_ window];
-
-  // If the floating bar currently has focus, do not hide the overlay.
-  if ([browserController_ floatingBarHasFocus])
-    return;
-
-  // We can get a false mouse exit when the menu slides down, so if the mouse is
-  // where the menu would be, ignore the mouse exit.
-  // TODO(rohitrao): Set a timer to check where the mouse is later, to make
-  // sure the floating bar doesn't get stuck.
-  CGFloat mainMenuHeight = [[NSApp mainMenu] menuBarHeight];
-  NSPoint mouseLoc = [window mouseLocationOutsideOfEventStream];
-  if (mouseLoc.y >= NSHeight([window frame]) - mainMenuHeight)
-    return;
-
-  // Do not hide the bar if the mouse is currently over the dropdown view.  We
-  // use the current tracking area as a proxy for the dropdown's location.  If
-  // there is no current tracking area (possible because we currently do not
-  // always open the dropdown when the omnibox gets focus), then go ahead and
-  // close the dropdown.
-  if (trackingArea_.get() &&
-      NSMouseInRect([contentView_ convertPointFromBase:mouseLoc],
-                    [trackingArea_ rect],
-                    [contentView_ isFlipped])) {
+    [browserController_ setFloatingBarShownFraction:fraction];
     return;
   }
 
-  // Hide the overlay with animation, first stopping any running animations.
-  if (currentAnimation_.get())
-    [currentAnimation_ stopAnimation];
+  // If we're already animating to the given fraction, then there's nothing more
+  // to do.
+  if (currentAnimation_ && [currentAnimation_ endFraction] == fraction)
+    return;
+
+  // In all other cases, we want to cancel any running animation (which may be
+  // to show or to hide).
+  [currentAnimation_ stopAnimation];
+
+  // Now, if it happens to already be in the right state, there's nothing more
+  // to do.
+  if ([browserController_ floatingBarShownFraction] == fraction)
+    return;
+
+  // Create the animation and set it up.
   currentAnimation_.reset(
-      [[DropdownAnimation alloc] initWithFraction:0
+      [[DropdownAnimation alloc] initWithFraction:fraction
                                      fullDuration:kDropdownAnimationDuration
                                    animationCurve:NSAnimationEaseOut
                                        controller:browserController_]);
+  DCHECK(currentAnimation_);
   [currentAnimation_ setAnimationBlockingMode:NSAnimationNonblocking];
   [currentAnimation_ setDelegate:self];
 
-  // If there is an existing tracking area, remove it.  We do not track mouse
-  // movements during animations.
-  if (currentAnimation_ && trackingArea_.get()) {
-    [contentView_ removeTrackingArea:trackingArea_.get()];
-    trackingArea_.reset(nil);
+  // If there is an existing tracking area, remove it. We do not track mouse
+  // movements during animations (see class comment in the header file).
+  if (trackingArea_) {
+    [contentView_ removeTrackingArea:trackingArea_];
+    trackingArea_.reset();
   }
 
   [currentAnimation_ startAnimation];
 }
 
+- (void)scheduleShowForMouse {
+  [browserController_ lockBarVisibilityForOwner:self
+                                  withAnimation:YES
+                                          delay:YES];
+}
+
+- (void)scheduleHideForMouse {
+  [browserController_ releaseBarVisibilityForOwner:self
+                                     withAnimation:YES
+                                             delay:YES];
+}
+
+- (BOOL)mouseInsideTrackingRect {
+  NSWindow* window = [browserController_ window];
+  NSPoint mouseLoc = [window mouseLocationOutsideOfEventStream];
+  NSPoint mousePos = [contentView_ convertPointFromBase:mouseLoc];
+  return NSMouseInRect(mousePos, trackingAreaBounds_, [contentView_ isFlipped]);
+}
+
+- (void)setupMouseExitCheck {
+  [self performSelector:@selector(checkForMouseExit)
+             withObject:nil
+             afterDelay:kMouseExitCheckDelay];
+}
+
+- (void)cancelMouseExitCheck {
+  [NSObject cancelPreviousPerformRequestsWithTarget:self
+      selector:@selector(checkForMouseExit) object:nil];
+}
+
+- (void)checkForMouseExit {
+  if ([self mouseInsideTrackingRect])
+    [self setupMouseExitCheck];
+  else
+    [self scheduleHideForMouse];
+}
+
+- (void)startShowTimer {
+  // If there's already a show timer going, just keep it.
+  if (showTimer_) {
+    DCHECK([showTimer_ isValid]);
+    DCHECK(!hideTimer_);
+    return;
+  }
+
+  // Cancel the hide timer (if necessary) and set up the new show timer.
+  [self cancelHideTimer];
+  showTimer_.reset(
+      [[NSTimer scheduledTimerWithTimeInterval:kDropdownShowDelay
+                                        target:self
+                                      selector:@selector(showTimerFire:)
+                                      userInfo:nil
+                                       repeats:NO] retain]);
+  DCHECK([showTimer_ isValid]);  // This also checks that |showTimer_ != nil|.
+}
+
+- (void)startHideTimer {
+  // If there's already a hide timer going, just keep it.
+  if (hideTimer_) {
+    DCHECK([hideTimer_ isValid]);
+    DCHECK(!showTimer_);
+    return;
+  }
+
+  // Cancel the show timer (if necessary) and set up the new hide timer.
+  [self cancelShowTimer];
+  hideTimer_.reset(
+      [[NSTimer scheduledTimerWithTimeInterval:kDropdownHideDelay
+                                        target:self
+                                      selector:@selector(hideTimerFire:)
+                                      userInfo:nil
+                                       repeats:NO] retain]);
+  DCHECK([hideTimer_ isValid]);  // This also checks that |hideTimer_ != nil|.
+}
+
+- (void)cancelShowTimer {
+  [showTimer_ invalidate];
+  showTimer_.reset();
+}
+
+- (void)cancelHideTimer {
+  [hideTimer_ invalidate];
+  hideTimer_.reset();
+}
+
+- (void)cancelAllTimers {
+  [self cancelShowTimer];
+  [self cancelHideTimer];
+}
+
+- (void)showTimerFire:(NSTimer*)timer {
+  DCHECK_EQ(showTimer_, timer);  // This better be our show timer.
+  [showTimer_ invalidate];       // Make sure it doesn't repeat.
+  showTimer_.reset();            // And get rid of it.
+  [self changeOverlayToFraction:1 withAnimation:YES];
+}
+
+- (void)hideTimerFire:(NSTimer*)timer {
+  DCHECK_EQ(hideTimer_, timer);  // This better be our hide timer.
+  [hideTimer_ invalidate];       // Make sure it doesn't repeat.
+  hideTimer_.reset();            // And get rid of it.
+  [self changeOverlayToFraction:0 withAnimation:YES];
+}
+
 - (void)cleanup {
-  [[NSNotificationCenter defaultCenter] removeObserver:self];
-  [NSObject cancelPreviousPerformRequestsWithTarget:self];
+  [self cancelMouseExitCheck];
+  [self cancelAllTimers];
+
   [currentAnimation_ stopAnimation];
-  [contentView_ removeTrackingArea:trackingArea_.get()];
+  currentAnimation_.reset();
+
+  [contentView_ removeTrackingArea:trackingArea_];
   contentView_ = nil;
-  currentAnimation_.reset(nil);
-  trackingArea_.reset(nil);
+
+  trackingArea_.reset();
+
+  // This isn't tracked when not in fullscreen mode.
+  [browserController_ releaseBarVisibilityForOwner:self
+                                     withAnimation:NO
+                                             delay:NO];
 }
 
 @end

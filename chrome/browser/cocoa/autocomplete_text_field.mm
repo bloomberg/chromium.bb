@@ -157,7 +157,7 @@
   [editor mouseDown:theEvent];
 }
 
-// Overriden to pass OnFrameChanged() notifications to |observer_|.
+// Overridden to pass OnFrameChanged() notifications to |observer_|.
 // Additionally, cursor and tooltip rects need to be updated.
 - (void)setFrame:(NSRect)frameRect {
   [super setFrame:frameRect];
@@ -301,6 +301,26 @@
                name:NSWindowDidResignKeyNotification
              object:[self window]];
   }
+}
+
+// (Overridden from NSResponder)
+- (BOOL)becomeFirstResponder {
+  BOOL doAccept = [super becomeFirstResponder];
+  if (doAccept) {
+    [[BrowserWindowController browserWindowControllerForView:self]
+        lockBarVisibilityForOwner:self withAnimation:YES delay:NO];
+  }
+  return doAccept;
+}
+
+// (Overridden from NSResponder)
+- (BOOL)resignFirstResponder {
+  BOOL doResign = [super resignFirstResponder];
+  if (doResign) {
+    [[BrowserWindowController browserWindowControllerForView:self]
+        releaseBarVisibilityForOwner:self withAnimation:YES delay:YES];
+  }
+  return doResign;
 }
 
 // (URLDropTarget protocol)

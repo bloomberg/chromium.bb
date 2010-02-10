@@ -25,6 +25,7 @@
 // implementation; it is easier to check the mouse location at each animation
 // step than it is to manage a constantly-changing tracking area.
 @interface FullscreenController : NSObject<NSAnimationDelegate> {
+ @private
   // Our parent controller.
   BrowserWindowController* browserController_;  // weak
 
@@ -46,6 +47,11 @@
   // running.
   scoped_nsobject<NSAnimation> currentAnimation_;
 
+  // Timers for scheduled showing/hiding of the bar (which are always done with
+  // animation).
+  scoped_nsobject<NSTimer> showTimer_;
+  scoped_nsobject<NSTimer> hideTimer_;
+
   // Holds the current bounds of |trackingArea_|, even if |trackingArea_| is
   // currently nil.  Used to restore the tracking area when an animation
   // completes.
@@ -56,9 +62,10 @@
 - (id)initWithBrowserController:(BrowserWindowController*)controller;
 
 // Informs the controller that the browser has entered or exited fullscreen
-// mode.  enterFullscreenForContentView:showDropdown: should be called after the
-// fullscreen window is setup, just before it is shown.  exitFullscreen should
-// be called before any views are moved back to the non-fullscreen window.
+// mode. |-enterFullscreenForContentView:showDropdown:| should be called after
+// the fullscreen window is setup, just before it is shown. |-exitFullscreen|
+// should be called before any views are moved back to the non-fullscreen
+// window.
 - (void)enterFullscreenForContentView:(NSView*)contentView
                          showDropdown:(BOOL)showDropdown;
 - (void)exitFullscreen;
@@ -66,6 +73,12 @@
 // Informs the controller that the overlay's frame has changed.  The controller
 // uses this information to update its tracking areas.
 - (void)overlayFrameChanged:(NSRect)frame;
+
+// Informs the controller that the overlay should be shown/hidden, possibly with
+// animation, possibly after a delay (only applicable for the animated case).
+- (void)ensureOverlayShownWithAnimation:(BOOL)animate delay:(BOOL)delay;
+- (void)ensureOverlayHiddenWithAnimation:(BOOL)animate delay:(BOOL)delay;
+
 @end
 
 #endif  // CHROME_BROWSER_COCOA_FULLSCREEN_CONTROLLER_H_

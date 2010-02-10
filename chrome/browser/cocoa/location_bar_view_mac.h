@@ -27,10 +27,6 @@ class CommandUpdater;
 class Profile;
 class ToolbarModel;
 
-// Notifications sent when this location bar gains or loses focus.
-extern const NSString* kLocationBarGainedFocusNotification;
-extern const NSString* kLocationBarLostFocusNotification;
-
 // A C++ bridge class that represents the location bar UI element to
 // the portable code.  Wires up an AutocompleteEditViewMac instance to
 // the location bar text field, which handles most of the work.

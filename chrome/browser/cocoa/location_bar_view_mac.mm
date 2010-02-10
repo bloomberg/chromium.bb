@@ -35,12 +35,6 @@
 #include "skia/ext/skia_utils_mac.h"
 
 
-const NSString* kLocationBarGainedFocusNotification =
-    @"kLocationBarGainedFocusNotification_Chrome";
-const NSString* kLocationBarLostFocusNotification =
-    @"kLocationBarLostFocusNotification_Chrome";
-
-
 // TODO(shess): This code is mostly copied from the gtk
 // implementation.  Make sure it's all appropriate and flesh it out.
 
@@ -148,14 +142,11 @@ void LocationBarViewMac::AcceptInputWithDisposition(
 }
 
 void LocationBarViewMac::FocusLocation() {
-  PostNotification(kLocationBarGainedFocusNotification);
   edit_view_->FocusLocation();
 }
 
 void LocationBarViewMac::FocusSearch() {
-  PostNotification(kLocationBarGainedFocusNotification);
   edit_view_->SetForcedQuery();
-  // TODO(pkasting): Focus the edit a la Linux/Win
 }
 
 void LocationBarViewMac::UpdateContentBlockedIcons() {
@@ -311,11 +302,11 @@ void LocationBarViewMac::OnInputInProgress(bool in_progress) {
 }
 
 void LocationBarViewMac::OnSetFocus() {
-  PostNotification(kLocationBarGainedFocusNotification);
+  // Do nothing.
 }
 
 void LocationBarViewMac::OnKillFocus() {
-  PostNotification(kLocationBarLostFocusNotification);
+  // Do nothing.
 }
 
 SkBitmap LocationBarViewMac::GetFavIcon() const {
@@ -330,7 +321,6 @@ std::wstring LocationBarViewMac::GetTitle() const {
 
 void LocationBarViewMac::Revert() {
   edit_view_->RevertAll();
-  PostNotification(kLocationBarLostFocusNotification);
 }
 
 // TODO(pamg): Change all these, here and for other platforms, to size_t.
