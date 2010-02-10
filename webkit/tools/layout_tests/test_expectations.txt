@@ -2938,3 +2938,6 @@ BUG_TONY MAC : svg/overflow/overflow-on-outermost-svg-element-ignore-attribute-1
 BUG_TONY MAC : svg/overflow/overflow-on-outermost-svg-element-ignore-attribute-2.svg = IMAGE
 BUG_TONY MAC : svg/overflow/overflow-on-outermost-svg-element-ignore-attribute-3.svg = IMAGE
 BUG_TONY MAC : svg/overflow/overflow-on-outermost-svg-element-in-xhtml-defaults.xhtml = IMAGE
+
+// WebKit roll 54559 to 54585
+BUG_TONY : fast/events/multiline-link-arrow-navigation.html = TEXT
