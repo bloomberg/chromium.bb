@@ -293,6 +293,8 @@
         'browser/chromeos/external_protocol_dialog.h',
         'browser/chromeos/gview_request_interceptor.cc',
         'browser/chromeos/gview_request_interceptor.h',
+        'browser/chromeos/login/account_creation_view.cc',
+        'browser/chromeos/login/account_creation_view.h',
         'browser/chromeos/login/image_background.h',
         'browser/chromeos/login/ipc_message.h',
         'browser/chromeos/login/login_manager_view.cc',

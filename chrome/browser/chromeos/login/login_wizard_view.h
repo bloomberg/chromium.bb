@@ -14,6 +14,7 @@
 #include "views/window/window_delegate.h"
 
 class LoginManagerView;
+class AccountCreationView;
 
 namespace chromeos {
 class StatusAreaView;
@@ -50,9 +51,12 @@ class LoginWizardView : public views::View,
   virtual void OpenButtonOptions(const views::View* button_view) const;
   virtual bool IsButtonVisible(const views::View* button_view) const;
 
-  // Initializers for all child views.
+  // Initializer for status area.
   void InitStatusArea();
-  void InitLoginManager();
+
+  // Initializer for all login screens.
+  template <class T>
+  void CreateAndInitScreen(T** screen);
 
   // Wizard view dimensions.
   gfx::Size dimensions_;
@@ -65,6 +69,9 @@ class LoginWizardView : public views::View,
 
   // Login manager view.
   LoginManagerView* login_manager_;
+
+  // Account creation view.
+  AccountCreationView* account_creation_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginWizardView);
 };

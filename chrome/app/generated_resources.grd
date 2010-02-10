@@ -2741,6 +2741,28 @@ each locale. -->
       <message name="IDS_LOGIN_DIALOG_OK_BUTTON_LABEL" desc="The label of the 'Log In' button on the login prompt dialog">
         Log In
       </message>
+      <!-- Account Creation Dialog -->
+      <message name="IDS_ACCOUNT_CREATION_TITLE" desc="String to be displayed in the title bar of the account creation dialog">
+        Create a Google Account
+      </message>
+      <message name="IDS_ACCOUNT_CREATION_FIRSTNAME" desc="The label of the firstname field in the account creation dialog">
+        First name:
+      </message>
+      <message name="IDS_ACCOUNT_CREATION_LASTNAME" desc="The label of the lastname field in the account creation dialog">
+        Last name:
+      </message>
+      <message name="IDS_ACCOUNT_CREATION_EMAIL" desc="The label of the email address field in the account creation dialog">
+        Choose a username:
+      </message>
+      <message name="IDS_ACCOUNT_CREATION_PASSWORD" desc="The label of the password field in the account creation dialog">
+        Choose a password:
+      </message>
+      <message name="IDS_ACCOUNT_CREATION_REENTER_PASSWORD" desc="The label of the second password field in the account creation dialog">
+        Re-enter password:
+      </message>
+      <message name="IDS_ACCOUNT_CREATION_BUTTON" desc="The label of the 'Create Account' button on the account creation dialog">
+        Create Account
+      </message>
 
 
       <!-- FindInPage strings -->

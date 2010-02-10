@@ -45,13 +45,11 @@ class LoginManagerView : public views::View,
   // Not thread-safe, by virtue of using SetupSession().
   virtual bool HandleKeystroke(views::Textfield* sender,
                                const views::Textfield::Keystroke& keystroke);
+  virtual void ContentsChanged(views::Textfield* sender,
+                               const string16& new_contents) {}
 
   // Overriden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
-
-  // This method is called whenever the text in the field changes.
-  virtual void ContentsChanged(views::Textfield* sender,
-                               const string16& new_contents) {}
 
  private:
   // Given a |username| and |password|, this method attempts to authenticate to
@@ -59,9 +57,6 @@ class LoginManagerView : public views::View,
   // Returns true upon success and false on failure.
   bool Authenticate(const std::string& username,
                     const std::string& password);
-
-  // Asynchronously launches the Chrome OS window manager.
-  bool RunWindowManager(const std::string& username);
 
   // This is not threadsafe; as authentication is supposed to happen on the main
   // thread before any other threads are started, so this should be ok.

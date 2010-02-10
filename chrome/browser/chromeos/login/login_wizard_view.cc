@@ -18,6 +18,7 @@
 #include "base/logging.h"
 #include "base/process_util.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
+#include "chrome/browser/chromeos/login/account_creation_view.h"
 #include "chrome/browser/chromeos/login/login_manager_view.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
@@ -38,8 +39,8 @@ using views::Widget;
 
 namespace {
 
-const int kLoginWidth = 700;
-const int kLoginHeight = 350;
+const int kScreenWidth = 700;
+const int kScreenHeight = 350;
 const SkColor kBackgroundTopColor = SkColorSetRGB(82, 139, 224);
 const SkColor kBackgroundBottomColor = SkColorSetRGB(50, 102, 204);
 const int kCornerRadius = 12;
@@ -48,6 +49,7 @@ const SkColor kBackgroundPaddingColor = SK_ColorBLACK;
 
 // Names of screens to start login wizard with.
 const char kLoginManager[] = "login";
+const char kAccountCreation[] = "create_account";
 
 }  // namespace
 
@@ -138,7 +140,8 @@ void ShowLoginWizard(const std::string& start_screen_name) {
 LoginWizardView::LoginWizardView()
     : status_area_(NULL),
       current_(NULL),
-      login_manager_(NULL) {
+      login_manager_(NULL),
+      account_creation_(NULL) {
 }
 
 LoginWizardView::~LoginWizardView() {
@@ -162,11 +165,14 @@ void LoginWizardView::Init(const std::string& start_view_name) {
   InitStatusArea();
 
   // Create and initialize all views, hidden.
-  InitLoginManager();
+  CreateAndInitScreen(&login_manager_);
+  CreateAndInitScreen(&account_creation_);
 
   // Select the view to start with and show it.
   if (start_view_name == kLoginManager) {
     current_ = login_manager_;
+  } else if (start_view_name == kAccountCreation) {
+    current_ = account_creation_;
   } else {
     // Default to login manager.
     current_ = login_manager_;
@@ -188,7 +194,6 @@ void LoginWizardView::InitStatusArea() {
   status_area_ = new chromeos::StatusAreaView(this);
   status_area_->Init();
   gfx::Size status_area_size = status_area_->GetPreferredSize();
-  // TODO(avayvod): Check this on RTL interface.
   status_area_->SetBounds(
       dimensions_.width() - status_area_size.width() -
           kCornerRadius - kBackgroundPadding,
@@ -198,15 +203,17 @@ void LoginWizardView::InitStatusArea() {
   AddChildView(status_area_);
 }
 
-void LoginWizardView::InitLoginManager() {
-  login_manager_ = new LoginManagerView(this);
-  login_manager_->Init();
-  login_manager_->SetBounds((dimensions_.width() - kLoginWidth) / 2,
-                            (dimensions_.height() - kLoginHeight) / 2,
-                            kLoginWidth,
-                            kLoginHeight);
-  login_manager_->SetVisible(false);
-  AddChildView(login_manager_);
+template <class T>
+void LoginWizardView::CreateAndInitScreen(T** screen) {
+  T* new_screen = new T(this);
+  new_screen->Init();
+  new_screen->SetBounds((dimensions_.width() - kScreenWidth) / 2,
+                        (dimensions_.height() - kScreenHeight) / 2,
+                        kScreenWidth,
+                        kScreenHeight);
+  new_screen->SetVisible(false);
+  AddChildView(new_screen);
+  *screen = new_screen;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
