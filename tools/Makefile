@@ -531,7 +531,7 @@ endif
 ifeq ($(CROSSARCH), nacl)
 	$(MAKE) -f $(THISMAKEFILE) sdk_minimal_test
 endif
-	$(MAKE) -f $(THISMAKEFILE) cygwin_redirector
+	$(MAKE) -f $(THISMAKEFILE) redirector
 
 ##################################################################
 # Build an updated set of patches from the current build versions.
