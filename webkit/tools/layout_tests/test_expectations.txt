@@ -738,7 +738,6 @@ BUG13907 BUG25094 LINUX DEBUG : media = PASS FAIL TIMEOUT
 
 // These tests should be passing.  Remove them once confirmed they're not flaky.
 BUG9798 BUG13907 : media/video-currentTime-set.html = PASS FAIL
-BUG9798 BUG13907 : media/media-load-event.html = PASS FAIL
 BUG9798 BUG13907 WIN DEBUG : media/controls-drag-timebar.html = TEXT TIMEOUT
 BUG9798 BUG13907 RELEASE : media/controls-drag-timebar.html = TEXT
 BUG9798 BUG13907 LINUX MAC DEBUG : media/controls-drag-timebar.html = TEXT
@@ -758,7 +757,6 @@ BUG13907 WIN DEBUG : media/video-load-networkState.html = PASS TIMEOUT
 BUG13907 SLOW WIN RELEASE : media/video-load-networkState.html = PASS
 
 // We occasionally fail to perform the third seek.
-BUG13907 WIN DEBUG : media/video-seeking.html = PASS FAIL
 BUG13907 LINUX DEBUG : media/video-seeking.html = PASS FAIL
 
 // Seeking to 500s causes us to seek to 0s and continue playing (expected), but WebKit checks too fast.
@@ -1153,8 +1151,6 @@ BUG10324 : editing/selection/caret-rtl-2.html = IMAGE
 // Expectations for this test changed upstream. We should fix this test, but
 // it doesn't need to block the current release
 BUG10325 WIN : fast/dom/resource-locations-in-created-html-document.html = FAIL
-
-BUG10326 LINUX WIN DEBUG : http/tests/messaging/cross-domain-message-event-dispatch.html = FAIL PASS
 
 // GURL/KURL difference in handling of "http:".
 // New test. We should fix it, but it doesn't need to block the current release
@@ -2104,7 +2100,7 @@ BUG9798 MAC WIN : http/tests/loading/preload-img-test.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : http/tests/local/style-access-before-stylesheet-loaded.html = FAIL PASS
 BUG9798 LINUX MAC : http/tests/misc/BOM-override-script.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : http/tests/misc/redirect-with-quotes.php = TIMEOUT PASS
-BUG9798 WIN DEBUG : http/tests/misc/refresh-headers.php = TIMEOUT PASS
+BUG9798 WIN RELEASE : http/tests/misc/refresh-headers.php = TIMEOUT PASS
 BUG9798 MAC RELEASE : http/tests/misc/refresh-headers.php = TIMEOUT PASS
 BUG9798 WIN : http/tests/security/cross-frame-access-protocol-explicit-domain.html = FAIL PASS
 BUG9798 WIN DEBUG : http/tests/security/cross-frame-access-protocol.html = FAIL PASS
@@ -2134,7 +2130,6 @@ BUG9798 SLOW LINUX RELEASE : http/tests/xmlhttprequest/small-chunks-response-tex
 BUG9798 MAC RELEASE : http/tests/xmlhttprequest/web-apps/003.html = PASS TIMEOUT
 BUG9798 LINUX DEBUG : fast/forms/listbox-scroll-after-options-removed.html = CRASH PASS
 BUG9798 LINUX DEBUG : fast/multicol/float-multicol.html = IMAGE PASS
-BUG9798 LINUX WIN DEBUG : svg/custom/js-update-transform-addition.svg = CRASH PASS
 BUG9798 MAC RELEASE : editing/selection/drag-in-iframe.html = FAIL PASS
 BUG9798 LINUX : svg/custom/use-property-changes-through-svg-dom.svg = FAIL
 BUG9798 LINUX : svg/custom/js-update-transform-changes.svg = FAIL
@@ -2292,7 +2287,6 @@ BUG18116 : svg/custom/global-constructors.html = TEXT
 // Flaky.  Timing?
 BUG18584 LINUX WIN : animations/change-one-anim.html = FAIL PASS
 BUG18584 WIN DEBUG : animations/play-state.html = FAIL PASS
-BUG18584 WIN LINUX DEBUG : transitions/shorthand-transitions.html = FAIL PASS
 BUG18584 WIN DEBUG : animations/combo-transform-translate+scale.html = FAIL PASS
 BUG18584 LINUX : animations/combo-transform-translate+scale.html = FAIL PASS
 
@@ -2688,6 +2682,7 @@ BUG29737 MAC : svg/filters/feMerge-wrong-input.svg = TEXT
 BUG29737 MAC : svg/custom/use-elementInstance-event-target.svg = IMAGE
 BUG29737 MAC : svg/filters/big-sized-filter.svg = IMAGE+TEXT
 BUG29737 MAC : svg/filters/filterRes.svg = IMAGE+TEXT
+BUG29737 LINUX : svg/filters/filterRes.svg = PASS TEXT
 BUG29737 MAC : svg/W3C-SVG-1.1/struct-image-02-b.svg = IMAGE
 BUG29737 MAC : svg/filters/sourceAlpha.svg = IMAGE+TEXT
 
@@ -2724,7 +2719,6 @@ BUG30343 LINUX : fast/css/large-number-round-trip.html = TEXT
 BUG25977 WIN MAC DEBUG : http/tests/appcache/access-via-redirect.php = TIMEOUT PASS FAIL
 BUG25977 WIN DEBUG : http/tests/appcache/auth.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : http/tests/appcache/crash-when-navigating-away-then-back.html = TIMEOUT PASS
-BUG25977 WIN DEBUG : http/tests/appcache/different-scheme.html = TIMEOUT PASS
 BUG25977 WIN DEBUG : http/tests/appcache/empty-manifest.html = TIMEOUT PASS
 // This test is slow on windows, but sometimes times out indefinitely.
 // See if this improves when we move to apache.
@@ -2789,7 +2783,6 @@ BUG_DIMICH LINUX : svg/custom/resource-invalidate-on-target-update.svg = IMAGE+T
 BUG31623 WIN: http/tests/appcache/remove-cache.html = PASS TEXT TIMEOUT
 
 // WebKit roll 52769 -> 52793
-BUG31642 WIN MAC DEBUG: svg/W3C-SVG-1.1/animate-elem-30-t.svg = CRASH PASS
 BUG31642 LINUX DEBUG: svg/W3C-SVG-1.1/animate-elem-30-t.svg = IMAGE CRASH
 
 // WebKit roll 52852 -> 52867
@@ -2829,9 +2822,6 @@ BUG32339 LINUX : fast/dom/Window/window-lookup-precedence.html = TEXT PASS
 
 // New flakyness ?
 BUG32306 MAC DEBUG: svg/hixie/error/004.xml = CRASH PASS
-BUG32516 WIN : tables/mozilla_expected_failures/core/backgrounds.html = CRASH PASS
-BUG32518 WIN : editing/unsupported-content/list-delete-001.html = CRASH PASS
-BUG32572 WIN : svg/hixie/mixed/003.xml = CRASH PASS
 
 // WebKit roll 53341:53451
 BUG32670 LINUX : fast/css/zoom-body-scroll.html = TEXT
@@ -2839,7 +2829,6 @@ BUG32673 WIN LINUX : fast/forms/textarea-scrollbar-height.html = TEXT
 BUG32675 LINUX : fast/repaint/trailing-floats-root-line-box-overflow.html = IMAGE
 
 // WebKit roll 53452:53511
-BUG32664 WIN DEBUG : http/tests/security/view-source-no-refresh.html = TIMEOUT
 BUG32665 WIN DEBUG : media/video-source-error-no-candidate.html = TIMEOUT
 
 // Flaky tests found during the roll.
@@ -2864,7 +2853,6 @@ BUG33293 SKIP : fast/media/lifetime.html = TIMEOUT
 BUG32864 WIN LINUX MAC : plugins/mouse-events-fixedpos.html = TEXT
 
 // WebKit roll 53655 -> 53704
-BUG32898 WIN LINUX MAC : fast/loader/history-forward-in-head.html = TEXT
 BUG32900 WIN LINUX : http/tests/misc/slow-loading-mask.html = IMAGE+TEXT
 
 // WebKit roll 53704 -> 53747
@@ -2905,9 +2893,6 @@ BUG33497 : storage/domstorage/sessionstorage/window-open.html = TEXT
 BUG33538 : fast/dom/Window/anonymous-slot-with-changes.html = TEXT
 
 // WebKit roll 54278 -> 54322
-BUG34546 WIN : fast/events/standalone-image-drag-to-editable.html = IMAGE+TEXT
-BUG34546 WIN : fast/events/onunload-not-on-body.html = CRASH
-BUG34546 WIN : storage/close-during-stress-test.html = CRASH
 BUG34546 LINUX : svg/W3C-SVG-1.1/filters-specular-01-f.svg = TEXT
 BUG34546 : fast/loader/document-with-fragment-url-1.html = TIMEOUT
 BUG34546 : fast/loader/document-with-fragment-url-2.html = TIMEOUT
