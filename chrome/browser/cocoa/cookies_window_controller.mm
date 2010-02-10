@@ -381,7 +381,7 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
   treeModel_.reset(new CookiesTreeModel(profile_, databaseHelper_,
                    storageHelper_));
   modelObserver_.reset(new CookiesTreeModelObserverBridge(self));
-  treeModel_->SetObserver(modelObserver_.get());
+  treeModel_->AddObserver(modelObserver_.get());
 
   // Convert the model's icons from Skia to Cocoa.
   std::vector<SkBitmap> skiaIcons;

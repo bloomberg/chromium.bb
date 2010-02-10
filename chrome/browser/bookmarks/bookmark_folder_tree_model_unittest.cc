@@ -54,7 +54,7 @@ class BookmarkFolderTreeModelTest : public testing::Test,
     bookmark_model()->AddURL(other, 2, L"url3", url3_);
 
     model_.reset(new BookmarkFolderTreeModel(bookmark_model()));
-    model_->SetObserver(this);
+    model_->AddObserver(this);
   }
 
   virtual void TearDown() {

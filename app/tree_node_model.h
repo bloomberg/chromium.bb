@@ -11,6 +11,7 @@
 
 #include "app/tree_model.h"
 #include "base/basictypes.h"
+#include "base/observer_list.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_vector.h"
 #include "base/stl_util-inl.h"
@@ -231,18 +232,18 @@ class TreeNodeModel : public TreeModel {
   // Creates a TreeNodeModel with the specified root node. The root is owned
   // by the TreeNodeModel.
   explicit TreeNodeModel(NodeType* root)
-      : root_(root),
-        observer_(NULL) {
+      : root_(root) {
   }
 
   virtual ~TreeNodeModel() {}
 
-  virtual void SetObserver(TreeModelObserver* observer) {
-    observer_ = observer;
+  // Observer methods, calls into ObserverList.
+  virtual void AddObserver(TreeModelObserver* observer) {
+    observer_list_.AddObserver(observer);
   }
 
-  TreeModelObserver* GetObserver() {
-    return observer_;
+  virtual void RemoveObserver(TreeModelObserver* observer) {
+    observer_list_.RemoveObserver(observer);
   }
 
   // TreeModel methods, all forward to the nodes.
@@ -294,26 +295,31 @@ class TreeNodeModel : public TreeModel {
   }
 
   void NotifyObserverTreeNodesAdded(NodeType* parent, int start, int count) {
-    if (observer_)
-      observer_->TreeNodesAdded(this, parent, start, count);
+    FOR_EACH_OBSERVER(TreeModelObserver,
+                      observer_list_,
+                      TreeNodesAdded(this, parent, start, count));
   }
 
   void NotifyObserverTreeNodesRemoved(NodeType* parent, int start, int count) {
-    if (observer_)
-      observer_->TreeNodesRemoved(this, parent, start, count);
+    FOR_EACH_OBSERVER(TreeModelObserver,
+                      observer_list_,
+                      TreeNodesRemoved(this, parent, start, count));
   }
 
   virtual void NotifyObserverTreeNodeChanged(TreeModelNode* node) {
-    if (observer_)
-      observer_->TreeNodeChanged(this, node);
+    FOR_EACH_OBSERVER(TreeModelObserver,
+                      observer_list_,
+                      TreeNodeChanged(this, node));
   }
 
+ protected:
+  ObserverList<TreeModelObserver>& observer_list() { return observer_list_; }
+
  private:
+  // The observers.
+  ObserverList<TreeModelObserver> observer_list_;
   // The root.
   scoped_ptr<NodeType> root_;
-
-  // The observer.
-  TreeModelObserver* observer_;
 
   DISALLOW_COPY_AND_ASSIGN(TreeNodeModel);
 };

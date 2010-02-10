@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "app/tree_model.h"
 #include "base/task.h"
 #include "net/base/cookie_monster.h"
 #include "views/controls/button/button.h"
@@ -33,7 +34,8 @@ class Profile;
 class Timer;
 
 
-class CookiesView : public views::View,
+class CookiesView : public TreeModelObserver,
+                    public views::View,
                     public views::DialogDelegate,
                     public views::ButtonListener,
                     public views::TreeViewController,
@@ -46,6 +48,25 @@ class CookiesView : public views::View,
 
   // Updates the display to show only the search results.
   void UpdateSearchResults();
+
+  // TreeModelObserver implementation.
+  virtual void TreeNodesAdded(TreeModel* model,
+                              TreeModelNode* parent,
+                              int start,
+                              int count);
+
+  // TreeModelObserver implementation.
+  virtual void TreeNodesRemoved(TreeModel* model,
+                                TreeModelNode* parent,
+                                int start,
+                                int count) {}
+
+  // TreeModelObserver implementation.
+  virtual void TreeNodeChildrenReordered(TreeModel* model,
+                                         TreeModelNode* parent) {}
+
+  // TreeModelObserver implementation.
+  virtual void TreeNodeChanged(TreeModel* model, TreeModelNode* node) {}
 
   // views::ButtonListener implementation.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
@@ -106,6 +127,9 @@ class CookiesView : public views::View,
 
   // Update the UI when a local storage is selected.
   void UpdateForLocalStorageState();
+
+  // Enable or disable the remove and remove all buttons.
+  void UpdateRemoveButtonsState();
 
   // Updates view to be visible inside detailed_info_view_;
   void UpdateVisibleDetailedInfo(views::View* view);

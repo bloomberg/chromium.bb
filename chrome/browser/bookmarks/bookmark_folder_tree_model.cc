@@ -128,8 +128,9 @@ void BookmarkFolderTreeModel::BookmarkNodeChanged(BookmarkModel* model,
     return;
 
   folder_node->SetTitle(node->GetTitle());
-  if (GetObserver())
-    GetObserver()->TreeNodeChanged(this, folder_node);
+  FOR_EACH_OBSERVER(TreeModelObserver,
+                    observer_list(),
+                    TreeNodeChanged(this, folder_node));
 }
 
 void BookmarkFolderTreeModel::BookmarkNodeChildrenReordered(
@@ -162,8 +163,9 @@ void BookmarkFolderTreeModel::BookmarkNodeChildrenReordered(
   DCHECK(original_count == folder_node->GetChildCount());
 
   // Finally, notify observers.
-  if (GetObserver())
-    GetObserver()->TreeNodeChildrenReordered(this, folder_node);
+  FOR_EACH_OBSERVER(TreeModelObserver,
+                    observer_list(),
+                    TreeNodeChildrenReordered(this, folder_node));
 }
 
 void BookmarkFolderTreeModel::GetIcons(std::vector<SkBitmap>* icons) {

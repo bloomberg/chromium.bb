@@ -74,8 +74,11 @@ class TreeModel {
   // Returns the parent of a node, or NULL if node is the root.
   virtual TreeModelNode* GetParent(TreeModelNode* node) = 0;
 
-  // Sets the observer of the model.
-  virtual void SetObserver(TreeModelObserver* observer) = 0;
+  // Adds an observer of the model.
+  virtual void AddObserver(TreeModelObserver* observer) = 0;
+
+  // Removes an observer of the model.
+  virtual void RemoveObserver(TreeModelObserver* observer) = 0;
 
   // Sets the title of the specified node.
   // This is only invoked if the node is editable and the user edits a node.

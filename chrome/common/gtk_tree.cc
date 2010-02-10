@@ -152,7 +152,7 @@ TreeAdapter::TreeAdapter(Delegate* delegate, TreeModel* tree_model)
                                    GDK_TYPE_PIXBUF,
                                    G_TYPE_STRING,
                                    G_TYPE_POINTER);
-  tree_model->SetObserver(this);
+  tree_model->AddObserver(this);
 
   std::vector<SkBitmap> icons;
   tree_model->GetIcons(&icons);

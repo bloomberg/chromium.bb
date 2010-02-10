@@ -45,7 +45,7 @@ TreeView::TreeView()
 
 TreeView::~TreeView() {
   if (model_)
-    model_->SetObserver(NULL);
+    model_->RemoveObserver(this);
   // Both param_to_details_map_ and node_to_details_map_ have the same value,
   // as such only need to delete from one.
   STLDeleteContainerPairSecondPointers(id_to_details_map_.begin(),
@@ -60,11 +60,11 @@ void TreeView::SetModel(TreeModel* model) {
   if (model_ && tree_view_)
     DeleteRootItems();
   if (model_)
-    model_->SetObserver(NULL);
+    model_->RemoveObserver(this);
   model_ = model;
   if (tree_view_ && model_) {
     CreateRootItems();
-    model_->SetObserver(this);
+    model_->AddObserver(this);
     HIMAGELIST last_image_list = image_list_;
     image_list_ = CreateImageList();
     TreeView_SetImageList(tree_view_, image_list_, TVSIL_NORMAL);
@@ -370,7 +370,7 @@ HWND TreeView::CreateNativeControl(HWND parent_container) {
 
   if (model_) {
     CreateRootItems();
-    model_->SetObserver(this);
+    model_->AddObserver(this);
     image_list_ = CreateImageList();
     TreeView_SetImageList(tree_view_, image_list_, TVSIL_NORMAL);
   }
