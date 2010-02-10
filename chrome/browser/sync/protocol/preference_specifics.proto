@@ -14,7 +14,7 @@ import "sync.proto";
 
 // Properties of preference sync objects.
 message PreferenceSpecifics {
-  optional string preference_name = 1;
+  optional string name = 1;
   optional string value = 2;
 }
 
