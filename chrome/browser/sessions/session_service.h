@@ -173,6 +173,11 @@ class SessionService : public BaseSessionService,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // Sets the application extension id of the specified tab.
+  void SetTabAppExtensionID(const SessionID& window_id,
+                            const SessionID& tab_id,
+                            const std::string& app_extension_id);
+
   // Methods to create the various commands. It is up to the caller to delete
   // the returned the SessionCommand* object.
   SessionCommand* CreateSetSelectedTabInWindow(const SessionID& window_id,

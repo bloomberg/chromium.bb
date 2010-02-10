@@ -9,6 +9,7 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/sessions/session_backend.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_service_test_helper.h"
@@ -510,6 +511,9 @@ TEST_F(SessionServiceTest, PruneFromFront) {
   ASSERT_EQ(window_id.id(), windows[0]->window_id.id());
   ASSERT_EQ(1U, windows[0]->tabs.size());
 
+  // There shouldn't be an app id.
+  EXPECT_TRUE(windows[0]->tabs[0]->app_extension_id.empty());
+
   // We should be left with three navigations, the 2nd selected.
   SessionTab* tab = windows[0]->tabs[0];
   ASSERT_EQ(1, tab->current_navigation_index);
@@ -553,9 +557,31 @@ TEST_F(SessionServiceTest, PinnedFalseWhenSetToFalse) {
   EXPECT_FALSE(CreateAndWriteSessionWithOneTab(false, true));
 }
 
-#if defined(ENABLE_PINNED_TABS)
+// Make sure application extension ids are persisted.
+TEST_F(SessionServiceTest, PersistApplicationExtensionID) {
+  SessionID tab_id;
+  ASSERT_NE(window_id.id(), tab_id.id());
+  std::string app_id("foo");
+
+  TabNavigation nav1(0, GURL("http://google.com"), GURL(),
+                     ASCIIToUTF16("abc"), std::string(),
+                     PageTransition::QUALIFIER_MASK);
+
+  helper_.PrepareTabInWindow(window_id, tab_id, 0, true);
+  UpdateNavigation(window_id, tab_id, nav1, 0, true);
+  helper_.SetTabAppExtensionID(window_id, tab_id, app_id);
+
+  ScopedVector<SessionWindow> windows;
+  ReadWindows(&(windows.get()));
+
+  helper_.AssertSingleWindowWithSingleTab(windows.get(), 1);
+  EXPECT_TRUE(app_id == windows[0]->tabs[0]->app_extension_id);
+}
+
 // Explicitly set the pinned state to true and make sure we get back true.
 TEST_F(SessionServiceTest, PinnedTrue) {
+  if (!browser_defaults::kEnablePinnedTabs)
+    return;
+
   EXPECT_TRUE(CreateAndWriteSessionWithOneTab(true, true));
 }
-#endif

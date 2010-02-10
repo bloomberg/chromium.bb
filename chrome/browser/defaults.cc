@@ -45,6 +45,12 @@ const bool kCanToggleSystemTitleBar = true;
 
 #endif
 
+#if defined(TOOLKIT_VIEWS)
+const bool kEnablePinnedTabs = true;
+#else
+const bool kEnablePinnedTabs = false;
+#endif
+
 #if !defined(OS_CHROMEOS)
 
 const SessionStartupPref::Type kDefaultSessionStartupType =

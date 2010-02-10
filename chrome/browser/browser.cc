@@ -671,11 +671,13 @@ TabContents* Browser::AddRestoredTab(
     const std::vector<TabNavigation>& navigations,
     int tab_index,
     int selected_navigation,
+    const std::string& app_extension_id,
     bool select,
     bool pin,
     bool from_last_session) {
   TabContents* new_tab = new TabContents(profile(), NULL,
       MSG_ROUTING_NONE, tabstrip_model_.GetSelectedTabContents());
+  SetAppExtensionById(new_tab, app_extension_id);
   new_tab->controller().RestoreFromState(navigations, selected_navigation,
                                          from_last_session);
 
@@ -697,9 +699,11 @@ TabContents* Browser::AddRestoredTab(
 void Browser::ReplaceRestoredTab(
     const std::vector<TabNavigation>& navigations,
     int selected_navigation,
-    bool from_last_session) {
+    bool from_last_session,
+    const std::string& app_extension_id) {
   TabContents* replacement = new TabContents(profile(), NULL,
       MSG_ROUTING_NONE, tabstrip_model_.GetSelectedTabContents());
+  SetAppExtensionById(replacement, app_extension_id);
   replacement->controller().RestoreFromState(navigations, selected_navigation,
                                              from_last_session);
 
@@ -3262,3 +3266,18 @@ bool Browser::RunUnloadEventsHelper(TabContents* contents) {
   }
   return false;
 }
+
+void Browser::SetAppExtensionById(TabContents* contents,
+                                  const std::string& app_extension_id) {
+  if (app_extension_id.empty())
+    return;
+
+  ExtensionsService* extension_service = profile()->GetExtensionsService();
+  if (extension_service && extension_service->is_ready()) {
+    Extension* extension =
+        extension_service->GetExtensionById(app_extension_id, false);
+    if (extension)
+      contents->SetAppExtension(extension);
+  }
+}
+

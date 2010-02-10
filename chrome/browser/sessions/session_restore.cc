@@ -14,6 +14,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sessions/session_service.h"
 #include "chrome/browser/sessions/session_types.h"
@@ -180,7 +181,8 @@ class SessionRestoreImpl : public NotificationObserver {
         synchronous_(synchronous),
         clobber_existing_window_(clobber_existing_window),
         always_create_tabbed_browser_(always_create_tabbed_browser),
-        urls_to_open_(urls_to_open) {
+        urls_to_open_(urls_to_open),
+        waiting_for_extension_service_(false) {
   }
 
   void Restore() {
@@ -210,11 +212,28 @@ class SessionRestoreImpl : public NotificationObserver {
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details) {
-    if (type != NotificationType::BROWSER_CLOSED) {
-      NOTREACHED();
-      return;
+    switch (type.value) {
+      case NotificationType::BROWSER_CLOSED:
+        delete this;
+        return;
+
+      case NotificationType::EXTENSIONS_READY: {
+        if (!waiting_for_extension_service_)
+          return;
+
+        waiting_for_extension_service_ = false;
+        if (synchronous_) {
+          MessageLoop::current()->Quit();
+          return;
+        }
+        ProcessSessionWindows(&windows_);
+        return;
+      }
+
+      default:
+        NOTREACHED();
+        break;
     }
-    delete this;
   }
 
  private:
@@ -255,13 +274,48 @@ class SessionRestoreImpl : public NotificationObserver {
 
   void OnGotSession(SessionService::Handle handle,
                     std::vector<SessionWindow*>* windows) {
+    if (HasAppExtensions(*windows) && profile_->GetExtensionsService() &&
+        !profile_->GetExtensionsService()->is_ready()) {
+      // At least one tab is an app tab and the extension service hasn't
+      // finished loading. Wait to continue processing until the extensions
+      // service finishes loading.
+      registrar_.Add(this, NotificationType::EXTENSIONS_READY,
+                     Source<Profile>(profile_));
+      windows_.swap(*windows);
+      waiting_for_extension_service_ = true;
+      return;
+    }
+
     if (synchronous_) {
       // See comment above windows_ as to why we don't process immediately.
       windows_.swap(*windows);
       MessageLoop::current()->Quit();
       return;
     }
+
     ProcessSessionWindows(windows);
+  }
+
+  // Returns true if any tab in |windows| has an application extension id.
+  bool HasAppExtensions(const std::vector<SessionWindow*>& windows) {
+    for (std::vector<SessionWindow*>::const_iterator i = windows.begin();
+         i != windows.end(); ++i) {
+      if (HasAppExtensions((*i)->tabs))
+        return true;
+    }
+
+    return false;
+  }
+
+  // Returns true if any tab in |tabs| has an application extension id.
+  bool HasAppExtensions(const std::vector<SessionTab*>& tabs) {
+    for (std::vector<SessionTab*>::const_iterator i = tabs.begin();
+         i != tabs.end(); ++i) {
+      if (!(*i)->app_extension_id.empty())
+        return true;
+    }
+
+    return false;
   }
 
   void ProcessSessionWindows(std::vector<SessionWindow*>* windows) {
@@ -340,6 +394,7 @@ class SessionRestoreImpl : public NotificationObserver {
           &browser->AddRestoredTab(tab.navigations,
                                    static_cast<int>(i - window.tabs.begin()),
                                    selected_index,
+                                   tab.app_extension_id,
                                    false,
                                    tab.pinned,
                                    true)->controller());
@@ -414,6 +469,10 @@ class SessionRestoreImpl : public NotificationObserver {
   // loop take a while) we cache the SessionWindows here and create the actual
   // windows when the nested message loop exits.
   std::vector<SessionWindow*> windows_;
+
+  // If true, indicates at least one tab has an application extension id and
+  // we're waiting for the extension service to finish loading.
+  bool waiting_for_extension_service_;
 
   NotificationRegistrar registrar_;
 };

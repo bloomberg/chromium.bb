@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
 #include "chrome/browser/sessions/session_types.h"
 #include "chrome/browser/sessions/session_service.h"
@@ -126,6 +127,7 @@ TEST_F(TabRestoreServiceTest, Basic) {
   ASSERT_EQ(TabRestoreService::TAB, entry->type);
   TabRestoreService::Tab* tab = static_cast<TabRestoreService::Tab*>(entry);
   EXPECT_FALSE(tab->pinned);
+  EXPECT_TRUE(tab->app_extension_id.empty());
   ASSERT_EQ(3U, tab->navigations.size());
   EXPECT_TRUE(url1_ == tab->navigations[0].url());
   EXPECT_TRUE(url2_ == tab->navigations[1].url());
@@ -191,7 +193,10 @@ TEST_F(TabRestoreServiceTest, Restore) {
 }
 
 // Tests restoring a single pinned tab.
-TEST_F(TabRestoreServiceTest, RestorePinned) {
+TEST_F(TabRestoreServiceTest, RestorePinnedAndApp) {
+  if (!browser_defaults::kEnablePinnedTabs)
+    return;
+
   AddThreeNavigations();
 
   // Have the service record the tab.
@@ -206,6 +211,8 @@ TEST_F(TabRestoreServiceTest, RestorePinned) {
   ASSERT_EQ(TabRestoreService::TAB, entry->type);
   TabRestoreService::Tab* tab = static_cast<TabRestoreService::Tab*>(entry);
   tab->pinned = true;
+  const std::string app_extension_id("test");
+  tab->app_extension_id = app_extension_id;
 
   // Recreate the service and have it load the tabs.
   RecreateService();
@@ -223,6 +230,7 @@ TEST_F(TabRestoreServiceTest, RestorePinned) {
   EXPECT_TRUE(url2_ == tab->navigations[1].url());
   EXPECT_TRUE(url3_ == tab->navigations[2].url());
   EXPECT_EQ(2, tab->current_navigation_index);
+  EXPECT_TRUE(app_extension_id == tab->app_extension_id);
 }
 
 // Make sure we persist entries to disk that have post data.
@@ -363,9 +371,11 @@ TEST_F(TabRestoreServiceTest, LoadPreviousSessionAndTabs) {
   EXPECT_TRUE(url3_ == tab->navigations[2].url());
 }
 
-#if defined(ENABLE_PINNED_TABS)
 // Make sure pinned state is correctly loaded from session service.
 TEST_F(TabRestoreServiceTest, LoadPreviousSessionAndTabsPinned) {
+  if (!browser_defaults::kEnablePinnedTabs)
+    return;
+
   CreateSessionServiceWithOneWindow(true);
 
   profile()->GetSessionService()->MoveCurrentSessionToLastSession();
@@ -402,7 +412,6 @@ TEST_F(TabRestoreServiceTest, LoadPreviousSessionAndTabsPinned) {
   EXPECT_TRUE(url2_ == tab->navigations[1].url());
   EXPECT_TRUE(url3_ == tab->navigations[2].url());
 }
-#endif
 
 // Creates TabRestoreService::kMaxEntries + 1 windows in the session service
 // and makes sure we only get back TabRestoreService::kMaxEntries on restore.

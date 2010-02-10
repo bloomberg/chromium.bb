@@ -279,12 +279,15 @@ class Browser : public TabStripModelDelegate,
   // Add a tab with its session history restored from the SessionRestore
   // system. If select is true, the tab is selected. |tab_index| gives the index
   // to insert the tab at. |selected_navigation| is the index of the
-  // TabNavigation in |navigations| to select. If |pin| is true and |tab_index|
-  // is the last pinned tab, then the newly created tab is pinned. If
-  // |from_last_session| is true, |navigations| are from the previous session.
+  // TabNavigation in |navigations| to select. If |app_extension_id| is
+  // non-empty the tab is an app tab and |app_extension_id| is the id of the
+  // extension. If |pin| is true and |tab_index|/ is the last pinned tab, then
+  // the newly created tab is pinned. If |from_last_session| is true,
+  // |navigations| are from the previous session.
   TabContents* AddRestoredTab(const std::vector<TabNavigation>& navigations,
                               int tab_index,
                               int selected_navigation,
+                              const std::string& app_extension_id,
                               bool select,
                               bool pin,
                               bool from_last_session);
@@ -321,7 +324,8 @@ class Browser : public TabStripModelDelegate,
   void ReplaceRestoredTab(
       const std::vector<TabNavigation>& navigations,
       int selected_navigation,
-      bool from_last_session);
+      bool from_last_session,
+      const std::string& app_extension_id);
 
   // Returns true if a tab can be restored.
   virtual bool CanRestoreTab();
@@ -763,6 +767,11 @@ class Browser : public TabStripModelDelegate,
   // Create a preference dictionary for the provided application name. This is
   // done only once per application name / per session.
   static void RegisterAppPrefs(const std::wstring& app_name);
+
+  // If |app_extension_id| is not empty this sets the application extension of
+  // |contents| to the extension whose id is |app_extension_id|.
+  void SetAppExtensionById(TabContents* contents,
+                           const std::string& app_extension_id);
 
   // Data members /////////////////////////////////////////////////////////////
 

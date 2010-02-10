@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/session_startup_pref.h"
 #include "chrome/browser/sessions/session_backend.h"
@@ -26,6 +27,7 @@
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_details.h"
 #include "chrome/common/notification_service.h"
 
@@ -53,6 +55,7 @@ static const SessionCommand::id_type kCommandSetWindowBounds2 = 10;
 static const SessionCommand::id_type
     kCommandTabNavigationPathPrunedFromFront = 11;
 static const SessionCommand::id_type kCommandSetPinnedState = 12;
+static const SessionCommand::id_type kCommandSetAppExtensionID = 13;
 
 // Every kWritesPerReset commands triggers recreating the file.
 static const int kWritesPerReset = 250;
@@ -402,6 +405,9 @@ void SessionService::Init() {
                  NotificationService::AllSources());
   registrar_.Add(this, NotificationType::BROWSER_OPENED,
                  NotificationService::AllSources());
+  registrar_.Add(this,
+                 NotificationType::TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
+                 NotificationService::AllSources());
 }
 
 void SessionService::Observe(NotificationType type,
@@ -445,6 +451,12 @@ void SessionService::Observe(NotificationType type,
       NavigationController* controller =
           Source<NavigationController>(source).ptr();
       SetTabWindow(controller->window_id(), controller->session_id());
+      if (controller->tab_contents()->app_extension()) {
+        SetTabAppExtensionID(
+            controller->window_id(),
+            controller->session_id(),
+            controller->tab_contents()->app_extension()->id());
+      }
       break;
     }
 
@@ -493,9 +505,33 @@ void SessionService::Observe(NotificationType type,
       break;
     }
 
+    case NotificationType::TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED: {
+      TabContents* tab_contents = Source<TabContents>(source).ptr();
+      DCHECK(tab_contents);
+      if (tab_contents->app_extension()) {
+        SetTabAppExtensionID(tab_contents->controller().window_id(),
+                             tab_contents->controller().session_id(),
+                             tab_contents->app_extension()->id());
+      }
+      break;
+    }
+
     default:
       NOTREACHED();
   }
+}
+
+void SessionService::SetTabAppExtensionID(
+    const SessionID& window_id,
+    const SessionID& tab_id,
+    const std::string& app_extension_id) {
+  if (!ShouldTrackChangesToWindow(window_id))
+    return;
+
+  ScheduleCommand(CreateSetTabAppExtensionIDCommand(
+                      kCommandSetAppExtensionID,
+                      tab_id.id(),
+                      app_extension_id));
 }
 
 SessionCommand* SessionService::CreateSetSelectedTabInWindow(
@@ -910,9 +946,20 @@ bool SessionService::CreateTabsAndWindows(
         PinnedStatePayload payload;
         if (!command->GetPayload(&payload, sizeof(payload)))
           return true;
-#if defined(ENABLE_PINNED_TABS)
-        GetTab(payload.tab_id, tabs)->pinned = payload.pinned_state;
-#endif
+        if (browser_defaults::kEnablePinnedTabs)
+          GetTab(payload.tab_id, tabs)->pinned = payload.pinned_state;
+        break;
+      }
+
+      case kCommandSetAppExtensionID: {
+        SessionID::id_type tab_id;
+        std::string app_extension_id;
+        if (!RestoreSetTabAppExtensionIDCommand(
+                *command, &tab_id, &app_extension_id)) {
+          return true;
+        }
+
+        GetTab(tab_id, tabs)->app_extension_id.swap(app_extension_id);
         break;
       }
 
@@ -946,6 +993,13 @@ void SessionService::BuildCommandsForTab(
   if (is_pinned) {
     commands->push_back(
         CreatePinnedStateCommand(controller->session_id(), true));
+  }
+  if (controller->tab_contents()->app_extension()) {
+    commands->push_back(
+        CreateSetTabAppExtensionIDCommand(
+            kCommandSetAppExtensionID,
+            controller->session_id().id(),
+            controller->tab_contents()->app_extension()->id()));
   }
   for (int i = min_index; i < max_index; ++i) {
     const NavigationEntry* entry = (i == pending_index) ?

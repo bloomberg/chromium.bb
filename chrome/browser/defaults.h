@@ -64,6 +64,11 @@ extern const bool kSizeTabButtonToTopOfTabStrip;
 // asking the user for credentials.
 extern const bool kBootstrapSyncAuthentication;
 
+// Are pinned tabs enabled?
+// TODO: if you're the last to make this true on all platforms, remove the
+// field.
+extern const bool kEnablePinnedTabs;
+
 }  // namespace browser_defaults
 
 #endif  // CHROME_BROWSER_DEFAULTS_H_

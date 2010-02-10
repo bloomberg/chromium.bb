@@ -29,6 +29,13 @@ void SessionServiceTestHelper::PrepareTabInWindow(const SessionID& window_id,
     service()->SetSelectedTabInWindow(window_id, visual_index);
 }
 
+void SessionServiceTestHelper::SetTabAppExtensionID(
+    const SessionID& window_id,
+    const SessionID& tab_id,
+    const std::string& app_extension_id) {
+  service()->SetTabAppExtensionID(window_id, tab_id, app_extension_id);
+}
+
 // Be sure and null out service to force closing the file.
 void SessionServiceTestHelper::ReadWindows(
     std::vector<SessionWindow*>* windows) {

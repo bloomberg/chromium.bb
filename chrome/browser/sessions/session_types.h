@@ -136,6 +136,9 @@ struct SessionTab {
   // True if the tab is pinned.
   bool pinned;
 
+  // If non-empty, this tab is an app tab and this is the id of the extension.
+  std::string app_extension_id;
+
   std::vector<TabNavigation> navigations;
 
  private:

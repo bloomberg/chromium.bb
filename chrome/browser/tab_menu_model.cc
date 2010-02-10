@@ -4,6 +4,7 @@
 
 #include "chrome/browser/tab_menu_model.h"
 
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "grit/generated_resources.h"
 
@@ -18,17 +19,17 @@ void TabMenuModel::Build() {
   AddItemWithStringId(TabStripModel::CommandReload, IDS_TAB_CXMENU_RELOAD);
   AddItemWithStringId(TabStripModel::CommandDuplicate,
                       IDS_TAB_CXMENU_DUPLICATE);
-#if defined(ENABLE_PINNED_TABS)
+  if (browser_defaults::kEnablePinnedTabs) {
   // On Mac the HIG prefers "pin/unpin" to a checkmark. The Mac code will fix up
   // the actual string based on the tab's state via the delegate.
 #if defined(OS_MACOSX)
-  AddItemWithStringId(TabStripModel::CommandTogglePinned,
-                      IDS_TAB_CXMENU_PIN_TAB);
+    AddItemWithStringId(TabStripModel::CommandTogglePinned,
+                        IDS_TAB_CXMENU_PIN_TAB);
 #else
-  AddCheckItemWithStringId(TabStripModel::CommandTogglePinned,
-                           IDS_TAB_CXMENU_PIN_TAB);
+    AddCheckItemWithStringId(TabStripModel::CommandTogglePinned,
+                             IDS_TAB_CXMENU_PIN_TAB);
 #endif
-#endif
+  }
   AddSeparator();
   AddItemWithStringId(TabStripModel::CommandCloseTab,
                       IDS_TAB_CXMENU_CLOSETAB);

@@ -462,6 +462,11 @@ RenderProcessHost* TabContents::GetRenderProcessHost() const {
 void TabContents::SetAppExtension(Extension* extension) {
   DCHECK(!extension || extension->IsApp());
   app_extension_ = extension;
+
+  NotificationService::current()->Notify(
+      NotificationType::TAB_CONTENTS_APPLICATION_EXTENSION_CHANGED,
+      Source<TabContents>(this),
+      NotificationService::NoDetails());
 }
 
 const GURL& TabContents::GetURL() const {
