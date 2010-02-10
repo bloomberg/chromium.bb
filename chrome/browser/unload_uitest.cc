@@ -24,6 +24,14 @@ const std::string BEFORE_UNLOAD_HTML =
     "<script>window.onbeforeunload=function(e){return 'foo'}</script>"
     "</body></html>";
 
+const std::string INNER_FRAME_WITH_FOCUS_HTML =
+    "<html><head><title>innerframewithfocus</title></head><body>"
+    "<script>window.onbeforeunload=function(e){return 'foo'}</script>"
+    "<iframe src=\"data:text/html,<html><head><script>window.onload="
+    "function(){document.getElementById('box').focus()}</script>"
+    "<body><input id='box'></input></body></html>\"></iframe>"
+    "</body></html>";
+
 const std::string TWO_SECOND_BEFORE_UNLOAD_HTML =
     "<html><head><title>twosecondbeforeunload</title></head><body>"
     "<script>window.onbeforeunload=function(e){"
@@ -264,6 +272,18 @@ TEST_F(UnloadTest, BrowserCloseBeforeUnloadCancel) {
   ClickModalDialogButton(MessageBoxFlags::DIALOGBUTTON_CANCEL);
   WaitForBrowserClosed();
   EXPECT_TRUE(IsBrowserRunning());
+
+  CloseBrowserAsync(browser.get());
+  ClickModalDialogButton(MessageBoxFlags::DIALOGBUTTON_OK);
+  WaitForBrowserClosed();
+  EXPECT_FALSE(IsBrowserRunning());
+}
+
+// Tests closing the browser and clicking OK in the beforeunload confirm dialog
+// if an inner frame has the focus.  See crbug.com/32615.
+TEST_F(UnloadTest, BrowserCloseWithInnerFocusedFrame) {
+  scoped_refptr<BrowserProxy> browser(automation()->GetBrowserWindow(0));
+  NavigateToDataURL(INNER_FRAME_WITH_FOCUS_HTML, L"innerframewithfocus");
 
   CloseBrowserAsync(browser.get());
   ClickModalDialogButton(MessageBoxFlags::DIALOGBUTTON_OK);
