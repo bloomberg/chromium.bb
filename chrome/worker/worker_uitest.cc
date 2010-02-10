@@ -35,8 +35,7 @@ static const char* kWorkerFastLayoutTestFiles[] = {
   // "worker-lifecycle.html",
   "worker-location.html",
   "worker-messageport.html",
-  // Disabled after r27089 (WebKit merge), http://crbug.com/22947
-  // "worker-messageport-gc.html",
+  "worker-messageport-gc.html",
   "worker-multi-port.html",
   "worker-navigator.html",
   "worker-replace-global-constructor.html",
