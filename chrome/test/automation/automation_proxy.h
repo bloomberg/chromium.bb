@@ -181,6 +181,11 @@ class AutomationProxy : public IPC::Channel::Listener,
   // sent.
   bool SavePackageShouldPromptUser(bool should_prompt);
 
+  // Installs the extension crx. Returns true only if extension was installed
+  // and loaded successfully.
+  // Note: Overinstalls will fail.
+  bool InstallExtension(const FilePath& crx_file);
+
   // Returns the ID of the automation IPC channel, so that it can be
   // passed to the app as a launch parameter.
   const std::string& channel_id() const { return channel_id_; }

@@ -220,6 +220,13 @@ bool AutomationProxy::SavePackageShouldPromptUser(bool should_prompt) {
   return Send(new AutomationMsg_SavePackageShouldPromptUser(0, should_prompt));
 }
 
+bool AutomationProxy::InstallExtension(const FilePath& crx_file) {
+  AutomationMsg_ExtensionResponseValues response;
+  if (!Send(new AutomationMsg_InstallExtension(0, crx_file, &response)))
+    return false;
+  return response == AUTOMATION_MSG_EXTENSION_INSTALL_SUCCEEDED;
+}
+
 bool AutomationProxy::GetBrowserWindowCount(int* num_windows) {
   if (!num_windows) {
     NOTREACHED();
