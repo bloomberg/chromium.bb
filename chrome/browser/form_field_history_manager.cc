@@ -114,6 +114,22 @@ void FormFieldHistoryManager::StoreFormEntriesInWebDatabase(
   if (profile()->IsOffTheRecord())
     return;
 
+  // We put the following restriction on stored FormFields:
+  //  - input_type() == WebInputElement::Text
+  //  - non-empty name
+  //  - non-empty value
+  //  - non-empty form_control_type()
+  std::vector<webkit_glue::FormField> values;
+  for (std::vector<webkit_glue::FormField>::const_iterator iter =
+           form.elements.begin();
+       iter != form.elements.end(); ++iter) {
+    if (iter->input_type() == WebKit::WebInputElement::Text &&
+        !iter->value().empty() &&
+        !iter->name().empty() &&
+        !iter->form_control_type().empty())
+      values.push_back(*iter);
+  }
+
   profile()->GetWebDataService(Profile::EXPLICIT_ACCESS)->
       AddFormFieldValues(form.elements);
 }
