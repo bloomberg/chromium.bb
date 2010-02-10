@@ -157,7 +157,7 @@ void CookieFilterPageGtk::OnCookiesAllowToggled(
     return;
   }
 
-  ContentSetting setting;
+  ContentSetting setting = CONTENT_SETTING_ALLOW;
   if (toggle_button == cookie_page->allow_radio_)
     setting = CONTENT_SETTING_ALLOW;
   else if (toggle_button == cookie_page->ask_every_time_radio_)
