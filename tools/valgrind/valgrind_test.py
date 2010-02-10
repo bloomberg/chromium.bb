@@ -303,7 +303,7 @@ class ValgrindTool(object):
 
     return common.RunSubprocess(proc, self._timeout)
 
-  def Analyze(self):
+  def Analyze(self, check_sanity=False):
     raise RuntimeError, "This method should be implemented " \
                         "in the tool-specific subclass"
 
@@ -318,10 +318,10 @@ class ValgrindTool(object):
       common.RunSubprocess([os.environ.get('WINESERVER'), '-k'])
     return True
 
-  def RunTestsAndAnalyze(self):
+  def RunTestsAndAnalyze(self, check_sanity=False):
     self.PrepareForTest()
     exec_retcode = self.Execute()
-    analyze_retcode = self.Analyze()
+    analyze_retcode = self.Analyze(check_sanity)
 
     if analyze_retcode:
       logging.error("Analyze failed.")
@@ -351,12 +351,12 @@ class ValgrindTool(object):
     os.putenv("BROWSER_WRAPPER", indirect_fname)
     logging.info('export BROWSER_WRAPPER=' + indirect_fname)
 
-  def Main(self, args):
+  def Main(self, args, check_sanity=False):
     '''Call this to run through the whole process: Setup, Execute, Analyze'''
     start = datetime.datetime.now()
     retcode = -1
     if self.Setup(args):
-      retcode = self.RunTestsAndAnalyze()
+      retcode = self.RunTestsAndAnalyze(check_sanity)
       self.Cleanup()
     else:
       logging.error("Setup failed")
@@ -404,7 +404,7 @@ class Memcheck(ValgrindTool):
 
     return ret
 
-  def Analyze(self):
+  def Analyze(self, check_sanity=False):
     # Glob all the files in the "valgrind.tmp" directory
     filenames = glob.glob(self.TMP_DIR + "/memcheck.*")
 
@@ -412,7 +412,7 @@ class Memcheck(ValgrindTool):
     analyzer = memcheck_analyze.MemcheckAnalyze(self._source_dir, filenames,
                                                 self._options.show_all_leaks,
                                                 use_gdb=use_gdb)
-    ret = analyzer.Report()
+    ret = analyzer.Report(check_sanity)
     if ret != 0:
       logging.info("Please see http://dev.chromium.org/developers/how-tos/"
                    "using-valgrind for the info on Memcheck/Valgrind")
@@ -484,12 +484,12 @@ class ThreadSanitizer(ValgrindTool):
 
     return ret
 
-  def Analyze(self):
+  def Analyze(self, check_sanity=False):
     filenames = glob.glob(self.TMP_DIR + "/tsan.*")
     use_gdb = common.IsMac()
     analyzer = tsan_analyze.TsanAnalyze(self._source_dir, filenames,
                                         use_gdb=use_gdb)
-    ret = analyzer.Report()
+    ret = analyzer.Report(check_sanity)
     if ret != 0:
       logging.info("Please see http://dev.chromium.org/developers/how-tos/"
                    "using-valgrind/threadsanitizer for the info on "
@@ -516,7 +516,7 @@ class ToolFactory:
     raise RuntimeError, "Unknown tool (tool=%s, platform=%s)" % (tool_name,
                                                                  platform_name)
 
-def RunTool(argv):
+def RunTool(argv, module):
   # TODO(timurrrr): customize optparse instead
   tool_name = "memcheck"
   args = argv[1:]
@@ -527,7 +527,9 @@ def RunTool(argv):
       break
 
   tool = ToolFactory().Create(tool_name)
-  return tool.Main(args)
+  MODULES_TO_SANITY_CHECK = ["base"]
+  check_sanity = module in MODULES_TO_SANITY_CHECK
+  return tool.Main(args, check_sanity)
 
 if __name__ == "__main__":
   if sys.argv.count("-v") > 0 or sys.argv.count("--verbose") > 0:

@@ -311,6 +311,7 @@ class MemcheckAnalyze:
   ''' Given a set of Valgrind XML files, parse all the errors out of them,
   unique them and output the results.'''
 
+  SANITY_TEST_SUPPRESSION = "Memcheck sanity test"
   def __init__(self, source_dir, files, show_all_leaks=False, use_gdb=False):
     '''Reads in a set of files.
 
@@ -429,19 +430,23 @@ class MemcheckAnalyze:
         logging.warn("Last 20 lines of %s :" % file)
         os.system("tail -n 20 '%s' 1>&2" % file)
 
-  def Report(self):
+  def Report(self, check_sanity=False):
     if self._parse_failed:
       logging.error("FAIL! Couldn't parse Valgrind output file")
       return -2
 
+    is_sane = False
     print "-----------------------------------------------------"
     print "Suppressions used:"
     print "  count name"
     for item in sorted(self._suppcounts.items(), key=lambda (k,v): (v,k)):
       print "%7s %s" % (item[1], item[0])
+      if item[0].startswith(MemcheckAnalyze.SANITY_TEST_SUPPRESSION):
+        is_sane = True
     print "-----------------------------------------------------"
     sys.stdout.flush()
 
+    retcode = 0
     if self._errors:
       logging.error("FAIL! There were %s errors: " % len(self._errors))
 
@@ -452,7 +457,15 @@ class MemcheckAnalyze:
       for error in self._errors:
         logging.error(error)
 
-      return -1
+      retcode = -1
+
+    # Report tool's insanity even if there were errors.
+    if check_sanity and not is_sane:
+      logging.error("FAIL! Sanity check failed!")
+      retcode = -3
+
+    if retcode != 0:
+      return retcode
 
     logging.info("PASS! No errors found!")
     return 0

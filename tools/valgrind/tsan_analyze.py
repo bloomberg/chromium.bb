@@ -47,6 +47,7 @@ class TsanAnalyze:
   THREAD_CREATION_STR = ("INFO: T.* "
       "(has been created by T.* at this point|is program's main thread)")
 
+  SANITY_TEST_SUPPRESSION = "ThreadSanitizer sanity test"
   def __init__(self, source_dir, files, use_gdb=False):
     '''Reads in a set of files.
 
@@ -131,15 +132,19 @@ class TsanAnalyze:
           self.used_suppressions[supp_name] = count
     self.cur_fd_.close()
 
-  def Report(self):
+  def Report(self, check_sanity=False):
+    is_sane = False
     print "-----------------------------------------------------"
     print "Suppressions used:"
     print "  count name"
     for item in sorted(self.used_suppressions.items(), key=lambda (k,v): (v,k)):
       print "%7s %s" % (item[1], item[0])
+      if item[0].startswith(TsanAnalyze.SANITY_TEST_SUPPRESSION):
+        is_sane = True
     print "-----------------------------------------------------"
     sys.stdout.flush()
 
+    retcode = 0
     if len(self.races) > 0:
       logging.error("Found %i race reports" % len(self.races))
       for report_list in self.races:
@@ -147,7 +152,15 @@ class TsanAnalyze:
         for line in report_list:
           report += str(line)
         logging.error('\n' + report)
-      return -1
+      retcode = -1
+
+    # Report tool's insanity even if there were errors.
+    if check_sanity and not is_sane:
+      logging.error("FAIL! Sanity check failed!")
+      retcode = -3
+
+    if retcode != 0:
+      return retcode
     logging.info("PASS: No race reports found")
     return 0
 
