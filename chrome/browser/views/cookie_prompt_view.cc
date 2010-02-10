@@ -255,7 +255,7 @@ void CookiePromptView::Init() {
   info_view_->SetVisible(expanded_view_);
 
   // Set default values.
-  ask_radio_->SetChecked(true);
+  remember_radio_->SetChecked(true);
 }
 
 int CookiePromptView::GetExtendedViewHeight() {
