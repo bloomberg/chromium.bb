@@ -97,21 +97,18 @@ void OmxVideoDecodeEngine::DecodeFrame(const Buffer& buffer,
   }
 
   if (!has_fed_on_eos_) {
-    // TODO(ajwong): This is a memcpy() of the compressed frame. Avoid?
-    uint8* data = new uint8[buffer.GetDataSize()];
-    memcpy(data, buffer.GetData(), buffer.GetDataSize());
+    OmxInputBuffer* input_buffer;
+    if (buffer.IsEndOfStream()) {
+      input_buffer = new OmxInputBuffer(NULL, 0);
+    } else {
+      // TODO(ajwong): This is a memcpy() of the compressed frame. Avoid?
+      uint8* data = new uint8[buffer.GetDataSize()];
+      memcpy(data, buffer.GetData(), buffer.GetDataSize());
+      input_buffer = new OmxInputBuffer(data, buffer.GetDataSize());
+    }
 
-    OmxInputBuffer* input_buffer =
-        new OmxInputBuffer(data, buffer.GetDataSize());
-
-    // Feed in the new buffer regardless.
-    //
-    // TODO(ajwong): This callback stuff is messy. Cleanup.
-    CleanupCallback<OmxCodec::FeedCallback>* feed_done =
-        new CleanupCallback<OmxCodec::FeedCallback>(
-            NewCallback(this, &OmxVideoDecodeEngine::OnFeedDone));
-    feed_done->DeleteWhenDone(input_buffer);
-    omx_codec_->Feed(input_buffer, feed_done);
+    omx_codec_->Feed(input_buffer,
+                     NewCallback(this, &OmxVideoDecodeEngine::OnFeedDone));
 
     if (buffer.IsEndOfStream()) {
       has_fed_on_eos_ = true;
