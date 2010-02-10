@@ -23,18 +23,11 @@ namespace {
 class ResourceDispatcherTest : public UITest {
  public:
   void CheckTitleTest(const std::wstring& file,
-                      const std::wstring& expected_title) {
-    NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
-                      FilePath::FromWStringHack(file)));
-    const int kCheckDelayMs = 100;
-    int max_wait_time = 5000;
-    while (max_wait_time > 0) {
-      max_wait_time -= kCheckDelayMs;
-      PlatformThread::Sleep(kCheckDelayMs);
-      if (expected_title == GetActiveTabTitle())
-        break;
-    }
-
+                      const std::wstring& expected_title,
+                      int expected_navigations) {
+    NavigateToURLBlockUntilNavigationsComplete(
+        URLRequestMockHTTPJob::GetMockUrl(FilePath::FromWStringHack(file)),
+        expected_navigations);
     EXPECT_EQ(expected_title, GetActiveTabTitle());
   }
 
@@ -46,25 +39,24 @@ class ResourceDispatcherTest : public UITest {
 
 TEST_F(ResourceDispatcherTest, SniffHTMLWithNoContentType) {
   CheckTitleTest(L"content-sniffer-test0.html",
-                 L"Content Sniffer Test 0");
+                 L"Content Sniffer Test 0", 1);
 }
 
 TEST_F(ResourceDispatcherTest, RespectNoSniffDirective) {
-  CheckTitleTest(L"nosniff-test.html", L"");
+  CheckTitleTest(L"nosniff-test.html", L"", 1);
 }
 
 TEST_F(ResourceDispatcherTest, DoNotSniffHTMLFromTextPlain) {
-  CheckTitleTest(L"content-sniffer-test1.html", L"");
+  CheckTitleTest(L"content-sniffer-test1.html", L"", 1);
 }
 
 TEST_F(ResourceDispatcherTest, DoNotSniffHTMLFromImageGIF) {
-  CheckTitleTest(L"content-sniffer-test2.html", L"");
+  CheckTitleTest(L"content-sniffer-test2.html", L"", 1);
 }
 
 TEST_F(ResourceDispatcherTest, SniffNoContentTypeNoData) {
   CheckTitleTest(L"content-sniffer-test3.html",
-                 L"Content Sniffer Test 3");
-  PlatformThread::Sleep(sleep_timeout_ms() * 2);
+                 L"Content Sniffer Test 3", 1);
   EXPECT_EQ(1, GetTabCount());
 
   // Make sure the download shelf is not showing.
@@ -75,11 +67,11 @@ TEST_F(ResourceDispatcherTest, SniffNoContentTypeNoData) {
 }
 
 TEST_F(ResourceDispatcherTest, ContentDispositionEmpty) {
-  CheckTitleTest(L"content-disposition-empty.html", L"success");
+  CheckTitleTest(L"content-disposition-empty.html", L"success", 1);
 }
 
 TEST_F(ResourceDispatcherTest, ContentDispositionInline) {
-  CheckTitleTest(L"content-disposition-inline.html", L"success");
+  CheckTitleTest(L"content-disposition-inline.html", L"success", 1);
 }
 
 // Test for bug #1091358.
@@ -184,7 +176,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteOnunloadCookie) {
   // Navigate to a new cross-site page, to dispatch unload event and set the
   // cookie.
   CheckTitleTest(L"content-sniffer-test0.html",
-                 L"Content Sniffer Test 0");
+                 L"Content Sniffer Test 0", 1);
 
   // Check that the cookie was set.
   std::string value_result;
@@ -229,7 +221,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteAfterCrash) {
   // Navigate to a new cross-site page.  The browser should not wait around for
   // the old renderer's on{before}unload handlers to run.
   CheckTitleTest(L"content-sniffer-test0.html",
-                 L"Content Sniffer Test 0");
+                 L"Content Sniffer Test 0", 1);
 }
 #endif  // !defined(OS_MACOSX)
 
@@ -243,7 +235,7 @@ TEST_F(ResourceDispatcherTest, CrossSiteNavigationNonBuffered) {
 
   // Start with an HTTP page.
   CheckTitleTest(L"content-sniffer-test0.html",
-                 L"Content Sniffer Test 0");
+                 L"Content Sniffer Test 0", 1);
 
   // Now load a file:// page, which does not use the BufferedEventHandler.
   // Make sure that the page loads and displays a title, and doesn't get stuck.
@@ -304,20 +296,15 @@ TEST_F(ResourceDispatcherTest, CrossSiteNavigationErrorPage) {
 }
 
 TEST_F(ResourceDispatcherTest, CrossOriginRedirectBlocked) {
-  int before = automation()->GetFilteredInetHitCount();
-  CheckTitleTest(L"cross-origin-redirect-blocked.html",
-                 L"done");
-  int after = automation()->GetFilteredInetHitCount();
-  //
   // We expect the following URL requests from this test:
   // 1-  http://mock.http/cross-origin-redirect-blocked.html
   // 2-  http://mock.http/redirect-to-title2.html
   // 3-  http://mock.http/title2.html
   //
   // If the redirect in #2 were not blocked, we'd also see a request
-  // for http://mock.http:4000/title2.html.
-  //
-  EXPECT_EQ(3, after - before);
+  // for http://mock.http:4000/title2.html, and the title would be different.
+  CheckTitleTest(L"cross-origin-redirect-blocked.html",
+                 L"Title Of More Awesomeness", 2);
 }
 
 }  // namespace

@@ -72,21 +72,6 @@ class SessionHistoryTest : public UITest {
     return title;
   }
 
-  // Try 10 times to get the right tab title.
-  wstring TestTabTitle(const wstring& value) {
-    // Error pages load separately, but the UI automation system does not wait
-    // for error pages to load before returning after a navigation request.
-    // So, we need to sleep a little.
-    const int kWaitForErrorPageMsec = 200;
-
-    for (int i = 0; i < 10; ++i) {
-      if (value.compare(GetTabTitle()) == 0)
-        return value;
-      PlatformThread::Sleep(kWaitForErrorPageMsec);
-    }
-    return GetTabTitle();
-  }
-
   GURL GetTabURL() {
     GURL url;
     EXPECT_TRUE(tab_->GetCurrentURL(&url));

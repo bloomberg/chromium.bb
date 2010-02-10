@@ -222,20 +222,9 @@ TEST_F(VisibleBrowserTest, WindowOpenClose) {
   FilePath test_file(test_data_directory_);
   test_file = test_file.AppendASCII("window.close.html");
 
-  NavigateToURL(net::FilePathToFileURL(test_file));
-
-  int i;
-  for (i = 0; i < 10; ++i) {
-    PlatformThread::Sleep(action_max_timeout_ms() / 10);
-    std::wstring title = GetActiveTabTitle();
-    if (title == L"PASSED") {
-      // Success, bail out.
-      break;
-    }
-  }
-
-  if (i == 10)
-    FAIL() << "failed to get error page title";
+  NavigateToURLBlockUntilNavigationsComplete(
+      net::FilePathToFileURL(test_file), 2);
+  EXPECT_EQ(L"Title Of Awesomeness", GetActiveTabTitle());
 }
 
 class ShowModalDialogTest : public UITest {

@@ -48,7 +48,6 @@ TEST_F(ViewSourceTest, DoesBrowserRenderInViewSource) {
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
   tab->NavigateToURL(url);
-  PlatformThread::Sleep(sleep_timeout_ms());
 
   // Try to retrieve the cookie that the page sets
   // It should not be there (because we are in view-source mode

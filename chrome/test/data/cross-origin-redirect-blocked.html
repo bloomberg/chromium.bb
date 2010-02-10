@@ -1,7 +1,6 @@
 <html>
 <head>
-<!-- avoid an automatically generated favicon reqeuest -->
-<link rel="icon" type="image/vnd.microsoft.icon" href="data:,">
+  <title></title>
 </head>
 <body>
 <script>
@@ -12,13 +11,17 @@ function NewXHR(url) {
   return r;
 }
 
-function SignalDone() {
-  document.title = "done";
+function SignalSuccess() {
+  document.location = "title3.html";
+}
+
+function SignalFailure() {
+  document.location = "title1.html";
 }
 
 function CreateDummyRequest() {
   dummy_request = NewXHR("http://mock.http/title2.html");
-  dummy_request.onload = SignalDone;
+  dummy_request.onload = SignalSuccess;
   dummy_request.send(null);
 }
 
@@ -28,7 +31,7 @@ function RedirectFailed() {
   // We also care that the underlying network stack does not send the redirect.
   // We cannot detect that from JS, but our test harness is designed to detect
   // that (see ResourceDispatcherTest::CrossOriginRedirectBlocked).  Before
-  // calling SignalDone, we want to allow the browser time to notice a request
+  // calling SignalSuccess, we want to allow the browser time to notice a request
   // to follow the redirect if one should exist.  To do that, we just need to
   // make another network request.
   //
@@ -39,7 +42,7 @@ function RedirectFailed() {
 
 function RedirectSucceeded() {
   // Oops, the redirect should have been denied!
-  SignalDone();
+  SignalFailure();
 }
 
 // Kick off a request that will attempt a cross-origin redirect.
