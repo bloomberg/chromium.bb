@@ -542,10 +542,11 @@ void EventSendingController::keyDown(
     // Convert \n -> VK_RETURN.  Some layout tests use \n to mean "Enter", when
     // Windows uses \r for "Enter".
     int code = 0;
+    int text = 0;
     bool needs_shift_key_modifier = false;
     if (L"\n" == code_str) {
       generate_char = true;
-      code = base::VKEY_RETURN;
+      text = code = base::VKEY_RETURN;
     } else if (L"rightArrow" == code_str) {
       code = base::VKEY_RIGHT;
     } else if (L"downArrow" == code_str) {
@@ -579,8 +580,10 @@ void EventSendingController::keyDown(
       }
       if (!code) {
         DCHECK(code_str.length() == 1);
-        code = code_str[0];
+        text = code = code_str[0];
         needs_shift_key_modifier = NeedsShiftModifier(code);
+        if ((code & 0xFF) >= 'a' && (code & 0xFF) <= 'z')
+          code -= 'a' - 'A';
         generate_char = true;
       }
     }
@@ -595,8 +598,8 @@ void EventSendingController::keyDown(
     event_down.modifiers = 0;
     event_down.windowsKeyCode = code;
     if (generate_char) {
-      event_down.text[0] = code;
-      event_down.unmodifiedText[0] = code;
+      event_down.text[0] = text;
+      event_down.unmodifiedText[0] = text;
     }
     event_down.setKeyIdentifierFromWindowsKeyCode();
 
