@@ -2616,6 +2616,7 @@
                 ['include', '^browser/printing/print_dialog_gtk.cc'],
                 ['include', '^browser/printing/print_dialog_gtk.h'],
                 ['exclude', '^browser/bookmarks/bookmark_drop_info.cc'],
+                ['exclude', '^browser/cookie_modal_dialog.cc'],
                 ['exclude', '^browser/views/autocomplete/autocomplete_popup_gtk.cc'],
                 ['exclude', '^browser/views/autocomplete/autocomplete_popup_gtk.h'],
               ],
