@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/extensions_service_unittest.h"
+
 #include <algorithm>
 #include <vector>
 
@@ -10,7 +12,6 @@
 #include "base/json/json_reader.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
-#include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
@@ -195,13 +196,107 @@ class MockProviderVisitor : public ExternalExtensionProvider::Visitor {
   DISALLOW_COPY_AND_ASSIGN(MockProviderVisitor);
 };
 
-class ExtensionsServiceTest
-  : public testing::Test, public NotificationObserver {
+class ExtensionTestingProfile : public TestingProfile {
  public:
-  ExtensionsServiceTest()
-      : ui_thread_(ChromeThread::UI, &loop_),
-        file_thread_(ChromeThread::FILE, &loop_),
-        installed_(NULL) {
+  ExtensionTestingProfile() {
+  }
+
+  void set_extensions_service(ExtensionsService* service) {
+    service_ = service;
+  }
+  virtual ExtensionsService* GetExtensionsService() { return service_; }
+
+ private:
+  ExtensionsService* service_;
+};
+
+// Our message loop may be used in tests which require it to be an IO loop.
+ExtensionsServiceTestBase::ExtensionsServiceTestBase()
+    : loop_(MessageLoop::TYPE_IO),
+      ui_thread_(ChromeThread::UI, &loop_),
+      file_thread_(ChromeThread::FILE, &loop_) {
+}
+
+ExtensionsServiceTestBase::~ExtensionsServiceTestBase() {
+  // Drop our reference to ExtensionsService now, so that it can be destroyed
+  // while ChromeThreads and MessageLoop are still around (they are used
+  // in the ExtensionsService destruction process).
+  service_ = NULL;
+  MessageLoop::current()->RunAllPending();
+}
+
+void ExtensionsServiceTestBase::InitializeExtensionsService(
+    const FilePath& pref_file, const FilePath& extensions_install_dir) {
+  ExtensionTestingProfile* profile = new ExtensionTestingProfile();
+  prefs_.reset(new PrefService(pref_file));
+  profile_.reset(profile);
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExtensionToolstrips);
+  service_ = new ExtensionsService(profile_.get(),
+                                   CommandLine::ForCurrentProcess(),
+                                   prefs_.get(),
+                                   extensions_install_dir,
+                                   false);
+  service_->set_extensions_enabled(true);
+  service_->set_show_extensions_prompts(false);
+  profile->set_extensions_service(service_.get());
+
+  // When we start up, we want to make sure there is no external provider,
+  // since the ExtensionService on Windows will use the Registry as a default
+  // provider and if there is something already registered there then it will
+  // interfere with the tests. Those tests that need an external provider
+  // will register one specifically.
+  service_->ClearProvidersForTesting();
+
+  total_successes_ = 0;
+}
+
+void ExtensionsServiceTestBase::InitializeInstalledExtensionsService(
+    const FilePath& prefs_file, const FilePath& source_install_dir) {
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  FilePath path_ = temp_dir_.path();
+  path_ = path_.Append(FILE_PATH_LITERAL("TestingExtensionsPath"));
+  file_util::Delete(path_, true);
+  file_util::CreateDirectory(path_);
+  FilePath temp_prefs = path_.Append(FILE_PATH_LITERAL("Preferences"));
+  file_util::CopyFile(prefs_file, temp_prefs);
+
+  extensions_install_dir_ = path_.Append(FILE_PATH_LITERAL("Extensions"));
+  file_util::Delete(extensions_install_dir_, true);
+  file_util::CopyDirectory(source_install_dir, extensions_install_dir_, true);
+
+  InitializeExtensionsService(temp_prefs, extensions_install_dir_);
+}
+
+void ExtensionsServiceTestBase::InitializeEmptyExtensionsService() {
+  ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
+  FilePath path_ = temp_dir_.path();
+  path_ = path_.Append(FILE_PATH_LITERAL("TestingExtensionsPath"));
+  file_util::Delete(path_, true);
+  file_util::CreateDirectory(path_);
+  FilePath prefs_filename = path_
+      .Append(FILE_PATH_LITERAL("TestPreferences"));
+  extensions_install_dir_ = path_.Append(FILE_PATH_LITERAL("Extensions"));
+  file_util::Delete(extensions_install_dir_, true);
+  file_util::CreateDirectory(extensions_install_dir_);
+
+  InitializeExtensionsService(prefs_filename, extensions_install_dir_);
+}
+
+// static
+void ExtensionsServiceTestBase::SetUpTestCase() {
+  ExtensionErrorReporter::Init(false);  // no noisy errors
+}
+
+void ExtensionsServiceTestBase::SetUp() {
+  ExtensionErrorReporter::GetInstance()->ClearErrors();
+}
+
+class ExtensionsServiceTest
+  : public ExtensionsServiceTestBase, public NotificationObserver {
+ public:
+  ExtensionsServiceTest() : installed_(NULL) {
     registrar_.Add(this, NotificationType::EXTENSION_LOADED,
                    NotificationService::AllSources());
     registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
@@ -210,78 +305,6 @@ class ExtensionsServiceTest
                    NotificationService::AllSources());
     registrar_.Add(this, NotificationType::THEME_INSTALLED,
                    NotificationService::AllSources());
-  }
-
-  ~ExtensionsServiceTest() {
-    // Drop our reference to ExtensionsService now, so that it can be destroyed
-    // while ChromeThreads and MessageLoop are still around (they are used
-    // in the ExtensionsService destruction process).
-    service_ = NULL;
-  }
-
-  virtual void InitializeExtensionsService(const FilePath& pref_file,
-      const FilePath& extensions_install_dir) {
-    prefs_.reset(new PrefService(pref_file));
-    profile_.reset(new TestingProfile());
-
-    CommandLine::ForCurrentProcess()->AppendSwitch(
-        switches::kEnableExtensionToolstrips);
-    service_ = new ExtensionsService(profile_.get(),
-                                     CommandLine::ForCurrentProcess(),
-                                     prefs_.get(),
-                                     extensions_install_dir,
-                                     false);
-    service_->set_extensions_enabled(true);
-    service_->set_show_extensions_prompts(false);
-
-    // When we start up, we want to make sure there is no external provider,
-    // since the ExtensionService on Windows will use the Registry as a default
-    // provider and if there is something already registered there then it will
-    // interfere with the tests. Those tests that need an external provider
-    // will register one specifically.
-    service_->ClearProvidersForTesting();
-
-    total_successes_ = 0;
-  }
-
-  virtual void InitializeInstalledExtensionsService(const FilePath& prefs_file,
-      const FilePath& source_install_dir) {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    FilePath path_ = temp_dir_.path();
-    path_ = path_.Append(FILE_PATH_LITERAL("TestingExtensionsPath"));
-    file_util::Delete(path_, true);
-    file_util::CreateDirectory(path_);
-    FilePath temp_prefs = path_.Append(FILE_PATH_LITERAL("Preferences"));
-    file_util::CopyFile(prefs_file, temp_prefs);
-
-    extensions_install_dir_ = path_.Append(FILE_PATH_LITERAL("Extensions"));
-    file_util::Delete(extensions_install_dir_, true);
-    file_util::CopyDirectory(source_install_dir, extensions_install_dir_, true);
-
-    InitializeExtensionsService(temp_prefs, extensions_install_dir_);
-  }
-
-  virtual void InitializeEmptyExtensionsService() {
-    ASSERT_TRUE(temp_dir_.CreateUniqueTempDir());
-    FilePath path_ = temp_dir_.path();
-    path_ = path_.Append(FILE_PATH_LITERAL("TestingExtensionsPath"));
-    file_util::Delete(path_, true);
-    file_util::CreateDirectory(path_);
-    FilePath prefs_filename = path_
-        .Append(FILE_PATH_LITERAL("TestPreferences"));
-    extensions_install_dir_ = path_.Append(FILE_PATH_LITERAL("Extensions"));
-    file_util::Delete(extensions_install_dir_, true);
-    file_util::CreateDirectory(extensions_install_dir_);
-
-    InitializeExtensionsService(prefs_filename, extensions_install_dir_);
-  }
-
-  static void SetUpTestCase() {
-    ExtensionErrorReporter::Init(false);  // no noisy errors
-  }
-
-  virtual void SetUp() {
-    ExtensionErrorReporter::GetInstance()->ClearErrors();
   }
 
   virtual void Observe(NotificationType type,
@@ -317,10 +340,6 @@ class ExtensionsServiceTest
       default:
         DCHECK(false);
     }
-  }
-
-  void set_extensions_enabled(bool enabled) {
-    service_->set_extensions_enabled(enabled);
   }
 
   void SetMockExternalProvider(Extension::Location location,
@@ -501,15 +520,6 @@ class ExtensionsServiceTest
   }
 
  protected:
-  ScopedTempDir temp_dir_;
-  scoped_ptr<PrefService> prefs_;
-  scoped_ptr<Profile> profile_;
-  FilePath extensions_install_dir_;
-  scoped_refptr<ExtensionsService> service_;
-  size_t total_successes_;
-  MessageLoop loop_;
-  ChromeThread ui_thread_;
-  ChromeThread file_thread_;
   ExtensionList loaded_;
   std::string unloaded_id_;
   Extension* installed_;

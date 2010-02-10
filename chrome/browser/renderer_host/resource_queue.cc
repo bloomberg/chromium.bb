@@ -17,8 +17,7 @@ ResourceQueue::ResourceQueue() : shutdown_(false) {
 }
 
 ResourceQueue::~ResourceQueue() {
-  // TODO(phajdan.jr): Add DCHECK(shutdown_) here when unit tests stop abusing
-  // ResourceDispatcherHost by not shutting it down in tests.
+  DCHECK(shutdown_);
 }
 
 void ResourceQueue::Initialize(const DelegateSet& delegates) {

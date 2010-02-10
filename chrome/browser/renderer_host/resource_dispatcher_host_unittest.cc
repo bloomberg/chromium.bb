@@ -185,6 +185,8 @@ class ResourceDispatcherHostTest : public testing::Test,
     DCHECK(test_fixture_ == this);
     test_fixture_ = NULL;
 
+    host_.Shutdown();
+
     ChildProcessSecurityPolicy::GetInstance()->Remove(0);
 
     // The plugin lib is automatically loaded during these test
