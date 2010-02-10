@@ -167,15 +167,15 @@ IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, ReloadExtension) {
   // Reload the extension a few times and make sure our resource count
   // doesn't increase.
   ReloadExtension(extension->id());
-  EXPECT_EQ(3, model()->ResourceCount());
+  WaitForResourceChange(3);
   extension = model()->GetResourceExtension(2);
 
   ReloadExtension(extension->id());
-  EXPECT_EQ(3, model()->ResourceCount());
+  WaitForResourceChange(3);
   extension = model()->GetResourceExtension(2);
 
   ReloadExtension(extension->id());
-  EXPECT_EQ(3, model()->ResourceCount());
+  WaitForResourceChange(3);
 }
 
 IN_PROC_BROWSER_TEST_F(TaskManagerBrowserTest, PopulateWebCacheFields) {

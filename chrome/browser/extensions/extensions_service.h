@@ -314,6 +314,12 @@ class ExtensionsService
   // The model that tracks extensions with BrowserAction buttons.
   ExtensionToolbarModel toolbar_model_;
 
+  // Map unloaded extensions' ids to their paths. When a temporarily loaded
+  // extension is unloaded, we lose the infomation about it and don't have
+  // any in the extension preferences file.
+  typedef std::map<std::string, FilePath> UnloadedExtensionPathMap;
+  UnloadedExtensionPathMap unloaded_extension_paths_;
+
   // Map of inspector cookies that are detached, waiting for an extension to be
   // reloaded.
   typedef std::map<std::string, int> OrphanedDevTools;

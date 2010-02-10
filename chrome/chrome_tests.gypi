@@ -1116,6 +1116,7 @@
         'browser/extensions/extension_browsertest.cc',
         'browser/extensions/extension_browsertest.h',
         'browser/extensions/extension_browsertests_misc.cc',
+        'browser/extensions/extension_crash_recovery_browsertest.cc',
         'browser/extensions/extension_history_apitest.cc',
         'browser/extensions/extension_i18n_apitest.cc',
         'browser/extensions/extension_javascript_url_apitest.cc',

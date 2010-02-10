@@ -224,16 +224,15 @@ void ExtensionsService::ReloadExtension(const std::string& extension_id) {
 
     path = current_extension->path();
     UnloadExtension(extension_id);
+  } else {
+    path = unloaded_extension_paths_[extension_id];
   }
 
-  if (path.empty()) {
-    // At this point we have to reconstruct the path from prefs, because
-    // we have no information about this extension in memory.
-    path = extension_prefs_->GetExtensionPath(extension_id);
-  }
+  // We should always be able to remember the extension's path. If it's not in
+  // the map, someone failed to update |unloaded_extension_paths_|.
+  CHECK(!path.empty());
 
-  if (!path.empty())
-    LoadExtension(path);
+  LoadExtension(path);
 }
 
 void ExtensionsService::UninstallExtension(const std::string& extension_id,
@@ -551,6 +550,10 @@ void ExtensionsService::UnloadExtension(const std::string& extension_id) {
   // Callers should not send us nonexistant extensions.
   CHECK(extension.get());
 
+  // Keep information about the extension so that we can reload it later
+  // even if it's not permanently installed.
+  unloaded_extension_paths_[extension->id()] = extension->path();
+
   ExtensionDOMUI::UnregisterChromeURLOverrides(profile_,
       extension->GetChromeURLOverrides());
 
@@ -615,6 +618,9 @@ void ExtensionsService::OnExtensionLoaded(Extension* extension,
                                           bool allow_privilege_increase) {
   // Ensure extension is deleted unless we transfer ownership.
   scoped_ptr<Extension> scoped_extension(extension);
+
+  // The extension is now loaded, remove its data from unloaded extension map.
+  unloaded_extension_paths_.erase(extension->id());
 
   if (extensions_enabled() ||
       extension->IsTheme() ||

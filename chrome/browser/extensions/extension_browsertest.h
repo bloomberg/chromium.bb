@@ -63,6 +63,13 @@ class ExtensionBrowserTest
   // error was raised.
   bool WaitForExtensionInstallError();
 
+  // Waits until an extension is loaded.
+  void WaitForExtensionLoad();
+
+  // Wait for the specified extension to crash. Returns true if it really
+  // crashed.
+  bool WaitForExtensionCrash(const std::string& extension_id);
+
   // NotificationObserver
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
