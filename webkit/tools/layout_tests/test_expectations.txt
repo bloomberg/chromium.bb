@@ -2927,3 +2927,7 @@ BUG_TONY MAC : svg/custom/use-clipped-hit.svg = IMAGE
 // WebKit roll 54493 to 54530: new tests.
 BUG35114 : fast/js/parser-syntax-check.html = TEXT
 BUG35115 : plugins/netscape-plugin-property-access-exception.html = TEXT
+
+// WebKit roll 54530 to 54550
+BUG_TONY MAC : fast/dom/clone-node-dynamic-style.html = IMAGE
+BUG35215 : printing/numberOfPages.html = TEXT
