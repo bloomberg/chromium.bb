@@ -248,6 +248,10 @@ bool AddressField::ParseZipCode(
   if (address_field->zip_)
     return false;
 
+  // We may be out of fields.
+  if (!**iter)
+    return false;
+
   string16 pattern;
   if (is_ecml) {
     pattern = GetEcmlPattern(kEcmlShipToPostalCode,
