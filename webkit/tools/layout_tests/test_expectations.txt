@@ -2473,6 +2473,8 @@ BUG28005 MAC : fast/css/color-correction-on-box-shadow.html = IMAGE
 BUG28005 WIN LINUX : fast/css/color-correction-on-box-shadow.html = IMAGE+TEXT
 BUG28005 MAC : fast/css/color-correction-on-text-shadow.html = IMAGE
 BUG28005 WIN LINUX : fast/css/color-correction-on-text-shadow.html = IMAGE+TEXT
+BUG28005 : fast/css/color-correction-on-background-image.html = FAIL
+BUG28005 : fast/css/color-correction-untagged-images.html = FAIL
 
 // May also be related to r50760, but not as confident.
 BUG27551 WIN : fast/css/shadow-multiple.html = IMAGE
@@ -2509,10 +2511,6 @@ BUG28264 : fast/forms/validationMessage.html = FAIL
 
 // Video Captions are added upsteram (r51191), need to implement.
 BUG28301 : media/media-captions.html = TIMEOUT
-
-// New tests, seems proper drawing method is not implemented in Skia. Upstream r51212.
-BUG28317 : fast/css/color-correction-on-background-image.html = FAIL
-BUG28317 : fast/css/color-correction-untagged-images.html = FAIL
 
 // Started failing with move from Lighttpd to Apache.
 // Since we have some bots on Lighttpd and some on Apache, mark it as flaky for
