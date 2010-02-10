@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "chrome/browser/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/common/gtk_tree.h"
 #include "net/base/cookie_monster.h"
@@ -34,6 +35,7 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
   // Create (if necessary) and show the cookie manager window.
   static void Show(
       Profile* profile,
+      BrowsingDataDatabaseHelper* browsing_data_database_helper,
       BrowsingDataLocalStorageHelper* browsing_data_local_storage_helper);
 
   // gtk_tree::TreeAdapter::Delegate implementation.
@@ -43,6 +45,7 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
  private:
   CookiesView(
       Profile* profile,
+      BrowsingDataDatabaseHelper* browsing_data_database_helper,
       BrowsingDataLocalStorageHelper* browsing_data_local_storage_helper);
 
   // Initialize the dialog contents and layout.
@@ -64,12 +67,19 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
   // Set sensitivity of cookie details.
   void SetCookieDetailsSensitivity(gboolean enabled);
 
+  // Set sensitivity of database details.
+  void SetDatabaseDetailsSensitivity(gboolean enabled);
+
   // Set sensitivity of local storage details.
   void SetLocalStorageDetailsSensitivity(gboolean enabled);
 
   // Show the details of the currently selected cookie.
   void PopulateCookieDetails(const std::string& domain,
                              const net::CookieMonster::CanonicalCookie& cookie);
+
+  // Show the details of the currently selected database.
+  void PopulateDatabaseDetails(
+      const BrowsingDataDatabaseHelper::DatabaseInfo& database_info);
 
   // Show the details of the currently selected local storage.
   void PopulateLocalStorageDetails(
@@ -137,6 +147,12 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
   GtkWidget* cookie_created_entry_;
   GtkWidget* cookie_expires_entry_;
 
+  // The database details widgets.
+  GtkWidget* database_details_table_;
+  GtkWidget* database_description_entry_;
+  GtkWidget* database_size_entry_;
+  GtkWidget* database_last_modified_entry_;
+
   // The local storage details widgets.
   GtkWidget* local_storage_details_table_;
   GtkWidget* local_storage_origin_entry_;
@@ -145,6 +161,9 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
 
   // The profile.
   Profile* profile_;
+
+  // Database Helper.
+  scoped_refptr<BrowsingDataDatabaseHelper> browsing_data_database_helper_;
 
   // Local Storage Helper.
   scoped_refptr<BrowsingDataLocalStorageHelper>
@@ -164,7 +183,7 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
   FRIEND_TEST(CookiesViewTest, RemoveAll);
   FRIEND_TEST(CookiesViewTest, RemoveAllWithDefaultSelected);
   FRIEND_TEST(CookiesViewTest, Remove);
-  FRIEND_TEST(CookiesViewTest, RemoveCookiesByDomain);
+  FRIEND_TEST(CookiesViewTest, RemoveCookiesByType);
   FRIEND_TEST(CookiesViewTest, RemoveByDomain);
   FRIEND_TEST(CookiesViewTest, RemoveDefaultSelection);
   FRIEND_TEST(CookiesViewTest, Filter);

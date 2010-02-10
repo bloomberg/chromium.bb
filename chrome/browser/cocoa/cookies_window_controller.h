@@ -100,6 +100,7 @@ class CookiesTreeModelObserverBridge : public TreeModelObserver {
   IBOutlet NSView* localStorageInfo_;
 
   Profile* profile_;  // weak
+  BrowsingDataDatabaseHelper* databaseHelper_;  // weak
   BrowsingDataLocalStorageHelper* storageHelper_;  // weak
 }
 @property (assign, nonatomic) BOOL removeButtonEnabled;
@@ -107,6 +108,7 @@ class CookiesTreeModelObserverBridge : public TreeModelObserver {
 
 // Designated initializer. Profile cannot be NULL.
 - (id)initWithProfile:(Profile*)profile
+       databaseHelper:(BrowsingDataDatabaseHelper*)databaseHelper
         storageHelper:(BrowsingDataLocalStorageHelper*)storageHelper;
 
 // Shows the cookies window as a modal sheet attached to |window|.

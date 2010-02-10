@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include <string>
 
 #include "app/l10n_util.h"
+#include "chrome/browser/mock_browsing_data_database_helper.h"
 #include "chrome/browser/mock_browsing_data_local_storage_helper.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/test/testing_profile.h"
@@ -27,7 +28,9 @@ class CookiesTreeModelTest : public testing::Test {
   virtual void SetUp() {
     profile_.reset(new TestingProfile());
     profile_->CreateRequestContext();
-    mock_browsing_data_helper_ =
+    mock_browsing_data_database_helper_ =
+      new MockBrowsingDataDatabaseHelper(profile_.get());
+    mock_browsing_data_local_storage_helper_ =
       new MockBrowsingDataLocalStorageHelper(profile_.get());
   }
 
@@ -37,15 +40,20 @@ class CookiesTreeModelTest : public testing::Test {
     monster->SetCookie(GURL("http://foo2"), "B=1");
     monster->SetCookie(GURL("http://foo3"), "C=1");
     CookiesTreeModel* cookies_model = new CookiesTreeModel(
-        profile_.get(), mock_browsing_data_helper_);
-    mock_browsing_data_helper_->AddLocalStorageSamples();
-    mock_browsing_data_helper_->Notify();
+        profile_.get(), mock_browsing_data_database_helper_,
+        mock_browsing_data_local_storage_helper_);
+    mock_browsing_data_database_helper_->AddDatabaseSamples();
+    mock_browsing_data_database_helper_->Notify();
+    mock_browsing_data_local_storage_helper_->AddLocalStorageSamples();
+    mock_browsing_data_local_storage_helper_->Notify();
     {
-      SCOPED_TRACE("Initial State 3 cookies, 2 local storages");
-      // 16 because there's the root, then foo1 -> cookies -> a,
+      SCOPED_TRACE("Initial State 3 cookies, 2 databases, 2 local storages");
+      // 22 because there's the root, then foo1 -> cookies -> a,
       // foo2 -> cookies -> b, foo3 -> cookies -> c,
+      // dbhost1 -> database -> db1, dbhost2 -> database -> db2,
       // host1 -> localstorage -> origin1, host2 -> localstorage -> origin2.
-      EXPECT_EQ(16, cookies_model->GetRoot()->GetTotalNodeCount());
+      EXPECT_EQ(22, cookies_model->GetRoot()->GetTotalNodeCount());
+      EXPECT_EQ("db1,db2", GetDisplayedDatabases(cookies_model));
       EXPECT_EQ("origin1,origin2", GetDisplayedLocalStorages(cookies_model));
     }
     return cookies_model;
@@ -79,6 +87,8 @@ class CookiesTreeModelTest : public testing::Test {
         switch (node_type) {
           case CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE:
             return node->GetDetailedInfo().local_storage_info->origin + ",";
+          case CookieTreeNode::DetailedInfo::TYPE_DATABASE:
+            return node->GetDetailedInfo().database_info->database_name + ",";
           case CookieTreeNode::DetailedInfo::TYPE_COOKIE:
             return node->GetDetailedInfo().cookie->second.Name() + ",";
           default:
@@ -92,6 +102,11 @@ class CookiesTreeModelTest : public testing::Test {
 
   std::string GetCookiesOfChildren(const CookieTreeNode* node) {
     return GetNodesOfChildren(node, CookieTreeNode::DetailedInfo::TYPE_COOKIE);
+  }
+
+  std::string GetDatabasesOfChildren(const CookieTreeNode* node) {
+    return GetNodesOfChildren(node,
+                              CookieTreeNode::DetailedInfo::TYPE_DATABASE);
   }
 
   std::string GetLocalStoragesOfChildren(const CookieTreeNode* node) {
@@ -117,6 +132,11 @@ class CookiesTreeModelTest : public testing::Test {
                              CookieTreeNode::DetailedInfo::TYPE_COOKIE);
   }
 
+  std::string GetDisplayedDatabases(CookiesTreeModel* cookies_model) {
+    return GetDisplayedNodes(cookies_model,
+                             CookieTreeNode::DetailedInfo::TYPE_DATABASE);
+  }
+
   std::string GetDisplayedLocalStorages(CookiesTreeModel* cookies_model) {
     return GetDisplayedNodes(cookies_model,
                              CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE);
@@ -136,7 +156,10 @@ class CookiesTreeModelTest : public testing::Test {
   ChromeThread io_thread_;
 
   scoped_ptr<TestingProfile> profile_;
-  scoped_refptr<MockBrowsingDataLocalStorageHelper> mock_browsing_data_helper_;
+  scoped_refptr<MockBrowsingDataDatabaseHelper>
+      mock_browsing_data_database_helper_;
+  scoped_refptr<MockBrowsingDataLocalStorageHelper>
+      mock_browsing_data_local_storage_helper_;
 };
 
 TEST_F(CookiesTreeModelTest, RemoveAll) {
@@ -149,12 +172,16 @@ TEST_F(CookiesTreeModelTest, RemoveAll) {
     SCOPED_TRACE("Before removing");
     EXPECT_EQ(GetMonsterCookies(monster),
               GetDisplayedCookies(cookies_model.get()));
+    EXPECT_EQ("db1,db2",
+              GetDisplayedDatabases(cookies_model.get()));
     EXPECT_EQ("origin1,origin2",
               GetDisplayedLocalStorages(cookies_model.get()));
   }
 
-  cookies_model->DeleteAllCookies();
-  cookies_model->DeleteAllLocalStorage();
+  mock_browsing_data_database_helper_->Reset();
+  mock_browsing_data_local_storage_helper_->Reset();
+
+  cookies_model->DeleteAllStoredObjects();
 
   {
     SCOPED_TRACE("After removing");
@@ -163,7 +190,8 @@ TEST_F(CookiesTreeModelTest, RemoveAll) {
     EXPECT_EQ(std::string(""), GetMonsterCookies(monster));
     EXPECT_EQ(GetMonsterCookies(monster),
               GetDisplayedCookies(cookies_model.get()));
-    EXPECT_TRUE(mock_browsing_data_helper_->delete_all_files_called_);
+    EXPECT_TRUE(mock_browsing_data_database_helper_->AllDeleted());
+    EXPECT_TRUE(mock_browsing_data_local_storage_helper_->AllDeleted());
   }
 }
 
@@ -177,17 +205,30 @@ TEST_F(CookiesTreeModelTest, Remove) {
     SCOPED_TRACE("First cookie origin removed");
     EXPECT_STREQ("B,C", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("B,C", GetDisplayedCookies(cookies_model.get()).c_str());
-    EXPECT_EQ("origin1,origin2", GetDisplayedLocalStorages(cookies_model.get()));
-    EXPECT_EQ(13, cookies_model->GetRoot()->GetTotalNodeCount());
+    EXPECT_EQ("db1,db2", GetDisplayedDatabases(cookies_model.get()));
+    EXPECT_EQ("origin1,origin2",
+              GetDisplayedLocalStorages(cookies_model.get()));
+    EXPECT_EQ(19, cookies_model->GetRoot()->GetTotalNodeCount());
   }
 
   DeleteStoredObjects(cookies_model->GetRoot()->GetChild(2));
   {
+    SCOPED_TRACE("First database origin removed");
+    EXPECT_STREQ("B,C", GetMonsterCookies(monster).c_str());
+    EXPECT_STREQ("B,C", GetDisplayedCookies(cookies_model.get()).c_str());
+    EXPECT_EQ("db2", GetDisplayedDatabases(cookies_model.get()));
+    EXPECT_EQ("origin1,origin2", GetDisplayedLocalStorages(cookies_model.get()));
+    EXPECT_EQ(16, cookies_model->GetRoot()->GetTotalNodeCount());
+  }
+
+  DeleteStoredObjects(cookies_model->GetRoot()->GetChild(3));
+  {
     SCOPED_TRACE("First local storage origin removed");
     EXPECT_STREQ("B,C", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("B,C", GetDisplayedCookies(cookies_model.get()).c_str());
+    EXPECT_EQ("db2", GetDisplayedDatabases(cookies_model.get()));
     EXPECT_EQ("origin2", GetDisplayedLocalStorages(cookies_model.get()));
-    EXPECT_EQ(10, cookies_model->GetRoot()->GetTotalNodeCount());
+    EXPECT_EQ(13, cookies_model->GetRoot()->GetTotalNodeCount());
   }
 }
 
@@ -201,22 +242,36 @@ TEST_F(CookiesTreeModelTest, RemoveCookiesNode) {
     SCOPED_TRACE("First origin removed");
     EXPECT_STREQ("B,C", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("B,C", GetDisplayedCookies(cookies_model.get()).c_str());
-    // 14 because in this case, the origin remains, although the COOKIES
+    // 20 because in this case, the origin remains, although the COOKIES
     // node beneath it has been deleted. So, we have
     // root -> foo1 -> cookies -> a, foo2, foo3 -> cookies -> c
+    // dbhost1 -> database -> db1, dbhost2 -> database -> db2,
     // host1 -> localstorage -> origin1, host2 -> localstorage -> origin2.
-    EXPECT_EQ(14, cookies_model->GetRoot()->GetTotalNodeCount());
+    EXPECT_EQ(20, cookies_model->GetRoot()->GetTotalNodeCount());
+    EXPECT_EQ("db1,db2", GetDisplayedDatabases(cookies_model.get()));
     EXPECT_EQ("origin1,origin2",
               GetDisplayedLocalStorages(cookies_model.get()));
   }
 
   DeleteStoredObjects(cookies_model->GetRoot()->GetChild(3)->GetChild(0));
   {
+    SCOPED_TRACE("First database removed");
+    EXPECT_STREQ("B,C", GetMonsterCookies(monster).c_str());
+    EXPECT_STREQ("B,C", GetDisplayedCookies(cookies_model.get()).c_str());
+    EXPECT_EQ("db2", GetDisplayedDatabases(cookies_model.get()));
+    EXPECT_EQ("origin1,origin2",
+              GetDisplayedLocalStorages(cookies_model.get()));
+    EXPECT_EQ(18, cookies_model->GetRoot()->GetTotalNodeCount());
+  }
+
+  DeleteStoredObjects(cookies_model->GetRoot()->GetChild(5)->GetChild(0));
+  {
     SCOPED_TRACE("First origin removed");
     EXPECT_STREQ("B,C", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("B,C", GetDisplayedCookies(cookies_model.get()).c_str());
+    EXPECT_EQ("db2", GetDisplayedDatabases(cookies_model.get()));
     EXPECT_EQ("origin2", GetDisplayedLocalStorages(cookies_model.get()));
-    EXPECT_EQ(12, cookies_model->GetRoot()->GetTotalNodeCount());
+    EXPECT_EQ(16, cookies_model->GetRoot()->GetTotalNodeCount());
   }
 }
 
@@ -230,20 +285,36 @@ TEST_F(CookiesTreeModelTest, RemoveCookieNode) {
     SCOPED_TRACE("Second origin COOKIES node removed");
     EXPECT_STREQ("A,C", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("A,C", GetDisplayedCookies(cookies_model.get()).c_str());
-    // 14 because in this case, the origin remains, although the COOKIES
+    EXPECT_EQ("db1,db2", GetDisplayedDatabases(cookies_model.get()));
+    EXPECT_EQ("origin1,origin2",
+              GetDisplayedLocalStorages(cookies_model.get()));
+    // 20 because in this case, the origin remains, although the COOKIES
     // node beneath it has been deleted. So, we have
     // root -> foo1 -> cookies -> a, foo2, foo3 -> cookies -> c
+    // dbhost1 -> database -> db1, dbhost2 -> database -> db2,
     // host1 -> localstorage -> origin1, host2 -> localstorage -> origin2.
-    EXPECT_EQ(14, cookies_model->GetRoot()->GetTotalNodeCount());
+    EXPECT_EQ(20, cookies_model->GetRoot()->GetTotalNodeCount());
   }
 
   DeleteStoredObjects(cookies_model->GetRoot()->GetChild(3)->GetChild(0));
   {
+    SCOPED_TRACE("First database removed");
+    EXPECT_STREQ("A,C", GetMonsterCookies(monster).c_str());
+    EXPECT_STREQ("A,C", GetDisplayedCookies(cookies_model.get()).c_str());
+    EXPECT_EQ("db2", GetDisplayedDatabases(cookies_model.get()));
+    EXPECT_EQ("origin1,origin2",
+              GetDisplayedLocalStorages(cookies_model.get()));
+    EXPECT_EQ(18, cookies_model->GetRoot()->GetTotalNodeCount());
+  }
+
+  DeleteStoredObjects(cookies_model->GetRoot()->GetChild(5)->GetChild(0));
+  {
     SCOPED_TRACE("First origin removed");
     EXPECT_STREQ("A,C", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("A,C", GetDisplayedCookies(cookies_model.get()).c_str());
+    EXPECT_EQ("db2", GetDisplayedDatabases(cookies_model.get()));
     EXPECT_EQ("origin2", GetDisplayedLocalStorages(cookies_model.get()));
-    EXPECT_EQ(12, cookies_model->GetRoot()->GetTotalNodeCount());
+    EXPECT_EQ(16, cookies_model->GetRoot()->GetTotalNodeCount());
   }
 }
 
@@ -253,19 +324,24 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNode) {
   monster->SetCookie(GURL("http://foo2"), "B=1");
   monster->SetCookie(GURL("http://foo3"), "C=1");
   monster->SetCookie(GURL("http://foo3"), "D=1");
-  CookiesTreeModel cookies_model(
-      profile_.get(), mock_browsing_data_helper_);
-  mock_browsing_data_helper_->AddLocalStorageSamples();
-  mock_browsing_data_helper_->Notify();
+  CookiesTreeModel cookies_model(profile_.get(),
+                                 mock_browsing_data_database_helper_,
+                                 mock_browsing_data_local_storage_helper_);
+  mock_browsing_data_database_helper_->AddDatabaseSamples();
+  mock_browsing_data_database_helper_->Notify();
+  mock_browsing_data_local_storage_helper_->AddLocalStorageSamples();
+  mock_browsing_data_local_storage_helper_->Notify();
 
   {
-    SCOPED_TRACE("Initial State 4 cookies, 2 local storages");
-    // 17 because there's the root, then foo1 -> cookies -> a,
+    SCOPED_TRACE("Initial State 4 cookies, 2 databases, 2 local storages");
+    // 23 because there's the root, then foo1 -> cookies -> a,
     // foo2 -> cookies -> b, foo3 -> cookies -> c,d
+    // dbhost1 -> database -> db1, dbhost2 -> database -> db2,
     // host1 -> localstorage -> origin1, host2 -> localstorage -> origin2.
-    EXPECT_EQ(17, cookies_model.GetRoot()->GetTotalNodeCount());
+    EXPECT_EQ(23, cookies_model.GetRoot()->GetTotalNodeCount());
     EXPECT_STREQ("A,B,C,D", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("A,B,C,D", GetDisplayedCookies(&cookies_model).c_str());
+    EXPECT_EQ("db1,db2", GetDisplayedDatabases(&cookies_model));
     EXPECT_EQ("origin1,origin2", GetDisplayedLocalStorages(&cookies_model));
   }
   DeleteStoredObjects(cookies_model.GetRoot()->GetChild(2));
@@ -273,7 +349,9 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNode) {
     SCOPED_TRACE("Third origin removed");
     EXPECT_STREQ("A,B", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("A,B", GetDisplayedCookies(&cookies_model).c_str());
-    EXPECT_EQ(13, cookies_model.GetRoot()->GetTotalNodeCount());
+    EXPECT_EQ("db1,db2", GetDisplayedDatabases(&cookies_model));
+    EXPECT_EQ("origin1,origin2", GetDisplayedLocalStorages(&cookies_model));
+    EXPECT_EQ(19, cookies_model.GetRoot()->GetTotalNodeCount());
   }
 }
 
@@ -284,18 +362,24 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNodeOf3) {
   monster->SetCookie(GURL("http://foo3"), "C=1");
   monster->SetCookie(GURL("http://foo3"), "D=1");
   monster->SetCookie(GURL("http://foo3"), "E=1");
-  CookiesTreeModel cookies_model(profile_.get(), mock_browsing_data_helper_);
-  mock_browsing_data_helper_->AddLocalStorageSamples();
-  mock_browsing_data_helper_->Notify();
+  CookiesTreeModel cookies_model(profile_.get(),
+                                 mock_browsing_data_database_helper_,
+                                 mock_browsing_data_local_storage_helper_);
+  mock_browsing_data_database_helper_->AddDatabaseSamples();
+  mock_browsing_data_database_helper_->Notify();
+  mock_browsing_data_local_storage_helper_->AddLocalStorageSamples();
+  mock_browsing_data_local_storage_helper_->Notify();
 
   {
-    SCOPED_TRACE("Initial State 5 cookies, 2 local storages");
-    // 17 because there's the root, then foo1 -> cookies -> a,
+    SCOPED_TRACE("Initial State 5 cookies, 2 databases, 2 local storages");
+    // 24 because there's the root, then foo1 -> cookies -> a,
     // foo2 -> cookies -> b, foo3 -> cookies -> c,d,e
+    // dbhost1 -> database -> db1, dbhost2 -> database -> db2,
     // host1 -> localstorage -> origin1, host2 -> localstorage -> origin2.
-    EXPECT_EQ(18, cookies_model.GetRoot()->GetTotalNodeCount());
+    EXPECT_EQ(24, cookies_model.GetRoot()->GetTotalNodeCount());
     EXPECT_STREQ("A,B,C,D,E", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("A,B,C,D,E", GetDisplayedCookies(&cookies_model).c_str());
+    EXPECT_EQ("db1,db2", GetDisplayedDatabases(&cookies_model));
     EXPECT_EQ("origin1,origin2", GetDisplayedLocalStorages(&cookies_model));
   }
   DeleteStoredObjects(cookies_model.GetRoot()->GetChild(2)->GetChild(0)->
@@ -304,7 +388,8 @@ TEST_F(CookiesTreeModelTest, RemoveSingleCookieNodeOf3) {
     SCOPED_TRACE("Middle cookie in third origin removed");
     EXPECT_STREQ("A,B,C,E", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("A,B,C,E", GetDisplayedCookies(&cookies_model).c_str());
-    EXPECT_EQ(17, cookies_model.GetRoot()->GetTotalNodeCount());
+    EXPECT_EQ(23, cookies_model.GetRoot()->GetTotalNodeCount());
+    EXPECT_EQ("db1,db2", GetDisplayedDatabases(&cookies_model));
     EXPECT_EQ("origin1,origin2", GetDisplayedLocalStorages(&cookies_model));
   }
 }
@@ -316,7 +401,9 @@ TEST_F(CookiesTreeModelTest, RemoveSecondOrigin) {
   monster->SetCookie(GURL("http://foo3"), "C=1");
   monster->SetCookie(GURL("http://foo3"), "D=1");
   monster->SetCookie(GURL("http://foo3"), "E=1");
-  CookiesTreeModel cookies_model(profile_.get(), mock_browsing_data_helper_);
+  CookiesTreeModel cookies_model(profile_.get(),
+      mock_browsing_data_database_helper_,
+      mock_browsing_data_local_storage_helper_);
   {
     SCOPED_TRACE("Initial State 5 cookies");
     // 11 because there's the root, then foo1 -> cookies -> a,
@@ -347,8 +434,9 @@ TEST_F(CookiesTreeModelTest, OriginOrdering) {
   monster->SetCookie(GURL("http://foo3.com"), "G=1");
   monster->SetCookie(GURL("http://foo4.com"), "H=1");
 
-  CookiesTreeModel cookies_model(
-      profile_.get(), new MockBrowsingDataLocalStorageHelper(profile_.get()));
+  CookiesTreeModel cookies_model(profile_.get(),
+      new MockBrowsingDataDatabaseHelper(profile_.get()),
+      new MockBrowsingDataLocalStorageHelper(profile_.get()));
 
   {
     SCOPED_TRACE("Initial State 8 cookies");

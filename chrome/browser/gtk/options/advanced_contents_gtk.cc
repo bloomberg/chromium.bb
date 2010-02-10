@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -773,6 +773,8 @@ void PrivacySection::OnShowCookiesButtonClicked(
     GtkButton *button, PrivacySection* privacy_section) {
   privacy_section->UserMetricsRecordAction("Options_ShowCookies", NULL);
   CookiesView::Show(privacy_section->profile(),
+                    new BrowsingDataDatabaseHelper(
+                        privacy_section->profile()),
                     new BrowsingDataLocalStorageHelper(
                         privacy_section->profile()));
 }

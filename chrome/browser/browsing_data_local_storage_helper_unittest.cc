@@ -145,26 +145,3 @@ IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, DeleteSingleFile) {
   }
   ASSERT_EQ(2, num_files);
 }
-
-IN_PROC_BROWSER_TEST_F(BrowsingDataLocalStorageHelperTest, DeleteAllFiles) {
-  scoped_refptr<BrowsingDataLocalStorageHelper> local_storage_helper(
-      new BrowsingDataLocalStorageHelper(&testing_profile_));
-  CreateLocalStorageFilesForTest();
-  local_storage_helper->DeleteAllLocalStorageFiles();
-  scoped_refptr<WaitForWebKitThread> wait_for_webkit_thread(
-      new WaitForWebKitThread);
-  wait_for_webkit_thread->QuitUiMessageLoopAfterWebKitThreadNotified();
-  // Blocks until WaitForWebKitThread is notified.
-  ui_test_utils::RunMessageLoop();
-  // Ensure the alls files but the one without local storage extension have been
-  // deleted.
-  file_util::FileEnumerator file_enumerator(
-      GetLocalStoragePathForTestingProfile(),
-      false,
-      file_util::FileEnumerator::FILES);
-  for (FilePath file_path = file_enumerator.Next();
-       !file_path.empty();
-       file_path = file_enumerator.Next()) {
-    ASSERT_TRUE(FilePath(kTestFileInvalid) == file_path.BaseName());
-  }
-}

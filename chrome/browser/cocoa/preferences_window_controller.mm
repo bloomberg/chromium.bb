@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -1313,10 +1313,13 @@ const int kDisabledIndex = 1;
 // Shows the cookies controller.
 - (IBAction)showCookies:(id)sender {
   // The controller will clean itself up.
+  BrowsingDataDatabaseHelper* databaseHelper =
+      new BrowsingDataDatabaseHelper(profile_);
   BrowsingDataLocalStorageHelper* storageHelper =
       new BrowsingDataLocalStorageHelper(profile_);
   CookiesWindowController* controller =
       [[CookiesWindowController alloc] initWithProfile:profile_
+                                        databaseHelper:databaseHelper
                                          storageHelper:storageHelper];
   [controller attachSheetTo:[self window]];
 }

@@ -64,8 +64,10 @@
         # The only thing used from browser is Browser::Type.
         'browser/browser.h',
         'browser/cocoa/browser_test_helper.h',
+        'browser/mock_browsing_data_database_helper.h',
+        'browser/mock_browsing_data_database_helper.cc',
         'browser/mock_browsing_data_local_storage_helper.h',
-		'browser/mock_browsing_data_local_storage_helper.cc',
+        'browser/mock_browsing_data_local_storage_helper.cc',
         # TODO:  these should live here but are currently used by
         # production code code in libbrowser (in chrome.gyp).
         #'browser/net/url_request_mock_http_job.cc',

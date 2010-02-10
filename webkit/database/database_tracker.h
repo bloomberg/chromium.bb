@@ -35,32 +35,41 @@ class OriginInfo {
       : origin_(origin_info.origin_),
         total_size_(origin_info.total_size_),
         quota_(origin_info.quota_),
-        database_sizes_(origin_info.database_sizes_) {}
-  string16 GetOrigin() const { return origin_; }
+        database_info_(origin_info.database_info_) {}
+  const string16& GetOrigin() const { return origin_; }
   int64 TotalSize() const { return total_size_; }
   int64 Quota() const { return quota_; }
   void GetAllDatabaseNames(std::vector<string16>* databases) const {
-    for (std::map<string16, int64>::const_iterator it = database_sizes_.begin();
-         it != database_sizes_.end(); it++) {
+    for (std::map<string16, DatabaseInfo>::const_iterator it =
+         database_info_.begin(); it != database_info_.end(); it++) {
       databases->push_back(it->first);
     }
   }
   int64 GetDatabaseSize(const string16& database_name) const {
-    std::map<string16, int64>::const_iterator it =
-        database_sizes_.find(database_name);
-    if (it != database_sizes_.end())
-      return it->second;
+    std::map<string16, DatabaseInfo>::const_iterator it =
+        database_info_.find(database_name);
+    if (it != database_info_.end())
+      return it->second.first;
     return 0;
+  }
+  string16 GetDatabaseDescription(const string16& database_name) const {
+    std::map<string16, DatabaseInfo>::const_iterator it =
+        database_info_.find(database_name);
+    if (it != database_info_.end())
+      return it->second.second;
+    return string16();
   }
 
  protected:
+  typedef std::pair<int64, string16> DatabaseInfo;
+
   OriginInfo(const string16& origin, int64 total_size, int64 quota)
       : origin_(origin), total_size_(total_size), quota_(quota) { }
 
   string16 origin_;
   int64 total_size_;
   int64 quota_;
-  std::map<string16, int64> database_sizes_;
+  std::map<string16, DatabaseInfo> database_info_;
 };
 
 // This class manages the main database, and keeps track of per origin quotas.
@@ -137,10 +146,16 @@ class DatabaseTracker
     void SetOrigin(const string16& origin) { origin_ = origin; }
     void SetQuota(int64 new_quota) { quota_ = new_quota; }
     void SetDatabaseSize(const string16& database_name, int64 new_size) {
-      int64 old_size = database_sizes_[database_name];
-      database_sizes_[database_name] = new_size;
+      int64 old_size = 0;
+      if (database_info_.find(database_name) != database_info_.end())
+        old_size = database_info_[database_name].first;
+      database_info_[database_name].first = new_size;
       if (new_size != old_size)
         total_size_ += new_size - old_size;
+    }
+    void SetDatabaseDescription(const string16& database_name,
+                                const string16& description) {
+      database_info_[database_name].second = description;
     }
   };
 

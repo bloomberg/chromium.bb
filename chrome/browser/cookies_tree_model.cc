@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,17 @@ CookieTreeCookieNode::CookieTreeCookieNode(
 }
 
 void CookieTreeCookieNode::DeleteStoredObjects() {
-  GetModel()->DeleteCookie(*cookie_);
+  // notify CookieMonster that we should delete this cookie
+  // Since we are running on the UI thread don't call GetURLRequestContext().
+  net::CookieMonster* monster = GetModel()->profile_->
+      GetRequestContext()->GetCookieStore()->GetCookieMonster();
+  // We have stored a copy of all the cookies in the model, and our model is
+  // never re-calculated. Thus, we just need to delete the nodes from our
+  // model, and tell CookieMonster to delete the cookies. We can keep the
+  // vector storing the cookies in-tact and not delete from there (that would
+  // invalidate our pointers), and the fact that it contains semi out-of-date
+  // data is not problematic as we don't re-build the model based on that.
+  monster->DeleteCookie(cookie_->first, cookie_->second, true);
 }
 
 namespace {
@@ -115,19 +125,31 @@ class OriginNodeComparator {
 }  // namespace
 
 ///////////////////////////////////////////////////////////////////////////////
+// CookieTreeDatabaseNode, public:
+
+CookieTreeDatabaseNode::CookieTreeDatabaseNode(
+    BrowsingDataDatabaseHelper::DatabaseInfo* database_info)
+    : CookieTreeNode(UTF8ToWide(database_info->database_name)),
+      database_info_(database_info) {
+}
+
+void CookieTreeDatabaseNode::DeleteStoredObjects() {
+  GetModel()->database_helper_->DeleteDatabase(
+      database_info_->origin_identifier, database_info_->database_name);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // CookieTreeLocalStorageNode, public:
 
 CookieTreeLocalStorageNode::CookieTreeLocalStorageNode(
     BrowsingDataLocalStorageHelper::LocalStorageInfo* local_storage_info)
-    : CookieTreeNode(UTF8ToWide(
-        !local_storage_info->origin.empty() ?
-            local_storage_info->origin :
-            local_storage_info->database_identifier)),
+    : CookieTreeNode(UTF8ToWide(local_storage_info->origin)),
       local_storage_info_(local_storage_info) {
 }
 
 void CookieTreeLocalStorageNode::DeleteStoredObjects() {
-  GetModel()->DeleteLocalStorage(local_storage_info_->file_path);
+  GetModel()->local_storage_helper_->DeleteLocalStorageFile(
+      local_storage_info_->file_path);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -172,13 +194,29 @@ CookieTreeCookiesNode* CookieTreeOriginNode::GetOrCreateCookiesNode() {
   return retval;
 }
 
+CookieTreeDatabasesNode*
+    CookieTreeOriginNode::GetOrCreateDatabasesNode() {
+  if (databases_child_)
+    return databases_child_;
+  // Need to make a Database node, add it to the tree, and return it.
+  CookieTreeDatabasesNode* retval = new CookieTreeDatabasesNode;
+  GetModel()->Add(this, cookies_child_ ? 1 : 0, retval);
+  databases_child_ = retval;
+  return retval;
+}
+
 CookieTreeLocalStoragesNode*
     CookieTreeOriginNode::GetOrCreateLocalStoragesNode() {
   if (local_storages_child_)
     return local_storages_child_;
-  // need to make a LocalStorages node, add it to the tree, and return it
+  // Need to make a LocalStorages node, add it to the tree, and return it.
   CookieTreeLocalStoragesNode* retval = new CookieTreeLocalStoragesNode;
-  GetModel()->Add(this, cookies_child_ ? 1 : 0, retval);
+  int index = 0;
+  if (cookies_child_)
+    index++;
+  if (databases_child_)
+    index++;
+  GetModel()->Add(this, index, retval);
   local_storages_child_ = retval;
   return retval;
 }
@@ -198,6 +236,25 @@ void CookieTreeCookiesNode::AddCookieNode(
                   new_child,
                   CookieTreeCookieNode::CookieNodeComparator());
   GetModel()->Add(this, (cookie_iterator - children().begin()), new_child);
+}
+
+///////////////////////////////////////////////////////////////////////////////
+// CookieTreeDatabasesNode, public:
+
+CookieTreeDatabasesNode::CookieTreeDatabasesNode()
+    : CookieTreeNode(l10n_util::GetString(IDS_COOKIES_WEB_DATABASES)) {
+}
+
+void CookieTreeDatabasesNode::AddDatabaseNode(
+    CookieTreeDatabaseNode* new_child) {
+  std::vector<CookieTreeNode*>::iterator database_iterator =
+      lower_bound(children().begin(),
+                  children().end(),
+                  new_child,
+                  CookieTreeDatabaseNode::CookieNodeComparator());
+  GetModel()->Add(this,
+                  (database_iterator - children().begin()),
+                  new_child);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -232,6 +289,19 @@ bool CookieTreeCookieNode::CookieNodeComparator::operator() (
 }
 
 ///////////////////////////////////////////////////////////////////////////////
+// CookieTreeDatabaseNode, private
+
+bool CookieTreeDatabaseNode::CookieNodeComparator::operator() (
+    const CookieTreeNode* lhs, const CookieTreeNode* rhs) {
+  const CookieTreeDatabaseNode* left  =
+      static_cast<const CookieTreeDatabaseNode*>(lhs);
+  const CookieTreeDatabaseNode* right =
+      static_cast<const CookieTreeDatabaseNode*>(rhs);
+  return (left->database_info_->database_name <
+          right->database_info_->database_name);
+}
+
+///////////////////////////////////////////////////////////////////////////////
 // CookieTreeLocalStorageNode, private
 
 bool CookieTreeLocalStorageNode::CookieNodeComparator::operator() (
@@ -249,18 +319,24 @@ bool CookieTreeLocalStorageNode::CookieNodeComparator::operator() (
 
 CookiesTreeModel::CookiesTreeModel(
     Profile* profile,
+    BrowsingDataDatabaseHelper* database_helper,
     BrowsingDataLocalStorageHelper* local_storage_helper)
     : ALLOW_THIS_IN_INITIALIZER_LIST(TreeNodeModel<CookieTreeNode>(
           new CookieTreeRootNode(this))),
       profile_(profile),
+      database_helper_(database_helper),
       local_storage_helper_(local_storage_helper) {
   LoadCookies();
+  DCHECK(database_helper_);
+  database_helper_->StartFetching(NewCallback(
+      this, &CookiesTreeModel::OnDatabaseModelInfoLoaded));
   DCHECK(local_storage_helper_);
   local_storage_helper_->StartFetching(NewCallback(
       this, &CookiesTreeModel::OnStorageModelInfoLoaded));
 }
 
 CookiesTreeModel::~CookiesTreeModel() {
+  database_helper_->CancelNotification();
   local_storage_helper_->CancelNotification();
 }
 
@@ -289,6 +365,8 @@ int CookiesTreeModel::GetIconIndex(TreeModelNode* node) {
     case CookieTreeNode::DetailedInfo::TYPE_COOKIE:
       return COOKIE;
       break;
+    case CookieTreeNode::DetailedInfo::TYPE_DATABASE:
+      // TODO(jochen): add an icon for databases.
     case CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE:
       // TODO(bulach): add an icon for local storage.
     default:
@@ -297,7 +375,7 @@ int CookiesTreeModel::GetIconIndex(TreeModelNode* node) {
 }
 
 void CookiesTreeModel::LoadCookies() {
-  LoadCookiesWithFilter(L"");
+  LoadCookiesWithFilter(std::wstring());
 }
 
 void CookiesTreeModel::LoadCookiesWithFilter(const std::wstring& filter) {
@@ -324,22 +402,7 @@ void CookiesTreeModel::LoadCookiesWithFilter(const std::wstring& filter) {
   }
 }
 
-void CookiesTreeModel::DeleteCookie(
-    const net::CookieMonster::CookieListPair& cookie) {
-  // notify CookieMonster that we should delete this cookie
-  // Since we are running on the UI thread don't call GetURLRequestContext().
-  net::CookieMonster* monster =
-      profile_->GetRequestContext()->GetCookieStore()->GetCookieMonster();
-  // We have stored a copy of all the cookies in the model, and our model is
-  // never re-calculated. Thus, we just need to delete the nodes from our
-  // model, and tell CookieMonster to delete the cookies. We can keep the
-  // vector storing the cookies in-tact and not delete from there (that would
-  // invalidate our pointers), and the fact that it contains semi out-of-date
-  // data is not problematic as we don't re-build the model based on that.
-  monster->DeleteCookie(cookie.first, cookie.second, true);
-}
-
-void CookiesTreeModel::DeleteAllCookies() {
+void CookiesTreeModel::DeleteAllStoredObjects() {
   CookieTreeNode* root = GetRoot();
   root->DeleteStoredObjects();
   int num_children = root->GetChildCount();
@@ -356,28 +419,47 @@ void CookiesTreeModel::DeleteCookieNode(CookieTreeNode* cookie_node) {
   delete Remove(parent_node, cookie_node_index);
 }
 
-void CookiesTreeModel::DeleteLocalStorage(const FilePath& file_path) {
-  local_storage_helper_->DeleteLocalStorageFile(file_path);
-}
-
-void CookiesTreeModel::DeleteAllLocalStorage() {
-  local_storage_helper_->DeleteAllLocalStorageFiles();
-}
-
 void CookiesTreeModel::UpdateSearchResults(const std::wstring& filter) {
   CookieTreeNode* root = GetRoot();
   int num_children = root->GetChildCount();
   for (int i = num_children - 1; i >= 0; --i)
     delete Remove(root, i);
   LoadCookiesWithFilter(filter);
+  PopulateDatabaseInfoWithFilter(filter);
   PopulateLocalStorageInfoWithFilter(filter);
+  NotifyObserverTreeNodeChanged(root);
+}
+
+void CookiesTreeModel::OnDatabaseModelInfoLoaded(
+    const DatabaseInfoList& database_info) {
+  database_info_list_ = database_info;
+  PopulateDatabaseInfoWithFilter(std::wstring());
+}
+
+void CookiesTreeModel::PopulateDatabaseInfoWithFilter(
+    const std::wstring& filter) {
+  CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(GetRoot());
+  for (DatabaseInfoList::iterator database_info = database_info_list_.begin();
+       database_info != database_info_list_.end();
+       ++database_info) {
+    std::string origin = database_info->host;
+    if (!filter.size() ||
+        (UTF8ToWide(origin).find(filter) != std::wstring::npos)) {
+      CookieTreeOriginNode* origin_node = root->GetOrCreateOriginNode(
+          UTF8ToWide(database_info->host));
+      CookieTreeDatabasesNode* databases_node =
+          origin_node->GetOrCreateDatabasesNode();
+      databases_node->AddDatabaseNode(
+          new CookieTreeDatabaseNode(&(*database_info)));
+    }
+  }
   NotifyObserverTreeNodeChanged(root);
 }
 
 void CookiesTreeModel::OnStorageModelInfoLoaded(
     const LocalStorageInfoList& local_storage_info) {
   local_storage_info_list_ = local_storage_info;
-  PopulateLocalStorageInfoWithFilter(L"");
+  PopulateLocalStorageInfoWithFilter(std::wstring());
 }
 
 void CookiesTreeModel::PopulateLocalStorageInfoWithFilter(
@@ -387,10 +469,7 @@ void CookiesTreeModel::PopulateLocalStorageInfoWithFilter(
        local_storage_info_list_.begin();
        local_storage_info != local_storage_info_list_.end();
        ++local_storage_info) {
-    std::string origin =
-        !local_storage_info->host.empty() ?
-            local_storage_info->host :
-            local_storage_info->database_identifier;
+    std::string origin = local_storage_info->host;
     if (!filter.size() ||
         (UTF8ToWide(origin).find(filter) != std::wstring::npos)) {
       CookieTreeOriginNode* origin_node = root->GetOrCreateOriginNode(

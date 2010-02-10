@@ -12,6 +12,7 @@
 #include "chrome/browser/cocoa/clear_browsing_data_controller.h"
 #import "chrome/browser/cocoa/cookies_window_controller.h"
 #include "chrome/browser/cocoa/cocoa_test_helper.h"
+#include "chrome/browser/mock_browsing_data_database_helper.h"
 #include "chrome/browser/mock_browsing_data_local_storage_helper.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/cookies_tree_model.h"
@@ -53,9 +54,11 @@ class CookiesWindowControllerTest : public CocoaTest {
     CocoaTest::SetUp();
     TestingProfile* profile = browser_helper_.profile();
     profile->CreateRequestContext();
+    database_helper_ = new MockBrowsingDataDatabaseHelper(profile);
     local_storage_helper_ = new MockBrowsingDataLocalStorageHelper(profile);
     controller_.reset(
         [[CookiesWindowController alloc] initWithProfile:profile
+                                          databaseHelper:database_helper_
                                            storageHelper:local_storage_helper_]
     );
   }
@@ -78,6 +81,7 @@ class CookiesWindowControllerTest : public CocoaTest {
   // Need an IO thread to not leak from TestingProfile::CreateRequestContext().
   ChromeThread io_thread_;
   scoped_nsobject<CookiesWindowController> controller_;
+  MockBrowsingDataDatabaseHelper* database_helper_;
   MockBrowsingDataLocalStorageHelper* local_storage_helper_;
 };
 
@@ -130,7 +134,8 @@ TEST_F(CookiesWindowControllerTest, FindCocoaNodeRecursive) {
 TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeCookie) {
   net::CookieMonster* cm = browser_helper_.profile()->GetCookieMonster();
   cm->SetCookie(GURL("http://foo.com"), "A=B");
-  CookiesTreeModel model(browser_helper_.profile(), local_storage_helper_);
+  CookiesTreeModel model(browser_helper_.profile(), database_helper_,
+      local_storage_helper_);
 
   // Root --> foo.com --> Cookies --> A. Create node for 'A'.
   TreeModelNode* node = model.GetRoot()->GetChild(0)->GetChild(0)->GetChild(0);
@@ -151,7 +156,8 @@ TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeCookie) {
 TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeRecursive) {
   net::CookieMonster* cm = browser_helper_.profile()->GetCookieMonster();
   cm->SetCookie(GURL("http://foo.com"), "A=B");
-  CookiesTreeModel model(browser_helper_.profile(), local_storage_helper_);
+  CookiesTreeModel model(browser_helper_.profile(), database_helper_,
+      local_storage_helper_);
 
   // Root --> foo.com --> Cookies --> A. Create node for 'foo.com'.
   CookieTreeNode* node = model.GetRoot()->GetChild(0);
@@ -194,6 +200,7 @@ TEST_F(CookiesWindowControllerTest, TreeNodesAdded) {
 
   controller_.reset(
       [[CookiesWindowController alloc] initWithProfile:profile
+                                        databaseHelper:database_helper_
                                          storageHelper:local_storage_helper_]);
 
   // Root --> foo.com --> Cookies.
@@ -236,6 +243,7 @@ TEST_F(CookiesWindowControllerTest, TreeNodesRemoved) {
 
   controller_.reset(
       [[CookiesWindowController alloc] initWithProfile:profile
+                                         databaseHelper:database_helper_
                                          storageHelper:local_storage_helper_]);
 
   // Root --> foo.com --> Cookies.
@@ -267,6 +275,7 @@ TEST_F(CookiesWindowControllerTest, TreeNodeChildrenReordered) {
 
   controller_.reset(
       [[CookiesWindowController alloc] initWithProfile:profile
+                                        databaseHelper:database_helper_
                                          storageHelper:local_storage_helper_]);
 
   // Root --> foo.com --> Cookies.
@@ -313,6 +322,7 @@ TEST_F(CookiesWindowControllerTest, TreeNodeChanged) {
 
   controller_.reset(
       [[CookiesWindowController alloc] initWithProfile:profile
+                                        databaseHelper:database_helper_
                                          storageHelper:local_storage_helper_]);
 
   CookiesTreeModel* model = [controller_ treeModel];
@@ -346,6 +356,7 @@ TEST_F(CookiesWindowControllerTest, TestDeleteCookie) {
   // scoper, we'd get a double-free.
   CookiesWindowController* controller =
       [[CookiesWindowController alloc] initWithProfile:profile
+                                        databaseHelper:database_helper_
                                          storageHelper:local_storage_helper_];
   [controller attachSheetTo:test_window()];
   NSTreeController* treeController = [controller treeController];
@@ -377,6 +388,7 @@ TEST_F(CookiesWindowControllerTest, TestDidExpandItem) {
 
   controller_.reset(
       [[CookiesWindowController alloc] initWithProfile:profile
+                                        databaseHelper:database_helper_
                                          storageHelper:local_storage_helper_]);
 
   // Root --> foo.com.
@@ -442,10 +454,12 @@ TEST_F(CookiesWindowControllerTest, RemoveButtonEnabled) {
 
   // This will clean itself up when we call |-closeSheet:|. If we reset the
   // scoper, we'd get a double-free.
+  database_helper_ = new MockBrowsingDataDatabaseHelper(profile);
   local_storage_helper_ = new MockBrowsingDataLocalStorageHelper(profile);
   local_storage_helper_->AddLocalStorageSamples();
   CookiesWindowController* controller =
       [[CookiesWindowController alloc] initWithProfile:profile
+                                        databaseHelper:database_helper_
                                          storageHelper:local_storage_helper_];
   local_storage_helper_->Notify();
   [controller attachSheetTo:test_window()];
@@ -520,6 +534,7 @@ TEST_F(CookiesWindowControllerTest, UpdateFilter)
 
   controller_.reset(
       [[CookiesWindowController alloc] initWithProfile:profile
+                                        databaseHelper:database_helper_
                                          storageHelper:local_storage_helper_]);
 
   // Make sure we registered all five cookies.
@@ -564,10 +579,12 @@ TEST_F(CookiesWindowControllerTest, CreateLocalStorageNodes) {
   net::CookieMonster* cm = profile->GetCookieMonster();
   cm->SetCookie(GURL("http://google.com"), "A=B");
   cm->SetCookie(GURL("http://dev.chromium.org"), "C=D");
+  database_helper_ = new MockBrowsingDataDatabaseHelper(profile);
   local_storage_helper_ = new MockBrowsingDataLocalStorageHelper(profile);
   local_storage_helper_->AddLocalStorageSamples();
   controller_.reset(
       [[CookiesWindowController alloc] initWithProfile:profile
+                                        databaseHelper:database_helper_
                                          storageHelper:local_storage_helper_]);
   local_storage_helper_->Notify();
 

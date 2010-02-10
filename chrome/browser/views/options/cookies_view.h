@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/task.h"
-#include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "net/base/cookie_monster.h"
 #include "views/controls/button/button.h"
 #include "views/controls/tree/tree_view.h"
@@ -25,10 +24,10 @@ class NativeButton;
 }  // namespace views
 
 
-class BrowsingDataLocalStorageHelper;
 class CookieInfoView;
 class CookiesTreeModel;
 class CookiesTreeView;
+class DatabaseInfoView;
 class LocalStorageInfoView;
 class Profile;
 class Timer;
@@ -102,6 +101,9 @@ class CookiesView : public views::View,
   // Update the UI when a cookie is selected.
   void UpdateForCookieState();
 
+  // Update the UI when a database is selected.
+  void UpdateForDatabaseState();
+
   // Update the UI when a local storage is selected.
   void UpdateForLocalStorageState();
 
@@ -115,6 +117,7 @@ class CookiesView : public views::View,
   views::Label* description_label_;
   CookiesTreeView* cookies_tree_;
   CookieInfoView* cookie_info_view_;
+  DatabaseInfoView* database_info_view_;
   LocalStorageInfoView* local_storage_info_view_;
   views::NativeButton* remove_button_;
   views::NativeButton* remove_all_button_;

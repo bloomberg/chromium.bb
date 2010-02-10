@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -57,16 +57,6 @@ void BrowsingDataLocalStorageHelper::DeleteLocalStorageFile(
            file_path));
 }
 
-void BrowsingDataLocalStorageHelper::DeleteAllLocalStorageFiles() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  ChromeThread::PostTask(
-      ChromeThread::WEBKIT, FROM_HERE,
-      NewRunnableMethod(
-          this,
-          &BrowsingDataLocalStorageHelper::
-              DeleteAllLocalStorageFilesInWebKitThread));
-}
-
 void BrowsingDataLocalStorageHelper::FetchLocalStorageInfoInWebKitThread() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   file_util::FileEnumerator file_enumerator(
@@ -118,11 +108,4 @@ void BrowsingDataLocalStorageHelper::DeleteLocalStorageFileInWebKitThread(
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
   profile_->GetWebKitContext()->dom_storage_context()->DeleteLocalStorageFile(
       file_path);
-}
-
-void
-    BrowsingDataLocalStorageHelper::DeleteAllLocalStorageFilesInWebKitThread() {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  profile_->GetWebKitContext()->dom_storage_context()
-      ->DeleteAllLocalStorageFiles();
 }

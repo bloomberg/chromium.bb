@@ -129,6 +129,9 @@ FilePath DatabaseTracker::GetFullDBFilePath(
 bool DatabaseTracker::GetAllOriginsInfo(std::vector<OriginInfo>* origins_info) {
   DCHECK(origins_info);
   DCHECK(origins_info->empty());
+  if (!LazyInit())
+    return false;
+
   std::vector<string16> origins;
   if (!databases_table_->GetAllOrigins(&origins))
     return false;
@@ -290,6 +293,7 @@ DatabaseTracker::CachedOriginInfo* DatabaseTracker::GetCachedOriginInfo(
       int64 db_file_size =
           GetDBFileSize(origin_identifier, it->database_name);
       origin_info.SetDatabaseSize(it->database_name, db_file_size);
+      origin_info.SetDatabaseDescription(it->database_name, it->description);
     }
 
     int64 origin_quota = quota_table_->GetOriginQuota(origin_identifier);

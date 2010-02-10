@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,8 +68,6 @@ class BrowsingDataLocalStorageHelper
   virtual void CancelNotification();
   // Requests a single local storage file to be deleted in the WEBKIT thread.
   virtual void DeleteLocalStorageFile(const FilePath& file_path);
-  // Requests all local storage files to be deleted in the WEBKIT thread.
-  virtual void DeleteAllLocalStorageFiles();
 
  private:
   friend class base::RefCountedThreadSafe<BrowsingDataLocalStorageHelper>;
@@ -82,8 +80,6 @@ class BrowsingDataLocalStorageHelper
   void NotifyInUIThread();
   // Delete a single local storage file in the WEBKIT thread.
   void DeleteLocalStorageFileInWebKitThread(const FilePath& file_path);
-  // Delete all local storage files in the WEBKIT thread.
-  void DeleteAllLocalStorageFilesInWebKitThread();
 
   Profile* profile_;
   // This only mutates on the UI thread.

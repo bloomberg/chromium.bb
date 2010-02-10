@@ -7,8 +7,7 @@
 MockBrowsingDataLocalStorageHelper::MockBrowsingDataLocalStorageHelper(
   Profile* profile)
   : BrowsingDataLocalStorageHelper(profile),
-    profile_(profile),
-    delete_all_files_called_(false) {
+    profile_(profile) {
 }
 
 MockBrowsingDataLocalStorageHelper::~MockBrowsingDataLocalStorageHelper() {
@@ -25,11 +24,9 @@ void MockBrowsingDataLocalStorageHelper::CancelNotification() {
 
 void MockBrowsingDataLocalStorageHelper::DeleteLocalStorageFile(
     const FilePath& file_path) {
+  CHECK(files_.find(file_path.value()) != files_.end());
   last_deleted_file_ = file_path;
-}
-
-void MockBrowsingDataLocalStorageHelper::DeleteAllLocalStorageFiles() {
-  delete_all_files_called_ = true;
+  files_[file_path.value()] = false;
 }
 
 void MockBrowsingDataLocalStorageHelper::AddLocalStorageSamples() {
@@ -37,13 +34,29 @@ void MockBrowsingDataLocalStorageHelper::AddLocalStorageSamples() {
       BrowsingDataLocalStorageHelper::LocalStorageInfo(
           "http", "host1", 1, "db1", "origin1",
           FilePath(FILE_PATH_LITERAL("file1")), 1, base::Time()));
+  files_[FILE_PATH_LITERAL("file1")] = true;
   response_.push_back(
       BrowsingDataLocalStorageHelper::LocalStorageInfo(
           "http", "host2", 2, "db2", "origin2",
           FilePath(FILE_PATH_LITERAL("file2")), 2, base::Time()));
+  files_[FILE_PATH_LITERAL("file2")] = true;
 }
 
 void MockBrowsingDataLocalStorageHelper::Notify() {
   CHECK(callback_.get());
   callback_->Run(response_);
+}
+
+void MockBrowsingDataLocalStorageHelper::Reset() {
+  for (std::map<const FilePath::StringType, bool>::iterator i = files_.begin();
+       i != files_.end(); ++i)
+    i->second = true;
+}
+
+bool MockBrowsingDataLocalStorageHelper::AllDeleted() {
+  for (std::map<const FilePath::StringType, bool>::const_iterator i =
+       files_.begin(); i != files_.end(); ++i)
+    if (i->second)
+      return false;
+  return true;
 }
