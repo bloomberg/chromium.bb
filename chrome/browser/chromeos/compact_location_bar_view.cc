@@ -159,16 +159,20 @@ void CompactLocationBarView::Layout() {
   int cur_x = kCompactLocationLeftRightMargin;
 
   gfx::Size reload_size = reload_->GetPreferredSize();
-  reload_->SetBounds(cur_x, 0, reload_size.width(), height());
+  int reload_y = (height() - reload_size.height()) / 2;
+  reload_->SetBounds(cur_x, reload_y,
+                     reload_size.width(), reload_size.height());
   cur_x += reload_size.width() + kEntryLeftMargin;
 
   gfx::Size star_size = star_->GetPreferredSize();
-  star_->SetBounds(cur_x, 0, star_size.width(), star_size.height());
+  int star_y = (height() - star_size.height()) / 2;
+  star_->SetBounds(cur_x, star_y, star_size.width(), star_size.height());
   cur_x += star_size.width();
 
   gfx::Size ba_size = browser_actions_->GetPreferredSize();
+  int ba_y = (height() - ba_size.height()) / 2;
   browser_actions_->SetBounds(
-      width() - ba_size.width(), 0, ba_size.width(), height());
+      width() - ba_size.width(), ba_y, ba_size.width(), ba_size.height());
   int location_entry_width = browser_actions_->x() - cur_x;
   if (ba_size.IsEmpty()) {
     // BrowserActionsContainer has its own margin on right.
