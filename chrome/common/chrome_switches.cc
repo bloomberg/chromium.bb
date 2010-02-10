@@ -437,6 +437,9 @@ const char kNoFirstRun[]                    = "no-first-run";
 // Pages may still be able to generate inconsistent data from plugins.
 const char kNoJsRandomness[]                = "no-js-randomness";
 
+// Don't send HTTP-Referer headers.
+const char kNoReferrers[]                   = "no-referrers";
+
 // Don't use a proxy server, always make direct connections. Overrides any
 // other proxy server flags that are passed.
 const char kNoProxyServer[]                 = "no-proxy-server";

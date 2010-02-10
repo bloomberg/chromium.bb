@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -379,7 +379,8 @@ void ResourceDispatcherHost::BeginRequest(
   URLRequest* request = new URLRequest(request_data.url, this);
   request->set_method(request_data.method);
   request->set_first_party_for_cookies(request_data.first_party_for_cookies);
-  request->set_referrer(request_data.referrer.spec());
+  request->set_referrer(CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kNoReferrers) ? std::string() : request_data.referrer.spec());
   request->SetExtraRequestHeaders(request_data.headers);
 
   int load_flags = request_data.load_flags;
@@ -615,7 +616,8 @@ void ResourceDispatcherHost::BeginDownload(
   }
 
   request->set_method("GET");
-  request->set_referrer(referrer.spec());
+  request->set_referrer(CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kNoReferrers) ? std::string() : referrer.spec());
   request->set_context(request_context);
   request->set_load_flags(request->load_flags() |
       net::LOAD_IS_DOWNLOAD);
@@ -671,7 +673,8 @@ void ResourceDispatcherHost::BeginSaveFile(const GURL& url,
 
   URLRequest* request = new URLRequest(url, this);
   request->set_method("GET");
-  request->set_referrer(referrer.spec());
+  request->set_referrer(CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kNoReferrers) ? std::string() : referrer.spec());
   // So far, for saving page, we need fetch content from cache, in the
   // future, maybe we can use a configuration to configure this behavior.
   request->set_load_flags(net::LOAD_PREFERRING_CACHE);
