@@ -54,10 +54,11 @@
       'common/common_resources.grd',
       'renderer/renderer_resources.grd',
     ],
-    'grit_info_cmd': ['python', '../tools/grit/grit_info.py',],
-    'repack_locales_cmd': ['python', 'tools/build/repack_locales.py',],
+    'grit_info_cmd': ['python', '../tools/grit/grit_info.py'],
+    'grit_cmd': ['python', '../tools/grit/grit.py'],
+    'repack_locales_cmd': ['python', 'tools/build/repack_locales.py'],
     # TODO: remove this helper when we have loops in GYP
-    'apply_locales_cmd': ['python', 'tools/build/apply_locales.py',],
+    'apply_locales_cmd': ['python', 'tools/build/apply_locales.py'],
     'conditions': [
       ['OS=="win"', {
         'nacl_defines': [
@@ -174,7 +175,7 @@
             # One alternative would be to turn this into several actions,
             # but that would be rather verbose.
           ],
-          'action': ['python', '../tools/grit/grit.py', '-i',
+          'action': ['<@(grit_cmd)', '-i',
             '<(RULE_INPUT_PATH)',
             'build', '-o', '<(grit_out_dir)',
             '-D', '<(chrome_build)',
@@ -260,7 +261,7 @@
             #'<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(chrome_strings_grds))',
             # See comment in chrome_resources as to why.
           ],
-          'action': ['python', '../tools/grit/grit.py', '-i',
+          'action': ['<@(grit_cmd)', '-i',
                     '<(RULE_INPUT_PATH)',
                     'build', '-o', '<(grit_out_dir)',
                     '-D', '<(chrome_build)'],
@@ -290,9 +291,6 @@
       'target_name': 'theme_resources',
       'type': 'none',
       'msvs_guid' : 'A158FB0A-25E4-6523-6B5A-4BB294B73D31',
-      'variables': {
-        'grit_path': '../tools/grit/grit.py',
-      },
       'actions': [
         {
           'action_name': 'theme_resources',
@@ -316,7 +314,7 @@
             '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(input_path))',
           ],
           'action': [
-            'python', '<(grit_path)',
+            '<@(grit_cmd)',
             '-i', '<(input_path)', 'build',
             '-o', '<(grit_out_dir)',
             '-D', '<(chrome_build)'
@@ -348,9 +346,6 @@
       # can't use chrome_strings rules above.
       'target_name': 'platform_locale_settings',
       'type': 'none',
-      'variables': {
-        'grit_path': '../tools/grit/grit.py',
-      },
       'actions': [
         {
           'action_name': 'platform_locale_settings',
@@ -374,7 +369,7 @@
             '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(input_path))',
           ],
           'action': [
-            'python', '<(grit_path)',
+            '<@(grit_cmd)',
             '-i', '<(input_path)', 'build',
             '-o', '<(grit_out_dir)',
             '-D', '<(chrome_build)'

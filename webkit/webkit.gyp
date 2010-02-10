@@ -9,9 +9,6 @@
     '../third_party/WebKit/WebCore/WebCore.gypi',
   ],
   'variables': {
-    # TODO: remove this helper when we have loops in GYP
-    'apply_locales_cmd': ['python', '../chrome/tools/build/apply_locales.py',],
-
     # We can't turn on warnings on Windows and Linux until we upstream the
     # WebKit API.
     'conditions': [
@@ -35,6 +32,9 @@
     ],
 
     'debug_devtools%': 0,
+
+    'grit_info_cmd': ['python', '../tools/grit/grit_info.py'],
+    'grit_cmd': ['python', '../tools/grit/grit.py'],
   },
   'targets': [
     {
@@ -56,7 +56,6 @@
       'type': 'none',
       'msvs_guid': '0B469837-3D46-484A-AFB3-C5A6C68730B9',
       'variables': {
-        'grit_path': '../tools/grit/grit.py',
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/webkit',
       },
       'actions': [
@@ -66,14 +65,14 @@
             'input_path': 'glue/webkit_resources.grd',
           },
           'inputs': [
-            '<(input_path)',
+            '<!@(<(grit_info_cmd) --inputs <(input_path))',
           ],
           'outputs': [
-            '<(grit_out_dir)/grit/webkit_resources.h',
-            '<(grit_out_dir)/webkit_resources.pak',
-            '<(grit_out_dir)/webkit_resources.rc',
+            '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(input_path))',
           ],
-          'action': ['python', '<(grit_path)', '-i', '<(input_path)', 'build', '-o', '<(grit_out_dir)'],
+          'action': ['<@(grit_cmd)',
+                     '-i', '<(input_path)', 'build',
+                     '-o', '<(grit_out_dir)'],
           'message': 'Generating resources from <(input_path)',
         },
       ],
@@ -93,7 +92,6 @@
       'type': 'none',
       'msvs_guid': '60B43839-95E6-4526-A661-209F16335E0E',
       'variables': {
-        'grit_path': '../tools/grit/grit.py',
         'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/webkit',
       },
       'actions': [
@@ -103,14 +101,14 @@
             'input_path': 'glue/webkit_strings.grd',
           },
           'inputs': [
-            '<(input_path)',
+            '<!@(<(grit_info_cmd) --inputs <(input_path))',
           ],
           'outputs': [
-            '<(grit_out_dir)/grit/webkit_strings.h',
-            # TODO: remove this helper when we have loops in GYP
-            '>!@(<(apply_locales_cmd) \'<(grit_out_dir)/webkit_strings_ZZLOCALE.pak\' <(locales))',
+            '<!@(<(grit_info_cmd) --outputs \'<(grit_out_dir)\' <(input_path))',
           ],
-          'action': ['python', '<(grit_path)', '-i', '<(input_path)', 'build', '-o', '<(grit_out_dir)'],
+          'action': ['<@(grit_cmd)',
+                     '-i', '<(input_path)', 'build',
+                     '-o', '<(grit_out_dir)'],
           'message': 'Generating resources from <(input_path)',
         },
       ],
