@@ -92,9 +92,9 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
 }
 
 - (id)initWithExtension:(Extension*)extension
-                  tabId:(int)tabId
-                xOffset:(int)xOffset {
-  NSRect frame = NSMakeRect(xOffset,
+                profile:(Profile*)profile
+                  tabId:(int)tabId {
+  NSRect frame = NSMakeRect(0.0,
                             kBrowserActionOriginYOffset,
                             kBrowserActionWidth,
                             kBrowserActionHeight);
@@ -114,7 +114,7 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
     [self setShowsBorderOnlyWhileMouseInside:YES];
 
     [self setMenu:[[[ExtensionActionContextMenu alloc]
-        initWithExtension:extension] autorelease]];
+        initWithExtension:extension profile:profile] autorelease]];
 
     tabId_ = tabId;
     extension_ = extension;

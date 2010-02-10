@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@ class Browser;
 @class BrowserActionsContainerView;
 class Extension;
 @class ExtensionPopupController;
+class ExtensionToolbarModel;
 class ExtensionsServiceObserverBridge;
 class Profile;
 
@@ -32,6 +33,9 @@ extern NSString* const kBrowserActionsChangedNotification;
 
   // The current profile. Weak.
   Profile* profile_;
+
+  // The model that tracks the order of the toolbar icons. Weak.
+  ExtensionToolbarModel* toolbarModel_;
 
   // The observer for the ExtensionsService we're getting events from.
   scoped_ptr<ExtensionsServiceObserverBridge> observer_;
@@ -56,10 +60,6 @@ extern NSString* const kBrowserActionsChangedNotification;
 
 // Update the display of all buttons.
 - (void)update;
-
-// Marks the container view for redraw. Called by the extension service
-// notification bridge.
-- (void)browserActionVisibilityHasChanged;
 
 // Returns the current number of browser action buttons within the container,
 // whether or not they are displayed.

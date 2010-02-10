@@ -14,6 +14,7 @@
 class Extension;
 class ExtensionAction;
 class ExtensionImageTrackerBridge;
+class Profile;
 
 extern const CGFloat kBrowserActionWidth;
 
@@ -33,8 +34,8 @@ extern const CGFloat kBrowserActionWidth;
 }
 
 - (id)initWithExtension:(Extension*)extension
-                  tabId:(int)tabId
-                xOffset:(int)xOffset;
+                profile:(Profile*)profile
+                  tabId:(int)tabId;
 
 - (void)setDefaultIcon:(NSImage*)image;
 

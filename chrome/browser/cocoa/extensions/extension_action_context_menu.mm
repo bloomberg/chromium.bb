@@ -105,9 +105,10 @@ enum {
 };
 }  // namespace
 
-- (id)initWithExtension:(Extension*)extension {
+- (id)initWithExtension:(Extension*)extension profile:(Profile*)profile {
   if ((self = [super initWithTitle:@""])) {
     extension_ = extension;
+    profile_ = profile;
 
     NSArray* menuItems = [NSArray arrayWithObjects:
         base::SysUTF8ToNSString(extension->name()),
@@ -148,12 +149,9 @@ enum {
 }
 
 - (void)dispatch:(id)menuItem {
-  Browser* browser = BrowserList::GetLastActive();
-  // GetLastActive() returns NULL during testing.
+  Browser* browser = BrowserList::FindBrowserWithProfile(profile_);
   if (!browser)
     return;
-
-  Profile* profile = browser->profile();
 
   NSMenuItem* item = (NSMenuItem*)menuItem;
   switch ([item tag]) {
@@ -170,8 +168,10 @@ enum {
       break;
     }
     case kExtensionContextDisable: {
-      ExtensionsService* extension_service = profile->GetExtensionsService();
-      extension_service->DisableExtension(extension_->id());
+      ExtensionsService* extensionService = profile_->GetExtensionsService();
+      if (!extensionService)
+        return; // Incognito mode.
+      extensionService->DisableExtension(extension_->id());
       break;
     }
     case kExtensionContextUninstall: {

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "chrome/browser/cocoa/extensions/browser_actions_container_view.h"
 #include "chrome/browser/cocoa/extensions/extension_popup_controller.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
+#include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -24,7 +25,8 @@ extern const CGFloat kBrowserActionButtonPadding = 3;
 NSString* const kBrowserActionsChangedNotification = @"BrowserActionsChanged";
 
 @interface BrowserActionsController(Private)
-- (void)createActionButtonForExtension:(Extension*)extension;
+- (void)createActionButtonForExtension:(Extension*)extension
+                             withIndex:(int)index;
 - (void)removeActionButtonForExtension:(Extension*)extension;
 - (void)repositionActionButtons;
 - (int)currentTabId;
@@ -32,40 +34,20 @@ NSString* const kBrowserActionsChangedNotification = @"BrowserActionsChanged";
 
 // A helper class to proxy extension notifications to the view controller's
 // appropriate methods.
-class ExtensionsServiceObserverBridge : public NotificationObserver {
+class ExtensionsServiceObserverBridge : public NotificationObserver,
+                                        public ExtensionToolbarModel::Observer {
  public:
   ExtensionsServiceObserverBridge(BrowserActionsController* owner,
                                   Profile* profile) : owner_(owner) {
-    registrar_.Add(this, NotificationType::EXTENSION_LOADED,
-                   Source<Profile>(profile));
-    registrar_.Add(this, NotificationType::EXTENSION_UNLOADED,
-                   Source<Profile>(profile));
-    registrar_.Add(this, NotificationType::EXTENSION_UNLOADED_DISABLED,
-                   Source<Profile>(profile));
     registrar_.Add(this, NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
                    Source<Profile>(profile));
   }
 
-  // Runs |owner_|'s method corresponding to the event type received from the
-  // notification system.
   // Overridden from NotificationObserver.
   void Observe(NotificationType type,
                const NotificationSource& source,
                const NotificationDetails& details) {
     switch (type.value) {
-      case NotificationType::EXTENSION_LOADED: {
-        Extension* extension = Details<Extension>(details).ptr();
-        [owner_ createActionButtonForExtension:extension];
-        [owner_ browserActionVisibilityHasChanged];
-        break;
-      }
-      case NotificationType::EXTENSION_UNLOADED:
-      case NotificationType::EXTENSION_UNLOADED_DISABLED: {
-        Extension* extension = Details<Extension>(details).ptr();
-        [owner_ removeActionButtonForExtension:extension];
-        [owner_ browserActionVisibilityHasChanged];
-        break;
-      }
       case NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE: {
         ExtensionPopupController* popup = [ExtensionPopupController popup];
         if (popup && ![popup isClosing])
@@ -76,6 +58,15 @@ class ExtensionsServiceObserverBridge : public NotificationObserver {
       default:
         NOTREACHED() << L"Unexpected notification";
     }
+  }
+
+  // ExtensionToolbarModel::Observer implementation.
+  void BrowserActionAdded(Extension* extension, int index) {
+    [owner_ createActionButtonForExtension:extension withIndex:index];
+  }
+
+  void BrowserActionRemoved(Extension* extension) {
+    [owner_ removeActionButtonForExtension:extension];
   }
 
  private:
@@ -98,9 +89,17 @@ class ExtensionsServiceObserverBridge : public NotificationObserver {
     browser_ = browser;
     profile_ = browser->profile();
 
+    observer_.reset(new ExtensionsServiceObserverBridge(self, profile_));
+    ExtensionsService* extensionsService = profile_->GetExtensionsService();
+    // |extensionsService| can be NULL in Incognito.
+    if (extensionsService) {
+      toolbarModel_ = extensionsService->toolbar_model();
+      toolbarModel_->AddObserver(observer_.get());
+    }
+
     containerView_ = container;
     [containerView_ setHidden:YES];
-    observer_.reset(new ExtensionsServiceObserverBridge(self, profile_));
+
     buttons_.reset([[NSMutableDictionary alloc] init]);
     buttonOrder_.reset([[NSMutableArray alloc] init]);
   }
@@ -109,6 +108,9 @@ class ExtensionsServiceObserverBridge : public NotificationObserver {
 }
 
 - (void)dealloc {
+  if (toolbarModel_)
+    toolbarModel_->RemoveObserver(observer_.get());
+
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [super dealloc];
 }
@@ -120,49 +122,43 @@ class ExtensionsServiceObserverBridge : public NotificationObserver {
   }
 }
 
-- (void)browserActionVisibilityHasChanged {
-  [containerView_ setNeedsDisplay:YES];
-}
-
 - (void)createButtons {
-  ExtensionsService* extensionsService = profile_->GetExtensionsService();
-  if (!extensionsService)  // |extensionsService| can be NULL in Incognito.
+  // No extensions in incognito mode.
+  if (!toolbarModel_)
     return;
 
-  for (size_t i = 0; i < extensionsService->extensions()->size(); ++i) {
-    Extension* extension = extensionsService->GetExtensionById(
-        extensionsService->extensions()->at(i)->id(), false);
-    if (extension->browser_action()) {
-      [self createActionButtonForExtension:extension];
-    }
+  int i = 0;
+  for (ExtensionList::iterator iter = toolbarModel_->begin();
+       iter != toolbarModel_->end(); ++iter) {
+    [self createActionButtonForExtension:*iter withIndex:i++];
   }
 }
 
-- (void)createActionButtonForExtension:(Extension*)extension {
+- (void)createActionButtonForExtension:(Extension*)extension
+                             withIndex:(int)index {
   if (!extension->browser_action())
     return;
 
-  if ([buttons_ count] == 0) {
-    // Only call if we're adding our first button, otherwise it will be shown
-    // already.
+  // Show the container if it's the first button. Otherwise it will be shown
+  // already.
+  if ([buttons_ count] == 0)
     [containerView_ setHidden:NO];
-  }
 
-  int xOffset =
-      [buttons_ count] * (kBrowserActionWidth + kBrowserActionButtonPadding);
-  BrowserActionButton* newButton =
-      [[[BrowserActionButton alloc] initWithExtension:extension
-                                                tabId:[self currentTabId]
-                                              xOffset:xOffset] autorelease];
+  BrowserActionButton* newButton = [[[BrowserActionButton alloc]
+      initWithExtension:extension
+                profile:profile_
+                  tabId:[self currentTabId]] autorelease];
   [newButton setTarget:self];
   [newButton setAction:@selector(browserActionClicked:)];
   NSString* buttonKey = base::SysUTF8ToNSString(extension->id());
   [buttons_ setObject:newButton forKey:buttonKey];
-  [buttonOrder_ addObject:newButton];
+  [buttonOrder_ insertObject:newButton atIndex:index];
   [containerView_ addSubview:newButton];
+  [self repositionActionButtons];
 
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kBrowserActionsChangedNotification object:self];
+  [containerView_ setNeedsDisplay:YES];
 }
 
 - (void)removeActionButtonForExtension:(Extension*)extension {
@@ -183,14 +179,11 @@ class ExtensionsServiceObserverBridge : public NotificationObserver {
     // No more buttons? Hide the container.
     [containerView_ setHidden:YES];
   } else {
-    // repositionActionButtons only needs to be called if removing a browser
-    // action button because adding one will always append to the end of the
-    // container, while removing one may require that those to the right of it
-    // be shifted to the left.
     [self repositionActionButtons];
   }
   [[NSNotificationCenter defaultCenter]
       postNotificationName:kBrowserActionsChangedNotification object:self];
+  [containerView_ setNeedsDisplay:YES];
 }
 
 - (void)repositionActionButtons {

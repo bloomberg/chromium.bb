@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #import "chrome/browser/cocoa/url_drop_target.h"
 
 class AutocompleteTextFieldObserver;
+class Profile;
 
 // AutocompleteTextFieldEditor customized the AutocompletTextField
 // field editor (helper text-view used in editing).  It intercepts UI
@@ -23,7 +24,13 @@ class AutocompleteTextFieldObserver;
   // |-updateDragTypeRegistration|), since the latter results in a weird
   // start-up time regression.
   scoped_nsobject<URLDropTargetHandler> dropHandler_;
+
+  // The browser profile for the editor. Weak.
+  Profile* profile_;
 }
+
+@property(nonatomic) Profile* profile;
+
 @end
 
 @interface AutocompleteTextFieldEditor(PrivateTestMethods)

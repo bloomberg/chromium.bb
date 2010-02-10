@@ -9,8 +9,9 @@
 
 #import <Cocoa/Cocoa.h>
 
-class Extension;
 class AsyncUninstaller;
+class Extension;
+class Profile;
 
 // A context menu used by the Browser and Page Action components that appears
 // if a user right-clicks the view of the given extension.
@@ -18,13 +19,16 @@ class AsyncUninstaller;
   // The extension that this menu belongs to. Weak.
   Extension* extension_;
 
+  // The browser profile of the window that contains this extension. Weak.
+  Profile* profile_;
+
   // Used to load the extension icon asynchronously on the I/O thread then show
   // the uninstall confirmation dialog.
   scoped_refptr<AsyncUninstaller> uninstaller_;
 }
 
-// Initializes and returns a context menu for the given extension.
-- (id)initWithExtension:(Extension*)extension;
+// Initializes and returns a context menu for the given extension and profile.
+- (id)initWithExtension:(Extension*)extension profile:(Profile*)profile;
 
 @end
 

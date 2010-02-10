@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -28,6 +28,8 @@ class Extension;
 
 @implementation AutocompleteTextFieldEditor
 
+@synthesize profile = profile_;
+
 - (id)initWithFrame:(NSRect)frameRect {
   if ((self = [super initWithFrame:frameRect]))
     dropHandler_.reset([[URLDropTargetHandler alloc] initWithView:self]);
@@ -37,9 +39,8 @@ class Extension;
 - (void)copy:(id)sender {
   AutocompleteTextFieldObserver* observer = [self observer];
   DCHECK(observer);
-  if (observer) {
+  if (observer)
     observer->OnCopy();
-  }
 }
 
 - (void)cut:(id)sender {
@@ -97,11 +98,13 @@ class Extension;
   AutocompleteTextFieldCell* cell = [field autocompleteTextFieldCell];
   const size_t pageActionCount = [cell pageActionCount];
   BOOL flipped = [self isFlipped];
-  Browser* browser = BrowserList::GetLastActive();
-  // GetLastActive() returns NULL during testing.
-  if (!browser)
+  if (!profile_)
     return [self defaultMenuForEvent:event];
-  ExtensionsService* service = browser->profile()->GetExtensionsService();
+
+  ExtensionsService* service = profile_->GetExtensionsService();
+  if (!service)
+    return [self defaultMenuForEvent:event];
+
   for (size_t i = 0; i < pageActionCount; ++i) {
     NSRect pageActionFrame = [cell pageActionFrameForIndex:i inFrame:bounds];
     if (NSMouseInRect(location, pageActionFrame, flipped)) {
@@ -110,8 +113,8 @@ class Extension;
       DCHECK(extension);
       if (!extension)
         break;
-      return [[[ExtensionActionContextMenu alloc] initWithExtension:extension]
-          autorelease];
+      return [[[ExtensionActionContextMenu alloc]
+          initWithExtension:extension profile:profile_] autorelease];
     }
   }
 
