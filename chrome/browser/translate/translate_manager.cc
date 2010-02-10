@@ -44,15 +44,29 @@ void TranslateManager::Observe(NotificationType type,
       break;
     }
     case NotificationType::PAGE_TRANSLATED: {
+      // Only add translate infobar if it doesn't exist; if it already exists,
+      // it would have received the same notification and acted accordingly.
       TabContents* tab = Source<TabContents>(source).ptr();
-      std::pair<std::string, std::string>* language_pair =
-          (Details<std::pair<std::string, std::string> >(details).ptr());
-      PrefService* prefs = GetPrefService(tab);
-      tab->AddInfoBar(new AfterTranslateInfoBarDelegate(tab, prefs,
-                                                        language_pair->first,
-                                                        language_pair->second));
+      int i;
+      for (i = 0; i < tab->infobar_delegate_count(); ++i) {
+        InfoBarDelegate* info_bar = tab->GetInfoBarDelegateAt(i);
+        if (info_bar->AsTranslateInfoBarDelegate())
+          break;
+      }
+      if (i == tab->infobar_delegate_count()) {
+        NavigationEntry* entry = tab->controller().GetActiveEntry();
+        if (entry) {
+          std::pair<std::string, std::string>* language_pair =
+              (Details<std::pair<std::string, std::string> >(details).ptr());
+          PrefService* prefs = GetPrefService(tab);
+          tab->AddInfoBar(new TranslateInfoBarDelegate(tab, prefs,
+              TranslateInfoBarDelegate::kAfterTranslate, entry->url(),
+              language_pair->first, language_pair->second));
+        }
+      }
       break;
     }
+
     default:
       NOTREACHED();
   }
@@ -113,9 +127,9 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
   }
 
   // Prompts the user if he/she wants the page translated.
-  tab->AddInfoBar(new BeforeTranslateInfoBarDelegate(tab, prefs,
-                                                     entry->url(),
-                                                     page_lang, ui_lang));
+  tab->AddInfoBar(new TranslateInfoBarDelegate(tab, prefs,
+      TranslateInfoBarDelegate::kBeforeTranslate, entry->url(),
+      page_lang, ui_lang));
 }
 
 PrefService* TranslateManager::GetPrefService(TabContents* tab) {

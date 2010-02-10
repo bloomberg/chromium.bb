@@ -10,12 +10,13 @@
 #include "grit/generated_resources.h"
 
 OptionsMenuModel::OptionsMenuModel(menus::SimpleMenuModel::Delegate* delegate,
-    TranslateInfoBarDelegate* translate_delegate, bool before_translate)
+    TranslateInfoBarDelegate* translate_delegate)
     : menus::SimpleMenuModel(delegate) {
   string16 original_language =
       TranslateInfoBarDelegate::GetDisplayNameForLocale(
           translate_delegate->original_lang_code());
-  if (before_translate) {
+  TranslateInfoBarDelegate::TranslateState state = translate_delegate->state();
+  if (state == TranslateInfoBarDelegate::kBeforeTranslate) {
     AddCheckItem(IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_LANG,
         l10n_util::GetStringFUTF16(
             IDS_TRANSLATE_INFOBAR_OPTIONS_NEVER_TRANSLATE_LANG,
@@ -23,7 +24,7 @@ OptionsMenuModel::OptionsMenuModel(menus::SimpleMenuModel::Delegate* delegate,
     AddCheckItem(IDC_TRANSLATE_OPTIONS_NEVER_TRANSLATE_SITE,
         l10n_util::GetStringUTF16(
             IDS_TRANSLATE_INFOBAR_OPTIONS_NEVER_TRANSLATE_SITE));
-  } else {
+  } else if (state == TranslateInfoBarDelegate::kAfterTranslate) {
     string16 target_language =
         TranslateInfoBarDelegate::GetDisplayNameForLocale(
             translate_delegate->target_lang_code());

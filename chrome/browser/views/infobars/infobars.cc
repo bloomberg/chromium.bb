@@ -42,9 +42,9 @@ static const SkColor kErrorBackgroundColorBottom =
     kWarningBackgroundColorBottom;
 
 static const SkColor kPageActionBackgroundColorTop =
-    SkColorSetRGB(209, 222, 245);
+    SkColorSetRGB(218, 231, 249);
 static const SkColor kPageActionBackgroundColorBottom =
-    SkColorSetRGB(178, 201, 239);
+    SkColorSetRGB(179, 202, 231);
 
 static const int kSeparatorLineHeight = 1;
 

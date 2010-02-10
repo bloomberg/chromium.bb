@@ -32,6 +32,41 @@ void TranslateInfoBarDelegate::InfoBarClosed() {
 
 // TranslateInfoBarDelegate: public: -------------------------------------------
 
+TranslateInfoBarDelegate::TranslateInfoBarDelegate(TabContents* tab_contents,
+    PrefService* user_prefs, TranslateState state, const GURL& url,
+    const std::string& original_lang_code, const std::string& target_lang_code)
+    : InfoBarDelegate(tab_contents),
+      tab_contents_(tab_contents),
+      prefs_(user_prefs),
+      state_(state),
+      site_(url.HostNoBrackets()),
+      original_lang_index_(-1),
+      target_lang_index_(-1),
+      never_translate_language_(false),
+      never_translate_site_(false),
+      always_translate_(false) {
+  TranslationService::GetSupportedLanguages(&supported_languages_);
+  for (size_t i = 0; i < supported_languages_.size(); ++i) {
+    if (original_lang_code == supported_languages_[i]) {
+      original_lang_index_ = i;
+      break;
+    }
+  }
+  DCHECK(original_lang_index_ > -1);
+  for (size_t i = 0; i < supported_languages_.size(); ++i) {
+    if (target_lang_code == supported_languages_[i]) {
+      target_lang_index_ = i;
+      break;
+    }
+  }
+  DCHECK(target_lang_index_ > -1);
+}
+
+void TranslateInfoBarDelegate::UpdateState(TranslateState new_state) {
+  if (state_ != new_state)
+    state_ = new_state;
+}
+
 void TranslateInfoBarDelegate::ModifyOriginalLanguage(int lang_index) {
   original_lang_index_ = lang_index;
   // TODO(kuan): Send stats to Google Translate that original language has been
@@ -39,7 +74,7 @@ void TranslateInfoBarDelegate::ModifyOriginalLanguage(int lang_index) {
 }
 
 void TranslateInfoBarDelegate::ModifyTargetLanguage(int lang_index) {
-  NOTREACHED() << "Subclass should override";
+  target_lang_index_ = lang_index;
 }
 
 void TranslateInfoBarDelegate::GetAvailableOriginalLanguages(
@@ -49,7 +84,7 @@ void TranslateInfoBarDelegate::GetAvailableOriginalLanguages(
 
 void TranslateInfoBarDelegate::GetAvailableTargetLanguages(
     std::vector<std::string>* languages) {
-  NOTREACHED() << "Subclass should override";
+  TranslationService::GetSupportedLanguages(languages);
 }
 
 void TranslateInfoBarDelegate::Translate() {
@@ -58,30 +93,69 @@ void TranslateInfoBarDelegate::Translate() {
 }
 
 bool TranslateInfoBarDelegate::IsLanguageBlacklisted() {
-  NOTREACHED() << "Subclass should override";
+  if (state_ == kBeforeTranslate) {
+    never_translate_language_ =
+        prefs_.IsLanguageBlacklisted(original_lang_code());
+    return never_translate_language_;
+  }
+  NOTREACHED() << "Invalid mehod called for translate state";
   return false;
 }
 
 bool TranslateInfoBarDelegate::IsSiteBlacklisted() {
-  NOTREACHED() << "Subclass should override";
+  if (state_ == kBeforeTranslate) {
+    never_translate_site_ = prefs_.IsSiteBlacklisted(site_);
+    return never_translate_site_;
+  }
+  NOTREACHED() << "Invalid mehod called for translate state";
   return false;
 }
 
 bool TranslateInfoBarDelegate::ShouldAlwaysTranslate() {
-  NOTREACHED() << "Subclass should override";
+  if (state_ == kAfterTranslate) {
+    always_translate_ = prefs_.IsLanguagePairWhitelisted(original_lang_code(),
+        target_lang_code());
+    return always_translate_;
+  }
+  NOTREACHED() << "Invalid mehod called for translate state";
   return false;
 }
 
 void TranslateInfoBarDelegate::ToggleLanguageBlacklist() {
-  NOTREACHED() << "Subclass should override";
+  if (state_ == kBeforeTranslate) {
+    never_translate_language_ = !never_translate_language_;
+    if (never_translate_language_)
+      prefs_.BlacklistLanguage(original_lang_code());
+    else
+      prefs_.RemoveLanguageFromBlacklist(original_lang_code());
+  } else {
+    NOTREACHED() << "Invalid mehod called for translate state";
+  }
 }
 
 void TranslateInfoBarDelegate::ToggleSiteBlacklist() {
-  NOTREACHED() << "Subclass should override";
+  if (state_ == kBeforeTranslate) {
+    never_translate_site_ = !never_translate_site_;
+    if (never_translate_site_)
+      prefs_.BlacklistSite(site_);
+    else
+      prefs_.RemoveSiteFromBlacklist(site_);
+  } else {
+    NOTREACHED() << "Invalid mehod called for translate state";
+  }
 }
 
 void TranslateInfoBarDelegate::ToggleAlwaysTranslate() {
-  NOTREACHED() << "Subclass should override";
+  if (state_ == kAfterTranslate) {
+    always_translate_ = !always_translate_;
+    if (always_translate_)
+      prefs_.WhitelistLanguagePair(original_lang_code(), target_lang_code());
+    else
+      prefs_.RemoveLanguagePairFromWhitelist(original_lang_code(),
+          target_lang_code());
+  } else {
+    NOTREACHED() << "Invalid mehod called for translate state";
+  }
 }
 
 // TranslateInfoBarDelegate: static: -------------------------------------------
@@ -92,113 +166,10 @@ string16 TranslateInfoBarDelegate::GetDisplayNameForLocale(
       language_code, g_browser_process->GetApplicationLocale(), true);
 }
 
-// TranslateInfoBarDelegate: protected: ----------------------------------------
-
-TranslateInfoBarDelegate::TranslateInfoBarDelegate(TabContents* tab_contents,
-    PrefService* user_prefs, const std::string& original_lang_code,
-    const std::string& target_lang_code)
-    : InfoBarDelegate(tab_contents),
-      tab_contents_(tab_contents),
-      original_lang_index_(0),
-      target_lang_index_(0),
-      prefs_(user_prefs) {
-  TranslationService::GetSupportedLanguages(&supported_languages_);
-  for (size_t i = 0; i < supported_languages_.size(); ++i) {
-    if (original_lang_code == supported_languages_[i]) {
-      original_lang_index_ = i;
-      break;
-    }
-  }
-  for (size_t i = 0; i < supported_languages_.size(); ++i) {
-    if (target_lang_code == supported_languages_[i]) {
-      target_lang_index_ = i;
-      break;
-    }
-  }
-}
-
-// BeforeTranslateInfoBarDelegate: public: -------------------------------------
-
-BeforeTranslateInfoBarDelegate::BeforeTranslateInfoBarDelegate(
-    TabContents* tab_contents, PrefService* user_prefs, const GURL& url,
-    const std::string& original_lang_code, const std::string& target_lang_code)
-    : TranslateInfoBarDelegate(tab_contents, user_prefs, original_lang_code,
-          target_lang_code),
-      site_(url.HostNoBrackets()),
-      never_translate_language_(false),
-      never_translate_site_(false) {
-}
-
-bool BeforeTranslateInfoBarDelegate::IsLanguageBlacklisted() {
-  never_translate_language_ =
-    prefs_.IsLanguageBlacklisted(original_lang_code());
-  return never_translate_language_;
-}
-
-void BeforeTranslateInfoBarDelegate::ToggleLanguageBlacklist() {
-  never_translate_language_ = !never_translate_language_;
-  if (never_translate_language_)
-    prefs_.BlacklistLanguage(original_lang_code());
-  else
-    prefs_.RemoveLanguageFromBlacklist(original_lang_code());
-}
-
-bool BeforeTranslateInfoBarDelegate::IsSiteBlacklisted() {
-  never_translate_site_ = prefs_.IsSiteBlacklisted(site_);
-  return never_translate_site_;
-}
-
-void BeforeTranslateInfoBarDelegate::ToggleSiteBlacklist() {
-  never_translate_site_ = !never_translate_site_;
-  if (never_translate_site_)
-    prefs_.BlacklistSite(site_);
-  else
-    prefs_.RemoveSiteFromBlacklist(site_);
-}
-
 #if !defined(TOOLKIT_VIEWS)
-InfoBar* BeforeTranslateInfoBarDelegate::CreateInfoBar() {
-  NOTIMPLEMENTED();
-  return NULL;
-}
-#endif  // !TOOLKIT_VIEWS
+// TranslateInfoBarDelegate: InfoBarDelegate overrides: ------------------------
 
-// AfterTranslateInfoBarDelegate: public: --------------------------------------
-
-AfterTranslateInfoBarDelegate::AfterTranslateInfoBarDelegate(
-    TabContents* tab_contents, PrefService* user_prefs,
-    const std::string& original_lang_code, const std::string& target_lang_code)
-    : TranslateInfoBarDelegate(tab_contents, user_prefs, original_lang_code,
-          target_lang_code),
-      always_translate_(false) {
-}
-
-void AfterTranslateInfoBarDelegate::GetAvailableTargetLanguages(
-    std::vector<std::string>* languages) {
-  TranslationService::GetSupportedLanguages(languages);
-}
-
-void AfterTranslateInfoBarDelegate::ModifyTargetLanguage(int lang_index) {
-  target_lang_index_ = lang_index;
-}
-
-bool AfterTranslateInfoBarDelegate::ShouldAlwaysTranslate() {
-  always_translate_ = prefs_.IsLanguagePairWhitelisted(original_lang_code(),
-      target_lang_code());
-  return always_translate_;
-}
-
-void AfterTranslateInfoBarDelegate::ToggleAlwaysTranslate() {
-  always_translate_ = !always_translate_;
-  if (always_translate_)
-    prefs_.WhitelistLanguagePair(original_lang_code(), target_lang_code());
-  else
-    prefs_.RemoveLanguagePairFromWhitelist(original_lang_code(),
-        target_lang_code());
-}
-
-#if !defined(TOOLKIT_VIEWS)
-InfoBar* AfterTranslateInfoBarDelegate::CreateInfoBar() {
+InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
   NOTIMPLEMENTED();
   return NULL;
 }

@@ -9,6 +9,7 @@
 #include "app/resource_bundle.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/app/chrome_dll_resource.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/translate/languages_menu_model.h"
 #include "chrome/browser/translate/options_menu_model.h"
@@ -107,7 +108,71 @@ void TranslateButtonBorder::Paint(const views::View& view, gfx::Canvas* canvas)
   else if (state == views::TextButton::BS_PUSHED)
     set = &pushed_set_;
 
-  TextButtonBorder::Paint(view, canvas, *set);
+  gfx::Rect bounds = view.bounds();
+
+  // Draw top left image.
+  canvas->DrawBitmapInt(*set->top_left, 0, 0);
+
+  // Stretch top image.
+  canvas->DrawBitmapInt(
+      *set->top,
+      0, 0, set->top->width(), set->top->height(),
+      set->top_left->width(),
+      0,
+      bounds.width() - set->top_right->width() - set->top_left->width(),
+      set->top->height(), false);
+
+  // Draw top right image.
+  canvas->DrawBitmapInt(*set->top_right,
+                        bounds.width() - set->top_right->width(), 0);
+
+  // Stretch left image.
+  canvas->DrawBitmapInt(
+      *set->left,
+      0, 0, set->left->width(), set->left->height(),
+      0,
+      set->top_left->height(),
+      set->top_left->width(),
+      bounds.height() - set->top->height() - set->bottom_left->height(), false);
+
+  // Stretch center image.
+  canvas->DrawBitmapInt(
+      *set->center,
+      0, 0, set->center->width(), set->center->height(),
+      set->left->width(),
+      set->top->height(),
+      bounds.width() - set->right->width() - set->left->width(),
+      bounds.height() - set->bottom->height() - set->top->height(), false);
+
+  // Stretch right image.
+  canvas->DrawBitmapInt(
+      *set->right,
+      0, 0, set->right->width(), set->right->height(),
+      bounds.width() - set->right->width(),
+      set->top_right->height(),
+      set->right->width(),
+      bounds.height() - set->bottom_right->height() -
+          set->top_right->height(), false);
+
+  // Draw bottom left image.
+  canvas->DrawBitmapInt(*set->bottom_left,
+                        0,
+                        bounds.height() - set->bottom_left->height());
+
+  // Stretch bottom image.
+  canvas->DrawBitmapInt(
+      *set->bottom,
+      0, 0, set->bottom->width(), set->bottom->height(),
+      set->bottom_left->width(),
+      bounds.height() - set->bottom->height(),
+      bounds.width() - set->bottom_right->width() -
+          set->bottom_left->width(),
+      set->bottom->height(), false);
+
+  // Draw bottom right image.
+  canvas->DrawBitmapInt(*set->bottom_right,
+                        bounds.width() - set->bottom_right->width(),
+                        bounds.height() -  set->bottom_right->height());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -145,77 +210,126 @@ TranslateTextButton::TranslateTextButton(views::ButtonListener* listener,
 TranslateTextButton::~TranslateTextButton() {
 }
 
-// TranslateButtonBorder, protected:--------------------------------------------
+// TranslateTextButton, protected: ---------------------------------------------
+
 bool TranslateTextButton::OnMousePressed(const views::MouseEvent& e) {
   return views::CustomButton::OnMousePressed(e);
 }
 
 // TranslateInfoBar, public: ---------------------------------------------------
 
-TranslateInfoBar::TranslateInfoBar(TranslateInfoBarDelegate* delegate,
-    bool before_translate, int label_id)
+TranslateInfoBar::TranslateInfoBar(TranslateInfoBarDelegate* delegate)
     : InfoBar(delegate),
-      before_translate_(before_translate),
+      label_1_(NULL),
+      label_2_(NULL),
+      label_3_(NULL),
+      translating_label_(NULL),
+      accept_button_(NULL),
+      deny_button_(NULL),
+      target_language_menu_button_(NULL),
       swapped_language_placeholders_(false) {
+  // Initialize icon.
   icon_ = new views::ImageView;
   SkBitmap* image = delegate->GetIcon();
   if (image)
     icon_->SetImage(image);
   AddChildView(icon_);
 
-  // Set up the labels.
-  std::vector<size_t> offsets;
-  std::wstring message_text = l10n_util::GetStringF(label_id, std::wstring(),
-      std::wstring(), &offsets);
-  if (!offsets.empty() && offsets.size() <= 2) {
-    // Sort the offsets if necessary.
-    if (offsets.size() == 2 && offsets[0] > offsets[1]) {
-      size_t offset0 = offsets[0];
-      offsets[0] = offsets[1];
-      offsets[1] = offset0;
-      swapped_language_placeholders_ = true;
-    }
-    if (offsets[offsets.size() - 1] != message_text.length())
-      offsets.push_back(message_text.length());
-  } else {
-    NOTREACHED() << "Invalid no. of placeholders in label.";
-  }
-
-  const gfx::Font& font = ResourceBundle::GetSharedInstance().GetFont(
-      ResourceBundle::MediumFont);
-  label_1_ = new views::Label(message_text.substr(0, offsets[0]), font);
-  label_1_->SetColor(SK_ColorBLACK);
-  label_1_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  AddChildView(label_1_);
-
-  label_2_ = new views::Label(
-      message_text.substr(offsets[0], offsets[1] - offsets[0]), font);
-  label_2_->SetColor(SK_ColorBLACK);
-  label_2_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  AddChildView(label_2_);
-
-  if (offsets.size() == 3) {
-    label_3_ = new views::Label(
-        message_text.substr(offsets[1], offsets[2] - offsets[1]), font);
-    label_3_->SetColor(SK_ColorBLACK);
-    label_3_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    AddChildView(label_3_);
-  } else {
-     label_3_ = NULL;
-  }
-
+  // Create original language menu button.
   string16 language_name = TranslateInfoBarDelegate::GetDisplayNameForLocale(
       GetDelegate()->original_lang_code());
   original_language_menu_button_ = CreateMenuButton(kMenuIDOriginalLanguage,
       UTF16ToWideHack(language_name));
   AddChildView(original_language_menu_button_);
 
+  // Create options menu button.
   options_menu_button_ = CreateMenuButton(kMenuIDOptions,
       l10n_util::GetString(IDS_TRANSLATE_INFOBAR_OPTIONS));
   AddChildView(options_menu_button_);
+
+  // Create state-dependent controls.
+  UpdateState(GetDelegate()->state());
+
+  // Register for PAGE_TRANSLATED notification.
+  notification_registrar_.Add(this, NotificationType::PAGE_TRANSLATED,
+      Source<TabContents>(GetDelegate()->tab_contents()));
 }
 
 TranslateInfoBar::~TranslateInfoBar() {
+}
+
+void TranslateInfoBar::UpdateState(
+    TranslateInfoBarDelegate::TranslateState new_state) {
+  // If this is not a call for initialization (i.e. called from Constructor),
+  // only proceed with state has changed.
+  if (label_1_ && GetDelegate()->state() == new_state)
+    return;
+  GetDelegate()->UpdateState(new_state);
+
+  // Create and initialize state-dependent controls if necessary.
+  switch (new_state) {
+    case TranslateInfoBarDelegate::kAfterTranslate:
+      CreateLabels();
+      if (!target_language_menu_button_) {
+        string16 language_name =
+            TranslateInfoBarDelegate::GetDisplayNameForLocale(
+                GetDelegate()->target_lang_code());
+        target_language_menu_button_ = CreateMenuButton(kMenuIDTargetLanguage,
+            UTF16ToWideHack(language_name));
+        AddChildView(target_language_menu_button_);
+      }
+      break;
+
+    case TranslateInfoBarDelegate::kBeforeTranslate:
+      if (!label_1_)
+        CreateLabels();
+      if (!accept_button_) {
+        accept_button_ = new TranslateTextButton(this,
+            IDS_TRANSLATE_INFOBAR_ACCEPT);
+        AddChildView(accept_button_);
+      }
+      if (!deny_button_) {
+        deny_button_ = new TranslateTextButton(this,
+            IDS_TRANSLATE_INFOBAR_DENY);
+        AddChildView(deny_button_);
+      }
+      break;
+
+    case TranslateInfoBarDelegate::kTranslating:
+      if (!translating_label_) {
+        translating_label_ = new views::Label(
+            l10n_util::GetString(IDS_TRANSLATE_INFOBAR_TRANSLATING));
+        translating_label_->SetColor(SK_ColorBLACK);
+        translating_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+        AddChildView(translating_label_);
+      }
+      break;
+
+    default:
+      NOTREACHED() << "Invalid translate state change";
+      break;
+  }
+
+  // Determine visibility of state-dependent controls.
+  if (accept_button_)
+    accept_button_->SetVisible(
+        new_state == TranslateInfoBarDelegate::kBeforeTranslate);
+  if (deny_button_)
+    deny_button_->SetVisible(
+        new_state == TranslateInfoBarDelegate::kBeforeTranslate);
+  if (target_language_menu_button_)
+    target_language_menu_button_->SetVisible(
+        new_state == TranslateInfoBarDelegate::kAfterTranslate);
+  if (translating_label_)
+    translating_label_->SetVisible(
+        new_state == TranslateInfoBarDelegate::kTranslating);
+
+  // Trigger layout and repaint.
+  Layout();
+  SchedulePaint();
+
+  // Clear options menu model so that it'll be created for new state.
+  options_menu_model_.reset();
 }
 
 // TranslateInfoBar, views::View overrides: ------------------------------------
@@ -235,13 +349,14 @@ void TranslateInfoBar::Layout() {
   options_menu_button_->SetBounds(available_width - options_ps.width(),
       OffsetY(this, options_ps), options_ps.width(), options_ps.height());
 
+  TranslateInfoBarDelegate::TranslateState state = GetDelegate()->state();
+
   // Layout the controls between icon and options i.e. labels, original language
   // menu button, and if available, target language menu button.
-  // We layout target language menu button here (as opposed to in
-  // AfterTranslateInfoBar) because the 2 language menu buttons could be swapped
-  // for different locales.
   views::MenuButton* button1 = original_language_menu_button_;
-  views::MenuButton* button2 = target_language_menu_button();
+  views::MenuButton* button2 =
+      (state == TranslateInfoBarDelegate::kAfterTranslate ?
+          target_language_menu_button_ : NULL);
   if (button2 && swapped_language_placeholders_) {
     button1 = button2;
     button2 = original_language_menu_button_;
@@ -251,18 +366,24 @@ void TranslateInfoBar::Layout() {
   gfx::Size label1_ps = label_1_->GetPreferredSize();
   gfx::Size label2_ps = label_2_->GetPreferredSize();
   gfx::Size label3_ps;
+  gfx::Size translating_ps;
   if (label_3_)
     label3_ps = label_3_->GetPreferredSize();
+  if (state == TranslateInfoBarDelegate::kTranslating)
+    translating_ps = translating_label_->GetPreferredSize();
   int text1_width = label1_ps.width();
   int text2_width = label2_ps.width();
   int text3_width = label3_ps.width();
-  int total_text_width = text1_width + text2_width + text3_width;
+  int translating_width = translating_ps.width();
+  int total_text_width = text1_width + text2_width + text3_width +
+      translating_width;
   if (total_text_width > available_text_width) {
     double ratio = static_cast<double>(available_text_width) /
         static_cast<double>(total_text_width);
     text1_width = static_cast<int>(text1_width * ratio);
     text2_width = static_cast<int>(text2_width * ratio);
     text3_width = static_cast<int>(text3_width * ratio);
+    translating_width = static_cast<int>(translating_width * ratio);
   }
   label_1_->SetBounds(icon_->bounds().right() + InfoBar::kIconLabelSpacing,
       InfoBar::OffsetY(this, label1_ps), text1_width, label1_ps.height());
@@ -284,13 +405,32 @@ void TranslateInfoBar::Layout() {
         InfoBar::kButtonInLabelSpacing, OffsetY(this, button2_ps),
         button2_ps.width(), button2_ps.height());
 
+    // If label_3 is available, place it after second language menu button.
     if (label_3_) {
       gfx::Size label3_ps = label_3_->GetPreferredSize();
-      // Place label_3 after first language menu button.
       label_3_->SetBounds(button2->bounds().right() +
           InfoBar::kButtonInLabelSpacing, InfoBar::OffsetY(this, label3_ps),
           text3_width, label3_ps.height());
     }
+  }
+
+  // If translate state is kBeforeTranslate, layout accept and deny butons.
+  if (state == TranslateInfoBarDelegate::kBeforeTranslate) {
+    gfx::Size accept_ps = accept_button_->GetPreferredSize();
+    accept_button_->SetBounds(
+        (label_3_ ? label_3_->bounds().right() : label_2_->bounds().right()) +
+        InfoBar::kEndOfLabelSpacing,
+        OffsetY(this, accept_ps), accept_ps.width(), accept_ps.height());
+    gfx::Size deny_ps = deny_button_->GetPreferredSize();
+    deny_button_->SetBounds(
+        accept_button_->bounds().right() + InfoBar::kButtonButtonSpacing,
+        OffsetY(this, deny_ps), deny_ps.width(), deny_ps.height());
+  } else if (state == TranslateInfoBarDelegate::kTranslating) {
+    // If translate state is kTranslating, layout "Translating..." label.
+    translating_label_->SetBounds(
+        label_2_->bounds().right() + InfoBar::kEndOfLabelSpacing,
+        InfoBar::OffsetY(this, translating_ps),
+        translating_width, translating_ps.height());
   }
 }
 
@@ -312,39 +452,73 @@ int TranslateInfoBar::GetAvailableWidth() const {
   gfx::Size options_ps = options_menu_button_->GetPreferredSize();
   int options_spacing =
       (label_3_ ? InfoBar::kButtonInLabelSpacing + InfoBar::kEndOfLabelSpacing :
-          (target_language_menu_button() ? InfoBar::kEndOfLabelSpacing :
+          (target_language_menu_button_ ? InfoBar::kEndOfLabelSpacing :
               InfoBar::kButtonButtonSpacing));
-  return (InfoBar::GetAvailableWidth() - options_ps.width() - options_spacing -
+  int available_width = (InfoBar::GetAvailableWidth() -
+      options_ps.width() - options_spacing -
       language_ps.width() - language_spacing -
       icon_->bounds().right() - InfoBar::kIconLabelSpacing);
+  TranslateInfoBarDelegate::TranslateState state = GetDelegate()->state();
+  if (state == TranslateInfoBarDelegate::kBeforeTranslate) {
+    gfx::Size accept_ps = accept_button_->GetPreferredSize();
+    gfx::Size deny_ps = deny_button_->GetPreferredSize();
+    available_width -= accept_ps.width() + InfoBar::kEndOfLabelSpacing +
+        deny_ps.width() + InfoBar::kButtonButtonSpacing;
+  } else if (state == TranslateInfoBarDelegate::kAfterTranslate) {
+    gfx::Size target_ps = target_language_menu_button_->GetPreferredSize();
+    available_width -= target_ps.width() + InfoBar::kButtonInLabelSpacing;
+  }
+  return available_width;
 }
 
 // TranslateInfoBar, views::ViewMenuDelegate implementation: -------------------
 
 void TranslateInfoBar::RunMenu(views::View* source, const gfx::Point& pt) {
-  int menu_id = source->GetID();
-  if (menu_id == kMenuIDOptions) {
-    if (!options_menu_model_.get()) {
-      options_menu_model_.reset(new OptionsMenuModel(this, GetDelegate(),
-          before_translate_));
-      options_menu_menu_.reset(new views::Menu2(options_menu_model_.get()));
+  switch (source->GetID()) {
+    case kMenuIDOptions: {
+      if (!options_menu_model_.get()) {
+        options_menu_model_.reset(new OptionsMenuModel(this, GetDelegate()));
+        options_menu_menu_.reset(new views::Menu2(options_menu_model_.get()));
+      }
+      options_menu_menu_->RunMenuAt(pt,
+          (UILayoutIsRightToLeft() ? views::Menu2::ALIGN_TOPLEFT :
+               views::Menu2::ALIGN_TOPRIGHT));
+      break;
     }
-    options_menu_menu_->RunMenuAt(pt,
-        (UILayoutIsRightToLeft() ? views::Menu2::ALIGN_TOPLEFT :
-             views::Menu2::ALIGN_TOPRIGHT));
-  } else if (menu_id == kMenuIDOriginalLanguage) {
-    if (!original_language_menu_model_.get()) {
-      original_language_menu_model_.reset(
-          new LanguagesMenuModel(this, GetDelegate(), true));
-      original_language_menu_menu_.reset(
-          new views::Menu2(original_language_menu_model_.get()));
+
+    case kMenuIDOriginalLanguage: {
+      if (GetDelegate()->state() != TranslateInfoBarDelegate::kTranslating) {
+        if (!original_language_menu_model_.get()) {
+          original_language_menu_model_.reset(
+              new LanguagesMenuModel(this, GetDelegate(), true));
+          original_language_menu_menu_.reset(
+              new views::Menu2(original_language_menu_model_.get()));
+        }
+        views::Menu2::Alignment alignment;
+        gfx::Point menu_position = DetermineMenuPositionAndAlignment(
+            original_language_menu_button_, &alignment);
+        original_language_menu_menu_->RunMenuAt(menu_position, alignment);
+      }
+      break;
     }
-    views::Menu2::Alignment alignment;
-    gfx::Point menu_position = DetermineMenuPositionAndAlignment(
-        original_language_menu_button_, &alignment);
-    original_language_menu_menu_->RunMenuAt(menu_position, alignment);
-  } else {
-    NOTREACHED() << "Invalid source menu.";
+
+    case kMenuIDTargetLanguage: {
+      if (!target_language_menu_model_.get()) {
+        target_language_menu_model_.reset(
+            new LanguagesMenuModel(this, GetDelegate(), false));
+        target_language_menu_menu_.reset(
+            new views::Menu2(target_language_menu_model_.get()));
+      }
+      views::Menu2::Alignment alignment;
+      gfx::Point menu_position = DetermineMenuPositionAndAlignment(
+          target_language_menu_button_, &alignment);
+      target_language_menu_menu_->RunMenuAt(menu_position, alignment);
+      break;
+    }
+
+    default:
+      NOTREACHED() << "Invalid source menu.";
+      break;
   }
 }
 
@@ -379,7 +553,10 @@ bool TranslateInfoBar::GetAcceleratorForCommandId(int command_id,
 }
 
 void TranslateInfoBar::ExecuteCommand(int command_id) {
-  if (command_id >= IDC_TRANSLATE_ORIGINAL_LANGUAGE_BASE) {
+  if (command_id >= IDC_TRANSLATE_TARGET_LANGUAGE_BASE) {
+    OnLanguageModified(target_language_menu_button_,
+        command_id - IDC_TRANSLATE_TARGET_LANGUAGE_BASE);
+  } else if (command_id >= IDC_TRANSLATE_ORIGINAL_LANGUAGE_BASE) {
     OnLanguageModified(original_language_menu_button_,
         command_id - IDC_TRANSLATE_ORIGINAL_LANGUAGE_BASE);
   } else {
@@ -414,7 +591,93 @@ void TranslateInfoBar::ExecuteCommand(int command_id) {
   }
 }
 
-// TranslateInfoBar, protected: ------------------------------------------------
+// TranslateInfoBar, views::ButtonListener overrides: --------------------------
+
+void TranslateInfoBar::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
+  if (sender == accept_button_) {
+    UpdateState(TranslateInfoBarDelegate::kTranslating);
+    GetDelegate()->Translate();
+  } else if (sender == deny_button_) {
+    RemoveInfoBar();
+  } else {  // Let base InfoBar handle close button.
+    InfoBar::ButtonPressed(sender, event);
+  }
+}
+
+// TranslateInfoBar, NotificationObserver overrides: ---------------------------
+
+void TranslateInfoBar::Observe(NotificationType type,
+    const NotificationSource& source, const NotificationDetails& details) {
+  if (type.value != NotificationType::PAGE_TRANSLATED)
+    return;
+  TabContents* tab = Source<TabContents>(source).ptr();
+  if (tab != GetDelegate()->tab_contents())
+    return;
+  UpdateState(TranslateInfoBarDelegate::kAfterTranslate);
+}
+
+// TranslateInfoBar, private: --------------------------------------------------
+
+void TranslateInfoBar::CreateLabels() {
+  // Determine text for labels.
+  std::vector<size_t> offsets;
+  std::wstring message_text = l10n_util::GetStringF(
+      (GetDelegate()->state() == TranslateInfoBarDelegate::kAfterTranslate ?
+          IDS_TRANSLATE_INFOBAR_AFTER_MESSAGE :
+              IDS_TRANSLATE_INFOBAR_BEFORE_MESSAGE),
+      std::wstring(), std::wstring(), &offsets);
+  if (!offsets.empty() && offsets.size() <= 2) {
+    // Sort the offsets if necessary.
+    if (offsets.size() == 2 && offsets[0] > offsets[1]) {
+      size_t offset0 = offsets[0];
+      offsets[0] = offsets[1];
+      offsets[1] = offset0;
+      swapped_language_placeholders_ = true;
+    }
+    if (offsets[offsets.size() - 1] != message_text.length())
+      offsets.push_back(message_text.length());
+  } else {
+    NOTREACHED() << "Invalid no. of placeholders in label.";
+  }
+
+  // Create label controls.
+  const gfx::Font& font = ResourceBundle::GetSharedInstance().GetFont(
+      ResourceBundle::MediumFont);
+  std::wstring label_1 = message_text.substr(0, offsets[0]);
+  if (label_1_) {
+    label_1_->SetText(label_1);
+  } else {
+    label_1_ = new views::Label(label_1, font);
+    label_1_->SetColor(SK_ColorBLACK);
+    label_1_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    AddChildView(label_1_);
+  }
+
+  std::wstring label_2 = message_text.substr(offsets[0],
+      offsets[1] - offsets[0]);
+  if (label_2_) {
+    label_2_->SetText(label_2);
+  } else {
+    label_2_ = new views::Label(label_2, font);
+    label_2_->SetColor(SK_ColorBLACK);
+    label_2_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+    AddChildView(label_2_);
+  }
+
+  if (offsets.size() == 3) {
+    std::wstring label_3 = message_text.substr(offsets[1],
+        offsets[2] - offsets[1]);
+    if (label_3_) {
+      label_3_->SetText(label_3);
+    } else {
+      label_3_ = new views::Label(label_3, font);
+      label_3_->SetColor(SK_ColorBLACK);
+      label_3_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
+      AddChildView(label_3_);
+    }
+  }
+}
 
 views::MenuButton* TranslateInfoBar::CreateMenuButton(int menu_id,
     const std::wstring& label) {
@@ -425,11 +688,6 @@ views::MenuButton* TranslateInfoBar::CreateMenuButton(int menu_id,
   menu_button->SetNormalHasBorder(true);
   menu_button->SetAnimationDuration(0);
   return menu_button;
-}
-
-int TranslateInfoBar::GetAvailableX() const {
-  return ((label_3_ ? label_3_->bounds().right() : label_2_->bounds().right()) +
-      InfoBar::kEndOfLabelSpacing);
 }
 
 gfx::Point TranslateInfoBar::DetermineMenuPositionAndAlignment(
@@ -474,133 +732,26 @@ void TranslateInfoBar::OnLanguageModified(views::MenuButton* menu_button,
   SchedulePaint();
   // Clear options menu model so that it'll be created with new language.
   options_menu_model_.reset();
-  if (!before_translate_)
+  // If necessary, update state and translate.
+  TranslateInfoBarDelegate::TranslateState state = GetDelegate()->state();
+  if (state != TranslateInfoBarDelegate::kTranslating) {
+    if (state == TranslateInfoBarDelegate::kBeforeTranslate)
+      UpdateState(TranslateInfoBarDelegate::kTranslating);
     GetDelegate()->Translate();
+  }
 }
 
-TranslateInfoBarDelegate* TranslateInfoBar::GetDelegate() const {
+inline TranslateInfoBarDelegate* TranslateInfoBar::GetDelegate() const {
   return static_cast<TranslateInfoBarDelegate*>(delegate());
 }
 
-// BeforeTranslateInfoBar, public: ---------------------------------------------
-
-BeforeTranslateInfoBar::BeforeTranslateInfoBar(
-    BeforeTranslateInfoBarDelegate* delegate)
-    : TranslateInfoBar(delegate, true, IDS_TRANSLATE_INFOBAR_BEFORE_MESSAGE) {
-  accept_button_ = new TranslateTextButton(this, IDS_TRANSLATE_INFOBAR_ACCEPT);
-  AddChildView(accept_button_);
-
-  deny_button_ = new TranslateTextButton(this, IDS_TRANSLATE_INFOBAR_DENY);
-  AddChildView(deny_button_);
+inline int TranslateInfoBar::GetSpacingAfterFirstLanguageButton() const {
+  return (GetDelegate()->state() == TranslateInfoBarDelegate::kBeforeTranslate ?
+      10 : kButtonInLabelSpacing);
 }
 
-BeforeTranslateInfoBar::~BeforeTranslateInfoBar() {
+// TranslateInfoBarDelegate, InfoBarDelegate overrides: ------------------
+
+InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {
+  return new TranslateInfoBar(this);
 }
-
-// BeforeTranslateInfoBar, InfoBar overrides: ----------------------------------
-
-int BeforeTranslateInfoBar::GetAvailableWidth() const {
-  gfx::Size accept_ps = accept_button_->GetPreferredSize();
-  gfx::Size deny_ps = deny_button_->GetPreferredSize();
-  return (TranslateInfoBar::GetAvailableWidth() -
-      accept_ps.width() - InfoBar::kEndOfLabelSpacing -
-      deny_ps.width() - InfoBar::kButtonButtonSpacing);
-}
-
-// BeforeTranslateInfoBar, views::View overrides: ------------------------------
-
-void BeforeTranslateInfoBar::Layout() {
-  // Layout the icon, options menu, language menu and close buttons.
-  TranslateInfoBar::Layout();
-
-  // Layout accept button.
-  gfx::Size accept_ps = accept_button_->GetPreferredSize();
-  accept_button_->SetBounds(TranslateInfoBar::GetAvailableX(),
-      OffsetY(this, accept_ps), accept_ps.width(), accept_ps.height());
-
-  // Layout deny button.
-  gfx::Size deny_ps = deny_button_->GetPreferredSize();
-  deny_button_->SetBounds(
-      accept_button_->bounds().right() + InfoBar::kButtonButtonSpacing,
-      OffsetY(this, deny_ps), deny_ps.width(), deny_ps.height());
-}
-
-// BeforeTranslateInfoBar, views::ButtonListener overrides: --------------------
-
-void BeforeTranslateInfoBar::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
-  if (sender == accept_button_) {
-    // TODO(kuan): If privacy warning box is needed (awaiting PM/UX decision),
-    // implement it.
-    GetDelegate()->Translate();
-  } else if (sender != deny_button_) {  // Let base InfoBar handle close button.
-    InfoBar::ButtonPressed(sender, event);
-  }
-  RemoveInfoBar();
-}
-
-// AfterTranslateInfoBar, public: ----------------------------------------------
-
-AfterTranslateInfoBar::AfterTranslateInfoBar(
-    AfterTranslateInfoBarDelegate* delegate)
-    : TranslateInfoBar(delegate, false, IDS_TRANSLATE_INFOBAR_AFTER_MESSAGE) {
-  string16 language_name = TranslateInfoBarDelegate::GetDisplayNameForLocale(
-      GetDelegate()->target_lang_code());
-  target_language_menu_button_ = CreateMenuButton(kMenuIDTargetLanguage,
-      UTF16ToWideHack(language_name));
-  AddChildView(target_language_menu_button_);
-}
-
-AfterTranslateInfoBar::~AfterTranslateInfoBar() {
-}
-
-// AfterTranslateInfoBar, InfoBar overrides: ----------------------------------
-
-int AfterTranslateInfoBar::GetAvailableWidth() const {
-  gfx::Size target_ps = target_language_menu_button_->GetPreferredSize();
-  return (TranslateInfoBar::GetAvailableWidth() - target_ps.width() -
-      InfoBar::kButtonInLabelSpacing);
-}
-
-// AfterTranslateInfoBar, views::ViewMenuDelegate implementation: --------------
-
-void AfterTranslateInfoBar::RunMenu(views::View* source, const gfx::Point& pt) {
-  if (source->GetID() == kMenuIDTargetLanguage) {
-    if (!target_language_menu_model_.get()) {
-      target_language_menu_model_.reset(
-          new LanguagesMenuModel(this, GetDelegate(), false));
-      target_language_menu_menu_.reset(
-          new views::Menu2(target_language_menu_model_.get()));
-    }
-    views::Menu2::Alignment alignment;
-    gfx::Point menu_position = DetermineMenuPositionAndAlignment(
-        target_language_menu_button_, &alignment);
-    target_language_menu_menu_->RunMenuAt(menu_position, alignment);
-  } else {
-    TranslateInfoBar::RunMenu(source, pt);
-  }
-}
-
-// AfterTranslateInfoBar, menus::SimpleMenuModel::Delegate implementation: -----
-
-void AfterTranslateInfoBar::ExecuteCommand(int command_id) {
-  if (command_id >= IDC_TRANSLATE_TARGET_LANGUAGE_BASE) {
-    OnLanguageModified(target_language_menu_button_,
-        command_id - IDC_TRANSLATE_TARGET_LANGUAGE_BASE);
-  } else {
-    TranslateInfoBar::ExecuteCommand(command_id);
-  }
-}
-
-// BeforeTranslateInfoBarDelegate, InfoBarDelegate overrides: ------------------
-
-InfoBar* BeforeTranslateInfoBarDelegate::CreateInfoBar() {
-  return new BeforeTranslateInfoBar(this);
-}
-
-// AfterTranslateInfoBarDelegate, InfoBarDelegate overrides: ------------------
-
-InfoBar* AfterTranslateInfoBarDelegate::CreateInfoBar() {
-  return new AfterTranslateInfoBar(this);
-}
-

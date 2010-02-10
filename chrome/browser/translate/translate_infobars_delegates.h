@@ -14,19 +14,29 @@ class SkBitmap;
 // translate infobars.
 class TranslateInfoBarDelegate : public InfoBarDelegate {
  public:
-  virtual void GetAvailableOriginalLanguages(
-      std::vector<std::string>* languages);
-  virtual void GetAvailableTargetLanguages(
-      std::vector<std::string>* languages);
-  virtual void ModifyOriginalLanguage(int lang_index);
-  virtual void ModifyTargetLanguage(int lang_index);
-  virtual void Translate();
-  virtual bool IsLanguageBlacklisted();
-  virtual void ToggleLanguageBlacklist();
-  virtual bool IsSiteBlacklisted();
-  virtual void ToggleSiteBlacklist();
-  virtual bool ShouldAlwaysTranslate();
-  virtual void ToggleAlwaysTranslate();
+  enum TranslateState {
+    kBeforeTranslate = 1,
+    kTranslating,
+    kAfterTranslate,
+    kTranslationFailed,
+  };
+
+  TranslateInfoBarDelegate(TabContents* contents, PrefService* user_prefs,
+      TranslateState state, const GURL& url,
+      const std::string& original_language, const std::string& target_language);
+
+  void UpdateState(TranslateState new_state);
+  void GetAvailableOriginalLanguages(std::vector<std::string>* languages);
+  void GetAvailableTargetLanguages(std::vector<std::string>* languages);
+  void ModifyOriginalLanguage(int lang_index);
+  void ModifyTargetLanguage(int lang_index);
+  void Translate();
+  bool IsLanguageBlacklisted();
+  void ToggleLanguageBlacklist();
+  bool IsSiteBlacklisted();
+  void ToggleSiteBlacklist();
+  bool ShouldAlwaysTranslate();
+  void ToggleAlwaysTranslate();
 
   int original_lang_index() const {
     return original_lang_index_;
@@ -46,77 +56,41 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
   TabContents* tab_contents() const {
     return tab_contents_;
   }
+  TranslateState state() const {
+    return state_;
+  }
 
   // Overridden from InfoBarDelegate.
   virtual Type GetInfoBarType() {
     return PAGE_ACTION_TYPE;
   }
   virtual SkBitmap* GetIcon() const;
-  virtual bool EqualsDelegate(InfoBarDelegate* delegate) const;
   virtual TranslateInfoBarDelegate* AsTranslateInfoBarDelegate() {
     return this;
   }
+  virtual bool EqualsDelegate(InfoBarDelegate* delegate) const;
   virtual void InfoBarClosed();
 
   // Returns the printable version of the language code |language_code|.
   static string16 GetDisplayNameForLocale(const std::string& language_code);
 
- protected:
-  TranslateInfoBarDelegate(TabContents* contents, PrefService* user_prefs,
-      const std::string& original_language, const std::string& target_language);
+  // Overridden from InfoBarDelegate:
+  virtual InfoBar* CreateInfoBar();
 
+ private:
   TabContents* tab_contents_;  // Weak.
+  TranslatePrefs prefs_;
+  TranslateState state_;
+  std::string site_;
   int original_lang_index_;
   int target_lang_index_;
-  TranslatePrefs prefs_;
   // The list of languages supported.
   std::vector<std::string> supported_languages_;
-
-  DISALLOW_COPY_AND_ASSIGN(TranslateInfoBarDelegate);
-};
-
-class BeforeTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
- public:
-  BeforeTranslateInfoBarDelegate(TabContents* contents, PrefService* user_prefs,
-      const GURL& url, const std::string& original_language,
-      const std::string& target_language);
-
-  // Overriden from TranslateInfoBarDelegate:
-  virtual bool IsLanguageBlacklisted();
-  virtual void ToggleLanguageBlacklist();
-  virtual bool IsSiteBlacklisted();
-  virtual void ToggleSiteBlacklist();
-
-  // Overridden from InfoBarDelegate:
-  virtual InfoBar* CreateInfoBar();
-
- private:
-  std::string site_;
   bool never_translate_language_;
   bool never_translate_site_;
-
-  DISALLOW_COPY_AND_ASSIGN(BeforeTranslateInfoBarDelegate);
-};
-
-class AfterTranslateInfoBarDelegate : public TranslateInfoBarDelegate {
- public:
-  AfterTranslateInfoBarDelegate(TabContents* contents, PrefService* user_prefs,
-      const std::string& original_language, const std::string& target_language);
-
-  // Overriden from TranslateInfoBar:
-  virtual void GetAvailableTargetLanguages(
-      std::vector<std::string>* languages);
-  virtual void ModifyTargetLanguage(int lang_index);
-  virtual bool ShouldAlwaysTranslate();
-  virtual void ToggleAlwaysTranslate();
-
-  // Overridden from InfoBarDelegate:
-  virtual InfoBar* CreateInfoBar();
-
- private:
   bool always_translate_;
 
-  DISALLOW_COPY_AND_ASSIGN(AfterTranslateInfoBarDelegate);
+  DISALLOW_COPY_AND_ASSIGN(TranslateInfoBarDelegate);
 };
 
 #endif  // CHROME_BROWSER_TRANSLATE_TRANSLATE_INFOBARS_DELEGATES_H_

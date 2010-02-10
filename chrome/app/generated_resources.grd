@@ -6407,6 +6407,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_TRANSLATE_INFOBAR_DENY" desc="Text to show for the translate infobar button to deny translation.">
         Nope
       </message>
+      <message name="IDS_TRANSLATE_INFOBAR_TRANSLATING" desc="Text shown when page is currently being translated by servers">
+        Loading...
+      </message>
       <message name="IDS_TRANSLATE_INFOBAR_PRIVACY_TITLE" desc="Title for translation warning.">
         Translation Warning
       </message>
