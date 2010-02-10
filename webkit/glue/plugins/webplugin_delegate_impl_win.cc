@@ -699,13 +699,16 @@ bool WebPluginDelegateImpl::WindowedReposition(
   // being displayed anywhere. See:
   // http://code.google.com/p/chromium/issues/detail?id=32658
   if (window_rect.size() != window_rect_.size()) {
+    UINT flags = SWP_NOMOVE | SWP_NOZORDER;
+    if (!GetParent(windowed_handle_))
+      flags |= SWP_NOACTIVATE;
     ::SetWindowPos(windowed_handle_,
                    NULL,
                    0,
                    0,
                    window_rect.width(),
                    window_rect.height(),
-                   GetParent(windowed_handle_) ? 0 : SWP_NOACTIVATE);
+                   flags);
   }
 
   window_rect_ = window_rect;
