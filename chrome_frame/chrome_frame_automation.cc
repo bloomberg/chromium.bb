@@ -14,6 +14,7 @@
 #include "base/singleton.h"
 #include "base/string_util.h"
 #include "base/sys_info.h"
+#include "base/waitable_event.h"
 #include "chrome/app/client_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_paths.h"
@@ -329,37 +330,54 @@ bool ProxyFactory::ReleaseAutomationServer(void* server_id) {
 
   ProxyCacheEntry* entry = reinterpret_cast<ProxyCacheEntry*>(server_id);
 
+#ifndef NDEBUG
   lock_.Acquire();
   Vector::ContainerType::iterator it = std::find(proxies_.container().begin(),
                                                  proxies_.container().end(),
                                                  entry);
   DCHECK(it != proxies_.container().end());
   DCHECK(entry->thread->thread_id() != PlatformThread::CurrentId());
-  if (--entry->ref_count == 0) {
-    proxies_.container().erase(it);
-  }
+  DCHECK_GT(entry->ref_count, 0);
 
   lock_.Release();
+#endif
 
-  // Destroy it.
+  base::WaitableEvent done(true, false);
+  entry->thread->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &ProxyFactory::ReleaseProxy, entry, &done));
+  done.Wait();
+
+  // Stop the thread and destroy the entry if there is no more clients.
   if (entry->ref_count == 0) {
-    entry->thread->message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
-        &ProxyFactory::DestroyProxy, entry));
-    // Wait until thread exits
-    entry->thread.reset();
     DCHECK(entry->proxy == NULL);
+    entry->thread.reset();
     delete entry;
   }
 
   return true;
 }
 
-void ProxyFactory::DestroyProxy(ProxyCacheEntry* entry) {
+void ProxyFactory::ReleaseProxy(ProxyCacheEntry* entry,
+                                base::WaitableEvent* done) {
   DCHECK(entry->thread->thread_id() == PlatformThread::CurrentId());
+
+  lock_.Acquire();
+  if (!--entry->ref_count) {
+    Vector::ContainerType::iterator it = std::find(proxies_.container().begin(),
+                                                   proxies_.container().end(),
+                                                   entry);
+    proxies_->erase(it);
+  }
+  lock_.Release();
+
   // Send pending UMA data if any.
-  SendUMAData(entry);
-  delete entry->proxy;
-  entry->proxy = NULL;
+  if (!entry->ref_count) {
+    SendUMAData(entry);
+    delete entry->proxy;
+    entry->proxy = NULL;
+  }
+
+  done->Signal();
 }
 
 Singleton<ProxyFactory> g_proxy_factory;

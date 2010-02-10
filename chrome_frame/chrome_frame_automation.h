@@ -122,7 +122,7 @@ class ProxyFactory {
   void CreateProxy(ProxyCacheEntry* entry,
                    const ChromeFrameLaunchParams& params,
                    LaunchDelegate* delegate);
-  void DestroyProxy(ProxyCacheEntry* entry);
+  void ReleaseProxy(ProxyCacheEntry* entry, base::WaitableEvent* done);
 
   void SendUMAData(ProxyCacheEntry* proxy_entry);
 

@@ -1,6 +1,7 @@
 // Copyright (c) 2006-2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
+#include "base/waitable_event.h"
 #include "chrome_frame/test/proxy_factory_mock.h"
 
 #define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
@@ -84,3 +85,42 @@ TEST(ProxyFactoryTest, CreateDifferentProfiles) {
   f.ReleaseAutomationServer(i1);
 }
 
+TEST(ProxyFactoryTest, FastCreateDestroy) {
+  ProxyFactory f;
+  LaunchDelegateMock* d1 = new LaunchDelegateMock();
+  LaunchDelegateMock* d2 = new LaunchDelegateMock();
+
+  ChromeFrameLaunchParams params;
+  params.automation_server_launch_timeout = 10000;
+  params.profile_name = L"Dr. Gratiano Forbeson";
+  params.extra_chrome_arguments = L"";
+  params.perform_version_check = false;
+  params.incognito_mode = false;
+
+  void* i1 = NULL;
+  base::WaitableEvent launched(true, false);
+  EXPECT_CALL(*d1, LaunchComplete(testing::NotNull(), AUTOMATION_SUCCESS))
+      .Times(1)
+      .WillOnce(testing::InvokeWithoutArgs(&launched,
+                                           &base::WaitableEvent::Signal));
+  f.GetAutomationServer(d1, params, &i1);
+  // Wait for launch
+  ASSERT_TRUE(launched.TimedWait(base::TimeDelta::FromSeconds(10)));
+
+  // Expect second launch to succeed too
+  EXPECT_CALL(*d2, LaunchComplete(testing::NotNull(), AUTOMATION_SUCCESS))
+      .Times(1);
+
+  // Boost thread priority so we call ReleaseAutomationServer before
+  // LaunchComplete callback have a chance to be executed.
+  ::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_HIGHEST);
+  void* i2 = NULL;
+  f.GetAutomationServer(d2, params, &i2);
+  EXPECT_EQ(i1, i2);
+  f.ReleaseAutomationServer(i2);
+  delete d2;
+
+  ::SetThreadPriority(::GetCurrentThread(), THREAD_PRIORITY_NORMAL);
+  f.ReleaseAutomationServer(i1);
+  delete d1;
+}
