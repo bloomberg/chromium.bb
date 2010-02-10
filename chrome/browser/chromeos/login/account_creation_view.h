@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_ACCOUNT_CREATION_VIEW_H_
 
 #include <string>
+#include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "views/accelerator.h"
 #include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield.h"
@@ -23,7 +24,7 @@ namespace chromeos {
 class ScreenObserver;
 }  // namespace chromeos
 
-class AccountCreationView : public views::View,
+class AccountCreationView : public WizardScreen,
                             public views::WindowDelegate,
                             public views::Textfield::Controller,
                             public views::ButtonListener {
@@ -31,7 +32,7 @@ class AccountCreationView : public views::View,
   explicit AccountCreationView(chromeos::ScreenObserver* observer);
   virtual ~AccountCreationView();
 
-  // Initialize the controls on the dialog.
+  // WizardScreen implementation:
   void Init();
 
   // Overridden from views::View:

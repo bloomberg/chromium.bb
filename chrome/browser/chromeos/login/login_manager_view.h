@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_MANAGER_VIEW_H_
 
 #include <string>
+#include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "views/accelerator.h"
 #include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield.h"
-#include "views/view.h"
 #include "views/widget/widget_gtk.h"
 #include "views/window/window_delegate.h"
 
@@ -23,7 +23,7 @@ class Label;
 class NativeButton;
 }  // namespace views
 
-class LoginManagerView : public views::View,
+class LoginManagerView : public WizardScreen,
                          public views::WindowDelegate,
                          public views::Textfield::Controller,
                          public views::ButtonListener {
@@ -31,7 +31,7 @@ class LoginManagerView : public views::View,
   explicit LoginManagerView(chromeos::ScreenObserver* observer);
   virtual ~LoginManagerView();
 
-  // Initialize the controls on the dialog.
+  // WizardScreen implementation:
   void Init();
 
   // Overridden from views::View:

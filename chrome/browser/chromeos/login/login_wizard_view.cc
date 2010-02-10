@@ -7,8 +7,6 @@
 #include <gdk/gdk.h>
 #include <signal.h>
 #include <sys/types.h>
-#include <X11/cursorfont.h>
-#include <X11/Xcursor/Xcursor.h>
 
 #include <string>
 
@@ -20,7 +18,9 @@
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/login/account_creation_view.h"
 #include "chrome/browser/chromeos/login/login_manager_view.h"
+#include "chrome/browser/chromeos/login/network_selection_view.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
+#include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/views/browser_dialogs.h"
@@ -32,6 +32,12 @@
 #include "views/window/non_client_view.h"
 #include "views/window/window.h"
 #include "views/window/window_gtk.h"
+
+// X Windows headers have "#define Status int". That interferes with
+// NetworkLibrary header which defines enum "Status".
+
+#include <X11/cursorfont.h>
+#include <X11/Xcursor/Xcursor.h>
 
 using views::Background;
 using views::View;
@@ -50,6 +56,7 @@ const SkColor kBackgroundPaddingColor = SK_ColorBLACK;
 // Names of screens to start login wizard with.
 const char kLoginManager[] = "login";
 const char kAccountCreation[] = "create_account";
+const char kNetworkSelection[] = "network";
 
 }  // namespace
 
@@ -141,6 +148,7 @@ LoginWizardView::LoginWizardView()
     : status_area_(NULL),
       current_(NULL),
       login_manager_(NULL),
+      network_selection_(NULL),
       account_creation_(NULL) {
 }
 
@@ -171,6 +179,10 @@ void LoginWizardView::Init(const std::string& start_view_name) {
   // Select the view to start with and show it.
   if (start_view_name == kLoginManager) {
     current_ = login_manager_;
+  } else if (start_view_name == kNetworkSelection) {
+    // TODO(nkostylev): Init network selection screen when it's required.
+    CreateAndInitScreen(&network_selection_);
+    current_ = network_selection_;
   } else if (start_view_name == kAccountCreation) {
     current_ = account_creation_;
   } else {
@@ -262,4 +274,3 @@ void LoginWizardView::OpenButtonOptions(const views::View* button_view) const {
 bool LoginWizardView::IsButtonVisible(const views::View* button_view) const {
   return true;
 }
-

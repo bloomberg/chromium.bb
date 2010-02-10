@@ -13,8 +13,10 @@
 #include "views/view.h"
 #include "views/window/window_delegate.h"
 
-class LoginManagerView;
 class AccountCreationView;
+class LoginManagerView;
+class NetworkSelectionView;
+class WizardScreen;
 
 namespace chromeos {
 class StatusAreaView;
@@ -36,7 +38,7 @@ class LoginWizardView : public views::View,
   // Exit handlers:
   void OnLoginSignInSelected();
 
-  // Overriden from chromeos::ScreenObserver:
+  // Overridden from chromeos::ScreenObserver:
   virtual void OnExit(ExitCodes exit_code);
 
   // Overridden from views::View:
@@ -45,7 +47,7 @@ class LoginWizardView : public views::View,
   // Overridden from views::WindowDelegate:
   virtual views::View* GetContentsView();
 
-  // Overriden from StatusAreaHost:
+  // Overridden from StatusAreaHost:
   virtual gfx::NativeWindow GetNativeWindow() const;
   virtual bool ShouldOpenButtonOptions(const views::View* button_view) const;
   virtual void OpenButtonOptions(const views::View* button_view) const;
@@ -65,10 +67,13 @@ class LoginWizardView : public views::View,
   chromeos::StatusAreaView* status_area_;
 
   // View that's shown to the user at the moment.
-  views::View* current_;
+  WizardScreen* current_;
 
   // Login manager view.
   LoginManagerView* login_manager_;
+
+  // Network selection/welcome view.
+  NetworkSelectionView* network_selection_;
 
   // Account creation view.
   AccountCreationView* account_creation_;
