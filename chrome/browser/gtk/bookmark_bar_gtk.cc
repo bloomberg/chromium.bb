@@ -271,7 +271,7 @@ void BookmarkBarGtk::Init(Profile* profile) {
       GTK_BUTTON(sync_error_button_),
       gtk_image_new_from_pixbuf(
           ResourceBundle::GetSharedInstance().GetPixbufNamed(IDR_WARNING)));
-  g_signal_connect(G_OBJECT(sync_error_button_), "button-press-event",
+  g_signal_connect(sync_error_button_, "button-press-event",
                    G_CALLBACK(OnSyncErrorButtonPressed), this);
   gtk_box_pack_start(GTK_BOX(bookmark_hbox_), sync_error_button_ ,
                      FALSE, FALSE, 0);
@@ -825,11 +825,11 @@ GtkWidget* BookmarkBarGtk::CreateBookmarkButton(const BookmarkNode* node) {
                    GtkDndUtil::NETSCAPE_URL;
   }
   GtkDndUtil::SetSourceTargetListFromCodeMask(button, target_mask);
-  g_signal_connect(G_OBJECT(button), "drag-begin",
+  g_signal_connect(button, "drag-begin",
                    G_CALLBACK(&OnButtonDragBegin), this);
-  g_signal_connect(G_OBJECT(button), "drag-end",
+  g_signal_connect(button, "drag-end",
                    G_CALLBACK(&OnButtonDragEnd), this);
-  g_signal_connect(G_OBJECT(button), "drag-data-get",
+  g_signal_connect(button, "drag-data-get",
                    G_CALLBACK(&OnButtonDragGet), this);
   // We deliberately don't connect to "drag-data-delete" because the action of
   // moving a button will regenerate all the contents of the bookmarks bar
@@ -839,9 +839,9 @@ GtkWidget* BookmarkBarGtk::CreateBookmarkButton(const BookmarkNode* node) {
     // Connect to 'button-release-event' instead of 'clicked' because we need
     // access to the modifier keys and we do different things on each
     // button.
-    g_signal_connect(G_OBJECT(button), "button-press-event",
+    g_signal_connect(button, "button-press-event",
                      G_CALLBACK(OnButtonPressed), this);
-    g_signal_connect(G_OBJECT(button), "clicked",
+    g_signal_connect(button, "clicked",
                      G_CALLBACK(OnClicked), this);
     gtk_util::SetButtonTriggersNavigation(button);
   } else {
@@ -869,9 +869,9 @@ void BookmarkBarGtk::ConnectFolderButtonEvents(GtkWidget* widget) {
   g_signal_connect(widget, "drag-data-received",
                    G_CALLBACK(&OnDragReceived), this);
 
-  g_signal_connect(G_OBJECT(widget), "button-press-event",
+  g_signal_connect(widget, "button-press-event",
                    G_CALLBACK(OnButtonPressed), this);
-  g_signal_connect(G_OBJECT(widget), "clicked",
+  g_signal_connect(widget, "clicked",
                    G_CALLBACK(OnFolderClicked), this);
 
   // Accept middle mouse clicking (which opens all). This must be called after

@@ -36,7 +36,7 @@ bool FirstRunDialog::Show(Profile* profile,
   // but that spins a nested message loop and hoses us.  :(
   // http://code.google.com/p/chromium/issues/detail?id=12552
   // Instead, run a loop and extract the response manually.
-  g_signal_connect(G_OBJECT(first_run->dialog_), "response",
+  g_signal_connect(first_run->dialog_, "response",
                    G_CALLBACK(HandleOnResponseDialog), first_run);
   gtk_widget_show_all(first_run->dialog_);
   MessageLoop::current()->Run();
@@ -72,7 +72,7 @@ FirstRunDialog::FirstRunDialog(Profile* profile, int& response)
   // manually:
   gtk_window_set_resizable(GTK_WINDOW(dialog_), FALSE);
 
-  g_signal_connect(G_OBJECT(dialog_), "delete-event",
+  g_signal_connect(dialog_, "delete-event",
                    G_CALLBACK(gtk_widget_hide_on_delete), NULL);
 
   GtkWidget* content_area = GTK_DIALOG(dialog_)->vbox;

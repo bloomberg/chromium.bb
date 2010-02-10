@@ -137,9 +137,9 @@ void ContentBlockedBubbleGtk::BuildBubble() {
             content_type_) == CONTENT_SETTING_ALLOW) ?
         allow_radio_ : block_radio_), TRUE);
 
-    g_signal_connect(G_OBJECT(allow_radio_), "toggled",
+    g_signal_connect(allow_radio_, "toggled",
                      G_CALLBACK(OnAllowBlockToggled), this);
-    g_signal_connect(G_OBJECT(block_radio_), "toggled",
+    g_signal_connect(block_radio_, "toggled",
                      G_CALLBACK(OnAllowBlockToggled), this);
   }
 

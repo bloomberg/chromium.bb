@@ -780,7 +780,7 @@ NPError NPP_SetWindow(NPP instance, NPWindow *window) {
       // calling NPP_Destroy. We handle this by hiding our X window instead of
       // destroying it. Without this, future OpenGL calls can raise a
       // GLXBadDrawable error and kill the browser process.
-      g_signal_connect(G_OBJECT(obj->gtk_container_), "delete-event",
+      g_signal_connect(obj->gtk_container_, "delete-event",
                        G_CALLBACK(gtk_widget_hide_on_delete), NULL);
       gtk_widget_set_double_buffered(obj->gtk_container_, FALSE);
       if (!obj->fullscreen()) {
@@ -863,7 +863,7 @@ void PluginObject::SetGtkEventSource(GtkWidget *widget) {
                           GDK_EXPOSURE_MASK |
                           GDK_ENTER_NOTIFY_MASK |
                           GDK_LEAVE_NOTIFY_MASK);
-    event_handler_id_ = g_signal_connect(G_OBJECT(gtk_event_source_), "event",
+    event_handler_id_ = g_signal_connect(gtk_event_source_, "event",
                                          G_CALLBACK(GtkEventCallback), this);
   }
 }
@@ -945,9 +945,9 @@ bool PluginObject::RequestFullscreenDisplay() {
   // size, but let's do it anyway. It could still be relevant for some window
   // managers.
   gtk_window_fullscreen(window);
-  g_signal_connect(G_OBJECT(window), "configure-event",
+  g_signal_connect(window, "configure-event",
                    G_CALLBACK(GtkConfigureEventCallback), this);
-  g_signal_connect(G_OBJECT(window), "delete-event",
+  g_signal_connect(window, "delete-event",
                    G_CALLBACK(GtkDeleteEventCallback), this);
   gtk_fullscreen_container_ = widget;
   gtk_widget_show(widget);

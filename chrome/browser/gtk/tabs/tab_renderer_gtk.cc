@@ -253,9 +253,9 @@ TabRendererGtk::TabRendererGtk(ThemeProvider* theme_provider)
 
   tab_.Own(gtk_fixed_new());
   gtk_widget_set_app_paintable(tab_.get(), TRUE);
-  g_signal_connect(G_OBJECT(tab_.get()), "expose-event",
+  g_signal_connect(tab_.get(), "expose-event",
                    G_CALLBACK(OnExposeEvent), this);
-  g_signal_connect(G_OBJECT(tab_.get()), "size-allocate",
+  g_signal_connect(tab_.get(), "size-allocate",
                    G_CALLBACK(OnSizeAllocate), this);
   close_button_.reset(MakeCloseButton());
   gtk_widget_show(tab_.get());
@@ -961,13 +961,13 @@ CustomDrawButton* TabRendererGtk::MakeCloseButton() {
   CustomDrawButton* button = new CustomDrawButton(IDR_TAB_CLOSE,
       IDR_TAB_CLOSE_P, IDR_TAB_CLOSE_H, IDR_TAB_CLOSE);
 
-  g_signal_connect(G_OBJECT(button->widget()), "clicked",
+  g_signal_connect(button->widget(), "clicked",
                    G_CALLBACK(OnCloseButtonClicked), this);
-  g_signal_connect(G_OBJECT(button->widget()), "button-release-event",
+  g_signal_connect(button->widget(), "button-release-event",
                    G_CALLBACK(OnCloseButtonMouseRelease), this);
-  g_signal_connect(G_OBJECT(button->widget()), "enter-notify-event",
+  g_signal_connect(button->widget(), "enter-notify-event",
                    G_CALLBACK(OnEnterNotifyEvent), this);
-  g_signal_connect(G_OBJECT(button->widget()), "leave-notify-event",
+  g_signal_connect(button->widget(), "leave-notify-event",
                    G_CALLBACK(OnLeaveNotifyEvent), this);
   GTK_WIDGET_UNSET_FLAGS(button->widget(), GTK_CAN_FOCUS);
   gtk_fixed_put(GTK_FIXED(tab_.get()), button->widget(), 0, 0);

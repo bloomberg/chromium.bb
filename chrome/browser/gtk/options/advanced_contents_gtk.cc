@@ -637,7 +637,7 @@ PrivacySection::PrivacySection(Profile* profile)
   gtk_combo_box_append_text(
       GTK_COMBO_BOX(cookie_behavior_combobox_),
       l10n_util::GetStringUTF8(IDS_OPTIONS_COOKIES_BLOCK_ALL_COOKIES).c_str());
-  g_signal_connect(G_OBJECT(cookie_behavior_combobox_), "changed",
+  g_signal_connect(cookie_behavior_combobox_, "changed",
                    G_CALLBACK(OnCookieBehaviorChanged), this);
   gtk_box_pack_start(GTK_BOX(cookie_controls), cookie_behavior_combobox_,
                      FALSE, FALSE, 0);

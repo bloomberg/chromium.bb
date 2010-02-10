@@ -140,7 +140,7 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
         l10n_util::GetString(IDS_BOOMARK_EDITOR_NEW_FOLDER_NAME));
   }
   gtk_entry_set_text(GTK_ENTRY(name_entry_), title.c_str());
-  g_signal_connect(G_OBJECT(name_entry_), "changed",
+  g_signal_connect(name_entry_, "changed",
                    G_CALLBACK(OnEntryChanged), this);
   gtk_entry_set_activates_default(GTK_ENTRY(name_entry_), TRUE);
 
@@ -151,7 +151,7 @@ void BookmarkEditorGtk::Init(GtkWindow* parent_window) {
     if (details_.type == EditDetails::EXISTING_NODE)
       url_spec = details_.existing_node->GetURL().spec();
     gtk_entry_set_text(GTK_ENTRY(url_entry_), url_spec.c_str());
-    g_signal_connect(G_OBJECT(url_entry_), "changed",
+    g_signal_connect(url_entry_, "changed",
                      G_CALLBACK(OnEntryChanged), this);
     gtk_entry_set_activates_default(GTK_ENTRY(url_entry_), TRUE);
     table = gtk_util::CreateLabeledControlsGroup(NULL,

@@ -256,9 +256,9 @@ void ActAsRoundedWindow(
   DCHECK(!g_object_get_data(G_OBJECT(widget), kRoundedData));
 
   gtk_widget_set_app_paintable(widget, TRUE);
-  g_signal_connect(G_OBJECT(widget), "expose-event",
+  g_signal_connect(widget, "expose-event",
                    G_CALLBACK(OnRoundedWindowExpose), NULL);
-  g_signal_connect(G_OBJECT(widget), "style-set", G_CALLBACK(OnStyleSet), NULL);
+  g_signal_connect(widget, "style-set", G_CALLBACK(OnStyleSet), NULL);
 
   RoundedWindowData* data = new RoundedWindowData;
   data->expected_width = -1;

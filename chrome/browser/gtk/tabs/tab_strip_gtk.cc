@@ -562,17 +562,17 @@ void TabStripGtk::Init() {
                                  -1 };
   GtkDndUtil::SetDestTargetList(tabstrip_.get(), targets);
 
-  g_signal_connect(G_OBJECT(tabstrip_.get()), "expose-event",
+  g_signal_connect(tabstrip_.get(), "expose-event",
                    G_CALLBACK(OnExpose), this);
-  g_signal_connect(G_OBJECT(tabstrip_.get()), "size-allocate",
-                     G_CALLBACK(OnSizeAllocate), this);
-  g_signal_connect(G_OBJECT(tabstrip_.get()), "drag-motion",
+  g_signal_connect(tabstrip_.get(), "size-allocate",
+                   G_CALLBACK(OnSizeAllocate), this);
+  g_signal_connect(tabstrip_.get(), "drag-motion",
                    G_CALLBACK(OnDragMotion), this);
-  g_signal_connect(G_OBJECT(tabstrip_.get()), "drag-drop",
+  g_signal_connect(tabstrip_.get(), "drag-drop",
                    G_CALLBACK(OnDragDrop), this);
-  g_signal_connect(G_OBJECT(tabstrip_.get()), "drag-leave",
+  g_signal_connect(tabstrip_.get(), "drag-leave",
                    G_CALLBACK(OnDragLeave), this);
-  g_signal_connect(G_OBJECT(tabstrip_.get()), "drag-data-received",
+  g_signal_connect(tabstrip_.get(), "drag-data-received",
                    G_CALLBACK(OnDragDataReceived), this);
 
   newtab_button_.reset(MakeNewTabButton());
@@ -1526,7 +1526,7 @@ void TabStripGtk::DropInfo::CreateContainer() {
   container = gtk_window_new(GTK_WINDOW_POPUP);
   SetContainerColorMap();
   gtk_widget_set_app_paintable(container, TRUE);
-  g_signal_connect(G_OBJECT(container), "expose-event",
+  g_signal_connect(container, "expose-event",
                    G_CALLBACK(OnExposeEvent), this);
   gtk_widget_add_events(container, GDK_STRUCTURE_MASK);
   gtk_window_move(GTK_WINDOW(container), 0, 0);
@@ -1853,7 +1853,7 @@ CustomDrawButton* TabStripGtk::MakeNewTabButton() {
 
   // Let the middle mouse button initiate clicks as well.
   gtk_util::SetButtonTriggersNavigation(button->widget());
-  g_signal_connect(G_OBJECT(button->widget()), "clicked",
+  g_signal_connect(button->widget(), "clicked",
                    G_CALLBACK(OnNewTabClicked), this);
   GTK_WIDGET_UNSET_FLAGS(button->widget(), GTK_CAN_FOCUS);
   gtk_fixed_put(GTK_FIXED(tabstrip_.get()), button->widget(), 0, 0);

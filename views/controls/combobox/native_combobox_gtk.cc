@@ -110,7 +110,7 @@ void NativeComboboxGtk::CreateNativeControl() {
   gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(widget), cell, TRUE);
   gtk_cell_layout_set_attributes(
       GTK_CELL_LAYOUT(widget), cell, "text", 0, NULL);
-  g_signal_connect(G_OBJECT(widget), "changed",
+  g_signal_connect(widget, "changed",
                    G_CALLBACK(CallChanged), this);
 
   NativeControlCreated(widget);

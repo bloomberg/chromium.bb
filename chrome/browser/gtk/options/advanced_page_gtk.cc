@@ -39,7 +39,7 @@ void AdvancedPageGtk::Init() {
   gtk_button_box_set_layout(GTK_BUTTON_BOX(button_box), GTK_BUTTONBOX_END);
   GtkWidget* reset_button = gtk_button_new_with_label(
         l10n_util::GetStringUTF8(IDS_OPTIONS_RESET).c_str());
-  g_signal_connect(G_OBJECT(reset_button), "clicked",
+  g_signal_connect(reset_button, "clicked",
                    G_CALLBACK(OnResetToDefaultsClicked), this);
   gtk_container_add(GTK_CONTAINER(button_box), reset_button);
   gtk_box_pack_start(GTK_BOX(page_), button_box, FALSE, FALSE, 0);

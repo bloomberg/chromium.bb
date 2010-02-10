@@ -391,10 +391,10 @@ void TaskManagerGtk::Init() {
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
 
-  destroy_handler_id_ = g_signal_connect(G_OBJECT(dialog_), "destroy",
+  destroy_handler_id_ = g_signal_connect(dialog_, "destroy",
                                          G_CALLBACK(OnDestroy), this);
-  g_signal_connect(G_OBJECT(dialog_), "response", G_CALLBACK(OnResponse), this);
-  g_signal_connect(G_OBJECT(dialog_), "button-release-event",
+  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
+  g_signal_connect(dialog_, "button-release-event",
                    G_CALLBACK(OnButtonReleaseEvent), this);
   gtk_widget_add_events(dialog_,
                         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
@@ -410,7 +410,7 @@ void TaskManagerGtk::Init() {
 
   CreateTaskManagerTreeview();
   gtk_tree_view_set_headers_clickable(GTK_TREE_VIEW(treeview_), TRUE);
-  g_signal_connect(G_OBJECT(treeview_), "button-press-event",
+  g_signal_connect(treeview_, "button-press-event",
                    G_CALLBACK(OnButtonPressEvent), this);
   gtk_widget_add_events(treeview_,
                         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK);
@@ -419,7 +419,7 @@ void TaskManagerGtk::Init() {
   GtkTreeSelection* selection = gtk_tree_view_get_selection(
       GTK_TREE_VIEW(treeview_));
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
-  g_signal_connect(G_OBJECT(selection), "changed",
+  g_signal_connect(selection, "changed",
                    G_CALLBACK(OnSelectionChanged), this);
 
   gtk_container_add(GTK_CONTAINER(scrolled), treeview_);
@@ -433,7 +433,7 @@ void TaskManagerGtk::Init() {
 void TaskManagerGtk::SetInitialDialogSize() {
   // Hook up to the realize event so we can size the page column to the
   // size of the leftover space after packing the other columns.
-  g_signal_connect(G_OBJECT(treeview_), "realize",
+  g_signal_connect(treeview_, "realize",
                    G_CALLBACK(OnTreeViewRealize), this);
   // If we previously saved the dialog's bounds, use them.
   if (g_browser_process->local_state()) {

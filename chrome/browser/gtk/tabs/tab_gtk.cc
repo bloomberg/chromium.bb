@@ -147,13 +147,13 @@ TabGtk::TabGtk(TabDelegate* delegate)
       ALLOW_THIS_IN_INITIALIZER_LIST(drag_end_factory_(this)) {
   event_box_ = gtk_event_box_new();
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(event_box_), FALSE);
-  g_signal_connect(G_OBJECT(event_box_), "button-press-event",
+  g_signal_connect(event_box_, "button-press-event",
                    G_CALLBACK(OnButtonPressEvent), this);
-  g_signal_connect(G_OBJECT(event_box_), "button-release-event",
+  g_signal_connect(event_box_, "button-release-event",
                    G_CALLBACK(OnButtonReleaseEvent), this);
-  g_signal_connect(G_OBJECT(event_box_), "enter-notify-event",
+  g_signal_connect(event_box_, "enter-notify-event",
                    G_CALLBACK(OnEnterNotifyEvent), this);
-  g_signal_connect(G_OBJECT(event_box_), "leave-notify-event",
+  g_signal_connect(event_box_, "leave-notify-event",
                    G_CALLBACK(OnLeaveNotifyEvent), this);
   gtk_widget_add_events(event_box_,
         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |

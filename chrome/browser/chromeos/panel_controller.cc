@@ -110,8 +110,8 @@ void PanelController::Init(const gfx::Rect window_bounds) {
       TabOverviewTypes::WINDOW_TYPE_CHROME_PANEL_CONTENT,
       &type_params);
 
-  g_signal_connect(
-      G_OBJECT(panel_), "client-event", G_CALLBACK(OnPanelClientEvent), this);
+  g_signal_connect(panel_, "client-event",
+                   G_CALLBACK(OnPanelClientEvent), this);
 
   title_content_ = new TitleContentView(this);
   title_window_->SetContentsView(title_content_);

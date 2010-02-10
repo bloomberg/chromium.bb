@@ -63,7 +63,7 @@ UrlPickerDialogGtk::UrlPickerDialogGtk(UrlPickerCallback* callback,
                      FALSE, FALSE, 0);
   url_entry_ = gtk_entry_new();
   gtk_entry_set_activates_default(GTK_ENTRY(url_entry_), TRUE);
-  g_signal_connect(G_OBJECT(url_entry_), "changed",
+  g_signal_connect(url_entry_, "changed",
                    G_CALLBACK(OnUrlEntryChanged), this);
   gtk_box_pack_start(GTK_BOX(url_hbox), url_entry_,
                      TRUE, TRUE, 0);
@@ -108,14 +108,14 @@ UrlPickerDialogGtk::UrlPickerDialogGtk(UrlPickerCallback* callback,
   gtk_container_add(GTK_CONTAINER(scroll_window), history_tree_);
   gtk_tree_view_set_headers_visible(GTK_TREE_VIEW(history_tree_),
                                     TRUE);
-  g_signal_connect(G_OBJECT(history_tree_), "row-activated",
+  g_signal_connect(history_tree_, "row-activated",
                    G_CALLBACK(OnHistoryRowActivated), this);
 
   history_selection_ = gtk_tree_view_get_selection(
       GTK_TREE_VIEW(history_tree_));
   gtk_tree_selection_set_mode(history_selection_,
                               GTK_SELECTION_SINGLE);
-  g_signal_connect(G_OBJECT(history_selection_), "changed",
+  g_signal_connect(history_selection_, "changed",
                    G_CALLBACK(OnHistorySelectionChanged), this);
 
   // History list columns.

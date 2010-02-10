@@ -79,9 +79,7 @@ Font::Font() {
     GtkSettings* settings = gtk_settings_get_default();
 
     gchar* font_name = NULL;
-    g_object_get(G_OBJECT(settings),
-                 "gtk-font-name", &font_name,
-                 NULL);
+    g_object_get(settings, "gtk-font-name", &font_name, NULL);
 
     // Temporary CHECK for helping track down
     // http://code.google.com/p/chromium/issues/detail?id=12530

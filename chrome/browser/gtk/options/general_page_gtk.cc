@@ -180,14 +180,14 @@ GtkWidget* GeneralPageGtk::InitStartupGroup() {
   startup_homepage_radio_ = gtk_radio_button_new_with_label(NULL,
       l10n_util::GetStringUTF8(
           IDS_OPTIONS_STARTUP_SHOW_DEFAULT_AND_NEWTAB).c_str());
-  g_signal_connect(G_OBJECT(startup_homepage_radio_), "toggled",
+  g_signal_connect(startup_homepage_radio_, "toggled",
                    G_CALLBACK(OnStartupRadioToggled), this);
   gtk_box_pack_start(GTK_BOX(vbox), startup_homepage_radio_, FALSE, FALSE, 0);
 
   startup_last_session_radio_ = gtk_radio_button_new_with_label_from_widget(
       GTK_RADIO_BUTTON(startup_homepage_radio_),
       l10n_util::GetStringUTF8(IDS_OPTIONS_STARTUP_SHOW_LAST_SESSION).c_str());
-  g_signal_connect(G_OBJECT(startup_last_session_radio_), "toggled",
+  g_signal_connect(startup_last_session_radio_, "toggled",
                    G_CALLBACK(OnStartupRadioToggled), this);
   gtk_box_pack_start(GTK_BOX(vbox), startup_last_session_radio_,
                      FALSE, FALSE, 0);
@@ -195,7 +195,7 @@ GtkWidget* GeneralPageGtk::InitStartupGroup() {
   startup_custom_radio_ = gtk_radio_button_new_with_label_from_widget(
       GTK_RADIO_BUTTON(startup_homepage_radio_),
       l10n_util::GetStringUTF8(IDS_OPTIONS_STARTUP_SHOW_PAGES).c_str());
-  g_signal_connect(G_OBJECT(startup_custom_radio_), "toggled",
+  g_signal_connect(startup_custom_radio_, "toggled",
                    G_CALLBACK(OnStartupRadioToggled), this);
   gtk_box_pack_start(GTK_BOX(vbox), startup_custom_radio_, FALSE, FALSE, 0);
 
@@ -238,7 +238,7 @@ GtkWidget* GeneralPageGtk::InitStartupGroup() {
       GTK_TREE_VIEW(startup_custom_pages_tree_));
   gtk_tree_selection_set_mode(startup_custom_pages_selection_,
                               GTK_SELECTION_MULTIPLE);
-  g_signal_connect(G_OBJECT(startup_custom_pages_selection_), "changed",
+  g_signal_connect(startup_custom_pages_selection_, "changed",
                    G_CALLBACK(OnStartupPagesSelectionChanged), this);
   favicon_loader_.reset(new ListStoreFavIconLoader(startup_custom_pages_model_,
                                                    COL_FAVICON,
@@ -253,21 +253,21 @@ GtkWidget* GeneralPageGtk::InitStartupGroup() {
   startup_add_custom_page_button_ = gtk_button_new_with_mnemonic(
       gtk_util::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(IDS_OPTIONS_STARTUP_ADD_BUTTON)).c_str());
-  g_signal_connect(G_OBJECT(startup_add_custom_page_button_), "clicked",
+  g_signal_connect(startup_add_custom_page_button_, "clicked",
                    G_CALLBACK(OnStartupAddCustomPageClicked), this);
   gtk_box_pack_start(GTK_BOX(url_list_buttons), startup_add_custom_page_button_,
                      FALSE, FALSE, 0);
   startup_remove_custom_page_button_ = gtk_button_new_with_mnemonic(
       gtk_util::ConvertAcceleratorsFromWindowsStyle(
         l10n_util::GetStringUTF8(IDS_OPTIONS_STARTUP_REMOVE_BUTTON)).c_str());
-  g_signal_connect(G_OBJECT(startup_remove_custom_page_button_), "clicked",
+  g_signal_connect(startup_remove_custom_page_button_, "clicked",
                    G_CALLBACK(OnStartupRemoveCustomPageClicked), this);
   gtk_box_pack_start(GTK_BOX(url_list_buttons),
                      startup_remove_custom_page_button_, FALSE, FALSE, 0);
   startup_use_current_page_button_ = gtk_button_new_with_mnemonic(
       gtk_util::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(IDS_OPTIONS_STARTUP_USE_CURRENT)).c_str());
-  g_signal_connect(G_OBJECT(startup_use_current_page_button_), "clicked",
+  g_signal_connect(startup_use_current_page_button_, "clicked",
                    G_CALLBACK(OnStartupUseCurrentPageClicked), this);
   gtk_box_pack_start(GTK_BOX(url_list_buttons),
                      startup_use_current_page_button_, FALSE, FALSE, 0);
@@ -280,7 +280,7 @@ GtkWidget* GeneralPageGtk::InitHomepageGroup() {
 
   homepage_use_newtab_radio_ = gtk_radio_button_new_with_label(NULL,
       l10n_util::GetStringUTF8(IDS_OPTIONS_HOMEPAGE_USE_NEWTAB).c_str());
-  g_signal_connect(G_OBJECT(homepage_use_newtab_radio_), "toggled",
+  g_signal_connect(homepage_use_newtab_radio_, "toggled",
                    G_CALLBACK(OnNewTabIsHomePageToggled), this);
   gtk_container_add(GTK_CONTAINER(vbox), homepage_use_newtab_radio_);
 
@@ -290,20 +290,20 @@ GtkWidget* GeneralPageGtk::InitHomepageGroup() {
   homepage_use_url_radio_ = gtk_radio_button_new_with_label_from_widget(
       GTK_RADIO_BUTTON(homepage_use_newtab_radio_),
       l10n_util::GetStringUTF8(IDS_OPTIONS_HOMEPAGE_USE_URL).c_str());
-  g_signal_connect(G_OBJECT(homepage_use_url_radio_), "toggled",
+  g_signal_connect(homepage_use_url_radio_, "toggled",
                    G_CALLBACK(OnNewTabIsHomePageToggled), this);
   gtk_box_pack_start(GTK_BOX(homepage_hbox), homepage_use_url_radio_,
                      FALSE, FALSE, 0);
 
   homepage_use_url_entry_ = gtk_entry_new();
-  g_signal_connect(G_OBJECT(homepage_use_url_entry_), "changed",
+  g_signal_connect(homepage_use_url_entry_, "changed",
                    G_CALLBACK(OnHomepageUseUrlEntryChanged), this);
   gtk_box_pack_start(GTK_BOX(homepage_hbox), homepage_use_url_entry_,
                      TRUE, TRUE, 0);
 
   homepage_show_home_button_checkbox_ = gtk_check_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_OPTIONS_HOMEPAGE_SHOW_BUTTON).c_str());
-  g_signal_connect(G_OBJECT(homepage_show_home_button_checkbox_), "toggled",
+  g_signal_connect(homepage_show_home_button_checkbox_, "toggled",
                    G_CALLBACK(OnShowHomeButtonToggled), this);
   gtk_container_add(GTK_CONTAINER(vbox), homepage_show_home_button_checkbox_);
 
@@ -319,7 +319,7 @@ GtkWidget* GeneralPageGtk::InitDefaultSearchGroup() {
   default_search_engine_combobox_ = gtk_combo_box_new_with_model(
       GTK_TREE_MODEL(default_search_engines_model_));
   g_object_unref(default_search_engines_model_);
-  g_signal_connect(G_OBJECT(default_search_engine_combobox_), "changed",
+  g_signal_connect(default_search_engine_combobox_, "changed",
                    G_CALLBACK(OnDefaultSearchEngineChanged), this);
   gtk_container_add(GTK_CONTAINER(hbox), default_search_engine_combobox_);
 
@@ -341,7 +341,7 @@ GtkWidget* GeneralPageGtk::InitDefaultSearchGroup() {
   default_search_manage_engines_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(
           IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES_LINK).c_str());
-  g_signal_connect(G_OBJECT(default_search_manage_engines_button_), "clicked",
+  g_signal_connect(default_search_manage_engines_button_, "clicked",
                    G_CALLBACK(OnDefaultSearchManageEnginesClicked), this);
   gtk_box_pack_end(GTK_BOX(hbox), default_search_manage_engines_button_,
                    FALSE, FALSE, 0);
@@ -361,7 +361,7 @@ GtkWidget* GeneralPageGtk::InitDefaultBrowserGroup() {
   default_browser_use_as_default_button_ = gtk_button_new_with_label(
       l10n_util::GetStringFUTF8(IDS_OPTIONS_DEFAULTBROWSER_USEASDEFAULT,
           l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)).c_str());
-  g_signal_connect(G_OBJECT(default_browser_use_as_default_button_), "clicked",
+  g_signal_connect(default_browser_use_as_default_button_, "clicked",
                    G_CALLBACK(OnBrowserUseAsDefaultClicked), this);
 
   gtk_box_pack_start(GTK_BOX(vbox), default_browser_use_as_default_button_,

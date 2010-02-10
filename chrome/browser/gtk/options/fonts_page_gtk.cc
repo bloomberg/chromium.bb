@@ -109,7 +109,7 @@ void FontsPageGtk::Init() {
 
 void FontsPageGtk::InitDefaultEncodingComboBox() {
   default_encoding_combobox_ = gtk_combo_box_new_text();
-  g_signal_connect(G_OBJECT(default_encoding_combobox_), "changed",
+  g_signal_connect(default_encoding_combobox_, "changed",
                    G_CALLBACK(OnDefaultEncodingChanged), this);
   int canonical_encoding_names_length =
       CharacterEncoding::GetSupportCanonicalEncodingCount();

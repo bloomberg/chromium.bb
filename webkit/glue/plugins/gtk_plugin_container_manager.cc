@@ -28,11 +28,11 @@ GtkWidget* GtkPluginContainerManager::CreatePluginContainer(
   //
   // Note, the RealizeCallback relies on the plugin_window_to_widget_map_ to
   // have the mapping.
-  g_signal_connect(G_OBJECT(widget), "realize",
+  g_signal_connect(widget, "realize",
                    G_CALLBACK(RealizeCallback), this);
 
   // Don't destroy the widget when the plug is removed.
-  g_signal_connect(G_OBJECT(widget), "plug-removed",
+  g_signal_connect(widget, "plug-removed",
                    G_CALLBACK(gtk_true), NULL);
 
   gtk_container_add(GTK_CONTAINER(host_widget_), widget);

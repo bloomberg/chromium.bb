@@ -112,7 +112,7 @@ void KeywordEditorView::Init() {
   gtk_tree_view_set_row_separator_func(GTK_TREE_VIEW(tree_),
                                        OnCheckRowIsSeparator,
                                        NULL, NULL);
-  g_signal_connect(G_OBJECT(tree_), "row-activated",
+  g_signal_connect(tree_, "row-activated",
                    G_CALLBACK(OnRowActivated), this);
   gtk_container_add(GTK_CONTAINER(scroll_window), tree_);
 
@@ -146,7 +146,7 @@ void KeywordEditorView::Init() {
   gtk_tree_selection_set_mode(selection_, GTK_SELECTION_SINGLE);
   gtk_tree_selection_set_select_function(selection_, OnSelectionFilter,
                                          NULL, NULL);
-  g_signal_connect(G_OBJECT(selection_), "changed",
+  g_signal_connect(selection_, "changed",
                    G_CALLBACK(OnSelectionChanged), this);
 
   GtkWidget* button_box = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
@@ -156,13 +156,13 @@ void KeywordEditorView::Init() {
       gtk_util::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(
               IDS_SEARCH_ENGINES_EDITOR_NEW_BUTTON)).c_str());
-  g_signal_connect(G_OBJECT(add_button_), "clicked",
+  g_signal_connect(add_button_, "clicked",
                    G_CALLBACK(OnAddButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(button_box), add_button_, FALSE, FALSE, 0);
 
   edit_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_SEARCH_ENGINES_EDITOR_EDIT_BUTTON).c_str());
-  g_signal_connect(G_OBJECT(edit_button_), "clicked",
+  g_signal_connect(edit_button_, "clicked",
                    G_CALLBACK(OnEditButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(button_box), edit_button_, FALSE, FALSE, 0);
 
@@ -170,14 +170,14 @@ void KeywordEditorView::Init() {
       gtk_util::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(
               IDS_SEARCH_ENGINES_EDITOR_REMOVE_BUTTON)).c_str());
-  g_signal_connect(G_OBJECT(remove_button_), "clicked",
+  g_signal_connect(remove_button_, "clicked",
                    G_CALLBACK(OnRemoveButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(button_box), remove_button_, FALSE, FALSE, 0);
 
   make_default_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(
           IDS_SEARCH_ENGINES_EDITOR_MAKE_DEFAULT_BUTTON).c_str());
-  g_signal_connect(G_OBJECT(make_default_button_), "clicked",
+  g_signal_connect(make_default_button_, "clicked",
                    G_CALLBACK(OnMakeDefaultButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(button_box), make_default_button_, FALSE, FALSE,
                      0);

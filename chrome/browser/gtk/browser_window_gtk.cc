@@ -1441,7 +1441,7 @@ void BrowserWindowGtk::InitWidgets() {
   gtk_widget_set_app_paintable(window_container_, TRUE);
   gtk_widget_set_double_buffered(window_container_, FALSE);
   gtk_widget_set_redraw_on_allocate(window_container_, TRUE);
-  g_signal_connect(G_OBJECT(window_container_), "expose-event",
+  g_signal_connect(window_container_, "expose-event",
                    G_CALLBACK(&OnCustomFrameExpose), this);
   gtk_container_add(GTK_CONTAINER(window_container_), window_vbox_);
 

@@ -302,68 +302,68 @@ void WidgetGtk::Init(GtkWidget* parent,
   // TODO(beng): make these take this rather than NULL.
   g_signal_connect_after(G_OBJECT(window_contents_), "size_allocate",
                          G_CALLBACK(CallSizeAllocate), NULL);
-  g_signal_connect(G_OBJECT(window_contents_), "expose_event",
+  g_signal_connect(window_contents_, "expose_event",
                    G_CALLBACK(CallPaint), NULL);
-  g_signal_connect(G_OBJECT(window_contents_), "enter_notify_event",
+  g_signal_connect(window_contents_, "enter_notify_event",
                    G_CALLBACK(CallEnterNotify), NULL);
-  g_signal_connect(G_OBJECT(window_contents_), "leave_notify_event",
+  g_signal_connect(window_contents_, "leave_notify_event",
                    G_CALLBACK(CallLeaveNotify), NULL);
-  g_signal_connect(G_OBJECT(window_contents_), "motion_notify_event",
+  g_signal_connect(window_contents_, "motion_notify_event",
                    G_CALLBACK(CallMotionNotify), NULL);
-  g_signal_connect(G_OBJECT(window_contents_), "button_press_event",
+  g_signal_connect(window_contents_, "button_press_event",
                    G_CALLBACK(CallButtonPress), NULL);
-  g_signal_connect(G_OBJECT(window_contents_), "button_release_event",
+  g_signal_connect(window_contents_, "button_release_event",
                    G_CALLBACK(CallButtonRelease), NULL);
-  g_signal_connect(G_OBJECT(window_contents_), "grab_broken_event",
+  g_signal_connect(window_contents_, "grab_broken_event",
                    G_CALLBACK(CallGrabBrokeEvent), NULL);
-  g_signal_connect(G_OBJECT(window_contents_), "grab_notify",
+  g_signal_connect(window_contents_, "grab_notify",
                    G_CALLBACK(CallGrabNotify), NULL);
-  g_signal_connect(G_OBJECT(window_contents_), "key_press_event",
+  g_signal_connect(window_contents_, "key_press_event",
                    G_CALLBACK(CallKeyPress), NULL);
-  g_signal_connect(G_OBJECT(window_contents_), "key_release_event",
+  g_signal_connect(window_contents_, "key_release_event",
                    G_CALLBACK(CallKeyRelease), NULL);
-  g_signal_connect(G_OBJECT(window_contents_), "scroll_event",
+  g_signal_connect(window_contents_, "scroll_event",
                    G_CALLBACK(CallScroll), NULL);
-  g_signal_connect(G_OBJECT(window_contents_), "visibility_notify_event",
+  g_signal_connect(window_contents_, "visibility_notify_event",
                    G_CALLBACK(CallVisibilityNotify), NULL);
 
   // In order to receive notification when the window is no longer the front
   // window, we need to install these on the widget.
   // NOTE: this doesn't work with focus follows mouse.
-  g_signal_connect(G_OBJECT(widget_), "focus_in_event",
+  g_signal_connect(widget_, "focus_in_event",
                    G_CALLBACK(CallFocusIn), NULL);
-  g_signal_connect(G_OBJECT(widget_), "focus_out_event",
+  g_signal_connect(widget_, "focus_out_event",
                    G_CALLBACK(CallFocusOut), NULL);
-  g_signal_connect(G_OBJECT(widget_), "destroy",
+  g_signal_connect(widget_, "destroy",
                    G_CALLBACK(CallDestroy), NULL);
   if (transparent_) {
-    g_signal_connect(G_OBJECT(widget_), "expose_event",
+    g_signal_connect(widget_, "expose_event",
                      G_CALLBACK(CallWindowPaint), this);
   }
 
   // Drag and drop.
   gtk_drag_dest_set(window_contents_, static_cast<GtkDestDefaults>(0),
                     NULL, 0, GDK_ACTION_COPY);
-  g_signal_connect(G_OBJECT(window_contents_), "drag_motion",
+  g_signal_connect(window_contents_, "drag_motion",
                    G_CALLBACK(CallDragMotion), this);
-  g_signal_connect(G_OBJECT(window_contents_), "drag_data_received",
+  g_signal_connect(window_contents_, "drag_data_received",
                    G_CALLBACK(CallDragDataReceived), this);
-  g_signal_connect(G_OBJECT(window_contents_), "drag_drop",
+  g_signal_connect(window_contents_, "drag_drop",
                    G_CALLBACK(CallDragDrop), this);
-  g_signal_connect(G_OBJECT(window_contents_), "drag_leave",
+  g_signal_connect(window_contents_, "drag_leave",
                    G_CALLBACK(CallDragLeave), this);
-  g_signal_connect(G_OBJECT(window_contents_), "drag_data_get",
+  g_signal_connect(window_contents_, "drag_data_get",
                    G_CALLBACK(CallDragDataGet), this);
-  g_signal_connect(G_OBJECT(window_contents_), "drag_end",
+  g_signal_connect(window_contents_, "drag_end",
                    G_CALLBACK(CallDragEnd), this);
-  g_signal_connect(G_OBJECT(window_contents_), "drag_failed",
+  g_signal_connect(window_contents_, "drag_failed",
                    G_CALLBACK(CallDragFailed), this);
 
   tooltip_manager_.reset(new TooltipManagerGtk(this));
 
   // Register for tooltips.
   g_object_set(G_OBJECT(window_contents_), "has-tooltip", TRUE, NULL);
-  g_signal_connect(G_OBJECT(window_contents_), "query_tooltip",
+  g_signal_connect(window_contents_, "query_tooltip",
                    G_CALLBACK(CallQueryTooltip), this);
 
   if (type_ == TYPE_CHILD) {

@@ -100,7 +100,7 @@ void NativeMenuGtk::RunMenuAt(const gfx::Point& point, int alignment) {
   // Listen for "hide" signal so that we know when to return from the blocking
   // RunMenuAt call.
   gint handle_id =
-      g_signal_connect(G_OBJECT(menu_), "hide", G_CALLBACK(OnMenuHidden), this);
+      g_signal_connect(menu_, "hide", G_CALLBACK(OnMenuHidden), this);
 
   // Block until menu is no longer shown by running a nested message loop.
   MessageLoopForUI::current()->Run(NULL);
@@ -228,8 +228,7 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
   }
   g_object_set_data(G_OBJECT(menu_item), kPositionString,
                              reinterpret_cast<void*>(index));
-  g_signal_connect(G_OBJECT(menu_item), "activate", G_CALLBACK(CallActivate),
-                   this);
+  g_signal_connect(menu_item, "activate", G_CALLBACK(CallActivate), this);
   gtk_widget_show(menu_item);
   gtk_menu_append(menu_, menu_item);
 

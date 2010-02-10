@@ -40,12 +40,12 @@ PasswordsPageGtk::PasswordsPageGtk(Profile* profile)
   remove_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_PASSWORDS_PAGE_VIEW_REMOVE_BUTTON).c_str());
   gtk_widget_set_sensitive(remove_button_, FALSE);
-  g_signal_connect(G_OBJECT(remove_button_), "clicked",
+  g_signal_connect(remove_button_, "clicked",
                    G_CALLBACK(OnRemoveButtonClicked), this);
   remove_all_button_ = gtk_button_new_with_label(l10n_util::GetStringUTF8(
           IDS_PASSWORDS_PAGE_VIEW_REMOVE_ALL_BUTTON).c_str());
   gtk_widget_set_sensitive(remove_all_button_, FALSE);
-  g_signal_connect(G_OBJECT(remove_all_button_), "clicked",
+  g_signal_connect(remove_all_button_, "clicked",
                    G_CALLBACK(OnRemoveAllButtonClicked), this);
 
   show_password_button_ = gtk_button_new_with_label(
@@ -66,7 +66,7 @@ PasswordsPageGtk::PasswordsPageGtk(Profile* profile)
   gtk_widget_set_size_request(show_password_button_, show_size.width,
                               show_size.height);
   gtk_widget_set_sensitive(show_password_button_, FALSE);
-  g_signal_connect(G_OBJECT(show_password_button_), "clicked",
+  g_signal_connect(show_password_button_, "clicked",
                    G_CALLBACK(OnShowPasswordButtonClicked), this);
 
   password_ = gtk_label_new("");
@@ -119,7 +119,7 @@ void PasswordsPageGtk::InitPasswordTree() {
       GTK_TREE_VIEW(password_tree_));
   gtk_tree_selection_set_mode(password_selection_,
                               GTK_SELECTION_SINGLE);
-  g_signal_connect(G_OBJECT(password_selection_), "changed",
+  g_signal_connect(password_selection_, "changed",
                    G_CALLBACK(OnPasswordSelectionChanged), this);
 
   GtkTreeViewColumn* column = gtk_tree_view_column_new_with_attributes(

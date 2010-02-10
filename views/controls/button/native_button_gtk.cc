@@ -93,7 +93,7 @@ gfx::Size NativeButtonGtk::GetPreferredSize() {
 
 void NativeButtonGtk::CreateNativeControl() {
   GtkWidget* widget = gtk_button_new();
-  g_signal_connect(G_OBJECT(widget), "clicked",
+  g_signal_connect(widget, "clicked",
                    G_CALLBACK(CallClicked), this);
 
   // Any push button can become the default button.
@@ -137,7 +137,7 @@ Checkbox* NativeCheckboxGtk::checkbox() {
 
 void NativeCheckboxGtk::CreateNativeControl() {
   GtkWidget* widget = gtk_check_button_new();
-  g_signal_connect(G_OBJECT(widget), "clicked",
+  g_signal_connect(widget, "clicked",
                    G_CALLBACK(CallClicked), this);
   NativeControlCreated(widget);
 }
@@ -189,9 +189,9 @@ RadioButton* NativeRadioButtonGtk::radio_button() {
 
 void NativeRadioButtonGtk::CreateNativeControl() {
   GtkWidget* widget = gtk_radio_button_new(NULL);
-  g_signal_connect(G_OBJECT(widget), "clicked",
+  g_signal_connect(widget, "clicked",
                    G_CALLBACK(CallClicked), this);
-  g_signal_connect(G_OBJECT(widget), "toggled",
+  g_signal_connect(widget, "toggled",
                    G_CALLBACK(CallToggled), this);
   NativeControlCreated(widget);
 }

@@ -770,7 +770,7 @@ void CertificateViewer::InitDetailsPage() {
   GtkTreeSelection* hierarchy_selection = gtk_tree_view_get_selection(
       GTK_TREE_VIEW(hierarchy_tree));
   gtk_tree_selection_set_mode(hierarchy_selection, GTK_SELECTION_SINGLE);
-  g_signal_connect(G_OBJECT(hierarchy_selection), "changed",
+  g_signal_connect(hierarchy_selection, "changed",
                    G_CALLBACK(OnHierarchySelectionChanged), this);
   GtkWidget* hierarchy_scroll_window = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(hierarchy_scroll_window),
@@ -800,7 +800,7 @@ void CertificateViewer::InitDetailsPage() {
   GtkTreeSelection* fields_selection = gtk_tree_view_get_selection(
       GTK_TREE_VIEW(fields_tree_));
   gtk_tree_selection_set_mode(fields_selection, GTK_SELECTION_SINGLE);
-  g_signal_connect(G_OBJECT(fields_selection), "changed",
+  g_signal_connect(fields_selection, "changed",
                    G_CALLBACK(OnFieldsSelectionChanged), this);
   GtkWidget* fields_scroll_window = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(fields_scroll_window),

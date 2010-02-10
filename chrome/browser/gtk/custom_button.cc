@@ -177,7 +177,7 @@ CustomDrawButton::~CustomDrawButton() {
 void CustomDrawButton::Init() {
   widget_.Own(gtk_chrome_button_new());
   GTK_WIDGET_UNSET_FLAGS(widget_.get(), GTK_CAN_FOCUS);
-  g_signal_connect(G_OBJECT(widget_.get()), "expose-event",
+  g_signal_connect(widget_.get(), "expose-event",
                    G_CALLBACK(OnCustomExpose), this);
 }
 

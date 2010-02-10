@@ -283,7 +283,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
   // Create a button for showing the options menu, and add it to the toolbar.
   options_menu_button_ = theme_provider->BuildChromeButton();
-  g_signal_connect(G_OBJECT(options_menu_button_), "clicked",
+  g_signal_connect(options_menu_button_, "clicked",
                    G_CALLBACK(HandleOptionsMenuButtonThunk), this);
   PrepareButtonWithIcon(options_menu_button_, options_text,
                         IDR_BALLOON_OPTIONS_ARROW_HOVER);
@@ -294,7 +294,7 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 
   // Create a button to dismiss the balloon and add it to the toolbar.
   close_button_ = theme_provider->BuildChromeButton();
-  g_signal_connect(G_OBJECT(close_button_), "clicked",
+  g_signal_connect(close_button_, "clicked",
                    G_CALLBACK(HandleCloseButtonThunk), this);
   PrepareButtonWithIcon(close_button_, dismiss_text, IDR_BALLOON_CLOSE_HOVER);
   GtkToolItem* close_button_toolitem = gtk_tool_item_new();

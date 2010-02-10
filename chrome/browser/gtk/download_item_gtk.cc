@@ -259,7 +259,7 @@ DownloadItemGtk::DownloadItemGtk(DownloadShelfGtk* parent_shelf,
   gtk_box_pack_start(GTK_BOX(shelf_hbox), hbox_.get(), FALSE, FALSE, 0);
   // Insert as the leftmost item.
   gtk_box_reorder_child(GTK_BOX(shelf_hbox), hbox_.get(), 1);
-  g_signal_connect(G_OBJECT(shelf_hbox), "size-allocate",
+  g_signal_connect(shelf_hbox, "size-allocate",
                    G_CALLBACK(OnShelfResized), this);
 
   get_download()->AddObserver(this);

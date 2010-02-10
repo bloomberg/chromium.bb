@@ -28,8 +28,7 @@ ProcessSingletonDialog::ProcessSingletonDialog(const std::string& message) {
   gtk_dialog_add_button(GTK_DIALOG(dialog_), GTK_STOCK_QUIT,
                         GTK_RESPONSE_REJECT);
 
-  g_signal_connect(G_OBJECT(dialog_), "response",
-                   G_CALLBACK(OnResponse), this);
+  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
 
   gtk_widget_show_all(dialog_);
   MessageLoop::current()->Run();

@@ -168,7 +168,7 @@ void LanguagesPageGtk::Init() {
       GTK_TREE_VIEW(language_order_tree_));
   gtk_tree_selection_set_mode(language_order_selection_,
                               GTK_SELECTION_MULTIPLE);
-  g_signal_connect(G_OBJECT(language_order_selection_), "changed",
+  g_signal_connect(language_order_selection_, "changed",
                    G_CALLBACK(OnSelectionChanged), this);
   GtkWidget* scroll_window = gtk_scrolled_window_new(NULL, NULL);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scroll_window),
@@ -193,7 +193,7 @@ void LanguagesPageGtk::Init() {
 
   add_button_ = gtk_button_new_with_label(l10n_util::GetStringUTF8(
       IDS_FONT_LANGUAGE_SETTING_LANGUAGES_SELECTOR_ADD_BUTTON_LABEL).c_str());
-  g_signal_connect(G_OBJECT(add_button_), "clicked",
+  g_signal_connect(add_button_, "clicked",
                    G_CALLBACK(OnAddButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(languages_buttons_vbox), add_button_,
                      FALSE, FALSE, 0);
@@ -201,7 +201,7 @@ void LanguagesPageGtk::Init() {
   std::string remove_button_text  = l10n_util::GetStringUTF8(
       IDS_FONT_LANGUAGE_SETTING_LANGUAGES_SELECTOR_REMOVE_BUTTON_LABEL);
   remove_button_ = gtk_button_new_with_label(remove_button_text.c_str());
-  g_signal_connect(G_OBJECT(remove_button_), "clicked",
+  g_signal_connect(remove_button_, "clicked",
                    G_CALLBACK(OnRemoveButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(languages_buttons_vbox), remove_button_,
                      FALSE, FALSE, 0);
@@ -209,7 +209,7 @@ void LanguagesPageGtk::Init() {
   std::string move_up_button_text  = l10n_util::GetStringUTF8(
       IDS_FONT_LANGUAGE_SETTING_LANGUAGES_SELECTOR_MOVEUP_BUTTON_LABEL);
   move_up_button_ = gtk_button_new_with_label(move_up_button_text.c_str());
-  g_signal_connect(G_OBJECT(move_up_button_), "clicked",
+  g_signal_connect(move_up_button_, "clicked",
                    G_CALLBACK(OnMoveUpButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(languages_buttons_vbox), move_up_button_,
                      FALSE, FALSE, 0);
@@ -217,7 +217,7 @@ void LanguagesPageGtk::Init() {
   std::string move_down_button_text  = l10n_util::GetStringUTF8(
       IDS_FONT_LANGUAGE_SETTING_LANGUAGES_SELECTOR_MOVEDOWN_BUTTON_LABEL);
   move_down_button_ = gtk_button_new_with_label(move_down_button_text.c_str());
-  g_signal_connect(G_OBJECT(move_down_button_), "clicked",
+  g_signal_connect(move_down_button_, "clicked",
                    G_CALLBACK(OnMoveDownButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(languages_buttons_vbox), move_down_button_,
                      FALSE, FALSE, 0);
@@ -229,7 +229,7 @@ void LanguagesPageGtk::Init() {
 
   enable_spellchecking_checkbox_ = gtk_check_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_OPTIONS_ENABLE_SPELLCHECK).c_str());
-  g_signal_connect(G_OBJECT(enable_spellchecking_checkbox_), "toggled",
+  g_signal_connect(enable_spellchecking_checkbox_, "toggled",
                    G_CALLBACK(OnEnableSpellCheckingToggled), this);
   gtk_box_pack_start(GTK_BOX(spellchecker_vbox), enable_spellchecking_checkbox_,
                      FALSE, FALSE, 0);
@@ -239,7 +239,7 @@ void LanguagesPageGtk::Init() {
     enable_autospellcorrect_checkbox_ = gtk_check_button_new_with_label(
         l10n_util::GetStringUTF8(
             IDS_OPTIONS_ENABLE_AUTO_SPELL_CORRECTION).c_str());
-    g_signal_connect(G_OBJECT(enable_autospellcorrect_checkbox_), "toggled",
+    g_signal_connect(enable_autospellcorrect_checkbox_, "toggled",
                      G_CALLBACK(OnEnableAutoSpellCheckingToggled), this);
     gtk_box_pack_start(GTK_BOX(spellchecker_vbox),
                        enable_autospellcorrect_checkbox_, FALSE, FALSE, 0);
@@ -251,7 +251,7 @@ void LanguagesPageGtk::Init() {
       spell_check_languages));
   dictionary_language_combobox_ = NewComboboxFromModel(
       dictionary_language_model_.get());
-  g_signal_connect(G_OBJECT(dictionary_language_combobox_), "changed",
+  g_signal_connect(dictionary_language_combobox_, "changed",
                    G_CALLBACK(OnDictionaryLanguageChangedThunk), this);
   GtkWidget* dictionary_language_control =
       gtk_util::CreateLabeledControlsGroup(NULL,

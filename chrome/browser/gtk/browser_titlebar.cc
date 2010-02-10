@@ -172,8 +172,7 @@ void BrowserTitlebar::Init() {
   gtk_event_box_set_visible_window(GTK_EVENT_BOX(container_), FALSE);
   gtk_container_add(GTK_CONTAINER(container_), container_hbox);
 
-  g_signal_connect(G_OBJECT(container_), "scroll-event",
-                   G_CALLBACK(OnScroll), this);
+  g_signal_connect(container_, "scroll-event", G_CALLBACK(OnScroll), this);
 
   g_signal_connect(window_, "window-state-event",
                    G_CALLBACK(OnWindowStateChanged), this);

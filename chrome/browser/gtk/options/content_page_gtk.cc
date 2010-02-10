@@ -173,7 +173,7 @@ GtkWidget* ContentPageGtk::InitPasswordSavingGroup() {
   // Ask to save radio button.
   passwords_asktosave_radio_ = gtk_radio_button_new_with_label(NULL,
       l10n_util::GetStringUTF8(IDS_OPTIONS_PASSWORDS_ASKTOSAVE).c_str());
-  g_signal_connect(G_OBJECT(passwords_asktosave_radio_), "toggled",
+  g_signal_connect(passwords_asktosave_radio_, "toggled",
                    G_CALLBACK(OnPasswordRadioToggled), this);
   gtk_box_pack_start(GTK_BOX(vbox), passwords_asktosave_radio_, FALSE,
                      FALSE, 0);
@@ -182,7 +182,7 @@ GtkWidget* ContentPageGtk::InitPasswordSavingGroup() {
   passwords_neversave_radio_ = gtk_radio_button_new_with_label_from_widget(
       GTK_RADIO_BUTTON(passwords_asktosave_radio_),
       l10n_util::GetStringUTF8(IDS_OPTIONS_PASSWORDS_NEVERSAVE).c_str());
-  g_signal_connect(G_OBJECT(passwords_neversave_radio_), "toggled",
+  g_signal_connect(passwords_neversave_radio_, "toggled",
                    G_CALLBACK(OnPasswordRadioToggled), this);
   gtk_box_pack_start(GTK_BOX(vbox), passwords_neversave_radio_, FALSE,
                      FALSE, 0);
@@ -193,7 +193,7 @@ GtkWidget* ContentPageGtk::InitPasswordSavingGroup() {
   gtk_container_add(GTK_CONTAINER(vbox), button_hbox);
   GtkWidget* passwords_exceptions_button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_OPTIONS_PASSWORDS_EXCEPTIONS).c_str());
-  g_signal_connect(G_OBJECT(passwords_exceptions_button), "clicked",
+  g_signal_connect(passwords_exceptions_button, "clicked",
                    G_CALLBACK(OnPasswordsExceptionsButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(button_hbox), passwords_exceptions_button, FALSE,
                      FALSE, 0);
@@ -207,7 +207,7 @@ GtkWidget* ContentPageGtk::InitFormAutofillGroup() {
   // Ask to save radio button.
   form_autofill_asktosave_radio_ = gtk_radio_button_new_with_label(NULL,
       l10n_util::GetStringUTF8(IDS_OPTIONS_AUTOFILL_SAVE).c_str());
-  g_signal_connect(G_OBJECT(form_autofill_asktosave_radio_), "toggled",
+  g_signal_connect(form_autofill_asktosave_radio_, "toggled",
                    G_CALLBACK(OnAutofillRadioToggled), this);
   gtk_box_pack_start(GTK_BOX(vbox), form_autofill_asktosave_radio_, FALSE,
                      FALSE, 0);
@@ -216,7 +216,7 @@ GtkWidget* ContentPageGtk::InitFormAutofillGroup() {
   form_autofill_neversave_radio_ = gtk_radio_button_new_with_label_from_widget(
       GTK_RADIO_BUTTON(form_autofill_asktosave_radio_),
       l10n_util::GetStringUTF8(IDS_OPTIONS_AUTOFILL_NEVERSAVE).c_str());
-  g_signal_connect(G_OBJECT(form_autofill_neversave_radio_), "toggled",
+  g_signal_connect(form_autofill_neversave_radio_, "toggled",
                    G_CALLBACK(OnAutofillRadioToggled), this);
   gtk_box_pack_start(GTK_BOX(vbox), form_autofill_neversave_radio_, FALSE,
                      FALSE, 0);
@@ -234,7 +234,7 @@ GtkWidget* ContentPageGtk::InitBrowsingDataGroup() {
   // Import button.
   GtkWidget* import_button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_OPTIONS_IMPORT_DATA_BUTTON).c_str());
-  g_signal_connect(G_OBJECT(import_button), "clicked",
+  g_signal_connect(import_button, "clicked",
                    G_CALLBACK(OnImportButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(button_hbox), import_button, FALSE, FALSE, 0);
 
@@ -243,7 +243,7 @@ GtkWidget* ContentPageGtk::InitBrowsingDataGroup() {
   // Windows).
   GtkWidget* clear_data_button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_OPTIONS_PRIVACY_CLEAR_DATA_BUTTON).c_str());
-  g_signal_connect(G_OBJECT(clear_data_button), "clicked",
+  g_signal_connect(clear_data_button, "clicked",
                    G_CALLBACK(OnClearBrowsingDataButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(button_hbox), clear_data_button, FALSE, FALSE, 0);
 
@@ -258,7 +258,7 @@ GtkWidget* ContentPageGtk::InitThemesGroup() {
   // GTK theme button.
   gtk_theme_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_THEMES_GTK_BUTTON).c_str());
-  g_signal_connect(G_OBJECT(gtk_theme_button_), "clicked",
+  g_signal_connect(gtk_theme_button_, "clicked",
                    G_CALLBACK(OnGtkThemeButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(hbox), gtk_theme_button_, FALSE, FALSE, 0);
 #endif
@@ -266,14 +266,14 @@ GtkWidget* ContentPageGtk::InitThemesGroup() {
   // Reset theme button.
   themes_reset_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_THEMES_SET_CLASSIC).c_str());
-  g_signal_connect(G_OBJECT(themes_reset_button_), "clicked",
+  g_signal_connect(themes_reset_button_, "clicked",
                    G_CALLBACK(OnResetDefaultThemeButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(hbox), themes_reset_button_, FALSE, FALSE, 0);
 
   // Get themes button.
   GtkWidget* themes_gallery_button = gtk_chrome_link_button_new(
       l10n_util::GetStringUTF8(IDS_THEMES_GALLERY_BUTTON).c_str());
-  g_signal_connect(G_OBJECT(themes_gallery_button), "clicked",
+  g_signal_connect(themes_gallery_button, "clicked",
                    G_CALLBACK(OnGetThemesButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(hbox), themes_gallery_button, FALSE, FALSE, 0);
 
@@ -284,7 +284,7 @@ GtkWidget* ContentPageGtk::InitThemesGroup() {
     // Use system title bar and borders
     system_title_bar_show_radio_ = gtk_radio_button_new_with_label(NULL,
         l10n_util::GetStringUTF8(IDS_SHOW_WINDOW_DECORATIONS_RADIO).c_str());
-    g_signal_connect(G_OBJECT(system_title_bar_show_radio_), "toggled",
+    g_signal_connect(system_title_bar_show_radio_, "toggled",
                      G_CALLBACK(OnSystemTitleBarRadioToggled), this);
     gtk_box_pack_start(GTK_BOX(vbox), system_title_bar_show_radio_, FALSE,
                        FALSE, 0);
@@ -293,7 +293,7 @@ GtkWidget* ContentPageGtk::InitThemesGroup() {
     system_title_bar_hide_radio_ = gtk_radio_button_new_with_label_from_widget(
         GTK_RADIO_BUTTON(system_title_bar_show_radio_),
         l10n_util::GetStringUTF8(IDS_HIDE_WINDOW_DECORATIONS_RADIO).c_str());
-    g_signal_connect(G_OBJECT(system_title_bar_hide_radio_), "toggled",
+    g_signal_connect(system_title_bar_hide_radio_, "toggled",
                      G_CALLBACK(OnSystemTitleBarRadioToggled), this);
     gtk_box_pack_start(GTK_BOX(vbox), system_title_bar_hide_radio_, FALSE,
                        FALSE, 0);
@@ -321,7 +321,7 @@ GtkWidget* ContentPageGtk::InitSyncGroup() {
   GtkWidget* link_hbox = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
   sync_action_link_background_ = gtk_event_box_new();
   sync_action_link_ = gtk_chrome_link_button_new("");
-  g_signal_connect(G_OBJECT(sync_action_link_), "clicked",
+  g_signal_connect(sync_action_link_, "clicked",
                    G_CALLBACK(OnSyncActionLinkClicked), this);
   gtk_box_pack_start(GTK_BOX(vbox), link_hbox, FALSE, FALSE, 0);
   gtk_box_pack_start(GTK_BOX(link_hbox), sync_action_link_background_, FALSE,
@@ -335,7 +335,7 @@ GtkWidget* ContentPageGtk::InitSyncGroup() {
   GtkWidget* button_hbox = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
   gtk_container_add(GTK_CONTAINER(vbox), button_hbox);
   sync_start_stop_button_ = gtk_button_new_with_label("");
-  g_signal_connect(G_OBJECT(sync_start_stop_button_), "clicked",
+  g_signal_connect(sync_start_stop_button_, "clicked",
                    G_CALLBACK(OnSyncStartStopButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(button_hbox), sync_start_stop_button_, FALSE,
                      FALSE, 0);

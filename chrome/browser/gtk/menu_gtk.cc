@@ -168,7 +168,7 @@ void MenuGtk::AppendMenuItemToMenu(int command_id,
                                    GtkWidget* menu_item,
                                    GtkWidget* menu) {
   SetMenuItemID(menu_item, command_id);
-  g_signal_connect(G_OBJECT(menu_item), "activate",
+  g_signal_connect(menu_item, "activate",
                    G_CALLBACK(OnMenuItemActivated), this);
 
   gtk_widget_show(menu_item);
@@ -277,7 +277,7 @@ void MenuGtk::BuildMenuIn(GtkWidget* menu,
     g_object_set_data(G_OBJECT(menu_item), "menu-data",
                       const_cast<MenuCreateMaterial*>(menu_data));
 
-    g_signal_connect(G_OBJECT(menu_item), "activate",
+    g_signal_connect(menu_item, "activate",
                      G_CALLBACK(OnMenuItemActivated), this);
 
     gtk_widget_show(menu_item);

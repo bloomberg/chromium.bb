@@ -111,13 +111,13 @@ void NativeViewHostGtk::NativeViewAttached() {
     gtk_container_add(GTK_CONTAINER(fixed_), host_->native_view());
 
   if (!destroy_signal_id_) {
-    destroy_signal_id_ = g_signal_connect(G_OBJECT(host_->native_view()),
+    destroy_signal_id_ = g_signal_connect(host_->native_view(),
                                           "destroy", G_CALLBACK(CallDestroy),
                                           this);
   }
 
   if (!focus_signal_id_) {
-    focus_signal_id_ = g_signal_connect(G_OBJECT(host_->native_view()),
+    focus_signal_id_ = g_signal_connect(host_->native_view(),
                                         "focus-in-event",
                                         G_CALLBACK(CallFocusIn), this);
   }

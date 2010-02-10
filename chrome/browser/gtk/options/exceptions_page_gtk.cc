@@ -36,12 +36,12 @@ ExceptionsPageGtk::ExceptionsPageGtk(Profile* profile)
   remove_button_ = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_EXCEPTIONS_PAGE_VIEW_REMOVE_BUTTON).c_str());
   gtk_widget_set_sensitive(remove_button_, FALSE);
-  g_signal_connect(G_OBJECT(remove_button_), "clicked",
+  g_signal_connect(remove_button_, "clicked",
                    G_CALLBACK(OnRemoveButtonClicked), this);
   remove_all_button_ = gtk_button_new_with_label(l10n_util::GetStringUTF8(
           IDS_EXCEPTIONS_PAGE_VIEW_REMOVE_ALL_BUTTON).c_str());
   gtk_widget_set_sensitive(remove_all_button_, FALSE);
-  g_signal_connect(G_OBJECT(remove_all_button_), "clicked",
+  g_signal_connect(remove_all_button_, "clicked",
                    G_CALLBACK(OnRemoveAllButtonClicked), this);
 
   GtkWidget* buttons = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
@@ -86,7 +86,7 @@ void ExceptionsPageGtk::InitExceptionTree() {
       GTK_TREE_VIEW(exception_tree_));
   gtk_tree_selection_set_mode(exception_selection_,
                               GTK_SELECTION_SINGLE);
-  g_signal_connect(G_OBJECT(exception_selection_), "changed",
+  g_signal_connect(exception_selection_, "changed",
                    G_CALLBACK(OnExceptionSelectionChanged), this);
 
   GtkTreeViewColumn* column = gtk_tree_view_column_new_with_attributes(

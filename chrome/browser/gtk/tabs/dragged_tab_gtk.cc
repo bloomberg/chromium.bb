@@ -60,7 +60,7 @@ DraggedTabGtk::DraggedTabGtk(TabContents* datasource,
   container_ = gtk_window_new(GTK_WINDOW_POPUP);
   SetContainerColorMap();
   gtk_widget_set_app_paintable(container_, TRUE);
-  g_signal_connect(G_OBJECT(container_), "expose-event",
+  g_signal_connect(container_, "expose-event",
                    G_CALLBACK(OnExposeEvent), this);
   gtk_widget_add_events(container_, GDK_STRUCTURE_MASK);
 

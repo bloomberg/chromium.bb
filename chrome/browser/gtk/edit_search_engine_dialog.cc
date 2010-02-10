@@ -108,19 +108,19 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window) {
 
   title_entry_ = gtk_entry_new();
   gtk_entry_set_activates_default(GTK_ENTRY(title_entry_), TRUE);
-  g_signal_connect(G_OBJECT(title_entry_), "changed",
+  g_signal_connect(title_entry_, "changed",
                    G_CALLBACK(OnEntryChanged), this);
 
   keyword_entry_ = gtk_entry_new();
   gtk_entry_set_activates_default(GTK_ENTRY(keyword_entry_), TRUE);
-  g_signal_connect(G_OBJECT(keyword_entry_), "changed",
+  g_signal_connect(keyword_entry_, "changed",
                    G_CALLBACK(OnEntryChanged), this);
-  g_signal_connect(G_OBJECT(keyword_entry_), "insert-text",
+  g_signal_connect(keyword_entry_, "insert-text",
                    G_CALLBACK(LowercaseInsertTextHandler), NULL);
 
   url_entry_ = gtk_entry_new();
   gtk_entry_set_activates_default(GTK_ENTRY(url_entry_), TRUE);
-  g_signal_connect(G_OBJECT(url_entry_), "changed",
+  g_signal_connect(url_entry_, "changed",
                    G_CALLBACK(OnEntryChanged), this);
 
   title_image_ = gtk_image_new_from_pixbuf(NULL);

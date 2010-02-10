@@ -113,7 +113,7 @@ gfx::NativeView NativeTabbedPaneGtk::GetTestingHandle() const {
 void NativeTabbedPaneGtk::CreateNativeControl() {
   GtkWidget* widget = gtk_notebook_new();
   gtk_notebook_set_tab_pos(GTK_NOTEBOOK(widget), GTK_POS_TOP);
-  g_signal_connect(G_OBJECT(widget), "switch-page",
+  g_signal_connect(widget, "switch-page",
                    G_CALLBACK(CallSwitchPage), this);
   NativeControlCreated(widget);
 }

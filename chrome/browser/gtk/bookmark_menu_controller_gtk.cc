@@ -157,7 +157,7 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
   DCHECK(!parent->GetChildCount() ||
          start_child_index < parent->GetChildCount());
 
-  g_signal_connect(G_OBJECT(menu), "button-press-event",
+  g_signal_connect(menu, "button-press-event",
                    G_CALLBACK(OnButtonPressed), this);
 
   for (int i = start_child_index; i < parent->GetChildCount(); ++i) {
@@ -174,9 +174,9 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
     gtk_util::SetAlwaysShowImage(menu_item);
 
     if (node->is_url()) {
-      g_signal_connect(G_OBJECT(menu_item), "activate",
+      g_signal_connect(menu_item, "activate",
                        G_CALLBACK(OnMenuItemActivated), this);
-      g_signal_connect(G_OBJECT(menu_item), "button-release-event",
+      g_signal_connect(menu_item, "button-release-event",
                        G_CALLBACK(OnButtonReleased), this);
     } else if (node->is_folder()) {
       GtkWidget* submenu = gtk_menu_new();
@@ -192,11 +192,11 @@ void BookmarkMenuController::BuildMenu(const BookmarkNode* parent,
     if (node->is_url())
       target_mask |= GtkDndUtil::TEXT_URI_LIST | GtkDndUtil::NETSCAPE_URL;
     GtkDndUtil::SetSourceTargetListFromCodeMask(menu_item, target_mask);
-    g_signal_connect(G_OBJECT(menu_item), "drag-begin",
+    g_signal_connect(menu_item, "drag-begin",
                      G_CALLBACK(&OnMenuItemDragBegin), this);
-    g_signal_connect(G_OBJECT(menu_item), "drag-end",
+    g_signal_connect(menu_item, "drag-end",
                      G_CALLBACK(&OnMenuItemDragEnd), this);
-    g_signal_connect(G_OBJECT(menu_item), "drag-data-get",
+    g_signal_connect(menu_item, "drag-data-get",
                      G_CALLBACK(&OnMenuItemDragGet), this);
 
     gtk_menu_shell_append(GTK_MENU_SHELL(menu), menu_item);

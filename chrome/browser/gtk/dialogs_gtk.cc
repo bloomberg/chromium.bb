@@ -349,7 +349,7 @@ GtkWidget* SelectFileDialogImpl::CreateSelectFolderDialog(
                                         last_opened_path_->value().c_str());
   }
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), FALSE);
-  g_signal_connect(G_OBJECT(dialog), "response",
+  g_signal_connect(dialog, "response",
                    G_CALLBACK(OnSelectSingleFolderDialogResponse), this);
   return dialog;
 }
@@ -377,7 +377,7 @@ GtkWidget* SelectFileDialogImpl::CreateFileOpenDialog(const std::string& title,
                                         last_opened_path_->value().c_str());
   }
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), FALSE);
-  g_signal_connect(G_OBJECT(dialog), "response",
+  g_signal_connect(dialog, "response",
                    G_CALLBACK(OnSelectSingleFileDialogResponse), this);
   return dialog;
 }
@@ -407,7 +407,7 @@ GtkWidget* SelectFileDialogImpl::CreateMultiFileOpenDialog(
                                         last_opened_path_->value().c_str());
   }
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), TRUE);
-  g_signal_connect(G_OBJECT(dialog), "response",
+  g_signal_connect(dialog, "response",
                    G_CALLBACK(OnSelectMultiFileDialogResponse), this);
   return dialog;
 }
@@ -440,7 +440,7 @@ GtkWidget* SelectFileDialogImpl::CreateSaveAsDialog(const std::string& title,
   gtk_file_chooser_set_select_multiple(GTK_FILE_CHOOSER(dialog), FALSE);
   gtk_file_chooser_set_do_overwrite_confirmation(GTK_FILE_CHOOSER(dialog),
                                                  TRUE);
-  g_signal_connect(G_OBJECT(dialog), "response",
+  g_signal_connect(dialog, "response",
                    G_CALLBACK(OnSelectSingleFileDialogResponse), this);
   return dialog;
 }

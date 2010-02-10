@@ -574,9 +574,9 @@ void AutocompleteEditViewGtk::SetBaseColor() {
     GdkColor average_color = gtk_util::AverageColors(
         style->text[GTK_STATE_NORMAL], style->base[GTK_STATE_NORMAL]);
 
-    g_object_set(G_OBJECT(faded_text_tag_), "foreground-gdk",
+    g_object_set(faded_text_tag_, "foreground-gdk",
                  &average_color, NULL);
-    g_object_set(G_OBJECT(normal_text_tag_), "foreground-gdk",
+    g_object_set(normal_text_tag_, "foreground-gdk",
                  &style->text[GTK_STATE_NORMAL], NULL);
   } else {
 #if defined(TOOLKIT_VIEWS)
@@ -589,8 +589,8 @@ void AutocompleteEditViewGtk::SetBaseColor() {
         &LocationBarViewGtk::kBackgroundColorByLevel[scheme_security_level_]);
 #endif
 
-    g_object_set(G_OBJECT(faded_text_tag_), "foreground", kTextBaseColor, NULL);
-    g_object_set(G_OBJECT(normal_text_tag_), "foreground", "#000000", NULL);
+    g_object_set(faded_text_tag_, "foreground", kTextBaseColor, NULL);
+    g_object_set(normal_text_tag_, "foreground", "#000000", NULL);
   }
 }
 

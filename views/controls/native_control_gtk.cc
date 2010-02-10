@@ -75,7 +75,7 @@ void NativeControlGtk::NativeControlCreated(GtkWidget* native_control) {
   gtk_widget_set_sensitive(native_view(), IsEnabled());
 
   // Listen for focus change event to update the FocusManager focused view.
-  g_signal_connect(G_OBJECT(native_control), "focus-in-event",
+  g_signal_connect(native_control, "focus-in-event",
                    G_CALLBACK(CallFocusIn), this);
 }
 

@@ -127,16 +127,16 @@ void CookiesView::Init() {
   // Filtering controls.
   GtkWidget* filter_hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
   filter_entry_ = gtk_entry_new();
-  g_signal_connect(G_OBJECT(filter_entry_), "activate",
+  g_signal_connect(filter_entry_, "activate",
                    G_CALLBACK(OnFilterEntryActivated), this);
-  g_signal_connect(G_OBJECT(filter_entry_), "changed",
+  g_signal_connect(filter_entry_, "changed",
                    G_CALLBACK(OnFilterEntryChanged), this);
   gtk_box_pack_start(GTK_BOX(filter_hbox), filter_entry_,
                      TRUE, TRUE, 0);
   filter_clear_button_ = gtk_button_new_with_mnemonic(
       gtk_util::ConvertAcceleratorsFromWindowsStyle(
           l10n_util::GetStringUTF8(IDS_COOKIES_CLEAR_SEARCH_LABEL)).c_str());
-  g_signal_connect(G_OBJECT(filter_clear_button_), "clicked",
+  g_signal_connect(filter_clear_button_, "clicked",
                    G_CALLBACK(OnFilterClearButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(filter_hbox), filter_clear_button_,
                      FALSE, FALSE, 0);
@@ -189,14 +189,14 @@ void CookiesView::Init() {
       title_column, l10n_util::GetStringUTF8(
           IDS_COOKIES_DOMAIN_COLUMN_HEADER).c_str());
   gtk_tree_view_append_column(GTK_TREE_VIEW(tree_), title_column);
-  g_signal_connect(G_OBJECT(tree_), "key-press-event",
+  g_signal_connect(tree_, "key-press-event",
                    G_CALLBACK(OnTreeViewKeyPress), this);
-  g_signal_connect(G_OBJECT(tree_), "row-expanded",
+  g_signal_connect(tree_, "row-expanded",
                    G_CALLBACK(OnTreeViewRowExpanded), this);
 
   selection_ = gtk_tree_view_get_selection(GTK_TREE_VIEW(tree_));
   gtk_tree_selection_set_mode(selection_, GTK_SELECTION_SINGLE);
-  g_signal_connect(G_OBJECT(selection_), "changed",
+  g_signal_connect(selection_, "changed",
                    G_CALLBACK(OnSelectionChanged), this);
 
   // Cookie details.

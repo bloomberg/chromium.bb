@@ -384,9 +384,9 @@ void SetButtonClickableByMouseButtons(GtkWidget* button,
     button_mask |= 1 << 3;
   void* userdata = GINT_TO_POINTER(button_mask);
 
-  g_signal_connect(G_OBJECT(button), "button-press-event",
+  g_signal_connect(button, "button-press-event",
                    G_CALLBACK(OnMouseButtonPressed), userdata);
-  g_signal_connect(G_OBJECT(button), "button-release-event",
+  g_signal_connect(button, "button-release-event",
                    G_CALLBACK(OnMouseButtonReleased), userdata);
 }
 

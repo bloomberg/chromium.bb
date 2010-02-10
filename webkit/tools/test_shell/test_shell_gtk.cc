@@ -126,7 +126,7 @@ gboolean ShowWebInspectorActivated(GtkWidget* widget, TestShell* shell) {
 GtkWidget* AddMenuEntry(GtkWidget* menu_widget, const char* text,
                         GCallback callback, TestShell* shell) {
   GtkWidget* entry = gtk_menu_item_new_with_label(text);
-  g_signal_connect(G_OBJECT(entry), "activate", callback, shell);
+  g_signal_connect(entry, "activate", callback, shell);
   gtk_menu_shell_append(GTK_MENU_SHELL(menu_widget), entry);
   return entry;
 }
@@ -346,22 +346,22 @@ bool TestShell::Initialize(const GURL& starting_url) {
   gtk_toolbar_set_style(GTK_TOOLBAR(toolbar), GTK_TOOLBAR_ICONS);
 
   GtkToolItem* back = gtk_tool_button_new_from_stock(GTK_STOCK_GO_BACK);
-  g_signal_connect(G_OBJECT(back), "clicked",
+  g_signal_connect(back, "clicked",
                    G_CALLBACK(BackButtonClicked), this);
   gtk_toolbar_insert(GTK_TOOLBAR(toolbar), back, -1 /* append */);
 
   GtkToolItem* forward = gtk_tool_button_new_from_stock(GTK_STOCK_GO_FORWARD);
-  g_signal_connect(G_OBJECT(forward), "clicked",
+  g_signal_connect(forward, "clicked",
                    G_CALLBACK(ForwardButtonClicked), this);
   gtk_toolbar_insert(GTK_TOOLBAR(toolbar), forward, -1 /* append */);
 
   GtkToolItem* reload = gtk_tool_button_new_from_stock(GTK_STOCK_REFRESH);
-  g_signal_connect(G_OBJECT(reload), "clicked",
+  g_signal_connect(reload, "clicked",
                    G_CALLBACK(ReloadButtonClicked), this);
   gtk_toolbar_insert(GTK_TOOLBAR(toolbar), reload, -1 /* append */);
 
   GtkToolItem* stop = gtk_tool_button_new_from_stock(GTK_STOCK_STOP);
-  g_signal_connect(G_OBJECT(stop), "clicked",
+  g_signal_connect(stop, "clicked",
                    G_CALLBACK(StopButtonClicked), this);
   gtk_toolbar_insert(GTK_TOOLBAR(toolbar), stop, -1 /* append */);
 

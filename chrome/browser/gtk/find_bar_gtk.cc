@@ -221,7 +221,7 @@ void FindBarGtk::InitWidgets() {
   close_button_.reset(CustomDrawButton::CloseButton(theme_provider_));
   gtk_util::CenterWidgetInHBox(hbox, close_button_->widget(), true,
                                kCloseButtonPaddingLeft);
-  g_signal_connect(G_OBJECT(close_button_->widget()), "clicked",
+  g_signal_connect(close_button_->widget(), "clicked",
                    G_CALLBACK(OnClicked), this);
   gtk_widget_set_tooltip_text(close_button_->widget(),
       l10n_util::GetStringUTF8(IDS_FIND_IN_PAGE_CLOSE_TOOLTIP).c_str());
@@ -229,7 +229,7 @@ void FindBarGtk::InitWidgets() {
   find_next_button_.reset(new CustomDrawButton(theme_provider_,
       IDR_FINDINPAGE_NEXT, IDR_FINDINPAGE_NEXT_H, IDR_FINDINPAGE_NEXT_H,
       IDR_FINDINPAGE_NEXT_P, 0, GTK_STOCK_GO_DOWN, GTK_ICON_SIZE_MENU));
-  g_signal_connect(G_OBJECT(find_next_button_->widget()), "clicked",
+  g_signal_connect(find_next_button_->widget(), "clicked",
                    G_CALLBACK(OnClicked), this);
   gtk_widget_set_tooltip_text(find_next_button_->widget(),
       l10n_util::GetStringUTF8(IDS_FIND_IN_PAGE_NEXT_TOOLTIP).c_str());
@@ -239,7 +239,7 @@ void FindBarGtk::InitWidgets() {
   find_previous_button_.reset(new CustomDrawButton(theme_provider_,
       IDR_FINDINPAGE_PREV, IDR_FINDINPAGE_PREV_H, IDR_FINDINPAGE_PREV_H,
       IDR_FINDINPAGE_PREV_P, 0, GTK_STOCK_GO_UP, GTK_ICON_SIZE_MENU));
-  g_signal_connect(G_OBJECT(find_previous_button_->widget()), "clicked",
+  g_signal_connect(find_previous_button_->widget(), "clicked",
                    G_CALLBACK(OnClicked), this);
   gtk_widget_set_tooltip_text(find_previous_button_->widget(),
       l10n_util::GetStringUTF8(IDS_FIND_IN_PAGE_PREVIOUS_TOOLTIP).c_str());
