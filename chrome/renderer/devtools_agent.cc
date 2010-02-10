@@ -13,7 +13,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsMessageData.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
-#include "webkit/glue/devtools/devtools_message_data.h"
+#include "webkit/glue/devtools_message_data.h"
 #include "webkit/glue/webkit_glue.h"
 
 using WebKit::WebDevToolsAgent;

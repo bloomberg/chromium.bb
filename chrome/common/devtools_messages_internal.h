@@ -43,7 +43,7 @@
 // This file describes developer tools message types.
 
 #include "ipc/ipc_message_macros.h"
-#include "webkit/glue/devtools/devtools_message_data.h"
+#include "webkit/glue/devtools_message_data.h"
 
 // These are messages sent from DevToolsAgent to DevToolsClient through the
 // browser.

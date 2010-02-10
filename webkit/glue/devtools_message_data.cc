@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "webkit/glue/devtools/devtools_message_data.h"
+#include "webkit/glue/devtools_message_data.h"
 
 #include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDevToolsMessageData.h"
@@ -12,15 +12,13 @@ using WebKit::WebString;
 using WebKit::WebVector;
 
 DevToolsMessageData::DevToolsMessageData(const WebDevToolsMessageData& data)
-    : class_name(data.className.utf8())
-    , method_name(data.methodName.utf8())
-{
+    : class_name(data.className.utf8()),
+      method_name(data.methodName.utf8()) {
   for (size_t i = 0; i < data.arguments.size(); i++)
     arguments.push_back(data.arguments[i].utf8());
 }
 
-WebDevToolsMessageData DevToolsMessageData::ToWebDevToolsMessageData() const
-{
+WebDevToolsMessageData DevToolsMessageData::ToWebDevToolsMessageData() const {
   WebDevToolsMessageData result;
   result.className = WebString::fromUTF8(class_name);
   result.methodName = WebString::fromUTF8(method_name);

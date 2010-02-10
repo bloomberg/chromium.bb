@@ -6,7 +6,7 @@
 #define CHROME_COMMON_DEVTOOLS_MESSAGES_H_
 
 #include "ipc/ipc_message_utils.h"
-#include "webkit/glue/devtools/devtools_message_data.h"
+#include "webkit/glue/devtools_message_data.h"
 
 namespace IPC {
 

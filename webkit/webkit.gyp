@@ -243,8 +243,8 @@
         # This list contains all .h, .cc, and .mm files in glue except for
         # those in the test subdirectory and those with unittest in in their
         # names.
-        'glue/devtools/devtools_message_data.cc',
-        'glue/devtools/devtools_message_data.h',
+        'glue/devtools_message_data.cc',
+        'glue/devtools_message_data.h',
         'glue/media/buffered_data_source.cc',
         'glue/media/buffered_data_source.h',
         'glue/media/media_resource_loader_bridge_factory.cc',

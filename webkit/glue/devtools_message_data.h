@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef WEBKIT_GLUE_DEVTOOLS_DEVTOOLS_MESSAGE_DATA_H_
-#define WEBKIT_GLUE_DEVTOOLS_DEVTOOLS_MESSAGE_DATA_H_
+#ifndef WEBKIT_GLUE_DEVTOOLS_MESSAGE_DATA_H_
+#define WEBKIT_GLUE_DEVTOOLS_MESSAGE_DATA_H_
 
 #include <string>
 #include <vector>
