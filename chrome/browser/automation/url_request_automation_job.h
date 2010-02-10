@@ -96,6 +96,10 @@ class URLRequestAutomationJob : public URLRequestJob {
  private:
   virtual ~URLRequestAutomationJob();
 
+  // Task which is scheduled in the URLRequestAutomationJob::ReadRawData
+  // function, which completes the job.
+  void NotifyJobCompletionTask();
+
   int id_;
   int tab_;
   scoped_refptr<AutomationResourceMessageFilter> message_filter_;
@@ -121,6 +125,10 @@ class URLRequestAutomationJob : public URLRequestJob {
   // automation channel, which will be used for routing the network requests to
   // the host.
   bool is_pending_;
+
+  // Contains the request status code, which is eventually passed  to the http
+  // stack when we receive a Read request for a completed job.
+  URLRequestStatus request_status_;
 
   DISALLOW_COPY_AND_ASSIGN(URLRequestAutomationJob);
 };

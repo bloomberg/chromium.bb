@@ -983,9 +983,9 @@ TEST_F(ExternalTabUITest, HostNetworkStack) {
       .Times(1)
       .WillOnce(testing::InvokeWithoutArgs(CreateFunctor(mock_,
           &ExternalTabUITestMockClient::Reply404, 1, 3)));
+
   EXPECT_CALL(*mock_, OnRequestRead(1, 3, testing::Gt(0)))
     .Times(1);
-
 
   // Chrome makes a brave request for favicon.ico
   EXPECT_CALL(*mock_, OnRequestStart(1, 4, testing::AllOf(
@@ -1048,6 +1048,69 @@ TEST_F(ExternalTabUITest, HostNetworkStackAbortRequest) {
   loop.RunFor(2 * action_max_timeout_ms());
 }
 
+TEST_F(ExternalTabUITest, HostNetworkStackUnresponsiveRenderer) {
+  scoped_refptr<TabProxy> tab;
+  TimedMessageLoopRunner loop(MessageLoop::current());
+  ASSERT_THAT(mock_, testing::NotNull());
+
+  std::string url = "http://placetogo.org";
+  const IPC::AutomationURLResponse http_200 = {"", "HTTP/0.9 200\r\n\r\n", };
+
+  EXPECT_CALL(*mock_, OnRequestStart(1, 3, testing::_))
+      .Times(testing::AnyNumber());
+
+  testing::InSequence sequence;
+  EXPECT_CALL(*mock_, OnRequestStart(1, 2, testing::AllOf(
+          testing::Field(&IPC::AutomationURLRequest::url, StrEq(url + "/")),
+          testing::Field(&IPC::AutomationURLRequest::method, StrEq("GET")))))
+      .Times(1)
+      // We can simply do CreateFunctor(1, 2, &http_200) since we know the
+      // tab handle and request id, but using WithArgs<> is much more fancy :)
+      .WillOnce(testing::WithArgs<0, 1>(testing::Invoke(CreateFunctor(mock_,
+          &ExternalTabUITestMockClient::ReplyStarted, &http_200))));
+
+  const std::string head = "<html><title>Hello</title><body>";
+
+  const std::string data = "<table border=\"1\"><tr><th>Month</th>"
+                           "<th>Savings</th></tr><tr><td>January</td>"
+                           "<td>$100</td></tr><tr><td>February</td>"
+                           "<td>$100</td></tr><tr><td>March</td>"
+                           "<td>$100</td></tr><tr><td>April</td>"
+                           "<td>$100</td></tr><tr><td>May</td>"
+                           "<td>$100</td></tr><tr><td>June</td>"
+                           "<td>$100</td></tr><tr><td>July</td>"
+                           "<td>$100</td></tr><tr><td>Aug</td>"
+                           "<td>$100</td></tr><tr><td>Sept</td>"
+                           "<td>$100</td></tr><tr><td>Oct</td>"
+                           "<td>$100</td></tr><tr><td>Nov</td>"
+                           "<td>$100</td></tr><tr><td>Dec</td>"
+                           "<td>$100</td></tr></table>";
+
+  const std::string tail = "</body></html>";
+
+  EXPECT_CALL(*mock_, OnRequestRead(1, 2, testing::Gt(0)))
+      .Times(1)
+      .WillOnce(testing::InvokeWithoutArgs(CreateFunctor(mock_,
+          &ExternalTabUITestMockClient::ReplyData, &head, 1, 2)));
+
+  EXPECT_CALL(*mock_, OnRequestRead(1, 2, testing::Gt(0)))
+      .Times(100)
+      .WillRepeatedly(testing::InvokeWithoutArgs(CreateFunctor(mock_,
+              &ExternalTabUITestMockClient::ReplyData, &data, 1, 2)));
+
+  EXPECT_CALL(*mock_, OnRequestRead(1, 2, testing::Gt(0)))
+      .Times(testing::AnyNumber())
+      .WillOnce(testing::DoAll(
+          testing::InvokeWithoutArgs(CreateFunctor(mock_,
+              &ExternalTabUITestMockClient::ReplyData, &tail, 1, 2)),
+          testing::InvokeWithoutArgs(CreateFunctor(mock_,
+              &ExternalTabUITestMockClient::ReplyEOF, 1, 2)),
+          QUIT_LOOP_SOON(&loop, 300)));
+
+  tab = mock_->CreateTabWithUrl(GURL(url));
+  loop.RunFor(2 * action_max_timeout_ms());
+  mock_->DestroyHostWindow();
+}
 #endif  // defined(OS_WIN)
 
 // TODO(port): Need to port autocomplete_edit_proxy.* first.

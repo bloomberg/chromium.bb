@@ -184,9 +184,15 @@ bool URLRequestAutomationJob::ReadRawData(
   pending_buf_ = buf;
   pending_buf_size_ = buf_size;
 
-  message_filter_->Send(new AutomationMsg_RequestRead(0, tab_, id_,
-      buf_size));
-  SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
+  if (message_filter_) {
+    message_filter_->Send(new AutomationMsg_RequestRead(0, tab_, id_,
+        buf_size));
+    SetStatus(URLRequestStatus(URLRequestStatus::IO_PENDING, 0));
+  } else {
+    ChromeThread::PostTask(ChromeThread::IO, FROM_HERE,
+        NewRunnableMethod(this,
+                          &URLRequestAutomationJob::NotifyJobCompletionTask));
+  }
   return false;
 }
 
@@ -385,6 +391,8 @@ void URLRequestAutomationJob::OnDataAvailable(
     pending_buf_size_ = 0;
 
     NotifyReadComplete(bytes_to_copy);
+  } else {
+    NOTREACHED() << "Received unexpected data of length:" << bytes.size();
   }
 }
 
@@ -410,8 +418,21 @@ void URLRequestAutomationJob::OnRequestEnd(
   DisconnectFromMessageFilter();
   // NotifyDone may have been called on the job if the original request was
   // redirected.
-  if (!is_done())
-    NotifyDone(status);
+  if (!is_done()) {
+    // We can complete the job if we have a valid response or a pending read.
+    // An end request can be received in the following cases
+    // 1. We failed to connect to the server, in which case we did not receive
+    //    a valid response.
+    // 2. In response to a read request.
+    if (!has_response_started() || pending_buf_) {
+      NotifyDone(status);
+    } else {
+      // Wait for the http stack to issue a Read request where we will notify
+      // that the job has completed.
+      request_status_ = status;
+      return;
+    }
+  }
 
   // Reset any pending reads.
   if (pending_buf_) {
@@ -538,5 +559,17 @@ void URLRequestAutomationJob::SetCookiePathToRootIfNotPresent(
     if ((*cookie_string)[cookie_string->length() - 1] != ';')
       *cookie_string += ';';
     cookie_string->append(" path=/");
+  }
+}
+
+void URLRequestAutomationJob::NotifyJobCompletionTask() {
+  if (!is_done()) {
+    NotifyDone(request_status_);
+  }
+  // Reset any pending reads.
+  if (pending_buf_) {
+    pending_buf_ = NULL;
+    pending_buf_size_ = 0;
+    NotifyReadComplete(0);
   }
 }
