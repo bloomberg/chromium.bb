@@ -19,8 +19,9 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/fonts_languages_window.h"
 #include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
+#include "chrome/browser/gtk/clear_browsing_data_dialog_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
-#include "chrome/browser/gtk/options/cookies_view.h"
+#include "chrome/browser/gtk/options/content_settings_window_gtk.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/options_page_base.h"
@@ -495,6 +496,10 @@ class PrivacySection : public OptionsPageBase {
   void ShowRestartMessageBox() const;
 
   // The callback functions for the options widgets.
+  static void OnContentSettingsClicked(GtkButton* button,
+                                       PrivacySection* privacy_section);
+  static void OnClearBrowsingDataButtonClicked(GtkButton* widget,
+                                               PrivacySection* page);
   static void OnLearnMoreLinkClicked(GtkButton *button,
                                      PrivacySection* privacy_section);
   static void OnEnableLinkDoctorChange(GtkWidget* widget,
@@ -507,10 +512,6 @@ class PrivacySection : public OptionsPageBase {
                                    PrivacySection* options_window);
   static void OnLoggingChange(GtkWidget* widget,
                               PrivacySection* options_window);
-  static void OnCookieBehaviorChanged(GtkComboBox* combo_box,
-                                      PrivacySection* privacy_section);
-  static void OnShowCookiesButtonClicked(GtkButton *button,
-                                         PrivacySection* privacy_section);
 
   // The widget containing the options for this section.
   GtkWidget* page_;
@@ -523,7 +524,6 @@ class PrivacySection : public OptionsPageBase {
 #if defined(GOOGLE_CHROME_BUILD)
   GtkWidget* reporting_enabled_checkbox_;
 #endif
-  GtkWidget* cookie_behavior_combobox_;
 
   // Preferences for this section:
   BooleanPrefMember alternate_error_pages_;
@@ -548,6 +548,24 @@ PrivacySection::PrivacySection(Profile* profile)
 
   accessible_widget_helper_.reset(new AccessibleWidgetHelper(
       page_, profile));
+
+  GtkWidget* content_button = gtk_button_new_with_label(
+      l10n_util::GetStringUTF8(
+          IDS_OPTIONS_PRIVACY_CONTENT_SETTINGS_BUTTON).c_str());
+  g_signal_connect(content_button, "clicked",
+                   G_CALLBACK(OnContentSettingsClicked), this);
+
+  GtkWidget* clear_data_button = gtk_button_new_with_label(
+      l10n_util::GetStringUTF8(IDS_OPTIONS_PRIVACY_CLEAR_DATA_BUTTON).c_str());
+  g_signal_connect(clear_data_button, "clicked",
+                   G_CALLBACK(OnClearBrowsingDataButtonClicked), this);
+
+  // Stick it in an hbox so it doesn't expand to the whole width.
+  GtkWidget* button_hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
+  gtk_box_pack_start(GTK_BOX(button_hbox), content_button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(button_hbox), clear_data_button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(page_), gtk_util::IndentWidget(button_hbox),
+                     FALSE, FALSE, 0);
 
   GtkWidget* section_description_label = CreateWrappedLabel(
       IDS_OPTIONS_DISABLE_SERVICES);
@@ -615,45 +633,6 @@ PrivacySection::PrivacySection(Profile* profile)
       reporting_enabled_checkbox_, IDS_OPTIONS_ENABLE_LOGGING);
 #endif
 
-  GtkWidget* cookie_description_label = gtk_label_new(
-      l10n_util::GetStringUTF8(IDS_OPTIONS_COOKIES_ACCEPT_LABEL).c_str());
-  gtk_misc_set_alignment(GTK_MISC(cookie_description_label), 0, 0);
-  gtk_box_pack_start(GTK_BOX(page_), cookie_description_label, FALSE, FALSE, 0);
-
-  GtkWidget* cookie_controls = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
-  gtk_box_pack_start(GTK_BOX(page_),
-                     gtk_util::IndentWidget(cookie_controls),
-                     FALSE, FALSE, 0);
-
-  cookie_behavior_combobox_ = gtk_combo_box_new_text();
-  DisableScrolling(cookie_behavior_combobox_);
-  gtk_combo_box_append_text(
-      GTK_COMBO_BOX(cookie_behavior_combobox_),
-      l10n_util::GetStringUTF8(IDS_OPTIONS_COOKIES_ACCEPT_ALL_COOKIES).c_str());
-  gtk_combo_box_append_text(
-      GTK_COMBO_BOX(cookie_behavior_combobox_),
-      l10n_util::GetStringUTF8(
-          IDS_OPTIONS_COOKIES_RESTRICT_THIRD_PARTY_COOKIES).c_str());
-  gtk_combo_box_append_text(
-      GTK_COMBO_BOX(cookie_behavior_combobox_),
-      l10n_util::GetStringUTF8(IDS_OPTIONS_COOKIES_BLOCK_ALL_COOKIES).c_str());
-  g_signal_connect(cookie_behavior_combobox_, "changed",
-                   G_CALLBACK(OnCookieBehaviorChanged), this);
-  gtk_box_pack_start(GTK_BOX(cookie_controls), cookie_behavior_combobox_,
-                     FALSE, FALSE, 0);
-
-  GtkWidget* show_cookies_button = gtk_button_new_with_label(
-      l10n_util::GetStringUTF8(
-          IDS_OPTIONS_COOKIES_SHOWCOOKIES_WEBSITE_PERMISSIONS).c_str());
-  g_signal_connect(show_cookies_button, "clicked",
-                   G_CALLBACK(OnShowCookiesButtonClicked), this);
-
-  // Stick it in an hbox so it doesn't expand to the whole width.
-  GtkWidget* button_hbox = gtk_hbox_new(FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(button_hbox), show_cookies_button,
-                     FALSE, FALSE, 0);
-  gtk_box_pack_start(GTK_BOX(cookie_controls), button_hbox, FALSE, FALSE, 0);
-
   // Init member prefs so we can update the controls if prefs change.
   alternate_error_pages_.Init(prefs::kAlternateErrorPagesEnabled,
                               profile->GetPrefs(), this);
@@ -666,6 +645,23 @@ PrivacySection::PrivacySection(Profile* profile)
                                  g_browser_process->local_state(), this);
 
   NotifyPrefChanged(NULL);
+}
+
+// static
+void PrivacySection::OnContentSettingsClicked(GtkButton* button,
+                                              PrivacySection* privacy_section) {
+  ContentSettingsWindowGtk::Show(
+      GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(button))),
+      CONTENT_SETTINGS_TYPE_DEFAULT,
+      privacy_section->profile());
+}
+
+// static
+void PrivacySection::OnClearBrowsingDataButtonClicked(GtkButton* widget,
+                                                      PrivacySection* section) {
+  ClearBrowsingDataDialogGtk::Show(
+      GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(widget))),
+      section->profile());
 }
 
 // static
@@ -760,23 +756,6 @@ void PrivacySection::OnLoggingChange(GtkWidget* widget,
                                     reinterpret_cast<gpointer>(OnLoggingChange),
                                     privacy_section);
   privacy_section->enable_metrics_recording_.SetValue(enabled);
-}
-
-// static
-void PrivacySection::OnCookieBehaviorChanged(GtkComboBox* combo_box,
-                                             PrivacySection* privacy_section) {
-  // TODO(darin): Remove everything else related to this setter.
-}
-
-// static
-void PrivacySection::OnShowCookiesButtonClicked(
-    GtkButton *button, PrivacySection* privacy_section) {
-  privacy_section->UserMetricsRecordAction("Options_ShowCookies", NULL);
-  CookiesView::Show(privacy_section->profile(),
-                    new BrowsingDataDatabaseHelper(
-                        privacy_section->profile()),
-                    new BrowsingDataLocalStorageHelper(
-                        privacy_section->profile()));
 }
 
 void PrivacySection::NotifyPrefChanged(const std::wstring* pref_name) {

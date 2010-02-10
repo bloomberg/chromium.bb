@@ -50,10 +50,6 @@ class ContentPageGtk : public OptionsPageBase,
   // Callback for import button.
   static void OnImportButtonClicked(GtkButton* widget, ContentPageGtk* page);
 
-  // Callback for clear data button.
-  static void OnClearBrowsingDataButtonClicked(GtkButton* widget,
-                                               ContentPageGtk* page);
-
   // Callback for the GTK theme button.
   static void OnGtkThemeButtonClicked(GtkButton* widget,
                                       ContentPageGtk* page);

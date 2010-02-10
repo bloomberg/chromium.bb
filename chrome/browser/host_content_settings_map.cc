@@ -108,6 +108,7 @@ void HostContentSettingsMap::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterDictionaryPref(prefs::kDefaultContentSettings);
   prefs->RegisterDictionaryPref(prefs::kPerHostContentSettings);
   prefs->RegisterBooleanPref(prefs::kBlockThirdPartyCookies, false);
+  prefs->RegisterIntegerPref(prefs::kContentSettingsWindowLastTabIndex, 0);
 
   // Obsolete prefs, for migration:
   prefs->RegisterIntegerPref(prefs::kCookieBehavior,

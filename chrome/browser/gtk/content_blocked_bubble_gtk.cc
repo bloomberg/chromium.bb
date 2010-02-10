@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/gtk/options/content_settings_window_gtk.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -224,6 +225,13 @@ void ContentBlockedBubbleGtk::OnCloseButtonClicked(
 void ContentBlockedBubbleGtk::OnManageLinkClicked(
     GtkButton* button,
     ContentBlockedBubbleGtk* bubble) {
-  // TODO(erg): Attach this to the options page once that's been written.
-  NOTIMPLEMENTED();
+  if (bubble->tab_contents_) {
+    bubble->tab_contents_->delegate()->ShowContentSettingsWindow(
+        bubble->content_type_);
+  } else {
+    ContentSettingsWindowGtk::Show(NULL, bubble->content_type_,
+                                   bubble->profile_);
+  }
+
+  bubble->Close();
 }

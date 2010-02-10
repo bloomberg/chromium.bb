@@ -11,7 +11,6 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/gtk/clear_browsing_data_dialog_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/import_dialog_gtk.h"
@@ -238,15 +237,6 @@ GtkWidget* ContentPageGtk::InitBrowsingDataGroup() {
                    G_CALLBACK(OnImportButtonClicked), this);
   gtk_box_pack_start(GTK_BOX(button_hbox), import_button, FALSE, FALSE, 0);
 
-  // Clear data button.
-  // TODO(pkasting): This should move to the advanced settings page (see
-  // Windows).
-  GtkWidget* clear_data_button = gtk_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_OPTIONS_PRIVACY_CLEAR_DATA_BUTTON).c_str());
-  g_signal_connect(clear_data_button, "clicked",
-                   G_CALLBACK(OnClearBrowsingDataButtonClicked), this);
-  gtk_box_pack_start(GTK_BOX(button_hbox), clear_data_button, FALSE, FALSE, 0);
-
   return vbox;
 }
 
@@ -391,14 +381,6 @@ void ContentPageGtk::OnImportButtonClicked(GtkButton* widget,
   ImportDialogGtk::Show(
       GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(widget))),
       page->profile(), ALL);
-}
-
-// static
-void ContentPageGtk::OnClearBrowsingDataButtonClicked(GtkButton* widget,
-                                                      ContentPageGtk* page) {
-  ClearBrowsingDataDialogGtk::Show(
-      GTK_WINDOW(gtk_widget_get_toplevel(GTK_WIDGET(widget))),
-      page->profile());
 }
 
 // static

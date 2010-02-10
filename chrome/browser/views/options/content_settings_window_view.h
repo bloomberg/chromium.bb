@@ -24,8 +24,6 @@ class ContentSettingsWindowView : public views::View,
                                   public views::DialogDelegate,
                                   public views::TabbedPane::Listener {
  public:
-  static void RegisterUserPrefs(PrefService* prefs);
-
   explicit ContentSettingsWindowView(Profile* profile);
   virtual ~ContentSettingsWindowView();
 

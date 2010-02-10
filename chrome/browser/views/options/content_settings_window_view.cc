@@ -45,15 +45,7 @@ void ShowContentSettingsWindow(gfx::NativeWindow parent_window,
   instance_->ShowContentSettingsTab(content_type);
 }
 
-};
-
-///////////////////////////////////////////////////////////////////////////////
-// ContentSettingsWindowView, public:
-
-// static
-void ContentSettingsWindowView::RegisterUserPrefs(PrefService* prefs) {
-  prefs->RegisterIntegerPref(prefs::kContentSettingsWindowLastTabIndex, 0);
-}
+}  // namespace browser
 
 ContentSettingsWindowView::ContentSettingsWindowView(Profile* profile)
     // Always show preferences for the original profile. Most state when off

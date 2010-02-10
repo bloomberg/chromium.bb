@@ -1,0 +1,181 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#include "chrome/browser/gtk/options/content_settings_window_gtk.h"
+
+#include "app/l10n_util.h"
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_process.h"
+#include "chrome/browser/gtk/browser_window_gtk.h"
+#include "chrome/browser/profile.h"
+#include "chrome/common/content_settings_types.h"
+#include "chrome/common/gtk_util.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/pref_service.h"
+#include "grit/chromium_strings.h"
+#include "grit/generated_resources.h"
+#include "grit/locale_settings.h"
+
+namespace {
+
+// The singleton options window object.
+ContentSettingsWindowGtk* settings_window = NULL;
+
+}  // namespace
+
+// static
+void ContentSettingsWindowGtk::Show(GtkWindow* parent,
+                                    ContentSettingsType page,
+                                    Profile* profile) {
+  DCHECK(profile);
+
+  if (!settings_window) {
+    // Creating and initializing a bunch of controls generates a bunch of
+    // spurious events as control values change. Temporarily suppress
+    // accessibility events until the window is created.
+    profile->PauseAccessibilityEvents();
+
+    // Create the options window.
+    settings_window = new ContentSettingsWindowGtk(parent, profile);
+
+    // Resume accessibility events.
+    profile->ResumeAccessibilityEvents();
+  }
+  settings_window->ShowContentSettingsTab(page);
+
+  std::string name = l10n_util::GetStringUTF8(
+      IDS_CONTENT_SETTINGS_TITLE);
+  AccessibilityWindowInfo info(profile, name);
+
+  NotificationService::current()->Notify(
+      NotificationType::ACCESSIBILITY_WINDOW_OPENED,
+      Source<Profile>(profile),
+      Details<AccessibilityWindowInfo>(&info));
+}
+
+ContentSettingsWindowGtk::ContentSettingsWindowGtk(GtkWindow* parent,
+                                                   Profile* profile)
+    : profile_(profile),
+      cookie_page_(profile),
+      image_page_(profile, CONTENT_SETTINGS_TYPE_IMAGES),
+      javascript_page_(profile, CONTENT_SETTINGS_TYPE_JAVASCRIPT),
+      plugin_page_(profile, CONTENT_SETTINGS_TYPE_PLUGINS),
+      popup_page_(profile, CONTENT_SETTINGS_TYPE_POPUPS) {
+  // We don't need to observe changes in this value.
+  last_selected_page_.Init(prefs::kContentSettingsWindowLastTabIndex,
+                           profile->GetPrefs(), NULL);
+
+  dialog_ = gtk_dialog_new_with_buttons(
+      l10n_util::GetStringUTF8(IDS_CONTENT_SETTINGS_TITLE).c_str(),
+      parent,
+      // Non-modal.
+      static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
+      GTK_STOCK_CLOSE,
+      GTK_RESPONSE_CLOSE,
+      NULL);
+  gtk_window_set_default_size(GTK_WINDOW(dialog_), 500, -1);
+  // Allow browser windows to go in front of the options dialog in metacity.
+  gtk_window_set_type_hint(GTK_WINDOW(dialog_), GDK_WINDOW_TYPE_HINT_NORMAL);
+  gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
+                      gtk_util::kContentAreaSpacing);
+
+  accessibility_widget_helper_.reset(new AccessibleWidgetHelper(
+      dialog_, profile));
+
+  notebook_ = gtk_notebook_new();
+
+  gtk_notebook_append_page(
+      GTK_NOTEBOOK(notebook_),
+      cookie_page_.get_page_widget(),
+      gtk_label_new(
+          l10n_util::GetStringUTF8(IDS_COOKIES_TAB_LABEL).c_str()));
+  gtk_notebook_append_page(
+      GTK_NOTEBOOK(notebook_),
+      image_page_.get_page_widget(),
+      gtk_label_new(
+          l10n_util::GetStringUTF8(IDS_IMAGES_TAB_LABEL).c_str()));
+  gtk_notebook_append_page(
+      GTK_NOTEBOOK(notebook_),
+      javascript_page_.get_page_widget(),
+      gtk_label_new(
+          l10n_util::GetStringUTF8(IDS_JAVASCRIPT_TAB_LABEL).c_str()));
+  gtk_notebook_append_page(
+      GTK_NOTEBOOK(notebook_),
+      plugin_page_.get_page_widget(),
+      gtk_label_new(
+          l10n_util::GetStringUTF8(IDS_PLUGIN_TAB_LABEL).c_str()));
+  gtk_notebook_append_page(
+      GTK_NOTEBOOK(notebook_),
+      popup_page_.get_page_widget(),
+      gtk_label_new(
+          l10n_util::GetStringUTF8(IDS_POPUP_TAB_LABEL).c_str()));
+
+  gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), notebook_);
+
+  DCHECK_EQ(gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook_)),
+            CONTENT_SETTINGS_NUM_TYPES);
+
+  // Need to show the notebook before connecting switch-page signal, otherwise
+  // we'll immediately get a signal switching to page 0 and overwrite our
+  // last_selected_page_ value.
+  gtk_widget_show_all(dialog_);
+
+  g_signal_connect(notebook_, "switch-page", G_CALLBACK(OnSwitchPage), this);
+
+  // We only have one button and don't do any special handling, so just hook it
+  // directly to gtk_widget_destroy.
+  g_signal_connect(dialog_, "response", G_CALLBACK(gtk_widget_destroy), NULL);
+
+  g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroy), this);
+}
+
+ContentSettingsWindowGtk::~ContentSettingsWindowGtk() {
+}
+
+void ContentSettingsWindowGtk::ShowContentSettingsTab(
+    ContentSettingsType page) {
+  if (Browser* b = BrowserList::GetLastActive()) {
+    gtk_util::CenterOverWindow(GTK_WINDOW(dialog_),
+                               b->window()->GetNativeHandle());
+  }
+
+  // Bring options window to front if it already existed and isn't already
+  // in front
+  gtk_window_present_with_time(GTK_WINDOW(dialog_),
+                               gtk_get_current_event_time());
+
+  if (page == CONTENT_SETTINGS_TYPE_DEFAULT) {
+    // Remember the last visited page from local state.
+    page = static_cast<ContentSettingsType>(last_selected_page_.GetValue());
+    if (page == CONTENT_SETTINGS_TYPE_DEFAULT)
+      page = CONTENT_SETTINGS_TYPE_COOKIES;
+  }
+  // If the page number is out of bounds, reset to the first tab.
+  if (page < 0 || page >= gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook_)))
+    page = CONTENT_SETTINGS_TYPE_COOKIES;
+
+  gtk_notebook_set_current_page(GTK_NOTEBOOK(notebook_), page);
+}
+
+// static
+void ContentSettingsWindowGtk::OnSwitchPage(
+    GtkNotebook* notebook,
+    GtkNotebookPage* page,
+    guint page_num,
+    ContentSettingsWindowGtk* window) {
+  int index = page_num;
+  DCHECK(index > CONTENT_SETTINGS_TYPE_DEFAULT &&
+         index < CONTENT_SETTINGS_NUM_TYPES);
+  window->last_selected_page_.SetValue(index);
+}
+
+// static
+void ContentSettingsWindowGtk::OnWindowDestroy(
+    GtkWidget* widget,
+    ContentSettingsWindowGtk* window) {
+  settings_window = NULL;
+  MessageLoop::current()->DeleteSoon(FROM_HERE, window);
+}

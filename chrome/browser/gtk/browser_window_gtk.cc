@@ -59,6 +59,7 @@
 #include "chrome/browser/gtk/infobar_container_gtk.h"
 #include "chrome/browser/gtk/keyword_editor_view.h"
 #include "chrome/browser/gtk/nine_box.h"
+#include "chrome/browser/gtk/options/content_settings_window_gtk.h"
 #include "chrome/browser/gtk/repost_form_warning_gtk.h"
 #include "chrome/browser/gtk/status_bubble_gtk.h"
 #include "chrome/browser/gtk/tab_contents_container_gtk.h"
@@ -874,7 +875,7 @@ void BrowserWindowGtk::ShowRepostFormWarningDialog(
 void BrowserWindowGtk::ShowContentSettingsWindow(
     ContentSettingsType content_type,
     Profile* profile) {
-  NOTIMPLEMENTED();
+  ContentSettingsWindowGtk::Show(GetNativeHandle(), content_type, profile);
 }
 
 void BrowserWindowGtk::ShowProfileErrorDialog(int message_id) {
