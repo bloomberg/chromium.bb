@@ -37,22 +37,16 @@ class CookiePromptView : public views::View,
                           public views::LinkController,
                           public CookieInfoViewDelegate {
  public:
-  // Show the Cookies Window, creating one if necessary.
-  CookiePromptView(
-      CookiePromptModalDialog* parent,
-      gfx::NativeWindow root_window,
-      Profile* profile,
-      const std::string& host,
-      const std::string& cookie_line,
-      CookiePromptModalDialogDelegate* delegate);
-
   CookiePromptView(
       CookiePromptModalDialog* parent,
       gfx::NativeWindow root_window,
       Profile* profile,
       const BrowsingDataLocalStorageHelper::LocalStorageInfo&
           local_storage_info,
-      CookiePromptModalDialogDelegate* delegate);
+      const std::string& host,
+      const std::string& cookie_line,
+      CookiePromptModalDialogDelegate* delegate,
+      bool cookie_ui);
 
   virtual ~CookiePromptView();
 
@@ -88,10 +82,6 @@ class CookiePromptView : public views::View,
   virtual void ModifyExpireDate(bool session_expire);
 
  private:
-  // Use the static factory method to show.
-  explicit CookiePromptView(Profile* profile,
-                             CookiePromptModalDialogDelegate* delegate);
-
   // Initialize the dialog layout.
   void Init();
 
@@ -109,7 +99,6 @@ class CookiePromptView : public views::View,
   views::NativeButton* allow_button_;
   views::NativeButton* block_button_;
   views::Link* show_cookie_link_;
-  views::Link* manage_cookies_link_;
   views::View* info_view_;
 
   // True if cookie should expire with this session.
@@ -131,9 +120,6 @@ class CookiePromptView : public views::View,
   CookiePromptModalDialog* parent_;
 
   gfx::NativeWindow root_window_;
-
-  // The Profile for which Cookies are displayed.
-  Profile* profile_;
 
   // Cookie / local storage host.
   std::string host_;

@@ -5,6 +5,8 @@
 #include "chrome/browser/cookie_modal_dialog.h"
 
 #include "chrome/browser/views/cookie_prompt_view.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/pref_service.h"
 
 CookiePromptModalDialog::CookiePromptModalDialog(
     TabContents* tab_contents,
@@ -29,4 +31,7 @@ CookiePromptModalDialog::CookiePromptModalDialog(
       delegate_(delegate) {
 }
 
-
+// static
+void CookiePromptModalDialog::RegisterPrefs(PrefService* prefs) {
+  prefs->RegisterBooleanPref(prefs::kCookiePromptExpanded, false);
+}

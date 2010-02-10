@@ -59,6 +59,7 @@ extern const wchar_t kAlternateErrorPagesEnabled[];
 extern const wchar_t kDnsPrefetchingEnabled[];
 extern const wchar_t kDnsStartupPrefetchList[];
 extern const wchar_t kDnsHostReferralList[];
+extern const wchar_t kCookiePromptExpanded[];
 #if defined(OS_LINUX)
 extern const wchar_t kCertRevocationCheckingEnabled[];
 extern const wchar_t kSSL2Enabled[];

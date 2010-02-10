@@ -39,16 +39,12 @@ void CookiePromptModalDialog::CancelWindow() {
 
 NativeDialog CookiePromptModalDialog::CreateNativeDialog() {
 #if defined(OS_WIN)
-  if (cookie_ui_) {
-    return new CookiePromptView(this,
-                                 tab_contents_->GetMessageBoxRootWindow(),
-                                 tab_contents_->profile(),
-                                 host_, cookie_line_, delegate_);
-  }
   return new CookiePromptView(this,
-                               tab_contents_->GetMessageBoxRootWindow(),
-                               tab_contents_->profile(),
-                               storage_info_, delegate_);
+                              tab_contents_->GetMessageBoxRootWindow(),
+                              tab_contents_->profile(),
+                              storage_info_,
+                              host_, cookie_line_, delegate_,
+                              cookie_ui_);
 #else
   return NULL;
 #endif

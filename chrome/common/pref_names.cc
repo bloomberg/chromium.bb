@@ -164,6 +164,9 @@ const wchar_t kDnsStartupPrefetchList[] = L"StartupDNSPrefetchList";
 // This list is adaptively grown and pruned.
 extern const wchar_t kDnsHostReferralList[] = L"HostReferralList";
 
+// Is the cookie prompt expanded?
+extern const wchar_t kCookiePromptExpanded[] = L"cookieprompt.expanded";
+
 #if defined(OS_LINUX)
 // Prefs for SSLConfigServicePref.  Currently, these are only present on
 // and used by Linux.

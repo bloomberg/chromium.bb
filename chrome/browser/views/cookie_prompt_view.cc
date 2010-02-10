@@ -12,12 +12,15 @@
 #include "base/i18n/time_formatting.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/cookie_modal_dialog.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/browser/views/cookie_info_view.h"
 #include "chrome/browser/views/local_storage_info_view.h"
 #include "chrome/browser/views/options/content_settings_window_view.h"
+#include "chrome/common/pref_names.h"
+#include "chrome/common/pref_service.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "net/base/cookie_monster.h"
@@ -38,31 +41,30 @@ CookiePromptView::CookiePromptView(
     CookiePromptModalDialog* parent,
     gfx::NativeWindow root_window,
     Profile* profile,
+    const BrowsingDataLocalStorageHelper::LocalStorageInfo& storage_info,
     const std::string& host,
     const std::string& cookie_line,
-    CookiePromptModalDialogDelegate* delegate)
-    : cookie_ui_(true),
+    CookiePromptModalDialogDelegate* delegate,
+    bool cookie_ui)
+    : remember_radio_(NULL),
+      ask_radio_(NULL),
+      allow_button_(NULL),
+      block_button_(NULL),
+      show_cookie_link_(NULL),
+      info_view_(NULL),
+      session_expire_(false),
+      expanded_view_(false),
+      signaled_(false),
+      cookie_ui_(cookie_ui),
       parent_(parent),
       root_window_(root_window),
-      profile_(profile),
+      host_(host),
       cookie_line_(cookie_line),
-      delegate_(delegate) {
-  InitializeViewResources(host);
-}
-
-CookiePromptView::CookiePromptView(
-    CookiePromptModalDialog* parent,
-    gfx::NativeWindow root_window,
-    Profile* profile,
-    const BrowsingDataLocalStorageHelper::LocalStorageInfo& storage_info,
-    CookiePromptModalDialogDelegate* delegate)
-    : cookie_ui_(false),
-      parent_(parent),
-      root_window_(root_window),
-      profile_(profile),
       local_storage_info_(storage_info),
       delegate_(delegate) {
-  InitializeViewResources(storage_info.host);
+  InitializeViewResources(host);
+  expanded_view_ = g_browser_process->local_state()->
+      GetBoolean(prefs::kCookiePromptExpanded);
 }
 
 CookiePromptView::~CookiePromptView() {
@@ -138,34 +140,12 @@ void CookiePromptView::ButtonPressed(views::Button* sender,
 ///////////////////////////////////////////////////////////////////////////////
 // CookiePromptView, views::LinkController implementation:
 void CookiePromptView::LinkActivated(views::Link* source, int event_flags) {
-  if (source == show_cookie_link_) {
-    ToggleDetailsViewExpand();
-    return;
-  }
-
-  DCHECK_EQ(source, manage_cookies_link_);
-  browser::ShowContentSettingsWindow(root_window_,
-                                     CONTENT_SETTINGS_TYPE_COOKIES, profile_);
+  DCHECK_EQ(source, show_cookie_link_);
+  ToggleDetailsViewExpand();
 }
 
 ///////////////////////////////////////////////////////////////////////////////
 // CookiePromptView, private:
-
-CookiePromptView::CookiePromptView(Profile* profile,
-                                   CookiePromptModalDialogDelegate* delegate)
-    : remember_radio_(NULL),
-      ask_radio_(NULL),
-      allow_button_(NULL),
-      block_button_(NULL),
-      show_cookie_link_(NULL),
-      manage_cookies_link_(NULL),
-      info_view_(NULL),
-      session_expire_(false),
-      expanded_view_(false),
-      signaled_(false),
-      delegate_(delegate),
-      profile_(profile) {
-}
 
 void CookiePromptView::Init() {
   std::wstring display_host = UTF8ToWide(host_);
@@ -187,9 +167,6 @@ void CookiePromptView::Init() {
   show_cookie_link_ = new views::Link(
       l10n_util::GetString(IDS_COOKIE_SHOW_DETAILS_LABEL));
   show_cookie_link_->SetController(this);
-  manage_cookies_link_ = new views::Link(
-      l10n_util::GetString(IDS_COOKIE_MANAGE_ALERTS_LABEL));
-  manage_cookies_link_->SetController(this);
 
   using views::GridLayout;
 
@@ -255,8 +232,6 @@ void CookiePromptView::Init() {
   link_column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
   layout->StartRow(0, link_column_layout_id);
   layout->AddView(show_cookie_link_);
-  layout->AddView(manage_cookies_link_, 1, 1,
-                  GridLayout::TRAILING, GridLayout::CENTER);
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   layout->StartRow(0, one_column_layout_id);
@@ -276,7 +251,8 @@ void CookiePromptView::Init() {
     local_storage_info_view->SetLocalStorageInfo(local_storage_info_);
     info_view_ = local_storage_info_view;
   }
-  info_view_->SetVisible(false);
+
+  info_view_->SetVisible(expanded_view_);
 
   // Set default values.
   ask_radio_->SetChecked(true);
@@ -289,15 +265,21 @@ int CookiePromptView::GetExtendedViewHeight() {
 }
 
 void CookiePromptView::ToggleDetailsViewExpand() {
-  expanded_view_ = !expanded_view_;
-  views::Window* parent = GetWindow();
-  gfx::Size non_client_size = parent->GetNonClientView()->GetPreferredSize();
-  gfx::Rect bounds = parent->GetBounds();
-  bounds.set_height(non_client_size.height() + GetExtendedViewHeight());
-  parent->SetBounds(bounds, NULL);
+  int old_extended_height = GetExtendedViewHeight();
 
+  expanded_view_ = !expanded_view_;
+  g_browser_process->local_state()->SetBoolean(prefs::kCookiePromptExpanded,
+                                               expanded_view_);
+
+  // We have to set the visbility before asking for the extended view height
+  // again as there is a bug in combobox that results in preferred height
+  // changing when visible and not visible.
   info_view_->SetVisible(expanded_view_);
-  Layout();
+  int extended_height_delta = GetExtendedViewHeight() - old_extended_height;
+  views::Window* window = GetWindow();
+  gfx::Rect bounds = window->GetBounds();
+  bounds.set_height(bounds.height() + extended_height_delta);
+  window->SetBounds(bounds, NULL);
 }
 
 void CookiePromptView::InitializeViewResources(const std::string& host) {

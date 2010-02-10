@@ -12,6 +12,7 @@
 #include "chrome/browser/cookie_prompt_modal_dialog_delegate.h"
 #include "googleurl/src/gurl.h"
 
+class PrefService;
 
 // A controller+model class for cookie and local storage warning prompt.
 // |NativeDialog| is a platform specific view.
@@ -28,6 +29,8 @@ class CookiePromptModalDialog : public AppModalDialog {
       const BrowsingDataLocalStorageHelper::LocalStorageInfo& storage_info,
       CookiePromptModalDialogDelegate* delegate);
   virtual ~CookiePromptModalDialog() {}
+
+  static void RegisterPrefs(PrefService* prefs);
 
   // AppModalDialog overrides.
   virtual int GetDialogButtons();
