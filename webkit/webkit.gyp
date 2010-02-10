@@ -5,6 +5,7 @@
 {
   'includes': [
     '../third_party/WebKit/WebKit/chromium/features.gypi',
+    '../third_party/WebKit/WebKit/chromium/WebKit.gypi',
     '../third_party/WebKit/WebCore/WebCore.gypi',
   ],
   'variables': {
@@ -22,9 +23,7 @@
     # List of DevTools source files, ordered by dependencies. It is used both
     # for copying them to resource dir, and for generating 'devtools.html' file.
     'devtools_files': [
-      'glue/devtools/js/devtools.css',
-      'glue/devtools/js/inspector_controller_impl.js',
-      'glue/devtools/js/debugger_agent.js',
+      '<@(devtools_css_files)',
       '../v8/tools/codemap.js',
       '../v8/tools/consarray.js',
       '../v8/tools/csvparser.js',
@@ -32,12 +31,7 @@
       '../v8/tools/profile.js',
       '../v8/tools/profile_view.js',
       '../v8/tools/splaytree.js',
-      'glue/devtools/js/profiler_agent.js',
-      'glue/devtools/js/profiler_processor.js',
-      'glue/devtools/js/heap_profiler_panel.js',
-      'glue/devtools/js/devtools.js',
-      'glue/devtools/js/devtools_host_stub.js',
-      'glue/devtools/js/tests.js',
+      '<@(devtools_js_files)',
     ],
 
     'debug_devtools%': 0,
@@ -483,19 +477,8 @@
         {
           'destination': '<(PRODUCT_DIR)/resources/inspector/Images',
           'files': [
-
-            '<@(webinspector_image_files)',
-
-            'glue/devtools/js/Images/segmentChromium.png',
-            'glue/devtools/js/Images/segmentHoverChromium.png',
-            'glue/devtools/js/Images/segmentHoverEndChromium.png',
-            'glue/devtools/js/Images/segmentSelectedChromium.png',
-            'glue/devtools/js/Images/segmentSelectedEndChromium.png',
-            'glue/devtools/js/Images/statusbarBackgroundChromium.png',
-            'glue/devtools/js/Images/statusbarBottomBackgroundChromium.png',
-            'glue/devtools/js/Images/statusbarButtonsChromium.png',
-            'glue/devtools/js/Images/statusbarMenuButtonChromium.png',
-            'glue/devtools/js/Images/statusbarMenuButtonSelectedChromium.png',
+            '<@(webinspector_image_files)', 
+            '<@(devtools_image_files)', 
           ],
         },
       ],
@@ -531,7 +514,7 @@
         'devtools_html',
       ],
       'sources': [
-        '<(PRODUCT_DIR)/resources/inspector/devtools.js',
+        '<(PRODUCT_DIR)/resources/inspector/DevTools.js',
       ],
       'actions': [
         {
@@ -543,7 +526,7 @@
             '<@(devtools_files)',
           ],
           'outputs': [
-            '<(PRODUCT_DIR)/resources/inspector/devtools.js',
+            '<(PRODUCT_DIR)/resources/inspector/DevTools.js',
           ],
           'action': ['python', '<@(_inputs)', '<@(_outputs)'],
         },
