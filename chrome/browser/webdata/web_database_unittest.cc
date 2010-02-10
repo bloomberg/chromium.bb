@@ -21,7 +21,6 @@
 #include "chrome/common/chrome_paths.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/password_form.h"
 
@@ -428,36 +427,32 @@ TEST_F(WebDatabaseTest, Autofill) {
   EXPECT_TRUE(db.AddFormFieldValue(
       FormField(string16(),
                 ASCIIToUTF16("Name"),
-                ASCIIToUTF16("Superman"),
                 string16(),
-                WebKit::WebInputElement::Text),
+                ASCIIToUTF16("Superman")),
       &changes));
   std::vector<string16> v;
   for (int i = 0; i < 5; i++) {
     EXPECT_TRUE(db.AddFormFieldValue(
         FormField(string16(),
                   ASCIIToUTF16("Name"),
-                  ASCIIToUTF16("Clark Kent"),
                   string16(),
-                  WebKit::WebInputElement::Text),
+                  ASCIIToUTF16("Clark Kent")),
         &changes));
   }
   for (int i = 0; i < 3; i++) {
     EXPECT_TRUE(db.AddFormFieldValue(
         FormField(string16(),
                   ASCIIToUTF16("Name"),
-                  ASCIIToUTF16("Clark Sutter"),
                   string16(),
-                  WebKit::WebInputElement::Text),
+                  ASCIIToUTF16("Clark Sutter")),
         &changes));
   }
   for (int i = 0; i < 2; i++) {
     EXPECT_TRUE(db.AddFormFieldValue(
         FormField(string16(),
                   ASCIIToUTF16("Favorite Color"),
-                  ASCIIToUTF16("Green"),
                   string16(),
-                  WebKit::WebInputElement::Text),
+                  ASCIIToUTF16("Green")),
         &changes));
   }
 
@@ -469,9 +464,8 @@ TEST_F(WebDatabaseTest, Autofill) {
   EXPECT_TRUE(db.GetIDAndCountOfFormElement(
       FormField(string16(),
                 ASCIIToUTF16("Name"),
-                ASCIIToUTF16("Clark Kent"),
                 string16(),
-                WebKit::WebInputElement::Text),
+                ASCIIToUTF16("Clark Kent")),
       &pair_id, &count));
   EXPECT_EQ(5, count);
   EXPECT_NE(0, pair_id);
@@ -481,18 +475,16 @@ TEST_F(WebDatabaseTest, Autofill) {
   EXPECT_TRUE(db.GetIDAndCountOfFormElement(
       FormField(string16(),
                 ASCIIToUTF16("Name"),
-                ASCIIToUTF16("clark kent"),
                 string16(),
-                WebKit::WebInputElement::Text),
+                ASCIIToUTF16("clark kent")),
       &pair_id, &count));
   EXPECT_EQ(0, count);
 
   EXPECT_TRUE(db.GetIDAndCountOfFormElement(
       FormField(string16(),
                 ASCIIToUTF16("Favorite Color"),
-                ASCIIToUTF16("Green"),
                 string16(),
-                WebKit::WebInputElement::Text),
+                ASCIIToUTF16("Green")),
       &pair_id, &count));
   EXPECT_EQ(2, count);
 
@@ -555,9 +547,8 @@ TEST_F(WebDatabaseTest, Autofill) {
   EXPECT_TRUE(db.GetIDAndCountOfFormElement(
       FormField(string16(),
                 ASCIIToUTF16("Name"),
-                ASCIIToUTF16("Clark Kent"),
                 string16(),
-                WebKit::WebInputElement::Text),
+                ASCIIToUTF16("Clark Kent")),
       &pair_id, &count));
   EXPECT_EQ(0, count);
 
@@ -570,26 +561,22 @@ TEST_F(WebDatabaseTest, Autofill) {
   EXPECT_TRUE(db.AddFormFieldValue(FormField(string16(),
                                              ASCIIToUTF16("blank"),
                                              string16(),
-                                             string16(),
-                                             WebKit::WebInputElement::Text),
+                                             string16()),
                                    &changes));
   EXPECT_TRUE(db.AddFormFieldValue(FormField(string16(),
                                              ASCIIToUTF16("blank"),
-                                             ASCIIToUTF16(" "),
                                              string16(),
-                                             WebKit::WebInputElement::Text),
+                                             ASCIIToUTF16(" ")),
                                    &changes));
   EXPECT_TRUE(db.AddFormFieldValue(FormField(string16(),
                                              ASCIIToUTF16("blank"),
-                                             ASCIIToUTF16("      "),
                                              string16(),
-                                             WebKit::WebInputElement::Text),
+                                             ASCIIToUTF16("      ")),
                                    &changes));
   EXPECT_TRUE(db.AddFormFieldValue(FormField(string16(),
                                              ASCIIToUTF16("blank"),
-                                             kValue,
                                              string16(),
-                                             WebKit::WebInputElement::Text),
+                                             kValue),
                                    &changes));
 
   // They should be stored normally as the DB layer does not check for empty
@@ -622,17 +609,15 @@ TEST_F(WebDatabaseTest, Autofill_RemoveBetweenChanges) {
   EXPECT_TRUE(db.AddFormFieldValueTime(
       FormField(string16(),
                 ASCIIToUTF16("Name"),
-                ASCIIToUTF16("Superman"),
                 string16(),
-                WebKit::WebInputElement::Text),
+                ASCIIToUTF16("Superman")),
       &changes,
       t1));
   EXPECT_TRUE(db.AddFormFieldValueTime(
       FormField(string16(),
                 ASCIIToUTF16("Name"),
-                ASCIIToUTF16("Superman"),
                 string16(),
-                WebKit::WebInputElement::Text),
+                ASCIIToUTF16("Superman")),
       &changes,
       t2));
 
@@ -665,9 +650,8 @@ TEST_F(WebDatabaseTest, Autofill_AddChanges) {
   EXPECT_TRUE(db.AddFormFieldValueTime(
       FormField(string16(),
                 ASCIIToUTF16("Name"),
-                ASCIIToUTF16("Superman"),
                 string16(),
-                WebKit::WebInputElement::Text),
+                ASCIIToUTF16("Superman")),
       &changes,
       t1));
   ASSERT_EQ(1U, changes.size());
@@ -680,9 +664,8 @@ TEST_F(WebDatabaseTest, Autofill_AddChanges) {
   EXPECT_TRUE(db.AddFormFieldValueTime(
       FormField(string16(),
                 ASCIIToUTF16("Name"),
-                ASCIIToUTF16("Superman"),
                 string16(),
-                WebKit::WebInputElement::Text),
+                ASCIIToUTF16("Superman")),
       &changes,
       t2));
   ASSERT_EQ(1U, changes.size());

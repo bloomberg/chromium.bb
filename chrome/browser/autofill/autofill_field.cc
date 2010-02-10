@@ -51,7 +51,7 @@ bool AutoFillField::IsEmpty() const {
 
 std::string AutoFillField::FieldSignature() const {
   std::string field_name = UTF16ToUTF8(name());
-  std::string type = UTF16ToUTF8(form_control_type());
+  std::string type = UTF16ToUTF8(html_input_type());
   std::string field_string = field_name + "&" + type;
   return Hash32Bit(field_string);
 }

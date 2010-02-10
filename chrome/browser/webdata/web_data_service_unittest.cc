@@ -24,7 +24,6 @@
 #include "chrome/common/notification_type.h"
 #include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "webkit/glue/form_field.h"
 
 using base::Time;
@@ -106,11 +105,7 @@ class WebDataServiceTest : public testing::Test {
                        const string16& value,
                        std::vector<webkit_glue::FormField>* form_fields) {
     form_fields->push_back(
-        webkit_glue::FormField(string16(),
-                               name,
-                               value,
-                               string16(),
-                               WebKit::WebInputElement::Text));
+        webkit_glue::FormField(string16(), name, string16(), value));
   }
 
   MessageLoopForUI message_loop_;
