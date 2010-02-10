@@ -188,26 +188,14 @@ RegisterList LoadMultiple::immediate_addressing_defs(
 
 
 SafetyLevel VectorLoad::safety(Instruction i) const {
-  /*
-   * The vector addressing mode uses PC and SP as fake registers to indicate
-   * no displacement and no-displacement-post-increment, respectively.
-   */
-  Register displacement = i.reg(3, 0);
-  if (displacement != kRegisterPc && displacement != kRegisterStack) {
-    return FORBIDDEN_OPERANDS;
-  }
   if (defs(i)[kRegisterPc]) return FORBIDDEN_OPERANDS;
 
   return MAY_BE_SAFE;
 }
 
 RegisterList VectorLoad::defs(Instruction i) const {
-  return immediate_addressing_defs(i);
-}
-
-RegisterList VectorLoad::immediate_addressing_defs(Instruction i) const {
-  // Rm == SP indicates post-increment addressing.
-  if (i.reg(3, 0) == kRegisterStack) {
+  // Rm == PC indicates no address writeback.  Otherwise Rn is affected.
+  if (i.reg(3, 0) != kRegisterPc) {
     return i.reg(19, 16);
   }
 
@@ -216,26 +204,14 @@ RegisterList VectorLoad::immediate_addressing_defs(Instruction i) const {
 
 
 SafetyLevel VectorStore::safety(Instruction i) const {
-  /*
-   * The vector addressing mode uses PC and SP as fake registers to indicate
-   * no displacement and no-displacement-post-increment, respectively.
-   */
-  Register displacement = i.reg(3, 0);
-  if (displacement != kRegisterPc && displacement != kRegisterStack) {
-    return FORBIDDEN_OPERANDS;
-  }
   if (defs(i)[kRegisterPc]) return FORBIDDEN_OPERANDS;
 
   return MAY_BE_SAFE;
 }
 
 RegisterList VectorStore::defs(Instruction i) const {
-  return immediate_addressing_defs(i);
-}
-
-RegisterList VectorStore::immediate_addressing_defs(Instruction i) const {
-  // Rm == SP indicates post-increment addressing.
-  if (i.reg(3, 0) == kRegisterStack) {
+  // Rm == PC indicates no address writeback.  Otherwise Rn is affected.
+  if (i.reg(3, 0) != kRegisterPc) {
     return base_address_register(i);
   }
 

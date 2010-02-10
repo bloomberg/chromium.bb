@@ -14,3 +14,13 @@ _start:
 
   bic r0, r0, #0xC0000000           @ r0 is masked here, so
   vst1.16 {d10-d12}, [r0]           @ this should succeed.
+
+  nop
+
+
+  bic r0, r0, #0xC0000000           @ r0 is masked here, so
+  vst1.8 {d0}, [r0, :64], r1        @ register postincrement should succeed
+
+  bic r0, r0, #0xC0000000           @ r0 is masked here, but
+  vst1.8 {d0}, [sp, :64], r1        @ SP+register should fail.
+  nop
