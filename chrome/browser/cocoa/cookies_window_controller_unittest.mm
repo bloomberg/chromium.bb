@@ -445,7 +445,13 @@ TEST_F(CookiesWindowControllerTest, ClearBrowsingData) {
   [mock verify];
 }
 
-TEST_F(CookiesWindowControllerTest, RemoveButtonEnabled) {
+// This test has been flaky under Valgrind and turns the bot red since r38504.
+// Under Mac Tests 10.5, it occasionally reports:
+//   malloc: *** error for object 0x31e0468: Non-aligned pointer being freed
+//   *** set a breakpoint in malloc_error_break to debug
+// Attempts to reproduce locally were not successful. This code is likely
+// changing in the future, so it's marked flaky for now. http://crbug.com/35327
+TEST_F(CookiesWindowControllerTest, FLAKY_RemoveButtonEnabled) {
   const GURL url = GURL("http://foo.com");
   TestingProfile* profile = browser_helper_.profile();
   net::CookieMonster* cm = profile->GetCookieMonster();
