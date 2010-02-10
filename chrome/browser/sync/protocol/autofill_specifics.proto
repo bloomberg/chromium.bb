@@ -14,8 +14,8 @@ import "sync.proto";
 
 // Properties of autofill sync objects.
 message AutofillSpecifics {
-  required string name = 1;
-  required string value = 2;
+  optional string autofill_name = 1;
+  optional string value = 2;
   repeated int64 usage_timestamp = 3;
 }
 
