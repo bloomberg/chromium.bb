@@ -36,14 +36,19 @@ class ExtensionPopupGtk : public NotificationObserver,
   virtual void InfoBubbleClosing(InfoBubbleGtk* bubble,
                                  bool closed_by_escape);
 
- private:
-  // Shows the popup widget. Called after loading completes.
-  void ShowPopup();
-
   // Destroys the popup widget. This will in turn destroy us since we delete
   // ourselves when the info bubble closes. Returns true if we successfully
   // closed the bubble.
   bool DestroyPopup();
+
+  // Get the currently showing extension popup, or NULL.
+  static ExtensionPopupGtk* get_current_extension_popup() {
+    return current_extension_popup_;
+  }
+
+ private:
+  // Shows the popup widget. Called after loading completes.
+  void ShowPopup();
 
   Browser* browser_;
 
@@ -58,12 +63,9 @@ class ExtensionPopupGtk : public NotificationObserver,
 
   NotificationRegistrar registrar_;
 
-  // Used for testing. ---------------------------------------------------------
-  static ExtensionPopupGtk* get_current_extension_popup() {
-    return current_extension_popup_;
-  }
   static ExtensionPopupGtk* current_extension_popup_;
 
+  // Used for testing. ---------------------------------------------------------
   gfx::Rect GetViewBounds();
 
   friend class BrowserActionTestUtil;

@@ -66,6 +66,9 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer {
   // to show.
   void UpdateVisibility();
 
+  // Hide the extension popup, if any.
+  void HidePopup();
+
   // ExtensionToolbarModel::Observer implementation.
   virtual void BrowserActionAdded(Extension* extension, int index);
   virtual void BrowserActionRemoved(Extension* extension);
@@ -100,6 +103,20 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer {
   gboolean OnDragFailed(GtkWidget* widget,
                         GdkDragContext* drag_context,
                         GtkDragResult result);
+
+  static void OnHierarchyChangedThunk(GtkWidget* widget,
+                                      GtkWidget* previous_toplevel,
+                                      BrowserActionsToolbarGtk* toolbar) {
+    toolbar->OnHierarchyChanged();
+  }
+  void OnHierarchyChanged();
+
+  static void OnSetFocusThunk(GtkWindow* window,
+                              GtkWidget* widget,
+                              BrowserActionsToolbarGtk* toolbar) {
+    toolbar->OnSetFocus();
+  }
+  void OnSetFocus();
 
   Browser* browser_;
 

@@ -277,9 +277,20 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
   model_->AddObserver(this);
   SetupDrags();
   CreateAllButtons();
+
+  // We want to connect to "set-focus" on the toplevel window; we have to wait
+  // until we are added to a toplevel window to do so.
+  g_signal_connect(widget(), "hierarchy-changed",
+                   G_CALLBACK(OnHierarchyChangedThunk), this);
 }
 
 BrowserActionsToolbarGtk::~BrowserActionsToolbarGtk() {
+  GtkWidget* toplevel = gtk_widget_get_toplevel(widget());
+  if (toplevel) {
+    g_signal_handlers_disconnect_by_func(
+        toplevel, reinterpret_cast<gpointer>(OnSetFocusThunk), this);
+  }
+
   if (model_)
     model_->RemoveObserver(this);
   hbox_.Destroy();
@@ -363,6 +374,12 @@ void BrowserActionsToolbarGtk::UpdateVisibility() {
     gtk_widget_show(widget());
 }
 
+void BrowserActionsToolbarGtk::HidePopup() {
+  ExtensionPopupGtk* popup = ExtensionPopupGtk::get_current_extension_popup();
+  if (popup)
+    popup->DestroyPopup();
+}
+
 void BrowserActionsToolbarGtk::BrowserActionAdded(Extension* extension,
                                                   int index) {
   CreateButtonForExtension(extension, index);
@@ -438,4 +455,17 @@ gboolean BrowserActionsToolbarGtk::OnDragFailed(GtkWidget* widget,
   // does not show, and the drag-end signal is emitted immediately instead of
   // several seconds later.
   return TRUE;
+}
+
+void BrowserActionsToolbarGtk::OnHierarchyChanged() {
+  GtkWidget* toplevel = gtk_widget_get_toplevel(widget());
+  if (!GTK_WIDGET_TOPLEVEL(toplevel))
+    return;
+
+  g_signal_connect(toplevel, "set-focus", G_CALLBACK(OnSetFocusThunk), this);
+}
+
+void BrowserActionsToolbarGtk::OnSetFocus() {
+  // The focus of the parent window has changed. Close the popup.
+  HidePopup();
 }
