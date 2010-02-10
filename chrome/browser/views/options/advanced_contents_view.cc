@@ -262,7 +262,7 @@ class AdvancedSection : public OptionsPageView {
                        bool control_stretches,  // Whether or not the control
                                                 // expands to fill the width.
                        int id,
-                       bool related_follows);
+                       int trailing_space);
   void AddLeadingControl(views::GridLayout* layout,
                          views::View* control,
                          int id,
@@ -377,7 +377,8 @@ void AdvancedSection::AddLabeledTwoColumnRow(views::GridLayout* layout,
                                              bool related_follows) {
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   AddTwoColumnRow(layout, label, control, control_stretches, id,
-                  related_follows);
+      related_follows ?
+          kRelatedControlVerticalSpacing : kUnrelatedControlVerticalSpacing);
 }
 
 void AdvancedSection::AddTwoColumnRow(views::GridLayout* layout,
@@ -385,7 +386,7 @@ void AdvancedSection::AddTwoColumnRow(views::GridLayout* layout,
                                       views::View* second,
                                       bool control_stretches,
                                       int id,
-                                      bool related_follows) {
+                                      int trailing_space) {
   layout->StartRow(0, id);
   layout->AddView(first);
   if (control_stretches) {
@@ -394,7 +395,7 @@ void AdvancedSection::AddTwoColumnRow(views::GridLayout* layout,
     layout->AddView(second, 1, 1, views::GridLayout::LEADING,
                     views::GridLayout::CENTER);
   }
-  AddSpacing(layout, related_follows);
+  layout->AddPaddingRow(0, trailing_space);
 }
 
 void AdvancedSection::AddLeadingControl(views::GridLayout* layout,
@@ -631,7 +632,7 @@ void PrivacySection::InitControlLayout() {
   AddIndentedColumnSet(layout, indented_column_set_id);
 
   AddTwoColumnRow(layout, content_settings_button_, clear_data_button_, false,
-                  leading_column_set_id, false);
+                  leading_column_set_id, kUnrelatedControlLargeVerticalSpacing);
 
   // The description label at the top and label.
   section_description_label_->SetMultiLine(true);
@@ -639,24 +640,25 @@ void PrivacySection::InitControlLayout() {
                        single_column_view_set_id, true);
   // Learn more link.
   AddLeadingControl(layout, learn_more_link_,
-                    single_column_view_set_id, false);
+                    single_column_view_set_id, true);
 
   // Link doctor.
   AddWrappingCheckboxRow(layout, enable_link_doctor_checkbox_,
-                         single_column_view_set_id, false);
+                         indented_view_set_id, true);
   // Use Suggest service.
   AddWrappingCheckboxRow(layout, enable_suggest_checkbox_,
-                         single_column_view_set_id, false);
+                         indented_view_set_id, true);
   // DNS pre-fetching.
   AddWrappingCheckboxRow(layout, enable_dns_prefetching_checkbox_,
-                         single_column_view_set_id, false);
+                         indented_view_set_id, true);
   // Safe browsing controls.
   AddWrappingCheckboxRow(layout, enable_safe_browsing_checkbox_,
-                         single_column_view_set_id, false);
+                         indented_view_set_id,
+                         reporting_enabled_checkbox_ != NULL);
   // The "Help make Google Chrome better" checkbox.
   if (reporting_enabled_checkbox_) {
-    AddLeadingControl(layout, reporting_enabled_checkbox_,
-                      single_column_view_set_id, false);
+    AddLeadingControl(layout, reporting_enabled_checkbox_, indented_view_set_id,
+                      false);
   }
 
   // Init member prefs so we can update the controls if prefs change.
