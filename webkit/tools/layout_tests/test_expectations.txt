@@ -2923,7 +2923,6 @@ BUG_TONY WIN : svg/W3C-SVG-1.1/text-intro-05-t.svg = TEXT
 BUG_TONY WIN : svg/batik/text/textFeatures.svg = TEXT
 BUG_TONY WIN : svg/text/text-intro-05-t.svg = TEXT
 BUG_TONY MAC : svg/custom/use-clipped-hit.svg = IMAGE
-BUG_TONY MAC : svg/text/selection-background-color.xhtml = IMAGE
 
 // WebKit roll 54493 to 54530: new tests.
 BUG35114 : fast/js/parser-syntax-check.html = TEXT
