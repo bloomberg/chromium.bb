@@ -86,15 +86,17 @@ LocationBarViewMac::LocationBarViewMac(
     const BubblePositioner* bubble_positioner,
     CommandUpdater* command_updater,
     ToolbarModel* toolbar_model,
-    Profile* profile)
+    Profile* profile,
+    Browser* browser)
     : edit_view_(new AutocompleteEditViewMac(this, bubble_positioner,
           toolbar_model, profile, command_updater, field)),
       command_updater_(command_updater),
       field_(field),
       disposition_(CURRENT_TAB),
-      security_image_view_(profile, toolbar_model),
+      security_image_view_(this, profile, toolbar_model),
       page_action_views_(this, profile, toolbar_model),
       profile_(profile),
+      browser_(browser),
       toolbar_model_(toolbar_model),
       transition_(PageTransition::TYPED) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
@@ -346,14 +348,14 @@ int LocationBarViewMac::PageActionVisibleCount() {
   return static_cast<int>(page_action_views_.VisibleCount());
 }
 
+TabContents* LocationBarViewMac::GetTabContents() const {
+  return browser_->GetSelectedTabContents();
+}
+
 void LocationBarViewMac::SetPreviewEnabledPageAction(
     ExtensionAction* page_action, bool preview_enabled) {
   DCHECK(page_action);
-  Browser* browser = BrowserList::GetLastActive();
-  // GetLastActive returns NULL in current unit testing.
-  if (!browser)
-    return;
-  TabContents* contents = browser->GetSelectedTabContents();
+  TabContents* contents = GetTabContents();
   if (!contents)
     return;
   page_action_views_.RefreshViews();
@@ -476,8 +478,7 @@ void LocationBarViewMac::Observe(NotificationType type,
                                  const NotificationDetails& details) {
   switch (type.value) {
     case NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED: {
-      TabContents* contents =
-          BrowserList::GetLastActive()->GetSelectedTabContents();
+      TabContents* contents = GetTabContents();
       if (Details<TabContents>(contents) != details)
         return;
 
@@ -534,10 +535,12 @@ void LocationBarViewMac::LocationBarImageView::SetVisible(bool visible) {
 // SecurityImageView------------------------------------------------------------
 
 LocationBarViewMac::SecurityImageView::SecurityImageView(
+    LocationBarViewMac* owner,
     Profile* profile,
     ToolbarModel* model)
     : lock_icon_(nil),
       warning_icon_(nil),
+      owner_(owner),
       profile_(profile),
       model_(model) {}
 
@@ -566,7 +569,7 @@ void LocationBarViewMac::SecurityImageView::SetImageShown(Image image) {
 }
 
 bool LocationBarViewMac::SecurityImageView::OnMousePressed() {
-  TabContents* tab = BrowserList::GetLastActive()->GetSelectedTabContents();
+  TabContents* tab = owner_->GetTabContents();
   NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
   if (!nav_entry) {
     NOTREACHED();
@@ -814,12 +817,7 @@ void LocationBarViewMac::PageActionViewList::RefreshViews() {
   if (views_.empty())
     return;
 
-  Browser* browser = BrowserList::GetLastActive();
-  // The last-active browser can be NULL during startup.
-  if (!browser)
-    return;
-
-  TabContents* contents = browser->GetSelectedTabContents();
+  TabContents* contents = owner_->GetTabContents();
   if (!contents)
     return;
 

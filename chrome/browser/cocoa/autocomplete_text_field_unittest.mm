@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -22,8 +22,10 @@ using ::testing::StrictMock;
 namespace {
 class MockSecurityImageView : public LocationBarViewMac::SecurityImageView {
  public:
-  MockSecurityImageView(Profile* profile, ToolbarModel* model)
-      : LocationBarViewMac::SecurityImageView(profile, model) {}
+  MockSecurityImageView(LocationBarViewMac* owner,
+                        Profile* profile,
+                        ToolbarModel* model)
+      : LocationBarViewMac::SecurityImageView(owner, profile, model) {}
 
   MOCK_METHOD0(OnMousePressed, bool());
 };
@@ -573,7 +575,7 @@ TEST_F(AutocompleteTextFieldTest, TripleClickSelectsAll) {
 TEST_F(AutocompleteTextFieldObserverTest, SecurityIconMouseDown) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
 
-  MockSecurityImageView security_image_view(NULL, NULL);
+  MockSecurityImageView security_image_view(NULL, NULL, NULL);
   [cell setSecurityImageView:&security_image_view];
   security_image_view.SetImageShown(
       LocationBarViewMac::SecurityImageView::LOCK);
@@ -591,7 +593,7 @@ TEST_F(AutocompleteTextFieldObserverTest, SecurityIconMouseDown) {
 TEST_F(AutocompleteTextFieldObserverTest, PageActionMouseDown) {
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
 
-  MockSecurityImageView security_image_view(NULL, NULL);
+  MockSecurityImageView security_image_view(NULL, NULL, NULL);
   security_image_view.SetImageShown(
       LocationBarViewMac::SecurityImageView::LOCK);
   [cell setSecurityImageView:&security_image_view];

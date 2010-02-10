@@ -40,7 +40,8 @@ class LocationBarViewMac : public AutocompleteEditController,
                      const BubblePositioner* bubble_positioner,
                      CommandUpdater* command_updater,
                      ToolbarModel* toolbar_model,
-                     Profile* profile);
+                     Profile* profile,
+                     Browser* browser);
   virtual ~LocationBarViewMac();
 
   // Overridden from LocationBar:
@@ -73,6 +74,9 @@ class LocationBarViewMac : public AutocompleteEditController,
   // security style, and if |should_restore_state| is true, restores
   // saved state from the tab (for tab switching).
   void Update(const TabContents* tab, bool should_restore_state);
+
+  // Returns the current TabContents.
+  TabContents* GetTabContents() const;
 
   // Sets preview_enabled_ for the PageActionImageView associated with this
   // |page_action|. If |preview_enabled|, the location bar will display the
@@ -166,7 +170,9 @@ class LocationBarViewMac : public AutocompleteEditController,
       WARNING
     };
 
-    SecurityImageView(Profile* profile, ToolbarModel* model);
+    SecurityImageView(LocationBarViewMac* owner,
+                      Profile* profile,
+                      ToolbarModel* model);
     virtual ~SecurityImageView();
 
     // Sets the image to the appropriate icon.
@@ -183,6 +189,9 @@ class LocationBarViewMac : public AutocompleteEditController,
     // The warning icon shown when HTTPS is broken. Loaded lazily, the first
     // time it's needed.
     scoped_nsobject<NSImage> warning_icon_;
+
+    // The location bar view that owns us.
+    LocationBarViewMac* owner_;
 
     Profile* profile_;
     ToolbarModel* model_;
@@ -353,6 +362,8 @@ class LocationBarViewMac : public AutocompleteEditController,
   PageActionViewList page_action_views_;
 
   Profile* profile_;
+
+  Browser* browser_;
 
   ToolbarModel* toolbar_model_;  // Weak, owned by Browser.
 

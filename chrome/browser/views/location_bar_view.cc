@@ -137,7 +137,7 @@ LocationBarView::LocationBarView(Profile* profile,
       selected_keyword_view_(profile),
       keyword_hint_view_(profile),
       type_to_search_view_(l10n_util::GetString(IDS_OMNIBOX_EMPTY_TEXT)),
-      security_image_view_(profile, model, bubble_positioner),
+      security_image_view_(this, profile, model, bubble_positioner),
       popup_window_mode_(popup_window_mode),
       first_run_bubble_(this),
       bubble_positioner_(bubble_positioner) {
@@ -1282,10 +1282,12 @@ SkBitmap* LocationBarView::
     ContentBlockedImageView::icons_[CONTENT_SETTINGS_NUM_TYPES] = { NULL };
 
 LocationBarView::SecurityImageView::SecurityImageView(
+    const LocationBarView* parent,
     Profile* profile,
     ToolbarModel* model,
     const BubblePositioner* bubble_positioner)
     : LocationBarImageView(bubble_positioner),
+      parent_(parent),
       profile_(profile),
       model_(model) {
   if (!lock_icon_) {
@@ -1315,7 +1317,7 @@ void LocationBarView::SecurityImageView::SetImageShown(Image image) {
 
 bool LocationBarView::SecurityImageView::OnMousePressed(
     const views::MouseEvent& event) {
-  TabContents* tab = BrowserList::GetLastActive()->GetSelectedTabContents();
+  TabContents* tab = parent_->GetTabContents();
   NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
   if (!nav_entry) {
     NOTREACHED();

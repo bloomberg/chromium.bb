@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -43,7 +43,7 @@ class TestPageActionViewList : public LocationBarViewMac::PageActionViewList {
 
 class AutocompleteTextFieldCellTest : public CocoaTest {
  public:
-  AutocompleteTextFieldCellTest() : security_image_view_(NULL, NULL),
+  AutocompleteTextFieldCellTest() : security_image_view_(NULL, NULL, NULL),
                                     page_action_views_() {
     // Make sure this is wide enough to play games with the cell
     // decorations.

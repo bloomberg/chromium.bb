@@ -360,6 +360,9 @@ void LocationBarViewGtk::SetProfile(Profile* profile) {
   profile_ = profile;
 }
 
+TabContents* LocationBarViewGtk::GetTabContents() const {
+  return browser_->GetSelectedTabContents();
+}
 
 void LocationBarViewGtk::SetPreviewEnabledPageAction(
     ExtensionAction *page_action,
@@ -534,7 +537,7 @@ void LocationBarViewGtk::FocusSearch() {
 }
 
 void LocationBarViewGtk::UpdateContentBlockedIcons() {
-  const TabContents* tab_contents = browser_->GetSelectedTabContents();
+  const TabContents* tab_contents = GetTabContents();
   for (ScopedVector<ContentBlockedViewGtk>::iterator i(
            content_blocked_views_.begin());
        i != content_blocked_views_.end(); ++i) {
@@ -572,7 +575,7 @@ void LocationBarViewGtk::UpdatePageActions() {
         NotificationService::NoDetails());
   }
 
-  TabContents* contents = browser_->GetSelectedTabContents();
+  TabContents* contents = GetTabContents();
   if (!page_action_views_.empty() && contents) {
     GURL url = GURL(WideToUTF8(toolbar_model_->GetText()));
 
@@ -844,7 +847,7 @@ gboolean LocationBarViewGtk::OnSecurityIconPressed(
     GtkWidget* sender,
     GdkEventButton* event,
     LocationBarViewGtk* location_bar) {
-  TabContents* tab = BrowserList::GetLastActive()->GetSelectedTabContents();
+  TabContents* tab = location_bar->GetTabContents();
   NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
   if (!nav_entry) {
     NOTREACHED();
@@ -1004,8 +1007,7 @@ gboolean LocationBarViewGtk::ContentBlockedViewGtk::OnButtonPressed(
   gfx::Rect bounds =
       gtk_util::GetWidgetRectRelativeToToplevel(sender);
 
-  TabContents* tab_contents =
-      BrowserList::GetLastActive()->GetSelectedTabContents();
+  TabContents* tab_contents = parent_->GetTabContents();
   if (!tab_contents)
     return true;
   GURL url = tab_contents->GetURL();
@@ -1226,7 +1228,7 @@ gboolean LocationBarViewGtk::PageActionViewGtk::OnButtonPressed(
 
 gboolean LocationBarViewGtk::PageActionViewGtk::OnExposeEvent(
     GtkWidget* widget, GdkEventExpose* event) {
-  TabContents* contents = owner_->browser_->GetSelectedTabContents();
+  TabContents* contents = owner_->GetTabContents();
   if (!contents)
     return FALSE;
 

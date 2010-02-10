@@ -102,8 +102,7 @@ class LocationBarView : public LocationBar,
   void SetProfile(Profile* profile);
   Profile* profile() { return profile_; }
 
-  // Returns the current TabContents.  This should only be used by the
-  // ContentBlockedImageView.
+  // Returns the current TabContents.
   TabContents* GetTabContents() const;
 
   // Sets |preview_enabled| for the PageAction View associated with this
@@ -328,7 +327,8 @@ class LocationBarView : public LocationBar,
       WARNING
     };
 
-    SecurityImageView(Profile* profile,
+    SecurityImageView(const LocationBarView* parent,
+                      Profile* profile,
                       ToolbarModel* model_,
                       const BubblePositioner* bubble_positioner);
     virtual ~SecurityImageView();
@@ -353,6 +353,9 @@ class LocationBarView : public LocationBar,
     // A task used to display the info bubble when the mouse hovers on the
     // image.
     ShowInfoBubbleTask* show_info_bubble_task_;
+
+    // The owning LocationBarView.
+    const LocationBarView* parent_;
 
     Profile* profile_;
 

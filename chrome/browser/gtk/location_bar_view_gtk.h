@@ -58,6 +58,9 @@ class LocationBarViewGtk : public AutocompleteEditController,
   // Returns the widget the caller should host.  You must call Init() first.
   GtkWidget* widget() { return hbox_.get(); }
 
+  // Returns the current TabContents.
+  TabContents* GetTabContents() const;
+
   // Sets |preview_enabled| for the PageActionViewGtk associated with this
   // |page_action|. If |preview_enabled| is true, the view will display the
   // page action's icon even though it has not been activated by the extension.
