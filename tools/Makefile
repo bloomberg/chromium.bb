@@ -526,11 +526,13 @@ ifeq ($(PLATFORM), Cygwin)
 	for exe in $(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)-*.exe ; do \
 	  if ! cmp redirector.exe "$$exe" > /dev/null ; then \
 	    mv -f "$$exe" $(DESTDIR)$(SDKROOT)/libexec/"`basename $$exe`" ; \
-	    cp -af redirector.exe "$$exe" ; \
+	    echo "The next command can hang on FAT partiton; use NTFS!" ; \
+	    ln -fn redirector.exe "$$exe" ; \
 	  fi ; \
 	done && \
 	for exe in $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/*.exe ; do \
-	  cp -af redirector.exe $$exe ; \
+	  echo "The next command can hang on FAT partiton; use NTFS!" ; \
+	  ln -fn redirector.exe $$exe ; \
 	done
 else
 	for exe in $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/* ; do \
