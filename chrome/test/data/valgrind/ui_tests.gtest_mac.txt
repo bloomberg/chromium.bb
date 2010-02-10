@@ -76,3 +76,4 @@ NPAPIVisiblePluginTester.PluginConvertPointTest
 WorkerTest.MultipleTabsQueuedSharedWorker
 WorkerTest.QueuedSharedWorkerStartedFromOtherTab
 WorkerTest.QueuedSharedWorkerShutdown
+WorkerTest.WorkerClose
