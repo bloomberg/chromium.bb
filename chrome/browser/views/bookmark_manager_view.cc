@@ -242,7 +242,7 @@ BookmarkManagerView::BookmarkManagerView(Profile* profile)
   if (!bookmark_model->IsLoaded())
     bookmark_model->AddObserver(this);
 
-  if (profile->GetProfileSyncService()) {
+  if (profile_->GetProfileSyncService()) {
     sync_service_ = profile_->GetProfileSyncService();
     sync_service_->AddObserver(this);
     UpdateSyncStatus();
