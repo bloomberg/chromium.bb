@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -401,6 +401,7 @@ TEST(URLFixerUpperTest, FixupRelativeFile) {
   FilePath file_part(FILE_PATH_LITERAL("url_fixer_upper_existing_file.txt"));
   ASSERT_TRUE(PathService::Get(chrome::DIR_APP, &dir));
   ASSERT_TRUE(MakeTempFile(dir, file_part, &full_path));
+  ASSERT_TRUE(file_util::AbsolutePath(&full_path));
 
   // make sure we pass through good URLs
   std::string fixedup;
@@ -437,6 +438,7 @@ TEST(URLFixerUpperTest, FixupRelativeFile) {
   FilePath new_dir = dir.Append(sub_dir);
   file_util::CreateDirectory(new_dir);
   ASSERT_TRUE(MakeTempFile(new_dir, sub_file, &full_path));
+  ASSERT_TRUE(file_util::AbsolutePath(&full_path));
 
   // test file in the subdir
   FilePath relative_file = sub_dir.Append(sub_file);
