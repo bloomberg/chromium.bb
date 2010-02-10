@@ -82,6 +82,9 @@
         {
           'target_name': 'handle_lookup64',
           'type': 'static_library',
+          'variables': {
+            'win_target': 'x64',
+          },
           'sources': [
             'handle_lookup.cc',
             'handle_lookup.h',
@@ -90,12 +93,15 @@
         {
           'target_name': 'browserhandle64',
           'type': 'static_library',
+          'variables': {
+            'win_target': 'x64',
+          },
           'sources': [
             'browser_handle.cc',
             'browser_handle.h',
           ],
           'dependencies': [
-            'handle_lookup',
+            'handle_lookup64',
             '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc64',
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
           ],
@@ -103,6 +109,9 @@
         {
           'target_name': 'ldrhandle64',
           'type': 'static_library',
+          'variables': {
+            'win_target': 'x64',
+          },
           'sources': [
             'ldr_handle.cc',
             'ldr_handle.h',

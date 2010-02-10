@@ -159,5 +159,33 @@
         },
       ],
     }],
+    ['nacl_standalone==0 and OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'npGoogleNaClPluginChrome64',
+          'type': 'static_library',
+          'variables': {
+            'win_target': 'x64',
+          },
+          'sources': [
+            '<@(common_sources)',
+            'nacl_entry_points.cc',
+            'srpc/video_chrome.cc',
+          ],
+          'dependencies': [
+            '<(DEPTH)/native_client/src/shared/npruntime/npruntime.gyp:google_nacl_npruntime64',
+            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
+            '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util_chrome64',
+            '<(DEPTH)/native_client/src/trusted/service_runtime/service_runtime.gyp:expiration64',
+            '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
+          ],
+          'configurations': {
+            'Common_Base': {
+              'msvs_target_platform': 'x64',
+            },
+          },
+        }
+      ],
+    }],
   ],
 }
