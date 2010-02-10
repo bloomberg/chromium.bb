@@ -2931,3 +2931,10 @@ BUG35115 : plugins/netscape-plugin-property-access-exception.html = TEXT
 // WebKit roll 54530 to 54550
 BUG_TONY MAC : fast/dom/clone-node-dynamic-style.html = IMAGE
 BUG35215 : printing/numberOfPages.html = TEXT
+
+// WebKit roll 54550 to 54559
+BUG_TONY MAC : svg/overflow/overflow-on-outermost-svg-element-defaults.svg = IMAGE
+BUG_TONY MAC : svg/overflow/overflow-on-outermost-svg-element-ignore-attribute-1.svg = IMAGE
+BUG_TONY MAC : svg/overflow/overflow-on-outermost-svg-element-ignore-attribute-2.svg = IMAGE
+BUG_TONY MAC : svg/overflow/overflow-on-outermost-svg-element-ignore-attribute-3.svg = IMAGE
+BUG_TONY MAC : svg/overflow/overflow-on-outermost-svg-element-in-xhtml-defaults.xhtml = IMAGE
