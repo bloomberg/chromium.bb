@@ -388,6 +388,11 @@ class HostResolverTraceSubSection : public SubSection {
     scoped_refptr<net::LoadLog> log = resolver->GetRequestsTrace();
 
     if (log) {
+      out->append(
+          "<p>To make sense of this trace, process it with the Python script "
+          "formatter.py at "
+          "<a href='http://src.chromium.org/viewvc/chrome/trunk/src/net/tools/"
+          "dns_trace_formatter/'>net/tools/dns_trace_formatter</a></p>");
       OutputTextInPre(net::LoadLogUtil::PrettyPrintAsEventTree(log), out);
     } else {
       out->append("<p><i>No trace information, must enable tracing.</i></p>");
