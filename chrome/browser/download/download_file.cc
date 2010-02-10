@@ -128,6 +128,11 @@ bool DownloadFile::Rename(const FilePath& new_path) {
 
   if (!Open())
     return false;
+
+  // Move to the end of the new file.
+  if (file_stream_->Seek(net::FROM_END, 0) < 0)
+    return false;
+
   return true;
 }
 
