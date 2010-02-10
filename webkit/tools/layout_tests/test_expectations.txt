@@ -903,6 +903,7 @@ BUG10286 LINUX : svg/W3C-SVG-1.1/animate-elem-02-t.svg = FAIL
 // Text fails very rarely, 1/200 runs or fewer.
 BUG29737 LINUX DEBUG : svg/W3C-SVG-1.1/filters-light-01-f.svg = TEXT PASS
 BUG29737 MAC : svg/W3C-SVG-1.1/filters-light-01-f.svg = TEXT PASS
+BUG29737 LINUX : svg/W3C-SVG-1.1/filters-specular-01-f.svg = TEXT PASS
 
 // -----------------------------------------------------------------
 // End SVG Regressions
@@ -2888,7 +2889,6 @@ BUG33497 : storage/domstorage/sessionstorage/window-open.html = TEXT
 BUG33538 : fast/dom/Window/anonymous-slot-with-changes.html = TEXT
 
 // WebKit roll 54278 -> 54322
-BUG34546 LINUX : svg/W3C-SVG-1.1/filters-specular-01-f.svg = TEXT
 BUG34546 : fast/loader/document-with-fragment-url-1.html = TIMEOUT
 BUG34546 : fast/loader/document-with-fragment-url-2.html = TIMEOUT
 BUG34546 : fast/loader/document-with-fragment-url-3.html = TIMEOUT
