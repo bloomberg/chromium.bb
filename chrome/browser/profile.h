@@ -51,6 +51,7 @@ class PasswordStore;
 class PersonalDataManager;
 class PrefService;
 class ProfileSyncService;
+class ProfileSyncFactory;
 class SearchVersusNavigateClassifier;
 class SessionService;
 class SpellCheckHost;
@@ -538,6 +539,7 @@ class ProfileImpl : public Profile,
   scoped_refptr<WebResourceService> web_resource_service_;
   scoped_ptr<NTPResourceCache> ntp_resource_cache_;
 
+  scoped_ptr<ProfileSyncFactory> profile_sync_factory_;
   scoped_ptr<ProfileSyncService> sync_service_;
 
   scoped_refptr<ChromeURLRequestContextGetter> request_context_;

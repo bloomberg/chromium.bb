@@ -1,0 +1,86 @@
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_SYNC_GLUE_BOOKMARK_DATA_TYPE_CONTROLLER_H__
+#define CHROME_BROWSER_SYNC_GLUE_BOOKMARK_DATA_TYPE_CONTROLLER_H__
+
+#include "base/basictypes.h"
+#include "base/scoped_ptr.h"
+#include "chrome/browser/sync/glue/data_type_controller.h"
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_observer.h"
+
+class NotificationDetails;
+class NotificationType;
+class NotificationSource;
+class Profile;
+class ProfileSyncService;
+class ProfileSyncFactory;
+
+namespace browser_sync {
+
+class AssociatorInterface;
+class ChangeProcessor;
+
+// A class that manages the startup and shutdown of bookmark sync.
+class BookmarkDataTypeController : public DataTypeController,
+                                   public NotificationObserver {
+ public:
+  BookmarkDataTypeController(
+      ProfileSyncFactory* profile_sync_factory,
+      Profile* profile,
+      ProfileSyncService* sync_service);
+  virtual ~BookmarkDataTypeController();
+
+  // DataTypeController interface.
+  virtual void Start(bool merge_allowed, StartCallback* start_callback);
+
+  virtual void Stop();
+
+  virtual bool enabled() {
+    return true;
+  }
+
+  virtual syncable::ModelType type() {
+    return syncable::BOOKMARKS;
+  }
+
+  virtual browser_sync::ModelSafeGroup model_safe_group() {
+    return browser_sync::GROUP_UI;
+  }
+
+  virtual State state() {
+    return state_;
+  }
+
+  // NotificationObserver interface.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
+
+ private:
+  // Runs model association and change processor registration.
+  void Associate();
+
+  // Helper method to run the stashed start callback with a given result.
+  void FinishStart(StartResult result);
+
+  ProfileSyncFactory* profile_sync_factory_;
+  Profile* profile_;
+  ProfileSyncService* sync_service_;
+
+  State state_;
+  bool merge_allowed_;
+
+  scoped_ptr<StartCallback> start_callback_;
+  scoped_ptr<AssociatorInterface> model_associator_;
+  scoped_ptr<ChangeProcessor> change_processor_;
+  NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(BookmarkDataTypeController);
+};
+
+}  // namespace browser_sync
+
+#endif  // CHROME_BROWSER_SYNC_GLUE_BOOKMARK_DATA_TYPE_CONTROLLER_H__

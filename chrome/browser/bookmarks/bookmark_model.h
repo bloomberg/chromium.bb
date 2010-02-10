@@ -237,7 +237,7 @@ class BookmarkModel : public NotificationObserver, public BookmarkService {
   void SetURL(const BookmarkNode* node, const GURL& url);
 
   // Returns true if the model finished loading.
-  bool IsLoaded() { return loaded_; }
+  virtual bool IsLoaded() { return loaded_; }
 
   // Returns the set of nodes with the specified URL.
   void GetNodesByURL(const GURL& url, std::vector<const BookmarkNode*>* nodes);

@@ -7,28 +7,62 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 #include "base/message_loop.h"
+#include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/string16.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
+#include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
+#include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
 #include "chrome/test/sync/test_http_bridge_factory.h"
 
 using std::vector;
+using browser_sync::AssociatorInterface;
 using browser_sync::BookmarkChangeProcessor;
 using browser_sync::BookmarkModelAssociator;
 using browser_sync::ChangeProcessor;
 using browser_sync::ModelAssociator;
 using browser_sync::SyncBackendHost;
 using browser_sync::TestHttpBridgeFactory;
+
+class TestProfileSyncFactory : public ProfileSyncFactory {
+ public:
+  TestProfileSyncFactory(ProfileSyncService* profile_sync_service,
+                         AssociatorInterface* model_associator,
+                         ChangeProcessor* change_processor)
+      : profile_sync_service_(profile_sync_service),
+        model_associator_(model_associator),
+        change_processor_(change_processor) {}
+  virtual ~TestProfileSyncFactory() {}
+
+  virtual ProfileSyncService* CreateProfileSyncService() {
+    return profile_sync_service_.release();
+  }
+
+  virtual BookmarkComponents CreateBookmarkComponents(
+      ProfileSyncService* service) {
+    return BookmarkComponents(model_associator_.release(),
+                              change_processor_.release());
+  }
+
+ private:
+  scoped_ptr<ProfileSyncService> profile_sync_service_;
+  scoped_ptr<AssociatorInterface> model_associator_;
+  scoped_ptr<ChangeProcessor> change_processor_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestProfileSyncFactory);
+};
 
 class TestModelAssociator : public BookmarkModelAssociator {
  public:
@@ -94,7 +128,6 @@ class TestProfileSyncService : public ProfileSyncService {
   }
 
   virtual void InitializeBackend(bool delete_sync_data_folder) {
-    InstallGlue<TestModelAssociator, BookmarkChangeProcessor>();
     TestHttpBridgeFactory* factory = new TestHttpBridgeFactory();
     TestHttpBridgeFactory* factory2 = new TestHttpBridgeFactory();
     backend()->InitializeForTestMode(L"testuser", factory, factory2,
@@ -111,17 +144,10 @@ class TestProfileSyncService : public ProfileSyncService {
     MessageLoop::current()->Quit();
   }
 
+  // TODO(skrul): how to handle this?
   virtual bool MergeAndSyncAcceptanceNeeded() {
     // Never show the dialog.
     return false;
-  }
-
-  BookmarkChangeProcessor* change_processor() {
-    // TODO(tim): The service should have a way to get specific processors.
-    return static_cast<BookmarkChangeProcessor*>(*processors()->begin());
-  }
-  BookmarkModelAssociator* model_associator() {
-    return associator()->GetImpl<BookmarkModelAssociator>();
   }
 };
 
@@ -278,7 +304,9 @@ class ProfileSyncServiceTest : public testing::Test {
   ProfileSyncServiceTest()
       : ui_thread_(ChromeThread::UI, &message_loop_),
         file_thread_(ChromeThread::FILE, &message_loop_),
-        model_(NULL) {
+        model_(NULL),
+        model_associator_(NULL),
+        change_processor_(NULL) {
     profile_.reset(new TestingProfile());
     profile_->set_has_history_service(true);
   }
@@ -292,18 +320,28 @@ class ProfileSyncServiceTest : public testing::Test {
   }
 
   BookmarkModelAssociator* associator() {
-    DCHECK(service_.get());
-    return service_->model_associator();
+    return model_associator_;
   }
 
   BookmarkChangeProcessor* change_processor() {
-    DCHECK(service_.get());
-    return service_->change_processor();
+    return change_processor_;
   }
 
   void StartSyncService() {
     if (!service_.get()) {
       service_.reset(new TestProfileSyncService(profile_.get()));
+
+      // Register the bookmark data type.
+      model_associator_ = new TestModelAssociator(service_.get());
+      change_processor_ = new BookmarkChangeProcessor(model_associator_,
+                                                      service_.get());
+      factory_.reset(new TestProfileSyncFactory(NULL,
+                                                model_associator_,
+                                                change_processor_));
+      service_->RegisterDataTypeController(
+          new browser_sync::BookmarkDataTypeController(factory_.get(),
+                                                       profile_.get(),
+                                                       service_.get()));
       service_->Initialize();
     }
     // The service may have already started sync automatically if it's already
@@ -483,7 +521,10 @@ class ProfileSyncServiceTest : public testing::Test {
 
   scoped_ptr<TestProfileSyncService> service_;
   scoped_ptr<TestingProfile> profile_;
+  scoped_ptr<TestProfileSyncFactory> factory_;
   BookmarkModel* model_;
+  TestModelAssociator* model_associator_;
+  BookmarkChangeProcessor* change_processor_;
 };
 
 TEST_F(ProfileSyncServiceTest, InitialState) {
@@ -740,6 +781,7 @@ TEST_F(ProfileSyncServiceTest, DISABLED_ServerChangeWithInvalidURL) {
   ExpectModelMatch();
 }
 
+
 // Test strings that might pose a problem if the titles ever became used as
 // file names in the sync backend.
 TEST_F(ProfileSyncServiceTest, CornerCaseNames) {
@@ -841,18 +883,15 @@ TEST_F(ProfileSyncServiceTest, UnrecoverableErrorSuspendsService) {
   EXPECT_TRUE(service_->ShouldPushChanges());
 
   // Add a child to the inconsistent node.  This should cause detection of the
-  // problem.
-  const BookmarkNode* nested = model_->AddGroup(node, 0, L"nested");
+  // problem and the syncer should stop processing changes.
+  model_->AddGroup(node, 0, L"nested");
   EXPECT_FALSE(service_->ShouldPushChanges());
-  ExpectSyncerNodeUnknown(nested);
 
   // Try to add a node under a totally different parent.  This should also
   // fail -- the ProfileSyncService should stop processing changes after
   // encountering a consistency violation.
-  const BookmarkNode* unrelated = model_->AddGroup(
-      model_->GetBookmarkBarNode(), 0, L"unrelated");
+  model_->AddGroup(model_->GetBookmarkBarNode(), 0, L"unrelated");
   EXPECT_FALSE(service_->ShouldPushChanges());
-  ExpectSyncerNodeUnknown(unrelated);
 
   // TODO(ncarter): We ought to test the ProfileSyncService state machine
   // directly here once that's formalized and exposed.
@@ -1327,6 +1366,7 @@ TEST_F(ProfileSyncServiceTestWithData, RecoverAfterDeletingSyncDataDirectory) {
 
 // Make sure that things still work if sync is not enabled, but some old sync
 // databases are lingering in the "Sync Data" folder.
+
 TEST_F(ProfileSyncServiceTestWithData, MAYBE_TestStartupWithOldSyncData) {
   const char* nonsense1 = "reginald";
   const char* nonsense2 = "beartato";
@@ -1345,6 +1385,18 @@ TEST_F(ProfileSyncServiceTestWithData, MAYBE_TestStartupWithOldSyncData) {
   if (!service_.get()) {
     service_.reset(new TestProfileSyncService(profile_.get()));
     profile_->GetPrefs()->SetBoolean(prefs::kSyncHasSetupCompleted, false);
+
+    model_associator_ = new TestModelAssociator(service_.get());
+    change_processor_ = new BookmarkChangeProcessor(model_associator_,
+                                                    service_.get());
+    factory_.reset(new TestProfileSyncFactory(NULL,
+                                              model_associator_,
+                                              change_processor_));
+    service_->RegisterDataTypeController(
+        new browser_sync::BookmarkDataTypeController(factory_.get(),
+                                                     profile_.get(),
+                                                     service_.get()));
+
     service_->Initialize(); // will call disableForUser because sync setup
                             // hasn't been completed.
   }

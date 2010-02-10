@@ -1,0 +1,23 @@
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
+#ifndef CHROME_BROWSER_SYNC_GLUE_MODEL_ASSOCIATOR_MOCK_H__
+#define CHROME_BROWSER_SYNC_GLUE_MODEL_ASSOCIATOR_MOCK_H__
+
+#include "chrome/browser/sync/glue/model_associator.h"
+#include "testing/gmock/include/gmock/gmock.h"
+
+namespace browser_sync {
+
+class ModelAssociatorMock : public AssociatorInterface {
+ public:
+  MOCK_METHOD0(AssociateModels, bool());
+  MOCK_METHOD0(DisassociateModels, bool());
+  MOCK_METHOD0(SyncModelHasUserCreatedNodes, bool());
+  MOCK_METHOD0(ChromeModelHasUserCreatedNodes, bool());
+};
+
+}  // namespace browser_sync
+
+#endif  // CHROME_BROWSER_SYNC_GLUE_MODEL_ASSOCIATOR_MOCK_H__

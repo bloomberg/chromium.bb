@@ -46,6 +46,7 @@
 #include "chrome/browser/sessions/tab_restore_service.h"
 #include "chrome/browser/ssl/ssl_host_state.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_factory_impl.h"
 #include "chrome/browser/thumbnail_store.h"
 #include "chrome/browser/visitedlink_master.h"
 #include "chrome/browser/visitedlink_event_listener.h"
@@ -1317,6 +1318,10 @@ ProfileSyncService* ProfileImpl::GetProfileSyncService() {
 }
 
 void ProfileImpl::InitSyncService() {
-  sync_service_.reset(new ProfileSyncService(this));
+  profile_sync_factory_.reset(
+      new ProfileSyncFactoryImpl(this,
+                                 CommandLine::ForCurrentProcess()));
+  sync_service_.reset(
+      profile_sync_factory_->CreateProfileSyncService());
   sync_service_->Initialize();
 }

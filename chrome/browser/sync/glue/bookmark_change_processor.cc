@@ -18,10 +18,11 @@
 namespace browser_sync {
 
 BookmarkChangeProcessor::BookmarkChangeProcessor(
+    BookmarkModelAssociator* model_associator,
     UnrecoverableErrorHandler* error_handler)
     : ChangeProcessor(error_handler),
       bookmark_model_(NULL),
-      model_associator_(NULL) {
+      model_associator_(model_associator) {
 }
 
 void BookmarkChangeProcessor::StartImpl(Profile* profile) {

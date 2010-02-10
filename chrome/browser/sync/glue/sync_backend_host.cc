@@ -8,6 +8,7 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/sync/glue/change_processor.h"
+#include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
 #include "webkit/glue/webkit_glue.h"
@@ -23,12 +24,10 @@ typedef GoogleServiceAuthError AuthError;
 namespace browser_sync {
 
 SyncBackendHost::SyncBackendHost(SyncFrontend* frontend,
-                                 const FilePath& profile_path,
-                                 std::set<ChangeProcessor*> processors)
+                                 const FilePath& profile_path)
     : core_thread_("Chrome_SyncCoreThread"),
       frontend_loop_(MessageLoop::current()),
       frontend_(frontend),
-      processors_(processors),
       sync_data_folder_path_(profile_path.Append(kSyncDataFolderName)),
       last_auth_error_(AuthError::None()) {
 
@@ -62,7 +61,6 @@ void SyncBackendHost::Initialize(
   // when a new type is synced as the worker may already exist and you just
   // need to update routing_info_.
   registrar_.workers[GROUP_UI] = new UIModelWorker(frontend_loop_);
-  registrar_.routing_info[syncable::BOOKMARKS] = GROUP_UI;
 
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoInitialize,
@@ -116,6 +114,39 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
   registrar_.workers.erase(GROUP_UI);
   frontend_ = NULL;
   core_ = NULL;  // Releases reference to core_.
+}
+
+void SyncBackendHost::ActivateDataType(
+    DataTypeController* data_type_controller,
+    ChangeProcessor* change_processor) {
+  // Ensure that the given data type is in the PASSIVE group.
+  browser_sync::ModelSafeRoutingInfo::iterator i =
+      registrar_.routing_info.find(data_type_controller->type());
+  DCHECK(i != registrar_.routing_info.end());
+  DCHECK((*i).second == GROUP_PASSIVE);
+
+  // Change the data type's routing info to its group.
+  registrar_.routing_info[data_type_controller->type()] =
+      data_type_controller->model_safe_group();
+
+  // Add the data type's change processor to the list of change
+  // processors so it can receive updates.
+  std::pair<std::set<ChangeProcessor*>::iterator, bool> result =
+      processors_.insert(change_processor);
+  DCHECK(result.second);
+}
+
+void SyncBackendHost::DeactivateDataType(
+    DataTypeController* data_type_controller,
+    ChangeProcessor* change_processor) {
+  registrar_.routing_info.erase(data_type_controller->type());
+
+  std::set<ChangeProcessor*>::size_type erased =
+      processors_.erase(change_processor);
+  DCHECK(erased == 1);
+
+  // TODO(sync): At this point we need to purge the data associated
+  // with this data type from the sync db.
 }
 
 void SyncBackendHost::Core::NotifyFrontend(FrontendNotification notification) {
@@ -277,6 +308,18 @@ void SyncBackendHost::Core::OnChangesApplied(
     DCHECK(false) << "OnChangesApplied called after Shutdown?";
     return;
   }
+
+  // Right now we only support bookmarks, and until bookmark model
+  // association happens, the processors list will be empty.  During
+  // this time, it is OK to drop changes on the floor (since model
+  // association has not happened yet).  When the bookmark data type
+  // is activated, model association takes place then the change
+  // processor is added to the processors_ list.  This all happens on
+  // the UI thread so we will never drop any changes after model
+  // association.
+  // TODO(sync): Replace this with proper change filtering.
+  if (!host_->processors_.size())
+    return;
 
   // ChangesApplied is the one exception that should come over from the sync
   // backend already on the service_loop_ thanks to our UIModelWorker.

@@ -151,8 +151,11 @@ const char kDisableSharedWorkers[]          = "disable-shared-workers";
 // Disable site-specific tailoring to compatibility issues in WebKit.
 const char kDisableSiteSpecificQuirks[]     = "disable-site-specific-quirks";
 
-// Disable syncing bookmarks to a Google Account.
+// Disable syncing browser data to a Google Account.
 const char kDisableSync[]                   = "disable-sync";
+
+// Disable syncing of bookmarks.
+const char kDisableSyncBookmarks[]          = "disable-sync-bookmarks";
 
 // Enables the backend service for web resources, used in the new tab page for
 // loading tips and recommendations from a JSON feed.
@@ -268,8 +271,11 @@ const char kEnableSessionStorage[]          = "enable-session-storage";
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const char kEnableStatsTable[]              = "enable-stats-table";
 
-// Enable syncing bookmarks to a Google Account.
+// Enable syncing browser data to a Google Account.
 const char kEnableSync[]                    = "enable-sync";
+
+// Enable syncing browser bookmarks.
+const char kEnableSyncBookmarks[]           = "enable-sync-bookmarks";
 
 // Whether the multiple profiles feature based on the user-data-dir flag is
 // enabled or not.

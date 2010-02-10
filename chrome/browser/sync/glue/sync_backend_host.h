@@ -26,6 +26,7 @@
 namespace browser_sync {
 
 class ChangeProcessor;
+class DataTypeController;
 
 // SyncFrontend is the interface used by SyncBackendHost to communicate with
 // the entity that created it and, presumably, is interested in sync-related
@@ -69,10 +70,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
   // Create a SyncBackendHost with a reference to the |frontend| that it serves
   // and communicates to via the SyncFrontend interface (on the same thread
-  // it used to call the constructor), and push changes from sync_api through
-  // |processor|.
-  SyncBackendHost(SyncFrontend* frontend, const FilePath& profile_path,
-                  std::set<ChangeProcessor*> processor);
+  // it used to call the constructor).
+  SyncBackendHost(SyncFrontend* frontend, const FilePath& profile_path);
   ~SyncBackendHost();
 
   // Called on |frontend_loop_| to kick off asynchronous initialization.
@@ -93,6 +92,17 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // |sync_disabled| indicates if syncing is being disabled or not.
   // See the implementation and Core::DoShutdown for details.
   void Shutdown(bool sync_disabled);
+
+  // Activates change processing for the given data type.  This must
+  // be called synchronously with the data type's model association so
+  // no changes are dropped between model association and change
+  // processor activation.
+  void ActivateDataType(DataTypeController* data_type_controller,
+                        ChangeProcessor* change_processor);
+
+  // Deactivates change processing for the given data type.
+  void DeactivateDataType(DataTypeController* data_type_controller,
+                          ChangeProcessor* change_processor);
 
   // Called on |frontend_loop_| to obtain a handle to the UserShare needed
   // for creating transactions.
@@ -127,7 +137,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     if (!core_thread_.Start())
       return;
     registrar_.workers[GROUP_UI] = new UIModelWorker(frontend_loop_);
-    registrar_.routing_info[syncable::BOOKMARKS] = GROUP_UI;
 
     core_thread_.message_loop()->PostTask(FROM_HERE,
         NewRunnableMethod(core_.get(),

@@ -7,26 +7,24 @@
 
 #include <string>
 #include <map>
-#include <vector>
 
 #include "base/basictypes.h"
-#include "base/file_path.h"
 #include "base/observer_list.h"
 #include "base/scoped_ptr.h"
+#include "base/time.h"
 #include "chrome/browser/google_service_auth_error.h"
-#include "chrome/browser/sync/glue/change_processor.h"
-#include "chrome/browser/sync/glue/model_associator.h"
+#include "chrome/browser/profile.h"
+#include "chrome/browser/sync/glue/data_type_controller.h"  // For StartResult.
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
-#include "chrome/common/notification_registrar.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
-class CommandLine;
-class MessageLoop;
-class Profile;
-
 namespace browser_sync {
+
+class ChangeProcessor;
+class DataTypeController;
 
 class UnrecoverableErrorHandler {
  public:
@@ -58,10 +56,11 @@ class ProfileSyncServiceObserver {
 
 // ProfileSyncService is the layer between browser subsystems like bookmarks,
 // and the sync backend.
-class ProfileSyncService : public NotificationObserver,
-                           public browser_sync::SyncFrontend,
+class ProfileSyncService : public browser_sync::SyncFrontend,
                            public browser_sync::UnrecoverableErrorHandler {
  public:
+  typedef std::map<syncable::ModelType, browser_sync::DataTypeController*>
+      DataTypeControllerMap;
   typedef ProfileSyncServiceObserver Observer;
   typedef browser_sync::SyncBackendHost::Status Status;
 
@@ -96,6 +95,17 @@ class ProfileSyncService : public NotificationObserver,
   // class is constructed.
   void Initialize();
 
+  // Registers a data type controller with the sync service.  This
+  // makes the data type controller available for use, it does not
+  // enable or activate the synchronization of the data type (see
+  // ActivateDataType).  Takes ownership of the pointer.
+  void RegisterDataTypeController(
+      browser_sync::DataTypeController* data_type_controller);
+
+  const DataTypeControllerMap& data_type_controllers() const {
+    return data_type_controllers_;
+  }
+
   // Enables/disables sync for user.
   virtual void EnableForUser();
   virtual void DisableForUser();
@@ -103,11 +113,6 @@ class ProfileSyncService : public NotificationObserver,
   // Whether sync is enabled by user or not.
   bool HasSyncSetupCompleted() const;
   void SetSyncSetupCompleted();
-
-  // NotificationObserver implementation.
-  virtual void Observe(NotificationType type,
-                       const NotificationSource& source,
-                       const NotificationDetails& details);
 
   // SyncFrontend implementation.
   virtual void OnBackendInitialized();
@@ -204,6 +209,13 @@ class ProfileSyncService : public NotificationObserver,
 
   browser_sync::SyncBackendHost* backend() { return backend_.get(); }
 
+  virtual void ActivateDataType(
+      browser_sync::DataTypeController* data_type_controller,
+      browser_sync::ChangeProcessor* change_processor);
+  virtual void DeactivateDataType(
+      browser_sync::DataTypeController* data_type_controller,
+      browser_sync::ChangeProcessor* change_processor);
+
  protected:
   // Call this after any of the subsystems being synced (the bookmark
   // model and the sync backend) finishes its initialization.  When everything
@@ -225,29 +237,13 @@ class ProfileSyncService : public NotificationObserver,
   void RegisterPreferences();
   void ClearPreferences();
 
+  void BookmarkStartCallback(
+      browser_sync::DataTypeController::StartResult result);
+
   // Tests need to override this.  If |delete_sync_data_folder| is true, then
   // this method will delete all previous "Sync Data" folders. (useful if the
   // folder is partial/corrupt)
   virtual void InitializeBackend(bool delete_sync_data_folder);
-
-  template <class AssociatorImpl, class ChangeProcessorImpl>
-  void InstallGlue() {
-    model_associator_->CreateAndRegisterPerDataTypeImpl<AssociatorImpl>();
-    // TODO(tim): Keep a map instead of a set so we can register/unregister
-    // data type specific ChangeProcessors, once we have more than one.
-    STLDeleteElements(processors());
-    ChangeProcessorImpl* processor = new ChangeProcessorImpl(this);
-    change_processors_.insert(processor);
-    processor->set_model_associator(
-        model_associator_->GetImpl<AssociatorImpl>());
-  }
-
-  browser_sync::ModelAssociator* associator() {
-    return model_associator_.get();
-  }
-  std::set<browser_sync::ChangeProcessor*>* processors() {
-    return &change_processors_;
-  }
 
   // We keep track of the last auth error observed so we can cover up the first
   // "expected" auth failure from observers.
@@ -266,9 +262,6 @@ class ProfileSyncService : public NotificationObserver,
 
   // Initializes the various settings from the command line.
   void InitSettings();
-
-  // Whether the sync merge warning should be shown.
-  bool MergeAndSyncAcceptanceNeeded() const;
 
   // Sets the last synced time to the current time.
   void UpdateLastSyncedTime();
@@ -298,13 +291,8 @@ class ProfileSyncService : public NotificationObserver,
   // other threads.
   scoped_ptr<browser_sync::SyncBackendHost> backend_;
 
-  // Model association manager instance.
-  scoped_ptr<browser_sync::ModelAssociator> model_associator_;
-
-  // The change processors that handle the different data types.
-  std::set<browser_sync::ChangeProcessor*> change_processors_;
-
-  NotificationRegistrar registrar_;
+  // List of available data type controllers.
+  DataTypeControllerMap data_type_controllers_;
 
   // Whether the SyncBackendHost has been initialized.
   bool backend_initialized_;

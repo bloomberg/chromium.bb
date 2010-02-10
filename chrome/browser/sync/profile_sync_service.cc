@@ -4,28 +4,20 @@
 
 #include "chrome/browser/sync/profile_sync_service.h"
 
-#include <stack>
-#include <vector>
-
 #include "app/l10n_util.h"
-#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/histogram.h"
+#include "base/stl_util-inl.h"
 #include "base/string_util.h"
-#include "base/time.h"
-#include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "base/task.h"
 #include "chrome/browser/defaults.h"
-#include "chrome/browser/history/history_notifications.h"
 #include "chrome/browser/history/history_types.h"
-#include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
-#include "chrome/browser/sync/glue/bookmark_change_processor.h"
-#include "chrome/browser/sync/glue/bookmark_model_associator.h"
+#include "chrome/browser/sync/glue/change_processor.h"
+#include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/notification_service.h"
-#include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/time_format.h"
@@ -33,10 +25,8 @@
 #include "net/base/cookie_monster.h"
 #include "views/window/window.h"
 
-using browser_sync::BookmarkChangeProcessor;
-using browser_sync::BookmarkModelAssociator;
 using browser_sync::ChangeProcessor;
-using browser_sync::ModelAssociator;
+using browser_sync::DataTypeController;
 using browser_sync::SyncBackendHost;
 
 typedef GoogleServiceAuthError AuthError;
@@ -48,8 +38,6 @@ ProfileSyncService::ProfileSyncService(Profile* profile)
     : last_auth_error_(AuthError::None()),
       profile_(profile),
       sync_service_url_(kSyncServerUrl),
-      ALLOW_THIS_IN_INITIALIZER_LIST(model_associator_(
-          new ModelAssociator(this))),
       backend_initialized_(false),
       expecting_first_run_auth_needed_event_(false),
       is_auth_in_progress_(false),
@@ -59,6 +47,7 @@ ProfileSyncService::ProfileSyncService(Profile* profile)
 
 ProfileSyncService::~ProfileSyncService() {
   Shutdown(false);
+  STLDeleteValues(&data_type_controllers_);
 }
 
 void ProfileSyncService::Initialize() {
@@ -77,6 +66,13 @@ void ProfileSyncService::Initialize() {
   } else {
     StartUp();
   }
+}
+
+void ProfileSyncService::RegisterDataTypeController(
+    DataTypeController* data_type_controller) {
+  DCHECK(data_type_controllers_.count(data_type_controller->type()) == 0);
+  data_type_controllers_[data_type_controller->type()] =
+      data_type_controller;
 }
 
 void ProfileSyncService::InitSettings() {
@@ -155,21 +151,10 @@ void ProfileSyncService::StartUp() {
   if (backend_.get())
     return;
 
-  // Register associator impls for all currently synced data types, and hook
-  // them up to the associated change processors.  If you add a new data type
-  // and want that data type to be synced, call CreateGlue with appropriate
-  // association and change processing implementations.
-  // Bookmarks.
-  InstallGlue<BookmarkModelAssociator, BookmarkChangeProcessor>();
-
   last_synced_time_ = base::Time::FromInternalValue(
       profile_->GetPrefs()->GetInt64(prefs::kSyncLastSyncedTime));
 
-  backend_.reset(new SyncBackendHost(this, profile_->GetPath(),
-                                     change_processors_));
-
-  registrar_.Add(this, NotificationType::BOOKMARK_MODEL_LOADED,
-                 Source<Profile>(profile_));
+  backend_.reset(new SyncBackendHost(this, profile_->GetPath()));
 
   // Initialize the backend.  Every time we start up a new SyncBackendHost,
   // we'll want to start from a fresh SyncDB, so delete any old one that might
@@ -178,22 +163,15 @@ void ProfileSyncService::StartUp() {
 }
 
 void ProfileSyncService::Shutdown(bool sync_disabled) {
-  registrar_.RemoveAll();
-
   if (backend_.get())
     backend_->Shutdown(sync_disabled);
 
-  for (std::set<ChangeProcessor*>::const_iterator it =
-       change_processors_.begin(); it != change_processors_.end(); ++it) {
-    (*it)->Stop();
-  }
+  // Stop all data type controllers.
+  // TODO(skrul): Change this to support multiple data type controllers.
+  if (data_type_controllers_.count(syncable::BOOKMARKS))
+    data_type_controllers_[syncable::BOOKMARKS]->Stop();
+
   backend_.reset();
-
-  // Clear all associations and throw away the association manager instance.
-  model_associator_->DisassociateModels();
-  model_associator_->CleanupAllAssociators();
-
-  STLDeleteElements(&change_processors_);
 
   // Clear various flags.
   is_auth_in_progress_ = false;
@@ -224,23 +202,6 @@ void ProfileSyncService::DisableForUser() {
   FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
 }
 
-void ProfileSyncService::Observe(NotificationType type,
-                                 const NotificationSource& source,
-                                 const NotificationDetails& details) {
-  DCHECK_EQ(NotificationType::BOOKMARK_MODEL_LOADED, type.value);
-  registrar_.RemoveAll();
-  StartProcessingChangesIfReady();
-}
-
-bool ProfileSyncService::MergeAndSyncAcceptanceNeeded() const {
-  // If we've shown the dialog before, don't show it again.
-  if (profile_->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted))
-    return false;
-
-  return model_associator_->ChromeModelHasUserCreatedNodes() &&
-         model_associator_->SyncModelHasUserCreatedNodes();
-}
-
 bool ProfileSyncService::HasSyncSetupCompleted() const {
   return profile_->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted);
 }
@@ -262,10 +223,9 @@ void ProfileSyncService::UpdateLastSyncedTime() {
 // to do as little work as possible, to avoid further corruption or crashes.
 void ProfileSyncService::OnUnrecoverableError() {
   unrecoverable_error_detected_ = true;
-  for (std::set<ChangeProcessor*>::const_iterator it =
-       change_processors_.begin(); it != change_processors_.end(); ++it) {
-    (*it)->Stop();
-  }
+
+  // TODO(skrul): Change this to support multiple data type controllers.
+  data_type_controllers_[syncable::BOOKMARKS]->Stop();
 
   // Tell the wizard so it can inform the user only if it is already open.
   wizard_.Step(SyncSetupWizard::FATAL_ERROR);
@@ -392,27 +352,12 @@ void ProfileSyncService::OnUserSubmittedAuth(
 }
 
 void ProfileSyncService::OnUserAcceptedMergeAndSync() {
-  base::TimeTicks start_time = base::TimeTicks::Now();
-  // TODO(sync): Figure out what do to when a single associator fails.
-  // http://crbug.com/30038
-  bool not_first_run = model_associator_->SyncModelHasUserCreatedNodes();
-  bool merge_success = model_associator_->AssociateModels();
-  UMA_HISTOGRAM_MEDIUM_TIMES("Sync.UserPerceivedBookmarkAssociation",
-                             base::TimeTicks::Now() - start_time);
-  if (!merge_success) {
-    LOG(ERROR) << "Model association failed.";
-    OnUnrecoverableError();
-    return;
-  }
-
-  wizard_.Step(not_first_run ? SyncSetupWizard::DONE :
-               SyncSetupWizard::DONE_FIRST_TIME);
-
-  for (std::set<ChangeProcessor*>::const_iterator it =
-       change_processors_.begin(); it != change_processors_.end(); ++it) {
-    (*it)->Start(profile(), backend_->GetUserShareHandle());
-  }
-  FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+  // Start each data type with "merge_allowed" to correspond to the
+  // user's acceptance of merge.
+  // TODO(skrul): Change this to support multiple data type controllers.
+  data_type_controllers_[syncable::BOOKMARKS]->Start(
+      true,
+      NewCallback(this, &ProfileSyncService::BookmarkStartCallback));
 }
 
 void ProfileSyncService::OnUserCancelledDialog() {
@@ -426,53 +371,63 @@ void ProfileSyncService::OnUserCancelledDialog() {
 }
 
 void ProfileSyncService::StartProcessingChangesIfReady() {
-  BookmarkModel* model = profile_->GetBookmarkModel();
+  DCHECK(backend_initialized_);
 
-  for (std::set<ChangeProcessor*>::const_iterator it =
-       change_processors_.begin(); it != change_processors_.end(); ++it) {
-    DCHECK(!(*it)->IsRunning());
+  // If the user has completed sync setup, we are always allowed to
+  // merge data.
+  bool merge_allowed =
+      profile_->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted);
+
+  // If we're running inside Chrome OS, always allow merges and
+  // consider the sync setup complete.
+  if (browser_defaults::kBootstrapSyncAuthentication) {
+    merge_allowed = true;
+    SetSyncSetupCompleted();
   }
 
-  // First check if the subsystems are ready.  We can't proceed until they
-  // both have finished loading.
-  if (!model->IsLoaded())
-    return;
-  if (!backend_initialized_)
-    return;
+  // Start data types.
+  // TODO(skrul): Change this to support multiple data type controllers.
+  data_type_controllers_[syncable::BOOKMARKS]->Start(
+      merge_allowed,
+      NewCallback(this, &ProfileSyncService::BookmarkStartCallback));
+}
 
-  if (browser_defaults::kBootstrapSyncAuthentication) {
-    // If we're running inside Chrome OS, skip the merge warning and consider
-    // the sync setup complete.
-    SetSyncSetupCompleted();
-  } else {
-    // Show the sync merge warning dialog if needed.
-    if (MergeAndSyncAcceptanceNeeded()) {
+void ProfileSyncService::BookmarkStartCallback(
+    DataTypeController::StartResult result) {
+  switch (result) {
+    case DataTypeController::OK:
+    case DataTypeController::OK_FIRST_RUN: {
+      wizard_.Step(result == DataTypeController::OK ? SyncSetupWizard::DONE :
+                   SyncSetupWizard::DONE_FIRST_TIME);
+      FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+      break;
+    }
+
+    case DataTypeController::NEEDS_MERGE: {
       ProfileSyncService::SyncEvent(MERGE_AND_SYNC_NEEDED);
       wizard_.Step(SyncSetupWizard::MERGE_AND_SYNC);
-      return;
+      break;
+    }
+
+    default: {
+      LOG(ERROR) << "Bookmark start failed";
+      OnUnrecoverableError();
     }
   }
+}
 
-  // We're ready to merge the models.
-  base::TimeTicks start_time = base::TimeTicks::Now();
-  bool not_first_run = model_associator_->SyncModelHasUserCreatedNodes();
-  bool merge_success = model_associator_->AssociateModels();
-  UMA_HISTOGRAM_TIMES("Sync.BookmarkAssociationTime",
-                      base::TimeTicks::Now() - start_time);
-  if (!merge_success) {
-      LOG(ERROR) << "Model association failed.";
-      OnUnrecoverableError();
-      return;
-  }
+void ProfileSyncService::ActivateDataType(
+    DataTypeController* data_type_controller,
+    ChangeProcessor* change_processor) {
+  change_processor->Start(profile(), backend_->GetUserShareHandle());
+  backend_->ActivateDataType(data_type_controller, change_processor);
+}
 
-  wizard_.Step(not_first_run ? SyncSetupWizard::DONE :
-               SyncSetupWizard::DONE_FIRST_TIME);
-
-  for (std::set<ChangeProcessor*>::const_iterator it =
-       change_processors_.begin(); it != change_processors_.end(); ++it) {
-    (*it)->Start(profile(), backend_->GetUserShareHandle());
-  }
-  FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+void ProfileSyncService::DeactivateDataType(
+    DataTypeController* data_type_controller,
+    ChangeProcessor* change_processor) {
+  change_processor->Stop();
+  backend_->DeactivateDataType(data_type_controller, change_processor);
 }
 
 void ProfileSyncService::AddObserver(Observer* observer) {
@@ -497,9 +452,9 @@ bool ProfileSyncService::ShouldPushChanges() {
   // True only after all bootstrapping has succeeded: the bookmark model is
   // loaded, the sync backend is initialized, the two domains are
   // consistent with one another, and no unrecoverable error has transpired.
-  for (std::set<ChangeProcessor*>::const_iterator it =
-       change_processors_.begin(); it != change_processors_.end(); ++it) {
-    if (!(*it)->IsRunning()) return false;
+  if (data_type_controllers_.count(syncable::BOOKMARKS)) {
+    return data_type_controllers_[syncable::BOOKMARKS]->state() ==
+        DataTypeController::RUNNING;
   }
-  return true;
+  return false;
 }
