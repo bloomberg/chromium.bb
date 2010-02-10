@@ -154,12 +154,26 @@ void LocationBarViewMac::UpdateContentBlockedIcons() {
 }
 
 void LocationBarViewMac::UpdatePageActions() {
+  size_t count_before = page_action_views_.Count();
   page_action_views_.RefreshViews();
   [field_ resetFieldEditorFrameIfNeeded];
+  if (page_action_views_.Count() != count_before) {
+    NotificationService::current()->Notify(
+        NotificationType::EXTENSION_PAGE_ACTION_COUNT_CHANGED,
+        Source<LocationBar>(this),
+        NotificationService::NoDetails());
+  }
 }
 
 void LocationBarViewMac::InvalidatePageActions() {
+  size_t count_before = page_action_views_.Count();
   page_action_views_.DeleteAll();
+  if (page_action_views_.Count() != count_before) {
+    NotificationService::current()->Notify(
+        NotificationType::EXTENSION_PAGE_ACTION_COUNT_CHANGED,
+        Source<LocationBar>(this),
+        NotificationService::NoDetails());
+  }
 }
 
 void LocationBarViewMac::SaveStateToContents(TabContents* contents) {
@@ -353,11 +367,6 @@ void LocationBarViewMac::SetPreviewEnabledPageAction(
   page_action_image_view->set_preview_enabled(preview_enabled);
   page_action_image_view->UpdateVisibility(contents,
       GURL(WideToUTF8(toolbar_model_->GetText())));
-
-  NotificationService::current()->Notify(
-      NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
-      Source<ExtensionAction>(page_action),
-      Details<TabContents>(contents));
 }
 
 size_t LocationBarViewMac::GetPageActionIndex(ExtensionAction* page_action) {
@@ -722,7 +731,13 @@ void LocationBarViewMac::PageActionImageView::UpdateVisibility(
     if (!skia_icon.isNull())
       SetImage(gfx::SkBitmapToNSImage(skia_icon));
   }
-  SetVisible(visible);
+  if (IsVisible() != visible) {
+    SetVisible(visible);
+    NotificationService::current()->Notify(
+        NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
+        Source<ExtensionAction>(page_action_),
+        Details<TabContents>(contents));
+  }
 }
 
 void LocationBarViewMac::PageActionImageView::SetToolTip(NSString* tooltip) {
@@ -809,20 +824,8 @@ void LocationBarViewMac::PageActionViewList::RefreshViews() {
     return;
 
   GURL url = GURL(WideToUTF8(toolbar_model_->GetText()));
-  for (size_t i = 0; i < views_.size(); ++i) {
+  for (size_t i = 0; i < views_.size(); ++i)
     views_[i]->UpdateVisibility(contents, url);
-    // Fire the notification regardless of the visibility changes to trigger a
-    // redraw and tooltip update.
-    // TODO(andybons): This notification is fired on all platforms but never
-    // actually used outside of the Mac implementation and one unit test. Either
-    // update it to reflect a change to the extension view as a whole, or remove
-    // it. http://crbug.com/34339
-    ExtensionAction* action = views_[i]->page_action();
-    NotificationService::current()->Notify(
-        NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
-        Source<ExtensionAction>(action),
-        Details<TabContents>(contents));
-  }
 }
 
 LocationBarViewMac::PageActionImageView*

@@ -749,6 +749,11 @@ class NotificationType {
     // ExtensionAction* that changed.  There are no details.
     EXTENSION_BROWSER_ACTION_UPDATED,
 
+    // Sent when the count of page actions has changed. Note that some of them
+    // may not apply to the current page. The source is a LocationBar*. There
+    // are no details.
+    EXTENSION_PAGE_ACTION_COUNT_CHANGED,
+
     // Sent when a page action's visibility has changed. The source is the
     // ExtensionAction* that changed. The details are a TabContents*.
     EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,

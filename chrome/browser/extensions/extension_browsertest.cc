@@ -30,6 +30,11 @@
 // minimize false positives.
 static const int kTimeoutMs = 60 * 1000;  // 1 minute
 
+ExtensionBrowserTest::ExtensionBrowserTest()
+    : target_page_action_count_(-1),
+      target_visible_page_action_count_(-1) {
+}
+
 void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   // This enables DOM automation for tab contentses.
   EnableDOMAutomation();
@@ -161,49 +166,37 @@ void ExtensionBrowserTest::UninstallExtension(const std::string& extension_id) {
 }
 
 bool ExtensionBrowserTest::WaitForPageActionCountChangeTo(int count) {
-  base::Time start_time = base::Time::Now();
-  while (true) {
-    LocationBarTesting* loc_bar =
-        browser()->window()->GetLocationBar()->GetLocationBarForTesting();
+  NotificationRegistrar registrar;
+  registrar.Add(this,
+      NotificationType::EXTENSION_PAGE_ACTION_COUNT_CHANGED,
+      NotificationService::AllSources());
 
-    int actions = loc_bar->PageActionCount();
-    if (actions == count)
-      return true;
+  MessageLoop::current()->PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask,
+                                          kTimeoutMs);
 
-    if ((base::Time::Now() - start_time).InMilliseconds() > kTimeoutMs) {
-      std::cout << "Timed out waiting for page actions to (un)load.\n"
-                << "Currently loaded page actions: " << IntToString(actions)
-                << "\n";
-      return false;
-    }
-
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                            new MessageLoop::QuitTask, 200);
+  target_page_action_count_ = count;
+  LocationBarTesting* location_bar =
+      browser()->window()->GetLocationBar()->GetLocationBarForTesting();
+  if (location_bar->PageActionCount() != count)
     ui_test_utils::RunMessageLoop();
-  }
+  return location_bar->PageActionCount() == count;
 }
 
 bool ExtensionBrowserTest::WaitForPageActionVisibilityChangeTo(int count) {
-  base::Time start_time = base::Time::Now();
-  while (true) {
-    LocationBarTesting* loc_bar =
-        browser()->window()->GetLocationBar()->GetLocationBarForTesting();
+  NotificationRegistrar registrar;
+  registrar.Add(this,
+      NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
+      NotificationService::AllSources());
 
-    int visible = loc_bar->PageActionVisibleCount();
-    if (visible == count)
-      return true;
+  MessageLoop::current()->PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask,
+                                          kTimeoutMs);
 
-    if ((base::Time::Now() - start_time).InMilliseconds() > kTimeoutMs) {
-      std::cout << "Timed out waiting for page actions to become (in)visible.\n"
-                << "Currently visible page actions: " << IntToString(visible)
-                << "\n";
-      return false;
-    }
-
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
-                                            new MessageLoop::QuitTask, 200);
+  target_visible_page_action_count_ = count;
+  LocationBarTesting* location_bar =
+      browser()->window()->GetLocationBar()->GetLocationBarForTesting();
+  if (location_bar->PageActionVisibleCount() != count)
     ui_test_utils::RunMessageLoop();
-  }
+  return location_bar->PageActionVisibleCount() == count;
 }
 
 bool ExtensionBrowserTest::WaitForExtensionHostsToLoad() {
@@ -314,6 +307,34 @@ void ExtensionBrowserTest::Observe(NotificationType type,
       std::cout << "Got EXTENSION_PROCESS_TERMINATED notification.\n";
       MessageLoopForUI::current()->Quit();
       break;
+
+    case NotificationType::EXTENSION_PAGE_ACTION_COUNT_CHANGED: {
+      LocationBarTesting* location_bar =
+          browser()->window()->GetLocationBar()->GetLocationBarForTesting();
+      std::cout << "Got EXTENSION_PAGE_ACTION_COUNT_CHANGED "
+                << "notification. Number of page actions: "
+                << location_bar->PageActionCount() << "\n";
+      if (location_bar->PageActionCount() ==
+          target_page_action_count_) {
+        target_page_action_count_ = -1;
+        MessageLoopForUI::current()->Quit();
+      }
+      break;
+    }
+
+    case NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED: {
+      LocationBarTesting* location_bar =
+          browser()->window()->GetLocationBar()->GetLocationBarForTesting();
+      std::cout << "Got EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED "
+                << "notification. Number of visible page actions: "
+                << location_bar->PageActionVisibleCount() << "\n";
+      if (location_bar->PageActionVisibleCount() ==
+          target_visible_page_action_count_) {
+        target_visible_page_action_count_ = -1;
+        MessageLoopForUI::current()->Quit();
+      }
+      break;
+    }
 
     default:
       NOTREACHED();

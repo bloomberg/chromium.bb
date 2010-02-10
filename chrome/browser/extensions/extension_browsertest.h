@@ -20,6 +20,8 @@
 class ExtensionBrowserTest
     : public InProcessBrowserTest, public NotificationObserver {
  protected:
+  ExtensionBrowserTest();
+
   virtual void SetUpCommandLine(CommandLine* command_line);
   bool LoadExtension(const FilePath& path);
 
@@ -89,6 +91,14 @@ class ExtensionBrowserTest
                                 int expected_change);
 
   bool WaitForExtensionHostsToLoad();
+
+  // When waiting for page action count to change, we wait until it reaches this
+  // value.
+  int target_page_action_count_;
+
+  // When waiting for visible page action count to change, we wait until it
+  // reaches this value.
+  int target_visible_page_action_count_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_BROWSERTEST_H_

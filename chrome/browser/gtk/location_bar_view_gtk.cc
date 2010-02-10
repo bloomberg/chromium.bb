@@ -566,6 +566,10 @@ void LocationBarViewGtk::UpdatePageActions() {
       gtk_box_pack_end(GTK_BOX(page_action_hbox_.get()),
                        page_action_views_[i]->widget(), FALSE, FALSE, 0);
     }
+    NotificationService::current()->Notify(
+        NotificationType::EXTENSION_PAGE_ACTION_COUNT_CHANGED,
+        Source<LocationBar>(this),
+        NotificationService::NoDetails());
   }
 
   TabContents* contents = browser_->GetSelectedTabContents();
@@ -585,7 +589,14 @@ void LocationBarViewGtk::UpdatePageActions() {
 }
 
 void LocationBarViewGtk::InvalidatePageActions() {
+  size_t count_before = page_action_views_.size();
   page_action_views_.reset();
+  if (page_action_views_.size() != count_before) {
+    NotificationService::current()->Notify(
+        NotificationType::EXTENSION_PAGE_ACTION_COUNT_CHANGED,
+        Source<LocationBar>(this),
+        NotificationService::NoDetails());
+  }
 }
 
 void LocationBarViewGtk::SaveStateToContents(TabContents* contents) {

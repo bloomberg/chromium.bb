@@ -317,14 +317,28 @@ void LocationBarView::UpdateContentBlockedIcons() {
 }
 
 void LocationBarView::UpdatePageActions() {
+  size_t count_before = page_action_views_.size();
   RefreshPageActionViews();
+  if (page_action_views_.size() != count_before) {
+    NotificationService::current()->Notify(
+        NotificationType::EXTENSION_PAGE_ACTION_COUNT_CHANGED,
+        Source<LocationBar>(this),
+        NotificationService::NoDetails());
+  }
 
   Layout();
   SchedulePaint();
 }
 
 void LocationBarView::InvalidatePageActions() {
+  size_t count_before = page_action_views_.size();
   DeletePageActionViews();
+  if (page_action_views_.size() != count_before) {
+    NotificationService::current()->Notify(
+        NotificationType::EXTENSION_PAGE_ACTION_COUNT_CHANGED,
+        Source<LocationBar>(this),
+        NotificationService::NoDetails());
+  }
 }
 
 void LocationBarView::Focus() {
