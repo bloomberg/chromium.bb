@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -133,11 +133,6 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // BrowserThemeProvider interface and the colors we send to webkit.
   void LoadGtkValues();
 
-  // Returns a GtkStyle* from which we get the colors for our frame. Checks for
-  // the optional "MetaFrames" widget class before returning the default
-  // GtkWindow one.
-  GtkStyle* GetFrameStyle();
-
   // Sets the values that we send to webkit to safe defaults.
   void LoadDefaultValues();
 
@@ -174,6 +169,7 @@ class GtkThemeProvider : public BrowserThemeProvider,
   // GtkWidgets that exist only so we can look at their properties (and take
   // their colors).
   GtkWidget* fake_window_;
+  GtkWidget* fake_frame_;
   OwnedWidgetGtk fake_label_;
   OwnedWidgetGtk fake_entry_;
 

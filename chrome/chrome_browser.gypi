@@ -1044,6 +1044,8 @@
         'browser/gtk/menu_bar_helper.h',
         'browser/gtk/menu_gtk.cc',
         'browser/gtk/menu_gtk.h',
+        'browser/gtk/meta_frames.cc',
+        'browser/gtk/meta_frames.h',
         'browser/gtk/nine_box.cc',
         'browser/gtk/nine_box.h',
         'browser/gtk/notifications/balloon_view_gtk.cc',

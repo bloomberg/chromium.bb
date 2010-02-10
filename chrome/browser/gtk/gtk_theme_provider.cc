@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,6 +15,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/gtk_chrome_button.h"
+#include "chrome/browser/gtk/meta_frames.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "chrome/common/notification_details.h"
@@ -101,19 +102,21 @@ GtkThemeProvider* GtkThemeProvider::GetFrom(Profile* profile) {
 
 GtkThemeProvider::GtkThemeProvider()
     : BrowserThemeProvider(),
-      fake_window_(gtk_window_new(GTK_WINDOW_TOPLEVEL)) {
+      fake_window_(gtk_window_new(GTK_WINDOW_TOPLEVEL)),
+      fake_frame_(meta_frames_new()) {
   fake_label_.Own(gtk_label_new(""));
   fake_entry_.Own(gtk_entry_new());
 
   // Only realized widgets receive style-set notifications, which we need to
   // broadcast new theme images and colors.
-  gtk_widget_realize(fake_window_);
-  g_signal_connect(fake_window_, "style-set", G_CALLBACK(&OnStyleSet), this);
+  gtk_widget_realize(fake_frame_);
+  g_signal_connect(fake_frame_, "style-set", G_CALLBACK(&OnStyleSet), this);
 }
 
 GtkThemeProvider::~GtkThemeProvider() {
   profile()->GetPrefs()->RemovePrefObserver(prefs::kUsesSystemTheme, this);
   gtk_widget_destroy(fake_window_);
+  gtk_widget_destroy(fake_frame_);
   fake_label_.Destroy();
   fake_entry_.Destroy();
 
@@ -439,13 +442,15 @@ void GtkThemeProvider::LoadGtkValues() {
       profile()->GetPrefs()->GetMutableDictionary(prefs::kCurrentThemeImages);
   pref_images->Clear();
 
-  GtkStyle* window_style = GetFrameStyle();
-  GtkStyle* label_style = gtk_rc_get_style(fake_label_.get());
+  GtkStyle* frame_style = gtk_rc_get_style(fake_frame_);
+  GdkColor frame_color = frame_style->bg[GTK_STATE_SELECTED];
+  GdkColor inactive_frame_color = frame_style->bg[GTK_STATE_INSENSITIVE];
 
-  GdkColor frame_color = window_style->bg[GTK_STATE_SELECTED];
-  GdkColor inactive_frame_color = window_style->bg[GTK_STATE_INSENSITIVE];
+  GtkStyle* window_style = gtk_rc_get_style(fake_window_);
   GdkColor toolbar_color = window_style->bg[GTK_STATE_NORMAL];
   GdkColor button_color = window_style->bg[GTK_STATE_SELECTED];
+
+  GtkStyle* label_style = gtk_rc_get_style(fake_label_.get());
   GdkColor label_color = label_style->text[GTK_STATE_NORMAL];
 
   GtkSettings* settings = gtk_settings_get_default();
@@ -613,20 +618,6 @@ void GtkThemeProvider::LoadGtkValues() {
       GdkToSkColor(&entry_style->base[GTK_STATE_ACTIVE]);
   inactive_selection_fg_color_ =
       GdkToSkColor(&entry_style->text[GTK_STATE_ACTIVE]);
-}
-
-GtkStyle* GtkThemeProvider::GetFrameStyle() {
-  GtkStyle* window_style =
-      gtk_rc_get_style_by_paths(gtk_widget_get_settings(fake_window_),
-                                NULL, "MetaFrames",
-                                G_TYPE_NONE);
-  if (!window_style) {
-    // Some themes don't specify the MetaFrames class, so do a normal lookup on
-    // our main window.
-    window_style = gtk_rc_get_style(fake_window_);
-  }
-
-  return window_style;
 }
 
 void GtkThemeProvider::LoadDefaultValues() {
