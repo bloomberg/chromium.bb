@@ -25,7 +25,6 @@ ExtensionPopupGtk::ExtensionPopupGtk(Browser* browser,
       bubble_(NULL),
       host_(host),
       relative_to_(relative_to) {
-
   // If the host had somehow finished loading, then we'd miss the notification
   // and not show.  This seems to happen in single-process mode.
   if (host->did_stop_loading()) {
@@ -63,8 +62,12 @@ void ExtensionPopupGtk::ShowPopup() {
     return;
   }
 
-  // Only one instance should be showing at a time.
-  DCHECK(!current_extension_popup_);
+  // Only one instance should be showing at a time. Get rid of the old one, if
+  // any. Typically, |current_extension_popup_| will be NULL, but it can be
+  // non-NULL if a browser action button is clicked while another extension
+  // popup's extension host is still loading.
+  if (current_extension_popup_)
+    current_extension_popup_->DestroyPopup();
   current_extension_popup_ = this;
 
   // We'll be in the upper-right corner of the window for LTR languages, so we
