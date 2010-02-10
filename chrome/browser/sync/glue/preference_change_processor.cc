@@ -7,6 +7,8 @@
 #include "base/string_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/protocol/preference_specifics.pb.h"
+#include "chrome/common/json_value_serializer.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
 
@@ -34,19 +36,11 @@ void PreferenceChangeProcessor::Observe(NotificationType type,
   sync_api::WriteTransaction trans(share_handle());
   sync_api::WriteNode sync_node(&trans);
 
-  int64 sync_id = model_associator_->GetSyncIdForChromeId(*name);
+  int64 sync_id = model_associator_->GetSyncIdFromChromeId(*name);
   if (sync_api::kInvalidId == sync_id) {
-    sync_api::ReadNode root_node(&trans);
-    if (!root_node.InitByTagLookup(kPreferencesTag)) {
-      LOG(ERROR) << "Preference root node lookup failed.";
-      error_handler()->OnUnrecoverableError();
-      return;
-    }
-    if (!sync_node.InitByCreation(syncable::PREFERENCES, root_node, NULL)) {
-      LOG(ERROR) << "Preference node creation failed.";
-      error_handler()->OnUnrecoverableError();
-      return;
-    }
+    LOG(ERROR) << "Unexpected notification for: " << *name;
+    error_handler()->OnUnrecoverableError();
+    return;
   } else {
     if (!sync_node.InitByIdLookup(sync_id)) {
       LOG(ERROR) << "Preference node lookup failed.";
@@ -60,9 +54,6 @@ void PreferenceChangeProcessor::Observe(NotificationType type,
     LOG(ERROR) << "Failed to update preference node.";
     error_handler()->OnUnrecoverableError();
     return;
-  }
-  if (sync_api::kInvalidId == sync_id) {
-    model_associator_->Associate(*name, sync_node.GetId());
   }
 }
 
@@ -100,7 +91,7 @@ void PreferenceChangeProcessor::ApplyChangesFromSyncModel(
         changes[i].action) {
       pref_service_->ClearPref(UTF8ToWide(name).c_str());
     } else {
-      if (pref_service_->HasPrefPath(UTF8ToWide(name).c_str())) {
+      if (value.get() && pref_service_->HasPrefPath(UTF8ToWide(name).c_str())) {
         pref_service_->Set(UTF8ToWide(name).c_str(), *value);
       }
     }
@@ -112,15 +103,37 @@ bool PreferenceChangeProcessor::WritePreference(
     sync_api::WriteNode* node,
     const std::string& name,
     const Value* value) {
-  // TODO(albertb): Implement me!
+  std::string serialized;
+  JSONStringValueSerializer json(&serialized);
+  if (!json.Serialize(*value)) {
+    LOG(ERROR) << "Failed to serialize preference value.";
+    error_handler()->OnUnrecoverableError();
+    return false;
+  }
+
+  sync_pb::PreferenceSpecifics preference;
+  preference.set_name(name);
+  preference.set_value(serialized);
+  node->SetPreferenceSpecifics(preference);
   return true;
 }
 
 Value* PreferenceChangeProcessor::ReadPreference(
     sync_api::ReadNode* node,
     std::string* name) {
-  // TODO(albertb): Implement me!
-  return NULL;
+  const sync_pb::PreferenceSpecifics& preference(
+      node->GetPreferenceSpecifics());
+  JSONStringValueSerializer json(preference.value());
+
+  std::string error_message;
+  Value* value = json.Deserialize(&error_message);
+  if (!value) {
+    LOG(ERROR) << "Failed to deserialize preference: " << error_message;
+    error_handler()->OnUnrecoverableError();
+    return NULL;
+  }
+  *name = preference.name();
+  return value;
 }
 
 void PreferenceChangeProcessor::StartImpl(Profile* profile) {

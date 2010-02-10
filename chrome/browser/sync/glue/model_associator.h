@@ -11,6 +11,7 @@
 #include "base/basictypes.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 
 namespace sync_api {
 class BaseNode;
@@ -21,12 +22,6 @@ class ReadNode;
 class ProfileSyncService;
 
 namespace browser_sync {
-
-// An enum identifying the various types of browser object models we know how
-// to "associate" with the sync engine view of the world.
-enum ModelType {
-  MODEL_TYPE_BOOKMARKS,
-};
 
 // This represents the fundamental operations used for model association that
 // are common to all ModelAssociators and do not depend on types of the models
@@ -165,7 +160,7 @@ class ModelAssociator : public AssociatorInterface {
  private:
   ProfileSyncService* sync_service_;
 
-  typedef std::map<ModelType, AssociatorInterface*> ImplMap;
+  typedef std::map<syncable::ModelType, AssociatorInterface*> ImplMap;
   ImplMap impl_map_;
   DISALLOW_COPY_AND_ASSIGN(ModelAssociator);
 };

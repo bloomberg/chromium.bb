@@ -34,7 +34,7 @@ class BookmarkChangeProcessor;
 class BookmarkModelAssociator
     : public PerDataTypeAssociatorInterface<BookmarkNode, int64> {
  public:
-  static ModelType model_type() { return MODEL_TYPE_BOOKMARKS; }
+  static syncable::ModelType model_type() { return syncable::BOOKMARKS; }
   explicit BookmarkModelAssociator(ProfileSyncService* sync_service);
   virtual ~BookmarkModelAssociator() { }
 

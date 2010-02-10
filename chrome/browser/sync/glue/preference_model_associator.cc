@@ -6,16 +6,15 @@
 
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/profile_sync_service.h"
+#include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 
 namespace browser_sync {
-
-static const char kPreferenceName[] = "preference_name";
-static const char kPreferenceValue[] = "preference_value";
 
 PreferenceModelAssociator::PreferenceModelAssociator(
     ProfileSyncService* sync_service)
@@ -33,28 +32,74 @@ PreferenceModelAssociator::PreferenceModelAssociator(
 bool PreferenceModelAssociator::AssociateModels() {
 
   // TODO(albertb): Attempt to load the model association from storage.
+  PrefService* pref_service = sync_service_->profile()->GetPrefs();
   sync_api::ReadTransaction trans(
       sync_service()->backend()->GetUserShareHandle());
-  sync_api::ReadNode root_node(&trans);
-  if (!root_node.InitByTagLookup(kPreferencesTag)) {
+
+  sync_api::ReadNode root(&trans);
+  if (!root.InitByTagLookup(kPreferencesTag)) {
     sync_service_->OnUnrecoverableError();
     LOG(ERROR) << "Server did not create the top-level preferences node. We "
                << "might be running against an out-of-date server.";
     return false;
   }
 
-  int64 pref_id = root_node.GetFirstChildId();
-  while (sync_api::kInvalidId != pref_id) {
-    sync_api::ReadNode pref_node(&trans);
-    if (!pref_node.InitByIdLookup(pref_id)) {
-      sync_service_->OnUnrecoverableError();
-      LOG(ERROR) << "Preference node lookup failed.";
-      return false;
+  for (std::set<std::wstring>::iterator it = synced_preferences_.begin();
+       it != synced_preferences_.end(); ++it) {
+    std::string tag = WideToUTF8(*it);
+
+    sync_api::ReadNode node(&trans);
+    if (node.InitByClientTagLookup(tag)) {
+      const sync_pb::PreferenceSpecifics& preference(
+          node.GetPreferenceSpecifics());
+      DCHECK_EQ(tag, preference.name());
+      JSONStringValueSerializer json(preference.value());
+
+      std::string error_message;
+      Value* value = json.Deserialize(&error_message);
+      if (!value) {
+        LOG(ERROR) << "Failed to deserialize preference: " << error_message;
+        sync_service_->OnUnrecoverableError();
+        return false;
+      }
+      std::wstring pref_name = UTF8ToWide(preference.name());
+
+      // Update the local preference based on what we got from the sync server.
+      const PrefService::Preference* pref =
+          pref_service->FindPreference((*it).c_str());
+      DCHECK(pref);
+      pref_service->Set(pref_name.c_str(), *value);
+
+      Associate(pref, node.GetId());
+    } else {
+      sync_api::WriteTransaction trans(
+          sync_service()->backend()->GetUserShareHandle());
+
+      sync_api::WriteNode node(&trans);
+      if (!node.InitUniqueByCreation(syncable::PREFERENCES, root, tag)) {
+        LOG(ERROR) << "Failed to create preference sync node.";
+        sync_service_->OnUnrecoverableError();
+        return false;
+      }
+
+      // Update the sync node with the local value for this preference.
+      const PrefService::Preference* pref =
+          pref_service->FindPreference((*it).c_str());
+      DCHECK(pref);
+
+      std::string serialized;
+      JSONStringValueSerializer json(&serialized);
+      if (!json.Serialize(*(pref->GetValue()))) {
+        LOG(ERROR) << "Failed to serialize preference value.";
+        sync_service_->OnUnrecoverableError();
+        return false;
+      }
+      sync_pb::PreferenceSpecifics preference;
+      preference.set_name(tag);
+      preference.set_value(serialized);
+      node.SetPreferenceSpecifics(preference);
+      Associate(pref, node.GetId());
     }
-    // TODO(albertb): Load the preference name and value from the node.
-    // TODO(albertb): Associate the preference name with pref_id.
-    // TODO(albertb): Add the preference to synced_preferences if needed.
-    pref_id = pref_node.GetSuccessorId();
   }
   return true;
 }
@@ -94,20 +139,20 @@ bool PreferenceModelAssociator::ChromeModelHasUserCreatedNodes() {
   return true;
 }
 
-int64 PreferenceModelAssociator::GetSyncIdForChromeId(
+int64 PreferenceModelAssociator::GetSyncIdFromChromeId(
     const std::wstring preference_name) {
   PreferenceNameToSyncIdMap::const_iterator iter =
       id_map_.find(preference_name);
   return iter == id_map_.end() ? sync_api::kInvalidId : iter->second;
 }
 
-void PreferenceModelAssociator::Associate(std::wstring preference_name,
-                                          int64 sync_id) {
+void PreferenceModelAssociator::Associate(
+    const PrefService::Preference* preference, int64 sync_id) {
   DCHECK_NE(sync_api::kInvalidId, sync_id);
-  DCHECK(id_map_.find(preference_name) == id_map_.end());
+  DCHECK(id_map_.find(preference->name()) == id_map_.end());
   DCHECK(id_map_inverse_.find(sync_id) == id_map_inverse_.end());
-  id_map_[preference_name] = sync_id;
-  id_map_inverse_[sync_id] = preference_name;
+  id_map_[preference->name()] = sync_id;
+  id_map_inverse_[sync_id] = preference->name();
   dirty_associations_sync_ids_.insert(sync_id);
   PostPersistAssociationsTask();
 }

@@ -13,6 +13,7 @@
         'chrome_resources',
         'chrome_strings',
         'platform_locale_settings',
+        'sync_proto',
         'theme_resources',
         '../app/app.gyp:app_resources',
         '../app/app.gyp:app_strings',

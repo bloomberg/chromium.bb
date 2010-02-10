@@ -719,6 +719,11 @@
         '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
         '../third_party/protobuf2/protobuf.gyp:protoc#host',
       ],
+      'direct_dependent_settings': {
+        'include_dirs': [
+          '<(protoc_out_dir)',
+        ]
+      },
       'export_dependent_settings': [
         '../third_party/protobuf2/protobuf.gyp:protobuf_lite',
       ],

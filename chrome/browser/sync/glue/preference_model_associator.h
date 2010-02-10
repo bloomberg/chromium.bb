@@ -27,8 +27,10 @@ static const char kPreferencesTag[] = "google_chrome_preferences";
 // * Algorithm to associate preferences model and sync model.
 // * Persisting model associations and loading them back.
 class PreferenceModelAssociator
-    : public PerDataTypeAssociatorInterface<Preference, std::wstring> {
+    : public PerDataTypeAssociatorInterface<PrefService::Preference,
+                                            std::wstring> {
  public:
+  static syncable::ModelType model_type() { return syncable::PREFERENCES; }
   explicit PreferenceModelAssociator(ProfileSyncService* sync_service);
   virtual ~PreferenceModelAssociator() { }
 
@@ -53,7 +55,8 @@ class PreferenceModelAssociator
   virtual bool ChromeModelHasUserCreatedNodes();
 
   // Not implemented.
-  virtual const Preference* GetChromeNodeFromSyncId(int64 sync_id) {
+  virtual const PrefService::Preference* GetChromeNodeFromSyncId(
+      int64 sync_id) {
     return NULL;
   }
 
@@ -65,10 +68,10 @@ class PreferenceModelAssociator
 
   // Returns the sync id for the given preference name, or sync_api::kInvalidId
   // if the preference name is not associated to any sync id.
-  virtual int64 GetSyncIdForChromeId(std::wstring node_id);
+  virtual int64 GetSyncIdFromChromeId(std::wstring node_id);
 
   // Associates the given preference name with the given sync id.
-  virtual void Associate(std::wstring node_id, int64 sync_id);
+  virtual void Associate(const PrefService::Preference* node, int64 sync_id);
 
   // Remove the association that corresponds to the given sync id.
   virtual void Disassociate(int64 sync_id);
