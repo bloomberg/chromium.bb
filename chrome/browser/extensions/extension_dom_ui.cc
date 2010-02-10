@@ -9,6 +9,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/bindings_policy.h"
 #include "chrome/common/pref_service.h"
@@ -88,6 +89,10 @@ gfx::NativeWindow ExtensionDOMUI::GetFrameNativeWindow() {
   }
 
   return native_window;
+}
+
+gfx::NativeView ExtensionDOMUI::GetNativeViewOfHost() {
+  return tab_contents()->GetRenderWidgetHostView()->GetNativeView();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

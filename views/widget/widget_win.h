@@ -130,6 +130,7 @@ class WidgetWin : public app::WindowImpl,
     MSG_WM_INITMENUPOPUP(OnInitMenuPopup)
     MSG_WM_KEYDOWN(OnKeyDown)
     MSG_WM_KEYUP(OnKeyUp)
+    MSG_WM_KILLFOCUS(OnKillFocus)
     MSG_WM_SYSKEYDOWN(OnKeyDown)
     MSG_WM_SYSKEYUP(OnKeyUp)
     MSG_WM_LBUTTONDBLCLK(OnLButtonDblClk)
@@ -207,6 +208,7 @@ class WidgetWin : public app::WindowImpl,
   virtual FocusManager* GetFocusManager();
   virtual void ViewHierarchyChanged(bool is_add, View *parent,
                                     View *child);
+  virtual bool ContainsNativeView(gfx::NativeView native_view);
 
   // Overridden from MessageLoop::Observer:
   void WillProcessMessage(const MSG& msg);
@@ -335,6 +337,7 @@ class WidgetWin : public app::WindowImpl,
   virtual void OnInitMenuPopup(HMENU menu, UINT position, BOOL is_system_menu);
   virtual void OnKeyDown(TCHAR c, UINT rep_cnt, UINT flags);
   virtual void OnKeyUp(TCHAR c, UINT rep_cnt, UINT flags);
+  virtual void OnKillFocus(HWND focused_window);
   virtual void OnLButtonDblClk(UINT flags, const CPoint& point);
   virtual void OnLButtonDown(UINT flags, const CPoint& point);
   virtual void OnLButtonUp(UINT flags, const CPoint& point);

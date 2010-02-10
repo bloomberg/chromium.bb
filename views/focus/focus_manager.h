@@ -5,12 +5,13 @@
 #ifndef VIEWS_FOCUS_FOCUS_MANAGER_H_
 #define VIEWS_FOCUS_FOCUS_MANAGER_H_
 
-#include <vector>
-#include <map>
 #include <list>
+#include <map>
+#include <vector>
 
 #include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
+#include "base/singleton.h"
 #include "views/accelerator.h"
 
 // The FocusManager class is used to handle focus traversal, store/restore
@@ -132,10 +133,60 @@ class FocusChangeListener {
   virtual void FocusWillChange(View* focused_before, View* focused_now) = 0;
 };
 
+// This interface should be implemented by classes that want to be notified when
+// the native focus is about to change.  Listeners implementing this interface
+// will be invoked for all native focus changes across the entire Chrome
+// application.  FocusChangeListeners are only called for changes within the
+// children of a single top-level native-view.
+class WidgetFocusChangeListener {
+ public:
+  virtual void NativeFocusWillChange(gfx::NativeView focused_before,
+                                     gfx::NativeView focused_now) = 0;
+};
+
 class FocusManager {
  public:
+  class WidgetFocusManager {
+   public:
+    // Adds/removes a WidgetFocusChangeListener |listener| to the set of
+    // active listeners.
+    void AddFocusChangeListener(WidgetFocusChangeListener* listener);
+    void RemoveFocusChangeListener(WidgetFocusChangeListener* listener);
+
+    // To be called when native-focus shifts from |focused_before| to
+    // |focused_now|.
+    // TODO(port) : Invocations to this routine are only implemented for
+    // the Win32 platform.  Calls need to be placed appropriately for
+    // non-Windows environments.
+    void OnWidgetFocusEvent(gfx::NativeView focused_before,
+                            gfx::NativeView focused_now);
+
+    // Enable/Disable notification of registered listeners during calls
+    // to OnWidgetFocusEvent.  Used to prevent unwanted focus changes from
+    // propagating notifications.
+    void EnableNotifications() { enabled_ = true; }
+    void DisableNotifications() { enabled_ = false; }
+
+   private:
+    WidgetFocusManager() : enabled_(true) {}
+
+    typedef std::vector<WidgetFocusChangeListener*>
+      WidgetFocusChangeListenerList;
+    WidgetFocusChangeListenerList focus_change_listeners_;
+
+    bool enabled_;
+
+    friend struct DefaultSingletonTraits<WidgetFocusManager>;
+    DISALLOW_COPY_AND_ASSIGN(WidgetFocusManager);
+  };
+
   explicit FocusManager(Widget* widget);
   ~FocusManager();
+
+  // Returns the global WidgetFocusManager instance for the running application.
+  static WidgetFocusManager* GetWidgetFocusManager() {
+    return Singleton<WidgetFocusManager>::get();
+  }
 
   // Processes the passed key event for accelerators and tab traversal.
   // Returns false if the event has been consumed and should not be processed
@@ -259,6 +310,21 @@ class FocusManager {
   FocusChangeListenerList focus_change_listeners_;
 
   DISALLOW_COPY_AND_ASSIGN(FocusManager);
+};
+
+// A basic helper class that is used to disable native focus change
+// notifications within a scope.
+class AutoNativeNotificationDisabler {
+ public:
+  AutoNativeNotificationDisabler() {
+    FocusManager::GetWidgetFocusManager()->DisableNotifications();
+  }
+
+  ~AutoNativeNotificationDisabler() {
+    FocusManager::GetWidgetFocusManager()->EnableNotifications();
+  }
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AutoNativeNotificationDisabler);
 };
 
 }  // namespace views

@@ -788,6 +788,14 @@ Window* View::GetWindow() const {
   return widget ? widget->GetWindow() : NULL;
 }
 
+bool View::ContainsNativeView(gfx::NativeView native_view) const {
+  for (int i = 0, count = GetChildViewCount(); i < count; ++i) {
+    if (GetChildViewAt(i)->ContainsNativeView(native_view))
+      return true;
+  }
+  return false;
+}
+
 // Get the containing RootView
 RootView* View::GetRootView() {
   Widget* widget = GetWidget();

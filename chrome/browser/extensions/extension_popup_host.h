@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_EXTENSIONS_EXTENSION_POPUP_HOST_H_
 #define CHROME_BROWSER_EXTENSIONS_EXTENSION_POPUP_HOST_H_
 
+#include "app/gfx/native_widget_types.h"
 #include "base/scoped_ptr.h"
+#include "base/task.h"
 #include "build/build_config.h"
 #if defined(TOOLKIT_VIEWS)
 #include "chrome/browser/views/browser_bubble.h"
@@ -39,6 +41,7 @@ class ExtensionPopupHost :  // NOLINT
     virtual ~PopupDelegate();
     virtual Browser* GetBrowser() const = 0;
     virtual RenderViewHost* GetRenderViewHost() = 0;
+    virtual gfx::NativeView GetNativeViewOfHost() = 0;
     virtual Profile* GetProfile();
 
     // Constructs, or returns the existing ExtensionPopupHost instance.
@@ -53,6 +56,7 @@ class ExtensionPopupHost :  // NOLINT
   explicit ExtensionPopupHost(PopupDelegate* delegate);
   virtual ~ExtensionPopupHost();
 
+  PopupDelegate* delegate() { return delegate_; }
   void RevokeDelegate() { delegate_ = NULL; }
 
   // Dismiss the hosted pop-up, if one is present.
@@ -60,11 +64,7 @@ class ExtensionPopupHost :  // NOLINT
 
 #if defined(TOOLKIT_VIEWS)
   ExtensionPopup* child_popup() const { return child_popup_; }
-  void set_child_popup(ExtensionPopup* popup) {
-    // An extension may only have one popup active at a given time.
-    DismissPopup();
-    child_popup_ = popup;
-  }
+  void set_child_popup(ExtensionPopup* popup);
 
   // BrowserBubble::Delegate implementation.
   // Called when the Browser Window that this bubble is attached to moves.
@@ -73,13 +73,6 @@ class ExtensionPopupHost :  // NOLINT
   // Called with the Browser Window that this bubble is attached to is
   // about to close.
   virtual void BubbleBrowserWindowClosing(BrowserBubble* bubble);
-
-  // Called when the bubble became active / got focus.
-  virtual void BubbleGotFocus(BrowserBubble* bubble);
-
-  // Called when the bubble became inactive / lost focus.
-  virtual void BubbleLostFocus(BrowserBubble* bubble,
-                               gfx::NativeView focused_view);
 #endif  // defined(TOOLKIT_VIEWS)
 
   // NotificationObserver implementation.
@@ -88,7 +81,16 @@ class ExtensionPopupHost :  // NOLINT
                        const NotificationDetails& details);
 
  private:
+  // Posts a task to the current thread's message-loop that will dismiss the
+  // popup.
+  void DismissPopupAsync();
+
 #if defined(TOOLKIT_VIEWS)
+  // A native-view focus listener that monitors when the pop-up should be
+  // dismissed due to focus change events.
+  class PopupFocusListener;
+  scoped_ptr<PopupFocusListener> listener_;
+
   // A popup view that is anchored to and owned by this ExtensionHost.  However,
   // the popup contains its own separate ExtensionHost
   ExtensionPopup* child_popup_;
@@ -102,6 +104,8 @@ class ExtensionPopupHost :  // NOLINT
   // Boolean value used to ensure that the host only registers for event
   // notifications once.
   bool listeners_registered_;
+
+  ScopedRunnableMethodFactory<ExtensionPopupHost> method_factory_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPopupHost);
 };

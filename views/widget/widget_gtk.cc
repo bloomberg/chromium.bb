@@ -590,6 +590,12 @@ void WidgetGtk::ViewHierarchyChanged(bool is_add, View *parent,
     drop_target_->ResetTargetViewIfEquals(child);
 }
 
+bool WidgetGtk::ContainsNativeView(gfx::NativeView native_view) {
+  // TODO(port)  See implementation in WidgetWin::ContainsNativeView.
+  NOTREACHED() << "WidgetGtk::ContainsNativeView is not implemented.";
+  return false;
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // WidgetGtk, MessageLoopForUI::Observer implementation:
 
@@ -1239,7 +1245,8 @@ void WidgetGtk::CreateGtkWidget(GtkWidget* parent, const gfx::Rect& bounds) {
     gtk_fixed_set_has_window(GTK_FIXED(window_contents_), true);
     gtk_container_add(GTK_CONTAINER(widget_), window_contents_);
     gtk_widget_show(window_contents_);
-    g_object_set_data(G_OBJECT(window_contents_), kWidgetKey, this);
+    g_object_set_data(G_OBJECT(window_contents_), kWidgetKey,
+                      static_cast<Widget*>(this));
 
     if (transparent_)
       ConfigureWidgetForTransparentBackground();

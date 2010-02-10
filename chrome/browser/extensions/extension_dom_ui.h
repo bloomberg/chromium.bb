@@ -47,6 +47,7 @@ class ExtensionDOMUI
   // ExtensionPopupHost::Delegate
   virtual RenderViewHost* GetRenderViewHost();
   virtual Profile* GetProfile();
+  virtual gfx::NativeView GetNativeViewOfHost();
 
   // BrowserURLHandler
   static bool HandleChromeURLOverride(GURL* url, Profile* profile);

@@ -195,6 +195,9 @@ class ExtensionHost : public ExtensionPopupHost::PopupDelegate,
 
   // ExtensionPopupHost::Delegate
   virtual RenderViewHost* GetRenderViewHost() { return render_view_host(); }
+  virtual gfx::NativeView GetNativeViewOfHost() {
+    return view()->native_view();
+  }
 
   // Returns true if we're hosting a background page.
   // This isn't valid until CreateRenderView is called.

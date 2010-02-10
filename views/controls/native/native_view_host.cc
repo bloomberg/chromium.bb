@@ -7,6 +7,7 @@
 #include "base/logging.h"
 #include "app/gfx/canvas.h"
 #include "views/controls/native/native_view_host_wrapper.h"
+#include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
 namespace views {
@@ -143,6 +144,20 @@ std::string NativeViewHost::GetClassName() const {
 
 void NativeViewHost::Focus() {
   native_wrapper_->SetFocus();
+}
+
+bool NativeViewHost::ContainsNativeView(gfx::NativeView native_view) const {
+  if (native_view == native_view_)
+    return true;
+
+  views::Widget* native_widget =
+      views::Widget::GetWidgetFromNativeView(native_view_);
+  views::RootView* root_view =
+      native_widget ? native_widget->GetRootView() : NULL;
+  if (root_view && root_view->ContainsNativeView(native_view))
+    return true;
+
+  return View::ContainsNativeView(native_view);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

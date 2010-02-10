@@ -455,6 +455,10 @@ class View : public AcceleratorTarget {
   // level windows (as is done for popups, bubbles and menus).
   virtual Window* GetWindow() const;
 
+  // Returns true if the native view |native_view| is contained in the view
+  // hierarchy beneath this view.
+  virtual bool ContainsNativeView(gfx::NativeView native_view) const;
+
   // Get the containing RootView
   virtual RootView* GetRootView();
 

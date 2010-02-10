@@ -168,6 +168,8 @@ class WidgetGtk
   virtual FocusManager* GetFocusManager();
   virtual void ViewHierarchyChanged(bool is_add, View *parent,
                                     View *child);
+  virtual bool ContainsNativeView(gfx::NativeView native_view);
+
 
   // Overridden from MessageLoopForUI::Observer:
   virtual void WillProcessEvent(GdkEvent* event);

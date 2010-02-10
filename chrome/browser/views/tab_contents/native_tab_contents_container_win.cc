@@ -114,7 +114,13 @@ void NativeTabContentsContainerWin::RequestFocus() {
   // that should also have focus, RequestFocus() is invoked one the
   // TabContentsContainer.  In order to make sure Focus() is invoked we need to
   // clear the focus before hands.
-  GetFocusManager()->ClearFocus();
+  {
+    // Disable notifications.  Clear focus will assign the focus to the main
+    // browser window.  Because this change of focus was not user requested,
+    // don't send it to listeners.
+    views::AutoNativeNotificationDisabler local_notification_disabler;
+    GetFocusManager()->ClearFocus();
+  }
   View::RequestFocus();
 }
 

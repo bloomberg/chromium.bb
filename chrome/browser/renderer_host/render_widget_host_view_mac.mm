@@ -93,6 +93,16 @@ RenderWidgetHostView* RenderWidgetHostView::CreateViewForWidget(
   return new RenderWidgetHostViewMac(widget);
 }
 
+// static
+RenderWidgetHostView* RenderWidgetHostView::
+    GetRenderWidgetHostViewFromNativeView(gfx::NativeView native_view) {
+  // TODO(port)
+  NOTREACHED() <<
+      "RenderWidgetHostView::GetRenderWidgetHostViewFromNativeView not"
+      "implemented";
+  return NULL;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewMac, public:
 
@@ -643,6 +653,14 @@ void RenderWidgetHostViewMac::SetBackground(const SkBitmap& background) {
   if (render_widget_host_)
     render_widget_host_->Send(new ViewMsg_SetBackground(
         render_widget_host_->routing_id(), background));
+}
+
+bool RenderWidgetHostViewMac::ContainsNativeView(
+    gfx::NativeView native_view) const {
+  // TODO(port)
+  NOTREACHED() <<
+    "RenderWidgetHostViewMac::ContainsNativeView not implemented.";
+  return false;
 }
 
 // EditCommandMatcher ---------------------------------------------------------

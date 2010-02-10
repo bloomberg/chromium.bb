@@ -115,6 +115,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void SetWindowVisibility(bool visible);
   virtual void WindowFrameChanged();
   virtual void SetBackground(const SkBitmap& background);
+  virtual bool ContainsNativeView(gfx::NativeView native_view) const;
 
   // Methods associated with GPU plugin instances
   virtual gfx::PluginWindowHandle AllocateFakePluginWindowHandle();

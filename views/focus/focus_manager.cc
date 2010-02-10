@@ -22,6 +22,46 @@
 
 namespace views {
 
+// FocusManager::WidgetFocusManager ---------------------------------
+
+void FocusManager::WidgetFocusManager::AddFocusChangeListener(
+    WidgetFocusChangeListener* listener) {
+  DCHECK(std::find(focus_change_listeners_.begin(),
+                   focus_change_listeners_.end(), listener) ==
+         focus_change_listeners_.end()) <<
+             "Adding a WidgetFocusChangeListener twice.";
+  focus_change_listeners_.push_back(listener);
+}
+
+void FocusManager::WidgetFocusManager::RemoveFocusChangeListener(
+    WidgetFocusChangeListener* listener) {
+  WidgetFocusChangeListenerList::iterator iter(std::find(
+      focus_change_listeners_.begin(),
+      focus_change_listeners_.end(),
+      listener));
+  if (iter != focus_change_listeners_.end()) {
+    focus_change_listeners_.erase(iter);
+  } else {
+    NOTREACHED() <<
+      "Attempting to remove an unregistered WidgetFocusChangeListener.";
+  }
+}
+
+void FocusManager::WidgetFocusManager::OnWidgetFocusEvent(
+    gfx::NativeView focused_before,
+    gfx::NativeView focused_now) {
+  if (!enabled_)
+    return;
+
+  // Perform a safe iteration over the focus listeners, as the array of
+  // may change during notification.
+  WidgetFocusChangeListenerList local_listeners(focus_change_listeners_);
+  WidgetFocusChangeListenerList::iterator iter(local_listeners.begin());
+  for (;iter != local_listeners.end(); ++iter) {
+    (*iter)->NativeFocusWillChange(focused_before, focused_now);
+  }
+}
+
 // FocusManager -----------------------------------------------------
 
 FocusManager::FocusManager(Widget* widget)
@@ -277,7 +317,15 @@ void FocusManager::StoreFocusedView() {
   view_storage->StoreView(stored_focused_view_storage_id_, focused_view_);
 
   View* v = focused_view_;
-  ClearFocus();
+
+  {
+    // Temporarily disable notification.  ClearFocus() will set the focus to the
+    // main browser window.  This extra focus bounce which happens during
+    // deactivation can confuse registered WidgetFocusListeners, as the focus
+    // is not changing due to a user-initiated event.
+    AutoNativeNotificationDisabler local_notification_disabler;
+    ClearFocus();
+  }
 
   if (v)
     v->SchedulePaint();  // Remove focus border.

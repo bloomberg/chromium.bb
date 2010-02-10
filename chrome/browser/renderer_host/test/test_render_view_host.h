@@ -94,6 +94,10 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) { }
 #endif
 
+  virtual bool ContainsNativeView(gfx::NativeView native_view) const {
+    return false;
+  }
+
   bool is_showing() const { return is_showing_; }
 
  private:

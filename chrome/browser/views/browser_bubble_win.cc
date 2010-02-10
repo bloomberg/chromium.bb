@@ -48,6 +48,7 @@ class BubbleWidget : public views::WidgetWin {
   }
 
   void OnActivate(UINT action, BOOL minimized, HWND window) {
+    WidgetWin::OnActivate(action, minimized, window);
     BrowserBubble::Delegate* delegate = bubble_->delegate();
     if (!delegate) {
       if (action == WA_INACTIVE && !closed_) {
@@ -63,6 +64,7 @@ class BubbleWidget : public views::WidgetWin {
   }
 
   virtual void OnSetFocus(HWND focused_window) {
+    WidgetWin::OnSetFocus(focused_window);
     BrowserBubble::Delegate* delegate = bubble_->delegate();
     if (delegate)
       delegate->BubbleGotFocus(bubble_);

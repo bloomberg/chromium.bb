@@ -71,6 +71,7 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   virtual void SetBackground(const SkBitmap& background);
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id);
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id);
+  virtual bool ContainsNativeView(gfx::NativeView native_view) const;
 
   gfx::NativeView native_view() const { return view_.get(); }
 

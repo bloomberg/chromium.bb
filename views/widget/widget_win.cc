@@ -383,6 +383,28 @@ void WidgetWin::ViewHierarchyChanged(bool is_add, View *parent,
     drop_target_->ResetTargetViewIfEquals(child);
 }
 
+
+bool WidgetWin::ContainsNativeView(gfx::NativeView native_view) {
+  if (hwnd() == native_view)
+    return true;
+
+  // Traverse the set of parents of the given view to determine if native_view
+  // is a descendant of this window.
+  HWND parent_window = ::GetParent(native_view);
+  HWND previous_child = native_view;
+  while (parent_window && parent_window != previous_child) {
+    if (hwnd() == parent_window)
+      return true;
+    previous_child = parent_window;
+    parent_window = ::GetParent(parent_window);
+  }
+
+  // A views::NativeViewHost may contain the given native view, without it being
+  // an ancestor of hwnd(), so traverse the views::View hierarchy looking for
+  // such views.
+  return GetRootView()->ContainsNativeView(native_view);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // MessageLoop::Observer
 
@@ -595,6 +617,13 @@ void WidgetWin::OnKeyUp(TCHAR c, UINT rep_cnt, UINT flags) {
   SetMsgHandled(root_view->ProcessKeyEvent(event));
 }
 
+void WidgetWin::OnKillFocus(HWND focused_window) {
+  GetFocusManager()->GetWidgetFocusManager()->OnWidgetFocusEvent(
+      this->GetNativeView(),
+      focused_window);
+  SetMsgHandled(FALSE);
+}
+
 // TODO(pkasting): ORing the pressed/released button into the flags is _wrong_.
 // It makes it impossible to tell which button was modified when multiple
 // buttons are/were held down.  We need to instead put the modified button into
@@ -800,6 +829,9 @@ LRESULT WidgetWin::OnReflectedMessage(UINT msg,
 }
 
 void WidgetWin::OnSetFocus(HWND focused_window) {
+  GetFocusManager()->GetWidgetFocusManager()->OnWidgetFocusEvent(
+      focused_window,
+      this->GetNativeView());
   SetMsgHandled(FALSE);
 }
 
@@ -1235,7 +1267,6 @@ void Widget::FindAllRootViews(HWND window,
       ++it)
     root_views->push_back(*it);
 }
-
 
 ////////////////////////////////////////////////////////////////////////////////
 // Widget, public:

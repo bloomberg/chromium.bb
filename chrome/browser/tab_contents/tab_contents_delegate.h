@@ -275,7 +275,7 @@ class TabContentsDelegate {
   // Returns the browser in which the tab contents is being displayed.
   virtual Browser* GetBrowser() { return NULL; }
 
-  // Returns the widget framing the view containing the tab contents.
+  // Returns the native window framing the view containing the tab contents.
   virtual gfx::NativeWindow GetFrameNativeWindow() { return NULL; }
 
  protected:

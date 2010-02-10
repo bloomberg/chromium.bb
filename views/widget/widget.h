@@ -193,6 +193,10 @@ class Widget {
   // Forwarded from the RootView so that the widget can do any cleanup.
   virtual void ViewHierarchyChanged(bool is_add, View *parent,
                                     View *child) = 0;
+
+  // Returns true if the native view |native_view| is contained in the
+  // views::View hierarchy rooted at this widget.
+  virtual bool ContainsNativeView(gfx::NativeView native_view) = 0;
 };
 
 }  // namespace views

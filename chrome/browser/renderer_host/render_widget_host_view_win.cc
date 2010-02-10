@@ -35,6 +35,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebInputEvent.h"
 #include "third_party/WebKit/WebKit/chromium/public/win/WebInputEventFactory.h"
 #include "views/accessibility/view_accessibility.h"
+#include "views/focus/focus_manager.h"
 #include "views/focus/focus_util_win.h"
 // Included for views::kReflectedMessage - TODO(beng): move this to win_util.h!
 #include "views/widget/widget_win.h"
@@ -57,6 +58,8 @@ const int kTooltipMaxWidthPixels = 300;
 
 // Maximum number of characters we allow in a tooltip.
 const int kMaxTooltipLength = 1024;
+
+const wchar_t* kRenderWidgetHostViewKey = L"__RENDER_WIDGET_HOST_VIEW__";
 
 // A callback function for EnumThreadWindows to enumerate and dismiss
 // any owned popop windows
@@ -728,6 +731,23 @@ void RenderWidgetHostViewWin::SetBackground(const SkBitmap& background) {
                                  background));
 }
 
+bool RenderWidgetHostViewWin::ContainsNativeView(
+    gfx::NativeView native_view) const {
+  if (m_hWnd == native_view)
+    return true;
+
+  // Traverse the set of parents of the given view to determine if native_view
+  // is a descendant of this window.
+  HWND parent_window = ::GetParent(native_view);
+  while (parent_window) {
+    if (parent_window == m_hWnd)
+      return true;
+    parent_window = ::GetParent(parent_window);
+  }
+
+  return false;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewWin, private:
 
@@ -740,7 +760,9 @@ LRESULT RenderWidgetHostViewWin::OnCreate(CREATESTRUCT* create_struct) {
   views::SetWindowSupportsRerouteMouseWheel(m_hWnd);
   // Save away our HWND in the parent window as a property so that the
   // accessibility code can find it.
-  SetProp(GetParent(), kViewsNativeHostPropForAccessibility, m_hWnd);
+  ::SetProp(GetParent(), kViewsNativeHostPropForAccessibility, m_hWnd);
+  ::SetProp(m_hWnd, kRenderWidgetHostViewKey,
+            static_cast<RenderWidgetHostView*>(this));
   return 0;
 }
 
@@ -770,6 +792,8 @@ void RenderWidgetHostViewWin::OnDestroy() {
   // automatically. The detached plugin windows will get cleaned up in proper
   // sequence as part of the usual cleanup when the plugin instance goes away.
   EnumChildWindows(m_hWnd, DetachPluginWindowsCallback, NULL);
+
+  ::RemoveProp(m_hWnd, kRenderWidgetHostViewKey);
 
   ResetTooltip();
   TrackMouseLeave(false);
@@ -919,11 +943,17 @@ LRESULT RenderWidgetHostViewWin::OnSetCursor(HWND window, UINT hittest_code,
 }
 
 void RenderWidgetHostViewWin::OnSetFocus(HWND window) {
+  views::FocusManager::GetWidgetFocusManager()->OnWidgetFocusEvent(window,
+                                                                   m_hWnd);
+
   if (render_widget_host_)
     render_widget_host_->GotFocus();
 }
 
 void RenderWidgetHostViewWin::OnKillFocus(HWND window) {
+  views::FocusManager::GetWidgetFocusManager()->OnWidgetFocusEvent(m_hWnd,
+                                                                   window);
+
   if (render_widget_host_)
     render_widget_host_->Blur();
 }
@@ -1515,4 +1545,17 @@ void RenderWidgetHostViewWin::ShutdownHost() {
   if (render_widget_host_)
     render_widget_host_->Shutdown();
   // Do not touch any members at this point, |this| has been deleted.
+}
+
+// static
+RenderWidgetHostView*
+    RenderWidgetHostView::GetRenderWidgetHostViewFromNativeView(
+        gfx::NativeView native_view) {
+  if (::IsWindow(native_view)) {
+    HANDLE raw_render_host_view = ::GetProp(native_view,
+                                            kRenderWidgetHostViewKey);
+    if (raw_render_host_view)
+      return reinterpret_cast<RenderWidgetHostView*>(raw_render_host_view);
+  }
+  return NULL;
 }

@@ -74,6 +74,7 @@ class NativeViewHost : public View {
   virtual void Paint(gfx::Canvas* canvas);
   virtual void VisibilityChanged(View* starting_from, bool is_visible);
   virtual void Focus();
+  virtual bool ContainsNativeView(gfx::NativeView native_view) const;
 
  protected:
   virtual void VisibleBoundsInRootChanged();

@@ -43,6 +43,8 @@ static const int kMaxWindowHeight = 4000;
 // TODO(brettw) make this a command line option.
 static const bool kUseGPURendering = false;
 
+static const char* kRenderWidgetHostViewKey = "__RENDER_WIDGET_HOST_VIEW__";
+
 using WebKit::WebInputEventFactory;
 
 // This class is a simple convenience wrapper for Gtk functions. It has only
@@ -101,6 +103,9 @@ class RenderWidgetHostViewGtkWidget {
     // TabContentsView which handles zoom events.
     g_signal_connect_after(widget, "scroll-event",
                            G_CALLBACK(MouseScrollEvent), host_view);
+
+    g_object_set_data(G_OBJECT(widget), kRenderWidgetHostViewKey,
+                      static_cast<RenderWidgetHostView*>(host_view));
 
     return widget;
   }
@@ -744,6 +749,14 @@ void RenderWidgetHostViewGtk::DestroyPluginContainer(
   plugin_container_manager_.DestroyPluginContainer(id);
 }
 
+bool RenderWidgetHostViewGtk::ContainsNativeView(
+    gfx::NativeView native_view) const {
+  // TODO(port)
+  NOTREACHED() <<
+    "RenderWidgetHostViewGtk::ContainsNativeView not implemented.";
+  return false;
+}
+
 void RenderWidgetHostViewGtk::ForwardKeyboardEvent(
     const NativeWebKeyboardEvent& event) {
   if (!host_)
@@ -754,4 +767,13 @@ void RenderWidgetHostViewGtk::ForwardKeyboardEvent(
     host_->ForwardEditCommandsForNextKeyEvent(edit_commands);
   }
   host_->ForwardKeyboardEvent(event);
+}
+
+// static
+RenderWidgetHostView*
+    RenderWidgetHostView::GetRenderWidgetHostViewFromNativeView(
+        gfx::NativeView widget) {
+  gpointer user_data = g_object_get_data(G_OBJECT(widget),
+                                         kRenderWidgetHostViewKey);
+  return reinterpret_cast<RenderWidgetHostView*>(user_data);
 }
