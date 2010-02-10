@@ -5,23 +5,21 @@
 <title>Content Browser</title>
 <style type="text/css">
 div.header {
-  border-bottom: 1px solid #006;
-  border-left: 1px solid #006;
-  border-right: 1px solid #006;
+  border-bottom: 1px solid #7289E2;
   padding: 8px;
   margin: 0;
   width: 100%;
   left: 0;
   top: 0;
-  height: 30px;
+  height: 32px;
   position: absolute;
   -webkit-box-sizing: border-box;
   box-sizing: border-box;
   background-image: -webkit-gradient(linear,
-                                     0% 0%,
-                                     0% 90%,
-                                     from(rgb(239, 242, 249)),
-                                     to(rgba(201, 212, 245, 1)));
+                                     left top,
+                                     left bottom,
+                                     from(#D0DAF8),
+                                     to(#A6BAF7));
   border-bottom-color: #999;
   border-bottom-width: 1px;
   border-left-color: #999;
@@ -29,6 +27,27 @@ div.header {
   border-right-color: #999;
   border-right-width: 1px;
   color: black;
+}
+
+li.filebrowserow .actionmenu {
+  display:inline-block;
+  float:right;
+  width:15px;
+  height:16px;
+  opacity:0.3;
+	-webkit-transition: opacity 0.2s ease-out ;
+
+}
+
+li.filebrowserow:hover .actionmenu {
+opacity:0.75;;
+-webkit-transition: opacity 0.0s ease-out ;
+
+}
+
+li.filebrowserow:hover .actionmenu:hover {
+opacity:1.0;
+-webkit-transition: opacity 0.0s ease-out ;
 }
 
 .rowlink {
@@ -110,12 +129,7 @@ li.filebrowserow div.icon {
 }
 
 .rightarrow {
-  margin-top: 2px;
-  position: absolute;
-  right: 0;
-  top: 5px;
-  height: 100%;
-  width: 10px;
+  opacity:0.5;
 }
 
 .uploaicon {
@@ -160,6 +174,7 @@ li.filebrowserow {
   font-size:.8em;
 /*  font-family: helvetica; */
   position: relative;
+  background: #fff;
 }
 
 .downloadstatus {
@@ -169,6 +184,7 @@ li.filebrowserow {
 
 li.filebrowserow:hover {
   background: #ebeff9;
+  cursor: pointer;
 }
 
 li.filebrowserow span.name {
@@ -181,7 +197,14 @@ li.filebrowserow span.namelink {
   margin-top: 10px;
   margin-left: -22px;
   position: relative;
+  color:#0D0052;
+  -webkit-transition: color 1.0s ease-out ;
+}
+
+li.filebrowserow:hover span.namelink {
   text-decoration:underline;
+  color:#20c;
+  -webkit-transition: color 0.0s ease-out ;
 }
 
 .selected {
@@ -197,18 +220,29 @@ div.title {
 }
 
 div.controlbutton {
-  width: 20px;
+  width: 16px;
+  height:15px;
   display:inline;
   position: absolute;
   z-index:999;
-  border:1px solid #abb6ce;
-  background-color: #f5f7fc;
-  padding-left: 7px;
-  padding-top: 2px;
-  padding-bottom: 4px;
-  padding-right: 7px;
-  height: 15px;
+  border:1px solid #859EE8;
   cursor: pointer;
+  padding:4px;
+
+  background: -webkit-gradient(linear,
+                               left top,
+                               left bottom,
+                               from(#F4F6FB),
+                               to(#CCD7F8));
+}
+
+div.controlbutton:hover {
+
+  background: -webkit-gradient(linear,
+                               left top,
+                               left bottom,
+                               from(#FFF),
+                               to(#D9E0F6));
 }
 
 div.column {
@@ -221,7 +255,7 @@ div.column {
 div.columnlist {
   width: 100%;
   bottom: 0;
-  top:30px;
+  top:32px;
   position:absolute;
   overflow-y:scroll;
   overflow-x:hidden;
@@ -248,17 +282,17 @@ div.iconmusic {
 }
 
 div.backbutton {
-  -webkit-border-top-left-radius: 5px;
-  -webkit-border-bottom-left-radius: 5px;
-  left: 10px;
-  top: 5px
+  -webkit-border-top-left-radius: 4px;
+  -webkit-border-bottom-left-radius: 4px;
+  left: 6px;
+  top: 3px
 }
 
 div.fwdbutton {
-  -webkit-border-top-right-radius: 5px;
-  -webkit-border-bottom-right-radius: 5px;
-  left: 45px;
-  top: 5px;
+  -webkit-border-top-right-radius: 4px;
+  -webkit-border-bottom-right-radius: 4px;
+  left: 31px;
+  top: 3px;
 }
 
 div.playbackcontainer {
@@ -441,12 +475,6 @@ div.fullcontainer {
   text-align: left;
   color: gray;
   left: 0;
-}
-
-a:hover {
-  color: #3874be;
-  text-decoration: underline;
-  display: block;
 }
 
 </style>
@@ -700,11 +728,10 @@ function createNewFormItem(initialName, isDirectory, id, blurcallback, keypressc
 
   element.appendChild(link);
   if (isDirectory) {
-    var rightarrow = document.createElement('div');
-    rightarrow.align = 'right';
+    var rightarrow = document.createElement('span');
     rightarrow.innerHTML = '&raquo;';
     rightarrow.className = 'rightarrow';
-    element.appendChild(rightarrow);
+    link.appendChild(rightarrow);
   }
 
   return element;
@@ -1117,11 +1144,10 @@ function createNewItem(title, path, isDirectory) {
 
   element.appendChild(link);
   if (isDirectory) {
-    var rightarrow = document.createElement('div');
-    rightarrow.align = 'right';
-    rightarrow.innerHTML = '&raquo;';
+    var rightarrow = document.createElement('span');
+    rightarrow.innerHTML = '&nbsp;&raquo;';
     rightarrow.className = 'rightarrow';
-    element.appendChild(rightarrow);
+    link.appendChild(rightarrow);
   } else if (pathIsImageFile(path)) {
     var uploadicon = document.createElement('div');
     var uploadmenu = document.createElement('div');
