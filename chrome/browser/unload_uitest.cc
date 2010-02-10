@@ -103,19 +103,32 @@ class UnloadTest : public UITest {
     }
   }
 
+  void CheckTitle(const std::wstring& expected_title) {
+    const int kCheckDelayMs = 100;
+    int max_wait_time = 5000;
+    while (max_wait_time > 0) {
+      max_wait_time -= kCheckDelayMs;
+      PlatformThread::Sleep(kCheckDelayMs);
+      if (expected_title == GetActiveTabTitle())
+        break;
+    }
+
+    EXPECT_EQ(expected_title, GetActiveTabTitle());
+  }
+
   void NavigateToDataURL(const std::string& html_content,
                          const std::wstring& expected_title) {
     NavigateToURL(GURL("data:text/html," + html_content));
-    EXPECT_EQ(expected_title, GetActiveTabTitle());
+    CheckTitle(expected_title);
   }
 
   void NavigateToNolistenersFileTwice() {
     NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
                       FilePath(FILE_PATH_LITERAL("title2.html"))));
-    EXPECT_EQ(L"Title Of Awesomeness", GetActiveTabTitle());
+    CheckTitle(L"Title Of Awesomeness");
     NavigateToURL(URLRequestMockHTTPJob::GetMockUrl(
                       FilePath(FILE_PATH_LITERAL("title2.html"))));
-    EXPECT_EQ(L"Title Of Awesomeness", GetActiveTabTitle());
+    CheckTitle(L"Title Of Awesomeness");
   }
 
   // Navigates to a URL asynchronously, then again synchronously. The first
@@ -133,7 +146,7 @@ class UnloadTest : public UITest {
         URLRequestMockHTTPJob::GetMockUrl(
             FilePath(FILE_PATH_LITERAL("title2.html"))));
 
-    EXPECT_EQ(L"Title Of Awesomeness", GetActiveTabTitle());
+    CheckTitle(L"Title Of Awesomeness");
   }
 
   void LoadUrlAndQuitBrowser(const std::string& html_content,
