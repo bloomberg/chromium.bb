@@ -34,25 +34,6 @@ namespace {
 // Time to backoff syncing after receiving a throttled response.
 static const int kSyncDelayAfterThrottled = 2 * 60 * 60;  // 2 hours
 
-// Verifies the store birthday, alerting/resetting as appropriate if there's a
-// mismatch.
-bool VerifyResponseBirthday(const ScopedDirLookup& dir,
-                            const ClientToServerResponse* response) {
-  // Process store birthday.
-  if (!response->has_store_birthday())
-    return true;
-  string birthday = dir->store_birthday();
-  if (response->store_birthday() == birthday)
-    return true;
-  LOG(INFO) << "New store birthday: " << response->store_birthday();
-  if (!birthday.empty()) {
-    LOG(ERROR) << "Birthday changed, showing syncer stuck";
-    return false;
-  }
-  dir->set_store_birthday(response->store_birthday());
-  return true;
-}
-
 void LogResponseProfilingData(const ClientToServerResponse& response) {
   if (response.has_profiling_data()) {
     stringstream response_trace;
@@ -93,79 +74,130 @@ void LogResponseProfilingData(const ClientToServerResponse& response) {
 
 }  // namespace
 
-// static
-bool SyncerProtoUtil::PostClientToServerMessage(ClientToServerMessage* msg,
-    ClientToServerResponse* response, SyncSession* session) {
-  bool rv = false;
-  string tx, rx;
-  CHECK(response);
 
-  ScopedDirLookup dir(session->context()->directory_manager(),
-      session->context()->account_name());
-  if (!dir.good())
-    return false;
-  string birthday = dir->store_birthday();
-  if (!birthday.empty()) {
-    msg->set_store_birthday(birthday);
-  } else {
-    LOG(INFO) << "no birthday set";
+// static
+bool SyncerProtoUtil::VerifyResponseBirthday(syncable::Directory* dir,
+    const ClientToServerResponse* response) {
+
+  std::string local_birthday = dir->store_birthday();
+
+  if (local_birthday.empty()) {
+    if (!response->has_store_birthday()) {
+      LOG(WARNING) << "Expected a birthday on first sync.";
+      return false;
+    }
+
+    LOG(INFO) << "New store birthday: " << response->store_birthday();
+    dir->set_store_birthday(response->store_birthday());
+    return true;
   }
 
+  // Error situation, but we're not stuck.
+  if (!response->has_store_birthday()) {
+    LOG(WARNING) << "No birthday in server response?";
+    return true;
+  }
+
+  if (response->store_birthday() != local_birthday) {
+    LOG(WARNING) << "Birthday changed, showing syncer stuck";
+    return false;
+  }
+
+  return true;
+}
+
+// static
+void SyncerProtoUtil::AddRequestBirthday(syncable::Directory* dir,
+                                         ClientToServerMessage* msg) {
+  if (!dir->store_birthday().empty()) {
+    msg->set_store_birthday(dir->store_birthday());
+  }
+}
+
+// static
+bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
+                                            ClientToServerMessage* msg,
+                                            ClientToServerResponse* response) {
+
+  std::string tx, rx;
   msg->SerializeToString(&tx);
+
   HttpResponse http_response;
   ServerConnectionManager::PostBufferParams params = {
     tx, &rx, &http_response
   };
 
-  ServerConnectionManager* scm = session->context()->connection_manager();
   ScopedServerStatusWatcher server_status_watcher(scm, &http_response);
   if (!scm->PostBufferWithCachedAuth(&params, &server_status_watcher)) {
     LOG(WARNING) << "Error posting from syncer:" << http_response;
+    return false;
   } else {
-    rv = response->ParseFromString(rx);
+    if (response->ParseFromString(rx)) {
+      // TODO(tim): This is an egregious layering violation (bug 35060).
+      switch (response->error_code()) {
+        case ClientToServerResponse::ACCESS_DENIED:
+        case ClientToServerResponse::AUTH_INVALID:
+        case ClientToServerResponse::USER_NOT_ACTIVATED:
+          // Fires on ScopedServerStatusWatcher
+          http_response.server_status = HttpResponse::SYNC_AUTH_ERROR;
+          return false;
+        default:
+          return true;
+      }
+    }
+
+    return false;
   }
-  if (rv) {
-    if (!VerifyResponseBirthday(dir, response)) {
-      // TODO(ncarter): Add a unit test for the case where the syncer becomes
-      // stuck due to a bad birthday.
-      session->status_controller()->set_syncer_stuck(true);
+}
+
+// static
+bool SyncerProtoUtil::PostClientToServerMessage(ClientToServerMessage* msg,
+    ClientToServerResponse* response, SyncSession* session) {
+
+  CHECK(response);
+
+  ScopedDirLookup dir(session->context()->directory_manager(),
+      session->context()->account_name());
+  if (!dir.good()) {
+    return false;
+  }
+
+  AddRequestBirthday(dir, msg);
+
+  if (!PostAndProcessHeaders(session->context()->connection_manager(),
+                             msg,
+                             response)) {
+    return false;
+  }
+
+  if (!VerifyResponseBirthday(dir, response)) {
+    // TODO(ncarter): Add a unit test for the case where the syncer becomes
+    // stuck due to a bad birthday.
+    session->status_controller()->set_syncer_stuck(true);
+    return false;
+  }
+
+  switch (response->error_code()) {
+    case ClientToServerResponse::SUCCESS:
+      LogResponseProfilingData(*response);
+      return true;
+    case ClientToServerResponse::NOT_MY_BIRTHDAY:
+      LOG(WARNING) << "Server thought we had wrong birthday.";
       return false;
-    }
-
-    switch (response->error_code()) {
-      case ClientToServerResponse::SUCCESS:
-        if (!response->has_store_birthday() && birthday.empty()) {
-          LOG(ERROR) <<
-            "Server didn't provide birthday in proto buffer response.";
-          rv = false;
-        }
-        LogResponseProfilingData(*response);
-        break;
-      case ClientToServerResponse::USER_NOT_ACTIVATED:
-      case ClientToServerResponse::AUTH_INVALID:
-      case ClientToServerResponse::ACCESS_DENIED:
-        LOG(INFO) << "SyncerProtoUtil: Authentication expired.";
-        // TODO(tim): This is an egregious layering violation (bug 35060).
-        http_response.server_status = HttpResponse::SYNC_AUTH_ERROR;
-        rv = false;
-        break;
-      case ClientToServerResponse::NOT_MY_BIRTHDAY:
-        LOG(WARNING) << "Not my birthday return.";
-        rv = false;
-        break;
-      case ClientToServerResponse::THROTTLED:
-        LOG(WARNING) << "Client silenced by server.";
-        session->delegate()->OnSilencedUntil(base::TimeTicks::Now() +
-            base::TimeDelta::FromSeconds(kSyncDelayAfterThrottled));
-        rv = false;
-        break;
-      default:
-        NOTREACHED();
-        break;
-    }
-
+    case ClientToServerResponse::THROTTLED:
+      LOG(WARNING) << "Client silenced by server.";
+      session->delegate()->OnSilencedUntil(base::TimeTicks::Now() +
+          base::TimeDelta::FromSeconds(kSyncDelayAfterThrottled));
+      return false;
+    case ClientToServerResponse::USER_NOT_ACTIVATED:
+    case ClientToServerResponse::AUTH_INVALID:
+    case ClientToServerResponse::ACCESS_DENIED:
+      // WARNING: PostAndProcessHeaders contains a hack for this case.
+      LOG(WARNING) << "SyncerProtoUtil: Authentication expired.";
+    default:
+      NOTREACHED();
+      return false;
   }
-  return rv;
 }
 
 // static

@@ -9,8 +9,10 @@
 
 #include "chrome/browser/sync/syncable/blob.h"
 #include "chrome/browser/sync/util/sync_types.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 namespace syncable {
+class Directory;
 class Entry;
 class ScopedDirLookup;
 class SyncName;
@@ -27,6 +29,7 @@ class SyncSession;
 }
 
 class ClientToServerMessage;
+class ServerConnectionManager;
 class SyncEntity;
 class CommitResponse_EntryResponse;
 
@@ -69,6 +72,31 @@ class SyncerProtoUtil {
 
  private:
   SyncerProtoUtil() {}
+
+  // Helper functions for PostClientToServerMessage.
+
+  // Verifies the store birthday, alerting/resetting as appropriate if there's a
+  // mismatch. Return false if the syncer should be stuck.
+  static bool VerifyResponseBirthday(syncable::Directory* dir,
+      const sync_pb::ClientToServerResponse* response);
+
+  // Pull the birthday from the dir and put it into the msg.
+  static void AddRequestBirthday(syncable::Directory* dir,
+                                 ClientToServerMessage* msg);
+
+  // Post the message using the scm, and do some processing on the returned
+  // headers. Decode the server response.
+  static bool PostAndProcessHeaders(browser_sync::ServerConnectionManager* scm,
+                                    ClientToServerMessage* msg,
+                                    sync_pb::ClientToServerResponse* response);
+
+  friend class SyncerProtoUtilTest;
+
+  FRIEND_TEST(SyncerProtoUtilTest, AddRequestBirthday);
+  FRIEND_TEST(SyncerProtoUtilTest, PostAndProcessHeaders);
+  FRIEND_TEST(SyncerProtoUtilTest, VerifyResponseBirthday);
+
+
   DISALLOW_COPY_AND_ASSIGN(SyncerProtoUtil);
 };
 

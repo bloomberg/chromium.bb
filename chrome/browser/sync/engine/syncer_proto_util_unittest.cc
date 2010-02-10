@@ -7,10 +7,15 @@
 #include "base/basictypes.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/syncable/blob.h"
+#include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
+#include "chrome/test/sync/engine/mock_server_connection.h"
+#include "chrome/test/sync/engine/test_directory_setter_upper.h"
+
 #include "testing/gtest/include/gtest/gtest.h"
 
 using syncable::Blob;
+using syncable::ScopedDirLookup;
 using syncable::SyncName;
 
 namespace browser_sync {
@@ -133,6 +138,111 @@ TEST(SyncerProtoUtil, NameExtractionTwoNames) {
   EXPECT_EQ(neuro, name_b);
 
   EXPECT_TRUE(name_a == name_b);
+}
+
+class SyncerProtoUtilTest : public testing::Test {
+ public:
+  virtual void SetUp() {
+    setter_upper_.SetUp();
+  }
+
+  virtual void TearDown() {
+    setter_upper_.TearDown();
+  }
+
+ protected:
+  browser_sync::TestDirectorySetterUpper setter_upper_;
+};
+
+TEST_F(SyncerProtoUtilTest, VerifyResponseBirthday) {
+  ScopedDirLookup lookup(setter_upper_.manager(), setter_upper_.name());
+  ASSERT_TRUE(lookup.good());
+
+  // Both sides empty
+  EXPECT_TRUE(lookup->store_birthday().empty());
+  ClientToServerResponse response;
+  EXPECT_FALSE(SyncerProtoUtil::VerifyResponseBirthday(lookup, &response));
+
+  // Remote set, local empty
+  response.set_store_birthday("flan");
+  EXPECT_TRUE(SyncerProtoUtil::VerifyResponseBirthday(lookup, &response));
+  EXPECT_EQ(lookup->store_birthday(), "flan");
+
+  // Remote empty, local set.
+  response.clear_store_birthday();
+  EXPECT_TRUE(SyncerProtoUtil::VerifyResponseBirthday(lookup, &response));
+  EXPECT_EQ(lookup->store_birthday(), "flan");
+
+  // Doesn't match
+  response.set_store_birthday("meat");
+  EXPECT_FALSE(SyncerProtoUtil::VerifyResponseBirthday(lookup, &response));
+}
+
+TEST_F(SyncerProtoUtilTest, AddRequestBirthday) {
+  ScopedDirLookup lookup(setter_upper_.manager(), setter_upper_.name());
+  ASSERT_TRUE(lookup.good());
+
+  EXPECT_TRUE(lookup->store_birthday().empty());
+  ClientToServerMessage msg;
+  SyncerProtoUtil::AddRequestBirthday(lookup, &msg);
+  EXPECT_FALSE(msg.has_store_birthday());
+
+  lookup->set_store_birthday("meat");
+  SyncerProtoUtil::AddRequestBirthday(lookup, &msg);
+  EXPECT_EQ(msg.store_birthday(), "meat");
+}
+
+class DummyConnectionManager : public browser_sync::ServerConnectionManager {
+ public:
+  DummyConnectionManager()
+      : ServerConnectionManager("unused", 0, false, "version", "id"),
+        send_error_(false),
+        access_denied_(false) {}
+
+  virtual ~DummyConnectionManager() {}
+  virtual bool PostBufferWithCachedAuth(const PostBufferParams* params,
+                                        ScopedServerStatusWatcher* watcher) {
+    if (send_error_) {
+      return false;
+    }
+
+    ClientToServerResponse response;
+    if (access_denied_) {
+      response.set_error_code(ClientToServerResponse::ACCESS_DENIED);
+    }
+    response.SerializeToString(params->buffer_out);
+
+    return true;
+  }
+
+  void set_send_error(bool send) {
+    send_error_ = send;
+  }
+
+  void set_access_denied(bool denied) {
+    access_denied_ = denied;
+  }
+
+ private:
+  bool send_error_;
+  bool access_denied_;
+};
+
+TEST_F(SyncerProtoUtilTest, PostAndProcessHeaders) {
+  DummyConnectionManager dcm;
+  ClientToServerMessage msg;
+  msg.set_share("required");
+  msg.set_message_contents(ClientToServerMessage::GET_UPDATES);
+  ClientToServerResponse response;
+
+  dcm.set_send_error(true);
+  EXPECT_FALSE(SyncerProtoUtil::PostAndProcessHeaders(&dcm, &msg, &response));
+
+  dcm.set_send_error(false);
+  EXPECT_TRUE(SyncerProtoUtil::PostAndProcessHeaders(&dcm, &msg, &response));
+
+  dcm.set_access_denied(true);
+  EXPECT_FALSE(SyncerProtoUtil::PostAndProcessHeaders(&dcm, &msg, &response));
 }
 
 }  // namespace browser_sync
