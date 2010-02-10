@@ -985,6 +985,24 @@ bool WebDatabase::GetCountOfFormElement(int64 pair_id, int* count) {
   return false;
 }
 
+bool WebDatabase::GetAllAutofillEntries(std::vector<AutofillEntry>* entries) {
+  DCHECK(entries);
+  sql::Statement s(db_.GetUniqueStatement("SELECT name, value FROM autofill"));
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  while (s.Step()) {
+    AutofillKey key(UTF8ToUTF16(s.ColumnString(0)),
+                    UTF8ToUTF16(s.ColumnString(1)));
+    AutofillEntry entry(key);
+    entries->push_back(entry);
+  }
+
+  return s.Succeeded();
+}
+
 bool WebDatabase::InsertFormElement(const FormField& element,
                                     int64* pair_id) {
   sql::Statement s(db_.GetUniqueStatement(

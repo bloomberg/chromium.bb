@@ -7,3 +7,8 @@
 bool AutofillKey::operator==(const AutofillKey& key) const {
   return name_ == key.name() && value_ == key.value();
 }
+
+bool AutofillEntry::operator==(const AutofillEntry& entry) const {
+  return key_ == entry.key();
+}
+

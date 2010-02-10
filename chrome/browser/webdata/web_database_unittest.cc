@@ -2,7 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include <list>
 #include <string>
+#include <vector>
 
 #include "base/file_util.h"
 #include "base/path_service.h"
@@ -999,4 +1001,70 @@ TEST_F(WebDatabaseTest, CreditCard) {
   EXPECT_TRUE(db.RemoveCreditCard(target_creditcard.unique_id()));
   EXPECT_FALSE(db.GetCreditCardForLabel(ASCIIToUTF16("Target"),
                                         &db_creditcard));
+}
+
+TEST_F(WebDatabaseTest, GetAllAutofillEntries) {
+  WebDatabase db;
+
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  // Simulate the submission of a handful of entries in a field called "Name",
+  // some more often than others.
+  AutofillChangeList changes;
+  EXPECT_TRUE(db.AddFormFieldValue(
+      FormField(string16(),
+                ASCIIToUTF16("Name"),
+                string16(),
+                ASCIIToUTF16("Superman")),
+      &changes));
+  for (int i = 0; i < 5; i++) {
+    EXPECT_TRUE(db.AddFormFieldValue(
+        FormField(string16(),
+                  ASCIIToUTF16("Name"),
+                  string16(),
+                  ASCIIToUTF16("Clark Kent")),
+        &changes));
+  }
+  for (int i = 0; i < 3; i++) {
+    EXPECT_TRUE(db.AddFormFieldValue(
+        FormField(string16(),
+                  ASCIIToUTF16("Name"),
+                  string16(),
+                  ASCIIToUTF16("Clark Sutter")),
+        &changes));
+  }
+  for (int i = 0; i < 2; i++) {
+    EXPECT_TRUE(db.AddFormFieldValue(
+        FormField(string16(),
+                  ASCIIToUTF16("Favorite Color"),
+                  string16(),
+                  ASCIIToUTF16("Green")),
+        &changes));
+  }
+
+  // we should get something along the lines of: [("Name", "Superman"),
+  // ("Name", "Clark Kent"), ("Name", "Clark Sutter"),
+  // ("Favorite Color", "Green")]
+  std::list<AutofillEntry> expected_entries;
+  AutofillKey ak1(ASCIIToUTF16("Name"), ASCIIToUTF16("Superman"));
+  AutofillKey ak2(ASCIIToUTF16("Name"), ASCIIToUTF16("Clark Kent"));
+  AutofillKey ak3(ASCIIToUTF16("Name"), ASCIIToUTF16("Clark Sutter"));
+  AutofillKey ak4(ASCIIToUTF16("Favorite Color"), ASCIIToUTF16("Green"));
+  AutofillEntry ae1(ak1);
+  AutofillEntry ae2(ak2);
+  AutofillEntry ae3(ak3);
+  AutofillEntry ae4(ak4);
+  expected_entries.push_back(ae1);
+  expected_entries.push_back(ae2);
+  expected_entries.push_back(ae3);
+  expected_entries.push_back(ae4);
+
+  std::vector<AutofillEntry> entries;
+  EXPECT_TRUE(db.GetAllAutofillEntries(&entries));
+
+  for (unsigned int i = 0; i < entries.size(); i++) {
+    expected_entries.remove(entries[i]);
+  }
+
+  EXPECT_EQ(0U, expected_entries.size());
 }

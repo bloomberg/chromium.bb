@@ -33,6 +33,7 @@ class AutofillEntry {
 
   const AutofillKey& key() const { return key_; }
 
+  bool operator==(const AutofillEntry& entry) const;
  private:
   AutofillKey key_;
 };

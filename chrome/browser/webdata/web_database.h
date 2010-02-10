@@ -16,6 +16,7 @@
 #include "webkit/glue/form_field.h"
 
 class AutofillChange;
+class AutofillEntry;
 class AutoFillProfile;
 class CreditCard;
 class FilePath;
@@ -232,6 +233,9 @@ class WebDatabase {
 
   // Retrieves all profiles in the database.  Caller owns the returned profiles.
   bool GetCreditCards(std::vector<CreditCard*>* profiles);
+
+  // Retrieves all of the entries in the autofill table.
+  bool GetAllAutofillEntries(std::vector<AutofillEntry>* entries);
 
   //////////////////////////////////////////////////////////////////////////////
   //
