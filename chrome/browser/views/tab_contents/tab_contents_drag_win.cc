@@ -10,10 +10,12 @@
 #include "base/message_loop.h"
 #include "base/task.h"
 #include "base/thread.h"
+#include "base/utf_string_conversions.h"
 #include "base/win_util.h"
 #include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/download/drag_download_file_win.h"
+#include "chrome/browser/download/drag_download_file.h"
+#include "chrome/browser/download/drag_download_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/web_drag_source_win.h"
@@ -112,7 +114,7 @@ void TabContentsDragWin::StartDragging(const WebDropData& drop_data,
   const std::string& page_encoding = view_->tab_contents()->encoding();
 
   // If it is not drag-out, do the drag-and-drop in the current UI thread.
-  if (!drop_data.download_url.is_valid()) {
+  if (drop_data.download_metadata.empty()) {
     DoDragging(drop_data, ops, page_url, page_encoding);
     EndDragging(false);
     return;
@@ -171,17 +173,38 @@ void TabContentsDragWin::PrepareDragForDownload(
     OSExchangeData* data,
     const GURL& page_url,
     const std::string& page_encoding) {
+  // Parse the download metadata.
+  string16 mime_type;
+  FilePath file_name;
+  GURL download_url;
+  if (!drag_download_util::ParseDownloadMetadata(drop_data.download_metadata,
+                                                 &mime_type,
+                                                 &file_name,
+                                                 &download_url))
+    return;
+
+  // Generate the download filename.
+  std::string content_disposition =
+      "attachment; filename=" + UTF16ToUTF8(file_name.value());
+  FilePath generated_file_name;
+  DownloadManager::GenerateFileName(download_url,
+                                    content_disposition,
+                                    std::string(),
+                                    UTF16ToUTF8(mime_type),
+                                    &generated_file_name);
+
   // Provide the data as file (CF_HDROP). A temporary download file with the
   // Zone.Identifier ADS (Alternate Data Stream) attached will be created.
+  linked_ptr<net::FileStream> empty_file_stream;
   scoped_refptr<DragDownloadFile> download_file =
-      new DragDownloadFile(drop_data.download_url,
+      new DragDownloadFile(generated_file_name,
+                           empty_file_stream,
+                           download_url,
                            page_url,
                            page_encoding,
                            view_->tab_contents());
-  OSExchangeData::DownloadFileInfo* file_download =
-      new OSExchangeData::DownloadFileInfo(FilePath(),
-                                           0,
-                                           download_file.get());
+  OSExchangeData::DownloadFileInfo file_download(FilePath(),
+                                                 download_file.get());
   data->SetDownloadFileInfo(file_download);
 
   // Enable asynchronous operation.
@@ -238,7 +261,7 @@ void TabContentsDragWin::DoDragging(const WebDropData& drop_data,
 
   // TODO(tc): Generate an appropriate drag image.
 
-  if (drop_data.download_url.is_valid()) {
+  if (!drop_data.download_metadata.empty()) {
     PrepareDragForDownload(drop_data, &data, page_url, page_encoding);
 
     // Set the observer.

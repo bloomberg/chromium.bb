@@ -19,7 +19,7 @@ WebDropData::WebDropData(const WebDragData& drag_data)
     : identity(0),
       url(drag_data.url()),
       url_title(drag_data.urlTitle()),
-      download_url(drag_data.downloadURL()),
+      download_metadata(drag_data.downloadMetadata()),
       file_extension(drag_data.fileExtension()),
       plain_text(drag_data.plainText()),
       text_html(drag_data.htmlText()),

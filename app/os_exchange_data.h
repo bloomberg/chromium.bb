@@ -17,9 +17,9 @@
 #include <gtk/gtk.h>
 #endif
 
+#include "app/download_file_interface.h"
 #include "base/basictypes.h"
 #include "base/file_path.h"
-#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 
 class GURL;
@@ -61,45 +61,13 @@ class OSExchangeData {
 #endif
   };
 
-  struct DownloadFileInfo;
-
-  // Defines the interface to observe the status of file download.
-  class DownloadFileObserver : public base::RefCounted<DownloadFileObserver> {
-   public:
-    // The caller is responsible to free the DownloadFileInfo objects passed
-    // in the vector parameter.
-    virtual void OnDataReady(
-        int format,
-        const std::vector<DownloadFileInfo*>& downloads) = 0;
-
-   protected:
-    friend class base::RefCounted<DownloadFileObserver>;
-    virtual ~DownloadFileObserver() {}
-  };
-
-  // Defines the interface to control how a file is downloaded.
-  class DownloadFileProvider :
-      public base::RefCountedThreadSafe<DownloadFileProvider> {
-   public:
-    virtual bool Start(DownloadFileObserver* observer, int format) = 0;
-    virtual void Stop() = 0;
-
-   protected:
-    friend class base::RefCountedThreadSafe<DownloadFileProvider>;
-    virtual ~DownloadFileProvider() {}
-  };
-
   // Encapsulates the info about a file to be downloaded.
   struct DownloadFileInfo {
     FilePath filename;
-    uint64 size;
     scoped_refptr<DownloadFileProvider> downloader;
 
-    DownloadFileInfo(const FilePath& filename,
-                     uint64 size,
-                     DownloadFileProvider* downloader)
+    DownloadFileInfo(const FilePath& filename, DownloadFileProvider* downloader)
         : filename(filename),
-          size(size),
           downloader(downloader) {}
   };
 
@@ -135,7 +103,7 @@ class OSExchangeData {
     virtual bool GetHtml(std::wstring* html, GURL* base_url) const = 0;
     virtual bool HasFileContents() const = 0;
     virtual bool HasHtml() const = 0;
-    virtual void SetDownloadFileInfo(DownloadFileInfo* download) = 0;
+    virtual void SetDownloadFileInfo(const DownloadFileInfo& download) = 0;
 #endif
   };
 
@@ -211,7 +179,7 @@ class OSExchangeData {
   bool GetHtml(std::wstring* html, GURL* base_url) const;
 
   // Adds a download file with full path (CF_HDROP).
-  void SetDownloadFileInfo(DownloadFileInfo* download);
+  void SetDownloadFileInfo(const DownloadFileInfo& download);
 #endif
 
  private:

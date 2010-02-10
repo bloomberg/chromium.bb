@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/time.h"
+#include "chrome/browser/download/download_file.h"
 #include "googleurl/src/gurl.h"
 
 // Used for informing the download database of a new download, where we don't
@@ -87,8 +88,8 @@ struct DownloadCreateInfo {
   // The charset of the referring page where the download request comes from.
   // It's used to construct a suggested filename.
   std::string referrer_charset;
-  // The file path to save to.
-  FilePath save_file_path;
+  // The download file save info.
+  DownloadSaveInfo save_info;
 };
 
 #endif  // CHROME_BROWSER_HISTORY_DOWNLOAD_TYPES_H_

@@ -62,6 +62,7 @@ class Profile;
 class ResourceDispatcherHost;
 class URLRequestContextGetter;
 class TabContents;
+struct DownloadSaveInfo;
 
 namespace base {
 class Thread;
@@ -414,7 +415,7 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   void DownloadUrlToFile(const GURL& url,
                          const GURL& referrer,
                          const std::string& referrer_encoding,
-                         const FilePath& save_file_path,
+                         const DownloadSaveInfo& save_info,
                          TabContents* tab_contents);
 
   // Allow objects to observe the download creation process.

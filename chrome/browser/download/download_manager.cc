@@ -598,21 +598,22 @@ void DownloadManager::StartDownload(DownloadCreateInfo* info) {
       info->save_as = true;
   }
 
-  // Determine the proper path for a download, by either one of the following:
-  // 1) using the provided save file path.
-  // 2) using the default download directory.
-  // 3) prompting the user.
-  FilePath generated_name;
-  GenerateFileNameFromInfo(info, &generated_name);
-  if (!info->save_file_path.empty())
-    info->suggested_path = info->save_file_path;
-  else if (info->save_as && !last_download_path_.empty())
-    info->suggested_path = last_download_path_;
-  else
-    info->suggested_path = download_path();
-  info->suggested_path = info->suggested_path.Append(generated_name);
+  if (info->save_info.file_path.empty()) {
+    // Determine the proper path for a download, by either one of the following:
+    // 1) using the default download directory.
+    // 2) prompting the user.
+    FilePath generated_name;
+    GenerateFileNameFromInfo(info, &generated_name);
+    if (info->save_as && !last_download_path_.empty())
+      info->suggested_path = last_download_path_;
+    else
+      info->suggested_path = download_path();
+    info->suggested_path = info->suggested_path.Append(generated_name);
+  } else {
+    info->suggested_path = info->save_info.file_path;
+  }
 
-  if (!info->save_as && info->save_file_path.empty()) {
+  if (!info->save_as && info->save_info.file_path.empty()) {
     // Downloads can be marked as dangerous for two reasons:
     // a) They have a dangerous-looking filename
     // b) They are an extension that is not from the gallery
@@ -646,7 +647,10 @@ void DownloadManager::CheckIfSuggestedPathExists(DownloadCreateInfo* info) {
     info->suggested_path = info->suggested_path.Append(filename);
   }
 
-  info->path_uniquifier = GetUniquePathNumber(info->suggested_path);
+  // Do not add the path uniquifier if we are saving to a specific path as in
+  // the drag-out case.
+  if (info->save_info.file_path.empty())
+    info->path_uniquifier = GetUniquePathNumber(info->suggested_path);
 
   // If the download is deemed dangerous, we'll use a temporary name for it.
   if (info->is_dangerous) {
@@ -676,7 +680,7 @@ void DownloadManager::CheckIfSuggestedPathExists(DownloadCreateInfo* info) {
     }
   }
 
-  if (!info->save_as) {
+  if (!info->save_as && info->save_info.file_path.empty()) {
     // Create an empty file at the suggested path so that we don't allocate the
     // same "non-existant" path to multiple downloads.
     // See: http://code.google.com/p/chromium/issues/detail?id=3662
@@ -743,7 +747,7 @@ void DownloadManager::ContinueStartDownload(DownloadCreateInfo* info,
                                 info->is_dangerous,
                                 info->save_as,
                                 info->is_extension_install,
-                                !info->save_file_path.empty());
+                                !info->save_info.file_path.empty());
     download->set_manager(this);
     in_progress_[info->download_id] = download;
   } else {
@@ -1204,7 +1208,7 @@ void DownloadManager::DownloadUrl(const GURL& url,
   file_manager_->DownloadUrl(url,
                              referrer,
                              referrer_charset,
-                             FilePath(),
+                             DownloadSaveInfo(),
                              tab_contents->GetRenderProcessHost()->id(),
                              tab_contents->render_view_host()->routing_id(),
                              request_context_getter_);
@@ -1213,13 +1217,13 @@ void DownloadManager::DownloadUrl(const GURL& url,
 void DownloadManager::DownloadUrlToFile(const GURL& url,
                                         const GURL& referrer,
                                         const std::string& referrer_charset,
-                                        const FilePath& save_file_path,
+                                        const DownloadSaveInfo& save_info,
                                         TabContents* tab_contents) {
   DCHECK(tab_contents);
   file_manager_->DownloadUrl(url,
                              referrer,
                              referrer_charset,
-                             save_file_path,
+                             save_info,
                              tab_contents->GetRenderProcessHost()->id(),
                              tab_contents->render_view_host()->routing_id(),
                              request_context_getter_);

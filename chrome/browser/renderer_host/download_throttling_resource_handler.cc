@@ -130,7 +130,6 @@ void DownloadThrottlingResourceHandler::CancelDownload() {
 
 void DownloadThrottlingResourceHandler::ContinueDownload() {
   DCHECK(!download_handler_.get());
-  FilePath save_file_path;
   download_handler_ =
       new DownloadResourceHandler(host_,
                                   render_process_host_id_,
@@ -140,7 +139,7 @@ void DownloadThrottlingResourceHandler::ContinueDownload() {
                                   host_->download_file_manager(),
                                   request_,
                                   false,
-                                  save_file_path);
+                                  DownloadSaveInfo());
   if (response_.get())
     download_handler_->OnResponseStarted(request_id_, response_.get());
 

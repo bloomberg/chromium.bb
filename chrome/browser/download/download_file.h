@@ -49,11 +49,13 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/hash_tables.h"
+#include "base/linked_ptr.h"
 #include "base/lock.h"
 #include "base/ref_counted.h"
 #include "base/timer.h"
 #include "chrome/browser/power_save_blocker.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/file_stream.h"
 
 namespace net {
 class IOBuffer;
@@ -76,6 +78,16 @@ struct DownloadBuffer {
   Lock lock;
   typedef std::pair<net::IOBuffer*, int> Contents;
   std::vector<Contents> contents;
+};
+
+// DownloadSaveInfo ------------------------------------------------------------
+
+// Holds the information about how to save a download file.
+struct DownloadSaveInfo {
+  FilePath file_path;
+  linked_ptr<net::FileStream> file_stream;
+
+  DownloadSaveInfo() { }
 };
 
 // DownloadFile ----------------------------------------------------------------
@@ -111,18 +123,18 @@ class DownloadFile {
   int render_view_id() const { return render_view_id_; }
   int request_id() const { return request_id_; }
   bool path_renamed() const { return path_renamed_; }
-  bool in_progress() const { return file_ != NULL; }
+  bool in_progress() const { return file_stream_ != NULL; }
   void set_in_progress(bool in_progress) { in_progress_ = in_progress; }
 
  private:
-  // Open or Close the OS file handle. The file is opened in the constructor
+  // Open or Close the OS file stream. The stream is opened in the constructor
   // based on creation information passed to it, and automatically closed in
   // the destructor.
   void Close();
-  bool Open(const char* open_mode);
+  bool Open();
 
-  // OS file handle for writing
-  FILE* file_;
+  // OS file stream for writing
+  linked_ptr<net::FileStream> file_stream_;
 
   // Source URL for the file being downloaded.
   GURL source_url_;
@@ -156,6 +168,9 @@ class DownloadFile {
 
   // RAII handle to keep the system from sleeping while we're downloading.
   PowerSaveBlocker dont_sleep_;
+
+  // The provider used to save the download data.
+  DownloadSaveInfo save_info_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadFile);
 };
@@ -192,7 +207,7 @@ class DownloadFileManager
   void DownloadUrl(const GURL& url,
                    const GURL& referrer,
                    const std::string& referrer_charset,
-                   const FilePath& save_file_path,
+                   const DownloadSaveInfo& save_info,
                    int render_process_host_id,
                    int render_view_id,
                    URLRequestContextGetter* request_context_getter);
@@ -201,7 +216,7 @@ class DownloadFileManager
   void OnDownloadUrl(const GURL& url,
                      const GURL& referrer,
                      const std::string& referrer_charset,
-                     const FilePath& save_file_path,
+                     const DownloadSaveInfo& save_info,
                      int render_process_host_id,
                      int render_view_id,
                      URLRequestContextGetter* request_context_getter);

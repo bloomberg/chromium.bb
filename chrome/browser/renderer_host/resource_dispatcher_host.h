@@ -42,6 +42,7 @@ class SSLClientAuthHandler;
 class UserScriptListener;
 class URLRequestContext;
 class WebKitThread;
+struct DownloadSaveInfo;
 struct GlobalRequestID;
 struct ViewHostMsg_Resource_Request;
 struct ViewMsg_ClosePage_Params;
@@ -107,7 +108,7 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
   // request from the renderer or another child process).
   void BeginDownload(const GURL& url,
                      const GURL& referrer,
-                     const FilePath& save_file_path,
+                     const DownloadSaveInfo& save_info,
                      int process_unique_id,
                      int route_id,
                      URLRequestContext* request_context);

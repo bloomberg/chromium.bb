@@ -560,12 +560,13 @@ void ResourceDispatcherHost::OnClosePageACK(
 }
 
 // We are explicitly forcing the download of 'url'.
-void ResourceDispatcherHost::BeginDownload(const GURL& url,
-                                           const GURL& referrer,
-                                           const FilePath& save_file_path,
-                                           int child_id,
-                                           int route_id,
-                                           URLRequestContext* request_context) {
+void ResourceDispatcherHost::BeginDownload(
+    const GURL& url,
+    const GURL& referrer,
+    const DownloadSaveInfo& save_info,
+    int child_id,
+    int route_id,
+    URLRequestContext* request_context) {
   if (is_shutdown_)
     return;
 
@@ -593,7 +594,7 @@ void ResourceDispatcherHost::BeginDownload(const GURL& url,
                                   download_file_manager_.get(),
                                   request,
                                   true,
-                                  save_file_path);
+                                  save_info);
 
 
   if (safe_browsing_->enabled() && safe_browsing_->CanCheckUrl(url)) {

@@ -15,6 +15,7 @@
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/chrome_plugin_browsing_context.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/download/download_file.h"
 #include "chrome/browser/extensions/extension_file_util.h"
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/host_zoom_map.h"
@@ -778,10 +779,9 @@ void ResourceMessageFilter::OnDownloadUrl(const IPC::Message& message,
                                           const GURL& url,
                                           const GURL& referrer) {
   URLRequestContext* context = request_context_->GetURLRequestContext();
-  FilePath save_file_path;
   resource_dispatcher_host_->BeginDownload(url,
                                            referrer,
-                                           save_file_path,
+                                           DownloadSaveInfo(),
                                            id(),
                                            message.routing_id(),
                                            context);

@@ -12,7 +12,7 @@
 #include "app/os_exchange_data.h"
 #include "base/scoped_comptr_win.h"
 
-class DataObjectImpl : public OSExchangeData::DownloadFileObserver,
+class DataObjectImpl : public DownloadFileObserver,
                        public IDataObject,
                        public IAsyncOperation {
  public:
@@ -30,9 +30,8 @@ class DataObjectImpl : public OSExchangeData::DownloadFileObserver,
   void set_observer(Observer* observer) { observer_ = observer; }
 
   // DownloadFileObserver implementation:
-  virtual void OnDataReady(
-      int format,
-      const std::vector<OSExchangeData::DownloadFileInfo*>& downloads);
+  virtual void OnDownloadCompleted(const FilePath& file_path);
+  virtual void OnDownloadAborted();
 
   // IDataObject implementation:
   HRESULT __stdcall GetData(FORMATETC* format_etc, STGMEDIUM* medium);
@@ -77,7 +76,7 @@ class DataObjectImpl : public OSExchangeData::DownloadFileObserver,
     STGMEDIUM* medium;
     bool owns_medium;
     bool in_delay_rendering;
-    std::vector<OSExchangeData::DownloadFileInfo*> downloads;
+    scoped_refptr<DownloadFileProvider> downloader;
 
     StoredDataInfo(CLIPFORMAT cf, STGMEDIUM* medium)
         : medium(medium),
@@ -102,11 +101,8 @@ class DataObjectImpl : public OSExchangeData::DownloadFileObserver,
         ReleaseStgMedium(medium);
         delete medium;
       }
-      for (size_t i = 0; i < downloads.size(); ++i) {
-        if (downloads[i]->downloader)
-          downloads[i]->downloader->Stop();
-      }
-      downloads.clear();
+      if (downloader.get())
+        downloader->Stop();
     }
   };
 
@@ -167,7 +163,7 @@ class OSExchangeDataProviderWin : public OSExchangeData::Provider {
   virtual bool HasHtml() const;
   virtual bool HasCustomFormat(OSExchangeData::CustomFormat format) const;
   virtual void SetDownloadFileInfo(
-      OSExchangeData::DownloadFileInfo* download_info);
+      const OSExchangeData::DownloadFileInfo& download_info);
 
  private:
   scoped_refptr<DataObjectImpl> data_;

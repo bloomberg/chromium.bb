@@ -1790,7 +1790,7 @@ struct ParamTraits<WebDropData> {
     WriteParam(m, p.identity);
     WriteParam(m, p.url);
     WriteParam(m, p.url_title);
-    WriteParam(m, p.download_url);
+    WriteParam(m, p.download_metadata);
     WriteParam(m, p.file_extension);
     WriteParam(m, p.filenames);
     WriteParam(m, p.plain_text);
@@ -1804,7 +1804,7 @@ struct ParamTraits<WebDropData> {
       ReadParam(m, iter, &p->identity) &&
       ReadParam(m, iter, &p->url) &&
       ReadParam(m, iter, &p->url_title) &&
-      ReadParam(m, iter, &p->download_url) &&
+      ReadParam(m, iter, &p->download_metadata) &&
       ReadParam(m, iter, &p->file_extension) &&
       ReadParam(m, iter, &p->filenames) &&
       ReadParam(m, iter, &p->plain_text) &&

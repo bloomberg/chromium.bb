@@ -57,7 +57,7 @@ class DownloadFileUpdateTask : public Task {
 // DownloadFile implementation -------------------------------------------------
 
 DownloadFile::DownloadFile(const DownloadCreateInfo* info)
-    : file_(NULL),
+    : file_stream_(info->save_info.file_stream),
       source_url_(info->url),
       referrer_url_(info->referrer_url),
       id_(info->download_id),
@@ -65,9 +65,11 @@ DownloadFile::DownloadFile(const DownloadCreateInfo* info)
       render_view_id_(info->render_view_id),
       request_id_(info->request_id),
       bytes_so_far_(0),
+      full_path_(info->save_info.file_path),
       path_renamed_(false),
       in_progress_(true),
-      dont_sleep_(true) {
+      dont_sleep_(true),
+      save_info_(info->save_info) {
 }
 
 DownloadFile::~DownloadFile() {
@@ -75,15 +77,15 @@ DownloadFile::~DownloadFile() {
 }
 
 bool DownloadFile::Initialize() {
-  if (file_util::CreateTemporaryFile(&full_path_))
-    return Open("wb");
+  if (!full_path_.empty() || file_util::CreateTemporaryFile(&full_path_))
+    return Open();
   return false;
 }
 
 bool DownloadFile::AppendDataToFile(const char* data, int data_len) {
-  if (file_) {
+  if (file_stream_.get()) {
     // FIXME bug 595247: handle errors on file writes.
-    size_t written = fwrite(data, 1, data_len, file_);
+    size_t written = file_stream_->Write(data, data_len, NULL);
     bytes_so_far_ += written;
     return true;
   }
@@ -92,12 +94,17 @@ bool DownloadFile::AppendDataToFile(const char* data, int data_len) {
 
 void DownloadFile::Cancel() {
   Close();
-  file_util::Delete(full_path_, false);
+  if (!full_path_.empty())
+    file_util::Delete(full_path_, false);
 }
 
 // The UI has provided us with our finalized name.
 bool DownloadFile::Rename(const FilePath& new_path) {
   Close();
+
+  // Nothing more to do if the new path is same as the old one.
+  if (new_path == full_path_)
+    return true;
 
 #if defined(OS_WIN)
   // We cannot rename because rename will keep the same security descriptor
@@ -119,23 +126,30 @@ bool DownloadFile::Rename(const FilePath& new_path) {
   if (!in_progress_)
     return true;
 
-  if (!Open("a+b"))
+  if (!Open())
     return false;
   return true;
 }
 
 void DownloadFile::Close() {
-  if (file_) {
-    file_util::CloseFile(file_);
-    file_ = NULL;
+  if (file_stream_.get()) {
+    file_stream_->Close();
+    file_stream_.reset();
   }
 }
 
-bool DownloadFile::Open(const char* open_mode) {
+bool DownloadFile::Open() {
   DCHECK(!full_path_.empty());
-  file_ = file_util::OpenFile(full_path_, open_mode);
-  if (!file_) {
-    return false;
+
+  // Create a new file steram if it is not provided.
+  if (!file_stream_.get()) {
+    file_stream_.reset(new net::FileStream);
+    if (file_stream_->Open(full_path_,
+                          base::PLATFORM_FILE_OPEN_ALWAYS |
+                              base::PLATFORM_FILE_WRITE) != net::OK) {
+      file_stream_.reset();
+      return false;
+    }
   }
 
 #if defined(OS_WIN)
@@ -429,7 +443,7 @@ void DownloadFileManager::DownloadUrl(
     const GURL& url,
     const GURL& referrer,
     const std::string& referrer_charset,
-    const FilePath& save_file_path,
+    const DownloadSaveInfo& save_info,
     int render_process_host_id,
     int render_view_id,
     URLRequestContextGetter* request_context_getter) {
@@ -441,7 +455,7 @@ void DownloadFileManager::DownloadUrl(
                           url,
                           referrer,
                           referrer_charset,
-                          save_file_path,
+                          save_info,
                           render_process_host_id,
                           render_view_id,
                           request_context_getter));
@@ -526,7 +540,7 @@ void DownloadFileManager::OnDownloadUrl(
     const GURL& url,
     const GURL& referrer,
     const std::string& referrer_charset,
-    const FilePath& save_file_path,
+    const DownloadSaveInfo& save_info,
     int render_process_host_id,
     int render_view_id,
     URLRequestContextGetter* request_context_getter) {
@@ -537,7 +551,7 @@ void DownloadFileManager::OnDownloadUrl(
 
   resource_dispatcher_host_->BeginDownload(url,
                                            referrer,
-                                           save_file_path,
+                                           save_info,
                                            render_process_host_id,
                                            render_view_id,
                                            context);

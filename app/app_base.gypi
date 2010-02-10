@@ -106,6 +106,7 @@
         'drag_drop_types_gtk.cc',
         'drag_drop_types_win.cc',
         'drag_drop_types.h',
+        'file_download_interface.h',
         'gfx/blit.cc',
         'gfx/blit.h',
         'gfx/canvas.cc',

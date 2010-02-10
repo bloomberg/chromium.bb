@@ -13,15 +13,16 @@
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request_context.h"
 
-DownloadResourceHandler::DownloadResourceHandler(ResourceDispatcherHost* rdh,
-                                                 int render_process_host_id,
-                                                 int render_view_id,
-                                                 int request_id,
-                                                 const GURL& url,
-                                                 DownloadFileManager* manager,
-                                                 URLRequest* request,
-                                                 bool save_as,
-                                                 const FilePath& save_file_path)
+DownloadResourceHandler::DownloadResourceHandler(
+    ResourceDispatcherHost* rdh,
+    int render_process_host_id,
+    int render_view_id,
+    int request_id,
+    const GURL& url,
+    DownloadFileManager* manager,
+    URLRequest* request,
+    bool save_as,
+    const DownloadSaveInfo& save_info)
     : download_id_(-1),
       global_id_(render_process_host_id, request_id),
       render_view_id_(render_view_id),
@@ -30,7 +31,7 @@ DownloadResourceHandler::DownloadResourceHandler(ResourceDispatcherHost* rdh,
       download_manager_(manager),
       request_(request),
       save_as_(save_as),
-      save_file_path_(save_file_path),
+      save_info_(save_info),
       buffer_(new DownloadBuffer),
       rdh_(rdh),
       is_paused_(false) {
@@ -69,10 +70,10 @@ bool DownloadResourceHandler::OnResponseStarted(int request_id,
   info->request_id = global_id_.request_id;
   info->content_disposition = content_disposition_;
   info->mime_type = response->response_head.mime_type;
-  info->save_as = save_as_ && save_file_path_.empty();
+  info->save_as = save_as_ && save_info_.file_path.empty();
   info->is_dangerous = false;
   info->referrer_charset = request_->context()->referrer_charset();
-  info->save_file_path = save_file_path_;
+  info->save_info = save_info_;
   ChromeThread::PostTask(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(

@@ -455,17 +455,17 @@ bool OSExchangeDataProviderWin::HasCustomFormat(CLIPFORMAT format) const {
 }
 
 void OSExchangeDataProviderWin::SetDownloadFileInfo(
-    OSExchangeData::DownloadFileInfo* download) {
+    const OSExchangeData::DownloadFileInfo& download) {
   // If the filename is not provided, set stoarge to NULL to indicate that
   // the delay rendering will be used.
   STGMEDIUM* storage = NULL;
-  if (!download->filename.empty())
-    storage = GetStorageForFileName(download->filename.value());
+  if (!download.filename.empty())
+    storage = GetStorageForFileName(download.filename.value());
 
   // Add CF_HDROP.
   DataObjectImpl::StoredDataInfo* info = new DataObjectImpl::StoredDataInfo(
       ClipboardUtil::GetCFHDropFormat()->cfFormat, storage);
-  info->downloads.push_back(download);
+  info->downloader = download.downloader;
   data_->contents_.push_back(info);
 }
 
@@ -560,35 +560,18 @@ DataObjectImpl::~DataObjectImpl() {
 void DataObjectImpl::StopDownloads() {
   for (StoredData::iterator iter = contents_.begin();
        iter != contents_.end(); ++iter) {
-    for (size_t i = 0; i < (*iter)->downloads.size(); ++i) {
-      if ((*iter)->downloads[i]->downloader) {
-        (*iter)->downloads[i]->downloader->Stop();
-        (*iter)->downloads[i]->downloader = 0;
-      }
-      delete (*iter)->downloads[i];
+    if ((*iter)->downloader.get()) {
+      (*iter)->downloader->Stop();
+      (*iter)->downloader = 0;
     }
-    (*iter)->downloads.clear();
   }
 }
 
-void DataObjectImpl::OnDataReady(
-    int format,
-    const std::vector<OSExchangeData::DownloadFileInfo*>& downloads) {
-  // Find and update the data corresponding to the format.
-  CLIPFORMAT clip_format = static_cast<CLIPFORMAT>(format);
-  DCHECK(clip_format == ClipboardUtil::GetCFHDropFormat()->cfFormat);
+void DataObjectImpl::OnDownloadCompleted(const FilePath& file_path) {
+  CLIPFORMAT hdrop_format = ClipboardUtil::GetCFHDropFormat()->cfFormat;
   DataObjectImpl::StoredData::iterator iter = contents_.begin();
   for (; iter != contents_.end(); ++iter) {
-    if ((*iter)->format_etc.cfFormat == clip_format) {
-      // Update the downloads.
-      DCHECK(downloads.size() == (*iter)->downloads.size());
-      for (size_t i = 0; i < (*iter)->downloads.size(); ++i) {
-        OSExchangeData::DownloadFileInfo* old_download = (*iter)->downloads[i];
-        (*iter)->downloads[i] = downloads[i];
-        (*iter)->downloads[i]->downloader = old_download->downloader;
-        delete old_download;
-      }
-
+    if ((*iter)->format_etc.cfFormat == hdrop_format) {
       // Release the old storage.
       if ((*iter)->owns_medium) {
         ReleaseStgMedium((*iter)->medium);
@@ -597,12 +580,15 @@ void DataObjectImpl::OnDataReady(
 
       // Update the storage.
       (*iter)->owns_medium = true;
-      (*iter)->medium = GetStorageForFileName(downloads[0]->filename.value());
+      (*iter)->medium = GetStorageForFileName(file_path.value());
 
       break;
     }
   }
   DCHECK(iter != contents_.end());
+}
+
+void DataObjectImpl::OnDownloadAborted() {
 }
 
 HRESULT DataObjectImpl::GetData(FORMATETC* format_etc, STGMEDIUM* medium) {
@@ -629,7 +615,12 @@ HRESULT DataObjectImpl::GetData(FORMATETC* format_etc, STGMEDIUM* medium) {
           if (is_left_button_down)
             return DV_E_FORMATETC;
 
-          wait_for_data = true;
+          // In async mode, we do not want to start waiting for the data before
+          // the async operation is started. This is because we want to postpone
+          // until Shell kicks off a background thread to do the work so that
+          // we do not block the UI thread.
+          if (!in_async_mode_ || async_operation_started_)
+            wait_for_data = true;
         } else {
           // If the left button is up and the target has not requested the data
           // yet, it probably means that the target does not support delay-
@@ -648,18 +639,11 @@ HRESULT DataObjectImpl::GetData(FORMATETC* format_etc, STGMEDIUM* medium) {
           if (observer_)
             observer_->OnWaitForData();
 
-          // Now we can start the downloads. Each download will wait till the
-          // necessary data is ready and then return the control.
-          for (size_t i = 0; i < (*iter)->downloads.size(); ++i) {
-            if ((*iter)->downloads[i]->downloader) {
-              if (!(*iter)->downloads[i]->downloader->Start(
-                     this, format_etc->cfFormat)) {
-                // If any of the download fails to start, abort the whole
-                // process.
-                is_aborting_ = true;
-                StopDownloads();
-                return DV_E_FORMATETC;
-              }
+          // Now we can start the download.
+          if ((*iter)->downloader.get()) {
+            if (!(*iter)->downloader->Start(this)) {
+              is_aborting_ = true;
+              return DV_E_FORMATETC;
             }
           }
 
@@ -788,12 +772,12 @@ HRESULT DataObjectImpl::QueryInterface(const IID& iid, void** object) {
 }
 
 ULONG DataObjectImpl::AddRef() {
-  base::RefCounted<OSExchangeData::DownloadFileObserver>::AddRef();
+  base::RefCountedThreadSafe<DownloadFileObserver>::AddRef();
   return 0;
 }
 
 ULONG DataObjectImpl::Release() {
-  base::RefCounted<OSExchangeData::DownloadFileObserver>::Release();
+  base::RefCountedThreadSafe<DownloadFileObserver>::Release();
   return 0;
 }
 
@@ -917,6 +901,7 @@ static STGMEDIUM* GetStorageForFileDescriptor(
   storage->pUnkForRelease = NULL;
   return storage;
 }
+
 
 ///////////////////////////////////////////////////////////////////////////////
 // OSExchangeData, public:
