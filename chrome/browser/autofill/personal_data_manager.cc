@@ -54,8 +54,16 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
   // If both requests have responded, then all personal data is loaded.
   if (pending_profiles_query_ == 0 && pending_creditcards_query_ == 0) {
     is_data_loaded_ = true;
-    if (observer_)
-      observer_->OnPersonalDataLoaded();
+    // Copy is needed as observer can unsubsribe itself when notified.
+    std::vector<PersonalDataManager::Observer*> temporary_copy;
+    temporary_copy.resize(observers_.size());
+    std::copy(observers_.begin(), observers_.end(), temporary_copy.begin());
+    for (std::vector<PersonalDataManager::Observer*>::iterator
+         iter = temporary_copy.begin();
+         iter != temporary_copy.end();
+         ++iter) {
+      (*iter)->OnPersonalDataLoaded();
+    }
   }
 }
 
@@ -74,14 +82,29 @@ void PersonalDataManager::OnAutoFillDialogApply(
 }
 
 void PersonalDataManager::SetObserver(PersonalDataManager::Observer* observer) {
-  DCHECK(observer_ == NULL);
-  observer_ = observer;
+  for (std::vector<PersonalDataManager::Observer*>::iterator
+       iter = observers_.begin();
+       iter != observers_.end();
+       ++iter) {
+    if (*iter == observer) {
+      // Already have this observer.
+      return;
+    }
+  }
+  observers_.push_back(observer);
 }
 
 void PersonalDataManager::RemoveObserver(
     PersonalDataManager::Observer* observer) {
-  if (observer_ == observer)
-    observer_ = NULL;
+  for (std::vector<PersonalDataManager::Observer*>::iterator
+       iter = observers_.begin();
+       iter != observers_.end();
+       ++iter) {
+    if (*iter == observer) {
+      observers_.erase(iter);
+      return;
+    }
+  }
 }
 
 bool PersonalDataManager::ImportFormData(
@@ -329,8 +352,7 @@ PersonalDataManager::PersonalDataManager(Profile* profile)
       is_initialized_(false),
       is_data_loaded_(false),
       pending_profiles_query_(0),
-      pending_creditcards_query_(0),
-      observer_(NULL) {
+      pending_creditcards_query_(0) {
   LoadProfiles();
   LoadCreditCards();
 }

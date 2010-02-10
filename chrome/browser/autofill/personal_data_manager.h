@@ -180,8 +180,8 @@ class PersonalDataManager : public WebDataServiceConsumer,
   WebDataService::Handle pending_profiles_query_;
   WebDataService::Handle pending_creditcards_query_;
 
-  // The observer.  This can be NULL.
-  Observer* observer_;
+  // The observers.  This can be empty.
+  std::vector<PersonalDataManager::Observer*> observers_;
 
   DISALLOW_COPY_AND_ASSIGN(PersonalDataManager);
 };

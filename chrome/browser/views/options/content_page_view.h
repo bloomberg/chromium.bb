@@ -5,6 +5,7 @@
 #ifndef CHROME_BROWSER_VIEWS_OPTIONS_CONTENT_PAGE_VIEW_H_
 #define CHROME_BROWSER_VIEWS_OPTIONS_CONTENT_PAGE_VIEW_H_
 
+#include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/views/options/options_page_view.h"
 #include "chrome/browser/views/confirm_message_box_dialog.h"
@@ -30,7 +31,8 @@ class ContentPageView : public OptionsPageView,
                         public views::LinkController,
                         public ProfileSyncServiceObserver,
                         public views::ButtonListener,
-                        public ConfirmMessageBoxObserver {
+                        public ConfirmMessageBoxObserver,
+                        public PersonalDataManager::Observer {
  public:
   explicit ContentPageView(Profile* profile);
   virtual ~ContentPageView();
@@ -43,6 +45,9 @@ class ContentPageView : public OptionsPageView,
 
   // ConfirmMessageBoxObserver implementation.
   virtual void OnConfirmMessageAccept();
+
+  // PersonalDataManager::Observer implementation.
+  virtual void OnPersonalDataLoaded();
 
   // ProfileSyncServiceObserver method.
   virtual void OnStateChanged();

@@ -73,6 +73,9 @@ ContentPageView::ContentPageView(Profile* profile)
 }
 
 ContentPageView::~ContentPageView() {
+  // Removes observer if we are observing Profile load. Does nothing otherwise.
+  if (profile()->GetPersonalDataManager())
+    profile()->GetPersonalDataManager()->RemoveObserver(this);
   if (sync_service_)
     sync_service_->RemoveObserver(this);
 }
@@ -108,10 +111,15 @@ void ContentPageView::ButtonPressed(
     UserMetricsRecordAction("Options_ShowPasswordsExceptions", NULL);
     PasswordsExceptionsWindowView::Show(profile());
   } else if (sender == change_autofill_settings_button_) {
-    ShowAutoFillDialog(
-        profile()->GetPersonalDataManager(),
-        profile()->GetPersonalDataManager()->profiles(),
-        profile()->GetPersonalDataManager()->credit_cards());
+    // This button should be disabled if we lack PersonalDataManager.
+    DCHECK(profile()->GetPersonalDataManager());
+    if (!profile()->GetPersonalDataManager()->IsDataLoaded()) {
+      profile()->GetPersonalDataManager()->SetObserver(this);
+    } else {
+      ShowAutoFillDialog(profile()->GetPersonalDataManager(),
+                         profile()->GetPersonalDataManager()->profiles(),
+                         profile()->GetPersonalDataManager()->credit_cards());
+    }
   } else if (sender == themes_reset_button_) {
     UserMetricsRecordAction("Options_ThemesReset", profile()->GetPrefs());
     profile()->ClearTheme();
@@ -315,6 +323,9 @@ void ContentPageView::InitFormAutofillGroup() {
 
   change_autofill_settings_button_ = new views::NativeButton(
       this, l10n_util::GetString(IDS_OPTIONS_AUTOFILL_SETTINGS));
+  if (!profile()->GetPersonalDataManager())
+    change_autofill_settings_button_->SetEnabled(false);
+
 
   using views::GridLayout;
   using views::ColumnSet;
@@ -404,6 +415,13 @@ void ContentPageView::InitBrowsingDataGroup() {
 void ContentPageView::OnConfirmMessageAccept() {
   sync_service_->DisableForUser();
   ProfileSyncService::SyncEvent(ProfileSyncService::STOP_FROM_OPTIONS);
+}
+
+void ContentPageView::OnPersonalDataLoaded() {
+  ShowAutoFillDialog(profile()->GetPersonalDataManager(),
+                     profile()->GetPersonalDataManager()->profiles(),
+                     profile()->GetPersonalDataManager()->credit_cards());
+  profile()->GetPersonalDataManager()->RemoveObserver(this);
 }
 
 void ContentPageView::InitSyncGroup() {
