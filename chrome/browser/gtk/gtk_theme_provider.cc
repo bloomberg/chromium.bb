@@ -451,7 +451,7 @@ void GtkThemeProvider::LoadGtkValues() {
   GdkColor button_color = window_style->bg[GTK_STATE_SELECTED];
 
   GtkStyle* label_style = gtk_rc_get_style(fake_label_.get());
-  GdkColor label_color = label_style->text[GTK_STATE_NORMAL];
+  GdkColor label_color = label_style->fg[GTK_STATE_NORMAL];
 
   GtkSettings* settings = gtk_settings_get_default();
   bool theme_has_frame_color = false;
@@ -564,7 +564,7 @@ void GtkThemeProvider::LoadGtkValues() {
   // Darklooks, HighContrastInverse or ThinIce.
   GtkStyle* entry_style = gtk_rc_get_style(fake_entry_.get());
   GdkColor ntp_background = entry_style->base[GTK_STATE_NORMAL];
-  GdkColor ntp_foreground = entry_style->fg[GTK_STATE_NORMAL];
+  GdkColor ntp_foreground = entry_style->text[GTK_STATE_NORMAL];
   SetThemeColorFromGtk(BrowserThemeProvider::COLOR_NTP_BACKGROUND,
                        &ntp_background);
   SetThemeColorFromGtk(BrowserThemeProvider::COLOR_NTP_TEXT,
