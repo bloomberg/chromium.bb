@@ -414,7 +414,11 @@ ExtensionAction* LocationBarViewMac::GetVisiblePageAction(size_t index) {
 }
 
 void LocationBarViewMac::TestPageActionPressed(size_t index) {
-  NOTIMPLEMENTED();
+  if (index >= page_action_views_.Count()) {
+    NOTREACHED();
+    return;
+  }
+  page_action_views_.OnMousePressed(NSZeroRect, index);
 }
 
 NSImage* LocationBarViewMac::GetTabButtonImage() {

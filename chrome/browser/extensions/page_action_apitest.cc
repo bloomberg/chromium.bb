@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -200,16 +200,8 @@ public:
   bool last_visibility_;
 };
 
-#if defined(OS_MACOSX)
-// The following test fails on Mac because some of page action implementation is
-// missing in LocationBarView (see http://crbug.com/29898).
-#define MAYBE_Show DISABLED_Show
-#else
-#define MAYBE_Show Show
-#endif
-
 // Tests popups in page actions.
-IN_PROC_BROWSER_TEST_F(PageActionPopupTest, MAYBE_Show) {
+IN_PROC_BROWSER_TEST_F(PageActionPopupTest, Show) {
   NotificationRegistrar registrar;
   registrar.Add(this,
                 NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,

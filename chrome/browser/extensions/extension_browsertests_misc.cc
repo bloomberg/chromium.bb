@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -200,24 +200,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TabContents) {
   EXPECT_TRUE(result);
 }
 
-#if defined(OS_MACOSX)
-// http://crbug.com/29898 LocationBarViewMac has a bunch of unimpl apis that
-// keep these from working
-#define MAYBE_PageAction DISABLED_PageAction
-#define MAYBE_UnloadPageAction DISABLED_UnloadPageAction
-#define MAYBE_RSSMultiRelLink DISABLED_RSSMultiRelLink
-#define MAYBE_TitleLocalizationBrowserAction DISABLED_TitleLocalizationBrowserAction
-#define MAYBE_TitleLocalizationPageAction DISABLED_TitleLocalizationPageAction
-#else
-#define MAYBE_PageAction PageAction
-#define MAYBE_UnloadPageAction UnloadPageAction
-#define MAYBE_RSSMultiRelLink RSSMultiRelLink
-#define MAYBE_TitleLocalizationBrowserAction TitleLocalizationBrowserAction
-#define MAYBE_TitleLocalizationPageAction TitleLocalizationPageAction
-#endif
-
 // Tests that we can load page actions in the Omnibox.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PageAction) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
   HTTPTestServer* server = StartHTTPServer();
 
   // This page action will not show an icon, since it doesn't specify one but
@@ -245,7 +229,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_PageAction) {
 }
 
 // Tests that the location bar forgets about unloaded page actions.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_UnloadPageAction) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, UnloadPageAction) {
   HTTPTestServer* server = StartHTTPServer();
 
   FilePath extension_path(test_data_dir_.AppendASCII("subscribe_page_action"));
@@ -264,7 +248,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_UnloadPageAction) {
 
 // Makes sure that the RSS detects RSS feed links, even when rel tag contains
 // more than just "alternate".
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_RSSMultiRelLink) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, RSSMultiRelLink) {
   HTTPTestServer* server = StartHTTPServer();
 
   ASSERT_TRUE(LoadExtension(
@@ -281,7 +265,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_RSSMultiRelLink) {
 
 // Tests that tooltips of a browser action icon can be specified using UTF8.
 // See http://crbug.com/25349.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_TitleLocalizationBrowserAction) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationBrowserAction) {
   FilePath extension_path(test_data_dir_.AppendASCII("browsertest")
                                         .AppendASCII("title_localized"));
   ASSERT_TRUE(LoadExtension(extension_path));
@@ -302,7 +286,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_TitleLocalizationBrowserActio
 
 // Tests that tooltips of a page action icon can be specified using UTF8.
 // See http://crbug.com/25349.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, MAYBE_TitleLocalizationPageAction) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, TitleLocalizationPageAction) {
   HTTPTestServer* server = StartHTTPServer();
 
   FilePath extension_path(test_data_dir_.AppendASCII("browsertest")
