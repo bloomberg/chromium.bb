@@ -16,6 +16,9 @@ LRESULT CALLBACK WindowProc(HWND hwnd, UINT msg,
       ::PostQuitMessage(0);
       break;
     case WM_ERASEBKGND:
+      // Return a non-zero value to indicate that the background has been
+      // erased.
+      result = 1;
       break;
     case WM_PAINT: {
       gpu::demos::Window* window = reinterpret_cast<gpu::demos::Window*>(
@@ -49,7 +52,7 @@ void Window::MainLoop() {
       ::DispatchMessage(&msg);
     }
     // Message queue is empty and application has not quit yet - keep painting.
-    if (!done) ::UpdateWindow(window_handle_);
+    if (!done) ::InvalidateRect(window_handle_, NULL, FALSE);
   }
 }
 
@@ -65,7 +68,7 @@ gfx::NativeWindow Window::CreateNativeWindow(const wchar_t* title,
   wnd_class.lpszClassName = L"gpu_demo";
   if (!RegisterClass(&wnd_class)) return NULL;
 
-  DWORD wnd_style = WS_VISIBLE | WS_POPUP | WS_BORDER | WS_SYSMENU | WS_CAPTION;
+  DWORD wnd_style = WS_OVERLAPPED | WS_SYSMENU;
   RECT wnd_rect;
   wnd_rect.left = 0;
   wnd_rect.top = 0;
