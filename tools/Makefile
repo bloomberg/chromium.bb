@@ -72,7 +72,6 @@ ifeq ($(PLATFORM), Cygwin)
   ifeq ($(CYGWIN17), 1)
     DESTDIR := $(SDKROOT)
     SDKROOT := 
-    PLATFORM:= Cygwin17
     # CygWin1.7 changes over time and list of files required to run the binaries
     # changes over time - use cygcheck (new tools in CygWin 1.7) to find list of
     # .dll files and filter only .dll files in /bin (AKA /usr/bin depending on
@@ -230,7 +229,7 @@ BUILD/stamp-binutils: BUILD/stamp-binutils-$(BINUTILS_VERSION) Makefile
 	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) all
 	$(MAKE) -C BUILD/build-binutils-$(CROSSARCH) DESTDIR=$(DESTDIR) install
 	touch $@
-	$(MAKE) -f $(THISMAKEFILE) cygwin_redirector
+	$(MAKE) -f $(THISMAKEFILE) redirector
 
 .PHONY: binutils
 binutils: BUILD/stamp-binutils
@@ -286,7 +285,7 @@ BUILD/stamp-pregcc: BUILD/stamp-gcc-$(GCC_VERSION) Makefile
 	cp $(DESTDIR)$(SDKROOT)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/libgcc.a \
 		$(DESTDIR)$(SDKROOT)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/libgcc_eh.a
 	touch $@
-	$(MAKE) -f $(THISMAKEFILE) cygwin_redirector
+	$(MAKE) -f $(THISMAKEFILE) redirector
 
 .PHONY: pregcc
 pregcc: BUILD/stamp-pregcc
@@ -350,12 +349,12 @@ newlib: BUILD/stamp-newlib
 BUILD/stamp-gcc: BUILD/stamp-gcc-$(GCC_VERSION) Makefile
 	rm -rf BUILD/build-gcc-$(CROSSARCH)
 	mkdir BUILD/build-gcc-$(CROSSARCH)
-ifeq ($(PLATFORM), Cygwin17)
+ifeq ($(CYGWIN17), 1)
 	mkdir BUILD/build-gcc-$(CROSSARCH)/gcc
 	cp -af $(DESTDIR)$(SDKROOT)/libexec/cyg*.dll \
 	    BUILD/build-gcc-$(CROSSARCH)/gcc
-	cp -af $(DESTDIR)$(SDKROOT)/nacl \
-	    BUILD/build-gcc-$(CROSSARCH)/nacl
+	cp -af $(DESTDIR)$(SDKROOT)/$(CROSSARCH) \
+	    BUILD/build-gcc-$(CROSSARCH)/$(CROSSARCH)
 endif
 	if [ "x$(GCC_VERSION)" != "x4.2.2" ] ; then \
 	cd BUILD/build-gcc-$(CROSSARCH) && \
@@ -409,7 +408,7 @@ endif
 		  CXXFLAGS_FOR_TARGET="-O2 -g" \
 	    DESTDIR=$(DESTDIR) install
 	touch $@
-	$(MAKE) -f $(THISMAKEFILE) cygwin_redirector
+	$(MAKE) -f $(THISMAKEFILE) redirector
 
 .PHONY: gcc
 gcc: BUILD/stamp-gcc
@@ -442,7 +441,7 @@ BUILD/stamp-gdb: BUILD/stamp-gdb-$(GDB_VERSION) #Makefile
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) all
 	$(MAKE) -C BUILD/build-gdb-$(CROSSARCH) DESTDIR=$(DESTDIR) install
 	touch $@
-	$(MAKE) -f $(THISMAKEFILE) cygwin_redirector
+	$(MAKE) -f $(THISMAKEFILE) redirector
 
 .PHONY: gdb
 gdb: BUILD/stamp-gdb
@@ -484,10 +483,12 @@ sdk_minimal_test: ALWAYS
 # to have our as/gcc/ld in %PATH% in SDK thus simple trick is employed:
 # we move compiled binary to libexec subdirectory and put very simple
 # MSVC-compiled redirector in it's place. This only works with CygWin 1.7+
+#
+# Use redirector on other platforms to save space.
 
-cygwin_redirector: ALWAYS
+redirector: ALWAYS
 	$(CYGWIN_DLL_COPY)
-ifeq ($(PLATFORM), Cygwin17)
+ifeq ($(PLATFORM), Cygwin)
 	mv -f $(DESTDIR)$(SDKROOT)/bin/cyg*.dll \
 	  $(DESTDIR)$(SDKROOT)/libexec
 	for exe in $(DESTDIR)$(SDKROOT)/bin/$(CROSSARCH)-*.exe ; do \
@@ -498,6 +499,10 @@ ifeq ($(PLATFORM), Cygwin17)
 	done && \
 	for exe in $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/*.exe ; do \
 	  cp -af redirector.exe $$exe ; \
+	done
+else
+	for exe in $(DESTDIR)$(SDKROOT)/$(CROSSARCH)/bin/* ; do \
+	  ln -sfn ../../bin/$(CROSSARCH)-"`basename $$exe`" $$exe ; \
 	done
 endif
 
