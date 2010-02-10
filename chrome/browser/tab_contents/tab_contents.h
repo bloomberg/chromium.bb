@@ -25,6 +25,7 @@
 #include "chrome/browser/find_notification_details.h"
 #include "chrome/browser/jsmessage_box_client.h"
 #include "chrome/browser/net/url_request_context_getter.h"
+#include "chrome/browser/printing/print_view_manager.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/constrained_window.h"
@@ -43,13 +44,6 @@
 #include "webkit/glue/dom_operations.h"
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/webpreferences.h"
-
-#if defined(OS_LINUX)
-// Remove when we've finished porting the supporting classes.
-#include "chrome/common/temp_scaffolding_stubs.h"
-#elif defined(OS_WIN) || defined(OS_MACOSX)
-#include "chrome/browser/printing/print_view_manager.h"
-#endif
 
 namespace gfx {
 class Rect;

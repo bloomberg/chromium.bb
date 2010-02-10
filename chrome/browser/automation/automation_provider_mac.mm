@@ -16,8 +16,8 @@ void AutomationProvider::SetWindowBounds(int handle, const gfx::Rect& bounds,
   if (window) {
     NSRect new_bounds = NSRectFromCGRect(bounds.ToCGRect());
 
-    // This is likely incorrect for a multiple-monitor setup; OK because this is
-    // used only for testing purposes.
+    // This is likely incorrect for a multiple-monitor setup; OK because this
+    // is used only for testing purposes.
     new_bounds.origin.y = [[window screen] frame].size.height -
         new_bounds.origin.y - new_bounds.size.height;
 
@@ -64,6 +64,45 @@ void AutomationProvider::GetFocusedViewID(int handle, int* view_id) {
 }
 
 void AutomationProvider::PrintAsync(int tab_handle) {
+  NOTIMPLEMENTED();
+}
+
+void AutomationProvider::GetAutocompleteEditText(
+    int autocomplete_edit_handle, bool* success, std::wstring* text) {
+  *success = false;
+  NOTIMPLEMENTED();
+}
+
+void AutomationProvider::SetAutocompleteEditText(int autocomplete_edit_handle,
+                                                 const std::wstring& text,
+                                                 bool* success) {
+  *success = false;
+  NOTIMPLEMENTED();
+}
+
+void AutomationProvider::AutocompleteEditIsQueryInProgress(
+    int autocomplete_edit_handle, bool* success, bool* query_in_progress) {
+  *success = false;
+  NOTIMPLEMENTED();
+}
+
+void AutomationProvider::AutocompleteEditGetMatches(
+    int autocomplete_edit_handle, bool* success,
+    std::vector<AutocompleteMatchData>* matches) {
+  *success = false;
+  NOTIMPLEMENTED();
+}
+
+void AutomationProvider::OnMessageFromExternalHost(int handle,
+                                                   const std::string& message,
+                                                   const std::string& origin,
+                                                   const std::string& target) {
+  NOTIMPLEMENTED();
+}
+
+void AutomationProvider::GetAutocompleteEditForBrowser(
+    int browser_handle, bool* success, int* autocomplete_edit_handle) {
+  *success = false;
   NOTIMPLEMENTED();
 }
 

@@ -190,10 +190,8 @@
 #include "base/rand_util.h"
 #endif
 
-#if defined(OS_POSIX)
-// TODO(port): Move these headers above as they are ported.
-#include "chrome/common/temp_scaffolding_stubs.h"
-#else
+// TODO(port): port browser_distribution.h.
+#if !defined(OS_POSIX)
 #include "chrome/installer/util/browser_distribution.h"
 #endif
 

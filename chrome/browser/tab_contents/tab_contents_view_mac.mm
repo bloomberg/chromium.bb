@@ -28,8 +28,6 @@
 #include "chrome/common/render_messages.h"
 #import "third_party/mozilla/include/NSPasteboard+Utils.h"
 
-#include "chrome/common/temp_scaffolding_stubs.h"
-
 using WebKit::WebDragOperation;
 using WebKit::WebDragOperationsMask;
 

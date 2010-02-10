@@ -26,6 +26,8 @@
 #include "chrome/browser/notifications/desktop_notification_service.h"
 #include "chrome/browser/notifications/notifications_prefs_cache.h"
 #include "chrome/browser/plugin_service.h"
+#include "chrome/browser/printing/print_job_manager.h"
+#include "chrome/browser/printing/printer_query.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/privacy_blacklist/blacklist_ui.h"
 #include "chrome/browser/profile.h"
@@ -62,14 +64,6 @@
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webplugin.h"
-
-#if defined(OS_WIN) || defined(OS_MACOSX)
-#include "chrome/browser/printing/print_job_manager.h"
-#include "chrome/browser/printing/printer_query.h"
-#elif defined(OS_LINUX) || defined(OS_FREEBSD)
-// TODO(port) remove this.
-#include "chrome/common/temp_scaffolding_stubs.h"
-#endif
 
 using WebKit::WebCache;
 

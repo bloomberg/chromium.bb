@@ -12,11 +12,8 @@
 #include "base/string16.h"
 #include "googleurl/src/gurl.h"
 
-// TODO(port): Port this file.
 #if defined(TOOLKIT_VIEWS)
 #include "app/os_exchange_data.h"
-#else
-#include "chrome/common/temp_scaffolding_stubs.h"
 #endif
 
 class BookmarkModel;

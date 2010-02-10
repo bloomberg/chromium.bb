@@ -36,7 +36,6 @@ EXCLUDE = (
   r'bloom_filter\.cc$',
   # Bogus ifdef tricks
   r'renderer_webkitclient_impl\.cc$',
-  r'temp_scaffolding_stubs\.h$',
   # Lines > 100 chars
   r'gcapi\.cc$',
 )

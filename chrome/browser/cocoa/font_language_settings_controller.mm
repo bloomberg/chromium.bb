@@ -8,6 +8,7 @@
 #import "base/mac_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/character_encoding.h"
+#include "chrome/browser/fonts_languages_window.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -15,6 +16,12 @@
 NSString* const kCharacterInfoEncoding = @"encoding";
 NSString* const kCharacterInfoName = @"name";
 NSString* const kCharacterInfoID = @"id";
+
+void ShowFontsLanguagesWindow(gfx::NativeWindow window,
+                              FontsLanguagesPage page,
+                              Profile* profile) {
+  NOTIMPLEMENTED();
+}
 
 @interface FontLanguageSettingsController (Private)
 - (void)updateDisplayField:(NSTextField*)field withFont:(NSFont*)font;

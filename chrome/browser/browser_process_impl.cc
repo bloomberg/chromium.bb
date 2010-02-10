@@ -30,6 +30,7 @@
 #include "chrome/browser/net/sqlite_persistent_cookie_store.h"
 #include "chrome/browser/notifications/notification_ui_manager.h"
 #include "chrome/browser/plugin_service.h"
+#include "chrome/browser/printing/print_job_manager.h"
 #include "chrome/browser/profile_manager.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
@@ -48,13 +49,6 @@
 
 #if defined(OS_WIN)
 #include "views/focus/view_storage.h"
-#endif
-
-#if defined(OS_LINUX)
-// TODO(port): get rid of this.
-#include "chrome/common/temp_scaffolding_stubs.h"
-#else
-#include "chrome/browser/printing/print_job_manager.h"
 #endif
 
 #if defined(IPC_MESSAGE_LOG_ENABLED)

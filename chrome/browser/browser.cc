@@ -27,6 +27,7 @@
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/debugger/devtools_manager.h"
 #include "chrome/browser/debugger/devtools_window.h"
+#include "chrome/browser/dock_info.h"
 #include "chrome/browser/dom_ui/filebrowse_ui.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
@@ -99,10 +100,6 @@
 #include "chrome/browser/views/location_bar_view.h"
 #include "chrome/common/child_process_host.h"
 #endif  // OS_WIN
-
-#if !defined(OS_MACOSX)
-#include "chrome/browser/dock_info.h"
-#endif
 
 #if defined(OS_MACOSX)
 #include "chrome/browser/cocoa/find_pasteboard.h"

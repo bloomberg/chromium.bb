@@ -2121,8 +2121,3 @@ BrowserWindow* BrowserWindow::CreateBrowserWindow(Browser* browser) {
 FindBar* BrowserWindow::CreateFindBar(Browser* browser) {
   return browser::CreateFindBar(static_cast<BrowserView*>(browser->window()));
 }
-
-// static
-void BrowserList::AllBrowsersClosed() {
-  views::Window::CloseAllSecondaryWindows();
-}

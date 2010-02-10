@@ -17,17 +17,6 @@
             'include_dirs': [
               'third_party/wtl/include',
             ],
-          }, { # else: OS != "win"
-            'sources!': [
-              'common/temp_scaffolding_stubs.h',
-            ],
-          }],
-          ['OS=="win" or OS=="linux"', {
-            'sources!': [
-              'common/hi_res_timer_manager.cc',
-              'common/hi_res_timer_manager.h',
-              'common/temp_scaffolding_stubs.cc',
-            ],
           }],
         ],
         'sources': [
@@ -267,8 +256,6 @@
         'common/sqlite_compiled_statement.h',
         'common/sqlite_utils.cc',
         'common/sqlite_utils.h',
-        'common/temp_scaffolding_stubs.cc',
-        'common/temp_scaffolding_stubs.h',
         'common/thumbnail_score.cc',
         'common/thumbnail_score.h',
         'common/transport_dib_linux.cc',

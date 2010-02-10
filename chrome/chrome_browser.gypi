@@ -202,6 +202,8 @@
         'browser/browser_init.cc',
         'browser/browser_init.h',
         'browser/browser_list_gtk.cc',
+        'browser/browser_list_stub.cc',
+        'browser/browser_list_win.cc',
         'browser/browser_list.cc',
         'browser/browser_list.h',
         'browser/browser_main.cc',
@@ -673,6 +675,7 @@
         'browser/diagnostics/recon_diagnostics.cc',
         'browser/diagnostics/recon_diagnostics.h',
         'browser/dock_info_gtk.cc',
+        'browser/dock_info_mac.cc',
         'browser/dock_info_win.cc',
         'browser/dock_info.cc',
         'browser/dock_info.h',
@@ -1239,6 +1242,7 @@
         'browser/intranet_redirect_detector.h',
         'browser/io_thread.cc',
         'browser/io_thread.h',
+        'browser/jankometer_mac.cc',
         'browser/jankometer.cc',
         'browser/jankometer.h',
         'browser/jumplist.cc',
@@ -1426,15 +1430,19 @@
         'browser/power_save_blocker_win.cc',
         'browser/printing/print_dialog_gtk.cc',
         'browser/printing/print_dialog_gtk.h',
+        'browser/printing/print_job_linux.cc',
         'browser/printing/print_job.cc',
         'browser/printing/print_job.h',
+        'browser/printing/print_job_manager_linux.cc',
         'browser/printing/print_job_manager.cc',
         'browser/printing/print_job_manager.h',
         'browser/printing/print_job_worker.cc',
         'browser/printing/print_job_worker.h',
         'browser/printing/print_job_worker_owner.h',
+        'browser/printing/print_view_manager_linux.cc',
         'browser/printing/print_view_manager.cc',
         'browser/printing/print_view_manager.h',
+        'browser/printing/printer_query_linux.cc',
         'browser/printing/printer_query.cc',
         'browser/printing/printer_query.h',
         'browser/privacy_blacklist/blacklist.h',
@@ -2115,6 +2123,18 @@
             '../base/base.gyp:linux_versioninfo',
           ],
           'sources!': [
+             # Exclude most of printing, it's not ported yet.
+            'browser/printing/print_job.cc',
+            'browser/printing/print_job.h',
+            'browser/printing/print_job_manager.cc',
+            'browser/printing/print_job_manager.h',
+            'browser/printing/print_job_worker.cc',
+            'browser/printing/print_job_worker.h',
+            'browser/printing/print_job_worker_owner.h',
+            'browser/printing/print_view_manager.cc',
+            'browser/printing/print_view_manager.h',
+            'browser/printing/printer_query.cc',
+            'browser/printing/printer_query.h',
              # Exclude extension shelf for toolstrips.
             'browser/views/extensions/extension_shelf.cc',
             'browser/views/extensions/extension_shelf.h',
@@ -2127,11 +2147,6 @@
           'sources': [
             'browser/crash_handler_host_linux.h',
             'browser/net/ssl_config_service_manager_pref.cc',
-          ],
-          'sources/': [
-            # Exclude most of printing.
-            ['exclude', '^browser/printing/'],
-            ['include', '^browser/printing/page_(number|range|setup)\\.cc$'],
           ],
           'conditions': [
             ['linux_breakpad==1', {
@@ -2322,6 +2337,7 @@
             'browser/history/history_indexer.idl',
           ],
           'sources!': [
+            'browser/browser_list_stub.cc',
             'browser/history/history_publisher_none.cc',
             'browser/password_manager/password_store_gnome.h',
             'browser/password_manager/password_store_gnome.cc',
@@ -2604,7 +2620,6 @@
                 ['exclude', '^browser/tab_contents/tab_contents_view_gtk.h'],
                 ['exclude', '^browser/tab_contents/render_view_context_menu_gtk.cc'],
                 ['exclude', '^browser/tab_contents/render_view_context_menu_gtk.h'],
-                # Overlaps with browser/views/frame/browser_view.cc
                 ['exclude', '^browser/browser_list_gtk.cc'],
               ],
             }],
@@ -2622,6 +2637,7 @@
               'sources/': [
                 ['include', '^browser/printing/print_dialog_gtk.cc'],
                 ['include', '^browser/printing/print_dialog_gtk.h'],
+                ['exclude', '^browser/browser_list_stub.cc'],
                 ['exclude', '^browser/bookmarks/bookmark_drop_info.cc'],
                 ['exclude', '^browser/cookie_modal_dialog.cc'],
                 ['exclude', '^browser/views/autocomplete/autocomplete_popup_gtk.cc'],
