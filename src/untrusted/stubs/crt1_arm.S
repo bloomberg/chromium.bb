@@ -135,12 +135,3 @@ __aeabi_read_tp:
     bic lr, lr, #NACL_CONTROL_FLOW_MASK
     bx lr
 
-/* ====================================================================== */
-/* NOTE: this is only here to make c++ programs link */
-/* ====================================================================== */
-    .align NACL_ARM_BUNDLE_SIZE_LOG
-    .global __aeabi_unwind_cpp_pr0
-
-__aeabi_unwind_cpp_pr0:
-    bic lr, lr, #NACL_CONTROL_FLOW_MASK
-    bx lr
