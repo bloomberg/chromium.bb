@@ -30,6 +30,7 @@
 
 #include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
+#include "base/gfx/rect.h"
 
 namespace webkit_glue {
 struct WebPluginGeometry;
@@ -67,8 +68,6 @@ class MacGPUPluginContainer {
   // will work on Leopard.
 
   // The x and y coordinates of the plugin window on the web page.
-  // TODO(kbr): see whether additional clipping information is
-  // necessary.
   int x_;
   int y_;
 
@@ -83,6 +82,9 @@ class MacGPUPluginContainer {
   // The width and height of the surface.
   int32 width_;
   int32 height_;
+
+  // The clip rectangle, relative to the (x_, y_) origin.
+  gfx::Rect clipRect_;
 
   // The "live" OpenGL texture referring to this IOSurfaceRef. Note
   // that per the CGLTexImageIOSurface2D API we do not need to

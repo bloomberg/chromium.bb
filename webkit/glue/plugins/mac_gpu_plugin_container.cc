@@ -46,10 +46,10 @@ void MacGPUPluginContainer::SetSizeAndBackingStore(
 
 void MacGPUPluginContainer::MoveTo(
     const webkit_glue::WebPluginGeometry& geom) {
-  // TODO(kbr): figure out whether additional information is necessary
-  // to keep around.
   x_ = geom.window_rect.x();
   y_ = geom.window_rect.y();
+  // TODO(kbr): may need to pay attention to cutout rects.
+  clipRect_ = geom.clip_rect;
 }
 
 void MacGPUPluginContainer::Draw(CGLContextObj context) {
@@ -81,16 +81,21 @@ void MacGPUPluginContainer::Draw(CGLContextObj context) {
     glBindTexture(target, texture_);
     glEnable(target);
     glBegin(GL_TRIANGLE_STRIP);
-    int x = x_;
-    int y = y_;
-    glTexCoord2f(0, height_);
+    // TODO(kbr): may need to pay attention to cutout rects.
+    int clipX = clipRect_.x();
+    int clipY = clipRect_.y();
+    int clipWidth = clipRect_.width();
+    int clipHeight = clipRect_.height();
+    int x = x_ + clipX;
+    int y = y_ + clipY;
+    glTexCoord2f(clipX, height_ - clipY);
     glVertex3f(x, y, 0);
-    glTexCoord2f(width_, height_);
-    glVertex3f(x + width_, y, 0);
-    glTexCoord2f(0, 0);
-    glVertex3f(x, y + height_, 0);
-    glTexCoord2f(width_, 0);
-    glVertex3f(x + width_, y + height_, 0);
+    glTexCoord2f(clipX + clipWidth, height_ - clipY);
+    glVertex3f(x + clipWidth, y, 0);
+    glTexCoord2f(clipX, height_ - clipY - clipHeight);
+    glVertex3f(x, y + clipHeight, 0);
+    glTexCoord2f(clipX + clipWidth, height_ - clipY - clipHeight);
+    glVertex3f(x + clipWidth, y + clipHeight, 0);
     glDisable(target);
     glEnd();
   }
