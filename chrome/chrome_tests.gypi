@@ -267,7 +267,7 @@
         '../third_party/icu/icu.gyp:icuuc',
         '../third_party/libxml/libxml.gyp:libxml',
         # run time dependencies
-        '../webkit/tools/test_shell/test_shell.gyp:npapi_layout_test_plugin',
+        '../webkit/webkit.gyp:npapi_layout_test_plugin',
       ],
       'include_dirs': [
         '..',
@@ -322,7 +322,7 @@
         # http://code.google.com/p/chromium/issues/detail?id=18337
         ['target_arch!="x64" and target_arch!="arm"', {
           'dependencies': [
-            '../webkit/tools/test_shell/test_shell.gyp:npapi_test_plugin',
+            '../webkit/webkit.gyp:npapi_test_plugin',
           ],
         }],
         ['OS=="linux"', {
@@ -453,7 +453,7 @@
             '../google_update/google_update.gyp:google_update',
             '../views/views.gyp:views',
             # run time dependency
-            '../webkit/tools/test_shell/test_shell.gyp:npapi_test_plugin',
+            '../webkit/webkit.gyp:npapi_test_plugin',
             '<(allocator_target)',
           ],
           'link_settings': {

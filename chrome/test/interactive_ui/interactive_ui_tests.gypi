@@ -65,7 +65,7 @@
     ['target_arch!="x64" and target_arch!="arm"', {
       'dependencies': [
         # run time dependency
-        '<(DEPTH)/webkit/tools/test_shell/test_shell.gyp:npapi_test_plugin',
+        '<(DEPTH)/webkit/webkit.gyp:npapi_test_plugin',
       ],
     }],  # target_arch
     ['OS=="linux" and (toolkit_views==1 or chromeos==1)', {

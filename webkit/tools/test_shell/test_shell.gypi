@@ -4,7 +4,6 @@
 
 {
   'variables': {
-    'chromium_code': 1,
     'test_shell_windows_resource_files': [
       'resources/test_shell.rc',
       'resources/pan_east.cur',
@@ -25,22 +24,25 @@
     {
       'target_name': 'test_shell_common',
       'type': '<(library)',
+      'variables': {
+        'chromium_code': 1,
+      },
       'dependencies': [
-        '../../../app/app.gyp:app_base',
-        '../../../base/base.gyp:base',
-        '../../../base/base.gyp:base_i18n',
-        '../../../media/media.gyp:media',
-        '../../../net/net.gyp:net',
-        '../../../skia/skia.gyp:skia',
-        '../../../testing/gmock.gyp:gmock',
-        '../../../testing/gtest.gyp:gtest',
-        '../../../third_party/npapi/npapi.gyp:npapi',
-        '../../../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
-        '../../../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
-        '../../webkit.gyp:appcache',
-        '../../webkit.gyp:database',
-        '../../webkit.gyp:glue',
-        '../../webkit.gyp:inspector_resources',
+        '<(DEPTH)/app/app.gyp:app_base',
+        '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/base/base.gyp:base_i18n',
+        '<(DEPTH)/media/media.gyp:media',
+        '<(DEPTH)/net/net.gyp:net',
+        '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/testing/gmock.gyp:gmock',
+        '<(DEPTH)/testing/gtest.gyp:gtest',
+        '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
+        '<(DEPTH)/third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+        '<(DEPTH)/third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
+        '<(DEPTH)/webkit/webkit.gyp:appcache',
+        '<(DEPTH)/webkit/webkit.gyp:database',
+        '<(DEPTH)/webkit/webkit.gyp:glue',
+        '<(DEPTH)/webkit/webkit.gyp:inspector_resources',
         'npapi_layout_test_plugin',
       ],
       'msvs_guid': '77C32787-1B96-CB84-B905-7F170629F0AC',
@@ -123,11 +125,11 @@
         'webwidget_host_win.cc',
       ],
       'export_dependent_settings': [
-        '../../../base/base.gyp:base',
-        '../../../net/net.gyp:net',
-        '../../../third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
-        '../../../third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
-        '../../webkit.gyp:glue',
+        '<(DEPTH)/base/base.gyp:base',
+        '<(DEPTH)/net/net.gyp:net',
+        '<(DEPTH)/third_party/WebKit/WebCore/WebCore.gyp/WebCore.gyp:webcore',
+        '<(DEPTH)/third_party/WebKit/WebKit/chromium/WebKit.gyp:webkit',
+        '<(DEPTH)/webkit/webkit.gyp:glue',
       ],
       'conditions': [
         # http://code.google.com/p/chromium/issues/detail?id=18337
@@ -139,16 +141,11 @@
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'dependencies': [
             'test_shell_resources',
-            '../../../build/linux/system.gyp:gtk',
-            '../../../tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
+            '<(DEPTH)/build/linux/system.gyp:gtk',
+            '<(DEPTH)/tools/xdisplaycheck/xdisplaycheck.gyp:xdisplaycheck',
           ],
           # for:  test_shell_gtk.cc
           'cflags': ['-Wno-multichar'],
-        }, { # else: OS!=linux
-          'sources/': [
-            ['exclude', '_gtk\\.cc$'],
-            ['exclude', '_x11\\.cc$'],
-          ],
         }],
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           # See below TODO in the Windows branch.
@@ -158,12 +155,6 @@
               'files': ['<(PRODUCT_DIR)/libnpapi_layout_test_plugin.so'],
             },
           ],
-        }],
-        ['OS!="mac"', {
-          'sources/': [
-            ['exclude', 'mac/[^/]*\\.(cc|mm?)$'],
-            ['exclude', '_mac\\.(cc|mm?)$'],
-          ]
         }],
         ['OS=="win"', {
           'msvs_disabled_warnings': [ 4800 ],
@@ -177,8 +168,8 @@
             '.',
           ],
           'dependencies': [
-            '../../../breakpad/breakpad.gyp:breakpad_handler',
-            '../../default_plugin/default_plugin.gyp:default_plugin',
+            '<(DEPTH)/breakpad/breakpad.gyp:breakpad_handler',
+            '<(DEPTH)/webkit/default_plugin/default_plugin.gyp:default_plugin',
           ],
           # TODO(bradnelson):
           # This should really be done in the 'npapi_layout_test_plugin'
@@ -196,7 +187,6 @@
           ],
         }, {  # else: OS!=win
           'sources/': [
-            ['exclude', '_win\\.cc$'],
             ['exclude', '_webtheme(control|engine)\.(cc|h)$'],
           ],
           'sources!': [
@@ -248,11 +238,14 @@
     {
       'target_name': 'test_shell',
       'type': 'executable',
+      'variables': {
+        'chromium_code': 1,
+      },
       'mac_bundle': 1,
       'msvs_guid': 'FA39524D-3067-4141-888D-28A86C66F2B9',
       'dependencies': [
         'test_shell_common',
-        '../../../tools/imagediff/image_diff.gyp:image_diff',
+        '<(DEPTH)/tools/imagediff/image_diff.gyp:image_diff',
       ],
       'defines': [
         # Technically not a unit test but require functions available only to
@@ -277,11 +270,13 @@
         'mac/Info.plist',
       ],
       'xcode_settings': {
-        'INFOPLIST_FILE': 'mac/Info.plist',
+        'INFOPLIST_FILE': '<(DEPTH)/webkit/tools/test_shell/mac/Info.plist',
       },
       'conditions': [
         ['OS=="win"', {
-          'dependencies': ['layout_test_helper'],
+          'dependencies': [
+            'layout_test_helper',
+          ],
           'resource_include_dirs': [
             '<(SHARED_INTERMEDIATE_DIR)/webkit',
           ],
@@ -301,19 +296,21 @@
           'conditions': [
             ['linux_use_tcmalloc==1', {
               'dependencies': [
-                '../../../base/allocator/allocator.gyp:allocator',
+                '<(DEPTH)/base/allocator/allocator.gyp:allocator',
               ],
             }],
           ],
           'dependencies': [
-            '../../../build/linux/system.gyp:gtk',
+            '<(DEPTH)/build/linux/system.gyp:gtk',
             'test_shell_resources',
             'test_shell_pak',
           ],
         }],
         ['OS=="mac"', {
           'product_name': 'TestShell',
-          'dependencies': ['layout_test_helper'],
+          'dependencies': [
+            'layout_test_helper',
+          ],
           'variables': {
             'repack_path': '../../../tools/data_pack/repack.py',
           },
@@ -358,9 +355,9 @@
           ],
         }, { # OS != "mac"
           'dependencies': [
-            '../../../net/net.gyp:net_resources',
-            '../../webkit.gyp:webkit_resources',
-            '../../webkit.gyp:webkit_strings',
+            '<(DEPTH)/net/net.gyp:net_resources',
+            '<(DEPTH)/webkit/webkit.gyp:webkit_resources',
+            '<(DEPTH)/webkit/webkit.gyp:webkit_strings',
           ]
         }],
       ],
@@ -368,12 +365,15 @@
     {
       'target_name': 'test_shell_tests',
       'type': 'executable',
+      'variables': {
+        'chromium_code': 1,
+      },
       'msvs_guid': 'E6766F81-1FCD-4CD7-BC16-E36964A14867',
       'dependencies': [
         'test_shell_common',
-        '../../../skia/skia.gyp:skia',
-        '../../../testing/gmock.gyp:gmock',
-        '../../../testing/gtest.gyp:gtest',
+        '<(DEPTH)/skia/skia.gyp:skia',
+        '<(DEPTH)/testing/gmock.gyp:gmock',
+        '<(DEPTH)/testing/gtest.gyp:gtest',
       ],
       'sources': [
         '../../../skia/ext/convolver_unittest.cc',
@@ -448,7 +448,7 @@
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'dependencies': [
             'test_shell_pak',
-            '../../../build/linux/system.gyp:gtk',
+            '<(DEPTH)/build/linux/system.gyp:gtk',
           ],
           'sources!': [
              # TODO(port)
@@ -458,7 +458,9 @@
         ['OS=="mac"', {
           # mac tests load the resources from the built test_shell beside the
           # test
-          'dependencies': ['test_shell'],
+          'dependencies': [
+            'test_shell',
+           ],
           'sources!': [
             # Disable the image decoder tests because we use CoreGraphics
             # code on mac and these tests are for the Skia image-decoders.
@@ -483,7 +485,7 @@
           'conditions': [
             ['linux_use_tcmalloc==1', {
               'dependencies': [
-                '../../../base/allocator/allocator.gyp:allocator',
+                '<(DEPTH)/base/allocator/allocator.gyp:allocator',
               ],
             }],
           ],
@@ -493,6 +495,9 @@
     {
       'target_name': 'npapi_layout_test_plugin',
       'type': 'loadable_module',
+      'variables': {
+        'chromium_code': 1,
+      },
       'mac_bundle': 1,
       'msvs_guid': 'BE6D5659-A8D5-4890-A42C-090DD10EF62C',
       'sources': [
@@ -506,15 +511,15 @@
         '../../..',
       ],
       'dependencies': [
-        '../../../third_party/npapi/npapi.gyp:npapi',
-        '../../../third_party/WebKit/JavaScriptCore/JavaScriptCore.gyp/JavaScriptCore.gyp:wtf',
+        '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
+        '<(DEPTH)/third_party/WebKit/JavaScriptCore/JavaScriptCore.gyp/JavaScriptCore.gyp:wtf',
       ],
       'msvs_disabled_warnings': [ 4996 ],
       'mac_bundle_resources': [
         '../npapi_layout_test_plugin/Info.r',
       ],
       'xcode_settings': {
-        'INFOPLIST_FILE': '../npapi_layout_test_plugin/Info.plist',
+        'INFOPLIST_FILE': '<(DEPTH)/webkit/tools/npapi_layout_test_plugin/Info.plist',
       },
       'conditions': [
         ['OS!="win"', {
@@ -540,10 +545,17 @@
         #      'files': ['<(PRODUCT_DIR)/npapi_layout_test_plugin.dll'],
         #    },
         #  ],
+          'variables': {
+            # This is not a relative pathname.  Avoid pathname relativization
+            # by sticking it in a variable that isn't recognized as one
+            # containing pathnames, and by using the >(late) form of variable
+            # expansion.
+            'winmm_lib': 'winmm.lib',
+          },
           'link_settings': {
             'libraries': [
-              "winmm.lib",
-             ],
+              '>(winmm_lib)',
+            ],
           },
         }],
         ['OS=="mac"', {
@@ -568,12 +580,15 @@
         {
           'target_name': 'npapi_test_plugin',
           'type': 'loadable_module',
+          'variables': {
+            'chromium_code': 1,
+          },
           'mac_bundle': 1,
           'msvs_guid': '0D04AEC1-6B68-492C-BCCF-808DFD69ABC6',
           'dependencies': [
-            '../../../base/base.gyp:base',
-            '../../../third_party/icu/icu.gyp:icuuc',
-            '../../../third_party/npapi/npapi.gyp:npapi',
+            '<(DEPTH)/base/base.gyp:base',
+            '<(DEPTH)/third_party/icu/icu.gyp:icuuc',
+            '<(DEPTH)/third_party/npapi/npapi.gyp:npapi',
           ],
           'sources': [
             '../../glue/plugins/test/npapi_constants.cc',
@@ -623,7 +638,7 @@
             '../../..',
           ],
           'xcode_settings': {
-            'INFOPLIST_FILE': '../../glue/plugins/test/Info.plist',
+            'INFOPLIST_FILE': '<(DEPTH)/webkit/glue/plugins/test/Info.plist',
           },
           'conditions': [
             ['OS!="win"', {
@@ -704,6 +719,9 @@
           # running of the layout tests
           'target_name': 'layout_test_helper',
           'type': 'executable',
+          'variables': {
+            'chromium_code': 1,
+          },
           'sources': [
             'win/layout_test_helper.cc',
           ],
@@ -717,6 +735,9 @@
           # for the test shells run by the layout tests.
           'target_name': 'layout_test_helper',
           'type': 'executable',
+          'variables': {
+            'chromium_code': 1,
+          },
           'sources': [
             'mac/layout_test_helper.mm',
           ],

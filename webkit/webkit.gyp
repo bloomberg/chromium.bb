@@ -7,6 +7,7 @@
     '../third_party/WebKit/WebKit/chromium/features.gypi',
     '../third_party/WebKit/WebKit/chromium/WebKit.gypi',
     '../third_party/WebKit/WebCore/WebCore.gypi',
+    'tools/test_shell/test_shell.gypi',
   ],
   'variables': {
     # We can't turn on warnings on Windows and Linux until we upstream the
@@ -37,13 +38,6 @@
     'grit_cmd': ['python', '../tools/grit/grit.py'],
   },
   'targets': [
-    {
-      'target_name': 'pull_in_test_shell',
-      'type': 'none',
-      'dependencies': [
-        'tools/test_shell/test_shell.gyp:*',
-      ],
-    },
     {
       'target_name': 'pull_in_webkit_unit_tests',
       'type': 'none',

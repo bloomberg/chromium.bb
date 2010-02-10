@@ -728,7 +728,7 @@
               },
         }], ['OS=="mac"', {
               # TODO(ajwong): These files are also copied in:
-              # webkit/tools/test_shell/test_shell.gyp and
+              # webkit/tools/test_shell/test_shell.gypi and
               # chrome/chrome.gyp
               # Need to consolidate the copies in one place. (BUG=23602)
               'variables': {
