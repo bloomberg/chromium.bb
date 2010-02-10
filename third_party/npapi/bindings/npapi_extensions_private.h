@@ -13,7 +13,10 @@ typedef enum {
   NPExtensionsReservedStateSharedMemory = 66536,
   // Used by the Device2D and Audio devices to return a pointer to the
   // structure used to implement the shared memory buffer for the device.
-  NPExtensionsReservedStateSyncChannel = 66537
+  NPExtensionsReservedStateSharedMemorySize = 66537,
+  // Used by the Audio device to return a pointer to the
+  // structure used to implement the shared memory buffer for the device.
+  NPExtensionsReservedStateSyncChannel = 66538
   // Used by the Audio device to return a pointer to the
   // structure used to implement the synchronization channel for the device.
 } NPExtensionsReservedStates;
