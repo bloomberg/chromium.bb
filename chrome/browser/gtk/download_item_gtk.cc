@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "app/gfx/canvas_paint.h"
+#include "app/gfx/color_utils.h"
 #include "app/gfx/font.h"
 #include "app/gfx/text_elider.h"
 #include "app/gtk_dnd_util.h"
@@ -27,9 +28,10 @@
 #include "chrome/browser/gtk/standard_menus.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_service.h"
-#include "net/base/net_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
+#include "net/base/net_util.h"
+#include "skia/ext/skia_utils_gtk.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
@@ -63,6 +65,11 @@ const int kBodyWidth = kTextWidth + 50 + download_util::kSmallProgressIconSize;
 // The font size of the text, and that size rounded down to the nearest integer
 // for the size of the arrow in GTK theme mode.
 const double kTextSize = 13.4;  // 13.4px == 10pt @ 96dpi
+
+// Darken light-on-dark download status text by 20% before drawing, thus
+// creating a "muted" version of title text for both dark-on-light and
+// light-on-dark themes.
+static const double kDownloadItemLuminanceMod = 0.8;
 
 }  // namespace
 
@@ -527,31 +534,44 @@ void DownloadItemGtk::UpdateNameLabel() {
   std::wstring elided_filename = gfx::ElideFilename(
       get_download()->GetFileName(),
       gfx::Font(), kTextWidth);
-  if (theme_provider_->UseGtkTheme()) {
-    gtk_util::SetLabelColor(name_label_, NULL);
-  } else {
-    GdkColor color = theme_provider_->GetGdkColor(
-        BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
-    gtk_util::SetLabelColor(name_label_, &color);
-  }
 
+  GdkColor color = theme_provider_->GetGdkColor(
+      BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+  gtk_util::SetLabelColor(name_label_, theme_provider_->UseGtkTheme() ?
+                                       NULL : &color);
   gtk_label_set_text(GTK_LABEL(name_label_),
                      WideToUTF8(elided_filename).c_str());
 }
 
 void DownloadItemGtk::UpdateStatusLabel(GtkWidget* status_label,
                                         const std::string& status_text) {
-  if (status_label) {
-    if (theme_provider_->UseGtkTheme()) {
-      gtk_util::SetLabelColor(status_label, NULL);
-    } else {
-      GdkColor color = theme_provider_->GetGdkColor(
-          BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
-      gtk_util::SetLabelColor(status_label, &color);
+  if (!status_label)
+    return;
+
+  GdkColor text_color;
+  if (!theme_provider_->UseGtkTheme()) {
+    SkColor color = theme_provider_->GetColor(
+        BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+    if (color_utils::RelativeLuminance(color) > 0.5) {
+      color = SkColorSetRGB(
+          static_cast<int>(kDownloadItemLuminanceMod *
+                           SkColorGetR(color)),
+          static_cast<int>(kDownloadItemLuminanceMod *
+                           SkColorGetG(color)),
+          static_cast<int>(kDownloadItemLuminanceMod *
+                           SkColorGetB(color)));
     }
 
-    gtk_label_set_label(GTK_LABEL(status_label), status_text.c_str());
+    // Lighten the color by blending it with the download item body color. These
+    // values are taken from IDR_DOWNLOAD_BUTTON.
+    SkColor blend_color = SkColorSetRGB(241, 245, 250);
+    text_color = skia::SkColorToGdkColor(
+        color_utils::AlphaBlend(blend_color, color, 77));
   }
+
+  gtk_util::SetLabelColor(status_label, theme_provider_->UseGtkTheme() ?
+                                        NULL : &text_color);
+  gtk_label_set_label(GTK_LABEL(status_label), status_text.c_str());
 }
 
 void DownloadItemGtk::UpdateDangerWarning() {
