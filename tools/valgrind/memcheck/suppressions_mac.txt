@@ -570,13 +570,6 @@
    fun:_ZN3net13CookieMonster9SetCookieERK4GURLRKSs
 }
 {
-   bug_31586b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN14TestingProfile20CreateRequestContextEv
-   fun:_ZN12_GLOBAL__N_127CookiesWindowControllerTest5SetUpEv
-}
-{
    bug_31586c
    Memcheck:Leak
    fun:_Znw*
