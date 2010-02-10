@@ -3365,7 +3365,7 @@ ExprNodeVector[0] = {
 0000000000000000: 41 0f a3 c0                                  bt %r8d, %eax; *NACL Disallows!*
   { 2, { 0x0f, 0xa3, 0x00 },
     NACLi_ILLEGAL,
-    InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
+    InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v) | InstFlag(AddressSizeDefaultIs32),
     InstBt,
     2, {
       { E_Operand, OpFlag(OpUse) },
@@ -3410,4 +3410,80 @@ ExprNodeVector[6] = {
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
   { ExprConstant[0] , 0, ExprSize8 },
+};
+0000000000000000: 0f b3 20                                     btr [%eax], %esp; *NACL Disallows!*
+  { 2, { 0x0f, 0xb3, 0x00 },
+    NACLi_ILLEGAL,
+    InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v) | InstFlag(AddressSizeDefaultIs32),
+    InstBtr,
+    2, {
+      { E_Operand, OpFlag(OpUse) },
+      { G_Operand, OpFlag(OpUse) },
+  } };
+ExprNodeVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprMemOffset[4] , 0, ExprUsed },
+  { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0, ExprSize8 },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %esp, ExprUsed | ExprSize32 },
+};
+0000000000000000: 0f a3 20                                     bt [%eax], %esp; *NACL Disallows!*
+  { 2, { 0x0f, 0xa3, 0x00 },
+    NACLi_ILLEGAL,
+    InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v) | InstFlag(AddressSizeDefaultIs32),
+    InstBt,
+    2, {
+      { E_Operand, OpFlag(OpUse) },
+      { G_Operand, OpFlag(OpUse) },
+  } };
+ExprNodeVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprMemOffset[4] , 0, ExprUsed },
+  { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0, ExprSize8 },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %esp, ExprUsed | ExprSize32 },
+};
+0000000000000000: 0f bb 20                                     btc [%eax], %esp; *NACL Disallows!*
+  { 2, { 0x0f, 0xbb, 0x00 },
+    NACLi_ILLEGAL,
+    InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v) | InstFlag(AddressSizeDefaultIs32),
+    InstBtc,
+    2, {
+      { E_Operand, OpFlag(OpUse) },
+      { G_Operand, OpFlag(OpUse) },
+  } };
+ExprNodeVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprMemOffset[4] , 0, ExprUsed },
+  { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0, ExprSize8 },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %esp, ExprUsed | ExprSize32 },
+};
+0000000000000000: 0f ab 20                                     bts [%eax], %esp; *NACL Disallows!*
+  { 2, { 0x0f, 0xab, 0x00 },
+    NACLi_ILLEGAL,
+    InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v) | InstFlag(AddressSizeDefaultIs32),
+    InstBts,
+    2, {
+      { E_Operand, OpFlag(OpUse) },
+      { G_Operand, OpFlag(OpUse) },
+  } };
+ExprNodeVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprMemOffset[4] , 0, ExprUsed },
+  { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0, ExprSize8 },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %esp, ExprUsed | ExprSize32 },
 };
