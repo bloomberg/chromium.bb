@@ -226,6 +226,15 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
       return S_OK;
     }
 
+    // We have no data, and no pending read request from Chrome.
+    // Wait until Chrome issue a read request and then send error/success code.
+    // The network policy in Chrome network is that error/end_of_stream should
+    // be returned only as a result of read (or start) request.
+    if (pending_read_size_ == 0) {
+      ReleaseBindings();
+      return S_OK;
+    }
+
     NotifyDelegateAndDie();
     return S_OK;
   }
