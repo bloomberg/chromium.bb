@@ -2305,3 +2305,20 @@
    fun:_ZN20LayoutTestController9WorkQueue15ProcessWorkSoonEv
    fun:_ZN20LayoutTestController18LocationChangeDoneEv
 }
+{
+   bug_35318
+   Memcheck:Param
+   write(buf)
+   obj:*
+   fun:_ZN3net10FileStream5WriteEPKciP14CallbackRunnerI6Tuple1IiEE
+   fun:_ZN12DownloadFile16AppendDataToFileEPKci
+   fun:_ZN19DownloadFileManager14UpdateDownloadEiP14DownloadBuffer
+   fun:_Z16DispatchToMethodI19DownloadFileManagerMS0_FviP14DownloadBufferEiS2_EvPT_T0_RK6Tuple2IT1_T2_E
+   fun:_ZN14RunnableMethodI19DownloadFileManagerMS0_FviP14DownloadBufferE6Tuple2IiS2_EE3RunEv
+   fun:_ZN11MessageLoop7RunTaskEP4Task
+   fun:_ZN11MessageLoop21DeferOrRunPendingTaskERKNS_11PendingTaskE
+   fun:_ZN11MessageLoop6DoWorkEv
+   fun:_ZN4base19MessagePumpLibevent3RunEPNS_11MessagePump8DelegateE
+   fun:_ZN11MessageLoop11RunInternalEv
+   fun:_ZN11MessageLoop10RunHandlerEv
+}
