@@ -90,6 +90,14 @@ void CookieMonster::EnableFileScheme() {
   enable_file_scheme_ = true;
 }
 
+CookieMonster::CookieMonster()
+    : initialized_(false),
+      store_(NULL),
+      last_access_threshold_(
+          TimeDelta::FromSeconds(kDefaultAccessUpdateThresholdSeconds)) {
+  SetDefaultCookieableSchemes();
+}
+
 CookieMonster::CookieMonster(PersistentCookieStore* store)
     : initialized_(false),
       store_(store),

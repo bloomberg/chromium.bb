@@ -50,17 +50,19 @@ class CookieMonster : public CookieStore {
   typedef std::pair<std::string, CanonicalCookie> CookieListPair;
   typedef std::vector<CookieListPair> CookieList;
 
+
+  CookieMonster();
+
   // The store passed in should not have had Init() called on it yet. This class
   // will take care of initializing it. The backing store is NOT owned by this
   // class, but it must remain valid for the duration of the cookie monster's
-  // existence. If |store| is NULL, then no backing store will be updated.
-  explicit CookieMonster(PersistentCookieStore* store);
+  // existence.
+  CookieMonster(PersistentCookieStore* store);
 
 #ifdef UNIT_TEST
-  CookieMonster(PersistentCookieStore* store,
-                int last_access_threshold_milliseconds)
+  CookieMonster(int last_access_threshold_milliseconds)
       : initialized_(false),
-        store_(store),
+        store_(NULL),
         last_access_threshold_(base::TimeDelta::FromMilliseconds(
             last_access_threshold_milliseconds)) {
     SetDefaultCookieableSchemes();

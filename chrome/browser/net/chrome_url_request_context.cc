@@ -167,7 +167,7 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
 
   if (record_mode || playback_mode) {
     // Don't use existing cookies and use an in-memory store.
-    context->set_cookie_store(new net::CookieMonster(NULL));
+    context->set_cookie_store(new net::CookieMonster());
     cache->set_mode(
         record_mode ? net::HttpCache::RECORD : net::HttpCache::PLAYBACK);
   }
@@ -264,7 +264,7 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
       new net::HttpCache(io_thread()->globals()->network_change_notifier.get(),
                          context->host_resolver(), context->proxy_service(),
                          context->ssl_config_service(), 0);
-  context->set_cookie_store(new net::CookieMonster(NULL));
+  context->set_cookie_store(new net::CookieMonster);
   context->set_cookie_policy(
       new ChromeCookiePolicy(host_content_settings_map_));
   context->set_http_transaction_factory(cache);
@@ -298,7 +298,7 @@ ChromeURLRequestContext* FactoryForOffTheRecordExtensions::Create() {
   ChromeURLRequestContext* context = new ChromeURLRequestContext;
   ApplyProfileParametersToContext(context);
 
-  net::CookieMonster* cookie_monster = new net::CookieMonster(NULL);
+  net::CookieMonster* cookie_monster = new net::CookieMonster;
 
   // Enable cookies for extension URLs only.
   const char* schemes[] = {chrome::kExtensionScheme};
