@@ -42,6 +42,9 @@ class WorkerProcessHost : public ChildProcessHost {
     // Returns the single sender (must only be one).
     SenderInfo GetSender() const;
 
+    typedef std::list<SenderInfo> SenderList;
+    const SenderList& senders() const { return senders_; }
+
     // Checks if this WorkerInstance matches the passed url/name params
     // (per the comparison algorithm in the WebWorkers spec). This API only
     // applies to shared workers.
@@ -69,7 +72,6 @@ class WorkerProcessHost : public ChildProcessHost {
 
    private:
     // Set of all senders (clients) associated with this worker.
-    typedef std::list<SenderInfo> SenderList;
     GURL url_;
     bool shared_;
     bool off_the_record_;

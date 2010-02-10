@@ -471,3 +471,84 @@ TEST_F(WorkerTest, LimitTotal) {
   ASSERT_TRUE(WaitForProcessCountToBe(tab_count, total_workers));
 #endif
 }
+
+TEST_F(WorkerTest, WorkerClose) {
+  scoped_refptr<TabProxy> tab(GetActiveTab());
+  ASSERT_TRUE(tab.get());
+  GURL url = GetTestUrl(L"workers", L"worker_close.html");
+  ASSERT_TRUE(tab->NavigateToURL(url));
+  std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
+      kTestCompleteCookie, kTestIntervalMs, kTestWaitTimeoutMs);
+  ASSERT_STREQ(kTestCompleteSuccess, value.c_str());
+  ASSERT_TRUE(WaitForProcessCountToBe(1, 0));
+}
+
+TEST_F(WorkerTest, QueuedSharedWorkerShutdown) {
+  // Tests to make sure that queued shared workers are started up when
+  // shared workers shut down.
+  int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
+  GURL url = GetTestUrl(L"workers", L"queued_shared_worker_shutdown.html");
+  url = GURL(url.spec() + StringPrintf("?count=%d", max_workers_per_tab));
+
+  scoped_refptr<TabProxy> tab(GetActiveTab());
+  ASSERT_TRUE(tab.get());
+  ASSERT_TRUE(tab->NavigateToURL(url));
+  std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
+      kTestCompleteCookie, kTestIntervalMs, kTestWaitTimeoutMs);
+  ASSERT_STREQ(kTestCompleteSuccess, value.c_str());
+  ASSERT_TRUE(WaitForProcessCountToBe(1, max_workers_per_tab));
+}
+
+TEST_F(WorkerTest, MultipleTabsQueuedSharedWorker) {
+  // Tests to make sure that only one instance of queued shared workers are
+  // started up even when those instances are on multiple tabs.
+  int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
+  GURL url = GetTestUrl(L"workers", L"many_shared_workers.html");
+  url = GURL(url.spec() + StringPrintf("?count=%d", max_workers_per_tab+1));
+
+  scoped_refptr<TabProxy> tab(GetActiveTab());
+  ASSERT_TRUE(tab.get());
+  ASSERT_TRUE(tab->NavigateToURL(url));
+  ASSERT_TRUE(WaitForProcessCountToBe(1, max_workers_per_tab));
+
+  // Create same set of workers in new tab (leaves one worker queued from this
+  // tab).
+  scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
+  ASSERT_TRUE(window->AppendTab(url));
+  ASSERT_TRUE(WaitForProcessCountToBe(2, max_workers_per_tab));
+
+  // Now shutdown one of the shared workers - this will fire both queued
+  // workers, but only one instance should be started
+  GURL url2 = GetTestUrl(L"workers", L"shutdown_shared_worker.html?id=0");
+  ASSERT_TRUE(window->AppendTab(url2));
+
+  std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
+      kTestCompleteCookie, kTestIntervalMs, kTestWaitTimeoutMs);
+  ASSERT_STREQ(kTestCompleteSuccess, value.c_str());
+  ASSERT_TRUE(WaitForProcessCountToBe(3, max_workers_per_tab));
+}
+
+TEST_F(WorkerTest, QueuedSharedWorkerStartedFromOtherTab) {
+  // Tests to make sure that queued shared workers are started up when
+  // an instance is launched from another tab.
+  int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
+  GURL url = GetTestUrl(L"workers", L"many_shared_workers.html");
+  url = GURL(url.spec() + StringPrintf("?count=%d", max_workers_per_tab+1));
+
+  scoped_refptr<TabProxy> tab(GetActiveTab());
+  ASSERT_TRUE(tab.get());
+  ASSERT_TRUE(tab->NavigateToURL(url));
+  ASSERT_TRUE(WaitForProcessCountToBe(1, max_workers_per_tab));
+  // First window has hit its limit. Now launch second window which creates
+  // the same worker that was queued in the first window, to ensure it gets
+  // connected to the first window too.
+  scoped_refptr<BrowserProxy> window(automation()->GetBrowserWindow(0));
+  GURL url2 = GetTestUrl(L"workers", L"single_shared_worker.html");
+  url2 = GURL(url2.spec() + StringPrintf("?id=%d", max_workers_per_tab));
+  window->AppendTab(url2);
+
+  std::string value = WaitUntilCookieNonEmpty(tab.get(), url,
+      kTestCompleteCookie, kTestIntervalMs, kTestWaitTimeoutMs);
+  ASSERT_STREQ(kTestCompleteSuccess, value.c_str());
+  ASSERT_TRUE(WaitForProcessCountToBe(2, max_workers_per_tab+1));
+}

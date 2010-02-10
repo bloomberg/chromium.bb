@@ -170,8 +170,15 @@ void WorkerProcessHost::CreateWorker(const WorkerInstance& instance) {
                                          instance.worker_route_id()));
 
   UpdateTitle();
-  WorkerInstance::SenderInfo info = instances_.back().GetSender();
-  info.first->Send(new ViewMsg_WorkerCreated(info.second));
+
+  // Walk all pending senders and let them know the worker has been created
+  // (could be more than one in the case where we had to queue up worker
+  // creation because the worker process limit was reached).
+  for (WorkerInstance::SenderList::const_iterator i =
+           instance.senders().begin();
+       i != instance.senders().end(); ++i) {
+    i->first->Send(new ViewMsg_WorkerCreated(i->second));
+  }
 }
 
 bool WorkerProcessHost::FilterMessage(const IPC::Message& message,

@@ -87,6 +87,9 @@ class WorkerService : public NotificationObserver {
   WorkerService();
   ~WorkerService();
 
+  // Given a WorkerInstance, create an associated worker process.
+  bool CreateWorkerFromInstance(WorkerProcessHost::WorkerInstance instance);
+
   // Returns a WorkerProcessHost object if one exists for the given domain, or
   // NULL if there are no such workers yet.
   WorkerProcessHost* GetProcessForDomain(const GURL& url);
@@ -126,7 +129,7 @@ class WorkerService : public NotificationObserver {
       const GURL& url, const string16& name, bool off_the_record);
   WorkerProcessHost::WorkerInstance* FindPendingInstance(
       const GURL& url, const string16& name, bool off_the_record);
-  void RemovePendingInstance(
+  void RemovePendingInstances(
       const GURL& url, const string16& name, bool off_the_record);
 
   NotificationRegistrar registrar_;

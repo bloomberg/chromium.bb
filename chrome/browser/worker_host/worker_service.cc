@@ -67,13 +67,19 @@ bool WorkerService::CreateWorker(const GURL &url,
   instance.worker_document_set()->Add(
       sender, document_id, renderer_id, render_view_route_id);
 
+  return CreateWorkerFromInstance(instance);
+}
+
+bool WorkerService::CreateWorkerFromInstance(
+    WorkerProcessHost::WorkerInstance instance) {
+
   WorkerProcessHost* worker = NULL;
   if (CommandLine::ForCurrentProcess()->HasSwitch(
           switches::kWebWorkerProcessPerCore)) {
     worker = GetProcessToFillUpCores();
   } else if (CommandLine::ForCurrentProcess()->HasSwitch(
                  switches::kWebWorkerShareProcesses)) {
-    worker = GetProcessForDomain(url);
+    worker = GetProcessForDomain(instance.url());
   } else {  // One process per worker.
     if (!CanCreateWorkerProcess(instance)) {
       queued_workers_.push_back(instance);
@@ -83,22 +89,25 @@ bool WorkerService::CreateWorker(const GURL &url,
 
   // Check to see if this shared worker is already running (two pages may have
   // tried to start up the worker simultaneously).
-  if (is_shared) {
+  if (instance.shared()) {
     // See if a worker with this name already exists.
     WorkerProcessHost::WorkerInstance* existing_instance =
-        FindSharedWorkerInstance(url, name, off_the_record);
+        FindSharedWorkerInstance(
+            instance.url(), instance.name(), instance.off_the_record());
     // If this worker is already running, no need to create a new copy. Just
     // inform the caller that the worker has been created.
     if (existing_instance) {
       // TODO(atwilson): Change this to scan the sender list (crbug.com/29243).
-      existing_instance->AddSender(sender, sender_route_id);
-      sender->Send(new ViewMsg_WorkerCreated(sender_route_id));
+      WorkerProcessHost::WorkerInstance::SenderInfo sender_info =
+          instance.GetSender();
+      existing_instance->AddSender(sender_info.first, sender_info.second);
+      sender_info.first->Send(new ViewMsg_WorkerCreated(sender_info.second));
       return true;
     }
 
     // Look to see if there's a pending instance.
     WorkerProcessHost::WorkerInstance* pending = FindPendingInstance(
-        url, name, off_the_record);
+        instance.url(), instance.name(), instance.off_the_record());
     // If there's no instance *and* no pending instance, then it means the
     // worker started up and exited already. Log a warning because this should
     // be a very rare occurrence and is probably a bug, but it *can* happen so
@@ -112,7 +121,24 @@ bool WorkerService::CreateWorker(const GURL &url,
     // worker to the new instance.
     DCHECK(!pending->worker_document_set()->IsEmpty());
     instance.ShareDocumentSet(*pending);
-    RemovePendingInstance(url, name, off_the_record);
+    RemovePendingInstances(
+        instance.url(), instance.name(), instance.off_the_record());
+
+    // Remove any queued instances of this worker and copy over the sender to
+    // this instance.
+    for (WorkerProcessHost::Instances::iterator iter = queued_workers_.begin();
+         iter != queued_workers_.end();) {
+      if (iter->Matches(instance.url(), instance.name(),
+                        instance.off_the_record())) {
+        DCHECK(iter->NumSenders() == 1);
+        WorkerProcessHost::WorkerInstance::SenderInfo sender_info =
+            iter->GetSender();
+        instance.AddSender(sender_info.first, sender_info.second);
+        iter = queued_workers_.erase(iter);
+      } else {
+        ++iter;
+      }
+    }
   }
 
   if (!worker) {
@@ -403,15 +429,16 @@ void WorkerService::WorkerProcessDestroyed(WorkerProcessHost* process) {
   for (WorkerProcessHost::Instances::iterator i = queued_workers_.begin();
        i != queued_workers_.end();) {
     if (CanCreateWorkerProcess(*i)) {
-      WorkerProcessHost* worker =
-          new WorkerProcessHost(resource_dispatcher_host_);
-      if (!worker->Init()) {
-        delete worker;
-        return;
-      }
+      WorkerProcessHost::WorkerInstance instance = *i;
+      queued_workers_.erase(i);
+      CreateWorkerFromInstance(instance);
 
-      worker->CreateWorker(*i);
-      i = queued_workers_.erase(i);
+      // CreateWorkerFromInstance can modify the queued_workers_ list when it
+      // coalesces queued instances after starting a shared worker, so we
+      // have to rescan the list from the beginning (our iterator is now
+      // invalid). This is not a big deal as having any queued workers will be
+      // rare in practice so the list will be small.
+      i = queued_workers_.begin();
     } else {
       ++i;
     }
@@ -466,17 +493,20 @@ WorkerService::FindPendingInstance(const GURL& url, const string16& name,
 }
 
 
-void WorkerService::RemovePendingInstance(const GURL& url,
-                                          const string16& name,
-                                          bool off_the_record) {
+void WorkerService::RemovePendingInstances(const GURL& url,
+                                           const string16& name,
+                                           bool off_the_record) {
   // Walk the pending instances looking for a matching pending worker.
   for (WorkerProcessHost::Instances::iterator iter =
            pending_shared_workers_.begin();
-       iter != pending_shared_workers_.end();
-       ++iter) {
+       iter != pending_shared_workers_.end(); ) {
+    // Pending workers should have no senders - only actively running worker
+    // instances have senders.
+    DCHECK(iter->NumSenders() == 0);
     if (iter->Matches(url, name, off_the_record)) {
-      pending_shared_workers_.erase(iter);
-      break;
+      iter = pending_shared_workers_.erase(iter);
+    } else {
+      ++iter;
     }
   }
 }
