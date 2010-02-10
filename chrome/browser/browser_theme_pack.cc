@@ -30,7 +30,7 @@ namespace {
 
 // Version number of the current theme pack. We just throw out and rebuild
 // theme packs that aren't int-equal to this.
-const int kThemePackVersion = 2;
+const int kThemePackVersion = 3;
 
 // IDs that are in the DataPack won't clash with the positive integer
 // int32_t. kHeaderID should always have the maximum value because we want the
@@ -41,6 +41,7 @@ const int kHeaderID = UINT_MAX - 1;
 const int kTintsID = UINT_MAX - 2;
 const int kColorsID = UINT_MAX - 3;
 const int kDisplayPropertiesID = UINT_MAX - 4;
+const int kSourceImagesID = UINT_MAX - 5;
 
 // Static size of the tint/color/display property arrays that are mmapped.
 const int kTintArraySize = 6;
@@ -336,6 +337,7 @@ BrowserThemePack::~BrowserThemePack() {
     delete [] tints_;
     delete [] colors_;
     delete [] display_properties_;
+    delete [] source_images_;
   }
 
   STLDeleteValues(&prepared_images_);
@@ -359,6 +361,8 @@ BrowserThemePack* BrowserThemePack::BuildFromExtension(Extension* extension) {
   pack->ParseImageNamesFromJSON(extension->GetThemeImages(),
                                 extension->path(),
                                 &file_paths);
+  pack->BuildSourceImagesArray(file_paths);
+
   if (!pack->LoadRawBitmapsTo(file_paths, &pack->prepared_images_))
     return NULL;
 
@@ -424,6 +428,11 @@ scoped_refptr<BrowserThemePack> BrowserThemePack::BuildFromDataPack(
   pack->display_properties_ = reinterpret_cast<DisplayPropertyPair*>(
       const_cast<char*>(pointer.data()));
 
+  if (!pack->data_pack_->GetStringPiece(kSourceImagesID, &pointer))
+    return NULL;
+  pack->source_images_ = reinterpret_cast<int*>(
+      const_cast<char*>(pointer.data()));
+
   return pack;
 }
 
@@ -441,6 +450,14 @@ bool BrowserThemePack::WriteToDisk(FilePath path) const {
   resources[kDisplayPropertiesID] = base::StringPiece(
       reinterpret_cast<const char*>(display_properties_),
       sizeof(DisplayPropertyPair[kDisplayPropertySize]));
+
+  int source_count = 1;
+  int* end = source_images_;
+  for (; *end != -1 ; end++)
+    source_count++;
+  resources[kSourceImagesID] = base::StringPiece(
+      reinterpret_cast<const char*>(source_images_),
+      source_count * sizeof(int));
 
   AddRawImagesTo(image_memory_, &resources);
 
@@ -557,13 +574,13 @@ bool BrowserThemePack::HasCustomImage(int idr_id) const {
   if (prs_id == -1)
     return false;
 
-  if (data_pack_.get()) {
-    base::StringPiece ignored;
-    return data_pack_->GetStringPiece(prs_id, &ignored);
-  } else {
-    return prepared_images_.count(prs_id) > 0 ||
-        image_memory_.count(prs_id) > 0;
+  int* img = source_images_;
+  for (; *img != -1; ++img) {
+    if (*img == prs_id)
+      return true;
   }
+
+  return false;
 }
 
 // private:
@@ -572,7 +589,8 @@ BrowserThemePack::BrowserThemePack()
     : header_(NULL),
       tints_(NULL),
       colors_(NULL),
-      display_properties_(NULL) {
+      display_properties_(NULL),
+      source_images_(NULL) {
 }
 
 void BrowserThemePack::BuildHeader(Extension* extension) {
@@ -824,6 +842,18 @@ void BrowserThemePack::ParseImageNamesFromJSON(
         (*file_paths)[id] = images_path.AppendASCII(val);
     }
   }
+}
+
+void BrowserThemePack::BuildSourceImagesArray(const FilePathMap& file_paths) {
+  std::vector<int> ids;
+  for (FilePathMap::const_iterator it = file_paths.begin();
+       it != file_paths.end(); ++it) {
+    ids.push_back(it->first);
+  }
+
+  source_images_ = new int[ids.size() + 1];
+  std::copy(ids.begin(), ids.end(), source_images_);
+  source_images_[ids.size()] = -1;
 }
 
 bool BrowserThemePack::LoadRawBitmapsTo(
