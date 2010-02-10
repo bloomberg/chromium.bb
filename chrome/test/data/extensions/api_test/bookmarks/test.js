@@ -268,6 +268,13 @@ chrome.test.runTests([
     chrome.bookmarks.update(node1.id, {"title": title}, pass(function(results) {
       chrome.test.assertEq(title, results.title);
     }));
+
+    var url = "http://example.com/hello"
+    chrome.bookmarks.update(node1.id, {"url": url}, pass(function(results) {
+      // Make sure that leaving out the title does not set the title to empty.
+      chrome.test.assertEq(title, results.title);
+      chrome.test.assertEq(url, results.url);
+    }));
   },
 
   function remove() {

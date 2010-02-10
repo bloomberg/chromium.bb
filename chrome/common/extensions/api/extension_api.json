@@ -1515,14 +1515,15 @@
       {
         "name": "update",
         "type": "function",
-        "description": "Updates the properties of a bookmark or folder. Specify only the properties that you want to change; unspecified properties will be left unchanged.  <b>Note:</b> Currently, only 'title' is supported.",
+        "description": "Updates the properties of a bookmark or folder. Specify only the properties that you want to change; unspecified properties will be left unchanged.  <b>Note:</b> Currently, only 'title' and 'url' are supported.",
         "parameters": [
           {"type": "string", "name": "id"},
           {
             "type": "object",
             "name": "changes",
             "properties": {
-              "title": {"type": "string", "optional": true}
+              "title": {"type": "string", "optional": true},
+              "url": {"type": "string", "optional": true}
             }
           },
           {
@@ -1586,14 +1587,15 @@
       {
         "name": "onChanged",
         "type": "function",
-        "description": "Fired when a bookmark or folder changes.  <b>Note:</b> Currently, only title changes trigger this.",
+        "description": "Fired when a bookmark or folder changes.  <b>Note:</b> Currently, only title and url changes changes trigger this.",
         "parameters": [
           {"type": "string", "name": "id"},
           {
             "type": "object",
             "name": "changeInfo",
             "properties": {
-              "title": { "type": "string" }
+              "title": {"type": "string"},
+              "url": {"type": "string", "optional": true}
             }
           }
         ]

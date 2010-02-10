@@ -238,13 +238,15 @@ void ExtensionBookmarkEventRouter::BookmarkNodeChanged(
   ListValue args;
   args.Append(new StringValue(Int64ToString(node->id())));
 
-  // TODO(erikkay) The only two things that BookmarkModel sends this
-  // notification for are title and favicon.  Since we're currently ignoring
-  // favicon and since the notification doesn't say which one anyway, for now
-  // we only include title.  The ideal thing would be to change BookmarkModel
-  // to indicate what changed.
+  // TODO(erikkay) The only three things that BookmarkModel sends this
+  // notification for are title, url and favicon.  Since we're currently
+  // ignoring favicon and since the notification doesn't say which one anyway,
+  // for now we only include title and url.  The ideal thing would be to change
+  // BookmarkModel to indicate what changed.
   DictionaryValue* object_args = new DictionaryValue();
   object_args->SetString(keys::kTitleKey, node->GetTitle());
+  if (node->is_url())
+    object_args->SetString(keys::kUrlKey, node->GetURL().spec());
   args.Append(object_args);
 
   std::string json_args;
@@ -639,8 +641,22 @@ bool UpdateBookmarkFunction::RunImpl() {
   const ListValue* args = args_as_list();
   DictionaryValue* updates;
   EXTENSION_FUNCTION_VALIDATE(args->GetDictionary(1, &updates));
+
   std::wstring title;
-  updates->GetString(keys::kTitleKey, &title);  // Optional (empty is clear).
+  std::string url_string;
+
+  // Optional but we need to distinguish non present from an empty title.
+  const bool has_title = updates->GetString(keys::kTitleKey, &title);
+  updates->GetString(keys::kUrlKey, &url_string);  // Optional.
+
+  GURL url;
+  if (!url_string.empty()) {
+    url = GURL(url_string);
+
+    // If URL is present then it needs to be a non empty valid URL.
+    EXTENSION_FUNCTION_VALIDATE(!url.is_empty());
+    EXTENSION_FUNCTION_VALIDATE(url.is_valid());
+  }
 
   BookmarkModel* model = profile()->GetBookmarkModel();
   const BookmarkNode* node = model->GetNodeByID(ids.front());
@@ -654,7 +670,10 @@ bool UpdateBookmarkFunction::RunImpl() {
     error_ = keys::kModifySpecialError;
     return false;
   }
-  model->SetTitle(node, title);
+  if (has_title)
+    model->SetTitle(node, title);
+  if (!url.is_empty())
+    model->SetURL(node, url);
 
   DictionaryValue* ret = ExtensionBookmarks::GetNodeDictionary(node, false);
   result_.reset(ret);
