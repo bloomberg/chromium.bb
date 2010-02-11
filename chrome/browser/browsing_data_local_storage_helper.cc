@@ -9,9 +9,9 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/profile.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
-#include "webkit/glue/glue_util.h"
 #include "webkit/glue/webkit_glue.h"
 
 BrowsingDataLocalStorageHelper::BrowsingDataLocalStorageHelper(
@@ -73,13 +73,11 @@ void BrowsingDataLocalStorageHelper::FetchLocalStorageInfoInWebKitThread() {
       bool ret = file_util::GetFileInfo(file_path, &file_info);
       if (ret) {
         local_storage_info_.push_back(LocalStorageInfo(
-            webkit_glue::WebStringToStdString(web_security_origin->protocol()),
-            webkit_glue::WebStringToStdString(web_security_origin->host()),
+            web_security_origin->protocol().utf8(),
+            web_security_origin->host().utf8(),
             web_security_origin->port(),
-            webkit_glue::WebStringToStdString(
-                web_security_origin->databaseIdentifier()),
-            webkit_glue::WebStringToStdString(
-                web_security_origin->toString()),
+            web_security_origin->databaseIdentifier().utf8(),
+            web_security_origin->toString().utf8(),
             file_path,
             file_info.size,
             file_info.last_modified));

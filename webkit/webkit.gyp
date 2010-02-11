@@ -305,8 +305,6 @@
         'glue/ftp_directory_listing_response_delegate.h',
         'glue/glue_serialize.cc',
         'glue/glue_serialize.h',
-        'glue/glue_util.cc',
-        'glue/glue_util.h',
         'glue/image_decoder.cc',
         'glue/image_decoder.h',
         'glue/image_resource_fetcher.cc',

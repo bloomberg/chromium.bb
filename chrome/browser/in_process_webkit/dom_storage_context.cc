@@ -14,7 +14,6 @@
 #include "chrome/common/dom_storage_common.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
-#include "webkit/glue/glue_util.h"
 #include "webkit/glue/webkit_glue.h"
 
 const FilePath::CharType DOMStorageContext::kLocalStorageDirectory[] =
