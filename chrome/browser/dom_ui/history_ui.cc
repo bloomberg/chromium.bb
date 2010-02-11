@@ -207,7 +207,6 @@ void BrowsingHistoryHandler::HandleDeleteDay(const Value* value) {
                                      end_time);
   remover_->AddObserver(this);
   remover_->Remove(BrowsingDataRemover::REMOVE_HISTORY |
-                   BrowsingDataRemover::REMOVE_COOKIES |
                    BrowsingDataRemover::REMOVE_CACHE);
 }
 
