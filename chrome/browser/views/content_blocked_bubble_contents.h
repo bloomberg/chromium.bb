@@ -49,6 +49,8 @@ class ContentBlockedBubbleContents : public views::View,
   void set_info_bubble(InfoBubble* info_bubble) { info_bubble_ = info_bubble; }
 
  private:
+  class Favicon;
+
   typedef std::map<views::Link*, TabContents*> PopupLinks;
 
   // Overridden from views::View:

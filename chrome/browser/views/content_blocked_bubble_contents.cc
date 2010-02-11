@@ -4,6 +4,10 @@
 
 #include "chrome/browser/views/content_blocked_bubble_contents.h"
 
+#if defined(OS_LINUX)
+#include <gdk/gdk.h>
+#endif
+
 #include "app/l10n_util.h"
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/host_content_settings_map.h"
@@ -16,10 +20,78 @@
 #include "grit/generated_resources.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/button/radio_button.h"
+#include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/controls/separator.h"
 #include "views/grid_layout.h"
 #include "views/standard_layout.h"
+
+class ContentBlockedBubbleContents::Favicon : public views::ImageView {
+ public:
+  Favicon(const SkBitmap& image,
+          ContentBlockedBubbleContents* parent,
+          views::Link* link);
+  virtual ~Favicon();
+
+ private:
+#if defined(OS_WIN)
+  static HCURSOR g_hand_cursor;
+#endif
+
+  // views::View overrides:
+  virtual bool OnMousePressed(const views::MouseEvent& event);
+  virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
+  virtual gfx::NativeCursor GetCursorForPoint(
+      views::Event::EventType event_type,
+      int x,
+      int y);
+
+  ContentBlockedBubbleContents* parent_;
+  views::Link* link_;
+};
+
+#if defined(OS_WIN)
+HCURSOR ContentBlockedBubbleContents::Favicon::g_hand_cursor = NULL;
+#endif
+
+ContentBlockedBubbleContents::Favicon::Favicon(
+    const SkBitmap& image,
+    ContentBlockedBubbleContents* parent,
+    views::Link* link)
+    : parent_(parent),
+      link_(link) {
+  SetImage(image);
+}
+
+ContentBlockedBubbleContents::Favicon::~Favicon() {
+}
+
+bool ContentBlockedBubbleContents::Favicon::OnMousePressed(
+    const views::MouseEvent& event) {
+  return event.IsLeftMouseButton() || event.IsMiddleMouseButton();
+}
+
+void ContentBlockedBubbleContents::Favicon::OnMouseReleased(
+    const views::MouseEvent& event,
+    bool canceled) {
+  if (!canceled &&
+      (event.IsLeftMouseButton() || event.IsMiddleMouseButton()) &&
+      HitTest(event.location()))
+    parent_->LinkActivated(link_, event.GetFlags());
+}
+
+gfx::NativeCursor ContentBlockedBubbleContents::Favicon::GetCursorForPoint(
+    views::Event::EventType event_type,
+    int x,
+    int y) {
+#if defined(OS_WIN)
+  if (!g_hand_cursor)
+    g_hand_cursor = LoadCursor(NULL, IDC_HAND);
+  return g_hand_cursor;
+#elif defined(OS_LINUX)
+  return gdk_cursor_new(GDK_HAND2);
+#endif
+}
 
 ContentBlockedBubbleContents::ContentBlockedBubbleContents(
     ContentSettingsType content_type,
@@ -117,18 +189,35 @@ void ContentBlockedBubbleContents::InitControlLayout() {
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 
   if (content_type_ == CONTENT_SETTINGS_TYPE_POPUPS) {
+    const int popup_column_set_id = 2;
+    views::ColumnSet* popup_column_set =
+        layout->AddColumnSet(popup_column_set_id);
+    popup_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 0,
+                                GridLayout::USE_PREF, 0, 0);
+    popup_column_set->AddPaddingColumn(0, kRelatedControlHorizontalSpacing);
+    popup_column_set->AddColumn(GridLayout::LEADING, GridLayout::FILL, 1,
+                                GridLayout::USE_PREF, 0, 0);
+
     BlockedPopupContainer::BlockedContents blocked_contents;
     DCHECK(tab_contents_->blocked_popup_container());
     tab_contents_->blocked_popup_container()->GetBlockedContents(
         &blocked_contents);
     for (BlockedPopupContainer::BlockedContents::const_iterator
          i(blocked_contents.begin()); i != blocked_contents.end(); ++i) {
-      views::Link* link = new views::Link(UTF16ToWideHack((*i)->GetTitle()));
-      link->SetController(this);
-      popup_links_[link] = *i;
+      string16 title((*i)->GetTitle());
+      // The popup may not have committed a load yet, in which case it won't
+      // have a URL or title.
+      if (title.empty())
+        title = l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE);
+
       if (i != blocked_contents.begin())
         layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-      layout->StartRow(0, single_column_set_id);
+      layout->StartRow(0, popup_column_set_id);
+
+      views::Link* link = new views::Link(UTF16ToWideHack(title));
+      link->SetController(this);
+      popup_links_[link] = *i;
+      layout->AddView(new Favicon((*i)->GetFavIcon(), this, link));
       layout->AddView(link);
     }
     layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
