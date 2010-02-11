@@ -42,6 +42,11 @@ class PortablePluginInterface {
   virtual void set_module(nacl::NPModule* module)  = 0;
   virtual NPObject* nacl_instance() = 0;
 
+  // TODO(sehr): replace the argn/argv/argc approach with strings and map.
+  virtual char** argn() = 0;
+  virtual char** argv() = 0;
+  virtual int argc() = 0;
+
   // Functions for communication with the browser.
   // NOTE(gregoryd): some of the functions below may require more information
   // about the browser than is available using PluginIdentifier. In this case
@@ -54,9 +59,9 @@ class PortablePluginInterface {
   static bool GetOrigin(nacl_srpc::PluginIdentifier plugin_identifier,
                         std::string **origin);
   // To indicate successful loading of a module, invoke the onload handler.
-  static bool RunOnloadHandler(nacl_srpc::PluginIdentifier plugin_identifier);
+  bool RunOnloadHandler(nacl_srpc::PluginIdentifier plugin_identifier);
   // To indicate unsuccessful loading of a module, invoke the onfail handler.
-  static bool RunOnfailHandler(nacl_srpc::PluginIdentifier plugin_identifier);
+  bool RunOnfailHandler(nacl_srpc::PluginIdentifier plugin_identifier);
   static void* BrowserAlloc(int size);
   static void BrowserRelease(void* ptr);
   static char *MemAllocStrdup(const char *str);

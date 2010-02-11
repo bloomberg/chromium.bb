@@ -71,9 +71,9 @@ class SRPC_Plugin : public NPInstance, public PortablePluginInterface {
   virtual nacl::NPModule* module() { return module_; }
   virtual void set_module(nacl::NPModule* module);
   NPObject* nacl_instance() { return nacl_instance_; }
-  char** argn() { return npapi_argn_; }
-  char** argv() { return npapi_argv_; }
-  int argc() { return npapi_argc_; }
+  virtual char** argn() { return npapi_argn_; }
+  virtual char** argv() { return npapi_argv_; }
+  virtual int argc() { return npapi_argc_; }
 
  private:
   NPP npp_;

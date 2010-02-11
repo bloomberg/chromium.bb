@@ -14,13 +14,13 @@
 #include <map>
 #include <string>
 
+#include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/include/checked_cast.h"
 #include "native_client/src/include/nacl_elf.h"
 #include "native_client/src/include/portability_io.h"
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/trusted/plugin/npinstance.h"
-#include "native_client/src/trusted/plugin/srpc/browser_interface.h"
 #include "native_client/src/trusted/plugin/srpc/utility.h"
 
 using nacl::assert_cast;
@@ -185,14 +185,26 @@ bool PortablePluginInterface::GetOrigin(
 namespace {
 bool RunHandler(
     nacl_srpc::PluginIdentifier plugin_identifier,
-    uintptr_t handler_identifier) {
+    char* handler_string) {
   NPP instance = plugin_identifier;
-  NPVariant attr_value;
   NPVariant dummy_return;
-  NPIdentifier attr_id = reinterpret_cast<NPIdentifier>(handler_identifier);
 
-  VOID_TO_NPVARIANT(attr_value);
   VOID_TO_NPVARIANT(dummy_return);
+
+  if (NULL == handler_string) {
+    return false;
+  }
+
+  // Create an NPString for the handler value passed in.
+  // We have to create a copy of the string, because the browser sometimes
+  // will free the string.  The copy does not include the terminating NUL,
+  // as the NPString UTF8Length member does not include the NUL.
+  uint32_t handler_len = nacl::saturate_cast<uint32_t>(strlen(handler_string));
+  char* handler_copy = reinterpret_cast<char*>(NPN_MemAlloc(handler_len));
+  memcpy(handler_copy, handler_string, handler_len);
+  NPString str;
+  str.UTF8Characters = reinterpret_cast<NPUTF8*>(handler_copy);
+  str.UTF8Length = handler_len;
 
   do {
     NPObject* element_obj;
@@ -200,36 +212,44 @@ bool RunHandler(
         NPN_GetValue(instance, NPNVPluginElementNPObject, &element_obj)) {
       break;
     }
-    if (!NPN_GetProperty(instance, element_obj, attr_id, &attr_value)) {
-      break;
-    }
-    if (!NPVARIANT_IS_VOID(attr_value) && !NPVARIANT_IS_OBJECT(attr_value)) {
-      break;
-    }
-    if (!NPN_InvokeDefault(instance,
-                           NPVARIANT_TO_OBJECT(attr_value),
-                           NULL,
-                           0,
-                           &dummy_return)) {
+    if (!NPN_Evaluate(instance,
+                      element_obj,
+                      &str,
+                      &dummy_return)) {
       break;
     }
   } while (0);
 
-  NPN_ReleaseVariantValue(&attr_value);
   NPN_ReleaseVariantValue(&dummy_return);
 
   return true;
 }
+
+// TODO(sehr): replace with a map lookup.
+char* LookupArgvForString(int argc,
+                          char** argn,
+                          char** argv,
+                          const char* name) {
+  for (int i = 0; i < argc; ++i) {
+    if (!strcmp(argn[i], name)) {
+      return argv[i];
+    }
+  }
+  return NULL;
+}
+
 }  // namespace
 
 bool PortablePluginInterface::RunOnloadHandler(
     nacl_srpc::PluginIdentifier plugin_identifier) {
-  return RunHandler(plugin_identifier, kOnloadIdent);
+  return RunHandler(plugin_identifier,
+                    LookupArgvForString(argc(), argn(), argv(), "onload"));
 }
 
 bool PortablePluginInterface::RunOnfailHandler(
     nacl_srpc::PluginIdentifier plugin_identifier) {
-  return RunHandler(plugin_identifier, kOnfailIdent);
+  return RunHandler(plugin_identifier,
+                    LookupArgvForString(argc(), argn(), argv(), "onfail"));
 }
 
 void* PortablePluginInterface::BrowserAlloc(int size) {
