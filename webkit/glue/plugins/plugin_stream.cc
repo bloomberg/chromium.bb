@@ -34,11 +34,13 @@ bool PluginStream::Open(const std::string &mime_type,
   stream_.pdata = 0;
   stream_.ndata = id->ndata;
   stream_.notifyData = notify_data_;
+  if (!headers_.empty())
+    stream_.headers = headers_.c_str();
 
   bool seekable_stream = false;
-  if (request_is_seekable && !headers_.empty()) {
-    stream_.headers = headers_.c_str();
-    if (headers_.find("Accept-Ranges: bytes") != std::string::npos) {
+  if (request_is_seekable) {
+    std::string headers_lc = StringToLowerASCII(headers);
+    if (headers_lc.find("accept-ranges: bytes") != std::string::npos) {
       seekable_stream = true;
     }
   }
