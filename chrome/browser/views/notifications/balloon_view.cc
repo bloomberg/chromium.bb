@@ -307,16 +307,16 @@ void BalloonViewImpl::Show(Balloon* balloon) {
   html_container_ = Widget::CreatePopupWidget(Widget::NotTransparent,
                                               Widget::AcceptEvents,
                                               Widget::DeleteOnDestroy);
-  html_container_->Init(NULL, contents_rect);
   html_container_->SetAlwaysOnTop(true);
+  html_container_->Init(NULL, contents_rect);
   html_container_->SetContentsView(html_contents_);
 
   gfx::Rect balloon_rect(x(), y(), width(), height());
   frame_container_ = Widget::CreatePopupWidget(Widget::Transparent,
                                                Widget::AcceptEvents,
                                                Widget::DeleteOnDestroy);
-  frame_container_->Init(NULL, balloon_rect);
   frame_container_->SetAlwaysOnTop(true);
+  frame_container_->Init(NULL, balloon_rect);
   frame_container_->SetContentsView(this);
 
   close_button_->SetIcon(*rb.GetBitmapNamed(IDR_BALLOON_CLOSE));
