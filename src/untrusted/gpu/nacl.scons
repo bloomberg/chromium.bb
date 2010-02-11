@@ -29,6 +29,7 @@ command_buffer_client_srcs = [
     '$SOURCE_ROOT/gpu/command_buffer/client/gles2_cmd_helper.cc',
     '$SOURCE_ROOT/gpu/command_buffer/client/gles2_implementation.cc',
     '$SOURCE_ROOT/gpu/command_buffer/client/gles2_lib.cc',
+    '$SOURCE_ROOT/gpu/command_buffer/client/gles2_c_lib.cc',
     '$SOURCE_ROOT/gpu/command_buffer/client/id_allocator.cc',
     ]
 
@@ -51,3 +52,4 @@ env.AddHeaderToSdk([
     '$SOURCE_ROOT/gpu/command_buffer/common/GLES2/gl2.h',
     '$SOURCE_ROOT/gpu/pgl/pgl.h',
     ])
+
