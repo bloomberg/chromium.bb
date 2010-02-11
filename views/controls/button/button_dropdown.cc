@@ -148,10 +148,7 @@ void ButtonDropDown::ShowDropDownMenu(gfx::NativeView window) {
       menu_position.set_x(left_bound);
 
     menu_.reset(new Menu2(model_));
-    Menu2::Alignment align = Menu2::ALIGN_TOPLEFT;
-    if (UILayoutIsRightToLeft())
-      align = Menu2::ALIGN_TOPLEFT;
-    menu_->RunMenuAt(menu_position, align);
+    menu_->RunMenuAt(menu_position, Menu2::ALIGN_TOPLEFT);
 
     // Need to explicitly clear mouse handler so that events get sent
     // properly after the menu finishes running. If we don't do this, then

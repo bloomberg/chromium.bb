@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved. Use of this
+// Copyright (c) 2010 The Chromium Authors. All rights reserved. Use of this
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#ifndef CONTROLS_MENU_VIEWS_MENU_2_H_
-#define CONTROLS_MENU_VIEWS_MENU_2_H_
+#ifndef VIEWS_CONTROLS_MENU_MENU_2_H_
+#define VIEWS_CONTROLS_MENU_MENU_2_H_
 
 #include "app/menus/menu_model.h"
 #include "base/scoped_ptr.h"
@@ -16,6 +16,7 @@ class Point;
 namespace views {
 
 class NativeMenuGtk;
+class View;
 
 // A menu. Populated from a model, and relies on a delegate to execute commands.
 //
@@ -34,6 +35,7 @@ class Menu2 {
   virtual ~Menu2() {}
 
   // How the menu is aligned relative to the point it is shown at.
+  // The alignment is reversed by menu if text direction is right to left.
   enum Alignment {
     ALIGN_TOPLEFT,
     ALIGN_TOPRIGHT
@@ -75,4 +77,5 @@ class Menu2 {
 
 }  // namespace views
 
-#endif  // CONTROLS_MENU_VIEWS_MENU_2_H_
+#endif  // VIEWS_CONTROLS_MENU_MENU_2_H_
+
