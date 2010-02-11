@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,6 +20,7 @@ class VfsBackend {
                        base::ProcessHandle handle,
                        base::PlatformFile* target_handle,
                        base::PlatformFile* target_dir_handle);
+
   static void OpenTempFileInDirectory(const FilePath& dir_path,
                                       int desired_flags,
                                       base::ProcessHandle handle,
@@ -31,6 +32,10 @@ class VfsBackend {
   static uint32 GetFileAttributes(const FilePath& file_path);
 
   static int64 GetFileSize(const FilePath& file_path);
+
+  // Used to make decisions in the DatabaseDispatcherHost.
+  static bool FileTypeIsMainDB(int desired_flags);
+  static bool OpenTypeIsReadWrite(int desired_flags);
 
  private:
   static bool OpenFileFlagsAreConsistent(int desired_flags);

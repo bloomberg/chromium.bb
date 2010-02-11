@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,8 +16,21 @@
 
 namespace webkit_database {
 
+static const int kFileTypeMask = 0x00007F00;
+
+// static
+bool VfsBackend::FileTypeIsMainDB(int desired_flags) {
+  return (desired_flags & kFileTypeMask) == SQLITE_OPEN_MAIN_DB;
+}
+
+// static
+bool VfsBackend::OpenTypeIsReadWrite(int desired_flags) {
+  return desired_flags & SQLITE_OPEN_READWRITE;
+}
+
+// static
 bool VfsBackend::OpenFileFlagsAreConsistent(int desired_flags) {
-  const int file_type = desired_flags & 0x00007F00;
+  const int file_type = desired_flags & kFileTypeMask;
   const bool is_exclusive = (desired_flags & SQLITE_OPEN_EXCLUSIVE) != 0;
   const bool is_delete = (desired_flags & SQLITE_OPEN_DELETEONCLOSE) != 0;
   const bool is_create = (desired_flags & SQLITE_OPEN_CREATE) != 0;
@@ -54,6 +67,7 @@ bool VfsBackend::OpenFileFlagsAreConsistent(int desired_flags) {
          (file_type == SQLITE_OPEN_TRANSIENT_DB);
 }
 
+// static
 void VfsBackend::OpenFile(const FilePath& file_path,
                           int desired_flags,
                           base::ProcessHandle handle,
@@ -124,6 +138,7 @@ void VfsBackend::OpenFile(const FilePath& file_path,
   }
 }
 
+// static
 void VfsBackend::OpenTempFileInDirectory(
     const FilePath& dir_path,
     int desired_flags,
@@ -146,6 +161,7 @@ void VfsBackend::OpenTempFileInDirectory(
            target_handle, target_dir_handle);
 }
 
+// static
 int VfsBackend::DeleteFile(const FilePath& file_path, bool sync_dir) {
   if (!file_util::PathExists(file_path))
     return SQLITE_OK;
@@ -169,6 +185,7 @@ int VfsBackend::DeleteFile(const FilePath& file_path, bool sync_dir) {
   return error_code;
 }
 
+// static
 uint32 VfsBackend::GetFileAttributes(const FilePath& file_path) {
 #if defined(OS_WIN)
   uint32 attributes = ::GetFileAttributes(file_path.value().c_str());
@@ -184,6 +201,7 @@ uint32 VfsBackend::GetFileAttributes(const FilePath& file_path) {
   return attributes;
 }
 
+// static
 int64 VfsBackend::GetFileSize(const FilePath& file_path) {
   int64 size = 0;
   return (file_util::GetFileSize(file_path, &size) ? size : 0);

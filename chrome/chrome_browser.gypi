@@ -1497,6 +1497,8 @@
         'browser/renderer_host/cross_site_resource_handler.h',
         'browser/renderer_host/database_dispatcher_host.cc',
         'browser/renderer_host/database_dispatcher_host.h',
+        'browser/renderer_host/database_permission_request.cc',
+        'browser/renderer_host/database_permission_request.h',
         'browser/renderer_host/download_resource_handler.cc',
         'browser/renderer_host/download_resource_handler.h',
         'browser/renderer_host/download_throttling_resource_handler.cc',

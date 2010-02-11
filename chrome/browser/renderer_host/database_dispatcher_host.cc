@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,11 +18,17 @@
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
+#include "chrome/browser/renderer_host/database_permission_request.h"
+#include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/common/render_messages.h"
+#include "googleurl/src/gurl.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "webkit/database/database_util.h"
 #include "webkit/database/vfs_backend.h"
 
+using WebKit::WebSecurityOrigin;
 using webkit_database::DatabaseTracker;
 using webkit_database::DatabaseUtil;
 using webkit_database::VfsBackend;
@@ -32,14 +38,14 @@ const int kDelayDeleteRetryMs = 100;
 
 DatabaseDispatcherHost::DatabaseDispatcherHost(
     DatabaseTracker* db_tracker,
-    IPC::Message::Sender* message_sender)
+    ResourceMessageFilter* resource_message_filter)
     : db_tracker_(db_tracker),
-      message_sender_(message_sender),
+      resource_message_filter_(resource_message_filter),
       process_handle_(0),
       observer_added_(false),
       shutdown_(false) {
   DCHECK(db_tracker_);
-  DCHECK(message_sender_);
+  DCHECK(resource_message_filter_);
 }
 
 void DatabaseDispatcherHost::Init(base::ProcessHandle process_handle) {
@@ -52,7 +58,7 @@ void DatabaseDispatcherHost::Init(base::ProcessHandle process_handle) {
 
 void DatabaseDispatcherHost::Shutdown() {
   shutdown_ = true;
-  message_sender_ = NULL;
+  resource_message_filter_ = NULL;
   if (observer_added_) {
     ChromeThread::PostTask(
         ChromeThread::FILE, FROM_HERE,
@@ -106,7 +112,7 @@ void DatabaseDispatcherHost::ReceivedBadMessage(uint32 msg_type) {
 void DatabaseDispatcherHost::SendMessage(IPC::Message* message) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
   if (!shutdown_)
-    message_sender_->Send(message);
+    resource_message_filter_->Send(message);
   else
     delete message;
 }
@@ -121,13 +127,51 @@ void DatabaseDispatcherHost::OnDatabaseOpenFile(const string16& vfs_file_name,
         NewRunnableMethod(this, &DatabaseDispatcherHost::AddObserver));
   }
 
-  ChromeThread::PostTask(
-      ChromeThread::FILE, FROM_HERE,
-      NewRunnableMethod(this,
-                        &DatabaseDispatcherHost::DatabaseOpenFile,
-                        vfs_file_name,
-                        desired_flags,
-                        message_id));
+  // Only ask permission on the main database file in read/write mode.
+  if (!VfsBackend::FileTypeIsMainDB(desired_flags) ||
+      !VfsBackend::OpenTypeIsReadWrite(desired_flags)) {
+    OnDatabaseOpenFileAllowed(vfs_file_name, desired_flags, message_id);
+    return;
+  }
+
+  string16 origin_identifier;
+  string16 database_name;
+  bool ok = DatabaseUtil::CrackVfsFileName(vfs_file_name,
+                                           &origin_identifier,
+                                           &database_name,
+                                           NULL);
+  DCHECK(ok);  // Should we assume this is an attack and kill the renderer?
+  if (!ok) {
+    OnDatabaseOpenFileBlocked(message_id);
+    return;
+  }
+
+  // TODO(jorlow): createFromDatabaseIdentifier should not return a pointer.
+  scoped_ptr<WebSecurityOrigin> security_origin(
+      WebSecurityOrigin::createFromDatabaseIdentifier(origin_identifier));
+  string16 origin(security_origin->toString());
+
+  ContentSetting content_setting = GetContentSetting(origin);
+  if (content_setting == CONTENT_SETTING_ASK) {
+    // Create a task for each possible outcome.
+    scoped_ptr<Task> on_allow(NewRunnableMethod(
+        this, &DatabaseDispatcherHost::OnDatabaseOpenFileAllowed,
+        vfs_file_name, desired_flags, message_id));
+    scoped_ptr<Task> on_block(NewRunnableMethod(
+        this, &DatabaseDispatcherHost::OnDatabaseOpenFileBlocked, message_id));
+    // And then let the permission request object do the rest.
+    scoped_refptr<DatabasePermissionRequest> request(
+        new DatabasePermissionRequest(origin,
+                                      database_name,
+                                      on_allow.release(),
+                                      on_block.release()));
+    request->RequestPermission();
+  } else if (content_setting == CONTENT_SETTING_ALLOW) {
+    OnDatabaseOpenFileAllowed(vfs_file_name, desired_flags, message_id);
+  } else {
+    DCHECK(content_setting == CONTENT_SETTING_BLOCK);
+    OnDatabaseOpenFileBlocked(message_id);
+  }
 }
 
 static void SetOpenFileResponseParams(
@@ -384,4 +428,45 @@ void DatabaseDispatcherHost::OnDatabaseSizeChanged(
                               origin_identifier, database_name,
                               database_size, space_available)));
   }
+}
+
+void DatabaseDispatcherHost::OnDatabaseOpenFileAllowed(
+    const string16& vfs_file_name, int desired_flags, int32 message_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  if (shutdown_)
+    return;
+
+  ChromeThread::PostTask(
+      ChromeThread::FILE, FROM_HERE,
+      NewRunnableMethod(this,
+                        &DatabaseDispatcherHost::DatabaseOpenFile,
+                        vfs_file_name,
+                        desired_flags,
+                        message_id));
+}
+
+void DatabaseDispatcherHost::OnDatabaseOpenFileBlocked(int32 message_id) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  if (shutdown_)
+    return;
+
+  // This will result in failed transactions NOT a failed window.openDatabase
+  // call.
+  ViewMsg_DatabaseOpenFileResponse_Params response_params;
+  SetOpenFileResponseParams(&response_params,
+                            base::kInvalidPlatformFileValue,
+                            base::kInvalidPlatformFileValue);
+  SendMessage(new ViewMsg_DatabaseOpenFileResponse(message_id,
+                                                   response_params));
+}
+
+ContentSetting DatabaseDispatcherHost::GetContentSetting(
+    const string16& origin) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
+  GURL url = GURL(origin);
+  std::string host = url.host();
+  ChromeURLRequestContext* url_request_context =
+      resource_message_filter_->GetRequestContextForURL(url);
+  return url_request_context->host_content_settings_map()->GetContentSetting(
+       host, CONTENT_SETTINGS_TYPE_COOKIES);
 }

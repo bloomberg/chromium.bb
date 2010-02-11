@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -9,16 +9,19 @@
 #include "base/process.h"
 #include "base/ref_counted.h"
 #include "base/string16.h"
+#include "chrome/common/content_settings.h"
 #include "ipc/ipc_message.h"
 #include "webkit/database/database_connections.h"
 #include "webkit/database/database_tracker.h"
+
+class ResourceMessageFilter;
 
 class DatabaseDispatcherHost
     : public base::RefCountedThreadSafe<DatabaseDispatcherHost>,
       public webkit_database::DatabaseTracker::Observer {
  public:
   DatabaseDispatcherHost(webkit_database::DatabaseTracker* db_tracker,
-                         IPC::Message::Sender* message_sender);
+                         ResourceMessageFilter* resource_message_filter);
   void Init(base::ProcessHandle process_handle);
   void Shutdown();
 
@@ -82,11 +85,20 @@ class DatabaseDispatcherHost
   void DatabaseClosed(const string16& origin_identifier,
                       const string16& database_name);
 
+  // Called once we decide whether to allow or block an open file request.
+  void OnDatabaseOpenFileAllowed(const string16& vfs_file_name,
+                                 int desired_flags,
+                                 int32 message_id);
+  void OnDatabaseOpenFileBlocked(int32 message_id);
+
+  // Get the content setting based on an origin.  IO thread only.
+  ContentSetting GetContentSetting(const string16& origin);
+
   // The database tracker for the current profile.
   scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
 
-  // The sender to be used for sending out IPC messages.
-  IPC::Message::Sender* message_sender_;
+  // The resource message filter that owns us.
+  ResourceMessageFilter* resource_message_filter_;
 
   // The handle of this process.
   base::ProcessHandle process_handle_;
