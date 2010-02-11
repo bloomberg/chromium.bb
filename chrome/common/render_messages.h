@@ -503,7 +503,7 @@ struct ViewMsg_DOMStorageEvent_Params {
 
 // Allows an extension to execute code in a tab.
 struct ViewMsg_ExecuteCode_Params {
-  ViewMsg_ExecuteCode_Params(){}
+  ViewMsg_ExecuteCode_Params() {}
   ViewMsg_ExecuteCode_Params(int request_id, const std::string& extension_id,
                              const std::vector<URLPattern>& host_permissions,
                              bool is_javascript, const std::string& code,
@@ -912,8 +912,9 @@ struct ParamTraits<webkit_glue::FormFieldValues> {
     for (itr = p.elements.begin(); itr != p.elements.end(); itr++) {
       WriteParam(m, itr->label());
       WriteParam(m, itr->name());
-      WriteParam(m, itr->html_input_type());
       WriteParam(m, itr->value());
+      WriteParam(m, itr->form_control_type());
+      WriteParam(m, static_cast<int>(itr->input_type()));
     }
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
@@ -925,15 +926,24 @@ struct ParamTraits<webkit_glue::FormFieldValues> {
           ReadParam(m, iter, &p->target_url);
       size_t elements_size = 0;
       result = result && ReadParam(m, iter, &elements_size);
+      if (!result)
+        return false;
+
       for (size_t i = 0; i < elements_size; i++) {
-        string16 label, name, type, value;
+        string16 label, name, value, form_control_type;
+        int type;
         result = result && ReadParam(m, iter, &label);
         result = result && ReadParam(m, iter, &name);
-        result = result && ReadParam(m, iter, &type);
         result = result && ReadParam(m, iter, &value);
-        if (result)
+        result = result && ReadParam(m, iter, &form_control_type);
+        result = result && ReadParam(m, iter, &type);
+        if (result) {
+          WebKit::WebInputElement::InputType input_type =
+              static_cast<WebKit::WebInputElement::InputType>(type);
           p->elements.push_back(
-            webkit_glue::FormField(label, name, type, value));
+            webkit_glue::FormField(label, name, value,
+                                   form_control_type, input_type));
+        }
       }
       return result;
   }
