@@ -11,26 +11,44 @@ const double kBackgroundColorBottom[3] =
     {250.0 / 255.0, 230.0 / 255.0, 145.0 / 255.0};
 
 @implementation InfoBarGradientView
+
+- (id)initWithFrame:(NSRect)frameRect {
+  if ((self = [super initWithFrame:frameRect])) {
+    NSColor* startingColor =
+        [NSColor colorWithCalibratedRed:kBackgroundColorTop[0]
+                                  green:kBackgroundColorTop[1]
+                                   blue:kBackgroundColorTop[2]
+                                  alpha:1.0];
+    NSColor* endingColor =
+        [NSColor colorWithCalibratedRed:kBackgroundColorBottom[0]
+                                  green:kBackgroundColorBottom[1]
+                                   blue:kBackgroundColorBottom[2]
+                                  alpha:1.0];
+    gradient_ =
+        [[NSGradient alloc] initWithStartingColor:startingColor
+                                       endingColor:endingColor];
+  }
+  return self;
+}
+
+- (void)dealloc {
+  [gradient_ release];
+  [super dealloc];
+}
+
+- (void)setGradient:(NSGradient*)gradient {
+  [gradient retain];
+  [gradient_ release];
+  gradient_ = gradient;
+}
+
 - (NSColor*)strokeColor {
   return [[self gtm_theme] strokeColorForStyle:GTMThemeStyleToolBar
                                          state:[[self window] isKeyWindow]];
 }
 
 - (void)drawRect:(NSRect)rect {
-  NSColor* startingColor =
-      [NSColor colorWithCalibratedRed:kBackgroundColorTop[0]
-                                green:kBackgroundColorTop[1]
-                                 blue:kBackgroundColorTop[2]
-                                alpha:1.0];
-  NSColor* endingColor =
-      [NSColor colorWithCalibratedRed:kBackgroundColorBottom[0]
-                                green:kBackgroundColorBottom[1]
-                                 blue:kBackgroundColorBottom[2]
-                                alpha:1.0];
-  NSGradient* gradient =
-      [[[NSGradient alloc] initWithStartingColor:startingColor
-                                     endingColor:endingColor] autorelease];
-  [gradient drawInRect:[self bounds] angle:270];
+  [gradient_ drawInRect:[self bounds] angle:270];
 
   // Draw bottom stroke
   [[self strokeColor] set];
