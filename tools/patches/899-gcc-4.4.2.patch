@@ -1285,7 +1285,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
 +  [(set_attr "type" "call")])
 +
 +(define_insn "naclsibcallsi"
-+  [(unspec [(mem:QI (match_operand:SI 0 "register_operand" "s,c,d,a"))
++  [(unspec [(mem:QI (match_operand:SI 0 "sibcall_insn_operand" "s,U"))
 +	          (match_operand 1 "" "")] UNSPEC_NACLCALL)]
 +  "SIBLING_CALL_P (insn)"
 +{
@@ -1302,7 +1302,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
 +  [(set_attr "type" "call")])
 +
 +(define_insn "naclsibcalldi"
-+  [(unspec [(mem:QI (match_operand:DI 0 "register_operand" "s,c,d,a"))
++  [(unspec [(mem:QI (match_operand:DI 0 "sibcall_insn_operand" "s,U"))
 +	          (match_operand 1 "" "")] UNSPEC_NACLCALL)]
 +  "SIBLING_CALL_P (insn) && TARGET_64BIT"
 +{
@@ -1394,7 +1394,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
 +
 +(define_insn "naclsibcall_valuesi"
 +  [(set (match_operand 0 "" "")
-+        (unspec [(mem:QI (match_operand:SI 1 "register_operand" "r"))
++        (unspec [(mem:QI (match_operand:SI 1 "sibcall_insn_operand" "s,U"))
 +	               (match_operand 2 "" "")] UNSPEC_NACLCALL))]
 +  "SIBLING_CALL_P (insn) && !TARGET_64BIT"
 +{
@@ -1412,7 +1412,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
 +
 +(define_insn "naclsibcall_valuedi"
 +  [(set (match_operand 0 "" "")
-+        (unspec [(mem:QI (match_operand:DI 1 "register_operand" "r"))
++        (unspec [(mem:QI (match_operand:DI 1 "sibcall_insn_operand" "s,U"))
 +	               (match_operand 2 "" "")] UNSPEC_NACLCALL))]
 +  "SIBLING_CALL_P (insn) && TARGET_64BIT"
 +{
@@ -1596,12 +1596,8 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
    [(set_attr "type" "call")])
  
  (define_insn "*call_1_rex64"
-@@ -15089,12 +15462,14 @@
-   [(set_attr "type" "call")])
- 
- (define_insn "*sibcall_1_rex64"
--  [(call (mem:QI (match_operand:DI 0 "sibcall_insn_operand" "s,U"))
-+  [(call (mem:QI (match_operand:DI 0 "call_insn_operand" "s,U"))
+@@ -15092,9 +15465,11 @@
+   [(call (mem:QI (match_operand:DI 0 "sibcall_insn_operand" "s,U"))
  	 (match_operand 1 "" ""))]
    "SIBLING_CALL_P (insn) && TARGET_64BIT"
 -  "@
