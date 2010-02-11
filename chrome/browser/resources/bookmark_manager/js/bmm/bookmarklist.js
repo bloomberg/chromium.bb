@@ -4,7 +4,11 @@
 
 
 cr.define('bmm', function() {
+  // require cr.ui.define
+  // require cr.ui.limitInputWidth.
+  // require cr.ui.contextMenuHandler
   const List = cr.ui.List;
+  const ListItem = cr.ui.ListItem;
 
   var listLookup = {};
 
@@ -114,6 +118,7 @@ cr.define('bmm', function() {
       var listItem = listLookup[id];
       if (listItem) {
         listItem.bookmarkNode.title = changeInfo.title;
+        listItem.bookmarkNode.url = changeInfo.url;
         updateListItem(listItem, listItem.bookmarkNode, list.showFolder());
       }
     },
@@ -184,9 +189,150 @@ cr.define('bmm', function() {
    */
   cr.ui.contextMenuHandler.addContextMenuProperty(BookmarkList);
 
+  /**
+   * Creates a new bookmark list item.
+   * @param {Object=} opt_propertyBag Optional properties.
+   * @constructor
+   * @extends {cr.ui.ListItem}
+   */
+  var BookmarkListItem = cr.ui.define('li');
+
+  BookmarkListItem.prototype = {
+    __proto__: ListItem.prototype,
+    /**
+     * Whether the user is currently able to edit the list item.
+     * @type {boolean}
+     */
+    get editing() {
+      return this.hasAttribute('editing');
+    },
+    set editing(editing) {
+      var oldEditing = this.editing;
+      if (oldEditing == editing)
+        return;
+
+      var url = this.bookmarkNode.url;
+      var title = this.bookmarkNode.title;
+      var isFolder = !url;
+      var listItem = this;
+      var labelEl = this.firstChild;
+      var urlEl = this.querySelector('.url');
+      var labelInput, urlInput;
+
+      // Handles enter and escape which trigger reset and commit respectively.
+      function handleKeydown(e) {
+        // Make sure that the tree does not handle the key.
+        e.stopPropagation();
+
+        // Calling list.focus blurs the input which will stop editing the list
+        // item.
+        switch (e.keyIdentifier) {
+          case 'U+001B':  // Esc
+            labelInput.value = title;
+            if (!isFolder)
+              urlInput.value = url;
+            // fall through
+          case 'Enter':
+            listItem.parentNode.focus();
+        }
+      }
+
+      function handleBlur(e) {
+        // When the blur event happens we do not know who is getting focus so we
+        // delay this a bit since we want to know if the other input got focus
+        // before deciding if we should exit edit mode.
+        var doc = e.target.ownerDocument;
+        window.setTimeout(function() {
+          var activeElement = doc.activeElement;
+          if (activeElement != urlInput && activeElement != labelInput) {
+            listItem.editing = false;
+          }
+        }, 50);
+      }
+
+      var doc = this.ownerDocument;
+      if (editing) {
+        this.setAttribute('editing', '');
+        this.draggable = false;
+
+        labelInput = doc.createElement('input');
+        labelEl.replaceChild(labelInput, labelEl.firstChild);
+        labelInput.value = title;
+
+        if (!isFolder) {
+          // To use :invalid we need to put the input inside a form
+          // https://bugs.webkit.org/show_bug.cgi?id=34733
+          var form = doc.createElement('form');
+          urlInput = doc.createElement('input');
+          urlInput.type = 'url';
+          urlInput.required = true;
+          // We also need a name for the input for the CSS to work.
+          urlInput.name = '-url-input-' + cr.createUid();
+          form.appendChild(urlInput);
+          urlEl.replaceChild(form, urlEl.firstChild);
+          urlInput.value = url;
+        }
+
+        function stopPropagation(e) {
+          e.stopPropagation();
+        }
+
+        var eventsToStop = ['mousedown', 'mouseup', 'contextmenu', 'dblclick'];
+        eventsToStop.forEach(function(type) {
+          labelInput.addEventListener(type, stopPropagation);
+        });
+        labelInput.addEventListener('keydown', handleKeydown);
+        labelInput.addEventListener('blur', handleBlur);
+        cr.ui.limitInputWidth(labelInput, this, 20);
+        labelInput.focus();
+        labelInput.select();
+
+        if (!isFolder) {
+          eventsToStop.forEach(function(type) {
+            urlInput.addEventListener(type, stopPropagation);
+          });
+          urlInput.addEventListener('keydown', handleKeydown);
+          urlInput.addEventListener('blur', handleBlur);
+          cr.ui.limitInputWidth(urlInput, this, 20);
+        }
+
+      } else {
+
+        // Check that we have a valid URL and if not we do not change the
+        // editing mode.
+        var newUrl;
+        if (!isFolder) {
+          var urlInput = this.querySelector('.url input');
+          if (!urlInput.validity.valid) {
+            return;
+
+          } else {
+            newUrl = urlInput.value;
+            urlEl.textContent = this.bookmarkNode.url = newUrl;
+          }
+        }
+
+        this.removeAttribute('editing');
+        this.draggable = false;
+
+        labelInput = this.querySelector('.label input');
+        var newLabel = labelInput.value;
+        labelEl.textContent = this.bookmarkNode.title = newLabel;
+
+        if (isFolder) {
+          if (newLabel != title) {
+            cr.dispatchSimpleEvent(this, 'rename', true);
+          }
+        } else if (newLabel != title || newUrl != url) {
+          cr.dispatchSimpleEvent(this, 'edit', true);
+        }
+      }
+    }
+  };
+
   function createListItem(bookmarkNode, showFolder) {
     var li = listItemPromo.cloneNode(true);
-    ListItem.decorate(li);
+    BookmarkListItem.decorate(li);
     updateListItem(li, bookmarkNode, showFolder);
     li.bookmarkId = bookmarkNode.id;
     li.bookmarkNode = bookmarkNode;

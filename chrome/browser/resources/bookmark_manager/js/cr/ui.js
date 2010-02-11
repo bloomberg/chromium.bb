@@ -99,8 +99,75 @@ cr.define('cr.ui', function() {
     return f;
   }
 
+  /**
+   * Input elements do not grow and shrink with their content. This is a simple
+   * (and not very efficient) way of handling shrinking to content with support
+   * for min width and limited by the width of the parent element.
+   * @param {HTMLElement} el The element to limit the width for.
+   * @param {number} parentEl The parent element that should limit the size.
+   * @param {number} min The minimum width.
+   */
+  function limitInputWidth(el, parentEl, min) {
+    // Needs a size larger than borders
+    el.style.width = '10px';
+    var doc = el.ownerDocument;
+    var win = doc.defaultView;
+    var computedStyle = win.getComputedStyle(el);
+    var parentComputedStyle = win.getComputedStyle(parentEl);
+    var rtl = computedStyle.direction == 'rtl';
+
+    // To get the max width we get the width of the treeItem minus the position
+    // of the input.
+    var inputRect = el.getBoundingClientRect();  // box-sizing
+    var parentRect = parentEl.getBoundingClientRect();
+    var startPos = rtl ? parentRect.right - inputRect.right :
+        inputRect.left - parentRect.left;
+
+    // Add up border and padding of the input.
+    var inner = parseInt(computedStyle.borderLeftWidth, 10) +
+        parseInt(computedStyle.paddingLeft, 10) +
+        parseInt(computedStyle.paddingRight, 10) +
+        parseInt(computedStyle.borderRightWidth, 10);
+
+    // We also need to subtract the padding of parent to prevent it to overflow.
+    var parentPadding = rtl ? parseInt(parentComputedStyle.paddingLeft, 10) :
+        parseInt(parentComputedStyle.paddingRight, 10);
+
+    // The magic number 14 comes from trial and error :'( It consists of:
+    // border + padding + treeItem.paddingEnd + treeItem.borderEnd +
+    // tree.paddingEnd
+    var max = parentEl.clientWidth - startPos - inner - parentPadding;
+
+    var pcs = getComputedStyle(parentEl);
+    console.log('pcs', 'borderLeft', pcs.borderLeftWidth,
+                'paddingLeft', pcs.paddingLeft,
+                'paddingRight', pcs.paddingRight,
+                'borderRight', pcs.borderRightWidth,
+                'width', pcs.width,
+                'clientWidth', parentEl.clientWidth,
+                'offsetWidth', parentEl.offsetWidth);
+
+    function limit() {
+      if (el.scrollWidth > max) {
+        el.style.width = max + 'px';
+      } else {
+        el.style.width = 0;
+        var sw = el.scrollWidth;
+        if (sw < min) {
+          el.style.width = min + 'px';
+        } else {
+          el.style.width = sw + 'px';
+        }
+      }
+    }
+
+    el.addEventListener('input', limit);
+    limit();
+  }
+
   return {
     decorate: decorate,
-    define: define
+    define: define,
+    limitInputWidth: limitInputWidth
   };
 });

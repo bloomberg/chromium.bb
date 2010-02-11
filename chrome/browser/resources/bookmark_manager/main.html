@@ -131,7 +131,7 @@ html[os=mac] list > * > * > .folder {
 
 list > * > * > :hover {
   text-decoration: underline;
-  color: -webkit-link;
+  color: blue;
   opacity: 1;
 }
 
@@ -146,6 +146,69 @@ html[dir=rtl] list .label {
 list > .folder > .label {
   background-image: url("images/folder_closed.png");
 }
+
+/*
+/* Edit mode
+*/
+
+list .label input,
+list .url input {
+  /* Do not inherit the line-height */
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  border: 1px solid transparent;
+  color: inherit;
+  background: transparent;
+  margin: -2px -8px -2px -3px;
+  padding: 1px 7px 1px 1px;
+  outline: none;
+  text-decoration: none;
+}
+
+html[dir=rtl] list .label input,
+html[dir=rtl] list .url input {
+  margin: -2px -3px -2px -8px;
+  padding: 1px 1px 1px 7px;
+}
+
+list [editing] .label,
+list [editing] .url,
+list [editing] > * {
+  overflow: visible;
+  opacity: 1;
+}
+
+list [editing] .url {
+  text-decoration: none;
+  color: inherit;
+}
+
+list [editing] input:focus {
+  color: black;
+  background: white;
+  border: 1px solid black;
+  outline: none;
+}
+
+list .url form {
+  display: inline;
+}
+
+list .url > form > input {
+  -webkit-transition: color .15s, background-color .15s;
+}
+
+list .url > form > :focus:invalid {
+  background: #fdd;
+  color: black;
+}
+
+list .url > form > :invalid {
+  color: red;
+}
+
+/* end editing */
 
 html[dir=rtl] list > .folder > .label {
   background-image: url("images/folder_closed_rtl.png");
@@ -1248,6 +1311,8 @@ document.addEventListener('canExecute', function(e) {
 
 // Update canExecute for the commands when the list is the active element.
 list.addEventListener('canExecute', function(e) {
+  if (e.target != list) return;
+
   var command = e.command;
   var commandId = command.id;
 
@@ -1320,6 +1385,8 @@ list.addEventListener('canExecute', function(e) {
 
 // Update canExecute for the commands when the tree is the active element.
 tree.addEventListener('canExecute', function(e) {
+  if (e.target != tree) return;
+
   var command = e.command;
   var commandId = command.id;
 
@@ -1406,6 +1473,24 @@ document.addEventListener('command', function(e) {
   } else if (command.id == 'export-menu-command') {
     chrome.experimental.bookmarkManager.export();
   }
+});
+
+function handleRename(e) {
+  var item = e.target;
+  var bookmarkNode = item.bookmarkNode;
+  chrome.bookmarks.update(bookmarkNode.id, {'title': item.label});
+}
+
+tree.addEventListener('rename', handleRename);
+list.addEventListener('rename', handleRename);
+
+list.addEventListener('edit', function(e) {
+  var item = e.target;
+  var bookmarkNode = item.bookmarkNode;
+  chrome.bookmarks.update(bookmarkNode.id, {
+    'title': bookmarkNode.title,
+    'url': bookmarkNode.url
+  });
 });
 
 /**
@@ -1583,6 +1668,10 @@ function handleCommand(e) {
       break;
     case 'sort-command':
       chrome.experimental.bookmarkManager.sortChildren(list.parentId);
+      break;
+    case 'rename-folder-command':
+    case 'edit-command':
+      document.activeElement.selectedItem.editing = true;
       break;
   }
 }

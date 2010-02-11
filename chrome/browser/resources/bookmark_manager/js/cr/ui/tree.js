@@ -3,6 +3,8 @@
 // found in the LICENSE file.
 
 cr.define('cr.ui', function() {
+  // require cr.ui.define
+  // require cr.ui.limitInputWidth
 
   /**
    * Helper function that finds the first ancestor tree item.
@@ -298,7 +300,7 @@ cr.define('cr.ui', function() {
         if (this.mayHaveChildren_) {
           this.setAttribute('expanded', '');
           treeChildren.setAttribute('expanded', '');
-          cr.dispatchSimpleEvent(this, 'expand', true, false);
+          cr.dispatchSimpleEvent(this, 'expand', true);
           this.scrollIntoViewIfNeeded(false);
         }
       } else {
@@ -310,7 +312,7 @@ cr.define('cr.ui', function() {
         }
         this.removeAttribute('expanded');
         treeChildren.removeAttribute('expanded');
-        cr.dispatchSimpleEvent(this, 'collapse', true, false);
+        cr.dispatchSimpleEvent(this, 'collapse', true);
       }
     },
 
@@ -439,6 +441,91 @@ cr.define('cr.ui', function() {
         this.expanded = !this.expanded;
       else
         this.selected = true;
+    },
+
+    /**
+     * Makes the tree item user editable. If the user renamed the item a
+     * bubbling {@code rename} event is fired.
+     * @type {boolean}
+     */
+    set editing(editing) {
+      var oldEditing = this.editing;
+      if (editing == oldEditing)
+        return;
+
+      var self = this;
+      var labelEl = this.labelElement;
+      var text = this.label;
+      var input;
+
+      // Handles enter and escape which trigger reset and commit respectively.
+      function handleKeydown(e) {
+        // Make sure that the tree does not handle the key.
+        e.stopPropagation();
+
+        // Calling tree.focus blurs the input which will make the tree item
+        // non editable.
+        switch (e.keyIdentifier) {
+          case 'U+001B':  // Esc
+            input.value = text;
+            // fall through
+          case 'Enter':
+            self.tree.focus();
+        }
+      }
+
+      function stopPropagation(e) {
+        e.stopPropagation();
+      }
+
+      if (editing) {
+        this.selected = true;
+        this.setAttribute('editing', '');
+        this.draggable = false;
+
+        // We create an input[type=text] and copy over the label value. When
+        // the input loses focus we set editing to false again.
+        input = this.ownerDocument.createElement('input');
+        input.value = text;
+        labelEl.replaceChild(input, labelEl.firstChild);
+
+        input.addEventListener('keydown', handleKeydown);
+        input.addEventListener('blur', cr.bind(function() {
+          this.editing = false;
+        }, this));
+
+        // Make sure that double clicks do not expand and collapse the tree
+        // item.
+        var eventsToStop = ['mousedown', 'mouseup', 'contextmenu', 'dblclick'];
+        eventsToStop.forEach(function(type) {
+          input.addEventListener(type, stopPropagation);
+        });
+
+        input.focus();
+        input.select();
+        cr.ui.limitInputWidth(input, this.rowElement, 20);
+            // the padding and border of the tree-row
+
+        this.oldLabel_ = text;
+      } else {
+        this.removeAttribute('editing');
+        this.draggable = true;
+        input = labelEl.firstChild;
+        var value = input.value;
+        if (/^\s*$/.test(value)) {
+          labelEl.textContent = this.oldLabel_;
+        } else {
+          labelEl.textContent = value;
+          if (value != this.oldLabel_) {
+            cr.dispatchSimpleEvent(this, 'rename', true);
+          }
+        }
+        delete this.oldLabel_;
+      }
+    },
+
+    get editing() {
+      return this.hasAttribute('editing');
     }
   };
 

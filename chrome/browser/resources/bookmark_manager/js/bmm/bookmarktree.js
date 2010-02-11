@@ -76,7 +76,7 @@ cr.define('bmm', function() {
       var treeItem = treeLookup[id];
       if (treeItem) {
         treeItem.bookmarkNode.title = changeInfo.title;
-        updateTreeItem(treeItem, listItem.bookmarkNode);
+        updateTreeItem(treeItem, treeItem.bookmarkNode);
       }
     },
 

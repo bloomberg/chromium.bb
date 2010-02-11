@@ -12,11 +12,9 @@ tree {
   background-color: rgba(255,255,255,0);
   -webkit-border-radius: 2px;
   padding: 0px 3px;
-  /*margin-bottom:-1px;*/
   line-height: 20px;
   white-space: nowrap;
   cursor: default;
-  /*-webkit-transition: all .12s;*/
   position: relative;
 }
 
@@ -140,4 +138,22 @@ html[dir='rtl'] .tree-label {
 
 html[dir='rtl'] .tree-row[selected] > .tree-label {
   background-image: url("../images/folder_open_rtl.png");
+}
+
+.tree-item[editing] input {
+  /* Do not inherit the line-height */
+  font-family: inherit;
+  font-size: inherit;
+  font-weight: inherit;
+  border: 1px solid black;
+  color: black;
+  background: white;
+  margin: -2px -8px -2px -3px;
+  padding: 1px 7px 1px 1px;
+  outline: none;
+}
+
+html[dir=rtl] .tree-item[editing] input {
+  margin: -2px -3px -2px -8px;
+  padding: 1px 1px 1px 7px;
 }

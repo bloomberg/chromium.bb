@@ -241,6 +241,15 @@ cr.define('cr.ui', function() {
         return this.selectedItems_[uid];
       }, this);
     },
+    set selectedItems(selectedItems) {
+      this.beginChange_();
+      this.clearAllSelected_();
+      for (var i = 0; i < selectedItems.length; i++) {
+        this.setItemSelected(selectedItems[i], true);
+      }
+      this.leadItem = this.anchorItem = selectedItems[0] || null;
+      this.endChange_();
+    },
 
     /**
      * Convenience getter which returns the first selected item.
@@ -251,6 +260,16 @@ cr.define('cr.ui', function() {
         return this.selectedItems_[uid];
       }
       return null;
+    },
+    set selectedItem(selectedItem) {
+      this.beginChange_();
+      this.clearAllSelected_();
+      if (selectedItem) {
+        this.selectedItems = [selectedItem];
+      } else {
+        this.leadItem = this.anchorItem = null;
+      }
+      this.endChange_();
     },
 
     /**
