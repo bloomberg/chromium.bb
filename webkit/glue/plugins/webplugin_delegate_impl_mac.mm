@@ -201,33 +201,15 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
 WebPluginDelegateImpl::~WebPluginDelegateImpl() {
   std::set<WebPluginDelegateImpl*>* delegates = g_active_delegates.Pointer();
   delegates->erase(this);
+
+  DestroyInstance();
+
 #ifndef NP_NO_CARBON
   if (cg_context_.window) {
     FakePluginWindowTracker::SharedInstance()->RemoveFakeWindowForDelegate(
         this, reinterpret_cast<WindowRef>(cg_context_.window));
   }
 #endif
-}
-
-void WebPluginDelegateImpl::PluginDestroyed() {
-  if (instance()->event_model() == NPEventModelCarbon) {
-    if (instance()->drawing_model() == NPDrawingModelQuickDraw) {
-      // Tell the plugin it should stop drawing into the window (which will go
-      // away when the next idle event arrives).
-      window_.x = 0;
-      window_.y = 0;
-      window_.width = 0;
-      window_.height = 0;
-      window_.clipRect.top = 0;
-      window_.clipRect.left = 0;
-      window_.clipRect.bottom = 0;
-      window_.clipRect.right = 0;
-      instance()->NPP_SetWindow(&window_);
-      QDFlushPortBuffer(qd_port_.port, NULL);
-    }
-  }
-  DestroyInstance();
-  delete this;
 }
 
 void WebPluginDelegateImpl::PlatformInitialize() {

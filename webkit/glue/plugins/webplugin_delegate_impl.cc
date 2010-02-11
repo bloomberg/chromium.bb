@@ -47,6 +47,14 @@ WebPluginDelegateImpl* WebPluginDelegateImpl::Create(
   return new WebPluginDelegateImpl(containing_view, instance.get());
 }
 
+void WebPluginDelegateImpl::PluginDestroyed() {
+  if (handle_event_depth_) {
+    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
+  } else {
+    delete this;
+  }
+}
+
 bool WebPluginDelegateImpl::Initialize(
     const GURL& url,
     const std::vector<std::string>& arg_names,

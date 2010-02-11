@@ -320,14 +320,6 @@ WebPluginDelegateImpl::~WebPluginDelegateImpl() {
   }
 }
 
-void WebPluginDelegateImpl::PluginDestroyed() {
-  if (handle_event_depth_) {
-    MessageLoop::current()->DeleteSoon(FROM_HERE, this);
-  } else {
-    delete this;
-  }
-}
-
 void WebPluginDelegateImpl::PlatformInitialize() {
   plugin_->SetWindow(windowed_handle_);
 
