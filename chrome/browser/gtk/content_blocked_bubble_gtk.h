@@ -33,7 +33,7 @@ class ContentBlockedBubbleGtk : public InfoBubbleGtkDelegate,
   void Close();
 
  private:
-  typedef std::map<GtkWidget*, TabContents*> PopupLinks;
+  typedef std::map<GtkWidget*, TabContents*> PopupMap;
 
   // InfoBubbleGtkDelegate:
   virtual void InfoBubbleClosing(InfoBubbleGtk* info_bubble,
@@ -47,7 +47,13 @@ class ContentBlockedBubbleGtk : public InfoBubbleGtkDelegate,
   // Builds the info bubble and all the widgets that it displays.
   void BuildBubble();
 
+  // Launches a popup from a click on a widget.
+  void LaunchPopup(TabContents* popup);
+
   // Widget callback methods.
+  static void OnPopupIconButtonPress(GtkWidget* icon,
+                                     GdkEventButton* event,
+                                     ContentBlockedBubbleGtk* bubble);
   static void OnPopupLinkClicked(GtkWidget* button,
                                  ContentBlockedBubbleGtk* bubble);
   static void OnAllowBlockToggled(GtkWidget* widget,
@@ -87,7 +93,8 @@ class ContentBlockedBubbleGtk : public InfoBubbleGtkDelegate,
   InfoBubbleGtk* info_bubble_;
 
   // Stored controls so we can figure out what was clicked.
-  PopupLinks popup_links_;
+  PopupMap popup_links_;
+  PopupMap popup_icons_;
   GtkWidget* allow_radio_;
   GtkWidget* block_radio_;
 };

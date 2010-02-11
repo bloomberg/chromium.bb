@@ -4,6 +4,7 @@
 
 #include "chrome/browser/gtk/content_blocked_bubble_gtk.h"
 
+#include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "chrome/browser/blocked_popup_container.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
@@ -12,9 +13,11 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/content_settings.h"
+#include "chrome/common/gtk_util.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
+#include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 
 ContentBlockedBubbleGtk::ContentBlockedBubbleGtk(
@@ -67,7 +70,7 @@ void ContentBlockedBubbleGtk::Observe(NotificationType type,
 void ContentBlockedBubbleGtk::BuildBubble() {
   GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(profile_);
 
-  GtkWidget* bubble_content = gtk_vbox_new(FALSE, 5);
+  GtkWidget* bubble_content = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
 
   // Add the content label.
   static const int kTitleIDs[CONTENT_SETTINGS_NUM_TYPES] = {
@@ -88,15 +91,49 @@ void ContentBlockedBubbleGtk::BuildBubble() {
     DCHECK(tab_contents_->blocked_popup_container());
     tab_contents_->blocked_popup_container()->GetBlockedContents(
         &blocked_contents);
+
+    GtkWidget* table = gtk_table_new(blocked_contents.size(), 2, FALSE);
+    int row = 0;
     for (BlockedPopupContainer::BlockedContents::const_iterator
-         i(blocked_contents.begin()); i != blocked_contents.end(); ++i) {
+             i(blocked_contents.begin()); i != blocked_contents.end();
+         ++i, ++row) {
+      SkBitmap icon = (*i)->GetFavIcon();
+      GtkWidget* image = gtk_image_new();
+      if (!icon.empty()) {
+        GdkPixbuf* icon_pixbuf = gfx::GdkPixbufFromSkBitmap(&icon);
+        gtk_image_set_from_pixbuf(GTK_IMAGE(image), icon_pixbuf);
+        g_object_unref(icon_pixbuf);
+
+        // We stuff the image in an event box so we can trap mouse clicks on the
+        // image (and launch the popup).
+        GtkWidget* event_box = gtk_event_box_new();
+        gtk_container_add(GTK_CONTAINER(event_box), image);
+
+        popup_icons_[event_box] = *i;
+        g_signal_connect(event_box, "button_press_event",
+                         G_CALLBACK(OnPopupIconButtonPress), this);
+        gtk_table_attach(GTK_TABLE(table), event_box, 0, 1, row, row + 1,
+                         GTK_FILL, GTK_FILL, gtk_util::kControlSpacing / 2,
+                         gtk_util::kControlSpacing / 2);
+      }
+
+      string16 title((*i)->GetTitle());
+      // The popup may not have committed a load yet, in which case it won't
+      // have a URL or title.
+      if (title.empty())
+        title = l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE);
+
       GtkWidget* button =
-          gtk_chrome_link_button_new(UTF16ToUTF8((*i)->GetTitle()).c_str());
+          gtk_chrome_link_button_new(UTF16ToUTF8(title).c_str());
       popup_links_[button] = *i;
       g_signal_connect(button, "clicked", G_CALLBACK(OnPopupLinkClicked),
                        this);
-      gtk_box_pack_start(GTK_BOX(bubble_content), button, FALSE, FALSE, 0);
+      gtk_table_attach(GTK_TABLE(table), button, 1, 2, row, row + 1,
+                       GTK_FILL, GTK_FILL, gtk_util::kControlSpacing / 2,
+                       gtk_util::kControlSpacing / 2);
     }
+
+    gtk_box_pack_start(GTK_BOX(bubble_content), table, FALSE, FALSE, 0);
   }
 
   if (content_type_ != CONTENT_SETTINGS_TYPE_COOKIES) {
@@ -185,21 +222,33 @@ void ContentBlockedBubbleGtk::BuildBubble() {
       this);
 }
 
+void ContentBlockedBubbleGtk::LaunchPopup(TabContents* popup) {
+  if (tab_contents_ && tab_contents_->blocked_popup_container()) {
+    tab_contents_->blocked_popup_container()->LaunchPopupForContents(popup);
+
+    // The views interface implicitly closes because of the launching of a new
+    // window; we need to do that explicitly.
+    Close();
+  }
+}
+
+// static
+void ContentBlockedBubbleGtk::OnPopupIconButtonPress(
+    GtkWidget* icon_event_box,
+    GdkEventButton* event,
+    ContentBlockedBubbleGtk* bubble) {
+  PopupMap::iterator i(bubble->popup_icons_.find(icon_event_box));
+  DCHECK(i != bubble->popup_icons_.end());
+  bubble->LaunchPopup(i->second);
+}
+
 // static
 void ContentBlockedBubbleGtk::OnPopupLinkClicked(
     GtkWidget* button,
     ContentBlockedBubbleGtk* bubble) {
-  PopupLinks::iterator i(bubble->popup_links_.find(button));
+  PopupMap::iterator i(bubble->popup_links_.find(button));
   DCHECK(i != bubble->popup_links_.end());
-  if (bubble->tab_contents_ &&
-      bubble->tab_contents_->blocked_popup_container()) {
-    bubble->tab_contents_->blocked_popup_container()->
-        LaunchPopupForContents(i->second);
-
-    // The views interface implicitly closes because of the launching of a new
-    // window; we need to do that explicitly.
-    bubble->Close();
-  }
+  bubble->LaunchPopup(i->second);
 }
 
 // static
