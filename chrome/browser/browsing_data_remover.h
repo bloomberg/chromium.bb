@@ -22,7 +22,8 @@ class BrowsingDataRemover : public NotificationObserver {
  public:
   // Time period ranges available when doing browsing data removals.
   enum TimePeriod {
-    LAST_DAY = 0,
+    LAST_HOUR = 0,
+    LAST_DAY,
     LAST_WEEK,
     FOUR_WEEKS,
     EVERYTHING

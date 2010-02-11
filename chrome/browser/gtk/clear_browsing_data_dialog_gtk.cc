@@ -114,6 +114,8 @@ ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
   // Time period combo box items.
   time_period_combobox_ = gtk_combo_box_new_text();
   gtk_combo_box_append_text(GTK_COMBO_BOX(time_period_combobox_),
+      l10n_util::GetStringUTF8(IDS_CLEAR_DATA_HOUR).c_str());
+  gtk_combo_box_append_text(GTK_COMBO_BOX(time_period_combobox_),
       l10n_util::GetStringUTF8(IDS_CLEAR_DATA_DAY).c_str());
   gtk_combo_box_append_text(GTK_COMBO_BOX(time_period_combobox_),
       l10n_util::GetStringUTF8(IDS_CLEAR_DATA_WEEK).c_str());

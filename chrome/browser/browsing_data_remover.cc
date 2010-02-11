@@ -199,6 +199,9 @@ base::Time BrowsingDataRemover::CalculateBeginDeleteTime(
   base::TimeDelta diff;
   base::Time delete_begin_time = base::Time::Now();
   switch (time_period) {
+    case LAST_HOUR:
+      diff = base::TimeDelta::FromHours(1);
+      break;
     case LAST_DAY:
       diff = base::TimeDelta::FromHours(24);
       break;

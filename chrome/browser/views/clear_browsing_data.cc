@@ -329,15 +329,16 @@ views::ClientView* ClearBrowsingDataView::CreateClientView(
 // ClearBrowsingDataView, ComboboxModel implementation:
 
 int ClearBrowsingDataView::GetItemCount() {
-  return 4;
+  return 5;
 }
 
 std::wstring ClearBrowsingDataView::GetItemAt(int index) {
   switch (index) {
-    case 0: return l10n_util::GetString(IDS_CLEAR_DATA_DAY);
-    case 1: return l10n_util::GetString(IDS_CLEAR_DATA_WEEK);
-    case 2: return l10n_util::GetString(IDS_CLEAR_DATA_4WEEKS);
-    case 3: return l10n_util::GetString(IDS_CLEAR_DATA_EVERYTHING);
+    case 0: return l10n_util::GetString(IDS_CLEAR_DATA_HOUR);
+    case 1: return l10n_util::GetString(IDS_CLEAR_DATA_DAY);
+    case 2: return l10n_util::GetString(IDS_CLEAR_DATA_WEEK);
+    case 3: return l10n_util::GetString(IDS_CLEAR_DATA_4WEEKS);
+    case 4: return l10n_util::GetString(IDS_CLEAR_DATA_EVERYTHING);
     default: NOTREACHED() << L"Missing item";
              return L"?";
   }
