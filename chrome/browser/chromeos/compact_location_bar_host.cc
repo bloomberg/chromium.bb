@@ -59,7 +59,6 @@ class MouseObserver : public MessageLoopForUI::Observer {
   // root window's coordinates.
   bool HitContentArea(GdkEvent* event) {
     gfx::Point p(event->button.x_root, event->button.y_root);
-    DLOG(WARNING) << "point:" << p;
     // First, exclude the location bar as it's shown on top of
     // content area.
     if (HitOnScreen(host_->GetClbView(), p)) {

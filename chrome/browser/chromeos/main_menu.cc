@@ -7,13 +7,19 @@
 #include <string>
 #include <vector>
 
+#include "app/gfx/canvas.h"
 #include "app/gfx/insets.h"
 #include "app/resource_bundle.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
-#include "chrome/browser/browser_list.h"
+#include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
 #include "chrome/browser/browser.h"
+#include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_window.h"
+#include "chrome/browser/bubble_positioner.h"
+#include "chrome/browser/chromeos/browser_view.h"
+#include "chrome/browser/chromeos/status/status_area_view.h"
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/profile.h"
@@ -23,44 +29,49 @@
 #include "chrome/browser/renderer_host/render_widget_host_view_gtk.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/renderer_preferences_util.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/views/tabs/tab_overview_types.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "views/background.h"
+#include "views/controls/native/native_view_host.h"
 #include "views/painter.h"
 #include "views/screen.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
 
-namespace chromeos {
 
-// Initial size of the renderer. This is contained within a window whose size
-// is set to the size of the image IDR_MAIN_MENU_BUTTON_DROP_DOWN.
-static const int kRendererX = 0;
-static const int kRendererY = 25;
-static const int kRendererWidth = 250;
-static const int kRendererHeight = 400;
+namespace {
+
+// Padding & margins for the navigation entry.
+const int kNavigationEntryPadding = 2;
+const int kNavigationEntryXMargin = 3;
+const int kNavigationEntryYMargin = 1;
+
+// NavigationBar size.
+const int kNavigationBarWidth = 300;
+const int kNavigationBarHeight = 25;
 
 // Insets defining the regions that are stretched and titled to create the
 // background of the popup. These constants are fed into
 // Painter::CreateImagePainter as the insets, see it for details.
-static const int kBackgroundImageTop = 27;
-static const int kBackgroundImageLeft = 85;
-static const int kBackgroundImageBottom = 10;
-static const int kBackgroundImageRight = 8;
+const int kBackgroundImageTop = 27;
+const int kBackgroundImageLeft = 85;
+const int kBackgroundImageBottom = 10;
+const int kBackgroundImageRight = 8;
 
 // Command line switch for specifying url of the page.
-static const wchar_t kURLSwitch[] = L"main-menu-url";
+const wchar_t kURLSwitch[] = L"main-menu-url";
 
 // Command line switch for specifying the size of the main menu. The default is
 // full screen.
-static const wchar_t kMenuSizeSwitch[] = L"main-menu-size";
+const wchar_t kMenuSizeSwitch[] = L"main-menu-size";
 
 // URL of the page to load. This is ignored if kURLSwitch is specified.
-static const char kMenuURL[] = "http://goto.ext.google.com/crux-home";
+const char kMenuURL[] = "http://goto.ext.google.com/crux-home";
 
 // Returns the size of the popup. By default the popup is sized slightly
 // larger than full screen, but can be overriden by the command line switch
@@ -83,13 +94,6 @@ static gfx::Size GetPopupSize() {
   return size;
 }
 
-// Returns the size for the renderer widget host view given the specified
-// size of the popup.
-static gfx::Size CalculateRWHVSize(const gfx::Size& popup_size) {
-  return gfx::Size(popup_size.width() - kRendererX - kBackgroundImageRight,
-                   popup_size.height() - kRendererY - kBackgroundImageBottom);
-}
-
 // Returns the URL of the menu.
 static GURL GetMenuURL() {
   std::wstring url_string =
@@ -98,6 +102,140 @@ static GURL GetMenuURL() {
     return GURL(WideToUTF8(url_string));
   return GURL(kMenuURL);
 }
+
+}  // namspace
+
+namespace chromeos {
+
+// A navigation bar that is shown in the main menu in
+// compact navigation bar mode.
+class NavigationBar : public views::View,
+                      public BubblePositioner {
+ public:
+  explicit NavigationBar(MainMenu* main_menu)
+      : views::View(),
+        main_menu_(main_menu),
+        location_entry_view_(NULL) {
+    SetFocusable(true);
+    location_entry_view_ = new views::NativeViewHost;
+    AddChildView(location_entry_view_);
+  }
+
+  virtual ~NavigationBar() {
+  }
+
+  // views::View overrides.
+  virtual void Focus() {
+    location_entry_->SetFocus();
+    location_entry_->SelectAll(true);
+  }
+
+  virtual void Layout() {
+    const int horizontal_margin =
+        kNavigationEntryPadding + kNavigationEntryYMargin;
+
+    location_entry_view_->SetBounds(
+        kNavigationEntryXMargin + kNavigationEntryPadding, horizontal_margin,
+        kNavigationBarWidth, height() - horizontal_margin * 2);
+  }
+
+  virtual void Paint(gfx::Canvas* canvas) {
+    const int padding = kNavigationEntryPadding;
+    canvas->FillRectInt(SK_ColorWHITE, 0, 0, width(), height());
+    // Draw border around the entry.
+    canvas->DrawRectInt(SK_ColorGRAY,
+                        location_entry_view_->x() - padding,
+                        location_entry_view_->y() - padding,
+                        location_entry_view_->width() + padding * 2,
+                        location_entry_view_->height() + padding * 2);
+  }
+
+  // BubblePositioner implementation.
+  virtual gfx::Rect GetLocationStackBounds() const {
+    gfx::Point origin(0, height());
+    views::View::ConvertPointToScreen(this, &origin);
+    return gfx::Rect(origin, gfx::Size(500, 0));
+  }
+
+  // AutocompleteEditView depends on the browser instance.
+  // Create new one when the browser instance changes.
+  void Update(Browser* browser) {
+    // Detach the native view if any.
+    if (location_entry_view_ && location_entry_view_->native_view())
+      location_entry_view_->Detach();
+
+    location_entry_.reset(new AutocompleteEditViewGtk(
+        main_menu_, browser->toolbar_model(), browser->profile(),
+        browser->command_updater(), false, this));
+    location_entry_->Init();
+    gtk_widget_show_all(location_entry_->widget());
+    gtk_widget_hide(location_entry_->widget());
+
+    location_entry_view_->set_focus_view(this);
+    location_entry_view_->Attach(location_entry_->widget());
+  }
+
+ private:
+  MainMenu* main_menu_;
+  views::NativeViewHost* location_entry_view_;
+  scoped_ptr<AutocompleteEditViewGtk> location_entry_;
+
+  DISALLOW_COPY_AND_ASSIGN(NavigationBar);
+};
+
+// A container for the main menu's contents (navigation bar and renderer).
+class AppMenuContainer : public views::View {
+ public:
+  explicit AppMenuContainer(MainMenu* main_menu)
+      : View(),
+        main_menu_(main_menu) {
+  }
+
+  virtual ~AppMenuContainer() {
+  }
+
+  // views::View overrides.
+  virtual void Layout() {
+    if (GetChildViewCount() == 2 && !bounds().IsEmpty()) {
+      int render_width = width() - kBackgroundImageRight;
+      if (main_menu_->navigation_bar_->IsVisible()) {
+        main_menu_->navigation_bar_->SetBounds(
+            0, kBackgroundImageTop, render_width, kNavigationBarHeight);
+      } else {
+        main_menu_->navigation_bar_->SetBounds(
+            gfx::Rect(0, kBackgroundImageTop, 0, 0));
+      }
+      int render_y = main_menu_->navigation_bar_->bounds().bottom();
+      int render_height =
+          std::max(0, height() - kBackgroundImageBottom - render_y);
+      gfx::Size rwhv_size = gfx::Size(render_width, render_height);
+
+      main_menu_->menu_content_view_->SetBounds(
+          0, render_y, rwhv_size.width(), rwhv_size.height());
+      main_menu_->rwhv_->SetSize(rwhv_size);
+    }
+  }
+
+  virtual gfx::Size GetPreferredSize() {
+    // Not really used.
+    return gfx::Size();
+  }
+
+  // Hide if a mouse is clicked outside of the content area.
+  virtual bool OnMousePressed(const views::MouseEvent& event) {
+    if (HitTest(event.location()) &&
+        event.y() > main_menu_->navigation_bar_->y()) {
+      return false;
+    }
+    main_menu_->Hide();
+    return false;
+  }
+
+ private:
+  MainMenu* main_menu_;
+
+  DISALLOW_COPY_AND_ASSIGN(AppMenuContainer);
+};
 
 // static
 void MainMenu::Show(Browser* browser) {
@@ -115,6 +253,10 @@ MainMenu::~MainMenu() {
   // TODO(sky): fix this.
   // menu_rvh_->Shutdown();
   // popup_->CloseNow();
+  // if (location_entry_view_->native_view())
+  //   location_entry_view_->Detach();
+  // etc
+  ActiveWindowWatcherX::RemoveObserver(this);
 }
 
 MainMenu::MainMenu()
@@ -125,19 +267,24 @@ MainMenu::MainMenu()
       rwhv_(NULL),
       ALLOW_THIS_IN_INITIALIZER_LIST(tab_contents_delegate_(this)),
       ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+      menu_container_(NULL),
+      navigation_bar_(NULL),
+      menu_content_view_(NULL),
       has_shown_(false) {
   SkBitmap* drop_down_image = ResourceBundle::GetSharedInstance().
       GetBitmapNamed(IDR_MAIN_MENU_BUTTON_DROP_DOWN);
-
   views::WidgetGtk* menu_popup =
-      new views::WidgetGtk(views::WidgetGtk::TYPE_POPUP);
+      new views::WidgetGtk(views::WidgetGtk::TYPE_WINDOW);
   popup_ = menu_popup;
   // The background image has transparency, so we make the window transparent.
   menu_popup->MakeTransparent();
   gfx::Size popup_size = GetPopupSize();
   menu_popup->Init(NULL, gfx::Rect(0, 0, popup_size.width(),
                                    popup_size.height()));
-
+  TabOverviewTypes::instance()->SetWindowType(
+      menu_popup->GetNativeView(),
+      TabOverviewTypes::WINDOW_TYPE_CHROME_INFO_BUBBLE,
+      NULL);
   views::Painter* painter = views::Painter::CreateImagePainter(
       *drop_down_image,
       gfx::Insets(kBackgroundImageTop, kBackgroundImageLeft,
@@ -145,6 +292,12 @@ MainMenu::MainMenu()
       false);
   menu_popup->GetRootView()->set_background(
       views::Background::CreateBackgroundPainter(true, painter));
+
+  menu_container_ = new AppMenuContainer(this);
+  menu_popup->SetContentsView(menu_container_);
+
+  navigation_bar_ = new NavigationBar(this);
+  menu_container_->AddChildView(navigation_bar_);
 
   GURL menu_url(GetMenuURL());
   DCHECK(BrowserList::begin() != BrowserList::end());
@@ -159,12 +312,13 @@ MainMenu::MainMenu()
   rwhv_ = new RenderWidgetHostViewGtk(menu_rvh_);
   rwhv_->InitAsChild();
   menu_rvh_->CreateRenderView(profile->GetRequestContext());
-  menu_popup->AddChild(rwhv_->GetNativeView());
-  gfx::Size rwhv_size = CalculateRWHVSize(popup_size);
-  menu_popup->PositionChild(rwhv_->GetNativeView(), kRendererX, kRendererY,
-                            rwhv_size.width(), rwhv_size.height());
-  rwhv_->SetSize(rwhv_size);
+
+  menu_content_view_ = new views::NativeViewHost;
+  menu_container_->AddChildView(menu_content_view_);
+  menu_content_view_->Attach(rwhv_->GetNativeView());
   menu_rvh_->NavigateToURL(menu_url);
+
+  ActiveWindowWatcherX::AddObserver(this);
 }
 
 // static
@@ -175,36 +329,37 @@ MainMenu* MainMenu::Get() {
 void MainMenu::ShowImpl(Browser* browser) {
   Cleanup();
 
-  browser_ = browser;
+  if (browser_ != browser) {
+    browser_ = browser;
+    navigation_bar_->Update(browser);
+    // Set the transient window so that ChromeOS WM treat this
+    // as if a popup window.
+    gtk_window_set_transient_for(
+        GTK_WINDOW(popup_->GetNativeView()),
+        GTK_WINDOW(browser_->window()->GetNativeHandle()));
+  }
+  BrowserView* bview = static_cast<BrowserView*>(browser->window());
+  navigation_bar_->SetVisible(bview->is_compact_style());
+  menu_container_->Layout();
 
   popup_->Show();
 
   GtkWidget* rwhv_widget = rwhv_->GetNativeView();
-
   if (!has_shown_) {
     has_shown_ = true;
     gtk_widget_realize(rwhv_widget);
-    g_signal_connect(rwhv_widget, "button-press-event",
-                     G_CALLBACK(CallButtonPressEvent), this);
   }
+}
 
-  // Do a mouse grab on the renderer widget host view's widget so that we can
-  // close the popup if the user clicks anywhere else. And do a keyboard
-  // grab so that we get all key events.
-  gdk_pointer_grab(rwhv_widget->window, FALSE,
-                   static_cast<GdkEventMask>(
-                         GDK_BUTTON_PRESS_MASK | GDK_BUTTON_RELEASE_MASK |
-                         GDK_POINTER_MOTION_MASK),
-                   NULL, NULL, GDK_CURRENT_TIME);
-  gdk_keyboard_grab(rwhv_widget->window, FALSE, GDK_CURRENT_TIME);
+void MainMenu::ActiveWindowChanged(GdkWindow* active_window) {
+  if (!popup_->IsActive())
+    Hide();
+  else
+    navigation_bar_->RequestFocus();
 }
 
 void MainMenu::Hide() {
-  gdk_keyboard_ungrab(GDK_CURRENT_TIME);
-  gdk_pointer_ungrab(GDK_CURRENT_TIME);
-
   popup_->Hide();
-
   // The stack may have pending_contents_ on it. Delay deleting the
   // pending_contents_ as TabContents doesn't deal well with being deleted
   // while on the stack.
@@ -217,42 +372,70 @@ void MainMenu::Cleanup() {
   method_factory_.RevokeAll();
 }
 
-// static
-gboolean MainMenu::CallButtonPressEvent(GtkWidget* widget,
-                                        GdkEventButton* event,
-                                        MainMenu* menu) {
-  return menu->OnButtonPressEvent(widget, event);
-}
-
-gboolean MainMenu::OnButtonPressEvent(GtkWidget* widget,
-                                      GdkEventButton* event) {
-  if (event->x < 0 || event->y < 0 ||
-      event->x >= widget->allocation.width ||
-      event->y >= widget->allocation.height) {
-    // The user clicked outside the bounds of the menu, delete the main which
-    // results in closing it.
-    Hide();
-  }
-  return FALSE;
-}
-
 void MainMenu::RequestMove(const gfx::Rect& new_bounds) {
   // Invoking PositionChild results in a gtk signal that triggers attempting to
   // to resize the window. We need to set the size request so that it resizes
   // correctly when this happens.
   gtk_widget_set_size_request(popup_->GetNativeView(),
                               new_bounds.width(), new_bounds.height());
-  gfx::Size rwhv_size = CalculateRWHVSize(new_bounds.size());
-  popup_->PositionChild(rwhv_->GetNativeView(), kRendererX, kRendererY,
-                        rwhv_size.width(), rwhv_size.height());
   popup_->SetBounds(new_bounds);
-  rwhv_->SetSize(rwhv_size);
 }
 
 RendererPreferences MainMenu::GetRendererPrefs(Profile* profile) const {
   RendererPreferences preferences;
   renderer_preferences_util::UpdateFromSystemSettings(&preferences, profile);
   return preferences;
+}
+
+// AutocompleteController implementation.
+void MainMenu::OnAutocompleteAccept(const GURL& url,
+                                    WindowOpenDisposition disposition,
+                                    PageTransition::Type transition,
+                                    const GURL& alternate_nav_url) {
+  AddTabWithURL(url, transition);
+  Hide();
+}
+
+void MainMenu::OnChanged() {
+}
+
+void MainMenu::OnInputInProgress(bool in_progress) {
+}
+
+void MainMenu::OnKillFocus() {
+}
+
+void MainMenu::OnSetFocus() {
+}
+
+SkBitmap MainMenu::GetFavIcon() const {
+  return SkBitmap();
+}
+
+std::wstring MainMenu::GetTitle() const {
+  return std::wstring();
+}
+
+void MainMenu::AddTabWithURL(const GURL& url,
+                             PageTransition::Type transition) {
+  switch (StatusAreaView::GetOpenTabsMode()) {
+    case StatusAreaView::OPEN_TABS_ON_LEFT: {
+      // Add the new tab at the first non-pinned location.
+      int index = browser_->tabstrip_model()->IndexOfFirstNonMiniTab();
+      browser_->AddTabWithURL(url, GURL(), transition,
+                              true, index, true, NULL);
+      break;
+    }
+    case StatusAreaView::OPEN_TABS_CLOBBER: {
+      browser_->GetSelectedTabContents()->controller().LoadURL(
+          url, GURL(), transition);
+      break;
+    }
+    case StatusAreaView::OPEN_TABS_ON_RIGHT: {
+      browser_->AddTabWithURL(url, GURL(), transition, true, -1, true, NULL);
+      break;
+    }
+  }
 }
 
 void MainMenu::CreateNewWindow(int route_id) {

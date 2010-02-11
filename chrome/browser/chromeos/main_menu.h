@@ -7,14 +7,17 @@
 
 #include <gtk/gtk.h>
 
+#include "app/active_window_watcher_x.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
 #include "base/task.h"
+#include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/common/renderer_preferences.h"
 
+class AutocompleteEditViewGtk;
 class Browser;
 class RenderWidgetHostViewGtk;
 class SiteInstance;
@@ -23,14 +26,22 @@ namespace gfx {
 class Size;
 }
 namespace views {
+class NativeViewHost;
+class View;
 class WidgetGtk;
 }
 
 namespace chromeos {
 
-// MainMenu manages showing the main menu. The menu is currently an HTML page.
-// When the user clicks a link on the page a new tab is added to the current
-// browser and the menu is hidden.
+class NavigationBar;
+
+// MainMenu manages showing the main menu and optionally the
+// navigation bar in compact navigation bar mode. The menu is
+// currently an HTML page. When the user clicks a link on the page a
+// new tab is added to the current browser and the menu is hidden.
+// When the user opens a new page from the navigation bar, it opens a
+// new tab on left, on right or clobbers the current tab depending on
+// the configuration.
 //
 // To show the menu invoke Show.
 //
@@ -51,7 +62,9 @@ namespace chromeos {
 // the life of the browser. This is done to make sure we have the html page
 // loaded when the user clicks on it.
 class MainMenu : public RenderViewHostDelegate,
-                 public RenderViewHostDelegate::View {
+                 public RenderViewHostDelegate::View,
+                 public AutocompleteEditController,
+                 public ActiveWindowWatcherX::Observer {
  public:
   // Shows the menu.
   static void Show(Browser* browser);
@@ -110,6 +123,7 @@ class MainMenu : public RenderViewHostDelegate,
   };
 
   friend class TabContentsDelegateImpl;
+  friend class AppMenuContainer;
 
   MainMenu();
 
@@ -125,14 +139,6 @@ class MainMenu : public RenderViewHostDelegate,
   // Cleans up state. This is invoked before showing and after a delay when
   // hidden.
   void Cleanup();
-
-  // Callback from button presses on the render widget host view. Clicks
-  // outside the widget resulting in closing the menu.
-  static gboolean CallButtonPressEvent(GtkWidget* widget,
-                                       GdkEventButton* event,
-                                       MainMenu* menu);
-  gboolean OnButtonPressEvent(GtkWidget* widget,
-                              GdkEventButton* event);
 
   // RenderViewHostDelegate overrides.
   virtual int GetBrowserWindowID() const {
@@ -171,6 +177,23 @@ class MainMenu : public RenderViewHostDelegate,
   virtual void HandleMouseLeave() {}
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
 
+  // AutocompleteController implementation.
+  virtual void OnAutocompleteAccept(const GURL& url,
+                                    WindowOpenDisposition disposition,
+                                    PageTransition::Type transition,
+                                    const GURL& alternate_nav_url);
+  virtual void OnChanged();
+  virtual void OnInputInProgress(bool in_progress);
+  virtual void OnKillFocus();
+  virtual void OnSetFocus();
+  virtual SkBitmap GetFavIcon() const;
+  virtual std::wstring GetTitle() const;
+
+  // ActiveWindowWatcherX::Observer implementation.
+  virtual void ActiveWindowChanged(GdkWindow* active_window);
+
+  void AddTabWithURL(const GURL& url, PageTransition::Type transition);
+
   // The currently active browser. We use this to open urls.
   Browser* browser_;
 
@@ -196,6 +219,15 @@ class MainMenu : public RenderViewHostDelegate,
   scoped_ptr<TabContents> pending_contents_;
 
   ScopedRunnableMethodFactory<MainMenu> method_factory_;
+
+  // Container of NavigationBar and Renderer.
+  views::View* menu_container_;
+
+  // The navigation bar. Only shown in compact navigation bar mode.
+  NavigationBar* navigation_bar_;
+
+  // The Renderer view.
+  views::NativeViewHost* menu_content_view_;
 
   // True if the popup has ever been shown.
   bool has_shown_;

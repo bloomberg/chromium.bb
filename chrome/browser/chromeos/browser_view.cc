@@ -404,8 +404,8 @@ bool BrowserView::IsToolbarVisible() const {
 }
 
 void BrowserView::SetFocusToLocationBar() {
-  if (compact_navigation_bar_->IsFocusable()) {
-    compact_navigation_bar_->FocusLocation();
+  if (is_compact_style()) {
+    ShowCompactLocationBarUnderSelectedTab();
   } else {
     ::BrowserView::SetFocusToLocationBar();
   }
@@ -413,7 +413,6 @@ void BrowserView::SetFocusToLocationBar() {
 
 void BrowserView::ToggleCompactNavigationBar() {
   ui_style_ = static_cast<UIStyle>((ui_style_ + 1) % 2);
-  compact_navigation_bar_->SetFocusable(is_compact_style());
   compact_location_bar_host_->SetEnabled(is_compact_style());
   compact_location_bar_host_->Hide(false);
   Layout();

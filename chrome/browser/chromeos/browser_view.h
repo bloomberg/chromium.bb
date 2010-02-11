@@ -47,7 +47,7 @@ class BrowserView : public ::BrowserView,
   // the tabstrip is moved to the side and the omnibox is moved on top of
   // the tabstrip.
   enum UIStyle {
-    StandardStyle,
+    StandardStyle = 0,
     CompactStyle,
     SidebarStyle,
   };
@@ -133,4 +133,3 @@ class BrowserView : public ::BrowserView,
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_BROWSER_VIEW_H_
-

@@ -438,7 +438,6 @@ void WidgetGtk::MoveAbove(Widget* widget) {
 void WidgetGtk::SetShape(gfx::NativeRegion region) {
   DCHECK(widget_);
   DCHECK(widget_->window);
-
   gdk_window_shape_combine_region(widget_->window, region, 0, 0);
   gdk_region_destroy(region);
 }
@@ -473,8 +472,11 @@ void WidgetGtk::Show() {
 }
 
 void WidgetGtk::Hide() {
-  if (widget_)
+  if (widget_) {
     gtk_widget_hide(widget_);
+    if (widget_->window)
+      gdk_window_lower(widget_->window);
+  }
 }
 
 gfx::NativeView WidgetGtk::GetNativeView() const {
@@ -669,7 +671,6 @@ void WidgetGtk::OnSizeAllocate(GtkWidget* widget, GtkAllocation* allocation) {
   gfx::Size new_size(allocation->width, allocation->height);
   if (new_size == size_)
     return;
-
   size_ = new_size;
   root_view_->SetBounds(0, 0, allocation->width, allocation->height);
   root_view_->SchedulePaint();
@@ -923,9 +924,22 @@ bool WidgetGtk::ProcessMousePressed(GdkEventButton* event) {
     return true;
   }
 
+  // An event may come from a child widget which has its own gdk window.
+  // Translate it to the widget's cooridnate.
+  int x = event->x;
+  int y = event->y;
+  GdkWindow* dest = GTK_WIDGET(window_contents_)->window;
+  if (event->window != dest) {
+    int dest_x, dest_y;
+    gdk_window_get_root_origin(dest, &dest_x, &dest_y);
+    x = event->x_root - dest_x;
+    y = event->y_root - dest_y;
+  }
+
   last_mouse_event_was_move_ = false;
-  MouseEvent mouse_pressed(Event::ET_MOUSE_PRESSED, event->x, event->y,
+  MouseEvent mouse_pressed(Event::ET_MOUSE_PRESSED, x, y,
                            GetFlagsForEventButton(*event));
+
   if (root_view_->OnMousePressed(mouse_pressed)) {
     is_mouse_down_ = true;
     if (!has_capture_)
