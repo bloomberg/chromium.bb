@@ -8,9 +8,9 @@
 
 namespace browser_sync {
 
-// TODO(akalin): Eventually change this to NOTIFICATION_TRANSITIONAL,
-// then NOTIFICATION_NEW.
-const NotificationMethod kDefaultNotificationMethod = NOTIFICATION_LEGACY;
+// TODO(akalin): Eventually change this to NOTIFICATION_NEW.
+const NotificationMethod kDefaultNotificationMethod =
+    NOTIFICATION_TRANSITIONAL;
 
 std::string NotificationMethodToString(
     NotificationMethod notification_method) {
