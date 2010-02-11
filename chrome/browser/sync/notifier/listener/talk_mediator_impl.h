@@ -14,6 +14,7 @@
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/engine/auth_watcher.h"
+#include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/notifier/listener/mediator_thread.h"
 #include "chrome/browser/sync/notifier/listener/talk_mediator.h"
 #include "talk/xmpp/xmppclientsettings.h"
@@ -31,7 +32,7 @@ class TalkMediatorImpl
     : public TalkMediator,
       public sigslot::has_slots<> {
  public:
-  TalkMediatorImpl();
+  explicit TalkMediatorImpl(NotificationMethod notification_method);
   explicit TalkMediatorImpl(MediatorThread* thread);
   virtual ~TalkMediatorImpl();
 

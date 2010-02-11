@@ -17,6 +17,7 @@
 #include "base/timer.h"
 #include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/net/url_request_context_getter.h"
+#include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/glue/ui_model_worker.h"
@@ -82,7 +83,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
                   URLRequestContextGetter* baseline_context_getter,
                   const std::string& lsid,
                   bool delete_sync_data_folder,
-                  bool invalidate_sync_login);
+                  bool invalidate_sync_login,
+                  NotificationMethod notification_method);
 
   // Called on |frontend_loop_| to kick off asynchronous authentication.
   void Authenticate(const std::string& username, const std::string& password,
@@ -133,7 +135,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   void InitializeForTestMode(const std::wstring& test_user,
                              sync_api::HttpPostProviderFactory* factory,
                              sync_api::HttpPostProviderFactory* auth_factory,
-                             bool delete_sync_data_folder) {
+                             bool delete_sync_data_folder,
+                             NotificationMethod notification_method) {
     if (!core_thread_.Start())
       return;
     registrar_.workers[GROUP_UI] = new UIModelWorker(frontend_loop_);
@@ -145,7 +148,8 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
         test_user,
         factory,
         auth_factory,
-        delete_sync_data_folder));
+        delete_sync_data_folder,
+        notification_method));
   }
 #endif
 
@@ -167,6 +171,35 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     virtual void OnInitializationComplete();
     virtual void OnAuthError(const GoogleServiceAuthError& auth_error);
 
+    struct DoInitializeOptions {
+      DoInitializeOptions(
+          const GURL& service_url,
+          bool attempt_last_user_authentication,
+          sync_api::HttpPostProviderFactory* http_bridge_factory,
+          sync_api::HttpPostProviderFactory* auth_http_bridge_factory,
+          const std::string& lsid,
+          bool delete_sync_data_folder,
+          bool invalidate_sync_login,
+          NotificationMethod notification_method)
+          : service_url(service_url),
+            attempt_last_user_authentication(attempt_last_user_authentication),
+            http_bridge_factory(http_bridge_factory),
+            auth_http_bridge_factory(auth_http_bridge_factory),
+            lsid(lsid),
+            delete_sync_data_folder(delete_sync_data_folder),
+            invalidate_sync_login(invalidate_sync_login),
+            notification_method(notification_method) {}
+
+      GURL service_url;
+      bool attempt_last_user_authentication;
+      sync_api::HttpPostProviderFactory* http_bridge_factory;
+      sync_api::HttpPostProviderFactory* auth_http_bridge_factory;
+      std::string lsid;
+      bool delete_sync_data_folder;
+      bool invalidate_sync_login;
+      NotificationMethod notification_method;
+    };
+
     // Note:
     //
     // The Do* methods are the various entry points from our SyncBackendHost.
@@ -175,13 +208,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     //
     // Called on the SyncBackendHost core_thread_ to perform initialization
     // of the syncapi on behalf of SyncBackendHost::Initialize.
-    void DoInitialize(const GURL& service_url,
-        bool attempt_last_user_authentication,
-        sync_api::HttpPostProviderFactory* http_bridge_factory,
-        sync_api::HttpPostProviderFactory* auth_http_bridge_factory,
-        const std::string& lsid,
-        bool delete_sync_data_folder,
-        bool invalidate_sync_login);
+    void DoInitialize(const DoInitializeOptions& options);
 
     // Called on our SyncBackendHost's core_thread_ to perform authentication
     // on behalf of SyncBackendHost::Authenticate.
@@ -218,9 +245,12 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     void DoInitializeForTest(const std::wstring& test_user,
                              sync_api::HttpPostProviderFactory* factory,
                              sync_api::HttpPostProviderFactory* auth_factory,
-                             bool delete_sync_data_folder) {
-        DoInitialize(GURL(), false, factory, auth_factory, std::string(),
-            delete_sync_data_folder, false);
+                             bool delete_sync_data_folder,
+                             NotificationMethod notification_method) {
+      DoInitialize(
+          DoInitializeOptions(GURL(), false, factory, auth_factory,
+                              std::string(), delete_sync_data_folder, false,
+                              notification_method));
         syncapi_->SetupForTestMode(test_user);
     }
 #endif

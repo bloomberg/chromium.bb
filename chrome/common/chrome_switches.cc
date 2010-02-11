@@ -604,6 +604,9 @@ const char kStartMaximized[]                = "start-maximized";
 // Override the default server used for profile sync.
 const char kSyncServiceURL[]                = "sync-url";
 
+// Override the default notification method for sync.
+const char kSyncNotificationMethod[]        = "sync-notification-method";
+
 // Use the SyncerThread implementation that matches up with the old pthread
 // impl semantics, but using Chrome synchronization primitives.  The only
 // difference between this and the default is that we now have no timeout on

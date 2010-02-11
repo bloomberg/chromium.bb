@@ -28,8 +28,9 @@ using std::string;
 
 namespace browser_sync {
 
-MediatorThreadImpl::MediatorThreadImpl() {
-}
+MediatorThreadImpl::MediatorThreadImpl(
+    NotificationMethod notification_method)
+    : MediatorThread(notification_method) {}
 
 MediatorThreadImpl::~MediatorThreadImpl() {
 }
@@ -42,6 +43,9 @@ void MediatorThreadImpl::Run() {
   PlatformThread::SetName("SyncEngine_MediatorThread");
   // For win32, this sets up the win32socketserver. Note that it needs to
   // dispatch windows messages since that is what the win32 socket server uses.
+
+  LOG(INFO) << "Running mediator thread with notification method "
+            << NotificationMethodToString(notification_method_);
 
   MessageLoop message_loop;
 #if defined(OS_WIN)
@@ -211,7 +215,8 @@ void MediatorThreadImpl::DoSubscribeForUpdates() {
   if (!client) {
     return;
   }
-  SubscribeTask* subscription = new SubscribeTask(client);
+  SubscribeTask* subscription =
+      new SubscribeTask(client, notification_method_);
   subscription->SignalStatusUpdate.connect(
       this,
       &MediatorThreadImpl::OnSubscriptionStateChange);
@@ -224,7 +229,7 @@ void MediatorThreadImpl::DoListenForUpdates() {
   if (!client) {
     return;
   }
-  ListenTask* listener = new ListenTask(client);
+  ListenTask* listener = new ListenTask(client, notification_method_);
   listener->SignalUpdateAvailable.connect(
       this,
       &MediatorThreadImpl::OnUpdateListenerMessage);
@@ -237,7 +242,7 @@ void MediatorThreadImpl::DoSendNotification() {
   if (!client) {
     return;
   }
-  SendUpdateTask* task = new SendUpdateTask(client);
+  SendUpdateTask* task = new SendUpdateTask(client, notification_method_);
   task->SignalStatusUpdate.connect(
       this,
       &MediatorThreadImpl::OnUpdateNotificationSent);

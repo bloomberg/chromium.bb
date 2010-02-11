@@ -10,13 +10,14 @@
 #define CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_MEDIATOR_THREAD_MOCK_H_
 
 #include "chrome/browser/sync/notifier/listener/mediator_thread.h"
+#include "chrome/browser/sync/notification_method.h"
 #include "talk/xmpp/xmppclientsettings.h"
 
 namespace browser_sync {
 
 class MockMediatorThread : public MediatorThread {
  public:
-  MockMediatorThread() {
+  MockMediatorThread() : MediatorThread(kDefaultNotificationMethod) {
     Reset();
   }
   ~MockMediatorThread() {}

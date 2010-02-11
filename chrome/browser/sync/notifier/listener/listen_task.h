@@ -12,6 +12,7 @@
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_LISTEN_TASK_H_
 #define CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_LISTEN_TASK_H_
 
+#include "chrome/browser/sync/notification_method.h"
 #include "talk/xmpp/xmpptask.h"
 
 namespace buzz {
@@ -23,7 +24,7 @@ namespace browser_sync {
 
 class ListenTask : public buzz::XmppTask {
  public:
-  explicit ListenTask(Task* parent);
+  ListenTask(Task* parent, NotificationMethod notification_method);
   virtual ~ListenTask();
 
   // Overriden from buzz::XmppTask.
@@ -38,6 +39,8 @@ class ListenTask : public buzz::XmppTask {
   // Decide whether a notification should start a sync.  We only validate that
   // this notification came from our own Jid().
   bool IsValidNotification(const buzz::XmlElement* stanza);
+
+  NotificationMethod notification_method_;
 
   DISALLOW_COPY_AND_ASSIGN(ListenTask);
 };

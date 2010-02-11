@@ -176,6 +176,7 @@ extern const char kSimpleDataSource[];
 extern const char kSingleProcess[];
 extern const char kStartMaximized[];
 extern const char kSyncServiceURL[];
+extern const char kSyncNotificationMethod[];
 extern const char kSyncerThreadTimedStop[];
 extern const char kTabCountToLoadOnSessionRestore[];
 extern const char kTestName[];

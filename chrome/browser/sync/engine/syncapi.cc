@@ -918,7 +918,8 @@ class SyncManager::SyncInternal {
             bool attempt_last_user_authentication,
             bool invalidate_last_user_auth_token,
             const char* user_agent,
-            const std::string& lsid);
+            const std::string& lsid,
+            browser_sync::NotificationMethod notification_method);
 
   // Tell sync engine to submit credentials to GAIA for verification and start
   // the syncing process on success. Successful GAIA authentication will kick
@@ -1159,7 +1160,8 @@ bool SyncManager::Init(const FilePath& database_location,
                        bool attempt_last_user_authentication,
                        bool invalidate_last_user_auth_token,
                        const char* user_agent,
-                       const char* lsid) {
+                       const char* lsid,
+                       browser_sync::NotificationMethod notification_method) {
   DCHECK(post_factory);
 
   string server_string(sync_server_and_path);
@@ -1175,7 +1177,8 @@ bool SyncManager::Init(const FilePath& database_location,
                      attempt_last_user_authentication,
                      invalidate_last_user_auth_token,
                      user_agent,
-                     lsid);
+                     lsid,
+                     notification_method);
 }
 
 void SyncManager::Authenticate(const char* username, const char* password,
@@ -1201,8 +1204,8 @@ bool SyncManager::SyncInternal::Init(
     bool attempt_last_user_authentication,
     bool invalidate_last_user_auth_token,
     const char* user_agent,
-    const std::string& lsid) {
-
+    const std::string& lsid,
+    browser_sync::NotificationMethod notification_method) {
   // Set up UserSettings, creating the db if necessary. We need this to
   // instantiate a URLFactory to give to the Syncer.
   FilePath settings_db_file =
@@ -1254,7 +1257,7 @@ bool SyncManager::SyncInternal::Init(
   const char* service_id = gaia_service_id ?
       gaia_service_id : SYNC_SERVICE_NAME;
 
-  talk_mediator_.reset(new TalkMediatorImpl());
+  talk_mediator_.reset(new TalkMediatorImpl(notification_method));
   allstatus()->WatchTalkMediator(talk_mediator());
 
   BridgedGaiaAuthenticator* gaia_auth = new BridgedGaiaAuthenticator(

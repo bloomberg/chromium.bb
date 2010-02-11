@@ -9,14 +9,18 @@
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_SUBSCRIBE_TASK_H_
 #define CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_SUBSCRIBE_TASK_H_
 
+#include <string>
+
+#include "chrome/browser/sync/notification_method.h"
 #include "talk/xmllite/xmlelement.h"
 #include "talk/xmpp/xmpptask.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"
 
 namespace browser_sync {
 
 class SubscribeTask : public buzz::XmppTask {
  public:
-  explicit SubscribeTask(Task* parent);
+  SubscribeTask(Task* parent, NotificationMethod notification_method);
   virtual ~SubscribeTask();
 
   // Overridden from XmppTask.
@@ -29,7 +33,22 @@ class SubscribeTask : public buzz::XmppTask {
 
  private:
   // Assembles an Xmpp stanza which can be sent to subscribe to notifications.
-  buzz::XmlElement* NewSubscriptionMessage();
+  static buzz::XmlElement* MakeSubscriptionMessage(
+      NotificationMethod notification_method,
+      const buzz::Jid& to_jid_bare, const std::string& task_id);
+
+  static buzz::XmlElement* MakeLegacySubscriptionMessage(
+      const buzz::Jid& to_jid_bare, const std::string& task_id);
+
+  static buzz::XmlElement* MakeNonLegacySubscriptionMessage(
+      bool is_transitional,
+      const buzz::Jid& to_jid_bare, const std::string& task_id);
+
+  NotificationMethod notification_method_;
+
+  FRIEND_TEST(SubscribeTaskTest, MakeLegacySubscriptionMessage);
+  FRIEND_TEST(SubscribeTaskTest, MakeNonLegacySubscriptionMessage);
+  FRIEND_TEST(SubscribeTaskTest, MakeSubscriptionMessage);
 
   DISALLOW_COPY_AND_ASSIGN(SubscribeTask);
 };

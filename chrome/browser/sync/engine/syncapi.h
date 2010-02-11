@@ -46,6 +46,7 @@
 #include "base/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/google_service_auth_error.h"
+#include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "googleurl/src/gurl.h"
 
@@ -592,7 +593,8 @@ class SyncManager {
             bool attempt_last_user_authentication,
             bool invalidate_last_user_auth_token,
             const char* user_agent,
-            const char* lsid);
+            const char* lsid,
+            browser_sync::NotificationMethod notification_method);
 
   // Returns the username last used for a successful authentication.
   // Returns empty if there is no such username.

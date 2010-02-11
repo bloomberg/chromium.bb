@@ -42,7 +42,8 @@ ProfileSyncService::ProfileSyncService(Profile* profile)
       expecting_first_run_auth_needed_event_(false),
       is_auth_in_progress_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(wizard_(this)),
-      unrecoverable_error_detected_(false) {
+      unrecoverable_error_detected_(false),
+      notification_method_(browser_sync::kDefaultNotificationMethod) {
 }
 
 ProfileSyncService::~ProfileSyncService() {
@@ -92,6 +93,13 @@ void ProfileSyncService::InitSettings() {
                      << "is invalid: " << value;
       }
     }
+  }
+
+  if (command_line.HasSwitch(switches::kSyncNotificationMethod)) {
+    const std::string notification_method_str(
+        command_line.GetSwitchValueASCII(switches::kSyncNotificationMethod));
+    notification_method_ =
+        browser_sync::StringToNotificationMethod(notification_method_str);
   }
 }
 
@@ -143,7 +151,7 @@ void ProfileSyncService::InitializeBackend(bool delete_sync_data_folder) {
 #endif
   backend_->Initialize(sync_service_url_, profile_->GetRequestContext(),
                        GetLsidForAuthBootstraping(), delete_sync_data_folder,
-                       invalidate_sync_login);
+                       invalidate_sync_login, notification_method_);
 }
 
 void ProfileSyncService::StartUp() {

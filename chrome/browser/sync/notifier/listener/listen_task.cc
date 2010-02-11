@@ -5,7 +5,9 @@
 #include "chrome/browser/sync/notifier/listener/listen_task.h"
 
 #include "base/logging.h"
-#include "base/string_util.h"
+#include "chrome/browser/sync/notification_method.h"
+#include "chrome/browser/sync/notifier/listener/notification_constants.h"
+#include "chrome/browser/sync/notifier/listener/xml_element_util.h"
 #include "talk/base/task.h"
 #include "talk/xmllite/qname.h"
 #include "talk/xmllite/xmlelement.h"
@@ -15,8 +17,9 @@
 
 namespace browser_sync {
 
-ListenTask::ListenTask(Task* parent)
-    : buzz::XmppTask(parent, buzz::XmppEngine::HL_TYPE) {
+ListenTask::ListenTask(Task* parent, NotificationMethod notification_method)
+    : buzz::XmppTask(parent, buzz::XmppEngine::HL_TYPE),
+      notification_method_(notification_method) {
 }
 
 ListenTask::~ListenTask() {
@@ -33,7 +36,7 @@ int ListenTask::ProcessResponse() {
   if (stanza == NULL) {
     return STATE_BLOCKED;
   }
-  // Acknowledge receipt of the notificaiton to the buzz server.
+  // Acknowledge receipt of the notification to the buzz server.
   scoped_ptr<buzz::XmlElement> response_stanza(MakeIqResult(stanza));
   SendStanza(response_stanza.get());
 
@@ -43,6 +46,9 @@ int ListenTask::ProcessResponse() {
 }
 
 bool ListenTask::HandleStanza(const buzz::XmlElement* stanza) {
+  LOG(INFO) << "P2P: Stanza received: " << XmlElementToString(*stanza);
+  // TODO(akalin): Do more verification on stanza depending on
+  // notification_method_.
   if (IsValidNotification(stanza)) {
     QueueStanza(stanza);
     return true;
@@ -51,8 +57,8 @@ bool ListenTask::HandleStanza(const buzz::XmlElement* stanza) {
 }
 
 bool ListenTask::IsValidNotification(const buzz::XmlElement* stanza) {
-  static const std::string kNSNotifier("google:notifier");
-  static const buzz::QName kQnNotifierGetAll(true, kNSNotifier, "getAll");
+  static const buzz::QName kQnNotifierGetAll(
+      true, kNotifierNamespace, "getAll");
   // An update notificaiton has the following form.
   //  <cli:iq from="{bare_jid}" to="{full_jid}"
   //      id="#" type="set" xmlns:cli="jabber:client">
@@ -60,14 +66,10 @@ bool ListenTask::IsValidNotification(const buzz::XmlElement* stanza) {
   //      <Timestamp long="#" xmlns=""/>
   //    </not:getAll>
   //  </cli:iq>
-  if (MatchRequestIq(stanza, buzz::STR_SET, kQnNotifierGetAll) &&
-      !base::strcasecmp(stanza->Attr(buzz::QN_TO).c_str(),
-                        GetClient()->jid().Str().c_str()) &&
-      !base::strcasecmp(stanza->Attr(buzz::QN_FROM).c_str(),
-                        GetClient()->jid().BareJid().Str().c_str())) {
-    return true;
-  }
-  return false;
+  return
+      (MatchRequestIq(stanza, buzz::STR_SET, kQnNotifierGetAll) &&
+       (stanza->Attr(buzz::QN_TO) == GetClient()->jid().Str()) &&
+       (stanza->Attr(buzz::QN_FROM) == GetClient()->jid().BareJid().Str()));
 }
 
 }  // namespace browser_sync

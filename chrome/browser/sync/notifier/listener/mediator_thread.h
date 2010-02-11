@@ -8,6 +8,8 @@
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_MEDIATOR_THREAD_H_
 #define CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_MEDIATOR_THREAD_H_
 
+#include "base/logging.h"
+#include "chrome/browser/sync/notification_method.h"
 #include "talk/xmpp/xmppclientsettings.h"
 
 namespace browser_sync {
@@ -23,7 +25,6 @@ class MediatorThread {
     MSG_NOTIFICATION_SENT
   };
 
-  MediatorThread() {}
   virtual ~MediatorThread() {}
 
   virtual void Login(const buzz::XmppClientSettings& settings) = 0;
@@ -35,6 +36,15 @@ class MediatorThread {
 
   // Connect to this for messages about talk events.
   sigslot::signal1<MediatorMessage> SignalStateChange;
+
+ protected:
+  explicit MediatorThread(NotificationMethod notification_method)
+      : notification_method_(notification_method) {}
+
+  const NotificationMethod notification_method_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(MediatorThread);
 };
 
 }  // namespace browser_sync

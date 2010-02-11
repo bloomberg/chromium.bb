@@ -20,6 +20,7 @@
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/common/chrome_switches.h"
@@ -131,7 +132,7 @@ class TestProfileSyncService : public ProfileSyncService {
     TestHttpBridgeFactory* factory = new TestHttpBridgeFactory();
     TestHttpBridgeFactory* factory2 = new TestHttpBridgeFactory();
     backend()->InitializeForTestMode(L"testuser", factory, factory2,
-        delete_sync_data_folder);
+        delete_sync_data_folder, browser_sync::kDefaultNotificationMethod);
     // The SyncBackend posts a task to the current loop when initialization
     // completes.
     MessageLoop::current()->Run();

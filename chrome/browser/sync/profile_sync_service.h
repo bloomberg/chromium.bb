@@ -16,6 +16,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"  // For StartResult.
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "googleurl/src/gurl.h"
@@ -320,6 +321,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // occurred during syncer operation.  This value should be checked before
   // doing any work that might corrupt things further.
   bool unrecoverable_error_detected_;
+
+  // Which peer-to-peer notification method to use.
+  browser_sync::NotificationMethod notification_method_;
 
   ObserverList<Observer> observers_;
 

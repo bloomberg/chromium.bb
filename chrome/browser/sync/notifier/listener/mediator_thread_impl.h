@@ -20,6 +20,7 @@
 #ifndef CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_MEDIATOR_THREAD_IMPL_H_
 #define CHROME_BROWSER_SYNC_NOTIFIER_LISTENER_MEDIATOR_THREAD_IMPL_H_
 
+#include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/notifier/communicator/login.h"
 #include "chrome/browser/sync/notifier/communicator/login_failure.h"
@@ -67,7 +68,7 @@ class MediatorThreadImpl
       public talk_base::MessageHandler,
       public talk_base::Thread {
  public:
-  MediatorThreadImpl();
+  explicit MediatorThreadImpl(NotificationMethod notification_method);
   virtual ~MediatorThreadImpl();
 
   // Start the thread.

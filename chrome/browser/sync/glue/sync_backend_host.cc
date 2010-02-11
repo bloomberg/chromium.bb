@@ -44,7 +44,8 @@ void SyncBackendHost::Initialize(
     URLRequestContextGetter* baseline_context_getter,
     const std::string& lsid,
     bool delete_sync_data_folder,
-    bool invalidate_sync_login) {
+    bool invalidate_sync_login,
+    NotificationMethod notification_method) {
   if (!core_thread_.Start())
     return;
 
@@ -64,12 +65,14 @@ void SyncBackendHost::Initialize(
 
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoInitialize,
-                        sync_service_url, true,
-                        new HttpBridgeFactory(baseline_context_getter),
-                        new HttpBridgeFactory(baseline_context_getter),
-                        lsid,
-                        delete_sync_data_folder,
-                        invalidate_sync_login));
+                        Core::DoInitializeOptions(
+                            sync_service_url, true,
+                            new HttpBridgeFactory(baseline_context_getter),
+                            new HttpBridgeFactory(baseline_context_getter),
+                            lsid,
+                            delete_sync_data_folder,
+                            invalidate_sync_login,
+                            notification_method)));
 }
 
 void SyncBackendHost::Authenticate(const std::string& username,
@@ -232,19 +235,12 @@ std::string MakeUserAgentForSyncapi() {
   return user_agent;
 }
 
-void SyncBackendHost::Core::DoInitialize(
-    const GURL& service_url,
-    bool attempt_last_user_authentication,
-    sync_api::HttpPostProviderFactory* http_provider_factory,
-    sync_api::HttpPostProviderFactory* auth_http_provider_factory,
-    const std::string& lsid,
-    bool delete_sync_data_folder,
-    bool invalidate_sync_login) {
+void SyncBackendHost::Core::DoInitialize(const DoInitializeOptions& options) {
   DCHECK(MessageLoop::current() == host_->core_thread_.message_loop());
 
   // Blow away the partial or corrupt sync data folder before doing any more
   // initialization, if necessary.
-  if (delete_sync_data_folder)
+  if (options.delete_sync_data_folder)
     DeleteSyncDataFolder();
 
   // Make sure that the directory exists before initializing the backend.
@@ -255,18 +251,19 @@ void SyncBackendHost::Core::DoInitialize(
   syncapi_->SetObserver(this);
   const FilePath& path_str = host_->sync_data_folder_path();
   success = syncapi_->Init(path_str,
-      (service_url.host() + service_url.path()).c_str(),
-      service_url.EffectiveIntPort(),
+      (options.service_url.host() + options.service_url.path()).c_str(),
+      options.service_url.EffectiveIntPort(),
       kGaiaServiceId,
       kGaiaSourceForChrome,
-      service_url.SchemeIsSecure(),
-      http_provider_factory,
-      auth_http_provider_factory,
+      options.service_url.SchemeIsSecure(),
+      options.http_bridge_factory,
+      options.auth_http_bridge_factory,
       host_,  // ModelSafeWorkerRegistrar.
-      attempt_last_user_authentication,
-      invalidate_sync_login,
+      options.attempt_last_user_authentication,
+      options.invalidate_sync_login,
       MakeUserAgentForSyncapi().c_str(),
-      lsid.c_str());
+      options.lsid.c_str(),
+      options.notification_method);
   DCHECK(success) << "Syncapi initialization failed!";
 }
 

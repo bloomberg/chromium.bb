@@ -41,8 +41,8 @@ class SslInitializationSingleton {
   DISALLOW_COPY_AND_ASSIGN(SslInitializationSingleton);
 };
 
-TalkMediatorImpl::TalkMediatorImpl()
-    : mediator_thread_(new MediatorThreadImpl()) {
+TalkMediatorImpl::TalkMediatorImpl(NotificationMethod notification_method)
+    : mediator_thread_(new MediatorThreadImpl(notification_method)) {
   // Ensure the SSL library is initialized.
   SslInitializationSingleton::GetInstance()->RegisterClient();
 

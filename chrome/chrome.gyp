@@ -801,6 +801,8 @@
         'browser/sync/notifier/listener/mediator_thread_impl.cc',
         'browser/sync/notifier/listener/mediator_thread_impl.h',
         'browser/sync/notifier/listener/mediator_thread_mock.h',
+        'browser/sync/notifier/listener/notification_constants.cc',
+        'browser/sync/notifier/listener/notification_constants.h',
         'browser/sync/notifier/listener/send_update_task.cc',
         'browser/sync/notifier/listener/send_update_task.h',
         'browser/sync/notifier/listener/subscribe_task.cc',
@@ -808,6 +810,8 @@
         'browser/sync/notifier/listener/talk_mediator.h',
         'browser/sync/notifier/listener/talk_mediator_impl.cc',
         'browser/sync/notifier/listener/talk_mediator_impl.h',
+        'browser/sync/notifier/listener/xml_element_util.cc',
+        'browser/sync/notifier/listener/xml_element_util.h',
       ],
       'include_dirs': [
         '..',
