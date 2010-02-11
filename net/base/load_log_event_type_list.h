@@ -136,6 +136,9 @@ EVENT_TYPE(HTTP_CACHE_OPEN_ENTRY)
 // Measures the time while creating a disk cache entry.
 EVENT_TYPE(HTTP_CACHE_CREATE_ENTRY)
 
+// Measures the time while deleting a disk cache entry.
+EVENT_TYPE(HTTP_CACHE_DOOM_ENTRY)
+
 // Measures the time while reading the response info from a disk cache entry.
 EVENT_TYPE(HTTP_CACHE_READ_INFO)
 
