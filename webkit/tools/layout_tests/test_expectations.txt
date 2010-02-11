@@ -174,6 +174,7 @@ WONTFIX SKIP BUG19635 : fast/events/pageshow-pagehide-on-back-cached-with-frames
 WONTFIX SKIP BUG19635 : media/restore-from-page-cache.html = TIMEOUT
 WONTFIX SKIP BUG19635 : loader/go-back-to-different-window-size.html = TIMEOUT TEXT
 WONTFIX SKIP BUG19635 : fast/loader/crash-copying-backforwardlist.html = TEXT
+WONTFIX SKIP BUG19635 : fast/frames/frame-crash-with-page-cache.html = TEXT
 
 // Tests that rely on cross-process MessagePorts.  No point in running them in
 // test_shell, since we'd have to use a completely different implementation from
@@ -2925,4 +2926,5 @@ BUG_TONY : fast/events/multiline-link-arrow-navigation.html = TEXT
 // WebKit roll 54596:54648
 BUG35387 : platform/win/plugins/plugin-delayed-destroy.html = TIMEOUT
 BUG35387 : fast/dom/prototype-inheritance.html = TEXT
-
+// Seems to be 54625
+BUG21852 : fast/canvas/webgl/gl-get-calls.html = CRASH
