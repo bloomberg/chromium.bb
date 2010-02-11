@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_TRANSLATE_TRANSLATE_MANAGER_H_
 #define CHROME_BROWSER_TRANSLATE_TRANSLATE_MANAGER_H_
 
+#include <map>
+#include <set>
 #include <string>
 
 #include "base/singleton.h"
@@ -36,10 +38,20 @@ class TranslateManager : public NotificationObserver {
   // |page_lang| language.
   void InitiateTranslation(TabContents* tab, const std::string& page_lang);
 
-  // Convenience method that retrieves the PrefService.
-  PrefService* GetPrefService(TabContents* tab);
+  // Returns true if the passed language has been configured by the user as an
+  // accept language.
+  bool IsAcceptLanguage(TabContents* tab, const std::string& language);
+
+  // Initializes the |accept_languages_| language table based on the associated
+  // preference in |prefs|.
+  void InitAcceptLanguages(PrefService* prefs);
 
   NotificationRegistrar notification_registrar_;
+
+  // A map that associates a profile with its parsed "accept languages".
+  typedef std::set<std::string> LanguageSet;
+  typedef std::map<PrefService*, LanguageSet> PrefServiceLanguagesMap;
+  PrefServiceLanguagesMap accept_languages_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateManager);
 };
