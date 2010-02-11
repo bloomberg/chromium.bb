@@ -5,7 +5,6 @@
 #include "chrome/browser/views/sad_tab_view.h"
 
 #include "app/gfx/canvas.h"
-#include "app/gfx/skia_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/gfx/size.h"
@@ -13,6 +12,7 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
+#include "skia/ext/skia_utils.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 
 static const int kSadTabOffset = -64;
@@ -52,9 +52,9 @@ SadTabView::SadTabView(TabContents* tab_contents)
 
 void SadTabView::Paint(gfx::Canvas* canvas) {
   SkPaint paint;
-  paint.setShader(gfx::CreateGradientShader(0, height(),
-                                            kBackgroundColor,
-                                            kBackgroundEndColor))->safeUnref();
+  paint.setShader(skia::CreateGradientShader(0, height(),
+                                             kBackgroundColor,
+                                             kBackgroundEndColor))->safeUnref();
   paint.setStyle(SkPaint::kFill_Style);
   canvas->drawRectCoords(0, 0,
                          SkIntToScalar(width()), SkIntToScalar(height()),

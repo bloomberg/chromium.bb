@@ -15,7 +15,6 @@
 namespace {
 const int kVerticalTabSpacing = 2;
 const int kTabStripWidth = 127;
-const int kTabStripInset = 3;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -80,14 +79,6 @@ bool SideTabStrip::IsSelected(SideTab* tab) const {
   return model_->IsSelected(GetIndexOfSideTab(tab));
 }
 
-void SideTabStrip::SelectTab(SideTab* tab) {
-  model_->SelectTab(GetIndexOfSideTab(tab));
-}
-
-void SideTabStrip::CloseTab(SideTab* tab) {
-  model_->CloseTab(GetIndexOfSideTab(tab));
-}
-
 ////////////////////////////////////////////////////////////////////////////////
 // SideTabStrip, BaseTabStrip implementation:
 
@@ -99,7 +90,7 @@ void SideTabStrip::SetBackgroundOffset(const gfx::Point& offset) {
 }
 
 bool SideTabStrip::IsPositionInWindowCaption(const gfx::Point& point) {
-  return GetViewForPoint(point) == this;
+  return true;
 }
 
 void SideTabStrip::SetDraggedTabBounds(int tab_index,
@@ -125,19 +116,20 @@ TabStrip* SideTabStrip::AsTabStrip() {
 // SideTabStrip, views::View overrides:
 
 void SideTabStrip::Layout() {
-  gfx::Rect layout_rect = GetLocalBounds(false);
-  layout_rect.Inset(kTabStripInset, kTabStripInset);
-  int y = layout_rect.y();
+  int y = 0;
   for (int c = GetChildViewCount(), i = 0; i < c; ++i) {
     views::View* child = GetChildViewAt(i);
-    child->SetBounds(layout_rect.x(), y, layout_rect.width(),
-                     child->GetPreferredSize().height());
+    child->SetBounds(0, y, width(), child->GetPreferredSize().height());
     y = child->bounds().bottom() + kVerticalTabSpacing;
   }
 }
 
+void SideTabStrip::Paint(gfx::Canvas* canvas) {
+  // canvas->FillRectInt(SK_ColorGREEN, 0, 0, width(), height());
+}
+
 gfx::Size SideTabStrip::GetPreferredSize() {
-  return gfx::Size(kTabStripWidth, height());
+  return gfx::Size(kTabStripWidth, 0);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

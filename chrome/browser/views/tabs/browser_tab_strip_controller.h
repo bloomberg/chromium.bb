@@ -20,8 +20,6 @@ class BrowserTabStripController : public SideTabStripModel,
   virtual SkBitmap GetIcon(int index) const;
   virtual string16 GetTitle(int index) const;
   virtual bool IsSelected(int index) const;
-  virtual void SelectTab(int index);
-  virtual void CloseTab(int index);
 
   // TabStripModelObserver implementation:
   virtual void TabInsertedAt(TabContents* contents, int index,

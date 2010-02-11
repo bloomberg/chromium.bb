@@ -221,14 +221,6 @@ void Canvas::DrawStringInt(const std::wstring& text,
                 l10n_util::DefaultCanvasTextAlignment());
 }
 
-void Canvas::DrawStringInt(const std::wstring& text,
-                           const gfx::Font& font,
-                           const SkColor& color,
-                           const gfx::Rect& display_rect) {
-  DrawStringInt(text, font, color, display_rect.x(), display_rect.y(),
-                display_rect.width(), display_rect.height());
-}
-
 void Canvas::TileImageInt(const SkBitmap& bitmap, int x, int y, int w, int h) {
   TileImageInt(bitmap, 0, 0, x, y, w, h);
 }

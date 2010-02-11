@@ -17,12 +17,6 @@ class SideTabStripModel {
   virtual SkBitmap GetIcon(int index) const = 0;
   virtual string16 GetTitle(int index) const = 0;
   virtual bool IsSelected(int index) const = 0;
-
-  // Select the tab at the specified index in the model.
-  virtual void SelectTab(int index) = 0;
-
-  // Closes the tab at the specified index in the model.
-  virtual void CloseTab(int index) = 0;
 };
 
 class SideTabStrip : public BaseTabStrip,
@@ -59,8 +53,6 @@ class SideTabStrip : public BaseTabStrip,
   virtual string16 GetTitle(SideTab* tab) const;
   virtual SkBitmap GetIcon(SideTab* tab) const;
   virtual bool IsSelected(SideTab* tab) const;
-  virtual void SelectTab(SideTab* tab);
-  virtual void CloseTab(SideTab* tab);
 
   // BaseTabStrip implementation:
   virtual int GetPreferredHeight();
@@ -75,6 +67,7 @@ class SideTabStrip : public BaseTabStrip,
 
   // views::View overrides:
   virtual void Layout();
+  virtual void Paint(gfx::Canvas* canvas);
   virtual gfx::Size GetPreferredSize();
 
  private:

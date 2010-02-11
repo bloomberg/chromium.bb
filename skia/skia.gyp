@@ -522,6 +522,8 @@
         'ext/platform_device_win.cc',
         'ext/platform_device_win.h',
         'ext/SkMemory_new_handler.cpp',
+        'ext/skia_utils.cc',
+        'ext/skia_utils.h',
         'ext/skia_utils_gtk.cc',
         'ext/skia_utils_gtk.h',
         'ext/skia_utils_mac.mm',

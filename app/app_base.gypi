@@ -150,8 +150,6 @@
         'gfx/scrollbar_size.h',
         'gfx/skbitmap_operations.cc',
         'gfx/skbitmap_operations.h',
-        'gfx/skia_util.cc',
-        'gfx/skia_util.h',
         'gfx/text_elider.cc',
         'gfx/text_elider.h',
         'gtk_dnd_util.cc',
