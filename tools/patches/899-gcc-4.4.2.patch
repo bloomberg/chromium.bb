@@ -1055,6 +1055,14 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.c gcc-4.4.2/gcc/config/i386/i386.c
      }
  
    extract_insn_cached (insn);
+@@ -24686,6 +24998,7 @@
+ 	  if (i == memory)
+ 	    {
+ 	      /* This must be the memory operand.  */
++              op = memory_address(Pmode, op);
+ 	      op = gen_rtx_MEM (mode, copy_to_mode_reg (Pmode, op));
+ 	      gcc_assert (GET_MODE (op) == mode
+ 			  || GET_MODE (op) == VOIDmode);
 diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.md
 --- gcc-4.4.2.orig/gcc/config/i386/i386.md	2009-10-12 15:40:17.000000000 +0200
 +++ gcc-4.4.2/gcc/config/i386/i386.md	2009-12-25 11:10:19.000000000 +0100
