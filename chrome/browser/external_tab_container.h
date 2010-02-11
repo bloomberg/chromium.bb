@@ -163,7 +163,7 @@ class ExternalTabContainer : public TabContentsDelegate,
   // Returns the ExternalTabContainer instance associated with the cookie
   // passed in. It also erases the corresponding reference from the map.
   // Returns NULL if we fail to find the cookie in the map.
-  static ExternalTabContainer* RemovePendingTab(intptr_t cookie);
+  static scoped_refptr<ExternalTabContainer> RemovePendingTab(intptr_t cookie);
 
   // Enables extension automation (for e.g. UITests), with the current tab
   // used as a conduit for the extension API messages being handled by the

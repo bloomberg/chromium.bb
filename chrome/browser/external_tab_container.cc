@@ -727,12 +727,13 @@ bool ExternalTabContainer::InitNavigationInfo(IPC::NavigationInfo* nav_info,
   return true;
 }
 
-ExternalTabContainer* ExternalTabContainer::RemovePendingTab(intptr_t cookie) {
+scoped_refptr<ExternalTabContainer> ExternalTabContainer::RemovePendingTab(
+    intptr_t cookie) {
   PendingTabs::iterator index = pending_tabs_.find(cookie);
   if (index != pending_tabs_.end()) {
     scoped_refptr<ExternalTabContainer> container = (*index).second;
     pending_tabs_.erase(index);
-    return container.release();
+    return container;
   }
 
   NOTREACHED() << "Failed to find ExternalTabContainer for cookie: "
