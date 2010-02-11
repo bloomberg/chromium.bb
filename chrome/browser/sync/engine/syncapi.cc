@@ -1524,13 +1524,14 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
     syncable::Entry e(event.trans, syncable::GET_BY_HANDLE, id);
     DCHECK(e.good());
 
-    if (e.IsRoot()) {
-      // Ignore root object, should it ever change.
-      continue;
-    } else if (e.GetModelType() != syncable::BOOKMARKS) {
-      // Ignore non-bookmark objects.
-      continue;
-    } else if (e.Get(syncable::IS_UNSYNCED)) {
+    syncable::ModelType model_type = e.GetModelType();
+
+    if (e.Get(syncable::IS_UNSYNCED)) {
+      if (model_type == syncable::TOP_LEVEL_FOLDER ||
+          model_type == syncable::UNSPECIFIED) {
+        NOTREACHED() << "Permanent or underspecified item changed via syncapi.";
+        continue;
+      }
       // Unsynced items will cause us to nudge the the syncer.
       exists_unsynced_items = true;
     }

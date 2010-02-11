@@ -111,6 +111,11 @@ void BuildCommitCommand::ExecuteImpl(SyncSession* session) {
     // We send both because it may aid in logging.
     sync_entry->set_non_unique_name(name);
 
+    if (!meta_entry.Get(syncable::UNIQUE_CLIENT_TAG).empty()) {
+      sync_entry->set_client_defined_unique_tag(
+          meta_entry.Get(syncable::UNIQUE_CLIENT_TAG));
+    }
+
     // Deleted items with negative parent ids can be a problem so we set the
     // parent to 0. (TODO(sync): Still true in protocol?).
     Id new_parent_id;
