@@ -513,3 +513,19 @@ TEST_F(L10nUtilTest, UpperLower) {
   result = l10n_util::ToUpper(mixed);
   EXPECT_EQ(result, expected_upper);
 }
+
+TEST_F(L10nUtilTest, LocaleDisplayName) {
+  // TODO(jungshik): Make this test more extensive.
+  // Test zh-CN and zh-TW are treated as zh-Hans and zh-Hant.
+  string16 result = l10n_util::GetDisplayNameForLocale("zh-CN", "en", false);
+  EXPECT_EQ(result, ASCIIToUTF16("Chinese (Simplified Han)"));
+
+  result = l10n_util::GetDisplayNameForLocale("zh-TW", "en", false);
+  EXPECT_EQ(result, ASCIIToUTF16("Chinese (Traditional Han)"));
+
+  result = l10n_util::GetDisplayNameForLocale("pt-BR", "en", false);
+  EXPECT_EQ(result, ASCIIToUTF16("Portuguese (Brazil)"));
+
+  result = l10n_util::GetDisplayNameForLocale("es-419", "en", false);
+  EXPECT_EQ(result, ASCIIToUTF16("Spanish (Latin America and the Caribbean)"));
+}

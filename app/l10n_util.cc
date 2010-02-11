@@ -524,9 +524,31 @@ std::string GetApplicationLocale(const std::wstring& pref_locale) {
 #endif  // !defined(OS_MACOSX)
 }
 
-string16 GetDisplayNameForLocale(const std::string& locale_code,
+string16 GetDisplayNameForLocale(const std::string& locale,
                                  const std::string& display_locale,
                                  bool is_for_ui) {
+  std::string locale_code = locale;
+  // Internally, we use the language code of zh-CN and zh-TW, but we want the
+  // display names to be Chinese (Simplified) and Chinese (Traditional) instead
+  // of Chinese (China) and Chinese (Taiwan).  To do that, we pass zh-Hans
+  // and zh-Hant to ICU. Even with this mapping, we'd get
+  // 'Chinese (Simplified Han)' and 'Chinese (Traditional Han)' in English and
+  // even longer results in other languages. Arguably, they're better than
+  // the current results : Chinese (China) / Chinese (Taiwan).
+  // TODO(jungshik): Do one of the following:
+  // 1. Special-case Chinese by getting the custom-translation for them
+  // 2. Recycle IDS_ENCODING_{SIMP,TRAD}_CHINESE.
+  // 3. Get translations for two directly from the ICU resouce bundle
+  // because they're not accessible with other any API.
+  // 4. Patch ICU to special-case zh-Hans/zh-Hant for us.
+  // #1 and #2 wouldn't work if display_locale != current UI locale although
+  // we can think of additional hack to work around the problem.
+  // #3 can be potentially expensive.
+  if (locale_code == "zh-CN")
+    locale_code = "zh-Hans";
+  else if (locale_code == "zh-TW")
+    locale_code = "zh-Hant";
+
   UErrorCode error = U_ZERO_ERROR;
   const int buffer_size = 1024;
 

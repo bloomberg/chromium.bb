@@ -38,32 +38,16 @@ void LanguageComboboxModel::InitNativeNames(
     std::string locale_code_str = locale_codes[i];
     const char* locale_code = locale_codes[i].c_str();
 
-    // Internally, we use the language code of zh-CN and zh-TW, but we want the
-    // display names to be Chinese (Simplified) and Chinese (Traditional).  To
-    // do that, we use zh-hans and zh-hant when using ICU's
-    // uloc_getDisplayName.
-    if (locale_code_str == "zh-CN") {
-      locale_code = "zh-hans";
-    } else if (locale_code_str == "zh-TW") {
-      locale_code = "zh-hant";
-    }
+    // TODO(jungshik): Even though these strings are used for the UI,
+    // the old code does not add an RTL mark for RTL locales. Make sure
+    // that it's ok without that.
+    string16 name_in_current_ui =
+        l10n_util::GetDisplayNameForLocale(locale_code, app_locale, false);
+    string16 name_native =
+        l10n_util::GetDisplayNameForLocale(locale_code, locale_code, false);
 
-    UErrorCode error = U_ZERO_ERROR;
-    const int buffer_size = 1024;
-    string16 name_local;
-    int actual_size = uloc_getDisplayName(locale_code, app_locale.c_str(),
-        WriteInto(&name_local, buffer_size + 1), buffer_size, &error);
-    DCHECK(U_SUCCESS(error));
-    name_local.resize(actual_size);
-
-    string16 name_native;
-    actual_size = uloc_getDisplayName(locale_code, locale_code,
-        WriteInto(&name_native, buffer_size + 1), buffer_size, &error);
-    DCHECK(U_SUCCESS(error));
-    name_native.resize(actual_size);
-
-    locale_names_.push_back(UTF16ToWideHack(name_local));
-    native_names_[UTF16ToWideHack(name_local)] = LocaleData(
+    locale_names_.push_back(UTF16ToWideHack(name_in_current_ui));
+    native_names_[UTF16ToWideHack(name_in_current_ui)] = LocaleData(
         UTF16ToWideHack(name_native), locale_codes[i]);
   }
 

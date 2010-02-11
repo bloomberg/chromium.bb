@@ -35,8 +35,12 @@ const char kLinkDoctorBaseURL[] =
     "http://linkhelp.clients.google.com/tbproxy/lh/fixurl";
 
 GURL AppendGoogleLocaleParam(const GURL& url) {
-  return AppendParam(url, "hl",
-                     g_browser_process->GetApplicationLocale());
+  // Google does not yet recognize 'nb' for Norwegian Bokmal, but it uses
+  // 'no' for that.
+  std::string locale = g_browser_process->GetApplicationLocale();
+  if (locale == "nb")
+    locale = "no";
+  return AppendParam(url, "hl", locale);
 }
 
 GURL AppendGoogleTLDParam(const GURL& url) {

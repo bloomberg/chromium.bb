@@ -54,14 +54,14 @@ bool IsLocaleSupportedByOS(const std::string& locale);
 
 // This method returns the display name of the locale code in |display_locale|.
 
-// For example, for |locale_code| = "en-US" and |display_locale| = "en",
-// it returns "English (United States)". To get the display name of
-// |locale_code| in the UI language of Chrome, |display_locale| can be
+// For example, for |locale| = "fr" and |display_locale| = "en",
+// it returns "French". To get the display name of
+// |locale| in the UI language of Chrome, |display_locale| can be
 // set to the return value of g_browser_process->GetApplicationLocale()
 // in the UI thread.
 // If |is_for_ui| is true, U+200F is appended so that it can be
 // rendered properly in a RTL Chrome.
-string16 GetDisplayNameForLocale(const std::string& locale_code,
+string16 GetDisplayNameForLocale(const std::string& locale,
                                  const std::string& display_locale,
                                  bool is_for_ui);
 
