@@ -2921,3 +2921,8 @@ BUG_TONY MAC : svg/overflow/overflow-on-outermost-svg-element-in-xhtml-defaults.
 
 // WebKit roll 54559 to 54585
 BUG_TONY : fast/events/multiline-link-arrow-navigation.html = TEXT
+
+// WebKit roll 54596:54648
+BUG35387 : platform/win/plugins/plugin-delayed-destroy.html = TIMEOUT
+BUG35387 : fast/dom/prototype-inheritance.html = TEXT
+
