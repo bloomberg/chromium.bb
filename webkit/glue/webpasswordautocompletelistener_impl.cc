@@ -7,20 +7,21 @@
 
 #include "webkit/glue/webpasswordautocompletelistener_impl.h"
 
+#include <vector>
+
 #include "base/string_util.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"
 
-using namespace WebKit;
+using WebKit::WebFrame;
+using WebKit::WebView;
 
 namespace webkit_glue {
 
 WebInputElementDelegate::WebInputElementDelegate() {
 }
 
-WebInputElementDelegate::WebInputElementDelegate(WebInputElement& element)
+WebInputElementDelegate::WebInputElementDelegate(const WebInputElement& element)
     : element_(element) {
 }
 
@@ -48,8 +49,8 @@ void WebInputElementDelegate::RefreshAutofillPopup(
     int default_suggestion_index) {
   WebView* webview = element_.frame()->view();
   if (webview)
-    webview->applyAutofillSuggestions(element_, suggestions,
-                                      default_suggestion_index);
+    webview->applyAutocompleteSuggestions(element_, suggestions,
+                                          default_suggestion_index);
 }
 
 

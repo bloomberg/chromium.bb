@@ -25,7 +25,7 @@ namespace webkit_glue {
 class WebInputElementDelegate {
  public:
   WebInputElementDelegate();
-  WebInputElementDelegate(WebInputElement& element);
+  WebInputElementDelegate(const WebInputElement& element);
   virtual ~WebInputElementDelegate();
 
   // These are virtual to support unit testing.
