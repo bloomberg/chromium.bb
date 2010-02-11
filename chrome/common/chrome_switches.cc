@@ -722,6 +722,8 @@ const char kEnableGView[]                   = "enable-gview";
 
 // Enable experimental Chrome-as-a-login-manager behavior.
 const char kLoginManager[]                  = "login-manager";
+// Enables to override the first login screen.
+const char kFirstLoginScreenName[]          = "first-login-screen-name";
 const char kSessionManagerPipe[]            = "session-manager-pipe";
 
 // Attempts to load libcros and validate it, then exits. A nonzero return code
