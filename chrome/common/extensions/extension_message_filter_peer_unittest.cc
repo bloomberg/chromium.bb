@@ -10,6 +10,7 @@
 #include "chrome/common/extensions/extension_message_filter_peer.h"
 #include "chrome/common/filter_policy.h"
 #include "ipc/ipc_message.h"
+#include "ipc/ipc_sync_message.h"
 #include "net/base/net_errors.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gmock/include/gmock/gmock.h"
@@ -17,6 +18,8 @@
 #include "webkit/glue/resource_loader_bridge.h"
 
 using testing::_;
+using testing::DoAll;
+using testing::Invoke;
 using testing::StrEq;
 using testing::Return;
 
@@ -29,9 +32,18 @@ static const char* const kExtensionUrl_2 =
 static const char* const kExtensionUrl_3 =
     "chrome-extension://some_id3/popup.css";
 
+void MessageDeleter(IPC::Message* message) {
+  delete static_cast<IPC::SyncMessage*>(message)->GetReplyDeserializer();
+  delete message;
+}
+
 class MockIpcMessageSender : public IPC::Message::Sender {
  public:
-  MockIpcMessageSender() {}
+  MockIpcMessageSender() {
+    ON_CALL(*this, Send(_))
+        .WillByDefault(DoAll(Invoke(MessageDeleter), Return(true)));
+  }
+
   virtual ~MockIpcMessageSender() {}
 
   MOCK_METHOD1(Send, bool(IPC::Message* message));

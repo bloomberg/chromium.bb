@@ -2323,35 +2323,6 @@
    fun:_ZN11MessageLoop10RunHandlerEv
 }
 {
-   bug_35367a
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN26ExtensionMessageFilterPeer15ReplaceMessagesEv
-   fun:_ZN26ExtensionMessageFilterPeer18OnCompletedRequestERK16URLRequestStatusRKSs
-   fun:_ZN64ExtensionMessageFilterPeerTest_OnCompletedRequestNoCatalogs_Test8TestBodyEv
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
-}
-{
-   bug_35367b
-   Memcheck:Leak
-   fun:_Znw*
-   fun:*ApplyMessageFilterPolicyTest28CreateNewResourceRequestInfoEv
-   fun:*ApplyMessageFilterPolicyTest5SetUpEv
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
-}
-{
    bug_35436
    Memcheck:Addr4
    fun:CERT_PKIXVerifyCert
