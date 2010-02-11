@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_NACL_PROCESS_HOST_H_
-#define CHROME_BROWSER_NACL_PROCESS_HOST_H_
+#ifndef CHROME_BROWSER_NACL_HOST_NACL_PROCESS_HOST_H_
+#define CHROME_BROWSER_NACL_HOST_NACL_PROCESS_HOST_H_
 
 #include "build/build_config.h"
 
@@ -79,4 +79,4 @@ class NaClProcessHost : public ChildProcessHost {
   DISALLOW_COPY_AND_ASSIGN(NaClProcessHost);
 };
 
-#endif  // CHROME_BROWSER_NACL_PROCESS_HOST_H_
+#endif  // CHROME_BROWSER_NACL_HOST_NACL_PROCESS_HOST_H_

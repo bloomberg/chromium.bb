@@ -4,7 +4,7 @@
 
 #include "build/build_config.h"
 
-#include "chrome/browser/nacl_process_host.h"
+#include "chrome/browser/nacl_host/nacl_process_host.h"
 
 #if defined(OS_POSIX)
 #include <fcntl.h>

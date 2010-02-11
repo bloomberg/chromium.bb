@@ -20,7 +20,7 @@
 #include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
-#include "chrome/browser/nacl_process_host.h"
+#include "chrome/browser/nacl_host/nacl_process_host.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/notifications/desktop_notification_service.h"
