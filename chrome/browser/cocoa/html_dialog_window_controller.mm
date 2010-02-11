@@ -200,8 +200,8 @@ void HtmlDialogWindowDelegateBridge::HandleKeyboardEvent(
 
   ChromeEventProcessingWindow* event_window =
       static_cast<ChromeEventProcessingWindow*>([controller_ window]);
-
-  [event_window redispatchEvent:event.os_event];
+  DCHECK([event_window isKindOfClass:[ChromeEventProcessingWindow class]]);
+  [event_window redispatchKeyEvent:event.os_event];
 }
 
 @implementation HtmlDialogWindowController (InternalAPI)
