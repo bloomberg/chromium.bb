@@ -53,29 +53,8 @@ class SyncEntity : public IdWrapper<sync_pb::SyncEntity> {
             (has_bookmarkdata() && bookmarkdata().bookmark_folder()));
   }
 
-  // Note: keep this consistent with GetModelType in syncable.cc!
   syncable::ModelType GetModelType() const {
-    DCHECK(!id().IsRoot());  // Root shouldn't ever go over the wire.
-
-    if (deleted())
-      return syncable::UNSPECIFIED;
-
-    if (specifics().HasExtension(sync_pb::bookmark) || has_bookmarkdata())
-      return syncable::BOOKMARKS;
-
-    if (specifics().HasExtension(sync_pb::preference))
-      return syncable::PREFERENCES;
-
-    // Loose check for server-created top-level folders that aren't
-    // bound to a particular model type.
-    if (!server_defined_unique_tag().empty() && IsFolder())
-      return syncable::TOP_LEVEL_FOLDER;
-
-    // This is an item of a datatype we can't understand. Maybe it's
-    // from the future?  Either we mis-encoded the object, or the
-    // server sent us entries it shouldn't have.
-    NOTREACHED() << "Unknown datatype in sync proto.";
-    return syncable::UNSPECIFIED;
+    return syncable::GetModelType(*this);
   }
 };
 

@@ -26,6 +26,7 @@ using sync_pb::CommitResponse_EntryResponse;
 using sync_pb::GetUpdatesMessage;
 using sync_pb::SyncEntity;
 using syncable::DirectoryManager;
+using syncable::ModelType;
 using syncable::ScopedDirLookup;
 using syncable::WriteTransaction;
 
@@ -48,7 +49,8 @@ MockConnectionManager::MockConnectionManager(DirectoryManager* dirmgr,
       fail_non_periodic_get_updates_(false),
       client_command_(NULL),
       next_position_in_parent_(2),
-      use_legacy_bookmarks_protocol_(false) {
+      use_legacy_bookmarks_protocol_(false),
+      num_get_updates_requests_(0) {
     server_reachable_ = true;
 };
 
@@ -275,10 +277,38 @@ void MockConnectionManager::ProcessGetUpdates(ClientToServerMessage* csm,
   CHECK(csm->has_get_updates());
   ASSERT_EQ(csm->message_contents(), ClientToServerMessage::GET_UPDATES);
   const GetUpdatesMessage& gu = csm->get_updates();
+  num_get_updates_requests_++;
   EXPECT_TRUE(gu.has_from_timestamp());
   if (fail_non_periodic_get_updates_) {
     EXPECT_EQ(sync_pb::GetUpdatesCallerInfo::PERIODIC,
               gu.caller_info().source());
+  }
+
+  // Verify that the GetUpdates filter sent by the Syncer matches the test
+  // expectation.
+  for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
+    if (i == syncable::UNSPECIFIED || i == syncable::TOP_LEVEL_FOLDER) {
+      DCHECK(!expected_filter_[i]) << "Protocol doesn't support this type.";
+      continue;
+    }
+    ModelType model_type = syncable::ModelTypeFromInt(i);
+    EXPECT_EQ(expected_filter_[i],
+        IsModelTypePresentInSpecifics(gu.requested_types(), model_type))
+        << "Syncer requested_types differs from test expectation.";
+  }
+
+  // Verify that the items we're about to send back to the client are of
+  // the types requested by the client.  If this fails, it probably indicates
+  // a test bug.
+  EXPECT_TRUE(gu.fetch_folders());
+  EXPECT_TRUE(gu.has_requested_types());
+  for (int i = 0; i < updates_.entries_size(); ++i) {
+    if (!updates_.entries(i).deleted()) {
+      ModelType entry_type = syncable::GetModelType(updates_.entries(i));
+      EXPECT_TRUE(
+          IsModelTypePresentInSpecifics(gu.requested_types(), entry_type))
+          << "Syncer did not request updates being provided by the test.";
+    }
   }
 
   // TODO(sync): filter results dependant on timestamp? or check limits?
@@ -437,4 +467,15 @@ void MockConnectionManager::StopFailingWithAuthInvalid(
   fail_with_auth_invalid_ = false;
   if (visitor)
     visitor->OnOverrideComplete();
+}
+
+bool MockConnectionManager::IsModelTypePresentInSpecifics(
+    const sync_pb::EntitySpecifics& filter, syncable::ModelType value) {
+  // This implementation is a little contorted; it's done this way
+  // to avoid having to switch on the ModelType.  We're basically doing
+  // the protobuf equivalent of ((value & filter) == filter).
+  sync_pb::EntitySpecifics value_filter;
+  syncable::AddDefaultExtensionValue(value, &value_filter);
+  value_filter.MergeFrom(filter);
+  return value_filter.SerializeAsString() == filter.SerializeAsString();
 }

@@ -103,6 +103,7 @@ class SyncSession {
   }
 
   const std::vector<ModelSafeWorker*>& workers() const { return workers_; }
+  const ModelSafeRoutingInfo& routing_info() const { return routing_info_; }
 
  private:
   // Extend the encapsulation boundary to utilities for internal member
@@ -134,6 +135,11 @@ class SyncSession {
 
   // The set of active ModelSafeWorkers for the duration of this session.
   const std::vector<ModelSafeWorker*> workers_;
+
+  // The routing info for the duration of this session, dictating which
+  // datatypes should be synced and which workers should be used when working
+  // on those datatypes.
+  const ModelSafeRoutingInfo routing_info_;
 
   // Used to fail read/write operations on this SyncSession that don't obey the
   // currently active ModelSafeWorker contract.

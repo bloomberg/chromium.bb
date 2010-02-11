@@ -7,16 +7,15 @@
 #ifndef CHROME_TEST_SYNC_ENGINE_MOCK_SERVER_CONNECTION_H_
 #define CHROME_TEST_SYNC_ENGINE_MOCK_SERVER_CONNECTION_H_
 
+#include <bitset>
 #include <string>
 #include <vector>
 
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/protocol/sync.pb.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/closure.h"
-
-using std::string;
-using std::vector;
 
 namespace syncable {
 class DirectoryManager;
@@ -136,8 +135,10 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
 
   sync_pb::ClientCommand* GetNextClientCommand();
 
-  const vector<syncable::Id>& committed_ids() const { return committed_ids_; }
-  const vector<sync_pb::CommitMessage*>& commit_messages() const {
+  const std::vector<syncable::Id>& committed_ids() const {
+    return committed_ids_;
+  }
+  const std::vector<sync_pb::CommitMessage*>& commit_messages() const {
     return commit_messages_;
   }
   // Retrieve the last sent commit message.
@@ -155,6 +156,23 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
 
   void set_use_legacy_bookmarks_protocol(bool value) {
     use_legacy_bookmarks_protocol_ = value;
+  }
+
+  // Retrieve the number of GetUpdates requests that the mock server has
+  // seen since the last time this function was called.  Can be used to
+  // verify that a GetUpdates actually did or did not happen after running
+  // the syncer.
+  int GetAndClearNumGetUpdatesRequests() {
+    int result = num_get_updates_requests_;
+    num_get_updates_requests_ = 0;
+    return result;
+  }
+
+  // Expect that GetUpdates will request exactly the types indicated in
+  // the bitset.
+  void ExpectGetUpdatesRequestTypes(
+      std::bitset<syncable::MODEL_TYPE_COUNT> expected_filter) {
+    expected_filter_ = expected_filter;
   }
 
  private:
@@ -189,15 +207,21 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
     return next_position_in_parent_--;
   }
 
+  // Determine whether an EntitySpecifics filter (like that sent in
+  // GetUpdates.requested_types) indicates that a particular ModelType
+  // should be included.
+  bool IsModelTypePresentInSpecifics(const sync_pb::EntitySpecifics& filter,
+      syncable::ModelType value);
+
   // All IDs that have been committed.
-  vector<syncable::Id> committed_ids_;
+  std::vector<syncable::Id> committed_ids_;
 
   // Control of when/if we return conflicts.
   bool conflict_all_commits_;
   int conflict_n_commits_;
 
   // Commit messages we've sent
-  vector<sync_pb::CommitMessage*> commit_messages_;
+  std::vector<sync_pb::CommitMessage*> commit_messages_;
 
   // The next id the mock will return to a commit.
   int next_new_id_;
@@ -248,6 +272,10 @@ class MockConnectionManager : public browser_sync::ServerConnectionManager {
   // If this option is set to true, then the MockConnectionManager will
   // use the older sync_pb::SyncEntity_BookmarkData-style protocol.
   bool use_legacy_bookmarks_protocol_;
+
+  std::bitset<syncable::MODEL_TYPE_COUNT> expected_filter_;
+
+  int num_get_updates_requests_;
 
   DISALLOW_COPY_AND_ASSIGN(MockConnectionManager);
 };

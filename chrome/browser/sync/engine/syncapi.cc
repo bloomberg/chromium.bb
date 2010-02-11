@@ -568,17 +568,9 @@ bool WriteNode::InitByClientTagLookup(const std::string& tag) {
 void WriteNode::PutModelType(syncable::ModelType model_type) {
   // Set an empty specifics of the appropriate datatype.  The presence
   // of the specific extension will identify the model type.
-  switch (model_type) {
-    case syncable::BOOKMARKS:
-      PutBookmarkSpecificsAndMarkForSyncing(
-          sync_pb::BookmarkSpecifics::default_instance());
-      break;
-    case syncable::PREFERENCES:
-      PutPreferenceSpecificsAndMarkForSyncing(
-          sync_pb::PreferenceSpecifics::default_instance());
-    default:
-      NOTREACHED();
-  }
+  sync_pb::EntitySpecifics specifics;
+  syncable::AddDefaultExtensionValue(model_type, &specifics);
+  PutSpecificsAndMarkForSyncing(specifics);
   DCHECK(GetModelType() == model_type);
 }
 

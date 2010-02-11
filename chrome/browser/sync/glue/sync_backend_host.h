@@ -137,6 +137,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     if (!core_thread_.Start())
       return;
     registrar_.workers[GROUP_UI] = new UIModelWorker(frontend_loop_);
+    registrar_.routing_info[syncable::BOOKMARKS] = GROUP_PASSIVE;
 
     core_thread_.message_loop()->PostTask(FROM_HERE,
         NewRunnableMethod(core_.get(),

@@ -838,19 +838,4 @@ syncable::Id SyncerUtil::ComputePrevIdFromServerPosition(
   return closest_sibling;
 }
 
-syncable::ModelType SyncerUtil::GetModelType(
-    const SyncEntity& entry) {
-
-  const bool is_bookmark =
-      (entry.has_specifics() &&
-       entry.specifics().HasExtension(sync_pb::bookmark)) ||
-       entry.has_bookmarkdata();
-
-  if (is_bookmark) {
-    return syncable::BOOKMARKS;
-  }
-
-  return syncable::UNSPECIFIED;
-}
-
 }  // namespace browser_sync

@@ -129,8 +129,12 @@ class SyncerTest : public testing::Test,
 
   virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
     // We're just testing the sync engine here, so we shunt everything to
-    // the SyncerThread.
-    (*out)[syncable::BOOKMARKS] = GROUP_PASSIVE;
+    // the SyncerThread.  Datatypes which aren't enabled aren't in the map.
+    for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
+      if (enabled_datatypes_[i]) {
+        (*out)[syncable::ModelTypeFromInt(i)] = GROUP_PASSIVE;
+      }
+    }
   }
 
   void HandleSyncerEvent(SyncerEvent event) {
@@ -168,6 +172,7 @@ class SyncerTest : public testing::Test,
 
     mock_server_.reset(
         new MockConnectionManager(syncdb_.manager(), syncdb_.name()));
+    EnableDatatype(syncable::BOOKMARKS);
     worker_ = new ModelSafeWorker();
     context_.reset(new SyncSessionContext(mock_server_.get(), syncdb_.manager(),
        this));
@@ -380,6 +385,16 @@ class SyncerTest : public testing::Test,
     return entry.Get(META_HANDLE);
   }
 
+  void EnableDatatype(syncable::ModelType model_type) {
+    enabled_datatypes_[model_type] = true;
+    mock_server_->ExpectGetUpdatesRequestTypes(enabled_datatypes_);
+  }
+
+  void DisableDatatype(syncable::ModelType model_type) {
+    enabled_datatypes_[model_type] = false;
+    mock_server_->ExpectGetUpdatesRequestTypes(enabled_datatypes_);
+  }
+
   // Some ids to aid tests. Only the root one's value is specific. The rest
   // are named for test clarity.
   // TODO(chron): Get rid of these inbuilt IDs. They only make it
@@ -402,6 +417,8 @@ class SyncerTest : public testing::Test,
   base::TimeDelta last_short_poll_interval_received_;
   base::TimeDelta last_long_poll_interval_received_;
   scoped_refptr<ModelSafeWorker> worker_;
+
+  std::bitset<syncable::MODEL_TYPE_COUNT> enabled_datatypes_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncerTest);
 };
@@ -713,6 +730,7 @@ TEST_F(SyncerTest, TestCommitListOrderingWithNesting) {
       ASSERT_TRUE(parent.good());
       parent.Put(syncable::IS_UNSYNCED, true);
       parent.Put(syncable::IS_DIR, true);
+      parent.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
       parent.Put(syncable::IS_DEL, true);
       parent.Put(syncable::ID, ids_.FromNumber(103));
       parent.Put(syncable::BASE_VERSION, 1);
@@ -722,6 +740,7 @@ TEST_F(SyncerTest, TestCommitListOrderingWithNesting) {
       ASSERT_TRUE(child.good());
       child.Put(syncable::IS_UNSYNCED, true);
       child.Put(syncable::IS_DIR, true);
+      child.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
       child.Put(syncable::IS_DEL, true);
       child.Put(syncable::ID, ids_.FromNumber(104));
       child.Put(syncable::BASE_VERSION, 1);
@@ -733,6 +752,7 @@ TEST_F(SyncerTest, TestCommitListOrderingWithNesting) {
       grandchild.Put(syncable::ID, ids_.FromNumber(105));
       grandchild.Put(syncable::IS_DEL, true);
       grandchild.Put(syncable::IS_DIR, false);
+      grandchild.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
       grandchild.Put(syncable::BASE_VERSION, 1);
       grandchild.Put(syncable::MTIME, now_minus_2h);
     }
@@ -838,10 +858,13 @@ TEST_F(SyncerTest, TestCommitListOrderingCounterexample) {
     ASSERT_TRUE(child1.good());
     child1.Put(syncable::IS_UNSYNCED, true);
     child1.Put(syncable::ID, child_id_);
+    child1.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
     MutableEntry child2(&wtrans, syncable::CREATE, parent_id_, "2");
     ASSERT_TRUE(child2.good());
     child2.Put(syncable::IS_UNSYNCED, true);
+    child2.Put(syncable::SPECIFICS, DefaultBookmarkSpecifics());
     child2.Put(syncable::ID, child2_id);
+
     parent.Put(syncable::BASE_VERSION, 1);
     child1.Put(syncable::BASE_VERSION, 1);
     child2.Put(syncable::BASE_VERSION, 1);
@@ -3366,6 +3389,7 @@ TEST_F(SyncerTest, UpdateFlipsTheFolderBit) {
     local_deleted.Put(IS_DEL, true);
     local_deleted.Put(IS_DIR, true);
     local_deleted.Put(IS_UNSYNCED, true);
+    local_deleted.Put(SPECIFICS, DefaultBookmarkSpecifics());
   }
 
   // Server update: entry-type object (not a container), revision 10.
@@ -4116,6 +4140,36 @@ TEST_F(SyncerTest, UniqueServerTagUpdates) {
     ASSERT_TRUE(hurdle.Get(UNIQUE_SERVER_TAG).empty());
     ASSERT_TRUE(hurdle.Get(NON_UNIQUE_NAME) == "bob");
   }
+}
+
+TEST_F(SyncerTest, GetUpdatesSetsRequestedTypes) {
+  // The expectations of this test happen in the MockConnectionManager's
+  // GetUpdates handler.  EnableDatatype sets the expectation value from our
+  // set of enabled/disabled datatypes.
+  EnableDatatype(syncable::BOOKMARKS);
+  syncer_->SyncShare(this);
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+
+  EnableDatatype(syncable::AUTOFILL);
+  syncer_->SyncShare(this);
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+
+  EnableDatatype(syncable::PREFERENCES);
+  syncer_->SyncShare(this);
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+
+  DisableDatatype(syncable::BOOKMARKS);
+  syncer_->SyncShare(this);
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+
+  DisableDatatype(syncable::AUTOFILL);
+  syncer_->SyncShare(this);
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
+
+  DisableDatatype(syncable::PREFERENCES);
+  EnableDatatype(syncable::AUTOFILL);
+  syncer_->SyncShare(this);
+  EXPECT_EQ(1, mock_server_->GetAndClearNumGetUpdatesRequests());
 }
 
 class SyncerPositionUpdateTest : public SyncerTest {

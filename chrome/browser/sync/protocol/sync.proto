@@ -282,6 +282,20 @@ message GetUpdatesMessage {
 
   // Indicates the reason for the GetUpdatesMessage.
   optional GetUpdatesCallerInfo caller_info = 2;
+
+  // Indicates whether related folders should be fetched.
+  optional bool fetch_folders = 3 [default = true];
+
+  // The presence of an individual EntitySpecifics extension indicates that the
+  // client requests sync object types associated with that extension.  This
+  // determination depends only on the presence of the extension field, not its
+  // contents -- thus clients should send empty extension messages.  For 
+  // backwards compatibility only bookmark objects will be sent to the client 
+  // should requested_types not be present.
+  //
+  // requested_types may contain multiple EntitySpecifics extensions -- in this
+  // event, the server will return items of all the indicated types.
+  optional EntitySpecifics requested_types = 4;
 };
 
 message AuthenticateMessage {

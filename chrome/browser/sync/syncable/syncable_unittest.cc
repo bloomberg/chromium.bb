@@ -12,13 +12,6 @@
 #include <limits>
 #include <string>
 
-// TODO(ncarter): Winnow down the OS-specific includes from the test
-// file.
-#if defined(OS_WIN)
-#include <tchar.h>
-#include <process.h>
-#endif  // defined(OS_WIN)
-
 #if !defined(OS_WIN)
 #define MAX_PATH PATH_MAX
 #include <ostream>
@@ -35,6 +28,7 @@
 #include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
+#include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/syncable/directory_backing_store.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
@@ -863,6 +857,88 @@ TEST_F(SyncableDirectoryTest, TestSaveChangesFailure) {
      ASSERT_TRUE(kids.good());
      EXPECT_TRUE(kids.GetKernelCopy().is_dirty());
      EXPECT_TRUE(aguilera.is_dirty());
+  }
+}
+
+// Create items of each model type, and check that GetModelType and
+// GetServerModelType return the right value.
+TEST_F(SyncableDirectoryTest, GetModelType) {
+  TestIdFactory id_factory;
+  for (int i = 0; i < MODEL_TYPE_COUNT; ++i) {
+    ModelType datatype = ModelTypeFromInt(i);
+    SCOPED_TRACE(testing::Message("Testing model type ") << datatype);
+    switch (datatype) {
+      case UNSPECIFIED:
+      case TOP_LEVEL_FOLDER:
+        continue;  // Datatype isn't a function of Specifics.
+      default:
+        break;
+    }
+    sync_pb::EntitySpecifics specifics;
+    AddDefaultExtensionValue(datatype, &specifics);
+
+    WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
+
+    MutableEntry folder(&trans, CREATE, trans.root_id(), "Folder");
+    ASSERT_TRUE(folder.good());
+    folder.Put(ID, id_factory.NewServerId());
+    folder.Put(SPECIFICS, specifics);
+    folder.Put(BASE_VERSION, 1);
+    folder.Put(IS_DIR, true);
+    folder.Put(IS_DEL, false);
+    ASSERT_EQ(datatype, folder.GetModelType());
+
+    MutableEntry item(&trans, CREATE, trans.root_id(), "Item");
+    ASSERT_TRUE(item.good());
+    item.Put(ID, id_factory.NewServerId());
+    item.Put(SPECIFICS, specifics);
+    item.Put(BASE_VERSION, 1);
+    item.Put(IS_DIR, false);
+    item.Put(IS_DEL, false);
+    ASSERT_EQ(datatype, item.GetModelType());
+
+    // It's critical that deletion records retain their datatype, so that
+    // they can be dispatched to the appropriate change processor.
+    MutableEntry deleted_item(&trans, CREATE, trans.root_id(), "Deleted Item");
+    ASSERT_TRUE(item.good());
+    deleted_item.Put(ID, id_factory.NewServerId());
+    deleted_item.Put(SPECIFICS, specifics);
+    deleted_item.Put(BASE_VERSION, 1);
+    deleted_item.Put(IS_DIR, false);
+    deleted_item.Put(IS_DEL, true);
+    ASSERT_EQ(datatype, deleted_item.GetModelType());
+
+    MutableEntry server_folder(&trans, CREATE_NEW_UPDATE_ITEM,
+        id_factory.NewServerId());
+    ASSERT_TRUE(server_folder.good());
+    server_folder.Put(SERVER_SPECIFICS, specifics);
+    server_folder.Put(BASE_VERSION, 1);
+    server_folder.Put(SERVER_IS_DIR, true);
+    server_folder.Put(SERVER_IS_DEL, false);
+    ASSERT_EQ(datatype, server_folder.GetServerModelType());
+
+    MutableEntry server_item(&trans, CREATE_NEW_UPDATE_ITEM,
+        id_factory.NewServerId());
+    ASSERT_TRUE(server_item.good());
+    server_item.Put(SERVER_SPECIFICS, specifics);
+    server_item.Put(BASE_VERSION, 1);
+    server_item.Put(SERVER_IS_DIR, false);
+    server_item.Put(SERVER_IS_DEL, false);
+    ASSERT_EQ(datatype, server_item.GetServerModelType());
+
+    browser_sync::SyncEntity folder_entity;
+    folder_entity.set_id(id_factory.NewServerId());
+    folder_entity.set_deleted(false);
+    folder_entity.set_folder(true);
+    folder_entity.mutable_specifics()->CopyFrom(specifics);
+    ASSERT_EQ(datatype, folder_entity.GetModelType());
+
+    browser_sync::SyncEntity item_entity;
+    item_entity.set_id(id_factory.NewServerId());
+    item_entity.set_deleted(false);
+    item_entity.set_folder(false);
+    item_entity.mutable_specifics()->CopyFrom(specifics);
+    ASSERT_EQ(datatype, item_entity.GetModelType());
   }
 }
 

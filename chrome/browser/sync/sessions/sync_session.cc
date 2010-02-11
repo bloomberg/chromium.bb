@@ -15,9 +15,10 @@ SyncSession::SyncSession(SyncSessionContext* context, Delegate* delegate)
       delegate_(delegate),
       auth_failure_occurred_(false) {
 
-  std::vector<ModelSafeWorker*>* s =
-      const_cast<std::vector<ModelSafeWorker*>* >(&workers_);
-  context_->registrar()->GetWorkers(s);
+  context_->registrar()->GetWorkers(
+      const_cast<std::vector<ModelSafeWorker*>*>(&workers_));
+  context_->registrar()->GetModelSafeRoutingInfo(
+      const_cast<ModelSafeRoutingInfo*>(&routing_info_));
 
   // TODO(tim): Use ModelSafeRoutingInfo to silo parts of the session status by
   // ModelSafeGroup;

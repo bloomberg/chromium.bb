@@ -35,6 +35,7 @@
 #include "base/time.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
+#include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
@@ -1037,6 +1038,10 @@ void Entry::DeleteAllExtendedAttributes(WriteTransaction *trans) {
 syncable::ModelType Entry::GetServerModelType() const {
   if (Get(SERVER_SPECIFICS).HasExtension(sync_pb::bookmark))
     return BOOKMARKS;
+  if (Get(SERVER_SPECIFICS).HasExtension(sync_pb::preference))
+    return PREFERENCES;
+  if (Get(SERVER_SPECIFICS).HasExtension(sync_pb::autofill))
+    return AUTOFILL;
   if (IsRoot())
     return TOP_LEVEL_FOLDER;
   // Loose check for server-created top-level folders that aren't
@@ -1062,6 +1067,8 @@ syncable::ModelType Entry::GetModelType() const {
     return BOOKMARKS;
   if (Get(SPECIFICS).HasExtension(sync_pb::preference))
     return PREFERENCES;
+  if (Get(SPECIFICS).HasExtension(sync_pb::autofill))
+    return AUTOFILL;
   if (IsRoot())
     return TOP_LEVEL_FOLDER;
   // Loose check for server-created top-level folders that aren't

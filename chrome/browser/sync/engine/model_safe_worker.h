@@ -74,7 +74,9 @@ class ModelSafeWorkerRegistrar {
   // Get the current list of active ModelSafeWorkers.  Should be threadsafe.
   virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) = 0;
 
-  // Get the current routing information for all model types.
+  // Get the current routing information for all enabled model types.
+  // If a model type is not enabled (that is, if the syncer should not
+  // be trying to sync it), it is not in this map.
   virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) = 0;
  protected:
   virtual ~ModelSafeWorkerRegistrar() {}

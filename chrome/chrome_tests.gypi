@@ -1453,6 +1453,7 @@
         'browser/sync/engine/all_status_unittest.cc',
         'browser/sync/engine/apply_updates_command_unittest.cc',
         'browser/sync/engine/auth_watcher_unittest.cc',
+        'browser/sync/engine/download_updates_command_unittest.cc',
         'browser/sync/engine/net/gaia_authenticator_unittest.cc',
         'browser/sync/engine/process_commit_response_command_unittest.cc',
         'browser/sync/engine/syncapi_unittest.cc',

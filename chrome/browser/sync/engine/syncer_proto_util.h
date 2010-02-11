@@ -8,6 +8,7 @@
 #include <string>
 
 #include "chrome/browser/sync/syncable/blob.h"
+#include "chrome/browser/sync/syncable/model_type.h"
 #include "chrome/browser/sync/util/sync_types.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
@@ -20,6 +21,7 @@ class SyncName;
 
 namespace sync_pb {
 class ClientToServerResponse;
+class EntitySpecifics;
 }  // namespace sync_pb
 
 namespace browser_sync {
@@ -69,6 +71,12 @@ class SyncerProtoUtil {
   // Extract the name field from a commit entry response.
   static const std::string& NameFromCommitEntryResponse(
       const CommitResponse_EntryResponse& entry);
+
+  // EntitySpecifics is used as a filter for the GetUpdates message to tell
+  // the server which datatypes to send back.  This adds a datatype so that
+  // it's included in the filter.
+  static void AddToEntitySpecificDatatypesFilter(syncable::ModelType datatype,
+      sync_pb::EntitySpecifics* filter);
 
  private:
   SyncerProtoUtil() {}

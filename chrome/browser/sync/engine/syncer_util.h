@@ -152,8 +152,6 @@ class SyncerUtil {
   // if they match.  For an up-to-date item, this should be the case.
   static bool ServerAndLocalOrdersMatch(syncable::Entry* entry);
 
-  static syncable::ModelType GetModelType(const SyncEntity& entry);
-
  private:
   DISALLOW_IMPLICIT_CONSTRUCTORS(SyncerUtil);
 };

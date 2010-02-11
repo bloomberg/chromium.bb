@@ -11,6 +11,11 @@
 
 #include "base/logging.h"
 
+namespace sync_pb {
+class EntitySpecifics;
+class SyncEntity;
+}
+
 namespace syncable {
 
 enum ModelType {
@@ -22,6 +27,7 @@ enum ModelType {
                      // datatypes (e.g. the "Google Chrome" folder).
   BOOKMARKS,         // A bookmark folder or a bookmark URL object.
   PREFERENCES,       // A preference folder or a preference object.
+  AUTOFILL,          // An autofill folder or an autofill object.
   MODEL_TYPE_COUNT,
 };
 
@@ -30,6 +36,15 @@ inline ModelType ModelTypeFromInt(int i) {
   DCHECK_LT(i, MODEL_TYPE_COUNT);
   return static_cast<ModelType>(i);
 }
+
+void AddDefaultExtensionValue(syncable::ModelType datatype,
+                              sync_pb::EntitySpecifics* specifics);
+
+// Extract the model type of a SyncEntity protocol buffer.  ModelType is a
+// local concept: the enum is not in the protocol.  The SyncEntity's ModelType
+// is inferred from the presence of particular datatype extensions in the
+// entity specifics.
+ModelType GetModelType(const sync_pb::SyncEntity& sync_entity);
 
 }  // namespace syncable
 

@@ -837,6 +837,8 @@
       'sources': [
         '<(protoc_out_dir)/chrome/browser/sync/protocol/sync.pb.cc',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/sync.pb.h',
+        '<(protoc_out_dir)/chrome/browser/sync/protocol/autofill_specifics.pb.cc',
+        '<(protoc_out_dir)/chrome/browser/sync/protocol/autofill_specifics.pb.h',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/bookmark_specifics.pb.cc',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/bookmark_specifics.pb.h',
         '<(protoc_out_dir)/chrome/browser/sync/protocol/preference_specifics.pb.cc',
@@ -917,6 +919,7 @@
         'browser/sync/syncable/directory_event.h',
         'browser/sync/syncable/directory_manager.cc',
         'browser/sync/syncable/directory_manager.h',
+        'browser/sync/syncable/model_type.cc',
         'browser/sync/syncable/model_type.h',
         'browser/sync/syncable/path_name_cmp.h',
         'browser/sync/syncable/syncable-inl.h',

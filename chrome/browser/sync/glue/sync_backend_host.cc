@@ -31,12 +31,6 @@ SyncBackendHost::SyncBackendHost(SyncFrontend* frontend,
       sync_data_folder_path_(profile_path.Append(kSyncDataFolderName)),
       last_auth_error_(AuthError::None()) {
 
-  // Init our registrar state.
-  for (int i = 0; i < syncable::MODEL_TYPE_COUNT; i++) {
-    syncable::ModelType t(syncable::ModelTypeFromInt(i));
-    registrar_.routing_info[t] = GROUP_PASSIVE;  // Init to syncing 0 types.
-  }
-
   core_ = new Core(this);
 }
 
@@ -61,6 +55,12 @@ void SyncBackendHost::Initialize(
   // when a new type is synced as the worker may already exist and you just
   // need to update routing_info_.
   registrar_.workers[GROUP_UI] = new UIModelWorker(frontend_loop_);
+
+  // Any datatypes that we want the syncer to pull down must
+  // be in the routing_info map.  We set them to group passive, meaning that
+  // updates will be applied, but not dispatched to the UI thread yet.
+  // TODO(ncarter): Wire this up to some external control.
+  registrar_.routing_info[syncable::BOOKMARKS] = GROUP_PASSIVE;
 
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoInitialize,

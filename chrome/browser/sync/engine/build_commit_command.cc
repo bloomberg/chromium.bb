@@ -20,9 +20,11 @@ using std::set;
 using std::string;
 using std::vector;
 using syncable::ExtendedAttribute;
+using syncable::IS_DEL;
 using syncable::Id;
 using syncable::MutableEntry;
 using syncable::SPECIFICS;
+using syncable::UNSPECIFIED;
 
 namespace browser_sync {
 
@@ -96,6 +98,9 @@ void BuildCommitCommand::ExecuteImpl(SyncSession* session) {
     // This is the only change we make to the entry in this function.
     meta_entry.Put(syncable::SYNCING, true);
 
+    DCHECK(0 != session->routing_info().count(meta_entry.GetModelType()))
+        << "Committing change to datatype that's not actively enabled.";
+
     string name = meta_entry.Get(syncable::NON_UNIQUE_NAME);
     CHECK(!name.empty());  // Make sure this isn't an update.
     sync_entry->set_name(name);
@@ -159,18 +164,21 @@ void BuildCommitCommand::ExecuteImpl(SyncSession* session) {
     }
 
     // Deletion is final on the server, let's move things and then delete them.
-    if (meta_entry.Get(syncable::IS_DEL)) {
+    if (meta_entry.Get(IS_DEL)) {
       sync_entry->set_deleted(true);
-    } else if (meta_entry.Get(SPECIFICS).HasExtension(sync_pb::bookmark)) {
-      // Common data in both new and old protocol.
-      const Id& prev_id = meta_entry.Get(syncable::PREV_ID);
-      string prev_string = prev_id.IsRoot() ? string() : prev_id.GetServerId();
-      sync_entry->set_insert_after_item_id(prev_string);
+    } else {
+      if (meta_entry.Get(SPECIFICS).HasExtension(sync_pb::bookmark)) {
+        // Common data in both new and old protocol.
+        const Id& prev_id = meta_entry.Get(syncable::PREV_ID);
+        string prev_id_string =
+            prev_id.IsRoot() ? string() : prev_id.GetServerId();
+        sync_entry->set_insert_after_item_id(prev_id_string);
 
-      // TODO(ncarter): In practice we won't want to send this data twice
-      // over the wire; instead, when deployed servers are able to accept
-      // the new-style scheme, we should abandon the old way.
-      SetOldStyleBookmarkData(&meta_entry, sync_entry);
+        // TODO(ncarter): In practice we won't want to send this data twice
+        // over the wire; instead, when deployed servers are able to accept
+        // the new-style scheme, we should abandon the old way.
+        SetOldStyleBookmarkData(&meta_entry, sync_entry);
+      }
       SetEntrySpecifics(&meta_entry, sync_entry);
     }
   }

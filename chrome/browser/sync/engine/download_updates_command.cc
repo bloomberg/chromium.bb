@@ -42,6 +42,15 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
   LOG(INFO) << "Getting updates from ts " << dir->last_sync_timestamp();
   get_updates->set_from_timestamp(dir->last_sync_timestamp());
 
+  // We want folders for our associated types, always.  If we were to set
+  // this to false, the server would send just the non-container items
+  // (e.g. Bookmark URLs but not their containing folders).
+  get_updates->set_fetch_folders(true);
+
+  // Set the requested_types protobuf field so that we fetch all enabled types.
+  SetRequestedTypes(session->routing_info(),
+                    get_updates->mutable_requested_types());
+
   // Set GetUpdatesMessage.GetUpdatesCallerInfo information.
   get_updates->mutable_caller_info()->set_source(session->TestAndSetSource());
   get_updates->mutable_caller_info()->set_notifications_enabled(
@@ -60,6 +69,22 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
     return;
   }
   status->mutable_updates_response()->CopyFrom(update_response);
+}
+
+void DownloadUpdatesCommand::SetRequestedTypes(
+    const ModelSafeRoutingInfo& routing_info,
+    sync_pb::EntitySpecifics* types) {
+  // The datatypes which should be synced are dictated by the value of the
+  // ModelSafeRoutingInfo.  If a datatype is in the routing info map, it
+  // should be synced (even if it's GROUP_PASSIVE).
+  int requested_type_count = 0;
+  for (ModelSafeRoutingInfo::const_iterator i = routing_info.begin();
+       i != routing_info.end();
+       ++i) {
+    requested_type_count++;
+    syncable::AddDefaultExtensionValue(i->first, types);
+  }
+  DCHECK_LT(0, requested_type_count) << "Doing GetUpdates with empty filter.";
 }
 
 }  // namespace browser_sync

@@ -6,7 +6,12 @@
 #define CHROME_BROWSER_SYNC_ENGINE_DOWNLOAD_UPDATES_COMMAND_H_
 
 #include "base/basictypes.h"
+#include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/syncer_command.h"
+
+namespace sync_pb {
+class EntitySpecifics;
+}
 
 namespace browser_sync {
 
@@ -18,6 +23,9 @@ class DownloadUpdatesCommand : public SyncerCommand {
 
   // SyncerCommand implementation.
   virtual void ExecuteImpl(sessions::SyncSession* session);
+
+  void SetRequestedTypes(const ModelSafeRoutingInfo& routing_info,
+                         sync_pb::EntitySpecifics* types);
 
  private:
   DISALLOW_COPY_AND_ASSIGN(DownloadUpdatesCommand);
