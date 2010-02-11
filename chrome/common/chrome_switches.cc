@@ -157,6 +157,9 @@ const char kDisableSync[]                   = "disable-sync";
 // Disable syncing of bookmarks.
 const char kDisableSyncBookmarks[]          = "disable-sync-bookmarks";
 
+// Disable syncing of preferences.
+const char kDisableSyncPreferences[]        = "disable-sync-preferences";
+
 // Enables the backend service for web resources, used in the new tab page for
 // loading tips and recommendations from a JSON feed.
 const char kDisableWebResources[]           = "disable-web-resources";
@@ -276,6 +279,9 @@ const char kEnableSync[]                    = "enable-sync";
 
 // Enable syncing browser bookmarks.
 const char kEnableSyncBookmarks[]           = "enable-sync-bookmarks";
+
+// Enable syncing browser preferences.
+const char kEnableSyncPreferences[]         = "enable-sync-preferences";
 
 // Whether the multiple profiles feature based on the user-data-dir flag is
 // enabled or not.

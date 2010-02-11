@@ -1682,6 +1682,8 @@
         'browser/sync/glue/model_associator.h',
         'browser/sync/glue/preference_change_processor.cc',
         'browser/sync/glue/preference_change_processor.h',
+        'browser/sync/glue/preference_data_type_controller.cc',
+        'browser/sync/glue/preference_data_type_controller.h',
         'browser/sync/glue/preference_model_associator.cc',
         'browser/sync/glue/preference_model_associator.h',
         'browser/sync/glue/sync_backend_host.cc',

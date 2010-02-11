@@ -18,11 +18,15 @@ class ChangeProcessor;
 // Factory class for all profile sync related classes.
 class ProfileSyncFactory {
  public:
-  struct BookmarkComponents {
+  // The various factory methods for the data type model associators
+  // and change processors all return this struct.  This is needed
+  // because the change processors typically require a type-specific
+  // model associator at construction time.
+  struct SyncComponents {
     browser_sync::AssociatorInterface* model_associator;
     browser_sync::ChangeProcessor* change_processor;
-    BookmarkComponents(browser_sync::AssociatorInterface* ma,
-                       browser_sync::ChangeProcessor* cp)
+    SyncComponents(browser_sync::AssociatorInterface* ma,
+                   browser_sync::ChangeProcessor* cp)
         : model_associator(ma), change_processor(cp) {}
   };
 
@@ -34,11 +38,15 @@ class ProfileSyncFactory {
   virtual ProfileSyncService* CreateProfileSyncService() = 0;
 
   // Instantiates both a model associator and change processor for the
-  // bookmark data type.  Ideally we would have separate factory
-  // methods for these components, but the bookmark implementation of
-  // these are tightly coupled and must be created at the same time.
-  // The pointers in the return struct are owned by the caller.
-  virtual BookmarkComponents CreateBookmarkComponents(
+  // bookmark data type.  The pointers in the return struct are owned
+  // by the caller.
+  virtual SyncComponents CreateBookmarkSyncComponents(
+      ProfileSyncService* profile_sync_service) = 0;
+
+  // Instantiates both a model associator and change processor for the
+  // preference data type.  The pointers in the return struct are
+  // owned by the caller.
+  virtual SyncComponents CreatePreferenceSyncComponents(
       ProfileSyncService* profile_sync_service) = 0;
 };
 

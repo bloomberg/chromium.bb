@@ -101,10 +101,10 @@ void BookmarkDataTypeController::Associate() {
   DCHECK_EQ(state_, MODEL_STARTING);
   state_ = ASSOCIATING;
 
-  ProfileSyncFactory::BookmarkComponents bookmark_components =
-      profile_sync_factory_->CreateBookmarkComponents(sync_service_);
-  model_associator_.reset(bookmark_components.model_associator);
-  change_processor_.reset(bookmark_components.change_processor);
+  ProfileSyncFactory::SyncComponents sync_components =
+      profile_sync_factory_->CreateBookmarkSyncComponents(sync_service_);
+  model_associator_.reset(sync_components.model_associator);
+  change_processor_.reset(sync_components.change_processor);
 
   bool needs_merge =  model_associator_->ChromeModelHasUserCreatedNodes() &&
       model_associator_->SyncModelHasUserCreatedNodes();

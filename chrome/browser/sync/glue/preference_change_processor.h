@@ -8,13 +8,13 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/change_processor.h"
-#include "chrome/browser/sync/glue/preference_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/pref_service.h"
 
 namespace browser_sync {
 
+class PreferenceModelAssociator;
 class UnrecoverableErrorHandler;
 
 // This class is responsible for taking changes from the PrefService and
@@ -23,12 +23,9 @@ class UnrecoverableErrorHandler;
 class PreferenceChangeProcessor : public ChangeProcessor,
                                   public NotificationObserver {
  public:
-  explicit PreferenceChangeProcessor(UnrecoverableErrorHandler* error_handler);
+  PreferenceChangeProcessor(PreferenceModelAssociator* model_associator,
+                            UnrecoverableErrorHandler* error_handler);
   virtual ~PreferenceChangeProcessor() {}
-
-  void set_model_associator(PreferenceModelAssociator* model_associator) {
-    model_associator_ = model_associator;
-  }
 
   // NotificationObserver implementation.
   // PrefService -> sync_api model change application.

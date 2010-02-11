@@ -17,17 +17,20 @@ class ChangeProcessor;
 
 class ProfileSyncFactoryMock : public ProfileSyncFactory {
  public:
+  ProfileSyncFactoryMock() {}
   ProfileSyncFactoryMock(
       browser_sync::AssociatorInterface* bookmark_model_associator,
       browser_sync::ChangeProcessor* bookmark_change_processor);
 
   MOCK_METHOD0(CreateProfileSyncService,
                ProfileSyncService*(void));
-  MOCK_METHOD1(CreateBookmarkComponents,
-               BookmarkComponents(ProfileSyncService* profile_sync_service));
+  MOCK_METHOD1(CreateBookmarkSyncComponents,
+               SyncComponents(ProfileSyncService* profile_sync_service));
+  MOCK_METHOD1(CreatePreferenceSyncComponents,
+               SyncComponents(ProfileSyncService* profile_sync_service));
 
  private:
-  BookmarkComponents MakeBookmarkComponents();
+  SyncComponents MakeBookmarkSyncComponents();
 
   scoped_ptr<browser_sync::AssociatorInterface> bookmark_model_associator_;
   scoped_ptr<browser_sync::ChangeProcessor> bookmark_change_processor_;

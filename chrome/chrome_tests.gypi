@@ -1463,6 +1463,7 @@
         'browser/sync/engine/syncproto_unittest.cc',
         'browser/sync/glue/bookmark_data_type_controller_unittest.cc',
         'browser/sync/glue/change_processor_mock.h',
+        'browser/sync/glue/preference_data_type_controller_unittest.cc',
         'browser/sync/notifier/base/mac/network_status_detector_task_mac_unittest.cc',
         'browser/sync/notifier/listener/talk_mediator_unittest.cc',
         'browser/sync/notifier/listener/send_update_task_unittest.cc',

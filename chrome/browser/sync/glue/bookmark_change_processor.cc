@@ -23,6 +23,8 @@ BookmarkChangeProcessor::BookmarkChangeProcessor(
     : ChangeProcessor(error_handler),
       bookmark_model_(NULL),
       model_associator_(model_associator) {
+  DCHECK(model_associator);
+  DCHECK(error_handler);
 }
 
 void BookmarkChangeProcessor::StartImpl(Profile* profile) {

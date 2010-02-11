@@ -68,7 +68,7 @@ class BookmarkDataTypeControllerTest : public testing::Test {
   }
 
   void SetAssociateExpectations() {
-    EXPECT_CALL(*profile_sync_factory_, CreateBookmarkComponents(_));
+    EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_));
     EXPECT_CALL(*model_associator_, ChromeModelHasUserCreatedNodes()).
         WillRepeatedly(Return(false));
     EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes()).
@@ -148,7 +148,7 @@ TEST_F(BookmarkDataTypeControllerTest, StartBusy) {
 
 TEST_F(BookmarkDataTypeControllerTest, StartNeedsMerge) {
   SetStartExpectations();
-  EXPECT_CALL(*profile_sync_factory_, CreateBookmarkComponents(_));
+  EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_));
   EXPECT_CALL(*model_associator_, ChromeModelHasUserCreatedNodes()).
       WillRepeatedly(Return(true));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes()).
@@ -175,7 +175,7 @@ TEST_F(BookmarkDataTypeControllerTest, StartMergeAllowed) {
 TEST_F(BookmarkDataTypeControllerTest, StartAssociationFailed) {
   SetStartExpectations();
   // Set up association to fail.
-  EXPECT_CALL(*profile_sync_factory_, CreateBookmarkComponents(_));
+  EXPECT_CALL(*profile_sync_factory_, CreateBookmarkSyncComponents(_));
   EXPECT_CALL(*model_associator_, ChromeModelHasUserCreatedNodes()).
       WillRepeatedly(Return(false));
   EXPECT_CALL(*model_associator_, SyncModelHasUserCreatedNodes()).

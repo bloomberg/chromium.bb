@@ -51,10 +51,15 @@ class TestProfileSyncFactory : public ProfileSyncFactory {
     return profile_sync_service_.release();
   }
 
-  virtual BookmarkComponents CreateBookmarkComponents(
+  virtual SyncComponents CreateBookmarkSyncComponents(
       ProfileSyncService* service) {
-    return BookmarkComponents(model_associator_.release(),
-                              change_processor_.release());
+    return SyncComponents(model_associator_.release(),
+                          change_processor_.release());
+  }
+
+  virtual SyncComponents CreatePreferenceSyncComponents(
+      ProfileSyncService* service) {
+    return SyncComponents(NULL, NULL);
   }
 
  private:

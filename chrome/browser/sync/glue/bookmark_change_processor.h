@@ -25,8 +25,8 @@ namespace browser_sync {
 class BookmarkChangeProcessor : public BookmarkModelObserver,
                                 public ChangeProcessor {
  public:
-  explicit BookmarkChangeProcessor(BookmarkModelAssociator* model_associator,
-                                   UnrecoverableErrorHandler* error_handler);
+  BookmarkChangeProcessor(BookmarkModelAssociator* model_associator,
+                          UnrecoverableErrorHandler* error_handler);
   virtual ~BookmarkChangeProcessor() {}
 
   // BookmarkModelObserver implementation.

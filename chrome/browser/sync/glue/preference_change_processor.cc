@@ -6,6 +6,7 @@
 
 #include "base/string_util.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/sync/glue/preference_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/common/json_value_serializer.h"
@@ -15,10 +16,13 @@
 namespace browser_sync {
 
 PreferenceChangeProcessor::PreferenceChangeProcessor(
+    PreferenceModelAssociator* model_associator,
     UnrecoverableErrorHandler* error_handler)
     : ChangeProcessor(error_handler),
       pref_service_(NULL),
-      model_associator_(NULL) {
+      model_associator_(model_associator) {
+  DCHECK(model_associator);
+  DCHECK(error_handler);
 }
 
 void PreferenceChangeProcessor::Observe(NotificationType type,
@@ -148,7 +152,7 @@ void PreferenceChangeProcessor::StopImpl() {
 
 
 void PreferenceChangeProcessor::StartObserving() {
-  DCHECK(model_associator_ && pref_service_);
+  DCHECK(pref_service_);
   for (std::set<std::wstring>::const_iterator it =
       model_associator_->synced_preferences().begin();
       it != model_associator_->synced_preferences().end(); ++it) {
@@ -157,7 +161,7 @@ void PreferenceChangeProcessor::StartObserving() {
 }
 
 void PreferenceChangeProcessor::StopObserving() {
-  DCHECK(model_associator_ && pref_service_);
+  DCHECK(pref_service_);
   for (std::set<std::wstring>::const_iterator it =
       model_associator_->synced_preferences().begin();
       it != model_associator_->synced_preferences().end(); ++it) {

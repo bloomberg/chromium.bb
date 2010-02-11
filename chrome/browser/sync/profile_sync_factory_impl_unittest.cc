@@ -52,3 +52,14 @@ TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableBookmarks) {
   EXPECT_EQ(0U, controllers.size());
   EXPECT_EQ(0U, controllers.count(syncable::BOOKMARKS));
 }
+
+TEST_F(ProfileSyncFactoryImplTest, CreatePSSEnablePreferences) {
+  command_line_->AppendSwitch(switches::kEnableSyncPreferences);
+  scoped_ptr<ProfileSyncService> pss;
+  pss.reset(profile_sync_service_factory_->CreateProfileSyncService());
+  ProfileSyncService::DataTypeControllerMap controllers(
+      pss->data_type_controllers());
+  EXPECT_EQ(2U, controllers.size());
+  EXPECT_EQ(1U, controllers.count(syncable::BOOKMARKS));
+  EXPECT_EQ(1U, controllers.count(syncable::PREFERENCES));
+}

@@ -16,9 +16,13 @@ class ProfileSyncFactoryImpl : public ProfileSyncFactory {
   ProfileSyncFactoryImpl(Profile* profile, CommandLine* command_line);
   virtual ~ProfileSyncFactoryImpl() {}
 
+  // ProfileSyncFactory interface.
   virtual ProfileSyncService* CreateProfileSyncService();
 
-  virtual BookmarkComponents CreateBookmarkComponents(
+  virtual SyncComponents CreateBookmarkSyncComponents(
+      ProfileSyncService* profile_sync_service);
+
+  virtual SyncComponents CreatePreferenceSyncComponents(
       ProfileSyncService* profile_sync_service);
 
  private:

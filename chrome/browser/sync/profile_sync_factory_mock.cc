@@ -16,15 +16,15 @@ ProfileSyncFactoryMock::ProfileSyncFactoryMock(
     ChangeProcessor* bookmark_change_processor)
     : bookmark_model_associator_(bookmark_model_associator),
       bookmark_change_processor_(bookmark_change_processor) {
-  ON_CALL(*this, CreateBookmarkComponents(_)).
+  ON_CALL(*this, CreateBookmarkSyncComponents(_)).
       WillByDefault(
           InvokeWithoutArgs(
               this,
-              &ProfileSyncFactoryMock::MakeBookmarkComponents));
+              &ProfileSyncFactoryMock::MakeBookmarkSyncComponents));
 }
 
-ProfileSyncFactory::BookmarkComponents
-ProfileSyncFactoryMock::MakeBookmarkComponents() {
-  return BookmarkComponents(bookmark_model_associator_.release(),
-                            bookmark_change_processor_.release());
+ProfileSyncFactory::SyncComponents
+ProfileSyncFactoryMock::MakeBookmarkSyncComponents() {
+  return SyncComponents(bookmark_model_associator_.release(),
+                        bookmark_change_processor_.release());
 }
