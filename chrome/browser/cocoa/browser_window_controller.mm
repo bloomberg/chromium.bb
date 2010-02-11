@@ -126,6 +126,10 @@ namespace {
 const CGFloat kLocBarLeftRightInset = 1;
 const CGFloat kLocBarTopInset = 0;
 const CGFloat kLocBarBottomInset = 1;
+
+// The amount by which the floating bar is offset downwards (to avoid the menu)
+// in fullscreen mode.
+const CGFloat kFullscreenVerticalBarOffset = 14;
 }  // end namespace
 
 @interface GTMTheme (BrowserThemeProviderInitialization)
@@ -2015,7 +2019,7 @@ willPositionSheet:(NSWindow*)sheet
   if (![self isFullscreen])
     return 0;
 
-  CGFloat totalHeight = 0;
+  CGFloat totalHeight = kFullscreenVerticalBarOffset;
 
   if ([self hasTabStrip])
     totalHeight += NSHeight([[self tabStripView] frame]);
@@ -2042,6 +2046,10 @@ willPositionSheet:(NSWindow*)sheet
 
   NSView* tabStripView = [self tabStripView];
   CGFloat tabStripHeight = NSHeight([tabStripView frame]);
+  // In fullscreen mode, push the tab strip down so that the main menu (which
+  // also slides down) doesn't run it over.
+  if (fullscreen)
+    maxY -= kFullscreenVerticalBarOffset;
   maxY -= tabStripHeight;
   [tabStripView setFrame:NSMakeRect(0, maxY, width, tabStripHeight)];
 
