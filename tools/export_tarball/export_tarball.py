@@ -38,6 +38,14 @@ def GetSourceDirectory():
   return os.path.realpath(
     os.path.join(os.path.dirname(__file__), '..', '..', '..', 'src'))
 
+# Workaround lack of the exclude parameter in add method in python-2.4.
+# TODO(phajdan.jr): remove the workaround when it's not needed on the bot.
+class MyTarFile(tarfile.TarFile):
+  def add(self, name, arcname=None, recursive=True, exclude=None):
+    if exclude is not None and exclude(name):
+      return
+    tarfile.TarFile.add(self, name, arcname=arcname, recursive=recursive)
+
 def main(argv):
   parser = optparse.OptionParser()
   parser.add_option("--remove-nonessential-files",
@@ -71,7 +79,7 @@ def main(argv):
 
     return False
 
-  archive = tarfile.open(output_fullname, 'w:bz2')
+  archive = MyTarFile.open(output_fullname, 'w:bz2')
   try:
     archive.add(GetSourceDirectory(), arcname=output_basename,
                 exclude=ShouldExcludePath)
