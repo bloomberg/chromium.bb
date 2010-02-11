@@ -88,6 +88,12 @@ HKEY GetReservedKeyFromName(const std::wstring& name);
 // cannot be resolved.
 bool ResolveRegistryName(std::wstring name, std::wstring* resolved_name);
 
+// Writes |length| bytes from the provided |buffer| into the address space of
+// |child_process|, at the specified |address|, preserving the original write
+// protection attributes. Returns true on success.
+bool WriteProtectedChildMemory(HANDLE child_process, void* address,
+                               const void* buffer, size_t length);
+
 }  // namespace sandbox
 
 // Resolves a function name in NTDLL to a function pointer. The second parameter

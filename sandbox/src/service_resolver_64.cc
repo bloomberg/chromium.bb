@@ -5,8 +5,8 @@
 #include "sandbox/src/service_resolver.h"
 
 #include "base/logging.h"
-#include "base/pe_image.h"
 #include "base/scoped_ptr.h"
+#include "sandbox/src/win_utils.h"
 
 namespace {
 #pragma pack(push, 1)
@@ -41,36 +41,6 @@ struct ServiceFullThunk {
 
 #pragma pack(pop)
 
-// Simple utility function to write to a buffer on the child, if the memery has
-// write protection attributes.
-// Arguments:
-// child_process (in): process to write to.
-// address (out): memory position on the child to write to.
-// buffer (in): local buffer with the data to write .
-// length (in): number of bytes to write.
-// Returns true on success.
-bool WriteProtectedChildMemory(HANDLE child_process,
-                               void* address,
-                               const void* buffer,
-                               size_t length) {
-  // first, remove the protections
-  DWORD old_protection;
-  if (!::VirtualProtectEx(child_process, address, length,
-                          PAGE_WRITECOPY, &old_protection))
-    return false;
-
-  SIZE_T written;
-  bool ok = ::WriteProcessMemory(child_process, address, buffer, length,
-                                 &written) && (length == written);
-
-  // always attempt to restore the original protection
-  if (!::VirtualProtectEx(child_process, address, length,
-                          old_protection, &old_protection))
-    return false;
-
-  return ok;
-}
-
 };  // namespace
 
 namespace sandbox {
@@ -103,36 +73,6 @@ NTSTATUS ServiceResolverThunk::Setup(const void* target_module,
     *storage_used = thunk_bytes;
 
   return ret;
-}
-
-NTSTATUS ServiceResolverThunk::ResolveInterceptor(
-    const void* interceptor_module,
-    const char* interceptor_name,
-    const void** address) {
-  // After all, we are using a locally mapped version of the exe, so the
-  // action is the same as for a target function.
-  return ResolveTarget(interceptor_module, interceptor_name,
-                       const_cast<void**>(address));
-}
-
-// In this case all the work is done from the parent, so resolve is
-// just a simple GetProcAddress.
-NTSTATUS ServiceResolverThunk::ResolveTarget(const void* module,
-                                             const char* function_name,
-                                             void** address) {
-  DCHECK(address);
-  if (NULL == module)
-    return STATUS_UNSUCCESSFUL;
-
-  PEImage module_image(module);
-  *address = module_image.GetProcAddress(function_name);
-
-  if (NULL == *address) {
-    NOTREACHED();
-    return STATUS_UNSUCCESSFUL;
-  }
-
-  return STATUS_SUCCESS;
 }
 
 size_t ServiceResolverThunk::GetThunkSize() const {
