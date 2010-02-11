@@ -647,7 +647,7 @@ For details, see
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Returns the global JavaScript object for the background page running inside the current extension. Returns null if the extension has no backround page.</p>
+                <p>Returns the JavaScript 'window' object for the background page running inside the current extension. Returns null if the extension has no backround page.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -744,7 +744,7 @@ For details, see
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Returns an array of the global JavaScript objects for each of the tab contents views running inside the current extension. If windowId is specified, returns only the tab contentses attached to the specified window.</p>
+                <p>Returns an array of the JavaScript 'window' objects for each of the tabs running inside the current extension. If windowId is specified, returns only the 'window' objects of tabs attached to the specified window.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -837,7 +837,7 @@ For details, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Array of global objects</dd>
+          <dd>Array of global window objects</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -1081,7 +1081,7 @@ For details, see
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Returns an array of the global JavaScript objects for each of the views running inside the current extension. This includes background pages and tabs.</p>
+                <p>Returns an array of the JavaScript 'window' objects for each of the pages running inside the current extension. This includes background pages and tabs.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
