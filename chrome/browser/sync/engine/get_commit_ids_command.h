@@ -30,14 +30,25 @@ class GetCommitIdsCommand : public SyncerCommand {
 
   // Builds a vector of IDs that should be committed.
   void BuildCommitIds(const vector<int64>& unsynced_handles,
-                      syncable::WriteTransaction* write_transaction);
+                      syncable::WriteTransaction* write_transaction,
+                      const ModelSafeRoutingInfo& routing_info);
 
   // These classes are public for testing.
   // TODO(ncarter): This code is more generic than just Commit and can
   // be reused elsewhere (e.g. ChangeReorderBuffer do similar things).  Merge
   // all these implementations.
+  // TODO(tim): Move this to its own file.  Also, SyncSession should now
+  // hold an OrderedCommitSet instead of just the vector<syncable::Id>.  Will
+  // do this in upcoming CL.
   class OrderedCommitSet {
    public:
+    // A list of indices into the full list of commit ids such that:
+    // 1 - each element is an index belonging to a particular ModelSafeGroup.
+    // 2 - the vector is in sorted (smallest to largest) order.
+    // 3 - each element is a valid index for GetCommitItemAt.
+    // See GetCommitIdProjection for usage.
+    typedef std::vector<size_t> Projection;
+
     // TODO(chron): Reserve space according to batch size?
     OrderedCommitSet() {}
     ~OrderedCommitSet() {}
@@ -46,22 +57,38 @@ class GetCommitIdsCommand : public SyncerCommand {
       return inserted_metahandles_.count(metahandle) > 0;
     }
 
-    void AddCommitItem(const int64 metahandle, const syncable::Id& commit_id) {
+    void AddCommitItem(const int64 metahandle, const syncable::Id& commit_id,
+                       ModelSafeGroup group) {
       if (!HaveCommitItem(metahandle)) {
         inserted_metahandles_.insert(metahandle);
         metahandle_order_.push_back(metahandle);
         commit_ids_.push_back(commit_id);
+        projections_[group].push_back(commit_ids_.size() - 1);
+        groups_.push_back(group);
       }
     }
 
-    const vector<syncable::Id>& GetCommitIds() const {
+    const vector<syncable::Id>& GetAllCommitIds() const {
       return commit_ids_;
     }
 
-    pair<int64, syncable::Id> GetCommitItemAt(const int position) const {
-      DCHECK(position < Size());
-      return pair<int64, syncable::Id> (
-          metahandle_order_[position], commit_ids_[position]);
+    // Return the Id at index |position| in this OrderedCommitSet.  Note that
+    // the index uniquely identifies the same logical item in each of:
+    // 1) this OrderedCommitSet
+    // 2) the CommitRequest sent to the server
+    // 3) the list of EntryResponse objects in the CommitResponse.
+    // These together allow re-association of the pre-commit Id with the
+    // actual committed entry.
+    const syncable::Id& GetCommitIdAt(const size_t position) const {
+      return commit_ids_[position];
+    }
+
+    // Get the projection of commit ids onto the space of commit ids
+    // belonging to |group|.  This is useful when you need to process a commit
+    // response one ModelSafeGroup at a time. See GetCommitIdAt for how the
+    // indices contained in the returned Projection can be used.
+    const Projection& GetCommitIdProjection(ModelSafeGroup group) {
+      return projections_[group];
     }
 
     int Size() const {
@@ -70,8 +97,8 @@ class GetCommitIdsCommand : public SyncerCommand {
 
     void AppendReverse(const OrderedCommitSet& other) {
       for (int i = other.Size() - 1; i >= 0; i--) {
-        pair<int64, syncable::Id> item = other.GetCommitItemAt(i);
-        AddCommitItem(item.first, item.second);
+        CommitItem item = other.GetCommitItemAt(i);
+        AddCommitItem(item.meta, item.id, item.group);
       }
     }
 
@@ -80,21 +107,63 @@ class GetCommitIdsCommand : public SyncerCommand {
         for (size_t i = max_size; i < metahandle_order_.size(); ++i) {
           inserted_metahandles_.erase(metahandle_order_[i]);
         }
+
+        // Some projections may refer to indices that are getting chopped.
+        // Since projections are in increasing order, it's easy to fix. Except
+        // that you can't erase(..) using a reverse_iterator, so we use binary
+        // search to find the chop point.
+        Projections::iterator it = projections_.begin();
+        for (; it != projections_.end(); ++it) {
+          // For each projection, chop off any indices larger than or equal to
+          // max_size by looking for max_size using binary search.
+          Projection& p = it->second;
+          Projection::iterator element = std::lower_bound(p.begin(), p.end(),
+                                                          max_size);
+          if (element != p.end())
+            p.erase(element, p.end());
+        }
         commit_ids_.resize(max_size);
         metahandle_order_.resize(max_size);
+        groups_.resize(max_size);
       }
     }
 
    private:
-    // These three lists are different views of the same data; e.g they are
+    // A set of CommitIdProjections associated with particular ModelSafeGroups.
+    typedef std::map<ModelSafeGroup, Projection> Projections;
+
+    // Helper container for return value of GetCommitItemAt.
+    struct CommitItem {
+      int64 meta;
+      syncable::Id id;
+      ModelSafeGroup group;
+    };
+
+    CommitItem GetCommitItemAt(const int position) const {
+      DCHECK(position < Size());
+      CommitItem return_item = {metahandle_order_[position],
+                                commit_ids_[position],
+                                groups_[position]};
+      return return_item;
+    }
+
+    // These lists are different views of the same items; e.g they are
     // isomorphic.
     syncable::MetahandleSet inserted_metahandles_;
     vector<syncable::Id> commit_ids_;
     vector<int64> metahandle_order_;
+    Projections projections_;
+
+    // We need this because of operations like AppendReverse that take ids from
+    // one OrderedCommitSet and insert into another -- we need to know the
+    // group for each ID so that the insertion can update the appropriate
+    // projection.  We could store it in commit_ids_, but sometimes we want
+    // to just return the vector of Ids, so this is more straightforward
+    // and shouldn't take up too much extra space since commit lists are small.
+    std::vector<ModelSafeGroup> groups_;
 
     DISALLOW_COPY_AND_ASSIGN(OrderedCommitSet);
   };
-
 
   // TODO(chron): Remove writes from this iterator. As a warning, this
   // iterator causes writes to entries and so isn't a pure iterator.
@@ -171,27 +240,33 @@ class GetCommitIdsCommand : public SyncerCommand {
  private:
   void AddUncommittedParentsAndTheirPredecessors(
       syncable::BaseTransaction* trans,
-      syncable::Id parent_id);
+      syncable::Id parent_id,
+      const ModelSafeRoutingInfo& routing_info);
 
   // OrderedCommitSet helpers for adding predecessors in order.
   // TODO(ncarter): Refactor these so that the |result| parameter goes away,
   // and AddItem doesn't need to consider two OrderedCommitSets.
-  bool AddItem(syncable::Entry* item, OrderedCommitSet* result);
+  bool AddItem(syncable::Entry* item, OrderedCommitSet* result,
+               const ModelSafeRoutingInfo& routing_info);
   bool AddItemThenPredecessors(syncable::BaseTransaction* trans,
                                syncable::Entry* item,
                                syncable::IndexedBitField inclusion_filter,
-                               OrderedCommitSet* result);
+                               OrderedCommitSet* result,
+                               const ModelSafeRoutingInfo& routing_info);
   void AddPredecessorsThenItem(syncable::BaseTransaction* trans,
                                syncable::Entry* item,
-                               syncable::IndexedBitField inclusion_filter);
+                               syncable::IndexedBitField inclusion_filter,
+                               const ModelSafeRoutingInfo& routing_info);
 
   bool IsCommitBatchFull();
 
   void AddCreatesAndMoves(const vector<int64>& unsynced_handles,
-                          syncable::WriteTransaction* write_transaction);
+                          syncable::WriteTransaction* write_transaction,
+                          const ModelSafeRoutingInfo& routing_info);
 
   void AddDeletes(const vector<int64>& unsynced_handles,
-                  syncable::WriteTransaction* write_transaction);
+                  syncable::WriteTransaction* write_transaction,
+                  const ModelSafeRoutingInfo& routing_info);
 
   OrderedCommitSet ordered_commit_set_;
 

@@ -351,14 +351,28 @@ class SyncerTest : public testing::Test,
       status->set_unsynced_handles(unsynced_handle_view);
 
       GetCommitIdsCommand command(limit);
+      ModelSafeRoutingInfo routes;
+      GetModelSafeRoutingInfo(&routes);
       command.BuildCommitIds(session_->status_controller()->unsynced_handles(),
-          session_->write_transaction());
-      vector<syncable::Id> output = command.ordered_commit_set_.GetCommitIds();
+          session_->write_transaction(), routes);
+      vector<syncable::Id> output =
+          command.ordered_commit_set_.GetAllCommitIds();
       size_t truncated_size = std::min(limit, expected_id_order.size());
       ASSERT_TRUE(truncated_size == output.size());
       for (size_t i = 0; i < truncated_size; ++i) {
         ASSERT_TRUE(expected_id_order[i] == output[i])
             << "At index " << i << " with batch size limited to " << limit;
+      }
+      GetCommitIdsCommand::OrderedCommitSet::Projection proj;
+      proj = command.ordered_commit_set_.GetCommitIdProjection(GROUP_PASSIVE);
+      ASSERT_EQ(truncated_size, proj.size());
+      for (size_t i = 0; i < truncated_size; ++i) {
+        SCOPED_TRACE(::testing::Message("Projection mismatch with i = ") << i);
+        syncable::Id projected =
+            command.ordered_commit_set_.GetCommitIdAt(proj[i]);
+        ASSERT_TRUE(expected_id_order[proj[i]] == projected);
+        // Since this projection is the identity, the following holds.
+        ASSERT_TRUE(expected_id_order[i] == projected);
       }
     }
   }
@@ -523,6 +537,75 @@ TEST_F(SyncerTest, TestCommitMetahandleIterator) {
 
     EXPECT_FALSE(iterator.Valid());
   }
+}
+
+TEST_F(SyncerTest, OrderedCommitSetProjections) {
+  vector<syncable::Id> expected;
+  for (int i = 0; i < 8; i++)
+    expected.push_back(ids_.NewLocalId());
+
+  GetCommitIdsCommand::OrderedCommitSet commit_set1, commit_set2;
+  commit_set1.AddCommitItem(0, expected[0], GROUP_UI);
+  commit_set1.AddCommitItem(1, expected[1], GROUP_UI);
+  commit_set1.AddCommitItem(2, expected[2], GROUP_UI);
+  commit_set1.AddCommitItem(3, expected[3], GROUP_PASSIVE);
+  commit_set1.AddCommitItem(4, expected[4], GROUP_PASSIVE);
+  commit_set2.AddCommitItem(7, expected[7], GROUP_DB);
+  commit_set2.AddCommitItem(6, expected[6], GROUP_DB);
+  commit_set2.AddCommitItem(5, expected[5], GROUP_DB);
+  commit_set1.AppendReverse(commit_set2);
+
+  // First, we should verify the projections are correct. Second, we want to
+  // do the same verification after truncating by 1. Next, try truncating
+  // the set to a size of 4, so that the DB projection is wiped out and
+  // PASSIVE has one element removed.  Finally, truncate to 1 so only UI is
+  // remaining.
+  int j = 0;
+  do {
+    SCOPED_TRACE(::testing::Message("Iteration j = ") << j);
+    vector<syncable::Id> all_ids = commit_set1.GetAllCommitIds();
+    EXPECT_EQ(expected.size(), all_ids.size());
+    for (size_t i = 0; i < expected.size(); i++) {
+      SCOPED_TRACE(::testing::Message("CommitSet mismatch at iteration i = ")
+                   << i);
+      EXPECT_TRUE(expected[i] == all_ids[i]);
+      EXPECT_TRUE(expected[i] == commit_set1.GetCommitIdAt(i));
+    }
+
+    GetCommitIdsCommand::OrderedCommitSet::Projection p1, p2, p3;
+    p1 = commit_set1.GetCommitIdProjection(GROUP_UI);
+    p2 = commit_set1.GetCommitIdProjection(GROUP_PASSIVE);
+    p3 = commit_set1.GetCommitIdProjection(GROUP_DB);
+    EXPECT_TRUE(p1.size() + p2.size() + p3.size() == expected.size()) << "Sum"
+        << "of sizes of projections should equal full expected size!";
+
+    for (size_t i = 0; i < p1.size(); i++) {
+      SCOPED_TRACE(::testing::Message("UI projection mismatch at i = ") << i);
+      EXPECT_TRUE(expected[p1[i]] == commit_set1.GetCommitIdAt(p1[i]))
+          << "expected[p1[i]] = " << expected[p1[i]]
+          << ", commit_set1[p1[i]] = " << commit_set1.GetCommitIdAt(p1[i]);
+    }
+    for (size_t i = 0; i < p2.size(); i++) {
+      SCOPED_TRACE(::testing::Message("PASSIVE projection mismatch at i = ")
+                   << i);
+      EXPECT_TRUE(expected[p2[i]] == commit_set1.GetCommitIdAt(p2[i]))
+          << "expected[p2[i]] = " << expected[p2[i]]
+          << ", commit_set1[p2[i]] = " << commit_set1.GetCommitIdAt(p2[i]);
+    }
+    for (size_t i = 0; i < p3.size(); i++) {
+      SCOPED_TRACE(::testing::Message("DB projection mismatch at i = ") << i);
+      EXPECT_TRUE(expected[p3[i]] == commit_set1.GetCommitIdAt(p3[i]))
+          << "expected[p3[i]] = " << expected[p3[i]]
+          << ", commit_set1[p3[i]] = " << commit_set1.GetCommitIdAt(p3[i]);
+    }
+
+    int cut_to_size = 7 - 3 * j++;
+    if (cut_to_size < 0)
+      break;
+
+    expected.resize(cut_to_size);
+    commit_set1.Truncate(cut_to_size);
+  } while (true);
 }
 
 TEST_F(SyncerTest, TestGetUnsyncedAndSimpleCommit) {

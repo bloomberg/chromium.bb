@@ -871,6 +871,7 @@
         'browser/sync/engine/idle_query_linux.h',
         'browser/sync/engine/model_changing_syncer_command.cc',
         'browser/sync/engine/model_changing_syncer_command.h',
+        'browser/sync/engine/model_safe_worker.cc',
         'browser/sync/engine/model_safe_worker.h',
         'browser/sync/engine/net/gaia_authenticator.cc',
         'browser/sync/engine/net/gaia_authenticator.h',
