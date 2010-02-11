@@ -959,9 +959,14 @@ void WebPluginDelegateProxy::OnInvalidateRect(const gfx::Rect& rect) {
   if (!plugin_)
     return;
 
+  // Clip the invalidation rect to the plugin bounds; the plugin may have been
+  // resized since the invalidate message was sent.
+  const gfx::Rect clipped_rect(rect.Intersect(
+      gfx::Rect(0, 0, plugin_rect_.width(), plugin_rect_.height())));
+
   invalidate_pending_ = true;
-  CopyFromTransportToBacking(rect);
-  plugin_->InvalidateRect(rect);
+  CopyFromTransportToBacking(clipped_rect);
+  plugin_->InvalidateRect(clipped_rect);
 }
 
 void WebPluginDelegateProxy::OnGetWindowScriptNPObject(

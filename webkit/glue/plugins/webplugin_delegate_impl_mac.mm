@@ -368,6 +368,12 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
   static StatsRate plugin_paint("Plugin.Paint");
   StatsScope<StatsRate> scope(plugin_paint);
 
+  // Plugin invalidates trigger asynchronous paints with the original
+  // invalidation rect; the plugin may be resized before the paint is handled,
+  // so we need to ensure that the damage rect is still sane.
+  const gfx::Rect paint_rect(damage_rect.Intersect(
+      gfx::Rect(0, 0, window_rect_.width(), window_rect_.height())));
+
   ScopedActiveDelegate active_delegate(this);
 
   switch (instance()->drawing_model()) {
@@ -409,10 +415,10 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
           memset(&paint_event, 0, sizeof(NPCocoaEvent));
           paint_event.type = NPCocoaEventDrawRect;
           paint_event.data.draw.context = context;
-          paint_event.data.draw.x = damage_rect.x();
-          paint_event.data.draw.y = damage_rect.y();
-          paint_event.data.draw.width = damage_rect.width();
-          paint_event.data.draw.height = damage_rect.height();
+          paint_event.data.draw.x = paint_rect.x();
+          paint_event.data.draw.y = paint_rect.y();
+          paint_event.data.draw.width = paint_rect.width();
+          paint_event.data.draw.height = paint_rect.height();
           instance()->NPP_HandleEvent(reinterpret_cast<NPEvent*>(&paint_event));
           break;
         }
