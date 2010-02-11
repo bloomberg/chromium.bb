@@ -2351,3 +2351,12 @@
    fun:_ZN9TestSuite3RunEv
    fun:main
 }
+{
+   bug_35436
+   Memcheck:Addr4
+   fun:CERT_PKIXVerifyCert
+   fun:_ZN3net*
+   fun:_ZNK3net15X509Certificate6VerifyERKSsiPNS_16CertVerifyResultE
+   fun:_ZN3net12CertVerifier7Request8DoVerifyEv
+}
+
