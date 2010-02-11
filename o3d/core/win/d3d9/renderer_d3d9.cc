@@ -181,11 +181,12 @@ D3DSTENCILOP ConvertStencilOp(State::StencilOperation stencil_func) {
 
 // Checks that a device will be able to support the given texture formats.
 bool CheckTextureFormatsSupported(LPDIRECT3D9 d3d,
+                                  UINT adapter,
                                   D3DFORMAT display_format,
                                   const D3DFORMAT* formats,
                                   int num_formats) {
   for (int i = 0; i < num_formats; ++i) {
-    if (!SUCCEEDED(d3d->CheckDeviceFormat(D3DADAPTER_DEFAULT,
+    if (!SUCCEEDED(d3d->CheckDeviceFormat(adapter,
                                           D3DDEVTYPE_HAL,
                                           display_format,
                                           0,
@@ -203,10 +204,11 @@ bool CheckTextureFormatsSupported(LPDIRECT3D9 d3d,
 // Note that in the current implementation we're being very lenient with the
 // capabilities we require.
 bool CheckDeviceCaps(LPDIRECT3D9 d3d,
+                     UINT adapter,
                      Features* features,
                      D3DDISPLAYMODE* d3d_display_mode) {
   D3DCAPS9 d3d_caps;
-  if (!HR(d3d->GetDeviceCaps(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, &d3d_caps))) {
+  if (!HR(d3d->GetDeviceCaps(adapter, D3DDEVTYPE_HAL, &d3d_caps))) {
     LOG(ERROR) << "Failed to get device capabilities.";
     return false;
   }
@@ -234,7 +236,7 @@ bool CheckDeviceCaps(LPDIRECT3D9 d3d,
     return false;
   }
 
-  if (!HR(d3d->GetAdapterDisplayMode(D3DADAPTER_DEFAULT, d3d_display_mode)))
+  if (!HR(d3d->GetAdapterDisplayMode(adapter, d3d_display_mode)))
     return false;
 
   // Check that the device supports all the texture formats needed.
@@ -244,6 +246,7 @@ bool CheckDeviceCaps(LPDIRECT3D9 d3d,
   };
   if (!CheckTextureFormatsSupported(
       d3d,
+      adapter,
       d3d_display_mode->Format,
       texture_formats,
       arraysize(texture_formats))) {
@@ -255,6 +258,7 @@ bool CheckDeviceCaps(LPDIRECT3D9 d3d,
     };
     if (!CheckTextureFormatsSupported(
         d3d,
+        adapter,
         d3d_display_mode->Format,
         float_texture_formats,
         arraysize(float_texture_formats))) {
@@ -273,7 +277,7 @@ bool CheckDeviceCaps(LPDIRECT3D9 d3d,
   D3DFORMAT render_target_formats[] = { D3DFMT_X8R8G8B8, D3DFMT_A8R8G8B8 };
   const int kNumRenderTargetFormats = arraysize(render_target_formats);
   for (int i = 0; i < kNumRenderTargetFormats; ++i) {
-    if (!SUCCEEDED(d3d->CheckDeviceFormat(D3DADAPTER_DEFAULT,
+    if (!SUCCEEDED(d3d->CheckDeviceFormat(adapter,
                                           D3DDEVTYPE_HAL,
                                           d3d_display_mode->Format,
                                           D3DUSAGE_RENDERTARGET,
@@ -290,7 +294,7 @@ bool CheckDeviceCaps(LPDIRECT3D9 d3d,
   const int kNumDepthStencilFormats = arraysize(depth_stencil_formats);
   bool success = false;
   for (int i = 0; i < kNumDepthStencilFormats; ++i) {
-    if (!SUCCEEDED(d3d->CheckDeviceFormat(D3DADAPTER_DEFAULT,
+    if (!SUCCEEDED(d3d->CheckDeviceFormat(adapter,
                                           D3DDEVTYPE_HAL,
                                           d3d_display_mode->Format,
                                           D3DUSAGE_DEPTHSTENCIL,
@@ -302,7 +306,7 @@ bool CheckDeviceCaps(LPDIRECT3D9 d3d,
     }
     // Now check that it's compatible with the given backbuffer format.
     if (!SUCCEEDED(d3d->CheckDepthStencilMatch(
-                       D3DADAPTER_DEFAULT,
+                       adapter,
                        D3DDEVTYPE_HAL,
                        d3d_display_mode->Format,
                        D3DFMT_A8R8G8B8,
@@ -316,10 +320,29 @@ bool CheckDeviceCaps(LPDIRECT3D9 d3d,
   return true;
 }
 
+// Find the adapter related to the given monitor.
+// Return true on success, false on error.
+bool GetAdapterFromMonitor(LPDIRECT3D9 d3d,
+                           HMONITOR monitor,
+                           UINT* adapter) {
+  UINT num_adapters = d3d->GetAdapterCount();
+  for (UINT i = 0; i < num_adapters; ++i) {
+    HMONITOR adapter_monitor = d3d->GetAdapterMonitor(i);
+    if (monitor == adapter_monitor) {
+      *adapter = i;
+      return true;
+    }
+  }
+  return false;
+}
+
 // Attempt to create a Direct3D9 object supporting the required caps. Return
 // NULL if the object cannot be created or if it does not support the caps.
 Renderer::InitStatus CreateDirect3D(Direct3DCreate9_Ptr d3d_create_function,
                                     LPDIRECT3D9* d3d,
+                                    HWND window,
+                                    HMONITOR* monitor,
+                                    UINT* adapter,
                                     Features* features,
                                     D3DDISPLAYMODE* d3d_display_mode) {
   if (!d3d_create_function) {
@@ -331,8 +354,21 @@ Renderer::InitStatus CreateDirect3D(Direct3DCreate9_Ptr d3d_create_function,
     return Renderer::INITIALIZATION_ERROR;
   }
 
+  // Get the current monitor and adapter.
+  *monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+  if (*monitor == NULL) {
+    DLOG(ERROR) << "Failed to get monitor from window";
+    (*d3d)->Release();
+    *d3d = NULL;
+    return Renderer::INITIALIZATION_ERROR;
+  }
+  if (!GetAdapterFromMonitor(*d3d, *monitor, adapter)) {
+    DLOG(WARNING) << "Failed to get adapter, use the default one";
+    *adapter = D3DADAPTER_DEFAULT;
+  }
+
   // Check that the graphics device meets the minimum capabilities.
-  if (!CheckDeviceCaps(*d3d, features, d3d_display_mode)) {
+  if (!CheckDeviceCaps(*d3d, *adapter, features, d3d_display_mode)) {
     (*d3d)->Release();
     *d3d = NULL;
     return Renderer::GPU_NOT_UP_TO_SPEC;
@@ -345,9 +381,10 @@ Renderer::InitStatus CreateDirect3D(Direct3DCreate9_Ptr d3d_create_function,
 // a huge performance hit when certain types of windows are used on the same
 // desktop as O3D. This function returns true if O3D is running on one
 // of these GPUs/Drivers.
-bool ForceAntiAliasingOff(LPDIRECT3D9* d3d) {
+bool ForceAntiAliasingOff(LPDIRECT3D9* d3d,
+                          UINT adapter) {
   D3DADAPTER_IDENTIFIER9 identifier;
-  HRESULT hr = (*d3d)->GetAdapterIdentifier(D3DADAPTER_DEFAULT, 0, &identifier);
+  HRESULT hr = (*d3d)->GetAdapterIdentifier(adapter, 0, &identifier);
 
   unsigned int vendor_id = identifier.VendorId;
   unsigned int device_id = identifier.DeviceId;
@@ -378,6 +415,8 @@ Renderer::InitStatus InitializeD3D9Context(
     LPDIRECT3DDEVICE9* d3d_device,
     D3DPRESENT_PARAMETERS* d3d_present_parameters,
     D3DDISPLAYMODE* d3d_display_mode,
+    HMONITOR* monitor,
+    UINT* adapter,
     bool fullscreen,
     Features* features,
     ServiceLocator* service_locator,
@@ -392,12 +431,24 @@ Renderer::InitStatus InitializeD3D9Context(
   } else {
     // Create a hardware device.
     status_hardware = CreateDirect3D(
-        Direct3DCreate9, d3d, features, d3d_display_mode);
+        Direct3DCreate9,
+        d3d,
+        window,
+        monitor,
+        adapter,
+        features,
+        d3d_display_mode);
   }
 
   if (status_hardware != Renderer::SUCCESS) {
     Renderer::InitStatus status_software = CreateDirect3D(
-        Direct3DCreate9Software, d3d, features, d3d_display_mode);
+        Direct3DCreate9Software,
+        d3d,
+        window,
+        monitor,
+        adapter,
+        features,
+        d3d_display_mode);
 
     // We should not be requiring caps that are not supported by the software
     // renderer.
@@ -431,7 +482,7 @@ Renderer::InitStatus InitializeD3D9Context(
   // wait for vsync
   d3d_present_parameters->PresentationInterval   = D3DPRESENT_INTERVAL_ONE;
 
-  if (features->not_anti_aliased() || ForceAntiAliasingOff(d3d)) {
+  if (features->not_anti_aliased() || ForceAntiAliasingOff(d3d, *adapter)) {
     d3d_present_parameters->MultiSampleType = D3DMULTISAMPLE_NONE;
     d3d_present_parameters->MultiSampleQuality = 0;
   } else {
@@ -448,7 +499,7 @@ Renderer::InitStatus InitializeD3D9Context(
       // check back-buffer for multisampling at level "i";
       // back buffer = 32-bit ARGB
       if (SUCCEEDED((*d3d)->CheckDeviceMultiSampleType(
-          D3DADAPTER_DEFAULT,
+          *adapter,
           D3DDEVTYPE_HAL,
           D3DFMT_A8R8G8B8,
           true,  // result is windowed
@@ -458,7 +509,7 @@ Renderer::InitStatus InitializeD3D9Context(
         // depth buffer = 24-bit, stencil = 8-bit
         // NOTE: 8-bit not 16-bit like the D3DPRESENT_PARAMETERS
         if (SUCCEEDED((*d3d)->CheckDeviceMultiSampleType(
-            D3DADAPTER_DEFAULT,
+            *adapter,
             D3DDEVTYPE_HAL,
             D3DFMT_D24S8,
             true,  // result is windowed
@@ -496,7 +547,7 @@ Renderer::InitStatus InitializeD3D9Context(
 
   // Check the device capabilities.
   D3DCAPS9 d3d_caps;
-  HRESULT caps_result = (*d3d)->GetDeviceCaps(D3DADAPTER_DEFAULT,
+  HRESULT caps_result = (*d3d)->GetDeviceCaps(*adapter,
                                               D3DDEVTYPE_HAL,
                                               &d3d_caps);
   if (!HR(caps_result)) {
@@ -516,7 +567,7 @@ Renderer::InitStatus InitializeD3D9Context(
   // case find out if we can disable it for Firefox 2/other browsers, and/or if
   // it makes sense to switch FPU flags before/after every DX call.
   d3d_behavior_flags |= D3DCREATE_FPU_PRESERVE;
-  if (!HR((*d3d)->CreateDevice(D3DADAPTER_DEFAULT,
+  if (!HR((*d3d)->CreateDevice(*adapter,
                                D3DDEVTYPE_HAL,
                                window,
                                d3d_behavior_flags,
@@ -944,6 +995,8 @@ Renderer::InitStatus RendererD3D9::InitPlatformSpecific(
       &d3d_device_,
       &d3d_present_parameters_,
       &d3d_display_mode_,
+      &current_monitor_,
+      &current_adapter_,
       fullscreen_,
       features(),
       service_locator(),
@@ -955,7 +1008,7 @@ Renderer::InitStatus RendererD3D9::InitPlatformSpecific(
   }
 
   D3DCAPS9 d3d_caps;
-  if (!HR(d3d_->GetDeviceCaps(D3DADAPTER_DEFAULT, D3DDEVTYPE_HAL, &d3d_caps))) {
+  if (!HR(d3d_->GetDeviceCaps(current_adapter_, D3DDEVTYPE_HAL, &d3d_caps))) {
     DLOG(ERROR) << "Failed to get device capabilities.";
     return INITIALIZATION_ERROR;
   }
@@ -971,7 +1024,7 @@ Renderer::InitStatus RendererD3D9::InitPlatformSpecific(
   SetClientSize(width, height);
   have_device_ = true;
 
-  if (!HR(d3d_->CheckDeviceFormat(D3DADAPTER_DEFAULT,
+  if (!HR(d3d_->CheckDeviceFormat(current_adapter_,
                                   D3DDEVTYPE_HAL,
                                   d3d_display_mode_.Format,
                                   D3DUSAGE_DEPTHSTENCIL,
@@ -1290,11 +1343,11 @@ void RendererD3D9::Resize(int width, int height) {
 
 void RendererD3D9::GetDisplayModes(std::vector<DisplayMode> *modes) {
   int num_modes =
-      d3d_->GetAdapterModeCount(D3DADAPTER_DEFAULT, D3DFMT_X8R8G8B8);
+      d3d_->GetAdapterModeCount(current_adapter_, D3DFMT_X8R8G8B8);
   std::vector<DisplayMode> modes_found;
   for (int i = 0; i < num_modes; ++i) {
     D3DDISPLAYMODE mode;
-    if (FAILED(d3d_->EnumAdapterModes(D3DADAPTER_DEFAULT,
+    if (FAILED(d3d_->EnumAdapterModes(current_adapter_,
                                       D3DFMT_X8R8G8B8,
                                       i,
                                       &mode))) {
@@ -1313,11 +1366,11 @@ bool RendererD3D9::GetDisplayMode(int id, DisplayMode *mode) {
   D3DDISPLAYMODE d3d_mode;
   bool success = false;
   if (id == DISPLAY_MODE_DEFAULT) {
-    success = SUCCEEDED(d3d_->GetAdapterDisplayMode(D3DADAPTER_DEFAULT,
+    success = SUCCEEDED(d3d_->GetAdapterDisplayMode(current_adapter_,
                                                     &d3d_mode));
   } else {
     // Display mode IDs are one higher than D3D display modes.
-    success = SUCCEEDED(d3d_->EnumAdapterModes(D3DADAPTER_DEFAULT,
+    success = SUCCEEDED(d3d_->EnumAdapterModes(current_adapter_,
                                                D3DFMT_X8R8G8B8,
                                                id - 1,
                                                &d3d_mode));

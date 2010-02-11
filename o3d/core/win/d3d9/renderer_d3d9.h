@@ -236,6 +236,10 @@ class RendererD3D9 : public Renderer {
   // Flag to tell us whether we have or lost the device.
   bool have_device_;
 
+  // The monitor/adapter the window is on.
+  HMONITOR current_monitor_;
+  UINT current_adapter_;
+
   // Indicates we're rendering fullscreen rather than in the plugin region.
   bool fullscreen_;
   // Indicates we're showing the "Press Escape..." banner.
