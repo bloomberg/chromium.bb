@@ -51,7 +51,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       socket_(NULL),
       parent_(containing_view),
       quirks_(0),
-      handle_event_depth_(0), {
+      handle_event_depth_(0) {
   memset(&window_, 0, sizeof(window_));
   if (instance_->mime_type() == "application/x-shockwave-flash") {
     // Flash is tied to Firefox's whacky behavior with windowless plugins. See
