@@ -35,7 +35,6 @@
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 #include "native_client/src/trusted/service_runtime/sel_addrspace.h"
 
-#define PTR_ALIGN_MASK  ((sizeof(void *))-1)
 #if !defined(SIZE_T_MAX)
 # define SIZE_T_MAX     (~(size_t) 0)
 #endif
@@ -371,7 +370,7 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   }
   size += ptr_tbl_size;
 
-  size = (size + PTR_ALIGN_MASK) & ~PTR_ALIGN_MASK;
+  size = (size + NACL_STACK_ALIGN_MASK) & ~NACL_STACK_ALIGN_MASK;
 
   if (size > nap->stack_size) {
     retval = 0;
@@ -383,7 +382,7 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   stack_ptr = (nap->mem_start + ((uintptr_t) 1 << nap->addr_bits) - size);
   NaClLog(2, "setting stack to : %016"PRIxPTR"\n", stack_ptr);
 
-  VCHECK(0 == (stack_ptr & PTR_ALIGN_MASK),
+  VCHECK(0 == (stack_ptr & NACL_STACK_ALIGN_MASK),
          ("stack_ptr not aligned: %016"PRIxPTR"\n", stack_ptr));
 
   p = (char *) stack_ptr;
@@ -479,17 +478,40 @@ int NaClWaitForMainThreadToExit(struct NaClApp  *nap) {
   return (nap->exit_status);
 }
 
+/*
+ * stack_ptr is from syscall, so a 32-bit address.
+ */
 int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
                                    uintptr_t      prog_ctr,
-                                   uintptr_t      stack_ptr,
+                                   uintptr_t      sys_stack_ptr,
                                    uintptr_t      sys_tdb,
                                    size_t         tdb_size) {
   struct NaClAppThread  *natp;
+  uintptr_t             stack_ptr;
 
   natp = malloc(sizeof *natp);
   if (NULL == natp) {
     return -NACL_ABI_ENOMEM;
   }
+
+  stack_ptr = NaClSysToUserStackAddr(nap, sys_stack_ptr);
+
+  if (0 != ((stack_ptr + sizeof(nacl_reg_t)) & NACL_STACK_ALIGN_MASK)) {
+    NaClLog(LOG_WARNING,
+            ("NaClCreateAdditionalThread:  user thread library"
+             " did not provide properly aligned user stack pointer\n"));
+    NaClLog(LOG_WARNING,
+            "NaClCreateAdditionalThread:  orig stack ptr: 0x%"PRIxPTR"\n",
+            stack_ptr);
+
+    stack_ptr &= ~NACL_STACK_ALIGN_MASK;
+    stack_ptr -= sizeof(nacl_reg_t);  /* pretend return addr */
+
+    NaClLog(LOG_WARNING,
+            "NaClCreateAdditionalThread: fixed stack ptr: 0x%"PRIxPTR"\n",
+            stack_ptr);
+  }
+
   if (!NaClAppThreadAllocSegCtor(natp,
                                  nap,
                                  0,

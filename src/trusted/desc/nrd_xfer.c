@@ -181,6 +181,10 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
                                                       &desc_bytes,
                                                       &desc_handles);
       if (retval < 0) {
+        NaClLog(1,
+                ("NaClImcSendTypedMessage: ExternalizeSize"
+                 " returned %"PRIdS"\n"),
+                retval);
         goto cleanup;
       }
       /*
@@ -221,6 +225,7 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
     }
     hdr_buf = malloc(sys_bytes + sizeof *hdr);
     if (NULL == hdr_buf) {
+      NaClLog(4, "NaClImcSendTypedMessage: out of memory for iov");
       retval = -NACL_ABI_ENOMEM;
       goto cleanup;
     }
@@ -254,6 +259,10 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
       retval = (*kern_desc[i]->vtbl->Externalize)(kern_desc[i],
                                                   &xfer_state);
       if (0 != retval) {
+        NaClLog(4,
+                ("NaClImcSendTypedMessage: Externalize for"
+                 " descriptor %"PRIdS" returned %"PRIdS"\n"),
+                i, retval);
         goto cleanup;
       }
     }
@@ -270,8 +279,11 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
     kern_msg_hdr.handle_count = sys_handles;
   }
 
+  NaClLog(4, "Invoking SendMsg, flags 0x%x\n", flags);
+
   retval = (*channel->vtbl->SendMsg)(channel, effp,
                                      &kern_msg_hdr, flags);
+  NaClLog(4, "SendMsg returned %"PRIdS"\n", retval);
   if (NaClIsNegErrno(retval)) {
     /*
      * NaClWouldBlock uses TSD (for both the errno-based and
@@ -306,6 +318,8 @@ ssize_t NaClImcSendTypedMessage(struct NaClDesc                 *channel,
 cleanup:
 
   free(hdr_buf);
+
+  NaClLog(4, "NaClImcSendTypedMessage: returning %"PRIdS"\n", retval);
 
   return retval;
 }

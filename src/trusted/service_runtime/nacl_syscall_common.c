@@ -173,10 +173,13 @@ int32_t NaClSetBreak(struct NaClAppThread *natp,
     goto cleanup_no_lock;
   }
   if (new_break < nap->data_end) {
+    NaClLog(4, "new_break before data_end (0x%"PRIxPTR")\n", nap->data_end);
     goto cleanup;
   }
   if (new_break <= nap->break_addr) {
     /* freeing memory */
+    NaClLog(4, "new_break before break (0x%"PRIxPTR"); freeing\n",
+            nap->break_addr);
     nap->break_addr = new_break;
   } else {
 
@@ -389,12 +392,20 @@ int32_t NaClCommonSysThreadExit(struct NaClAppThread  *natp,
   nap = natp->nap;
 
   if (NULL != stack_flag) {
+    NaClLog(4,
+            "NaClCommonSysThreadExit: stack_flag is %"PRIxPTR"\n",
+            (uintptr_t) stack_flag);
     sys_stack_flag = NaClUserToSys(natp->nap, (uintptr_t) stack_flag);
+    NaClLog(4,
+            "NaClCommonSysThreadExit: sys_stack_flag is %"PRIxPTR"\n",
+            sys_stack_flag);
     if (kNaClBadAddress != sys_stack_flag) {
       /*
        * We don't return failure if the address is illegal because
        * this function is not supposed to return.
        */
+      NaClLog(4,
+              "NaClCommonSysThreadExit: clearing stack flag\n");
       *(int32_t *) sys_stack_flag = 0;
     }
   }
@@ -1933,6 +1944,7 @@ int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
                                    size_t               tdb_size) {
   int32_t     retval = -NACL_ABI_EINVAL;
   uintptr_t   sys_tdb;
+  uintptr_t   sys_stack;
 
   NaClSysCommonThreadSyscallEnter(natp);
 
@@ -1952,8 +1964,9 @@ int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
     goto cleanup;
   }
 #endif
-  /* we do not enforce stack alignment */
-  if (kNaClBadAddress == NaClUserToSysAddr(natp->nap, (uintptr_t) stack_ptr)) {
+  /* we do not enforce stack alignment, just check for validity */
+  sys_stack = NaClUserToSysAddr(natp->nap, (uintptr_t) stack_ptr);
+  if (kNaClBadAddress == sys_stack) {
     NaClLog(LOG_ERROR, "bad stack\n");
     retval = -NACL_ABI_EFAULT;
     goto cleanup;
@@ -1967,7 +1980,7 @@ int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
 
   retval = NaClCreateAdditionalThread(natp->nap,
                                       (uintptr_t) prog_ctr,
-                                      (uintptr_t) stack_ptr,
+                                      sys_stack,
                                       sys_tdb,
                                       tdb_size);
 cleanup:

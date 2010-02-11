@@ -17,13 +17,13 @@
 
 namespace nacl {
 
-SelLdrLauncher::SelLdrLauncher() :
-  child_(kInvalidHandle),
-  channel_(kInvalidHandle),
-  argc_(-1),
-  argv_(NULL),
-  is_sel_ldr_(true),
-  sock_addr_(NULL) {
+SelLdrLauncher::SelLdrLauncher()
+    : child_(kInvalidHandle),
+      channel_(kInvalidHandle),
+      argc_(-1),
+      argv_(NULL),
+      is_sel_ldr_(true),
+      sock_addr_(NULL) {
 }
 
 static DescWrapper* GetSockAddr(DescWrapper* desc) {
@@ -75,6 +75,7 @@ bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
   // Get the socket address from the descriptor.
   sock_addr = GetSockAddr(channel_desc);
   if (NULL == sock_addr) {
+    NaClLog(4, "SelLdrLauncher::OpenSrpcChannels: GetSockAddr failed\n");
     goto done;
   }
   // Save the socket address for other uses.
@@ -83,6 +84,7 @@ bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
   // The first connection goes to the trusted command channel.
   command_desc = sock_addr->Connect();
   if (NULL == command_desc) {
+    NaClLog(4, "SelLdrLauncher::OpenSrpcChannels: Connect failed\n");
     goto done;
   }
   // Start the SRPC client to communicate with the trusted command channel.

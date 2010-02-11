@@ -76,13 +76,14 @@ void CheckErrno(int expected) {
 #endif
 
 const int kExitOk = 69;
-const int kSysbreakBase = 0x100000;
-const int kMmapBase = 0x200000;
-const int kMmapSize = 0x10000;
+const int kSysbreakBase = 0x800000;
+const int kMmapBase     = 0xa00000;
+const int kMmapSize     = 0x10000;
 const int kInvalidFileDescriptor = 100;
 
 
 int main() {
+  void *map_result;
   int  i;
 
   CheckErrno(0);
@@ -94,6 +95,10 @@ int main() {
   i = (int) sysbrk(0);
   PrintInt(i);
   if (0 == i) Error("bad sysbrk() value\n");
+
+  if (kSysbreakBase < i) {
+    Error("INTERNAL ERROR: kSysbreakBase too small\n");
+  }
 
   myprint("\nsysbrk()\n");
   i = (int) sysbrk((void *) kSysbreakBase);
@@ -118,14 +123,23 @@ int main() {
   if (0 != i) Error("bad munmap() value\n");
 
   myprint("\nmmap()\n");
-  i = (int) mmap((void *)kMmapBase, kMmapSize,
-                 PROT_READ, MAP_ANONYMOUS | MAP_SHARED,
-                 -1, 0);
+  map_result = mmap((void *)kMmapBase, kMmapSize,
+                    PROT_READ, MAP_ANONYMOUS | MAP_SHARED,
+                    -1, 0);
+  i = (int) map_result;
   PrintInt(i);
-  if (kMmapBase != i) Error("bad mmap() value\n");
+  /*
+   * It is an ERROR to expect i to be kMapBase.  Since the mmap
+   * syscall were not made with MAP_FIXED, the kernel is free to use
+   * the provided address as a hint -- or to ignore it altogether.
+   * Exactly what behavior we implement may vary from release to
+   * release -- thus, the only reasonable value to compare this with
+   * is MAP_FAILED.
+   */
+  if (MAP_FAILED == map_result) Error("bad: mmap() failed\n");
 
   myprint("\nmunmap()\n");
-  i = (int) munmap((void *)i, kMmapSize);
+  i = (int) munmap(map_result, kMmapSize);
   PrintInt(i);
   if (0 != i) Error("bad munmap() value\n");
 

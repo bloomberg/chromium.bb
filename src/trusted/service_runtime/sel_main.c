@@ -630,6 +630,10 @@ int main(int  ac,
    * error reporting done; can quit now if there was an error earlier.
    */
   if (LOAD_OK != errcode) {
+    NaClLog(4,
+            "Not running app code since errcode is %s (%d)\n",
+            NaClErrorString(errcode),
+            errcode);
     goto done;
   }
 

@@ -56,6 +56,9 @@ NORETURN void NaClStartThreadInApp(struct NaClAppThread *natp,
   context->r15 = nap->mem_start;
 
   NaClLog(4,
+          "NaClStackThreadInApp: user stack: 0x%"PRIxPTR"\n",
+          NaClGetThreadCtxSp(context));
+  NaClLog(4,
           "NaClStartThreadInApp: switching to untrusted code\n");
 
   NaClSwitch(context);

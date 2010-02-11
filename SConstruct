@@ -124,10 +124,8 @@ def AddNodeToTestSuite(env, node, suite_name, node_name=None):
 
   known_bad_nacl64 = [ 'run_srpc_basic_test',
                        'run_srpc_sysv_shm_test',
-                       'run_sysbasic_test',
-                       'run_thread_test',
-                       'run_simple_thread_test',
-                       'run_voronoi']
+                       'run_srpc_bad_service_test',
+                       ]
   if node_name in known_bad_nacl64 and env['BUILD_SUBARCH'] == '64':
     print '*** SKIPPING', node_name
     return

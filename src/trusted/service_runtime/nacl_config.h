@@ -116,17 +116,32 @@
 # define HIDDEN(n)
 #endif
 
+
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 
 # if NACL_BUILD_SUBARCH == 32
-#  define NACL_USERRET_FIX    (0x8)
-#  define NACL_SYSARGS_FIX    (NACL_USERRET_FIX + 0x4)
-#  define NACL_SYSCALLRET_FIX (NACL_USERRET_FIX + 0x4)
+#  define NACL_USERRET_FIX        (0x8)
+#  define NACL_SYSARGS_FIX        (NACL_USERRET_FIX + 0x4)
+#  define NACL_SYSCALLRET_FIX     (NACL_USERRET_FIX + 0x4)
+/*
+ * System V Application Binary Interface, Intel386 Architcture
+ * Processor Supplement, section 3-10, says stack alignment is
+ * 4-bytes, but gcc-generated code can require 16-byte alignment
+ * (depending on compiler flags in force) for SSE instructions, so we
+ * must do so here as well.
+ */
+#  define NACL_STACK_ALIGN_MASK   (0xf)
 
 # elif NACL_BUILD_SUBARCH == 64
-#  define NACL_USERRET_FIX    (0x8)
-#  define NACL_SYSARGS_FIX    (-0x18)
-#  define NACL_SYSCALLRET_FIX (0x10)
+#  define NACL_USERRET_FIX        (0x8)
+#  define NACL_SYSARGS_FIX        (-0x18)
+#  define NACL_SYSCALLRET_FIX     (0x10)
+/*
+ * System V Application Binary Interface, AMD64 Architecture Processor
+ * Supplement, at http://www.x86-64.org/documentation/abi.pdf, section
+ * 3.2.2 discusses stack alignment.
+ */
+#  define NACL_STACK_ALIGN_MASK   (0xf)
 # else /* NACL_BUILD_SUBARCH */
 #  error Unknown platform!
 # endif /* NACL_BUILD_SUBARCH */
@@ -137,9 +152,15 @@
 /* 16-byte bundles, 256MB code segment*/
 # define NACL_CONTROL_FLOW_MASK      0xF000000F
 
-# define NACL_USERRET_FIX     (0x4)
-# define NACL_SYSARGS_FIX     (NACL_USERRET_FIX + 0x4)
-# define NACL_SYSCALLRET_FIX  (NACL_USERRET_FIX + 0x4)
+# define NACL_USERRET_FIX         (0x4)
+# define NACL_SYSARGS_FIX         (NACL_USERRET_FIX + 0x4)
+# define NACL_SYSCALLRET_FIX      (NACL_USERRET_FIX + 0x4)
+/*
+ * See ARM Procedure Call Standard, ARM IHI 0042D, section 5.2.1.2.
+ * http://infocenter.arm.com/help/topic/com.arm.doc.ihi0042a/IHI0042A_aapcs.pdf
+ * -- the "public" stack alignment is required to be 8 bytes,
+ */
+# define NACL_STACK_ALIGN_MASK    (0x3)
 
 /* TODO(robertm): unify this with NACL_BLOCK_SHIFT */
 /* 16 byte bundles */
