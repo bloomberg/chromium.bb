@@ -8,7 +8,7 @@
 #include "net/base/mock_host_resolver.h"
 
 // Flaky, http://crbug.com/26296.
-IN_PROC_BROWSER_TEST_F(ExtensionApiTest, DISABLED_History) {
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, FLAKY_History) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 

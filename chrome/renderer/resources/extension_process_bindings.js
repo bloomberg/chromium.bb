@@ -557,7 +557,7 @@ var chrome = chrome || {};
   if (!chrome.experimental.history)
     chrome.experimental.history = {};
 
-  chrome.experimental.history.transistionType = {
+  chrome.experimental.history.transitionType = {
     LINK: 0,
     TYPED: 1,
     AUTO_BOOKMARK: 2,
