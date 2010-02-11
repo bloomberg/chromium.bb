@@ -139,7 +139,18 @@ SSL_CanBypass;
 ;+    local:
 ;+*;
 ;+};
-;+NSS_CHROMIUM {      # Chromium experimental
+;+NSS_3.12.6 {      # NSS 3.12.6 release
+;+    global:
+SSL_ConfigServerSessionIDCacheWithOpt;
+SSL_GetNegotiatedHostInfo;
+SSL_HandshakeNegotiatedExtension;
+SSL_ReconfigFD;
+SSL_SetTrustAnchors;
+SSL_SNISocketConfigHook;
+;+    local:
+;+*;
+;+};
+;+NSS_CHROMIUM {
 ;+    global:
 SSL_GetNextProto;
 SSL_SetNextProtoNego;
