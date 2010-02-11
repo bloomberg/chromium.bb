@@ -320,9 +320,9 @@ void RenderThread::OnSetZoomLevelForCurrentHost(const std::string& host,
 }
 
 void RenderThread::OnUpdateUserScripts(
-    base::SharedMemoryHandle scripts) {
+    base::SharedMemoryHandle scripts, bool only_inject_incognito) {
   DCHECK(base::SharedMemory::IsHandleValid(scripts)) << "Bad scripts handle";
-  user_script_slave_->UpdateScripts(scripts);
+  user_script_slave_->UpdateScripts(scripts, only_inject_incognito);
   UpdateActiveExtensions();
 }
 

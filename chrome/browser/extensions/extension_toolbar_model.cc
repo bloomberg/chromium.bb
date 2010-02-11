@@ -187,3 +187,28 @@ void ExtensionToolbarModel::UpdatePrefs() {
     ids.push_back((*iter)->id());
   service_->extension_prefs()->SetToolbarOrder(ids);
 }
+
+int ExtensionToolbarModel::IncognitoIndexToOriginal(int incognito_index) {
+  int original_index = 0, i = 0;
+  for (ExtensionList::iterator iter = begin(); iter != end();
+       ++iter, ++original_index) {
+    if (service_->IsIncognitoEnabled((*iter)->id())) {
+      if (incognito_index == i)
+        break;
+      ++i;
+    }
+  }
+  return original_index;
+}
+
+int ExtensionToolbarModel::OriginalIndexToIncognito(int original_index) {
+  int incognito_index = 0, i = 0;
+  for (ExtensionList::iterator iter = begin(); iter != end();
+       ++iter, ++i) {
+    if (original_index == i)
+      break;
+    if (service_->IsIncognitoEnabled((*iter)->id()))
+      ++incognito_index;
+  }
+  return incognito_index;
+}

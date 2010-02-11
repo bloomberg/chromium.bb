@@ -280,10 +280,6 @@ class ChromeURLRequestContextGetter : public URLRequestContextGetter,
   // called on the UI thread.
   static ChromeURLRequestContextGetter* CreateOffTheRecord(Profile* profile);
 
-  // Create an instance of request context for OTR profile for extensions.
-  static ChromeURLRequestContextGetter* CreateOffTheRecordForExtensions(
-      Profile* profile);
-
   // Clean up UI thread resources. This is expected to get called on the UI
   // thread before the instance is deleted on the IO thread.
   void CleanupOnUIThread();

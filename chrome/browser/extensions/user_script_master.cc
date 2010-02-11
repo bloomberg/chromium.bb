@@ -16,6 +16,7 @@
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extensions_service.h"
+#include "chrome/browser/profile.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
@@ -333,17 +334,15 @@ void UserScriptMaster::Observe(NotificationType type,
       StartScan();
       break;
     case NotificationType::EXTENSION_LOADED: {
-      // TODO(aa): Fix race here. A page could need a content script on startup,
-      // before the extension has loaded.  We need to freeze the renderer in
-      // that case.
-      // See: http://code.google.com/p/chromium/issues/detail?id=11547.
-
       // Add any content scripts inside the extension.
       Extension* extension = Details<Extension>(details).ptr();
+      bool incognito_enabled = profile_->GetExtensionsService()->
+          IsIncognitoEnabled(extension->id());
       const UserScriptList& scripts = extension->content_scripts();
       for (UserScriptList::const_iterator iter = scripts.begin();
            iter != scripts.end(); ++iter) {
         lone_scripts_.push_back(*iter);
+        lone_scripts_.back().set_incognito_enabled(incognito_enabled);
       }
       if (extensions_service_ready_)
         StartScan();
@@ -378,4 +377,15 @@ void UserScriptMaster::StartScan() {
     script_reloader_ = new ScriptReloader(this);
 
   script_reloader_->StartScan(user_script_dir_, lone_scripts_);
+}
+
+void UserScriptMaster::ReloadExtensionForTesting(Extension* extension) {
+  bool incognito_enabled = profile_->GetExtensionsService()->
+      IsIncognitoEnabled(extension->id());
+  for (UserScriptList::iterator iter = lone_scripts_.begin();
+       iter != lone_scripts_.end(); ++iter) {
+    if (iter->extension_id() == extension->id())
+      (*iter).set_incognito_enabled(incognito_enabled);
+  }
+  StartScan();
 }

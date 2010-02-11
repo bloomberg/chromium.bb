@@ -162,7 +162,8 @@ class RenderThread : public RenderThreadBase,
   void OnSetZoomLevelForCurrentHost(const std::string& host, int zoom_level);
   void OnSetContentSettingsForCurrentHost(
       const std::string& host, const ContentSettings& content_settings);
-  void OnUpdateUserScripts(base::SharedMemoryHandle table);
+  void OnUpdateUserScripts(base::SharedMemoryHandle table,
+                           bool only_inject_incognito);
   void OnSetExtensionFunctionNames(const std::vector<std::string>& names);
   void OnPageActionsUpdated(const std::string& extension_id,
       const std::vector<std::string>& page_actions);

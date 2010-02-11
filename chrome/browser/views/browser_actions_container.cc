@@ -450,6 +450,9 @@ void BrowserActionsContainer::CreateBrowserActionViews() {
   DCHECK(browser_action_views_.empty());
   for (ExtensionList::iterator iter = model_->begin();
        iter != model_->end(); ++iter) {
+    if (!ShouldDisplayBrowserAction(*iter))
+      continue;
+
     BrowserActionView* view = new BrowserActionView(*iter, this);
     browser_action_views_.push_back(view);
     AddChildView(view);
@@ -673,6 +676,7 @@ void BrowserActionsContainer::ViewHierarchyChanged(bool is_add,
 bool BrowserActionsContainer::GetDropFormats(
     int* formats, std::set<OSExchangeData::CustomFormat>* custom_formats) {
   custom_formats->insert(BrowserActionDragData::GetBrowserActionCustomFormat());
+
   return true;
 }
 
@@ -770,6 +774,9 @@ int BrowserActionsContainer::OnPerformDrop(
   // * Well, it can also point to the end, but not when dragging to the left. :)
   if (i > data.index())
     --i;
+
+  if (profile_->IsOffTheRecord())
+    i = model_->IncognitoIndexToOriginal(i);
 
   model_->MoveBrowserAction(dragging, i);
 
@@ -933,6 +940,12 @@ void BrowserActionsContainer::BrowserActionAdded(Extension* extension,
 
   CloseMenus();
 
+  if (!ShouldDisplayBrowserAction(extension))
+    return;
+
+  if (profile_->IsOffTheRecord())
+    index = model_->OriginalIndexToIncognito(index);
+
   // Before we change anything, determine the number of visible browser actions.
   size_t visible_actions = VisibleBrowserActions();
 
@@ -1011,6 +1024,12 @@ void BrowserActionsContainer::BrowserActionRemoved(Extension* extension) {
 
 void BrowserActionsContainer::BrowserActionMoved(Extension* extension,
                                                  int index) {
+  if (!ShouldDisplayBrowserAction(extension))
+    return;
+
+  if (profile_->IsOffTheRecord())
+    index = model_->OriginalIndexToIncognito(index);
+
   DCHECK(index >= 0 && index < static_cast<int>(browser_action_views_.size()));
 
   DeleteBrowserActionViews();
@@ -1103,4 +1122,11 @@ void BrowserActionsContainer::NotifyMenuDeleted(
     BrowserActionOverflowMenuController* controller) {
   DCHECK(controller == overflow_menu_);
   overflow_menu_ = NULL;
+}
+
+bool BrowserActionsContainer::ShouldDisplayBrowserAction(Extension* extension) {
+  // Only display incognito-enabled extensions while in incognito mode.
+  return (!profile_->IsOffTheRecord() ||
+          profile_->GetExtensionsService()->
+              IsIncognitoEnabled(extension->id()));
 }

@@ -41,7 +41,7 @@ void BrowserActionTestUtil::Press(int index) {
 
 std::string BrowserActionTestUtil::GetTooltip(int index) {
   std::wstring text;
-  GetContainer(browser_)->GetBrowserActionViewAt(0)->button()->
+  GetContainer(browser_)->GetBrowserActionViewAt(index)->button()->
       GetTooltipText(0, 0, &text);
   return WideToUTF8(text);
 }

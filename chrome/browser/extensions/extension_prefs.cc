@@ -49,6 +49,10 @@ const wchar_t kExtensionToolbar[] = L"extensions.toolbar";
 // server's perspective) an extension last included a "ping" parameter during
 // its update check.
 const wchar_t kLastPingDay[] = L"lastpingday";
+
+// A preference that, if true, will allow this extension to run in incognito
+// mode.
+const wchar_t kPrefIncognitoEnabled[] = L"incognito";
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -257,6 +261,16 @@ void ExtensionPrefs::SetLastPingDay(const std::string& extension_id,
   prefs_->ScheduleSavePersistentPrefs();
 }
 
+bool ExtensionPrefs::IsIncognitoEnabled(const std::string& extension_id) {
+  return ReadExtensionPrefBoolean(extension_id, kPrefIncognitoEnabled);
+}
+
+void ExtensionPrefs::SetIsIncognitoEnabled(const std::string& extension_id,
+                                           bool enabled) {
+  UpdateExtensionPref(extension_id, kPrefIncognitoEnabled,
+                      Value::CreateBooleanValue(enabled));
+  prefs_->SavePersistentPrefs();
+}
 
 void ExtensionPrefs::GetKilledExtensionIds(std::set<std::string>* killed_ids) {
   const DictionaryValue* dict = prefs_->GetDictionary(kExtensionsPref);

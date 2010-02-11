@@ -117,12 +117,14 @@ const char* Extension::kTabPermission = "tabs";
 const char* Extension::kBookmarkPermission = "bookmarks";
 const char* Extension::kNotificationPermission = "notifications";
 const char* Extension::kExperimentalPermission = "experimental";
+const char* Extension::kIncognitoPermission = "incognito";
 
 const char* Extension::kPermissionNames[] = {
   Extension::kTabPermission,
   Extension::kBookmarkPermission,
   Extension::kNotificationPermission,
-  Extension::kExperimentalPermission
+  Extension::kExperimentalPermission,
+  Extension::kIncognitoPermission
 };
 const size_t Extension::kNumPermissions =
     arraysize(Extension::kPermissionNames);

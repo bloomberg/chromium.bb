@@ -3,7 +3,8 @@
   "version": "1.0",
   "background_page": "background.html",
   "permissions": [
-    "tabs", "http://*/*"
+    "tabs", "http://*/*",
+    "experimental", "incognito"
   ],
   "browser_action": {
     "default_title": "Make this page red",

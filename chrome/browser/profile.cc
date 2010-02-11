@@ -196,7 +196,6 @@ class OffTheRecordProfileImpl : public Profile,
  public:
   explicit OffTheRecordProfileImpl(Profile* real_profile)
       : profile_(real_profile),
-        extensions_request_context_(NULL),
         start_time_(Time::Now()) {
     request_context_ = ChromeURLRequestContextGetter::CreateOffTheRecord(this);
 
@@ -209,7 +208,6 @@ class OffTheRecordProfileImpl : public Profile,
 
   virtual ~OffTheRecordProfileImpl() {
     CleanupRequestContext(request_context_);
-    CleanupRequestContext(extensions_request_context_);
   }
 
   virtual ProfileId GetRuntimeId() {
@@ -248,23 +246,25 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   virtual ExtensionsService* GetExtensionsService() {
-    return NULL;
+    return GetOriginalProfile()->GetExtensionsService();
   }
 
   virtual UserScriptMaster* GetUserScriptMaster() {
-    return NULL;
+    return GetOriginalProfile()->GetUserScriptMaster();
   }
 
   virtual ExtensionDevToolsManager* GetExtensionDevToolsManager() {
+    // TODO(mpcomplete): figure out whether we should return the original
+    // profile's version.
     return NULL;
   }
 
   virtual ExtensionProcessManager* GetExtensionProcessManager() {
-    return NULL;
+    return GetOriginalProfile()->GetExtensionProcessManager();
   }
 
   virtual ExtensionMessageService* GetExtensionMessageService() {
-    return NULL;
+    return GetOriginalProfile()->GetExtensionMessageService();
   }
 
   virtual SSLHostState* GetSSLHostState() {
@@ -389,12 +389,7 @@ class OffTheRecordProfileImpl : public Profile,
   }
 
   URLRequestContextGetter* GetRequestContextForExtensions() {
-    if (!extensions_request_context_) {
-      extensions_request_context_ =
-          ChromeURLRequestContextGetter::CreateOffTheRecordForExtensions(this);
-    }
-
-    return extensions_request_context_;
+    return GetOriginalProfile()->GetRequestContextForExtensions();
   }
 
   virtual net::SSLConfigService* GetSSLConfigService() {
@@ -526,8 +521,6 @@ class OffTheRecordProfileImpl : public Profile,
 
   // The context to use for requests made from this OTR session.
   scoped_refptr<ChromeURLRequestContextGetter> request_context_;
-
-  scoped_refptr<ChromeURLRequestContextGetter> extensions_request_context_;
 
   // The download manager that only stores downloaded items in memory.
   scoped_refptr<DownloadManager> download_manager_;

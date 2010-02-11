@@ -94,6 +94,10 @@ class ExtensionPrefs {
   // the client's.
   void SetLastPingDay(const std::string& extension_id, const base::Time& time);
 
+  // Returns true if the user enabled this extension to be loaded in incognito
+  // mode.
+  bool IsIncognitoEnabled(const std::string& extension_id);
+  void SetIsIncognitoEnabled(const std::string& extension_id, bool enabled);
 
   // Saves ExtensionInfo for each installed extension with the path to the
   // version directory and the location. Blacklisted extensions won't be saved

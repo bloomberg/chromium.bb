@@ -69,6 +69,11 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer {
   // Hide the extension popup, if any.
   void HidePopup();
 
+  // Returns true if this extension should be shown in this toolbar. This can
+  // return false if we are in an incognito window and the extension is disabled
+  // for incognito.
+  bool ShouldDisplayBrowserAction(Extension* extension);
+
   // ExtensionToolbarModel::Observer implementation.
   virtual void BrowserActionAdded(Extension* extension, int index);
   virtual void BrowserActionRemoved(Extension* extension);

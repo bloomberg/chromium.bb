@@ -283,32 +283,6 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
   return context;
 }
 
-// Factory that creates the ChromeURLRequestContext for extensions in incognito
-// mode.
-class FactoryForOffTheRecordExtensions
-    : public ChromeURLRequestContextFactory {
- public:
-  explicit FactoryForOffTheRecordExtensions(Profile* profile)
-      : ChromeURLRequestContextFactory(profile) {}
-
-  virtual ChromeURLRequestContext* Create();
-};
-
-ChromeURLRequestContext* FactoryForOffTheRecordExtensions::Create() {
-  ChromeURLRequestContext* context = new ChromeURLRequestContext;
-  ApplyProfileParametersToContext(context);
-
-  net::CookieMonster* cookie_monster = new net::CookieMonster(NULL);
-
-  // Enable cookies for extension URLs only.
-  const char* schemes[] = {chrome::kExtensionScheme};
-  cookie_monster->SetCookieableSchemes(schemes, 1);
-  context->set_cookie_store(cookie_monster);
-  // No dynamic cookie policy for extensions.
-
-  return context;
-}
-
 // Factory that creates the ChromeURLRequestContext for media.
 class FactoryForMedia : public ChromeURLRequestContextFactory {
  public:
@@ -499,16 +473,6 @@ ChromeURLRequestContextGetter::CreateOffTheRecord(Profile* profile) {
   DCHECK(profile->IsOffTheRecord());
   return new ChromeURLRequestContextGetter(
       profile, new FactoryForOffTheRecord(profile));
-}
-
-// static
-ChromeURLRequestContextGetter*
-ChromeURLRequestContextGetter::CreateOffTheRecordForExtensions(
-    Profile* profile) {
-  DCHECK(profile->IsOffTheRecord());
-  return new ChromeURLRequestContextGetter(
-      profile,
-      new FactoryForOffTheRecordExtensions(profile));
 }
 
 void ChromeURLRequestContextGetter::CleanupOnUIThread() {

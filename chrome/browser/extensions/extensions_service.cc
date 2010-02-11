@@ -529,6 +529,16 @@ base::Time ExtensionsService::LastPingDay(const std::string& extension_id) {
   return extension_prefs_->LastPingDay(extension_id);
 }
 
+bool ExtensionsService::IsIncognitoEnabled(const std::string& extension_id) {
+  Extension* extension = GetExtensionById(extension_id, true);
+  if (!extension)
+    return false;
+
+  return extension_prefs_->IsIncognitoEnabled(extension_id) &&
+      extension->HasApiPermission(Extension::kExperimentalPermission) &&
+      extension->HasApiPermission(Extension::kIncognitoPermission);
+}
+
 void ExtensionsService::CheckForExternalUpdates() {
   // This installs or updates externally provided extensions.
   // TODO(aa): Why pass this list into the provider, why not just filter it

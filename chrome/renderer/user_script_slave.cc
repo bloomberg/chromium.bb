@@ -68,7 +68,8 @@ void UserScriptSlave::GetActiveExtensions(std::set<std::string>* extension_ids) 
   }
 }
 
-bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
+bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory,
+                                    bool only_inject_incognito) {
   scripts_.clear();
 
   // Create the shared memory object (read only).
@@ -100,6 +101,13 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory) {
     scripts_.push_back(new UserScript());
     UserScript* script = scripts_.back();
     script->Unpickle(pickle, &iter);
+
+    if (only_inject_incognito && !script->is_incognito_enabled()) {
+      // This script shouldn't run in an incognito tab.
+      delete script;
+      scripts_.pop_back();
+      continue;
+    }
 
     // Note that this is a pointer into shared memory. We don't own it. It gets
     // cleared up when the last renderer or browser process drops their

@@ -75,17 +75,12 @@ void UserScript::File::Unpickle(const ::Pickle& pickle, void** iter) {
 }
 
 void UserScript::Pickle(::Pickle* pickle) const {
-  // Write the run location.
+  // Write simple types.
   pickle->WriteInt(run_location());
-
-  // Write the extension id.
   pickle->WriteString(extension_id());
-
-  // Write Greasemonkey emulation.
   pickle->WriteBool(emulate_greasemonkey());
-
-  // Write match all frames
   pickle->WriteBool(match_all_frames());
+  pickle->WriteBool(is_incognito_enabled());
 
   // Write globs.
   std::vector<std::string>::const_iterator glob;
@@ -127,14 +122,10 @@ void UserScript::Unpickle(const ::Pickle& pickle, void** iter) {
   CHECK(run_location >= 0 && run_location < RUN_LOCATION_LAST);
   run_location_ = static_cast<RunLocation>(run_location);
 
-  // Read the extension ID.
   CHECK(pickle.ReadString(iter, &extension_id_));
-
-  // Read Greasemonkey emulation.
   CHECK(pickle.ReadBool(iter, &emulate_greasemonkey_));
-
-  // Read match all frames
   CHECK(pickle.ReadBool(iter, &match_all_frames_));
+  CHECK(pickle.ReadBool(iter, &incognito_enabled_));
 
   // Read globs.
   size_t num_globs = 0;

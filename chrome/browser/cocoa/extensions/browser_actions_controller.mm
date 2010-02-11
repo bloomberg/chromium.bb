@@ -30,6 +30,7 @@ NSString* const kBrowserActionsChangedNotification = @"BrowserActionsChanged";
 - (void)removeActionButtonForExtension:(Extension*)extension;
 - (void)repositionActionButtons;
 - (int)currentTabId;
+- (bool)shouldDisplayBrowserAction:(Extension*)extension;
 @end
 
 // A helper class to proxy extension notifications to the view controller's
@@ -137,6 +138,9 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 - (void)createActionButtonForExtension:(Extension*)extension
                              withIndex:(int)index {
   if (!extension->browser_action())
+    return;
+
+  if (![self shouldDisplayBrowserAction:extension])
     return;
 
   // Show the container if it's the first button. Otherwise it will be shown
@@ -264,6 +268,12 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 
 - (NSButton*)buttonWithIndex:(int)index {
   return [buttonOrder_ objectAtIndex:(NSUInteger)index];
+}
+
+- (bool)shouldDisplayBrowserAction:(Extension*)extension {
+  return (!profile_->IsOffTheRecord() ||
+          profile_->GetExtensionsService()->
+              IsIncognitoEnabled(extension->id()));
 }
 
 @end

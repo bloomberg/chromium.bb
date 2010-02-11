@@ -399,7 +399,14 @@ class BrowserActionsContainer
   // all the padding that we normally show if there are icons.
   int ContainerMinSize() const;
 
-  // The vector of browser actions (icons/image buttons for each action).
+  // Returns true if this extension should be shown in this toolbar. This can
+  // return false if we are in an incognito window and the extension is disabled
+  // for incognito.
+  bool ShouldDisplayBrowserAction(Extension* extension);
+
+  // The vector of browser actions (icons/image buttons for each action). Note
+  // that not every BrowserAction in the ToolbarModel will necessarily be in
+  // this collection. Some extensions may be disabled in incognito windows.
   BrowserActionViews browser_action_views_;
 
   NotificationRegistrar registrar_;

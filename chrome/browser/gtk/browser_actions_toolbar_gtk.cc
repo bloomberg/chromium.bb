@@ -332,6 +332,12 @@ void BrowserActionsToolbarGtk::CreateAllButtons() {
 
 void BrowserActionsToolbarGtk::CreateButtonForExtension(Extension* extension,
                                                         int index) {
+  if (!ShouldDisplayBrowserAction(extension))
+    return;
+
+  if (profile_->IsOffTheRecord())
+    index = model_->OriginalIndexToIncognito(index);
+
   RemoveButtonForExtension(extension);
   linked_ptr<BrowserActionButton> button(
       new BrowserActionButton(this, extension));
@@ -374,6 +380,14 @@ void BrowserActionsToolbarGtk::UpdateVisibility() {
     gtk_widget_show(widget());
 }
 
+bool BrowserActionsToolbarGtk::ShouldDisplayBrowserAction(
+    Extension* extension) {
+  // Only display incognito-enabled extensions while in incognito mode.
+  return (!profile_->IsOffTheRecord() ||
+          profile_->GetExtensionsService()->
+              IsIncognitoEnabled(extension->id()));
+}
+
 void BrowserActionsToolbarGtk::HidePopup() {
   ExtensionPopupGtk* popup = ExtensionPopupGtk::get_current_extension_popup();
   if (popup)
@@ -402,9 +416,13 @@ void BrowserActionsToolbarGtk::BrowserActionMoved(Extension* extension,
 
   BrowserActionButton* button = extension_button_map_[extension->id()].get();
   if (!button) {
-    NOTREACHED();
+    if (ShouldDisplayBrowserAction(extension))
+      NOTREACHED();
     return;
   }
+
+  if (profile_->IsOffTheRecord())
+    index = model_->OriginalIndexToIncognito(index);
 
   gtk_box_reorder_child(GTK_BOX(hbox_.get()), button->widget(), index);
 }
@@ -428,6 +446,9 @@ gboolean BrowserActionsToolbarGtk::OnDragMotion(GtkWidget* widget,
     return FALSE;
 
   drop_index_ = x < kButtonSize ? 0 : x / (kButtonSize + kButtonPadding);
+  if (profile_->IsOffTheRecord())
+    drop_index_ = model_->IncognitoIndexToOriginal(drop_index_);
+
   // We will go ahead and reorder the child in order to provide visual feedback
   // to the user. We don't inform the model that it has moved until the drag
   // ends.
