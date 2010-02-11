@@ -182,9 +182,7 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       initial_window_focus_(false),
       container_is_visible_(false),
       have_called_set_window_(false),
-      handle_event_depth_(0),
-      user_gesture_message_posted_(this),
-      user_gesture_msg_factory_(this) {
+      handle_event_depth_(0) {
   memset(&window_, 0, sizeof(window_));
 #ifndef NP_NO_CARBON
   memset(&cg_context_, 0, sizeof(cg_context_));
@@ -917,10 +915,9 @@ static bool NPCocoaEventFromWebInputEvent(const WebInputEvent& event,
   return false;
 }
 
-bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
-                                             WebCursorInfo* cursor) {
-  DCHECK(windowless_) << "events should only be received in windowless mode";
-  DCHECK(cursor != NULL);
+bool WebPluginDelegateImpl::PlatformHandleInputEvent(
+    const WebInputEvent& event, WebCursorInfo* cursor_info) {
+  DCHECK(cursor_info != NULL);
 
 #ifndef NP_NO_CARBON
   if (instance()->event_model() == NPEventModelCarbon &&
@@ -945,7 +942,7 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
       SetContentAreaOrigin(content_area_origin_);
     }
 
-    current_windowless_cursor_.GetCursorInfo(cursor);
+    current_windowless_cursor_.GetCursorInfo(cursor_info);
   }
 
   // if we do not currently have focus and this is a mouseDown, trigger a

@@ -683,9 +683,8 @@ static bool NPEventFromWebInputEvent(const WebInputEvent& event,
   }
 }
 
-bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
-                                             WebCursorInfo* cursor_info) {
-  DCHECK(windowless_) << "events should only be received in windowless mode";
+bool WebPluginDelegateImpl::PlatformHandleInputEvent(
+    const WebInputEvent& event, WebCursorInfo* cursor_info) {
 
   if (first_event_time_ < 0.0)
     first_event_time_ = event.timeStampSeconds;

@@ -243,10 +243,10 @@ WebPluginDelegateImpl::WebPluginDelegateImpl(
       dummy_window_for_activation_(NULL),
       handle_event_message_filter_hook_(NULL),
       handle_event_pump_messages_event_(NULL),
-      handle_event_depth_(0),
       user_gesture_message_posted_(false),
 #pragma warning(suppress: 4355)  // can use this
-      user_gesture_msg_factory_(this) {
+      user_gesture_msg_factory_(this),
+      handle_event_depth_(0) {
   memset(&window_, 0, sizeof(window_));
 
   const WebPluginInfo& plugin_info = instance_->plugin_lib()->plugin_info();
@@ -792,6 +792,22 @@ LRESULT CALLBACK WebPluginDelegateImpl::DummyWindowProc(
   return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
+// Returns true if the message passed in corresponds to a user gesture.
+static bool IsUserGestureMessage(unsigned int message) {
+  switch (message) {
+    case WM_LBUTTONUP:
+    case WM_RBUTTONUP:
+    case WM_MBUTTONUP:
+    case WM_KEYUP:
+      return true;
+
+    default:
+      break;
+  }
+
+  return false;
+}
+
 LRESULT CALLBACK WebPluginDelegateImpl::NativeWndProc(
     HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam) {
   WebPluginDelegateImpl* delegate = reinterpret_cast<WebPluginDelegateImpl*>(
@@ -1084,9 +1100,8 @@ static bool NPEventFromWebInputEvent(const WebInputEvent& event,
   }
 }
 
-bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
-                                             WebCursorInfo* cursor_info) {
-  DCHECK(windowless_) << "events should only be received in windowless mode";
+bool WebPluginDelegateImpl::PlatformHandleInputEvent(
+    const WebInputEvent& event, WebCursorInfo* cursor_info) {
   DCHECK(cursor_info != NULL);
 
   NPEvent np_event;
@@ -1119,13 +1134,6 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
 
   handle_event_depth_++;
 
-  bool pop_user_gesture = false;
-
-  if (IsUserGestureMessage(np_event.event)) {
-    pop_user_gesture = true;
-    instance()->PushPopupsEnabledState(true);
-  }
-
   bool ret = instance()->NPP_HandleEvent(&np_event) != 0;
 
   if (np_event.event == WM_MOUSEMOVE) {
@@ -1133,10 +1141,6 @@ bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
     // it. There is a nasty race condition here with the multiprocess browser
     // as someone might be setting the cursor in the main process as well.
     current_windowless_cursor_.GetCursorInfo(cursor_info);
-  }
-
-  if (pop_user_gesture) {
-    instance()->PopPopupsEnabledState();
   }
 
   handle_event_depth_--;
@@ -1169,21 +1173,6 @@ void WebPluginDelegateImpl::OnModalLoopEntered() {
 bool WebPluginDelegateImpl::ShouldTrackEventForModalLoops(NPEvent* event) {
   if (event->event == WM_RBUTTONDOWN)
     return true;
-  return false;
-}
-
-bool WebPluginDelegateImpl::IsUserGestureMessage(unsigned int message) {
-  switch (message) {
-    case WM_LBUTTONUP:
-    case WM_RBUTTONUP:
-    case WM_MBUTTONUP:
-    case WM_KEYUP:
-      return true;
-
-    default:
-      break;
-  }
-
   return false;
 }
 

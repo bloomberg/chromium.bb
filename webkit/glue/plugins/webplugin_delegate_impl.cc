@@ -213,6 +213,38 @@ void WebPluginDelegateImpl::WindowedUpdateGeometry(
   }
 }
 
+bool WebPluginDelegateImpl::HandleInputEvent(const WebInputEvent& event,
+                                             WebCursorInfo* cursor_info) {
+  DCHECK(windowless_) << "events should only be received in windowless mode";
+
+  bool pop_user_gesture = false;
+  if (IsUserGesture(event)) {
+    pop_user_gesture = true;
+    instance()->PushPopupsEnabledState(true);
+  }
+
+  bool handled = PlatformHandleInputEvent(event, cursor_info);
+
+  if (pop_user_gesture) {
+    instance()->PopPopupsEnabledState();
+  }
+
+  return handled;
+}
+
+bool WebPluginDelegateImpl::IsUserGesture(const WebInputEvent& event) {
+  switch (event.type) {
+    case WebInputEvent::MouseDown:
+    case WebInputEvent::MouseUp:
+    case WebInputEvent::KeyDown:
+    case WebInputEvent::KeyUp:
+      return true;
+    default:
+      return false;
+  }
+  return false;
+}
+
 WebPluginResourceClient* WebPluginDelegateImpl::CreateResourceClient(
     unsigned long resource_id, const GURL& url, int notify_id) {
   return instance()->CreateStream(

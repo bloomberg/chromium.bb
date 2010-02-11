@@ -77,7 +77,7 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   virtual void Print(gfx::NativeDrawingContext context);
   virtual void SetFocus();
   virtual bool HandleInputEvent(const WebKit::WebInputEvent& event,
-                                WebKit::WebCursorInfo* cursor);
+                                WebKit::WebCursorInfo* cursor_info);
   virtual NPObject* GetPluginScriptableObject();
   virtual void DidFinishLoadWithReason(
       const GURL& url, NPReason reason, int notify_id);
@@ -229,6 +229,11 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   //-----------------------------------------
   // used for windowed and windowless plugins
 
+  // Does platform-specific event handling. Arguments and return are identical
+  // to HandleInputEvent.
+  bool PlatformHandleInputEvent(const WebKit::WebInputEvent& event,
+                                WebKit::WebCursorInfo* cursor_info);
+
   NPAPI::PluginInstance* instance() { return instance_.get(); }
 
   // Closes down and destroys our plugin instance.
@@ -375,34 +380,32 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
   void OnModalLoopEntered();
 
   // Returns true if the message passed in corresponds to a user gesture.
-  static bool IsUserGestureMessage(unsigned int message);
-
-  // Indicates the end of a user gesture period.
-  void OnUserGestureEnd();
+  static bool IsUserGesture(const WebKit::WebInputEvent& event);
 
   // The url with which the plugin was instantiated.
   std::string plugin_url_;
 
 #if defined(OS_WIN)
+  // Indicates the end of a user gesture period.
+  void OnUserGestureEnd();
+
   // Handle to the message filter hook
   HHOOK handle_event_message_filter_hook_;
 
   // Event which is set when the plugin enters a modal loop in the course
   // of a NPP_HandleEvent call.
   HANDLE handle_event_pump_messages_event_;
-#endif
-
-  // Holds the depth of the HandleEvent callstack.
-  int handle_event_depth_;
 
   // This flag indicates whether we started tracking a user gesture message.
   bool user_gesture_message_posted_;
 
   // Runnable Method Factory used to invoke the OnUserGestureEnd method
   // asynchronously.
-#if !defined(USE_X11)
   ScopedRunnableMethodFactory<WebPluginDelegateImpl> user_gesture_msg_factory_;
 #endif
+
+  // Holds the depth of the HandleEvent callstack.
+  int handle_event_depth_;
 
   // Holds the current cursor set by the windowless plugin.
   WebCursor current_windowless_cursor_;
