@@ -33,6 +33,7 @@ class LoginManagerView : public WizardScreen,
 
   // WizardScreen implementation:
   void Init();
+  void UpdateLocalizedStrings();
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
@@ -73,6 +74,10 @@ class LoginManagerView : public WizardScreen,
   // Attempt to login with the current field values.
   void Login();
 
+  // Shows error message with the specified message id.
+  // -1 stands for no error.
+  void ShowError(int error_id);
+
   views::Textfield* username_field_;
   views::Textfield* password_field_;
   views::Label* os_version_label_;
@@ -90,6 +95,10 @@ class LoginManagerView : public WizardScreen,
 
   // Notifications receiver.
   chromeos::ScreenObserver* observer_;
+
+  // String ID for the current error message.
+  // Set to -1 if no messages is shown.
+  int error_id_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginManagerView);
 };

@@ -33,7 +33,8 @@ class AccountCreationView : public WizardScreen,
   virtual ~AccountCreationView();
 
   // WizardScreen implementation:
-  void Init();
+  virtual void Init();
+  virtual void UpdateLocalizedStrings();
 
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
@@ -55,9 +56,7 @@ class AccountCreationView : public WizardScreen,
   void CreateAccount();
 
   // Initializers for labels and textfields.
-  void InitLabel(const gfx::Font& label_font,
-                 const std::wstring& label_text,
-                 views::Label** label);
+  void InitLabel(const gfx::Font& label_font, views::Label** label);
   void InitTextfield(const gfx::Font& field_font,
                      views::Textfield::StyleFlags style,
                      views::Textfield** field);

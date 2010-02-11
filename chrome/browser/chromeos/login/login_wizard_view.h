@@ -37,6 +37,8 @@ class LoginWizardView : public views::View,
  private:
   // Exit handlers:
   void OnLoginSignInSelected();
+  void OnNetworkConnected();
+  void OnAccountCreated();
 
   // Overridden from chromeos::ScreenObserver:
   virtual void OnExit(ExitCodes exit_code);
@@ -59,6 +61,9 @@ class LoginWizardView : public views::View,
   // Initializer for all login screens.
   template <class T>
   void CreateAndInitScreen(T** screen);
+
+  // Switches the current screen to another one.
+  void SetCurrentScreen(WizardScreen* screen);
 
   // Wizard view dimensions.
   gfx::Size dimensions_;

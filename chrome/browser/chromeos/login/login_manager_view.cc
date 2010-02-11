@@ -59,7 +59,16 @@ const bool kStubOutLogin = false;
 }  // namespace
 
 LoginManagerView::LoginManagerView(chromeos::ScreenObserver* observer)
-    : observer_(observer) {
+    : username_field_(NULL),
+      password_field_(NULL),
+      os_version_label_(NULL),
+      title_label_(NULL),
+      username_label_(NULL),
+      password_label_(NULL),
+      error_label_(NULL),
+      sign_in_button_(NULL),
+      observer_(observer),
+      error_id_(-1) {
 }
 
 LoginManagerView::~LoginManagerView() {
@@ -86,14 +95,12 @@ void LoginManagerView::Init() {
   title_label_ = new views::Label();
   title_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   title_label_->SetFont(title_font);
-  title_label_->SetText(l10n_util::GetString(IDS_LOGIN_TITLE));
   AddChildView(title_label_);
 
   username_label_ = new views::Label();
   username_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   username_label_->SetColor(kLabelColor);
   username_label_->SetFont(label_font);
-  username_label_->SetText(l10n_util::GetString(IDS_LOGIN_USERNAME));
   AddChildView(username_label_);
 
   username_field_ = new views::Textfield;
@@ -104,7 +111,6 @@ void LoginManagerView::Init() {
   password_label_->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   password_label_->SetColor(kLabelColor);
   password_label_->SetFont(label_font);
-  password_label_->SetText(l10n_util::GetString(IDS_LOGIN_PASSWORD));
   AddChildView(password_label_);
 
   password_field_ = new views::Textfield(views::Textfield::STYLE_PASSWORD);
@@ -113,7 +119,6 @@ void LoginManagerView::Init() {
 
   sign_in_button_ = new views::NativeButton(this, std::wstring());
   sign_in_button_->set_font(button_font);
-  sign_in_button_->SetLabel(l10n_util::GetString(IDS_LOGIN_BUTTON));
   AddChildView(sign_in_button_);
 
   os_version_label_ = new views::Label();
@@ -127,6 +132,8 @@ void LoginManagerView::Init() {
   error_label_->SetColor(kErrorColor);
   error_label_->SetFont(label_font);
   AddChildView(error_label_);
+
+  UpdateLocalizedStrings();
 
   // Restore previously logged in user.
   std::vector<chromeos::UserManager::User> users =
@@ -142,10 +149,18 @@ void LoginManagerView::Init() {
     loader_.GetVersion(
         &consumer_, NewCallback(this, &LoginManagerView::OnOSVersion));
   } else if (!kStubOutLogin) {
-    error_label_->SetText(l10n_util::GetString(IDS_LOGIN_DISABLED_NO_LIBCROS));
+    ShowError(IDS_LOGIN_DISABLED_NO_LIBCROS);
     username_field_->SetReadOnly(true);
     password_field_->SetReadOnly(true);
   }
+}
+
+void LoginManagerView::UpdateLocalizedStrings() {
+  title_label_->SetText(l10n_util::GetString(IDS_LOGIN_TITLE));
+  username_label_->SetText(l10n_util::GetString(IDS_LOGIN_USERNAME));
+  password_label_->SetText(l10n_util::GetString(IDS_LOGIN_PASSWORD));
+  sign_in_button_->SetLabel(l10n_util::GetString(IDS_LOGIN_BUTTON));
+  ShowError(error_id_);
 }
 
 // Sets the bounds of the view, using x and y as the origin.
@@ -261,17 +276,22 @@ void LoginManagerView::Login() {
     chromeos::UserManager::Get()->UserLoggedIn(username);
   } else {
     chromeos::NetworkLibrary* network = chromeos::NetworkLibrary::Get();
-    int errorID;
     // Check networking after trying to login in case user is
     // cached locally or the local admin account.
     if (!network || !network->EnsureLoaded())
-      errorID = IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY;
+      ShowError(IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY);
     else if (!network->Connected())
-      errorID = IDS_LOGIN_ERROR_NETWORK_NOT_CONNECTED;
+      ShowError(IDS_LOGIN_ERROR_NETWORK_NOT_CONNECTED);
     else
-      errorID = IDS_LOGIN_ERROR_AUTHENTICATING;
-    error_label_->SetText(l10n_util::GetString(errorID));
+      ShowError(IDS_LOGIN_ERROR_AUTHENTICATING);
   }
+}
+
+void LoginManagerView::ShowError(int error_id) {
+  error_id_ = error_id;
+  error_label_->SetText((error_id_ == -1)
+                        ? std::wstring()
+                        : l10n_util::GetString(error_id_));
 }
 
 bool LoginManagerView::HandleKeystroke(views::Textfield* s,

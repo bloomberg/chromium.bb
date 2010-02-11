@@ -50,6 +50,8 @@ AccountCreationView::AccountCreationView(chromeos::ScreenObserver* observer)
 AccountCreationView::~AccountCreationView() {
 }
 
+///////////////////////////////////////////////////////////////////////////////
+// AccountCreationView, WizardScreen overrides:
 void AccountCreationView::Init() {
   // Use rounded rect background.
   views::Painter* painter = new chromeos::RoundedRectPainter(
@@ -62,6 +64,21 @@ void AccountCreationView::Init() {
 
   InitControls();
   InitLayout();
+}
+
+void AccountCreationView::UpdateLocalizedStrings() {
+  title_label_->SetText(l10n_util::GetString(IDS_ACCOUNT_CREATION_TITLE));
+  firstname_label_->SetText(
+      l10n_util::GetString(IDS_ACCOUNT_CREATION_FIRSTNAME));
+  lastname_label_->SetText(
+      l10n_util::GetString(IDS_ACCOUNT_CREATION_LASTNAME));
+  username_label_->SetText(l10n_util::GetString(IDS_ACCOUNT_CREATION_EMAIL));
+  password_label_->SetText(
+      l10n_util::GetString(IDS_ACCOUNT_CREATION_PASSWORD));
+  reenter_password_label_->SetText(
+      l10n_util::GetString(IDS_ACCOUNT_CREATION_REENTER_PASSWORD));
+  create_account_button_->SetLabel(
+      l10n_util::GetString(IDS_ACCOUNT_CREATION_BUTTON));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -90,10 +107,10 @@ bool AccountCreationView::HandleKeystroke(views::Textfield* s,
     const views::Textfield::Keystroke& keystroke) {
   if (keystroke.GetKeyboardCode() == base::VKEY_RETURN) {
     CreateAccount();
-    // Return true so that processing ends
+    // Return true so that processing ends.
     return true;
   }
-  // Return false so that processing does not end
+  // Return false so that processing does not end.
   return false;
 }
 
@@ -101,15 +118,18 @@ bool AccountCreationView::HandleKeystroke(views::Textfield* s,
 // AccountCreationView, private:
 void AccountCreationView::CreateAccount() {
   // TODO(avayvod): Implement account creation.
+  if (observer_) {
+    observer_->OnExit(chromeos::ScreenObserver::ACCOUNT_CREATED);
+  }
 }
 
 void AccountCreationView::InitLabel(const gfx::Font& label_font,
-                                    const std::wstring& label_text,
                                     views::Label** label) {
+  if (!label)
+    return;
   scoped_ptr<views::Label> new_label(new views::Label());
   new_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   new_label->SetFont(label_font);
-  new_label->SetText(label_text);
   new_label->SetColor(kLabelColor);
   AddChildView(new_label.get());
   *label = new_label.release();
@@ -118,6 +138,8 @@ void AccountCreationView::InitLabel(const gfx::Font& label_font,
 void AccountCreationView::InitTextfield(const gfx::Font& field_font,
                                         views::Textfield::StyleFlags style,
                                         views::Textfield** field) {
+  if (!field)
+    return;
   scoped_ptr<views::Textfield> new_field(new views::Textfield(style));
   new_field->SetFont(field_font);
   new_field->set_default_width_in_chars(kTextfieldWidthInChars);
@@ -134,39 +156,27 @@ void AccountCreationView::InitControls() {
   gfx::Font button_font = label_font;
   gfx::Font field_font = label_font;
 
-  InitLabel(title_font,
-            l10n_util::GetString(IDS_ACCOUNT_CREATION_TITLE),
-            &title_label_);
+  InitLabel(title_font, &title_label_);
 
-  InitLabel(label_font,
-            l10n_util::GetString(IDS_ACCOUNT_CREATION_FIRSTNAME),
-            &firstname_label_);
+  InitLabel(label_font, &firstname_label_);
   InitTextfield(field_font, views::Textfield::STYLE_DEFAULT,
                 &firstname_field_);
-  InitLabel(label_font,
-            l10n_util::GetString(IDS_ACCOUNT_CREATION_LASTNAME),
-            &lastname_label_);
+  InitLabel(label_font, &lastname_label_);
   InitTextfield(field_font, views::Textfield::STYLE_DEFAULT, &lastname_field_);
-  InitLabel(label_font,
-            l10n_util::GetString(IDS_ACCOUNT_CREATION_EMAIL),
-            &username_label_);
+  InitLabel(label_font, &username_label_);
   InitTextfield(field_font, views::Textfield::STYLE_DEFAULT, &username_field_);
-  InitLabel(label_font,
-            l10n_util::GetString(IDS_ACCOUNT_CREATION_PASSWORD),
-            &password_label_);
+  InitLabel(label_font, &password_label_);
   InitTextfield(field_font, views::Textfield::STYLE_PASSWORD,
                 &password_field_);
-  InitLabel(label_font,
-            l10n_util::GetString(IDS_ACCOUNT_CREATION_REENTER_PASSWORD),
-            &reenter_password_label_);
+  InitLabel(label_font, &reenter_password_label_);
   InitTextfield(field_font, views::Textfield::STYLE_PASSWORD,
                 &reenter_password_field_);
 
   create_account_button_ = new views::NativeButton(this, std::wstring());
   create_account_button_->set_font(button_font);
-  create_account_button_->SetLabel(
-      l10n_util::GetString(IDS_ACCOUNT_CREATION_BUTTON));
   AddChildView(create_account_button_);
+
+  UpdateLocalizedStrings();
 }
 
 void AccountCreationView::InitLayout() {

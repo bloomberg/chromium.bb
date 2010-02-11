@@ -174,6 +174,7 @@ void LoginWizardView::Init(const std::string& start_view_name) {
 
   // Create and initialize all views, hidden.
   CreateAndInitScreen(&login_manager_);
+  CreateAndInitScreen(&network_selection_);
   CreateAndInitScreen(&account_creation_);
 
   // Select the view to start with and show it.
@@ -181,7 +182,6 @@ void LoginWizardView::Init(const std::string& start_view_name) {
     current_ = login_manager_;
   } else if (start_view_name == kNetworkSelection) {
     // TODO(nkostylev): Init network selection screen when it's required.
-    CreateAndInitScreen(&network_selection_);
     current_ = network_selection_;
   } else if (start_view_name == kAccountCreation) {
     current_ = account_creation_;
@@ -198,6 +198,16 @@ void LoginWizardView::OnLoginSignInSelected() {
   if (window()) {
     window()->Close();
   }
+}
+
+void LoginWizardView::OnNetworkConnected() {
+  // TODO(avayvod): Switch to update screen when it's ready.
+  SetCurrentScreen(login_manager_);
+}
+
+void LoginWizardView::OnAccountCreated() {
+  // TODO(avayvod): Enter username into username field.
+  SetCurrentScreen(login_manager_);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -217,6 +227,8 @@ void LoginWizardView::InitStatusArea() {
 
 template <class T>
 void LoginWizardView::CreateAndInitScreen(T** screen) {
+  if (!screen)
+    return;
   T* new_screen = new T(this);
   new_screen->Init();
   new_screen->SetBounds((dimensions_.width() - kScreenWidth) / 2,
@@ -228,12 +240,28 @@ void LoginWizardView::CreateAndInitScreen(T** screen) {
   *screen = new_screen;
 }
 
+void LoginWizardView::SetCurrentScreen(WizardScreen* screen) {
+  if (current_ == screen)
+    return;
+  if (current_ != NULL)
+    current_->SetVisible(false);
+  if (screen != NULL)
+    screen->SetVisible(true);
+  current_ = screen;
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // LoginWizardView, chromeos::ScreenObserver overrides:
 void LoginWizardView::OnExit(ExitCodes exit_code) {
   switch (exit_code) {
     case LOGIN_SIGN_IN_SELECTED:
       OnLoginSignInSelected();
+      break;
+    case NETWORK_CONNECTED:
+      OnNetworkConnected();
+      break;
+    case ACCOUNT_CREATED:
+      OnAccountCreated();
       break;
     default:
       NOTREACHED();

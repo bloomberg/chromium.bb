@@ -32,7 +32,8 @@ class NetworkSelectionView : public WizardScreen,
   virtual ~NetworkSelectionView();
 
   // WizardScreen implementation:
-  void Init();
+  virtual void Init();
+  virtual void UpdateLocalizedStrings();
 
   // views::View: implementation:
   virtual gfx::Size GetPreferredSize();
@@ -55,11 +56,11 @@ class NetworkSelectionView : public WizardScreen,
   virtual void NetworkTraffic(chromeos::NetworkLibrary* cros, int traffic_type);
 
  private:
-   // Returns true if there's at least one Wifi network available in the model.
-   bool HasWifiNetworks();
+  // Returns true if there's at least one Wifi network available in the model.
+  bool HasWifiNetworks();
 
-   // Returns WiFi network by index from model.
-   const chromeos::WifiNetwork& GetWifiNetworkAt(int index);
+  // Returns WiFi network by index from model.
+  const chromeos::WifiNetwork& GetWifiNetworkAt(int index);
 
   // Dialog controls.
   views::Combobox* network_combobox_;

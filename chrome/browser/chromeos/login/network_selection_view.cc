@@ -39,13 +39,19 @@ const SkColor kBackground = SK_ColorWHITE;
 }  // namespace
 
 NetworkSelectionView::NetworkSelectionView(chromeos::ScreenObserver* observer)
-      : observer_(observer) {
+    : network_combobox_(NULL),
+      welcome_label_(NULL),
+      select_network_label_(NULL),
+      observer_(observer) {
   chromeos::NetworkLibrary::Get()->AddObserver(this);
 }
 
 NetworkSelectionView::~NetworkSelectionView() {
   chromeos::NetworkLibrary::Get()->RemoveObserver(this);
 }
+
+////////////////////////////////////////////////////////////////////////////////
+// WizardScreen implementation:
 
 void NetworkSelectionView::Init() {
   // TODO(nkostylev): Add UI language and logo.
@@ -62,23 +68,29 @@ void NetworkSelectionView::Init() {
 
   welcome_label_ = new views::Label();
   welcome_label_->SetColor(kWelcomeColor);
-  welcome_label_->SetText(l10n_util::GetStringF(IDS_NETWORK_SELECTION_TITLE,
-                          l10n_util::GetString(IDS_PRODUCT_OS_NAME)));
   welcome_label_->SetFont(welcome_label_font);
 
   select_network_label_ = new views::Label();
-  select_network_label_->SetText(
-      l10n_util::GetString(IDS_NETWORK_SELECTION_SELECT));
   select_network_label_->SetFont(network_label_font);
 
   network_combobox_ = new views::Combobox(this);
   network_combobox_->SetSelectedItem(0);
   network_combobox_->set_listener(this);
 
+  UpdateLocalizedStrings();
+
   AddChildView(welcome_label_);
   AddChildView(select_network_label_);
   AddChildView(network_combobox_);
   NetworkChanged(chromeos::NetworkLibrary::Get());
+}
+
+void NetworkSelectionView::UpdateLocalizedStrings() {
+  welcome_label_->SetText(l10n_util::GetStringF(IDS_NETWORK_SELECTION_TITLE,
+                          l10n_util::GetString(IDS_PRODUCT_OS_NAME)));
+  select_network_label_->SetText(
+      l10n_util::GetString(IDS_NETWORK_SELECTION_SELECT));
+  network_combobox_->ModelChanged();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -156,7 +168,7 @@ void NetworkSelectionView::ItemChanged(views::Combobox* sender,
     return;
   }
 
-  if (HasWifiNetworks())
+  if (!HasWifiNetworks())
     return;
 
   chromeos::WifiNetwork selected_network = GetWifiNetworkAt(new_index);
@@ -165,9 +177,10 @@ void NetworkSelectionView::ItemChanged(views::Combobox* sender,
   } else {
     chromeos::NetworkLibrary::Get()->ConnectToWifiNetwork(selected_network,
                                                           string16());
-    if (observer_) {
-      observer_->OnExit(chromeos::ScreenObserver::NETWORK_SELECTED);
-    }
+  }
+  // TODO(avayvod): Check for connection error.
+  if (observer_) {
+    observer_->OnExit(chromeos::ScreenObserver::NETWORK_CONNECTED);
   }
 }
 
