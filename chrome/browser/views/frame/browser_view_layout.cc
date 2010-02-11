@@ -283,7 +283,7 @@ int BrowserViewLayout::LayoutTabStrip() {
       browser_view_->frame()->GetBoundsForTabStrip(tabstrip_);
 
   if (browser_view_->UsingSideTabs()) {
-    vertical_layout_rect_.Inset(layout_bounds.width(), 0, 0, 0);
+    vertical_layout_rect_.Inset(layout_bounds.right(), 0, 0, 0);
   } else {
     gfx::Rect toolbar_bounds = browser_view_->GetToolbarBounds();
     tabstrip_->SetBackgroundOffset(

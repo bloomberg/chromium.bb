@@ -8,6 +8,7 @@
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/color_utils.h"
+#include "app/gfx/skia_util.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/keyboard_codes.h"
@@ -32,7 +33,6 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "grit/theme_resources.h"
-#include "skia/ext/skia_utils.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "views/controls/button/menu_button.h"
 #include "views/controls/label.h"
@@ -350,7 +350,7 @@ void BookmarkManagerView::PaintBackground(gfx::Canvas* canvas) {
   canvas->drawColor(kBackgroundColorBottom, SkXfermode::kSrc_Mode);
 
   SkPaint paint;
-  paint.setShader(skia::CreateGradientShader(0, kBackgroundGradientHeight,
+  paint.setShader(gfx::CreateGradientShader(0, kBackgroundGradientHeight,
       kBackgroundColorTop,
       kBackgroundColorBottom))->safeUnref();
   canvas->FillRectInt(0, 0, width(), kBackgroundGradientHeight, paint);

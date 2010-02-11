@@ -163,6 +163,8 @@ class Canvas : public skia::PlatformCanvas {
   // text is too big, it is truncated and '...' is added to the end.
   void DrawStringInt(const std::wstring& text, const gfx::Font& font,
                      const SkColor& color, int x, int y, int w, int h);
+  void DrawStringInt(const std::wstring& text, const gfx::Font& font,
+                     const SkColor& color, const gfx::Rect& display_rect);
 
   // Draws text with the specified color, font and location. The last argument
   // specifies flags for how the text should be rendered. It can be one of
