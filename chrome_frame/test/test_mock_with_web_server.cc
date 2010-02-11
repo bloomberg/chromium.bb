@@ -526,7 +526,9 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_BackForwardAnchor) {
 
 // Full tab mode view source test
 // Launch and navigate chrome frame and invoke view source functionality
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ViewSource) {
+// This test has been marked FLAKY
+// http://code.google.com/p/chromium/issues/detail?id=35370
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ViewSource) {
   chrome_frame_test::TimedMsgLoop loop;
   CComObjectStackEx<MockWebBrowserEventSink> mock;
   CComObjectStackEx<MockWebBrowserEventSink> view_source_mock;
