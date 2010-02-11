@@ -301,6 +301,18 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
   }
   gboolean HandleExposeEvent(GdkEventExpose* expose);
 
+  static void HandleWidgetDirectionChangedThunk(
+      GtkWidget* widget, GtkTextDirection previous_direction, gpointer self) {
+    return reinterpret_cast<AutocompleteEditViewGtk*>(self)->
+        AdjustTextJustification();
+  }
+
+  static void HandleKeymapDirectionChangedThunk(GdkKeymap* keymap,
+                                                gpointer self) {
+    return reinterpret_cast<AutocompleteEditViewGtk*>(self)->
+        AdjustTextJustification();
+  }
+
   // Gets the GTK_TEXT_WINDOW_WIDGET coordinates for |text_view_| that bound the
   // given iters.
   gfx::Rect WindowBoundsFromIters(GtkTextIter* iter1, GtkTextIter* iter2);
@@ -347,6 +359,15 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
 
   // Set the selection to |range|.
   void SetSelectedRange(const CharRange& range);
+
+  // Adjust the text justification according to the text direction of the widget
+  // and |text_buffer_|'s content, to make sure the real text justification is
+  // always in sync with the UI language direction.
+  void AdjustTextJustification();
+
+  // Get the text direction of |text_buffer_|'s content, by searching the first
+  // character that has a strong direction.
+  PangoDirection GetContentDirection();
 
   // The widget we expose, used for vertically centering the real text edit,
   // since the height will change based on the font / font size, etc.

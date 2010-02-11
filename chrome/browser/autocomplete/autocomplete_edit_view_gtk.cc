@@ -192,6 +192,10 @@ void AutocompleteEditViewGtk::Init() {
       browser_defaults::kAutocompleteEditFontPixelSizeInPopup :
       browser_defaults::kAutocompleteEditFontPixelSize);
 
+  // One pixel left margin is necessary to make the cursor visible when UI
+  // language direction is LTR but |text_buffer_|'s content direction is RTL.
+  gtk_text_view_set_left_margin(GTK_TEXT_VIEW(text_view_), 1);
+
   // See SetEntryStyle() comments.
   gtk_widget_set_name(text_view_, "chrome-location-bar-entry");
 
@@ -263,6 +267,8 @@ void AutocompleteEditViewGtk::Init() {
                    G_CALLBACK(&HandlePasteClipboardThunk), this);
   g_signal_connect_after(text_view_, "expose-event",
                          G_CALLBACK(&HandleExposeEventThunk), this);
+  g_signal_connect(text_view_, "direction-changed",
+                   G_CALLBACK(&HandleWidgetDirectionChangedThunk), this);
 
 #if !defined(TOOLKIT_VIEWS)
   registrar_.Add(this,
@@ -290,13 +296,19 @@ int AutocompleteEditViewGtk::TextWidth() {
                                            GTK_TEXT_WINDOW_RIGHT) +
       gtk_text_view_get_left_margin(GTK_TEXT_VIEW(text_view_)) +
       gtk_text_view_get_right_margin(GTK_TEXT_VIEW(text_view_));
-  GtkTextIter end;
-  GdkRectangle last_char_bounds;
-  gtk_text_buffer_get_end_iter(
-      gtk_text_view_get_buffer(GTK_TEXT_VIEW(text_view_)), &end);
+
+  GtkTextIter start, end;
+  GdkRectangle first_char_bounds, last_char_bounds;
+  gtk_text_buffer_get_start_iter(text_buffer_, &start);
+  gtk_text_buffer_get_end_iter(text_buffer_, &end);
+  gtk_text_view_get_iter_location(GTK_TEXT_VIEW(text_view_),
+                                  &start, &first_char_bounds);
   gtk_text_view_get_iter_location(GTK_TEXT_VIEW(text_view_),
                                   &end, &last_char_bounds);
-  return last_char_bounds.x + last_char_bounds.width + horizontal_border_size;
+  return ((last_char_bounds.x > first_char_bounds.x) ?
+          (last_char_bounds.x + last_char_bounds.width - first_char_bounds.x) :
+          (first_char_bounds.x - last_char_bounds.x + last_char_bounds.width)) +
+      horizontal_border_size;
 }
 
 void AutocompleteEditViewGtk::SaveStateToTab(TabContents* tab) {
@@ -515,6 +527,9 @@ bool AutocompleteEditViewGtk::OnAfterPossibleChange() {
   // See if the text or selection have changed since OnBeforePossibleChange().
   std::wstring new_text(GetText());
   text_changed_ = (new_text != text_before_change_);
+
+  if (text_changed_)
+    AdjustTextJustification();
 
   // When the user has deleted text, we don't allow inline autocomplete.  Make
   // sure to not flag cases like selecting part of the text and then pasting
@@ -823,6 +838,13 @@ gboolean AutocompleteEditViewGtk::HandleViewFocusIn() {
   controller_->OnSetFocus();
   // TODO(deanm): Some keyword hit business, etc here.
 
+  g_signal_connect(
+      gdk_keymap_get_for_display(gtk_widget_get_display(text_view_)),
+      "direction-changed",
+      G_CALLBACK(&HandleKeymapDirectionChangedThunk), this);
+
+  AdjustTextJustification();
+
   return FALSE;  // Continue propagation.
 }
 
@@ -832,6 +854,11 @@ gboolean AutocompleteEditViewGtk::HandleViewFocusOut() {
   // Tell the model to reset itself.
   model_->OnKillFocus();
   controller_->OnKillFocus();
+
+  g_signal_handlers_disconnect_by_func(
+      gdk_keymap_get_for_display(gtk_widget_get_display(text_view_)),
+      reinterpret_cast<gpointer>(&HandleKeymapDirectionChangedThunk), this);
+
   return FALSE;  // Pass the event on to the GtkTextView.
 }
 
@@ -1350,10 +1377,47 @@ void AutocompleteEditViewGtk::SetTextAndSelectedRange(const std::wstring& text,
   std::string utf8 = WideToUTF8(text);
   gtk_text_buffer_set_text(text_buffer_, utf8.data(), utf8.length());
   SetSelectedRange(range);
+  AdjustTextJustification();
 }
 
 void AutocompleteEditViewGtk::SetSelectedRange(const CharRange& range) {
   GtkTextIter insert, bound;
   ItersFromCharRange(range, &bound, &insert);
   gtk_text_buffer_select_range(text_buffer_, &insert, &bound);
+}
+
+void AutocompleteEditViewGtk::AdjustTextJustification() {
+  PangoDirection content_dir = GetContentDirection();
+
+  // Use keymap direction if content does not have strong direction.
+  // It matches the behavior of GtkTextView.
+  if (content_dir == PANGO_DIRECTION_NEUTRAL) {
+    content_dir = gdk_keymap_get_direction(
+      gdk_keymap_get_for_display(gtk_widget_get_display(text_view_)));
+  }
+
+  GtkTextDirection widget_dir = gtk_widget_get_direction(text_view_);
+
+  if ((widget_dir == GTK_TEXT_DIR_RTL && content_dir == PANGO_DIRECTION_LTR) ||
+      (widget_dir == GTK_TEXT_DIR_LTR && content_dir == PANGO_DIRECTION_RTL)) {
+    gtk_text_view_set_justification(GTK_TEXT_VIEW(text_view_),
+                                    GTK_JUSTIFY_RIGHT);
+  } else {
+    gtk_text_view_set_justification(GTK_TEXT_VIEW(text_view_),
+                                    GTK_JUSTIFY_LEFT);
+  }
+}
+
+PangoDirection AutocompleteEditViewGtk::GetContentDirection() {
+  GtkTextIter iter;
+  gtk_text_buffer_get_start_iter(text_buffer_, &iter);
+
+  PangoDirection dir = PANGO_DIRECTION_NEUTRAL;
+  do {
+    dir = pango_unichar_direction(gtk_text_iter_get_char(&iter));
+    if (dir != PANGO_DIRECTION_NEUTRAL)
+      break;
+  } while (gtk_text_iter_forward_char(&iter));
+
+  return dir;
 }
