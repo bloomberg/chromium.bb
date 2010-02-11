@@ -79,7 +79,7 @@ function extend(obj, obj2) {
  */
 function renderPage() {
   // The page name minus the ".html" extension.
-  pageBase = document.location.href.match(/\/([^\/]*)\.html$/)[1];
+  pageBase = document.location.href.match(/\/([^\/]*)\.html/)[1];
   if (!pageBase) {
     alert("Empty page name for: " + document.location.href);
     return;
