@@ -37,6 +37,20 @@
 
 #define FUN_TO_VOID_PTR(a) ((void*)((uintptr_t) a))
 
+#if NACL_ARCH(NACL_TARGET_ARCH) == NACL_x86
+# if __x86_64__
+typedef uint64_t return_addr_t;
+# elif __i386__
+typedef uint32_t return_addr_t;
+# else
+#  error "What kind of x86 processor are we on?!?"
+# endif
+#elif NACL_ARCH(NACL_TARGET_ARCH) == NACL_arm
+typedef uint32_t return_addr_t;
+#else
+# error "What target architecture are we running the NaCl module on?"
+#endif
+
 /* Thread management global variables */
 const int __nc_kMaxCachedMemoryBlocks = 50;
 
@@ -503,17 +517,18 @@ int pthread_create(pthread_t *thread_id,
 
   /*
    * Calculate the stack location - it should be 12 mod 16 aligned.
-   * We subtract 4 since thread_stack is 0 mod 16 aligned and
-   * the stack size is a multiple of 16.
+   * We subtract sizeof(return_addr_t) since thread_stack is 0 mod 16
+   * aligned and the stack size is a multiple of 16.
    */
-  esp = (void*)(thread_stack + __nacl_thread_stack_size(0) - 4);
+  esp = (void*) (thread_stack + __nacl_thread_stack_size(0)
+                 - sizeof(return_addr_t));
 
   /*
    * Put 0 on the stack as a return address - it is needed to satisfy
    * the alignment requirement when we call nacl's exit_thread syscall
    * when the thread terminates.
    */
-  *(int32_t*)esp = 0;
+  *(return_addr_t *) esp = 0;
 
   /* start the thread */
   retval = NACL_SYSCALL(thread_create)(FUN_TO_VOID_PTR(nc_thread_starter),
