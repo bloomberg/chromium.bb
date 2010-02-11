@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -97,13 +97,13 @@ void SearchProvider::Start(const AutocompleteInput& input,
     if (default_provider) {
       AutocompleteMatch match(this, 0, false,
                               AutocompleteMatch::SEARCH_WHAT_YOU_TYPED);
-      static const std::wstring kNoQueryInput(
-          l10n_util::GetString(IDS_AUTOCOMPLETE_NO_QUERY));
-      match.contents.assign(l10n_util::GetStringF(
-          IDS_AUTOCOMPLETE_SEARCH_CONTENTS,
-          default_provider->AdjustedShortNameForLocaleDirection(),
-          kNoQueryInput));
+      match.contents.assign(l10n_util::GetString(IDS_EMPTY_KEYWORD_VALUE));
       match.contents_class.push_back(
+          ACMatchClassification(0, ACMatchClassification::NONE));
+      match.description.assign(l10n_util::GetStringF(
+          IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION,
+          default_provider->AdjustedShortNameForLocaleDirection()));
+      match.description_class.push_back(
           ACMatchClassification(0, ACMatchClassification::DIM));
       matches_.push_back(match);
     }
@@ -672,7 +672,7 @@ void SearchProvider::AddMatchToMap(const std::wstring& query_string,
         ACMatchClassification(0, ACMatchClassification::NONE));
     match.description.assign(l10n_util::GetStringF(
         IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION,
-        provider.short_name()));
+        provider.AdjustedShortNameForLocaleDirection()));
     match.description_class.push_back(
         ACMatchClassification(0, ACMatchClassification::DIM));
   }
@@ -690,8 +690,7 @@ void SearchProvider::AddMatchToMap(const std::wstring& query_string,
     match.template_url = &providers_.keyword_provider();
   }
   match.fill_into_edit.append(query_string);
-  // NOTE: All Google suggestions currently start with the original input, but
-  // not all Yahoo! suggestions do.
+  // Not all suggestions start with the original input.
   if (!input_.prevent_inline_autocomplete() &&
       !match.fill_into_edit.compare(search_start, input_text.length(),
                                    input_text))
