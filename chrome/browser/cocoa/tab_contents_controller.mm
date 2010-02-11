@@ -82,20 +82,27 @@ static const int kMinWebHeight = 50;
   NSArray* subviews = [contentsContainer_ subviews];
   if (devToolsContents) {
     DCHECK_GE([subviews count], 1u);
-    if ([subviews count] == 1) {
-      [contentsContainer_ addSubview:devToolsContents->GetNativeView()];
-    } else {
-      DCHECK_EQ([subviews count], 2u);
-      [contentsContainer_ replaceSubview:[subviews objectAtIndex:1]
-                                    with:devToolsContents->GetNativeView()];
-    }
-    // Restore split offset.
+
+    // Load the default split offset.  If we are already showing devtools, we
+    // will replace the default with the current devtools height.
     CGFloat splitOffset = g_browser_process->local_state()->GetInteger(
         prefs::kDevToolsSplitLocation);
     if (splitOffset == -1) {
       // Initial load, set to default value.
       splitOffset = kDefaultContentsSplitOffset;
     }
+
+    if ([subviews count] == 1) {
+      [contentsContainer_ addSubview:devToolsContents->GetNativeView()];
+    } else {
+      DCHECK_EQ([subviews count], 2u);
+      [contentsContainer_ replaceSubview:[subviews objectAtIndex:1]
+                                    with:devToolsContents->GetNativeView()];
+      // If devtools are already visible, keep the current size.
+      splitOffset = NSHeight([devToolsContents->GetNativeView() frame]);
+    }
+
+    // Make sure |splitOffset| isn't too large or too small.
     splitOffset = MIN(splitOffset,
                       NSHeight([contentsContainer_ frame]) - kMinWebHeight);
     DCHECK_GE(splitOffset, 0) << "kMinWebHeight needs to be smaller than "
