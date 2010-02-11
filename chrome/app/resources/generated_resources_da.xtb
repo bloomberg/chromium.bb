@@ -110,7 +110,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> har nu <ph name="BEGIN_LINK"/>udvidelser<ph name="END_LINK"/> og <ph name="BEGIN_BUTTON"/>synkronisering af bogmærker<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Dine bogmærker bliver sammenflettet.</translation>
 <translation id="4422347585044846479">Rediger bogmærke for denne side</translation>
-<translation id="7367545749698325833">Du kan importere dine bogmærker og indstillinger fra andre browsere eller rydde dine browserdata fra denne computer.</translation>
 <translation id="51285338152176012">Skjul nyligt lukkede faner</translation>
 <translation id="8546306075665861288">Billed-cache</translation>
 <translation id="801357260673640054">Bogmærker synkroniseres ...</translation>
@@ -228,7 +227,6 @@
 <translation id="692135145298539227">slet</translation>
 <translation id="8343477974731263456">Konfiguration af synkronisering af bogmærker</translation>
 <translation id="5999606216064768721">Brug systemets titellinje og rammer</translation>
-<translation id="2663762871503078613">Importer:</translation>
 <translation id="1635247229519770914">Fortsæt installeringen</translation>
 <translation id="8945419807169257367">Serverens certifikat kan ikke kontrolleres</translation>
 <translation id="1464570622807304272">Prøv det! Indtast &quot;orkideer&quot;, og tryk på Enter.</translation>
@@ -548,7 +546,6 @@
 <translation id="6883611015375728278">Bloker alle cookies</translation>
 <translation id="7842346819602959665">Den nyeste version af udvidelsen &quot;<ph name="EXTENSION_NAME"/>&quot; kræver flere tilladelser, så den er deaktiveret.</translation>
 <translation id="6979448128170032817">Undtagelser ...</translation>
-<translation id="8942948210663084792">Ryd data:</translation>
 <translation id="208047771235602537">Vil du afslutte <ph name="PRODUCT_NAME"/>, når der er en download i gang?</translation>
 <translation id="6710213216561001401">Forrige</translation>
 <translation id="1567993339577891801">JavaScript-konsol</translation>
@@ -653,7 +650,6 @@
 <translation id="3122496702278727796">Oprettelsen af datamappe mislykkedes</translation>
 <translation id="8888930795132369495">Kopier fil&amp;sti</translation>
 <translation id="4517036173149081027">Luk, og annuller download</translation>
-<translation id="8446970197849314122">Du kan importere dine bogmærker og indstillinger fra andre browsere og brugerkonti på denne computer.</translation>
 <translation id="6281636957902664775">Gå til <ph name="URL"/></translation>
 <translation id="9148058034647219655">Afslut</translation>
 <translation id="630065524203833229">Af&amp;slut</translation>
@@ -1079,7 +1075,6 @@
 <translation id="3748412725338508953">Der var for mange omdirigeringer.</translation>
 <translation id="8929159553808058020">Tilføj de sprog, du bruger til læsning af websteder, i prioriteret rækkefølge. Tilføj kun dem, du har brug for, da nogle tegn kan benyttes til at efterligne websteder på andre sprog.</translation>
 <translation id="8831104962952173133">Phishing registreret!</translation>
-<translation id="2614223168876839822">Ryd browserdata på denne computer. Du skal være opmærksom på, at dette kan påvirke indholdet på siden Ny fane.</translation>
 <translation id="2812989263793994277">Vis ikke billeder</translation>
 <translation id="6845383723252244143">Vælg mappe</translation>
 <translation id="8948393169621400698">Tillad altid plugins på <ph name="HOST"/></translation>
@@ -1382,6 +1377,7 @@ Nøglefil: <ph name="KEY_FILE"/>
 Opbevar din nøglefil på et sikkert sted. Du skal bruge den til at oprette nye versioner af din udvidelse.</translation>
 <translation id="3036649622769666520">Åbn filer</translation>
 <translation id="7685049629764448582">JavaScript-hukommelse</translation>
+<translation id="3989635538409502728">Log ud</translation>
 <translation id="4508765956121923607">Vis k&amp;ilde</translation>
 <translation id="8080048886850452639">K&amp;opier lydens webadresse</translation>
 <translation id="5849869942539715694">Pak udvidelse ...</translation>

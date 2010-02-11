@@ -109,7 +109,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> propose désormais des <ph name="BEGIN_LINK"/>extensions<ph name="END_LINK"/> et la <ph name="BEGIN_BUTTON"/>synchronisation des favoris<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Vos favoris vont être fusionnés.</translation>
 <translation id="4422347585044846479">Modifier le favori de cette page</translation>
-<translation id="7367545749698325833">Vous pouvez importer vos favoris et vos paramètres depuis d'autres navigateurs ou effacer les données de navigation de cet ordinateur.</translation>
 <translation id="51285338152176012">Masquer les onglets fermés récemment</translation>
 <translation id="8546306075665861288">Cache des images</translation>
 <translation id="801357260673640054">Favoris synchronisés...</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">supprimer</translation>
 <translation id="8343477974731263456">Configuration de la synchronisation des favoris</translation>
 <translation id="5999606216064768721">Utiliser la barre de titre du système et les bordures de la fenêtre</translation>
-<translation id="2663762871503078613">Importer :</translation>
 <translation id="1635247229519770914">Poursuivre l'installation</translation>
 <translation id="8945419807169257367">Impossible de vérifier le certificat du serveur</translation>
 <translation id="1464570622807304272">Essayez : saisissez &quot;orchidées&quot;, puis appuyez sur Entrée.</translation>
@@ -548,7 +546,6 @@
 <translation id="7842346819602959665">La dernière version de l'extension &quot;<ph name="EXTENSION_NAME"/>&quot; requiert d'autres permissions. Elle a donc été désactivée.</translation>
 <translation id="6979448128170032817">Exceptions...
 </translation>
-<translation id="8942948210663084792">Effacer les données :</translation>
 <translation id="208047771235602537">Voulez-vous vraiment quitter <ph name="PRODUCT_NAME"/> alors qu'un téléchargement est en cours ?</translation>
 <translation id="6710213216561001401">Précédent</translation>
 <translation id="1567993339577891801">Console JavaScript</translation>
@@ -653,7 +650,6 @@
 <translation id="3122496702278727796">Échec de la création du répertoire des données</translation>
 <translation id="8888930795132369495">Co&amp;pier le chemin du fichier</translation>
 <translation id="4517036173149081027">Fermer et annuler le chargement</translation>
-<translation id="8446970197849314122">Vous pouvez importer vos favoris et vos paramètres depuis d'autres navigateurs et comptes sur cet ordinateur.</translation>
 <translation id="6281636957902664775">Accéder à <ph name="URL"/></translation>
 <translation id="9148058034647219655">Quitter</translation>
 <translation id="630065524203833229">&amp;Quitter</translation>
@@ -1080,7 +1076,6 @@
 <translation id="3748412725338508953">Trop de redirections</translation>
 <translation id="8929159553808058020">Ajoutez les langues dont vous avez besoin pour lire les sites Web, classées par ordre de préférence. Ajoutez uniquement celles qui sont strictement nécessaires. En effet, certains caractères sont utilisés pour falsifier des sites Web dans d'autres langues.</translation>
 <translation id="8831104962952173133">Phishing détecté !</translation>
-<translation id="2614223168876839822">Efface les données de navigation enregistrées sur cet ordinateur. Sachez que cette opération peut avoir une incidence négative sur le contenu de la page Nouvel onglet.</translation>
 <translation id="2812989263793994277">N'afficher aucune image</translation>
 <translation id="6845383723252244143">Sélectionner un dossier</translation>
 <translation id="8948393169621400698">Toujours autoriser les plug-ins sur <ph name="HOST"/> </translation>

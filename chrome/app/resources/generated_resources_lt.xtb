@@ -109,7 +109,6 @@
 <translation id="1486408090387743835">Dabar „<ph name="PRODUCT_NAME"/>“ yra <ph name="BEGIN_LINK"/>plėtinių<ph name="END_LINK"/> ir <ph name="BEGIN_BUTTON"/>žymių sinchronizavimas<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Jūsų žymės bus sujungtos.</translation>
 <translation id="4422347585044846479">Redaguoti žymą šitam puslapiui</translation>
-<translation id="7367545749698325833">Galite importuoti žymes ir nustatymus iš kitų naršyklių arba galite išvalyti naršymo duomenis iš šio kompiuterio.</translation>
 <translation id="51285338152176012">Nerodyti neseniai uždarytų skirtukų</translation>
 <translation id="8546306075665861288">Vaizdo talpykla</translation>
 <translation id="801357260673640054">Sinchronizuotos žymės...</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">ištrinti</translation>
 <translation id="8343477974731263456">Žymių sinchronizavimo nustatymas</translation>
 <translation id="5999606216064768721">Naudoti sistemos pavadinimo juostą ir rėmelius</translation>
-<translation id="2663762871503078613">Importuoti:</translation>
 <translation id="1635247229519770914">Tęsti diegimą</translation>
 <translation id="8945419807169257367">Serverio sertifikato neįmanoma patikrinti</translation>
 <translation id="1464570622807304272">Išbandykite – įveskite „orchidėjos“ ir paspauskite „Įvesti“.</translation>
@@ -547,7 +545,6 @@
 <translation id="6883611015375728278">Blokuoti visus slapukus</translation>
 <translation id="7842346819602959665">Naujausiai plėtinio „<ph name="EXTENSION_NAME"/>“ versijai reikia daugiau leidimų, todėl ji buvo išjungta.</translation>
 <translation id="6979448128170032817">Išimtys...</translation>
-<translation id="8942948210663084792">Išvalyti duomenis:</translation>
 <translation id="208047771235602537">Ar norite išeiti iš „<ph name="PRODUCT_NAME"/>“, kol vykdomas atsisiuntimas?</translation>
 <translation id="6710213216561001401">Ankstesnis</translation>
 <translation id="1567993339577891801">„JavaScript“ konsolė</translation>
@@ -652,7 +649,6 @@
 <translation id="3122496702278727796">Nepavyko sukurti duomenų aplanko</translation>
 <translation id="8888930795132369495">Kopijuoti failo &amp;kelią</translation>
 <translation id="4517036173149081027">Uždaryti ir atšaukti atsisiuntimą</translation>
-<translation id="8446970197849314122">Galite importuoti žymes ir nustatymus iš kitų naršyklių ir naudotojų paskyrų šiame kompiuteryje.</translation>
 <translation id="6281636957902664775">Eiti į <ph name="URL"/></translation>
 <translation id="9148058034647219655">Išeiti</translation>
 <translation id="630065524203833229">I&amp;šeiti</translation>
@@ -1080,7 +1076,6 @@
 <translation id="3748412725338508953">Pernelyg daug nukreipimų.</translation>
 <translation id="8929159553808058020">Pridėti kalbas, kurias naudojate tinklalapiams skaityti, rūšiuoti pagal pageidaujamą tvarką.  Įtraukti tik jūsų pageidaujamas kalbas, nes kai kurie simboliai gali būti naudojami tinklalapiams vaizduoti kitomis kalbomis.</translation>
 <translation id="8831104962952173133">Pastebėtas sukčiavimo atvejis!</translation>
-<translation id="2614223168876839822">Išvalykite naršymo duomenis iš šio kompiuterio. Atminkite, kad tai gali turėti įtakos „Naujo skirtuko“ puslapio turiniui.</translation>
 <translation id="2812989263793994277">Nerodyti jokių vaizdų</translation>
 <translation id="6845383723252244143">Pasirinkti aplanką</translation>
 <translation id="8948393169621400698">Visada leisti papildinius <ph name="HOST"/></translation>

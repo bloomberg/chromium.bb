@@ -109,7 +109,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> sada ima <ph name="BEGIN_LINK"/>proširenja<ph name="END_LINK"/> i <ph name="BEGIN_BUTTON"/>sinkronizaciju oznaka<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Oznake će biti spojene.</translation>
 <translation id="4422347585044846479">Uredi oznaku za ovu stranicu</translation>
-<translation id="7367545749698325833">Oznake i postavke možete uvesti iz drugih preglednika ili izbrisati podatke pregledavanja s ovog računala.</translation>
 <translation id="51285338152176012">Sakrij nedavno zatvorene kartice</translation>
 <translation id="8546306075665861288">Predmemorija slike</translation>
 <translation id="801357260673640054">Sinkronizirane oznake...</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">izbriši</translation>
 <translation id="8343477974731263456">Postavljanje sinkronizacije oznaka</translation>
 <translation id="5999606216064768721">Koristi naslovnu traku sustava i obrube</translation>
-<translation id="2663762871503078613">Uvezi:</translation>
 <translation id="1635247229519770914">Nastavi s instaliranjem</translation>
 <translation id="8945419807169257367">Potvrdu poslužitelja nije moguće provjeriti</translation>
 <translation id="1464570622807304272">Isprobajte - upišite &quot;orhideje&quot;, a zatim pritisnite Enter.</translation>
@@ -547,7 +545,6 @@
 <translation id="6883611015375728278">Blokiraj sve kolačiće</translation>
 <translation id="7842346819602959665">Najnovija verzija proširenja &quot;<ph name="EXTENSION_NAME"/>&quot; zahtijeva više dopuštenja i stoga je onemogućena.</translation>
 <translation id="6979448128170032817">Iznimke...</translation>
-<translation id="8942948210663084792">Obrišite podatke:</translation>
 <translation id="208047771235602537">Želite li izaći iz programa <ph name="PRODUCT_NAME"/> kada je preuzimanje u tijeku?</translation>
 <translation id="6710213216561001401">Prethodno</translation>
 <translation id="1567993339577891801">Konzola JavaScripta</translation>
@@ -652,7 +649,6 @@
 <translation id="3122496702278727796">Nije uspjelo stvaranje podatkovnog direktorija</translation>
 <translation id="8888930795132369495">Kopiraj put &amp;datoteke</translation>
 <translation id="4517036173149081027">Zatvori i otkaži preuzimanje</translation>
-<translation id="8446970197849314122">Svoje oznake i postavke možete uvesti iz drugih preglednika i korisničkih računa na ovom računalu.</translation>
 <translation id="6281636957902664775">Idi na <ph name="URL"/></translation>
 <translation id="9148058034647219655">Izlaz</translation>
 <translation id="630065524203833229">I&amp;zađi</translation>
@@ -1081,7 +1077,6 @@ s
 <translation id="3748412725338508953">Bilo je previše preusmjeravanja.</translation>
 <translation id="8929159553808058020">Dodajte jezike na kojima čitate web stranice i to željenim redoslijedom. Dodajte samo one koje Vam uistinu trebaju budući da se neki znakovi mogu koristiti za oponašanje web lokacija na drugim jezicima.</translation>
 <translation id="8831104962952173133">Otkrivena je krađa identiteta!</translation>
-<translation id="2614223168876839822">Obrišite svoje podatke pregleda s ovog računala. Imajte u vidu da to može negativno utjecati na sadržaj stranice Nova kartica.</translation>
 <translation id="2812989263793994277">Ne prikazuj nikakve slike</translation>
 <translation id="6845383723252244143">Odabir mape</translation>
 <translation id="8948393169621400698">Uvijek dopusti dodatke na web-lokaciji <ph name="HOST"/></translation>

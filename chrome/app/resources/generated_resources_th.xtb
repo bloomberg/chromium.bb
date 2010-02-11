@@ -107,7 +107,6 @@
 <translation id="1486408090387743835">ขณะนี้ <ph name="PRODUCT_NAME"/> มี<ph name="BEGIN_LINK"/>ส่วนขยาย<ph name="END_LINK"/>และ<ph name="BEGIN_BUTTON"/>การทำให้ข้อมูลบุ๊กมาร์กตรงกัน <ph name="END_BUTTON"/></translation>
 <translation id="3147949335879360642">บุ๊กมาร์กของคุณจะถูกรวมเข้าด้วยกัน</translation>
 <translation id="4422347585044846479">แก้ไขบุ๊คมาร์คสำหรับหน้านี้</translation>
-<translation id="7367545749698325833">คุณสามารถนำเข้าบุ๊คมาร์คและการตั้งค่าจากเบราว์เซอร์อื่นๆ หรือล้างข้อมูลการท่องเว็บทั้งหมดจากคอมพิวเตอร์นี้</translation>
 <translation id="51285338152176012">ซ่อนแท็บที่เพิ่งปิดไป</translation>
 <translation id="8546306075665861288">แคชของภาพ</translation>
 <translation id="801357260673640054">ทำให้ข้อมูลบุ๊กมาร์กตรงกันแล้ว...</translation>
@@ -225,7 +224,6 @@
 <translation id="692135145298539227">ลบ</translation>
 <translation id="8343477974731263456">การตั้งค่าการทำให้ข้อมูลบุ๊กมาร์กตรงกัน</translation>
 <translation id="5999606216064768721">ใช้แถบชื่อและเส้นขอบของระบบ</translation>
-<translation id="2663762871503078613">การนำเข้า:</translation>
 <translation id="1635247229519770914">ดำเนินการติดตั้งต่อไป</translation>
 <translation id="8945419807169257367">ไม่สามารถตรวจสอบใบรับรองของเซิร์ฟเวอร์ได้</translation>
 <translation id="1464570622807304272">ลองใช้ด้วยการพิมพ์คำว่า &quot;กล้วยไม้&quot; และกด Enter</translation>
@@ -545,7 +543,6 @@
 <translation id="6883611015375728278">ป้องกันคุกกี้ทั้งหมด</translation>
 <translation id="7842346819602959665">ส่วนขยายเวอร์ชันใหม่ล่าสุด &quot;<ph name="EXTENSION_NAME"/>&quot; จำเป็นต้องได้รับการอนุญาตที่มากกว่าเดิม ดังนั้นจึงถูกปิดการใช้งานไว้</translation>
 <translation id="6979448128170032817">ข้อยกเว้น...</translation>
-<translation id="8942948210663084792">ลบข้อมูล:</translation>
 <translation id="208047771235602537">คุณต้องการออกจาก <ph name="PRODUCT_NAME"/> โดยที่ยังมีการดาวน์โหลดอยู่หรือไม่</translation>
 <translation id="6710213216561001401">ก่อนหน้า</translation>
 <translation id="1567993339577891801">คอนโซล JavaScript</translation>
@@ -650,7 +647,6 @@
 <translation id="3122496702278727796">การสร้างไดเรกทอรีข้อมูลล้มเหลว</translation>
 <translation id="8888930795132369495">คัดลอกเ&amp;ส้นทางไฟล์</translation>
 <translation id="4517036173149081027">ปิดและยกเลิกการดาวน์โหลด</translation>
-<translation id="8446970197849314122">คุณสามารถนำเข้าบุ๊คมาร์คและการตั้งค่าจากเบราว์เซอร์อื่นรวมทั้งบัญชีผู้ใช้ในคอมพิวเตอร์เครื่องนี้ได้</translation>
 <translation id="6281636957902664775">ไปที่ <ph name="URL"/></translation>
 <translation id="9148058034647219655">ออกจากระบบ</translation>
 <translation id="630065524203833229">&amp;ออก</translation>
@@ -1077,7 +1073,6 @@
 <translation id="3748412725338508953">มีการเปลี่ยนเส้นทางมากเกินไป</translation>
 <translation id="8929159553808058020">เพิ่มภาษาที่คุณใช้เพื่ออ่านเว็บไซต์โดยแสดงลำดับตามความต้องการ เพิ่มเฉพาะภาษาที่คุณต้องการเท่านั้น เนื่องจากอักขระบางตัวสามารถใช้เพื่อปลอมแปลงเว็บไซต์ในภาษาอื่นได้</translation>
 <translation id="8831104962952173133">ตรวจพบฟิชชิ่ง!</translation>
-<translation id="2614223168876839822">ล้างข้อมูลการท่องเว็บที่เรียกดูจากคอมพิวเตอร์เครื่องนี้ โปรดระมัดระวังว่าการล้างข้อมูลอาจส่งผลกระทบต่อเนื้อหาของหน้าแท็บใหม่</translation>
 <translation id="2812989263793994277">ไม่ต้องแสดงภาพใดๆ</translation>
 <translation id="6845383723252244143">เลือกโฟลเดอร์</translation>
 <translation id="8948393169621400698">อนุญาตให้ใช้ปลั๊กอินบน <ph name="HOST"/> เสมอ</translation>

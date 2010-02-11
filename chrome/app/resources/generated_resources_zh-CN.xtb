@@ -109,7 +109,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/>现已推出<ph name="BEGIN_LINK"/>扩展程序<ph name="END_LINK"/>和<ph name="BEGIN_BUTTON"/>书签同步<ph name="END_BUTTON"/>功能。</translation>
 <translation id="3147949335879360642">此操作将会合并您的书签。</translation>
 <translation id="4422347585044846479">修改此页的书签</translation>
-<translation id="7367545749698325833">您可以从其他浏览器导入您的书签和设置，或者清除本计算机的浏览数据。</translation>
 <translation id="51285338152176012">隐藏最近关闭的标签页</translation>
 <translation id="8546306075665861288">图片缓存</translation>
 <translation id="801357260673640054">书签已同步...</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">删除</translation>
 <translation id="8343477974731263456">设置书签同步</translation>
 <translation id="5999606216064768721">使用系统标题栏和边框</translation>
-<translation id="2663762871503078613">导入：</translation>
 <translation id="1635247229519770914">继续安装</translation>
 <translation id="8945419807169257367">无法核实服务器证书</translation>
 <translation id="1464570622807304272">试试键入“魔术”，然后按 Enter 键。</translation>
@@ -557,7 +555,6 @@
 <translation id="6883611015375728278">拦截所有 Cookie</translation>
 <translation id="7842346819602959665">最新版的扩展程序“<ph name="EXTENSION_NAME"/>”需要更多的权限，因此已将其禁用。</translation>
 <translation id="6979448128170032817">例外…</translation>
-<translation id="8942948210663084792">清除数据：</translation>
 <translation id="208047771235602537">您正在进行一项下载，确定要退出<ph name="PRODUCT_NAME"/> 吗？</translation>
 <translation id="6710213216561001401">上一步</translation>
 <translation id="1567993339577891801">JavaScript 控制台</translation>
@@ -662,7 +659,6 @@
 <translation id="3122496702278727796">无法创建数据目录</translation>
 <translation id="8888930795132369495">复制文件路径(&amp;P)</translation>
 <translation id="4517036173149081027">关闭并取消下载</translation>
-<translation id="8446970197849314122">您可以导入您在此计算机上其他浏览器和用户帐户中的书签和设置。</translation>
 <translation id="6281636957902664775">转到 <ph name="URL"/></translation>
 <translation id="9148058034647219655">退出</translation>
 <translation id="630065524203833229">退出(&amp;X)</translation>
@@ -1087,7 +1083,6 @@
 <translation id="3748412725338508953">重定向过多。</translation>
 <translation id="8929159553808058020">按偏好程度排列所添加的用于阅读网页的语言。请只添加所需语言，因为有些字符可以用来假冒其他语言的网站。</translation>
 <translation id="8831104962952173133">检测到网上诱骗！</translation>
-<translation id="2614223168876839822">清除您在此计算机上的浏览数据。请注意，此操作可能会对新标签页的内容产生不利影响。</translation>
 <translation id="2812989263793994277">不显示任何图片</translation>
 <translation id="6845383723252244143">选择文件夹</translation>
 <translation id="8948393169621400698">始终允许使用 <ph name="HOST"/> 上的插件</translation>

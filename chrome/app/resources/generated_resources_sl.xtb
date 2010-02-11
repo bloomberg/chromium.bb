@@ -109,7 +109,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> ima zdaj <ph name="BEGIN_LINK"/>razširitve<ph name="END_LINK"/> in <ph name="BEGIN_BUTTON"/>sinhroniziranje zaznamkov<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Vaši zaznamki bodo združeni.</translation>
 <translation id="4422347585044846479">Uredite zaznamek za to stran</translation>
-<translation id="7367545749698325833">Uvozite lahko zaznamke in nastavitve iz drugih brskalnikov ali izbrišete podatke o brisanju v tem računalniku.</translation>
 <translation id="51285338152176012">Skrij nedavno zaprte zavihke</translation>
 <translation id="8546306075665861288">Predpomnilnik slik</translation>
 <translation id="801357260673640054">Zaznamki so sinhronizirani ...</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">izbriši</translation>
 <translation id="8343477974731263456">Nastavitev sinhroniziranja zaznamkov</translation>
 <translation id="5999606216064768721">Uporabi sistemsko naslovno vrstico in obrobe</translation>
-<translation id="2663762871503078613">Uvozi:</translation>
 <translation id="1635247229519770914">Nadaljuj nameščanje</translation>
 <translation id="8945419807169257367">Certifikata strežnika ni mogoče preveriti</translation>
 <translation id="1464570622807304272">Preskusite: vnesite »orchids« in pritisnite »Enter«.</translation>
@@ -547,7 +545,6 @@
 <translation id="6883611015375728278">Blokiraj vse piškotke</translation>
 <translation id="7842346819602959665">Za najnovejšo različico razširitve »<ph name="EXTENSION_NAME"/>« je potrebno več dovoljenj, zato je bila onemogočena.</translation>
 <translation id="6979448128170032817">Izjeme ...</translation>
-<translation id="8942948210663084792">Izbriši podatke:</translation>
 <translation id="208047771235602537">Ali želite zapreti <ph name="PRODUCT_NAME"/>, medtem ko poteka prenos?</translation>
 <translation id="6710213216561001401">Nazaj</translation>
 <translation id="1567993339577891801">Konzola JavaScript</translation>
@@ -652,7 +649,6 @@
 <translation id="3122496702278727796">Imenika s podatki ni bilo mogoče ustvariti</translation>
 <translation id="8888930795132369495">Kopiraj pot &amp;datoteke</translation>
 <translation id="4517036173149081027">Zapri in prekliči prenos</translation>
-<translation id="8446970197849314122">Uvozite lahko zaznamke in nastavitve iz drugih brskalnikov in uporabniških računov v tem računalniku.</translation>
 <translation id="6281636957902664775">Pojdi na <ph name="URL"/></translation>
 <translation id="9148058034647219655">Izhod</translation>
 <translation id="630065524203833229">I&amp;zhod</translation>
@@ -1080,7 +1076,6 @@
 <translation id="3748412725338508953">Bilo je preveč preusmeritev.</translation>
 <translation id="8929159553808058020">Dodajte jezike, ki jih uporabljate za branje spletnih mest, v takšnem vrstnem redu, kot želite. Dodajte le tiste, ki jih potrebujete, saj se lahko nekateri znaki uporabljajo za poosebljanje spletnih mest v drugih jezikih.</translation>
 <translation id="8831104962952173133">Zaznano je lažno predstavljanje!</translation>
-<translation id="2614223168876839822">Izbrišite podatke o brskanju iz tega računalnika. Ne pozabite, da lahko to vpliva na vsebino strani »Nov zavihek«.</translation>
 <translation id="2812989263793994277">Ne pokaži slik</translation>
 <translation id="6845383723252244143">Izberite mapo</translation>
 <translation id="8948393169621400698">Vedno dovoli vtičnike na mestu <ph name="HOST"/></translation>

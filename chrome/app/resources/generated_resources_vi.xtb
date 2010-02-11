@@ -110,7 +110,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> giờ đã có <ph name="BEGIN_LINK"/>tiện ích mở rộng<ph name="END_LINK"/> và <ph name="BEGIN_BUTTON"/>tính năng đồng bộ hoá dấu trang<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Dấu trang của bạn sẽ được hợp nhất.</translation>
 <translation id="4422347585044846479">Chỉnh sửa dấu trang của trang này</translation>
-<translation id="7367545749698325833">Bạn có thể nhập các dấu trang và cài đặt của mình từ các trình duyệt khác hoặc xoá dữ liệu duyệt web của bạn khỏi máy tính này.</translation>
 <translation id="51285338152176012">Ẩn các tab bị đóng gần đây</translation>
 <translation id="8546306075665861288">Bộ nhớ cache hình ảnh</translation>
 <translation id="801357260673640054">Đã đồng bộ hoá Dấu trang...</translation>
@@ -229,7 +228,6 @@
 <translation id="692135145298539227">xoá</translation>
 <translation id="8343477974731263456">Thiết lập Đồng bộ hoá Dấu trang</translation>
 <translation id="5999606216064768721">Sử dụng Đường viền và Thanh Tiêu đề của Hệ thống</translation>
-<translation id="2663762871503078613">Nhập:</translation>
 <translation id="1635247229519770914">Tiếp tục Cài đặt</translation>
 <translation id="8945419807169257367">Không thể kiểm tra chứng chỉ máy chủ</translation>
 <translation id="1464570622807304272">Hãy dùng thử - nhập &quot;phong lan&quot; và nhấn Enter.</translation>
@@ -548,7 +546,6 @@
 <translation id="6883611015375728278">Chặn tất cả cookie</translation>
 <translation id="7842346819602959665">Phiên bản mới nhất của tiện ích mở rộng &quot;<ph name="EXTENSION_NAME"/>&quot; yêu cầu được cấp thêm quyền; do đó nó đã bị vô hiệu hoá.</translation>
 <translation id="6979448128170032817">Ngoại lệ...</translation>
-<translation id="8942948210663084792">Xoá Dữ liệu:</translation>
 <translation id="208047771235602537">Bạn có muốn thoát khỏi <ph name="PRODUCT_NAME"/> khi đang tải xuống không?</translation>
 <translation id="6710213216561001401">Trước đó</translation>
 <translation id="1567993339577891801">Bảng điều khiển JavaScript</translation>
@@ -653,7 +650,6 @@
 <translation id="3122496702278727796">Lỗi tạo Thư mục Dữ liệu</translation>
 <translation id="8888930795132369495">Sao chép Đường &amp;dẫn Tệp</translation>
 <translation id="4517036173149081027">Đóng và huỷ bản tải xuống</translation>
-<translation id="8446970197849314122">Bạn có thể nhập dấu trang và cài đặt của mình từ trình duyệt và tài khoản người dùng khác trên máy tính này.</translation>
 <translation id="6281636957902664775">Chuyển đến <ph name="URL"/></translation>
 <translation id="9148058034647219655">Thoát</translation>
 <translation id="630065524203833229">T&amp;hoát</translation>
@@ -1083,7 +1079,6 @@
 <translation id="3748412725338508953">Có quá nhiều lần chuyển hướng.</translation>
 <translation id="8929159553808058020">Thêm ngôn ngữ bạn sử dùng để đọc trang web, liệt kê theo thứ tự tuỳ chọn. Chỉ thêm ngôn ngữ bạn cần, vì một số ký tự có thể được sử dụng để giả mạo trang web bằng ngôn ngữ khác.</translation>
 <translation id="8831104962952173133">Phát hiện Lừa đảo trực tuyến!</translation>
-<translation id="2614223168876839822">Xoá dữ liệu duyệt web của bạn khỏi máy tính này. Lưu ý rằng điều này có thể ảnh hưởng bất lợi đến nội dung của Trang Tab Mới.</translation>
 <translation id="2812989263793994277">Không hiển thị bất kỳ hình ảnh nào</translation>
 <translation id="6845383723252244143">Chọn Thư mục</translation>
 <translation id="8948393169621400698">Luôn cho phép trình cắm trên <ph name="HOST"/></translation>

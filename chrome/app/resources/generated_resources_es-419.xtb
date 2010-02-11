@@ -109,7 +109,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> ahora tiene <ph name="BEGIN_LINK"/>extensiones<ph name="END_LINK"/> y <ph name="BEGIN_BUTTON"/>sincronizaciones de marcadores<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Se mezclarán los marcadores.</translation>
 <translation id="4422347585044846479">Editar marcador para esta página</translation>
-<translation id="7367545749698325833">Puedes importar tus favoritos y tu configuración de otros navegadores o borrar datos de navegación de esta computadora.</translation>
 <translation id="51285338152176012">Ocultar pestañas cerradas recientemente</translation>
 <translation id="8546306075665861288">Caché de imagen</translation>
 <translation id="801357260673640054">Marcadores sincronizados...</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">suprimir</translation>
 <translation id="8343477974731263456">Configuración de la sincronización de marcadores</translation>
 <translation id="5999606216064768721">Usar la barra de título y los bordes del sistema</translation>
-<translation id="2663762871503078613">Importar:</translation>
 <translation id="1635247229519770914">Continuar con la instalación</translation>
 <translation id="8945419807169257367">No se puede comprobar el certificado del servidor</translation>
 <translation id="1464570622807304272">Inténtalo. Escribe &quot;orquídeas&quot; y presiona &quot;Intro&quot;.</translation>
@@ -547,7 +545,6 @@
 <translation id="6883611015375728278">Bloquear todas las cookies</translation>
 <translation id="7842346819602959665">La versión más reciente de la extensión &quot;<ph name="EXTENSION_NAME"/>&quot; requiere más permisos, por lo cual fue desactivada.</translation>
 <translation id="6979448128170032817">Excepciones...</translation>
-<translation id="8942948210663084792">Eliminar datos:</translation>
 <translation id="208047771235602537">¿Desea salir <ph name="PRODUCT_NAME"/> con una descarga en progreso?</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="1567993339577891801">Consola de JavaScript</translation>
@@ -652,7 +649,6 @@
 <translation id="3122496702278727796">Se ha producido un error al crear el directorio de datos.</translation>
 <translation id="8888930795132369495">Co&amp;piar la ruta de acceso del archivo</translation>
 <translation id="4517036173149081027">Cerrar y cancelar las descargas</translation>
-<translation id="8446970197849314122">Puedes importar tus favoritos y tu configuración desde otros navegadores y cuentas de usuario en este equipo.</translation>
 <translation id="6281636957902664775">Ir a <ph name="URL"/></translation>
 <translation id="9148058034647219655">Salir</translation>
 <translation id="630065524203833229">&amp;Salir</translation>
@@ -1077,7 +1073,6 @@
 <translation id="3748412725338508953">Demasiados redireccionamientos.</translation>
 <translation id="8929159553808058020">Agrega los idiomas que utilizas para leer sitios web, en orden de preferencia. Agrega solo los que necesitas, ya que algunos caracteres se pueden utilizar para suplantar sitios web en otros idiomas.</translation>
 <translation id="8831104962952173133">Se ha detectado actividad de phishing.</translation>
-<translation id="2614223168876839822">Borra tus datos de navegación en esta computadora. Recuerda que esto puede afectar negativamente el contenido de la página Nueva pestaña.</translation>
 <translation id="2812989263793994277">No mostrar imágenes</translation>
 <translation id="6845383723252244143">Seleccionar carpeta</translation>
 <translation id="8948393169621400698">Siempre permitir ventanas emergentes en <ph name="HOST"/></translation>

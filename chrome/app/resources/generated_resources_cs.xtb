@@ -109,7 +109,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> má nyní <ph name="BEGIN_LINK"/>rozšíření<ph name="END_LINK"/> a <ph name="BEGIN_BUTTON"/>synchronizaci záložek<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Vaše záložky budou sloučeny.</translation>
 <translation id="4422347585044846479">Upravit záložku pro tuto stránku</translation>
-<translation id="7367545749698325833">Můžete importovat záložky a nastavení z jiných prohlížečů; nebo z tohoto počítače vymazat data procházení.</translation>
 <translation id="51285338152176012">Skrýt nedávno zavřené karty</translation>
 <translation id="8546306075665861288">Mezipaměť obrázků</translation>
 <translation id="801357260673640054">Záložky byly synchronizovány...</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">smazat</translation>
 <translation id="8343477974731263456">Nastavení synchronizace záložek</translation>
 <translation id="5999606216064768721">Použít systémovou lištu s názvem a okraje</translation>
-<translation id="2663762871503078613">Import:</translation>
 <translation id="1635247229519770914">Pokračovat v instalaci</translation>
 <translation id="8945419807169257367">Certifikát serveru nelze zkontrolovat</translation>
 <translation id="1464570622807304272">Zkuste to sami – zadejte „orchideje“ a stiskněte klávesu Enter.</translation>
@@ -546,7 +544,6 @@
 <translation id="6883611015375728278">Blokovat všechny soubory cookie</translation>
 <translation id="7842346819602959665">Nejnovější verze rozšíření „<ph name="EXTENSION_NAME"/>“ vyžaduje další oprávnění, byla proto deaktivována.</translation>
 <translation id="6979448128170032817">Výjimky...</translation>
-<translation id="8942948210663084792">Smazat údaje:</translation>
 <translation id="208047771235602537">Chcete <ph name="PRODUCT_NAME"/> ukončit, i když probíhá stahování?</translation>
 <translation id="6710213216561001401">Předchozí</translation>
 <translation id="1567993339577891801">Konzola JavaScriptu</translation>
@@ -651,7 +648,6 @@
 <translation id="3122496702278727796">Nepodařilo se vytvořit datový adresář</translation>
 <translation id="8888930795132369495">Ko&amp;pírovat cestu souboru</translation>
 <translation id="4517036173149081027">Ukončit a zrušit stahování</translation>
-<translation id="8446970197849314122">Záložky a nastavení můžete importovat z dalších prohlížečů a uživatelských účtů v tomto počítači.</translation>
 <translation id="6281636957902664775">Přejít na <ph name="URL"/></translation>
 <translation id="9148058034647219655">Konec</translation>
 <translation id="630065524203833229">Konec</translation>
@@ -1076,7 +1072,6 @@
 <translation id="3748412725338508953">Proběhlo příliš mnoho přesměrování.</translation>
 <translation id="8929159553808058020">Přidejte jazyky, které používáte při čtení webových stránek, a seřaďte je podle preference. Přidejte pouze ty, které potřebujete, protože některé znaky mohou být v jiných jazycích použity pro vydávání se za jiné weby.</translation>
 <translation id="8831104962952173133">Byl detekován phishing!</translation>
-<translation id="2614223168876839822">Smazat údaje o prohlížení z tohoto počítače. Pozor, akce může nepříznivě ovlivnit obsah stránky Nová karta.</translation>
 <translation id="2812989263793994277">Nezobrazovat žádné obrázky</translation>
 <translation id="6845383723252244143">Vybrat složku</translation>
 <translation id="8948393169621400698">Vždy povolovat pluginy z webu <ph name="HOST"/></translation>

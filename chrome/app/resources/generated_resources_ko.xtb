@@ -109,7 +109,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/>의 새로운 <ph name="BEGIN_LINK"/>확장 프로그램<ph name="END_LINK"/>과 <ph name="BEGIN_BUTTON"/>북마크 동기화<ph name="END_BUTTON"/> 기능을 사용해 보세요.</translation>
 <translation id="3147949335879360642">북마크가 통합됩니다.</translation>
 <translation id="4422347585044846479">이 페이지에 대한 북마크 편집</translation>
-<translation id="7367545749698325833">북마크와 설정을 다른 브라우저에서 가져오거나 이 컴퓨터에서 인터넷 사용정보를 삭제할 수 있습니다.</translation>
 <translation id="51285338152176012">최근에 닫은 탭 숨기기</translation>
 <translation id="8546306075665861288">이미지 캐시</translation>
 <translation id="801357260673640054">북마크가 동기화됨..</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">삭제</translation>
 <translation id="8343477974731263456">북마크 동기화 설정</translation>
 <translation id="5999606216064768721">시스템 제목 표시줄 및 경계선 사용</translation>
-<translation id="2663762871503078613">가져오기:</translation>
 <translation id="1635247229519770914">설치 계속하기</translation>
 <translation id="8945419807169257367">서버 인증서를 확인할 수 없음</translation>
 <translation id="1464570622807304272">'난초'를 입력하고 Enter 키를 눌러 보세요.</translation>
@@ -547,7 +545,6 @@
 <translation id="6883611015375728278">모든 쿠키 차단</translation>
 <translation id="7842346819602959665">확장 프로그램 '<ph name="EXTENSION_NAME"/>'의 최신 버전이 더 많은 권한을 필요로 하므로 사용 중지되었습니다.</translation>
 <translation id="6979448128170032817">예외...</translation>
-<translation id="8942948210663084792">데이터 삭제:</translation>
 <translation id="208047771235602537">한 개의 다운로드가 진행 중인 상태에서 <ph name="PRODUCT_NAME"/>을 종료하시겠습니까?</translation>
 <translation id="6710213216561001401">이전</translation>
 <translation id="1567993339577891801">자바스크립트 콘솔</translation>
@@ -652,7 +649,6 @@
 <translation id="3122496702278727796">데이터 디렉토리 만들기 실패</translation>
 <translation id="8888930795132369495">파일 경로 복사(&amp;P)</translation>
 <translation id="4517036173149081027">다운로드 취소하고 닫기</translation>
-<translation id="8446970197849314122">이 컴퓨터에 설치된 다른 브라우저나 사용자 계정에서 북마크 및 설정을 가져올 수 있습니다.</translation>
 <translation id="6281636957902664775"><ph name="URL"/>으로 이동</translation>
 <translation id="9148058034647219655">끝내기</translation>
 <translation id="630065524203833229">종료(&amp;X)</translation>
@@ -1073,7 +1069,6 @@
 <translation id="3748412725338508953">리디렉션이 너무 많습니다.</translation>
 <translation id="8929159553808058020">방문하는 웹 사이트를 볼 때 선호하는 언어를 선호도 순으로 지정 하십시오. 잘 모르는 언어에 쓰이는 글자는 웹 주소를 속이는데 쓰이기도 하므로, 꼭 필요하고 읽을 수 있는 언어만 더하십시오.</translation>
 <translation id="8831104962952173133">피싱 시도가 감지되었습니다.</translation>
-<translation id="2614223168876839822">이 컴퓨터에서 인터넷 사용정보를 삭제합니다. 이 경우 새 탭 페이지의 콘텐츠가 손상될 수 있으니 주의하세요.</translation>
 <translation id="2812989263793994277">이미지 표시 안함</translation>
 <translation id="6845383723252244143">폴더 선택</translation>
 <translation id="8948393169621400698"><ph name="HOST"/>에서 플러그인 항상 허용</translation>

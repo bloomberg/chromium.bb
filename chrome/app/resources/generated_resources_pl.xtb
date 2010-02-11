@@ -109,7 +109,6 @@
 <translation id="1486408090387743835">Przeglądarka <ph name="PRODUCT_NAME"/> umożliwia teraz <ph name="BEGIN_LINK"/>instalowanie rozszerzeń<ph name="END_LINK"/> i <ph name="BEGIN_BUTTON"/>synchronizowanie zakładek<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Twoje zakładki zostaną scalone.</translation>
 <translation id="4422347585044846479">Edytuj zakładkę tej strony</translation>
-<translation id="7367545749698325833">Możesz importować swoje zakładki i ustawienia z innych przeglądarek lub wyczyścić dane przeglądarki na tym komputerze.</translation>
 <translation id="51285338152176012">Ukryj ostatnio zamknięte karty</translation>
 <translation id="8546306075665861288">Pamięć podręczna grafiki</translation>
 <translation id="801357260673640054">Zakładki zsynchronizowane...</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">usuń</translation>
 <translation id="8343477974731263456">Konfigurowanie synchronizacji zakładek</translation>
 <translation id="5999606216064768721">Użyj systemowego paska tytułu i obramowania</translation>
-<translation id="2663762871503078613">Importuj:</translation>
 <translation id="1635247229519770914">Kontynuuj instalację</translation>
 <translation id="8945419807169257367">Nie można sprawdzić certyfikatu serwera</translation>
 <translation id="1464570622807304272">Wypróbuj – wpisz hasło „storczyki” i naciśnij klawisz Enter.</translation>
@@ -547,7 +545,6 @@
 <translation id="6883611015375728278">Blokuj wszystkie pliki cookie</translation>
 <translation id="7842346819602959665">Najnowsza wersja rozszerzenia „<ph name="EXTENSION_NAME"/>” wymaga większej liczby pozwoleń, została więc wyłączona.</translation>
 <translation id="6979448128170032817">Wyjątki...</translation>
-<translation id="8942948210663084792">Wyczyść dane:</translation>
 <translation id="208047771235602537">Czy chcesz zamknąć przeglądarkę <ph name="PRODUCT_NAME"/> z operacją pobierania w toku?</translation>
 <translation id="6710213216561001401">Poprzednia</translation>
 <translation id="1567993339577891801">Konsola JavaScript</translation>
@@ -652,7 +649,6 @@
 <translation id="3122496702278727796">Nie można utworzyć katalogu danych</translation>
 <translation id="8888930795132369495">Kopiuj &amp;ścieżkę do pliku</translation>
 <translation id="4517036173149081027">Zamknij i anuluj pobieranie</translation>
-<translation id="8446970197849314122">Możesz importować zakładki i ustawienia z innych przeglądarek i kont użytkowników na tym komputerze.</translation>
 <translation id="6281636957902664775">Przejdź do <ph name="URL"/></translation>
 <translation id="9148058034647219655">Zakończ</translation>
 <translation id="630065524203833229">Z&amp;akończ</translation>
@@ -1079,7 +1075,6 @@
 <translation id="3748412725338508953">Zbyt wiele przekierowań.</translation>
 <translation id="8929159553808058020">Dodaj języki używane do czytania witryn zgodnie z preferencjami. Dodaj tylko potrzebne języki, ponieważ niektóre znaki mogą być używane do podszywania się pod witryny w innych językach.</translation>
 <translation id="8831104962952173133">Wykryto wyłudzanie danych (phishing)!</translation>
-<translation id="2614223168876839822">Wyczyść dane przeglądarki na tym komputerze. Pamiętaj, że może to niekorzystnie wpłynąć na zawartość strony Nowa karta.</translation>
 <translation id="2812989263793994277">Nie pokazuj żadnych grafik</translation>
 <translation id="6845383723252244143">Wybierz folder</translation>
 <translation id="8948393169621400698">Zawsze zezwalaj na korzystanie z wtyczek w witrynie <ph name="HOST"/></translation>

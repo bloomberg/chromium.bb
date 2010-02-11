@@ -109,7 +109,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/>'il on nüüd <ph name="BEGIN_LINK"/>laiendid<ph name="END_LINK"/> ja <ph name="BEGIN_BUTTON"/>järjehoidjate sünkroonimise funktsioon<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Teie järjehoidjad liidetakse kokku.</translation>
 <translation id="4422347585044846479">Muuda selle lehekülje järjehoidjat</translation>
-<translation id="7367545749698325833">Võite importida teistest brauseritest oma järjehoidjaid ja seadeid või eemaldada sellest arvutist oma sirvimisandmed.</translation>
 <translation id="51285338152176012">Peida viimasena suletud vahekaardid</translation>
 <translation id="8546306075665861288">Kujutise vahemälu</translation>
 <translation id="801357260673640054">Järjehoidjate sünkroonimine...</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">Kustuta</translation>
 <translation id="8343477974731263456">Järjehoidjate sünkroonimise seadistamine</translation>
 <translation id="5999606216064768721">Kasuta süsteemi pealkirjariba ja ääriseid</translation>
-<translation id="2663762871503078613">Impordi:</translation>
 <translation id="1635247229519770914">Jätka installi</translation>
 <translation id="8945419807169257367">Serveri serti ei õnnestu kontrollida</translation>
 <translation id="1464570622807304272">Proovige järele — tippige „orhideed“ ja vajutage nuppu Enter.</translation>
@@ -547,7 +545,6 @@
 <translation id="6883611015375728278">Keela kõik küpsised</translation>
 <translation id="7842346819602959665">Uusim laiendi „<ph name="EXTENSION_NAME"/>“ versioon nõuab rohkem õigusi, seega on see keelatud.</translation>
 <translation id="6979448128170032817">Erandid...</translation>
-<translation id="8942948210663084792">Tühjenda andmed:</translation>
 <translation id="208047771235602537">Kas soovite väljuda rakendusest <ph name="PRODUCT_NAME"/>, kui allalaadimine on pooleli?</translation>
 <translation id="6710213216561001401">Eelmine</translation>
 <translation id="1567993339577891801">JavaScripti konsool</translation>
@@ -652,7 +649,6 @@
 <translation id="3122496702278727796">Andmekataloogi loomine ebaõnnestus</translation>
 <translation id="8888930795132369495">Kopeeri faili &amp;tee</translation>
 <translation id="4517036173149081027">Sule ja tühista allalaadimised</translation>
-<translation id="8446970197849314122">Saate oma järjehoidjaid ja seadeid importida selle arvuti teistest brauseritest ja kasutajakontodest.</translation>
 <translation id="6281636957902664775">Mine aadressile <ph name="URL"/></translation>
 <translation id="9148058034647219655">Välju</translation>
 <translation id="630065524203833229">V&amp;älju</translation>
@@ -1084,7 +1080,6 @@
 <translation id="3748412725338508953">Liiga palju ümbersuunamisi.</translation>
 <translation id="8929159553808058020">Lisage keeled, mida kasutate veebisaitide lugemiseks, järjestades need eelistuse järgi. Lisage ainult need, mida te vajate, kuna mõndasid tähemärke saab kasutada muudes keeltes olevate veebisaitide esitamiseks.</translation>
 <translation id="8831104962952173133">Tuvastatud andmepüük!</translation>
-<translation id="2614223168876839822">Tühjendage sellest arvutist oma sirvimise andmed. Pange tähele, et see võib uue vahekaardi lehe sisu ebasoodsalt mõjutada.</translation>
 <translation id="2812989263793994277">Ära kuva ühtki pilti</translation>
 <translation id="6845383723252244143">Kausta valimine</translation>
 <translation id="8948393169621400698">Luba alati pistikprogrammid saidil <ph name="HOST"/></translation>

@@ -109,7 +109,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> сада има <ph name="BEGIN_LINK"/>додатке<ph name="END_LINK"/> и <ph name="BEGIN_BUTTON"/>синхронизацију обележивача<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Обележивачи ће бити обједињени.</translation>
 <translation id="4422347585044846479">Измените обележивач за ову страницу</translation>
-<translation id="7367545749698325833">Можете да увезете обележиваче и подешавања из других прегледача или да обришете податке прегледања са овог рачунара.</translation>
 <translation id="51285338152176012">Сакриј недавно затворене картице</translation>
 <translation id="8546306075665861288">Кеш слике</translation>
 <translation id="801357260673640054">Синхронизовани обележивачи...</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">избриши</translation>
 <translation id="8343477974731263456">Подешавање синхронизације обележивача</translation>
 <translation id="5999606216064768721">Користи системску траку наслова и ивице</translation>
-<translation id="2663762871503078613">Увоз:</translation>
 <translation id="1635247229519770914">Настави инсталирање</translation>
 <translation id="8945419807169257367">Није могуће проверити сертификат сервера</translation>
 <translation id="1464570622807304272">Испробајте – унесите „орхидеје“ и притисните тастер Enter.</translation>
@@ -547,7 +545,6 @@
 <translation id="6883611015375728278">Блокирај све колачиће</translation>
 <translation id="7842346819602959665">Најновија верзија додатка „<ph name="EXTENSION_NAME"/>“ захтева више дозвола, па је онемогућена.</translation>
 <translation id="6979448128170032817">Изузеци...</translation>
-<translation id="8942948210663084792">Брисање података:</translation>
 <translation id="208047771235602537">Желите ли да изађете из <ph name="PRODUCT_NAME"/> прегледача док је преузимање у току?</translation>
 <translation id="6710213216561001401">Претходно</translation>
 <translation id="1567993339577891801">JavaScript конзола</translation>
@@ -652,7 +649,6 @@
 <translation id="3122496702278727796">Прављење директоријума са подацима није успело</translation>
 <translation id="8888930795132369495">Копирај путању &amp;датотеке</translation>
 <translation id="4517036173149081027">Затвори и откажи преузимање</translation>
-<translation id="8446970197849314122">На овај рачунар можете да увезете обележиваче и подешавања из других прегледача и корисничких налога.</translation>
 <translation id="6281636957902664775">Идите на <ph name="URL"/></translation>
 <translation id="9148058034647219655">Изађи</translation>
 <translation id="630065524203833229">И&amp;зађи</translation>
@@ -1080,7 +1076,6 @@
 <translation id="3748412725338508953">Било је превише преусмеравања.</translation>
 <translation id="8929159553808058020">Додајте језике које користите за читање веб сајтова, наведене у жељеном редоследу. Додајте само оне који су вам потребни, пошто неки знакови могу да се користе за веб сајтове на другим језицима.</translation>
 <translation id="8831104962952173133">Откривен фишинг!</translation>
-<translation id="2614223168876839822">Обришите податке прегледања са овог рачунара. Имајте на уму да овај поступак може неповољно да утиче на садржај странице „Нова картица“.</translation>
 <translation id="2812989263793994277">Не приказуј ниједну слику</translation>
 <translation id="6845383723252244143">Избор директоријума</translation>
 <translation id="8948393169621400698">Увек дозволи додатке на сајту <ph name="HOST"/></translation>

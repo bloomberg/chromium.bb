@@ -109,7 +109,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> ara té <ph name="BEGIN_LINK"/>extensions<ph name="END_LINK"/> i <ph name="BEGIN_BUTTON"/>sincronització d'adreces d'interès<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Les adreces d'interès es combinaran.</translation>
 <translation id="4422347585044846479">Edita l'adreça d'interès d'aquesta pàgina</translation>
-<translation id="7367545749698325833">Podeu importar els preferits i la configuració d'altres navegadors o bé esborrar les dades de navegació des d'aquest equip.</translation>
 <translation id="51285338152176012">Oculta les pestanyes tancades recentment</translation>
 <translation id="8546306075665861288">Memòria cau d'imatges</translation>
 <translation id="801357260673640054">S'han sincronitzat les adreces d'interès...</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">suprimeix</translation>
 <translation id="8343477974731263456">S'està configurant la sincronització de les adreces d'interès</translation>
 <translation id="5999606216064768721">Utilitza la barra del títol i els límits del sistema</translation>
-<translation id="2663762871503078613">Importa:</translation>
 <translation id="1635247229519770914">Continua instal·lant</translation>
 <translation id="8945419807169257367">No es pot comprovar el certificat del servidor</translation>
 <translation id="1464570622807304272">Proveu-ho. Escriviu &quot;orquídies&quot; i premeu la tecla de retorn.</translation>
@@ -547,7 +545,6 @@
 <translation id="6883611015375728278">Bloqueja totes les galetes</translation>
 <translation id="7842346819602959665">La versió més recent de l'extensió &quot;<ph name="EXTENSION_NAME"/>&quot; requereix més permisos i, per tant, s'ha desactivat.</translation>
 <translation id="6979448128170032817">Excepcions...</translation>
-<translation id="8942948210663084792">Elimina les dades:</translation>
 <translation id="208047771235602537">Voleu sortir de <ph name="PRODUCT_NAME"/> amb una baixada en curs?</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="1567993339577891801">Consola de JavaScript</translation>
@@ -652,7 +649,6 @@
 <translation id="3122496702278727796">Error en crear un directori de dades</translation>
 <translation id="8888930795132369495">&amp;Copia el camí del fitxer</translation>
 <translation id="4517036173149081027">Tanca i cancel·la la baixada</translation>
-<translation id="8446970197849314122">Podeu importar els preferits i la configuració d'altres navegadors i d'altres comptes d'usuari d'aquest equip.</translation>
 <translation id="6281636957902664775">Vés a <ph name="URL"/></translation>
 <translation id="9148058034647219655">Surt</translation>
 <translation id="630065524203833229">S&amp;urt</translation>
@@ -1081,7 +1077,6 @@
 <translation id="3748412725338508953">Hi havia massa redireccionaments.</translation>
 <translation id="8929159553808058020">Afegeix els idiomes que utilitzes per llegir llocs web, en ordre de preferència. Afegeix només aquells que necessites, ja que alguns caràcters es poden utilitzar per suplantar llocs web en altres idiomes.</translation>
 <translation id="8831104962952173133">Pesca detectada!</translation>
-<translation id="2614223168876839822">Esborreu les dades de navegació d'aquest equip. Tingueu en compte que això pot afectar negativament el contingut de la pàgina &quot;Pestanya nova&quot;.</translation>
 <translation id="2812989263793994277">No mostris cap imatge</translation>
 <translation id="6845383723252244143">Selecció d'una carpeta</translation>
 <translation id="8948393169621400698">Permet sempre els connectors a <ph name="HOST"/></translation>

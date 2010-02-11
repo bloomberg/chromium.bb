@@ -109,7 +109,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> sekarang memiliki <ph name="BEGIN_LINK"/>ekstensi<ph name="END_LINK"/> dan <ph name="BEGIN_BUTTON"/>sinkronisasi bookmark<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Bookmark Anda akan digabungkan.</translation>
 <translation id="4422347585044846479">Edit bookmark untuk laman ini</translation>
-<translation id="7367545749698325833">Anda dapat mengimpor bookmark dan setelan dari peramban lain atau hapus data perambanan dari komputer ini.</translation>
 <translation id="51285338152176012">Sembunyikan tab yang barusan ditutup</translation>
 <translation id="8546306075665861288">Tembolok gambar</translation>
 <translation id="801357260673640054">Bookmark disinkronkan...</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">hapus, delete</translation>
 <translation id="8343477974731263456">Menyiapkan Sinkronisasi Bookmark</translation>
 <translation id="5999606216064768721">Gunakan Bilah Judul dan Batas Sistem</translation>
-<translation id="2663762871503078613">Impor:</translation>
 <translation id="1635247229519770914">Lanjutkan Penginstalan</translation>
 <translation id="8945419807169257367">Sertifikat server tidak dapat diperiksa</translation>
 <translation id="1464570622807304272">Cobalah - ketik &quot;anggrek&quot; dan tekan Enter.</translation>
@@ -550,7 +548,6 @@
 <translation id="7842346819602959665">Versi ekstensi &quot;<ph name="EXTENSION_NAME"/>&quot; teranyar memerlukan izin lebih lanjut, jadi ekstensi belum diaktifkan.</translation>
 <translation id="6979448128170032817">Pengecualian...
 </translation>
-<translation id="8942948210663084792">Hapus Data:</translation>
 <translation id="208047771235602537">Apakah Anda ingin keluar <ph name="PRODUCT_NAME"/> sementara ada unduhan yang sedang berlangsung?</translation>
 <translation id="6710213216561001401">Sebelumnya</translation>
 <translation id="1567993339577891801">Konsol Javascript</translation>
@@ -655,7 +652,6 @@
 <translation id="3122496702278727796">Gagal Membuat Direktori Data</translation>
 <translation id="8888930795132369495">Salin &amp;Jalur Berkas</translation>
 <translation id="4517036173149081027">Tutup dan batalkan unduhan</translation>
-<translation id="8446970197849314122">Anda dapat mengimpor bookmark serta setelan dari peramban dan akun pengguna lain di komputer ini.</translation>
 <translation id="6281636957902664775">Buka <ph name="URL"/></translation>
 <translation id="9148058034647219655">Keluar</translation>
 <translation id="630065524203833229">K&amp;eluar</translation>
@@ -1082,7 +1078,6 @@
 <translation id="3748412725338508953">Terlalu banyak arahan ulang.</translation>
 <translation id="8929159553808058020">Tambahkan bahasa yang Anda gunakan untuk membaca situs Web dengan urutan sesuai keinginan. Hanya tambahkan yang Anda perlukan, karena beberapa karakter dapat digunakan untuk meniru situs Web dalam bahasa lain.</translation>
 <translation id="8831104962952173133">Phishing Terdeteksi!</translation>
-<translation id="2614223168876839822">Hapus data perambanan dari komputer ini. Perhatikan bahwa tindakan ini akan sangat mempengaruhi konten Laman Tab Baru.</translation>
 <translation id="2812989263793994277">Jangan tampilkan gambar apa pun</translation>
 <translation id="6845383723252244143">Pilih Map</translation>
 <translation id="8948393169621400698">Selalu izinkan pengaya di <ph name="HOST"/></translation>

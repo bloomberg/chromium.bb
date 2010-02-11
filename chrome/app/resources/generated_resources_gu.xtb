@@ -102,7 +102,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> પાસે <ph name="BEGIN_LINK"/>એક્સટેન્શન્સ<ph name="END_LINK"/> અને <ph name="BEGIN_BUTTON"/>બુકમાર્ક સમન્વય<ph name="END_BUTTON"/></translation>
 <translation id="3147949335879360642">તમારા બુકમાર્ક્સ મર્જ થશે.</translation>
 <translation id="4422347585044846479">આ પૃષ્ઠ માટે બુકમાર્ક સંપાદિત કરો</translation>
-<translation id="7367545749698325833">તમે અન્ય બ્રાઉઝર્સથી તમારા બુકમાર્ક્સ અને સેટિંગ્સ આયાત કરી શકો છો અથવા આ કમ્પ્યુટરમાંથી તમારો બ્રાઉઝિંગ ડેટા સાફ કરી શકો છો.</translation>
 <translation id="51285338152176012">તાજેતરમાં બંધ કરેલા ટૅબ્સ છુપાવો</translation>
 <translation id="8546306075665861288">છબી કેશ</translation>
 <translation id="801357260673640054">બુકમાર્ક્સ સમન્વિત થયા...</translation>
@@ -214,7 +213,6 @@
 <translation id="692135145298539227">કાઢી નાખો</translation>
 <translation id="8343477974731263456">બુકમાર્ક્સ સમન્વયન સેટ કરો</translation>
 <translation id="5999606216064768721">સિસ્ટમ શીર્ષક બાર અને બોર્ડર્સનો ઉપયોગ કરો</translation>
-<translation id="2663762871503078613">આયાત કરો:</translation>
 <translation id="1635247229519770914">ઇન્સ્ટોલ કરવાનું ચાલુ રાખો</translation>
 <translation id="8945419807169257367">સર્વરનું પ્રમાણપત્ર તપાસી શકાતું નથી</translation>
 <translation id="1464570622807304272">આ અજમાવી જુઓ - &quot;ગુલાબ&quot; લખો અને Enter દબાવો.</translation>
@@ -523,7 +521,6 @@
 <translation id="7910768399700579500">&amp;નવું ફોલ્ડર</translation>
 <translation id="6883611015375728278">બધી કૂકીઝને અવરોધિત કરો</translation>
 <translation id="7842346819602959665">એક્સ્ટેંશન &quot;<ph name="EXTENSION_NAME"/>&quot; ના નવા સંસ્કરણને વધુ પરવાનગીઓની જરૂર છે, તેથી તેને અક્ષમ કરવામાં આવ્યું છે.</translation>
-<translation id="8942948210663084792">ડેટા સાફ કરો:</translation>
 <translation id="208047771235602537">ડાઉનલોડ કાર્ય ચાલુ હોય ત્યારે તમે <ph name="PRODUCT_NAME"/> માંથી બહાર નીકળવા માંગો છો?</translation>
 <translation id="6710213216561001401">પહેલાનું</translation>
 <translation id="1567993339577891801">JavaScript કન્સોલ</translation>
@@ -621,7 +618,6 @@
 <translation id="3122496702278727796">ડેટા ડાયરેક્ટરી બનાવવામાટે નિષ્ફળ</translation>
 <translation id="8888930795132369495">ફાઇલ પા&amp;થને કૉપિ કરો</translation>
 <translation id="4517036173149081027">બંધ કરો અને ડાઉનલોડ કરવાનું રદ કરો</translation>
-<translation id="8446970197849314122">તમે અન્ય બ્રાઉઝર અને આ કમ્પ્યુટર પરનાં અન્ય વપરાશકર્તાઓથી તમારા બુકમાર્ક્સ અને સેટિંગ્સ આયાત કરી શકો છો.</translation>
 <translation id="6281636957902664775"><ph name="URL"/> પર જાઓ</translation>
 <translation id="9148058034647219655">બહાર નીકળો</translation>
 <translation id="630065524203833229">&amp;બહાર નીકળો</translation>
@@ -1024,7 +1020,6 @@
 <translation id="3748412725338508953">ત્યાં ઘણા બધા રિડાયરેક્ટ્સ હતા.</translation>
 <translation id="8929159553808058020">પસંદગી ક્રમ મુજબ તે ભાષાઓ ઉમેરો જેનો તમે વેબસાઇટ્સ વાંચવા માટે ઉપયોગ કરો છો. ફક્ત તમને જરૂરી હોય તે જ ઉમેરો, કારણકે કેટલાક વર્ણોનો ઉપયોગ અન્ય ભાષાઓમાં વેબસાઇટ્સની નકલ કરવા માટે થઈ શકે છે.</translation>
 <translation id="8831104962952173133">ફિશીંગ મળી!</translation>
-<translation id="2614223168876839822">આ કમ્પ્યુટરથી તમારો બ્રાઉઝિંગ ડેટા સાફ કરો. સાવધ રહો કેમ કે આ તમારા નવા ટૅબ પૃષ્ઠની સામગ્રી પર વિપરિત અસર કરી શકે છે.</translation>
 <translation id="6845383723252244143">ફોલ્ડર પસંદ કરો</translation>
 <translation id="8288345061925649502">શોધ એંજીન બદલો</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> સેકંડ</translation>

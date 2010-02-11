@@ -109,7 +109,6 @@
 <translation id="1486408090387743835">O <ph name="PRODUCT_NAME"/> agora tem <ph name="BEGIN_LINK"/>extensões<ph name="END_LINK"/> e <ph name="BEGIN_BUTTON"/>sincronização de favoritos<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Os seus favoritos serão unidos.</translation>
 <translation id="4422347585044846479">Editar favorito para esta página</translation>
-<translation id="7367545749698325833">Você pode importar os seus favoritos e configurações de outros navegadores ou apagar os seus dados de navegação deste computador.</translation>
 <translation id="51285338152176012">Ocultar guias recém-fechadas</translation>
 <translation id="8546306075665861288">Cache da imagem</translation>
 <translation id="801357260673640054">Favoritos sincronizados...</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">excluir</translation>
 <translation id="8343477974731263456">Configurando a sincronização de favoritos</translation>
 <translation id="5999606216064768721">Usar barra de título e bordas do sistema</translation>
-<translation id="2663762871503078613">Importar:</translation>
 <translation id="1635247229519770914">Continuar instalando</translation>
 <translation id="8945419807169257367">O certificado do servidor não pode ser verificado</translation>
 <translation id="1464570622807304272">Experimente: digite &quot;orquídea&quot; e pressione Enter.</translation>
@@ -548,7 +546,6 @@
 <translation id="7842346819602959665">A versão mais recente da extensão &quot;<ph name="EXTENSION_NAME"/>&quot; exige mais permissões, e por isso foi desativada.</translation>
 <translation id="6979448128170032817">Exceções...
 </translation>
-<translation id="8942948210663084792">Limpar dados:</translation>
 <translation id="208047771235602537">Deseja sair do <ph name="PRODUCT_NAME"/> com um download em andamento?</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="1567993339577891801">Console JavaScript</translation>
@@ -653,7 +650,6 @@
 <translation id="3122496702278727796">Falha ao criar o diretório de dados</translation>
 <translation id="8888930795132369495">Copiar &amp;caminho do arquivo</translation>
 <translation id="4517036173149081027">Fechar e cancelar o download</translation>
-<translation id="8446970197849314122">Você pode importar seus favoritos e configurações de outros navegadores e contas de usuário desse computador.</translation>
 <translation id="6281636957902664775">Ir para <ph name="URL"/></translation>
 <translation id="9148058034647219655">Sair</translation>
 <translation id="630065524203833229">&amp;Sair</translation>
@@ -1081,7 +1077,6 @@
 <translation id="3748412725338508953">Houve muitos redirecionamentos.</translation>
 <translation id="8929159553808058020">Adicione os idiomas que você usa para ler sites, listando em ordem de preferência. Adicione somente os necessários, pois alguns caracteres podem ser usados para representar sites em outros idiomas.</translation>
 <translation id="8831104962952173133">Phishing detectado.</translation>
-<translation id="2614223168876839822">Apague seus dados de navegação desse computador. Isso pode afetar negativamente o conteúdo da página &quot;Nova guia&quot;.</translation>
 <translation id="2812989263793994277">Não mostrar nenhuma imagem</translation>
 <translation id="6845383723252244143">Selecionar pasta</translation>
 <translation id="8948393169621400698">Sempre permitir plug-ins em <ph name="HOST"/></translation>

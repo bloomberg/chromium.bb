@@ -109,7 +109,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> ora include <ph name="BEGIN_LINK"/>estensioni<ph name="END_LINK"/> e <ph name="BEGIN_BUTTON"/>sincronizzazione Preferiti<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">I Preferiti verranno uniti.</translation>
 <translation id="4422347585044846479">Modifica Preferito</translation>
-<translation id="7367545749698325833">Puoi importare i tuoi preferiti e le tue impostazioni da altri browser o cancellare i tuoi dati di navigazione da questo computer.</translation>
 <translation id="51285338152176012">Nascondi schede chiuse di recente</translation>
 <translation id="8546306075665861288">Cache immagini</translation>
 <translation id="801357260673640054">Preferiti sincronizzati...</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">elimina</translation>
 <translation id="8343477974731263456">Configurazione sincronizzazione Preferiti</translation>
 <translation id="5999606216064768721">Utilizza barra del titolo di sistema e bordi</translation>
-<translation id="2663762871503078613">Importa:</translation>
 <translation id="1635247229519770914">Prosegui l'installazione</translation>
 <translation id="8945419807169257367">Impossibile verificare il certificato del server</translation>
 <translation id="1464570622807304272">Prova. Digita &quot;orchidee&quot; e premi Invio.</translation>
@@ -548,7 +546,6 @@
 <translation id="6883611015375728278">Blocca tutti i cookie</translation>
 <translation id="7842346819602959665">L'ultima versione dell'estensione &quot;<ph name="EXTENSION_NAME"/>&quot; richiede maggiori autorizzazioni, pertanto è stata disattivata.</translation>
 <translation id="6979448128170032817">Eccezioni...</translation>
-<translation id="8942948210663084792">Cancella dati:</translation>
 <translation id="208047771235602537">Uscire da <ph name="PRODUCT_NAME"/> con un download in corso?</translation>
 <translation id="6710213216561001401">Indietro</translation>
 <translation id="1567993339577891801">Console JavaScript</translation>
@@ -653,7 +650,6 @@
 <translation id="3122496702278727796">Creazione directory dati non riuscita</translation>
 <translation id="8888930795132369495">Copia &amp;percorso file</translation>
 <translation id="4517036173149081027">Chiudi e annulla download</translation>
-<translation id="8446970197849314122">Puoi importare i tuoi preferiti e le tue impostazioni da altri browser e account utente presenti in questo computer.</translation>
 <translation id="6281636957902664775">Vai a <ph name="URL"/></translation>
 <translation id="9148058034647219655">Esci</translation>
 <translation id="630065524203833229">E&amp;sci</translation>
@@ -1080,7 +1076,6 @@
 <translation id="3748412725338508953">Si sono verificati troppi reindirizzamenti.</translation>
 <translation id="8929159553808058020">Aggiungi le lingue utilizzate per leggere i siti web, in ordine di preferenza. Aggiungi solo quelle che ti servono, poiché alcuni caratteri possono essere utilizzati per rappresentare siti web in altre lingue.</translation>
 <translation id="8831104962952173133">Rilevato tentativo di phishing!</translation>
-<translation id="2614223168876839822">Cancella i dati di navigazione da questo computer. Tieni presente che ciò potrebbe influire negativamente sui contenuti della pagina Nuova scheda.</translation>
 <translation id="2812989263793994277">Non mostrare le immagini</translation>
 <translation id="6845383723252244143">Seleziona cartella</translation>
 <translation id="8948393169621400698">Consenti sempre i plug-in su <ph name="HOST"/></translation>

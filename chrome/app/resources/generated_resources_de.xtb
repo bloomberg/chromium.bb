@@ -109,7 +109,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> jetzt mit <ph name="BEGIN_LINK"/>Erweiterungen<ph name="END_LINK"/> und <ph name="BEGIN_BUTTON"/>Lesezeichen-Synchronisierung<ph name="END_BUTTON"/></translation>
 <translation id="3147949335879360642">Ihre Lesezeichen werden zusammengeführt.</translation>
 <translation id="4422347585044846479">Lesezeichen für diese Seite bearbeiten</translation>
-<translation id="7367545749698325833">Sie können Lesezeichen und Einstellungen von anderen Browsern importieren oder Ihre Internetdaten von diesem Computer löschen.</translation>
 <translation id="51285338152176012">Zuletzt geschlossene Tabs ausblenden</translation>
 <translation id="8546306075665861288">Bildercache</translation>
 <translation id="801357260673640054">Lesezeichen synchronisiert...</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">löschen</translation>
 <translation id="8343477974731263456">Einrichtung der Lesezeichen-Synchronisierung</translation>
 <translation id="5999606216064768721">Titelleiste und Ränder des Systems verwenden</translation>
-<translation id="2663762871503078613">Importieren:</translation>
 <translation id="1635247229519770914">Installation fortsetzen</translation>
 <translation id="8945419807169257367">Serverzertifikat kann nicht überprüft werden</translation>
 <translation id="1464570622807304272">Versuchen Sie es - geben Sie &quot;Orchideen&quot; ein und drücken Sie die Eingabetaste.</translation>
@@ -550,7 +548,6 @@
 <translation id="7842346819602959665">Die neueste Version der Erweiterung &quot;<ph name="EXTENSION_NAME"/>&quot; benötigt mehr Berechtigungen und wurde daher deaktiviert.</translation>
 <translation id="6979448128170032817">Ausnahmen...
 </translation>
-<translation id="8942948210663084792">Daten löschen:</translation>
 <translation id="208047771235602537">Sind Sie sicher, dass Sie <ph name="PRODUCT_NAME"/> beenden wollen, während ein Download läuft?</translation>
 <translation id="6710213216561001401">Zurück</translation>
 <translation id="1567993339577891801">JavaScript-Konsole</translation>
@@ -655,7 +652,6 @@
 <translation id="3122496702278727796">Erstellen eines Datenverzeichnisses fehlgeschlagen</translation>
 <translation id="8888930795132369495">Datei&amp;pfad kopieren</translation>
 <translation id="4517036173149081027">Download abbrechen und schließen.</translation>
-<translation id="8446970197849314122">Sie können Lesezeichen und Einstellungen von anderen Browsern und Nutzerkonten auf diesem Computer importieren.</translation>
 <translation id="6281636957902664775">Zu <ph name="URL"/> wechseln</translation>
 <translation id="9148058034647219655">Beenden</translation>
 <translation id="630065524203833229">Be&amp;enden</translation>
@@ -1089,7 +1085,6 @@ Sie können Ihre Webclips <ph name="BEGIN_LINK"/>anpassen<ph name="END_LINK"/> u
 <translation id="3748412725338508953">Zu viele Umleitungen.</translation>
 <translation id="8929159553808058020">Fügen Sie die Sprachen hinzu, die Sie zum Lesen von Websites verwenden, und listen Sie sie in beliebiger Reihenfolge auf. Fügen Sie nur benötigte Sprachen hinzu, da einige Zeichen verwendet werden können, um Websites in anderen Sprachen darzustellen.</translation>
 <translation id="8831104962952173133">Phishing bemerkt!</translation>
-<translation id="2614223168876839822">Löscht Ihre Internetdaten von diesem Computer. Dies kann sich nachteilig auf die Inhalte der Seite &quot;Neuer Tab&quot; auswirken.</translation>
 <translation id="2812989263793994277">Keine Bilder anzeigen</translation>
 <translation id="6845383723252244143">Ordner auswählen</translation>
 <translation id="8948393169621400698">Plug-ins auf <ph name="HOST"/> immer zulassen

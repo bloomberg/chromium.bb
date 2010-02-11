@@ -103,7 +103,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> मध्ये आता <ph name="BEGIN_LINK"/>विस्तार<ph name="END_LINK"/> आणि <ph name="BEGIN_BUTTON"/>बुकमार्क समक्रमण<ph name="END_BUTTON"/> आहे. </translation>
 <translation id="3147949335879360642">आपले बुकमार्क विलीन केले जातील.</translation>
 <translation id="4422347585044846479">या पृष्ठासाठी बुकमार्क संपादित करा</translation>
-<translation id="7367545749698325833">आपण इतर ब्राउझरवरुन आपले बुकमार्क आणि सेटिंग्ज आयात करू शकता किंवा या संगणकावरील आपला ब्राउझिंग डेटा साफ करू शकता.</translation>
 <translation id="51285338152176012">अलीकडे बंद केलेले टॅब लपवा</translation>
 <translation id="8546306075665861288">प्रतिमा कॅशे</translation>
 <translation id="801357260673640054">बुकमार्क समक्रमित केले...</translation>
@@ -215,7 +214,6 @@
 <translation id="692135145298539227">हटवा</translation>
 <translation id="8343477974731263456">बुकमार्क समक्रमण सेट अप करीत आहे</translation>
 <translation id="5999606216064768721">सिस्टम शीर्षक बार आणि किनारी वापरा</translation>
-<translation id="2663762871503078613">आयात:</translation>
 <translation id="1635247229519770914">स्थापना सुरू ठेवा</translation>
 <translation id="8945419807169257367">सर्व्हरचे प्रमाणपत्र तपासणे शक्य नाही</translation>
 <translation id="1464570622807304272">हे करुन पहा – &quot;गुलाब&quot; टाइप करा आणि Enter दाबा.</translation>
@@ -524,7 +522,6 @@
 <translation id="7910768399700579500">&amp;नवीन फोल्‍डर</translation>
 <translation id="6883611015375728278">सर्व कुकीज अवरोधित करा</translation>
 <translation id="7842346819602959665">&quot;<ph name="EXTENSION_NAME"/>&quot; विस्ताराच्या नवीनतम आवृत्तीस अधिक परवानग्या आवश्यक आहेत, म्हणून हा अक्षम केला गेला आहे.</translation>
-<translation id="8942948210663084792">डेटा साफ करा:</translation>
 <translation id="208047771235602537">एक डाउनलोड प्रक्रियेत असताना आपण <ph name="PRODUCT_NAME"/> मधून निर्गमन करू इच्छिता?</translation>
 <translation id="6710213216561001401">मागील</translation>
 <translation id="1567993339577891801">JavaScript कन्सोल</translation>
@@ -622,7 +619,6 @@
 <translation id="3122496702278727796">डेटा निर्देशिका तयार करण्यात अयशस्वी</translation>
 <translation id="8888930795132369495">फाइल &amp;पथ कॉपी करा</translation>
 <translation id="4517036173149081027">बंद करा आणि डाउनलोड रद्द करा</translation>
-<translation id="8446970197849314122">आपण इतर ब्राउझर आणि वापरकर्ता खात्यांवरून या संगणकावर आपले बुकमार्क आणि सेटिंग्ज आयात करू शकता.</translation>
 <translation id="6281636957902664775"><ph name="URL"/> वर जा</translation>
 <translation id="9148058034647219655">बाहेर जा</translation>
 <translation id="630065524203833229">नि&amp;र्गमन</translation>
@@ -1024,7 +1020,6 @@
 <translation id="3748412725338508953">तेथे बरेच पुनर्निर्देशित होते.</translation>
 <translation id="8929159553808058020">वेबसाइट्स वाचण्यासाठी आपण वापरत असलेल्या सूची प्राधान्य क्रमातील भाषा जोडा. केवळ आपल्‍याला आवश्यक असलेल्या जोडा, कारण काही वर्ण इतर भाषांतील वेबसाइट्सचे छद्म रूप दर्शविण्यासाठी वापरले जाऊ शकतात.</translation>
 <translation id="8831104962952173133">फिशिंग तपासले!</translation>
-<translation id="2614223168876839822">या संगणकावरून आपला ब्राउझिंग डेटा साफ करा. असे करणे नवीन टॅब पृष्ठाच्या सामग्रीस प्रतिकूलपणे प्रभावित करणार नाही याची सावधगिरी बाळगा.</translation>
 <translation id="6845383723252244143">फोल्डर निवडा</translation>
 <translation id="8288345061925649502">शोध इंजिन बदला</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> से</translation>

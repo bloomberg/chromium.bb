@@ -109,7 +109,6 @@
 <translation id="1486408090387743835">В <ph name="PRODUCT_NAME"/> установлены <ph name="BEGIN_LINK"/>расширения<ph name="END_LINK"/>. Также выполнена <ph name="BEGIN_BUTTON"/>синхронизация закладок<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Ваши закладки будут объединены.</translation>
 <translation id="4422347585044846479">Изменить закладку для этой страницы</translation>
-<translation id="7367545749698325833">Можно импортировать закладки и настройки из других браузеров или удалить данные о работе браузера с этого компьютера.</translation>
 <translation id="51285338152176012">Скрыть последние закрытые вкладки</translation>
 <translation id="8546306075665861288">Кэш изображений</translation>
 <translation id="801357260673640054">Закладки синхронизированы...</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">удалить</translation>
 <translation id="8343477974731263456">Настройка синхронизации закладок</translation>
 <translation id="5999606216064768721">Использовать рамки и строку заголовка системы</translation>
-<translation id="2663762871503078613">Импорт:</translation>
 <translation id="1635247229519770914">Продолжить установку</translation>
 <translation id="8945419807169257367">Не удается проверить сертификат сервера</translation>
 <translation id="1464570622807304272">Просто введите &quot;орхидеи&quot; и нажмите клавишу Enter.</translation>
@@ -547,7 +545,6 @@
 <translation id="6883611015375728278">Заблокировать все файлы сookie</translation>
 <translation id="7842346819602959665">Новейшей версии расширения &quot;<ph name="EXTENSION_NAME"/>&quot; требуются дополнительные разрешения, поэтому оно было отключено.</translation>
 <translation id="6979448128170032817">Исключения...</translation>
-<translation id="8942948210663084792">Удаление данных:</translation>
 <translation id="208047771235602537">Закрыть <ph name="PRODUCT_NAME"/> несмотря на то, что идет загрузка?</translation>
 <translation id="6710213216561001401">Назад</translation>
 <translation id="1567993339577891801">Консоль JavaScript</translation>
@@ -652,7 +649,6 @@
 <translation id="3122496702278727796">Не удалось создать каталог данных</translation>
 <translation id="8888930795132369495">Копировать путь к файлу</translation>
 <translation id="4517036173149081027">Закрыть и отменить загрузку</translation>
-<translation id="8446970197849314122">Вы можете импортировать закладки и настройки из других браузеров и аккаунтов на этом компьютере.</translation>
 <translation id="6281636957902664775">Перейти к <ph name="URL"/></translation>
 <translation id="9148058034647219655">Выйти</translation>
 <translation id="630065524203833229">В&amp;ыход</translation>
@@ -1078,7 +1074,6 @@
 <translation id="3748412725338508953">Обнаружено слишком много переадресаций.</translation>
 <translation id="8929159553808058020">Добавить языки для просмотра веб-сайтов в порядке предпочтения. Добавьте только те из них, которые вам нужны, поскольку некоторые символы могут использоватся для олицетворения веб-сайтов на других языках.</translation>
 <translation id="8831104962952173133">Обнаружена попытка фишинга</translation>
-<translation id="2614223168876839822">Удаление истории веб-поиска может негативно сказаться на содержании страницы быстрого доступа.</translation>
 <translation id="2812989263793994277">Не показывать изображения</translation>
 <translation id="6845383723252244143">Выбор папки</translation>
 <translation id="8948393169621400698">Всегда разрешать модули для сайта <ph name="HOST"/></translation>

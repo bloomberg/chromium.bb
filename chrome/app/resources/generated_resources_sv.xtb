@@ -109,7 +109,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> har nu <ph name="BEGIN_LINK"/>tillägg<ph name="END_LINK"/> och <ph name="BEGIN_BUTTON"/>bokmärkessynkronisering<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Dina bokmärken kombineras.</translation>
 <translation id="4422347585044846479">Redigera bokmärke för den här sidan</translation>
-<translation id="7367545749698325833">Du kan importera bokmärken och inställningar från andra webbläsare eller radera webbinformationen från den här datorn.</translation>
 <translation id="51285338152176012">Dölj ‎nyligen stängda flikar</translation>
 <translation id="8546306075665861288">Cacheminne för bilder</translation>
 <translation id="801357260673640054">Bokmärken synkroniserade...</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">radera</translation>
 <translation id="8343477974731263456">Ställa in bokmärkessynkronisering</translation>
 <translation id="5999606216064768721">Använd systemets inställningar för namnlist och ramar</translation>
-<translation id="2663762871503078613">Importera:</translation>
 <translation id="1635247229519770914">Fortsätt installationen</translation>
 <translation id="8945419807169257367">Servercertifikatet kan inte kontrolleras</translation>
 <translation id="1464570622807304272">Testa själv – skriv pelargon och tryck på Retur.</translation>
@@ -547,7 +545,6 @@
 <translation id="6883611015375728278">Blockera alla cookies</translation>
 <translation id="7842346819602959665">Den senaste versionen av &quot;<ph name="EXTENSION_NAME"/>&quot; kräver mer behörighet och har därför inaktiverats.</translation>
 <translation id="6979448128170032817">Undantag...</translation>
-<translation id="8942948210663084792">Rensa data:</translation>
 <translation id="208047771235602537">Vill du avsluta <ph name="PRODUCT_NAME"/> medan en hämtning pågår?</translation>
 <translation id="6710213216561001401">Föregående</translation>
 <translation id="1567993339577891801">JavaScript-konsol</translation>
@@ -652,7 +649,6 @@
 <translation id="3122496702278727796">Kunde inte skapa datakatalog</translation>
 <translation id="8888930795132369495">Kopiera s&amp;ökväg</translation>
 <translation id="4517036173149081027">Stäng och avbryt hämtning</translation>
-<translation id="8446970197849314122">Du kan importera bokmärken och inställningar från andra webbläsare och användarkonton på den här datorn.</translation>
 <translation id="6281636957902664775">Gå till <ph name="URL"/></translation>
 <translation id="9148058034647219655">Avsluta</translation>
 <translation id="630065524203833229">&amp;Avsluta</translation>
@@ -1080,7 +1076,6 @@
 <translation id="3748412725338508953">Det fanns för många omdirigeringar.</translation>
 <translation id="8929159553808058020">Lägg i prioritetsordning till de språk som du vill använda för att läsa webbplatser. Lägg bara till de språk som du behöver, eftersom vissa tecken kan användas för att härma webbplatser på andra språk.</translation>
 <translation id="8831104962952173133">Lösenordsfiske har upptäckts!</translation>
-<translation id="2614223168876839822">Rensa webbinformation från den här datorn. Tänk på att detta kan påverka innehållet på sidan Ny flik.</translation>
 <translation id="2812989263793994277">Visa inga bilder</translation>
 <translation id="6845383723252244143">Välj mapp</translation>
 <translation id="8948393169621400698">Tillåt alltid plugin-program på <ph name="HOST"/></translation>

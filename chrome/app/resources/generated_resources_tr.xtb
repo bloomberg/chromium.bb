@@ -109,7 +109,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> artık <ph name="BEGIN_LINK"/>uzantılara<ph name="END_LINK"/> ve <ph name="BEGIN_BUTTON"/>yer işareti senkronizasyonu<ph name="END_BUTTON"/> özelliklerine sahip.</translation>
 <translation id="3147949335879360642">Yer işaretleriniz birleştirilecek.</translation>
 <translation id="4422347585044846479">Bu sayfanın yer imini düzenle</translation>
-<translation id="7367545749698325833">Diğer tarayıcılardaki yer işaretlerinizi ve diğer ayarlarınızı alabilir veya bu bilgisayardaki göz atma verilerinizi temizleyebilirsiniz.</translation>
 <translation id="51285338152176012">Yeni kapatılan sekmeleri gizle</translation>
 <translation id="8546306075665861288">Resim önbelleği</translation>
 <translation id="801357260673640054">Yer işaretleri senkronize edildi...</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">sil</translation>
 <translation id="8343477974731263456">Google Favoriler Senkronizasyonunu Ayarlama</translation>
 <translation id="5999606216064768721">Sistem Başlık Çubuğunu ve Kenarlıkları Kullan</translation>
-<translation id="2663762871503078613">Al:</translation>
 <translation id="1635247229519770914">Yüklemeye Devam Et</translation>
 <translation id="8945419807169257367">Sunucunun sertifikası kontrol edilemiyor</translation>
 <translation id="1464570622807304272">Bunu deneyin; &quot;orkideler&quot; yazın ve Enter tuşuna basın.</translation>
@@ -548,7 +546,6 @@
 <translation id="7842346819602959665">&quot;<ph name="EXTENSION_NAME"/>&quot; uzantısının en yeni sürümü daha fazla izin gerektirir. Bu nedenle devre dışı bırakılmış.</translation>
 <translation id="6979448128170032817">İstisnalar...
 </translation>
-<translation id="8942948210663084792">Verileri Temizle:</translation>
 <translation id="208047771235602537">Devam eden bir indirme işlemi varken <ph name="PRODUCT_NAME"/> uygulamasından çıkmak istiyor musunuz?</translation>
 <translation id="6710213216561001401">Önceki</translation>
 <translation id="1567993339577891801">JavaScript Konsolu</translation>
@@ -653,7 +650,6 @@
 <translation id="3122496702278727796">Veri Dizini Oluşturulamadı</translation>
 <translation id="8888930795132369495">Dosya &amp;Yolunu Kopyala</translation>
 <translation id="4517036173149081027">Kapat ve indirme işlemini iptal et</translation>
-<translation id="8446970197849314122">Bu bilgisayardaki diğer tarayıcılardan ve kullanıcı hesaplarından yer işaretlerinizi ve ayarlarınızı alabilirsiniz.</translation>
 <translation id="6281636957902664775"><ph name="URL"/> adresine git</translation>
 <translation id="9148058034647219655">Çık</translation>
 <translation id="630065524203833229">Çı&amp;kış</translation>
@@ -1080,7 +1076,6 @@
 <translation id="3748412725338508953">Çok fazla yeniden yönlendirme vardı.</translation>
 <translation id="8929159553808058020">Web sitelerini okumak için kullandığınız dilleri ekleyin ve önceliğe göre sıralayın. Bazı karakterler diğer dillerdeki web sitelerini temsil etmek için kullanılabileceğinden yalnızca gerekenleri ekleyin.</translation>
 <translation id="8831104962952173133">Phishing Algılandı!</translation>
-<translation id="2614223168876839822">Bu bilgisayardan tarama verilerinizi temizleyin. Bunun, Yeni Sekme sayfasının içeriğini olumsuz yönde etkileyebileceğini unutmayın.</translation>
 <translation id="2812989263793994277">Hiçbir resmi gösterme</translation>
 <translation id="6845383723252244143">Klasörü Seçin</translation>
 <translation id="8948393169621400698"><ph name="HOST"/> sitesindeki eklentilere her zaman izin ver</translation>

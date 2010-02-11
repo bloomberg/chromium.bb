@@ -109,7 +109,6 @@
 <translation id="1486408090387743835">Ang <ph name="PRODUCT_NAME"/> ay mayroon na ngayong mga <ph name="BEGIN_LINK"/>na extension<ph name="END_LINK"/> at<ph name="BEGIN_BUTTON"/>na pag-sync ng bookmark<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Pagsasamahin ang iyong mga bookmark.</translation>
 <translation id="4422347585044846479">I-edit ang bookmark para sa pahinang ito</translation>
-<translation id="7367545749698325833">Maaari mong i-import ang iyong mga bookmark at setting mula sa iba pang mga browser o i-clear ang iyong data sa pag-browse mula sa computer na ito.</translation>
 <translation id="51285338152176012">Itago ang mga kamakailang isinarang tab</translation>
 <translation id="8546306075665861288">Cache ng Larawan</translation>
 <translation id="801357260673640054">Na-sync na ang mga bookmark...</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">tanggalin</translation>
 <translation id="8343477974731263456">Pag-se-set up ng Bookmarks Sync</translation>
 <translation id="5999606216064768721">Gumamit ng System Title Bar at Mga Border</translation>
-<translation id="2663762871503078613">I-import:</translation>
 <translation id="1635247229519770914">Ipapatuloy ang Pag-install</translation>
 <translation id="8945419807169257367">Hindi masuri ang sertipiko ng server</translation>
 <translation id="1464570622807304272">Subukan ito - i-type ang &quot;mga orchid&quot; at pindutin ang Enter.</translation>
@@ -548,7 +546,6 @@
 <translation id="7842346819602959665">Ang pinakabagong bersyon ng extension na &quot;<ph name="EXTENSION_NAME"/>&quot; ay nangangailangan ng marami pang mga pahintulot, kaya hindi ito pinagana.</translation>
 <translation id="6979448128170032817">Mga Pagbubukod...
 </translation>
-<translation id="8942948210663084792">I-clear ang Data:</translation>
 <translation id="208047771235602537">Gusto mo bang lumabas sa <ph name="PRODUCT_NAME"/> habang kasalukuyang may dina-download?</translation>
 <translation id="6710213216561001401">Nakaraan</translation>
 <translation id="1567993339577891801">Console ng JavaScript</translation>
@@ -653,7 +650,6 @@
 <translation id="3122496702278727796">Nabigo Sa Paglikha ng Direktoryo sa Data</translation>
 <translation id="8888930795132369495">Kopyahin ang &amp;Path ng File</translation>
 <translation id="4517036173149081027">Isara at kanselahin ang pag-download</translation>
-<translation id="8446970197849314122">Maaari mong i-import ang iyong mga bookmark at setting mula sa iba pang mga browser at mga account ng gumagamit sa computer na ito.</translation>
 <translation id="6281636957902664775">Pumunta sa <ph name="URL"/></translation>
 <translation id="9148058034647219655">Lumabas sa</translation>
 <translation id="630065524203833229">L&amp;umabas</translation>
@@ -1080,7 +1076,6 @@
 <translation id="3748412725338508953">Masyadong maraming mga na-redirect.</translation>
 <translation id="8929159553808058020">Idagdag ang mga wika na ginamitmo upang mabasa ang mga website, ayos sa pagkakasunod-sunod. Idagdag lamang ang isa sa kailangan mo, bilang ilang mga character na maaaring magamit upang magpanggap sa mga website sa iba pang mga wika.</translation>
 <translation id="8831104962952173133">Nakitang Phishing!</translation>
-<translation id="2614223168876839822">I-clear ang iyong data sa pag-browse mula sa computer na ito. Malaman na maaari nitong hindi mabuting maapektuhan ang mga nilalaman ng Pahina ng Bagong Tab.</translation>
 <translation id="2812989263793994277">Huwag magpakita ng anumang mga larawan</translation>
 <translation id="6845383723252244143">Piliin ang Folder</translation>
 <translation id="8948393169621400698">Palaging hayaan ang mga plug-in sa <ph name="HOST"/></translation>

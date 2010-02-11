@@ -109,7 +109,6 @@
 <translation id="1486408090387743835">Tuote <ph name="PRODUCT_NAME"/> sisältää nyt <ph name="BEGIN_LINK"/>laajennuksia<ph name="END_LINK"/> ja <ph name="BEGIN_BUTTON"/>kirjanmerkkien synkronoinnin<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Kirjanmerkit yhdistetään.</translation>
 <translation id="4422347585044846479">Muokkaa tämän sivun kirjanmerkkiä</translation>
-<translation id="7367545749698325833">Voit tuoda kirjanmerkkisi ja asetuksesi muista selaimista tai tyhjentää selailutiedot tästä tietokoneesta.</translation>
 <translation id="51285338152176012">Piilota hiljattain suljetut välilehdet</translation>
 <translation id="8546306075665861288">Kuvavälimuisti</translation>
 <translation id="801357260673640054">Kirjanmerkit synkronoidaan...</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">poista</translation>
 <translation id="8343477974731263456">Valmistellaan kirjanmerkkien synkronointia</translation>
 <translation id="5999606216064768721">Käytä järjestelmän otsikkoriviä ja reunoja</translation>
-<translation id="2663762871503078613">Tuo:</translation>
 <translation id="1635247229519770914">Jatka asennusta</translation>
 <translation id="8945419807169257367">Palvelimen varmennetta ei voi tarkistaa</translation>
 <translation id="1464570622807304272">Kokeile. Kirjoita &quot;orkideat&quot; ja paina Enter.</translation>
@@ -546,7 +544,6 @@
 <translation id="6883611015375728278">Estä kaikki evästeet</translation>
 <translation id="7842346819602959665">Laajennuksen <ph name="EXTENSION_NAME"/> uusin versio vaatii enemmän käyttölupia, joten se on poistettu käytöstä.</translation>
 <translation id="6979448128170032817">Poikkeukset...</translation>
-<translation id="8942948210663084792">Poista tiedot:</translation>
 <translation id="208047771235602537">Haluatko sulkea ohjelman <ph name="PRODUCT_NAME"/>, vaikka lataus on vielä käynnissä?</translation>
 <translation id="6710213216561001401">Edellinen</translation>
 <translation id="1567993339577891801">JavaScript-konsoli</translation>
@@ -651,7 +648,6 @@
 <translation id="3122496702278727796">Tietohakemiston luonti epäonnistui</translation>
 <translation id="8888930795132369495">Kopioi tiedosto&amp;polku</translation>
 <translation id="4517036173149081027">Sulje ja peruuta lataus</translation>
-<translation id="8446970197849314122">Voit tuoda kirjanmerkit ja asetukset tämän tietokoneen muista selaimista ja käyttäjätileistä.</translation>
 <translation id="6281636957902664775">Siirry osoitteeseen <ph name="URL"/></translation>
 <translation id="9148058034647219655">Poistu</translation>
 <translation id="630065524203833229">Poist&amp;u</translation>
@@ -1076,7 +1072,6 @@
 <translation id="3748412725338508953">Uudelleenohjauksia oli liian monta.</translation>
 <translation id="8929159553808058020">Lisää haluamasi kielet tärkeysjärjestyksessä. Lisää vain tarvitsemasi, koska joitakin merkkejä voidaan käyttää matkimaan muunkielisiä sivustoja.</translation>
 <translation id="8831104962952173133">Tietojenkalastelu havaittu!</translation>
-<translation id="2614223168876839822">Poista tämän tietokoneen selaustiedot. Huomaa, että selaustietojen poistamisella saattaa olla epäsuotuisia vaikutuksia Uusi välilehti -sivun sisältöön.</translation>
 <translation id="2812989263793994277">Älä näytä kuvia</translation>
 <translation id="6845383723252244143">Valitse kansio</translation>
 <translation id="8948393169621400698">Salli aina laajennukset sivustossa <ph name="HOST"/></translation>

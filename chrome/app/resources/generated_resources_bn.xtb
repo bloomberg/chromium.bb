@@ -103,7 +103,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> এখন <ph name="BEGIN_LINK"/> এক্সটেনশন আছে<ph name="END_LINK"/> এবং <ph name="BEGIN_BUTTON"/>বুকমার্ক সিঙ্ক<ph name="END_BUTTON"/>।</translation>
 <translation id="3147949335879360642">আপনার বুকমার্কগুলি মার্জ করা হবে৷</translation>
 <translation id="4422347585044846479">এই পৃষ্ঠার বুকমার্ক সম্পাদনা করুন</translation>
-<translation id="7367545749698325833">আপনি নিজের বুকমার্কগুলি ও সেটিংস অন্যান্য ব্রাউজার থেকে আমদানি করতে পারেন বা এই কম্পিউটার থেকে আপনার ব্রাউজিংয়ের ডেটা সাফ করতে পারেন৷</translation>
 <translation id="51285338152176012">সম্প্রতি বন্ধ হওয়া ট্যাবগুলি লুকান</translation>
 <translation id="8546306075665861288">চিত্র ক্যাশে</translation>
 <translation id="801357260673640054">সিঙ্ক করা বুকমার্কগুলি...</translation>
@@ -215,7 +214,6 @@
 <translation id="692135145298539227">মুছুন</translation>
 <translation id="8343477974731263456">বুকমার্কস সিঙ্ক সেট আপ হচ্ছে</translation>
 <translation id="5999606216064768721">সিস্টেম শিরোনাম দণ্ড ও সীমানাগুলি ব্যবহার করুন</translation>
-<translation id="2663762871503078613">আমদানি:</translation>
 <translation id="1635247229519770914">ইনস্টল অবিরত করুন</translation>
 <translation id="8945419807169257367">সার্ভারের শংসাপত্র চেক করা যাবে না</translation>
 <translation id="1464570622807304272">এটি চেষ্টা করে দেখুন – “গোলাপ&quot; টাইপ করুন ও Enter টিপুন৷</translation>
@@ -524,7 +522,6 @@
 <translation id="7910768399700579500">&amp;নতুন ফোল্ডার</translation>
 <translation id="6883611015375728278">সকল কুকি অবরোধ করুন</translation>
 <translation id="7842346819602959665">এক্সটেনশন &quot;<ph name="EXTENSION_NAME"/>&quot;-এর সবচেয়ে নতুন সংস্করণটির আরও অনুমতির প্রয়োজন, সেই কারণে এটি অক্ষম করা হয়েছে৷</translation>
-<translation id="8942948210663084792">ডেটা সাফ করুন:</translation>
 <translation id="208047771235602537">আপনি কি <ph name="PRODUCT_NAME"/>-কে কোন ডাউনলোড প্রগতিতে থাকা অবস্থায় বন্ধ করতে চান?</translation>
 <translation id="6710213216561001401">পূর্ববর্তী</translation>
 <translation id="1567993339577891801">JavaScript কনসোল</translation>
@@ -622,7 +619,6 @@
 <translation id="3122496702278727796">ডেটা ডিরেক্টরি তৈরি করতে ব্যর্থ</translation>
 <translation id="8888930795132369495">ফাইল &amp;পথ অনুলিপি করুন</translation>
 <translation id="4517036173149081027">ডাউনলোড বন্ধ ও বাতিল করুন</translation>
-<translation id="8446970197849314122">আপনি এই কম্পিউটারে অন্যান্য ব্রাউজারগুলি এবং ব্যবহারকারীর অ্যাকাউন্টগুলি থেকে নিজের বুকমার্কস এবং সেটিংস আমদানি করতে পারেন৷</translation>
 <translation id="6281636957902664775"><ph name="URL"/>-এ যান</translation>
 <translation id="9148058034647219655">প্রস্থান</translation>
 <translation id="630065524203833229">ব&amp;ন্ধ</translation>
@@ -1027,7 +1023,6 @@
 <translation id="3748412725338508953">অত্যধিক পুনঃনির্দেশ ছিল৷</translation>
 <translation id="8929159553808058020">ওয়েবসাইট পড়ার জন্য আপনি যে ভাষাগুলি ব্যবহার করেন ,সেগুলি পছন্দ অনুযায়ী তালিকাভুক্ত করুন৷ কেবলমাত্র যেগুলি দরকার সেগুলি যুক্ত করুন, কেন না কিছু অক্ষর ওয়েবসাইট অন্য ভাষাতে প্রকাশ করার জন্য ব্যবহৃত হতে পারে৷</translation>
 <translation id="8831104962952173133">ফিশিং সনাক্ত হয়েছে!</translation>
-<translation id="2614223168876839822">এই কম্পিউটারটি থেকে আপনার ব্রাউজিং ডেটা সাফ করুন৷ সতর্ক হন যে এটি নতুন ট্যাব পৃষ্ঠার লিখিত সামগ্রীতে ক্ষতিকারক প্রভাব ফেলতে পারে৷</translation>
 <translation id="6845383723252244143">ফোল্ডার নির্বাচন করুন</translation>
 <translation id="8288345061925649502">সার্চ ইঞ্জিন পরিবর্তন করুন</translation>
 <translation id="1095623615273566396"><ph name="NUMBER_FEW"/> সেকেন্ড</translation>

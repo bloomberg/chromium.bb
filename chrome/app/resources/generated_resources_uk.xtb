@@ -109,7 +109,6 @@
 <translation id="1486408090387743835">У <ph name="PRODUCT_NAME"/> відтепер є <ph name="BEGIN_LINK"/>розширення<ph name="END_LINK"/> та <ph name="BEGIN_BUTTON"/>синхронізація закладок<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Ваші закладки буде об'єднано.</translation>
 <translation id="4422347585044846479">Редагувати закладку для цієї сторінки</translation>
-<translation id="7367545749698325833">Можна імпортувати закладки та налаштування з іншого веб-переглядача чи очистити дані веб-перегляду з цього комп'ютера.</translation>
 <translation id="51285338152176012">Сховати нещодавно закриті вкладки</translation>
 <translation id="8546306075665861288">Кеш зображення</translation>
 <translation id="801357260673640054">Закладки синхронізовано...</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">видалити</translation>
 <translation id="8343477974731263456">Налаштування синхронізації закладок</translation>
 <translation id="5999606216064768721">Використовувати системні границі та рядок заголовка</translation>
-<translation id="2663762871503078613">Імпорт:</translation>
 <translation id="1635247229519770914">Продовжити інсталяцію</translation>
 <translation id="8945419807169257367">Сертифікат сервера не можна перевірити</translation>
 <translation id="1464570622807304272">Спробуйте: введіть &quot;орхідеї&quot; та натисніть клавішу Enter.</translation>
@@ -547,7 +545,6 @@
 <translation id="6883611015375728278">Заблокувати всі cookie-файли</translation>
 <translation id="7842346819602959665">Найновіша версія розширення &quot;<ph name="EXTENSION_NAME"/>&quot; потребує більше дозволів, тому його було вимкнуто.</translation>
 <translation id="6979448128170032817">Винятки...</translation>
-<translation id="8942948210663084792">Очищення даних:</translation>
 <translation id="208047771235602537">Вийти з <ph name="PRODUCT_NAME"/>, хоча виконується завантаження?</translation>
 <translation id="6710213216561001401">Попереднє</translation>
 <translation id="1567993339577891801">Консоль JavaScript</translation>
@@ -652,7 +649,6 @@
 <translation id="3122496702278727796">Не вдалося створити каталог даних</translation>
 <translation id="8888930795132369495">Копіювати &amp;шлях до файлу</translation>
 <translation id="4517036173149081027">Закрити та скасувати завантаження</translation>
-<translation id="8446970197849314122">Можна імпортувати закладки та налаштування з інших веб-переглядачів і облікових записів на цьому комп'ютері.</translation>
 <translation id="6281636957902664775">Перейти до <ph name="URL"/></translation>
 <translation id="9148058034647219655">Вийти</translation>
 <translation id="630065524203833229">В&amp;ийти</translation>
@@ -1078,7 +1074,6 @@
 <translation id="3748412725338508953">Було забагато перенаправлень.</translation>
 <translation id="8929159553808058020">Додайте мови, які використовуються для читання веб-сайтів, у порядку пріоритету. Додавайте лише потрібні мови, оскільки деякі символи можуть використовуватися для персоналізації веб-сайтів іншими мовами.</translation>
 <translation id="8831104962952173133">Виявлено фішинг!</translation>
-<translation id="2614223168876839822">Очистіть дані веб-переглядача з цього комп'ютера. Пам'ятайте, що це може відповідно вплинути на вміст сторінки &quot;Нова вкладка&quot;.</translation>
 <translation id="2812989263793994277">Не показувати жодних зображень</translation>
 <translation id="6845383723252244143">Вибір папки</translation>
 <translation id="8948393169621400698">Завжди дозволяти модулі на хості <ph name="HOST"/></translation>

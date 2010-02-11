@@ -109,7 +109,6 @@
 <translation id="1486408090387743835">O <ph name="PRODUCT_NAME"/> tem agora <ph name="BEGIN_LINK"/>extensões<ph name="END_LINK"/> e <ph name="BEGIN_BUTTON"/>sincronização de marcadores<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Os seus marcadores serão intercalados.</translation>
 <translation id="4422347585044846479">Editar marcador para esta página</translation>
-<translation id="7367545749698325833">Pode importar os seus marcadores e as definições de outros browsers ou limpar os dados de navegação deste computador.</translation>
 <translation id="51285338152176012">Ocultar separadores fechados recentemente</translation>
 <translation id="8546306075665861288">Cache de imagem</translation>
 <translation id="801357260673640054">Marcadores sincronizados...</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">eliminar, delete</translation>
 <translation id="8343477974731263456">A configurar Sincronização de marcadores</translation>
 <translation id="5999606216064768721">Utilizar os Limites e a Barra de Título do Sistema</translation>
-<translation id="2663762871503078613">Importar:</translation>
 <translation id="1635247229519770914">Continuar a instalação</translation>
 <translation id="8945419807169257367">Não é possível verificar o certificado do servidor</translation>
 <translation id="1464570622807304272">Experimente escrever &quot;orquídeas&quot; e prima Enter.</translation>
@@ -547,7 +545,6 @@
 <translation id="6883611015375728278">Bloquear todos os cookies</translation>
 <translation id="7842346819602959665">A versão mais recente da extensão &quot;<ph name="EXTENSION_NAME"/>&quot; necessita de mais permissões, pelo que foi desactivada.</translation>
 <translation id="6979448128170032817">Excepções...</translation>
-<translation id="8942948210663084792">Limpar dados:</translation>
 <translation id="208047771235602537">Pretende sair do <ph name="PRODUCT_NAME"/> com uma transferência em curso?</translation>
 <translation id="6710213216561001401">Anterior</translation>
 <translation id="1567993339577891801">Consola de JavaScript</translation>
@@ -652,7 +649,6 @@
 <translation id="3122496702278727796">Falha ao criar directório de dados</translation>
 <translation id="8888930795132369495">Co&amp;piar Caminho do Ficheiro</translation>
 <translation id="4517036173149081027">Fechar e cancelar a transferência</translation>
-<translation id="8446970197849314122">Pode importar os seus marcadores e as definições de outros browsers e contas de utilizador neste computador.</translation>
 <translation id="6281636957902664775">Ir para <ph name="URL"/></translation>
 <translation id="9148058034647219655">Sair</translation>
 <translation id="630065524203833229">&amp;Sair</translation>
@@ -1079,7 +1075,6 @@
 <translation id="3748412725338508953">Houve demasiados redireccionamentos.</translation>
 <translation id="8929159553808058020">Adicione os idiomas que utiliza para ler Web sites, listando-os por ordem de preferência. Adicione apenas os idiomas de que necessita, uma vez que alguns caracteres podem ser utilizados para imitar Web sites noutros idiomas.</translation>
 <translation id="8831104962952173133">Phishing detectado!</translation>
-<translation id="2614223168876839822">Limpe os dados de navegação deste computador. Tenha em atenção que esta acção pode afectar negativamente o conteúdo da Página Novo separador.</translation>
 <translation id="2812989263793994277">Não mostrar imagens</translation>
 <translation id="6845383723252244143">Seleccionar pasta</translation>
 <translation id="8948393169621400698">Permitir sempre plug-ins em <ph name="HOST"/></translation>

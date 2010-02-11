@@ -110,7 +110,6 @@
 <translation id="1486408090387743835">「<ph name="PRODUCT_NAME"/>」現在已推出<ph name="BEGIN_LINK"/>擴充功能<ph name="END_LINK"/>與<ph name="BEGIN_BUTTON"/>書籤同步功能<ph name="END_BUTTON"/>。</translation>
 <translation id="3147949335879360642">系統將會合併您的書籤。</translation>
 <translation id="4422347585044846479">編輯此網頁的書籤</translation>
-<translation id="7367545749698325833">您可以從這台電腦的其他瀏覽器匯入書籤和設定或清除您的瀏覽資料。</translation>
 <translation id="51285338152176012">隱藏最近關閉的分頁</translation>
 <translation id="8546306075665861288">圖片快取</translation>
 <translation id="801357260673640054">已啟用書籤同步功能...</translation>
@@ -228,7 +227,6 @@
 <translation id="692135145298539227">刪除</translation>
 <translation id="8343477974731263456">設定書籤同步化功能</translation>
 <translation id="5999606216064768721">使用系統標題列及邊框</translation>
-<translation id="2663762871503078613">匯入：</translation>
 <translation id="1635247229519770914">繼續安裝</translation>
 <translation id="8945419807169257367">無法檢查伺服器的憑證</translation>
 <translation id="1464570622807304272">輸入「蘭花」，然後按下 Enter 鍵，看看會有什麼結果吧！</translation>
@@ -548,7 +546,6 @@
 <translation id="6883611015375728278">封鎖所有 Cookie</translation>
 <translation id="7842346819602959665">系統需要您的授權才能更新「<ph name="EXTENSION_NAME"/>」擴充功能，因此目前已將其暫時停用。</translation>
 <translation id="6979448128170032817">例外...</translation>
-<translation id="8942948210663084792">清除資料：</translation>
 <translation id="208047771235602537">您正在下載檔案，確定要結束「<ph name="PRODUCT_NAME"/>」嗎？</translation>
 <translation id="6710213216561001401">上一頁</translation>
 <translation id="1567993339577891801">JavaScript 控制台</translation>
@@ -653,7 +650,6 @@
 <translation id="3122496702278727796">無法建立資料目錄</translation>
 <translation id="8888930795132369495">複製檔案路徑(&amp;P)</translation>
 <translation id="4517036173149081027">關閉並取消下載作業</translation>
-<translation id="8446970197849314122">您可以從這台電腦的其他瀏覽器和使用者帳號匯入書籤和設定。</translation>
 <translation id="6281636957902664775">前往 <ph name="URL"/></translation>
 <translation id="9148058034647219655">結束</translation>
 <translation id="630065524203833229">結束(&amp;X)</translation>
@@ -1078,7 +1074,6 @@
 <translation id="3748412725338508953">重新導向次數過多。</translation>
 <translation id="8929159553808058020">新增您瀏覽網頁時所用的語言，並依偏好程度順序列出。由於有些字元可以在網站上模擬其他語言，您僅需加入所需的語言。</translation>
 <translation id="8831104962952173133">偵測到網路釣魚!</translation>
-<translation id="2614223168876839822">從這台電腦中清除您的瀏覽資料。請注意，這個動作可能會影響到「新分頁」上顯示的內容。</translation>
 <translation id="2812989263793994277">不顯示任何圖片</translation>
 <translation id="6845383723252244143">選取資料夾</translation>
 <translation id="8948393169621400698">永遠允許在 <ph name="HOST"/> 使用外掛程式</translation>

@@ -101,7 +101,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> sasa ina <ph name="BEGIN_LINK"/>viendelezi<ph name="END_LINK"/> na <ph name="BEGIN_BUTTON"/>usawazishaji wa alamisho<ph name="END_BUTTON"/>.</translation>
 <translation id="3147949335879360642">Alamisho zako zitachanganywa.</translation>
 <translation id="4422347585044846479">Hariri alamisho ya ukurasa huu</translation>
-<translation id="7367545749698325833">Unaweza kuingiza alamisho zako na mipangilio kutoka vivinjari vingine au ufute data yako ya kuvinjari kutoka kwenye kompyuta hii.</translation>
 <translation id="51285338152176012">Ficha vichupo vilivyofungwa hivi karibuni</translation>
 <translation id="8546306075665861288">Kache ya picha</translation>
 <translation id="801357260673640054">Alamisho zimesawazishwa...</translation>
@@ -213,7 +212,6 @@
 <translation id="692135145298539227">futa</translation>
 <translation id="8343477974731263456">Inasanidi Usawazishaji wa Alamisho</translation>
 <translation id="5999606216064768721">Tumia Upau wa Jina na Mipaka ya Mfumo</translation>
-<translation id="2663762871503078613">Ingiza:</translation>
 <translation id="1635247229519770914">Endelea kusakinisha</translation>
 <translation id="8945419807169257367">Cheti cha seva hakiwezi kuchunguzwa</translation>
 <translation id="1464570622807304272">Ijaribu - chapa &quot;nazi&quot; kisha ubonyeze Enter.</translation>
@@ -511,7 +509,6 @@
 <translation id="7910768399700579500">&amp;Folda jipya</translation>
 <translation id="6883611015375728278">Zuia kuki zote</translation>
 <translation id="7842346819602959665">Toleo jipya zaidi la kiendelezi &quot;<ph name="EXTENSION_NAME"/>&quot; linahitaji idhini zaidi, kwa hivyo limelemazwa.</translation>
-<translation id="8942948210663084792">Futa Data:</translation>
 <translation id="208047771235602537">Je, ungependa kutoka <ph name="PRODUCT_NAME"/> ilhali upakuaji unaendelea?</translation>
 <translation id="6710213216561001401">Iliyotangulia</translation>
 <translation id="1567993339577891801">Kidhibiti Kazi cha JavaScript</translation>
@@ -609,7 +606,6 @@
 <translation id="3122496702278727796">Imeshindwa Kuunda Saraka ya Data</translation>
 <translation id="8888930795132369495">Nakili &amp;Njia ya Faili</translation>
 <translation id="4517036173149081027">Funga na ughairi upakuaji</translation>
-<translation id="8446970197849314122">Unaweza kuingiza alamisho zako na mipangilio kutoka vivinjari vingine na akaunti za watumiaji kwenye kompyuta hii.</translation>
 <translation id="6281636957902664775">Nenda <ph name="URL"/></translation>
 <translation id="9148058034647219655">Ondoka</translation>
 <translation id="630065524203833229">Ondoka</translation>
@@ -1007,7 +1003,6 @@
 <translation id="3748412725338508953">Kuelekezwa upya kumekuwa kwingi zaidi.</translation>
 <translation id="8929159553808058020">Ongeza lugha unazotumia kusoma tovuti, ukiorodhesha kulingana na unavyozipendelea. Ongeza unazohitaji pekee kwani vibambo fulani vinaweza kutumiwa kuiga tovuti za lugha zingine.</translation>
 <translation id="8831104962952173133">Hadaa Imegunduliwa!</translation>
-<translation id="2614223168876839822">Futa data yako ya kuvinjari kutoka kompyuta hii. Ufahamu kuwa kufanya hivi kunaweza kudhuru maudhui ya Ukurasa wa Kichupo Kipya.</translation>
 <translation id="6845383723252244143">Chagua Folda</translation>
 <translation id="8288345061925649502">Badilisha injini tafuti</translation>
 <translation id="1095623615273566396">sekunde <ph name="NUMBER_FEW"/></translation>

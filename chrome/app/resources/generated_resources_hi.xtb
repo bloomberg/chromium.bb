@@ -109,7 +109,6 @@
 <translation id="1486408090387743835"><ph name="PRODUCT_NAME"/> में अब <ph name="BEGIN_LINK"/>विस्तार<ph name="END_LINK"/> और <ph name="BEGIN_BUTTON"/>बुकमार्क सिंक<ph name="END_BUTTON"/> हैं.</translation>
 <translation id="3147949335879360642">आपके बुकमार्क मर्ज कर दिए जाएंगे.</translation>
 <translation id="4422347585044846479">इस पृष्ठ के लिए बुकमार्क संपादित करें</translation>
-<translation id="7367545749698325833">आप अपने बुकमार्क और सेटिंग को अन्य ब्राउज़र से आयात कर सकते हैं या इस कंप्यूटर से अपना ब्राउज़िंग डेटा साफ़ कर सकते हैं.</translation>
 <translation id="51285338152176012">हाल ही में बंद किए गए टैब छुपाएं</translation>
 <translation id="8546306075665861288">छवि कैश</translation>
 <translation id="801357260673640054">सिंक किए गए बुकमार्क...</translation>
@@ -227,7 +226,6 @@
 <translation id="692135145298539227">हटाएं</translation>
 <translation id="8343477974731263456">बुकमार्क सिंक सेट अप करना</translation>
 <translation id="5999606216064768721">सिस्टम शीर्षक बार और बॉर्डर का उपयोग करें</translation>
-<translation id="2663762871503078613">आयात करें:</translation>
 <translation id="1635247229519770914">स्थापना जारी रखें</translation>
 <translation id="8945419807169257367">सर्वर प्रमाणपत्र की जाँच नहीं की जा सकती</translation>
 <translation id="1464570622807304272">इसे आजमाएं - &quot;orchids&quot; लिखें और Enter दबाएं.</translation>
@@ -547,7 +545,6 @@
 <translation id="6883611015375728278">सभी कुकीज़ ब्लॉक करें</translation>
 <translation id="7842346819602959665">विस्तार &quot;<ph name="EXTENSION_NAME"/>&quot; के सबसे नए संस्करण को और अनुमतियों की आवश्यकता है, इसलिए इसे अक्षम कर दिया गया है.</translation>
 <translation id="6979448128170032817">अपवाद...</translation>
-<translation id="8942948210663084792">डेटा साफ़ करें:</translation>
 <translation id="208047771235602537">क्या आप कोई डाउनलोड प्रगति में होने के साथ <ph name="PRODUCT_NAME"/> से बाहर निकलना चाहते हैं?</translation>
 <translation id="6710213216561001401">पिछला</translation>
 <translation id="1567993339577891801">JavaScript कंसोल</translation>
@@ -652,7 +649,6 @@
 <translation id="3122496702278727796">डाटा निर्देशिका बनाने में असफ़ल रहा</translation>
 <translation id="8888930795132369495">फ़ाइल &amp;पथ की प्रतिलिपि करें</translation>
 <translation id="4517036173149081027">बंद करें और डाउनलोड रद्द करें</translation>
-<translation id="8446970197849314122">आप अपने बुकमार्क और सेटिंग को इस कंप्यूटर पर अन्य ब्राउज़र और उपयोगकर्ता खातों से आयात कर सकते हैं.</translation>
 <translation id="6281636957902664775"><ph name="URL"/> पर जाएँ</translation>
 <translation id="9148058034647219655">बाहर निकलें</translation>
 <translation id="630065524203833229">&amp;बाहर निकलें</translation>
@@ -1078,7 +1074,6 @@
 <translation id="3748412725338508953">बहुत अधिक रीडायरेक्ट्स मौजूद थे.</translation>
 <translation id="8929159553808058020">वरीयता के क्रम में सूचीबद्ध करते हुए, अपने द्वारा वेबसाइटें पढ़ने के लिए उपयोग की जाने वाली भाषाएँ जोड़ें. केवल वही जोड़ें जिनकी आपको आवश्यकता हो, क्योंकि अन्य भाषाओं में साइटों का प्रतिरूप प्रस्तुत करने के लिए कुछ वर्णों का उपयोग किया जा सकता है.</translation>
 <translation id="8831104962952173133">फ़िशिंग का पता लगाया गया!</translation>
-<translation id="2614223168876839822">इस कंप्यूटर से अपना ब्राउज़िंग डेटा साफ़ करें. सावधान रहें कि इससे नए टैब पृष्ठ की सामग्री पर प्रतिकूल प्रभाव पड़ सकता है.</translation>
 <translation id="2812989263793994277">कोई भी छवियां न दिखाएं</translation>
 <translation id="6845383723252244143">फ़ोल्डर चयनित करें</translation>
 <translation id="8948393169621400698"><ph name="HOST"/> पर प्लग-इन को हमेशा अनुमति दें</translation>
