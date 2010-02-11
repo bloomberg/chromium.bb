@@ -330,7 +330,7 @@ class ChromeTests:
     # Now run script_cmd with the wrapper in cmd
     cmd.extend(["--"])
     cmd.extend(script_cmd)
-    return valgrind_test.RunTool(cmd)
+    return valgrind_test.RunTool(cmd, "layout")
 
   def TestLayout(self):
     # A "chunk file" is maintained in the local directory so that each test
