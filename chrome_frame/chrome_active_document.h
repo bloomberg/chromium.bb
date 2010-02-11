@@ -73,34 +73,37 @@ class ChromeActiveDocument;
                               DWORD cmd_exec_opt, VARIANT* in_args, \
                               VARIANT* out_args) { \
    HRESULT hr = OLECMDERR_E_NOTSUPPORTED; \
-   switch (command_id) {
+   do {
 
-
-#define EXEC_COMMAND_HANDLER(id, handler) \
-  case id: { \
+#define EXEC_COMMAND_HANDLER(group, id, handler)                              \
+  if ((id == command_id) && ((group != NULL && cmd_group_guid != NULL && \
+       IsEqualGUID(*(GUID*)group,*cmd_group_guid)) || \
+       (group == NULL && cmd_group_guid == NULL))) {  \
     hr = S_OK;  \
     handler(cmd_group_guid, command_id, cmd_exec_opt, in_args, out_args);  \
     break;  \
   }
 
-#define EXEC_COMMAND_HANDLER_NO_ARGS(id, handler) \
-  case id: { \
+#define EXEC_COMMAND_HANDLER_NO_ARGS(group, id, handler) \
+  if ((id == command_id) && ((group != NULL && cmd_group_guid != NULL && \
+       IsEqualGUID(*(GUID*)group,*cmd_group_guid)) || \
+       (group == NULL && cmd_group_guid == NULL))) {  \
     hr = S_OK;  \
     handler();  \
     break;  \
   }
 
-#define EXEC_COMMAND_HANDLER_GENERIC(id, code) \
-  case id: { \
+#define EXEC_COMMAND_HANDLER_GENERIC(group, id, code) \
+  if ((id == command_id) && ((group != NULL && cmd_group_guid != NULL && \
+       IsEqualGUID(*(GUID*)group,*cmd_group_guid)) || \
+       (group == NULL && cmd_group_guid == NULL))) {  \
     hr = S_OK;  \
     code;  \
     break;  \
   }
 
 #define END_EXEC_COMMAND_MAP()  \
-    default: \
-      break; \
-  } \
+  } while(0); \
   return hr; \
 }
 
@@ -148,27 +151,30 @@ END_MSG_MAP()
 
   HRESULT FinalConstruct();
 
-#define FORWARD_TAB_COMMAND(id, command) \
-  EXEC_COMMAND_HANDLER_GENERIC(id, GetTabProxy() ? GetTabProxy()->command() : 1)
+#define FORWARD_TAB_COMMAND(group, id, command) \
+  EXEC_COMMAND_HANDLER_GENERIC(group, id, GetTabProxy() ? \
+    GetTabProxy()->command() : 1)
 
 BEGIN_EXEC_COMMAND_MAP(ChromeActiveDocument)
-  EXEC_COMMAND_HANDLER_GENERIC(OLECMDID_PRINT, automation_client_->PrintTab())
-  EXEC_COMMAND_HANDLER_NO_ARGS(OLECMDID_FIND, OnFindInPage)
-  EXEC_COMMAND_HANDLER_NO_ARGS(IDM_FIND, OnFindInPage)
-  EXEC_COMMAND_HANDLER_NO_ARGS(IDM_VIEWSOURCE, OnViewSource)
-  FORWARD_TAB_COMMAND(OLECMDID_SELECTALL, SelectAll)
-  FORWARD_TAB_COMMAND(OLECMDID_CUT, Cut)
-  FORWARD_TAB_COMMAND(OLECMDID_COPY, Copy)
-  FORWARD_TAB_COMMAND(OLECMDID_PASTE, Paste)
-  FORWARD_TAB_COMMAND(OLECMDID_REFRESH, ReloadAsync)
-  FORWARD_TAB_COMMAND(OLECMDID_STOP, StopAsync)
-  FORWARD_TAB_COMMAND(OLECMDID_SAVEAS, SaveAsAsync)
-  EXEC_COMMAND_HANDLER(SBCMDID_MIXEDZONE, OnDetermineSecurityZone)
-  EXEC_COMMAND_HANDLER(IDM_BASELINEFONT1, SetPageFontSize)
-  EXEC_COMMAND_HANDLER(IDM_BASELINEFONT2, SetPageFontSize)
-  EXEC_COMMAND_HANDLER(IDM_BASELINEFONT3, SetPageFontSize)
-  EXEC_COMMAND_HANDLER(IDM_BASELINEFONT4, SetPageFontSize)
-  EXEC_COMMAND_HANDLER(IDM_BASELINEFONT5, SetPageFontSize)
+  EXEC_COMMAND_HANDLER_GENERIC(NULL, OLECMDID_PRINT,
+                               automation_client_->PrintTab())
+  EXEC_COMMAND_HANDLER_NO_ARGS(NULL, OLECMDID_FIND, OnFindInPage)
+  EXEC_COMMAND_HANDLER_NO_ARGS(&CGID_MSHTML, IDM_FIND, OnFindInPage)
+  EXEC_COMMAND_HANDLER_NO_ARGS(&CGID_MSHTML, IDM_VIEWSOURCE, OnViewSource)
+  FORWARD_TAB_COMMAND(NULL, OLECMDID_SELECTALL, SelectAll)
+  FORWARD_TAB_COMMAND(NULL, OLECMDID_CUT, Cut)
+  FORWARD_TAB_COMMAND(NULL, OLECMDID_COPY, Copy)
+  FORWARD_TAB_COMMAND(NULL, OLECMDID_PASTE, Paste)
+  FORWARD_TAB_COMMAND(NULL, OLECMDID_REFRESH, ReloadAsync)
+  FORWARD_TAB_COMMAND(NULL, OLECMDID_STOP, StopAsync)
+  FORWARD_TAB_COMMAND(NULL, OLECMDID_SAVEAS, SaveAsAsync)
+  EXEC_COMMAND_HANDLER(&CGID_Explorer, SBCMDID_MIXEDZONE,
+                       OnDetermineSecurityZone)
+  EXEC_COMMAND_HANDLER(&CGID_MSHTML, IDM_BASELINEFONT1, SetPageFontSize)
+  EXEC_COMMAND_HANDLER(&CGID_MSHTML, IDM_BASELINEFONT2, SetPageFontSize)
+  EXEC_COMMAND_HANDLER(&CGID_MSHTML, IDM_BASELINEFONT3, SetPageFontSize)
+  EXEC_COMMAND_HANDLER(&CGID_MSHTML, IDM_BASELINEFONT4, SetPageFontSize)
+  EXEC_COMMAND_HANDLER(&CGID_MSHTML, IDM_BASELINEFONT5, SetPageFontSize)
 END_EXEC_COMMAND_MAP()
 
   // IPCs from automation server.
