@@ -47,9 +47,11 @@
 #ifdef HAVE_PTHREAD
 #include <pthread.h>
 #endif
+#ifdef HAVE_POLL_H
+#include <poll.h>
+#endif
 #include <sys/stat.h>
 #include <sys/types.h>
-#include <time.h>
 #include <assert.h>
 
 #ifdef HAVE_LINUX_PTRACE_H
@@ -1832,9 +1834,7 @@ static bool internal_init_start_has_run = false;
 //
 /*static*/ void HeapLeakChecker::InternalInitStart() {
   { SpinLockHolder l(&heap_checker_lock);
-    RAW_CHECK(!internal_init_start_has_run,
-              "Heap-check constructor called twice.  Perhaps you both linked"
-              " in the heap checker, and also used LD_PRELOAD to load it?");
+    RAW_CHECK(!internal_init_start_has_run, "Only one call is expected");
     internal_init_start_has_run = true;
 
     if (FLAGS_heap_check.empty()) {
@@ -2298,8 +2298,7 @@ void HeapLeakChecker_AfterDestructors() {
   }
   if (FLAGS_heap_check_after_destructors) {
     if (HeapLeakChecker::DoMainHeapCheck()) {
-      const struct timespec sleep_time = { 0, 500000000 };  // 500 ms
-      nanosleep(&sleep_time, NULL);
+      poll(0, 0, 500);
         // Need this hack to wait for other pthreads to exit.
         // Otherwise tcmalloc find errors
         // on a free() call from pthreads.
