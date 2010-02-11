@@ -5,11 +5,11 @@
 #include "chrome/browser/ntp_background_util.h"
 
 #include "app/gfx/canvas.h"
+#include "app/gfx/skia_util.h"
 #include "base/gfx/rect.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_theme_provider.h"
 #include "grit/theme_resources.h"
-#include "skia/ext/skia_utils.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {

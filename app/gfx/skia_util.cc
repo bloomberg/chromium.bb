@@ -1,13 +1,29 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "skia/ext/skia_utils.h"
+#include "app/gfx/skia_util.h"
+
+#include "base/gfx/rect.h"
 #include "third_party/skia/include/core/SkColorPriv.h"
 #include "third_party/skia/include/core/SkShader.h"
 #include "third_party/skia/include/effects/SkGradientShader.h"
 
-namespace skia {
+namespace gfx {
+
+SkRect RectToSkRect(const gfx::Rect& rect) {
+  SkRect r;
+  r.set(SkIntToScalar(rect.x()), SkIntToScalar(rect.y()),
+        SkIntToScalar(rect.right()), SkIntToScalar(rect.bottom()));
+  return r;
+}
+
+gfx::Rect SkRectToRect(const SkRect& rect) {
+  return gfx::Rect(SkScalarToFixed(rect.fLeft),
+                   SkScalarToFixed(rect.fTop),
+                   SkScalarToFixed(rect.width()),
+                   SkScalarToFixed(rect.height()));
+}
 
 SkShader* CreateGradientShader(int start_point,
                                int end_point,
@@ -22,5 +38,5 @@ SkShader* CreateGradientShader(int start_point,
       grad_points, grad_colors, NULL, 2, SkShader::kRepeat_TileMode);
 }
 
-}  // namespace skia
+}  // namespace gfx
 

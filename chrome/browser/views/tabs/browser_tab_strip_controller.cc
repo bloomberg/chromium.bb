@@ -34,6 +34,14 @@ bool BrowserTabStripController::IsSelected(int index) const {
   return model_->selected_index() == index;
 }
 
+void BrowserTabStripController::SelectTab(int index) {
+  model_->SelectTabContentsAt(index, true);
+}
+
+void BrowserTabStripController::CloseTab(int index) {
+  model_->CloseTabContentsAt(index);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserTabStripController, TabStripModelObserver implementation:
 
