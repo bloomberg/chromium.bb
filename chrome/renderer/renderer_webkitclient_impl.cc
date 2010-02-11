@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be
-// found in the LICENSE file.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
+// source code is governed by a BSD-style license that can be found in the
+// LICENSE file.
 
 #include "chrome/renderer/renderer_webkitclient_impl.h"
 
@@ -21,12 +21,10 @@
 #include "chrome/plugin/npobject_util.h"
 #include "chrome/renderer/net/render_dns_master.h"
 #include "chrome/renderer/render_thread.h"
-#include "chrome/renderer/render_view.h"
 #include "chrome/renderer/renderer_webstoragenamespace_impl.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "googleurl/src/gurl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCookie.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageEventDispatcher.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
@@ -45,7 +43,6 @@
 using WebKit::WebApplicationCacheHost;
 using WebKit::WebApplicationCacheHostClient;
 using WebKit::WebCookie;
-using WebKit::WebFrame;
 using WebKit::WebKitClient;
 using WebKit::WebStorageArea;
 using WebKit::WebStorageEventDispatcher;
@@ -114,18 +111,10 @@ RendererWebKitClientImpl::createMessagePortChannel() {
 void RendererWebKitClientImpl::setCookies(const WebURL& url,
                                           const WebURL& first_party_for_cookies,
                                           const WebString& value) {
-  // TODO(darin): Modify WebKit to pass the WebFrame.
-  RenderView* view =
-      RenderView::FromWebView(WebFrame::frameForCurrentContext()->view());
-  DCHECK(view);
-
   std::string value_utf8;
   UTF16ToUTF8(value.data(), value.length(), &value_utf8);
   RenderThread::current()->Send(
-      new ViewHostMsg_SetCookie(view->routing_id(),
-                                url,
-                                first_party_for_cookies,
-                                value_utf8));
+      new ViewHostMsg_SetCookie(url, first_party_for_cookies, value_utf8));
 }
 
 WebString RendererWebKitClientImpl::cookies(

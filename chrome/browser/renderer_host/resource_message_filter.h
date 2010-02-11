@@ -127,8 +127,7 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                          int64 session_storage_namespace_id, int* route_id,
                          int64* cloned_session_storage_namespace_id);
   void OnMsgCreateWidget(int opener_id, bool activatable, int* route_id);
-  void OnSetCookie(const IPC::Message& message,
-                   const GURL& url,
+  void OnSetCookie(const GURL& url,
                    const GURL& first_party_for_cookies,
                    const std::string& cookie);
   void OnGetCookies(const GURL& url,

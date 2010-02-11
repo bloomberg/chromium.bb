@@ -1088,10 +1088,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
 
   // Used to set a cookie.  The cookie is set asynchronously, but will be
   // available to a subsequent ViewHostMsg_GetCookies request.
-  IPC_MESSAGE_ROUTED3(ViewHostMsg_SetCookie,
-                      GURL /* url */,
-                      GURL /* first_party_for_cookies */,
-                      std::string /* cookie */)
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_SetCookie,
+                       GURL /* url */,
+                       GURL /* first_party_for_cookies */,
+                       std::string /* cookie */)
 
   // Used to get cookies for the given URL
   IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_GetCookies,

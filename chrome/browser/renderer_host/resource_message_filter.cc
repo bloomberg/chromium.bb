@@ -35,7 +35,6 @@
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 #include "chrome/browser/renderer_host/database_dispatcher_host.h"
 #include "chrome/browser/renderer_host/render_widget_helper.h"
-#include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/browser/task_manager.h"
 #include "chrome/browser/worker_host/message_port_dispatcher.h"
@@ -151,39 +150,26 @@ Blacklist::Match* GetPrivacyBlacklistMatchForURL(
 
 class SetCookieCompletion : public net::CompletionCallback {
  public:
-  SetCookieCompletion(int render_process_id,
-                      int render_view_id,
-                      const GURL& url,
-                      const std::string& cookie_line,
+  SetCookieCompletion(const GURL& url, const std::string& cookie_line,
                       URLRequestContext* context)
-      : render_process_id_(render_process_id),
-        render_view_id_(render_view_id),
-        url_(url),
+      : url_(url),
         cookie_line_(cookie_line),
         context_(context) {
   }
 
   virtual void RunWithParams(const Tuple1<int>& params) {
     int result = params.a;
-    if (result == net::OK ||
-        result == net::OK_FOR_SESSION_ONLY) {
+    if (result >= 0) {
       net::CookieOptions options;
       if (result == net::OK_FOR_SESSION_ONLY)
         options.set_force_session();
       context_->cookie_store()->SetCookieWithOptions(url_, cookie_line_,
                                                      options);
-    } else {
-      CallRenderViewHostResourceDelegate(
-          render_process_id_, render_view_id_,
-          &RenderViewHostDelegate::Resource::OnContentBlocked,
-          CONTENT_SETTINGS_TYPE_COOKIES);
     }
     delete this;
   }
 
  private:
-  int render_process_id_;
-  int render_view_id_;
   GURL url_;
   std::string cookie_line_;
   scoped_refptr<URLRequestContext> context_;
@@ -586,8 +572,7 @@ void ResourceMessageFilter::OnMsgCreateWidget(int opener_id,
   render_widget_helper_->CreateNewWidget(opener_id, activatable, route_id);
 }
 
-void ResourceMessageFilter::OnSetCookie(const IPC::Message& message,
-                                        const GURL& url,
+void ResourceMessageFilter::OnSetCookie(const GURL& url,
                                         const GURL& first_party_for_cookies,
                                         const std::string& cookie) {
   ChromeURLRequestContext* context = GetRequestContextForURL(url);
@@ -597,8 +582,7 @@ void ResourceMessageFilter::OnSetCookie(const IPC::Message& message,
   if (match.get() && (match->attributes() & Blacklist::kBlockCookies))
     return;
 
-  SetCookieCompletion* callback =
-      new SetCookieCompletion(id(), message.routing_id(), url, cookie, context);
+  SetCookieCompletion* callback = new SetCookieCompletion(url, cookie, context);
 
   int policy = net::OK;
   if (context->cookie_policy()) {
