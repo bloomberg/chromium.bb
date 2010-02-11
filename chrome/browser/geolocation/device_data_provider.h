@@ -29,10 +29,12 @@
 #include <vector>
 
 #include "base/basictypes.h"
-#include "base/lock.h"
+#include "base/message_loop.h"
+#include "base/non_thread_safe.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/scoped_ptr.h"
+#include "base/task.h"
 
 // The following data structures are used to store cell radio data and wifi
 // data. See the Geolocation API design document at
@@ -181,65 +183,94 @@ struct WifiData {
 template<typename DataType>
 class DeviceDataProvider;
 
+// This class just exists to work-around MSVC2005 not being able to have a
+// template class implement RefCountedThreadSafe
+class DeviceDataProviderImplBaseHack
+    : public base::RefCountedThreadSafe<DeviceDataProviderImplBaseHack> {
+ protected:
+  friend class base::RefCountedThreadSafe<DeviceDataProviderImplBaseHack>;
+  virtual ~DeviceDataProviderImplBaseHack() {}
+};
+
+// See class DeviceDataProvider for the public client API.
 // DeviceDataProvider uses containment to hide platform-specific implementation
 // details from common code. This class provides common functionality for these
-// contained implementation classes.
+// contained implementation classes. This is a modified pimpl pattern: this
+// class needs to be in the public header due to use of templating.
 template<typename DataType>
-class DeviceDataProviderImplBase {
+class DeviceDataProviderImplBase : public DeviceDataProviderImplBaseHack {
  public:
-  DeviceDataProviderImplBase() : container_(NULL) {}
-  virtual ~DeviceDataProviderImplBase() {}
+  DeviceDataProviderImplBase()
+      : container_(NULL), client_loop_(MessageLoop::current()) {
+    DCHECK(client_loop_);
+  }
 
   virtual bool StartDataProvider() = 0;
-
+  virtual void StopDataProvider() = 0;
   virtual bool GetData(DataType* data) = 0;
 
   // Sets the container of this class, which is of type DeviceDataProvider.
   // This is required to pass as a parameter when making the callback to
   // listeners.
   void SetContainer(DeviceDataProvider<DataType>* container) {
+    DCHECK(CalledOnClientThread());
     container_ = container;
   }
 
   typedef typename DeviceDataProvider<DataType>::ListenerInterface
           ListenerInterface;
   void AddListener(ListenerInterface* listener) {
-    AutoLock mutex(listeners_mutex_);
+    DCHECK(CalledOnClientThread());
     listeners_.insert(listener);
   }
   bool RemoveListener(ListenerInterface* listener) {
-    AutoLock mutex(listeners_mutex_);
-    typename ListenersSet::iterator iter = find(listeners_.begin(),
-                                                listeners_.end(),
-                                                listener);
-    if (iter == listeners_.end()) {
-      return false;
-    }
-    listeners_.erase(iter);
-    return true;
+    DCHECK(CalledOnClientThread());
+    return listeners_.erase(listener) == 1;
+  }
+
+  bool has_listeners() const {
+    DCHECK(CalledOnClientThread());
+    return !listeners_.empty();
   }
 
  protected:
+  virtual ~DeviceDataProviderImplBase() {
+    DCHECK(CalledOnClientThread());
+  }
+
   // Calls DeviceDataUpdateAvailable() on all registered listeners.
   typedef std::set<ListenerInterface*> ListenersSet;
   void NotifyListeners() {
-    AutoLock lock(listeners_mutex_);
-    for (typename ListenersSet::const_iterator iter = listeners_.begin();
-         iter != listeners_.end();
-         ++iter) {
-      (*iter)->DeviceDataUpdateAvailable(container_);
-    }
+    // Always make the nitofy callback via a posted task, se we can unwind
+    // callstack here and make callback without causing client re-entrancy.
+    client_loop_->PostTask(FROM_HERE, NewRunnableMethod(this,
+        &DeviceDataProviderImplBase<DataType>::NotifyListenersInClientLoop));
+  }
+
+  bool CalledOnClientThread() const {
+    return MessageLoop::current() == this->client_loop_;
   }
 
  private:
+  void NotifyListenersInClientLoop() {
+    DCHECK(CalledOnClientThread());
+    // It's possible that all the listeners (and the container) went away
+    // whilst this task was pending. This is fine; the loop will be a no-op.
+    typename ListenersSet::const_iterator iter = listeners_.begin();
+    while (iter != listeners_.end()) {
+      ListenerInterface* listener = *iter;
+      ++iter;  // Advance iter before callback, in case listener unregisters.
+      listener->DeviceDataUpdateAvailable(container_);
+    }
+  }
+
   DeviceDataProvider<DataType>* container_;
 
-  // The listeners to this class and their mutex.
-  // TODO(joth): Once we've established the client is always single threaded,
-  // remove mutex and instead capture client's MessageLoop to stage the
-  // NotifyListeners callback via.
+  // Reference to the client's message loop, all callbacks and access to
+  // the listeners_ member should happen in this context.
+  MessageLoop* client_loop_;
+
   ListenersSet listeners_;
-  Lock listeners_mutex_;
 
   DISALLOW_COPY_AND_ASSIGN(DeviceDataProviderImplBase);
 };
@@ -253,13 +284,12 @@ typedef DeviceDataProviderImplBase<WifiData> WifiDataProviderImplBase;
 // location providers. These location providers access the instance through the
 // Register and Unregister methods.
 template<typename DataType>
-class DeviceDataProvider {
+class DeviceDataProvider : public NonThreadSafe {
  public:
   // Interface to be implemented by listeners to a device data provider.
   class ListenerInterface {
    public:
-    // NOTE this may be called back in the context of the implementation private
-    // worker thread. (TODO Is there a naming convention to use for this?)
+    // Will be called in the context of the thread that called Register().
     virtual void DeviceDataUpdateAvailable(
         DeviceDataProvider<DataType>* provider) = 0;
     virtual ~ListenerInterface() {}
@@ -281,24 +311,15 @@ class DeviceDataProvider {
   // Adds a listener, which will be called back with DeviceDataUpdateAvailable
   // whenever new data is available. Returns the singleton instance.
   static DeviceDataProvider* Register(ListenerInterface* listener) {
-    // TODO(joth): The following comment applied when this was used in Gears;
-    // revisit if this is still needed once usage is established in Chromium.
-    // We protect against Register and Unregister being called asynchronously
-    // from different threads. This is the case when a device data provider is
-    // used by a NetworkLocationProvider object. Register is always called from
-    // the JavaScript thread. Unregister is called when NetworkLocationProvider
-    // objects are destructed, which happens asynchronously once the
-    // NetworkLocationProvider HTTP request has completed.
-    AutoLock mutex(instance_mutex_);
     if (!instance_) {
       instance_ = new DeviceDataProvider();
     }
     DCHECK(instance_);
-    instance_->Ref();
+    DCHECK(instance_->CalledOnValidThread());
     instance_->AddListener(listener);
     // Start the provider after adding the listener, to avoid any race in
     // it receiving an early callback.
-    bool started = instance_->impl_->StartDataProvider();
+    bool started = instance_->StartDataProvider();
     DCHECK(started);
     return instance_;
   }
@@ -306,11 +327,17 @@ class DeviceDataProvider {
   // Removes a listener. If this is the last listener, deletes the singleton
   // instance. Return value indicates success.
   static bool Unregister(ListenerInterface* listener) {
-    AutoLock mutex(instance_mutex_);
+    DCHECK(instance_);
+    DCHECK(instance_->CalledOnValidThread());
+    DCHECK(instance_->has_listeners());
     if (!instance_->RemoveListener(listener)) {
       return false;
     }
-    if (instance_->Unref()) {
+    if (!instance_->has_listeners()) {
+      // Must stop the provider (and any implementation threads) before
+      // destroying to avoid any race conditions in access to the provider in
+      // the destructor chain.
+      instance_->StopDataProvider();
       delete instance_;
       instance_ = NULL;
     }
@@ -321,26 +348,22 @@ class DeviceDataProvider {
   // value indicates whether this is all the data the provider could ever
   // obtain.
   bool GetData(DataType* data) {
+    DCHECK(this->CalledOnValidThread());
     return impl_->GetData(data);
   }
 
  private:
   // Private constructor and destructor, callers access singleton through
   // Register and Unregister.
-  DeviceDataProvider() : count_(0) {
+  DeviceDataProvider() {
     DCHECK(factory_function_);
-    impl_.reset((*factory_function_)());
+    impl_ = (*factory_function_)();
+    DCHECK(impl_);
     impl_->SetContainer(this);
   }
-  virtual ~DeviceDataProvider() {}
-
-  void Ref() {
-    ++count_;
-  }
-  // Returns true when the ref count transitions from 1 to 0.
-  bool Unref() {
-    --count_;
-    return count_ == 0;
+  virtual ~DeviceDataProvider() {
+    DCHECK(impl_);
+    impl_->SetContainer(NULL);
   }
 
   void AddListener(ListenerInterface* listener) {
@@ -351,26 +374,33 @@ class DeviceDataProvider {
     return impl_->RemoveListener(listener);
   }
 
+  bool has_listeners() const {
+    return impl_->has_listeners();
+  }
+
+  bool StartDataProvider() {
+    return impl_->StartDataProvider();
+  }
+
+  void StopDataProvider() {
+    impl_->StopDataProvider();
+  }
+
   static DeviceDataProviderImplBase<DataType>* DefaultFactoryFunction();
 
-  // The singleton instance of this class and its mutex.
+  // The singleton-like instance of this class. (Not 'true' singleton, as it
+  // may go through multiple create/destroy/create cycles per process instance,
+  // e.g. when under test).
   static DeviceDataProvider* instance_;
-  static Lock instance_mutex_;
 
   // The factory function used to create the singleton instance.
   static ImplFactoryFunction factory_function_;
 
   // The internal implementation.
-  scoped_ptr<DeviceDataProviderImplBase<DataType> > impl_;
-
-  int count_;
+  scoped_refptr<DeviceDataProviderImplBase<DataType> > impl_;
 
   DISALLOW_EVIL_CONSTRUCTORS(DeviceDataProvider);
 };
-
-// static
-template<typename DataType>
-Lock DeviceDataProvider<DataType>::instance_mutex_;
 
 // static
 template<typename DataType>

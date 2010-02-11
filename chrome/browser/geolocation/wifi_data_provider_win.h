@@ -25,7 +25,6 @@ class Win32WifiDataProvider
   };
 
   Win32WifiDataProvider();
-  virtual ~Win32WifiDataProvider();
 
   // Takes ownership of wlan_api. Must be called before Start().
   void inject_mock_wlan_api(WlanApiInterface* wlan_api);
@@ -35,12 +34,14 @@ class Win32WifiDataProvider
 
   // WifiDataProviderImplBase implementation
   virtual bool StartDataProvider();
+  virtual void StopDataProvider();
   virtual bool GetData(WifiData *data);
 
  private:
+  virtual ~Win32WifiDataProvider();
+
   // Thread implementation
   virtual void Init();
-  // Called just after the message loop ends
   virtual void CleanUp();
 
   // Task which run in the child thread.

@@ -41,67 +41,65 @@ class MessageLoopQuitListener
  public:
   explicit MessageLoopQuitListener(MessageLoop* message_loop)
       : message_loop_to_quit_(message_loop) {
-    DCHECK(message_loop_to_quit_ != NULL);
+    CHECK(message_loop_to_quit_ != NULL);
   }
   // ListenerInterface
   virtual void DeviceDataUpdateAvailable(
       DeviceDataProvider<WifiData>* provider) {
-    // We expect the callback to come from the provider's internal worker
-    // thread. This is not a strict requirement, just a lot of the complexity
-    // here is predicated on the need to cope with this scenario!
-    EXPECT_NE(MessageLoop::current(), message_loop_to_quit_);
+    // Provider should call back on client's thread.
+    EXPECT_EQ(MessageLoop::current(), message_loop_to_quit_);
     provider_ = provider;
-    // Can't call Quit() directly on another thread's message loop.
-    message_loop_to_quit_->PostTask(FROM_HERE, new MessageLoop::QuitTask);
+    message_loop_to_quit_->Quit();
   }
   MessageLoop* message_loop_to_quit_;
   DeviceDataProvider<WifiData>* provider_;
 };
 
+Win32WifiDataProvider* CreateWin32WifiDataProvider(MockWlanApi** wlan_api_out) {
+  Win32WifiDataProvider* provider = new Win32WifiDataProvider;
+  *wlan_api_out = new MockWlanApi;
+  provider->inject_mock_wlan_api(*wlan_api_out);  // Takes ownership.
+  provider->inject_mock_polling_policy(new MockPollingPolicy);  // ditto
+  return provider;
+}
+
+WifiDataProviderImplBase* CreateWin32WifiDataProvider() {
+  MockWlanApi* wlan_api;
+  return CreateWin32WifiDataProvider(&wlan_api);
+}
+}  // namespace
+
 // Main test fixture
-class Win32WifiDataProviderTest : public testing::Test {
+class GeolocationWin32WifiDataProviderTest : public testing::Test {
  public:
-  static Win32WifiDataProvider* CreateWin32WifiDataProvider(
-      MockWlanApi** wlan_api_out) {
-    Win32WifiDataProvider* provider = new Win32WifiDataProvider;
-    *wlan_api_out = new MockWlanApi;
-    provider->inject_mock_wlan_api(*wlan_api_out);  // Takes ownership.
-    provider->inject_mock_polling_policy(new MockPollingPolicy);  // ditto
-    return provider;
-  }
   virtual void SetUp() {
-    provider_.reset(CreateWin32WifiDataProvider(&wlan_api_));
+    provider_ = CreateWin32WifiDataProvider(&wlan_api_);
   }
   virtual void TearDown() {
-    provider_.reset();
+    provider_->StopDataProvider();
+    provider_ = NULL;
   }
 
  protected:
   MessageLoop main_message_loop_;
-  scoped_ptr<Win32WifiDataProvider> provider_;
+  scoped_refptr<Win32WifiDataProvider> provider_;
   MockWlanApi* wlan_api_;
 };
 
-WifiDataProviderImplBase* CreateWin32WifiDataProviderStatic() {
-  MockWlanApi* wlan_api;
-  return Win32WifiDataProviderTest::CreateWin32WifiDataProvider(&wlan_api);
-}
-}  // namespace
-
-TEST_F(Win32WifiDataProviderTest, CreateDestroy) {
+TEST_F(GeolocationWin32WifiDataProviderTest, CreateDestroy) {
   // Test fixture members were SetUp correctly.
   EXPECT_EQ(&main_message_loop_, MessageLoop::current());
   EXPECT_TRUE(NULL != provider_.get());
   EXPECT_TRUE(NULL != wlan_api_);
 }
 
-TEST_F(Win32WifiDataProviderTest, StartThread) {
+TEST_F(GeolocationWin32WifiDataProviderTest, StartThread) {
   EXPECT_TRUE(provider_->StartDataProvider());
-  provider_.reset();  // Stop()s the thread.
+  provider_->StopDataProvider();
   SUCCEED();
 }
 
-TEST_F(Win32WifiDataProviderTest, DoAnEmptyScan) {
+TEST_F(GeolocationWin32WifiDataProviderTest, DoAnEmptyScan) {
   MessageLoopQuitListener quit_listener(&main_message_loop_);
   provider_->AddListener(&quit_listener);
   EXPECT_TRUE(provider_->StartDataProvider());
@@ -115,7 +113,7 @@ TEST_F(Win32WifiDataProviderTest, DoAnEmptyScan) {
   provider_->RemoveListener(&quit_listener);
 }
 
-TEST_F(Win32WifiDataProviderTest, DoScanWithResults) {
+TEST_F(GeolocationWin32WifiDataProviderTest, DoScanWithResults) {
   MessageLoopQuitListener quit_listener(&main_message_loop_);
   provider_->AddListener(&quit_listener);
   AccessPointData single_access_point;
@@ -138,9 +136,9 @@ TEST_F(Win32WifiDataProviderTest, DoScanWithResults) {
   provider_->RemoveListener(&quit_listener);
 }
 
-TEST_F(Win32WifiDataProviderTest, StartThreadViaDeviceDataProvider) {
+TEST_F(GeolocationWin32WifiDataProviderTest, StartThreadViaDeviceDataProvider) {
   MessageLoopQuitListener quit_listener(&main_message_loop_);
-  WifiDataProvider::SetFactory(CreateWin32WifiDataProviderStatic);
+  WifiDataProvider::SetFactory(CreateWin32WifiDataProvider);
   DeviceDataProvider<WifiData>::Register(&quit_listener);
   main_message_loop_.Run();
   DeviceDataProvider<WifiData>::Unregister(&quit_listener);

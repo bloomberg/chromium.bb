@@ -166,9 +166,9 @@ Win32WifiDataProvider::Win32WifiDataProvider()
 }
 
 Win32WifiDataProvider::~Win32WifiDataProvider() {
-  // Base class auto-stops the thread, however we need to do it here so our
-  // override of CleanUp still exists whilst the thread is shutting down.
-  Stop();
+  // Thread must be stopped before entering destructor chain to avoid race
+  // conditions; see comment in DeviceDataProvider::Unregister.
+  DCHECK(!IsRunning()) << "Must call StopDataProvider before destroying me";
 }
 
 void Win32WifiDataProvider::inject_mock_wlan_api(WlanApiInterface* wlan_api) {
@@ -185,10 +185,17 @@ void Win32WifiDataProvider::inject_mock_polling_policy(
 }
 
 bool Win32WifiDataProvider::StartDataProvider() {
-  return base::Thread::Start();
+  DCHECK(CalledOnClientThread());
+  return Start();
+}
+
+void Win32WifiDataProvider::StopDataProvider() {
+  DCHECK(CalledOnClientThread());
+  Stop();
 }
 
 bool Win32WifiDataProvider::GetData(WifiData *data) {
+  DCHECK(CalledOnClientThread());
   DCHECK(data);
   AutoLock lock(data_mutex_);
   *data = wifi_data_;

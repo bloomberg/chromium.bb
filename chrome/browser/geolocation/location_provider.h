@@ -14,19 +14,15 @@
 #define CHROME_BROWSER_GEOLOCATION_LOCATION_PROVIDER_H_
 
 #include <map>
-#include "base/lock.h"
-#include "base/message_loop.h"
-#include "base/ref_counted.h"
+#include "base/non_thread_safe.h"
 #include "base/string16.h"
-#include "base/task.h"
 
 class GURL;
 struct Position;
 class URLRequestContextGetter;
 
 // The base class used by all location providers.
-class LocationProviderBase
-    : public base::RefCountedThreadSafe<LocationProviderBase> {
+class LocationProviderBase : public NonThreadSafe {
  public:
   // Provides storage for the access token used in the network request.
   // Normally the client (i.e. geolocation controller) implements this, but
@@ -62,18 +58,19 @@ class LocationProviderBase
     virtual ~ListenerInterface() {}
   };
 
-  // TODO(joth): Make register / unregister non-virtual.
+  virtual ~LocationProviderBase();
+
   // Registers a listener, which will be called back on
   // ListenerInterface::LocationUpdateAvailable as soon as a position is
   // available and again whenever a new position is available. Ref counts the
   // listener to handle multiple calls to this method.
-  virtual void RegisterListener(ListenerInterface* listener);
+  void RegisterListener(ListenerInterface* listener);
   // Unregisters a listener. Unrefs the listener to handle multiple calls to
   // this method. Once the ref count reaches zero, the listener is removed and
   // once this method returns, no further calls to
   // ListenerInterface::LocationUpdateAvailable will be made for this listener.
   // It may block if a callback is in progress.
-  virtual void UnregisterListener(ListenerInterface* listener);
+  void UnregisterListener(ListenerInterface* listener);
 
   // Interface methods
   // Returns false if the provider failed to start.
@@ -84,12 +81,10 @@ class LocationProviderBase
   // as possible. Default implementation does nothing.
   virtual void UpdatePosition() {}
 
+  bool has_listeners() const;
+
  protected:
-  // Instances should only be destroyed via the thread safe ref count; derived
-  // classes should not have a public destructor.
-  friend class base::RefCountedThreadSafe<LocationProviderBase>;
   LocationProviderBase();
-  virtual ~LocationProviderBase();
 
   // Inform listeners that a new position or error is available, using
   // LocationUpdateAvailable.
@@ -97,38 +92,11 @@ class LocationProviderBase
   // Inform listeners that movement has been detected, using MovementDetected.
   virtual void InformListenersOfMovement();
 
-  MessageLoop* client_loop() { return client_loop_; }
-  void CheckRunningInClientLoop();
-
  private:
-  // Utility methods to delegate method calls into the client thread
-  template <class Method>
-  bool RunInClientThread(const tracked_objects::Location& from_here,
-                         Method method) {
-    if (MessageLoop::current() == client_loop_) {
-      return false;
-    }
-    client_loop_->PostTask(from_here, NewRunnableMethod(this, method));
-    return true;
-  }
-  template <class Method, class A>
-  bool RunInClientThread(const tracked_objects::Location& from_here,
-                         Method method, const A& a) {
-    if (MessageLoop::current() == client_loop_) {
-      return false;
-    }
-    client_loop_->PostTask(from_here, NewRunnableMethod(this, method, a));
-    return true;
-  }
-
   // The listeners registered to this provider. For each listener, we store a
   // ref count.
   typedef std::map<ListenerInterface*, int> ListenerMap;
   ListenerMap listeners_;
-
-  // Reference to the client's message loop, all callbacks and access to
-  // the listeners_ member should happen in this context.
-  MessageLoop* client_loop_;
 };
 
 // Factory functions for the various types of location provider to abstract over

@@ -178,7 +178,7 @@ void NetworkLocationProvider::LocationResponseAvailable(
     const Position& position,
     bool server_error,
     const string16& access_token) {
-  CheckRunningInClientLoop();
+  DCHECK(CalledOnValidThread());
   // Record the position and update our cache.
   {
     AutoLock position_lock(position_mutex_);
@@ -202,7 +202,7 @@ void NetworkLocationProvider::LocationResponseAvailable(
 }
 
 bool NetworkLocationProvider::StartProvider() {
-  CheckRunningInClientLoop();
+  DCHECK(CalledOnValidThread());
   DCHECK(radio_data_provider_ == NULL);
   DCHECK(wifi_data_provider_ == NULL);
   if (!request_->url().is_valid()) {
@@ -234,7 +234,7 @@ bool NetworkLocationProvider::StartProvider() {
 
 // Other methods
 void NetworkLocationProvider::RequestPosition() {
-  CheckRunningInClientLoop();
+  DCHECK(CalledOnValidThread());
 
   delayed_start_task_.RevokeAll();
   const Position* cached_position;
@@ -278,11 +278,7 @@ void NetworkLocationProvider::RequestPosition() {
 }
 
 void NetworkLocationProvider::OnDeviceDataUpdated() {
-  if (MessageLoop::current() != client_loop()) {
-    client_loop()->PostTask(FROM_HERE,
-        NewRunnableMethod(this, &NetworkLocationProvider::OnDeviceDataUpdated));
-    return;
-  }
+  DCHECK(CalledOnValidThread());
   device_data_updated_timestamp_ = GetCurrentTimeMillis();
 
   is_new_data_available_ = is_radio_data_complete_ || is_radio_data_complete_;

@@ -8,35 +8,37 @@
 #include "chrome/browser/geolocation/location_provider.h"
 
 #include <assert.h>
+#include "base/logging.h"
 
-LocationProviderBase::LocationProviderBase()
-    : client_loop_(MessageLoop::current()) {
+LocationProviderBase::LocationProviderBase() {
 }
 
 LocationProviderBase::~LocationProviderBase() {
-  DCHECK_EQ(client_loop_, MessageLoop::current());
+  DCHECK(CalledOnValidThread());
 }
 
 void LocationProviderBase::RegisterListener(ListenerInterface* listener) {
+  DCHECK(CalledOnValidThread());
   DCHECK(listener);
-  if (RunInClientThread(FROM_HERE,
-                        &LocationProviderBase::RegisterListener, listener))
-    return;
-  ListenerMap::iterator iter = listeners_.find(listener);
-  if (iter == listeners_.end()) {
-    std::pair<ListenerMap::iterator, bool> result =
-        listeners_.insert(std::make_pair(listener, 0));
-    DCHECK(result.second);
-    iter = result.first;
+  std::pair<ListenerMap::iterator, bool> result =
+      listeners_.insert(std::make_pair(listener, 0));
+  DCHECK(result.first != listeners_.end());
+
+  int& ref_count = result.first->second;
+  const bool& is_new = result.second;
+  ++ref_count;
+
+  // Check the post condition...
+  if (is_new) {
+    DCHECK(ref_count == 1);
+  } else {
+    DCHECK(ref_count > 1);
   }
-  ++iter->second;
 }
 
 void LocationProviderBase::UnregisterListener(ListenerInterface *listener) {
+  DCHECK(CalledOnValidThread());
   DCHECK(listener);
-  if (RunInClientThread(FROM_HERE,
-                        &LocationProviderBase::UnregisterListener, listener))
-    return;
   ListenerMap::iterator iter = listeners_.find(listener);
   if (iter != listeners_.end()) {
     if (--iter->second == 0) {
@@ -45,10 +47,12 @@ void LocationProviderBase::UnregisterListener(ListenerInterface *listener) {
   }
 }
 
+bool LocationProviderBase::has_listeners() const {
+  return !listeners_.empty();
+}
+
 void LocationProviderBase::UpdateListeners() {
-  // Currently we required location provider implementations to make
-  // notifications from the client thread. This could be relaxed if needed.
-  CheckRunningInClientLoop();
+  DCHECK(CalledOnValidThread());
   for (ListenerMap::const_iterator iter = listeners_.begin();
        iter != listeners_.end();
        ++iter) {
@@ -57,18 +61,12 @@ void LocationProviderBase::UpdateListeners() {
 }
 
 void LocationProviderBase::InformListenersOfMovement() {
-  // Currently we required location provider implementations to make
-  // notifications from the client thread. This could be relaxed if needed.
-  CheckRunningInClientLoop();
+  DCHECK(CalledOnValidThread());
   for (ListenerMap::const_iterator iter = listeners_.begin();
        iter != listeners_.end();
        ++iter) {
     iter->first->MovementDetected(this);
   }
-}
-
-void LocationProviderBase::CheckRunningInClientLoop() {
-  DCHECK_EQ(MessageLoop::current(), client_loop());
 }
 
 // Currently no platforms have a GPS location provider.
