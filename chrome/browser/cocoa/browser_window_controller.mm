@@ -1470,6 +1470,11 @@ willPositionSheet:(NSWindow*)sheet
       static_cast<Browser::WindowFeature>(feature));
 }
 
+- (NSRect)regularWindowFrame {
+  return [self isFullscreen] ? [savedRegularWindow_ frame] :
+                               [[self window] frame];
+}
+
 // (Override of |TabWindowController| method.)
 - (BOOL)hasTabStrip {
   return [self supportsWindowFeature:Browser::FEATURE_TABSTRIP];

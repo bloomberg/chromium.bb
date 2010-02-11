@@ -159,6 +159,11 @@ class TabStripModelObserverBridge;
 // Make the location bar the first responder, if possible.
 - (void)focusLocationBar;
 
+// Returns the frame of the regular (non-fullscreened) window (even if the
+// window is currently in fullscreen mode).  The frame is returned in Cocoa
+// coordinates (origin in bottom-left).
+- (NSRect)regularWindowFrame;
+
 // Determines whether this controller's window supports a given feature (i.e.,
 // whether a given feature is or can be shown in the window).
 // TODO(viettrungluu): |feature| is really should be |Browser::Feature|, but I

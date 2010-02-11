@@ -166,7 +166,7 @@ void BrowserWindowCocoa::SetStarredState(bool is_starred) {
 gfx::Rect BrowserWindowCocoa::GetRestoredBounds() const {
   // Flip coordinates based on the primary screen.
   NSScreen* screen = [[NSScreen screens] objectAtIndex:0];
-  NSRect frame = [window() frame];
+  NSRect frame = [controller_ regularWindowFrame];
   gfx::Rect bounds(frame.origin.x, 0, frame.size.width, frame.size.height);
   bounds.set_y([screen frame].size.height - frame.origin.y - frame.size.height);
   return bounds;
