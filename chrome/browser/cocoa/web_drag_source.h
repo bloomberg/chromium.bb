@@ -4,8 +4,11 @@
 
 #import <Cocoa/Cocoa.h>
 
+#include "app/download_file_interface.h"
+#include "base/file_path.h"
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
+#include "googleurl/src/gurl.h"
 
 struct WebDropData;
 @class TabContentsViewCocoa;
@@ -25,6 +28,12 @@ struct WebDropData;
 
   // A mask of the allowed drag operations.
   NSDragOperation dragOperationMask_;
+
+  // The file name to be saved to for a drag-out download.
+  FilePath downloadFileName_;
+
+  // The URL to download from for a drag-out download.
+  GURL downloadURL_;
 }
 
 // Initialize a WebDragSource object for a drag (originating on the given

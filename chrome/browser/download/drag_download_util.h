@@ -17,6 +17,8 @@ namespace drag_download_util {
 // * MIME type
 // * File name
 // * URL
+// If the file name contains special characters, they need to be escaped
+// appropriately.
 // For example, we can have
 //   text/plain:example.txt:http://example.com/example.txt
 bool ParseDownloadMetadata(const string16& metadata,

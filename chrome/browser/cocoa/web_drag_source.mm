@@ -12,6 +12,9 @@
 #include "base/task.h"
 #include "base/thread.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/drag_download_file.h"
+#include "chrome/browser/download/drag_download_util.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
@@ -39,12 +42,10 @@ NSImage* MakeDragImage(const WebDropData* drop_data) {
   return nsimage_cache::ImageNamed(@"nav.pdf");
 }
 
-// Returns a filename appropriate for the drop data (of form "FILENAME-seq.EXT"
-// if seq > 0).
+// Returns a filename appropriate for the drop data
 // TODO(viettrungluu): Refactor to make it common across platforms,
 // and move it somewhere sensible.
-FilePath GetFileNameFromDragData(
-    const WebDropData& drop_data, unsigned seq) {
+FilePath GetFileNameFromDragData(const WebDropData& drop_data) {
   // Images without ALT text will only have a file extension so we need to
   // synthesize one from the provided extension and URL.
   FilePath file_name([SysUTF16ToNSString(drop_data.file_description_filename)
@@ -58,11 +59,6 @@ FilePath GetFileNameFromDragData(
 
   file_name = file_name.ReplaceExtension([SysUTF16ToNSString(
           drop_data.file_extension) fileSystemRepresentation]);
-
-  if (seq > 0) {
-    file_name =
-        file_name.InsertBeforeExtension(std::string("-")+UintToString(seq));
-  }
 
   return file_name;
 }
@@ -106,6 +102,42 @@ void PromiseWriterTask::Run() {
                       NULL);
 
   // Let our destructor take care of business.
+}
+
+class PromiseFileFinalizer : public DownloadFileObserver {
+ public:
+  PromiseFileFinalizer(DragDownloadFile* drag_file_downloader)
+      : drag_file_downloader_(drag_file_downloader) {
+  }
+  virtual ~PromiseFileFinalizer() { }
+
+  // DownloadFileObserver methods.
+  virtual void OnDownloadCompleted(const FilePath& file_path);
+  virtual void OnDownloadAborted();
+
+ private:
+  void Cleanup();
+
+  scoped_refptr<DragDownloadFile> drag_file_downloader_;
+
+  DISALLOW_COPY_AND_ASSIGN(PromiseFileFinalizer);
+};
+
+void PromiseFileFinalizer::Cleanup() {
+  if (drag_file_downloader_.get())
+    drag_file_downloader_ = NULL;
+}
+
+void PromiseFileFinalizer::OnDownloadCompleted(const FilePath& file_path) {
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &PromiseFileFinalizer::Cleanup));
+}
+
+void PromiseFileFinalizer::OnDownloadAborted() {
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &PromiseFileFinalizer::Cleanup));
 }
 
 }  // namespace
@@ -179,7 +211,7 @@ void PromiseWriterTask::Run() {
                 dataWithBytes:dropData_->file_contents.data()
                        length:dropData_->file_contents.length()]]);
     [file_wrapper setPreferredFilename:SysUTF8ToNSString(
-            GetFileNameFromDragData(*dropData_, 0).value())];
+            GetFileNameFromDragData(*dropData_).value())];
     [pboard writeFileWrapper:file_wrapper];
 
   // TIFF.
@@ -278,37 +310,57 @@ void PromiseWriterTask::Run() {
     return nil;
   }
 
-  FileStream* file_stream = new FileStream;
-  DCHECK(file_stream);
-  if (!file_stream)
+  FileStream* fileStream = new FileStream;
+  DCHECK(fileStream);
+  if (!fileStream)
     return nil;
 
-  FilePath path_name(SysNSStringToUTF8(path));
-  FilePath file_name;
+  FilePath baseFileName = downloadFileName_.empty() ?
+      GetFileNameFromDragData(*dropData_) : downloadFileName_;
+  FilePath pathName(SysNSStringToUTF8(path));
+  FilePath fileName;
+  FilePath filePath;
   unsigned seq;
-  const unsigned k_max_seq = 99;
-  for (seq = 0; seq <= k_max_seq; seq++) {
-    file_name = GetFileNameFromDragData(*dropData_, seq);
-    FilePath file_path = path_name.Append(file_name);
+  const unsigned kMaxSeq = 99;
+  for (seq = 0; seq <= kMaxSeq; seq++) {
+    fileName = (seq == 0) ? baseFileName :
+        baseFileName.InsertBeforeExtension(
+            std::string("-") + UintToString(seq));
+    filePath = pathName.Append(fileName);
 
     // Explicitly (and redundantly check) for file -- despite the fact that our
     // open won't overwrite -- just to avoid log spew.
-    if (!file_util::PathExists(file_path) &&
-        file_stream->Open(path_name.Append(file_name),
+    if (!file_util::PathExists(filePath) &&
+        fileStream->Open(filePath,
             base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE) == net::OK)
       break;
   }
-  if (seq > k_max_seq) {
-    delete file_stream;
+  if (seq > kMaxSeq) {
+    delete fileStream;
     return nil;
   }
 
-  // The writer will take care of closing and deletion.
-  g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
-      new PromiseWriterTask(*dropData_, file_stream));
+  if (downloadURL_.is_valid()) {
+    TabContents* tabContents = [contentsView_ tabContents];
+    scoped_refptr<DragDownloadFile> dragFileDownloader = new DragDownloadFile(
+        filePath,
+        linked_ptr<net::FileStream>(fileStream),
+        downloadURL_,
+        tabContents->GetURL(),
+        tabContents->encoding(),
+        tabContents);
+
+    // The finalizer will take care of closing and deletion.
+    dragFileDownloader->Start(
+        new PromiseFileFinalizer(dragFileDownloader));
+  } else {
+    // The writer will take care of closing and deletion.
+    g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
+        new PromiseWriterTask(*dropData_, fileStream));
+  }
 
   // Once we've created the file, we should return the file name.
-  return SysUTF8ToNSString(file_name.value());
+  return SysUTF8ToNSString(fileName.value());
 }
 
 @end  // @implementation WebDragSource
@@ -332,25 +384,49 @@ void PromiseWriterTask::Run() {
                     owner:contentsView_];
 
   // File.
-  if (!dropData_->file_contents.empty()) {
-    // |dropData_->file_extension| comes with the '.', which we must strip.
-    NSString* fileExtension =
-        (dropData_->file_extension.length() > 0) ?
-        SysUTF16ToNSString(dropData_->file_extension.substr(1)) : @"";
+  if (!dropData_->file_contents.empty() ||
+      !dropData_->download_metadata.empty()) {
+    NSString* fileExtension = 0;
 
-    // File contents (with and without specific type), file (HFS) promise, TIFF.
-    // TODO(viettrungluu): others?
-    [pasteboard_ addTypes:[NSArray arrayWithObjects:
+    if (dropData_->download_metadata.empty()) {
+      // |dropData_->file_extension| comes with the '.', which we must strip.
+      fileExtension = (dropData_->file_extension.length() > 0) ?
+          SysUTF16ToNSString(dropData_->file_extension.substr(1)) : @"";
+    } else {
+      string16 mimeType;
+      FilePath fileName;
+      if (drag_download_util::ParseDownloadMetadata(
+              dropData_->download_metadata,
+              &mimeType,
+              &fileName,
+              &downloadURL_)) {
+        std::string contentDisposition =
+            "attachment; filename=" + fileName.value();
+        DownloadManager::GenerateFileName(downloadURL_,
+                                          contentDisposition,
+                                          std::string(),
+                                          UTF16ToUTF8(mimeType),
+                                          &downloadFileName_);
+        fileExtension = SysUTF8ToNSString(downloadFileName_.Extension());
+      }
+    }
+
+    if (fileExtension) {
+      // File contents (with and without specific type), file (HFS) promise,
+      // TIFF.
+      // TODO(viettrungluu): others?
+      [pasteboard_ addTypes:[NSArray arrayWithObjects:
                                   NSFileContentsPboardType,
                                   NSCreateFileContentsPboardType(fileExtension),
                                   NSFilesPromisePboardType,
                                   NSTIFFPboardType,
                                   nil]
-                    owner:contentsView_];
+                      owner:contentsView_];
 
-    // For the file promise, we need to specify the extension.
-    [pasteboard_ setPropertyList:[NSArray arrayWithObject:fileExtension]
-                         forType:NSFilesPromisePboardType];
+      // For the file promise, we need to specify the extension.
+      [pasteboard_ setPropertyList:[NSArray arrayWithObject:fileExtension]
+                           forType:NSFilesPromisePboardType];
+    }
   }
 
   // Plain text.

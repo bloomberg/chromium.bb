@@ -100,11 +100,19 @@ void DownloadFile::Cancel() {
 
 // The UI has provided us with our finalized name.
 bool DownloadFile::Rename(const FilePath& new_path) {
-  Close();
+  // If the new path is same as the old one, there is no need to perform the
+  // following renaming logic.
+  if (new_path == full_path_) {
+    path_renamed_ = true;
 
-  // Nothing more to do if the new path is same as the old one.
-  if (new_path == full_path_)
+    // Don't close the file if we're not done (finished or canceled).
+    if (!in_progress_)
+      Close();
+
     return true;
+  }
+
+  Close();
 
 #if defined(OS_WIN)
   // We cannot rename because rename will keep the same security descriptor
