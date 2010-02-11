@@ -2925,6 +2925,3 @@ BUG_TONY : fast/events/multiline-link-arrow-navigation.html = TEXT
 
 // WebKit roll 54596:54648
 BUG35387 : platform/win/plugins/plugin-delayed-destroy.html = TIMEOUT
-BUG35387 : fast/dom/prototype-inheritance.html = TEXT
-// Seems to be 54625
-BUG21852 SKIP : fast/canvas/webgl/gl-get-calls.html = CRASH
