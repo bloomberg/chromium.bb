@@ -439,13 +439,7 @@ TEST_F(URLFetcherProtectTest, ServerUnavailable) {
   MessageLoop::current()->Run();
 }
 
-#if defined(OS_WIN)
 TEST_F(URLFetcherBadHTTPSTest, BadHTTPSTest) {
-#else
-// TODO(port): Enable BadHTTPSTest. Currently asserts in
-// URLFetcherBadHTTPSTest::OnURLFetchComplete don't pass.
-TEST_F(URLFetcherBadHTTPSTest, DISABLED_BadHTTPSTest) {
-#endif
   scoped_refptr<HTTPSTestServer> server =
       HTTPSTestServer::CreateExpiredServer(kDocRoot);
   ASSERT_TRUE(NULL != server.get());
