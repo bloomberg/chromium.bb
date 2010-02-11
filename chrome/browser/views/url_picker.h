@@ -1,12 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #ifndef CHROME_BROWSER_VIEWS_URL_PICKER_H_
 #define CHROME_BROWSER_VIEWS_URL_PICKER_H_
 
-#include "chrome/browser/cancelable_request.h"
-#include "chrome/browser/history/history.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/table/table_view_observer.h"
 #include "views/controls/textfield/textfield.h"
@@ -47,8 +45,7 @@ class UrlPicker : public views::View,
                   public views::TableViewObserver {
  public:
   UrlPicker(UrlPickerDelegate* delegate,
-            Profile* profile,
-            bool show_title);
+            Profile* profile);
   virtual ~UrlPicker();
 
   // Show the dialog on the provided contents.
@@ -88,16 +85,6 @@ class UrlPicker : public views::View,
   // Modify the model from the user interface.
   void PerformModelChange();
 
-  // Fetch the title for the entered URL. If we get the title in time before
-  // the user starts to modify the title field, the title field is changed.
-  void InitiateTitleAutoFill(const GURL& url);
-
-  // Invoked by the history system when a title becomes available.
-  void OnURLInfoAvailable(HistoryService::Handle handle,
-                          bool success,
-                          const history::URLRow* info,
-                          history::VisitVector* unused);
-
   // Returns the URL the user has typed.
   GURL GetInputURL() const;
 
@@ -107,20 +94,11 @@ class UrlPicker : public views::View,
   // URL Field.
   views::Textfield* url_field_;
 
-  // Title field. This is NULL if we're not showing the title.
-  views::Textfield* title_field_;
-
   // The table model.
   scoped_ptr<PossibleURLModel> url_table_model_;
 
   // The table of visited urls.
   views::TableView* url_table_;
-
-  // Handle of the title request we are expecting.
-  CancelableRequestProvider::Handle expected_title_handle_;
-
-  // The consumer object for the history database.
-  CancelableRequestConsumer history_consumer_;
 
   // The delegate.
   UrlPickerDelegate* delegate_;

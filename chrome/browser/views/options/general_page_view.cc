@@ -899,7 +899,7 @@ void GeneralPageView::SaveStartupPref() {
 }
 
 void GeneralPageView::AddURLToStartupURLs() {
-  UrlPicker* dialog = new UrlPicker(this, profile(), false);
+  UrlPicker* dialog = new UrlPicker(this, profile());
   dialog->Show(GetWindow()->GetNativeWindow());
 }
 

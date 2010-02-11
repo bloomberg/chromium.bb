@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -44,10 +44,8 @@ UrlPickerDelegate::~UrlPickerDelegate() {}
 //
 ////////////////////////////////////////////////////////////////////////////////
 UrlPicker::UrlPicker(UrlPickerDelegate* delegate,
-                     Profile* profile,
-                     bool show_title)
+                     Profile* profile)
     : profile_(profile),
-      expected_title_handle_(0),
       delegate_(delegate) {
   DCHECK(profile_);
 
@@ -88,22 +86,6 @@ UrlPicker::UrlPicker(UrlPickerDelegate* delegate,
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::FIXED, kTableWidth, 0);
 
-  if (show_title) {
-    layout->StartRow(0, labels_column_set_id);
-    views::Label* title_label = new views::Label();
-    title_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-    title_label->SetText(l10n_util::GetString(IDS_ASI_TITLE_LABEL));
-    layout->AddView(title_label);
-
-    title_field_ = new views::Textfield();
-    title_field_->SetController(this);
-    layout->AddView(title_field_);
-
-    layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
-  } else {
-    title_field_ = NULL;
-  }
-
   layout->StartRow(0, labels_column_set_id);
   views::Label* url_label = new views::Label();
   url_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -141,14 +123,8 @@ UrlPicker::~UrlPicker() {
 void UrlPicker::Show(HWND parent) {
   DCHECK(!window());
   views::Window::CreateChromeWindow(parent, gfx::Rect(), this)->Show();
-  if (title_field_) {
-    title_field_->SetText(l10n_util::GetString(IDS_ASI_DEFAULT_TITLE));
-    title_field_->SelectAll();
-    title_field_->RequestFocus();
-  } else {
-    url_field_->SelectAll();
-    url_field_->RequestFocus();
-  }
+  url_field_->SelectAll();
+  url_field_->RequestFocus();
   url_table_model_->Reload(profile_);
 }
 
@@ -172,47 +148,8 @@ std::wstring UrlPicker::GetDialogButtonLabel(
   return std::wstring();
 }
 
-void UrlPicker::OnURLInfoAvailable(
-    HistoryService::Handle handle,
-    bool success,
-    const history::URLRow* info,
-    history::VisitVector* unused) {
-  if (handle != expected_title_handle_)
-    return;
-
-  std::wstring s;
-  if (success)
-    s = info->title();
-  if (s.empty())
-    s = l10n_util::GetString(IDS_ASI_DEFAULT_TITLE);
-
-  if (title_field_) {
-    // expected_title_handle_ is reset if the title Textfield is edited so we
-    // can safely set the value.
-    title_field_->SetText(s);
-    title_field_->SelectAll();
-  }
-  expected_title_handle_ = 0;
-}
-
-void UrlPicker::InitiateTitleAutoFill(const GURL& url) {
-  HistoryService* hs = profile_->GetHistoryService(Profile::EXPLICIT_ACCESS);
-  if (!hs)
-    return;
-
-  if (expected_title_handle_)
-    hs->CancelRequest(expected_title_handle_);
-
-  expected_title_handle_ = hs->QueryURL(url, false, &history_consumer_,
-      NewCallback(this, &UrlPicker::OnURLInfoAvailable));
-}
-
 void UrlPicker::ContentsChanged(views::Textfield* sender,
                                 const std::wstring& new_contents) {
-  // If the user has edited the title field we no longer want to autofill it
-  // so we reset the expected handle to an impossible value.
-  if (sender == title_field_)
-    expected_title_handle_ = 0;
   GetDialogClientView()->UpdateDialogButtons();
 }
 
@@ -220,8 +157,6 @@ bool UrlPicker::Accept() {
   if (!IsDialogButtonEnabled(MessageBoxFlags::DIALOGBUTTON_OK)) {
     if (!GetInputURL().is_valid())
       url_field_->RequestFocus();
-    else if (title_field_)
-      title_field_->RequestFocus();
     return false;
   }
   PerformModelChange();
@@ -248,9 +183,7 @@ views::View* UrlPicker::GetContentsView() {
 void UrlPicker::PerformModelChange() {
   DCHECK(delegate_);
   GURL url(GetInputURL());
-  const std::wstring title =
-      title_field_ ? title_field_->text() : std::wstring();
-  delegate_->AddBookmark(this, title, url);
+  delegate_->AddBookmark(this, std::wstring(), url);
 }
 
 gfx::Size UrlPicker::GetPreferredSize() {
@@ -278,9 +211,6 @@ bool UrlPicker::AcceleratorPressed(
       } else {
         url_field_->SelectAll();
       }
-    } else if (title_field_ && fm->GetFocusedView() == title_field_) {
-      url_field_->SelectAll();
-      url_field_->RequestFocus();
     }
   }
   return true;
@@ -296,8 +226,6 @@ void UrlPicker::OnSelectionChanged() {
     std::wstring formatted = net::FormatUrl(url_table_model_->GetURL(selection),
         languages, false, UnescapeRule::NONE, NULL, NULL, NULL);
     url_field_->SetText(formatted);
-    if (title_field_)
-      title_field_->SetText(url_table_model_->GetTitle(selection));
     GetDialogClientView()->UpdateDialogButtons();
   }
 }
@@ -313,5 +241,6 @@ void UrlPicker::OnDoubleClick() {
 }
 
 GURL UrlPicker::GetInputURL() const {
-  return GURL(URLFixerUpper::FixupURL(UTF16ToUTF8(url_field_->text()), ""));
+  return GURL(URLFixerUpper::FixupURL(UTF16ToUTF8(url_field_->text()),
+                                      std::string()));
 }
