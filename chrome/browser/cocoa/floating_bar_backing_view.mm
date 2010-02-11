@@ -17,30 +17,37 @@
     [[NSColor windowBackgroundColor] set];
   NSRectFill(rect);
 
-  // Code basically clipped from browser_frame_view.mm, with modifications to
-  // not use window rect and not draw rounded corners.
+  // The code here mirrors the code in browser_frame_view.mm, with modifications
+  // to not use window rect and not draw rounded corners.
   NSRect bounds = [self bounds];
 
-  // Draw our background color if we have one, otherwise fall back on
-  // system drawing.
+  // Draw our background image or theme pattern, if one exists.
   GTMTheme* theme = [self gtm_theme];
   GTMThemeState state = isMainWindow ? GTMThemeStateActiveWindow
                                      : GTMThemeStateInactiveWindow;
   NSColor* color = [theme backgroundPatternColorForStyle:GTMThemeStyleWindow
                                                    state:state];
   if (color) {
-    // If there is a theme pattern, draw it here.
-
-    // To line up the background pattern with the patterns in the tabs the
-    // background pattern in the window frame need to be moved up by two
-    // pixels and left by 5.
+    // The titlebar/tabstrip header on the mac is slightly smaller than on
+    // Windows.  To keep the window background lined up with the tab and toolbar
+    // patterns, we have to shift the pattern slightly, rather than simply
+    // drawing it from the top left corner.  The offset below was empirically
+    // determined in order to line these patterns up.
+    //
     // This will make the themes look slightly different than in Windows/Linux
     // because of the differing heights between window top and tab top, but this
     // has been approved by UI.
     static const NSPoint kBrowserFrameViewPatternPhaseOffset = { -5, 2 };
-    NSPoint phase = kBrowserFrameViewPatternPhaseOffset;
-    phase.y += NSHeight(bounds);
-    phase = [self gtm_themePatternPhase];
+    NSPoint offsetTopLeft = kBrowserFrameViewPatternPhaseOffset;
+    offsetTopLeft.y += NSHeight(bounds);
+
+    // We want the pattern to start at the upper left corner of the floating
+    // bar, but the phase needs to be in the coordinate system of
+    // |windowChromeView|.
+    NSView* windowChromeView = [[[self window] contentView] superview];
+    NSPoint phase = [self convertPoint:offsetTopLeft toView:windowChromeView];
+
+    // Apply the offset.
     [[NSGraphicsContext currentContext] setPatternPhase:phase];
     [color set];
     NSRectFill(rect);

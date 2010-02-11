@@ -113,9 +113,12 @@
   if (color) {
     // If there is a theme pattern, draw it here.
 
-    // To line up the background pattern with the patterns in the tabs the
-    // background pattern in the window frame need to be moved up by two
-    // pixels and left by 5.
+    // The titlebar/tabstrip header on the mac is slightly smaller than on
+    // Windows.  To keep the window background lined up with the tab and toolbar
+    // patterns, we have to shift the pattern slightly, rather than simply
+    // drawing it from the top left corner.  The offset below was empirically
+    // determined in order to line these patterns up.
+    //
     // This will make the themes look slightly different than in Windows/Linux
     // because of the differing heights between window top and tab top, but this
     // has been approved by UI.
