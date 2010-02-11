@@ -71,6 +71,9 @@ class ExtensionMessageBundle {
   // Returns false if there is a message in text that's not defined in the
   // dictionary.
   bool ReplaceMessages(std::string* text, std::string* error) const;
+  // Static version that accepts dictionary.
+  static bool ReplaceMessagesWithExternalDictionary(
+      const SubstitutionMap& dictionary, std::string* text, std::string* error);
 
   // Replaces each occurance of variable placeholder with its value.
   // I.e. replaces __MSG_name__ with value from the catalog with the key "name".
@@ -144,5 +147,29 @@ class ExtensionMessageBundle {
   // Holds all messages for application locale.
   SubstitutionMap dictionary_;
 };
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Renderer helper typedefs and functions.
+//
+///////////////////////////////////////////////////////////////////////////////
+
+// A map of message name to message.
+typedef std::map<std::string, std::string> L10nMessagesMap;
+
+// A map of extension ID to l10n message map.
+typedef std::map<std::string, L10nMessagesMap > ExtensionToL10nMessagesMap;
+
+// Unique class for Singleton.
+struct ExtensionToMessagesMap {
+  // Maps extension ID to message map.
+  ExtensionToL10nMessagesMap messages_map;
+};
+
+// Returns the extension_id to messages map.
+ExtensionToL10nMessagesMap* GetExtensionToL10nMessagesMap();
+
+// Returns message map that matches given extension_id, or NULL.
+L10nMessagesMap* GetL10nMessagesMap(const std::string extension_id);
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_MESSAGE_BUNDLE_H_

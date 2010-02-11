@@ -11,6 +11,7 @@
 #include "base/hash_tables.h"
 #include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
+#include "base/singleton.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/values.h"
@@ -209,7 +210,13 @@ bool ExtensionMessageBundle::ReplacePlaceholders(
 
 bool ExtensionMessageBundle::ReplaceMessages(std::string* text,
                                              std::string* error) const {
-  return ReplaceVariables(dictionary_, kMessageBegin, kMessageEnd, text, error);
+  return ReplaceMessagesWithExternalDictionary(dictionary_, text, error);
+}
+
+// static
+bool ExtensionMessageBundle::ReplaceMessagesWithExternalDictionary(
+    const SubstitutionMap& dictionary, std::string* text, std::string* error) {
+  return ReplaceVariables(dictionary, kMessageBegin, kMessageEnd, text, error);
 }
 
 // static
@@ -282,4 +289,23 @@ std::string ExtensionMessageBundle::GetL10nMessage(
   }
 
   return "";
+}
+
+///////////////////////////////////////////////////////////////////////////////
+//
+// Renderer helper functions.
+//
+///////////////////////////////////////////////////////////////////////////////
+
+ExtensionToL10nMessagesMap* GetExtensionToL10nMessagesMap() {
+  return &Singleton<ExtensionToMessagesMap>()->messages_map;
+}
+
+L10nMessagesMap* GetL10nMessagesMap(const std::string extension_id) {
+  ExtensionToL10nMessagesMap::iterator it =
+      Singleton<ExtensionToMessagesMap>()->messages_map.find(extension_id);
+  if (it != Singleton<ExtensionToMessagesMap>()->messages_map.end())
+    return &(it->second);
+
+  return NULL;
 }

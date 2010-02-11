@@ -1343,14 +1343,17 @@ void ResourceMessageFilter::OnGetExtensionMessageBundleOnFileThread(
     IPC::Message* reply_msg) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
 
-  std::string error;
-  scoped_ptr<ExtensionMessageBundle> bundle(
-      extension_file_util::LoadExtensionMessageBundle(
-          extension_path, default_locale, &error));
-
   std::map<std::string, std::string> dictionary_map;
-  if (bundle.get())
-    dictionary_map = *bundle->dictionary();
+  if (!default_locale.empty()) {
+    // Touch disk only if extension is localized.
+    std::string error;
+    scoped_ptr<ExtensionMessageBundle> bundle(
+        extension_file_util::LoadExtensionMessageBundle(
+            extension_path, default_locale, &error));
+
+    if (bundle.get())
+      dictionary_map = *bundle->dictionary();
+  }
 
   ViewHostMsg_GetExtensionMessageBundle::WriteReplyParams(
       reply_msg, dictionary_map);

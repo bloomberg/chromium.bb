@@ -51,6 +51,7 @@
 #include "chrome/browser/ssl/ssl_manager.h"
 #include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
 #include "net/base/auth.h"
@@ -465,6 +466,8 @@ void ResourceDispatcherHost::BeginRequest(
           ResourceType::IsFrame(request_data.resource_type), // allow_download
           request_data.host_renderer_id,
           request_data.host_render_view_id);
+  extension_l10n_util::ApplyMessageFilterPolicy(
+      request_data.url, request_data.resource_type, extra_info);
   SetRequestInfo(request, extra_info);  // Request takes ownership.
   chrome_browser_net::SetOriginProcessUniqueIDForRequest(
       request_data.origin_child_id, request);

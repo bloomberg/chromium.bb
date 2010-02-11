@@ -11,10 +11,14 @@
 #include <string>
 #include <vector>
 
+#include "webkit/glue/resource_type.h"
+
 class DictionaryValue;
 class Extension;
 class ExtensionMessageBundle;
 class FilePath;
+class GURL;
+class ResourceDispatcherHostRequestInfo;
 struct ExtensionInfo;
 
 namespace extension_l10n_util {
@@ -90,6 +94,12 @@ ExtensionMessageBundle* LoadMessageCatalogs(
     const std::string& app_locale,
     const std::set<std::string>& valid_locales,
     std::string* error);
+
+// Applies FilterPolicy::FILTER_EXTENSION_MESSAGES to all text/css requests
+// that have "chrome-extension://" scheme.
+void ApplyMessageFilterPolicy(const GURL& url,
+                              const ResourceType::Type& resource_type,
+                              ResourceDispatcherHostRequestInfo* request_info);
 
 }  // namespace extension_l10n_util
 

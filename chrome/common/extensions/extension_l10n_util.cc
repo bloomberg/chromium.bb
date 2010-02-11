@@ -15,10 +15,12 @@
 #include "base/values.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/extensions/extension_file_util.h"
+#include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_message_bundle.h"
 #include "chrome/common/json_value_serializer.h"
+#include "chrome/common/url_constants.h"
 #include "unicode/uloc.h"
 
 namespace errors = extension_manifest_errors;
@@ -292,6 +294,17 @@ ExtensionMessageBundle* LoadMessageCatalogs(
   }
 
   return ExtensionMessageBundle::Create(catalogs, error);
+}
+
+void ApplyMessageFilterPolicy(const GURL& url,
+                              const ResourceType::Type& resource_type,
+                              ResourceDispatcherHostRequestInfo* request_info) {
+  // Apply filter only to chrome extension css files that don't have
+  // security filter already set.
+  if (url.SchemeIs(chrome::kExtensionScheme) &&
+      request_info->filter_policy() == FilterPolicy::DONT_FILTER &&
+      resource_type == ResourceType::STYLESHEET)
+    request_info->set_filter_policy(FilterPolicy::FILTER_EXTENSION_MESSAGES);
 }
 
 }  // namespace extension_l10n_util

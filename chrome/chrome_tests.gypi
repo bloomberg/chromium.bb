@@ -840,6 +840,7 @@
         'common/extensions/extension_action_unittest.cc',
         'common/extensions/extension_l10n_util_unittest.cc',
         'common/extensions/extension_message_bundle_unittest.cc',
+        'common/extensions/extension_message_filter_peer_unittest.cc',
         'common/extensions/extension_unpacker_unittest.cc',
         'common/extensions/update_manifest_unittest.cc',
         'common/extensions/url_pattern_unittest.cc',

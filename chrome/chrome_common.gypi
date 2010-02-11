@@ -153,6 +153,8 @@
         'common/extensions/extension_l10n_util.h',
         'common/extensions/extension_message_bundle.cc',
         'common/extensions/extension_message_bundle.h',
+        'common/extensions/extension_message_filter_peer.cc',
+        'common/extensions/extension_message_filter_peer.h',
         'common/extensions/extension_resource.cc',
         'common/extensions/extension_resource.h',
         'common/extensions/extension_unpacker.cc',

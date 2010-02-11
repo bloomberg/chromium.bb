@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/shared_memory.h"
 #include "base/string_util.h"
+#include "chrome/common/extensions/extension_message_filter_peer.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/security_filter_peer.h"
 #include "net/base/net_errors.h"
@@ -179,7 +180,8 @@ bool IPCResourceLoaderBridge::Start(Peer* peer) {
   peer_ = peer;
 
   // generate the request ID, and append it to the message
-  request_id_ = dispatcher_->AddPendingRequest(peer_, request_.resource_type);
+  request_id_ = dispatcher_->AddPendingRequest(
+      peer_, request_.resource_type, request_.url);
 
   return dispatcher_->message_sender()->Send(
       new ViewHostMsg_RequestResource(routing_id_, request_id_, request_));
@@ -330,18 +332,28 @@ void ResourceDispatcher::OnReceivedResponse(
   PendingRequestInfo& request_info = it->second;
   request_info.filter_policy = response_head.filter_policy;
   webkit_glue::ResourceLoaderBridge::Peer* peer = request_info.peer;
-  if (request_info.filter_policy != FilterPolicy::DONT_FILTER) {
+  webkit_glue::ResourceLoaderBridge::Peer* new_peer = NULL;
+  if (request_info.filter_policy == FilterPolicy::FILTER_EXTENSION_MESSAGES) {
+     new_peer = ExtensionMessageFilterPeer::CreateExtensionMessageFilterPeer(
+        peer,
+        message_sender(),
+        response_head.mime_type,
+        request_info.filter_policy,
+        request_info.url);
+  } else if (request_info.filter_policy != FilterPolicy::DONT_FILTER) {
     // TODO(jcampan): really pass the loader bridge.
-    webkit_glue::ResourceLoaderBridge::Peer* new_peer =
-        SecurityFilterPeer::CreateSecurityFilterPeer(
-            NULL, peer,
-            request_info.resource_type, response_head.mime_type,
-            request_info.filter_policy,
-            net::ERR_INSECURE_RESPONSE);
-    if (new_peer) {
-      request_info.peer = new_peer;
-      peer = new_peer;
-    }
+    new_peer = SecurityFilterPeer::CreateSecurityFilterPeer(
+        NULL,
+        peer,
+        request_info.resource_type,
+        response_head.mime_type,
+        request_info.filter_policy,
+        net::ERR_INSECURE_RESPONSE);
+  }
+
+  if (new_peer) {
+    request_info.peer = new_peer;
+    peer = new_peer;
   }
 
   RESOURCE_LOG("Dispatching response for " <<
@@ -452,10 +464,12 @@ void ResourceDispatcher::OnRequestComplete(int request_id,
 
 int ResourceDispatcher::AddPendingRequest(
     webkit_glue::ResourceLoaderBridge::Peer* callback,
-    ResourceType::Type resource_type) {
+    ResourceType::Type resource_type,
+    const GURL& request_url) {
   // Compute a unique request_id for this renderer process.
   int id = MakeRequestID();
-  pending_requests_[id] = PendingRequestInfo(callback, resource_type);
+  pending_requests_[id] =
+      PendingRequestInfo(callback, resource_type, request_url);
   return id;
 }
 

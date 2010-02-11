@@ -11,11 +11,16 @@
 // can decide to filter it.  The filtering is done in the renderer.  This class
 // enumerates the different policy that can be used for the filtering.  It is
 // passed along with resource response messages.
+// It can be used for content post-processing, like message replacement within
+// extension css files.
 class FilterPolicy {
  public:
   enum Type {
     // Pass all types of resources through unmodified.
     DONT_FILTER = 0,
+
+    // Post-process extension css files.
+    FILTER_EXTENSION_MESSAGES,
 
     // Block all types of resources, except images.  For images, modify them to
     // indicate that they have been filtered.

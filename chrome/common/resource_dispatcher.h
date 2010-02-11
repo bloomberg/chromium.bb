@@ -42,7 +42,8 @@ class ResourceDispatcher {
   // Adds a request from the pending_requests_ list, returning the new
   // requests' ID
   int AddPendingRequest(webkit_glue::ResourceLoaderBridge::Peer* callback,
-                        ResourceType::Type resource_type);
+                        ResourceType::Type resource_type,
+                        const GURL& request_url);
 
   // Removes a request from the pending_requests_ list, returning true if the
   // request was found and removed.
@@ -65,12 +66,14 @@ class ResourceDispatcher {
   struct PendingRequestInfo {
     PendingRequestInfo() { }
     PendingRequestInfo(webkit_glue::ResourceLoaderBridge::Peer* peer,
-                       ResourceType::Type resource_type)
+                       ResourceType::Type resource_type,
+                       const GURL& request_url)
         : peer(peer),
           resource_type(resource_type),
           filter_policy(FilterPolicy::DONT_FILTER),
           is_deferred(false),
-          is_cancelled(false) {
+          is_cancelled(false),
+          url(request_url) {
     }
     ~PendingRequestInfo() { }
     webkit_glue::ResourceLoaderBridge::Peer* peer;
@@ -79,6 +82,7 @@ class ResourceDispatcher {
     MessageQueue deferred_message_queue;
     bool is_deferred;
     bool is_cancelled;
+    GURL url;
   };
   typedef base::hash_map<int, PendingRequestInfo> PendingRequestList;
 
