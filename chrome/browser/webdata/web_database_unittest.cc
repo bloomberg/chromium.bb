@@ -1031,31 +1031,35 @@ TEST_F(WebDatabaseTest, GetAllAutofillEntries) {
   EXPECT_TRUE(db.AddFormFieldValue(
       FormField(string16(),
                 ASCIIToUTF16("Name"),
+                ASCIIToUTF16("Superman"),
                 string16(),
-                ASCIIToUTF16("Superman")),
+                WebKit::WebInputElement::Text),
       &changes));
   for (int i = 0; i < 5; i++) {
     EXPECT_TRUE(db.AddFormFieldValue(
         FormField(string16(),
                   ASCIIToUTF16("Name"),
+                  ASCIIToUTF16("Clark Kent"),
                   string16(),
-                  ASCIIToUTF16("Clark Kent")),
+                  WebKit::WebInputElement::Text),
         &changes));
   }
   for (int i = 0; i < 3; i++) {
     EXPECT_TRUE(db.AddFormFieldValue(
         FormField(string16(),
                   ASCIIToUTF16("Name"),
+                  ASCIIToUTF16("Clark Sutter"),
                   string16(),
-                  ASCIIToUTF16("Clark Sutter")),
+                  WebKit::WebInputElement::Text),
         &changes));
   }
   for (int i = 0; i < 2; i++) {
     EXPECT_TRUE(db.AddFormFieldValue(
         FormField(string16(),
                   ASCIIToUTF16("Favorite Color"),
+                  ASCIIToUTF16("Green"),
                   string16(),
-                  ASCIIToUTF16("Green")),
+                  WebKit::WebInputElement::Text),
         &changes));
   }
 
