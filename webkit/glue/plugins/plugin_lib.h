@@ -74,6 +74,10 @@ class PluginLib : public base::RefCounted<PluginLib> {
 
   int instance_count() const { return instance_count_; }
 
+  // Prevents the library code from being unload when Unload() is called (since
+  // some plugins crash if unloaded).
+  void PreventLibraryUnload();
+
  private:
   friend class base::RefCounted<PluginLib>;
 
@@ -102,6 +106,7 @@ class PluginLib : public base::RefCounted<PluginLib> {
   bool initialized_;  // Is the plugin initialized?
   NPSavedData *saved_data_;  // Persisted plugin info for NPAPI.
   int instance_count_;  // Count of plugins in use.
+  bool skip_unload_;  // True if library_ should not be unloaded.
 
   // Function pointers to entry points into the plugin.
   PluginEntryPoints entry_points_;

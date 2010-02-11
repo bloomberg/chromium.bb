@@ -64,7 +64,8 @@ PluginLib::PluginLib(const WebPluginInfo& info,
       library_(0),
       initialized_(false),
       saved_data_(0),
-      instance_count_(0) {
+      instance_count_(0),
+      skip_unload_(false) {
   StatsCounter(kPluginLibrariesLoadedCounter).Increment();
   memset((void*)&plugin_funcs_, 0, sizeof(plugin_funcs_));
   g_loaded_libs->push_back(this);
@@ -125,6 +126,10 @@ NPError PluginLib::NP_Initialize() {
 void PluginLib::NP_Shutdown(void) {
   DCHECK(initialized_);
   entry_points_.np_shutdown();
+}
+
+void PluginLib::PreventLibraryUnload() {
+  skip_unload_ = true;
 }
 
 PluginInstance* PluginLib::CreateInstance(const std::string& mime_type) {
@@ -259,11 +264,13 @@ void PluginLib::Unload() {
 
     if (defer_unload) {
       FreePluginLibraryTask* free_library_task =
-          new FreePluginLibraryTask(library_, entry_points_.np_shutdown);
+          new FreePluginLibraryTask(skip_unload_ ? NULL : library_,
+                                    entry_points_.np_shutdown);
       MessageLoop::current()->PostTask(FROM_HERE, free_library_task);
     } else {
       Shutdown();
-      base::UnloadNativeLibrary(library_);
+      if (!skip_unload_)
+        base::UnloadNativeLibrary(library_);
     }
 
     library_ = 0;
