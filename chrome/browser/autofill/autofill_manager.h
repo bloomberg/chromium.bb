@@ -8,7 +8,6 @@
 #include <vector>
 
 #include "base/scoped_ptr.h"
-#include "base/scoped_vector.h"
 #include "chrome/browser/autofill/autofill_dialog.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
@@ -39,8 +38,6 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   // RenderViewHostDelegate::AutoFill implementation:
   virtual void FormFieldValuesSubmitted(
       const webkit_glue::FormFieldValues& form);
-  virtual void FormsSeen(
-      const std::vector<webkit_glue::FormFieldValues>& forms);
 
   // AutoFillDialogObserver implementation:
   virtual void OnAutoFillDialogApply(
@@ -74,11 +71,11 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   TabContents* tab_contents_;
 
   // The personal data manager, used to save and load personal data to/from the
-  // web database.  This may be NULL if we're OTR.
+  // web database.
   PersonalDataManager* personal_data_;
 
   // Our copy of the form data.
-  ScopedVector<FormStructure> form_structures_;
+  std::vector<FormStructure*> form_structures_;
   scoped_ptr<FormStructure> upload_form_structure_;
 
   // The infobar that asks for permission to store form information.
