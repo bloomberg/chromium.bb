@@ -67,7 +67,6 @@ class BrowserActionOverflowMenuController : public views::MenuDelegate {
   virtual void WriteDragData(views::MenuItemView* sender, OSExchangeData* data);
   virtual int GetDragOperations(views::MenuItemView* sender);
 
-
  private:
   // This class manages its own lifetime.
   virtual ~BrowserActionOverflowMenuController();
@@ -88,9 +87,6 @@ class BrowserActionOverflowMenuController : public views::MenuDelegate {
 
   // The overflow menu for the menu button.
   scoped_ptr<views::MenuItemView> menu_;
-
-  // The context menu (when you right click a menu item in the overflow menu).
-  scoped_ptr<ExtensionActionContextMenu> context_menu_;
 
   // The views vector of all the browser actions the container knows about. We
   // won't show all items, just the one starting at |start_index| and above.

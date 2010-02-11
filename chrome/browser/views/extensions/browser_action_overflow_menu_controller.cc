@@ -68,8 +68,6 @@ bool BrowserActionOverflowMenuController::RunMenu(gfx::NativeWindow window,
 }
 
 void BrowserActionOverflowMenuController::CancelMenu() {
-  if (context_menu_.get())
-    context_menu_->Cancel();
   menu_->Cancel();
 }
 
@@ -80,11 +78,10 @@ void BrowserActionOverflowMenuController::ExecuteCommand(int id) {
 
 bool BrowserActionOverflowMenuController::ShowContextMenu(
     views::MenuItemView* source, int id, int x, int y, bool is_mouse_gesture) {
-  if (!context_menu_.get())
-    context_menu_.reset(new ExtensionActionContextMenu());
-  // This blocks until the user choses something or dismisses.
-  context_menu_->Run((*views_)[start_index_ + id]->button()->extension(),
-                     gfx::Point(x, y));
+  // This blocks until the user choses something or dismisses the menu.
+  owner_->GetContextMenu()->Run(
+      (*views_)[start_index_ + id]->button()->extension(),
+      gfx::Point(x, y));
 
   // The user is done with the context menu, so we can close the underlying
   // menu.

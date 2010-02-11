@@ -1433,6 +1433,7 @@ LocationBarView::PageActionImageView::PageActionImageView(
       owner_(owner),
       profile_(profile),
       page_action_(page_action),
+      tracker_(NULL),
       current_tab_id_(-1),
       preview_enabled_(false),
       popup_(NULL),

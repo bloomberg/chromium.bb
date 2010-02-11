@@ -105,7 +105,7 @@ BrowserActionButton::BrowserActionButton(Extension* extension,
     return;
 
   // This is a bit sketchy because if ImageLoadingTracker calls
-  // ::OnImageLoaded() before our creator appends up to the view heirarchy, we
+  // ::OnImageLoaded() before our creator appends up to the view hierarchy, we
   // will crash. But since we know that ImageLoadingTracker is asynchronous,
   // this should be OK. And doing this in the constructor means that we don't
   // have to protect against it getting done multiple times.
@@ -217,9 +217,7 @@ bool BrowserActionButton::OnMousePressed(const views::MouseEvent& e) {
     // Make the menu appear below the button.
     point.Offset(0, height());
 
-    if (!context_menu_.get())
-      context_menu_.reset(new ExtensionActionContextMenu());
-    context_menu_->Run(extension(), point);
+    panel_->GetContextMenu()->Run(extension(), point);
 
     SetButtonNotPushed();
     return false;
@@ -371,7 +369,7 @@ BrowserActionsContainer::~BrowserActionsContainer() {
   if (model_)
     model_->RemoveObserver(this);
   StopShowFolderDropMenuTimer();
-  CloseOverflowMenu();
+  CloseMenus();
   HidePopup();
   DeleteBrowserActionViews();
 }
@@ -387,6 +385,12 @@ int BrowserActionsContainer::GetCurrentTabId() const {
     return -1;
 
   return tab_contents->controller().session_id().id();
+}
+
+ExtensionActionContextMenu* BrowserActionsContainer::GetContextMenu() {
+  if (!context_menu_.get())
+    context_menu_.reset(new ExtensionActionContextMenu());
+  return context_menu_.get();
 }
 
 BrowserActionView* BrowserActionsContainer::GetBrowserActionView(
@@ -406,8 +410,10 @@ void BrowserActionsContainer::RefreshBrowserActionViews() {
     browser_action_views_[i]->button()->UpdateState();
 }
 
-void BrowserActionsContainer::CloseOverflowMenu() {
-  // Close the overflow menu if open (and the context menu off of that).
+void BrowserActionsContainer::CloseMenus() {
+  if (context_menu_.get())
+    context_menu_->Cancel();
+  // Close the overflow menu if open.
   if (overflow_menu_)
     overflow_menu_->CancelMenu();
 }
@@ -426,6 +432,7 @@ void BrowserActionsContainer::StartShowFolderDropMenuTimer() {
 
 void BrowserActionsContainer::ShowDropFolder() {
   DCHECK(!overflow_menu_);
+  SetDropIndicator(-1);
   overflow_menu_ = new BrowserActionOverflowMenuController(
       this, chevron_, browser_action_views_, VisibleBrowserActions());
   overflow_menu_->set_observer(this);
@@ -688,8 +695,6 @@ int BrowserActionsContainer::OnDragUpdated(
     const views::DropTargetEvent& event) {
   // First check if we are above the chevron (overflow) menu.
   if (GetViewForPoint(event.location()) == chevron_) {
-    SetDropIndicator(-1);
-
     if (show_menu_task_factory_.empty() && !overflow_menu_)
       StartShowFolderDropMenuTimer();
     return DragDropTypes::DRAG_MOVE;
@@ -926,7 +931,7 @@ void BrowserActionsContainer::BrowserActionAdded(Extension* extension,
   }
 #endif
 
-  CloseOverflowMenu();
+  CloseMenus();
 
   // Before we change anything, determine the number of visible browser actions.
   size_t visible_actions = VisibleBrowserActions();
@@ -962,7 +967,7 @@ void BrowserActionsContainer::BrowserActionAdded(Extension* extension,
 }
 
 void BrowserActionsContainer::BrowserActionRemoved(Extension* extension) {
-  CloseOverflowMenu();
+  CloseMenus();
 
   if (popup_ && popup_->host()->extension() == extension)
     HidePopup();

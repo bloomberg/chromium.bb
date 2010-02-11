@@ -104,9 +104,6 @@ class BrowserActionButton : public views::MenuButton,
   // and takes care of deleting itself.
   ImageLoadingTracker* tracker_;
 
-  // The context menu for browser action icons.
-  scoped_ptr<ExtensionActionContextMenu> context_menu_;
-
   // Whether we are currently showing/just finished showing a context menu.
   bool showing_context_menu_;
 
@@ -255,6 +252,11 @@ class BrowserActionsContainer
   // Returns the profile this container is associated with.
   Profile* profile() const { return profile_; }
 
+  // Returns the context menu for Browser Actions. Constructs the menu object if
+  // not constructed yet. This menu is used for all browser actions (regardless
+  // of whether they are in the overflow menu or not).
+  ExtensionActionContextMenu* GetContextMenu();
+
   // Returns the current tab's ID, or -1 if there is no current tab.
   int GetCurrentTabId() const;
 
@@ -359,8 +361,8 @@ class BrowserActionsContainer
   virtual void BrowserActionRemoved(Extension* extension);
   virtual void BrowserActionMoved(Extension* extension, int index);
 
-  // Closes the overflow menu if open.
-  void CloseOverflowMenu();
+  // Closes the overflow and context menu if open.
+  void CloseMenus();
 
   // Cancels the timer for showing the drop down menu.
   void StopShowFolderDropMenuTimer();
@@ -404,7 +406,7 @@ class BrowserActionsContainer
 
   Profile* profile_;
 
-  // The Browser object the contanier is associated with.
+  // The Browser object the containier is associated with.
   Browser* browser_;
 
   // The view that owns us.
@@ -432,6 +434,10 @@ class BrowserActionsContainer
   // The menu to show for the overflow button (chevron). This class manages its
   // own lifetime so that it can stay alive during drag and drop operations.
   BrowserActionOverflowMenuController* overflow_menu_;
+
+  // The context menu that the overflow menu shows. Is NULL until the menu is
+  // shown for the first time.
+  scoped_ptr<ExtensionActionContextMenu> context_menu_;
 
   // The animation that happens when the container snaps to place.
   scoped_ptr<SlideAnimation> resize_animation_;
