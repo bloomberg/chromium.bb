@@ -1569,7 +1569,7 @@ void RenderViewHost::OnQueryFormFieldAutofill(int query_id,
         query_id, field_name, user_text);
   }
   if (!ok)
-    FormFieldHistorySuggestionsReturned(query_id, std::vector<string16>(), -1);
+    AutocompleteSuggestionsReturned(query_id, std::vector<string16>(), -1);
 }
 
 void RenderViewHost::OnRemoveAutofillEntry(const string16& field_name,
@@ -1580,7 +1580,7 @@ void RenderViewHost::OnRemoveAutofillEntry(const string16& field_name,
     formfield_history_delegate->RemoveFormFieldHistoryEntry(field_name, value);
 }
 
-void RenderViewHost::FormFieldHistorySuggestionsReturned(
+void RenderViewHost::AutocompleteSuggestionsReturned(
     int query_id, const std::vector<string16>& suggestions,
     int default_suggestion_index) {
   Send(new ViewMsg_QueryFormFieldAutofill_ACK(

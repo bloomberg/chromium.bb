@@ -369,7 +369,7 @@ class RenderViewHostDelegate {
     // in the field |user_text|.  Appeals to the database thead to perform the
     // query. When the database thread is finished, the FormFieldHistory manager
     // retrieves the calling RenderViewHost and then passes the vector of
-    // suggestions to RenderViewHost::FormFieldHistorySuggestionsReturned.
+    // suggestions to RenderViewHost::AutocompleteSuggestionsReturned.
     // Return true to indicate that FormFieldHistorySuggestionsReturned will be
     // called.
     virtual bool GetFormFieldHistorySuggestions(int query_id,

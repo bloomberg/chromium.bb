@@ -142,10 +142,10 @@ void FormFieldHistoryManager::SendSuggestions(const WDTypedResult* result) {
     DCHECK(result->GetType() == AUTOFILL_VALUE_RESULT);
     const WDResult<std::vector<string16> >* autofill_result =
         static_cast<const WDResult<std::vector<string16> >*>(result);
-    host->FormFieldHistorySuggestionsReturned(
+    host->AutocompleteSuggestionsReturned(
         query_id_, autofill_result->GetValue(), -1);
   } else {
-    host->FormFieldHistorySuggestionsReturned(
+    host->AutocompleteSuggestionsReturned(
         query_id_, std::vector<string16>(), -1);
   }
 }

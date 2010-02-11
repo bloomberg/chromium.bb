@@ -387,7 +387,7 @@ class RenderViewHost : public RenderWidgetHost {
 
   // Called by the FormFieldHistoryManager when the list of suggestions is
   // ready.
-  void FormFieldHistorySuggestionsReturned(
+  void AutocompleteSuggestionsReturned(
       int query_id,
       const std::vector<string16>& suggestions,
       int default_suggestion_index);
