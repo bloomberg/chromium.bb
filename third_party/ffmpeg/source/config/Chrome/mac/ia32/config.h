@@ -69,7 +69,7 @@
 #define HAVE_DLFCN_H 1
 #define HAVE_DLOPEN 1
 #define HAVE_DOS_PATHS 0
-#define HAVE_EBP_AVAILABLE 1
+#define HAVE_EBP_AVAILABLE 0
 #define HAVE_EBX_AVAILABLE 0
 #define HAVE_EXP2 1
 #define HAVE_EXP2F 1
