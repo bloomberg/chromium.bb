@@ -75,6 +75,7 @@ ae, 0
 ae.org, 0
 aejrie.no, 0
 aero, 0
+aero.mv, 0
 aero.tt, 0
 aerobatic.aero, 0
 aeroclub.aero, 0
@@ -184,6 +185,7 @@ art.dz, 0
 art.ht, 0
 art.museum, 0
 art.pl, 0
+art.sn, 0
 artanddesign.museum, 0
 artcenter.museum, 0
 artdeco.museum, 0
@@ -212,6 +214,7 @@ assassination.museum, 0
 assedic.fr, 0
 assisi.museum, 0
 assn.lk, 0
+asso.bj, 0
 asso.ci, 0
 asso.dz, 0
 asso.fr, 0
@@ -219,6 +222,7 @@ asso.gp, 0
 asso.ht, 0
 asso.km, 0
 asso.mc, 0
+asso.nc, 0
 asso.re, 0
 association.aero, 0
 association.museum, 0
@@ -284,6 +288,7 @@ bardu.no, 0
 bari.it, 0
 barletta-andria-trani.it, 0
 barlettaandriatrani.it, 0
+barreau.bj, 0
 barum.no, 0
 baseball.museum, 0
 basel.museum, 0
@@ -338,8 +343,11 @@ birdart.museum, 0
 birkenes.no, 0
 birthplace.museum, 0
 biz, 0
+biz.at, 0
 biz.az, 0
+biz.bb, 0
 biz.ki, 0
+biz.mv, 0
 biz.mw, 0
 biz.nr, 0
 biz.pk, 0
@@ -643,8 +651,10 @@ com.lv, 0
 com.ly, 0
 com.mg, 0
 com.mk, 0
+com.ml, 0
 com.mo, 0
 com.mu, 0
+com.mv, 0
 com.mw, 0
 com.mx, 0
 com.my, 0
@@ -671,6 +681,7 @@ com.sc, 0
 com.sd, 0
 com.sg, 0
 com.sl, 0
+com.sn, 0
 com.st, 0
 com.sy, 0
 com.tj, 0
@@ -705,6 +716,7 @@ coop, 0
 coop.br, 0
 coop.ht, 0
 coop.km, 0
+coop.mv, 0
 coop.mw, 0
 coop.tt, 0
 copenhagen.museum, 0
@@ -865,8 +877,10 @@ edu.ly, 0
 edu.me, 0
 edu.mg, 0
 edu.mk, 0
+edu.ml, 0
 edu.mn, 0
 edu.mo, 0
+edu.mv, 0
 edu.mw, 0
 edu.mx, 0
 edu.my, 0
@@ -891,6 +905,7 @@ edu.sc, 0
 edu.sd, 0
 edu.sg, 0
 edu.sl, 0
+edu.sn, 0
 edu.st, 0
 edu.sy, 0
 edu.tj, 0
@@ -923,6 +938,7 @@ elburg.museum, 0
 elk.pl, 0
 elvendrell.museum, 0
 elverum.no, 0
+embaixada.st, 0
 embroidery.museum, 0
 emergency.aero, 0
 en.it, 0
@@ -1172,11 +1188,14 @@ gorge.museum, 0
 gorizia.it, 0
 gorlice.pl, 0
 gos.pk, 0
+gouv.bj, 0
 gouv.ci, 0
 gouv.fr, 0
 gouv.ht, 0
 gouv.km, 0
+gouv.ml, 0
 gouv.rw, 0
+gouv.sn, 0
 gov, 0
 gov.ac, 0
 gov.ae, 0
@@ -1238,10 +1257,12 @@ gov.ma, 0
 gov.me, 0
 gov.mg, 0
 gov.mk, 0
+gov.ml, 0
 gov.mn, 0
 gov.mo, 0
 gov.mr, 0
 gov.mu, 0
+gov.mv, 0
 gov.mw, 0
 gov.my, 0
 gov.ng, 0
@@ -1448,6 +1469,7 @@ idv.hk, 0
 idv.tw, 0
 ie, 0
 if.ua, 0
+iki.fi, 0
 il, 2
 il.us, 0
 ilawa.pl, 0
@@ -1477,13 +1499,16 @@ inf.br, 0
 inf.cu, 0
 inf.mk, 0
 info, 0
+info.at, 0
 info.az, 0
+info.bb, 0
 info.co, 0
 info.ec, 0
 info.ht, 0
 info.hu, 0
 info.ki, 0
 info.la, 0
+info.mv, 0
 info.na, 0
 info.nf, 0
 info.nr, 0
@@ -1506,6 +1531,7 @@ int.co, 0
 int.is, 0
 int.la, 0
 int.lk, 0
+int.mv, 0
 int.mw, 0
 int.pt, 0
 int.ru, 0
@@ -1522,6 +1548,7 @@ iq, 0
 ir, 0
 iraq.museum, 0
 irc.pl, 0
+iris.arpa, 0
 irkutsk.ru, 0
 iron.museum, 0
 is, 0
@@ -1913,6 +1940,7 @@ mielno.pl, 0
 mil, 0
 mil.ac, 0
 mil.ae, 0
+mil.al, 0
 mil.az, 0
 mil.ba, 0
 mil.bo, 0
@@ -1933,6 +1961,7 @@ mil.kr, 0
 mil.kz, 0
 mil.lv, 0
 mil.mg, 0
+mil.mv, 0
 mil.my, 0
 mil.no, 0
 mil.pe, 0
@@ -1961,7 +1990,7 @@ miyazaki.jp, 2
 mjondalen.no, 0
 mk, 0
 mk.ua, 0
-ml, 2
+ml, 0
 mm, 2
 mn, 0
 mn.it, 0
@@ -2020,12 +2049,14 @@ murmansk.ru, 0
 mus.br, 0
 museet.museum, 0
 museum, 0
+museum.mv, 0
+museum.mw, 0
 museum.no, 0
 museum.tt, 0
 museumcenter.museum, 0
 museumvereniging.museum, 0
 music.museum, 0
-mv, 2
+mv, 0
 mw, 0
 mx, 0
 mx.na, 0
@@ -2050,6 +2081,7 @@ name.az, 0
 name.hr, 0
 name.jo, 0
 name.mk, 0
+name.mv, 0
 name.my, 0
 name.na, 0
 name.pr, 0
@@ -2158,8 +2190,10 @@ net.ly, 0
 net.ma, 0
 net.me, 0
 net.mk, 0
+net.ml, 0
 net.mo, 0
 net.mu, 0
+net.mv, 0
 net.mw, 0
 net.mx, 0
 net.my, 0
@@ -2217,6 +2251,7 @@ ni, 2
 nic.ar, 1
 nic.im, 0
 nic.in, 0
+nic.tj, 0
 niepce.museum, 0
 nieruchomosci.pl, 0
 niigata.jp, 2
@@ -2304,6 +2339,7 @@ od.ua, 0
 odda.no, 0
 odessa.ua, 0
 odo.br, 0
+of.by, 0
 of.no, 0
 off.ai, 0
 og.ao, 0
@@ -2326,6 +2362,7 @@ on.ca, 0
 online.museum, 0
 ontario.museum, 0
 openair.museum, 0
+operaunite.com, 0
 opoczno.pl, 0
 opole.pl, 0
 oppdal.no, 0
@@ -2410,9 +2447,11 @@ org.ma, 0
 org.me, 0
 org.mg, 0
 org.mk, 0
+org.ml, 0
 org.mn, 0
 org.mo, 0
 org.mu, 0
+org.mv, 0
 org.mw, 0
 org.mx, 0
 org.my, 0
@@ -2439,6 +2478,7 @@ org.sd, 0
 org.se, 0
 org.sg, 0
 org.sl, 0
+org.sn, 0
 org.st, 0
 org.sy, 0
 org.sz, 0
@@ -2520,6 +2560,7 @@ per.nf, 0
 per.sg, 0
 perm.ru, 0
 perso.ht, 0
+perso.sn, 0
 perso.tn, 0
 perugia.it, 0
 pesaro-urbino.it, 0
@@ -2646,6 +2687,7 @@ press.se, 0
 presse.ci, 0
 presse.fr, 0
 presse.km, 0
+presse.ml, 0
 pri.ee, 0
 principe.st, 0
 priv.at, 0
@@ -2658,6 +2700,7 @@ pro.az, 0
 pro.br, 0
 pro.ec, 0
 pro.ht, 0
+pro.mv, 0
 pro.na, 0
 pro.pr, 0
 pro.tt, 0
@@ -2910,6 +2953,7 @@ show.aero, 0
 si, 0
 si.it, 0
 sibenik.museum, 0
+siedlce.pl, 0
 siellak.no, 0
 siena.it, 0
 sigdal.no, 0
@@ -3026,6 +3070,7 @@ stokke.no, 0
 stor-elvdal.no, 0
 stord.no, 0
 stordal.no, 0
+store.bb, 0
 store.nf, 0
 store.ro, 0
 store.st, 0
@@ -3098,6 +3143,7 @@ teramo.it, 0
 terni.it, 0
 ternopil.ua, 0
 test.ru, 0
+test.tj, 0
 texas.museum, 0
 textile.museum, 0
 tf, 0
@@ -3234,6 +3280,7 @@ um.gov.pl, 0
 unbi.ba, 0
 undersea.museum, 0
 union.aero, 0
+univ.sn, 0
 university.museum, 0
 unjarga.no, 0
 unsa.ba, 0
