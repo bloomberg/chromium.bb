@@ -148,27 +148,6 @@ class RedBlackTree {
 
   // Returns the number of elements in the tree.
   int NumElements() {
-    // A Visitor which simply counts the number of visited elements.
-    class Counter : public Visitor {
-     public:
-      Counter() : count_(0) {}
-
-      virtual void Visit(const T& data) {
-        ++count_;
-      }
-
-      int count() {
-        return count_;
-      }
-
-     private:
-      int count_;
-      // Using the DISALLOW_COPY_AND_ASSIGN macro for this local class
-      // breaks compilation on Windows because the declarations do not
-      // have method bodies.
-      Counter(const Counter&) {}
-      void operator=(const Counter&) {}
-    };
     Counter counter;
     VisitInorder(&counter);
     return counter.count();
@@ -695,6 +674,27 @@ class RedBlackTree {
     if (node->right() != NULL)
       VisitInorderImpl(node->right(), visitor);
   }
+
+  //----------------------------------------------------------------------
+  // Helper class for NumElements()
+
+  // A Visitor which simply counts the number of visited elements.
+  class Counter : public Visitor {
+   public:
+    Counter() : count_(0) {}
+
+    virtual void Visit(const T& data) {
+      ++count_;
+    }
+
+    int count() {
+      return count_;
+    }
+
+   private:
+    int count_;
+    DISALLOW_COPY_AND_ASSIGN(Counter);
+  };
 
   //----------------------------------------------------------------------
   // Verification and debugging routines
