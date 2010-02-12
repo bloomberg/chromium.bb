@@ -300,6 +300,7 @@ class UrlmonUrlRequest
   size_t pending_read_size_;
   PlatformThreadId thread_;
   HWND parent_window_;
+  bool headers_received_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlmonUrlRequest);
 };

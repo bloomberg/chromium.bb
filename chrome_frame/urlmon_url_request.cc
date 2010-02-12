@@ -37,6 +37,7 @@ STDMETHODIMP UrlmonUrlRequest::SendStream::Write(const void * buffer,
 
 UrlmonUrlRequest::UrlmonUrlRequest()
     : pending_read_size_(0),
+      headers_received_(false),
       thread_(NULL),
       parent_window_(NULL) {
   DLOG(INFO) << StringPrintf("Created request. Obj: %X", this);
@@ -216,16 +217,29 @@ STDMETHODIMP UrlmonUrlRequest::OnStopBinding(HRESULT result, LPCWSTR error) {
     }
 
     // The code below seems easy but it is not. :)
+    // The network policy in Chrome network is that error code/end_of_stream
+    // should be returned only as a result of read (or start) request.
+    // Here is the possible cases:
+    // cached_data|pending_read
+    //     FALSE  |FALSE    => EndRequest if no headers, otherwise wait for Read
+    //     FALSE  |TRUE     => EndRequest.
+    //     TRUE   |FALSE    => Wait for Read.
+    //     TRUE   |TRUE     => Something went wrong!!
+
     // we cannot have pending read and data_avail at the same time.
     DCHECK(!(pending_read_size_ > 0 && cached_data_.is_valid()));
 
-    // We have some data, but Chrome has not yet read it. Wait until Chrome
-    // read the remaining of the data and then send the error/success code.
     if (cached_data_.is_valid()) {
       ReleaseBindings();
       return S_OK;
     }
 
+    if (headers_received_ && pending_read_size_ == 0) {
+      ReleaseBindings();
+      return S_OK;
+    }
+
+    // No headers or there is a pending read from Chrome.
     NotifyDelegateAndDie();
     return S_OK;
   }
@@ -424,11 +438,7 @@ STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
   DLOG(INFO) << __FUNCTION__ << " " << url() << std::endl << " headers: " <<
       std::endl << response_headers;
   DCHECK_EQ(thread_, PlatformThread::CurrentId());
-  if (!binding_) {
-    DLOG(WARNING) << __FUNCTION__
-                  << ": Ignoring as the binding was aborted due to a redirect";
-    return S_OK;
-  }
+  DCHECK(binding_ != NULL);
 
   std::string raw_headers = WideToUTF8(response_headers);
 
@@ -457,7 +467,6 @@ STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
       return E_FAIL;
     }
   }
-
 
   std::string url_for_persistent_cookies;
   std::string persistent_cookies;
@@ -488,6 +497,7 @@ STDMETHODIMP UrlmonUrlRequest::OnResponse(DWORD dwResponseCode,
   }
 
   // Inform the delegate.
+  headers_received_ = true;
   delegate_->OnResponseStarted(id(),
                     "",                   // mime_type
                     raw_headers.c_str(),  // headers

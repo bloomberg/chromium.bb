@@ -109,8 +109,11 @@ class LowIntegrityToken {
 // We need a UI message loop in the main thread.
 class TimedMsgLoop {
  public:
+  TimedMsgLoop() : quit_loop_invoked_(false) {}
+
   void RunFor(int seconds) {
     QuitAfter(seconds);
+    quit_loop_invoked_ = false;
     loop_.MessageLoop::Run();
   }
 
@@ -120,14 +123,21 @@ class TimedMsgLoop {
   }
 
   void Quit() {
-    loop_.PostTask(FROM_HERE, new MessageLoop::QuitTask);
+    QuitAfter(0);
   }
 
   void QuitAfter(int seconds) {
+    quit_loop_invoked_ = true;
     loop_.PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask, 1000 * seconds);
   }
 
+  bool WasTimedOut() const {
+    return !quit_loop_invoked_;
+  }
+
+ private:
   MessageLoopForUI loop_;
+  bool quit_loop_invoked_;
 };
 
 // Saves typing. It's somewhat hard to create a wrapper around
