@@ -740,16 +740,8 @@ BUG13907 BUG25094 LINUX DEBUG : media = PASS FAIL TIMEOUT
 
 // These tests should be passing.  Remove them once confirmed they're not flaky.
 BUG9798 BUG13907 : media/video-currentTime-set.html = PASS FAIL
-BUG9798 BUG13907 WIN DEBUG : media/controls-drag-timebar.html = TEXT TIMEOUT
-BUG9798 BUG13907 RELEASE : media/controls-drag-timebar.html = TEXT
-BUG9798 BUG13907 LINUX MAC DEBUG : media/controls-drag-timebar.html = TEXT
 BUG9798 BUG13907 SLOW WIN : media/video-played-collapse.html = PASS FAIL
 BUG9798 BUG13907 SLOW LINUX MAC : media/video-played-collapse.html = PASS
-BUG9798 BUG13907 SLOW DEBUG : media/video-played-ranges-1.html = PASS
-BUG9798 BUG13907 SLOW LINUX MAC RELEASE : media/video-played-ranges-1.html = PASS
-BUG9798 BUG13907 SLOW WIN RELEASE : media/video-played-ranges-1.html = PASS FAIL
-BUG9798 BUG13907 SLOW MAC WIN RELEASE : media/video-played-reset.html = PASS
-BUG9798 BUG13907 SLOW LINUX DEBUG : media/video-played-reset.html = PASS
 
 // We output an extra playing event and video durations are different.
 BUG13907 SKIP : media/video-loop.html = FAIL
@@ -2923,3 +2915,18 @@ BUG35237 : fast/events/multiline-link-arrow-navigation.html = TEXT
 
 // WebKit roll 54596:54648
 BUG35387 : platform/win/plugins/plugin-delayed-destroy.html = TIMEOUT
+
+// FFmpeg roll breaks these
+BUG35492 : media/video-played-ranges-1.html = FAIL
+BUG35492 : media/video-played-reset.html = FAIL
+BUG35492 : media/video-display-toggle.html = FAIL
+BUG35492 : media/controls-drag-timebar.html = FAIL
+// Previous to FFmpeg roll expectations
+//BUG9798 BUG13907 SLOW LINUX MAC RELEASE : media/video-played-ranges-1.html = FAIL
+//BUG9798 BUG13907 SLOW WIN RELEASE : media/video-played-ranges-1.html = FAIL
+//BUG9798 BUG13907 WIN DEBUG : media/controls-drag-timebar.html = TEXT TIMEOUT
+//BUG9798 BUG13907 RELEASE : media/controls-drag-timebar.html = TEXT
+//BUG9798 BUG13907 LINUX MAC DEBUG : media/controls-drag-timebar.html = TEXT
+//BUG9798 BUG13907 SLOW WIN RELEASE : media/video-played-ranges-1.html = PASS FAIL
+//BUG9798 BUG13907 SLOW MAC WIN RELEASE : media/video-played-reset.html = PASS
+//BUG9798 BUG13907 SLOW LINUX DEBUG : media/video-played-reset.html = PASS
