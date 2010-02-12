@@ -10,7 +10,7 @@
 #include "base/gfx/rect.h"
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
-#include "chrome/browser/chromeos/panel_controller.h"
+#include "chrome/browser/chromeos/frame/panel_controller.h"
 
 class BalloonViewImpl;
 

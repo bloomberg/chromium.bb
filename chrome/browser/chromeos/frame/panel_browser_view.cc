@@ -2,9 +2,9 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/panel_browser_view.h"
+#include "chrome/browser/chromeos/frame/panel_browser_view.h"
 
-#include "chrome/browser/chromeos/panel_controller.h"
+#include "chrome/browser/chromeos/frame/panel_controller.h"
 #include "views/window/window.h"
 
 namespace chromeos {

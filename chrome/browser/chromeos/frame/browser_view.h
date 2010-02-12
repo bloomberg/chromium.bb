@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_BROWSER_VIEW_H_
-#define CHROME_BROWSER_CHROMEOS_BROWSER_VIEW_H_
+#ifndef CHROME_BROWSER_CHROMEOS_FRAME_BROWSER_VIEW_H_
+#define CHROME_BROWSER_CHROMEOS_FRAME_BROWSER_VIEW_H_
 
 #include "chrome/browser/chromeos/status/status_area_host.h"
 #include "chrome/browser/views/frame/browser_view.h"
@@ -132,4 +132,4 @@ class BrowserView : public ::BrowserView,
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_BROWSER_VIEW_H_
+#endif  // CHROME_BROWSER_CHROMEOS_FRAME_BROWSER_VIEW_H_

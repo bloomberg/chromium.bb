@@ -203,6 +203,10 @@ class BrowserView : public BrowserWindow,
     return browser_->type() == Browser::TYPE_APP_PANEL;
   }
 
+  bool IsBrowserTypePopup() const {
+    return browser_->type() == Browser::TYPE_POPUP;
+  }
+
   // Returns true if the frame containing this BrowserView should show the
   // distributor logo.
   bool ShouldShowDistributorLogo() const {

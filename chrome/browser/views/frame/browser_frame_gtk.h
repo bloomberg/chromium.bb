@@ -20,9 +20,11 @@ class BrowserFrameGtk : public BrowserFrame,
   BrowserFrameGtk(BrowserView* browser_view, Profile* profile);
   virtual ~BrowserFrameGtk();
 
-  // This initialization function must be called after construction, it is
-  // separate to avoid recursive calling of the frame from its constructor.
-  void Init();
+  // Creates a frame view and initializes the window.  This
+  // initialization function must be called after construction, it is
+  // separate to avoid recursive calling of the frame from its
+  // constructor.
+  virtual void Init();
 
   // Overridden from BrowserFrame:
   virtual views::Window* GetWindow();

@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/chromeos/browser_view.h"
+#include "chrome/browser/chromeos/frame/browser_view.h"
 
 #include <algorithm>
 #include <string>
@@ -14,8 +14,8 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/chromeos/compact_location_bar_host.h"
 #include "chrome/browser/chromeos/compact_navigation_bar.h"
+#include "chrome/browser/chromeos/frame/panel_browser_view.h"
 #include "chrome/browser/chromeos/main_menu.h"
-#include "chrome/browser/chromeos/panel_browser_view.h"
 #include "chrome/browser/chromeos/status/browser_status_area_view.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/view_ids.h"

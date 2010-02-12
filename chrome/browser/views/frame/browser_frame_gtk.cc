@@ -57,6 +57,7 @@ class PopupNonClientFrameView : public BrowserNonClientFrameView {
 
 }
 
+#if !defined(OS_CHROMEOS)
 // static (Factory method.)
 BrowserFrame* BrowserFrame::Create(BrowserView* browser_view,
                                    Profile* profile) {
@@ -64,6 +65,7 @@ BrowserFrame* BrowserFrame::Create(BrowserView* browser_view,
   frame->Init();
   return frame;
 }
+#endif
 
 // static
 const gfx::Font& BrowserFrame::GetTitleFont() {
@@ -78,19 +80,21 @@ BrowserFrameGtk::BrowserFrameGtk(BrowserView* browser_view, Profile* profile)
       root_view_(NULL),
       profile_(profile) {
   browser_view_->set_frame(this);
-  if (browser_view->browser()->type() == Browser::TYPE_POPUP)
-    browser_frame_view_ = new PopupNonClientFrameView();
-  else
-    browser_frame_view_ = new OpaqueBrowserFrameView(this, browser_view_);
-  GetNonClientView()->SetFrameView(browser_frame_view_);
-  // Don't focus anything on creation, selecting a tab will set the focus.
 }
 
 BrowserFrameGtk::~BrowserFrameGtk() {
 }
 
 void BrowserFrameGtk::Init() {
+  if (browser_frame_view_ == NULL) {
+    if (browser_view_->browser()->type() == Browser::TYPE_POPUP)
+      browser_frame_view_ = new PopupNonClientFrameView();
+    else
+      browser_frame_view_ = new OpaqueBrowserFrameView(this, browser_view_);
+  }
+  GetNonClientView()->SetFrameView(browser_frame_view_);
   WindowGtk::Init(NULL, gfx::Rect());
+  // Don't focus anything on creation, selecting a tab will set the focus.
 }
 
 views::Window* BrowserFrameGtk::GetWindow() {

@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_CHROMEOS_PANEL_CONTROLLER_H_
-#define CHROME_BROWSER_CHROMEOS_PANEL_CONTROLLER_H_
+#ifndef CHROME_BROWSER_CHROMEOS_FRAME_PANEL_CONTROLLER_H_
+#define CHROME_BROWSER_CHROMEOS_FRAME_PANEL_CONTROLLER_H_
 
 #include <gtk/gtk.h>
 
@@ -131,4 +131,4 @@ class PanelController : public views::ButtonListener {
 
 }  // namespace chromeos
 
-#endif  // CHROME_BROWSER_CHROMEOS_PANEL_CONTROLLER_H_
+#endif  // CHROME_BROWSER_CHROMEOS_FRAME_PANEL_CONTROLLER_H_
