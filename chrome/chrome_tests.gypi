@@ -530,6 +530,7 @@
         'browser/autocomplete/history_url_provider_unittest.cc',
         'browser/autocomplete/keyword_provider_unittest.cc',
         'browser/autocomplete/search_provider_unittest.cc',
+        'browser/autofill/autofill_dialog_controller_mac_unittest.mm',
         'browser/autofill/personal_data_manager_unittest.cc',
         'browser/automation/automation_provider_unittest.cc',
         'browser/back_forward_menu_model_unittest.cc',

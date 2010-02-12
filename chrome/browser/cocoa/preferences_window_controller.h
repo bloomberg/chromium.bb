@@ -126,6 +126,7 @@ class ProfileSyncService;
 
 // User Data panel
 - (IBAction)showSavedPasswords:(id)sender;
+- (IBAction)showAutoFillSettings:(id)sender;
 - (IBAction)importData:(id)sender;
 - (IBAction)clearData:(id)sender;
 - (IBAction)resetThemeToDefault:(id)sender;

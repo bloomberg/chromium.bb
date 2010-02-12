@@ -12,6 +12,9 @@
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "chrome/browser/autofill/autofill_dialog.h"
+#include "chrome/browser/autofill/autofill_type.h"
+#include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
@@ -1143,6 +1146,28 @@ const int kDisabledIndex = 1;
 - (IBAction)showSavedPasswords:(id)sender {
   [self recordUserAction:"Options_ShowPasswordsExceptions"];
   [self launchKeychainAccess];
+}
+
+// Called to show the Auto Fill Settings dialog.
+- (IBAction)showAutoFillSettings:(id)sender {
+  [self recordUserAction:"Options_ShowAutoFillSettings"];
+
+  // TODO(dhollowa): Need "n" of these.  Create single entry for now.
+  // See http://crbug.com/33029.
+  std::vector<AutoFillProfile*> profiles;
+  AutoFillProfile profile(ASCIIToUTF16(""), 0);
+  profiles.push_back(&profile);
+
+  // TODO(dhollowa): Need "n" of these.  Create single entry for now.
+  // See http://crbug.com/33029.
+  std::vector<CreditCard*> creditCards;
+  CreditCard creditCard(ASCIIToUTF16(""), 0);
+  creditCards.push_back(&creditCard);
+
+  // TODO(dhollowa): There are outstanding assertions in autofill back end.
+  // Hooking up with UI only until those issues are resolved.
+  // See http://crbug.com/33029.
+  ShowAutoFillDialog(NULL, profiles, creditCards);
 }
 
 // Called to import data from other browsers (Safari, Firefox, etc).

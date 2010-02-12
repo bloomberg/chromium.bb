@@ -4901,6 +4901,18 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_AUTOFILL_NEW_ADDRESS" desc="The profile label of a new address.">
         New address
       </message>
+      <message name="IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_SEPARATOR" desc="The separator character used in the summary of an address.">
+        , '''
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_ADDRESS_NAME_SEPARATOR" desc="The separator character used between first and last names in the address summary.">
+        ''' '''
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_FORMAT" desc="The format string of the summary of an address. $1=name, $2=separator, $3=addressLine1">
+        $1$2$3
+      </message>
+      <message name="IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_NAME_FORMAT" desc="The format string of the summary of an address. $1=firstName, $2=separator, $3=lastName">
+        $1$2$3
+      </message>
       <message name="IDS_AUTOFILL_NEW_CREDITCARD" desc="The profile label of a new credit card.">
         New credit card
       </message>

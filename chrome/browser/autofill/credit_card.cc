@@ -42,7 +42,6 @@ CreditCard::CreditCard()
       expiration_year_(0) {
 }
 
-
 FormGroup* CreditCard::Clone() const {
   return new CreditCard(*this);
 }
@@ -323,6 +322,10 @@ bool CreditCard::operator==(const CreditCard& creditcard) const {
   }
 
   return true;
+}
+
+bool CreditCard::operator!=(const CreditCard& creditcard) const {
+  return !operator==(creditcard);
 }
 
 bool CreditCard::FindInfoMatchesHelper(const AutoFillFieldType& field_type,

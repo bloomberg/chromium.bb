@@ -90,6 +90,7 @@ class CreditCard : public FormGroup {
 
   // Used by tests.
   bool operator==(const CreditCard& creditcard) const;
+  bool operator!=(const CreditCard& creditcard) const;
   void set_label(const string16& label) { label_ = label; }
 
  private:

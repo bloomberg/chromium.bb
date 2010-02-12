@@ -158,6 +158,10 @@ bool AutoFillProfile::operator==(const AutoFillProfile& profile) const {
   return true;
 }
 
+bool AutoFillProfile::operator!=(const AutoFillProfile& profile) const {
+  return !operator==(profile);
+}
+
 void AutoFillProfile::set_use_billing_address(bool use) {
   if (use_billing_address_ == use)
     return;

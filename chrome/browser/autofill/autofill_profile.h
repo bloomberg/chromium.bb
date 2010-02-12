@@ -56,6 +56,7 @@ class AutoFillProfile : public FormGroup {
   // Used by tests.
   // TODO(jhawkins): Move these to private and add the test as a friend.
   bool operator==(const AutoFillProfile& profile) const;
+  bool operator!=(const AutoFillProfile& profile) const;
   void set_label(const string16& label) { label_ = label; }
 
  private:
