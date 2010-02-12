@@ -93,7 +93,7 @@ class GLES2DecoderTest : public testing::Test {
 
   template <typename T, typename Command>
   T GetImmediateDataAs(Command* cmd) {
-    reinterpret_cast<T>(ImmediateDataAddress(cmd));
+    return reinterpret_cast<T>(ImmediateDataAddress(cmd));
   }
 
   void ClearSharedMemory() {
@@ -192,6 +192,12 @@ class GLES2DecoderTest : public testing::Test {
   template <typename T>
   T GetSharedMemoryAs() {
     return reinterpret_cast<T>(shared_memory_address_);
+  }
+
+  template <typename T>
+  T GetSharedMemoryAsWithOffset(uint32 offset) {
+    void* ptr = reinterpret_cast<int8*>(shared_memory_address_) + offset;
+    return reinterpret_cast<T>(ptr);
   }
 
   uint32 GetServiceId(uint32 client_id) {
@@ -1308,6 +1314,100 @@ TEST_F(GLES2DecoderWithShaderTest, GetActiveAttribBadSharedMemoryFails) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
+TEST_F(GLES2DecoderTest, CompileShaderValidArgs) {
+  EXPECT_CALL(*gl_, ShaderSource(kServiceShaderId, 1, _, _));
+  EXPECT_CALL(*gl_, CompileShader(kServiceShaderId));
+  CompileShader cmd;
+  cmd.Init(client_shader_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+}
+
+TEST_F(GLES2DecoderTest, CompileShaderInvalidArgs) {
+  CompileShader cmd;
+  cmd.Init(kInvalidClientId);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  cmd.Init(client_texture_id_);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest, ShaderSourceAndGetShaderSourceValidArgs) {
+  const char kSource[] = "hello";
+  const uint32 kSourceSize = sizeof(kSource) - 1;
+  memcpy(shared_memory_address_, kSource, kSourceSize);
+  ShaderSource cmd;
+  cmd.Init(client_shader_id_,
+           kSharedMemoryId, kSharedMemoryOffset, kSourceSize);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  memset(shared_memory_address_, 0, kSourceSize);
+  // TODO(gman): GetShaderSource has to change format so result is always set.
+  GetShaderSource get_cmd;
+  get_cmd.Init(client_shader_id_, kSourceSize + 1,
+               kSharedMemoryId, kSharedMemoryOffset,
+               kSharedMemoryId, kSharedMemoryOffset + sizeof(kSourceSize));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(get_cmd));
+  EXPECT_EQ(kSourceSize, *GetSharedMemoryAs<uint32*>());
+  EXPECT_EQ(0, memcmp(GetSharedMemoryAsWithOffset<void*>(sizeof(kSourceSize)),
+                      kSource, kSourceSize));
+}
+
+TEST_F(GLES2DecoderTest, ShaderSourceInvalidArgs) {
+  const char kSource[] = "hello";
+  const uint32 kSourceSize = sizeof(kSource) - 1;
+  memcpy(shared_memory_address_, kSource, kSourceSize);
+  ShaderSource cmd;
+  cmd.Init(kInvalidClientId,
+           kSharedMemoryId, kSharedMemoryOffset, kSourceSize);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  cmd.Init(client_texture_id_,
+           kSharedMemoryId, kSharedMemoryOffset, kSourceSize);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+  cmd.Init(client_shader_id_,
+           kInvalidSharedMemoryId, kSharedMemoryOffset, kSourceSize);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  cmd.Init(client_shader_id_,
+           kSharedMemoryId, kInvalidSharedMemoryOffset, kSourceSize);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+  cmd.Init(client_shader_id_,
+           kSharedMemoryId, kSharedMemoryOffset, kSharedBufferSize);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+}
+
+TEST_F(GLES2DecoderTest, ShaderSourceImmediateAndGetShaderSourceValidArgs) {
+  const char kSource[] = "hello";
+  const uint32 kSourceSize = sizeof(kSource) - 1;
+  ShaderSourceImmediate& cmd = *GetImmediateAs<ShaderSourceImmediate>();
+  cmd.Init(client_shader_id_, kSourceSize);
+  memcpy(GetImmediateDataAs<void*>(&cmd), kSource, kSourceSize);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, kSourceSize));
+  memset(shared_memory_address_, 0, kSourceSize);
+  // TODO(gman): GetShaderSource has to change format so result is always set.
+  GetShaderSource get_cmd;
+  get_cmd.Init(client_shader_id_, kSourceSize + 1,
+               kSharedMemoryId, kSharedMemoryOffset,
+               kSharedMemoryId, kSharedMemoryOffset + sizeof(kSourceSize));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(get_cmd));
+  EXPECT_EQ(kSourceSize, *GetSharedMemoryAs<uint32*>());
+  EXPECT_EQ(0, memcmp(GetSharedMemoryAsWithOffset<void*>(sizeof(kSourceSize)),
+                      kSource, kSourceSize));
+}
+
+TEST_F(GLES2DecoderTest, ShaderSourceImmediateInvalidArgs) {
+  const char kSource[] = "hello";
+  const uint32 kSourceSize = sizeof(kSource) - 1;
+  ShaderSourceImmediate& cmd = *GetImmediateAs<ShaderSourceImmediate>();
+  cmd.Init(kInvalidClientId, kSourceSize);
+  memcpy(GetImmediateDataAs<void*>(&cmd), kSource, kSourceSize);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, kSourceSize));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+  cmd.Init(client_texture_id_, kSourceSize);
+  EXPECT_EQ(error::kNoError, ExecuteImmediateCmd(cmd, kSourceSize));
+  EXPECT_EQ(GL_INVALID_OPERATION, GetGLError());
+}
+
 // TODO(gman): BindAttribLocation
 
 // TODO(gman): BindAttribLocationImmediate
@@ -1343,10 +1443,6 @@ TEST_F(GLES2DecoderWithShaderTest, GetActiveAttribBadSharedMemoryFails) {
 // TODO(gman): PixelStorei
 
 // TODO(gman): ReadPixels
-
-// TODO(gman): ShaderSource
-
-// TODO(gman): ShaderSourceImmediate
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder_unittest_autogen.h"
 

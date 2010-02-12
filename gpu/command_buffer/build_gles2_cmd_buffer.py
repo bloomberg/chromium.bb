@@ -834,6 +834,7 @@ _ENUM_LISTS = {
 # needs_size:  If true a data_size field is added to the command.
 # data_type:   The type of data the command uses. For PUTn or PUT types.
 # count:       The number of units per element. For PUTn or PUT types.
+# unit_test:   If False no unit test will be generated.
 
 _FUNCTION_INFO = {
   'BindAttribLocation': {'type': 'GLchar'},
@@ -844,6 +845,7 @@ _FUNCTION_INFO = {
   'BufferSubData': {'type': 'Data'},
   'CheckFramebufferStatus': {'DecoderFunc': 'glCheckFramebufferStatusEXT'},
   'ClearDepthf': {'DecoderFunc': 'glClearDepth'},
+  'CompileShader': {'DecoderFunc': 'DoCompileShader', 'unit_test': False},
   'CompressedTexImage2D': {'type': 'Manual','immediate': True},
   'CompressedTexSubImage2D': {'type': 'Data'},
   'CreateProgram': {'type': 'Create'},
@@ -944,7 +946,7 @@ _FUNCTION_INFO = {
       'int32 precision',
     ],
   },
-  'GetShaderSource': {'type': 'STRn'},
+  'GetShaderSource': {'type': 'STRn', 'DecoderFunc': 'DoGetShaderSource'},
   'GetTexParameterfv': {'type': 'GETn'},
   'GetTexParameteriv': {'type': 'GETn'},
   'GetUniformfv': {
@@ -989,7 +991,7 @@ _FUNCTION_INFO = {
     'immediate': True,
     'needs_size': True,
     'cmd_args':
-        'GLuint shader, GLsizei count, const char* data',
+        'GLuint shader, const char* data',
   },
   'TexImage2D': {'type': 'Manual', 'immediate': True},
   'TexParameterfv': {'type': 'PUT', 'data_type': 'GLfloat', 'count': 1},

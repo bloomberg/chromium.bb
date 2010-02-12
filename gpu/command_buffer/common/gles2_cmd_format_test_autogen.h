@@ -1828,20 +1828,18 @@ TEST(GLES2FormatTest, ShaderSource) {
   void* next_cmd = cmd.Set(
       &cmd,
       static_cast<GLuint>(11),
-      static_cast<GLsizei>(12),
+      static_cast<uint32>(12),
       static_cast<uint32>(13),
-      static_cast<uint32>(14),
-      static_cast<uint32>(15));
+      static_cast<uint32>(14));
   EXPECT_EQ(static_cast<uint32>(ShaderSource::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<char*>(next_cmd),
             reinterpret_cast<char*>(&cmd) + sizeof(cmd));
   EXPECT_EQ(static_cast<GLuint>(11), cmd.shader);
-  EXPECT_EQ(static_cast<GLsizei>(12), cmd.count);
-  EXPECT_EQ(static_cast<uint32>(13), cmd.data_shm_id);
-  EXPECT_EQ(static_cast<uint32>(14), cmd.data_shm_offset);
-  EXPECT_EQ(static_cast<uint32>(15), cmd.data_size);
+  EXPECT_EQ(static_cast<uint32>(12), cmd.data_shm_id);
+  EXPECT_EQ(static_cast<uint32>(13), cmd.data_shm_offset);
+  EXPECT_EQ(static_cast<uint32>(14), cmd.data_size);
 }
 
 // TODO(gman): Implement test for ShaderSourceImmediate

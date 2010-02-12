@@ -198,25 +198,25 @@ void GLES2Implementation::ShaderSource(
   // TODO(gman): change to use buckets and check that there is enough room.
 
   // Compute the total size.
-  uint32 total_size = count * sizeof(total_size);
+  uint32 total_size = 0;
   for (GLsizei ii = 0; ii < count; ++ii) {
     total_size += length ? length[ii] : strlen(source[ii]);
   }
 
-  // Create string table in transfer buffer.
+  // Concatenate all the strings in to the transfer buffer.
   char* strings = transfer_buffer_.AllocTyped<char>(total_size);
-  uint32* offsets = reinterpret_cast<uint32*>(strings);
-  uint32 offset = count * sizeof(*offsets);
+  uint32 offset = 0;
   for (GLsizei ii = 0; ii < count; ++ii) {
     uint32 len = length ? length[ii] : strlen(source[ii]);
     memcpy(strings + offset, source[ii], len);
     offset += len;
-    offsets[ii] = offset;
   }
+  DCHECK_EQ(total_size, offset);
 
-  helper_->ShaderSource(shader, count,
+  helper_->ShaderSource(shader,
                         transfer_buffer_id_,
-                        transfer_buffer_.GetOffset(strings), offset);
+                        transfer_buffer_.GetOffset(strings),
+                        total_size);
   transfer_buffer_.FreePendingToken(strings, helper_->InsertToken());
 }
 

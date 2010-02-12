@@ -4924,47 +4924,42 @@ struct ShaderSource {
   }
 
   void Init(
-      GLuint _shader, GLsizei _count, uint32 _data_shm_id,
-      uint32 _data_shm_offset, uint32 _data_size) {
+      GLuint _shader, uint32 _data_shm_id, uint32 _data_shm_offset,
+      uint32 _data_size) {
     SetHeader();
     shader = _shader;
-    count = _count;
     data_shm_id = _data_shm_id;
     data_shm_offset = _data_shm_offset;
     data_size = _data_size;
   }
 
   void* Set(
-      void* cmd, GLuint _shader, GLsizei _count, uint32 _data_shm_id,
-      uint32 _data_shm_offset, uint32 _data_size) {
+      void* cmd, GLuint _shader, uint32 _data_shm_id, uint32 _data_shm_offset,
+      uint32 _data_size) {
     static_cast<ValueType*>(
-        cmd)->Init(
-            _shader, _count, _data_shm_id, _data_shm_offset, _data_size);
+        cmd)->Init(_shader, _data_shm_id, _data_shm_offset, _data_size);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
   uint32 shader;
-  int32 count;
   uint32 data_shm_id;
   uint32 data_shm_offset;
   uint32 data_size;
 };
 
-COMPILE_ASSERT(sizeof(ShaderSource) == 24,
-               Sizeof_ShaderSource_is_not_24);
+COMPILE_ASSERT(sizeof(ShaderSource) == 20,
+               Sizeof_ShaderSource_is_not_20);
 COMPILE_ASSERT(offsetof(ShaderSource, header) == 0,
                OffsetOf_ShaderSource_header_not_0);
 COMPILE_ASSERT(offsetof(ShaderSource, shader) == 4,
                OffsetOf_ShaderSource_shader_not_4);
-COMPILE_ASSERT(offsetof(ShaderSource, count) == 8,
-               OffsetOf_ShaderSource_count_not_8);
-COMPILE_ASSERT(offsetof(ShaderSource, data_shm_id) == 12,
-               OffsetOf_ShaderSource_data_shm_id_not_12);
-COMPILE_ASSERT(offsetof(ShaderSource, data_shm_offset) == 16,
-               OffsetOf_ShaderSource_data_shm_offset_not_16);
-COMPILE_ASSERT(offsetof(ShaderSource, data_size) == 20,
-               OffsetOf_ShaderSource_data_size_not_20);
+COMPILE_ASSERT(offsetof(ShaderSource, data_shm_id) == 8,
+               OffsetOf_ShaderSource_data_shm_id_not_8);
+COMPILE_ASSERT(offsetof(ShaderSource, data_shm_offset) == 12,
+               OffsetOf_ShaderSource_data_shm_offset_not_12);
+COMPILE_ASSERT(offsetof(ShaderSource, data_size) == 16,
+               OffsetOf_ShaderSource_data_size_not_16);
 
 struct ShaderSourceImmediate {
   typedef ShaderSourceImmediate ValueType;
@@ -4981,36 +4976,32 @@ struct ShaderSourceImmediate {
     header.SetCmdByTotalSize<ValueType>(size_in_bytes);
   }
 
-  void Init(GLuint _shader, GLsizei _count, uint32 _data_size) {
+  void Init(GLuint _shader, uint32 _data_size) {
     uint32 total_size = ComputeSize(_data_size);
     SetHeader(total_size);
     shader = _shader;
-    count = _count;
     data_size = _data_size;
   }
 
-  void* Set(void* cmd, GLuint _shader, GLsizei _count, uint32 _data_size) {
+  void* Set(void* cmd, GLuint _shader, uint32 _data_size) {
     uint32 total_size = ComputeSize(_data_size);
-    static_cast<ValueType*>(cmd)->Init(_shader, _count, _data_size);
+    static_cast<ValueType*>(cmd)->Init(_shader, _data_size);
     return NextImmediateCmdAddressTotalSize<ValueType>(cmd, total_size);
   }
 
   gpu::CommandHeader header;
   uint32 shader;
-  int32 count;
   uint32 data_size;
 };
 
-COMPILE_ASSERT(sizeof(ShaderSourceImmediate) == 16,
-               Sizeof_ShaderSourceImmediate_is_not_16);
+COMPILE_ASSERT(sizeof(ShaderSourceImmediate) == 12,
+               Sizeof_ShaderSourceImmediate_is_not_12);
 COMPILE_ASSERT(offsetof(ShaderSourceImmediate, header) == 0,
                OffsetOf_ShaderSourceImmediate_header_not_0);
 COMPILE_ASSERT(offsetof(ShaderSourceImmediate, shader) == 4,
                OffsetOf_ShaderSourceImmediate_shader_not_4);
-COMPILE_ASSERT(offsetof(ShaderSourceImmediate, count) == 8,
-               OffsetOf_ShaderSourceImmediate_count_not_8);
-COMPILE_ASSERT(offsetof(ShaderSourceImmediate, data_size) == 12,
-               OffsetOf_ShaderSourceImmediate_data_size_not_12);
+COMPILE_ASSERT(offsetof(ShaderSourceImmediate, data_size) == 8,
+               OffsetOf_ShaderSourceImmediate_data_size_not_8);
 
 struct StencilFunc {
   typedef StencilFunc ValueType;

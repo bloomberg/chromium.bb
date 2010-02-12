@@ -309,7 +309,7 @@ error::Error GLES2DecoderImpl::HandleCompileShader(
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
-  glCompileShader(shader);
+  DoCompileShader(shader);
   return error::kNoError;
 }
 
@@ -1089,7 +1089,7 @@ error::Error GLES2DecoderImpl::HandleGetShaderSource(
   if (source == NULL) {
     return error::kOutOfBounds;
   }
-  glGetShaderSource(shader, bufsize, length, source);
+  DoGetShaderSource(shader, bufsize, length, source);
   return error::kNoError;
 }
 

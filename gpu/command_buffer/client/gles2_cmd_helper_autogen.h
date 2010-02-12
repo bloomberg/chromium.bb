@@ -690,17 +690,17 @@
   }
 
   void ShaderSource(
-      GLuint shader, GLsizei count, uint32 data_shm_id, uint32 data_shm_offset,
+      GLuint shader, uint32 data_shm_id, uint32 data_shm_offset,
       uint32 data_size) {
     gles2::ShaderSource& c = GetCmdSpace<gles2::ShaderSource>();
-    c.Init(shader, count, data_shm_id, data_shm_offset, data_size);
+    c.Init(shader, data_shm_id, data_shm_offset, data_size);
   }
 
-  void ShaderSourceImmediate(GLuint shader, GLsizei count, uint32 data_size) {
+  void ShaderSourceImmediate(GLuint shader, uint32 data_size) {
     const uint32 s = 0;  // TODO(gman): compute correct size
     gles2::ShaderSourceImmediate& c =
         GetImmediateCmdSpaceTotalSize<gles2::ShaderSourceImmediate>(s);
-    c.Init(shader, count, data_size);
+    c.Init(shader, data_size);
   }
 
   void StencilFunc(GLenum func, GLint ref, GLuint mask) {

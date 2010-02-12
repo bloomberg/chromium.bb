@@ -541,6 +541,72 @@ void ProgramManager::RemoveProgramInfo(GLuint program) {
   }
 }
 
+// Tracks the Shaders.
+//
+// NOTE: To support shared resources an instance of this class will
+// need to be shared by multiple GLES2Decoders.
+class ShaderManager {
+ public:
+  // This is used to keep the source code for a shader. This is because in order
+  // to emluate GLES2 the shaders will have to be re-written before passed to
+  // the underlying OpenGL. But, when the user calls glGetShaderSource they
+  // should get the source they passed in, not the re-written source.
+  class ShaderInfo {
+   public:
+    explicit ShaderInfo(GLuint shader)
+        : shader_(shader) {
+    }
+
+    void Update(const std::string& source) {
+      source_ = source;
+    }
+
+    const std::string& source() {
+      return source_;
+    }
+
+   private:
+    // The shader this ShaderInfo is tracking.
+    GLuint shader_;
+
+    // The shader source as passed to glShaderSource.
+    std::string source_;
+  };
+
+  // Creates a shader info for the given shader ID.
+  void CreateShaderInfo(GLuint shader);
+
+  // Gets an existing shader info for the given shader ID. Returns NULL if none
+  // exists.
+  ShaderInfo* GetShaderInfo(GLuint shader);
+
+  // Deletes the shader info for the given shader.
+  void RemoveShaderInfo(GLuint shader);
+
+ private:
+  // Info for each shader by service side shader Id.
+  typedef std::map<GLuint, ShaderInfo> ShaderInfoMap;
+  ShaderInfoMap shader_infos_;
+};
+
+void ShaderManager::CreateShaderInfo(GLuint shader) {
+  std::pair<ShaderInfoMap::iterator, bool> result =
+      shader_infos_.insert(std::make_pair(shader, ShaderInfo(shader)));
+  DCHECK(result.second);
+}
+
+ShaderManager::ShaderInfo* ShaderManager::GetShaderInfo(GLuint shader) {
+  ShaderInfoMap::iterator it = shader_infos_.find(shader);
+  return it != shader_infos_.end() ? &it->second : NULL;
+}
+
+void ShaderManager::RemoveShaderInfo(GLuint shader) {
+  ShaderInfoMap::iterator it = shader_infos_.find(shader);
+  if (it != shader_infos_.end()) {
+    shader_infos_.erase(it);
+  }
+}
+
 // This class implements GLES2Decoder so we don't have to expose all the GLES2
 // cmd stuff to outside this class.
 class GLES2DecoderImpl : public GLES2Decoder {
@@ -720,6 +786,25 @@ class GLES2DecoderImpl : public GLES2Decoder {
     program_manager_->RemoveProgramInfo(program);
   }
 
+  // Creates a ShaderInfo for the given shader.
+  void CreateShaderInfo(GLuint shader) {
+    shader_manager_->CreateShaderInfo(shader);
+  }
+
+  // Gets the shader info for the given shader. Returns NULL if none exists.
+  ShaderManager::ShaderInfo* GetShaderInfo(GLuint shader) {
+    return shader_manager_->GetShaderInfo(shader);
+  }
+
+  // Deletes the shader info for the given shader.
+  void RemoveShaderInfo(GLuint shader) {
+    shader_manager_->RemoveShaderInfo(shader);
+  }
+
+  // Helper for glShaderSource.
+  error::Error ShaderSourceHelper(
+      GLuint shader, const char* data, uint32 data_size);
+
   // Gets the buffer info for the given buffer.
   BufferManager::BufferInfo* GetBufferInfo(GLuint buffer) {
     return buffer_manager_->GetBufferInfo(buffer);
@@ -737,6 +822,9 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // Wrapper for glBindBuffer since we need to track the current targets.
   void DoBindBuffer(GLenum target, GLuint buffer);
 
+  // Wrapper for glCompileShader.
+  void DoCompileShader(GLuint shader);
+
   // Wrapper for glDrawArrays.
   void DoDrawArrays(GLenum mode, GLint first, GLsizei count);
 
@@ -745,6 +833,10 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   // Wrapper for glEnableVertexAttribArray.
   void DoEnableVertexAttribArray(GLuint index);
+
+  // Wrapper for glGetShaderSource.
+  void DoGetShaderSource(
+      GLuint shader, GLsizei bufsize, GLsizei* length, char* dst);
 
   // Wrapper for glLinkProgram
   void DoLinkProgram(GLuint program);
@@ -830,6 +922,8 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   scoped_ptr<ProgramManager> program_manager_;
 
+  scoped_ptr<ShaderManager> shader_manager_;
+
   // The program in use by glUseProgram
   GLuint current_program_;
 
@@ -896,6 +990,7 @@ bool GLES2DecoderImpl::Initialize() {
 
   id_manager_.reset(new IdManager());
   buffer_manager_.reset(new BufferManager());
+  shader_manager_.reset(new ShaderManager());
   program_manager_.reset(new ProgramManager());
 
   if (InitPlatformSpecific()) {
@@ -1563,6 +1658,7 @@ void GLES2DecoderImpl::CreateShaderHelper(GLenum type, GLuint client_id) {
   GLuint service_id = glCreateShader(type);
   if (service_id) {
     id_manager_->AddMapping(client_id, service_id);
+    CreateShaderInfo(service_id);
   }
 }
 
@@ -1607,6 +1703,7 @@ error::Error GLES2DecoderImpl::HandleDeleteShader(
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
+  RemoveShaderInfo(service_id);
   glDeleteShader(service_id);
   id_manager_->RemoveMapping(shader, service_id);
   return error::kNoError;
@@ -1810,38 +1907,22 @@ error::Error GLES2DecoderImpl::HandleDrawElements(
   return error::kNoError;
 }
 
-// TODO(kbr): the use of this anonymous namespace core dumps the
-// linker on Mac OS X 10.6 when the symbol ordering file is used
-// namespace {
-
 // Calls glShaderSource for the various versions of the ShaderSource command.
 // Assumes that data / data_size points to a piece of memory that is in range
 // of whatever context it came from (shared memory, immediate memory, bucket
 // memory.)
-error::Error ShaderSourceHelper(
-    GLuint shader, GLsizei count, const char* data, uint32 data_size) {
-  std::vector<std::string> strings(count);
-  scoped_array<const char*> string_pointers(new const char* [count]);
-
-  const uint32* ends = reinterpret_cast<const uint32*>(data);
-  uint32 start_offset = count * sizeof(*ends);
-  if (start_offset > data_size) {
-    return error::kOutOfBounds;
+error::Error GLES2DecoderImpl::ShaderSourceHelper(
+    GLuint shader, const char* data, uint32 data_size) {
+  ShaderManager::ShaderInfo* info = GetShaderInfo(shader);
+  if (!info) {
+    SetGLError(GL_INVALID_OPERATION);
+    return error::kNoError;
   }
-  for (GLsizei ii = 0; ii < count; ++ii) {
-    uint32 end_offset = ends[ii];
-    if (end_offset > data_size || end_offset < start_offset) {
-      return error::kOutOfBounds;
-    }
-    strings[ii] = std::string(data + start_offset, end_offset - start_offset);
-    string_pointers[ii] = strings[ii].c_str();
-  }
-
-  glShaderSource(shader, count, string_pointers.get(), NULL);
+  // Note: We don't actually call glShaderSource here. We wait until
+  // the call to glCompileShader.
+  info->Update(std::string(data, data + data_size));
   return error::kNoError;
 }
-
-// }  // anonymous namespace.
 
 error::Error GLES2DecoderImpl::HandleShaderSource(
     uint32 immediate_data_size, const gles2::ShaderSource& c) {
@@ -1850,15 +1931,13 @@ error::Error GLES2DecoderImpl::HandleShaderSource(
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
-  GLsizei count = c.count;
   uint32 data_size = c.data_size;
-  const char** data = GetSharedMemoryAs<const char**>(
+  const char* data = GetSharedMemoryAs<const char*>(
       c.data_shm_id, c.data_shm_offset, data_size);
   if (!data) {
     return error::kOutOfBounds;
   }
-  return ShaderSourceHelper(
-      shader, count, reinterpret_cast<const char*>(data), data_size);
+  return ShaderSourceHelper(shader, data, data_size);
 }
 
 error::Error GLES2DecoderImpl::HandleShaderSourceImmediate(
@@ -1868,15 +1947,43 @@ error::Error GLES2DecoderImpl::HandleShaderSourceImmediate(
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
-  GLsizei count = c.count;
   uint32 data_size = c.data_size;
-  const char** data = GetImmediateDataAs<const char**>(
+  const char* data = GetImmediateDataAs<const char*>(
       c, data_size, immediate_data_size);
   if (!data) {
     return error::kOutOfBounds;
   }
-  return ShaderSourceHelper(
-      shader, count, reinterpret_cast<const char*>(data), data_size);
+  return ShaderSourceHelper(shader, data, data_size);
+}
+
+void GLES2DecoderImpl::DoCompileShader(GLuint shader) {
+  ShaderManager::ShaderInfo* info = GetShaderInfo(shader);
+  if (!info) {
+    SetGLError(GL_INVALID_OPERATION);
+    return;
+  }
+  // TODO(gman): Run shader through compiler that converts GL ES 2.0 shader
+  // to DesktopGL shader and pass that to glShaderSource and then
+  // glCompileShader.
+  const char* ptr = info->source().c_str();
+  glShaderSource(shader, 1, &ptr, NULL);
+  glCompileShader(shader);
+};
+
+void GLES2DecoderImpl::DoGetShaderSource(
+      GLuint shader, GLsizei bufsize, GLsizei* length, char* dst) {
+  ShaderManager::ShaderInfo* info = GetShaderInfo(shader);
+  if (!info) {
+    SetGLError(GL_INVALID_OPERATION);
+    return;
+  }
+  const std::string& source = info->source();
+  GLsizei size = std::min(bufsize - 1, static_cast<GLsizei>(source.size()));
+  if (length) {
+    *length = size;
+  }
+  memcpy(dst, source.c_str(), size);
+  dst[size] = '\0';
 }
 
 error::Error GLES2DecoderImpl::HandleVertexAttribPointer(

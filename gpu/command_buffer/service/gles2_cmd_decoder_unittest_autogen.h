@@ -229,14 +229,7 @@ TEST_F(GLES2DecoderTest, ColorMaskValidArgs) {
   cmd.Init(1, 2, 3, 4);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
 }
-
-TEST_F(GLES2DecoderTest, CompileShaderValidArgs) {
-  EXPECT_CALL(*gl_, CompileShader(kServiceShaderId));
-  SpecializedSetup<CompileShader, 0>();
-  CompileShader cmd;
-  cmd.Init(client_shader_id_);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-}
+// TODO(gman): CompileShader
 // TODO(gman): CompressedTexImage2D
 
 // TODO(gman): CompressedTexImage2DImmediate
