@@ -201,7 +201,8 @@ void CookieFilterPageGtk::OnShowCookiesClicked(
     GtkWidget* button,
     CookieFilterPageGtk* cookie_page) {
   cookie_page->UserMetricsRecordAction("Options_ShowCookies", NULL);
-  CookiesView::Show(cookie_page->profile(),
+  CookiesView::Show(GTK_WINDOW(gtk_widget_get_toplevel(button)),
+                    cookie_page->profile(),
                     new BrowsingDataDatabaseHelper(
                         cookie_page->profile()),
                     new BrowsingDataLocalStorageHelper(

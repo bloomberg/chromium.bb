@@ -34,6 +34,7 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
 
   // Create (if necessary) and show the cookie manager window.
   static void Show(
+      GtkWindow* parent,
       Profile* profile,
       BrowsingDataDatabaseHelper* browsing_data_database_helper,
       BrowsingDataLocalStorageHelper* browsing_data_local_storage_helper);
@@ -44,12 +45,13 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
 
  private:
   CookiesView(
+      GtkWindow* parent,
       Profile* profile,
       BrowsingDataDatabaseHelper* browsing_data_database_helper,
       BrowsingDataLocalStorageHelper* browsing_data_local_storage_helper);
 
   // Initialize the dialog contents and layout.
-  void Init();
+  void Init(GtkWindow* parent);
 
   // Initialize the widget styles and display the dialog.
   void InitStylesAndShow();

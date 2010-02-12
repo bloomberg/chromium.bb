@@ -181,7 +181,8 @@ class CookiesViewTest : public testing::Test {
 };
 
 TEST_F(CookiesViewTest, Empty) {
-  CookiesView cookies_view(profile_.get(),
+  CookiesView cookies_view(NULL,
+                           profile_.get(),
                            mock_browsing_data_database_helper_,
                            mock_browsing_data_local_storage_helper_);
   EXPECT_EQ(FALSE, GTK_WIDGET_SENSITIVE(cookies_view.remove_all_button_));
@@ -199,7 +200,8 @@ TEST_F(CookiesViewTest, Noop) {
   monster->SetCookie(GURL("http://foo1"), "E=1");
   monster->SetCookie(GURL("http://foo2"), "G=1");
   monster->SetCookie(GURL("http://foo2"), "X=1");
-  CookiesView cookies_view(profile_.get(),
+  CookiesView cookies_view(NULL,
+                           profile_.get(),
                            mock_browsing_data_database_helper_,
                            mock_browsing_data_local_storage_helper_);
   mock_browsing_data_database_helper_->AddDatabaseSamples();
@@ -223,7 +225,8 @@ TEST_F(CookiesViewTest, RemoveAll) {
   net::CookieMonster* monster = profile_->GetCookieMonster();
   monster->SetCookie(GURL("http://foo"), "A=1");
   monster->SetCookie(GURL("http://foo2"), "B=1");
-  CookiesView cookies_view(profile_.get(),
+  CookiesView cookies_view(NULL,
+                           profile_.get(),
                            mock_browsing_data_database_helper_,
                            mock_browsing_data_local_storage_helper_);
   mock_browsing_data_database_helper_->AddDatabaseSamples();
@@ -267,7 +270,8 @@ TEST_F(CookiesViewTest, RemoveAllWithDefaultSelected) {
   net::CookieMonster* monster = profile_->GetCookieMonster();
   monster->SetCookie(GURL("http://foo"), "A=1");
   monster->SetCookie(GURL("http://foo2"), "B=1");
-  CookiesView cookies_view(profile_.get(),
+  CookiesView cookies_view(NULL,
+                           profile_.get(),
                            mock_browsing_data_database_helper_,
                            mock_browsing_data_local_storage_helper_);
   mock_browsing_data_database_helper_->AddDatabaseSamples();
@@ -313,7 +317,8 @@ TEST_F(CookiesViewTest, Remove) {
   monster->SetCookie(GURL("http://foo1"), "A=1");
   monster->SetCookie(GURL("http://foo2"), "B=1");
   monster->SetCookie(GURL("http://foo2"), "C=1");
-  CookiesView cookies_view(profile_.get(),
+  CookiesView cookies_view(NULL,
+                           profile_.get(),
                            mock_browsing_data_database_helper_,
                            mock_browsing_data_local_storage_helper_);
   mock_browsing_data_database_helper_->AddDatabaseSamples();
@@ -466,7 +471,8 @@ TEST_F(CookiesViewTest, RemoveCookiesByType) {
   monster->SetCookie(GURL("http://foo1"), "E=1");
   monster->SetCookie(GURL("http://foo2"), "G=1");
   monster->SetCookie(GURL("http://foo2"), "X=1");
-  CookiesView cookies_view(profile_.get(),
+  CookiesView cookies_view(NULL,
+                           profile_.get(),
                            mock_browsing_data_database_helper_,
                            mock_browsing_data_local_storage_helper_);
   mock_browsing_data_database_helper_->AddDatabaseSamples();
@@ -628,7 +634,8 @@ TEST_F(CookiesViewTest, RemoveByDomain) {
   monster->SetCookie(GURL("http://foo1"), "E=1");
   monster->SetCookie(GURL("http://foo2"), "G=1");
   monster->SetCookie(GURL("http://foo2"), "X=1");
-  CookiesView cookies_view(profile_.get(),
+  CookiesView cookies_view(NULL,
+                           profile_.get(),
                            mock_browsing_data_database_helper_,
                            mock_browsing_data_local_storage_helper_);
   mock_browsing_data_database_helper_->AddDatabaseSamples();
@@ -751,7 +758,8 @@ TEST_F(CookiesViewTest, RemoveDefaultSelection) {
   monster->SetCookie(GURL("http://foo1"), "E=1");
   monster->SetCookie(GURL("http://foo2"), "G=1");
   monster->SetCookie(GURL("http://foo2"), "X=1");
-  CookiesView cookies_view(profile_.get(),
+  CookiesView cookies_view(NULL,
+                           profile_.get(),
                            mock_browsing_data_database_helper_,
                            mock_browsing_data_local_storage_helper_);
   mock_browsing_data_database_helper_->AddDatabaseSamples();
@@ -856,7 +864,8 @@ TEST_F(CookiesViewTest, Filter) {
   monster->SetCookie(GURL("http://bar0"), "D=1");
   monster->SetCookie(GURL("http://foo1"), "B=1");
   monster->SetCookie(GURL("http://bar1"), "A=1");
-  CookiesView cookies_view(profile_.get(),
+  CookiesView cookies_view(NULL,
+                           profile_.get(),
                            mock_browsing_data_database_helper_,
                            mock_browsing_data_local_storage_helper_);
   mock_browsing_data_database_helper_->AddDatabaseSamples();
@@ -923,7 +932,8 @@ TEST_F(CookiesViewTest, FilterRemoveAll) {
   monster->SetCookie(GURL("http://bar0"), "D=1");
   monster->SetCookie(GURL("http://foo1"), "B=1");
   monster->SetCookie(GURL("http://bar1"), "A=1");
-  CookiesView cookies_view(profile_.get(),
+  CookiesView cookies_view(NULL,
+                           profile_.get(),
                            mock_browsing_data_database_helper_,
                            mock_browsing_data_local_storage_helper_);
   mock_browsing_data_database_helper_->AddDatabaseSamples();
@@ -989,7 +999,8 @@ TEST_F(CookiesViewTest, FilterRemove) {
   monster->SetCookie(GURL("http://foo1"), "B=1");
   monster->SetCookie(GURL("http://bar1"), "A=1");
   monster->SetCookie(GURL("http://bar1"), "E=1");
-  CookiesView cookies_view(profile_.get(),
+  CookiesView cookies_view(NULL,
+                           profile_.get(),
                            mock_browsing_data_database_helper_,
                            mock_browsing_data_local_storage_helper_);
   mock_browsing_data_database_helper_->AddDatabaseSamples();

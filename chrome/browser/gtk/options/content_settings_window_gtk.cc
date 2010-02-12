@@ -71,7 +71,6 @@ ContentSettingsWindowGtk::ContentSettingsWindowGtk(GtkWindow* parent,
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_CONTENT_SETTINGS_TITLE).c_str(),
       parent,
-      // Non-modal.
       static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
       GTK_STOCK_CLOSE,
       GTK_RESPONSE_CLOSE,
@@ -81,6 +80,7 @@ ContentSettingsWindowGtk::ContentSettingsWindowGtk(GtkWindow* parent,
   gtk_window_set_type_hint(GTK_WINDOW(dialog_), GDK_WINDOW_TYPE_HINT_NORMAL);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
+  gtk_util::SetWindowIcon(GTK_WINDOW(dialog_));
 
   accessibility_widget_helper_.reset(new AccessibleWidgetHelper(
       dialog_, profile));

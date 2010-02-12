@@ -58,6 +58,7 @@ CookiesView::~CookiesView() {
 
 // static
 void CookiesView::Show(
+    GtkWindow* parent,
     Profile* profile,
     BrowsingDataDatabaseHelper* browsing_data_database_helper,
     BrowsingDataLocalStorageHelper* browsing_data_local_storage_helper) {
@@ -69,7 +70,8 @@ void CookiesView::Show(
   if (instance_) {
     gtk_window_present(GTK_WINDOW(instance_->dialog_));
   } else {
-    instance_ = new CookiesView(profile,
+    instance_ = new CookiesView(parent,
+                                profile,
                                 browsing_data_database_helper,
                                 browsing_data_local_storage_helper);
     instance_->InitStylesAndShow();
@@ -77,6 +79,7 @@ void CookiesView::Show(
 }
 
 CookiesView::CookiesView(
+    GtkWindow* parent,
     Profile* profile,
     BrowsingDataDatabaseHelper* browsing_data_database_helper,
     BrowsingDataLocalStorageHelper* browsing_data_local_storage_helper)
@@ -84,18 +87,20 @@ CookiesView::CookiesView(
       browsing_data_database_helper_(browsing_data_database_helper),
       browsing_data_local_storage_helper_(browsing_data_local_storage_helper),
       filter_update_factory_(this) {
-  Init();
+  Init(parent);
 }
 
-void CookiesView::Init() {
+void CookiesView::Init(GtkWindow* parent) {
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(
           IDS_COOKIES_WEBSITE_PERMISSIONS_WINDOW_TITLE).c_str(),
-      NULL,
-      GTK_DIALOG_NO_SEPARATOR,
+      parent,
+      static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
       GTK_STOCK_CLOSE,
       GTK_RESPONSE_CLOSE,
       NULL);
+  // Allow browser windows to go in front of the options dialog in metacity.
+  gtk_window_set_type_hint(GTK_WINDOW(dialog_), GDK_WINDOW_TYPE_HINT_NORMAL);
   gtk_util::SetWindowIcon(GTK_WINDOW(dialog_));
 
   remove_button_ = gtk_util::AddButtonToDialog(
