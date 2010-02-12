@@ -722,6 +722,7 @@ BUG20226 DEFER : fast/forms/input-selectedoption.html = FAIL
 
 // Add support for inspector layout tests.
 BUG26734 LINUX MAC SKIP : inspector = PASS
+BUG26734 LINUX MAC SKIP : http/tests/inspector = PASS
 BUG26734 SKIP : inspector/console-format-collections.html = TEXT
 BUG26734 SKIP : inspector/console-format.html = TEXT
 
