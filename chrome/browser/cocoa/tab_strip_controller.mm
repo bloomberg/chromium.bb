@@ -225,9 +225,6 @@ private:
 
 #pragma mark -
 
-// TODO(pinkerton): document tab layout, placeholders, tab dragging on
-// dev.chromium.org http://crbug.com/34659
-
 // In general, there is a one-to-one correspondence between TabControllers,
 // TabViews, TabContentsControllers, and the TabContents in the TabStripModel.
 // In the steady-state, the indices line up so an index coming from the model

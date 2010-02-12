@@ -29,11 +29,8 @@ class ToolbarModel;
 // TabStripModel. The Obj-C part of this class handles drag and drop and all
 // the other Cocoa-y aspects.
 //
-// When a new tab is created, we create a TabController which manages loading
-// the contents, including toolbar, from a separate nib file. This controller
-// then handles replacing the contentView of the window. As tabs are switched,
-// the single child of the contentView is swapped around to hold the contents
-// (toolbar and all) representing that tab.
+// For a full description of the design, see
+// http://www.chromium.org/developers/design-documents/tab-strip-mac
 @interface TabStripController :
   NSObject<TabControllerTarget,
            URLDropTargetController,
