@@ -54,7 +54,8 @@ void USBMountObserver::MountChanged(chromeos::MountLibrary* obj,
     // Return since disk added doesn't mean anything until
     // its mounted, which is a change event.
     LOG(INFO) << "Got added mount:" << path;
-  } else if (evt == chromeos::DISK_REMOVED) {
+  } else if (evt == chromeos::DISK_REMOVED ||
+             evt == chromeos::DEVICE_REMOVED) {
     RemoveBrowserFromVector(path);
   } else if (evt == chromeos::DISK_CHANGED) {
     BrowserIterator iter = FindBrowserForPath(path);
