@@ -93,7 +93,6 @@ END
 
 IDR_NPAPI_HOST_CONTROL  REGISTRY                "npapi_host_control.rgs"
 IDR_HOSTCONTROL         REGISTRY                "host_control.rgs"
-IDR_NPOBJECTPROXY       REGISTRY                "np_object_proxy.rgs"
 
 /////////////////////////////////////////////////////////////////////////////
 //

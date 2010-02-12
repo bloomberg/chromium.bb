@@ -159,8 +159,13 @@ CComPtr<IDispatchEx> NPBrowserProxy::GetDispatchObject(NPObject* np_object) {
     }
 
     // Create a new NPObject proxy, register it for future use and return it.
+    CComObject<NPObjectProxy>* proxy_instance;
+    HRESULT hr = CComObject<NPObjectProxy>::CreateInstance(&proxy_instance);
+    if (FAILED(hr))
+      return NULL;
+
     CComPtr<INPObjectProxy> proxy_wrapper;
-    HRESULT hr = NPObjectProxy::CreateInstance(&proxy_wrapper);
+    hr = proxy_instance->QueryInterface(&proxy_wrapper);
     if (SUCCEEDED(hr)) {
       proxy_wrapper->SetBrowserProxy(this);
       proxy_wrapper->SetHostedObject(np_object);

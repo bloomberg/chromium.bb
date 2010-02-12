@@ -143,35 +143,6 @@ Wix script for building o3d installer.
                    registry entries from o3d_host.dll, and then use
                    tallow.exe (part of WiX) to convert that .reg file
                    to WiX XML form. -->
-              <Registry Root="HKCU" Key="Software\Classes\o3d_host.NPObjectProxy.1"
-                        Value="NPObjectProxy Class" Type="string" />
-              <Registry Root="HKCU" Key="Software\Classes\o3d_host.NPObjectProxy.1\CLSID"
-                        Value="{1D68424D-7A71-4b61-AE5C-56DBCD8B0E53}" Type="string" />
-              <Registry Root="HKCU" Key="Software\Classes\o3d_host.NPObjectProxy.1\Insertable" />
-              <Registry Root="HKCU" Key="Software\Classes\o3d_host.NPObjectProxy"
-                        Value="NPObjectProxy Class" Type="string" />
-              <Registry Root="HKCU" Key="Software\Classes\o3d_host.NPObjectProxy\CLSID"
-                        Value="{1D68424D-7A71-4b61-AE5C-56DBCD8B0E53}" Type="string" />
-              <Registry Root="HKCU" Key="Software\Classes\o3d_host.NPObjectProxy\CurVer"
-                        Value="o3d_host.NPObjectProxy.1" Type="string" />
-              <Registry Root="HKCU" Key="Software\Classes\CLSID" />
-              <Registry Root="HKCU" Key="Software\Classes\CLSID\{1D68424D-7A71-4b61-AE5C-56DBCD8B0E53}"
-                        Value="NPObjectProxy Class" Type="string" />
-              <Registry Root="HKCU" Key="Software\Classes\CLSID\{1D68424D-7A71-4b61-AE5C-56DBCD8B0E53}\ProgID"
-                        Value="o3d_host.NPObjectProxy.1" Type="string" />
-              <Registry Root="HKCU" Key="Software\Classes\CLSID\{1D68424D-7A71-4b61-AE5C-56DBCD8B0E53}\VersionIndependentProgID"
-                        Value="o3d_host.NPObjectProxy" Type="string" />
-              <Registry Root="HKCU" Key="Software\Classes\CLSID\{1D68424D-7A71-4b61-AE5C-56DBCD8B0E53}\Programmable" />
-              <Registry Root="HKCU" Key="Software\Classes\CLSID\{1D68424D-7A71-4b61-AE5C-56DBCD8B0E53}\InprocServer32"
-                        Value="[#pu.GoogleActiveXDll.dll]" Type="string" />
-              <Registry Root="HKCU" Key="Software\Classes\CLSID\{1D68424D-7A71-4b61-AE5C-56DBCD8B0E53}\InprocServer32"
-                        Name="ThreadingModel" Value="Apartment" Type="string" />
-              <Registry Root="HKCU" Key="Software\Classes\CLSID\{1D68424D-7A71-4b61-AE5C-56DBCD8B0E53}\Control" />
-              <Registry Root="HKCU" Key="Software\Classes\CLSID\{1D68424D-7A71-4b61-AE5C-56DBCD8B0E53}\Insertable" />
-              <Registry Root="HKCU" Key="Software\Classes\CLSID\{1D68424D-7A71-4b61-AE5C-56DBCD8B0E53}\TypeLib"
-                        Value="{D4F6E31C-E952-48FE-9833-6AE308BD79C6}" Type="string" />
-              <Registry Root="HKCU" Key="Software\Classes\CLSID\{1D68424D-7A71-4b61-AE5C-56DBCD8B0E53}\Version"
-                        Value="1.0" Type="string" />
               <Registry Root="HKCU" Key="Software\Classes\CLSID\{9666A772-407E-4F90-BC37-982E8160EB2D}"
                         Value="O3DHostControl Class" Type="string" />
               <Registry Root="HKCU" Key="Software\Classes\CLSID\{9666A772-407E-4F90-BC37-982E8160EB2D}\ProgID"

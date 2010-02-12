@@ -89,12 +89,4 @@ library npapi_host_controlLib
   {
     [default] interface IHostControl;
   };
-
-  [
-    uuid(1D68424D-7A71-4b61-AE5C-56DBCD8B0E53),
-  ]
-  coclass NPObjectProxy
-  {
-    [default] interface INPObjectProxy;
-  };
 };

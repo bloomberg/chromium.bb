@@ -38,8 +38,7 @@
 #define IDR_NPAPI_HOST_CONTROL          101
 #define IDB_HOSTCONTROL                 102
 #define IDR_HOSTCONTROL                 103
-#define IDB_NPOBJECTPROXY               104
-#define IDR_NPOBJECTPROXY               105
+
 
 
 // Next default values for new objects.

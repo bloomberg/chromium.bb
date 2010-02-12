@@ -53,7 +53,6 @@ class NPBrowserProxy;
 // NPObject scripting functionality.
 class ATL_NO_VTABLE NPObjectProxy :
     public CComObjectRootEx<CComSingleThreadModel>,
-    public CComCoClass<NPObjectProxy, &CLSID_NPObjectProxy>,
     public IDispatchImpl<INPObjectProxy, &IID_INPObjectProxy,
                          &LIBID_npapi_host_controlLib>,
     public IObjectSafetyImpl<NPObjectProxy,
@@ -61,8 +60,6 @@ class ATL_NO_VTABLE NPObjectProxy :
  public:
   NPObjectProxy();
   virtual ~NPObjectProxy();
-
-DECLARE_REGISTRY_RESOURCEID(IDR_NPOBJECTPROXY)
 
 BEGIN_COM_MAP(NPObjectProxy)
   COM_INTERFACE_ENTRY(INPObjectProxy)
@@ -123,8 +120,5 @@ END_COM_MAP()
 
   DISALLOW_COPY_AND_ASSIGN(NPObjectProxy);
 };
-
-// Register this COM class with the COM module.
-OBJECT_ENTRY_AUTO(__uuidof(NPObjectProxy), NPObjectProxy);
 
 #endif  // O3D_PLUGIN_NPAPI_HOST_CONTROL_WIN_NP_OBJECT_PROXY_H_
