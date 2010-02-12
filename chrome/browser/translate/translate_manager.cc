@@ -8,6 +8,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/translation_service.h"
+#include "chrome/browser/tab_contents/language_state.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -27,22 +28,13 @@ void TranslateManager::Observe(NotificationType type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
   switch (type.value) {
-    case NotificationType::NAV_ENTRY_COMMITTED: {
-      // We have navigated to a new page.
-      NavigationController* controller =
-          Source<NavigationController>(source).ptr();
-      NavigationEntry* entry = controller->GetActiveEntry();
-      if (!entry->language().empty()) {
-        // The language for that page is known (it must be a back/forward
-        // navigation to a page we already visited).
-        InitiateTranslation(controller->tab_contents(), entry->language());
-      }
-      break;
-    }
     case NotificationType::TAB_LANGUAGE_DETERMINED: {
       TabContents* tab = Source<TabContents>(source).ptr();
       std::string language = *(Details<std::string>(details).ptr());
-      InitiateTranslation(tab, language);
+      // We may get this notifications multiple times.  Make sure to translate
+      // only once.
+      if (!tab->language_state().translation_pending())
+        InitiateTranslation(tab, language);
       break;
     }
     case NotificationType::PAGE_TRANSLATED: {
@@ -91,11 +83,9 @@ void TranslateManager::Observe(NotificationType type,
 }
 
 TranslateManager::TranslateManager() {
-  if (!TranslationService::IsTranslationEnabled())
+  if (TestEnabled() && !TranslationService::IsTranslationEnabled())
     return;
 
-  notification_registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
-                              NotificationService::AllSources());
   notification_registrar_.Add(this, NotificationType::TAB_LANGUAGE_DETERMINED,
                               NotificationService::AllSources());
   notification_registrar_.Add(this, NotificationType::PAGE_TRANSLATED,
@@ -134,15 +124,11 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
     return;
   }
 
-  // If we already have an "after translate" infobar, it sometimes might be
-  // sticky when running in frames.  So we need to proactively remove any
-  // translate related infobars as they would prevent any new infobar from
-  // showing. (As TabContents will not add an infobar if there is already one
-  // showing equal to the one being added.)
-  for (int i = tab->infobar_delegate_count() - 1; i >= 0; --i) {
-    InfoBarDelegate* info_bar = tab->GetInfoBarDelegateAt(i);
-    if (info_bar->AsTranslateInfoBarDelegate())
-      tab->RemoveInfoBar(info_bar);
+  std::string auto_translate_to = tab->language_state().AutoTranslateTo();
+  if (!auto_translate_to.empty()) {
+    // This page was navigated through a click from a translated page.
+    tab->TranslatePage(page_lang, auto_translate_to);
+    return;
   }
 
   // Prompts the user if he/she wants the page translated.

@@ -29,10 +29,15 @@ class TranslateManager : public NotificationObserver {
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
- private:
-  friend struct DefaultSingletonTraits<TranslateManager>;
+
+ protected:
+  // Overriden by unit-tests to enable the TranslateManager.
+  virtual bool TestEnabled() { return false; }
 
   TranslateManager();
+
+ private:
+  friend struct DefaultSingletonTraits<TranslateManager>;
 
   // Starts the translation process on |tab| containing the page in the
   // |page_lang| language.

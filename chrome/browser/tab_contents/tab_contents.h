@@ -30,6 +30,7 @@
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/constrained_window.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
+#include "chrome/browser/tab_contents/language_state.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/page_navigator.h"
@@ -639,6 +640,10 @@ class TabContents : public PageNavigator,
     return request_context_;
   }
 
+  LanguageState& language_state() {
+    return language_state_;
+  }
+
   // Creates a duplicate of this TabContents. The returned TabContents is
   // configured such that the renderer has not been loaded (it'll load the first
   // time it is selected).
@@ -1179,6 +1184,9 @@ class TabContents : public PageNavigator,
   // If non-null this tab is an app tab and this is the extension the tab was
   // created for.
   Extension* app_extension_;
+
+  // Information about the language the page is in and has been translated to.
+  LanguageState language_state_;
 
   // ---------------------------------------------------------------------------
 

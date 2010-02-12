@@ -1731,6 +1731,8 @@
         'browser/tab_contents/infobar_delegate.h',
         'browser/tab_contents/interstitial_page.cc',
         'browser/tab_contents/interstitial_page.h',
+        'browser/tab_contents/language_state.h',
+        'browser/tab_contents/language_state.cc',
         'browser/tab_contents/navigation_controller.cc',
         'browser/tab_contents/navigation_controller.h',
         'browser/tab_contents/navigation_entry.cc',

@@ -457,20 +457,16 @@ IN_PROC_BROWSER_TEST_F(BrowserTest, PageLanguageDetection) {
   // Navigate to a page in English.
   ui_test_utils::NavigateToURL(
       browser(), GURL(server->TestServerPage("files/english_page.html")));
-  NavigationEntry* entry = current_tab->controller().GetActiveEntry();
-  ASSERT_TRUE(NULL != entry);
-  EXPECT_TRUE(entry->language().empty());
+  EXPECT_TRUE(current_tab->language_state().original_language().empty());
   std::string lang = ui_test_utils::WaitForLanguageDetection(current_tab);
   EXPECT_EQ("en", lang);
-  EXPECT_EQ("en", entry->language());
+  EXPECT_EQ("en", current_tab->language_state().original_language());
 
   // Now navigate to a page in French.
   ui_test_utils::NavigateToURL(
       browser(), GURL(server->TestServerPage("files/french_page.html")));
-  entry = current_tab->controller().GetActiveEntry();
-  ASSERT_TRUE(NULL != entry);
-  EXPECT_TRUE(entry->language().empty());
+  EXPECT_TRUE(current_tab->language_state().original_language().empty());
   lang = ui_test_utils::WaitForLanguageDetection(current_tab);
   EXPECT_EQ("fr", lang);
-  EXPECT_EQ("fr", entry->language());
+  EXPECT_EQ("fr", current_tab->language_state().original_language());
 }

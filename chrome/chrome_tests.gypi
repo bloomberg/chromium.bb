@@ -826,6 +826,7 @@
         'browser/tab_menu_model_unittest.cc',
         'browser/tabs/tab_strip_model_unittest.cc',
         'browser/task_manager_unittest.cc',
+        'browser/translate/translate_manager_unittest.cc',
         'browser/theme_resources_util_unittest.cc',
         'browser/views/bookmark_context_menu_test.cc',
         'browser/views/bookmark_editor_view_unittest.cc',

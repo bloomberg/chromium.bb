@@ -246,8 +246,8 @@ class RenderViewHostTestHarness : public testing::Test {
     contents_.reset();
   }
 
-  // Creates a pending navigation to the given oURL with the default parameters
-  // and the commits the load with a page ID one larger than any seen. This
+  // Creates a pending navigation to the given URL with the default parameters
+  // and then commits the load with a page ID one larger than any seen. This
   // emulates what happens on a new navigation.
   void NavigateAndCommit(const GURL& url);
 

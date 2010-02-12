@@ -883,16 +883,13 @@ bool DetectTabLanguageFunction::RunImpl() {
 
   AddRef();  // Balanced in GotLanguage()
 
-  NavigationEntry* entry = contents->controller().GetActiveEntry();
-  if (entry) {
-    std::string language = entry->language();
-    if (!language.empty()) {
-      // Delay the callback invocation until after the current JS call has
-      // returned.
-      MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
-          this, &DetectTabLanguageFunction::GotLanguage, language));
-      return true;
-    }
+  if (!contents->language_state().original_language().empty()) {
+    // Delay the callback invocation until after the current JS call has
+    // returned.
+    MessageLoop::current()->PostTask(FROM_HERE, NewRunnableMethod(
+        this, &DetectTabLanguageFunction::GotLanguage,
+        contents->language_state().original_language()));
+    return true;
   }
   // The tab contents does not know its language yet.  Let's  wait until it
   // receives it, or until the tab is closed/navigates to some other page.
