@@ -80,7 +80,7 @@ class ContentPageView : public OptionsPageView,
   void InitSyncGroup();
 
   // Controls for the Password Saving group
-  views::NativeButton* passwords_exceptions_button_;
+  views::NativeButton* show_passwords_button_;
   OptionsGroupView* passwords_group_;
   views::RadioButton* passwords_asktosave_radio_;
   views::RadioButton* passwords_neversave_radio_;

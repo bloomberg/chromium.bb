@@ -186,15 +186,15 @@ GtkWidget* ContentPageGtk::InitPasswordSavingGroup() {
   gtk_box_pack_start(GTK_BOX(vbox), passwords_neversave_radio_, FALSE,
                      FALSE, 0);
 
-  // Add the exceptions button into its own horizontal box so it does not
+  // Add the show passwords button into its own horizontal box so it does not
   // depend on the spacing above.
   GtkWidget* button_hbox = gtk_hbox_new(FALSE, gtk_util::kLabelSpacing);
   gtk_container_add(GTK_CONTAINER(vbox), button_hbox);
-  GtkWidget* passwords_exceptions_button = gtk_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_OPTIONS_PASSWORDS_EXCEPTIONS).c_str());
-  g_signal_connect(passwords_exceptions_button, "clicked",
-                   G_CALLBACK(OnPasswordsExceptionsButtonClicked), this);
-  gtk_box_pack_start(GTK_BOX(button_hbox), passwords_exceptions_button, FALSE,
+  GtkWidget* show_passwords_button = gtk_button_new_with_label(
+      l10n_util::GetStringUTF8(IDS_OPTIONS_PASSWORDS_SHOWPASSWORDS).c_str());
+  g_signal_connect(show_passwords_button, "clicked",
+                   G_CALLBACK(OnShowPasswordsButtonClicked), this);
+  gtk_box_pack_start(GTK_BOX(button_hbox), show_passwords_button, FALSE,
                      FALSE, 0);
 
   return vbox;
@@ -434,8 +434,8 @@ void ContentPageGtk::OnSystemTitleBarRadioToggled(GtkToggleButton* widget,
 }
 
 // static
-void ContentPageGtk::OnPasswordsExceptionsButtonClicked(GtkButton* widget,
-                                                        ContentPageGtk* page) {
+void ContentPageGtk::OnShowPasswordsButtonClicked(GtkButton* widget,
+                                                  ContentPageGtk* page) {
   ShowPasswordsExceptionsWindow(page->profile());
 }
 

@@ -48,7 +48,7 @@ static views::Background* CreateErrorBackground() {
 }  // namespace
 
 ContentPageView::ContentPageView(Profile* profile)
-    : passwords_exceptions_button_(NULL),
+    : show_passwords_button_(NULL),
       passwords_group_(NULL),
       passwords_asktosave_radio_(NULL),
       passwords_neversave_radio_(NULL),
@@ -107,7 +107,7 @@ void ContentPageView::ButtonPressed(
                               profile()->GetPrefs());
     }
     ask_to_save_form_autofill_.SetValue(enabled);
-  } else if (sender == passwords_exceptions_button_) {
+  } else if (sender == show_passwords_button_) {
     UserMetricsRecordAction("Options_ShowPasswordsExceptions", NULL);
     PasswordsExceptionsWindowView::Show(profile());
   } else if (sender == change_autofill_settings_button_) {
@@ -280,8 +280,8 @@ void ContentPageView::InitPasswordSavingGroup() {
       kPasswordSavingRadioGroup);
   passwords_neversave_radio_->set_listener(this);
   passwords_neversave_radio_->SetMultiLine(true);
-  passwords_exceptions_button_ = new views::NativeButton(
-      this, l10n_util::GetString(IDS_OPTIONS_PASSWORDS_EXCEPTIONS));
+  show_passwords_button_ = new views::NativeButton(
+      this, l10n_util::GetString(IDS_OPTIONS_PASSWORDS_SHOWPASSWORDS));
 
   using views::GridLayout;
   using views::ColumnSet;
@@ -302,7 +302,7 @@ void ContentPageView::InitPasswordSavingGroup() {
   layout->AddView(passwords_neversave_radio_);
   layout->AddPaddingRow(0, kUnrelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id);
-  layout->AddView(passwords_exceptions_button_);
+  layout->AddView(show_passwords_button_);
 
   passwords_group_ = new OptionsGroupView(
       contents, l10n_util::GetString(IDS_OPTIONS_PASSWORDS_GROUP_NAME), L"",
