@@ -247,7 +247,7 @@ class ChromeTests(object):
     # Sets LD_LIBRARY_PATH to the build folder so external libraries can be
     # loaded.
     os.putenv("LD_LIBRARY_PATH", self._options.build_dir)
-    return heapcheck_test.RunTool(cmd, supp)
+    return heapcheck_test.RunTool(cmd, supp, module)
 
   def TestBase(self):
     return self.SimpleTest("base", "base_unittests")
@@ -349,7 +349,7 @@ class ChromeTests(object):
     cmd.extend(["--"])
     cmd.extend(script_cmd)
     supp = self.Suppressions()
-    return heapcheck_test.RunTool(cmd, supp)
+    return heapcheck_test.RunTool(cmd, supp, "layout")
 
   def TestLayout(self):
     '''Runs the layout tests.'''

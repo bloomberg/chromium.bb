@@ -19,6 +19,7 @@ import suppressions
 
 class HeapcheckWrapper(object):
   TMP_FILE = 'heapcheck.log'
+  SANITY_TEST_SUPPRESSION = "Heapcheck sanity test"
 
   def __init__(self, supp_files):
     self._mode = 'strict'
@@ -58,21 +59,30 @@ class HeapcheckWrapper(object):
     # the purify_test.py script.)
     return True
 
-  def Analyze(self, log_lines):
+  def Analyze(self, log_lines, check_sanity=False):
     """Analyzes the app's output and applies suppressions to the reports.
 
     Analyze() searches the logs for leak reports and tries to apply
     suppressions to them. Unsuppressed reports and other log messages are
     dumped as is.
 
+    If |check_sanity| is True, the list of suppressed reports is searched for a
+    report starting with SANITY_TEST_SUPPRESSION. If there isn't one, Analyze
+    returns 2 regardless of the unsuppressed reports.
+
     Args:
-      log_lines: An iterator over the app's log lines.
+      log_lines:      An iterator over the app's log lines.
+      check_sanity:   A flag that determines whether we should check the tool's
+                      sanity.
     Returns:
-      1, if unsuppressed reports remain in the output, 0 otherwise.
+      2, if the sanity check fails,
+      1, if unsuppressed reports remain in the output and the sanity check
+      passes,
+      0, if all the errors are suppressed and the sanity check passes.
     """
     leak_report = re.compile(
         'Leak of ([0-9]*) bytes in ([0-9]*) objects allocated from:')
-    stack_line = re.compile('\s*@\s*0x[0-9a-fA-F]*\s*(\S*)')
+    stack_line = re.compile('\s*@\s*[0-9a-fA-F]*\s*(\S*)')
     return_code = 0
     # leak signature: [number of bytes, number of objects]
     cur_leak_signature = None
@@ -122,6 +132,7 @@ class HeapcheckWrapper(object):
         else:
           print line
     # Print the list of suppressions used.
+    is_sane = False
     if used_suppressions:
       print
       print '-----------------------------------------------------'
@@ -129,6 +140,8 @@ class HeapcheckWrapper(object):
       print '   count    bytes  objects name'
       histo = {}
       for description in used_suppressions:
+        if description.startswith(HeapcheckWrapper.SANITY_TEST_SUPPRESSION):
+          is_sane = True
         hits, bytes, objects = used_suppressions[description]
         line = '%8d %8d %8d %s' % (hits, bytes, objects, description)
         if hits in histo:
@@ -141,21 +154,24 @@ class HeapcheckWrapper(object):
         for line in histo[count]:
           print line
       print '-----------------------------------------------------'
+    if is_sane:
+      return return_code
+    else:
+      logging.error("Sanity check failed")
+      return 2
 
-    return return_code
-
-  def RunTestsAndAnalyze(self):
+  def RunTestsAndAnalyze(self, check_sanity):
     self.Execute()
     log_file = file(self.TMP_FILE, 'r')
-    ret = self.Analyze(log_file)
+    ret = self.Analyze(log_file, check_sanity)
     log_file.close()
     return ret
 
-  def Main(self, args):
+  def Main(self, args, check_sanity=False):
     self._args = args
     start = datetime.datetime.now()
     retcode = -1
-    retcode = self.RunTestsAndAnalyze()
+    retcode = self.RunTestsAndAnalyze(check_sanity)
     end = datetime.datetime.now()
     seconds = (end - start).seconds
     hours = seconds / 3600
@@ -166,6 +182,8 @@ class HeapcheckWrapper(object):
     return retcode
 
 
-def RunTool(args, supp_files):
+def RunTool(args, supp_files, module):
   tool = HeapcheckWrapper(supp_files)
-  return tool.Main(args[1:])
+  MODULES_TO_SANITY_CHECK = ["base"]
+  check_sanity = module in MODULES_TO_SANITY_CHECK
+  return tool.Main(args[1:], check_sanity)
