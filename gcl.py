@@ -1018,7 +1018,7 @@ def Change(change_info, args):
 
 # Valid extensions for files we want to lint.
 DEFAULT_LINT_REGEX = r"(.*\.cpp|.*\.cc|.*\.h)"
-DEFAULT_LINT_IGNORE_REGEX = r""
+DEFAULT_LINT_IGNORE_REGEX = r"$^"
 
 def Lint(change_info, args):
   """Runs cpplint.py on all the files in |change_info|"""
