@@ -63,6 +63,8 @@ class CompactLocationBarView : public DropdownBarView,
   virtual void ViewHierarchyChanged(bool is_add, views::View* parent,
                                     views::View* child);
   virtual void Focus();
+  // No focus border for the location bar, the caret is enough.
+  virtual void PaintFocusBorder(gfx::Canvas* canvas) { }
 
   // Overridden from views::ButtonListener:
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);

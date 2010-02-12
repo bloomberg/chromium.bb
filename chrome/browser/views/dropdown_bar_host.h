@@ -88,6 +88,14 @@ class DropdownBarHost : public views::AcceleratorTarget,
   // Returns the browser view that the dropdown belongs to.
   BrowserView* browser_view() const { return browser_view_; }
 
+  // Registers this class as the handler for when Escape is pressed. We will
+  // unregister once we loose focus. See also: SetFocusChangeListener().
+  void RegisterEscAccelerator();
+
+  // When we loose focus, we unregister the handler for Escape. See
+  // also: SetFocusChangeListener().
+  void UnregisterEscAccelerator();
+
  protected:
   // Returns the dropdown bar view.
   DropdownBarView* view() const { return view_; }
@@ -124,14 +132,6 @@ class DropdownBarHost : public views::AcceleratorTarget,
   // curved edges. We also check to see if the region should be
   // truncated to prevent from drawing onto Chrome's window border.
   void UpdateWindowEdges(const gfx::Rect& new_pos);
-
-  // Registers this class as the handler for when Escape is pressed. We will
-  // unregister once we loose focus. See also: SetFocusChangeListener().
-  void RegisterEscAccelerator();
-
-  // When we loose focus, we unregister the handler for Escape. See
-  // also: SetFocusChangeListener().
-  void UnregisterEscAccelerator();
 
   // Creates and returns the native Widget.
   views::Widget* CreateHost();

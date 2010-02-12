@@ -11,13 +11,11 @@
 #include "base/scoped_ptr.h"
 #include "base/singleton.h"
 #include "base/task.h"
-#include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "chrome/common/renderer_preferences.h"
 
-class AutocompleteEditViewGtk;
 class Browser;
 class RenderWidgetHostViewGtk;
 class SiteInstance;
@@ -63,7 +61,6 @@ class NavigationBar;
 // loaded when the user clicks on it.
 class MainMenu : public RenderViewHostDelegate,
                  public RenderViewHostDelegate::View,
-                 public AutocompleteEditController,
                  public ActiveWindowWatcherX::Observer {
  public:
   // Shows the menu.
@@ -124,6 +121,7 @@ class MainMenu : public RenderViewHostDelegate,
 
   friend class TabContentsDelegateImpl;
   friend class AppMenuContainer;
+  friend class NavigationBar;
 
   MainMenu();
 
@@ -184,18 +182,6 @@ class MainMenu : public RenderViewHostDelegate,
   virtual void HandleMouseEvent() {}
   virtual void HandleMouseLeave() {}
   virtual void UpdatePreferredSize(const gfx::Size& pref_size) {}
-
-  // AutocompleteController implementation.
-  virtual void OnAutocompleteAccept(const GURL& url,
-                                    WindowOpenDisposition disposition,
-                                    PageTransition::Type transition,
-                                    const GURL& alternate_nav_url);
-  virtual void OnChanged();
-  virtual void OnInputInProgress(bool in_progress);
-  virtual void OnKillFocus();
-  virtual void OnSetFocus();
-  virtual SkBitmap GetFavIcon() const;
-  virtual std::wstring GetTitle() const;
 
   // ActiveWindowWatcherX::Observer implementation.
   virtual void ActiveWindowChanged(GdkWindow* active_window);

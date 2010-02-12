@@ -40,7 +40,8 @@
 namespace chromeos {
 const int kAutocompletePopupWidth = 700;
 const int kDefaultLocationEntryWidth = 250;
-const int kCompactLocationLeftRightMargin = 5;
+const int kCompactLocationLeftMargin = 5;
+const int kCompactLocationRightMargin = 10;
 const int kEntryLeftMargin = 2;
 // TODO(oshima): ToolbarView gets this from background image's height;
 // Find out the right way, value for compact location bar.
@@ -148,7 +149,9 @@ gfx::Size CompactLocationBarView::GetPreferredSize() {
       reload_size.width() + kEntryLeftMargin + star_size.width() +
       std::max(kDefaultLocationEntryWidth,
                location_entry_view_->GetPreferredSize().width()) +
-      ba_size.width();
+      ba_size.width() +
+      kCompactLocationLeftMargin +
+      kCompactLocationRightMargin;
   return gfx::Size(width, kDefaultLocationBarHeight);
 }
 
@@ -156,7 +159,7 @@ void CompactLocationBarView::Layout() {
   if (!reload_)
     return;  // Not initialized yet, do nothing.
 
-  int cur_x = kCompactLocationLeftRightMargin;
+  int cur_x = kCompactLocationLeftMargin;
 
   gfx::Size reload_size = reload_->GetPreferredSize();
   int reload_y = (height() - reload_size.height()) / 2;
@@ -177,7 +180,7 @@ void CompactLocationBarView::Layout() {
   if (ba_size.IsEmpty()) {
     // BrowserActionsContainer has its own margin on right.
     // Use the our margin when if the browser action is empty.
-    location_entry_width -= kCompactLocationLeftRightMargin;
+    location_entry_width -= kCompactLocationRightMargin;
   }
 
   // The location bar gets the rest of the space in the middle.
@@ -223,6 +226,7 @@ void CompactLocationBarView::OnAutocompleteAccept(
     PageTransition::Type transition,
     const GURL& alternate_nav_url) {
   browser()->OpenURL(url, GURL(), disposition, transition);
+  clb_host()->StartAutoHideTimer();
 }
 
 void CompactLocationBarView::OnChanged() {
@@ -230,9 +234,17 @@ void CompactLocationBarView::OnChanged() {
 }
 
 void CompactLocationBarView::OnKillFocus() {
+  host()->UnregisterEscAccelerator();
 }
 
 void CompactLocationBarView::OnSetFocus() {
+  views::FocusManager* focus_manager = GetFocusManager();
+  if (!focus_manager) {
+    NOTREACHED();
+    return;
+  }
+  focus_manager->SetFocusedView(this);
+  host()->RegisterEscAccelerator();
 }
 
 void CompactLocationBarView::OnInputInProgress(bool in_progress) {

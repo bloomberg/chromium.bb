@@ -13,6 +13,7 @@
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_gtk.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
@@ -89,6 +90,7 @@ namespace chromeos {
 // A navigation bar that is shown in the main menu in
 // compact navigation bar mode.
 class NavigationBar : public views::View,
+                      public AutocompleteEditController,
                       public BubblePositioner {
  public:
   explicit NavigationBar(MainMenu* main_menu)
@@ -136,6 +138,32 @@ class NavigationBar : public views::View,
     return gfx::Rect(origin, gfx::Size(500, 0));
   }
 
+  // AutocompleteController implementation.
+  virtual void OnAutocompleteAccept(const GURL& url,
+                                    WindowOpenDisposition disposition,
+                                    PageTransition::Type transition,
+                                    const GURL& alternate_nav_url) {
+    main_menu_->AddTabWithURL(url, transition);
+    main_menu_->Hide();
+  }
+  virtual void OnChanged() {}
+  virtual void OnInputInProgress(bool in_progress) {}
+  virtual void OnKillFocus() {}
+  virtual void OnSetFocus() {
+    views::FocusManager* focus_manager = GetFocusManager();
+    if (!focus_manager) {
+      NOTREACHED();
+      return;
+    }
+    focus_manager->SetFocusedView(this);
+  }
+  virtual SkBitmap GetFavIcon() const {
+    return SkBitmap();
+  }
+  virtual std::wstring GetTitle() const {
+    return std::wstring();
+  }
+
   // AutocompleteEditView depends on the browser instance.
   // Create new one when the browser instance changes.
   void Update(Browser* browser) {
@@ -144,7 +172,7 @@ class NavigationBar : public views::View,
       location_entry_view_->Detach();
 
     location_entry_.reset(new AutocompleteEditViewGtk(
-        main_menu_, browser->toolbar_model(), browser->profile(),
+        this, browser->toolbar_model(), browser->profile(),
         browser->command_updater(), false, this));
     location_entry_->Init();
     gtk_widget_show_all(location_entry_->widget());
@@ -390,35 +418,6 @@ RendererPreferences MainMenu::GetRendererPrefs(Profile* profile) const {
   RendererPreferences preferences;
   renderer_preferences_util::UpdateFromSystemSettings(&preferences, profile);
   return preferences;
-}
-
-// AutocompleteController implementation.
-void MainMenu::OnAutocompleteAccept(const GURL& url,
-                                    WindowOpenDisposition disposition,
-                                    PageTransition::Type transition,
-                                    const GURL& alternate_nav_url) {
-  AddTabWithURL(url, transition);
-  Hide();
-}
-
-void MainMenu::OnChanged() {
-}
-
-void MainMenu::OnInputInProgress(bool in_progress) {
-}
-
-void MainMenu::OnKillFocus() {
-}
-
-void MainMenu::OnSetFocus() {
-}
-
-SkBitmap MainMenu::GetFavIcon() const {
-  return SkBitmap();
-}
-
-std::wstring MainMenu::GetTitle() const {
-  return std::wstring();
 }
 
 void MainMenu::AddTabWithURL(const GURL& url,
