@@ -534,13 +534,15 @@ void BrowserActionsContainer::OnBrowserActionExecuted(
     BubbleBorder::ArrowLocation arrow_location = UILayoutIsRightToLeft() ?
         BubbleBorder::TOP_LEFT : BubbleBorder::TOP_RIGHT;
 
-    popup_ = ExtensionPopup::Show(button->GetPopupUrl(),
-                                  browser_,
-                                  browser_->profile(),
-                                  frame_window,
-                                  rect,
-                                  arrow_location,
-                                  true);  // Activate the popup window.
+    popup_ = ExtensionPopup::Show(
+        button->GetPopupUrl(),
+        browser_,
+        browser_->profile(),
+        frame_window,
+        rect,
+        arrow_location,
+        true,  // Activate the popup window.
+        ExtensionPopup::BUBBLE_CHROME);
     popup_->set_delegate(this);
     popup_button_ = button;
     popup_button_->SetButtonPushed();

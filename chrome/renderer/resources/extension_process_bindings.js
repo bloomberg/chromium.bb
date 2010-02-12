@@ -447,6 +447,11 @@ var chrome = chrome || {};
             giveFocus: {
               type: "boolean",
               optional: true
+            },
+            borderStyle: {
+              type: "string",
+              optional: true,
+              enum: ["bubble", "rectangle"]
             }
           }
         },
@@ -456,7 +461,8 @@ var chrome = chrome || {};
                          [url,
                           {
                             domAnchor: getAbsoluteRect(showDetails.relativeTo),
-                            giveFocus: showDetails.giveFocus
+                            giveFocus: showDetails.giveFocus,
+                            borderStyle: showDetails.borderStyle
                           },
                           callback],
                          internalSchema);

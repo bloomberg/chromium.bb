@@ -68,7 +68,7 @@ class WindowImpl : public MessageMapInterface {
     DCHECK_EQ((class_style & CS_GLOBALCLASS), 0);
     class_style_ = class_style;
   }
-  UINT initial_class_style() { return class_style_; }
+  UINT initial_class_style() const { return class_style_; }
 
  protected:
   // Handles the WndProc callback for this object.

@@ -38,9 +38,10 @@ class BrowserBubble {
   // Note that the bubble will size itself to the preferred size of |view|.
   // |view| is the embedded view, |frame| is widget that the bubble is being
   // positioned relative to, |origin| is the location that the bubble will
-  // be positioned relative to |frame|.
+  // be positioned relative to |frame|.  Pass true through |drop_shadow| to
+  // surround the bubble widget with a drop-shadow.
   BrowserBubble(views::View* view, views::Widget* frame,
-                const gfx::Point& origin);
+                const gfx::Point& origin, bool drop_shadow);
   virtual ~BrowserBubble();
 
   // Call manually if you need to detach the bubble from tracking the browser's
@@ -115,6 +116,9 @@ class BrowserBubble {
 
   // Is the bubble attached to a Browser window.
   bool attached_;
+
+  // Does the bubble have a drop-shadow.
+  bool drop_shadow_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserBubble);
 };

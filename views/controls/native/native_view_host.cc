@@ -98,10 +98,15 @@ void NativeViewHost::Layout() {
     // Since widgets know nothing about the View hierarchy (they are direct
     // children of the Widget that hosts our View hierarchy) they need to be
     // positioned in the coordinate system of the Widget, not the current
-    // view.
-    gfx::Point top_left;
+    // view.  Also, they should be positioned respecting the border insets
+    // of the native view.
+    gfx::Insets insets = GetInsets();
+    gfx::Point top_left(insets.left(), insets.top());
     ConvertPointToWidget(this, &top_left);
-    native_wrapper_->ShowWidget(top_left.x(), top_left.y(), width(), height());
+    gfx::Rect local_bounds = GetLocalBounds(false);
+    native_wrapper_->ShowWidget(top_left.x(), top_left.y(),
+                                local_bounds.width(),
+                                local_bounds.height());
   } else {
     native_wrapper_->HideWidget();
   }

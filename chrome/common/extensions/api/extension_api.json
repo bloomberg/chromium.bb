@@ -1912,6 +1912,12 @@
                 "type": "boolean",
                 "description": "Pass true to give the focus to the popup window.  The default behaviour is true.",
                 "optional": true
+              },
+              "borderStyle": {
+                "type": "string",
+                "description": "Pass 'bubble' to give the pop-up window a bubble-chrome border, including an arrow pointing at the relative-to point.  Pass 'rectangle' to give the pop-up a rectangular black border with drop-shadow.  Default behaviour is to pass 'bubble'.",
+                "optional": true,
+                "enum": ["bubble", "rectangle"]
               }
             }
           },

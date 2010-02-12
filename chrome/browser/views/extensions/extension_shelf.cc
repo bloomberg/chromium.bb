@@ -428,7 +428,8 @@ void ExtensionShelf::Toolstrip::LayoutWindow() {
 
   if (!window_.get()) {
     window_.reset(new BrowserBubble(this, shelf_->GetWidget(),
-                                    gfx::Point(0, 0)));
+                                    gfx::Point(0, 0),
+                                    false));  //  Do not add a drop-shadow.
     window_->set_delegate(this);
   }
 

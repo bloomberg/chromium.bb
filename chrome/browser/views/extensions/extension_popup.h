@@ -26,6 +26,11 @@ class ExtensionPopup : public BrowserBubble,
                        public NotificationObserver,
                        public ExtensionView::Container {
  public:
+  enum PopupChrome {
+    BUBBLE_CHROME,
+    RECTANGLE_CHROME
+  };
+
   virtual ~ExtensionPopup();
 
   // Create and show a popup with |url| positioned adjacent to |relative_to| in
@@ -42,6 +47,12 @@ class ExtensionPopup : public BrowserBubble,
   // If |arrow_location| is BOTTOM_*, then the popup 'pops up', otherwise
   // the popup 'drops down'.
   // Pass |activate_on_show| as true to activate the popup window.
+  // The |chrome| argument controls the chrome that surrounds the pop-up.
+  // Passing BUBBLE_CHROME will give the pop-up a bubble-like appearance,
+  // including the arrow mentioned above.  Passing RECTANGLE_CHROME will give
+  // the popup a rectangular, black border with a drop-shadow with no arrow.
+  // The positioning of the popup is still governed by the arrow-location
+  // parameter.
   //
   // The actual display of the popup is delayed until the page contents
   // finish loading in order to minimize UI flashing and resizing.
@@ -50,7 +61,8 @@ class ExtensionPopup : public BrowserBubble,
                               gfx::NativeWindow frame_window,
                               const gfx::Rect& relative_to,
                               BubbleBorder::ArrowLocation arrow_location,
-                              bool activate_on_show);
+                              bool activate_on_show,
+                              PopupChrome chrome);
 
   ExtensionHost* host() const { return extension_host_.get(); }
 
@@ -80,7 +92,14 @@ class ExtensionPopup : public BrowserBubble,
                  views::Widget* frame,
                  const gfx::Rect& relative_to,
                  BubbleBorder::ArrowLocation arrow_location,
-                 bool activate_on_show);
+                 bool activate_on_show,
+                 PopupChrome chrome);
+
+  // Gives the desired bounds (in screen coordinates) given the rect to point
+  // to and the size of the contained contents.  Includes all of the
+  // border-chrome surrounding the pop-up as well.
+  gfx::Rect GetOuterBounds(const gfx::Rect& position_relative_to,
+                           const gfx::Size& contents_size) const;
 
   // The area on the screen that the popup should be positioned relative to.
   gfx::Rect relative_to_;
@@ -100,6 +119,14 @@ class ExtensionPopup : public BrowserBubble,
   views::Widget* border_widget_;
   BubbleBorder* border_;
   views::View* border_view_;
+
+  // The type of chrome associated with the popup window.
+  PopupChrome popup_chrome_;
+
+  // A cached copy of the arrow-position for the bubble chrome.
+  // If a black-border was requested, we still need this value to determine
+  // the position of the pop-up in relation to |relative_to_|.
+  BubbleBorder::ArrowLocation anchor_position_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionPopup);
 };

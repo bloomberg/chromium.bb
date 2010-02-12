@@ -1501,13 +1501,15 @@ void LocationBarView::PageActionImageView::ExecuteAction(int button) {
     rect.set_x(origin.x());
     rect.set_y(origin.y());
 
-    popup_ = ExtensionPopup::Show(page_action_->GetPopupUrl(current_tab_id_),
-                                  browser,
-                                  browser->profile(),
-                                  browser->window()->GetNativeHandle(),
-                                  rect,
-                                  BubbleBorder::TOP_RIGHT,
-                                  true);  // Activate the popup window.
+    popup_ = ExtensionPopup::Show(
+        page_action_->GetPopupUrl(current_tab_id_),
+        browser,
+        browser->profile(),
+        browser->window()->GetNativeHandle(),
+        rect,
+        BubbleBorder::TOP_RIGHT,
+        true,  // Activate the popup window.
+        ExtensionPopup::BUBBLE_CHROME);
     popup_->set_delegate(this);
   } else {
     ExtensionBrowserEventRouter::GetInstance()->PageActionExecuted(

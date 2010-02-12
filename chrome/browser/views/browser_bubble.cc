@@ -25,12 +25,13 @@ BrowserView* GetBrowserViewFromFrame(views::Widget* frame) {
 }  // namespace
 
 BrowserBubble::BrowserBubble(views::View* view, views::Widget* frame,
-                             const gfx::Point& origin)
+                             const gfx::Point& origin, bool drop_shadow)
     : frame_(frame),
       view_(view),
       visible_(false),
       delegate_(NULL),
-      attached_(false) {
+      attached_(false),
+      drop_shadow_enabled_(drop_shadow) {
   gfx::Size size = view->GetPreferredSize();
   bounds_.SetRect(origin.x(), origin.y(), size.width(), size.height());
   InitPopup();

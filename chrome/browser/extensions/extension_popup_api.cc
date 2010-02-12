@@ -44,6 +44,10 @@ const wchar_t kTopKey[] = L"top";
 const wchar_t kLeftKey[] = L"left";
 const wchar_t kGiveFocusKey[] = L"giveFocus";
 const wchar_t kDomAnchorKey[] = L"domAnchor";
+const wchar_t kBorderStyleKey[] = L"borderStyle";
+
+// chrome enumeration values
+const char kRectangleChrome[] = "rectangle";
 
 };  // namespace
 
@@ -111,6 +115,18 @@ bool PopupShowFunction::RunImpl() {
                                                          &give_focus));
   }
 
+#if defined(TOOLKIT_VIEWS)
+  // The default behaviour is to provide the bubble-chrome to the popup.
+  ExtensionPopup::PopupChrome chrome = ExtensionPopup::BUBBLE_CHROME;
+  if (show_details->HasKey(kBorderStyleKey)) {
+    std::string chrome_string;
+    EXTENSION_FUNCTION_VALIDATE(show_details->GetString(kBorderStyleKey,
+                                                        &chrome_string));
+    if (chrome_string == kRectangleChrome)
+      chrome = ExtensionPopup::RECTANGLE_CHROME;
+  }
+#endif
+
   GURL url = dispatcher()->url().Resolve(url_string);
   if (!url.is_valid()) {
     error_ = kInvalidURLError;
@@ -144,7 +160,8 @@ bool PopupShowFunction::RunImpl() {
                                 dispatcher()->GetFrameNativeWindow(),
                                 rect,
                                 arrow_location,
-                                give_focus);
+                                give_focus,
+                                chrome);
 
   ExtensionPopupHost* popup_host = dispatcher()->GetPopupHost();
   DCHECK(popup_host);

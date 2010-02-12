@@ -92,6 +92,20 @@ window.onload = function() {
         //     chrome.experimental.extension.getPopupView() == undefined);
       });
       chrome.experimental.extension.getPopupView().close();
+    },
+    function popupBlackBorder() {
+      // Validate that displaying a pop-up with a black border still invokes
+      // the callback successfully.  Note that this test does not validate
+      // the actual style of the border displayed.
+      var showDetails = {
+        "relativeTo": document.getElementById("anchorHere"),
+        "borderStyle": "rectangle"
+      };
+      chrome.experimental.popup.show("toolband_popup.html",
+                                     showDetails,
+                                     chrome.test.callbackPass(function() {
+        chrome.experimental.extension.getPopupView().close();
+      }));
     }
   ]);
 }
