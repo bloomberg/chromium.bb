@@ -527,7 +527,23 @@ std::string AboutVersion(DictionaryValue* localized_strings) {
     localized_strings->SetString(L"official",
       l10n_util::GetString(IDS_ABOUT_VERSION_UNOFFICIAL));
   }
+  localized_strings->SetString(L"user_agent_name",
+      l10n_util::GetString(IDS_ABOUT_VERSION_USER_AGENT));
   localized_strings->SetString(L"useragent", webkit_glue::GetUserAgent(GURL()));
+  localized_strings->SetString(L"command_line_name",
+      l10n_util::GetString(IDS_ABOUT_VERSION_COMMAND_LINE));
+
+#if defined(OS_WIN)
+  localized_strings->SetString(L"command_line",
+      CommandLine::ForCurrentProcess()->command_line_string());
+#elif defined(OS_POSIX)
+  std::string command_line = "";
+  typedef std::vector<std::string> ArgvList;
+  const ArgvList& argv = CommandLine::ForCurrentProcess()->argv();
+  for (ArgvList::const_iterator iter = argv.begin(); iter != argv.end(); iter++)
+    command_line += " " + *iter;
+  localized_strings->SetString(L"command_line", command_line);
+#endif
 
   static const std::string version_html(
       ResourceBundle::GetSharedInstance().GetDataResource(

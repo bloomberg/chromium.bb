@@ -3137,6 +3137,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_ABOUT_VERSION_UNOFFICIAL" desc="unofficial build on the about:version page">
         Developer Build
       </message>
+      <message name="IDS_ABOUT_VERSION_USER_AGENT" desc="label for the user agent on the about:version page">
+        User Agent
+      </message>
+      <message name="IDS_ABOUT_VERSION_COMMAND_LINE" desc="label for the command line on the about:version page">
+        Command Line
+      </message>
 
       <!-- Javascript Dialog Box strings -->
       <message name="IDS_JAVASCRIPT_ALERT_DEFAULT_TITLE" desc="Title for Javascript alert originating from a web page if there is no hostname to display">
