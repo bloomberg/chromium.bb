@@ -102,13 +102,6 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory,
     UserScript* script = scripts_.back();
     script->Unpickle(pickle, &iter);
 
-    if (only_inject_incognito && !script->is_incognito_enabled()) {
-      // This script shouldn't run in an incognito tab.
-      delete script;
-      scripts_.pop_back();
-      continue;
-    }
-
     // Note that this is a pointer into shared memory. We don't own it. It gets
     // cleared up when the last renderer or browser process drops their
     // reference to the shared memory.
@@ -125,6 +118,12 @@ bool UserScriptSlave::UpdateScripts(base::SharedMemoryHandle shared_memory,
       CHECK(pickle.ReadData(&iter, &body, &body_length));
       script->css_scripts()[j].set_external_content(
           base::StringPiece(body, body_length));
+    }
+
+    if (only_inject_incognito && !script->is_incognito_enabled()) {
+      // This script shouldn't run in an incognito tab.
+      delete script;
+      scripts_.pop_back();
     }
   }
 
