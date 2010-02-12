@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -132,7 +132,7 @@ class BrowserRenderProcessHost : public RenderProcessHost,
   // Copies applicable command line switches from the given |browser_cmd| line
   // flags to the output |renderer_cmd| line flags. Not all switches will be
   // copied over.
-  void PropogateBrowserCommandLineToRenderer(const CommandLine& browser_cmd,
+  void PropagateBrowserCommandLineToRenderer(const CommandLine& browser_cmd,
                                              CommandLine* renderer_cmd) const;
 
   // Callers can reduce the RenderProcess' priority.

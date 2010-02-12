@@ -304,12 +304,11 @@ void SetFileDescriptorLimit(unsigned int max_descriptors) {
 #if defined(OS_WIN)
 void AddFirstRunNewTabs(BrowserInit* browser_init,
                         const std::vector<std::wstring>& new_tabs) {
-  std::vector<std::wstring>::const_iterator it = new_tabs.begin();
-  while (it != new_tabs.end()) {
+  for (std::vector<std::wstring>::const_iterator it = new_tabs.begin();
+       it != new_tabs.end(); ++it) {
     GURL url(*it);
     if (url.is_valid())
       browser_init->AddFirstRunTab(url);
-    ++it;
   }
 }
 #else
@@ -657,17 +656,13 @@ int BrowserMain(const MainFunctionParams& parameters) {
   }
 
   if (parsed_command_line.HasSwitch(switches::kFixedHttpPort)) {
-    std::string http_port_str =
-        parsed_command_line.GetSwitchValueASCII(switches::kFixedHttpPort);
-    int http_port = StringToInt(http_port_str);
-    net::HttpNetworkSession::set_fixed_http_port(http_port);
+    net::HttpNetworkSession::set_fixed_http_port(StringToInt(
+        parsed_command_line.GetSwitchValueASCII(switches::kFixedHttpPort)));
   }
 
   if (parsed_command_line.HasSwitch(switches::kFixedHttpsPort)) {
-    std::string https_port_str =
-        parsed_command_line.GetSwitchValueASCII(switches::kFixedHttpsPort);
-    int https_port = StringToInt(https_port_str);
-    net::HttpNetworkSession::set_fixed_https_port(https_port);
+    net::HttpNetworkSession::set_fixed_https_port(StringToInt(
+        parsed_command_line.GetSwitchValueASCII(switches::kFixedHttpsPort)));
   }
 
   // Initialize histogram statistics gathering system.
@@ -719,14 +714,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #endif
 
   if (parsed_command_line.HasSwitch(switches::kHideIcons) ||
-      parsed_command_line.HasSwitch(switches::kShowIcons)) {
+      parsed_command_line.HasSwitch(switches::kShowIcons))
     return HandleIconsCommands(parsed_command_line);
-  } else if (parsed_command_line.HasSwitch(switches::kMakeDefaultBrowser)) {
-    if (ShellIntegration::SetAsDefaultBrowser()) {
-      return ResultCodes::NORMAL_EXIT;
-    } else {
-      return ResultCodes::SHELL_INTEGRATION_FAILED;
-    }
+  if (parsed_command_line.HasSwitch(switches::kMakeDefaultBrowser)) {
+    return ShellIntegration::SetAsDefaultBrowser() ?
+        ResultCodes::NORMAL_EXIT : ResultCodes::SHELL_INTEGRATION_FAILED;
   }
 
   // Try to create/load the profile.
@@ -935,28 +927,23 @@ int BrowserMain(const MainFunctionParams& parameters) {
     MetricsLog::set_version_extension("-64");
 #endif  // defined(OS_WIN)
 
-    bool enabled = local_state->GetBoolean(prefs::kMetricsReportingEnabled);
-    bool record_only =
-        parsed_command_line.HasSwitch(switches::kMetricsRecordingOnly);
-
-#if !defined(GOOGLE_CHROME_BUILD)
-    // Disable user metrics completely for non-Google Chrome builds.
-    enabled = false;
-#endif
-
     metrics = browser_process->metrics_service();
     DCHECK(metrics);
 
     // If we're testing then we don't care what the user preference is, we turn
     // on recording, but not reporting, otherwise tests fail.
-    if (record_only) {
+    if (parsed_command_line.HasSwitch(switches::kMetricsRecordingOnly)) {
       metrics->StartRecordingOnly();
     } else {
       // If the user permits metrics reporting with the checkbox in the
-      // prefs, we turn on recording.
+      // prefs, we turn on recording.  We disable metrics completely for
+      // non-official builds.
+#if defined(GOOGLE_CHROME_BUILD)
+      bool enabled = local_state->GetBoolean(prefs::kMetricsReportingEnabled);
       metrics->SetUserPermitsUpload(enabled);
       if (enabled)
         metrics->Start();
+#endif
     }
     chrome_browser_net_websocket_experiment::WebSocketExperimentRunner::Start();
   }

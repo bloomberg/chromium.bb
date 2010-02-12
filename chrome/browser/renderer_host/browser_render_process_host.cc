@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -452,7 +452,7 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
 
   // Now send any options from our own command line we want to propogate.
   const CommandLine& browser_command_line = *CommandLine::ForCurrentProcess();
-  PropogateBrowserCommandLineToRenderer(browser_command_line, command_line);
+  PropagateBrowserCommandLineToRenderer(browser_command_line, command_line);
 
   // Pass on the browser locale.
   const std::string locale = g_browser_process->GetApplicationLocale();
@@ -482,7 +482,7 @@ void BrowserRenderProcessHost::AppendRendererCommandLine(
 #endif
 }
 
-void BrowserRenderProcessHost::PropogateBrowserCommandLineToRenderer(
+void BrowserRenderProcessHost::PropagateBrowserCommandLineToRenderer(
     const CommandLine& browser_cmd,
     CommandLine* renderer_cmd) const {
   // Propagate the following switches to the renderer command line (along
