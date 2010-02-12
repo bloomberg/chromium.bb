@@ -678,30 +678,17 @@ bool ExternalTabContainer::ProcessUnhandledKeyStroke(HWND window,
     return false;
   }
 
-  unsigned int flags = HIWORD(lparam);
-  bool alt = (flags & KF_ALTDOWN) != 0;
-  if (!alt && (message == WM_SYSKEYUP || message == WM_KEYUP)) {
-    // In case the Alt key is being released.
-    alt = (wparam == VK_MENU);
-  }
-
-  if ((flags & KF_EXTENDED) || alt || (wparam >= VK_F1 && wparam <= VK_F24) ||
-      wparam == VK_ESCAPE || wparam == VK_RETURN ||
-      win_util::IsShiftPressed() || win_util::IsCtrlPressed()) {
-    // If this is an extended key or if one or more of Alt, Shift and Control
-    // are pressed, this might be an accelerator that the external host wants
-    // to handle. If the host does not handle this accelerator, it will reflect
-    // the accelerator back to us via the ProcessUnhandledAccelerator method.
-    MSG msg = {0};
-    msg.hwnd = window;
-    msg.message = message;
-    msg.wParam = wparam;
-    msg.lParam = lparam;
-    automation_->Send(new AutomationMsg_HandleAccelerator(0, tab_handle_, msg));
-    return true;
-  }
-
-  return false;
+  // Send this keystroke to the external host as it could be processed as an
+  // accelerator there. If the host does not handle this accelerator, it will
+  // reflect the accelerator back to us via the ProcessUnhandledAccelerator
+  // method.
+  MSG msg = {0};
+  msg.hwnd = window;
+  msg.message = message;
+  msg.wParam = wparam;
+  msg.lParam = lparam;
+  automation_->Send(new AutomationMsg_HandleAccelerator(0, tab_handle_, msg));
+  return true;
 }
 
 bool ExternalTabContainer::InitNavigationInfo(IPC::NavigationInfo* nav_info,

@@ -971,11 +971,14 @@ END_MSG_MAP()
     // fall back on its default behavior.  Instead we give IE a chance to
     // handle the shortcut here.
 
+    MSG accel_message = msg;
+    accel_message.hwnd = ::GetParent(m_hWnd);
+
     HRESULT hr = S_FALSE;
     ScopedComPtr<IBrowserService2> bs2;
     if (S_OK == DoQueryService(SID_STopLevelBrowser, m_spInPlaceSite,
                                bs2.Receive()) && bs2.get()) {
-      hr = bs2->v_MayTranslateAccelerator(const_cast<MSG*>(&msg));
+      hr = bs2->v_MayTranslateAccelerator(&accel_message);
     } else {
       // IE8 doesn't support IBrowserService2 unless you enable a special,
       // undocumented flag with CoInternetSetFeatureEnabled and even then,
@@ -999,8 +1002,8 @@ END_MSG_MAP()
       // to our parent window and IE will pick it up if it's an
       // accelerator. We won't know for sure if the browser handled the
       // keystroke or not.
-      ::PostMessage(::GetParent(m_hWnd), msg.message, msg.wParam,
-                    msg.lParam);
+      ::PostMessage(accel_message.hwnd, accel_message.message,
+                    accel_message.wParam, accel_message.lParam);
     }
 
     return hr;
