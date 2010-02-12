@@ -1795,9 +1795,6 @@ BUG23489 MAC : fast/forms/menulist-restrict-line-height.html = IMAGE
 BUG23489 MAC : fast/forms/select-baseline.html = IMAGE
 BUG23489 MAC : fast/table/empty-section-crash.html = IMAGE
 
-// Uses the wrong bullets for the bulleted list
-// BUG_HCLAM BUG23487 MAC : editing/execCommand/indent-selection.html = IMAGE
-
 // Selection glow is thinner than expected
 BUG23485 MAC : editing/inserting/4960120-1.html = IMAGE
 BUG23485 MAC : editing/style/apply-through-end-of-document.html = IMAGE
@@ -2900,29 +2897,29 @@ BUG34546 : fast/loader/document-with-fragment-url-4.html = TIMEOUT
 BUG35064 WIN DEBUG : fast/forms/restore-selection-after-layout.html = TEXT PASS
 
 // WebKit roll 54482 to 54493.
-BUG_TONY WIN : svg/W3C-SVG-1.1/filters-conv-01-f.svg = TEXT
-BUG_TONY WIN : svg/W3C-SVG-1.1/text-intro-05-t.svg = TEXT
-BUG_TONY WIN : svg/batik/text/textFeatures.svg = TEXT
-BUG_TONY WIN : svg/text/text-intro-05-t.svg = TEXT
-BUG_TONY MAC : svg/custom/use-clipped-hit.svg = IMAGE
+BUG35242 WIN : svg/W3C-SVG-1.1/filters-conv-01-f.svg = TEXT
+BUG35242 WIN : svg/W3C-SVG-1.1/text-intro-05-t.svg = TEXT
+BUG35242 WIN : svg/batik/text/textFeatures.svg = TEXT
+BUG35242 WIN : svg/text/text-intro-05-t.svg = TEXT
+BUG35240 MAC : svg/custom/use-clipped-hit.svg = IMAGE
 
 // WebKit roll 54493 to 54530: new tests.
 BUG35114 : fast/js/parser-syntax-check.html = TEXT
 BUG35115 : plugins/netscape-plugin-property-access-exception.html = TEXT
 
 // WebKit roll 54530 to 54550
-BUG_TONY MAC : fast/dom/clone-node-dynamic-style.html = IMAGE
+BUG35238 MAC : fast/dom/clone-node-dynamic-style.html = IMAGE
 BUG35215 : printing/numberOfPages.html = TEXT
 
 // WebKit roll 54550 to 54559
-BUG_TONY MAC : svg/overflow/overflow-on-outermost-svg-element-defaults.svg = IMAGE
-BUG_TONY MAC : svg/overflow/overflow-on-outermost-svg-element-ignore-attribute-1.svg = IMAGE
-BUG_TONY MAC : svg/overflow/overflow-on-outermost-svg-element-ignore-attribute-2.svg = IMAGE
-BUG_TONY MAC : svg/overflow/overflow-on-outermost-svg-element-ignore-attribute-3.svg = IMAGE
-BUG_TONY MAC : svg/overflow/overflow-on-outermost-svg-element-in-xhtml-defaults.xhtml = IMAGE
+BUG35238 MAC : svg/overflow/overflow-on-outermost-svg-element-defaults.svg = IMAGE
+BUG35238 MAC : svg/overflow/overflow-on-outermost-svg-element-ignore-attribute-1.svg = IMAGE
+BUG35238 MAC : svg/overflow/overflow-on-outermost-svg-element-ignore-attribute-2.svg = IMAGE
+BUG35238 MAC : svg/overflow/overflow-on-outermost-svg-element-ignore-attribute-3.svg = IMAGE
+BUG35238 MAC : svg/overflow/overflow-on-outermost-svg-element-in-xhtml-defaults.xhtml = IMAGE
 
 // WebKit roll 54559 to 54585
-BUG_TONY : fast/events/multiline-link-arrow-navigation.html = TEXT
+BUG35237 : fast/events/multiline-link-arrow-navigation.html = TEXT
 
 // WebKit roll 54596:54648
 BUG35387 : platform/win/plugins/plugin-delayed-destroy.html = TIMEOUT
