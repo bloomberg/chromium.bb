@@ -4,6 +4,7 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "base/cocoa_protocols_mac.h"
 #include "base/file_path.h"
 #import "chrome/browser/cocoa/draggable_button.h"
 
@@ -11,7 +12,7 @@
 
 // A button that is a drag source for a file and that displays a context menu
 // instead of firing an action when clicked in a certain area.
-@interface DownloadItemButton : DraggableButton {
+@interface DownloadItemButton : DraggableButton<NSMenuDelegate> {
  @private
   FilePath downloadPath_;
   DownloadItemController* controller_;  // weak
