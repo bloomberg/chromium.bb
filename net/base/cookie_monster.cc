@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,6 +48,7 @@
 
 #include "base/basictypes.h"
 #include "base/format_macros.h"
+#include "base/histogram.h"
 #include "base/logging.h"
 #include "base/scoped_ptr.h"
 #include "base/string_tokenizer.h"
@@ -68,19 +69,32 @@ using base::TimeDelta;
 
 namespace net {
 
+namespace {
+
 // Cookie garbage collection thresholds.  Based off of the Mozilla defaults.
 // It might seem scary to have a high purge value, but really it's not.  You
 // just make sure that you increase the max to cover the increase in purge,
 // and we would have been purging the same amount of cookies.  We're just
 // going through the garbage collection process less often.
-static const size_t kNumCookiesPerHost      = 70;  // ~50 cookies
-static const size_t kNumCookiesPerHostPurge = 20;
-static const size_t kNumCookiesTotal        = 3300;  // ~3000 cookies
-static const size_t kNumCookiesTotalPurge   = 300;
+const size_t kNumCookiesPerHost      = 70;  // ~50 cookies
+const size_t kNumCookiesPerHostPurge = 20;
+const size_t kNumCookiesTotal        = 3300;  // ~3000 cookies
+const size_t kNumCookiesTotalPurge   = 300;
 
 // Default minimum delay after updating a cookie's LastAccessDate before we
 // will update it again.
-static const int kDefaultAccessUpdateThresholdSeconds = 60;
+const int kDefaultAccessUpdateThresholdSeconds = 60;
+
+// Comparator to sort cookies from highest creation date to lowest
+// creation date.
+struct OrderByCreationTimeDesc {
+  bool operator()(const CookieMonster::CookieMap::iterator& a,
+                  const CookieMonster::CookieMap::iterator& b) const {
+    return a->second->CreationDate() > b->second->CreationDate();
+  }
+};
+
+}  // namespace
 
 // static
 bool CookieMonster::enable_file_scheme_ = false;
@@ -117,6 +131,116 @@ void CookieMonster::InitStore() {
        it != cookies.end(); ++it) {
     InternalInsertCookie(it->first, it->second, false);
   }
+
+  // After importing cookies from the PersistentCookieStore, verify that
+  // none of our constraints are violated.
+  //
+  // In particular, the backing store might have given us duplicate cookies.
+  EnsureCookiesMapIsValid();
+}
+
+void CookieMonster::EnsureCookiesMapIsValid() {
+  int num_duplicates_trimmed = 0;
+
+  // Iterate through all the of the cookies, grouped by host.
+  CookieMap::iterator prev_range_end = cookies_.begin();
+  while (prev_range_end != cookies_.end()) {
+    CookieMap::iterator cur_range_begin = prev_range_end;
+    const std::string key = cur_range_begin->first;  // Keep a copy.
+    CookieMap::iterator cur_range_end = cookies_.upper_bound(key);
+    prev_range_end = cur_range_end;
+
+    // Ensure no equivalent cookies for this host.
+    num_duplicates_trimmed +=
+        TrimDuplicateCookiesForHost(key, cur_range_begin, cur_range_end);
+  }
+
+  // Record how many duplicates were found in the database.
+  UMA_HISTOGRAM_COUNTS_10000("Net.NumDuplicateCookiesInDb",
+                             num_duplicates_trimmed);
+
+  // TODO(eroman): Should also verify that there are no cookies with the same
+  // creation time, since that is assumed to be unique by the rest of the code.
+}
+
+// Our strategy to find duplicates is:
+// (1) Build a map from (cookiename, cookiepath) to
+//     {list of cookies with this signature, sorted by creation time}.
+// (2) For each list with more than 1 entry, keep the cookie having the
+//     most recent creation time, and delete the others.
+int CookieMonster::TrimDuplicateCookiesForHost(
+    const std::string& key,
+    CookieMap::iterator begin,
+    CookieMap::iterator end) {
+
+  // Two cookies are considered equivalent if they have the same name and path.
+  typedef std::pair<std::string, std::string> CookieSignature;
+
+  // List of cookies ordered by creation time.
+  typedef std::set<CookieMap::iterator, OrderByCreationTimeDesc> CookieList;
+
+  // Helper map we populate to find the duplicates.
+  typedef std::map<CookieSignature, CookieList> EquivalenceMap;
+  EquivalenceMap equivalent_cookies;
+
+  // The number of duplicate cookies that have been found.
+  int num_duplicates = 0;
+
+  // Iterate through all of the cookies in our range, and insert them into
+  // the equivalence map.
+  for (CookieMap::iterator it = begin; it != end; ++it) {
+    DCHECK_EQ(key, it->first);
+    CanonicalCookie* cookie = it->second;
+
+    CookieSignature signature(cookie->Name(), cookie->Path());
+    CookieList& list = equivalent_cookies[signature];
+
+    // We found a duplicate!
+    if (!list.empty())
+      num_duplicates++;
+
+    // We save the iterator into |cookies_| rather than the actual cookie
+    // pointer, since we may need to delete it later.
+    list.insert(it);
+  }
+
+  // If there were no duplicates, we are done!
+  if (num_duplicates == 0)
+    return 0;
+
+  // Otherwise, delete all the duplicate cookies, both from our in-memory store
+  // and from the backing store.
+  for (EquivalenceMap::iterator it = equivalent_cookies.begin();
+       it != equivalent_cookies.end();
+       ++it) {
+    const CookieSignature& signature = it->first;
+    CookieList& dupes = it->second;
+
+    if (dupes.size() <= 1)
+      continue;  // This cookiename/path has no duplicates.
+
+    // Since |dups| is sorted by creation time (descending), the first cookie
+    // is the most recent one, so we will keep it. The rest are duplicates.
+    dupes.erase(dupes.begin());
+
+    LOG(ERROR) << StringPrintf("Found %d duplicate cookies for host='%s', "
+                               "with {name='%s', path='%s'}",
+                               static_cast<int>(dupes.size()),
+                               key.c_str(),
+                               signature.first.c_str(),
+                               signature.second.c_str());
+
+    // Remove all the cookies identified by |dupes|. It is valid to delete our
+    // list of iterators one at a time, since |cookies_| is a multimap (they
+    // don't invalidate existing iterators following deletion).
+    for (CookieList::iterator dupes_it = dupes.begin();
+         dupes_it != dupes.end();
+         ++dupes_it) {
+      InternalDeleteCookie(*dupes_it, true /*sync_to_store*/);
+    }
+  }
+
+  return num_duplicates;
 }
 
 void CookieMonster::SetDefaultCookieableSchemes() {
@@ -523,7 +647,7 @@ bool CookieMonster::DeleteAnyEquivalentCookie(const std::string& key,
     if (ecc.IsEquivalent(*cc)) {
       // We should never have more than one equivalent cookie, since they should
       // overwrite each other.
-      DCHECK(!found_equivalent_cookie) <<
+      CHECK(!found_equivalent_cookie) <<
           "Duplicate equivalent cookies found, cookie store is corrupted.";
       if (skip_httponly && cc->IsHttpOnly()) {
         skipped_httponly = true;
@@ -531,11 +655,6 @@ bool CookieMonster::DeleteAnyEquivalentCookie(const std::string& key,
         InternalDeleteCookie(curit, true);
       }
       found_equivalent_cookie = true;
-#ifdef NDEBUG
-      // Speed optimization: No point looping through the rest of the cookies
-      // since we're only doing it as a consistency check.
-      break;
-#endif
     }
   }
   return skipped_httponly;

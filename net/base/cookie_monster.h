@@ -148,6 +148,17 @@ class CookieMonster : public CookieStore {
   // Should only be called by InitIfNecessary().
   void InitStore();
 
+  // Checks that |cookies_| matches our invariants, and tries to repair any
+  // inconsistencies. (In other words, it does not have duplicate cookies).
+  void EnsureCookiesMapIsValid();
+
+  // Checks for any duplicate cookies for host |key|, which lie between
+  // |begin| and |end|. If any are found, all but the most recent are deleted.
+  // Returns the number of duplicate cookies that were deleted.
+  int TrimDuplicateCookiesForHost(const std::string& key,
+                                  CookieMap::iterator begin,
+                                  CookieMap::iterator end);
+
   void SetDefaultCookieableSchemes();
 
   void FindCookiesForHostAndDomain(const GURL& url,
@@ -341,6 +352,7 @@ class CookieMonster::CanonicalCookie {
   bool IsEquivalent(const CanonicalCookie& ecc) const {
     // It seems like it would make sense to take secure and httponly into
     // account, but the RFC doesn't specify this.
+    // NOTE: Keep this logic in-sync with TrimDuplicateCookiesForHost().
     return name_ == ecc.Name() && path_ == ecc.Path();
   }
 
