@@ -1776,8 +1776,8 @@ void Browser::CloseFrameAfterDragSession() {
   // otherwise the frame will think the drag session is still active and ignore
   // the request.
   // TODO(port): figure out what is required here in a cross-platform world
-  MessageLoop::current()->PostTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(&Browser::CloseFrame));
+  MessageLoop::current()->PostTask(
+      FROM_HERE, method_factory_.NewRunnableMethod(&Browser::CloseFrame));
 #endif
 }
 
@@ -1962,8 +1962,8 @@ void Browser::TabStripEmpty() {
   //       still present.
   // NOTE: If you change to be immediate (no invokeLater) then you'll need to
   //       update BrowserList::CloseAllBrowsers.
-  MessageLoop::current()->PostTask(FROM_HERE,
-      method_factory_.NewRunnableMethod(&Browser::CloseFrame));
+  MessageLoop::current()->PostTask(
+      FROM_HERE, method_factory_.NewRunnableMethod(&Browser::CloseFrame));
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -2371,7 +2371,8 @@ void Browser::Observe(NotificationType type,
       if (is_attempting_to_close_browser_) {
         // Need to do this asynchronously as it will close the tab, which is
         // currently on the call stack above us.
-        MessageLoop::current()->PostTask(FROM_HERE,
+        MessageLoop::current()->PostTask(
+            FROM_HERE,
             method_factory_.NewRunnableMethod(&Browser::ClearUnloadState,
                 Source<TabContents>(source).ptr()));
       }
@@ -2777,7 +2778,8 @@ void Browser::ScheduleUIUpdate(const TabContents* source,
 
   if (chrome_updater_factory_.empty()) {
     // No task currently scheduled, start another.
-    MessageLoop::current()->PostDelayedTask(FROM_HERE,
+    MessageLoop::current()->PostDelayedTask(
+        FROM_HERE,
         chrome_updater_factory_.NewRunnableMethod(
             &Browser::ProcessPendingUIUpdates),
             kUIUpdateCoalescingTimeMS);
@@ -3280,4 +3282,3 @@ void Browser::SetAppExtensionById(TabContents* contents,
       contents->SetAppExtension(extension);
   }
 }
-

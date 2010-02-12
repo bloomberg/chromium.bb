@@ -17,7 +17,8 @@ class OffThreadObjectCreator {
     {
       Thread creator_thread("creator_thread");
       creator_thread.Start();
-      creator_thread.message_loop()->PostTask(FROM_HERE,
+      creator_thread.message_loop()->PostTask(
+          FROM_HERE,
           NewRunnableFunction(OffThreadObjectCreator::CreateObject, &result));
     }
     DCHECK(result);  // We synchronized on thread destruction above.

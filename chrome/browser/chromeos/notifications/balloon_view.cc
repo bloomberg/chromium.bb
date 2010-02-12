@@ -105,7 +105,8 @@ void BalloonViewImpl::Show(Balloon* balloon) {
 }
 
 void BalloonViewImpl::Close(bool by_user) {
-  MessageLoop::current()->PostTask(FROM_HERE,
+  MessageLoop::current()->PostTask(
+      FROM_HERE,
       method_factory_.NewRunnableMethod(
           &BalloonViewImpl::DelayedClose, by_user));
 }

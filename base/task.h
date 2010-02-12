@@ -66,7 +66,8 @@ class CancelableTask : public Task {
 //
 //     // The factories are not thread safe, so always invoke on
 //     // |MessageLoop::current()|.
-//     MessageLoop::current()->PostDelayedTask(FROM_HERE,
+//     MessageLoop::current()->PostDelayedTask(
+//         FROM_HERE,
 //         some_method_factory_.NewRunnableMethod(&MyClass::SomeMethod),
 //         kSomeMethodDelayMS);
 //   }
