@@ -121,8 +121,6 @@
       <include name="IDR_BROWSER_ACTION_BADGE_RIGHT" file="browser_action_badge_right.png" type="BINDATA" />
       <include name="IDR_BROWSER_ACTION_BADGE_CENTER" file="browser_action_badge_center.png" type="BINDATA" />
 
-      <include name="IDR_GLEN" file="linux_close_glen.png" type="BINDATA" />
-
       <!-- Infobar Buttons normal, highlighted and pushed images -->
       <include name="IDR_INFOBARBUTTON_TOP_LEFT_N" file="infobarbutton_tl_n.png" type="BINDATA" />
       <include name="IDR_INFOBARBUTTON_TOP_N" file="infobarbutton_t_n.png" type="BINDATA" />

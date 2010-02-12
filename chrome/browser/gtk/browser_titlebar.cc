@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -255,14 +255,9 @@ void BrowserTitlebar::Init() {
   gtk_box_pack_start(GTK_BOX(titlebar_buttons_box_), buttons_hbox, FALSE,
                      FALSE, 0);
 
-  if (CommandLine::ForCurrentProcess()->HasSwitch("glen")) {
-    close_button_.reset(BuildTitlebarButton(IDR_GLEN, IDR_GLEN, IDR_GLEN,
-                                            buttons_hbox, IDS_GLEN));
-  } else {
-    close_button_.reset(BuildTitlebarButton(IDR_CLOSE, IDR_CLOSE_P, IDR_CLOSE_H,
-                                            buttons_hbox,
-                                            IDS_XPFRAME_CLOSE_TOOLTIP));
-  }
+  close_button_.reset(BuildTitlebarButton(IDR_CLOSE, IDR_CLOSE_P, IDR_CLOSE_H,
+                                          buttons_hbox,
+                                          IDS_XPFRAME_CLOSE_TOOLTIP));
 
   restore_button_.reset(BuildTitlebarButton(IDR_RESTORE, IDR_RESTORE_P,
                         IDR_RESTORE_H, buttons_hbox,
