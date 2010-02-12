@@ -164,6 +164,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
     // traffic controller here, forwarding incoming messages to appropriate
     // landing threads.
     virtual void OnChangesApplied(
+        syncable::ModelType model_type,
         const sync_api::BaseTransaction* trans,
         const sync_api::SyncManager::ChangeRecord* changes,
         int change_count);
@@ -352,7 +353,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   SyncFrontend* frontend_;
 
   // The change processors that handle the different data types.
-  std::set<ChangeProcessor*> processors_;
+  std::map<syncable::ModelType, ChangeProcessor*> processors_;
 
   // Path of the folder that stores the sync data files.
   FilePath sync_data_folder_path_;

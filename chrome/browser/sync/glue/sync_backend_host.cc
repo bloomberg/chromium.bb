@@ -127,16 +127,14 @@ void SyncBackendHost::ActivateDataType(
       registrar_.routing_info.find(data_type_controller->type());
   DCHECK(i != registrar_.routing_info.end());
   DCHECK((*i).second == GROUP_PASSIVE);
-
+  syncable::ModelType type = data_type_controller->type();
   // Change the data type's routing info to its group.
-  registrar_.routing_info[data_type_controller->type()] =
-      data_type_controller->model_safe_group();
+  registrar_.routing_info[type] = data_type_controller->model_safe_group();
 
   // Add the data type's change processor to the list of change
   // processors so it can receive updates.
-  std::pair<std::set<ChangeProcessor*>::iterator, bool> result =
-      processors_.insert(change_processor);
-  DCHECK(result.second);
+  DCHECK(processors_.count(type) == 0);
+  processors_[type] = change_processor;
 }
 
 void SyncBackendHost::DeactivateDataType(
@@ -144,8 +142,8 @@ void SyncBackendHost::DeactivateDataType(
     ChangeProcessor* change_processor) {
   registrar_.routing_info.erase(data_type_controller->type());
 
-  std::set<ChangeProcessor*>::size_type erased =
-      processors_.erase(change_processor);
+  std::map<syncable::ModelType, ChangeProcessor*>::size_type erased =
+      processors_.erase(data_type_controller->type());
   DCHECK(erased == 1);
 
   // TODO(sync): At this point we need to purge the data associated
@@ -298,6 +296,7 @@ void SyncBackendHost::Core::DoShutdown(bool sync_disabled) {
 }
 
 void SyncBackendHost::Core::OnChangesApplied(
+    syncable::ModelType model_type,
     const sync_api::BaseTransaction* trans,
     const sync_api::SyncManager::ChangeRecord* changes,
     int change_count) {
@@ -306,17 +305,19 @@ void SyncBackendHost::Core::OnChangesApplied(
     return;
   }
 
-  // Right now we only support bookmarks, and until bookmark model
-  // association happens, the processors list will be empty.  During
-  // this time, it is OK to drop changes on the floor (since model
-  // association has not happened yet).  When the bookmark data type
-  // is activated, model association takes place then the change
+  std::map<syncable::ModelType, ChangeProcessor*>::const_iterator it =
+      host_->processors_.find(model_type);
+
+  // Until model association happens for a datatype, it will not appear in
+  // the processors list.  During this time, it is OK to drop changes on
+  // the floor (since model association has not happened yet).  When the
+  // data type is activated, model association takes place then the change
   // processor is added to the processors_ list.  This all happens on
   // the UI thread so we will never drop any changes after model
   // association.
-  // TODO(sync): Replace this with proper change filtering.
-  if (!host_->processors_.size())
+  if (it == host_->processors_.end())
     return;
+  ChangeProcessor* processor = it->second;
 
   // ChangesApplied is the one exception that should come over from the sync
   // backend already on the service_loop_ thanks to our UIModelWorker.
@@ -331,12 +332,7 @@ void SyncBackendHost::Core::OnChangesApplied(
     DLOG(WARNING) << "Could not update bookmark model from non-UI thread";
     return;
   }
-  for (std::set<ChangeProcessor*>::const_iterator it =
-       host_->processors_.begin(); it != host_->processors_.end(); ++it) {
-    // TODO(sync): Filter per data-type here and apply only the relevant
-    // changes for each processor.
-    (*it)->ApplyChangesFromSyncModel(trans, changes, change_count);
-  }
+  processor->ApplyChangesFromSyncModel(trans, changes, change_count);
 }
 
 void SyncBackendHost::Core::OnSyncCycleCompleted() {

@@ -1070,6 +1070,14 @@ class SyncManager::SyncInternal {
       return true;
     return false;
   }
+  
+  bool ChangeBuffersAreEmpty() {
+    for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
+      if (!change_buffers_[i].IsEmpty())
+        return false;
+    }
+    return true;
+  }
 
   // We couple the DirectoryManager and username together in a UserShare member
   // so we can return a handle to share_ to clients of the API for use when
@@ -1105,10 +1113,12 @@ class SyncManager::SyncInternal {
   // It has a heavy duty constructor requiring boilerplate so we heap allocate.
   scoped_refptr<AuthWatcher> auth_watcher_;
 
-  // A store of change records produced by HandleChangeEvent during the
-  // CALCULATE_CHANGES step, and to be processed, and forwarded to the
-  // observer, by HandleChangeEvent during the TRANSACTION_COMPLETE step.
-  ChangeReorderBuffer change_buffer_;
+  // Each element of this array is a store of change records produced by
+  // HandleChangeEvent during the CALCULATE_CHANGES step.  The changes are
+  // segregated by model type, and are stored here to be processed and
+  // forwarded to the observer slightly later, at the TRANSACTION_COMPLETE
+  // step by HandleTransactionCompleteChangeEvent.
+  ChangeReorderBuffer change_buffers_[syncable::MODEL_TYPE_COUNT];
 
   // The event listener hookup that is registered for HandleChangeEvent.
   scoped_ptr<EventListenerHookup> dir_change_hookup_;
@@ -1492,20 +1502,25 @@ void SyncManager::SyncInternal::HandleChangeEvent(
 
 void SyncManager::SyncInternal::HandleTransactionCompleteChangeEvent(
     const syncable::DirectoryChangeEvent& event) {
-  DCHECK_EQ(event.todo, syncable::DirectoryChangeEvent::TRANSACTION_COMPLETE);
   // This notification happens immediately after a syncable WriteTransaction
   // falls out of scope.
-  if (change_buffer_.IsEmpty() || !observer_)
+  DCHECK_EQ(event.todo, syncable::DirectoryChangeEvent::TRANSACTION_COMPLETE);
+  if (!observer_ || ChangeBuffersAreEmpty())
     return;
 
   ReadTransaction trans(GetUserShare());
-  vector<ChangeRecord> ordered_changes;
-  change_buffer_.GetAllChangesInTreeOrder(&trans, &ordered_changes);
-  if (!ordered_changes.empty()) {
-    observer_->OnChangesApplied(&trans, &ordered_changes[0],
-                                ordered_changes.size());
+  for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
+    if (change_buffers_[i].IsEmpty())
+      continue;
+
+    vector<ChangeRecord> ordered_changes;
+    change_buffers_[i].GetAllChangesInTreeOrder(&trans, &ordered_changes);
+    if (!ordered_changes.empty()) {
+      observer_->OnChangesApplied(syncable::ModelTypeFromInt(i), &trans,
+                                  &ordered_changes[0], ordered_changes.size());
+    }
+    change_buffers_[i].Clear();
   }
-  change_buffer_.Clear();
 }
 
 void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
@@ -1513,7 +1528,7 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
   // We have been notified about a user action changing the bookmark model.
   DCHECK_EQ(event.todo, syncable::DirectoryChangeEvent::CALCULATE_CHANGES);
   DCHECK_EQ(event.writer, syncable::SYNCAPI);
-  LOG_IF(WARNING, !change_buffer_.IsEmpty()) <<
+  LOG_IF(WARNING, !ChangeBuffersAreEmpty()) <<
       "CALCULATE_CHANGES called with unapplied old changes.";
 
   bool exists_unsynced_items = false;
@@ -1543,11 +1558,11 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncApi(
 
 void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncer(
     const syncable::DirectoryChangeEvent& event) {
-  // We only expect one notification per sync step, so change_buffer_ should
+  // We only expect one notification per sync step, so change_buffers_ should
   // contain no pending entries.
   DCHECK_EQ(event.todo, syncable::DirectoryChangeEvent::CALCULATE_CHANGES);
   DCHECK_EQ(event.writer, syncable::SYNCER);
-  LOG_IF(WARNING, !change_buffer_.IsEmpty()) <<
+  LOG_IF(WARNING, !ChangeBuffersAreEmpty()) <<
       "CALCULATE_CHANGES called with unapplied old changes.";
 
   for (syncable::OriginalEntries::const_iterator i = event.originals->begin();
@@ -1558,19 +1573,17 @@ void SyncManager::SyncInternal::HandleCalculateChangesChangeEventFromSyncer(
     bool exists_now = e.good() && !e.Get(syncable::IS_DEL);
     DCHECK(e.good());
 
-    // Ignore root object, should it ever change.
-    if (e.IsRoot())
-      continue;
-    // Ignore non-bookmark objects.
-    if (e.GetModelType() != syncable::BOOKMARKS)
+    // Omit items that aren't associated with a model.
+    syncable::ModelType type = e.GetModelType();
+    if (type == syncable::TOP_LEVEL_FOLDER || type == syncable::UNSPECIFIED)
       continue;
 
     if (exists_now && !existed_before)
-      change_buffer_.PushAddedItem(id);
+      change_buffers_[type].PushAddedItem(id);
     else if (!exists_now && existed_before)
-      change_buffer_.PushDeletedItem(id);
+      change_buffers_[type].PushDeletedItem(id);
     else if (exists_now && existed_before && VisiblePropertiesDiffer(*i, e))
-      change_buffer_.PushUpdatedItem(id, VisiblePositionsDiffer(*i, e));
+      change_buffers_[type].PushUpdatedItem(id, VisiblePositionsDiffer(*i, e));
   }
 }
 

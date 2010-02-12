@@ -499,13 +499,18 @@ class SyncManager {
    public:
     Observer() { }
     virtual ~Observer() { }
+
     // Notify the observer that changes have been applied to the sync model.
+    //
     // This will be invoked on the same thread as on which ApplyChanges was
-    // called. |changes| is an array of size |change_count|, and contains the ID
-    // of each individual item that was changed.  |changes| exists only
-    // for the duration of the call.  Because the observer is passed a |trans|,
-    // the observer can assume a read lock on the database that will be released
-    // after the function returns.
+    // called. |changes| is an array of size |change_count|, and contains the
+    // ID of each individual item that was changed. |changes| exists only for
+    // the duration of the call. If items of multiple data types change at
+    // the same time, this method is invoked once per data type and |changes|
+    // is restricted to items of the ModelType indicated by |model_type|. 
+    // Because the observer is passed a |trans|, the observer can assume a
+    // read lock on the sync model that will be released after the function
+    // returns.
     //
     // The SyncManager constructs |changes| in the following guaranteed order:
     //
@@ -520,7 +525,8 @@ class SyncManager {
     // forward dependencies.  But since deletions come before reparent
     // operations, a delete may temporarily orphan a node that is
     // updated later in the list.
-    virtual void OnChangesApplied(const BaseTransaction* trans,
+    virtual void OnChangesApplied(syncable::ModelType model_type,
+                                  const BaseTransaction* trans,
                                   const ChangeRecord* changes,
                                   int change_count) = 0;
 
