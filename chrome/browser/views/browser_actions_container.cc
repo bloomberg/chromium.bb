@@ -37,6 +37,8 @@
 
 #include "grit/theme_resources.h"
 
+namespace {
+
 // The size (both dimensions) of the buttons for page actions.
 static const int kButtonSize = 29;
 
@@ -78,6 +80,11 @@ static const SkColor kDropIndicatorColor = SK_ColorBLACK;
 // The x offset for the drop indicator (how much we shift it by).
 static const int kDropIndicatorOffsetLtr = 3;
 static const int kDropIndicatorOffsetRtl = 9;
+
+}  // namespace.
+
+// Static.
+bool BrowserActionsContainer::disable_animations_during_testing_ = false;
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionButton
@@ -502,6 +509,13 @@ void BrowserActionsContainer::TestExecuteBrowserAction(int index) {
   OnBrowserActionExecuted(button);
 }
 
+void BrowserActionsContainer::TestSetIconVisibilityCount(size_t icons) {
+  chevron_->SetVisible(icons < browser_action_views_.size());
+  container_size_.set_width(IconCountToWidth(icons));
+  Layout();
+  SchedulePaint();
+}
+
 void BrowserActionsContainer::OnBrowserActionExecuted(
     BrowserActionButton* button) {
   ExtensionAction* browser_action = button->browser_action();
@@ -602,7 +616,8 @@ void BrowserActionsContainer::Layout() {
       ((browser_action_views_.size() - 1) *
           kBrowserActionButtonPadding);
 
-  int max_x = width() - kDividerHorizontalMargin - kChevronRightMargin;
+  gfx::Size sz = GetPreferredSize();
+  int max_x = sz.width() - kDividerHorizontalMargin - kChevronRightMargin;
 
   // If they don't all fit, show the chevron (unless suppressed).
   gfx::Size chevron_size;
@@ -974,10 +989,7 @@ void BrowserActionsContainer::BrowserActionAdded(Extension* extension,
     // in the header for why we do this.
     suppress_chevron_ = !chevron_->IsVisible();
 
-    // Animate!
-    resize_animation_->Reset();
-    resize_animation_->SetTweenType(SlideAnimation::NONE);
-    resize_animation_->Show();
+    Animate(SlideAnimation::NONE);
   }
 }
 
@@ -986,6 +998,10 @@ void BrowserActionsContainer::BrowserActionRemoved(Extension* extension) {
 
   if (popup_ && popup_->host()->extension() == extension)
     HidePopup();
+
+  // Before we change anything, determine the number of visible browser
+  // actions.
+  size_t visible_actions = VisibleBrowserActions();
 
   for (BrowserActionViews::iterator iter =
        browser_action_views_.begin(); iter != browser_action_views_.end();
@@ -1003,10 +1019,6 @@ void BrowserActionsContainer::BrowserActionRemoved(Extension* extension) {
       // For details on why we do the following see the class comments in the
       // header.
 
-      // Before we change anything, determine the number of visible browser
-      // actions.
-      size_t visible_actions = VisibleBrowserActions();
-
       // Calculate the target size we'll animate to (end state). This might be
       // the same size (if the icon we are removing is in the overflow bucket
       // and there are other icons there). We don't decrement visible_actions
@@ -1015,10 +1027,7 @@ void BrowserActionsContainer::BrowserActionRemoved(Extension* extension) {
       animation_target_size_ =
           ClampToNearestIconCount(IconCountToWidth(visible_actions), true);
 
-      // Animate!
-      resize_animation_->Reset();
-      resize_animation_->SetTweenType(SlideAnimation::EASE_OUT);
-      resize_animation_->Show();
+      Animate(SlideAnimation::EASE_OUT);
       return;
     }
   }
@@ -1061,6 +1070,18 @@ int BrowserActionsContainer::IconCountToWidth(int icons) const {
 
 int BrowserActionsContainer::ContainerMinSize() const {
   return resize_gripper_->width() + chevron_->width() + kChevronRightMargin;
+}
+
+void BrowserActionsContainer::Animate(
+    SlideAnimation::TweenType tween_type) {
+  if (!disable_animations_during_testing_) {
+    // Animate!
+    resize_animation_->Reset();
+    resize_animation_->SetTweenType(tween_type);
+    resize_animation_->Show();
+  } else {
+    AnimationEnded(resize_animation_.get());
+  }
 }
 
 size_t BrowserActionsContainer::VisibleBrowserActions() const {

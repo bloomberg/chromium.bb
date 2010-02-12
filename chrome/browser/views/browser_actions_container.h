@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "app/slide_animation.h"
 #include "base/task.h"
 #include "chrome/browser/extensions/extension_toolbar_model.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
@@ -31,7 +32,6 @@ class ExtensionAction;
 class ExtensionPopup;
 class PrefService;
 class Profile;
-class SlideAnimation;
 
 ////////////////////////////////////////////////////////////////////////////////
 // BrowserActionButton
@@ -353,6 +353,15 @@ class BrowserActionsContainer
   // Retrieve the current popup.  This should only be used by unit tests.
   ExtensionPopup* TestGetPopup() { return popup_; }
 
+  // Set how many icons the container should show. This should only be used by
+  // unit tests.
+  void TestSetIconVisibilityCount(size_t icons);
+
+  // During testing we can disable animations by setting this flag to true,
+  // so that the bar resizes instantly, instead of having to poll it while it
+  // animates to open/closed status.
+  static bool disable_animations_during_testing_;
+
  private:
   typedef std::vector<BrowserActionView*> BrowserActionViews;
 
@@ -399,6 +408,10 @@ class BrowserActionsContainer
   // all the padding that we normally show if there are icons.
   int ContainerMinSize() const;
 
+  // Animate to the target value (unless testing, in which case we go straight
+  // to the target size).
+  void Animate(SlideAnimation::TweenType tween_type);
+
   // Returns true if this extension should be shown in this toolbar. This can
   // return false if we are in an incognito window and the extension is disabled
   // for incognito.
@@ -413,7 +426,7 @@ class BrowserActionsContainer
 
   Profile* profile_;
 
-  // The Browser object the containier is associated with.
+  // The Browser object the container is associated with.
   Browser* browser_;
 
   // The view that owns us.

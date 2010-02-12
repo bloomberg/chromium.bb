@@ -6,6 +6,7 @@
   'variables' : {
     'browser_tests_sources_views_specific': [
       'browser/extensions/browser_action_test_util_views.cc',
+      'browser/views/browser_actions_container_unittest.cc',
       'browser/views/find_bar_host_browsertest.cc',
     ],
     'browser_tests_sources_win_specific': [

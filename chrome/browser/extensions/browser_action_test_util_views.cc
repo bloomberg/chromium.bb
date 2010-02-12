@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,10 @@ int BrowserActionTestUtil::NumberOfBrowserActions() {
   return GetContainer(browser_)->num_browser_actions();
 }
 
+int BrowserActionTestUtil::VisibleBrowserActions() {
+  return GetContainer(browser_)->VisibleBrowserActions();
+}
+
 bool BrowserActionTestUtil::HasIcon(int index) {
   return !GetContainer(browser_)->GetBrowserActionViewAt(index)->
       button()->icon().empty();
@@ -37,6 +41,12 @@ bool BrowserActionTestUtil::HasIcon(int index) {
 
 void BrowserActionTestUtil::Press(int index) {
   GetContainer(browser_)->TestExecuteBrowserAction(index);
+}
+
+std::string BrowserActionTestUtil::GetExtensionId(int index) {
+  BrowserActionButton* button =
+      GetContainer(browser_)->GetBrowserActionViewAt(index)->button();
+  return button->extension()->id();
 }
 
 std::string BrowserActionTestUtil::GetTooltip(int index) {
@@ -58,6 +68,10 @@ bool BrowserActionTestUtil::HidePopup() {
   BrowserActionsContainer* container = GetContainer(browser_);
   container->HidePopup();
   return !HasPopup();
+}
+
+void BrowserActionTestUtil::SetIconVisibilityCount(size_t icons) {
+  GetContainer(browser_)->TestSetIconVisibilityCount(icons);
 }
 
 gfx::Size BrowserActionTestUtil::GetMinPopupSize() {

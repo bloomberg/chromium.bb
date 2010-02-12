@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,11 +21,17 @@ class BrowserActionTestUtil {
   // Returns the number of browser action buttons in the window toolbar.
   int NumberOfBrowserActions();
 
+  // Returns the number of browser action currently visible.
+  int VisibleBrowserActions();
+
   // Returns whether the browser action at |index| has a non-null icon.
   bool HasIcon(int index);
 
   // Simulates a user click on the browser action button at |index|.
   void Press(int index);
+
+  // Returns the extension id of the extension at |index|.
+  std::string GetExtensionId(int index);
 
   // Returns the current tooltip for the browser action button.
   std::string GetTooltip(int index);
@@ -38,6 +44,9 @@ class BrowserActionTestUtil {
 
   // Hides the given popup and returns whether the hide was successful.
   bool HidePopup();
+
+  // Set how many icons should be visible.
+  void SetIconVisibilityCount(size_t icons);
 
   // Returns the minimum allowed size of an extension popup.
   static gfx::Size GetMinPopupSize();

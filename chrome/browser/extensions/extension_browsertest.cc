@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -76,8 +76,8 @@ class MockAbortExtensionInstallUI : public ExtensionInstallUI {
   MockAbortExtensionInstallUI() : ExtensionInstallUI(NULL) {}
 
   // Simulate a user abort on an extension installation.
-  void ConfirmInstall(Delegate* delegate, Extension* extension, SkBitmap* icon)
-  {
+  void ConfirmInstall(
+      Delegate* delegate, Extension* extension, SkBitmap* icon) {
     delegate->InstallUIAbort();
     MessageLoopForUI::current()->Quit();
   }
@@ -163,6 +163,16 @@ void ExtensionBrowserTest::UnloadExtension(const std::string& extension_id) {
 void ExtensionBrowserTest::UninstallExtension(const std::string& extension_id) {
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   service->UninstallExtension(extension_id, false);
+}
+
+void ExtensionBrowserTest::DisableExtension(const std::string& extension_id) {
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  service->DisableExtension(extension_id);
+}
+
+void ExtensionBrowserTest::EnableExtension(const std::string& extension_id) {
+  ExtensionsService* service = browser()->profile()->GetExtensionsService();
+  service->EnableExtension(extension_id);
 }
 
 bool ExtensionBrowserTest::WaitForPageActionCountChangeTo(int count) {
