@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "base/dynamic_annotations.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -13,6 +14,7 @@
 class MockWlanApi : public WifiDataProviderCommon::WlanApiInterface {
  public:
   MockWlanApi() : calls_(0), bool_return_(true) {
+    ANNOTATE_BENIGN_RACE(&calls_, "This is a test-only data race on a counter");
   }
   virtual bool GetAccessPointData(WifiData::AccessPointDataSet* data) {
     ++calls_;
