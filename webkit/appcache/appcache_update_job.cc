@@ -14,7 +14,7 @@
 
 namespace appcache {
 
-static const int kBufferSize = 4096;
+static const int kBufferSize = 32768;
 static const size_t kMaxConcurrentUrlFetches = 2;
 static const int kMax503Retries = 3;
 
@@ -734,10 +734,16 @@ void AppCacheUpdateJob::OnGroupAndNewestCacheStored(AppCacheGroup* group,
                                                     AppCache* newest_cache,
                                                     bool success) {
   DCHECK(stored_state_ == STORING);
-  if (success)
+  if (success) {
     stored_state_ = STORED;
-  else
+  } else {
     internal_state_ = CACHE_FAILURE;
+
+    // Restore inprogress_cache_ to get the proper events delivered
+    // and the proper cleanup to occur.
+    if (newest_cache != group->newest_complete_cache())
+      inprogress_cache_ = newest_cache;
+  }
   MaybeCompleteUpdate();  // will definitely complete
 }
 
