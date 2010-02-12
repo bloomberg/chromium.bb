@@ -26,6 +26,9 @@ class TestObserver : public webkit_database::DatabaseTracker::Observer {
     database_size_ = database_size;
     space_available_ = space_available;
   }
+  virtual void OnDatabaseScheduledForDeletion(const string16& origin_identifier,
+                                              const string16& database_name) {
+  }
   bool DidReceiveNewNotification() {
     bool temp_new_notification_received = new_notification_received_;
     new_notification_received_ = false;

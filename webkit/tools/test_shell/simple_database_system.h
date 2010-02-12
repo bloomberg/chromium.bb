@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef WEBKIT_TOOLS_TEST_SHELL_SIMPLE_DATABASE_SYSTEM_H_
 #define WEBKIT_TOOLS_TEST_SHELL_SIMPLE_DATABASE_SYSTEM_H_
@@ -46,6 +46,8 @@ class SimpleDatabaseSystem : public webkit_database::DatabaseTracker::Observer,
                                      const string16& database_name,
                                      int64 database_size,
                                      int64 space_available);
+  virtual void OnDatabaseScheduledForDeletion(const string16& origin_identifier,
+                                              const string16& database_name);
 
   // WebDatabaseObserver implementation
   virtual void databaseOpened(const WebKit::WebDatabase& database);

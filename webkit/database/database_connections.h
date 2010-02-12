@@ -5,9 +5,10 @@
 #ifndef WEBKIT_DATABASE_DATABASE_CONNECTIONS_H_
 #define WEBKIT_DATABASE_DATABASE_CONNECTIONS_H_
 
-#include "base/string16.h"
-
 #include <map>
+#include <vector>
+
+#include "base/string16.h"
 
 namespace webkit_database {
 
@@ -25,7 +26,9 @@ class DatabaseConnections {
   void RemoveConnection(const string16& origin_identifier,
                         const string16& database_name);
   void RemoveAllConnections();
-  void RemoveConnections(const DatabaseConnections& connections);
+  void RemoveConnections(
+      const DatabaseConnections& connections,
+      std::vector<std::pair<string16, string16> >* closed_dbs);
 
  private:
   typedef std::map<string16, int> DBConnections;

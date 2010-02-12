@@ -98,6 +98,10 @@ class DBMessageFilter : public IPC::ChannelProxy::MessageFilter {
                             int64 database_size,
                             int64 space_available);
 
+  // Processes IPCs that ask for a DB to be closed immediately.
+  void OnDatabaseCloseImmediately(const string16& origin_identifier,
+                                  const string16& database_name);
+
   // The message loop for the IO thread.
   MessageLoop* io_thread_message_loop_;
 

@@ -49,11 +49,13 @@ class DatabaseDispatcherHost
   void OnDatabaseClosed(const string16& origin_identifier,
                         const string16& database_name);
 
-  // DatabaseTracker::Observer callback (file thread)
+  // DatabaseTracker::Observer callbacks (file thread)
   virtual void OnDatabaseSizeChanged(const string16& origin_identifier,
                                      const string16& database_name,
                                      int64 database_size,
                                      int64 space_available);
+  virtual void OnDatabaseScheduledForDeletion(const string16& origin_identifier,
+                                              const string16& database_name);
 
  private:
   void AddObserver();
@@ -77,7 +79,7 @@ class DatabaseDispatcherHost
 
   // Database tracker message handlers (file thread)
   void DatabaseOpened(const string16& origin_identifier,
-                      const string16& file_name,
+                      const string16& database_name,
                       const string16& description,
                       int64 estimated_size);
   void DatabaseModified(const string16& origin_identifier,

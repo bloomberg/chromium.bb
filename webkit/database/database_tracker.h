@@ -6,6 +6,7 @@
 #define WEBKIT_DATABASE_DATABASE_TRACKER_H_
 
 #include <map>
+#include <set>
 
 #include "base/file_path.h"
 #include "base/observer_list.h"
@@ -92,6 +93,9 @@ class DatabaseTracker
                                        const string16& database_name,
                                        int64 database_size,
                                        int64 space_available) = 0;
+    virtual void OnDatabaseScheduledForDeletion(
+        const string16& origin_identifier,
+        const string16& database_name) = 0;
     virtual ~Observer() {}
   };
 
@@ -111,6 +115,8 @@ class DatabaseTracker
   void DatabaseClosed(const string16& origin_identifier,
                       const string16& database_name);
   void CloseDatabases(const DatabaseConnections& connections);
+  void DeleteDatabaseIfNeeded(const string16& origin_identifier,
+                              const string16& database_name);
 
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
@@ -126,6 +132,8 @@ class DatabaseTracker
   bool DeleteDatabase(const string16& origin_identifier,
                       const string16& database_name);
   bool DeleteOrigin(const string16& origin_identifier);
+  bool IsDatabaseScheduledForDeletion(const string16& origin_identifier,
+                                      const string16& database_name);
 
   // Delete any databases that have been touched since the cutoff date that's
   // supplied. Returns net::OK on success, net::FAILED if not all databases
@@ -178,6 +186,8 @@ class DatabaseTracker
 
   int64 UpdateCachedDatabaseFileSize(const string16& origin_identifier,
                                      const string16& database_name);
+  void ScheduleDatabaseForDeletion(const string16& origin_identifier,
+                                   const string16& database_name);
 
   bool initialized_;
   const FilePath db_dir_;
@@ -188,6 +198,10 @@ class DatabaseTracker
   ObserverList<Observer> observers_;
   std::map<string16, CachedOriginInfo> origins_info_map_;
   DatabaseConnections database_connections_;
+
+  // The set of databases that should be deleted but are still opened
+  std::map<string16, std::set<string16> > dbs_to_be_deleted_;
+  net::CompletionCallback* dbs_deleted_callback_;
 
   // Default quota for all origins; changed only by tests
   int64 default_quota_;

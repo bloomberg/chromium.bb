@@ -196,17 +196,22 @@ void DatabaseDispatcherHost::DatabaseOpenFile(const string16& vfs_file_name,
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   base::PlatformFile target_handle = base::kInvalidPlatformFileValue;
   base::PlatformFile target_dir_handle = base::kInvalidPlatformFileValue;
+  string16 origin_identifier;
+  string16 database_name;
   if (vfs_file_name.empty()) {
     VfsBackend::OpenTempFileInDirectory(db_tracker_->DatabaseDirectory(),
                                         desired_flags, process_handle_,
                                         &target_handle, &target_dir_handle);
-  } else {
-    FilePath db_file =
-        DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name);
-    if (!db_file.empty()) {
-      VfsBackend::OpenFile(db_file, desired_flags, process_handle_,
-                           &target_handle, &target_dir_handle);
-    }
+  } else if (DatabaseUtil::CrackVfsFileName(vfs_file_name, &origin_identifier,
+                                            &database_name, NULL) &&
+             !db_tracker_->IsDatabaseScheduledForDeletion(origin_identifier,
+                                                          database_name)) {
+      FilePath db_file =
+          DatabaseUtil::GetFullFilePathForVfsFile(db_tracker_, vfs_file_name);
+      if (!db_file.empty()) {
+        VfsBackend::OpenFile(db_file, desired_flags, process_handle_,
+                             &target_handle, &target_dir_handle);
+      }
   }
 
   ViewMsg_DatabaseOpenFileResponse_Params response_params;
@@ -428,6 +433,18 @@ void DatabaseDispatcherHost::OnDatabaseSizeChanged(
                               origin_identifier, database_name,
                               database_size, space_available)));
   }
+}
+
+void DatabaseDispatcherHost::OnDatabaseScheduledForDeletion(
+    const string16& origin_identifier,
+    const string16& database_name) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  ChromeThread::PostTask(
+      ChromeThread::IO, FROM_HERE,
+      NewRunnableMethod(this,
+                        &DatabaseDispatcherHost::SendMessage,
+                        new ViewMsg_DatabaseCloseImmediately(
+                            origin_identifier, database_name)));
 }
 
 void DatabaseDispatcherHost::OnDatabaseOpenFileAllowed(

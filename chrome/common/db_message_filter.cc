@@ -66,6 +66,8 @@ bool DBMessageFilter::OnMessageReceived(const IPC::Message& message) {
                         OnResponse<uint32>)
     IPC_MESSAGE_HANDLER(ViewMsg_DatabaseGetFileSizeResponse, OnResponse<int64>)
     IPC_MESSAGE_HANDLER(ViewMsg_DatabaseUpdateSize, OnDatabaseUpdateSize)
+    IPC_MESSAGE_HANDLER(ViewMsg_DatabaseCloseImmediately,
+                        OnDatabaseCloseImmediately)
     IPC_MESSAGE_UNHANDLED(handled = false)
   IPC_END_MESSAGE_MAP()
   return handled;
@@ -77,4 +79,11 @@ void DBMessageFilter::OnDatabaseUpdateSize(const string16& origin_identifier,
                                            int64 space_available) {
   WebKit::WebDatabase::updateDatabaseSize(
       origin_identifier, database_name, database_size, space_available);
+}
+
+void DBMessageFilter::OnDatabaseCloseImmediately(
+    const string16& origin_identifier,
+    const string16& database_name) {
+  WebKit::WebDatabase::closeDatabaseImmediately(
+      origin_identifier, database_name);
 }

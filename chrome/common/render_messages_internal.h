@@ -804,6 +804,11 @@ IPC_MESSAGE_ROUTED4(ViewMsg_NotifyLowLatencyAudioStreamCreated,
                        int64 /* the new database size */,
                        int64 /* space available to origin */)
 
+  // Asks the child process to close a database immediately
+  IPC_MESSAGE_CONTROL2(ViewMsg_DatabaseCloseImmediately,
+                       string16 /* the origin */,
+                       string16 /* the database name */)
+
   // Storage events are broadcast to renderer processes.
   IPC_MESSAGE_CONTROL1(ViewMsg_DOMStorageEvent,
                        ViewMsg_DOMStorageEvent_Params)

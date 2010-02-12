@@ -50,7 +50,8 @@ void DatabaseConnections::RemoveAllConnections() {
 }
 
 void DatabaseConnections::RemoveConnections(
-    const DatabaseConnections& connections) {
+    const DatabaseConnections& connections,
+    std::vector<std::pair<string16, string16> >* closed_dbs) {
   for (OriginConnections::const_iterator origin_it =
            connections.connections_.begin();
        origin_it != connections.connections_.end();
@@ -59,6 +60,8 @@ void DatabaseConnections::RemoveConnections(
     for (DBConnections::const_iterator db_it = db_connections.begin();
          db_it != db_connections.end(); db_it++) {
       RemoveConnectionsHelper(origin_it->first, db_it->first, db_it->second);
+      if (!IsDatabaseOpened(origin_it->first, db_it->first))
+        closed_dbs->push_back(std::make_pair(origin_it->first, db_it->first));
     }
   }
 }
