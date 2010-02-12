@@ -83,7 +83,7 @@ void TranslateManager::Observe(NotificationType type,
 }
 
 TranslateManager::TranslateManager() {
-  if (TestEnabled() && !TranslationService::IsTranslationEnabled())
+  if (!TestEnabled() && !TranslationService::IsTranslationEnabled())
     return;
 
   notification_registrar_.Add(this, NotificationType::TAB_LANGUAGE_DETERMINED,
