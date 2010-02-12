@@ -314,7 +314,6 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       webkit_preferences_(webkit_preferences),
       session_storage_namespace_id_(session_storage_namespace_id),
       ALLOW_THIS_IN_INITIALIZER_LIST(text_translator_(this)) {
-  ClearBlockedContentSettings();
   page_translator_.reset(new PageTranslator(&text_translator_, this));
 }
 
@@ -1227,6 +1226,10 @@ void RenderView::UpdateURL(WebFrame* frame) {
     UMA_HISTOGRAM_COUNTS_10000("Memory.GlyphPagesPerLoad",
                                webkit_glue::GetGlyphPageCount());
 
+    // This message needs to be sent before any of allowScripts(),
+    // allowImages(), allowPlugins() is called for the new page, so that when
+    // these functions send a ViewHostMsg_ContentBlocked message, it arrives
+    // after the ViewHostMsg_FrameNavigate message.
     Send(new ViewHostMsg_FrameNavigate(routing_id_, params));
   } else {
     // Subframe navigation: the type depends on whether this navigation
@@ -2617,8 +2620,6 @@ void RenderView::didReceiveResponse(
   if (!frame->provisionalDataSource() || frame->parent())
     return;
 
-  // A new page is about to be loaded. Clear "block" flags.
-  ClearBlockedContentSettings();
   // If we are in view source mode, then just let the user see the source of
   // the server's 404 error page.
   if (frame->isViewSourceModeEnabled())
@@ -3210,20 +3211,15 @@ bool RenderView::AllowContentType(ContentSettingsType settings_type,
   // CONTENT_SETTING_ASK is only valid for cookies.
   if (current_content_settings_.settings[settings_type] ==
       CONTENT_SETTING_BLOCK) {
-    if (!content_blocked_[settings_type]) {
-      content_blocked_[settings_type] = true;
+    NavigationState* navigation_state =
+        NavigationState::FromDataSource(webview()->mainFrame()->dataSource());
+    if (!navigation_state->is_content_blocked(settings_type)) {
+      navigation_state->set_content_blocked(settings_type, true);
       Send(new ViewHostMsg_ContentBlocked(routing_id_, settings_type));
     }
     return false;
   }
   return true;
-}
-
-void RenderView::ClearBlockedContentSettings() {
-  DCHECK_EQ(static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES),
-            arraysize(content_blocked_));
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i)
-    content_blocked_[i] = false;
 }
 
 void RenderView::DnsPrefetch(const std::vector<std::string>& host_names) {

@@ -1282,9 +1282,7 @@ TabContents* TabContents::CloneAndMakePhantom() {
 
 // Resets the |content_blocked_| array.
 void TabContents::ClearBlockedContentSettings() {
-  DCHECK_EQ(static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES),
-            arraysize(content_blocked_));
-  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i)
+  for (size_t i = 0; i < arraysize(content_blocked_); ++i)
     content_blocked_[i] = false;
 }
 

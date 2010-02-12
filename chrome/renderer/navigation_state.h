@@ -7,6 +7,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/time.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/page_transition_types.h"
 #include "chrome/renderer/user_script_idle_scheduler.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDataSource.h"
@@ -215,6 +216,13 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   void set_was_translated(bool value) { was_translated_ = value; }
   bool was_translated() const { return was_translated_; }
 
+  // Whether content has been blocked.
+  bool is_content_blocked(ContentSettingsType settings_type) {
+    return content_blocked_[settings_type];
+  }
+  void set_content_blocked(ContentSettingsType settings_type, bool is_blocked) {
+    content_blocked_[settings_type] = is_blocked;
+  }
  private:
   NavigationState(PageTransition::Type transition_type,
                   const base::Time& request_time,
@@ -233,6 +241,8 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
         user_script_idle_scheduler_(NULL),
         was_fetched_via_spdy_(false),
         was_translated_(false) {
+    for (size_t i = 0; i < arraysize(content_blocked_); ++i)
+      content_blocked_[i] = false;
   }
 
   PageTransition::Type transition_type_;
@@ -264,6 +274,9 @@ class NavigationState : public WebKit::WebDataSource::ExtraData {
   bool was_fetched_via_spdy_;
 
   bool was_translated_;
+
+  // Stores if images, scripts, and plugins have actually been blocked.
+  bool content_blocked_[CONTENT_SETTINGS_NUM_TYPES];
 
   DISALLOW_COPY_AND_ASSIGN(NavigationState);
 };
