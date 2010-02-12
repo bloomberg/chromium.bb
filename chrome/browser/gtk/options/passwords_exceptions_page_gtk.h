@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_GTK_OPTIONS_EXCEPTIONS_PAGE_GTK_H_
-#define CHROME_BROWSER_GTK_OPTIONS_EXCEPTIONS_PAGE_GTK_H_
+#ifndef CHROME_BROWSER_GTK_OPTIONS_PASSWORDS_EXCEPTIONS_PAGE_GTK_H_
+#define CHROME_BROWSER_GTK_OPTIONS_PASSWORDS_EXCEPTIONS_PAGE_GTK_H_
 
 #include <gtk/gtk.h>
 
@@ -12,10 +12,13 @@
 #include "chrome/browser/password_manager/password_store.h"
 #include "chrome/browser/profile.h"
 
-class ExceptionsPageGtk {
+// A page in the show saved passwords dialog that lists what sites we never
+// show passwords for, with controls for the user to add/remove sites from that
+// list.
+class PasswordsExceptionsPageGtk {
  public:
-  explicit ExceptionsPageGtk(Profile* profile);
-  ~ExceptionsPageGtk();
+  explicit PasswordsExceptionsPageGtk(Profile* profile);
+  ~PasswordsExceptionsPageGtk();
 
   GtkWidget* get_page_widget() const {
     return page_;
@@ -32,15 +35,16 @@ class ExceptionsPageGtk {
   void SetExceptionList(const std::vector<webkit_glue::PasswordForm*>& result);
 
   // Callback for the remove button.
-  static void OnRemoveButtonClicked(GtkButton* widget, ExceptionsPageGtk* page);
+  static void OnRemoveButtonClicked(GtkButton* widget,
+                                    PasswordsExceptionsPageGtk* page);
 
   // Callback for the remove all button.
   static void OnRemoveAllButtonClicked(GtkButton* widget,
-                                       ExceptionsPageGtk* page);
+                                       PasswordsExceptionsPageGtk* page);
 
   // Callback for selection changed events.
   static void OnExceptionSelectionChanged(GtkTreeSelection* selection,
-                                          ExceptionsPageGtk* page);
+                                          PasswordsExceptionsPageGtk* page);
 
   // Sorting function.
   static gint CompareSite(GtkTreeModel* model,
@@ -50,20 +54,21 @@ class ExceptionsPageGtk {
   // A short class to mediate requests to the password store.
   class ExceptionListPopulater : public PasswordStoreConsumer {
    public:
-    explicit ExceptionListPopulater(ExceptionsPageGtk* page)
+    explicit ExceptionListPopulater(PasswordsExceptionsPageGtk* page)
         : page_(page),
           pending_login_query_(0) {
     }
 
-    // Send a query to the password store to populate an ExceptionsPageGtk.
+    // Send a query to the password store to populate an
+    // PasswordsExceptionsPageGtk.
     void populate();
 
-    // Send the password store's reply back to the ExceptionsPageGtk.
+    // Send the password store's reply back to the PasswordsExceptionsPageGtk.
     virtual void OnPasswordStoreRequestDone(
         int handle, const std::vector<webkit_glue::PasswordForm*>& result);
 
    private:
-    ExceptionsPageGtk* page_;
+    PasswordsExceptionsPageGtk* page_;
     int pending_login_query_;
   };
 
@@ -86,7 +91,7 @@ class ExceptionsPageGtk {
   Profile* profile_;
   std::vector<webkit_glue::PasswordForm> exception_list_;
 
-  DISALLOW_COPY_AND_ASSIGN(ExceptionsPageGtk);
+  DISALLOW_COPY_AND_ASSIGN(PasswordsExceptionsPageGtk);
 };
 
-#endif  // CHROME_BROWSER_GTK_OPTIONS_EXCEPTIONS_PAGE_GTK_H_
+#endif  // CHROME_BROWSER_GTK_OPTIONS_PASSWORDS_EXCEPTIONS_PAGE_GTK_H_

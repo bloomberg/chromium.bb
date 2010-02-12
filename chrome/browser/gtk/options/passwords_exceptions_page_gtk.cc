@@ -1,8 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/gtk/options/exceptions_page_gtk.h"
+#include "chrome/browser/gtk/options/passwords_exceptions_page_gtk.h"
 
 #include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
@@ -28,9 +28,9 @@ enum {
 }  // anonymous namespace
 
 ///////////////////////////////////////////////////////////////////////////////
-// ExceptionsPageGtk, public:
+// PasswordsExceptionsPageGtk, public:
 
-ExceptionsPageGtk::ExceptionsPageGtk(Profile* profile)
+PasswordsExceptionsPageGtk::PasswordsExceptionsPageGtk(Profile* profile)
     : populater(this), profile_(profile) {
 
   remove_button_ = gtk_button_new_with_label(
@@ -65,13 +65,13 @@ ExceptionsPageGtk::ExceptionsPageGtk(Profile* profile)
   gtk_box_pack_end(GTK_BOX(page_), scroll_window, TRUE, TRUE, 0);
 }
 
-ExceptionsPageGtk::~ExceptionsPageGtk() {
+PasswordsExceptionsPageGtk::~PasswordsExceptionsPageGtk() {
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// ExceptionsPageGtk, private:
+// PasswordsExceptionsPageGtk, private:
 
-void ExceptionsPageGtk::InitExceptionTree() {
+void PasswordsExceptionsPageGtk::InitExceptionTree() {
   exception_list_store_ = gtk_list_store_new(COL_COUNT, G_TYPE_STRING);
   exception_list_sort_ = gtk_tree_model_sort_new_with_model(
       GTK_TREE_MODEL(exception_list_store_));
@@ -100,11 +100,11 @@ void ExceptionsPageGtk::InitExceptionTree() {
   populater.populate();
 }
 
-PasswordStore* ExceptionsPageGtk::GetPasswordStore() {
+PasswordStore* PasswordsExceptionsPageGtk::GetPasswordStore() {
     return profile_->GetPasswordStore(Profile::EXPLICIT_ACCESS);
 }
 
-void ExceptionsPageGtk::SetExceptionList(
+void PasswordsExceptionsPageGtk::SetExceptionList(
     const std::vector<webkit_glue::PasswordForm*>& result) {
   std::wstring languages =
       profile_->GetPrefs()->GetString(prefs::kAcceptLanguages);
@@ -123,8 +123,9 @@ void ExceptionsPageGtk::SetExceptionList(
 }
 
 // static
-void ExceptionsPageGtk::OnRemoveButtonClicked(GtkButton* widget,
-                                             ExceptionsPageGtk* page) {
+void PasswordsExceptionsPageGtk::OnRemoveButtonClicked(
+    GtkButton* widget,
+    PasswordsExceptionsPageGtk* page) {
   GtkTreeIter iter;
   if (!gtk_tree_selection_get_selected(page->exception_selection_,
                                        NULL, &iter)) {
@@ -152,8 +153,9 @@ void ExceptionsPageGtk::OnRemoveButtonClicked(GtkButton* widget,
 }
 
 // static
-void ExceptionsPageGtk::OnRemoveAllButtonClicked(GtkButton* widget,
-                                                ExceptionsPageGtk* page) {
+void PasswordsExceptionsPageGtk::OnRemoveAllButtonClicked(
+    GtkButton* widget,
+    PasswordsExceptionsPageGtk* page) {
   // Remove from GTK list, DB, and vector.
   PasswordStore* store = page->GetPasswordStore();
   gtk_list_store_clear(page->exception_list_store_);
@@ -165,8 +167,9 @@ void ExceptionsPageGtk::OnRemoveAllButtonClicked(GtkButton* widget,
 }
 
 // static
-void ExceptionsPageGtk::OnExceptionSelectionChanged(GtkTreeSelection* selection,
-                                                  ExceptionsPageGtk* page) {
+void PasswordsExceptionsPageGtk::OnExceptionSelectionChanged(
+    GtkTreeSelection* selection,
+    PasswordsExceptionsPageGtk* page) {
   GtkTreeIter iter;
   if (!gtk_tree_selection_get_selected(selection, NULL, &iter)) {
     gtk_widget_set_sensitive(page->remove_button_, FALSE);
@@ -176,23 +179,25 @@ void ExceptionsPageGtk::OnExceptionSelectionChanged(GtkTreeSelection* selection,
 }
 
 // static
-gint ExceptionsPageGtk::CompareSite(GtkTreeModel* model,
+gint PasswordsExceptionsPageGtk::CompareSite(GtkTreeModel* model,
                                    GtkTreeIter* a, GtkTreeIter* b,
                                    gpointer window) {
   int row1 = gtk_tree::GetRowNumForIter(model, a);
   int row2 = gtk_tree::GetRowNumForIter(model, b);
-  ExceptionsPageGtk* page = reinterpret_cast<ExceptionsPageGtk*>(window);
+  PasswordsExceptionsPageGtk* page =
+      reinterpret_cast<PasswordsExceptionsPageGtk*>(window);
   return page->exception_list_[row1].origin.spec().compare(
          page->exception_list_[row2].origin.spec());
 }
 
-void ExceptionsPageGtk::ExceptionListPopulater::populate() {
+void PasswordsExceptionsPageGtk::ExceptionListPopulater::populate() {
   DCHECK(!pending_login_query_);
   PasswordStore* store = page_->GetPasswordStore();
   pending_login_query_ = store->GetBlacklistLogins(this);
 }
 
-void ExceptionsPageGtk::ExceptionListPopulater::OnPasswordStoreRequestDone(
+void
+PasswordsExceptionsPageGtk::ExceptionListPopulater::OnPasswordStoreRequestDone(
     int handle, const std::vector<webkit_glue::PasswordForm*>& result) {
   DCHECK_EQ(pending_login_query_, handle);
   pending_login_query_ = 0;
