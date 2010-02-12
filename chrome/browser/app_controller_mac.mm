@@ -286,10 +286,6 @@ static bool g_is_opening_new_window = false;
 // update the UI based on the new main window.
 - (void)windowLayeringDidChange:(NSNotification*)notify {
   [self delayedFixCloseMenuItemKeyEquivalents];
-
-  // TODO(pinkerton): If we have other things here, such as inspector panels
-  // that follow the contents of the selected webpage, we would update those
-  // here.
 }
 
 // Called when the number of tabs changes in one of the browser windows. The

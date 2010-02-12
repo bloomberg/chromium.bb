@@ -329,7 +329,6 @@ void TabContentsViewMac::Observe(NotificationType type,
 }
 
 // Registers for the view for the appropriate drag types.
-// TODO(pinkerton): register for file drags.
 - (void)registerDragTypes {
   NSArray* types = [NSArray arrayWithObjects:NSStringPboardType,
       NSHTMLPboardType, NSURLPboardType, nil];

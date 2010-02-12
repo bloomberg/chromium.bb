@@ -83,7 +83,7 @@ int Font::FontSize() {
 }
 
 NativeFont Font::nativeFont() const {
-  // TODO(pinkerton): apply |style_| to font.
+  // TODO(pinkerton): apply |style_| to font. http://crbug.com/34667
   // We could cache this, but then we'd have to conditionally change the
   // dtor just for MacOS. Not sure if we want to/need to do that.
   return [NSFont fontWithName:base::SysWideToNSString(font_name_)

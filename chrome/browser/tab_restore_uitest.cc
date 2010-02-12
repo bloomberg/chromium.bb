@@ -324,8 +324,6 @@ TEST_F(TabRestoreUITest, DISABLED_DontLoadRestoredTab) {
   ASSERT_EQ(current_tab_count, starting_tab_count + 2);
 
   // Make sure that there's nothing else to restore.
-  // TODO(pinkerton): This currently fails because the command_updater in the
-  // always says yes. See bug above.
   bool is_timeout = false;
   bool enabled =
     browser_proxy->IsPageMenuCommandEnabledWithTimeout(IDC_RESTORE_TAB,

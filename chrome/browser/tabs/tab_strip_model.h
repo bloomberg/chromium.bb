@@ -534,10 +534,6 @@ class TabStripModel : public NotificationObserver {
 
   // The specified contents should be opened in a new tabstrip. Returns the
   // Browser that holds it.
-  // TODO(pinkerton): I really don't like the fact that this is returning a
-  // Browser object, there may be some better abstraction we can achieve that
-  // the Browser implements, but for now, we'll experiment with returning
-  // that type.
   Browser* TearOffTabContents(TabContents* detached_contents,
                               const gfx::Rect& window_bounds,
                               const DockInfo& dock_info);

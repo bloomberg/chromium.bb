@@ -193,11 +193,11 @@ TEST_F(ResourceDispatcherTest, CrossSiteOnunloadCookie) {
 // Tests that the onbeforeunload and onunload logic is shortcutted if the old
 // renderer is gone.  In that case, we don't want to wait for the old renderer
 // to run the handlers.
-// TODO(pinkerton): We need to disable this because the crash causes
-// the OS CrashReporter process to kick in to analyze the poor dead renderer.
-// Unfortunately, if the app isn't stripped of debug symbols, this takes about
-// five minutes to complete and isn't conducive to quick turnarounds. As we
-// don't currently strip the app on the build bots, this is bad times.
+// We need to disable this on Mac because the crash causes the OS CrashReporter
+// process to kick in to analyze the poor dead renderer.  Unfortunately, if the
+// app isn't stripped of debug symbols, this takes about five minutes to
+// complete and isn't conducive to quick turnarounds. As we don't currently
+// strip the app on the build bots, this is bad times.
 TEST_F(ResourceDispatcherTest, CrossSiteAfterCrash) {
   // This test only works in multi-process mode
   if (in_process_renderer())
