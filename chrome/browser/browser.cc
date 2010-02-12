@@ -506,7 +506,7 @@ string16 Browser::GetWindowTitleForCurrentTab() const {
     FormatTitleForDisplay(&title);
   }
   if (title.empty())
-    title = l10n_util::GetStringUTF16(IDS_TAB_UNTITLED_TITLE);
+    title = TabContents::GetDefaultTitle();
 
 #if defined(OS_MACOSX) || defined(OS_CHROMEOS)
   // On Mac or ChromeOS, we don't want to suffix the page title with

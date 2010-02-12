@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -89,9 +89,9 @@ int HungPagesTableModel::RowCount() {
 
 std::wstring HungPagesTableModel::GetText(int row, int column_id) {
   DCHECK(row >= 0 && row < RowCount());
-  std::wstring title = UTF16ToWideHack(tab_contentses_.at(row)->GetTitle());
+  std::wstring title = UTF16ToWideHack(tab_contentses_[row]->GetTitle());
   if (title.empty())
-    title = l10n_util::GetString(IDS_TAB_UNTITLED_TITLE);
+    title = UTF16ToWideHack(TabContents::GetDefaultTitle());
   // TODO(xji): Consider adding a special case if the title text is a URL,
   // since those should always have LTR directionality. Please refer to
   // http://crbug.com/6726 for more information.

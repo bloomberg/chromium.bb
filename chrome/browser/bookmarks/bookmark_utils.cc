@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -258,7 +258,7 @@ int PerformBookmarkDrop(Profile* profile,
       // No title, use the host.
       title = UTF8ToUTF16(data.elements[0].url.host());
       if (title.empty())
-        title = l10n_util::GetStringUTF16(IDS_BOOMARK_BAR_UNKNOWN_DRAG_TITLE);
+        title = TabContents::GetDefaultTitle();
     }
     model->AddURL(parent_node, index, title, data.elements[0].url);
     return DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_LINK;

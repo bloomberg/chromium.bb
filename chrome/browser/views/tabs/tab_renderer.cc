@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -592,11 +592,9 @@ void TabRenderer::PaintTitle(SkColor title_color, gfx::Canvas* canvas) {
   // Paint the Title.
   string16 title = data_.title;
   if (title.empty()) {
-    if (data_.loading) {
-      title = l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE);
-    } else {
-      title = l10n_util::GetStringUTF16(IDS_TAB_UNTITLED_TITLE);
-    }
+    title = data_.loading ?
+        l10n_util::GetStringUTF16(IDS_TAB_LOADING_TITLE) :
+        TabContents::GetDefaultTitle();
   } else {
     Browser::FormatTitleForDisplay(&title);
   }

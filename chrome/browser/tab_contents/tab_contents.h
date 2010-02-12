@@ -200,6 +200,9 @@ class TabContents : public PageNavigator,
   virtual const GURL& GetURL() const;
   virtual const string16& GetTitle() const;
 
+  // Initial title assigned to NavigationEntries from Navigate.
+  static string16 GetDefaultTitle();
+
   // The max PageID of any page that this TabContents has loaded.  PageIDs
   // increase with each new page that is loaded by a tab.  If this is a
   // TabContents, then the max PageID is kept separately on each SiteInstance.
@@ -213,9 +216,6 @@ class TabContents : public PageNavigator,
   // there is no site instance. TabContents overrides this to provide proper
   // access to its site instance.
   virtual SiteInstance* GetSiteInstance() const;
-
-  // Initial title assigned to NavigationEntries from Navigate.
-  const std::wstring GetDefaultTitle() const;
 
   // Defines whether this tab's URL should be displayed in the browser's URL
   // bar. Normally this is true so you can see the URL. This is set to false

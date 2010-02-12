@@ -505,6 +505,11 @@ const string16& TabContents::GetTitle() const {
   return EmptyString16();
 }
 
+// static
+string16 TabContents::GetDefaultTitle() {
+  return l10n_util::GetStringUTF16(IDS_DEFAULT_TAB_TITLE);
+}
+
 int32 TabContents::GetMaxPageID() {
   if (GetSiteInstance())
     return GetSiteInstance()->max_page_id();
@@ -523,10 +528,6 @@ void TabContents::UpdateMaxPageID(int32 page_id) {
 
 SiteInstance* TabContents::GetSiteInstance() const {
   return render_manager_.current_host()->site_instance();
-}
-
-const std::wstring TabContents::GetDefaultTitle() const {
-  return l10n_util::GetString(IDS_DEFAULT_TAB_TITLE);
 }
 
 bool TabContents::ShouldDisplayURL() {

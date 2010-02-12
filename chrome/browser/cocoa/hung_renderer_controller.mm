@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -137,13 +137,10 @@ HungRendererController* g_instance = NULL;
   scoped_nsobject<NSMutableArray> favicons([[NSMutableArray alloc] init]);
   for (TabContentsIterator it; !it.done(); ++it) {
     if (it->GetRenderProcessHost() == hungContents_->GetRenderProcessHost()) {
-      const string16 title = (*it)->GetTitle();
-      if (title.empty()) {
-        [titles addObject:
-                  l10n_util::GetNSStringWithFixup(IDS_TAB_UNTITLED_TITLE)];
-      } else {
-        [titles addObject:base::SysUTF16ToNSString(title)];
-      }
+      string16 title = (*it)->GetTitle();
+      if (title.empty())
+        title = TabContents::GetDefaultTitle();
+      [titles addObject:base::SysUTF16ToNSString(title)];
 
       // TabContents can return a null SkBitmap if it has no favicon.  If this
       // happens, use the default favicon.

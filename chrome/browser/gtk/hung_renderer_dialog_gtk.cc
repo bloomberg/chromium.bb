@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -154,7 +154,7 @@ void HungRendererDialogGtk::ShowForTabContents(TabContents* hung_contents) {
       gtk_list_store_append(model_, &tree_iter);
       std::string title = UTF16ToUTF8(it->GetTitle());
       if (title.empty())
-        title = l10n_util::GetStringUTF8(IDS_TAB_UNTITLED_TITLE);
+        title = UTF16ToUTF8(TabContents::GetDefaultTitle());
       SkBitmap favicon = it->GetFavIcon();
 
       gtk_list_store_set(model_, &tree_iter,
