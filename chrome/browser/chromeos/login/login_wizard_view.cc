@@ -45,8 +45,8 @@ using views::Widget;
 
 namespace {
 
-const int kScreenWidth = 700;
-const int kScreenHeight = 350;
+const int kScreenWidth = 512;
+const int kScreenHeight = 384;
 const SkColor kBackgroundTopColor = SkColorSetRGB(82, 139, 224);
 const SkColor kBackgroundBottomColor = SkColorSetRGB(50, 102, 204);
 const int kCornerRadius = 12;
@@ -218,8 +218,8 @@ void LoginWizardView::InitStatusArea() {
   gfx::Size status_area_size = status_area_->GetPreferredSize();
   status_area_->SetBounds(
       dimensions_.width() - status_area_size.width() -
-          kCornerRadius - kBackgroundPadding,
-      kBackgroundPadding,
+          kCornerRadius / 2  - kBackgroundPadding,
+          kBackgroundPadding + kCornerRadius / 2,
       status_area_size.width(),
       status_area_size.height());
   AddChildView(status_area_);

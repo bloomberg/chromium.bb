@@ -21,23 +21,16 @@ class RoundedRectPainter : public views::Painter {
  public:
   RoundedRectPainter(
       int padding, SkColor padding_color,
-      bool shadow, SkColor shadow_color,
+      int shadow, SkColor shadow_color,
       int corner_radius,
       SkColor top_color, SkColor bottom_color);
 
   virtual void Paint(int w, int h, gfx::Canvas* canvas);
 
  private:
-  static void drawRoundedRect(
-      gfx::Canvas* canvas,
-      int x, int y,
-      int w, int h,
-      int corner_radius,
-      SkColor top_color, SkColor bottom_color);
-
   int padding_;
   SkColor padding_color_;
-  bool shadow_;
+  int shadow_;
   SkColor shadow_color_;
   int corner_radius_;
   SkColor top_color_;
@@ -49,4 +42,3 @@ class RoundedRectPainter : public views::Painter {
 }  // namespace chromeos
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_ROUNDED_RECT_PAINTER_H_
-

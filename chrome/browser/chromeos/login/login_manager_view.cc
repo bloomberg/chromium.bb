@@ -39,7 +39,7 @@ using views::Widget;
 
 namespace {
 
-const int kTitleY = 50;
+const int kTitleY = 100;
 const int kPanelSpacing = 36;
 const int kVersionPad = 4;
 const int kTextfieldWidth = 286;
@@ -47,8 +47,10 @@ const int kRowPad = 10;
 const int kLabelPad = 2;
 const int kCornerPad = 6;
 const int kCornerRadius = 12;
+const int kShadow = 10;
 const SkColor kErrorColor = 0xFF8F384F;
 const SkColor kBackground = SK_ColorWHITE;
+const SkColor kShadowColor = 0x40223673;
 const SkColor kLabelColor = 0xFF808080;
 const SkColor kVersionColor = 0xFFA0A0A0;
 const char *kDefaultDomain = "@gmail.com";
@@ -77,8 +79,8 @@ LoginManagerView::~LoginManagerView() {
 void LoginManagerView::Init() {
   // Use rounded rect background.
   views::Painter* painter = new chromeos::RoundedRectPainter(
-      0, kBackground,             // no padding
-      true, SK_ColorBLACK,        // black shadow
+      0, 0x00000000,              // no padding
+      kShadow, kShadowColor,      // gradient shadow
       kCornerRadius,              // corner radius
       kBackground, kBackground);  // backgound without gradient
   set_background(
@@ -196,9 +198,10 @@ void LoginManagerView::Layout() {
 
   setViewBounds(
       os_version_label_,
-      kCornerPad,
-      height() - (os_version_label_->GetPreferredSize().height() + kCornerPad),
-      width() - (2 * kCornerPad),
+      kCornerPad + kShadow,
+      height() - (os_version_label_->GetPreferredSize().height() +
+          kCornerPad + kShadow),
+      width() - (2 * kCornerPad + 2 * kShadow),
       true);
 
   SchedulePaint();
