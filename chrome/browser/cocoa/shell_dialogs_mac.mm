@@ -4,11 +4,13 @@
 
 #include "chrome/browser/shell_dialogs.h"
 
-#include <CoreServices/CoreServices.h>
 #import <Cocoa/Cocoa.h>
+#include <CoreServices/CoreServices.h>
+
 #include <map>
 #include <set>
 
+#import "base/cocoa_protocols_mac.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
 #include "base/scoped_cftyperef.h"
@@ -21,7 +23,7 @@ class SelectFileDialogImpl;
 
 // A bridge class to act as the modal delegate to the save/open sheet and send
 // the results to the C++ class.
-@interface SelectFileDialogBridge : NSObject {
+@interface SelectFileDialogBridge : NSObject<NSOpenSavePanelDelegate> {
  @private
   SelectFileDialogImpl* selectFileDialogImpl_;  // WEAK; owns us
 }
