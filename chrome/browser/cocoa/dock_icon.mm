@@ -125,7 +125,7 @@ static const float kBadgeIndent = 5.0f;
   [NSGraphicsContext saveGraphicsState];
   [[NSColor whiteColor] set];
   scoped_nsobject<NSShadow> shadow([[NSShadow alloc] init]);
-  [shadow setShadowOffset:NSMakeSize(0, -2)];
+  [shadow.get() setShadowOffset:NSMakeSize(0, -2)];
   [shadow setShadowBlurRadius:2];
   [shadow set];
   [badgeEdge setLineWidth:2];
@@ -140,8 +140,8 @@ static const float kBadgeIndent = 5.0f;
 
   scoped_nsobject<NSShadow> countShadow([[NSShadow alloc] init]);
   [countShadow setShadowBlurRadius:3.0];
-  [countShadow setShadowColor:[NSColor whiteColor]];
-  [countShadow setShadowOffset:NSMakeSize(0.0, 0.0)];
+  [countShadow.get() setShadowColor:[NSColor whiteColor]];
+  [countShadow.get() setShadowOffset:NSMakeSize(0.0, 0.0)];
   NSMutableDictionary* countAttrsDict =
       [NSMutableDictionary dictionaryWithObjectsAndKeys:
           [NSColor blackColor], NSForegroundColorAttributeName,
