@@ -5,7 +5,7 @@
 #import "chrome/browser/cocoa/download_shelf_view.h"
 
 #include "base/scoped_nsobject.h"
-#import "third_party/GTM/AppKit/GTMTheme.h"
+#import "chrome/browser/cocoa/GTMTheme.h"
 
 @implementation DownloadShelfView
 

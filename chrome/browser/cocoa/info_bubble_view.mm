@@ -5,7 +5,7 @@
 #import "chrome/browser/cocoa/info_bubble_view.h"
 
 #include "base/logging.h"
-#import "third_party/GTM/AppKit/GTMTheme.h"
+#import "chrome/browser/cocoa/GTMTheme.h"
 
 // TODO(andybons): confirm constants with UI dudes.
 extern const CGFloat kBubbleArrowHeight = 8.0;

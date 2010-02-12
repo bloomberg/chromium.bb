@@ -19,9 +19,9 @@
 #import "chrome/browser/cocoa/bookmark_bubble_controller.h"
 #import "chrome/browser/cocoa/browser_command_executor.h"
 #import "chrome/browser/cocoa/url_drop_target.h"
+#import "chrome/browser/cocoa/GTMTheme.h"
 #import "chrome/browser/cocoa/view_resizer.h"
 #include "chrome/browser/sync/sync_ui_util.h"
-#import "third_party/GTM/AppKit/GTMTheme.h"
 
 
 class Browser;

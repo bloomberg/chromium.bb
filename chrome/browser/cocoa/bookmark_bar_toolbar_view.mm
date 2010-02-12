@@ -11,8 +11,8 @@
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/bookmark_bar_constants.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
+#import "chrome/browser/cocoa/GTMTheme.h"
 #include "chrome/browser/ntp_background_util.h"
-#import "third_party/GTM/AppKit/GTMTheme.h"
 
 const CGFloat kBorderRadius = 3.0;
 

@@ -10,7 +10,7 @@
 #include "base/logging.h"
 #include "base/scoped_nsautorelease_pool.h"
 #import "chrome/browser/cocoa/chrome_browser_window.h"
-#import "third_party/GTM/AppKit/GTMTheme.h"
+#import "chrome/browser/cocoa/GTMTheme.h"
 
 @interface NSView (Swizzles)
 - (void)drawRectOriginal:(NSRect)rect;

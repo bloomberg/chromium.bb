@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_COCOA_BROWSER_THEME_PROVIDER_INIT_H_
 #define CHROME_BROWSER_COCOA_BROWSER_THEME_PROVIDER_INIT_H_
 
-#import "third_party/GTM/AppKit/GTMTheme.h"
+#import "chrome/browser/cocoa/GTMTheme.h"
 
 class BrowserThemeProvider;
 

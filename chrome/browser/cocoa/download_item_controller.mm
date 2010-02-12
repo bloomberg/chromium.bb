@@ -13,13 +13,13 @@
 #import "chrome/browser/cocoa/download_item_cell.h"
 #include "chrome/browser/cocoa/download_item_mac.h"
 #import "chrome/browser/cocoa/download_shelf_controller.h"
+#import "chrome/browser/cocoa/GTMTheme.h"
 #import "chrome/browser/cocoa/ui_localizer.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_shelf.h"
 #include "chrome/browser/download/download_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#import "third_party/GTM/AppKit/GTMTheme.h"
 #include "third_party/GTM/AppKit/GTMUILocalizerAndLayoutTweaker.h"
 
 static const int kTextWidth = 140;            // Pixels

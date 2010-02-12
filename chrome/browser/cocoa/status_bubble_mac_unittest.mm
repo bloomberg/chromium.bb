@@ -9,11 +9,11 @@
 #import "chrome/browser/cocoa/bubble_view.h"
 #import "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
+#import "chrome/browser/cocoa/GTMTheme.h"
 #import "chrome/browser/cocoa/status_bubble_mac.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-#import "third_party/GTM/AppKit/GTMTheme.h"
 
 @interface StatusBubbleMacTestWindowDelegate : NSObject <GTMThemeDelegate>
 @end

@@ -13,11 +13,11 @@
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/bubble_view.h"
+#import "chrome/browser/cocoa/GTMTheme.h"
 #include "googleurl/src/gurl.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
-#import "third_party/GTM/AppKit/GTMTheme.h"
 
 namespace {
 

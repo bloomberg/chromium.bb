@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/cocoa/infobar_gradient_view.h"
-#import "third_party/GTM/AppKit/GTMTheme.h"
+#import "chrome/browser/cocoa/GTMTheme.h"
 
 const double kBackgroundColorTop[3] =
     {255.0 / 255.0, 242.0 / 255.0, 183.0 / 255.0};

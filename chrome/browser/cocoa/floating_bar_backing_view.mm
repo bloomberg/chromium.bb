@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/cocoa/floating_bar_backing_view.h"
-#import "third_party/GTM/AppKit/GTMTheme.h"
+#import "chrome/browser/cocoa/GTMTheme.h"
 
 @implementation FloatingBarBackingView
 

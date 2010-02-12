@@ -4,9 +4,9 @@
 
 #import "chrome/browser/cocoa/bubble_view.h"
 
+#import "chrome/browser/cocoa/GTMTheme.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
-#import "third_party/GTM/AppKit/GTMTheme.h"
 
 // The roundedness of the edges of our bubble.
 const int kBubbleCornerRadius = 4.0f;

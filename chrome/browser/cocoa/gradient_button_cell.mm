@@ -5,7 +5,7 @@
 #include "base/logging.h"
 #import "base/scoped_nsobject.h"
 #include "chrome/browser/cocoa/gradient_button_cell.h"
-#import "third_party/GTM/AppKit/GTMTheme.h"
+#import "chrome/browser/cocoa/GTMTheme.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 
 @interface GradientButtonCell (Private)

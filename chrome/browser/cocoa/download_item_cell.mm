@@ -13,9 +13,9 @@
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
+#import "chrome/browser/cocoa/GTMTheme.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
-#import "third_party/GTM/AppKit/GTMTheme.h"
 
 namespace {
 

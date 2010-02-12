@@ -6,7 +6,7 @@
 #define CHROME_BROWSER_COCOA_BACKGROUND_GRADIENT_VIEW_H_
 
 #import <Cocoa/Cocoa.h>
-#import "third_party/GTM/AppKit/GTMTheme.h"
+#import "chrome/browser/cocoa/GTMTheme.h"
 
 // A custom view that draws a 'standard' background gradient.
 // Base class for other Chromium views.

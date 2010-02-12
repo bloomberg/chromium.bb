@@ -4,12 +4,12 @@
 
 #include "app/l10n_util_mac.h"
 #include "base/mac_util.h"
+#import "chrome/browser/cocoa/GTMTheme.h"
 #import "chrome/browser/cocoa/menu_controller.h"
 #import "chrome/browser/cocoa/tab_controller.h"
 #import "chrome/browser/cocoa/tab_controller_target.h"
 #import "chrome/browser/cocoa/tab_view.h"
 #include "grit/generated_resources.h"
-#import "third_party/GTM/AppKit/GTMTheme.h"
 
 @implementation TabController
 

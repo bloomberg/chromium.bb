@@ -6,7 +6,7 @@
 
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmark_button.h"
-#import "third_party/GTM/AppKit/GTMTheme.h"
+#import "chrome/browser/cocoa/GTMTheme.h"
 #import "third_party/mozilla/include/NSPasteboard+Utils.h"
 
 @interface BookmarkBarView (Private)

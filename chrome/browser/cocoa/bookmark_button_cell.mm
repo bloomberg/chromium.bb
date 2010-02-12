@@ -5,7 +5,7 @@
 #include "base/logging.h"
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
 #import "chrome/browser/cocoa/bookmark_menu.h"
-#import "third_party/GTM/AppKit/GTMTheme.h"
+#import "chrome/browser/cocoa/GTMTheme.h"
 
 @implementation BookmarkButtonCell
 
