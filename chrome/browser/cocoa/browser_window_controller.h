@@ -23,6 +23,7 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #import "third_party/GTM/AppKit/GTMTheme.h"
 
+
 class Browser;
 class BrowserWindow;
 class BrowserWindowCocoa;
@@ -41,6 +42,7 @@ class TabStripModelObserverBridge;
 @class TabStripView;
 @class ToolbarController;
 @class TitlebarController;
+
 
 @interface BrowserWindowController :
   TabWindowController<NSUserInterfaceValidations,
@@ -130,11 +132,17 @@ class TabStripModelObserverBridge;
 // Access the C++ bridge between the NSWindow and the rest of Chromium.
 - (BrowserWindow*)browserWindow;
 
-// Access the C++ bridge object representing the location bar.
-- (LocationBar*)locationBarBridge;
+// Return a weak pointer to the toolbar controller.
+- (ToolbarController*)toolbarController;
+
+// Return a weak pointer to the tab strip controller.
+- (TabStripController*)tabStripController;
 
 // Access the C++ bridge object representing the status bubble for the window.
 - (StatusBubbleMac*)statusBubble;
+
+// Access the C++ bridge object representing the location bar.
+- (LocationBar*)locationBarBridge;
 
 // Updates the toolbar (and transitively the location bar) with the states of
 // the specified |tab|.  If |shouldRestore| is true, we're switching
@@ -164,6 +172,57 @@ class TabStripModelObserverBridge;
 // coordinates (origin in bottom-left).
 - (NSRect)regularWindowFrame;
 
+- (BOOL)isBookmarkBarVisible;
+
+// Called after bookmark bar visibility changes (due to pref change or change in
+// tab/tab contents).
+- (void)updateBookmarkBarVisibilityWithAnimation:(BOOL)animate;
+
+- (BOOL)isDownloadShelfVisible;
+
+// Lazily creates the download shelf in visible state if it doesn't exist yet.
+- (DownloadShelfController*)downloadShelf;
+
+// Retains the given FindBarCocoaController and adds its view to this
+// browser window.  Must only be called once per
+// BrowserWindowController.
+- (void)addFindBar:(FindBarCocoaController*)findBarCocoaController;
+
+// The user changed the theme.
+- (void)userChangedTheme;
+
+// Executes the command in the context of the current browser.
+// |command| is an integer value containing one of the constants defined in the
+// "chrome/app/chrome_dll_resource.h" file.
+- (void)executeCommand:(int)command;
+
+// Delegate method for the status bubble to query about its vertical offset.
+- (float)verticalOffsetForStatusBubble;
+
+// Show the bookmark bubble (e.g. user just clicked on the STAR)
+- (void)showBookmarkBubbleForURL:(const GURL&)url
+               alreadyBookmarked:(BOOL)alreadyBookmarked;
+
+// Returns the (lazily created) window sheet controller of this window. Used
+// for the per-tab sheets.
+- (GTMWindowSheetController*)sheetController;
+
+// Requests that |window| is opened as a per-tab sheet to the current tab.
+- (void)attachConstrainedWindow:(ConstrainedWindowMac*)window;
+// Closes the tab sheet |window| and potentially shows the next sheet in the
+// tab's sheet queue.
+- (void)removeConstrainedWindow:(ConstrainedWindowMac*)window;
+
+// Shows or hides the docked web inspector depending on |contents|'s state.
+- (void)updateDevToolsForContents:(TabContents*)contents;
+
+@end  // @interface BrowserWindowController
+
+
+// Methods having to do with the window type (normal/popup/app, and whether the
+// window has various features; fullscreen methods are separate).
+@interface BrowserWindowController(WindowType)
+
 // Determines whether this controller's window supports a given feature (i.e.,
 // whether a given feature is or can be shown in the window).
 // TODO(viettrungluu): |feature| is really should be |Browser::Feature|, but I
@@ -191,27 +250,11 @@ class TabStripModelObserverBridge;
 // pop-up window). Returns YES if it is, NO otherwise.
 - (BOOL)isNormalWindow;
 
-- (BOOL)isBookmarkBarVisible;
+@end  // @interface BrowserWindowController(WindowType)
 
-// Called after bookmark bar visibility changes (due to pref change or change in
-// tab/tab contents).
-- (void)updateBookmarkBarVisibilityWithAnimation:(BOOL)animate;
 
-// Return a weak pointer to the tab strip controller.
-- (TabStripController*)tabStripController;
-
-// Return a weak pointer to the toolbar controller.
-- (ToolbarController*)toolbarController;
-
-- (BOOL)isDownloadShelfVisible;
-
-// Lazily creates the download shelf in visible state if it doesn't exist yet.
-- (DownloadShelfController*)downloadShelf;
-
-// Retains the given FindBarCocoaController and adds its view to this
-// browser window.  Must only be called once per
-// BrowserWindowController.
-- (void)addFindBar:(FindBarCocoaController*)findBarCocoaController;
+// Methods having to do with fullscreen mode.
+@interface BrowserWindowController(Fullscreen)
 
 // Enters (or exits) fullscreen mode.
 - (void)setFullscreen:(BOOL)fullscreen;
@@ -245,35 +288,8 @@ class TabStripModelObserverBridge;
 // Returns YES if any of the views in the floating bar currently has focus.
 - (BOOL)floatingBarHasFocus;
 
-// The user changed the theme.
-- (void)userChangedTheme;
+@end  // @interface BrowserWindowController(Fullscreen)
 
-// Executes the command in the context of the current browser.
-// |command| is an integer value containing one of the constants defined in the
-// "chrome/app/chrome_dll_resource.h" file.
-- (void)executeCommand:(int)command;
-
-// Delegate method for the status bubble to query about its vertical offset.
-- (float)verticalOffsetForStatusBubble;
-
-// Show the bookmark bubble (e.g. user just clicked on the STAR)
-- (void)showBookmarkBubbleForURL:(const GURL&)url
-               alreadyBookmarked:(BOOL)alreadyBookmarked;
-
-// Returns the (lazily created) window sheet controller of this window. Used
-// for the per-tab sheets.
-- (GTMWindowSheetController*)sheetController;
-
-// Requests that |window| is opened as a per-tab sheet to the current tab.
-- (void)attachConstrainedWindow:(ConstrainedWindowMac*)window;
-// Closes the tab sheet |window| and potentially shows the next sheet in the
-// tab's sheet queue.
-- (void)removeConstrainedWindow:(ConstrainedWindowMac*)window;
-
-// Shows or hides the docked web inspector depending on |contents|'s state.
-- (void)updateDevToolsForContents:(TabContents*)contents;
-
-@end
 
 // Methods which are either only for testing, or only public for testing.
 @interface BrowserWindowController(TestingAPI)
@@ -305,6 +321,7 @@ class TabStripModelObserverBridge;
 // or the download shelf), so that future shrinking will occur from the bottom.
 - (void)resetWindowGrowthState;
 
-@end  // BrowserWindowController(TestingAPI)
+@end  // @interface BrowserWindowController(TestingAPI)
+
 
 #endif  // CHROME_BROWSER_COCOA_BROWSER_WINDOW_CONTROLLER_H_
