@@ -23,9 +23,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoNoScript) {
   // that loads to "modified".
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
-  FilePath extension_path = test_data_dir_.AppendASCII("api_test")
-      .AppendASCII("incognito_no_script");
-  ASSERT_TRUE(LoadExtension(extension_path));
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
+      .AppendASCII("incognito_no_script")));
 
   // Open incognito window and navigate to test page.
   ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
@@ -42,21 +41,30 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoYesScript) {
   host_resolver()->AddRule("*", "127.0.0.1");
   StartHTTPServer();
 
+  // Load a dummy extension. This just tests that we don't regress a
+  // crash fix when multiple incognito- and non-incognito-enabled extensions
+  // are mixed.
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
+      .AppendASCII("content_scripts").AppendASCII("all_frames")));
+
   // Loads a simple extension which attempts to change the title of every page
   // that loads to "modified".
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
-  FilePath extension_path = test_data_dir_.AppendASCII("api_test")
-      .AppendASCII("incognito_no_script");
-  ASSERT_TRUE(LoadExtension(extension_path));
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
+      .AppendASCII("incognito_no_script")));
 
-  // Now enable the extension in incognito mode, and ensure that page titles
-  // are modified.
+  // Dummy extension #2.
+  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
+      .AppendASCII("content_scripts").AppendASCII("isolated_world1")));
+
+  // Now enable the incognito_no_script extension in incognito mode, and ensure
+  // that page titles are modified.
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   service->extension_prefs()->SetIsIncognitoEnabled(
-      service->extensions()->at(0)->id(), true);
+      service->extensions()->at(1)->id(), true);
   browser()->profile()->GetUserScriptMaster()->ReloadExtensionForTesting(
-      service->extensions()->at(0));
+      service->extensions()->at(1));
 
   // Open incognito window and navigate to test page.
   ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
