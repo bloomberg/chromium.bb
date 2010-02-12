@@ -188,14 +188,13 @@ void RenderWidgetHostViewMac::SetSize(const gfx::Size& size) {
   if (is_hidden_)
     return;
 
-  // TODO(avi): the TabContents object uses this method to size the newly
-  // created widget to the correct size. For that instance, we're not yet in the
-  // view hierarchy so |size| ends up being 0x0. However, this works for us
-  // because we're using the Cocoa view struture and resizer flags to fix things
-  // up as soon as the view gets added to the hierarchy. Figure out if we want
-  // to keep this flow or switch back to the flow Windows uses which sets the
-  // size upon creation. <http://crbug.com/8285>. However, if the size is not
-  // 0x0, this is a valid request.
+  // During the initial creation of the RenderWidgetHostView in
+  // TabContents::CreateRenderViewForRenderManager, SetSize is called with an
+  // empty size. In the Windows code flow, it is not ignored because subsequent
+  // sizing calls from the OS flow through TCVW::WasSized which calls SetSize()
+  // again. On Cocoa, we rely on the Cocoa view struture and resizer flags to
+  // keep things sized properly. On the other hand, if the size is not empty
+  // then this is a valid request for a pop-up.
   if (size.IsEmpty())
     return;
 
