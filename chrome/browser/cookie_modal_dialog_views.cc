@@ -41,10 +41,7 @@ NativeDialog CookiePromptModalDialog::CreateNativeDialog() {
 #if defined(OS_WIN)
   return new CookiePromptView(this,
                               tab_contents_->GetMessageBoxRootWindow(),
-                              tab_contents_->profile(),
-                              storage_info_,
-                              host_, cookie_line_, delegate_,
-                              cookie_ui_);
+                              tab_contents_->profile());
 #else
   return NULL;
 #endif

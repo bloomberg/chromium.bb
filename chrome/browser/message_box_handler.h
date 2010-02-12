@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/string16.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "googleurl/src/gurl.h"
 #include "ipc/ipc_message.h"
@@ -45,7 +46,7 @@ void RunBeforeUnloadDialog(TabContents* tab_contents,
 // user to accept or reject the cookie. The caller should pass |delegate|
 // that will handle the reply from the dialog.
 void RunCookiePrompt(TabContents* tab_contents,
-                     const std::string& host,
+                     const GURL& origin,
                      const std::string& cookie_line,
                      CookiePromptModalDialogDelegate* delegate);
 
@@ -54,7 +55,9 @@ void RunCookiePrompt(TabContents* tab_contents,
 // that will handle the reply from the dialog.
 void RunLocalStoragePrompt(
     TabContents* tab_contents,
-    const BrowsingDataLocalStorageHelper::LocalStorageInfo& local_storage_info,
+    const GURL& origin,
+    const string16& key,
+    const string16& value,
     CookiePromptModalDialogDelegate* delegate);
 #endif
 

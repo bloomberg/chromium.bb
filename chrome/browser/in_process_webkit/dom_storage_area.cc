@@ -42,32 +42,23 @@ DOMStorageArea::~DOMStorageArea() {
 }
 
 unsigned DOMStorageArea::Length() {
-  if (!CheckContentSetting())
-    return 0;  // Pretend we're an empty store.
-
   CreateWebStorageAreaIfNecessary();
   return storage_area_->length();
 }
 
 NullableString16 DOMStorageArea::Key(unsigned index) {
-  if (!CheckContentSetting())
-    return NullableString16(true);  // Null string.
-
   CreateWebStorageAreaIfNecessary();
   return storage_area_->key(index);
 }
 
 NullableString16 DOMStorageArea::GetItem(const string16& key) {
-  if (!CheckContentSetting())
-    return NullableString16(true);  // Null string.
-
   CreateWebStorageAreaIfNecessary();
   return storage_area_->getItem(key);
 }
 
 NullableString16 DOMStorageArea::SetItem(
     const string16& key, const string16& value, bool* quota_exception) {
-  if (!CheckContentSetting()) {
+  if (!CheckContentSetting(key, value)) {
     *quota_exception = true;
     return NullableString16(true);  // Ignored if exception is true.
   }
@@ -79,9 +70,6 @@ NullableString16 DOMStorageArea::SetItem(
 }
 
 NullableString16 DOMStorageArea::RemoveItem(const string16& key) {
-  if (!CheckContentSetting())
-    return NullableString16(true);  // Indicates nothing removed.
-
   CreateWebStorageAreaIfNecessary();
   WebString old_value;
   storage_area_->removeItem(key, WebURL(), old_value);
@@ -89,9 +77,6 @@ NullableString16 DOMStorageArea::RemoveItem(const string16& key) {
 }
 
 bool DOMStorageArea::Clear() {
-  if (!CheckContentSetting())
-    return false;  // Nothing cleared.
-
   CreateWebStorageAreaIfNecessary();
   bool somethingCleared;
   storage_area_->clear(WebURL(), somethingCleared);
@@ -107,31 +92,14 @@ void DOMStorageArea::CreateWebStorageAreaIfNecessary() {
     storage_area_.reset(owner_->CreateWebStorageArea(origin_));
 }
 
-bool DOMStorageArea::CheckContentSetting() {
+bool DOMStorageArea::CheckContentSetting(const string16& key,
+                                         const string16& value) {
   ContentSetting content_setting =
       host_content_settings_map_->GetContentSetting(
           origin_url_, CONTENT_SETTINGS_TYPE_COOKIES);
 
   if (content_setting == CONTENT_SETTING_ASK) {
-    WebSecurityOrigin security_origin(
-        WebSecurityOrigin::createFromString(origin_));
-    FilePath::StringType file_name = webkit_glue::WebStringToFilePath(
-        security_origin.databaseIdentifier()).value();
-    file_name.append(DOMStorageContext::kLocalStorageExtension);
-    FilePath file_path = webkit_glue::WebStringToFilePath(
-        owner_->data_dir_path()).Append(file_name);
-
-    bool file_exists = false;
-    int64 size = 0;
-    base::Time last_modified;
-    file_util::FileInfo file_info;
-    if (file_util::GetFileInfo(file_path, &file_info)) {
-      file_exists = true;
-      size = file_info.size;
-      last_modified = file_info.last_modified;
-    }
-    DOMStoragePermissionRequest request(origin_url_, file_exists, size,
-                                        last_modified,
+    DOMStoragePermissionRequest request(origin_url_, key, value,
                                         host_content_settings_map_);
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,

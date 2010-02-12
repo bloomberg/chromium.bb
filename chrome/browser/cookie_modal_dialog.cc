@@ -10,24 +10,28 @@
 
 CookiePromptModalDialog::CookiePromptModalDialog(
     TabContents* tab_contents,
-    const std::string& host,
+    const GURL& origin,
     const std::string& cookie_line,
     CookiePromptModalDialogDelegate* delegate)
     : AppModalDialog(tab_contents, std::wstring()),
-      host_(host),
+      dialog_type_(DIALOG_TYPE_COOKIE),
+      origin_(origin),
       cookie_line_(cookie_line),
-      cookie_ui_(true),
       delegate_(delegate) {
 }
 
 
 CookiePromptModalDialog::CookiePromptModalDialog(
     TabContents* tab_contents,
-    const BrowsingDataLocalStorageHelper::LocalStorageInfo& storage_info,
+    const GURL& origin,
+    const string16& key,
+    const string16& value,
     CookiePromptModalDialogDelegate* delegate)
     : AppModalDialog(tab_contents, std::wstring()),
-      storage_info_(storage_info),
-      cookie_ui_(false),
+      dialog_type_(DIALOG_TYPE_LOCAL_STORAGE),
+      origin_(origin),
+      local_storage_key_(key),
+      local_storage_value_(value),
       delegate_(delegate) {
 }
 

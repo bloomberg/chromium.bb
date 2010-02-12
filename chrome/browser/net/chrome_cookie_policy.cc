@@ -163,7 +163,7 @@ void ChromeCookiePolicy::ShowNextPrompt() {
   }
 
 #if defined(OS_WIN)
-  RunCookiePrompt(browser->GetSelectedTabContents(), host, data.cookie_line,
+  RunCookiePrompt(browser->GetSelectedTabContents(), data.url, data.cookie_line,
                   new PromptDelegate(this, host));
 #else
   // TODO(darin): Enable prompting for other ports.

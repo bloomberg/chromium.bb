@@ -20,9 +20,8 @@
 class DOMStoragePermissionRequest : public CookiePromptModalDialogDelegate {
  public:
   DOMStoragePermissionRequest(const GURL& url,
-                              bool file_exists,
-                              int64 size,
-                              base::Time last_modified,
+                              const string16& key,
+                              const string16& value,
                               HostContentSettingsMap* settings);
 
 
@@ -30,9 +29,8 @@ class DOMStoragePermissionRequest : public CookiePromptModalDialogDelegate {
   void SendResponse(ContentSetting content_setting, bool remember);
 
   const GURL& url() const { return url_; }
-  bool file_exists() const { return file_exists_; }
-  int64 size() const { return size_; }
-  const base::Time last_modified() const { return last_modified_; }
+  const string16& key() const { return key_; }
+  const string16& value() const { return value_; }
 
   // Called on the UI thread.
   static void PromptUser(DOMStoragePermissionRequest* request);
@@ -45,14 +43,11 @@ class DOMStoragePermissionRequest : public CookiePromptModalDialogDelegate {
   // The URL we need to get permission for.
   const GURL url_;
 
-  // Is there any information on disk currently?
-  bool file_exists_;
+  // The key we're trying to set.
+  const string16 key_;
 
-  // If file_exists_, what's the size?
-  int64 size_;
-
-  // If file_exists_, what's the size?
-  const base::Time last_modified_;
+  // The value we're trying to set.
+  const string16 value_;
 
   // The response to the permission request.
   ContentSetting response_content_setting_;

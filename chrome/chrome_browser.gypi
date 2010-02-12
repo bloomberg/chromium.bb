@@ -1966,6 +1966,8 @@
         'browser/views/keyword_editor_view.h',
         'browser/views/local_storage_info_view.cc',
         'browser/views/local_storage_info_view.h',
+        'browser/views/local_storage_set_item_info_view.cc',
+        'browser/views/local_storage_set_item_info_view.h',
         'browser/views/location_bar_view.cc',
         'browser/views/location_bar_view.h',
         'browser/views/login_view.cc',

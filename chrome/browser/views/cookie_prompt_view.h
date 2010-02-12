@@ -32,21 +32,15 @@ class Timer;
 
 // Cookie alert dialog UI.
 class CookiePromptView : public views::View,
-                          public ModalDialogDelegate,
-                          public views::ButtonListener,
-                          public views::LinkController,
-                          public CookieInfoViewDelegate {
+                         public ModalDialogDelegate,
+                         public views::ButtonListener,
+                         public views::LinkController,
+                         public CookieInfoViewDelegate {
  public:
   CookiePromptView(
       CookiePromptModalDialog* parent,
       gfx::NativeWindow root_window,
-      Profile* profile,
-      const BrowsingDataLocalStorageHelper::LocalStorageInfo&
-          local_storage_info,
-      const std::string& host,
-      const std::string& cookie_line,
-      CookiePromptModalDialogDelegate* delegate,
-      bool cookie_ui);
+      Profile* profile);
 
   virtual ~CookiePromptView();
 
@@ -113,24 +107,10 @@ class CookiePromptView : public views::View,
   // Prompt window title.
   std::wstring title_;
 
-  // Whether we're showing cookie UI as opposed to other site data.
-  bool cookie_ui_;
-
   // A pointer to the AppModalDialog that owns us.
   CookiePromptModalDialog* parent_;
 
   gfx::NativeWindow root_window_;
-
-  // Cookie / local storage host.
-  std::string host_;
-
-  // Displayed cookie. Only used when |cookie_ui_| is true.
-  std::string cookie_line_;
-
-  // Displayed local storage info.  Only used when |cookie_ui_| is false.
-  BrowsingDataLocalStorageHelper::LocalStorageInfo local_storage_info_;
-
-  CookiePromptModalDialogDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(CookiePromptView);
 };

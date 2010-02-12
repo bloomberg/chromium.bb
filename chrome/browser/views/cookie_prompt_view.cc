@@ -17,7 +17,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/browser/views/cookie_info_view.h"
-#include "chrome/browser/views/local_storage_info_view.h"
+#include "chrome/browser/views/local_storage_set_item_info_view.h"
 #include "chrome/browser/views/options/content_settings_window_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -40,12 +40,7 @@ static const int kCookiePromptViewInsetSize = 5;
 CookiePromptView::CookiePromptView(
     CookiePromptModalDialog* parent,
     gfx::NativeWindow root_window,
-    Profile* profile,
-    const BrowsingDataLocalStorageHelper::LocalStorageInfo& storage_info,
-    const std::string& host,
-    const std::string& cookie_line,
-    CookiePromptModalDialogDelegate* delegate,
-    bool cookie_ui)
+    Profile* profile)
     : remember_radio_(NULL),
       ask_radio_(NULL),
       allow_button_(NULL),
@@ -55,14 +50,9 @@ CookiePromptView::CookiePromptView(
       session_expire_(false),
       expanded_view_(false),
       signaled_(false),
-      cookie_ui_(cookie_ui),
       parent_(parent),
-      root_window_(root_window),
-      host_(host),
-      cookie_line_(cookie_line),
-      local_storage_info_(storage_info),
-      delegate_(delegate) {
-  InitializeViewResources(host);
+      root_window_(root_window) {
+  InitializeViewResources(parent_->origin().host());
   expanded_view_ = g_browser_process->local_state()->
       GetBoolean(prefs::kCookiePromptExpanded);
 }
@@ -102,8 +92,8 @@ std::wstring CookiePromptView::GetWindowTitle() const {
 }
 
 void CookiePromptView::WindowClosing() {
-  if (!signaled_ && delegate_)
-    delegate_->BlockSiteData(false);
+  if (!signaled_ && parent_->GetDelegate())
+    parent_->GetDelegate()->BlockSiteData(false);
   parent_->CompleteDialog();
 }
 
@@ -123,14 +113,15 @@ void CookiePromptView::ModifyExpireDate(bool session_expire) {
 void CookiePromptView::ButtonPressed(views::Button* sender,
                                      const views::Event& event) {
   if (sender == allow_button_) {
-    if (delegate_) {
-      delegate_->AllowSiteData(remember_radio_->checked(), session_expire_);
+    if (parent_->GetDelegate()) {
+      parent_->GetDelegate()->AllowSiteData(remember_radio_->checked(),
+                                            session_expire_);
       signaled_ = true;
     }
     GetWindow()->Close();
   } else if (sender == block_button_) {
-    if (delegate_) {
-      delegate_->BlockSiteData(remember_radio_->checked());
+    if (parent_->GetDelegate()) {
+      parent_->GetDelegate()->BlockSiteData(remember_radio_->checked());
       signaled_ = true;
     }
     GetWindow()->Close();
@@ -148,9 +139,11 @@ void CookiePromptView::LinkActivated(views::Link* source, int event_flags) {
 // CookiePromptView, private:
 
 void CookiePromptView::Init() {
-  std::wstring display_host = UTF8ToWide(host_);
+  CookiePromptModalDialog::DialogType type = parent_->dialog_type();
+  std::wstring display_host = UTF8ToWide(parent_->origin().host());
   views::Label* description_label = new views::Label(l10n_util::GetStringF(
-      cookie_ui_ ? IDS_COOKIE_ALERT_LABEL : IDS_DATA_ALERT_LABEL,
+      type == CookiePromptModalDialog::DIALOG_TYPE_COOKIE ?
+          IDS_COOKIE_ALERT_LABEL : IDS_DATA_ALERT_LABEL,
       display_host));
   int radio_group_id = 0;
   remember_radio_ = new views::RadioButton(
@@ -236,20 +229,23 @@ void CookiePromptView::Init() {
 
   layout->StartRow(0, one_column_layout_id);
 
-  if (cookie_ui_) {
+  if (type == CookiePromptModalDialog::DIALOG_TYPE_COOKIE) {
     CookieInfoView* cookie_info_view = new CookieInfoView(true);
     cookie_info_view->set_delegate(this);
     layout->AddView(cookie_info_view, 1, 1, GridLayout::FILL,
                     GridLayout::CENTER);
 
-    cookie_info_view->SetCookieString(host_, cookie_line_);
+    cookie_info_view->SetCookieString(parent_->origin().host(), parent_->cookie_line());
     info_view_ = cookie_info_view;
+  } else if (type == CookiePromptModalDialog::DIALOG_TYPE_LOCAL_STORAGE) {
+    LocalStorageSetItemInfoView* view = new LocalStorageSetItemInfoView();
+    layout->AddView(view, 1, 1, GridLayout::FILL, GridLayout::CENTER);
+    view->SetFields(parent_->origin().host(),
+                    parent_->local_storage_key(),
+                    parent_->local_storage_value());
+    info_view_ = view;
   } else {
-    LocalStorageInfoView* local_storage_info_view = new LocalStorageInfoView();
-    layout->AddView(local_storage_info_view, 1, 1, GridLayout::FILL,
-                    GridLayout::CENTER);
-    local_storage_info_view->SetLocalStorageInfo(local_storage_info_);
-    info_view_ = local_storage_info_view;
+    NOTIMPLEMENTED();
   }
 
   info_view_->SetVisible(expanded_view_);
@@ -284,9 +280,11 @@ void CookiePromptView::ToggleDetailsViewExpand() {
 
 void CookiePromptView::InitializeViewResources(const std::string& host) {
   DCHECK(host.empty() || host[0] != '.');
-  host_ = host;
+  DCHECK(host == parent_->origin().host());
+ CookiePromptModalDialog::DialogType type = parent_->dialog_type();
   title_ = l10n_util::GetStringF(
-      cookie_ui_ ? IDS_COOKIE_ALERT_TITLE : IDS_DATA_ALERT_TITLE,
-      UTF8ToWide(host_));
+      type == CookiePromptModalDialog::DIALOG_TYPE_COOKIE ?
+          IDS_COOKIE_ALERT_TITLE : IDS_DATA_ALERT_TITLE,
+      UTF8ToWide(parent_->origin().host()));
 }
 

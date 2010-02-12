@@ -9,14 +9,12 @@
 
 DOMStoragePermissionRequest::DOMStoragePermissionRequest(
     const GURL& url,
-    bool file_exists,
-    int64 size,
-    base::Time last_modified,
+    const string16& key,
+    const string16& value,
     HostContentSettingsMap* settings)
     : url_(url),
-      file_exists_(file_exists),
-      size_(size),
-      last_modified_(last_modified),
+      key_(key),
+      value_(value),
       event_(true, false),  // manual reset, not initially signaled
       host_content_settings_map_(settings) {
 }
@@ -62,15 +60,9 @@ void DOMStoragePermissionRequest::PromptUser(
   // showed the name and value being stored (as is done for cookies).
   const std::string& host = dom_storage_permission_request->url().host();
   RunLocalStoragePrompt(browser->GetSelectedTabContents(),
-                        BrowsingDataLocalStorageHelper::LocalStorageInfo(
-                            std::string(),
-                            host,
-                            -1,
-                            std::string(),
-                            host,
-                            FilePath(),
-                            dom_storage_permission_request->size(),
-                            dom_storage_permission_request->last_modified()),
+                        dom_storage_permission_request->url(),
+                        dom_storage_permission_request->key(),
+                        dom_storage_permission_request->value(),
                         dom_storage_permission_request);
 #else
   // TODO(darin): Enable prompting for other ports.
