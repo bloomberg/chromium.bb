@@ -80,6 +80,7 @@ net::ProxyConfigService* CreateProxyConfigService(
 
 // Create a proxy service according to the options on command line.
 net::ProxyService* CreateProxyService(
+    net::NetworkChangeNotifier* network_change_notifier,
     URLRequestContext* context,
     net::ProxyConfigService* proxy_config_service,
     const CommandLine& command_line,
@@ -98,8 +99,7 @@ net::ProxyService* CreateProxyService(
       proxy_config_service,
       use_v8,
       context,
-      NULL, // TODO(eroman): Pass a valid NetworkChangeNotifier implementation
-            //               (http://crbug.com/12293).
+      network_change_notifier,
       io_loop);
 }
 
@@ -146,7 +146,8 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
   context->set_proxy_service(
-      CreateProxyService(context,
+      CreateProxyService(io_thread()->globals()->network_change_notifier.get(),
+                         context,
                          proxy_config_service_.release(),
                          command_line,
                          MessageLoop::current() /*io_loop*/));
