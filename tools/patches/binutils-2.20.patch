@@ -1022,7 +1022,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
        x86_cie_data_alignment = -4;
      }
 +
-+  nativeclient_symbol_init();
++  nativeclient_symbol_init ();
  }
  
  void
@@ -1231,7 +1231,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  	}
      }
    else
-@@ -5560,19 +5652,295 @@
+@@ -5560,19 +5652,264 @@
  }
  
  static void
@@ -1358,91 +1358,15 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
 +static int imm_size (unsigned int n);
 +
 +static void
-+insert_add_sp_sandbox_code (offsetT insn_start_off)
++insert_sp_adjust_sandbox_code (offsetT insn_start_off)
 +{
-+  char *p;
-+  if (i.reg_operands == 2)
-+    {
-+      if (i.rex & REX_B)
-+	{
-+	  p = frag_more (3);
-+	  p[0] = 0x44;
-+	  p[1] = 0x01;
-+	  p[2] = 0xc4 + (i.rm.regmem << 3); // ADD %eXX, %esp
-+	  i.rex &= ~REX_B;
-+	  i.prefix[REX_PREFIX] &= ~REX_B;
-+	}
-+      else
-+	{
-+	  p = frag_more (2);
-+	  p[0] = 0x01;
-+	  p[1] = 0xc4 + (i.rm.regmem << 3); // ADD %eXX, %esp
-+	}
-+    }
-+  else
-+    {
-+      p = frag_more(2);
-+      if (imm_size (0) == 1)
-+	p[0] = 0x83; // ADD imm8, %esp
-+      else
-+	p[0] = 0x81; // ADD imm32, %esp
-+      p[1] = 0xc4;
-+      output_imm (frag_now, insn_start_off);
-+      // Immediate was already used
-+      i.imm_operands = 0;
-+    }
-+  // Second operand is SP
-+  i.rm.regmem = 4;
-+}
-+
-+static void
-+insert_sub_sp_sandbox_code (offsetT insn_start_off)
-+{
-+  char *p;
-+  if (i.reg_operands == 2)
-+    {
-+      if (i.rex & REX_B)
-+	{
-+	  p = frag_more (3);
-+	  p[0] = 0x44;
-+	  p[1] = 0x29;
-+	  p[2] = 0xc4 + (i.rm.regmem << 3); // SUB %eXX, %esp
-+	  i.rex &= ~REX_B;
-+	  i.prefix[REX_PREFIX] &= ~REX_B;
-+	}
-+      else
-+	{
-+	  p = frag_more (2);
-+	  p[0] = 0x29;
-+	  p[1] = 0xc4 + (i.rm.regmem << 3); // SUB %eXX, %esp
-+	}
-+    }
-+  else
-+    {
-+      p = frag_more(2);
-+      if (imm_size (0) == 1)
-+	p[0] = 0x83; // SUB imm8, %esp
-+      else
-+	p[0] = 0x81; // SUB imm32, %esp
-+      p[1] = 0xec;
-+      output_imm (frag_now, insn_start_off);
-+      // Immediate was already used
-+      i.imm_operands = 0;
-+    }
-+  // Second operand is SP
-+  i.rm.regmem = 4;
-+}
-+
-+static void
-+insert_sp_adjust_sandbox_code(offsetT insn_start_off)
-+{
-+  char *p = frag_more(2);
++  char *p = frag_more (2);
 +  p[0] = 0x8d; // LEA off(%rbp), %esp
 +  if (imm_size(0) == 1)
 +    p[1] = 0x65; // Off8
 +  else
 +    p[1] = 0xa5; // Off32
-+  output_imm(frag_now, insn_start_off);
++  output_imm (frag_now, insn_start_off);
 +  // Immediate was already used.
 +  i.imm_operands = 0;
 +  // Second operand is SP
@@ -1450,31 +1374,76 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
 +}
 +
 +static void
-+insert_restore_xp_sandbox_code(unsigned int regN, offsetT insn_start_off)
++insert_xp_sandbox_code(unsigned int regN, unsigned int cmd_2reg,
++		       unsigned int cmd_imm, offsetT insn_start_off)
 +{
++  char *p;
 +  unsigned int need_rex = !!(i.rex & (REX_B | REX_X));
-+  unsigned int need_sib =
-+    i.rm.regmem == ESCAPE_TO_TWO_BYTE_ADDRESSING
-+    && i.rm.mode != 3
-+    && !(i.base_reg && i.base_reg->reg_type.bitfield.reg16);
-+  char *p = frag_more(2 + need_sib + need_rex);
-+  if (need_rex)
-+    p[0] = i.prefix[REX_PREFIX] & ~(REX_R | REX_W);
-+  p[0 + need_rex] = 0x8b; // MOV %eXX, %eYY
-+  p[1 + need_rex] = (i.rm.regmem << 0 | regN/*ExP*/ << 3 | i.rm.mode << 6);
-+  if (need_sib)
-+    p[2 + need_rex] = (i.sib.base << 0 | i.sib.index << 3 | i.sib.scale << 6);
-+  if (i.disp_operands)
-+    output_disp (frag_now, insn_start_off);
-+  // Some bits from REX prefix are already used
-+  i.rex &= ~(REX_B | REX_X);
-+  i.prefix[REX_PREFIX] &= ~(REX_B | REX_X);
-+  // Second operand is regN(ExP)
-+  i.rm.regmem = regN/*ExP*/;
-+  // Mode is always reg-to-reg
-+  i.rm.mode = 3;
-+  // We've already used disp
-+  i.disp_operands = 0;
++  if (i.reg_operands == 2)
++    {
++      p = frag_more (2 + need_rex);
++      if (need_rex)
++	p[0] = 0x44;
++      p[0 + need_rex] = cmd_2reg; // CMD %eXX, %esp
++      p[1 + need_rex] = regN/*ExP*/ << 0 | (i.rm.regmem << 3) | 0xc0;
++      i.prefix[REX_PREFIX] &= ~REX_B;
++      // Second operand is regN(ExP)
++      i.rm.regmem = regN/*ExP*/;
++      // Mode is always reg-to-reg
++      i.rm.mode = 3;
++    }
++  else if (i.imm_operands == 0)
++    {
++      unsigned int need_sib =
++        i.rm.regmem == ESCAPE_TO_TWO_BYTE_ADDRESSING
++        && i.rm.mode != 3
++        && !(i.base_reg && i.base_reg->reg_type.bitfield.reg16);
++      unsigned int need_addr32 = !!i.prefix[ADDR_PREFIX];
++      p = frag_more (2 + need_sib + need_rex + need_addr32);
++      if (need_addr32)
++	{
++	  --i.prefixes;
++	  i.prefix[ADDR_PREFIX] = 0;
++	  p[0] = 0x67;
++	}
++      if (need_rex)
++        p[0 + need_addr32] = i.prefix[REX_PREFIX] & ~(REX_R | REX_W);
++      p[0 + need_addr32 + need_rex] = cmd_2reg | 2; // CMD XXX(XXX,XXX,X),%eYY
++      p[1 + need_addr32 + need_rex] =
++	(i.rm.regmem << 0 | regN/*ExP*/ << 3 | i.rm.mode << 6);
++      if (need_sib)
++        p[2 + need_addr32 + need_rex] =
++	  (i.sib.base << 0 | i.sib.index << 3 | i.sib.scale << 6);
++      if (i.disp_operands)
++        output_disp (frag_now, insn_start_off);
++      // Some bits from REX prefix are already used
++      i.rex &= ~(REX_B | REX_X);
++      i.prefix[REX_PREFIX] &= ~(REX_B | REX_X);
++      // i.prefix[ADDR_PREFIX] was already used
++      i.prefix[ADDR_PREFIX] = 0;
++      // Second operand is regN(ExP)
++      i.rm.regmem = regN/*ExP*/;
++      // Mode is always reg-to-reg
++      i.rm.mode = 3;
++      // We've already used disp
++      i.disp_operands = 0;
++    }
++  else
++    {
++      p = frag_more (2);
++      if (imm_size (0) == 1)
++	p[0] = 0x83; // CMD imm8, %regN(ExP)
++      else
++	p[0] = 0x81; // CMD imm32, %regX(ExP)
++      p[1] = cmd_imm;
++      output_imm (frag_now, insn_start_off);
++      // Second operand is regN(ExP)
++      i.rm.regmem = regN/*ExP*/;
++      // Mode is always reg-to-reg
++      i.rm.mode = 3;
++      // Immediate was already used
++      i.imm_operands = 0;
++    }
 +}
 +
 +static int
@@ -1505,7 +1474,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
 +  insn_start_frag = frag_now;
 +
 +  if (nacl_alignment > 0) {
-+    frag_align_code(0, 0);
++    frag_align_code (0, 0);
 +  }
 +
    /* Tie dwarf2 debug info to the address at the start of the insn.
@@ -1518,17 +1487,17 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  
 +  if (nacl_alignment > 0) {
 +    if (!strcmp(i.tm.name, "naclcall")) {
-+      insert_sandbox_jmp();
++      insert_sandbox_jmp ();
 +    }
 +    else if (!strcmp(i.tm.name, "nacljmp")) {
-+      insert_sandbox_jmp();
++      insert_sandbox_jmp ();
 +    }
 +  }
 +
    /* Output jumps.  */
    if (i.tm.opcode_modifier.jump)
      output_branch ();
-@@ -5612,10 +5984,10 @@
+@@ -5612,10 +5949,10 @@
  		      if (prefix != REPE_PREFIX_OPCODE
  			  || (i.prefix[LOCKREP_PREFIX]
  			      != REPE_PREFIX_OPCODE))
@@ -1541,31 +1510,39 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  		}
  	      break;
  	    case 1:
-@@ -5624,6 +5996,23 @@
+@@ -5624,6 +5961,31 @@
  	      abort ();
  	    }
  
 +#ifdef TC_NACL_C
 +	  /* First output NaCl "prefix" */
-+          insert_sandbox_memory_access();
++          insert_sandbox_memory_access ();
 +#endif
 +
 +          /* Special instructions */
 +	  if (!strcmp(i.tm.name, "naclasp"))
-+	    insert_add_sp_sandbox_code(insn_start_off);
++	    /*                    esp   add   add
++				        reg   imm  */
++	    insert_xp_sandbox_code (4, 0x01, 0xc4, insn_start_off);
 +	  else if (!strcmp(i.tm.name, "naclssp"))
-+	    insert_sub_sp_sandbox_code(insn_start_off);
++	    /*                    esp   sub   sub
++				        reg   imm  */
++	    insert_xp_sandbox_code (4, 0x29, 0xec, insn_start_off);
 +	  else if (!strcmp(i.tm.name, "naclspadj"))
-+	    insert_sp_adjust_sandbox_code(insn_start_off);
++	    insert_sp_adjust_sandbox_code (insn_start_off);
 +	  else if (!strcmp(i.tm.name, "naclrestbp"))
-+	    insert_restore_xp_sandbox_code(5, insn_start_off);
++	    /*                    ebp   mov   mov
++				        reg   imm  */
++	    insert_xp_sandbox_code (5, 0x89, 0xbc, insn_start_off);
 +	  else if (!strcmp(i.tm.name, "naclrestsp"))
-+	    insert_restore_xp_sandbox_code(4, insn_start_off);
++	    /*                    esp   mov   mov
++				        reg   imm  */
++	    insert_xp_sandbox_code (4, 0x89, 0xbc, insn_start_off);
 +
  	  /* The prefix bytes.  */
  	  for (j = ARRAY_SIZE (i.prefix), q = i.prefix; j > 0; j--, q++)
  	    if (*q)
-@@ -5700,10 +6089,18 @@
+@@ -5700,10 +6062,18 @@
  	}
  
        if (i.disp_operands)
@@ -1584,7 +1561,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
      }
  
  #ifdef DEBUG386
-@@ -5712,6 +6109,74 @@
+@@ -5712,6 +6082,74 @@
        pi ("" /*line*/, &i);
      }
  #endif /* DEBUG386  */
@@ -1597,7 +1574,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
 +  if (nacl_alignment > 0) {
 +    int align_base;
 +    int call_align;
-+    int instrsize = (int) frag_now_fix();
++    int instrsize = (int) frag_now_fix ();
 +
 +    /*
 +     * "library mode" enables compatible library builds for either 16 or
@@ -1651,15 +1628,15 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
 +     * alignment.  During writing of the object we swap the nops before the
 +     * instruction.
 +     */
-+    if (frag_is_a_call()) {
++    if (frag_is_a_call ()) {
 +      frag_now->is_call = 1;
-+      frag_align_code(call_align,0);
++      frag_align_code (call_align,0);
 +    }
 +  }
  }
  
  /* Return the size of the displacement operand N.  */
-@@ -6858,8 +7323,44 @@
+@@ -6858,8 +7296,44 @@
      }
    else if (*op_string == REGISTER_PREFIX)
      {
@@ -1706,7 +1683,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
      }
    else if (*op_string == IMMEDIATE_PREFIX)
      {
-@@ -7725,6 +8226,8 @@
+@@ -7725,6 +8199,8 @@
  #define OPTION_MOLD_GCC (OPTION_MD_BASE + 9)
  #define OPTION_MSSE2AVX (OPTION_MD_BASE + 10)
  #define OPTION_MSSE_CHECK (OPTION_MD_BASE + 11)
@@ -1715,7 +1692,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
  
  struct option md_longopts[] =
  {
-@@ -7743,6 +8246,8 @@
+@@ -7743,6 +8219,8 @@
    {"mold-gcc", no_argument, NULL, OPTION_MOLD_GCC},
    {"msse2avx", no_argument, NULL, OPTION_MSSE2AVX},
    {"msse-check", required_argument, NULL, OPTION_MSSE_CHECK},
@@ -1724,7 +1701,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
    {NULL, no_argument, NULL, 0}
  };
  size_t md_longopts_size = sizeof (md_longopts);
-@@ -7953,6 +8458,20 @@
+@@ -7953,6 +8431,20 @@
  	as_fatal (_("Invalid -msse-check= option: `%s'"), arg);
        break;
  
@@ -1745,7 +1722,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
      default:
        return 0;
      }
-@@ -8597,4 +9116,25 @@
+@@ -8597,4 +9089,25 @@
        bss_section = saved_bss_section;
      }
  }
@@ -1945,8 +1922,8 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/write.c binutils-2.20/gas/write.c
 +  if (fragP->fr_offset != 0) {
 +    // fragP->fr_fix is the start of the fixup code (i.e. nops).
 +    int i;
-+    unsigned char *tmp = alloca(fragP->fr_fix);
-+    memcpy(tmp, fragP->fr_literal, fragP->fr_fix);
++    unsigned char *tmp = alloca (fragP->fr_fix);
++    memcpy (tmp, fragP->fr_literal, fragP->fr_fix);
 +    for (i = 0; i < fragP->fr_var; i++) {
 +      fragP->fr_literal[i] = fragP->fr_literal[fragP->fr_fix+i];
 +    }
@@ -1963,8 +1940,8 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/write.c binutils-2.20/gas/write.c
 +      fragP->nacl_fixup->fx_where += fragP->fr_var;
 +    }
 +    else if (getenv("NACL_CONTROL_ENFORCE_RANGE")) {
-+      symbolS* and_mask = symbol_find_or_make("__nacl_and_mask");
-+      symbolS* exec_start = symbol_find_or_make("__executable_start");
++      symbolS* and_mask = symbol_find_or_make ("__nacl_and_mask");
++      symbolS* exec_start = symbol_find_or_make ("__executable_start");
 +      fix_new (fragP, 2+fragP->fr_var, 4, and_mask, 0, 0, BFD_RELOC_32);
 +      fix_new (fragP, 8+fragP->fr_var, 4, exec_start, 0, 0, BFD_RELOC_32);
 +    }
@@ -1981,7 +1958,7 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/write.c binutils-2.20/gas/write.c
  	}
 +
 +      if (fragP->is_call && (nacl_alignment > 0)) {
-+        move_call_insn_to_end(fragP, NULL);
++        move_call_insn_to_end (fragP, NULL);
 +      }
        fragP->fr_type = rs_fill;
        break;
@@ -2933,12 +2910,12 @@ diff -Naur ../PRISTINE/binutils-2.20/opcodes/i386-opc.tbl binutils-2.20/opcodes/
 +nacljmp, 1, 0xff, 0x4, 1, CpuNo64, Modrm|DefaultSize|No_bSuf|No_wSuf|No_lSuf|No_sSuf|No_qSuf|No_ldSuf, { Reg32 }
 +naclcall, 2, 0xff, 0x2, 1, Cpu64, Modrm|DefaultSize|No_bSuf|No_wSuf|No_lSuf|No_sSuf|No_qSuf|No_ldSuf, { Reg32, Reg64 }
 +nacljmp, 2, 0xff, 0x4, 1, Cpu64, Modrm|DefaultSize|No_bSuf|No_wSuf|No_lSuf|No_sSuf|No_qSuf|No_ldSuf, { Reg32, Reg64 }
-+naclasp, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Reg32, Reg64 }
 +naclasp, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Imm8S, Reg64 }
 +naclasp, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Imm32S, Reg64 }
-+naclssp, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Reg32, Reg64 }
++naclasp, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Unspecified|BaseIndex|Disp8|Disp32S|Reg32, Reg64 }
 +naclssp, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Imm8S, Reg64 }
 +naclssp, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Imm32S, Reg64 }
++naclssp, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Unspecified|BaseIndex|Disp8|Disp32S|Reg32, Reg64 }
 +naclspadj, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Imm8S, Reg64 }
 +naclspadj, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Imm32S, Reg64 }
 +naclrestbp, 2, 0x01, None, 1, Cpu64, W|Modrm|No_sSuf|No_ldSuf, { Unspecified|BaseIndex|Disp8|Disp32S|Reg32, Reg64 }
