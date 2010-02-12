@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -51,7 +51,7 @@ def CombineLibraries(output, remove_re, inputs):
   removals = []
   if remove_re:
     removals = CollectRemovals(remove_re, inputs)
-  
+
   print removals
 
   args = ['lib.exe', '/out:%s' % output]
@@ -100,7 +100,7 @@ def Main():
   else:
     remove_re = None
 
-  if sys.platform != 'win32':
+  if sys.platform != 'win32' and sys.platform != 'cygwin':
     parser.error('this script only works on Windows for now')
 
   # If this is set, we can't capture lib.exe's output.
