@@ -2128,7 +2128,7 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/i386.md gcc-4.4.2/gcc/config/i386/i386.
 diff -uNr gcc-4.4.2.orig/gcc/config/i386/nacl.h gcc-4.4.2/gcc/config/i386/nacl.h
 --- gcc-4.4.2.orig/gcc/config/i386/nacl.h	1970-01-01 01:00:00.000000000 +0100
 +++ gcc-4.4.2/gcc/config/i386/nacl.h	2009-12-25 11:10:19.000000000 +0100
-@@ -0,0 +1,114 @@
+@@ -0,0 +1,116 @@
 +/* Target definitions for GCC for NativeClient using ELF
 +   Copyright (C) 1988, 1991, 1995, 2000, 2001, 2002
 +   Free Software Foundation, Inc.
@@ -2243,6 +2243,8 @@ diff -uNr gcc-4.4.2.orig/gcc/config/i386/nacl.h gcc-4.4.2/gcc/config/i386/nacl.h
 +/* Leave is forbidden in NaCl mode */
 +#undef TARGET_USE_LEAVE
 +#define TARGET_USE_LEAVE	(ix86_tune_features[X86_TUNE_USE_LEAVE] && !flag_control_integrity)
++#undef TARGET_USE_BT
++#define TARGET_USE_BT		(ix86_tune_features[X86_TUNE_USE_BT] && !flag_control_integrity)
 diff -uNr gcc-4.4.2.orig/gcc/config/i386/predicates.md gcc-4.4.2/gcc/config/i386/predicates.md
 --- gcc-4.4.2.orig/gcc/config/i386/predicates.md	2009-03-12 21:45:39.000000000 +0100
 +++ gcc-4.4.2/gcc/config/i386/predicates.md	2009-12-25 11:10:19.000000000 +0100
