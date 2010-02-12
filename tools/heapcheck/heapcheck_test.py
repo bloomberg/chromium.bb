@@ -154,11 +154,11 @@ class HeapcheckWrapper(object):
         for line in histo[count]:
           print line
       print '-----------------------------------------------------'
-    if is_sane:
-      return return_code
-    else:
+    if check_sanity and not is_sane:
       logging.error("Sanity check failed")
       return 2
+    else:
+      return return_code
 
   def RunTestsAndAnalyze(self, check_sanity):
     self.Execute()
