@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_MANAGER_VIEW_H_
 
 #include <string>
+#include "base/task.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "views/accelerator.h"
@@ -38,6 +39,7 @@ class LoginManagerView : public WizardScreen,
   // Overridden from views::View:
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
+  virtual void RequestFocus();
 
   // Overridden from views::WindowDelegate:
   virtual views::View* GetContentsView();
@@ -51,6 +53,15 @@ class LoginManagerView : public WizardScreen,
 
   // Overriden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+
+ protected:
+  // views::View overrides:
+  virtual void ViewHierarchyChanged(bool is_add, views::View *parent,
+                                    views::View *child);
+
+  virtual void NativeViewHierarchyChanged(bool attached,
+                                          gfx::NativeView native_view,
+                                          views::RootView* root_view);
 
  private:
   // Given a |username| and |password|, this method attempts to authenticate to
@@ -78,6 +89,8 @@ class LoginManagerView : public WizardScreen,
   // -1 stands for no error.
   void ShowError(int error_id);
 
+  void FocusFirstField();
+
   views::Textfield* username_field_;
   views::Textfield* password_field_;
   views::Label* os_version_label_;
@@ -99,6 +112,12 @@ class LoginManagerView : public WizardScreen,
   // String ID for the current error message.
   // Set to -1 if no messages is shown.
   int error_id_;
+
+  ScopedRunnableMethodFactory<LoginManagerView> focus_grabber_factory_;
+
+  // Indicates that this view was created when focus manager was unavailable
+  // (on the hidden tab, for example).
+  bool focus_delayed_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginManagerView);
 };

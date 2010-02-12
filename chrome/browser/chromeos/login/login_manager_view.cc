@@ -70,7 +70,9 @@ LoginManagerView::LoginManagerView(chromeos::ScreenObserver* observer)
       error_label_(NULL),
       sign_in_button_(NULL),
       observer_(observer),
-      error_id_(-1) {
+      error_id_(-1),
+      ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)),
+      focus_delayed_(false) {
 }
 
 LoginManagerView::~LoginManagerView() {
@@ -143,6 +145,7 @@ void LoginManagerView::Init() {
   if (users.size() > 0) {
     username_field_->SetText(UTF8ToUTF16(users[0].email()));
   }
+  RequestFocus();
 
   // Controller to handle events from textfields
   username_field_->SetController(this);
@@ -163,6 +166,45 @@ void LoginManagerView::UpdateLocalizedStrings() {
   password_label_->SetText(l10n_util::GetString(IDS_LOGIN_PASSWORD));
   sign_in_button_->SetLabel(l10n_util::GetString(IDS_LOGIN_BUTTON));
   ShowError(error_id_);
+}
+
+void LoginManagerView::RequestFocus() {
+  MessageLoop::current()->PostTask(FROM_HERE,
+      focus_grabber_factory_.NewRunnableMethod(
+          &LoginManagerView::FocusFirstField));
+}
+
+void LoginManagerView::ViewHierarchyChanged(bool is_add,
+                                            View *parent,
+                                            View *child) {
+  if (is_add && child == this) {
+    MessageLoop::current()->PostTask(FROM_HERE,
+        focus_grabber_factory_.NewRunnableMethod(
+            &LoginManagerView::FocusFirstField));
+  }
+}
+
+void LoginManagerView::NativeViewHierarchyChanged(bool attached,
+                                                  gfx::NativeView native_view,
+                                                  views::RootView* root_view) {
+  if (focus_delayed_ && attached) {
+    focus_delayed_ = false;
+    MessageLoop::current()->PostTask(FROM_HERE,
+        focus_grabber_factory_.NewRunnableMethod(
+            &LoginManagerView::FocusFirstField));
+  }
+}
+
+void LoginManagerView::FocusFirstField() {
+  if (GetFocusManager()) {
+    if (username_field_->text().empty())
+      username_field_->RequestFocus();
+    else
+      password_field_->RequestFocus();
+  } else {
+    // We are invisible - delay until it is no longer the case.
+    focus_delayed_ = true;
+  }
 }
 
 // Sets the bounds of the view, using x and y as the origin.
