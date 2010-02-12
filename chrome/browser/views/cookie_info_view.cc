@@ -88,23 +88,11 @@ void CookieInfoView::SetCookie(
   Layout();
 }
 
-void CookieInfoView::SetCookieString(
-    const std::string& host,
-    const std::string& cookie_line) {
+void CookieInfoView::SetCookieString(const GURL& url,
+                                     const std::string& cookie_line) {
   net::CookieMonster::ParsedCookie pc(cookie_line);
-  net::CookieMonster::CanonicalCookie cookie(
-      pc.Name(),
-      pc.Value(),
-      pc.Path(),
-      pc.IsSecure(),
-      pc.IsHttpOnly(),
-      base::Time::Now(),  // creation time
-      base::Time(),       // last access time is unused
-      pc.HasExpires(),
-      pc.HasExpires() ?
-          net::CookieMonster::ParseCookieTime(pc.Expires()) :
-          base::Time());
-  SetCookie(pc.HasDomain() ? pc.Domain() : host, cookie);
+  net::CookieMonster::CanonicalCookie cookie(url, pc);
+  SetCookie(pc.HasDomain() ? pc.Domain() : url.host(), cookie);
 }
 
 

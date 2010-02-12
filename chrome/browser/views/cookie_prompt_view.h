@@ -86,7 +86,7 @@ class CookiePromptView : public views::View,
   int GetExtendedViewHeight();
 
   // Initializes text resources needed to display this view.
-  void InitializeViewResources(const std::string& domain);
+  void InitializeViewResources();
 
   views::RadioButton* remember_radio_;
   views::RadioButton* ask_radio_;

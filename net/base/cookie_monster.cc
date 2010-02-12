@@ -1254,6 +1254,20 @@ std::string CookieMonster::ParsedCookie::DebugString() const {
   return out;
 }
 
+CookieMonster::CanonicalCookie::CanonicalCookie(const GURL& url,
+                                                const ParsedCookie& pc)
+    : name_(pc.Name()),
+      value_(pc.Value()),
+      path_(CanonPath(url, pc)),
+      creation_date_(Time::Now()),
+      last_access_date_(Time()),
+      has_expires_(pc.HasExpires()),
+      secure_(pc.IsSecure()),
+      httponly_(pc.IsHttpOnly()) {
+  if (has_expires_)
+    expiry_date_ = CanonExpiration(pc, creation_date_, CookieOptions());
+}
+
 bool CookieMonster::CanonicalCookie::IsOnPath(
     const std::string& url_path) const {
 
