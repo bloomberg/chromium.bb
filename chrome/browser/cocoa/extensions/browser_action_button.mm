@@ -170,9 +170,10 @@ class ExtensionImageTrackerBridge : public NotificationObserver,
 
   // Create the shadow below and to the right of the drawn image.
   scoped_nsobject<NSShadow> imgShadow([[NSShadow alloc] init]);
-  [imgShadow setShadowOffset:NSMakeSize(2.0, -2.0)];
+  [imgShadow.get() setShadowOffset:NSMakeSize(2.0, -2.0)];
   [imgShadow setShadowBlurRadius:2.0];
-  [imgShadow setShadowColor:[[NSColor blackColor] colorWithAlphaComponent:0.3]];
+  [imgShadow.get() setShadowColor:[[NSColor blackColor]
+          colorWithAlphaComponent:0.3]];
   [imgShadow set];
 
   [super drawInteriorWithFrame:cellFrame inView:controlView];
