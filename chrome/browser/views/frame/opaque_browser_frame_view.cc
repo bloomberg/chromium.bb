@@ -275,8 +275,19 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   if (!bounds().Contains(point))
     return HTNOWHERE;
 
+  // See if we're in the sysmenu region.  We still have to check the tabstrip
+  // first so that clicks in a tab don't get treated as sysmenu clicks.
+  gfx::Rect sysmenu_rect(IconBounds());
+  // In maximized mode we extend the rect to the screen corner to take advantage
+  // of Fitts' Law.
+  if (frame_->GetWindow()->IsMaximized())
+    sysmenu_rect.SetRect(0, 0, sysmenu_rect.right(), sysmenu_rect.bottom());
+  bool in_sysmenu = sysmenu_rect.Contains(point);
+
   int frame_component =
       frame_->GetWindow()->GetClientView()->NonClientHitTest(point);
+  if (in_sysmenu)
+    return (frame_component == HTCLIENT) ? HTCLIENT : HTSYSMENU;
   if (frame_component != HTNOWHERE)
     return frame_component;
 
@@ -527,6 +538,40 @@ int OpaqueBrowserFrameView::IconSize() const {
   return kTitleBorderSpacing + title_font_->height() + kTitleBorderSpacing +
       (kFrameBorderThickness - TitlebarBottomThickness());
 #endif
+}
+
+gfx::Rect OpaqueBrowserFrameView::IconBounds() const {
+  int size = IconSize();
+  int frame_thickness = FrameBorderThickness();
+  int y;
+  if (frame_->GetWindow()->GetDelegate()->ShouldShowWindowIcon()) {
+    // This next statement handles two things:
+    //   (1) Vertically centering the icon when the icon is shorter than the
+    //       minimum space we reserve for the caption button. Practically, this
+    //       only occurs in maximized mode, since otherwise the minimum icon
+    //       size supplied by Windows (16) + the frame border height (4) >= the
+    //       minimum caption button space (19 + the frame shadow thickness (1)).
+    //       In maximized mode we want to bias rounding to put extra space above
+    //       the icon, since below it is the 2 px 3D edge, which looks to the
+    //       eye like additional space; hence the + 1 below.
+    //   (2) Our frame border has a different "3D look" than Windows'.  Theirs
+    //       has a more complex gradient on the top that they push their
+    //       icon/title below; then the maximized window cuts this off and the
+    //       icon/title are centered in the remaining space.  Because the
+    //       apparent shape of our border is simpler, using the same positioning
+    //       makes things look slightly uncentered with restored windows, so we
+    //       come up to compensate.  The frame border has a 2 px 3D edge plus
+    //       some empty space, so we adjust by half the width of the empty space
+    //       to center things.
+    y = (NonClientTopBorderHeight() - size - TitlebarBottomThickness() + 1 +
+        (frame_->GetWindow()->IsMaximized() ?
+            frame_thickness : kTitlebarTopAndBottomEdgeThickness)) / 2;
+  } else {
+    // For "browser mode" windows, we use the native positioning, which is just
+    // below the top frame border.
+    y = frame_thickness;
+  }
+  return gfx::Rect(frame_thickness + kIconLeftSpacing, y, size, size);
 }
 
 void OpaqueBrowserFrameView::PaintRestoredFrameBorder(gfx::Canvas* canvas) {
@@ -962,43 +1007,19 @@ void OpaqueBrowserFrameView::LayoutDistributorLogo() {
 void OpaqueBrowserFrameView::LayoutTitleBar() {
   // Always lay out the icon, even when it's not present, so we can lay out the
   // window title based on its position.
-  int frame_thickness = FrameBorderThickness();
-  int icon_x = frame_thickness + kIconLeftSpacing;
-  int icon_size = IconSize();
-  // This next statement handles vertically centering the icon when the icon is
-  // shorter than the minimum space we reserve for the caption button.
-  // Practically, this never occurs except in maximized mode, since otherwise
-  // the minimum icon size supplied by Windows (16) + the frame border height
-  // (4) >= the minimum caption button space (19 + the frame shadow thickness
-  // (1)).  In maximized mode we want to bias rounding to put extra space above
-  // the icon, since below it is the 2 px 3D edge, which looks to the eye like
-  // additional space; hence the + 1 below.
-  int icon_y = frame_thickness + ((NonClientTopBorderHeight() -
-      frame_thickness - icon_size - TitlebarBottomThickness() + 1) / 2);
-
+  gfx::Rect icon_bounds(IconBounds());
   views::WindowDelegate* d = frame_->GetWindow()->GetDelegate();
-  if (d->ShouldShowWindowIcon()) {
-    // Hack: Our frame border has a different "3D look" than Windows'.  Theirs
-    // has a more complex gradient on the top that they push their icon/title
-    // below; then the maximized window cuts this off and the icon/title are
-    // centered in the remaining space.  Because the apparent shape of our
-    // border is simpler, using the same positioning makes things look slightly
-    // uncentered with restored windows, so we come up to compensate.  The frame
-    // border has a 2 px 3D edge plus some empty space, so we adjust by half the
-    // width of the empty space to center things.
-    if (!frame_->GetWindow()->IsMaximized())
-      icon_y -= (frame_thickness - kTitlebarTopAndBottomEdgeThickness) / 2;
-
-    window_icon_->SetBounds(icon_x, icon_y, icon_size, icon_size);
-  }
+  if (d->ShouldShowWindowIcon())
+    window_icon_->SetBounds(icon_bounds);
 
   // Size the title, if visible.
   if (d->ShouldShowWindowTitle()) {
     InitAppWindowResources();  // To make sure the title_font_ is loaded.
-    int title_x = icon_x +
-        (d->ShouldShowWindowIcon() ? icon_size + kIconTitleSpacing : 0);
+    int title_x = d->ShouldShowWindowIcon() ?
+        icon_bounds.right() + kIconTitleSpacing : icon_bounds.x();
     int title_height = title_font_->height();
-    title_bounds_.SetRect(title_x, icon_y + ((icon_size - title_height) / 2),
+    title_bounds_.SetRect(title_x,
+        icon_bounds.y() + ((icon_bounds.height() - title_height) / 2),
         std::max(0, logo_icon_->x() - kTitleLogoSpacing - title_x),
         title_height);
   }

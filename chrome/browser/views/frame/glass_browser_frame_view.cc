@@ -97,8 +97,8 @@ gfx::Rect GlassBrowserFrameView::GetBoundsForTabStrip(
   if (UILayoutIsRightToLeft())
     tabstrip_x += (width() - minimize_button_offset);
   int tabstrip_width = minimize_button_offset - tabstrip_x -
-      (frame_->GetWindow()->IsMaximized() ? kNewTabCaptionMaximizedSpacing
-                                          : kNewTabCaptionRestoredSpacing);
+      (frame_->GetWindow()->IsMaximized() ?
+          kNewTabCaptionMaximizedSpacing : kNewTabCaptionRestoredSpacing);
   if (UILayoutIsRightToLeft())
     tabstrip_width += tabstrip_x;
   return gfx::Rect(tabstrip_x, NonClientTopBorderHeight(),
@@ -161,9 +161,9 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
 
   // See if we're in the sysmenu region.  We still have to check the tabstrip
   // first so that clicks in a tab don't get treated as sysmenu clicks.
-  int frame_border_thickness = FrameBorderThickness();
   int nonclient_border_thickness = NonClientBorderThickness();
-  gfx::Rect sysmenu_rect(nonclient_border_thickness, frame_border_thickness,
+  gfx::Rect sysmenu_rect(nonclient_border_thickness,
+                         GetSystemMetrics(SM_CXSIZEFRAME),
                          GetSystemMetrics(SM_CXSMICON),
                          GetSystemMetrics(SM_CYSMICON));
   bool in_sysmenu = sysmenu_rect.Contains(point);
@@ -175,6 +175,7 @@ int GlassBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   if (frame_component != HTNOWHERE)
     return frame_component;
 
+  int frame_border_thickness = FrameBorderThickness();
   int window_component = GetHTComponentForFrame(point, frame_border_thickness,
       nonclient_border_thickness, frame_border_thickness,
       kResizeAreaCornerSize - frame_border_thickness,
@@ -224,9 +225,8 @@ int GlassBrowserFrameView::NonClientTopBorderHeight() const {
   // We'd like to use FrameBorderThickness() here, but the maximized Aero glass
   // frame has a 0 frame border around most edges and a CXSIZEFRAME-thick border
   // at the top (see AeroGlassFrame::OnGetMinMaxInfo()).
-  const int kRestoredHeight = browser_view_->UsingSideTabs()
-      ? GetSystemMetrics(SM_CYCAPTION)
-      : kNonClientRestoredExtraThickness;
+  const int kRestoredHeight = browser_view_->UsingSideTabs() ?
+      GetSystemMetrics(SM_CYCAPTION) : kNonClientRestoredExtraThickness;
   return GetSystemMetrics(SM_CXSIZEFRAME) + (browser_view_->IsMaximized() ?
       -kTabstripTopShadowThickness : kRestoredHeight);
 }
@@ -373,8 +373,7 @@ void GlassBrowserFrameView::LayoutOTRAvatar() {
   if (browser_view_->IsTabStripVisible()) {
     tabstrip_height = browser_view_->GetTabStripHeight() - kOTRBottomSpacing;
     otr_height = frame_->GetWindow()->IsMaximized() ?
-        (tabstrip_height - kOTRMaximizedTopSpacing) :
-        otr_avatar_icon.height();
+        (tabstrip_height - kOTRMaximizedTopSpacing) : otr_avatar_icon.height();
   } else {
     tabstrip_height = otr_height = 0;
   }

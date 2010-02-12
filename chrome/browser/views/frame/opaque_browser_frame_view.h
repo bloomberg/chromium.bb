@@ -98,6 +98,10 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // not shown, e.g. to set the titlebar height.
   int IconSize() const;
 
+  // Returns the bounds of the titlebar icon (or where the icon would be if
+  // there was one).
+  gfx::Rect IconBounds() const;
+
   // Paint various sub-components of this view.  The *FrameBorder() functions
   // also paint the background of the titlebar area, since the top frame border
   // and titlebar background are a contiguous component.
