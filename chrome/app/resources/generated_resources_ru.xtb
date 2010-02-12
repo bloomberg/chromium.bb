@@ -253,7 +253,7 @@
 <translation id="2011110593081822050">Web Worker: <ph name="WORKER_NAME"/></translation>
 <translation id="350069200438440499">Имя файла:</translation>
 <translation id="8494979374722910010">Ошибка при попытке соединения с сервером.</translation>
-<translation id="7810202088502699111">На этой странице произошло блокирование всплывающих окон.</translation>
+<translation id="7810202088502699111">Всплывающие окна были заблокированы. </translation>
 <translation id="8795916974678578410">Новое окно</translation>
 <translation id="3400618317772401692">Укажите в этом окне сайты, с которых вы хотите получать новости, сообщения блогов и RSS/Atom-фиды.
         <ph name="BEGIN_LINK"/>Подробнее<ph name="END_LINK"/></translation>
@@ -315,7 +315,7 @@
 <translation id="5097982659374947325">Принимать файлы cookie от посещаемых сайтов</translation>
 <translation id="14171126816530869">Идентификационные данные <ph name="ORGANIZATION"/> в <ph name="LOCALITY"/> проверены <ph name="ISSUER"/>.</translation>
 <translation id="1587275751631642843">Консоль &amp;JavaScript</translation>
-<translation id="6880587130513028875">На этой странице произошло блокирование изображений.</translation>
+<translation id="6880587130513028875">Показ изображений запрещен для этой страниц.</translation>
 <translation id="851263357009351303">Всегда показывать изображения с сайта <ph name="HOST"/></translation>
 <translation id="5821894118254011366">Полностью заблокировать файлы cookie сторонних поставщиков</translation>
 <translation id="3511307672085573050">Скопировать адрес ссылки</translation>
@@ -426,7 +426,7 @@
 <translation id="9027459031423301635">Открыть ссылку в новой вкладке</translation>
 <translation id="358344266898797651">Кельтская</translation>
 <translation id="5055518462594137986">Запомнить выбор для всех ссылок этого типа.</translation>
-<translation id="246059062092993255">На этой странице произошло блокирование подключаемых модулей.</translation>
+<translation id="246059062092993255">Подключаемые модули были заблокированы.</translation>
 <translation id="2870560284913253234">Сайт</translation>
 <translation id="7724603315864178912">Вырезать</translation>
 <translation id="4164507027399414915">Восстановить все уменьшенные изображения, которые были удалены</translation>
@@ -481,7 +481,7 @@
 <translation id="1572103024875503863"><ph name="NUMBER_MANY"/> дн.</translation>
 <translation id="8453184121293348016">Не обнаружен механизм отзыва</translation>
 <translation id="1199429765931693651">Скрыть список</translation>
-<translation id="3481915276125965083">На этой странице произошло блокирование следующих всплывающих окон:</translation>
+<translation id="3481915276125965083">Заблокированы следующие всплывающие окна:</translation>
 <translation id="7163503212501929773">Осталось <ph name="NUMBER_MANY"/> час.</translation>
 <translation id="5586329397967040209">Сделать эту страницу главной</translation>
 <translation id="3283719377675052581">неизвестно</translation>
