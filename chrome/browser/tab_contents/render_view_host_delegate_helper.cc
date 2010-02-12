@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -168,7 +168,6 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
         !command_line.HasSwitch(switches::kDisableJava) &&
         prefs->GetBoolean(prefs::kWebKitJavaEnabled);
     web_prefs.loads_images_automatically =
-        !command_line.HasSwitch(switches::kDisableImages) &&
         prefs->GetBoolean(prefs::kWebKitLoadsImagesAutomatically);
     web_prefs.uses_page_cache =
         command_line.HasSwitch(switches::kEnableFastback);

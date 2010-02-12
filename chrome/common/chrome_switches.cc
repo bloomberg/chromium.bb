@@ -107,9 +107,6 @@ const char kDisableHangMonitor[]            = "disable-hang-monitor";
 // This flag can be overidden by the "enable-ipv6" flag.
 const char kDisableIPv6[]                   = "disable-ipv6";
 
-// Prevent images from loading.
-const char kDisableImages[]                 = "disable-images";
-
 // Don't execute JavaScript (browser JS like the new tab page still runs).
 const char kDisableJavaScript[]             = "disable-javascript";
 

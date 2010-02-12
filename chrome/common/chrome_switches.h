@@ -45,7 +45,6 @@ extern const char kDisableDevTools[];
 extern const char kDisableExtensions[];
 extern const char kDisableHangMonitor[];
 extern const char kDisableIPv6[];
-extern const char kDisableImages[];
 extern const char kDisableJavaScript[];
 extern const char kDisableJava[];
 extern const char kDisableLocalStorage[];
