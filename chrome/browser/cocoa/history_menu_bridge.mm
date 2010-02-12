@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,7 +30,7 @@ const static int kMostVisitedScope = 90;
 const static int kMostVisitedCount = 9;
 
 // The number of recently closed items to get.
-const static unsigned int kRecentlyClosedCount = 4;
+const static unsigned int kRecentlyClosedCount = 5;
 
 }
 
@@ -113,6 +113,12 @@ void HistoryMenuBridge::TabRestoreServiceChanged(TabRestoreService* service) {
   // Clear the history menu before modifying |closed_results_|.
   NSMenu* menu = HistoryMenu();
   ClearMenuSection(menu, IDC_HISTORY_MENU_CLOSED, closed_results_.size());
+
+  // If the number of entries in the tab restore service is less than
+  // what's cached, throw it away and rebuild it. It probably means
+  // the browsing data was cleared by the user.
+  if (entries.size() < closed_results_.size())
+    closed_results_.clear();
 
   unsigned int added_count = 0;
   for (TabRestoreService::Entries::const_iterator it = entries.begin();
