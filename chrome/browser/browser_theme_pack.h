@@ -57,12 +57,18 @@ class BrowserThemePack : public base::RefCountedThreadSafe<BrowserThemePack> {
   // destruction.
   bool WriteToDisk(FilePath path) const;
 
-  // Returns data from the pack, or the default value if |id| doesn't
-  // exist. These methods should only be called from the UI thread. (But this
-  // isn't enforced because of unit tests).
+  // If this theme specifies data for the corresponding |id|, return true and
+  // write the corresponding value to the output parameter. These functions
+  // don't return the default data. These methods should only be called from
+  // the UI thread. (But this isn't enforced because of unit tests).
   bool GetTint(int id, color_utils::HSL* hsl) const;
   bool GetColor(int id, SkColor* color) const;
   bool GetDisplayProperty(int id, int* result) const;
+
+  // Returns a bitmap if we have a custom image for |id|, otherwise NULL. Note
+  // that this is separate from HasCustomImage() which returns whether a custom
+  // image |id| was included in the unprocessed theme and is used as a proxy
+  // for making layout decisions in the interface.
   SkBitmap* GetBitmapNamed(int id) const;
 
   // Returns the raw PNG encoded data for IDR_THEME_NTP_*. This method is only
