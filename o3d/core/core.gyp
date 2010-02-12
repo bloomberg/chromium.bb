@@ -269,6 +269,8 @@
         'cross/viewport.h',
         'cross/visitor_base.h',
         'cross/weak_ptr.h',
+        'cross/gpu2d/arena.h',
+        'cross/gpu2d/red_black_tree.h',
       ],
       'direct_dependent_settings': {
         'include_dirs': [
@@ -509,6 +511,10 @@
           'cross/vertex_source_test.cc',
           'cross/visitor_base_test.cc',
           'cross/weak_ptr_test.cc',
+          'cross/gpu2d/arena_test.cc',
+          'cross/gpu2d/red_black_tree_test.cc',
+          'cross/gpu2d/tree_test_helpers.cc',
+          'cross/gpu2d/tree_test_helpers.h',
         ],
       },
     },
