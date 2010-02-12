@@ -139,6 +139,9 @@ class FindBarGtk : public FindBar,
   static void OnMoveCursor(GtkEntry* entry, GtkMovementStep step, gint count,
                            gboolean selection, FindBarGtk* bar);
 
+  // Handles Enter key.
+  static void OnActivate(GtkEntry* entry, FindBarGtk* bar);
+
   Browser* browser_;
   BrowserWindowGtk* window_;
 

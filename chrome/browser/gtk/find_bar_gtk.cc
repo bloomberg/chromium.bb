@@ -193,6 +193,7 @@ FindBarGtk::FindBarGtk(Browser* browser)
   g_signal_connect(text_entry_, "button-press-event",
                    G_CALLBACK(OnButtonPress), this);
   g_signal_connect(text_entry_, "move-cursor", G_CALLBACK(OnMoveCursor), this);
+  g_signal_connect(text_entry_, "activate", G_CALLBACK(OnActivate), this);
   g_signal_connect(container_, "expose-event",
                    G_CALLBACK(OnExpose), this);
 }
@@ -840,4 +841,8 @@ void FindBarGtk::OnMoveCursor(GtkEntry* entry, GtkMovementStep step, gint count,
 
     gdk_event_free(event);
   }
+}
+
+void FindBarGtk::OnActivate(GtkEntry* entry, FindBarGtk* bar) {
+  bar->FindEntryTextInContents(true);
 }
