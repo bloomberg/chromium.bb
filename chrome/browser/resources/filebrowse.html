@@ -29,27 +29,6 @@ div.header {
   color: black;
 }
 
-li.filebrowserow .actionmenu {
-  display:inline-block;
-  float:right;
-  width:15px;
-  height:16px;
-  opacity:0.3;
-	-webkit-transition: opacity 0.2s ease-out ;
-
-}
-
-li.filebrowserow:hover .actionmenu {
-opacity:0.75;;
--webkit-transition: opacity 0.0s ease-out ;
-
-}
-
-li.filebrowserow:hover .actionmenu:hover {
-opacity:1.0;
--webkit-transition: opacity 0.0s ease-out ;
-}
-
 .rowlink {
   height: 100%;
   width: 90%;
@@ -132,17 +111,29 @@ li.filebrowserow div.icon {
   opacity:0.5;
 }
 
-.uploaicon {
-  background: url('../../app/theme/filebrowse_upload.png');
+.menuicon {
+  background: url('../../app/theme/filebrowse_menu.png');
   position: absolute;
-  right: 0;
+  right: 4px;
   top: 5px;
   height: 100%;
-  width: 12px;
-  margin-left: 5px;
+  width: 15px;
+  margin-left: 0;
   margin-top: 5px;
   background-repeat: no-repeat;
   cursor:pointer;
+  opacity:0.3;
+  -webkit-transition: opacity 0.2s ease-out ;
+}
+
+li.filebrowserow:hover .menuicon {
+  opacity:0.75;;
+  -webkit-transition: opacity 0.0s ease-out ;
+}
+
+li.filebrowserow:hover .menuicon:hover {
+  opacity:1.0;
+  -webkit-transition: opacity 0.0s ease-out ;
 }
 
 .uploadcomplete {
@@ -180,6 +171,17 @@ li.filebrowserow {
 .downloadstatus {
   width: 100%;
   font-size:.6em;
+}
+
+.downloadpause {
+  right:0;
+  bottom:0;
+  height: 15px;
+  cursor: pointer;
+  color:blue;
+  text-align: center;
+  position: absolute;
+  text-decoration:underline;
 }
 
 li.filebrowserow:hover {
@@ -446,30 +448,42 @@ div.fullcontainer {
   height: 100%;
 }
 
-.uploadmenu {
-  top: 0;
-  right: 0;
+.menu {
+  top: 14px;
+  right: 2px;
   width: 100px;
-  height: 70px;
+  -webkit-box-shadow: rgba(0, 0, 0, 0.3) 0px 3px 3px;
+  border-bottom-left-radius: 4px 4px;
+  border-bottom-right-radius: 4px 4px;
+  border-top-left-radius: 4px 4px;
+  border-top-right-radius: 0px 0px;
   position: absolute;
   display: none;
   z-index: 999;
   background: white;
-  border: 1px solid black;
+  -webkit-border-top-left-radius: 4px;
+  border: 1px solid rgba(0, 0, 0, 0.6);
   padding: 5px;
 }
 
-.uploadmenuitem {
+.menuitem {
   width: 100%;
   height: 20px;
   text-align: left;
   cursor: pointer;
   left: 0;
-  color: blue;
-  text-decoration: underline;
+  color:#0D0052;
+  -webkit-transition: color 1.0s ease-out ;
 }
 
-.uploadmenuitemdisabled {
+.menuitem:hover {
+  text-decoration:underline;
+  color:#20c;
+  background: #ebeff9;
+  -webkit-transition: color 0.0s ease-out ;
+}
+
+.menuitemdisabled {
   width: 100%;
   height: 20px;
   text-align: left;
@@ -489,7 +503,7 @@ function $(o) {
 
 var pathArray = [];
 var currentNode = -1;
-var foundImages = [];
+var menus = [];
 var currentImageMenu = '';
 var inFullMode = false;
 var inSelectMode = false;
@@ -502,6 +516,12 @@ var currentlySelectedItems = new Array();
 var currentlySelectedPaths = new Array();
 var multiSelect = false;
 var inSaveMode = false;
+var currentMenu = null;
+var mainColumn = null;
+
+// strings
+var kPauseDownload = 'pause';
+var kResumeDownload = 'resume';
 
 function goBackInList() {
   if (currentNode > 0) {
@@ -529,7 +549,7 @@ function goForwardInList() {
 var lastScrollLeft = 0;
 function animateScrollRight() {
 
-  var main = $('main');
+  var main = mainColumn;
   main.scrollLeft += 20;
   // since if its larger than a size, we know we reached the leftmost part when
   // it stops growing, so clear it out and no more timeouts.
@@ -553,7 +573,7 @@ function getCurrentContainer() {
     animateScrollRight();
     return newContainer;
   } else {
-    return $('main');
+    return mainColumn;
   }
 };
 
@@ -587,9 +607,20 @@ function browseFileResult(info, results) {
      }
    } else if (info.functionCall == 'getChildren') {
      var main = getCurrentContainer();
+     main.id = 'dir/' + info.path;
      divArray.push(main);
 
      createNewList(lastDir, results, main, info.path);
+   } else if (info.functionCall == 'refresh') {
+     var main = $('dir/' + info.path);
+     if (main) {
+       clearList(main);
+       createNewList(lastDir, results, main, info.path);    
+     } else {
+       alert('hmm, got a refresh on an unknown directory: '+ 'dir/' + info.path);
+       // not currently displayed, so just return.
+       return;
+     }
    }
 };
 
@@ -606,7 +637,7 @@ function pathIsImageFile(path) {
 };
 
 function moveScrollLeft() {
-  var main = $('main');
+  var main = mainColumn;
   main.scrollLeft += 10;
 }
 
@@ -614,7 +645,7 @@ function setUpForPlayback(path) {
    var mediapath = 'file://' + path;
    var header = $('header');
    document.body.removeChild(header);
-   var main = $('main');
+   var main = mainColumn;
    main.className = 'playbackcontainer';
    var elementType;
    if (pathIsVideoFile(path)) {
@@ -669,7 +700,7 @@ function getDataForPath(path) {
 function setUpForScanning() {
   var header = $('header');
   document.body.removeChild(header);
-  var main = $('main');
+  var main = mainColumn;
   main.className = 'scanningcontainer';
   main.textContent = 'Scanning Device...';
 };
@@ -765,6 +796,10 @@ function createFolder(elementId) {
   return false;
 };
 
+function deleteFile(path) {
+  chrome.send('deleteFile', [path]);
+};
+
 function createFolderTyping(elementId) {
    if (window.event.keyCode == 13) {
      createFolder(elementId);
@@ -779,9 +814,21 @@ function getDirectoryForPath(path) {
   return path.substr(path, index);
 };
 
+function pauseToggleDownload(id) {
+  var element = $('downloaditem' + id);
+  if (element.textContent == kPauseDownload) {
+    element.textContent = kResumeDownload;
+  } else {
+    element.textContent = kPauseDownload;
+  }
+  // Have to convert to a string, the system wasn't accepting ints
+  chrome.send('pauseToggleDownload', ['' + id]);
+};
+
 function downloadsList(results) {
 //  alert(JSON.stringify(results));
 //  We might want to do something with this... For now assume that the update will get the necessary info
+  downloadUpdated(results);
 };
 
 function downloadUpdated(results) {
@@ -801,12 +848,27 @@ function downloadUpdated(results) {
           var progressDiv = document.createElement('div');
           progressDiv.className = 'downloadstatus';
           element.appendChild(progressDiv);
+          var pauseDiv = document.createElement('div');
+          pauseDiv.onclick = new Function('pauseToggleDownload(' + results[x].id + ')');
+          pauseDiv.className = 'downloadpause';
+          if (results[x].state == "DANGEROUS") {
+            pauseDiv.textContent = "danger";
+          } else if (results[x].state == "PAUSED") {
+            pauseDiv.textContent = kResumeDownload;
+          } else if (results[x].state == "IN_PROGRESS") {
+            pauseDiv.textContent = kPauseDownload;
+          }
+          pauseDiv.id = 'downloaditem' + results[x].id;
+          element.appendChild(pauseDiv);
         }
         progressDiv.textContent = results[x].progress_status_text;
 
       } else {
         for (var x = 0; x < element.children.length; x++) {
            if (element.children[x].className == 'downloadstatus') {
+              var child = element.children[x];
+              element.removeChild(child);
+           } else if (element.children[x].className == 'downloadpause') {
               var child = element.children[x];
               element.removeChild(child);
            }
@@ -850,6 +912,7 @@ function dialogNewFolderClick() {
  * Window onload handler, sets up the page.
  */
 function load() {
+  mainColumn = $('main');
   if(document.documentElement.clientWidth <= 600) {
     inFullMode = false;
 
@@ -866,7 +929,7 @@ function load() {
       }
       inSelectMode = true;
       if (inSaveMode) {
-        var main = $('main');
+        var main = mainColumn;
         main.className = 'containerwithsavebuttons';
         var savemenu = document.createElement('div');
         savemenu.className = 'savecontainer';
@@ -905,7 +968,7 @@ function load() {
         document.body.appendChild(savemenu);
 
       } else {
-        var main = $('main');
+        var main = mainColumn;
         main.className = 'containerwithopenbuttons';
         var openmenu = document.createElement('div');
         openmenu.className = 'opencontainer';
@@ -923,7 +986,7 @@ function load() {
       }
     }
   } else {
-    var main = $('main');
+    var main = mainColumn;
     main.className = 'fullcontainer';
     var innerContainer = document.createElement('div');
     innerContainer.className = 'container';
@@ -1029,34 +1092,41 @@ function showImage(path) {
   }
 };
 
-function clearImageMenus() {
-  if (foundImages[currentImageMenu]) {
-    var element = foundImages[currentImageMenu];
-    element.firstChild.style.display = 'none';
-    currentImageMenu = '';
+function clearMenus() {
+
+  if (currentMenu) {
+    currentMenu.firstChild.style.display = 'none';
+    currentMenu.style.opacity = '';
+    currentMenu = null;
   }
 };
 
 function uploadImage(path) {
+  /*
   if (foundImages[path]) {
     var element = foundImages[path];
     element.onclick = undefined;
     element.className = 'uploadprogress';
   }
-  chrome.send('uploadToPicasaweb', [path]);
+  chrome.send('uploadToPicasaweb', [path]);*/
 };
 
 function showMenu(path) {
-  if (foundImages[path]) {
-    clearImageMenus();
-    var element = foundImages[path];
+  var element = menus[path];
+  if (element.firstChild.style.display == 'block') {
+    // Second click should clear the menu.
+    clearMenus();
+  } else {
+    clearMenus();
     element.firstChild.style.display = 'block';
-    currentImageMenu = path;
+    element.style.opacity = '1';
+    currentMenu = element;
   }
   window.event.stopPropagation();
 }
 
 function uploadComplete(result) {
+  /*
   if (foundImages[result.path]) {
     var element = foundImages[result.path];
     element.className = 'uploadcomplete';
@@ -1065,7 +1135,7 @@ function uploadComplete(result) {
     } else {
       element.textContent = 'Error';
     }
-  }
+  }*/
 };
 
 function findInArray(arr, element) {
@@ -1143,37 +1213,46 @@ function createNewItem(title, path, isDirectory) {
   link.appendChild(span);
 
   element.appendChild(link);
+
+  // Setup Menu
+  var currentPath = pathArray[pathArray.length - 1];
+  if (currentPath != 'roots') {
+    var menuicon = document.createElement('div');
+    var menu = document.createElement('div');
+    menu.className = 'menu';
+    if (pathIsImageFile(path)) {
+      var picasaitem = document.createElement('div');
+      var flikritem = document.createElement('div');
+      var emailitem = document.createElement('div');
+      picasaitem.textContent = 'Picasa Web';
+      flikritem.textContent = 'Flikr';
+      emailitem.textContent = 'Email';
+      picasaitem.className = 'menuitem';
+      flikritem.className = 'menuitemdisabled';
+      emailitem.className = 'menuitemdisabled';
+      picasaitem.onclick = new Function('uploadImage("' + path + '")');
+      menu.appendChild(picasaitem);
+      menu.appendChild(flikritem);
+      menu.appendChild(emailitem);
+    }
+    var deleteitem = document.createElement('div');
+    deleteitem.textContent = 'Delete';
+    deleteitem.className = 'menuitem';
+    deleteitem.onclick = new Function('deleteFile("' + path +'")');
+    menu.appendChild(deleteitem);
+    menuicon.align = 'right';
+    menuicon.className = 'menuicon';
+    menuicon.onclick = new Function('showMenu("' + path + '")');
+    menuicon.appendChild(menu);
+    element.appendChild(menuicon);
+    menus[path] = menuicon;
+  }
   if (isDirectory) {
     var rightarrow = document.createElement('span');
     rightarrow.innerHTML = '&nbsp;&raquo;';
     rightarrow.className = 'rightarrow';
     link.appendChild(rightarrow);
-  } else if (pathIsImageFile(path)) {
-    var uploadicon = document.createElement('div');
-    var uploadmenu = document.createElement('div');
-    uploadmenu.className = 'uploadmenu';
-    var picasaitem = document.createElement('div');
-    var flikritem = document.createElement('div');
-    var emailitem = document.createElement('div');
-    picasaitem.textContent = 'Picasa Web';
-    flikritem.textContent = 'Flikr';
-    emailitem.textContent = 'Email';
-    picasaitem.className = 'uploadmenuitem';
-    flikritem.className = 'uploadmenuitemdisabled';
-    emailitem.className = 'uploadmenuitemdisabled';
-    picasaitem.onclick = new Function('uploadImage("' + path + '")');
-    uploadmenu.appendChild(picasaitem);
-    uploadmenu.appendChild(flikritem);
-    uploadmenu.appendChild(emailitem);
-    uploadicon.align = 'right';
-    uploadicon.className = 'uploadicon';
-    uploadicon.onclick = new Function('showMenu("' + path + '")');
-    uploadicon.appendChild(uploadmenu);
-    element.appendChild(uploadicon);
-    // Doing this so that we can change it when we get events
-    foundImages[path] = uploadicon;
   }
-
   return element;
 };
 
@@ -1222,7 +1301,7 @@ function createNewList(title, results, main, path) {
 };
 
 </script>
-<body onload='load();' onclick='clearImageMenus()' onselectstart='return false'>
+<body onload='load();' onclick='clearMenus()' onselectstart='return false'>
 <div id='header' class=''>
   <div id='back' class='backbutton controlbutton' onclick='goBackInList();return false;'>
     <img src="../../app/theme/filebrowse_back.png" width='100%' height='100%'>

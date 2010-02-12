@@ -126,6 +126,8 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   // Callback for the "getRoots" message.
   void HandleGetRoots(const Value* value);
 
+  void GetChildrenForPath(FilePath& path, bool is_refresh);
+
   void OnURLFetchComplete(const URLFetcher* source,
                           const GURL& url,
                           const URLRequestStatus& status,
@@ -151,6 +153,12 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
 
   void HandleCreateNewFolder(const Value* value);
 
+  void HandleDeleteFile(const Value* value);
+  void DeleteFile(const FilePath& path);
+  void FireDeleteComplete(const FilePath& path);
+
+  void HandlePauseToggleDownload(const Value* value);
+
   void ReadInFile();
   void FireUploadComplete();
 
@@ -172,6 +180,7 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
   int upload_response_code_;
   TaskProxy* CurrentTask_;
   scoped_refptr<net::DirectoryLister> lister_;
+  bool is_refresh_;
 
   DownloadManager* download_manager_;
   typedef std::vector<DownloadItem*> DownloadList;
@@ -182,8 +191,9 @@ class FilebrowseHandler : public net::DirectoryLister::DirectoryListerDelegate,
 
 class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
  public:
-  explicit TaskProxy(const base::WeakPtr<FilebrowseHandler>& handler)
-      : handler_(handler) {}
+  explicit TaskProxy(const base::WeakPtr<FilebrowseHandler>& handler, FilePath& path)
+      : handler_(handler),
+        path_(path) {}
   void ReadInFileProxy() {
     if (handler_) {
       handler_->ReadInFile();
@@ -195,8 +205,21 @@ class TaskProxy : public base::RefCountedThreadSafe<TaskProxy> {
       handler_->FireUploadComplete();
     }
   }
+
+  void DeleteFileProxy() {
+    if (handler_) {
+      handler_->DeleteFile(path_);
+    }
+  }
+
+  void FireDeleteCompleteProxy() {
+    if (handler_) {
+      handler_->FireDeleteComplete(path_);
+    }
+  }
  private:
   base::WeakPtr<FilebrowseHandler> handler_;
+  FilePath path_;
   friend class base::RefCountedThreadSafe<TaskProxy>;
 };
 
@@ -240,13 +263,13 @@ void FileBrowseUIHTMLSource::StartDataRequest(const std::string& path,
 ////////////////////////////////////////////////////////////////////////////////
 FilebrowseHandler::FilebrowseHandler()
     : profile_(NULL),
+      is_refresh_(false),
       download_manager_(NULL) {
-  // TODO(dhg): Check to see if this is really necessary
+  lister_ = NULL;
 #if defined(OS_CHROMEOS)
   chromeos::MountLibrary* lib = chromeos::MountLibrary::Get();
   lib->AddObserver(this);
 #endif
-  lister_ = NULL;
 }
 
 FilebrowseHandler::~FilebrowseHandler() {
@@ -298,7 +321,18 @@ void FilebrowseHandler::RegisterMessages() {
       NewCallback(this, &FilebrowseHandler::HandleGetDownloads));
   dom_ui_->RegisterMessageCallback("createNewFolder",
       NewCallback(this, &FilebrowseHandler::HandleCreateNewFolder));
+  dom_ui_->RegisterMessageCallback("pauseToggleDownload",
+      NewCallback(this, &FilebrowseHandler::HandlePauseToggleDownload));
+  dom_ui_->RegisterMessageCallback("deleteFile",
+      NewCallback(this, &FilebrowseHandler::HandleDeleteFile));
 }
+
+
+void FilebrowseHandler::FireDeleteComplete(const FilePath& path) {
+  // We notify the UI by telling it to refresh its contents.
+  FilePath dir_path = path.DirName();
+  GetChildrenForPath(dir_path, true);
+};
 
 void FilebrowseHandler::FireUploadComplete() {
   DictionaryValue info_value;
@@ -421,6 +455,25 @@ void FilebrowseHandler::HandleCreateNewFolder(const Value* value) {
 #endif
 }
 
+void FilebrowseHandler::HandlePauseToggleDownload(const Value* value) {
+#if defined(OS_CHROMEOS)
+  if (value && value->GetType() == Value::TYPE_LIST) {
+    const ListValue* list_value = static_cast<const ListValue*>(value);
+    int id;
+    std::string str_id;
+
+    if (list_value->GetString(0, &str_id)) {
+      id = atoi(str_id.c_str());
+      DownloadItem* item = download_items_[id];
+      item->TogglePause();
+    } else {
+      LOG(ERROR) << "Unable to get id for download to pause";
+      return;
+    }
+  }
+#endif
+}
+
 void FilebrowseHandler::OpenNewFullWindow(const Value* value) {
   OpenNewWindow(value, false);
 }
@@ -537,7 +590,8 @@ void FilebrowseHandler::UploadToPicasaweb(const Value* value) {
   }
   current_file_uploaded_ = path;
   //  ReadInFile();
-  TaskProxy* task = new TaskProxy(AsWeakPtr());
+  FilePath current_path(path);
+  TaskProxy* task = new TaskProxy(AsWeakPtr(), current_path);
   task->AddRef();
   CurrentTask_ = task;
   ChromeThread::PostTask(
@@ -545,6 +599,21 @@ void FilebrowseHandler::UploadToPicasaweb(const Value* value) {
       NewRunnableMethod(
           task, &TaskProxy::ReadInFileProxy));
 #endif
+}
+
+void FilebrowseHandler::GetChildrenForPath(FilePath& path, bool is_refresh) {
+  filelist_value_.reset(new ListValue());
+  currentpath_ = FilePath(path);
+
+  if (lister_.get()) {
+    lister_->Cancel();
+    lister_->set_delegate(NULL);
+    lister_ = NULL;
+  }
+
+  is_refresh_ = is_refresh;
+  lister_ = new net::DirectoryLister(currentpath_, this);
+  lister_->Start();
 }
 
 void FilebrowseHandler::HandleGetChildren(const Value* value) {
@@ -566,19 +635,14 @@ void FilebrowseHandler::HandleGetChildren(const Value* value) {
     return;
   }
   filelist_value_.reset(new ListValue());
+  FilePath currentpath;
 #if defined(OS_WIN)
-  currentpath_ = FilePath(ASCIIToWide(path));
+  currentpath = FilePath(ASCIIToWide(path));
 #else
-  currentpath_ = FilePath(path);
+  currentpath = FilePath(path);
 #endif
 
-  if (lister_.get()) {
-    lister_->Cancel();
-    lister_->set_delegate(NULL);
-    lister_ = NULL;
-  }
-  lister_ = new net::DirectoryLister(currentpath_, this);
-  lister_->Start();
+  GetChildrenForPath(currentpath, false);
 }
 
 void FilebrowseHandler::OnListFile(
@@ -615,10 +679,15 @@ void FilebrowseHandler::OnListFile(
 
 void FilebrowseHandler::OnListDone(int error) {
   DictionaryValue info_value;
-  info_value.SetString(L"functionCall", "getChildren");
+  if (is_refresh_) {
+    info_value.SetString(L"functionCall", "refresh");
+  } else {
+    info_value.SetString(L"functionCall", "getChildren");
+  }
   info_value.SetString(kPropertyPath, currentpath_.value());
   dom_ui_->CallJavascriptFunction(L"browseFileResult",
                                   info_value, *(filelist_value_.get()));
+  SendCurrentDownloads();
 }
 
 void FilebrowseHandler::HandleGetMetadata(const Value* value) {
@@ -650,6 +719,42 @@ void FilebrowseHandler::SetDownloads(std::vector<DownloadItem*>& downloads) {
   }
 
   SendCurrentDownloads();
+}
+
+void FilebrowseHandler::DeleteFile(const FilePath& path) {
+  if (!file_util::Delete(path, true)) {
+    LOG(ERROR) << "unable to delete directory";
+  }
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(CurrentTask_, &TaskProxy::FireDeleteCompleteProxy));
+}
+
+void FilebrowseHandler::HandleDeleteFile(const Value* value) {
+  #if defined(OS_CHROMEOS)
+  if (value && value->GetType() == Value::TYPE_LIST) {
+    const ListValue* list_value = static_cast<const ListValue*>(value);
+    std::string path;
+
+    // Get path string.
+    if (list_value->GetString(0, &path)) {
+
+      FilePath currentpath;
+      currentpath = FilePath(path);
+
+      TaskProxy* task = new TaskProxy(AsWeakPtr(), currentpath);
+      task->AddRef();
+      CurrentTask_ = task;
+      ChromeThread::PostTask(
+          ChromeThread::FILE, FROM_HERE,
+          NewRunnableMethod(
+              task, &TaskProxy::DeleteFileProxy));
+    } else {
+      LOG(ERROR) << "Unable to get string";
+      return;
+    }
+  }
+#endif
 }
 
 void FilebrowseHandler::OnDownloadUpdated(DownloadItem* download) {

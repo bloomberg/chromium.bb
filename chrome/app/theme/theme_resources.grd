@@ -427,6 +427,7 @@
         <include name="IDR_ICON_WEBPAGE" file="icon_webpage.png" type="BINDATA" />
         <include name="IDR_FILEBROWSER_UPLOAD" file="filebrowse_upload.png" type="BINDATA" />
         <include name="IDR_FILEBROWSER_FULLSCREEN" file="filebrowse_fullscreen.png" type="BINDATA" />
+        <include name="IDR_FILEBROWSER_MENU" file="filebrowse_menu.png" type="BINDATA" />
        </if>
 
       <if expr="(pp_ifdef('chromeos') or pp_ifdef('toolkit_views')) and pp_ifdef('_google_chrome')">
