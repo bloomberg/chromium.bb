@@ -35,16 +35,19 @@ extern NSString* const kCharacterInfoID;  // NSNumber value.
   IBOutlet NSButton* serifButton_;
   IBOutlet NSTextField* serifField_;
   scoped_nsobject<NSFont> serifFont_;
+  IBOutlet NSTextField* serifLabel_;
   BOOL changedSerif_;
 
   IBOutlet NSButton* sansSerifButton_;
   IBOutlet NSTextField* sansSerifField_;
   scoped_nsobject<NSFont> sansSerifFont_;
+  IBOutlet NSTextField* sansSerifLabel_;
   BOOL changedSansSerif_;
 
   IBOutlet NSButton* fixedWidthButton_;
   IBOutlet NSTextField* fixedWidthField_;
   scoped_nsobject<NSFont> fixedWidthFont_;
+  IBOutlet NSTextField* fixedWidthLabel_;
   BOOL changedFixedWidth_;
 
   // The actual preference members.

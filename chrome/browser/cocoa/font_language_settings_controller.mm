@@ -24,7 +24,9 @@ void ShowFontsLanguagesWindow(gfx::NativeWindow window,
 }
 
 @interface FontLanguageSettingsController (Private)
-- (void)updateDisplayField:(NSTextField*)field withFont:(NSFont*)font;
+- (void)updateDisplayField:(NSTextField*)field
+                  withFont:(NSFont*)font
+                 withLabel:(NSTextField*)label;
 @end
 
 @implementation FontLanguageSettingsController
@@ -122,9 +124,15 @@ void ShowFontsLanguagesWindow(gfx::NativeWindow window,
   [[self window] setDelegate:self];
 
   // Set up the font display.
-  [self updateDisplayField:serifField_ withFont:serifFont_.get()];
-  [self updateDisplayField:sansSerifField_ withFont:sansSerifFont_.get()];
-  [self updateDisplayField:fixedWidthField_ withFont:fixedWidthFont_.get()];
+  [self updateDisplayField:serifField_
+                  withFont:serifFont_.get()
+                 withLabel:serifLabel_];
+  [self updateDisplayField:sansSerifField_
+                  withFont:sansSerifFont_.get()
+                 withLabel:sansSerifLabel_];
+  [self updateDisplayField:fixedWidthField_
+                  withFont:fixedWidthFont_.get()
+                 withLabel:fixedWidthLabel_];
 }
 
 - (void)windowWillClose:(NSNotification*)notif {
@@ -159,19 +167,24 @@ void ShowFontsLanguagesWindow(gfx::NativeWindow window,
   switch (currentType_) {
     case FontSettingSerif:
       serifFont_.reset([[fontManager convertFont:serifFont_] retain]);
-      [self updateDisplayField:serifField_ withFont:serifFont_.get()];
+      [self updateDisplayField:serifField_
+                      withFont:serifFont_.get()
+                     withLabel:serifLabel_];
       changedSerif_ = YES;
       break;
     case FontSettingSansSerif:
       sansSerifFont_.reset([[fontManager convertFont:sansSerifFont_] retain]);
-      [self updateDisplayField:sansSerifField_ withFont:sansSerifFont_.get()];
+      [self updateDisplayField:sansSerifField_
+                      withFont:sansSerifFont_.get()
+                     withLabel:sansSerifLabel_];
       changedSansSerif_ = YES;
       break;
     case FontSettingFixed:
       fixedWidthFont_.reset(
           [[fontManager convertFont:fixedWidthFont_] retain]);
       [self updateDisplayField:fixedWidthField_
-                      withFont:fixedWidthFont_.get()];
+                      withFont:fixedWidthFont_.get()
+                     withLabel:fixedWidthLabel_];
       changedFixedWidth_ = YES;
       break;
     default:
@@ -232,9 +245,25 @@ void ShowFontsLanguagesWindow(gfx::NativeWindow window,
 
 #pragma mark Private
 
+// Set the baseline for the font field to be aligned with the baseline
+// of its corresponding label.
+- (NSPoint)getFontFieldOrigin:(NSTextField*)field
+                     forLabel:(NSTextField*)label {
+  [field sizeToFit];
+  NSRect labelFrame = [label frame];
+  NSPoint newOrigin =
+      [[label superview] convertPoint:labelFrame.origin
+                               toView:[field superview]];
+  newOrigin.x = 0;  // Left-align font field.
+  newOrigin.y += [[field font] descender] - [[label font] descender];
+  return newOrigin;
+}
+
 // This will set the font on |field| to be |font|, and will set the string
 // value to something human-readable.
-- (void)updateDisplayField:(NSTextField*)field withFont:(NSFont*)font {
+- (void)updateDisplayField:(NSTextField*)field
+                  withFont:(NSFont*)font
+                 withLabel:(NSTextField*)label {
   if (!font) {
     // Something has gone really wrong. Don't make things worse by showing the
     // user "(null)".
@@ -244,6 +273,7 @@ void ShowFontsLanguagesWindow(gfx::NativeWindow window,
   NSString* value =
       [NSString stringWithFormat:@"%@, %g", [font fontName], [font pointSize]];
   [field setStringValue:value];
+  [field setFrameOrigin:[self getFontFieldOrigin:field forLabel:label]];
 }
 
 @end

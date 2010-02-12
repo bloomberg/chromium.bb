@@ -11,8 +11,31 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+// The FontLanguageSettingsControllerForTest overrides the getFontFieldOrigin
+// method to provide a dummy point, so we don't have to actually display the
+// window to test the controller.
+@interface FontLanguageSettingsControllerForTest :
+    FontLanguageSettingsController {
+}
+
+- (NSPoint)getFontFieldOrigin:(NSTextField*)field
+                     forLabel:(NSTextField*)label;
+
+@end
+
+@implementation FontLanguageSettingsControllerForTest
+
+- (NSPoint)getFontFieldOrigin:(NSTextField*)field
+                     forLabel:(NSTextField*)label {
+  return NSMakePoint(10, 10);
+}
+
+@end
+
 @interface FontLanguageSettingsController (Testing)
-- (void)updateDisplayField:(NSTextField*)field withFont:(NSFont*)font;
+- (void)updateDisplayField:(NSTextField*)field
+                  withFont:(NSFont*)font
+                 withLabel:(NSTextField*)label;
 @end
 
 class FontLanguageSettingsControllerTest : public CocoaTest {
@@ -20,7 +43,7 @@ class FontLanguageSettingsControllerTest : public CocoaTest {
   FontLanguageSettingsControllerTest() {
     Profile* profile = helper_.profile();
     font_controller_.reset(
-        [[FontLanguageSettingsController alloc] initWithProfile:profile]);
+        [[FontLanguageSettingsControllerForTest alloc] initWithProfile:profile]);
    }
   ~FontLanguageSettingsControllerTest() {}
 
@@ -37,8 +60,11 @@ TEST_F(FontLanguageSettingsControllerTest, UpdateDisplayField) {
   NSFont* font = [NSFont fontWithName:@"Times-Roman" size:12.0];
   scoped_nsobject<NSTextField> field(
       [[NSTextField alloc] initWithFrame:NSMakeRect(100, 100, 100, 100)]);
-
-  [font_controller_ updateDisplayField:field.get() withFont:font];
+  scoped_nsobject<NSTextField> label(
+      [[NSTextField alloc] initWithFrame:NSMakeRect(100, 100, 100, 100)]);
+  [font_controller_ updateDisplayField:field.get()
+                              withFont:font
+                             withLabel:label];
 
   ASSERT_TRUE([[font fontName] isEqualToString:[[field font] fontName]]);
   ASSERT_TRUE([@"Times-Roman, 12" isEqualToString:[field stringValue]]);
@@ -47,9 +73,12 @@ TEST_F(FontLanguageSettingsControllerTest, UpdateDisplayField) {
 TEST_F(FontLanguageSettingsControllerTest, UpdateDisplayFieldNilFont) {
   scoped_nsobject<NSTextField> field(
       [[NSTextField alloc] initWithFrame:NSMakeRect(100, 100, 100, 100)]);
+  scoped_nsobject<NSTextField> label(
+      [[NSTextField alloc] initWithFrame:NSMakeRect(100, 100, 100, 100)]);
   [field setStringValue:@"foo"];
-
-  [font_controller_ updateDisplayField:field.get() withFont:nil];
+  [font_controller_ updateDisplayField:field.get()
+                              withFont:nil
+                             withLabel:label];
 
   ASSERT_TRUE([@"foo" isEqualToString:[field stringValue]]);
 }
@@ -57,5 +86,5 @@ TEST_F(FontLanguageSettingsControllerTest, UpdateDisplayFieldNilFont) {
 TEST_F(FontLanguageSettingsControllerTest, UpdateDisplayFieldNilField) {
   // Don't crash.
   NSFont* font = [NSFont fontWithName:@"Times-Roman" size:12.0];
-  [font_controller_ updateDisplayField:nil withFont:font];
+  [font_controller_ updateDisplayField:nil withFont:font withLabel:nil];
 }
