@@ -152,9 +152,7 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   std::wstring accessible_name_;
 
   static void InitClass();
-  static void InitAppWindowResources();
   static SkBitmap* distributor_logo_;
-  static gfx::Font* title_font_;
 
   DISALLOW_EVIL_CONSTRUCTORS(OpaqueBrowserFrameView);
 };

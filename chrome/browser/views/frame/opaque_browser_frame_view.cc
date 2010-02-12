@@ -37,7 +37,6 @@
 
 // static
 SkBitmap* OpaqueBrowserFrameView::distributor_logo_ = NULL;
-gfx::Font* OpaqueBrowserFrameView::title_font_ = NULL;
 
 #if defined(OS_CHROMEOS)
 const int kCustomFrameBackgroundVerticalOffset = 15;
@@ -528,15 +527,14 @@ int OpaqueBrowserFrameView::IconSize() const {
   // The title text has 2 px of padding between it and the frame border on both
   // top and bottom.
   const int kTitleBorderSpacing = 2;
-  InitAppWindowResources();  // To make sure the title_font_ is loaded.
   // The bottom spacing should be the same apparent height as the top spacing.
   // The top spacing height is FrameBorderThickness() + kTitleBorderSpacing.  We
   // omit the frame border portion because that's not part of the icon height.
   // The bottom spacing, then, is kTitleBorderSpacing + kFrameBorderThickness to
   // the bottom edge of the titlebar.  We omit TitlebarBottomThickness() because
   // that's also not part of the icon height.
-  return kTitleBorderSpacing + title_font_->height() + kTitleBorderSpacing +
-      (kFrameBorderThickness - TitlebarBottomThickness());
+  return kTitleBorderSpacing + BrowserFrame::GetTitleFont().height() +
+      kTitleBorderSpacing + (kFrameBorderThickness - TitlebarBottomThickness());
 #endif
 }
 
@@ -760,8 +758,8 @@ void OpaqueBrowserFrameView::PaintTitleBar(gfx::Canvas* canvas) {
   // The window icon is painted by the TabIconView.
   views::WindowDelegate* d = frame_->GetWindow()->GetDelegate();
   if (d->ShouldShowWindowTitle()) {
-    InitAppWindowResources();  // To make sure the title_font_ is loaded.
-    canvas->DrawStringInt(d->GetWindowTitle(), *title_font_, SK_ColorWHITE,
+    canvas->DrawStringInt(
+        d->GetWindowTitle(), BrowserFrame::GetTitleFont(), SK_ColorWHITE,
         MirroredLeftPointForRect(title_bounds_), title_bounds_.y(),
         title_bounds_.width(), title_bounds_.height());
     /* TODO(pkasting):  If this window is active, we should also draw a drop
@@ -1014,10 +1012,9 @@ void OpaqueBrowserFrameView::LayoutTitleBar() {
 
   // Size the title, if visible.
   if (d->ShouldShowWindowTitle()) {
-    InitAppWindowResources();  // To make sure the title_font_ is loaded.
     int title_x = d->ShouldShowWindowIcon() ?
         icon_bounds.right() + kIconTitleSpacing : icon_bounds.x();
-    int title_height = title_font_->height();
+    int title_height = BrowserFrame::GetTitleFont().height();
     title_bounds_.SetRect(title_x,
         icon_bounds.y() + ((icon_bounds.height() - title_height) / 2),
         std::max(0, logo_icon_->x() - kTitleLogoSpacing - title_x),
@@ -1068,19 +1065,6 @@ void OpaqueBrowserFrameView::InitClass() {
 #if defined(GOOGLE_CHROME_BUILD)
     distributor_logo_ = ResourceBundle::GetSharedInstance().
         GetBitmapNamed(IDR_DISTRIBUTOR_LOGO_LIGHT);
-#endif
-    initialized = true;
-  }
-}
-
-// static
-void OpaqueBrowserFrameView::InitAppWindowResources() {
-  static bool initialized = false;
-  if (!initialized) {
-#if defined(OS_WIN)
-    title_font_ = new gfx::Font(win_util::GetWindowTitleFont());
-#else
-    title_font_ = new gfx::Font();
 #endif
     initialized = true;
   }
