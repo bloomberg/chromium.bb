@@ -747,3 +747,30 @@
    fun:_pthread_start
    fun:thread_start
 }
+{
+   bug_35601
+   Memcheck:Cond
+   fun:rips_f_DrawRing
+   fun:rips_f_BltShape
+   fun:ripc_Render
+   fun:ripc_DrawRects
+   fun:CGContextFillRects
+   fun:CGContextFillRect
+   fun:NSRectFill
+   fun:_ZN18FocusIndicationFix40currentOSHasSetFocusRingStyleInBitmapBugEv
+   fun:_ZN18FocusIndicationFix16swizzleFocusViewEv
+   fun:_ZN18FocusIndicationFix11ScopedFixerC2Ev
+   fun:_ZN18FocusIndicationFix11ScopedFixerC1Ev
+   fun:_ZN7WebCoreL11paintButtonENS_11ControlPartEjPNS_15GraphicsContextERKNS_7IntRectEfPNS_10ScrollViewE
+   fun:_ZNK7WebCore16ThemeChromiumMac5paintENS_11ControlPartEjPNS_15GraphicsContextERKNS_7IntRectEfPNS_10ScrollViewE
+   fun:_ZN7WebCore11RenderTheme5paintEPNS_12RenderObjectERKNS1_9PaintInfoERKNS_7IntRectE
+   fun:_ZN7WebCore9RenderBox19paintBoxDecorationsERNS_12RenderObject9PaintInfoEii
+   fun:_ZN7WebCore11RenderBlock11paintObjectERNS_12RenderObject9PaintInfoEii
+   fun:_ZN7WebCore11RenderBlock5paintERNS_12RenderObject9PaintInfoEii
+   fun:_ZN7WebCore9InlineBox5paintERNS_12RenderObject9PaintInfoEii
+   fun:_ZN7WebCore13InlineFlowBox5paintERNS_12RenderObject9PaintInfoEii
+   fun:_ZN7WebCore13RootInlineBox5paintERNS_12RenderObject9PaintInfoEii
+   fun:_ZNK7WebCore17RenderLineBoxList5paintEPNS_20RenderBoxModelObjectERNS_12RenderObject9PaintInfoEii
+   fun:_ZN7WebCore11RenderBlock13paintContentsERNS_12RenderObject9PaintInfoEii
+}
+
