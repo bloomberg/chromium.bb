@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -31,7 +31,7 @@ void ExtensionInstallUI::ShowExtensionInstallUIPromptImpl(
   [continueButton setKeyEquivalent:@""];
 
   NSButton* cancelButton = [alert addButtonWithTitle:l10n_util::GetNSString(
-      IDS_EXTENSION_PROMPT_CANCEL_BUTTON)];
+      IDS_CANCEL)];
   [cancelButton setKeyEquivalent:@"\r"];
 
   [alert setMessageText:l10n_util::GetNSStringF(

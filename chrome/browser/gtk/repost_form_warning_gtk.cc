@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -26,7 +26,7 @@ RepostFormWarningGtk::RepostFormWarningGtk(
   gtk_window_set_title(GTK_WINDOW(dialog_),
       l10n_util::GetStringUTF8(IDS_HTTP_POST_WARNING_TITLE).c_str());
   gtk_util::AddButtonToDialog(dialog_,
-      l10n_util::GetStringUTF8(IDS_HTTP_POST_WARNING_CANCEL).c_str(),
+      l10n_util::GetStringUTF8(IDS_CANCEL).c_str(),
       GTK_STOCK_CANCEL, GTK_RESPONSE_CANCEL);
   gtk_util::AddButtonToDialog(dialog_,
       l10n_util::GetStringUTF8(IDS_HTTP_POST_WARNING_RESEND).c_str(),

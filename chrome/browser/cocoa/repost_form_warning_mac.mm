@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -52,7 +52,7 @@ RepostFormWarningMac::RepostFormWarningMac(
   [alert_ addButtonWithTitle:
       l10n_util::GetNSStringWithFixup(IDS_HTTP_POST_WARNING_RESEND)];
   [alert_ addButtonWithTitle:
-      l10n_util::GetNSStringWithFixup(IDS_HTTP_POST_WARNING_CANCEL)];
+      l10n_util::GetNSStringWithFixup(IDS_CANCEL)];
 
   [alert_ beginSheetModalForWindow:parent
                     modalDelegate:delegate_.get()
