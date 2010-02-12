@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/glue/preference_change_processor.h"
 
+#include "base/json/json_reader.h"
 #include "base/string_util.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/glue/preference_model_associator.h"
@@ -77,18 +78,29 @@ void PreferenceChangeProcessor::ApplyChangesFromSyncModel(
     return;
   }
 
-  sync_api::ReadNode sync_node(trans);
   std::string name;
   for (int i = 0; i < change_count; ++i) {
+    sync_api::ReadNode sync_node(trans);
+    // TODO(ncarter): Can't look up the name for deletions: lookup of
+    // deleted items fails at the syncapi layer.  However, the node should
+    // generally still exist in the syncable database; we just need to
+    // plumb the syncapi so that it succeeds.
+    if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE ==
+        changes[i].action) {
+      // Until the above is fixed, we have no choice but to ignore deletions.
+      LOG(ERROR) << "No way to handle pref deletion";
+      continue;
+    }
+
     if (!sync_node.InitByIdLookup(changes[i].id)) {
       LOG(ERROR) << "Preference node lookup failed.";
       error_handler()->OnUnrecoverableError();
       return;
     }
 
-    // TODO(sync): Remove this once per-datatype filtering is working.
     // Check that the changed node is a child of the preferences folder.
-    if (root_node.GetId() != sync_node.GetParentId()) continue;
+    DCHECK(root_node.GetId() == sync_node.GetParentId());
+    DCHECK(syncable::PREFERENCES == sync_node.GetModelType());
 
     scoped_ptr<Value> value(ReadPreference(&sync_node, &name));
     if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE ==
@@ -127,17 +139,16 @@ Value* PreferenceChangeProcessor::ReadPreference(
     std::string* name) {
   const sync_pb::PreferenceSpecifics& preference(
       node->GetPreferenceSpecifics());
-  JSONStringValueSerializer json(preference.value());
-
-  std::string error_message;
-  Value* value = json.Deserialize(&error_message);
-  if (!value) {
-    LOG(ERROR) << "Failed to deserialize preference: " << error_message;
+  base::JSONReader reader;
+  scoped_ptr<Value> value(reader.JsonToValue(preference.value(), false, false));
+  if (!value.get()) {
+    LOG(ERROR) << "Failed to deserialize preference value: "
+               << reader.error_message();
     error_handler()->OnUnrecoverableError();
     return NULL;
   }
   *name = preference.name();
-  return value;
+  return value.release();
 }
 
 void PreferenceChangeProcessor::StartImpl(Profile* profile) {

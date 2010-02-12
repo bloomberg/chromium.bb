@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/glue/preference_model_associator.h"
 
+#include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/values.h"
 #include "chrome/browser/profile.h"
@@ -33,7 +34,7 @@ bool PreferenceModelAssociator::AssociateModels() {
 
   // TODO(albertb): Attempt to load the model association from storage.
   PrefService* pref_service = sync_service_->profile()->GetPrefs();
-  sync_api::ReadTransaction trans(
+  sync_api::WriteTransaction trans(
       sync_service()->backend()->GetUserShareHandle());
 
   sync_api::ReadNode root(&trans);
@@ -44,6 +45,7 @@ bool PreferenceModelAssociator::AssociateModels() {
     return false;
   }
 
+  base::JSONReader reader;
   for (std::set<std::wstring>::iterator it = synced_preferences_.begin();
        it != synced_preferences_.end(); ++it) {
     std::string tag = WideToUTF8(*it);
@@ -53,28 +55,28 @@ bool PreferenceModelAssociator::AssociateModels() {
       const sync_pb::PreferenceSpecifics& preference(
           node.GetPreferenceSpecifics());
       DCHECK_EQ(tag, preference.name());
-      JSONStringValueSerializer json(preference.value());
 
-      std::string error_message;
-      Value* value = json.Deserialize(&error_message);
-      if (!value) {
-        LOG(ERROR) << "Failed to deserialize preference: " << error_message;
+      scoped_ptr<Value> value(
+          reader.JsonToValue(preference.value(), false, false));
+      std::wstring pref_name = UTF8ToWide(preference.name());
+      if (!value.get()) {
+        LOG(ERROR) << "Failed to deserialize preference value: "
+                   << reader.error_message();
         sync_service_->OnUnrecoverableError();
         return false;
       }
-      std::wstring pref_name = UTF8ToWide(preference.name());
 
       // Update the local preference based on what we got from the sync server.
       const PrefService::Preference* pref =
           pref_service->FindPreference((*it).c_str());
-      DCHECK(pref);
-      pref_service->Set(pref_name.c_str(), *value);
+      if (!pref) {
+        LOG(ERROR) << "Unrecognized preference -- ignoring.";
+        continue;
+      }
 
+      pref_service->Set(pref_name.c_str(), *value);
       Associate(pref, node.GetId());
     } else {
-      sync_api::WriteTransaction trans(
-          sync_service()->backend()->GetUserShareHandle());
-
       sync_api::WriteNode node(&trans);
       if (!node.InitUniqueByCreation(syncable::PREFERENCES, root, tag)) {
         LOG(ERROR) << "Failed to create preference sync node.";
@@ -85,7 +87,10 @@ bool PreferenceModelAssociator::AssociateModels() {
       // Update the sync node with the local value for this preference.
       const PrefService::Preference* pref =
           pref_service->FindPreference((*it).c_str());
-      DCHECK(pref);
+      if (!pref) {
+        LOG(ERROR) << "Unrecognized preference -- ignoring.";
+        continue;
+      }
 
       std::string serialized;
       JSONStringValueSerializer json(&serialized);
