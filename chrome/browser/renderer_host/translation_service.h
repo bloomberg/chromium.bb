@@ -130,16 +130,29 @@ class TranslationService : public URLFetcher::Delegate {
   // Merges all text chunks to be translated into a single string that can be
   // sent to the translate server, surrounding each chunk with an anchor tag
   // to preserve chunk order in the translated version.
-  static string16 MergeTextChunks(const TextChunks& text_chunks);
+  string16 MergeTextChunks(const TextChunks& text_chunks);
 
   // Splits the translated text into its original text chunks, removing the
   // anchor tags wrapper that were added to preserve order.
-  static void SplitIntoTextChunks(const string16& translated_text,
-                                  TextChunks* text_chunks);
+  void SplitIntoTextChunks(const string16& translated_text,
+                           TextChunks* text_chunks);
 
   // Removes the HTML anchor tag surrounding |text| and returns the resulting
   // string.
-  static string16 RemoveTag(const string16& text);
+  string16 RemoveTag(const string16& text);
+
+  // Find the next anchor tag in |text| starting at |start_index|.
+  // Sets |id| (which must be non NULL) to the id property of the tag (which is
+  // expected to be an int). Sets |tag_start_index| and |tag_end_index| to the
+  // index of the beginning/end of the next tag.
+  // Returns true if a tag was found and it is not at the end of the string,
+  // false otherwise in which case |id|, |tag_start_index| and |tag_end_index|
+  // are not set.
+  bool FindOpenTagIndex(const string16& text,
+                        size_t start_index,
+                        size_t* tag_start_index,
+                        size_t* tag_end_index,
+                        int* id);
 
   // Adds |text| to the string request in/out param |request|.  If |request| is
   // empty, then the source, target language as well as the secure parameters
@@ -159,6 +172,15 @@ class TranslationService : public URLFetcher::Delegate {
 
   TranslationRequestMap pending_translation_requests_;
   TranslationRequestMap pending_secure_translation_requests_;
+
+  // Strings used for parsing.
+  const string16 kCRAnchorTagStart;
+  const string16 kAnchorTagStart;
+  const string16 kClosingAnchorTag;
+  const string16 kQuote;
+  const string16 kGreaterThan;
+  const string16 kLessThan;
+  const string16 kQuoteGreaterThan;
 
   // The size taken by the parameters and separators needed when adding text to
   // a request string.

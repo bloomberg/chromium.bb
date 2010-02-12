@@ -154,14 +154,15 @@ static void ExtractQueryStringsFromUploadData(TestURLFetcher* url_fetcher,
 }
 
 TEST_F(TranslationServiceTest, MergeTestChunks) {
+  TranslationService translation_service(NULL);
   std::vector<string16> input;
   input.push_back(ASCIIToUTF16("Hello"));
-  string16 result = TranslationService::MergeTextChunks(input);
+  string16 result = translation_service.MergeTextChunks(input);
   EXPECT_EQ(ASCIIToUTF16("Hello"), result);
   input.push_back(ASCIIToUTF16(" my name"));
   input.push_back(ASCIIToUTF16(" is"));
   input.push_back(ASCIIToUTF16(" Jay."));
-  result = TranslationService::MergeTextChunks(input);
+  result = translation_service.MergeTextChunks(input);
   EXPECT_EQ(ASCIIToUTF16("<a _CR_TR_ id='0'>Hello</a>"
                          "<a _CR_TR_ id='1'> my name</a>"
                          "<a _CR_TR_ id='2'> is</a>"
@@ -179,11 +180,12 @@ TEST_F(TranslationServiceTest, RemoveTag) {
     "", "Hello", "", "  Link ", "Link", "<a link", "broken", "broken bad bad"
   };
 
+  TranslationService translation_service(NULL);
   ASSERT_EQ(arraysize(kInputs), arraysize(kExpected));
   for (size_t i = 0; i < arraysize(kInputs); ++i) {
     SCOPED_TRACE(::testing::Message::Message() << "Iteration " << i);
     string16 input = ASCIIToUTF16(kInputs[i]);
-    string16 output = TranslationService::RemoveTag(input);
+    string16 output = translation_service.RemoveTag(input);
     EXPECT_EQ(ASCIIToUTF16(kExpected[i]), output);
   }
 }
@@ -191,16 +193,18 @@ TEST_F(TranslationServiceTest, RemoveTag) {
 // Tests that we deal correctly with the various results the translation server
 // can return, including the buggy ones.
 TEST_F(TranslationServiceTest, SplitIntoTextChunks) {
+  TranslationService translation_service(NULL);
+
   // Simple case.
   std::vector<string16> text_chunks;
-  TranslationService::SplitIntoTextChunks(ASCIIToUTF16("Hello"), &text_chunks);
+  translation_service.SplitIntoTextChunks(ASCIIToUTF16("Hello"), &text_chunks);
   ASSERT_EQ(1U, text_chunks.size());
   EXPECT_EQ(ASCIIToUTF16("Hello"), text_chunks[0]);
 
   text_chunks.clear();
 
   // Multiple chunks case, correct syntax.
-  TranslationService::SplitIntoTextChunks(
+  translation_service.SplitIntoTextChunks(
       ASCIIToUTF16("<a _CR_TR_ id='0'>Bonjour</a>"
                    "<a _CR_TR_ id='1'> mon nom</a>"
                    "<a _CR_TR_ id='2'> est</a>"
@@ -216,15 +220,58 @@ TEST_F(TranslationServiceTest, SplitIntoTextChunks) {
   // For info, original input:
   // <a _CR_TRANSLATE_ id='0'> Experience </a><a _CR_TRANSLATE_ id='1'>Nexus One
   // </a><a _CR_TRANSLATE_ id='2'>, the new Android phone from Google</a>
-  TranslationService::SplitIntoTextChunks(
+  translation_service.SplitIntoTextChunks(
       ASCIIToUTF16("<a _CR_TR_ id='0'>Experience</a> <a _CR_TR_ id='1'>Nexus"
                    "<a _CR_TR_ id='2'> One,</a></a> <a _CR_TR_ id='2'>the new "
                    "Android Phone</a>"), &text_chunks);
   ASSERT_EQ(3U, text_chunks.size());
   EXPECT_EQ(ASCIIToUTF16("Experience "), text_chunks[0]);
-  EXPECT_EQ(ASCIIToUTF16("Nexus One, "), text_chunks[1]);
-  EXPECT_EQ(ASCIIToUTF16("the new Android Phone"), text_chunks[2]);
+  EXPECT_EQ(ASCIIToUTF16("Nexus"), text_chunks[1]);
+  EXPECT_EQ(ASCIIToUTF16(" One, the new Android Phone"), text_chunks[2]);
   text_chunks.clear();
+
+  // Other incorrect case:
+  // Original input:
+  // <a _CR_TR_ id='0'>Benzinpreis-</a><a _CR_TR_ id='1'>vergleich</a>
+  translation_service.SplitIntoTextChunks(
+      ASCIIToUTF16("<a _CR_TR_ id='0'>Gasoline <a _CR_TR_ id='1'>"
+                   "price-comparison</a></a>"), &text_chunks);
+  ASSERT_EQ(2U, text_chunks.size());
+  EXPECT_EQ(ASCIIToUTF16("Gasoline "), text_chunks[0]);
+  EXPECT_EQ(ASCIIToUTF16("price-comparison"), text_chunks[1]);
+  text_chunks.clear();
+
+  // Other incorrect case:
+  // Original input:
+  // <a _CR_TR_ id='0'>Bußgeld-</a><a _CR_TR_ id='1'>rechner</a>
+  translation_service.SplitIntoTextChunks(
+      ASCIIToUTF16("<a _CR_TR_ id='1'><a _CR_TR_ id='0'>Fine-computer</a>"
+                   "</a>"), &text_chunks);
+  ASSERT_EQ(2U, text_chunks.size());
+  EXPECT_EQ(ASCIIToUTF16(""), text_chunks[0]);
+  EXPECT_EQ(ASCIIToUTF16("Fine-computer"), text_chunks[1]);
+  text_chunks.clear();
+
+  translation_service.SplitIntoTextChunks(
+      ASCIIToUTF16("<a _CR_TR_ id='0'>The mountain live .</a> "
+          "<a _CR_TR_ id='1'>By Philipp Wittrock</a> <a _CR_TR_ id='0'>are</a> "
+          "<a _CR_TR_ id='2'>more ...</a> <a _CR_TR_ id='3'>Video</a> "
+          "<a _CR_TR_ id='4'>Forum</a>"), &text_chunks);
+  ASSERT_EQ(5U, text_chunks.size());
+  EXPECT_EQ(ASCIIToUTF16("The mountain live . "), text_chunks[0]);
+  EXPECT_EQ(ASCIIToUTF16("By Philipp Wittrock are "), text_chunks[1]);
+  EXPECT_EQ(ASCIIToUTF16("more ... "), text_chunks[2]);
+  EXPECT_EQ(ASCIIToUTF16("Video "), text_chunks[3]);
+  EXPECT_EQ(ASCIIToUTF16("Forum"), text_chunks[4]);
+  text_chunks.clear();
+
+  // Make sure we support ending with a start tag.
+  translation_service.SplitIntoTextChunks(
+      ASCIIToUTF16("<a _CR_TR_ id='0'>Hello</a><a _CR_TR_ id='1'>"),
+      &text_chunks);
+  ASSERT_EQ(2U, text_chunks.size());
+  EXPECT_EQ(ASCIIToUTF16("Hello"), text_chunks[0]);
+  EXPECT_EQ(EmptyString16(), text_chunks[1]);
 }
 
 // Tests that a successful translate works as expected.

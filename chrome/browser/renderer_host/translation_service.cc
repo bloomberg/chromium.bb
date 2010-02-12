@@ -217,7 +217,14 @@ void SendTranslationRequestTask::Cancel() {
 // TranslationService, public:
 
 TranslationService::TranslationService(IPC::Message::Sender* message_sender)
-    : message_sender_(message_sender) {
+    : message_sender_(message_sender),
+      kCRAnchorTagStart(ASCIIToUTF16("<a _CR_TR_ id='")),
+      kAnchorTagStart(ASCIIToUTF16("<a ")),
+      kClosingAnchorTag(ASCIIToUTF16("</a>")),
+      kQuote(ASCIIToUTF16("'")),
+      kGreaterThan(ASCIIToUTF16(">")),
+      kLessThan(ASCIIToUTF16("<")),
+      kQuoteGreaterThan(ASCIIToUTF16("'>")) {
 }
 
 TranslationService::~TranslationService() {
@@ -490,7 +497,6 @@ void TranslationService::TranslationFailed(const URLFetcher* url_fetcher) {
   SendResponseToRenderer(url_fetcher, 1, TranslationService::TextChunksList());
 }
 
-// static
 string16 TranslationService::MergeTextChunks(const TextChunks& text_chunks) {
   // If there is only 1 chunk, we don't need an anchor tag as there is no order
   // to preserve.
@@ -499,69 +505,100 @@ string16 TranslationService::MergeTextChunks(const TextChunks& text_chunks) {
 
   string16 str;
   for (size_t i = 0; i < text_chunks.size(); ++i) {
-    str.append(ASCIIToUTF16("<a _CR_TR_ id='"));
+    str.append(kCRAnchorTagStart);
     str.append(IntToString16(i));
-    str.append(ASCIIToUTF16("'>"));
+    str.append(kQuoteGreaterThan);
     str.append(text_chunks[i]);
-    str.append(ASCIIToUTF16("</a>"));
+    str.append(kClosingAnchorTag);
   }
   return str;
 }
 
-// static
+bool TranslationService::FindOpenTagIndex(const string16& text,
+                                          size_t start_index,
+                                          size_t* tag_start_index,
+                                          size_t* tag_end_index,
+                                          int* id) {
+  DCHECK(tag_start_index && tag_end_index && id);
+  size_t text_length = text.length();
+  if (start_index >= text_length)
+    return false;
+
+  *tag_start_index = text.find(kCRAnchorTagStart, start_index);
+  if (*tag_start_index == std::string::npos)
+    return false;
+
+  size_t quote_index = *tag_start_index + kCRAnchorTagStart.length();
+  size_t close_quote_index = text.find(kQuote, quote_index);
+  if (close_quote_index == std::string::npos) {
+    NOTREACHED();
+    return false;  // Not a valid anchor tag.
+  }
+
+  string16 id_str = text.substr(quote_index, close_quote_index - quote_index);
+  // Get the id.
+  if (!StringToInt(id_str, id)) {
+    NOTREACHED();
+    return false;  // Not a valid id, give up.
+  }
+
+  *tag_end_index = text.find(kGreaterThan, close_quote_index);
+  if (*tag_end_index == std::string::npos || *tag_end_index >= text_length)
+    return false;
+  return true;
+}
+
 void TranslationService::SplitIntoTextChunks(const string16& translated_text,
                                              TextChunks* text_chunks) {
-  const string16 kOpenTag = ASCIIToUTF16("<a _CR_TR_ ");
-  const string16 kCloseTag = ASCIIToUTF16("</a>");
-  const size_t open_tag_len = kOpenTag.size();
-
-  size_t start_index = translated_text.find(kOpenTag);
-  if (start_index == std::string::npos) {
+  int id = -1;
+  size_t tag_start_index = 0;
+  size_t tag_end_index = 0;
+  if (!FindOpenTagIndex(translated_text, 0, &tag_start_index, &tag_end_index,
+                        &id)) {
     // No magic anchor tag, it was a single chunk.
     text_chunks->push_back(translated_text);
     return;
   }
 
   // The server might send us some HTML with duplicated and unbalanced tags.
-  // We separate from the open tag to the next open tag located after at least
-  // one close tag.
-  while (start_index != std::string::npos) {
-    size_t stop_index =
-        translated_text.find(kCloseTag, start_index + open_tag_len);
-    string16 chunk;
-    if (stop_index == std::string::npos) {
-      // No close tag.  Just report as one chunk.
-      chunk = translated_text;
-      start_index = std::string::npos;  // So we break on next iteration.
+  // We separate from one tag begining to the next, and merge tags with
+  // duplicate IDs.
+  std::set<int> parsed_tags;
+  string16 chunk;
+  while (tag_start_index != std::string::npos) {
+    int next_id = -1;
+    size_t previous_tag_end_index = tag_end_index;
+    if (!FindOpenTagIndex(translated_text, tag_end_index,
+                          &tag_start_index, &tag_end_index, &next_id)) {
+      // Last tag. Just report as one chunk.
+      chunk = translated_text.substr(previous_tag_end_index + 1);
+      tag_start_index = std::string::npos;  // So we break on next iteration.
     } else {
-      // Now find the next open tag after this close tag.
-      stop_index = translated_text.find(kOpenTag, stop_index);
-      if (stop_index != std::string::npos) {
-        chunk = translated_text.substr(start_index, stop_index - start_index);
-        start_index = stop_index;
-      } else {
-        chunk = translated_text.substr(start_index);
-        start_index = std::string::npos;  // So we break on next iteration.
-      }
+      // Extract the text for this tag.
+      DCHECK(tag_start_index > previous_tag_end_index);
+      chunk =
+          translated_text.substr(previous_tag_end_index + 1,
+                                 tag_start_index - previous_tag_end_index - 1);
     }
     chunk = RemoveTag(chunk);
     // The translation server leaves some ampersand character in the
     // translation.
     chunk = UnescapeForHTML(chunk);
-    text_chunks->push_back(RemoveTag(chunk));
+    if (parsed_tags.count(id) > 0) {
+      // We have already seen this tag, add it to the previous text-chunk.
+      text_chunks->back().append(chunk);
+    } else {
+      text_chunks->push_back(chunk);
+      parsed_tags.insert(id);
+    }
+    id = next_id;
   }
 }
 
-// static
 string16 TranslationService::RemoveTag(const string16& text) {
   // Remove any anchor tags, knowing they could be extra/unbalanced tags.
-  const string16 kStartTag(ASCIIToUTF16("<a "));
-  const string16 kEndTag(ASCIIToUTF16("</a>"));
-  const string16 kGreaterThan(ASCIIToUTF16(">"));
-  const string16 kLessThan(ASCIIToUTF16("<"));
-
   string16 result;
-  size_t start_index = text.find(kStartTag);
+  size_t start_index = text.find(kAnchorTagStart);
   if (start_index == std::string::npos) {
     result = text;
   } else {
@@ -579,7 +616,7 @@ string16 TranslationService::RemoveTag(const string16& text) {
       }
       if (start_index > 0 && first_iter)
         result = text.substr(0, start_index);
-      start_index = text.find(kStartTag, start_index + 1);
+      start_index = text.find(kAnchorTagStart, start_index + 1);
       if (start_index == std::string::npos) {
         result += text.substr(stop_index + 1);
         break;
@@ -590,8 +627,7 @@ string16 TranslationService::RemoveTag(const string16& text) {
   }
 
   // Now remove </a> tags.
-  ReplaceSubstringsAfterOffset(&result, 0,
-                               ASCIIToUTF16("</a>"), ASCIIToUTF16(""));
+  ReplaceSubstringsAfterOffset(&result, 0, kClosingAnchorTag, EmptyString16());
   return result;
 }
 
