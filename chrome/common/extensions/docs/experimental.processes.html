@@ -15,7 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>chrome.* APIs - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
+  <title>chrome.experimental.processes - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
       <!-- SUBTEMPLATES: DO NOT MOVE FROM THIS LOCATION -->
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
@@ -179,7 +179,7 @@
                   <!-- <li>Packages (.crx)</li> -->
                 </ul>
               </li>
-              <li class="leftNavSelected">chrome.* APIs</li>
+              <li><a href="api_index.html">chrome.* APIs</a></li>
               <li><a href="api_other.html">Other APIs</a></li>
             </ul>
           </li>
@@ -189,38 +189,24 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">chrome.* APIs</h1>
+        <h1 class="page_title">chrome.experimental.processes</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
             <li>
-              <a href="#supported">Supported APIs</a>
-              <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#experimental">Experimental APIs</a>
-              <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#conventions">API conventions</a>
+              <a href="#examples">Examples</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li>
-              <li style="display: none; ">
-                <a href="#apiReference">API reference</a>
+              <li>
+                <a href="#apiReference">API reference: chrome.experimental.processes</a>
                 <ol>
-                  <li>
+                  <li style="display: none; ">
                     <a href="#properties">Properties</a>
                     <ol>
                       <li>
@@ -232,11 +218,11 @@
                     <a href="#methods">Methods</a>
                     <ol>
                       <li>
-                        <a href="#method-anchor">methodName</a>
+                        <a href="#method-getProcessForTab">getProcessForTab</a>
                       </li>
                     </ol>
                   </li>
-                  <li>
+                  <li style="display: none; ">
                     <a href="#events">Events</a>
                     <ol>
                       <li>
@@ -248,7 +234,7 @@
                     <a href="#types">Types</a>
                     <ol>
                       <li>
-                        <a href="#id-anchor">id</a>
+                        <a href="#type-Process">Process</a>
                       </li>
                     </ol>
                   </li>
@@ -259,94 +245,30 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">chrome.* APIs</div>
-<div id="pageData-showTOC" class="pageData">true</div>
+        <div id="static"><!-- BEGIN AUTHORED CONTENT -->
+<p id="classSummary">
+For information on how to use experimental APIs,
+see the <a href="api_index.html">chrome.* APIs</a> page.
+</p>
+
+<h2 id="examples">Examples</h2>
 
 <p>
-Google Chrome provides APIs such as
-<code>chrome.bookmarks</code> and <code>chrome.tab</code>
-so that extensions can interact with the browser.
+For an example of using this API, see the
+<a href="
+http://src.chromium.org/viewvc/chrome/trunk/src/chrome/test/data/extensions/api_test/processes/">processes API test directory</a>.
 </p>
 
-<h2 id="supported">Supported APIs</h2>
-
-<p>
-Here are the supported chrome.* APIs:
-</p>
-
-<ul>
-  <li><a href="bookmarks.html">bookmarks</a></li>
-  <li><a href="browserAction.html">browserAction</a></li>
-  <li><a href="extension.html">extension</a></li>
-  <li><a href="i18n.html">i18n</a></li>
-  <li><a href="pageAction.html">pageAction</a></li>
-  <li><a href="tabs.html">tabs</a></li>
-  <li><a href="windows.html">windows</a></li>
-</ul>
-
-<h2 id="experimental">Experimental APIs</h2>
-
-<p>
-We'd like your <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions/topics">feedback</a>
-on the following experimental APIs:
-</p>
-
-<ul>
-  <li><a href="experimental.history.html">experimental.history</a></li>
-  <li><a href="experimental.processes.html">experimental.processes</a></li>
-</ul>
-
-<p class="caution">
-<b>Caution:</b>
-Don't depend on these experimental APIs.
-They might disappear,
-and they <em>will</em> change.
-Also, the extension gallery doesn't allow you to
-upload extensions that use experimental APIs.
-</p>
-
-<p>
-To use an experimental API, you must specify the "experimental"
-<a href="manifest.html#permissions">permission</a>
-in your extension's manifest, like this:
-</p>
-
-<pre>"permissions": [
-  <b>"experimental"</b>,
-  ...
-],
-</pre>
-
-<p>
-You must also specify the <b>--enable-experimental-extension-apis</b> flag
-when you launch the browser. On Windows, you can do this by modifying
-the properties of the shortcut that you use to launch Google Chrome.
-For example:
-</p>
-
-<pre><em>path_to_chrome.exe</em> <b>--enable-experimental-extension-apis</b></pre>
-
-<h2 id="conventions">API conventions</h2>
-
-<p>
-Unless the doc says otherwise,
-methods in the chrome.* APIs are asynchronous:
-they return immediately,
-without waiting for the operation to finish.
-If you need to know the outcome of an operation,
-then you pass a callback function into the method.
-For more information, see the video
-<a href="http://www.youtube.com/watch?v=bmxr75CV36A&amp;feature=PlayList&amp;p=CA101D6A85FE9D4B&amp;index=2">Extension API Design</a>.
-</p>
+<!-- END AUTHORED CONTENT -->
 </div>
 
         <!-- API PAGE -->
-        <div class="apiPage" style="display: none; ">
+        <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.apiname </h2>
+        <h2>API reference: chrome.experimental.processes</h2>
 
           <!-- PROPERTIES -->
-          <div class="apiGroup">
+          <div class="apiGroup" style="display: none; ">
             <a name="properties"></a>
             <h3 id="properties">Properties</h3>
 
@@ -370,33 +292,115 @@ For more information, see the video
 
             <!-- iterates over all functions -->
             <div class="apiItem">
-              <a></a> <!-- method-anchor -->
-              <h4>method name</h4>
+              <a name="method-getProcessForTab"></a> <!-- method-anchor -->
+              <h4>getProcessForTab</h4>
 
-              <div class="summary"><span>void</span>
+              <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.module.methodName</span>(<span><span>, </span><span></span>
-                      <var><span></span></var></span>)</div>
+                  <span>chrome.experimental.processes.getProcessForTab</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
+                      <var><span>tabId</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>callback</span></var></span>)</div>
 
               <div class="description">
-                <p class="todo">Undocumented.</p>
-                <p>
-                  A description from the json schema def of the function goes here.
-                </p>
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Returns details about the current renderer process of the specified tab.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
                   <div>
                     <div>
-                    </div>
+          <dt>
+            <var>tabId</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>callback</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
                   </div>
                 </dl>
 
                 <!-- RETURNS -->
-                <h4>Returns</h4>
+                <h4 style="display: none; ">Returns</h4>
                 <dl>
-                  <div>
+                  <div style="display: none; ">
                     <div>
                     </div>
                   </div>
@@ -410,17 +414,55 @@ For more information, see the video
                     The callback <em>parameter</em> should specify a function
                     that looks like this:
                   </p>
-                  <p>
+                  <p style="display: none; ">
                     If you specify the <em>callback</em> parameter, it should
                     specify a function that looks like this:
                   </p>
 
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>);</pre>
+                  <pre>function(<span>Process process</span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
                     <div>
                       <div>
-                      </div>
+          <dt>
+            <var>process</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.processes.html#type-Process">Process</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
+                          array of <span><span></span></span>
+                        </span>
+                        <span>paramType</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Details about the tab's process.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
                     </div>
                   </dl>
                   </div>
@@ -433,7 +475,7 @@ For more information, see the video
           </div>  <!-- /apiGroup -->
 
           <!-- EVENTS -->
-          <div class="apiGroup">
+          <div class="apiGroup" style="display: none; ">
             <a name="events"></a>
             <h3 id="events">Events</h3>
 
@@ -475,11 +517,87 @@ For more information, see the video
 
             <!-- iterates over all types -->
             <div class="apiItem">
-              <a></a>
-              <h4>type name</h4>
+              <a name="type-Process"></a>
+              <h4>Process</h4>
 
               <div>
+          <dt>
+            <var style="display: none; ">paramName</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>An object containing information about one of the browser's processes.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>id</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The internal ID of the process.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
               </div>
+            </dl>
+          </dd>
+        </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
 
             </div> <!-- /apiItem -->
 

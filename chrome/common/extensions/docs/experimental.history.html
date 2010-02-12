@@ -15,7 +15,7 @@
     </script>
     <script type="text/javascript" src="js/api_page_generator.js"></script>
     <script type="text/javascript" src="js/bootstrap.js"></script>
-  <title>Windows - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
+  <title>chrome.experimental.history - Google Chrome Extensions - Google Code</title></head><body>  <div id="gc-container" class="labs">
       <!-- SUBTEMPLATES: DO NOT MOVE FROM THIS LOCATION -->
       <!-- In particular, sub-templates that recurse, must be used by allowing
            jstemplate to make a copy of the template in this section which
@@ -143,7 +143,7 @@
                   <li><a href="bookmarks.html">Bookmarks</a></li>
                   <li><a href="events.html">Events</a></li>
                   <li><a href="tabs.html">Tabs</a></li>
-                  <li class="leftNavSelected">Windows</li>
+                  <li><a href="windows.html">Windows</a></li>
                 </ul>
               </li>
               <li>Implementation
@@ -189,28 +189,21 @@
 
     <div class="g-unit" id="gc-pagecontent">
       <div id="pageTitle">
-        <h1 class="page_title">Windows</h1>
+        <h1 class="page_title">chrome.experimental.history</h1>
       </div>
         <!-- TABLE OF CONTENTS -->
         <div id="toc">
           <h2>Contents</h2>
           <ol>
             <li>
-              <a href="#manifest">Manifest</a>
+              <a href="#transition_types">Transition types</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
                 </li>
               </ol>
             </li><li>
-              <a href="#current-window">The current window</a>
-              <ol>
-                <li style="display: none; ">
-                  <a>h3Name</a>
-                </li>
-              </ol>
-            </li><li>
-              <a href="#examples"> Examples </a>
+              <a href="#examples">Examples</a>
               <ol>
                 <li style="display: none; ">
                   <a>h3Name</a>
@@ -218,7 +211,7 @@
               </ol>
             </li>
               <li>
-                <a href="#apiReference">API reference: chrome.windows</a>
+                <a href="#apiReference">API reference: chrome.experimental.history</a>
                 <ol>
                   <li style="display: none; ">
                     <a href="#properties">Properties</a>
@@ -232,19 +225,17 @@
                     <a href="#methods">Methods</a>
                     <ol>
                       <li>
-                        <a href="#method-create">create</a>
+                        <a href="#method-addUrl">addUrl</a>
                       </li><li>
-                        <a href="#method-get">get</a>
+                        <a href="#method-deleteAll">deleteAll</a>
                       </li><li>
-                        <a href="#method-getAll">getAll</a>
+                        <a href="#method-deleteRange">deleteRange</a>
                       </li><li>
-                        <a href="#method-getCurrent">getCurrent</a>
+                        <a href="#method-deleteUrl">deleteUrl</a>
                       </li><li>
-                        <a href="#method-getLastFocused">getLastFocused</a>
+                        <a href="#method-getVisits">getVisits</a>
                       </li><li>
-                        <a href="#method-remove">remove</a>
-                      </li><li>
-                        <a href="#method-update">update</a>
+                        <a href="#method-search">search</a>
                       </li>
                     </ol>
                   </li>
@@ -252,11 +243,9 @@
                     <a href="#events">Events</a>
                     <ol>
                       <li>
-                        <a href="#event-onCreated">onCreated</a>
+                        <a href="#event-onVisitRemoved">onVisitRemoved</a>
                       </li><li>
-                        <a href="#event-onFocusChanged">onFocusChanged</a>
-                      </li><li>
-                        <a href="#event-onRemoved">onRemoved</a>
+                        <a href="#event-onVisited">onVisited</a>
                       </li>
                     </ol>
                   </li>
@@ -264,7 +253,9 @@
                     <a href="#types">Types</a>
                     <ol>
                       <li>
-                        <a href="#type-Window">Window</a>
+                        <a href="#type-VisitItem">VisitItem</a>
+                      </li><li>
+                        <a href="#type-HistoryItem">HistoryItem</a>
                       </li>
                     </ol>
                   </li>
@@ -275,72 +266,151 @@
         <!-- /TABLE OF CONTENTS -->
 
         <!-- STATIC CONTENT PLACEHOLDER -->
-        <div id="static"><div id="pageData-name" class="pageData">Windows</div>
-
-<!-- BEGIN AUTHORED CONTENT -->
+        <div id="static"><!-- BEGIN AUTHORED CONTENT -->
 <p id="classSummary">
-Use the <code>chrome.windows</code> module
-to interact with browser windows.
-You can use this module to
-create, modify, and rearrange windows in the browser.
+For information on how to use experimental APIs,
+see the <a href="api_index.html">chrome.* APIs</a> page.
 </p>
 
-<img src="images/windows.png" width="256" height="76" alt="Two windows, each with one tab">
-
-<h2 id="manifest">Manifest</h2>
-<p>
-To use the windows API,
-you must declare the "tabs" permission
-in <a href="manifest.html">manifest.json</a>.
-(No, that isn't a typo —
-the window and tabs modules interact so closely we
-decided to just share one permission between them.)
-For example:
-</p>
-
-<pre>{
-  "name": "My extension",
-  ...
-  <b>"permissions": ["tabs"]</b>,
-  ...
-}</pre>
-
-<h2 id="current-window">The current window</h2>
-
-<p>Many functions in the extension system
-take an optional <var>windowId</var> parameter,
-which defaults to the current window.
-</p>
-
-<p>The <em>current window</em> is the window that
-contains the code that is currently executing.
-It's important to realize that this can be
-different from the topmost or focused window.
-</p>
-
-<p>For example, say an extension
-creates a few tabs or windows from a single HTML file,
-and that the HTML file
-contains a call to
-<a href="tabs.html#method-getSelected">chrome.tabs.getSelected</a>.
-The current window is the window that contains the page that made
-the call, no matter what the topmost window is.
-</p>
-
-<p>In the case of the <a href="background_pages.html">background page</a>,
-the value of the current window falls back to the topmost window.
-</p>
-
-<h2 id="examples"> Examples </h2>
+<h2 id="transition_types">Transition types</h2>
 
 <p>
-You can find an example of using the windows module in the
-<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/tabs/inspector/tabs_api.html?content-type=text/plain">tabs_api.html</a> file
-of the
-<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/tabs/inspector/">inspector</a>
-example.
-For other examples and for help in viewing the source code, see
-<a href="samples.html">Samples</a>.
+The history API uses a <em>transition type</em> to describe
+how the browser navigated to a particular URL
+on a particular visit.
+For example, if a user visits a page
+by clicking a link on another page,
+the transition type is LINK.
+To be precise,
+the type is
+<a href="#LINK"><code>chrome.experimental.history.transitionType.LINK</code></a>,
+which has an integer value of 0.
+</p>
+
+<p class="note">
+<b>Note:</b>
+The spelling of
+<code>transitionType</code> changed in
+<a href="http://src.chromium.org/viewvc/chrome?view=rev&amp;revision=38850">revision 38850</a>.
+Previously, it was <code>transistionType</code>.
+</p>
+
+<p>
+The following table describes each transition type defined by
+<code>chrome.experimental.history.transistionType</code>.
+</p>
+
+<table>
+<tbody><tr>
+  <th> Transition type </th> <th> Value </th> <th> Description </th>
+</tr>
+<tr id="LINK">
+  <td>LINK</td> <td>0</td>
+  <td>
+    The user got to this page by clicking a link on another page.
+  </td>
+</tr>
+<tr id="TYPED">
+  <td>TYPED</td> <td>1</td>
+  <td>
+    The user got this page by typing the URL in the address bar.
+    Also used for other explicit navigation actions.
+    See also <a href="#GENERATED">GENERATED</a>,
+    which is used for cases where the user selected a choice
+    that didn't look at all like a URL.
+  </td>
+</tr>
+<tr id="AUTO_BOOKMARK">
+  <td>AUTO_BOOKMARK</td><td>2</td>
+  <td>
+    The user got to this page through a suggestion in the UI —
+    for example, through a menu item.
+  </td>
+</tr>
+<tr id="AUTO_SUBFRAME">
+  <td>AUTO_SUBFRAME</td><td>3</td>
+  <td>
+    Subframe navigation.
+    This is any content that is automatically
+    loaded in a non-top-level frame.
+    For example, if a page consists of
+    several frames containing ads,
+    those ad URLs have this transition type.
+    The user may not even realize the content in these pages
+    is a separate frame, and so may not care about the URL
+    (see also <a href="#MANUAL_SUBFRAME">MANUAL_SUBFRAME</a>).
+  </td>
+</tr>
+<tr id="MANUAL_SUBFRAME">
+  <td>MANUAL_SUBFRAME</td><td>4</td>
+  <td>
+    For subframe navigations that are explicitly requested by the user
+    and generate new navigation entries in the back/forward list.
+    An explicitly requested frame is probably more important than
+    an automatically loaded frame
+    because the user probably cares about the fact that
+    the requested frame was loaded.
+  </td>
+</tr>
+<tr id="GENERATED">
+  <td>GENERATED</td><td>5</td>
+  <td>
+    The user got to this page by typing in the address bar
+    and selecting an entry that did not look like a URL.
+    For example, a match might have the URL of a Google search result page,
+    but it might appear to the user as "Search Google for ...".
+    These are not quite the same as <a href="#TYPED">TYPED</a> navigations
+    because the user didn't type or see the destination URL.
+    See also <a href="#KEYWORD">KEYWORD</a>.
+  </td>
+</tr>
+<tr id="START_PAGE">
+  <td>START_PAGE</td><td>6</td>
+  <td>
+    The page was specified in the command line or is the start page.
+  </td>
+</tr>
+<tr id="FORM_SUBMIT">
+  <td>FORM_SUBMIT</td><td>7</td>
+  <td>
+    The user filled out values in a form and submitted it.
+    Note that in some situations —
+    such as when a form uses script to submit contents —
+    submitting a form does not result in this transition type.
+  </td>
+</tr>
+<tr id="RELOAD">
+  <td>RELOAD</td><td>8</td>
+  <td>
+    The user reloaded the page,
+    either by clicking the reload button
+    or by pressing Enter in the address bar.
+    Session restore and Reopen closed tab use this transition type, too.
+  </td>
+</tr>
+<tr id="KEYWORD">
+  <td>KEYWORD</td><td>9</td>
+  <td>
+    The URL was generated from a replaceable keyword
+    other than the default search provider.
+    See also
+    <a href="#KEYWORD_GENERATED">KEYWORD_GENERATED</a>.
+  </td>
+</tr>
+<tr id="KEYWORD_GENERATED">
+  <td>KEYWORD_GENERATED</td><td>10</td>
+  <td>
+    Corresponds to a visit generated for a keyword.
+    See also <a href="#KEYWORD">KEYWORD</a>.
+  </td>
+</tr>
+</tbody></table>
+
+<h2 id="examples">Examples</h2>
+
+<p>
+For an example of using this API, see the
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/test/data/extensions/api_test/history/">history API test directory</a>.
 </p>
 
 <!-- END AUTHORED CONTENT -->
@@ -349,7 +419,7 @@ For other examples and for help in viewing the source code, see
         <!-- API PAGE -->
         <div class="apiPage">
         <a name="apiReference"></a>
-        <h2>API reference: chrome.windows</h2>
+        <h2>API reference: chrome.experimental.history</h2>
 
           <!-- PROPERTIES -->
           <div class="apiGroup" style="display: none; ">
@@ -376,18 +446,17 @@ For other examples and for help in viewing the source code, see
 
             <!-- iterates over all functions -->
             <div class="apiItem">
-              <a name="method-create"></a> <!-- method-anchor -->
-              <h4>create</h4>
+              <a name="method-addUrl"></a> <!-- method-anchor -->
+              <h4>addUrl</h4>
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.windows.create</span>(<span class="optional"><span style="display: none; ">, </span><span>object</span>
-                      <var><span>createData</span></var></span><span class="optional"><span>, </span><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
+                  <span>chrome.experimental.history.addUrl</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
+                      <var><span>undefined</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Creates (opens) a new browser with any optional sizing, position or default URL provided.</p>
+                <p>Adds a URL to the history at the current time with a <a href="#transition_types">transition type</a> of LINK.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -395,13 +464,13 @@ For other examples and for help in viewing the source code, see
                   <div>
                     <div>
           <dt>
-            <var>createData</var>
+            <var style="display: none; ">paramName</var>
               <em>
 
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional">optional</span>
+                    <span class="optional" style="display: none; ">optional</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -437,7 +506,7 @@ For other examples and for help in viewing the source code, see
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional">optional</span>
+                    <span class="optional" style="display: none; ">optional</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -457,7 +526,7 @@ For other examples and for help in viewing the source code, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The URL to navigate the first tab to. Fully-qualified URLs must include a scheme (i.e. 'http://www.google.com', not 'www.google.com'). Relative URLs will be relative to the current page within the extension. Defaults to the New Tab Page.</dd>
+          <dd>The URL to add.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -469,213 +538,6 @@ For other examples and for help in viewing the source code, see
             </dl>
           </dd>
         </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>left</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>The number of pixels to position the new window from the left edge of the screen. If not specified, the new window is offset naturally from the last focusd window.</dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>top</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>The number of pixels to position the new window from the top edge of the screen. If not specified, the new window is offset naturally from the last focusd window.</dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>width</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>The width in pixels of the new window. If not specified defaults to a natural width.</dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>height</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>The height in pixels of the new window. If not specified defaults to a natural height.</dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-                  </div><div>
-                    <div>
-          <dt>
-            <var>callback</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>function</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
               </div>
             </dl>
           </dd>
@@ -693,10 +555,10 @@ For other examples and for help in viewing the source code, see
                 </dl>
 
                 <!-- CALLBACK -->
-                <div>
+                <div style="display: none; ">
                   <div>
                   <h4>Callback function</h4>
-                  <p style="display: none; ">
+                  <p>
                     The callback <em>parameter</em> should specify a function
                     that looks like this:
                   </p>
@@ -706,49 +568,11 @@ For other examples and for help in viewing the source code, see
                   </p>
 
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Window window</span>) <span class="subdued">{...}</span>);</pre>
+                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
                     <div>
                       <div>
-          <dt>
-            <var>window</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <a href="windows.html#type-Window">Window</a>
-                      </span>
-                      <span style="display: none; ">
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>Contains details about the created window.</dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
+                      </div>
                     </div>
                   </dl>
                   </div>
@@ -757,66 +581,22 @@ For other examples and for help in viewing the source code, see
               </div> <!-- /description -->
 
             </div><div class="apiItem">
-              <a name="method-get"></a> <!-- method-anchor -->
-              <h4>get</h4>
+              <a name="method-deleteAll"></a> <!-- method-anchor -->
+              <h4>deleteAll</h4>
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.windows.get</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
-                      <var><span>windowId</span></var></span><span class="null"><span>, </span><span>function</span>
+                  <span>chrome.experimental.history.deleteAll</span>(<span class="null"><span style="display: none; ">, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Gets details about a window.</p>
+                <p>Deletes all items from the history.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
                 <dl>
                   <div>
-                    <div>
-          <dt>
-            <var>windowId</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-                  </div><div>
                     <div>
           <dt>
             <var>callback</var>
@@ -885,51 +665,11 @@ For other examples and for help in viewing the source code, see
                   </p>
 
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Window window</span>) <span class="subdued">{...}</span>);</pre>
+                  <pre>function(<span></span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
-                    <div>
+                    <div style="display: none; ">
                       <div>
-          <dt>
-            <var>window</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <a href="windows.html#type-Window">Window</a>
-                      </span>
-                      <span style="display: none; ">
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
+                      </div>
                     </div>
                   </dl>
                   </div>
@@ -938,18 +678,18 @@ For other examples and for help in viewing the source code, see
               </div> <!-- /description -->
 
             </div><div class="apiItem">
-              <a name="method-getAll"></a> <!-- method-anchor -->
-              <h4>getAll</h4>
+              <a name="method-deleteRange"></a> <!-- method-anchor -->
+              <h4>deleteRange</h4>
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.windows.getAll</span>(<span class="optional"><span style="display: none; ">, </span><span>object</span>
-                      <var><span>getInfo</span></var></span><span class="null"><span>, </span><span>function</span>
+                  <span>chrome.experimental.history.deleteRange</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
+                      <var><span>undefined</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Gets all windows.</p>
+                <p>Removes all items within the specified date range from the history.  Pages will not be removed from the history unless all visits fall within the range.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -957,13 +697,13 @@ For other examples and for help in viewing the source code, see
                   <div>
                     <div>
           <dt>
-            <var>getInfo</var>
+            <var style="display: none; ">paramName</var>
               <em>
 
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional">optional</span>
+                    <span class="optional" style="display: none; ">optional</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -993,13 +733,13 @@ For other examples and for help in viewing the source code, see
               <div>
                 <div>
           <dt>
-            <var>populate</var>
+            <var>startTime</var>
               <em>
 
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional">optional</span>
+                    <span class="optional" style="display: none; ">optional</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -1008,7 +748,7 @@ For other examples and for help in viewing the source code, see
                         <span style="display: none; ">
                           array of <span><span></span></span>
                         </span>
-                        <span>boolean</span>
+                        <span>number</span>
                       </span>
                     </span>
                   )
@@ -1019,7 +759,48 @@ For other examples and for help in viewing the source code, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>If true, each window object will have a <var>tabs</var> property that contains a list of the <a href="tabs.html#type-Tab">Tab</a> objects for that window.</dd>
+          <dd>Items added to history after this date, represented in milliseconds since the epoch.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>endTime</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>number</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>Items added to history before this date, represented in milliseconds since the epoch.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -1104,12 +885,326 @@ For other examples and for help in viewing the source code, see
                   </p>
 
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>array of Window windows</span>) <span class="subdued">{...}</span>);</pre>
+                  <pre>function(<span></span>) <span class="subdued">{...}</span>);</pre>
+                  <dl>
+                    <div style="display: none; ">
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+
+              </div> <!-- /description -->
+
+            </div><div class="apiItem">
+              <a name="method-deleteUrl"></a> <!-- method-anchor -->
+              <h4>deleteUrl</h4>
+
+              <div class="summary"><span style="display: none; ">void</span>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.history.deleteUrl</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
+                      <var><span>undefined</span></var></span>)</div>
+
+              <div class="description">
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Removes all occurrences of the given URL from the history.</p>
+
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var style="display: none; ">paramName</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>url</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The URL to remove.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+
+                <!-- RETURNS -->
+                <h4 style="display: none; ">Returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+                <!-- CALLBACK -->
+                <div style="display: none; ">
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    The callback <em>parameter</em> should specify a function
+                    that looks like this:
+                  </p>
+                  <p>
+                    If you specify the <em>callback</em> parameter, it should
+                    specify a function that looks like this:
+                  </p>
+
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>Type param1, Type param2</span>) <span class="subdued">{...}</span>);</pre>
+                  <dl>
+                    <div>
+                      <div>
+                      </div>
+                    </div>
+                  </dl>
+                  </div>
+                </div>
+
+              </div> <!-- /description -->
+
+            </div><div class="apiItem">
+              <a name="method-getVisits"></a> <!-- method-anchor -->
+              <h4>getVisits</h4>
+
+              <div class="summary"><span style="display: none; ">void</span>
+                  <!-- Note: intentionally longer 80 columns -->
+                  <span>chrome.experimental.history.getVisits</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
+                      <var><span>undefined</span></var></span><span class="null"><span>, </span><span>function</span>
+                      <var><span>callback</span></var></span>)</div>
+
+              <div class="description">
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Retrieve information about visits to a URL.</p>
+
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var style="display: none; ">paramName</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>url</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The URL for which to retrieve visit information.  It must be in the format as returned from a call to history.search.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+                  </div><div>
+                    <div>
+          <dt>
+            <var>callback</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>function</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+
+                <!-- RETURNS -->
+                <h4 style="display: none; ">Returns</h4>
+                <dl>
+                  <div style="display: none; ">
+                    <div>
+                    </div>
+                  </div>
+                </dl>
+
+                <!-- CALLBACK -->
+                <div>
+                  <div>
+                  <h4>Callback function</h4>
+                  <p>
+                    The callback <em>parameter</em> should specify a function
+                    that looks like this:
+                  </p>
+                  <p style="display: none; ">
+                    If you specify the <em>callback</em> parameter, it should
+                    specify a function that looks like this:
+                  </p>
+
+                  <!-- Note: intentionally longer 80 columns -->
+                  <pre>function(<span>array of VisitItem results</span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
                     <div>
                       <div>
           <dt>
-            <var>windows</var>
+            <var>results</var>
               <em>
 
                 <!-- TYPE -->
@@ -1124,7 +1219,7 @@ For other examples and for help in viewing the source code, see
                         <span>
                           array of <span><span>
                       <span>
-                        <a href="windows.html#type-Window">Window</a>
+                        <a href="experimental.history.html#type-VisitItem">VisitItem</a>
                       </span>
                       <span style="display: none; ">
                         <span>
@@ -1167,17 +1262,18 @@ For other examples and for help in viewing the source code, see
               </div> <!-- /description -->
 
             </div><div class="apiItem">
-              <a name="method-getCurrent"></a> <!-- method-anchor -->
-              <h4>getCurrent</h4>
+              <a name="method-search"></a> <!-- method-anchor -->
+              <h4>search</h4>
 
               <div class="summary"><span style="display: none; ">void</span>
                   <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.windows.getCurrent</span>(<span class="null"><span style="display: none; ">, </span><span>function</span>
+                  <span>chrome.experimental.history.search</span>(<span class="null"><span style="display: none; ">, </span><span>object</span>
+                      <var><span>query</span></var></span><span class="null"><span>, </span><span>function</span>
                       <var><span>callback</span></var></span>)</div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Gets the <a href="#current-window">current window</a>.</p>
+                <p>Search the history for the last visit time of each page matching the query.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -1185,467 +1281,7 @@ For other examples and for help in viewing the source code, see
                   <div>
                     <div>
           <dt>
-            <var>callback</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>function</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-                  </div>
-                </dl>
-
-                <!-- RETURNS -->
-                <h4 style="display: none; ">Returns</h4>
-                <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
-                  <p style="display: none; ">
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Window window</span>) <span class="subdued">{...}</span>);</pre>
-                  <dl>
-                    <div>
-                      <div>
-          <dt>
-            <var>window</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <a href="windows.html#type-Window">Window</a>
-                      </span>
-                      <span style="display: none; ">
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-
-              </div> <!-- /description -->
-
-            </div><div class="apiItem">
-              <a name="method-getLastFocused"></a> <!-- method-anchor -->
-              <h4>getLastFocused</h4>
-
-              <div class="summary"><span style="display: none; ">void</span>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.windows.getLastFocused</span>(<span class="null"><span style="display: none; ">, </span><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
-
-              <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Gets the window that was most recently focused — typically the window 'on top'.</p>
-
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>callback</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>function</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-                  </div>
-                </dl>
-
-                <!-- RETURNS -->
-                <h4 style="display: none; ">Returns</h4>
-                <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p>
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
-                  <p style="display: none; ">
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Window window</span>) <span class="subdued">{...}</span>);</pre>
-                  <dl>
-                    <div>
-                      <div>
-          <dt>
-            <var>window</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <a href="windows.html#type-Window">Window</a>
-                      </span>
-                      <span style="display: none; ">
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-
-              </div> <!-- /description -->
-
-            </div><div class="apiItem">
-              <a name="method-remove"></a> <!-- method-anchor -->
-              <h4>remove</h4>
-
-              <div class="summary"><span style="display: none; ">void</span>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.windows.remove</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
-                      <var><span>windowId</span></var></span><span class="optional"><span>, </span><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
-
-              <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Removes (closes) a window, and all the tabs inside it.</p>
-
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>windowId</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-                  </div><div>
-                    <div>
-          <dt>
-            <var>callback</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>function</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-                  </div>
-                </dl>
-
-                <!-- RETURNS -->
-                <h4 style="display: none; ">Returns</h4>
-                <dl>
-                  <div style="display: none; ">
-                    <div>
-                    </div>
-                  </div>
-                </dl>
-
-                <!-- CALLBACK -->
-                <div>
-                  <div>
-                  <h4>Callback function</h4>
-                  <p style="display: none; ">
-                    The callback <em>parameter</em> should specify a function
-                    that looks like this:
-                  </p>
-                  <p>
-                    If you specify the <em>callback</em> parameter, it should
-                    specify a function that looks like this:
-                  </p>
-
-                  <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span></span>) <span class="subdued">{...}</span>);</pre>
-                  <dl>
-                    <div style="display: none; ">
-                      <div>
-                      </div>
-                    </div>
-                  </dl>
-                  </div>
-                </div>
-
-              </div> <!-- /description -->
-
-            </div><div class="apiItem">
-              <a name="method-update"></a> <!-- method-anchor -->
-              <h4>update</h4>
-
-              <div class="summary"><span style="display: none; ">void</span>
-                  <!-- Note: intentionally longer 80 columns -->
-                  <span>chrome.windows.update</span>(<span class="null"><span style="display: none; ">, </span><span>integer</span>
-                      <var><span>windowId</span></var></span><span class="null"><span>, </span><span>object</span>
-                      <var><span>updateInfo</span></var></span><span class="optional"><span>, </span><span>function</span>
-                      <var><span>callback</span></var></span>)</div>
-
-              <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Updates the properties of a window. Specify only the properties that you want to change; unspecified properties will be left unchanged.</p>
-
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>windowId</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo">
-            Undocumented.
-          </dd>
-          <dd style="display: none; ">
-            Description of this parameter from the json schema.
-          </dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-                  </div><div>
-                    <div>
-          <dt>
-            <var>updateInfo</var>
+            <var>query</var>
               <em>
 
                 <!-- TYPE -->
@@ -1681,13 +1317,13 @@ For other examples and for help in viewing the source code, see
               <div>
                 <div>
           <dt>
-            <var>left</var>
+            <var>search</var>
               <em>
 
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional">optional</span>
+                    <span class="optional" style="display: none; ">optional</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -1696,7 +1332,7 @@ For other examples and for help in viewing the source code, see
                         <span style="display: none; ">
                           array of <span><span></span></span>
                         </span>
-                        <span>integer</span>
+                        <span>string</span>
                       </span>
                     </span>
                   )
@@ -1707,7 +1343,7 @@ For other examples and for help in viewing the source code, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The offset from the left edge of the screen to move the window to in pixels.</dd>
+          <dd>A free-text query to the history service, leave empty to retrieve all pages.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -1722,7 +1358,7 @@ For other examples and for help in viewing the source code, see
               </div><div>
                 <div>
           <dt>
-            <var>top</var>
+            <var>startTime</var>
               <em>
 
                 <!-- TYPE -->
@@ -1737,7 +1373,7 @@ For other examples and for help in viewing the source code, see
                         <span style="display: none; ">
                           array of <span><span></span></span>
                         </span>
-                        <span>integer</span>
+                        <span>number</span>
                       </span>
                     </span>
                   )
@@ -1748,7 +1384,7 @@ For other examples and for help in viewing the source code, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The offset from the top edge of the screen to move the window to in pixels.</dd>
+          <dd>Limit results to those visited after this date, represented in milliseconds since the epoch.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -1763,7 +1399,7 @@ For other examples and for help in viewing the source code, see
               </div><div>
                 <div>
           <dt>
-            <var>width</var>
+            <var>endTime</var>
               <em>
 
                 <!-- TYPE -->
@@ -1778,7 +1414,7 @@ For other examples and for help in viewing the source code, see
                         <span style="display: none; ">
                           array of <span><span></span></span>
                         </span>
-                        <span>integer</span>
+                        <span>number</span>
                       </span>
                     </span>
                   )
@@ -1789,7 +1425,7 @@ For other examples and for help in viewing the source code, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The width to resize the window to in pixels.</dd>
+          <dd>Limit results to those visited before this date, represented in milliseconds since the epoch.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -1804,7 +1440,7 @@ For other examples and for help in viewing the source code, see
               </div><div>
                 <div>
           <dt>
-            <var>height</var>
+            <var>maxResults</var>
               <em>
 
                 <!-- TYPE -->
@@ -1830,7 +1466,7 @@ For other examples and for help in viewing the source code, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>The height to resize the window to in pixels.</dd>
+          <dd>The maximum number of results to retrieve.  Defaults to 100.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -1855,7 +1491,7 @@ For other examples and for help in viewing the source code, see
                 <!-- TYPE -->
                 <div style="display:inline">
                   (
-                    <span class="optional">optional</span>
+                    <span class="optional" style="display: none; ">optional</span>
                     <span id="typeTemplate">
                       <span style="display: none; ">
                         <a> Type</a>
@@ -1905,22 +1541,22 @@ For other examples and for help in viewing the source code, see
                 <div>
                   <div>
                   <h4>Callback function</h4>
-                  <p style="display: none; ">
+                  <p>
                     The callback <em>parameter</em> should specify a function
                     that looks like this:
                   </p>
-                  <p>
+                  <p style="display: none; ">
                     If you specify the <em>callback</em> parameter, it should
                     specify a function that looks like this:
                   </p>
 
                   <!-- Note: intentionally longer 80 columns -->
-                  <pre>function(<span>Window window</span>) <span class="subdued">{...}</span>);</pre>
+                  <pre>function(<span>array of HistoryItem results</span>) <span class="subdued">{...}</span>);</pre>
                   <dl>
                     <div>
                       <div>
           <dt>
-            <var>window</var>
+            <var>results</var>
               <em>
 
                 <!-- TYPE -->
@@ -1928,14 +1564,24 @@ For other examples and for help in viewing the source code, see
                   (
                     <span class="optional" style="display: none; ">optional</span>
                     <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
                       <span>
-                        <a href="windows.html#type-Window">Window</a>
+                        <span>
+                          array of <span><span>
+                      <span>
+                        <a href="experimental.history.html#type-HistoryItem">HistoryItem</a>
                       </span>
                       <span style="display: none; ">
                         <span>
                           array of <span><span></span></span>
                         </span>
                         <span>paramType</span>
+                      </span>
+                    </span></span>
+                        </span>
+                        <span style="display: none; ">paramType</span>
                       </span>
                     </span>
                   )
@@ -1978,17 +1624,17 @@ For other examples and for help in viewing the source code, see
 
             <!-- iterates over all events -->
             <div class="apiItem">
-              <a name="event-onCreated"></a>
-              <h4>onCreated</h4>
+              <a name="event-onVisitRemoved"></a>
+              <h4>onVisitRemoved</h4>
 
               <div class="summary">
                 <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.windows.</span><span>onCreated</span><span class="subdued">.addListener</span>(function(<span>Window window</span>) <span class="subdued">{...}</span>);
+                <span class="subdued">chrome.experimental.history.</span><span>onVisitRemoved</span><span class="subdued">.addListener</span>(function(<span>object removed</span>) <span class="subdued">{...}</span>);
               </div>
 
               <div class="description">
                 <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Fired when a window is created.</p>
+                <p>Fired when one or more URLs are removed from the history service.  When all visits have been removed the URL is purged from history.</p>
 
                 <!-- PARAMETERS -->
                 <h4>Parameters</h4>
@@ -1996,190 +1642,7 @@ For other examples and for help in viewing the source code, see
                   <div>
                     <div>
           <dt>
-            <var>window</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span>
-                        <a href="windows.html#type-Window">Window</a>
-                      </span>
-                      <span style="display: none; ">
-                        <span>
-                          array of <span><span></span></span>
-                        </span>
-                        <span>paramType</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>Details of the window that was created.</dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-                  </div>
-                </dl>
-
-              </div> <!-- /decription -->
-
-            </div><div class="apiItem">
-              <a name="event-onFocusChanged"></a>
-              <h4>onFocusChanged</h4>
-
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.windows.</span><span>onFocusChanged</span><span class="subdued">.addListener</span>(function(<span>integer windowId</span>) <span class="subdued">{...}</span>);
-              </div>
-
-              <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Fired when the currently focused window changes.</p>
-
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>windowId</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>ID of the newly focused window.</dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-                  </div>
-                </dl>
-
-              </div> <!-- /decription -->
-
-            </div><div class="apiItem">
-              <a name="event-onRemoved"></a>
-              <h4>onRemoved</h4>
-
-              <div class="summary">
-                <!-- Note: intentionally longer 80 columns -->
-                <span class="subdued">chrome.windows.</span><span>onRemoved</span><span class="subdued">.addListener</span>(function(<span>integer windowId</span>) <span class="subdued">{...}</span>);
-              </div>
-
-              <div class="description">
-                <p class="todo" style="display: none; ">Undocumented.</p>
-                <p>Fired when a window is removed (closed).</p>
-
-                <!-- PARAMETERS -->
-                <h4>Parameters</h4>
-                <dl>
-                  <div>
-                    <div>
-          <dt>
-            <var>windowId</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>ID of the removed window.</dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-                  </div>
-                </dl>
-
-              </div> <!-- /decription -->
-
-            </div> <!-- /apiItem -->
-
-          </div> <!-- /apiGroup -->
-
-          <!-- TYPES -->
-          <div class="apiGroup">
-            <a name="types.sort(sortByName)"></a>
-            <h3 id="types">Types</h3>
-
-            <!-- iterates over all types -->
-            <div class="apiItem">
-              <a name="type-Window"></a>
-              <h4>Window</h4>
-
-              <div>
-          <dt>
-            <var style="display: none; ">paramName</var>
+            <var>removed</var>
               <em>
 
                 <!-- TYPE -->
@@ -2215,48 +1678,7 @@ For other examples and for help in viewing the source code, see
               <div>
                 <div>
           <dt>
-            <var>id</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>The ID of the window. Window IDs are unique within a browser session.</dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>focused</var>
+            <var>allHistory</var>
               <em>
 
                 <!-- TYPE -->
@@ -2282,7 +1704,7 @@ For other examples and for help in viewing the source code, see
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Whether the window is currently the focused window.</dd>
+          <dd>True if all history was removed.  If true, then urls will be empty.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
@@ -2297,171 +1719,7 @@ For other examples and for help in viewing the source code, see
               </div><div>
                 <div>
           <dt>
-            <var>top</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>The offset of the window from the top edge of the screen in pixels.</dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>left</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>The offset of the window from the left edge of the screen in pixels.</dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>width</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>The width of the window in pixels.</dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>height</var>
-              <em>
-
-                <!-- TYPE -->
-                <div style="display:inline">
-                  (
-                    <span class="optional" style="display: none; ">optional</span>
-                    <span id="typeTemplate">
-                      <span style="display: none; ">
-                        <a> Type</a>
-                      </span>
-                      <span>
-                        <span style="display: none; ">
-                          array of <span><span></span></span>
-                        </span>
-                        <span>integer</span>
-                      </span>
-                    </span>
-                  )
-                </div>
-
-              </em>
-          </dt>
-          <dd class="todo" style="display: none; ">
-            Undocumented.
-          </dd>
-          <dd>The height of the window in pixels.</dd>
-
-          <!-- OBJECT PROPERTIES -->
-          <dd style="display: none; ">
-            <dl>
-              <div>
-                <div>
-                </div>
-              </div>
-            </dl>
-          </dd>
-        </div>
-              </div><div>
-                <div>
-          <dt>
-            <var>tabs</var>
+            <var>urls</var>
               <em>
 
                 <!-- TYPE -->
@@ -2475,14 +1733,14 @@ For other examples and for help in viewing the source code, see
                       <span>
                         <span>
                           array of <span><span>
-                      <span>
-                        <a href="tabs.html#type-Tab">Tab</a>
-                      </span>
                       <span style="display: none; ">
-                        <span>
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
                           array of <span><span></span></span>
                         </span>
-                        <span>paramType</span>
+                        <span>string</span>
                       </span>
                     </span></span>
                         </span>
@@ -2494,10 +1752,625 @@ For other examples and for help in viewing the source code, see
 
               </em>
           </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /decription -->
+
+            </div><div class="apiItem">
+              <a name="event-onVisited"></a>
+              <h4>onVisited</h4>
+
+              <div class="summary">
+                <!-- Note: intentionally longer 80 columns -->
+                <span class="subdued">chrome.experimental.history.</span><span>onVisited</span><span class="subdued">.addListener</span>(function(<span>HistoryItem result</span>) <span class="subdued">{...}</span>);
+              </div>
+
+              <div class="description">
+                <p class="todo" style="display: none; ">Undocumented.</p>
+                <p>Fired when a URL is visited, providing the HistoryItem data for that URL.</p>
+
+                <!-- PARAMETERS -->
+                <h4>Parameters</h4>
+                <dl>
+                  <div>
+                    <div>
+          <dt>
+            <var>result</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span>
+                        <a href="experimental.history.html#type-HistoryItem">HistoryItem</a>
+                      </span>
+                      <span style="display: none; ">
+                        <span>
+                          array of <span><span></span></span>
+                        </span>
+                        <span>paramType</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo">
+            Undocumented.
+          </dd>
+          <dd style="display: none; ">
+            Description of this parameter from the json schema.
+          </dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+                  </div>
+                </dl>
+
+              </div> <!-- /decription -->
+
+            </div> <!-- /apiItem -->
+
+          </div> <!-- /apiGroup -->
+
+          <!-- TYPES -->
+          <div class="apiGroup">
+            <a name="types.sort(sortByName)"></a>
+            <h3 id="types">Types</h3>
+
+            <!-- iterates over all types -->
+            <div class="apiItem">
+              <a name="type-VisitItem"></a>
+              <h4>VisitItem</h4>
+
+              <div>
+          <dt>
+            <var style="display: none; ">paramName</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
           <dd class="todo" style="display: none; ">
             Undocumented.
           </dd>
-          <dd>Array of <a href="tabs.html#type-Tab">Tab</a> objects representing the current tabs in the window.</dd>
+          <dd>An object encapsulating one visit to a URL.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>id</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The unique identifier for the item.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>visitId</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The unique identifier for this visit.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>visitTime</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>number</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>When this visit occurred, represented in milliseconds since the epoch.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>referringVisitId</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The visit_id of the referrer.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>transition</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The <a href="#transition_types">transition type</a> for this visit from its referrer.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+
+            </div><div class="apiItem">
+              <a name="type-HistoryItem"></a>
+              <h4>HistoryItem</h4>
+
+              <div>
+          <dt>
+            <var style="display: none; ">paramName</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>object</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>An object encapsulating one result of a history query.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd>
+            <dl>
+              <div>
+                <div>
+          <dt>
+            <var>id</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional" style="display: none; ">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The unique identifier for the item.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>url</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The URL navigated to by a user.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>title</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>string</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The title of the history page.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>lastVisitTime</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>number</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>When this page was last loaded, represented in milliseconds since the epoch.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>visitCount</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The number of times the user has navigated to this page.</dd>
+
+          <!-- OBJECT PROPERTIES -->
+          <dd style="display: none; ">
+            <dl>
+              <div>
+                <div>
+                </div>
+              </div>
+            </dl>
+          </dd>
+        </div>
+              </div><div>
+                <div>
+          <dt>
+            <var>typedCount</var>
+              <em>
+
+                <!-- TYPE -->
+                <div style="display:inline">
+                  (
+                    <span class="optional">optional</span>
+                    <span id="typeTemplate">
+                      <span style="display: none; ">
+                        <a> Type</a>
+                      </span>
+                      <span>
+                        <span style="display: none; ">
+                          array of <span><span></span></span>
+                        </span>
+                        <span>integer</span>
+                      </span>
+                    </span>
+                  )
+                </div>
+
+              </em>
+          </dt>
+          <dd class="todo" style="display: none; ">
+            Undocumented.
+          </dd>
+          <dd>The number of times the user has navigated to this page by typing in the address.</dd>
 
           <!-- OBJECT PROPERTIES -->
           <dd style="display: none; ">
