@@ -2910,10 +2910,9 @@ BUG33497 : storage/domstorage/sessionstorage/window-open.html = TEXT
 BUG33538 : fast/dom/Window/anonymous-slot-with-changes.html = TEXT
 
 // WebKit roll 54278 -> 54322
-BUG34546 : fast/loader/document-with-fragment-url-1.html = TIMEOUT
-BUG34546 : fast/loader/document-with-fragment-url-2.html = TIMEOUT
-BUG34546 : fast/loader/document-with-fragment-url-3.html = TIMEOUT
-BUG34546 : fast/loader/document-with-fragment-url-4.html = TIMEOUT
+// asserts in DEBUG, no need to muddy the waters and run at all for
+// the moment.
+BUG34546 SKIP : fast/loader/document-with-fragment-url-3.html = CRASH
 
 // Flaky test
 BUG35064 WIN DEBUG : fast/forms/restore-selection-after-layout.html = TEXT PASS
