@@ -139,7 +139,7 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
   // translate related infobars as they would prevent any new infobar from
   // showing. (As TabContents will not add an infobar if there is already one
   // showing equal to the one being added.)
-  for (int i = 0; i < tab->infobar_delegate_count(); ++i) {
+  for (int i = tab->infobar_delegate_count() - 1; i >= 0; --i) {
     InfoBarDelegate* info_bar = tab->GetInfoBarDelegateAt(i);
     if (info_bar->AsTranslateInfoBarDelegate())
       tab->RemoveInfoBar(info_bar);

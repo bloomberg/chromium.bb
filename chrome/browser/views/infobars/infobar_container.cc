@@ -152,18 +152,22 @@ void InfoBarContainer::AddInfoBar(InfoBarDelegate* delegate,
 
 void InfoBarContainer::RemoveInfoBar(InfoBarDelegate* delegate,
                                      bool use_animation) {
-  int index = 0;
-  for (; index < tab_contents_->infobar_delegate_count(); ++index) {
-    if (tab_contents_->GetInfoBarDelegateAt(index) == delegate)
+  // Search for infobar associated with |delegate| among child views.
+  // We cannot search for |delegate| in tab_contents, because an infobar remains
+  // a child view until its close animation completes, which can result in
+  // different number of infobars in container and infobar delegates in tab
+  // contents.
+  for (int i = 0; i < GetChildViewCount(); ++i) {
+    InfoBar* infobar = static_cast<InfoBar*>(GetChildViewAt(i));
+    if (infobar->delegate() == delegate) {
+      if (use_animation) {
+        // The View will be removed once the Close animation completes.
+        infobar->AnimateClose();
+      } else {
+        infobar->Close();
+      }
       break;
-  }
-
-  InfoBar* infobar = static_cast<InfoBar*>(GetChildViewAt(index));
-  if (use_animation) {
-    // The View will be removed once the Close animation completes.
-    infobar->AnimateClose();
-  } else {
-    infobar->Close();
+    }
   }
 }
 
