@@ -120,7 +120,7 @@ void ChromeFrameTestWithWebServer::CloseBrowser() {
 }
 
 bool ChromeFrameTestWithWebServer::BringBrowserToTop() {
-  return chrome_frame_test::EnsureProcessInForeground(
+  return simulate_input::EnsureProcessInForeground(
       GetProcessId(browser_handle_));
 }
 
@@ -314,7 +314,7 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_ObjectFocus) {
          i < 5 && (ok = CheckResultFile(L"ObjectFocus", "OK")) == false;
          ++i) {
       Sleep(300);
-      chrome_frame_test::SendMnemonic(VK_TAB, false, false, false);
+      simulate_input::SendMnemonic(VK_TAB, false, false, false, false, false);
     }
     ASSERT_TRUE(ok);
   }
@@ -698,64 +698,12 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_SubIFrame) {
   SimpleBrowserTest(IE, kSubIFrameTestPage, L"sub_frame");
 }
 
-const wchar_t kChromeFrameFullTabModeKeyEventUrl[] = L"files/keyevent.html";
-
-// Marking this test FLAKY as it fails at times on the buildbot.
-// http://code.google.com/p/chromium/issues/detail?id=26549
-TEST_F(ChromeFrameTestWithWebServer,
-       FLAKY_FullTabModeIE_ChromeFrameKeyboardTest) {
-  chrome_frame_test::TimedMsgLoop loop;
-
-  ASSERT_TRUE(LaunchBrowser(IE, kChromeFrameFullTabModeKeyEventUrl));
-
-  // Allow some time for chrome to be launched.
-  loop.RunFor(kChromeFrameLaunchDelay);
-
-  HWND renderer_window = chrome_frame_test::GetChromeRendererWindow();
-  EXPECT_TRUE(IsWindow(renderer_window));
-
-  chrome_frame_test::SetKeyboardFocusToWindow(renderer_window, 1, 1);
-  chrome_frame_test::SendInputToWindow(renderer_window, "Chrome");
-
-  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
-
-  chrome_frame_test::CloseAllIEWindows();
-  ASSERT_TRUE(CheckResultFile(L"FullTab_KeyboardTest", "OK"));
-}
-
-const wchar_t kChromeFrameAboutBlankUrl[] = L"gcf:about:blank";
-
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ChromeFrameFocusTest) {
-  chrome_frame_test::TimedMsgLoop loop;
-
-  ASSERT_TRUE(LaunchBrowser(IE, kChromeFrameAboutBlankUrl));
-
-  // Allow some time for chrome to be launched.
-  loop.RunFor(kChromeFrameLaunchDelay);
-
-  HWND renderer_window = chrome_frame_test::GetChromeRendererWindow();
-  EXPECT_TRUE(IsWindow(renderer_window));
-
-  DWORD renderer_thread_id = 0;
-  DWORD renderer_process_id = 0;
-  renderer_thread_id = GetWindowThreadProcessId(renderer_window,
-                                                &renderer_process_id);
-
-  AttachThreadInput(GetCurrentThreadId(), renderer_thread_id, TRUE);
-  HWND focus_window = GetFocus();
-  EXPECT_TRUE(focus_window == renderer_window);
-  AttachThreadInput(GetCurrentThreadId(), renderer_thread_id, FALSE);
-
-  chrome_frame_test::CloseAllIEWindows();
-}
-
-const wchar_t kChromeFrameFullTabModeXMLHttpRequestTestUrl[] =
+const wchar_t kXMLHttpRequestTestUrl[] =
     L"files/xmlhttprequest_test.html";
 
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ChromeFrameXHRTest) {
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_XHRTest) {
   chrome_frame_test::TimedMsgLoop loop;
-
-  ASSERT_TRUE(LaunchBrowser(IE, kChromeFrameFullTabModeXMLHttpRequestTestUrl));
+  ASSERT_TRUE(LaunchBrowser(IE, kXMLHttpRequestTestUrl));
 
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
 
@@ -779,31 +727,25 @@ TEST_F(ChromeFrameTestWithWebServer,
                     L"WidgetMode_MultipleInstancesTest");
 }
 
-const wchar_t kChromeFrameFullTabModeXMLHttpRequestAuthHeaderTestUrl[] =
+const wchar_t kXHRAuthHeaderTestUrl[] =
     L"files/xmlhttprequest_authorization_header_test.html";
 
-TEST_F(ChromeFrameTestWithWebServer,
-       FullTabModeIE_ChromeFrameXHRAuthHeaderTest) {
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_XHRAuthHeaderTest) {
   chrome_frame_test::TimedMsgLoop loop;
-
-  ASSERT_TRUE(LaunchBrowser(
-                  IE, kChromeFrameFullTabModeXMLHttpRequestAuthHeaderTestUrl));
+  ASSERT_TRUE(LaunchBrowser(IE, kXHRAuthHeaderTestUrl));
 
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
 
   chrome_frame_test::CloseAllIEWindows();
-  ASSERT_TRUE(
-      CheckResultFile(L"FullTab_XMLHttpRequestAuthorizationHeaderTest", "OK"));
+  ASSERT_TRUE(CheckResultFile(L"FullTabModeIE_XHRAuthHeaderTest", "OK"));
 }
 
-const wchar_t kChromeFrameFullTabModeDeleteCookieTest[] =
+const wchar_t kDeleteCookieTest[] =
     L"files/fulltab_delete_cookie_test.html";
 
-TEST_F(ChromeFrameTestWithWebServer,
-       FullTabModeIE_ChromeFrameDeleteCookieTest) {
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_DeleteCookieTest) {
   chrome_frame_test::TimedMsgLoop loop;
-
-  ASSERT_TRUE(LaunchBrowser(IE, kChromeFrameFullTabModeDeleteCookieTest));
+  ASSERT_TRUE(LaunchBrowser(IE, kDeleteCookieTest));
 
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
 
@@ -811,14 +753,14 @@ TEST_F(ChromeFrameTestWithWebServer,
   ASSERT_TRUE(CheckResultFile(L"FullTab_DeleteCookieTest", "OK"));
 }
 
-const wchar_t kChromeFrameFullTabModeAnchorUrlNavigate[] =
+const wchar_t kAnchorUrlNavigate[] =
     L"files/fulltab_anchor_url_navigate.html#chrome_frame";
 
+// http://code.google.com/p/chromium/issues/detail?id=35341
 TEST_F(ChromeFrameTestWithWebServer,
-       FullTabModeIE_ChromeFrameAnchorUrlNavigateTest) {
+       FLAKY_FullTabModeIE_AnchorUrlNavigateTest) {
   chrome_frame_test::TimedMsgLoop loop;
-
-  ASSERT_TRUE(LaunchBrowser(IE, kChromeFrameFullTabModeAnchorUrlNavigate));
+  ASSERT_TRUE(LaunchBrowser(IE, kAnchorUrlNavigate));
 
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
 
@@ -832,8 +774,6 @@ TEST_F(ChromeFrameTestWithWebServer,
 TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_TestPostReissue) {
   // Test whether POST-ing a form from an mshtml page to a CF page will cause
   // the request to get reissued.  It should not.
-
-
   FilePath source_path;
   PathService::Get(base::DIR_SOURCE_ROOT, &source_path);
   source_path = source_path.Append(FILE_PATH_LITERAL("chrome_frame"))

@@ -28,21 +28,6 @@ const wchar_t kOperaImageName[] = L"opera.exe";
 const wchar_t kSafariImageName[] = L"safari.exe";
 const wchar_t kChromeImageName[] = L"chrome.exe";
 
-bool IsTopLevelWindow(HWND window) {
-  long style = GetWindowLong(window, GWL_STYLE);  // NOLINT
-  if (!(style & WS_CHILD))
-    return true;
-
-  HWND parent = GetParent(window);
-  if (!parent)
-    return true;
-
-  if (parent == GetDesktopWindow())
-    return true;
-
-  return false;
-}
-
 // Callback function for EnumThreadWindows.
 BOOL CALLBACK CloseWindowsThreadCallback(HWND hwnd, LPARAM param) {
   int& count = *reinterpret_cast<int*>(param);
@@ -103,195 +88,6 @@ int CloseVisibleWindowsOnAllThreads(HANDLE process) {
   }
 
   return window_close_attempts;
-}
-
-class ForegroundHelperWindow : public CWindowImpl<ForegroundHelperWindow> {
- public:
-BEGIN_MSG_MAP(ForegroundHelperWindow)
-  MESSAGE_HANDLER(WM_HOTKEY, OnHotKey)
-END_MSG_MAP()
-
-  HRESULT SetForeground(HWND window) {
-    DCHECK(::IsWindow(window));
-    if (NULL == Create(NULL, NULL, NULL, WS_POPUP))
-      return AtlHresultFromLastError();
-
-    static const int kHotKeyId = 0x0000baba;
-    static const int kHotKeyWaitTimeout = 2000;
-
-    SetWindowLongPtr(GWLP_USERDATA, reinterpret_cast<ULONG_PTR>(window));
-    RegisterHotKey(m_hWnd, kHotKeyId, 0, VK_F22);
-
-    MSG msg = {0};
-    PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE);
-
-    SendVirtualKey(VK_F22, false);
-    // There are scenarios where the WM_HOTKEY is not dispatched by the
-    // the corresponding foreground thread. To prevent us from indefinitely
-    // waiting for the hotkey, we set a timer and exit the loop.
-    SetTimer(kHotKeyId, kHotKeyWaitTimeout, NULL);
-
-    while (GetMessage(&msg, NULL, 0, 0)) {
-      TranslateMessage(&msg);
-      DispatchMessage(&msg);
-      if (msg.message == WM_HOTKEY)
-        break;
-      else if (msg.message == WM_TIMER) {
-        SetForegroundWindow(window);
-        break;
-      }
-    }
-
-    UnregisterHotKey(m_hWnd, kHotKeyId);
-    KillTimer(kHotKeyId);
-    DestroyWindow();
-    return S_OK;
-  }
-
-  LRESULT OnHotKey(UINT msg, WPARAM wp, LPARAM lp, BOOL& handled) {  // NOLINT
-    HWND window = reinterpret_cast<HWND>(GetWindowLongPtr(GWLP_USERDATA));
-    SetForegroundWindow(window);
-    return 1;
-  }
-};
-
-bool ForceSetForegroundWindow(HWND window) {
-  if (GetForegroundWindow() == window)
-    return true;
-  ForegroundHelperWindow foreground_helper_window;
-  HRESULT hr = foreground_helper_window.SetForeground(window);
-  return SUCCEEDED(hr);
-}
-
-struct PidAndWindow {
-  base::ProcessId pid;
-  HWND hwnd;
-};
-
-BOOL CALLBACK FindWindowInProcessCallback(HWND hwnd, LPARAM param) {
-  PidAndWindow* paw = reinterpret_cast<PidAndWindow*>(param);
-  base::ProcessId pid;
-  GetWindowThreadProcessId(hwnd, &pid);
-  if (pid == paw->pid && IsWindowVisible(hwnd)) {
-    paw->hwnd = hwnd;
-    return FALSE;
-  }
-
-  return TRUE;
-}
-
-bool EnsureProcessInForeground(base::ProcessId process_id) {
-  HWND hwnd = GetForegroundWindow();
-  base::ProcessId current_foreground_pid = 0;
-  DWORD active_thread_id = GetWindowThreadProcessId(hwnd,
-      &current_foreground_pid);
-  if (current_foreground_pid == process_id)
-    return true;
-
-  PidAndWindow paw = { process_id };
-  EnumWindows(FindWindowInProcessCallback, reinterpret_cast<LPARAM>(&paw));
-  if (!IsWindow(paw.hwnd)) {
-    DLOG(ERROR) << "failed to find process window";
-    return false;
-  }
-
-  bool ret = ForceSetForegroundWindow(paw.hwnd);
-  LOG_IF(ERROR, !ret) << "ForceSetForegroundWindow: " << ret;
-
-  return ret;
-}
-
-// Iterates through all the characters in the string and simulates
-// keyboard input.  The input goes to the currently active application.
-bool SendString(const wchar_t* string) {
-  DCHECK(string != NULL);
-
-  INPUT input[2] = {0};
-  input[0].type = INPUT_KEYBOARD;
-  input[0].ki.dwFlags = KEYEVENTF_UNICODE;  // to avoid shift, etc.
-  input[1] = input[0];
-  input[1].ki.dwFlags |= KEYEVENTF_KEYUP;
-
-  for (const wchar_t* p = string; *p; p++) {
-    input[0].ki.wScan = input[1].ki.wScan = *p;
-    SendInput(2, input, sizeof(INPUT));
-  }
-
-  return true;
-}
-
-void SendVirtualKey(int16 key, bool extended) {
-  INPUT input = { INPUT_KEYBOARD };
-  input.ki.wVk = key;
-  input.ki.dwFlags = extended ? KEYEVENTF_EXTENDEDKEY : 0;
-  SendInput(1, &input, sizeof(input));
-  input.ki.dwFlags = (extended ? KEYEVENTF_EXTENDEDKEY : 0) | KEYEVENTF_KEYUP;
-  SendInput(1, &input, sizeof(input));
-}
-
-void SendChar(char c) {
-  SendVirtualKey(VkKeyScanA(c), false);
-}
-
-void SendString(const char* s) {
-  while (*s) {
-    SendChar(*s);
-    s++;
-  }
-}
-
-// Sends a keystroke to the currently active application with optional
-// modifiers set.
-bool SendMnemonic(WORD mnemonic_char, bool shift_pressed, bool control_pressed,
-                  bool alt_pressed) {
-  INPUT special_keys[3] = {0};
-  for (int index = 0; index < arraysize(special_keys); ++index) {
-    special_keys[index].type = INPUT_KEYBOARD;
-    special_keys[index].ki.dwFlags = 0;
-  }
-
-  int num_special_keys = 0;
-  if (shift_pressed)  {
-    special_keys[num_special_keys].ki.wVk = VK_SHIFT;
-    num_special_keys++;
-  }
-
-  if (control_pressed)  {
-    special_keys[num_special_keys].ki.wVk = VK_CONTROL;
-    num_special_keys++;
-  }
-
-  if (alt_pressed)  {
-    special_keys[num_special_keys].ki.wVk = VK_MENU;
-    num_special_keys++;
-  }
-
-  // Depress the modifiers.
-  SendInput(num_special_keys, special_keys, sizeof(INPUT));
-
-  Sleep(100);
-
-  INPUT mnemonic = {0};
-  mnemonic.type = INPUT_KEYBOARD;
-  mnemonic.ki.wVk = mnemonic_char;
-
-  // Depress and release the mnemonic.
-  SendInput(1, &mnemonic, sizeof(INPUT));
-  Sleep(100);
-
-  mnemonic.ki.dwFlags |= KEYEVENTF_KEYUP;
-  SendInput(1, &mnemonic, sizeof(INPUT));
-  Sleep(100);
-
-  // Now release the modifiers.
-  for (int index = 0;  index < num_special_keys; index++) {
-    special_keys[index].ki.dwFlags |= KEYEVENTF_KEYUP;
-  }
-
-  SendInput(num_special_keys, special_keys, sizeof(INPUT));
-  Sleep(100);
-
-  return true;
 }
 
 std::wstring GetExecutableAppPath(const std::wstring& file) {
@@ -421,121 +217,6 @@ int CloseAllIEWindows() {
   }
 
   return ret;
-}
-
-void ShowChromeFrameContextMenu() {
-  static const int kChromeFrameContextMenuTimeout = 500;
-  HWND renderer_window = GetChromeRendererWindow();
-  EXPECT_TRUE(IsWindow(renderer_window));
-
-  SetKeyboardFocusToWindow(renderer_window, 100, 100);
-
-  // Bring up the context menu in the Chrome renderer window.
-  PostMessage(renderer_window, WM_RBUTTONDOWN, MK_RBUTTON, MAKELPARAM(50, 50));
-  PostMessage(renderer_window, WM_RBUTTONUP, MK_RBUTTON, MAKELPARAM(50, 50));
-
-  MessageLoop::current()->PostDelayedTask(
-      FROM_HERE,
-      NewRunnableFunction(SelectAboutChromeFrame),
-      kChromeFrameContextMenuTimeout);
-}
-
-void SetKeyboardFocusToWindow(HWND window, int x, int y) {
-  HWND top_level_window = window;
-  if (!IsTopLevelWindow(top_level_window)) {
-    top_level_window = GetAncestor(window, GA_ROOT);
-  }
-  ForceSetForegroundWindow(top_level_window);
-
-  POINT cursor_position = {130, 130};
-  ClientToScreen(window, &cursor_position);
-
-  double screen_width = ::GetSystemMetrics( SM_CXSCREEN ) - 1;
-  double screen_height = ::GetSystemMetrics( SM_CYSCREEN ) - 1;
-  double location_x =  cursor_position.x * (65535.0f / screen_width);
-  double location_y =  cursor_position.y * (65535.0f / screen_height);
-
-  INPUT input_info = {0};
-  input_info.type = INPUT_MOUSE;
-  input_info.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
-  input_info.mi.dx = static_cast<long>(location_x);
-  input_info.mi.dy = static_cast<long>(location_y);
-  ::SendInput(1, &input_info, sizeof(INPUT));
-
-  Sleep(10);
-
-  input_info.mi.dwFlags = MOUSEEVENTF_LEFTDOWN | MOUSEEVENTF_ABSOLUTE;
-  ::SendInput(1, &input_info, sizeof(INPUT));
-
-  Sleep(10);
-
-  input_info.mi.dwFlags = MOUSEEVENTF_LEFTUP | MOUSEEVENTF_ABSOLUTE;
-  ::SendInput(1, &input_info, sizeof(INPUT));
-}
-
-void SendInputToWindow(HWND window, const std::string& input_string) {
-  const unsigned long kIntervalBetweenInput = 100;
-
-  for (size_t index = 0; index < input_string.length(); index++) {
-    bool is_upper_case = isupper(input_string[index]);
-    if (is_upper_case) {
-      INPUT input = { INPUT_KEYBOARD };
-      input.ki.wVk = VK_SHIFT;
-      input.ki.dwFlags = 0;
-      SendInput(1, &input, sizeof(input));
-      Sleep(kIntervalBetweenInput);
-    }
-
-    // The WM_KEYDOWN and WM_KEYUP messages for characters always contain
-    // the uppercase character codes.
-    SendVirtualKey(toupper(input_string[index]), false);
-    Sleep(kIntervalBetweenInput);
-
-    if (is_upper_case) {
-      INPUT input = { INPUT_KEYBOARD };
-      input.ki.wVk = VK_SHIFT;
-      input.ki.dwFlags = KEYEVENTF_KEYUP;
-      SendInput(1, &input, sizeof(input));
-      Sleep(kIntervalBetweenInput);
-    }
-  }
-}
-
-void SelectAboutChromeFrame() {
-  // Send a key up message to enable the About chrome frame option to be
-  // selected followed by a return to select it.
-  SendVirtualKey(VK_UP, true);
-  SendVirtualKey(VK_RETURN, false);
-}
-
-BOOL CALLBACK FindChromeRendererWindowProc(
-    HWND window, LPARAM lParam) {
-  HWND* target_window = reinterpret_cast<HWND*>(lParam);
-  wchar_t class_name[MAX_PATH] = {0};
-
-  GetClassName(window, class_name, arraysize(class_name));
-  if (!_wcsicmp(class_name, L"Chrome_RenderWidgetHostHWND")) {
-    *target_window = window;
-    return FALSE;
-  }
-
-  return TRUE;
-}
-
-BOOL CALLBACK EnumHostBrowserWindowProc(
-    HWND window, LPARAM lParam) {
-  EnumChildWindows(window, FindChromeRendererWindowProc, lParam);
-  HWND* target_window = reinterpret_cast<HWND*>(lParam);
-  if (IsWindow(*target_window))
-    return FALSE;
-  return TRUE;
-}
-
-HWND GetChromeRendererWindow() {
-  HWND chrome_window = NULL;
-  EnumWindows(EnumHostBrowserWindowProc,
-              reinterpret_cast<LPARAM>(&chrome_window));
-  return chrome_window;
 }
 
 
@@ -802,8 +483,30 @@ HRESULT WebBrowserEventSink::OnLoadErrorInternal(const VARIANT* param) {
 }
 
 HRESULT WebBrowserEventSink::OnMessageInternal(const VARIANT* param) {
-  DLOG(INFO) << __FUNCTION__ << " " << param->bstrVal;
-  OnMessage(param->bstrVal);
+  DLOG(INFO) << __FUNCTION__ << " " << param;
+  ScopedVariant data, origin, source;
+  if (param && (V_VT(param) == VT_DISPATCH)) {
+    wchar_t* properties[] = { L"data", L"origin", L"source" };
+    const int prop_count = arraysize(properties);
+    DISPID ids[prop_count] = {0};
+
+    HRESULT hr = param->pdispVal->GetIDsOfNames(IID_NULL, properties,
+        prop_count, LOCALE_SYSTEM_DEFAULT, ids);
+    if (SUCCEEDED(hr)) {
+      DISPPARAMS params = { 0 };
+      EXPECT_HRESULT_SUCCEEDED(param->pdispVal->Invoke(ids[0], IID_NULL,
+          LOCALE_SYSTEM_DEFAULT, DISPATCH_PROPERTYGET, &params,
+          data.Receive(), NULL, NULL));
+      EXPECT_HRESULT_SUCCEEDED(param->pdispVal->Invoke(ids[1], IID_NULL,
+          LOCALE_SYSTEM_DEFAULT, DISPATCH_PROPERTYGET, &params,
+          origin.Receive(), NULL, NULL));
+      EXPECT_HRESULT_SUCCEEDED(param->pdispVal->Invoke(ids[2], IID_NULL,
+          LOCALE_SYSTEM_DEFAULT, DISPATCH_PROPERTYGET, &params,
+          source.Receive(), NULL, NULL));
+    }
+  }
+
+  OnMessage(V_BSTR(&data), V_BSTR(&origin), V_BSTR(&source));
   return S_OK;
 }
 
@@ -832,12 +535,17 @@ HRESULT WebBrowserEventSink::Navigate(const std::wstring& navigate_url) {
 }
 
 void WebBrowserEventSink::SetFocusToChrome() {
-  chrome_frame_test::SetKeyboardFocusToWindow(GetTabWindow(), 1, 1);
+  simulate_input::SetKeyboardFocusToWindow(GetRendererWindow());
 }
 
-void WebBrowserEventSink::SendInputToChrome(
-    const std::string& input_string) {
-  chrome_frame_test::SendInputToWindow(GetTabWindow(), input_string);
+void WebBrowserEventSink::SendKeys(const wchar_t* input_string) {
+  SetFocusToChrome();
+  simulate_input::SendString(input_string);
+}
+
+void WebBrowserEventSink::SendMouseClick(int x, int y,
+                                         simulate_input::MouseButton button) {
+  simulate_input::SendMouseClick(GetRendererWindow(), x, y, button);
 }
 
 void WebBrowserEventSink::ConnectToChromeFrame() {
@@ -875,7 +583,7 @@ void WebBrowserEventSink::DisconnectFromChromeFrame() {
   }
 }
 
-HWND WebBrowserEventSink::GetTabWindow() {
+HWND WebBrowserEventSink::GetRendererWindow() {
   DCHECK(chrome_frame_);
   HWND renderer_window = NULL;
   ScopedComPtr<IOleWindow> ole_window;
@@ -893,7 +601,7 @@ HWND WebBrowserEventSink::GetTabWindow() {
     renderer_window = GetWindow(chrome_tab_window, GW_CHILD);
   }
 
-  DCHECK(IsWindow(renderer_window));
+  EXPECT_TRUE(IsWindow(renderer_window));
   return renderer_window;
 }
 
@@ -903,6 +611,41 @@ HRESULT WebBrowserEventSink::SetWebBrowser(IWebBrowser2* web_browser2) {
   web_browser2_->put_Visible(VARIANT_TRUE);
   HRESULT hr = DispEventAdvise(web_browser2_, &DIID_DWebBrowserEvents2);
   return hr;
+}
+
+void WebBrowserEventSink::ExpectRendererWindowHasfocus() {
+  HWND renderer_window = GetRendererWindow();
+  EXPECT_TRUE(IsWindow(renderer_window));
+
+  for (HWND first_child = renderer_window;
+      IsWindow(first_child); first_child = GetWindow(first_child, GW_CHILD)) {
+    renderer_window = first_child;
+  }
+
+  wchar_t class_name[MAX_PATH] = {0};
+  GetClassName(renderer_window, class_name, arraysize(class_name));
+  EXPECT_EQ(0, _wcsicmp(class_name, L"Chrome_RenderWidgetHostHWND"));
+
+  DWORD renderer_thread = 0;
+  DWORD renderer_process = 0;
+  renderer_thread = GetWindowThreadProcessId(renderer_window,
+                                             &renderer_process);
+
+  ASSERT_TRUE(AttachThreadInput(GetCurrentThreadId(), renderer_thread, TRUE));
+  HWND focus_window = GetFocus();
+  EXPECT_TRUE(focus_window == renderer_window);
+  EXPECT_TRUE(AttachThreadInput(GetCurrentThreadId(), renderer_thread, FALSE));
+}
+
+void WebBrowserEventSink::Exec(const GUID* cmd_group_guid, DWORD command_id,
+                               DWORD cmd_exec_opt, VARIANT* in_args,
+                               VARIANT* out_args) {
+  ScopedComPtr<IOleCommandTarget> shell_browser_cmd_target;
+  DoQueryService(SID_STopLevelBrowser, web_browser2_,
+                 shell_browser_cmd_target.Receive());
+  ASSERT_TRUE(NULL != shell_browser_cmd_target);
+  EXPECT_HRESULT_SUCCEEDED(shell_browser_cmd_target->Exec(cmd_group_guid,
+      command_id, cmd_exec_opt, in_args, out_args));
 }
 
 }  // namespace chrome_frame_test

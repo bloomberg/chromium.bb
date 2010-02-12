@@ -344,4 +344,8 @@ std::wstring GetActualUrlFromMoniker(IMoniker* moniker,
                                      IBindCtx* bind_context,
                                      const std::wstring& bho_url);
 
+// Checks if a window is a top level window
+bool IsTopLevelWindow(HWND window);
+
+
 #endif  // CHROME_FRAME_UTILS_H_

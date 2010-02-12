@@ -10,7 +10,7 @@
 #include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
 
-#include "chrome_frame/test/chrome_frame_test_utils.h"
+#include "chrome_frame/test/simulate_input.h"
 #include "chrome_frame/function_stub.h"
 
 namespace {
@@ -54,17 +54,17 @@ bool SupplyProxyCredentials::OnDialogDetected(HWND hwnd,
 
   // We can't use SetWindowText to set the username/password, so simulate
   // keyboard input instead.
-  chrome_frame_test::ForceSetForegroundWindow(hwnd);
+  simulate_input::ForceSetForegroundWindow(hwnd);
   CHECK(SetFocusToAccessibleWindow(props.username_));
-  chrome_frame_test::SendString(username_.c_str());
+  simulate_input::SendString(username_.c_str());
   Sleep(100);
 
-  chrome_frame_test::SendVirtualKey(VK_TAB, false);
+  simulate_input::SendChar(static_cast<char>(VK_TAB), false, false);
   Sleep(100);
-  chrome_frame_test::SendString(password_.c_str());
+  simulate_input::SendString(password_.c_str());
 
   Sleep(100);
-  chrome_frame_test::SendVirtualKey(VK_RETURN, false);
+  simulate_input::SendChar(static_cast<char>(VK_RETURN), false, false);
 
   return true;
 }

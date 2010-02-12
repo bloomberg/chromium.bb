@@ -107,12 +107,19 @@ END_MSG_MAP()
     if (!copy)
       return;
 
-    T* pThis = static_cast<T*>(this);
-    if (pThis->PreProcessContextMenu(copy)) {
+    T* self = static_cast<T*>(this);
+    if (self->PreProcessContextMenu(copy)) {
+      // In order for the context menu to handle keyboard input, give the
+      // ActiveX window focus.
+      ignore_setfocus_ = true;
+      SetFocus(GetWindow());
+      ignore_setfocus_ = false;
       UINT flags = align_flags | TPM_LEFTBUTTON | TPM_RETURNCMD | TPM_RECURSE;
       UINT selected = TrackPopupMenuEx(copy, flags, params.screen_x,
                                        params.screen_y, GetWindow(), NULL);
-      if (selected != 0 && !pThis->HandleContextMenuCommand(selected, params)) {
+      // Menu is over now give focus back to chrome
+      GiveFocusToChrome();
+      if (selected != 0 && !self->HandleContextMenuCommand(selected, params)) {
         automation_client_->SendContextMenuCommandToChromeFrame(selected);
       }
     }

@@ -16,10 +16,10 @@
       }
 
       function SendXHRRequest() {
+        var test_name = "FullTabModeIE_XHRAuthHeaderTest";
         var xhr = getXHRObject();
         if (!xhr) {
-          onFailure("FullTab_XMLHttpRequestAuthorizationHeaderTest", 1,
-                    "Failed to get XHR object");
+          onFailure(test_name, 1, "Failed to get XHR object");
         }
 
         xhr.open("GET", "http://localhost:1337/echoheader?Authorization", false);
@@ -30,15 +30,13 @@
           var pos = xhr.responseText.indexOf("Basic");
           if (pos >= 0) {
             appendStatus("Received authorization header: " + xhr.responseText);
-            onSuccess("FullTab_XMLHttpRequestAuthorizationHeaderTest", 1);
+            onSuccess(test_name, 1);
           } else {
-          onFailure("FullTab_XMLHttpRequestAuthorizationHeaderTest", 1,
-                      "Failed to find authorization header in response.");
+          onFailure(test_name, 1, "Failed to find auth header in response.");
           }
         } catch (e) {
           appendStatus("XHR send failed. Error: " + e.description);
-          onFailure("FullTab_XMLHttpRequestAuthorizationHeaderTest", 1,
-                    "Failed to send XHR request");
+          onFailure(test_name, 1, "Failed to send XHR request");
         }
       }
     </script>
