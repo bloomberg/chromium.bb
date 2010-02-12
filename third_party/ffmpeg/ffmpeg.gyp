@@ -2,7 +2,10 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
+# TODO(fbarchard): Turn off --enable-memalign-hack for all but windows.
 # TODO(ajwong): Determine if we want to statically link libz.
+
+
 
 {
   'target_defaults': {
@@ -238,7 +241,6 @@
                 'make_ffmpeg_asm_lib',
               ],
               'sources': [
-                'source/patched-ffmpeg-mt/libavcodec/x86/dsputil_mmx.c',
                 'source/patched-ffmpeg-mt/libavcodec/x86/vc1dsp_mmx.c',
               ],
             }],
@@ -265,10 +267,15 @@
                 '-mfloat-abi=softfp',
               ],
               'sources': [
-                'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_arm.c',
-                'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_arm_s.S',
+                'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_arm.S',
+                'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_armv6.S',
+                'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_init_arm.c',
+                'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_init_armv5te.c',
+                'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_init_armv6.c',
+                'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_init_neon.c',
+                'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_init_vfp.c',
+                'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_neon.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_vfp.S',
-                'source/patched-ffmpeg-mt/libavcodec/arm/float_arm_vfp.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/jrevdct_arm.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_arm.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_armv5te.S',
@@ -281,10 +288,10 @@
 	        # TODO(fbarchard): dsputil_neon code should be used by chromium
 		# for ogg, but with h264 references only if CONFIG_H264_DECODER
 		# is enabled.
-                'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_neon.c',
-                'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_neon_s.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/h264dsp_neon.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/h264idct_neon.S',
+                'source/patched-ffmpeg-mt/libavcodec/arm/h264pred_init_arm.c',
+                'source/patched-ffmpeg-mt/libavcodec/arm/h264pred_neon.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/mpegvideo_arm.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/mpegvideo_armv5te.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/mpegvideo_armv5te_s.S',
@@ -293,7 +300,8 @@
            ['target_arch=="arm" and ffmpeg_branding=="ChromeOS"', {
               'sources': [
                 'source/patched-ffmpeg-mt/libavcodec/h264_mp4toannexb_bsf.c',
-                'source/patched-ffmpeg-mt/libavcodec/mpeg4video_es_bsf.c',
+# TODO(fbarchard): mpeg4video_es_bsf.c requires a patch
+#                'source/patched-ffmpeg-mt/libavcodec/mpeg4video_es_bsf.c',
               ],
             }],  # target_arch=="arm" and ffmpeg_branding=="ChromeOS"
             ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
