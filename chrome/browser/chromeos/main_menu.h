@@ -140,6 +140,14 @@ class MainMenu : public RenderViewHostDelegate,
   // hidden.
   void Cleanup();
 
+  // Updates the main menu's state and layout with the |browser|.
+  void Update(Browser* browser);
+
+  // Returns the size of the popup. By default the popup is positioned
+  // and sized to cover the entire browser window, but its size can be
+  // overriden by the command line switch kMenuSizeSwitch.
+  gfx::Rect GetPopupBounds();
+
   // RenderViewHostDelegate overrides.
   virtual int GetBrowserWindowID() const {
     return -1;

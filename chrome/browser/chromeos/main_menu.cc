@@ -73,27 +73,6 @@ const wchar_t kMenuSizeSwitch[] = L"main-menu-size";
 // URL of the page to load. This is ignored if kURLSwitch is specified.
 const char kMenuURL[] = "http://goto.ext.google.com/crux-home";
 
-// Returns the size of the popup. By default the popup is sized slightly
-// larger than full screen, but can be overriden by the command line switch
-// kMenuSizeSwitch.
-static gfx::Size GetPopupSize() {
-  std::wstring cl_size =
-      CommandLine::ForCurrentProcess()->GetSwitchValue(kMenuSizeSwitch);
-  if (!cl_size.empty()) {
-    std::vector<std::string> chunks;
-    SplitString(WideToUTF8(cl_size), 'x', &chunks);
-    if (chunks.size() == 2)
-      return gfx::Size(StringToInt(chunks[0]), StringToInt(chunks[1]));
-  }
-
-  gfx::Size size =
-      views::Screen::GetMonitorAreaNearestPoint(gfx::Point(0, 0)).size();
-  // When full screen we don't want to see the drop shadow. Adjust the width
-  // so the drop shadow ends up off screen.
-  size.Enlarge(kBackgroundImageRight, kBackgroundImageBottom);
-  return size;
-}
-
 // Returns the URL of the menu.
 static GURL GetMenuURL() {
   std::wstring url_string =
@@ -278,13 +257,12 @@ MainMenu::MainMenu()
   popup_ = menu_popup;
   // The background image has transparency, so we make the window transparent.
   menu_popup->MakeTransparent();
-  gfx::Size popup_size = GetPopupSize();
-  menu_popup->Init(NULL, gfx::Rect(0, 0, popup_size.width(),
-                                   popup_size.height()));
+  popup_->Init(NULL, gfx::Rect());
   TabOverviewTypes::instance()->SetWindowType(
-      menu_popup->GetNativeView(),
+      popup_->GetNativeView(),
       TabOverviewTypes::WINDOW_TYPE_CHROME_INFO_BUBBLE,
       NULL);
+
   views::Painter* painter = views::Painter::CreateImagePainter(
       *drop_down_image,
       gfx::Insets(kBackgroundImageTop, kBackgroundImageLeft,
@@ -326,9 +304,7 @@ MainMenu* MainMenu::Get() {
   return Singleton<MainMenu>::get();
 }
 
-void MainMenu::ShowImpl(Browser* browser) {
-  Cleanup();
-
+void MainMenu::Update(Browser* browser) {
   if (browser_ != browser) {
     browser_ = browser;
     navigation_bar_->Update(browser);
@@ -338,10 +314,39 @@ void MainMenu::ShowImpl(Browser* browser) {
         GTK_WINDOW(popup_->GetNativeView()),
         GTK_WINDOW(browser_->window()->GetNativeHandle()));
   }
-  BrowserView* bview = static_cast<BrowserView*>(browser->window());
-  navigation_bar_->SetVisible(bview->is_compact_style());
-  menu_container_->Layout();
 
+  BrowserView* bview = static_cast<BrowserView*>(browser_->window());
+  navigation_bar_->SetVisible(bview->is_compact_style());
+  popup_->SetBounds(GetPopupBounds());
+  menu_container_->Layout();
+}
+
+gfx::Rect MainMenu::GetPopupBounds() {
+  gfx::Rect window_bounds = browser_->window()->GetRestoredBounds();
+  std::wstring cl_size =
+      CommandLine::ForCurrentProcess()->GetSwitchValue(kMenuSizeSwitch);
+  if (!cl_size.empty()) {
+    std::vector<std::string> chunks;
+    SplitString(WideToUTF8(cl_size), 'x', &chunks);
+    if (chunks.size() == 2) {
+      return gfx::Rect(window_bounds.origin(),
+                       gfx::Size(StringToInt(chunks[0]),
+                                 StringToInt(chunks[1])));
+    }
+  }
+
+  gfx::Size window_size = window_bounds.size();
+  // We don't want to see the drop shadow. Adjust the width
+  // so the drop shadow ends up off screen.
+  window_size.Enlarge(kBackgroundImageRight, kBackgroundImageBottom);
+  window_bounds.set_size(window_size);
+  return window_bounds;
+}
+
+void MainMenu::ShowImpl(Browser* browser) {
+  Cleanup();
+
+  Update(browser);
   popup_->Show();
 
   GtkWidget* rwhv_widget = rwhv_->GetNativeView();

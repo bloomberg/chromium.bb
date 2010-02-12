@@ -32,8 +32,14 @@ namespace chromeos {
 // Padding inside each button around the image.
 static const int kInnerPadding = 1;
 
-// Spacing between buttons.
-static const int kHorizPadding = 3;
+// Spacing between buttons (excluding left/right most margin)
+static const int kHorizMargin = 3;
+
+// Left side margin of the back button to align with the main menu.
+static const int kBackButtonLeftMargin = 10;
+
+// Right side margin of the forward button to align with the main menu.
+static const int kForwardButtonRightMargin = 1;
 
 // Preferred height.
 static const int kPreferredHeight = 25;
@@ -97,14 +103,13 @@ void CompactNavigationBar::Init() {
 }
 
 gfx::Size CompactNavigationBar::GetPreferredSize() {
-  int width = kHorizPadding;
-  width += back_->GetPreferredSize().width() + kHorizPadding +
-      kInnerPadding * 2;
-  width += bf_separator_->GetPreferredSize().width() + kHorizPadding;
-  width += forward_->GetPreferredSize().width() + kHorizPadding +
-      kInnerPadding * 2;
-
-  width++;
+  int width = kBackButtonLeftMargin;
+  width += back_->GetPreferredSize().width() + kInnerPadding * 2;
+  width += kHorizMargin;
+  width += bf_separator_->GetPreferredSize().width();
+  width += kHorizMargin;
+  width += forward_->GetPreferredSize().width() + kInnerPadding * 2;
+  width += kForwardButtonRightMargin;
   return gfx::Size(width, kPreferredHeight);
 }
 
@@ -114,21 +119,20 @@ void CompactNavigationBar::Layout() {
 
   // Layout forward/back buttons after entry views as follows:
   // [Back]|[Forward]
-  int curx = 0;
+  int curx = kBackButtonLeftMargin;
   // "Back | Forward" section.
   gfx::Size button_size = back_->GetPreferredSize();
   button_size.set_width(button_size.width() + kInnerPadding * 2);
   back_->SetBounds(curx, 0, button_size.width(), height());
-  curx += button_size.width() + kHorizPadding;
+  curx += button_size.width() + kHorizMargin;
 
   button_size = bf_separator_->GetPreferredSize();
   bf_separator_->SetBounds(curx, 0, button_size.width(), height());
-  curx += button_size.width() + kHorizPadding;
+  curx += button_size.width() + kHorizMargin;
 
   button_size = forward_->GetPreferredSize();
   button_size.set_width(button_size.width() + kInnerPadding * 2);
   forward_->SetBounds(curx, 0, button_size.width(), height());
-  curx += button_size.width() + kHorizPadding;
 }
 
 void CompactNavigationBar::Paint(gfx::Canvas* canvas) {
