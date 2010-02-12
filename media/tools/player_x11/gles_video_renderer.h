@@ -2,25 +2,27 @@
 // source code is governed by a BSD-style license that can be found in the
 // LICENSE file.
 
-#ifndef MEDIA_TOOLS_PLAYER_X11_X11_VIDEO_RENDERER_H_
-#define MEDIA_TOOLS_PLAYER_X11_X11_VIDEO_RENDERER_H_
+#ifndef MEDIA_TOOLS_PLAYER_X11_GL_VIDEO_RENDERER_H_
+#define MEDIA_TOOLS_PLAYER_X11_GL_VIDEO_RENDERER_H_
 
-#include <X11/Xlib.h>
+#include <EGL/egl.h>
+#include <GLES2/gl2.h>
+#include <GLES2/gl2ext.h>
 
 #include "base/lock.h"
 #include "base/scoped_ptr.h"
 #include "media/base/factory.h"
 #include "media/filters/video_renderer_base.h"
 
-class X11VideoRenderer : public media::VideoRendererBase {
+class GlesVideoRenderer : public media::VideoRendererBase {
  public:
   static media::FilterFactory* CreateFactory(Display* display,
                                              Window window) {
     return new media::FilterFactoryImpl2<
-        X11VideoRenderer, Display*, Window>(display, window);
+        GlesVideoRenderer, Display*, Window>(display, window);
   }
 
-  X11VideoRenderer(Display* display, Window window);
+  GlesVideoRenderer(Display* display, Window window);
 
   // This method is called to paint the current video frame to the assigned
   // window.
@@ -29,7 +31,7 @@ class X11VideoRenderer : public media::VideoRendererBase {
   // media::FilterFactoryImpl2 Implementation.
   static bool IsMediaFormatSupported(const media::MediaFormat& media_format);
 
-  static X11VideoRenderer* instance() { return instance_; }
+  static GlesVideoRenderer* instance() { return instance_; }
 
  protected:
   // VideoRendererBase implementation.
@@ -39,8 +41,8 @@ class X11VideoRenderer : public media::VideoRendererBase {
 
  private:
   // Only allow to be deleted by reference counting.
-  friend class scoped_refptr<X11VideoRenderer>;
-  virtual ~X11VideoRenderer();
+  friend class scoped_refptr<GlesVideoRenderer>;
+  virtual ~GlesVideoRenderer();
 
   int width_;
   int height_;
@@ -48,22 +50,26 @@ class X11VideoRenderer : public media::VideoRendererBase {
   Display* display_;
   Window window_;
 
-  // Image in heap that contains the RGBA data of the video frame.
-  XImage* image_;
-
   // Protects |new_frame_|.
   Lock lock_;
   bool new_frame_;
 
-  // Picture represents the paint target. This is a picture located
-  // in the server.
-  unsigned long picture_;
+  // EGL context.
+  EGLDisplay egl_display_;
+  EGLSurface egl_surface_;
+  EGLContext egl_context_;
 
-  bool use_render_;
+  // 3 textures, one for each plane.
+  GLuint textures_[3];
 
-  static X11VideoRenderer* instance_;
+  // Shaders and program for YUV->RGB conversion.
+  GLuint vertex_shader_;
+  GLuint fragment_shader_;
+  GLuint program_;
 
-  DISALLOW_COPY_AND_ASSIGN(X11VideoRenderer);
+  static GlesVideoRenderer* instance_;
+
+  DISALLOW_COPY_AND_ASSIGN(GlesVideoRenderer);
 };
 
-#endif  // MEDIA_TOOLS_PLAYER_X11_X11_VIDEO_RENDERER_H_
+#endif  // MEDIA_TOOLS_PLAYER_X11_GLES_VIDEO_RENDERER_H_

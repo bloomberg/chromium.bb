@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,7 +21,17 @@
 #include "media/filters/file_data_source.h"
 #include "media/filters/null_audio_renderer.h"
 #include "media/filters/omx_video_decoder.h"
+
+#if defined(RENDERER_GL)
+#include "media/tools/player_x11/gl_video_renderer.h"
+typedef GlVideoRenderer Renderer;
+#elif RENDERER_GLES
+#include "media/tools/player_x11/gles_video_renderer.h"
+typedef GlesVideoRenderer Renderer;
+#elif RENDERER_X11
 #include "media/tools/player_x11/x11_video_renderer.h"
+typedef X11VideoRenderer Renderer;
+#endif
 
 Display* g_display = NULL;
 Window g_window = 0;
@@ -71,7 +81,7 @@ bool InitPipeline(MessageLoop* message_loop,
     factories->AddFactory(media::OmxVideoDecoder::CreateFactory());
   }
   factories->AddFactory(media::FFmpegVideoDecoder::CreateFactory());
-  factories->AddFactory(X11VideoRenderer::CreateFactory(g_display, g_window));
+  factories->AddFactory(Renderer::CreateFactory(g_display, g_window));
 
   if (enable_audio) {
     factories->AddFactory(media::AudioRendererImpl::CreateFilterFactory());
@@ -146,8 +156,8 @@ int main(int argc, char** argv) {
         XNextEvent(g_display, &e);
         if (e.type == Expose) {
           // Tell the renderer to paint.
-          DCHECK(X11VideoRenderer::instance());
-          X11VideoRenderer::instance()->Paint();
+          DCHECK(Renderer::instance());
+          Renderer::instance()->Paint();
         } else if (e.type == ButtonPress) {
           // Stop the playback.
           break;
