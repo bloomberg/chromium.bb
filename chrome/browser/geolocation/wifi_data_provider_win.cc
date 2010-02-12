@@ -79,7 +79,7 @@ typedef DWORD (WINAPI *WlanCloseHandleFunction)(HANDLE hClientHandle,
 
 
 // Local classes and functions
-class WindowsWlanApi : public Win32WifiDataProvider::WlanApiInterface {
+class WindowsWlanApi : public WifiDataProviderCommon::WlanApiInterface {
  public:
   ~WindowsWlanApi();
   // Factory function. Will return NULL if this API is unavailable.
@@ -109,7 +109,7 @@ class WindowsWlanApi : public Win32WifiDataProvider::WlanApiInterface {
   WlanCloseHandleFunction WlanCloseHandle_function_;
 };
 
-class WindowsNdisApi : public Win32WifiDataProvider::WlanApiInterface {
+class WindowsNdisApi : public WifiDataProviderCommon::WlanApiInterface {
  public:
   ~WindowsNdisApi();
   static WindowsNdisApi* Create();
@@ -159,105 +159,26 @@ WifiDataProviderImplBase* WifiDataProvider::DefaultFactoryFunction() {
   return new Win32WifiDataProvider();
 }
 
-Win32WifiDataProvider::Win32WifiDataProvider()
-    : Thread(__FILE__),
-      is_first_scan_complete_(false),
-      ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
+Win32WifiDataProvider::Win32WifiDataProvider() {
 }
 
 Win32WifiDataProvider::~Win32WifiDataProvider() {
-  // Thread must be stopped before entering destructor chain to avoid race
-  // conditions; see comment in DeviceDataProvider::Unregister.
-  DCHECK(!IsRunning()) << "Must call StopDataProvider before destroying me";
 }
 
-void Win32WifiDataProvider::inject_mock_wlan_api(WlanApiInterface* wlan_api) {
-  DCHECK(wlan_api_ == NULL);
-  DCHECK(wlan_api);
-  wlan_api_.reset(wlan_api);
-}
-
-void Win32WifiDataProvider::inject_mock_polling_policy(
-    PollingPolicyInterface* policy) {
-  DCHECK(polling_policy_ == NULL);
-  DCHECK(policy);
-  polling_policy_.reset(policy);
-}
-
-bool Win32WifiDataProvider::StartDataProvider() {
-  DCHECK(CalledOnClientThread());
-  return Start();
-}
-
-void Win32WifiDataProvider::StopDataProvider() {
-  DCHECK(CalledOnClientThread());
-  Stop();
-}
-
-bool Win32WifiDataProvider::GetData(WifiData *data) {
-  DCHECK(CalledOnClientThread());
-  DCHECK(data);
-  AutoLock lock(data_mutex_);
-  *data = wifi_data_;
-  // If we've successfully completed a scan, indicate that we have all of the
-  // data we can get.
-  return is_first_scan_complete_;
-}
-
-// Thread implementation
-void Win32WifiDataProvider::Init() {
+WifiDataProviderCommon::WlanApiInterface* Win32WifiDataProvider::NewWlanApi() {
   // Use the WLAN interface if we're on Vista and if it's available. Otherwise,
   // use NDIS.
-  if (wlan_api_ == NULL) {
-    wlan_api_.reset(WindowsWlanApi::Create());
+  WlanApiInterface* api = WindowsWlanApi::Create();
+  if (api) {
+    return api;
   }
-  if (wlan_api_ == NULL) {
-    wlan_api_.reset(WindowsNdisApi::Create());
-  }
-  if (wlan_api_ == NULL) {
-    // Error! Can't do scans, so don't try and schedule one.
-    is_first_scan_complete_ = true;
-    return;
-  }
-
-  if (polling_policy_ == NULL) {
-    polling_policy_.reset(
-        new GenericPollingPolicy<kDefaultPollingInterval,
-                                 kNoChangePollingInterval,
-                                 kTwoNoChangePollingInterval>);
-  }
-  DCHECK(polling_policy_ != NULL);
-
-  ScheduleNextScan();
+  return WindowsNdisApi::Create();
 }
 
-void Win32WifiDataProvider::CleanUp() {
-  // Destroy the wlan api instance in the thread in which it was created.
-  wlan_api_.reset();
-}
-
-void Win32WifiDataProvider::DoWifiScanTask() {
-  // TODO(joth): Almost all of this is shareable across platforms.
-  WifiData new_data;
-  if (wlan_api_->GetAccessPointData(&new_data.access_point_data)) {
-    bool update_available;
-    data_mutex_.Acquire();
-    update_available = wifi_data_.DiffersSignificantly(new_data);
-    wifi_data_ = new_data;
-    data_mutex_.Release();
-    polling_policy_->UpdatePollingInterval(update_available);
-    if (update_available || !is_first_scan_complete_) {
-      is_first_scan_complete_ = true;
-      NotifyListeners();
-    }
-  }
-  ScheduleNextScan();
-}
-
-void Win32WifiDataProvider::ScheduleNextScan() {
-  message_loop()->PostDelayedTask(FROM_HERE,
-      task_factory_.NewRunnableMethod(&Win32WifiDataProvider::DoWifiScanTask),
-      polling_policy_->PollingInterval());
+PollingPolicyInterface* Win32WifiDataProvider::NewPolicyPolicy() {
+  return new GenericPollingPolicy<kDefaultPollingInterval,
+                                  kNoChangePollingInterval,
+                                  kTwoNoChangePollingInterval>;
 }
 
 // Local classes and functions
@@ -639,7 +560,7 @@ int PerformQuery(HANDLE adapter_handle,
 }
 
 bool ResizeBuffer(int requested_size, scoped_ptr_malloc<BYTE>* buffer) {
-  DCHECK(requested_size > 0);
+  DCHECK_GT(requested_size, 0);
   DCHECK(buffer);
   if (requested_size > kMaximumBufferSize) {
     buffer->reset();
