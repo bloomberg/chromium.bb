@@ -70,10 +70,12 @@ env.Publish('srpc_nrd_client.nexe', 'run',
 
 
 
-env.ComponentProgram('cat.nexe', 'cat.c',
-                     EXTRA_LIBS=['srpc', 'm', 'pthread'])
-env.Publish('cat.nexe', 'run', ['srpc_url_as_nacl_desc.html',
-                                'srpc_url_as_nacl_desc_success.html'])
+cat_nexe = env.ComponentProgram('cat.nexe', 'cat.c',
+                                EXTRA_LIBS=['srpc', 'm', 'pthread'])
+env.Publish('cat.nexe', 'run',
+            ['srpc_url_as_nacl_desc.html',
+             'srpc_url_as_nacl_desc_success.html',
+             env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 
 env.ComponentProgram('srpc_bidir.nexe', 'srpc_bidir.c',
                      EXTRA_LIBS=['srpc', 'm', 'pthread'])
@@ -185,3 +187,16 @@ node = env.BrowserTester(
      browser='*firefox',
      )
 env.AddNodeToTestSuite(node, BROWSER_TESTS, 'run_srpc_nrd_xfer_browser_test')
+
+node = env.BrowserTester(
+    'srpc_url_as_nacl_desc_test.out',
+     url='srpc_url_as_nacl_desc.html',
+     files=[cat_nexe,
+            env.File('srpc_url_as_nacl_desc.html'),
+            env.File('srpc_url_as_nacl_desc_success.html'),
+            env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js'),
+            ],
+     browser='*firefox',
+     )
+env.AddNodeToTestSuite(node, BROWSER_TESTS,
+                       'run_srpc_url_as_nacl_desc_browser_test')

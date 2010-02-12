@@ -2,30 +2,77 @@
           "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html>
   <!-- Copyright 2008 Google Inc.  All rights reserved. -->
-  <!--
-     Much of this file is cribbed from srpc_nrd_xfer and mandel_nav.
-    -->
   <head>
+    <title>SRPC Open URL as NaCl Descriptor Test</title>
     <style type="text/css">
       pre.notrun { background-color: skyblue }
       pre.pass { background-color: lime }
       pre.fail { background-color: red }
+      td.notrun { background-color: skyblue }
+      td.pass { background-color: lime }
+      td.fail { background-color: red }
     </style>
     <script type="application/x-javascript">
       //<![CDATA[
-var plugin = 0;
-var startupTimeout;
-var logElt;
+var server = 0;
+var log_element = 0;
+var test_timeout_handler = 0;
+var module_loaded = false;
+var test_complete = false;
+var test_passed = false;
+var test_error_msg = '';
 
 var GeneralLog = function(str) {
-  logElt.textContent += str + '\n';
+  log_element.textContent += str + '\n';
 }
 
-var FileLoadCallback = function(again, expect_fail) {
+var ClearTestTimeoutHandler = function() {
+  if (0 != test_timeout_handler) {
+    clearTimeout(test_timeout_handler);
+    test_timeout_handler = 0;
+  }
+}
+
+var AllTestsComplete = function(msg) {
+  ClearTestTimeoutHandler();
+  test_complete = true;
+  test_error_msg = msg;
+  if (test_passed) {
+    log_element.className = 'pass';
+  } else {
+    log_element.className = 'fail';
+  }
+}
+
+var InvalidFileLoadCallback = function() {
   this.onload = function(nacl_desc) {
-    GeneralLog('onload callback');
-    var msg = plugin.cat(nacl_desc, 4096);
-    GeneralLog('cat returned, converting to string');
+    // Should not have been able to load a cross-domain file.
+    GeneralLog('ERROR: InvalidFileLoadCallback onload invoked.');
+    GeneralLog('Loading from the wrong domain should have been an error.');
+    AllTestsComplete('Load of invalid file succeeded (incorrectly).');
+  }
+  this.onfail = function(object) {
+    // Correctly invoked the onfail handler for attempting to read a
+    // cross-domain file.  Everything is working as expected.
+    GeneralLog('InvalidFileLoadCallback onfail correctly invoked: ' + object);
+    test_passed = true;
+    AllTestsComplete('');
+  }
+}
+
+var StartInvalidFileLoad = function() {
+  var url = 'http://www.google.com/robots.txt';
+  GeneralLog('Loading URL ' + url);
+  GeneralLog('Expecting to see same origin violation.');
+  server.__urlAsNaClDesc(url, new InvalidFileLoadCallback());
+}
+
+var ValidFileLoadCallback = function() {
+  this.onload = function(nacl_desc) {
+    // Get the data that was loaded from the file.
+    GeneralLog('ValidFileLoadCallback onload correctly invoked.');
+    var msg = server.cat(nacl_desc, 4096);
+    GeneralLog('cat returned, converting to string.');
     var str = '';
     var len = msg.length;
     var byte;
@@ -34,79 +81,106 @@ var FileLoadCallback = function(again, expect_fail) {
     }
     GeneralLog(str);
 
-    if (again) {  // this is a gross hack
-      var url = 'http://www.google.com/robots.txt';
-      // url = 'index.html';  // uncomment to test the test case.
-      GeneralLog('Loading URL ' + url);
-      GeneralLog('Expect same origin policy violation popup');
-      plugin.__urlAsNaClDesc(url,
-                             new FileLoadCallback(0, 1));
-    } else {
-      if (expect_fail) {
-        logElt.className = 'fail';
-        window.alert('Test failed.');
-      } else {
-        logElt.className = 'pass';
-      }
-    }
+    // Start a load from the wrong domain.
+    StartInvalidFileLoad();
   }
   this.onfail = function(object) {
-    GeneralLog('onfail callback invoked, ' + object);
-    if (expect_fail) {
-      logElt.className = 'pass';
-      window.alert('Test passed -- cross-domain fetch failed: ' + object);
-    } else {
-      logElt.className = 'fail';
-      window.alert('Test failed: ' + object);
-    }
+    GeneralLog('ERROR: ValidFileLoadCallback onfail invoked: ' + object);
+    AllTestsComplete('File load test failed: ' + object);
   }
 }
 
-var PostLoadInit = function() {
-  if (1 == plugin.__moduleReady) {
-    clearTimeout(startupTimeout);
-
-    // start of payload
-    var url = 'srpc_url_as_nacl_desc_success.html';
-    GeneralLog('Loading URL ' + url);
-    plugin.__urlAsNaClDesc(url,
-                           new FileLoadCallback(1, 0));
-    // end of payload
-  } else {
-    if (plugin.__moduleReady == undefined) {
-      logElt.className = 'fail';
-      alert('The Native Client plugin was unable to load');
-      return;
-    }
-    startupTimeout = setTimeout(PostLoadInit, 100);
-  }
+var StartValidFileLoad = function() {
+  var url = 'srpc_url_as_nacl_desc_success.html';
+  GeneralLog('Loading URL ' + url);
+  server.__urlAsNaClDesc(url, new ValidFileLoadCallback());
 }
 
-var Init = function() {
-  // window.alert('hello world');
-  plugin = document.getElementById('nacl');
-  logElt = document.getElementById('GeneralOutput');
-  GeneralLog('loading module');
-  PostLoadInit();
+var TestTimeoutHandler = function() {
+  GeneralLog('The test did not finish in the allotted time.');
+  AllTestsComplete('Test timed out.');
 }
       //]]>
     </script>
-    <title>SRPC Open URL as NaCl Descriptor Test</title>
   </head>
-  <body onload="Init();">
+  <body onload="nacllib.waitForModulesAndRunTests();"
+        onunload="nacllib.cleanUp();" >
+
     <h1>SRPC Open URL as NaCl Descriptor Test</h1>
 
-    <h2> Output logs </h2>
-      <table border=5 cellpadding=5% summary="Test status table">
-        <tr>
-          <td> <b> General test output </b> </td>
-        </tr>
-        <tr>
-          <td valign=top><pre id='GeneralOutput'></pre></td>
-        </tr>
-      </table>
-      <embed type="application/x-nacl-srpc" id="nacl" width="0" height="0"
-              src="cat.nexe" />
+    <h2> Output logs</h2>
+    <table border=5 cellpadding=5% summary="Test status table">
+      <tr>
+        <td><b>General test output</b></td>
+      </tr>
+      <tr>
+        <td valign=top><pre id="GeneralOutput"></pre></td>
+      </tr>
+    </table>
+
+    <table summary="The color codes used for identifying test outcomes">
+      <tr> <td align="center"> <em> Legend </em> </td> </tr>
+      <tr> <td align="center" class="notrun"> Test not run </td> </tr>
+      <tr> <td align="center" class="pass"> Test passed </td> </tr>
+      <tr> <td align="center" class="fail"> Test failed </td> </tr>
+    </table>
+
+    <p>
+    <b>
+      NOTE: Some versions of some WebKit-based browsers do not correctly report
+      JavaScript exceptions raised by NPAPI plugins.  This can cause some of
+      the above tests to spuriously report failure.
+    </b>
+    </p>
+
+    <div id="status">NO-STATUS</div>
+
+    <embed type="application/x-nacl-srpc" id="nacl_server" name="nacl_module"
+           width="0" height="0" src="cat.nexe" />
+
+    <script type="text/javascript" src="nacl_js_lib.js"></script>
+    <script type="text/javascript">
+      //<![CDATA[
+      var nacllib = new NaclLib(document.getElementsByName('nacl_module'),
+                                document.getElementById('status'),
+                                100);
+
+      nacllib.wait = function() {
+        if (!module_loaded) {
+          // The module has successfully loaded. Get set up and start testing.
+          module_loaded = true;
+          server = document.getElementById('nacl_server');
+          log_element = document.getElementById('GeneralOutput');
+          GeneralLog('Module loaded.');
+
+          test_timeout_handler = setTimeout('TestTimeoutHandler()', 10000);
+          StartValidFileLoad();
+          return true;
+        } else if (!test_complete) {
+          // Continue to return true until all testing is complete. This tells
+          // the test driver to wait before calling the test() method.
+          return true;
+        } else {
+          // Testing is complete.  Allow the test driver to call test().
+          return false;
+        }
+      }
+
+      nacllib.test = function() {
+        // The actual testing is all finished by the time this method is
+        // called, so just return the test results.
+        if (!module_loaded) {
+          return 'The module did not load.';
+        } else if (!test_passed && '' != test_error_msg) {
+          return test_error_msg;
+        } else if (!test_passed) {
+          return 'Generic test failure.';
+        } else {
+          document.cookie = 'status=OK';
+          return '';
+        }
+      }
+      //]]>
+    </script>
   </body>
 </html>
-
