@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -77,13 +77,19 @@
             'source/patched-ffmpeg-mt/libavcodec/avpacket.c',
             'source/patched-ffmpeg-mt/libavcodec/bitstream.c',
             'source/patched-ffmpeg-mt/libavcodec/bitstream_filter.c',
+            'source/patched-ffmpeg-mt/libavcodec/dirac.c', # TODO(fbarchard): Review for stripping.
             'source/patched-ffmpeg-mt/libavcodec/dsputil.c',
             'source/patched-ffmpeg-mt/libavcodec/eval.c',
             'source/patched-ffmpeg-mt/libavcodec/faanidct.c',
             'source/patched-ffmpeg-mt/libavcodec/fft.c',
+            'source/patched-ffmpeg-mt/libavcodec/flac.c', # TODO(fbarchard): Review for stripping.
+            'source/patched-ffmpeg-mt/libavcodec/flacdata.c', # TODO(fbarchard): Review for stripping.
+            'source/patched-ffmpeg-mt/libavcodec/flacdec.c', # TODO(fbarchard): Review for stripping.
+            'source/patched-ffmpeg-mt/libavcodec/golomb.c', # TODO(fbarchard): Move to Chrome
             'source/patched-ffmpeg-mt/libavcodec/imgconvert.c',
             'source/patched-ffmpeg-mt/libavcodec/jrevdct.c',
             'source/patched-ffmpeg-mt/libavcodec/mdct.c',
+            'source/patched-ffmpeg-mt/libavcodec/mpeg12data.c', # TODO(fbarchard): Move to ChromeOS
             'source/patched-ffmpeg-mt/libavcodec/opt.c',
             'source/patched-ffmpeg-mt/libavcodec/options.c',
             'source/patched-ffmpeg-mt/libavcodec/parser.c',
@@ -101,10 +107,14 @@
             'source/patched-ffmpeg-mt/libavformat/avio.c',
             'source/patched-ffmpeg-mt/libavformat/aviobuf.c',
             'source/patched-ffmpeg-mt/libavformat/cutils.c',
+            'source/patched-ffmpeg-mt/libavformat/id3v1.c', # TODO(fbarchard): Review this file.
             'source/patched-ffmpeg-mt/libavformat/metadata.c',
             'source/patched-ffmpeg-mt/libavformat/metadata_compat.c',
             'source/patched-ffmpeg-mt/libavformat/oggdec.c',
+            'source/patched-ffmpeg-mt/libavformat/oggparsedirac.c', # TODO(fbarchard): Review this file.
+            'source/patched-ffmpeg-mt/libavformat/oggparseflac.c', # TODO(fbarchard): Review this file.
             'source/patched-ffmpeg-mt/libavformat/oggparseogm.c',
+            'source/patched-ffmpeg-mt/libavformat/oggparsespeex.c', # TODO(fbarchard): Review this file.
             'source/patched-ffmpeg-mt/libavformat/oggparsetheora.c',
             'source/patched-ffmpeg-mt/libavformat/oggparsevorbis.c',
             'source/patched-ffmpeg-mt/libavformat/options.c',
@@ -115,13 +125,16 @@
             'source/patched-ffmpeg-mt/libavutil/log.c',
             'source/patched-ffmpeg-mt/libavutil/mathematics.c',
             'source/patched-ffmpeg-mt/libavutil/mem.c',
+            'source/patched-ffmpeg-mt/libavutil/pixdesc.c', # TODO(fbarchard): Review this file.
             'source/patched-ffmpeg-mt/libavutil/rational.c',
             # Config file for the OS and architecture.
             'source/config/<(ffmpeg_branding)/<(OS)/<(target_arch)/config.h',
+            'source/config/libavutil/avconfig.h',
           ],
           'include_dirs': [
             'source/config/<(ffmpeg_branding)/<(OS)/<(target_arch)',
             'source/patched-ffmpeg-mt',
+	    'source/config',
           ],
           'defines': [
             'HAVE_AV_CONFIG_H',
@@ -139,10 +152,16 @@
                 'source/patched-ffmpeg-mt/libavcodec/aactab.c',
                 'source/patched-ffmpeg-mt/libavcodec/cabac.c',
                 'source/patched-ffmpeg-mt/libavcodec/error_resilience.c',
-                'source/patched-ffmpeg-mt/libavcodec/golomb.c',
                 'source/patched-ffmpeg-mt/libavcodec/h264.c',
+                'source/patched-ffmpeg-mt/libavcodec/h264_cabac.c', # TODO(fbarchard): Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/h264_cavlc.c', # TODO(fbarchard): Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/h264_direct.c', # TODO(fbarchard): Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/h264_loopfilter.c', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/h264_mp4toannexb_bsf.c',
                 'source/patched-ffmpeg-mt/libavcodec/h264_parser.c',
+                'source/patched-ffmpeg-mt/libavcodec/h264_ps.c', # TODO(fbarchard): Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/h264_refs.c', # TODO(fbarchard): Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/h264_sei.c', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/h264idct.c',
                 'source/patched-ffmpeg-mt/libavcodec/h264pred.c',
                 'source/patched-ffmpeg-mt/libavcodec/mpeg4audio.c',
@@ -152,6 +171,7 @@
                 'source/patched-ffmpeg-mt/libavcodec/mpegaudiodec.c',
                 'source/patched-ffmpeg-mt/libavcodec/mpegaudiodecheader.c',
                 'source/patched-ffmpeg-mt/libavcodec/mpegvideo.c',
+                'source/patched-ffmpeg-mt/libavformat/gxf.c', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavformat/id3v2.c',
                 'source/patched-ffmpeg-mt/libavformat/isom.c',
                 'source/patched-ffmpeg-mt/libavformat/mov.c',
@@ -165,7 +185,6 @@
                 'source/patched-ffmpeg-mt/libavcodec/h263dec.c',
                 'source/patched-ffmpeg-mt/libavcodec/intrax8.c',
                 'source/patched-ffmpeg-mt/libavcodec/intrax8dsp.c',
-                'source/patched-ffmpeg-mt/libavcodec/mpeg12data.c',
                 'source/patched-ffmpeg-mt/libavcodec/mpeg4video_parser.c',
                 'source/patched-ffmpeg-mt/libavcodec/msmpeg4.c',
                 'source/patched-ffmpeg-mt/libavcodec/msmpeg4data.c',
@@ -195,6 +214,7 @@
                 'source/patched-ffmpeg-mt/libavcodec/x86/cpuid.c',
                 'source/patched-ffmpeg-mt/libavcodec/x86/dsputil_mmx.c',
                 'source/patched-ffmpeg-mt/libavcodec/x86/fdct_mmx.c',
+                'source/patched-ffmpeg-mt/libavcodec/x86/fft.c', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/x86/fft_3dn.c',
                 'source/patched-ffmpeg-mt/libavcodec/x86/fft_3dn2.c',
                 'source/patched-ffmpeg-mt/libavcodec/x86/fft_sse.c',
@@ -255,7 +275,7 @@
                 'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_armv6.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_neon.S',
               ],
-            }],  # target_arch=="arm" 
+            }],  # target_arch=="arm"
             ['target_arch=="arm" and (ffmpeg_branding=="Chrome" or ffmpeg_branding=="ChromeOS")', {
               'sources': [
 	        # TODO(fbarchard): dsputil_neon code should be used by chromium
