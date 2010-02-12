@@ -2604,6 +2604,9 @@ BUG29344 MAC LINUX : svg/text/text-text-07-t.svg = FAIL
 // Failures from WebKit merge 51642:51681
 // Skip these tests since they all timeout and add ~1 minute to cycle time!
 BUG29393 SKIP DEFER : fast/loader/stateobjects = TIMEOUT
+// Asserts in DEBUG, will continue until we implement pushState.
+BUG29393 SKIP : fast/loader/document-with-fragment-url-3.html = CRASH
+
 //BUG29944 WIN : websocket/tests/unicode.html = TEXT PASS
 
 // Failures introduced by USE_NEW_BUILDER in Skia.
@@ -2908,11 +2911,6 @@ BUG33497 : storage/domstorage/sessionstorage/window-open.html = TEXT
 
 // WebKit roll 54059 -> 54075
 BUG33538 : fast/dom/Window/anonymous-slot-with-changes.html = TEXT
-
-// WebKit roll 54278 -> 54322
-// asserts in DEBUG, no need to muddy the waters and run at all for
-// the moment.
-BUG34546 SKIP : fast/loader/document-with-fragment-url-3.html = CRASH
 
 // Flaky test
 BUG35064 WIN DEBUG : fast/forms/restore-selection-after-layout.html = TEXT PASS
