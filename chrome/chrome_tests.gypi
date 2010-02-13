@@ -536,6 +536,7 @@
         'browser/automation/automation_provider_unittest.cc',
         'browser/back_forward_menu_model_unittest.cc',
         'browser/bookmarks/bookmark_codec_unittest.cc',
+        'browser/bookmarks/bookmark_context_menu_controller_unittest.cc',
         'browser/bookmarks/bookmark_drag_data_unittest.cc',
         'browser/bookmarks/bookmark_folder_tree_model_unittest.cc',
         'browser/bookmarks/bookmark_html_writer_unittest.cc',
@@ -963,6 +964,8 @@
             '../third_party/GTM/AppKit',
           ],
           'sources!': [
+            # Blocked on bookmark manager.
+            'browser/bookmarks/bookmark_context_menu_controller_unittest.cc',
             'browser/views/bookmark_context_menu_test.cc',
             'browser/gtk/go_button_gtk_unittest.cc',
             'browser/gtk/tabs/tab_renderer_gtk_unittest.cc',
