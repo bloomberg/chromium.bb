@@ -146,6 +146,12 @@ void URLRequestNewFtpJob::OnStartCompleted(int result) {
     return;
   // Clear the IO_PENDING status
   SetStatus(URLRequestStatus());
+
+  // FTP obviously doesn't have HTTP Content-Length header. We have to pass
+  // the content size information manually.
+  set_expected_content_size(
+      transaction_->GetResponseInfo()->expected_content_size);
+
   if (result == net::OK) {
     NotifyHeadersComplete();
   } else if (transaction_->GetResponseInfo()->needs_auth) {
