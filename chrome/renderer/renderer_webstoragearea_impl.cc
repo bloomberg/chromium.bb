@@ -6,8 +6,11 @@
 
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/render_thread.h"
+#include "chrome/renderer/render_view.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 
+using WebKit::WebFrame;
 using WebKit::WebString;
 using WebKit::WebURL;
 
@@ -44,12 +47,20 @@ WebString RendererWebStorageAreaImpl::getItem(const WebString& key) {
 
 void RendererWebStorageAreaImpl::setItem(
     const WebString& key, const WebString& value, const WebURL& url,
-    bool& quota_exception, WebString& old_value_webkit) {
+    WebStorageArea::Result& result, WebString& old_value_webkit) {
   NullableString16 old_value;
   RenderThread::current()->Send(
       new ViewHostMsg_DOMStorageSetItem(storage_area_id_, key, value, url,
-                                        &quota_exception, &old_value));
+                                        &result, &old_value));
   old_value_webkit = old_value;
+
+  if (result == WebStorageArea::ResultBlockedByPolicy) {
+    RenderView* view =
+        RenderView::FromWebView(WebFrame::frameForCurrentContext()->view());
+    DCHECK(view);
+    RenderThread::current()->Send(new ViewHostMsg_ContentBlocked(
+        view->routing_id(), CONTENT_SETTINGS_TYPE_COOKIES));
+  }
 }
 
 void RendererWebStorageAreaImpl::removeItem(

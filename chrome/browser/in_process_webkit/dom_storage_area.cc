@@ -57,15 +57,16 @@ NullableString16 DOMStorageArea::GetItem(const string16& key) {
 }
 
 NullableString16 DOMStorageArea::SetItem(
-    const string16& key, const string16& value, bool* quota_exception) {
+    const string16& key, const string16& value,
+    WebStorageArea::Result* result) {
   if (!CheckContentSetting(key, value)) {
-    *quota_exception = true;
-    return NullableString16(true);  // Ignored if exception is true.
+    *result = WebStorageArea::ResultBlockedByPolicy;
+    return NullableString16(true);  // Ignored if the content was blocked.
   }
 
   CreateWebStorageAreaIfNecessary();
   WebString old_value;
-  storage_area_->setItem(key, value, WebURL(), *quota_exception, old_value);
+  storage_area_->setItem(key, value, WebURL(), *result, old_value);
   return old_value;
 }
 

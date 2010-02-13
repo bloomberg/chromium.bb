@@ -35,6 +35,7 @@
 #include "media/audio/audio_output.h"
 #include "net/base/upload_data.h"
 #include "net/http/http_response_headers.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebStorageArea.h"
 #include "webkit/appcache/appcache_interfaces.h"
 #include "webkit/glue/context_menu.h"
 #include "webkit/glue/form_data.h"
@@ -2307,6 +2308,41 @@ struct ParamTraits<DOMStorageType> {
         break;
       case DOM_STORAGE_SESSION:
         control = L"DOM_STORAGE_SESSION";
+        break;
+      default:
+        NOTIMPLEMENTED();
+        control = L"UNKNOWN";
+        break;
+    }
+    LogParam(control, l);
+  }
+};
+
+// Traits for WebKit::WebStorageArea::Result enum.
+template <>
+struct ParamTraits<WebKit::WebStorageArea::Result> {
+  typedef WebKit::WebStorageArea::Result param_type;
+  static void Write(Message* m, const param_type& p) {
+    m->WriteInt(p);
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    int type;
+    if (!m->ReadInt(iter, &type))
+      return false;
+    *p = static_cast<param_type>(type);
+    return true;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    std::wstring control;
+    switch (p) {
+      case WebKit::WebStorageArea::ResultOK:
+        control = L"WebKit::WebStorageArea::ResultOK";
+        break;
+      case WebKit::WebStorageArea::ResultBlockedByQuota:
+        control = L"WebKit::WebStorageArea::ResultBlockedByQuota";
+        break;
+      case WebKit::WebStorageArea::ResultBlockedByPolicy:
+        control = L"WebKit::WebStorageArea::ResultBlockedByPolicy";
         break;
       default:
         NOTIMPLEMENTED();

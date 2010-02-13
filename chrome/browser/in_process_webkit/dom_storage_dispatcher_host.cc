@@ -16,6 +16,8 @@
 #include "chrome/common/render_messages.h"
 #include "googleurl/src/gurl.h"
 
+using WebKit::WebStorageArea;
+
 DOMStorageDispatcherHost* DOMStorageDispatcherHost::storage_event_host_ = NULL;
 const GURL* DOMStorageDispatcherHost::storage_event_url_ = NULL;
 
@@ -259,7 +261,6 @@ void DOMStorageDispatcherHost::OnSetItem(
   }
 
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::WEBKIT));
-  bool quota_exception = false;
   DOMStorageArea* storage_area = Context()->GetStorageArea(storage_area_id);
   if (!storage_area) {
     BrowserRenderProcessHost::BadMessageTerminateProcess(
@@ -268,10 +269,9 @@ void DOMStorageDispatcherHost::OnSetItem(
   }
 
   ScopedStorageEventContext scope(this, &url);
-  NullableString16 old_value = storage_area->SetItem(key, value,
-                                                     &quota_exception);
-  ViewHostMsg_DOMStorageSetItem::WriteReplyParams(reply_msg, quota_exception,
-                                                  old_value);
+  WebStorageArea::Result result;
+  NullableString16 old_value = storage_area->SetItem(key, value, &result);
+  ViewHostMsg_DOMStorageSetItem::WriteReplyParams(reply_msg, result, old_value);
   Send(reply_msg);
 }
 
