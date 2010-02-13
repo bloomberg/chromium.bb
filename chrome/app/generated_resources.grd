@@ -2709,6 +2709,60 @@ each locale. -->
       </message>
 
 
+      <!-- Certificate manager dialog strings.  These are only used on platforms that don't have a native certificate manager dialog, such as Linux. -->
+      <message name="IDS_CERTIFICATE_MANAGER_TITLE" desc="String to be displayed in the title bar of the certificate manager dialog">
+        Certificate Manager
+      </message>
+      <message name="IDS_CERT_MANAGER_PERSONAL_CERTS_TAB_LABEL" desc="Title of the notebook page displaying the user's own certificates">
+        Your Certificates
+      </message>
+      <message name="IDS_CERT_MANAGER_OTHER_PEOPLES_CERTS_TAB_LABEL" desc="Title of the notebook page displaying other individual's certificates">
+        People
+      </message>
+      <message name="IDS_CERT_MANAGER_SERVER_CERTS_TAB_LABEL" desc="Title of the notebook page displaying server certificates">
+        Servers
+      </message>
+      <message name="IDS_CERT_MANAGER_CERT_AUTHORITIES_TAB_LABEL" desc="Title of the notebook page displaying certificate authorities">
+        Authorities
+      </message>
+      <message name="IDS_CERT_MANAGER_UNKNOWN_TAB_LABEL" desc="Title of the notebook page displaying certificates that don't fall under any of the other categories">
+        Others
+      </message>
+      <message name="IDS_CERT_MANAGER_USER_TREE_DESCRIPTION" desc="Description label above the tree showing the user's own certificates">
+        You have certificates from these organizations that identify you:
+      </message>
+      <message name="IDS_CERT_MANAGER_OTHER_PEOPLE_TREE_DESCRIPTION" desc="Description label above the tree showing other individual's certificates">
+        You have certificates on file that identify these people:
+      </message>
+      <message name="IDS_CERT_MANAGER_SERVER_TREE_DESCRIPTION" desc="Description label above the tree showing server certificates">
+        You have certificates on file that identify these servers:
+      </message>
+      <message name="IDS_CERT_MANAGER_AUTHORITIES_TREE_DESCRIPTION" desc="Description label above the Certificate Authorities tree">
+        You have certificates on file that identify these certificate authorities:
+      </message>
+      <message name="IDS_CERT_MANAGER_UNKNOWN_TREE_DESCRIPTION" desc="Description label above the tree showing certificates that don't fall under any of the other categories">
+        You have certificates on file that do not fit in any of the other categories:
+      </message>
+      <message name="IDS_CERT_MANAGER_NAME_COLUMN_LABEL" desc="Label for the certificate name column of the certificate tree in the certificate manager">
+        Certificate Name
+      </message>
+      <message name="IDS_CERT_MANAGER_DEVICE_COLUMN_LABEL" desc="Label for the security device column of the certificate tree in the certificate manager">
+        Security Device
+      </message>
+      <message name="IDS_CERT_MANAGER_SERIAL_NUMBER_COLUMN_LABEL" desc="Label for the serial number column of the certificate tree in the certificate manager">
+        Serial Number
+      </message>
+      <message name="IDS_CERT_MANAGER_EXPIRES_COLUMN_LABEL" desc="Label for the expires on column of the certificate tree in the certificate manager">
+        Expires On
+      </message>
+      <message name="IDS_CERT_MANAGER_EMAIL_ADDRESS_COLUMN_LABEL" desc="Label for the email address column of the certificate tree in the certificate manager">
+        Email Address
+      </message>
+      <message name="IDS_CERT_MANAGER_VIEW_CERT_BUTTON" desc="Label for the button in the certificate manager which launches the certificate viewer for the selected certificate">
+        &amp;View
+      </message>
+
+
       <!-- General wizard strings -->
       <message name="IDS_WIZARD_NEXT" desc="The wizard next button label">
         Next

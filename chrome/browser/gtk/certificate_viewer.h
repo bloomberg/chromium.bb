@@ -7,6 +7,9 @@
 
 #include "app/gfx/native_widget_types.h"
 
+typedef struct CERTCertificateStr CERTCertificate;
+
+void ShowCertificateViewer(gfx::NativeWindow parent, CERTCertificate* cert);
 void ShowCertificateViewer(gfx::NativeWindow parent, int cert_id);
 
 #endif  // CHROME_BROWSER_GTK_CERTIFICATE_VIEWER_H_

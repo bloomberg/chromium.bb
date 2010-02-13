@@ -890,6 +890,13 @@ void CertificateViewer::Show() {
 
 } // namespace
 
+void ShowCertificateViewer(gfx::NativeWindow parent, CERTCertificate* cert) {
+  CERTCertList* cert_chain = CERT_GetCertChainFromCert(
+      cert, PR_Now(), certUsageSSLServer);
+  DCHECK(cert_chain);
+  (new CertificateViewer(parent, cert_chain))->Show();
+}
+
 void ShowCertificateViewer(gfx::NativeWindow parent, int cert_id) {
   scoped_refptr<net::X509Certificate> cert;
   CertStore::GetSharedInstance()->RetrieveCert(cert_id, &cert);
@@ -898,9 +905,5 @@ void ShowCertificateViewer(gfx::NativeWindow parent, int cert_id) {
     // we displayed the page info.
     return;
   }
-
-  CERTCertList* cert_chain = CERT_GetCertChainFromCert(
-      cert->os_cert_handle(), PR_Now(), certUsageSSLServer);
-  DCHECK(cert_chain);
-  (new CertificateViewer(parent, cert_chain))->Show();
+  ShowCertificateViewer(parent, cert->os_cert_handle());
 }
