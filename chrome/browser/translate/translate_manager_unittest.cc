@@ -13,9 +13,6 @@
 class TestTranslateManager : public TranslateManager {
  public:
   TestTranslateManager() {}
-
- protected:
-  virtual bool TestEnabled() { return true; }
 };
 
 class TranslateManagerTest : public RenderViewHostTestHarness {
@@ -45,8 +42,24 @@ class TranslateManagerTest : public RenderViewHostTestHarness {
     return true;
   }
 
+ protected:
+  virtual void SetUp() {
+    RenderViewHostTestHarness::SetUp();
+
+    TranslateManager::set_test_enabled(true);
+    // This must be created after set_test_enabled() has been called to register
+    // notifications properly.
+    translate_manager_.reset(new TestTranslateManager());
+  }
+
+  virtual void TearDown() {
+    RenderViewHostTestHarness::TearDown();
+
+    TranslateManager::set_test_enabled(false);
+  }
+
  private:
-  TestTranslateManager translate_manager_;
+  scoped_ptr<TestTranslateManager> translate_manager_;
 };
 
 TEST_F(TranslateManagerTest, NormalTranslate) {

@@ -21,6 +21,9 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 
+// static
+bool TranslateManager::test_enabled_ = false;
+
 TranslateManager::~TranslateManager() {
 }
 
@@ -83,7 +86,7 @@ void TranslateManager::Observe(NotificationType type,
 }
 
 TranslateManager::TranslateManager() {
-  if (TestEnabled() && !TranslationService::IsTranslationEnabled())
+  if (!test_enabled_ && !TranslationService::IsTranslationEnabled())
     return;
 
   notification_registrar_.Add(this, NotificationType::TAB_LANGUAGE_DETERMINED,

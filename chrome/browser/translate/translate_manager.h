@@ -30,10 +30,10 @@ class TranslateManager : public NotificationObserver {
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
- protected:
-  // Overriden by unit-tests to enable the TranslateManager.
-  virtual bool TestEnabled() { return false; }
+  // Used by unit-test to enable the TranslateManager for testing purpose.
+  static void set_test_enabled(bool enabled) { test_enabled_ = enabled; }
 
+ protected:
   TranslateManager();
 
  private:
@@ -57,6 +57,8 @@ class TranslateManager : public NotificationObserver {
   typedef std::set<std::string> LanguageSet;
   typedef std::map<PrefService*, LanguageSet> PrefServiceLanguagesMap;
   PrefServiceLanguagesMap accept_languages_;
+
+  static bool test_enabled_;
 
   DISALLOW_COPY_AND_ASSIGN(TranslateManager);
 };
