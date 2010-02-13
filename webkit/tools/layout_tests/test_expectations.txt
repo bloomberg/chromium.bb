@@ -450,11 +450,6 @@ BUG20570 WONTFIX : fast/forms/get-forms-to-about-blank.html = FAIL
 // We are not planning to support these.
 BUG12254 WONTFIX SKIP : fast/xhtmlmp = FAIL
 
-// wap css tests were added in http://trac.webkit.org/changeset/43887 and are
-// skipped on all platforms upstream.
-// We are not planning to support these.
-BUG12310 WONTFIX SKIP : fast/wcss = FAIL
-
 // This test requires LayoutTestController.setCacheModel, which we don't implement
 // because we can't emulate the cahcing behaviors it expects.
 WONTFIX : fast/dom/HTMLScriptElement/nested-execution.html = FAIL
