@@ -5,6 +5,7 @@
 #include "base/basictypes.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/autofill/autofill_common_unittest.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/chrome_thread.h"
@@ -60,49 +61,6 @@ class PersonalDataManagerTest : public testing::Test {
     personal_data_->SetObserver(&personal_data_observer_);
   }
 
-  static void SetProfileInfo(AutoFillProfile* profile,
-      const char* label, const char* first_name, const char* middle_name,
-      const char* last_name, const char* email, const char* company,
-      const char* address1, const char* address2, const char* city,
-      const char* state, const char* zipcode, const char* country,
-      const char* phone, const char* fax) {
-    profile->set_label(ASCIIToUTF16(label));
-    profile->SetInfo(AutoFillType(NAME_FIRST), ASCIIToUTF16(first_name));
-    profile->SetInfo(AutoFillType(NAME_MIDDLE), ASCIIToUTF16(middle_name));
-    profile->SetInfo(AutoFillType(NAME_LAST), ASCIIToUTF16(last_name));
-    profile->SetInfo(AutoFillType(EMAIL_ADDRESS), ASCIIToUTF16(email));
-    profile->SetInfo(AutoFillType(COMPANY_NAME), ASCIIToUTF16(company));
-    profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE1), ASCIIToUTF16(address1));
-    profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE2), ASCIIToUTF16(address2));
-    profile->SetInfo(AutoFillType(ADDRESS_HOME_CITY), ASCIIToUTF16(city));
-    profile->SetInfo(AutoFillType(ADDRESS_HOME_STATE), ASCIIToUTF16(state));
-    profile->SetInfo(AutoFillType(ADDRESS_HOME_ZIP), ASCIIToUTF16(zipcode));
-    profile->SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY), ASCIIToUTF16(country));
-    profile->SetInfo(AutoFillType(PHONE_HOME_NUMBER), ASCIIToUTF16(phone));
-    profile->SetInfo(AutoFillType(PHONE_FAX_NUMBER), ASCIIToUTF16(fax));
-  }
-
-  static void SetCreditCardInfo(CreditCard* credit_card,
-      const char* label, const char* name_on_card, const char* type,
-      const char* card_number, const char* expiration_month,
-      const char* expiration_year, const char* verification_code,
-      const char* billing_address, const char* shipping_address) {
-    credit_card->set_label(ASCIIToUTF16(label));
-    credit_card->SetInfo(AutoFillType(CREDIT_CARD_NAME),
-                     ASCIIToUTF16(name_on_card));
-    credit_card->SetInfo(AutoFillType(CREDIT_CARD_TYPE), ASCIIToUTF16(type));
-    credit_card->SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
-                     ASCIIToUTF16(card_number));
-    credit_card->SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
-                     ASCIIToUTF16(expiration_month));
-    credit_card->SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
-                     ASCIIToUTF16(expiration_year));
-    credit_card->SetInfo(AutoFillType(CREDIT_CARD_VERIFICATION_CODE),
-                     ASCIIToUTF16(verification_code));
-    credit_card->set_billing_address(ASCIIToUTF16(billing_address));
-    credit_card->set_shipping_address(ASCIIToUTF16(shipping_address));
-  }
-
   MessageLoopForUI message_loop_;
   ChromeThread ui_thread_;
   ChromeThread db_thread_;
@@ -116,17 +74,20 @@ class PersonalDataManagerTest : public testing::Test {
 // TODO(jhawkins): Test SetProfiles w/out a WebDataService in the profile.
 TEST_F(PersonalDataManagerTest, SetProfiles) {
   AutoFillProfile profile0(string16(), 0);
-  SetProfileInfo(&profile0, "Billing", "Marion", "Mitchell", "Morrison",
+  autofill_unittest::SetProfileInfo(&profile0,
+      "Billing", "Marion", "Mitchell", "Morrison",
       "johnwayne@me.xyz", "Fox", "123 Zoo St.", "unit 5", "Hollywood", "CA",
       "91601", "US", "12345678910", "01987654321");
 
   AutoFillProfile profile1(string16(), 0);
-  SetProfileInfo(&profile1, "Home", "Josephine", "Alicia", "Saenz",
+  autofill_unittest::SetProfileInfo(&profile1,
+      "Home", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "903 Apple Ct.", NULL, "Orlando", "FL", "32801",
       "US", "19482937549", "13502849239");
 
   AutoFillProfile profile2(string16(), 0);
-  SetProfileInfo(&profile2, "Work", "Josephine", "Alicia", "Saenz",
+  autofill_unittest::SetProfileInfo(&profile2,
+      "Work", "Josephine", "Alicia", "Saenz",
       "joewayne@me.xyz", "Fox", "1212 Center.", "Bld. 5", "Orlando", "FL",
       "32801", "US", "19482937549", "13502849239");
 
@@ -199,15 +160,18 @@ TEST_F(PersonalDataManagerTest, SetProfiles) {
 // TODO(jhawkins): Test SetCreditCards w/out a WebDataService in the profile.
 TEST_F(PersonalDataManagerTest, SetCreditCards) {
   CreditCard creditcard0(string16(), 0);
-  SetCreditCardInfo(&creditcard0, "Corporate", "John Dillinger", "Visa",
+  autofill_unittest::SetCreditCardInfo(&creditcard0,
+      "Corporate", "John Dillinger", "Visa",
       "123456789012", "01", "2010", "123", "Chicago", "Indianapolis");
 
   CreditCard creditcard1(string16(), 0);
-  SetCreditCardInfo(&creditcard1, "Personal", "Bonnie Parker", "Mastercard",
+  autofill_unittest::SetCreditCardInfo(&creditcard1,
+      "Personal", "Bonnie Parker", "Mastercard",
       "098765432109", "12", "2012", "987", "Dallas", "");
 
   CreditCard creditcard2(string16(), 0);
-  SetCreditCardInfo(&creditcard2, "Savings", "Clyde Barrow", "American Express",
+  autofill_unittest::SetCreditCardInfo(&creditcard2,
+      "Savings", "Clyde Barrow", "American Express",
       "777666888555", "04", "2015", "445", "Home", "Farm");
 
   // This will verify that the web database has been loaded and the notification

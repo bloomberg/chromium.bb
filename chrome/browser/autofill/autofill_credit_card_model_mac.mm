@@ -37,15 +37,15 @@
   if ((self = [super init])) {
     [self setLabel:SysUTF16ToNSString(creditCard.Label())];
     [self setNameOnCard:SysUTF16ToNSString(
-          creditCard.GetFieldText(AutoFillType(CREDIT_CARD_NAME)))];
+        creditCard.GetFieldText(AutoFillType(CREDIT_CARD_NAME)))];
     [self setCreditCardNumber:SysUTF16ToNSString(
-          creditCard.GetFieldText(AutoFillType(CREDIT_CARD_NUMBER)))];
+        creditCard.GetFieldText(AutoFillType(CREDIT_CARD_NUMBER)))];
     [self setExpirationMonth:SysUTF16ToNSString(
-          creditCard.GetFieldText(AutoFillType(CREDIT_CARD_EXP_MONTH)))];
+        creditCard.GetFieldText(AutoFillType(CREDIT_CARD_EXP_MONTH)))];
     [self setExpirationYear:SysUTF16ToNSString(
-          creditCard.GetFieldText(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)))];
+        creditCard.GetFieldText(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)))];
     [self setCvcCode:SysUTF16ToNSString(
-          creditCard.GetFieldText(AutoFillType(CREDIT_CARD_VERIFICATION_CODE)))];
+        creditCard.GetFieldText(AutoFillType(CREDIT_CARD_VERIFICATION_CODE)))];
   }
   return self;
 }
@@ -63,24 +63,25 @@
 }
 
 - (NSString*)summary {
-  // TODO(dhollowa): This has been pulled into cross platform code.
-  // Will hook up in separate CL.  See http://crbug.com/33029.
-  return @"";
+  // Create a temporary |creditCard| to generate summary string.
+  CreditCard creditCard(string16(), 0);
+  [self copyModelToCreditCard:&creditCard];
+  return SysUTF16ToNSString(creditCard.PreviewSummary());
 }
 
 - (void)copyModelToCreditCard:(CreditCard*)creditCard {
   DCHECK(creditCard);
   creditCard->set_label(base::SysNSStringToUTF16([self label]));
   creditCard->SetInfo(AutoFillType(CREDIT_CARD_NAME),
-        base::SysNSStringToUTF16([self nameOnCard]));
+      base::SysNSStringToUTF16([self nameOnCard]));
   creditCard->SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
-        base::SysNSStringToUTF16([self creditCardNumber]));
+      base::SysNSStringToUTF16([self creditCardNumber]));
   creditCard->SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
-        base::SysNSStringToUTF16([self expirationMonth]));
+      base::SysNSStringToUTF16([self expirationMonth]));
   creditCard->SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
-        base::SysNSStringToUTF16([self expirationYear]));
+      base::SysNSStringToUTF16([self expirationYear]));
   creditCard->SetInfo(AutoFillType(CREDIT_CARD_VERIFICATION_CODE),
-        base::SysNSStringToUTF16([self cvcCode]));
+      base::SysNSStringToUTF16([self cvcCode]));
 }
 
 @end

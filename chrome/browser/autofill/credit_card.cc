@@ -262,26 +262,25 @@ void CreditCard::set_expiration_year(int expiration_year) {
   expiration_year_ = expiration_year;
 }
 
-std::wstring CreditCard::PreviewSummary() const {
-  // TODO(georgey): add unit-test
-  std::wstring preview;
+string16 CreditCard::PreviewSummary() const {
+  string16 preview;
   if (number().empty())
     return preview;  // No CC number, means empty preview.
-  std::wstring obfuscated_cc_number(L"************");
-  obfuscated_cc_number.append(UTF16ToWide(last_four_digits()));
+  string16 obfuscated_cc_number(ASCIIToUTF16("************"));
+  obfuscated_cc_number.append(last_four_digits());
   if (!expiration_month() || !expiration_year())
     return obfuscated_cc_number;  // no expiration date set
   // TODO(georgey): internationalize date
-  std::wstring formatted_date(UTF16ToWide(ExpirationMonthAsString()));
-  formatted_date.append(L"/");
-  formatted_date.append(UTF16ToWide(Expiration4DigitYearAsString()));
+  string16 formatted_date(ExpirationMonthAsString());
+  formatted_date.append(ASCIIToUTF16("/"));
+  formatted_date.append(Expiration4DigitYearAsString());
 
-  preview = l10n_util::GetStringF(IDS_CREDIT_CARD_NUMBER_PREVIEW_FORMAT,
-                                  obfuscated_cc_number,
-                                  formatted_date);
+  preview = l10n_util::GetStringFUTF16(
+      IDS_CREDIT_CARD_NUMBER_PREVIEW_FORMAT,
+      obfuscated_cc_number,
+      formatted_date);
   return preview;
 }
-
 
 void CreditCard::operator=(const CreditCard& source) {
   number_ = source.number_;

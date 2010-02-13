@@ -50,6 +50,16 @@ class AutoFillProfile : public FormGroup {
   void set_unique_id(int id) { unique_id_ = id; }
   int unique_id() const { return unique_id_; }
 
+  // Profile summary string for UI.
+  // Constructs a summary string based on NAME_FIRST, NAME_LAST, and
+  // ADDRESS_HOME_LINE1 fields of the profile.  The summary string is of the
+  // form:
+  //     L"<first_name> <last_name>, <address_line_1>"
+  // but may omit any or all of the fields if they are not present in the
+  // profile.
+  // The form of the string is governed by generated resources.
+  string16 PreviewSummary() const;
+
   // For use in STL containers.
   void operator=(const AutoFillProfile&);
 

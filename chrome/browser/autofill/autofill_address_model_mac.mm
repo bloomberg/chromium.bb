@@ -46,39 +46,39 @@
   if ((self = [super init])) {
     [self setLabel:SysUTF16ToNSString(profile.Label())];
     [self setFirstName:SysUTF16ToNSString(
-          profile.GetFieldText(AutoFillType(NAME_FIRST)))];
+        profile.GetFieldText(AutoFillType(NAME_FIRST)))];
     [self setMiddleName:SysUTF16ToNSString(
-          profile.GetFieldText(AutoFillType(NAME_MIDDLE)))];
+        profile.GetFieldText(AutoFillType(NAME_MIDDLE)))];
     [self setLastName:SysUTF16ToNSString(
-          profile.GetFieldText(AutoFillType(NAME_LAST)))];
+        profile.GetFieldText(AutoFillType(NAME_LAST)))];
     [self setEmail:SysUTF16ToNSString(
-          profile.GetFieldText(AutoFillType(EMAIL_ADDRESS)))];
+        profile.GetFieldText(AutoFillType(EMAIL_ADDRESS)))];
     [self setCompanyName:SysUTF16ToNSString(
-          profile.GetFieldText(AutoFillType(COMPANY_NAME)))];
+        profile.GetFieldText(AutoFillType(COMPANY_NAME)))];
     [self setAddressLine1:SysUTF16ToNSString(
-          profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE1)))];
+        profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE1)))];
     [self setAddressLine2:SysUTF16ToNSString(
-          profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE2)))];
+        profile.GetFieldText(AutoFillType(ADDRESS_HOME_LINE2)))];
     [self setCity:SysUTF16ToNSString(
-          profile.GetFieldText(AutoFillType(ADDRESS_HOME_CITY)))];
+        profile.GetFieldText(AutoFillType(ADDRESS_HOME_CITY)))];
     [self setState:SysUTF16ToNSString(
-          profile.GetFieldText(AutoFillType(ADDRESS_HOME_STATE)))];
+        profile.GetFieldText(AutoFillType(ADDRESS_HOME_STATE)))];
     [self setZip:SysUTF16ToNSString(
-          profile.GetFieldText(AutoFillType(ADDRESS_HOME_ZIP)))];
+        profile.GetFieldText(AutoFillType(ADDRESS_HOME_ZIP)))];
     [self setCountry:SysUTF16ToNSString(
-          profile.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY)))];
+        profile.GetFieldText(AutoFillType(ADDRESS_HOME_COUNTRY)))];
     [self setPhoneCountryCode:SysUTF16ToNSString(
-          profile.GetFieldText(AutoFillType(PHONE_HOME_COUNTRY_CODE)))];
+        profile.GetFieldText(AutoFillType(PHONE_HOME_COUNTRY_CODE)))];
     [self setPhoneAreaCode:SysUTF16ToNSString(
-          profile.GetFieldText(AutoFillType(PHONE_HOME_CITY_CODE)))];
+        profile.GetFieldText(AutoFillType(PHONE_HOME_CITY_CODE)))];
     [self setPhoneNumber:SysUTF16ToNSString(
-          profile.GetFieldText(AutoFillType(PHONE_HOME_NUMBER)))];
+        profile.GetFieldText(AutoFillType(PHONE_HOME_NUMBER)))];
     [self setFaxCountryCode:SysUTF16ToNSString(
-          profile.GetFieldText(AutoFillType(PHONE_FAX_COUNTRY_CODE)))];
+        profile.GetFieldText(AutoFillType(PHONE_FAX_COUNTRY_CODE)))];
     [self setFaxAreaCode:SysUTF16ToNSString(
-          profile.GetFieldText(AutoFillType(PHONE_FAX_CITY_CODE)))];
+        profile.GetFieldText(AutoFillType(PHONE_FAX_CITY_CODE)))];
     [self setFaxNumber:SysUTF16ToNSString(
-          profile.GetFieldText(AutoFillType(PHONE_FAX_NUMBER)))];
+        profile.GetFieldText(AutoFillType(PHONE_FAX_NUMBER)))];
   }
   return self;
 }
@@ -106,76 +106,49 @@
 }
 
 - (NSString*)summary {
-  // Bindings may set these to nil.  We normalize here to @"".
-  if (firstName_ == nil)
-    firstName_ = @"";
-  if (lastName_ == nil)
-    lastName_ = @"";
-  if (addressLine1_ == nil)
-    addressLine1_ = @"";
-
-  BOOL haveFirstName = [firstName_ length] > 0;
-  BOOL haveLastName = [lastName_ length] > 0;
-  BOOL haveAddress = [addressLine1_ length] > 0;
-
-  NSString* nameSeparator = (haveFirstName && haveLastName) ?
-      l10n_util::GetNSString(IDS_AUTOFILL_DIALOG_ADDRESS_NAME_SEPARATOR) :
-      @"";
-  NSString* nameFormat =
-      l10n_util::GetNSStringF(IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_NAME_FORMAT,
-                          base::SysNSStringToUTF16(firstName_),
-                          base::SysNSStringToUTF16(nameSeparator),
-                          base::SysNSStringToUTF16(lastName_));
-  NSString* summarySeparator = (haveFirstName || haveLastName) && haveAddress ?
-      l10n_util::GetNSString(IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_SEPARATOR) :
-      @"";
-  NSString* summaryFormat =
-      l10n_util::GetNSStringF(IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_FORMAT,
-                         base::SysNSStringToUTF16(nameFormat),
-                         base::SysNSStringToUTF16(summarySeparator),
-                         base::SysNSStringToUTF16(addressLine1_));
-
-  return summaryFormat;
+  // Create a temporary |profile| to generate summary string.
+  AutoFillProfile profile(string16(), 0);
+  [self copyModelToProfile:&profile];
+  return SysUTF16ToNSString(profile.PreviewSummary());
 }
 
 - (void)copyModelToProfile:(AutoFillProfile*)profile {
   DCHECK(profile);
   profile->set_label(base::SysNSStringToUTF16([self label]));
-
   profile->SetInfo(AutoFillType(NAME_FIRST),
-                   base::SysNSStringToUTF16([self firstName]));
+      base::SysNSStringToUTF16([self firstName]));
   profile->SetInfo(AutoFillType(NAME_MIDDLE),
-                   base::SysNSStringToUTF16([self middleName]));
+      base::SysNSStringToUTF16([self middleName]));
   profile->SetInfo(AutoFillType(NAME_LAST),
-                   base::SysNSStringToUTF16([self lastName]));
+      base::SysNSStringToUTF16([self lastName]));
   profile->SetInfo(AutoFillType(EMAIL_ADDRESS),
-                   base::SysNSStringToUTF16([self email]));
+      base::SysNSStringToUTF16([self email]));
   profile->SetInfo(AutoFillType(COMPANY_NAME),
-                   base::SysNSStringToUTF16([self companyName]));
+      base::SysNSStringToUTF16([self companyName]));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE1),
-                   base::SysNSStringToUTF16([self addressLine1]));
+      base::SysNSStringToUTF16([self addressLine1]));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_LINE2),
-                   base::SysNSStringToUTF16([self addressLine2]));
+      base::SysNSStringToUTF16([self addressLine2]));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_CITY),
-                   base::SysNSStringToUTF16([self city]));
+      base::SysNSStringToUTF16([self city]));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_STATE),
-                   base::SysNSStringToUTF16([self state]));
+      base::SysNSStringToUTF16([self state]));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_ZIP),
-                   base::SysNSStringToUTF16([self zip]));
+      base::SysNSStringToUTF16([self zip]));
   profile->SetInfo(AutoFillType(ADDRESS_HOME_COUNTRY),
-                   base::SysNSStringToUTF16([self country]));
+      base::SysNSStringToUTF16([self country]));
   profile->SetInfo(AutoFillType(PHONE_HOME_COUNTRY_CODE),
-                   base::SysNSStringToUTF16([self phoneCountryCode]));
+      base::SysNSStringToUTF16([self phoneCountryCode]));
   profile->SetInfo(AutoFillType(PHONE_HOME_CITY_CODE),
-                   base::SysNSStringToUTF16([self phoneAreaCode]));
+      base::SysNSStringToUTF16([self phoneAreaCode]));
   profile->SetInfo(AutoFillType(PHONE_HOME_NUMBER),
-                   base::SysNSStringToUTF16([self phoneNumber]));
+      base::SysNSStringToUTF16([self phoneNumber]));
   profile->SetInfo(AutoFillType(PHONE_FAX_COUNTRY_CODE),
-                   base::SysNSStringToUTF16([self faxCountryCode]));
+      base::SysNSStringToUTF16([self faxCountryCode]));
   profile->SetInfo(AutoFillType(PHONE_FAX_CITY_CODE),
-                   base::SysNSStringToUTF16([self faxAreaCode]));
+      base::SysNSStringToUTF16([self faxAreaCode]));
   profile->SetInfo(AutoFillType(PHONE_FAX_NUMBER),
-                   base::SysNSStringToUTF16([self faxNumber]));
+      base::SysNSStringToUTF16([self faxNumber]));
 }
 
 @end

@@ -6,6 +6,7 @@
 
 #include <vector>
 
+#include "app/l10n_util.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "chrome/browser/autofill/address.h"
@@ -15,6 +16,7 @@
 #include "chrome/browser/autofill/fax_number.h"
 #include "chrome/browser/autofill/home_address.h"
 #include "chrome/browser/autofill/home_phone_number.h"
+#include "grit/generated_resources.h"
 
 AutoFillProfile::AutoFillProfile(const string16& label, int unique_id)
     : label_(label),
@@ -107,6 +109,49 @@ FormGroup* AutoFillProfile::Clone() const {
   }
 
   return profile;
+}
+
+string16 AutoFillProfile::PreviewSummary() const {
+  // Fetch the components of the summary string.  Any or all of these
+  // may be an empty string.
+  string16 first_name = GetFieldText(AutoFillType(NAME_FIRST));
+  string16 last_name = GetFieldText(AutoFillType(NAME_LAST));
+  string16 address = GetFieldText(AutoFillType(ADDRESS_HOME_LINE1));
+
+  // String separators depend (below) on the existence of the various fields.
+  bool have_first_name = first_name.length() > 0;
+  bool have_last_name = last_name.length() > 0;
+  bool have_address = address.length() > 0;
+
+  // Name separator defaults to "".  Space if we have first and last name.
+  string16 name_separator;
+  if (have_first_name && have_last_name) {
+    name_separator = l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_DIALOG_ADDRESS_NAME_SEPARATOR);
+  }
+
+  // E.g. "John Smith", or "John", or "Smith", or "".
+  string16 name_format = l10n_util::GetStringFUTF16(
+      IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_NAME_FORMAT,
+      first_name,
+      name_separator,
+      last_name);
+
+  // Summary separator defaults to "".  ", " if we have name and address.
+  string16 summary_separator;
+  if ((have_first_name || have_last_name) && have_address) {
+    summary_separator = l10n_util::GetStringUTF16(
+        IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_SEPARATOR);
+  }
+
+  // E.g. "John Smith, 123 Main Street".
+  string16 summary_format = l10n_util::GetStringFUTF16(
+      IDS_AUTOFILL_DIALOG_ADDRESS_SUMMARY_FORMAT,
+      name_format,
+      summary_separator,
+      address);
+
+  return summary_format;
 }
 
 void AutoFillProfile::operator=(const AutoFillProfile& source) {

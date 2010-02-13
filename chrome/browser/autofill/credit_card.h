@@ -83,7 +83,7 @@ class CreditCard : public FormGroup {
   void set_expiration_year(int expiration_year);
 
   // Credit card preview summary, for example: ******1234, Exp: 01/2020
-  std::wstring PreviewSummary() const;
+  string16 PreviewSummary() const;
 
   // For use in STL containers.
   void operator=(const CreditCard&);

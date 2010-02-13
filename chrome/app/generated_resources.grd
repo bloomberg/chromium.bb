@@ -4982,7 +4982,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_CREDIT_CARD_NUMBER_PREVIEW_FORMAT"
                desc="Credit card preview format">
         <ph name="OBFUSCATED_CC_NUMBER">$1<ex>************1234</ex>
-        </ph>, Exp:<ph name="CC_EXPIRATION_DATE">$2<ex>03/2020</ex>
+        </ph>, Exp: <ph name="CC_EXPIRATION_DATE">$2<ex>03/2020</ex>
         </ph>
       </message>
       <message name="IDS_AUTOFILL_DIALOG_LABEL" desc="The label of the Label entry.">
@@ -6855,12 +6855,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_NETWORK_SELECTION_TITLE" desc="Welcome title shown on network selection screen">
         Welcome to <ph name="PRODUCT_NAME">$1<ex>Chrome OS</ex></ph>
-      </message>      
+      </message>
       <message name="IDS_NETWORK_SELECTION_SELECT" desc="Label for network selection dropdown">
         Please select a network:
-      </message>            
+      </message>
       <message name="IDS_LOGIN_TITLE">
-        Sign in with your Google account 
+        Sign in with your Google account
       </message>
       <message name="IDS_LOGIN_USERNAME">
         Username:
