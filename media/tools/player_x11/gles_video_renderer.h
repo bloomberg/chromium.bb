@@ -44,6 +44,8 @@ class GlesVideoRenderer : public media::VideoRendererBase {
   friend class scoped_refptr<GlesVideoRenderer>;
   virtual ~GlesVideoRenderer();
 
+  bool InitializeGles();
+
   int width_;
   int height_;
 

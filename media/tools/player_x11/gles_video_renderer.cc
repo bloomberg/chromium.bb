@@ -10,6 +10,8 @@
 #include <X11/extensions/Xcomposite.h>
 
 #include "media/base/buffers.h"
+#include "media/base/pipeline.h"
+#include "media/base/filter_host.h"
 #include "media/base/yuv_convert.h"
 
 GlesVideoRenderer* GlesVideoRenderer::instance_ = NULL;
@@ -35,6 +37,8 @@ bool GlesVideoRenderer::IsMediaFormatSupported(
 }
 
 void GlesVideoRenderer::OnStop() {
+  // TODO(hclam): Context switching seems to be broek so the following
+  // calls may fail. Need to fix them.
   eglMakeCurrent(egl_display_, EGL_NO_SURFACE,
                  EGL_NO_SURFACE, EGL_NO_CONTEXT);
   eglDestroyContext(egl_display_, egl_context_);
@@ -43,9 +47,9 @@ void GlesVideoRenderer::OnStop() {
 
 // Matrix used for the YUV to RGB conversion.
 static const float kYUV2RGB[9] = {
-  1.f, 0.f, 1.403f,
-  1.f, -.344f, -.714f,
-  1.f, 1.772f, 0.f,
+  1.f, 1.f, 1.f,
+  0.f, -.344f, 1.772f,
+  1.403f, -.714f, 0.f,
 };
 
 // Vertices for a full screen quad.
@@ -105,6 +109,76 @@ bool GlesVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
 
   LOG(INFO) << "Initializing GLES Renderer...";
 
+  // Save this instance.
+  DCHECK(!instance_);
+  instance_ = this;
+  return true;
+}
+
+void GlesVideoRenderer::OnFrameAvailable() {
+  AutoLock auto_lock(lock_);
+  new_frame_ = true;
+}
+
+void GlesVideoRenderer::Paint() {
+  // Use |new_frame_| to prevent overdraw since Paint() is called more
+  // often than needed. It is OK to lock only this flag and we don't
+  // want to lock the whole function because this method takes a long
+  // time to complete.
+  {
+    AutoLock auto_lock(lock_);
+    if (!new_frame_)
+      return;
+    new_frame_ = false;
+  }
+
+  // Initialize GLES here to avoid context switching. Some drivers doesn't
+  // like switching context between threads.
+  static bool initialized = false;
+  if (!initialized && !InitializeGles()) {
+    initialized = true;
+    host()->SetError(media::PIPELINE_ERROR_COULD_NOT_RENDER);
+    return;
+  }
+  initialized = true;
+
+  scoped_refptr<media::VideoFrame> video_frame;
+  GetCurrentFrame(&video_frame);
+
+  if (!video_frame)
+    return;
+
+  // Convert YUV frame to RGB.
+  media::VideoSurface frame_in;
+  if (video_frame->Lock(&frame_in)) {
+    DCHECK(frame_in.format == media::VideoSurface::YV12 ||
+           frame_in.format == media::VideoSurface::YV16);
+    DCHECK(frame_in.strides[media::VideoSurface::kUPlane] ==
+           frame_in.strides[media::VideoSurface::kVPlane]);
+    DCHECK(frame_in.planes == media::VideoSurface::kNumYUVPlanes);
+
+    for (unsigned int i = 0; i < media::VideoSurface::kNumYUVPlanes; ++i) {
+      unsigned int width = (i == media::VideoSurface::kYPlane) ?
+          frame_in.width : frame_in.width / 2;
+      unsigned int height = (i == media::VideoSurface::kYPlane ||
+                             frame_in.format == media::VideoSurface::YV16) ?
+          frame_in.height : frame_in.height / 2;
+      glActiveTexture(GL_TEXTURE0 + i);
+      // No GL_UNPACK_ROW_LENGTH in GLES2.
+      // glPixelStorei(GL_UNPACK_ROW_LENGTH, frame_in.strides[i]);
+      glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0,
+                   GL_LUMINANCE, GL_UNSIGNED_BYTE, frame_in.data[i]);
+    }
+    video_frame->Unlock();
+  } else {
+    NOTREACHED();
+  }
+
+  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
+  eglSwapBuffers(egl_display_, egl_surface_);
+}
+
+bool GlesVideoRenderer::InitializeGles() {
   // Resize the window to fit that of the video.
   XResizeWindow(display_, window_, width_, height_);
 
@@ -188,13 +262,12 @@ bool GlesVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
   EGLint height;
   eglQuerySurface(egl_display_, egl_surface_, EGL_WIDTH, &width);
   eglQuerySurface(egl_display_, egl_surface_, EGL_HEIGHT, &height);
-  glViewport(0, 0, width, height);
-
   glViewport(0, 0, width_, height_);
 
   // Create 3 textures, one for each plane, and bind them to different
   // texture units.
   glGenTextures(media::VideoSurface::kNumYUVPlanes, textures_);
+
   glActiveTexture(GL_TEXTURE0);
   glBindTexture(GL_TEXTURE_2D, textures_[0]);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -265,7 +338,7 @@ bool GlesVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
   glUniform1i(glGetUniformLocation(program_, "u_tex"), 1);
   glUniform1i(glGetUniformLocation(program_, "v_tex"), 2);
   int yuv2rgb_location = glGetUniformLocation(program_, "yuv2rgb");
-  glUniformMatrix3fv(yuv2rgb_location, 1, GL_TRUE, kYUV2RGB);
+  glUniformMatrix3fv(yuv2rgb_location, 1, GL_FALSE, kYUV2RGB);
 
   int pos_location = glGetAttribLocation(program_, "in_pos");
   glEnableVertexAttribArray(pos_location);
@@ -278,67 +351,9 @@ bool GlesVideoRenderer::OnInitialize(media::VideoDecoder* decoder) {
 
   // We are getting called on a thread. Release the context so that it can be
   // made current on the main thread.
-  eglMakeCurrent(egl_display_, EGL_NO_SURFACE, EGL_NO_SURFACE, EGL_NO_CONTEXT);
-
-  // Save this instance.
-  DCHECK(!instance_);
-  instance_ = this;
+  // TODO(hclam): Fix this if neccessary. Currently the following call fails
+  // for some drivers.
+  // eglMakeCurrent(egl_display_, EGL_NO_SURFACE,
+  //                EGL_NO_SURFACE, EGL_NO_CONTEXT);
   return true;
-}
-
-void GlesVideoRenderer::OnFrameAvailable() {
-  AutoLock auto_lock(lock_);
-  new_frame_ = true;
-}
-
-void GlesVideoRenderer::Paint() {
-  // Use |new_frame_| to prevent overdraw since Paint() is called more
-  // often than needed. It is OK to lock only this flag and we don't
-  // want to lock the whole function because this method takes a long
-  // time to complete.
-  {
-    AutoLock auto_lock(lock_);
-    if (!new_frame_)
-      return;
-    new_frame_ = false;
-  }
-
-  scoped_refptr<media::VideoFrame> video_frame;
-  GetCurrentFrame(&video_frame);
-
-  if (!video_frame)
-    return;
-
-  // Convert YUV frame to RGB.
-  media::VideoSurface frame_in;
-  if (video_frame->Lock(&frame_in)) {
-    DCHECK(frame_in.format == media::VideoSurface::YV12 ||
-           frame_in.format == media::VideoSurface::YV16);
-    DCHECK(frame_in.strides[media::VideoSurface::kUPlane] ==
-           frame_in.strides[media::VideoSurface::kVPlane]);
-    DCHECK(frame_in.planes == media::VideoSurface::kNumYUVPlanes);
-
-    if (eglGetCurrentContext() != egl_context_) {
-      eglMakeCurrent(egl_display_, egl_surface_,
-                     egl_surface_, egl_context_);
-    }
-    for (unsigned int i = 0; i < media::VideoSurface::kNumYUVPlanes; ++i) {
-      unsigned int width = (i == media::VideoSurface::kYPlane) ?
-          frame_in.width : frame_in.width / 2;
-      unsigned int height = (i == media::VideoSurface::kYPlane ||
-                             frame_in.format == media::VideoSurface::YV16) ?
-          frame_in.height : frame_in.height / 2;
-      glActiveTexture(GL_TEXTURE0 + i);
-      // No GL_UNPACK_ROW_LENGTH in GLES2.
-      // glPixelStorei(GL_UNPACK_ROW_LENGTH, frame_in.strides[i]);
-      glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0,
-                   GL_LUMINANCE, GL_UNSIGNED_BYTE, frame_in.data[i]);
-    }
-    video_frame->Unlock();
-  } else {
-    NOTREACHED();
-  }
-
-  glDrawArrays(GL_TRIANGLE_STRIP, 0, 4);
-  eglSwapBuffers(egl_display_, egl_surface_);
 }
