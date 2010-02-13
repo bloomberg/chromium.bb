@@ -267,7 +267,8 @@ BrowserActionsToolbarGtk::BrowserActionsToolbarGtk(Browser* browser)
       model_(NULL),
       hbox_(gtk_hbox_new(FALSE, kButtonPadding)),
       drag_button_(NULL),
-      drop_index_(-1) {
+      drop_index_(-1),
+      method_factory_(this) {
   ExtensionsService* extension_service = profile_->GetExtensionsService();
   // The |extension_service| can be NULL in Incognito.
   if (!extension_service)
@@ -487,6 +488,9 @@ void BrowserActionsToolbarGtk::OnHierarchyChanged() {
 }
 
 void BrowserActionsToolbarGtk::OnSetFocus() {
-  // The focus of the parent window has changed. Close the popup.
-  HidePopup();
+  // The focus of the parent window has changed. Close the popup. Delay the hide
+  // because it will destroy the RenderViewHost, which may still be on the
+  // call stack.
+  MessageLoop::current()->PostTask(FROM_HERE,
+      method_factory_.NewRunnableMethod(&BrowserActionsToolbarGtk::HidePopup));
 }

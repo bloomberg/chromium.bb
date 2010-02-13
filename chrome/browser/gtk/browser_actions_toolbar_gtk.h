@@ -144,6 +144,8 @@ class BrowserActionsToolbarGtk : public ExtensionToolbarModel::Observer {
       ExtensionButtonMap;
   ExtensionButtonMap extension_button_map_;
 
+  ScopedRunnableMethodFactory<BrowserActionsToolbarGtk> method_factory_;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserActionsToolbarGtk);
 };
 
