@@ -124,18 +124,28 @@ class NavigationBar : public views::View,
     const int padding = kNavigationEntryPadding;
     canvas->FillRectInt(SK_ColorWHITE, 0, 0, width(), height());
     // Draw border around the entry.
+    gfx::Rect bounds = location_entry_view_->GetBounds(
+        views::View::APPLY_MIRRORING_TRANSFORMATION);
     canvas->DrawRectInt(SK_ColorGRAY,
-                        location_entry_view_->x() - padding,
-                        location_entry_view_->y() - padding,
-                        location_entry_view_->width() + padding * 2,
-                        location_entry_view_->height() + padding * 2);
+                        bounds.x() - padding,
+                        bounds.y() - padding,
+                        bounds.width() + padding * 2,
+                        bounds.height() + padding * 2);
   }
 
   // BubblePositioner implementation.
   virtual gfx::Rect GetLocationStackBounds() const {
-    gfx::Point origin(0, height());
+    gfx::Rect bounds = location_entry_view_->GetBounds(
+        views::View::APPLY_MIRRORING_TRANSFORMATION);
+    gfx::Point origin(bounds.x(), bounds.bottom() + kNavigationEntryPadding);
     views::View::ConvertPointToScreen(this, &origin);
-    return gfx::Rect(origin, gfx::Size(500, 0));
+    gfx::Rect rect = gfx::Rect(origin, gfx::Size(500, 0));
+    if (UILayoutIsRightToLeft()) {
+      // Align the window to the right side of the entry view when
+      // UI is RTL mode.
+      rect.set_x(rect.x() - (rect.width() - location_entry_view_->width()));
+    }
+    return rect;
   }
 
   // AutocompleteController implementation.
