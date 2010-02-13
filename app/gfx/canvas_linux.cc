@@ -16,6 +16,8 @@
 
 namespace {
 
+const gunichar kAcceleratorChar = '&';
+
 // Font settings that we initialize once and then use when drawing text in
 // DrawStringInt().
 static cairo_font_options_t* cairo_font_options = NULL;
@@ -114,6 +116,7 @@ Canvas::~Canvas() {
 
 // Pass a width > 0 to force wrapping and elliding.
 static void SetupPangoLayout(PangoLayout* layout,
+                             const std::wstring& text,
                              const gfx::Font& font,
                              int width,
                              int flags) {
@@ -161,6 +164,20 @@ static void SetupPangoLayout(PangoLayout* layout,
   PangoFontDescription* desc = gfx::Font::PangoFontFromGfxFont(font);
   pango_layout_set_font_description(layout, desc);
   pango_font_description_free(desc);
+
+  // Set text and accelerator character if needed.
+  std::string utf8 = WideToUTF8(text);
+  if (flags & gfx::Canvas::HIDE_PREFIX) {
+    // Escape the text string to be used as markup.
+    gchar* escaped_text = g_markup_escape_text(utf8.c_str(), utf8.size());
+    pango_layout_set_markup_with_accel(layout,
+                                       escaped_text,
+                                       strlen(escaped_text),
+                                       kAcceleratorChar, NULL);
+    g_free(escaped_text);
+  } else {
+    pango_layout_set_text(layout, utf8.data(), utf8.size());
+  }
 }
 
 // static
@@ -173,10 +190,7 @@ void Canvas::SizeStringInt(const std::wstring& text,
   cairo_t* cr = cairo_create(surface);
   PangoLayout* layout = pango_cairo_create_layout(cr);
 
-  SetupPangoLayout(layout, font, *width, flags);
-
-  std::string utf8 = WideToUTF8(text);
-  pango_layout_set_text(layout, utf8.data(), utf8.size());
+  SetupPangoLayout(layout, text, font, *width, flags);
 
   pango_layout_get_pixel_size(layout, width, height);
 
@@ -212,7 +226,7 @@ void Canvas::DrawStringInt(const std::wstring& text,
   cairo_t* cr = beginPlatformPaint();
   PangoLayout* layout = pango_cairo_create_layout(cr);
 
-  SetupPangoLayout(layout, font, w, flags);
+  SetupPangoLayout(layout, text, font, w, flags);
 
   pango_layout_set_height(layout, h * PANGO_SCALE);
 
@@ -221,9 +235,6 @@ void Canvas::DrawStringInt(const std::wstring& text,
                        SkColorGetR(color) / 255.0,
                        SkColorGetG(color) / 255.0,
                        SkColorGetB(color) / 255.0);
-
-  std::string utf8 = WideToUTF8(text);
-  pango_layout_set_text(layout, utf8.data(), utf8.size());
 
   int width, height;
   pango_layout_get_pixel_size(layout, &width, &height);
