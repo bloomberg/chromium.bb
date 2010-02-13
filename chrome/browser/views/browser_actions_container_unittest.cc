@@ -54,16 +54,7 @@ IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Basic) {
   EXPECT_EQ(0, browser_actions_bar()->NumberOfBrowserActions());
 }
 
-#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
-// Linux with toolkits doesn't yet support an overflow for the browser actions
-// container, so it doesn't make sense to test that feature yet.
-// See http://crbug.com/35593.
-#define MAYBE_TestVisibility DISABLED_TestVisibility
-#else
-#define MAYBE_TestVisibility TestVisibility
-#endif
-
-IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, MAYBE_TestVisibility) {
+IN_PROC_BROWSER_TEST_F(BrowserActionsContainerTest, Visibility) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
 

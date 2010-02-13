@@ -586,8 +586,10 @@ bool Extension::LoadAppHelper(const DictionaryValue* app, std::string* error) {
 }
 
 Extension::Extension(const FilePath& path)
-    : converted_from_user_script_(false), is_theme_(false),
-      background_page_ready_(false) {
+    : converted_from_user_script_(false),
+      is_theme_(false),
+      background_page_ready_(false),
+      being_upgraded_(false) {
   DCHECK(path.IsAbsolute());
   location_ = INVALID;
 
