@@ -36,6 +36,7 @@
 /* bo object */
 #define RADEON_BO_FLAGS_MACRO_TILE  1
 #define RADEON_BO_FLAGS_MICRO_TILE  2
+#define RADEON_BO_FLAGS_MICRO_TILE_SQUARE 0x20
 
 struct radeon_bo_manager;
 struct radeon_cs;
