@@ -22,6 +22,15 @@ PrintingContext::~PrintingContext() {
   ResetSettings();
 }
 
+PrintingContext::Result PrintingContext::AskUserForSettings(
+    gfx::NativeWindow window,
+    int max_pages,
+    bool has_selection) {
+
+  NOTIMPLEMENTED();
+
+  return FAILED;
+}
 
 PrintingContext::Result PrintingContext::UseDefaultSettings() {
   DCHECK(!in_print_job_);

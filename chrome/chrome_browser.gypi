@@ -1467,7 +1467,6 @@
         'browser/power_save_blocker_win.cc',
         'browser/printing/print_dialog_gtk.cc',
         'browser/printing/print_dialog_gtk.h',
-        'browser/printing/print_job_linux.cc',
         'browser/printing/print_job.cc',
         'browser/printing/print_job.h',
         'browser/printing/print_job_manager_linux.cc',
@@ -2179,12 +2178,9 @@
           ],
           'sources!': [
              # Exclude most of printing, it's not ported yet.
-            'browser/printing/print_job.cc',
             'browser/printing/print_job.h',
             'browser/printing/print_job_manager.cc',
             'browser/printing/print_job_manager.h',
-            'browser/printing/print_job_worker.cc',
-            'browser/printing/print_job_worker.h',
             'browser/printing/print_job_worker_owner.h',
             'browser/printing/print_view_manager.cc',
             'browser/printing/print_view_manager.h',
