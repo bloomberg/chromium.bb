@@ -323,7 +323,7 @@ int main(int argc, char **argv) {
   // because those files are owned by root. So we need another helper here.
   if (argc == 4 && (0 == strcmp(argv[1], kAdjustOOMScoreSwitch))) {
     char* endptr;
-    int score;
+    long score;
     pid_t pid = strtoul(argv[2], &endptr, 10);
     if (pid == ULONG_MAX || *endptr)
       return 1;
