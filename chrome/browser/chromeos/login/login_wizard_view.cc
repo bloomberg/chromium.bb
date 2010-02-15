@@ -181,7 +181,6 @@ void LoginWizardView::Init(const std::string& start_view_name) {
   if (start_view_name == kLoginManager) {
     current_ = login_manager_;
   } else if (start_view_name == kNetworkSelection) {
-    // TODO(nkostylev): Init network selection screen when it's required.
     current_ = network_selection_;
   } else if (start_view_name == kAccountCreation) {
     current_ = account_creation_;
@@ -198,6 +197,12 @@ void LoginWizardView::OnLoginSignInSelected() {
   if (window()) {
     window()->Close();
   }
+}
+
+void LoginWizardView::OnLoginBack() {
+  // TODO(nkostylev): Do not fall back to welcome screen
+  // when known network is available.
+  SetCurrentScreen(network_selection_);
 }
 
 void LoginWizardView::OnNetworkConnected() {
@@ -258,11 +263,14 @@ void LoginWizardView::OnExit(ExitCodes exit_code) {
       OnLoginSignInSelected();
       break;
     case NETWORK_CONNECTED:
+    case NETWORK_OFFLINE:
       OnNetworkConnected();
       break;
     case ACCOUNT_CREATED:
       OnAccountCreated();
       break;
+    case LOGIN_BACK:
+      OnLoginBack();
     default:
       NOTREACHED();
   }

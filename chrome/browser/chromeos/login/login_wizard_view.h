@@ -37,6 +37,7 @@ class LoginWizardView : public views::View,
  private:
   // Exit handlers:
   void OnLoginSignInSelected();
+  void OnLoginBack();
   void OnNetworkConnected();
   void OnAccountCreated();
 

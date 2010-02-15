@@ -358,6 +358,12 @@ bool LoginManagerView::HandleKeystroke(views::Textfield* s,
     Login();
     // Return true so that processing ends
     return true;
+  } else if (keystroke.GetKeyboardCode() == base::VKEY_ESCAPE) {
+    // TODO(nkostylev): Implement non-textfield dependent keystroke handler.
+    if (observer_) {
+      observer_->OnExit(chromeos::ScreenObserver::LOGIN_BACK);
+    }
+    return true;
   }
   // Return false so that processing does not end
   return false;

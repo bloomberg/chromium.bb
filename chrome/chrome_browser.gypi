@@ -333,6 +333,8 @@
         'browser/chromeos/login/wizard_screen.h',
         'browser/chromeos/main_menu.cc',
         'browser/chromeos/main_menu.h',
+        'browser/chromeos/network_list.cc',
+        'browser/chromeos/network_list.h',
         'browser/chromeos/options/internet_page_view.cc',
         'browser/chromeos/options/internet_page_view.h',
         'browser/chromeos/options/settings_page_view.cc',
