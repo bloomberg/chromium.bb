@@ -2929,8 +2929,8 @@ BUG35492 : media/controls-drag-timebar.html = FAIL TIMEOUT
 //BUG9798 BUG13907 SLOW MAC WIN RELEASE : media/video-played-reset.html = PASS
 //BUG9798 BUG13907 SLOW LINUX DEBUG : media/video-played-reset.html = PASS
 
-// The test was added in WebKit r54766 and is slow in Chromium
-BUG13907 SLOW : media/video-display-aspect-ratio.html = PASS
+// The test was added in WebKit r54766 and timeouts in Chromium
+BUG13907 : media/video-display-aspect-ratio.html = TIMEOUT PASS
 
 // WebKit roll 54726:54731
 BUG35618 LINUX WIN : fast/text/glyph-reordering.html = TEXT
