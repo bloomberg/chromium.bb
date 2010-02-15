@@ -5,6 +5,7 @@
 #include "app/gfx/codec/jpeg_codec.h"
 #include "base/file_util.h"
 #include "base/shared_memory.h"
+#include "chrome/common/content_settings.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/renderer/print_web_view_helper.h"
@@ -535,7 +536,7 @@ TEST_F(RenderViewTest, OnPrintPageAsBitmap) {
                                      gfx::JPEGCodec::FORMAT_RGBA,
                                      &decoded, &w, &h));
 
-  // Check if its not 100% white.
+  // Check if it's not 100% white.
   bool is_white = true;
   for (int y = 0; y < h; y++) {
     for (int x = 0; x < w; x++) {
@@ -923,4 +924,54 @@ TEST_F(RenderViewTest, DidFailProvisionalLoadWithErrorForCancellation) {
   view_->didFailProvisionalLoad(web_frame, error);
   // Frame should stay in view-source mode.
   EXPECT_TRUE(web_frame->isViewSourceModeEnabled());
+}
+
+// Regression test for http://crbug.com/35011
+TEST_F(RenderViewTest, JSBlockSentAfterPageLoad) {
+  // 1. Load page with JS.
+  std::string html = "<html>"
+           "<head>"
+           "<script>document.createElement('div');</script>"
+           "</head>"
+           "<body>"
+           "</body>"
+           "</html>";
+  render_thread_.sink().ClearMessages();
+  LoadHTML(html.c_str());
+
+  // 2. Block JavaScript.
+  ContentSettings settings;
+  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i)
+    settings.settings[i] = CONTENT_SETTING_ALLOW;
+  settings.settings[CONTENT_SETTINGS_TYPE_JAVASCRIPT] = CONTENT_SETTING_BLOCK;
+  view_->SetContentSettings(settings);
+
+  // Make sure no pending messages are in the queue.
+  ProcessPendingMessages();
+  render_thread_.sink().ClearMessages();
+
+  // 3. Reload page.
+  ViewMsg_Navigate_Params params;
+  std::string url_str = "data:text/html;charset=utf-8,";
+  url_str.append(html);
+  GURL url(url_str);
+  params.url = url;
+  params.navigation_type = ViewMsg_Navigate_Params::RELOAD;
+  view_->OnNavigate(params);
+  ProcessPendingMessages();
+
+  // 4. Verify that the notification that javascript was blocked is sent after
+  //    the navigation notifiction is sent.
+  int navigation_index = -1;
+  int block_index = -1;
+  for (size_t i = 0; i < render_thread_.sink().message_count(); ++i) {
+    const IPC::Message* msg = render_thread_.sink().GetMessageAt(i);
+    if (msg->type() == ViewHostMsg_FrameNavigate::ID)
+      navigation_index = i;
+    if (msg->type() == ViewHostMsg_ContentBlocked::ID)
+      block_index = i;
+  }
+  EXPECT_NE(-1, navigation_index);
+  EXPECT_NE(-1, block_index);
+  EXPECT_LT(navigation_index, block_index);
 }

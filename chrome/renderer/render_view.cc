@@ -314,6 +314,7 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       webkit_preferences_(webkit_preferences),
       session_storage_namespace_id_(session_storage_namespace_id),
       ALLOW_THIS_IN_INITIALIZER_LIST(text_translator_(this)) {
+  ClearBlockedContentSettings();
   page_translator_.reset(new PageTranslator(&text_translator_, this));
 }
 
@@ -1159,6 +1160,12 @@ void RenderView::UpdateURL(WebFrame* frame) {
 
   if (!frame->parent()) {
     // Top-level navigation.
+
+    // Clear "block" flags for the new page. This needs to happen before any of
+    // allowScripts(), allowImages(), allowPlugins() is called for the new page
+    // so that these functions can correctly detect that a piece of content
+    // flipped from "not blocked" to "blocked".
+    ClearBlockedContentSettings();
 
     // Set content settings.
     HostContentSettings::iterator host_content_settings =
@@ -3211,15 +3218,18 @@ bool RenderView::AllowContentType(ContentSettingsType settings_type,
   // CONTENT_SETTING_ASK is only valid for cookies.
   if (current_content_settings_.settings[settings_type] ==
       CONTENT_SETTING_BLOCK) {
-    NavigationState* navigation_state =
-        NavigationState::FromDataSource(webview()->mainFrame()->dataSource());
-    if (!navigation_state->is_content_blocked(settings_type)) {
-      navigation_state->set_content_blocked(settings_type, true);
+    if (!content_blocked_[settings_type]) {
+      content_blocked_[settings_type] = true;
       Send(new ViewHostMsg_ContentBlocked(routing_id_, settings_type));
     }
     return false;
   }
   return true;
+}
+
+void RenderView::ClearBlockedContentSettings() {
+  for (size_t i = 0; i < arraysize(content_blocked_); ++i)
+    content_blocked_[i] = false;
 }
 
 void RenderView::DnsPrefetch(const std::vector<std::string>& host_names) {
