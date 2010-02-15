@@ -1999,9 +1999,10 @@ bool BrowserWindowGtk::GetWindowEdge(int x, int y, GdkWindowEdge* edge) {
 }
 
 bool BrowserWindowGtk::UseCustomFrame() {
-  // We don't use the custom frame for app mode windows.
+  // We don't use the custom frame for app mode windows or app window popups.
   return use_custom_frame_pref_.GetValue() &&
-      (browser_->type() != Browser::TYPE_APP);
+      browser_->type() != Browser::TYPE_APP &&
+      browser_->type() != Browser::TYPE_APP_POPUP;
 }
 
 void BrowserWindowGtk::PlaceBookmarkBar(bool is_floating) {
