@@ -163,8 +163,14 @@ class CandidateWindowView : public views::View {
 
   // The lookup table (candidates).
   ImeLookupTable lookup_table_;
+
+  // Zero-origin index of the current page. If the cursor is on the first
+  // page, the value will be 0.
+  int current_page_index_;
+
   // The index in the current page of the candidate currently being selected.
   int selected_candidate_index_in_page_;
+
   // The observers of the object.
   ObserverList<Observer> observers_;
 
@@ -457,6 +463,7 @@ void CandidateView::OnMouseReleased(const views::MouseEvent& event,
 CandidateWindowView::CandidateWindowView(
     views::Widget* parent_frame)
     : orientation_(kVertical),
+      current_page_index_(0),
       selected_candidate_index_in_page_(0),
       parent_frame_(parent_frame),
       candidate_area_(NULL),
@@ -533,9 +540,13 @@ void CandidateWindowView::UpdateCandidates(
   lookup_table_ = lookup_table;
   orientation_ = orientation;
 
+  // Compute the index of the current page.
+  current_page_index_ =
+      lookup_table.cursor_absolute_index / lookup_table.page_size;
+
   // Update the candidates in the current page.
-  const int start_from = (lookup_table_.current_page_index *
-                          lookup_table_.page_size);
+  const int start_from = current_page_index_ * lookup_table.page_size;
+
   for (size_t i = 0; i < candidate_views_.size(); ++i) {
     const size_t index_in_page = i;
     const size_t candidate_index = start_from + index_in_page;
@@ -548,9 +559,10 @@ void CandidateWindowView::UpdateCandidates(
     }
   }
 
-  // Select the current candidate per the lookup table.
-  // TODO(satorux): Rename cursor_row_index to cursor_index_in_page.
-  SelectCandidateAt(lookup_table_.cursor_row_index);
+  // Select the first candidate candidate in the page.
+  const int first_candidate_in_page =
+      lookup_table.cursor_absolute_index % lookup_table.page_size;
+  SelectCandidateAt(first_candidate_in_page);
 }
 
 void CandidateWindowView::MaybeInitializeCandidateViews(
@@ -677,8 +689,12 @@ views::View* CandidateWindowView::CreateFooterArea() {
 }
 
 void CandidateWindowView::SelectCandidateAt(int index_in_page) {
+  int cursor_absolute_index =
+      lookup_table_.page_size * current_page_index_ + index_in_page;
   // Ignore click on out of range views.
-  if (index_in_page >= lookup_table_.num_candidates_in_current_page) {
+  if (cursor_absolute_index < 0 ||
+      cursor_absolute_index >=
+      static_cast<int>(lookup_table_.candidates.size())) {
     return;
   }
 
@@ -695,15 +711,14 @@ void CandidateWindowView::SelectCandidateAt(int index_in_page) {
   candidate_views_[index_in_page]->Select();
 
   // Update the cursor indexes in the model.
-  lookup_table_.cursor_row_index = index_in_page;
-  lookup_table_.cursor_absolute_index =
-      (lookup_table_.page_size * lookup_table_.current_page_index +
-       index_in_page);
+  lookup_table_.cursor_absolute_index = cursor_absolute_index;
 
   // Update the footer area.
   footer_area_->RemoveAllChildViews(false);  // Don't delete child views.
   if (orientation_ == kVertical) {
     // Show information about the cursor and the page in the footer area.
+    // TODO(satorux): This only works with engines that return all
+    // candidates (i.e. ibus-anthy).
     footer_label_->SetText(
         StringPrintf(L"%d/%d",
                      lookup_table_.cursor_absolute_index + 1,
