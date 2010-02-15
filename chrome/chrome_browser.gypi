@@ -1475,13 +1475,11 @@
         'browser/printing/print_dialog_gtk.h',
         'browser/printing/print_job.cc',
         'browser/printing/print_job.h',
-        'browser/printing/print_job_manager_linux.cc',
         'browser/printing/print_job_manager.cc',
         'browser/printing/print_job_manager.h',
         'browser/printing/print_job_worker.cc',
         'browser/printing/print_job_worker.h',
         'browser/printing/print_job_worker_owner.h',
-        'browser/printing/print_view_manager_linux.cc',
         'browser/printing/print_view_manager.cc',
         'browser/printing/print_view_manager.h',
         'browser/printing/printer_query_linux.cc',
@@ -2184,12 +2182,7 @@
           ],
           'sources!': [
              # Exclude most of printing, it's not ported yet.
-            'browser/printing/print_job.h',
-            'browser/printing/print_job_manager.cc',
-            'browser/printing/print_job_manager.h',
             'browser/printing/print_job_worker_owner.h',
-            'browser/printing/print_view_manager.cc',
-            'browser/printing/print_view_manager.h',
             'browser/printing/printer_query.cc',
             'browser/printing/printer_query.h',
              # Exclude extension shelf for toolstrips.

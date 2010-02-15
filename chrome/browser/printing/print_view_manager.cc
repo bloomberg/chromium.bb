@@ -120,6 +120,9 @@ void PrintViewManager::DidPrintPage(
     return;
   }
 
+#if defined(OS_POSIX) && !defined(OS_MACOSX)
+  NOTIMPLEMENTED() << " this printing code doesn't quite work yet.";
+#else
   scoped_ptr<NativeMetafile> metafile(new NativeMetafile());
   if (!metafile->CreateFromData(shared_buf.memory(), params.data_size)) {
     NOTREACHED() << "Invalid metafile header";
@@ -131,6 +134,7 @@ void PrintViewManager::DidPrintPage(
   document->SetPage(params.page_number,
                     metafile.release(),
                     params.actual_shrink);
+#endif
   ShouldQuitFromInnerMessageLoop();
 }
 
