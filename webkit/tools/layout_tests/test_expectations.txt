@@ -1109,33 +1109,7 @@ BUG3273 : editing/selection/mixed-editability-10.html = FAIL
 BUG8402 MAC : fast/forms/drag-out-of-textarea.html = FAIL
 
 // Regression from 54707
-BUG35526 SKIP : websocket/tests/cookies/httponly-cookie.pl = PASS
-BUG35526 SKIP : websocket/tests/bufferedAmount-after-close.html = PASS
-BUG35526 SKIP : websocket/tests/close-on-navigate-new-location.html = PASS
-BUG35526 SKIP : websocket/tests/close-on-unload-and-force-gc.html = PASS
-BUG35526 SKIP : websocket/tests/close-on-unload-reference-in-parent.html = PASS
-BUG35526 SKIP : websocket/tests/close-on-unload.html = PASS
-BUG35526 SKIP : websocket/tests/cross-origin.html = PASS
-BUG35526 SKIP : websocket/tests/frame-length-longer-than-buffer.html = PASS
-BUG35526 SKIP : websocket/tests/frame-length-skip.html = PASS
-BUG35526 SKIP : websocket/tests/frame-lengths.html = PASS
-BUG35526 SKIP : websocket/tests/handshake-error.html = PASS
-BUG35526 SKIP : websocket/tests/handshake-fail-by-cross-origin.html = PASS
-BUG35526 SKIP : websocket/tests/handshake-fail-by-sub-protocol-mismatch.html = PASS
-BUG35526 SKIP : websocket/tests/multiple-connections.html = PASS
-BUG35526 SKIP : websocket/tests/send-after-close-on-unload.html = PASS
-BUG35526 SKIP : websocket/tests/send.html = PASS
-BUG35526 SKIP : websocket/tests/simple.html = PASS
-BUG35526 SKIP : websocket/tests/sub-protocol-with-space.html = PASS
-BUG35526 SKIP : websocket/tests/sub-protocol.html = PASS
-BUG35526 SKIP : websocket/tests/unicode.html = PASS
-BUG35526 SKIP : websocket/tests/url-no-trailing-slash.html = PASS
-BUG35526 SKIP : websocket/tests/url-with-credential.html = PASS
-BUG35526 SKIP : websocket/tests/url-with-empty-query.html = PASS
-BUG35526 SKIP : websocket/tests/url-with-query-for-no-query.html = PASS
-BUG35526 SKIP : websocket/tests/url-with-query.html = PASS
-BUG35526 SKIP : websocket/tests/websocket-pending-activity.html = PASS
-BUG35526 SKIP : websocket/tests/websocket-protocol-ignored.html = PASS
+BUG35660 : websocket/tests/cookies/httponly-cookie.pl = FAIL
 
 // GURL doesn't handle switching from standard URL to path URL correctly
 BUG27914 : fast/dom/HTMLAnchorElement/set-href-attribute-protocol.html = TEXT
@@ -2602,7 +2576,7 @@ BUG29393 SKIP DEFER : fast/loader/stateobjects = TIMEOUT
 // Asserts in DEBUG, will continue until we implement pushState.
 BUG29393 SKIP : fast/loader/document-with-fragment-url-3.html = CRASH
 
-//BUG29944 WIN : websocket/tests/unicode.html = TEXT PASS
+BUG29944 WIN : websocket/tests/unicode.html = TEXT PASS
 
 // Failures introduced by USE_NEW_BUILDER in Skia.
 BUG33287 WIN LINUX : fast/canvas/set-colors.html = TEXT
@@ -2611,7 +2585,7 @@ BUG33287 WIN LINUX : fast/canvas/set-colors.html = TEXT
 BUG32003 : fast/js/string-property-deletion.html = TEXT
 BUG31998 LINUX : svg/carto.net/selectionlist.svg = IMAGE PASS
 BUG31997 DEBUG WIN : fast/body-propagation/overflow/004-xhtml.xhtml = IMAGE+TEXT PASS
-//BUG29943 WIN : websocket/tests/send.html = TEXT PASS
+BUG29943 WIN : websocket/tests/send.html = TEXT PASS
 
 // Regression from Webkit merge 51772 -> 51784
 BUG35329 : http/tests/appcache/resource-redirect-2.html = TIMEOUT PASS
@@ -2801,7 +2775,7 @@ BUG31623 WIN: http/tests/appcache/remove-cache.html = PASS TEXT TIMEOUT
 BUG31642 LINUX DEBUG: svg/W3C-SVG-1.1/animate-elem-30-t.svg = IMAGE CRASH
 
 // WebKit roll 52852 -> 52867
-//BUG32018 : websocket/tests/frame-lengths.html = PASS TIMEOUT
+BUG32018 : websocket/tests/frame-lengths.html = PASS TIMEOUT
 BUG32018 DEBUG : websocket/tests/simple-stress.html = PASS TEXT
 
 // Flaky
