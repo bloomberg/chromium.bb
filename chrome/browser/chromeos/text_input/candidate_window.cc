@@ -3,7 +3,6 @@
 // found in the LICENSE file.
 //
 // TODO(satorux):
-// - Implement a horizontal candidate window.
 // - Implement a scroll bar or an indicator showing where you are in the
 //   candidate window.
 
@@ -141,6 +140,11 @@ class CandidateWindowView : public views::View {
   // Updates candidates of the candidate window from |lookup_table|.
   void UpdateCandidates(const ImeLookupTable& lookup_table);
 
+  // Resizes the parent frame and schedules painting. This needs to be
+  // called when the visible contents of the candidate window are
+  // modified.
+  void ResizeAndSchedulePaint();
+
  private:
   // Initializes the candidate views if needed.
   void MaybeInitializeCandidateViews(int num_views,
@@ -152,11 +156,6 @@ class CandidateWindowView : public views::View {
 
   // Creates the header area, where we show auxiliary text.
   views::View* CreateHeaderArea();
-
-  // Resizes the parent frame and schedules painting. This needs to be
-  // called when the visible contents of the candidate window are
-  // modified.
-  void ResizeAndSchedulePaint();
 
   // The orientation of the candidate window.
   Orientation orientation_;
@@ -876,7 +875,11 @@ void CandidateWindowController::OnSetCursorLocation(void* ime_library,
     frame_bounds.set_y(frame_bounds.y() - height - frame_bounds.height());
   }
 
+  // Move the window per the cursor location.
   controller->frame_->SetBounds(frame_bounds);
+  // The call is needed to ensure that the candidate window is redrawed
+  // properly after the cursor location is changed.
+  controller->candidate_window_->ResizeAndSchedulePaint();
 }
 
 void CandidateWindowController::OnUpdateAuxiliaryText(
