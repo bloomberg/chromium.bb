@@ -50,7 +50,7 @@ are meant to be copied to the output as ordinary characters.
 
 </para><para>
 
-Each tags is introduced by the character "%",
+Each tag is introduced by the character "%",
 followed by an optional minimum field width,
 followed by tag contents in curly braces ({}).
 If the minimum field width value is provided the tag
