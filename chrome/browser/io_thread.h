@@ -20,6 +20,7 @@ class DnsMaster;
 }  // namespace chrome_browser_net
 
 namespace net {
+class HttpAuthHandlerFactory;
 class NetworkChangeNotifier;
 }  // namespace net
 
@@ -30,6 +31,7 @@ class IOThread : public BrowserProcessSubThread {
     // TODO(willchan): Stop reference counting HostResolver.  It's owned by
     // IOThread now.
     scoped_refptr<net::HostResolver> host_resolver;
+    scoped_ptr<net::HttpAuthHandlerFactory> http_auth_handler_factory;
   };
 
   IOThread();
@@ -86,4 +88,4 @@ class IOThread : public BrowserProcessSubThread {
   DISALLOW_COPY_AND_ASSIGN(IOThread);
 };
 
-#endif // CHROME_BROWSER_IO_THREAD_H_
+#endif  // CHROME_BROWSER_IO_THREAD_H_

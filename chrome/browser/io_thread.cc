@@ -17,6 +17,7 @@
 #include "net/base/host_resolver_impl.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
+#include "net/http/http_auth_handler_factory.h"
 #include "net/url_request/url_request.h"
 
 namespace {
@@ -123,6 +124,8 @@ void IOThread::Init() {
       net::NetworkChangeNotifier::CreateDefaultNetworkChangeNotifier());
   globals_->host_resolver =
       CreateGlobalHostResolver(globals_->network_change_notifier.get());
+  globals_->http_auth_handler_factory.reset(
+      net::HttpAuthHandlerFactory::CreateDefault());
 }
 
 void IOThread::CleanUp() {

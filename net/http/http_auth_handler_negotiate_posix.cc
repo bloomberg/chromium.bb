@@ -37,8 +37,7 @@ bool HttpAuthHandlerNegotiate::AllowDefaultCredentials() {
   return false;
 }
 
-bool HttpAuthHandlerNegotiate::Init(std::string::const_iterator challenge_begin,
-                                    std::string::const_iterator challenge_end) {
+bool HttpAuthHandlerNegotiate::Init(HttpAuth::ChallengeTokenizer* tok) {
   return false;
 }
 
@@ -60,6 +59,14 @@ int HttpAuthHandlerNegotiate::GenerateDefaultAuthToken(
   NOTREACHED();
   LOG(ERROR) << ErrorToString(ERR_NOT_IMPLEMENTED);
   return ERR_NOT_IMPLEMENTED;
+}
+
+int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
+    HttpAuth::ChallengeTokenizer* challenge,
+    HttpAuth::Target target,
+    const GURL& origin,
+    scoped_refptr<HttpAuthHandler>* handler) {
+  return ERR_UNSUPPORTED_AUTH_SCHEME;
 }
 
 }  // namespace net

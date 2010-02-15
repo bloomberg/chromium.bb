@@ -32,13 +32,11 @@ int HttpAuthHandlerNegotiate::GenerateAuthToken(
 
 // The Negotiate challenge header looks like:
 //   WWW-Authenticate: NEGOTIATE auth-data
-bool HttpAuthHandlerNegotiate::Init(
-    std::string::const_iterator challenge_begin,
-    std::string::const_iterator challenge_end) {
+bool HttpAuthHandlerNegotiate::Init(HttpAuth::ChallengeTokenizer* challenge) {
   scheme_ = "negotiate";
   score_ = 4;
   properties_ = ENCRYPTS_IDENTITY | IS_CONNECTION_BASED;
-  return auth_sspi_.ParseChallenge(challenge_begin, challenge_end);
+  return auth_sspi_.ParseChallenge(challenge);
 }
 
 // Require identity on first pass instead of second.
@@ -74,6 +72,20 @@ int HttpAuthHandlerNegotiate::GenerateDefaultAuthToken(
       request,
       proxy,
       auth_token);
+}
+
+int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
+    HttpAuth::ChallengeTokenizer* challenge,
+    HttpAuth::Target target,
+    const GURL& origin,
+    scoped_refptr<HttpAuthHandler>* handler) {
+  // TODO(cbentzel): Move towards model of parsing in the factory
+  //                 method and only constructing when valid.
+  scoped_refptr<HttpAuthHandler> tmp_handler(new HttpAuthHandlerNegotiate());
+  if (!tmp_handler->InitFromChallenge(challenge, target, origin))
+    return ERR_INVALID_RESPONSE;
+  handler->swap(tmp_handler);
+  return OK;
 }
 
 }  // namespace net

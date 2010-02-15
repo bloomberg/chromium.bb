@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,6 +30,7 @@
 #include "net/base/ssl_config_service_defaults.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/ftp/ftp_network_layer.h"
+#include "net/http/http_auth_handler_factory.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
 #include "net/socket/ssl_test_util.h"
@@ -151,17 +152,20 @@ class TestURLRequestContext : public URLRequestContext {
   virtual ~TestURLRequestContext() {
     delete ftp_transaction_factory_;
     delete http_transaction_factory_;
+    delete http_auth_handler_factory_;
   }
 
  private:
   void Init() {
     ftp_transaction_factory_ = new net::FtpNetworkLayer(host_resolver_);
     ssl_config_service_ = new net::SSLConfigServiceDefaults;
+    http_auth_handler_factory_ = net::HttpAuthHandlerFactory::CreateDefault();
     http_transaction_factory_ =
         new net::HttpCache(
           net::HttpNetworkLayer::CreateFactory(NULL, host_resolver_,
                                                proxy_service_,
-                                               ssl_config_service_),
+                                               ssl_config_service_,
+                                               http_auth_handler_factory_),
           disk_cache::CreateInMemoryCacheBackend(0));
     // In-memory cookie store.
     cookie_store_ = new net::CookieMonster(NULL);

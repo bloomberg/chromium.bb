@@ -160,6 +160,9 @@ class ChromeURLRequestContext : public URLRequestContext {
   void set_ftp_transaction_factory(net::FtpTransactionFactory* factory) {
     ftp_transaction_factory_ = factory;
   }
+  void set_http_auth_handler_factory(net::HttpAuthHandlerFactory* factory) {
+    http_auth_handler_factory_ = factory;
+  }
   void set_cookie_store(net::CookieStore* cookie_store) {
     cookie_store_ = cookie_store;
   }

@@ -1,4 +1,4 @@
-// Copyright (c) 2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -37,8 +37,10 @@ class RequestContext : public URLRequestContext {
     ssl_config_service_ = new net::SSLConfigServiceDefaults;
 
     http_transaction_factory_ =
-        new net::HttpCache(net::HttpNetworkLayer::CreateFactory(
-            NULL, host_resolver_, proxy_service_, ssl_config_service_),
+        new net::HttpCache(
+            net::HttpNetworkLayer::CreateFactory(
+                NULL, host_resolver_, proxy_service_, ssl_config_service_,
+                NULL),
             disk_cache::CreateInMemoryCacheBackend(0));
   }
 

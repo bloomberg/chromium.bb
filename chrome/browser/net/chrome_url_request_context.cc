@@ -142,6 +142,8 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
 
   // Global host resolver for the context.
   context->set_host_resolver(io_thread()->globals()->host_resolver);
+  context->set_http_auth_handler_factory(
+      io_thread()->globals()->http_auth_handler_factory.get());
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
@@ -157,6 +159,7 @@ ChromeURLRequestContext* FactoryForOriginal::Create() {
                          context->host_resolver(),
                          context->proxy_service(),
                          context->ssl_config_service(),
+                         context->http_auth_handler_factory(),
                          disk_cache_path_, cache_size_);
 
   if (command_line.HasSwitch(switches::kDisableByteRangeSupport))
@@ -230,6 +233,9 @@ ChromeURLRequestContext* FactoryForExtensions::Create() {
   const char* schemes[] = {chrome::kExtensionScheme};
   cookie_monster->SetCookieableSchemes(schemes, 1);
   context->set_cookie_store(cookie_monster);
+  // TODO(cbentzel): How should extensions handle HTTP Authentication?
+  context->set_http_auth_handler_factory(
+      io_thread()->globals()->http_auth_handler_factory.get());
 
   return context;
 }
@@ -257,14 +263,20 @@ ChromeURLRequestContext* FactoryForOffTheRecord::Create() {
   ChromeURLRequestContext* original_context =
       original_context_getter_->GetIOContext();
 
-  // Share the same proxy service and host resolver as the original profile.
+  // Share the same proxy service, host resolver, and http_auth_handler_factory
+  // as the original profile.
   context->set_host_resolver(original_context->host_resolver());
   context->set_proxy_service(original_context->proxy_service());
+  context->set_http_auth_handler_factory(
+      original_context->http_auth_handler_factory());
 
   net::HttpCache* cache =
       new net::HttpCache(io_thread()->globals()->network_change_notifier.get(),
-                         context->host_resolver(), context->proxy_service(),
-                         context->ssl_config_service(), 0);
+                         context->host_resolver(),
+                         context->proxy_service(),
+                         context->ssl_config_service(),
+                         context->http_auth_handler_factory(),
+                         0);
   context->set_cookie_store(new net::CookieMonster(NULL));
   context->set_cookie_policy(
       new ChromeCookiePolicy(host_content_settings_map_));
@@ -319,6 +331,9 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
 
   // Share the same proxy service of the common profile.
   context->set_proxy_service(main_context->proxy_service());
+  context->set_http_auth_handler_factory(
+      main_context->http_auth_handler_factory());
+
   // Also share the cookie store of the common profile.
   context->set_cookie_store(main_context->cookie_store());
   context->set_cookie_policy(
@@ -350,6 +365,7 @@ ChromeURLRequestContext* FactoryForMedia::Create() {
         main_context->host_resolver(),
         main_context->proxy_service(),
         main_context->ssl_config_service(),
+        main_context->http_auth_handler_factory(),
         disk_cache_path_, cache_size_);
   }
 
@@ -747,6 +763,13 @@ ChromeURLRequestContext::ChromeURLRequestContext(
   accept_language_ = other->accept_language_;
   accept_charset_ = other->accept_charset_;
   referrer_charset_ = other->referrer_charset_;
+  // NOTE(cbentzel): Sharing the http_auth_handler_factory_ is potentially
+  // dangerous because it is a raw pointer. However, the current implementation
+  // creates and destroys the pointed-to-object in the io_thread and it is
+  // valid for the lifetime of all ChromeURLRequestContext objects.
+  // If this is no longer the case, HttpAuthHandlerFactory will need to be
+  // ref-counted or cloneable.
+  http_auth_handler_factory_ = other->http_auth_handler_factory_;
 
   // Set ChromeURLRequestContext members
   extension_info_ = other->extension_info_;
