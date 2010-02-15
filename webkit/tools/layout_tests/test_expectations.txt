@@ -1109,7 +1109,8 @@ BUG3273 : editing/selection/mixed-editability-10.html = FAIL
 BUG8402 MAC : fast/forms/drag-out-of-textarea.html = FAIL
 
 // Regression from 54707
-BUG35660 : websocket/tests/cookies/httponly-cookie.pl = FAIL
+// Skip now, because run_webkit_test failes to find expected data.
+BUG35660 SKIP : websocket/tests/cookies/httponly-cookie.pl = FAIL
 
 // GURL doesn't handle switching from standard URL to path URL correctly
 BUG27914 : fast/dom/HTMLAnchorElement/set-href-attribute-protocol.html = TEXT
