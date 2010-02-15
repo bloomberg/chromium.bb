@@ -5,6 +5,7 @@
 #include "chrome/browser/geolocation/network_location_provider.h"
 
 #include "base/time.h"
+#include "chrome/browser/geolocation/access_token_store.h"
 
 namespace {
 // The maximum period of time we'll wait for a complete set of device data
@@ -103,7 +104,7 @@ class NetworkLocationProvider::PositionCache {
 
 // NetworkLocationProvider factory function
 LocationProviderBase* NewNetworkLocationProvider(
-    LocationProviderBase::AccessTokenStore* access_token_store,
+    AccessTokenStore* access_token_store,
     URLRequestContextGetter* context,
     const GURL& url,
     const string16& host_name) {

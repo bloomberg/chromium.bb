@@ -54,7 +54,7 @@ class NetworkLocationProvider
                                          bool server_error,
                                          const string16& access_token);
 
-  AccessTokenStore* access_token_store_;
+  scoped_refptr<AccessTokenStore> access_token_store_;
 
   // The device data providers, acquired via global factories.
   RadioDataProvider* radio_data_provider_;

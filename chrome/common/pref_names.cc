@@ -20,7 +20,7 @@ const wchar_t kHomePage[] = L"homepage";
 // it means the profile didn't exit cleanly.
 const wchar_t kSessionExitedCleanly[] = L"profile.exited_cleanly";
 
-// This is one of three integer values:
+// An integer pref. Holds one of several values:
 // 0: (or empty) don't do anything special on startup.
 // 1: restore the last session.
 // 2: this was used to indicate a specific session should be restored. It is
@@ -663,5 +663,9 @@ const wchar_t kWebAppCreateInAppsMenu[] =
     L"browser.web_app.create_in_apps_menu";
 const wchar_t kWebAppCreateInQuickLaunchBar[] =
     L"browser.web_app.create_in_quick_launch_bar";
+
+// Dictionary that maps Geolocation network provider server URLs to
+// corresponding access token.
+const wchar_t kGeolocationAccessToken[] = L"geolocation.access_token";
 
 }  // namespace prefs

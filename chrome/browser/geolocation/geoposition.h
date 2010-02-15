@@ -20,11 +20,8 @@ struct Position {
   // values for all of them to allow us to provide the constants on the error
   // object.
   enum ErrorCode {
-    ERROR_CODE_NONE = -1,              // Gears addition
-    ERROR_CODE_UNKNOWN_ERROR = 0,      // Not used by Gears
-    ERROR_CODE_PERMISSION_DENIED = 1,  // Not used by Gears - Geolocation
-                                       // methods throw an exception if
-                                       // permission has not been granted.
+    ERROR_CODE_NONE = 0,               // Chrome addition
+    ERROR_CODE_PERMISSION_DENIED = 1,
     ERROR_CODE_POSITION_UNAVAILABLE = 2,
     ERROR_CODE_TIMEOUT = 3,
   };

@@ -15,6 +15,7 @@
 #include "chrome/browser/extensions/extensions_ui.h"
 #include "chrome/browser/external_protocol_handler.h"
 #include "chrome/browser/form_field_history_manager.h"
+#include "chrome/browser/geolocation/access_token_store.h"
 #include "chrome/browser/google_url_tracker.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"
@@ -81,6 +82,7 @@ void RegisterLocalState(PrefService* local_state) {
 #if defined(OS_WIN)
   CookiePromptModalDialog::RegisterPrefs(local_state);
 #endif
+  AccessTokenStore::RegisterPrefs(local_state);
 }
 
 void RegisterUserPrefs(PrefService* user_prefs) {

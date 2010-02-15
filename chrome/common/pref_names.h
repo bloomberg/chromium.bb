@@ -247,6 +247,8 @@ extern const wchar_t kWebAppCreateOnDesktop[];
 extern const wchar_t kWebAppCreateInAppsMenu[];
 extern const wchar_t kWebAppCreateInQuickLaunchBar[];
 
+extern const wchar_t kGeolocationAccessToken[];
+
 }  // namespace prefs
 
 #endif  // CHROME_COMMON_PREF_NAMES_H_

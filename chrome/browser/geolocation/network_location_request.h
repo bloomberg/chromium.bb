@@ -12,9 +12,9 @@
 #include "chrome/browser/net/url_fetcher.h"
 #include "googleurl/src/gurl.h"
 
-struct Position;
 class URLRequestContextGetter;
 class URLFetcher;
+struct Position;
 
 // Takes a set of device data and sends it to a server to get a position fix.
 // It performs formatting of the request and interpretation of the response.

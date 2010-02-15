@@ -17,26 +17,14 @@
 #include "base/non_thread_safe.h"
 #include "base/string16.h"
 
+class AccessTokenStore;
 class GURL;
-struct Position;
 class URLRequestContextGetter;
+struct Position;
 
 // The base class used by all location providers.
 class LocationProviderBase : public NonThreadSafe {
  public:
-  // Provides storage for the access token used in the network request.
-  // Normally the client (i.e. geolocation controller) implements this, but
-  // also allows mocking for testing.
-  class AccessTokenStore {
-   public:
-    virtual bool SetAccessToken(const GURL& url,
-                                const string16& access_token) = 0;
-    virtual bool GetAccessToken(const GURL& url, string16* access_token) = 0;
-
-   protected:
-    virtual ~AccessTokenStore() {}
-  };
-
   // Clients of the location provider must implement this interface. All call-
   // backs to this interface will happen in the context of the thread on which
   // the location provider was created.
@@ -104,7 +92,7 @@ class LocationProviderBase : public NonThreadSafe {
 LocationProviderBase* NewMockLocationProvider();
 LocationProviderBase* NewGpsLocationProvider();
 LocationProviderBase* NewNetworkLocationProvider(
-    LocationProviderBase::AccessTokenStore* access_token_store,
+    AccessTokenStore* access_token_store,
     URLRequestContextGetter* context,
     const GURL& url,
     const string16& host_name);
