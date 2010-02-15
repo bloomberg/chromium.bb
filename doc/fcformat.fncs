@@ -66,7 +66,7 @@ A <firstterm>simple</firstterm> tag
 is one where the content is an identifier.  When simple
 tags are expanded, the named identifier will be looked up in
 <parameter>pattern</parameter> and the resulting list of values returned,
-joined together using comma.  For example, to print the family name and style the
+joined together using comma.  For example, to print the family name and style of the
 pattern, use the format "%{family} %{style}\n".  To extend the family column
 to forty characters use "%-40{family}%{style}\n".
 
@@ -112,7 +112,7 @@ A <firstterm>sub-expression</firstterm> tag
 is one that expands a sub-expression.  The tag contents
 are the sub-expression to expand placed inside another set of curly braces.
 Sub-expression tags are useful for aligning an entire sub-expression, or to
-apply converters (explained later) on an entire sub-expression.
+apply converters (explained later) to the entire sub-expression output.
 For example, the format "%40{{%{family} %{style}}}" expands the sub-expression
 to construct the family name followed by the style, then takes the entire
 string and pads it on the left to be at least forty characters.
