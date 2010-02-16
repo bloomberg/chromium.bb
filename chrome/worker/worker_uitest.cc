@@ -218,12 +218,13 @@ TEST_F(WorkerTest, SharedWorkerHttpAuth) {
 // Crashy on Linux and Mac, see http://crbug.com/28445, http://crbug.com/22898,
 // http://crbug.com/35023.
 #if defined(OS_LINUX) || defined(OS_MACOSX)
-#define WorkerFastLayoutTests0 DISABLED_WorkerFastLayoutTests0
 #define WorkerFastLayoutTests1 DISABLED_WorkerFastLayoutTests1
 #define WorkerFastLayoutTests2 DISABLED_WorkerFastLayoutTests2
 #endif
 
-TEST_F(WorkerTest, WorkerFastLayoutTests0) {
+// Failing on Windows, see http://crbug.com/35867. Crashy on Linux and Mac,
+// see http://crbug.com/28445, http://crbug.com/22898, http://crbug.com/35023.
+TEST_F(WorkerTest, DISABLED_WorkerFastLayoutTests0) {
   SCOPED_TRACE("");
   RunWorkerFastLayoutTests(0);
 }
