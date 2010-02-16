@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -30,9 +30,6 @@
 #include "net/url_request/url_request_job.h"
 #include "net/url_request/url_request_view_net_internals_job.h"
 
-// The URL scheme used for internal chrome resources.
-// TODO(glen): Choose a better location for this.
-static const char kChromeURLScheme[] = "chrome";
 
 // URLRequestChromeJob is a URLRequestJob that manages running chrome-internal
 // resource requests asynchronously.
@@ -96,10 +93,11 @@ class URLRequestChromeFileJob : public URLRequestFileJob {
 void RegisterURLRequestChromeJob() {
   // Being a standard scheme allows us to resolve relative paths. This method
   // is invoked multiple times during testing, so only add the scheme once.
-  url_parse::Component url_scheme_component(0, arraysize(kChromeURLScheme) - 1);
-  if (!url_util::IsStandard(kChromeURLScheme, arraysize(kChromeURLScheme) - 1,
+  url_parse::Component url_scheme_component(0, strlen(chrome::kChromeUIScheme));
+  if (!url_util::IsStandard(chrome::kChromeUIScheme,
+                            strlen(chrome::kChromeUIScheme),
                             url_scheme_component)) {
-    url_util::AddStandardScheme(kChromeURLScheme);
+    url_util::AddStandardScheme(chrome::kChromeUIScheme);
   }
 
   FilePath inspector_dir;
@@ -108,7 +106,7 @@ void RegisterURLRequestChromeJob() {
         chrome::kChromeUIDevToolsHost, inspector_dir);
   }
 
-  URLRequest::RegisterProtocolFactory(kChromeURLScheme,
+  URLRequest::RegisterProtocolFactory(chrome::kChromeUIScheme,
                                       &ChromeURLDataManager::Factory);
   URLRequest::RegisterProtocolFactory(chrome::kPrintScheme,
                                       &ChromeURLDataManager::Factory);
@@ -126,7 +124,8 @@ void UnregisterURLRequestChromeJob() {
 void ChromeURLDataManager::URLToRequest(const GURL& url,
                                         std::string* source_name,
                                         std::string* path) {
-  DCHECK(url.SchemeIs(kChromeURLScheme) || url.SchemeIs(chrome::kPrintScheme));
+  DCHECK(url.SchemeIs(chrome::kChromeUIScheme) ||
+         url.SchemeIs(chrome::kPrintScheme));
 
   if (!url.is_valid()) {
     NOTREACHED();
