@@ -632,6 +632,15 @@ void ResourceMessageFilter::OnGetRawCookies(
     const GURL& url,
     const GURL& first_party_for_cookies,
     IPC::Message* reply_msg) {
+  // Only return raw cookies to trusted renderers.
+  if (!ChildProcessSecurityPolicy::GetInstance()->CanReadRawCookies(id())) {
+    ViewHostMsg_GetRawCookies::WriteReplyParams(
+        reply_msg,
+        std::vector<webkit_glue::WebCookie>());
+    Send(reply_msg);
+    return;
+  }
+
   URLRequestContext* context = GetRequestContextForURL(url);
 
   GetRawCookiesCompletion* callback =
