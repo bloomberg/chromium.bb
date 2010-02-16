@@ -68,7 +68,6 @@ Display* GetXDisplay() {
 }
 
 static SharedMemorySupport DoQuerySharedMemorySupport(Display* dpy) {
-#if defined(OS_CHROMEOS) || defined(OS_FREEBSD) || defined(OS_OPENBSD)
   // A temporary flag for tracking down shared memory problems.
   // TODO(evanm): remove this.
   if (CommandLine::ForCurrentProcess()->HasSwitch("disable-xshm"))
@@ -103,14 +102,6 @@ static SharedMemorySupport DoQuerySharedMemorySupport(Display* dpy) {
 
   XShmDetach(dpy, &shminfo);
   return pixmaps_supported ? SHARED_MEMORY_PIXMAP : SHARED_MEMORY_PUTIMAGE;
-#else  // OS_LINUX
-  // TODO(thestig) Temporarily disabled all together to try to work around
-  // http://crbug.com/25324
-  // Disabling on Linux only. I have no idea what the situation is on *BSD,
-  // so keeping it enabled as is. For ChromiumOS, enable because we can use
-  // the right version of libXext.
-  return SHARED_MEMORY_NONE;
-#endif
 }
 
 SharedMemorySupport QuerySharedMemorySupport(Display* dpy) {
