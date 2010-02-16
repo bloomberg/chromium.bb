@@ -89,13 +89,13 @@ bool TextureManager::TextureInfo::CanGenerateMipmaps() const {
   // TODO(gman): Check internal_format, format and type.
   for (size_t ii = 0; ii < level_infos_.size(); ++ii) {
     const LevelInfo& info = level_infos_[ii][0];
-    if (!info.valid ||
-        info.width != first.width &&
-        info.height != first.height &&
-        info.depth != 1 &&
-        info.format != first.format &&
-        info.internal_format != first.internal_format &&
-        info.type != first.type) {
+    if ((!info.valid) ||
+        (info.width != first.width) ||
+        (info.height != first.height) ||
+        (info.depth != 1) ||
+        (info.format != first.format) ||
+        (info.internal_format != first.internal_format) ||
+        (info.type != first.type)) {
         return false;
     }
   }
