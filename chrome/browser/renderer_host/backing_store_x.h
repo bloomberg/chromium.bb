@@ -36,7 +36,10 @@ class BackingStoreX : public BackingStore {
   //   display: the display of the backing store and target window
   //   damage: the area to copy
   //   target: the X id of the target window
-  void ShowRect(const gfx::Rect& damage, XID target);
+  void XShowRect(const gfx::Rect& damage, XID target);
+
+  // As above, but use Cairo instead of Xlib.
+  void CairoShowRect(const gfx::Rect& damage, GdkDrawable* drawable);
 
 #if defined(TOOLKIT_GTK)
   // Paint the backing store into the target's |dest_rect|.

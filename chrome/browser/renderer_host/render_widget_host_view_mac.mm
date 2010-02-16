@@ -568,6 +568,10 @@ void RenderWidgetHostViewMac::DrawGPUPluginInstances(CGLContextObj context) {
   plugin_container_manager_.Draw(context);
 }
 
+void RenderWidgetHostViewMac::SetVisuallyDeemphasized(bool deemphasized) {
+  // Mac uses tab-modal sheets, so this is a no-op.
+}
+
 void RenderWidgetHostViewMac::ShutdownHost() {
   shutdown_factory_.RevokeAll();
   render_widget_host_->Shutdown();

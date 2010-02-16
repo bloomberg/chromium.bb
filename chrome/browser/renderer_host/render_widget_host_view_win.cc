@@ -748,6 +748,10 @@ bool RenderWidgetHostViewWin::ContainsNativeView(
   return false;
 }
 
+void RenderWidgetHostViewWin::SetVisuallyDeemphasized(bool deemphasized) {
+  NOTIMPLEMENTED() << "http://crbug.com/32399";
+}
+
 ///////////////////////////////////////////////////////////////////////////////
 // RenderWidgetHostViewWin, private:
 

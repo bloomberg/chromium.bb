@@ -71,6 +71,7 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
   virtual void SetBackground(const SkBitmap& background);
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id);
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id);
+  virtual void SetVisuallyDeemphasized(bool deemphasized);
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
 
   gfx::NativeView native_view() const { return view_.get(); }
@@ -129,6 +130,9 @@ class RenderWidgetHostViewGtk : public RenderWidgetHostView {
 
   // The time it took after this view was selected for it to be fully painted.
   base::TimeTicks tab_switch_paint_time_;
+
+  // If true, fade the render widget when painting it.
+  bool visually_deemphasized_;
 
   // Variables used only for popups --------------------------------------------
   // Our parent widget.

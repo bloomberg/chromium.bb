@@ -147,7 +147,7 @@ class RenderWidgetHostView {
 
   // Tells the View whether the context menu is showing. This is used on Linux
   // to suppress updates to webkit focus for the duration of the show.
-  virtual void ShowingContextMenu(bool showing) { }
+  virtual void ShowingContextMenu(bool showing) {}
 
   // Allocate a backing store for this view
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) = 0;
@@ -196,6 +196,10 @@ class RenderWidgetHostView {
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) = 0;
   virtual void DestroyPluginContainer(gfx::PluginWindowHandle id) = 0;
 #endif
+
+  // Toggles visual muting of the render view area. This is on when a
+  // constrained window is showing.
+  virtual void SetVisuallyDeemphasized(bool deemphasized) = 0;
 
   void set_activatable(bool activatable) {
     activatable_ = activatable;

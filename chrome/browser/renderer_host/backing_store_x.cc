@@ -4,13 +4,11 @@
 
 #include "chrome/browser/renderer_host/backing_store_x.h"
 
+#include <cairo-xlib.h>
+#include <gtk/gtk.h>
 #include <stdlib.h>
 #include <sys/ipc.h>
 #include <sys/shm.h>
-#if defined(TOOLKIT_GTK)
-#include <cairo-xlib.h>
-#include <gtk/gtk.h>
-#endif
 
 #include <algorithm>
 #include <utility>
@@ -459,10 +457,24 @@ void BackingStoreX::ScrollBackingStore(int dx, int dy,
   }
 }
 
-void BackingStoreX::ShowRect(const gfx::Rect& rect, XID target) {
+void BackingStoreX::XShowRect(const gfx::Rect& rect, XID target) {
   XCopyArea(display_, pixmap_, target, static_cast<GC>(pixmap_gc_),
             rect.x(), rect.y(), rect.width(), rect.height(),
             rect.x(), rect.y());
+}
+
+void BackingStoreX::CairoShowRect(const gfx::Rect& rect,
+                                  GdkDrawable* drawable) {
+  cairo_surface_t* surface = cairo_xlib_surface_create(
+      display_, pixmap_, static_cast<Visual*>(visual_),
+      size().width(), size().height());
+  cairo_t* cr = gdk_cairo_create(drawable);
+  cairo_set_source_surface(cr, surface, 0, 0);
+
+  cairo_rectangle(cr, rect.x(), rect.y(), rect.width(), rect.height());
+  cairo_fill(cr);
+  cairo_destroy(cr);
+  cairo_surface_destroy(surface);
 }
 
 #if defined(TOOLKIT_GTK)

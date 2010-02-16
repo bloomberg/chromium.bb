@@ -55,6 +55,8 @@ class RenderWidgetHostViewGtkWidget {
     GtkWidget* widget = gtk_fixed_new();
     gtk_widget_set_name(widget, "chrome-render-widget-host-view");
     gtk_fixed_set_has_window(GTK_FIXED(widget), TRUE);
+    // We manually double-buffer in Paint() because Paint() may or may not be
+    // called in repsonse to an "expose-event" signal.
     gtk_widget_set_double_buffered(widget, FALSE);
     gtk_widget_set_redraw_on_allocate(widget, FALSE);
 #if defined(NDEBUG)
@@ -324,6 +326,7 @@ RenderWidgetHostViewGtk::RenderWidgetHostViewGtk(RenderWidgetHost* widget_host)
       is_hidden_(false),
       is_loading_(false),
       is_showing_context_menu_(false),
+      visually_deemphasized_(false),
       parent_host_view_(NULL),
       parent_(NULL),
       is_popup_first_mouse_release_(true),
@@ -667,8 +670,29 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
     // period where this object isn't attached to a window but hasn't been
     // Destroy()ed yet and it receives paint messages...
     if (window) {
-      backing_store->ShowRect(
-          paint_rect, x11_util::GetX11WindowFromGtkWidget(view_.get()));
+      if (!visually_deemphasized_) {
+        // In the common case, use XCopyArea. We don't draw more than once, so
+        // we don't need to double buffer.
+        backing_store->XShowRect(
+            paint_rect, x11_util::GetX11WindowFromGtkWidget(view_.get()));
+      } else {
+        // If the grey blend is showing, we make two drawing calls. Use double
+        // buffering to prevent flicker. Use CairoShowRect because XShowRect
+        // shortcuts GDK's double buffering.
+        GdkRectangle rect = { paint_rect.x(), paint_rect.y(),
+                              paint_rect.width(), paint_rect.height() };
+        gdk_window_begin_paint_rect(window, &rect);
+
+        backing_store->CairoShowRect(paint_rect, GDK_DRAWABLE(window));
+
+        cairo_t* cr = gdk_cairo_create(window);
+        gdk_cairo_rectangle(cr, &rect);
+        cairo_set_source_rgba(cr, 0, 0, 0, 0.7);
+        cairo_fill(cr);
+        cairo_destroy(cr);
+
+        gdk_window_end_paint(window);
+      }
     }
     if (!whiteout_start_time_.is_null()) {
       base::TimeDelta whiteout_duration = base::TimeTicks::Now() -
@@ -747,6 +771,14 @@ void RenderWidgetHostViewGtk::CreatePluginContainer(
 void RenderWidgetHostViewGtk::DestroyPluginContainer(
     gfx::PluginWindowHandle id) {
   plugin_container_manager_.DestroyPluginContainer(id);
+}
+
+void RenderWidgetHostViewGtk::SetVisuallyDeemphasized(bool deemphasized) {
+  if (deemphasized == visually_deemphasized_)
+    return;
+
+  visually_deemphasized_ = deemphasized;
+  gtk_widget_queue_draw(view_.get());
 }
 
 bool RenderWidgetHostViewGtk::ContainsNativeView(

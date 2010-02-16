@@ -139,6 +139,10 @@ void TabContentsViewGtk::AttachConstrainedWindow(
   constrained_window_ = constrained_window;
   gtk_floating_container_add_floating(GTK_FLOATING_CONTAINER(floating_.get()),
                                       constrained_window->widget());
+
+  RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->SetVisuallyDeemphasized(true);
 }
 
 void TabContentsViewGtk::RemoveConstrainedWindow(
@@ -148,6 +152,10 @@ void TabContentsViewGtk::RemoveConstrainedWindow(
   constrained_window_ = NULL;
   gtk_container_remove(GTK_CONTAINER(floating_.get()),
                        constrained_window->widget());
+
+  RenderWidgetHostView* rwhv = tab_contents()->GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->SetVisuallyDeemphasized(false);
 }
 
 void TabContentsViewGtk::CreateView(const gfx::Size& initial_size) {

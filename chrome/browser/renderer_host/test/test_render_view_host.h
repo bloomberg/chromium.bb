@@ -88,6 +88,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void GPUPluginBuffersSwapped(gfx::PluginWindowHandle window);
   virtual void DrawGPUPluginInstances(CGLContextObj context);
 #endif
+  virtual void SetVisuallyDeemphasized(bool deemphasized) { }
 
 #if defined(OS_LINUX)
   virtual void CreatePluginContainer(gfx::PluginWindowHandle id) { }

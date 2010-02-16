@@ -127,6 +127,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void GPUPluginBuffersSwapped(gfx::PluginWindowHandle window);
   // Draws the current GPU plugin instances into the given context.
   virtual void DrawGPUPluginInstances(CGLContextObj context);
+  virtual void SetVisuallyDeemphasized(bool deemphasized);
 
   void KillSelf();
 
