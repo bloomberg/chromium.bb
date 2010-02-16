@@ -1,4 +1,4 @@
- // This file consists of lines with specifications of what
+// This file consists of lines with specifications of what
 // to expect from layout test cases. The test cases can be directories
 // in which case the expectations apply to all test cases in that
 // directory and any subdirectory. The format of the file is along the
@@ -1666,8 +1666,7 @@ BUG23498 MAC : tables/mozilla_expected_failures/marvin/table_overflow_dirty_refl
 BUG23498 MAC : tables/mozilla_expected_failures/marvin/table_overflow_style_reflow_row_sibling.html = IMAGE
 BUG23498 MAC : tables/mozilla_expected_failures/marvin/table_overflow_style_reflow_tbody_sibling.html = IMAGE
 BUG23498 MAC : tables/mozilla_expected_failures/other/empty_cells.html = IMAGE
-BUG23498 MAC DEBUG : tables/mozilla_expected_failures/other/test4.html = IMAGE
-BUG23498 MAC RELEASE : tables/mozilla_expected_failures/other/test4.html = IMAGE+TEXT
+BUG23498 MAC : tables/mozilla_expected_failures/other/test4.html = IMAGE+TEXT IMAGE
 BUG23498 MAC : webarchive/test-duplicate-resources.html = IMAGE
 
 // Missing "misspelled-word" dotted underline
@@ -2914,7 +2913,7 @@ BUG35387 : platform/win/plugins/plugin-delayed-destroy.html = TIMEOUT
 // FFmpeg roll breaks these
 BUG35492 : media/video-played-ranges-1.html = FAIL
 BUG35492 : media/video-played-reset.html = FAIL
-BUG35492 : media/video-display-toggle.html = FAIL
+BUG35492 : media/video-display-toggle.html = CRASH FAIL
 BUG35492 : media/controls-drag-timebar.html = FAIL TIMEOUT
 // Previous to FFmpeg roll expectations
 //BUG9798 BUG13907 SLOW LINUX MAC RELEASE : media/video-played-ranges-1.html = FAIL
@@ -2937,3 +2936,9 @@ BUG35823 : fast/harness/page-cache-crash-on-data-urls.html = TEXT
 
 // WebKit roll 54726:54731
 BUG35618 LINUX WIN : fast/text/glyph-reordering.html = TEXT
+
+// Not known when these started failing.
+BUG35858 MAC LINUX : media/remove-from-document.html = CRASH
+BUG35858 MAC : media/video-source.html = CRASH
+BUG35858 MAC : media/video-source-type.html = CRASH
+BUG35858 MAC : media/video-src.html = CRASH
