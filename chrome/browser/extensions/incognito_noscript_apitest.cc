@@ -37,7 +37,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoNoScript) {
   ASSERT_EQ("Unmodified", UTF16ToASCII(title));
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoYesScript) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_IncognitoYesScript) {
   host_resolver()->AddRule("*", "127.0.0.1");
   StartHTTPServer();
 
