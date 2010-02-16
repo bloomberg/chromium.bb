@@ -21,11 +21,12 @@
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/notification_method.h"
+#include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
-#include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
+#include "chrome/test/sync/test_http_bridge_factory.h"
 
 using std::vector;
 using browser_sync::AssociatorInterface;
@@ -34,6 +35,7 @@ using browser_sync::BookmarkModelAssociator;
 using browser_sync::ChangeProcessor;
 using browser_sync::ModelAssociator;
 using browser_sync::SyncBackendHost;
+using browser_sync::TestHttpBridgeFactory;
 
 class TestProfileSyncFactory : public ProfileSyncFactory {
  public:
@@ -119,6 +121,40 @@ class TestModelAssociator : public BookmarkModelAssociator {
 
  private:
   ~TestModelAssociator() {}
+};
+
+class TestProfileSyncService : public ProfileSyncService {
+ public:
+  explicit TestProfileSyncService(Profile* profile)
+      : ProfileSyncService(profile) {
+    RegisterPreferences();
+    SetSyncSetupCompleted();
+  }
+  virtual ~TestProfileSyncService() {
+  }
+
+  virtual void InitializeBackend(bool delete_sync_data_folder) {
+    TestHttpBridgeFactory* factory = new TestHttpBridgeFactory();
+    TestHttpBridgeFactory* factory2 = new TestHttpBridgeFactory();
+    backend()->InitializeForTestMode(L"testuser", factory, factory2,
+        delete_sync_data_folder, browser_sync::kDefaultNotificationMethod);
+    // The SyncBackend posts a task to the current loop when initialization
+    // completes.
+    MessageLoop::current()->Run();
+    // Initialization is synchronous for test mode, so we should be good to go.
+    DCHECK(sync_initialized());
+  }
+
+  virtual void OnBackendInitialized() {
+    ProfileSyncService::OnBackendInitialized();
+    MessageLoop::current()->Quit();
+  }
+
+  // TODO(skrul): how to handle this?
+  virtual bool MergeAndSyncAcceptanceNeeded() {
+    // Never show the dialog.
+    return false;
+  }
 };
 
 // FakeServerChange constructs a list of sync_api::ChangeRecords while modifying

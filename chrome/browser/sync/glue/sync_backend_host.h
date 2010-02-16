@@ -20,7 +20,6 @@
 #include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
-#include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/ui_model_worker.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "googleurl/src/gurl.h"
@@ -73,9 +72,7 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
   // Create a SyncBackendHost with a reference to the |frontend| that it serves
   // and communicates to via the SyncFrontend interface (on the same thread
   // it used to call the constructor).
-  SyncBackendHost(SyncFrontend* frontend,
-                  const FilePath& profile_path,
-                  const DataTypeController::TypeMap& data_type_controllers);
+  SyncBackendHost(SyncFrontend* frontend, const FilePath& profile_path);
   ~SyncBackendHost();
 
   // Called on |frontend_loop_| to kick off asynchronous initialization.
@@ -360,9 +357,6 @@ class SyncBackendHost : public browser_sync::ModelSafeWorkerRegistrar {
 
   // Path of the folder that stores the sync data files.
   FilePath sync_data_folder_path_;
-
-  // List of registered data type controllers.
-  DataTypeController::TypeMap data_type_controllers_;
 
   // UI-thread cache of the last AuthErrorState received from syncapi.
   GoogleServiceAuthError last_auth_error_;
