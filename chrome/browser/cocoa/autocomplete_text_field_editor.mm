@@ -13,7 +13,6 @@
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
-#import "chrome/browser/cocoa/extensions/extension_action_context_menu.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/common/extensions/extension_action.h"
@@ -96,25 +95,13 @@ class Extension;
   AutocompleteTextField* field = (AutocompleteTextField*)[self delegate];
   NSRect bounds([field bounds]);
   AutocompleteTextFieldCell* cell = [field autocompleteTextFieldCell];
-  const size_t pageActionCount = [cell pageActionCount];
   BOOL flipped = [self isFlipped];
-  if (!profile_)
-    return [self defaultMenuForEvent:event];
 
-  ExtensionsService* service = profile_->GetExtensionsService();
-  if (!service)
-    return [self defaultMenuForEvent:event];
-
-  for (size_t i = 0; i < pageActionCount; ++i) {
-    NSRect pageActionFrame = [cell pageActionFrameForIndex:i inFrame:bounds];
-    if (NSMouseInRect(location, pageActionFrame, flipped)) {
-      Extension* extension = service->GetExtensionById(
-          [cell pageActionForIndex:i]->extension_id(), false);
-      DCHECK(extension);
-      if (!extension)
-        break;
-      return [[[ExtensionActionContextMenu alloc]
-          initWithExtension:extension profile:profile_] autorelease];
+  for (AutocompleteTextFieldIcon* icon in [cell layedOutIcons:bounds]) {
+    if (NSMouseInRect(location, [icon rect], flipped)) {
+      NSMenu* menu = [icon view]->GetMenu();
+      if (menu)
+        return menu;
     }
   }
 

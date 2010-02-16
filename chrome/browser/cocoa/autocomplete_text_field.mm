@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -115,21 +115,12 @@
     return;
   }
 
-  // If the user clicked the security hint icon in the cell, display the page
-  // info window.
-  const NSRect hintIconFrame = [cell securityImageFrameForFrame:bounds];
-  if (NSMouseInRect(location, hintIconFrame, flipped)) {
-    [cell onSecurityIconMousePressed];
-    return;
-  }
-
+  // If the user clicked on one of the icons (security icon, Page Actions, etc),
+  // let the icon handle the click.
   const BOOL ctrlKey = ([theEvent modifierFlags] & NSControlKeyMask) != 0;
-  // If the user left-clicked a Page Action icon, execute its action.
-  const size_t pageActionCount = [cell pageActionCount];
-  for (size_t i = 0; i < pageActionCount; ++i) {
-    NSRect pageActionFrame = [cell pageActionFrameForIndex:i inFrame:bounds];
-    if (NSMouseInRect(location, pageActionFrame, flipped) && !ctrlKey) {
-      [cell onPageActionMousePressedIn:pageActionFrame forIndex:i];
+  for (AutocompleteTextFieldIcon* icon in [cell layedOutIcons:bounds]) {
+    if (NSMouseInRect(location, [icon rect], flipped) && !ctrlKey) {
+      [icon view]->OnMousePressed([icon rect]);
       return;
     }
   }
@@ -204,14 +195,8 @@
   [self addCursorRect:fieldBounds cursor:[NSCursor IBeamCursor]];
 
   AutocompleteTextFieldCell* cell = [self autocompleteTextFieldCell];
-  NSRect iconRect = [cell securityImageFrameForFrame:fieldBounds];
-  [self addCursorRect:iconRect cursor:[NSCursor arrowCursor]];
-
-  const size_t pageActionCount = [cell pageActionCount];
-  for (size_t i = 0; i < pageActionCount; ++i) {
-    iconRect = [cell pageActionFrameForIndex:i inFrame:fieldBounds];
-    [self addCursorRect:iconRect cursor:[NSCursor arrowCursor]];
-  }
+  for (AutocompleteTextFieldIcon* icon in [cell layedOutIcons:fieldBounds])
+    [self addCursorRect:[icon rect] cursor:[NSCursor arrowCursor]];
 }
 
 - (void)updateCursorAndToolTipRects {
@@ -226,14 +211,13 @@
   [currentToolTips_ removeAllObjects];
 
   AutocompleteTextFieldCell* cell = [self autocompleteTextFieldCell];
-  const size_t pageActionCount = [cell pageActionCount];
-  for (size_t i = 0; i < pageActionCount; ++i) {
-    NSRect iconRect = [cell pageActionFrameForIndex:i inFrame:[self bounds]];
-    NSString* tooltip = [cell pageActionToolTipForIndex:i];
+  for (AutocompleteTextFieldIcon* icon in [cell layedOutIcons:[self bounds]]) {
+    NSRect iconRect = [icon rect];
+    NSString* tooltip = [icon view]->GetToolTip();
     if (!tooltip)
       continue;
 
-    // -[NSView addToolTipRect:owner:userData] does _not_ retain the owner!
+    // -[NSView addToolTipRect:owner:userData] does _not_ retain its |owner:|.
     // Put the string in a collection so it can't be dealloced while in use.
     [currentToolTips_ addObject:tooltip];
     [self addToolTipRect:iconRect owner:tooltip userData:nil];

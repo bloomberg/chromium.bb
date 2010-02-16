@@ -284,14 +284,12 @@ TEST_F(AutocompleteTextFieldCellTest, SecurityImageFrame) {
       LocationBarViewMac::SecurityImageView::LOCK);
 
   security_image_view_.SetVisible(false);
-  NSRect iconRect = [cell securityImageFrameForFrame:bounds];
-  EXPECT_TRUE(NSIsEmptyRect(iconRect));
-
-  // Save the starting frame for after clear.
-  const NSRect originalIconRect(iconRect);
+  EXPECT_EQ(0u, [[cell layedOutIcons:bounds] count]);
 
   security_image_view_.SetVisible(true);
-  iconRect = [cell securityImageFrameForFrame:bounds];
+  NSArray* icons = [cell layedOutIcons:bounds];
+  ASSERT_EQ(1u, [icons count]);
+  NSRect iconRect = [[icons objectAtIndex:0] rect];
 
   EXPECT_FALSE(NSIsEmptyRect(iconRect));
   EXPECT_TRUE(NSContainsRect(bounds, iconRect));
@@ -308,7 +306,9 @@ TEST_F(AutocompleteTextFieldCellTest, SecurityImageFrame) {
   NSFont* font = [NSFont controlContentFontOfSize:12.0];
   NSColor* color = [NSColor blackColor];
   security_image_view_.SetLabel(@"Label", font, color);
-  iconRect = [cell securityImageFrameForFrame:bounds];
+  icons = [cell layedOutIcons:bounds];
+  ASSERT_EQ(1u, [icons count]);
+  iconRect = [[icons objectAtIndex:0] rect];
 
   EXPECT_FALSE(NSIsEmptyRect(iconRect));
   EXPECT_TRUE(NSContainsRect(bounds, iconRect));
@@ -323,9 +323,7 @@ TEST_F(AutocompleteTextFieldCellTest, SecurityImageFrame) {
 
   // Make sure we clear correctly.
   security_image_view_.SetVisible(false);
-  iconRect = [cell securityImageFrameForFrame:bounds];
-  EXPECT_TRUE(NSEqualRects(iconRect, originalIconRect));
-  EXPECT_TRUE(NSIsEmptyRect(iconRect));
+  EXPECT_EQ(0u, [[cell layedOutIcons:bounds] count]);
 }
 
 // Test Page Action counts.
@@ -382,6 +380,7 @@ TEST_F(AutocompleteTextFieldCellTest, PageActionImageFrame) {
   EXPECT_TRUE(NSIsEmptyRect([cell pageActionFrameForIndex:2 inFrame:bounds]));
   preview_view.set_preview_enabled(true);
   EXPECT_FALSE(NSIsEmptyRect([cell pageActionFrameForIndex:2 inFrame:bounds]));
+  preview_view.set_preview_enabled(false);
 
   // One page action, no security icon.
   page_action_view.SetVisible(true);
@@ -401,9 +400,14 @@ TEST_F(AutocompleteTextFieldCellTest, PageActionImageFrame) {
   // Two page actions plus a security icon.
   page_action_view2.SetVisible(true);
   security_image_view_.SetVisible(true);
+  NSArray* icons = [cell layedOutIcons:bounds];
+  EXPECT_EQ(3u, [icons count]);
   iconRect0 = [cell pageActionFrameForIndex:0 inFrame:bounds];
   NSRect iconRect1 = [cell pageActionFrameForIndex:1 inFrame:bounds];
-  NSRect lockRect = [cell securityImageFrameForFrame:bounds];
+  NSRect lockRect = [[icons objectAtIndex:0] rect];
+
+  EXPECT_TRUE(NSEqualRects(iconRect0, [[icons objectAtIndex:1] rect]));
+  EXPECT_TRUE(NSEqualRects(iconRect1, [[icons objectAtIndex:2] rect]));
 
   // Make sure they're all in the expected order, and right of the |drawingRect|
   // and |textFrame|.

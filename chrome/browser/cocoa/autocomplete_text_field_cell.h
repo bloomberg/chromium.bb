@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,24 @@
 #include "chrome/browser/cocoa/location_bar_view_mac.h"
 
 class ExtensionAction;
+
+// Holds a |LocationBarImageView| and its current rect. Do not keep references
+// to this object, only use it directly after calling |-layedOutIcons:|.
+@interface AutocompleteTextFieldIcon : NSObject {
+  // The frame rect of |view_|.
+  NSRect rect_;
+
+  // weak, owned by LocationBarViewMac.
+  LocationBarViewMac::LocationBarImageView* view_;
+}
+
+// Returns a new AutocompleteTextFieldIcon object.
++ (AutocompleteTextFieldIcon*)
+    iconWithRect:(NSRect)rect
+            view:(LocationBarViewMac::LocationBarImageView*)view;
+@property(assign, nonatomic) NSRect rect;
+@property(assign, nonatomic) LocationBarViewMac::LocationBarImageView* view;
+@end
 
 // AutocompleteTextFieldCell extends StyledTextFieldCell to provide support for
 // certain decorations to be applied to the field.  These are the search hint
@@ -35,6 +53,9 @@ class ExtensionAction;
   // Display is exclusive WRT the |hintString_| and |keywordString_|.
   // This may be NULL during testing.
   LocationBarViewMac::PageActionViewList* page_action_views_;
+
+  // List of content blocked icons. This may be NULL during testing.
+  LocationBarViewMac::ContentBlockedViews* content_blocked_views_;
 }
 
 // Chooses |partialString| if |width| won't fit |fullString|.  Strings
@@ -58,34 +79,21 @@ class ExtensionAction;
 
 - (void)setSecurityImageView:(LocationBarViewMac::SecurityImageView*)view;
 - (void)setPageActionViewList:(LocationBarViewMac::PageActionViewList*)list;
+- (void)setContentBlockedViewList:
+    (LocationBarViewMac::ContentBlockedViews*)views;
 
-// Returns the total number of installed Page Actions, visible or not.
-- (size_t)pageActionCount;
+// Returns an array of the visible AutocompleteTextFieldIcon objects. Returns
+// only visible icons.
+- (NSArray*)layedOutIcons:(NSRect)cellFrame;
 
-// Called when the security icon is visible and clicked. Passed through to the
-// security_image_view_ to handle the click (i.e., show the page info dialog).
-- (void)onSecurityIconMousePressed;
-
-// Returns the portion of the cell to use for displaying the security (SSL lock)
-// icon, leaving space for its label if any.
-- (NSRect)securityImageFrameForFrame:(NSRect)cellFrame;
 
 // Returns the portion of the cell to use for displaying the Page Action icon
 // at the given index. May be NSZeroRect if the index's action is not visible.
+// This does a linear walk over all page actions, so do not call this in a loop
+// to get the position of all page actions. Use |-layedOutIcons:| instead in that
+// case.
 - (NSRect)pageActionFrameForIndex:(size_t)index inFrame:(NSRect)cellFrame;
 
-// Returns the string to be shown on hover for the Page Action icon at the
-// given index.
-- (NSString*)pageActionToolTipForIndex:(size_t)index;
-
-// Returns a pointer to the ExtensionAction object that the view at the
-// specified index represents.
-- (ExtensionAction*)pageActionForIndex:(size_t)index;
-
-// Called when the Page Action at the given index, whose icon is drawn in the
-// iconFrame, is visible and clicked. Passed through to the list of views to
-// handle the click.
-- (void)onPageActionMousePressedIn:(NSRect)iconFrame forIndex:(size_t)index;
 
 @end
 
@@ -95,5 +103,12 @@ class ExtensionAction;
 @property(readonly) NSAttributedString* keywordString;
 @property(readonly) NSAttributedString* hintString;
 @property(readonly) NSAttributedString* hintIconLabel;
+
+// Returns the total number of installed Page Actions, visible or not.
+- (size_t)pageActionCount;
+
+// Returns the portion of the cell to use for displaying the security (SSL lock)
+// icon, leaving space for its label if any.
+- (NSRect)securityImageFrameForFrame:(NSRect)cellFrame;
 
 @end

@@ -27,7 +27,12 @@ class MockSecurityImageView : public LocationBarViewMac::SecurityImageView {
                         ToolbarModel* model)
       : LocationBarViewMac::SecurityImageView(owner, profile, model) {}
 
-  MOCK_METHOD0(OnMousePressed, bool());
+  // We can't use gmock's MOCK_METHOD macro, because it doesn't like the
+  // NSRect argument to OnMousePressed.
+  virtual void OnMousePressed(NSRect bounds) {
+    mouse_was_pressed_ = true;
+  }
+  bool mouse_was_pressed_;
 };
 
 class MockPageActionImageView : public LocationBarViewMac::PageActionImageView {
@@ -37,9 +42,8 @@ class MockPageActionImageView : public LocationBarViewMac::PageActionImageView {
 
   // We can't use gmock's MOCK_METHOD macro, because it doesn't like the
   // NSRect argument to OnMousePressed.
-  virtual bool OnMousePressed(NSRect bounds) {
+  virtual void OnMousePressed(NSRect bounds) {
     mouse_was_pressed_ = true;
-    return true;
   }
 
   bool MouseWasPressed() { return mouse_was_pressed_; }
@@ -585,8 +589,8 @@ TEST_F(AutocompleteTextFieldObserverTest, SecurityIconMouseDown) {
   NSPoint location(NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame)));
   NSEvent* event(Event(field_, location, NSLeftMouseDown, 1));
 
-  EXPECT_CALL(security_image_view, OnMousePressed());
   [field_ mouseDown:event];
+  EXPECT_TRUE(security_image_view.mouse_was_pressed_);
 }
 
 // Clicking a Page Action icon should call its OnMousePressed.
@@ -657,8 +661,8 @@ TEST_F(AutocompleteTextFieldObserverTest, PageActionMouseDown) {
   location = NSMakePoint(NSMidX(iconFrame), NSMidY(iconFrame));
   event = Event(field_, location, NSLeftMouseDown, 1);
 
-  EXPECT_CALL(security_image_view, OnMousePressed());
   [field_ mouseDown:event];
+  EXPECT_TRUE(security_image_view.mouse_was_pressed_);
 }
 
 // Verify that -setAttributedStringValue: works as expected when

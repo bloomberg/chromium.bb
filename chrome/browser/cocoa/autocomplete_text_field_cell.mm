@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -56,6 +56,22 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
 }
 
 }  // namespace
+
+@implementation AutocompleteTextFieldIcon
+
+@synthesize rect = rect_;
+@synthesize view = view_;
+
++ (AutocompleteTextFieldIcon*)
+    iconWithRect:(NSRect)rect
+            view:(LocationBarViewMac::LocationBarImageView*)view {
+  AutocompleteTextFieldIcon* result = [[AutocompleteTextFieldIcon alloc] init];
+  [result setRect:rect];
+  [result setView:view];
+  return [result autorelease];
+}
+
+@end
 
 @implementation AutocompleteTextFieldCell
 
@@ -202,12 +218,9 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   security_image_view_ = view;
 }
 
-- (void)onSecurityIconMousePressed {
-  security_image_view_->OnMousePressed();
-}
-
-- (void)onPageActionMousePressedIn:(NSRect)iconFrame forIndex:(size_t)index {
-  page_action_views_->OnMousePressed(iconFrame, index);
+- (void)setContentBlockedViewList:
+    (LocationBarViewMac::ContentBlockedViews*)views {
+  content_blocked_views_ = views;
 }
 
 // Overriden to account for the hint strings and hint icons.
@@ -235,32 +248,15 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
       textFrame.size.width = NSMaxX(cellFrame) - NSMinX(textFrame);
     }
   } else {
-    // Account for the lock icon, if any, and any visible Page Action icons.
+    // Leave room for images on the right (lock icon etc).
+    NSArray* iconFrames = [self layedOutIcons:cellFrame];
     CGFloat width = 0;
-    const size_t iconCount = [self pageActionCount];
-    for (size_t i = 0; i < iconCount; ++i) {
-      LocationBarViewMac::PageActionImageView* view =
-          page_action_views_->ViewAt(i);
-      NSImage* image = view->GetImage();
-      if (image && view->IsVisible()) {
-        width += [image size].width + kIconHorizontalPad;
-      }
-    }
-
-    if (security_image_view_ && security_image_view_->IsVisible()) {
-      width += [security_image_view_->GetImage() size].width +
-          kIconHorizontalPad;
-      NSAttributedString* label = security_image_view_->GetLabel();
-      if (label) {
-        width += ceil([label size].width) + kHintXOffset;
-      }
-    }
+    if ([iconFrames count] > 0)
+      width = NSMaxX(cellFrame) - NSMinX([[iconFrames lastObject] rect]);
     if (width > 0)
       width += kIconHorizontalPad;
-
-    if (width < NSWidth(cellFrame)) {
+    if (width < NSWidth(cellFrame))
       textFrame.size.width -= width;
-    }
   }
 
   return textFrame;
@@ -308,53 +304,21 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
 - (NSRect)pageActionFrameForIndex:(size_t)index inFrame:(NSRect)cellFrame {
   LocationBarViewMac::PageActionImageView* view =
       page_action_views_->ViewAt(index);
-  const NSImage* icon = view->GetImage();
 
   // If we are calculating space for a preview page action, the icon is still
   // loading. We use this function only to get the correct x value for the
   // extension installed bubble arrow.
   if (!view->preview_enabled() &&
-      (!icon || !view->IsVisible())) {
+      (!view->GetImage() || !view->IsVisible())) {
     return NSZeroRect;
   }
 
-  // Compute the amount of space used by this icon plus any other icons to its
-  // right. It's terribly inefficient to do this anew every time, but easy to
-  // understand. It should be fine for 5 or 10 installed Page Actions, perhaps
-  // too slow for 100.
-  // TODO(pamg): Refactor to avoid this if performance is a problem.
-  const NSRect securityIconRect = [self securityImageFrameForFrame:cellFrame];
-  CGFloat widthUsed = 0.0;
-  if (NSWidth(securityIconRect) > 0) {
-    widthUsed += NSMaxX(cellFrame) - NSMinX(securityIconRect);
+  for (AutocompleteTextFieldIcon* icon in [self layedOutIcons:cellFrame]) {
+    if (view == [icon view])
+      return [icon rect];
   }
-  for (size_t i = 0; i <= index; ++i) {
-    view = page_action_views_->ViewAt(i);
-    if (view->IsVisible()) {
-      NSImage* image = view->GetImage();
-      if (image) {
-        // Page Action icons don't have labels. Don't compute space for them.
-        widthUsed += [image size].width + kIconHorizontalPad;
-      }
-    }
-  }
-  widthUsed += kIconHorizontalPad;
-
-  // If we are calculating frame space for a preview, the icon is still
-  // loading -- use maximum size as a placeholder.
-  NSSize iconSize = view->GetImageSize();
-
-  return [self rightJustifyImage:iconSize
-                          inRect:cellFrame
-                      withMargin:widthUsed];
-}
-
-- (NSString*)pageActionToolTipForIndex:(size_t)index {
-  return page_action_views_->ViewAt(index)->GetToolTip();
-}
-
-- (ExtensionAction*)pageActionForIndex:(size_t)index {
-  return page_action_views_->ViewAt(index)->page_action();
+  NOTREACHED();
+  return NSZeroRect;
 }
 
 - (void)drawHintWithFrame:(NSRect)cellFrame inView:(NSView*)controlView {
@@ -430,25 +394,65 @@ CGFloat WidthForKeyword(NSAttributedString* keywordString) {
   } else if (keywordString_) {
     [self drawKeywordWithFrame:cellFrame inView:controlView];
   } else {
-    if (security_image_view_ && security_image_view_->IsVisible()) {
-      [self drawImageView:security_image_view_
-                  inFrame:[self securityImageFrameForFrame:cellFrame]
+    for (AutocompleteTextFieldIcon* icon in [self layedOutIcons:cellFrame]) {
+      [self drawImageView:[icon view]
+                  inFrame:[icon rect]
                    inView:controlView];
-    }
-
-    const size_t pageActionCount = [self pageActionCount];
-    for (size_t i = 0; i < pageActionCount; ++i) {
-      LocationBarViewMac::PageActionImageView* view =
-          page_action_views_->ViewAt(i);
-      if (view && view->IsVisible()) {
-        [self drawImageView:view
-                    inFrame:[self pageActionFrameForIndex:i inFrame:cellFrame]
-                     inView:controlView];
-      }
     }
   }
 
   [super drawInteriorWithFrame:cellFrame inView:controlView];
+}
+
+- (NSArray*)layedOutIcons:(NSRect)cellFrame {
+  NSMutableArray* result = [NSMutableArray arrayWithCapacity:0];
+  NSRect iconFrame = cellFrame;
+  if (security_image_view_ && security_image_view_->IsVisible()) {
+    NSRect securityImageFrame = [self securityImageFrameForFrame:iconFrame];
+    [result addObject:
+        [AutocompleteTextFieldIcon iconWithRect:securityImageFrame
+                                           view:security_image_view_]];
+    iconFrame.size.width -= NSMaxX(iconFrame) - NSMinX(securityImageFrame);
+  }
+
+  const size_t pageActionCount = [self pageActionCount];
+  for (size_t i = 0; i < pageActionCount; ++i) {
+    LocationBarViewMac::PageActionImageView* view =
+        page_action_views_->ViewAt(i);
+    if (view->preview_enabled() || (view->GetImage() && view->IsVisible())) {
+      NSSize iconSize = view->GetImageSize();
+      NSRect pageActionFrame =
+          [self rightJustifyImage:iconSize
+                           inRect:iconFrame
+                       withMargin:kIconHorizontalPad + iconSize.width];
+      [result addObject:
+          [AutocompleteTextFieldIcon iconWithRect:pageActionFrame view:view]];
+      iconFrame.size.width -= NSMaxX(iconFrame) - NSMinX(pageActionFrame);
+    }
+  }
+
+  if (content_blocked_views_) {
+    // We use a reverse_iterator here because we're laying out the views from
+    // right to left but in the vector they're ordered left to right.
+    for (LocationBarViewMac::ContentBlockedViews::const_reverse_iterator
+            it(content_blocked_views_->rbegin());
+        it != const_cast<const LocationBarViewMac::ContentBlockedViews*>(
+            content_blocked_views_)->rend();
+        ++it) {
+      if ((*it)->IsVisible()) {
+        NSImage* image = (*it)->GetImage();
+        NSRect blockedContentFrame =
+            [self rightJustifyImage:[image size]
+                             inRect:iconFrame
+                         withMargin:[image size].width + kIconHorizontalPad];
+        [result addObject:
+            [AutocompleteTextFieldIcon iconWithRect:blockedContentFrame
+                                               view:*it]];
+        iconFrame.size.width -= NSMaxX(iconFrame) - NSMinX(blockedContentFrame);
+      }
+    }
+  }
+  return result;
 }
 
 @end

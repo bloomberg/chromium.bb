@@ -200,9 +200,7 @@ class ExtensionLoadedNotificationObserver : public NotificationObserver {
           pageActionFrameForIndex:index inFrame:[field frame]];
       NSRect boundsrect = [browserContentWindow convertRect:iconRect
                                                    fromView:[field superview]];
-      arrowPoint =
-          NSMakePoint(NSMinX(boundsrect) - NSWidth(boundsrect) / 2 - 1,
-                      NSMinY(boundsrect));
+      arrowPoint = NSMakePoint(NSMidX(boundsrect) + 1, NSMinY(boundsrect));
       break;
     }
     default: {

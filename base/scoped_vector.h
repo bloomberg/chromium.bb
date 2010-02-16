@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -17,6 +17,9 @@ class ScopedVector {
  public:
   typedef typename std::vector<T*>::iterator iterator;
   typedef typename std::vector<T*>::const_iterator const_iterator;
+  typedef typename std::vector<T*>::reverse_iterator reverse_iterator;
+  typedef typename std::vector<T*>::const_reverse_iterator
+      const_reverse_iterator;
 
   ScopedVector() {}
   ~ScopedVector() { reset(); }
@@ -28,6 +31,11 @@ class ScopedVector {
 
   bool empty() const { return v.empty(); }
   size_t size() const { return v.size(); }
+
+  reverse_iterator rbegin() { return v.rbegin(); }
+  const_reverse_iterator rbegin() const { return v.rbegin(); }
+  reverse_iterator rend() { return v.rend(); }
+  const_reverse_iterator rend() const { return v.rend(); }
 
   iterator begin() { return v.begin(); }
   const_iterator begin() const { return v.begin(); }

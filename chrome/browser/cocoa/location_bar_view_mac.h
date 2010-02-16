@@ -13,11 +13,13 @@
 
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
+#include "base/scoped_vector.h"
 #include "chrome/browser/autocomplete/autocomplete_edit.h"
 #include "chrome/browser/autocomplete/autocomplete_edit_view_mac.h"
 #include "chrome/browser/extensions/image_loading_tracker.h"
 #include "chrome/browser/location_bar.h"
 #include "chrome/browser/toolbar_model.h"
+#include "chrome/common/content_settings_types.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 @class AutocompleteTextField;
@@ -150,6 +152,15 @@ class LocationBarViewMac : public AutocompleteEditController,
     const NSAttributedString* GetLabel() const { return label_; }
     bool IsVisible() const { return visible_; }
 
+    // Returns the tooltip for this image view or |nil| if there is none.
+    virtual const NSString* GetToolTip() { return nil; }
+
+    // Called on mouse down.
+    virtual void OnMousePressed(NSRect bounds) {}
+
+    // Called to get the icon's context menu. Return |nil| for no menu.
+    virtual NSMenu* GetMenu() { return nil; }
+
    private:
     scoped_nsobject<NSImage> image_;
 
@@ -178,8 +189,8 @@ class LocationBarViewMac : public AutocompleteEditController,
     // Sets the image to the appropriate icon.
     void SetImageShown(Image image);
 
-    // Shows the page info dialog. Virtual so it can be overridden for testing.
-    virtual bool OnMousePressed();
+    // Shows the page info dialog.
+    virtual void OnMousePressed(NSRect bounds);
 
    private:
     // The lock icon shown when using HTTPS. Loaded lazily, the first time it's
@@ -223,8 +234,7 @@ class LocationBarViewMac : public AutocompleteEditController,
     virtual NSSize GetImageSize();
 
     // Either notify listeners or show a popup depending on the Page Action.
-    // Virtual so it can be overridden for testing.
-    virtual bool OnMousePressed(NSRect bounds);
+    virtual void OnMousePressed(NSRect bounds);
 
     // Overridden from ImageLoadingTracker.
     virtual void OnImageLoaded(SkBitmap* image, size_t index);
@@ -239,7 +249,10 @@ class LocationBarViewMac : public AutocompleteEditController,
     void SetToolTip(std::string tooltip);
 
     // Returns the tooltip for this Page Action image or |nil| if there is none.
-    const NSString* GetToolTip();
+    virtual const NSString* GetToolTip();
+
+    // Overridden to return a menu.
+    virtual NSMenu* GetMenu();
 
    protected:
     // For unit testing only.
@@ -293,6 +306,38 @@ class LocationBarViewMac : public AutocompleteEditController,
     DISALLOW_COPY_AND_ASSIGN(PageActionImageView);
   };
 
+  // ContentBlockedImageView is used to display the content settings images
+  // when types of contents are blocked on the current page.
+  class ContentBlockedImageView : public LocationBarImageView {
+   public:
+    ContentBlockedImageView(ContentSettingsType settings_type,
+                            LocationBarViewMac* owner,
+                            Profile* profile);
+    virtual ~ContentBlockedImageView();
+
+    // Shows a content settings bubble.
+    void OnMousePressed(NSRect bounds);
+
+    // Returns the settings type this shows up for.
+    ContentSettingsType settings_type() { return settings_type_; }
+
+    // Returns the tooltip for this Page Action image or |nil| if there is none.
+    virtual const NSString* GetToolTip();
+
+   private:
+    void SetToolTip(NSString* tooltip);
+
+    // The type of content handled by this view.
+    ContentSettingsType settings_type_;
+
+    LocationBarViewMac* owner_;
+    Profile* profile_;
+    scoped_nsobject<NSString> tooltip_;
+
+    DISALLOW_COPY_AND_ASSIGN(ContentBlockedImageView);
+  };
+  typedef ScopedVector<ContentBlockedImageView> ContentBlockedViews;
+
   class PageActionViewList {
    public:
     PageActionViewList(LocationBarViewMac* location_bar,
@@ -341,6 +386,10 @@ class LocationBarViewMac : public AutocompleteEditController,
   // Posts |notification| to the default notification center.
   void PostNotification(const NSString* notification);
 
+  // Updates visibility of the content blocked icons based on the current
+  // tab contents state.
+  void RefreshContentBlockedViews();
+
   scoped_ptr<AutocompleteEditViewMac> edit_view_;
 
   CommandUpdater* command_updater_;  // Weak, owned by Browser.
@@ -360,6 +409,9 @@ class LocationBarViewMac : public AutocompleteEditController,
 
   // Any installed Page Actions.
   PageActionViewList page_action_views_;
+
+  // The content blocked views.
+  ContentBlockedViews content_blocked_views_;
 
   Profile* profile_;
 

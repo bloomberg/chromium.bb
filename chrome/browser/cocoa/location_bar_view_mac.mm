@@ -6,6 +6,7 @@
 
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
+#include "base/nsimage_cache_mac.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -17,6 +18,7 @@
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
 #include "chrome/browser/cocoa/event_utils.h"
+#import "chrome/browser/cocoa/extensions/extension_action_context_menu.h"
 #import "chrome/browser/cocoa/extensions/extension_popup_controller.h"
 #include "chrome/browser/command_updater.h"
 #include "chrome/browser/extensions/extension_browser_event_router.h"
@@ -99,9 +101,18 @@ LocationBarViewMac::LocationBarViewMac(
       browser_(browser),
       toolbar_model_(toolbar_model),
       transition_(PageTransition::TYPED) {
+  for (int i = 0; i < CONTENT_SETTINGS_NUM_TYPES; ++i) {
+    ContentBlockedImageView* content_blocked_view =
+        new ContentBlockedImageView(static_cast<ContentSettingsType>(i), this,
+                                    profile_);
+    content_blocked_views_.push_back(content_blocked_view);
+    content_blocked_view->SetVisible(false);
+  }
+
   AutocompleteTextFieldCell* cell = [field_ autocompleteTextFieldCell];
   [cell setSecurityImageView:&security_image_view_];
   [cell setPageActionViewList:&page_action_views_];
+  [cell setContentBlockedViewList:&content_blocked_views_];
 
   registrar_.Add(this,
       NotificationType::EXTENSION_PAGE_ACTION_VISIBILITY_CHANGED,
@@ -123,6 +134,7 @@ WindowOpenDisposition LocationBarViewMac::GetWindowOpenDisposition() const {
   return disposition_;
 }
 
+// TODO(thakis): Ping shess to verify what he wants to verify.
 // TODO(shess): Verify that this TODO is TODONE.
 // TODO(rohitrao): Fix this to return different types once autocomplete and
 // the onmibar are implemented.  For now, any URL that comes from the
@@ -152,7 +164,9 @@ void LocationBarViewMac::FocusSearch() {
 }
 
 void LocationBarViewMac::UpdateContentBlockedIcons() {
-  // TODO(pkasting): Implement.
+  RefreshContentBlockedViews();
+  [field_ updateCursorAndToolTipRects];
+  [field_ setNeedsDisplay:YES];
 }
 
 void LocationBarViewMac::UpdatePageActions() {
@@ -187,6 +201,7 @@ void LocationBarViewMac::Update(const TabContents* contents,
                                 bool should_restore_state) {
   SetSecurityIcon(toolbar_model_->GetIcon());
   page_action_views_.RefreshViews();
+  RefreshContentBlockedViews();
   // AutocompleteEditView restores state if the tab is non-NULL.
   edit_view_->Update(should_restore_state ? contents : NULL);
 }
@@ -497,6 +512,16 @@ void LocationBarViewMac::PostNotification(const NSString* notification) {
                                         object:[NSValue valueWithPointer:this]];
 }
 
+void LocationBarViewMac::RefreshContentBlockedViews() {
+  const TabContents* tab_contents = browser_->GetSelectedTabContents();
+  for (ContentBlockedViews::iterator it(content_blocked_views_.begin());
+      it != content_blocked_views_.end();
+      ++it) {
+    (*it)->SetVisible((!toolbar_model_->input_in_progress() && tab_contents) ?
+        tab_contents->IsContentBlocked((*it)->settings_type()) : false);
+  }
+}
+
 // LocationBarImageView---------------------------------------------------------
 
 void LocationBarViewMac::LocationBarImageView::SetImage(NSImage* image) {
@@ -568,15 +593,14 @@ void LocationBarViewMac::SecurityImageView::SetImageShown(Image image) {
   }
 }
 
-bool LocationBarViewMac::SecurityImageView::OnMousePressed() {
+void LocationBarViewMac::SecurityImageView::OnMousePressed(NSRect bounds) {
   TabContents* tab = owner_->GetTabContents();
   NavigationEntry* nav_entry = tab->controller().GetActiveEntry();
   if (!nav_entry) {
     NOTREACHED();
-    return true;
+    return;
   }
   tab->ShowPageInfo(nav_entry->url(), nav_entry->ssl(), true);
-  return true;
 }
 
 // PageActionImageView----------------------------------------------------------
@@ -632,12 +656,12 @@ NSSize LocationBarViewMac::PageActionImageView::GetImageSize() {
 
 // Overridden from LocationBarImageView. Either notify listeners or show a
 // popup depending on the Page Action.
-bool LocationBarViewMac::PageActionImageView::OnMousePressed(NSRect bounds) {
+void LocationBarViewMac::PageActionImageView::OnMousePressed(NSRect bounds) {
   if (current_tab_id_ < 0) {
     NOTREACHED() << "No current tab.";
     // We don't want other code to try and handle this click.  Returning true
     // prevents this by indicating that we handled it.
-    return true;
+    return;
   }
 
   if (page_action_->HasPopup(current_tab_id_)) {
@@ -662,7 +686,6 @@ bool LocationBarViewMac::PageActionImageView::OnMousePressed(NSRect bounds) {
         current_tab_id_, current_url_.spec(),
         1);
   }
-  return true;
 }
 
 void LocationBarViewMac::PageActionImageView::OnImageLoaded(SkBitmap* image,
@@ -763,6 +786,21 @@ const NSString* LocationBarViewMac::PageActionImageView::GetToolTip() {
   return tooltip_.get();
 }
 
+NSMenu* LocationBarViewMac::PageActionImageView::GetMenu() {
+  if (!profile_)
+    return nil;
+  ExtensionsService* service = profile_->GetExtensionsService();
+  if (!service)
+    return nil;
+  Extension* extension = service->GetExtensionById(
+      page_action_->extension_id(), false);
+  DCHECK(extension);
+  if (!extension)
+    return nil;
+  return [[[ExtensionActionContextMenu alloc]
+      initWithExtension:extension profile:profile_] autorelease];
+}
+
 void LocationBarViewMac::PageActionImageView::Observe(
     NotificationType type,
     const NotificationSource& source,
@@ -779,6 +817,58 @@ void LocationBarViewMac::PageActionImageView::Observe(
       NOTREACHED() << "Unexpected notification";
       break;
   }
+}
+
+// ContentSettingsImageView-----------------------------------------------------
+
+LocationBarViewMac::ContentBlockedImageView::ContentBlockedImageView(
+    ContentSettingsType settings_type,
+    LocationBarViewMac* owner,
+    Profile* profile)
+    : settings_type_(settings_type),
+      owner_(owner),
+      profile_(profile) {
+  // TODO(thakis): We should use pdfs for these icons on OSX.
+  // http://crbug.com/35847
+  static const int kIconIDs[] = {
+    IDR_BLOCKED_COOKIES,
+    IDR_BLOCKED_IMAGES,
+    IDR_BLOCKED_JAVASCRIPT,
+    IDR_BLOCKED_PLUGINS,
+    IDR_BLOCKED_POPUPS,
+  };
+  DCHECK_EQ(arraysize(kIconIDs),
+            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  SetImage(rb.GetNSImageNamed(kIconIDs[settings_type]));
+
+  static const int kTooltipIDs[] = {
+    IDS_BLOCKED_COOKIES_TITLE,
+    IDS_BLOCKED_IMAGES_TITLE,
+    IDS_BLOCKED_JAVASCRIPT_TITLE,
+    IDS_BLOCKED_PLUGINS_TITLE,
+    IDS_BLOCKED_POPUPS_TOOLTIP,
+  };
+  DCHECK_EQ(arraysize(kTooltipIDs),
+            static_cast<size_t>(CONTENT_SETTINGS_NUM_TYPES));
+  SetToolTip(l10n_util::GetNSStringWithFixup(kTooltipIDs[settings_type]));
+}
+
+LocationBarViewMac::ContentBlockedImageView::~ContentBlockedImageView() {}
+
+void LocationBarViewMac::ContentBlockedImageView::OnMousePressed(NSRect bounds)
+    {
+  // TODO(thakis): Implement.
+  NOTIMPLEMENTED();
+}
+
+const NSString* LocationBarViewMac::ContentBlockedImageView::GetToolTip() {
+  return tooltip_.get();
+}
+
+void LocationBarViewMac::ContentBlockedImageView::SetToolTip(NSString* tooltip)
+    {
+  tooltip_.reset([tooltip retain]);
 }
 
 // PageActionViewList-----------------------------------------------------------
