@@ -12,8 +12,7 @@ SyncSession::SyncSession(SyncSessionContext* context, Delegate* delegate)
     : context_(context),
       source_(sync_pb::GetUpdatesCallerInfo::UNKNOWN),
       write_transaction_(NULL),
-      delegate_(delegate),
-      auth_failure_occurred_(false) {
+      delegate_(delegate) {
 
   context_->registrar()->GetWorkers(
       const_cast<std::vector<ModelSafeWorker*>*>(&workers_));
@@ -30,8 +29,6 @@ SyncSession::SyncSession(SyncSessionContext* context, Delegate* delegate)
   // synced) *continue* to be for this whole session, even though the
   // ModelSafeWorkerRegistrar may be configured to route syncable::AUTOFILL to
   // GROUP_DB now.
-  group_restriction_in_effect_ = false;
-  group_restriction_ = GROUP_PASSIVE;
 }
 
 SyncSessionSnapshot SyncSession::TakeSnapshot() const {

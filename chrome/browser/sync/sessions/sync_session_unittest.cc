@@ -22,7 +22,9 @@ class SyncSessionTest : public testing::Test,
                         public SyncSession::Delegate,
                         public ModelSafeWorkerRegistrar {
  public:
-  SyncSessionTest() : controller_invocations_allowed_(false) {}
+  SyncSessionTest() : controller_invocations_allowed_(false) {
+    GetModelSafeRoutingInfo(&routes_);
+  }
   virtual void SetUp() {
     context_.reset(new SyncSessionContext(NULL, NULL, this));
     session_.reset(new SyncSession(context_.get(), this));
@@ -50,7 +52,9 @@ class SyncSessionTest : public testing::Test,
 
   // ModelSafeWorkerRegistrar implementation.
   virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) {}
-  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {}
+  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
+    (*out)[syncable::BOOKMARKS] = GROUP_UI;
+  }
 
   StatusController* status() { return session_->status_controller(); }
  protected:
@@ -61,6 +65,7 @@ class SyncSessionTest : public testing::Test,
   bool controller_invocations_allowed_;
   scoped_ptr<SyncSession> session_;
   scoped_ptr<SyncSessionContext> context_;
+  ModelSafeRoutingInfo routes_;
 };
 
 TEST_F(SyncSessionTest, ScopedContextHelpers) {
@@ -107,9 +112,9 @@ TEST_F(SyncSessionTest, MoreToSyncIfUnsyncedGreaterThanCommitted) {
   // more to sync. For example, this occurs if we had more commit ids
   // than could fit in a single commit batch.
   EXPECT_FALSE(session_->HasMoreToSync());
-  std::vector<syncable::Id> commit_ids;
-  commit_ids.push_back(syncable::Id());
-  status()->set_commit_ids(commit_ids);
+  OrderedCommitSet commit_set(routes_);
+  commit_set.AddCommitItem(0, syncable::Id(), syncable::BOOKMARKS);
+  status()->set_commit_set(commit_set);
   EXPECT_FALSE(session_->HasMoreToSync());
 
   std::vector<int64> unsynced_handles;
@@ -119,8 +124,6 @@ TEST_F(SyncSessionTest, MoreToSyncIfUnsyncedGreaterThanCommitted) {
   EXPECT_FALSE(session_->HasMoreToSync());
   status()->increment_num_successful_commits();
   EXPECT_TRUE(session_->HasMoreToSync());
-  status()->ResetTransientState();
-  EXPECT_FALSE(session_->HasMoreToSync());
 }
 
 TEST_F(SyncSessionTest, MoreToSyncIfConflictSetsBuilt) {
@@ -128,8 +131,6 @@ TEST_F(SyncSessionTest, MoreToSyncIfConflictSetsBuilt) {
   // to get updates & commit again.
   status()->set_conflict_sets_built(true);
   EXPECT_TRUE(session_->HasMoreToSync());
-  status()->ResetTransientState();
-  EXPECT_FALSE(session_->HasMoreToSync());
 }
 
 TEST_F(SyncSessionTest, MoreToSyncIfDidNotGetZeroUpdates) {
@@ -142,8 +143,6 @@ TEST_F(SyncSessionTest, MoreToSyncIfDidNotGetZeroUpdates) {
   EXPECT_FALSE(session_->HasMoreToSync());
   status()->mutable_updates_response()->CopyFrom(response);
   EXPECT_TRUE(session_->HasMoreToSync());
-  status()->ResetTransientState();
-  EXPECT_FALSE(session_->HasMoreToSync());
 }
 
 TEST_F(SyncSessionTest, MoreToSyncIfConflictsResolved) {
@@ -152,8 +151,6 @@ TEST_F(SyncSessionTest, MoreToSyncIfConflictsResolved) {
   // that we have made forward progress.
   status()->set_conflicts_resolved(true);
   EXPECT_TRUE(session_->HasMoreToSync());
-  status()->ResetTransientState();
-  EXPECT_FALSE(session_->HasMoreToSync());
 }
 
 TEST_F(SyncSessionTest, MoreToSyncIfTimestampDirty) {
@@ -163,8 +160,6 @@ TEST_F(SyncSessionTest, MoreToSyncIfTimestampDirty) {
   status()->set_timestamp_dirty(true);
   status()->set_conflicts_resolved(true);
   EXPECT_TRUE(session_->HasMoreToSync());
-  status()->ResetTransientState();
-  EXPECT_FALSE(session_->HasMoreToSync());
 }
 
 

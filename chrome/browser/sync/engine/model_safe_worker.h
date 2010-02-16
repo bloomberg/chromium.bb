@@ -13,10 +13,6 @@
 #include "chrome/browser/sync/util/closure.h"
 #include "chrome/browser/sync/util/sync_types.h"
 
-namespace syncable {
-class Entry;
-}
-
 namespace browser_sync {
 
 enum ModelSafeGroup {
@@ -63,8 +59,8 @@ class ModelSafeWorker : public base::RefCountedThreadSafe<ModelSafeWorker> {
 typedef std::map<syncable::ModelType, ModelSafeGroup>
     ModelSafeRoutingInfo;
 
-ModelSafeGroup GetGroupForEntry(const syncable::Entry* e,
-                                const ModelSafeRoutingInfo& routes);
+ModelSafeGroup GetGroupForModelType(const syncable::ModelType type,
+                                    const ModelSafeRoutingInfo& routes);
 
 // Maintain the up-to-date state regarding which ModelSafeWorkers exist and
 // which types get routed to which worker.  When a sync session begins, it will

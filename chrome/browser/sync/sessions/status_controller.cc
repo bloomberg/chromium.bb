@@ -10,12 +10,10 @@ namespace browser_sync {
 namespace sessions {
 
 StatusController::StatusController()
-    : transient_(new Dirtyable<TransientState>()) {}
-
-void StatusController::ResetTransientState() {
-  transient_.reset(new Dirtyable<TransientState>());
-  syncer_status_.value()->over_quota = false;
-}
+    : commit_set_(ModelSafeRoutingInfo()),
+      transient_(new Dirtyable<TransientState>()),
+      group_restriction_in_effect_(false),
+      group_restriction_(GROUP_PASSIVE) {}
 
 // Helper to set the 'dirty' bit in the container of the field being
 // mutated.
@@ -43,21 +41,16 @@ bool StatusController::TestAndClearIsDirty() {
   conflict_progress_.reset_progress_changed();
   return is_dirty;
 }
-void StatusController::set_num_conflicting_commits(int value) {
+void StatusController::increment_num_conflicting_commits_by(int value) {
+  int new_value = error_counters_.value()->num_conflicting_commits + value;
   SetAndMarkDirtyIfChanged(&error_counters_.value()->num_conflicting_commits,
-                           value, &error_counters_);
-}
-
-void StatusController::set_num_consecutive_problem_get_updates(int value) {
-  SetAndMarkDirtyIfChanged(
-      &error_counters_.value()->consecutive_problem_get_updates, value,
+      new_value,
       &error_counters_);
 }
 
-void StatusController::set_num_consecutive_problem_commits(int value) {
-  SetAndMarkDirtyIfChanged(
-      &error_counters_.value()->consecutive_problem_commits, value,
-      &error_counters_);
+void StatusController::reset_num_conflicting_commits() {
+  SetAndMarkDirtyIfChanged(&error_counters_.value()->num_conflicting_commits,
+                           0, &error_counters_);
 }
 
 void StatusController::set_num_consecutive_transient_error_commits(int value) {
@@ -109,6 +102,12 @@ void StatusController::set_syncing(bool syncing) {
                            &syncer_status_);
 }
 
+void StatusController::set_num_successful_bookmark_commits(int value) {
+  SetAndMarkDirtyIfChanged(
+      &syncer_status_.value()->num_successful_bookmark_commits,
+      value, &syncer_status_);
+}
+
 void StatusController::set_num_successful_commits(int value) {
   SetAndMarkDirtyIfChanged(&syncer_status_.value()->num_successful_commits,
                            value, &syncer_status_);
@@ -118,16 +117,6 @@ void StatusController::set_unsynced_handles(
     const std::vector<int64>& unsynced_handles) {
   SetAndMarkDirtyIfChanged(&transient_->value()->unsynced_handles,
                            unsynced_handles, transient_.get());
-}
-
-void StatusController::increment_num_consecutive_problem_get_updates() {
-  set_num_consecutive_problem_get_updates(
-    error_counters_.value()->consecutive_problem_get_updates + 1);
-}
-
-void StatusController::increment_num_consecutive_problem_commits() {
-  set_num_consecutive_problem_commits(
-    error_counters_.value()->consecutive_problem_commits + 1);
 }
 
 void StatusController::increment_num_consecutive_errors() {
@@ -140,15 +129,20 @@ void StatusController::increment_num_consecutive_errors_by(int value) {
                              value);
 }
 
+void StatusController::increment_num_successful_bookmark_commits() {
+  set_num_successful_bookmark_commits(
+      syncer_status_.value()->num_successful_bookmark_commits + 1);
+}
+
 void StatusController::increment_num_successful_commits() {
   set_num_successful_commits(
     syncer_status_.value()->num_successful_commits + 1);
 }
 
 // These setters don't affect the dirtiness of TransientState.
-void StatusController::set_commit_ids(
-    const std::vector<syncable::Id>& commit_ids) {
-  transient_->value()->commit_ids = commit_ids;
+void StatusController::set_commit_set(const OrderedCommitSet& commit_set) {
+  DCHECK(!group_restriction_in_effect_);
+  commit_set_ = commit_set;
 }
 
 void StatusController::set_conflict_sets_built(bool built) {
@@ -173,6 +167,12 @@ int64 StatusController::CountUpdates() const {
   } else {
     return 0;
   }
+}
+
+bool StatusController::CurrentCommitIdProjectionHasIndex(size_t index) {
+  OrderedCommitSet::Projection proj =
+      commit_set_.GetCommitIdProjection(group_restriction_);
+  return std::binary_search(proj.begin(), proj.end(), index);
 }
 
 }  // namespace sessions

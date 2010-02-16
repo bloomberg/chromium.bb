@@ -40,34 +40,23 @@ using syncable::SYNCING;
 
 namespace browser_sync {
 
+using sessions::OrderedCommitSet;
 using sessions::StatusController;
 using sessions::SyncSession;
 using sessions::ConflictProgress;
 
 void IncrementErrorCounters(StatusController* status) {
-  status->increment_num_consecutive_problem_commits();
   status->increment_num_consecutive_errors();
 }
 void ResetErrorCounters(StatusController* status) {
-  status->set_num_consecutive_problem_commits(0);
   status->set_num_consecutive_errors(0);
 }
 
 ProcessCommitResponseCommand::ProcessCommitResponseCommand() {}
 ProcessCommitResponseCommand::~ProcessCommitResponseCommand() {}
 
-void ProcessCommitResponseCommand::ModelChangingExecuteImpl(
-    SyncSession* session) {
-  ProcessCommitResponse(session);
-  ExtensionsActivityMonitor* monitor = session->context()->extensions_monitor();
-  if (session->status_controller()->syncer_status().num_successful_commits == 0)
-    monitor->PutRecords(session->extensions_activity());
-}
-
-void ProcessCommitResponseCommand::ProcessCommitResponse(
-    SyncSession* session) {
-  // TODO(sync): This function returns if it sees problems. We probably want
-  // to flag the need for an update or similar.
+void ProcessCommitResponseCommand::ModelNeutralExecuteImpl(
+    sessions::SyncSession* session) {
   ScopedDirLookup dir(session->context()->directory_manager(),
                       session->context()->account_name());
   if (!dir.good()) {
@@ -100,6 +89,33 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
     IncrementErrorCounters(status);
     return;
   }
+}
+
+void ProcessCommitResponseCommand::ModelChangingExecuteImpl(
+    SyncSession* session) {
+  ProcessCommitResponse(session);
+  ExtensionsActivityMonitor* monitor = session->context()->extensions_monitor();
+  if (session->status_controller()->HasBookmarkCommitActivity() &&
+      session->status_controller()->syncer_status()
+          .num_successful_bookmark_commits == 0) {
+    monitor->PutRecords(session->extensions_activity());
+  }
+}
+
+void ProcessCommitResponseCommand::ProcessCommitResponse(
+    SyncSession* session) {
+  // TODO(sync): This function returns if it sees problems. We probably want
+  // to flag the need for an update or similar.
+  ScopedDirLookup dir(session->context()->directory_manager(),
+                      session->context()->account_name());
+  if (!dir.good()) {
+    LOG(ERROR) << "Scoped dir lookup failed!";
+    return;
+  }
+
+  StatusController* status = session->status_controller();
+  const ClientToServerResponse& response(status->commit_response());
+  const CommitResponse& cr = response.commit();
 
   // If we try to commit a parent and child together and the parent conflicts
   // the child will have a bad parent causing an error. As this is not a
@@ -113,12 +129,13 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
   set<syncable::Id> conflicting_new_folder_ids;
   set<syncable::Id> deleted_folders;
   ConflictProgress* conflict_progress = status->mutable_conflict_progress();
+  OrderedCommitSet::Projection proj = status->commit_id_projection();
   { // Scope for WriteTransaction.
     WriteTransaction trans(dir, SYNCER, __FILE__, __LINE__);
-    for (int i = 0; i < cr.entryresponse_size(); i++) {
+    for (size_t i = 0; i < proj.size(); i++) {
       CommitResponse::ResponseType response_type =
-          ProcessSingleCommitResponse(&trans, cr.entryresponse(i),
-                                      commit_ids[i],
+          ProcessSingleCommitResponse(&trans, cr.entryresponse(proj[i]),
+                                      status->GetCommitIdAt(proj[i]),
                                       &conflicting_new_folder_ids,
                                       &deleted_folders);
       switch (response_type) {
@@ -128,11 +145,14 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
         case CommitResponse::CONFLICT:
           ++conflicting_commits;
           // Only server CONFLICT responses will activate conflict resolution.
-          conflict_progress->AddConflictingItemById(commit_ids[i]);
+          conflict_progress->AddConflictingItemById(
+              status->GetCommitIdAt(proj[i]));
           break;
         case CommitResponse::SUCCESS:
           // TODO(sync): worry about sync_rate_ rate calc?
           ++successes;
+          if (status->GetCommitIdModelTypeAt(proj[i]) == syncable::BOOKMARKS)
+            status->increment_num_successful_bookmark_commits();
           status->increment_num_successful_commits();
           break;
         case CommitResponse::OVER_QUOTA:
@@ -153,7 +173,7 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
   }
 
   // TODO(sync): move status reporting elsewhere.
-  status->set_num_conflicting_commits(conflicting_commits);
+  status->increment_num_conflicting_commits_by(conflicting_commits);
   if (0 == successes) {
     status->increment_num_consecutive_transient_error_commits_by(
         transient_error_commits);
@@ -162,6 +182,7 @@ void ProcessCommitResponseCommand::ProcessCommitResponse(
     status->set_num_consecutive_transient_error_commits(0);
     status->set_num_consecutive_errors(0);
   }
+  int commit_count = static_cast<int>(proj.size());
   if (commit_count != (conflicting_commits + error_commits +
                        transient_error_commits)) {
     ResetErrorCounters(status);

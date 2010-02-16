@@ -17,6 +17,7 @@
 #include "base/basictypes.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
 #include "chrome/browser/sync/engine/syncproto.h"
+#include "chrome/browser/sync/sessions/ordered_commit_set.h"
 
 namespace syncable {
 class DirectoryManager;
@@ -47,23 +48,16 @@ struct SyncerStatus {
   bool syncer_stuck;
   bool syncing;
   int num_successful_commits;
+  // This is needed for monitoring extensions activity.
+  int num_successful_bookmark_commits;
 };
 
 // Counters for various errors that can occur repeatedly during a sync session.
 struct ErrorCounters {
   ErrorCounters() : num_conflicting_commits(0),
-                    consecutive_problem_get_updates(0),
-                    consecutive_problem_commits(0),
                     consecutive_transient_error_commits(0),
                     consecutive_errors(0) {}
   int num_conflicting_commits;
-  // Is reset when we get any updates (not on pings) and increments whenever
-  // the request fails.
-  int consecutive_problem_get_updates;
-
-  // Consecutive_problem_commits_ resets whenever we commit any number of items
-  // and increments whenever all commits fail for any reason.
-  int consecutive_problem_commits;
 
   // Number of commits hitting transient errors since the last successful
   // commit.

@@ -20,6 +20,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/time.h"
+#include "chrome/browser/sync/sessions/ordered_commit_set.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 #include "chrome/browser/sync/sessions/status_controller.h"
 #include "chrome/browser/sync/sessions/sync_session_context.h"
@@ -90,10 +91,6 @@ class SyncSession {
     return &extensions_activity_;
   }
 
-  bool auth_failure_occurred() const { return auth_failure_occurred_; }
-  void set_auth_failure_occurred() { auth_failure_occurred_ = true; }
-  void clear_auth_failure_occurred() { auth_failure_occurred_ = false; }
-
   // Volatile reader for the source member of the sync session object.  The
   // value is set to the SYNC_CYCLE_CONTINUATION value to signal that it has
   // been read.
@@ -110,7 +107,6 @@ class SyncSession {
   // assignments. This way, the scope of these actions is explicit, they can't
   // be overridden, and assigning is always accompanied by unassigning.
   friend class ScopedSetSessionWriteTransaction;
-  friend class ScopedModelSafeGroupRestriction;
 
   // The context for this session, guaranteed to outlive |this|.
   SyncSessionContext* const context_;
@@ -130,9 +126,6 @@ class SyncSession {
   // Our controller for various status and error counters.
   StatusController status_controller_;
 
-  // Used to determine if an auth error notification should be sent out.
-  bool auth_failure_occurred_;
-
   // The set of active ModelSafeWorkers for the duration of this session.
   const std::vector<ModelSafeWorker*> workers_;
 
@@ -140,11 +133,6 @@ class SyncSession {
   // datatypes should be synced and which workers should be used when working
   // on those datatypes.
   const ModelSafeRoutingInfo routing_info_;
-
-  // Used to fail read/write operations on this SyncSession that don't obey the
-  // currently active ModelSafeWorker contract.
-  bool group_restriction_in_effect_;
-  ModelSafeGroup group_restriction_;
 
   DISALLOW_COPY_AND_ASSIGN(SyncSession);
 };
@@ -175,12 +163,13 @@ class ScopedModelSafeGroupRestriction {
   ScopedModelSafeGroupRestriction(SyncSession* to_restrict,
                                ModelSafeGroup restriction)
       : session_(to_restrict) {
-    DCHECK(!session_->group_restriction_in_effect_);
-    session_->group_restriction_in_effect_ = true;
-    session_->group_restriction_ = restriction;
+    DCHECK(!session_->status_controller()->group_restriction_in_effect_);
+    session_->status_controller()->group_restriction_ = restriction;
+    session_->status_controller()->group_restriction_in_effect_ = true;
   }
   ~ScopedModelSafeGroupRestriction() {
-    session_->group_restriction_in_effect_ = false;
+    DCHECK(session_->status_controller()->group_restriction_in_effect_);
+    session_->status_controller()->group_restriction_in_effect_ = false;
   }
  private:
   SyncSession* session_;

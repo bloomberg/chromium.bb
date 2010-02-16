@@ -107,7 +107,6 @@ void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
     status->set_timestamp_dirty(true);
   }
 
-  status->set_num_consecutive_problem_get_updates(0);
   status->set_num_consecutive_errors(0);
   status->set_current_sync_timestamp(dir->last_sync_timestamp());
   status->set_syncing(true);

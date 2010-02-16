@@ -12,6 +12,8 @@ namespace browser_sync {
 
 void ModelChangingSyncerCommand::ExecuteImpl(sessions::SyncSession* session) {
   work_session_ = session;
+  ModelNeutralExecuteImpl(work_session_);
+
   for (size_t i = 0; i < session->workers().size(); ++i) {
     ModelSafeWorker* worker = session->workers()[i];
     ModelSafeGroup group = worker->GetModelSafeGroup();

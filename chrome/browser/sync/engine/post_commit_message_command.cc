@@ -34,7 +34,6 @@ void PostCommitMessageCommand::ExecuteImpl(sessions::SyncSession* session) {
     // set to true during BuildCommitCommand, and which may still be true.
     // Not to be confused with IS_UNSYNCED.  This bit is used to detect local
     // changes to items that happen during the server Commit operation.
-    status->increment_num_consecutive_problem_commits();
     status->increment_num_consecutive_errors();
     syncable::WriteTransaction trans(dir, syncable::SYNCER, __FILE__, __LINE__);
     const vector<syncable::Id>& commit_ids = status->commit_ids();

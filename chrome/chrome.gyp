@@ -910,6 +910,8 @@
         'browser/sync/engine/verify_updates_command.cc',
         'browser/sync/engine/verify_updates_command.h',
         'browser/sync/protocol/service_constants.h',
+        'browser/sync/sessions/ordered_commit_set.cc',
+        'browser/sync/sessions/ordered_commit_set.h',
         'browser/sync/sessions/session_state.cc',
         'browser/sync/sessions/session_state.h',
         'browser/sync/sessions/status_controller.cc',

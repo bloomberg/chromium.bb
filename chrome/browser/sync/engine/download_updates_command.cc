@@ -63,7 +63,6 @@ void DownloadUpdatesCommand::ExecuteImpl(SyncSession* session) {
 
   StatusController* status = session->status_controller();
   if (!ok) {
-    status->increment_num_consecutive_problem_get_updates();
     status->increment_num_consecutive_errors();
     LOG(ERROR) << "PostClientToServerMessage() failed";
     return;

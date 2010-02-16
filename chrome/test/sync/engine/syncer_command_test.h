@@ -5,6 +5,8 @@
 #ifndef CHROME_TEST_SYNC_ENGINE_SYNCER_COMMAND_TEST_H_
 #define CHROME_TEST_SYNC_ENGINE_SYNCER_COMMAND_TEST_H_
 
+#include <vector>
+
 #include "chrome/test/sync/engine/test_directory_setter_upper.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
@@ -38,8 +40,15 @@ class SyncerCommandTest : public testing::Test,
   }
 
   // ModelSafeWorkerRegistrar implementation.
-  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) {}
-  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {}
+  virtual void GetWorkers(std::vector<ModelSafeWorker*>* out) {
+    std::vector<scoped_refptr<ModelSafeWorker> >::iterator it;
+    for (it = workers_.begin(); it != workers_.end(); ++it)
+      out->push_back(*it);
+  }
+  virtual void GetModelSafeRoutingInfo(ModelSafeRoutingInfo* out) {
+    ModelSafeRoutingInfo copy(routing_info_);
+    out->swap(copy);
+  }
 
  protected:
   SyncerCommandTest() {}
@@ -68,10 +77,19 @@ class SyncerCommandTest : public testing::Test,
     session_.reset();
   }
 
+  std::vector<scoped_refptr<ModelSafeWorker> >* workers() {
+    return &workers_;
+  }
+
+  const ModelSafeRoutingInfo& routing_info() {return routing_info_; }
+  ModelSafeRoutingInfo* mutable_routing_info() { return &routing_info_; }
+
  private:
   TestDirectorySetterUpper syncdb_;
   scoped_ptr<sessions::SyncSessionContext> context_;
   scoped_ptr<sessions::SyncSession> session_;
+  std::vector<scoped_refptr<ModelSafeWorker> > workers_;
+  ModelSafeRoutingInfo routing_info_;
   DISALLOW_COPY_AND_ASSIGN(SyncerCommandTest);
 };
 

@@ -14,6 +14,7 @@
 #define CHROME_BROWSER_SYNC_SESSIONS_STATUS_CONTROLLER_H_
 
 #include "base/scoped_ptr.h"
+#include "chrome/browser/sync/sessions/ordered_commit_set.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 
 namespace browser_sync {
@@ -26,12 +27,6 @@ class StatusController {
   // Returns true if some portion of the session state has changed (is dirty)
   // since it was created or was last reset.
   bool TestAndClearIsDirty();
-
-  // Discards the current transient state components that should not carry over
-  // to a subsequent sync cycle (a run between states in SyncShare), and keeps
-  // everything else intact. After the call, |this| is ready for use
-  // as part of a new sync cycle.
-  void ResetTransientState();
 
   ConflictProgress const* conflict_progress() const {
     return &conflict_progress_;
@@ -70,7 +65,21 @@ class StatusController {
     return change_progress_.value();
   }
   const std::vector<syncable::Id>& commit_ids() const {
-    return transient_->value()->commit_ids;
+    DCHECK(!group_restriction_in_effect_) << "Group restriction in effect!";
+    return commit_set_.GetAllCommitIds();
+  }
+  const OrderedCommitSet::Projection& commit_id_projection() {
+    DCHECK(group_restriction_in_effect_)
+        << "No group restriction for projection.";
+    return commit_set_.GetCommitIdProjection(group_restriction_);
+  }
+  const syncable::Id& GetCommitIdAt(size_t index) {
+    DCHECK(CurrentCommitIdProjectionHasIndex(index));
+    return commit_set_.GetCommitIdAt(index);
+  }
+  const syncable::ModelType GetCommitIdModelTypeAt(size_t index) {
+    DCHECK(CurrentCommitIdProjectionHasIndex(index));
+    return commit_set_.GetModelTypeAt(index);
   }
   const std::vector<int64>& unsynced_handles() const {
     return transient_->value()->unsynced_handles;
@@ -91,14 +100,17 @@ class StatusController {
   // Returns the number of updates received from the sync server.
   int64 CountUpdates() const;
 
+  // Returns true iff any of the commit ids added during this session are
+  // bookmark related.
+  bool HasBookmarkCommitActivity() const {
+    return commit_set_.HasBookmarkCommitId();
+  }
+
   bool got_zero_updates() const { return CountUpdates() == 0; }
 
   // A toolbelt full of methods for updating counters and flags.
-  void set_num_conflicting_commits(int value);
-  void set_num_consecutive_problem_get_updates(int value);
-  void increment_num_consecutive_problem_get_updates();
-  void set_num_consecutive_problem_commits(int value);
-  void increment_num_consecutive_problem_commits();
+  void increment_num_conflicting_commits_by(int value);
+  void reset_num_conflicting_commits();
   void set_num_consecutive_transient_error_commits(int value);
   void increment_num_consecutive_transient_error_commits_by(int value);
   void set_num_consecutive_errors(int value);
@@ -111,16 +123,24 @@ class StatusController {
   void set_syncer_stuck(bool syncer_stuck);
   void set_syncing(bool syncing);
   void set_num_successful_commits(int value);
+  void set_num_successful_bookmark_commits(int value);
   void increment_num_successful_commits();
+  void increment_num_successful_bookmark_commits();
   void set_unsynced_handles(const std::vector<int64>& unsynced_handles);
 
-  void set_commit_ids(const std::vector<syncable::Id>& commit_ids);
+  void set_commit_set(const OrderedCommitSet& commit_set);
   void set_conflict_sets_built(bool built);
   void set_conflicts_resolved(bool resolved);
   void set_items_committed(bool items_committed);
   void set_timestamp_dirty(bool dirty);
 
  private:
+  friend class ScopedModelSafeGroupRestriction;
+
+  // Returns true iff the commit id projection for |group_restriction_|
+  // references position |index| into the full set of commit ids in play.
+  bool CurrentCommitIdProjectionHasIndex(size_t index);
+
   // Dirtyable keeps a dirty bit that can be set, cleared, and checked to
   // determine if a notification should be sent due to state change.
   // This is useful when applied to any session state object if you want to know
@@ -138,6 +158,8 @@ class StatusController {
     bool dirty_;
   };
 
+  OrderedCommitSet commit_set_;
+
   // Various pieces of state we track dirtiness of.
   Dirtyable<ChangelogProgress> change_progress_;
   Dirtyable<SyncerStatus> syncer_status_;
@@ -146,9 +168,16 @@ class StatusController {
   // The transient parts of a sync session that can be reset during the session.
   // For some parts of this state, we want to track whether changes occurred so
   // we allocate a Dirtyable version.
+  // TODO(tim): Get rid of transient state since it has no valid use case
+  // anymore.
   scoped_ptr<Dirtyable<TransientState> > transient_;
 
   ConflictProgress conflict_progress_;
+
+  // Used to fail read/write operations on state that don't obey the current
+  // active ModelSafeWorker contract.
+  bool group_restriction_in_effect_;
+  ModelSafeGroup group_restriction_;
 
   DISALLOW_COPY_AND_ASSIGN(StatusController);
 };

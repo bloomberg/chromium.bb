@@ -35,6 +35,11 @@ BuildCommitCommand::~BuildCommitCommand() {}
 
 void BuildCommitCommand::AddExtensionsActivityToMessage(
     SyncSession* session, CommitMessage* message) {
+  // We only send ExtensionsActivity to the server if bookmarks are being
+  // committed.
+  if (!session->status_controller()->HasBookmarkCommitActivity())
+    return;
+
   const ExtensionsActivityMonitor::Records& records =
       session->extensions_activity();
   for (ExtensionsActivityMonitor::Records::const_iterator it = records.begin();

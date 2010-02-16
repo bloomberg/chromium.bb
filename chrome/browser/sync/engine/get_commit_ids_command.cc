@@ -17,6 +17,7 @@ using std::vector;
 
 namespace browser_sync {
 
+using sessions::OrderedCommitSet;
 using sessions::SyncSession;
 using sessions::StatusController;
 
@@ -38,51 +39,50 @@ void GetCommitIdsCommand::ExecuteImpl(SyncSession* session) {
                  session->routing_info());
 
   const vector<syncable::Id>& verified_commit_ids =
-      ordered_commit_set_.GetAllCommitIds();
+      ordered_commit_set_->GetAllCommitIds();
 
   for (size_t i = 0; i < verified_commit_ids.size(); i++)
     LOG(INFO) << "Debug commit batch result:" << verified_commit_ids[i];
 
-  status->set_commit_ids(verified_commit_ids);
+  status->set_commit_set(*ordered_commit_set_.get());
 }
 
 void GetCommitIdsCommand::AddUncommittedParentsAndTheirPredecessors(
     syncable::BaseTransaction* trans,
     syncable::Id parent_id,
-    const ModelSafeRoutingInfo& routing_info) {
+    const ModelSafeRoutingInfo& routes) {
   using namespace syncable;
-  OrderedCommitSet item_dependencies;
+  OrderedCommitSet item_dependencies(routes);
 
   // Climb the tree adding entries leaf -> root.
   while (!parent_id.ServerKnows()) {
     Entry parent(trans, GET_BY_ID, parent_id);
     CHECK(parent.good()) << "Bad user-only parent in item path.";
     int64 handle = parent.Get(META_HANDLE);
-    if (ordered_commit_set_.HaveCommitItem(handle) ||
+    if (ordered_commit_set_->HaveCommitItem(handle) ||
         item_dependencies.HaveCommitItem(handle)) {
       break;
     }
     if (!AddItemThenPredecessors(trans, &parent, IS_UNSYNCED,
-                                 &item_dependencies, routing_info)) {
+                                 &item_dependencies)) {
       break;  // Parent was already present in the set.
     }
     parent_id = parent.Get(PARENT_ID);
   }
 
   // Reverse what we added to get the correct order.
-  ordered_commit_set_.AppendReverse(item_dependencies);
+  ordered_commit_set_->AppendReverse(item_dependencies);
 }
 
 bool GetCommitIdsCommand::AddItem(syncable::Entry* item,
-                                  OrderedCommitSet* result,
-                                  const ModelSafeRoutingInfo& routing_info) {
+                                  OrderedCommitSet* result) {
   int64 item_handle = item->Get(syncable::META_HANDLE);
   if (result->HaveCommitItem(item_handle) ||
-      ordered_commit_set_.HaveCommitItem(item_handle)) {
+      ordered_commit_set_->HaveCommitItem(item_handle)) {
     return false;
   }
   result->AddCommitItem(item_handle, item->Get(syncable::ID),
-      GetGroupForEntry(item, routing_info));
+                        item->GetModelType());
   return true;
 }
 
@@ -90,9 +90,8 @@ bool GetCommitIdsCommand::AddItemThenPredecessors(
     syncable::BaseTransaction* trans,
     syncable::Entry* item,
     syncable::IndexedBitField inclusion_filter,
-    OrderedCommitSet* result,
-    const ModelSafeRoutingInfo& routing_info) {
-  if (!AddItem(item, result, routing_info))
+    OrderedCommitSet* result) {
+  if (!AddItem(item, result))
     return false;
   if (item->Get(syncable::IS_DEL))
     return true;  // Deleted items have no predecessors.
@@ -103,7 +102,7 @@ bool GetCommitIdsCommand::AddItemThenPredecessors(
     CHECK(prev.good()) << "Bad id when walking predecessors.";
     if (!prev.Get(inclusion_filter))
       break;
-    if (!AddItem(&prev, result, routing_info))
+    if (!AddItem(&prev, result))
       break;
     prev_id = prev.Get(syncable::PREV_ID);
   }
@@ -114,26 +113,25 @@ void GetCommitIdsCommand::AddPredecessorsThenItem(
     syncable::BaseTransaction* trans,
     syncable::Entry* item,
     syncable::IndexedBitField inclusion_filter,
-    const ModelSafeRoutingInfo& routing_info) {
-  OrderedCommitSet item_dependencies;
-  AddItemThenPredecessors(trans, item, inclusion_filter, &item_dependencies,
-                          routing_info);
+    const ModelSafeRoutingInfo& routes) {
+  OrderedCommitSet item_dependencies(routes);
+  AddItemThenPredecessors(trans, item, inclusion_filter, &item_dependencies);
 
   // Reverse what we added to get the correct order.
-  ordered_commit_set_.AppendReverse(item_dependencies);
+  ordered_commit_set_->AppendReverse(item_dependencies);
 }
 
 bool GetCommitIdsCommand::IsCommitBatchFull() {
-  return ordered_commit_set_.Size() >= requested_commit_batch_size_;
+  return ordered_commit_set_->Size() >= requested_commit_batch_size_;
 }
 
 void GetCommitIdsCommand::AddCreatesAndMoves(
     const vector<int64>& unsynced_handles,
     syncable::WriteTransaction* write_transaction,
-    const ModelSafeRoutingInfo& routing_info) {
+    const ModelSafeRoutingInfo& routes) {
   // Add moves and creates, and prepend their uncommitted parents.
   for (CommitMetahandleIterator iterator(unsynced_handles, write_transaction,
-                                         &ordered_commit_set_);
+                                         ordered_commit_set_.get());
        !IsCommitBatchFull() && iterator.Valid();
        iterator.Increment()) {
     int64 metahandle = iterator.Current();
@@ -143,25 +141,23 @@ void GetCommitIdsCommand::AddCreatesAndMoves(
                           metahandle);
     if (!entry.Get(syncable::IS_DEL)) {
       AddUncommittedParentsAndTheirPredecessors(write_transaction,
-                                                entry.Get(syncable::PARENT_ID),
-                                                routing_info);
-      AddPredecessorsThenItem(write_transaction, &entry, syncable::IS_UNSYNCED,
-                              routing_info);
+          entry.Get(syncable::PARENT_ID), routes);
+      AddPredecessorsThenItem(write_transaction, &entry,
+          syncable::IS_UNSYNCED, routes);
     }
   }
 
   // It's possible that we overcommitted while trying to expand dependent
   // items.  If so, truncate the set down to the allowed size.
-  ordered_commit_set_.Truncate(requested_commit_batch_size_);
+  ordered_commit_set_->Truncate(requested_commit_batch_size_);
 }
 
 void GetCommitIdsCommand::AddDeletes(const vector<int64>& unsynced_handles,
-    syncable::WriteTransaction* write_transaction,
-    const ModelSafeRoutingInfo& routing_info) {
+    syncable::WriteTransaction* write_transaction) {
   set<syncable::Id> legal_delete_parents;
 
   for (CommitMetahandleIterator iterator(unsynced_handles, write_transaction,
-                                         &ordered_commit_set_);
+                                         ordered_commit_set_.get());
        !IsCommitBatchFull() && iterator.Valid();
        iterator.Increment()) {
     int64 metahandle = iterator.Current();
@@ -194,9 +190,9 @@ void GetCommitIdsCommand::AddDeletes(const vector<int64>& unsynced_handles,
           LOG(INFO) << "Inserting moved and deleted entry, will be missed by"
             " delete roll." << entry.Get(syncable::ID);
 
-          ordered_commit_set_.AddCommitItem(metahandle,
+          ordered_commit_set_->AddCommitItem(metahandle,
               entry.Get(syncable::ID),
-              GetGroupForEntry(&entry, routing_info));
+              entry.GetModelType());
         }
 
         // Skip this entry since it's a child of a parent that will be
@@ -224,7 +220,7 @@ void GetCommitIdsCommand::AddDeletes(const vector<int64>& unsynced_handles,
   //   parent was not deleted
 
   for (CommitMetahandleIterator iterator(unsynced_handles, write_transaction,
-                                         &ordered_commit_set_);
+                                         ordered_commit_set_.get());
       !IsCommitBatchFull() && iterator.Valid();
       iterator.Increment()) {
     int64 metahandle = iterator.Current();
@@ -233,8 +229,8 @@ void GetCommitIdsCommand::AddDeletes(const vector<int64>& unsynced_handles,
     if (entry.Get(syncable::IS_DEL)) {
       syncable::Id parent_id = entry.Get(syncable::PARENT_ID);
       if (legal_delete_parents.count(parent_id)) {
-        ordered_commit_set_.AddCommitItem(metahandle, entry.Get(syncable::ID),
-            GetGroupForEntry(&entry, routing_info));
+        ordered_commit_set_->AddCommitItem(metahandle, entry.Get(syncable::ID),
+            entry.GetModelType());
       }
     }
   }
@@ -242,7 +238,8 @@ void GetCommitIdsCommand::AddDeletes(const vector<int64>& unsynced_handles,
 
 void GetCommitIdsCommand::BuildCommitIds(const vector<int64>& unsynced_handles,
     syncable::WriteTransaction* write_transaction,
-    const ModelSafeRoutingInfo& routing_info) {
+    const ModelSafeRoutingInfo& routes) {
+  ordered_commit_set_.reset(new OrderedCommitSet(routes));
   // Commits follow these rules:
   // 1. Moves or creates are preceded by needed folder creates, from
   //    root to leaf.  For folders whose contents are ordered, moves
@@ -253,10 +250,10 @@ void GetCommitIdsCommand::BuildCommitIds(const vector<int64>& unsynced_handles,
   // delete trees.
 
   // Add moves and creates, and prepend their uncommitted parents.
-  AddCreatesAndMoves(unsynced_handles, write_transaction, routing_info);
+  AddCreatesAndMoves(unsynced_handles, write_transaction, routes);
 
   // Add all deletes.
-  AddDeletes(unsynced_handles, write_transaction, routing_info);
+  AddDeletes(unsynced_handles, write_transaction);
 }
 
 }  // namespace browser_sync

@@ -12,24 +12,12 @@ typedef testing::Test StatusControllerTest;
 
 TEST_F(StatusControllerTest, GetsDirty) {
   StatusController status;
-  status.set_num_conflicting_commits(1);
+  status.increment_num_conflicting_commits_by(1);
   EXPECT_TRUE(status.TestAndClearIsDirty());
   EXPECT_FALSE(status.TestAndClearIsDirty());  // Test that it actually resets.
-  status.set_num_conflicting_commits(1);
+  status.increment_num_conflicting_commits_by(0);
   EXPECT_FALSE(status.TestAndClearIsDirty());
-  status.set_num_conflicting_commits(0);
-  EXPECT_TRUE(status.TestAndClearIsDirty());
-
-  status.set_num_consecutive_problem_get_updates(1);
-  EXPECT_TRUE(status.TestAndClearIsDirty());
-
-  status.increment_num_consecutive_problem_get_updates();
-  EXPECT_TRUE(status.TestAndClearIsDirty());
-
-  status.set_num_consecutive_problem_commits(1);
-  EXPECT_TRUE(status.TestAndClearIsDirty());
-
-  status.increment_num_consecutive_problem_commits();
+  status.increment_num_conflicting_commits_by(1);
   EXPECT_TRUE(status.TestAndClearIsDirty());
 
   status.set_num_consecutive_transient_error_commits(1);
@@ -77,7 +65,7 @@ TEST_F(StatusControllerTest, GetsDirty) {
   status.set_syncing(false);
   EXPECT_TRUE(status.TestAndClearIsDirty());
 
-  status.set_num_successful_commits(1);
+  status.increment_num_successful_commits();
   EXPECT_TRUE(status.TestAndClearIsDirty());
   status.increment_num_successful_commits();
   EXPECT_TRUE(status.TestAndClearIsDirty());
@@ -103,9 +91,11 @@ TEST_F(StatusControllerTest, StaysClean) {
   status.set_items_committed(true);
   EXPECT_FALSE(status.TestAndClearIsDirty());
 
-  std::vector<syncable::Id> v;
-  v.push_back(syncable::Id());
-  status.set_commit_ids(v);
+  ModelSafeRoutingInfo routes;
+  routes[syncable::BOOKMARKS] = GROUP_UI;
+  OrderedCommitSet commits(routes);
+  commits.AddCommitItem(0, syncable::Id(), syncable::BOOKMARKS);
+  status.set_commit_set(commits);
   EXPECT_FALSE(status.TestAndClearIsDirty());
 }
 
@@ -114,18 +104,8 @@ TEST_F(StatusControllerTest, StaysClean) {
 // method was actually setting |bar_| instead!).
 TEST_F(StatusControllerTest, ReadYourWrites) {
   StatusController status;
-  status.set_num_conflicting_commits(1);
+  status.increment_num_conflicting_commits_by(1);
   EXPECT_EQ(1, status.error_counters().num_conflicting_commits);
-
-  status.set_num_consecutive_problem_get_updates(2);
-  EXPECT_EQ(2, status.error_counters().consecutive_problem_get_updates);
-  status.increment_num_consecutive_problem_get_updates();
-  EXPECT_EQ(3, status.error_counters().consecutive_problem_get_updates);
-
-  status.set_num_consecutive_problem_commits(4);
-  EXPECT_EQ(4, status.error_counters().consecutive_problem_commits);
-  status.increment_num_consecutive_problem_commits();
-  EXPECT_EQ(5, status.error_counters().consecutive_problem_commits);
 
   status.set_num_consecutive_transient_error_commits(6);
   EXPECT_EQ(6, status.error_counters().consecutive_transient_error_commits);
@@ -172,44 +152,6 @@ TEST_F(StatusControllerTest, ReadYourWrites) {
   v.push_back(16);
   status.set_unsynced_handles(v);
   EXPECT_EQ(16, v[0]);
-}
-
-TEST_F(StatusControllerTest, ResetTransientState) {
-  StatusController status;
-  status.set_conflict_sets_built(true);
-  EXPECT_TRUE(status.conflict_sets_built());
-  status.set_timestamp_dirty(true);
-  status.set_items_committed(true);
-  status.set_conflicts_resolved(true);
-  sync_pb::SyncEntity entity;
-  status.mutable_update_progress()->AddVerifyResult(VERIFY_SUCCESS, entity);
-  status.mutable_commit_message()->mutable_commit();  // Lazy initialization.
-  ASSERT_TRUE(status.mutable_commit_message()->has_commit());
-  status.mutable_commit_response()->mutable_commit();
-  ASSERT_TRUE(status.commit_response().has_commit());
-  status.mutable_updates_response()->mutable_get_updates();
-  ASSERT_TRUE(status.updates_response().has_get_updates());
-
-  std::vector<int64> v;
-  v.push_back(1);
-  status.set_unsynced_handles(v);
-
-  std::vector<syncable::Id> v2;
-  v2.push_back(syncable::Id());
-  status.set_commit_ids(v2);
-
-  EXPECT_TRUE(status.TestAndClearIsDirty());
-  status.ResetTransientState();
-  EXPECT_FALSE(status.TestAndClearIsDirty());
-
-  EXPECT_FALSE(status.conflict_sets_built());
-  EXPECT_FALSE(status.timestamp_dirty());
-  EXPECT_FALSE(status.did_commit_items());
-  EXPECT_FALSE(status.conflicts_resolved());
-  EXPECT_EQ(0, status.update_progress().VerifiedUpdatesSize());
-  EXPECT_FALSE(status.mutable_commit_message()->has_commit());
-  EXPECT_FALSE(status.commit_response().has_commit());
-  EXPECT_FALSE(status.updates_response().has_get_updates());
 }
 
 TEST_F(StatusControllerTest, HasConflictingUpdates) {

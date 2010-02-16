@@ -81,7 +81,6 @@ bool Syncer::SyncShare(sessions::SyncSession::Delegate* delegate) {
 }
 
 bool Syncer::SyncShare(sessions::SyncSession* session) {
-  session->status_controller()->ResetTransientState();
   session->set_source(TestAndSetUpdatesSource());
   // This isn't perfect, as we can end up bundling extensions activity
   // intended for the next session into the current one.  We could do a
@@ -197,6 +196,7 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       }
       case PROCESS_COMMIT_RESPONSE: {
         LOG(INFO) << "Processing the commit response";
+        session->status_controller()->reset_num_conflicting_commits();
         ProcessCommitResponseCommand process_response_command;
         process_response_command.Execute(session);
         next_step = BUILD_AND_PROCESS_CONFLICT_SETS;
