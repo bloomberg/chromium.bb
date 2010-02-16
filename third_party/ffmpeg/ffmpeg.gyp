@@ -276,11 +276,15 @@
                 'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_init_vfp.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_neon.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_vfp.S',
+                'source/patched-ffmpeg-mt/libavcodec/arm/fft_init_arm.c', # TODO(fbarchard): Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/arm/fft_neon.S', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/arm/jrevdct_arm.S',
+                'source/patched-ffmpeg-mt/libavcodec/arm/mdct_neon.S', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_arm.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_armv5te.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_armv6.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_neon.S',
+                'source/patched-ffmpeg-mt/libavcodec/arm/vp3dsp_neon.S', # TODO(fbarchard): Review this file.
               ],
             }],  # target_arch=="arm"
             ['target_arch=="arm" and (ffmpeg_branding=="Chrome" or ffmpeg_branding=="ChromeOS")', {
