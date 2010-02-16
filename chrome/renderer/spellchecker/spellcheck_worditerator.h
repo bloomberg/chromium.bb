@@ -10,105 +10,117 @@
 
 #include "base/basictypes.h"
 #include "base/string16.h"
+#include "third_party/icu/public/common/unicode/ubrk.h"
+#include "third_party/icu/public/common/unicode/uscript.h"
 
-#include "unicode/uscript.h"
-
-// A class which handles character attributes dependent on a spellchecker and
-// its dictionary.
-// This class is used by the SpellcheckWordIterator class to determine whether
-// or not a character is one used by the spellchecker and its dictinary.
+// A class which encapsulates language-specific operations used by
+// SpellcheckWordIterator.
+// When we set the spellchecker language, this class creates rule sets that
+// filter out the characters not supported by the spellchecker.
+// (Please read the comment in the SpellcheckWordIterator class about how to
+// use this class.)
 class SpellcheckCharAttribute {
  public:
   SpellcheckCharAttribute();
-
   ~SpellcheckCharAttribute();
 
-  // Sets the default language of the spell checker. This controls which
-  // characters are considered parts of words of the given language.
+  // Sets the language of the spellchecker.
+  // This function creates the custom rule-sets used by SpellcheckWordIterator.
+  // Parameters
+  //   * language [in] (std::string)
+  //     The language-code string.
   void SetDefaultLanguage(const std::string& language);
 
-  // Returns whether or not the given character is a character used by the
-  // selected dictionary.
+  // Returns a custom rule-set string used by the ICU break iterator.
   // Parameters
-  //   * character [in] (UChar32)
-  //     Represents a Unicode character to be checked.
-  // Return values
-  //   * true
-  //     The given character is a word character.
-  //   * false
-  //     The given character is not a word character.
-  bool IsWordChar(UChar32 character) const;
+  //   * allow_contraction [in] (bool)
+  //     A flag to control whether or not this object splits a possible
+  //     contraction. If this value is false, it returns a rule set that
+  //    splits a possible contraction: "in'n'out" -> "in", "n", and "out".
+  string16 GetRuleSet(bool allow_contraction) const;
 
-  // Returns whether or not the given character is a character used by
-  // contractions.
-  // Parameters
-  //   * character [in] (UChar32)
-  //     Represents a Unicode character to be checked.
-  // Return values
-  //   * true
-  //     The given character is a character used by contractions.
-  //   * false
-  //     The given character is not a character used by contractions.
-  bool IsContractionChar(UChar32 character) const;
+  // Output a character only if it is a word character.
+  bool OutputChar(UChar c, string16* output) const;
 
  private:
-  // Initializes the mapping table.
-  void InitializeScriptTable();
+  // Creates the rule-set strings.
+  void CreateRuleSets(const std::string& language);
 
-  // Retrieves the ICU script code.
-  UScriptCode GetScriptCode(UChar32 character) const;
-
-  // Updates an entry in the mapping table.
-  void SetWordScript(const int script_code, bool in_use);
-
-  // Returns whether or not the given script is used by the selected
-  // dictionary.
-  bool IsWordScript(const UScriptCode script_code) const;
+  // Language-specific output functions.
+  bool OutputArabic(UChar c, string16* output) const;
+  bool OutputHangul(UChar c, string16* output) const;
+  bool OutputHebrew(UChar c, string16* output) const;
+  bool OutputDefault(UChar c, string16* output) const;
 
  private:
-  // Represents a mapping table from a script code to a boolean value
-  // representing whether or not the script is used by the selected dictionary.
-  bool script_attributes_[USCRIPT_CODE_LIMIT];
+  // The custom rule-set strings used by ICU BreakIterator.
+  // Since it is not so easy to create custom rule-sets from a spellchecker
+  // language, this class saves these rule-set strings created when we set the
+  // language.
+  string16 ruleset_allow_contraction_;
+  string16 ruleset_disallow_contraction_;
 
-  // Represents a table of characters used by contractions.
-  std::map<UChar32, bool> middle_letters_;
+  // The script code used by this language.
+  UScriptCode script_code_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckCharAttribute);
 };
 
-// A class which implements methods for finding the location of word boundaries
-// used by the Spellchecker class.
-// This class is implemented on the following assumptions:
-//   * An input string is encoded in UTF-16 (i.e. it may contain surrogate
-//     pairs), and;
-//   * The length of a string is the number of UTF-16 characters in the string
-//     (i.e. the length of a non-BMP character becomes two).
+// A class which extracts words that can be checked for spelling from a longer
+// string.
+// The ICU word-break iterator does not discard some punctuation characters
+// attached to a word. For example, when we set a word "_hello_" to a
+// word-break iterator, it just returns "_hello_".
+// On the other hand, our spellchecker expects for us to discard such
+// punctuation characters.
+// To extract only the words that our spellchecker can check, this class uses
+// custom rule-sets created by the SpellcheckCharAttribute class.
+// Also, this class normalizes extracted words so our spellchecker can check
+// the spellings of a word that includes ligatures, combined characters,
+// full-width characters, etc.
+//
+// The following snippet is an example that extracts words with this class.
+//
+//   // Creates the language-specific attributes for US English.
+//   SpellcheckCharAttribute attribute;
+//   attribute.SetDefaultLanguage("en-US");
+//
+//   // Set up a SpellcheckWordIterator object which extracts English words,
+//   // and retrieves them.
+//   SpellcheckWordIterator iterator;
+//   string16 text(UTF8ToUTF16("this is a test."));
+//   iterator.Initialize(&attribute, text.c_str(), text_.length(), true);
+//
+//   string16 word;
+//   int start;
+//   int end;
+//   while (iterator.GetNextWord(&word, &start, &end)) {
+//     ...
+//   }
+//
 class SpellcheckWordIterator {
  public:
   SpellcheckWordIterator();
-
   ~SpellcheckWordIterator();
 
   // Initializes a word-iterator object.
   // Parameters
   //   * attribute [in] (const SpellcheckCharAttribute*)
-  //     Represents a set of character attributes used for filtering out
-  //     non-word characters.
+  //     Character attributes used for filtering out non-word characters.
   //   * word [in] (const char16*)
-  //     Represents a string from which this object extracts words.
-  //     (This string does not have to be NUL-terminated.)
+  //     A string from which this object extracts words. (This string does not
+  //     have to be NUL-terminated.)
   //   * length [in] (size_t)
-  //     Represents the length of the given string, in UTF-16 characters.
-  //     This value should not include terminating NUL characters.
+  //     The length of the given string, in UTF-16 characters.
   //   * allow_contraction [in] (bool)
-  //     Represents a flag to control whether or not this object should split a
-  //     possible contraction (e.g. "isn't", "in'n'out", etc.)
+  //     A flag to control whether or not this object should split a possible
+  //     contraction (e.g. "isn't", "in'n'out", etc.)
   // Return values
   //   * true
   //     This word-iterator object is initialized successfully.
   //   * false
   //     An error occured while initializing this object.
-  void Initialize(const SpellcheckCharAttribute* attribute,
+  bool Initialize(const SpellcheckCharAttribute* attribute,
                   const char16* word,
                   size_t length,
                   bool allow_contraction);
@@ -116,20 +128,20 @@ class SpellcheckWordIterator {
   // Retrieves a word (or a contraction).
   // Parameters
   //   * word_string [out] (string16*)
-  //     Represents a word (or a contraction) to be checked its spelling.
-  //     This |word_string| has been already normalized to its canonical form
-  //     (i.e. decomposed ligatures, replaced full-width latin characters to
-  //     its ASCII alternatives, etc.) so that a SpellChecker object can check
-  //     its spelling without any additional operations.
-  //     On the other hand, a substring of the input string
+  //     A word (or a contraction) to be checked its spelling. This
+  //     |word_string| has been already normalized to its canonical form (i.e.
+  //     decomposed ligatures, replaced full-width latin characters to its ASCII
+  //     alternatives, etc.) so a SpellChecker object can check its spelling
+  //     without any additional operations. We can use |word_start| and
+  //     |word_length| to retrieve the non-normalizedversion of this string as
+  //     shown in the following snippet.
   //       string16 str(&word[word_start], word_length);
-  //     represents the non-normalized version of this extracted word.
   //   * word_start [out] (int*)
-  //     Represents the offset of this word from the beginning of the input
-  //     string, in UTF-16 characters.
+  //     The offset of this word from the beginning of the input string,
+  //     in UTF-16 characters.
   //   * word_length [out] (int*)
-  //     Represents the length of an extracted word before normalization, in
-  //     UTF-16 characters.
+  //     The length of an extracted word before normalization, in UTF-16
+  //     characters.
   //     When the input string contains ligatures, this value may not be equal
   //     to the length of the |word_string|.
   // Return values
@@ -142,20 +154,14 @@ class SpellcheckWordIterator {
                    int* word_length);
 
  private:
-  // Retrieves a segment consisting of word characters (and contraction
-  // characters if the |allow_contraction| value is true).
-  void GetSegment(int* segment_start,
-                  int* segment_end);
+  // Releases all the resources attached to this object.
+  void Close();
 
-  // Discards non-word characters at the beginning and the end of the given
-  // segment.
-  void TrimSegment(int segment_start,
-                   int segment_end,
-                   int* word_start,
-                   int* word_length) const;
-
-  // Normalizes the given segment of the |word_| variable and write its
-  // canonical form to the |output_string|.
+  // Normalizes a non-terminated string so our spellchecker can check its
+  // spelling. A word returned from an ICU word-break iterator may include
+  // characters not supported by our spellchecker, e.g. ligatures, combining
+  // characters, full-width letters, etc. This function replaces such characters
+  // with alternative characters supported by our spellchecker.
   bool Normalize(int input_start,
                  int input_length,
                  string16* output_string) const;
@@ -170,12 +176,12 @@ class SpellcheckWordIterator {
   // The current position in the original string.
   int position_;
 
-  // The flag to control whether or not this object should extract possible
-  // contractions.
-  bool allow_contraction_;
-
-  // The character attributes used for filtering out non-word characters.
+  // The language-specific attributes used for filtering out non-word
+  // characters.
   const SpellcheckCharAttribute* attribute_;
+
+  // The ICU break iterator.
+  UBreakIterator* iterator_;
 
   DISALLOW_COPY_AND_ASSIGN(SpellcheckWordIterator);
 };

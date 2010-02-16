@@ -884,6 +884,7 @@
         'renderer/render_widget_unittest.cc',
         'renderer/renderer_main_unittest.cc',
         'renderer/spellchecker/spellcheck_unittest.cc',
+        'renderer/spellchecker/spellcheck_worditerator_unittest.cc',
         'renderer/translate/page_translator_unittest.cc',
         'test/browser_with_test_window_test.cc',
         'test/browser_with_test_window_test.h',
