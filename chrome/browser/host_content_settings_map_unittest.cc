@@ -107,6 +107,9 @@ TEST_F(HostContentSettingsMapTest, DefaultValues) {
   EXPECT_EQ(CONTENT_SETTING_BLOCK,
             host_content_settings_map->GetContentSetting(
                 host, CONTENT_SETTINGS_TYPE_IMAGES));
+  EXPECT_EQ(CONTENT_SETTING_ALLOW,
+            host_content_settings_map->GetContentSetting(
+                host, CONTENT_SETTINGS_TYPE_PLUGINS));
 
   // Check returning all settings for a host.
   ContentSettings desired_settings;

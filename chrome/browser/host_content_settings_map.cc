@@ -127,9 +127,12 @@ ContentSetting HostContentSettingsMap::GetContentSetting(
     ContentSettingsType content_type) const {
   AutoLock auto_lock(lock_);
   HostContentSettings::const_iterator i(host_content_settings_.find(host));
-  return (i == host_content_settings_.end()) ?
-      default_content_settings_.settings[content_type] :
-      i->second.settings[content_type];
+  if (i != host_content_settings_.end()) {
+    ContentSetting setting = i->second.settings[content_type];
+    if (setting != CONTENT_SETTING_DEFAULT)
+      return setting;
+  }
+  return default_content_settings_.settings[content_type];
 }
 
 ContentSetting HostContentSettingsMap::GetContentSetting(
