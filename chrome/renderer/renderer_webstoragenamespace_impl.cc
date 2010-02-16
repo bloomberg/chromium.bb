@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "chrome/renderer/renderer_webstoragenamespace_impl.h"
 
@@ -39,7 +39,10 @@ WebStorageArea* RendererWebStorageNamespaceImpl::createStorageArea(
 }
 
 WebStorageNamespace* RendererWebStorageNamespaceImpl::copy() {
-  NOTREACHED();  // We shouldn't ever reach this code in Chromium.
+  // By returning NULL, we're telling WebKit to lazily fetch it the next time
+  // session storage is used.  In the WebViewClient::createView, we do the
+  // book-keeping necessary to make it a true copy-on-write despite not doing
+  // anything here, now.
   return NULL;
 }
 
