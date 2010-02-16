@@ -405,6 +405,86 @@ bool ForceAntiAliasingOff(LPDIRECT3D9* d3d,
   return false;
 }
 
+// Setup MultiSampleType/MultiSampleQuality in D3DPRESENT_PARAMETERS.
+void SetupD3DMultisampleParameters(
+    LPDIRECT3D9 d3d,
+    UINT adapter,
+    Features* features,
+    D3DPRESENT_PARAMETERS* d3d_present_parameters) {
+  if (features->not_anti_aliased() || ForceAntiAliasingOff(&d3d, adapter)) {
+    d3d_present_parameters->MultiSampleType = D3DMULTISAMPLE_NONE;
+    d3d_present_parameters->MultiSampleQuality = 0;
+  } else {
+    // query multisampling
+    static D3DMULTISAMPLE_TYPE multisample_types[] = {
+      D3DMULTISAMPLE_5_SAMPLES,
+      D3DMULTISAMPLE_4_SAMPLES,
+      D3DMULTISAMPLE_2_SAMPLES,
+      D3DMULTISAMPLE_NONE
+    };
+
+    DWORD multisample_quality = 0;
+    for (int i = 0; i < arraysize(multisample_types); ++i) {
+      // check back-buffer for multisampling at level "i";
+      // back buffer = 32-bit ARGB
+      if (SUCCEEDED(d3d->CheckDeviceMultiSampleType(
+          adapter,
+          D3DDEVTYPE_HAL,
+          D3DFMT_A8R8G8B8,
+          true,  // result is windowed
+          multisample_types[i],
+          &multisample_quality))) {
+        // back buffer succeeded, now check depth-buffer
+        // depth buffer = 24-bit, stencil = 8-bit
+        // NOTE: 8-bit not 16-bit like the D3DPRESENT_PARAMETERS
+        if (SUCCEEDED(d3d->CheckDeviceMultiSampleType(
+            adapter,
+            D3DDEVTYPE_HAL,
+            D3DFMT_D24S8,
+            true,  // result is windowed
+            multisample_types[i],
+            &multisample_quality))) {
+          d3d_present_parameters->MultiSampleType = multisample_types[i];
+          d3d_present_parameters->MultiSampleQuality = multisample_quality - 1;
+          break;
+        }
+      }
+    }
+  }
+}
+
+Renderer::InitStatus CreateD3DBehaviorFlags(
+    LPDIRECT3D9 d3d,
+    UINT adapter,
+    DWORD* out_d3d_behavior_flags) {
+  *out_d3d_behavior_flags = 0;
+
+  // Check the device capabilities.
+  D3DCAPS9 d3d_caps;
+  HRESULT caps_result = d3d->GetDeviceCaps(adapter,
+                                           D3DDEVTYPE_HAL,
+                                           &d3d_caps);
+  if (!HR(caps_result)) {
+    return Renderer::INITIALIZATION_ERROR;
+  }
+
+  // Check if the device supports HW vertex processing.
+  if (d3d_caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT)
+    *out_d3d_behavior_flags |= D3DCREATE_HARDWARE_VERTEXPROCESSING;
+  else
+    *out_d3d_behavior_flags |= D3DCREATE_SOFTWARE_VERTEXPROCESSING;
+
+  // D3DCREATE_FPU_PRESERVE is there because Firefox 3 relies on specific FPU
+  // flags for its UI rendering. Apparently Firefox 2 is not, though we don't
+  // currently propagate that info.
+  // TODO: check if FPU_PRESERVE has a significant perf hit, in which
+  // case find out if we can disable it for Firefox 2/other browsers, and/or if
+  // it makes sense to switch FPU flags before/after every DX call.
+  *out_d3d_behavior_flags |= D3DCREATE_FPU_PRESERVE;
+
+  return Renderer::SUCCESS;
+}
+
 // Helper function that gets the D3D Interface, checks the available
 // multisampling modes and selects the most advanced one available to create
 // a D3D Device with a back buffer containing depth and stencil buffers that
@@ -482,46 +562,8 @@ Renderer::InitStatus InitializeD3D9Context(
   // wait for vsync
   d3d_present_parameters->PresentationInterval   = D3DPRESENT_INTERVAL_ONE;
 
-  if (features->not_anti_aliased() || ForceAntiAliasingOff(d3d, *adapter)) {
-    d3d_present_parameters->MultiSampleType = D3DMULTISAMPLE_NONE;
-    d3d_present_parameters->MultiSampleQuality = 0;
-  } else {
-    // query multisampling
-    static D3DMULTISAMPLE_TYPE multisample_types[] = {
-      D3DMULTISAMPLE_5_SAMPLES,
-      D3DMULTISAMPLE_4_SAMPLES,
-      D3DMULTISAMPLE_2_SAMPLES,
-      D3DMULTISAMPLE_NONE
-    };
-
-    DWORD multisample_quality = 0;
-    for (int i = 0; i < arraysize(multisample_types); ++i) {
-      // check back-buffer for multisampling at level "i";
-      // back buffer = 32-bit ARGB
-      if (SUCCEEDED((*d3d)->CheckDeviceMultiSampleType(
-          *adapter,
-          D3DDEVTYPE_HAL,
-          D3DFMT_A8R8G8B8,
-          true,  // result is windowed
-          multisample_types[i],
-          &multisample_quality))) {
-        // back buffer succeeded, now check depth-buffer
-        // depth buffer = 24-bit, stencil = 8-bit
-        // NOTE: 8-bit not 16-bit like the D3DPRESENT_PARAMETERS
-        if (SUCCEEDED((*d3d)->CheckDeviceMultiSampleType(
-            *adapter,
-            D3DDEVTYPE_HAL,
-            D3DFMT_D24S8,
-            true,  // result is windowed
-            multisample_types[i],
-            &multisample_quality))) {
-          d3d_present_parameters->MultiSampleType = multisample_types[i];
-          d3d_present_parameters->MultiSampleQuality = multisample_quality - 1;
-          break;
-        }
-      }
-    }
-  }
+  SetupD3DMultisampleParameters(*d3d, *adapter, features,
+                                d3d_present_parameters);
 
   // Check if the window size is zero. Some drivers will fail because of that
   // so we'll force a small size in that case.
@@ -543,30 +585,10 @@ Renderer::InitStatus InitializeD3D9Context(
   }
 
   // create the D3D device
-  DWORD d3d_behavior_flags = 0;
-
-  // Check the device capabilities.
-  D3DCAPS9 d3d_caps;
-  HRESULT caps_result = (*d3d)->GetDeviceCaps(*adapter,
-                                              D3DDEVTYPE_HAL,
-                                              &d3d_caps);
-  if (!HR(caps_result)) {
+  DWORD d3d_behavior_flags;
+  if (CreateD3DBehaviorFlags(*d3d, *adapter,
+                             &d3d_behavior_flags) != Renderer::SUCCESS)
     return Renderer::INITIALIZATION_ERROR;
-  }
-
-  // Check if the device supports HW vertex processing.
-  if (d3d_caps.DevCaps & D3DDEVCAPS_HWTRANSFORMANDLIGHT)
-    d3d_behavior_flags |= D3DCREATE_HARDWARE_VERTEXPROCESSING;
-  else
-    d3d_behavior_flags |= D3DCREATE_SOFTWARE_VERTEXPROCESSING;
-
-  // D3DCREATE_FPU_PRESERVE is there because Firefox 3 relies on specific FPU
-  // flags for its UI rendering. Apparently Firefox 2 is not, though we don't
-  // currently propagate that info.
-  // TODO: check if FPU_PRESERVE has a significant perf hit, in which
-  // case find out if we can disable it for Firefox 2/other browsers, and/or if
-  // it makes sense to switch FPU flags before/after every DX call.
-  d3d_behavior_flags |= D3DCREATE_FPU_PRESERVE;
   if (!HR((*d3d)->CreateDevice(*adapter,
                                D3DDEVTYPE_HAL,
                                window,
@@ -574,6 +596,67 @@ Renderer::InitStatus InitializeD3D9Context(
                                d3d_present_parameters,
                                d3d_device))) {
     return Renderer::OUT_OF_RESOURCES;
+  }
+
+  return Renderer::SUCCESS;
+}
+
+Renderer::InitStatus SetupD3DDevice(
+    LPDIRECT3D9 d3d,
+    LPDIRECT3DDEVICE9 d3d_device,
+    UINT adapter,
+    D3DDISPLAYMODE* d3d_display_mode,
+    Features* features,
+    bool* out_use_small_index_buffers,
+    bool* out_supoorts_npot,
+    ID3DXFont** out_fullscreen_message_font,
+    ID3DXLine** out_fullscreen_message_line) {
+  D3DCAPS9 d3d_caps;
+  if (!HR(d3d->GetDeviceCaps(adapter, D3DDEVTYPE_HAL, &d3d_caps))) {
+    DLOG(ERROR) << "Failed to get device capabilities.";
+    return Renderer::INITIALIZATION_ERROR;
+  }
+
+  // Do we require small index buffers?
+  *out_use_small_index_buffers = d3d_caps.MaxVertexIndex < 0x10000;
+  DCHECK(!*out_use_small_index_buffers || !features->large_geometry());
+
+  const unsigned int kNpotFlags =
+      D3DPTEXTURECAPS_POW2 | D3DPTEXTURECAPS_CUBEMAP_POW2;
+  *out_supoorts_npot = ((d3d_caps.TextureCaps & kNpotFlags) == 0);
+
+  if (!HR(d3d->CheckDeviceFormat(adapter,
+                                 D3DDEVTYPE_HAL,
+                                 d3d_display_mode->Format,
+                                 D3DUSAGE_DEPTHSTENCIL,
+                                 D3DRTYPE_SURFACE,
+                                 D3DFMT_D24S8))) {
+    DLOG(ERROR) << "Failed to find compatible depth surface format.";
+    return Renderer::GPU_NOT_UP_TO_SPEC;
+  }
+
+  if (S_OK !=
+      D3DXCreateFont(d3d_device,
+                     27 /* font_height */,
+                     0 /* font width--0 appears to be "don't care" */,
+                     FW_BOLD,
+                     1 /* MIP levels */,
+                     FALSE,
+                     DEFAULT_CHARSET,
+                     OUT_TT_PRECIS,
+                     PROOF_QUALITY,
+                     DEFAULT_PITCH | FF_DONTCARE /* pitch and font family */,
+                     L"Arial",
+                     out_fullscreen_message_font)) {
+    DLOG(ERROR) << "Failed to initialize font.";
+    return Renderer::INITIALIZATION_ERROR;
+  }
+
+  if (S_OK !=
+      D3DXCreateLine(d3d_device,
+                     out_fullscreen_message_line)) {
+    DLOG(ERROR) << "Failed to initialize line for message background.";
+    return Renderer::INITIALIZATION_ERROR;
   }
 
   return Renderer::SUCCESS;
@@ -1007,33 +1090,25 @@ Renderer::InitStatus RendererD3D9::InitPlatformSpecific(
     return init_status;
   }
 
-  D3DCAPS9 d3d_caps;
-  if (!HR(d3d_->GetDeviceCaps(current_adapter_, D3DDEVTYPE_HAL, &d3d_caps))) {
-    DLOG(ERROR) << "Failed to get device capabilities.";
-    return INITIALIZATION_ERROR;
+  bool supoorts_npot;
+  init_status = SetupD3DDevice(d3d_,
+                               d3d_device_,
+                               current_adapter_,
+                               &d3d_display_mode_,
+                               features(),
+                               &use_small_index_buffers_,
+                               &supoorts_npot,
+                               &fullscreen_message_font_,
+                               &fullscreen_message_line_);
+  if (init_status != SUCCESS) {
+    Destroy();
+    return init_status;
   }
 
-  // Do we require small index buffers?
-  use_small_index_buffers_ = d3d_caps.MaxVertexIndex < 0x10000;
-  DCHECK(!use_small_index_buffers_ || !features()->large_geometry());
-
-  const unsigned int kNpotFlags =
-      D3DPTEXTURECAPS_POW2 | D3DPTEXTURECAPS_CUBEMAP_POW2;
-  SetSupportsNPOT((d3d_caps.TextureCaps & kNpotFlags) == 0);
+  SetSupportsNPOT(supoorts_npot);
 
   SetClientSize(width, height);
   have_device_ = true;
-
-  if (!HR(d3d_->CheckDeviceFormat(current_adapter_,
-                                  D3DDEVTYPE_HAL,
-                                  d3d_display_mode_.Format,
-                                  D3DUSAGE_DEPTHSTENCIL,
-                                  D3DRTYPE_SURFACE,
-                                  D3DFMT_D24S8))) {
-    DLOG(ERROR) << "Failed to find compatible depth surface format.";
-    Destroy();
-    return GPU_NOT_UP_TO_SPEC;
-  }
 
   if (off_screen) {
     init_status = InitOffscreenSurface(d3d_device_, &off_screen_surface_);
@@ -1041,30 +1116,6 @@ Renderer::InitStatus RendererD3D9::InitPlatformSpecific(
       Destroy();
       return init_status;
     }
-  }
-
-  if (S_OK !=
-      D3DXCreateFont(d3d_device_,
-                     27 /* font_height */,
-                     0 /* font width--0 appears to be "don't care" */,
-                     FW_BOLD,
-                     1 /* MIP levels */,
-                     FALSE,
-                     DEFAULT_CHARSET,
-                     OUT_TT_PRECIS,
-                     PROOF_QUALITY,
-                     DEFAULT_PITCH | FF_DONTCARE /* pitch and font family */,
-                     L"Arial",
-                     &fullscreen_message_font_)) {
-    DLOG(ERROR) << "Failed to initialize font.";
-    return INITIALIZATION_ERROR;
-  }
-
-  if (S_OK !=
-      D3DXCreateLine(d3d_device_,
-                     &fullscreen_message_line_)) {
-    DLOG(ERROR) << "Failed to initialize line for message background.";
-    return INITIALIZATION_ERROR;
   }
 
   return SUCCESS;
@@ -1391,6 +1442,14 @@ bool RendererD3D9::GoFullscreen(const DisplayWindow& display,
       int refresh_rate = 0;
       bool windowed = true;
 
+      // With software renderer, always use DISPLAY_MODE_DEFAULT.
+      // This is due to a bug in software renderer that only the primary
+      // monitor/adapter is recognized.
+      ClientInfoManager* client_info_manager =
+          service_locator()->GetService<ClientInfoManager>();
+      if (client_info_manager->client_info().software_renderer())
+        mode_id = DISPLAY_MODE_DEFAULT;
+
       // Look up the refresh rate, width and height.
       DisplayMode mode;
       if (!GetDisplayMode(mode_id, &mode)) {
@@ -1454,6 +1513,57 @@ bool RendererD3D9::CancelFullscreen(const DisplayWindow& display,
     }
   }
   return true;
+}
+
+bool RendererD3D9::HandleMonitorChange() {
+  HWND window = d3d_present_parameters_.hDeviceWindow;
+  HMONITOR monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
+  if (monitor == NULL) {
+    DLOG(ERROR) << "Failed to get monitor from window";
+    return false;
+  }
+  if (monitor == current_monitor_)
+    return true;
+  current_monitor_ = monitor;
+
+  UINT adapter;
+  if (!GetAdapterFromMonitor(d3d_, monitor, &adapter)) {
+    // We return true here because nothing went wrong except for a bug in
+    // software renderer where only the primary monitor/adapter is detected.
+    return true;
+  }
+
+  D3DPRESENT_PARAMETERS d3d_params = d3d_present_parameters_;
+
+  SetupD3DMultisampleParameters(d3d_, adapter, features(),
+                                &d3d_params);
+
+  // create the D3D device
+  DWORD d3d_behavior_flags;
+  if (CreateD3DBehaviorFlags(d3d_, adapter,
+                             &d3d_behavior_flags) != Renderer::SUCCESS) {
+    DLOG(ERROR) << "Failed to create D3D behavior flags";
+    return false;
+  }
+  IDirect3DDevice9* d3d_new_device;
+  if (!HR(d3d_->CreateDevice(adapter,
+                             D3DDEVTYPE_HAL,
+                             window,
+                             d3d_behavior_flags,
+                             d3d_params,
+                             d3d_new_device))) {
+    return false;
+  }
+
+  InvalidateDeviceObjects();
+//  off_screen = (off_screen_surface_ != NULL);
+//  off_screen_surface_ = NULL;
+  d3d_device_ = NULL;
+
+  d3d_present_parameters_ = d3d_params;
+  d3d_device_ = d3d_new_device;
+*/
+  return;
 }
 
 // Resets the rendering stats and
