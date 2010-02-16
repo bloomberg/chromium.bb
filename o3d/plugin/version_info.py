@@ -31,20 +31,20 @@ FLAGS = gflags.FLAGS
 gflags.DEFINE_boolean('kill_switch', False,
                       'Generate version numbers for kill switch binary.')
 
-gflags.DEFINE_boolean('name', False,
-                      'Print out the plugin name and exit.')
-
 gflags.DEFINE_boolean('description', False,
                       'Print out the plugin description and exit.')
-
-gflags.DEFINE_boolean('mimetype', False,
-                      'Print out the plugin mime type and exit.')
 
 gflags.DEFINE_boolean('version', False,
                       'Print out the plugin version and exit.')
 
 gflags.DEFINE_boolean('commaversion', False,
                       'Print out the plugin version with commas and exit.')
+
+gflags.DEFINE_string('set_name', None,
+                     'Sets the plugin name to use.')
+
+gflags.DEFINE_string('set_mimetype', None,
+                     'Sets the plugin mimetype to use.')
 
 def GetDotVersion(version):
   return '%d.%d.%d.%d' % version
@@ -93,25 +93,17 @@ def main(argv):
   # not change. If you change this you must change the name in
   # samples/o3djs/util.js but be aware, changing the name
   # will break all apps that use o3d on the web.
-  O3D_PLUGIN_NAME = 'O3D Plugin'
+  O3D_PLUGIN_NAME = FLAGS.set_name
   O3D_PLUGIN_VERSION = GetDotVersion(plugin_version)
   O3D_PLUGIN_VERSION_COMMAS = GetCommaVersion(plugin_version)
   O3D_SDK_VERSION = GetDotVersion(sdk_version)
   O3D_SDK_VERSION_COMMAS = GetCommaVersion(sdk_version)
-  O3D_PLUGIN_DESCRIPTION = '%s version:%s' % (O3D_PLUGIN_NAME,
+  O3D_PLUGIN_DESCRIPTION = '%s version: %s' % (O3D_PLUGIN_NAME,
                                               O3D_PLUGIN_VERSION)
-  O3D_PLUGIN_MIME_TYPE = 'application/vnd.o3d.auto'
-
-  if FLAGS.name:
-    print '%s' % O3D_PLUGIN_NAME
-    sys.exit(0)
+  O3D_PLUGIN_MIME_TYPE = FLAGS.set_mimetype
 
   if FLAGS.description:
     print '%s' % O3D_PLUGIN_DESCRIPTION
-    sys.exit(0)
-
-  if FLAGS.mimetype:
-    print '%s' % O3D_PLUGIN_MIME_TYPE
     sys.exit(0)
 
   if FLAGS.version:
