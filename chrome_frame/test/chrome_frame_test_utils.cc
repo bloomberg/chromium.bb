@@ -9,7 +9,9 @@
 #include <iepmapi.h>
 #include <sddl.h>
 
+#include "base/file_util.h"
 #include "base/message_loop.h"
+#include "base/path_service.h"
 #include "base/registry.h"   // to find IE and firefox
 #include "base/scoped_handle.h"
 #include "base/scoped_comptr_win.h"
@@ -149,8 +151,20 @@ base::ProcessHandle LaunchSafari(const std::wstring& url) {
 }
 
 base::ProcessHandle LaunchChrome(const std::wstring& url) {
-  return LaunchExecutable(kChromeImageName,
-      StringPrintf(L"--%ls ", switches::kNoFirstRun) + url);
+  std::wstring path;
+  PathService::Get(base::DIR_MODULE, &path);
+  file_util::AppendToPath(&path, kChromeImageName);
+
+  FilePath exe_path(path);
+  CommandLine cmd(exe_path);
+  std::wstring args(StringPrintf(L"--%ls ",
+                                 ASCIIToWide(switches::kNoFirstRun)));
+  args += url;
+  cmd.AppendLooseValue(args);
+
+  base::ProcessHandle process = NULL;
+  base::LaunchApp(cmd, false, false, &process);
+  return process;
 }
 
 base::ProcessHandle LaunchOpera(const std::wstring& url) {

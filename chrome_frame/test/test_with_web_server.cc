@@ -176,6 +176,7 @@ void ChromeFrameTestWithWebServer::SimpleBrowserTest(BrowserKind browser,
 
 void ChromeFrameTestWithWebServer::OptionalBrowserTest(BrowserKind browser,
     const wchar_t* page, const wchar_t* result_file_to_check) {
+  DCHECK(browser != CHROME) << "Chrome tests shouldn't be optional";
   if (!LaunchBrowser(browser, page)) {
     LOG(ERROR) << "Failed to launch browser " << ToString(browser);
   } else {
@@ -456,7 +457,7 @@ TEST_F(ChromeFrameTestWithWebServer,
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeChrome_CFInstanceIfrPost) {
-  OptionalBrowserTest(CHROME, kCFIIfrPostPage, L"CFInstanceIfrPost");
+  SimpleBrowserTest(CHROME, kCFIIfrPostPage, L"CFInstanceIfrPost");
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeSafari_CFInstanceIfrPost) {
@@ -480,7 +481,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_CFInstancePost) {
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeChrome_CFInstancePost) {
-  OptionalBrowserTest(CHROME, kCFIPostPage, L"CFInstancePost");
+  SimpleBrowserTest(CHROME, kCFIPostPage, L"CFInstancePost");
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeSafari_CFInstancePost) {
@@ -504,7 +505,7 @@ TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_CFInstanceRPC) {
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeChrome_CFInstanceRPC) {
-  OptionalBrowserTest(CHROME, kCFIRPCPage, L"CFInstanceRPC");
+  SimpleBrowserTest(CHROME, kCFIRPCPage, L"CFInstanceRPC");
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeSafari_CFInstanceRPC) {
@@ -527,7 +528,7 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_CFInstanceRPCInternal) {
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeChrome_CFInstanceRPCInternal) {
-  OptionalBrowserTest(CHROME, kCFIRPCInternalPage, L"CFInstanceRPCInternal");
+  SimpleBrowserTest(CHROME, kCFIRPCInternalPage, L"CFInstanceRPCInternal");
 }
 
 TEST_F(ChromeFrameTestWithWebServer, WidgetModeSafari_CFInstanceRPCInternal) {
