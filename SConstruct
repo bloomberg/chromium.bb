@@ -1166,6 +1166,19 @@ if int(ARGUMENTS.get('naclsdk_validate', "1")):
   nacl_env.ValidateSdk()
 
 # ----------------------------------------------------------
+# Update prebuilt nexes
+# ----------------------------------------------------------
+# Contains all binaries that have to be checked in
+nacl_env.Alias('prebuilt_binaries_update', [])
+
+
+def AddPrebuiltBinaryToRepository(env, nodes):
+  n = env.Replicate('${SCONSTRUCT_DIR}/tests/prebuilt/x86/', nodes)
+  env.Alias('prebuilt_binaries_update', n)
+  return n
+
+nacl_env.AddMethod(AddPrebuiltBinaryToRepository)
+# ----------------------------------------------------------
 # We force this into a separate env so that the tests in nacl_env
 # have NO access to any libraries build here but need to link them
 # from the sdk libdir

@@ -41,6 +41,8 @@ env.Publish('srpc_test.nexe', 'run',
              'srpc_plugin.html',
              env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 
+env.AddPrebuiltBinaryToRepository(srpc_test_nexe)
+
 
 
 srpc_shm_nexe = env.ComponentProgram('srpc_shm.nexe', 'srpc_shm.c',
@@ -48,6 +50,8 @@ srpc_shm_nexe = env.ComponentProgram('srpc_shm.nexe', 'srpc_shm.c',
 env.Publish('srpc_shm.nexe', 'run',
             [ 'srpc_shm.html',
               env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
+
+env.AddPrebuiltBinaryToRepository(srpc_shm_nexe)
 
 
 
@@ -59,6 +63,8 @@ env.Publish('srpc_nrd_server.nexe', 'run',
             ['examples.html', '_README.txt', 'srpc_sockaddr.html',
              env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 
+env.AddPrebuiltBinaryToRepository(srpc_nrd_server_nexe)
+
 
 
 srpc_nrd_client_nexe = env.ComponentProgram('srpc_nrd_client.nexe',
@@ -68,6 +74,7 @@ env.Publish('srpc_nrd_client.nexe', 'run',
             ['srpc_nrd_xfer.html',
              env.File('${SCONSTRUCT_DIR}/tests/nacl_js_lib.js') ])
 
+env.AddPrebuiltBinaryToRepository(srpc_nrd_client_nexe)
 
 
 cat_nexe = env.ComponentProgram('cat.nexe', 'cat.c',
