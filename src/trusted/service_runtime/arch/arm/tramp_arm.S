@@ -4,7 +4,15 @@
  * be found in the LICENSE file.
  */
 
+#include "native_client/src/trusted/service_runtime/nacl_config.h"
+
+.text
+
 /*
+ * Assembly code template.
+ * This is linked into the service runtime but is unused as code -- it is used
+ * as data to be patched into a NaCl app's address space.
+ *
  * Trampoline to transfer control from native client module to
  * sel_ldr's NaClSyscallSeg residing in the service runtime portion of address
  * space. Trampolines are patched into nacl module's address space in the
@@ -13,17 +21,7 @@
  * region is full of identical trampoline code segments. Service runtime
  * distinguish which system call is requested using the address of an executed
  * trampoline (it is saved on stack in NaClSyscallSeg()).
- */
-
-#include "native_client/src/trusted/service_runtime/nacl_config.h"
-
-
-  .text
-
-.globl  IDENTIFIER(NaCl_trampoline_seg_code)
-  HIDDEN(NaCl_trampoline_seg_code)
-IDENTIFIER(NaCl_trampoline_seg_code):
-/*
+ *
  * ARM passes parameters to a callee in registers r0-r3. If there are more
  * than 4 parameters, the first four args are passed in registers the rest are
  * placed on the stack. This code pushes all parameters from registers into the
@@ -49,16 +47,24 @@ IDENTIFIER(NaCl_trampoline_seg_code):
  *
  */
 
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_code):
+
   push {r0, r1, r2, r3}
   push {lr}
 
+  /* this accesses the data item immediately after the halt */
   ldr r0, [pc, #4]
+  /* NOTE: we use the blx instead of bx because the return addres */
+  /*       is used to determine which trampoline was used */
+
   blx r0
 
   /* NORETURN */
   NACL_HALT
+  /* a DATA item will be patched in here */
 
   .word   NaClSyscallSeg
-.globl  IDENTIFIER(NaCl_trampoline_seg_end)
-  HIDDEN(NaCl_trampoline_seg_end)
-IDENTIFIER(NaCl_trampoline_seg_end):
+
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaCl_trampoline_seg_end):
+
+

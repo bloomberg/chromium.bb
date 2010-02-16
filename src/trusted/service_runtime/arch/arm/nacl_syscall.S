@@ -6,11 +6,14 @@
 
 #include "native_client/src/trusted/service_runtime/nacl_config.h"
 
+.text
+
+
 /*
  * This trusted code is linked into the service runtime. It is executed when a
- * nacl module performs a system call via service runtime interface. The nacl
- * module jumps to trampoline corresponding to the syscall it performs and then
- * here. This code switches the execution contexts (registers and stack) from
+ * nacl module performs a system call via a service runtime interface. The nacl
+ * module jumps to the trampoline corresponding to the syscall and then here.
+ * This code switches the execution contexts (registers and stack) from
  * untrusted to trusted.
  *
  * on stack:
@@ -25,9 +28,7 @@
  * arg N
  */
 
-.globl  IDENTIFIER(NaClSyscallSeg)
-  HIDDEN(NaClSyscallSeg)
-IDENTIFIER(NaClSyscallSeg):
+DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClSyscallSeg):
 
   push {lr}
 
@@ -38,6 +39,7 @@ IDENTIFIER(NaClSyscallSeg):
    */
 
   /* r9 keep lower 12 bits =  TLS_IDX */
+  /* TODO(cbiffle): this maybe equivalent to ubfx r0, r9, #0, #NACL_PAGESHIFT */
   mov r0, r9, lsl #(32 - NACL_PAGESHIFT)
   lsr r0, #(32 - NACL_PAGESHIFT)
 
@@ -46,14 +48,14 @@ IDENTIFIER(NaClSyscallSeg):
   /* r1 = nacl_user[r0*4], r1 points to the nacl_user entry of this thread */
 
   /* store thread state to the nacl_user entry */
-  stmia r1, {r4, r5, r6, r7, r8, r9, r10, r11, sp}
+  stmia r1, NACL_CALLEE_SAVE_LIST
 
   ldr r1, =nacl_sys
   ldr r1, [r1, r0, lsl #2]
   /* r1 = nacl_sys[r0*4], r1 points to the nacl_sys entry of this thread */
 
   /* restore the service runtime state from nacl_sys entry */
-  ldmia r1, {r4, r5, r6, r7, r8, r9, r10, r11, sp}
+  ldmia r1, NACL_CALLEE_SAVE_LIST
 
   bl  NaClSyscallCSegHook
 
@@ -65,3 +67,4 @@ IDENTIFIER(NaClSyscallSeg):
    */
 
   NACL_HALT
+

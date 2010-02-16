@@ -108,17 +108,17 @@
         ['target_arch=="arm"', {
           'sources': [
             'arch/arm/nacl_app.c',
-            'arch/arm/nacl_switch_to_app.c',
+            'arch/arm/nacl_switch_to_app_arm.c',
             'arch/arm/sel_rt.c',
             'arch/arm/nacl_tls.c',
-            'arch/arm/sel_ldr.c',
+            'arch/arm/sel_ldr_arm.c',
             'arch/arm/sel_addrspace_arm.c',
             'arch/arm/sel_validate_image.c',
             'arch/arm/nacl_switch.S',
             'arch/arm/nacl_syscall.S',
-            'arch/arm/springboard.S',
-            'arch/arm/tramp.S',
             'arch/arm/nacl_tls_tramp.S',
+            'arch/arm/springboard.S',
+            'arch/arm/tramp_arm.S',
           ],
         }],
         ['OS=="linux"', {

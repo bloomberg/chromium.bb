@@ -6,6 +6,9 @@
 
 /*
  * NaCl Simple/secure ELF loader (NaCl SEL).
+ *
+ * NOTE: This header is ALSO included by assembler files and hence
+ *       must not include any C code
  */
 #ifndef NATIVE_CLIENT_SERVICE_RUNTIME_NACL_CONFIG_H_
 #define NATIVE_CLIENT_SERVICE_RUNTIME_NACL_CONFIG_H_
@@ -116,6 +119,8 @@
 # define HIDDEN(n)
 #endif
 
+#define DEFINE_GLOBAL_HIDDEN_IDENTIFIER(n) \
+  .globl IDENTIFIER(n); HIDDEN(n); IDENTIFIER(n)
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
 
@@ -165,6 +170,15 @@
 /* TODO(robertm): unify this with NACL_BLOCK_SHIFT */
 /* 16 byte bundles */
 # define  NACL_ARM_BUNDLE_SIZE_LOG 4
+
+/*
+ * NOTE: Used by various assembler files, needs to be
+ *       synchronized with NaClThreadContext
+ */
+# define NACL_CALLEE_SAVE_LIST {r4, r5, r6, r7, r8, r9, r10, fp, sp}
+
+
+
 #else /* NACL_ARCH(NACL_BUILD_ARCH) */
 
 # error Unknown platform!

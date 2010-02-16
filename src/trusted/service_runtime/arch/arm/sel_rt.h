@@ -24,6 +24,11 @@ typedef uint32_t nacl_reg_t;
 #define PRIxNACL_REG PRIx32
 #define PRIXNACL_REG PRIX32
 
+/*
+ * NOTE: This struct needs to be synchronized with
+ *       synchronized with  NACL_CALLEE_SAVE_LIST
+ */
+
 struct NaClThreadContext {
   nacl_reg_t  r4, r5, r6, r7, r8, r9, r10, fp, stack_ptr, prog_ctr;
   /*           0   4   8   c  10  14   18  1c         20        24 */
