@@ -31,7 +31,7 @@ class PdfPsMetafile {
 
   // In the renderer process, callers should also call Init(void) to see if the
   // metafile can obtain all necessary rendering resources.
-  // In the browser process, callers should also call Init(const void*, size_t)
+  // In the browser process, callers should also call Init(const void*, uint32)
   // to initialize the buffer |all_pages_| to use SaveTo().
   explicit PdfPsMetafile(const FileFormat& format);
 
@@ -46,7 +46,7 @@ class PdfPsMetafile {
   // |src_buffer| should point to the shared memory which stores PDF/PS
   // contents generated in the renderer.
   // Note: Only call in the browser to initialize |all_pages_|.
-  bool Init(const void* src_buffer, size_t src_buffer_size);
+  bool Init(const void* src_buffer, uint32 src_buffer_size);
 
   FileFormat GetFileFormat() const { return format_; }
 
@@ -70,12 +70,12 @@ class PdfPsMetafile {
 
   // Returns size of PDF/PS contents stored in buffer |all_pages_|.
   // This function should ONLY be called after PDF/PS file is closed.
-  unsigned int GetDataSize() const;
+  uint32 GetDataSize() const;
 
   // Copies PDF/PS contents stored in buffer |all_pages_| into |dst_buffer|.
   // This function should ONLY be called after PDF/PS file is closed.
   // Returns true only when success.
-  bool GetData(void* dst_buffer, size_t dst_buffer_size) const;
+  bool GetData(void* dst_buffer, uint32 dst_buffer_size) const;
 
   // Saves PDF/PS contents stored in buffer |all_pages_| into the file
   // associated with |fd|.

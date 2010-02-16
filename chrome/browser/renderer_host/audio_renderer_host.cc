@@ -291,7 +291,7 @@ uint32 AudioRendererHost::IPCAudioSource::OnMoreData(AudioOutputStream* stream,
     SubmitPacketRequest(&auto_lock);
   } else {
     // Low latency mode.
-    size = std::min(static_cast<uint32>(shared_memory_.max_size()), max_size);
+    size = std::min(shared_memory_.max_size(), max_size);
     memcpy(dest, shared_memory_.memory(), size);
     memset(shared_memory_.memory(), 0, shared_memory_.max_size());
     shared_socket_->Send(&pending_bytes, sizeof(pending_bytes));

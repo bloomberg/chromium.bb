@@ -413,7 +413,7 @@ struct ViewHostMsg_DidPrintPage_Params {
   base::SharedMemoryHandle metafile_data_handle;
 
   // Size of the metafile data.
-  unsigned data_size;
+  uint32 data_size;
 
   // Cookie for the document to ensure correctness.
   int document_cookie;

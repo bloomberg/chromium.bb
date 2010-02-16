@@ -145,43 +145,46 @@ int MockPrinter::GetPrintedPages() const {
   return page_number_;
 }
 
-const MockPrinterPage* MockPrinter::GetPrintedPage(size_t pageno) const {
+const MockPrinterPage* MockPrinter::GetPrintedPage(unsigned int pageno) const {
   if (pages_.size() > pageno)
     return pages_[pageno];
   else
     return NULL;
 }
 
-int MockPrinter::GetWidth(size_t page) const {
+int MockPrinter::GetWidth(unsigned int page) const {
   if (printer_status_ != PRINTER_READY || page >= pages_.size())
     return -1;
   return pages_[page]->width();
 }
 
-int MockPrinter::GetHeight(size_t page) const {
+int MockPrinter::GetHeight(unsigned int page) const {
   if (printer_status_ != PRINTER_READY || page >= pages_.size())
     return -1;
   return pages_[page]->height();
 }
 
-bool MockPrinter::GetBitmapChecksum(size_t page, std::string* checksum) const {
+bool MockPrinter::GetBitmapChecksum(
+    unsigned int page, std::string* checksum) const {
   if (printer_status_ != PRINTER_READY || page >= pages_.size())
     return false;
   *checksum = pages_[page]->image().checksum();
   return true;
 }
 
-bool MockPrinter::SaveSource(size_t page, const FilePath& filepath) const {
+bool MockPrinter::SaveSource(
+    unsigned int page, const FilePath& filepath) const {
   if (printer_status_ != PRINTER_READY || page >= pages_.size())
     return false;
   const uint8* source_data = pages_[page]->source_data();
-  size_t source_size = pages_[page]->source_size();
+  uint32 source_size = pages_[page]->source_size();
   file_util::WriteFile(filepath, reinterpret_cast<const char*>(source_data),
                        source_size);
   return true;
 }
 
-bool MockPrinter::SaveBitmap(size_t page, const FilePath& filepath) const {
+bool MockPrinter::SaveBitmap(
+    unsigned int page, const FilePath& filepath) const {
   if (printer_status_ != PRINTER_READY || page >= pages_.size())
     return false;
 

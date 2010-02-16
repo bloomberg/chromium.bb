@@ -24,7 +24,7 @@ class PdfMetafile {
   // To create PDF data, callers should also call Init() to set up the
   // rendering context.
   // To create a metafile from existing Data, callers should also call
-  // Init(const void*, size_t).
+  // Init(const void*, uint32).
   PdfMetafile();
 
   ~PdfMetafile() {}
@@ -36,9 +36,9 @@ class PdfMetafile {
   CGContextRef Init();
 
   // Initializes a copy of metafile from PDF data. Returns true on success.
-  bool Init(const void* src_buffer, size_t src_buffer_size);
+  bool Init(const void* src_buffer, uint32 src_buffer_size);
   // Alias for Init, for compatibility with Emf-based code.
-  bool CreateFromData(const void* src_buffer, size_t src_buffer_size);
+  bool CreateFromData(const void* src_buffer, uint32 src_buffer_size);
 
   // Prepares a new pdf page with the given width and height and a scale
   // factor to use for the drawing.
@@ -55,7 +55,7 @@ class PdfMetafile {
   bool RenderPage(unsigned int page_number, CGContextRef context,
                   const CGRect rect) const;
 
-  size_t GetPageCount() const;
+  unsigned int GetPageCount() const;
 
   // Returns the bounds of the given page.
   // Pages use a 1-based index.
@@ -63,12 +63,12 @@ class PdfMetafile {
 
   // Returns the size of the underlying PDF data. Only valid after Close() has
   // been called.
-  unsigned int GetDataSize() const;
+  uint32 GetDataSize() const;
 
   // Copies the first |dst_buffer_size| bytes of the PDF data into |dst_buffer|.
   // Only valid after Close() has been called.
   // Returns true if the copy succeeds.
-  bool GetData(void* dst_buffer, size_t dst_buffer_size) const;
+  bool GetData(void* dst_buffer, uint32 dst_buffer_size) const;
 
   // Saves the raw PDF data to the given file. For testing only.
   // Returns true if writing succeeded.

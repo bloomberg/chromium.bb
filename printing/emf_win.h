@@ -34,7 +34,7 @@ class Emf {
   bool CreateDc(HDC sibling, const RECT* rect);
 
   // Load a EMF data stream. buffer contains EMF data.
-  bool CreateFromData(const void* buffer, size_t size);
+  bool CreateFromData(const void* buffer, uint32 size);
 
   // TODO(maruel): CreateFromFile(). If ever used. Maybe users would like to
   // have the ability to save web pages to an EMF file? Afterward, it is easy to
@@ -68,10 +68,10 @@ class Emf {
   gfx::Rect GetBounds() const;
 
   // Retrieves the EMF stream size.
-  unsigned GetDataSize() const;
+  uint32 GetDataSize() const;
 
   // Retrieves the EMF stream.
-  bool GetData(void* buffer, size_t size) const;
+  bool GetData(void* buffer, uint32 size) const;
 
   // Retrieves the EMF stream. It is an helper function.
   bool GetData(std::vector<uint8>* buffer) const;

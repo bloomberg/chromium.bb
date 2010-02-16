@@ -244,7 +244,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   }
 
   // Get the size of the compiled metafile.
-  unsigned buf_size = metafile.GetDataSize();
+  uint32 buf_size = metafile.GetDataSize();
   DCHECK_GT(buf_size, 128u);
   ViewHostMsg_DidPrintPage_Params page_params;
   page_params.data_size = 0;

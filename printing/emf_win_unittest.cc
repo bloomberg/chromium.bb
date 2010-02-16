@@ -34,7 +34,7 @@ class EmfPrintingTest : public testing::Test {
 }  // namespace
 
 TEST(EmfTest, DC) {
-  static const int EMF_HEADER_SIZE = 128;
+  static const uint32 EMF_HEADER_SIZE = 128;
 
   // Simplest use case.
   printing::Emf emf;
@@ -45,7 +45,7 @@ TEST(EmfTest, DC) {
   EXPECT_TRUE(emf.hdc() != NULL);
   // In theory, you'd use the HDC with GDI functions here.
   EXPECT_TRUE(emf.CloseDc());
-  unsigned size = emf.GetDataSize();
+  uint32 size = emf.GetDataSize();
   EXPECT_EQ(size, EMF_HEADER_SIZE);
   std::vector<BYTE> data;
   EXPECT_TRUE(emf.GetData(&data));

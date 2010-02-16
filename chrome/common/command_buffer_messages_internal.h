@@ -53,7 +53,7 @@ IPC_BEGIN_MESSAGES(CommandBuffer)
   IPC_SYNC_MESSAGE_ROUTED1_2(CommandBufferMsg_GetTransferBuffer,
                              int32 /* id */,
                              base::SharedMemoryHandle /* transfer_buffer */,
-                             size_t /* size */)
+                             uint32 /* size */)
 
 #if defined(OS_MACOSX)
   // On Mac OS X the GPU plugin must be offscreen, because there is no

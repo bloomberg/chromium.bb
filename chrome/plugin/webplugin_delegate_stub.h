@@ -70,7 +70,7 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
                           bool* handled, WebCursor* cursor);
   void OnPaint(const gfx::Rect& damaged_rect);
   void OnDidPaint();
-  void OnPrint(base::SharedMemoryHandle* shared_memory, size_t* size);
+  void OnPrint(base::SharedMemoryHandle* shared_memory, uint32* size);
   void OnUpdateGeometry(const PluginMsg_UpdateGeometry_Param& param);
   void OnGetPluginScriptableObject(int* route_id);
   void OnSendJavaScriptStream(const GURL& url,
@@ -98,7 +98,7 @@ class WebPluginDelegateStub : public IPC::Channel::Listener,
                                int notify_id);
   void OnHTTPRangeRequestReply(unsigned long resource_id, int range_request_id);
   void OnCreateCommandBuffer(int* route_id);
-  void CreateSharedBuffer(size_t size,
+  void CreateSharedBuffer(uint32 size,
                           base::SharedMemory* shared_buf,
                           base::SharedMemoryHandle* remote_handle);
 

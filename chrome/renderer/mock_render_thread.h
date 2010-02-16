@@ -93,7 +93,7 @@ class MockRenderThread : public RenderThreadBase {
 #endif
 
 #if defined(OS_MACOSX)
-  void OnAllocatePDFTransport(size_t buffer_size,
+  void OnAllocatePDFTransport(uint32 buffer_size,
                               base::SharedMemoryHandle* handle);
 #endif
 

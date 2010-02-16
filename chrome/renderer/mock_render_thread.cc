@@ -122,7 +122,7 @@ void MockRenderThread::OnDuplicateSection(
 
 #if defined(OS_MACOSX)
 void MockRenderThread::OnAllocatePDFTransport(
-    size_t buffer_size, base::SharedMemoryHandle* handle) {
+    uint32 buffer_size, base::SharedMemoryHandle* handle) {
   base::SharedMemory shared_buf;
   shared_buf.Create(L"", false, false, buffer_size);
   if (!shared_buf.Map(buffer_size)) {

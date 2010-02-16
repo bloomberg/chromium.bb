@@ -24,7 +24,7 @@ static const char test_page_mime_type[] = "text/html";
 static const char test_page_charset[] = "";
 static const char test_page_contents[] =
   "<html><head><title>Google</title></head><body><h1>Google</h1></body></html>";
-static const int test_page_contents_len = arraysize(test_page_contents) - 1;
+static const uint32 test_page_contents_len = arraysize(test_page_contents) - 1;
 
 // Listens for request response data and stores it so that it can be compared
 // to the reference data.

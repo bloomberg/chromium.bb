@@ -121,7 +121,7 @@ bool PdfPsMetafile::Init() {
   return true;
 }
 
-bool PdfPsMetafile::Init(const void* src_buffer, size_t src_buffer_size) {
+bool PdfPsMetafile::Init(const void* src_buffer, uint32 src_buffer_size) {
   // We need to check at least these two members to ensure Init() has not been
   // called before. Passing these two checks also implies that surface_,
   // page_surface_, and page_context_ are NULL, and current_page_ is empty.
@@ -307,7 +307,7 @@ void PdfPsMetafile::Close() {
   CleanUpSurface(&surface_);
 }
 
-unsigned int PdfPsMetafile::GetDataSize() const {
+uint32 PdfPsMetafile::GetDataSize() const {
   // We need to check at least these two members to ensure that either Init()
   // has been called to initialize |all_pages_|, or metafile has been closed.
   // Passing these two checks also implies that surface_, page_surface_, and
@@ -318,7 +318,7 @@ unsigned int PdfPsMetafile::GetDataSize() const {
   return all_pages_.size();
 }
 
-bool PdfPsMetafile::GetData(void* dst_buffer, size_t dst_buffer_size) const {
+bool PdfPsMetafile::GetData(void* dst_buffer, uint32 dst_buffer_size) const {
   DCHECK(dst_buffer);
   DCHECK_GT(dst_buffer_size, 0u);
   // We need to check at least these two members to ensure that either Init()
@@ -328,7 +328,7 @@ bool PdfPsMetafile::GetData(void* dst_buffer, size_t dst_buffer_size) const {
   DCHECK(!context_);
   DCHECK(!all_pages_.empty());
 
-  size_t data_size = GetDataSize();
+  uint32 data_size = GetDataSize();
   if (dst_buffer_size > data_size) {
     return false;
   }

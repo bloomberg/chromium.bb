@@ -204,7 +204,7 @@ IPC_BEGIN_MESSAGES(Plugin)
 
   IPC_SYNC_MESSAGE_ROUTED0_2(PluginMsg_Print,
                              base::SharedMemoryHandle /* shared_memory*/,
-                             size_t /* size */)
+                             uint32 /* size */)
 
   IPC_SYNC_MESSAGE_ROUTED0_1(PluginMsg_GetPluginScriptableObject,
                              int /* route_id */)

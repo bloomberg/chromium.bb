@@ -33,7 +33,7 @@ bool CommandBufferService::Initialize(int32 size) {
   size_ = size;
 
   ring_buffer_.reset(new SharedMemory);
-  size_t size_bytes = size * sizeof(CommandBufferEntry);
+  uint32 size_bytes = size * sizeof(CommandBufferEntry);
   if (ring_buffer_->Create(std::wstring(), false, false, size_bytes)) {
     if (ring_buffer_->Map(size_bytes))
       return true;

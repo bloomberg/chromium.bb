@@ -220,7 +220,7 @@ TEST_F(ClipboardTest, SharedBitmapTest) {
     0x91E9F63A, 0xC31EA14F, 0x69AB32DF, 0x643A3FD1,
   };
   gfx::Size fake_bitmap_size(3, 4);
-  size_t bytes = sizeof(fake_bitmap);
+  uint32 bytes = sizeof(fake_bitmap);
 
   // Create shared memory region.
   base::SharedMemory shared_buf;

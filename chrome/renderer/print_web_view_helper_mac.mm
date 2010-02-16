@@ -207,7 +207,7 @@ void PrintWebViewHelper::PrintPage(const ViewMsg_PrintPage_Params& params,
   base::SharedMemory shared_buf;
 
   // Ask the browser to create the shared memory for us.
-  unsigned int buf_size = metafile.GetDataSize();
+  uint32 buf_size = metafile.GetDataSize();
   base::SharedMemoryHandle shared_mem_handle;
   if (Send(new ViewHostMsg_AllocatePDFTransport(routing_id(), buf_size,
                                                 &shared_mem_handle))) {

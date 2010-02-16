@@ -248,8 +248,8 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
   // Used to ask the browser to allocate a block of shared memory for the
   // renderer to send back data in, since shared memory can't be created
   // in the renderer on OS X due to the sandbox.
-  void OnAllocateSharedMemoryBuffer(size_t buffer_size,
-                              base::SharedMemoryHandle* handle);
+  void OnAllocateSharedMemoryBuffer(uint32 buffer_size,
+                                    base::SharedMemoryHandle* handle);
 #endif
 
   void OnResourceTypeStats(const WebKit::WebCache::ResourceTypeStats& stats);

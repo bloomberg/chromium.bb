@@ -127,7 +127,7 @@ void CommandBufferStub::OnDestroyTransferBuffer(int32 id) {
 void CommandBufferStub::OnGetTransferBuffer(
     int32 id,
     base::SharedMemoryHandle* transfer_buffer,
-    size_t* size) {
+    uint32* size) {
   *transfer_buffer = base::SharedMemoryHandle();
   *size = 0;
 

@@ -48,7 +48,7 @@ class CommandBufferStub : public IPC::Channel::Listener,
   void OnDestroyTransferBuffer(int32 id);
   void OnGetTransferBuffer(int32 id,
                            base::SharedMemoryHandle* transfer_buffer,
-                           size_t* size);
+                           uint32* size);
 #if defined(OS_MACOSX)
   void OnSetWindowSize(int32 width, int32 height);
   void SwapBuffersCallback();

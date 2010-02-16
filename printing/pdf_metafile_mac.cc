@@ -42,7 +42,7 @@ CGContextRef PdfMetafile::Init() {
   return context_.get();
 }
 
-bool PdfMetafile::Init(const void* src_buffer, size_t src_buffer_size) {
+bool PdfMetafile::Init(const void* src_buffer, uint32 src_buffer_size) {
   DCHECK(!context_.get());
   DCHECK(!pdf_data_.get());
 
@@ -58,7 +58,7 @@ bool PdfMetafile::Init(const void* src_buffer, size_t src_buffer_size) {
 }
 
 bool PdfMetafile::CreateFromData(const void* src_buffer,
-                                 size_t src_buffer_size) {
+                                 uint32 src_buffer_size) {
   return Init(src_buffer, src_buffer_size);
 }
 
@@ -123,7 +123,7 @@ bool PdfMetafile::RenderPage(unsigned int page_number, CGContextRef context,
   return true;
 }
 
-size_t PdfMetafile::GetPageCount() const {
+unsigned int PdfMetafile::GetPageCount() const {
   CGPDFDocumentRef pdf_doc = GetPDFDocument();
   return pdf_doc ? CGPDFDocumentGetNumberOfPages(pdf_doc) : 0;
 }
@@ -143,23 +143,23 @@ gfx::Rect PdfMetafile::GetPageBounds(unsigned int page_number) const {
   return gfx::Rect(page_rect);
 }
 
-unsigned int PdfMetafile::GetDataSize() const {
+uint32 PdfMetafile::GetDataSize() const {
   // PDF data is only valid/complete once the context is released.
   DCHECK(!context_);
 
   if (!pdf_data_)
     return 0;
-  return static_cast<unsigned int>(CFDataGetLength(pdf_data_));
+  return static_cast<uint32>(CFDataGetLength(pdf_data_));
 }
 
-bool PdfMetafile::GetData(void* dst_buffer, size_t dst_buffer_size) const {
+bool PdfMetafile::GetData(void* dst_buffer, uint32 dst_buffer_size) const {
   // PDF data is only valid/complete once the context is released.
   DCHECK(!context_);
   DCHECK(pdf_data_);
   DCHECK(dst_buffer);
   DCHECK_GT(dst_buffer_size, 0U);
 
-  size_t data_size = GetDataSize();
+  uint32 data_size = GetDataSize();
   if (dst_buffer_size > data_size) {
     return false;
   }

@@ -29,7 +29,7 @@ TEST(PdfMetafileTest, Pdf) {
   pdf.Close();
 
   // Check data size.
-  unsigned int size = pdf.GetDataSize();
+  uint32 size = pdf.GetDataSize();
   EXPECT_GT(size, 0U);
 
   // Get resulting data.

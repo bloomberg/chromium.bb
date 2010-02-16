@@ -24,10 +24,9 @@ bool Emf::CreateDc(HDC sibling, const RECT* rect) {
   return hdc_ != NULL;
 }
 
-bool Emf::CreateFromData(const void* buffer, size_t size) {
+bool Emf::CreateFromData(const void* buffer, uint32 size) {
   DCHECK(!emf_ && !hdc_);
-  emf_ = SetEnhMetaFileBits(static_cast<unsigned>(size),
-                            reinterpret_cast<const BYTE*>(buffer));
+  emf_ = SetEnhMetaFileBits(size, reinterpret_cast<const BYTE*>(buffer));
   DCHECK(emf_);
   return emf_ != NULL;
 }
@@ -96,22 +95,22 @@ gfx::Rect Emf::GetBounds() const {
                    header.rclBounds.bottom - header.rclBounds.top);
 }
 
-unsigned Emf::GetDataSize() const {
+uint32 Emf::GetDataSize() const {
   DCHECK(emf_ && !hdc_);
   return GetEnhMetaFileBits(emf_, 0, NULL);
 }
 
-bool Emf::GetData(void* buffer, size_t size) const {
+bool Emf::GetData(void* buffer, uint32 size) const {
   DCHECK(emf_ && !hdc_);
   DCHECK(buffer && size);
-  unsigned size2 = GetEnhMetaFileBits(emf_, static_cast<unsigned>(size),
-                                      reinterpret_cast<BYTE*>(buffer));
+  uint32 size2 =
+      GetEnhMetaFileBits(emf_, size, reinterpret_cast<BYTE*>(buffer));
   DCHECK(size2 == size);
   return size2 == size && size2 != 0;
 }
 
 bool Emf::GetData(std::vector<uint8>* buffer) const {
-  unsigned size = GetDataSize();
+  uint32 size = GetDataSize();
   if (!size)
     return false;
 

@@ -805,7 +805,7 @@ bool WebPluginDelegateProxy::BackgroundChanged(
 
 void WebPluginDelegateProxy::Print(gfx::NativeDrawingContext context) {
   base::SharedMemoryHandle shared_memory;
-  size_t size;
+  uint32 size;
   if (!Send(new PluginMsg_Print(instance_id_, &shared_memory, &size)))
     return;
 

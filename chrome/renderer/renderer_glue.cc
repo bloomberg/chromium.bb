@@ -90,7 +90,7 @@ void ScopedClipboardWriterGlue::WriteBitmapFromPixels(const void* pixels,
   if (shared_buf_)
     return;
 
-  size_t buf_size = 4 * size.width() * size.height();
+  uint32 buf_size = 4 * size.width() * size.height();
 
   // Allocate a shared memory buffer to hold the bitmap bits.
 #if defined(OS_MACOSX)

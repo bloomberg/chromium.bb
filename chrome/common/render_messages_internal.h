@@ -1636,12 +1636,12 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // Asks the browser to create a block of shared memory for the renderer to pass
   // NativeMetafile data to the browser.
   IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_AllocatePDFTransport,
-                             size_t /* buffer size */,
+                             uint32 /* buffer size */,
                              base::SharedMemoryHandle /* browser handle */)
   // Asks the browser to create a block of shared memory for the renderer to
   // fill in and pass back to the browser.
   IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_AllocateSharedMemoryBuffer,
-                             size_t /* buffer size */,
+                             uint32 /* buffer size */,
                              base::SharedMemoryHandle /* browser handle */)
 #endif
 

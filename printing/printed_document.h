@@ -71,7 +71,7 @@ class PrintedDocument : public base::RefCountedThreadSafe<PrintedDocument> {
 
   // Retrieves the current memory usage of the renderer pages.
   // Note: locks for a short amount of time.
-  size_t MemoryUsage() const;
+  uint32 MemoryUsage() const;
 
   // Sets the number of pages in the document to be rendered. Can only be set
   // once.

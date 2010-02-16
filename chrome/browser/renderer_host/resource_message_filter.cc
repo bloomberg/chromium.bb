@@ -939,7 +939,7 @@ void ResourceMessageFilter::OnDuplicateSection(
 
 #if defined(OS_MACOSX)
 void ResourceMessageFilter::OnAllocateSharedMemoryBuffer(
-    size_t buffer_size,
+    uint32 buffer_size,
     base::SharedMemoryHandle* handle) {
   base::SharedMemory shared_buf;
   shared_buf.Create(L"", false, false, buffer_size);

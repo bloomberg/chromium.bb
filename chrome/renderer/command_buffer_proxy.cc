@@ -133,7 +133,7 @@ Buffer CommandBufferProxy::GetTransferBuffer(int32 id) {
   // Assuming we are in the renderer process, the service is responsible for
   // duplicating the handle. This might not be true for NaCl.
   base::SharedMemoryHandle handle;
-  size_t size;
+  uint32 size;
   if (!Send(new CommandBufferMsg_GetTransferBuffer(route_id_,
                                                    id,
                                                    &handle,

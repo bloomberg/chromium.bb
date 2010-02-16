@@ -42,7 +42,7 @@ TEST_F(PdfPsTest, Pdf) {
   pdf.Close();
 
   // Checks data size.
-  unsigned int size = pdf.GetDataSize();
+  uint32 size = pdf.GetDataSize();
   EXPECT_GT(size, 0u);
 
   // Gets resulting data.
@@ -86,7 +86,7 @@ TEST_F(PdfPsTest, Ps) {
   ps.Close();
 
   // Checks data size.
-  unsigned int size = ps.GetDataSize();
+  uint32 size = ps.GetDataSize();
   EXPECT_GT(size, 0u);
 
   // Gets resulting data.

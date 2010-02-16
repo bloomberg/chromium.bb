@@ -127,7 +127,7 @@ void PrintedDocument::DisconnectSource() {
   mutable_.source_ = NULL;
 }
 
-size_t PrintedDocument::MemoryUsage() const {
+uint32 PrintedDocument::MemoryUsage() const {
   std::vector< scoped_refptr<PrintedPage> > pages_copy;
   {
     AutoLock lock(lock_);
@@ -140,7 +140,7 @@ size_t PrintedDocument::MemoryUsage() const {
       }
     }
   }
-  size_t total = 0;
+  uint32 total = 0;
   for (size_t i = 0; i < pages_copy.size(); ++i) {
     total += pages_copy[i]->native_metafile()->GetDataSize();
   }

@@ -278,7 +278,7 @@ void WebPluginDelegateStub::OnDidPaint() {
 }
 
 void WebPluginDelegateStub::OnPrint(base::SharedMemoryHandle* shared_memory,
-                                    size_t* size) {
+                                    uint32* size) {
 #if defined(OS_WIN)
   printing::NativeMetafile metafile;
   if (!metafile.CreateDc(NULL, NULL)) {
@@ -407,7 +407,7 @@ void WebPluginDelegateStub::OnCreateCommandBuffer(int* route_id) {
 }
 
 void WebPluginDelegateStub::CreateSharedBuffer(
-    size_t size,
+    uint32 size,
     base::SharedMemory* shared_buf,
     base::SharedMemoryHandle* remote_handle) {
   if (!shared_buf->Create(std::wstring(), false, false, size)) {

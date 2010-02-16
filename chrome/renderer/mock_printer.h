@@ -24,7 +24,7 @@ struct ViewHostMsg_DidPrintPage_Params;
 class MockPrinterPage : public base::RefCounted<MockPrinterPage> {
  public:
   MockPrinterPage(const void* source_data,
-                  size_t source_size,
+                  uint32 source_size,
                   const printing::Image& image)
         : source_size_(source_size),
           image_(image) {
@@ -40,11 +40,11 @@ class MockPrinterPage : public base::RefCounted<MockPrinterPage> {
   int width() const { return image_.size().width(); }
   int height() const { return image_.size().height(); }
   const uint8* source_data() const { return source_data_.get(); }
-  const size_t source_size() const { return source_size_; }
+  const uint32 source_size() const { return source_size_; }
   const printing::Image& image() const { return image_; }
 
  private:
-  size_t source_size_;
+  uint32 source_size_;
   scoped_array<uint8> source_data_;
   printing::Image image_;
 
@@ -89,19 +89,19 @@ class MockPrinter {
 
   // Get a pointer to the printed page, returns NULL if pageno has not been
   // printed.  The pointer is for read only view and should not be deleted.
-  const MockPrinterPage* GetPrintedPage(size_t pageno) const;
+  const MockPrinterPage* GetPrintedPage(unsigned int pageno) const;
 
-  int GetWidth(size_t page) const;
-  int GetHeight(size_t page) const;
-  bool GetBitmapChecksum(size_t page, std::string* checksum) const;
-  bool GetSource(size_t page, const void** data, size_t* size) const;
-  bool GetBitmap(size_t page, const void** data, size_t* size) const;
-  bool SaveSource(size_t page, const FilePath& filepath) const;
-  bool SaveBitmap(size_t page, const FilePath& filepath) const;
+  int GetWidth(unsigned int page) const;
+  int GetHeight(unsigned int page) const;
+  bool GetBitmapChecksum(unsigned int page, std::string* checksum) const;
+  bool GetSource(unsigned int page, const void** data, uint32* size) const;
+  bool GetBitmap(unsigned int page, const void** data, uint32* size) const;
+  bool SaveSource(unsigned int page, const FilePath& filepath) const;
+  bool SaveBitmap(unsigned int page, const FilePath& filepath) const;
 
  protected:
   int CreateDocumentCookie();
-  bool GetChecksum(const void* data, size_t size, std::string* checksum) const;
+  bool GetChecksum(const void* data, uint32 size, std::string* checksum) const;
 
  private:
   // In pixels according to dpi_x and dpi_y.

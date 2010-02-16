@@ -666,7 +666,7 @@ bool VisitedLinkMaster::GetDatabaseFileName(FilePath* filename) {
 // in so that it can be written to the shared memory
 bool VisitedLinkMaster::CreateURLTable(int32 num_entries, bool init_to_empty) {
   // The table is the size of the table followed by the entries.
-  int32 alloc_size = num_entries * sizeof(Fingerprint) + sizeof(SharedHeader);
+  uint32 alloc_size = num_entries * sizeof(Fingerprint) + sizeof(SharedHeader);
 
   // Create the shared memory object.
   shared_memory_ = new base::SharedMemory();

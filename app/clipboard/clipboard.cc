@@ -20,13 +20,13 @@ namespace {
 // the bitmap data or -1 if the data is invalid.
 // returns: true if the bitmap size is valid, false otherwise.
 bool IsBitmapSafe(const Clipboard::ObjectMapParams& params,
-                  size_t* bitmap_bytes) {
+                  uint32* bitmap_bytes) {
   *bitmap_bytes = -1;
   if (params[1].size() != sizeof(gfx::Size))
     return false;
   const gfx::Size* size =
       reinterpret_cast<const gfx::Size*>(&(params[1].front()));
-  size_t total_size = size->width();
+  uint32 total_size = size->width();
   // Using INT_MAX not SIZE_T_MAX to put a reasonable bound on things.
   if (INT_MAX / size->width() <= size->height())
     return false;
@@ -42,7 +42,7 @@ bool IsBitmapSafe(const Clipboard::ObjectMapParams& params,
 // Returns true if the clipboard data makes sense and it's safe to access the
 // bitmap.
 bool ValidatePlainBitmap(const Clipboard::ObjectMapParams& params) {
-  size_t bitmap_bytes = -1;
+  uint32 bitmap_bytes = -1;
   if (!IsBitmapSafe(params, &bitmap_bytes))
     return false;
   if (bitmap_bytes != params[0].size())
@@ -56,7 +56,7 @@ bool ValidatePlainBitmap(const Clipboard::ObjectMapParams& params) {
 bool ValidateAndMapSharedBitmap(const Clipboard::ObjectMapParams& params,
                                 base::SharedMemory* bitmap_data) {
   using base::SharedMemory;
-  size_t bitmap_bytes = -1;
+  uint32 bitmap_bytes = -1;
   if (!IsBitmapSafe(params, &bitmap_bytes))
     return false;
 
