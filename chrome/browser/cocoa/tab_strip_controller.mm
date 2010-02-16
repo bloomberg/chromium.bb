@@ -1632,6 +1632,12 @@ private:
   return sheetController_.get();
 }
 
+- (void)destroySheetController {
+  // Make sure there are no open sheets.
+  DCHECK_EQ(0U, [[sheetController_ viewsWithAttachedSheets] count]);
+  sheetController_.reset();
+}
+
 - (TabContentsController*)activeTabContentsController {
   int modelIndex = tabStripModel_->selected_index();
   if (modelIndex < 0)

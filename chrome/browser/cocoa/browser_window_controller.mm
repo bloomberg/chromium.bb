@@ -1611,6 +1611,10 @@ willAnimateFromState:(bookmarks::VisualState)oldState
     fullscreenController_.reset(nil);
   }
 
+  // Destroy the tab strip's sheet controller.  We will recreate it in the new
+  // window when needed.
+  [tabStripController_ destroySheetController];
+
   // Retain the tab strip view while we remove it from its superview.
   scoped_nsobject<NSView> tabStripView;
   if ([self hasTabStrip]) {

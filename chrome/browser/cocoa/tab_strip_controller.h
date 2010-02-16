@@ -186,6 +186,15 @@ class ToolbarModel;
 // for the per-tab sheets.
 - (GTMWindowSheetController*)sheetController;
 
+// Destroys the window sheet controller of this window, if it exists.  The sheet
+// controller can be recreated by a subsequent call to |-sheetController|.  Must
+// not be called if any sheets are currently open.
+// TODO(viettrungluu): This is temporary code needed to allow sheets to work
+// (read: not crash) in fullscreen mode.  Once GTMWindowSheetController is
+// modified to support moving sheets between windows, this code can go away.
+// http://crbug.com/19093.
+- (void)destroySheetController;
+
 // Returns the currently active TabContentsController.
 - (TabContentsController*)activeTabContentsController;
 
