@@ -820,27 +820,29 @@ _ENUM_LISTS = {
 # This table specifies types and other special data for the commands that
 # will be generated.
 #
-# type:        defines which handler will be used to generate code.
-# DecoderFunc: defines which function to call in the decoder to execute the
-#              corresponding GL command. If not specified the GL command will
-#              be called directly.
-# cmd_args:    The arguments to use for the command. This overrides generating
-#              them based on the GL function arguments.
-#              a NonImmediate type is a type that stays a pointer even in
-#              and immediate version of acommand.
-# immediate:   Whether or not to generate an immediate command for the GL
-#              function. The default is if there is exactly 1 pointer argument
-#              in the GL function an immediate command is generated.
-# needs_size:  If true a data_size field is added to the command.
-# data_type:   The type of data the command uses. For PUTn or PUT types.
-# count:       The number of units per element. For PUTn or PUT types.
-# unit_test:   If False no unit test will be generated.
+# type:         defines which handler will be used to generate code.
+# DecoderFunc:  defines which function to call in the decoder to execute the
+#               corresponding GL command. If not specified the GL command will
+#               be called directly.
+# gl_test_func: GL function that is expected to be called when testing.
+# cmd_args:     The arguments to use for the command. This overrides generating
+#               them based on the GL function arguments.
+#               a NonImmediate type is a type that stays a pointer even in
+#               and immediate version of acommand.
+# immediate:    Whether or not to generate an immediate command for the GL
+#               function. The default is if there is exactly 1 pointer argument
+#               in the GL function an immediate command is generated.
+# needs_size:   If true a data_size field is added to the command.
+# data_type:    The type of data the command uses. For PUTn or PUT types.
+# count:        The number of units per element. For PUTn or PUT types.
+# unit_test:    If False no unit test will be generated.
 
 _FUNCTION_INFO = {
   'BindAttribLocation': {'type': 'GLchar'},
   'BindBuffer': {'DecoderFunc': 'DoBindBuffer'},
   'BindFramebuffer': {'DecoderFunc': 'glBindFramebufferEXT'},
   'BindRenderbuffer': {'DecoderFunc': 'glBindRenderbufferEXT'},
+  'BindTexture': {'DecoderFunc': 'DoBindTexture'},
   'BufferData': {'type': 'Manual', 'immediate': True},
   'BufferSubData': {'type': 'Data'},
   'CheckFramebufferStatus': {'DecoderFunc': 'glCheckFramebufferStatusEXT'},
@@ -874,7 +876,10 @@ _FUNCTION_INFO = {
   'Flush': {'ImplFunc': False},
   'FramebufferRenderbuffer': {'DecoderFunc': 'glFramebufferRenderbufferEXT'},
   'FramebufferTexture2D': {'DecoderFunc': 'glFramebufferTexture2DEXT'},
-  'GenerateMipmap': {'DecoderFunc': 'glGenerateMipmapEXT'},
+  'GenerateMipmap': {
+    'DecoderFunc': 'DoGenerateMipmap',
+    'gl_test_func': 'glGenerateMipmapEXT',
+  },
   'GenBuffers': {'type': 'GENn', 'gl_test_func': 'glGenBuffersARB'},
   'GenFramebuffers': {'type': 'GENn', 'gl_test_func': 'glGenFramebuffersEXT'},
   'GenRenderbuffers': {'type': 'GENn', 'gl_test_func': 'glGenRenderbuffersEXT'},
@@ -1356,12 +1361,7 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
         for arg in func.GetOriginalArgs():
           gl_arg_strings.append("_")
           count += 1
-        gl_func_name = func.GetGLFunctionName()
-        if gl_func_name.startswith("gl"):
-          gl_func_name = gl_func_name[2:]
-        else:
-          gl_func_name = func.name
-
+        gl_func_name = func.GetGLTestFunctionName()
         vars = {
             'name': func.name,
             'arg_index': arg_index,

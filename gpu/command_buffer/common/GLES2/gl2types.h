@@ -152,6 +152,7 @@ typedef khronos_ssize_t  GLsizeiptr;
 #define GL_INVALID_VALUE                  0x0501
 #define GL_INVALID_OPERATION              0x0502
 #define GL_OUT_OF_MEMORY                  0x0505
+#define GL_CONTEXT_LOST                   0x300E  // TODO(gman): What value?
 
 /* FrontFaceDirection */
 #define GL_CW                             0x0900

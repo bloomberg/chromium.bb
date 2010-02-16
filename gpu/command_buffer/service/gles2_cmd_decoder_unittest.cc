@@ -8,6 +8,7 @@
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
 #include "gpu/command_buffer/service/gl_mock.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
+#include "gpu/command_buffer/service/program_manager.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using ::gles2::MockGLInterface;
@@ -25,15 +26,6 @@ using ::testing::StrictMock;
 namespace gpu {
 namespace gles2 {
 
-namespace {
-
-bool IsInvalidPrefix(const char* name) {
-  static const char kInvalidPrefix[] = { 'g', 'l', '_' };
-  return memcmp(name, kInvalidPrefix, sizeof(kInvalidPrefix)) == 0;
-}
-
-}  // anonymous namespace
-
 class GLES2DecoderTest : public testing::Test {
  public:
   GLES2DecoderTest()
@@ -48,6 +40,8 @@ class GLES2DecoderTest : public testing::Test {
   }
 
  protected:
+  static const GLint kMaxTextureSize = 2048;
+  static const GLint kMaxCubeMapTextureSize = 256;
   static const GLint kNumVertexAttribs = 16;
 
   static const GLuint kServiceBufferId = 301;
@@ -106,6 +100,12 @@ class GLES2DecoderTest : public testing::Test {
 
     EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_VERTEX_ATTRIBS, _))
         .WillOnce(SetArgumentPointee<1>(kNumVertexAttribs))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_TEXTURE_SIZE, _))
+        .WillOnce(SetArgumentPointee<1>(kMaxTextureSize))
+        .RetiresOnSaturation();
+    EXPECT_CALL(*gl_, GetIntegerv(GL_MAX_CUBE_MAP_TEXTURE_SIZE, _))
+        .WillOnce(SetArgumentPointee<1>(kMaxCubeMapTextureSize))
         .RetiresOnSaturation();
     EXPECT_CALL(*gl_, GetError())
         .WillRepeatedly(Return(GL_NO_ERROR));
@@ -220,6 +220,29 @@ class GLES2DecoderTest : public testing::Test {
     return static_cast<GLint>(*GetSharedMemoryAs<GLenum*>());
   }
 
+  void DoBindTexture(GLenum target, GLuint client_id, GLuint service_id) {
+    EXPECT_CALL(*gl_, BindTexture(target, service_id))
+        .Times(1)
+        .RetiresOnSaturation();
+    BindTexture cmd;
+    cmd.Init(target, client_id);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  }
+
+  void DoTexImage2D(GLenum target, GLint level, GLenum internal_format,
+                    GLsizei width, GLsizei height, GLint border,
+                    GLenum format, GLenum type,
+                    uint32 shared_memory_id, uint32 shared_memory_offset) {
+    EXPECT_CALL(*gl_, TexImage2D(target, level, internal_format,
+                                 width, height, border, format, type, _))
+        .Times(1)
+        .RetiresOnSaturation();
+    TexImage2D cmd;
+    cmd.Init(target, level, internal_format, width, height, border, format,
+             type, shared_memory_id, shared_memory_offset);
+    EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  }
+
   // Use StrictMock to make 100% sure we know how GL will be called.
   scoped_ptr<StrictMock<MockGLInterface> > gl_;
   scoped_ptr<GLES2Decoder> decoder_;
@@ -319,6 +342,13 @@ void GLES2DecoderTest::SpecializedSetup<LinkProgram, 0>() {
       .WillOnce(SetArgumentPointee<2>(0));
 };
 
+template <>
+void GLES2DecoderTest::SpecializedSetup<GenerateMipmap, 0>() {
+  DoBindTexture(GL_TEXTURE_2D, client_texture_id_, kServiceTextureId);
+  DoTexImage2D(
+      GL_TEXTURE_2D, 0, GL_RGBA, 16, 16, 0, GL_RGBA, GL_UNSIGNED_BYTE,
+      0, 0);
+};
 
 class GLES2DecoderWithShaderTest : public GLES2DecoderTest {
  public:
@@ -392,9 +422,9 @@ class GLES2DecoderWithShaderTest : public GLES2DecoderTest {
         { kAttrib3Name, kAttrib3Size, kAttrib3Type, kAttrib3Location, },
       };
       static UniformInfo uniforms[] = {
-        { kUniform1Name, kUniform1Size, GL_FLOAT_VEC4, kUniform1Location, },
-        { kUniform2Name, kUniform2Size, GL_INT_VEC2, kUniform2Location, },
-        { kUniform3Name, kUniform3Size, GL_FLOAT_VEC3, kUniform3Location, },
+        { kUniform1Name, kUniform1Size, kUniform1Type, kUniform1Location, },
+        { kUniform2Name, kUniform2Size, kUniform2Type, kUniform2Location, },
+        { kUniform3Name, kUniform3Size, kUniform3Type, kUniform3Location, },
       };
       SetupShader(attribs, arraysize(attribs), uniforms, arraysize(uniforms),
                   client_program_id_, kServiceProgramId);
@@ -448,7 +478,7 @@ class GLES2DecoderWithShaderTest : public GLES2DecoderTest {
                 SetArrayArgument<6>(info.name,
                                     info.name + strlen(info.name) + 1)))
             .RetiresOnSaturation();
-        if (!IsInvalidPrefix(info.name)) {
+        if (!ProgramManager::IsInvalidPrefix(info.name, strlen(info.name))) {
           EXPECT_CALL(*gl_, GetAttribLocation(service_id,
                                               StrEq(info.name)))
               .WillOnce(Return(info.location))
@@ -475,7 +505,7 @@ class GLES2DecoderWithShaderTest : public GLES2DecoderTest {
                 SetArrayArgument<6>(info.name,
                                     info.name + strlen(info.name) + 1)))
             .RetiresOnSaturation();
-        if (!IsInvalidPrefix(info.name)) {
+        if (!ProgramManager::IsInvalidPrefix(info.name, strlen(info.name))) {
           EXPECT_CALL(*gl_, GetUniformLocation(service_id,
                                                StrEq(info.name)))
               .WillOnce(Return(info.location))

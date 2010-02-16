@@ -9,6 +9,8 @@
     # twice with different defines. Once so it calls real GL, again so it
     # calls mock GL for the unit tests.
     'gpu_source_files': [
+      'command_buffer/service/buffer_manager.h',
+      'command_buffer/service/buffer_manager.cc',
       'command_buffer/service/gles2_cmd_decoder.h',
       'command_buffer/service/gles2_cmd_decoder_autogen.h',
       'command_buffer/service/gles2_cmd_decoder.cc',
@@ -17,6 +19,14 @@
       'command_buffer/service/gles2_cmd_validation_autogen.h',
       'command_buffer/service/gles2_cmd_validation_implementation_autogen.h',
       'command_buffer/service/gl_utils.h',
+      'command_buffer/service/id_manager.h',
+      'command_buffer/service/id_manager.cc',
+      'command_buffer/service/program_manager.h',
+      'command_buffer/service/program_manager.cc',
+      'command_buffer/service/shader_manager.h',
+      'command_buffer/service/shader_manager.cc',
+      'command_buffer/service/texture_manager.h',
+      'command_buffer/service/texture_manager.cc',
     ],
   },
   'targets': [
@@ -303,6 +313,11 @@
       'direct_dependent_settings': {
         'sources': [
           '<@(gpu_source_files)',
+          'command_buffer/common/gles2_cmd_format_test.cc',
+          'command_buffer/common/gles2_cmd_format_test_autogen.h',
+          'command_buffer/common/gles2_cmd_id_test.cc',
+          'command_buffer/common/gles2_cmd_id_test_autogen.h',
+          'command_buffer/service/buffer_manager_unittest.cc',
           'command_buffer/service/cmd_parser_test.cc',
           'command_buffer/service/command_buffer_service_unittest.cc',
           'command_buffer/service/common_decoder_unittest.cc',
@@ -314,10 +329,10 @@
           'command_buffer/service/gl_mock.cc',
           'command_buffer/service/gles2_cmd_decoder_unittest.cc',
           'command_buffer/service/gles2_cmd_decoder_unittest_autogen.h',
-          'command_buffer/common/gles2_cmd_format_test.cc',
-          'command_buffer/common/gles2_cmd_format_test_autogen.h',
-          'command_buffer/common/gles2_cmd_id_test.cc',
-          'command_buffer/common/gles2_cmd_id_test_autogen.h',
+          'command_buffer/service/id_manager_unittest.cc',
+          'command_buffer/service/program_manager_unittest.cc',
+          'command_buffer/service/shader_manager_unittest.cc',
+          'command_buffer/service/texture_manager_unittest.cc',
         ],
       },
     },

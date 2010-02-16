@@ -129,7 +129,7 @@ error::Error GLES2DecoderImpl::HandleBindTexture(
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
   }
-  glBindTexture(target, texture);
+  DoBindTexture(target, texture);
   return error::kNoError;
 }
 
@@ -739,7 +739,7 @@ error::Error GLES2DecoderImpl::HandleGenerateMipmap(
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
   }
-  glGenerateMipmapEXT(target);
+  DoGenerateMipmap(target);
   return error::kNoError;
 }
 
