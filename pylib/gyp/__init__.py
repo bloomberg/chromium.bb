@@ -35,7 +35,7 @@ def FindBuildFiles():
 
 
 def Load(build_files, format, default_variables={},
-         includes=[], depth='.', params={}, check=False):
+         includes=[], depth='.', params={}, check=False, circular_check=True):
   """
   Loads one or more specified build files.
   default_variables and includes will be copied before use.
@@ -80,7 +80,7 @@ def Load(build_files, format, default_variables={},
 
   # Process the input specific to this generator.
   result = gyp.input.Load(build_files, default_variables, includes[:],
-                          depth, generator_input_info, check)
+                          depth, generator_input_info, check, circular_check)
   return [generator] + result
 
 def NameValueListToDict(name_value_list):
@@ -264,6 +264,16 @@ def main(args):
                     help='do not read options from environment variables')
   parser.add_option('--check', dest='check', action='store_true',
                     help='check format of gyp files')
+  # --no-circular-check disables the check for circular relationships between
+  # .gyp files.  These relationships should not exist, but they've only been
+  # observed to be harmful with the Xcode generator.  Chromium's .gyp files
+  # currently have some circular relationships on non-Mac platforms, so this
+  # option allows the strict behavior to be used on Macs and the lenient
+  # behavior to be used elsewhere.
+  # TODO(mark): Remove this option when http://crbug.com/35878 is fixed.
+  parser.add_option('--no-circular-check', dest='circular_check',
+                    action='store_false', default=True, regenerate=False,
+                    help="don't check for circular relationships between files")
 
   # We read a few things from ~/.gyp, so set up a var for that.
   home_vars = ['HOME']
@@ -420,7 +430,8 @@ def main(args):
     [generator, flat_list, targets, data] = Load(build_files, format,
                                                  cmdline_default_variables,
                                                  includes, options.depth,
-                                                 params, options.check)
+                                                 params, options.check,
+                                                 options.circular_check)
 
     # TODO(mark): Pass |data| for now because the generator needs a list of
     # build files that came in.  In the future, maybe it should just accept
