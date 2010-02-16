@@ -2877,9 +2877,6 @@ BUG33486 LINUX : fast/text/international/thai-baht-space.html = IMAGE
 BUG33486 LINUX : fast/text/international/thai-line-breaks.html = IMAGE
 BUG33486 LINUX : svg/text/text-intro-05-t.svg = IMAGE
 
-// WebKit roll 54045 -> 54059
-BUG33497 : storage/domstorage/sessionstorage/window-open.html = TEXT
-
 // WebKit roll 54059 -> 54075
 BUG33538 : fast/dom/Window/anonymous-slot-with-changes.html = TEXT
 
