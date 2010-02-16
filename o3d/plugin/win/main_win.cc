@@ -720,25 +720,6 @@ void ReplaceContentWindow(HWND content_hwnd,
   ::ShowWindow(content_hwnd, SW_SHOW);
 }
 
-// Get the screen rect of the monitor the window is on, in virtual screen
-// coordinates.
-// Return true on success, false on failure.
-bool GetScreenRect(HWND hwnd,
-                   RECT* rect) {
-  HMONITOR monitor = MonitorFromWindow(hwnd, MONITOR_DEFAULTTONULL);
-  if (monitor == NULL)
-    return false;
-
-  MONITORINFO monitor_info;
-  monitor_info.cbSize = sizeof(monitor_info);
-  if (GetMonitorInfo(monitor, &monitor_info)) {
-    *rect = monitor_info.rcMonitor;
-    return true;
-  } else {
-    return false;
-  }
-}
-
 }  // namespace anonymous
 
 #if defined(O3D_INTERNAL_PLUGIN)
@@ -977,12 +958,10 @@ bool PluginObject::RequestFullscreenDisplay() {
     // We need to resize the full-screen window to the desired size of
     // the display mode early, before calling
     // Renderer::GoFullscreen().
-    RECT screen_rect;
-    if (GetScreenRect(GetPluginHWnd(), &screen_rect)) {
-      ::SetWindowPos(GetContentHWnd(), HWND_TOP,
-                     screen_rect.left, screen_rect.top,
-                     screen_rect.right - screen_rect.left + 1,
-                     screen_rect.bottom - screen_rect.top + 1,
+    o3d::DisplayMode mode;
+    if (GetDisplayMode(fullscreen_region_mode_id_, &mode)) {
+      ::SetWindowPos(GetContentHWnd(), HWND_TOP, 0, 0,
+                     mode.width(), mode.height(),
                      SWP_NOZORDER | SWP_NOREPOSITION | SWP_ASYNCWINDOWPOS);
       DisplayWindowWindows display;
       display.set_hwnd(GetContentHWnd());
