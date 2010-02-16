@@ -395,6 +395,7 @@ GtkWidget* LocationBarViewGtk::GetPageActionWidget(
 
 void LocationBarViewGtk::Update(const TabContents* contents) {
   SetSecurityIcon(toolbar_model_->GetIcon());
+  UpdateContentBlockedIcons();
   UpdatePageActions();
   SetInfoText();
   location_entry_->Update(contents);
@@ -538,12 +539,22 @@ void LocationBarViewGtk::FocusSearch() {
 
 void LocationBarViewGtk::UpdateContentBlockedIcons() {
   const TabContents* tab_contents = GetTabContents();
+  bool any_visible = false;
   for (ScopedVector<ContentBlockedViewGtk>::iterator i(
            content_blocked_views_.begin());
        i != content_blocked_views_.end(); ++i) {
-    (*i)->SetVisible((!toolbar_model_->input_in_progress() && tab_contents) ?
-        tab_contents->IsContentBlocked((*i)->content_type()) : false);
+    bool is_visible = (!toolbar_model_->input_in_progress() && tab_contents) ?
+        tab_contents->IsContentBlocked((*i)->content_type()) : false;
+    any_visible = is_visible || any_visible;
+    (*i)->SetVisible(is_visible);
   }
+
+  // If there are no visible content things, hide the top level box so it
+  // doesn't mess with padding.
+  if (any_visible)
+    gtk_widget_show(content_blocking_hbox_.get());
+  else
+    gtk_widget_hide(content_blocking_hbox_.get());
 }
 
 void LocationBarViewGtk::UpdatePageActions() {
