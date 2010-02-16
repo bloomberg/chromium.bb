@@ -36,8 +36,16 @@ PluginInstance::PluginInstance(PluginLib *plugin, const std::string &mime_type)
       mime_type_(mime_type),
       use_mozilla_user_agent_(false),
 #if defined (OS_MACOSX)
-      drawing_model_(0),
-      event_model_(0),
+#ifdef NP_NO_QUICKDRAW
+      drawing_model_(NPDrawingModelCoreGraphics),
+#else
+      drawing_model_(NPDrawingModelQuickDraw),
+#endif
+#ifdef NP_NO_CARBON
+      event_model_(NPEventModelCocoa),
+#else
+      event_model_(NPEventModelCarbon),
+#endif
       currently_handled_event_(NULL),
 #endif
       message_loop_(MessageLoop::current()),

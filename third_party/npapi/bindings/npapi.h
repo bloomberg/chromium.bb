@@ -722,6 +722,7 @@ typedef struct NP_Port
  *  Non-standard event types that can be passed to HandleEvent
  */
 /* BEGIN GOOGLE MODIFICATIONS */
+#ifndef NP_NO_CARBON
 enum NPEventType {
   NPEventType_GetFocusEvent = (osEvt + 16),
   NPEventType_LoseFocusEvent,
@@ -737,6 +738,7 @@ enum NPEventType {
 #define loseFocusEvent    (osEvt + 17)
 #define adjustCursorEvent (osEvt + 18)
 #endif
+#endif /* NP_NO_CARBON */
 /* END GOOGLE MODIFICATIONS */
 
 #endif /* XP_MACOSX */

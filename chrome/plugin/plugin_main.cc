@@ -53,7 +53,9 @@ int PluginMain(const MainFunctionParams& parameters) {
 
   // The main thread of the plugin services UI.
 #if defined(OS_MACOSX)
+#if !defined(__LP64__)
   TrimInterposeEnvironment();
+#endif
   InitializeChromeApplication();
 #endif
   MessageLoop main_message_loop(MessageLoop::TYPE_UI);

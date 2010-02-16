@@ -297,7 +297,6 @@ class WebPluginDelegateImpl : public webkit_glue::WebPluginDelegate {
 #endif
 #ifndef NP_NO_QUICKDRAW
   NP_Port qd_port_;
-  GWorldPtr qd_world_;
 #endif
 #endif
   gfx::Rect window_rect_;

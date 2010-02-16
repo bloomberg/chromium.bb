@@ -424,7 +424,7 @@ bool PluginProcessHost::Init(const WebPluginInfo& info,
 
 #if defined(OS_POSIX)
   base::environment_vector env;
-#if defined(OS_MACOSX)
+#if defined(OS_MACOSX) && !defined(__LP64__)
   // Add our interposing library for Carbon. This is stripped back out in
   // plugin_main.cc, so changes here should be reflected there.
   std::string interpose_list(plugin_interpose_strings::kInterposeLibraryPath);

@@ -7,6 +7,7 @@
 #include "chrome/common/plugin_carbon_interpose_constants_mac.h"
 #include "chrome/plugin/plugin_interpose_util_mac.h"
 
+#if !defined(__LP64__)
 void TrimInterposeEnvironment() {
   const char* interpose_list =
       getenv(plugin_interpose_strings::kDYLDInsertLibrariesKey);
@@ -37,6 +38,7 @@ void TrimInterposeEnvironment() {
     NOTREACHED() << "Missing Carbon interposing library";
   }
 }
+#endif
 
 void InitializeChromeApplication() {
   [CrApplication sharedApplication];

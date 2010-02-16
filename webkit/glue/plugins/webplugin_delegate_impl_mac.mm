@@ -232,8 +232,10 @@ void WebPluginDelegateImpl::PlatformInitialize() {
     Rect window_bounds = { 0, 0, window_rect_.height(), window_rect_.width() };
     SetWindowBounds(reinterpret_cast<WindowRef>(cg_context_.window),
                     kWindowContentRgn, &window_bounds);
+#ifndef NP_NO_QUICKDRAW
     qd_port_.port =
         GetWindowPort(reinterpret_cast<WindowRef>(cg_context_.window));
+#endif
   }
 #endif
 
@@ -271,8 +273,10 @@ void WebPluginDelegateImpl::PlatformInitialize() {
 }
 
 void WebPluginDelegateImpl::PlatformDestroyInstance() {
+#ifndef NP_NO_CARBON
   if (instance()->event_model() == NPEventModelCarbon)
     CarbonIdleEventSource::SharedInstance()->UnregisterDelegate(this);
+#endif
 }
 
 void WebPluginDelegateImpl::UpdateContext(CGContextRef context) {
@@ -417,7 +421,7 @@ void WebPluginDelegateImpl::WindowlessPaint(gfx::NativeDrawingContext context,
           paint_event.data.draw.y = paint_rect.y();
           paint_event.data.draw.width = paint_rect.width();
           paint_event.data.draw.height = paint_rect.height();
-          instance()->NPP_HandleEvent(reinterpret_cast<NPEvent*>(&paint_event));
+          instance()->NPP_HandleEvent(&paint_event);
           break;
         }
       }
@@ -491,7 +495,7 @@ void WebPluginDelegateImpl::FocusChanged(bool has_focus) {
       memset(&focus_event, 0, sizeof(focus_event));
       focus_event.type = NPCocoaEventFocusChanged;
       focus_event.data.focus.hasFocus = have_focus_;
-      instance()->NPP_HandleEvent(reinterpret_cast<NPEvent*>(&focus_event));
+      instance()->NPP_HandleEvent(&focus_event);
       break;
     }
   }
@@ -535,7 +539,7 @@ void WebPluginDelegateImpl::SetWindowHasFocus(bool has_focus) {
       memset(&focus_event, 0, sizeof(focus_event));
       focus_event.type = NPCocoaEventWindowFocusChanged;
       focus_event.data.focus.hasFocus = has_focus;
-      instance()->NPP_HandleEvent(reinterpret_cast<NPEvent*>(&focus_event));
+      instance()->NPP_HandleEvent(&focus_event);
     }
   }
 }
@@ -1002,8 +1006,7 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
         return false;
       }
       NPAPI::ScopedCurrentPluginEvent event_scope(instance(), &np_cocoa_event);
-      ret = instance()->NPP_HandleEvent(
-          reinterpret_cast<NPEvent*>(&np_cocoa_event)) != 0;
+      ret = instance()->NPP_HandleEvent(&np_cocoa_event) != 0;
       break;
     }
   }
