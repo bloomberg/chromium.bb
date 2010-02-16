@@ -341,7 +341,11 @@ bool TestServerLauncher::Stop() {
   if (!process_handle_)
     return true;
 
-  bool ret = base::KillProcess(process_handle_, 1, true);
+  // First check if the process has already terminated.
+  bool ret = base::WaitForSingleProcess(process_handle_, 0);
+  if (!ret)
+    ret = base::KillProcess(process_handle_, 1, true);
+
   if (ret) {
     base::CloseProcessHandle(process_handle_);
     process_handle_ = base::kNullProcessHandle;
