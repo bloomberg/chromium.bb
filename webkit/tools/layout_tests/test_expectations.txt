@@ -2939,6 +2939,9 @@ BUG35618 LINUX WIN : fast/text/glyph-reordering.html = TEXT
 
 // Not known when these started failing.
 BUG35858 MAC LINUX : media/remove-from-document.html = CRASH PASS
-BUG35858 MAC : media/video-source.html = CRASH
-BUG35858 MAC : media/video-source-type.html = CRASH
-BUG35858 MAC : media/video-src.html = CRASH
+BUG35858 MAC : media/video-source.html = CRASH PASS
+BUG35858 MAC : media/video-source-type.html = CRASH PASS
+BUG35858 MAC : media/video-src.html = CRASH PASS
+BUG35858 MAC : media/video-src-change.html = CRASH PASS
+BUG35858 MAC : media/video-src-source.html = CRASH PASS
+BUG35858 MAC : media/video-timeupdate-during-playback.html = CRASH PASS
