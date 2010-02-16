@@ -38,7 +38,7 @@ class GeolocationArbitrator {
     bool use_high_accuracy;
   };
 
-  virtual ~GeolocationArbitrator() = 0;
+  virtual ~GeolocationArbitrator();
 
   // Must be called from the same thread as the arbitrator was created on.
   // The update options passed are used as a 'hint' for the provider preferences

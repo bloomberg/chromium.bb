@@ -63,6 +63,9 @@ GeolocationArbitrator* GeolocationArbitrator::New(
   return new GeolocationArbitratorImpl(access_token_store, context_getter);
 }
 
+GeolocationArbitrator::~GeolocationArbitrator() {
+}
+
 GeolocationArbitratorImpl::GeolocationArbitratorImpl(
     AccessTokenStore* access_token_store,
     URLRequestContextGetter* context_getter)
