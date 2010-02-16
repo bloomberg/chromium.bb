@@ -539,7 +539,7 @@
       <message name="IDS_SYNC_SETUP_WIZARD_WIDTH_CHARS" use_name_for_id="true">
         46
       </message>
-      
+
       <!-- The height of the sync setup wizard / login dialog in lines. -->
       <message name="IDS_SYNC_SETUP_WIZARD_HEIGHT_LINES" use_name_for_id="true">
         15
@@ -578,6 +578,16 @@
       <message name="IDS_CREATE_SHORTCUTS_DIALOG_WIDTH_CHARS" use_name_for_id="true">
         55
       </message>
+
+      <!-- The width and height for the "create application shortcuts error" dialog. -->
+      <if expr="os == 'linux2'">
+        <message name="IDS_CREATE_SHORTCUTS_ERROR_DIALOG_WIDTH_CHARS" use_name_for_id="true">
+         60
+        </message>
+        <message name="IDS_CREATE_SHORTCUTS_ERROR_DIALOG_HEIGHT_LINES" use_name_for_id="true">
+         6
+        </message>
+      </if>
 
       <!-- The width of the AutoFill dialog in characters. -->
       <message name="IDS_AUTOFILL_DIALOG_WIDTH_CHARS" use_name_for_id="true">

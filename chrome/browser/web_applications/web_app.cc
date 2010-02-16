@@ -248,8 +248,13 @@ void CreateShortcutTask::Run() {
 }
 
 bool CreateShortcutTask::CreateShortcut() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
 #if defined(OS_LINUX)
-  ShellIntegration::CreateDesktopShortcut(shortcut_info_);
+  std::string shortcut_template;
+  if (!ShellIntegration::GetDesktopShortcutTemplate(&shortcut_template))
+    return false;
+  ShellIntegration::CreateDesktopShortcut(shortcut_info_, shortcut_template);
   return true;  // assuming always success.
 #elif defined(OS_WIN)
   // Shortcut paths under which to create shortcuts.

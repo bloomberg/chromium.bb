@@ -32,6 +32,7 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_plugin_util.h"
 #include "chrome/common/chrome_switches.h"
+#include "chrome/browser/chrome_thread.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
@@ -80,7 +81,165 @@ bool LaunchXdgUtility(const std::vector<std::string>& argv) {
   return success_code == EXIT_SUCCESS;
 }
 
-bool GetDesktopShortcutTemplate(std::string* output) {
+std::string CreateShortcutIcon(
+    const ShellIntegration::ShortcutInfo& shortcut_info,
+    const FilePath& shortcut_filename) {
+  if (shortcut_info.favicon.isNull())
+    return std::string();
+
+  // TODO(phajdan.jr): Report errors from this function, possibly as infobars.
+  ScopedTempDir temp_dir;
+  if (!temp_dir.CreateUniqueTempDir())
+    return std::string();
+
+  FilePath temp_file_path = temp_dir.path().Append(
+      shortcut_filename.ReplaceExtension("png"));
+
+  std::vector<unsigned char> png_data;
+  gfx::PNGCodec::EncodeBGRASkBitmap(shortcut_info.favicon, false, &png_data);
+  int bytes_written = file_util::WriteFile(temp_file_path,
+      reinterpret_cast<char*>(png_data.data()), png_data.size());
+
+  if (bytes_written != static_cast<int>(png_data.size()))
+    return std::string();
+
+  std::vector<std::string> argv;
+  argv.push_back("xdg-icon-resource");
+  argv.push_back("install");
+
+  // Always install in user mode, even if someone runs the browser as root
+  // (people do that).
+  argv.push_back("--mode");
+  argv.push_back("user");
+
+  argv.push_back("--size");
+  argv.push_back(IntToString(shortcut_info.favicon.width()));
+
+  argv.push_back(temp_file_path.value());
+  std::string icon_name = temp_file_path.BaseName().RemoveExtension().value();
+  argv.push_back(icon_name);
+  LaunchXdgUtility(argv);
+  return icon_name;
+}
+
+void CreateShortcutOnDesktop(const FilePath& shortcut_filename,
+                             const std::string& contents) {
+  // TODO(phajdan.jr): Report errors from this function, possibly as infobars.
+
+  // Make sure that we will later call openat in a secure way.
+  DCHECK_EQ(shortcut_filename.BaseName().value(), shortcut_filename.value());
+
+  FilePath desktop_path;
+  if (!PathService::Get(chrome::DIR_USER_DESKTOP, &desktop_path))
+    return;
+
+  int desktop_fd = open(desktop_path.value().c_str(), O_RDONLY | O_DIRECTORY);
+  if (desktop_fd < 0)
+    return;
+
+  int fd = openat(desktop_fd, shortcut_filename.value().c_str(),
+                  O_CREAT | O_EXCL | O_WRONLY,
+                  S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
+  if (fd < 0) {
+    HANDLE_EINTR(close(desktop_fd));
+    return;
+  }
+
+  ssize_t bytes_written = file_util::WriteFileDescriptor(fd, contents.data(),
+                                                         contents.length());
+  HANDLE_EINTR(close(fd));
+
+  if (bytes_written != static_cast<ssize_t>(contents.length())) {
+    // Delete the file. No shortuct is better than corrupted one. Use unlinkat
+    // to make sure we're deleting the file in the directory we think we are.
+    // Even if an attacker manager to put something other at
+    // |shortcut_filename| we'll just undo his action.
+    unlinkat(desktop_fd, shortcut_filename.value().c_str(), 0);
+  }
+
+  HANDLE_EINTR(close(desktop_fd));
+}
+
+void CreateShortcutInApplicationsMenu(const FilePath& shortcut_filename,
+                                      const std::string& contents) {
+  // TODO(phajdan.jr): Report errors from this function, possibly as infobars.
+  ScopedTempDir temp_dir;
+  if (!temp_dir.CreateUniqueTempDir())
+    return;
+
+  FilePath temp_file_path = temp_dir.path().Append(shortcut_filename);
+
+  int bytes_written = file_util::WriteFile(temp_file_path, contents.data(),
+                                           contents.length());
+
+  if (bytes_written != static_cast<int>(contents.length()))
+    return;
+
+  std::vector<std::string> argv;
+  argv.push_back("xdg-desktop-menu");
+  argv.push_back("install");
+
+  // Always install in user mode, even if someone runs the browser as root
+  // (people do that).
+  argv.push_back("--mode");
+  argv.push_back("user");
+
+  argv.push_back(temp_file_path.value());
+  LaunchXdgUtility(argv);
+}
+
+}  // namespace
+
+// We delegate the difficulty of setting the default browser in Linux desktop
+// environments to a new xdg utility, xdg-settings. We have to include a copy of
+// it for this to work, obviously, but that's actually the suggested approach
+// for xdg utilities anyway.
+
+// static
+bool ShellIntegration::SetAsDefaultBrowser() {
+  std::vector<std::string> argv;
+  argv.push_back("xdg-settings");
+  argv.push_back("set");
+  argv.push_back("default-web-browser");
+  argv.push_back(GetDesktopName());
+  return LaunchXdgUtility(argv);
+}
+
+// static
+ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
+  std::vector<std::string> argv;
+  argv.push_back("xdg-settings");
+  argv.push_back("check");
+  argv.push_back("default-web-browser");
+  argv.push_back(GetDesktopName());
+
+  std::string reply;
+  if (!base::GetAppOutput(CommandLine(argv), &reply)) {
+    // xdg-settings failed: we can't determine or set the default browser.
+    return UNKNOWN_DEFAULT_BROWSER;
+  }
+
+  // Allow any reply that starts with "yes".
+  return (reply.find("yes") == 0) ? IS_DEFAULT_BROWSER : NOT_DEFAULT_BROWSER;
+}
+
+// static
+bool ShellIntegration::IsFirefoxDefaultBrowser() {
+  std::vector<std::string> argv;
+  argv.push_back("xdg-settings");
+  argv.push_back("get");
+  argv.push_back("default-web-browser");
+
+  std::string browser;
+  // We don't care about the return value here.
+  base::GetAppOutput(CommandLine(argv), &browser);
+  return browser.find("irefox") != std::string::npos;
+}
+
+// static
+bool ShellIntegration::GetDesktopShortcutTemplate(std::string* output) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
   std::vector<FilePath> search_paths;
 
   const char* xdg_data_home = getenv("XDG_DATA_HOME");
@@ -107,200 +266,18 @@ bool GetDesktopShortcutTemplate(std::string* output) {
   for (std::vector<FilePath>::const_iterator i = search_paths.begin();
        i != search_paths.end(); ++i) {
     FilePath path = (*i).Append(template_filename);
-    if (file_util::PathExists(path))
+    LOG(INFO) << "Looking for desktop file template in " << path.value();
+    if (file_util::PathExists(path)) {
+      LOG(INFO) << "Found desktop file template at " << path.value();
       return file_util::ReadFileToString(path, output);
+    }
   }
 
+  LOG(ERROR) << "Could not find desktop file template.";
   return false;
 }
 
-class CreateDesktopShortcutTask : public Task {
- public:
-  explicit CreateDesktopShortcutTask(
-      const ShellIntegration::ShortcutInfo& shortcut_info)
-      : shortcut_info_(shortcut_info) {
-  }
-
-  virtual void Run() {
-    // TODO(phajdan.jr): Report errors from this function, possibly as infobars.
-    std::string template_contents;
-    if (!GetDesktopShortcutTemplate(&template_contents))
-      return;
-
-    FilePath shortcut_filename =
-        ShellIntegration::GetDesktopShortcutFilename(shortcut_info_.url);
-    if (shortcut_filename.empty())
-      return;
-
-    std::string icon_name = CreateIcon(shortcut_filename);
-
-    std::string contents = ShellIntegration::GetDesktopFileContents(
-        template_contents, shortcut_info_.url, shortcut_info_.extension_id,
-        shortcut_info_.title, icon_name);
-
-    if (shortcut_info_.create_on_desktop)
-      CreateOnDesktop(shortcut_filename, contents);
-
-    if (shortcut_info_.create_in_applications_menu)
-      CreateInApplicationsMenu(shortcut_filename, contents);
-  }
-
- private:
-  std::string CreateIcon(const FilePath& shortcut_filename) {
-    if (shortcut_info_.favicon.isNull())
-      return std::string();
-
-    // TODO(phajdan.jr): Report errors from this function, possibly as infobars.
-    ScopedTempDir temp_dir;
-    if (!temp_dir.CreateUniqueTempDir())
-      return std::string();
-
-    FilePath temp_file_path = temp_dir.path().Append(
-        shortcut_filename.ReplaceExtension("png"));
-
-    std::vector<unsigned char> png_data;
-    gfx::PNGCodec::EncodeBGRASkBitmap(shortcut_info_.favicon, false, &png_data);
-    int bytes_written = file_util::WriteFile(temp_file_path,
-        reinterpret_cast<char*>(png_data.data()), png_data.size());
-
-    if (bytes_written != static_cast<int>(png_data.size()))
-      return std::string();
-
-    std::vector<std::string> argv;
-    argv.push_back("xdg-icon-resource");
-    argv.push_back("install");
-
-    // Always install in user mode, even if someone runs the browser as root
-    // (people do that).
-    argv.push_back("--mode");
-    argv.push_back("user");
-
-    argv.push_back("--size");
-    argv.push_back(IntToString(shortcut_info_.favicon.width()));
-
-    argv.push_back(temp_file_path.value());
-    std::string icon_name = temp_file_path.BaseName().RemoveExtension().value();
-    argv.push_back(icon_name);
-    LaunchXdgUtility(argv);
-    return icon_name;
-  }
-
-  void CreateOnDesktop(const FilePath& shortcut_filename,
-                       const std::string& contents) {
-    // TODO(phajdan.jr): Report errors from this function, possibly as infobars.
-
-    // Make sure that we will later call openat in a secure way.
-    DCHECK_EQ(shortcut_filename.BaseName().value(), shortcut_filename.value());
-
-    FilePath desktop_path;
-    if (!PathService::Get(chrome::DIR_USER_DESKTOP, &desktop_path))
-      return;
-
-    int desktop_fd = open(desktop_path.value().c_str(), O_RDONLY | O_DIRECTORY);
-    if (desktop_fd < 0)
-      return;
-
-    int fd = openat(desktop_fd, shortcut_filename.value().c_str(),
-                    O_CREAT | O_EXCL | O_WRONLY,
-                    S_IRWXU | S_IRGRP | S_IXGRP | S_IROTH | S_IXOTH);
-    if (fd < 0) {
-      HANDLE_EINTR(close(desktop_fd));
-      return;
-    }
-
-    ssize_t bytes_written = file_util::WriteFileDescriptor(fd, contents.data(),
-                                                           contents.length());
-    HANDLE_EINTR(close(fd));
-
-    if (bytes_written != static_cast<ssize_t>(contents.length())) {
-      // Delete the file. No shortuct is better than corrupted one. Use unlinkat
-      // to make sure we're deleting the file in the directory we think we are.
-      // Even if an attacker manager to put something other at
-      // |shortcut_filename| we'll just undo his action.
-      unlinkat(desktop_fd, shortcut_filename.value().c_str(), 0);
-    }
-
-    HANDLE_EINTR(close(desktop_fd));
-  }
-
-  void CreateInApplicationsMenu(const FilePath& shortcut_filename,
-                                const std::string& contents) {
-    // TODO(phajdan.jr): Report errors from this function, possibly as infobars.
-    ScopedTempDir temp_dir;
-    if (!temp_dir.CreateUniqueTempDir())
-      return;
-
-    FilePath temp_file_path = temp_dir.path().Append(shortcut_filename);
-
-    int bytes_written = file_util::WriteFile(temp_file_path, contents.data(),
-                                             contents.length());
-
-    if (bytes_written != static_cast<int>(contents.length()))
-      return;
-
-    std::vector<std::string> argv;
-    argv.push_back("xdg-desktop-menu");
-    argv.push_back("install");
-
-    // Always install in user mode, even if someone runs the browser as root
-    // (people do that).
-    argv.push_back("--mode");
-    argv.push_back("user");
-
-    argv.push_back(temp_file_path.value());
-    LaunchXdgUtility(argv);
-  }
-
-  const ShellIntegration::ShortcutInfo shortcut_info_;
-
-  DISALLOW_COPY_AND_ASSIGN(CreateDesktopShortcutTask);
-};
-
-}  // namespace
-
-// We delegate the difficulty of setting the default browser in Linux desktop
-// environments to a new xdg utility, xdg-settings. We have to include a copy of
-// it for this to work, obviously, but that's actually the suggested approach
-// for xdg utilities anyway.
-
-bool ShellIntegration::SetAsDefaultBrowser() {
-  std::vector<std::string> argv;
-  argv.push_back("xdg-settings");
-  argv.push_back("set");
-  argv.push_back("default-web-browser");
-  argv.push_back(GetDesktopName());
-  return LaunchXdgUtility(argv);
-}
-
-ShellIntegration::DefaultBrowserState ShellIntegration::IsDefaultBrowser() {
-  std::vector<std::string> argv;
-  argv.push_back("xdg-settings");
-  argv.push_back("check");
-  argv.push_back("default-web-browser");
-  argv.push_back(GetDesktopName());
-
-  std::string reply;
-  if (!base::GetAppOutput(CommandLine(argv), &reply)) {
-    // xdg-settings failed: we can't determine or set the default browser.
-    return UNKNOWN_DEFAULT_BROWSER;
-  }
-
-  // Allow any reply that starts with "yes".
-  return (reply.find("yes") == 0) ? IS_DEFAULT_BROWSER : NOT_DEFAULT_BROWSER;
-}
-
-bool ShellIntegration::IsFirefoxDefaultBrowser() {
-  std::vector<std::string> argv;
-  argv.push_back("xdg-settings");
-  argv.push_back("get");
-  argv.push_back("default-web-browser");
-
-  std::string browser;
-  // We don't care about the return value here.
-  base::GetAppOutput(CommandLine(argv), &browser);
-  return browser.find("irefox") != std::string::npos;
-}
-
+// static
 FilePath ShellIntegration::GetDesktopShortcutFilename(const GURL& url) {
   // Use a prefix, because xdg-desktop-menu requires it.
   std::string filename =
@@ -325,6 +302,7 @@ FilePath ShellIntegration::GetDesktopShortcutFilename(const GURL& url) {
   return FilePath();
 }
 
+// static
 std::string ShellIntegration::GetDesktopFileContents(
     const std::string& template_contents, const GURL& url,
     const string16& extension_id, const string16& title,
@@ -371,8 +349,26 @@ std::string ShellIntegration::GetDesktopFileContents(
   return output_buffer;
 }
 
+// static
 void ShellIntegration::CreateDesktopShortcut(
-    const ShortcutInfo& shortcut_info) {
-  g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
-      new CreateDesktopShortcutTask(shortcut_info));
+    const ShortcutInfo& shortcut_info, const std::string& shortcut_template) {
+  // TODO(phajdan.jr): Report errors from this function, possibly as infobars.
+
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
+  FilePath shortcut_filename = GetDesktopShortcutFilename(shortcut_info.url);
+  if (shortcut_filename.empty())
+    return;
+
+  std::string icon_name = CreateShortcutIcon(shortcut_info, shortcut_filename);
+
+  std::string contents = GetDesktopFileContents(
+      shortcut_template, shortcut_info.url, shortcut_info.extension_id,
+      shortcut_info.title, icon_name);
+
+  if (shortcut_info.create_on_desktop)
+    CreateShortcutOnDesktop(shortcut_filename, contents);
+
+  if (shortcut_info.create_in_applications_menu)
+    CreateShortcutInApplicationsMenu(shortcut_filename, contents);
 }

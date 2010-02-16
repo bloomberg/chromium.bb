@@ -5,8 +5,10 @@
 #include "chrome/browser/gtk/create_application_shortcuts_dialog_gtk.h"
 
 #include "app/l10n_util.h"
+#include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/shell_integration.h"
 #include "chrome/common/gtk_util.h"
+#include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 
@@ -25,25 +27,31 @@ CreateApplicationShortcutsDialogGtk::CreateApplicationShortcutsDialogGtk(
     const SkBitmap& favicon)
     : url_(url),
       title_(title),
-      favicon_(favicon) {
+      favicon_(favicon),
+      error_dialog_(NULL) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  // Will be balanced by Release later.
+  AddRef();
+
   // Build the dialog.
-  GtkWidget* dialog = gtk_dialog_new_with_buttons(
+  create_dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringUTF8(IDS_CREATE_SHORTCUTS_TITLE).c_str(),
       parent,
       (GtkDialogFlags) (GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
       GTK_STOCK_CANCEL,
       GTK_RESPONSE_REJECT,
       NULL);
-  gtk_widget_realize(dialog);
-  gtk_util::SetWindowSizeFromResources(GTK_WINDOW(dialog),
+  gtk_widget_realize(create_dialog_);
+  gtk_util::SetWindowSizeFromResources(GTK_WINDOW(create_dialog_),
                                        IDS_CREATE_SHORTCUTS_DIALOG_WIDTH_CHARS,
                                        -1,  // height
                                        false);  // resizable
-  gtk_util::AddButtonToDialog(dialog,
+  gtk_util::AddButtonToDialog(create_dialog_,
       l10n_util::GetStringUTF8(IDS_CREATE_SHORTCUTS_COMMIT).c_str(),
       GTK_STOCK_APPLY, GTK_RESPONSE_ACCEPT);
 
-  GtkWidget* content_area = GTK_DIALOG(dialog)->vbox;
+  GtkWidget* content_area = GTK_DIALOG(create_dialog_)->vbox;
   gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);
 
   GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
@@ -67,13 +75,24 @@ CreateApplicationShortcutsDialogGtk::CreateApplicationShortcutsDialogGtk(
   gtk_box_pack_start(GTK_BOX(vbox), menu_checkbox_, FALSE, FALSE, 0);
   gtk_toggle_button_set_active(GTK_TOGGLE_BUTTON(menu_checkbox_), false);
 
-  g_signal_connect(dialog, "response",
-                   G_CALLBACK(HandleOnResponseDialog), this);
-  gtk_widget_show_all(dialog);
+  g_signal_connect(create_dialog_, "response",
+                   G_CALLBACK(HandleOnResponseCreateDialog), this);
+  gtk_widget_show_all(create_dialog_);
 }
 
-void CreateApplicationShortcutsDialogGtk::OnDialogResponse(GtkWidget* widget,
-                                                           int response) {
+CreateApplicationShortcutsDialogGtk::~CreateApplicationShortcutsDialogGtk() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  gtk_widget_destroy(create_dialog_);
+
+  if (error_dialog_)
+    gtk_widget_destroy(error_dialog_);
+}
+
+void CreateApplicationShortcutsDialogGtk::OnCreateDialogResponse(
+    GtkWidget* widget, int response) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
   if (response == GTK_RESPONSE_ACCEPT) {
     ShellIntegration::ShortcutInfo shortcut_info;
     shortcut_info.url = url_;
@@ -83,10 +102,71 @@ void CreateApplicationShortcutsDialogGtk::OnDialogResponse(GtkWidget* widget,
         gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(desktop_checkbox_));
     shortcut_info.create_in_applications_menu =
         gtk_toggle_button_get_active(GTK_TOGGLE_BUTTON(menu_checkbox_));
-    ShellIntegration::CreateDesktopShortcut(shortcut_info);
+    ChromeThread::PostTask(ChromeThread::FILE, FROM_HERE,
+         NewRunnableMethod(this,
+             &CreateApplicationShortcutsDialogGtk::CreateDesktopShortcut,
+             shortcut_info));
+  } else {
+    Release();
   }
-
-  delete this;
-  gtk_widget_destroy(GTK_WIDGET(widget));
 }
 
+void CreateApplicationShortcutsDialogGtk::OnErrorDialogResponse(
+    GtkWidget* widget, int response) {
+  Release();
+}
+
+void CreateApplicationShortcutsDialogGtk::CreateDesktopShortcut(
+    const ShellIntegration::ShortcutInfo& shortcut_info) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+
+  std::string shortcut_template;
+  if (ShellIntegration::GetDesktopShortcutTemplate(&shortcut_template)) {
+    ShellIntegration::CreateDesktopShortcut(shortcut_info,
+                                            shortcut_template);
+    Release();
+  } else {
+    ChromeThread::PostTask(ChromeThread::UI, FROM_HERE,
+        NewRunnableMethod(this,
+            &CreateApplicationShortcutsDialogGtk::ShowErrorDialog));
+  }
+}
+
+void CreateApplicationShortcutsDialogGtk::ShowErrorDialog() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+
+  // Hide the create dialog so that the user can no longer interact with it.
+  gtk_widget_hide(create_dialog_);
+
+  error_dialog_ = gtk_dialog_new_with_buttons(
+      l10n_util::GetStringUTF8(IDS_CREATE_SHORTCUTS_ERROR_TITLE).c_str(),
+      NULL,
+      (GtkDialogFlags) (GTK_DIALOG_NO_SEPARATOR),
+      GTK_STOCK_OK,
+      GTK_RESPONSE_ACCEPT,
+      NULL);
+  gtk_widget_realize(error_dialog_);
+  gtk_util::SetWindowSizeFromResources(
+      GTK_WINDOW(error_dialog_),
+      IDS_CREATE_SHORTCUTS_ERROR_DIALOG_WIDTH_CHARS,
+      IDS_CREATE_SHORTCUTS_ERROR_DIALOG_HEIGHT_LINES,
+      false);  // resizable
+  GtkWidget* content_area = GTK_DIALOG(error_dialog_)->vbox;
+  gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);
+
+  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  gtk_container_add(GTK_CONTAINER(content_area), vbox);
+
+  // Label on top of the checkboxes.
+  GtkWidget* description = gtk_label_new(
+      l10n_util::GetStringFUTF8(
+          IDS_CREATE_SHORTCUTS_ERROR_LABEL,
+          l10n_util::GetStringUTF16(IDS_PRODUCT_NAME)).c_str());
+  gtk_label_set_line_wrap(GTK_LABEL(description), TRUE);
+  gtk_misc_set_alignment(GTK_MISC(description), 0, 0);
+  gtk_box_pack_start(GTK_BOX(vbox), description, FALSE, FALSE, 0);
+
+  g_signal_connect(error_dialog_, "response",
+                   G_CALLBACK(HandleOnResponseErrorDialog), this);
+  gtk_widget_show_all(error_dialog_);
+}

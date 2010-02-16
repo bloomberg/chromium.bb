@@ -69,6 +69,8 @@ class ShellIntegration {
       const string16& extension_app_id);
 
 #if defined(OS_LINUX)
+  static bool GetDesktopShortcutTemplate(std::string* output);
+
   // Returns filename for .desktop file based on |url|, sanitized for security.
   static FilePath GetDesktopShortcutFilename(const GURL& url);
 
@@ -80,10 +82,8 @@ class ShellIntegration {
       const string16& extension_id, const string16& title,
       const std::string& icon_name);
 
-  // Creates a desktop shortcut. It is not guaranteed to exist immediately after
-  // returning from this function, because actual file operation is done on the
-  // file thread.
-  static void CreateDesktopShortcut(const ShortcutInfo& shortcut_info);
+  static void CreateDesktopShortcut(const ShortcutInfo& shortcut_info,
+                                    const std::string& shortcut_template);
 #endif  // defined(OS_LINUX)
 
 #if defined(OS_WIN)
