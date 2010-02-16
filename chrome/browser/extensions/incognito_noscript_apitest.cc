@@ -31,14 +31,18 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoNoScript) {
       GURL("http://www.example.com:1337/files/extensions/test_file.html"));
   Browser* otr_browser = BrowserList::FindBrowserWithType(
       browser()->profile()->GetOffTheRecordProfile(), Browser::TYPE_NORMAL);
+  TabContents* tab = otr_browser->GetSelectedTabContents();
 
-  string16 title;
-  ui_test_utils::GetCurrentTabTitle(otr_browser, &title);
-  ASSERT_EQ("Unmodified", UTF16ToASCII(title));
+  // Verify the script didn't run.
+  bool result = false;
+  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      tab->render_view_host(), L"",
+      L"window.domAutomationController.send(document.title == 'Unmodified')",
+      &result);
+  EXPECT_TRUE(result);
 }
 
-// Flaky, see: http://crbug.com/35885.
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_IncognitoYesScript) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoYesScript) {
   host_resolver()->AddRule("*", "127.0.0.1");
   StartHTTPServer();
 
@@ -72,8 +76,13 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_IncognitoYesScript) {
       GURL("http://www.example.com:1337/files/extensions/test_file.html"));
   Browser* otr_browser = BrowserList::FindBrowserWithType(
       browser()->profile()->GetOffTheRecordProfile(), Browser::TYPE_NORMAL);
+  TabContents* tab = otr_browser->GetSelectedTabContents();
 
-  string16 title;
-  ui_test_utils::GetCurrentTabTitle(otr_browser, &title);
-  ASSERT_EQ("modified", UTF16ToASCII(title));
+  // Verify the script ran.
+  bool result = false;
+  ui_test_utils::ExecuteJavaScriptAndExtractBool(
+      tab->render_view_host(), L"",
+      L"window.domAutomationController.send(document.title == 'modified')",
+      &result);
+  EXPECT_TRUE(result);
 }
