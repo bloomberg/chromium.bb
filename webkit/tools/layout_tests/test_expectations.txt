@@ -870,9 +870,6 @@ BUG31363 DEBUG WIN LINUX MAC : platform/chromium/fast/dom/interval.html = TEXT P
 
 BUG8763 LINUX WIN MAC : svg/custom/use-on-g-containing-foreignObject-and-image.svg = IMAGE
 
-// smiley.png should be shown with xml:base and xml:base on parent.
-BUG23463 WIN LINUX : svg/W3C-SVG-1.1/struct-image-07-t.svg = IMAGE+TEXT
-
 // We show reduced version of the entire SVN image rather than an image
 BUG23463 MAC : svg/W3C-SVG-1.1/struct-symbol-01-b.svg = IMAGE
 BUG23463 MAC : svg/W3C-SVG-1.1/struct-use-01-t.svg = IMAGE
