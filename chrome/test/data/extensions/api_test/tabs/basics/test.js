@@ -73,11 +73,11 @@ chrome.test.runTests([
 
   function setupTwoWindows() {
     setupWindow(["about:blank", "chrome://newtab/", pageUrl("a")],
-                        pass(function(winId, tabIds) {
+                pass(function(winId, tabIds) {
       firstWindowId = winId;
       testTabId = tabIds[2];
 
-      createWindow(["chrome://newtab/", pageUrl("b")],
+      createWindow(["chrome://newtab/", pageUrl("b")], {},
                            pass(function(winId, tabIds) {
         secondWindowId = winId;
       }));
@@ -183,7 +183,7 @@ chrome.test.runTests([
       moveTabIds['c'] = tabIds[3];
       moveTabIds['d'] = tabIds[4];
       moveTabIds['e'] = tabIds[5];
-      createWindow(["chrome://newtab/"], pass(function(winId, tabIds) {
+      createWindow(["chrome://newtab/"], {}, pass(function(winId, tabIds) {
         secondWindowId = winId;
       }));
       chrome.tabs.getAllInWindow(firstWindowId, pass(function(tabs) {
@@ -253,38 +253,52 @@ chrome.test.runTests([
   },
   */
 
-  /* TODO(rafaelw): Ideally, this test would include a page with known content,
-     it'd take a capture and compare it to some expected output.
-     TODO(rafaelw): This test fails in at least three distinct ways. One where
-     the function actually fails to get anything and logs a "Internal error
-     while trying to capture visible region of the current tab" error from the
-     browser process.
-  function captureVisibleTab() {
-    // Take First Capture
-    chrome.tabs.captureVisibleTab(firstWindowId,
-                                  pass(function(window1Url) {
-      assertEq("string", typeof(window1Url));
-      assertTrue(window1Url.length > 0);
-
-      // Take Second Capture
-      chrome.tabs.captureVisibleTab(secondWindowId,
-                                    pass(function(window2Url) {
-        assertEq("string", typeof(window2Url));
-        assertTrue(window2Url.length > 0);
-        assertTrue(window1Url != window2Url);
-
-        // Now pass null for windowId - it should come back with something
-        // equal to either the first or second window. This is nondeterministic
-        // depending on whether you let chrome stay focused, or click
-        // focus away (or are running on the try/build servers).
-        chrome.tabs.captureVisibleTab(null, pass(function(url) {
-          assertEq("string", typeof(url));
-          assertTrue(url.length > 0);
-          assertTrue(url == window1Url || url == window2Url);
+  // Open a window with one tab, take a snapshot.
+  function captureVisibleTabSimple() {
+    // Keep the resulting image small by making the window small.
+    createWindow([pageUrl("a")], {"width": 300, "height": 150},
+                 pass(function(winId, tabIds) {
+      waitForAllTabs(pass(function() {
+        chrome.tabs.getSelected(winId, pass(function(tab) {
+          assertEq('complete', tab.status);  // waitForAllTabs ensures this.
+          chrome.tabs.captureVisibleTab(winId, pass(function(imgDataUrl) {
+            // The URL should be a data URL with has a JPEG mime type.
+            assertEq('data:image/jpg;base64,', imgDataUrl.substr(0,22));
+          }));
         }));
       }));
     }));
-  }, */
+  },
+
+  // Open a window with three tabs, take a snapshot of each.
+  function captureVisibleTabMultiTab() {
+    var snapshotAndRemoveSelectedTab = function(winId, callback) {
+      chrome.tabs.getSelected(winId, function(tab) {
+        chrome.tabs.captureVisibleTab(winId, function(imgDataUrl) {
+          // Test that the URL we got is a data URL which encodes a JPEG image.
+          assertEq('data:image/jpg;base64,', imgDataUrl.substr(0,22));
+
+          // TODO(skerner): Once an option allows captureVisibleTab to
+          // take a lossless snapshot with a set color depth, use
+          // a canvas to compare |imgDataUrl| to an image of the tab
+          // we expect.  This can't be done with JPEG, as the results
+          // vary based on the display settings.
+          chrome.tabs.remove(tab.id, callback);
+        });
+      });
+    };
+
+    createWindow(["a", "b", "c"].map(pageUrl), {"width": 300, "height": 150},
+      function(winId, tabIds){
+        waitForAllTabs(pass(function() {
+          snapshotAndRemoveSelectedTab(winId, pass(function() {
+            snapshotAndRemoveSelectedTab(winId, pass(function() {
+              snapshotAndRemoveSelectedTab(winId, pass(function() {}));
+            }));
+          }));
+        }));
+      });
+  },
 
   function tabsOnCreated() {
     chrome.test.listenOnce(chrome.tabs.onCreated, function(tab) {
@@ -364,7 +378,7 @@ chrome.test.runTests([
     setupWindow(["", ""], pass(function(winId, tabIds) {
       firstWindowId = winId;
       testTabId = tabIds[1];
-      createWindow([""], pass(function(winId, tabIds) {
+      createWindow([""], {}, pass(function(winId, tabIds) {
         secondWindowId = winId;
       }));
     }));
@@ -571,9 +585,5 @@ chrome.test.runTests([
     chrome.tabs.sendRequest(testTabId, request, pass(function(response) {
       assertEq(request, response);
     }));
-  },
-
-  // TODO(asargent)
-  // It would be an improvement to check the captureVisibleTab results
-  // against a known-good result.
+  }
 ]);

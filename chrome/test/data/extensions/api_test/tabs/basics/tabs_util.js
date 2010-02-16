@@ -4,7 +4,7 @@
 // the urls in the array |tabUrls|. At least one url must be specified.
 // The |callback| should look like function(windowId, tabIds) {...}.
 function setupWindow(tabUrls, callback) {
-  createWindow(tabUrls, function(winId, tabIds) {
+  createWindow(tabUrls, {}, function(winId, tabIds) {
     // Remove all other windows.
     var removedCount = 0;
     chrome.windows.getAll({}, function(windows) {
@@ -26,8 +26,9 @@ function setupWindow(tabUrls, callback) {
 // Creates one window with tabs set to the urls in the array |tabUrls|.
 // At least one url must be specified.
 // The |callback| should look like function(windowId, tabIds) {...}.
-function createWindow(tabUrls, callback) {
-  chrome.windows.create({"url": tabUrls[0]}, function(win) {
+function createWindow(tabUrls, winOptions, callback) {
+  winOptions["url"] = tabUrls[0];
+  chrome.windows.create(winOptions, function(win) {
     assertTrue(win.id > 0);
     var newTabIds = [];
 
