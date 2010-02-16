@@ -140,7 +140,7 @@ struct drm_nouveau_gem_pushbuf_reloc {
 	uint32_t tor;
 };
 
-#define NOUVEAU_GEM_MAX_PUSH 64
+#define NOUVEAU_GEM_MAX_PUSH 512
 struct drm_nouveau_gem_pushbuf_push {
 	uint32_t bo_index;
 	uint32_t pad;
