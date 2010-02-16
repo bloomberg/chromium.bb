@@ -16,13 +16,22 @@ test.run_gyp('actions.gyp', chdir='src')
 
 test.relocate('src', 'relocate/src')
 
-# Test that an "always run" action increases a counter on multiple invocations.
+# Test that an "always run" action increases a counter on multiple invocations,
+# and that a dependent action updates in step.
 test.build('actions.gyp', chdir='relocate/src')
 test.must_match('relocate/src/subdir1/actions-out/action-counter.txt', '1')
+test.must_match('relocate/src/subdir1/actions-out/action-counter_2.txt', '1')
 test.build('actions.gyp', chdir='relocate/src')
 test.must_match('relocate/src/subdir1/actions-out/action-counter.txt', '2')
-test.build('actions.gyp', chdir='relocate/src')
-test.must_match('relocate/src/subdir1/actions-out/action-counter.txt', '3')
+test.must_match('relocate/src/subdir1/actions-out/action-counter_2.txt', '2')
+
+# The "always run" action only counts to 2, but the dependent target will count
+# forever if it's allowed to run. This verifies that the dependent target only
+# runs when the "always run" action generates new output, not just because the
+# "always run" ran.
+test.build('actions.gyp', test.ALL, chdir='relocate/src')
+test.must_match('relocate/src/subdir1/actions-out/action-counter.txt', '2')
+test.must_match('relocate/src/subdir1/actions-out/action-counter_2.txt', '2')
 
 expect = """\
 Hello from program.c

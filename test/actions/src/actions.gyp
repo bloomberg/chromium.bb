@@ -13,5 +13,24 @@
         'subdir3/null_input.gyp:*',
       ],
     },
+    {
+      'target_name': 'depend_on_always_run_action',
+      'type': 'none',
+      'actions': [
+        {
+          'action_name': 'use_always_run_output',
+          'inputs': [
+            'subdir1/actions-out/action-counter.txt',
+            'subdir1/counter.py',
+          ],
+          'outputs': [
+            'subdir1/actions-out/action-counter_2.txt',
+          ],
+          'action': [
+            'python', 'subdir1/counter.py', '<(_outputs)',
+          ],
+        },
+      ],
+    },
   ],
 }

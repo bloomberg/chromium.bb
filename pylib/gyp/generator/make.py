@@ -579,8 +579,11 @@ class MakefileWriter:
       # are defined relative to their containing dir.  This replaces the obj
       # variable for the action rule with an absolute version so that the output
       # goes in the right place.
-      self.WriteMakeRule(outputs, ['obj := $(abs_obj)'])
-      self.WriteMakeRule(outputs, ['builddir := $(abs_builddir)'])
+      # Only write the 'obj' and 'builddir' rules for the "primary" output (:1);
+      # it's superfluous for the "extra outputs", and this avoids accidentally
+      # writing duplicate dummy rules for those outputs.
+      self.WriteMakeRule(outputs[:1], ['obj := $(abs_obj)'])
+      self.WriteMakeRule(outputs[:1], ['builddir := $(abs_builddir)'])
       self.WriteDoCmd(outputs, map(Sourceify, map(self.Absolutify, inputs)),
                       part_of_all=part_of_all, command=name)
 
@@ -637,8 +640,11 @@ class MakefileWriter:
           # amount of pain.
           actions += ['@touch --no-create $@']
 
-        self.WriteMakeRule(outputs, ['obj := $(abs_obj)'])
-        self.WriteMakeRule(outputs, ['builddir := $(abs_builddir)'])
+        # Only write the 'obj' and 'builddir' rules for the "primary" output
+        # (:1); it's superfluous for the "extra outputs", and this avoids
+        # accidentally writing duplicate dummy rules for those outputs.
+        self.WriteMakeRule(outputs[:1], ['obj := $(abs_obj)'])
+        self.WriteMakeRule(outputs[:1], ['builddir := $(abs_builddir)'])
         self.WriteMakeRule(outputs, inputs + ['FORCE_DO_CMD'], actions)
         if part_of_all:
           self.WriteLn('all_targets += %s' % ' '.join(outputs))
@@ -1006,9 +1012,14 @@ class MakefileWriter:
       # 1) Write the naive rule that would produce parallel runs of
       # the action.
       # 2) Make the outputs seralized on each other, so we won't start
-      # a a parallel run until the first run finishes, at which point
+      # a parallel run until the first run finishes, at which point
       # we'll have generated all the outputs and we're done.
       self.WriteLn('%s: %s' % (' '.join(outputs[1:]), outputs[0]))
+      # Add a dummy command to the "extra outputs" rule, otherwise make seems to
+      # think these outputs haven't (couldn't have?) changed, and thus doesn't
+      # flag them as changed (i.e. include in '$?') when evaluating dependent
+      # rules, which in turn causes do_cmd() to skip running dependent commands.
+      self.WriteLn('%s: ;' % (' '.join(outputs[1:])))
     self.WriteLn()
 
 
