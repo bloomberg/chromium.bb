@@ -8,7 +8,6 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/sync/glue/change_processor.h"
-#include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
 #include "webkit/glue/webkit_glue.h"
@@ -19,16 +18,21 @@ static const char kGaiaSourceForChrome[] = "ChromiumBrowser";
 static const FilePath::CharType kSyncDataFolderName[] =
     FILE_PATH_LITERAL("Sync Data");
 
+using browser_sync::DataTypeController;
+
 typedef GoogleServiceAuthError AuthError;
 
 namespace browser_sync {
 
-SyncBackendHost::SyncBackendHost(SyncFrontend* frontend,
-                                 const FilePath& profile_path)
+SyncBackendHost::SyncBackendHost(
+    SyncFrontend* frontend,
+    const FilePath& profile_path,
+    const DataTypeController::TypeMap& data_type_controllers)
     : core_thread_("Chrome_SyncCoreThread"),
       frontend_loop_(MessageLoop::current()),
       frontend_(frontend),
       sync_data_folder_path_(profile_path.Append(kSyncDataFolderName)),
+      data_type_controllers_(data_type_controllers),
       last_auth_error_(AuthError::None()) {
 
   core_ = new Core(this);
@@ -60,8 +64,11 @@ void SyncBackendHost::Initialize(
   // Any datatypes that we want the syncer to pull down must
   // be in the routing_info map.  We set them to group passive, meaning that
   // updates will be applied, but not dispatched to the UI thread yet.
-  // TODO(ncarter): Wire this up to some external control.
-  registrar_.routing_info[syncable::BOOKMARKS] = GROUP_PASSIVE;
+  for (DataTypeController::TypeMap::const_iterator it =
+           data_type_controllers_.begin();
+       it != data_type_controllers_.end(); ++it) {
+    registrar_.routing_info[(*it).first] = GROUP_PASSIVE;
+  }
 
   core_thread_.message_loop()->PostTask(FROM_HERE,
       NewRunnableMethod(core_.get(), &SyncBackendHost::Core::DoInitialize,
