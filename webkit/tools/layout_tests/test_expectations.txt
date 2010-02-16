@@ -2932,5 +2932,11 @@ BUG35492 : media/controls-drag-timebar.html = FAIL TIMEOUT
 // The test was added in WebKit r54766 and timeouts in Chromium
 BUG13907 : media/video-display-aspect-ratio.html = TIMEOUT PASS
 
+// New test added in WebKit r54783
+BUG35822 : plugins/netscape-browser-object-identity.html = TEXT
+
+// New test added in WebKit r54786
+BUG35823 : fast/harness/page-cache-crash-on-data-urls.html = TEXT
+
 // WebKit roll 54726:54731
 BUG35618 LINUX WIN : fast/text/glyph-reordering.html = TEXT
