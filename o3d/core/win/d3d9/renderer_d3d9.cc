@@ -1391,6 +1391,14 @@ bool RendererD3D9::GoFullscreen(const DisplayWindow& display,
       int refresh_rate = 0;
       bool windowed = true;
 
+      // With software renderer, always use DISPLAY_MODE_DEFAULT.
+      // This is due to a bug in software renderer that only the primary
+      // monitor/adapter is recognized.
+      ClientInfoManager* client_info_manager =
+          service_locator()->GetService<ClientInfoManager>();
+      if (client_info_manager->client_info().software_renderer())
+        mode_id = DISPLAY_MODE_DEFAULT;
+
       // Look up the refresh rate, width and height.
       DisplayMode mode;
       if (!GetDisplayMode(mode_id, &mode)) {
