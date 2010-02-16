@@ -35,6 +35,30 @@ div.header {
   cursor: pointer;
 }
 
+.deleteYes {
+  width: 40px;
+  height: 30px;
+  float: left;
+  text-decoration: underline;
+  color: blue;
+}
+
+.deleteNo {
+  width: 40px;
+  height: 30px;
+  float: left;
+  text-decoration: underline;
+  color: blue;
+}
+
+.confirmdelete {
+  text-align: center;
+  border: 1px solid rgba(0, 0, 0, 0.25);
+  border-radius: 2px;
+  height: 36px;
+  padding: 4px;
+}
+
 a.iconlink {
   display: block;
 /*  font-family: helvetica; */
@@ -800,6 +824,32 @@ function deleteFile(path) {
   chrome.send('deleteFile', [path]);
 };
 
+function removeDeleteConfirm(path) {
+  var element = menus[path];
+  element.firstChild.removeChild(element.firstChild.lastChild);
+};
+
+function deleteFileConfirm(path) {
+  var askingDiv = document.createElement('div');
+  askingDiv.className = 'confirmdelete';
+  askingDiv.textContent = 'Are you sure?';
+  var yes = document.createElement('div');
+  yes.className = 'deleteYes';
+  yes.textContent = 'Yes';
+  yes.onclick = new Function('deleteFile("' + path + '")');
+  var no = document.createElement('div');
+  no.onclick = new Function('removeDeleteConfirm("' + path + '")');
+  no.textContent = 'Cancel';
+  no.className = 'deleteNo';
+  askingDiv.appendChild(yes);
+  askingDiv.appendChild(no);
+  var element = menus[path];
+  if (element) {
+    element.firstChild.appendChild(askingDiv);
+  }
+  window.event.stopPropagation();
+};
+
 function createFolderTyping(elementId) {
    if (window.event.keyCode == 13) {
      createFolder(elementId);
@@ -1238,7 +1288,7 @@ function createNewItem(title, path, isDirectory) {
     var deleteitem = document.createElement('div');
     deleteitem.textContent = 'Delete';
     deleteitem.className = 'menuitem';
-    deleteitem.onclick = new Function('deleteFile("' + path +'")');
+    deleteitem.onclick = new Function('deleteFileConfirm("' + path +'")');
     menu.appendChild(deleteitem);
     menuicon.align = 'right';
     menuicon.className = 'menuicon';
