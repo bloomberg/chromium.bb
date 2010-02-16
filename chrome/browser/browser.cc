@@ -733,7 +733,11 @@ void Browser::ShowSingletonTab(const GURL& url) {
 }
 
 void Browser::UpdateCommandsForFullscreenMode(bool is_fullscreen) {
+#if !defined(OS_MACOSX)
   const bool show_main_ui = (type() == TYPE_NORMAL) && !is_fullscreen;
+#else
+  const bool show_main_ui = (type() == TYPE_NORMAL);
+#endif
 
   // Navigation commands
   command_updater_.UpdateCommandEnabled(IDC_OPEN_CURRENT_URL, show_main_ui);
@@ -1076,7 +1080,14 @@ bool Browser::SupportsWindowFeature(WindowFeature feature) const {
     features |= FEATURE_BOOKMARKBAR;
     features |= FEATURE_EXTENSIONSHELF;
   }
-  if (!window_ || !window_->IsFullscreen()) {
+
+  // On Mac, fullscreen mode has most normal things (in a slide-down panel).  On
+  // other platforms, we hide some controls when in fullscreen mode.
+  bool hide_ui_for_fullscreen = false;
+#if !defined(OS_MACOSX)
+  hide_ui_for_fullscreen = window_ && window_->IsFullscreen();
+#endif
+  if (!hide_ui_for_fullscreen) {
     if (type() == TYPE_NORMAL)
       features |= FEATURE_TABSTRIP | FEATURE_TOOLBAR;
     else
@@ -2517,11 +2528,7 @@ void Browser::InitCommandState() {
   command_updater_.UpdateCommandEnabled(IDC_NEW_TAB, true);
   command_updater_.UpdateCommandEnabled(IDC_CLOSE_TAB, true);
   command_updater_.UpdateCommandEnabled(IDC_DUPLICATE_TAB, true);
-// TODO(viettrungluu): Temporarily disabled on Mac. Must disable here (not in
-// BWC) so that it also affects the wrench menu. http://crbug.com/31638
-#if !defined(OS_MACOSX)
   command_updater_.UpdateCommandEnabled(IDC_FULLSCREEN, true);
-#endif
   command_updater_.UpdateCommandEnabled(IDC_EXIT, true);
 
   // Page-related commands
