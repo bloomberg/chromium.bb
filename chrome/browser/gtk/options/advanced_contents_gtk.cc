@@ -1091,15 +1091,15 @@ AdvancedContentsGtk::~AdvancedContentsGtk() {
 void AdvancedContentsGtk::Init() {
   OptionsLayoutBuilderGtk options_builder;
 
-  network_section_.reset(new NetworkSection(profile_));
-  options_builder.AddOptionGroup(
-      l10n_util::GetStringUTF8(IDS_OPTIONS_ADVANCED_SECTION_TITLE_NETWORK),
-      network_section_->get_page_widget(), false);
-
   privacy_section_.reset(new PrivacySection(profile_));
   options_builder.AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_OPTIONS_ADVANCED_SECTION_TITLE_PRIVACY),
       privacy_section_->get_page_widget(), false);
+
+  network_section_.reset(new NetworkSection(profile_));
+  options_builder.AddOptionGroup(
+      l10n_util::GetStringUTF8(IDS_OPTIONS_ADVANCED_SECTION_TITLE_NETWORK),
+      network_section_->get_page_widget(), false);
 
   download_section_.reset(new DownloadSection(profile_));
   options_builder.AddOptionGroup(
