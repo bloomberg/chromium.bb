@@ -20,6 +20,7 @@
 #include "chrome/common/x11_util.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget_gtk.h"
+#include "views/window/window.h"
 
 // Horizontal padding from the edge of the monitor to the overview.
 static int kMonitorPadding = 20;
@@ -184,11 +185,7 @@ void TabOverviewController::SelectTab(int index) {
 }
 
 void TabOverviewController::FocusBrowser() {
-  TabOverviewTypes::Message message;
-  message.set_type(TabOverviewTypes::Message::WM_FOCUS_WINDOW);
-  GtkWidget* browser_widget = GTK_WIDGET(browser_->window()->GetNativeHandle());
-  message.set_param(0, x11_util::GetX11WindowFromGtkWidget(browser_widget));
-  TabOverviewTypes::instance()->SendMessage(message);
+  static_cast<BrowserView*>(browser_->window())->GetWindow()->Activate();
 }
 
 void TabOverviewController::GridAnimationEnded() {

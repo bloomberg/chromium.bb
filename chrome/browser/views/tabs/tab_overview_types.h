@@ -145,11 +145,9 @@ class TabOverviewTypes {
       //   param[0]: X ID of the panel's content window
       WM_NOTIFY_PANEL_DRAG_COMPLETE,
 
-      // Instruct the WM to focus a window (either top-level or a panel).
-      // This is used when a tab is clicked in a tab overview window, or
-      // when the user clicks on a panel's titlebar to expand it.
-      //   param[0]: X ID of the window to focus
-      WM_FOCUS_WINDOW,
+      // Deprecated.  Send a _NET_ACTIVE_WINDOW client message to focus a window
+      // instead (e.g. using gtk_window_present()).
+      DEPRECATED_WM_FOCUS_WINDOW,
 
       // Notify Chrome that the layout mode (for example, overview or
       // focused) has changed.
