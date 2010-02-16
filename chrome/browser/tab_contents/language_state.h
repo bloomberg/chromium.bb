@@ -27,7 +27,7 @@ class LanguageState {
 
   // Should be called when the page did a new navigation (whether it is a main
   // frame or sub-frame navigation).
-  void DidNavigate();
+  void DidNavigate(bool reload);
 
   // Should be called when the language of the page has been determined.
   void LanguageDetermined(const std::string& page_language);

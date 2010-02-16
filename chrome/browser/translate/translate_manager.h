@@ -10,6 +10,7 @@
 #include <string>
 
 #include "base/singleton.h"
+#include "base/task.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 
@@ -43,6 +44,12 @@ class TranslateManager : public NotificationObserver {
   // |page_lang| language.
   void InitiateTranslation(TabContents* tab, const std::string& page_lang);
 
+  // If the tab identified by |process_id| and |render_id| has been closed, this
+  // does nothing, otherwise it calls InitiateTranslation.
+  void InitiateTranslationPosted(int process_id,
+                                 int render_id,
+                                 const std::string& page_lang);
+
   // Returns true if the passed language has been configured by the user as an
   // accept language.
   bool IsAcceptLanguage(TabContents* tab, const std::string& language);
@@ -57,6 +64,8 @@ class TranslateManager : public NotificationObserver {
   typedef std::set<std::string> LanguageSet;
   typedef std::map<PrefService*, LanguageSet> PrefServiceLanguagesMap;
   PrefServiceLanguagesMap accept_languages_;
+
+  ScopedRunnableMethodFactory<TranslateManager> method_factory_;
 
   static bool test_enabled_;
 

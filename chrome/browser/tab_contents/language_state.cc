@@ -15,11 +15,13 @@ LanguageState::LanguageState(NavigationController* nav_controller)
 LanguageState::~LanguageState() {
 }
 
-void LanguageState::DidNavigate() {
-  prev_original_lang_ = original_lang_;
-  prev_current_lang_ = current_lang_;
+void LanguageState::DidNavigate(bool reload) {
+  if (!reload) {
+    prev_original_lang_ = original_lang_;
+    prev_current_lang_ = current_lang_;
+    original_lang_.clear();
+  }
 
-  original_lang_.clear();
   current_lang_.clear();
 
   translation_pending_ = false;

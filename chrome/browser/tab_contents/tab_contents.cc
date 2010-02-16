@@ -1507,7 +1507,8 @@ void TabContents::DidNavigateAnyFramePostCommit(
     GetPasswordManager()->ProvisionallySavePassword(params.password_form);
 
   // Let the LanguageState clear its state.
-  language_state_.DidNavigate();
+  language_state_.DidNavigate(details.entry->transition_type() ==
+                              PageTransition::RELOAD);
 }
 
 void TabContents::CloseConstrainedWindows() {

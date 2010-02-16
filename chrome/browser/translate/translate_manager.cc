@@ -4,14 +4,18 @@
 
 #include "chrome/browser/translate/translate_manager.h"
 
+#include "base/compiler_specific.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/translation_service.h"
 #include "chrome/browser/tab_contents/language_state.h"
 #include "chrome/browser/tab_contents/navigation_controller.h"
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/translate/translate_infobars_delegates.h"
 #include "chrome/browser/translate/translate_prefs.h"
 #include "chrome/common/notification_details.h"
@@ -31,6 +35,31 @@ void TranslateManager::Observe(NotificationType type,
                                const NotificationSource& source,
                                const NotificationDetails& details) {
   switch (type.value) {
+    case NotificationType::NAV_ENTRY_COMMITTED: {
+      NavigationController* controller =
+          Source<NavigationController>(source).ptr();
+      NavigationEntry* entry = controller->GetActiveEntry();
+      if (!entry) {
+        NOTREACHED();
+        return;
+      }
+      if (entry->transition_type() != PageTransition::RELOAD)
+        return;
+      // When doing a page reload, we don't get a TAB_LANGUAGE_DETERMINED
+      // notification.  So we need to explictly initiate the translation.
+      // Note that we delay it as the TranslateManager gets this notification
+      // before the TabContents and the TabContents processing might remove the
+      // current infobars.  Since InitTranslation might add an infobar, it must
+      // be done after that.
+      MessageLoop::current()->PostTask(FROM_HERE,
+          method_factory_.NewRunnableMethod(
+              &TranslateManager::InitiateTranslationPosted,
+              controller->tab_contents()->render_view_host()->process()->id(),
+              controller->tab_contents()->render_view_host()->routing_id(),
+              controller->tab_contents()->language_state().
+                  original_language()));
+      break;
+    }
     case NotificationType::TAB_LANGUAGE_DETERMINED: {
       TabContents* tab = Source<TabContents>(source).ptr();
       std::string language = *(Details<std::string>(details).ptr());
@@ -85,10 +114,13 @@ void TranslateManager::Observe(NotificationType type,
   }
 }
 
-TranslateManager::TranslateManager() {
+TranslateManager::TranslateManager()
+    : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
   if (!test_enabled_ && !TranslationService::IsTranslationEnabled())
     return;
 
+  notification_registrar_.Add(this, NotificationType::NAV_ENTRY_COMMITTED,
+                              NotificationService::AllSources());
   notification_registrar_.Add(this, NotificationType::TAB_LANGUAGE_DETERMINED,
                               NotificationService::AllSources());
   notification_registrar_.Add(this, NotificationType::PAGE_TRANSLATED,
@@ -138,6 +170,17 @@ void TranslateManager::InitiateTranslation(TabContents* tab,
   tab->AddInfoBar(new TranslateInfoBarDelegate(tab, prefs,
       TranslateInfoBarDelegate::kBeforeTranslate, entry->url(),
       page_lang, ui_lang));
+}
+
+void TranslateManager::InitiateTranslationPosted(int process_id,
+                                                 int render_id,
+                                                 const std::string& page_lang) {
+  // The tab might have been closed.
+  TabContents* tab = tab_util::GetTabContentsByID(process_id, render_id);
+  if (!tab || tab->language_state().translation_pending())
+    return;
+
+  InitiateTranslation(tab, page_lang);
 }
 
 bool TranslateManager::IsAcceptLanguage(TabContents* tab,
