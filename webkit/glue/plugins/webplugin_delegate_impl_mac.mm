@@ -571,7 +571,7 @@ void WebPluginDelegateImpl::SetContainerVisibility(bool is_visible) {
   // change anything.
   if (!clip_rect_.IsEmpty()) {
 #ifndef NP_NO_CARBON
-    if (instance()->event_model() == NPEventModelCarbon)
+    if (instance() && instance()->event_model() == NPEventModelCarbon)
       UpdateIdleEventRate();
 #endif
     WindowlessSetWindow(true);
@@ -953,8 +953,12 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
   // notification that we are taking the keyboard focus.  We can't just key
   // off of incoming calls to SetFocus, since WebKit may already think we
   // have it if we were the most recently focused element on our parent tab.
-  if (event.type == WebInputEvent::MouseDown && !have_focus_)
+  if (event.type == WebInputEvent::MouseDown && !have_focus_) {
     SetFocus();
+    // Make sure that the plugin is still there after handling the focus event.
+    if (!instance())
+      return false;
+  }
 
 #ifndef NP_NO_CARBON
   if (instance()->event_model() == NPEventModelCarbon) {
@@ -1020,7 +1024,7 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
   }
 
 #ifndef NP_NO_CARBON
-  if (instance()->event_model() == NPEventModelCarbon &&
+  if (instance() && instance()->event_model() == NPEventModelCarbon &&
       instance()->drawing_model() == NPDrawingModelCoreGraphics &&
       cg_context_.context == old_context_weak)
     CGContextRestoreGState(cg_context_.context);
@@ -1032,7 +1036,7 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
 #ifndef NP_NO_CARBON
 void WebPluginDelegateImpl::FireIdleEvent() {
   // Avoid a race condition between IO and UI threads during plugin shutdown
-  if (!instance_)
+  if (!instance())
     return;
 
   ScopedActiveDelegate active_delegate(this);
@@ -1050,6 +1054,9 @@ void WebPluginDelegateImpl::FireIdleEvent() {
               reinterpret_cast<void *>(event.message) != cg_context_.window)
             continue;
           instance()->NPP_HandleEvent(&event);
+          // If the plugin went away during event handling, we're done.
+          if (!instance())
+            return;
         }
         break;
     }
@@ -1075,7 +1082,7 @@ void WebPluginDelegateImpl::FireIdleEvent() {
   // repaint.
   // TODO: only do this if the contents of the offscreen window has changed,
   // so as not to spam the renderer with an unchanging image.
-  if (instance()->drawing_model() == NPDrawingModelQuickDraw)
+  if (instance() && instance()->drawing_model() == NPDrawingModelQuickDraw)
     instance()->webplugin()->Invalidate();
 #endif
 }
