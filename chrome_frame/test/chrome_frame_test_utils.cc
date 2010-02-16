@@ -157,8 +157,9 @@ base::ProcessHandle LaunchChrome(const std::wstring& url) {
 
   FilePath exe_path(path);
   CommandLine cmd(exe_path);
-  std::wstring args(StringPrintf(L"--%ls ",
-                                 ASCIIToWide(switches::kNoFirstRun)));
+  std::wstring args = L"--";
+  args += ASCIIToWide(switches::kNoFirstRun);
+  args += L" ";
   args += url;
   cmd.AppendLooseValue(args);
 
