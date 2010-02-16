@@ -2911,9 +2911,9 @@ BUG35237 : fast/events/multiline-link-arrow-navigation.html = TEXT
 BUG35387 : platform/win/plugins/plugin-delayed-destroy.html = TIMEOUT
 
 // FFmpeg roll breaks these
-BUG35492 : media/video-played-ranges-1.html = FAIL
+BUG35492 MAC LINUX : media/video-played-ranges-1.html = FAIL PASS
 BUG35492 : media/video-played-reset.html = FAIL
-BUG35492 : media/video-display-toggle.html = CRASH FAIL
+BUG35492 : media/video-display-toggle.html = CRASH FAIL PASS
 BUG35492 : media/controls-drag-timebar.html = FAIL TIMEOUT
 // Previous to FFmpeg roll expectations
 //BUG9798 BUG13907 SLOW LINUX MAC RELEASE : media/video-played-ranges-1.html = FAIL
@@ -2938,7 +2938,7 @@ BUG35823 : fast/harness/page-cache-crash-on-data-urls.html = TEXT
 BUG35618 LINUX WIN : fast/text/glyph-reordering.html = TEXT
 
 // Not known when these started failing.
-BUG35858 MAC LINUX : media/remove-from-document.html = CRASH
+BUG35858 MAC LINUX : media/remove-from-document.html = CRASH PASS
 BUG35858 MAC : media/video-source.html = CRASH
 BUG35858 MAC : media/video-source-type.html = CRASH
 BUG35858 MAC : media/video-src.html = CRASH
