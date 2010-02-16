@@ -8,7 +8,7 @@
       'conditions': [
         ['sysroot!=""', {
           'variables': {
-            'pkg-config': './pkg-config-wrapper "<(sysroot)"',
+            'pkg-config': '../../../build/linux/pkg-config-wrapper "<(sysroot)"',
           },
         }, {
           'variables': {
