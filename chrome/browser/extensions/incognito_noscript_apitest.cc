@@ -37,6 +37,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoNoScript) {
   ASSERT_EQ("Unmodified", UTF16ToASCII(title));
 }
 
+// Flaky, see: http://crbug.com/35885.
 IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, FLAKY_IncognitoYesScript) {
   host_resolver()->AddRule("*", "127.0.0.1");
   StartHTTPServer();
