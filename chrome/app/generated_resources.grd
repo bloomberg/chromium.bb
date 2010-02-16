@@ -183,9 +183,6 @@ each locale. -->
         Show Full History
       </message>
 
-      <message name="IDS_PAGEMENU" desc="The label to show for the page menu">
-        Page
-      </message>
       <message name="IDS_PAGEMENU_TOOLTIP" desc="The tooltip to show for the page menu">
         Control the current page
       </message>
@@ -197,27 +194,8 @@ each locale. -->
         Did you mean to go to <ph name="SITE">$1<ex>http://intranetsite/</ex></ph>?
       </message>
 
-      <message name="IDS_AUTOCOMPLETE_KEYWORD_DESCRIPTION" desc="Description for a keyword match.">
-        (Keyword: <ph name="KEYWORD">$1</ph>)
-      </message>
-      <message name="IDS_AUTOCOMPLETE_SEARCH_CONTENTS" desc="Contents for a search match.">
-        Search <ph name="ENGINE">$1<ex>Google</ex></ph> for <ph name="SEARCH_TERMS">$2<ex>flowers</ex></ph>
-      </message>
-      <message name="IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION" desc="Description for the default search match.">
-        <ph name="ENGINE">$1<ex>Google</ex></ph> Search
-      </message>
-      <message name="IDS_AUTOCOMPLETE_NO_QUERY" desc="Dummy search term displayed when the user has no query input.">
-        &lt;enter query&gt;
-      </message>
-      <message name="IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR" desc="The separator between a result in the autocomplete popup and its description.">
-        ''' - '''
-      </message>
-
       <message name="IDS_HISTORY_TITLE" desc="Title for the history tab.">
         History
-      </message>
-      <message name="IDS_BOOKMARKS_TITLE" desc="Title for the bookmarks tab.">
-        Bookmarks
       </message>
       <message name="IDS_DOWNLOAD_TITLE" desc="Title for the downloads tab.">
         Downloads
@@ -228,14 +206,11 @@ each locale. -->
       <message name="IDS_SESSIONS_TITLE" desc="Title for the sessions tab.">
         Sessions
       </message>
-      <message name="IDS_HISTORY_UNTITLED_TITLE" desc="Title for history items when the page has no title">
-        (Untitled)
-      </message>
-      <message name="IDS_DESTINATIONS_MENU_SEPARATOR" desc="Character between items in the menu">
-        ''' - '''
-      </message>
       <message name="IDS_DEFAULT_TAB_TITLE" desc="The default title in a tab.">
         Untitled
+      </message>
+      <message name="IDS_TAB_LOADING_TITLE" desc="The text to be displayed in the title of a tab before a title is discovered.">
+        Loading...
       </message>
       <message name="IDS_VIEW_SOURCE_TITLE" desc="The ViewSource tab title.">
         Source of <ph name="PAGE_URL">%s</ph>
@@ -699,11 +674,6 @@ each locale. -->
         </message>
       </if>
 
-      <!-- On quick look, I didn't find any uses of this, is it stale? -->
-      <message name="IDS_MOST_VISITED_SUB_PAGE" desc="The link below every domain on the most visited view">
-        Show pages
-      </message>
-
       <!-- Page menu -->
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_NEW_TAB" desc="The text label of the New Tab menu item">
@@ -1039,13 +1009,21 @@ each locale. -->
       </if>
 
       <!-- Keywords -->
-      <message name="IDS_KEYWORD_SEARCH"
-               desc="The description for a chrome keyword search match in the Omnibox dropdown">
+      <message name="IDS_AUTOCOMPLETE_MATCH_DESCRIPTION_SEPARATOR" desc="The separator between a result in the autocomplete popup and its description.">
+        ''' - '''
+      </message>
+      <message name="IDS_AUTOCOMPLETE_SEARCH_DESCRIPTION" desc="Description for the default search match.">
+        <ph name="ENGINE">$1<ex>Google</ex></ph> Search
+      </message>
+      <message name="IDS_KEYWORD_SEARCH" desc="The description for a chrome keyword search match in the Omnibox dropdown">
         Search <ph name="SITE_NAME">$1<ex>www.google.com</ex></ph> for <ph name="SEARCH_TERMS">$2<ex>flowers</ex></ph>
       </message>
       <message name="IDS_EMPTY_KEYWORD_VALUE"
-                desc="Shown in the location bar drop down when the user enters a string that matches a chrome keyword, but they haven't entered any text following the chrome keyword">
+               desc="Shown in the location bar drop down when the user enters a string that matches a chrome keyword, but they haven't entered any text following the chrome keyword">
         &lt;enter query&gt;
+      </message>
+      <message name="IDS_AUTOCOMPLETE_KEYWORD_DESCRIPTION" desc="Description for a keyword match.">
+        (Keyword: <ph name="KEYWORD">$1</ph>)
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_EDIT_SEARCH_ENGINES"
@@ -2030,14 +2008,6 @@ each locale. -->
       <message name="IDS_DOWNLOAD_STATUS_CANCELED" desc="Canceled text.">
         Canceled
       </message>
-      <message name="IDS_DOWNLOAD_BUTTON_OPEN"
-               desc="Button open text.">
-        Open
-      </message>
-      <message name="IDS_DOWNLOAD_BUTTON_CANCEL"
-               desc="Button close text.">
-        Cancel
-      </message>
 
       <message name="IDS_PROMPT_DANGEROUS_DOWNLOAD"
                desc="Message shown to the user to validate the download of a dangerous file.">
@@ -2716,7 +2686,6 @@ each locale. -->
         Not Critical
       </message>
 
-
       <!-- Certificate manager dialog strings.  These are only used on platforms that don't have a native certificate manager dialog, such as Linux. -->
       <message name="IDS_CERTIFICATE_MANAGER_TITLE" desc="String to be displayed in the title bar of the certificate manager dialog">
         Certificate Manager
@@ -2770,20 +2739,6 @@ each locale. -->
         &amp;View
       </message>
 
-
-      <!-- General wizard strings -->
-      <message name="IDS_WIZARD_NEXT" desc="The wizard next button label">
-        Next
-      </message>
-      <message name="IDS_WIZARD_DONE" desc="The wizard done button label">
-        Done
-      </message>
-      <message name="IDS_WIZARD_PREVIOUS" desc="The wizard previous button label">
-        Previous
-      </message>
-      <message name="IDS_WIZARD_CANCEL" desc="The wizard cancel button label">
-        Cancel
-      </message>
       <!-- Basic Auth Dialog -->
       <message name="IDS_LOGIN_DIALOG_TITLE" desc="String to be displayed in the title bar of the login prompt dialog">
         Authentication Required
@@ -2940,7 +2895,7 @@ each locale. -->
         Reload
       </message>
       <message name="IDS_EXTENSION_CRASHED_INFOBAR_MESSAGE" desc="Message displayed on the extension crashed infobar.">
-        The following extension has crashed : <ph name="EXTENSION_NAME">$1<ex>Buildbot Monitor</ex></ph>
+        The following extension has crashed: <ph name="EXTENSION_NAME">$1<ex>Buildbot Monitor</ex></ph>
       </message>
 
       <!-- Theme preview info bar -->
@@ -3147,9 +3102,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_EXTENSION_PROMPT_UNINSTALL_BUTTON" desc="Text for the uninstall button on the extension uninstall prompt">
         Uninstall
       </message>
-      <message name="IDS_EXTENSION_PROMPT_CANCEL_BUTTON" desc="Text for the cancel button on the extension install prompt">
-        Cancel
-      </message>
 
       <!-- Session Crashed Info Bar-->
       <message name="IDS_SESSION_CRASHED_VIEW_RESTORE_BUTTON" desc="Title of the restore button in the session crashed view.">
@@ -3214,11 +3166,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Javascript
       </message>
       <message name="IDS_JAVASCRIPT_ALERT_TITLE" desc="Title for Javascript alert originating from a web page">
-        Alert <ph name="SITE">$1<ex>http://www.google.com</ex>
+        The page at <ph name="SITE">$1<ex>http://www.google.com</ex> says:
         </ph>
       </message>
       <message name="IDS_JAVASCRIPT_MESSAGEBOX_TITLE" desc="Title for Javascript prompt and confirm originating from a web page">
-        <ph name="SITE">$1<ex>http://www.google.com</ex></ph>
+        The page at <ph name="SITE">$1<ex>http://www.google.com</ex></ph> says:
       </message>
       <message name="IDS_EXTENSION_ALERT_DEFAULT_TITLE" desc="Title for Javascript alert originating from an extension if there is no extension name to display">
         Extension Alert
@@ -3227,10 +3179,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Extension
       </message>
       <message name="IDS_EXTENSION_ALERT_TITLE" desc="Title for Javascript alert originating from an extension">
-        Extension Alert <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>
+        The <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> extension says:
       </message>
       <message name="IDS_EXTENSION_MESSAGEBOX_TITLE" desc="Title for Javascript prompt and confirm originating from an extension">
-        Extension <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph>
+        The <ph name="EXTENSION_NAME">$1<ex>Gmail Checker</ex></ph> extension says:
       </message>
       <message name="IDS_JAVASCRIPT_MESSAGEBOX_SUPPRESS_OPTION" desc="Optional UI shown on the message box, in the form of a checkbox, allowing the user to suppress additional message boxes from the page.">
         Prevent this page from creating additional dialogs.
@@ -3259,12 +3211,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_ASI_URL" desc="The URL: label in the dialog">
         URL:
-      </message>
-      <message name="IDS_ASI_TITLE_LABEL" desc="The Title: label in the dialog">
-        Title:
-      </message>
-      <message name="IDS_ASI_DEFAULT_TITLE" desc="The default title for a web page">
-        Untitled
       </message>
       <message name="IDS_ASI_PAGE_COLUMN" desc="The page column in the table">
         Page
@@ -3914,9 +3860,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COOKIE_HIDE_DETAILS_LABEL" desc="A link title for hidding cookie details">
         Hide details
       </message>
-      <message name="IDS_COOKIE_MANAGE_ALERTS_LABEL" desc="A link title for managing alerts and exceptions">
-        Manage these alerts and exceptions
-      </message>
 
       <!-- Automatic updates -->
       <if expr="os == 'darwin'">
@@ -3983,14 +3926,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_PRINT_SPOOL_FAILED_ERROR_TEXT" desc="Text in a messagebox when printing fails because of printer issues.">
         Something went wrong when trying to print.  Please check your printer and try again.
-      </message>
-
-      <!-- Tabs -->
-      <message name="IDS_TAB_LOADING_TITLE" desc="The text to be displayed in the title of a tab before a title is discovered.">
-        Loading...
-      </message>
-      <message name="IDS_TAB_UNTITLED_TITLE" desc="The text to be displayed in the title of a tab when the tab has no title.">
-        Untitled
       </message>
 
       <!-- Load State -->
@@ -4089,13 +4024,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         </message>
       </if>
 
-      <!-- Items in the bookmarks destination mode -->
-      <message name="IDS_BOOKMARKS_DEST_MODE_BOOKMARK_BAR_ON_BOOKMARK_BAR" desc="Text shown when entry is on the bookmark bar">
-        Bookmark Bar
-      </message>
-      <message name="IDS_BOOKMARKS_PATH_SEPARATOR" desc="Separator for elements of the bookmark bar path">
-        /
-      </message>
+      <!-- Bookmarks bar -->
       <message name="IDS_BOOKMARKS_NO_ITEMS" desc="Text shown when the user has no bookmarks">
         For quick access, place your bookmarks here on the bookmarks bar.
       </message>
@@ -4299,9 +4228,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
       <message name="IDS_BOOMARK_BAR_EDIT_FOLDER_LABEL" desc="Title of label before text field in edit folder dialog">
         Name:
-      </message>
-      <message name="IDS_BOOMARK_BAR_UNKNOWN_DRAG_TITLE" desc="Title given to URLs that are dropped on the bookmark bar that don't have a title or host">
-        Untitled
       </message>
       <if expr="not pp_ifdef('use_titlecase')">
         <message name="IDS_BOOKMARK_BAR_EDIT"
@@ -4598,9 +4524,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_HTTP_POST_WARNING_RESEND" desc="Resend button for post warning">
         Continue
       </message>
-      <message name="IDS_HTTP_POST_WARNING_CANCEL" desc="Cancel button for post warning">
-        Cancel
-      </message>
 
       <!-- Menus -->
       <message name="IDS_MENU_EMPTY_SUBMENU" desc="Used when a submenu has no entries">
@@ -4633,20 +4556,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </if>
 
       <!-- First-run messages -->
-      <message name="IDS_FIRSTRUN_DLG_CANCEL" desc="Text for CANCEL button on first-run dialog">
-        Cancel
-      </message>
       <message name="IDS_FIRSTRUN_DLG_OVERRIDE" desc="Text for the customize button">
         Customize these settings
       </message>
       <message name="IDS_FIRSTRUN_DLG_ACTION1" desc="First action item on first-run dialog">
         Import bookmarks, passwords, and other settings from <ph name="DEF_BROWSER">$1<ex>Internet Explorer</ex></ph>
-      </message>
-      <message name="IDS_FIRSTRUN_DLG_CANCEL_CONFIRM_CONTINUE" desc="Continue installation button for cancel confirmation dialog">
-        Continue Installing
-      </message>
-      <message name="IDS_FIRSTRUN_DLG_CANCEL_CONFIRM_EXIT" desc="Exit installation button for cancel confirmation dialog">
-        Exit Install
       </message>
 
       <!-- Customize chrome messages -->
@@ -4736,17 +4650,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_CONTENT_TAB_LABEL" desc="The title of the Personal Stuff tab">
         Personal Stuff
       </message>
-      <message name="IDS_OPTIONS_USER_DATA_TAB_LABEL" desc="The title of the User Data tab">
-        User Data
-      </message>
       <message name="IDS_OPTIONS_ADVANCED_TAB_LABEL" desc="The title of the Under the Hood tab">
         Under the Hood
       </message>
       <message name="IDS_OPTIONS_LEARN_MORE_LABEL" desc="In the options dialog, we have links to the support web pages where the user can learn more about a feature.">
         Learn more
-      </message>
-      <message name="IDS_OPTIONS_PRIVACY_LABEL" desc="In the options dialog, we have links to the support web pages where the user can learn about the privacy implications of a feature.">
-        Privacy
       </message>
 
       <!-- Views displays group titles and their contents side-by-side -->
@@ -4831,9 +4739,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Default Search
         </message>
       </if>
-      <message name="IDS_OPTIONS_DEFAULTSEARCH_GROUP_DESCRIPTION" desc="The description of the default search engine group">
-        Set the search engine used in the omnibox.
-      </message>
       <message name="IDS_OPTIONS_DEFAULTSEARCH_MANAGE_ENGINES_LINK"
                desc="The label of a link that brings up the keyword editor (aka search engine editor)">
         Manage
@@ -4917,9 +4822,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Never save passwords
       </message>
       <message name="IDS_OPTIONS_PASSWORDS_SHOWPASSWORDS" desc="The label of the 'Show passwords' button">
-        Show saved passwords
-      </message>
-      <message name="IDS_OPTIONS_PASSWORDS_EXCEPTIONS" desc="The label of the 'Show saved passwords' button">
         Show saved passwords
       </message>
 
@@ -5138,14 +5040,8 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Block All Cookies
         </message>
       </if>
-      <message name="IDS_OPTIONS_COOKIES_SHOWCOOKIES" desc="The label of the 'Show Cookies' button">
-        Show cookies
-      </message>
       <message name="IDS_OPTIONS_COOKIES_SHOWCOOKIES_WEBSITE_PERMISSIONS" desc="The label of the 'Show Cookies and Website Permissions' button. Website Permissions means you can set permissions for individual websites, such as google.com can do this, yahoo.com can do that.">
         Show cookies and website permissions
-      </message>
-      <message name="IDS_OPTIONS_PLUGINS_IN_SANDBOX" desc="The label for the 'run plugins in sandbox' option">
-        Runs plug-ins in a sandbox with no privileges. Will cause some plug-ins to not work properly.
       </message>
       <message name="IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION" desc="The label of the 'Enable phishing and malware protection' checkbox">
         Enable phishing and malware protection
@@ -5167,19 +5063,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Use TLS 1.0
       </message>
 
-      <message name="IDS_OPTIONS_MIXED_CONTENT_LABEL" desc="The documentation string of the 'Mixed Content handling' preference.">
-        When there is mixed content on secure (SSL) pages:
-      </message>
-      <message name="IDS_OPTIONS_INCLUDE_NO_MIXED_CONTENT" desc="The combo-box option for setting that no mixed-content should be included.">
-        Block all insecure content
-      </message>
-      <message name="IDS_OPTIONS_INCLUDE_MIXED_CONTENT_IMAGE_ONLY" desc="The combo-box option for setting that only mixed-content which are not images should be included.">
-        Allow insecure images
-      </message>
-      <message name="IDS_OPTIONS_INCLUDE_MIXED_CONTENT" desc="The combo-box option for setting that all mixed-content be included.">
-        Allow all content to load
-      </message>
-
       <if expr="not pp_ifdef('use_titlecase') or os != 'linux2'">
         <message name="IDS_OPTIONS_BROWSING_DATA_GROUP_NAME" desc="The title of the 'Browsing data' group.">
           Browsing data:
@@ -5195,18 +5078,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
 
       <!-- Misc advanced option description strings. -->
-      <message name="IDS_WEBKIT_JAVA_ENABLED_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables Java.">
-        Enable Java
-      </message>
-      <message name="IDS_WEBKIT_JAVASCRIPT_ENABLED_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables JavaScript.">
-        Enable JavaScript
-      </message>
-      <message name="IDS_WEBKIT_PLUGINS_ENABLED_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables plugins (like flash).">
-        Enable plug-ins
-      </message>
-      <message name="IDS_WEBKIT_IMAGE_LOAD_AUTOMATIC_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables automatic image loading.">
-        Load images automatically
-      </message>
       <message name="IDS_NETWORK_DNS_PREFETCH_ENABLED_DESCRIPTION" desc="In the advanced options tab, the text next to the checkbox that enables DNS prefetching.  DNS prefetching involves scanning pages and user text entries, guessing what domain the user may next navigate to, and obtaining the domain's DNS information for that URL in advance. ">
         Use DNS pre-fetching to improve page load performance
       </message>
@@ -5572,175 +5443,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Close
       </message>
 
-      <!-- New tab page web clips. These are not in use yet -->
-      <message name="IDS_NEW_TAB_WEB_CLIPS_WEB_CLIPS"
-               desc="Web Clips module header">
-        Web Clips
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_CUSTOMIZE"
-               desc="Link at bottom ">
-        Customize
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_DESCRIPTION_TEXT"
-               desc="Description for Web Clips module">
-        Add your favorite sources to get news headlines, blog posts, RSS and Atom feeds right in this box.
-        <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Learn more<ph name="END_LINK">&lt;/a&gt;</ph>
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_ADDED"
-               desc="Status message when user has added a web clip">
-        added
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_REMOVE"
-               desc="Action link for removing a current web clip">
-        remove
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_REMOVED"
-               desc="Status message when user has removed a web clip">
-        removed
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_ADD"
-               desc="Button label for adding a web clip">
-        Add
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_ADD_A_NEW_WEB_CLIP"
-               desc="Header for section that lets users add new web clips">
-        Add a new web clip
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_FEATURED_WEB_CLIPS"
-               desc="Name for featured web clips category">
-        Featured web clips
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_NEWS"
-               desc="Label of web clips category">
-        News
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_FUN"
-               desc="Label of web clips category">
-        Fun
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_BUSINESS"
-               desc="Label of web clips category">
-        Business
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_SPORTS"
-               desc="Label of web clips category">
-        Sports
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_LIFESTYLE"
-               desc="Label of web clips category">
-        Lifestyle
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_TECHNOLOGY"
-               desc="Label of web clips category">
-        Technology
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_SEARCH_BY_TOPIC_OR_URL"
-               desc="Label for search box in Web Clips customization dialog">
-        Search by topic or URL:
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_HINT_EXAMPLES"
-               desc="Hint underneath search box in Web Clips customization dialog">
-        e.g. hockey, BBC, http://engadget.com/rss.xml
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_NO_ITEMS"
-               desc="Message shown when no web clips are cached/available">
-        There are no items to show here yet.
-        <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Customize<ph name="END_LINK">&lt;/a&gt;</ph>
-        your web clips and add more sources.
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_PREVIEW"
-               desc="Link for showing preview of web clip items - seen in search results list">
-        preview
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_HIDE"
-               desc="Link for hiding preview of web clip items - seen in search results list">
-        hide
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_SEARCH_RESULTS"
-               desc="Search results when users searches for web clips">
-        Search results
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_NO_FEEDS_MATCHED_YOUR_SEARCH_QUERY"
-               desc="Description when no web clip feeds were found for the user's query">
-        No feeds matched your search query.
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_THE_FEED_YOU_ENTERED_COULD_NOT_BE_LOADED"
-               desc="Error message when web clip feed could not be loaded">
-        The feed you entered could not be loaded.
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_NOTE"
-               desc="Hint displayed underneath search results">
-        Note: Since many of these feeds don't come from Google, we can't vouch for their content.
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_N_HOURS_AGO"
-               desc="Label next to a web clip item, showing when the item was published">
-        <ph name="HOUR">$1<ex>1</ex></ph> hour/hours ago
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_MINUTES_AGO"
-               desc="Label next to a web clip item, showing when the item was published">
-        <ph name="MINUTE">$1<ex>1</ex></ph> minute/minutes ago
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_NEW_IN_CHROME"
-               desc="Alternative header for Web Clips module">
-        New in Chrome
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_FEATURED"
-               desc="Alternative header for Web Clips module">
-        Featured
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_NEW"
-               desc="Alternative header for Web Clips module">
-        New!
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_FEATURED_THEME"
-               desc="Alternative header for Web Clips module">
-        Featured theme
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_FEATURED_THEMES"
-               desc="Alternative header for Web Clips module">
-        Featured themes
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_FEATURED_EXTRA"
-               desc="Alternative header for Web Clips module">
-        Featured extra
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_FEATURED_EXTRAS"
-               desc="Alternative header for Web Clips module">
-        Featured extras
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_TIPS_AND_TRICKS"
-               desc="Alternative header for Web Clips module">
-        Tips &amp; tricks
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_GOOGLE_READER_PROMO"
-               desc="Google Reader promo">
-        Want to keep track of more sites in one place? Try
-        <ph name="BEGIN_LINK">&lt;a href="$1"&gt;</ph>Google Reader<ph name="END_LINK">&lt;/a&gt;</ph>
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_CANCEL"
-               desc="Cancel button">
-        Cancel
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_DONE"
-               desc="Done button">
-        Done
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_SAVE"
-               desc="Save button">
-        Save
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_BACK"
-               desc="back link">
-        back
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_NEXT"
-               desc="Next link">
-        next
-      </message>
-      <message name="IDS_NEW_TAB_WEB_CLIPS_PREVIOUS"
-               desc="Previous link">
-        previous
-      </message>
       <message name="IDS_NEW_TAB_MAKE_THIS_HOMEPAGE"
                desc="Text for link that sets new tab page as home page">
         Make this my home page
@@ -6000,15 +5702,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_LINKDOCTOR_PREF" desc="The documentation string of the 'Use Link Doctor' preference">
         Show suggestions for navigation errors
       </message>
-      <message name="IDS_OPTIONS_LINKDOCTOR_URL" desc="The documentation string of the preference that sets the URL of the link doctor service">
-        Service URL:
-      </message>
 
       <message name="IDS_OPTIONS_SUGGEST_PREF" desc="The documentation string of the 'Use Suggest' preference">
         Use a suggestion service to help complete searches and URLs typed in the address bar
-      </message>
-      <message name="IDS_OPTIONS_SUGGEST_URL" desc="The documentation string of the preference">
-        Suggestion service URL:
       </message>
 
       <message name="IDS_OPTIONS_FONTSETTINGS_INFO" desc="Information text about font and language options for web pages">
@@ -6813,32 +6509,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
     <message name="IDS_BLACKLIST_MESSAGE" desc="Message shown instead of a blocked element.">
       The following Privacy Blacklists prevented this content from showing:
     </message>
-    <message name="IDS_BLACKLIST_BLOCKED_COOKIES" desc="Cookies was blacklisted.">
-      Cookies blocked
-    </message>
-    <message name="IDS_BLACKLIST_BLOCKED_REFERRER" desc="Referrer sending was blacklisted.">
-      Referrer not sent
-    </message>
-    <message name="IDS_BLACKLIST_ERROR_LOADING_TITLE" desc="Title of the dialog shown when the privacy blacklist cannot be loaded.">
-      Privacy Blacklist Error
-    </message>
-    <message name="IDS_BLACKLIST_ERROR_LOADING_TEXT" desc="Text of the dialog shown when the privacy blacklist cannot be loaded.">
-      Your privacy blacklists failed to load.
-    </message>
-    <message name="IDS_BLACKLIST_ERROR_LOADING_CONTINUE" desc="Continue button text when blacklist cannot be loaded.">
-      Continue
-    </message>
-    <message name="IDS_BLACKLIST_ERROR_LOADING_EXIT" desc="Exit button text when the privacy blacklist cannot be loaded.">
-      Exit
-    </message>
 
     <!-- ProcessSingleton -->
     <message name="IDS_PROFILE_IN_USE_LINUX" desc="Message shown when the browser cannot start because the profile is in use on a different host.">
       The profile appears to be in use by process <ph name="PROCESS_ID">$1<ex>12345</ex></ph> on host <ph name="HOST_NAME">$2<ex>example.com</ex></ph>.  If you are sure no other processes are using this profile, delete the file <ph name="LOCK_FILE">$3<ex>/home/user/.config/google-chrome/SingletonLock</ex></ph> and restart <ph name="PRODUCT_NAME">$4<ex>Google Chrome</ex></ph>.
-    </message>
-
-    <message translateable="false" name="IDS_GLEN" desc="Glen">
-      Glen
     </message>
 
     <!-- Theme UI -->
