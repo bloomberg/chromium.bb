@@ -86,6 +86,10 @@ END_MSG_MAP()
     return automation_client_.get() != NULL;
   }
 
+  virtual void OnHostMoved() {
+    automation_client_->OnChromeFrameHostMoved();
+  }
+
  protected:
   virtual void OnNavigationFailed(int tab_handle, int error_code,
                                   const GURL& gurl) {

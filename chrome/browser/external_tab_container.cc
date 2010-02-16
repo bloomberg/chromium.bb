@@ -256,7 +256,7 @@ void ExternalTabContainer::FocusThroughTabTraversal(bool reverse) {
 
 // static
 bool ExternalTabContainer::IsExternalTabContainer(HWND window) {
-  if (GetProp(window, kWindowObjectKey) != NULL)
+  if (::GetProp(window, kWindowObjectKey) != NULL)
     return true;
 
   return false;
@@ -277,6 +277,17 @@ ExternalTabContainer* ExternalTabContainer::GetContainerForTab(
   return container;
 }
 
+// static
+ExternalTabContainer*
+    ExternalTabContainer::GetExternalContainerFromNativeWindow(
+        gfx::NativeView native_window) {
+  ExternalTabContainer* tab_container = NULL;
+  if (native_window) {
+    HANDLE handle = ::GetProp(native_window, kWindowObjectKey);
+    tab_container = reinterpret_cast<ExternalTabContainer*>(handle);
+  }
+  return tab_container;
+}
 ////////////////////////////////////////////////////////////////////////////////
 // ExternalTabContainer, TabContentsDelegate implementation:
 

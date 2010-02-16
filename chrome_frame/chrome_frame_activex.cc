@@ -7,6 +7,7 @@
 #include <wininet.h>
 
 #include <algorithm>
+#include <map>
 
 #include "base/basictypes.h"
 #include "base/command_line.h"
@@ -15,6 +16,7 @@
 #include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/scoped_bstr_win.h"
+#include "base/singleton.h"
 #include "base/string_util.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/chrome_switches.h"
@@ -22,7 +24,94 @@
 #include "googleurl/src/gurl.h"
 #include "chrome_frame/utils.h"
 
-ChromeFrameActivex::ChromeFrameActivex() {
+namespace {
+
+// Class used to maintain a mapping from top-level windows to ChromeFrameActivex
+// instances.
+class TopLevelWindowMapping {
+ public:
+  typedef std::vector<HWND> WindowList;
+
+  static TopLevelWindowMapping* instance() {
+    return Singleton<TopLevelWindowMapping>::get();
+  }
+
+  // Add |cf_window| to the set of windows registered under |top_window|.
+  void AddMapping(HWND top_window, HWND cf_window) {
+    top_window_map_lock_.Lock();
+    top_window_map_[top_window].push_back(cf_window);
+    top_window_map_lock_.Unlock();
+  }
+
+  // Return the set of Chrome-Frame instances under |window|.
+  WindowList GetInstances(HWND window) {
+    top_window_map_lock_.Lock();
+    WindowList list = top_window_map_[window];
+    top_window_map_lock_.Unlock();
+    return list;
+  }
+
+ private:
+  // Constructor is private as this class it to be used as a singleton.
+  // See static method instance().
+  TopLevelWindowMapping() {}
+
+  friend struct DefaultSingletonTraits<TopLevelWindowMapping>;
+
+  typedef std::map<HWND, WindowList> TopWindowMap;
+  TopWindowMap top_window_map_;
+
+  CComAutoCriticalSection top_window_map_lock_;
+
+  DISALLOW_COPY_AND_ASSIGN(TopLevelWindowMapping);
+};
+
+// Message pump hook function that monitors for WM_MOVE and WM_MOVING
+// messages on a top-level window, and passes notification to the appropriate
+// Chrome-Frame instances.
+LRESULT CALLBACK TopWindowProc(int code, WPARAM wparam, LPARAM lparam) {
+  CWPSTRUCT *info = reinterpret_cast<CWPSTRUCT*>(lparam);
+  const UINT &message = info->message;
+  const HWND &message_hwnd = info->hwnd;
+
+  switch (message) {
+    case WM_MOVE:
+    case WM_MOVING: {
+      TopLevelWindowMapping::WindowList cf_instances =
+          TopLevelWindowMapping::instance()->GetInstances(message_hwnd);
+      TopLevelWindowMapping::WindowList::iterator
+          iter(cf_instances.begin()), end(cf_instances.end());
+      for (;iter != end; ++iter) {
+        PostMessage(*iter, WM_HOST_MOVED_NOTIFICATION, NULL, NULL);
+      }
+      break;
+    }
+    default:
+      break;
+  }
+
+  return CallNextHookEx(0, code, wparam, lparam);
+}
+
+HHOOK InstallLocalWindowHook(HWND window) {
+  if (!window)
+    return NULL;
+
+  DWORD proc_thread = ::GetWindowThreadProcessId(window, NULL);
+  if (!proc_thread)
+    return NULL;
+
+  // Note that this hook is installed as a LOCAL hook.
+  return  ::SetWindowsHookEx(WH_CALLWNDPROC,
+                             TopWindowProc,
+                             NULL,
+                             proc_thread);
+}
+
+}  // unnamed namespace
+
+ChromeFrameActivex::ChromeFrameActivex()
+    : chrome_wndproc_hook_(NULL) {
 }
 
 HRESULT ChromeFrameActivex::FinalConstruct() {
@@ -43,6 +132,11 @@ ChromeFrameActivex::~ChromeFrameActivex() {
   DCHECK(onreadystatechanged_.size() == 0);
   DCHECK(onextensionready_.size() == 0);
 
+  if (chrome_wndproc_hook_) {
+    BOOL unhook_success = ::UnhookWindowsHookEx(chrome_wndproc_hook_);
+    DCHECK(unhook_success);
+  }
+
   // ChromeFramePlugin::Uninitialize()
   Base::Uninitialize();
 }
@@ -50,6 +144,17 @@ ChromeFrameActivex::~ChromeFrameActivex() {
 LRESULT ChromeFrameActivex::OnCreate(UINT message, WPARAM wparam, LPARAM lparam,
                                      BOOL& handled) {
   Base::OnCreate(message, wparam, lparam, handled);
+  // Install the notification hook on the top-level window, so that we can
+  // be notified on move events.  Note that the return value is not checked.
+  // This hook is installed here, as opposed to during IOleObject_SetClientSite
+  // because m_hWnd has not yet been assigned during the SetSite call.
+  InstallTopLevelHook(m_spClientSite);
+  return 0;
+}
+
+LRESULT ChromeFrameActivex::OnHostMoved(UINT message, WPARAM wparam,
+                                        LPARAM lparam, BOOL& handled) {
+  Base::OnHostMoved();
   return 0;
 }
 
@@ -448,4 +553,25 @@ void ChromeFrameActivex::FireEvent(const EventHandlers& handlers,
     DLOG_IF(ERROR, FAILED(hr) && hr != 0x80020101)
         << StringPrintf(L"Failed to invoke script: 0x%08X", hr);
   }
+}
+
+HRESULT ChromeFrameActivex::InstallTopLevelHook(IOleClientSite* client_site) {
+  // Get the parent window of the site, and install our hook on the topmost
+  // window of the parent.
+  ScopedComPtr<IOleWindow> ole_window;
+  HRESULT hr = ole_window.QueryFrom(client_site);
+  if (FAILED(hr))
+    return hr;
+
+  HWND parent_wnd;
+  hr = ole_window->GetWindow(&parent_wnd);
+  if (FAILED(hr))
+    return hr;
+
+  HWND top_window = ::GetAncestor(parent_wnd, GA_ROOT);
+  chrome_wndproc_hook_ = InstallLocalWindowHook(top_window);
+  if (chrome_wndproc_hook_)
+    TopLevelWindowMapping::instance()->AddMapping(top_window, m_hWnd);
+
+  return chrome_wndproc_hook_ ? S_OK : E_FAIL;
 }

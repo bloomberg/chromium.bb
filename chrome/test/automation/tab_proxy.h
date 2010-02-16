@@ -360,6 +360,9 @@ class TabProxy : public AutomationResourceProxy {
 
   // Sends the selected context menu command to the chrome instance
   void SendContextMenuCommand(int selected_command);
+
+  // To be called when the window hosting the tab has moved.
+  void OnHostMoved();
 #endif  // defined(OS_WIN)
 
   // Selects all contents on the page.

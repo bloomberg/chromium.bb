@@ -465,6 +465,9 @@ void AutomationProvider::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(AutomationMsg_ShutdownSessionService,
                         ShutdownSessionService)
     IPC_MESSAGE_HANDLER(AutomationMsg_SaveAsAsync, SaveAsAsync)
+#if defined(OS_WIN)
+    IPC_MESSAGE_HANDLER(AutomationMsg_BrowserMove, OnBrowserMoved)
+#endif
   IPC_END_MESSAGE_MAP()
 }
 
@@ -2264,4 +2267,3 @@ void AutomationProvider::SaveAsAsync(int tab_handle) {
   if (tab_contents)
     tab_contents->OnSavePage();
 }
-

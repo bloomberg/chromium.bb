@@ -708,6 +708,10 @@ void TabProxy::SendContextMenuCommand(int selected_command) {
   sender_->Send(new AutomationMsg_ForwardContextMenuCommandToChrome(
       0, handle_, selected_command));
 }
+
+void TabProxy::OnHostMoved() {
+  sender_->Send(new AutomationMsg_BrowserMove(0, handle_));
+}
 #endif  // defined(OS_WIN)
 
 void TabProxy::SelectAll() {

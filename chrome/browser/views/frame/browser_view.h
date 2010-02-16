@@ -17,6 +17,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
+#include "chrome/browser/views/frame/browser_bubble_host.h"
 #include "chrome/browser/views/frame/browser_frame.h"
 #include "chrome/browser/views/infobars/infobar_container.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
@@ -67,7 +68,8 @@ class SingleSplitView;
 //  A ClientView subclass that provides the contents of a browser window,
 //  including the TabStrip, toolbars, download shelves, the content area etc.
 //
-class BrowserView : public BrowserWindow,
+class BrowserView : public BrowserBubbleHost,
+                    public BrowserWindow,
                     public BrowserWindowTesting,
                     public NotificationObserver,
                     public TabStripModelObserver,
@@ -215,10 +217,6 @@ class BrowserView : public BrowserWindow,
 
   // Register preferences specific to this view.
   static void RegisterBrowserViewPrefs(PrefService* prefs);
-
-  // Attach/Detach a BrowserBubble to the browser.
-  void AttachBrowserBubble(BrowserBubble *bubble);
-  void DetachBrowserBubble(BrowserBubble *bubble);
 
   // Returns true if the specified point(BrowserView coordinates) is in
   // in the window caption area of the browser window.
@@ -560,9 +558,6 @@ class BrowserView : public BrowserWindow,
 
   // A bottom bar for showing extensions.
   ExtensionShelf* extension_shelf_;
-
-  typedef std::set<BrowserBubble*> BubbleSet;
-  BubbleSet browser_bubbles_;
 
   // The accessible name of this view.
   std::wstring accessible_name_;

@@ -35,6 +35,7 @@ bool ChromeFrameAutomationProvider::IsValidMessage(uint32 type) {
     case AutomationMsg_CreateExternalTab::ID:
     case AutomationMsg_ConnectExternalTab::ID:
 #if defined(OS_WIN)
+    case AutomationMsg_BrowserMove::ID:
     case AutomationMsg_ProcessUnhandledAccelerator::ID:
     case AutomationMsg_TabReposition::ID:
     case AutomationMsg_ForwardContextMenuCommandToChrome::ID:

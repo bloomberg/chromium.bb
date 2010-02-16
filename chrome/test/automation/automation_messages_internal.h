@@ -1192,4 +1192,11 @@ IPC_BEGIN_MESSAGES(Automation)
   IPC_MESSAGE_ROUTED1(AutomationMsg_SaveAsAsync,
                       int /* tab handle */)
 
+#if defined(OS_WIN)
+  // An incoming message from an automation host to Chrome.  Signals that
+  // the browser containing |tab_handle| has moved.
+  IPC_MESSAGE_ROUTED1(AutomationMsg_BrowserMove,
+                      int /* tab handle */)
+#endif
+
 IPC_END_MESSAGES(Automation)

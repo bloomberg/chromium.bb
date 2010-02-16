@@ -506,3 +506,13 @@ void AutomationProvider::SetEnableExtensionAutomation(
       "SetEnableExtensionAutomation called with invalid tab handle.";
   }
 }
+
+void AutomationProvider::OnBrowserMoved(int tab_handle) {
+  ExternalTabContainer* external_tab = GetExternalTabForHandle(tab_handle);
+  if (external_tab) {
+    external_tab->WindowMoved();
+  } else {
+    DLOG(WARNING) <<
+      "AutomationProvider::OnBrowserMoved called with invalid tab handle.";
+  }
+}

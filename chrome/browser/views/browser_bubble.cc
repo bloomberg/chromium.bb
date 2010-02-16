@@ -6,20 +6,35 @@
 
 #include "app/l10n_util.h"
 #include "chrome/browser/views/frame/browser_view.h"
+#if defined(OS_WIN)
+#include "chrome/browser/external_tab_container.h"
+#endif
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
 
 namespace {
 
-BrowserView* GetBrowserViewFromFrame(views::Widget* frame) {
-  BrowserView* browser_view = NULL;
+BrowserBubbleHost* GetBubbleHostFromFrame(views::Widget* frame) {
+  if (!frame)
+    return NULL;
+
+  BrowserBubbleHost* bubble_host = NULL;
   views::Window* window = frame->GetWindow();
   if (window) {
-    browser_view = BrowserView::GetBrowserViewForNativeWindow(
+    bubble_host = BrowserView::GetBrowserViewForNativeWindow(
         window->GetNativeWindow());
-    DCHECK(browser_view);
+    DCHECK(bubble_host);
   }
-  return browser_view;
+#if defined(OS_WIN)
+  // The frame may also be an ExternalTabContainer, which is also capable of
+  // hosting BrowserBubbles.
+  gfx::NativeView native_view = frame->GetNativeView();
+  if (!bubble_host) {
+    bubble_host =
+        ExternalTabContainer::GetExternalContainerFromNativeWindow(native_view);
+  }
+#endif
+  return bubble_host;
 }
 
 }  // namespace
@@ -31,7 +46,8 @@ BrowserBubble::BrowserBubble(views::View* view, views::Widget* frame,
       visible_(false),
       delegate_(NULL),
       attached_(false),
-      drop_shadow_enabled_(drop_shadow) {
+      drop_shadow_enabled_(drop_shadow),
+      bubble_host_(GetBubbleHostFromFrame(frame)) {
   gfx::Size size = view->GetPreferredSize();
   bounds_.SetRect(origin.x(), origin.y(), size.width(), size.height());
   InitPopup();
@@ -55,9 +71,8 @@ void BrowserBubble::DetachFromBrowser() {
     return;
   attached_ = false;
 
-  BrowserView* browser_view = GetBrowserViewFromFrame(frame_);
-  if (browser_view)
-    browser_view->DetachBrowserBubble(this);
+  if (bubble_host_)
+    bubble_host_->DetachBrowserBubble(this);
 }
 
 void BrowserBubble::AttachToBrowser() {
@@ -65,9 +80,8 @@ void BrowserBubble::AttachToBrowser() {
   if (attached_)
     return;
 
-  BrowserView* browser_view = GetBrowserViewFromFrame(frame_);
-  if (browser_view)
-    browser_view->AttachBrowserBubble(this);
+  if (bubble_host_)
+    bubble_host_->AttachBrowserBubble(this);
 
   attached_ = true;
 }

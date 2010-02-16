@@ -191,6 +191,8 @@ class ChromeFrameAutomationClient
       void* user_data,
       AutomationMsg_ExtensionResponseValues res);
 
+  virtual void OnChromeFrameHostMoved();
+
   TabProxy* tab() const { return tab_.get(); }
 
   BEGIN_MSG_MAP(ChromeFrameAutomationClient)

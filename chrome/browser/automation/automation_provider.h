@@ -229,6 +229,9 @@ class AutomationProvider : public base::RefCounted<AutomationProvider>,
   void SetProxyConfig(const std::string& new_proxy_config);
   void IsFullscreen(int handle, bool* is_fullscreen);
   void GetFullscreenBubbleVisibility(int handle, bool* is_visible);
+#if defined(OS_WIN)
+  void OnBrowserMoved(int handle);
+#endif
 
 #if defined(OS_WIN)
   void ScheduleMouseEvent(views::View* view,

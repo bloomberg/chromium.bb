@@ -13,6 +13,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/tab_contents/tab_contents_delegate.h"
+#include "chrome/browser/views/frame/browser_bubble_host.h"
 #include "chrome/browser/views/infobars/infobar_container.h"
 #include "chrome/browser/views/unhandled_keyboard_event_handler.h"
 #include "chrome/common/navigation_types.h"
@@ -39,7 +40,8 @@ class ExternalTabContainer : public TabContentsDelegate,
                              public views::WidgetWin,
                              public base::RefCounted<ExternalTabContainer>,
                              public views::AcceleratorTarget,
-                             public InfoBarContainer::Delegate {
+                             public InfoBarContainer::Delegate,
+                             public BrowserBubbleHost {
  public:
   typedef std::map<intptr_t, scoped_refptr<ExternalTabContainer> > PendingTabs;
 
@@ -88,6 +90,12 @@ class ExternalTabContainer : public TabContentsDelegate,
   // A helper method that tests whether the given window is an
   // ExternalTabContainer window
   static bool IsExternalTabContainer(HWND window);
+
+  // A helper function that returns a pointer to the ExternalTabContainer
+  // instance associated with a native view.  Returns NULL if the window
+  // is not an ExternalTabContainer.
+  static ExternalTabContainer* GetExternalContainerFromNativeWindow(
+      gfx::NativeView native_window);
 
   // A helper method that retrieves the ExternalTabContainer object that
   // hosts the given tab window.

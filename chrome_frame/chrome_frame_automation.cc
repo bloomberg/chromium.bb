@@ -705,6 +705,10 @@ void ChromeFrameAutomationClient::InstallExtensionComplete(
   }
 }
 
+void ChromeFrameAutomationClient::OnChromeFrameHostMoved() {
+  tab_->OnHostMoved();
+}
+
 void ChromeFrameAutomationClient::LoadExpandedExtension(
     const FilePath& path,
     void* user_data) {

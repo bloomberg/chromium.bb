@@ -486,13 +486,7 @@ void BrowserView::WindowMoved() {
 
   status_bubble_->Reposition();
 
-  // Do safe iteration in case the bubble winds up closing as a result of this
-  // message.
-  for (BubbleSet::iterator i = browser_bubbles_.begin();
-       i != browser_bubbles_.end();) {
-    BubbleSet::iterator bubble = i++;
-    (*bubble)->BrowserWindowMoved();
-  }
+  BrowserBubbleHost::WindowMoved();
 
   browser::HideBookmarkBubbleView();
 
@@ -653,16 +647,6 @@ void BrowserView::RegisterBrowserViewPrefs(PrefService* prefs) {
                              kDefaultHungPluginDetectFrequency);
 }
 
-void BrowserView::AttachBrowserBubble(BrowserBubble* bubble) {
-  browser_bubbles_.insert(bubble);
-}
-
-void BrowserView::DetachBrowserBubble(BrowserBubble* bubble) {
-  BubbleSet::iterator it = browser_bubbles_.find(bubble);
-  if (it != browser_bubbles_.end())
-    browser_bubbles_.erase(it);
-}
-
 bool BrowserView::IsPositionInWindowCaption(const gfx::Point& point) {
   return GetBrowserViewLayout()->IsPositionInWindowCaption(point);
 }
@@ -712,13 +696,7 @@ void BrowserView::SetBounds(const gfx::Rect& bounds) {
 }
 
 void BrowserView::Close() {
-  // BrowserWindowClosing will usually cause the bubble to remove itself from
-  // the set, so we need to iterate in a way that's safe against deletion.
-  for (BubbleSet::iterator i = browser_bubbles_.begin();
-       i != browser_bubbles_.end();) {
-    BubbleSet::iterator bubble = i++;
-    (*bubble)->BrowserWindowClosing();
-  }
+  BrowserBubbleHost::Close();
 
   frame_->GetWindow()->Close();
 }

@@ -22,6 +22,8 @@
 // Include without path to make GYP build see it.
 #include "chrome_tab.h"  // NOLINT
 
+#define WM_HOST_MOVED_NOTIFICATION (WM_APP + 1)
+
 // ChromeFrameActivex: Implementation of the ActiveX control that is
 // responsible for hosting a chrome frame, i.e. an iframe like widget which
 // hosts the the chrome window. This object delegates to Chrome.exe
@@ -48,6 +50,7 @@ END_COM_MAP()
 
 BEGIN_MSG_MAP(ChromeFrameActivex)
   MESSAGE_HANDLER(WM_CREATE, OnCreate)
+  MESSAGE_HANDLER(WM_HOST_MOVED_NOTIFICATION, OnHostMoved)
   CHAIN_MSG_MAP(Base)
 END_MSG_MAP()
 
@@ -74,7 +77,7 @@ END_MSG_MAP()
 
   // Used to setup the document_url_ member needed for completing navigation.
   // Create external tab (possibly in incognito mode).
-  HRESULT IOleObject_SetClientSite(IOleClientSite *pClientSite);
+  HRESULT IOleObject_SetClientSite(IOleClientSite* client_site);
 
   // Overridden to perform security checks.
   STDMETHOD(put_src)(BSTR src);
@@ -95,6 +98,8 @@ END_MSG_MAP()
  private:
   LRESULT OnCreate(UINT message, WPARAM wparam, LPARAM lparam,
                    BOOL& handled);  // NO_LINT
+  LRESULT OnHostMoved(UINT message, WPARAM wparam, LPARAM lparam,
+                      BOOL& handled);  // NO_LINT
 
   HRESULT GetContainingDocument(IHTMLDocument2** doc);
   HRESULT GetDocumentWindow(IHTMLWindow2** window);
@@ -123,6 +128,11 @@ END_MSG_MAP()
   void FireEvent(const EventHandlers& handlers, IDispatch* event,
                  BSTR target);
 
+  // Installs a hook on the top-level window hosting the control.
+  HRESULT InstallTopLevelHook(IOleClientSite* client_site);
+
+  // A hook attached to the top-level window containing the ActiveX control.
+  HHOOK chrome_wndproc_hook_;
 };
 
 #endif  // CHROME_FRAME_CHROME_FRAME_ACTIVEX_H_

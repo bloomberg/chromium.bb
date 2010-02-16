@@ -37,6 +37,10 @@ class ChromeFrameDelegate {
   // messages.
   virtual bool IsValid() const = 0;
 
+  // To be called when the top-most window of an application hosting
+  // ChromeFrame is moved.
+  virtual void OnHostMoved() = 0;
+
  protected:
   ~ChromeFrameDelegate() {}
 };
@@ -70,6 +74,8 @@ class ChromeFrameDelegateImpl : public ChromeFrameDelegate {
   virtual bool IsValid() const {
     return true;
   }
+
+  virtual void OnHostMoved() {}
 
  protected:
   // Protected methods to be overriden.

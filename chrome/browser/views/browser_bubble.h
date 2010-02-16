@@ -8,6 +8,8 @@
 #include "views/view.h"
 #include "views/widget/widget.h"
 
+class BrowserBubbleHost;
+
 // A class for creating a floating window that is "attached" to a particular
 // Browser.  If you don't install a delegate, the bubble will hide
 // automatically when the browser moves.  The bubble is only shown manually.
@@ -58,7 +60,7 @@ class BrowserBubble {
   Delegate* delegate() const { return delegate_; }
   void set_delegate(Delegate* del) { delegate_ = del; }
 
-  // Notifications from BrowserView.
+  // Notifications from BrowserBubbleHost.
   // With no delegate, both of these default to Hiding the bubble.
   virtual void BrowserWindowMoved();
   virtual void BrowserWindowClosing();
@@ -119,6 +121,9 @@ class BrowserBubble {
 
   // Does the bubble have a drop-shadow.
   bool drop_shadow_enabled_;
+
+  // Non-owning pointer to the host of this bubble.
+  BrowserBubbleHost* bubble_host_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserBubble);
 };
