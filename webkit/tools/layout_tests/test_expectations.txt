@@ -109,6 +109,8 @@ BUG27335 WIN DEBUG SLOW : plugins/embed-attributes-setting.html = PASS
 // was slow, started to timeout
 BUG18702 MAC WIN : http/tests/xmlhttprequest/supported-xml-content-types.html = PASS TIMEOUT
 
+BUG34759 WIN DEBUG SLOW : inspector/console-log-before-inspector-open.html = PASS
+
 // -----------------------------------------------------------------
 // SKIPPED TESTS
 // -----------------------------------------------------------------
@@ -2823,7 +2825,6 @@ BUG32680 WIN DEBUG : svg/filters/big-sized-filter.svg = TIMEOUT PASS
 BUG32682 LINUX : svg/W3C-SVG-1.1/filters-conv-01-f.svg = TEXT PASS
 BUG32683 LINUX DEBUG : svg/css/glyph-orientation-rounding-test.xhtml = TEXT PASS
 BUG32684 WIN DEBUG : inspector/timeline-layout.html = TEXT PASS
-BUG34759 WIN : inspector/console-log-before-inspector-open.html = TEXT PASS
 BUG35519 WIN SKIP : http/tests/inspector/inspect-iframe-from-different-domain.html = PASS
 BUG32688 MAC DEBUG : fast/lists/inlineBoxWrapperNullCheck.html = TEXT PASS
 BUG32689 MAC LINUX DEBUG : http/tests/security/mixedContent/about-blank-iframe-in-main-frame.html = TEXT PASS
