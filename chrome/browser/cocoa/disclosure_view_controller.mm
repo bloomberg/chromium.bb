@@ -4,11 +4,13 @@
 
 #import "chrome/browser/cocoa/disclosure_view_controller.h"
 #include "base/logging.h"
-#include "base/scoped_nsobject.h"
 
+namespace {
 const NSCellStateValue kInitialDisclosureState = NSOffState;
 const NSInteger kClosedBoxHeight = 20;
+const CGFloat kDisclosureAnimationDurationSeconds = .2;
 NSString* const kKVODisclosedKey = @"disclosed";
+}
 
 // This class externalizes the state of the disclosure control.  When the
 // disclosure control is pressed it changes the state of this object.  In turn
@@ -28,13 +30,11 @@ NSString* const kKVODisclosedKey = @"disclosed";
 - (void)initDisclosureState:(NSCellStateValue)state;
 - (NSRect)openStateFrameSize:(NSRect)startFrame;
 - (NSRect)closedStateFrameSize:(NSRect)startFrame;
-
 - (void)startAnimations:(NSView*)view
                   start:(NSRect)startFrame
                     end:(NSRect)endFrame;
-
 - (void)discloseDetails:(NSCellStateValue)state;
-
+- (void)setContentViewVisibility;
 - (void)observeValueForKeyPath:(NSString*)keyPath
                       ofObject:(id)object
                         change:(NSDictionary*)change
@@ -61,6 +61,9 @@ NSString* const kKVODisclosedKey = @"disclosed";
   // Set frame size according to initial disclosure state.
   [self initDisclosureState:kInitialDisclosureState];
 
+  // Set content visibility according to initial disclosure state.
+  [self setContentViewVisibility];
+
   // Setup observers so that when disclosure state changes we resize frame
   // accordingly.
   [disclosureState_ addObserver:self forKeyPath:kKVODisclosedKey
@@ -70,6 +73,7 @@ NSString* const kKVODisclosedKey = @"disclosed";
 
 - (void)dealloc {
   [disclosureState_ removeObserver:self forKeyPath:kKVODisclosedKey];
+  [animation_ stopAnimation];
   [disclosureState_ release];
   [super dealloc];
 }
@@ -133,17 +137,43 @@ NSString* const kKVODisclosedKey = @"disclosed";
       [NSValue valueWithRect:endFrame], NSViewAnimationEndFrameKey,
       nil];
 
+  // Stop any existing animation.
+  [animation_ stopAnimation];
+
   // Create the view animation object.
-  scoped_nsobject<NSViewAnimation> animation;
-  animation.reset([[NSViewAnimation alloc] initWithViewAnimations:
+  animation_.reset([[NSViewAnimation alloc] initWithViewAnimations:
                [NSArray arrayWithObject:dictionary]]);
 
   // Set some additional attributes for the animation.
-  [animation.get() setDuration:.2];
-  [animation.get() setAnimationCurve:NSAnimationEaseIn];
+  [animation_ setDuration:kDisclosureAnimationDurationSeconds];
+  [animation_ setAnimationCurve:NSAnimationEaseIn];
+
+  // Set self as delegate so we can toggle visibility at end of animation.
+  [animation_ setDelegate:self];
 
   // Run the animation.
-  [animation.get() startAnimation];
+  [animation_ startAnimation];
+}
+
+// NSAnimationDelegate method.  Before starting the animation we show the
+// |detailedView_|.
+- (BOOL)animationShouldStart:(NSAnimation*)animation {
+  [detailedView_ setHidden:NO];
+  return YES;
+}
+
+// NSAnimationDelegate method.  If animation stops before ending we release
+// our animation object.
+- (void)animationDidStop:(NSAnimation*)animation {
+  animation_.reset();
+}
+
+// NSAnimationDelegate method.  Once the disclosure animation is over we set
+// content view visibility to match disclosure state.
+// |animation_| reference is relinquished at end of animation.
+- (void)animationDidEnd:(NSAnimation*)animation {
+  [self setContentViewVisibility];
+  animation_.reset();
 }
 
 // This method is invoked when the disclosure state changes.  It computes
@@ -163,6 +193,23 @@ NSString* const kKVODisclosedKey = @"disclosed";
   }
 
   [self startAnimations:[self view] start:startFrame end:endFrame];
+}
+
+// Sets the "hidden" state of the content view according to the current
+// disclosure state.  We do this so that the view hierarchy knows to remove
+// undisclosed content from the first responder chain.
+- (void)setContentViewVisibility {
+  NSCellStateValue disclosed = [[disclosureState_ valueForKey:kKVODisclosedKey]
+      intValue];
+
+  if (disclosed == NSOnState) {
+    [detailedView_ setHidden:NO];
+  } else if (disclosed == NSOffState) {
+    [detailedView_ setHidden:YES];
+  } else {
+    NOTREACHED();
+    return;
+  }
 }
 
 // The |DisclosureViewController| is an observer of an instance of a

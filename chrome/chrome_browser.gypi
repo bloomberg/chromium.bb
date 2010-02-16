@@ -109,6 +109,8 @@
         'browser/autofill/autofill_manager.h',
         'browser/autofill/autofill_profile.cc',
         'browser/autofill/autofill_profile.h',
+        'browser/autofill/autofill_text_field_mac.h',
+        'browser/autofill/autofill_text_field_mac.mm',
         'browser/autofill/autofill_type.cc',
         'browser/autofill/autofill_type.h',
         'browser/autofill/billing_address.h',
