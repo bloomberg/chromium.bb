@@ -2682,7 +2682,13 @@ void TabContents::BeforeUnloadFiredFromRenderManager(
 
 void TabContents::UpdateRenderViewSizeForRenderManager() {
   // TODO(brettw) this is a hack. See TabContentsView::SizeContents.
-  view_->SizeContents(view_->GetContainerSize());
+  gfx::Size size = view_->GetContainerSize();
+  // 0x0 isn't a valid window size (minimal window size is 1x1) but it may be
+  // here during container initialization and normal window size will be set
+  // later. In case of tab duplication this resizing to 0x0 prevents setting
+  // normal size later so just ignore it.
+  if (!size.IsEmpty())
+    view_->SizeContents(size);
 }
 
 DOMUI* TabContents::CreateDOMUIForRenderManager(const GURL& url) {
