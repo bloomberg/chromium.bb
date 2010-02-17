@@ -225,9 +225,13 @@ TEST_F(CommandParserTest, TestWrap) {
 
 // Tests error conditions.
 TEST_F(CommandParserTest, TestError) {
-  scoped_ptr<CommandParser> parser(MakeParser(5));
+  const unsigned int kNumEntries = 5;
+  scoped_ptr<CommandParser> parser(MakeParser(kNumEntries));
   CommandBufferOffset put = parser->put();
   CommandHeader header;
+
+  EXPECT_FALSE(parser->set_get(-1));
+  EXPECT_FALSE(parser->set_get(kNumEntries));
 
   // Generate a command with size 0.
   header.size = 0;

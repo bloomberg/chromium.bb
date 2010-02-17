@@ -32,7 +32,7 @@ class CommandParser {
   // Sets the "get" pointer. The get pointer is an index into the command buffer
   // considered as an array of CommandBufferEntry.
   bool set_get(CommandBufferOffset get) {
-    if (get < entry_count_) {
+    if (get >= 0 && get < entry_count_) {
       get_ = get;
       return true;
     }
