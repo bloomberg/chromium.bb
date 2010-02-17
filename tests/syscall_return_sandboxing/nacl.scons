@@ -1,0 +1,44 @@
+# -*- python -*-
+# Copyright 2010 The Native Client Authors.  All rights reserved.
+# Use of this source code is governed by a BSD-style license that can
+# be found in the LICENSE file.
+
+Import('env')
+
+# env's BUILD_ARCH, BUILD_SUBARCH controls what assembly files to
+# use.
+
+if env['BUILD_ARCHITECTURE'] == 'x86':
+  if env['BUILD_SUBARCH'] == '32':
+    sandboxing_asm = 'sandboxed_x86_32.S'
+  elif env['BUILD_SUBARCH'] == '64':
+    sandboxing_asm = 'sandboxed_x86_64.S'
+  else:
+    print >>sys.stderr, 'unknown x86 subarchitecture'
+    assert 0
+elif env['BUILD_ARCHITECTURE'] == 'arm':
+  sandboxing_asm = 'sandboxed_arm.S'
+else:
+  print >>sys.stderr, 'unknown archtecture'
+  assert 0
+
+
+# TODO(bsy): remove adding pthread once we figure out how to eliminate
+# srpc library being added by default in nacl builds.  We don't
+# actually need srpc, so all we're doing is bloating the nexe
+# unnecessarily.
+#
+# env.FilterOut(LIBS=['srpc'])
+env.Append(LIBS=['pthread'])
+
+env.ComponentProgram('syscall_return_sandboxing.nexe',
+                     [ 'syscall_return_sandboxing.c',
+                       sandboxing_asm ])
+
+node = env.CommandSelLdrTestNacl(
+    'syscall_return_sandboxing.out',
+    command=[env.File('syscall_return_sandboxing.nexe')])
+
+env.AddNodeToTestSuite(node, ['small_tests',
+                              'sel_ldr_tests'],
+                       'run_syscall_return_sandboxing_test')
