@@ -1979,6 +1979,8 @@
         'browser/views/jsmessage_box_dialog.h',
         'browser/views/keyword_editor_view.cc',
         'browser/views/keyword_editor_view.h',
+        'browser/views/database_open_info_view.cc',
+        'browser/views/database_open_info_view.h',
         'browser/views/local_storage_info_view.cc',
         'browser/views/local_storage_info_view.h',
         'browser/views/local_storage_set_item_info_view.cc',

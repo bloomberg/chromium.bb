@@ -59,6 +59,15 @@ void RunLocalStoragePrompt(
     const string16& key,
     const string16& value,
     CookiePromptModalDialogDelegate* delegate);
+
+// This will display a modal dialog box with the database name on every open
+// and ask the user to accept or reject it. The caller should pass |delegate|
+// that will handle the reply from the dialog.
+void RunDatabasePrompt(
+    TabContents* tab_contents,
+    const GURL& origin,
+    const string16& database_name,
+    CookiePromptModalDialogDelegate* delegate);
 #endif
 
 #endif  // CHROME_BROWSER_MESSAGE_BOX_HANDLER_H_

@@ -58,9 +58,8 @@ void LocalStorageSetItemInfoView::ClearLocalStorageDisplay() {
 ///////////////////////////////////////////////////////////////////////////////
 // LocalStorageSetItemInfoView, views::View overrides:
 
-void LocalStorageSetItemInfoView::ViewHierarchyChanged(bool is_add,
-                                                views::View* parent,
-                                                views::View* child) {
+void LocalStorageSetItemInfoView::ViewHierarchyChanged(
+    bool is_add, views::View* parent, views::View* child) {
   if (is_add && child == this)
     Init();
 }

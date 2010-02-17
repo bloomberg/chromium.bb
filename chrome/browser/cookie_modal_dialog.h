@@ -20,8 +20,8 @@ class CookiePromptModalDialog : public AppModalDialog {
  public:
   enum DialogType {
     DIALOG_TYPE_COOKIE = 0,
-    DIALOG_TYPE_LOCAL_STORAGE
-    // TODO(jorlow): Database
+    DIALOG_TYPE_LOCAL_STORAGE,
+    DIALOG_TYPE_DATABASE
     // TODO(michaeln): AppCache
   };
 
@@ -31,12 +31,15 @@ class CookiePromptModalDialog : public AppModalDialog {
                           const GURL& origin,
                           const std::string& cookie_line,
                           CookiePromptModalDialogDelegate* delegate);
-  CookiePromptModalDialog(
-      TabContents* tab_contents,
-      const GURL& origin,
-      const string16& key,
-      const string16& value,
-      CookiePromptModalDialogDelegate* delegate);
+  CookiePromptModalDialog(TabContents* tab_contents,
+                          const GURL& origin,
+                          const string16& key,
+                          const string16& value,
+                          CookiePromptModalDialogDelegate* delegate);
+  CookiePromptModalDialog(TabContents* tab_contents,
+                          const GURL& origin,
+                          const string16& database_name,
+                          CookiePromptModalDialogDelegate* delegate);
   virtual ~CookiePromptModalDialog() {}
 
   static void RegisterPrefs(PrefService* prefs);
@@ -51,7 +54,11 @@ class CookiePromptModalDialog : public AppModalDialog {
   const std::string& cookie_line() const { return cookie_line_; }
   const string16& local_storage_key() const { return local_storage_key_; }
   const string16& local_storage_value() const { return local_storage_value_; }
-  CookiePromptModalDialogDelegate* GetDelegate() { return delegate_; }
+  const string16& database_name() const { return database_name_; }
+
+  // Send a response to our delegate.
+  void AllowSiteData(bool remember, bool session_expire);
+  void BlockSiteData(bool remember);
 
  protected:
   // AppModalDialog overrides.
@@ -73,8 +80,12 @@ class CookiePromptModalDialog : public AppModalDialog {
   const string16 local_storage_key_;
   const string16 local_storage_value_;
 
+   // Database name.
+  const string16 database_name_;
+
   // Delegate. The caller should provide one in order to receive results
-  // from this delegate.
+  // from this delegate.  Any time after calling one of these methods, the
+  // delegate could be deleted
   CookiePromptModalDialogDelegate* delegate_;
 
   DISALLOW_COPY_AND_ASSIGN(CookiePromptModalDialog);

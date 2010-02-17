@@ -6,6 +6,9 @@
 #define CHROME_BROWSER_COOKIE_PROMPT_MODAL_DIALOG_DELEGATE_H_
 
 // Delegate for handling modal dialog results from CookiePromptModalDialog.
+// The implementer of this MUST guarentee that from the time it's passed to the
+// CookieModalDialog until one of these methods are called it will not be
+// deleted.
 class CookiePromptModalDialogDelegate {
  public:
   // Allow site data to be set. If |remember| is true, record this decision

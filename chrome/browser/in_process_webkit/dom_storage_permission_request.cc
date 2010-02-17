@@ -24,16 +24,6 @@ ContentSetting DOMStoragePermissionRequest::WaitOnResponse() {
   return response_content_setting_;
 }
 
-void DOMStoragePermissionRequest::SendResponse(ContentSetting content_setting,
-                                               bool remember) {
-  response_content_setting_ = content_setting;
-  if (remember) {
-    host_content_settings_map_->SetContentSetting(
-        url_.host(), CONTENT_SETTINGS_TYPE_COOKIES, content_setting);
-  }
-  event_.Signal();
-}
-
 // static
 void DOMStoragePermissionRequest::PromptUser(
     DOMStoragePermissionRequest* dom_storage_permission_request) {
@@ -56,9 +46,6 @@ void DOMStoragePermissionRequest::PromptUser(
   }
 
 #if defined(OS_WIN)
-  // TODO(darin): It seems like it would be interesting if the dialog actually
-  // showed the name and value being stored (as is done for cookies).
-  const std::string& host = dom_storage_permission_request->url().host();
   RunLocalStoragePrompt(browser->GetSelectedTabContents(),
                         dom_storage_permission_request->url(),
                         dom_storage_permission_request->key(),
@@ -78,4 +65,14 @@ void DOMStoragePermissionRequest::AllowSiteData(bool remember,
 
 void DOMStoragePermissionRequest::BlockSiteData(bool remember) {
   SendResponse(CONTENT_SETTING_BLOCK, remember);
+}
+
+void DOMStoragePermissionRequest::SendResponse(ContentSetting content_setting,
+                                               bool remember) {
+  response_content_setting_ = content_setting;
+  if (remember) {
+    host_content_settings_map_->SetContentSetting(
+        url_.host(), CONTENT_SETTINGS_TYPE_COOKIES, content_setting);
+  }
+  event_.Signal();
 }

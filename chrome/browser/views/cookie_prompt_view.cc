@@ -17,6 +17,7 @@
 #include "chrome/browser/profile.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/browser/views/cookie_info_view.h"
+#include "chrome/browser/views/database_open_info_view.h"
 #include "chrome/browser/views/local_storage_set_item_info_view.h"
 #include "chrome/browser/views/options/content_settings_window_view.h"
 #include "chrome/common/pref_names.h"
@@ -92,8 +93,8 @@ std::wstring CookiePromptView::GetWindowTitle() const {
 }
 
 void CookiePromptView::WindowClosing() {
-  if (!signaled_ && parent_->GetDelegate())
-    parent_->GetDelegate()->BlockSiteData(false);
+  if (!signaled_)
+    parent_->BlockSiteData(false);
   parent_->CompleteDialog();
 }
 
@@ -113,17 +114,12 @@ void CookiePromptView::ModifyExpireDate(bool session_expire) {
 void CookiePromptView::ButtonPressed(views::Button* sender,
                                      const views::Event& event) {
   if (sender == allow_button_) {
-    if (parent_->GetDelegate()) {
-      parent_->GetDelegate()->AllowSiteData(remember_radio_->checked(),
-                                            session_expire_);
-      signaled_ = true;
-    }
+    parent_->AllowSiteData(remember_radio_->checked(), session_expire_);
+    signaled_ = true;
     GetWindow()->Close();
   } else if (sender == block_button_) {
-    if (parent_->GetDelegate()) {
-      parent_->GetDelegate()->BlockSiteData(remember_radio_->checked());
-      signaled_ = true;
-    }
+    parent_->BlockSiteData(remember_radio_->checked());
+    signaled_ = true;
     GetWindow()->Close();
   }
 }
@@ -243,6 +239,12 @@ void CookiePromptView::Init() {
     view->SetFields(parent_->origin().host(),
                     parent_->local_storage_key(),
                     parent_->local_storage_value());
+    info_view_ = view;
+  } else if (type == CookiePromptModalDialog::DIALOG_TYPE_DATABASE) {
+    DatabaseOpenInfoView* view = new DatabaseOpenInfoView();
+    layout->AddView(view, 1, 1, GridLayout::FILL, GridLayout::CENTER);
+    view->SetFields(parent_->origin().host(),
+                    parent_->database_name());
     info_view_ = view;
   } else {
     NOTIMPLEMENTED();

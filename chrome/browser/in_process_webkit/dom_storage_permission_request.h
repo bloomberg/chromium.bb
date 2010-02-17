@@ -26,7 +26,6 @@ class DOMStoragePermissionRequest : public CookiePromptModalDialogDelegate {
 
 
   ContentSetting WaitOnResponse();
-  void SendResponse(ContentSetting content_setting, bool remember);
 
   const GURL& url() const { return url_; }
   const string16& key() const { return key_; }
@@ -40,6 +39,8 @@ class DOMStoragePermissionRequest : public CookiePromptModalDialogDelegate {
   virtual void BlockSiteData(bool remember);
 
  private:
+  void SendResponse(ContentSetting content_setting, bool remember);
+
   // The URL we need to get permission for.
   const GURL url_;
 

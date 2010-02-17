@@ -93,9 +93,6 @@ class DatabaseDispatcherHost
                                  int32 message_id);
   void OnDatabaseOpenFileBlocked(int32 message_id);
 
-  // Get the content setting based on an origin.  IO thread only.
-  ContentSetting GetContentSetting(const string16& origin);
-
   // The database tracker for the current profile.
   scoped_refptr<webkit_database::DatabaseTracker> db_tracker_;
 

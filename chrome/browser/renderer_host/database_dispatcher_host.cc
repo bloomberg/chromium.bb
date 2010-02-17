@@ -150,8 +150,13 @@ void DatabaseDispatcherHost::OnDatabaseOpenFile(const string16& vfs_file_name,
   scoped_ptr<WebSecurityOrigin> security_origin(
       WebSecurityOrigin::createFromDatabaseIdentifier(origin_identifier));
   string16 origin(security_origin->toString());
+  GURL url = GURL(origin);
 
-  ContentSetting content_setting = GetContentSetting(origin);
+  HostContentSettingsMap* host_content_settings_map = resource_message_filter_->
+      GetRequestContextForURL(url)->host_content_settings_map();
+  ContentSetting content_setting = host_content_settings_map->GetContentSetting(
+      url.host(), CONTENT_SETTINGS_TYPE_COOKIES);
+
   if (content_setting == CONTENT_SETTING_ASK) {
     // Create a task for each possible outcome.
     scoped_ptr<Task> on_allow(NewRunnableMethod(
@@ -161,10 +166,9 @@ void DatabaseDispatcherHost::OnDatabaseOpenFile(const string16& vfs_file_name,
         this, &DatabaseDispatcherHost::OnDatabaseOpenFileBlocked, message_id));
     // And then let the permission request object do the rest.
     scoped_refptr<DatabasePermissionRequest> request(
-        new DatabasePermissionRequest(origin,
-                                      database_name,
-                                      on_allow.release(),
-                                      on_block.release()));
+        new DatabasePermissionRequest(url, database_name, on_allow.release(),
+                                      on_block.release(),
+                                      host_content_settings_map));
     request->RequestPermission();
   } else if (content_setting == CONTENT_SETTING_ALLOW) {
     OnDatabaseOpenFileAllowed(vfs_file_name, desired_flags, message_id);
@@ -475,15 +479,4 @@ void DatabaseDispatcherHost::OnDatabaseOpenFileBlocked(int32 message_id) {
                             base::kInvalidPlatformFileValue);
   SendMessage(new ViewMsg_DatabaseOpenFileResponse(message_id,
                                                    response_params));
-}
-
-ContentSetting DatabaseDispatcherHost::GetContentSetting(
-    const string16& origin) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
-  GURL url = GURL(origin);
-  std::string host = url.host();
-  ChromeURLRequestContext* url_request_context =
-      resource_message_filter_->GetRequestContextForURL(url);
-  return url_request_context->host_content_settings_map()->GetContentSetting(
-       host, CONTENT_SETTINGS_TYPE_COOKIES);
 }
