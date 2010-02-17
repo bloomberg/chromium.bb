@@ -1872,6 +1872,14 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
 #endif  // No need to invoke SetFullscreen for linux as this code is executed
         // once we're already fullscreen on linux.
 
+#if defined(OS_CHROMEOS)
+  // Updating of commands for fullscreen mode is called from SetFullScreen on
+  // Wndows (see just above), but for ChromeOS, this method (ProcessFullScreen)
+  // is called after full screen has happened successfully (via GTK's
+  // window-state-change event), so we have to update commands here.
+  browser_->UpdateCommandsForFullscreenMode(fullscreen);
+#endif
+
   if (fullscreen) {
     bool is_kiosk =
         CommandLine::ForCurrentProcess()->HasSwitch(switches::kKioskMode);
