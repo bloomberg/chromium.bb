@@ -2946,5 +2946,30 @@ BUG35858 MAC : media/video-timeupdate-during-playback.html = CRASH PASS
 BUG35922 MAC : media/video-replaces-poster.html = IMAGE
 BUG35922 WIN LINUX : media/video-replaces-poster.html = IMAGE+TEXT
 
+// Newly added tests in r54844
+BUG_JPARENT LINUX WIN : svg/zoom/page/zoom-coords-viewattr-01-b.svg = IMAGE+TEXT
+BUG_JPARENT LINUX WIN : svg/zoom/page/zoom-foreignObject.svg = IMAGE+TEXT
+BUG_JPARENT LINUX WIN : svg/zoom/page/zoom-hixie-mixed-008.xml = IMAGE+TEXT
+BUG_JPARENT LINUX WIN : svg/zoom/page/zoom-hixie-mixed-009.xml = IMAGE+TEXT
+BUG_JPARENT LINUX WIN : svg/zoom/page/zoom-hixie-rendering-model-004.xhtml = IMAGE+TEXT
+BUG_JPARENT LINUX WIN : svg/zoom/page/zoom-svg-float-border-padding.xml = IMAGE+TEXT
+BUG_JPARENT LINUX WIN : svg/zoom/text/zoom-coords-viewattr-01-b.svg = IMAGE+TEXT
+BUG_JPARENT LINUX WIN : svg/zoom/text/zoom-foreignObject.svg = IMAGE+TEXT
+BUG_JPARENT LINUX WIN : svg/zoom/text/zoom-hixie-mixed-008.xml = IMAGE+TEXT
+BUG_JPARENT LINUX WIN : svg/zoom/text/zoom-hixie-mixed-009.xml = IMAGE+TEXT
+BUG_JPARENT LINUX WIN : svg/zoom/text/zoom-hixie-rendering-model-004.xhtml = IMAGE+TEXT
+BUG_JPARENT LINUX WIN : svg/zoom/text/zoom-svg-float-border-padding.xml = IMAGE+TEXT
+BUG_JPARENT LINUX WIN : svg/zoom/page/absolute-sized-document-no-scrollbars.svg = IMAGE
+BUG_JPARENT : svg/zoom/page/absolute-sized-document-scrollbars.svg = IMAGE
+BUG_JPARENT : svg/zoom/page/relative-sized-document-scrollbars.svg = IMAGE
+BUG_JPARENT LINUX WIN : svg/zoom/text/absolute-sized-document-no-scrollbars.svg = IMAGE
+BUG_JPARENT LINUX WIN : svg/zoom/text/absolute-sized-document-scrollbars.svg = IMAGE
+BUG_JPARENT LINUX WIN : svg/zoom/text/relative-sized-document-scrollbars.svg = IMAGE
+BUG_JPARENT MAC : svg/zoom/page/zoom-coords-viewattr-01-b.svg = IMAGE
+BUG_JPARENT MAC : svg/zoom/page/zoom-foreignObject.svg = IMAGE
+BUG_JPARENT MAC : svg/zoom/page/zoom-hixie-mixed-008.xml = IMAGE
+BUG_JPARENT MAC : svg/zoom/page/zoom-svg-float-border-padding.xml = IMAGE
+BUG_JPARENT MAC : svg/zoom/text/zoom-svg-float-border-padding.xml = IMAGE
+
 // Started failing with r54823
 BUG35923 LINUX : fast/backgrounds/animated-gif-as-background.html = IMAGE
