@@ -71,7 +71,7 @@ class AccessTokenStoreFactory
 
  protected:
   friend class base::RefCountedThreadSafe<AccessTokenStoreFactory>;
-  ~AccessTokenStoreFactory();
+  virtual ~AccessTokenStoreFactory();
 };
 
 // Creates a new access token store backed by the global chome prefs.

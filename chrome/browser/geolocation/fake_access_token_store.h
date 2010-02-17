@@ -21,7 +21,7 @@ class FakeAccessTokenStore : public AccessTokenStore {
   string16 access_token_set_;
 
  private:
-  ~FakeAccessTokenStore() {}
+  virtual ~FakeAccessTokenStore() {}
 };
 
 class FakeAccessTokenStoreFactory : public AccessTokenStoreFactory {

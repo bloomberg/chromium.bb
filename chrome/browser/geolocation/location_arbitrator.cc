@@ -29,7 +29,7 @@ class GeolocationArbitratorImpl
  public:
   GeolocationArbitratorImpl(AccessTokenStoreFactory* access_token_store_factory,
                             URLRequestContextGetter* context_getter);
-  ~GeolocationArbitratorImpl();
+  virtual ~GeolocationArbitratorImpl();
 
   // GeolocationArbitrator
   virtual void AddObserver(GeolocationArbitrator::Delegate* delegate,
