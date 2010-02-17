@@ -233,7 +233,7 @@ li.filebrowserow:hover span.namelink {
   -webkit-transition: color 0.0s ease-out ;
 }
 
-.selected {
+li.selected {
   background-color: #b1c8f2;
 }
 
@@ -708,6 +708,9 @@ function getDataForPath(path) {
       newfolderbutton.className = 'filebutton newfolderbutton disabled';
       var savebutton = $('savebutton');
       savebutton.className = 'filebutton openbutton disabled';
+    } else if (inSelectMode) {
+      var openbutton = $('openbutton');
+      openbutton.className = 'filebutton openbutton disabled';
     }
     chrome.send('getRoots', []);
   } else {
@@ -716,6 +719,9 @@ function getDataForPath(path) {
       newfolderbutton.className = 'filebutton newfolderbutton';
       var savebutton = $('savebutton');
       savebutton.className = 'filebutton openbutton';
+    } else if (inSelectMode) {
+      var openbutton = $('openbutton');
+      openbutton.className = 'filebutton openbutton';
     }
     chrome.send('getChildren', [path]);
   }
@@ -965,7 +971,6 @@ function load() {
   mainColumn = $('main');
   if(document.documentElement.clientWidth <= 600) {
     inFullMode = false;
-
     if (chrome.dialogArguments) {
       var args = JSON.parse(chrome.dialogArguments);
       if (args.type == 'open') {
@@ -1023,6 +1028,7 @@ function load() {
         var openmenu = document.createElement('div');
         openmenu.className = 'opencontainer';
         var openbutton = document.createElement('div');
+        openbutton.id = 'openbutton';
         openbutton.className = 'filebutton openbutton disabled';
         var cancelbutton = document.createElement('div');
         cancelbutton.className = 'filebutton cancelbutton';
