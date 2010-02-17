@@ -243,9 +243,6 @@ TEST_F(SyncableGeneralTest, ClientIndexRebuildsDeletedProperly) {
   }
 }
 
-
-namespace {
-
 // A Directory whose backing store always fails SaveChanges by returning false.
 class TestUnsaveableDirectory : public Directory {
  public:
@@ -316,11 +313,159 @@ class SyncableDirectoryTest : public testing::Test {
       bool set_server_fields, bool is_dir, bool add_to_lru, int64 *meta_handle);
 };
 
+TEST_F(SyncableDirectoryTest, TakeSnapshotGetsAllDirtyHandlesTest) {
+  const int metahandles_to_create = 100;
+  std::vector<int64> expected_dirty_metahandles;
+  {
+    WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
+    for (int i = 0; i < metahandles_to_create; i++) {
+      MutableEntry e(&trans, CREATE, trans.root_id(), "foo");
+      expected_dirty_metahandles.push_back(e.Get(META_HANDLE));
+      e.Put(IS_UNSYNCED, true);
+    }
+  }
+  // Fake SaveChanges() and make sure we got what we expected.
+  {
+    Directory::SaveChangesSnapshot snapshot;
+    AutoLock scoped_lock(dir_->kernel_->save_changes_mutex);
+    dir_->TakeSnapshotForSaveChanges(&snapshot);
+    // Make sure there's an entry for each new metahandle.  Make sure all
+    // entries are marked dirty.
+    ASSERT_EQ(expected_dirty_metahandles.size(), snapshot.dirty_metas.size());
+    for (OriginalEntries::const_iterator i = snapshot.dirty_metas.begin();
+        i != snapshot.dirty_metas.end(); ++i) {
+      ASSERT_TRUE(i->is_dirty());
+    }
+    dir_->VacuumAfterSaveChanges(snapshot);
+  }
+  // Put a new value with existing transactions as well as adding new ones.
+  {
+    WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
+    std::vector<int64> new_dirty_metahandles;
+    for (std::vector<int64>::const_iterator i =
+        expected_dirty_metahandles.begin();
+        i != expected_dirty_metahandles.end(); ++i) {
+        // Change existing entries to directories to dirty them.
+        MutableEntry e1(&trans, GET_BY_HANDLE, *i);
+        e1.Put(IS_DIR, true);
+        e1.Put(IS_UNSYNCED, true);
+        // Add new entries
+        MutableEntry e2(&trans, CREATE, trans.root_id(), "bar");
+        e2.Put(IS_UNSYNCED, true);
+        new_dirty_metahandles.push_back(e2.Get(META_HANDLE));
+    }
+    expected_dirty_metahandles.insert(expected_dirty_metahandles.end(),
+        new_dirty_metahandles.begin(), new_dirty_metahandles.end());
+  }
+  // Fake SaveChanges() and make sure we got what we expected.
+  {
+    Directory::SaveChangesSnapshot snapshot;
+    AutoLock scoped_lock(dir_->kernel_->save_changes_mutex);
+    dir_->TakeSnapshotForSaveChanges(&snapshot);
+    // Make sure there's an entry for each new metahandle.  Make sure all
+    // entries are marked dirty.
+    EXPECT_EQ(expected_dirty_metahandles.size(), snapshot.dirty_metas.size());
+    for (OriginalEntries::const_iterator i = snapshot.dirty_metas.begin();
+        i != snapshot.dirty_metas.end(); ++i) {
+      EXPECT_TRUE(i->is_dirty());
+    }
+    dir_->VacuumAfterSaveChanges(snapshot);
+  }
+}
+
+TEST_F(SyncableDirectoryTest, TakeSnapshotGetsOnlyDirtyHandlesTest) {
+  const int metahandles_to_create = 100;
+  const unsigned int number_changed = 100u;  // half of 2 * metahandles_to_create
+  std::vector<int64> expected_dirty_metahandles;
+  {
+    WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
+    for (int i = 0; i < metahandles_to_create; i++) {
+      MutableEntry e(&trans, CREATE, trans.root_id(), "foo");
+      expected_dirty_metahandles.push_back(e.Get(META_HANDLE));
+      e.Put(IS_UNSYNCED, true);
+    }
+  }
+  dir_->SaveChanges();
+  // Put a new value with existing transactions as well as adding new ones.
+  {
+    WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
+    std::vector<int64> new_dirty_metahandles;
+    for (std::vector<int64>::const_iterator i =
+        expected_dirty_metahandles.begin();
+        i != expected_dirty_metahandles.end(); ++i) {
+        // Change existing entries to directories to dirty them.
+        MutableEntry e1(&trans, GET_BY_HANDLE, *i);
+        ASSERT_TRUE(e1.good());
+        e1.Put(IS_DIR, true);
+        e1.Put(IS_UNSYNCED, true);
+        // Add new entries
+        MutableEntry e2(&trans, CREATE, trans.root_id(), "bar");
+        e2.Put(IS_UNSYNCED, true);
+        new_dirty_metahandles.push_back(e2.Get(META_HANDLE));
+    }
+    expected_dirty_metahandles.insert(expected_dirty_metahandles.end(),
+        new_dirty_metahandles.begin(), new_dirty_metahandles.end());
+  }
+  dir_->SaveChanges();
+  // Don't make any changes whatsoever and ensure nothing comes back.
+  {
+    WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
+    for (std::vector<int64>::const_iterator i =
+        expected_dirty_metahandles.begin();
+        i != expected_dirty_metahandles.end(); ++i) {
+      MutableEntry e(&trans, GET_BY_HANDLE, *i);
+      ASSERT_TRUE(e.good());
+      // We aren't doing anything to dirty these entries.
+    }
+  }
+  // Fake SaveChanges() and make sure we got what we expected.
+  {
+    Directory::SaveChangesSnapshot snapshot;
+    AutoLock scoped_lock(dir_->kernel_->save_changes_mutex);
+    dir_->TakeSnapshotForSaveChanges(&snapshot);
+    // Make sure there are no dirty_metahandles.
+    EXPECT_EQ(0u, snapshot.dirty_metas.size());
+    dir_->VacuumAfterSaveChanges(snapshot);
+  }
+  {
+    WriteTransaction trans(dir_.get(), UNITTEST, __FILE__, __LINE__);
+    bool should_change = false;
+    for (std::vector<int64>::const_iterator i =
+        expected_dirty_metahandles.begin();
+        i != expected_dirty_metahandles.end(); ++i) {
+        // Maybe change entries by flipping IS_DIR.
+        MutableEntry e(&trans, GET_BY_HANDLE, *i);
+        ASSERT_TRUE(e.good());
+        should_change = !should_change;
+        if (should_change) {
+          bool not_dir = !e.Get(IS_DIR);
+          e.Put(IS_DIR, not_dir);
+          e.Put(IS_UNSYNCED, true);
+        }
+    }
+  }
+  // Fake SaveChanges() and make sure we got what we expected.
+  {
+    Directory::SaveChangesSnapshot snapshot;
+    AutoLock scoped_lock(dir_->kernel_->save_changes_mutex);
+    dir_->TakeSnapshotForSaveChanges(&snapshot);
+    // Make sure there's an entry for each changed metahandle.  Make sure all
+    // entries are marked dirty.
+    EXPECT_EQ(number_changed, snapshot.dirty_metas.size());
+    for (OriginalEntries::const_iterator i = snapshot.dirty_metas.begin();
+        i != snapshot.dirty_metas.end(); ++i) {
+      EXPECT_TRUE(i->is_dirty());
+    }
+    dir_->VacuumAfterSaveChanges(snapshot);
+  }
+}
+
 const FilePath::CharType SyncableDirectoryTest::kFilePath[] =
     FILE_PATH_LITERAL("Test.sqlite3");
 const char SyncableDirectoryTest::kName[] = "Foo";
 const Id SyncableDirectoryTest::kId(TestIdFactory::FromNumber(-99));
 
+namespace {
 TEST_F(SyncableDirectoryTest, TestBasicLookupNonExistantID) {
   ReadTransaction rtrans(dir_.get(), __FILE__, __LINE__);
   Entry e(&rtrans, GET_BY_ID, kId);
@@ -942,6 +1087,8 @@ TEST_F(SyncableDirectoryTest, GetModelType) {
   }
 }
 
+}  // namespace
+
 void SyncableDirectoryTest::ValidateEntry(BaseTransaction* trans, int64 id,
     bool check_name, string name, int64 base_version, int64 server_version,
     bool is_del) {
@@ -954,6 +1101,8 @@ void SyncableDirectoryTest::ValidateEntry(BaseTransaction* trans, int64 id,
   ASSERT_TRUE(server_version == e.Get(SERVER_VERSION));
   ASSERT_TRUE(is_del == e.Get(IS_DEL));
 }
+
+namespace {
 
 TEST(SyncableDirectoryManager, TestFileRelease) {
   DirectoryManager dm(FilePath(FILE_PATH_LITERAL(".")));

@@ -29,6 +29,7 @@
 #include "chrome/browser/sync/util/event_sys.h"
 #include "chrome/browser/sync/util/row_iterator.h"
 #include "chrome/browser/sync/util/sync_types.h"
+#include "testing/gtest/include/gtest/gtest_prod.h"  // For FRIEND_TEST
 
 struct PurgeInfo;
 
@@ -648,6 +649,10 @@ class Directory {
   friend class ScopedKernelLock;
   friend class ScopedKernelUnlock;
   friend class WriteTransaction;
+  friend class SyncableDirectoryTest;
+  FRIEND_TEST(SyncableDirectoryTest, TakeSnapshotGetsAllDirtyHandlesTest);
+  FRIEND_TEST(SyncableDirectoryTest, TakeSnapshotGetsOnlyDirtyHandlesTest);
+
  public:
   // Various data that the Directory::Kernel we are backing (persisting data
   // for) needs saved across runs of the application.
@@ -736,6 +741,8 @@ class Directory {
   EntryKernel* GetRootEntry();
   bool ReindexId(EntryKernel* const entry, const Id& new_id);
   void ReindexParentId(EntryKernel* const entry, const Id& new_parent_id);
+  void AddToDirtyMetahandles(int64 handle);
+  void ClearDirtyMetahandles();
 
   // These don't do semantic checking.
   // The semantic checking is implemented higher up.
@@ -930,12 +937,12 @@ class Directory {
     EntryKernel needle;
     ExtendedAttributes* const extended_attributes;
 
-    // 2 in-memory indices on bits used extremely frequently by the syncer.
+    // 3 in-memory indices on bits used extremely frequently by the syncer.
     MetahandleSet* const unapplied_update_metahandles;
     MetahandleSet* const unsynced_metahandles;
-    // TODO(timsteele): Add a dirty_metahandles index as we now may want to
-    // optimize the SaveChanges work of scanning all entries to find dirty ones
-    // due to the entire entry domain now being in-memory.
+    // Contains metahandles that are most likely dirty (though not
+    // necessarily).  Dirtyness is confirmed in TakeSnapshotForSaveChanges().
+    MetahandleSet* const dirty_metahandles;
 
     // TODO(ncarter): Figure out what the hell this is, and comment it.
     Channel* const channel;

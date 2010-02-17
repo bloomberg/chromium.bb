@@ -166,6 +166,7 @@ Directory::Kernel::Kernel(const FilePath& db_path,
       extended_attributes(new ExtendedAttributes),
       unapplied_update_metahandles(new MetahandleSet),
       unsynced_metahandles(new MetahandleSet),
+      dirty_metahandles(new MetahandleSet),
       channel(new Directory::Channel(syncable::DIRECTORY_DESTROYED)),
       changes_channel(new Directory::ChangesChannel(kShutdownChangesEvent)),
       last_sync_timestamp_(info.kernel_info.last_sync_timestamp),
@@ -196,6 +197,7 @@ Directory::Kernel::~Kernel() {
   delete changes_channel;
   delete unsynced_metahandles;
   delete unapplied_update_metahandles;
+  delete dirty_metahandles;
   delete extended_attributes;
   delete parent_id_child_index;
   delete client_tag_index;
@@ -232,6 +234,7 @@ void Directory::InitializeIndices() {
       kernel_->unsynced_metahandles->insert(entry->ref(META_HANDLE));
     if (entry->ref(IS_UNAPPLIED_UPDATE))
       kernel_->unapplied_update_metahandles->insert(entry->ref(META_HANDLE));
+    DCHECK(!entry->is_dirty());
   }
 }
 
@@ -484,6 +487,16 @@ void Directory::ReindexParentId(EntryKernel* const entry,
   CHECK(kernel_->parent_id_child_index->insert(entry).second);
 }
 
+void Directory::AddToDirtyMetahandles(int64 handle) {
+  kernel_->transaction_mutex.AssertAcquired();
+  kernel_->dirty_metahandles->insert(handle);
+}
+
+void Directory::ClearDirtyMetahandles() {
+  kernel_->transaction_mutex.AssertAcquired();
+  kernel_->dirty_metahandles->clear();
+}
+
 // static
 bool Directory::SafeToPurgeFromMemory(const EntryKernel* const entry) {
   return entry->ref(IS_DEL) && !entry->is_dirty() && !entry->ref(SYNCING) &&
@@ -495,14 +508,17 @@ void Directory::TakeSnapshotForSaveChanges(SaveChangesSnapshot* snapshot) {
   ScopedKernelLock lock(this);
   // Deep copy dirty entries from kernel_->metahandles_index into snapshot and
   // clear dirty flags.
-  for (MetahandlesIndex::iterator i = kernel_->metahandles_index->begin();
-       i != kernel_->metahandles_index->end(); ++i) {
-    EntryKernel* entry = *i;
+
+  for (MetahandleSet::const_iterator i = kernel_->dirty_metahandles->begin();
+       i != kernel_->dirty_metahandles->end(); ++i) {
+    EntryKernel* entry = GetEntryByHandle(*i, &lock);
+    // Skip over false positives; it happens relatively infrequently.
     if (!entry->is_dirty())
       continue;
     snapshot->dirty_metas.insert(snapshot->dirty_metas.end(), *entry);
     entry->clear_dirty();
   }
+  ClearDirtyMetahandles();
 
   // Do the same for extended attributes.
   for (ExtendedAttributes::iterator i = kernel_->extended_attributes->begin();
@@ -985,6 +1001,11 @@ WriteTransaction::~WriteTransaction() {
       directory()->CheckTreeInvariants(this, full_scan);
     else
       directory()->CheckTreeInvariants(this, originals_);
+  }
+
+  for (OriginalEntries::const_iterator i = originals_->begin();
+      i != originals_->end(); ++i) {
+    directory()->AddToDirtyMetahandles(i->ref(META_HANDLE));
   }
   UnlockAndLog(originals_);
 }
