@@ -951,7 +951,7 @@ TEST_F(RenderViewTest, JSBlockSentAfterPageLoad) {
   render_thread_.sink().ClearMessages();
 
   // 3. Reload page.
-  ViewMsg_Navigate_Params params;
+  ViewMsg_Navigate_Params params = { 0 };
   std::string url_str = "data:text/html;charset=utf-8,";
   url_str.append(html);
   GURL url(url_str);
