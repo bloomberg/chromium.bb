@@ -164,10 +164,33 @@ void GlesVideoRenderer::Paint() {
                              frame_in.format == media::VideoSurface::YV16) ?
           frame_in.height : frame_in.height / 2;
       glActiveTexture(GL_TEXTURE0 + i);
-      // No GL_UNPACK_ROW_LENGTH in GLES2.
-      // glPixelStorei(GL_UNPACK_ROW_LENGTH, frame_in.strides[i]);
+      // GLES2 supports a fixed set of unpack alignments that should match most
+      // of the time what ffmpeg outputs.
+      // TODO(piman): check if it is more efficient to prefer higher
+      // alignments.
+      unsigned int stride = frame_in.strides[i];
+      uint8* data = frame_in.data[i];
+      if (stride == width) {
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+      } else if (stride == ((width + 1) & ~1)) {
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 2);
+      } else if (stride == ((width + 3) & ~3)) {
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 4);
+      } else if (stride == ((width + 7) & ~7)) {
+        glPixelStorei(GL_UNPACK_ALIGNMENT, 8);
+      } else {
+        // Otherwise do it line-by-line.
+        glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0,
+                     GL_LUMINANCE, GL_UNSIGNED_BYTE, NULL);
+        for (unsigned int y = 0; y < height; ++y) {
+          glTexSubImage2D(GL_TEXTURE_2D, 0, 0, y, width, 1,
+                          GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
+          data += stride;
+        }
+        continue;
+      }
       glTexImage2D(GL_TEXTURE_2D, 0, GL_LUMINANCE, width, height, 0,
-                   GL_LUMINANCE, GL_UNSIGNED_BYTE, frame_in.data[i]);
+                   GL_LUMINANCE, GL_UNSIGNED_BYTE, data);
     }
     video_frame->Unlock();
   } else {
