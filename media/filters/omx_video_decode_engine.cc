@@ -57,7 +57,9 @@ void OmxVideoDecodeEngine::Initialize(AVStream* stream, Task* done_cb) {
   memset(&output_format, 0, sizeof(output_format));
   input_format.codec = OmxConfigurator::kCodecH264;
   output_format.codec = OmxConfigurator::kCodecRaw;
-  omx_codec_->Setup(new OmxDecoderConfigurator(input_format, output_format));
+  omx_configurator_.reset(
+      new OmxDecoderConfigurator(input_format, output_format));
+  omx_codec_->Setup(omx_configurator_.get(), NULL);
   omx_codec_->SetErrorCallback(
       NewCallback(this, &OmxVideoDecodeEngine::OnHardwareError));
   omx_codec_->SetFormatCallback(
@@ -143,8 +145,39 @@ void OmxVideoDecodeEngine::Stop(Callback0::Type* done_cb) {
   state_ = kStopped;
 }
 
-void OmxVideoDecodeEngine::OnReadComplete(uint8* buffer, int size) {
+bool OmxVideoDecodeEngine::AllocateEGLImages(
+    int width, int height, std::vector<EGLImageKHR>* images) {
+  NOTREACHED() << "This method is never used";
+  return false;
+}
+
+void OmxVideoDecodeEngine::ReleaseEGLImages(
+    const std::vector<EGLImageKHR>& images) {
+  NOTREACHED() << "This method is never used";
+}
+
+void OmxVideoDecodeEngine::UseThisBuffer(int buffer_id,
+                                         OMX_BUFFERHEADERTYPE* buffer) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
+  omx_buffers_.push_back(std::make_pair(buffer_id, buffer));
+}
+
+void OmxVideoDecodeEngine::StopUsingThisBuffer(int id) {
+  DCHECK_EQ(message_loop_, MessageLoop::current());
+  omx_buffers_.erase(FindBuffer(id));
+}
+
+void OmxVideoDecodeEngine::BufferReady(int buffer_id,
+                                       BufferUsedCallback* callback) {
+  DCHECK_EQ(message_loop_, MessageLoop::current());
+  CHECK(buffer_id != OmxCodec::kEosBuffer);
+  CHECK(callback);
+
+  // Obtain the corresponding OMX_BUFFERHEADERTYPE.
+  OmxBufferList::iterator i = FindBuffer(buffer_id);
+  uint8* buffer = i->second->pBuffer;
+  int size = i->second->nFilledLen;
+
   if ((size_t)size != frame_bytes_) {
     LOG(ERROR) << "Read completed with weird size: " << size;
   }
@@ -183,7 +216,17 @@ void OmxVideoDecodeEngine::OnReadComplete(uint8* buffer, int size) {
            frame->data + pixels + pixels /4,
            pixels / 4);
   }
+
+  // Notify the read request to this object has been fulfilled.
   request.done_cb->Run();
+
+  // Notify OmxCodec that we have finished using this buffer.
+  callback->RunWithParams(MakeTuple(buffer_id));
+}
+
+void OmxVideoDecodeEngine::OnReadComplete(
+    int buffer_id, OmxOutputSink::BufferUsedCallback* callback) {
+  BufferReady(buffer_id, callback);
 }
 
 bool OmxVideoDecodeEngine::IsFrameComplete(const YuvFrame* frame) {
@@ -210,6 +253,17 @@ void OmxVideoDecodeEngine::MergeBytesFrameQueue(uint8* buffer, int size) {
     memcpy(frame->data, buffer, amount_to_copy);
     amount_left -= amount_to_copy;
   }
+}
+
+OmxVideoDecodeEngine::OmxBufferList::iterator
+OmxVideoDecodeEngine::FindBuffer(int buffer_id) {
+  for (OmxVideoDecodeEngine::OmxBufferList::iterator i = omx_buffers_.begin();
+       i != omx_buffers_.end(); ++i) {
+    if (i->first == buffer_id)
+      return i;
+  }
+  NOTREACHED() << "Invalid buffer id received";
+  return omx_buffers_.end();
 }
 
 }  // namespace media

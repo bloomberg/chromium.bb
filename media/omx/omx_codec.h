@@ -10,19 +10,56 @@
 // Operations on this object are all asynchronous and this object
 // requires a message loop that it works on.
 //
+// OWNERSHIP
+//
+// The OmxCodec works with two external objects, they are:
+// 1. OmxConfigurator
+//    This object is given to OmxCodec to perform port configuration.
+// 2. OmxOutputSink
+//    This object is given to OmxCodec to perform output buffer negotiation.
+//
+// These two external objects are provided and destroyed externally. Their
+// references are given to OmxCodec and client application is responsible
+// for cleaning them.
+//
+// INTERACTION WITH EXTERNAL OBJECTS
+//
+//         ................                    ............
+//        |  Configurator  |  <-------------  |  OmxCodec  |
+//         ................                    ............
+//                   Read / Feed  -----------'     '
+//                   .-----------'                 v Buffer Allocation
+//         ..........                         ...............
+//        |  Client  |  ------------------>  |  OutputSink   |
+//         ..........      Buffer Ready       ...............
+//
+// THREADING
+//
+// OmxCodec is given a message loop to run on. There is a strong gurantee
+// that all callbacks given to it will be executed on this message loop.
+// Communicatations with OmxConfigurator and OmxOutputSink are also done
+// on this thread.
+//
+// Public methods can be called on any thread.
+//
 // USAGES
 //
 // // Initialization.
 // MessageLoop message_loop;
 // OmxCodec* decoder = new OmxCodec(&message_loop);
+//
 // OmxConfigurator::MediaFormat input_format, output_format;
 // input_format.codec = OmxCodec::kCodecH264;
 // output_format.codec = OmxCodec::kCodecRaw;
-// decoder->Setup(new OmxDecoderConfigurator(input_format, output_format));
+// scoped_ptr<OmxConfigurator> configurator(
+//     new OmxDecoderConfigurator(input_format, output_format));
+// scoped_ptr<OmxOutputSink> output_sink(new CustomOutputSink());
+//
+// decoder->Setup(configurator.get(), output_sink.get());
 // decoder->SetErrorCallback(NewCallback(this, &Client::ErrorCallback));
 // decoder->SetFormatCallback(NewCallback(this, &Client::FormatCallback));
 //
-// // Start is asynchronous. But we don't need to wait for it to proceed.
+// // Start is asynchronous. We don't need to wait for it to proceed.
 // decoder->Start();
 //
 // // We can start giving buffer to the decoder right after start. It will
@@ -42,10 +79,24 @@
 // A typical FeedCallback will look like:
 // void Client::FeedCallback(OmxInputBuffer* buffer) {
 //   // We have read to the end so stop feeding.
-//   if (buffer->Eos())
+//   if (buffer->IsEndOfStream())
 //     return;
 //   PrepareInputBuffer(buffer);
 //   decoder->Feed(buffer, NewCallback(this, &Client::FeedCallback));
+// }
+//
+// A typical ReadCallback will look like:
+// void Client::ReadCallback(int buffer_id,
+//     OmxOutputSink::BufferUsedCallback* callback) {
+//   // Detect end-of-stream state.
+//   if (buffer_id == OmxCodec::kEosBuffer)
+//     return;
+//
+//   // Issue a new read immediately.
+//   decoder->Read(NewCallback(this, &Client::ReadCallback));
+//
+//   // Pass the buffer to OmxOutputSink.
+//   output_sink->BufferReady(buffer_id, callback);
 // }
 //
 // EXTERNAL STATES
@@ -91,6 +142,7 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "media/omx/omx_configurator.h"
+#include "media/omx/omx_output_sink.h"
 #include "third_party/openmax/il/OMX_Component.h"
 #include "third_party/openmax/il/OMX_Core.h"
 #include "third_party/openmax/il/OMX_Video.h"
@@ -108,7 +160,8 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
       const OmxConfigurator::MediaFormat&,
       const OmxConfigurator::MediaFormat&>::Type FormatCallback;
   typedef Callback1<OmxInputBuffer*>::Type FeedCallback;
-  typedef Callback2<uint8*, int>::Type ReadCallback;
+  typedef Callback2<int,
+      OmxOutputSink::BufferUsedCallback*>::Type ReadCallback;
   typedef Callback0::Type Callback;
 
   // Initialize an OmxCodec object that runs on |message_loop|. It is
@@ -116,9 +169,9 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   explicit OmxCodec(MessageLoop* message_loop);
   virtual ~OmxCodec();
 
-  // Setup OmxCodec using |configurator|. Ownership of |configurator|
-  // is passed to this class. It is then used for configuration.
-  void Setup(OmxConfigurator* configurator);
+  // Setup OmxCodec using |configurator|. |configurator| and |output_sink|
+  // are not owned by this class and should be cleaned up externally.
+  void Setup(OmxConfigurator* configurator, OmxOutputSink* output_sink);
 
   // Set the error callback. In case of error the callback will be called.
   void SetErrorCallback(Callback* callback);
@@ -136,6 +189,14 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
 
   // Read decoded buffer from the decoder. When there is decoded data
   // ready to be consumed |callback| is called.
+  // The callback will be called with two parameters:
+  // 1. Buffer ID.
+  //    To identify the buffer which contains the decoded frame. If
+  //    the value is kEosBuffer then end-of-stream has been reached.
+  // 2. Buffer used callback
+  //    When the buffer is used, client should call this callback
+  //    with the given buffer id to return the buffer to OmxCodec.
+  //    This callback can be made from any thread.
   void Read(ReadCallback* callback);
 
   // Feed the decoder with |buffer|. When the decoder has consumed the
@@ -147,6 +208,8 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
 
   // Subclass can provide a different value.
   virtual int current_omx_spec_version() const { return 0x00000101; }
+
+  static const int kEosBuffer = -1;
 
  private:
   enum State {
@@ -241,7 +304,15 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
 
   // Methods to handle outgoing (decoded) buffers.
   void FillBufferCompleteTask(OMX_BUFFERHEADERTYPE* buffer);
-  void FillBufferTask();
+
+  // Take on decoded buffer to fulfill one read request.
+  void FulfillOneRead();
+
+  // Callback method to be called from a buffer output sink.
+  // BufferUsedTask() is the corresponding task that runs on
+  // |message_loop_|.
+  void BufferUsedCallback(int buffer_id);
+  void BufferUsedTask(int buffer_id);
 
   // Methods that do initial reads to kick start the decoding process.
   void InitialFillBuffer();
@@ -300,10 +371,9 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   State state_;
   State next_state_;
 
-  std::string role_name_;
-  std::string component_name_;
   OMX_COMPONENTTYPE* component_handle_;
-  scoped_ptr<OmxConfigurator> configurator_;
+  OmxConfigurator* configurator_;
+  OmxOutputSink* output_sink_;
   MessageLoop* message_loop_;
 
   scoped_ptr<FormatCallback> format_callback_;
@@ -315,9 +385,19 @@ class OmxCodec : public base::RefCountedThreadSafe<OmxCodec> {
   std::queue<InputUnit> input_queue_;
   std::queue<ReadCallback*> output_queue_;
 
-  // Input and output buffers that we can use to feed the decoder.
+  // Available input OpenMAX buffers that we can use to issue
+  // OMX_EmptyThisBuffer() call.
   std::queue<OMX_BUFFERHEADERTYPE*> available_input_buffers_;
-  std::queue<OMX_BUFFERHEADERTYPE*> available_output_buffers_;
+
+  // A queue of buffers that carries decoded video frames. They are
+  // ready to return to client.
+  // TOOD(hclam): extract it to a separate class.
+  std::queue<int> output_buffers_ready_;
+
+  // A set of buffers that are currently in use by the client.
+  // TODO(hclam): extract it to a separate class.
+  typedef std::vector<int> OutputBuffersInUseSet;
+  OutputBuffersInUseSet output_buffers_in_use_;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(OmxCodec);

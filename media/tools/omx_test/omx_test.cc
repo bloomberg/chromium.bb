@@ -19,20 +19,22 @@
 #include "media/filters/bitstream_converter.h"
 #include "media/omx/omx_codec.h"
 #include "media/omx/omx_input_buffer.h"
+#include "media/omx/omx_output_sink.h"
 #include "media/tools/omx_test/color_space_util.h"
 #include "media/tools/omx_test/file_reader_util.h"
-#include "media/tools/omx_test/file_writer_util.h"
+#include "media/tools/omx_test/file_sink.h"
 
 using media::BlockFileReader;
 using media::FFmpegFileReader;
 using media::FileReader;
-using media::FileWriter;
+using media::FileSink;
 using media::H264FileReader;
 using media::OmxCodec;
 using media::OmxConfigurator;
 using media::OmxDecoderConfigurator;
 using media::OmxEncoderConfigurator;
 using media::OmxInputBuffer;
+using media::OmxOutputSink;
 using media::YuvFileReader;
 
 // This is the driver object to feed the decoder with data from a file.
@@ -40,11 +42,11 @@ using media::YuvFileReader;
 // decoder.
 class TestApp {
  public:
-  TestApp(OmxConfigurator* configurator, FileReader* file_reader,
-          FileWriter* file_writer)
+  TestApp(OmxConfigurator* configurator, FileSink* file_sink,
+          FileReader* file_reader)
       : configurator_(configurator),
         file_reader_(file_reader),
-        file_writer_(file_writer),
+        file_sink_(file_sink),
         stopped_(false),
         error_(false) {
   }
@@ -56,7 +58,7 @@ class TestApp {
       return false;;
     }
 
-    if (!file_writer_->Initialize()) {
+    if (!file_sink_->Initialize()) {
       LOG(ERROR) << "can't initialize output writer";
       return false;
     }
@@ -92,7 +94,7 @@ class TestApp {
     DCHECK_EQ(input_format.video_header.height,
               output_format.video_header.height);
 
-    file_writer_->UpdateSize(input_format.video_header.width,
+    file_sink_->UpdateSize(input_format.video_header.width,
                              input_format.video_header.height);
   }
 
@@ -107,7 +109,8 @@ class TestApp {
       FeedInputBuffer();
   }
 
-  void ReadCompleteCallback(uint8* buffer, int size) {
+  void ReadCompleteCallback(int buffer,
+                            FileSink::BufferUsedCallback* callback) {
     // This callback is received when the decoder has completed a decoding
     // task and given us some output data. The buffer is owned by the decoder.
     if (stopped_ || error_)
@@ -117,7 +120,7 @@ class TestApp {
       first_sample_delivered_time_ = base::TimeTicks::HighResNow();
 
     // If we are readding to the end, then stop.
-    if (!size) {
+    if (buffer == OmxCodec::kEosBuffer) {
       codec_->Stop(NewCallback(this, &TestApp::StopCallback));
       return;
     }
@@ -125,12 +128,11 @@ class TestApp {
     // Read one more from the decoder.
     codec_->Read(NewCallback(this, &TestApp::ReadCompleteCallback));
 
-    if (file_writer_.get())
-      file_writer_->Write(buffer, size);
+    if (file_sink_.get())
+      file_sink_->BufferReady(buffer, callback);
 
     // could OMX IL return patial sample for decoder?
     frame_count_++;
-    bit_count_ += size << 3;
   }
 
   void FeedInputBuffer() {
@@ -147,7 +149,7 @@ class TestApp {
     // Setup the |codec_| with the message loop of the current thread. Also
     // setup component name, codec format and callbacks.
     codec_ = new OmxCodec(&message_loop_);
-    codec_->Setup(configurator_.release());
+    codec_->Setup(configurator_.get(), file_sink_.get());
     codec_->SetErrorCallback(NewCallback(this, &TestApp::ErrorCallback));
     codec_->SetFormatCallback(NewCallback(this, &TestApp::FormatCallback));
 
@@ -167,7 +169,6 @@ class TestApp {
   void StartProfiler() {
     start_time_ = base::TimeTicks::HighResNow();
     frame_count_ = 0;
-    bit_count_ = 0;
   }
 
   void StopProfiler() {
@@ -184,7 +185,6 @@ class TestApp {
     printf("\n<<< fps : %d >>>", static_cast<int>(fps));
     printf("\n<<< initial delay used(us): %d >>>",
            static_cast<int>(delay.InMicroseconds()));
-    // printf("\n<<< bitrate>>> : %I64d\n", bit_count_ * 1000000 / micro_sec);
     printf("\n");
   }
 
@@ -192,7 +192,7 @@ class TestApp {
   MessageLoop message_loop_;
   scoped_ptr<OmxConfigurator> configurator_;
   scoped_ptr<FileReader> file_reader_;
-  scoped_ptr<FileWriter> file_writer_;
+  scoped_ptr<FileSink> file_sink_;
 
   // Internal states for execution.
   bool stopped_;
@@ -202,7 +202,6 @@ class TestApp {
   base::TimeTicks start_time_;
   base::TimeTicks first_sample_delivered_time_;
   int frame_count_;
-  int bit_count_;
 };
 
 static std::string GetStringSwitch(const char* name) {
@@ -360,12 +359,11 @@ int main(int argc, char** argv) {
   else
     configurator = new OmxDecoderConfigurator(input, output);
 
-  // Create a file writer.
-  FileWriter* file_writer =
-      new FileWriter(output_filename, copy, enable_csc);
+  // Create a file sink.
+  FileSink* file_sink = new FileSink(output_filename, copy, enable_csc);
 
   // Create a test app object and initialize it.
-  TestApp test(configurator, file_reader, file_writer);
+  TestApp test(configurator, file_sink, file_reader);
   if (!test.Initialize()) {
     LOG(ERROR) << "can't initialize this application";
     return -1;
