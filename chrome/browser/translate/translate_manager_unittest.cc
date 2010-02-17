@@ -23,6 +23,12 @@ class TranslateManagerTest : public RenderViewHostTestHarness {
                           const std::wstring& contents,
                           const std::string& lang) {
     NavigateAndCommit(url);
+    SimulateOnPageContents(url, page_id, contents, lang);
+  }
+
+  void SimulateOnPageContents(const GURL& url, int page_id,
+                              const std::wstring& contents,
+                              const std::string& lang) {
     rvh()->TestOnMessageReceived(ViewHostMsg_PageContents(0, url, page_id,
                                                           contents, lang));
   }
@@ -121,7 +127,7 @@ TEST_F(TranslateManagerTest, NormalTranslate) {
   EXPECT_EQ(new_target_lang, target_lang);
 }
 
-// Test auto-translate on page.
+// Tests auto-translate on page.
 TEST_F(TranslateManagerTest, AutoTranslateOnNavigate) {
   // Simulate navigating to a page and gettings its language.
   SimulateNavigation(GURL("http://www.google.fr"), 0, L"Le Google", "fr");
@@ -152,4 +158,34 @@ TEST_F(TranslateManagerTest, AutoTranslateOnNavigate) {
 
   // This should not have triggered a translate.
   EXPECT_FALSE(GetTranslateMessage(&page_id, &original_lang, &target_lang));
+}
+
+// Tests that multiple OnPageContents do not cause multiple infobars.
+TEST_F(TranslateManagerTest, MultipleOnPageContents) {
+  // Simulate navigating to a page and gettings its language.
+  SimulateNavigation(GURL("http://www.google.fr"), 0, L"Le Google", "fr");
+
+  // Simulate clicking 'Nope' (don't translate).
+  ASSERT_EQ(1, contents()->infobar_delegate_count());
+  TranslateInfoBarDelegate* infobar =
+      contents()->GetInfoBarDelegateAt(0)->AsTranslateInfoBarDelegate();
+  ASSERT_TRUE(infobar != NULL);
+  infobar->TranslationDeclined();
+  contents()->RemoveInfoBar(infobar);
+  EXPECT_EQ(0, contents()->infobar_delegate_count());
+
+  // Send a new PageContents, we should not show an infobar.
+  SimulateOnPageContents(GURL("http://www.google.fr"), 0, L"Le Google", "fr");
+  EXPECT_EQ(0, contents()->infobar_delegate_count());
+
+  // Do the same steps but simulate closing the infobar this time.
+  SimulateNavigation(GURL("http://www.youtube.fr"), 1, L"Le YouTube", "fr");
+  ASSERT_EQ(1, contents()->infobar_delegate_count());
+  infobar = contents()->GetInfoBarDelegateAt(0)->AsTranslateInfoBarDelegate();
+  ASSERT_TRUE(infobar != NULL);
+  infobar->InfoBarDismissed();  // Simulates closing the infobar.
+  contents()->RemoveInfoBar(infobar);
+  EXPECT_EQ(0, contents()->infobar_delegate_count());
+  SimulateOnPageContents(GURL("http://www.youtube.fr"), 1, L"Le YouTube", "fr");
+  EXPECT_EQ(0, contents()->infobar_delegate_count());
 }

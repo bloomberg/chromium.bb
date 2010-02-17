@@ -26,6 +26,15 @@ bool TranslateInfoBarDelegate::EqualsDelegate(InfoBarDelegate* delegate) const {
   return (!!translate_delegate);
 }
 
+void TranslateInfoBarDelegate::InfoBarDismissed() {
+  LanguageState& language_state = tab_contents_->language_state();
+  if (!language_state.IsPageTranslated() &&
+      !language_state.translation_pending()) {
+    // The user closed the infobar without clicking the translate button.
+    TranslationDeclined();
+  }
+}
+
 void TranslateInfoBarDelegate::InfoBarClosed() {
   delete this;
 }
@@ -90,6 +99,15 @@ void TranslateInfoBarDelegate::GetAvailableTargetLanguages(
 void TranslateInfoBarDelegate::Translate() {
   if (original_lang_index_ != target_lang_index_)
     tab_contents_->TranslatePage(original_lang_code(), target_lang_code());
+}
+
+void TranslateInfoBarDelegate::TranslationDeclined() {
+  // Remember that the user declined the translation so as to prevent showing a
+  // translate infobar for that page again.  (TranslateManager initiates
+  // translations when getting a LANGUAGE_DETERMINED from the page, which
+  // happens when a load stops. That could happen multiple times, including
+  // after the user already declined the translation.)
+  tab_contents_->language_state().set_translation_declined(true);
 }
 
 bool TranslateInfoBarDelegate::IsLanguageBlacklisted() {

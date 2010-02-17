@@ -9,7 +9,8 @@
 
 LanguageState::LanguageState(NavigationController* nav_controller)
     : navigation_controller_(nav_controller),
-      translation_pending_(false) {
+      translation_pending_(false),
+      translation_declined_(false) {
 }
 
 LanguageState::~LanguageState() {
@@ -25,6 +26,7 @@ void LanguageState::DidNavigate(bool reload) {
   current_lang_.clear();
 
   translation_pending_ = false;
+  translation_declined_ = false;
 }
 
 void LanguageState::LanguageDetermined(const std::string& page_language) {

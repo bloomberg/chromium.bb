@@ -52,6 +52,10 @@ class LanguageState {
   bool translation_pending() const { return translation_pending_; }
   void set_translation_pending(bool value) { translation_pending_ = value; }
 
+  // Whether the user has already declined to translate the page.
+  bool translation_declined() const { return translation_declined_; }
+  void set_translation_declined(bool value) { translation_declined_ = value; }
+
  private:
   // The languages this page is in. Note that current_lang_ is different from
   // original_lang_ when the page has been translated.
@@ -76,6 +80,11 @@ class LanguageState {
   // TODO(jcampan): make the renderer send the language just once per navigation
   //                then we can get rid of that state.
   bool translation_pending_;
+
+  // Whether the user has declined to translate the page (by closing the infobar
+  // for example).  This is necessary as a new infobar could be shown if a new
+  // load happens in the page after the user closed the infobar.
+  bool translation_declined_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageState);
 };

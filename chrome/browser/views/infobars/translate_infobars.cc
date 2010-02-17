@@ -600,6 +600,7 @@ void TranslateInfoBar::ButtonPressed(
     UpdateState(TranslateInfoBarDelegate::kTranslating);
     GetDelegate()->Translate();
   } else if (sender == deny_button_) {
+    GetDelegate()->TranslationDeclined();
     RemoveInfoBar();
   } else {  // Let base InfoBar handle close button.
     InfoBar::ButtonPressed(sender, event);
