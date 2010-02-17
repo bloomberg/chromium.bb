@@ -254,7 +254,8 @@ class Zygote {
 #endif
 
       close(kBrowserDescriptor);  // our socket from the browser
-      close(kZygoteIdDescriptor);  // another socket from the browser
+      if (g_suid_sandbox_active)
+        close(kZygoteIdDescriptor);  // another socket from the browser
       Singleton<base::GlobalDescriptors>()->Reset(mapping);
 
       // Reset the process-wide command line to our new command line.
