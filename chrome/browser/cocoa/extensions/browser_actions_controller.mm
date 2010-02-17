@@ -22,6 +22,11 @@
 // The padding between browser action buttons.
 extern const CGFloat kBrowserActionButtonPadding = 3;
 
+namespace {
+const CGFloat kContainerPadding = 2.0;
+const CGFloat kGrippyXOffset = 8.0;
+}  // namespace
+
 NSString* const kBrowserActionsChangedNotification = @"BrowserActionsChanged";
 
 @interface BrowserActionsController(Private)
@@ -82,6 +87,8 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 
 @implementation BrowserActionsController
 
+@synthesize containerView = containerView_;
+
 - (id)initWithBrowser:(Browser*)browser
         containerView:(BrowserActionsContainerView*)container {
   DCHECK(browser && container);
@@ -133,6 +140,15 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
        iter != toolbarModel_->end(); ++iter) {
     [self createActionButtonForExtension:*iter withIndex:i++];
   }
+}
+
+- (CGFloat)idealContainerWidth {
+  NSUInteger buttonCount = [self visibleButtonCount];
+  if (buttonCount == 0)
+    return 0.0;
+
+  return kGrippyXOffset + kContainerPadding + (buttonCount *
+      (kBrowserActionWidth + kBrowserActionButtonPadding));
 }
 
 - (void)createActionButtonForExtension:(Extension*)extension
@@ -192,7 +208,8 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
 
 - (void)repositionActionButtons {
   for (NSUInteger i = 0; i < [buttonOrder_ count]; ++i) {
-    CGFloat xOffset = i * (kBrowserActionWidth + kBrowserActionButtonPadding);
+    CGFloat xOffset = kGrippyXOffset +
+        (i * (kBrowserActionWidth + kBrowserActionButtonPadding));
     BrowserActionButton* button = [buttonOrder_ objectAtIndex:i];
     NSRect buttonFrame = [button frame];
     buttonFrame.origin.x = xOffset;
@@ -200,11 +217,11 @@ class ExtensionsServiceObserverBridge : public NotificationObserver,
   }
 }
 
-- (int)buttonCount {
+- (NSUInteger)buttonCount {
   return [buttons_ count];
 }
 
-- (int)visibleButtonCount {
+- (NSUInteger)visibleButtonCount {
   int count = 0;
   for (BrowserActionButton* button in [buttons_ allValues]) {
     if (![button isHidden])

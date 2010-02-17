@@ -49,6 +49,8 @@ extern NSString* const kBrowserActionsChangedNotification;
   scoped_nsobject<NSMutableArray> buttonOrder_;
 }
 
+@property(readonly, nonatomic) BrowserActionsContainerView* containerView;
+
 // Initializes the controller given the current browser and container view that
 // will hold the browser action buttons.
 - (id)initWithBrowser:(Browser*)browser
@@ -58,16 +60,20 @@ extern NSString* const kBrowserActionsChangedNotification;
 // extensions service to the toolbar.
 - (void)createButtons;
 
+// Returns the ideal (not current) width to fit all visible extensions and other
+// UI elements in the container nicely.
+- (CGFloat)idealContainerWidth;
+
 // Update the display of all buttons.
 - (void)update;
 
 // Returns the current number of browser action buttons within the container,
 // whether or not they are displayed.
-- (int)buttonCount;
+- (NSUInteger)buttonCount;
 
 // Returns the current number of browser action buttons displayed in the
 // container.
-- (int)visibleButtonCount;
+- (NSUInteger)visibleButtonCount;
 
 // Executes the action designated by the extension.
 - (void)browserActionClicked:(BrowserActionButton*)sender;

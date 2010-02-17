@@ -22,6 +22,7 @@
 #import "chrome/browser/cocoa/background_gradient_view.h"
 #import "chrome/browser/cocoa/encoding_menu_controller_delegate_mac.h"
 #import "chrome/browser/cocoa/extensions/browser_action_button.h"
+#import "chrome/browser/cocoa/extensions/browser_actions_container_view.h"
 #import "chrome/browser/cocoa/extensions/browser_actions_controller.h"
 #import "chrome/browser/cocoa/gradient_button_cell.h"
 #import "chrome/browser/cocoa/location_bar_view_mac.h"
@@ -222,7 +223,7 @@ class PrefObserverBridge : public NotificationObserver {
              name:NSWindowDidResizeNotification
            object:[[self view] window]];
   // Register pref observers for the optional home and page/options buttons
-  // and then add them to the toolbar them based on those prefs.
+  // and then add them to the toolbar based on those prefs.
   prefObserver_.reset(new ToolbarControllerInternal::PrefObserverBridge(self));
   PrefService* prefs = profile_->GetPrefs();
   showHomeButton_.Init(prefs::kShowHomeButton, prefs, prefObserver_.get());
@@ -576,11 +577,6 @@ class PrefObserverBridge : public NotificationObserver {
   CGFloat moveX = 2 * [self interButtonSpacing] + NSWidth([pageButton_ frame]) +
       NSWidth([wrenchButton_ frame]);
 
-  // Adjust for the extra unit of inter-button spacing added when the page and
-  // wrench buttons are hidden.
-  if ([browserActionsController_ visibleButtonCount] > 0)
-    moveX -= [self interButtonSpacing];
-
   if (!hide)
     moveX *= -1;  // Reverse the direction of the move.
 
@@ -588,6 +584,7 @@ class PrefObserverBridge : public NotificationObserver {
   [browserActionsContainerView_ setFrame:NSOffsetRect(
       [browserActionsContainerView_ frame], moveX, 0)];
 
+  [browserActionsContainerView_ setRightBorderShown:!hide];
   [pageButton_ setHidden:hide];
   [wrenchButton_ setHidden:hide];
 }
@@ -604,6 +601,8 @@ class PrefObserverBridge : public NotificationObserver {
 - (void)createBrowserActionButtons {
   [browserActionsController_ createButtons];
   [self showOrHideBrowserActionButtons];
+  BOOL rightBorderShown = !([pageButton_ isHidden] && [wrenchButton_ isHidden]);
+  [browserActionsContainerView_ setRightBorderShown:rightBorderShown];
 }
 
 - (void)showOrHideBrowserActionButtons {
@@ -654,34 +653,10 @@ class PrefObserverBridge : public NotificationObserver {
 }
 
 - (void)browserActionsChanged {
-  // Calculate the new width.
-  int buttonCount = [browserActionsController_ visibleButtonCount];
-
-  CGFloat width = 0.0;
-  if (buttonCount > 0)
-    width = buttonCount * (kBrowserActionWidth + kBrowserActionButtonPadding);
-
+  CGFloat width = [browserActionsController_ idealContainerWidth];
   NSRect containerFrame = [browserActionsContainerView_ frame];
-  CGFloat buttonSpacing = [self interButtonSpacing];
   CGFloat dX = containerFrame.size.width - width;
   containerFrame.size.width = width;
-
-  bool addingButton = (dX < 0);
-  // If a button is being added, add spacing inward by negating the value.
-  if (addingButton)
-    buttonSpacing *= -1;
-
-  // If the first button is being added or the last button is being removed,
-  // then account for the right padding it will need.
-  if ((buttonCount == 1 && addingButton) ||
-      (buttonCount == 0 && !addingButton)) {
-    dX += buttonSpacing;
-    // The offset of the buttons from the right side will be one button spacing
-    // unit more than if the wrench and page buttons were shown.
-    if ([pageButton_ isHidden] && [wrenchButton_ isHidden]) {
-      dX += buttonSpacing;
-    }
-  }
 
   [browserActionsContainerView_ setFrame:NSOffsetRect(containerFrame, dX, 0)];
   [self adjustLocationAndGoPositionsBy:dX];
