@@ -11,7 +11,7 @@
 namespace appcache {
 
 AppCacheService::AppCacheService()
-    : request_context_(NULL) {
+    : appcache_policy_(NULL), request_context_(NULL) {
 }
 
 AppCacheService::~AppCacheService() {

@@ -97,6 +97,11 @@ class AppCacheStorageImpl : public AppCacheStorage {
       scoped_refptr<AppCacheGroup> group, scoped_refptr<AppCache> newest_cache,
       scoped_refptr<DelegateReference> delegate_ref);
 
+  void CheckPolicyAndCallOnMainResponseFound(
+      DelegateReferenceVector* delegates, const GURL& url,
+      const AppCacheEntry& entry, const AppCacheEntry& fallback_entry,
+      int64 cache_id, const GURL& manifest_url);
+
   disk_cache::Backend* disk_cache();
 
   // The directory in which we place files in the file system.

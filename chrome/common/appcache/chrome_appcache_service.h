@@ -8,6 +8,7 @@
 #include "base/ref_counted.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/common/notification_registrar.h"
+#include "webkit/appcache/appcache_policy.h"
 #include "webkit/appcache/appcache_service.h"
 
 class ChromeURLRequestContext;
@@ -24,6 +25,7 @@ class FilePath;
 class ChromeAppCacheService
     : public base::RefCounted<ChromeAppCacheService>,
       public appcache::AppCacheService,
+      public appcache::AppCachePolicy,
       public NotificationObserver {
  public:
   ChromeAppCacheService(const FilePath& profile_path,
@@ -34,6 +36,11 @@ class ChromeAppCacheService
  private:
   friend class base::RefCounted<ChromeAppCacheService>;
   virtual ~ChromeAppCacheService();
+
+  // AppCachePolicy overrides
+  virtual bool CanLoadAppCache(const GURL& manifest_url);
+  virtual int CanCreateAppCache(const GURL& manifest_url,
+                                net::CompletionCallback* callback);
 
   // NotificationObserver override
   virtual void Observe(NotificationType type,

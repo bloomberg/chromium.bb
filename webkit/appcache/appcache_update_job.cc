@@ -9,7 +9,9 @@
 #include "base/string_util.h"
 #include "net/base/io_buffer.h"
 #include "net/base/load_flags.h"
+#include "net/base/net_errors.h"
 #include "webkit/appcache/appcache_group.h"
+#include "webkit/appcache/appcache_policy.h"
 #include "webkit/appcache/appcache_response.h"
 
 namespace appcache {
@@ -113,7 +115,10 @@ AppCacheUpdateJob::AppCacheUpdateJob(AppCacheService* service,
       ALLOW_THIS_IN_INITIALIZER_LIST(manifest_data_write_callback_(
           this, &AppCacheUpdateJob::OnManifestDataWriteComplete)),
       ALLOW_THIS_IN_INITIALIZER_LIST(manifest_data_read_callback_(
-          this, &AppCacheUpdateJob::OnManifestDataReadComplete)) {
+          this, &AppCacheUpdateJob::OnManifestDataReadComplete)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(policy_callback_(
+          new net::CancelableCompletionCallback<AppCacheUpdateJob>(
+              this, &AppCacheUpdateJob::OnPolicyCheckComplete))) {
   DCHECK(group_);
   manifest_url_ = group_->manifest_url();
 }
@@ -130,6 +135,8 @@ AppCacheUpdateJob::~AppCacheUpdateJob() {
 
   if (group_)
     group_->SetUpdateStatus(AppCacheGroup::IDLE);
+
+  policy_callback_->Cancel();
 }
 
 void AppCacheUpdateJob::StartUpdate(AppCacheHost* host,
@@ -191,7 +198,45 @@ void AppCacheUpdateJob::StartUpdate(AppCacheHost* host,
                               is_new_pending_master_entry);
   }
 
-  FetchManifest(true);
+  if (update_type_ == CACHE_ATTEMPT)
+    CheckPolicy();
+  else
+    FetchManifest(true);
+}
+
+void AppCacheUpdateJob::CheckPolicy() {
+  int rv = net::OK;
+  policy_callback_->AddRef();  // Balanced in OnPolicyCheckComplete.
+  AppCachePolicy* policy = service_->appcache_policy();
+  if (policy) {
+    rv = policy->CanCreateAppCache(manifest_url_, policy_callback_);
+    if (rv == net::ERR_IO_PENDING)
+      return;
+  }
+  OnPolicyCheckComplete(rv);
+}
+
+void AppCacheUpdateJob::OnPolicyCheckComplete(int rv) {
+  policy_callback_->Release();  // Balanced in CheckPolicy.
+  if (rv == net::OK) {
+    FetchManifest(true);
+    return;
+  }
+
+  MessageLoop::current()->PostTask(FROM_HERE,
+      method_factory_.NewRunnableMethod(
+          &AppCacheUpdateJob::HandleCacheFailure));
+}
+
+void AppCacheUpdateJob::HandleCacheFailure() {
+  // TODO(michaeln): For now this is only invoked from one point
+  // of failure. Overtime, attempt the migrate the various places
+  // where we can detect a failure condition to use this same
+  // method to enter the cache_failure state.
+  internal_state_ = CACHE_FAILURE;
+  CancelAllUrlFetches();
+  CancelAllMasterEntryFetches();
+  MaybeCompleteUpdate();
 }
 
 void AppCacheUpdateJob::FetchManifest(bool is_first_fetch) {
@@ -1227,6 +1272,8 @@ void AppCacheUpdateJob::Cancel() {
     manifest_response_writer_.reset();
 
   service_->storage()->CancelDelegateCallbacks(this);
+
+  policy_callback_->Cancel();
 }
 
 void AppCacheUpdateJob::ClearPendingMasterEntries() {

@@ -15,6 +15,7 @@ class URLRequestContext;
 namespace appcache {
 
 class AppCacheBackendImpl;
+class AppCachePolicy;
 
 // Class that manages the application cache service. Sends notifications
 // to many frontends.  One instance per user-profile. Each instance has
@@ -40,6 +41,14 @@ class AppCacheService {
     request_context_ = context;
   }
 
+  // The appcache policy, may be null, in which case access is always allowed.
+  // The service does NOT assume ownership of the policy, it is the callers
+  // responsibility to ensure that the pointer remains valid while set.
+  AppCachePolicy* appcache_policy() const { return appcache_policy_; }
+  void set_appcache_policy(AppCachePolicy* policy) {
+    appcache_policy_ = policy;
+  }
+
   // Track which processes are using this appcache service.
   void RegisterBackend(AppCacheBackendImpl* backend_impl);
   void UnregisterBackend(AppCacheBackendImpl* backend_impl);
@@ -51,6 +60,8 @@ class AppCacheService {
   AppCacheStorage* storage() const { return storage_.get(); }
 
  protected:
+  AppCachePolicy* appcache_policy_;
+
   // Deals with persistence.
   scoped_ptr<AppCacheStorage> storage_;
 

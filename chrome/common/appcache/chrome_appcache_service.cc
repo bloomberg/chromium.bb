@@ -10,6 +10,7 @@
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/notification_service.h"
+#include "net/base/net_errors.h"
 #include "webkit/appcache/appcache_thread.h"
 
 static bool has_initialized_thread_ids;
@@ -33,6 +34,7 @@ ChromeAppCacheService::ChromeAppCacheService(
   Initialize(request_context->is_off_the_record() ?
       FilePath() : profile_path.Append(chrome::kAppCacheDirname));
   set_request_context(request_context);
+  set_appcache_policy(this);
 }
 
 ChromeAppCacheService::~ChromeAppCacheService() {
@@ -42,6 +44,26 @@ ChromeAppCacheService::~ChromeAppCacheService() {
 // static
 void ChromeAppCacheService::ClearLocalState(const FilePath& profile_path) {
   file_util::Delete(profile_path.Append(chrome::kAppCacheDirname), true);
+}
+
+bool ChromeAppCacheService::CanLoadAppCache(const GURL& manifest_url) {
+  ContentSetting setting = host_contents_settings_map_->GetContentSetting(
+      manifest_url, CONTENT_SETTINGS_TYPE_COOKIES);
+  DCHECK(setting != CONTENT_SETTING_DEFAULT);
+  return setting == CONTENT_SETTING_ALLOW ||
+         setting == CONTENT_SETTING_ASK;  // we don't prompt for read access
+}
+
+int ChromeAppCacheService::CanCreateAppCache(
+    const GURL& manifest_url, net::CompletionCallback* callback) {
+  ContentSetting setting = host_contents_settings_map_->GetContentSetting(
+      manifest_url, CONTENT_SETTINGS_TYPE_COOKIES);
+  DCHECK(setting != CONTENT_SETTING_DEFAULT);
+  if (setting == CONTENT_SETTING_ASK) {
+    // TODO(michaeln): prompt the user, for now we block
+    setting = CONTENT_SETTING_BLOCK;
+  }
+  return (setting != CONTENT_SETTING_BLOCK) ? net::OK : net::ERR_ACCESS_DENIED;
 }
 
 void ChromeAppCacheService::Observe(NotificationType type,

@@ -7,11 +7,13 @@
 #include "base/message_loop.h"
 #include "base/thread.h"
 #include "base/waitable_event.h"
+#include "net/base/net_errors.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache.h"
 #include "webkit/appcache/appcache_database.h"
 #include "webkit/appcache/appcache_entry.h"
 #include "webkit/appcache/appcache_group.h"
+#include "webkit/appcache/appcache_policy.h"
 #include "webkit/appcache/appcache_service.h"
 #include "webkit/appcache/appcache_storage_impl.h"
 #include "webkit/tools/test_shell/simple_appcache_system.h"
@@ -130,6 +132,34 @@ class AppCacheStorageImplTest : public testing::Test {
     AppCacheStorageImplTest* test_;
   };
 
+  class MockAppCachePolicy : public AppCachePolicy {
+   public:
+    explicit MockAppCachePolicy(AppCacheStorageImplTest* test)
+        : can_load_return_value_(true), can_create_return_value_(0),
+          callback_(NULL), test_(test) {
+    }
+
+    virtual bool CanLoadAppCache(const GURL& manifest_url) {
+      requested_manifest_url_ = manifest_url;
+      return can_load_return_value_;
+    }
+
+    virtual int CanCreateAppCache(const GURL& manifest_url,
+                                  net::CompletionCallback* callback) {
+      requested_manifest_url_ = manifest_url;
+      callback_ = callback;
+      if (can_create_return_value_ == net::ERR_IO_PENDING)
+        test_->ScheduleNextTask();
+      return can_create_return_value_;
+    }
+
+    bool can_load_return_value_;
+    int can_create_return_value_;
+    GURL requested_manifest_url_;
+    net::CompletionCallback* callback_;
+    AppCacheStorageImplTest* test_;
+  };
+
   // Helper class run a test on our io_thread. The io_thread
   // is spun up once and reused for all tests.
   template <class Method>
@@ -182,7 +212,8 @@ class AppCacheStorageImplTest : public testing::Test {
   // Test harness --------------------------------------------------
 
   AppCacheStorageImplTest()
-      : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)) {
+      : ALLOW_THIS_IN_INITIALIZER_LIST(method_factory_(this)),
+        ALLOW_THIS_IN_INITIALIZER_LIST(policy_(this)) {
   }
 
   template <class Method>
@@ -664,16 +695,24 @@ class AppCacheStorageImplTest : public testing::Test {
   // BasicFindMainResponse  -------------------------------
 
   void BasicFindMainResponseInDatabase() {
-    BasicFindMainResponse(true);
+    BasicFindMainResponse(true, false);
   }
 
   void BasicFindMainResponseInWorkingSet() {
-    BasicFindMainResponse(false);
+    BasicFindMainResponse(false, false);
   }
 
-  void BasicFindMainResponse(bool drop_from_working_set) {
+  void BlockFindMainResponseWithPolicyCheck() {
+    BasicFindMainResponse(true, true);
+  }
+
+  void BasicFindMainResponse(bool drop_from_working_set,
+                             bool block_with_policy_check) {
     PushNextTask(method_factory_.NewRunnableMethod(
        &AppCacheStorageImplTest::Verify_BasicFindMainResponse));
+
+    policy_.can_load_return_value_ = !block_with_policy_check;
+    service()->set_appcache_policy(&policy_);
 
     // Setup some preconditions. Create a complete cache with an entry
     // in storage.
@@ -700,13 +739,18 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   void Verify_BasicFindMainResponse() {
-    EXPECT_EQ(kEntryUrl, delegate()->found_url_);
-    EXPECT_EQ(kManifestUrl, delegate()->found_manifest_url_);
-    EXPECT_EQ(1, delegate()->found_cache_id_);
-    EXPECT_EQ(1, delegate()->found_entry_.response_id());
-    EXPECT_TRUE(delegate()->found_entry_.IsExplicit());
-    EXPECT_FALSE(delegate()->found_fallback_entry_.has_response_id());
-    TestFinished();
+    EXPECT_EQ(kManifestUrl, policy_.requested_manifest_url_);
+    if (policy_.can_load_return_value_) {
+      EXPECT_EQ(kEntryUrl, delegate()->found_url_);
+      EXPECT_EQ(kManifestUrl, delegate()->found_manifest_url_);
+      EXPECT_EQ(1, delegate()->found_cache_id_);
+      EXPECT_EQ(1, delegate()->found_entry_.response_id());
+      EXPECT_TRUE(delegate()->found_entry_.IsExplicit());
+      EXPECT_FALSE(delegate()->found_fallback_entry_.has_response_id());
+      TestFinished();
+    } else {
+      Verify_FindNoMainResponse();
+    }
   }
 
   // BasicFindMainFallbackResponse  -------------------------------
@@ -914,6 +958,7 @@ class AppCacheStorageImplTest : public testing::Test {
   ScopedRunnableMethodFactory<AppCacheStorageImplTest> method_factory_;
   scoped_ptr<base::WaitableEvent> test_finished_event_;
   std::stack<Task*> task_stack_;
+  MockAppCachePolicy policy_;
   scoped_ptr<AppCacheService> service_;
   scoped_ptr<MockStorageDelegate> delegate_;
   scoped_refptr<AppCacheGroup> group_;
@@ -979,6 +1024,11 @@ TEST_F(AppCacheStorageImplTest, BasicFindMainResponseInDatabase) {
 TEST_F(AppCacheStorageImplTest, BasicFindMainResponseInWorkingSet) {
   RunTestOnIOThread(
       &AppCacheStorageImplTest::BasicFindMainResponseInWorkingSet);
+}
+
+TEST_F(AppCacheStorageImplTest, BlockFindMainResponseWithPolicyCheck) {
+  RunTestOnIOThread(
+      &AppCacheStorageImplTest::BlockFindMainResponseWithPolicyCheck);
 }
 
 TEST_F(AppCacheStorageImplTest, BasicFindMainFallbackResponseInDatabase) {
