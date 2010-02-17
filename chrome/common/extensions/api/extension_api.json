@@ -2080,6 +2080,7 @@
   },
   {
     "namespace": "devtools",
+    "nodoc": "true",
     "types": [],
     "functions": [
       {
@@ -2146,6 +2147,7 @@
   },
   {
     "namespace": "test",
+    "nodoc": true,
     "types": [],
     "functions": [
       {

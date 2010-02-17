@@ -268,6 +268,22 @@ function selectCurrentPageOnLeftNav() {
  * The jstProcess() will call out to these functions from within the page template
  */
 
+function stableAPIs() {
+  return schema.filter(function(module) {
+    return !module.nodoc && module.namespace.indexOf("experimental") < 0;
+  }).map(function(module) {
+    return module.namespace;
+  }).sort();
+}
+ 
+function experimentalAPIs() {
+  return schema.filter(function(module) {
+    return !module.nodoc && module.namespace.indexOf("experimental") == 0;
+  }).map(function(module) {
+    return module.namespace;
+  }).sort();
+}
+
 function getDataFromPageHTML(id) {
   var node = document.getElementById(id);
   if (!node)
