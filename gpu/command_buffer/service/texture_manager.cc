@@ -147,7 +147,7 @@ void TextureManager::TextureInfo::Update() {
     }
   }
 
-  // Update texture_complete status.
+  // Update texture_complete and cube_complete status.
   const TextureInfo::LevelInfo& first_face = level_infos_[0][0];
   texture_complete_ =
       (max_level_set_ == ComputeMipMapCount(first_face.width,
@@ -157,7 +157,7 @@ void TextureManager::TextureInfo::Update() {
   cube_complete_ = (level_infos_.size() == 6) &&
                    (first_face.width == first_face.height);
   for (size_t ii = 0;
-       ii < level_infos_.size() && cube_complete_ && texture_complete_;
+       ii < level_infos_.size() && (cube_complete_ || texture_complete_);
        ++ii) {
     const TextureInfo::LevelInfo& level0 = level_infos_[ii][0];
     if (!level0.valid ||
@@ -173,7 +173,7 @@ void TextureManager::TextureInfo::Update() {
     GLsizei width = level0.width;
     GLsizei height = level0.height;
     GLsizei depth = level0.depth;
-    for (GLint jj = 0; jj <= max_level_set_; ++jj) {
+    for (GLint jj = 1; jj <= max_level_set_; ++jj) {
       // compute required size for mip.
       width = std::max(1, width >> 1);
       height = std::max(1, height >> 1);

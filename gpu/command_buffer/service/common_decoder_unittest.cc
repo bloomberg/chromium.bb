@@ -209,6 +209,9 @@ TEST_F(CommonDecoderTest, Jump) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(MockCommandBufferEngine::kValidOffset,
             engine_.GetGetOffset());
+  // Check negative offset fails
+  cmd.Init(-1);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
 // NOTE: The read_pointer checks for relative commands do not take into account
@@ -236,6 +239,10 @@ TEST_F(CommonDecoderTest, JumpRelative) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
   // See note above.
   EXPECT_EQ(read_pointer + kNegativeOffset, engine_.GetGetOffset());
+  // Check invalid negative offset fails.
+  const int32 kInvalidNegativeOffset = -kPositiveOffset + kNegativeOffset - 1;
+  cmd.Init(kInvalidNegativeOffset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }
 
 TEST_F(CommonDecoderTest, Call) {
@@ -250,6 +257,9 @@ TEST_F(CommonDecoderTest, Call) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
   EXPECT_EQ(MockCommandBufferEngine::kValidOffset,
             engine_.GetGetOffset());
+  // Check negative offset fails
+  cmd.Init(-1);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
   // Check that the call values are on the stack.
   cmd::Return return_cmd;
   return_cmd.Init();
@@ -284,6 +294,10 @@ TEST_F(CommonDecoderTest, CallRelative) {
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
   // See note above.
   EXPECT_EQ(read_pointer_2 + kNegativeOffset, engine_.GetGetOffset());
+  // Check invalid negative offset fails.
+  const int32 kInvalidNegativeOffset = -kPositiveOffset + kNegativeOffset - 1;
+  cmd.Init(kInvalidNegativeOffset);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 
   // Check that the call values are on the stack.
   cmd::Return return_cmd;
@@ -466,7 +480,7 @@ TEST_F(CommonDecoderTest, GetBucketSize) {
   const uint32 kSomeOffsetInSharedMemory = 50;
   uint32* memory =
       engine_.GetSharedMemoryAs<uint32*>(kSomeOffsetInSharedMemory);
-  *memory = 0xFFFFFFFF;
+  *memory = 0x0;
   cmd.Init(kBucketId,
            MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
@@ -474,6 +488,12 @@ TEST_F(CommonDecoderTest, GetBucketSize) {
 
   // Check that it fails if the bucket_id is invalid
   cmd.Init(kInvalidBucketId,
+           MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
+  EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
+
+  // Check that it fails if the result size is not set to zero
+  *memory = 0x1;
+  cmd.Init(kBucketId,
            MockCommandBufferEngine::kValidShmId, kSomeOffsetInSharedMemory);
   EXPECT_NE(error::kNoError, ExecuteCmd(cmd));
 }

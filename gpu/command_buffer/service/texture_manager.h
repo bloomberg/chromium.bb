@@ -40,21 +40,17 @@ class TextureManager {
       return target_;
     }
 
-    void SetTarget(GLenum target, GLint max_levels) {
-      DCHECK_EQ(0u, target_);  // you can only set this once.
-      target_ = target;
-      size_t num_faces = (target == GL_TEXTURE_2D) ? 1 : 6;
-      level_infos_.resize(num_faces);
-      for (size_t ii = 0; ii < num_faces; ++ii) {
-        level_infos_[ii].resize(max_levels);
-      }
-    }
-
     // In GLES2 "texture complete" means it has all required mips for filtering
     // down to a 1x1 pixel texture, they are in the correct order, they are all
     // the same format.
     bool texture_complete() const {
       return texture_complete_;
+    }
+
+    // In GLES2 "cube complete" means all 6 faces level 0 are defined, all the
+    // same format, all the same dimensions and all width = height.
+    bool cube_complete() const {
+      return cube_complete_;
     }
 
     // Whether or not this texture is a non-power-of-two texture.
@@ -80,7 +76,9 @@ class TextureManager {
         GLenum format,
         GLenum type);
 
-   protected:
+   private:
+    friend class TextureManager;
+
     struct LevelInfo {
       LevelInfo()
          : valid(false),
@@ -103,7 +101,20 @@ class TextureManager {
       GLenum type;
     };
 
-   private:
+    // Sets the TextureInfo's target
+    // Parameters:
+    //   target: GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP
+    //   max_levels: The maximum levels this type of target can have.
+    void SetTarget(GLenum target, GLint max_levels) {
+      DCHECK_EQ(0u, target_);  // you can only set this once.
+      target_ = target;
+      size_t num_faces = (target == GL_TEXTURE_2D) ? 1 : 6;
+      level_infos_.resize(num_faces);
+      for (size_t ii = 0; ii < num_faces; ++ii) {
+        level_infos_[ii].resize(max_levels);
+      }
+    }
+
     // Update info about this texture.
     void Update();
 
@@ -156,7 +167,18 @@ class TextureManager {
            level < MaxLevelsForTarget(target) &&
            width <= max_size &&
            height <= max_size &&
-           depth <= max_size;
+           depth <= max_size &&
+           (target != GL_TEXTURE_CUBE_MAP || (width == height && depth == 1)) &&
+           (target != GL_TEXTURE_2D || (depth == 1));
+  }
+
+  // Sets the TextureInfo's target
+  // Parameters:
+  //   target: GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP
+  //   max_levels: The maximum levels this type of target can have.
+  void SetInfoTarget(TextureInfo* info, GLenum target) {
+    DCHECK(info);
+    info->SetTarget(target, MaxLevelsForTarget(target));
   }
 
   // Creates a new texture info.

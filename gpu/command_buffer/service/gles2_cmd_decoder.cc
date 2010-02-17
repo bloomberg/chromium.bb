@@ -1374,7 +1374,7 @@ void GLES2DecoderImpl::DoBindTexture(GLenum target, GLuint texture) {
       return;
     }
     if (info->target() == 0) {
-      info->SetTarget(target, texture_manager_->MaxLevelsForTarget(target));
+      texture_manager_->SetInfoTarget(info, target);
     }
   }
   glBindTexture(target, texture);
@@ -2186,7 +2186,10 @@ error::Error GLES2DecoderImpl::HandleGetVertexAttribPointerv(
   if (!result) {
     return error::kOutOfBounds;
   }
-  result->size = 0;
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
   if (!ValidateGLenumVertexPointer(pname)) {
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
@@ -2293,9 +2296,12 @@ error::Error GLES2DecoderImpl::HandleGetShaderPrecisionFormat(
   if (!result) {
     return error::kOutOfBounds;
   }
+  // Check that the client initialized the result.
+  if (result->success != 0) {
+    return error::kInvalidArguments;
+  }
   if (!ValidateGLenumShaderType(shader_type) ||
       !ValidateGLenumShaderPrecision(precision_type)) {
-    result->success = 0;  // false
     SetGLError(GL_INVALID_ENUM);
   } else {
     result->success = 1;  // true
@@ -2336,6 +2342,10 @@ error::Error GLES2DecoderImpl::HandleGetAttachedShaders(
   if (!result) {
     return error::kOutOfBounds;
   }
+  // Check that the client initialized the result.
+  if (result->size != 0) {
+    return error::kInvalidArguments;
+  }
   GLsizei count = 0;
   glGetAttachedShaders(service_id, max_count, &count, result->GetData());
   for (GLsizei ii = 0; ii < count; ++ii) {
@@ -2361,7 +2371,10 @@ error::Error GLES2DecoderImpl::HandleGetActiveUniform(
   if (!result) {
     return error::kOutOfBounds;
   }
-  result->success = 0;  // false.
+  // Check that the client initialized the result.
+  if (result->success != 0) {
+    return error::kInvalidArguments;
+  }
   if (!id_manager_->GetServiceId(program, &service_id)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
@@ -2398,7 +2411,10 @@ error::Error GLES2DecoderImpl::HandleGetActiveAttrib(
   if (!result) {
     return error::kOutOfBounds;
   }
-  result->success = 0;  // false.
+  // Check that the client initialized the result.
+  if (result->success != 0) {
+    return error::kInvalidArguments;
+  }
   if (!id_manager_->GetServiceId(program, &service_id)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;

@@ -272,6 +272,10 @@ error::Error CommonDecoder::HandleGetBucketSize(
   if (!data) {
     return error::kInvalidArguments;
   }
+  // Check that the client initialized the result.
+  if (*data != 0) {
+    return error::kInvalidArguments;
+  }
   Bucket* bucket = GetBucket(bucket_id);
   if (!bucket) {
     return error::kInvalidArguments;
