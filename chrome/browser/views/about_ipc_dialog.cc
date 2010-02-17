@@ -98,7 +98,7 @@ void CreateColumn(uint32 start, uint32 end, HWND hwnd,
   control_ptr->ModifyStyle(0, LVS_SORTASCENDING | LVS_NOCOLUMNHEADER);
   control_ptr->InsertColumn(0, L"id", LVCFMT_LEFT, 230);
 
-  for (uint16 i = start; i < end; i++) {
+  for (uint32 i = start; i < end; i++) {
     std::wstring name;
     IPC::Logging::GetMessageText(i, &name, NULL, NULL);
 
