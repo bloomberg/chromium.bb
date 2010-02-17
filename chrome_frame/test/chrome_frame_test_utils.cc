@@ -749,4 +749,14 @@ void WebBrowserEventSink::Exec(const GUID* cmd_group_guid, DWORD command_id,
       command_id, cmd_exec_opt, in_args, out_args));
 }
 
+void WebBrowserEventSink::NavigateBackward() {
+  SendMouseClick(10, 10, simulate_input::LEFT);
+  simulate_input::SendMnemonic(VK_BACK, false, false, false, false, false);
+}
+
+void WebBrowserEventSink::NavigateForward() {
+  SendMouseClick(10, 10, simulate_input::LEFT);
+  simulate_input::SendMnemonic(VK_BACK, true, false, false, false, false);
+}
+
 }  // namespace chrome_frame_test

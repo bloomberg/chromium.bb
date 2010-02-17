@@ -146,6 +146,8 @@ BEGIN_COM_MAP(ChromeActiveDocument)
 END_COM_MAP()
 
 BEGIN_MSG_MAP(ChromeActiveDocument)
+  COMMAND_ID_HANDLER(IDC_FORWARD, OnForward)
+  COMMAND_ID_HANDLER(IDC_BACK, OnBack)
   CHAIN_MSG_MAP(Base)
 END_MSG_MAP()
 
@@ -299,6 +301,10 @@ END_EXEC_COMMAND_MAP()
   // Get the travel log from the client site
   HRESULT GetBrowserServiceAndTravelLog(IBrowserService** browser_service,
                                         ITravelLog** travel_log);
+  LRESULT OnForward(WORD notify_code, WORD id, HWND control_window,
+                    BOOL& bHandled);
+  LRESULT OnBack(WORD notify_code, WORD id, HWND control_window,
+                 BOOL& bHandled);
 
  protected:
   typedef std::map<int, bool> EnabledCommandsMap;
@@ -323,6 +329,8 @@ END_EXEC_COMMAND_MAP()
   bool is_automation_client_reused_;
 
   ScopedComPtr<IInternetSecurityManager> security_manager_;
+
+  HACCEL accelerator_table_;
 
  public:
   ScopedComPtr<IOleInPlaceFrame> in_place_frame_;

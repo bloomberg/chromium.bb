@@ -40,6 +40,10 @@ for localizable strings
       <structure name="IDD_FIND_DIALOG" file="structured_resources.rc" type="dialog" >
       </structure>
     </structures>
+    <structures first_id="50005">
+      <structure name="IDR_CHROME_FRAME_IE_FULL_TAB" file="structured_resources.rc" type="accelerators" >
+      </structure>
+    </structures>
     <includes>
       <include name="IDR_BHO" file="../bho.rgs" type="REGISTRY" />
       <include name="IDR_CHROMETAB" file="../chrome_tab.rgs" type="REGISTRY" />

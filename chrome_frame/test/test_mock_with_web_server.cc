@@ -7,6 +7,7 @@
 
 #include "chrome/common/url_constants.h"
 #include "chrome_frame/utils.h"
+#include "chrome_frame/test/simulate_input.h"
 #include "chrome_frame/test/test_with_web_server.h"
 
 #define GMOCK_MUTANT_INCLUDE_LATE_OBJECT_BINDING
@@ -1214,5 +1215,124 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ContextMenuViewSource) {
 
   ASSERT_TRUE(mock.web_browser2() != NULL);
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+}
+
+const wchar_t kKeyboardTestForwardUrl[] =
+    L"http://localhost:1337/files/fulltab_forward_page.html";
+
+const wchar_t kKeyboardTestBackUrl[] =
+    L"http://localhost:1337/files/fulltab_back_page.html";
+
+TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_KeyboardBackForwardTest) {
+  chrome_frame_test::TimedMsgLoop loop;
+  CComObjectStackEx<MockWebBrowserEventSink> mock;
+  CComObjectStackEx<MockWebBrowserEventSink> view_source_mock;
+  ::testing::InSequence sequence;   // Everything in sequence
+
+  // This test performs the following steps.
+  // 1. Launches IE and navigates to
+  //    http://localhost:1337/files/fulltab_back_page.html
+  // 2. It then navigates to
+  //    http://localhost:1337/files/fulltab_back_page.html
+  // 3. Sends the VK_BACK keystroke to IE, which should navigate back to
+  //    http://localhost:1337/files/fulltab_back_page.html
+  // 4. Sends the Shift + VK_BACK keystroke to IE which should navigate
+  //    forward to http://localhost:1337/files/fulltab_forward_page.html
+
+  EXPECT_CALL(mock,
+              OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                testing::StrCaseEq(kKeyboardTestBackUrl)),
+                                      _, _, _, _, _))
+      .WillOnce(testing::Return(S_OK));
+  EXPECT_CALL(mock, OnNavigateComplete2(_, _))
+      .WillOnce(testing::Return());
+  EXPECT_CALL(mock,
+              OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                testing::StrCaseEq(kKeyboardTestBackUrl)),
+                                      _, _, _, _, _))
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return(S_OK));
+  EXPECT_CALL(mock, OnNavigateComplete2(_, _))
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return());
+
+  VARIANT empty = ScopedVariant::kEmptyVariant;
+
+  EXPECT_CALL(mock, OnLoad(testing::StrEq(kKeyboardTestBackUrl)))
+      .WillOnce(testing::IgnoreResult(testing::InvokeWithoutArgs(
+          CreateFunctor(
+              &mock, &chrome_frame_test::WebBrowserEventSink::Navigate,
+              std::wstring(kKeyboardTestForwardUrl)))));
+
+  EXPECT_CALL(mock,
+              OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                testing::StrCaseEq(kKeyboardTestForwardUrl)),
+                                      _, _, _, _, _))
+      .WillOnce(testing::Return(S_OK));
+  EXPECT_CALL(mock, OnNavigateComplete2(_, _))
+      .WillOnce(testing::Return());
+  EXPECT_CALL(mock,
+              OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                testing::StrCaseEq(kKeyboardTestForwardUrl)),
+                                      _, _, _, _, _))
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return(S_OK));
+  EXPECT_CALL(mock, OnNavigateComplete2(_, _))
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return());
+
+  EXPECT_CALL(mock, OnLoad(testing::StrEq(kKeyboardTestForwardUrl)))
+      .WillOnce(testing::InvokeWithoutArgs(CreateFunctor(&loop,
+          &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
+          NewRunnableMethod(
+              &mock,
+              &MockWebBrowserEventSink::NavigateBackward), 500)));
+
+  EXPECT_CALL(mock,
+              OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                testing::StrCaseEq(kKeyboardTestBackUrl)),
+                                      _, _, _, _, _))
+      .WillOnce(testing::Return(S_OK));
+  EXPECT_CALL(mock, OnNavigateComplete2(_, _))
+      .WillOnce(testing::Return());
+  EXPECT_CALL(mock,
+              OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                testing::StrCaseEq(kKeyboardTestBackUrl)),
+                                      _, _, _, _, _))
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return(S_OK));
+  EXPECT_CALL(mock, OnNavigateComplete2(_, _))
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return());
+
+  EXPECT_CALL(mock, OnLoad(testing::StrEq(kKeyboardTestBackUrl)))
+      .WillOnce(testing::InvokeWithoutArgs(CreateFunctor(&loop,
+          &chrome_frame_test::TimedMsgLoop::PostDelayedTask, FROM_HERE,
+          NewRunnableMethod(
+              &mock,
+              &MockWebBrowserEventSink::NavigateForward), 500)));
+
+  EXPECT_CALL(mock,
+              OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                testing::StrCaseEq(kKeyboardTestForwardUrl)),
+                                      _, _, _, _, _))
+      .WillOnce(testing::Return(S_OK));
+  EXPECT_CALL(mock, OnNavigateComplete2(_, _))
+      .WillOnce(testing::Return());
+  EXPECT_CALL(mock,
+              OnBeforeNavigate2(_, testing::Field(&VARIANT::bstrVal,
+                                testing::StrCaseEq(kKeyboardTestForwardUrl)),
+                                      _, _, _, _, _))
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return(S_OK));
+  EXPECT_CALL(mock, OnNavigateComplete2(_, _))
+      .Times(testing::AnyNumber()).WillRepeatedly(testing::Return());
+
+  EXPECT_CALL(mock, OnLoad(testing::StrEq(kKeyboardTestForwardUrl)))
+      .Times(1)
+      .WillOnce(QUIT_LOOP_SOON(loop, 2));
+
+  HRESULT hr = mock.LaunchIEAndNavigate(kKeyboardTestBackUrl);
+  ASSERT_HRESULT_SUCCEEDED(hr);
+  if (hr == S_FALSE)
+    return;
+
+  ASSERT_TRUE(mock.web_browser2() != NULL);
+  loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
+  mock.Uninitialize();
+  chrome_frame_test::CloseAllIEWindows();
 }
 

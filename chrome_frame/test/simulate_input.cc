@@ -121,7 +121,7 @@ void SendChar(wchar_t c, bool control, bool alt) {
 
 // Sends a keystroke to the currently active application with optional
 // modifiers set.
-bool SendMnemonic(WORD mnemonic_char, bool shift_pressed, bool control_pressed,
+void SendMnemonic(WORD mnemonic_char, bool shift_pressed, bool control_pressed,
                   bool alt_pressed, bool extended, bool unicode) {
   INPUT keys[4] = {0};  // Keyboard events
   int key_count = 0;  // Number of generated events
@@ -129,41 +129,52 @@ bool SendMnemonic(WORD mnemonic_char, bool shift_pressed, bool control_pressed,
   if (shift_pressed) {
     keys[key_count].type = INPUT_KEYBOARD;
     keys[key_count].ki.wVk = VK_SHIFT;
+    keys[key_count].ki.wScan = MapVirtualKey(VK_SHIFT, 0);
     key_count++;
   }
 
   if (control_pressed) {
     keys[key_count].type = INPUT_KEYBOARD;
     keys[key_count].ki.wVk = VK_CONTROL;
+    keys[key_count].ki.wScan = MapVirtualKey(VK_CONTROL, 0);
     key_count++;
   }
 
   if (alt_pressed) {
     keys[key_count].type = INPUT_KEYBOARD;
     keys[key_count].ki.wVk = VK_MENU;
+    keys[key_count].ki.wScan = MapVirtualKey(VK_MENU, 0);
     key_count++;
   }
 
   keys[key_count].type = INPUT_KEYBOARD;
   keys[key_count].ki.wVk = mnemonic_char;
+  keys[key_count].ki.wScan = MapVirtualKey(mnemonic_char, 0);
+
   if (extended)
     keys[key_count].ki.dwFlags |= KEYEVENTF_EXTENDEDKEY;
   if (unicode)
     keys[key_count].ki.dwFlags |= KEYEVENTF_UNICODE;
   key_count++;
 
+  bool should_sleep = key_count > 1;
+
   // Send key downs
   for (int i = 0; i < key_count; i++) {
     SendInput(1, &keys[ i ], sizeof(keys[0]));
     keys[i].ki.dwFlags |= KEYEVENTF_KEYUP;
+    if (should_sleep) {
+      Sleep(100);
+    }
   }
 
   // Now send key ups in reverse order
   for (int i = key_count; i; i--) {
     SendInput(1, &keys[ i - 1 ], sizeof(keys[0]));
+    if (should_sleep) {
+      Sleep(100);
+    }
   }
-
-  return true;
 }
 
 void SetKeyboardFocusToWindow(HWND window) {
@@ -215,8 +226,8 @@ void SendMouseClick(HWND window, int x, int y, MouseButton button) {
   ::SendInput(1, &input_info, sizeof(INPUT));
 }
 
-bool SendExtendedKey(WORD key, bool shift, bool control, bool alt) {
-  return SendMnemonic(key, shift, control, alt, true, false);
+void SendExtendedKey(WORD key, bool shift, bool control, bool alt) {
+  SendMnemonic(key, shift, control, alt, true, false);
 }
 
 }  // namespace simulate_input

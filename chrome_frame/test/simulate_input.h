@@ -27,7 +27,7 @@ void SetKeyboardFocusToWindow(HWND window);
 
 // Sends a keystroke to the currently active application with optional
 // modifiers set.
-bool SendMnemonic(WORD mnemonic_char, bool shift_pressed, bool control_pressed,
+void SendMnemonic(WORD mnemonic_char, bool shift_pressed, bool control_pressed,
                   bool alt_pressed, bool extended, bool unicode);
 
 // Sends a mouse click to the window passed in.
@@ -40,7 +40,7 @@ void SendChar(wchar_t c, bool control, bool alt);
 
 // Sends extended keystroke to the currently active application with optional
 // modifiers set.
-bool SendExtendedKey(WORD key, bool shift, bool control, bool alt);
+void SendExtendedKey(WORD key, bool shift, bool control, bool alt);
 
 // Iterates through all the characters in the string and simulates
 // keyboard input.  The input goes to the currently active application.

@@ -171,6 +171,13 @@ class WebBrowserEventSink
   void Exec(const GUID* cmd_group_guid, DWORD command_id,
             DWORD cmd_exec_opt, VARIANT* in_args, VARIANT* out_args);
 
+  // Navigates to the next item in history by sending the Shift+Back key
+  // combination
+  void NavigateForward();
+
+  // Navigates to the next item in history by sending the Backstroke key.
+  void NavigateBackward();
+
 BEGIN_COM_MAP(WebBrowserEventSink)
 END_COM_MAP()
 

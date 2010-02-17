@@ -52,7 +52,8 @@ bool g_first_launch_by_process_ = true;
 
 ChromeActiveDocument::ChromeActiveDocument()
     : first_navigation_(true),
-      is_automation_client_reused_(false) {
+      is_automation_client_reused_(false),
+      accelerator_table_(NULL) {
   url_fetcher_.set_frame_busting(false);
   memset(&navigation_info_, 0, sizeof(navigation_info_));
 }
@@ -95,6 +96,11 @@ HRESULT ChromeActiveDocument::FinalConstruct() {
   enabled_commands_map_[OLECMDID_PASTE] = true;
   enabled_commands_map_[OLECMDID_SELECTALL] = true;
   enabled_commands_map_[OLECMDID_SAVEAS] = true;
+
+  accelerator_table_ =
+    LoadAccelerators(GetModuleHandle(L"npchrome_frame.dll"),
+                     MAKEINTRESOURCE(IDR_CHROME_FRAME_IE_FULL_TAB));
+  DCHECK(accelerator_table_ != NULL);
   return S_OK;
 }
 
@@ -487,6 +493,10 @@ bool IsFindAccelerator(const MSG& msg) {
 
 void ChromeActiveDocument::OnAcceleratorPressed(int tab_handle,
                                                 const MSG& accel_message) {
+  if (::TranslateAccelerator(m_hWnd, accelerator_table_,
+                             const_cast<MSG*>(&accel_message)))
+    return;
+
   bool handled_accel = false;
   if (in_place_frame_ != NULL) {
     handled_accel = (S_OK == in_place_frame_->TranslateAcceleratorW(
@@ -978,3 +988,30 @@ HRESULT ChromeActiveDocument::GetBrowserServiceAndTravelLog(
 
   return hr;
 }
+
+LRESULT ChromeActiveDocument::OnForward(WORD notify_code, WORD id,
+                                        HWND control_window,
+                                        BOOL& bHandled) {
+  ScopedComPtr<IWebBrowser2> web_browser2;
+  DoQueryService(SID_SWebBrowserApp, m_spClientSite, web_browser2.Receive());
+  DCHECK(web_browser2);
+
+  if (web_browser2) {
+    web_browser2->GoForward();
+  }
+  return 0;
+}
+
+LRESULT ChromeActiveDocument::OnBack(WORD notify_code, WORD id,
+                                     HWND control_window,
+                                     BOOL& bHandled) {
+  ScopedComPtr<IWebBrowser2> web_browser2;
+  DoQueryService(SID_SWebBrowserApp, m_spClientSite, web_browser2.Receive());
+  DCHECK(web_browser2);
+
+  if (web_browser2) {
+    web_browser2->GoBack();
+  }
+  return 0;
+}
+
