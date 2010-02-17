@@ -7,13 +7,15 @@
 
 #include <gtk/gtk.h>
 
+#include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/options_page_base.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/pref_member.h"
 
 class ContentPageGtk : public OptionsPageBase,
-                       public ProfileSyncServiceObserver {
+                       public ProfileSyncServiceObserver,
+                       public PersonalDataManager::Observer {
  public:
   explicit ContentPageGtk(Profile* profile);
   ~ContentPageGtk();
@@ -37,6 +39,9 @@ class ContentPageGtk : public OptionsPageBase,
                        const NotificationSource& source,
                        const NotificationDetails& details);
 
+  // Overriden from PersonalDataManager::Observer.
+  virtual void OnPersonalDataLoaded();
+
   // Update content area after a theme changed.
   void ObserveThemeChanged();
 
@@ -46,6 +51,9 @@ class ContentPageGtk : public OptionsPageBase,
   GtkWidget* InitBrowsingDataGroup();
   GtkWidget* InitThemesGroup();
   GtkWidget* InitSyncGroup();
+
+  // Callback for autofill button.
+  static void OnAutoFillButtonClicked(GtkButton* widget, ContentPageGtk* page);
 
   // Callback for import button.
   static void OnImportButtonClicked(GtkButton* widget, ContentPageGtk* page);
@@ -96,8 +104,8 @@ class ContentPageGtk : public OptionsPageBase,
   GtkWidget* passwords_neversave_radio_;
 
   // Widgets for the Form Autofill group.
-  GtkWidget* form_autofill_asktosave_radio_;
-  GtkWidget* form_autofill_neversave_radio_;
+  GtkWidget* form_autofill_enable_radio_;
+  GtkWidget* form_autofill_disable_radio_;
 
   // Widgets for the Appearance group.
   GtkWidget* system_title_bar_show_radio_;
@@ -119,7 +127,7 @@ class ContentPageGtk : public OptionsPageBase,
 
   // Pref members.
   BooleanPrefMember ask_to_save_passwords_;
-  BooleanPrefMember ask_to_save_form_autofill_;
+  BooleanPrefMember enable_form_autofill_;
   BooleanPrefMember use_custom_chrome_frame_;
 
   // Flag to ignore gtk callbacks while we are loading prefs, to avoid
@@ -131,6 +139,10 @@ class ContentPageGtk : public OptionsPageBase,
   // Cached pointer to ProfileSyncService, if it exists. Kept up to date
   // and NULL-ed out on destruction.
   ProfileSyncService* sync_service_;
+
+  // The personal data manager, used to save and load personal data to/from the
+  // web database. This can be NULL.
+  PersonalDataManager* personal_data_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentPageGtk);
 };

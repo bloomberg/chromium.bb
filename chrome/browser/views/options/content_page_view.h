@@ -88,8 +88,8 @@ class ContentPageView : public OptionsPageView,
   // Controls for the Form Autofill group
   views::NativeButton* change_autofill_settings_button_;
   OptionsGroupView* form_autofill_group_;
-  views::RadioButton* form_autofill_asktosave_radio_;
-  views::RadioButton* form_autofill_neversave_radio_;
+  views::RadioButton* form_autofill_enable_radio_;
+  views::RadioButton* form_autofill_disable_radio_;
 
   // Controls for the Themes group
   OptionsGroupView* themes_group_;

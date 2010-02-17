@@ -4835,11 +4835,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Form Autofill
         </message>
       </if>
-      <message name="IDS_OPTIONS_AUTOFILL_SAVE" desc="The label of the 'Ask me to save autofill' radio button">
-        Save text from forms to make them easier to fill out
+      <message name="IDS_OPTIONS_AUTOFILL_ENABLE" desc="The label of the 'Ask me to enable autofill' radio button">
+        Enable Autofill to fill in web forms with a single click
       </message>
-      <message name="IDS_OPTIONS_AUTOFILL_NEVERSAVE" desc="The label of the 'Never save autofill' radio button">
-        Never save text from forms
+      <message name="IDS_OPTIONS_AUTOFILL_DISABLE" desc="The label of the 'Disable autofill' radio button">
+        Disable Autofill
       </message>
       <message name="IDS_OPTIONS_AUTOFILL_SETTINGS" desc="The label of the 'Change autofill settings' button">
         Change autofill settings

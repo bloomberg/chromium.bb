@@ -2089,7 +2089,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<object class="NSButtonCell" id="674682819">
 								<int key="NSCellFlags">-2080244224</int>
 								<int key="NSCellFlags2">0</int>
-								<string key="NSContents">^IDS_OPTIONS_AUTOFILL_SAVE</string>
+								<string key="NSContents">^IDS_OPTIONS_AUTOFILL_ENABLE</string>
 								<reference key="NSSupport" ref="445696277"/>
 								<int key="NSTag">1</int>
 								<reference key="NSControlView" ref="854747859"/>
@@ -2104,7 +2104,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 							<object class="NSButtonCell" id="201008548">
 								<int key="NSCellFlags">67239424</int>
 								<int key="NSCellFlags2">0</int>
-								<string key="NSContents">^IDS_OPTIONS_AUTOFILL_NEVERSAVE</string>
+								<string key="NSContents">^IDS_OPTIONS_AUTOFILL_DISABLE</string>
 								<reference key="NSSupport" ref="445696277"/>
 								<reference key="NSControlView" ref="854747859"/>
 								<int key="NSButtonFlags">1211912703</int>

@@ -138,9 +138,10 @@ void FormTableSetLabel(
   // We have two table rows per form table row.
   row *= 2;
 
-  const char* text =
-      (label_id) ? l10n_util::GetStringUTF8(label_id).c_str() : 0;
-  GtkWidget* label = gtk_label_new(text);
+  std::string text;
+  if (label_id)
+    text = l10n_util::GetStringUTF8(label_id);
+  GtkWidget* label = gtk_label_new(text.c_str());
   gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
   gtk_table_attach(GTK_TABLE(table), label,
                    col, col + len,  // Left col, right col.
