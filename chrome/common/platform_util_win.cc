@@ -162,16 +162,24 @@ void SimpleErrorBox(gfx::NativeWindow parent,
 namespace {
 
 std::wstring CurrentChromeChannel() {
-  // See if we can find the Clients key on the HKLM branch.
+  // Start by seeing if we can find the Clients key on the HKLM branch.
+  // For each search, require confirmation by looking for "name"
+  // inside it.  We've noticed problems cleaning up the registry on
+  // uninstall or upgrade (http://crbug.com/33532,
+  // http://crbug.com/33534), and have other reports of inconsistency
+  // (http://crbug.com/32479).
   HKEY registry_hive = HKEY_LOCAL_MACHINE;
   std::wstring key = google_update::kRegPathClients + std::wstring(L"\\") +
                      google_update::kChromeUpgradeCode;
   RegKey google_update_hklm(registry_hive, key.c_str(), KEY_READ);
-  if (!google_update_hklm.Valid()) {
+
+  if (!google_update_hklm.Valid() ||
+      !google_update_hklm.ValueExists(google_update::kRegNameField)) {
     // HKLM failed us, try the same for the HKCU branch.
     registry_hive = HKEY_CURRENT_USER;
     RegKey google_update_hkcu(registry_hive, key.c_str(), KEY_READ);
-    if (!google_update_hkcu.Valid()) {
+    if (!google_update_hkcu.Valid() ||
+        !google_update_hkcu.ValueExists(google_update::kRegNameField)) {
       // Unknown.
       registry_hive = 0;
     }
