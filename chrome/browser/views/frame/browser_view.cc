@@ -1872,7 +1872,7 @@ void BrowserView::ProcessFullscreen(bool fullscreen) {
 #endif  // No need to invoke SetFullscreen for linux as this code is executed
         // once we're already fullscreen on linux.
 
-#if defined(OS_CHROMEOS)
+#if defined(OS_LINUX)
   // Updating of commands for fullscreen mode is called from SetFullScreen on
   // Wndows (see just above), but for ChromeOS, this method (ProcessFullScreen)
   // is called after full screen has happened successfully (via GTK's
