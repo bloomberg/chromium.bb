@@ -61,14 +61,20 @@
     return theme;
   }
 
-  NSImage* frameImage = provider->GetNSImageNamed(IDR_THEME_FRAME);
-  NSImage* frameInactiveImage =
-      provider->GetNSImageNamed(IDR_THEME_FRAME_INACTIVE);
-
-  [theme setValue:frameImage
-     forAttribute:@"backgroundImage"
-            style:GTMThemeStyleWindow
-            state:GTMThemeStateActiveWindow];
+  NSImage* frameImage = provider->HasCustomImage(IDR_THEME_FRAME) ?
+      provider->GetNSImageNamed(IDR_THEME_FRAME) : nil;
+  if (frameImage) {
+    NSImage* frameInactiveImage =
+        provider->GetNSImageNamed(IDR_THEME_FRAME_INACTIVE);
+    [theme setValue:frameImage
+       forAttribute:@"backgroundImage"
+              style:GTMThemeStyleWindow
+              state:GTMThemeStateActiveWindow];
+    [theme setValue:frameInactiveImage
+       forAttribute:@"backgroundImage"
+              style:GTMThemeStyleWindow
+              state:0];
+  }
 
   NSColor* tabTextColor =
       provider->GetNSColor(BrowserThemeProvider::COLOR_TAB_TEXT);
@@ -91,25 +97,24 @@
             style:GTMThemeStyleBookmarksBarButton
             state:GTMThemeStateActiveWindow];
 
-  [theme setValue:frameInactiveImage
-     forAttribute:@"backgroundImage"
-            style:GTMThemeStyleWindow
-            state:0];
 
-  NSImage* toolbarImage = provider->GetNSImageNamed(IDR_THEME_TOOLBAR);
+  NSImage* toolbarImage = provider->HasCustomImage(IDR_THEME_TOOLBAR) ?
+      provider->GetNSImageNamed(IDR_THEME_TOOLBAR) : nil;
   [theme setValue:toolbarImage
      forAttribute:@"backgroundImage"
             style:GTMThemeStyleToolBar
             state:GTMThemeStateActiveWindow];
   NSImage* toolbarBackgroundImage =
-      provider->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND);
+      provider->HasCustomImage(IDR_THEME_TAB_BACKGROUND) ?
+          provider->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND) : nil;
   [theme setValue:toolbarBackgroundImage
      forAttribute:@"backgroundImage"
             style:GTMThemeStyleTabBarDeselected
             state:GTMThemeStateActiveWindow];
 
   NSImage* toolbarButtonImage =
-      provider->GetNSImageNamed(IDR_THEME_BUTTON_BACKGROUND);
+      provider->HasCustomImage(IDR_THEME_BUTTON_BACKGROUND) ?
+          provider->GetNSImageNamed(IDR_THEME_BUTTON_BACKGROUND) : nil;
   if (toolbarButtonImage) {
     [theme setValue:toolbarButtonImage
        forAttribute:@"backgroundImage"
@@ -154,21 +159,21 @@
             state:GTMThemeStateActiveWindow];
 
   NSImage* frameOverlayImage =
-      provider->GetNSImageNamed(IDR_THEME_FRAME_OVERLAY);
+      provider->HasCustomImage(IDR_THEME_FRAME_OVERLAY) ?
+          provider->GetNSImageNamed(IDR_THEME_FRAME_OVERLAY) : nil;
   if (frameOverlayImage) {
     [theme setValue:frameOverlayImage
        forAttribute:@"overlay"
               style:GTMThemeStyleWindow
               state:GTMThemeStateActiveWindow];
-  }
-
-  NSImage* frameOverlayInactiveImage =
-      provider->GetNSImageNamed(IDR_THEME_FRAME_OVERLAY_INACTIVE);
-  if (frameOverlayInactiveImage) {
-    [theme setValue:frameOverlayInactiveImage
-       forAttribute:@"overlay"
-              style:GTMThemeStyleWindow
-              state:GTMThemeStateInactiveWindow];
+    NSImage* frameOverlayInactiveImage =
+        provider->GetNSImageNamed(IDR_THEME_FRAME_OVERLAY_INACTIVE);
+    if (frameOverlayInactiveImage) {
+      [theme setValue:frameOverlayInactiveImage
+         forAttribute:@"overlay"
+                style:GTMThemeStyleWindow
+                state:GTMThemeStateInactiveWindow];
+    }
   }
 
   return theme;

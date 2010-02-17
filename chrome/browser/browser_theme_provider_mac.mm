@@ -28,9 +28,6 @@ void HSLToHSB(const color_utils::HSL& hsl, CGFloat* h, CGFloat* s, CGFloat* b) {
 NSImage* BrowserThemeProvider::GetNSImageNamed(int id) const {
   DCHECK(CalledOnValidThread());
 
-  if (!HasCustomImage(id))
-    return nil;
-
   // Check to see if we already have the image in the cache.
   NSImageMap::const_iterator nsimage_iter = nsimage_cache_.find(id);
   if (nsimage_iter != nsimage_cache_.end())
