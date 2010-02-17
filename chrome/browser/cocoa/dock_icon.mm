@@ -39,7 +39,12 @@ static const float kBadgeIndent = 5.0f;
 @synthesize progress = progress_;
 
 - (void)drawRect:(NSRect)dirtyRect {
-  NSImage* appIcon = [[NSApplication sharedApplication] applicationIconImage];
+  // Not -[NSApplication applicationIconImage]; that fails to return a pasted
+  // custom icon.
+  NSWorkspace* workspace = [NSWorkspace sharedWorkspace];
+  NSString* appPath =
+      [[workspace activeApplication] valueForKey:@"NSApplicationPath"];
+  NSImage* appIcon = [workspace iconForFile:appPath];
   [appIcon drawInRect:[self bounds]
              fromRect:NSZeroRect
             operation:NSCompositeSourceOver
