@@ -30,8 +30,9 @@ typedef GoogleServiceAuthError AuthError;
 class ProfileSyncServiceForWizardTest : public ProfileSyncService {
  public:
   explicit ProfileSyncServiceForWizardTest(Profile* profile)
-    : ProfileSyncService(profile), user_accepted_merge_and_sync_(false),
-      user_cancelled_dialog_(false) {
+      : ProfileSyncService(profile, false),
+        user_accepted_merge_and_sync_(false),
+        user_cancelled_dialog_(false) {
     RegisterPreferences();
   }
 

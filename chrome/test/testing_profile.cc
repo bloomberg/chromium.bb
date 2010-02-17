@@ -296,7 +296,7 @@ void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
 
 void TestingProfile::CreateProfileSyncService() {
   if (!profile_sync_service_.get()) {
-    profile_sync_service_.reset(new ProfileSyncService(this));
+    profile_sync_service_.reset(new ProfileSyncService(this, false));
     profile_sync_service_->Initialize();
   }
 }

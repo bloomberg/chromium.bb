@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_CONTROLLER_H__
 #define CHROME_BROWSER_SYNC_GLUE_DATA_TYPE_CONTROLLER_H__
 
+#include <map>
+
 #include "base/task.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/syncable/model_type.h"
@@ -42,6 +44,8 @@ class DataTypeController {
   };
 
   typedef Callback1<StartResult>::Type StartCallback;
+
+  typedef std::map<syncable::ModelType, DataTypeController*> TypeMap;
 
   virtual ~DataTypeController() {}
 

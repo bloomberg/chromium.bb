@@ -12,7 +12,6 @@
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/task.h"
-#include "chrome/browser/defaults.h"
 #include "chrome/browser/history/history_types.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/change_processor.h"
@@ -34,15 +33,18 @@ typedef GoogleServiceAuthError AuthError;
 // Default sync server URL.
 static const char kSyncServerUrl[] = "https://clients4.google.com/chrome-sync";
 
-ProfileSyncService::ProfileSyncService(Profile* profile)
+ProfileSyncService::ProfileSyncService(Profile* profile,
+                                       bool bootstrap_sync_authentication)
     : last_auth_error_(AuthError::None()),
       profile_(profile),
+      bootstrap_sync_authentication_(bootstrap_sync_authentication),
       sync_service_url_(kSyncServerUrl),
       backend_initialized_(false),
       expecting_first_run_auth_needed_event_(false),
       is_auth_in_progress_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(wizard_(this)),
       unrecoverable_error_detected_(false),
+      startup_had_first_time_(false),
       notification_method_(browser_sync::kDefaultNotificationMethod) {
 }
 
@@ -59,11 +61,9 @@ void ProfileSyncService::Initialize() {
     DisableForUser();  // Clean up in case of previous crash / setup abort.
     // If the LSID is empty, we're in a UI test that is not testing sync
     // behavior, so we don't want the sync service to start.
-    // profile()->GetRequestContext() also checks if this is in a test.
-    if (browser_defaults::kBootstrapSyncAuthentication &&
-        profile()->GetRequestContext() &&
+    if (bootstrap_sync_authentication_ &&
         !GetLsidForAuthBootstraping().empty())
-      StartUp();  // We always start sync for Chrome OS.
+    StartUp();  // We always start sync for Chromium OS.
   } else {
     StartUp();
   }
@@ -120,14 +120,14 @@ void ProfileSyncService::ClearPreferences() {
 }
 
 // The domain and name of the LSID cookie which we use to bootstrap the sync
-// authentication in Chrome OS.
+// authentication in Chromium OS.
 const char kLsidCookieDomain[] = "www.google.com";
 const char kLsidCookieName[]   = "LSID";
 
 std::string ProfileSyncService::GetLsidForAuthBootstraping() {
-  if (browser_defaults::kBootstrapSyncAuthentication) {
-    // If we're running inside Chrome OS, bootstrap the sync authentication by
-    // using the LSID cookie provided by the Chrome OS login manager.
+  if (bootstrap_sync_authentication_) {
+    // If we're running inside Chromium OS, bootstrap the sync authentication by
+    // using the LSID cookie provided by the Chromium OS login manager.
     net::CookieMonster::CookieList cookies = profile()->GetRequestContext()->
         GetCookieStore()->GetCookieMonster()->GetAllCookies();
     for (net::CookieMonster::CookieList::const_iterator it = cookies.begin();
@@ -162,7 +162,8 @@ void ProfileSyncService::StartUp() {
   last_synced_time_ = base::Time::FromInternalValue(
       profile_->GetPrefs()->GetInt64(prefs::kSyncLastSyncedTime));
 
-  backend_.reset(new SyncBackendHost(this, profile_->GetPath()));
+  backend_.reset(
+      new SyncBackendHost(this, profile_->GetPath(), data_type_controllers_));
 
   // Initialize the backend.  Every time we start up a new SyncBackendHost,
   // we'll want to start from a fresh SyncDB, so delete any old one that might
@@ -176,8 +177,8 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
 
   // Stop all data type controllers.
   // TODO(skrul): Change this to support multiple data type controllers.
-  if (data_type_controllers_.count(syncable::BOOKMARKS))
-    data_type_controllers_[syncable::BOOKMARKS]->Stop();
+  StopDataType(syncable::BOOKMARKS);
+  StopDataType(syncable::PREFERENCES);
 
   backend_.reset();
 
@@ -233,7 +234,8 @@ void ProfileSyncService::OnUnrecoverableError() {
   unrecoverable_error_detected_ = true;
 
   // TODO(skrul): Change this to support multiple data type controllers.
-  data_type_controllers_[syncable::BOOKMARKS]->Stop();
+  StopDataType(syncable::BOOKMARKS);
+  StopDataType(syncable::PREFERENCES);
 
   // Tell the wizard so it can inform the user only if it is already open.
   wizard_.Step(SyncSetupWizard::FATAL_ERROR);
@@ -348,6 +350,14 @@ string16 ProfileSyncService::GetAuthenticatedUsername() const {
   return backend_->GetAuthenticatedUsername();
 }
 
+void ProfileSyncService::StopDataType(syncable::ModelType model_type) {
+  if (data_type_controllers_.count(model_type) &&
+      data_type_controllers_[model_type]->state() !=
+        DataTypeController::NOT_RUNNING) {
+    data_type_controllers_[model_type]->Stop();
+  }
+}
+
 void ProfileSyncService::OnUserSubmittedAuth(
     const std::string& username, const std::string& password,
     const std::string& captcha) {
@@ -380,24 +390,33 @@ void ProfileSyncService::OnUserCancelledDialog() {
 
 void ProfileSyncService::StartProcessingChangesIfReady() {
   DCHECK(backend_initialized_);
+  startup_had_first_time_ = false;
 
   // If the user has completed sync setup, we are always allowed to
   // merge data.
   bool merge_allowed =
       profile_->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted);
 
-  // If we're running inside Chrome OS, always allow merges and
+  // If we're running inside Chromium OS, always allow merges and
   // consider the sync setup complete.
-  if (browser_defaults::kBootstrapSyncAuthentication) {
+  if (bootstrap_sync_authentication_) {
     merge_allowed = true;
     SetSyncSetupCompleted();
   }
 
   // Start data types.
   // TODO(skrul): Change this to support multiple data type controllers.
-  data_type_controllers_[syncable::BOOKMARKS]->Start(
-      merge_allowed,
-      NewCallback(this, &ProfileSyncService::BookmarkStartCallback));
+  if (data_type_controllers_.count(syncable::BOOKMARKS)) {
+    data_type_controllers_[syncable::BOOKMARKS]->Start(
+        merge_allowed,
+        NewCallback(this, &ProfileSyncService::BookmarkStartCallback));
+  } else {
+    if (data_type_controllers_.count(syncable::PREFERENCES)) {
+      data_type_controllers_[syncable::PREFERENCES]->Start(
+          true,
+          NewCallback(this, &ProfileSyncService::PreferenceStartCallback));
+    }
+  }
 }
 
 void ProfileSyncService::BookmarkStartCallback(
@@ -405,9 +424,22 @@ void ProfileSyncService::BookmarkStartCallback(
   switch (result) {
     case DataTypeController::OK:
     case DataTypeController::OK_FIRST_RUN: {
-      wizard_.Step(result == DataTypeController::OK ? SyncSetupWizard::DONE :
-                   SyncSetupWizard::DONE_FIRST_TIME);
-      FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+      startup_had_first_time_ |= result == DataTypeController::OK_FIRST_RUN;
+
+      // If the preference data type was registered, start it here.
+      // Since we only care about presenting the merge warning dialog
+      // for bookmarks, pass a "true" for merge_allowed so preferences
+      // will always start.  If preferences is not registered, just
+      // call the callback directly so we can finish startup.
+      // TODO(skrul): Change this to support multiple data type
+      // controllers.
+      if (data_type_controllers_.count(syncable::PREFERENCES)) {
+        data_type_controllers_[syncable::PREFERENCES]->Start(
+            true,
+            NewCallback(this, &ProfileSyncService::PreferenceStartCallback));
+      } else {
+        PreferenceStartCallback(DataTypeController::OK);
+      }
       break;
     }
 
@@ -420,6 +452,27 @@ void ProfileSyncService::BookmarkStartCallback(
     default: {
       LOG(ERROR) << "Bookmark start failed";
       OnUnrecoverableError();
+      break;
+    }
+  }
+}
+
+void ProfileSyncService::PreferenceStartCallback(
+    DataTypeController::StartResult result) {
+  switch (result) {
+    case DataTypeController::OK:
+    case DataTypeController::OK_FIRST_RUN: {
+      startup_had_first_time_ |= result == DataTypeController::OK_FIRST_RUN;
+
+      wizard_.Step(startup_had_first_time_ ? SyncSetupWizard:: DONE_FIRST_TIME :
+                   SyncSetupWizard::DONE);
+      FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+      break;
+    }
+    default: {
+      LOG(ERROR) << "Preference start failed";
+      OnUnrecoverableError();
+      break;
     }
   }
 }
@@ -460,9 +513,23 @@ bool ProfileSyncService::ShouldPushChanges() {
   // True only after all bootstrapping has succeeded: the bookmark model is
   // loaded, the sync backend is initialized, the two domains are
   // consistent with one another, and no unrecoverable error has transpired.
-  if (data_type_controllers_.count(syncable::BOOKMARKS)) {
-    return data_type_controllers_[syncable::BOOKMARKS]->state() ==
-        DataTypeController::RUNNING;
-  }
-  return false;
+
+  // Don't push changes if there are no data type controllers registered.
+  if (data_type_controllers_.size() == 0)
+    return false;
+
+  // TODO: make this size_t
+  DataTypeController::TypeMap::size_type running_data_type_controllers = 0;
+  if (data_type_controllers_.count(syncable::BOOKMARKS) &&
+      data_type_controllers_[syncable::BOOKMARKS]->state() ==
+      DataTypeController::RUNNING)
+    running_data_type_controllers++;
+
+  if (data_type_controllers_.count(syncable::PREFERENCES) &&
+      data_type_controllers_[syncable::PREFERENCES]->state() ==
+      DataTypeController::RUNNING)
+    running_data_type_controllers++;
+
+  // Return true only if all data type controllers are running.
+  return data_type_controllers_.size() == running_data_type_controllers;
 }

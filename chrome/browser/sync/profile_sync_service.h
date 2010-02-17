@@ -14,7 +14,7 @@
 #include "base/time.h"
 #include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/sync/glue/data_type_controller.h"  // For StartResult.
+#include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
@@ -25,7 +25,6 @@
 namespace browser_sync {
 
 class ChangeProcessor;
-class DataTypeController;
 
 class UnrecoverableErrorHandler {
  public:
@@ -60,8 +59,6 @@ class ProfileSyncServiceObserver {
 class ProfileSyncService : public browser_sync::SyncFrontend,
                            public browser_sync::UnrecoverableErrorHandler {
  public:
-  typedef std::map<syncable::ModelType, browser_sync::DataTypeController*>
-      DataTypeControllerMap;
   typedef ProfileSyncServiceObserver Observer;
   typedef browser_sync::SyncBackendHost::Status Status;
 
@@ -89,7 +86,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     MAX_SYNC_EVENT_CODE
   };
 
-  explicit ProfileSyncService(Profile* profile);
+  ProfileSyncService(Profile* profile, bool bootstrap_sync_authentication);
   virtual ~ProfileSyncService();
 
   // Initializes the object. This should be called every time an object of this
@@ -103,7 +100,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   void RegisterDataTypeController(
       browser_sync::DataTypeController* data_type_controller);
 
-  const DataTypeControllerMap& data_type_controllers() const {
+  const browser_sync::DataTypeController::TypeMap& data_type_controllers()
+      const {
     return data_type_controllers_;
   }
 
@@ -240,6 +238,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   void BookmarkStartCallback(
       browser_sync::DataTypeController::StartResult result);
+  void PreferenceStartCallback(
+      browser_sync::DataTypeController::StartResult result);
 
   // Tests need to override this.  If |delete_sync_data_folder| is true, then
   // this method will delete all previous "Sync Data" folders. (useful if the
@@ -269,7 +269,10 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // When running inside Chrome OS, extract the LSID cookie from the cookie
   // store to bootstrap the authentication process.
-  std::string GetLsidForAuthBootstraping();
+  virtual std::string GetLsidForAuthBootstraping();
+
+  // Stops a data type.
+  void StopDataType(syncable::ModelType model_type);
 
   // Time at which we begin an attempt a GAIA authorization.
   base::TimeTicks auth_start_time_;
@@ -279,6 +282,12 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // The profile whose data we are synchronizing.
   Profile* profile_;
+
+  // True if the profile sync service should attempt to use an LSID
+  // cookie for authentication.  This is typically set to true in
+  // ChromiumOS since we want to use the system level authentication
+  // for sync.
+  bool bootstrap_sync_authentication_;
 
   // TODO(ncarter): Put this in a profile, once there is UI for it.
   // This specifies where to find the sync server.
@@ -293,7 +302,7 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   scoped_ptr<browser_sync::SyncBackendHost> backend_;
 
   // List of available data type controllers.
-  DataTypeControllerMap data_type_controllers_;
+  browser_sync::DataTypeController::TypeMap data_type_controllers_;
 
   // Whether the SyncBackendHost has been initialized.
   bool backend_initialized_;
@@ -321,6 +330,11 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // occurred during syncer operation.  This value should be checked before
   // doing any work that might corrupt things further.
   bool unrecoverable_error_detected_;
+
+  // True if at least one of the data types started up was started for
+  // the first time.  TODO(sync): Remove this when we have full
+  // support for starting multiple data types.
+  bool startup_had_first_time_;
 
   // Which peer-to-peer notification method to use.
   browser_sync::NotificationMethod notification_method_;

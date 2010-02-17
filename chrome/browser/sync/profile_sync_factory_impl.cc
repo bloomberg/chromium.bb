@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/command_line.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
@@ -30,7 +31,9 @@ ProfileSyncFactoryImpl::ProfileSyncFactoryImpl(
 }
 
 ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService() {
-  ProfileSyncService* pss = new ProfileSyncService(profile_);
+  ProfileSyncService* pss =
+      new ProfileSyncService(profile_,
+                             browser_defaults::kBootstrapSyncAuthentication);
 
   // Bookmark sync is enabled by default.  Register unless explicitly
   // disabled.

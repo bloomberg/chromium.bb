@@ -9,10 +9,13 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/sync/engine/syncapi.h"
+#include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/test/testing_profile.h"
+
+using browser_sync::DataTypeController;
 
 class ProfileSyncFactoryImplTest : public testing::Test {
  protected:
@@ -37,8 +40,7 @@ class ProfileSyncFactoryImplTest : public testing::Test {
 TEST_F(ProfileSyncFactoryImplTest, CreatePSSDefault) {
   scoped_ptr<ProfileSyncService> pss;
   pss.reset(profile_sync_service_factory_->CreateProfileSyncService());
-  ProfileSyncService::DataTypeControllerMap controllers(
-      pss->data_type_controllers());
+  DataTypeController::TypeMap controllers(pss->data_type_controllers());
   EXPECT_EQ(1U, controllers.size());
   EXPECT_EQ(1U, controllers.count(syncable::BOOKMARKS));
 }
@@ -47,8 +49,7 @@ TEST_F(ProfileSyncFactoryImplTest, CreatePSSDisableBookmarks) {
   command_line_->AppendSwitch(switches::kDisableSyncBookmarks);
   scoped_ptr<ProfileSyncService> pss;
   pss.reset(profile_sync_service_factory_->CreateProfileSyncService());
-  ProfileSyncService::DataTypeControllerMap controllers(
-      pss->data_type_controllers());
+  DataTypeController::TypeMap controllers(pss->data_type_controllers());
   EXPECT_EQ(0U, controllers.size());
   EXPECT_EQ(0U, controllers.count(syncable::BOOKMARKS));
 }
@@ -57,8 +58,7 @@ TEST_F(ProfileSyncFactoryImplTest, CreatePSSEnablePreferences) {
   command_line_->AppendSwitch(switches::kEnableSyncPreferences);
   scoped_ptr<ProfileSyncService> pss;
   pss.reset(profile_sync_service_factory_->CreateProfileSyncService());
-  ProfileSyncService::DataTypeControllerMap controllers(
-      pss->data_type_controllers());
+  DataTypeController::TypeMap controllers(pss->data_type_controllers());
   EXPECT_EQ(2U, controllers.size());
   EXPECT_EQ(1U, controllers.count(syncable::BOOKMARKS));
   EXPECT_EQ(1U, controllers.count(syncable::PREFERENCES));
