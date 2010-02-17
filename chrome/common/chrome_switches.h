@@ -120,6 +120,7 @@ extern const char kInternalPepper[];
 extern const char kJavaScriptFlags[];
 extern const char kLoadExtension[];
 extern const char kLoadPlugin[];
+extern const char kLongLivedExtensions[];
 extern const char kLogFilterPrefix[];
 extern const char kLogPluginMessages[];
 extern const char kLoggingLevel[];

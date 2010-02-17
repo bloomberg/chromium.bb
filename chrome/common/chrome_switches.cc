@@ -378,6 +378,9 @@ const char kLoadExtension[]                 = "load-extension";
 // Load an NPAPI plugin from the specified path.
 const char kLoadPlugin[]                    = "load-plugin";
 
+// Long lived extensions.
+const char kLongLivedExtensions[]           = "long-lived-extensions";
+
 // Will filter log messages to show only the messages that are prefixed
 // with the specified value. See also kEnableLogging and kLoggingLevel.
 const char kLogFilterPrefix[]               = "log-filter-prefix";
