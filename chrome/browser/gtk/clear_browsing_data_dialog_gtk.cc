@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -6,7 +6,9 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "chrome/browser/browser.h"
 #include "chrome/browser/browsing_data_remover.h"
+#include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_names.h"
@@ -133,6 +135,29 @@ ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
   // Add the combo/label time period box to the vertical layout.
   gtk_box_pack_start(GTK_BOX(vbox), combo_hbox, FALSE, FALSE, 0);
 
+  // Add widgets for the area below the accept buttons.
+  GtkWidget* flash_link = gtk_chrome_link_button_new(
+      l10n_util::GetStringUTF8(IDS_FLASH_STORAGE_SETTINGS).c_str());
+  g_signal_connect(G_OBJECT(flash_link), "clicked",
+                   G_CALLBACK(HandleOnFlashLinkClicked), this);
+  GtkWidget* flash_link_hbox = gtk_hbox_new(FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(flash_link_hbox), flash_link, FALSE, FALSE, 0);
+  gtk_box_pack_end(GTK_BOX(content_area), flash_link_hbox, FALSE, FALSE, 0);
+
+  GtkWidget* separator = gtk_hseparator_new();
+  gtk_box_pack_end(GTK_BOX(content_area), separator, FALSE, FALSE, 0);
+
+  // Make sure we can move things around.
+  DCHECK_EQ(GTK_DIALOG(dialog)->action_area->parent, content_area);
+
+  // Now rearrange those because they're *above* the accept buttons...there's
+  // no way to place them in the correct position with gtk_box_pack_end() so
+  // manually move things into the correct order.
+  gtk_box_reorder_child(GTK_BOX(content_area), flash_link_hbox, -1);
+  gtk_box_reorder_child(GTK_BOX(content_area), separator, -1);
+  gtk_box_reorder_child(GTK_BOX(content_area), GTK_DIALOG(dialog)->action_area,
+                        -1);
+
   g_signal_connect(dialog, "response",
                    G_CALLBACK(HandleOnResponseDialog), this);
   gtk_widget_show_all(dialog);
@@ -204,4 +229,12 @@ void ClearBrowsingDataDialogGtk::OnDialogWidgetClicked(GtkWidget* widget) {
     profile_->GetPrefs()->SetInteger(prefs::kDeleteTimePeriod,
         gtk_combo_box_get_active(GTK_COMBO_BOX(widget)));
   }
+}
+
+void ClearBrowsingDataDialogGtk::OnFlashLinkClicked(GtkWidget* button) {
+  // We open a new browser window so the Options dialog doesn't get lost
+  // behind other windows.
+  Browser* browser = Browser::Create(profile_);
+  browser->OpenURL(GURL(l10n_util::GetStringUTF8(IDS_FLASH_STORAGE_URL)),
+                   GURL(), NEW_WINDOW, PageTransition::LINK);
 }
