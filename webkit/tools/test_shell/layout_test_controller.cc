@@ -129,6 +129,7 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("counterValueForElementById", &LayoutTestController::counterValueForElementById);
   BindMethod("addUserScript", &LayoutTestController::addUserScript);
   BindMethod("pageNumberForElementById", &LayoutTestController::pageNumberForElementById);
+  BindMethod("numberOfPages", &LayoutTestController::numberOfPages);
 
   // The following are stubs.
   BindMethod("dumpAsWebArchive", &LayoutTestController::dumpAsWebArchive);
@@ -1071,33 +1072,62 @@ void LayoutTestController::counterValueForElementById(
   result->Set(WideToUTF8(counterValue));
 }
 
-void LayoutTestController::pageNumberForElementById(
-    const CppArgumentList& args, CppVariant* result) {
-  result->SetNull();
+static bool ParsePageSizeParameters(const CppArgumentList& args,
+                                    int arg_offset,
+                                    float* page_width_in_pixels,
+                                    float* page_height_in_pixels) {
   // WebKit is using the window width/height of DumpRenderTree as the
   // default value of the page size.
   // TODO(hamaji): Once chromium DumpRenderTree is implemented,
   //               share these values with other ports.
-  float page_width_in_pixels = 800;
-  float page_height_in_pixels = 600;
-  switch (args.size()) {
-  case 3:
-    if (!args[1].isNumber() || !args[2].isNumber())
-      return;
-    page_width_in_pixels = static_cast<float>(args[1].ToInt32());
-    page_height_in_pixels = static_cast<float>(args[2].ToInt32());
-  case 1:  // fall through.
-    if (!args[0].isString())
-      return;
+  *page_width_in_pixels = 800;
+  *page_height_in_pixels = 600;
+  switch (args.size() - arg_offset) {
+  case 2:
+    if (!args[arg_offset].isNumber() || !args[1 + arg_offset].isNumber())
+      return false;
+    *page_width_in_pixels = static_cast<float>(args[arg_offset].ToInt32());
+    *page_height_in_pixels = static_cast<float>(args[1 + arg_offset].ToInt32());
+  // fall through.
+  case 0:
     break;
   default:
-    return;
+    return false;
   }
+  return true;
+}
+
+void LayoutTestController::pageNumberForElementById(
+    const CppArgumentList& args, CppVariant* result) {
+  result->SetNull();
+  float page_width_in_pixels = 0;
+  float page_height_in_pixels = 0;
+  if (!ParsePageSizeParameters(args, 1,
+                               &page_width_in_pixels, &page_height_in_pixels))
+    return;
+  if (!args[0].isString())
+    return;
+
   int page_number = webkit_glue::PageNumberForElementById(
       shell_->webView()->mainFrame(),
       args[0].ToString(),
       page_width_in_pixels,
       page_height_in_pixels);
+  result->Set(page_number);
+}
+
+void LayoutTestController::numberOfPages(
+    const CppArgumentList& args, CppVariant* result) {
+  result->SetNull();
+  float page_width_in_pixels = 0;
+  float page_height_in_pixels = 0;
+  if (!ParsePageSizeParameters(args, 0,
+                               &page_width_in_pixels, &page_height_in_pixels))
+    return;
+
+  int page_number = webkit_glue::NumberOfPages(shell_->webView()->mainFrame(),
+                                               page_width_in_pixels,
+                                               page_height_in_pixels);
   result->Set(page_number);
 }
 

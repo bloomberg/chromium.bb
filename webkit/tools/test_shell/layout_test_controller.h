@@ -227,6 +227,9 @@ class LayoutTestController : public CppBoundClass {
   void pageNumberForElementById(
       const CppArgumentList& args, CppVariant* result);
 
+  // Gets the number of pages to be printed.
+  void numberOfPages(const CppArgumentList& args, CppVariant* result);
+
   // Allows layout tests to start Timeline profiling.
   void setTimelineProfilingEnabled(const CppArgumentList& args,
                                    CppVariant* result);

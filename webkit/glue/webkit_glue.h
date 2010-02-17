@@ -70,6 +70,11 @@ int PageNumberForElementById(WebKit::WebFrame* web_frame,
                              float page_width_in_pixels,
                              float page_height_in_pixels);
 
+// Returns the number of pages to be printed.
+int NumberOfPages(WebKit::WebFrame* web_frame,
+                  float page_width_in_pixels,
+                  float page_height_in_pixels);
+
 // Returns a dump of the scroll position of the webframe.
 std::wstring DumpFrameScrollPosition(WebKit::WebFrame* web_frame, bool recursive);
 
