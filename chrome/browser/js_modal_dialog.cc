@@ -29,6 +29,7 @@ JavaScriptAppModalDialog::JavaScriptAppModalDialog(
       is_before_unload_dialog_(is_before_unload_dialog),
       reply_msg_(reply_msg) {
   DCHECK((tab_contents_ != NULL) != (extension_host_ != NULL));
+  InitNotifications();
 }
 
 JavaScriptAppModalDialog::~JavaScriptAppModalDialog() {
