@@ -292,7 +292,7 @@ o3djs.util.getPluginVersion = function() {
     }
   }
   if (description) {
-    var re = /.*version:(\d+)\.(\d+)\.(\d+)\.(\d+).*/;
+    var re = /.*version:\s*(\d+)\.(\d+)\.(\d+)\.(\d+).*/;
     // Parse the version out of the description.
     var parts = re.exec(description);
     if (parts && parts.length == 5) {
