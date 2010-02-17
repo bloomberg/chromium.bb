@@ -208,6 +208,7 @@ class RenderView : public RenderWidget,
   }
   virtual void didStartLoading();
   virtual void didStopLoading();
+  virtual bool isSmartInsertDeleteEnabled();
   virtual bool isSelectTrailingWhitespaceEnabled();
   virtual void setInputMethodEnabled(bool enabled);
   virtual void didChangeSelection(bool is_selection_empty);
