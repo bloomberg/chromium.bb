@@ -125,9 +125,6 @@ class BookmarkContextMenuController : public BookmarkModelObserver,
   // Invoked from the various bookmark model observer methods. Closes the menu.
   void ModelChanged();
 
-  // Removes the observer from the model and NULLs out model_.
-  BookmarkModel* RemoveModelObserver();
-
   // Returns true if selection_ has at least one bookmark of type url.
   bool HasURLs() const;
 
