@@ -149,8 +149,6 @@ void TabContentsViewGtk::CreateView(const gfx::Size& initial_size) {
   set_delete_on_destroy(false);
   WidgetGtk::Init(NULL, gfx::Rect(0, 0, initial_size.width(),
                                   initial_size.height()));
-  // WidgetGtk::Init doesn't set initial size so remember it here.
-  size_ = initial_size;
   // We need to own the widget in order to attach/detach the native view
   // to container.
   gtk_object_ref(GTK_OBJECT(GetNativeView()));
@@ -218,10 +216,6 @@ void TabContentsViewGtk::GetContainerBounds(gfx::Rect* out) const {
   // during init callers expect 0x0, but Gtk layout enforces a min size of 1x1.
   out->set_width(GetNativeView()->requisition.width);
   out->set_height(GetNativeView()->requisition.height);
-
-  // Return initial size if window is not visible yet.
-  if (out->IsEmpty())
-    out->set_size(size_);
 }
 
 void TabContentsViewGtk::StartDragging(const WebDropData& drop_data,
