@@ -72,6 +72,7 @@
                 'BufferSecurityCheck': 'false',
               },
               'VCLinkerTool': {
+                'SubSystem': '2',     # Set /SUBSYSTEM:WINDOWS
                 'AdditionalOptions': [
                   '/safeseh:no',
                   '/dynamicbase:no',
@@ -91,6 +92,7 @@
                 'BufferSecurityCheck': 'false',
               },
               'VCLinkerTool': {
+                'SubSystem': '2',     # Set /SUBSYSTEM:WINDOWS
                 'AdditionalOptions': [
                   '/SAFESEH:NO',
                   '/NXCOMPAT',
