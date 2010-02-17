@@ -94,6 +94,11 @@ void AppendUninstallCommandLineFlags(std::wstring* uninstall_cmd_line,
     uninstall_cmd_line->append(installer_util::switches::kChromeFrame);
   }
 
+  if (InstallUtil::IsChromeSxSProcess()) {
+    uninstall_cmd_line->append(L" --");
+    uninstall_cmd_line->append(installer_util::switches::kChromeSxS);
+  }
+
   // Propagate the verbose logging switch to uninstalls too.
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
   if (command_line.HasSwitch(installer_util::switches::kVerboseLogging)) {

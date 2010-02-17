@@ -27,6 +27,8 @@
           'util/delete_tree_work_item.h',
           'util/google_chrome_distribution.cc',
           'util/google_chrome_distribution.h',
+          'util/google_chrome_sxs_distribution.cc',
+          'util/google_chrome_sxs_distribution.h',
           'util/google_update_constants.cc',
           'util/google_update_constants.h',
           'util/google_update_settings.cc',

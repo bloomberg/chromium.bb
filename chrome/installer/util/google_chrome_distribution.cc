@@ -157,6 +157,10 @@ bool RelaunchSetupAsConsoleUser(const std::wstring& flag) {
 
 }  // namespace
 
+GoogleChromeDistribution::GoogleChromeDistribution()
+    : product_guid_(kChromeGuid) {
+}
+
 // The functions below are not used by the 64-bit Windows binary -
 // see the comment in google_chrome_distribution_dummy.cc
 #ifndef _WIN64
@@ -278,7 +282,7 @@ void GoogleChromeDistribution::DoPostUninstallOperations(
 }
 
 std::wstring GoogleChromeDistribution::GetAppGuid() {
-  return kChromeGuid;
+  return product_guid();
 }
 
 std::wstring GoogleChromeDistribution::GetApplicationName() {
@@ -294,7 +298,10 @@ std::wstring GoogleChromeDistribution::GetAlternateApplicationName() {
 }
 
 std::wstring GoogleChromeDistribution::GetInstallSubDir() {
-  return L"Google\\Chrome";
+  std::wstring sub_dir(installer_util::kGoogleChromeInstallSubDir1);
+  sub_dir.append(L"\\");
+  sub_dir.append(installer_util::kGoogleChromeInstallSubDir2);
+  return sub_dir;
 }
 
 std::wstring GoogleChromeDistribution::GetNewGoogleUpdateApKey(
@@ -342,14 +349,14 @@ std::string GoogleChromeDistribution::GetSafeBrowsingName() {
 std::wstring GoogleChromeDistribution::GetStateKey() {
   std::wstring key(google_update::kRegPathClientState);
   key.append(L"\\");
-  key.append(kChromeGuid);
+  key.append(product_guid());
   return key;
 }
 
 std::wstring GoogleChromeDistribution::GetStateMediumKey() {
   std::wstring key(google_update::kRegPathClientStateMedium);
   key.append(L"\\");
-  key.append(kChromeGuid);
+  key.append(product_guid());
   return key;
 }
 
@@ -361,7 +368,7 @@ std::wstring GoogleChromeDistribution::GetDistributionData(RegKey* key) {
   DCHECK(NULL != key);
   std::wstring sub_key(google_update::kRegPathClientState);
   sub_key.append(L"\\");
-  sub_key.append(kChromeGuid);
+  sub_key.append(product_guid());
 
   RegKey client_state_key(key->Handle(), sub_key.c_str());
   std::wstring result;
@@ -408,7 +415,7 @@ std::wstring GoogleChromeDistribution::GetUninstallRegPath() {
 std::wstring GoogleChromeDistribution::GetVersionKey() {
   std::wstring key(google_update::kRegPathClients);
   key.append(L"\\");
-  key.append(kChromeGuid);
+  key.append(product_guid());
   return key;
 }
 
@@ -428,7 +435,7 @@ void GoogleChromeDistribution::UpdateDiffInstallStatus(bool system_install,
   std::wstring ap_key_value;
   std::wstring reg_key(google_update::kRegPathClientState);
   reg_key.append(L"\\");
-  reg_key.append(kChromeGuid);
+  reg_key.append(product_guid());
   if (!key.Open(reg_root, reg_key.c_str(), KEY_ALL_ACCESS) ||
       !key.ReadValue(google_update::kRegApField, &ap_key_value)) {
     LOG(INFO) << "Application key not found.";
@@ -439,7 +446,7 @@ void GoogleChromeDistribution::UpdateDiffInstallStatus(bool system_install,
     } else if (!key.Valid()) {
       reg_key.assign(google_update::kRegPathClientState);
       if (!key.Open(reg_root, reg_key.c_str(), KEY_ALL_ACCESS) ||
-          !key.CreateKey(kChromeGuid, KEY_ALL_ACCESS)) {
+          !key.CreateKey(product_guid().c_str(), KEY_ALL_ACCESS)) {
         LOG(ERROR) << "Failed to create application key.";
         key.Close();
         return;

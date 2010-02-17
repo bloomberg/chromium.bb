@@ -88,8 +88,17 @@ class GoogleChromeDistribution : public BrowserDistribution {
   // outcome in the registry.
   virtual void InactiveUserToastExperiment(int flavor, bool system_install);
 
+  std::wstring product_guid() { return product_guid_; }
+
+ protected:
+  void set_product_guid(std::wstring guid) { product_guid_ = guid; }
+
+  // Disallow construction from others.
+  GoogleChromeDistribution();
+
  private:
   friend class BrowserDistribution;
+
   FRIEND_TEST(GoogleChromeDistributionTest, TestExtractUninstallMetrics);
 
   // Extracts uninstall metrics from the JSON file located at file_path.
@@ -111,8 +120,8 @@ class GoogleChromeDistribution : public BrowserDistribution {
   virtual bool BuildUninstallMetricsString(
       DictionaryValue* uninstall_metrics_dict, std::wstring* metrics);
 
-  // Disallow construction from non-friends.
-  GoogleChromeDistribution() {}
+  // The product ID for Google Update.
+  std::wstring product_guid_;
 };
 
 #endif  // CHROME_INSTALLER_UTIL_GOOGLE_CHROME_DISTRIBUTION_H_

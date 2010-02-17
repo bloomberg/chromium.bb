@@ -11,6 +11,9 @@ namespace switches {
 // Run the installer in Chrome Frame mode.
 const wchar_t kChromeFrame[] = L"chrome-frame";
 
+// Run the installer for Chrome SxS.
+const wchar_t kChromeSxS[] = L"chrome-sxs";
+
 // Create Desktop and QuickLaunch shortcuts
 const wchar_t kCreateAllShortcuts[] = L"create-all-shortcuts";
 
@@ -110,6 +113,8 @@ const wchar_t kSystemLevelToast[] = L"system-level-toast";
 
 }  // namespace switches
 
+const wchar_t kGoogleChromeInstallSubDir1[] = L"Google";
+const wchar_t kGoogleChromeInstallSubDir2[] = L"Chrome";
 const wchar_t kInstallBinaryDir[] = L"Application";
 const wchar_t kInstallUserDataDir[] = L"User Data";
 const wchar_t kChromeExe[] = L"chrome.exe";
@@ -120,6 +125,7 @@ const wchar_t kChromeNaCl64Dll[] = L"chrome_nacl_win64.dll";
 const wchar_t kChromeFrameDll[] = L"npchrome_frame.dll";
 const wchar_t kSetupExe[] = L"setup.exe";
 const wchar_t kInstallerDir[] = L"Installer";
+const wchar_t kSxSSuffix[] = L" SxS";
 
 const wchar_t kUninstallStringField[] = L"UninstallString";
 const wchar_t kUninstallDisplayNameField[] = L"DisplayName";

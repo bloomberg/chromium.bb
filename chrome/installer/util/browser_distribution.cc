@@ -15,6 +15,7 @@
 #include "chrome/common/env_vars.h"
 #include "chrome/installer/util/chrome_frame_distribution.h"
 #include "chrome/installer/util/google_chrome_distribution.h"
+#include "chrome/installer/util/google_chrome_sxs_distribution.h"
 #include "chrome/installer/util/install_util.h"
 #include "chrome/installer/util/l10n_string_util.h"
 
@@ -33,7 +34,11 @@ BrowserDistribution* BrowserDistribution::GetDistribution(bool chrome_frame) {
       dist = new ChromeFrameDistribution();
     } else {
 #if defined(GOOGLE_CHROME_BUILD)
-      dist = new GoogleChromeDistribution();
+      if (InstallUtil::IsChromeSxSProcess()) {
+        dist = new GoogleChromeSxSDistribution();
+      } else {
+        dist = new GoogleChromeDistribution();
+      }
 #else
       dist = new BrowserDistribution();
 #endif

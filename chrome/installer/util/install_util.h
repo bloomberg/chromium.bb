@@ -60,6 +60,12 @@ class InstallUtil {
   // inside of the Chrome Frame dll.
   static bool IsChromeFrameProcess();
 
+  // Returns true if this is running setup process for Chrome SxS (as
+  // indicated by the presence of --chrome-sxs on the command line) or if this
+  // is running Chrome process from the Chrome SxS installation (as indicated
+  // by either --chrome-sxs or the executable path).
+  static bool IsChromeSxSProcess();
+
   // Adds all DLLs in install_path whose names are given by dll_names to a
   // work item list containing registration or unregistration actions.
   //

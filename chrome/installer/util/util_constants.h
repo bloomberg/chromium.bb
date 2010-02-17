@@ -48,6 +48,7 @@ enum InstallStatus {
 
 namespace switches {
 extern const wchar_t kChromeFrame[];
+extern const wchar_t kChromeSxS[];
 extern const wchar_t kCreateAllShortcuts[];
 extern const wchar_t kDeleteProfile[];
 extern const wchar_t kDisableLogging[];
@@ -77,6 +78,8 @@ extern const wchar_t kInactiveUserToast[];
 extern const wchar_t kSystemLevelToast[];
 }  // namespace switches
 
+extern const wchar_t kGoogleChromeInstallSubDir1[];
+extern const wchar_t kGoogleChromeInstallSubDir2[];
 extern const wchar_t kInstallBinaryDir[];
 extern const wchar_t kInstallUserDataDir[];
 extern const wchar_t kChromeExe[];
@@ -87,6 +90,7 @@ extern const wchar_t kChromeNaCl64Dll[];
 extern const wchar_t kChromeFrameDll[];
 extern const wchar_t kSetupExe[];
 extern const wchar_t kInstallerDir[];
+extern const wchar_t kSxSSuffix[];
 
 extern const wchar_t kUninstallStringField[];
 extern const wchar_t kUninstallDisplayNameField[];

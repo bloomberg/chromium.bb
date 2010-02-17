@@ -145,6 +145,24 @@ bool InstallUtil::IsChromeFrameProcess() {
          module_name == installer_util::kChromeFrameDll;
 }
 
+bool InstallUtil::IsChromeSxSProcess() {
+  CommandLine* command_line = CommandLine::ForCurrentProcess();
+  CHECK(command_line);
+
+  if (command_line->HasSwitch(installer_util::switches::kChromeSxS))
+    return true;
+
+  // Also return true if we are running from Chrome SxS installed path.
+  FilePath exe_dir;
+  PathService::Get(base::DIR_EXE, &exe_dir);
+  std::wstring chrome_sxs_dir(installer_util::kGoogleChromeInstallSubDir2);
+  chrome_sxs_dir.append(installer_util::kSxSSuffix);
+  return FilePath::CompareEqualIgnoreCase(exe_dir.BaseName().value(),
+                                          installer_util::kInstallBinaryDir) &&
+         FilePath::CompareEqualIgnoreCase(exe_dir.DirName().BaseName().value(),
+                                          chrome_sxs_dir);
+}
+
 bool InstallUtil::BuildDLLRegistrationList(const std::wstring& install_path,
                                            const wchar_t** const dll_names,
                                            int dll_names_count,
