@@ -37,6 +37,7 @@
 #include "native_client/src/shared/platform/nacl_threads.h"
 
 #include "native_client/src/trusted/service_runtime/dyn_array.h"
+#include "native_client/src/trusted/service_runtime/nacl_config_dangerous.h"
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "native_client/src/trusted/service_runtime/nacl_sync_queue.h"
 #include "native_client/src/trusted/service_runtime/sel_mem.h"
@@ -478,25 +479,6 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           nacl_reg_t                tls_info);
 
 void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
-
-#if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
-static INLINE uintptr_t NaClSandboxCodeAddr(struct NaClApp *nap,
-                                            uintptr_t addr) {
-  return addr & ~(((uintptr_t) nap->bundle_size) - 1);
-}
-#elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
-static INLINE uintptr_t NaClSandboxCodeAddr(struct NaClApp *nap,
-                                            uintptr_t addr) {
-  /*
-   * TODO(cbiffle): this hardcodes the size of code memory, and needs to become
-   * a parameter in NaClApp.  The simplest way to do this is with the change
-   * suggested in issue 244.  Then we could fold ARM and x86 impls together.
-   */
-  return (addr & ~(((uintptr_t) nap->bundle_size) - 1)) & ~0xF0000000;
-}
-#else
-#error Unknown platform!
-#endif
 
 EXTERN_C_END
 

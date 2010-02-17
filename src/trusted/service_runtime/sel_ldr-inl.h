@@ -151,3 +151,33 @@ static INLINE uintptr_t NaClSysToUserStackAddr(struct NaClApp *nap,
 static INLINE uintptr_t NaClEndOfText(struct NaClApp *nap) {
   return nap->static_text_end;
 }
+
+static INLINE uintptr_t NaClSandboxCodeAddr(struct NaClApp *nap,
+                                            uintptr_t addr) {
+#if NACL_DANGEROUS_DEBUG_ONLY_NO_SANDBOX_RETURNS
+  UNREFERENCED_PARAMETER(nap);
+  return addr;
+#else
+# if NACL_ARCH(NACL_BUILD_ARCH) == NACL_x86
+#  if NACL_BUILD_SUBARCH == 32
+  return addr & ~(((uintptr_t) nap->bundle_size) - 1);
+#  elif NACL_BUILD_SUBARCH == 64
+  return (((addr & ~(((uintptr_t) nap->bundle_size) - 1))
+           & ((((uintptr_t) 1) << 32) - 1))
+          + nap->mem_start);
+#  else
+#   error "What kind of x86 are we on anyway?!?"
+#  endif
+# elif NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
+  /*
+   * TODO(cbiffle): this hardcodes the size of code memory, and needs to become
+   * a parameter in NaClApp.  The simplest way to do this is with the change
+   * suggested in issue 244.  Then we could fold ARM and x86 impls together.
+   */
+
+  return (addr & ~(((uintptr_t) nap->bundle_size) - 1)) & ~0xF0000000;
+# else
+#  error "What architecture are we on?!?"
+# endif
+#endif
+}

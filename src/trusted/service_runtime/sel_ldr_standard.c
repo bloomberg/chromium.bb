@@ -66,7 +66,7 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
             NaClErrorString(subret));
   }
 
-#if !defined(DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX)
+#if 0 == NACL_DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX
   check_abi = NACL_ABI_CHECK_OPTION_CHECK;
 #endif
 
@@ -211,7 +211,7 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
 
   NaClFillEndOfTextRegion(nap);
 
-#if !defined(DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX)
+#if 0 == NACL_DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX
   NaClLog(2, "Validating image\n");
   subret = NaClValidateImage(nap);
   if (LOAD_OK != subret) {
@@ -470,7 +470,10 @@ int NaClWaitForMainThreadToExit(struct NaClApp  *nap) {
   NaClLog(3, " waiting for exit status\n");
   while (nap->running) {
     NaClCondVarWait(&nap->cv, &nap->mu);
+    NaClLog(3, " wakeup, nap->running %d, nap->exit_status %d\n",
+            nap->running, nap->exit_status);
   }
+  NaClXMutexUnlock(&nap->mu);
   /*
    * Some thread invoked the exit (exit_group) syscall.
    */

@@ -1956,8 +1956,8 @@ int32_t NaClCommonSysThread_Create(struct NaClAppThread *natp,
   }
   /* make sure that the thread start function is aligned */
   /* TODO(robertm): there should be a function for this test */
-#if !defined(DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX)
 
+#if 0 == NACL_DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX
   if (0 != ((natp->nap->bundle_size - 1) & (uintptr_t) prog_ctr)) {
     NaClLog(LOG_ERROR, "bad pc alignment\n");
     retval = -NACL_ABI_EINVAL;

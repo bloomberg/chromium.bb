@@ -34,12 +34,15 @@
 
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClReadTP_start):
 
-   mov r0, r9, lsr #NACL_PAGESHIFT
-   lsl r0, #NACL_PAGESHIFT
- #if !defined(DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX)
-   bic lr, lr, #NACL_CONTROL_FLOW_MASK
- #endif
-   bx lr
+  /*
+   * NOTE: A copy of this code also exists in the arm startup under
+   *       the arm eabi name  __aeabi_read_tp()
+   */
+  mov r0, r9, lsr #NACL_PAGESHIFT
+  lsl r0, #NACL_PAGESHIFT
+#if 0 == NACL_DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX
+  bic lr, lr, #NACL_CONTROL_FLOW_MASK
+#endif
+  bx lr
 
 DEFINE_GLOBAL_HIDDEN_IDENTIFIER(NaClReadTP_end):
-

@@ -62,10 +62,10 @@ IDENTIFIER(NaClSyscallSeg):
 #if NACL_LINUX
         /* Linux uses TLS. */
         movl    %fs:nacl_thread_index@TPOFF, %eax
-#elif NACL_OSX
-        /* TODO(bsy): add TSD access code here */
 #elif NACL_WINDOWS
-        /* TODO(bsy): add TLS access code here */
+        /* TODO(ilewis): add TLS access code here */
+#elif NACL_OSX
+# error "64-bit NaCl for OSX is not supported"
 #else
 # error "What OS/compiler is the service runtime being compiled with?"
 #endif
@@ -112,11 +112,7 @@ IDENTIFIER(NaClSyscallSeg):
 #else
 # error "What OS/compiler is the service runtime being compiled with?"
 #endif
-#ifdef __PIC__
-        call    IDENTIFIER(NaClSyscallCSegHook)@PLT
-#else
         call    IDENTIFIER(NaClSyscallCSegHook)
-#endif
         hlt
 
         /*
