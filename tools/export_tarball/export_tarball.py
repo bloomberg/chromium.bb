@@ -41,9 +41,20 @@ def GetSourceDirectory():
 # Workaround lack of the exclude parameter in add method in python-2.4.
 # TODO(phajdan.jr): remove the workaround when it's not needed on the bot.
 class MyTarFile(tarfile.TarFile):
+  def set_remove_nonessential_files(self, remove):
+    self.__remove_nonessential_files = remove
+
   def add(self, name, arcname=None, recursive=True, exclude=None):
-    if exclude is not None and exclude(name):
+    head, tail = os.path.split(name)
+    if tail in ('.svn', '.git'):
       return
+
+    if self.__remove_nonessential_files:
+      for nonessential_dir in NONESSENTIAL_DIRS:
+        dir_path = os.path.join(GetSourceDirectory(), nonessential_dir)
+        if name.startswith(dir_path):
+          return
+
     tarfile.TarFile.add(self, name, arcname=arcname, recursive=recursive)
 
 def main(argv):
@@ -66,23 +77,10 @@ def main(argv):
   output_fullname = args[0] + '.tar.bz2'
   output_basename = os.path.basename(args[0])
 
-  def ShouldExcludePath(path):
-    head, tail = os.path.split(path)
-    if tail in ('.svn', '.git'):
-      return True
-
-    if not options.remove_nonessential_files:
-      return False
-    for nonessential_dir in NONESSENTIAL_DIRS:
-      if path.startswith(os.path.join(GetSourceDirectory(), nonessential_dir)):
-        return True
-
-    return False
-
   archive = MyTarFile.open(output_fullname, 'w:bz2')
+  archive.set_remove_nonessential_files(options.remove_nonessential_files)
   try:
-    archive.add(GetSourceDirectory(), arcname=output_basename,
-                exclude=ShouldExcludePath)
+    archive.add(GetSourceDirectory(), arcname=output_basename)
   finally:
     archive.close()
 
