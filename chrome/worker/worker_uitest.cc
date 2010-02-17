@@ -14,38 +14,6 @@
 static const char kTestCompleteCookie[] = "status";
 static const char kTestCompleteSuccess[] = "OK";
 
-// Layout test files for WorkerFastLayoutTest for the WorkerFastLayoutTest
-// shards.
-static const char* kWorkerFastLayoutTestFiles[] = {
-  "stress-js-execution.html",
-  "use-machine-stack.html",
-  "worker-call.html",
-#if defined(OS_WIN)
-  // This test occasionally fails on valgrind (http://crbug.com/30212).
-  "worker-cloneport.html",
-#endif
-  "worker-close.html",
-  "worker-constructor.html",
-  "worker-context-gc.html",
-  "worker-context-multi-port.html",
-  "worker-event-listener.html",
-  "worker-gc.html",
-  // worker-lifecycle.html relies on layoutTestController.workerThreadCount
-  // which is not currently implemented.
-  // "worker-lifecycle.html",
-  "worker-location.html",
-  "worker-messageport.html",
-  "worker-messageport-gc.html",
-  "worker-multi-port.html",
-  "worker-navigator.html",
-  "worker-replace-global-constructor.html",
-  "worker-replace-self.html",
-  "worker-script-error.html",
-  "worker-terminate.html",
-  "worker-timeout.html"
-};
-static const int kWorkerFastLayoutTestShards = 3;
-
 class WorkerTest : public UILayoutTest {
  protected:
   virtual ~WorkerTest() { }
@@ -108,7 +76,7 @@ class WorkerTest : public UILayoutTest {
     return false;
   }
 
-  void RunWorkerFastLayoutTests(size_t shard) {
+  void RunWorkerFastLayoutTest(const std::string& test_case_file_name) {
     FilePath fast_test_dir;
     fast_test_dir = fast_test_dir.AppendASCII("LayoutTests");
     fast_test_dir = fast_test_dir.AppendASCII("fast");
@@ -123,17 +91,13 @@ class WorkerTest : public UILayoutTest {
     resource_dir = resource_dir.AppendASCII("resources");
     AddResourceForLayoutTest(js_dir, resource_dir);
 
-    for (size_t i = 0; i < arraysize(kWorkerFastLayoutTestFiles); ++i) {
-      if ((i % kWorkerFastLayoutTestShards) == shard) {
-        printf ("Test: %s\n", kWorkerFastLayoutTestFiles[i]);
-        RunLayoutTest(kWorkerFastLayoutTestFiles[i], kNoHttpPort);
-      }
-    }
+    printf ("Test: %s\n", test_case_file_name.c_str());
+    RunLayoutTest(test_case_file_name, kNoHttpPort);
 
-    // Navigate away from to a blank page so that any workers are cleaned up.
+    // Navigate to a blank page so that any workers are cleaned up.
     // This helps leaks trackers do a better job of reporting.
     scoped_refptr<TabProxy> tab(GetActiveTab());
-    GURL about_url(std::string("file://localhost/"));
+    GURL about_url(std::string("about:blank"));
     EXPECT_EQ(AUTOMATION_MSG_NAVIGATION_SUCCESS, tab->NavigateToURL(about_url));
   }
 
@@ -215,30 +179,90 @@ TEST_F(WorkerTest, SharedWorkerHttpAuth) {
   // dialogs displayed by non-navigating tabs.
 }
 
-// Crashy on Linux and Mac, see http://crbug.com/28445, http://crbug.com/22898,
-// http://crbug.com/35023.
+
+// All kinds of crashes on Linux and Mac http://crbug.com/
 #if defined(OS_LINUX) || defined(OS_MACOSX)
-#define WorkerFastLayoutTests1 DISABLED_WorkerFastLayoutTests1
-#define WorkerFastLayoutTests2 DISABLED_WorkerFastLayoutTests2
+#define StressJSExecution DISABLED_StressJSExecution
 #endif
 
-// Failing on Windows, see http://crbug.com/35867. Crashy on Linux and Mac,
-// see http://crbug.com/28445, http://crbug.com/22898, http://crbug.com/35023.
-TEST_F(WorkerTest, DISABLED_WorkerFastLayoutTests0) {
-  SCOPED_TRACE("");
-  RunWorkerFastLayoutTests(0);
+TEST_F(WorkerTest, StressJSExecution) {
+  RunWorkerFastLayoutTest("stress-js-execution.html");
 }
 
-// Crashy, see http://crbug.com/22898, http://crbug.com/35023.
-TEST_F(WorkerTest, WorkerFastLayoutTests1) {
-  SCOPED_TRACE("");
-  RunWorkerFastLayoutTests(1);
+TEST_F(WorkerTest, UseMachineStack) {
+  RunWorkerFastLayoutTest("use-machine-stack.html");
 }
 
-// Crashy, see http://crbug.com/22898, http://crbug.com/35023.
-TEST_F(WorkerTest, WorkerFastLayoutTests2) {
-  SCOPED_TRACE("");
-  RunWorkerFastLayoutTests(2);
+TEST_F(WorkerTest, WorkerCall) {
+  RunWorkerFastLayoutTest("worker-call.html");
+}
+
+#if defined(OS_LINUX) || defined(OS_MACOSX)
+#define WorkerClonePort DISABLED_WorkerClonePort
+#endif
+
+TEST_F(WorkerTest, WorkerClonePort) {
+  RunWorkerFastLayoutTest("worker-cloneport.html");
+}
+
+TEST_F(WorkerTest, WorkerCloseFast) {
+  RunWorkerFastLayoutTest("worker-close.html");
+}
+
+TEST_F(WorkerTest, WorkerConstructor) {
+  RunWorkerFastLayoutTest("worker-constructor.html");
+}
+
+TEST_F(WorkerTest, WorkerContextGc) {
+  RunWorkerFastLayoutTest("worker-context-gc.html");
+}
+
+TEST_F(WorkerTest, WorkerContextMultiPort) {
+  RunWorkerFastLayoutTest("worker-context-multi-port.html");
+}
+
+TEST_F(WorkerTest, WorkerEventListener) {
+  RunWorkerFastLayoutTest("worker-event-listener.html");
+}
+
+TEST_F(WorkerTest, WorkerGC) {
+  RunWorkerFastLayoutTest("worker-gc.html");
+}
+
+// worker-lifecycle.html relies on layoutTestController.workerThreadCount
+// which is not currently implemented.
+TEST_F(WorkerTest, DISABLED_WorkerLifecycle) {
+  RunWorkerFastLayoutTest("worker-lifecycle.html");
+}
+TEST_F(WorkerTest, WorkerLocation) {
+  RunWorkerFastLayoutTest("worker-location.html");
+}
+TEST_F(WorkerTest, WorkerMessagePort) {
+  RunWorkerFastLayoutTest("worker-messageport.html");
+}
+TEST_F(WorkerTest, WorkerMessagePortGC) {
+  RunWorkerFastLayoutTest("worker-messageport-gc.html");
+}
+TEST_F(WorkerTest, WorkerMultiPort) {
+  RunWorkerFastLayoutTest("worker-multi-port.html");
+}
+TEST_F(WorkerTest, WorkerNavigator) {
+  RunWorkerFastLayoutTest("worker-navigator.html");
+}
+TEST_F(WorkerTest, WorkerReplaceGlobalConstructor) {
+  RunWorkerFastLayoutTest("worker-replace-global-constructor.html");
+}
+TEST_F(WorkerTest, WorkerReplaceSelf) {
+  RunWorkerFastLayoutTest("worker-replace-self.html");
+}
+TEST_F(WorkerTest, WorkerScriptError) {
+  RunWorkerFastLayoutTest("worker-script-error.html");
+}
+TEST_F(WorkerTest, WorkerTerminate) {
+  RunWorkerFastLayoutTest("worker-terminate.html");
+}
+TEST_F(WorkerTest, WorkerTimeout) {
+  RunWorkerFastLayoutTest("worker-timeout.html");
 }
 
 #if defined(OS_WIN) || defined(OS_MACOSX)
