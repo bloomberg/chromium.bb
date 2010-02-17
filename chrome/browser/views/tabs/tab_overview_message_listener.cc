@@ -49,8 +49,11 @@ void TabOverviewMessageListener::DidProcessEvent(GdkEvent* event) {
   if (event->type == GDK_CLIENT_EVENT) {
     TabOverviewTypes::Message message;
     GdkEventClient* client_event = reinterpret_cast<GdkEventClient*>(event);
-    if (TabOverviewTypes::instance()->DecodeMessage(*client_event, &message))
+    TabOverviewTypes* types = TabOverviewTypes::instance();
+    if (types->DecodeMessage(*client_event, &message))
       ProcessMessage(message, client_event->window);
+    else
+      types->HandleNonChromeClientMessageEvent(*client_event);
   }
 }
 

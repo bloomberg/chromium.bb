@@ -251,10 +251,21 @@ class TabOverviewTypes {
   // returned. If false is returned, |event| is not a valid StringMessage.
   bool DecodeStringMessage(const GdkEventProperty& event, std::string* msg);
 
+  // Handle ClientMessage events that weren't decodable using DecodeMessage().
+  // Specifically, this catches messages about the WM_S0 selection that get sent
+  // when a window manager process starts (so that we can re-run InitWmInfo()).
+  // See ICCCM 2.8 for more info about MANAGER selections.
+  void HandleNonChromeClientMessageEvent(const GdkEventClient& event);
+
  private:
   friend struct DefaultSingletonTraits<TabOverviewTypes>;
 
   TabOverviewTypes();
+
+  // Initialize 'wm_' and send the window manager a message telling it the
+  // version of the IPC protocol that we support.  This is called in our
+  // constructor, but needs to be re-run if the window manager gets restarted.
+  void InitWmInfo();
 
   // Maps from our Atom enum to the X server's atom IDs and from the
   // server's IDs to atoms' string names.  These maps aren't necessarily in

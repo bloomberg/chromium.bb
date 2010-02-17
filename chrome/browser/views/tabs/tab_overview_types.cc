@@ -193,6 +193,19 @@ bool TabOverviewTypes::DecodeStringMessage(const GdkEventProperty& event,
   return true;
 }
 
+void TabOverviewTypes::HandleNonChromeClientMessageEvent(
+    const GdkEventClient& event) {
+  // Only do these lookups once; they should never change.
+  static GdkAtom manager_gdk_atom =
+      gdk_x11_xatom_to_atom(type_to_atom_[ATOM_MANAGER]);
+  static Atom wm_s0_atom = type_to_atom_[ATOM_WM_S0];
+
+  if (event.message_type == manager_gdk_atom &&
+      static_cast<Atom>(event.data.l[1]) == wm_s0_atom) {
+    InitWmInfo();
+  }
+}
+
 TabOverviewTypes::TabOverviewTypes() {
   scoped_array<char*> names(new char*[kNumAtoms]);
   scoped_array<Atom> atoms(new Atom[kNumAtoms]);
@@ -213,6 +226,18 @@ TabOverviewTypes::TabOverviewTypes() {
 
   wm_message_atom_ = type_to_atom_[ATOM_CHROME_WM_MESSAGE];
 
+  // Make sure that we're selecting structure changes on the root window;
+  // the window manager uses StructureNotifyMask when sending the ClientMessage
+  // event to announce that it's taken the manager selection.
+  GdkWindow* root = gdk_get_default_root_window();
+  GdkEventMask event_mask = gdk_window_get_events(root);
+  gdk_window_set_events(
+      root, static_cast<GdkEventMask>(event_mask | GDK_STRUCTURE_MASK));
+
+  InitWmInfo();
+}
+
+void TabOverviewTypes::InitWmInfo() {
   wm_ = XGetSelectionOwner(x11_util::GetXDisplay(), type_to_atom_[ATOM_WM_S0]);
 
   // Let the window manager know which version of the IPC messages we support.
