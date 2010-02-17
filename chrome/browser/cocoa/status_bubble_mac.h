@@ -44,6 +44,10 @@ class StatusBubbleMac : public StatusBubble {
   // exist.
   void UpdateSizeAndPosition();
 
+  // Mac-specific method: Change the parent window of the status bubble. Safe to
+  // call even when the status bubble does not exist.
+  void SwitchParentWindow(NSWindow* parent);
+
   // Delegate method called when a fade-in or fade-out transition has
   // completed.  This is public so that it may be visible to the CAAnimation
   // delegate, which is an Objective-C object.

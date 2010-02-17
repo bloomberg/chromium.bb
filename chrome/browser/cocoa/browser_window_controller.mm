@@ -1673,6 +1673,10 @@ willAnimateFromState:(bookmarks::VisualState)oldState
     [self layoutSubviews];
   }
 
+  // Move the status bubble over, if we have one.
+  if (statusBubble_)
+    statusBubble_->SwitchParentWindow(destWindow);
+
   // The window needs to be onscreen before we can set its first responder.
   [destWindow makeKeyAndOrderFront:self];
   [focusTracker restoreFocusInWindow:destWindow];

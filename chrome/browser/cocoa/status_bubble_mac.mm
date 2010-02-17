@@ -533,6 +533,21 @@ void StatusBubbleMac::UpdateSizeAndPosition() {
   [window_ setFrame:CalculateWindowFrame() display:YES];
 }
 
+void StatusBubbleMac::SwitchParentWindow(NSWindow* parent) {
+  DCHECK(parent);
+
+  // If not attached, just update our member variable and return.
+  if (!is_attached()) {
+    parent_ = parent;
+    return;
+  }
+
+  Detach();
+  parent_ = parent;
+  Attach();
+  UpdateSizeAndPosition();
+}
+
 NSRect StatusBubbleMac::CalculateWindowFrame() {
   DCHECK(parent_);
 
