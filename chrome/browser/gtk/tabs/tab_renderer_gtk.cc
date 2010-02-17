@@ -262,6 +262,9 @@ TabRendererGtk::TabRendererGtk(ThemeProvider* theme_provider)
 
   hover_animation_.reset(new SlideAnimation(this));
   hover_animation_->SetSlideDuration(kHoverDurationMs);
+
+  registrar_.Add(this, NotificationType::BROWSER_THEME_CHANGED,
+                 NotificationService::AllSources());
 }
 
 TabRendererGtk::~TabRendererGtk() {
@@ -528,6 +531,20 @@ void TabRendererGtk::StopPinnedTabTitleAnimation() {
 void TabRendererGtk::SetBounds(const gfx::Rect& bounds) {
   requisition_ = bounds;
   gtk_widget_set_size_request(tab_.get(), bounds.width(), bounds.height());
+}
+
+void TabRendererGtk::Observe(NotificationType type,
+                             const NotificationSource& source,
+                             const NotificationDetails& details) {
+  DCHECK(type == NotificationType::BROWSER_THEME_CHANGED);
+
+  // Clear our cache when we receive a theme change notification because it
+  // contains cached bitmaps based off the previous theme.
+  for (BitmapCache::iterator it = cached_bitmaps_.begin();
+       it != cached_bitmaps_.end(); ++it) {
+    delete it->second.bitmap;
+  }
+  cached_bitmaps_.clear();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

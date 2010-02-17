@@ -30,7 +30,8 @@ class TabContents;
 class ThemeProvider;
 class ThrobAnimation;
 
-class TabRendererGtk : public AnimationDelegate {
+class TabRendererGtk : public AnimationDelegate,
+                       public NotificationObserver {
  public:
   // Possible animation states.
   enum AnimationState {
@@ -145,6 +146,11 @@ class TabRendererGtk : public AnimationDelegate {
 
   // Sets the bounds of the tab.
   virtual void SetBounds(const gfx::Rect& bounds);
+
+  // Provide NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // Advance the loading animation to the next frame, or hide the animation if
   // the tab isn't loading.  Returns |true| if the icon area needs to be
@@ -406,6 +412,9 @@ class TabRendererGtk : public AnimationDelegate {
 
   // The current color of the close button.
   SkColor close_button_color_;
+
+  // Used to listen for theme change notifications.
+  NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(TabRendererGtk);
 };
