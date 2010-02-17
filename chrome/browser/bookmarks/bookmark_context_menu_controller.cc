@@ -243,7 +243,6 @@ void BookmarkContextMenuController::BuildMenu() {
   } else {
     AddItem(IDS_BOOKMARK_BAR_EDIT);
   }
-  AddItem(IDS_BOOKMARK_BAR_REMOVE);
 
   if (configuration_ == BOOKMARK_MANAGER_TABLE_OTHER ||
       configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU_OTHER) {
@@ -254,6 +253,9 @@ void BookmarkContextMenuController::BuildMenu() {
   AddItem(IDS_CUT);
   AddItem(IDS_COPY);
   AddItem(IDS_PASTE);
+
+  AddSeparator();
+  AddItem(IDS_BOOKMARK_BAR_REMOVE);
 
   if (configuration_ == BOOKMARK_MANAGER_ORGANIZE_MENU) {
     AddSeparator();
