@@ -40,6 +40,17 @@
       'ENABLE_WEB_SOCKETS=1',
       'ENABLE_WORKERS=1',
     ],
+    # We have to nest variables inside variables so that they can be overridden
+    # through GYP_DEFINES.
+    'variables': {
+      'use_accelerated_compositing%':0,
+    },
+    'use_accelerated_compositing%': '<(use_accelerated_compositing)',
+    'conditions': [
+      ['use_accelerated_compositing==1', {
+        'feature_defines': ['WTF_USE_ACCELERATED_COMPOSITING=1'],
+      }],
+    ],
     # TODO: If the need arises, create a mechanism that will intelligently
     # merge the lists rather than replace one with the other. This may
     # require changes in gyp.
