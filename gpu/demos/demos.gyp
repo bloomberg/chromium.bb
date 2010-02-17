@@ -18,9 +18,6 @@
       }],
     ],
   },
-  'includes': [
-    '../../build/common.gypi',
-  ],
   'targets': [
     {
       'target_name': 'gpu_demo_framework',
@@ -45,18 +42,14 @@
       'sources': [
         'framework/main_exe.cc',
         'framework/window.cc',
+        'framework/window_linux.cc',
+        'framework/window_mac.mm',
+        'framework/window_win.cc',
         'framework/window.h',
       ],
       'conditions': [
         ['OS=="linux"', {
-          'sources': ['framework/window_linux.cc'],
           'dependencies': ['../../build/linux/system.gyp:gtk'],
-        }],
-        ['OS=="mac"', {
-          'sources': ['framework/window_mac.mm'],
-        }],
-        ['OS=="win"', {
-          'sources': ['framework/window_win.cc'],
         }],
       ],
     },
@@ -75,22 +68,22 @@
         'sources': [
           'framework/main_pepper.cc',
         ],
+        'run_as': {
+          'action': [
+            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)chrome<(EXECUTABLE_SUFFIX)',
+            '--no-sandbox',
+            '--internal-pepper',
+            '--enable-gpu-plugin',
+            '--load-plugin=$(TargetPath)',
+            'file://$(ProjectDir)pepper_gpu_demo.html',
+          ],
+        },
         'conditions': [
           ['OS=="win"', {
             'sources': [
               'framework/plugin.def',
               'framework/plugin.rc',
             ],
-            'run_as': {
-              'action': [
-                '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)chrome<(EXECUTABLE_SUFFIX)',
-                '--no-sandbox',
-                '--internal-pepper',
-                '--enable-gpu-plugin',
-                '--load-plugin=$(TargetPath)',
-                'file://$(ProjectDir)pepper_gpu_demo.html',
-              ],
-            },
           }],
           ['OS=="linux"', {
             # -gstabs, used in the official builds, causes an ICE. Remove it.
