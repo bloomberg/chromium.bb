@@ -4,12 +4,13 @@
 # found in the LICENSE file.
 
 base_dir=$(dirname "$0")
+repo="$base_dir/git-cl-repo"
 url="http://src.chromium.org/git/git-cl.git"
-cur_url=$(git config -f "$base_dir/git-cl-repo/.git/config" remote.origin.url)
+cur_url=$(git config -f "$repo/.git/config" remote.origin.url)
 
-if [ "$cur_url" != "$url" ]; then
+if [ -e "$repo" -a "$cur_url" != "$url" ]; then
   cat <<EOF
-$base_dir/git-cl-repo
+$repo
 is tracking a non-default remote repository:
 
   default: $url
@@ -18,13 +19,13 @@ is tracking a non-default remote repository:
 This is intended to be an automatically-updating, read-only repository.
 Please create a separate repository for making changes to git-cl, move your
 modifications there, and then run:
-  rm -rf $base_dir/git-cl-repo
+  rm -rf $repo
 EOF
   exit 1
 fi
 
-if [ ! -f "$base_dir/git-cl-repo/git-cl" ]; then
-  git clone $url $base_dir/git-cl-repo -q
+if [ ! -f "$repo/git-cl" ]; then
+  git clone $url $repo -q
 fi
 
-$base_dir/git-cl-repo/git-cl "$@"
+$repo/git-cl "$@"
