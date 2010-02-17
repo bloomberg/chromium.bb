@@ -805,7 +805,10 @@ class RenderView : public RenderWidget,
   void LogNavigationState(const NavigationState* state,
                           const WebKit::WebDataSource* ds) const;
 
-  // Scan the given frame for password forms and send them up to the browser.
+  // Scans the given frame for forms and sends them up to the browser.
+  void SendForms(WebKit::WebFrame* frame);
+
+  // Scans the given frame for password forms and sends them up to the browser.
   void SendPasswordForms(WebKit::WebFrame* frame);
 
   void Print(WebKit::WebFrame* frame, bool script_initiated);
@@ -841,7 +844,7 @@ class RenderView : public RenderWidget,
   bool AllowContentType(ContentSettingsType settings_type,
                         bool enabled_per_settings);
 
-  // Resets the |content_blocked_| array.	
+  // Resets the |content_blocked_| array.
   void ClearBlockedContentSettings();
 
   // Bitwise-ORed set of extra bindings that have been enabled.  See

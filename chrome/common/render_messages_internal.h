@@ -1347,8 +1347,13 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       string16 /* title */,
                       FilePath /* Default file name */)
 
+  // Notification that forms have been seen that are candidates for
+  // filling/submitting by the AutoFillManager.
+  IPC_MESSAGE_ROUTED1(ViewHostMsg_FormsSeen,
+                      std::vector<webkit_glue::FormFieldValues> /* forms */)
+
   // Notification that password forms have been seen that are candidates for
-  // filling/submitting by the password manager
+  // filling/submitting by the password manager.
   IPC_MESSAGE_ROUTED1(ViewHostMsg_PasswordFormsSeen,
                       std::vector<webkit_glue::PasswordForm> /* forms */)
 

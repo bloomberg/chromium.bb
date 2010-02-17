@@ -757,6 +757,7 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                                     OnMsgRunBeforeUnloadConfirm)
     IPC_MESSAGE_HANDLER_DELAY_REPLY(ViewHostMsg_ShowModalHTMLDialog,
                                     OnMsgShowModalHTMLDialog)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_FormsSeen, OnMsgFormsSeen)
     IPC_MESSAGE_HANDLER(ViewHostMsg_PasswordFormsSeen, OnMsgPasswordFormsSeen)
     IPC_MESSAGE_HANDLER(ViewHostMsg_FormFieldValuesSubmitted,
                         OnMsgFormFieldValuesSubmitted)
@@ -1340,6 +1341,14 @@ void RenderViewHost::MediaPlayerActionAt(const gfx::Point& location,
                                          const WebMediaPlayerAction& action) {
   // TODO(ajwong): Which thread should run this?  Does it matter?
   Send(new ViewMsg_MediaPlayerActionAt(routing_id(), location, action));
+}
+
+void RenderViewHost::OnMsgFormsSeen(
+    const std::vector<webkit_glue::FormFieldValues>& forms) {
+  RenderViewHostDelegate::AutoFill* autofill_delegate =
+      delegate_->GetAutoFillDelegate();
+  if (autofill_delegate)
+    autofill_delegate->FormsSeen(forms);
 }
 
 void RenderViewHost::OnMsgPasswordFormsSeen(
