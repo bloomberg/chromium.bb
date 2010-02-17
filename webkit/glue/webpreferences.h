@@ -58,6 +58,7 @@ struct WebPreferences {
   GURL user_style_sheet_location;
 
   bool allow_universal_access_from_file_urls;
+  bool allow_file_access_from_file_urls;
 
   bool experimental_webgl_enabled;
 
@@ -100,6 +101,7 @@ struct WebPreferences {
         tabs_to_links(true),
         user_style_sheet_enabled(false),
         allow_universal_access_from_file_urls(false),
+        allow_file_access_from_file_urls(false),
         experimental_webgl_enabled(false),
         geolocation_enabled(false) {
   }

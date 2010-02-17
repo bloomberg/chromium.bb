@@ -74,6 +74,7 @@ void WebPreferences::Apply(WebView* web_view) const {
   // universal access. Only test shell will enable this.
   settings->setAllowUniversalAccessFromFileURLs(
       allow_universal_access_from_file_urls);
+  settings->setAllowFileAccessFromFileURLs(allow_file_access_from_file_urls);
 
   // We prevent WebKit from checking if it needs to add a "text direction"
   // submenu to a context menu. it is not only because we don't need the result
