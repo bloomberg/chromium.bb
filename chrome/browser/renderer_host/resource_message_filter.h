@@ -174,10 +174,8 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
                     IPC::Message* reply_msg);
   void OnCreateWorker(const ViewHostMsg_CreateWorker_Params& params,
                       int* route_id);
-  void OnLookupSharedWorker(const GURL& url,
-                            const string16& name,
-                            unsigned long long document_id,
-                            int render_view_route_id,
+  void OnLookupSharedWorker(const ViewHostMsg_CreateWorker_Params& params,
+                            bool* exists,
                             int* route_id,
                             bool* url_error);
   void OnDocumentDetached(unsigned long long document_id);

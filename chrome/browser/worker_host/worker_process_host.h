@@ -122,10 +122,8 @@ class WorkerProcessHost : public ChildProcessHost {
   void OnWorkerContextClosed(int worker_route_id);
 
   // Called if a worker tries to connect to a shared worker.
-  void OnLookupSharedWorker(const GURL& url,
-                            const string16& name,
-                            unsigned long long document_id,
-                            int render_view_route_id,
+  void OnLookupSharedWorker(const ViewHostMsg_CreateWorker_Params& params,
+                            bool* exists,
                             int* route_id,
                             bool* url_error);
 

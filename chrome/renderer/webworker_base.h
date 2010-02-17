@@ -31,7 +31,8 @@ class WebWorkerBase : public IPC::Channel::Listener {
                            bool is_shared,
                            const string16& name,
                            const string16& user_agent,
-                           const string16& source_code);
+                           const string16& source_code,
+                           int pending_route_id);
 
   // Returns true if the worker is running (can send messages to it).
   bool IsStarted();

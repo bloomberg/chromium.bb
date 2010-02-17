@@ -1987,14 +1987,23 @@ WebSharedWorker* RenderView::createSharedWorker(
     unsigned long long document_id) {
 
   int route_id = MSG_ROUTING_NONE;
+  bool exists = false;
   bool url_mismatch = false;
+  ViewHostMsg_CreateWorker_Params params;
+  params.url = url;
+  params.is_shared = true;
+  params.name = name;
+  params.document_id = document_id;
+  params.render_view_route_id = routing_id_;
+  params.route_id = MSG_ROUTING_NONE;
   Send(new ViewHostMsg_LookupSharedWorker(
-      url, name, document_id, routing_id_, &route_id, &url_mismatch));
+      params, &exists, &route_id, &url_mismatch));
   if (url_mismatch) {
     return NULL;
   } else {
     return new WebSharedWorkerProxy(RenderThread::current(),
                                     document_id,
+                                    exists,
                                     route_id,
                                     routing_id_);
   }

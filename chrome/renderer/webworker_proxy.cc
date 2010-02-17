@@ -46,7 +46,8 @@ void WebWorkerProxy::startWorkerContext(
     const WebURL& script_url,
     const WebString& user_agent,
     const WebString& source_code) {
-  CreateWorkerContext(script_url, false, string16(), user_agent, source_code);
+  CreateWorkerContext(script_url, false, string16(), user_agent, source_code,
+                      MSG_ROUTING_NONE);
 }
 
 void WebWorkerProxy::terminateWorkerContext() {

@@ -761,23 +761,20 @@ void ResourceMessageFilter::OnLaunchNaCl(
 
 void ResourceMessageFilter::OnCreateWorker(
     const ViewHostMsg_CreateWorker_Params& params, int* route_id) {
-  *route_id = render_widget_helper_->GetNextRoutingID();
+  *route_id = params.route_id != MSG_ROUTING_NONE ?
+      params.route_id : render_widget_helper_->GetNextRoutingID();
   WorkerService::GetInstance()->CreateWorker(
       params.url, params.is_shared, off_the_record(), params.name,
       params.document_id, id(), params.render_view_route_id, this, *route_id);
 }
 
-void ResourceMessageFilter::OnLookupSharedWorker(const GURL& url,
-                                                 const string16& name,
-                                                 unsigned long long document_id,
-                                                 int render_view_route_id,
-                                                 int* route_id,
-                                                 bool* url_mismatch) {
-  int new_route_id = render_widget_helper_->GetNextRoutingID();
-  bool worker_found = WorkerService::GetInstance()->LookupSharedWorker(
-      url, name, off_the_record(), document_id, id(), render_view_route_id,
-      this, new_route_id, url_mismatch);
-  *route_id = worker_found ? new_route_id : MSG_ROUTING_NONE;
+void ResourceMessageFilter::OnLookupSharedWorker(
+    const ViewHostMsg_CreateWorker_Params& params, bool* exists, int* route_id,
+    bool* url_mismatch) {
+  *route_id = render_widget_helper_->GetNextRoutingID();
+  *exists = WorkerService::GetInstance()->LookupSharedWorker(
+      params.url, params.name, off_the_record(), params.document_id, id(),
+      params.render_view_route_id, this, *route_id, url_mismatch);
 }
 
 void ResourceMessageFilter::OnDocumentDetached(unsigned long long document_id) {

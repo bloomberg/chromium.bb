@@ -23,6 +23,7 @@ class WebSharedWorkerProxy : public WebKit::WebSharedWorker,
   // If the worker not loaded yet, route_id == MSG_ROUTING_NONE
   WebSharedWorkerProxy(ChildThread* child_thread,
                        unsigned long long document_id,
+                       bool exists,
                        int route_id,
                        int render_view_route_id);
 
@@ -43,6 +44,10 @@ class WebSharedWorkerProxy : public WebKit::WebSharedWorker,
  private:
   void OnWorkerCreated();
 
+  // The id for the placeholder worker instance we've stored on the
+  // browser process (we need to pass this same route id back in when creating
+  // the worker).
+  int pending_route_id_;
   ConnectListener* connect_listener_;
 
   DISALLOW_COPY_AND_ASSIGN(WebSharedWorkerProxy);

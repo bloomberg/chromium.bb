@@ -551,6 +551,10 @@ struct ViewHostMsg_CreateWorker_Params {
 
   // RenderView routing id used to send messages back to the parent.
   int render_view_route_id;
+
+  // The route ID to associate with the worker. If MSG_ROUTING_NONE is passed,
+  // a new unique ID is created and assigned to the worker.
+  int route_id;
 };
 
 // Creates a new view via a control message since the view doesn't yet exist.
@@ -2401,6 +2405,7 @@ struct ParamTraits<ViewHostMsg_CreateWorker_Params> {
     WriteParam(m, p.name);
     WriteParam(m, p.document_id);
     WriteParam(m, p.render_view_route_id);
+    WriteParam(m, p.route_id);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return
@@ -2408,7 +2413,8 @@ struct ParamTraits<ViewHostMsg_CreateWorker_Params> {
         ReadParam(m, iter, &p->is_shared) &&
         ReadParam(m, iter, &p->name) &&
         ReadParam(m, iter, &p->document_id) &&
-        ReadParam(m, iter, &p->render_view_route_id);
+        ReadParam(m, iter, &p->render_view_route_id) &&
+        ReadParam(m, iter, &p->route_id);
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");
@@ -2421,6 +2427,8 @@ struct ParamTraits<ViewHostMsg_CreateWorker_Params> {
     LogParam(p.document_id, l);
     l->append(L", ");
     LogParam(p.render_view_route_id, l);
+    l->append(L")");
+    LogParam(p.route_id, l);
     l->append(L")");
   }
 };

@@ -94,13 +94,16 @@ bool WorkerService::CreateWorkerFromInstance(
     WorkerProcessHost::WorkerInstance* existing_instance =
         FindSharedWorkerInstance(
             instance.url(), instance.name(), instance.off_the_record());
+    WorkerProcessHost::WorkerInstance::SenderInfo sender_info =
+        instance.GetSender();
     // If this worker is already running, no need to create a new copy. Just
     // inform the caller that the worker has been created.
     if (existing_instance) {
-      // TODO(atwilson): Change this to scan the sender list (crbug.com/29243).
-      WorkerProcessHost::WorkerInstance::SenderInfo sender_info =
-          instance.GetSender();
-      existing_instance->AddSender(sender_info.first, sender_info.second);
+      // Walk the worker's sender list to see if this client is listed. If not,
+      // then it means that the worker started by the client already exited so
+      // we should not attach to this new one (http://crbug.com/29243).
+      if (!existing_instance->HasSender(sender_info.first, sender_info.second))
+        return false;
       sender_info.first->Send(new ViewMsg_WorkerCreated(sender_info.second));
       return true;
     }
@@ -108,11 +111,13 @@ bool WorkerService::CreateWorkerFromInstance(
     // Look to see if there's a pending instance.
     WorkerProcessHost::WorkerInstance* pending = FindPendingInstance(
         instance.url(), instance.name(), instance.off_the_record());
-    // If there's no instance *and* no pending instance, then it means the
+    // If there's no instance *and* no pending instance (or there is a pending
+    // instance but it does not contain our sender info), then it means the
     // worker started up and exited already. Log a warning because this should
     // be a very rare occurrence and is probably a bug, but it *can* happen so
     // handle it gracefully.
-    if (!pending) {
+    if (!pending ||
+        !pending->HasSender(sender_info.first, sender_info.second)) {
       DLOG(WARNING) << "Pending worker already exited";
       return false;
     }
@@ -121,6 +126,11 @@ bool WorkerService::CreateWorkerFromInstance(
     // worker to the new instance.
     DCHECK(!pending->worker_document_set()->IsEmpty());
     instance.ShareDocumentSet(*pending);
+    for (WorkerProcessHost::WorkerInstance::SenderList::const_iterator i =
+             pending->senders().begin();
+         i != pending->senders().end(); ++i) {
+      instance.AddSender(i->first, i->second);
+    }
     RemovePendingInstances(
         instance.url(), instance.name(), instance.off_the_record());
 
@@ -186,8 +196,7 @@ bool WorkerService::LookupSharedWorker(const GURL &url,
   }
 
   // Add our route ID to the existing instance so we can send messages to it.
-  if (found_instance)
-    instance->AddSender(sender, sender_route_id);
+  instance->AddSender(sender, sender_route_id);
 
   // Add the passed sender/document_id to the worker instance.
   instance->worker_document_set()->Add(
@@ -500,9 +509,6 @@ void WorkerService::RemovePendingInstances(const GURL& url,
   for (WorkerProcessHost::Instances::iterator iter =
            pending_shared_workers_.begin();
        iter != pending_shared_workers_.end(); ) {
-    // Pending workers should have no senders - only actively running worker
-    // instances have senders.
-    DCHECK(iter->NumSenders() == 0);
     if (iter->Matches(url, name, off_the_record)) {
       iter = pending_shared_workers_.erase(iter);
     } else {

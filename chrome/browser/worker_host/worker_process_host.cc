@@ -386,24 +386,22 @@ void WorkerProcessHost::UpdateTitle() {
   set_name(ASCIIToWide(display_title));
 }
 
-void WorkerProcessHost::OnLookupSharedWorker(const GURL& url,
-                                             const string16& name,
-                                             unsigned long long document_id,
-                                             int render_view_route_id,
-                                             int* route_id,
-                                             bool* url_mismatch) {
-  int new_route_id = WorkerService::GetInstance()->next_worker_route_id();
+void WorkerProcessHost::OnLookupSharedWorker(
+    const ViewHostMsg_CreateWorker_Params& params,
+    bool* exists,
+    int* route_id,
+    bool* url_mismatch) {
+  *route_id = WorkerService::GetInstance()->next_worker_route_id();
   // TODO(atwilson): Add code to pass in the current worker's document set for
   // these nested workers. Code below will not work for SharedWorkers as it
   // only looks at a single parent.
   DCHECK(instances_.front().worker_document_set()->documents().size() == 1);
   WorkerDocumentSet::DocumentInfoSet::const_iterator first_parent =
       instances_.front().worker_document_set()->documents().begin();
-  bool worker_found = WorkerService::GetInstance()->LookupSharedWorker(
-      url, name, instances_.front().off_the_record(), document_id,
-      first_parent->renderer_id(), first_parent->render_view_route_id(), this,
-      new_route_id, url_mismatch);
-  *route_id = worker_found ? new_route_id : MSG_ROUTING_NONE;
+  *exists = WorkerService::GetInstance()->LookupSharedWorker(
+      params.url, params.name, instances_.front().off_the_record(),
+      params.document_id, first_parent->renderer_id(),
+      first_parent->render_view_route_id(), this, *route_id, url_mismatch);
 }
 
 void WorkerProcessHost::OnCreateWorker(
@@ -415,7 +413,8 @@ void WorkerProcessHost::OnCreateWorker(
   DCHECK(instances_.front().worker_document_set()->documents().size() == 1);
   WorkerDocumentSet::DocumentInfoSet::const_iterator first_parent =
       instances_.front().worker_document_set()->documents().begin();
-  *route_id = WorkerService::GetInstance()->next_worker_route_id();
+  *route_id = params.route_id == MSG_ROUTING_NONE ?
+      WorkerService::GetInstance()->next_worker_route_id() : params.route_id;
   WorkerService::GetInstance()->CreateWorker(
       params.url, params.is_shared, instances_.front().off_the_record(),
       params.name, params.document_id, first_parent->renderer_id(),

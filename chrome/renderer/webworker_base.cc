@@ -54,7 +54,8 @@ void WebWorkerBase::CreateWorkerContext(const GURL& script_url,
                                         bool is_shared,
                                         const string16& name,
                                         const string16& user_agent,
-                                        const string16& source_code) {
+                                        const string16& source_code,
+                                        int pending_route_id) {
   DCHECK(route_id_ == MSG_ROUTING_NONE);
   ViewHostMsg_CreateWorker_Params params;
   params.url = script_url;
@@ -62,6 +63,7 @@ void WebWorkerBase::CreateWorkerContext(const GURL& script_url,
   params.name = name;
   params.document_id = document_id_;
   params.render_view_route_id = render_view_route_id_;
+  params.route_id = pending_route_id;
   IPC::Message* create_message = new ViewHostMsg_CreateWorker(
       params, &route_id_);
   child_thread_->Send(create_message);
