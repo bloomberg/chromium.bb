@@ -69,7 +69,7 @@
 
 /* BEGIN GOOGLE MODIFICATIONS */
 /* On Linux and Mac, be sure to set Mozilla-specific macros. */
-#if defined(OS_LINUX) || defined(OS_FREEBSD)
+#if defined(OS_LINUX) || defined(OS_FREEBSD) || defined(OS_SOLARIS)
 #define XP_UNIX 1
 #define MOZ_X11 1
 #endif
