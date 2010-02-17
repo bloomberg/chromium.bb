@@ -943,7 +943,7 @@ bool WebPluginDelegateImpl::PlatformHandleInputEvent(
         content_origin.y() != content_area_origin_.y()) {
       DLOG(WARNING) << "Stale plugin location: " << content_area_origin_
                     << " instead of " << content_origin;
-      SetContentAreaOrigin(content_area_origin_);
+      SetContentAreaOrigin(content_origin);
     }
 
     current_windowless_cursor_.GetCursorInfo(cursor_info);
