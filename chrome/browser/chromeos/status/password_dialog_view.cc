@@ -9,6 +9,8 @@
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
 #include "views/controls/textfield/textfield.h"
+#include "views/grid_layout.h"
+#include "views/standard_layout.h"
 #include "views/window/window.h"
 
 namespace chromeos {
@@ -18,10 +20,7 @@ PasswordDialogView::PasswordDialogView(PasswordDialogDelegate* delegate,
     : delegate_(delegate),
       ssid_(ssid),
       password_textfield_(NULL) {
-}
-
-std::wstring PasswordDialogView::GetWindowTitle() const {
-  return l10n_util::GetString(IDS_OPTIONS_SETTINGS_SECTION_TITLE_PASSWORD);
+  Init();
 }
 
 bool PasswordDialogView::Cancel() {
@@ -34,13 +33,8 @@ bool PasswordDialogView::Accept() {
   return delegate_->OnPasswordDialogAccept(ssid_, password_textfield_->text());
 }
 
-static const int kDialogPadding = 7;
-
-void PasswordDialogView::Layout() {
-  gfx::Size sz = password_textfield_->GetPreferredSize();
-  password_textfield_->SetBounds(kDialogPadding, kDialogPadding,
-                                 width() - 2*kDialogPadding,
-                                 sz.height());
+std::wstring PasswordDialogView::GetWindowTitle() const {
+  return l10n_util::GetString(IDS_OPTIONS_SETTINGS_SECTION_TITLE_PASSWORD);
 }
 
 gfx::Size PasswordDialogView::GetPreferredSize() {
@@ -50,16 +44,19 @@ gfx::Size PasswordDialogView::GetPreferredSize() {
       IDS_IMPORTLOCK_DIALOG_HEIGHT_LINES));
 }
 
-void PasswordDialogView::ViewHierarchyChanged(bool is_add,
-                                              views::View* parent,
-                                              views::View* child) {
-  if (is_add && child == this)
-    Init();
-}
-
 void PasswordDialogView::Init() {
+  views::GridLayout* layout = CreatePanelGridLayout(this);
+  SetLayoutManager(layout);
+
+  int column_view_set_id = 0;
+  views::ColumnSet* column_set = layout->AddColumnSet(column_view_set_id);
+  column_set->AddColumn(views::GridLayout::FILL, views::GridLayout::FILL, 1,
+                        views::GridLayout::USE_PREF, 0, 200);
+
+  layout->StartRow(0, column_view_set_id);
   password_textfield_ = new views::Textfield(views::Textfield::STYLE_PASSWORD);
-  AddChildView(password_textfield_);
+  layout->AddView(password_textfield_);
+  layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
 }
 
 }  // namespace chromeos

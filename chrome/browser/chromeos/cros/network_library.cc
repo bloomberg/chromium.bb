@@ -152,6 +152,28 @@ void NetworkLibrary::EnableOfflineMode(bool enable) {
   }
 }
 
+NetworkIPConfigVector NetworkLibrary::GetIPConfigs(
+    const std::string& device_path) {
+  NetworkIPConfigVector ipconfig_vector;
+  if (!device_path.empty()) {
+    chromeos::IPConfigStatus* ipconfig_status =
+        chromeos::ListIPConfigs(device_path.c_str());
+    if (ipconfig_status) {
+      for (int i = 0; i < ipconfig_status->size; i++) {
+        chromeos::IPConfig ipconfig = ipconfig_status->ips[i];
+        ipconfig_vector.push_back(
+            NetworkIPConfig(device_path, ipconfig.type, ipconfig.address,
+                            ipconfig.netmask, ipconfig.gateway,
+                            ipconfig.name_servers));
+      }
+      chromeos::FreeIPConfigStatus(ipconfig_status);
+      // Sort the list of ip configs by type.
+      std::sort(ipconfig_vector.begin(), ipconfig_vector.end());
+    }
+  }
+  return ipconfig_vector;
+}
+
 // static
 void NetworkLibrary::NetworkStatusChangedHandler(void* object,
     const chromeos::ServiceStatus& service_status) {
@@ -181,21 +203,51 @@ void NetworkLibrary::ParseNetworks(
                       service.state == chromeos::STATE_CONFIGURATION ||
                       service.state == chromeos::STATE_CARRIER;
     bool connected = service.state == chromeos::STATE_READY;
+    // if connected, get ip config
+    std::string ip_address;
+    if (connected) {
+      chromeos::IPConfigStatus* ipconfig_status =
+          chromeos::ListIPConfigs(service.device_path);
+      if (ipconfig_status) {
+        for (int i = 0; i < ipconfig_status->size; i++) {
+          chromeos::IPConfig ipconfig = ipconfig_status->ips[i];
+          if (strlen(ipconfig.address) > 0)
+            ip_address = ipconfig.address;
+          DLOG(INFO) << "          ipconfig: " <<
+                        " type=" << ipconfig.type <<
+                        " address=" << ipconfig.address <<
+                        " mtu=" << ipconfig.mtu <<
+                        " netmask=" << ipconfig.netmask <<
+                        " broadcast=" << ipconfig.broadcast <<
+                        " peer_address=" << ipconfig.peer_address <<
+                        " gateway=" << ipconfig.gateway <<
+                        " domainname=" << ipconfig.domainname <<
+                        " name_servers=" << ipconfig.name_servers;
+        }
+        chromeos::FreeIPConfigStatus(ipconfig_status);
+      }
+    }
     if (service.type == chromeos::TYPE_ETHERNET) {
       ethernet->connecting = connecting;
       ethernet->connected = connected;
+      ethernet->device_path = service.device_path;
+      ethernet->ip_address = ip_address;
     } else if (service.type == chromeos::TYPE_WIFI) {
-      wifi_networks->push_back(WifiNetwork(service.ssid,
+      wifi_networks->push_back(WifiNetwork(service.device_path,
+                                           service.ssid,
                                            service.needs_passphrase,
                                            service.encryption,
                                            service.signal_strength,
                                            connecting,
-                                           connected));
+                                           connected,
+                                           ip_address));
     } else if (service.type == chromeos::TYPE_CELLULAR) {
-      cellular_networks->push_back(CellularNetwork(service.ssid,
+      cellular_networks->push_back(CellularNetwork(service.device_path,
+                                                   service.ssid,
                                                    service.signal_strength,
                                                    connecting,
-                                                   connected));
+                                                   connected,
+                                                   ip_address));
     }
   }
 }

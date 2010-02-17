@@ -8,6 +8,7 @@
 
 #include "app/combobox_model.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/options/ip_config_view.h"
 #include "chrome/browser/chromeos/status/password_dialog_view.h"
 #include "grit/generated_resources.h"
 #include "views/controls/button/native_button.h"
@@ -162,9 +163,21 @@ void NetworkSection::ItemChanged(views::Combobox* sender,
 
 void NetworkSection::ButtonPressed(views::Button* sender,
                                    const views::Event& event) {
-  // TODO(chocobo): Open options dialog.
   if (sender == ethernet_options_button_) {
+    views::Window* window = views::Window::CreateChromeWindow(
+        NULL,
+        gfx::Rect(),
+        new IPConfigView(
+            NetworkLibrary::Get()->ethernet_network().device_path));
+    window->SetIsAlwaysOnTop(true);
+    window->Show();
   } else if (sender == wifi_options_button_) {
+    views::Window* window = views::Window::CreateChromeWindow(
+        NULL,
+        gfx::Rect(),
+        new IPConfigView(activated_wifi_network_.device_path));
+    window->SetIsAlwaysOnTop(true);
+    window->Show();
   } else if (sender == cellular_options_button_) {
   }
 }

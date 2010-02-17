@@ -43,19 +43,14 @@ class PasswordDialogView : public views::View,
   // views::DialogDelegate methods.
   virtual bool Cancel();
   virtual bool Accept();
-  virtual std::wstring GetWindowTitle() const;
 
   // views::WindowDelegate method.
   virtual bool IsModal() const { return true; }
   virtual views::View* GetContentsView() { return this; }
 
   // views::View overrides.
-  virtual void Layout();
+  virtual std::wstring GetWindowTitle() const;
   virtual gfx::Size GetPreferredSize();
-
- protected:
-  virtual void ViewHierarchyChanged(bool is_add, views::View* parent,
-                                    views::View* child);
 
  private:
   void Init();

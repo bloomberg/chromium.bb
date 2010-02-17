@@ -22,10 +22,9 @@ struct EthernetNetwork {
   EthernetNetwork()
       : connecting(false),
         connected(false) {}
-  EthernetNetwork(bool connecting, bool connected)
-      : connecting(connecting),
-        connected(connected) {}
 
+  std::string device_path;
+  std::string ip_address;
   bool connecting;
   bool connected;
 };
@@ -37,27 +36,31 @@ struct WifiNetwork {
         strength(0),
         connecting(false),
         connected(false) {}
-  WifiNetwork(const std::string& ssid, bool encrypted,
-              chromeos::EncryptionType encryption, int strength,
-              bool connecting, bool connected)
-      : ssid(ssid),
+  WifiNetwork(const std::string& device_path, const std::string& ssid,
+              bool encrypted, chromeos::EncryptionType encryption, int strength,
+              bool connecting, bool connected, const std::string& ip_address)
+      : device_path(device_path),
+        ssid(ssid),
         encrypted(encrypted),
         encryption(encryption),
         strength(strength),
         connecting(connecting),
-        connected(connected) {}
+        connected(connected),
+        ip_address(ip_address) {}
 
   // WifiNetworks are sorted by ssids.
   bool operator< (const WifiNetwork& other) const {
     return ssid < other.ssid;
   }
 
+  std::string device_path;
   std::string ssid;
   bool encrypted;
   chromeos::EncryptionType encryption;
   int strength;
   bool connecting;
   bool connected;
+  std::string ip_address;
 };
 typedef std::vector<WifiNetwork> WifiNetworkVector;
 
@@ -66,24 +69,54 @@ struct CellularNetwork {
       : strength(strength),
         connecting(false),
         connected(false) {}
-  CellularNetwork(const std::string& name, int strength, bool connecting,
-                  bool connected)
-      : name(name),
+  CellularNetwork(const std::string& device_path, const std::string& name,
+                  int strength, bool connecting, bool connected,
+                  const std::string& ip_address)
+      : device_path(device_path),
+        name(name),
         strength(strength),
         connecting(connecting),
-        connected(connected) {}
+        connected(connected),
+        ip_address(ip_address) {}
 
   // CellularNetworks are sorted by name.
   bool operator< (const CellularNetwork& other) const {
     return name < other.name;
   }
 
+  std::string device_path;
   std::string name;
   int strength;
   bool connecting;
   bool connected;
+  std::string ip_address;
 };
 typedef std::vector<CellularNetwork> CellularNetworkVector;
+
+struct NetworkIPConfig {
+  NetworkIPConfig(const std::string& device_path, IPConfigType type,
+                  const std::string& address, const std::string& netmask,
+                  const std::string& gateway, const std::string& name_servers)
+      : device_path(device_path),
+        type(type),
+        address(address),
+        netmask(netmask),
+        gateway(gateway),
+        name_servers(name_servers) {}
+
+  // NetworkIPConfigs are sorted by tyoe.
+  bool operator< (const NetworkIPConfig& other) const {
+    return type < other.type;
+  }
+
+  std::string device_path;
+  IPConfigType type;
+  std::string address;
+  std::string netmask;
+  std::string gateway;
+  std::string name_servers;
+};
+typedef std::vector<NetworkIPConfig> NetworkIPConfigVector;
 
 // This class handles the interaction with the ChromeOS network library APIs.
 // Classes can add themselves as observers. Users can get an instance of this
@@ -124,12 +157,15 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
   void AddObserver(Observer* observer);
   void RemoveObserver(Observer* observer);
 
+  const EthernetNetwork& ethernet_network() const { return ethernet_; }
   bool ethernet_connecting() const { return ethernet_.connecting; }
   bool ethernet_connected() const { return ethernet_.connected; }
+
   const std::string& wifi_ssid() const { return wifi_.ssid; }
   bool wifi_connecting() const { return wifi_.connecting; }
   bool wifi_connected() const { return wifi_.connected; }
   int wifi_strength() const { return wifi_.strength; }
+
   const std::string& cellular_name() const { return cellular_.name; }
   bool cellular_connecting() const { return cellular_.connecting; }
   bool cellular_connected() const { return cellular_.connected; }
@@ -168,6 +204,9 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
 
   // Enables/disables offline mode.
   void EnableOfflineMode(bool enable);
+
+  // Fetches IP configs for a given device_path
+  NetworkIPConfigVector GetIPConfigs(const std::string& device_path);
 
  private:
   friend struct DefaultSingletonTraits<NetworkLibrary>;

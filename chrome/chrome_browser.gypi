@@ -339,6 +339,8 @@
         'browser/chromeos/network_list.h',
         'browser/chromeos/options/internet_page_view.cc',
         'browser/chromeos/options/internet_page_view.h',
+        'browser/chromeos/options/ip_config_view.cc',
+        'browser/chromeos/options/ip_config_view.h',
         'browser/chromeos/options/settings_page_view.cc',
         'browser/chromeos/options/settings_page_view.h',
         'browser/chromeos/options/system_page_view.cc',
