@@ -16,6 +16,7 @@
 #include "chrome/browser/theme_resources_util.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
+#include "views/border.h"
 #include "views/controls/button/image_button.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/label.h"
@@ -82,13 +83,13 @@ AutoFillProfilesView::AutoFillProfilesView(
            profiles.begin();
        address_it != profiles.end();
        ++address_it) {
-    profiles_set_.push_back(EditableSetInfo(*address_it, true));
+    profiles_set_.push_back(EditableSetInfo(*address_it, false));
   }
   credit_card_set_.reserve(credit_cards.size());
   for (std::vector<CreditCard*>::const_iterator cc_it = credit_cards.begin();
        cc_it != credit_cards.end();
        ++cc_it) {
-    credit_card_set_.push_back(EditableSetInfo(*cc_it, true));
+    credit_card_set_.push_back(EditableSetInfo(*cc_it, false));
   }
 }
 
@@ -446,6 +447,13 @@ void AutoFillProfilesView::EditableSetViewContents::ViewHierarchyChanged(
         InitAddressFields(layout);
       else
         InitCreditCardFields(layout);
+      // Create border, but only if it is opened.
+      // The border is a standard group box.
+      SkColor border_color =
+          gfx::NativeTheme::instance()->GetThemeColorWithDefault(
+          gfx::NativeTheme::BUTTON, BP_GROUPBOX, GBS_NORMAL,
+          TMT_EDGESHADOWCOLOR, COLOR_GRAYTEXT);
+      set_border(views::Border::CreateSolidBorder(1, border_color));
     }
   }
 }
@@ -544,21 +552,7 @@ void AutoFillProfilesView::EditableSetViewContents::InitTitle(
     title = editable_fields_set_->address.Label();
     if (title.empty())
       title = l10n_util::GetString(IDS_AUTOFILL_NEW_ADDRESS);
-    // TODO(georgey): build address preview  correctly
-    title_preview = editable_fields_set_->address.GetFieldText(
-        AutoFillType(NAME_FIRST));
-    title_preview.append(L" ");
-    std::wstring middle = editable_fields_set_->address.GetFieldText(
-        AutoFillType(NAME_MIDDLE));
-    if (!middle.empty()) {
-      title_preview.append(middle);
-      title_preview.append(L" ");
-    }
-    title_preview.append(editable_fields_set_->address.GetFieldText(
-        AutoFillType(NAME_LAST)));
-    title_preview.append(L" ");
-    title_preview.append(editable_fields_set_->address.GetFieldText(
-        AutoFillType(ADDRESS_HOME_LINE1)));
+    title_preview = editable_fields_set_->address.PreviewSummary();
   } else {
     title = editable_fields_set_->credit_card.Label();
     if (title.empty())
