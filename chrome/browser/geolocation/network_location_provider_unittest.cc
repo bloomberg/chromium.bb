@@ -4,13 +4,11 @@
 
 #include "chrome/browser/geolocation/network_location_provider.h"
 
-#include <map>
-
 #include "base/json/json_reader.h"
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "base/values.h"
-#include "chrome/browser/geolocation/access_token_store.h"
+#include "chrome/browser/geolocation/fake_access_token_store.h"
 #include "chrome/browser/net/test_url_fetcher_factory.h"
 #include "net/url_request/url_request_status.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -45,32 +43,6 @@ class MessageLoopQuitListener
   LocationProviderBase* updated_provider_;
   LocationProviderBase* movement_provider_;
 };
-
-class FakeAccessTokenStore : public AccessTokenStore {
- public:
-  FakeAccessTokenStore() : allow_set_(true) {}
-
-  virtual bool SetAccessToken(const GURL& url,
-                              const string16& access_token) {
-    if (!allow_set_)
-      return false;
-    token_map_[url] = access_token;
-    return true;
-  }
-  virtual bool GetAccessToken(const GURL& url, string16* access_token) {
-    std::map<GURL, string16>::iterator item = token_map_.find(url);
-    if (item == token_map_.end())
-      return false;
-    *access_token = item->second;
-    return true;
-  }
-  bool allow_set_;
-  std::map<GURL, string16> token_map_;
-
- private:
-  ~FakeAccessTokenStore() {}
-};
-
 
 // A mock implementation of DeviceDataProviderImplBase for testing. Adapted from
 // http://gears.googlecode.com/svn/trunk/gears/geolocation/geolocation_test.cc
@@ -136,7 +108,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
  public:
   virtual void SetUp() {
     URLFetcher::set_factory(&url_fetcher_factory_);
-    access_token_store_ = new FakeAccessTokenStore;
+    access_token_store_ = new FakeAccessTokenStore(test_server_url_);
   }
 
   virtual void TearDown() {
@@ -320,9 +292,10 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
       ResponseCookies(), kNoFixNetworkResponse);
 
   // This should have set the access token anyhow
-  EXPECT_EQ(1, static_cast<int>(access_token_store_->token_map_.size()));
+  EXPECT_EQ(access_token_store_->access_token_set_,
+            ASCIIToUTF16(REFERENCE_ACCESS_TOKEN));
   string16 token;
-  EXPECT_TRUE(access_token_store_->GetAccessToken(test_server_url_, &token));
+  EXPECT_TRUE(access_token_store_->GetAccessToken(&token));
   EXPECT_EQ(REFERENCE_ACCESS_TOKEN, UTF16ToUTF8(token));
 
   Position position;
@@ -366,8 +339,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   EXPECT_TRUE(position.IsValidFix());
 
   // Token should still be in the store.
-  EXPECT_EQ(1, static_cast<int>(access_token_store_->token_map_.size()));
-  EXPECT_TRUE(access_token_store_->GetAccessToken(test_server_url_, &token));
+  EXPECT_TRUE(access_token_store_->GetAccessToken(&token));
   EXPECT_EQ(REFERENCE_ACCESS_TOKEN, UTF16ToUTF8(token));
 
   // Wifi updated again, with one less AP. This is 'close enough' to the

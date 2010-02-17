@@ -930,6 +930,8 @@
         'browser/geolocation/device_data_provider.h',
         'browser/geolocation/empty_device_data_provider.cc',
         'browser/geolocation/empty_device_data_provider.h',
+        'browser/geolocation/geolocation_prefs.cc',
+        'browser/geolocation/geolocation_prefs.h',
         'browser/geolocation/geoposition.cc',
         'browser/geolocation/geoposition.h',
         'browser/geolocation/location_arbitrator.cc',

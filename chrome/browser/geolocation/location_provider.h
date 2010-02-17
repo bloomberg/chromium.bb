@@ -76,9 +76,9 @@ class LocationProviderBase : public NonThreadSafe {
 
   // Inform listeners that a new position or error is available, using
   // LocationUpdateAvailable.
-  virtual void UpdateListeners();
+  void UpdateListeners();
   // Inform listeners that movement has been detected, using MovementDetected.
-  virtual void InformListenersOfMovement();
+  void InformListenersOfMovement();
 
  private:
   // The listeners registered to this provider. For each listener, we store a

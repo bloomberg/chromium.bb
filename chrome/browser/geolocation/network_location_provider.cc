@@ -193,7 +193,7 @@ void NetworkLocationProvider::LocationResponseAvailable(
   // Record access_token if it's set.
   if (!access_token.empty() && access_token_ != access_token) {
     access_token_ = access_token;
-    access_token_store_->SetAccessToken(request_->url(), access_token);
+    access_token_store_->SetAccessToken(access_token);
   }
 
   // If new data arrived whilst request was pending reissue the request.
@@ -271,7 +271,7 @@ void NetworkLocationProvider::RequestPosition() {
   is_new_data_available_ = false;
 
   if (access_token_.empty())
-    access_token_store_->GetAccessToken(request_->url(), &access_token_);
+    access_token_store_->GetAccessToken(&access_token_);
 
   AutoLock data_lock(data_mutex_);
   request_->MakeRequest(access_token_, radio_data_, wifi_data_,

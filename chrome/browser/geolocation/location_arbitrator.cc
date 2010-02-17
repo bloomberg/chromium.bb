@@ -18,80 +18,85 @@
 #include "googleurl/src/gurl.h"
 
 namespace {
-
 const char* kDefaultNetworkProviderUrl = "https://www.google.com/loc/json";
+}  // namespace
 
 class GeolocationArbitratorImpl
     : public GeolocationArbitrator,
       public LocationProviderBase::ListenerInterface,
+      public AccessTokenStoreFactory::Delegate,
       public NonThreadSafe {
  public:
-  GeolocationArbitratorImpl(AccessTokenStore* access_token_store,
+  GeolocationArbitratorImpl(AccessTokenStoreFactory* access_token_store_factory,
                             URLRequestContextGetter* context_getter);
   ~GeolocationArbitratorImpl();
 
   // GeolocationArbitrator
-  virtual void AddObserver(Delegate* delegate,
+  virtual void AddObserver(GeolocationArbitrator::Delegate* delegate,
                            const UpdateOptions& update_options);
-  virtual void RemoveObserver(Delegate* delegate);
+  virtual bool RemoveObserver(GeolocationArbitrator::Delegate* delegate);
   virtual void SetUseMockProvider(bool use_mock);
 
   // ListenerInterface
   virtual void LocationUpdateAvailable(LocationProviderBase* provider);
   virtual void MovementDetected(LocationProviderBase* provider);
 
+  // AccessTokenStoreFactory::Delegate
+  virtual void OnAccessTokenStoresCreated(
+      const AccessTokenStoreFactory::TokenStoreSet& access_token_store);
+
  private:
   void CreateProviders();
   bool HasHighAccuracyObserver();
 
-  scoped_refptr<AccessTokenStore> access_token_store_;
+  scoped_refptr<AccessTokenStoreFactory> access_token_store_factory_;
   scoped_refptr<URLRequestContextGetter> context_getter_;
 
   const GURL default_url_;
   scoped_ptr<LocationProviderBase> provider_;
 
-  typedef std::map<Delegate*, UpdateOptions> DelegateMap;
+  typedef std::map<GeolocationArbitrator::Delegate*, UpdateOptions> DelegateMap;
   DelegateMap observers_;
+
+  base::WeakPtrFactory<GeolocationArbitratorImpl> weak_ptr_factory_;
+
   bool use_mock_;
 };
 
-}  // namespace
-
-GeolocationArbitrator* GeolocationArbitrator::New(
-    AccessTokenStore* access_token_store,
-    URLRequestContextGetter* context_getter) {
-  return new GeolocationArbitratorImpl(access_token_store, context_getter);
-}
-
-GeolocationArbitrator::~GeolocationArbitrator() {
-}
-
 GeolocationArbitratorImpl::GeolocationArbitratorImpl(
-    AccessTokenStore* access_token_store,
+    AccessTokenStoreFactory* access_token_store_factory,
     URLRequestContextGetter* context_getter)
-    : access_token_store_(access_token_store), context_getter_(context_getter),
-      default_url_(kDefaultNetworkProviderUrl), use_mock_(false) {
+    : access_token_store_factory_(access_token_store_factory),
+      context_getter_(context_getter),
+      default_url_(kDefaultNetworkProviderUrl),
+      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
+      use_mock_(false) {
   DCHECK(default_url_.is_valid());
 }
 
 GeolocationArbitratorImpl::~GeolocationArbitratorImpl() {
   DCHECK(CalledOnValidThread());
+  DCHECK(observers_.empty()) << "Not all observers have unregistered";
 }
 
 void GeolocationArbitratorImpl::AddObserver(
-    Delegate* delegate, const UpdateOptions& update_options) {
+    GeolocationArbitrator::Delegate* delegate,
+    const UpdateOptions& update_options) {
   DCHECK(CalledOnValidThread());
   observers_[delegate] = update_options;
   CreateProviders();
 }
 
-void GeolocationArbitratorImpl::RemoveObserver(Delegate* delegate) {
+bool GeolocationArbitratorImpl::RemoveObserver(
+    GeolocationArbitrator::Delegate* delegate) {
   DCHECK(CalledOnValidThread());
-  observers_.erase(delegate);
-  if (observers_.empty()) {
+  size_t remove = observers_.erase(delegate);
+  if (observers_.empty() && provider_ != NULL) {
     // TODO(joth): Delayed callback to linger before destroying the provider.
+    provider_->UnregisterListener(this);
     provider_.reset();
   }
+  return remove > 0;
 }
 
 void GeolocationArbitratorImpl::SetUseMockProvider(bool use_mock) {
@@ -118,15 +123,37 @@ void GeolocationArbitratorImpl::MovementDetected(
   DCHECK(CalledOnValidThread());
 }
 
+void GeolocationArbitratorImpl::OnAccessTokenStoresCreated(
+    const AccessTokenStoreFactory::TokenStoreSet& access_token_store) {
+  DCHECK(provider_ == NULL);
+  // TODO(joth): Once we have arbitration implementation, iterate the whole set
+  // rather than cherry-pick our defaul url.
+  AccessTokenStoreFactory::TokenStoreSet::const_iterator item =
+      access_token_store.find(default_url_);
+  DCHECK(item != access_token_store.end());
+  DCHECK(item->second != NULL);
+  if (use_mock_) {
+    provider_.reset(NewMockLocationProvider());
+  } else {
+    // TODO(joth): Check with GLS folks what hostname they'd like sent.
+    provider_.reset(NewNetworkLocationProvider(
+        item->second, context_getter_.get(),
+        default_url_, ASCIIToUTF16("chromium.org")));
+  }
+  DCHECK(provider_ != NULL);
+  provider_->RegisterListener(this);
+  const bool ok = provider_->StartProvider();
+  DCHECK(ok);
+}
+
 void GeolocationArbitratorImpl::CreateProviders() {
   DCHECK(CalledOnValidThread());
   DCHECK(!observers_.empty());
   if (provider_ == NULL) {
-    // TODO(joth): Check with GLS folks what hostname they'd like sent.
-    provider_.reset(NewNetworkLocationProvider(access_token_store_.get(),
-        context_getter_.get(), default_url_, ASCIIToUTF16("chromium.org")));
+    access_token_store_factory_->CreateAccessTokenStores(
+        weak_ptr_factory_.GetWeakPtr(), default_url_);
   }
-  // TODO(joth): Use high-accuracy to create conditionally create GPS provider.
+  // TODO(joth): Use high accuracy flag to conditionally create GPS provider.
 }
 
 bool GeolocationArbitratorImpl::HasHighAccuracyObserver() {
@@ -137,4 +164,14 @@ bool GeolocationArbitratorImpl::HasHighAccuracyObserver() {
       return true;
   }
   return false;
+}
+
+GeolocationArbitrator* GeolocationArbitrator::New(
+    AccessTokenStoreFactory* access_token_store_factory,
+    URLRequestContextGetter* context_getter) {
+  return new GeolocationArbitratorImpl(access_token_store_factory,
+                                       context_getter);
+}
+
+GeolocationArbitrator::~GeolocationArbitrator() {
 }

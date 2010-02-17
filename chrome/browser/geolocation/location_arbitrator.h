@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_GEOLOCATION_LOCATION_ARBITRATOR_H_
 #define CHROME_BROWSER_GEOLOCATION_LOCATION_ARBITRATOR_H_
 
-class AccessTokenStore;
+class AccessTokenStoreFactory;
 class URLRequestContextGetter;
 struct Position;
 
@@ -20,8 +20,9 @@ struct Position;
 class GeolocationArbitrator {
  public:
   // Creates and returns a new instance of the location arbitrator.
-  static GeolocationArbitrator* New(AccessTokenStore* access_token_store,
-                                    URLRequestContextGetter* context_getter);
+  static GeolocationArbitrator* New(
+      AccessTokenStoreFactory* access_token_store_factory,
+      URLRequestContextGetter* context_getter);
 
   class Delegate {
    public:
@@ -50,8 +51,8 @@ class GeolocationArbitrator {
   virtual void AddObserver(Delegate* delegate,
                            const UpdateOptions& update_options) = 0;
   // Remove a previously registered observer. No-op if not previously registered
-  // via AddObserver()
-  virtual void RemoveObserver(Delegate* delegate) = 0;
+  // via AddObserver(). Returns true if the observer was removed.
+  virtual bool RemoveObserver(Delegate* delegate) = 0;
 
   // TODO(joth): This is a stop-gap for testing; once we have decoupled
   // provider factory we should extract mock creation from the arbitrator.
