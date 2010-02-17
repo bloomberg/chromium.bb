@@ -2970,5 +2970,22 @@ BUG_JPARENT MAC : svg/zoom/page/zoom-hixie-mixed-008.xml = IMAGE
 BUG_JPARENT MAC : svg/zoom/page/zoom-svg-float-border-padding.xml = IMAGE
 BUG_JPARENT MAC : svg/zoom/text/zoom-svg-float-border-padding.xml = IMAGE
 
+// Started failing during roll from 54848 -> 54898
+// Started failing with 54865. No rebaselines upstream but they don't run pixel tests.
+BUG36019 : fast/borders/svg-as-border-image-2.html = IMAGE
+BUG36019 : fast/borders/svg-as-border-image.html = IMAGE
+BUG36019 : fast/images/svg-as-tiled-background.html = IMAGE
+// Added in 54865.
+BUG36018 WIN LINUX : svg/css/background-image-svg.html = IMAGE
+// Added in 54858.
+BUG36016 MAC : svg/text/selection-doubleclick.svg = IMAGE
+BUG36016 WIN LINUX : svg/text/selection-doubleclick.svg = IMAGE+TEXT
+BUG36016 MAC : svg/text/selection-tripleclick.svg = IMAGE
+BUG36016 WIN LINUX : svg/text/selection-tripleclick.svg = IMAGE+TEXT
+// Added in 54855.
+BUG36015 WIN LINUX : fast/css/font-face-opentype.html = IMAGE+TEXT
+// Added in 54859.
+BUG36014 WIN LINUX : svg/custom/stroke-width-large.svg = IMAGE+TEXT
+
 // Started failing with r54823
 BUG35923 LINUX : fast/backgrounds/animated-gif-as-background.html = IMAGE
