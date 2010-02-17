@@ -475,7 +475,8 @@ static void AddInstallIcon(const WebElement& link,
   if (href.isNull() || href.isEmpty())
     return;
 
-  GURL url(href);
+  // Get complete url.
+  GURL url = link.document().completeURL(href);
   if (!url.is_valid())
     return;
 
@@ -518,7 +519,12 @@ void GetApplicationInfo(WebView* view, WebApplicationInfo* app_info) {
 
     if (elem.hasTagName("link")) {
       std::string rel = elem.getAttribute("rel").utf8();
-      if (rel == "SHORTCUT ICON")
+      // "rel" attribute may use either "icon" or "shortcut icon".
+      // see also
+      //   <http://en.wikipedia.org/wiki/Favicon>
+      //   <http://dev.w3.org/html5/spec/Overview.html#rel-icon>
+      if (LowerCaseEqualsASCII(rel, "icon") ||
+          LowerCaseEqualsASCII(rel, "shortcut icon"))
         AddInstallIcon(elem, &app_info->icons);
     } else if (elem.hasTagName("meta") && elem.hasAttribute("name")) {
       std::string name = elem.getAttribute("name").utf8();
