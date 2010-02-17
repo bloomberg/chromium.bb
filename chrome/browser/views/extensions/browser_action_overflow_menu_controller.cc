@@ -27,7 +27,7 @@ BrowserActionOverflowMenuController::BrowserActionOverflowMenuController(
   menu_.reset(new views::MenuItemView(this));
   menu_->set_has_icons(true);
 
-  size_t command_id = 0;
+  size_t command_id = 1;  // Menu id 0 is reserved, start with 1.
   for (size_t i = start_index; i < views_->size(); ++i) {
     BrowserActionView* view = (*views_)[i];
     scoped_ptr<gfx::Canvas> canvas(view->GetIconWithBadge());
@@ -35,6 +35,13 @@ BrowserActionOverflowMenuController::BrowserActionOverflowMenuController(
         command_id,
         UTF8ToWide(view->button()->extension()->name()),
         canvas->ExtractBitmap());
+
+    // Set the tooltip for this item.
+    std::wstring tooltip = UTF8ToWide(
+        view->button()->extension()->browser_action()->GetTitle(
+            owner_->GetCurrentTabId()));
+    menu_->SetTooltip(tooltip, command_id);
+
     ++command_id;
   }
 }
@@ -72,7 +79,7 @@ void BrowserActionOverflowMenuController::CancelMenu() {
 }
 
 void BrowserActionOverflowMenuController::ExecuteCommand(int id) {
-  BrowserActionView* view = (*views_)[start_index_ + id];
+  BrowserActionView* view = (*views_)[start_index_ + id - 1];
   owner_->OnBrowserActionExecuted(view->button());
 }
 
@@ -80,7 +87,7 @@ bool BrowserActionOverflowMenuController::ShowContextMenu(
     views::MenuItemView* source, int id, int x, int y, bool is_mouse_gesture) {
   // This blocks until the user choses something or dismisses the menu.
   owner_->GetContextMenu()->Run(
-      (*views_)[start_index_ + id]->button()->extension(),
+      (*views_)[start_index_ + id - 1]->button()->extension(),
       gfx::Point(x, y));
 
   // The user is done with the context menu, so we can close the underlying
@@ -181,9 +188,9 @@ int BrowserActionOverflowMenuController::GetDragOperations(
 
 BrowserActionView* BrowserActionOverflowMenuController::ViewForId(
     int id, size_t* index) {
-  // The index of the view being dragged (GetCommand gives a 0-based index into
+  // The index of the view being dragged (GetCommand gives a 1-based index into
   // the overflow menu).
-  size_t view_index = owner_->VisibleBrowserActions() + id;
+  size_t view_index = owner_->VisibleBrowserActions() + id - 1;
   if (index)
     *index = view_index;
   return owner_->GetBrowserActionViewAt(view_index);

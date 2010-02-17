@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -71,6 +71,11 @@ MenuItemView::~MenuItemView() {
   // thoroughly screwed. The destructor should be made private, and
   // MenuController should be the only place handling deletion of the menu.
   delete submenu_;
+}
+
+bool MenuItemView::GetTooltipText(int x, int y, std::wstring* tooltip) {
+  *tooltip = tooltip_;
+  return !tooltip_.empty();
 }
 
 void MenuItemView::RunMenuAt(gfx::NativeWindow parent,
@@ -162,6 +167,12 @@ SubmenuView* MenuItemView::CreateSubmenu() {
 void MenuItemView::SetSelected(bool selected) {
   selected_ = selected;
   SchedulePaint();
+}
+
+void MenuItemView::SetTooltip(const std::wstring& tooltip, int item_id) {
+  MenuItemView* item = GetMenuItemByID(item_id);
+  DCHECK(item);
+  item->tooltip_ = tooltip;
 }
 
 void MenuItemView::SetIcon(const SkBitmap& icon, int item_id) {

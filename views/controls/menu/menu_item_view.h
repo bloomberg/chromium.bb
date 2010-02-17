@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -70,6 +70,9 @@ class MenuItemView : public View {
   explicit MenuItemView(MenuDelegate* delegate);
 
   virtual ~MenuItemView();
+
+  // Overridden from View:
+  virtual bool GetTooltipText(int x, int y, std::wstring* tooltip);
 
   // Returns the preferred height of menu items. This is only valid when the
   // menu is about to be shown.
@@ -177,6 +180,9 @@ class MenuItemView : public View {
 
   // Returns true if the item is selected.
   bool IsSelected() const { return selected_; }
+
+  // Sets the |tooltip| for a menu item view with |item_id| identifier.
+  void SetTooltip(const std::wstring& tooltip, int item_id);
 
   // Sets the icon for the descendant identified by item_id.
   void SetIcon(const SkBitmap& icon, int item_id);
@@ -320,6 +326,9 @@ class MenuItemView : public View {
   bool has_mnemonics_;
 
   bool has_icons_;
+
+  // The tooltip to show on hover for this menu item.
+  std::wstring tooltip_;
 
   // X-coordinate of where the label starts.
   static int label_start_;
