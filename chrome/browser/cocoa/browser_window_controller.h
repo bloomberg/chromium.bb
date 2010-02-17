@@ -114,6 +114,10 @@ class TabStripModelObserverBridge;
   // itself added to |barVisibilityLocks_|. When it no longer requires bar
   // visibility, it has itself removed.
   scoped_nsobject<NSMutableSet> barVisibilityLocks_;
+
+  // Bar visibility locks and releases only result (when appropriate) in changes
+  // in visible state when the following is |YES|.
+  BOOL barVisibilityUpdatesEnabled_;
 }
 
 // A convenience class method which gets the controller for window containing

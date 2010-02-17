@@ -233,6 +233,12 @@ const NSTimeInterval kDropdownHideDelay = 0.2;
   }
 }
 
+- (void)cancelAnimationAndTimers {
+  [self cancelAllTimers];
+  [currentAnimation_ stopAnimation];
+  currentAnimation_.reset();
+}
+
 // Used to activate the floating bar in fullscreen mode.
 - (void)mouseEntered:(NSEvent*)event {
   DCHECK(isFullscreen_);
@@ -459,10 +465,7 @@ const NSTimeInterval kDropdownHideDelay = 0.2;
 
 - (void)cleanup {
   [self cancelMouseExitCheck];
-  [self cancelAllTimers];
-
-  [currentAnimation_ stopAnimation];
-  currentAnimation_.reset();
+  [self cancelAnimationAndTimers];
 
   [contentView_ removeTrackingArea:trackingArea_];
   contentView_ = nil;

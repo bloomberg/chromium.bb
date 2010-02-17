@@ -437,4 +437,26 @@ willPositionSheet:(NSWindow*)sheet
   }
 }
 
+- (void)enableBarVisibilityUpdates {
+  // Early escape if there's nothing to do.
+  if (barVisibilityUpdatesEnabled_)
+    return;
+
+  barVisibilityUpdatesEnabled_ = YES;
+
+  if ([barVisibilityLocks_ count])
+    [fullscreenController_ ensureOverlayShownWithAnimation:NO delay:NO];
+  else
+    [fullscreenController_ ensureOverlayHiddenWithAnimation:NO delay:NO];
+}
+
+- (void)disableBarVisibilityUpdates {
+  // Early escape if there's nothing to do.
+  if (!barVisibilityUpdatesEnabled_)
+    return;
+
+  barVisibilityUpdatesEnabled_ = NO;
+  [fullscreenController_ cancelAnimationAndTimers];
+}
+
 @end  // @implementation BrowserWindowController(Private)

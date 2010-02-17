@@ -102,6 +102,12 @@
 // Adjust the UI when entering or leaving fullscreen mode.
 - (void)adjustUIForFullscreen:(BOOL)fullscreen;
 
+// Allows/prevents bar visibility locks and releases from updating the visual
+// state. Enabling makes changes instantaneously; disabling cancels any
+// timers/animation.
+- (void)enableBarVisibilityUpdates;
+- (void)disableBarVisibilityUpdates;
+
 @end  // @interface BrowserWindowController(Private)
 
 

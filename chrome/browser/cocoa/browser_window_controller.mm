@@ -278,6 +278,9 @@
     // |-awakeFromNib|.
     [self updateBookmarkBarVisibilityWithAnimation:NO];
 
+    // Allow bar visibility to be changed.
+    [self enableBarVisibilityUpdates];
+
     // Force a relayout of all the various bars.
     [self layoutSubviews];
 
@@ -1601,6 +1604,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
       [[FocusTracker alloc] initWithWindow:window]);
   BOOL showDropdown = [self floatingBarHasFocus];
 
+  // While we move views (and focus) around, disable any bar visibility changes.
+  [self disableBarVisibilityUpdates];
+
   // If we're entering fullscreen, create the fullscreen controller.  If we're
   // exiting fullscreen, kill the controller.
   if (fullscreen) {
@@ -1608,7 +1614,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
                                   initWithBrowserController:self]);
   } else {
     [fullscreenController_ exitFullscreen];
-    fullscreenController_.reset(nil);
+    fullscreenController_.reset();
   }
 
   // Destroy the tab strip's sheet controller.  We will recreate it in the new
@@ -1681,6 +1687,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   [destWindow makeKeyAndOrderFront:self];
   [focusTracker restoreFocusInWindow:destWindow];
   [window orderOut:self];
+
+  // We're done moving focus, so re-enable bar visibility changes.
+  [self enableBarVisibilityUpdates];
 }
 
 - (BOOL)isFullscreen {
@@ -1708,9 +1717,11 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   if (![self isBarVisibilityLockedForOwner:owner]) {
     [barVisibilityLocks_ addObject:owner];
 
-    // Show the overlay if necessary (and if in fullscreen mode).
-    [fullscreenController_ ensureOverlayShownWithAnimation:animate
-                                                     delay:delay];
+    // If enabled, show the overlay if necessary (and if in fullscreen mode).
+    if (barVisibilityUpdatesEnabled_) {
+      [fullscreenController_ ensureOverlayShownWithAnimation:animate
+                                                       delay:delay];
+    }
   }
 }
 
@@ -1720,8 +1731,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   if ([self isBarVisibilityLockedForOwner:owner]) {
     [barVisibilityLocks_ removeObject:owner];
 
-    // Hide the overlay if necessary (and if in fullscreen mode).
-    if (![barVisibilityLocks_ count]) {
+    // If enabled, hide the overlay if necessary (and if in fullscreen mode).
+    if (barVisibilityUpdatesEnabled_ &&
+        ![barVisibilityLocks_ count]) {
       [fullscreenController_ ensureOverlayHiddenWithAnimation:animate
                                                         delay:delay];
     }

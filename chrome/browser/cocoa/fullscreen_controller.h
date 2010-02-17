@@ -79,6 +79,9 @@
 - (void)ensureOverlayShownWithAnimation:(BOOL)animate delay:(BOOL)delay;
 - (void)ensureOverlayHiddenWithAnimation:(BOOL)animate delay:(BOOL)delay;
 
+// Cancels any running animation and timers.
+- (void)cancelAnimationAndTimers;
+
 @end
 
 #endif  // CHROME_BROWSER_COCOA_FULLSCREEN_CONTROLLER_H_
