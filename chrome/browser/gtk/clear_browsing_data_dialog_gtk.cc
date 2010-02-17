@@ -8,6 +8,7 @@
 #include "app/resource_bundle.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browsing_data_remover.h"
+#include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/gtk_util.h"
@@ -236,5 +237,6 @@ void ClearBrowsingDataDialogGtk::OnFlashLinkClicked(GtkWidget* button) {
   // behind other windows.
   Browser* browser = Browser::Create(profile_);
   browser->OpenURL(GURL(l10n_util::GetStringUTF8(IDS_FLASH_STORAGE_URL)),
-                   GURL(), NEW_WINDOW, PageTransition::LINK);
+                   GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  browser->window()->Show();
 }

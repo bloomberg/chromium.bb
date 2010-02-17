@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
+#include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/options/cookies_view.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
@@ -216,5 +217,6 @@ void CookieFilterPageGtk::OnFlashLinkClicked(
   // behind other windows.
   Browser* browser = Browser::Create(cookie_page->profile());
   browser->OpenURL(GURL(l10n_util::GetStringUTF8(IDS_FLASH_STORAGE_URL)),
-                   GURL(), NEW_WINDOW, PageTransition::LINK);
+                   GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  browser->window()->Show();
 }
