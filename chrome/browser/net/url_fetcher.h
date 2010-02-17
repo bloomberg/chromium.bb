@@ -137,7 +137,7 @@ class URLFetcher {
 
   // Retrieve the response headers from the request.  Must only be called after
   // the OnURLFetchComplete callback has run.
-  net::HttpResponseHeaders* response_headers() const;
+  virtual net::HttpResponseHeaders* response_headers() const;
 
   // Start the request.  After this is called, you may not change any other
   // settings.

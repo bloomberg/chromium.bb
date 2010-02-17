@@ -55,6 +55,9 @@ bool SyncAPIBridgedPost::Init(const char* path, const string& auth_token,
   else
     response->server_status = HttpResponse::SYNC_SERVER_ERROR;
 
+  response->update_client_auth_header =
+      http->GetResponseHeaderValue("Update-Client-Auth");
+
   // Write the content into our buffer.
   buffer_.assign(http->GetResponseContent(), http->GetResponseContentLength());
 

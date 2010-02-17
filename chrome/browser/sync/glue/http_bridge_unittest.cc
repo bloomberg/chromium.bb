@@ -4,6 +4,7 @@
 
 #include "base/thread.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/net/test_url_fetcher_factory.h"
 #include "chrome/browser/sync/glue/http_bridge.h"
 #include "net/url_request/url_request_unittest.h"
 #include "testing/gtest/include/gtest/gtest.h"
@@ -77,6 +78,15 @@ class HttpBridgeTest : public testing::Test {
 
 };
 
+class DummyURLFetcher : public TestURLFetcher {
+ public:
+  DummyURLFetcher() : TestURLFetcher(GURL(), POST, NULL) {}
+
+  net::HttpResponseHeaders* response_headers() const {
+    return NULL;
+  }
+};
+
 // An HttpBridge that doesn't actually make network requests and just calls
 // back with dummy response info.
 class ShuntedHttpBridge : public HttpBridge {
@@ -103,7 +113,8 @@ class ShuntedHttpBridge : public HttpBridge {
     ResponseCookies cookies;
 
     std::string response_content = "success!";
-    OnURLFetchComplete(NULL, GURL("www.google.com"), URLRequestStatus(),
+    DummyURLFetcher fetcher;
+    OnURLFetchComplete(&fetcher, GURL("www.google.com"), URLRequestStatus(),
                        200, cookies, response_content);
   }
   HttpBridgeTest* test_;
@@ -225,4 +236,28 @@ TEST_F(HttpBridgeTest, TestExtraRequestHeaders) {
 
   EXPECT_NE(std::string::npos, response.find("fnord"));
   EXPECT_NE(std::string::npos, response.find(test_payload.c_str()));
+}
+
+TEST_F(HttpBridgeTest, TestResponseHeader) {
+  scoped_refptr<HTTPTestServer> server =
+      HTTPTestServer::CreateServer(kDocRoot, NULL);
+  ASSERT_TRUE(NULL != server.get());
+  scoped_refptr<HttpBridge> http_bridge(BuildBridge());
+
+  GURL echo_header = server->TestServerPage("echoall");
+  http_bridge->SetURL(echo_header.spec().c_str(), echo_header.IntPort());
+
+  std::string test_payload = "###TEST PAYLOAD###";
+  http_bridge->SetPostPayload("text/html", test_payload.length() + 1,
+                              test_payload.c_str());
+
+  int os_error = 0;
+  int response_code = 0;
+  bool success = http_bridge->MakeSynchronousPost(&os_error, &response_code);
+  EXPECT_TRUE(success);
+  EXPECT_EQ(200, response_code);
+  EXPECT_EQ(0, os_error);
+
+  EXPECT_EQ(http_bridge->GetResponseHeaderValue("Content-type"), "text/html");
+  EXPECT_TRUE(http_bridge->GetResponseHeaderValue("invalid-header").empty());
 }

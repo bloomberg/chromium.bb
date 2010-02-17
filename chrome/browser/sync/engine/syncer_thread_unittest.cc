@@ -36,7 +36,7 @@ class SyncerThreadWithSyncerTest : public testing::Test,
     allstatus_.reset(new AllStatus());
     worker_ = new ModelSafeWorker();
     SyncSessionContext* context = new SyncSessionContext(connection_.get(),
-        metadb_.manager(), this);
+        NULL, metadb_.manager(), this);
     syncer_thread_ = new SyncerThread(context, allstatus_.get());
     syncer_event_hookup_.reset(
         NewEventListenerHookup(syncer_thread_->relay_channel(), this,
@@ -150,12 +150,12 @@ class SyncShareIntercept
 };
 
 TEST_F(SyncerThreadTest, Construction) {
-  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL);
+  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL, NULL);
   scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context, NULL));
 }
 
 TEST_F(SyncerThreadTest, StartStop) {
-  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL);
+  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL, NULL);
   scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context, NULL));
   EXPECT_TRUE(syncer_thread->Start());
   EXPECT_TRUE(syncer_thread->Stop(2000));
@@ -167,7 +167,7 @@ TEST_F(SyncerThreadTest, StartStop) {
 }
 
 TEST_F(SyncerThreadTest, CalculateSyncWaitTime) {
-  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL);
+  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL, NULL);
   scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context, NULL));
   syncer_thread->DisableIdleDetection();
 
@@ -227,7 +227,7 @@ TEST_F(SyncerThreadTest, CalculateSyncWaitTime) {
 TEST_F(SyncerThreadTest, CalculatePollingWaitTime) {
   // Set up the environment.
   int user_idle_milliseconds_param = 0;
-  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL);
+  SyncSessionContext* context = new SyncSessionContext(NULL, NULL, NULL, NULL);
   scoped_refptr<SyncerThread> syncer_thread(new SyncerThread(context, NULL));
   syncer_thread->DisableIdleDetection();
   // Hold the lock to appease asserts in code.

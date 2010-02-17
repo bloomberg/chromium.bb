@@ -4,6 +4,7 @@
 
 #include "chrome/browser/sync/engine/syncer_proto_util.h"
 
+#include "chrome/browser/sync/engine/auth_watcher.h"
 #include "chrome/browser/sync/engine/net/server_connection_manager.h"
 #include "chrome/browser/sync/engine/syncer.h"
 #include "chrome/browser/sync/engine/syncer_util.h"
@@ -33,7 +34,6 @@ namespace {
 
 // Time to backoff syncing after receiving a throttled response.
 static const int kSyncDelayAfterThrottled = 2 * 60 * 60;  // 2 hours
-
 void LogResponseProfilingData(const ClientToServerResponse& response) {
   if (response.has_profiling_data()) {
     stringstream response_trace;
@@ -116,6 +116,7 @@ void SyncerProtoUtil::AddRequestBirthday(syncable::Directory* dir,
 
 // static
 bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
+                                            AuthWatcher* auth_watcher,
                                             ClientToServerMessage* msg,
                                             ClientToServerResponse* response) {
 
@@ -132,6 +133,17 @@ bool SyncerProtoUtil::PostAndProcessHeaders(ServerConnectionManager* scm,
     LOG(WARNING) << "Error posting from syncer:" << http_response;
     return false;
   } else {
+    std::string new_token =
+        http_response.update_client_auth_header;
+    if (!new_token.empty()) {
+      // We could also do this in the SCM's PostBufferWithAuth.
+      // But then we could be in the middle of authentication, which seems
+      // like a bad time to update the token. A consequence of this is that
+      // we can't reset the cookie in response to auth attempts, but this
+      // should be OK.
+      auth_watcher->RenewAuthToken(new_token);
+    }
+
     if (response->ParseFromString(rx)) {
       // TODO(tim): This is an egregious layering violation (bug 35060).
       switch (response->error_code()) {
@@ -165,6 +177,7 @@ bool SyncerProtoUtil::PostClientToServerMessage(ClientToServerMessage* msg,
   AddRequestBirthday(dir, msg);
 
   if (!PostAndProcessHeaders(session->context()->connection_manager(),
+                             session->context()->auth_watcher(),
                              msg,
                              response)) {
     return false;

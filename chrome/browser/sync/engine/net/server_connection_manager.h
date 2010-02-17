@@ -89,6 +89,9 @@ struct HttpResponse {
   // The size of a download request's payload.
   int64 payload_length;
 
+  // Value of the Update-Client-Auth header.
+  std::string update_client_auth_header;
+
   // Identifies the type of failure, if any.
   ServerConnectionCode server_status;
 };
@@ -285,10 +288,13 @@ class ServerConnectionManager {
   };
 
   void set_auth_token(const std::string& auth_token) {
+    // TODO(chron): Consider adding a message loop check here.
+    AutoLock lock(auth_token_mutex_);
     auth_token_.assign(auth_token);
   }
 
-  const std::string& auth_token() const {
+  const std::string auth_token() const {
+    AutoLock lock(auth_token_mutex_);
     return auth_token_;
   }
 
@@ -338,6 +344,7 @@ class ServerConnectionManager {
   std::string proto_sync_path_;
   std::string get_time_path_;
 
+  mutable Lock auth_token_mutex_;
   // The auth token to use in authenticated requests. Set by the AuthWatcher.
   std::string auth_token_;
 

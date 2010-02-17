@@ -13,6 +13,7 @@
 #include "net/base/load_flags.h"
 #include "net/http/http_cache.h"
 #include "net/http/http_network_layer.h"
+#include "net/http/http_response_headers.h"
 #include "net/proxy/proxy_service.h"
 #include "net/url_request/url_request_context.h"
 #include "net/url_request/url_request_status.h"
@@ -198,6 +199,16 @@ const char* HttpBridge::GetResponseContent() const {
   return response_content_.data();
 }
 
+const std::string HttpBridge::GetResponseHeaderValue(
+    const std::string& name) const {
+
+  DCHECK_EQ(MessageLoop::current(), created_on_loop_);
+  DCHECK(request_completed_);
+  std::string value;
+  response_headers_->EnumerateHeader(NULL, name, &value);
+  return value;
+}
+
 void HttpBridge::OnURLFetchComplete(const URLFetcher *source, const GURL &url,
                                     const URLRequestStatus &status,
                                     int response_code,
@@ -211,6 +222,7 @@ void HttpBridge::OnURLFetchComplete(const URLFetcher *source, const GURL &url,
   os_error_code_ = status.os_error();
 
   response_content_ = data;
+  response_headers_ = source->response_headers();
 
   // End of the line for url_poster_. It lives only on the IO loop.
   // We defer deletion because we're inside a callback from a component of the

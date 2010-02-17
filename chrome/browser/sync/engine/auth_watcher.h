@@ -40,6 +40,7 @@ struct AuthWatcherEvent {
   enum WhatHappened {
     AUTHENTICATION_ATTEMPT_START,
     AUTHWATCHER_DESTROYED,
+    AUTH_RENEWED,  // Currently only used in testing.
     AUTH_SUCCEEDED,
     GAIA_AUTH_FAILED,
     SERVICE_USER_NOT_SIGNED_UP,
@@ -118,6 +119,10 @@ class AuthWatcher : public base::RefCountedThreadSafe<AuthWatcher> {
       bool persist_creds_to_disk) {
     Authenticate(email, password, "", "", persist_creds_to_disk);
   }
+
+  // Use this to update only the token of the current email address.
+  void RenewAuthToken(const std::string& updated_token);
+  void DoRenewAuthToken(const std::string& updated_token);
 
   // Use this version when you don't need the gaia authentication step because
   // you already have a valid LSID cookie for |gaia_email|.

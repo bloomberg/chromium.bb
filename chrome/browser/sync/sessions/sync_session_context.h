@@ -30,6 +30,7 @@ class DirectoryManager;
 
 namespace browser_sync {
 
+class AuthWatcher;
 class ConflictResolver;
 class ModelSafeWorkerRegistrar;
 class ServerConnectionManager;
@@ -41,11 +42,13 @@ class ScopedSessionContextSyncerEventChannel;
 class SyncSessionContext {
  public:
   SyncSessionContext(ServerConnectionManager* connection_manager,
+                     AuthWatcher* auth_watcher,
                      syncable::DirectoryManager* directory_manager,
                      ModelSafeWorkerRegistrar* model_safe_worker_registrar)
       : resolver_(NULL),
         syncer_event_channel_(NULL),
         connection_manager_(connection_manager),
+        auth_watcher_(auth_watcher),
         directory_manager_(directory_manager),
         registrar_(model_safe_worker_registrar),
         extensions_activity_monitor_(new ExtensionsActivityMonitor()),
@@ -63,6 +66,9 @@ class SyncSessionContext {
   ConflictResolver* resolver() { return resolver_; }
   ServerConnectionManager* connection_manager() {
     return connection_manager_;
+  }
+  AuthWatcher* auth_watcher() {
+    return auth_watcher_;
   }
   syncable::DirectoryManager* directory_manager() {
     return directory_manager_;
@@ -102,6 +108,7 @@ class SyncSessionContext {
   SyncerEventChannel* syncer_event_channel_;
 
   ServerConnectionManager* const connection_manager_;
+  AuthWatcher* const auth_watcher_;
   syncable::DirectoryManager* const directory_manager_;
 
   // A registrar of workers capable of processing work closures on a thread

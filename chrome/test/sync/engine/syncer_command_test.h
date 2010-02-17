@@ -55,8 +55,8 @@ class SyncerCommandTest : public testing::Test,
   virtual ~SyncerCommandTest() {}
   virtual void SetUp() {
     syncdb_.SetUp();
-    context_.reset(new sessions::SyncSessionContext(NULL, syncdb_.manager(),
-                                                    registrar()));
+    context_.reset(new sessions::SyncSessionContext(NULL, NULL,
+        syncdb_.manager(), registrar()));
     context_->set_account_name(syncdb_.name());
   }
   virtual void TearDown() {

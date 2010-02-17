@@ -46,6 +46,10 @@ class TestHttpBridge : public sync_api::HttpPostProviderInterface {
   virtual const char* GetResponseContent() const {
     return 0;
   }
+
+  virtual const std::string GetResponseHeaderValue(const std::string &) const {
+    return std::string();
+  }
 };
 
 class TestHttpBridgeFactory : public sync_api::HttpPostProviderFactory {

@@ -43,6 +43,10 @@ class GaiaAuthMockForAuthWatcher : public browser_sync::GaiaAuthenticator {
 
   void SendBadAuthTokenForNextRequest() { use_bad_auth_token_ = true; }
 
+  std::string renewed_token() {
+    return renewed_token_;
+  }
+
  protected:
   bool PerformGaiaRequest(const AuthParams& params, AuthResults* results) {
     if (params.password == kWrongPassword) {
@@ -66,9 +70,14 @@ class GaiaAuthMockForAuthWatcher : public browser_sync::GaiaAuthenticator {
     return true;
   }
 
+  void RenewAuthToken(const std::string& auth_token) {
+    renewed_token_ = auth_token;
+  }
+
  private:
   // Whether we should send an invalid auth token on the next request.
   bool use_bad_auth_token_;
+  std::string renewed_token_;
 };
 
 class AuthWatcherTest : public testing::Test {
@@ -207,6 +216,19 @@ TEST_F(AuthWatcherTest, AuthenticateWithTokenSuccess) {
   auth_watcher()->AuthenticateWithToken(kTestEmail, kValidAuthToken);
   EXPECT_EQ(AuthWatcherEvent::AUTH_SUCCEEDED, ConsumeNextEvent());
   EXPECT_EQ(kUserDisplayEmail, user_email());
+}
+
+// Just check that the thread task was properly issued.
+TEST_F(AuthWatcherTest, RenewAuthToken) {
+  auth_watcher()->Authenticate(kTestEmail, kCorrectPassword, std::string(),
+      std::string(), false);
+  EXPECT_EQ(AuthWatcherEvent::AUTHENTICATION_ATTEMPT_START, ConsumeNextEvent());
+  EXPECT_EQ(AuthWatcherEvent::AUTH_SUCCEEDED, ConsumeNextEvent());
+
+  auth_watcher()->RenewAuthToken("updated_token");
+  EXPECT_EQ(AuthWatcherEvent::AUTH_RENEWED, ConsumeNextEvent());
+  EXPECT_EQ(gaia_auth()->renewed_token(), "updated_token");
+  EXPECT_EQ(connection()->auth_token(), "updated_token");
 }
 
 }  // namespace browser_sync

@@ -136,6 +136,8 @@ class GaiaAuthenticator {
 
   void SetUsername(const std::string& username);
 
+  // Virtual for testing
+  virtual void RenewAuthToken(const std::string& auth_token);
   void SetAuthToken(const std::string& auth_token, SaveCredentials);
 
   struct AuthResults {

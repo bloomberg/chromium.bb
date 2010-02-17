@@ -374,6 +374,11 @@ void GaiaAuthenticator::SetUsername(const string& username) {
   auth_results_.email = username;
 }
 
+void GaiaAuthenticator::RenewAuthToken(const string& auth_token) {
+  DCHECK_EQ(MessageLoop::current(), message_loop_);
+  DCHECK(!this->auth_token().empty());
+  auth_results_.auth_token = auth_token;
+}
 void GaiaAuthenticator::SetAuthToken(const string& auth_token,
                                      SaveCredentials save) {
   DCHECK_EQ(MessageLoop::current(), message_loop_);

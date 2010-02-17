@@ -1070,7 +1070,7 @@ class SyncManager::SyncInternal {
       return true;
     return false;
   }
-  
+
   bool ChangeBuffersAreEmpty() {
     for (int i = 0; i < syncable::MODEL_TYPE_COUNT; ++i) {
       if (!change_buffers_[i].IsEmpty())
@@ -1290,7 +1290,8 @@ bool SyncManager::SyncInternal::Init(
 
   // Build a SyncSessionContext and store the worker in it.
   SyncSessionContext* context = new SyncSessionContext(
-      connection_manager_.get(), dir_manager(), model_safe_worker_registrar);
+      connection_manager_.get(), auth_watcher(),
+          dir_manager(), model_safe_worker_registrar);
 
   // The SyncerThread takes ownership of |context|.
   syncer_thread_ = new SyncerThread(context, &allstatus_);

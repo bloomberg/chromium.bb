@@ -26,7 +26,7 @@ class SyncSessionTest : public testing::Test,
     GetModelSafeRoutingInfo(&routes_);
   }
   virtual void SetUp() {
-    context_.reset(new SyncSessionContext(NULL, NULL, this));
+    context_.reset(new SyncSessionContext(NULL, NULL, NULL, this));
     session_.reset(new SyncSession(context_.get(), this));
   }
   virtual void TearDown() {
@@ -89,7 +89,7 @@ TEST_F(SyncSessionTest, SetWriteTransaction) {
   TestDirectorySetterUpper db;
   db.SetUp();
   session_.reset(NULL);
-  context_.reset(new SyncSessionContext(NULL, db.manager(), this));
+  context_.reset(new SyncSessionContext(NULL, NULL, db.manager(), this));
   session_.reset(new SyncSession(context_.get(), this));
   context_->set_account_name(db.name());
   syncable::ScopedDirLookup dir(context_->directory_manager(),

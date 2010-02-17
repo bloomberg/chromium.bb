@@ -30,6 +30,7 @@ namespace sessions {
 class SyncSession;
 }
 
+class AuthWatcher;
 class ClientToServerMessage;
 class ServerConnectionManager;
 class SyncEntity;
@@ -95,6 +96,7 @@ class SyncerProtoUtil {
   // Post the message using the scm, and do some processing on the returned
   // headers. Decode the server response.
   static bool PostAndProcessHeaders(browser_sync::ServerConnectionManager* scm,
+                                    browser_sync::AuthWatcher* authwatcher,
                                     ClientToServerMessage* msg,
                                     sync_pb::ClientToServerResponse* response);
 

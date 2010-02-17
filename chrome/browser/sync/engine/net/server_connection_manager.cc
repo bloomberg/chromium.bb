@@ -169,7 +169,7 @@ bool ServerConnectionManager::PostBufferWithCachedAuth(
     const PostBufferParams* params, ScopedServerStatusWatcher* watcher) {
   string path =
       MakeSyncServerPath(proto_sync_path(), MakeSyncQueryString(client_id_));
-  return PostBufferToPath(params, path, auth_token_, watcher);
+  return PostBufferToPath(params, path, auth_token(), watcher);
 }
 
 bool ServerConnectionManager::PostBufferWithAuth(const PostBufferParams* params,

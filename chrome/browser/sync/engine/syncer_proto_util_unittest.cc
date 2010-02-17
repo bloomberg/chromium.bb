@@ -236,13 +236,16 @@ TEST_F(SyncerProtoUtilTest, PostAndProcessHeaders) {
   ClientToServerResponse response;
 
   dcm.set_send_error(true);
-  EXPECT_FALSE(SyncerProtoUtil::PostAndProcessHeaders(&dcm, &msg, &response));
+  EXPECT_FALSE(SyncerProtoUtil::PostAndProcessHeaders(&dcm, NULL,
+      &msg, &response));
 
   dcm.set_send_error(false);
-  EXPECT_TRUE(SyncerProtoUtil::PostAndProcessHeaders(&dcm, &msg, &response));
+  EXPECT_TRUE(SyncerProtoUtil::PostAndProcessHeaders(&dcm, NULL,
+      &msg, &response));
 
   dcm.set_access_denied(true);
-  EXPECT_FALSE(SyncerProtoUtil::PostAndProcessHeaders(&dcm, &msg, &response));
+  EXPECT_FALSE(SyncerProtoUtil::PostAndProcessHeaders(&dcm, NULL,
+      &msg, &response));
 }
 
 }  // namespace browser_sync

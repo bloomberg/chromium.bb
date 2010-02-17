@@ -92,6 +92,30 @@ void AuthWatcher::PersistCredentials() {
   }
 }
 
+// TODO(chron): Full integration test suite needed. http://crbug.com/35429
+void AuthWatcher::RenewAuthToken(const std::string& updated_token) {
+  message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
+      &AuthWatcher::DoRenewAuthToken, updated_token));
+}
+
+void AuthWatcher::DoRenewAuthToken(const std::string& updated_token) {
+  DCHECK_EQ(MessageLoop::current(), message_loop());
+  // TODO(chron): We should probably only store auth token in one place.
+  if (scm_->auth_token() == updated_token) {
+    return;  // This thread is the only one writing to the SCM's auth token.
+  }
+  LOG(INFO) << "Updating auth token:" << updated_token;
+  scm_->set_auth_token(updated_token);
+  gaia_->RenewAuthToken(updated_token);  // Must be on AuthWatcher thread
+  talk_mediator_->SetAuthToken(user_settings_->email(), updated_token);
+  user_settings_->SetAuthTokenForService(user_settings_->email(),
+                                         SYNC_SERVICE_NAME,
+                                         updated_token);
+
+  AuthWatcherEvent event = { AuthWatcherEvent::AUTH_RENEWED };
+  NotifyListeners(&event);
+}
+
 void AuthWatcher::AuthenticateWithLsid(const std::string& lsid) {
   message_loop()->PostTask(FROM_HERE, NewRunnableMethod(this,
       &AuthWatcher::DoAuthenticateWithLsid, lsid));

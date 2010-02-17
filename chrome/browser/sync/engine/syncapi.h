@@ -507,7 +507,7 @@ class SyncManager {
     // ID of each individual item that was changed. |changes| exists only for
     // the duration of the call. If items of multiple data types change at
     // the same time, this method is invoked once per data type and |changes|
-    // is restricted to items of the ModelType indicated by |model_type|. 
+    // is restricted to items of the ModelType indicated by |model_type|.
     // Because the observer is passed a |trans|, the observer can assume a
     // read lock on the sync model that will be released after the function
     // returns.
@@ -704,6 +704,11 @@ class HttpPostProviderInterface {
   // This is a null terminated string of characters.
   // Value should be copied.
   virtual const char* GetResponseContent() const = 0;
+
+  // Get the value of a header returned in the HTTP response.
+  // If the header is not present, returns the empty string.
+  virtual const std::string GetResponseHeaderValue(
+      const std::string& name) const = 0;
 
  private:
   DISALLOW_COPY_AND_ASSIGN(HttpPostProviderInterface);
