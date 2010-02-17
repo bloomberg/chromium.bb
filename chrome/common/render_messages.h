@@ -1970,11 +1970,11 @@ struct ParamTraits<ViewMsg_DatabaseOpenFileResponse_Params> {
 #endif
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
-    return ReadParam(m, iter, &p->file_handle)
+    bool ret = ReadParam(m, iter, &p->file_handle);
 #if defined(OS_POSIX)
-        && ReadParam(m, iter, &p->dir_handle)
+    ret = ret && ReadParam(m, iter, &p->dir_handle);
 #endif
-      ;
+    return ret;
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"(");

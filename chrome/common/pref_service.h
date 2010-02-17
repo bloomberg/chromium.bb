@@ -126,7 +126,7 @@ class PrefService : public NonThreadSafe,
   FilePath GetFilePath(const wchar_t* path) const;
 
   // Returns the branch if it exists.  If it's not a branch or the branch does
-  // not exist, returns NULL.  This does
+  // not exist, returns NULL.
   const DictionaryValue* GetDictionary(const wchar_t* path) const;
   const ListValue* GetList(const wchar_t* path) const;
 

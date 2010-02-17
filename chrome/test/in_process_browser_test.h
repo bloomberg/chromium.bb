@@ -26,7 +26,9 @@ class RuleBasedHostResolverProc;
 //   is shown, invoke MessageLoop::current()->Quit() to return control back to
 //   your test method.
 // . If you subclass and override SetUp, be sure and invoke
-//   InProcessBrowserTest::SetUp.
+//   InProcessBrowserTest::SetUp. (But see also
+//   SetUpInProcessBrowserTestFixture and related hook methods for a cleaner
+//   alternative).
 //
 // By default InProcessBrowserTest creates a single Browser (as returned from
 // the CreateBrowser method). You can obviously create more as needed.

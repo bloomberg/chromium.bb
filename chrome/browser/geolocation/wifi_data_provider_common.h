@@ -118,5 +118,4 @@ class WifiDataProviderCommon
   DISALLOW_COPY_AND_ASSIGN(WifiDataProviderCommon);
 };
 
-
 #endif  // CHROME_BROWSER_GEOLOCATION_WIFI_DATA_PROVIDER_COMMON_H_

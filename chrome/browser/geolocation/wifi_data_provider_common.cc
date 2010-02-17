@@ -17,7 +17,7 @@ string16 MacAddressAsString16(const uint8 mac_as_int[6]) {
 }
 
 WifiDataProviderCommon::WifiDataProviderCommon()
-    : Thread(__FILE__),
+    : Thread("Geolocation_wifi_provider"),
       is_first_scan_complete_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(task_factory_(this)) {
 }

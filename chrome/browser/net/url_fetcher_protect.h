@@ -123,9 +123,11 @@ class URLFetcherProtectManager {
   static URLFetcherProtectManager* GetInstance();
 
   // Registers a new entry in this service. If the entry already exists,
-  // just returns it.
+  // just returns it. Ownership of the return object remains with the manager.
   URLFetcherProtectEntry* Register(const std::string& id);
-  // Always registers the entry even when it exists.
+  // Always registers the entry even when it exists; any existing entry for this
+  // id will be deleted and existing references to it will become invalid.
+  // Ownership of the return object remains with the manager.
   URLFetcherProtectEntry* Register(const std::string& id,
                                    URLFetcherProtectEntry* entry);
 

@@ -48,7 +48,7 @@ class CancelableTask : public Task {
 //
 //  public:
 //   // It is safe to suppress warning 4355 here.
-//   MyClass() : some_method_factory_(this) { }
+//   MyClass() : ALLOW_THIS_IN_INITIALIZER_LIST(some_method_factory_(this)) { }
 //
 //   void SomeMethod() {
 //     // If this function might be called directly, you might want to revoke

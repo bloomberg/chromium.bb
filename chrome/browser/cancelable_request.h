@@ -18,8 +18,11 @@
 //
 //   class MyClass {
 //     void MakeRequest() {
-//       frontend_service->StartRequest(some_input1, some_input2, this,
+//       frontend_service->StartRequest(some_input1, some_input2,
+//           &callback_consumer_,
 //           NewCallback(this, &MyClass:RequestComplete));
+//       // StartRequest() returns a Handle which may be retained for use with
+//       // CancelRequest() if required, e.g. in MyClass's destructor.
 //     }
 //
 //     void RequestComplete(int status) {
@@ -27,7 +30,7 @@
 //     }
 //
 //    private:
-//     CallbackConsumer callback_consumer_;
+//     CancelableRequestConsumer callback_consumer_;
 //   };
 //
 //
@@ -38,7 +41,7 @@
 //     typedef Callback1<int>::Type RequestCallbackType;
 //
 //     Handle StartRequest(int some_input1, int some_input2,
-//                         CallbackConsumer* consumer,
+//                         CancelableRequestConsumer* consumer,
 //                         RequestCallbackType* callback) {
 //       scoped_refptr<CancelableRequest<RequestCallbackType> > request(
 //           new CancelableRequest<RequestCallbackType>(callback));
@@ -117,6 +120,7 @@ class CancelableRequestProvider {
   // Called by the enduser of the request to cancel it. This MUST be called on
   // the same thread that originally issued the request (which is also the same
   // thread that would have received the callback if it was not canceled).
+  // handle must be for a valid pending (not yet complete or cancelled) request.
   void CancelRequest(Handle handle);
 
  protected:
