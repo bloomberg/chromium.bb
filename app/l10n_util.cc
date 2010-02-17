@@ -705,6 +705,13 @@ std::wstring GetStringF(int message_id,
                                 string16(), string16(), offsets));
 }
 
+string16 GetStringFUTF16(int message_id,
+                        const string16& a,
+                        const string16& b,
+                        std::vector<size_t>* offsets) {
+  return GetStringF(message_id, a, b, string16(), string16(), offsets);
+}
+
 std::wstring GetStringF(int message_id, int a) {
   return GetStringF(message_id, IntToWString(a));
 }

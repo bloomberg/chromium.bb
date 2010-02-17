@@ -60,6 +60,21 @@ class TranslateInfoBarDelegate : public InfoBarDelegate {
     return state_;
   }
 
+  // Retrieve the text for the toolbar label.  The toolbar label is a bit
+  // strange since we need to place popup menus inside the string in question.
+  // To do this we use two placeholders.
+  //
+  // |message_text| is the text to display for the label.
+  // |offsets| contains the offsets of the number of placeholders in the text
+  // + message_text->length() i.e. it can contain 2 or 3 elements.
+  // offsets[0] < offsets[1] even in cases where the languages need to be
+  // displayed in reverse order.
+  // |swapped_language_placeholders| is true if we need to flip the order
+  // of the menus in the current locale.
+  void GetMessageText(string16 *message_text,
+                      std::vector<size_t> *offsets,
+                      bool *swapped_language_placeholders);
+
   // Overridden from InfoBarDelegate.
   virtual Type GetInfoBarType() {
     return PAGE_ACTION_TYPE;

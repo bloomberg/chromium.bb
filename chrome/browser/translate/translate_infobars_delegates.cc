@@ -158,6 +158,34 @@ void TranslateInfoBarDelegate::ToggleAlwaysTranslate() {
   }
 }
 
+void TranslateInfoBarDelegate::GetMessageText(string16 *message_text,
+     std::vector<size_t> *offsets, bool *swapped_language_placeholders) {
+  *swapped_language_placeholders = false;
+  offsets->clear();
+
+  std::vector<size_t> offsets_tmp;
+  int message_resource_id = IDS_TRANSLATE_INFOBAR_BEFORE_MESSAGE;
+  if (state() == kAfterTranslate)
+    message_resource_id = IDS_TRANSLATE_INFOBAR_AFTER_MESSAGE;
+  *message_text = l10n_util::GetStringFUTF16(message_resource_id,
+      string16(), string16(), &offsets_tmp);
+
+  if (offsets_tmp.empty() || offsets_tmp.size() > 2) {
+    NOTREACHED() << "Invalid no. of placeholders in label.";
+    return;
+  }
+  // Sort the offsets if necessary.
+  if (offsets_tmp.size() == 2 && offsets_tmp[0] > offsets_tmp[1]) {
+    size_t offset0 = offsets_tmp[0];
+    offsets_tmp[0] = offsets_tmp[1];
+    offsets_tmp[1] = offset0;
+    *swapped_language_placeholders = true;
+  }
+  if (offsets_tmp[offsets_tmp.size() - 1] != message_text->length())
+    offsets_tmp.push_back(message_text->length());
+  *offsets = offsets_tmp;
+}
+
 // TranslateInfoBarDelegate: static: -------------------------------------------
 
 string16 TranslateInfoBarDelegate::GetDisplayNameForLocale(

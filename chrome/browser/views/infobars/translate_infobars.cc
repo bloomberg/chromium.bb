@@ -623,24 +623,11 @@ void TranslateInfoBar::Observe(NotificationType type,
 void TranslateInfoBar::CreateLabels() {
   // Determine text for labels.
   std::vector<size_t> offsets;
-  std::wstring message_text = l10n_util::GetStringF(
-      (GetDelegate()->state() == TranslateInfoBarDelegate::kAfterTranslate ?
-          IDS_TRANSLATE_INFOBAR_AFTER_MESSAGE :
-              IDS_TRANSLATE_INFOBAR_BEFORE_MESSAGE),
-      std::wstring(), std::wstring(), &offsets);
-  if (!offsets.empty() && offsets.size() <= 2) {
-    // Sort the offsets if necessary.
-    if (offsets.size() == 2 && offsets[0] > offsets[1]) {
-      size_t offset0 = offsets[0];
-      offsets[0] = offsets[1];
-      offsets[1] = offset0;
-      swapped_language_placeholders_ = true;
-    }
-    if (offsets[offsets.size() - 1] != message_text.length())
-      offsets.push_back(message_text.length());
-  } else {
-    NOTREACHED() << "Invalid no. of placeholders in label.";
-  }
+  string16 message_text_utf16;
+  GetDelegate()->GetMessageText(&message_text_utf16, &offsets,
+      &swapped_language_placeholders_);
+
+  std::wstring message_text = UTF16ToWideHack(message_text_utf16);
 
   // Create label controls.
   const gfx::Font& font = ResourceBundle::GetSharedInstance().GetFont(
