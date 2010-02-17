@@ -343,7 +343,7 @@ bool AutocompleteEditModel::OnEscapeKeyPressed() {
 
   view_->RevertAll();
   view_->SelectAll(true);
-  return false;
+  return true;
 }
 
 void AutocompleteEditModel::OnControlKeyChanged(bool pressed) {
