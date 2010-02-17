@@ -224,6 +224,7 @@
               'inputs': [
                 '<(template_input_path)',
                 '<(version_path)',
+                '<(lastchange_path)',
                 '<(branding_dir)/BRANDING',
               ],
               'outputs': [
@@ -236,9 +237,6 @@
                 '-f', '<(branding_dir)/BRANDING',
                 '<(template_input_path)',
                 '<@(_outputs)',
-              ],
-              'dependencies': [
-                '../../build/util/build_util.gyp:lastchange',
               ],
               'process_outputs_as_sources': 1,
               'message': 'Generating version information'
@@ -428,6 +426,7 @@
               'inputs': [
                 '<(branding_dir)/BRANDING',
                 '<(version_path)',
+                '<(lastchange_path)',
               ],
               'outputs': [
                 '<(PRODUCT_DIR)/installer/version.txt',
@@ -439,9 +438,6 @@
                 '-f', '<(version_path)',
                 '-f', '<(lastchange_path)',
                 '-o', '<@(_outputs)'
-              ],
-              'dependencies': [
-                '../../build/util/build_util.gyp:lastchange',
               ],
             },
           ],
