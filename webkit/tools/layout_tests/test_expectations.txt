@@ -1260,18 +1260,14 @@ BUG10358 SKIP MAC LINUX : animations/animation-drt-api.html = PASS
 // New test. We should fix it, but it doesn't need to block the current release
 BUG10361 WIN : http/tests/misc/single-character-pi-stylesheet.xhtml = FAIL
 
-// Started crashing with webkit r54823.  Commented out section below is
-// expectations before that.
-BUG35917 : http/tests/multipart/invalid-image-data.html = CRASH PASS
-
 // Windows is missing the green box. Started to pass in roll to WebKit r50313
-//BUG8729 WIN DEBUG : http/tests/multipart/invalid-image-data.html = FAIL
-//BUG8729 SLOW WIN RELEASE : http/tests/multipart/invalid-image-data.html = FAIL
+BUG8729 WIN DEBUG : http/tests/multipart/invalid-image-data.html = FAIL
+BUG8729 SLOW WIN RELEASE : http/tests/multipart/invalid-image-data.html = FAIL
 
 // This test got considerably more flaky for DEBUG when we switched from
 // lighttpd to apache on the linux bots. For RELEASE, this was not flaky until
 // we sharded the http.
-//BUG9798 LINUX : http/tests/multipart/invalid-image-data.html = PASS IMAGE
+BUG9798 LINUX : http/tests/multipart/invalid-image-data.html = PASS IMAGE
 
 // -----------------------------------------------------------------
 // MAC PORT TESTS
