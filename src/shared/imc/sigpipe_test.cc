@@ -300,7 +300,7 @@ int ReceiveDescriptor(TestState *tsp, int mode) {
     }
 
     if (NACL_ARRAY_SIZE(handle) < hdr.handle_count) {
-      printf("ERROR: Too many handles: %"PRIdS, hdr.handle_count);
+      printf("ERROR: Too many handles: %"PRIu32, hdr.handle_count);
       return ++errors;
     }
     for (size_t i = 0; i < hdr.handle_count; ++i) {
@@ -442,7 +442,7 @@ int ReceiveData(TestState *tsp, int mode) {
       ++errors;
     }
     if (NACL_ARRAY_SIZE(handle) < hdr.handle_count) {
-      printf("Too many handles: %"PRIdS, hdr.handle_count);
+      printf("Too many handles: %"PRIu32, hdr.handle_count);
       return ++errors;
     }
     for (size_t i = 0; i < hdr.handle_count; ++i) {

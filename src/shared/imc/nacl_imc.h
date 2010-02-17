@@ -23,7 +23,11 @@
 
 #if NACL_WINDOWS
 #include <windows.h>
+#include "native_client/src/include/portability.h"
+#else
+#include <stdint.h>
 #endif
+
 #include <sys/types.h>
 
 /**
@@ -75,8 +79,8 @@ struct SocketAddress {
  *  ReceiveDatagram()
  */
 struct IOVec {
-  void*   base;
-  size_t  length;
+  void*     base;
+  uint32_t  length;
 };
 
 /**
@@ -98,11 +102,11 @@ const int kHandlesTruncated = 0x2;  /**< Not all the handles were received. */
  *  Message header used by SendDatagram() and ReceiveDatagram()
  */
 struct MessageHeader {
-  IOVec*  iov;            /**< scatter/gather array */
-  size_t  iov_length;     /**< number of elements in iov */
-  Handle* handles;        /**< array of handles to be transferred */
-  size_t  handle_count;   /**< number of handles in handles */
-  int     flags;
+  IOVec*    iov;            /**< scatter/gather array */
+  uint32_t  iov_length;     /**< number of elements in iov */
+  Handle*   handles;        /**< array of handles to be transferred */
+  uint32_t  handle_count;   /**< number of handles in handles */
+  int       flags;
 };
 
 /**

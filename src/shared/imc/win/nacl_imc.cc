@@ -12,13 +12,15 @@
                   // <windows.h>.
 #endif
 
+#include <algorithm>
 #include <ctype.h>
 #include <limits.h>
 #include <stdio.h>
 #include <windows.h>
 #include <sys/types.h>
-#include <algorithm>
+
 #include "native_client/src/include/atomic_ops.h"
+#include "native_client/src/include/portability.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
 #include "native_client/src/trusted/handle_pass/handle_lookup.h"
 
@@ -49,8 +51,8 @@ const int kCancel = 3;   // Cancels Handle transfer operations
 struct ControlHeader {
   int command;
   DWORD pid;
-  size_t message_length;
-  size_t handle_count;
+  uint32_t message_length;
+  uint32_t handle_count;
 };
 
 bool GetSocketName(const SocketAddress* address, char* name) {
@@ -118,11 +120,11 @@ BOOL SkipFile(HANDLE handle, size_t length) {
 
 BOOL SkipHandles(HANDLE handle, size_t count) {
   while (0 < count) {
-    Handle discard;
+    uint64_t discard;
     if (ReadAll(handle, &discard, sizeof discard) != sizeof discard) {
       return FALSE;
     }
-    CloseHandle(discard);
+    CloseHandle(reinterpret_cast<HANDLE>(discard));
     --count;
   }
   return TRUE;
@@ -218,7 +220,7 @@ int Close(Handle handle) {
 
 int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
   ControlHeader header = { kEchoRequest, GetCurrentProcessId(), 0, 0 };
-  HANDLE remote_handles[kHandleCountMax];
+  uint64_t remote_handles[kHandleCountMax];
 
   if (kHandleCountMax < message->handle_count) {
     SetLastError(ERROR_INVALID_PARAMETER);
@@ -241,9 +243,10 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
     if (target == NULL) {
       return -1;
     }
-    for (size_t i = 0; i < message->handle_count; ++i) {
+    for (uint32_t i = 0; i < message->handle_count; ++i) {
+      HANDLE temp_remote_handle;
       if (DuplicateHandle(GetCurrentProcess(), message->handles[i],
-                          target, &remote_handles[i],
+                          target, &temp_remote_handle,
                           0, FALSE, DUPLICATE_SAME_ACCESS) == FALSE) {
         // Send the kCancel message to revoke the handles duplicated
         // so far in the remote peer.
@@ -251,13 +254,14 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
         header.handle_count = i;
         if (0 < i) {
           WriteAll(handle, &header, sizeof header);
-          WriteAll(handle, remote_handles, sizeof(Handle) * i);
+          WriteAll(handle, remote_handles, sizeof(uint64_t) * i);
         }
 #ifdef NACL_STANDALONE
         CloseHandle(target);
 #endif
         return -1;
       }
+      remote_handles[i] = reinterpret_cast<uint64_t>(temp_remote_handle);
     }
 #ifdef NACL_STANDALONE
     CloseHandle(target);
@@ -265,13 +269,16 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
   }
   header.command = kMessage;
   header.handle_count = message->handle_count;
-  for (size_t i = 0; i < message->iov_length; ++i) {
+  for (uint32_t i = 0; i < message->iov_length; ++i) {
+    if (UINT32_MAX - header.message_length < message->iov[i].length) {
+      return -1;
+    }
     header.message_length += message->iov[i].length;
   }
   if (WriteAll(handle, &header, sizeof header) != sizeof header) {
     return -1;
   }
-  for (size_t i = 0; i < message->iov_length; ++i) {
+  for (uint32_t i = 0; i < message->iov_length; ++i) {
     if (WriteAll(handle, message->iov[i].base, message->iov[i].length) !=
         message->iov[i].length) {
       return -1;
@@ -280,8 +287,8 @@ int SendDatagram(Handle handle, const MessageHeader* message, int flags) {
   if (0 < message->handle_count && message->handles &&
       WriteAll(handle,
                remote_handles,
-               sizeof(Handle) * message->handle_count) !=
-          sizeof(Handle) * message->handle_count) {
+               sizeof(uint64_t) * message->handle_count) !=
+          sizeof(uint64_t) * message->handle_count) {
     return -1;
   }
   return static_cast<int>(header.message_length);
@@ -397,7 +404,7 @@ int ReceiveDatagram(Handle handle, MessageHeader* message, int flags,
           }
           break;
         case kCancel:
-          if (sizeof header + sizeof(Handle) * header.handle_count <= len &&
+          if (sizeof header + sizeof(uint64_t) * header.handle_count <= len &&
               ReadAll(handle, &header, sizeof header) == sizeof header) {
             SkipHandles(handle, header.handle_count);
             goto Repeat;
@@ -421,14 +428,14 @@ int ReceiveDatagram(Handle handle, MessageHeader* message, int flags,
       goto Repeat;
       break;
     case kMessage: {
-      size_t total_message_bytes = header.message_length;
+      uint32_t total_message_bytes = header.message_length;
       size_t count = 0;
       message->flags = 0;
       for (size_t i = 0;
            i < message->iov_length && count < header.message_length;
            ++i) {
         IOVec* iov = &message->iov[i];
-        size_t len = std::min(iov->length, total_message_bytes);
+        uint32_t len = std::min(iov->length, total_message_bytes);
         if (ReadAll(handle, iov->base, len) != len) {
           break;
         }
@@ -444,10 +451,14 @@ int ReceiveDatagram(Handle handle, MessageHeader* message, int flags,
       if (0 < message->handle_count && message->handles) {
         message->handle_count = std::min(message->handle_count,
                                          header.handle_count);
-        if (ReadAll(handle, message->handles,
-                    message->handle_count * sizeof(Handle)) !=
-            message->handle_count * sizeof(Handle)) {
+        uint64_t received_handles[kHandleCountMax];
+        if (ReadAll(handle, received_handles,
+                    message->handle_count * sizeof(uint64_t)) !=
+            message->handle_count * sizeof(uint64_t)) {
           break;
+        }
+        for (uint32_t i = 0; i < message->handle_count; ++i) {
+          message->handles[i] = reinterpret_cast<HANDLE>(received_handles[i]);
         }
       } else {
         message->handle_count = 0;
