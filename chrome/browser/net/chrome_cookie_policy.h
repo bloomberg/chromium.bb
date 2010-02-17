@@ -66,19 +66,7 @@ class ChromeCookiePolicy
   typedef std::vector<Completion> Completions;
   typedef std::map<std::string, Completions> HostCompletionsMap;
 
-  struct PromptData {
-    GURL url;
-    std::string cookie_line;
-
-    PromptData(const GURL& url, const std::string& cookie_line)
-        : url(url),
-          cookie_line(cookie_line) {
-    }
-  };
-  typedef std::queue<PromptData> PromptQueue;
-
   int CheckPolicy(const GURL& url) const;
-  void ShowNextPrompt();
   void PromptForSetCookie(const GURL& url, const std::string& cookie_line);
   void DidPromptForSetCookie(const std::string& host, int result,
                              bool remember);
@@ -86,12 +74,6 @@ class ChromeCookiePolicy
   // A map from hostname to callbacks awaiting a cookie policy response.
   // This map is only accessed on the IO thread.
   HostCompletionsMap host_completions_map_;
-
-  // A queue of pending prompts.  We queue these up here so that before showing
-  // the next prompt we can reconsult the HostContentSettingsMap in case
-  // settings have changed since the prompt request was placed in the queue.
-  // This queue is only accessed on the UI thread.
-  PromptQueue prompt_queue_;
 
   scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
 };

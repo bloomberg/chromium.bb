@@ -90,9 +90,8 @@ void DatabasePermissionRequest::SendResponse(ContentSetting content_setting,
   on_allow_.reset();
   on_block_.reset();
 
-  // And lastly, release our self ref which may trigger delete.  Do the release
-  // on a local variable instead of a member variable to avoid reentrancy
-  // nastiness if the ref count goes to 0.
-  scoped_refptr<DatabasePermissionRequest> self;
-  self.swap(self_ref_);
+  // This seems safer than possibly being deleted while in method(s) related to
+  // this object.  Any thread will do, but UI is always around and can be
+  // posted without locking, so we'll ask it to do the release.
+  ChromeThread::ReleaseSoon(ChromeThread::UI, FROM_HERE, self_ref_.release());
 }

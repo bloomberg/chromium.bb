@@ -55,8 +55,9 @@ class CookiePromptModalDialog : public AppModalDialog {
   const string16& local_storage_key() const { return local_storage_key_; }
   const string16& local_storage_value() const { return local_storage_value_; }
   const string16& database_name() const { return database_name_; }
+  TabContents* tab_contents() const { return tab_contents_; }
 
-  // Send a response to our delegate.
+  // Implement CookiePromptModalDialogDelegate.
   void AllowSiteData(bool remember, bool session_expire);
   void BlockSiteData(bool remember);
 
