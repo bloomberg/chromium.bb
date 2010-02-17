@@ -10,7 +10,7 @@
 {
   'target_defaults': {
     'conditions': [
-      ['OS!="linux" and OS!="freebsd" and OS!="openbsd"', {
+      ['OS!="linux" and OS!="freebsd" and OS!="openbsd" and OS!="solaris"', {
         'sources/': [['exclude', '/linux/']]
       }],
       ['OS!="mac"', {'sources/': [['exclude', '/mac/']]}],
@@ -52,7 +52,7 @@
     #
     # TODO(ajwong): Per the comment above, reduce this conditional's size and
     # determine if in-tree build in Windows is tractable.
-    ['(OS!="linux" and OS!="freebsd" and OS!="openbsd" and OS!="mac") or use_system_ffmpeg!=0', {
+    ['(OS!="linux" and OS!="freebsd" and OS!="openbsd" and OS!="solaris" and OS!="mac") or use_system_ffmpeg!=0', {
       'variables': {
         'target_for_binaries': 'ffmpeg_binaries',
         'ffmpeg_include_root': 'include',
@@ -308,7 +308,7 @@
 #                'source/patched-ffmpeg-mt/libavcodec/mpeg4video_es_bsf.c',
               ],
             }],  # target_arch=="arm" and ffmpeg_branding=="ChromeOS"
-            ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+            ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
               'defines': [
                 '_ISOC99_SOURCE',
                 '_LARGEFILE_SOURCE',
@@ -344,7 +344,7 @@
                   }],
                 ],
               },
-            }],  # OS=="linux" or OS=="freebsd" or OS=="openbsd"
+            }],  # OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"
             ['OS=="mac"', {
               'libraries': [
                 # TODO(ajwong): Move into link_settings when this is fixed:
@@ -428,7 +428,7 @@
           'rules': [
             {
               'conditions': [
-                ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+                ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
                   'variables': {
                     'obj_format': 'elf',
                   },
@@ -546,7 +546,7 @@
             'ffmpegsumo',
           ],
           'conditions': [
-            ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+            ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
               'copies': [
                 {
                   # On Make and Scons builds, the library does not end up in
@@ -718,7 +718,7 @@
             ],
           },
         ],
-        ['OS=="linux" or OS=="freebsd"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="solaris"', {
           'link_settings': {
             'libraries': [
               # We need dl for dlopen() and friends.
@@ -751,7 +751,7 @@
             ],
           },
           'dependencies': ['../../build/win/system.gyp:cygwin'],
-        }], ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+        }], ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
               'variables': {
                 # TODO(ajwong): Clean this up after we've finished
                 # migrating to in-tree build.
