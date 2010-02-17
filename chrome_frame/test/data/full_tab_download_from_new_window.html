@@ -1,0 +1,18 @@
+<html>
+  <head>
+    <meta http-equiv="x-ua-compatible" content="chrome=1" />
+    <script language="javascript">
+    function downloadInNewWindow() {
+      var download_url = "download_file.zip";
+      window.open(download_url, 'download', 'toolbar=0,location=no');
+      return false;  // cancel form submission
+    }
+    </script>
+  </head>
+<body onload="downloadInNewWindow();">
+<form method="POST" action="hero">
+  <input onclick="return downloadInNewWindow()" value="Download"
+    id="downloadButton" type="button">
+</form>
+</body>
+</html>

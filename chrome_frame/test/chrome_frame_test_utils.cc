@@ -23,6 +23,8 @@
 
 namespace chrome_frame_test {
 
+const int kDefaultWaitForIEToTerminateMs = 10 * 1000;
+
 const wchar_t kIEImageName[] = L"iexplore.exe";
 const wchar_t kIEBrokerImageName[] = L"ieuser.exe";
 const wchar_t kFirefoxImageName[] = L"firefox.exe";
@@ -325,6 +327,8 @@ HRESULT LaunchIEAsComServer(IWebBrowser2** web_browser) {
   if (!web_browser)
     return E_INVALIDARG;
 
+  AllowSetForegroundWindow(ASFW_ANY);
+
   HRESULT hr = S_OK;
   DWORD cocreate_flags = CLSCTX_LOCAL_SERVER;
   chrome_frame_test::LowIntegrityToken token;
@@ -413,6 +417,13 @@ _ATL_FUNC_INFO WebBrowserEventSink::kDocumentCompleteInfo = {
   }
 };
 
+_ATL_FUNC_INFO WebBrowserEventSink::kFileDownloadInfo = {
+  CC_STDCALL, VT_EMPTY, 2, {
+    VT_BOOL,
+    VT_BOOL | VT_BYREF
+  }
+};
+
 // WebBrowserEventSink member defines
 void WebBrowserEventSink::Attach(IDispatch* browser_disp) {
   EXPECT_TRUE(NULL != browser_disp);
@@ -427,8 +438,60 @@ void WebBrowserEventSink::Uninitialize() {
   DisconnectFromChromeFrame();
   if (web_browser2_.get()) {
     DispEventUnadvise(web_browser2_);
-    web_browser2_->Quit();
+
+    ScopedHandle process;
+    // process_id_to_wait_for_ is set when we receive OnQuit.
+    // So, we should only attempt to wait for the browser if we know that
+    // the browser is truly quitting and if this instance actually launched
+    // the browser.
+    if (process_id_to_wait_for_) {
+      if (is_main_browser_object_) {
+        process.Set(OpenProcess(SYNCHRONIZE, FALSE, process_id_to_wait_for_));
+        DLOG_IF(ERROR, !process.IsValid())
+            << StringPrintf("OpenProcess failed: %i", ::GetLastError());
+      }
+      process_id_to_wait_for_ = 0;
+    } else {
+      DLOG_IF(ERROR, is_main_browser_object_)
+          << "Main browser event object did not have a valid the process id.";
+      web_browser2_->Quit();
+    }
+
     web_browser2_.Release();
+
+    if (process) {
+      DWORD max_wait = kDefaultWaitForIEToTerminateMs;
+      while (true) {
+        base::Time start = base::Time::Now();
+        HANDLE wait_for = process;
+        DWORD wait = MsgWaitForMultipleObjects(1, &wait_for, FALSE, max_wait,
+                                               QS_ALLINPUT);
+        if (wait == WAIT_OBJECT_0 + 1) {
+          MSG msg;
+          while (PeekMessage(&msg, NULL, 0, 0, TRUE) > 0) {
+            TranslateMessage(&msg);
+            DispatchMessage(&msg);
+          }
+        } else if (wait == WAIT_OBJECT_0) {
+          break;
+        } else {
+          DCHECK(wait == WAIT_TIMEOUT);
+          DLOG(ERROR) << "Wait for IE timed out";
+          break;
+        }
+
+        base::TimeDelta elapsed = base::Time::Now() - start;
+        ULARGE_INTEGER ms;
+        ms.QuadPart = elapsed.InMilliseconds();
+        DCHECK(ms.HighPart == 0);
+        if (ms.LowPart > max_wait) {
+          DLOG(ERROR) << "Wait for IE timed out (2)";
+          break;
+        } else {
+          max_wait -= ms.LowPart;
+        }
+      }
+    }
   }
 }
 
@@ -436,7 +499,8 @@ STDMETHODIMP WebBrowserEventSink::OnBeforeNavigate2Internal(
     IDispatch* dispatch, VARIANT* url, VARIANT* flags,
     VARIANT* target_frame_name, VARIANT* post_data, VARIANT* headers,
     VARIANT_BOOL* cancel) {
-  DLOG(INFO) << __FUNCTION__;
+  DLOG(INFO) << __FUNCTION__
+      << StringPrintf("%ls - 0x%08X", url->bstrVal, this);
   // Reset any existing reference to chrome frame since this is a new
   // navigation.
   chrome_frame_ = NULL;
@@ -455,6 +519,14 @@ STDMETHODIMP_(void) WebBrowserEventSink::OnDocumentCompleteInternal(
     IDispatch* dispatch, VARIANT* url) {
   DLOG(INFO) << __FUNCTION__;
   OnDocumentComplete(dispatch, url);
+}
+
+STDMETHODIMP_(void) WebBrowserEventSink::OnFileDownloadInternal(
+    VARIANT_BOOL active_doc, VARIANT_BOOL* cancel) {
+  DLOG(INFO) << __FUNCTION__ << StringPrintf(" 0x%08X ad=%i", this, active_doc);
+  OnFileDownload(active_doc, cancel);
+  // Always cancel file downloads in tests.
+  *cancel = VARIANT_TRUE;
 }
 
 STDMETHODIMP_(void) WebBrowserEventSink::OnNewWindow3Internal(
@@ -527,6 +599,7 @@ HRESULT WebBrowserEventSink::OnMessageInternal(const VARIANT* param) {
 
 HRESULT WebBrowserEventSink::LaunchIEAndNavigate(
     const std::wstring& navigate_url) {
+  is_main_browser_object_ = true;
   HRESULT hr = LaunchIEAsComServer(web_browser2_.Receive());
   EXPECT_EQ(S_OK, hr);
   if (hr == S_OK) {
@@ -622,10 +695,23 @@ HWND WebBrowserEventSink::GetRendererWindow() {
 
 HRESULT WebBrowserEventSink::SetWebBrowser(IWebBrowser2* web_browser2) {
   DCHECK(web_browser2_.get() == NULL);
+  DCHECK(!is_main_browser_object_);
   web_browser2_ = web_browser2;
   web_browser2_->put_Visible(VARIANT_TRUE);
   HRESULT hr = DispEventAdvise(web_browser2_, &DIID_DWebBrowserEvents2);
   return hr;
+}
+
+HRESULT WebBrowserEventSink::CloseWebBrowser() {
+  DCHECK(process_id_to_wait_for_ == 0);
+  if (!web_browser2_)
+    return E_FAIL;
+  HWND hwnd = NULL;
+  HRESULT hr = web_browser2_->get_HWND(reinterpret_cast<SHANDLE_PTR*>(&hwnd));
+  if (!::IsWindow(hwnd))
+    return E_UNEXPECTED;
+  EXPECT_TRUE(::PostMessage(hwnd, WM_SYSCOMMAND, SC_CLOSE, 0));
+  return S_OK;
 }
 
 void WebBrowserEventSink::ExpectRendererWindowHasfocus() {

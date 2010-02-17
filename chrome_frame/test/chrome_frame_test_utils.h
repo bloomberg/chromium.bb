@@ -138,7 +138,9 @@ class WebBrowserEventSink
       ALLOW_THIS_IN_INITIALIZER_LIST(
           onloaderror_(this, &WebBrowserEventSink::OnLoadErrorInternal)),
       ALLOW_THIS_IN_INITIALIZER_LIST(
-          onload_(this, &WebBrowserEventSink::OnLoadInternal)) {
+          onload_(this, &WebBrowserEventSink::OnLoadInternal)),
+      process_id_to_wait_for_(0),
+      is_main_browser_object_(false) {
   }
 
   ~WebBrowserEventSink() {
@@ -187,6 +189,10 @@ BEGIN_SINK_MAP(WebBrowserEventSink)
                   OnNewWindow3Internal, &kNewWindow3Info)
   SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_DOCUMENTCOMPLETE,
                   OnDocumentCompleteInternal, &kDocumentCompleteInfo)
+  SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_FILEDOWNLOAD,
+                  OnFileDownloadInternal, &kFileDownloadInfo)
+  SINK_ENTRY_INFO(0, DIID_DWebBrowserEvents2, DISPID_ONQUIT,
+                  OnQuitInternal, &kVoidMethodInfo)
 END_SINK_MAP()
 
   STDMETHOD_(void, OnNavigateError)(IDispatch* dispatch, VARIANT* url,
@@ -195,8 +201,8 @@ END_SINK_MAP()
     DLOG(INFO) << __FUNCTION__;
   }
 
-  STDMETHOD(OnBeforeNavigate2)(IDispatch* dispatch, VARIANT* url, VARIANT*
-                               flags, VARIANT* target_frame_name,
+  STDMETHOD(OnBeforeNavigate2)(IDispatch* dispatch, VARIANT* url,
+                               VARIANT* flags, VARIANT* target_frame_name,
                                VARIANT* post_data, VARIANT* headers,
                                VARIANT_BOOL* cancel) {
     return S_OK;
@@ -209,6 +215,23 @@ END_SINK_MAP()
                                  DWORD flags, BSTR url_context, BSTR url) {}
   STDMETHOD_(void, OnDocumentComplete)(IDispatch* dispatch,
                                        VARIANT* url) {}
+
+  STDMETHOD_(void, OnFileDownloadInternal)(VARIANT_BOOL active_doc,
+                                           VARIANT_BOOL* cancel);
+  STDMETHOD_(void, OnFileDownload)(VARIANT_BOOL active_doc,
+                                   VARIANT_BOOL* cancel) {}
+  STDMETHOD_(void, OnQuit)() {}
+  STDMETHOD_(void, OnQuitInternal)() {
+    DLOG(INFO) << __FUNCTION__;
+    // Grab the process id here in case it will be too late to do it
+    // in Uninitialize.
+    HWND hwnd = NULL;
+    web_browser2_->get_HWND(reinterpret_cast<SHANDLE_PTR*>(&hwnd));
+    if (::IsWindow(hwnd))
+      ::GetWindowThreadProcessId(hwnd, &process_id_to_wait_for_);
+
+    OnQuit();
+  }
 #ifdef _DEBUG
   STDMETHOD(Invoke)(DISPID dispid, REFIID riid,
     LCID lcid, WORD flags, DISPPARAMS* params, VARIANT* result,
@@ -234,6 +257,10 @@ END_SINK_MAP()
   HRESULT SetWebBrowser(IWebBrowser2* web_browser2);
   void ExpectRendererWindowHasfocus();
 
+  // Closes the web browser in such a way that the OnQuit notification will
+  // be fired when the window closes (async).
+  HRESULT CloseWebBrowser();
+
  protected:
   STDMETHOD(OnBeforeNavigate2Internal)(IDispatch* dispatch, VARIANT* url,
                                        VARIANT* flags,
@@ -245,7 +272,7 @@ END_SINK_MAP()
   STDMETHOD_(void, OnDocumentCompleteInternal)(IDispatch* dispatch,
                                                VARIANT* url);
   STDMETHOD_(void, OnNewWindow3Internal)(IDispatch** dispatch,
-                                         VARIANT_BOOL* Cancel, DWORD flags,
+                                         VARIANT_BOOL* cancel, DWORD flags,
                                          BSTR url_context, BSTR url);
 
   // IChromeFrame callbacks
@@ -263,6 +290,12 @@ END_SINK_MAP()
   DispCallback<WebBrowserEventSink> onmessage_;
   DispCallback<WebBrowserEventSink> onloaderror_;
   DispCallback<WebBrowserEventSink> onload_;
+  base::ProcessId process_id_to_wait_for_;
+
+  // Set to true if this instance was used to launch the browser process.
+  // For instances used to connect to popup windows etc, this will be
+  // set to false.
+  bool is_main_browser_object_;
 
  protected:
   static _ATL_FUNC_INFO kBeforeNavigate2Info;
@@ -272,6 +305,7 @@ END_SINK_MAP()
   static _ATL_FUNC_INFO kNewWindow3Info;
   static _ATL_FUNC_INFO kVoidMethodInfo;
   static _ATL_FUNC_INFO kDocumentCompleteInfo;
+  static _ATL_FUNC_INFO kFileDownloadInfo;
 };
 
 }  // namespace chrome_frame_test

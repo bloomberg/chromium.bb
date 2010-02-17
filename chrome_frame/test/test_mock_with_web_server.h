@@ -53,6 +53,13 @@ class MockWebBrowserEventSink : public chrome_frame_test::WebBrowserEventSink {
                                    VARIANT* status_code,
                                    VARIANT* cancel));
 
+  MOCK_METHOD2_WITH_CALLTYPE(__stdcall, OnFileDownload,
+                             void (VARIANT_BOOL active_doc,
+                                   VARIANT_BOOL* cancel));
+
+  MOCK_METHOD0_WITH_CALLTYPE(__stdcall, OnQuit,
+                             void ());
+
   MOCK_METHOD1(OnLoad, void (const wchar_t* url));    // NOLINT
   MOCK_METHOD1(OnLoadError, void (const wchar_t* url));    // NOLINT
   MOCK_METHOD3(OnMessage, void (const wchar_t* message,
