@@ -45,7 +45,7 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
 - (void)layoutItems:(BOOL)skipFirst;
 - (void)closed;
 
-- (void)updateTheme:(GTMTheme*)theme;
+- (void)updateTheme;
 - (void)themeDidChangeNotification:(NSNotification*)aNotification;
 @end
 
@@ -79,7 +79,7 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
   NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
   [defaultCenter addObserver:self
                     selector:@selector(themeDidChangeNotification:)
-                        name:kGTMThemeDidChangeNotification
+                        name:kBrowserThemeDidChangeNotification
                       object:nil];
 
   [[self animatableView] setResizeDelegate:resizeDelegate_];
@@ -99,33 +99,25 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
 }
 
 // Called after the current theme has changed.
-- (void)themeDidChangeNotification:(NSNotification*)aNotification {
-  GTMTheme* theme = [aNotification object];
-  [self updateTheme:theme];
+- (void)themeDidChangeNotification:(NSNotification*)notification {
+  [self updateTheme];
 }
 
 // Adapt appearance to the current theme. Called after theme changes and before
 // this is shown for the first time.
-- (void)updateTheme:(GTMTheme*)theme {
-  // For the default theme, use a blue color for the link. Ideally, we'd want to
-  // compare the current theme id with kDefaultThemeID, but the classic theme
-  // from the gallery does have a different id. Hence, we use the blue color if
-  // the current theme does not change the bookmark text color.
-  BOOL useDefaultColor = YES;
+- (void)updateTheme {
+  NSColor* color = nil;
+
   if (bridge_.get() && bridge_->browser() && bridge_->browser()->profile()) {
     ThemeProvider* provider = bridge_->browser()->profile()->GetThemeProvider();
-    if (provider) {
-      useDefaultColor = provider->GetColor(
-          BrowserThemeProvider::COLOR_BOOKMARK_TEXT) ==
-          BrowserThemeProvider::GetDefaultColor(
-              BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
-    }
+
+    color =
+        provider->GetNSColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT, false);
   }
 
-  NSColor* color = useDefaultColor ?
-      [HyperlinkButtonCell defaultTextColor] :
-      [theme textColorForStyle:GTMThemeStyleBookmarksBarButton
-                         state:GTMThemeStateActiveWindow];
+  if (!color)
+    color = [HyperlinkButtonCell defaultTextColor];
+
   [showAllDownloadsCell_ setTextColor:color];
 }
 
@@ -170,7 +162,7 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
     return;
 
   if ([[self view] window])
-    [self updateTheme:[[self view] gtm_theme]];
+    [self updateTheme];
 
   // Animate the shelf out, but not in.
   // TODO(rohitrao): We do not animate on the way in because Cocoa is already

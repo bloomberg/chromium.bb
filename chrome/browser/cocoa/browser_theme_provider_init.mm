@@ -61,11 +61,10 @@
     return theme;
   }
 
-  NSImage* frameImage = provider->HasCustomImage(IDR_THEME_FRAME) ?
-      provider->GetNSImageNamed(IDR_THEME_FRAME) : nil;
+  NSImage* frameImage = provider->GetNSImageNamed(IDR_THEME_FRAME, false);
   if (frameImage) {
     NSImage* frameInactiveImage =
-        provider->GetNSImageNamed(IDR_THEME_FRAME_INACTIVE);
+        provider->GetNSImageNamed(IDR_THEME_FRAME_INACTIVE, true);
     [theme setValue:frameImage
        forAttribute:@"backgroundImage"
               style:GTMThemeStyleWindow
@@ -77,44 +76,42 @@
   }
 
   NSColor* tabTextColor =
-      provider->GetNSColor(BrowserThemeProvider::COLOR_TAB_TEXT);
+      provider->GetNSColor(BrowserThemeProvider::COLOR_TAB_TEXT, false);
   [theme setValue:tabTextColor
      forAttribute:@"textColor"
             style:GTMThemeStyleTabBarSelected
             state:GTMThemeStateActiveWindow];
 
   NSColor* tabInactiveTextColor =
-      provider->GetNSColor(BrowserThemeProvider::COLOR_BACKGROUND_TAB_TEXT);
+      provider->GetNSColor(BrowserThemeProvider::COLOR_BACKGROUND_TAB_TEXT,
+                           false);
   [theme setValue:tabInactiveTextColor
      forAttribute:@"textColor"
             style:GTMThemeStyleTabBarDeselected
             state:GTMThemeStateActiveWindow];
 
   NSColor* bookmarkBarTextColor =
-      provider->GetNSColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT);
+      provider->GetNSColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT, false);
   [theme setValue:bookmarkBarTextColor
      forAttribute:@"textColor"
             style:GTMThemeStyleBookmarksBarButton
             state:GTMThemeStateActiveWindow];
 
 
-  NSImage* toolbarImage = provider->HasCustomImage(IDR_THEME_TOOLBAR) ?
-      provider->GetNSImageNamed(IDR_THEME_TOOLBAR) : nil;
+  NSImage* toolbarImage = provider->GetNSImageNamed(IDR_THEME_TOOLBAR, false);
   [theme setValue:toolbarImage
      forAttribute:@"backgroundImage"
             style:GTMThemeStyleToolBar
             state:GTMThemeStateActiveWindow];
   NSImage* toolbarBackgroundImage =
-      provider->HasCustomImage(IDR_THEME_TAB_BACKGROUND) ?
-          provider->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND) : nil;
+      provider->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND, false);
   [theme setValue:toolbarBackgroundImage
      forAttribute:@"backgroundImage"
             style:GTMThemeStyleTabBarDeselected
             state:GTMThemeStateActiveWindow];
 
   NSImage* toolbarButtonImage =
-      provider->HasCustomImage(IDR_THEME_BUTTON_BACKGROUND) ?
-          provider->GetNSImageNamed(IDR_THEME_BUTTON_BACKGROUND) : nil;
+      provider->GetNSImageNamed(IDR_THEME_BUTTON_BACKGROUND, false);
   if (toolbarButtonImage) {
     [theme setValue:toolbarButtonImage
        forAttribute:@"backgroundImage"
@@ -139,7 +136,7 @@
   }
 
   NSColor* toolbarButtonIconColor =
-      provider->GetNSColorTint(BrowserThemeProvider::TINT_BUTTONS);
+      provider->GetNSColorTint(BrowserThemeProvider::TINT_BUTTONS, false);
   [theme setValue:toolbarButtonIconColor
      forAttribute:@"iconColor"
             style:GTMThemeStyleToolBarButton
@@ -152,22 +149,21 @@
             state:GTMThemeStateActiveWindow];
 
   NSColor* toolbarBackgroundColor =
-      provider->GetNSColor(BrowserThemeProvider::COLOR_TOOLBAR);
+      provider->GetNSColor(BrowserThemeProvider::COLOR_TOOLBAR, false);
   [theme setValue:toolbarBackgroundColor
      forAttribute:@"backgroundColor"
             style:GTMThemeStyleToolBar
             state:GTMThemeStateActiveWindow];
 
   NSImage* frameOverlayImage =
-      provider->HasCustomImage(IDR_THEME_FRAME_OVERLAY) ?
-          provider->GetNSImageNamed(IDR_THEME_FRAME_OVERLAY) : nil;
+      provider->GetNSImageNamed(IDR_THEME_FRAME_OVERLAY, false);
   if (frameOverlayImage) {
     [theme setValue:frameOverlayImage
        forAttribute:@"overlay"
               style:GTMThemeStyleWindow
               state:GTMThemeStateActiveWindow];
     NSImage* frameOverlayInactiveImage =
-        provider->GetNSImageNamed(IDR_THEME_FRAME_OVERLAY_INACTIVE);
+        provider->GetNSImageNamed(IDR_THEME_FRAME_OVERLAY_INACTIVE, true);
     if (frameOverlayInactiveImage) {
       [theme setValue:frameOverlayInactiveImage
          forAttribute:@"overlay"
@@ -178,6 +174,5 @@
 
   return theme;
 }
-
 
 @end  // @implementation GTMTheme(BrowserThemeProviderInitialization)

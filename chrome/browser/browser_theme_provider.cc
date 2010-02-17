@@ -541,6 +541,9 @@ void BrowserThemeProvider::NotifyThemeChanged() {
   service->Notify(NotificationType::BROWSER_THEME_CHANGED,
                   Source<BrowserThemeProvider>(this),
                   NotificationService::NoDetails());
+#if defined(OS_MACOSX)
+  NotifyPlatformThemeChanged();
+#endif  // OS_MACOSX
 }
 
 #if defined(OS_WIN)

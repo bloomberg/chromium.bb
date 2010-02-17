@@ -11,6 +11,9 @@
 #include "chrome/browser/browser_theme_pack.h"
 #include "skia/ext/skia_utils_mac.h"
 
+NSString* const kBrowserThemeDidChangeNotification =
+    @"BrowserThemeDidChangeNotification";
+
 namespace {
 
 void HSLToHSB(const color_utils::HSL& hsl, CGFloat* h, CGFloat* s, CGFloat* b) {
@@ -25,8 +28,12 @@ void HSLToHSB(const color_utils::HSL& hsl, CGFloat* h, CGFloat* s, CGFloat* b) {
 
 }
 
-NSImage* BrowserThemeProvider::GetNSImageNamed(int id) const {
+NSImage* BrowserThemeProvider::GetNSImageNamed(int id,
+                                               bool allow_default) const {
   DCHECK(CalledOnValidThread());
+
+  if (!allow_default && !HasCustomImage(id))
+    return nil;
 
   // Check to see if we already have the image in the cache.
   NSImageMap::const_iterator nsimage_iter = nsimage_cache_.find(id);
@@ -65,58 +72,91 @@ NSImage* BrowserThemeProvider::GetNSImageNamed(int id) const {
   return empty_image;
 }
 
-NSColor* BrowserThemeProvider::GetNSColor(int id) const {
+NSColor* BrowserThemeProvider::GetNSColor(int id,
+                                          bool allow_default) const {
   DCHECK(CalledOnValidThread());
 
   // Check to see if we already have the color in the cache.
   NSColorMap::const_iterator nscolor_iter = nscolor_cache_.find(id);
-  if (nscolor_iter != nscolor_cache_.end())
-    return nscolor_iter->second;
+  if (nscolor_iter != nscolor_cache_.end()) {
+    bool cached_is_default = nscolor_iter->second.second;
+    if (!cached_is_default || allow_default)
+      return nscolor_iter->second.first;
+  }
 
+  bool is_default = false;
   SkColor sk_color;
   if (theme_pack_.get() && theme_pack_->GetColor(id, &sk_color)) {
-    NSColor* color = [NSColor
-        colorWithCalibratedRed:SkColorGetR(sk_color)/255.0
-                         green:SkColorGetG(sk_color)/255.0
-                          blue:SkColorGetB(sk_color)/255.0
-                         alpha:SkColorGetA(sk_color)/255.0];
+    is_default = false;
+  } else {
+    is_default = true;
+    sk_color = GetDefaultColor(id);
+  }
 
-    // We loaded successfully.  Cache the color.
-    if (color) {
-      nscolor_cache_[id] = [color retain];
-      return color;
-    }
+  if (is_default && !allow_default)
+    return nil;
+
+  NSColor* color = [NSColor
+      colorWithCalibratedRed:SkColorGetR(sk_color)/255.0
+                       green:SkColorGetG(sk_color)/255.0
+                        blue:SkColorGetB(sk_color)/255.0
+                       alpha:SkColorGetA(sk_color)/255.0];
+
+  // We loaded successfully.  Cache the color.
+  if (color) {
+    nscolor_cache_[id] = std::make_pair([color retain], is_default);
+    return color;
   }
 
   return nil;
 }
 
-NSColor* BrowserThemeProvider::GetNSColorTint(int id) const {
+NSColor* BrowserThemeProvider::GetNSColorTint(int id,
+                                              bool allow_default) const {
   DCHECK(CalledOnValidThread());
 
   // Check to see if we already have the color in the cache.
   NSColorMap::const_iterator nscolor_iter = nscolor_cache_.find(id);
-  if (nscolor_iter != nscolor_cache_.end())
-    return nscolor_iter->second;
+  if (nscolor_iter != nscolor_cache_.end()) {
+    bool cached_is_default = nscolor_iter->second.second;
+    if (!cached_is_default || allow_default)
+      return nscolor_iter->second.first;
+  }
 
+  bool is_default = false;
   color_utils::HSL tint;
   if (theme_pack_.get() && theme_pack_->GetTint(id, &tint)) {
-    CGFloat hue, saturation, brightness;
-    HSLToHSB(tint, &hue, &saturation, &brightness);
+    is_default = false;
+  } else {
+    is_default = true;
+    tint = GetDefaultTint(id);
+  }
 
-    NSColor* tint_color = [NSColor colorWithCalibratedHue:hue
-                                               saturation:saturation
-                                               brightness:brightness
-                                                    alpha:1.0];
+  if (is_default && !allow_default)
+    return nil;
 
-    // We loaded successfully.  Cache the color.
-    if (tint_color) {
-      nscolor_cache_[id] = [tint_color retain];
-      return tint_color;
-    }
+  CGFloat hue, saturation, brightness;
+  HSLToHSB(tint, &hue, &saturation, &brightness);
+
+  NSColor* tint_color = [NSColor colorWithCalibratedHue:hue
+                                             saturation:saturation
+                                             brightness:brightness
+                                                  alpha:1.0];
+
+  // We loaded successfully.  Cache the color.
+  if (tint_color) {
+    nscolor_cache_[id] = std::make_pair([tint_color retain], is_default);
+    return tint_color;
   }
 
   return nil;
+}
+
+// Let all the browser views know that themes have changed in a platform way.
+void BrowserThemeProvider::NotifyPlatformThemeChanged() {
+  NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
+  [defaultCenter postNotificationName:kBrowserThemeDidChangeNotification
+                               object:[NSValue valueWithPointer:this]];
 }
 
 void BrowserThemeProvider::FreePlatformCaches() {
@@ -132,7 +172,7 @@ void BrowserThemeProvider::FreePlatformCaches() {
   // Free colors.
   for (NSColorMap::iterator i = nscolor_cache_.begin();
        i != nscolor_cache_.end(); i++) {
-    [i->second release];
+    [i->second.first release];
   }
   nscolor_cache_.clear();
 }

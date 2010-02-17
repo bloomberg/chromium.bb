@@ -26,6 +26,13 @@ class PrefService;
 class Profile;
 class ResourceBundle;
 
+#ifdef __OBJC__
+@class NSString;
+// Sent whenever the browser theme changes.  Object => NSValue wrapping the
+// BrowserThemeProvider that changed.
+extern "C" NSString* const kBrowserThemeDidChangeNotification;
+#endif  // __OBJC__
+
 class BrowserThemeProvider : public NonThreadSafe,
                              public ThemeProvider {
  public:
@@ -111,9 +118,9 @@ class BrowserThemeProvider : public NonThreadSafe,
   virtual GdkPixbuf* GetPixbufNamed(int id) const;
   virtual GdkPixbuf* GetRTLEnabledPixbufNamed(int id) const;
 #elif defined(OS_MACOSX)
-  virtual NSImage* GetNSImageNamed(int id) const;
-  virtual NSColor* GetNSColor(int id) const;
-  virtual NSColor* GetNSColorTint(int id) const;
+  virtual NSImage* GetNSImageNamed(int id, bool allow_default) const;
+  virtual NSColor* GetNSColor(int id, bool allow_default) const;
+  virtual NSColor* GetNSColorTint(int id, bool allow_default) const;
 #endif
 
   // Set the current theme to the theme defined in |extension|.
@@ -182,6 +189,11 @@ class BrowserThemeProvider : public NonThreadSafe,
   // Let all the browser views know that themes have changed.
   virtual void NotifyThemeChanged();
 
+#if defined(OS_MACOSX)
+  // Let all the browser views know that themes have changed in a platform way.
+  virtual void NotifyPlatformThemeChanged();
+#endif  // OS_MACOSX
+
   // Clears the platform-specific caches. Do not call directly; it's called
   // from ClearCaches().
   virtual void FreePlatformCaches();
@@ -215,7 +227,8 @@ class BrowserThemeProvider : public NonThreadSafe,
 #elif defined(OS_MACOSX)
   typedef std::map<int, NSImage*> NSImageMap;
   mutable NSImageMap nsimage_cache_;
-  typedef std::map<int, NSColor*> NSColorMap;
+  // The bool member of the pair is whether the color is a default color.
+  typedef std::map<int, std::pair<NSColor*, bool> > NSColorMap;
   mutable NSColorMap nscolor_cache_;
 #endif
 
