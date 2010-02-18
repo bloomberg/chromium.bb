@@ -18,6 +18,8 @@
 #include "chrome/browser/download/download_file.h"
 #include "chrome/browser/extensions/extension_file_util.h"
 #include "chrome/browser/extensions/extension_message_service.h"
+#include "chrome/browser/geolocation/geolocation_permission_context.h"
+#include "chrome/browser/geolocation/geolocation_dispatcher_host.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/in_process_webkit/dom_storage_dispatcher_host.h"
 #include "chrome/browser/nacl_host/nacl_process_host.h"
@@ -297,7 +299,10 @@ ResourceMessageFilter::ResourceMessageFilter(
       off_the_record_(profile->IsOffTheRecord()),
       next_route_id_callback_(NewCallbackWithReturnValue(
           render_widget_helper, &RenderWidgetHelper::GetNextRoutingID)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(translation_service_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(translation_service_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(geolocation_dispatcher_host_(
+          new GeolocationDispatcherHost(
+              this->id(), new GeolocationPermissionContext(profile)))) {
   DCHECK(request_context_);
   DCHECK(media_request_context_);
   DCHECK(audio_renderer_host_.get());
@@ -387,7 +392,8 @@ bool ResourceMessageFilter::OnMessageReceived(const IPC::Message& msg) {
       audio_renderer_host_->OnMessageReceived(msg, &msg_is_ok) ||
       db_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok) ||
       mp_dispatcher->OnMessageReceived(
-          msg, this, next_route_id_callback(), &msg_is_ok);
+          msg, this, next_route_id_callback(), &msg_is_ok) ||
+      geolocation_dispatcher_host_->OnMessageReceived(msg, &msg_is_ok);
 
   if (!handled) {
     DCHECK(msg_is_ok);  // It should have been marked handled if it wasn't OK.

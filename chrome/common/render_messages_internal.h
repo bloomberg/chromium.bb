@@ -19,6 +19,7 @@
 #include "base/values.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/extensions/update_manifest.h"
+#include "chrome/common/geoposition.h"
 #include "chrome/common/nacl_types.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/page_zoom.h"
@@ -898,6 +899,22 @@ IPC_BEGIN_MESSAGES(View)
                       int /* id of translation work */,
                       int /* error id of translation work */,
                       std::vector<string16> /* the translated text chunks */)
+
+  // Reply in response to ViewHostMsg_Geolocation_RequestPermission.
+  IPC_MESSAGE_ROUTED2(ViewMsg_Geolocation_PermissionSet,
+                      int /* bridge_id */,
+                      bool /* is_allowed */)
+
+  // Sent after ViewHostMsg_Geolocation_StartUpdating iff the user has granted
+  // permission and we have a position available.
+  IPC_MESSAGE_ROUTED1(ViewMsg_Geolocation_PositionUpdated,
+                      Geoposition /* geoposition */)
+
+  // Sent after ViewHostMsg_Geolocation_StartUpdating in case of error (such as
+  // permission denied, position unavailable, etc.).
+  IPC_MESSAGE_ROUTED2(ViewMsg_Geolocation_Error,
+                      int /* code */,
+                      std::string /* message */)
 
 IPC_END_MESSAGES(View)
 
@@ -2129,5 +2146,65 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // Used when translating a page from one language to another.
   IPC_MESSAGE_CONTROL1(ViewHostMsg_TranslateText,
                        ViewHostMsg_TranslateTextParam)
+
+  //---------------------------------------------------------------------------
+  // Geolocation services messages
+
+  // A GeolocationServiceBridgeImpl in the renderer process has been created.
+  // This is used to lazily initialize the host dispatchers and related
+  // Geolocation infrastructure in the browser process.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_Geolocation_RegisterDispatcher,
+                       int /* route_id */)
+
+  // A GeolocationServiceBridgeImpl has been destroyed.
+  // This is used to let the Geolocation infrastructure do its cleanup.
+  IPC_MESSAGE_CONTROL1(ViewHostMsg_Geolocation_UnregisterDispatcher,
+                       int /* route_id */)
+
+  // The |route_id| and |bridge_id| representing |URL| is requesting permission
+  // to access geolocation position.
+  // This will be replied by ViewMsg_Geolocation_PermissionSet.
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_Geolocation_RequestPermission,
+                       int /* route_id */,
+                       int /* bridge_id */,
+                       GURL /* URL of the page*/)
+
+  // The |route_id| and |bridge_id| requests Geolocation service to start
+  // updating.
+  // This is an asynchronous call, and the browser process may eventually reply
+  // with the updated geoposition, or an error (access denied, location
+  // unavailable, etc.)
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_Geolocation_StartUpdating,
+                       int /* route_id */,
+                       int /* bridge_id */,
+                       bool /* high_accuracy */)
+
+  // The |route_id| and |bridge_id| requests Geolocation service to stop
+  // updating.
+  // Note that the geolocation service may continue to fetch geolocation data
+  // for other origins.
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_Geolocation_StopUpdating,
+                       int /* route_id */,
+                       int /* bridge_id */)
+
+  // The |route_id| and |bridge_id| requests Geolocation service to suspend.
+  // Note that the geolocation service may continue to fetch geolocation data
+  // for other origins.
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_Geolocation_Suspend,
+                       int /* route_id */,
+                       int /* bridge_id */)
+
+  // The |route_id| and |bridge_id| requests Geolocation service to resume.
+  IPC_MESSAGE_CONTROL2(ViewHostMsg_Geolocation_Resume,
+                       int /* route_id */,
+                       int /* bridge_id */)
+
+  // Sent to indicate whether this particular GeolocationServiceBridgeImpl
+  // (identified by |route_id| and |bridge_id|) is allowed to use geolocation
+  // services.
+  IPC_MESSAGE_CONTROL3(ViewHostMsg_Geolocation_PermissionSet,
+                       int /* route_id */,
+                       int /* bridge_id */,
+                       bool /* is_allowed */)
 
 IPC_END_MESSAGES(ViewHost)

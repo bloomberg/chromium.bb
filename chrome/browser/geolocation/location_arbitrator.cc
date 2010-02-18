@@ -13,8 +13,8 @@
 #include "base/string_util.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/geolocation/access_token_store.h"
-#include "chrome/browser/geolocation/geoposition.h"
 #include "chrome/browser/geolocation/location_provider.h"
+#include "chrome/common/geoposition.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
@@ -109,7 +109,7 @@ void GeolocationArbitratorImpl::LocationUpdateAvailable(
     LocationProviderBase* provider) {
   DCHECK(CalledOnValidThread());
   DCHECK(provider);
-  Position position;
+  Geoposition position;
   provider->GetPosition(&position);
   // TODO(joth): Arbitrate.
   for (DelegateMap::const_iterator it = observers_.begin();

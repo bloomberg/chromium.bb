@@ -69,6 +69,7 @@ class DictionaryValue;
 class DevToolsAgent;
 class DevToolsClient;
 class FilePath;
+class GeolocationDispatcher;
 class GURL;
 class ListValue;
 class NavigationState;
@@ -86,6 +87,10 @@ class WaitableEvent;
 
 namespace webkit_glue {
 struct FileUploadData;
+}
+
+namespace WebKit {
+class WebGeolocationServiceInterfaceChromium;
 }
 
 namespace WebKit {
@@ -259,6 +264,7 @@ class RenderView : public RenderWidget,
   virtual WebKit::WebNotificationPresenter* GetNotificationPresenter() {
     return notification_provider_.get();
   }
+  virtual WebKit::WebGeolocationServiceInterface* getGeolocationService();
 
   // Sets the content settings that back allowScripts(), allowImages(), and
   // allowPlugins().
@@ -1110,6 +1116,9 @@ class RenderView : public RenderWidget,
   // or tab focus and visibily. These are non-owning references.
   std::set<WebPluginDelegateProxy*> plugin_delegates_;
 #endif
+
+  // The geolocation dispatcher attached to this view, lazily initialized.
+  scoped_ptr<GeolocationDispatcher> geolocation_dispatcher_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderView);
 };

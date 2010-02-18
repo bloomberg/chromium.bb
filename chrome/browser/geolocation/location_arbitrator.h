@@ -7,7 +7,7 @@
 
 class AccessTokenStoreFactory;
 class URLRequestContextGetter;
-struct Position;
+struct Geoposition;
 
 // This is the main API to the geolocaiton subsystem. Typically the application
 // will hold a single instance of this class, and can register multiple
@@ -29,7 +29,7 @@ class GeolocationArbitrator {
     // This will be called whenever the 'best available' location is updated,
     // or when an error is encountered meaning no location data will be
     // available in the forseeable future.
-    virtual void OnLocationUpdate(const Position& position) = 0;
+    virtual void OnLocationUpdate(const Geoposition& position) = 0;
 
    protected:
     virtual ~Delegate() {}
