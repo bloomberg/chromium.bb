@@ -2029,7 +2029,7 @@ diff -Naur ../PRISTINE/binutils-2.20/include/elf/nacl.h binutils-2.20/include/el
 +#define EF_NACL_ALIGN_LIB   0x000000	/* aligned to pass either way */
 +
 +/* ABI version number -- increment when ABI changes are incompatible. */
-+#define EF_NACL_ABIVERSION  6
++#define EF_NACL_ABIVERSION  7
 +/* For x86-64 the version number is still zero, until a stable point. */
 +
 +#endif
