@@ -50,25 +50,15 @@ net::HostResolver* CreateGlobalHostResolver(
       global_host_resolver->SetDefaultAddressFamily(net::ADDRESS_FAMILY_IPV4);
   }
 
-  std::string hostname_remappings;
-
-  if (command_line.HasSwitch(switches::kFixedHost)) {
-    std::string host =
-        command_line.GetSwitchValueASCII(switches::kFixedHost);
-    hostname_remappings = StringPrintf("MAP * %s", host.c_str());
-  } else if (command_line.HasSwitch(switches::kHostResolverRules)) {
-    hostname_remappings =
-        command_line.GetSwitchValueASCII(switches::kHostResolverRules);
-  }
-
   // If hostname remappings were specified on the command-line, layer these
   // rules on top of the real host resolver. This allows forwarding all requests
   // through a designated test server.
-  if (!hostname_remappings.empty()) {
+  if (command_line.HasSwitch(switches::kHostResolverRules)) {
     net::MappedHostResolver* remapped_resolver =
         new net::MappedHostResolver(global_host_resolver);
     global_host_resolver = remapped_resolver;
-    remapped_resolver->SetRulesFromString(hostname_remappings);
+    remapped_resolver->SetRulesFromString(
+        command_line.GetSwitchValueASCII(switches::kHostResolverRules));
   }
 
   return global_host_resolver;

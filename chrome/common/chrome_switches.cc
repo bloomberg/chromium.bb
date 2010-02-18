@@ -670,17 +670,6 @@ const char kUninstall[]                     = "uninstall";
 // This is a temporary testing flag.
 const char kUseSpdy[]                       = "use-spdy";
 
-// Force all requests to go to this server.  This commandline is provided
-// for testing purposes only, and will likely be removed soon.  It can also
-// hurt startup performance as it does a synchronous name resolution on the
-// UI thread.
-// The host resolution using this scheme is done exactly once at startup.
-// From that point on, it is completely a static configuration.
-// TODO(mbelshe): Remove this flag when testing is complete.
-//   --testing-fixed-host=myserver
-// TODO(eroman): Can this be replaced by host-resolver-rules ?
-const char kFixedHost[]                     = "testing-fixed-host";
-
 // These two flags are used to force http and https requests to fixed ports.
 const char kFixedHttpPort[]                 = "testing-fixed-http-port";
 const char kFixedHttpsPort[]                = "testing-fixed-https-port";
