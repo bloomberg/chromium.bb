@@ -5,7 +5,7 @@
 {
   'variables': {
     'conditions': [
-      ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+      ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
         'os_include': 'linux'
       }],
       ['OS=="mac"', {'os_include': 'mac'}],

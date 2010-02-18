@@ -391,7 +391,7 @@
       # own hard dependencies.
       'hard_dependency': 1,
       'conditions': [
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../base/base.gyp:linux_versioninfo',
@@ -399,7 +399,8 @@
           'sources!': [
             'glue/plugins/plugin_stubs.cc',
           ],
-        }, { # else: OS!="linux" and OS!="freebsd" and OS!="openbsd"
+        }, { # else: OS!="linux" and OS!="freebsd" and OS!="openbsd" \
+             # and OS!="solaris"'
           'sources/': [['exclude', '_(linux|gtk)(_data)?\\.cc$'],
                        ['exclude', r'/gtk_']],
         }],
