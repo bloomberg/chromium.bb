@@ -6,6 +6,10 @@
 // header guard.
 // See ipc_message_macros.h for explanation of the macros and passes.
 
+#include <map>
+#include <string>
+#include <vector>
+
 #include "build/build_config.h"
 
 #include "base/file_path.h"
@@ -23,6 +27,7 @@
 #include "ipc/ipc_message_macros.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/dom_operations.h"
+#include "webkit/glue/form_field.h"
 #include "webkit/glue/webcursor.h"
 
 #if defined(OS_POSIX)
@@ -607,9 +612,17 @@ IPC_BEGIN_MESSAGES(View)
                        std::vector<int> /* host_ids */,
                        appcache::EventID)
 
-  // Reply to the ViewHostMsg_QueryFormFieldAutofill message with the autofill
-  // suggestions.
-  IPC_MESSAGE_ROUTED3(ViewMsg_QueryFormFieldAutofill_ACK,
+  // Reply to the ViewHostMsg_QueryFormFieldAutofill message with the
+  // autofill suggestions.
+  IPC_MESSAGE_ROUTED4(ViewMsg_AutoFillSuggestionsReturned,
+                      int /* id of the request message */,
+                      std::vector<string16> /* names */,
+                      std::vector<string16> /* labels */,
+                      int /* index of default suggestion */)
+
+  // Reply to the ViewHostMsg_QueryFormFieldAutofill message with the
+  // autocomplete suggestions.
+  IPC_MESSAGE_ROUTED3(ViewMsg_AutocompleteSuggestionsReturned,
                       int /* id of the request message */,
                       std::vector<string16> /* suggestions */,
                       int /* index of default suggestion */)
@@ -644,11 +657,11 @@ IPC_BEGIN_MESSAGES(View)
                       base::SyncSocket::Handle /* socket handle */,
                       uint32 /* length */)
 #else
-IPC_MESSAGE_ROUTED4(ViewMsg_NotifyLowLatencyAudioStreamCreated,
-                    int /* stream id */,
-                    base::SharedMemoryHandle /* handle */,
-                    base::FileDescriptor /* socket handle */,
-                    uint32 /* length */)
+  IPC_MESSAGE_ROUTED4(ViewMsg_NotifyLowLatencyAudioStreamCreated,
+                      int /* stream id */,
+                      base::SharedMemoryHandle /* handle */,
+                      base::FileDescriptor /* socket handle */,
+                      uint32 /* length */)
 #endif
 
   // Notification message sent from AudioRendererHost to renderer for state
@@ -1638,8 +1651,8 @@ IPC_BEGIN_MESSAGES(ViewHost)
 #endif
 
 #if defined(OS_MACOSX)
-  // Asks the browser to create a block of shared memory for the renderer to pass
-  // NativeMetafile data to the browser.
+  // Asks the browser to create a block of shared memory for the renderer to
+  // pass NativeMetafile data to the browser.
   IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_AllocatePDFTransport,
                              uint32 /* buffer size */,
                              base::SharedMemoryHandle /* browser handle */)
@@ -1717,10 +1730,9 @@ IPC_BEGIN_MESSAGES(ViewHost)
                              gfx::Rect /* Out: Window location */)
 
   // Queries the browser for suggestion for autofill in a form input field.
-  IPC_MESSAGE_ROUTED3(ViewHostMsg_QueryFormFieldAutofill,
+  IPC_MESSAGE_ROUTED2(ViewHostMsg_QueryFormFieldAutofill,
                       int /* id of this message */,
-                      string16 /* field name */,
-                      string16 /* user entered text */)
+                      webkit_glue::FormField /* the form field */)
 
   // Instructs the browser to remove the specified autofill-entry from the
   // database.

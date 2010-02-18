@@ -41,6 +41,7 @@ class Point;
 }
 
 namespace webkit_glue {
+class FormField;
 class FormFieldValues;
 struct WebApplicationInfo;
 }
@@ -385,6 +386,13 @@ class RenderViewHost : public RenderWidgetHost {
   // notification.
   void PopupNotificationVisibilityChanged(bool visible);
 
+  // Called by the AutoFillManager when the list of suggestions is ready.
+  void AutoFillSuggestionsReturned(
+      int query_id,
+      const std::vector<string16>& names,
+      const std::vector<string16>& labels,
+      int default_suggestion_index);
+
   // Called by the FormFieldHistoryManager when the list of suggestions is
   // ready.
   void AutocompleteSuggestionsReturned(
@@ -578,8 +586,7 @@ class RenderViewHost : public RenderWidgetHost {
                                const webkit_glue::WebApplicationInfo& info);
   void OnMsgShouldCloseACK(bool proceed);
   void OnQueryFormFieldAutofill(int request_id,
-                                const string16& field_name,
-                                const string16& user_text);
+                                const webkit_glue::FormField& field);
   void OnRemoveAutofillEntry(const string16& field_name,
                              const string16& value);
 

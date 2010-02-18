@@ -27,7 +27,17 @@ class FormField {
   string16 form_control_type() const { return form_control_type_; }
   WebKit::WebInputElement::InputType input_type() const { return input_type_; }
 
+  void set_label(const string16& label) { label_ = label; }
+  void set_name(const string16& name) { name_ = name; }
   void set_value(const string16& value) { value_ = value; }
+  void set_form_control_type(const string16& form_control_type) {
+    form_control_type_ = form_control_type;
+  }
+  void set_input_type(WebKit::WebInputElement::InputType input_type) {
+    input_type_ = input_type;
+  }
+
+  bool operator!=(const FormField& field);
 
  private:
   string16 label_;

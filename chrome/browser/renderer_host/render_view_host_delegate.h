@@ -51,6 +51,7 @@ class Message;
 }
 
 namespace webkit_glue {
+class FormField;
 class FormFieldValues;
 struct PasswordForm;
 struct WebApplicationInfo;
@@ -366,7 +367,7 @@ class RenderViewHostDelegate {
 
     // Called to retrieve a list of suggestions from the web database given
     // the name of the field |field_name| and what the user has already typed
-    // in the field |user_text|.  Appeals to the database thead to perform the
+    // in the field |user_text|.  Appeals to the database thread to perform the
     // query. When the database thread is finished, the FormFieldHistory manager
     // retrieves the calling RenderViewHost and then passes the vector of
     // suggestions to RenderViewHost::AutocompleteSuggestionsReturned.
@@ -395,6 +396,13 @@ class RenderViewHostDelegate {
     // frame.
     virtual void FormsSeen(
         const std::vector<webkit_glue::FormFieldValues>& forms) = 0;
+
+    // Called to retrieve a list of AutoFill suggestions from the web database
+    // given the name of the field and what the user has already typed in the
+    // field.  Returns true to indicate that
+    // RenderViewHost::AutoFillSuggestionsReturned has been called.
+    virtual bool GetAutoFillSuggestions(
+        int query_id, const webkit_glue::FormField& field) = 0;
   };
 
   // ---------------------------------------------------------------------------

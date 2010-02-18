@@ -42,6 +42,7 @@
 #include "net/base/net_util.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFindOptions.h"
+#include "webkit/glue/form_field.h"
 #include "webkit/glue/form_field_values.h"
 
 #if defined(OS_WIN)
@@ -1558,18 +1559,27 @@ void RenderViewHost::OnMsgShouldCloseACK(bool proceed) {
   }
 }
 
-void RenderViewHost::OnQueryFormFieldAutofill(int query_id,
-                                              const string16& field_name,
-                                              const string16& user_text) {
+void RenderViewHost::OnQueryFormFieldAutofill(
+    int query_id, const webkit_glue::FormField& field) {
+  RenderViewHostDelegate::AutoFill* autofill_delegate =
+      delegate_->GetAutoFillDelegate();
+  // If the AutoFill delegate has results to return, we don't need any results
+  // from the FormFieldHistory delegate.
+  if (autofill_delegate &&
+      autofill_delegate->GetAutoFillSuggestions(query_id, field)) {
+      return;
+  }
+
   RenderViewHostDelegate::FormFieldHistory* formfield_history_delegate =
       delegate_->GetFormFieldHistoryDelegate();
-  bool ok = false;
-  if (formfield_history_delegate) {
-    ok = formfield_history_delegate->GetFormFieldHistorySuggestions(
-        query_id, field_name, user_text);
+  if (formfield_history_delegate &&
+      formfield_history_delegate->GetFormFieldHistorySuggestions(
+          query_id, field.name(), field.value())) {
+      return;
   }
-  if (!ok)
-    AutocompleteSuggestionsReturned(query_id, std::vector<string16>(), -1);
+
+  // No suggestions provided, so send an empty vector as the results.
+  AutocompleteSuggestionsReturned(query_id, std::vector<string16>(), -1);
 }
 
 void RenderViewHost::OnRemoveAutofillEntry(const string16& field_name,
@@ -1580,10 +1590,19 @@ void RenderViewHost::OnRemoveAutofillEntry(const string16& field_name,
     formfield_history_delegate->RemoveFormFieldHistoryEntry(field_name, value);
 }
 
+void RenderViewHost::AutoFillSuggestionsReturned(
+    int query_id,
+    const std::vector<string16>& names,
+    const std::vector<string16>& labels,
+    int default_suggestion_index) {
+  Send(new ViewMsg_AutoFillSuggestionsReturned(
+      routing_id(), query_id, names, labels, default_suggestion_index));
+}
+
 void RenderViewHost::AutocompleteSuggestionsReturned(
     int query_id, const std::vector<string16>& suggestions,
     int default_suggestion_index) {
-  Send(new ViewMsg_QueryFormFieldAutofill_ACK(
+  Send(new ViewMsg_AutocompleteSuggestionsReturned(
       routing_id(), query_id, suggestions, -1));
   // Default index -1 means no default suggestion.
 }

@@ -79,6 +79,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebFormElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebHistoryItem.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebInputElement.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNodeList.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPageSerializer.h"
@@ -98,8 +99,10 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebVector.h"
 #include "webkit/appcache/web_application_cache_host_impl.h"
 #include "webkit/default_plugin/default_plugin_shared.h"
-#include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/dom_operations.h"
+#include "webkit/glue/form_field.h"
+#include "webkit/glue/form_field_values.h"
+#include "webkit/glue/glue_serialize.h"
 #include "webkit/glue/image_decoder.h"
 #include "webkit/glue/media/buffered_data_source.h"
 #include "webkit/glue/media/simple_data_source.h"
@@ -123,6 +126,7 @@ using appcache::WebApplicationCacheHostImpl;
 using base::Time;
 using base::TimeDelta;
 using webkit_glue::AltErrorPageResourceFetcher;
+using webkit_glue::FormField;
 using webkit_glue::FormFieldValues;
 using webkit_glue::ImageResourceFetcher;
 using webkit_glue::PasswordForm;
@@ -145,6 +149,7 @@ using WebKit::WebFindOptions;
 using WebKit::WebFormElement;
 using WebKit::WebFrame;
 using WebKit::WebHistoryItem;
+using WebKit::WebInputElement;
 using WebKit::WebMediaPlayer;
 using WebKit::WebMediaPlayerAction;
 using WebKit::WebMediaPlayerClient;
@@ -558,8 +563,10 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
                         OnMessageFromExternalHost)
     IPC_MESSAGE_HANDLER(ViewMsg_DisassociateFromPopupCount,
                         OnDisassociateFromPopupCount)
-    IPC_MESSAGE_HANDLER(ViewMsg_QueryFormFieldAutofill_ACK,
-                        OnQueryFormFieldAutofillAck)
+    IPC_MESSAGE_HANDLER(ViewMsg_AutoFillSuggestionsReturned,
+                        OnAutoFillSuggestionsReturned)
+    IPC_MESSAGE_HANDLER(ViewMsg_AutocompleteSuggestionsReturned,
+                        OnAutocompleteSuggestionsReturned)
     IPC_MESSAGE_HANDLER(ViewMsg_PopupNotificationVisibilityChanged,
                         OnPopupNotificationVisibilityChanged)
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
@@ -1406,7 +1413,19 @@ void RenderView::AddGURLSearchProvider(const GURL& osd_url, bool autodetected) {
                                      autodetected));
 }
 
-void RenderView::OnQueryFormFieldAutofillAck(
+void RenderView::OnAutoFillSuggestionsReturned(
+    int query_id,
+    const std::vector<string16>& names,
+    const std::vector<string16>& labels,
+    int default_suggestion_index) {
+  if (webview() && query_id == autofill_query_id_) {
+    webview()->applyAutoFillSuggestions(
+        autofill_query_node_, names, labels, default_suggestion_index);
+  }
+  autofill_query_node_.reset();
+}
+
+void RenderView::OnAutocompleteSuggestionsReturned(
     int query_id,
     const std::vector<string16>& suggestions,
     int default_suggestion_index) {
@@ -1916,8 +1935,10 @@ void RenderView::queryAutofillSuggestions(const WebNode& node,
   static int query_counter = 0;
   autofill_query_id_ = query_counter++;
   autofill_query_node_ = node;
+  const WebKit::WebInputElement input_element =
+      node.toConstElement<WebInputElement>();
   Send(new ViewHostMsg_QueryFormFieldAutofill(
-      routing_id_, autofill_query_id_, name, value));
+      routing_id_, autofill_query_id_, FormField(input_element)));
 }
 
 void RenderView::removeAutofillSuggestions(const WebString& name,

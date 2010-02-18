@@ -11,10 +11,12 @@
 #include "chrome/browser/autofill/autofill_infobar_delegate.h"
 #include "chrome/browser/autofill/form_structure.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
+#include "webkit/glue/form_field.h"
 #include "webkit/glue/form_field_values.h"
 
 AutoFillManager::AutoFillManager(TabContents* tab_contents)
@@ -71,6 +73,78 @@ void AutoFillManager::FormsSeen(
     DeterminePossibleFieldTypes(form_structure);
     form_structures_.push_back(form_structure);
   }
+}
+
+bool AutoFillManager::GetAutoFillSuggestions(
+    int query_id, const webkit_glue::FormField& field) {
+  // TODO(jhawkins): Use the autofill preference.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableNewAutoFill))
+    return false;
+
+  RenderViewHost* host = tab_contents_->render_view_host();
+  if (!host)
+    return false;
+
+  const std::vector<AutoFillProfile*>& profiles = personal_data_->profiles();
+  if (profiles.empty())
+    return false;
+
+  AutoFillFieldType type = UNKNOWN_TYPE;
+  for (std::vector<FormStructure*>::iterator form = form_structures_.begin();
+       form != form_structures_.end(); ++form) {
+    for (std::vector<AutoFillField*>::const_iterator iter = (*form)->begin();
+         iter != (*form)->end(); ++iter) {
+      // The field list is terminated with a NULL AutoFillField, so don't try to
+      // dereference it.
+      if (!*iter)
+        break;
+
+      AutoFillField* form_field = *iter;
+      if (*form_field != field)
+        continue;
+
+      if (form_field->possible_types().find(NAME_FIRST) !=
+          form_field->possible_types().end() ||
+          form_field->heuristic_type() == NAME_FIRST) {
+        type = NAME_FIRST;
+        break;
+      }
+
+      if (form_field->possible_types().find(NAME_FULL) !=
+          form_field->possible_types().end() ||
+          form_field->heuristic_type() == NAME_FULL) {
+        type = NAME_FULL;
+        break;
+      }
+    }
+  }
+
+  if (type == UNKNOWN_TYPE)
+    return false;
+
+  std::vector<string16> names;
+  std::vector<string16> labels;
+  for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
+       iter != profiles.end(); ++iter) {
+    string16 name = (*iter)->GetFieldText(AutoFillType(type));
+    string16 label = (*iter)->Label();
+
+    // TODO(jhawkins): What if name.length() == 0?
+    if (StartsWith(name, field.value(), false)) {
+      names.push_back(name);
+      labels.push_back(label);
+    }
+  }
+
+  // No suggestions.
+  if (names.empty())
+    return false;
+
+  // TODO(jhawkins): If the default profile is in this list, set it as the
+  // default suggestion index.
+  host->AutoFillSuggestionsReturned(query_id, names, labels, -1);
+  return true;
 }
 
 void AutoFillManager::OnAutoFillDialogApply(

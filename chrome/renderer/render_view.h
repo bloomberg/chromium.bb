@@ -697,8 +697,16 @@ class RenderView : public RenderWidget,
   // Notification about ui theme changes.
   void OnThemeChanged();
 
-  // Notification that we have received autofill suggestion.
-  void OnQueryFormFieldAutofillAck(
+  // Notification that we have received AutoFill suggestions.  |names| and
+  // |labels| correspond with each other and should be the same size.
+  void OnAutoFillSuggestionsReturned(
+      int query_id,
+      const std::vector<string16>& names,
+      const std::vector<string16>& labels,
+      int default_suggestions_index);
+
+  // Notification that we have received Autocomplete suggestions.
+  void OnAutocompleteSuggestionsReturned(
       int query_id,
       const std::vector<string16>& suggestions,
       int default_suggestions_index);

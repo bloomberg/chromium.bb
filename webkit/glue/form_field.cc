@@ -39,4 +39,13 @@ FormField::FormField(const string16& label,
     input_type_(input_type) {
 }
 
+bool FormField::operator!=(const FormField& field) {
+  // A FormField stores a value, but the value is not part of the identity of
+  // the field, so we don't want to compare the values.
+  return (label_ != field.label_ ||
+          name_ != field.name_ ||
+          form_control_type_ != field.form_control_type_ ||
+          input_type_ != field.input_type_);
+}
+
 }  // namespace webkit_glue

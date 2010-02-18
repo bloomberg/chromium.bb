@@ -903,6 +903,43 @@ struct ParamTraits<webkit_glue::PasswordForm> {
   }
 };
 
+// Traits for FormField_Params structure to pack/unpack.
+template <>
+struct ParamTraits<webkit_glue::FormField> {
+  typedef webkit_glue::FormField param_type;
+  static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.label());
+    WriteParam(m, p.name());
+    WriteParam(m, p.value());
+    WriteParam(m, p.form_control_type());
+    WriteParam(m, static_cast<int>(p.input_type()));
+  }
+  static bool Read(const Message* m, void** iter, param_type* p) {
+    string16 label, name, value, form_control_type;
+    int type;
+    bool result = ReadParam(m, iter, &label);
+    result = result && ReadParam(m, iter, &name);
+    result = result && ReadParam(m, iter, &value);
+    result = result && ReadParam(m, iter, &form_control_type);
+    result = result && ReadParam(m, iter, &type);
+    if (!result)
+      return false;
+
+    WebKit::WebInputElement::InputType input_type =
+        static_cast<WebKit::WebInputElement::InputType>(type);
+
+    p->set_label(label);
+    p->set_name(name);
+    p->set_value(value);
+    p->set_form_control_type(form_control_type);
+    p->set_input_type(input_type);
+    return true;
+  }
+  static void Log(const param_type& p, std::wstring* l) {
+    l->append(L"<FormField>");
+  }
+};
+
 // Traits for FormFieldValues_Params structure to pack/unpack.
 template <>
 struct ParamTraits<webkit_glue::FormFieldValues> {
@@ -914,13 +951,8 @@ struct ParamTraits<webkit_glue::FormFieldValues> {
     WriteParam(m, p.target_url);
     WriteParam(m, p.elements.size());
     std::vector<webkit_glue::FormField>::const_iterator itr;
-    for (itr = p.elements.begin(); itr != p.elements.end(); itr++) {
-      WriteParam(m, itr->label());
-      WriteParam(m, itr->name());
-      WriteParam(m, itr->value());
-      WriteParam(m, itr->form_control_type());
-      WriteParam(m, static_cast<int>(itr->input_type()));
-    }
+    for (itr = p.elements.begin(); itr != p.elements.end(); itr++)
+      WriteParam(m, *itr);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
       bool result = true;
@@ -935,22 +967,13 @@ struct ParamTraits<webkit_glue::FormFieldValues> {
         return false;
 
       for (size_t i = 0; i < elements_size; i++) {
-        string16 label, name, value, form_control_type;
-        int type;
-        result = result && ReadParam(m, iter, &label);
-        result = result && ReadParam(m, iter, &name);
-        result = result && ReadParam(m, iter, &value);
-        result = result && ReadParam(m, iter, &form_control_type);
-        result = result && ReadParam(m, iter, &type);
-        if (result) {
-          WebKit::WebInputElement::InputType input_type =
-              static_cast<WebKit::WebInputElement::InputType>(type);
-          p->elements.push_back(
-            webkit_glue::FormField(label, name, value,
-                                   form_control_type, input_type));
-        }
+        webkit_glue::FormField field;
+        if (!ReadParam(m, iter, &field))
+          return false;
+
+        p->elements.push_back(field);
       }
-      return result;
+      return true;
   }
   static void Log(const param_type& p, std::wstring* l) {
     l->append(L"<FormFieldValues>");
