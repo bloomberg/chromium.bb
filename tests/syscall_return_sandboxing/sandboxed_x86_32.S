@@ -20,7 +20,7 @@ SyscallReturnIsSandboxed:
         pushl $timebuf
         pushl $1f
 
-        movl $GETTIMEOFDAY_ADDR, %ecx
+        movl $ GETTIMEOFDAY_ADDR, %ecx
         and $0xffffffe0, %ecx
         jmp *%ecx
 
