@@ -69,4 +69,22 @@
   }
 }
 
+// Eat all mouse events (and do *not* pass them on to the next responder!).
+- (void)mouseDown:(NSEvent*)event {}
+- (void)rightMouseDown:(NSEvent*)event {}
+- (void)otherMouseDown:(NSEvent*)event {}
+- (void)rightMouseUp:(NSEvent*)event {}
+- (void)otherMouseUp:(NSEvent*)event {}
+- (void)mouseMoved:(NSEvent*)event {}
+- (void)mouseDragged:(NSEvent*)event {}
+- (void)rightMouseDragged:(NSEvent*)event {}
+- (void)otherMouseDragged:(NSEvent*)event {}
+
+// Eat this too, except that ...
+- (void)mouseUp:(NSEvent*)event {
+  // a double-click in the blank area should minimize.
+  if ([event clickCount] == 2)
+    [[self window] performMiniaturize:self];
+}
+
 @end  // @implementation FloatingBarBackingView
