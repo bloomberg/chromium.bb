@@ -154,17 +154,17 @@ OptionsWindowGtk::OptionsWindowGtk(Profile* profile)
   DCHECK_EQ(
       gtk_notebook_get_n_pages(GTK_NOTEBOOK(notebook_)), OPTIONS_PAGE_COUNT);
 
+  // Show the content so that we can compute full dialog size, both
+  // for centering and because we want to show the notebook before
+  // connecting switch-page signal, otherwise we'll immediately get a
+  // signal switching to page 0 and overwrite our last_selected_page_
+  // value.
+  gtk_widget_show_all(gtk_bin_get_child(GTK_BIN(dialog_)));
+
   if (Browser* b = BrowserList::GetLastActive()) {
-    // Show container content so that we can compute full dialog size.
-    gtk_widget_show_all(notebook_);
     gtk_util::CenterOverWindow(GTK_WINDOW(dialog_),
                                b->window()->GetNativeHandle());
   }
-
-  // Need to show the notebook before connecting switch-page signal, otherwise
-  // we'll immediately get a signal switching to page 0 and overwrite our
-  // last_selected_page_ value.
-  gtk_widget_show_all(dialog_);
 
   g_signal_connect(notebook_, "switch-page", G_CALLBACK(OnSwitchPage), this);
 
@@ -173,6 +173,8 @@ OptionsWindowGtk::OptionsWindowGtk(Profile* profile)
   g_signal_connect(dialog_, "response", G_CALLBACK(gtk_widget_destroy), NULL);
 
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroy), this);
+
+  gtk_widget_show(dialog_);
 }
 
 OptionsWindowGtk::~OptionsWindowGtk() {
