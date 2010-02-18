@@ -1103,7 +1103,8 @@ void SafeBrowsingDatabaseBloom::InsertAdd(SBPrefix host, SBEntry* entry) {
   STATS_COUNTER("SB.HostInsert", 1);
   int encoded = EncodeChunkId(entry->chunk_id(), entry->list_id());
 
-  if (entry->type() == SBEntry::ADD_FULL_HASH) {
+  DCHECK(entry->IsAdd());
+  if (!entry->IsPrefix()) {
     base::Time receive_time = base::Time::Now();
     for (int i = 0; i < entry->prefix_count(); ++i) {
       SBFullHash full_hash = entry->FullHashAt(i);
@@ -1180,7 +1181,8 @@ void SafeBrowsingDatabaseBloom::InsertSub(
   int encoded = EncodeChunkId(chunk_id, entry->list_id());
   int encoded_add;
 
-  if (entry->type() == SBEntry::SUB_FULL_HASH) {
+  DCHECK(entry->IsSub());
+  if (!entry->IsPrefix()) {
     for (int i = 0; i < entry->prefix_count(); ++i) {
       SBFullHash full_hash = entry->FullHashAt(i);
       SBPrefix prefix = full_hash.prefix;

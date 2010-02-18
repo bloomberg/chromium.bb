@@ -29,12 +29,14 @@ TEST(SafeBrowsingProtocolParsingTest, TestAddChunk) {
 
   EXPECT_EQ(chunks[0].hosts[0].host, 0x61616161);
   SBEntry* entry = chunks[0].hosts[0].entry;
-  EXPECT_EQ(entry->type(), SBEntry::ADD_PREFIX);
+  EXPECT_TRUE(entry->IsAdd());
+  EXPECT_TRUE(entry->IsPrefix());
   EXPECT_EQ(entry->prefix_count(), 0);
 
   EXPECT_EQ(chunks[0].hosts[1].host, 0x31313131);
   entry = chunks[0].hosts[1].entry;
-  EXPECT_EQ(entry->type(), SBEntry::ADD_PREFIX);
+  EXPECT_TRUE(entry->IsAdd());
+  EXPECT_TRUE(entry->IsPrefix());
   EXPECT_EQ(entry->prefix_count(), 3);
   EXPECT_EQ(entry->PrefixAt(0), 0x32323232);
   EXPECT_EQ(entry->PrefixAt(1), 0x33333333);
@@ -42,7 +44,8 @@ TEST(SafeBrowsingProtocolParsingTest, TestAddChunk) {
 
   EXPECT_EQ(chunks[0].hosts[2].host, 0x37373737);
   entry = chunks[0].hosts[2].entry;
-  EXPECT_EQ(entry->type(), SBEntry::ADD_PREFIX);
+  EXPECT_TRUE(entry->IsAdd());
+  EXPECT_TRUE(entry->IsPrefix());
   EXPECT_EQ(entry->prefix_count(), 2);
   EXPECT_EQ(entry->PrefixAt(0), 0x38383838);
   EXPECT_EQ(entry->PrefixAt(1), 0x39393939);
@@ -79,7 +82,8 @@ TEST(SafeBrowsingProtocolParsingTest, TestAddFullChunk) {
 
   EXPECT_EQ(chunks[0].hosts[0].host, 0x61616161);
   SBEntry* entry = chunks[0].hosts[0].entry;
-  EXPECT_EQ(entry->type(), SBEntry::ADD_FULL_HASH);
+  EXPECT_TRUE(entry->IsAdd());
+  EXPECT_FALSE(entry->IsPrefix());
   EXPECT_EQ(entry->prefix_count(), 2);
   EXPECT_TRUE(entry->FullHashAt(0) == full_hash1);
   EXPECT_TRUE(entry->FullHashAt(1) == full_hash2);
@@ -109,12 +113,14 @@ TEST(SafeBrowsingProtocolParsingTest, TestAddChunks) {
 
   EXPECT_EQ(chunks[0].hosts[0].host, 0x61616161);
   SBEntry* entry = chunks[0].hosts[0].entry;
-  EXPECT_EQ(entry->type(), SBEntry::ADD_PREFIX);
+  EXPECT_TRUE(entry->IsAdd());
+  EXPECT_TRUE(entry->IsPrefix());
   EXPECT_EQ(entry->prefix_count(), 0);
 
   EXPECT_EQ(chunks[0].hosts[1].host, 0x31313131);
   entry = chunks[0].hosts[1].entry;
-  EXPECT_EQ(entry->type(), SBEntry::ADD_PREFIX);
+  EXPECT_TRUE(entry->IsAdd());
+  EXPECT_TRUE(entry->IsPrefix());
   EXPECT_EQ(entry->prefix_count(), 3);
   EXPECT_EQ(entry->PrefixAt(0), 0x32323232);
   EXPECT_EQ(entry->PrefixAt(1), 0x33333333);
@@ -122,7 +128,8 @@ TEST(SafeBrowsingProtocolParsingTest, TestAddChunks) {
 
   EXPECT_EQ(chunks[0].hosts[2].host, 0x37373737);
   entry = chunks[0].hosts[2].entry;
-  EXPECT_EQ(entry->type(), SBEntry::ADD_PREFIX);
+  EXPECT_TRUE(entry->IsAdd());
+  EXPECT_TRUE(entry->IsPrefix());
   EXPECT_EQ(entry->prefix_count(), 2);
   EXPECT_EQ(entry->PrefixAt(0), 0x38383838);
   EXPECT_EQ(entry->PrefixAt(1), 0x39393939);
@@ -133,7 +140,8 @@ TEST(SafeBrowsingProtocolParsingTest, TestAddChunks) {
 
   EXPECT_EQ(chunks[1].hosts[0].host, 0x35353535);
   entry = chunks[1].hosts[0].entry;
-  EXPECT_EQ(entry->type(), SBEntry::ADD_PREFIX);
+  EXPECT_TRUE(entry->IsAdd());
+  EXPECT_TRUE(entry->IsPrefix());
   EXPECT_EQ(entry->prefix_count(), 2);
   EXPECT_EQ(entry->PrefixAt(0), 0x70707070);
   EXPECT_EQ(entry->PrefixAt(1), 0x67676767);
@@ -195,13 +203,15 @@ TEST(SafeBrowsingProtocolParsingTest, TestSubChunk) {
 
   EXPECT_EQ(chunks[0].hosts[0].host, 0x61616161);
   SBEntry* entry = chunks[0].hosts[0].entry;
-  EXPECT_EQ(entry->type(), SBEntry::SUB_PREFIX);
+  EXPECT_TRUE(entry->IsSub());
+  EXPECT_TRUE(entry->IsPrefix());
   EXPECT_EQ(entry->chunk_id(), 0x6b6b6b6b);
   EXPECT_EQ(entry->prefix_count(), 0);
 
   EXPECT_EQ(chunks[0].hosts[1].host, 0x31313131);
   entry = chunks[0].hosts[1].entry;
-  EXPECT_EQ(entry->type(), SBEntry::SUB_PREFIX);
+  EXPECT_TRUE(entry->IsSub());
+  EXPECT_TRUE(entry->IsPrefix());
   EXPECT_EQ(entry->prefix_count(), 3);
   EXPECT_EQ(entry->ChunkIdAtPrefix(0), 0x7a7a7a7a);
   EXPECT_EQ(entry->PrefixAt(0), 0x32323232);
@@ -212,7 +222,8 @@ TEST(SafeBrowsingProtocolParsingTest, TestSubChunk) {
 
   EXPECT_EQ(chunks[0].hosts[2].host, 0x37373737);
   entry = chunks[0].hosts[2].entry;
-  EXPECT_EQ(entry->type(), SBEntry::SUB_PREFIX);
+  EXPECT_TRUE(entry->IsSub());
+  EXPECT_TRUE(entry->IsPrefix());
   EXPECT_EQ(entry->prefix_count(), 2);
   EXPECT_EQ(entry->ChunkIdAtPrefix(0), 0x79797979);
   EXPECT_EQ(entry->PrefixAt(0), 0x38383838);
@@ -253,7 +264,8 @@ TEST(SafeBrowsingProtocolParsingTest, TestSubFullChunk) {
 
   EXPECT_EQ(chunks[0].hosts[0].host, 0x61616161);
   SBEntry* entry = chunks[0].hosts[0].entry;
-  EXPECT_EQ(entry->type(), SBEntry::SUB_FULL_HASH);
+  EXPECT_TRUE(entry->IsSub());
+  EXPECT_FALSE(entry->IsPrefix());
   EXPECT_EQ(entry->prefix_count(), 2);
   EXPECT_EQ(entry->ChunkIdAtPrefix(0), 0x79797979);
   EXPECT_TRUE(entry->FullHashAt(0) == full_hash1);
