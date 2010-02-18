@@ -257,12 +257,13 @@ class DelayedInitTask : public Task {
                                        RLZTracker::CHROME_OMNIBOX,
                                        RLZTracker::SET_TO_GOOGLE);
       }
-      // Record first user interaction with the omnibox.
-      if (OmniBoxUsageObserver::used()) {
-        RLZTracker::RecordProductEvent(RLZTracker::CHROME,
-                                       RLZTracker::CHROME_OMNIBOX,
-                                       RLZTracker::FIRST_SEARCH);
-      }
+    }
+    // Record first user interaction with the omnibox. We call this all the
+    // time but the rlz lib should ingore all but the first one.
+    if (OmniBoxUsageObserver::used()) {
+      RLZTracker::RecordProductEvent(RLZTracker::CHROME,
+                                     RLZTracker::CHROME_OMNIBOX,
+                                     RLZTracker::FIRST_SEARCH);
     }
     // Schedule the daily RLZ ping.
     base::Thread* thread = g_browser_process->file_thread();
