@@ -93,7 +93,9 @@ void MemoryDetails::CollectChildInfoOnUIThread() {
          RenderProcessHost::AllHostsIterator()); !renderer_iter.IsAtEnd();
          renderer_iter.Advance()) {
       DCHECK(renderer_iter.GetCurrentValue());
-      if (process.pid !=
+      // Ignore processes that don't have a connection, such as crashed tabs or
+      // phantom tabs.
+      if (!renderer_iter.GetCurrentValue()->HasConnection() || process.pid !=
               base::GetProcId(renderer_iter.GetCurrentValue()->GetHandle())) {
         continue;
       }
