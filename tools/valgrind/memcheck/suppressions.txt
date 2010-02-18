@@ -414,6 +414,14 @@
    fun:ChromeMain	
    fun:main	
 }
+{
+   # Valgrind reports bogus uninitialized parameter for utimes
+   # https://bugs.kde.org/show_bug.cgi?id=227570
+   file_util_setlastmodifiedtime
+   Memcheck:Param
+   utimes(tvp[1])
+   fun:utimes
+}
 #-----------------------------------------------------------------------
 # 2. intentional unit test errors, or stuff that is somehow a false positive
 # in our own code, or stuff that is so trivial it's not worth fixing
@@ -2320,14 +2328,3 @@
    fun:_ZN2v88internal6Object23GetPropertyWithCallbackEPS1_S2_PNS0_6StringES2_
    obj:*
 }
-{
-   # Valgrind on Mac and Linux reports passing uninitialised data here.
-   # stuartmorgan is looking into fix.
-   file_util_setlastmodifiedtime
-   Memcheck:Param
-   utimes(tvp[1])
-   fun:utimes
-   ...
-   fun:*FileUtilTest_LastModified_Test*
-}
-                                                               
