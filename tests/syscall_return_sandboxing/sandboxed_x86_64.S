@@ -22,7 +22,7 @@ SyscallReturnIsSandboxed:
         addq %r15, %rcx
         pushq %rcx
 
-        movq $ GETTIMEOFDAY_ADDR, %rcx
+        movq $GETTIMEOFDAY_ADDR, %rcx
         andl $0xffffffe0, %ecx
         addq %r15, %rcx
         jmp *%rcx
