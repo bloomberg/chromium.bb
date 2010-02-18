@@ -68,6 +68,9 @@ struct ViewMsg_Navigate_Params {
     // Reload the page.
     RELOAD,
 
+    // Reload the page, ignoring any cache entries.
+    RELOAD_IGNORING_CACHE,
+
     // The navigation is the result of session restore and should honor the
     // page's cache policy while restoring form state. This is set to true if
     // restoring a tab/session from the previous session and the previous
@@ -845,6 +848,10 @@ struct ParamTraits<ViewMsg_Navigate_Params::NavigationType> {
     switch (p) {
       case ViewMsg_Navigate_Params::RELOAD:
         event = L"NavigationType_RELOAD";
+        break;
+
+    case ViewMsg_Navigate_Params::RELOAD_IGNORING_CACHE:
+        event = L"NavigationType_RELOAD_IGNORING_CACHE";
         break;
 
       case ViewMsg_Navigate_Params::RESTORE:

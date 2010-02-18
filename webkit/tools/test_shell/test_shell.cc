@@ -635,7 +635,7 @@ bool TestShell::Navigate(const TestNavigationEntry& entry, bool reload) {
   // If we are reloading, then WebKit will use the state of the current page.
   // Otherwise, we give it the state to navigate to.
   if (reload) {
-    frame->reload();
+    frame->reload(false);
   } else if (!entry.GetContentState().empty()) {
     DCHECK_NE(entry.GetPageID(), -1);
     frame->loadHistoryItem(

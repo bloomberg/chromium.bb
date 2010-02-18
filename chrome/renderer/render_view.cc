@@ -841,7 +841,9 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
 
   AboutHandler::MaybeHandle(params.url);
 
-  bool is_reload = (params.navigation_type == ViewMsg_Navigate_Params::RELOAD);
+  bool is_reload =
+      params.navigation_type == ViewMsg_Navigate_Params::RELOAD ||
+      params.navigation_type == ViewMsg_Navigate_Params::RELOAD_IGNORING_CACHE;
 
   WebFrame* main_frame = webview()->mainFrame();
   if (is_reload && main_frame->currentHistoryItem().isNull()) {
@@ -878,7 +880,9 @@ void RenderView::OnNavigate(const ViewMsg_Navigate_Params& params) {
   if (is_reload) {
     if (navigation_state)
       navigation_state->set_load_type(NavigationState::RELOAD);
-    main_frame->reload();
+    bool ignore_cache = (params.navigation_type ==
+                             ViewMsg_Navigate_Params::RELOAD_IGNORING_CACHE);
+    main_frame->reload(ignore_cache);
   } else if (!params.state.empty()) {
     // We must know the page ID of the page we are navigating back to.
     DCHECK_NE(params.page_id, -1);
@@ -916,10 +920,15 @@ void RenderView::OnStop() {
     webview()->mainFrame()->stopLoading();
 }
 
-// Reload current focused frame
+// Reload current focused frame.
+// E.g. called by right-clicking on the frame and picking "reload this frame".
 void RenderView::OnReloadFrame() {
-  if (webview() && webview()->focusedFrame())
-    webview()->focusedFrame()->reload();
+  if (webview() && webview()->focusedFrame()) {
+    // We always obey the cache (ignore_cache=false) here.
+    // TODO(evanm): perhaps we could allow shift-clicking the menu item to do
+    // a cache-ignoring reload of the frame.
+    webview()->focusedFrame()->reload(false);
+  }
 }
 
 void RenderView::OnLoadAlternateHTMLText(const std::string& html,
