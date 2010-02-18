@@ -273,6 +273,8 @@
         'cross/gpu2d/cubic_classifier.cc',
         'cross/gpu2d/cubic_classifier.h',
         'cross/gpu2d/cubic_math_utils.h',
+        'cross/gpu2d/cubic_texture_coords.cc',
+        'cross/gpu2d/cubic_texture_coords.h',
         'cross/gpu2d/interval_tree.h',
         'cross/gpu2d/red_black_tree.h',
       ],
