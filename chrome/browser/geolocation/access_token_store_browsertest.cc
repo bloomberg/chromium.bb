@@ -95,7 +95,14 @@ void GeolocationAccessTokenStoreTest::OnAccessTokenStoresCreated(
       ChromeThread::UI, FROM_HERE, new MessageLoop::QuitTask);
 }
 
-IN_PROC_BROWSER_TEST_F(GeolocationAccessTokenStoreTest, SetAcrossInstances) {
+#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+// TODO(joth): http://crbug.com/36068 crashes on Linux Views.
+#define MAYBE_SetAcrossInstances DISABLED_SetAcrossInstances
+#else
+#define MAYBE_SetAcrossInstances SetAcrossInstances
+#endif
+
+IN_PROC_BROWSER_TEST_F(GeolocationAccessTokenStoreTest, MAYBE_SetAcrossInstances) {
   const string16 ref_token1 = ASCIIToUTF16("jksdfo90,'s#\"#1*(");
   const string16 ref_token2 = ASCIIToUTF16("\1\2\3\4\5\6\7\10\11\12=023");
   ASSERT_TRUE(ChromeThread::CurrentlyOn(ChromeThread::UI));
