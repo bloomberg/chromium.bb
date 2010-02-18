@@ -20,7 +20,6 @@ namespace switches {
 // All switches in alphabetical order. The switches should be documented
 // alongside the definition of their values in the .cc file.
 extern const char kActivateOnLaunch[];
-extern const char kAllowFileAccessFromFiles[];
 extern const char kAllowSandboxDebugging[];
 extern const char kAlwaysEnableDevTools[];
 extern const char kApp[];

@@ -152,7 +152,6 @@ LayoutTestController::LayoutTestController(TestShell* shell) :
   BindMethod("evaluateScriptInIsolatedWorld", &LayoutTestController::evaluateScriptInIsolatedWorld);
   BindMethod("overridePreference", &LayoutTestController::overridePreference);
   BindMethod("setAllowUniversalAccessFromFileURLs", &LayoutTestController::setAllowUniversalAccessFromFileURLs);
-  BindMethod("setAllowFileAccessFromFileURLs", &LayoutTestController::setAllowFileAccessFromFileURLs);
   BindMethod("setTimelineProfilingEnabled", &LayoutTestController::setTimelineProfilingEnabled);
   BindMethod("evaluateInWebInspector", &LayoutTestController::evaluateInWebInspector);
   BindMethod("forceRedSelectionColors", &LayoutTestController::forceRedSelectionColors);
@@ -895,16 +894,6 @@ void LayoutTestController::setAllowUniversalAccessFromFileURLs(
   if (args.size() > 0 && args[0].isBool()) {
     WebPreferences* prefs = shell_->GetWebPreferences();
     prefs->allow_universal_access_from_file_urls = args[0].value.boolValue;
-    prefs->Apply(shell_->webView());
-  }
-  result->SetNull();
-}
-
-void LayoutTestController::setAllowFileAccessFromFileURLs(
-    const CppArgumentList& args, CppVariant* result) {
-  if (args.size() > 0 && args[0].isBool()) {
-    WebPreferences* prefs = shell_->GetWebPreferences();
-    prefs->allow_file_access_from_file_urls = args[0].value.boolValue;
     prefs->Apply(shell_->webView());
   }
   result->SetNull();

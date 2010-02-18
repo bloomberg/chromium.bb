@@ -188,8 +188,6 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
       !command_line.HasSwitch(switches::kDisableSiteSpecificQuirks);
     web_prefs.geolocation_enabled =
       command_line.HasSwitch(switches::kEnableGeolocation);
-    web_prefs.allow_file_access_from_file_urls =
-      command_line.HasSwitch(switches::kAllowFileAccessFromFiles);
   }
 
   web_prefs.uses_universal_detector =

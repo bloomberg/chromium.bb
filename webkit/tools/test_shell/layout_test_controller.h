@@ -199,7 +199,6 @@ class LayoutTestController : public CppBoundClass {
   void evaluateScriptInIsolatedWorld(const CppArgumentList& args, CppVariant* result);
   void overridePreference(const CppArgumentList& args, CppVariant* result);
   void setAllowUniversalAccessFromFileURLs(const CppArgumentList& args, CppVariant* result);
-  void setAllowFileAccessFromFileURLs(const CppArgumentList& args, CppVariant* result);
 
   // The fallback method is called when a nonexistent method is called on
   // the layout test controller object.

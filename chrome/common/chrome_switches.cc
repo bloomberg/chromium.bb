@@ -17,10 +17,6 @@ namespace switches {
 // is launched on the command line (e.g. by Selenium).  Only needed on Mac.
 const char kActivateOnLaunch[] = "activate-on-launch";
 
-// By default, file:/// URIs cannot read other file:/// URIs.  This is an
-// override for developers who need the old behavior for testing.
-const char kAllowFileAccessFromFiles[]      = "allow-file-access-from-files";
-
 // Allows debugging of sandboxed processes (see zygote_main_linux.cc).
 const char kAllowSandboxDebugging[]         = "allow-sandbox-debugging";
 
