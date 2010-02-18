@@ -700,6 +700,7 @@ BUG27697 SKIP : storage/hash-change-with-xhr.html = PASS
 WONTFIX SKIP : storage/private-browsing-readonly.html = PASS
 // Disable this test until we rebaseline it
 BUG_DUMI SKIP : storage/quota-tracking.html = TEXT
+BUG_DUMI SKIP : storage/statement-error-callback.html = TEXT
 
 // Implement HTML5 Geolocation API.
 BUG11246 DEFER SKIP : fast/dom/Geolocation = FAIL
