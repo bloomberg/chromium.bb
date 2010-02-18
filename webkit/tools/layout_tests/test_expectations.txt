@@ -2973,6 +2973,12 @@ BUG36019 : fast/images/svg-as-tiled-background.html = IMAGE
 // Started failing with r54823
 BUG35923 LINUX : fast/backgrounds/animated-gif-as-background.html = IMAGE
 
-// Failed with roll to r54937 (not just a rebaseline)
-BUG_ROLANDSTEINER LINUX WIN : fast/css/first-letter-first-line-hover.html = IMAGE+TEXT
+// Failed with roll to r54937 (incorrect color of hovered item)
+BUG36113 : fast/css/first-letter-first-line-hover.html = IMAGE+TEXT
 
+// Expected failures with WebKit roll to r54944
+BUG36110 : editing/execCommand/19089.html = TEXT
+BUG36110 : editing/pasteboard/5065605.html = TEXT
+BUG36110 : editing/pasteboard/5245519.html = TEXT
+BUG36110 : editing/pasteboard/paste-text-011.html = TEXT
+BUG36110 : editing/pasteboard/paste-text-012.html = TEXT
