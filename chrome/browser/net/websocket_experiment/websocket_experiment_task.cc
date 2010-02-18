@@ -27,7 +27,8 @@ URLFetcher* WebSocketExperimentTask::Context::CreateURLFetcher(
   fetcher->set_request_context(getter);
   fetcher->set_load_flags(
       net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
-      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SEND_AUTH_DATA);
+      net::LOAD_DO_NOT_SEND_COOKIES | net::LOAD_DO_NOT_SEND_AUTH_DATA |
+      net::LOAD_IGNORE_CERT_AUTHORITY_INVALID);
   return fetcher;
 }
 
