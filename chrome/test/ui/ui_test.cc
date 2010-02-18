@@ -1137,6 +1137,9 @@ bool UITestBase::LaunchBrowserHelper(const CommandLine& arguments,
     command_line.AppendSwitchWithValue(switches::kTestName,
                                        ui_test_name_);
 
+  // The tests assume that file:// URIs can freely access other file:// URIs.
+  command_line.AppendSwitch(switches::kAllowFileAccessFromFiles);
+
   DebugFlags::ProcessDebugFlags(
       &command_line, ChildProcessInfo::UNKNOWN_PROCESS, false);
   command_line.AppendArguments(arguments, false);
