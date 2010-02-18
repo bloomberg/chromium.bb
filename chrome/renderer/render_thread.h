@@ -92,25 +92,34 @@ class RenderThread : public RenderThreadBase,
   // be accessed when running on the render thread itself
   static RenderThread* current();
 
+  // Returns the routing ID of the RenderWidget containing the current script
+  // execution context (corresponding to WebFrame::frameForCurrentContext).
+  static int32 RoutingIDForCurrentContext();
+
   // Overridden from RenderThreadBase.
-  virtual bool Send(IPC::Message* msg) {
-    return ChildThread::Send(msg);
-  }
-
-  virtual void AddRoute(int32 routing_id, IPC::Channel::Listener* listener) {
-    widget_count_++;
-    return ChildThread::AddRoute(routing_id, listener);
-  }
-  virtual void RemoveRoute(int32 routing_id) {
-    widget_count_--;
-    return ChildThread::RemoveRoute(routing_id);
-  }
-
+  virtual bool Send(IPC::Message* msg);
+  virtual void AddRoute(int32 routing_id, IPC::Channel::Listener* listener);
+  virtual void RemoveRoute(int32 routing_id);
   virtual void AddFilter(IPC::ChannelProxy::MessageFilter* filter);
   virtual void RemoveFilter(IPC::ChannelProxy::MessageFilter* filter);
-
   virtual void WidgetHidden();
   virtual void WidgetRestored();
+
+  // Send a synchronous message and run a nested message loop, while waiting
+  // for a reply.
+  //
+  // NOTE: Only use this method if the handler for the message may need to show
+  // UI before replying.
+  //
+  bool SendAndRunNestedMessageLoop(IPC::SyncMessage* message);
+
+  // These methods modify how the next message is sent.  Normally, when sending
+  // a synchronous message that runs a nested message loop, we need to suspend
+  // callbacks into WebKit.  This involves disabling timers and deferring
+  // resource loads.  However, there are exceptions when we need to customize
+  // the behavior.
+  void DoNotSuspendWebKitSharedTimer();
+  void DoNotNotifyWebKitOfModalLoop();
 
   VisitedLinkSlave* visited_link_slave() const {
     return visited_link_slave_.get();
@@ -254,6 +263,10 @@ class RenderThread : public RenderThreadBase,
 
   // True if this renderer is running extensions.
   bool is_extension_process_;
+
+  bool do_not_suspend_webkit_shared_timer_;
+  bool do_not_notify_webkit_of_modal_loop_;
+  bool did_notify_webkit_of_modal_loop_;
 
   // Timer that periodically calls IdleHandler.
   base::RepeatingTimer<RenderThread> idle_timer_;

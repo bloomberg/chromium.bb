@@ -33,10 +33,14 @@ void MessageRouter::OnMessageReceived(const IPC::Message& msg) {
 }
 
 bool MessageRouter::RouteMessage(const IPC::Message& msg) {
-  IPC::Channel::Listener* listener = routes_.Lookup(msg.routing_id());
+  IPC::Channel::Listener* listener = ResolveRoute(msg.routing_id());
   if (!listener)
     return false;
 
   listener->OnMessageReceived(msg);
   return true;
+}
+
+IPC::Channel::Listener* MessageRouter::ResolveRoute(int32 routing_id) {
+  return routes_.Lookup(routing_id);
 }

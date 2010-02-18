@@ -157,10 +157,6 @@ class RenderView : public RenderWidget,
     return static_cast<WebKit::WebView*>(webwidget());
   }
 
-  gfx::NativeViewId host_window() const {
-    return host_window_;
-  }
-
   int browser_window_id() const {
     return browser_window_id_;
   }
@@ -450,9 +446,6 @@ class RenderView : public RenderWidget,
     return webkit_preferences_;
   }
 
-  // Sends a message and runs a nested message loop.
-  bool SendAndRunNestedMessageLoop(IPC::SyncMessage* message);
-
   // Called when the "idle" user script state has been reached. See
   // UserScript::DOCUMENT_IDLE.
   void OnUserScriptIdleTriggered(WebKit::WebFrame* frame);
@@ -572,6 +565,9 @@ class RenderView : public RenderWidget,
                             const std::wstring& default_value,
                             const GURL& frame_url,
                             std::wstring* result);
+
+  // Sends a message and runs a nested message loop.
+  bool SendAndRunNestedMessageLoop(IPC::SyncMessage* message);
 
   // Adds search provider from the given OpenSearch description URL as a
   // keyword search.

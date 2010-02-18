@@ -1112,18 +1112,20 @@ IPC_BEGIN_MESSAGES(ViewHost)
                       GURL /* first_party_for_cookies */,
                       std::string /* cookie */)
 
-  // Used to get cookies for the given URL
-  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_GetCookies,
-                              GURL /* url */,
-                              GURL /* first_party_for_cookies */,
-                              std::string /* cookies */)
+  // Used to get cookies for the given URL.  This may be blocked by a user
+  // prompt to validate a previous SetCookie message.
+  IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_GetCookies,
+                             GURL /* url */,
+                             GURL /* first_party_for_cookies */,
+                             std::string /* cookies */)
 
-  // Used to get raw cookie information for the given URL
-  IPC_SYNC_MESSAGE_CONTROL2_1(ViewHostMsg_GetRawCookies,
-                              GURL /* url */,
-                              GURL /* first_party_for_cookies */,
-                              std::vector<webkit_glue::WebCookie>
-                                  /* raw_cookies */)
+  // Used to get raw cookie information for the given URL.  This may be blocked
+  // by a user prompt to validate a previous SetCookie message.
+  IPC_SYNC_MESSAGE_ROUTED2_1(ViewHostMsg_GetRawCookies,
+                             GURL /* url */,
+                             GURL /* first_party_for_cookies */,
+                             std::vector<webkit_glue::WebCookie>
+                                 /* raw_cookies */)
 
   // Used to delete cookie for the given URL and name
   IPC_SYNC_MESSAGE_CONTROL2_0(ViewHostMsg_DeleteCookie,
@@ -1458,10 +1460,10 @@ IPC_BEGIN_MESSAGES(ViewHost)
   // by javascript. This step is about showing UI to the user to select the
   // final print settings. The output parameter is the same as
   // ViewMsg_PrintPages which is executed implicitly.
-  IPC_SYNC_MESSAGE_CONTROL1_1(ViewHostMsg_ScriptedPrint,
-                              ViewHostMsg_ScriptedPrint_Params,
-                              ViewMsg_PrintPages_Params /* settings choosen by
-                                                          the user*/)
+  IPC_SYNC_MESSAGE_ROUTED1_1(ViewHostMsg_ScriptedPrint,
+                             ViewHostMsg_ScriptedPrint_Params,
+                             ViewMsg_PrintPages_Params
+                                 /* settings choosen by the user*/)
 #endif  // defined(OS_WIN) || defined(OS_MACOSX)
 
   // WebKit and JavaScript error messages to log to the console
@@ -1981,13 +1983,13 @@ IPC_BEGIN_MESSAGES(ViewHost)
                               NullableString16 /* value */)
 
   // Set a value that's associated with a key in a storage area.
-  IPC_SYNC_MESSAGE_CONTROL4_2(ViewHostMsg_DOMStorageSetItem,
-                              int64 /* storage_area_id */,
-                              string16 /* key */,
-                              string16 /* value */,
-                              GURL /* url */,
-                              WebKit::WebStorageArea::Result /* result */,
-                              NullableString16 /* old_value */)
+  IPC_SYNC_MESSAGE_ROUTED4_2(ViewHostMsg_DOMStorageSetItem,
+                             int64 /* storage_area_id */,
+                             string16 /* key */,
+                             string16 /* value */,
+                             GURL /* url */,
+                             WebKit::WebStorageArea::Result /* result */,
+                             NullableString16 /* old_value */)
 
   // Remove the value associated with a key in a storage area.
   IPC_SYNC_MESSAGE_CONTROL3_1(ViewHostMsg_DOMStorageRemoveItem,

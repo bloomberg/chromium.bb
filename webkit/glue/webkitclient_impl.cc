@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #include "webkit/glue/webkitclient_impl.h"
 
@@ -100,7 +100,8 @@ static int ToMessageID(WebLocalizedString::Name name) {
 
 WebKitClientImpl::WebKitClientImpl()
     : main_loop_(MessageLoop::current()),
-      shared_timer_func_(NULL) {
+      shared_timer_func_(NULL),
+      shared_timer_suspended_(0) {
 }
 
 WebApplicationCacheHost* WebKitClientImpl::createApplicationCacheHost(
@@ -256,6 +257,9 @@ void WebKitClientImpl::setSharedTimerFiredFunction(void (*func)()) {
 }
 
 void WebKitClientImpl::setSharedTimerFireTime(double fire_time) {
+  if (shared_timer_suspended_)
+    return;
+
   // By converting between double and int64 representation, we run the risk
   // of losing precision due to rounding errors. Performing computations in
   // microseconds reduces this risk somewhat. But there still is the potential
@@ -392,6 +396,15 @@ bool WebKitClientImpl::isDirectory(const WebKit::WebString& path) {
 
 WebKit::WebURL WebKitClientImpl::filePathToURL(const WebKit::WebString& path) {
   return net::FilePathToFileURL(webkit_glue::WebStringToFilePath(path));
+}
+
+void WebKitClientImpl::SuspendSharedTimer() {
+  ++shared_timer_suspended_;
+}
+
+void WebKitClientImpl::ResumeSharedTimer() {
+  if (--shared_timer_suspended_ == 0)
+    setSharedTimerFireTime(currentTime());
 }
 
 }  // namespace webkit_glue

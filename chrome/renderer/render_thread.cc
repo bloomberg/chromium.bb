@@ -29,6 +29,7 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/db_message_filter.h"
+#include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/url_constants.h"
@@ -49,6 +50,7 @@
 #include "chrome/renderer/external_extension.h"
 #include "chrome/renderer/loadtimes_extension_bindings.h"
 #include "chrome/renderer/net/render_dns_master.h"
+#include "chrome/renderer/plugin_channel_host.h"
 #include "chrome/renderer/render_process.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/render_view_visitor.h"
@@ -206,6 +208,9 @@ void RenderThread::Init() {
   std::string type_str = CommandLine::ForCurrentProcess()->GetSwitchValueASCII(
       switches::kProcessType);
   is_extension_process_ = type_str == switches::kExtensionProcess;
+  do_not_suspend_webkit_shared_timer_ = false;
+  do_not_notify_webkit_of_modal_loop_ = false;
+  did_notify_webkit_of_modal_loop_ = false;
   plugin_refresh_allowed_ = true;
   cache_stats_task_pending_ = false;
   widget_count_ = 0;
@@ -260,6 +265,90 @@ RenderThread* RenderThread::current() {
   return lazy_tls.Pointer()->Get();
 }
 
+int32 RenderThread::RoutingIDForCurrentContext() {
+  int32 routing_id = MSG_ROUTING_CONTROL;
+  if (v8::Context::InContext()) {
+    RenderView* view =
+        RenderView::FromWebView(WebFrame::frameForCurrentContext()->view());
+    DCHECK(view);
+    routing_id = view->routing_id();
+  } else {
+    DLOG(WARNING) << "Not called within a script context!";
+  }
+  return routing_id;
+}
+
+bool RenderThread::Send(IPC::Message* msg) {
+  gfx::NativeViewId host_window = 0;
+  bool pumping_events = false;
+
+  // Inform related plugins when they also need to pump events.
+  if (msg->is_sync() && msg->is_caller_pumping_messages()) {
+    pumping_events = true;
+    RenderWidget* widget =
+        static_cast<RenderWidget*>(ResolveRoute(msg->routing_id()));
+    if (widget)
+      host_window = widget->host_window();
+  }
+
+  bool do_not_suspend_webkit_shared_timer = false;
+  std::swap(do_not_suspend_webkit_shared_timer,
+            do_not_suspend_webkit_shared_timer_);
+
+  bool do_not_notify_webkit_of_modal_loop = false;
+  std::swap(do_not_notify_webkit_of_modal_loop,
+            do_not_notify_webkit_of_modal_loop_);
+
+  if (pumping_events) {
+    if (!do_not_suspend_webkit_shared_timer)
+      webkit_client_->SuspendSharedTimer();
+
+    // WebKit does not like nested calls to willEnterModalLoop.
+    // TODO(darin): Fix WebKit to allow nesting.
+    if (!do_not_notify_webkit_of_modal_loop &&
+        !did_notify_webkit_of_modal_loop_) {
+      WebView::willEnterModalLoop();
+      did_notify_webkit_of_modal_loop_ = true;
+    }
+
+    if (host_window) {
+      PluginChannelHost::Broadcast(
+          new PluginMsg_SignalModalDialogEvent(host_window));
+    }
+  }
+
+  bool rv = ChildThread::Send(msg);
+
+  if (pumping_events) {
+    if (host_window) {
+      PluginChannelHost::Broadcast(
+          new PluginMsg_ResetModalDialogEvent(host_window));
+    }
+
+    if (!do_not_notify_webkit_of_modal_loop &&
+        did_notify_webkit_of_modal_loop_) {
+      WebView::didExitModalLoop();
+      did_notify_webkit_of_modal_loop_ = false;
+    }
+
+    if (!do_not_suspend_webkit_shared_timer)
+      webkit_client_->ResumeSharedTimer();
+  }
+
+  return rv;
+}
+
+void RenderThread::AddRoute(int32 routing_id,
+                            IPC::Channel::Listener* listener) {
+  widget_count_++;
+  return ChildThread::AddRoute(routing_id, listener);
+}
+
+void RenderThread::RemoveRoute(int32 routing_id) {
+  widget_count_--;
+  return ChildThread::RemoveRoute(routing_id);
+}
+
 void RenderThread::AddFilter(IPC::ChannelProxy::MessageFilter* filter) {
   channel()->AddFilter(filter);
 }
@@ -281,6 +370,19 @@ void RenderThread::WidgetRestored() {
   hidden_widget_count_--;
   if (!is_extension_process())
     idle_timer_.Stop();
+}
+
+bool RenderThread::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
+  message->EnableMessagePumping();
+  return Send(message);
+}
+
+void RenderThread::DoNotSuspendWebKitSharedTimer() {
+  do_not_suspend_webkit_shared_timer_ = true;
+}
+
+void RenderThread::DoNotNotifyWebKitOfModalLoop() {
+  do_not_notify_webkit_of_modal_loop_ = true;
 }
 
 void RenderThread::Resolve(const char* name, size_t length) {

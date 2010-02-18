@@ -32,6 +32,8 @@ class ChildThread : public IPC::Channel::Listener,
   void AddRoute(int32 routing_id, IPC::Channel::Listener* listener);
   void RemoveRoute(int32 routing_id);
 
+  IPC::Channel::Listener* ResolveRoute(int32 routing_id);
+
   // Creates a ResourceLoaderBridge.
   // Tests can override this method if they want a custom loading behavior.
   virtual webkit_glue::ResourceLoaderBridge* CreateBridge(

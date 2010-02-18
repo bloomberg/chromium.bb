@@ -116,13 +116,7 @@ void RendererWebKitClientImpl::setCookies(const WebURL& url,
                                           const WebString& value) {
   // TODO(darin): Modify WebKit to pass the WebFrame.  This code may be reached
   // when there is no active script context.
-  int routing_id = MSG_ROUTING_CONTROL;
-  if (v8::Context::InContext()) {
-    RenderView* view =
-        RenderView::FromWebView(WebFrame::frameForCurrentContext()->view());
-    DCHECK(view);
-    routing_id = view->routing_id();
-  }
+  int32 routing_id = RenderThread::RoutingIDForCurrentContext();
 
   std::string value_utf8;
   UTF16ToUTF8(value.data(), value.length(), &value_utf8);
@@ -133,9 +127,15 @@ void RendererWebKitClientImpl::setCookies(const WebURL& url,
 
 WebString RendererWebKitClientImpl::cookies(
     const WebURL& url, const WebURL& first_party_for_cookies) {
+  // TODO(darin): Modify WebKit to pass the WebFrame.  This code may be reached
+  // when there is no active script context.
+  int32 routing_id = RenderThread::RoutingIDForCurrentContext();
+
   std::string value_utf8;
-  RenderThread::current()->Send(
-      new ViewHostMsg_GetCookies(url, first_party_for_cookies, &value_utf8));
+  RenderThread::current()->SendAndRunNestedMessageLoop(
+      new ViewHostMsg_GetCookies(routing_id, url, first_party_for_cookies,
+                                 &value_utf8));
+
   return WebString::fromUTF8(value_utf8);
 }
 
@@ -143,9 +143,15 @@ bool RendererWebKitClientImpl::rawCookies(
     const WebURL& url,
     const WebURL& first_party_for_cookies,
     WebVector<WebKit::WebCookie>* raw_cookies) {
+  // TODO(darin): Modify WebKit to pass the WebFrame.  This code may be reached
+  // when there is no active script context.
+  int32 routing_id = RenderThread::RoutingIDForCurrentContext();
+
   std::vector<webkit_glue::WebCookie> cookies;
-  RenderThread::current()->Send(
-      new ViewHostMsg_GetRawCookies(url, first_party_for_cookies, &cookies));
+  RenderThread::current()->SendAndRunNestedMessageLoop(
+      new ViewHostMsg_GetRawCookies(routing_id, url, first_party_for_cookies,
+                                    &cookies));
+
 
   WebVector<WebKit::WebCookie> result(cookies.size());
   int i = 0;

@@ -32,7 +32,6 @@
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/page_zoom.h"
-#include "chrome/common/plugin_messages.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/renderer_preferences.h"
 #include "chrome/common/thumbnail_score.h"
@@ -1407,6 +1406,18 @@ bool RenderView::RunJavaScriptMessage(int type,
   return success;
 }
 
+bool RenderView::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
+  // Before WebKit asks us to show an alert (etc.), it takes care of doing the
+  // equivalent of WebView::willEnterModalLoop.  In the case of showModalDialog
+  // it is particularly important that we do not call willEnterModalLoop as
+  // that would defer resource loads for the dialog itself.
+  if (RenderThread::current())  // Will be NULL during unit tests.
+    RenderThread::current()->DoNotNotifyWebKitOfModalLoop();
+
+  message->EnableMessagePumping();  // Runs a nested message loop.
+  return Send(message);
+}
+
 void RenderView::AddGURLSearchProvider(const GURL& osd_url, bool autodetected) {
   if (!osd_url.is_empty())
     Send(new ViewHostMsg_PageHasOSDD(routing_id_, page_id_, osd_url,
@@ -1988,6 +1999,16 @@ void RenderView::closeWidgetSoon() {
 
 void RenderView::runModal() {
   DCHECK(did_show_) << "should already have shown the view";
+
+  // We must keep WebKit's shared timer running in this case in order to allow
+  // showModalDialog to function properly.
+  //
+  // TODO(darin): WebKit should really be smarter about suppressing events and
+  // timers so that we do not need to manage the shared timer in such a heavy
+  // handed manner.
+  //
+  if (RenderThread::current())  // Will be NULL during unit tests.
+    RenderThread::current()->DoNotSuspendWebKitSharedTimer();
 
   SendAndRunNestedMessageLoop(new ViewHostMsg_RunModal(routing_id_));
 }
@@ -4449,19 +4470,6 @@ void RenderView::EnsureDocumentTag() {
     has_document_tag_ = true;
   }
 #endif
-}
-
-bool RenderView::SendAndRunNestedMessageLoop(IPC::SyncMessage* message) {
-  PluginChannelHost::Broadcast(
-      new PluginMsg_SignalModalDialogEvent(host_window_));
-
-  message->EnableMessagePumping();  // Runs a nested message loop.
-  bool rv = Send(message);
-
-  PluginChannelHost::Broadcast(
-      new PluginMsg_ResetModalDialogEvent(host_window_));
-
-  return rv;
 }
 
 #if defined(OS_MACOSX)

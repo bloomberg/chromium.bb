@@ -50,6 +50,8 @@ class MessageRouter : public IPC::Channel::Listener,
   void AddRoute(int32 routing_id, IPC::Channel::Listener* listener);
   void RemoveRoute(int32 routing_id);
 
+  IPC::Channel::Listener* ResolveRoute(int32 routing_id);
+
  private:
   // A list of all listeners with assigned routing IDs.
   IDMap<IPC::Channel::Listener> routes_;

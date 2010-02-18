@@ -66,6 +66,10 @@ class RenderWidget : public IPC::Channel::Listener,
     return webwidget_;
   }
 
+  gfx::NativeViewId host_window() const {
+    return host_window_;
+  }
+
   // IPC::Channel::Listener
   virtual void OnMessageReceived(const IPC::Message& msg);
 
