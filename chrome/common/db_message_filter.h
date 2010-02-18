@@ -7,6 +7,7 @@
 
 #include "base/atomic_sequence_num.h"
 #include "base/id_map.h"
+#include "base/lock.h"
 #include "base/scoped_ptr.h"
 #include "base/waitable_event.h"
 #include "ipc/ipc_channel_proxy.h"
@@ -26,11 +27,11 @@ class Channel;
 // use GetInstance().
 class DBMessageFilter : public IPC::ChannelProxy::MessageFilter {
  public:
-  // Creates a new DBMessageFilter instance.
-  DBMessageFilter();
-
   // Returns the DBMessageFilter singleton created in this renderer process.
   static DBMessageFilter* GetInstance() { return instance_; }
+
+  // Creates a new DBMessageFilter instance.
+  DBMessageFilter();
 
   // Returns a unique ID for use when calling the SendAndWait() method.
   virtual int GetUniqueID();
@@ -49,12 +50,21 @@ class DBMessageFilter : public IPC::ChannelProxy::MessageFilter {
     base::WaitableEvent waitable_event(false, false);
     DBMessageState state =
         { reinterpret_cast<intptr_t>(&result), &waitable_event };
-    messages_awaiting_replies_->AddWithID(&state, message_id);
+    {
+      AutoLock msgs_awaiting_replies_autolock(messages_awaiting_replies_lock_);
+      messages_awaiting_replies_->AddWithID(&state, message_id);
+    }
 
     Send(message);
 
     base::WaitableEvent* events[2] = { shutdown_event_, &waitable_event };
-    return (base::WaitableEvent::WaitMany(events, 2) ? result : default_result);
+    if (base::WaitableEvent::WaitMany(events, 2)) {
+      return result;
+    } else {
+      AutoLock msgs_awaiting_replies_autolock(messages_awaiting_replies_lock_);
+      messages_awaiting_replies_->Remove(message_id);
+      return default_result;
+    }
   }
 
   // Processes incoming message |message| from the browser process.
@@ -84,6 +94,7 @@ class DBMessageFilter : public IPC::ChannelProxy::MessageFilter {
   // Processes the reply to a sync DB request.
   template<class ResultType>
   void OnResponse(int32 message_id, ResultType result) {
+    AutoLock msgs_awaiting_replies_autolock(messages_awaiting_replies_lock_);
     DBMessageState *state = messages_awaiting_replies_->Lookup(message_id);
     if (state) {
       messages_awaiting_replies_->Remove(message_id);
@@ -109,7 +120,7 @@ class DBMessageFilter : public IPC::ChannelProxy::MessageFilter {
   IPC::Channel* channel_;
 
   // A lock around the channel.
-  scoped_ptr<Lock> channel_lock_;
+  Lock channel_lock_;
 
   // The shutdown event.
   base::WaitableEvent* shutdown_event_;
@@ -117,6 +128,9 @@ class DBMessageFilter : public IPC::ChannelProxy::MessageFilter {
   // The list of messages awaiting replies. For each such message we store a
   // DBMessageState instance.
   scoped_ptr<IDMap<DBMessageState> > messages_awaiting_replies_;
+
+  // The lock for 'messages_awaiting_replies_'.
+  Lock messages_awaiting_replies_lock_;
 
   // A thread-safe unique number generator.
   scoped_ptr<base::AtomicSequenceNumber> unique_id_generator_;

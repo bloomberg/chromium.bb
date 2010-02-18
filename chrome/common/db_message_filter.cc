@@ -13,7 +13,6 @@ DBMessageFilter* DBMessageFilter::instance_ = NULL;
 DBMessageFilter::DBMessageFilter()
     : io_thread_message_loop_(ChildProcess::current()->io_message_loop()),
       channel_(NULL),
-      channel_lock_(new Lock()),
       shutdown_event_(ChildProcess::current()->GetShutDownEvent()),
       messages_awaiting_replies_(new IDMap<DBMessageState>()),
       unique_id_generator_(new base::AtomicSequenceNumber()) {
@@ -38,21 +37,21 @@ static void SendMessageOnIOThread(IPC::Message* message,
 void DBMessageFilter::Send(IPC::Message* message) {
   io_thread_message_loop_->PostTask(FROM_HERE,
       NewRunnableFunction(SendMessageOnIOThread, message, channel_,
-                          channel_lock_.get()));
+                          &channel_lock_));
 }
 
 void DBMessageFilter::OnFilterAdded(IPC::Channel* channel) {
-  AutoLock channel_auto_lock(*channel_lock_);
+  AutoLock channel_auto_lock(channel_lock_);
   channel_ = channel;
 }
 
 void DBMessageFilter::OnChannelError() {
-  AutoLock channel_auto_lock(*channel_lock_);
+  AutoLock channel_auto_lock(channel_lock_);
   channel_ = NULL;
 }
 
 void DBMessageFilter::OnChannelClosing() {
-  AutoLock channel_auto_lock(*channel_lock_);
+  AutoLock channel_auto_lock(channel_lock_);
   channel_ = NULL;
 }
 
