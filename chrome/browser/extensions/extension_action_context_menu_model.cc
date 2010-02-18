@@ -44,8 +44,15 @@ bool ExtensionActionContextMenuModel::IsCommandIdChecked(int command_id) const {
 }
 
 bool ExtensionActionContextMenuModel::IsCommandIdEnabled(int command_id) const {
-  if (command_id == CONFIGURE)
+  if (command_id == CONFIGURE) {
     return extension_->options_url().spec().length() > 0;
+  } else if (command_id == NAME) {
+    // The NAME links to the gallery page, which only makes sense if Google is
+    // hosting the extension. For other 3rd party extensions we don't have a
+    // homepage url, so we just disable this menu item on those cases, at least
+    // for now.
+    return extension_->update_url().DomainIs("google.com");
+  }
   return true;
 }
 
