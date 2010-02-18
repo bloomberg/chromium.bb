@@ -1356,11 +1356,12 @@ void ResourceMessageFilter::OnGetExtensionMessageBundle(
       ChromeThread::FILE, FROM_HERE,
       NewRunnableMethod(
           this, &ResourceMessageFilter::OnGetExtensionMessageBundleOnFileThread,
-          extension_path, default_locale, reply_msg));
+          extension_path, extension_id, default_locale, reply_msg));
 }
 
 void ResourceMessageFilter::OnGetExtensionMessageBundleOnFileThread(
     const FilePath& extension_path,
+    const std::string& extension_id,
     const std::string& default_locale,
     IPC::Message* reply_msg) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
@@ -1376,6 +1377,11 @@ void ResourceMessageFilter::OnGetExtensionMessageBundleOnFileThread(
     if (bundle.get())
       dictionary_map = *bundle->dictionary();
   }
+
+  // Add @@extension_id reserved message here, so it's available to
+  // non-localized extensions too.
+  dictionary_map.insert(
+      std::make_pair(ExtensionMessageBundle::kExtensionIdKey, extension_id));
 
   ViewHostMsg_GetExtensionMessageBundle::WriteReplyParams(
       reply_msg, dictionary_map);

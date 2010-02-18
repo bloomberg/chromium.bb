@@ -40,6 +40,10 @@ class ExtensionMessageBundle {
   static const char* kBidiReversedDirectionKey;
   static const char* kBidiStartEdgeKey;
   static const char* kBidiEndEdgeKey;
+  // Extension id gets added in the
+  // browser/renderer_host/resource_message_filter.cc to enable message
+  // replacement for non-localized extensions.
+  static const char* kExtensionIdKey;
 
   // Values for some of the reserved messages.
   static const char* kBidiLeftEdgeValue;

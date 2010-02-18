@@ -198,9 +198,6 @@ class ExtensionImpl : public ExtensionBase {
       renderview->Send(new ViewHostMsg_GetExtensionMessageBundle(
           extension_id, &messages));
 
-      if (messages.empty())
-        return v8::Undefined();
-
       // Save messages we got.
       ExtensionToL10nMessagesMap& l10n_messages_map =
           *GetExtensionToL10nMessagesMap();

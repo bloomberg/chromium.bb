@@ -37,6 +37,7 @@ const char* ExtensionMessageBundle::kBidiReversedDirectionKey =
     "@@bidi_reversed_dir";
 const char* ExtensionMessageBundle::kBidiStartEdgeKey = "@@bidi_start_edge";
 const char* ExtensionMessageBundle::kBidiEndEdgeKey = "@@bidi_end_edge";
+const char* ExtensionMessageBundle::kExtensionIdKey = "@@extension_id";
 
 // Reserved messages values.
 const char* ExtensionMessageBundle::kBidiLeftEdgeValue = "left";

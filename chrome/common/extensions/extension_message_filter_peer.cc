@@ -110,17 +110,14 @@ void ExtensionMessageFilterPeer::ReplaceMessages() {
     message_sender_->Send(new ViewHostMsg_GetExtensionMessageBundle(
         extension_id, &messages));
 
-    // Save messages we got, even if they are empty, so we don't have to
-    // ask again.
+    // Save messages we got, so we don't have to ask again.
+    // Messages map is never empty, it contains at least @@extension_id value.
     ExtensionToL10nMessagesMap& l10n_messages_map =
         *GetExtensionToL10nMessagesMap();
     l10n_messages_map[extension_id] = messages;
 
     l10n_messages = GetL10nMessagesMap(extension_id);
   }
-
-  if (l10n_messages->empty())
-    return;
 
   std::string error;
   if (ExtensionMessageBundle::ReplaceMessagesWithExternalDictionary(
