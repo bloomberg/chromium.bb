@@ -464,6 +464,7 @@ void TestShell::ResetWebPreferences() {
         web_prefs_->local_storage_enabled = true;
         web_prefs_->application_cache_enabled = true;
         web_prefs_->databases_enabled = true;
+        web_prefs_->allow_file_access_from_file_urls = true;
         // LayoutTests were written with Safari Mac in mind which does not allow
         // tabbing to links by default.
         web_prefs_->tabs_to_links = false;
