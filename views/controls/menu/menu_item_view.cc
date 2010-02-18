@@ -256,6 +256,14 @@ void MenuItemView::ChildrenChanged() {
   AddEmptyMenus();
 
   controller->MenuChildrenChanged(this);
+
+  if (submenu_) {
+    // Force a paint and layout. This handles the case of the top level window's
+    // size remaining the same, resulting in no change to the submenu's size and
+    // no layout.
+    submenu_->Layout();
+    submenu_->SchedulePaint();
+  }
 }
 
 MenuItemView::MenuItemView(MenuItemView* parent,

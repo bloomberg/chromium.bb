@@ -70,7 +70,15 @@ void SubmenuView::Layout() {
   View* parent = GetParent();
   if (!parent)
     return;
-  SetBounds(x(), y(), parent->width(), GetPreferredSize().height());
+
+  // Use our current y, unless it means part of the menu isn't visible anymore.
+  int pref_height = GetPreferredSize().height();
+  int new_y;
+  if (pref_height > parent->height())
+    new_y = std::max(parent->height() - pref_height, y());
+  else
+    new_y = 0;
+  SetBounds(x(), new_y, parent->width(), pref_height);
 
   gfx::Insets insets = GetInsets();
   int x = insets.left();
