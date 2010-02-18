@@ -867,6 +867,26 @@ TEST_F(ProfileSyncServiceTest, UnrecoverableErrorSuspendsService) {
   // directly here once that's formalized and exposed.
 }
 
+// See what happens if we run model association when there are two exact URL
+// duplicate bookmarks.  The BookmarkModelAssociator should not fall over when
+// this happens.
+TEST_F(ProfileSyncServiceTest, MergeDuplicates) {
+  LoadBookmarkModel(DELETE_EXISTING_STORAGE, SAVE_TO_STORAGE);
+  StartSyncService();
+
+  model_->AddURL(model_->other_node(), 0, L"Dup", GURL("http://dup.com/"));
+  model_->AddURL(model_->other_node(), 0, L"Dup", GURL("http://dup.com/"));
+
+  EXPECT_EQ(2, model_->other_node()->GetChildCount());
+
+  // Restart the sync service to trigger model association.
+  StopSyncService(SAVE_TO_STORAGE);
+  StartSyncService();
+
+  EXPECT_EQ(2, model_->other_node()->GetChildCount());
+  ExpectModelMatch();
+}
+
 struct TestData {
   const wchar_t* title;
   const char* url;
