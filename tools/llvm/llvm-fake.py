@@ -130,7 +130,7 @@ def PatchAbiVersionIntoElfHeader(filename):
   t = list(struct.unpack(FORMAT, data))
   # c.f. nacl_elf.h
   t[ELF_OSABI] = 123
-  t[ELF_ABIVERSION] = 6
+  t[ELF_ABIVERSION] = 7
   t[ELF_FLAGS] = t[ELF_FLAGS] | 0x100000
   data = struct.pack(FORMAT, *t)
   fp = open(filename, 'rb+')
