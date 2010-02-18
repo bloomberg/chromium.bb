@@ -104,6 +104,9 @@ const char* GetNameFromID(ViewID id) {
     case VIEW_ID_BOOKMARK_BAR:
       return "chrome-bookmark-bar";
 
+    case VIEW_ID_OTHER_BOOKMARKS:
+      return "chrome-bookmark-bar-other-bookmarks";
+
     case VIEW_ID_FIND_IN_PAGE_TEXT_FIELD:
       return "chrome-find-in-page-entry";
 
@@ -121,7 +124,8 @@ const char* GetNameFromID(ViewID id) {
     case VIEW_ID_TAB_CONTAINER:
     case VIEW_ID_TAB_CONTAINER_FOCUS_VIEW:
     default:
-      NOTREACHED();
+      NOTREACHED() << "If you added a new VIEW_ID, please provide "
+                      "a name for the widget.";
       return NULL;
   }
 }

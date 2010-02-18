@@ -280,6 +280,7 @@ void BookmarkBarGtk::Init(Profile* profile) {
 
   slide_animation_.reset(new SlideAnimation(this));
 
+  ViewIDUtil::SetID(other_bookmarks_button_, VIEW_ID_OTHER_BOOKMARKS);
   ViewIDUtil::SetID(widget(), VIEW_ID_BOOKMARK_BAR);
 }
 

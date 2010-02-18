@@ -46,6 +46,7 @@ enum ViewID {
 
   // The Bookmark Bar.
   VIEW_ID_BOOKMARK_BAR,
+  VIEW_ID_OTHER_BOOKMARKS,
 
   // Find in page.
   VIEW_ID_FIND_IN_PAGE_TEXT_FIELD,
