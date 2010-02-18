@@ -46,14 +46,8 @@ bool PyUITestSuite::IsShelfVisible() {
   return visible;
 }
 
-std::wstring PyUITestSuite::GetActiveTabTitle() {
-  std::wstring title;
-  scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
-  EXPECT_TRUE(tab_proxy.get());
-  if (!tab_proxy.get())
-    return title;
-  EXPECT_TRUE(tab_proxy->GetTabTitle(&title));
-  return title;
+GURL PyUITestSuite::GetActiveTabURL() {
+  return UITestBase::GetActiveTabURL();
 }
 
 void PyUITestSuite::OpenFindInPage() {
@@ -70,5 +64,19 @@ bool PyUITestSuite::IsFindInPageVisible() {
   bool is_visible;
   EXPECT_TRUE(browser_proxy->IsFindWindowFullyVisible(&is_visible));
   return is_visible;
+}
+
+std::string PyUITestSuite::GetDownloadDirectory() {
+  FilePath download_dir;
+  scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
+  EXPECT_TRUE(tab_proxy.get());
+  if (!tab_proxy.get())
+    return download_dir.value();
+  EXPECT_TRUE(tab_proxy->GetDownloadDirectory(&download_dir));
+  return download_dir.value();
+}
+
+bool PyUITestSuite::OpenNewBrowserWindow(bool show) {
+  return automation()->OpenNewBrowserWindow(Browser::TYPE_NORMAL, show);
 }
 

@@ -66,6 +66,7 @@ class UITestBase {
   // Set up the test time out values.
   virtual void InitializeTimeouts();
 
+ public:
   // ********* Utility functions *********
 
   // Launches the browser and IPC testing server.

@@ -39,7 +39,7 @@ def _LocateBinDirs():
 _LocateBinDirs()
 
 try:
-  from pyautolib import PyUITestSuite
+  from pyautolib import *
 except ImportError:
   print >>sys.stderr, "Could not locate built libraries. Did you build?"
   raise

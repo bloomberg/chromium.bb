@@ -29,8 +29,8 @@ class PyUITestSuite : public UITestSuite, public UITestBase {
 
   void NavigateToURL(const char* url_string);
 
-  // Get the title of the active tab. Empty string in case of error.
-  std::wstring GetActiveTabTitle();
+  // Get the URL of the active tab.
+  GURL GetActiveTabURL();
 
   // BrowserProxy methods
 
@@ -45,6 +45,14 @@ class PyUITestSuite : public UITestSuite, public UITestBase {
 
   // Determines the visibility of the Find box
   bool IsFindInPageVisible();
+
+  // Get the path to the downloads directory
+  std::string GetDownloadDirectory();
+
+  // AutomationProxy methods
+
+  // Open a new browser window. Returns false on failure.
+  bool OpenNewBrowserWindow(bool show);
 
  private:
   base::ScopedNSAutoreleasePool pool_;
