@@ -93,7 +93,7 @@ extern const char kEnableNaClOnMac[];
 extern const char kEnableNewAutoFill[];
 extern const char kEnablePrivacyBlacklists[];
 extern const char kEnableRendererAccessibility[];
-extern const char kEnableSeccompSandbox[];
+extern const char kDisableSeccompSandbox[];
 extern const char kEnableSessionStorage[];
 extern const char kEnableStatsTable[];
 extern const char kEnableSync[];
