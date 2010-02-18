@@ -8,6 +8,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
+#include "base/string_util.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/syncable/directory_manager.h"
 #include "chrome/browser/sync/syncable/syncable.h"
@@ -68,7 +69,8 @@ TEST_F(SyncApiTest, BasicTagWrite) {
   {
     ReadTransaction trans(&share_);
     ReadNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup("testtag"));
+    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS,
+        "testtag"));
 
     ReadNode root_node(&trans);
     root_node.InitByRootLookup();
@@ -77,16 +79,84 @@ TEST_F(SyncApiTest, BasicTagWrite) {
   }
 }
 
+namespace {
+std::string HashToHex(const std::string& hash) {
+  return HexEncode(hash.data(), hash.length());
+}
+}  // namespace
+
+TEST_F(SyncApiTest, GenerateSyncableHash) {
+  EXPECT_EQ("3B2697579984CEB3D2E306E8826B4ABD17DE9002",
+      HashToHex(BaseNode::GenerateSyncableHash(syncable::BOOKMARKS, "tag1")));
+  EXPECT_EQ("88D150B511506FE219727D642942446430E42ECE",
+      HashToHex(
+          BaseNode::GenerateSyncableHash(syncable::PREFERENCES, "tag1")));
+  EXPECT_EQ("80ED5C3D941768CEF7B073AF480FAD282285B39F",
+      HashToHex(BaseNode::GenerateSyncableHash(syncable::AUTOFILL, "tag1")));
+  EXPECT_EQ("0347982075CCD7F8D5C0A0C3A75D94A76D0890A6",
+      HashToHex(BaseNode::GenerateSyncableHash(syncable::BOOKMARKS, "tag2")));
+  EXPECT_EQ("5D8C6417B6E14B8788B52B45822388014DB7B302",
+      HashToHex(
+          BaseNode::GenerateSyncableHash(syncable::PREFERENCES, "tag2")));
+  EXPECT_EQ("185896CE8E4D1A18CB94DF8EC827E1CB6F032534",
+      HashToHex(BaseNode::GenerateSyncableHash(syncable::AUTOFILL, "tag2")));
+}
+
+TEST_F(SyncApiTest, ModelTypesSiloed) {
+  {
+    WriteTransaction trans(&share_);
+    ReadNode root_node(&trans);
+    root_node.InitByRootLookup();
+    EXPECT_EQ(root_node.GetFirstChildId(), 0);
+
+    WriteNode bookmarknode(&trans);
+    EXPECT_TRUE(bookmarknode.InitUniqueByCreation(syncable::BOOKMARKS,
+        root_node, "collideme"));
+    bookmarknode.SetIsFolder(false);
+
+    WriteNode prefnode(&trans);
+    EXPECT_TRUE(prefnode.InitUniqueByCreation(syncable::PREFERENCES,
+        root_node, "collideme"));
+    prefnode.SetIsFolder(false);
+
+    WriteNode autofillnode(&trans);
+    EXPECT_TRUE(autofillnode.InitUniqueByCreation(syncable::AUTOFILL,
+        root_node, "collideme"));
+    autofillnode.SetIsFolder(false);
+  }
+  {
+    ReadTransaction trans(&share_);
+
+    ReadNode bookmarknode(&trans);
+    EXPECT_TRUE(bookmarknode.InitByClientTagLookup(syncable::BOOKMARKS,
+        "collideme"));
+
+    ReadNode prefnode(&trans);
+    EXPECT_TRUE(prefnode.InitByClientTagLookup(syncable::PREFERENCES,
+        "collideme"));
+
+    ReadNode autofillnode(&trans);
+    EXPECT_TRUE(autofillnode.InitByClientTagLookup(syncable::AUTOFILL,
+        "collideme"));
+
+    EXPECT_NE(bookmarknode.GetId(), prefnode.GetId());
+    EXPECT_NE(autofillnode.GetId(), prefnode.GetId());
+    EXPECT_NE(bookmarknode.GetId(), autofillnode.GetId());
+  }
+}
+
 TEST_F(SyncApiTest, ReadMissingTagsFails) {
   {
     ReadTransaction trans(&share_);
     ReadNode node(&trans);
-    EXPECT_FALSE(node.InitByClientTagLookup("testtag"));
+    EXPECT_FALSE(node.InitByClientTagLookup(syncable::BOOKMARKS,
+        "testtag"));
   }
   {
     WriteTransaction trans(&share_);
     WriteNode node(&trans);
-    EXPECT_FALSE(node.InitByClientTagLookup("testtag"));
+    EXPECT_FALSE(node.InitByClientTagLookup(syncable::BOOKMARKS,
+        "testtag"));
   }
 }
 
@@ -122,7 +192,8 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
   {
     WriteTransaction trans(&share_);
     WriteNode wnode(&trans);
-    EXPECT_TRUE(wnode.InitByClientTagLookup("testtag"));
+    EXPECT_TRUE(wnode.InitByClientTagLookup(syncable::BOOKMARKS,
+        "testtag"));
     EXPECT_FALSE(wnode.GetIsFolder());
     EXPECT_EQ(wnode.GetTitle(), test_title);
 
@@ -134,7 +205,8 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
   {
     ReadTransaction trans(&share_);
     ReadNode node(&trans);
-    EXPECT_FALSE(node.InitByClientTagLookup("testtag"));
+    EXPECT_FALSE(node.InitByClientTagLookup(syncable::BOOKMARKS,
+        "testtag"));
     // Note that for proper function of this API this doesn't need to be
     // filled, we're checking just to make sure the DB worked in this test.
     EXPECT_EQ(node.GetTitle(), test_title);
@@ -160,7 +232,8 @@ TEST_F(SyncApiTest, TestDeleteBehavior) {
   {
     ReadTransaction trans(&share_);
     ReadNode node(&trans);
-    EXPECT_TRUE(node.InitByClientTagLookup("testtag"));
+    EXPECT_TRUE(node.InitByClientTagLookup(syncable::BOOKMARKS,
+        "testtag"));
     EXPECT_EQ(node.GetTitle(), test_title);
     EXPECT_EQ(node.GetModelType(), syncable::BOOKMARKS);
   }

@@ -1097,15 +1097,6 @@ syncable::ModelType Entry::GetModelType() const {
   if (!Get(UNIQUE_SERVER_TAG).empty() && Get(IS_DIR))
     return TOP_LEVEL_FOLDER;
 
-  // Otherwise, we don't have a local type yet.  That should only happen
-  // if the item doesn't exist locally -- like if it's a new update item.
-  // It's possible we'll need to relax these checks in the future; they're
-  // just here for now as a safety measure.
-  DCHECK(Get(ID).ServerKnows());
-  DCHECK(Get(IS_UNAPPLIED_UPDATE));
-  DCHECK(!Get(IS_UNSYNCED));
-  DCHECK(Get(BASE_VERSION) == CHANGES_VERSION);
-  DCHECK(Get(IS_DEL));
   return UNSPECIFIED;
 }
 

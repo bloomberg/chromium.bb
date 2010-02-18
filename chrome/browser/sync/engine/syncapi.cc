@@ -32,6 +32,7 @@
 #include "base/lock.h"
 #include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
+#include "base/sha1.h"
 #include "base/string_util.h"
 #include "base/task.h"
 #include "base/utf_string_conversions.h"
@@ -389,6 +390,18 @@ BaseNode::BaseNode() {}
 
 BaseNode::~BaseNode() {}
 
+std::string BaseNode::GenerateSyncableHash(
+    syncable::ModelType model_type, const std::string& client_tag) {
+  // blank PB with just the extension in it has termination symbol,
+  // handy for delimiter
+  sync_pb::EntitySpecifics serialized_type;
+  syncable::AddDefaultExtensionValue(model_type, &serialized_type);
+  std::string hash_input;
+  serialized_type.AppendToString(&hash_input);
+  hash_input.append(client_tag);
+  return base::SHA1HashString(hash_input);
+}
+
 int64 BaseNode::GetParentId() const {
   return IdToMetahandle(GetTransaction()->GetWrappedTrans(),
                         GetEntry()->Get(syncable::PARENT_ID));
@@ -556,18 +569,25 @@ bool WriteNode::InitByIdLookup(int64 id) {
 // Find a node by client tag, and bind this WriteNode to it.
 // Return true if the write node was found, and was not deleted.
 // Undeleting a deleted node is possible by ClientTag.
-bool WriteNode::InitByClientTagLookup(const std::string& tag) {
+bool WriteNode::InitByClientTagLookup(syncable::ModelType model_type,
+                                      const std::string& tag) {
   DCHECK(!entry_) << "Init called twice";
   if (tag.empty())
     return false;
+
+  const std::string hash = GenerateSyncableHash(model_type, tag);
+
   entry_ = new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
-                                      syncable::GET_BY_CLIENT_TAG, tag);
+                                      syncable::GET_BY_CLIENT_TAG, hash);
   return (entry_->good() && !entry_->Get(syncable::IS_DEL));
 }
 
 void WriteNode::PutModelType(syncable::ModelType model_type) {
   // Set an empty specifics of the appropriate datatype.  The presence
   // of the specific extension will identify the model type.
+  DCHECK(GetModelType() == model_type ||
+         GetModelType() == syncable::UNSPECIFIED);  // Immutable once set.
+
   sync_pb::EntitySpecifics specifics;
   syncable::AddDefaultExtensionValue(model_type, &specifics);
   PutSpecificsAndMarkForSyncing(specifics);
@@ -620,6 +640,8 @@ bool WriteNode::InitUniqueByCreation(syncable::ModelType model_type,
                                      const std::string& tag) {
   DCHECK(!entry_) << "Init called twice";
 
+  const std::string hash = GenerateSyncableHash(model_type, tag);
+
   syncable::Id parent_id = parent.GetEntry()->Get(syncable::ID);
 
   // Start out with a dummy name.  We expect
@@ -629,7 +651,7 @@ bool WriteNode::InitUniqueByCreation(syncable::ModelType model_type,
   // Check if we have this locally and need to undelete it.
   scoped_ptr<syncable::MutableEntry> existing_entry(
       new syncable::MutableEntry(transaction_->GetWrappedWriteTrans(),
-                                 syncable::GET_BY_CLIENT_TAG, tag));
+                                 syncable::GET_BY_CLIENT_TAG, hash));
 
   if (existing_entry->good()) {
     if (existing_entry->Get(syncable::IS_DEL)) {
@@ -670,7 +692,7 @@ bool WriteNode::InitUniqueByCreation(syncable::ModelType model_type,
     }
 
     // Only set IS_DIR for new entries. Don't bitflip undeleted ones.
-    entry_->Put(syncable::UNIQUE_CLIENT_TAG, tag);
+    entry_->Put(syncable::UNIQUE_CLIENT_TAG, hash);
   }
 
   // We don't support directory and tag combinations.
@@ -781,12 +803,16 @@ bool ReadNode::InitByIdLookup(int64 id) {
   return true;
 }
 
-bool ReadNode::InitByClientTagLookup(const std::string& tag) {
+bool ReadNode::InitByClientTagLookup(syncable::ModelType model_type,
+                                     const std::string& tag) {
   DCHECK(!entry_) << "Init called twice";
   if (tag.empty())
     return false;
+
+  const std::string hash = GenerateSyncableHash(model_type, tag);
+
   entry_ = new syncable::Entry(transaction_->GetWrappedTrans(),
-                               syncable::GET_BY_CLIENT_TAG, tag);
+                               syncable::GET_BY_CLIENT_TAG, hash);
   return (entry_->good() && !entry_->Get(syncable::IS_DEL));
 }
 

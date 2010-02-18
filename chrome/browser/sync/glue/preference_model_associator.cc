@@ -51,7 +51,7 @@ bool PreferenceModelAssociator::AssociateModels() {
     std::string tag = WideToUTF8(*it);
 
     sync_api::ReadNode node(&trans);
-    if (node.InitByClientTagLookup(tag)) {
+    if (node.InitByClientTagLookup(syncable::PREFERENCES, tag)) {
       const sync_pb::PreferenceSpecifics& preference(
           node.GetPreferenceSpecifics());
       DCHECK_EQ(tag, preference.name());

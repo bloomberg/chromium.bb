@@ -49,6 +49,7 @@
 #include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "googleurl/src/gurl.h"
+#include "testing/gtest/include/gtest/gtest_prod.h" // for FRIEND_TEST
 
 namespace browser_sync {
 class ModelSafeWorkerRegistrar;
@@ -115,7 +116,8 @@ class BaseNode {
   // All subclasses of BaseNode must also provide a way to initialize themselves
   // by doing a client tag lookup. Returns false on failure. A deleted node
   // will return FALSE.
-  virtual bool InitByClientTagLookup(const std::string& tag) = 0;
+  virtual bool InitByClientTagLookup(syncable::ModelType model_type,
+      const std::string& tag) = 0;
 
   // Each object is identified by a 64-bit id (internally, the syncable
   // metahandle).  These ids are strictly local handles.  They will persist
@@ -185,10 +187,17 @@ class BaseNode {
  protected:
   BaseNode();
   virtual ~BaseNode();
+  // The server has a size limit on client tags, so we generate a fixed length
+  // hash locally. This also ensures that ModelTypes have unique namespaces.
+  static std::string GenerateSyncableHash(syncable::ModelType model_type,
+      const std::string& client_tag);
 
  private:
   // Node is meant for stack use only.
   void* operator new(size_t size);
+
+  friend class SyncApiTest;
+  FRIEND_TEST(SyncApiTest, GenerateSyncableHash);
 
   DISALLOW_COPY_AND_ASSIGN(BaseNode);
 };
@@ -206,7 +215,8 @@ class WriteNode : public BaseNode {
 
   // BaseNode implementation.
   virtual bool InitByIdLookup(int64 id);
-  virtual bool InitByClientTagLookup(const std::string& tag);
+  virtual bool InitByClientTagLookup(syncable::ModelType model_type,
+      const std::string& tag);
 
   // Create a new node with the specified parent and predecessor.  |model_type|
   // dictates the type of the item, and controls which EntitySpecifics proto
@@ -311,7 +321,8 @@ class ReadNode : public BaseNode {
 
   // BaseNode implementation.
   virtual bool InitByIdLookup(int64 id);
-  virtual bool InitByClientTagLookup(const std::string& tag);
+  virtual bool InitByClientTagLookup(syncable::ModelType model_type,
+      const std::string& tag);
 
   // There is always a root node, so this can't fail.  The root node is
   // never mutable, so root lookup is only possible on a ReadNode.
