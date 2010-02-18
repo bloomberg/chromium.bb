@@ -100,32 +100,17 @@ STDMETHODIMP Bho::BeforeNavigate2(IDispatch* dispatch, VARIANT* url,
 
   if (!web_browser2 || url->vt != VT_BSTR) {
     NOTREACHED() << "Can't find WebBrowser2 with given dispatch";
-    return S_OK;  // Return success, we operate on best effort basis.
-  }
-
-  DLOG(INFO) << "BeforeNavigate2: " << url->bstrVal;
-
-  ProcessOptInUrls(web_browser2, url->bstrVal);
-
-  referrer_.clear();
-
-  // Save away the referrer in case our active document needs it to initiate
-  // navigation in chrome.
-  if (headers && V_VT(headers) == VT_BSTR && headers->bstrVal != NULL) {
-    std::string raw_headers_utf8 = WideToUTF8(headers->bstrVal);
-    std::string http_headers =
-        net::HttpUtil::AssembleRawHeaders(raw_headers_utf8.c_str(),
-                                          raw_headers_utf8.length());
-    net::HttpUtil::HeadersIterator it(http_headers.begin(), http_headers.end(),
-                                      "\r\n");
-    while (it.GetNext()) {
-      if (LowerCaseEqualsASCII(it.name(), "referer")) {
-        referrer_ = it.values();
-        break;
-      }
+  } else {
+    DLOG(INFO) << "BeforeNavigate2: " << url->bstrVal;
+    ScopedComPtr<IBrowserService> browser_service;
+    DoQueryService(SID_SShellBrowser, web_browser2, browser_service.Receive());
+    if (!browser_service || !CheckForCFNavigation(browser_service, false)) {
+      referrer_.clear();
     }
+    url_ = url->bstrVal;
+    ProcessOptInUrls(web_browser2, url->bstrVal);
   }
-  url_ = url->bstrVal;
+
   return S_OK;
 }
 
@@ -270,6 +255,46 @@ HRESULT Bho::OnHttpEquiv(IBrowserService_OnHttpEquiv_Fn original_httpequiv,
   }
 
   return original_httpequiv(browser, shell_view, done, in_arg, out_arg);
+}
+
+void Bho::OnBeginningTransaction(IWebBrowser2* browser, const wchar_t* url,
+                                 const wchar_t* headers,
+                                 const wchar_t* additional_headers) {
+  if (!browser)
+    return;
+
+  if (url_.compare(url) != 0) {
+    DLOG(INFO) << __FUNCTION__ << " not processing headers for url: " << url
+        << " current url is: " << url_;
+    return;
+  }
+
+  VARIANT_BOOL is_top_level = VARIANT_FALSE;
+  browser->get_TopLevelContainer(&is_top_level);
+  if (is_top_level) {
+    ScopedComPtr<IBrowserService> browser_service;
+    DoQueryService(SID_SShellBrowser, browser, browser_service.Receive());
+    if (!browser_service || !CheckForCFNavigation(browser_service, false)) {
+      // Save away the referrer in case our active document needs it to initiate
+      // navigation in chrome.
+      referrer_.clear();
+      const wchar_t* both_headers[] = { headers, additional_headers };
+      for (int i = 0; referrer_.empty() && i < arraysize(both_headers); ++i) {
+        std::string raw_headers_utf8 = WideToUTF8(both_headers[i]);
+        std::string http_headers =
+            net::HttpUtil::AssembleRawHeaders(raw_headers_utf8.c_str(),
+                                              raw_headers_utf8.length());
+        net::HttpUtil::HeadersIterator it(http_headers.begin(),
+                                          http_headers.end(), "\r\n");
+        while (it.GetNext()) {
+          if (LowerCaseEqualsASCII(it.name(), "referer")) {
+            referrer_ = it.values();
+            break;
+          }
+        }
+      }
+    }
+  }
 }
 
 Bho* Bho::GetCurrentThreadBhoInstance() {

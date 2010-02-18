@@ -544,8 +544,13 @@ bool ChromeFrameAutomationClient::InitiateNavigation(
     return false;
   }
 
+  // Important: Since we will be using the referrer_ variable from a different
+  // thread, we need to force a new std::string buffer instance for the
+  // referrer_ GURL variable.  Otherwise we can run into strangeness when the
+  // GURL is accessed and it could result in a bad URL that can cause the
+  // referrer to be dropped or something worse.
+  referrer_ = GURL(referrer.c_str());
   url_ = parsed_url;
-  referrer_ = GURL(referrer);
   navigate_after_initialization_ = false;
 
   if (is_initialized()) {

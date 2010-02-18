@@ -12,6 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 
+#include "chrome_frame/bho.h"
 #include "chrome_frame/html_utils.h"
 #include "chrome_frame/urlmon_url_request.h"
 #include "chrome_frame/utils.h"
@@ -201,6 +202,15 @@ HRESULT HttpNegotiatePatch::BeginningTransaction(
   if (FAILED(hr)) {
     DLOG(WARNING) << __FUNCTION__ << " Delegate returned an error";
     return hr;
+  }
+
+  ScopedComPtr<IWebBrowser2> browser2;
+  DoQueryService(IID_ITargetFrame2, me, browser2.Receive());
+  if (browser2) {
+    Bho* bho = Bho::GetCurrentThreadBhoInstance();
+    if (bho) {
+      bho->OnBeginningTransaction(browser2, url, headers, *additional_headers);
+    }
   }
 
   static const char kLowerCaseUserAgent[] = "user-agent";

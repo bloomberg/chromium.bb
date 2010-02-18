@@ -100,6 +100,13 @@ END_SINK_MAP()
     return url_;
   }
 
+  // Called from HttpNegotiatePatch::BeginningTransaction when a request is
+  // being issued.  We check the url and headers and see if there is a referrer
+  // header that we need to cache.
+  void OnBeginningTransaction(IWebBrowser2* browser, const wchar_t* url,
+                              const wchar_t* headers,
+                              const wchar_t* additional_headers);
+
   // Returns the Bho instance for the current thread. This is returned from
   // TLS.
   static Bho* GetCurrentThreadBhoInstance();
