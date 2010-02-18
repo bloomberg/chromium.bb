@@ -49,10 +49,13 @@
    if ($2) free($2);
 }
 
+%include "chrome/app/chrome_dll_resource.h"
+
 %feature("docstring", "Represent a URL. Call spec() to get the string.") GURL;
 class GURL {
  public:
   GURL();
+  explicit GURL(const std::string& url_string);
   %feature("docstring", "Get the string representation.") spec;
   const std::string& spec() const;
 };
@@ -61,13 +64,17 @@ class GURL {
          "Represent a file path. Call value() to get the string.") FilePath;
 class FilePath {
  public:
-  FilePath();
   %feature("docstring", "Get the string representation.") value;
 #ifdef SWIGWIN
-  const std::wstring& value() const;
+  typedef std::wstring StringType;
 #else
-  const std::string& value() const;
+  typedef std::string StringType;
 #endif  // OS_WIN
+  const StringType& value() const;
+  %feature("docstring", "Construct an empty FilePath or from a string.")
+      FilePath;
+  FilePath();
+  explicit FilePath(const StringType& path);
 };
 
 class PyUITestSuite {
@@ -88,6 +95,19 @@ class PyUITestSuite {
   // BrowserProxy methods
   %feature("docstring", "Set download shelf visibility.") SetShelfVisible;
   void SetShelfVisible(bool is_visible);
+  %feature("docstring", "Create a new tab at the end of given or first browser "
+           "window and activate it. Blocks until the page is loaded. "
+           "Returns True on success.") AppendTab;
+  bool AppendTab(const GURL& tab_url, int window_index=0);
+  %feature("docstring", "Activate the tab at the given zero-based index in "
+           "the given or first window. Returns True on success.") ActivateTab;
+  bool ActivateTab(int tab_index, int window_index=0);
+  %feature("docstring", "Apply the accelerator with given id "
+           "(IDC_BACK, IDC_NEWTAB ...) to the given or first window. "
+           "The list can be found at chrome/app/chrome_dll_resource.h. "
+           "Returns True on success.")
+      ApplyAccelerator;
+  bool ApplyAccelerator(int id, int window_index=0);
 
   // TabProxy methods
   %feature("docstring",
@@ -105,6 +125,9 @@ class PyUITestSuite {
   // AutomationProxy methods
   %feature("docstring", "Open a new browser window.") OpenNewBrowserWindow;
   bool OpenNewBrowserWindow(bool show);
+  %feature("docstring", "Install an extension from the given file. Returns "
+           "True if successfully installed and loaded.") InstallExtension;
+  bool InstallExtension(const FilePath& crx_file);
 
   // UITestBase methods
   %feature("docstring", "Path to download directory.") user_data_dir;

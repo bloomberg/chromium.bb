@@ -30,6 +30,24 @@ void PyUITestSuite::NavigateToURL(const char* url_string) {
   UITestBase::NavigateToURL(url);
 }
 
+bool PyUITestSuite::AppendTab(const GURL& tab_url, int window_index) {
+  scoped_refptr<BrowserProxy> browser_proxy =
+    automation()->GetBrowserWindow(window_index);
+  return browser_proxy->AppendTab(tab_url);
+}
+
+bool PyUITestSuite::ApplyAccelerator(int id, int window_index) {
+  scoped_refptr<BrowserProxy> browser_proxy =
+    automation()->GetBrowserWindow(window_index);
+  return browser_proxy->ApplyAccelerator(id);
+}
+
+bool PyUITestSuite::ActivateTab(int tab_index, int window_index) {
+  scoped_refptr<BrowserProxy> browser_proxy =
+    automation()->GetBrowserWindow(window_index);
+  return browser_proxy->ActivateTab(tab_index);
+}
+
 void PyUITestSuite::SetShelfVisible(bool is_visible) {
   scoped_refptr<BrowserProxy> browser_proxy = automation()->GetBrowserWindow(0);
   ASSERT_TRUE(browser_proxy.get());
@@ -78,5 +96,9 @@ std::string PyUITestSuite::GetDownloadDirectory() {
 
 bool PyUITestSuite::OpenNewBrowserWindow(bool show) {
   return automation()->OpenNewBrowserWindow(Browser::TYPE_NORMAL, show);
+}
+
+bool PyUITestSuite::InstallExtension(const FilePath& crx_file) {
+  return automation()->InstallExtension(crx_file);
 }
 

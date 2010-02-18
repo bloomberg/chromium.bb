@@ -37,6 +37,19 @@ class PyUITestSuite : public UITestSuite, public UITestBase {
   // Shows or hides the download shelf.
   void SetShelfVisible(bool is_visible);
 
+  // Appends a new tab with the given URL in the given or first browser window.
+  bool AppendTab(const GURL& tab_url, int window_index = 0);
+
+  // Activate the tab at the given zero-based index in the given or first
+  // browser window.
+  bool ActivateTab(int tab_index, int window_index = 0);
+
+  // Apply the accelerator with given id (IDC_BACK, IDC_NEWTAB ...) to the
+  // browser window at the given or first index.
+  // The list can be found at chrome/app/chrome_dll_resource.h
+  // Returns true if the call was successful.
+  bool ApplyAccelerator(int id, int window_index = 0);
+
   // Determines the visibility of the download shelf
   bool IsShelfVisible();
 
@@ -53,6 +66,10 @@ class PyUITestSuite : public UITestSuite, public UITestBase {
 
   // Open a new browser window. Returns false on failure.
   bool OpenNewBrowserWindow(bool show);
+
+  // Installs the extension crx. Returns true only if extension was installed
+  // and loaded successfully. Overinstalls will fail.
+  bool InstallExtension(const FilePath& crx_file);
 
  private:
   base::ScopedNSAutoreleasePool pool_;

@@ -1849,6 +1849,8 @@
           'product_prefix': '_',
           'dependencies': [
             'chrome',
+            'debugger',
+            'syncapi',
             'test_support_common',
             'chrome_resources',
             'chrome_strings',
@@ -1921,6 +1923,7 @@
               ],
               'action': [ 'python',
                           '../tools/swig/swig.py',
+                          '-I..',
                           '-python',
                           '-c++',
                           '-outdir',
