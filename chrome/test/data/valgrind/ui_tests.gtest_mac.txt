@@ -1,3 +1,9 @@
+# See http://crbug.com/36161
+WorkerTest.WorkerCloseFast
+WorkerTest.WorkerScriptError
+# See http://crbug.com/36163
+LoginPromptTest.FLAKY_TestTwoAuths
+
 # Hangs on mac at exit, during final valgrind leak checking? (valgrind bug?)
 ErrorPageTest.DNSError_GoBack2Forward2
 # Flakily hangs on Mac
