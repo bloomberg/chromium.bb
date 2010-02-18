@@ -42,9 +42,14 @@ class SSLClientAuthHandler
   // Called on the UI thread.
   void DoSelectCertificate();
 
+  // Calls DoCertificateSelected on the I/O thread.
+  // Called on the UI thread after the user has made a selection (which may
+  // be long after DoSelectCertificate returns, if the UI is modeless/async.)
+  void CertificateSelected(net::X509Certificate* cert);
+
   // Notifies that the user has selected a cert.
   // Called on the IO thread.
-  void CertificateSelected(net::X509Certificate* cert);
+  void DoCertificateSelected(net::X509Certificate* cert);
 
   // The URLRequest that triggered this client auth.
   URLRequest* request_;

@@ -4,11 +4,6 @@
 
 #include "chrome/browser/ssl/ssl_client_auth_handler.h"
 
-#if defined (OS_WIN)
-#include <cryptuiapi.h>
-#pragma comment(lib, "cryptui.lib")
-#endif
-
 #include "app/l10n_util.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_list.h"
@@ -41,54 +36,18 @@ void SSLClientAuthHandler::SelectCertificate() {
       NewRunnableMethod(this, &SSLClientAuthHandler::DoSelectCertificate));
 }
 
-void SSLClientAuthHandler::DoSelectCertificate() {
-  net::X509Certificate* cert = NULL;
-#if defined(OS_WIN)
-  // TODO(jcampan): replace this with our own cert selection dialog.
-  // CryptUIDlgSelectCertificateFromStore is blocking (but still processes
-  // Windows messages), which is scary.
-  HCERTSTORE client_certs = CertOpenStore(CERT_STORE_PROV_MEMORY, 0, NULL,
-                                          0, NULL);
-  BOOL ok;
-  for (size_t i = 0; i < cert_request_info_->client_certs.size(); ++i) {
-    PCCERT_CONTEXT cc = cert_request_info_->client_certs[i]->os_cert_handle();
-    ok = CertAddCertificateContextToStore(client_certs, cc,
-                                          CERT_STORE_ADD_ALWAYS, NULL);
-    DCHECK(ok);
-  }
+// Looking for DoSelectCertificate()?
+// It's implemented in a separate source file for each platform.
 
-  HWND browser_hwnd = NULL;
-  Browser* browser = BrowserList::GetLastActive();
-  if (browser)
-    browser_hwnd = browser->window()->GetNativeHandle();
-
-  std::wstring title = l10n_util::GetString(IDS_CLIENT_CERT_DIALOG_TITLE);
-  std::wstring text = l10n_util::GetStringF(
-      IDS_CLIENT_CERT_DIALOG_TEXT,
-      ASCIIToWide(cert_request_info_->host_and_port));
-  PCCERT_CONTEXT cert_context = CryptUIDlgSelectCertificateFromStore(
-      client_certs, browser_hwnd, title.c_str(), text.c_str(), 0, 0, NULL);
-
-  if (cert_context) {
-    cert = net::X509Certificate::CreateFromHandle(
-        cert_context,
-        net::X509Certificate::SOURCE_LONE_CERT_IMPORT);
-  }
-
-  ok = CertCloseStore(client_certs, CERT_CLOSE_STORE_CHECK_FLAG);
-  DCHECK(ok);
-#else
-  NOTIMPLEMENTED();
-#endif
-
-  // Notify the IO thread that we have selected a cert.
+// Notify the IO thread that we have selected a cert.
+void SSLClientAuthHandler::CertificateSelected(net::X509Certificate* cert) {
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(
-          this, &SSLClientAuthHandler::CertificateSelected, cert));
+          this, &SSLClientAuthHandler::DoCertificateSelected, cert));
 }
 
-void SSLClientAuthHandler::CertificateSelected(net::X509Certificate* cert) {
+void SSLClientAuthHandler::DoCertificateSelected(net::X509Certificate* cert) {
   // request_ could have been NULLed if the request was cancelled while the user
   // was choosing a cert.
   if (request_)
