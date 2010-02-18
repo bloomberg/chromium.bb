@@ -847,6 +847,11 @@ class NotificationType {
     // object, the details are ContentSettingsNotificationsDetails.
     CONTENT_SETTINGS_CHANGED,
 
+#if defined(OS_CHROMEOS)
+    // Sent when a chromium os user logs in.
+    LOGIN_USER_CHANGED,
+#endif
+
     // Count (must be last) ----------------------------------------------------
     // Used to determine the number of notification types.  Not valid as
     // a type parameter when registering for or posting notifications.

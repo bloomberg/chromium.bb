@@ -308,9 +308,36 @@ void RecordLaunchModeHistogram(LaunchMode mode) {
 
 static bool in_startup = false;
 
-bool LaunchBrowser(const CommandLine& command_line, Profile* profile,
-                   const std::wstring& cur_dir, bool process_startup,
-                   int* return_code, BrowserInit* browser_init) {
+GURL GetWelcomePageURL() {
+  std::string welcome_url = l10n_util::GetStringUTF8(IDS_WELCOME_PAGE_URL);
+  return GURL(welcome_url);
+}
+
+void ShowPackExtensionMessage(const std::wstring caption,
+    const std::wstring message) {
+#if defined(OS_WIN)
+  win_util::MessageBox(NULL, message, caption, MB_OK | MB_SETFOREGROUND);
+#else
+  // Just send caption & text to stdout on mac & linux.
+  std::string out_text = WideToASCII(caption);
+  out_text.append("\n\n");
+  out_text.append(WideToASCII(message));
+  out_text.append("\n");
+  printf("%s", out_text.c_str());
+#endif
+}
+
+}  // namespace
+
+// static
+bool BrowserInit::InProcessStartup() {
+  return in_startup;
+}
+
+bool BrowserInit::LaunchBrowser(
+    const CommandLine& command_line, Profile* profile,
+    const std::wstring& cur_dir, bool process_startup,
+    int* return_code) {
   in_startup = process_startup;
   DCHECK(profile);
 
@@ -326,7 +353,7 @@ bool LaunchBrowser(const CommandLine& command_line, Profile* profile,
   if (command_line.HasSwitch(switches::kIncognito))
     profile = profile->GetOffTheRecordProfile();
 
-  BrowserInit::LaunchWithProfile lwp(cur_dir, command_line, browser_init);
+  BrowserInit::LaunchWithProfile lwp(cur_dir, command_line, this);
   bool launched = lwp.Launch(profile, process_startup);
   in_startup = false;
 
@@ -358,32 +385,6 @@ bool LaunchBrowser(const CommandLine& command_line, Profile* profile,
   }
 #endif
   return true;
-}
-
-GURL GetWelcomePageURL() {
-  std::string welcome_url = l10n_util::GetStringUTF8(IDS_WELCOME_PAGE_URL);
-  return GURL(welcome_url);
-}
-
-void ShowPackExtensionMessage(const std::wstring caption,
-    const std::wstring message) {
-#if defined(OS_WIN)
-  win_util::MessageBox(NULL, message, caption, MB_OK | MB_SETFOREGROUND);
-#else
-  // Just send caption & text to stdout on mac & linux.
-  std::string out_text = WideToASCII(caption);
-  out_text.append("\n\n");
-  out_text.append(WideToASCII(message));
-  out_text.append("\n");
-  printf("%s", out_text.c_str());
-#endif
-}
-
-}  // namespace
-
-// static
-bool BrowserInit::InProcessStartup() {
-  return in_startup;
 }
 
 // LaunchWithProfile ----------------------------------------------------------
@@ -905,11 +906,17 @@ bool BrowserInit::ProcessCmdLineImpl(const CommandLine& command_line,
     UserDataManager::Get()->RefreshUserDataDirProfiles();
   }
 
+#if defined(OS_CHROMEOS)
+  // The browser will be launched after the user logs in.
+  if (command_line.HasSwitch(switches::kLoginManager))
+    silent_launch = true;
+#endif
+
   // If we don't want to launch a new browser window or tab (in the case
   // of an automation request), we are done here.
   if (!silent_launch) {
-    return LaunchBrowser(command_line, profile, cur_dir, process_startup,
-                         return_code, browser_init);
+    return browser_init->LaunchBrowser(
+        command_line, profile, cur_dir, process_startup, return_code);
   }
   return true;
 }

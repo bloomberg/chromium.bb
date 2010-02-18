@@ -330,6 +330,8 @@
         'browser/chromeos/login/rounded_rect_painter.cc',
         'browser/chromeos/login/rounded_rect_painter.h',
         'browser/chromeos/login/screen_observer.h',
+        'browser/chromeos/login/test_renderer_screen.cc',
+        'browser/chromeos/login/test_renderer_screen.h',
         'browser/chromeos/login/user_manager.cc',
         'browser/chromeos/login/user_manager.h',
         'browser/chromeos/login/wizard_screen.h',

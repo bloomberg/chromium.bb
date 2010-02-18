@@ -16,6 +16,7 @@
 class AccountCreationView;
 class LoginManagerView;
 class NetworkSelectionView;
+class TestRendererScreen;
 class WizardScreen;
 
 namespace chromeos {
@@ -29,10 +30,10 @@ class LoginWizardView : public views::View,
                         public chromeos::ScreenObserver {
  public:
   LoginWizardView();
-  virtual ~LoginWizardView();
+  virtual ~LoginWizardView() {}
 
   // Initializes wizard windows and controls (status bar).
-  void Init(const std::string& start_view_name);
+  void Init(const std::string& start_view_name, const gfx::Size size);
 
  private:
   // Exit handlers:
@@ -80,6 +81,10 @@ class LoginWizardView : public views::View,
 
   // Network selection/welcome view.
   NetworkSelectionView* network_selection_;
+
+  // Test Renderer Screen. To be used for testing.
+  // TODO(davemoore) Remove this after done.
+  TestRendererScreen* test_renderer_;
 
   // Account creation view.
   AccountCreationView* account_creation_;

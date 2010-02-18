@@ -61,6 +61,15 @@ class BrowserInit {
   // Returns true if the browser is coming up.
   static bool InProcessStartup();
 
+  // Launches a browser window associated with |profile|. |command_line|
+  // should be the command line passed to this process. |cur_dir| can be
+  // the null string, which implies that the directory of the executable.
+  // should be used. |process_startup| indicates whether this is the
+  // first browser.
+  bool LaunchBrowser(const CommandLine& command_line, Profile* profile,
+                     const std::wstring& cur_dir, bool process_startup,
+                     int* return_code);
+
   // LaunchWithProfile ---------------------------------------------------------
   //
   // Assists launching the application and appending the initial tabs for a

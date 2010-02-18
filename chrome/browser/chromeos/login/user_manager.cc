@@ -5,6 +5,7 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/pref_service.h"
 
 namespace chromeos {
@@ -65,6 +66,12 @@ void UserManager::UserLoggedIn(std::string email) {
     }
   }
   prefs->ScheduleSavePersistentPrefs();
+  User user;
+  user.email_ = email;
+  NotificationService::current()->Notify(
+      NotificationType::LOGIN_USER_CHANGED,
+      Source<UserManager>(this),
+      Details<const User>(&user));
 }
 
 }

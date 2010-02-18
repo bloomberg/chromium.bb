@@ -21,6 +21,8 @@
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/logging_chrome.h"
+#include "chrome/common/notification_service.h"
+#include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
 #include "grit/generated_resources.h"
@@ -36,8 +38,14 @@ void ProfileManager::ShutdownSessionServices() {
     (*i)->ShutdownSessionService();
 }
 
-ProfileManager::ProfileManager() {
+ProfileManager::ProfileManager() : logged_in_(false) {
   SystemMonitor::Get()->AddObserver(this);
+#if defined(OS_CHROMEOS)
+  registrar_.Add(
+      this,
+      NotificationType::LOGIN_USER_CHANGED,
+      NotificationService::AllSources());
+#endif
 }
 
 ProfileManager::~ProfileManager() {
@@ -60,15 +68,8 @@ ProfileManager::~ProfileManager() {
 FilePath ProfileManager::GetDefaultProfileDir(
     const FilePath& user_data_dir) {
   FilePath default_profile_dir(user_data_dir);
-  std::wstring profile = chrome::kNotSignedInProfile;
-#if defined(OS_CHROMEOS)
-  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-  if (command_line.HasSwitch(switches::kProfile)) {
-    profile = command_line.GetSwitchValue(switches::kProfile);
-  }
-#endif
   default_profile_dir = default_profile_dir.Append(
-      FilePath::FromWStringHack(profile));
+      FilePath::FromWStringHack(chrome::kNotSignedInProfile));
   return default_profile_dir;
 }
 
@@ -80,7 +81,23 @@ FilePath ProfileManager::GetProfilePrefsPath(
 }
 
 Profile* ProfileManager::GetDefaultProfile(const FilePath& user_data_dir) {
-  return GetProfile(GetDefaultProfileDir(user_data_dir));
+  FilePath default_profile_dir(user_data_dir);
+  std::wstring profile = chrome::kNotSignedInProfile;
+#if defined(OS_CHROMEOS)
+  // If the user has logged in, pick up the new profile.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  // TODO(davemoore) Delete this once chromium os has started using
+  // "--login-profile" instead of "--profile".
+  if (logged_in_ && command_line.HasSwitch(switches::kProfile)) {
+    profile = command_line.GetSwitchValue(switches::kProfile);
+  }
+  if (logged_in_ && command_line.HasSwitch(switches::kLoginProfile)) {
+    profile = command_line.GetSwitchValue(switches::kLoginProfile);
+  }
+#endif
+  default_profile_dir = default_profile_dir.Append(
+      FilePath::FromWStringHack(profile));
+  return GetProfile(default_profile_dir);
 }
 
 Profile* ProfileManager::GetProfile(const FilePath& profile_dir) {
@@ -166,6 +183,17 @@ void ProfileManager::OnResume() {
         ChromeThread::IO, FROM_HERE,
         NewRunnableFunction(&ProfileManager::ResumeProfile, *i));
   }
+}
+
+void ProfileManager::Observe(
+    NotificationType type,
+    const NotificationSource& source,
+    const NotificationDetails& details) {
+#if defined(OS_CHROMEOS)
+  if (type == NotificationType::LOGIN_USER_CHANGED) {
+    logged_in_ = true;
+  }
+#endif
 }
 
 #if defined(OS_WIN)

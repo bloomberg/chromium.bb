@@ -18,6 +18,8 @@
 #include "base/non_thread_safe.h"
 #include "base/values.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 
 // This is a small storage class that simply represents some metadata about
 // profiles that are available in the current user data directory.
@@ -63,7 +65,8 @@ class AvailableProfile {
 };
 
 class ProfileManager : public NonThreadSafe,
-                       public SystemMonitor::PowerObserver {
+                       public SystemMonitor::PowerObserver,
+                       public NotificationObserver {
  public:
   ProfileManager();
   virtual ~ProfileManager();
@@ -97,6 +100,11 @@ class ProfileManager : public NonThreadSafe,
   // PowerObserver notifications
   void OnSuspend();
   void OnResume();
+
+  // NotificationObserver implementation.
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details);
 
   // ------------------ static utility functions -------------------
 
@@ -141,6 +149,13 @@ class ProfileManager : public NonThreadSafe,
   ProfileVector profiles_;
 
   AvailableProfileVector available_profiles_;
+
+  NotificationRegistrar registrar_;
+
+  // Indicates that a user has logged in and that the profile specified
+  // in the --login-profile command line argument should be used as the
+  // default.
+  bool logged_in_;
 
   DISALLOW_EVIL_CONSTRUCTORS(ProfileManager);
 };

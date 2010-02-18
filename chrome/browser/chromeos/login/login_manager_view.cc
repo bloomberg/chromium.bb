@@ -14,13 +14,18 @@
 #include "base/file_path.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"
+#include "base/path_service.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
+#include "chrome/browser/browser_init.h"
+#include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
+#include "chrome/browser/profile_manager.h"
+#include "chrome/common/chrome_paths.h"
 #include "chrome/common/chrome_switches.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -319,6 +324,24 @@ void LoginManagerView::Login() {
     // TODO(cmasone): something sensible if errors occur.
     SetupSession(username);
     chromeos::UserManager::Get()->UserLoggedIn(username);
+
+    // Now launch the initial browser window.
+    BrowserInit browser_init;
+    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+    FilePath user_data_dir;
+    PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+    ProfileManager* profile_manager = g_browser_process->profile_manager();
+    // The default profile will have been changed because the ProfileManager
+    // will process the notification that the UserManager sends out.
+    Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
+    int return_code;
+
+    browser_init.LaunchBrowser(
+        command_line,
+        profile,
+        std::wstring(),
+        true,
+        &return_code);
   } else {
     chromeos::NetworkLibrary* network = chromeos::NetworkLibrary::Get();
     // Check networking after trying to login in case user is

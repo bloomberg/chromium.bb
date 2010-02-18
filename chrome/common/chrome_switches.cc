@@ -718,7 +718,7 @@ const char kWorkerStartupDialog[]           = "worker-startup-dialog";
 const char kZygoteCmdPrefix[]               = "zygote-cmd-prefix";
 
 // Causes the process to run as a renderer zygote.
-const char kZygoteProcess[]                 = "zygote";
+const char kZygoteProcess[]                 = "zygote"; //
 
 #if defined(OS_CHROMEOS)
 // The name of the pipe over which the Chrome OS login manager will send
@@ -733,14 +733,20 @@ const char kEnableGView[]                   = "enable-gview";
 const char kLoginManager[]                  = "login-manager";
 // Enables to override the first login screen.
 const char kFirstLoginScreenName[]          = "first-login-screen-name";
+// Allows control over the initial login screen size. Pass width,height.
+const char kLoginScreenSize[]               = "login-screen-size";
 const char kSessionManagerPipe[]            = "session-manager-pipe";
 
 // Attempts to load libcros and validate it, then exits. A nonzero return code
 // means the library could not be loaded correctly.
 const char kTestLoadLibcros[]               = "test-load-libcros";
 
-// Overrides the Default profile.
+// TODO(davemoore) Delete this once chromeos has started using
+// login-profile as its arg.
 const char kProfile[]                       = "profile";
+
+// Specifies the profile to use once a chromeos user is logged in.
+const char kLoginProfile[]                  = "login-profile";
 
 // Use the frame layout used in chromeos.
 const char kChromeosFrame[]                 = "chromeos-frame";

@@ -587,8 +587,23 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
 #if defined(OS_CHROMEOS)
   if (parsed_command_line.HasSwitch(switches::kLoginManager)) {
-    browser::ShowLoginWizard(
-        parsed_command_line.GetSwitchValueASCII(switches::kFirstLoginScreenName));
+    std::string first_screen =
+        parsed_command_line.GetSwitchValueASCII(
+            switches::kFirstLoginScreenName);
+    std::string size_arg =
+        parsed_command_line.GetSwitchValueASCII(
+            switches::kLoginScreenSize);
+    gfx::Size size(0, 0);
+    // Allow the size of the login window to be set explicitly. If not set,
+    // default to the entire screen. This is mostly useful for testing.
+    if (size_arg.size()) {
+      std::vector<std::string> dimensions;
+      SplitString(size_arg, ',', &dimensions);
+      if (dimensions.size() == 2) {
+        size.SetSize(StringToInt(dimensions[0]), StringToInt(dimensions[1]));
+      }
+    }
+    browser::ShowLoginWizard(first_screen, size);
   }
 #endif  // OS_CHROMEOS
 

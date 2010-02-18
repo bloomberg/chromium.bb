@@ -20,6 +20,7 @@
 #include "chrome/browser/chromeos/login/login_manager_view.h"
 #include "chrome/browser/chromeos/login/network_selection_view.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
+#include "chrome/browser/chromeos/login/test_renderer_screen.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "chrome/browser/chromeos/status/clock_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
@@ -57,6 +58,7 @@ const SkColor kBackgroundPaddingColor = SK_ColorBLACK;
 const char kLoginManager[] = "login";
 const char kAccountCreation[] = "create_account";
 const char kNetworkSelection[] = "network";
+const char kTestRenderer[] = "test_renderer";
 
 }  // namespace
 
@@ -94,13 +96,13 @@ class LoginWizardNonClientFrameView : public views::NonClientFrameView {
 class LoginWizardWindow : public views::WindowGtk {
  public:
   static LoginWizardWindow* CreateLoginWizardWindow(
-      const std::string start_screen_name) {
+      const std::string& start_screen_name, const gfx::Size& size) {
     LoginWizardView* login_wizard = new LoginWizardView();
     LoginWizardWindow* login_wizard_window =
         new LoginWizardWindow(login_wizard);
     login_wizard_window->GetNonClientView()->SetFrameView(
         new LoginWizardNonClientFrameView());
-    login_wizard->Init(start_screen_name);
+    login_wizard->Init(start_screen_name, size);
     login_wizard_window->Init(NULL, gfx::Rect());
 
     // This keeps the window from flashing at startup.
@@ -127,17 +129,14 @@ class LoginWizardWindow : public views::WindowGtk {
 };
 
 // Declared in browser_dialogs.h so that others don't need to depend on our .h.
-void ShowLoginWizard(const std::string& start_screen_name) {
+void ShowLoginWizard(
+    const std::string& start_screen_name, const gfx::Size& size) {
   views::WindowGtk* window =
-      LoginWizardWindow::CreateLoginWizardWindow(start_screen_name);
+      LoginWizardWindow::CreateLoginWizardWindow(start_screen_name, size);
   window->Show();
   if (chromeos::LoginLibrary::EnsureLoaded()) {
     chromeos::LoginLibrary::Get()->EmitLoginPromptReady();
   }
-  bool old_state = MessageLoop::current()->NestableTasksAllowed();
-  MessageLoop::current()->SetNestableTasksAllowed(true);
-  MessageLoop::current()->Run();
-  MessageLoop::current()->SetNestableTasksAllowed(old_state);
 }
 
 }  // namespace browser
@@ -152,11 +151,7 @@ LoginWizardView::LoginWizardView()
       account_creation_(NULL) {
 }
 
-LoginWizardView::~LoginWizardView() {
-  MessageLoop::current()->Quit();
-}
-
-void LoginWizardView::Init(const std::string& start_view_name) {
+void LoginWizardView::Init(const std::string& start_view_name, gfx::Size size) {
   views::Painter* painter = new chromeos::RoundedRectPainter(
       kBackgroundPadding, kBackgroundPaddingColor,    // black padding
       false, SK_ColorBLACK,                           // no shadow
@@ -166,9 +161,13 @@ void LoginWizardView::Init(const std::string& start_view_name) {
       views::Background::CreateBackgroundPainter(true, painter));
 
   // TODO(dpolukhin): add support for multiple monitors.
-  gfx::Rect monitor_bounds =
-      views::Screen::GetMonitorWorkAreaNearestWindow(NULL);
-  dimensions_ = monitor_bounds.size();
+  if (size.width() <= 0 || size.height() <= 0) {
+    gfx::Rect monitor_bounds =
+        views::Screen::GetMonitorWorkAreaNearestWindow(NULL);
+    dimensions_ = monitor_bounds.size();
+  } else {
+    dimensions_ = size;
+  }
 
   InitStatusArea();
 
@@ -176,6 +175,7 @@ void LoginWizardView::Init(const std::string& start_view_name) {
   CreateAndInitScreen(&login_manager_);
   CreateAndInitScreen(&network_selection_);
   CreateAndInitScreen(&account_creation_);
+  CreateAndInitScreen(&test_renderer_);
 
   // Select the view to start with and show it.
   if (start_view_name == kLoginManager) {
@@ -184,6 +184,8 @@ void LoginWizardView::Init(const std::string& start_view_name) {
     current_ = network_selection_;
   } else if (start_view_name == kAccountCreation) {
     current_ = account_creation_;
+  } else if (start_view_name == kTestRenderer) {
+    current_ = test_renderer_;
   } else {
     // Default to login manager.
     current_ = login_manager_;
