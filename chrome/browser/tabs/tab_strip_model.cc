@@ -558,7 +558,7 @@ bool TabStripModel::IsContextMenuCommandEnabled(
       }
     case CommandCloseOtherTabs:
       // Close other doesn't effect mini-tabs.
-      return count() > IndexOfFirstNonMiniTab();
+      return count() > 1 && count() > IndexOfFirstNonMiniTab();
     case CommandCloseTabsToRight:
       // Close doesn't effect mini-tabs.
       return count() != IndexOfFirstNonMiniTab() &&
