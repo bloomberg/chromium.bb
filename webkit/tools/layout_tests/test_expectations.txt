@@ -2926,9 +2926,6 @@ BUG35822 : plugins/netscape-browser-object-identity.html = TEXT
 // New test added in WebKit r54786
 BUG35823 : fast/harness/page-cache-crash-on-data-urls.html = TEXT
 
-// WebKit roll 54726:54731
-BUG35618 LINUX WIN : fast/text/glyph-reordering.html = TEXT
-
 // Not known when these started failing.
 BUG35858 MAC LINUX : media/remove-from-document.html = CRASH PASS
 BUG35858 MAC : media/video-source.html = CRASH PASS
