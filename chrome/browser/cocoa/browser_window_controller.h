@@ -171,6 +171,9 @@ class TabStripModelObserverBridge;
 // Make the location bar the first responder, if possible.
 - (void)focusLocationBar;
 
+// Make the (currently-selected) tab contents the first responder, if possible.
+- (void)focusTabContents;
+
 // Returns the frame of the regular (non-fullscreened) window (even if the
 // window is currently in fullscreen mode).  The frame is returned in Cocoa
 // coordinates (origin in bottom-left).

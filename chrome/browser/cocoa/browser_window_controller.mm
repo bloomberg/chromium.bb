@@ -1083,6 +1083,10 @@
   [toolbarController_ focusLocationBar];
 }
 
+- (void)focusTabContents {
+  [[self window] makeFirstResponder:[tabStripController_ selectedTabView]];
+}
+
 - (void)layoutTabs {
   [tabStripController_ layoutTabs];
 }

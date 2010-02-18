@@ -258,6 +258,18 @@
   if (observer_ && observer_->OnDoCommandBySelector(cmd)) {
     return YES;
   }
+
+  // If the escape key was pressed and no revert happened and we're in
+  // fullscreen mode, make it resign key.
+  if (cmd == @selector(cancelOperation:)) {
+    BrowserWindowController* windowController =
+        [BrowserWindowController browserWindowControllerForView:self];
+    if ([windowController isFullscreen]) {
+      [windowController focusTabContents];
+      return YES;
+    }
+  }
+
   return NO;
 }
 
