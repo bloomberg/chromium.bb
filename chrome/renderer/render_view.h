@@ -452,12 +452,6 @@ class RenderView : public RenderWidget,
 
   PageTranslator* page_translator() const { return page_translator_.get(); }
 
-  // Returns the ISO 639 language code of the current page (e.g. en, fr).
-  // If ISO 639-1 code is not available for the language, ISO 639-2 3-letter
-  // code will be returned (e.g. fil for Filipino and und for undtermined). For
-  // traditional and simplified Chinse, 'zh-TW'  and 'zh-CN' will be returned.
-  std::string DetectLanguage();
-
 #if defined(OS_MACOSX)
   // Helper routines for GPU plugin support. Used by the
   // WebPluginDelegateProxy, which has a pointer to the RenderView.

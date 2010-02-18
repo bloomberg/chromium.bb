@@ -110,6 +110,9 @@ class PageTranslator : public TextTranslator::Delegate {
   // request received after this call will be ignored.
   void ClearPendingTranslations();
 
+  // Reverts the text nodes in the page to their original text.
+  void RevertTranslation();
+
   // Our delegate (notified when a page is translated).
   PageTranslatorDelegate* delegate_;
 

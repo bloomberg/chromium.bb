@@ -3249,16 +3249,6 @@ void RenderView::OnFind(int request_id, const string16& search_text,
   }
 }
 
-std::string RenderView::DetectLanguage() {
-  if (!webview() || is_loading_)
-    return kUnknownLanguageCode;
-
-  WebFrame* main_frame = webview()->mainFrame();
-  std::wstring contents;
-  CaptureText(main_frame, &contents);
-  return DetermineTextLanguage(contents);
-}
-
 // static
 std::string RenderView::DetermineTextLanguage(const std::wstring& text) {
   std::string language = kUnknownLanguageCode;
