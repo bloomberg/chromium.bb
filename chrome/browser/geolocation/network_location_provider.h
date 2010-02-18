@@ -12,9 +12,9 @@
 #include "base/string16.h"
 #include "base/thread.h"
 #include "chrome/browser/geolocation/device_data_provider.h"
+#include "chrome/browser/geolocation/geoposition.h"
 #include "chrome/browser/geolocation/location_provider.h"
 #include "chrome/browser/geolocation/network_location_request.h"
-#include "chrome/common/geoposition.h"
 
 class URLFetcherProtectEntry;
 
@@ -32,7 +32,7 @@ class NetworkLocationProvider
 
   // LocationProviderBase implementation
   virtual bool StartProvider();
-  virtual void GetPosition(Geoposition *position);
+  virtual void GetPosition(Position *position);
   virtual void UpdatePosition();
 
  private:
@@ -50,7 +50,7 @@ class NetworkLocationProvider
   virtual void DeviceDataUpdateAvailable(WifiDataProvider* provider);
 
   // NetworkLocationRequest::ListenerInterface implementation.
-  virtual void LocationResponseAvailable(const Geoposition& position,
+  virtual void LocationResponseAvailable(const Position& position,
                                          bool server_error,
                                          const string16& access_token);
 
@@ -74,7 +74,7 @@ class NetworkLocationProvider
   string16 access_token_;
 
   // The current best position estimate and its guarding mutex
-  Geoposition position_;
+  Position position_;
   Lock position_mutex_;
 
   bool is_new_data_available_;

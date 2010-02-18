@@ -6510,21 +6510,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       The following Privacy Blacklists prevented this content from showing:
     </message>
 
-    <!-- Geolocation messages -->
-    <message name="IDS_GEOLOCATION_INFOBAR_QUESTION" desc="Question asked on the info bar whenever URL wants to access the user physical location">
-      <ph name="URL">
-        $1<ex>google.com</ex>
-      </ph> wants to track your physical location
-    </message>
-    <message name="IDS_GEOLOCATION_ALLOW_BUTTON" desc="A button in geolocation infobar for allowing access to geolocation for a given domain.">
-      Allow
-    </message>
-    <message name="IDS_GEOLOCATION_DENY_BUTTON" desc="A button in geolocation infobar for denying access to geolocation for a given domain.">
-      Deny
-    </message>
-
-
-      <!-- ProcessSingleton -->
+    <!-- ProcessSingleton -->
     <message name="IDS_PROFILE_IN_USE_LINUX" desc="Message shown when the browser cannot start because the profile is in use on a different host.">
       The profile appears to be in use by process <ph name="PROCESS_ID">$1<ex>12345</ex></ph> on host <ph name="HOST_NAME">$2<ex>example.com</ex></ph>.  If you are sure no other processes are using this profile, delete the file <ph name="LOCK_FILE">$3<ex>/home/user/.config/google-chrome/SingletonLock</ex></ph> and restart <ph name="PRODUCT_NAME">$4<ex>Google Chrome</ex></ph>.
     </message>

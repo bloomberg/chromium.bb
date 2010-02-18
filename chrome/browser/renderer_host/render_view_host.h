@@ -611,9 +611,7 @@ class RenderViewHost : public RenderWidgetHost {
   void OnPageTranslated(int32 page_id,
                         const std::string& original_lang,
                         const std::string& translated_lang);
-
   void OnContentBlocked(ContentSettingsType type);
-
  private:
   friend class TestRenderViewHost;
 

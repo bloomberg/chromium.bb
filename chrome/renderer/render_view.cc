@@ -44,7 +44,6 @@
 #include "chrome/renderer/extensions/event_bindings.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/extensions/renderer_extension_bindings.h"
-#include "chrome/renderer/geolocation_dispatcher.h"
 #include "chrome/renderer/localized_error.h"
 #include "chrome/renderer/media/audio_renderer_impl.h"
 #include "chrome/renderer/navigation_state.h"
@@ -68,7 +67,6 @@
 #include "skia/ext/bitmap_platform_device.h"
 #include "skia/ext/image_operations.h"
 #include "third_party/cld/encodings/compact_lang_det/win/cld_unicodetext.h"
-#include "third_party/WebKit/WebKit/chromium/public/GeolocationServiceBridgeChromium.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityCache.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebAccessibilityObject.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
@@ -483,10 +481,6 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     return;
   if (notification_provider_->OnMessageReceived(message))
     return;
-  if (geolocation_dispatcher_.get() &&
-      geolocation_dispatcher_->OnMessageReceived(message)) {
-    return;
-  }
 
   IPC_BEGIN_MESSAGE_MAP(RenderView, message)
     IPC_MESSAGE_HANDLER(ViewMsg_CaptureThumbnail, SendThumbnail)
@@ -4512,10 +4506,3 @@ void RenderView::GPUPluginBuffersSwapped(gfx::PluginWindowHandle window) {
   Send(new ViewHostMsg_GPUPluginBuffersSwapped(routing_id(), window));
 }
 #endif
-
-WebKit::WebGeolocationServiceInterface* RenderView::getGeolocationService() {
-  if (!geolocation_dispatcher_.get())
-    geolocation_dispatcher_.reset(new GeolocationDispatcher(this));
-  return geolocation_dispatcher_.get();
-}
-

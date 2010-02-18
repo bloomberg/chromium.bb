@@ -15,7 +15,6 @@
 
 #include "app/gfx/native_widget_types.h"
 #include "chrome/common/content_settings.h"
-#include "chrome/common/geoposition.h"
 #include "chrome/common/page_zoom.h"
 #include "chrome/common/thumbnail_score.h"
 #include "chrome/common/transport_dib.h"
@@ -391,22 +390,6 @@ struct ParamTraits<ThumbnailScore> {
     l->append(StringPrintf(L"(%f, %d, %d)",
                            p.boring_score, p.good_clipping, p.at_top));
   }
-};
-
-template <>
-struct ParamTraits<Geoposition> {
-  typedef Geoposition param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::wstring* l);
-};
-
-template <>
-struct ParamTraits<Geoposition::ErrorCode> {
-  typedef Geoposition::ErrorCode param_type;
-  static void Write(Message* m, const param_type& p);
-  static bool Read(const Message* m, void** iter, param_type* p);
-  static void Log(const param_type& p, std::wstring* l);
 };
 
 }  // namespace IPC

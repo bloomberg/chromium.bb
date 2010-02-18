@@ -38,7 +38,6 @@ class ChromeURLRequestContext;
 class DatabaseDispatcherHost;
 class DOMStorageDispatcherHost;
 class ExtensionMessageService;
-class GeolocationDispatcherHost;
 class HostZoomMap;
 class NotificationsPrefsCache;
 class Profile;
@@ -402,9 +401,6 @@ class ResourceMessageFilter : public IPC::ChannelProxy::MessageFilter,
 
   // Used to translate page contents from one language to another.
   TranslationService translation_service_;
-
-  // Used to handle geolocation-related messages.
-  scoped_refptr<GeolocationDispatcherHost> geolocation_dispatcher_host_;
 
   DISALLOW_COPY_AND_ASSIGN(ResourceMessageFilter);
 };

@@ -32,7 +32,7 @@ class NetworkLocationProvider::PositionCache {
   // WiFi data. Returns true on success, false otherwise.
   bool CachePosition(const RadioData& radio_data,
                      const WifiData& wifi_data,
-                     const Geoposition& position) {
+                     const Position& position) {
     // Check that we can generate a valid key for the device data.
     string16 key;
     if (!MakeKey(radio_data, wifi_data, &key)) {
@@ -57,8 +57,8 @@ class NetworkLocationProvider::PositionCache {
 
   // Searches for a cached position response for the current set of cell ID and
   // WiFi data. Returns the cached position if available, NULL otherwise.
-  const Geoposition *FindPosition(const RadioData &radio_data,
-                                  const WifiData &wifi_data) {
+  const Position *FindPosition(const RadioData &radio_data,
+                               const WifiData &wifi_data) {
     string16 key;
     if (!MakeKey(radio_data, wifi_data, &key)) {
       return NULL;
@@ -96,7 +96,7 @@ class NetworkLocationProvider::PositionCache {
   // The cache of positions. This is stored using two maps. One map is keyed on
   // a string that represents a set of device data, the other is keyed on the
   // timestamp of the position.
-  typedef std::map<string16, Geoposition> CacheMap;
+  typedef std::map<string16, Position> CacheMap;
   CacheMap cache_;
   typedef std::map<int64, CacheMap::iterator> CacheTimesMap;
   CacheTimesMap cache_times_;
@@ -141,7 +141,7 @@ NetworkLocationProvider::~NetworkLocationProvider() {
 }
 
 // LocationProviderBase implementation
-void NetworkLocationProvider::GetPosition(Geoposition *position) {
+void NetworkLocationProvider::GetPosition(Position *position) {
   DCHECK(position);
   AutoLock lock(position_mutex_);
   *position = position_;
@@ -176,7 +176,7 @@ void NetworkLocationProvider::DeviceDataUpdateAvailable(
 
 // NetworkLocationRequest::ListenerInterface implementation.
 void NetworkLocationProvider::LocationResponseAvailable(
-    const Geoposition& position,
+    const Position& position,
     bool server_error,
     const string16& access_token) {
   DCHECK(CalledOnValidThread());
@@ -238,7 +238,7 @@ void NetworkLocationProvider::RequestPosition() {
   DCHECK(CalledOnValidThread());
 
   delayed_start_task_.RevokeAll();
-  const Geoposition* cached_position;
+  const Position* cached_position;
   {
     AutoLock lock(data_mutex_);
     cached_position = position_cache_->FindPosition(radio_data_, wifi_data_);

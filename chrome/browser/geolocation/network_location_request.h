@@ -14,7 +14,6 @@
 
 class URLRequestContextGetter;
 class URLFetcher;
-struct Geoposition;
 struct Position;
 
 // Takes a set of device data and sends it to a server to get a position fix.
@@ -27,7 +26,7 @@ class NetworkLocationRequest : private URLFetcher::Delegate {
     // Updates the listener with a new position. server_error indicates whether
     // was a server or network error - either no response or a 500 error code.
     virtual void LocationResponseAvailable(
-        const Geoposition& position,
+        const Position& position,
         bool server_error,
         const string16& access_token) = 0;
 

@@ -83,8 +83,6 @@
         'renderer/external_extension.h',
         'renderer/form_manager.cc',
         'renderer/form_manager.h',
-        'renderer/geolocation_dispatcher.cc',
-        'renderer/geolocation_dispatcher.h',
         'renderer/localized_error.cc',
         'renderer/localized_error.h',
         'renderer/navigation_state.h',

@@ -8,8 +8,8 @@
 #include "base/json/json_writer.h"
 #include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/geolocation/geoposition.h"
 #include "chrome/browser/net/url_request_context_getter.h"
-#include "chrome/common/geoposition.h"
 #include "net/url_request/url_request_status.h"
 
 namespace {
@@ -39,7 +39,7 @@ void GetLocationFromResponse(bool http_post_result,
                              const std::string& response_body,
                              int64 timestamp,
                              const GURL& server_url,
-                             Geoposition* position,
+                             Position* position,
                              string16* access_token);
 
 const char* RadioTypeToString(RadioType type);
@@ -54,7 +54,7 @@ void AddInteger(const std::wstring& property_name,
 // Parses the server response body. Returns true if parsing was successful.
 bool ParseServerResponse(const std::string& response_body,
                          int64 timestamp,
-                         Geoposition* position,
+                         Position* position,
                          string16* access_token);
 void AddRadioData(const RadioData& radio_data, DictionaryValue* body_object);
 void AddWifiData(const WifiData& wifi_data, DictionaryValue* body_object);
@@ -105,7 +105,7 @@ void NetworkLocationRequest::OnURLFetchComplete(const URLFetcher* source,
   DCHECK_EQ(url_fetcher_.get(), source);
   DCHECK(url_.possibly_invalid_spec() == url.possibly_invalid_spec());
 
-  Geoposition position;
+  Position position;
   string16 access_token;
   GetLocationFromResponse(status.is_success(), response_code, data,
                           timestamp_, url, &position, &access_token);
@@ -162,8 +162,8 @@ bool FormRequestBody(const string16& host_name,
 
 void FormatPositionError(const GURL& server_url,
                          const std::wstring& message,
-                         Geoposition* position) {
-    position->error_code = Geoposition::ERROR_CODE_POSITION_UNAVAILABLE;
+                         Position* position) {
+    position->error_code = Position::ERROR_CODE_POSITION_UNAVAILABLE;
     position->error_message = L"Network location provider at '";
     position->error_message += ASCIIToWide(server_url.possibly_invalid_spec());
     position->error_message += L"' : ";
@@ -178,7 +178,7 @@ void GetLocationFromResponse(bool http_post_result,
                              const std::string& response_body,
                              int64 timestamp,
                              const GURL& server_url,
-                             Geoposition* position,
+                             Position* position,
                              string16* access_token) {
   DCHECK(position);
   DCHECK(access_token);
@@ -268,7 +268,7 @@ bool GetAsDouble(const DictionaryValue& object,
 
 bool ParseServerResponse(const std::string& response_body,
                          int64 timestamp,
-                         Geoposition* position,
+                         Position* position,
                          string16* access_token) {
   DCHECK(position);
   DCHECK(access_token);

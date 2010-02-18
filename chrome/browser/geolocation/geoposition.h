@@ -6,14 +6,14 @@
 // position fix. Originally derived from
 // http://gears.googlecode.com/svn/trunk/gears/geolocation/geolocation.h
 
-#ifndef CHROME_COMMON_GEOPOSITION_H_
-#define CHROME_COMMON_GEOPOSITION_H_
+#ifndef CHROME_BROWSER_GEOLOCATION_GEOPOSITION_H_
+#define CHROME_BROWSER_GEOLOCATION_GEOPOSITION_H_
 
 #include "base/string16.h"
 
-// The internal representation of a geo position. Some properties use different
+// The internal representation of a position. Some properties use different
 // types when passed to JavaScript.
-struct Geoposition {
+struct Position {
  public:
   // Error codes for returning to JavaScript. These values are defined by the
   // W3C spec. Note that Gears does not use all of these codes, but we need
@@ -26,14 +26,12 @@ struct Geoposition {
     ERROR_CODE_TIMEOUT = 3,
   };
 
-  Geoposition();
+  Position();
 
   bool is_valid_latlong() const;
   bool is_valid_altitude() const;
   bool is_valid_accuracy() const;
   bool is_valid_altitude_accuracy() const;
-  bool is_valid_heading() const;
-  bool is_valid_speed() const;
   bool is_valid_timestamp() const;
 
   // A valid fix has a valid latitude, longitude, accuracy and timestamp.
@@ -49,8 +47,6 @@ struct Geoposition {
   double altitude;           // In metres
   double accuracy;           // In metres
   double altitude_accuracy;  // In metres
-  double heading;            // In degrees clockwise relative to the true north
-  double speed;              // In meters per second
   int64 timestamp;           // Milliseconds since 1st Jan 1970
 
   // These properties are returned to JavaScript as a PositionError object.
@@ -58,4 +54,4 @@ struct Geoposition {
   std::wstring error_message;  // Human-readable error message
 };
 
-#endif  // CHROME_COMMON_GEOPOSITION_H_
+#endif  // CHROME_BROWSER_GEOLOCATION_GEOPOSITION_H_
