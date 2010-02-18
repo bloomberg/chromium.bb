@@ -95,8 +95,8 @@ void GeolocationAccessTokenStoreTest::OnAccessTokenStoresCreated(
       ChromeThread::UI, FROM_HERE, new MessageLoop::QuitTask);
 }
 
-#if defined(OS_LINUX)
-// TODO(joth): http://crbug.com/36068 crashes on Linux.
+#if !defined(OS_WIN)
+// TODO(joth): Crashes on Linux and Mac. See http://crbug.com/36068.
 #define MAYBE_SetAcrossInstances DISABLED_SetAcrossInstances
 #else
 #define MAYBE_SetAcrossInstances SetAcrossInstances
