@@ -82,8 +82,11 @@ class TaskManagerGtk : public TaskManagerModelObserver {
                                 TaskManagerGtk* task_manager);
 
   // changed signal handler that is sent when the treeview selection changes.
-  static void OnSelectionChanged(GtkTreeSelection* selection,
-                                 TaskManagerGtk* task_manager);
+  static void OnSelectionChangedThunk(GtkTreeSelection* selection,
+                                      TaskManagerGtk* task_manager) {
+    task_manager->OnSelectionChanged(selection);
+  }
+  void OnSelectionChanged(GtkTreeSelection* selection);
 
   // button-press-event handler that activates a process on double-click.
   static gboolean OnButtonPressEvent(GtkWidget* widget, GdkEventButton* event,
@@ -208,6 +211,11 @@ class TaskManagerGtk : public TaskManagerModelObserver {
   // An open task manager window. There can only be one open at a time. This
   // is reset to NULL when the window is closed.
   static TaskManagerGtk* instance_;
+
+  // We edit the selection in the OnSelectionChanged handler, and we use this
+  // variable to prevent ourselves from handling further changes that we
+  // ourselves caused.
+  bool handling_selection_changed_;
 
   DISALLOW_COPY_AND_ASSIGN(TaskManagerGtk);
 };

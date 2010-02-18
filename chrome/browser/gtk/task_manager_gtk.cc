@@ -13,6 +13,7 @@
 #include "app/l10n_util.h"
 #include "app/menus/simple_menu_model.h"
 #include "app/resource_bundle.h"
+#include "base/auto_reset.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
@@ -265,7 +266,8 @@ TaskManagerGtk::TaskManagerGtk()
     dialog_(NULL),
     treeview_(NULL),
     process_list_(NULL),
-    process_count_(0) {
+    process_count_(0),
+    handling_selection_changed_(false) {
   Init();
 }
 
@@ -420,7 +422,7 @@ void TaskManagerGtk::Init() {
       GTK_TREE_VIEW(treeview_));
   gtk_tree_selection_set_mode(selection, GTK_SELECTION_MULTIPLE);
   g_signal_connect(selection, "changed",
-                   G_CALLBACK(OnSelectionChanged), this);
+                   G_CALLBACK(OnSelectionChangedThunk), this);
 
   gtk_container_add(GTK_CONTAINER(scrolled), treeview_);
 
@@ -808,29 +810,43 @@ void TaskManagerGtk::OnTreeViewRealize(GtkTreeView* treeview,
   TreeViewColumnSetWidth(column, width);
 }
 
-// static
-void TaskManagerGtk::OnSelectionChanged(GtkTreeSelection* selection,
-                                        TaskManagerGtk* task_manager) {
+void TaskManagerGtk::OnSelectionChanged(GtkTreeSelection* selection) {
+  if (handling_selection_changed_)
+    return;
+  AutoReset autoreset(&handling_selection_changed_, true);
+
+  // The set of groups that should be selected.
+  std::set<std::pair<int, int> > ranges;
   bool selection_contains_browser_process = false;
 
   GtkTreeModel* model;
   GList* paths = gtk_tree_selection_get_selected_rows(selection, &model);
   for (GList* item = paths; item; item = item->next) {
     GtkTreePath* path = gtk_tree_model_sort_convert_path_to_child_path(
-        GTK_TREE_MODEL_SORT(task_manager->process_list_sort_),
+        GTK_TREE_MODEL_SORT(process_list_sort_),
         reinterpret_cast<GtkTreePath*>(item->data));
     int row = gtk_tree::GetRowNumForPath(path);
     gtk_tree_path_free(path);
-    if (task_manager->task_manager_->IsBrowserProcess(row)) {
+    if (task_manager_->IsBrowserProcess(row))
       selection_contains_browser_process = true;
-      break;
-    }
+    ranges.insert(model_->GetGroupRangeForResource(row));
   }
   g_list_foreach(paths, reinterpret_cast<GFunc>(gtk_tree_path_free), NULL);
   g_list_free(paths);
 
+  for (std::set<std::pair<int, int> >::iterator iter = ranges.begin();
+       iter != ranges.end(); ++iter) {
+    GtkTreePath* start_path =
+        gtk_tree_path_new_from_indices(iter->first, -1);
+    GtkTreePath* end_path =
+        gtk_tree_path_new_from_indices(iter->first + iter->second - 1, -1);
+    gtk_tree_selection_select_range(selection, start_path, end_path);
+    gtk_tree_path_free(start_path);
+    gtk_tree_path_free(end_path);
+  }
+
   bool sensitive = (paths != NULL) && !selection_contains_browser_process;
-  gtk_dialog_set_response_sensitive(GTK_DIALOG(task_manager->dialog_),
+  gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog_),
                                     kTaskManagerResponseKill, sensitive);
 }
 
