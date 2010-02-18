@@ -138,6 +138,8 @@ bool RelaunchSetup(const std::wstring& flag, int value,
 // windowstation.
 // The function fails if there is no interactive session active, basically
 // the computer is on but nobody has logged in locally.
+// Remote Desktop sessions do not count as interactive sessions; running this
+// method as a user logged in via remote desktop will do nothing.
 bool RelaunchSetupAsConsoleUser(const std::wstring& flag) {
   CommandLine cmd_line(CommandLine::ForCurrentProcess()->GetProgram());
   cmd_line.AppendSwitch(WideToASCII(flag));
@@ -150,7 +152,7 @@ bool RelaunchSetupAsConsoleUser(const std::wstring& flag) {
     return false;
   bool launched = base::LaunchAppAsUser(user_token,
                                         cmd_line.command_line_string(),
-                                        false, NULL);
+                                        false, NULL, true);
   ::CloseHandle(user_token);
   return launched;
 }
