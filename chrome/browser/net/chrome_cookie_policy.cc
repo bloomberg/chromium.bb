@@ -20,6 +20,8 @@ static const size_t kMaxCompletionsPerHost = 10000;
 
 // ----------------------------------------------------------------------------
 
+// ChromeCookiePolicy cannot just subclass the delegate interface because we
+// may have several prompts pending.
 class ChromeCookiePolicy::PromptDelegate
     : public CookiePromptModalDialogDelegate {
  public:
@@ -33,6 +35,8 @@ class ChromeCookiePolicy::PromptDelegate
   virtual void BlockSiteData(bool remember);
 
  private:
+  void NotifyDone(int policy, bool remember);
+
   scoped_refptr<ChromeCookiePolicy> cookie_policy_;
   std::string host_;
 };
@@ -42,12 +46,16 @@ void ChromeCookiePolicy::PromptDelegate::AllowSiteData(bool remember,
   int policy = net::OK;
   if (session_expire)
     policy = net::OK_FOR_SESSION_ONLY;
-  cookie_policy_->DidPromptForSetCookie(host_, policy, remember);
+  NotifyDone(policy, remember);
 }
 
 void ChromeCookiePolicy::PromptDelegate::BlockSiteData(bool remember) {
-  cookie_policy_->DidPromptForSetCookie(host_, net::ERR_ACCESS_DENIED,
-                                        remember);
+  NotifyDone(net::ERR_ACCESS_DENIED, remember);
+}
+
+void ChromeCookiePolicy::PromptDelegate::NotifyDone(int policy, bool remember) {
+  cookie_policy_->DidPromptForSetCookie(host_, policy, remember);
+  delete this;
 }
 
 // ----------------------------------------------------------------------------
