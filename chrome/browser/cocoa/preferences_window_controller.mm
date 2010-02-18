@@ -410,6 +410,83 @@ class PrefObserverBridge : public NotificationObserver,
   PreferencesWindowController* controller_;  // weak, owns us
 };
 
+// PersonalDataManagerObserver facilitates asynchronous loading of
+// PersonalDataManager data before showing the auto fill settings dialog to the
+// user.  It acts as a C++-based delegate for the |PreferencesWindowController|.
+class PersonalDataManagerObserver : public PersonalDataManager::Observer {
+ public:
+  explicit PersonalDataManagerObserver(
+      PersonalDataManager* personal_data_manager)
+      : personal_data_manager_(personal_data_manager) {
+  }
+
+  virtual ~PersonalDataManagerObserver();
+
+  // Notifies the observer that the PersonalDataManager has finished loading.
+  virtual void OnPersonalDataLoaded();
+
+  // Static method to dispatch to |ShowAutoFillDialog| method in autofill
+  // module.  This is public to facilitate direct external call when the
+  // data manager has already loaded its data.
+  static void ShowAutoFillDialog(PersonalDataManager* personal_data_manager);
+
+ private:
+  // Utility method to remove |this| from |personal_data_manager_| as an
+  // observer.
+  void RemoveObserver();
+
+  // The object in which we are registered as an observer.  We hold on to
+  // it to facilitate un-registering ourself in the destructor and in the
+  // |OnPersonalDataLoaded| method.  This may be NULL.
+  // Weak reference.
+  PersonalDataManager* personal_data_manager_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(PersonalDataManagerObserver);
+};
+
+// During destruction ensure that we are removed from the
+// |personal_data_manager_| as an observer.
+PersonalDataManagerObserver::~PersonalDataManagerObserver() {
+  RemoveObserver();
+}
+
+void PersonalDataManagerObserver::RemoveObserver() {
+  if (personal_data_manager_) {
+    personal_data_manager_->RemoveObserver(this);
+  }
+}
+
+// The data is ready so display our dialog.  Recursively call
+// |showAutoFillSettings:| to try again now knowing that the
+// |PersonalDataManager| is ready.  Once done we clear the observer
+// (deleting |this| in the process).
+void PersonalDataManagerObserver::OnPersonalDataLoaded() {
+  RemoveObserver();
+  PersonalDataManagerObserver::ShowAutoFillDialog(personal_data_manager_);
+}
+
+void PersonalDataManagerObserver::ShowAutoFillDialog(
+    PersonalDataManager* personal_data_manager) {
+  // TODO(dhollowa): Need "n" of these.  Create single entry for now.
+  // See http://crbug.com/33029.
+  std::vector<AutoFillProfile*> profiles;
+  AutoFillProfile profile(ASCIIToUTF16(""), 0);
+  profiles.push_back(&profile);
+
+  // TODO(dhollowa): Need "n" of these.  Create single entry for now.
+  // See http://crbug.com/33029.
+  std::vector<CreditCard*> creditCards;
+  CreditCard creditCard(ASCIIToUTF16(""), 0);
+  creditCards.push_back(&creditCard);
+
+  // TODO(dhollowa): There are outstanding assertions in autofill back end.
+  // Hooking up with UI only until those issues are resolved.
+  // See http://crbug.com/33029.
+  ::ShowAutoFillDialog(NULL, profiles, creditCards);
+}
+
+
 @implementation PreferencesWindowController
 
 - (id)initWithProfile:(Profile*)profile initialPage:(OptionsPage)initialPage {
@@ -666,6 +743,7 @@ class PrefObserverBridge : public NotificationObserver,
   [customPagesSource_ removeObserver:self forKeyPath:@"customHomePages"];
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   [self unregisterPrefObservers];
+  personalDataManagerObserver_.reset();
   [super dealloc];
 }
 
@@ -1151,23 +1229,25 @@ const int kDisabledIndex = 1;
 // Called to show the Auto Fill Settings dialog.
 - (IBAction)showAutoFillSettings:(id)sender {
   [self recordUserAction:"Options_ShowAutoFillSettings"];
+  PersonalDataManager* personalDataManager = profile_->GetPersonalDataManager();
+  if (!personalDataManager) {
+    // Should not reach here because button is disabled when
+    // |personalDataManager| is NULL.
+    // TODO(dhollowa): Need to disable button when personalDataManager == NULL.
+    // See http://crbug.com/33029.
+    return;
+  }
 
-  // TODO(dhollowa): Need "n" of these.  Create single entry for now.
-  // See http://crbug.com/33029.
-  std::vector<AutoFillProfile*> profiles;
-  AutoFillProfile profile(ASCIIToUTF16(""), 0);
-  profiles.push_back(&profile);
-
-  // TODO(dhollowa): Need "n" of these.  Create single entry for now.
-  // See http://crbug.com/33029.
-  std::vector<CreditCard*> creditCards;
-  CreditCard creditCard(ASCIIToUTF16(""), 0);
-  creditCards.push_back(&creditCard);
-
-  // TODO(dhollowa): There are outstanding assertions in autofill back end.
-  // Hooking up with UI only until those issues are resolved.
-  // See http://crbug.com/33029.
-  ShowAutoFillDialog(NULL, profiles, creditCards);
+  if (personalDataManager->IsDataLoaded()) {
+    // |personalDataManager| data is loaded, we can proceed with the dialog.
+    PersonalDataManagerObserver::ShowAutoFillDialog(personalDataManager);
+  } else {
+    // |personalDataManager| data is NOT loaded, so we load it here, installing
+    // our observer.
+    personalDataManagerObserver_.reset(
+        new PersonalDataManagerObserver(personalDataManager));
+    personalDataManager->SetObserver(personalDataManagerObserver_.get());
+  }
 }
 
 // Called to import data from other browsers (Safari, Firefox, etc).

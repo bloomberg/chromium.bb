@@ -9,6 +9,7 @@
 #include "chrome/browser/options_window.h"
 #include "chrome/common/pref_member.h"
 
+class PersonalDataManagerObserver;
 @class CookiesWindowController;
 @class CustomHomePagesModel;
 @class FontLanguageSettingsController;
@@ -81,6 +82,8 @@ class ProfileSyncService;
   // User Data panel
   BooleanPrefMember askSavePasswords_;
   BooleanPrefMember formAutofill_;
+  // Manages PersonalDataManager loading.
+  scoped_ptr<PersonalDataManagerObserver> personalDataManagerObserver_;
   IBOutlet NSButton* syncButton_;
   IBOutlet NSTextField* syncStatus_;
   IBOutlet NSButton* syncLink_;
