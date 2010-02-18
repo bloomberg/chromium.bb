@@ -9,5 +9,6 @@
 // Default, stub implementation, for platforms that don't have their own yet.
 
 void PowerSaveBlocker::ApplyBlock(bool blocking) {
-  NOTIMPLEMENTED();
+  // http://code.google.com/p/chromium/issues/detail?id=33605
+  // http://code.google.com/p/chromium/issues/detail?id=34081
 }
