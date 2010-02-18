@@ -12,6 +12,7 @@ libkms_la_LIBADD =
 #endif
 
 libkms_la_SOURCES = \
+	internal.h \
 	linux.c \
 	intel.c \
 	api.c
