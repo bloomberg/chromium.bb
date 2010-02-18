@@ -353,6 +353,19 @@ const char kHideIcons[]                     = "hide-icons";
 // that the UI tests don't depend on what comes up for http://google.com.
 const char kHomePage[]                      = "homepage";
 
+// Comma separated list of rules that control how hostnames are resolved.
+//
+// For example:
+//    "MAP * 127.0.0.1" --> Forces all hostnames to be resolved to 127.0.0.1
+//    "MAP *.google.com proxy" --> Forces all google.com subdomains to be
+//                                 resolved to "proxy".
+//    "MAP test.com [::1]:77 --> Forces "test.com" to resolve to IPv6 loopback.
+//                               Will also force the port of the resulting
+//                               socket address to be 77.
+//    "MAP * baz, EXCLUDE www.google.com" --> Remaps everything to "baz",
+//                                            except for "www.google.com".
+const char kHostResolverRules[]             = "host-resolver-rules";
+
 // Perform importing from another browser. The value associated with this
 // setting encodes the target browser and what items to import.
 const char kImport[]                        = "import";
@@ -661,6 +674,7 @@ const char kUseSpdy[]                       = "use-spdy";
 // From that point on, it is completely a static configuration.
 // TODO(mbelshe): Remove this flag when testing is complete.
 //   --testing-fixed-host=myserver
+// TODO(eroman): Can this be replaced by host-resolver-rules ?
 const char kFixedHost[]                     = "testing-fixed-host";
 
 // These two flags are used to force http and https requests to fixed ports.

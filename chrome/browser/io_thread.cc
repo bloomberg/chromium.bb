@@ -11,7 +11,7 @@
 #include "chrome/browser/net/dns_global.h"
 #include "chrome/browser/net/url_fetcher.h"
 #include "chrome/common/chrome_switches.h"
-#include "net/base/fixed_host_resolver.h"
+#include "net/base/mapped_host_resolver.h"
 #include "net/base/host_cache.h"
 #include "net/base/host_resolver.h"
 #include "net/base/host_resolver_impl.h"
@@ -28,34 +28,47 @@ net::HostResolver* CreateGlobalHostResolver(
 
   const CommandLine& command_line = *CommandLine::ForCurrentProcess();
 
-  // The FixedHostResolver allows us to send all network requests through
-  // a designated test server.
+  global_host_resolver =
+      net::CreateSystemHostResolver(network_change_notifier);
+
+  if (!command_line.HasSwitch(switches::kEnableIPv6)) {
+    // Measure impact of allowing IPv6 support without probing.
+    const FieldTrial::Probability kDivisor = 100;
+    const FieldTrial::Probability kProbability = 50;  // 50% probability.
+    FieldTrial* trial = new FieldTrial("IPv6_Probe", kDivisor);
+    int skip_group = trial->AppendGroup("_IPv6_probe_skipped", kProbability);
+    trial->AppendGroup("_IPv6_probe_done",
+                       FieldTrial::kAllRemainingProbability);
+    bool use_ipv6_probe = (trial->group() != skip_group);
+
+    // Perform probe, and then optionally use result to disable IPv6.
+    // Some users report confused OS handling of IPv6, leading to large
+    // latency.  If we can show that IPv6 is not supported, then disabliing it
+    // will work around such problems.
+    if ((!net::IPv6Supported() && use_ipv6_probe) ||
+        command_line.HasSwitch(switches::kDisableIPv6))
+      global_host_resolver->SetDefaultAddressFamily(net::ADDRESS_FAMILY_IPV4);
+  }
+
+  std::string hostname_remappings;
+
   if (command_line.HasSwitch(switches::kFixedHost)) {
     std::string host =
         command_line.GetSwitchValueASCII(switches::kFixedHost);
-    global_host_resolver = new net::FixedHostResolver(host);
-  } else {
-    global_host_resolver =
-        net::CreateSystemHostResolver(network_change_notifier);
+    hostname_remappings = StringPrintf("MAP * %s", host.c_str());
+  } else if (command_line.HasSwitch(switches::kHostResolverRules)) {
+    hostname_remappings =
+        command_line.GetSwitchValueASCII(switches::kHostResolverRules);
+  }
 
-    if (!command_line.HasSwitch(switches::kEnableIPv6)) {
-      // Measure impact of allowing IPv6 support without probing.
-      const FieldTrial::Probability kDivisor = 100;
-      const FieldTrial::Probability kProbability = 50;  // 50% probability.
-      FieldTrial* trial = new FieldTrial("IPv6_Probe", kDivisor);
-      int skip_group = trial->AppendGroup("_IPv6_probe_skipped", kProbability);
-      trial->AppendGroup("_IPv6_probe_done",
-                         FieldTrial::kAllRemainingProbability);
-      bool use_ipv6_probe = (trial->group() != skip_group);
-
-      // Perform probe, and then optionally use result to disable IPv6.
-      // Some users report confused OS handling of IPv6, leading to large
-      // latency.  If we can show that IPv6 is not supported, then disabliing it
-      // will work around such problems.
-      if ((!net::IPv6Supported() && use_ipv6_probe) ||
-          command_line.HasSwitch(switches::kDisableIPv6))
-        global_host_resolver->SetDefaultAddressFamily(net::ADDRESS_FAMILY_IPV4);
-    }
+  // If hostname remappings were specified on the command-line, layer these
+  // rules on top of the real host resolver. This allows forwarding all requests
+  // through a designated test server.
+  if (!hostname_remappings.empty()) {
+    net::MappedHostResolver* remapped_resolver =
+        new net::MappedHostResolver(global_host_resolver);
+    global_host_resolver = remapped_resolver;
+    remapped_resolver->SetRulesFromString(hostname_remappings);
   }
 
   return global_host_resolver;

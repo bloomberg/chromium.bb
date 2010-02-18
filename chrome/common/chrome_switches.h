@@ -112,6 +112,7 @@ extern const char kGpuLauncher[];
 extern const char kGpuProcess[];
 extern const char kHideIcons[];
 extern const char kHomePage[];
+extern const char kHostResolverRules[];
 extern const char kImport[];
 extern const char kInProcessPlugins[];
 extern const char kIncognito[];
