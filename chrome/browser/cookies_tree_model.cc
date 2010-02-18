@@ -129,7 +129,9 @@ class OriginNodeComparator {
 
 CookieTreeDatabaseNode::CookieTreeDatabaseNode(
     BrowsingDataDatabaseHelper::DatabaseInfo* database_info)
-    : CookieTreeNode(UTF8ToWide(database_info->database_name)),
+    : CookieTreeNode(UTF8ToWide(database_info->database_name.empty() ?
+          database_info->origin_identifier :
+          database_info->database_name)),
       database_info_(database_info) {
 }
 
@@ -143,7 +145,10 @@ void CookieTreeDatabaseNode::DeleteStoredObjects() {
 
 CookieTreeLocalStorageNode::CookieTreeLocalStorageNode(
     BrowsingDataLocalStorageHelper::LocalStorageInfo* local_storage_info)
-    : CookieTreeNode(UTF8ToWide(local_storage_info->origin)),
+    : CookieTreeNode(UTF8ToWide(
+          local_storage_info->origin.empty() ?
+              local_storage_info->database_identifier :
+              local_storage_info->origin)),
       local_storage_info_(local_storage_info) {
 }
 
@@ -213,9 +218,9 @@ CookieTreeLocalStoragesNode*
   CookieTreeLocalStoragesNode* retval = new CookieTreeLocalStoragesNode;
   int index = 0;
   if (cookies_child_)
-    index++;
+    ++index;
   if (databases_child_)
-    index++;
+    ++index;
   GetModel()->Add(this, index, retval);
   local_storages_child_ = retval;
   return retval;
@@ -442,7 +447,8 @@ void CookiesTreeModel::PopulateDatabaseInfoWithFilter(
   for (DatabaseInfoList::iterator database_info = database_info_list_.begin();
        database_info != database_info_list_.end();
        ++database_info) {
-    std::string origin = database_info->host;
+    std::string origin = database_info->host.empty() ?
+        database_info->origin_identifier : database_info->host;
     if (!filter.size() ||
         (UTF8ToWide(origin).find(filter) != std::wstring::npos)) {
       CookieTreeOriginNode* origin_node = root->GetOrCreateOriginNode(
@@ -469,7 +475,8 @@ void CookiesTreeModel::PopulateLocalStorageInfoWithFilter(
        local_storage_info_list_.begin();
        local_storage_info != local_storage_info_list_.end();
        ++local_storage_info) {
-    std::string origin = local_storage_info->host;
+    std::string origin = local_storage_info->host.empty() ?
+        local_storage_info->database_identifier : local_storage_info->host;
     if (!filter.size() ||
         (UTF8ToWide(origin).find(filter) != std::wstring::npos)) {
       CookieTreeOriginNode* origin_node = root->GetOrCreateOriginNode(

@@ -348,11 +348,7 @@ void CookiesView::UpdateRemoveButtonsState() {
 }
 
 void CookiesView::UpdateVisibleDetailedInfo(views::View* view) {
-  view->SetVisible(true);
-  if (view != cookie_info_view_)
-    cookie_info_view_->SetVisible(false);
-  if (view != database_info_view_)
-    database_info_view_->SetVisible(false);
-  if (view != local_storage_info_view_)
-    local_storage_info_view_->SetVisible(false);
+  cookie_info_view_->SetVisible(view == cookie_info_view_);
+  database_info_view_->SetVisible(view == database_info_view_);
+  local_storage_info_view_->SetVisible(view == local_storage_info_view_);
 }

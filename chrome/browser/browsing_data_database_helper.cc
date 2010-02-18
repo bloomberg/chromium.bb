@@ -8,17 +8,16 @@
 #include "base/message_loop.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/profile.h"
+#include "net/base/net_errors.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebCString.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
-#include "webkit/database/database_tracker.h"
 #include "webkit/glue/webkit_glue.h"
 
 BrowsingDataDatabaseHelper::BrowsingDataDatabaseHelper(Profile* profile)
-    : profile_(profile),
+    : tracker_(profile->GetDatabaseTracker()),
       completion_callback_(NULL),
       is_fetching_(false) {
-  DCHECK(profile_);
 }
 
 BrowsingDataDatabaseHelper::~BrowsingDataDatabaseHelper() {
@@ -52,9 +51,7 @@ void BrowsingDataDatabaseHelper::DeleteDatabase(const std::string& origin,
 void BrowsingDataDatabaseHelper::FetchDatabaseInfoInFileThread() {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
   std::vector<webkit_database::OriginInfo> origins_info;
-  scoped_refptr<webkit_database::DatabaseTracker> tracker =
-      profile_->GetDatabaseTracker();
-  if (tracker.get() && tracker->GetAllOriginsInfo(&origins_info)) {
+  if (tracker_.get() && tracker_->GetAllOriginsInfo(&origins_info)) {
     for (std::vector<webkit_database::OriginInfo>::const_iterator ori =
          origins_info.begin(); ori != origins_info.end(); ++ori) {
       scoped_ptr<WebKit::WebSecurityOrigin> web_security_origin(
@@ -64,7 +61,7 @@ void BrowsingDataDatabaseHelper::FetchDatabaseInfoInFileThread() {
       ori->GetAllDatabaseNames(&databases);
       for (std::vector<string16>::const_iterator db = databases.begin();
            db != databases.end(); ++db) {
-        FilePath file_path = tracker->GetFullDBFilePath(ori->GetOrigin(), *db);
+        FilePath file_path = tracker_->GetFullDBFilePath(ori->GetOrigin(), *db);
         file_util::FileInfo file_info;
         if (file_util::GetFileInfo(file_path, &file_info)) {
           database_info_.push_back(DatabaseInfo(
@@ -98,5 +95,7 @@ void BrowsingDataDatabaseHelper::DeleteDatabaseInFileThread(
     const std::string& origin,
     const std::string& name) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
-  // TODO(jochen): delete the given database.
+  if (!tracker_.get())
+    return;
+  tracker_->DeleteDatabase(UTF8ToUTF16(origin), UTF8ToUTF16(name), NULL);
 }

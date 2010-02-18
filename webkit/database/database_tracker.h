@@ -41,28 +41,26 @@ class OriginInfo {
   int64 TotalSize() const { return total_size_; }
   int64 Quota() const { return quota_; }
   void GetAllDatabaseNames(std::vector<string16>* databases) const {
-    for (std::map<string16, DatabaseInfo>::const_iterator it =
-         database_info_.begin(); it != database_info_.end(); it++) {
+    for (DatabaseInfoMap::const_iterator it = database_info_.begin();
+         it != database_info_.end(); it++) {
       databases->push_back(it->first);
     }
   }
   int64 GetDatabaseSize(const string16& database_name) const {
-    std::map<string16, DatabaseInfo>::const_iterator it =
-        database_info_.find(database_name);
+    DatabaseInfoMap::const_iterator it = database_info_.find(database_name);
     if (it != database_info_.end())
       return it->second.first;
     return 0;
   }
   string16 GetDatabaseDescription(const string16& database_name) const {
-    std::map<string16, DatabaseInfo>::const_iterator it =
-        database_info_.find(database_name);
+    DatabaseInfoMap::const_iterator it = database_info_.find(database_name);
     if (it != database_info_.end())
       return it->second.second;
     return string16();
   }
 
  protected:
-  typedef std::pair<int64, string16> DatabaseInfo;
+  typedef std::map<string16, std::pair<int64, string16> > DatabaseInfoMap;
 
   OriginInfo(const string16& origin, int64 total_size, int64 quota)
       : origin_(origin), total_size_(total_size), quota_(quota) { }
@@ -70,7 +68,7 @@ class OriginInfo {
   string16 origin_;
   int64 total_size_;
   int64 quota_;
-  std::map<string16, DatabaseInfo> database_info_;
+  DatabaseInfoMap database_info_;
 };
 
 // This class manages the main database, and keeps track of per origin quotas.
@@ -101,9 +99,6 @@ class DatabaseTracker
 
   explicit DatabaseTracker(const FilePath& profile_path);
 
-  // Sets the default quota for all origins. Should be used in tests only.
-  void SetDefaultQuota(int64 quota);
-
   void DatabaseOpened(const string16& origin_identifier,
                       const string16& database_name,
                       const string16& database_details,
@@ -129,16 +124,24 @@ class DatabaseTracker
 
   bool GetAllOriginsInfo(std::vector<OriginInfo>* origins_info);
   void SetOriginQuota(const string16& origin_identifier, int64 new_quota);
-  bool DeleteDatabase(const string16& origin_identifier,
-                      const string16& database_name);
-  bool DeleteOrigin(const string16& origin_identifier);
+
+  // Sets the default quota for all origins. Should be used in tests only.
+  void SetDefaultQuota(int64 quota);
+
   bool IsDatabaseScheduledForDeletion(const string16& origin_identifier,
                                       const string16& database_name);
+
+  // Deletes a single database. Returns net::OK on success, net::FAILED on
+  // failure, or net::ERR_IO_PENDING and |callback| is invoked upon completion,
+  // if non-NULL.
+  int DeleteDatabase(const string16& origin_identifier,
+                     const string16& database_name,
+                     net::CompletionCallback* callback);
 
   // Delete any databases that have been touched since the cutoff date that's
   // supplied. Returns net::OK on success, net::FAILED if not all databases
   // could be deleted, and net::ERR_IO_PENDING and |callback| is invoked upon
-  // completion.
+  // completion, if non-NULL.
   int DeleteDataModifiedSince(const base::Time& cutoff,
                               net::CompletionCallback* callback);
 
@@ -147,6 +150,9 @@ class DatabaseTracker
  private:
   // Need this here to allow RefCountedThreadSafe to call ~DatabaseTracker().
   friend class base::RefCountedThreadSafe<DatabaseTracker>;
+
+  typedef std::map<string16, std::set<string16> > DatabaseSet;
+  typedef std::map<net::CompletionCallback*, DatabaseSet> PendingCompletionMap;
 
   class CachedOriginInfo : public OriginInfo {
    public:
@@ -168,6 +174,10 @@ class DatabaseTracker
   };
 
   ~DatabaseTracker();
+
+  bool DeleteClosedDatabase(const string16& origin_identifier,
+                            const string16& database_name);
+  bool DeleteOrigin(const string16& origin_identifier);
 
   bool LazyInit();
   bool UpgradeToCurrentVersion();
@@ -200,8 +210,8 @@ class DatabaseTracker
   DatabaseConnections database_connections_;
 
   // The set of databases that should be deleted but are still opened
-  std::map<string16, std::set<string16> > dbs_to_be_deleted_;
-  net::CompletionCallback* dbs_deleted_callback_;
+  DatabaseSet dbs_to_be_deleted_;
+  PendingCompletionMap deletion_callbacks_;
 
   // Default quota for all origins; changed only by tests
   int64 default_quota_;

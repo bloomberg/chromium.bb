@@ -217,7 +217,8 @@ TEST_F(CookiesTreeModelTest, Remove) {
     EXPECT_STREQ("B,C", GetMonsterCookies(monster).c_str());
     EXPECT_STREQ("B,C", GetDisplayedCookies(cookies_model.get()).c_str());
     EXPECT_EQ("db2", GetDisplayedDatabases(cookies_model.get()));
-    EXPECT_EQ("origin1,origin2", GetDisplayedLocalStorages(cookies_model.get()));
+    EXPECT_EQ("origin1,origin2",
+              GetDisplayedLocalStorages(cookies_model.get()));
     EXPECT_EQ(16, cookies_model->GetRoot()->GetTotalNodeCount());
   }
 

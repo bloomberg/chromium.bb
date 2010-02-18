@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,8 @@
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
+#include "base/time.h"
+#include "net/base/test_completion_callback.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/database/database_tracker.h"
 
@@ -28,6 +30,9 @@ class TestObserver : public webkit_database::DatabaseTracker::Observer {
   }
   virtual void OnDatabaseScheduledForDeletion(const string16& origin_identifier,
                                               const string16& database_name) {
+    new_notification_received_ = true;
+    origin_identifier_ = origin_identifier;
+    database_name_ = database_name;
   }
   bool DidReceiveNewNotification() {
     bool temp_new_notification_received = new_notification_received_;
@@ -66,6 +71,101 @@ void CheckNotificationReceived(TestObserver* observer,
 }  // namespace
 
 namespace webkit_database {
+
+TEST(DatabaseTrackerTest, DeleteOpenDatabase) {
+  // Initialize the tracker database.
+  ScopedTempDir temp_dir;
+  EXPECT_TRUE(temp_dir.CreateUniqueTempDir());
+  scoped_refptr<DatabaseTracker> tracker(new DatabaseTracker(temp_dir.path()));
+
+  // Create and open three databases.
+  int64 database_size = 0;
+  int64 space_available = 0;
+  const string16 kOrigin1 = ASCIIToUTF16("origin1");
+  const string16 kOrigin2 = ASCIIToUTF16("origin2");
+  const string16 kDB1 = ASCIIToUTF16("db1");
+  const string16 kDB2 = ASCIIToUTF16("db2");
+  const string16 kDB3 = ASCIIToUTF16("db3");
+  const string16 kDescription = ASCIIToUTF16("database_description");
+
+  tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
+                          &database_size, &space_available);
+  tracker->DatabaseOpened(kOrigin2, kDB2, kDescription, 0,
+                          &database_size, &space_available);
+  tracker->DatabaseOpened(kOrigin2, kDB3, kDescription, 0,
+                          &database_size, &space_available);
+
+  EXPECT_TRUE(file_util::CreateDirectory(tracker->DatabaseDirectory().Append(
+      FilePath::FromWStringHack(UTF16ToWide(kOrigin1)))));
+  EXPECT_TRUE(file_util::CreateDirectory(tracker->DatabaseDirectory().Append(
+      FilePath::FromWStringHack(UTF16ToWide(kOrigin2)))));
+  EXPECT_EQ(1, file_util::WriteFile(
+      tracker->GetFullDBFilePath(kOrigin1, kDB1), "a", 1));
+  EXPECT_EQ(2, file_util::WriteFile(
+      tracker->GetFullDBFilePath(kOrigin2, kDB2), "aa", 2));
+  EXPECT_EQ(3, file_util::WriteFile(
+      tracker->GetFullDBFilePath(kOrigin2, kDB3), "aaa", 3));
+  tracker->DatabaseModified(kOrigin1, kDB1);
+  tracker->DatabaseModified(kOrigin2, kDB2);
+  tracker->DatabaseModified(kOrigin2, kDB3);
+
+  // Delete db1. Should also delete origin1.
+  TestObserver observer;
+  tracker->AddObserver(&observer);
+  TestCompletionCallback callback;
+  int result = tracker->DeleteDatabase(kOrigin1, kDB1, &callback);
+  EXPECT_EQ(net::ERR_IO_PENDING, result);
+  ASSERT_FALSE(callback.have_result());
+  EXPECT_TRUE(observer.DidReceiveNewNotification());
+  EXPECT_EQ(kOrigin1, observer.GetNotificationOriginIdentifier());
+  EXPECT_EQ(kDB1, observer.GetNotificationDatabaseName());
+  tracker->DatabaseClosed(kOrigin1, kDB1);
+  result = callback.GetResult(result);
+  EXPECT_EQ(net::OK, result);
+  EXPECT_FALSE(file_util::PathExists(tracker->DatabaseDirectory().Append(
+      FilePath::FromWStringHack(UTF16ToWide(kOrigin1)))));
+
+  // Recreate db1.
+  tracker->DatabaseOpened(kOrigin1, kDB1, kDescription, 0,
+                          &database_size, &space_available);
+  EXPECT_TRUE(file_util::CreateDirectory(tracker->DatabaseDirectory().Append(
+      FilePath::FromWStringHack(UTF16ToWide(kOrigin1)))));
+  EXPECT_EQ(1, file_util::WriteFile(
+      tracker->GetFullDBFilePath(kOrigin1, kDB1), "a", 1));
+  tracker->DatabaseModified(kOrigin1, kDB1);
+
+  // Setup file modification times.  db1 and db2 are modified now, db3 three
+  // days ago.
+  EXPECT_TRUE(file_util::SetLastModifiedTime(
+      tracker->GetFullDBFilePath(kOrigin1, kDB1), base::Time::Now()));
+  EXPECT_TRUE(file_util::SetLastModifiedTime(
+      tracker->GetFullDBFilePath(kOrigin2, kDB2), base::Time::Now()));
+  base::Time three_days_ago = base::Time::Now();
+  three_days_ago -= base::TimeDelta::FromDays(3);
+  EXPECT_TRUE(file_util::SetLastModifiedTime(
+      tracker->GetFullDBFilePath(kOrigin2, kDB3), three_days_ago));
+
+  // Delete databases modified since yesterday.
+  base::Time yesterday = base::Time::Now();
+  yesterday -= base::TimeDelta::FromDays(1);
+  result = tracker->DeleteDataModifiedSince(yesterday, &callback);
+  EXPECT_EQ(net::ERR_IO_PENDING, result);
+  ASSERT_FALSE(callback.have_result());
+  EXPECT_TRUE(observer.DidReceiveNewNotification());
+  tracker->DatabaseClosed(kOrigin1, kDB1);
+  tracker->DatabaseClosed(kOrigin2, kDB2);
+  result = callback.GetResult(result);
+  EXPECT_EQ(net::OK, result);
+  EXPECT_FALSE(file_util::PathExists(tracker->DatabaseDirectory().Append(
+      FilePath::FromWStringHack(UTF16ToWide(kOrigin1)))));
+  EXPECT_FALSE(
+      file_util::PathExists(tracker->GetFullDBFilePath(kOrigin2, kDB2)));
+  EXPECT_TRUE(
+      file_util::PathExists(tracker->GetFullDBFilePath(kOrigin2, kDB3)));
+
+  tracker->DatabaseClosed(kOrigin2, kDB3);
+  tracker->RemoveObserver(&observer);
+}
 
 TEST(DatabaseTrackerTest, TestIt) {
   // Initialize the tracker database.
@@ -210,14 +310,14 @@ TEST(DatabaseTrackerTest, TestIt) {
   // Trying to delete a database in use should fail
   tracker->DatabaseOpened(kOrigin1, kDB3, kDescription, 0,
                           &database_size, &space_available);
-  EXPECT_FALSE(tracker->DeleteDatabase(kOrigin1, kDB3));
+  EXPECT_FALSE(tracker->DeleteClosedDatabase(kOrigin1, kDB3));
   origin1_info = tracker->GetCachedOriginInfo(kOrigin1);
   EXPECT_TRUE(origin1_info);
   EXPECT_EQ(6, origin1_info->GetDatabaseSize(kDB3));
   tracker->DatabaseClosed(kOrigin1, kDB3);
 
   // Delete a database and make sure the space used by that origin is updated
-  EXPECT_TRUE(tracker->DeleteDatabase(kOrigin1, kDB3));
+  EXPECT_TRUE(tracker->DeleteClosedDatabase(kOrigin1, kDB3));
   origin1_info = tracker->GetCachedOriginInfo(kOrigin1);
   EXPECT_TRUE(origin1_info);
   EXPECT_EQ(origin1_quota - 5, tracker->GetOriginSpaceAvailable(kOrigin1));

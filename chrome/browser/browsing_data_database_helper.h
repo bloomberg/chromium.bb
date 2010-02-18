@@ -10,6 +10,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "webkit/database/database_tracker.h"
 
 class Profile;
 
@@ -82,7 +83,7 @@ class BrowsingDataDatabaseHelper
   void DeleteDatabaseInFileThread(const std::string& origin,
                                   const std::string& name);
 
-  Profile* profile_;
+  scoped_refptr<webkit_database::DatabaseTracker> tracker_;
 
   // This only mutates on the UI thread.
   scoped_ptr<Callback1<const std::vector<DatabaseInfo>& >::Type >
