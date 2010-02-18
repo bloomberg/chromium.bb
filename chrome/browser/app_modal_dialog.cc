@@ -17,16 +17,7 @@ AppModalDialog::AppModalDialog(TabContents* tab_contents,
       skip_this_dialog_(false) {
 }
 
-
 void AppModalDialog::ShowModalDialog() {
-  // If the TabContents or ExtensionHost that created this dialog navigated
-  // away or was destroyed before this dialog became visible, simply show the
-  // next dialog if any.
-  if (skip_this_dialog_) {
-    Singleton<AppModalDialogQueue>()->ShowNextDialog();
-    delete this;
-    return;
-  }
   if (tab_contents_)
     tab_contents_->Activate();
 

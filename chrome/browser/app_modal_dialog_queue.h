@@ -54,10 +54,16 @@ class AppModalDialogQueue {
  private:
   friend struct DefaultSingletonTraits<AppModalDialogQueue>;
 
-  AppModalDialogQueue() : active_dialog_(NULL) { }
+  AppModalDialogQueue() : active_dialog_(NULL) {}
 
   // Shows |dialog| and notifies the BrowserList that a modal dialog is showing.
   void ShowModalDialog(AppModalDialog* dialog);
+
+  // Returns the next dialog to show. This removes entries from
+  // app_modal_dialog_queue_ until one is valid or the queue is empty. This
+  // returns NULL if there are no more dialogs, or all the dialogs in the queue
+  // are not valid.
+  AppModalDialog* GetNextDialog();
 
   // Contains all app modal dialogs which are waiting to be shown, with the
   // currently modal dialog at the front of the queue.

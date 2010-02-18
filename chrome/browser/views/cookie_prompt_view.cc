@@ -14,9 +14,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/cookie_modal_dialog.h"
-#include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
-#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #include "chrome/browser/views/cookie_info_view.h"
 #include "chrome/browser/views/database_open_info_view.h"
@@ -61,6 +59,7 @@ CookiePromptView::CookiePromptView(
 }
 
 CookiePromptView::~CookiePromptView() {
+  delete parent_;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -137,24 +136,6 @@ void CookiePromptView::LinkActivated(views::Link* source, int event_flags) {
 // CookiePromptView, private:
 
 void CookiePromptView::Init() {
-  // See if there's still a need for this dialog.  Self destruct if not.
-  HostContentSettingsMap* host_content_settings_map =
-      parent_->tab_contents()->profile()->GetHostContentSettingsMap();
-  ContentSetting content_setting =
-      host_content_settings_map->GetContentSetting(
-          parent_->origin(), CONTENT_SETTINGS_TYPE_COOKIES);
-  if (content_setting != CONTENT_SETTING_ASK) {
-    if (content_setting == CONTENT_SETTING_ALLOW) {
-      parent_->AllowSiteData(false, false);
-    } else {
-      DCHECK(content_setting == CONTENT_SETTING_BLOCK);
-      parent_->BlockSiteData(false);
-    }
-    signaled_ = true;
-    GetWindow()->Close();
-    return;
-  }
-
   CookiePromptModalDialog::DialogType type = parent_->dialog_type();
   std::wstring display_host = UTF8ToWide(parent_->origin().host());
   views::Label* description_label = new views::Label(l10n_util::GetStringF(

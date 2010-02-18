@@ -4,6 +4,9 @@
 
 #include "chrome/browser/cookie_modal_dialog.h"
 
+#include "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/cookie_prompt_view.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/pref_service.h"
@@ -47,6 +50,25 @@ CookiePromptModalDialog::CookiePromptModalDialog(
       origin_(origin),
       database_name_(database_name),
       delegate_(delegate) {
+}
+
+bool CookiePromptModalDialog::IsValid() {
+  HostContentSettingsMap* host_content_settings_map =
+      tab_contents()->profile()->GetHostContentSettingsMap();
+  ContentSetting content_setting =
+      host_content_settings_map->GetContentSetting(
+          origin(),
+          CONTENT_SETTINGS_TYPE_COOKIES);
+  if (content_setting != CONTENT_SETTING_ASK) {
+    if (content_setting == CONTENT_SETTING_ALLOW) {
+      AllowSiteData(false, false);
+    } else {
+      DCHECK(content_setting == CONTENT_SETTING_BLOCK);
+      BlockSiteData(false);
+    }
+    return false;
+  }
+  return true;
 }
 
 void CookiePromptModalDialog::AllowSiteData(bool remember,

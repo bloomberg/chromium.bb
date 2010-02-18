@@ -48,6 +48,7 @@ class CookiePromptModalDialog : public AppModalDialog {
   virtual int GetDialogButtons();
   virtual void AcceptWindow();
   virtual void CancelWindow();
+  virtual bool IsValid();
 
   DialogType dialog_type() const { return dialog_type_; }
   const GURL& origin() const { return origin_; }

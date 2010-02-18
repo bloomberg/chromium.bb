@@ -15,13 +15,11 @@ void AppModalDialogQueue::AddDialog(AppModalDialog* dialog) {
 }
 
 void AppModalDialogQueue::ShowNextDialog() {
-  if (!app_modal_dialog_queue_.empty()) {
-    AppModalDialog* dialog = app_modal_dialog_queue_.front();
-    app_modal_dialog_queue_.pop();
+  AppModalDialog* dialog = GetNextDialog();
+  if (dialog)
     ShowModalDialog(dialog);
-  } else {
+  else
     active_dialog_ = NULL;
-  }
 }
 
 void AppModalDialogQueue::ActivateModalDialog() {
@@ -32,4 +30,15 @@ void AppModalDialogQueue::ActivateModalDialog() {
 void AppModalDialogQueue::ShowModalDialog(AppModalDialog* dialog) {
   dialog->ShowModalDialog();
   active_dialog_ = dialog;
+}
+
+AppModalDialog* AppModalDialogQueue::GetNextDialog() {
+  while (!app_modal_dialog_queue_.empty()) {
+    AppModalDialog* dialog = app_modal_dialog_queue_.front();
+    app_modal_dialog_queue_.pop();
+    if (dialog->IsValid())
+      return dialog;
+    delete dialog;
+  }
+  return NULL;
 }

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/basictypes.h"
 #include "build/build_config.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
@@ -45,6 +46,12 @@ class AppModalDialog {
 
   // Called by the app modal window queue when it is time to show this window.
   void ShowModalDialog();
+
+  // Returns true if the dialog is still valid. As dialogs are created they are
+  // added to the AppModalDialogQueue. When the current modal dialog finishes
+  // and it's time to show the next dialog in the queue IsValid is invoked.
+  // If IsValid returns false the dialog is deleted and not shown.
+  virtual bool IsValid() { return !skip_this_dialog_; }
 
   /////////////////////////////////////////////////////////////////////////////
   // The following methods are platform specific and should be implemented in
@@ -101,6 +108,9 @@ class AppModalDialog {
   // True if the dialog should no longer be shown, e.g. because the underlying
   // tab navigated away while the dialog was queued.
   bool skip_this_dialog_;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(AppModalDialog);
 };
 
 #endif  // CHROME_BROWSER_APP_MODAL_DIALOG_H_

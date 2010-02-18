@@ -37,6 +37,7 @@ class CookiePromptView : public views::View,
                          public views::LinkController,
                          public CookieInfoViewDelegate {
  public:
+  // Creates a new CookiePromptView. We take ownership of |parent|.
   CookiePromptView(
       CookiePromptModalDialog* parent,
       gfx::NativeWindow root_window,
@@ -107,7 +108,7 @@ class CookiePromptView : public views::View,
   // Prompt window title.
   std::wstring title_;
 
-  // A pointer to the AppModalDialog that owns us.
+  // A pointer to the AppModalDialog that created us. We own this.
   CookiePromptModalDialog* parent_;
 
   gfx::NativeWindow root_window_;
