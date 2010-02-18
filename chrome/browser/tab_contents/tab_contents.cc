@@ -2128,7 +2128,7 @@ void TabContents::RenderViewGone(RenderViewHost* rvh) {
   SetIsCrashed(true);
 
   // Remove all infobars.
-  for (int i = 0; i < infobar_delegate_count(); ++i)
+  for (int i = infobar_delegate_count() - 1; i >=0 ; --i)
     RemoveInfoBar(GetInfoBarDelegateAt(i));
 
   // Tell the view that we've crashed so it can prepare the sad tab page.
