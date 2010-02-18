@@ -40,8 +40,9 @@ bool RendererMainPlatformDelegate::EnableSandbox() {
   // N.b. SupportsSeccompSandbox() returns a cached result, as we already
   // called it earlier in the zygote. Thus, it is OK for us to not pass in
   // a file descriptor for "/proc".
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-          switches::kDisableSeccompSandbox)) {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableSeccompSandbox) &&
+      SupportsSeccompSandbox(-1)) {
     StartSeccompSandbox();
   }
 #endif

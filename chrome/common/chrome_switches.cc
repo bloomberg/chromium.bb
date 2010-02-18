@@ -266,8 +266,8 @@ const char kEnablePrivacyBlacklists[]       = "enable-privacy-blacklists";
 // http://b/issue?id=1432077 is fixed.
 const char kEnableRendererAccessibility[]   = "enable-renderer-accessibility";
 
-// Disable the seccomp sandbox (Linux only)
-const char kDisableSeccompSandbox[]         = "disable-seccomp-sandbox";
+// Enable the seccomp sandbox (Linux only)
+const char kEnableSeccompSandbox[]          = "enable-seccomp-sandbox";
 
 // Enable session storage.  Still buggy.
 const char kEnableSessionStorage[]          = "enable-session-storage";

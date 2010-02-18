@@ -24,6 +24,29 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/process_watcher.h"
 
+#include "sandbox/linux/suid/suid_unsafe_environment_variables.h"
+
+static void SaveSUIDUnsafeEnvironmentVariables() {
+  // The ELF loader will clear many environment variables so we save them to
+  // different names here so that the SUID sandbox can resolve them for the
+  // renderer.
+
+  for (unsigned i = 0; kSUIDUnsafeEnvironmentVariables[i]; ++i) {
+    const char* const envvar = kSUIDUnsafeEnvironmentVariables[i];
+    char* const saved_envvar = SandboxSavedEnvironmentVariable(envvar);
+    if (!saved_envvar)
+      continue;
+
+    const char* const value = getenv(envvar);
+    if (value)
+      setenv(saved_envvar, value, 1 /* overwrite */);
+    else
+      unsetenv(saved_envvar);
+
+    free(saved_envvar);
+  }
+}
+
 ZygoteHost::ZygoteHost()
     : pid_(-1),
       init_(false),
@@ -74,11 +97,29 @@ void ZygoteHost::Init(const std::string& sandbox_cmd) {
                                    browser_command_line.GetSwitchValueASCII(
                                        switches::kEnableLogging));
   }
-  if (browser_command_line.HasSwitch(switches::kDisableSeccompSandbox)) {
-    cmd_line.AppendSwitch(switches::kDisableSeccompSandbox);
+  if (browser_command_line.HasSwitch(switches::kEnableSeccompSandbox)) {
+    cmd_line.AppendSwitch(switches::kEnableSeccompSandbox);
   }
 
   sandbox_binary_ = sandbox_cmd.c_str();
+  struct stat st;
+
+  if (!sandbox_cmd.empty() && stat(sandbox_binary_.c_str(), &st) == 0) {
+    if (access(sandbox_binary_.c_str(), X_OK) == 0 &&
+        (st.st_uid == 0) &&
+        (st.st_mode & S_ISUID) &&
+        (st.st_mode & S_IXOTH)) {
+      using_suid_sandbox_ = true;
+      cmd_line.PrependWrapper(ASCIIToWide(sandbox_binary_.c_str()));
+
+      SaveSUIDUnsafeEnvironmentVariables();
+    } else {
+      LOG(FATAL) << "The SUID sandbox helper binary was found, but is not "
+                    "configured correctly. Rather than run without sandboxing "
+                    "I'm aborting now. You need to make sure that "
+                 << sandbox_binary_ << " is mode 4755 and owned by root.";
+    }
+  }
 
   // Start up the sandbox host process and get the file descriptor for the
   // renderers to talk to it.
