@@ -105,10 +105,16 @@ static const ElfW(Shdr) *FindSectionByName(const char *name,
   if (name_len == 0)
     return NULL;
 
+  // Find the end of the section name section, to make sure that
+  // comparisons don't run off the end of the section.
+  const char *names_end = 
+    reinterpret_cast<char*>(section_names->sh_offset + section_names->sh_size);
+
   for (int i = 0; i < nsection; ++i) {
     const char *section_name =
       reinterpret_cast<char*>(section_names->sh_offset + sections[i].sh_name);
-    if (!strncmp(name, section_name, name_len))
+    if (names_end - section_name >= name_len + 1 &&
+        strcmp(name, section_name) == 0)
       return sections + i;
   }
   return NULL;
