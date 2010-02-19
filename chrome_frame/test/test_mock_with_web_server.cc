@@ -920,7 +920,9 @@ TEST_F(ChromeFrameTestWithWebServer,
 
 // Test Back/Forward from context menu. Loads page 1 in chrome and page 2
 // in IE. Then it tests back and forward using context menu
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ContextMenuBackForward) {
+// Marking this test FLAKY as it fails at times on the buildbot.
+// http://code.google.com/p/chromium/issues/detail?id=26549
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ContextMenuBackForward) {
   CloseIeAtEndOfScope last_resort_close_ie;
   chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
@@ -1046,7 +1048,9 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ContextMenuBackForward) {
 }
 
 // Test Reload from context menu.
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ContextMenuReload) {
+// Marking this test FLAKY as it fails at times on the buildbot.
+// http://code.google.com/p/chromium/issues/detail?id=26549
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ContextMenuReload) {
   CloseIeAtEndOfScope last_resort_close_ie;
   chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
@@ -1113,7 +1117,9 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ContextMenuReload) {
 }
 
 // Test view source using context menu
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ContextMenuViewSource) {
+// Marking this test FLAKY as it fails at times on the buildbot.
+// http://code.google.com/p/chromium/issues/detail?id=26549
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_ContextMenuViewSource) {
   CloseIeAtEndOfScope last_resort_close_ie;
   chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
@@ -1217,7 +1223,9 @@ TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_ContextMenuViewSource) {
   loop.RunFor(kChromeFrameLongNavigationTimeoutInSeconds);
 }
 
-TEST_F(ChromeFrameTestWithWebServer, FullTabModeIE_KeyboardBackForwardTest) {
+// Marking this test FLAKY as it fails at times on the buildbot.
+// http://code.google.com/p/chromium/issues/detail?id=26549
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_FullTabModeIE_KeyboardBackForwardTest) {
   chrome_frame_test::TimedMsgLoop loop;
   ComStackObjectWithUninitialize<MockWebBrowserEventSink> mock;
 
