@@ -71,7 +71,7 @@ ifeq ($(PLATFORM), Cygwin)
   CYGWIN17=$(shell grep '^cygwin cygwin-1.7' /etc/setup/installed.db | wc -l)
   ifeq ($(CYGWIN17), 1)
     DESTDIR := $(SDKROOT)
-    SDKROOT := 
+    SDKROOT :=
     # CygWin1.7 changes over time and list of files required to run the binaries
     # changes over time - use cygcheck (new tools in CygWin 1.7) to find list of
     # .dll files and filter only .dll files in /bin (AKA /usr/bin depending on
@@ -167,7 +167,7 @@ BUILD/gcc-$(GCC_VERSION): | BUILD
 	if [ "x$(GCC_VERSION)" != "x4.2.2" ] ; then \
 	  cd BUILD && tar xf $(SRCDIR)/gcc/gcc-fortran-$(GCC_VERSION).tar.bz2 ; \
 	fi
-	if [ "x$(GCC_VERSION)" = "x4.4.2" ] ; then \
+	if [ "x$(GCC_VERSION)" = "x4.4.2" -o "x$(GCC_VERSION)" = "x4.4.3" ] ; then \
 	  GNU_MP_MAJOR=0 ; \
 	  if [ -f /usr/include/gmp.h ] ; then \
 	    GNU_MP_MAJOR="`grep '#[ 	]*define[ 	]*__GNU_MP_VERSION ' /usr/include/gmp.h | sed -e s'@[ 	]*#define[ 	]*__GNU_MP_VERSION[ 	]*@@'`" ; \
@@ -453,7 +453,7 @@ gcc: BUILD/stamp-gcc
 # gdb:
 # Builds gdb.
 ##################################################################
-# FIXME: This currently forces a 32-bit host.
+# TODO: Add 64-bit support.
 # Only linux is supported.
 BUILD/stamp-gdb: BUILD/stamp-gdb-$(GDB_VERSION) #Makefile
 	case $$(BUILD/gdb-$(GDB_VERSION)/config.guess) in \
