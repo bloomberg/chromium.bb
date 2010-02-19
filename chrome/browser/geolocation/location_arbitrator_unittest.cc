@@ -6,8 +6,8 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/geolocation/fake_access_token_store.h"
-#include "chrome/browser/geolocation/geoposition.h"
 #include "chrome/browser/geolocation/location_provider.h"
+#include "chrome/common/geoposition.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
@@ -31,11 +31,11 @@ class MockLocationProvider : public LocationProviderBase {
     ++started_count_;
     return true;
   }
-  virtual void GetPosition(Position *position) {
+  virtual void GetPosition(Geoposition *position) {
     *position = position_;
   }
 
-  Position position_;
+  Geoposition position_;
   int started_count_;
 
   static MockLocationProvider* instance_;
@@ -49,18 +49,18 @@ class MockLocationObserver : public GeolocationArbitrator::Delegate {
  public:
   void InvalidateLastPosition() {
     last_position_.accuracy = -1;
-    last_position_.error_code = Position::ERROR_CODE_NONE;
+    last_position_.error_code = Geoposition::ERROR_CODE_NONE;
     ASSERT_FALSE(last_position_.IsInitialized());
   }
   // Delegate
-  virtual void OnLocationUpdate(const Position& position) {
+  virtual void OnLocationUpdate(const Geoposition& position) {
     last_position_ = position;
   }
 
-  Position last_position_;
+  Geoposition last_position_;
 };
 
-void SetReferencePosition(Position* position) {
+void SetReferencePosition(Geoposition* position) {
   position->latitude = 51.0;
   position->longitude = -0.1;
   position->accuracy = 400;

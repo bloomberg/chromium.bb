@@ -20,6 +20,7 @@
 class AccessTokenStore;
 class GURL;
 class URLRequestContextGetter;
+struct Geoposition;
 struct Position;
 
 // The base class used by all location providers.
@@ -64,7 +65,7 @@ class LocationProviderBase : public NonThreadSafe {
   // Returns false if the provider failed to start.
   virtual bool StartProvider() = 0;
   // Gets the current best position estimate.
-  virtual void GetPosition(Position* position) = 0;
+  virtual void GetPosition(Geoposition* position) = 0;
   // Provides a hint to the provider that new location data is needed as soon
   // as possible. Default implementation does nothing.
   virtual void UpdatePosition() {}

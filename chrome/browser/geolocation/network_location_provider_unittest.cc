@@ -298,7 +298,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   EXPECT_TRUE(access_token_store_->GetAccessToken(&token));
   EXPECT_EQ(REFERENCE_ACCESS_TOKEN, UTF16ToUTF8(token));
 
-  Position position;
+  Geoposition position;
   provider->GetPosition(&position);
   EXPECT_FALSE(position.IsValidFix());
 
