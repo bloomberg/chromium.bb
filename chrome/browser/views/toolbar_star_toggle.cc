@@ -42,13 +42,15 @@ ToolbarStarToggle::ToolbarStarToggle(views::ButtonListener* listener)
 }
 
 void ToolbarStarToggle::Init() {
-  ThemeProvider* tp = profile_->GetThemeProvider();
-
   set_tag(IDC_BOOKMARK_PAGE);
   SetTooltipText(l10n_util::GetString(IDS_TOOLTIP_STAR));
   SetToggledTooltipText(l10n_util::GetString(IDS_TOOLTIP_STARRED));
   SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_STAR));
   SetID(VIEW_ID_STAR_BUTTON);
+}
+
+void ToolbarStarToggle::LoadImages() {
+  ThemeProvider* tp = profile_->GetThemeProvider();
 
   // Load images.
   SkColor color = tp->GetColor(BrowserThemeProvider::COLOR_BUTTON_BACKGROUND);

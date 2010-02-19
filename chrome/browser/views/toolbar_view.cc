@@ -572,7 +572,6 @@ void ToolbarView::CreateCenterStack(Profile *profile) {
   star_->set_host_view(this);
   star_->set_bubble_positioner(this);
   star_->Init();
-  AddChildView(star_);
 
   location_bar_ = new LocationBarView(profile, browser_->command_updater(),
                                       model_, this,
@@ -586,6 +585,7 @@ void ToolbarView::CreateCenterStack(Profile *profile) {
 
   LoadCenterStackImages();
 
+  AddChildView(star_);
   location_bar_->SetAccessibleName(l10n_util::GetString(IDS_ACCNAME_LOCATION));
   AddChildView(location_bar_);
   location_bar_->Init();
@@ -664,6 +664,8 @@ void ToolbarView::LoadLeftSideControlsImages() {
 }
 
 void ToolbarView::LoadCenterStackImages() {
+  star_->LoadImages();
+
   ThemeProvider* tp = GetThemeProvider();
 
   SkColor color = tp->GetColor(BrowserThemeProvider::COLOR_BUTTON_BACKGROUND);

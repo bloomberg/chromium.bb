@@ -33,8 +33,11 @@ class ToolbarStarToggle : public views::ToggleImageButton,
     bubble_positioner_ = bubble_positioner;
   }
 
-  // Sets up all labels and images for the button.
+  // Sets up all labels for the button.
   void Init();
+
+  // Sets up all images for the button.
+  void LoadImages();
 
   // If the bubble isn't showing, shows it.
   void ShowStarBubble(const GURL& url, bool newly_bookmarked);
