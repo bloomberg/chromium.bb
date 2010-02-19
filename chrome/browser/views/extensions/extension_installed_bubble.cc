@@ -251,10 +251,13 @@ void ExtensionInstalledBubble::ShowInternal() {
     }
     reference_view = container->GetBrowserActionView(extension_);
     // If the view is not visible then it is in the chevron, so point the
-    // install bubble to the chevron instead.
-    if (!reference_view->IsVisible())
+    // install bubble to the chevron instead. If this is an incognito window,
+    // both could be invisible.
+    if (!reference_view || !reference_view->IsVisible()) {
       reference_view = container->chevron();
-    DCHECK(reference_view);
+      if (!reference_view || !reference_view->IsVisible())
+        reference_view = NULL;  // fall back to app menu below.
+    }
   } else if (type_ == PAGE_ACTION) {
     LocationBarView* location_bar_view = browser_view->GetLocationBarView();
     location_bar_view->SetPreviewEnabledPageAction(extension_->page_action(),
