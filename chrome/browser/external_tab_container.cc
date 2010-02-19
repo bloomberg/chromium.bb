@@ -162,21 +162,6 @@ void ExternalTabContainer::Uninitialize() {
 
   registrar_.RemoveAll();
   if (tab_contents_) {
-    waiting_for_unload_event_ = true;
-    if (Browser::RunUnloadEventsHelper(tab_contents_)) {
-      // Maintain a local global stack of Externa;TabCotainers waiting for the
-      // unload event listeners to finish. We need this as we only want to
-      // handle the CloseContents call from the TabContents when the current
-      // ExternalTabContainers message loop is active. This ensures that nested
-      // ExternalTabContainer message loops terminate correctly.
-      ExternalTabContainer* current_tab = innermost_tab_for_unload_event_;
-      innermost_tab_for_unload_event_ = this;
-      MessageLoop::current()->Run();
-      innermost_tab_for_unload_event_ = current_tab;
-    }
-
-    waiting_for_unload_event_ = false;
-
     RenderViewHost* rvh = tab_contents_->render_view_host();
     if (rvh && DevToolsManager::GetInstance()) {
       DevToolsManager::GetInstance()->UnregisterDevToolsClientHostFor(rvh);
@@ -662,6 +647,22 @@ LRESULT ExternalTabContainer::OnCreate(LPCREATESTRUCT create_struct) {
 }
 
 void ExternalTabContainer::OnDestroy() {
+  if (tab_contents_) {
+    waiting_for_unload_event_ = true;
+    if (Browser::RunUnloadEventsHelper(tab_contents_)) {
+      // Maintain a local global stack of Externa;TabCotainers waiting for the
+      // unload event listeners to finish. We need this as we only want to
+      // handle the CloseContents call from the TabContents when the current
+      // ExternalTabContainers message loop is active. This ensures that nested
+      // ExternalTabContainer message loops terminate correctly.
+      ExternalTabContainer* current_tab = innermost_tab_for_unload_event_;
+      innermost_tab_for_unload_event_ = this;
+      MessageLoop::current()->Run();
+      innermost_tab_for_unload_event_ = current_tab;
+    }
+    waiting_for_unload_event_ = false;
+  }
+
   Uninitialize();
   WidgetWin::OnDestroy();
   if (browser_.get()) {
