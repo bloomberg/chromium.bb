@@ -153,9 +153,8 @@ void IOThread::CleanUp() {
   }
 
   // TODO(eroman): hack for http://crbug.com/15513
-  if (globals_->host_resolver->IsHostResolverImpl()) {
-    static_cast<net::HostResolverImpl*>(
-        globals_->host_resolver.get())->Shutdown();
+  if (globals_->host_resolver->GetAsHostResolverImpl()) {
+    globals_->host_resolver.get()->GetAsHostResolverImpl()->Shutdown();
   }
 
   delete globals_;
@@ -210,9 +209,9 @@ void IOThread::ChangedToOnTheRecordOnIOThread() {
 
   // Clear the host cache to avoid showing entries from the OTR session
   // in about:net-internals.
-  if (globals_->host_resolver->IsHostResolverImpl()) {
-    net::HostCache* host_cache = static_cast<net::HostResolverImpl*>(
-        globals_->host_resolver.get())->cache();
+  if (globals_->host_resolver->GetAsHostResolverImpl()) {
+    net::HostCache* host_cache =
+        globals_->host_resolver.get()->GetAsHostResolverImpl()->cache();
     if (host_cache)
       host_cache->clear();
   }

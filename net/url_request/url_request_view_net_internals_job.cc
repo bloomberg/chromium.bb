@@ -51,9 +51,7 @@ void DrawCommandButton(const std::string& title,
 //------------------------------------------------------------------------------
 
 net::HostResolverImpl* GetHostResolverImpl(URLRequestContext* context) {
-  if (context->host_resolver()->IsHostResolverImpl())
-    return static_cast<net::HostResolverImpl*> (context->host_resolver());
-  return NULL;
+  return context->host_resolver()->GetAsHostResolverImpl();
 }
 
 net::HostCache* GetHostCache(URLRequestContext* context) {
