@@ -47,7 +47,8 @@ NaClSrpcError NPNavigatorRpcServer::NP_Initialize(
     NaClSrpcChannel* channel,
     int32_t pid,
     int32_t npvariant,
-    NaClSrpcImcDescType upcall_channel_desc) {
+    NaClSrpcImcDescType upcall_channel_desc,
+    int32_t* nacl_pid) {
   // There is only one NPNavigator per call to Initialize, and it is
   // remembered on the SRPC channel that called it.
   // Make sure it is only set once.
@@ -65,6 +66,7 @@ NaClSrpcError NPNavigatorRpcServer::NP_Initialize(
   }
   channel->server_instance_data = static_cast<void*>(navigator);
 
+  *nacl_pid = GETPID();
   return navigator->Initialize(channel, upcall_channel_desc);
 }
 

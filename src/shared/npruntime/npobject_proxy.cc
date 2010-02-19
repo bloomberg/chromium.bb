@@ -16,6 +16,12 @@
 #include "gen/native_client/src/shared/npruntime/npnavigator_rpc.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npbridge.h"
+#ifdef __native_client__
+#include "native_client/src/shared/npruntime/npnavigator.h"
+using nacl::NPNavigator;
+#else
+using nacl::NPBridge;
+#endif  // __native_client__
 
 namespace {
 
@@ -102,6 +108,15 @@ bool Construct(NPObject* object,
   return npobj->Construct(args, arg_count, result);
 }
 
+// TODO(sehr): we need to centralize conversion to/from NPP wire format.
+int32_t NPPToWireFormat(NPP npp) {
+#ifdef __native_client__
+  return NPNavigator::GetPluginNPP(npp);
+#else
+  return NPBridge::NppToInt(npp);
+#endif
+}
+
 }  // namespace
 
 namespace nacl {
@@ -146,8 +161,7 @@ NPObject* NPObjectProxy::last_allocated;
 
 NPObjectProxy::NPObjectProxy(NPP npp, const NPCapability& capability)
     : npp_(npp) {
-  DebugPrintf("NPObjectProxy\n");
-
+  DebugPrintf("NPObjectProxy(%p)\n", reinterpret_cast<void*>(this));
   capability_.CopyFrom(capability);
   last_allocated = this;
   NPN_CreateObject(npp_, &np_class);
@@ -155,7 +169,7 @@ NPObjectProxy::NPObjectProxy(NPP npp, const NPCapability& capability)
 }
 
 NPObjectProxy::~NPObjectProxy() {
-  DebugPrintf("~NPObjectProxy\n");
+  DebugPrintf("&NPObjectProxy(%p)\n", reinterpret_cast<void*>(this));
 
   NPBridge* bridge = NPBridge::LookupBridge(npp_);
   if (NULL == bridge) {
@@ -163,6 +177,7 @@ NPObjectProxy::~NPObjectProxy() {
   }
 
   NPObjectStubRpcClient::NPN_Deallocate(bridge->channel(),
+                                        ::NPPToWireFormat(npp_),
                                         capability_.size(),
                                         capability_.char_addr());
   bridge->RemoveProxy(this);
@@ -176,6 +191,7 @@ void NPObjectProxy::Deallocate() {
     return;
   }
   NPObjectStubRpcClient::NPN_Deallocate(bridge->channel(),
+                                        ::NPPToWireFormat(npp_),
                                         capability_.size(),
                                         capability_.char_addr());
 }
@@ -189,6 +205,7 @@ void NPObjectProxy::Invalidate() {
     return;
   }
   NPObjectStubRpcClient::NPN_Invalidate(bridge->channel(),
+                                        ::NPPToWireFormat(npp_),
                                         capability_.size(),
                                         capability_.char_addr());
 }
@@ -205,6 +222,7 @@ bool NPObjectProxy::HasMethod(NPIdentifier name) {
   int32_t error_code;
   if (NACL_SRPC_RESULT_OK !=
       NPObjectStubRpcClient::NPN_HasMethod(bridge->channel(),
+                                           ::NPPToWireFormat(npp_),
                                            capability_.size(),
                                            capability_.char_addr(),
                                            NPBridge::NpidentifierToInt(name),
@@ -253,6 +271,7 @@ bool NPObjectProxy::Invoke(NPIdentifier name,
       static_cast<nacl_abi_size_t>(sizeof(ret_optional));
   if (NACL_SRPC_RESULT_OK !=
       NPObjectStubRpcClient::NPN_Invoke(bridge->channel(),
+                                        ::NPPToWireFormat(npp_),
                                         capability_.size(),
                                         capability_.char_addr(),
                                         NPBridge::NpidentifierToInt(name),
@@ -285,7 +304,7 @@ bool NPObjectProxy::Invoke(NPIdentifier name,
   }
   DebugPrintf("Invoke(%p, ", reinterpret_cast<void*>(this));
   PrintIdent(name);
-  printf(") failed.");
+  printf(") failed.\n");
   return false;
 }
 
@@ -316,7 +335,7 @@ bool NPObjectProxy::InvokeDefault(const NPVariant* args,
     printf("Args didn't fit\n");
     return false;
   }
-  int32_t error_code;
+  int32_t ret_bool;
   char ret_fixed[kNPVariantSizeMax];
   nacl_abi_size_t ret_fixed_size =
       static_cast<nacl_abi_size_t>(sizeof(ret_fixed));
@@ -325,6 +344,7 @@ bool NPObjectProxy::InvokeDefault(const NPVariant* args,
       static_cast<nacl_abi_size_t>(sizeof(ret_optional));
   if (NACL_SRPC_RESULT_OK !=
       NPObjectStubRpcClient::NPN_InvokeDefault(bridge->channel(),
+                                               ::NPPToWireFormat(npp_),
                                                capability_.size(),
                                                capability_.char_addr(),
                                                fixed_size,
@@ -332,7 +352,7 @@ bool NPObjectProxy::InvokeDefault(const NPVariant* args,
                                                optional_size,
                                                optional,
                                                static_cast<int32_t>(arg_count),
-                                               &error_code,
+                                               &ret_bool,
                                                &ret_fixed_size,
                                                ret_fixed,
                                                &ret_optional_size,
@@ -340,7 +360,7 @@ bool NPObjectProxy::InvokeDefault(const NPVariant* args,
     printf("RPC failed\n");
     return false;
   }
-  if (NPERR_NO_ERROR != error_code) {
+  if (ret_bool) {
     RpcArg rets(npp_,
                 ret_fixed,
                 ret_fixed_size,
@@ -369,6 +389,7 @@ bool NPObjectProxy::HasProperty(NPIdentifier name) {
   int32_t error_code;
   if (NACL_SRPC_RESULT_OK !=
       NPObjectStubRpcClient::NPN_HasProperty(bridge->channel(),
+                                             ::NPPToWireFormat(npp_),
                                              capability_.size(),
                                              capability_.char_addr(),
                                              NPBridge::NpidentifierToInt(name),
@@ -394,6 +415,7 @@ bool NPObjectProxy::GetProperty(NPIdentifier name, NPVariant* variant) {
   uint32_t ret_optional_size = static_cast<uint32_t>(sizeof(ret_optional));
   if (NACL_SRPC_RESULT_OK !=
       NPObjectStubRpcClient::NPN_GetProperty(bridge->channel(),
+                                             ::NPPToWireFormat(npp_),
                                              capability_.size(),
                                              capability_.char_addr(),
                                              NPBridge::NpidentifierToInt(name),
@@ -412,6 +434,11 @@ bool NPObjectProxy::GetProperty(NPIdentifier name, NPVariant* variant) {
                 ret_optional,
                 ret_optional_size);
     *variant = *rets.GetVariant(true);
+    DebugPrintf("GetProperty(%p, ", reinterpret_cast<void*>(this));
+    PrintIdent(name);
+    printf(") succeeded: ");
+    PrintVariant(variant);
+    printf("\n");
     return true;
   }
   return false;
@@ -439,6 +466,7 @@ bool NPObjectProxy::SetProperty(NPIdentifier name, const NPVariant* value) {
   int32_t error_code;
   if (NACL_SRPC_RESULT_OK !=
       NPObjectStubRpcClient::NPN_SetProperty(bridge->channel(),
+                                             ::NPPToWireFormat(npp_),
                                              capability_.size(),
                                              capability_.char_addr(),
                                              NPBridge::NpidentifierToInt(name),
@@ -465,6 +493,7 @@ bool NPObjectProxy::RemoveProperty(NPIdentifier name) {
   if (NACL_SRPC_RESULT_OK !=
       NPObjectStubRpcClient::NPN_RemoveProperty(
           bridge->channel(),
+          ::NPPToWireFormat(npp_),
           capability_.size(),
           capability_.char_addr(),
           NPBridge::NpidentifierToInt(name),
@@ -490,6 +519,7 @@ bool NPObjectProxy::Enumerate(NPIdentifier** identifiers,
   int32_t ident_count;
   if (NACL_SRPC_RESULT_OK !=
       NPObjectStubRpcClient::NPN_Enumerate(bridge->channel(),
+                                           ::NPPToWireFormat(npp_),
                                            capability_.size(),
                                            capability_.char_addr(),
                                            &error_code,
@@ -534,6 +564,7 @@ bool NPObjectProxy::Construct(const NPVariant* args,
       static_cast<nacl_abi_size_t>(sizeof(optional));
   if (NACL_SRPC_RESULT_OK !=
       NPObjectStubRpcClient::NPN_Construct(bridge->channel(),
+                                           ::NPPToWireFormat(npp_),
                                            capability_.size(),
                                            capability_.char_addr(),
                                            fixed_size,

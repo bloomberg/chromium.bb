@@ -107,11 +107,11 @@ bool NPObjectStub::HasMethodImpl(NPIdentifier name) {
   return NPN_HasMethod(npp_, object_, name);
 }
 
-NPError NPObjectStub::InvokeImpl(NPIdentifier name,
-                                 const NPVariant* args,
-                                 uint32_t arg_count,
-                                 NPVariant* variant) {
-  DebugPrintf("Invoke(%p, ", reinterpret_cast<void*>(this));
+bool NPObjectStub::InvokeImpl(NPIdentifier name,
+                              const NPVariant* args,
+                              uint32_t arg_count,
+                              NPVariant* variant) {
+  DebugPrintf("Invoke(%p, ", reinterpret_cast<void*>(object_));
   PrintIdent(name);
   printf(", [");
   for (uint32_t i = 0; i < arg_count; ++i) {
@@ -122,12 +122,12 @@ NPError NPObjectStub::InvokeImpl(NPIdentifier name,
   }
   printf("], %u)\n", static_cast<unsigned int>(arg_count));
 
-  NPError return_value = NPN_Invoke(npp_,
-                                    object_,
-                                    name,
-                                    args,
-                                    arg_count,
-                                    variant);
+  bool return_value = NPN_Invoke(npp_,
+                                 object_,
+                                 name,
+                                 args,
+                                 arg_count,
+                                 variant);
   for (uint32_t i = 0; i < arg_count; ++i) {
     if (NPVARIANT_IS_OBJECT(args[i])) {
       NPN_ReleaseObject(NPVARIANT_TO_OBJECT(args[i]));
@@ -136,10 +136,10 @@ NPError NPObjectStub::InvokeImpl(NPIdentifier name,
   return return_value;
 }
 
-NPError NPObjectStub::InvokeDefaultImpl(const NPVariant* args,
-                                        uint32_t arg_count,
-                                        NPVariant* variant) {
-  DebugPrintf("InvokeDefault(%p, [", reinterpret_cast<void*>(this));
+bool NPObjectStub::InvokeDefaultImpl(const NPVariant* args,
+                                     uint32_t arg_count,
+                                     NPVariant* variant) {
+  DebugPrintf("InvokeDefault(%p, [", reinterpret_cast<void*>(object_));
   for (uint32_t i = 0; i < arg_count; ++i) {
     PrintVariant(args + i);
     if (i < arg_count -1) {
@@ -148,11 +148,11 @@ NPError NPObjectStub::InvokeDefaultImpl(const NPVariant* args,
   }
   printf("], %u)\n", static_cast<unsigned int>(arg_count));
 
-  NPError return_value = NPN_InvokeDefault(npp_,
-                                           object_,
-                                           args,
-                                           arg_count,
-                                           variant);
+  bool return_value = NPN_InvokeDefault(npp_,
+                                        object_,
+                                        args,
+                                        arg_count,
+                                        variant);
   for (uint32_t i = 0; i < arg_count; ++i) {
     if (NPVARIANT_IS_OBJECT(args[i])) {
       NPN_ReleaseObject(NPVARIANT_TO_OBJECT(args[i]));

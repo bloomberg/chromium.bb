@@ -194,15 +194,18 @@ NPError NPModule::Initialize() {
   // On success, ownership of info passes to the thread.
   info = NULL;
   // Invoke the NaCl module's NP_Initialize function.
+  int32_t nacl_pid;
   retval =
       NPNavigatorRpcClient::NP_Initialize(channel(),
                                           GETPID(),
                                           static_cast<int>(sizeof(NPVariant)),
-                                          pair[1]->desc());
+                                          pair[1]->desc(),
+                                          &nacl_pid);
   // Return the appropriate error code.
   if (NACL_SRPC_RESULT_OK != retval) {
     goto done;
   }
+  set_peer_pid(nacl_pid);
   err = NPERR_NO_ERROR;
 
  done:

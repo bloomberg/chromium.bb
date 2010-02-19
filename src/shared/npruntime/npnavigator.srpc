@@ -11,7 +11,8 @@
                       ['npvariant_size', 'int32_t'],
                       ['upcall_channel_desc', 'handle'],
                      ],
-           'outputs': []
+           'outputs': [['nacl_pid', 'int32_t'],
+                      ]
           },
           {'name': 'NPP_New',
            'inputs': [['mimetype', 'string'],

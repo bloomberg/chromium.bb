@@ -70,13 +70,13 @@ class NPObjectStub {
   void DeallocateImpl();
   void InvalidateImpl();
   bool HasMethodImpl(NPIdentifier name);
-  NPError InvokeImpl(NPIdentifier name,
-                     const NPVariant* args,
-                     uint32_t arg_count,
-                     NPVariant* result);
-  NPError InvokeDefaultImpl(const NPVariant* args,
-                            uint32_t arg_count,
-                            NPVariant* result);
+  bool InvokeImpl(NPIdentifier name,
+                  const NPVariant* args,
+                  uint32_t arg_count,
+                  NPVariant* result);
+  bool InvokeDefaultImpl(const NPVariant* args,
+                         uint32_t arg_count,
+                         NPVariant* result);
   bool HasPropertyImpl(NPIdentifier name);
   bool GetPropertyImpl(NPIdentifier name, NPVariant* result);
   bool SetPropertyImpl(NPIdentifier name, const NPVariant* variant);
