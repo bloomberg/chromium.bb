@@ -55,6 +55,12 @@ string16 NetworkMenuButton::GetLabelAt(int index) const {
   return menu_items_[index].label;
 }
 
+const gfx::Font* NetworkMenuButton::GetLabelFontAt(int index) const {
+  return (menu_items_[index].flags & FLAG_BOLD) ?
+      &ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BoldFont) :
+      NULL;
+}
+
 bool NetworkMenuButton::IsItemCheckedAt(int index) const {
   // All menus::MenuModel::TYPE_CHECK menu items are checked.
   return true;
@@ -62,7 +68,10 @@ bool NetworkMenuButton::IsItemCheckedAt(int index) const {
 
 bool NetworkMenuButton::GetIconAt(int index, SkBitmap* icon) const {
   if (!menu_items_[index].icon.empty()) {
-    *icon = menu_items_[index].icon;
+    // Make icon smaller (if necessary) to look better in the menu.
+    static const int kMinSize = 8;
+    *icon = SkBitmapOperations::DownsampleByTwoUntilSize(
+                menu_items_[index].icon, kMinSize, kMinSize);
     return true;
   }
   return false;
@@ -87,7 +96,7 @@ void NetworkMenuButton::ActivatedAt(int index) {
     cros->EnableCellularNetworkDevice(!cros->cellular_enabled());
   } else if (menu_items_[index].flags & FLAG_TOGGLE_OFFLINE) {
     cros->EnableOfflineMode(!cros->offline_mode());
-  } else if (menu_items_[index].flags & FLAG_ACTIVATE_WIFI) {
+  } else if (menu_items_[index].flags & FLAG_WIFI) {
     activated_wifi_network_ = menu_items_[index].wifi_network;
 
     // If clicked on a network that we are already connected to or we are
@@ -112,7 +121,12 @@ void NetworkMenuButton::ActivatedAt(int index) {
       window->SetBounds(gfx::Rect(point, size), parent_window_);
       window->Show();
     }
-  } else if (menu_items_[index].flags & FLAG_ACTIVATE_CELLULAR) {
+  } else if (menu_items_[index].flags & FLAG_CELLULAR) {
+      // If clicked on a network that we are already connected to or we are
+      // currently trying to connect to, then do nothing.
+      if (menu_items_[index].cellular_network.name == cros->cellular_name())
+        return;
+
       cros->ConnectToCellularNetwork(menu_items_[index].cellular_network);
   }
 }
@@ -348,156 +362,86 @@ void NetworkMenuButton::InitMenuItems() {
   NetworkLibrary* cros = NetworkLibrary::Get();
   ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
-  bool offline_mode = cros->offline_mode();
-
-  // Wifi: Status.
-  int status = IDS_STATUSBAR_NETWORK_DEVICE_DISABLED;
-  if (cros->wifi_connecting())
-    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
-  else if (cros->wifi_connected())
-    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
-  else if (cros->wifi_enabled())
-    status = IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED;
-  string16 label =
-      l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
-          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI),
-          l10n_util::GetStringUTF16(status));
-  SkBitmap icon = cros->wifi_connected() ?
-      IconForNetworkStrength(cros->wifi_strength(), true) :
-      *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
-  menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-      icon, WifiNetwork(), CellularNetwork(), FLAG_DISABLED));
-
-  // Turn Wifi Off.
-  if (!offline_mode) {
-    label = cros->wifi_enabled() ?
-        l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_DISABLE,
-            l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI)) :
-        l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
-            l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI));
-    menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-        SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_TOGGLE_WIFI));
-
-    const WifiNetworkVector& networks = cros->wifi_networks();
-    // Wifi networks ssids.
-    if (networks.empty()) {
-      // No networks available message.
-      label =
-          l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_MENU_ITEM_INDENT,
-              l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_NETWORKS_MESSAGE));
-      menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-          SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_DISABLED));
-    } else {
-      for (size_t i = 0; i < networks.size(); ++i) {
-        label =
-            l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_MENU_ITEM_INDENT,
-                ASCIIToUTF16(networks[i].ssid));
-        if (networks[i].ssid == cros->wifi_ssid()) {
-          menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_CHECK, label,
-              SkBitmap(), networks[i], CellularNetwork(), FLAG_ACTIVATE_WIFI));
-        } else {
-          menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-              SkBitmap(), networks[i], CellularNetwork(), FLAG_ACTIVATE_WIFI));
-        }
-      }
-    }
-
-    // Separator.
-    menu_items_.push_back(MenuItem());
-  }
-
-  // Cellular: Status.
-  status = IDS_STATUSBAR_NETWORK_DEVICE_DISABLED;
-  if (cros->cellular_connecting())
-    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
-  else if (cros->cellular_connected())
-    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
-  else if (cros->cellular_enabled())
-    status = IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED;
-  label =
-      l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
-          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR),
-          l10n_util::GetStringUTF16(status));
-  icon = cros->cellular_connected() ?
-      IconForNetworkStrength(cros->cellular_strength(), true) :
-      *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
-  menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-      icon, WifiNetwork(), CellularNetwork(), FLAG_DISABLED));
-
-  // Turn Cellular Off.
-  if (!offline_mode) {
-    label = cros->cellular_enabled() ?
-        l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_DISABLE,
-            l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR)) :
-        l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
-            l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR));
-    menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-        SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_TOGGLE_CELLULAR));
-
-    const CellularNetworkVector& networks = cros->cellular_networks();
-    // Cellular networks ssids.
-    if (networks.empty()) {
-      // No networks available message.
-      label =
-          l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_MENU_ITEM_INDENT,
-              l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_NETWORKS_MESSAGE));
-      menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-          SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_DISABLED));
-    } else {
-      for (size_t i = 0; i < networks.size(); ++i) {
-        label =
-            l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_MENU_ITEM_INDENT,
-                ASCIIToUTF16(networks[i].name));
-        if (networks[i].name == cros->cellular_name()) {
-          menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_CHECK, label,
-              SkBitmap(), WifiNetwork(), networks[i], FLAG_ACTIVATE_CELLULAR));
-        } else {
-          menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-              SkBitmap(), WifiNetwork(), networks[i], FLAG_ACTIVATE_CELLULAR));
-        }
-      }
-    }
-
-    // Separator.
-    menu_items_.push_back(MenuItem());
-  }
-
-  // Ethernet: Status.
-  status = IDS_STATUSBAR_NETWORK_DEVICE_DISABLED;
-  if (cros->ethernet_connecting())
-    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
-  else if (cros->ethernet_connected())
-    status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTED;
-  else if (cros->ethernet_enabled())
-    status = IDS_STATUSBAR_NETWORK_DEVICE_DISCONNECTED;
-  label = l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
-      l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET),
-      l10n_util::GetStringUTF16(status));
-  icon = cros->ethernet_connected() ?
+  // Ethernet
+  string16 label = l10n_util::GetStringUTF16(
+                       IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
+  SkBitmap icon = cros->ethernet_connecting() || cros->ethernet_connected() ?
       *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED_BLACK) :
       *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
+  int flag = (cros->ethernet_connecting() || cros->ethernet_connected()) ?
+      FLAG_ETHERNET & FLAG_BOLD : FLAG_ETHERNET;
   menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-      icon, WifiNetwork(), CellularNetwork(), FLAG_DISABLED));
+      icon, WifiNetwork(), CellularNetwork(), flag));
 
-  // Turn Ethernet Off.
-  if (!offline_mode) {
-    label = cros->ethernet_enabled() ?
-        l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_DISABLE,
-            l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET)) :
-        l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
-            l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET));
+  // Wifi
+  const WifiNetworkVector& wifi_networks = cros->wifi_networks();
+  // Wifi networks ssids.
+  for (size_t i = 0; i < wifi_networks.size(); ++i) {
+    label = ASCIIToUTF16(wifi_networks[i].ssid);
+    flag = (wifi_networks[i].ssid == cros->wifi_ssid()) ?
+        FLAG_WIFI & FLAG_BOLD : FLAG_WIFI;
     menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-        SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_TOGGLE_ETHERNET));
-
-    // Separator.
-    menu_items_.push_back(MenuItem());
+        IconForNetworkStrength(wifi_networks[i].strength, true),
+        wifi_networks[i], CellularNetwork(), flag));
   }
 
+  // Cellular
+  const CellularNetworkVector& cell_networks = cros->cellular_networks();
+  // Cellular networks ssids.
+  for (size_t i = 0; i < cell_networks.size(); ++i) {
+    label = ASCIIToUTF16(cell_networks[i].name);
+    flag = (cell_networks[i].name == cros->cellular_name()) ?
+        FLAG_CELLULAR & FLAG_BOLD : FLAG_CELLULAR;
+    menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
+        IconForNetworkStrength(cell_networks[i].strength, true),
+        WifiNetwork(), cell_networks[i], flag));
+  }
+
+  // No networks available message.
+  if (wifi_networks.empty() && cell_networks.empty()) {
+    label = l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_MENU_ITEM_INDENT,
+                l10n_util::GetStringUTF16(IDS_STATUSBAR_NO_NETWORKS_MESSAGE));
+    menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
+        SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_DISABLED));
+  }
+
+  // Separator.
+  menu_items_.push_back(MenuItem());
+
+  // TODO(chocobo): Uncomment once we figure out how to do offline mode.
   // Offline mode.
-  menu_items_.push_back(MenuItem(offline_mode ?
-      menus::MenuModel::TYPE_CHECK : menus::MenuModel::TYPE_COMMAND,
-      l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_OFFLINE_MODE),
-      SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_TOGGLE_OFFLINE));
+//  menu_items_.push_back(MenuItem(cros->offline_mode() ?
+//      menus::MenuModel::TYPE_CHECK : menus::MenuModel::TYPE_COMMAND,
+//      l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_OFFLINE_MODE),
+//      SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_TOGGLE_OFFLINE));
+
+  // Turn Wifi Off.
+  label = cros->wifi_enabled() ?
+      l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_DISABLE,
+          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI)) :
+      l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
+          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI));
+  menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
+      SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_TOGGLE_WIFI));
+
+  // Turn Cellular Off.
+  label = cros->cellular_enabled() ?
+      l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_DISABLE,
+          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR)) :
+      l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ENABLE,
+          l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR));
+  menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
+      SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_TOGGLE_CELLULAR));
+
+  // IP address
+  if (cros->Connected()) {
+    // Separator.
+    menu_items_.push_back(MenuItem());
+
+    menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND,
+        ASCIIToUTF16(cros->IPAddress()), SkBitmap(),
+        WifiNetwork(), CellularNetwork(), FLAG_DISABLED));
+  }
 }
 
 }  // namespace chromeos

@@ -7,6 +7,7 @@
 #include <map>
 #include <string>
 
+#include "app/gfx/font.h"
 #include "app/gfx/gtk_util.h"
 #include "app/menus/menu_model.h"
 #include "base/keyboard_code_conversion_gtk.h"
@@ -229,6 +230,16 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
     default:
       NOTREACHED();
       break;
+  }
+
+  // Label font.
+  const gfx::Font* font = model_->GetLabelFontAt(index);
+  if (font) {
+    // The label item is the first child of the menu item.
+    GtkWidget* label_widget = GTK_BIN(menu_item)->child;
+    DCHECK(label_widget && GTK_IS_LABEL(label_widget));
+    gtk_widget_modify_font(label_widget,
+                           gfx::Font::PangoFontFromGfxFont(*font));
   }
 
   if (type == menus::MenuModel::TYPE_SUBMENU) {

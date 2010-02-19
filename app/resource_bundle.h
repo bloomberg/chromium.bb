@@ -53,10 +53,11 @@ class ResourceBundle {
  public:
   // An enumeration of the various font styles used throughout Chrome.
   // The following holds true for the font sizes:
-  // Small <= Base <= Medium <= MediumBold <= Large.
+  // Small <= Base <= Bold <= Medium <= MediumBold <= Large.
   enum FontStyle {
     SmallFont,
     BaseFont,
+    BoldFont,
     MediumFont,
     // NOTE: depending upon the locale, this may *not* result in a bold font.
     MediumBoldFont,
@@ -219,6 +220,7 @@ class ResourceBundle {
 
   // The various fonts used. Cached to avoid repeated GDI creation/destruction.
   scoped_ptr<gfx::Font> base_font_;
+  scoped_ptr<gfx::Font> bold_font_;
   scoped_ptr<gfx::Font> small_font_;
   scoped_ptr<gfx::Font> medium_font_;
   scoped_ptr<gfx::Font> medium_bold_font_;

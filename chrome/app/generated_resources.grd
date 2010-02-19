@@ -6646,10 +6646,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Off
       </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_ENABLE" desc="Enable the network device.">
-        Turn <ph name="NETWORKDEVICE">$1<ex>Wifi</ex></ph> On
+        Enable <ph name="NETWORKDEVICE">$1<ex>Wifi</ex></ph>
       </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_DISABLE" desc="Disable the network device.">
-        Turn <ph name="NETWORKDEVICE">$1<ex>Wifi</ex></ph> Off
+        Disable <ph name="NETWORKDEVICE">$1<ex>Wifi</ex></ph>
       </message>
       <message name="IDS_STATUSBAR_NETWORK_DEVICE_STATUS" desc="The status of the network device.">
         <ph name="NETWORKDEVICE">$1<ex>Wifi</ex></ph>: <ph name="STATUS">$2<ex>Connecting</ex></ph>

@@ -11,6 +11,12 @@
 
 class SkBitmap;
 
+namespace gfx {
+
+class Font;
+
+}  // namespace gfx
+
 namespace menus {
 
 class Accelerator;
@@ -58,6 +64,10 @@ class MenuModel {
   // of the menu's lifetime. If this function returns true, the label of the
   // menu item will be updated each time the menu is shown.
   virtual bool IsLabelDynamicAt(int index) const = 0;
+
+  // Returns the font use for the label at the specified index.
+  // If NULL, then use default font.
+  virtual const gfx::Font* GetLabelFontAt(int index) const { return NULL; }
 
   // Gets the acclerator information for the specified index, returning true if
   // there is a shortcut accelerator for the item, false otherwise.

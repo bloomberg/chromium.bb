@@ -146,6 +146,10 @@ void ResourceBundle::LoadFontsIfNecessary() {
   if (!base_font_.get()) {
     base_font_.reset(new gfx::Font());
 
+    bold_font_.reset(new gfx::Font());
+    *bold_font_ =
+        base_font_->DeriveFont(0, base_font_->style() | gfx::Font::BOLD);
+
     small_font_.reset(new gfx::Font());
     *small_font_ = base_font_->DeriveFont(-2);
 
@@ -164,6 +168,8 @@ void ResourceBundle::LoadFontsIfNecessary() {
 const gfx::Font& ResourceBundle::GetFont(FontStyle style) {
   LoadFontsIfNecessary();
   switch (style) {
+    case BoldFont:
+      return *bold_font_;
     case SmallFont:
       return *small_font_;
     case MediumFont:

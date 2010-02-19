@@ -67,6 +67,7 @@ class NetworkMenuButton : public StatusAreaButton,
   virtual int GetCommandIdAt(int index) const { return index; }
   virtual string16 GetLabelAt(int index) const;
   virtual bool IsLabelDynamicAt(int index) const { return true; }
+  virtual const gfx::Font* GetLabelFontAt(int index) const;
   virtual bool GetAcceleratorAt(int index,
       menus::Accelerator* accelerator) const { return false; }
   virtual bool IsItemCheckedAt(int index) const;
@@ -101,8 +102,10 @@ class NetworkMenuButton : public StatusAreaButton,
     FLAG_TOGGLE_WIFI       = 1 << 2,
     FLAG_TOGGLE_CELLULAR   = 1 << 3,
     FLAG_TOGGLE_OFFLINE    = 1 << 4,
-    FLAG_ACTIVATE_WIFI     = 1 << 5,
-    FLAG_ACTIVATE_CELLULAR = 1 << 6
+    FLAG_BOLD              = 1 << 5,
+    FLAG_ETHERNET          = 1 << 6,
+    FLAG_WIFI              = 1 << 7,
+    FLAG_CELLULAR          = 1 << 8,
   };
 
   struct MenuItem {

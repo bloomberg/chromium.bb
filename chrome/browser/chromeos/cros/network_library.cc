@@ -387,4 +387,15 @@ bool NetworkLibrary::Connected() const {
   return ethernet_connected() || wifi_connected() || cellular_connected();
 }
 
+const std::string& NetworkLibrary::IPAddress() const {
+  // Returns highest priority IP address.
+  if (ethernet_connected())
+    return ethernet_.ip_address;
+  if (wifi_connected())
+    return wifi_.ip_address;
+  if (cellular_connected())
+    return cellular_.ip_address;
+  return ethernet_.ip_address;
+}
+
 }  // namespace chromeos
