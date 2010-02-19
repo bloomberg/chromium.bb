@@ -4,27 +4,38 @@
  * be found in the LICENSE file.
  */
 
-#include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
+#include <assert.h>
 
-#include <stdio.h>
-#include <sys/types.h>
+#include <algorithm>
+#include <sstream>
+#include <string>
+#include <vector>
 
 #include "native_client/src/include/nacl_macros.h"
-#include "native_client/src/include/nacl_elf.h"
-#include "native_client/src/include/portability_io.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
+#include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
+
+using std::string;
+using std::vector;
+
+// TODO(robertm): Move this to  new header if it becomes more popular
+template <class T> std::string ToString(const T& t) {
+  std::stringstream ss;
+  ss << t;
+  return ss.str();
+}
+
 
 namespace nacl {
 
 SelLdrLauncher::SelLdrLauncher()
-    : child_(kInvalidHandle),
-      channel_(kInvalidHandle),
-      argc_(-1),
-      argv_(NULL),
-      is_sel_ldr_(true),
-      sock_addr_(NULL) {
+  : child_(kInvalidHandle),
+    channel_(kInvalidHandle),
+    sock_addr_(NULL),
+    is_sel_ldr_(true) {
 }
+
 
 static DescWrapper* GetSockAddr(DescWrapper* desc) {
   DescWrapper::MsgHeader   header;
@@ -51,6 +62,7 @@ static DescWrapper* GetSockAddr(DescWrapper* desc) {
 
   return descs[0];
 }
+
 
 bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
                                       NaClSrpcChannel* untrusted_command,
@@ -132,59 +144,79 @@ bool SelLdrLauncher::OpenSrpcChannels(NaClSrpcChannel* command,
   return retval;
 }
 
-void SelLdrLauncher::BuildArgv(const char* sel_ldr_pathname,
-                               const char* application_name,
-                               int imc_fd,
-                               Handle imc_channel_handle,
-                               int sel_ldr_argc,
-                               const char* sel_ldr_argv[],
-                               int application_argc,
-                               const char* application_argv[]) {
-  // NOTE: there might be some signedness issues with imc_channel_handle
-  SNPRINTF(channel_buf_,
-           sizeof(channel_buf_),
-           "%d:%u",
-           imc_fd,
-           imc_channel_handle);
-  SNPRINTF(channel_number_, sizeof(channel_number_), "%d", imc_fd);
 
-  // Fixed args are:
-  // .../sel_ldr -f <application_name> -i <NaCl fd>:<imcchannel#>
-  const char* kFixedArgs[] = {
-    const_cast<char*>(sel_ldr_pathname),
-    "-f",
-    const_cast<char*>(application_name),
-    "-i",
-    channel_buf_
+string SelLdrLauncher::ExpandVar(string arg) {
+  if (arg[0] != '$') return arg;
+
+  if (arg == "$SEL_LDR_EXE") {
+    return sel_ldr_;
+  } else if (arg == "$APP_EXE") {
+    return application_name_;
+  } else if (arg == "$CHAN_BUF") {
+    return channel_buf_;
+  } else if (arg == "$CHAN") {
+    return channel_number_;
+  } else {
+    // TODO(robertm): add error message
+    return "BAD_BAD_BAD";
+  }
+}
+
+
+void SelLdrLauncher::BuildArgv(vector<string>* command) {
+  // assert that both Init() and SetChannelBuf() were called
+  assert(channel_buf_ != "");
+  assert(sel_ldr_ != "");
+  // NOTE: this is followed by sel_ldr_argv, "--", application_argv
+  static const char* kCommandLineTemplate[] = {
+    "$SEL_LDR_EXE",        // something like sel_ldr
+    "-f", "$APP_EXE",      // something like app_name.nexe
+    "-i", "$CHAN_BUF",     // something like <NaCl fd>:<imcchannel#>
+    0,
   };
-  const int kFixedArgc = NACL_ARRAY_SIZE(kFixedArgs);
 
-  argv_ = new char const*[kFixedArgc + sel_ldr_argc
-                          + (application_argc + 1) + 1];
-  // We use pre-increment everywhere, so we need to initialize to -1.
-  argc_ = -1;
+  for (size_t i = 0; kCommandLineTemplate[i]; ++i) {
+    command->push_back(ExpandVar(kCommandLineTemplate[i]));
+  }
 
-  // Copy the fixed arguments to argv_.
-  for (int i = 0; i < kFixedArgc; ++i) {
-    argv_[++argc_] = kFixedArgs[i];
+  for (size_t i = 0; i < sel_ldr_argv_.size(); ++i) {
+    command->push_back(ExpandVar(sel_ldr_argv_[i]));
   }
-  // Copy the specified additional arguments (e.g., "-d" or "-P") to sel_ldr
-  for (int i = 0; i < sel_ldr_argc; ++i) {
-    argv_[++argc_] = sel_ldr_argv[i];
-  }
-  // Copy the specified arguments to the application
-  if (application_argc > 0) {
-    argv_[++argc_] = "--";
-    for (int i = 0; i < application_argc; ++i) {
-      if (strncmp("$CHAN", application_argv[i], 6) == 0) {
-        argv_[++argc_] = channel_number_;
-      } else {
-        argv_[++argc_] = application_argv[i];
-      }
+
+  if (application_argv_.size() > 0) {
+    // Separator between sel_universal and app args
+    command->push_back("--");
+
+    for (size_t i = 0; i < application_argv_.size(); ++i) {
+      command->push_back(ExpandVar(application_argv_[i]));
     }
   }
-  // NULL terminate the argument list.
-  argv_[++argc_] = NULL;
+}
+
+
+void SelLdrLauncher::Init(const string& application_name,
+                          int imc_fd,
+                          const vector<string>& sel_ldr_argv,
+                          const vector<string>& app_argv) {
+  // make sure we don't call this twice
+  assert(sel_ldr_ == "");
+  sel_ldr_ = GetSelLdrPathName();
+  application_name_ = application_name;
+  copy(sel_ldr_argv.begin(), sel_ldr_argv.end(), back_inserter(sel_ldr_argv_));
+  copy(app_argv.begin(), app_argv.end(), back_inserter(application_argv_));
+  channel_number_ = ToString(imc_fd);
+}
+
+//
+void SelLdrLauncher::InitChannelBuf(Handle imc_channel_handle) {
+  channel_buf_ = channel_number_ + ":" +
+                 // TODO(robertm): eliminate #ifdef
+                 // NOTE: before we used printf("%d:%u", ...)
+#if NACL_WINDOWS
+                 ToString(reinterpret_cast<uintptr_t>(imc_channel_handle));
+#else
+                 ToString(imc_channel_handle);
+#endif
 }
 
 }  // namespace nacl

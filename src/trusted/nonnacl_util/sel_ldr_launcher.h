@@ -10,10 +10,8 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_NONNACL_UTIL_SEL_LDR_LAUNCHER_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_NONNACL_UTIL_SEL_LDR_LAUNCHER_H_
 
-#include <stdarg.h>
-#include <stdlib.h>
-#include <string.h>
 #include <string>
+#include <vector>
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
@@ -29,14 +27,36 @@ namespace nacl {
  */
 struct SelLdrLauncher {
  public:
-  explicit SelLdrLauncher();
+  SelLdrLauncher();
 
-  bool Start(const char* application_name,
+  // TODO(robertm): shouldn't some of these args go in the constructor
+  // application_argv can take a "$CHAN" as an argument which will be replaced
+  // with `imc_fd` number if the target application is a NaCl module
+  // and with `channel_` number if the target application is a native OS
+  // binary.
+
+  bool Start(const std::string& application_name,
+             int imc_fd,
+             const std::vector<std::string>& sel_ldr_argv,
+             const std::vector<std::string>& app_argv) {
+    Init(application_name, imc_fd, sel_ldr_argv, app_argv);
+    return Launch();
+  }
+
+  // Obsolete: compatibility interface
+  bool Start(const std::string& application_name,
              int imc_fd,
              int sel_ldr_argc,
              const char* sel_ldr_argv[],
-             int application_argc,
-             const char* application_argv[]);
+             int app_argc,
+             const char* app_argv[]) {
+    const std::vector<std::string> sel_ldr_vec(sel_ldr_argv,
+                                               sel_ldr_argv + sel_ldr_argc);
+    const std::vector<std::string> app_vec(app_argv,
+                                           app_argv + app_argc);
+    return Start(application_name, imc_fd, sel_ldr_vec, app_vec);
+  }
+  // TODO(gregoryd): add some background story here
 #ifdef NACL_STANDALONE
   // Should never be called when not running in Chrome.
   bool Start(const char* url, int imc_fd) {
@@ -65,9 +85,7 @@ struct SelLdrLauncher {
   // ownership of the handle prior to the Dtor firing.
   Handle channel() const { return channel_; }
 
-  const char* GetApplicationName() const { return application_name_.c_str(); }
-
-  static const char* GetPluginDirname();
+  std::string GetApplicationName() const { return application_name_; }
 
   // Returns the socket address used to connect to the sel_ldr.
   struct NaClDesc* GetSelLdrSocketAddress() const { return sock_addr_; }
@@ -82,40 +100,47 @@ struct SelLdrLauncher {
   bool KillChild();
 
  private:
-  // application_argv can take a "$CHAN" as an argument which will be replaced
-  // with `imc_fd` number if the target application is a NaCl module
-  // and with `channel_` number if the target application is a native OS
-  // binary.
-  void BuildArgv(const char* sel_ldr_pathname,
-                 const char* application_name,
-                 int imc_fd,
-                 Handle imc_channel_handle,
-                 int sel_ldr_argc,
-                 const char* sel_ldr_argv[],
-                 int application_argc,
-                 const char* application_argv[]);
+  // We have different implementations for all platforms.
+  static void GetPluginDirectory(char* buffer, size_t len);
 
-  // If subprocess creation fails, both child_ and channel_  are set to
-  // kInvalidHandle.
- public:
+  std::string GetSelLdrPathName();
+
+  std::string ExpandVar(std::string arg);
+
+  void BuildArgv(std::vector<std::string>* argv);
+
+  // If subprocess creation fails, both child_ and channel_ are set to
+  // kInvalidHandle. We have different implementations for unix and win.
+  // NOTE: you must call Init() and InitChannelBuf() before Launch()
+  bool Launch();
+
+  void Init(const std::string& application_name,
+            int imc_fd,
+            const std::vector<std::string>& sel_ldr_argv,
+            const std::vector<std::string>& application_argv);
+
+  void InitChannelBuf(Handle handle);
+
+ private:
   Handle child_;
   Handle channel_;
- private:
-  int argc_;
-  char const** argv_;
-  // The following buffer is used as an argv element for mapping the imc
-  // channel to a nacl descriptor.
-  char channel_buf_[23];
-  // The following buffer is used to save a string that replaces an application
-  // argument "$CHAN".
-  char channel_number_[19];
+  // The following strings and vectors are used by BuildArgv to
+  // create a command line, they are initialized by InitBasic().
+  std::string channel_number_;
+  std::string sel_ldr_;
+  std::string application_name_;
+  std::vector<std::string> sel_ldr_argv_;
+  std::vector<std::string> application_argv_;
+  // unlike the others above this is set from within Launch();
+  std::string channel_buf_;
+
+  // The socket address returned from sel_ldr for connects.
+  struct NaClDesc* sock_addr_;
+
   // The following boolean value is set to true if SelLdrLauncher has launched
   // an instance of sel_ldr, or false if child_ is executing a native OS binary
   // instead of sel_ldr for debugging.
   bool is_sel_ldr_;
-  std::string application_name_;
-  // The socket address returned from sel_ldr for connects.
-  struct NaClDesc* sock_addr_;
 };
 
 }  // namespace nacl

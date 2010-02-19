@@ -4,12 +4,11 @@
  * be found in the LICENSE file.
  */
 
-
-
-#include <iostream>
-#include <sstream>
 #include <string.h>
 #include <windows.h>
+
+#include <string>
+#include <vector>
 
 #include "native_client/src/include/portability.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
@@ -17,7 +16,11 @@
 
 // Use a predefined symbol to get a handle to the current module.
 // http://blogs.msdn.com/oldnewthing/archive/2004/10/25/247180.aspx
+// @IGNORE_LINES_FOR_CODE_HYGIENE[1]
 extern "C" IMAGE_DOS_HEADER __ImageBase;
+
+using std::string;
+using std::vector;
 
 namespace nacl {
 
@@ -33,31 +36,34 @@ SelLdrLauncher::~SelLdrLauncher() {
   }
 }
 
-bool SelLdrLauncher::Start(const char* application_name,
-                           int imc_fd,
-                           int sel_ldr_argc,
-                           const char* sel_ldr_argv[],
-                           int application_argc,
-                           const char* application_argv[]) {
+string SelLdrLauncher::GetSelLdrPathName() {
+  char buffer[FILENAME_MAX];
+  GetPluginDirectory(buffer, sizeof(buffer));
+  return string(buffer) + "\\sel_ldr.exe";
+}
+
+// TODO(sehr): document what this is supposed to do exactly
+// NOTE: this may be buggy, e.g. how is \\ handled?
+static string Escape(string s) {
+  string result;
+  for (size_t i = 0; i < s.size(); ++i) {
+    if (s[i] == '"') {
+      result += "\\\"";
+    } else if (s[i] == '\\' && i + 1 < s.size() && s[i + 1] == '"') {
+      result += "\\\\\\\"";
+      ++i;
+    } else {
+      result.push_back(s[i]);
+    }
+  }
+
+  return result;
+}
+
+bool SelLdrLauncher::Launch() {
   Handle pair[2];
   STARTUPINFOA startup_info;
   PROCESS_INFORMATION process_infomation;
-  const char* const kSelLdrBasename = "sel_ldr.exe";
-  const char* plugin_dirname = GetPluginDirname();
-  char sel_ldr_path[MAX_PATH];
-
-  // TODO(sehr): this should be refactored to merge more with the Linux code.
-  if (NULL == plugin_dirname) {
-    plugin_dirname = "";
-  }
-  _snprintf_s(sel_ldr_path,
-              sizeof(sel_ldr_path),
-              sizeof(sel_ldr_path),
-              "%s\\%s",
-              plugin_dirname,
-              kSelLdrBasename);
-
-  application_name_ = application_name;
 
   if (SocketPair(pair) == -1) {
     return false;
@@ -73,33 +79,18 @@ bool SelLdrLauncher::Start(const char* application_name,
     return false;
   }
 
-  // Build argc_ and argv_.
-  BuildArgv(sel_ldr_path,
-            application_name,
-            imc_fd,
-            channel,
-            sel_ldr_argc,
-            sel_ldr_argv,
-            application_argc,
-            application_argv);
+  InitChannelBuf(channel);
+  vector<string> command;
+  BuildArgv(&command);
 
-  // Convert argv_ to a string for process creation.
+  // Convert to single string for process creation.
   std::string str = "";
-  for (int i = 0; i < argc_; ++i) {
+  for (size_t i = 0; i < command.size(); ++i) {
     if (i > 0) {
       str += " ";
     }
     str += "\"";
-    for (const char* p = argv_[i]; *p; ++p) {
-      if (*p == '"') {
-        str += "\\\"";
-      } else if (*p == '\\' && p[1] == '"') {
-        str += "\\\\\\\"";
-        ++p;
-      } else {
-        str += *p;
-      }
-    }
+    str += Escape(command[i]);
     str += "\"";
   }
 
@@ -124,19 +115,16 @@ bool SelLdrLauncher::Start(const char* application_name,
   return true;
 }
 
-// This function is not thread-safe and should be called from the main browser
-// thread.
-const char* SelLdrLauncher::GetPluginDirname() {
-  static char system_buffer[MAX_PATH];
-
+void SelLdrLauncher::GetPluginDirectory(char* buffer, size_t len) {
   // __ImageBase is in the current module, which could be a .dll or .exe
   HMODULE this_module = reinterpret_cast<HMODULE>(&__ImageBase);
-  GetModuleFileNameA(this_module, system_buffer, MAX_PATH);
-  char* path_end = strrchr(system_buffer, '\\');
+  // NOTE: casting down to DWORD is safe the integer will become smaller
+  //       at worst
+  GetModuleFileNameA(this_module, buffer, static_cast<DWORD>(len));
+  char* path_end = strrchr(buffer, '\\');
   if (NULL != path_end) {
     *path_end = '\0';
   }
-  return system_buffer;
 }
 
 bool SelLdrLauncher::KillChild() {

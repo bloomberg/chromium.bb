@@ -6,6 +6,8 @@
 
 
 #include <map>
+#include <vector>
+#include <string>
 
 #include "native_client/src/include/nacl_macros.h"
 
@@ -33,6 +35,9 @@
 
 #include "native_client/src/trusted/service_runtime/nacl_error_code.h"
 #include "native_client/src/trusted/service_runtime/include/sys/nacl_imc_api.h"
+
+using std::string;
+using std::vector;
 
 namespace nacl_srpc {
 
@@ -257,25 +262,23 @@ bool ServiceRuntimeInterface::Start(const char* nacl_file) {
   const char* kSelLdrArgs[] = { "-P", "5", "-X", "5" };
   // TODO(sehr): remove -P support and default channels.
   const int kSelLdrArgLength = NACL_ARRAY_SIZE(kSelLdrArgs);
+  vector<string> kArgv(kSelLdrArgs, kSelLdrArgs + kSelLdrArgLength);
+  vector<string> kEmpty;
 
   // NB: number_alive is intentionally modified only when
   // SRPC_PLUGIN_DEBUG is enabled.
   dprintf(("ServiceRuntimeInterface::ServiceRuntimeInterface(%p, %p, %s, %d)\n",
-           static_cast<void *>(this),
-           static_cast<void *>(plugin()),
+           static_cast<void*>(this),
+           static_cast<void*>(plugin()),
            nacl_file,
+           // TODO(robertm): should this really be inside the debug macro
            ++number_alive_counter));
 
   subprocess_ = new(std::nothrow) nacl::SelLdrLauncher();
   if (NULL == subprocess_) {
     return false;
   }
-  if (!subprocess_->Start(const_cast<char*>(nacl_file),
-                          5,
-                          kSelLdrArgLength,
-                          kSelLdrArgs,
-                          0,
-                          NULL)) {
+  if (!subprocess_->Start(nacl_file, 5, kArgv, kEmpty)) {
     delete subprocess_;
     subprocess_ = NULL;
     return false;
@@ -317,7 +320,7 @@ bool ServiceRuntimeInterface::Kill() {
 }
 
 bool ServiceRuntimeInterface::LogAtServiceRuntime(int severity,
-                                                  std::string msg) {
+                                                  string msg) {
   return runtime_channel_->Log(severity, msg);
 }
 
