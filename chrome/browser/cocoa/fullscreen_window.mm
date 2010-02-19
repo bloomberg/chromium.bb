@@ -58,10 +58,21 @@
   }
 }
 
+// Similarly, we need this too....
+- (void)performMiniaturize:(id)sender {
+  [self miniaturize:sender];
+}
+
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
+  SEL action = [item action];
+
   // Explicitly enable |-performClose:| (see above); otherwise the fact that
   // this window does not have a close button results in it being disabled.
-  if ([item action] == @selector(performClose:))
+  if (action == @selector(performClose:))
+    return YES;
+
+  // Similarly for |-performMiniaturize:|.
+  if (action == @selector(performMiniaturize:))
     return YES;
 
   return [super validateUserInterfaceItem:item];
