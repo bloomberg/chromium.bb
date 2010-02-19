@@ -186,9 +186,16 @@ BOOL CALLBACK InvalidateWindow(HWND hwnd, LPARAM lparam) {
 #endif
 
 ViewMsg_Navigate_Params::NavigationType GetNavigationType(
-    Profile* profile, const NavigationEntry& entry, bool reload) {
-  if (reload)
-    return ViewMsg_Navigate_Params::RELOAD;
+    Profile* profile, const NavigationEntry& entry,
+    NavigationController::ReloadType reload_type) {
+  switch (reload_type) {
+    case NavigationController::RELOAD:
+      return ViewMsg_Navigate_Params::RELOAD;
+    case NavigationController::RELOAD_IGNORING_CACHE:
+      return ViewMsg_Navigate_Params::RELOAD_IGNORING_CACHE;
+    case NavigationController::NO_RELOAD:
+      break;  // Fall through to rest of function.
+  }
 
   if (entry.restore_type() == NavigationEntry::RESTORE_LAST_SESSION &&
       profile->DidLastSessionExitCleanly())
@@ -198,13 +205,14 @@ ViewMsg_Navigate_Params::NavigationType GetNavigationType(
 }
 
 void MakeNavigateParams(Profile* profile, const NavigationEntry& entry,
-                        bool reload, ViewMsg_Navigate_Params* params) {
+                        NavigationController::ReloadType reload_type,
+                        ViewMsg_Navigate_Params* params) {
   params->page_id = entry.page_id();
   params->url = entry.url();
   params->referrer = entry.referrer();
   params->transition = entry.transition_type();
   params->state = entry.content_state();
-  params->navigation_type = GetNavigationType(profile, entry, reload);
+  params->navigation_type = GetNavigationType(profile, entry, reload_type);
   params->request_time = base::Time::Now();
 }
 
@@ -703,7 +711,8 @@ void TabContents::OpenURL(const GURL& url, const GURL& referrer,
     delegate_->OpenURLFromTab(this, url, referrer, disposition, transition);
 }
 
-bool TabContents::NavigateToPendingEntry(bool reload) {
+bool TabContents::NavigateToPendingEntry(
+    NavigationController::ReloadType reload_type) {
   const NavigationEntry& entry = *controller_.pending_entry();
 
   RenderViewHost* dest_render_view_host = render_manager_.Navigate(entry);
@@ -724,7 +733,7 @@ bool TabContents::NavigateToPendingEntry(bool reload) {
 
   // Navigate in the desired RenderViewHost.
   ViewMsg_Navigate_Params navigate_params;
-  MakeNavigateParams(profile(), entry, reload, &navigate_params);
+  MakeNavigateParams(profile(), entry, reload_type, &navigate_params);
   dest_render_view_host->Navigate(navigate_params);
 
   if (entry.page_id() == -1) {
@@ -742,7 +751,8 @@ bool TabContents::NavigateToPendingEntry(bool reload) {
   // loading.
   GetPasswordManager()->ClearProvisionalSave();
 
-  if (reload && !profile()->IsOffTheRecord()) {
+  if (reload_type != NavigationController::NO_RELOAD &&
+      !profile()->IsOffTheRecord()) {
     FaviconService* favicon_service =
         profile()->GetFaviconService(Profile::IMPLICIT_ACCESS);
     if (favicon_service)

@@ -120,9 +120,10 @@ const struct AcceleratorMapping {
   { GDK_Right, IDC_FORWARD, GDK_MOD1_MASK },
   { XF86XK_Forward, IDC_FORWARD, GdkModifierType(0) },
   { GDK_r, IDC_RELOAD, GDK_CONTROL_MASK },
+  { GDK_r, IDC_RELOAD_IGNORING_CACHE,
+    GdkModifierType(GDK_CONTROL_MASK|GDK_SHIFT_MASK) },
   { GDK_F5, IDC_RELOAD, GdkModifierType(0) },
-  { GDK_F5, IDC_RELOAD, GDK_CONTROL_MASK },
-  { GDK_F5, IDC_RELOAD, GDK_SHIFT_MASK },
+  { GDK_F5, IDC_RELOAD_IGNORING_CACHE, GDK_SHIFT_MASK },
   { XF86XK_Reload, IDC_RELOAD, GdkModifierType(0) },
   { XF86XK_Refresh, IDC_RELOAD, GdkModifierType(0) },
 

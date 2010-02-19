@@ -73,6 +73,9 @@
 #define IDC_OPEN_CURRENT_URL            33004
 #define IDC_GO                          33005
 #define IDC_STOP                        33006
+// TODO: put this alongside RELOAD, next time someone wants to fix all
+// the Mac ids.
+#define IDC_RELOAD_IGNORING_CACHE       33007
 
 // Window management commands
 #define IDC_NEW_WINDOW                  34000

@@ -824,7 +824,15 @@ void Browser::GoForward(WindowOpenDisposition disp) {
 
 void Browser::Reload() {
   UserMetrics::RecordAction("Reload", profile_);
+  ReloadInternal(false);
+}
 
+void Browser::ReloadIgnoringCache() {
+  UserMetrics::RecordAction("ReloadIgnoringCache", profile_);
+  ReloadInternal(true);
+}
+
+void Browser::ReloadInternal(bool ignore_cache) {
   // If we are showing an interstitial, treat this as an OpenURL.
   TabContents* current_tab = GetSelectedTabContents();
   if (current_tab) {
@@ -838,7 +846,10 @@ void Browser::Reload() {
     // As this is caused by a user action, give the focus to the page.
     if (!current_tab->FocusLocationBarByDefault())
       current_tab->Focus();
-    current_tab->controller().Reload(true);
+    if (ignore_cache)
+      current_tab->controller().ReloadIgnoringCache(true);
+    else
+      current_tab->controller().Reload(true);
   }
 }
 
@@ -1469,6 +1480,7 @@ void Browser::ExecuteCommandWithDisposition(
     case IDC_BACK:                  GoBack(disposition);           break;
     case IDC_FORWARD:               GoForward(disposition);        break;
     case IDC_RELOAD:                Reload();                      break;
+    case IDC_RELOAD_IGNORING_CACHE: ReloadIgnoringCache();         break;
     case IDC_HOME:                  Home(disposition);             break;
     case IDC_OPEN_CURRENT_URL:      OpenCurrentURL();              break;
     case IDC_GO:                    Go(disposition);               break;
@@ -2509,6 +2521,7 @@ void Browser::InitCommandState() {
 
   // Navigation commands
   command_updater_.UpdateCommandEnabled(IDC_RELOAD, true);
+  command_updater_.UpdateCommandEnabled(IDC_RELOAD_IGNORING_CACHE, true);
 
   // Window management commands
   command_updater_.UpdateCommandEnabled(IDC_NEW_WINDOW, true);
@@ -2699,6 +2712,8 @@ void Browser::UpdateCommandsForTabState() {
 
   // Disable certain items if running DevTools
   command_updater_.UpdateCommandEnabled(IDC_RELOAD,
+                                        CanReloadContents(current_tab));
+  command_updater_.UpdateCommandEnabled(IDC_RELOAD_IGNORING_CACHE,
                                         CanReloadContents(current_tab));
   bool enabled_for_non_devtools = type() != TYPE_DEVTOOLS;
   command_updater_.UpdateCommandEnabled(IDC_FIND, enabled_for_non_devtools);

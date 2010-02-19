@@ -321,7 +321,8 @@ class TabContents : public PageNavigator,
   //
   // If this method returns false, then the navigation is discarded (equivalent
   // to calling DiscardPendingEntry on the NavigationController).
-  virtual bool NavigateToPendingEntry(bool reload);
+  virtual bool NavigateToPendingEntry(
+      NavigationController::ReloadType reload_type);
 
   // Stop any pending navigation.
   virtual void Stop();

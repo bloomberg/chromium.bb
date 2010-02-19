@@ -173,6 +173,14 @@ void NavigationController::RestoreFromState(
 }
 
 void NavigationController::Reload(bool check_for_repost) {
+  ReloadInternal(check_for_repost, RELOAD);
+}
+void NavigationController::ReloadIgnoringCache(bool check_for_repost) {
+  ReloadInternal(check_for_repost, RELOAD_IGNORING_CACHE);
+}
+
+void NavigationController::ReloadInternal(bool check_for_repost,
+                                          ReloadType reload_type) {
   // Reloading a transient entry does nothing.
   if (transient_entry_index_ != -1)
     return;
@@ -199,7 +207,7 @@ void NavigationController::Reload(bool check_for_repost) {
 
     pending_entry_index_ = current_index;
     entries_[pending_entry_index_]->set_transition_type(PageTransition::RELOAD);
-    NavigateToPendingEntry(true);
+    NavigateToPendingEntry(reload_type);
   }
 }
 
@@ -224,7 +232,7 @@ void NavigationController::LoadEntry(NavigationEntry* entry) {
       NotificationType::NAV_ENTRY_PENDING,
       Source<NavigationController>(this),
       NotificationService::NoDetails());
-  NavigateToPendingEntry(false);
+  NavigateToPendingEntry(NO_RELOAD);
 }
 
 NavigationEntry* NavigationController::GetActiveEntry() const {
@@ -288,7 +296,7 @@ void NavigationController::GoBack() {
   DiscardNonCommittedEntries();
 
   pending_entry_index_ = current_index - 1;
-  NavigateToPendingEntry(false);
+  NavigateToPendingEntry(NO_RELOAD);
 }
 
 void NavigationController::GoForward() {
@@ -310,7 +318,7 @@ void NavigationController::GoForward() {
   if (!transient)
     pending_entry_index_++;
 
-  NavigateToPendingEntry(false);
+  NavigateToPendingEntry(NO_RELOAD);
 }
 
 void NavigationController::GoToIndex(int index) {
@@ -333,7 +341,7 @@ void NavigationController::GoToIndex(int index) {
   DiscardNonCommittedEntries();
 
   pending_entry_index_ = index;
-  NavigateToPendingEntry(false);
+  NavigateToPendingEntry(NO_RELOAD);
 }
 
 void NavigationController::GoToOffset(int offset) {
@@ -360,7 +368,7 @@ void NavigationController::RemoveEntryAtIndex(int index,
     // We removed the currently shown entry, so we have to load something else.
     if (last_committed_entry_index_ != -1) {
       pending_entry_index_ = last_committed_entry_index_;
-      NavigateToPendingEntry(false);
+      NavigateToPendingEntry(NO_RELOAD);
     } else {
       // If there is nothing to show, show a default page.
       LoadURL(default_url.is_empty() ? GURL("about:blank") : default_url,
@@ -940,7 +948,7 @@ void NavigationController::SetWindowID(const SessionID& id) {
                                          NotificationService::NoDetails());
 }
 
-void NavigationController::NavigateToPendingEntry(bool reload) {
+void NavigationController::NavigateToPendingEntry(ReloadType reload_type) {
   needs_reload_ = false;
 
   // For session history navigations only the pending_entry_index_ is set.
@@ -949,7 +957,7 @@ void NavigationController::NavigateToPendingEntry(bool reload) {
     pending_entry_ = entries_[pending_entry_index_].get();
   }
 
-  if (!tab_contents_->NavigateToPendingEntry(reload))
+  if (!tab_contents_->NavigateToPendingEntry(reload_type))
     DiscardNonCommittedEntries();
 }
 
@@ -995,7 +1003,7 @@ void NavigationController::LoadIfNecessary() {
   // Explicitly use NavigateToPendingEntry so that the renderer uses the
   // cached state.
   pending_entry_index_ = last_committed_entry_index_;
-  NavigateToPendingEntry(false);
+  NavigateToPendingEntry(NO_RELOAD);
 }
 
 void NavigationController::NotifyEntryChanged(const NavigationEntry* entry,

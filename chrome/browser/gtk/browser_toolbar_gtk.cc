@@ -626,7 +626,13 @@ void BrowserToolbarGtk::OnButtonClick(GtkWidget* button,
 
   int tag = -1;
   if (button == toolbar->reload_->widget()) {
-    tag = IDC_RELOAD;
+    GdkModifierType modifier_state;
+    if (gtk_get_current_event_state(&modifier_state) &&
+        modifier_state & GDK_SHIFT_MASK) {
+      tag = IDC_RELOAD_IGNORING_CACHE;
+    } else {
+      tag = IDC_RELOAD;
+    }
     toolbar->location_bar_->Revert();
   } else if (toolbar->home_.get() && button == toolbar->home_->widget()) {
     tag = IDC_HOME;

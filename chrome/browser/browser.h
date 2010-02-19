@@ -350,6 +350,7 @@ class Browser : public TabStripModelDelegate,
   void GoBack(WindowOpenDisposition disposition);
   void GoForward(WindowOpenDisposition disposition);
   void Reload();
+  void ReloadIgnoringCache();  // AKA shift-reload.
   void Home(WindowOpenDisposition disposition);
   void OpenCurrentURL();
   void Go(WindowOpenDisposition disposition);
@@ -772,6 +773,9 @@ class Browser : public TabStripModelDelegate,
   // |contents| to the extension whose id is |app_extension_id|.
   void SetAppExtensionById(TabContents* contents,
                            const std::string& app_extension_id);
+
+  // Shared code between Reload() and ReloadAll().
+  void ReloadInternal(bool ignore_cache);
 
   // Data members /////////////////////////////////////////////////////////////
 

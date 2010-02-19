@@ -133,6 +133,12 @@ class NavigationController {
     int count;
   };
 
+  enum ReloadType {
+    NO_RELOAD,                // Normal load.
+    RELOAD,                   // Normal (cache-validating) reload.
+    RELOAD_IGNORING_CACHE     // Reload bypassing the cache, aka shift-reload.
+  };
+
   // ---------------------------------------------------------------------------
 
   NavigationController(TabContents* tab_contents, Profile* profile);
@@ -286,6 +292,8 @@ class NavigationController {
   // entry has POST data the user is prompted to see if they really want to
   // reload the page. In nearly all cases pass in true.
   void Reload(bool check_for_repost);
+  // Like Reload(), but don't use caches (aka "shift-reload").
+  void ReloadIgnoringCache(bool check_for_repost);
 
   // Removing of entries -------------------------------------------------------
 
@@ -431,8 +439,11 @@ class NavigationController {
   bool RendererDidNavigateAutoSubframe(
       const ViewHostMsg_FrameNavigate_Params& params);
 
+  // Helper function for code shared between Reload() and ReloadAll().
+  void ReloadInternal(bool check_for_repost, ReloadType reload_type);
+
   // Actually issues the navigation held in pending_entry.
-  void NavigateToPendingEntry(bool reload);
+  void NavigateToPendingEntry(ReloadType reload_type);
 
   // Allows the derived class to issue notifications that a load has been
   // committed. This will fill in the active entry to the details structure.
