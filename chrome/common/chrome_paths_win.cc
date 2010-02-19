@@ -15,16 +15,15 @@
 #include "base/path_service.h"
 #include "base/scoped_comptr_win.h"
 #include "chrome/common/chrome_constants.h"
+#include "chrome/installer/util/browser_distribution.h"
 
 namespace chrome {
 
 bool GetDefaultUserDataDirectory(FilePath* result) {
   if (!PathService::Get(base::DIR_LOCAL_APP_DATA, result))
     return false;
-#if defined(GOOGLE_CHROME_BUILD)
-  *result = result->Append(FILE_PATH_LITERAL("Google"));
-#endif
-  *result = result->Append(chrome::kBrowserAppName);
+  BrowserDistribution* dist = BrowserDistribution::GetDistribution();
+  *result = result->Append(dist->GetInstallSubDir());
   *result = result->Append(chrome::kUserDataDirname);
   return true;
 }

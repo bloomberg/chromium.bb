@@ -37,6 +37,7 @@
     'nacl_win64_dependencies': [
       'common_nacl_win64',
       'common_constants_win64',
+      'installer/installer.gyp:installer_util_nacl_win64',
     ],
     'allocator_target': '../base/allocator/allocator.gyp:allocator',
     'grit_out_dir': '<(SHARED_INTERMEDIATE_DIR)/chrome',
@@ -1464,6 +1465,7 @@
           'msvs_guid': '89C1C190-A5D1-4EC4-BD6A-67FF2195C7CC',
           'dependencies': [
             'common_constants',
+            'installer/installer.gyp:installer_util',
             '../base/base.gyp:base',
             '../breakpad/breakpad.gyp:breakpad_handler',
             '../breakpad/breakpad.gyp:breakpad_sender',

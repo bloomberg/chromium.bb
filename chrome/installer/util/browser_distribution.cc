@@ -10,6 +10,7 @@
 #include "chrome/installer/util/browser_distribution.h"
 
 #include "base/command_line.h"
+#include "base/lock.h"
 #include "base/registry.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/env_vars.h"
@@ -27,6 +28,8 @@ BrowserDistribution* BrowserDistribution::GetDistribution() {
 
 BrowserDistribution* BrowserDistribution::GetDistribution(bool chrome_frame) {
   static BrowserDistribution* dist = NULL;
+  static Lock dist_lock;
+  AutoLock lock(dist_lock);
   if (dist == NULL) {
     if (chrome_frame) {
       // TODO(robertshield): Make one of these for Google Chrome vs
