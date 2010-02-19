@@ -39,8 +39,9 @@ static void NormalizeBuildtime(std::string* xml_encoded) {
 }
 
 TEST(MetricsLogTest, EmptyRecord) {
-  std::string expected_output =
-      "<log clientid=\"bogus client ID\" buildtime=\"123456789\"/>";
+  std::string expected_output = StringPrintf(
+      "<log clientid=\"bogus client ID\" buildtime=\"123456789\" "
+      "appversion=\"%s\"/>", MetricsLog::GetVersionString().c_str());
 
   MetricsLog log("bogus client ID", 0);
   log.CloseLog();
@@ -73,15 +74,16 @@ class NoTimeMetricsLog : public MetricsLog {
 };  // namespace
 
 TEST(MetricsLogTest, WindowEvent) {
-  std::string expected_output =
-      "<log clientid=\"bogus client ID\" buildtime=\"123456789\">\n"
+  std::string expected_output = StringPrintf(
+      "<log clientid=\"bogus client ID\" buildtime=\"123456789\" "
+          "appversion=\"%s\">\n"
       " <window action=\"create\" windowid=\"0\" session=\"0\" time=\"\"/>\n"
       " <window action=\"open\" windowid=\"1\" parent=\"0\" "
           "session=\"0\" time=\"\"/>\n"
       " <window action=\"close\" windowid=\"1\" parent=\"0\" "
           "session=\"0\" time=\"\"/>\n"
       " <window action=\"destroy\" windowid=\"0\" session=\"0\" time=\"\"/>\n"
-      "</log>";
+      "</log>", MetricsLog::GetVersionString().c_str());
 
   NoTimeMetricsLog log("bogus client ID", 0);
   log.RecordWindowEvent(MetricsLog::WINDOW_CREATE, 0, -1);
@@ -104,12 +106,12 @@ TEST(MetricsLogTest, WindowEvent) {
 }
 
 TEST(MetricsLogTest, LoadEvent) {
-  std::string expected_output =
-      "<log clientid=\"bogus client ID\" buildtime=\"123456789\">\n"
+  std::string expected_output = StringPrintf(
+      "<log clientid=\"bogus client ID\" buildtime=\"123456789\" "
+          "appversion=\"%s\">\n"
       " <document action=\"load\" docid=\"1\" window=\"3\" loadtime=\"7219\" "
-      "origin=\"link\" "
-      "session=\"0\" time=\"\"/>\n"
-      "</log>";
+          "origin=\"link\" session=\"0\" time=\"\"/>\n"
+      "</log>", MetricsLog::GetVersionString().c_str());
 
   NoTimeMetricsLog log("bogus client ID", 0);
   log.RecordLoadEvent(3, GURL("http://google.com"), PageTransition::LINK,
