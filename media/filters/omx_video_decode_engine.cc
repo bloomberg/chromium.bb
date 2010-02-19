@@ -60,7 +60,7 @@ void OmxVideoDecodeEngine::Initialize(AVStream* stream, Task* done_cb) {
   output_format.codec = OmxConfigurator::kCodecRaw;
   omx_configurator_.reset(
       new OmxDecoderConfigurator(input_format, output_format));
-  omx_codec_->Setup(omx_configurator_.get(), NULL);
+  omx_codec_->Setup(omx_configurator_.get(), this);
   omx_codec_->SetErrorCallback(
       NewCallback(this, &OmxVideoDecodeEngine::OnHardwareError));
   omx_codec_->SetFormatCallback(
