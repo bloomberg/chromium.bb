@@ -1004,11 +1004,12 @@ int32_t NaClCommonSysMmap(struct NaClAppThread  *natp,
 
   /*
    * Starting address must be aligned to worst-case allocation
-   * granularity.  (Windows.)  We round up.
+   * granularity.  (Windows.)
    */
   if (!NaClIsAllocPageMultiple(usraddr)) {
     NaClLog(2, "NaClSysMmap: address not allocation granularity aligned\n");
-    usraddr = NaClRoundAllocPage(usraddr);
+    retval = -NACL_ABI_EINVAL;
+    goto cleanup;
   }
   /*
    * Offset should be non-negative (nacl_abi_off_t is signed).  This
