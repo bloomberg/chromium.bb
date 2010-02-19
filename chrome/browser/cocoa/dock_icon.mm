@@ -41,10 +41,8 @@ static const float kBadgeIndent = 5.0f;
 - (void)drawRect:(NSRect)dirtyRect {
   // Not -[NSApplication applicationIconImage]; that fails to return a pasted
   // custom icon.
-  NSWorkspace* workspace = [NSWorkspace sharedWorkspace];
-  NSString* appPath =
-      [[workspace activeApplication] valueForKey:@"NSApplicationPath"];
-  NSImage* appIcon = [workspace iconForFile:appPath];
+  NSString* appPath = [[NSBundle mainBundle] bundlePath];
+  NSImage* appIcon = [[NSWorkspace sharedWorkspace] iconForFile:appPath];
   [appIcon drawInRect:[self bounds]
              fromRect:NSZeroRect
             operation:NSCompositeSourceOver
