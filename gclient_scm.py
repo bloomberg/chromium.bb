@@ -231,7 +231,7 @@ class GitWrapper(SCMWrapper, scm.GIT):
     self._Run(['remote', 'update'], redirect_stdout=False)
     files = self._Run(['diff', new_base, '--name-only']).split()
     file_list.extend([os.path.join(self.checkout_path, f) for f in files])
-    if options.force:
+    if options.force or options.reset:
       self._Run(['reset', '--hard', merge_base], redirect_stdout=False)
     try:
       self._Run(['rebase', '-v', '--onto', new_base, merge_base, cur_branch],

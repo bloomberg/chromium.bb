@@ -125,6 +125,7 @@ Valid options:
   --deps PLATFORM(S)      : sync deps for the given platform(s), or 'all'
   --verbose               : output additional diagnostics
   --head                  : update to latest revision, instead of last good revision
+  --reset                 : resets any local changes before updating (git only)
 
 Examples:
   gclient %(cmd)s
@@ -1129,6 +1130,9 @@ def Main(argv):
                            help=("(update/sync only) sync deps for the "
                                  "specified (comma-separated) platform(s); "
                                  "'all' will sync all platforms"))
+  option_parser.add_option("", "--reset", action="store_true", default=False,
+                           help=("(update/sync only) resets any local changes "
+                                 "before updating (git only)"))
   option_parser.add_option("", "--spec", default=None,
                            help=("(config only) create a gclient file "
                                  "containing the provided string"))
