@@ -8,6 +8,7 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/character_encoding.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
@@ -18,7 +19,6 @@
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 
 void RenderViewHostDelegateViewHelper::CreateNewWindow(
     int route_id,

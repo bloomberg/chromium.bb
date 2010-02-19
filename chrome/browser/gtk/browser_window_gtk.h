@@ -15,9 +15,9 @@
 #include "base/timer.h"
 #include "build/build_config.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/pref_member.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/pref_member.h"
 #include "chrome/common/x11_util.h"
 
 class BookmarkBarGtk;

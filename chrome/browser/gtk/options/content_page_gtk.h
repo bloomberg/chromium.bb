@@ -9,9 +9,9 @@
 
 #include "chrome/browser/autofill/personal_data_manager.h"
 #include "chrome/browser/options_page_base.h"
+#include "chrome/browser/pref_member.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/profile_sync_service.h"
-#include "chrome/common/pref_member.h"
 
 class ContentPageGtk : public OptionsPageBase,
                        public ProfileSyncServiceObserver,

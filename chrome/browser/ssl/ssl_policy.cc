@@ -24,7 +24,7 @@
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/time_format.h"
 #include "chrome/common/url_constants.h"

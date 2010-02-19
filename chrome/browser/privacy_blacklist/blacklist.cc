@@ -11,9 +11,9 @@
 #include "base/file_path.h"
 #include "base/file_util.h"
 #include "base/string_util.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 #include "chrome/common/url_constants.h"
 #include "net/http/http_util.h"
 

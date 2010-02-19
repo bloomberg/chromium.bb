@@ -6,8 +6,8 @@
 
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class ShownSectionsHandlerTest : public testing::Test {

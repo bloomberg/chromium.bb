@@ -5,11 +5,11 @@
 #include "chrome/browser/cookie_modal_dialog.h"
 
 #include "chrome/browser/host_content_settings_map.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/views/cookie_prompt_view.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 
 // Cookies
 CookiePromptModalDialog::CookiePromptModalDialog(

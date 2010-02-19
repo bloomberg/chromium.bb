@@ -12,8 +12,8 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/sync/glue/model_associator.h"
-#include "chrome/common/pref_service.h"
 
 class ProfileSyncService;
 

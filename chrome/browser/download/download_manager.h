@@ -50,8 +50,8 @@
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/history/download_types.h"
 #include "chrome/browser/history/history.h"
+#include "chrome/browser/pref_member.h"
 #include "chrome/browser/shell_dialogs.h"
-#include "chrome/common/pref_member.h"
 
 class DownloadFileManager;
 class DownloadItemView;

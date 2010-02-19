@@ -8,6 +8,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/load_from_memory_cache_details.h"
 #include "chrome/browser/net/url_request_tracking.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/renderer_host/resource_request_details.h"
 #include "chrome/browser/ssl/ssl_cert_error_handler.h"
 #include "chrome/browser/ssl/ssl_policy.h"
@@ -17,7 +18,6 @@
 #include "chrome/browser/tab_contents/provisional_load_details.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 #include "grit/generated_resources.h"
 #include "net/base/cert_status_flags.h"
 

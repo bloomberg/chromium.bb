@@ -6,10 +6,10 @@
 #define CHROME_BROWSER_VIEWS_OPTIONS_CONTENT_PAGE_VIEW_H_
 
 #include "chrome/browser/autofill/personal_data_manager.h"
+#include "chrome/browser/pref_member.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/views/options/options_page_view.h"
 #include "chrome/browser/views/confirm_message_box_dialog.h"
-#include "chrome/common/pref_member.h"
 #include "views/controls/button/button.h"
 #include "views/controls/link.h"
 #include "views/view.h"

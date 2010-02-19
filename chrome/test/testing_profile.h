@@ -16,9 +16,9 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/net/url_request_context_getter.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
-#include "chrome/common/pref_service.h"
 #include "net/base/cookie_monster.h"
 
 class SessionService;

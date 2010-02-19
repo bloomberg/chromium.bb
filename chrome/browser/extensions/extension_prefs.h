@@ -12,8 +12,8 @@
 #include "base/linked_ptr.h"
 #include "base/task.h"
 #include "base/time.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/common/extensions/extension.h"
-#include "chrome/common/pref_service.h"
 #include "googleurl/src/gurl.h"
 
 // Class for managing global and per-extension preferences.

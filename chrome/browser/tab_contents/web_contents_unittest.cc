@@ -4,6 +4,7 @@
 
 #include "app/message_box_flags.h"
 #include "base/logging.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/renderer_host/test/test_render_view_host.h"
@@ -13,7 +14,6 @@
 #include "chrome/browser/tab_contents/navigation_entry.h"
 #include "chrome/browser/tab_contents/test_tab_contents.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/pref_service.h"
 #include "chrome/common/render_messages.h"
 #include "chrome/common/url_constants.h"
 #include "chrome/test/testing_profile.h"

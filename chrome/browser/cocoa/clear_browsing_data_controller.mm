@@ -8,9 +8,9 @@
 #include "base/scoped_nsobject.h"
 #include "base/singleton.h"
 #include "chrome/browser/browsing_data_remover.h"
-#include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/pref_names.h"
 
 NSString* const kClearBrowsingDataControllerDidDelete =
     @"kClearBrowsingDataControllerDidDelete";

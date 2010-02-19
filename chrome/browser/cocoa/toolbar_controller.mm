@@ -31,6 +31,7 @@
 #import "chrome/browser/cocoa/toolbar_view.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/page_menu_model.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
@@ -39,7 +40,6 @@
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 

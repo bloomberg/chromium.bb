@@ -6,10 +6,10 @@
 
 #include "base/string_util.h"
 #include "chrome/browser/chromeos/cros/synaptics_library.h"
+#include "chrome/browser/pref_member.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/pref_member.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 #include "unicode/timezone.h"
 
 namespace chromeos {

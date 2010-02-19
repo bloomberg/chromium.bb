@@ -5,8 +5,8 @@
 #include "chrome/browser/chromeos/login/user_manager.h"
 
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/pref_service.h"
 
 namespace chromeos {
 

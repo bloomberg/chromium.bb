@@ -9,7 +9,7 @@
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/bookmarks/bookmark_index.h"
-#include "chrome/common/important_file_writer.h"
+#include "chrome/browser/important_file_writer.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 

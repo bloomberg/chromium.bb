@@ -6,11 +6,11 @@
 
 #include "app/gfx/canvas.h"
 #include "base/command_line.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 
 namespace {
 const int kVerticalTabSpacing = 2;

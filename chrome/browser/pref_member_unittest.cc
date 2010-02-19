@@ -3,9 +3,9 @@
 // found in the LICENSE file.
 
 #include "base/file_path.h"
+#include "chrome/browser/pref_member.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/common/notification_service.h"
-#include "chrome/common/pref_member.h"
-#include "chrome/common/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {

@@ -14,6 +14,7 @@
 #include "base/scoped_ptr.h"
 #include "base/task.h"
 #include "chrome/browser/command_updater.h"
+#include "chrome/browser/pref_member.h"
 #include "chrome/browser/sessions/session_id.h"
 #include "chrome/browser/shell_dialogs.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
@@ -22,7 +23,6 @@
 #include "chrome/browser/toolbar_model.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/page_zoom.h"
-#include "chrome/common/pref_member.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
 class BrowserWindow;

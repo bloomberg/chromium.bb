@@ -7,11 +7,11 @@
 #include <vector>
 
 #include "base/string_util.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 #include "webkit/glue/form_field_values.h"
 
 // Limit on the number of suggestions to appear in the pop-up menu under an

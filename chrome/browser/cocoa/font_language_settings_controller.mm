@@ -9,9 +9,9 @@
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/character_encoding.h"
 #include "chrome/browser/fonts_languages_window.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 
 NSString* const kCharacterInfoEncoding = @"encoding";
 NSString* const kCharacterInfoName = @"name";

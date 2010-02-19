@@ -11,8 +11,8 @@
 #import "chrome/browser/cocoa/gradient_button_cell.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
 #import "chrome/browser/cocoa/view_resizer_pong.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 

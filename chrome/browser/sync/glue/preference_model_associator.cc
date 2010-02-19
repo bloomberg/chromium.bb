@@ -7,13 +7,13 @@
 #include "base/json/json_reader.h"
 #include "base/logging.h"
 #include "base/values.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 
 namespace browser_sync {
 

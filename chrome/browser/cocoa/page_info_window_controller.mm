@@ -10,8 +10,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/cocoa/page_info_window_mac.h"
 #include "chrome/browser/cocoa/window_size_autosaver.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 #include "grit/theme_resources.h"
 
 @implementation PageInfoWindowController

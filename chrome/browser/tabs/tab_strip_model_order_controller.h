@@ -5,9 +5,9 @@
 #ifndef CHROME_BROWSER_TABS_TAB_STRIP_MODEL_ORDER_CONTROLLER_H__
 #define CHROME_BROWSER_TABS_TAB_STRIP_MODEL_ORDER_CONTROLLER_H__
 
+#include "chrome/browser/pref_member.h"
 #include "chrome/browser/tabs/tab_strip_model.h"
 #include "chrome/common/page_transition_types.h"
-#include "chrome/common/pref_member.h"
 
 class TabContents;
 class TabStripModel;

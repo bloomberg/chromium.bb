@@ -16,11 +16,11 @@
 #include "chrome/browser/gtk/menu_bar_helper.h"
 #include "chrome/browser/gtk/menu_gtk.h"
 #include "chrome/browser/page_menu_model.h"
+#include "chrome/browser/pref_member.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/notification_observer.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/owned_widget_gtk.h"
-#include "chrome/common/pref_member.h"
 
 class BackForwardButtonGtk;
 class Browser;

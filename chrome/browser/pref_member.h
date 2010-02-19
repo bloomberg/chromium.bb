@@ -21,8 +21,8 @@
 // notify MyClass of changes. Note that if you use SetValue(), the observer
 // will not be notified.
 
-#ifndef CHROME_COMMON_PREF_MEMBER_H_
-#define CHROME_COMMON_PREF_MEMBER_H_
+#ifndef CHROME_BROWSER_PREF_MEMBER_H_
+#define CHROME_BROWSER_PREF_MEMBER_H_
 
 #include <string>
 
@@ -173,4 +173,4 @@ class StringPrefMember : public PrefMember<std::wstring> {
   DISALLOW_COPY_AND_ASSIGN(StringPrefMember);
 };
 
-#endif  // CHROME_COMMON_PREF_MEMBER_H_
+#endif  // CHROME_BROWSER_PREF_MEMBER_H_

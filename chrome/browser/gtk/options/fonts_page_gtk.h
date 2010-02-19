@@ -12,8 +12,8 @@
 #include <vector>
 
 #include "chrome/browser/character_encoding.h"
+#include "chrome/browser/pref_member.h"
 #include "chrome/browser/options_page_base.h"
-#include "chrome/common/pref_member.h"
 
 class FontsPageGtk : public OptionsPageBase {
  public:

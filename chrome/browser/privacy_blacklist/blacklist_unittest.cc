@@ -9,9 +9,9 @@
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_prefs.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/chrome_paths.h"
-#include "chrome/common/pref_service.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 class BlacklistTest : public testing::Test {

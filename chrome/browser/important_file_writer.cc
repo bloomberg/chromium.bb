@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/important_file_writer.h"
+#include "chrome/browser/important_file_writer.h"
 
 #include <stdio.h>
 

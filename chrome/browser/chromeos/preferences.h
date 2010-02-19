@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_CHROMEOS_PREFERENCES_H_
 #define CHROME_BROWSER_CHROMEOS_PREFERENCES_H_
 
+#include "chrome/browser/pref_member.h"
 #include "chrome/common/notification_observer.h"
-#include "chrome/common/pref_member.h"
 
 class PrefService;
 

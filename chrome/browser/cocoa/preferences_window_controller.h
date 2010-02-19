@@ -7,7 +7,7 @@
 #include "base/scoped_ptr.h"
 #include "base/scoped_nsobject.h"
 #include "chrome/browser/options_window.h"
-#include "chrome/common/pref_member.h"
+#include "chrome/browser/pref_member.h"
 
 class PersonalDataManagerObserver;
 @class CookiesWindowController;

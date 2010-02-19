@@ -12,8 +12,8 @@
 // persistent and transient stores, where any corresponding value in the
 // transient store overrides the one in the persistent store.
 
-#ifndef CHROME_COMMON_PREF_SERVICE_H_
-#define CHROME_COMMON_PREF_SERVICE_H_
+#ifndef CHROME_BROWSER_PREF_SERVICE_H_
+#define CHROME_BROWSER_PREF_SERVICE_H_
 
 #include <set>
 
@@ -23,7 +23,7 @@
 #include "base/observer_list.h"
 #include "base/scoped_ptr.h"
 #include "base/values.h"
-#include "chrome/common/important_file_writer.h"
+#include "chrome/browser/important_file_writer.h"
 
 class NotificationObserver;
 class Preference;
@@ -219,4 +219,4 @@ class PrefService : public NonThreadSafe,
   DISALLOW_COPY_AND_ASSIGN(PrefService);
 };
 
-#endif  // CHROME_COMMON_PREF_SERVICE_H_
+#endif  // CHROME_BROWSER_PREF_SERVICE_H_

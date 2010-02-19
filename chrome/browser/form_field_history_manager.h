@@ -7,9 +7,9 @@
 
 #include <string>
 
+#include "chrome/browser/pref_member.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/webdata/web_data_service.h"
-#include "chrome/common/pref_member.h"
 
 namespace webkit_glue {
 class FormFieldValues;

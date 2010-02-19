@@ -11,13 +11,13 @@
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/io_thread.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/privacy_blacklist/blacklist.h"
 #include "chrome/browser/net/chrome_cookie_policy.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/common/appcache/chrome_appcache_service.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_registrar.h"
-#include "chrome/common/pref_service.h"
 #include "net/url_request/url_request_context.h"
 
 class CommandLine;

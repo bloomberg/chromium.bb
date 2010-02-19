@@ -12,9 +12,9 @@
 
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/options_page_base.h"
+#include "chrome/browser/pref_member.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/shell_integration.h"
-#include "chrome/common/pref_member.h"
 #include "googleurl/src/gurl.h"
 
 class Profile;

@@ -10,7 +10,7 @@
 #include <string>
 
 #include "chrome/browser/options_page_base.h"
-#include "chrome/common/pref_member.h"
+#include "chrome/browser/pref_member.h"
 
 class Profile;
 

@@ -5,7 +5,7 @@
 #include "chrome/browser/translate/translate_prefs.h"
 
 #include "base/string_util.h"
-#include "chrome/common/pref_service.h"
+#include "chrome/browser/pref_service.h"
 
 static const wchar_t kPrefTranslateLanguageBlacklist[] =
     L"translate_language_blacklist";

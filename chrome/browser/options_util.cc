@@ -10,8 +10,8 @@
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/host_zoom_map.h"
 #include "chrome/browser/metrics/metrics_service.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 #include "chrome/installer/util/google_update_settings.h"
 
 // static

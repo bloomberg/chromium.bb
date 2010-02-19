@@ -5,12 +5,12 @@
 #include "chrome/browser/search_engines/keyword_editor_controller.h"
 
 #include "chrome/browser/metrics/user_metrics.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "chrome/browser/search_engines/template_url_table_model.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 
 KeywordEditorController::KeywordEditorController(Profile* profile)
     : profile_(profile) {

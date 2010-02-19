@@ -6,11 +6,11 @@
 #define CHROME_BROWSER_SYNC_GLUE_PREFERENCE_CHANGE_PROCESSOR_H_
 
 #include "base/scoped_ptr.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/common/notification_observer.h"
-#include "chrome/common/pref_service.h"
 
 namespace browser_sync {
 

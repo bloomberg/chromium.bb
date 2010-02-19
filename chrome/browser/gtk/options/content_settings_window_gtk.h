@@ -11,8 +11,8 @@
 #include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/gtk/options/cookie_filter_page_gtk.h"
 #include "chrome/browser/gtk/options/content_filter_page_gtk.h"
+#include "chrome/browser/pref_member.h"
 #include "chrome/common/content_settings_types.h"
-#include "chrome/common/pref_member.h"
 
 class AccessibleWidgetHelper;
 

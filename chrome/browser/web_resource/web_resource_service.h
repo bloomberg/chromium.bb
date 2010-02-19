@@ -7,8 +7,8 @@
 
 #include <string>
 
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/utility_process_host.h"
-#include "chrome/common/pref_service.h"
 #include "chrome/common/web_resource/web_resource_unpacker.h"
 
 class Profile;

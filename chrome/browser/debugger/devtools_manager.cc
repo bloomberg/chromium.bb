@@ -13,13 +13,13 @@
 #include "chrome/browser/child_process_security_policy.h"
 #include "chrome/browser/debugger/devtools_window.h"
 #include "chrome/browser/debugger/devtools_client_host.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/site_instance.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/devtools_messages.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 #include "googleurl/src/gurl.h"
 
 // static

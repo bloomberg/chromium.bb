@@ -10,10 +10,10 @@
 
 #include "base/command_line.h"
 #include "base/string_util.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 
 #if defined(OS_WIN)
 #undef IN  // On Windows, windef.h defines this, which screws up "India" cases.

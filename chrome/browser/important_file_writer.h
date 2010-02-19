@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_IMPORTANT_FILE_WRITER_H_
-#define CHROME_COMMON_IMPORTANT_FILE_WRITER_H_
+#ifndef CHROME_BROWSER_IMPORTANT_FILE_WRITER_H_
+#define CHROME_BROWSER_IMPORTANT_FILE_WRITER_H_
 
 #include <string>
 
@@ -101,4 +101,4 @@ class ImportantFileWriter : public NonThreadSafe {
   DISALLOW_COPY_AND_ASSIGN(ImportantFileWriter);
 };
 
-#endif  // CHROME_COMMON_IMPORTANT_FILE_WRITER_H_
+#endif  // CHROME_BROWSER_IMPORTANT_FILE_WRITER_H_

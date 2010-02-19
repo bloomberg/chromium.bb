@@ -6,7 +6,7 @@
 
 #import "chrome/browser/cocoa/window_size_autosaver.h"
 
-#include "chrome/common/pref_service.h"
+#include "chrome/browser/pref_service.h"
 
 @interface WindowSizeAutosaver (Private)
 - (void)save:(NSNotification*)notification;
@@ -25,7 +25,7 @@
     path_ = path;
     state_ = state;
 
-    [self restore]; 
+    [self restore];
     [[NSNotificationCenter defaultCenter]
       addObserver:self
          selector:@selector(save:)

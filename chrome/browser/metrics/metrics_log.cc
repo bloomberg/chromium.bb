@@ -15,9 +15,9 @@
 #include "base/third_party/nspr/prtime.h"
 #include "chrome/browser/autocomplete/autocomplete.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/pref_service.h"
 #include "chrome/common/logging_chrome.h"
 #include "chrome/common/pref_names.h"
-#include "chrome/common/pref_service.h"
 #include "googleurl/src/gurl.h"
 
 #define OPEN_ELEMENT_FOR_SCOPE(name) ScopedElement scoped_element(this, name)
