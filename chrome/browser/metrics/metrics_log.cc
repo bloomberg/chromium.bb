@@ -64,7 +64,6 @@ MetricsLog::MetricsLog(const std::string& client_id, int session_id)
   StartElement("log");
   WriteAttribute("clientid", client_id_);
   WriteInt64Attribute("buildtime", GetBuildTime());
-  WriteAttribute("appversion", GetVersionString());
 
   DCHECK_GE(result, 0);
 }
@@ -510,6 +509,7 @@ void MetricsLog::WriteInstallElement() {
   OPEN_ELEMENT_FOR_SCOPE("install");
   WriteAttribute("installdate", GetInstallDate());
   WriteIntAttribute("buildid", 0);  // We're using appversion instead.
+  WriteAttribute("appversion", GetVersionString());
 }
 
 void MetricsLog::RecordEnvironment(
