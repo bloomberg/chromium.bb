@@ -42,6 +42,7 @@ class SVNWrapperTestCase(BaseTestCase):
       self.manually_grab_svn_rev = True
       self.deps_os = None
       self.force = False
+      self.reset = False
       self.nohooks = False
 
   def Options(self, *args, **kwargs):
@@ -289,6 +290,7 @@ class GitWrapperTestCase(BaseTestCase):
       self.manually_grab_svn_rev = True
       self.deps_os = None
       self.force = False
+      self.reset = False
       self.nohooks = False
 
   sample_git_import = """blob
