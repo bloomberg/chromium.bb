@@ -14,12 +14,13 @@
 #include "native_client/src/include/portability_string.h"
 #include "gen/native_client/src/shared/npruntime/npmodule_rpc.h"
 #include "gen/native_client/src/shared/npruntime/npnavigator_rpc.h"
-#include "native_client/src/shared/srpc/nacl_srpc.h"
+#include "native_client/src/shared/npruntime/audio.h"
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npcapability.h"
 #include "native_client/src/shared/npruntime/npn_gate.h"
 #include "native_client/src/shared/npruntime/nprpc.h"
 #include "native_client/src/shared/npruntime/npobject_stub.h"
+#include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 
 namespace {
@@ -64,7 +65,6 @@ std::map<const NPUTF8*, NPIdentifier>* NPNavigator::string_id_map = NULL;
 std::map<NPIdentifier, const NPUTF8*>* NPNavigator::id_string_map = NULL;
 std::set<const NPUTF8*, NPNavigator::StringCompare>*
     NPNavigator::string_set = NULL;
-uint32_t NPNavigator::next_pending_call = 0;
 
 NPPluginFuncs NPNavigator::plugin_funcs;
 
@@ -90,13 +90,16 @@ NPNavigator::NPNavigator(NaClSrpcChannel* channel,
   id_string_map = new(std::nothrow) std::map<NPIdentifier, const NPUTF8*>;
   int_id_map = new(std::nothrow) std::map<int32_t, NPIdentifier>;
   id_int_map = new(std::nothrow) std::map<NPIdentifier, int32_t>;
-  // Initialize the pending call mutex.
-  pthread_mutex_init(&pending_mu_, NULL);
+  // Allocate the closure table.
+  closure_table_ = new(std::nothrow) NPClosureTable();
+  // Initialize the upcall mutex.
+  pthread_mutex_init(&upcall_mu_, NULL);
 }
 
 NPNavigator::~NPNavigator() {
   DebugPrintf("~NPNavigator\n");
-  pthread_mutex_destroy(&pending_mu_);
+  pthread_mutex_destroy(&upcall_mu_);
+  delete closure_table_;
   // Note that all the mappings are per-module and only cleaned up on
   // shutdown.
 }
@@ -558,82 +561,57 @@ int32_t NPNavigator::IntFromIdentifier(NPIdentifier identifier) {
   return (*id_int_map)[identifier];
 }
 
-class NPPendingCallClosure {
- public:
-  NPPendingCallClosure(NPNavigator::AsyncCallFunc func, void* user_data) :
-    func_(func), user_data_(user_data) {
-    }
-  NPNavigator::AsyncCallFunc func() const { return func_; }
-  void* user_data() const { return user_data_; }
-
- private:
-  NPNavigator::AsyncCallFunc func_;
-  void* user_data_;
-};
-
-// TODO(sehr): this should move to platform.
-class MutexLock {
-  pthread_mutex_t* mutex_;
- public:
-  explicit MutexLock(pthread_mutex_t* mutex) : mutex_(mutex) {
-    if (NULL == mutex_) {
-      abort();
-    } else {
-      pthread_mutex_lock(mutex_);
-    }
-  }
-  ~MutexLock() {
-    if (NULL == mutex_) {
-      abort();
-    } else {
-      pthread_mutex_unlock(mutex_);
-    }
-  }
-};
-
 void NPNavigator::PluginThreadAsyncCall(NPP instance,
-                                        AsyncCallFunc func,
+                                        NPClosureTable::FunctionPointer func,
                                         void* user_data) {
-  uint32_t next_call;
+  uint32_t id;
   DebugPrintf("PluginThreadAsyncCall %p %p %p\n", instance, func, user_data);
-  // The map of pending calls.
-  NPPendingCallClosure* closure =
-      new(std::nothrow) NPPendingCallClosure(func, user_data);
-  if (NULL == closure)
+  // Add a closure to the table.
+  if (NULL == closure_table_ ||
+      NULL == func ||
+      !closure_table_->Add(func, user_data, &id)) {
     return;
+  }
   // There may be out-of-order responses to calls from different threads.
   // Hence we guard the accesses by a mutex.
-  MutexLock ml(&pending_mu_);
-  next_call = next_pending_call++;
-  pending_calls_[next_call] = closure;
+  pthread_mutex_lock(&upcall_mu_);
   // Send an RPC to the NPAPI upcall thread in the browser plugin.
   NaClSrpcInvokeByName(
       upcall_channel_,
       "NPN_PluginThreadAsyncCall",
       GetPluginNPP(instance),
-      static_cast<int32_t>(next_call));
+      static_cast<int32_t>(id));
+  pthread_mutex_unlock(&upcall_mu_);
 }
 
 NaClSrpcError NPNavigator::DoAsyncCall(int32_t number) {
-  uint32_t key = static_cast<uint32_t>(number);
-  AsyncCallFunc func;
+  uint32_t id = static_cast<uint32_t>(number);
+  NPClosureTable::FunctionPointer func;
   void* user_data;
-  {  /* SCOPE */
-    MutexLock ml(&pending_mu_);
-    std::map<uint32_t, NPPendingCallClosure*>::iterator i;
-    i = pending_calls_.find(key);
-    if (pending_calls_.end() == i)
-      return NACL_SRPC_RESULT_APP_ERROR;
-    NPPendingCallClosure* closure = i->second;
-    func = closure->func();
-    user_data = closure->user_data();
-    delete closure;
-    pending_calls_.erase(i);
+  if (NULL == closure_table_ ||
+      !closure_table_->Remove(id, &func, &user_data) ||
+      NULL == func) {
+    return NACL_SRPC_RESULT_APP_ERROR;
   }
   // Invoke the function with the data.
   (*func)(user_data);
   // Return success.
   return NACL_SRPC_RESULT_OK;
+}
+
+NaClSrpcError NPNavigator::AudioCallback(int32_t number,
+                                         int shm_desc,
+                                         int32_t shm_size,
+                                         int sync_desc) {
+  if (nacl::DoAudioCallback(closure_table_,
+                            number,
+                            shm_desc,
+                            shm_size,
+                            sync_desc)) {
+    return NACL_SRPC_RESULT_OK;
+  } else {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
 }
 
 }  // namespace nacl

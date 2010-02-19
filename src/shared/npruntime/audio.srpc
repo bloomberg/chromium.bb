@@ -1,0 +1,45 @@
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+{
+ 'name': 'AudioRpc',
+ 'rpcs': [
+          {'name': 'AudioInitialize',
+           'inputs': [['npp', 'int32_t'],
+                      ['number', 'int32_t'],
+                      ['sample_rate', 'int32_t'],
+                      ['sample_type', 'int32_t'],
+                      ['output_channel_map', 'int32_t'],
+                      ['input_channel_map', 'int32_t'],
+                      ['sample_frame_count', 'int32_t'],
+                      ['flags', 'int32_t'],
+                     ],
+           'outputs': []
+          },
+          {'name': 'AudioFlush',
+           'inputs': [['npp', 'int32_t'],
+                     ],
+           'outputs': [['error', 'int32_t']
+                      ]
+          },
+          {'name': 'AudioDestroy',
+           'inputs': [['npp', 'int32_t'],
+                     ],
+           'outputs': []
+          },
+          {'name': 'AudioGetState',
+           'inputs': [['npp', 'int32_t'],
+                      ['state', 'int32_t'],
+                     ],
+           'outputs': [['value', 'int32_t'],
+                      ]
+          },
+          {'name': 'AudioSetState',
+           'inputs': [['npp', 'int32_t'],
+                      ['state', 'int32_t'],
+                      ['value', 'int32_t'],
+                     ],
+           'outputs': []
+          },
+         ]
+}

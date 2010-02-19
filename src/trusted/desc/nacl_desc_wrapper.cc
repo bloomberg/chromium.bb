@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include <limits>
 #include <new>
 #ifndef NACL_STANDALONE
@@ -18,8 +19,8 @@
 #include "native_client/src/trusted/desc/nacl_desc_conn_cap.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc.h"
 #include "native_client/src/trusted/desc/nacl_desc_imc_shm.h"
+#include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "native_client/src/trusted/desc/nacl_desc_sync_socket.h"
-#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #if defined(NACL_LINUX)
 #include "native_client/src/trusted/desc/linux/nacl_desc_sysv_shm.h"
 #endif  // defined(NACL_LINUX)
@@ -172,7 +173,7 @@ int DescWrapperFactory::MakeBoundSock(DescWrapper* pair[2]) {
   pair[1] = tmp_pair[1];
   return 0;
 
-cleanup:
+ cleanup:
   NaClDescSafeUnref(descs[0]);
   NaClDescSafeUnref(descs[1]);
   delete tmp_pair[0];
@@ -205,7 +206,7 @@ DescWrapper* DescWrapperFactory::MakeImcSock(NaClHandle handle) {
   imc_desc = NULL;  // DescWrapper takes ownership of imc_desc.
   return wrapper;
 
-cleanup:
+ cleanup:
   NaClDescSafeUnref(reinterpret_cast<struct NaClDesc*>(imc_desc));
   return NULL;
 }
@@ -248,7 +249,7 @@ DescWrapper* DescWrapperFactory::ImportShmHandle(NaClHandle handle,
   imc_desc = NULL;  // DescWrapper takes ownership of imc_desc.
   return wrapper;
 
-cleanup:
+ cleanup:
   NaClDescSafeUnref(reinterpret_cast<struct NaClDesc*>(imc_desc));
   return NULL;
 }
@@ -280,7 +281,7 @@ DescWrapper* DescWrapperFactory::ImportSysvShm(int key, size_t size) {
   }
   return wrapper;
 
-cleanup:
+ cleanup:
   NaClDescSafeUnref(reinterpret_cast<struct NaClDesc*>(sysv_desc));
   return NULL;
 }
@@ -354,7 +355,7 @@ DescWrapper* DescWrapperFactory::ImportSyncSocket(base::SyncSocket* sock) {
   ss_desc = NULL;  // DescWrapper takes ownership of ss_desc.
   return wrapper;
 
-cleanup:
+ cleanup:
   NaClDescSafeUnref(reinterpret_cast<struct NaClDesc*>(ss_desc));
   return NULL;
 #endif  // NACL_STANDALONE
@@ -405,7 +406,7 @@ DescWrapper* DescWrapperFactory::MakeSocketAddress(const char* str) {
   conn_cap = NULL;
   return wrapper;
 
-cleanup:
+ cleanup:
   NaClDescSafeUnref(reinterpret_cast<struct NaClDesc*>(conn_cap));
   return NULL;
 }
@@ -436,7 +437,7 @@ int DescWrapperFactory::MakeSocketPair(DescWrapper* pair[2]) {
   pair[1] = tmp_pair[1];
   return 0;
 
-cleanup:
+ cleanup:
   NaClDescSafeUnref(descs[0]);
   NaClDescSafeUnref(descs[1]);
   delete tmp_pair[0];
@@ -472,9 +473,27 @@ DescWrapper* DescWrapperFactory::OpenHostFile(const char* fname,
   }
   return wrapper;
 
-cleanup:
+ cleanup:
   NaClDescSafeUnref(reinterpret_cast<struct NaClDesc*>(ndiodp));
   delete nhdp;
+  return NULL;
+}
+
+DescWrapper* DescWrapperFactory::MakeInvalid() {
+  DescWrapper* wrapper = NULL;
+  struct NaClDescInvalid *desc =
+      const_cast<NaClDescInvalid*>(NaClDescInvalidMake());
+  if (NULL == desc) {
+    goto cleanup;
+  }
+  wrapper = MakeGeneric(reinterpret_cast<struct NaClDesc*>(desc));
+  if (NULL == wrapper) {
+    goto cleanup;
+  }
+  return wrapper;
+
+ cleanup:
+  NaClDescSafeUnref(reinterpret_cast<struct NaClDesc*>(desc));
   return NULL;
 }
 
@@ -598,7 +617,7 @@ ssize_t DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
   if (kHandleCountMax < dgram->ndescv_length) {
     goto cleanup;
   }
-  if (kSizeTMax / sizeof(NaClDesc*) <= ddescv_length) {
+  if (kSizeTMax / sizeof(header.ndescv[0]) <= ddescv_length) {
     goto cleanup;
   }
   header.ndescv = new(std::nothrow) NaClDesc*[dgram->ndescv_length];
@@ -612,7 +631,7 @@ ssize_t DescWrapper::SendMsg(const MsgHeader* dgram, int flags) {
   // Send the message.
   ret = NaClImcSendTypedMessage(desc_, common_data_->effp(), &header, flags);
 
-cleanup:
+ cleanup:
   delete header.ndescv;
   delete header.iov;
   return ret;
@@ -648,7 +667,7 @@ ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
   if (kHandleCountMax < dgram->ndescv_length) {
     goto cleanup;
   }
-  if (kSizeTMax / sizeof(NaClDesc*) <= ddescv_length) {
+  if (kSizeTMax / sizeof(header.ndescv[0]) <= ddescv_length) {
     goto cleanup;
   }
   header.ndescv = new(std::nothrow) NaClDesc*[dgram->ndescv_length];
@@ -670,7 +689,7 @@ ssize_t DescWrapper::RecvMsg(MsgHeader* dgram, int flags) {
   }
   return ret;
 
-cleanup:
+ cleanup:
   for (i = 0; i < ddescv_length; ++i) {
     delete dgram->ndescv[i];
   }

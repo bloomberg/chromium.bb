@@ -4,8 +4,8 @@
 
 // NaCl-NPAPI Interface
 
-#ifndef NATIVE_CLIENT_NPAPI_PLUGIN_NPAPI_BRIDGE_NPMODULE_H_
-#define NATIVE_CLIENT_NPAPI_PLUGIN_NPAPI_BRIDGE_NPMODULE_H_
+#ifndef NATIVE_CLIENT_SRC_SHARED_NPRUNTIME_NPMODULE_H_
+#define NATIVE_CLIENT_SRC_SHARED_NPRUNTIME_NPMODULE_H_
 
 #if !NACL_WINDOWS
 #include <pthread.h>
@@ -87,6 +87,24 @@ class NPModule : public NPBridge {
                                      int32_t* id);
   NaClSrpcError Device3DDestroyBuffer(NPP npp, int32_t id);
 
+  NaClSrpcError AudioInitialize(NPP npp,
+                                int32_t closure_number,
+                                int32_t sample_rate,
+                                int32_t sample_type,
+                                int32_t output_channel_map,
+                                int32_t input_channel_map,
+                                int32_t sample_frame_count,
+                                int32_t flags);
+  NaClSrpcError AudioFlush(NPP npp,
+                           int32_t* error);
+  NaClSrpcError AudioDestroy(NPP npp);
+  NaClSrpcError AudioGetState(NPP npp,
+                              int32_t state,
+                              int32_t* value);
+  NaClSrpcError AudioSetState(NPP npp,
+                              int32_t state,
+                              int32_t value);
+
   //
   // NPInstance methods
   //
@@ -149,8 +167,12 @@ class NPModule : public NPBridge {
   // 3D graphics device state.
   NPDevice* device3d_;
   NPDeviceContext3D* context3d_;
+
+  // Audio device state.
+  NPDevice* device_audio_;
+  NPDeviceContextAudio* context_audio_;
 };
 
 }  // namespace nacl
 
-#endif  // NATIVE_CLIENT_NPAPI_PLUGIN_NPAPI_BRIDGE_NPMODULE_H_
+#endif  // NATIVE_CLIENT_SRC_SHARED_NPRUNTIME_NPMODULE_H_

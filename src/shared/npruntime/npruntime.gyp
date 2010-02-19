@@ -14,10 +14,11 @@
     'variables': {
       'target_base': 'none',
       'npmodule_specs': [
-        'npmodule.srpc',
-        'npobjectstub.srpc',
+        'audio.srpc',
         'device2d.srpc',
         'device3d.srpc',
+        'npmodule.srpc',
+        'npobjectstub.srpc',
       ],
       'npnavigator_specs': [
         'npnavigator.srpc',

@@ -49,7 +49,8 @@ GENERATED = '${TARGET_ROOT}/gen/native_client/src/shared/npruntime'
 npmodule_specinputs = ['npmodule.srpc',
                        'npobjectstub.srpc',
                        'device2d.srpc',
-                       'device3d.srpc', ]
+                       'device3d.srpc',
+                       'audio.srpc', ]
 
 npmodule_rpc_h = GENERATED + '/npmodule_rpc.h'
 npmodule_rpc_cc = GENERATED + '/npmodule_rpc_server.cc'

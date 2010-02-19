@@ -176,3 +176,16 @@ NaClSrpcError NPNavigatorRpcServer::NPP_DoAsyncCall(NaClSrpcChannel* channel,
 
   return NACL_SRPC_RESULT_OK;
 }
+
+NaClSrpcError NPNavigatorRpcServer::NPP_AudioCallback(
+    NaClSrpcChannel* channel,
+    int32_t number,
+    int shm_desc,
+    int32_t shm_size,
+    int sync_desc) {
+  NPNavigator* nav = NPNavigator::GetNavigator();
+
+  nav->AudioCallback(number, shm_desc, shm_size, sync_desc);
+
+  return NACL_SRPC_RESULT_OK;
+}

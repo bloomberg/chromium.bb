@@ -31,7 +31,7 @@ class DescWrapperFactory {
 
   // Create a bound socket, socket address pair.
   int MakeBoundSock(DescWrapper* pair[2]);
-  // Create a pair of DescWrappers for XferableDataDesc for a connnected socket.
+  // Create a pair of DescWrappers for a connnected (data-only) socket.
   int MakeSocketPair(DescWrapper* pair[2]);
   // Create an IMC socket object.
   DescWrapper* MakeImcSock(NaClHandle handle);
@@ -41,6 +41,8 @@ class DescWrapperFactory {
   DescWrapper* MakeSocketAddress(const char* addr);
   // Create a DescWrapper from opening a host file.
   DescWrapper* OpenHostFile(const char* fname, int flags, int mode);
+  // Create a DescWrapper for the designated invalid descriptor
+  DescWrapper* MakeInvalid();
 
   // Create a DescWrapper from a base::SharedMemory
   DescWrapper* ImportSharedMemory(base::SharedMemory* shm, size_t size);

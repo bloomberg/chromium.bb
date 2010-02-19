@@ -13,6 +13,7 @@
 
 #include "native_client/src/shared/npruntime/device2d.h"
 #include "native_client/src/shared/npruntime/device3d.h"
+#include "native_client/src/shared/npruntime/audio.h"
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
@@ -25,6 +26,8 @@ NPDevice* AcquireDevice(NPP instance, NPDeviceID device) {
       return const_cast<NPDevice*>(nacl::GetDevice2D());
     case NPPepper3DDevice:
       return const_cast<NPDevice*>(nacl::GetDevice3D());
+    case NPPepperAudioDevice:
+      return const_cast<NPDevice*>(nacl::GetAudio());
     default:
       return NULL;
   }

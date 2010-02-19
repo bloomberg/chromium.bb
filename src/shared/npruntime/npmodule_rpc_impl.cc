@@ -346,3 +346,63 @@ NaClSrpcError Device3DRpcServer::Device3DDestroyBuffer(NaClSrpcChannel* channel,
 
   return module->Device3DDestroyBuffer(NPBridge::IntToNpp(int_npp), id);
 }
+
+NaClSrpcError AudioRpcServer::AudioInitialize(
+    NaClSrpcChannel* channel,
+    int32_t int_npp,
+    int32_t closure_number,
+    int32_t sample_rate,
+    int32_t sample_type,
+    int32_t output_channel_map,
+    int32_t input_channel_map,
+    int32_t sample_frame_count,
+    int32_t flags) {
+  UNREFERENCED_PARAMETER(channel);
+  NPModule* module = nacl::NPModule::GetModule(int_npp);
+
+  return module->AudioInitialize(NPBridge::IntToNpp(int_npp),
+                                 closure_number,
+                                 sample_rate,
+                                 sample_type,
+                                 output_channel_map,
+                                 input_channel_map,
+                                 sample_frame_count,
+                                 flags);
+}
+
+NaClSrpcError AudioRpcServer::AudioFlush(NaClSrpcChannel* channel,
+                                         int32_t int_npp,
+                                         int32_t* error) {
+  UNREFERENCED_PARAMETER(channel);
+  NPModule* module = nacl::NPModule::GetModule(int_npp);
+
+  return module->AudioFlush(NPBridge::IntToNpp(int_npp), error);
+}
+
+NaClSrpcError AudioRpcServer::AudioDestroy(NaClSrpcChannel* channel,
+                                           int32_t int_npp) {
+  UNREFERENCED_PARAMETER(channel);
+  NPModule* module = nacl::NPModule::GetModule(int_npp);
+
+  return module->AudioDestroy(NPBridge::IntToNpp(int_npp));
+}
+
+NaClSrpcError AudioRpcServer::AudioGetState(NaClSrpcChannel* channel,
+                                            int32_t int_npp,
+                                            int32_t state,
+                                            int32_t* value) {
+  UNREFERENCED_PARAMETER(channel);
+  NPModule* module = nacl::NPModule::GetModule(int_npp);
+
+  return module->AudioGetState(NPBridge::IntToNpp(int_npp), state, value);
+}
+
+NaClSrpcError AudioRpcServer::AudioSetState(NaClSrpcChannel* channel,
+                                            int32_t int_npp,
+                                            int32_t state,
+                                            int32_t value) {
+  UNREFERENCED_PARAMETER(channel);
+  NPModule* module = nacl::NPModule::GetModule(int_npp);
+
+  return module->AudioSetState(NPBridge::IntToNpp(int_npp), state, value);
+}

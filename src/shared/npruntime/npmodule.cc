@@ -543,6 +543,7 @@ NaClSrpcError NPModule::Device2DDestroy(NPP npp) {
 
 namespace base {
 class SharedMemory;
+class SyncSocket;
 }  // namespace base
 
 struct Device3DImpl {
@@ -665,30 +666,25 @@ NaClSrpcError NPModule::Device3DDestroy(NPP npp) {
 NaClSrpcError NPModule::Device3DGetState(NPP npp,
                                          int32_t state,
                                          int32_t* value) {
-  UNREFERENCED_PARAMETER(npp);
-  UNREFERENCED_PARAMETER(state);
-  UNREFERENCED_PARAMETER(value);
-  /* TODO(sehr): re-enable this.
-  NPError retval = device3d_->getStateContext(npp, context3d_, state, value);
+  intptr_t value_ptr;
+  NPError retval =
+      device3d_->getStateContext(npp, context3d_, state, &value_ptr);
   if (NPERR_NO_ERROR != retval) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
-  */
+  *value = static_cast<int32_t>(value_ptr);
   return NACL_SRPC_RESULT_OK;
 }
 
 NaClSrpcError NPModule::Device3DSetState(NPP npp,
                                          int32_t state,
                                          int32_t value) {
-  UNREFERENCED_PARAMETER(npp);
-  UNREFERENCED_PARAMETER(state);
-  UNREFERENCED_PARAMETER(value);
-  /* TODO(sehr): re-enable this.
-  NPError retval = device3d_->setStateContext(npp, context3d_, state, value);
+  intptr_t value_ptr = static_cast<intptr_t>(value);
+  NPError retval =
+      device3d_->setStateContext(npp, context3d_, state, value_ptr);
   if (NPERR_NO_ERROR != retval) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
-  */
   return NACL_SRPC_RESULT_OK;
 }
 
@@ -747,6 +743,205 @@ NaClSrpcError NPModule::Device3DDestroyBuffer(NPP npp, int32_t id) {
     return NACL_SRPC_RESULT_APP_ERROR;
   }
 
+  return NACL_SRPC_RESULT_OK;
+}
+
+struct AudioCallbackInfo {
+  NPP npp_;
+  int32_t closure_number_;
+  NaClSrpcChannel* channel_;
+  NPDevice* device_audio_;
+  NPDeviceContextAudio* context_audio_;
+};
+
+void AudioCallback(NPDeviceContextAudio* user_data) {
+  AudioCallbackInfo* info =
+      reinterpret_cast<AudioCallbackInfo*>(user_data->config.userData);
+  DescWrapperFactory factory;
+  // Get the shared memory size used for audio.
+  intptr_t shm_size_intptr;
+  NPError retval =
+      info->device_audio_->getStateContext(
+          info->npp_,
+          info->context_audio_,
+          NPExtensionsReservedStateSharedMemorySize,
+          &shm_size_intptr);
+  if (NPERR_NO_ERROR != retval) {
+    return;
+  }
+  int32_t size = static_cast<int32_t>(shm_size_intptr);
+  // Get the shared memory used for audio.
+  intptr_t shm_int;
+  retval =
+      info->device_audio_->getStateContext(
+          info->npp_,
+          info->context_audio_,
+          NPExtensionsReservedStateSharedMemory,
+          &shm_int);
+  if (NPERR_NO_ERROR != retval) {
+    return;
+  }
+  ::base::SharedMemory* shm =
+      reinterpret_cast< ::base::SharedMemory*>(shm_int);
+  DescWrapper* shm_wrapper =
+      factory.ImportSharedMemory(shm, static_cast<size_t>(size));
+  if (NULL == shm_wrapper) {
+    return;
+  }
+  // Get the sync channel used for audio.
+  intptr_t sync_int;
+  retval =
+      info->device_audio_->getStateContext(info->npp_,
+                                           info->context_audio_,
+                                           NPExtensionsReservedStateSyncChannel,
+                                           &sync_int);
+  if (NPERR_NO_ERROR != retval) {
+    return;
+  }
+  ::base::SyncSocket* sync =
+      reinterpret_cast< ::base::SyncSocket*>(sync_int);
+  DescWrapper* sync_wrapper = NULL;
+  if (NULL == sync) {
+    // The high-latency audio interface does not use a sync socket.
+    sync_wrapper = factory.MakeInvalid();
+  } else {
+    sync_wrapper = factory.ImportSyncSocket(sync);
+  }
+  if (NULL == sync_wrapper) {
+    DescWrapper::SafeDelete(shm_wrapper);
+    return;
+  }
+
+  // Send the RPC to the NaCl module, conveying the descriptors and
+  // starting the thread and the prefill.
+  NPNavigatorRpcClient::NPP_AudioCallback(
+      info->channel_,
+      info->closure_number_,
+      NaClDescRef(shm_wrapper->desc()),
+      size,
+      NaClDescRef(sync_wrapper->desc()));
+
+  DescWrapper::SafeDelete(shm_wrapper);
+  DescWrapper::SafeDelete(sync_wrapper);
+}
+
+NaClSrpcError NPModule::AudioInitialize(NPP npp,
+                                        int32_t closure_number,
+                                        int32_t sample_rate,
+                                        int32_t sample_type,
+                                        int32_t output_channel_map,
+                                        int32_t input_channel_map,
+                                        int32_t sample_frame_count,
+                                        int32_t flags) {
+#if defined(NACL_STANDALONE)
+  UNREFERENCED_PARAMETER(npp);
+  UNREFERENCED_PARAMETER(closure_number);
+  UNREFERENCED_PARAMETER(sample_rate);
+  UNREFERENCED_PARAMETER(sample_type);
+  UNREFERENCED_PARAMETER(output_channel_map);
+  UNREFERENCED_PARAMETER(input_channel_map);
+  UNREFERENCED_PARAMETER(sample_frame_count);
+  UNREFERENCED_PARAMETER(flags);
+  return NACL_SRPC_RESULT_APP_ERROR;
+#else
+  if (NULL == extensions_) {
+    if (NPERR_NO_ERROR !=
+        NPN_GetValue(npp, NPNVPepperExtensions, &extensions_)) {
+      // Because this variable is not implemented in other browsers, this path
+      // should always be taken except in Pepper-enabled browsers.
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+    if (NULL == extensions_) {
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+  }
+  if (NULL == device_audio_) {
+    device_audio_ = extensions_->acquireDevice(npp, NPPepperAudioDevice);
+    if (NULL == device_audio_) {
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+  }
+  if (NULL == context_audio_) {
+    context_audio_ = new(std::nothrow) NPDeviceContextAudio;
+    if (NULL == context_audio_) {
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+    static NPDeviceContextAudioConfig config;
+    config.sampleRate = sample_rate;
+    config.sampleType = sample_type;
+    config.outputChannelMap = output_channel_map;
+    config.inputChannelMap = input_channel_map;
+    config.sampleFrameCount = sample_frame_count;
+    config.flags = flags;
+    config.callback = AudioCallback;
+    AudioCallbackInfo* info = new(std::nothrow) AudioCallbackInfo;
+    if (NULL == info) {
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+    info->npp_ = npp;
+    info->closure_number_ = closure_number;
+    info->channel_ = channel();
+    info->device_audio_ = device_audio_;
+    info->context_audio_ = context_audio_;
+    config.userData = reinterpret_cast<void*>(info);
+    NPError retval =
+        device_audio_->initializeContext(npp, &config, context_audio_);
+    if (NPERR_NO_ERROR != retval) {
+      return NACL_SRPC_RESULT_APP_ERROR;
+    }
+  }
+
+  return NACL_SRPC_RESULT_OK;
+#endif  // defined(NACL_STANDALONE)
+}
+
+NaClSrpcError NPModule::AudioFlush(NPP npp,
+                                   int32_t* error) {
+  if (NULL == device_audio_ || NULL == context_audio_) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  NPError retval =
+      device_audio_->flushContext(npp, context_audio_, NULL, NULL);
+  *error = static_cast<int32_t>(retval);
+  return NACL_SRPC_RESULT_OK;
+}
+
+NaClSrpcError NPModule::AudioDestroy(NPP npp) {
+  if (NULL == device_audio_ || NULL == context_audio_) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  device_audio_->destroyContext(npp, context_audio_);
+  return NACL_SRPC_RESULT_OK;
+}
+
+NaClSrpcError NPModule::AudioGetState(NPP npp,
+                                      int32_t state,
+                                      int32_t* value) {
+  if (NULL == device_audio_ || NULL == context_audio_) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  intptr_t value_ptr;
+  NPError retval =
+      device_audio_->getStateContext(npp, context_audio_, state, &value_ptr);
+  if (NPERR_NO_ERROR != retval) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  *value = static_cast<int32_t>(value_ptr);
+  return NACL_SRPC_RESULT_OK;
+}
+
+NaClSrpcError NPModule::AudioSetState(NPP npp,
+                                      int32_t state,
+                                      int32_t value) {
+  if (NULL == device_audio_ || NULL == context_audio_) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
+  intptr_t value_ptr = static_cast<intptr_t>(value);
+  NPError retval =
+      device_audio_->setStateContext(npp, context_audio_, state, value_ptr);
+  if (NPERR_NO_ERROR != retval) {
+    return NACL_SRPC_RESULT_APP_ERROR;
+  }
   return NACL_SRPC_RESULT_OK;
 }
 

@@ -1,3 +1,6 @@
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
 {
  'name': 'NPNavigatorRpc',
  'rpcs': [
@@ -67,6 +70,14 @@
           },
           {'name': 'NPP_DoAsyncCall',
            'inputs': [['number', 'int32_t'],
+                     ],
+           'outputs': []
+          },
+          {'name': 'NPP_AudioCallback',
+           'inputs': [['number', 'int32_t'],
+                      ['shm_desc', 'handle'],
+                      ['shm_size', 'int32_t'],
+                      ['sync_desc', 'handle'],
                      ],
            'outputs': []
           },
