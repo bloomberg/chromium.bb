@@ -81,6 +81,16 @@
           'target_arch%': 'ia32',
         }],
       ],
+      # NOTE: adapted from them chrome common.gypi file for arm
+      'armv7%': 0,
+
+      # Set Thumb compilation flags.
+      'arm_thumb%': 0,
+
+      # The system root for cross-compiles. Default: none.
+      'sysroot%': '',
+
+      # NOTE: end adapted from them chrome common.gypi file for arm
     },
     # These come from the above variable scope.
     'target_arch%': '<(target_arch)',
@@ -89,14 +99,26 @@
     'buildtype%': '<(buildtype)',
 
     'linux2%': 0,
+      'conditions': [
+        ['OS=="win"', {
+          'python_exe': [
+            '<(DEPTH)/native_client/tools/win_py.cmd'
+          ],
+        }, {
+          'python_exe': [
+             'python'
+          ],
+        }],
+      ],
 
   },
+
   'target_defaults': {
     'include_dirs': [
       '../..',
     ],
     'variables': {
-      'win_target': 'x32'
+      'win_target': 'x32',
     },
     'target_conditions': [
       ['win_target=="x64"', {
@@ -302,11 +324,6 @@
   },
   'conditions': [
     ['OS=="linux"', {
-      'variables': {
-        # This variable is overriden below for Windows
-        # and should never be used on other platforms.
-        'python_exe': ['python'],
-      },
       'target_defaults': {
         # Enable -Werror by default, but put it in a variable so it can
         # be disabled in ~/.gyp/include.gypi on the valgrind builders.
@@ -474,8 +491,20 @@
         'conditions': [
           [ 'target_arch=="arm"', {
             'cflags': [
+              '-Wno-abi',
+              '-march=armv7-a',
+              '-mtune=cortex-a8',
+              '-mfpu=neon',
+              '-mfloat-abi=softfp',
+              '-fPIC',
               '-fno-exceptions',
               '-Wall',
+            ],
+            'cflags_cc': [
+              '--sysroot=<(sysroot)',
+            ],
+            'ldflags': [
+              '--sysroot=<(sysroot)',
             ],
           }, { # else: target_arch != "arm"
             'conditions': [
@@ -505,11 +534,6 @@
       },
     }],
     ['OS=="mac"', {
-      'variables': {
-        # This variable is overriden below for Windows
-        # and should never be used on other platforms.
-        'python_exe': ['python'],
-      },
       'target_defaults': {
         'variables': {
           # This should be 'mac_real_dsym%', but there seems to be a bug
@@ -620,11 +644,6 @@
       },
     }],
     ['OS=="win"', {
-      'variables': {
-        'python_exe': [
-          '<(DEPTH)/native_client/tools/win_py.cmd'
-        ],
-      },
       'target_defaults': {
         'rules': [
         {
