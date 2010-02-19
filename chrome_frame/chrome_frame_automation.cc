@@ -712,7 +712,14 @@ void ChromeFrameAutomationClient::InstallExtensionComplete(
 }
 
 void ChromeFrameAutomationClient::OnChromeFrameHostMoved() {
-  tab_->OnHostMoved();
+  // Use a local var to avoid the small possibility of getting the tab_
+  // member be cleared while we try to use it.
+  // Note that TabProxy is a RefCountedThreadSafe object, so we should be OK.
+  scoped_refptr<TabProxy> tab(tab_);
+  // There also is a possibility that tab_ has not been set yet,
+  // so we still need to test for NULL.
+  if (tab.get() != NULL)
+    tab->OnHostMoved();
 }
 
 void ChromeFrameAutomationClient::LoadExpandedExtension(
