@@ -182,6 +182,13 @@
                 'source/patched-ffmpeg-mt/libavutil/intfloat_readwrite.c',
               ],
             }],  # ffmpeg_branding
+            ['ffmpeg_branding=="ChromiumOS" or ffmpeg_branding=="ChromeOS"', {
+              'sources': [
+                'source/patched-ffmpeg-mt/libavcodec/pcm.c',
+                'source/patched-ffmpeg-mt/libavformat/raw.c',
+                'source/patched-ffmpeg-mt/libavformat/wav.c',
+              ],
+            }],  # ffmpeg_branding
             ['ffmpeg_branding=="ChromeOS"', {
               'sources': [
                 'source/patched-ffmpeg-mt/libavcodec/h263.c',
@@ -197,7 +204,6 @@
                 'source/patched-ffmpeg-mt/libavcodec/mpeg4videodec.c', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/msmpeg4.c',
                 'source/patched-ffmpeg-mt/libavcodec/msmpeg4data.c',
-                'source/patched-ffmpeg-mt/libavcodec/pcm.c',
                 'source/patched-ffmpeg-mt/libavcodec/vc1.c',
                 'source/patched-ffmpeg-mt/libavcodec/vc1data.c',
                 'source/patched-ffmpeg-mt/libavcodec/vc1dec.c', # TODO(fbarchard): Review this file.
@@ -211,8 +217,6 @@
                 'source/patched-ffmpeg-mt/libavformat/asfdec.c',
                 'source/patched-ffmpeg-mt/libavformat/avidec.c',
                 'source/patched-ffmpeg-mt/libavformat/avlanguage.c', # TODO(fbarchard): Review this file.
-                'source/patched-ffmpeg-mt/libavformat/raw.c',
-                'source/patched-ffmpeg-mt/libavformat/wav.c',
                 'source/patched-ffmpeg-mt/libavutil/des.c',
                 'source/patched-ffmpeg-mt/libavutil/rc4.c',
               ],
