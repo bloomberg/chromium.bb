@@ -5,8 +5,17 @@
 #include "chrome/browser/download/drag_download_util.h"
 
 #include "base/string_util.h"
+#include "base/file_path.h"
+#include "base/file_util.h"
+#include "base/scoped_ptr.h"
+#include "base/task.h"
 #include "base/utf_string_conversions.h"
+#include "chrome/browser/chrome_thread.h"
 #include "googleurl/src/gurl.h"
+#include "net/base/file_stream.h"
+#include "net/base/net_errors.h"
+
+using net::FileStream;
 
 namespace drag_download_util {
 
@@ -43,6 +52,54 @@ bool ParseDownloadMetadata(const string16& metadata,
     *url = parsed_url;
 
   return true;
+}
+
+FileStream* CreateFileStreamForDrop(FilePath* file_path) {
+  DCHECK(file_path && !file_path->empty());
+
+  scoped_ptr<FileStream> file_stream(new FileStream);
+  const int kMaxSeq = 99;
+  for (int seq = 0; seq <= kMaxSeq; seq++) {
+    FilePath new_file_path;
+    if (seq == 0) {
+      new_file_path = *file_path;
+    } else {
+ #if defined(OS_WIN)
+      std::wstring suffix = std::wstring(L"-") + IntToWString(seq);
+ #else
+      std::string suffix = std::string("-") + IntToString(seq);
+ #endif
+      new_file_path = file_path->InsertBeforeExtension(suffix);
+    }
+
+    // Explicitly (and redundantly check) for file -- despite the fact that our
+    // open won't overwrite -- just to avoid log spew.
+    if (!file_util::PathExists(new_file_path) &&
+        file_stream->Open(new_file_path, base::PLATFORM_FILE_CREATE |
+                              base::PLATFORM_FILE_WRITE) == net::OK) {
+      *file_path = new_file_path;
+      return file_stream.release();
+    }
+  }
+
+  return NULL;
+}
+
+void PromiseFileFinalizer::Cleanup() {
+  if (drag_file_downloader_.get())
+    drag_file_downloader_ = NULL;
+}
+
+void PromiseFileFinalizer::OnDownloadCompleted(const FilePath& file_path) {
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &PromiseFileFinalizer::Cleanup));
+}
+
+void PromiseFileFinalizer::OnDownloadAborted() {
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE,
+      NewRunnableMethod(this, &PromiseFileFinalizer::Cleanup));
 }
 
 }  // namespace drag_download_util

@@ -5,10 +5,17 @@
 #ifndef CHROME_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_UTIL_H_
 #define CHROME_BROWSER_DOWNLOAD_DRAG_DOWNLOAD_UTIL_H_
 
+#include "app/download_file_interface.h"
 #include "base/basictypes.h"
-#include "base/file_path.h"
+#include "base/ref_counted.h"
+#include "base/string16.h"
+#include "chrome/browser/download/drag_download_file.h"
 
+class FilePath;
 class GURL;
+namespace net {
+class FileStream;
+}
 
 namespace drag_download_util {
 
@@ -25,6 +32,31 @@ bool ParseDownloadMetadata(const string16& metadata,
                            string16* mime_type,
                            FilePath* file_name,
                            GURL* url);
+
+// Create a new file at the specified path. If the file already exists, try to
+// insert the sequential unifier to produce a new file, like foo-01.txt.
+// Return a FileStream if successful.
+net::FileStream* CreateFileStreamForDrop(FilePath* file_path);
+
+// Implementation of DownloadFileObserver to finalize the download process.
+class PromiseFileFinalizer : public DownloadFileObserver {
+ public:
+  explicit PromiseFileFinalizer(DragDownloadFile* drag_file_downloader)
+      : drag_file_downloader_(drag_file_downloader) {
+  }
+  virtual ~PromiseFileFinalizer() { }
+
+  // DownloadFileObserver methods.
+  virtual void OnDownloadCompleted(const FilePath& file_path);
+  virtual void OnDownloadAborted();
+
+ private:
+  void Cleanup();
+
+  scoped_refptr<DragDownloadFile> drag_file_downloader_;
+
+  DISALLOW_COPY_AND_ASSIGN(PromiseFileFinalizer);
+};
 
 }  // namespace drag_download_util
 

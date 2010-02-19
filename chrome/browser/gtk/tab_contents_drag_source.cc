@@ -5,13 +5,19 @@
 #include "chrome/browser/gtk/tab_contents_drag_source.h"
 
 #include "app/gtk_dnd_util.h"
+#include "base/file_util.h"
 #include "base/mime_util.h"
 #include "base/string_util.h"
+#include "chrome/browser/download/download_manager.h"
+#include "chrome/browser/download/drag_download_file.h"
+#include "chrome/browser/download/drag_download_util.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_view_host_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
 #include "chrome/common/gtk_util.h"
+#include "net/base/file_stream.h"
+#include "net/base/net_util.h"
 #include "webkit/glue/webdropdata.h"
 
 using WebKit::WebDragOperation;
@@ -25,6 +31,8 @@ TabContentsDragSource::TabContentsDragSource(
   drag_widget_ = gtk_invisible_new();
   g_signal_connect(drag_widget_, "drag-failed",
                    G_CALLBACK(OnDragFailedThunk), this);
+  g_signal_connect(drag_widget_, "drag-begin", G_CALLBACK(OnDragBeginThunk),
+                   this);
   g_signal_connect(drag_widget_, "drag-end", G_CALLBACK(OnDragEndThunk), this);
   g_signal_connect(drag_widget_, "drag-data-get",
                    G_CALLBACK(OnDragDataGetThunk), this);
@@ -34,6 +42,8 @@ TabContentsDragSource::TabContentsDragSource(
 TabContentsDragSource::~TabContentsDragSource() {
   g_signal_handlers_disconnect_by_func(drag_widget_,
       reinterpret_cast<gpointer>(OnDragFailedThunk), this);
+  g_signal_handlers_disconnect_by_func(drag_widget_,
+      reinterpret_cast<gpointer>(OnDragBeginThunk), this);
   g_signal_handlers_disconnect_by_func(drag_widget_,
       reinterpret_cast<gpointer>(OnDragEndThunk), this);
   g_signal_handlers_disconnect_by_func(drag_widget_,
@@ -71,6 +81,13 @@ void TabContentsDragSource::StartDragging(const WebDropData& drop_data,
     targets_mask |= GtkDndUtil::TEXT_HTML;
   if (!drop_data.file_contents.empty())
     targets_mask |= GtkDndUtil::CHROME_WEBDROP_FILE_CONTENTS;
+  if (!drop_data.download_metadata.empty() &&
+      drag_download_util::ParseDownloadMetadata(drop_data.download_metadata,
+                                                &wide_download_mime_type_,
+                                                &download_file_name_,
+                                                &download_url_)) {
+    targets_mask |= GtkDndUtil::DIRECT_SAVE_FILE;
+  }
 
   if (targets_mask == 0) {
     NOTIMPLEMENTED();
@@ -179,6 +196,64 @@ void TabContentsDragSource::OnDragDataGet(
       break;
     }
 
+    case GtkDndUtil::DIRECT_SAVE_FILE: {
+      char status_code = 'E';
+
+      // Retrieves the full file path (in file URL format) provided by the
+      // drop target by reading from the source window's XdndDirectSave0
+      // property.
+      gint file_url_len = 0;
+      guchar* file_url_value = NULL;
+      if (gdk_property_get(context->source_window,
+                           GtkDndUtil::GetAtomForTarget(
+                              GtkDndUtil::DIRECT_SAVE_FILE),
+                           GtkDndUtil::GetAtomForTarget(
+                              GtkDndUtil::TEXT_PLAIN_NO_CHARSET),
+                           0,
+                           1024,
+                           FALSE,
+                           NULL,
+                           NULL,
+                           &file_url_len,
+                           &file_url_value) &&
+          file_url_value) {
+        // Convert from the file url to the file path.
+        GURL file_url(std::string(reinterpret_cast<char*>(file_url_value),
+                                  file_url_len));
+        FilePath file_path;
+        if (net::FileURLToFilePath(file_url, &file_path)) {
+          // Open the file as a stream.
+          net::FileStream* file_stream =
+              drag_download_util::CreateFileStreamForDrop(&file_path);
+          if (file_stream) {
+              // Start downloading the file to the stream.
+              TabContents* tab_contents = tab_contents_view_->tab_contents();
+              scoped_refptr<DragDownloadFile> drag_file_downloader =
+                  new DragDownloadFile(file_path,
+                                       linked_ptr<net::FileStream>(file_stream),
+                                       download_url_,
+                                       tab_contents->GetURL(),
+                                       tab_contents->encoding(),
+                                       tab_contents);
+              drag_file_downloader->Start(
+                  new drag_download_util::PromiseFileFinalizer(
+                      drag_file_downloader));
+
+              // Set the status code to success.
+              status_code = 'S';
+          }
+        }
+
+        // Return the status code to the file manager.
+        gtk_selection_data_set(selection_data,
+                               selection_data->target,
+                               8,
+                               reinterpret_cast<guchar*>(&status_code),
+                               1);
+      }
+      break;
+    }
+
     default:
       NOTREACHED();
   }
@@ -200,8 +275,43 @@ gboolean TabContentsDragSource::OnDragFailed() {
   return FALSE;
 }
 
-void TabContentsDragSource::OnDragEnd(WebDragOperation operation) {
+void TabContentsDragSource::OnDragBegin(GdkDragContext* drag_context) {
+  if (!download_url_.is_empty()) {
+    // Generate the file name based on both mime type and proposed file name.
+    std::string download_mime_type = UTF16ToUTF8(wide_download_mime_type_);
+    std::string content_disposition("attachment; filename=");
+    content_disposition += download_file_name_.value();
+    FilePath generated_download_file_name;
+    DownloadManager::GenerateFileName(download_url_,
+                                      content_disposition,
+                                      std::string(),
+                                      download_mime_type,
+                                      &generated_download_file_name);
+
+    // Pass the file name to the drop target by setting the source window's
+    // XdndDirectSave0 property.
+    gdk_property_change(drag_context->source_window,
+                        GtkDndUtil::GetAtomForTarget(
+                            GtkDndUtil::DIRECT_SAVE_FILE),
+                        GtkDndUtil::GetAtomForTarget(
+                            GtkDndUtil::TEXT_PLAIN_NO_CHARSET),
+                        8,
+                        GDK_PROP_MODE_REPLACE,
+                        reinterpret_cast<const guchar*>(
+                            generated_download_file_name.value().c_str()),
+                        generated_download_file_name.value().length());
+  }
+}
+
+void TabContentsDragSource::OnDragEnd(GdkDragContext* drag_context,
+                                      WebDragOperation operation) {
   MessageLoopForUI::current()->RemoveObserver(this);
+
+  if (!download_url_.is_empty()) {
+    gdk_property_delete(drag_context->source_window,
+                        GtkDndUtil::GetAtomForTarget(
+                            GtkDndUtil::DIRECT_SAVE_FILE));
+  }
 
   if (!drag_failed_) {
     gfx::Point root = gtk_util::ScreenPoint(GetContentNativeView());

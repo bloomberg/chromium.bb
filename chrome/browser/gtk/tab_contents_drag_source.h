@@ -9,7 +9,10 @@
 
 #include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "base/message_loop.h"
+#include "base/string16.h"
+#include "googleurl/src/gurl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
 
 class TabContents;
@@ -42,13 +45,20 @@ class TabContentsDragSource : public MessageLoopForUI::Observer {
     return handler->OnDragFailed();
   }
   gboolean OnDragFailed();
+  static void OnDragBeginThunk(GtkWidget* widget,
+                             GdkDragContext* drag_context,
+                             TabContentsDragSource* handler) {
+    handler->OnDragBegin(drag_context);
+  }
+  void OnDragBegin(GdkDragContext* drag_context);
   static void OnDragEndThunk(GtkWidget* widget,
                              GdkDragContext* drag_context,
                              TabContentsDragSource* handler) {
-    handler->OnDragEnd(WebKit::WebDragOperationCopy);
+    handler->OnDragEnd(drag_context, WebKit::WebDragOperationCopy);
     // TODO(snej): Pass actual operation instead of hardcoding copy
   }
-  void OnDragEnd(WebKit::WebDragOperation operation);
+  void OnDragEnd(GdkDragContext* drag_context,
+                 WebKit::WebDragOperation operation);
   static void OnDragDataGetThunk(GtkWidget* drag_widget,
                                  GdkDragContext* context,
                                  GtkSelectionData* selection_data,
@@ -80,6 +90,15 @@ class TabContentsDragSource : public MessageLoopForUI::Observer {
   // renderer widget, we can persist drags even when our contents is switched
   // out.
   GtkWidget* drag_widget_;
+
+  // The file mime type for a drag-out download.
+  string16 wide_download_mime_type_;
+
+  // The file name to be saved to for a drag-out download.
+  FilePath download_file_name_;
+
+  // The URL to download from for a drag-out download.
+  GURL download_url_;
 
   DISALLOW_COPY_AND_ASSIGN(TabContentsDragSource);
 };

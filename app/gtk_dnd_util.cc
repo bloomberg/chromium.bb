@@ -49,6 +49,16 @@ GdkAtom GtkDndUtil::GetAtomForTarget(int target) {
           const_cast<char*>("_NETSCAPE_URL"), false);
       return netscape_url;
 
+    case TEXT_PLAIN_NO_CHARSET:
+      static GdkAtom text_no_charset_atom = gdk_atom_intern(
+          const_cast<char*>("text/plain"), false);
+      return text_no_charset_atom;
+
+    case DIRECT_SAVE_FILE:
+      static GdkAtom xds_atom = gdk_atom_intern(
+          const_cast<char*>("XdndDirectSave0"), false);
+      return xds_atom;
+
     default:
       NOTREACHED();
   }
@@ -114,8 +124,13 @@ void GtkDndUtil::AddTargetToList(GtkTargetList* targets, int target_code) {
     case CHROME_TAB:
     case CHROME_BOOKMARK_ITEM:
     case CHROME_NAMED_URL:
-      gtk_target_list_add(targets, GtkDndUtil::GetAtomForTarget(target_code),
+      gtk_target_list_add(targets, GetAtomForTarget(target_code),
                           GTK_TARGET_SAME_APP, target_code);
+      break;
+
+    case DIRECT_SAVE_FILE:
+      gtk_target_list_add(targets, GetAtomForTarget(DIRECT_SAVE_FILE), 0,
+                          DIRECT_SAVE_FILE);
       break;
 
     default:

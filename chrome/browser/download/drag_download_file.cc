@@ -33,7 +33,7 @@ DragDownloadFile::DragDownloadFile(
 #if defined(OS_WIN)
   DCHECK(!file_name_or_path.empty() && !file_stream.get());
   file_name_ = file_name_or_path;
-#elif defined(OS_MACOSX)
+#elif defined(OS_POSIX)
   DCHECK(!file_name_or_path.empty() && file_stream.get());
   file_path_ = file_name_or_path;
 #endif

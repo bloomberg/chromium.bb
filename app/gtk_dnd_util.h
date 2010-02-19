@@ -31,7 +31,11 @@ class GtkDndUtil {
     // apps.
     NETSCAPE_URL = 1 << 7,
 
-    INVALID_TARGET = 1 << 8,
+    // Used for drag-out download.
+    TEXT_PLAIN_NO_CHARSET = 1 << 8,
+    DIRECT_SAVE_FILE = 1 << 9,
+
+    INVALID_TARGET = 1 << 10,
   };
 
   // Get the atom for a given target (of the above enum type). Will return NULL

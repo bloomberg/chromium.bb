@@ -5,7 +5,6 @@
 #import "chrome/browser/cocoa/web_drag_source.h"
 
 #include "base/file_path.h"
-#include "base/file_util.h"
 #include "base/nsimage_cache_mac.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
@@ -19,7 +18,6 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view_mac.h"
 #include "net/base/file_stream.h"
-#include "net/base/net_errors.h"
 #include "net/base/net_util.h"
 #import "third_party/mozilla/include/NSPasteboard+Utils.h"
 #include "webkit/glue/webdropdata.h"
@@ -102,42 +100,6 @@ void PromiseWriterTask::Run() {
                       NULL);
 
   // Let our destructor take care of business.
-}
-
-class PromiseFileFinalizer : public DownloadFileObserver {
- public:
-  PromiseFileFinalizer(DragDownloadFile* drag_file_downloader)
-      : drag_file_downloader_(drag_file_downloader) {
-  }
-  virtual ~PromiseFileFinalizer() { }
-
-  // DownloadFileObserver methods.
-  virtual void OnDownloadCompleted(const FilePath& file_path);
-  virtual void OnDownloadAborted();
-
- private:
-  void Cleanup();
-
-  scoped_refptr<DragDownloadFile> drag_file_downloader_;
-
-  DISALLOW_COPY_AND_ASSIGN(PromiseFileFinalizer);
-};
-
-void PromiseFileFinalizer::Cleanup() {
-  if (drag_file_downloader_.get())
-    drag_file_downloader_ = NULL;
-}
-
-void PromiseFileFinalizer::OnDownloadCompleted(const FilePath& file_path) {
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &PromiseFileFinalizer::Cleanup));
-}
-
-void PromiseFileFinalizer::OnDownloadAborted() {
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE,
-      NewRunnableMethod(this, &PromiseFileFinalizer::Cleanup));
 }
 
 }  // namespace
@@ -310,35 +272,14 @@ void PromiseFileFinalizer::OnDownloadAborted() {
     return nil;
   }
 
-  FileStream* fileStream = new FileStream;
-  DCHECK(fileStream);
+  FilePath fileName = downloadFileName_.empty() ?
+      GetFileNameFromDragData(*dropData_) : downloadFileName_;
+  FilePath filePath(SysNSStringToUTF8(path));
+  filePath = filePath.Append(fileName);
+  FileStream* fileStream =
+      drag_download_util::CreateFileStreamForDrop(&filePath);
   if (!fileStream)
     return nil;
-
-  FilePath baseFileName = downloadFileName_.empty() ?
-      GetFileNameFromDragData(*dropData_) : downloadFileName_;
-  FilePath pathName(SysNSStringToUTF8(path));
-  FilePath fileName;
-  FilePath filePath;
-  unsigned seq;
-  const unsigned kMaxSeq = 99;
-  for (seq = 0; seq <= kMaxSeq; seq++) {
-    fileName = (seq == 0) ? baseFileName :
-        baseFileName.InsertBeforeExtension(
-            std::string("-") + UintToString(seq));
-    filePath = pathName.Append(fileName);
-
-    // Explicitly (and redundantly check) for file -- despite the fact that our
-    // open won't overwrite -- just to avoid log spew.
-    if (!file_util::PathExists(filePath) &&
-        fileStream->Open(filePath,
-            base::PLATFORM_FILE_CREATE | base::PLATFORM_FILE_WRITE) == net::OK)
-      break;
-  }
-  if (seq > kMaxSeq) {
-    delete fileStream;
-    return nil;
-  }
 
   if (downloadURL_.is_valid()) {
     TabContents* tabContents = [contentsView_ tabContents];
@@ -352,7 +293,7 @@ void PromiseFileFinalizer::OnDownloadAborted() {
 
     // The finalizer will take care of closing and deletion.
     dragFileDownloader->Start(
-        new PromiseFileFinalizer(dragFileDownloader));
+        new drag_download_util::PromiseFileFinalizer(dragFileDownloader));
   } else {
     // The writer will take care of closing and deletion.
     g_browser_process->file_thread()->message_loop()->PostTask(FROM_HERE,
@@ -360,7 +301,7 @@ void PromiseFileFinalizer::OnDownloadAborted() {
   }
 
   // Once we've created the file, we should return the file name.
-  return SysUTF8ToNSString(fileName.value());
+  return SysUTF8ToNSString(filePath.BaseName().value());
 }
 
 @end  // @implementation WebDragSource
