@@ -85,13 +85,18 @@
       'dependencies': [
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
         '<(DEPTH)/native_client/src/trusted/gio/gio.gyp:gio',
-        '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate',
         '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
       ],
       'conditions': [
+        ['target_arch=="arm"', {
+          'dependencies': [
+            '<(DEPTH)/native_client/src/trusted/validator_arm/v2/validator_arm.gyp:ncvalidate_arm_v2',
+          ],
+        }],
         ['target_arch=="ia32" or target_arch=="x64"', {
           'dependencies': [
             'arch/x86/service_runtime_x86.gyp:service_runtime_x86',
+            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate',
           ],
         }],
         ['target_arch == "ia32"', {

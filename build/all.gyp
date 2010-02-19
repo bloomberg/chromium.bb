@@ -20,7 +20,6 @@
         '../src/trusted/platform_qualify/platform_qualify.gyp:*',
         '../src/trusted/plugin/plugin.gyp:*',
         '../src/trusted/service_runtime/service_runtime.gyp:*',
-        '../src/trusted/validator_x86/validator_x86.gyp:*',
         # Tests
         '../src/trusted/service_runtime/service_runtime_tests.gyp:*',
       ],
@@ -29,6 +28,16 @@
           'dependencies': [
 # TODO: fix sandbox.gyp
 #            '../src/trusted/sandbox/sandbox.gyp:*',
+          ],
+        }],
+        ['target_arch=="ia32"', {
+          'dependencies': [
+            '../src/trusted/validator_x86/validator_x86.gyp:*',
+          ],
+        }],
+        ['target_arch=="arm"', {
+          'dependencies': [
+            '../src/trusted/validator_arm/v2/validator_arm.gyp:*',
           ],
         }],
         ['OS=="win" and nacl_standalone==0', {

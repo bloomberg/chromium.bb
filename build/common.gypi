@@ -140,6 +140,9 @@
       ['target_arch=="arm"', {
         'defines': [
           'NACL_BUILD_ARCH=arm',
+          'NACL_BUILD_SUBARCH=32',
+          'NACL_TARGET_ARCH=arm',
+          'NACL_TARGET_SUBARCH=32',
         ],
       }],
       ['linux2==1', {
