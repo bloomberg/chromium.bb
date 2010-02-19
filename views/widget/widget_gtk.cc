@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -749,6 +749,30 @@ gboolean WidgetGtk::OnDragMotion(GdkDragContext* context,
 }
 
 gboolean WidgetGtk::OnEnterNotify(GtkWidget* widget, GdkEventCrossing* event) {
+  if (last_mouse_event_was_move_ && last_mouse_move_x_ == event->x_root &&
+      last_mouse_move_y_ == event->y_root) {
+    // Don't generate a mouse event for the same location as the last.
+    return false;
+  }
+
+  if (!last_mouse_event_was_move_ && !is_mouse_down_) {
+    // When a mouse button is pressed gtk generates a leave, enter, press.
+    // RootView expects to get a mouse move before a press, otherwise enter is
+    // not set. So we generate a move here.
+    last_mouse_move_x_ = event->x_root;
+    last_mouse_move_y_ = event->y_root;
+    last_mouse_event_was_move_ = true;
+    // If this event is the result of pressing a button then one of the button
+    // modifiers is set. Unset it as we're compensating for the leave generated
+    // when you press a button.
+    int flags = (Event::GetFlagsFromGdkState(event->state) &
+                 ~(Event::EF_LEFT_BUTTON_DOWN |
+                   Event::EF_MIDDLE_BUTTON_DOWN |
+                   Event::EF_RIGHT_BUTTON_DOWN));
+    MouseEvent mouse_move(Event::ET_MOUSE_MOVED, event->x, event->y, flags);
+    root_view_->OnMouseMoved(mouse_move);
+  }
+
   return false;
 }
 
@@ -763,12 +787,6 @@ gboolean WidgetGtk::OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
   if (has_capture_ && is_mouse_down_) {
     last_mouse_event_was_move_ = false;
     int flags = Event::GetFlagsFromGdkState(event->state);
-    if (event->state & GDK_BUTTON1_MASK)
-      flags |= Event::EF_LEFT_BUTTON_DOWN;
-    if (event->state & GDK_BUTTON2_MASK)
-      flags |= Event::EF_MIDDLE_BUTTON_DOWN;
-    if (event->state & GDK_BUTTON3_MASK)
-      flags |= Event::EF_RIGHT_BUTTON_DOWN;
     MouseEvent mouse_drag(Event::ET_MOUSE_DRAGGED, event->x, event->y, flags);
     root_view_->OnMouseDragged(mouse_drag);
     return true;
@@ -783,12 +801,6 @@ gboolean WidgetGtk::OnMotionNotify(GtkWidget* widget, GdkEventMotion* event) {
   last_mouse_move_y_ = screen_loc.y();
   last_mouse_event_was_move_ = true;
   int flags = Event::GetFlagsFromGdkState(event->state);
-  if (event->state & GDK_BUTTON1_MASK)
-    flags |= Event::EF_LEFT_BUTTON_DOWN;
-  if (event->state & GDK_BUTTON2_MASK)
-    flags |= Event::EF_MIDDLE_BUTTON_DOWN;
-  if (event->state & GDK_BUTTON3_MASK)
-    flags |= Event::EF_RIGHT_BUTTON_DOWN;
   MouseEvent mouse_move(Event::ET_MOUSE_MOVED, event->x, event->y, flags);
   root_view_->OnMouseMoved(mouse_move);
   return true;
