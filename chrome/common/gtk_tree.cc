@@ -65,6 +65,18 @@ bool RemoveRecursively(GtkTreeStore* tree_store, GtkTreeIter* iter) {
   return gtk_tree_store_remove(tree_store, iter);
 }
 
+void GetSelectedIndicies(GtkTreeSelection* selection, std::set<int>* out) {
+  GList* list = gtk_tree_selection_get_selected_rows(
+      selection, NULL);
+  GList* node;
+  for (node = list; node != NULL; node = node->next) {
+    out->insert(
+        gtk_tree::GetRowNumForPath(static_cast<GtkTreePath*>(node->data)));
+  }
+  g_list_foreach(list, (GFunc)gtk_tree_path_free, NULL);
+  g_list_free(list);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 //  TableAdapter
 

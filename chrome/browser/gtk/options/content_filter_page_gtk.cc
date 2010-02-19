@@ -7,6 +7,7 @@
 #include "app/l10n_util.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/gtk/options/content_exceptions_window_gtk.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_names.h"
@@ -88,8 +89,6 @@ GtkWidget* ContentFilterPageGtk::InitGroup() {
 
   GtkWidget* exceptions_button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_COOKIES_EXCEPTIONS_BUTTON).c_str());
-  // TODO(erg): Disable the exceptions button until that is implemented.
-  gtk_widget_set_sensitive(exceptions_button, FALSE);
   g_signal_connect(G_OBJECT(exceptions_button), "clicked",
                    G_CALLBACK(OnExceptionsClicked), this);
 
@@ -117,5 +116,9 @@ void ContentFilterPageGtk::OnAllowToggled(
 void ContentFilterPageGtk::OnExceptionsClicked(
     GtkWidget* button,
     ContentFilterPageGtk* content_page) {
-  // TODO(erg): Implement a GTK equivalent of ExceptionsView.
+  HostContentSettingsMap* settings_map =
+      content_page->profile()->GetHostContentSettingsMap();
+  ContentExceptionsWindowGtk::ShowExceptionsWindow(
+      GTK_WINDOW(gtk_widget_get_toplevel(button)),
+      settings_map, content_page->content_type_);
 }

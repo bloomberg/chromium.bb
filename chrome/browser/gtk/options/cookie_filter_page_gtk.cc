@@ -9,6 +9,7 @@
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
+#include "chrome/browser/gtk/options/content_exceptions_window_gtk.h"
 #include "chrome/browser/gtk/options/cookies_view.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
 #include "chrome/browser/host_content_settings_map.h"
@@ -107,8 +108,6 @@ GtkWidget* CookieFilterPageGtk::InitCookieStoringGroup() {
   // Exception button.
   GtkWidget* exceptions_button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_COOKIES_EXCEPTIONS_BUTTON).c_str());
-  // TODO(erg): Disable the exceptions button until that is implemented.
-  gtk_widget_set_sensitive(exceptions_button, FALSE);
   g_signal_connect(G_OBJECT(exceptions_button), "clicked",
                    G_CALLBACK(OnExceptionsClicked), this);
   gtk_box_pack_start(GTK_BOX(vbox), WrapInHBox(exceptions_button),
@@ -171,9 +170,13 @@ void CookieFilterPageGtk::OnCookiesAllowToggled(
 }
 
 void CookieFilterPageGtk::OnExceptionsClicked(
-    GtkToggleButton* toggle_button,
+    GtkWidget* button,
     CookieFilterPageGtk* cookie_page) {
-  // TODO(erg): Implement the exceptions button.
+  HostContentSettingsMap* settings_map =
+      cookie_page->profile()->GetHostContentSettingsMap();
+  ContentExceptionsWindowGtk::ShowExceptionsWindow(
+      GTK_WINDOW(gtk_widget_get_toplevel(button)),
+      settings_map, CONTENT_SETTINGS_TYPE_COOKIES);
 }
 
 void CookieFilterPageGtk::OnBlock3rdpartyToggled(

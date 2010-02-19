@@ -5,8 +5,8 @@
 #include "chrome/browser/views/options/exception_editor_view.h"
 
 #include "app/l10n_util.h"
+#include "chrome/browser/content_exceptions_table_model.h"
 #include "chrome/browser/host_content_settings_map.h"
-#include "chrome/browser/views/options/content_exceptions_table_model.h"
 #include "googleurl/src/url_canon.h"
 #include "googleurl/src/url_parse.h"
 #include "grit/generated_resources.h"

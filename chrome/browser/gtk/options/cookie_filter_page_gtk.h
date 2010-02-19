@@ -34,7 +34,7 @@ class CookieFilterPageGtk : public OptionsPageBase {
   // GTK callbacks
   static void OnCookiesAllowToggled(GtkWidget* toggle_button,
                                     CookieFilterPageGtk* cookie_page);
-  static void OnExceptionsClicked(GtkToggleButton* toggle_button,
+  static void OnExceptionsClicked(GtkWidget* toggle_button,
                                   CookieFilterPageGtk* cookie_page);
   static void OnBlock3rdpartyToggled(GtkToggleButton* toggle_button,
                                      CookieFilterPageGtk* cookie_page);

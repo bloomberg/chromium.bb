@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_OPTIONS_CONTENT_EXCEPTIONS_TABLE_MODEL_H_
-#define CHROME_BROWSER_VIEWS_OPTIONS_CONTENT_EXCEPTIONS_TABLE_MODEL_H_
+#ifndef CHROME_BROWSER_CONTENT_EXCEPTIONS_TABLE_MODEL_H_
+#define CHROME_BROWSER_CONTENT_EXCEPTIONS_TABLE_MODEL_H_
 
 #include <string>
 
@@ -51,4 +51,4 @@ class ContentExceptionsTableModel : public TableModel {
   DISALLOW_COPY_AND_ASSIGN(ContentExceptionsTableModel);
 };
 
-#endif  // CHROME_BROWSER_VIEWS_OPTIONS_CONTENT_EXCEPTIONS_TABLE_MODEL_H_
+#endif  // CHROME_BROWSER_CONTENT_EXCEPTIONS_TABLE_MODEL_H_

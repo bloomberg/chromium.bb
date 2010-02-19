@@ -7,7 +7,7 @@
 
 #include <string>
 
-#include "chrome/browser/views/options/content_exceptions_table_model.h"
+#include "chrome/browser/content_exceptions_table_model.h"
 #include "chrome/browser/views/options/exception_editor_view.h"
 #include "chrome/common/content_settings.h"
 #include "chrome/common/content_settings_types.h"

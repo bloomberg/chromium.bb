@@ -6,6 +6,7 @@
 #define CHROME_COMMON_GTK_TREE_H_
 
 #include <gtk/gtk.h>
+#include <set>
 #include <vector>
 
 #include "app/table_model_observer.h"
@@ -35,6 +36,9 @@ void SelectAndFocusRowNum(int row, GtkTreeView* tree_view);
 // will be true, otherwise the return will be false and |iter| is no longer
 // valid.
 bool RemoveRecursively(GtkTreeStore* tree_store, GtkTreeIter* iter);
+
+// Writes all the indexes of selected rows into |out|.
+void GetSelectedIndicies(GtkTreeSelection* selection, std::set<int>* out);
 
 // A helper class for populating a GtkListStore from a TableModel.
 class TableAdapter : public TableModelObserver {

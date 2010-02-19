@@ -374,16 +374,9 @@ void LanguagesPageGtk::OnAddButtonClicked(GtkButton* button,
 // static
 void LanguagesPageGtk::OnRemoveButtonClicked(GtkButton* button,
                                              LanguagesPageGtk* languages_page) {
-  GList* list = gtk_tree_selection_get_selected_rows(
-      languages_page->language_order_selection_, NULL);
   std::set<int> selected_rows;
-  GList* node;
-  for (node = list; node != NULL; node = node->next) {
-    selected_rows.insert(
-        gtk_tree::GetRowNumForPath(static_cast<GtkTreePath*>(node->data)));
-  }
-  g_list_foreach(list, (GFunc)gtk_tree_path_free, NULL);
-  g_list_free(list);
+  gtk_tree::GetSelectedIndicies(languages_page->language_order_selection_,
+                                &selected_rows);
 
   int selected_row = 0;
   for (std::set<int>::reverse_iterator selected = selected_rows.rbegin();
