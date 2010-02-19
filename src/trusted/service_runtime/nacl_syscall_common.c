@@ -1474,39 +1474,41 @@ int32_t NaClCommonSysImc_Connect(struct NaClAppThread *natp,
  * races, then invoke NaClImcSendTypedMessage from the nrd_xfer
  * library.
  */
-int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread *natp,
-                                 int                  d,
-                                 struct NaClImcMsgHdr *nimhp,
-                                 int                  flags) {
-  int32_t                   retval = -NACL_ABI_EINVAL;
-  ssize_t                   ssize_retval;
-  uintptr_t                 sysaddr;
+int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread         *natp,
+                                 int                          d,
+                                 struct NaClAbiNaClImcMsgHdr *nanimhp,
+                                 int                          flags) {
+  int32_t                       retval = -NACL_ABI_EINVAL;
+  ssize_t                       ssize_retval;
+  uintptr_t                     sysaddr;
   /* copy of user-space data for validation */
-  struct NaClImcMsgHdr      kern_nimh;
-  struct NaClImcMsgIoVec    kern_iov[NACL_ABI_IMC_IOVEC_MAX];
+  struct NaClAbiNaClImcMsgHdr   kern_nanimh;
+  struct NaClAbiNaClImcMsgIoVec kern_naiov[NACL_ABI_IMC_IOVEC_MAX];
+  struct NaClImcMsgIoVec        kern_iov[NACL_ABI_IMC_IOVEC_MAX];
   /* kernel-side representatin of descriptors */
-  struct NaClDesc           *kern_desc[NACL_ABI_IMC_USER_DESC_MAX];
-  struct NaClImcTypedMsgHdr kern_msg_hdr;
-  struct NaClDesc           *ndp;
-  size_t                    i;
+  struct NaClDesc               *kern_desc[NACL_ABI_IMC_USER_DESC_MAX];
+  struct NaClImcTypedMsgHdr     kern_msg_hdr;
+  struct NaClDesc               *ndp;
+  size_t                        i;
 
   NaClLog(3,
           ("Entered NaClCommonSysImc_Sendmsg(0x%08"PRIxPTR", %d,"
            " 0x%08"PRIxPTR", 0x%x)\n"),
-          (uintptr_t) natp, d, (uintptr_t) nimhp, flags);
+          (uintptr_t) natp, d, (uintptr_t) nanimhp, flags);
 
   NaClSysCommonThreadSyscallEnter(natp);
 
   sysaddr = NaClUserToSysAddrRange(natp->nap,
-                                   (uintptr_t) nimhp,
-                                   sizeof *nimhp);
+                                   (uintptr_t) nanimhp,
+                                   sizeof *nanimhp);
   if (kNaClBadAddress == sysaddr) {
     NaClLog(4, "NaClImcMsgHdr not in user address space\n");
     retval = -NACL_ABI_EFAULT;
     goto cleanup_leave;
   }
 
-  kern_nimh = *(struct NaClImcMsgHdr *) sysaddr;  /* copy before validating */
+  kern_nanimh = *(struct NaClAbiNaClImcMsgHdr *) sysaddr;
+  /* copy before validating */
 
   /*
    * Some of these checks duplicate checks that will be done in the
@@ -1518,40 +1520,41 @@ int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread *natp,
    * service runtime, but the nrd xfer library might be called from
    * other code.
    */
-  if (kern_nimh.iov_length > NACL_ABI_IMC_IOVEC_MAX) {
+  if (kern_nanimh.iov_length > NACL_ABI_IMC_IOVEC_MAX) {
     NaClLog(4, "gather/scatter array too large\n");
     retval = -NACL_ABI_EINVAL;
     goto cleanup_leave;
   }
-  if (kern_nimh.desc_length > NACL_ABI_IMC_USER_DESC_MAX) {
+  if (kern_nanimh.desc_length > NACL_ABI_IMC_USER_DESC_MAX) {
     NaClLog(4, "handle vector too long\n");
     retval = -NACL_ABI_EINVAL;
     goto cleanup_leave;
   }
 
-  if (kern_nimh.iov_length > 0) {
+  if (kern_nanimh.iov_length > 0) {
     sysaddr = NaClUserToSysAddrRange(natp->nap,
-                                     (uintptr_t) kern_nimh.iov,
-                                     (kern_nimh.iov_length
-                                      * sizeof *kern_nimh.iov));
+                                     (uintptr_t) kern_nanimh.iov,
+                                     (kern_nanimh.iov_length
+                                      * sizeof kern_naiov[0]));
     if (kNaClBadAddress == sysaddr) {
       NaClLog(4, "gather/scatter array not in user address space\n");
       retval = -NACL_ABI_EFAULT;
       goto cleanup_leave;
     }
 
-    memcpy(kern_iov, (void *) sysaddr,
-           kern_nimh.iov_length * sizeof *kern_nimh.iov);
+    memcpy(kern_naiov, (void *) sysaddr,
+           kern_nanimh.iov_length * sizeof kern_naiov[0]);
 
-    for (i = 0; i < kern_nimh.iov_length; ++i) {
+    for (i = 0; i < kern_nanimh.iov_length; ++i) {
       sysaddr = NaClUserToSysAddrRange(natp->nap,
-                                       (uintptr_t) kern_iov[i].base,
-                                       kern_iov[i].length);
+                                       (uintptr_t) kern_naiov[i].base,
+                                       kern_naiov[i].length);
       if (kNaClBadAddress == sysaddr) {
         retval = -NACL_ABI_EFAULT;
         goto cleanup_leave;
       }
       kern_iov[i].base = (void *) sysaddr;
+      kern_iov[i].length = kern_naiov[i].length;
     }
   }
 
@@ -1568,15 +1571,15 @@ int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread *natp,
   retval = -NACL_ABI_EINVAL;
 
   kern_msg_hdr.iov = kern_iov;
-  kern_msg_hdr.iov_length = kern_nimh.iov_length;
+  kern_msg_hdr.iov_length = kern_nanimh.iov_length;
 
-  if (0 == kern_nimh.desc_length) {
+  if (0 == kern_nanimh.desc_length) {
     kern_msg_hdr.ndescv = 0;
     kern_msg_hdr.ndesc_length = 0;
   } else {
     sysaddr = NaClUserToSysAddrRange(natp->nap,
-                                     (uintptr_t) kern_nimh.descv,
-                                     kern_nimh.desc_length * sizeof(int));
+                                     (uintptr_t) kern_nanimh.descv,
+                                     kern_nanimh.desc_length * sizeof(int));
     if (kNaClBadAddress == sysaddr) {
       retval = -NACL_ABI_EFAULT;
       goto cleanup;
@@ -1586,10 +1589,11 @@ int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread *natp,
      * NB: for each descv entry, we read from NaCl app address space
      * exactly once.
      */
-    for (i = 0; i < kern_nimh.desc_length; ++i) {
+    for (i = 0; i < kern_nanimh.desc_length; ++i) {
       if (kKnownInvalidDescNumber == ((int *) sysaddr)[i]) {
         kern_desc[i] = (struct NaClDesc *) NaClDescInvalidMake();
       } else {
+        /* NaCl modules are ILP32, so this works on ILP32 and LP64 systems */
         kern_desc[i] = NaClGetDesc(natp->nap, ((int *) sysaddr)[i]);
       }
       if (NULL == kern_desc[i]) {
@@ -1598,9 +1602,9 @@ int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread *natp,
       }
     }
     kern_msg_hdr.ndescv = kern_desc;
-    kern_msg_hdr.ndesc_length = kern_nimh.desc_length;
+    kern_msg_hdr.ndesc_length = kern_nanimh.desc_length;
   }
-  kern_msg_hdr.flags = kern_nimh.flags;
+  kern_msg_hdr.flags = kern_nanimh.flags;
 
   ssize_retval = NaClImcSendTypedMessage(ndp, natp->effp, &kern_msg_hdr, flags);
 
@@ -1628,7 +1632,7 @@ int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread *natp,
   }
 
 cleanup:
-  for (i = 0; i < kern_nimh.desc_length; ++i) {
+  for (i = 0; i < kern_nanimh.desc_length; ++i) {
     if (NULL != kern_desc[i]) {
       NaClDescUnref(kern_desc[i]);
       kern_desc[i] = NULL;
@@ -1641,28 +1645,29 @@ cleanup_leave:
   return retval;
 }
 
-int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread *natp,
-                                 int                  d,
-                                 struct NaClImcMsgHdr *nimhp,
-                                 int                  flags) {
-  int32_t                   retval = -NACL_ABI_EINVAL;
-  ssize_t                   ssize_retval;
-  uintptr_t                 sysaddr;
-  struct NaClImcMsgHdr      *kern_nimhp;
-  size_t                    i;
-  struct NaClDesc           *ndp;
-  struct NaClImcMsgHdr      kern_nimh;
-  struct NaClImcMsgIoVec    kern_iov[NACL_ABI_IMC_IOVEC_MAX];
-  int                       *kern_descv;
-  struct NaClImcTypedMsgHdr recv_hdr;
-  struct NaClDesc           *new_desc[NACL_ABI_IMC_DESC_MAX];
-  size_t                    num_user_desc;
-  struct NaClDesc           *invalid_desc = NULL;
+int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread         *natp,
+                                 int                          d,
+                                 struct NaClAbiNaClImcMsgHdr  *nanimhp,
+                                 int                          flags) {
+  int32_t                       retval = -NACL_ABI_EINVAL;
+  ssize_t                       ssize_retval;
+  uintptr_t                     sysaddr;
+  struct NaClAbiNaClImcMsgHdr   *kern_nanimhp;
+  size_t                        i;
+  struct NaClDesc               *ndp;
+  struct NaClAbiNaClImcMsgHdr   kern_nanimh;
+  struct NaClAbiNaClImcMsgIoVec kern_naiov[NACL_ABI_IMC_IOVEC_MAX];
+  struct NaClImcMsgIoVec        kern_iov[NACL_ABI_IMC_IOVEC_MAX];
+  int32_t                       *kern_descv;
+  struct NaClImcTypedMsgHdr     recv_hdr;
+  struct NaClDesc               *new_desc[NACL_ABI_IMC_DESC_MAX];
+  size_t                        num_user_desc;
+  struct NaClDesc               *invalid_desc = NULL;
 
   NaClLog(3,
           ("Entered NaClCommonSysImc_RecvMsg(0x%08"PRIxPTR", %d,"
            " 0x%08"PRIxPTR")\n"),
-          (uintptr_t) natp, d, (uintptr_t) nimhp);
+          (uintptr_t) natp, d, (uintptr_t) nanimhp);
 
   NaClSysCommonThreadSyscallEnter(natp);
 
@@ -1671,31 +1676,34 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread *natp,
    * allocating a receive buffer.
    */
   sysaddr = NaClUserToSysAddrRange(natp->nap,
-                                   (uintptr_t) nimhp,
-                                   sizeof *nimhp);
+                                   (uintptr_t) nanimhp,
+                                   sizeof *nanimhp);
   if (kNaClBadAddress == sysaddr) {
     NaClLog(4, "NaClImcMsgHdr not in user address space\n");
     retval = -NACL_ABI_EFAULT;
     goto cleanup_leave;
   }
-  kern_nimhp = (struct NaClImcMsgHdr *) sysaddr;
-  kern_nimh = *kern_nimhp;  /* copy before validating */
-  if (kern_nimh.iov_length > NACL_ABI_IMC_IOVEC_MAX) {
-    NaClLog(4, "gather/scatter array too large\n");
+  kern_nanimhp = (struct NaClAbiNaClImcMsgHdr *) sysaddr;
+  kern_nanimh = *kern_nanimhp;  /* copy before validating */
+
+  if (kern_nanimh.iov_length > NACL_ABI_IMC_IOVEC_MAX) {
+    NaClLog(4, "gather/scatter array too large: %"PRIdNACL_SIZE"\n",
+            kern_nanimh.iov_length);
     retval = -NACL_ABI_EINVAL;
     goto cleanup_leave;
   }
-  if (kern_nimh.desc_length > NACL_ABI_IMC_USER_DESC_MAX) {
-    NaClLog(4, "handle vector too long\n");
+  if (kern_nanimh.desc_length > NACL_ABI_IMC_USER_DESC_MAX) {
+    NaClLog(4, "handle vector too long: %"PRIdNACL_SIZE"\n",
+            kern_nanimh.desc_length);
     retval = -NACL_ABI_EINVAL;
     goto cleanup_leave;
   }
 
-  if (kern_nimh.iov_length > 0) {
+  if (kern_nanimh.iov_length > 0) {
     sysaddr = NaClUserToSysAddrRange(natp->nap,
-                                     (uintptr_t) kern_nimh.iov,
-                                     (kern_nimh.iov_length
-                                      * sizeof *kern_nimh.iov));
+                                     (uintptr_t) kern_nanimh.iov,
+                                     (kern_nanimh.iov_length
+                                      * sizeof kern_naiov[0]));
     if (kNaClBadAddress == sysaddr) {
       NaClLog(4, "gather/scatter array not in user address space\n");
       retval = -NACL_ABI_EFAULT;
@@ -1705,38 +1713,39 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread *natp,
      * Copy IOV array into kernel space.  Validate this snapshot and do
      * user->kernel address conversions on this snapshot.
      */
-    memcpy(kern_iov, (void *) sysaddr,
-           kern_nimh.iov_length * sizeof *kern_nimh.iov);
+    memcpy(kern_naiov, (void *) sysaddr,
+           kern_nanimh.iov_length * sizeof kern_naiov[0]);
     /*
      * Convert every IOV base from user to system address, validate
      * range of bytes are really in user address space.
      */
 
-    for (i = 0; i < kern_nimh.iov_length; ++i) {
+    for (i = 0; i < kern_nanimh.iov_length; ++i) {
       sysaddr = NaClUserToSysAddrRange(natp->nap,
-                                       (uintptr_t) kern_iov[i].base,
-                                       kern_iov[i].length);
+                                       (uintptr_t) kern_naiov[i].base,
+                                       kern_naiov[i].length);
       if (kNaClBadAddress == sysaddr) {
         NaClLog(4, "iov number %"PRIdS" not entirely in user space\n", i);
         retval = -NACL_ABI_EFAULT;
         goto cleanup_leave;
       }
       kern_iov[i].base = (void *) sysaddr;
+      kern_iov[i].length = kern_naiov[i].length;
     }
   }
 
-  if (kern_nimh.desc_length > 0) {
+  if (kern_nanimh.desc_length > 0) {
     sysaddr = NaClUserToSysAddrRange(natp->nap,
-                                     (uintptr_t) kern_nimh.descv,
-                                     kern_nimh.desc_length * sizeof(int));
+                                     (uintptr_t) kern_nanimh.descv,
+                                     kern_nanimh.desc_length * sizeof(int));
     if (kNaClBadAddress == sysaddr) {
       retval = -NACL_ABI_EFAULT;
       goto cleanup_leave;
     }
-    kern_descv = (int *) sysaddr;
+    kern_descv = (int32_t *) sysaddr;
   } else {
     /* ensure we will SEGV if there's a bug below */
-    kern_descv = (int *) NULL;
+    kern_descv = (int32_t *) NULL;
   }
 
   ndp = NaClGetDesc(natp->nap, d);
@@ -1747,7 +1756,7 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread *natp,
   }
 
   recv_hdr.iov = kern_iov;
-  recv_hdr.iov_length = kern_nimh.iov_length;
+  recv_hdr.iov_length = kern_nanimh.iov_length;
 
   recv_hdr.ndescv = new_desc;
   recv_hdr.ndesc_length = NACL_ARRAY_SIZE(new_desc);
@@ -1766,14 +1775,14 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread *natp,
   if (NaClIsNegErrno(ssize_retval)) {
     /* negative error numbers all have valid 32-bit representations,
      * so this cast is safe. */
-    retval = (int32_t)ssize_retval;
+    retval = (int32_t) ssize_retval;
     goto cleanup;
   } else if (ssize_retval > INT32_MAX || ssize_retval < INT32_MIN) {
     retval = -NACL_ABI_EOVERFLOW;
     goto cleanup;
   } else {
     /* cast is safe due to range check above */
-    retval = (int32_t)ssize_retval;
+    retval = (int32_t) ssize_retval;
   }
 
   /*
@@ -1781,20 +1790,20 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread *natp,
    * NACL_ABI_HANDLES_TRUNCATED.
    */
 
-  kern_nimh.flags = recv_hdr.flags;
+  kern_nanimh.flags = recv_hdr.flags;
 
   /*
    * Now internalize the NaClHandles as NaClDesc objects.
    */
   num_user_desc = recv_hdr.ndesc_length;
 
-  if (kern_nimh.desc_length < num_user_desc) {
-    kern_nimh.flags |= NACL_ABI_RECVMSG_DESC_TRUNCATED;
-    for (i = kern_nimh.desc_length; i < num_user_desc; ++i) {
+  if (kern_nanimh.desc_length < num_user_desc) {
+    kern_nanimh.flags |= NACL_ABI_RECVMSG_DESC_TRUNCATED;
+    for (i = kern_nanimh.desc_length; i < num_user_desc; ++i) {
       NaClDescUnref(new_desc[i]);
       new_desc[i] = NULL;
     }
-    num_user_desc = kern_nimh.desc_length;
+    num_user_desc = kern_nanimh.desc_length;
   }
 
   invalid_desc = (struct NaClDesc *) NaClDescInvalidMake();
@@ -1808,8 +1817,8 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread *natp,
     new_desc[i] = NULL;
   }
 
-  kern_nimh.desc_length = num_user_desc;
-  *kern_nimhp = kern_nimh;
+  kern_nanimh.desc_length = num_user_desc;
+  *kern_nanimhp = kern_nanimh;
   /* copy out updated desc count, flags */
  cleanup:
   if (retval < 0) {

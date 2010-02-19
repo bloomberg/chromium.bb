@@ -119,13 +119,17 @@ def AddNodeToTestSuite(env, node, suite_name, node_name=None):
   if not node:
     return
 
-  # TODO(bsy): these nacl64 tests are known to fail, and should be
-  # re-enabled as we get x86-64 version of sel_ldr fully operational.
+  # There are no known-to-fail tests any more, but this code is left
+  # in so that if/when we port to a new architecture or add a test
+  # that is known to fail on some platform(s), we can continue to have
+  # a central location to disable tests from running.  NB: tests that
+  # don't *build* on some platforms need to be omitted in another way.
 
-  known_bad_nacl64 = [ 'run_srpc_basic_test',
-                       'run_srpc_sysv_shm_test',
-                       'run_srpc_bad_service_test',
-                       ]
+  known_bad_nacl64 = []
+
+  # This should be generalized to work for multiple arch/subarch, but
+  # hopefully we won't have too many new architectures / broken tests
+  # at a time.
   if node_name in known_bad_nacl64 and env['BUILD_SUBARCH'] == '64':
     print '*** SKIPPING', node_name
     return

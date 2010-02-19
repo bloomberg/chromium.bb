@@ -34,6 +34,32 @@ typedef int NaClHandle;
 #endif
 #endif
 
+struct NaClAbiNaClImcMsgIoVec {
+#ifdef __native_client__
+  void            *base;
+#else
+  uint32_t        base;
+#endif
+  nacl_abi_size_t length;
+};
+
+struct NaClAbiNaClImcMsgHdr {
+#ifdef __native_client__
+  struct NaClImcMsgIoVec  *iov;
+#else
+  uint32_t                iov;
+#endif
+  nacl_abi_size_t         iov_length;
+#ifdef __native_client__
+  int                     *descv;
+#else
+  uint32_t                descv;
+#endif
+  nacl_abi_size_t         desc_length;
+  int                     flags;
+};
+
+#ifndef __native_client__
 struct NaClImcMsgIoVec {
   void            *base;
   nacl_abi_size_t length;
@@ -46,6 +72,7 @@ struct NaClImcMsgHdr {
   nacl_abi_size_t         desc_length;
   int                     flags;
 };
+#endif
 
 /*
  * NACL_ABI_IMC_IOVEC_MAX: How many struct NaClIOVec are permitted?
