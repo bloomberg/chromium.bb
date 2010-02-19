@@ -185,4 +185,13 @@ TEST(SafeBrowsingStoreTest, SBProcessSubs) {
   EXPECT_TRUE(SBFullHashEq(kHash3, sub_hashes[0].full_hash));
 }
 
+TEST(SafeBrowsingStoreTest, Y2K38) {
+  const base::Time now = base::Time::Now();
+  const base::Time future = now + base::TimeDelta::FromDays(3*365);
+
+  // TODO: Fix file format before 2035.
+  EXPECT_GT(static_cast<int32>(future.ToTimeT()), 0)
+    << " (int32)time_t is running out.";
+}
+
 }  // namespace

@@ -64,10 +64,18 @@ struct SBSubPrefix {
 // different structs, and there aren't many full hashes.  Hmm.
 struct SBAddFullHash {
   SBAddPrefix add_prefix;
-  base::Time received;
+  int32 received;
   SBFullHash full_hash;
 
   SBAddFullHash(int32 id, SBPrefix p, base::Time r, SBFullHash h)
+      : add_prefix(id, p),
+        received(static_cast<int32>(r.ToTimeT())),
+        full_hash(h) {
+  }
+
+  // Provided for ReadAddHashes() implementations, which already have
+  // an int32 for the time.
+  SBAddFullHash(int32 id, SBPrefix p, int32 r, SBFullHash h)
       : add_prefix(id, p), received(r), full_hash(h) {}
 
   int32 GetAddChunkId() const { return add_prefix.chunk_id; }

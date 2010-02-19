@@ -25,23 +25,6 @@ bool WriteInt32(FILE* fp, int32 value) {
   return ret == 1;
 }
 
-bool ReadTime(FILE* fp, base::Time* value) {
-  DCHECK(value);
-
-  int64 time_t;
-  const size_t ret = fread(&time_t, sizeof(time_t), 1, fp);
-  if (ret != 1)
-    return false;
-  *value = base::Time::FromTimeT(time_t);
-  return true;
-}
-
-bool WriteTime(FILE* fp, const base::Time& value) {
-  const int64 time_t = value.ToTimeT();
-  const size_t ret = fwrite(&time_t, sizeof(time_t), 1, fp);
-  return ret == 1;
-}
-
 bool ReadHash(FILE* fp, SBFullHash* value) {
   DCHECK(value);
   const size_t ret = fread(&value->full_hash, sizeof(value->full_hash),
@@ -237,13 +220,13 @@ bool SafeBrowsingStoreFile::ReadAddHashes(
   for (int i = 0; i < count; ++i) {
     int32 chunk_id;
     SBPrefix prefix;
-    base::Time received;
+    int32 received;
     SBFullHash full_hash;
     DCHECK_EQ(sizeof(int32), sizeof(prefix));
 
     if (!ReadInt32(fp, &chunk_id) ||
         !ReadInt32(fp, &prefix) ||
-        !ReadTime(fp, &received) ||
+        !ReadInt32(fp, &received) ||
         !ReadHash(fp, &full_hash))
       return false;
 
@@ -264,7 +247,7 @@ bool SafeBrowsingStoreFile::WriteAddHashes(
        iter != add_hashes.end(); ++iter) {
     if (!WriteInt32(new_file_.get(), iter->add_prefix.chunk_id) ||
         !WriteInt32(new_file_.get(), iter->add_prefix.prefix) ||
-        !WriteTime(new_file_.get(), iter->received) ||
+        !WriteInt32(new_file_.get(), iter->received) ||
         !WriteHash(new_file_.get(), iter->full_hash))
       return false;
   }

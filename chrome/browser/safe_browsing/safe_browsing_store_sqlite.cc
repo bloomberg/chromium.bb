@@ -358,7 +358,8 @@ bool SafeBrowsingStoreSqlite::ReadAddPrefixes(
   return true;
 }
 
-bool SafeBrowsingStoreSqlite::WriteAddPrefix(int32 chunk_id, SBPrefix prefix) {
+bool SafeBrowsingStoreSqlite::WriteAddPrefixes(
+    const std::vector<SBAddPrefix>& add_prefixes) {
   DCHECK(db_);
 
   SQLITE_UNIQUE_STATEMENT(statement, *statement_cache_,
@@ -369,23 +370,15 @@ bool SafeBrowsingStoreSqlite::WriteAddPrefix(int32 chunk_id, SBPrefix prefix) {
     return false;
   }
 
-  statement->bind_int(0, chunk_id);
-  statement->bind_int(1, prefix);
-  int rv = statement->step();
-  if (rv == SQLITE_CORRUPT)
-    return OnCorruptDatabase();
-  DCHECK(rv == SQLITE_DONE);
-  return true;
-}
-
-bool SafeBrowsingStoreSqlite::WriteAddPrefixes(
-    const std::vector<SBAddPrefix>& add_prefixes) {
-  DCHECK(db_);
-
   for (std::vector<SBAddPrefix>::const_iterator iter = add_prefixes.begin();
        iter != add_prefixes.end(); ++iter) {
-    if (!WriteAddPrefix(iter->chunk_id, iter->prefix))
-      return false;
+    statement->bind_int(0, iter->chunk_id);
+    statement->bind_int(1, iter->prefix);
+    int rv = statement->step();
+    if (rv == SQLITE_CORRUPT)
+      return OnCorruptDatabase();
+    DCHECK(rv == SQLITE_DONE);
+    statement->reset();
   }
   return true;
 }
@@ -418,8 +411,8 @@ bool SafeBrowsingStoreSqlite::ReadSubPrefixes(
   return true;
 }
 
-bool SafeBrowsingStoreSqlite::WriteSubPrefix(
-    int32 chunk_id, int32 add_chunk_id, SBPrefix prefix) {
+bool SafeBrowsingStoreSqlite::WriteSubPrefixes(
+    const std::vector<SBSubPrefix>& sub_prefixes) {
   DCHECK(db_);
 
   SQLITE_UNIQUE_STATEMENT(statement, *statement_cache_,
@@ -430,25 +423,16 @@ bool SafeBrowsingStoreSqlite::WriteSubPrefix(
     return false;
   }
 
-  statement->bind_int(0, chunk_id);
-  statement->bind_int(1, add_chunk_id);
-  statement->bind_int(2, prefix);
-  int rv = statement->step();
-  if (rv == SQLITE_CORRUPT)
-    return OnCorruptDatabase();
-  DCHECK(rv == SQLITE_DONE);
-  return true;
-}
-
-bool SafeBrowsingStoreSqlite::WriteSubPrefixes(
-    std::vector<SBSubPrefix>& sub_prefixes) {
-  DCHECK(db_);
-
   for (std::vector<SBSubPrefix>::const_iterator iter = sub_prefixes.begin();
        iter != sub_prefixes.end(); ++iter) {
-    const SBAddPrefix &add_prefix = iter->add_prefix;
-    if (!WriteSubPrefix(iter->chunk_id, add_prefix.chunk_id, add_prefix.prefix))
-      return false;
+    statement->bind_int(0, iter->chunk_id);
+    statement->bind_int(1, iter->add_prefix.chunk_id);
+    statement->bind_int(2, iter->add_prefix.prefix);
+    int rv = statement->step();
+    if (rv == SQLITE_CORRUPT)
+      return OnCorruptDatabase();
+    DCHECK(rv == SQLITE_DONE);
+    statement->reset();
   }
   return true;
 }
@@ -472,8 +456,7 @@ bool SafeBrowsingStoreSqlite::ReadAddHashes(
       continue;
 
     const SBPrefix prefix = statement->column_int(1);
-    const base::Time received =
-        base::Time::FromTimeT(statement->column_int64(2));
+    const int32 received = statement->column_int(2);
     const SBFullHash full_hash = ReadFullHash(&statement, 3);
     add_hashes->push_back(SBAddFullHash(chunk_id, prefix, received, full_hash));
   }
@@ -483,9 +466,8 @@ bool SafeBrowsingStoreSqlite::ReadAddHashes(
   return true;
 }
 
-bool SafeBrowsingStoreSqlite::WriteAddHash(int32 chunk_id, SBPrefix prefix,
-                                           base::Time receive_time,
-                                           SBFullHash full_hash) {
+bool SafeBrowsingStoreSqlite::WriteAddHashes(
+    const std::vector<SBAddFullHash>& add_hashes) {
   DCHECK(db_);
 
   SQLITE_UNIQUE_STATEMENT(statement, *statement_cache_,
@@ -497,27 +479,18 @@ bool SafeBrowsingStoreSqlite::WriteAddHash(int32 chunk_id, SBPrefix prefix,
     return false;
   }
 
-  statement->bind_int(0, chunk_id);
-  statement->bind_int(1, prefix);
-  statement->bind_int64(2, receive_time.ToTimeT());
-  statement->bind_blob(3, full_hash.full_hash, sizeof(full_hash.full_hash));
-  int rv = statement->step();
-  if (rv == SQLITE_CORRUPT)
-    return OnCorruptDatabase();
-  DCHECK(rv == SQLITE_DONE);
-  return true;
-}
-
-bool SafeBrowsingStoreSqlite::WriteAddHashes(
-    const std::vector<SBAddFullHash>& add_hashes) {
-  DCHECK(db_);
-
   for (std::vector<SBAddFullHash>::const_iterator iter = add_hashes.begin();
        iter != add_hashes.end(); ++iter) {
-    const SBAddPrefix& add_prefix = iter->add_prefix;
-    if (!WriteAddHash(add_prefix.chunk_id, add_prefix.prefix,
-                      iter->received, iter->full_hash))
-      return false;
+    statement->bind_int(0, iter->add_prefix.chunk_id);
+    statement->bind_int(1, iter->add_prefix.prefix);
+    statement->bind_int(2, iter->received);
+    statement->bind_blob(3, iter->full_hash.full_hash,
+                         sizeof(iter->full_hash.full_hash));
+    int rv = statement->step();
+    if (rv == SQLITE_CORRUPT)
+      return OnCorruptDatabase();
+    DCHECK(rv == SQLITE_DONE);
+    statement->reset();
   }
   return true;
 }
@@ -552,8 +525,8 @@ bool SafeBrowsingStoreSqlite::ReadSubHashes(
   return true;
 }
 
-bool SafeBrowsingStoreSqlite::WriteSubHash(
-    int32 chunk_id, int32 add_chunk_id, SBPrefix prefix, SBFullHash full_hash) {
+bool SafeBrowsingStoreSqlite::WriteSubHashes(
+    const std::vector<SBSubFullHash>& sub_hashes) {
   DCHECK(db_);
 
   SQLITE_UNIQUE_STATEMENT(statement, *statement_cache_,
@@ -565,26 +538,18 @@ bool SafeBrowsingStoreSqlite::WriteSubHash(
     return false;
   }
 
-  statement->bind_int(0, chunk_id);
-  statement->bind_int(1, add_chunk_id);
-  statement->bind_int(2, prefix);
-  statement->bind_blob(3, full_hash.full_hash, sizeof(full_hash.full_hash));
-  int rv = statement->step();
-  if (rv == SQLITE_CORRUPT)
-    return OnCorruptDatabase();
-  DCHECK(rv == SQLITE_DONE);
-  return true;
-}
-
-bool SafeBrowsingStoreSqlite::WriteSubHashes(
-    std::vector<SBSubFullHash>& sub_hashes) {
-  DCHECK(db_);
-
   for (std::vector<SBSubFullHash>::const_iterator iter = sub_hashes.begin();
        iter != sub_hashes.end(); ++iter) {
-    if (!WriteSubHash(iter->chunk_id, iter->add_prefix.chunk_id,
-                      iter->add_prefix.prefix, iter->full_hash))
-      return false;
+    statement->bind_int(0, iter->chunk_id);
+    statement->bind_int(1, iter->add_prefix.chunk_id);
+    statement->bind_int(2, iter->add_prefix.prefix);
+    statement->bind_blob(3, iter->full_hash.full_hash,
+                         sizeof(iter->full_hash.full_hash));
+    int rv = statement->step();
+    if (rv == SQLITE_CORRUPT)
+      return OnCorruptDatabase();
+    DCHECK(rv == SQLITE_DONE);
+    statement->reset();
   }
   return true;
 }

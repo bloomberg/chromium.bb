@@ -30,13 +30,28 @@ class SafeBrowsingStoreSqlite : public SafeBrowsingStore {
   virtual bool BeginChunk() {
     return true;
   }
-  virtual bool WriteAddPrefix(int32 chunk_id, SBPrefix prefix);
+  virtual bool WriteAddPrefix(int32 chunk_id, SBPrefix prefix) {
+    const std::vector<SBAddPrefix> prefixes(1, SBAddPrefix(chunk_id, prefix));
+    return WriteAddPrefixes(prefixes);
+  }
   virtual bool WriteAddHash(int32 chunk_id, SBPrefix prefix,
-                            base::Time receive_time, SBFullHash full_hash);
+                            base::Time receive_time, SBFullHash full_hash) {
+    const std::vector<SBAddFullHash>
+        hashes(1, SBAddFullHash(chunk_id, prefix, receive_time, full_hash));
+    return WriteAddHashes(hashes);
+  }
   virtual bool WriteSubPrefix(int32 chunk_id,
-                              int32 add_chunk_id, SBPrefix prefix);
+                              int32 add_chunk_id, SBPrefix prefix) {
+    const std::vector<SBSubPrefix>
+        prefixes(1, SBSubPrefix(chunk_id, add_chunk_id, prefix));
+    return WriteSubPrefixes(prefixes);
+  }
   virtual bool WriteSubHash(int32 chunk_id, int32 add_chunk_id,
-                            SBPrefix prefix, SBFullHash full_hash);
+                            SBPrefix prefix, SBFullHash full_hash) {
+    const std::vector<SBSubFullHash>
+        hashes(1, SBSubFullHash(chunk_id, add_chunk_id, prefix, full_hash));
+    return WriteSubHashes(hashes);
+  }
   virtual bool FinishChunk() {
     return true;
   }
@@ -126,9 +141,9 @@ class SafeBrowsingStoreSqlite : public SafeBrowsingStore {
   // Write the various types of data.  The existing data is not
   // cleared.
   bool WriteAddPrefixes(const std::vector<SBAddPrefix>& add_prefixes);
-  bool WriteSubPrefixes(std::vector<SBSubPrefix>& sub_prefixes);
+  bool WriteSubPrefixes(const std::vector<SBSubPrefix>& sub_prefixes);
   bool WriteAddHashes(const std::vector<SBAddFullHash>& add_hashes);
-  bool WriteSubHashes(std::vector<SBSubFullHash>& sub_hashes);
+  bool WriteSubHashes(const std::vector<SBSubFullHash>& sub_hashes);
 
   // Calls |corruption_callback_| if non-NULL, always returns false as
   // a convenience to the caller.

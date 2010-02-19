@@ -46,9 +46,9 @@
 //   int32 chunk_id;
 //   // TODO(shess): This duplicates first four bytes of full_hash!
 //   int32 prefix;
-//   // From base::Time::ToTimeT().
-//   // TODO(shess): an int32 probably has enough resolution.
-//   int64 received_time;
+//   // From base::Time::ToTimeT().  This data should never last long
+//   // enough for 32 bits to be a problem.
+//   int32 received_time;
 //   char[32] full_hash;
 // array[sub_hash_count] {
 //   int32 chunk_id;

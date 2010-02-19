@@ -107,7 +107,7 @@ void SafeBrowsingStoreTestStorePrefix(SafeBrowsingStore* store) {
   EXPECT_EQ(add_full_hashes_result[0].add_prefix.prefix,
             add_full_hashes_result[0].full_hash.prefix);
   // EXPECT_TRUE(add_full_hashes_result[0].received == now)?
-  EXPECT_EQ(now.ToTimeT(), add_full_hashes_result[0].received.ToTimeT());
+  EXPECT_EQ(now.ToTimeT(), add_full_hashes_result[0].received);
   EXPECT_TRUE(SBFullHashEq(kHash2, add_full_hashes_result[0].full_hash));
 
   add_prefixes_result.clear();
@@ -141,7 +141,7 @@ void SafeBrowsingStoreTestStorePrefix(SafeBrowsingStore* store) {
   ASSERT_EQ(1U, add_full_hashes_result.size());
   EXPECT_EQ(kAddChunk1, add_full_hashes_result[0].add_prefix.chunk_id);
   EXPECT_EQ(kHash2.prefix, add_full_hashes_result[0].add_prefix.prefix);
-  EXPECT_EQ(now.ToTimeT(), add_full_hashes_result[0].received.ToTimeT());
+  EXPECT_EQ(now.ToTimeT(), add_full_hashes_result[0].received);
   EXPECT_TRUE(SBFullHashEq(kHash2, add_full_hashes_result[0].full_hash));
 }
 
@@ -277,7 +277,7 @@ void SafeBrowsingStoreTestDeleteChunks(SafeBrowsingStore* store) {
   EXPECT_EQ(1U, add_full_hashes_result.size());
   EXPECT_EQ(kAddChunk2, add_full_hashes_result[0].add_prefix.chunk_id);
   EXPECT_EQ(kHash3.prefix, add_full_hashes_result[0].add_prefix.prefix);
-  EXPECT_EQ(now.ToTimeT(), add_full_hashes_result[0].received.ToTimeT());
+  EXPECT_EQ(now.ToTimeT(), add_full_hashes_result[0].received);
   EXPECT_TRUE(SBFullHashEq(kHash3, add_full_hashes_result[0].full_hash));
 
   // Expected chunks are there in another update.
