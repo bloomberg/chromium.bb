@@ -36,38 +36,51 @@
 
 using WebKit::WebNotificationPresenter;
 
+namespace {
+
 // Creates a data:xxxx URL which contains the full HTML for a notification
 // using supplied icon, title, and text, run through a template which contains
 // the standard formatting for notifications.
 static string16 CreateDataUrl(const GURL& icon_url, const string16& title,
     const string16& body) {
-  const base::StringPiece template_html(
-      ResourceBundle::GetSharedInstance().GetRawDataResource(
-          IDR_NOTIFICATION_HTML));
 
-  if (template_html.empty()) {
-    NOTREACHED() << "unable to load template. ID: " << IDR_NOTIFICATION_HTML;
-    return string16();
+  int resource;
+  string16 line_name;
+  string16 line;
+  std::vector<string16> subst;
+  if (icon_url.is_valid()) {
+    resource = IDR_NOTIFICATION_ICON_HTML;
+    subst.push_back(UTF8ToUTF16(icon_url.spec()));
+    subst.push_back(UTF8ToUTF16(EscapeForHTML(UTF16ToUTF8(title))));
+    subst.push_back(UTF8ToUTF16(EscapeForHTML(UTF16ToUTF8(body))));
+  } else if (title.empty() || body.empty()) {
+    resource = IDR_NOTIFICATION_1LINE_HTML;
+    line = title.empty() ? body : title;
+    // Strings are div names in the template file.
+    line_name = title.empty() ? ASCIIToUTF16("description")
+                              : ASCIIToUTF16("title");
+    subst.push_back(UTF8ToUTF16(EscapeForHTML(UTF16ToUTF8(line_name))));
+    subst.push_back(UTF8ToUTF16(EscapeForHTML(UTF16ToUTF8(line))));
+  } else {
+    resource = IDR_NOTIFICATION_2LINE_HTML;
+    subst.push_back(UTF8ToUTF16(EscapeForHTML(UTF16ToUTF8(title))));
+    subst.push_back(UTF8ToUTF16(EscapeForHTML(UTF16ToUTF8(body))));
   }
 
-  std::vector<string16> subst;
-  if (icon_url.is_valid())
-    subst.push_back(UTF8ToUTF16(icon_url.spec()));
-  else
-    subst.push_back(string16());
+  const base::StringPiece template_html(
+      ResourceBundle::GetSharedInstance().GetRawDataResource(
+          resource));
 
-  subst.push_back(UTF8ToUTF16(EscapeForHTML(UTF16ToUTF8(title))));
-  subst.push_back(UTF8ToUTF16(EscapeForHTML(UTF16ToUTF8(body))));
-
-  if (icon_url.is_valid()) {
-    subst.push_back(ASCIIToUTF16("margin-left:56px;"));
-  } else {
-    subst.push_back(string16());
+  if (template_html.empty()) {
+    NOTREACHED() << "unable to load template. ID: " << resource;
+    return string16();
   }
 
   string16 format_string = ASCIIToUTF16("data:text/html;charset=utf-8,"
                                         + template_html.as_string());
   return ReplaceStringPlaceholders(format_string, subst, NULL);
+}
+
 }
 
 // A task object which calls the renderer to inform the web page that the

@@ -124,7 +124,7 @@ class BalloonCollectionImpl : public BalloonCollection {
     // Minimum and maximum size of balloon content.
     static const int kBalloonMinWidth = 300;
     static const int kBalloonMaxWidth = 300;
-    static const int kBalloonMinHeight = 48;
+    static const int kBalloonMinHeight = 24;
     static const int kBalloonMaxHeight = 120;
 
     static Placement placement_;
