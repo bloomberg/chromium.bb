@@ -86,6 +86,9 @@ const double kMiniTitleChangeThrobOpacity = 0.75;
 // Duration for when the title of an inactive mini-tab changes.
 const int kMiniTitleChangeThrobDuration = 1000;
 
+// Size to render the favicon at when the mouse is over a mini-tab.
+static const int kMiniTabHoverFavIconSize = 24;
+
 namespace {
 
 void InitResources() {
@@ -391,6 +394,46 @@ void TabRenderer::StopMiniTabTitleAnimation() {
     mini_title_animation_->Stop();
 }
 
+void TabRenderer::PaintIcon(gfx::Canvas* canvas) {
+  if (animation_state_ != ANIMATION_NONE) {
+    PaintLoadingAnimation(canvas);
+  } else {
+    canvas->save();
+    canvas->ClipRectInt(0, 0, width(), height());
+    if (should_display_crashed_favicon_) {
+      canvas->DrawBitmapInt(*crashed_fav_icon, 0, 0,
+                            crashed_fav_icon->width(),
+                            crashed_fav_icon->height(),
+                            favicon_bounds_.x(),
+                            favicon_bounds_.y() + fav_icon_hiding_offset_,
+                            kFavIconSize, kFavIconSize,
+                            true);
+    } else {
+      if (!data_.favicon.isNull()) {
+        // TODO(pkasting): Use code in tab_icon_view.cc:PaintIcon() (or switch
+        // to using that class to render the favicon).
+        int x = favicon_bounds_.x();
+        int y = favicon_bounds_.y() + fav_icon_hiding_offset_;
+        int size = kFavIconSize;
+        if (mini() && (hover_animation_->IsAnimating() ||
+                       hover_animation_->IsShowing())) {
+          int hover_size = hover_animation_->CurrentValueBetween(
+              size, kMiniTabHoverFavIconSize);
+          x -= (hover_size - size) / 2;
+          y -= (hover_size - size) / 2;
+          size = hover_size;
+        }
+        canvas->DrawBitmapInt(data_.favicon, 0, 0,
+                              data_.favicon.width(),
+                              data_.favicon.height(),
+                              x, y, size, size,
+                              true);
+      }
+    }
+    canvas->restore();
+  }
+}
+
 // static
 gfx::Size TabRenderer::GetMinimumUnselectedSize() {
   InitResources();
@@ -450,14 +493,13 @@ void TabRenderer::Paint(gfx::Canvas* canvas) {
     return;
 
   // See if the model changes whether the icons should be painted.
-  const bool show_icon = ShouldShowIcon();
+  const bool show_icon = ShouldShowIcon() && !phantom();
   const bool show_close_button = ShouldShowCloseBox();
   if (show_icon != showing_icon_ ||
       show_close_button != showing_close_button_)
     Layout();
 
-  if (!data_.phantom)
-    PaintTabBackground(canvas);
+  PaintTabBackground(canvas);
 
   SkColor title_color = GetThemeProvider()->
       GetColor(IsSelected() ?
@@ -604,42 +646,8 @@ void TabRenderer::PaintTitle(SkColor title_color, gfx::Canvas* canvas) {
                         title_bounds_.width(), title_bounds_.height());
 }
 
-void TabRenderer::PaintIcon(gfx::Canvas* canvas) {
-  if (animation_state_ != ANIMATION_NONE) {
-    PaintLoadingAnimation(canvas);
-  } else {
-    canvas->save();
-    canvas->ClipRectInt(0, 0, width(), height() - kFavIconTitleSpacing);
-    if (should_display_crashed_favicon_) {
-      canvas->DrawBitmapInt(*crashed_fav_icon, 0, 0,
-                            crashed_fav_icon->width(),
-                            crashed_fav_icon->height(),
-                            favicon_bounds_.x(),
-                            favicon_bounds_.y() + fav_icon_hiding_offset_,
-                            kFavIconSize, kFavIconSize,
-                            true);
-    } else {
-      if (!data_.favicon.isNull()) {
-        // TODO(pkasting): Use code in tab_icon_view.cc:PaintIcon() (or switch
-        // to using that class to render the favicon).
-        canvas->DrawBitmapInt(data_.favicon, 0, 0,
-                              data_.favicon.width(),
-                              data_.favicon.height(),
-                              favicon_bounds_.x(),
-                              favicon_bounds_.y() + fav_icon_hiding_offset_,
-                              kFavIconSize, kFavIconSize,
-                              true);
-      }
-    }
-    canvas->restore();
-  }
-}
-
 void TabRenderer::PaintTabBackground(gfx::Canvas* canvas) {
   if (IsSelected()) {
-    // Sometimes detaching a tab quickly can result in the model reporting it
-    // as not being selected, so is_drag_clone_ ensures that we always paint
-    // the active representation for the dragged tab.
     PaintActiveTabBackground(canvas);
   } else {
     PaintInactiveTabBackground(canvas);
@@ -760,21 +768,6 @@ void TabRenderer::PaintActiveTabBackground(gfx::Canvas* canvas) {
   canvas->TileImageInt(*tab_active.image_c, tab_active.l_width, 0,
       width() - tab_active.l_width - tab_active.r_width, height());
   canvas->DrawBitmapInt(*tab_active.image_r, width() - tab_active.r_width, 0);
-}
-
-void TabRenderer::PaintHoverTabBackground(gfx::Canvas* canvas,
-                                          double opacity) {
-  SkBitmap left = SkBitmapOperations::CreateBlendedBitmap(
-      *tab_inactive.image_l, *tab_active.image_l, opacity);
-  SkBitmap center = SkBitmapOperations::CreateBlendedBitmap(
-      *tab_inactive.image_c, *tab_active.image_c, opacity);
-  SkBitmap right = SkBitmapOperations::CreateBlendedBitmap(
-      *tab_inactive.image_r, *tab_active.image_r, opacity);
-
-  canvas->DrawBitmapInt(left, 0, 0);
-  canvas->TileImageInt(center, tab_active.l_width, 0,
-      width() - tab_active.l_width - tab_active.r_width, height());
-  canvas->DrawBitmapInt(right, width() - tab_active.r_width, 0);
 }
 
 void TabRenderer::PaintLoadingAnimation(gfx::Canvas* canvas) {
