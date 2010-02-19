@@ -17,6 +17,7 @@ dependents = [
   'PSAPI.DLL',
   'secur32.dll',
   't2embed.dll',
+  'riched20.dll',
 ]
 
 delay_loaded = [

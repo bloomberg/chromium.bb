@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -487,10 +487,6 @@ class AutocompleteEditViewWin
 
   // Instance of accessibility information and handling.
   mutable ScopedComPtr<IAccessible> autocomplete_accessibility_;
-
-  // We explicitly retain a handle to this library so it never gets unloaded out
-  // from underneath us.
-  HMODULE riched20dll_handle_;
 
   DISALLOW_COPY_AND_ASSIGN(AutocompleteEditViewWin);
 };

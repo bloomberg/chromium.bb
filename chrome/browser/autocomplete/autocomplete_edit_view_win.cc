@@ -1,10 +1,12 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/autocomplete/autocomplete_edit_view_win.h"
 
 #include <locale>
+#include <richedit.h>
+#include <textserv.h>
 
 #include "app/clipboard/clipboard.h"
 #include "app/clipboard/scoped_clipboard_writer.h"
@@ -48,6 +50,7 @@
 #include "views/widget/widget.h"
 
 #pragma comment(lib, "oleacc.lib")  // Needed for accessibility support.
+#pragma comment(lib, "riched20.lib")  // Needed for the richedit control.
 
 ///////////////////////////////////////////////////////////////////////////////
 // AutocompleteEditModel
@@ -405,8 +408,11 @@ AutocompleteEditViewWin::AutocompleteEditViewWin(
       drop_highlight_position_(-1),
       background_color_(0),
       scheme_security_level_(ToolbarModel::NORMAL),
-      text_object_model_(NULL),
-      riched20dll_handle_(LoadLibrary(L"riched20.dll")) {
+      text_object_model_(NULL) {
+  // Dummy call to a function exported by riched20.dll to ensure it sets up an
+  // import dependency on the dll.
+  CreateTextServices(NULL, NULL, NULL);
+
   model_->SetPopupModel(popup_view_->GetModel());
 
   saved_selection_for_focus_change_.cpMin = -1;
@@ -474,10 +480,6 @@ AutocompleteEditViewWin::~AutocompleteEditViewWin() {
   // before we free the library. If the library gets unloaded before this
   // released, it becomes garbage.
   text_object_model_->Release();
-
-  // We're now done with this library, so release our reference to it so it can
-  // be unloaded if possible.
-  FreeLibrary(riched20dll_handle_);
 
   // We balance our reference count and unpatch when the last instance has
   // been destroyed.  This prevents us from relying on the AtExit or static
