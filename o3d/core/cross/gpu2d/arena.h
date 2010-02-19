@@ -29,11 +29,17 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// An arena allocates large chunks of memory internally and allocates
+// individual objects out of those chunks. Objects are not freed
+// individually; their storage is reclaimed all at once when the arena
+// is destroyed. The arena calls the constructors of the objects
+// allocated within, but NOT their destructors.
+
 #ifndef O3D_CORE_CROSS_GPU2D_ARENA_H_
 #define O3D_CORE_CROSS_GPU2D_ARENA_H_
 
-#include <assert.h>
 #include <stddef.h>
+
 #include <algorithm>
 #include <list>
 
@@ -42,11 +48,6 @@
 namespace o3d {
 namespace gpu2d {
 
-// An arena allocates large chunks of memory internally and allocates
-// individual objects out of those chunks. Objects are not freed
-// individually; their storage is reclaimed all at once when the arena
-// is destroyed. The arena calls the constructors of the objects
-// allocated within, but NOT their destructors.
 class Arena {
  public:
   // The arena is configured with an allocator, which is responsible
@@ -147,7 +148,7 @@ class Arena {
 
   // Rounds up the given allocation size to the specified alignment.
   size_t RoundUp(size_t size, size_t alignment) {
-    assert(alignment % 2 == 0);
+    DCHECK(alignment % 2 == 0);
     return (size + alignment - 1) & ~(alignment - 1);
   }
 

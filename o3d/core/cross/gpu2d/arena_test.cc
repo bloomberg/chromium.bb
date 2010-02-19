@@ -34,8 +34,9 @@
 #include <algorithm>
 #include <vector>
 
-#include "gtest/gtest.h"
+#include "base/scoped_ptr.h"
 #include "core/cross/gpu2d/arena.h"
+#include "gtest/gtest.h"
 
 namespace o3d {
 namespace gpu2d {
@@ -112,15 +113,16 @@ TEST_F(ArenaTest, CanAllocateFromMoreThanOneRegion) {
 
 // Make sure the arena frees all allocated regions during destruction.
 TEST_F(ArenaTest, FreesAllAllocatedRegions) {
-  TrackedMallocAllocator* base_allocator = new TrackedMallocAllocator();
-  Arena* arena = new Arena(base_allocator);
-  for (int i = 0; i < 3; i++) {
-    arena->Alloc<TestClass1>();
+  scoped_ptr<TrackedMallocAllocator> base_allocator(
+      new TrackedMallocAllocator());
+  {
+    scoped_ptr<Arena> arena(new Arena(base_allocator.get()));
+    for (int i = 0; i < 3; i++) {
+      arena->Alloc<TestClass1>();
+    }
+    EXPECT_GT(base_allocator->NumRegions(), 0);
   }
-  EXPECT_GT(base_allocator->NumRegions(), 0);
-  delete arena;
   EXPECT_TRUE(base_allocator->IsEmpty());
-  delete base_allocator;
 }
 
 // Make sure the arena runs constructors of the objects allocated within.

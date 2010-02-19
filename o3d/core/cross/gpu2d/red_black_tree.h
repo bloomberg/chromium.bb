@@ -29,21 +29,6 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-
-#ifndef O3D_CORE_CROSS_GPU2D_RED_BLACK_TREE_H_
-#define O3D_CORE_CROSS_GPU2D_RED_BLACK_TREE_H_
-
-#include <string>
-
-#include "base/logging.h"
-#include "core/cross/gpu2d/arena.h"
-
-namespace o3d {
-namespace gpu2d {
-
-// Uncomment this for verbose logging output.
-// #define O3D_CORE_CROSS_GPU2D_RED_BLACK_TREE_VERBOSE
-
 // A red-black tree, which is a form of a balanced binary tree. It
 // supports efficient insertion, deletion and queries of comparable
 // elements. The same element may be inserted multiple times. The
@@ -79,6 +64,18 @@ namespace gpu2d {
 //
 // The design of this red-black tree comes from Cormen, Leiserson,
 // and Rivest, _Introduction to Algorithms_, MIT Press, 1990.
+
+#ifndef O3D_CORE_CROSS_GPU2D_RED_BLACK_TREE_H_
+#define O3D_CORE_CROSS_GPU2D_RED_BLACK_TREE_H_
+
+#include <string>
+
+#include "base/logging.h"
+#include "core/cross/gpu2d/arena.h"
+
+namespace o3d {
+namespace gpu2d {
+
 template<class T>
 class RedBlackTree {
  public:
@@ -95,7 +92,8 @@ class RedBlackTree {
       : arena_(new Arena()),
         should_delete_arena_(true),
         root_(NULL),
-        needs_full_ordering_comparisons_(false) {
+        needs_full_ordering_comparisons_(false),
+        verbose_debugging_(false) {
   }
 
   // Constructs a new red-black tree, allocating temporary objects
@@ -105,7 +103,8 @@ class RedBlackTree {
       : arena_(arena),
         should_delete_arena_(false),
         root_(NULL),
-        needs_full_ordering_comparisons_(false) {
+        needs_full_ordering_comparisons_(false),
+        verbose_debugging_(false) {
   }
 
   // Destructor deletes the internal Arena if it was not explicitly
@@ -155,7 +154,7 @@ class RedBlackTree {
 
   // Returns true if the tree's invariants are preserved.
   bool Verify() {
-    int black_count = 0;
+    int black_count;
     return VerifyFromNode(root_, &black_count);
   }
 
@@ -170,6 +169,13 @@ class RedBlackTree {
   void set_needs_full_ordering_comparisons(
       bool needs_full_ordering_comparisons) {
     needs_full_ordering_comparisons_ = needs_full_ordering_comparisons;
+  }
+
+  // Turns on or off verbose debugging of the tree, causing many
+  // messages to be logged during insertion and other operations in
+  // debug mode.
+  void set_verbose_debugging(bool on_or_off) {
+    verbose_debugging_ = on_or_off;
   }
 
  protected:
@@ -443,9 +449,7 @@ class RedBlackTree {
     x->set_color(kRed);
     UpdateNode(x);
 
-#ifdef O3D_CORE_CROSS_GPU2D_RED_BLACK_TREE_VERBOSE
-    DLOG(INFO) << "  RedBlackTree::InsertNode";
-#endif
+    DLOG_IF(INFO, verbose_debugging_) << "  RedBlackTree::InsertNode";
 
     // The node from which to start propagating updates upwards.
     Node* update_start = x->parent();
@@ -455,9 +459,7 @@ class RedBlackTree {
         Node* y = x->parent()->parent()->right();
         if (y != NULL && y->color() == kRed) {
           // Case 1
-#ifdef O3D_CORE_CROSS_GPU2D_RED_BLACK_TREE_VERBOSE
-          DLOG(INFO) << "  Case 1/1";
-#endif
+          DLOG_IF(INFO, verbose_debugging_) << "  Case 1/1";
           x->parent()->set_color(kBlack);
           y->set_color(kBlack);
           x->parent()->parent()->set_color(kRed);
@@ -467,17 +469,13 @@ class RedBlackTree {
           update_start = x->parent();
         } else {
           if (x == x->parent()->right()) {
-#ifdef O3D_CORE_CROSS_GPU2D_RED_BLACK_TREE_VERBOSE
-            DLOG(INFO) << "  Case 1/2";
-#endif
+            DLOG_IF(INFO, verbose_debugging_) << "  Case 1/2";
             // Case 2
             x = x->parent();
             LeftRotate(x);
           }
           // Case 3
-#ifdef O3D_CORE_CROSS_GPU2D_RED_BLACK_TREE_VERBOSE
-          DLOG(INFO) << "  Case 1/3";
-#endif
+          DLOG_IF(INFO, verbose_debugging_) << "  Case 1/3";
           x->parent()->set_color(kBlack);
           x->parent()->parent()->set_color(kRed);
           RightRotate(x->parent()->parent());
@@ -488,9 +486,7 @@ class RedBlackTree {
         Node* y = x->parent()->parent()->left();
         if (y != NULL && y->color() == kRed) {
           // Case 1
-#ifdef O3D_CORE_CROSS_GPU2D_RED_BLACK_TREE_VERBOSE
-          DLOG(INFO) << "  Case 2/1";
-#endif
+          DLOG_IF(INFO, verbose_debugging_) << "  Case 2/1";
           x->parent()->set_color(kBlack);
           y->set_color(kBlack);
           x->parent()->parent()->set_color(kRed);
@@ -501,16 +497,12 @@ class RedBlackTree {
         } else {
           if (x == x->parent()->left()) {
             // Case 2
-#ifdef O3D_CORE_CROSS_GPU2D_RED_BLACK_TREE_VERBOSE
-            DLOG(INFO) << "  Case 2/2";
-#endif
+            DLOG_IF(INFO, verbose_debugging_) << "  Case 2/2";
             x = x->parent();
             RightRotate(x);
           }
           // Case 3
-#ifdef O3D_CORE_CROSS_GPU2D_RED_BLACK_TREE_VERBOSE
-          DLOG(INFO) << "  Case 2/3";
-#endif
+          DLOG_IF(INFO, verbose_debugging_) << "  Case 2/3";
           x->parent()->set_color(kBlack);
           x->parent()->parent()->set_color(kRed);
           LeftRotate(x->parent()->parent());
@@ -759,6 +751,7 @@ class RedBlackTree {
   bool should_delete_arena_;
   Node* root_;
   bool needs_full_ordering_comparisons_;
+  bool verbose_debugging_;
 
   DISALLOW_COPY_AND_ASSIGN(RedBlackTree);
 };

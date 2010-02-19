@@ -29,6 +29,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
+// Simple pseudorandom number generator helper functions, used by the
+// red-black and interval tree tests.
+//
+// These are **not** thread safe!
+
 #ifndef O3D_CORE_CROSS_GPU2D_TREE_TEST_HELPERS_H_
 #define O3D_CORE_CROSS_GPU2D_TREE_TEST_HELPERS_H_
 
@@ -37,21 +42,16 @@
 namespace o3d {
 namespace gpu2d {
 
-// Simple pseudorandom number generator helper functions, used by the
-// red-black and interval tree tests.
-//
-// These are **not** thread safe!
-
 // Generates a seed value to be passed to InitRandom().
 int32 GenerateSeed();
 
 // Initializes the pseudo-random number generator with a specific seed.
-void InitRandom(int32 seed);
+void InitRandom(const int32 seed);
 
 // Produces the next pseudo-random number in the sequence, in the
-// range from [0..max). Negative numbers are not allowed and will
+// range from [0..max_val). Negative numbers are not allowed and will
 // produce undefined results.
-int32 NextRandom(int32 max);
+int32 NextRandom(const int32 max_val);
 
 }  // namespace gpu2d
 }  // namespace o3d

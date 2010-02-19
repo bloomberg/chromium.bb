@@ -33,126 +33,123 @@
 
 #include <vector>
 
-#include "gtest/gtest.h"
 #include "core/cross/gpu2d/red_black_tree.h"
 #include "core/cross/gpu2d/tree_test_helpers.h"
+#include "gtest/gtest.h"
 
 namespace o3d {
 namespace gpu2d {
 
-class RedBlackTreeTest : public testing::Test {
-};
-
-TEST_F(RedBlackTreeTest, TestSingleElementInsertion) {
+TEST(RedBlackTreeTest, TestSingleElementInsertion) {
   RedBlackTree<int> tree;
   tree.Insert(5);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   EXPECT_TRUE(tree.Contains(5));
 }
 
-TEST_F(RedBlackTreeTest, TestMultipleElementInsertion) {
+TEST(RedBlackTreeTest, TestMultipleElementInsertion) {
   RedBlackTree<int> tree;
   tree.Insert(4);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   EXPECT_TRUE(tree.Contains(4));
   tree.Insert(3);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   EXPECT_TRUE(tree.Contains(3));
   tree.Insert(5);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   EXPECT_TRUE(tree.Contains(5));
   EXPECT_TRUE(tree.Contains(4));
   EXPECT_TRUE(tree.Contains(3));
 }
 
-TEST_F(RedBlackTreeTest, TestDuplicateElementInsertion) {
+TEST(RedBlackTreeTest, TestDuplicateElementInsertion) {
   RedBlackTree<int> tree;
   tree.Insert(3);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   tree.Insert(3);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   tree.Insert(3);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   EXPECT_EQ(3, tree.NumElements());
   EXPECT_TRUE(tree.Contains(3));
 }
 
-TEST_F(RedBlackTreeTest, TestSingleElementInsertionAndDeletion) {
+TEST(RedBlackTreeTest, TestSingleElementInsertionAndDeletion) {
   RedBlackTree<int> tree;
   tree.Insert(5);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   EXPECT_TRUE(tree.Contains(5));
   tree.Delete(5);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   EXPECT_FALSE(tree.Contains(5));
 }
 
-TEST_F(RedBlackTreeTest, TestMultipleElementInsertionAndDeletion) {
+TEST(RedBlackTreeTest, TestMultipleElementInsertionAndDeletion) {
   RedBlackTree<int> tree;
   tree.Insert(4);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   EXPECT_TRUE(tree.Contains(4));
   tree.Insert(3);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   EXPECT_TRUE(tree.Contains(3));
   tree.Insert(5);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   EXPECT_TRUE(tree.Contains(5));
   EXPECT_TRUE(tree.Contains(4));
   EXPECT_TRUE(tree.Contains(3));
   tree.Delete(4);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   EXPECT_TRUE(tree.Contains(3));
   EXPECT_FALSE(tree.Contains(4));
   EXPECT_TRUE(tree.Contains(5));
   tree.Delete(5);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   EXPECT_TRUE(tree.Contains(3));
   EXPECT_FALSE(tree.Contains(4));
   EXPECT_FALSE(tree.Contains(5));
   EXPECT_EQ(1, tree.NumElements());
 }
 
-TEST_F(RedBlackTreeTest, TestDuplicateElementInsertionAndDeletion) {
+TEST(RedBlackTreeTest, TestDuplicateElementInsertionAndDeletion) {
   RedBlackTree<int> tree;
   tree.Insert(3);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   tree.Insert(3);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   tree.Insert(3);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   EXPECT_EQ(3, tree.NumElements());
   EXPECT_TRUE(tree.Contains(3));
   tree.Delete(3);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   tree.Delete(3);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   EXPECT_EQ(1, tree.NumElements());
   EXPECT_TRUE(tree.Contains(3));
   tree.Delete(3);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   EXPECT_EQ(0, tree.NumElements());
   EXPECT_FALSE(tree.Contains(3));
 }
 
-TEST_F(RedBlackTreeTest, FailingInsertionRegressionTest1) {
+TEST(RedBlackTreeTest, FailingInsertionRegressionTest1) {
   RedBlackTree<int> tree;
   tree.Insert(5113);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   tree.Insert(4517);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   tree.Insert(3373);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   tree.Insert(9307);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
   tree.Insert(7077);
-  EXPECT_TRUE(tree.Verify());
+  ASSERT_TRUE(tree.Verify());
 }
 
 namespace {
-void InsertionAndDeletionTest(int32 seed, int tree_size) {
+void InsertionAndDeletionTest(const int32 seed, const int tree_size) {
   InitRandom(seed);
-  int max_val = tree_size;
+  const int max_val = tree_size;
   // Build the tree.
   RedBlackTree<int> tree;
   std::vector<int> values;
@@ -179,11 +176,11 @@ void InsertionAndDeletionTest(int32 seed, int tree_size) {
 }
 }  // anonymous namespace
 
-TEST_F(RedBlackTreeTest, RandomDeletionAndInsertionRegressionTest1) {
+TEST(RedBlackTreeTest, RandomDeletionAndInsertionRegressionTest1) {
   InsertionAndDeletionTest(12311, 100);
 }
 
-TEST_F(RedBlackTreeTest, TestRandomDeletionAndInsertion) {
+TEST(RedBlackTreeTest, TestRandomDeletionAndInsertion) {
   InsertionAndDeletionTest(GenerateSeed(), 100);
 }
 

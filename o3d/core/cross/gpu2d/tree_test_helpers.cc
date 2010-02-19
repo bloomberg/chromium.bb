@@ -29,9 +29,11 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#include <cstdlib>
-#include "base/rand_util.h"
 #include "core/cross/gpu2d/tree_test_helpers.h"
+
+#include <cstdlib>
+
+#include "base/rand_util.h"
 
 namespace o3d {
 namespace gpu2d {
@@ -40,20 +42,20 @@ int32 GenerateSeed() {
   // A seed of 1 has the special behavior of resetting the random
   // number generator. Assume that if we call this routine that we
   // don't want this behavior.
-  int seed = 0;
+  int seed;
   do {
     seed = base::RandInt(0, 2 << 15);
   } while (seed <= 1);
   return seed;
 }
 
-void InitRandom(int32 seed) {
+void InitRandom(const int32 seed) {
   srand(seed);
 }
 
-int32 NextRandom(int32 max) {
+int32 NextRandom(const int32 max_val) {
   // rand_r is not available on Windows
-  return rand() % max;  // NOLINT
+  return rand() % max_val;  // NOLINT
 }
 
 }  // namespace gpu2d
