@@ -712,6 +712,9 @@ void ReplaceContentWindow(HWND content_hwnd,
   LONG_PTR style = ::GetWindowLongPtr(content_hwnd, GWL_STYLE);
   style |= WS_CHILD;
   ::SetWindowLongPtr(content_hwnd, GWL_STYLE, style);
+  LONG_PTR exstyle = ::GetWindowLongPtr(content_hwnd, GWL_EXSTYLE);
+  exstyle &= ~WS_EX_TOOLWINDOW;
+  ::SetWindowLongPtr(content_hwnd, GWL_EXSTYLE, exstyle);
   ::SetParent(content_hwnd, containing_hwnd);
   BOOL res = ::SetWindowPos(content_hwnd, containing_hwnd,
                             0, 0, width, height,
@@ -973,13 +976,18 @@ bool PluginObject::RequestFullscreenDisplay() {
     LONG_PTR style = ::GetWindowLongPtr(GetContentHWnd(), GWL_STYLE);
     style &= ~WS_CHILD;
     ::SetWindowLongPtr(GetContentHWnd(), GWL_STYLE, style);
+    // Add WS_EX_TOOLWINDOW to the window exstyle so the content window won't
+    // show in the Taskbar.
+    LONG_PTR exstyle = ::GetWindowLongPtr(GetContentHWnd(), GWL_EXSTYLE);
+    exstyle |= WS_EX_TOOLWINDOW;
+    ::SetWindowLongPtr(GetContentHWnd(), GWL_EXSTYLE, exstyle);
     ::ShowWindow(GetContentHWnd(), SW_SHOW);
     // We need to resize the full-screen window to the desired size of
     // the display mode early, before calling
     // Renderer::GoFullscreen().
     RECT screen_rect;
     if (GetScreenRect(GetPluginHWnd(), &screen_rect)) {
-      ::SetWindowPos(GetContentHWnd(), HWND_TOP,
+      ::SetWindowPos(GetContentHWnd(), HWND_TOPMOST,
                      screen_rect.left, screen_rect.top,
                      screen_rect.right - screen_rect.left + 1,
                      screen_rect.bottom - screen_rect.top + 1,
