@@ -16,20 +16,7 @@ if env['TARGET_ARCHITECTURE'] == 'x86':
     env.Append(LIBS=['dl'])
 
 
-# NOTE: we need Cocoa because of the GetPluginDir() implementation
-#       on mac (nonnacl_util_c)
 
-env.ComponentProgram('sel_universal',
-                     'sel_universal.c',
-                     EXTRA_LIBS=['nonnacl_util_c',
-                                 'nonnacl_srpc',
-                                 'nrd_xfer',
-                                 'platform',
-                                 'gio',
-                                 'google_nacl_imc_c',
-                                 ],
-                       FRAMEWORKS=['Cocoa'],
-                     )
 # NOTE: we need Cocoa because of the GetPluginDir() implementation
 #       on mac (nonnacl_util_c)
 
@@ -44,3 +31,125 @@ env.ComponentProgram('rpc_benchmarker',
                                  ],
                        FRAMEWORKS=['Cocoa'],
                      )
+
+# NOTE: we need Cocoa because of the GetPluginDir() implementation
+#       on mac (nonnacl_util_c)
+
+env.ComponentProgram('sel_universal',
+                     ['sel_universal.c',
+                      ],
+                     EXTRA_LIBS=['nonnacl_util_c',
+                                 'nonnacl_srpc',
+                                 'nrd_xfer',
+                                 'platform',
+                                 'gio',
+                                 'google_nacl_imc_c',
+                                 ],
+                     FRAMEWORKS=['Cocoa'],
+                     )
+
+######################################################################
+# NOTE: below is a somewhat experimental section for
+#       a multimedia enabled sel_universal_new
+#       currently only video output is working which is enough to
+#       make earth.nexe work
+#
+#       The idea is to remove all the sdl cruft from sel_ldr once this
+#       become more mature
+######################################################################
+
+# only linux support is tested for now
+if not env.Bit('linux'):
+  Return()
+
+# only x86 support is tested for now
+if env['TARGET_ARCHITECTURE'] != 'x86' or env['TARGET_SUBARCH'] != '32':
+  Return()
+
+def ReplicateDlls(sdl_dll):
+  dsts = []
+  lib = None
+  if env.Bit('windows'):
+    dsts = ['${STAGING_DIR}', '.']
+    lib = '${SDL_DIR}/lib/SDL.dll'
+  elif env.Bit('mac'):
+    # TODO: why do we replicate this THREE times?
+    dsts = ['{$TARGET_ROOT}/Frameworks',
+            '${OBJ_ROOT}/Frameworks',
+            '${OBJ_ROOT}/src/trusted/Frameworks']
+    lib = '${SDL_DIR}/SDL.framework'
+  elif env.Bit('linux') and env['BUILD_ARCHITECTURE'] == 'x86':
+    dsts = ['${STAGING_DIR}', '.']
+    if sdl_env['BUILD_SUBARCH'] == '32':
+      lib = '${SDL_DIR}/lib/libSDL-1.2.so.0'
+    elif sdl_env['BUILD_SUBARCH'] == '64':
+      lib = '${SDL_DIR}/lib64/libSDL-1.2.so.0'
+
+  assert dsts
+  sdl_dll = []
+  for d in dsts:
+    sdl_dll += sdl_env.Replicate(d, lib)
+  return sdl_dll
+
+
+def AddSdlRequirements(sdl_env, target):
+  if not sdl_env.Bit('linux'):
+    return
+  if ARGUMENTS.get('sdl', 'hermetic') == 'none':
+    return
+
+  sdl_env.Requires(target, ReplicateDlls(sdl_env))
+
+
+def MakeSdlEnv(env):
+  if not env.Bit('linux'):
+    return env
+  if ARGUMENTS.get('sdl', 'hermetic') == 'none':
+    return env
+
+  sdl_env = env.Clone()
+  sdl_env.Append(CPPDEFINES=['HAVE_SDL'])
+
+  sdl_env.Tool('sdl')
+  print '=' * 70
+  print 'SDL build (%s) enabled for %s' % (ARGUMENTS.get('sdl', 'hermetic'),
+                                           sdl_env['BUILD_TYPE'])
+  print sdl_env.subst('Using version in ${SDL_DIR}')
+  print '=' * 70
+  return sdl_env
+
+sdl_env = MakeSdlEnv(env)
+# work around a cast warning in multimedia_handler.cc
+sdl_env.Append(CCFLAGS=['-fno-strict-aliasing'])
+
+# NOTE: we need Cocoa because of the GetPluginDir() implementation
+#       on mac (nonnacl_util_c)
+
+node = sdl_env.ComponentProgram('sel_universal_new',
+                                ['sel_universal_new.cc',
+                                 'multimedia_sdl.cc',
+                                 'multimedia_handler.cc'
+                                 ],
+                                EXTRA_LIBS=['nonnacl_util_c',
+                                            'nonnacl_srpc',
+                                            'nrd_xfer',
+                                            'platform',
+                                            'gio',
+                                            'google_nacl_imc_c',
+                                            ],
+                                FRAMEWORKS=['Cocoa'],
+                                )
+
+
+AddSdlRequirements(sdl_env, node)
+
+# manual test for multimedia
+sdl_env.ComponentProgram('multimedia_test',
+                         ['multimedia_test.cc',
+                          'multimedia_sdl.cc',
+                          ],
+                         EXTRA_LIBS=['platform',
+                                     'gio',
+                                     ],
+                         FRAMEWORKS=['Cocoa'],
+                         )
