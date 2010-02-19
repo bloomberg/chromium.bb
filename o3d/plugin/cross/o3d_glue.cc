@@ -887,12 +887,9 @@ void PluginObject::SetDisplay(Display *display) {
   }
 }
 
-static unsigned int O3DToX11Cursor(o3d::Cursor::CursorType cursor_type) {
+static unsigned int O3DToX11CursorShape(o3d::Cursor::CursorType cursor_type) {
   switch (cursor_type) {
     case o3d::Cursor::DEFAULT:
-      return XC_arrow;
-    case o3d::Cursor::NONE:
-      NOTIMPLEMENTED();
       return XC_arrow;
     case o3d::Cursor::CROSSHAIR:
       return XC_crosshair;
@@ -927,13 +924,45 @@ static unsigned int O3DToX11Cursor(o3d::Cursor::CursorType cursor_type) {
       NOTIMPLEMENTED();
       return XC_arrow;
   }
+  NOTIMPLEMENTED();
   return XC_arrow;
+}
+
+static Cursor O3DToX11Cursor(Display *display, Window window,
+                             o3d::Cursor::CursorType cursor_type) {
+  switch (cursor_type) {
+    case o3d::Cursor::NONE: {
+      // There is no X11 primitive for hiding the cursor. The standard practice
+      // is to define a custom cursor from a 1x1 invisible pixmap.
+      static char zero[1] = {0};
+      Pixmap zero_pixmap = XCreateBitmapFromData(display, window, zero, 1, 1);
+      DLOG_ASSERT(zero_pixmap);
+      if (!zero_pixmap) {
+        return 0;
+      }
+      // This could actually be any colour, since our mask pixmap specifies that
+      // no pixels are visible.
+      XColor black;
+      black.red = 0;
+      black.green = 0;
+      black.blue = 0;
+      Cursor cursor = XCreatePixmapCursor(display, zero_pixmap, zero_pixmap,
+                                          &black, &black, 0, 0);
+      XFreePixmap(display, zero_pixmap);
+      return cursor;
+    }
+
+    default:
+      return XCreateFontCursor(display, O3DToX11CursorShape(cursor_type));
+  }
 }
 
 void PluginObject::PlatformSpecificSetCursor() {
   if (!cursors_[cursor_type_]) {
-    cursors_[cursor_type_] =
-        XCreateFontCursor(display_, O3DToX11Cursor(cursor_type_));
+    // According to the docs, the window here is only relevant for selecting the
+    // screen, and we always create our fullscreen and embedded windows on the
+    // same screen, so we can just always use the embedded window.
+    cursors_[cursor_type_] = O3DToX11Cursor(display_, window_, cursor_type_);
   }
   Window window = fullscreen_ ? fullscreen_window_ : window_;
   XDefineCursor(display_, window, cursors_[cursor_type_]);

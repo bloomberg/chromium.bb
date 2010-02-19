@@ -925,6 +925,10 @@ bool PluginObject::RequestFullscreenDisplay() {
   GtkWidget *widget = gtk_window_new(GTK_WINDOW_TOPLEVEL);
   // The returned object counts as both a widget and a window.
   GtkWindow *window = GTK_WINDOW(widget);
+  // Ensure that the fullscreen window is displayed on the same screen as the
+  // embedded window.
+  GdkScreen *screen = gtk_window_get_screen(GTK_WINDOW(gtk_container_));
+  gtk_window_set_screen(window, screen);
   // The window title shouldn't normally be visible, but the user will see it
   // if they Alt+Tab to another app.
   gtk_window_set_title(window, "O3D Application");
@@ -934,7 +938,6 @@ bool PluginObject::RequestFullscreenDisplay() {
   // with our GL rendering.
   gtk_widget_set_double_buffered(widget, FALSE);
   gtk_window_set_keep_above(window, TRUE);
-  GdkScreen *screen = gtk_window_get_screen(window);
   // In the case of Xinerama or TwinView, these will be the dimensions of the
   // whole desktop, which is wrong, but the window manager is smart enough to
   // restrict our size to that of the main screen.
