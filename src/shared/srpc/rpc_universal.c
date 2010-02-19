@@ -282,11 +282,11 @@ static int HandleEscapedChar(const char** p) {
     ival = 0;
     count = 0;
     ++*p;
-    while (isxdigit(**p) && 2 > count) {
-      if (isdigit(**p)) {
+    while (isxdigit((unsigned char)**p) && 2 > count) {
+      if (isdigit((unsigned char)**p)) {
         ival = ival * 16 + **p - '0';
       } else {
-        ival = ival * 16 + toupper(**p) - 'A' + 10;
+        ival = ival * 16 + toupper((unsigned char)**p) - 'A' + 10;
       }
       ++*p;
       ++count;
@@ -357,7 +357,7 @@ static int Tokenize(char* line, TOKEN *array, int n) {
     /* skip leading white space */
     while (line[pos_start]) {
       const char c = line[pos_start];
-      if (isspace(c)) {
+      if (isspace((unsigned char)c)) {
         pos_start++;
       } else {
         break;
@@ -372,7 +372,7 @@ static int Tokenize(char* line, TOKEN *array, int n) {
     while (line[pos_end]) {
       const char c = line[pos_end];
 
-      if (isspace(c)) {
+      if (isspace((unsigned char)c)) {
         break;
       } else if (c == '\"') {
         /* TBD(sehr): quotes are only really relevant in s("..."). */
