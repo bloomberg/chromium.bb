@@ -7,7 +7,7 @@ vars = {
   "nacl_sdk_rev": "1520",
   "gyp_rev": "770",
   "gtest_rev": "267",
-  "tools_rev": "1509",
+  "tools_rev": "1535",
   "python_rev": "22967",
   "wix_rev": "153",
 }
