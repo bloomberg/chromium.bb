@@ -29,76 +29,69 @@
  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  */
 
-#ifndef O3D_CORE_CROSS_GPU2D_CUBIC_MATH_UTILS_H_
-#define O3D_CORE_CROSS_GPU2D_CUBIC_MATH_UTILS_H_
-
-#include <math.h>
-
-#include "core/cross/math_types.h"
+#include "core/cross/gpu2d/cubic_math_utils.h"
 
 namespace o3d {
 namespace gpu2d {
 namespace cubic {
 
-// A roundoff factor in the cubic classification and texture
-// coordinate generation algorithms. This primarily determines the
-// handling of corner cases during the classification process. Be
-// careful when adjusting this; it has been determined emprically to
-// work well.
-const float kEpsilon = 5.0e-4f;
+namespace {
 
-// Returns zero if value is within +/-kEpsilon of zero.
-inline float RoundToZero(float val) {
-  if (val < kEpsilon && val > -kEpsilon)
-    return 0;
-  return val;
+// Utility functions local to this file
+
+int Orientation(float x1, float y1,
+                float x2, float y2,
+                float x3, float y3) {
+  // p1 = (x1, y1)
+  // p2 = (x2, y2)
+  // p3 = (x3, y3)
+  float cross_product = (y2 - y1) * (x3 - x2) - (y3 - y2) * (x2 - x1);
+  return (cross_product < 0.0f) ? -1 : ((cross_product > 0.0f) ? 1 : 0);
 }
 
-// Returns distance between two points in the 2D plane.
-inline float Distance(float x0, float y0,
-                      float x1, float y1) {
-  float xd = x1 - x0;
-  float yd = y1 - y0;
-  return sqrtf(xd * xd + yd * yd);
-}
+}  // anonymous namespace
 
-// Returns true if the given points are within kEpsilon distance of
-// each other.
-inline bool ApproxEqual(const Vector3& v0, const Vector3& v1) {
-  return lengthSqr(v0 - v1) < kEpsilon * kEpsilon;
-}
-
-// Returns true if the given 2D points are within kEpsilon distance of
-// each other.
-inline bool ApproxEqual(float x0, float y0,
-                        float x1, float y1) {
-  return Distance(x0, y0, x1, y1) < kEpsilon;
-}
-
-// Returns true if the given scalar values are within kEpsilon of each other.
-inline bool ApproxEqual(float f0, float f1) {
-  return fabsf(f0 - f1) < kEpsilon;
-}
-
-// Determines whether the line segment between (p1, q1) intersects
-// that between (p2, q2).
 bool LinesIntersect(float p1x, float p1y,
                     float q1x, float q1y,
                     float p2x, float p2y,
-                    float q2x, float q2y);
+                    float q2x, float q2y) {
+  return ((Orientation(p1x, p1y, q1x, q1y, p2x, p2y) !=
+           Orientation(p1x, p1y, q1x, q1y, q2x, q2y)) &&
+          (Orientation(p2x, p2y, q2x, q2y, p1x, p1y) !=
+           Orientation(p2x, p2y, q2x, q2y, q1x, q1y)));
+}
 
-// Determines whether the 2D point defined by (px, py) is inside the
-// 2D triangle defined by vertices (ax, ay), (bx, by), and (cx, cy).
-// This test defines that points exactly on an edge are not considered
-// to be inside the triangle.
 bool PointInTriangle(float px, float py,
                      float ax, float ay,
                      float bx, float by,
-                     float cx, float cy);
+                     float cx, float cy) {
+  // Algorithm from http://www.blackpawn.com/texts/pointinpoly/default.html
+  float x0 = cx - ax;
+  float y0 = cy - ay;
+  float x1 = bx - ax;
+  float y1 = by - ay;
+  float x2 = px - ax;
+  float y2 = py - ay;
+
+  float dot00 = x0 * x0 + y0 * y0;
+  float dot01 = x0 * x1 + y0 * y1;
+  float dot02 = x0 * x2 + y0 * y2;
+  float dot11 = x1 * x1 + y1 * y1;
+  float dot12 = x1 * x2 + y1 * y2;
+  float denom = dot00 * dot11 - dot01 * dot01;
+  if (denom == 0.0f) {
+    // Triangle is zero-area. Treat query point as not being inside.
+    return false;
+  }
+  // Compute
+  float invDenom = 1.0f / denom;
+  float u = (dot11 * dot02 - dot01 * dot12) * invDenom;
+  float v = (dot00 * dot12 - dot01 * dot02) * invDenom;
+
+  return (u > 0.0f) && (v > 0.0f) && (u + v < 1.0f);
+}
 
 }  // namespace cubic
 }  // namespace gpu2d
 }  // namespace o3d
-
-#endif  // O3D_CORE_CROSS_GPU2D_CUBIC_MATH_UTILS_H_
 
