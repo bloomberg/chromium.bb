@@ -2765,7 +2765,7 @@ BUG31252 : http/tests/security/listener/xss-inactive-closure.html = TEXT
 
 // WebKit roll 52633 -> 52667
 // On Linux, sometimes the text dump matches. Not sure why.
-//BUG_DIMICH LINUX : svg/custom/resource-invalidate-on-target-update.svg = IMAGE+TEXT IMAGE
+BUG_DIMICH RELEASE LINUX : svg/custom/resource-invalidate-on-target-update.svg = IMAGE+TEXT IMAGE
 
 BUG31623 WIN: http/tests/appcache/remove-cache.html = PASS TEXT TIMEOUT
 
@@ -2800,7 +2800,7 @@ BUG32195 : fast/repaint/renderer-destruction-by-invalidateSelection-crash.html =
 BUG32235 LINUX DEBUG : svg/W3C-SVG-1.1/filters-diffuse-01-f.svg = PASS TEXT
 
 // Errors from roll from 53207:53246
-//BUG32398 MAC : svg/custom/resource-invalidate-on-target-update.svg = IMAGE PASS
+BUG32398 RELEASE MAC : svg/custom/resource-invalidate-on-target-update.svg = IMAGE PASS
 
 BUG32308 DEBUG : fast/frames/cached-frame-counter.html = TIMEOUT
 
