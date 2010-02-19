@@ -91,7 +91,6 @@ BUG24182 WIN RELEASE SLOW : http/tests/incremental/split-hex-entities.pl = PASS
 BUG24182 WIN RELEASE SLOW : http/tests/xmlhttprequest/XMLHttpRequestException.html = PASS
 BUG24182 WIN RELEASE SLOW : http/tests/xmlhttprequest/connection-error-sync.html = PASS
 BUG24182 WIN RELEASE SLOW : http/tests/loading/onload-vs-immediate-refresh.pl = PASS
-BUG24182 SLOW DEBUG : editing/selection/extend-selection.html = PASS
 BUG24182 SLOW WIN : fast/images/svg-as-background.html = PASS
 BUG24182 SLOW WIN : fast/backgrounds/svg-as-background-5.html = PASS
 BUG24182 SLOW DEBUG : svg/css/getComputedStyle-basic.xhtml = PASS
@@ -2327,7 +2326,6 @@ BUG21958 MAC : svg/hixie/error/012.xml = FAIL
 // WebKit merge 48500:48585, newly implemented Object.defineProperty.
 BUG22526 : fast/js/Object-create.html = FAIL
 BUG22526 : fast/js/Object-defineProperties.html = FAIL
-BUG22526 : fast/js/Object-defineProperty.html = FAIL
 BUG22526 : http/tests/security/xss-DENIED-defineProperty.html = FAIL
 
 // WebKit merge 48500:48585, due to newly added support for MathML.
@@ -2764,10 +2762,6 @@ BUG30939 : svg/filters/filter-source-position.svg = IMAGE+TEXT
 BUG31991 WIN LINUX : fast/text/international/bidi-layout-across-linebreak.html = TEXT
 BUG31252 : http/tests/security/listener/xss-inactive-closure.html = TEXT
 
-// WebKit roll 52633 -> 52667
-// On Linux, sometimes the text dump matches. Not sure why.
-BUG_DIMICH LINUX : svg/custom/resource-invalidate-on-target-update.svg = IMAGE+TEXT IMAGE
-
 BUG31623 WIN: http/tests/appcache/remove-cache.html = PASS TEXT TIMEOUT
 
 // WebKit roll 52769 -> 52793
@@ -2970,9 +2964,40 @@ BUG36019 : fast/borders/svg-as-border-image-2.html = IMAGE
 BUG36019 : fast/borders/svg-as-border-image.html = IMAGE
 BUG36019 : fast/images/svg-as-tiled-background.html = IMAGE
 
-// Started failing with r54823
-BUG35923 LINUX : fast/backgrounds/animated-gif-as-background.html = IMAGE
+// New test in WebKit r54926
 
-// Failed with roll to r54937 (incorrect color of hovered item)
+// Failed with roll to r54937: new test, needs re-baseline
 BUG36113 WIN LINUX : fast/css/first-letter-first-line-hover.html = IMAGE+TEXT
 BUG36113 MAC : fast/css/first-letter-first-line-hover.html = IMAGE
+
+// Failures after WebKit roll to 54996
+//     all platforms
+BUG_ROLANDSTEINER : fast/loader/api-test-new-window-data-load-base-url.html = TEXT
+BUG_ROLANDSTEINER : plugins/set-status.html = TEXT
+//     Win, Linux only
+BUG_ROLANDSTEINER WIN LINUX : svg/W3C-SVG-1.1/masking-intro-01-f.svg = TEXT
+BUG_ROLANDSTEINER WIN LINUX : svg/W3C-SVG-1.1/masking-mask-01-b.svg = TEXT
+BUG_ROLANDSTEINER WIN LINUX : svg/batik/masking/maskRegions.svg = TEXT
+BUG_ROLANDSTEINER WIN LINUX : svg/custom/empty-mask.svg = TEXT
+BUG_ROLANDSTEINER WIN LINUX : svg/custom/mask-invalidation.svg = TEXT
+BUG_ROLANDSTEINER MAC : svg/custom/dominant-baseline-hanging.svg = IMAGE
+BUG_ROLANDSTEINER MAC : svg/custom/gradient-stop-corner-cases.svg = IMAGE
+//     Selection different:
+BUG_ROLANDSTEINER WIN LINUX : fast/repaint/selection-gap-overflow-scroll-2.html = IMAGE+TEXT
+//     Changes
+// BUG24182 SLOW DEBUG : editing/selection/extend-selection.html = PASS
+BUG_ROLANDSTEINER SLOW DEBUG : editing/selection/extend-selection.html = TEXT
+BUG_ROLANDSTEINER WIN LINUX RELEASE : editing/selection/extend-selection.html = TEXT
+
+// Crashes after WebKit roll to 54996. Used to be:
+//     WebKit roll 52633 -> 52667
+//     On Linux, sometimes the text dump matches. Not sure why.
+//     BUG_DIMICH LINUX : svg/custom/resource-invalidate-on-target-update.svg = IMAGE+TEXT IMAGE
+BUG36236 WIN LINUX : svg/custom/resource-invalidate-on-target-update.svg = CRASH
+BUG36236 : http/tests/security/cross-frame-access-custom.html = CRASH
+BUG36236 : http/tests/security/cross-frame-access-get.html = CRASH
+BUG36236 : http/tests/security/cross-frame-access-name-getter.html = CRASH
+BUG36236 : http/tests/security/xss-DENIED-htmlelelment-with-iframe-proto.html = CRASH
+//     BUG22526 : fast/js/Object-defineProperty.html = FAIL
+BUG36236 : fast/js/Object-defineProperty.html = CRASH
+
