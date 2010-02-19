@@ -567,9 +567,9 @@ void WebPluginDelegateImpl::SetContainerVisibility(bool is_visible) {
     FocusChanged(false);
 
   // If the plugin is changing visibility, let the plugin know. If it's scrolled
-  // off screen (i.e., clip_rect_ is empty), then container visibility doesn't
-  // change anything.
-  if (!clip_rect_.IsEmpty()) {
+  // off screen (i.e., cached_clip_rect_ is empty), then container visibility
+  // doesn't change anything.
+  if (!cached_clip_rect_.IsEmpty()) {
 #ifndef NP_NO_CARBON
     if (instance() && instance()->event_model() == NPEventModelCarbon)
       UpdateIdleEventRate();
