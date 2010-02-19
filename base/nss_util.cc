@@ -89,9 +89,18 @@ class NSSInitSingleton {
         nss_version_check_failed);
     // Also check the run-time NSS version.
     // NSS_VersionCheck is a >= check, not strict equality.
-    CHECK(NSS_VersionCheck("3.12.3")) << "We depend on NSS >= 3.12.3. "
-                                         "If NSS is up to date, please "
-                                         "update NSPR to the latest version.";
+    if (!NSS_VersionCheck("3.12.3")) {
+      // It turns out many people have misconfigured NSS setups, where
+      // their run-time NSPR doesn't match the one their NSS was compiled
+      // against.  So rather than aborting, complain loudly.
+      LOG(ERROR) << "NSS_VersionCheck(\"3.12.3\") failed.  "
+                    "We depend on NSS >= 3.12.3, and this error is not fatal "
+                    "only because many people have busted NSS setups (for "
+                    "example, using the wrong version of NSPR). "
+                    "Please upgrade to the latest NSS and NSPR, and if you "
+                    "still get this error, contact your distribution "
+                    "maintainer.";
+    }
 
     SECStatus status = SECFailure;
 #if defined(USE_NSS_FOR_SSL_ONLY)
