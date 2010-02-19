@@ -2766,7 +2766,7 @@ BUG31623 WIN: http/tests/appcache/remove-cache.html = PASS TEXT TIMEOUT
 
 // WebKit roll 52633 -> 52667
 // On Linux, sometimes the text dump matches. Not sure why.
-BUG_DIMICH LINUX : svg/custom/resource-invalidate-on-target-update.svg = IMAGE+TEXT IMAGE
+BUG_DIMICH LINUX : svg/custom/resource-invalidate-on-target-update.svg = IMAGE+TEXT IMAGE TEXT
 
 // WebKit roll 52769 -> 52793
 BUG31642 LINUX DEBUG: svg/W3C-SVG-1.1/animate-elem-30-t.svg = IMAGE CRASH
@@ -2992,3 +2992,6 @@ BUG_ROLANDSTEINER WIN LINUX : fast/repaint/selection-gap-overflow-scroll-2.html 
 // BUG24182 SLOW DEBUG : editing/selection/extend-selection.html = PASS
 BUG_ROLANDSTEINER SLOW DEBUG : editing/selection/extend-selection.html = TEXT
 BUG_ROLANDSTEINER WIN LINUX RELEASE : editing/selection/extend-selection.html = TEXT
+
+// More fallout...
+BUG_ROLANDSTEINER WIN RELEASE : svg/custom/resource-invalidate-on-target-update.svg = TEXT
