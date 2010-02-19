@@ -251,16 +251,81 @@ o3djs.cameracontroller.CameraController = function(centerPos,
 };
 
 /**
+ * Calculates the center point and backpedal which will make the
+ * camera view the entire supplied bounding box, assuming a symmetric
+ * perspective projection. The heightAngle and rotationAngle are
+ * unchanged.
+ * @param {!o3d.BoundingBox} The bounding box to enclose in the view
+ * volume.
+ * @param {number} aspectRatio The aspect ratio of the viewing plane.
+ */
+o3djs.cameracontroller.CameraController.prototype.viewAll =
+  function(boundingBox,
+           aspectRatio) {
+  // Form a view matrix facing in the correct direction but whose
+  // origin is at the center of the bounding box
+  var minExtent = boundingBox.minExtent;
+  var maxExtent = boundingBox.maxExtent;
+  var centerPos = o3djs.math.divVectorScalar(
+      o3djs.math.addVector(minExtent, maxExtent), 2.0);
+  var viewMatrix = this.calculateViewMatrix_(centerPos, 0);
+  var maxBackpedal = 0;
+  var vertFOV = this.fieldOfViewAngle;
+  var tanVertFOV = Math.tan(vertFOV);
+  var horizFOV = Math.atan(aspectRatio * tanVertFOV);
+  var tanHorizFOV = Math.tan(horizFOV);
+  var extents = [minExtent, maxExtent];
+  for (var zi = 0; zi < 2; zi++) {
+    for (var yi = 0; yi < 2; yi++) {
+      for (var xi = 0; xi < 2; xi++) {
+        // Form world space vector of this corner
+        var vec = [extents[xi][0], extents[yi][1], extents[zi][2], 1];
+        // Transform by the temporary view matrix
+        vec = o3djs.math.mulVectorMatrix(vec, viewMatrix);
+        // Consider only points on the +z side of the origin
+        if (vec[2] >= 0.0) {
+          // Figure out the backpedal based on the horizontal and
+          // vertical view angles, and the z coordinate of the
+          // corner
+          maxBackpedal = Math.max(maxBackpedal,
+                                  vec[2] + vec[0] / tanHorizFOV);
+          maxBackpedal = Math.max(maxBackpedal,
+                                  vec[2] + vec[1] / tanVertFOV);
+        }
+      }
+    }
+  }
+  // Now set up the center point, backpedal and distancePerUnit
+  this.centerPos = centerPos;
+  this.backpedal = maxBackpedal;
+  // This is heuristic based on some experimentation
+  this.distancePerUnit = maxBackpedal / 5.0;
+};
+
+/**
  * Calculates the view matrix for this camera.
  * @return {!o3djs.math.Matrix4} The view matrix.
  */
 o3djs.cameracontroller.CameraController.prototype.calculateViewMatrix =
     function() {
+  return this.calculateViewMatrix_(this.centerPos, this.backpedal);
+};
+
+/**
+ * Calculates the view matrix for this camera given the specified
+ * center point and backpedal.
+ * @param {!o3djs.math.Vector3} centerPoint Center point for the
+ * camera.
+ * @param {number} backpedal Backpedal from the center point for the
+ * camera.
+ */
+o3djs.cameracontroller.CameraController.prototype.calculateViewMatrix_ =
+    function(centerPoint, backpedal) {
   var matrix4 = o3djs.math.matrix4;
-  var view = matrix4.translation(o3djs.math.negativeVector(this.centerPos));
+  var view = matrix4.translation(o3djs.math.negativeVector(centerPoint));
   view = matrix4.mul(view, matrix4.rotationY(this.rotationAngle));
   view = matrix4.mul(view, matrix4.rotationX(this.heightAngle));
-  view = matrix4.mul(view, matrix4.translation([0, 0, -this.backpedal]));
+  view = matrix4.mul(view, matrix4.translation([0, 0, -backpedal]));
   return view;
 };
 
