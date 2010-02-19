@@ -16,12 +16,11 @@
 #include <map>
 #include "base/non_thread_safe.h"
 #include "base/string16.h"
+#include "chrome/common/geoposition.h"
 
 class AccessTokenStore;
 class GURL;
 class URLRequestContextGetter;
-struct Geoposition;
-struct Position;
 
 // The base class used by all location providers.
 class LocationProviderBase : public NonThreadSafe {
@@ -86,6 +85,29 @@ class LocationProviderBase : public NonThreadSafe {
   // ref count.
   typedef std::map<ListenerInterface*, int> ListenerMap;
   ListenerMap listeners_;
+};
+
+// Mock implementation of a location provider for testing.
+// TODO(joth): Move this and the implementation of this back in the unit_tests
+// once the location_arbitrator mock/factory situation is resolved.
+class MockLocationProvider : public LocationProviderBase {
+ public:
+  MockLocationProvider();
+  virtual ~MockLocationProvider();
+
+  using LocationProviderBase::UpdateListeners;
+  using LocationProviderBase::InformListenersOfMovement;
+
+  // LocationProviderBase implementation.
+  virtual bool StartProvider();
+  virtual void GetPosition(Geoposition *position);
+
+  Geoposition position_;
+  int started_count_;
+
+  static MockLocationProvider* instance_;
+
+  DISALLOW_COPY_AND_ASSIGN(MockLocationProvider);
 };
 
 // Factory functions for the various types of location provider to abstract over

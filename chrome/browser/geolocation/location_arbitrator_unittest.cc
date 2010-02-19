@@ -11,39 +11,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace {
-// Mock implementation of a location provider for testing.
-class MockLocationProvider : public LocationProviderBase {
- public:
-  MockLocationProvider() : started_count_(0) {
-    CHECK(instance_ == NULL);
-    instance_ = this;
-  }
-  virtual ~MockLocationProvider() {
-    CHECK(instance_ == this);
-    instance_ = NULL;
-  }
-
-  using LocationProviderBase::UpdateListeners;
-  using LocationProviderBase::InformListenersOfMovement;
-
-  // LocationProviderBase implementation.
-  virtual bool StartProvider() {
-    ++started_count_;
-    return true;
-  }
-  virtual void GetPosition(Geoposition *position) {
-    *position = position_;
-  }
-
-  Geoposition position_;
-  int started_count_;
-
-  static MockLocationProvider* instance_;
-
-  DISALLOW_COPY_AND_ASSIGN(MockLocationProvider);
-};
-
-MockLocationProvider* MockLocationProvider::instance_ = NULL;
 
 class MockLocationObserver : public GeolocationArbitrator::Delegate {
  public:
@@ -70,10 +37,6 @@ void SetReferencePosition(Geoposition* position) {
 }
 
 }  // namespace
-
-LocationProviderBase* NewMockLocationProvider() {
-  return new MockLocationProvider;
-}
 
 class GeolocationLocationArbitratorTest : public testing::Test {
  protected:

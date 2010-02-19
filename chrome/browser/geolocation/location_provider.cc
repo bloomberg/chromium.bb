@@ -73,3 +73,29 @@ void LocationProviderBase::InformListenersOfMovement() {
 LocationProviderBase* NewGpsLocationProvider() {
   return NULL;
 }
+
+MockLocationProvider::MockLocationProvider() : started_count_(0) {
+  CHECK(instance_ == NULL);
+  instance_ = this;
+}
+
+MockLocationProvider::~MockLocationProvider() {
+  CHECK(instance_ == this);
+  instance_ = NULL;
+}
+
+bool MockLocationProvider::StartProvider() {
+  ++started_count_;
+  return true;
+}
+
+void MockLocationProvider::GetPosition(Geoposition *position) {
+  *position = position_;
+}
+
+MockLocationProvider* MockLocationProvider::instance_ = NULL;
+
+LocationProviderBase* NewMockLocationProvider() {
+  return new MockLocationProvider;
+}
+
