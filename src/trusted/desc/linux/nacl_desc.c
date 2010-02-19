@@ -71,13 +71,13 @@ int32_t NaClAbiStatHostDescStatXlateCtor(struct nacl_abi_stat    *dst,
               src->st_mode);
       m = NACL_ABI_S_UNSUP;
   }
-  if (0 != (dst->nacl_abi_st_mode & S_IRUSR)) {
+  if (0 != (src->st_mode & S_IRUSR)) {
       m |= NACL_ABI_S_IRUSR;
   }
-  if (0 != (dst->nacl_abi_st_mode & S_IWUSR)) {
+  if (0 != (src->st_mode & S_IWUSR)) {
       m |= NACL_ABI_S_IWUSR;
   }
-  if (0 != (dst->nacl_abi_st_mode & S_IXUSR)) {
+  if (0 != (src->st_mode & S_IXUSR)) {
       m |= NACL_ABI_S_IXUSR;
   }
   dst->nacl_abi_st_mode = m;
