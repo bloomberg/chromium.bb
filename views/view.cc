@@ -242,17 +242,13 @@ bool View::UILayoutIsRightToLeft() const {
 ////////////////////////////////////////////////////////////////////////////////
 
 inline int View::MirroredX() const {
-  // TODO(beng): reimplement in terms of MirroredLeftPointForRect.
   View* parent = GetParent();
-  if (parent && parent->UILayoutIsRightToLeft())
-    return parent->width() - x() - width();
-  return x();
+  return parent ? parent->MirroredLeftPointForRect(bounds_) : x();
 }
 
 int View::MirroredLeftPointForRect(const gfx::Rect& bounds) const {
-  if (!UILayoutIsRightToLeft())
-    return bounds.x();
-  return width() - bounds.x() - bounds.width();
+  return UILayoutIsRightToLeft() ?
+      (width() - bounds.x() - bounds.width()) : bounds.x();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
