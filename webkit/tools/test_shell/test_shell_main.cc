@@ -50,6 +50,15 @@ const char* const kStatsFilePrefix = "testshell_";
 int kStatsFileThreads = 20;
 int kStatsFileCounters = 200;
 
+void RemoveSharedMemoryFile(std::string& filename) {
+  // Stats uses SharedMemory under the hood. On posix, this results in a file
+  // on disk.
+#if defined(OS_POSIX)
+  base::SharedMemory memory;
+  memory.Delete(UTF8ToWide(filename));
+#endif
+}
+
 }  // namespace
 
 int main(int argc, char* argv[]) {
@@ -233,10 +242,13 @@ int main(int argc, char* argv[]) {
 
   // Load and initialize the stats table.  Attempt to construct a somewhat
   // unique name to isolate separate instances from each other.
-  StatsTable *table = new StatsTable(
-      // truncate the random # to 32 bits for the benefit of Mac OS X, to
-      // avoid tripping over its maximum shared memory segment name length
-      kStatsFilePrefix + Uint64ToString(base::RandUint64() & 0xFFFFFFFFL),
+
+  // truncate the random # to 32 bits for the benefit of Mac OS X, to
+  // avoid tripping over its maximum shared memory segment name length
+  std::string stats_filename =
+      kStatsFilePrefix + Uint64ToString(base::RandUint64() & 0xFFFFFFFFL);
+  RemoveSharedMemoryFile(stats_filename);
+  StatsTable *table = new StatsTable(stats_filename,
       kStatsFileThreads,
       kStatsFileCounters);
   StatsTable::set_current(table);
@@ -370,6 +382,7 @@ int main(int argc, char* argv[]) {
   // Tear down shared StatsTable; prevents unit_tests from leaking it.
   StatsTable::set_current(NULL);
   delete table;
+  RemoveSharedMemoryFile(stats_filename);
 
   return 0;
 }
