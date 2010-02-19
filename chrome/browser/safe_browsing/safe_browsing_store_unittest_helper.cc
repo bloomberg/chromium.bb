@@ -64,13 +64,12 @@ void SafeBrowsingStoreTestStorePrefix(SafeBrowsingStore* store) {
   EXPECT_TRUE(store->CheckAddChunk(kAddChunk1));
   EXPECT_TRUE(store->WriteAddPrefix(kAddChunk1, kHash1.prefix));
   EXPECT_TRUE(store->WriteAddPrefix(kAddChunk1, kHash2.prefix));
-  EXPECT_TRUE(store->WriteAddHash(kAddChunk1, kHash2.prefix, now, kHash2));
+  EXPECT_TRUE(store->WriteAddHash(kAddChunk1, now, kHash2));
 
   store->SetSubChunk(kSubChunk1);
   EXPECT_TRUE(store->CheckSubChunk(kSubChunk1));
   EXPECT_TRUE(store->WriteSubPrefix(kSubChunk1, kAddChunk3, kHash3.prefix));
-  EXPECT_TRUE(store->WriteSubHash(kSubChunk1,
-                                  kAddChunk3, kHash3.prefix, kHash3));
+  EXPECT_TRUE(store->WriteSubHash(kSubChunk1, kAddChunk3, kHash3));
   EXPECT_TRUE(store->FinishChunk());
 
   // Chunk numbers shouldn't leak over.
@@ -102,10 +101,7 @@ void SafeBrowsingStoreTestStorePrefix(SafeBrowsingStore* store) {
   EXPECT_EQ(kHash2.prefix, add_prefixes_result[1].prefix);
 
   ASSERT_EQ(1U, add_full_hashes_result.size());
-  EXPECT_EQ(kAddChunk1, add_full_hashes_result[0].add_prefix.chunk_id);
-  EXPECT_EQ(kHash2.prefix, add_full_hashes_result[0].add_prefix.prefix);
-  EXPECT_EQ(add_full_hashes_result[0].add_prefix.prefix,
-            add_full_hashes_result[0].full_hash.prefix);
+  EXPECT_EQ(kAddChunk1, add_full_hashes_result[0].chunk_id);
   // EXPECT_TRUE(add_full_hashes_result[0].received == now)?
   EXPECT_EQ(now.ToTimeT(), add_full_hashes_result[0].received);
   EXPECT_TRUE(SBFullHashEq(kHash2, add_full_hashes_result[0].full_hash));
@@ -139,8 +135,7 @@ void SafeBrowsingStoreTestStorePrefix(SafeBrowsingStore* store) {
   EXPECT_EQ(kHash2.prefix, add_prefixes_result[1].prefix);
 
   ASSERT_EQ(1U, add_full_hashes_result.size());
-  EXPECT_EQ(kAddChunk1, add_full_hashes_result[0].add_prefix.chunk_id);
-  EXPECT_EQ(kHash2.prefix, add_full_hashes_result[0].add_prefix.prefix);
+  EXPECT_EQ(kAddChunk1, add_full_hashes_result[0].chunk_id);
   EXPECT_EQ(now.ToTimeT(), add_full_hashes_result[0].received);
   EXPECT_TRUE(SBFullHashEq(kHash2, add_full_hashes_result[0].full_hash));
 }
@@ -154,7 +149,7 @@ void SafeBrowsingStoreTestSubKnockout(SafeBrowsingStore* store) {
   store->SetAddChunk(kAddChunk1);
   EXPECT_TRUE(store->WriteAddPrefix(kAddChunk1, kHash1.prefix));
   EXPECT_TRUE(store->WriteAddPrefix(kAddChunk1, kHash2.prefix));
-  EXPECT_TRUE(store->WriteAddHash(kAddChunk1, kHash2.prefix, now, kHash2));
+  EXPECT_TRUE(store->WriteAddHash(kAddChunk1, now, kHash2));
 
   store->SetSubChunk(kSubChunk1);
   EXPECT_TRUE(store->WriteSubPrefix(kSubChunk1, kAddChunk3, kHash3.prefix));
@@ -225,7 +220,7 @@ void SafeBrowsingStoreTestDeleteChunks(SafeBrowsingStore* store) {
   EXPECT_TRUE(store->BeginChunk());
   EXPECT_TRUE(store->WriteAddPrefix(kAddChunk1, kHash1.prefix));
   EXPECT_TRUE(store->WriteAddPrefix(kAddChunk1, kHash2.prefix));
-  EXPECT_TRUE(store->WriteAddHash(kAddChunk1, kHash2.prefix, now, kHash2));
+  EXPECT_TRUE(store->WriteAddHash(kAddChunk1, now, kHash2));
   EXPECT_TRUE(store->FinishChunk());
 
   // Another which won't.
@@ -233,7 +228,7 @@ void SafeBrowsingStoreTestDeleteChunks(SafeBrowsingStore* store) {
   store->SetAddChunk(kAddChunk2);
   EXPECT_TRUE(store->BeginChunk());
   EXPECT_TRUE(store->WriteAddPrefix(kAddChunk2, kHash3.prefix));
-  EXPECT_TRUE(store->WriteAddHash(kAddChunk2, kHash3.prefix, now, kHash3));
+  EXPECT_TRUE(store->WriteAddHash(kAddChunk2, now, kHash3));
   EXPECT_TRUE(store->FinishChunk());
 
   // A sub chunk to delete.
@@ -241,8 +236,7 @@ void SafeBrowsingStoreTestDeleteChunks(SafeBrowsingStore* store) {
   store->SetSubChunk(kSubChunk1);
   EXPECT_TRUE(store->BeginChunk());
   EXPECT_TRUE(store->WriteSubPrefix(kSubChunk1, kAddChunk3, kHash4.prefix));
-  EXPECT_TRUE(store->WriteSubHash(kSubChunk1,
-                                  kAddChunk3, kHash4.prefix, kHash4));
+  EXPECT_TRUE(store->WriteSubHash(kSubChunk1, kAddChunk3, kHash4));
   EXPECT_TRUE(store->FinishChunk());
 
   // A sub chunk to keep.
@@ -250,8 +244,7 @@ void SafeBrowsingStoreTestDeleteChunks(SafeBrowsingStore* store) {
   store->SetSubChunk(kSubChunk2);
   EXPECT_TRUE(store->BeginChunk());
   EXPECT_TRUE(store->WriteSubPrefix(kSubChunk2, kAddChunk4, kHash5.prefix));
-  EXPECT_TRUE(store->WriteSubHash(kSubChunk2,
-                                  kAddChunk4, kHash5.prefix, kHash5));
+  EXPECT_TRUE(store->WriteSubHash(kSubChunk2, kAddChunk4, kHash5));
   EXPECT_TRUE(store->FinishChunk());
 
   store->DeleteAddChunk(kAddChunk1);
@@ -275,8 +268,7 @@ void SafeBrowsingStoreTestDeleteChunks(SafeBrowsingStore* store) {
   EXPECT_EQ(kAddChunk2, add_prefixes_result[0].chunk_id);
   EXPECT_EQ(kHash3.prefix, add_prefixes_result[0].prefix);
   EXPECT_EQ(1U, add_full_hashes_result.size());
-  EXPECT_EQ(kAddChunk2, add_full_hashes_result[0].add_prefix.chunk_id);
-  EXPECT_EQ(kHash3.prefix, add_full_hashes_result[0].add_prefix.prefix);
+  EXPECT_EQ(kAddChunk2, add_full_hashes_result[0].chunk_id);
   EXPECT_EQ(now.ToTimeT(), add_full_hashes_result[0].received);
   EXPECT_TRUE(SBFullHashEq(kHash3, add_full_hashes_result[0].full_hash));
 

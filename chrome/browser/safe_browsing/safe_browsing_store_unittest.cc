@@ -38,28 +38,26 @@ TEST(SafeBrowsingStoreTest, SBAddPrefixHashLess) {
   const base::Time now = base::Time::Now();
 
   // add_id dominates.
-  EXPECT_TRUE(SBAddPrefixHashLess(SBAddFullHash(10, two.prefix, now, two),
-                                  SBAddFullHash(11, one.prefix, now, one)));
-  EXPECT_FALSE(SBAddPrefixHashLess(SBAddFullHash(11, two.prefix, now, two),
-                                   SBAddFullHash(10, one.prefix, now, one)));
+  EXPECT_TRUE(SBAddPrefixHashLess(SBAddFullHash(10, now, two),
+                                  SBAddFullHash(11, now, one)));
+  EXPECT_FALSE(SBAddPrefixHashLess(SBAddFullHash(11, now, two),
+                                   SBAddFullHash(10, now, one)));
 
   // After add_id, prefix.
-  EXPECT_TRUE(SBAddPrefixHashLess(SBAddFullHash(10, one.prefix, now, two),
-                                  SBAddFullHash(10, two.prefix, now, one)));
-  EXPECT_FALSE(SBAddPrefixHashLess(SBAddFullHash(10, two.prefix, now, one),
-                                   SBAddFullHash(10, one.prefix, now, two)));
+  EXPECT_TRUE(SBAddPrefixHashLess(SBAddFullHash(10, now, one),
+                                  SBAddFullHash(10, now, two)));
+  EXPECT_FALSE(SBAddPrefixHashLess(SBAddFullHash(10, now, two),
+                                   SBAddFullHash(10, now, one)));
 
   // After prefix, full hash.
-  EXPECT_TRUE(SBAddPrefixHashLess(SBAddFullHash(10, one.prefix, now, one),
-                                  SBAddFullHash(10, onetwo.prefix,
-                                                now, onetwo)));
-  EXPECT_FALSE(SBAddPrefixHashLess(SBAddFullHash(10, onetwo.prefix,
-                                                 now, onetwo),
-                                   SBAddFullHash(10, one.prefix, now, one)));
+  EXPECT_TRUE(SBAddPrefixHashLess(SBAddFullHash(10, now, one),
+                                  SBAddFullHash(10, now, onetwo)));
+  EXPECT_FALSE(SBAddPrefixHashLess(SBAddFullHash(10, now, onetwo),
+                                   SBAddFullHash(10, now, one)));
 
   // Equal is not less-than.
-  EXPECT_FALSE(SBAddPrefixHashLess(SBAddFullHash(10, one.prefix, now, one),
-                                   SBAddFullHash(10, one.prefix, now, one)));
+  EXPECT_FALSE(SBAddPrefixHashLess(SBAddFullHash(10, now, one),
+                                   SBAddFullHash(10, now, one)));
 }
 
 TEST(SafeBrowsingStoreTest, SBSubPrefixLess) {
@@ -89,26 +87,26 @@ TEST(SafeBrowsingStoreTest, SBSubFullHashLess) {
   two.prefix = 2;
 
   // add_id dominates.
-  EXPECT_TRUE(SBAddPrefixHashLess(SBSubFullHash(12, 10, two.prefix, two),
-                                  SBSubFullHash(9, 11, one.prefix, one)));
-  EXPECT_FALSE(SBAddPrefixHashLess(SBSubFullHash(12, 11, two.prefix, two),
-                                   SBSubFullHash(9, 10, one.prefix, one)));
+  EXPECT_TRUE(SBAddPrefixHashLess(SBSubFullHash(12, 10, two),
+                                  SBSubFullHash(9, 11, one)));
+  EXPECT_FALSE(SBAddPrefixHashLess(SBSubFullHash(12, 11, two),
+                                   SBSubFullHash(9, 10, one)));
 
   // After add_id, prefix.
-  EXPECT_TRUE(SBAddPrefixHashLess(SBSubFullHash(12, 10, one.prefix, two),
-                                  SBSubFullHash(9, 10, two.prefix, one)));
-  EXPECT_FALSE(SBAddPrefixHashLess(SBSubFullHash(12, 10, two.prefix, one),
-                                   SBSubFullHash(9, 10, one.prefix, two)));
+  EXPECT_TRUE(SBAddPrefixHashLess(SBSubFullHash(12, 10, one),
+                                  SBSubFullHash(9, 10, two)));
+  EXPECT_FALSE(SBAddPrefixHashLess(SBSubFullHash(12, 10, two),
+                                   SBSubFullHash(9, 10, one)));
 
   // After prefix, full_hash.
-  EXPECT_TRUE(SBAddPrefixHashLess(SBSubFullHash(12, 10, one.prefix, one),
-                                  SBSubFullHash(9, 10, onetwo.prefix, onetwo)));
-  EXPECT_FALSE(SBAddPrefixHashLess(SBSubFullHash(12, 10, onetwo.prefix, onetwo),
-                                   SBSubFullHash(9, 10, one.prefix, one)));
+  EXPECT_TRUE(SBAddPrefixHashLess(SBSubFullHash(12, 10, one),
+                                  SBSubFullHash(9, 10, onetwo)));
+  EXPECT_FALSE(SBAddPrefixHashLess(SBSubFullHash(12, 10, onetwo),
+                                   SBSubFullHash(9, 10, one)));
 
   // Equal is not less-than.
-  EXPECT_FALSE(SBAddPrefixHashLess(SBSubFullHash(12, 10, one.prefix, one),
-                                   SBSubFullHash(9, 10, one.prefix, one)));
+  EXPECT_FALSE(SBAddPrefixHashLess(SBSubFullHash(12, 10, one),
+                                   SBSubFullHash(9, 10, one)));
 }
 
 TEST(SafeBrowsingStoreTest, SBProcessSubs) {
@@ -143,23 +141,18 @@ TEST(SafeBrowsingStoreTest, SBProcessSubs) {
   // An add with prefix and a couple hashes, plus a sub for the prefix
   // and a couple sub hashes.  The sub should knock all of them out.
   add_prefixes.push_back(SBAddPrefix(kAddChunk1, kHash1.prefix));
-  add_hashes.push_back(
-      SBAddFullHash(kAddChunk1, kHash1.prefix, kNow, kHash1));
-  add_hashes.push_back(
-      SBAddFullHash(kAddChunk1, kHash1mod1.prefix, kNow, kHash1mod1));
+  add_hashes.push_back(SBAddFullHash(kAddChunk1, kNow, kHash1));
+  add_hashes.push_back(SBAddFullHash(kAddChunk1, kNow, kHash1mod1));
   sub_prefixes.push_back(SBSubPrefix(kSubChunk1, kAddChunk1, kHash1.prefix));
-  sub_hashes.push_back(
-      SBSubFullHash(kSubChunk1, kAddChunk1, kHash1mod2.prefix, kHash1mod2));
-  sub_hashes.push_back(
-      SBSubFullHash(kSubChunk1, kAddChunk1, kHash1mod3.prefix, kHash1mod3));
+  sub_hashes.push_back(SBSubFullHash(kSubChunk1, kAddChunk1, kHash1mod2));
+  sub_hashes.push_back(SBSubFullHash(kSubChunk1, kAddChunk1, kHash1mod3));
 
   // An add with no corresponding sub.  Both items should be retained.
-  add_hashes.push_back(SBAddFullHash(kAddChunk1, kHash2.prefix, kNow, kHash2));
+  add_hashes.push_back(SBAddFullHash(kAddChunk1, kNow, kHash2));
   add_prefixes.push_back(SBAddPrefix(kAddChunk1, kHash2.prefix));
 
   // A sub with no corresponding add.  Both items should be retained.
-  sub_hashes.push_back(
-      SBSubFullHash(kSubChunk1, kAddChunk1, kHash3.prefix, kHash3));
+  sub_hashes.push_back(SBSubFullHash(kSubChunk1, kAddChunk1, kHash3));
   sub_prefixes.push_back(SBSubPrefix(kSubChunk1, kAddChunk1, kHash3.prefix));
 
   SBProcessSubs(&add_prefixes, &sub_prefixes, &add_hashes, &sub_hashes);
@@ -169,19 +162,17 @@ TEST(SafeBrowsingStoreTest, SBProcessSubs) {
   EXPECT_EQ(kHash2.prefix, add_prefixes[0].prefix);
 
   EXPECT_EQ(1U, add_hashes.size());
-  EXPECT_EQ(kAddChunk1, add_hashes[0].add_prefix.chunk_id);
-  EXPECT_EQ(kHash2.prefix, add_hashes[0].add_prefix.prefix);
+  EXPECT_EQ(kAddChunk1, add_hashes[0].chunk_id);
   EXPECT_TRUE(SBFullHashEq(kHash2, add_hashes[0].full_hash));
 
   EXPECT_EQ(1U, sub_prefixes.size());
   EXPECT_EQ(kSubChunk1, sub_prefixes[0].chunk_id);
-  EXPECT_EQ(kAddChunk1, sub_prefixes[0].add_prefix.chunk_id);
-  EXPECT_EQ(kHash3.prefix, sub_prefixes[0].add_prefix.prefix);
+  EXPECT_EQ(kAddChunk1, sub_prefixes[0].add_chunk_id);
+  EXPECT_EQ(kHash3.prefix, sub_prefixes[0].add_prefix);
 
   EXPECT_EQ(1U, sub_hashes.size());
   EXPECT_EQ(kSubChunk1, sub_hashes[0].chunk_id);
-  EXPECT_EQ(kAddChunk1, sub_hashes[0].add_prefix.chunk_id);
-  EXPECT_EQ(kHash3.prefix, sub_hashes[0].add_prefix.prefix);
+  EXPECT_EQ(kAddChunk1, sub_hashes[0].add_chunk_id);
   EXPECT_TRUE(SBFullHashEq(kHash3, sub_hashes[0].full_hash));
 }
 

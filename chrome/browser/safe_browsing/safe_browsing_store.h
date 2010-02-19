@@ -50,48 +50,46 @@ struct SBAddPrefix {
 
 struct SBSubPrefix {
   int32 chunk_id;
-  SBAddPrefix add_prefix;
+  int32 add_chunk_id;
+  SBPrefix add_prefix;
 
   SBSubPrefix(int32 id, int32 add_id, int prefix)
-      : chunk_id(id), add_prefix(add_id, prefix) {}
+      : chunk_id(id), add_chunk_id(add_id), add_prefix(prefix) {}
 
-  int32 GetAddChunkId() const { return add_prefix.chunk_id; }
-  SBPrefix GetAddPrefix() const { return add_prefix.prefix; }
+  int32 GetAddChunkId() const { return add_chunk_id; }
+  SBPrefix GetAddPrefix() const { return add_prefix; }
 };
 
-// TODO(shess): The full_hash includes the prefix, so the prefix could
-// be dropped.  But SBAddPrefix is convenient for comparing across
-// different structs, and there aren't many full hashes.  Hmm.
 struct SBAddFullHash {
-  SBAddPrefix add_prefix;
+  int32 chunk_id;
   int32 received;
   SBFullHash full_hash;
 
-  SBAddFullHash(int32 id, SBPrefix p, base::Time r, SBFullHash h)
-      : add_prefix(id, p),
+  SBAddFullHash(int32 id, base::Time r, SBFullHash h)
+      : chunk_id(id),
         received(static_cast<int32>(r.ToTimeT())),
         full_hash(h) {
   }
 
   // Provided for ReadAddHashes() implementations, which already have
   // an int32 for the time.
-  SBAddFullHash(int32 id, SBPrefix p, int32 r, SBFullHash h)
-      : add_prefix(id, p), received(r), full_hash(h) {}
+  SBAddFullHash(int32 id, int32 r, SBFullHash h)
+      : chunk_id(id), received(r), full_hash(h) {}
 
-  int32 GetAddChunkId() const { return add_prefix.chunk_id; }
-  SBPrefix GetAddPrefix() const { return add_prefix.prefix; }
+  int32 GetAddChunkId() const { return chunk_id; }
+  SBPrefix GetAddPrefix() const { return full_hash.prefix; }
 };
 
 struct SBSubFullHash {
   int32 chunk_id;
-  SBAddPrefix add_prefix;
+  int32 add_chunk_id;
   SBFullHash full_hash;
 
-  SBSubFullHash(int32 id, int32 add_id, SBPrefix p, SBFullHash h)
-      : chunk_id(id), add_prefix(add_id, p), full_hash(h) {}
+  SBSubFullHash(int32 id, int32 add_id, SBFullHash h)
+      : chunk_id(id), add_chunk_id(add_id), full_hash(h) {}
 
-  int32 GetAddChunkId() const { return add_prefix.chunk_id; }
-  SBPrefix GetAddPrefix() const { return add_prefix.prefix; }
+  int32 GetAddChunkId() const { return add_chunk_id; }
+  SBPrefix GetAddPrefix() const { return full_hash.prefix; }
 };
 
 // Determine less-than based on add chunk and prefix.
@@ -173,12 +171,12 @@ class SafeBrowsingStore {
   virtual bool BeginChunk() = 0;
 
   virtual bool WriteAddPrefix(int32 chunk_id, SBPrefix prefix) = 0;
-  virtual bool WriteAddHash(int32 chunk_id, SBPrefix prefix,
+  virtual bool WriteAddHash(int32 chunk_id,
                             base::Time receive_time, SBFullHash full_hash) = 0;
   virtual bool WriteSubPrefix(int32 chunk_id,
                               int32 add_chunk_id, SBPrefix prefix) = 0;
   virtual bool WriteSubHash(int32 chunk_id, int32 add_chunk_id,
-                            SBPrefix prefix, SBFullHash full_hash) = 0;
+                            SBFullHash full_hash) = 0;
 
   // Collect the chunk data and preferrably store it on disk to
   // release memory.  Shoul not modify the data in-place.

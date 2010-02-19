@@ -44,8 +44,6 @@
 // }
 // array[add_hash_count] {
 //   int32 chunk_id;
-//   // TODO(shess): This duplicates first four bytes of full_hash!
-//   int32 prefix;
 //   // From base::Time::ToTimeT().  This data should never last long
 //   // enough for 32 bits to be a problem.
 //   int32 received_time;
@@ -53,7 +51,6 @@
 // array[sub_hash_count] {
 //   int32 chunk_id;
 //   int32 add_chunk_id;
-//   int32 add_prefix;
 //   char[32] add_full_hash;
 // }
 // TODO(shess): Would a checksum be worthwhile?  If so, check at open,
@@ -141,10 +138,9 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
     add_prefixes_.push_back(SBAddPrefix(chunk_id, prefix));
     return true;
   }
-  virtual bool WriteAddHash(int32 chunk_id, SBPrefix prefix,
+  virtual bool WriteAddHash(int32 chunk_id,
                             base::Time receive_time, SBFullHash full_hash) {
-    add_hashes_.push_back(
-        SBAddFullHash(chunk_id, prefix, receive_time, full_hash));
+    add_hashes_.push_back(SBAddFullHash(chunk_id, receive_time, full_hash));
     return true;
   }
   virtual bool WriteSubPrefix(int32 chunk_id,
@@ -153,9 +149,8 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
     return true;
   }
   virtual bool WriteSubHash(int32 chunk_id, int32 add_chunk_id,
-                            SBPrefix prefix, SBFullHash full_hash) {
-    sub_hashes_.push_back(
-        SBSubFullHash(chunk_id, add_chunk_id, prefix, full_hash));
+                            SBFullHash full_hash) {
+    sub_hashes_.push_back(SBSubFullHash(chunk_id, add_chunk_id, full_hash));
     return true;
   }
   virtual bool FinishChunk();

@@ -426,8 +426,8 @@ bool SafeBrowsingStoreSqlite::WriteSubPrefixes(
   for (std::vector<SBSubPrefix>::const_iterator iter = sub_prefixes.begin();
        iter != sub_prefixes.end(); ++iter) {
     statement->bind_int(0, iter->chunk_id);
-    statement->bind_int(1, iter->add_prefix.chunk_id);
-    statement->bind_int(2, iter->add_prefix.prefix);
+    statement->bind_int(1, iter->add_chunk_id);
+    statement->bind_int(2, iter->add_prefix);
     int rv = statement->step();
     if (rv == SQLITE_CORRUPT)
       return OnCorruptDatabase();
@@ -455,10 +455,12 @@ bool SafeBrowsingStoreSqlite::ReadAddHashes(
     if (add_del_cache_.count(chunk_id) > 0)
       continue;
 
+    // NOTE: Legacy format duplicated |hash.prefix| in column 1.
     const SBPrefix prefix = statement->column_int(1);
     const int32 received = statement->column_int(2);
     const SBFullHash full_hash = ReadFullHash(&statement, 3);
-    add_hashes->push_back(SBAddFullHash(chunk_id, prefix, received, full_hash));
+    DCHECK_EQ(prefix, full_hash.prefix);
+    add_hashes->push_back(SBAddFullHash(chunk_id, received, full_hash));
   }
   if (rv == SQLITE_CORRUPT)
     return OnCorruptDatabase();
@@ -481,8 +483,9 @@ bool SafeBrowsingStoreSqlite::WriteAddHashes(
 
   for (std::vector<SBAddFullHash>::const_iterator iter = add_hashes.begin();
        iter != add_hashes.end(); ++iter) {
-    statement->bind_int(0, iter->add_prefix.chunk_id);
-    statement->bind_int(1, iter->add_prefix.prefix);
+    // NOTE: Legacy format duplicated |hash.prefix| in column 1.
+    statement->bind_int(0, iter->chunk_id);
+    statement->bind_int(1, iter->full_hash.prefix);
     statement->bind_int(2, iter->received);
     statement->bind_blob(3, iter->full_hash.full_hash,
                          sizeof(iter->full_hash.full_hash));
@@ -513,11 +516,12 @@ bool SafeBrowsingStoreSqlite::ReadSubHashes(
     if (sub_del_cache_.count(chunk_id) > 0)
       continue;
 
+    // NOTE: Legacy format duplicated |hash.prefix| in column 2.
     const int32 add_chunk_id = statement->column_int(1);
     const SBPrefix add_prefix = statement->column_int(2);
     const SBFullHash full_hash = ReadFullHash(&statement, 3);
-    sub_hashes->push_back(
-        SBSubFullHash(chunk_id, add_chunk_id, add_prefix, full_hash));
+    DCHECK_EQ(add_prefix, full_hash.prefix);
+    sub_hashes->push_back(SBSubFullHash(chunk_id, add_chunk_id, full_hash));
   }
   if (rv == SQLITE_CORRUPT)
     return OnCorruptDatabase();
@@ -540,9 +544,10 @@ bool SafeBrowsingStoreSqlite::WriteSubHashes(
 
   for (std::vector<SBSubFullHash>::const_iterator iter = sub_hashes.begin();
        iter != sub_hashes.end(); ++iter) {
+    // NOTE: Legacy format duplicated |hash.prefix| in column 2.
     statement->bind_int(0, iter->chunk_id);
-    statement->bind_int(1, iter->add_prefix.chunk_id);
-    statement->bind_int(2, iter->add_prefix.prefix);
+    statement->bind_int(1, iter->add_chunk_id);
+    statement->bind_int(2, iter->full_hash.prefix);
     statement->bind_blob(3, iter->full_hash.full_hash,
                          sizeof(iter->full_hash.full_hash));
     int rv = statement->step();
@@ -621,7 +626,7 @@ bool SafeBrowsingStoreSqlite::DoUpdate(
   // Add the pending adds which haven't since been deleted.
   for (std::vector<SBAddFullHash>::const_iterator iter = pending_adds.begin();
        iter != pending_adds.end(); ++iter) {
-    if (add_del_cache_.count(iter->add_prefix.chunk_id) == 0)
+    if (add_del_cache_.count(iter->chunk_id) == 0)
       add_full_hashes.push_back(*iter);
   }
 

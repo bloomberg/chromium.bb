@@ -204,8 +204,8 @@ bool SafeBrowsingStoreFile::WriteSubPrefixes(
   for (std::vector<SBSubPrefix>::const_iterator iter = sub_prefixes.begin();
        iter != sub_prefixes.end(); ++iter) {
     if (!WriteInt32(new_file_.get(), iter->chunk_id) ||
-        !WriteInt32(new_file_.get(), iter->add_prefix.chunk_id) ||
-        !WriteInt32(new_file_.get(), iter->add_prefix.prefix))
+        !WriteInt32(new_file_.get(), iter->add_chunk_id) ||
+        !WriteInt32(new_file_.get(), iter->add_prefix))
       return false;
   }
   return true;
@@ -219,13 +219,10 @@ bool SafeBrowsingStoreFile::ReadAddHashes(
 
   for (int i = 0; i < count; ++i) {
     int32 chunk_id;
-    SBPrefix prefix;
     int32 received;
     SBFullHash full_hash;
-    DCHECK_EQ(sizeof(int32), sizeof(prefix));
 
     if (!ReadInt32(fp, &chunk_id) ||
-        !ReadInt32(fp, &prefix) ||
         !ReadInt32(fp, &received) ||
         !ReadHash(fp, &full_hash))
       return false;
@@ -233,7 +230,7 @@ bool SafeBrowsingStoreFile::ReadAddHashes(
     if (add_del_cache_.count(chunk_id) > 0)
       continue;
 
-    add_hashes->push_back(SBAddFullHash(chunk_id, prefix, received, full_hash));
+    add_hashes->push_back(SBAddFullHash(chunk_id, received, full_hash));
   }
 
   return true;
@@ -245,8 +242,7 @@ bool SafeBrowsingStoreFile::WriteAddHashes(
 
   for (std::vector<SBAddFullHash>::const_iterator iter = add_hashes.begin();
        iter != add_hashes.end(); ++iter) {
-    if (!WriteInt32(new_file_.get(), iter->add_prefix.chunk_id) ||
-        !WriteInt32(new_file_.get(), iter->add_prefix.prefix) ||
+    if (!WriteInt32(new_file_.get(), iter->chunk_id) ||
         !WriteInt32(new_file_.get(), iter->received) ||
         !WriteHash(new_file_.get(), iter->full_hash))
       return false;
@@ -263,21 +259,17 @@ bool SafeBrowsingStoreFile::ReadSubHashes(
   for (int i = 0; i < count; ++i) {
     int32 chunk_id;
     int32 add_chunk_id;
-    SBPrefix add_prefix;
     SBFullHash add_full_hash;
-    DCHECK_EQ(sizeof(int32), sizeof(add_prefix));
 
     if (!ReadInt32(fp, &chunk_id) ||
         !ReadInt32(fp, &add_chunk_id) ||
-        !ReadInt32(fp, &add_prefix) ||
         !ReadHash(fp, &add_full_hash))
       return false;
 
     if (sub_del_cache_.count(chunk_id) > 0)
       continue;
 
-    sub_hashes->push_back(
-        SBSubFullHash(chunk_id, add_chunk_id, add_prefix, add_full_hash));
+    sub_hashes->push_back(SBSubFullHash(chunk_id, add_chunk_id, add_full_hash));
   }
 
   return true;
@@ -290,8 +282,7 @@ bool SafeBrowsingStoreFile::WriteSubHashes(
   for (std::vector<SBSubFullHash>::const_iterator iter = sub_hashes.begin();
        iter != sub_hashes.end(); ++iter) {
     if (!WriteInt32(new_file_.get(), iter->chunk_id) ||
-        !WriteInt32(new_file_.get(), iter->add_prefix.chunk_id) ||
-        !WriteInt32(new_file_.get(), iter->add_prefix.prefix) ||
+        !WriteInt32(new_file_.get(), iter->add_chunk_id) ||
         !WriteHash(new_file_.get(), iter->full_hash))
       return false;
   }
@@ -461,7 +452,7 @@ bool SafeBrowsingStoreFile::DoUpdate(
   // Add the pending adds which haven't since been deleted.
   for (std::vector<SBAddFullHash>::const_iterator iter = pending_adds.begin();
        iter != pending_adds.end(); ++iter) {
-    if (add_del_cache_.count(iter->add_prefix.chunk_id) == 0)
+    if (add_del_cache_.count(iter->chunk_id) == 0)
       add_full_hashes.push_back(*iter);
   }
 
