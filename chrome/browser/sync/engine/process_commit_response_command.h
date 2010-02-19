@@ -26,7 +26,7 @@ class ProcessCommitResponseCommand : public ModelChangingSyncerCommand {
   virtual ~ProcessCommitResponseCommand();
 
   // ModelChangingSyncerCommand implementation.
-  virtual void ModelNeutralExecuteImpl(sessions::SyncSession* session);
+  virtual bool ModelNeutralExecuteImpl(sessions::SyncSession* session);
   virtual void ModelChangingExecuteImpl(sessions::SyncSession* session);
 
  private:

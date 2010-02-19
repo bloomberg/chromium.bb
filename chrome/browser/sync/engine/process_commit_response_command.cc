@@ -55,13 +55,13 @@ void ResetErrorCounters(StatusController* status) {
 ProcessCommitResponseCommand::ProcessCommitResponseCommand() {}
 ProcessCommitResponseCommand::~ProcessCommitResponseCommand() {}
 
-void ProcessCommitResponseCommand::ModelNeutralExecuteImpl(
+bool ProcessCommitResponseCommand::ModelNeutralExecuteImpl(
     sessions::SyncSession* session) {
   ScopedDirLookup dir(session->context()->directory_manager(),
                       session->context()->account_name());
   if (!dir.good()) {
     LOG(ERROR) << "Scoped dir lookup failed!";
-    return;
+    return false;
   }
 
   StatusController* status = session->status_controller();
@@ -72,7 +72,7 @@ void ProcessCommitResponseCommand::ModelNeutralExecuteImpl(
     // TODO(sync): What if we didn't try to commit anything?
     LOG(WARNING) << "Commit response has no commit body!";
     IncrementErrorCounters(status);
-    return;
+    return false;
   }
 
   const CommitResponse& cr = response.commit();
@@ -87,8 +87,9 @@ void ProcessCommitResponseCommand::ModelNeutralExecuteImpl(
         LOG(ERROR) << "  " << cr.entryresponse(i).error_message();
     }
     IncrementErrorCounters(status);
-    return;
+    return false;
   }
+  return true;
 }
 
 void ProcessCommitResponseCommand::ModelChangingExecuteImpl(

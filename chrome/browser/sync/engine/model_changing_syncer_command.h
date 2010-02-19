@@ -39,7 +39,10 @@ class ModelChangingSyncerCommand : public SyncerCommand {
   // belonging to multiple ModelSafeGroups, but in a way that is known to be
   // safe.  This will be called once, prior to ModelChangingExecuteImpl,
   // *without* a ModelSafeGroup restriction in place on the SyncSession.
-  virtual void ModelNeutralExecuteImpl(sessions::SyncSession* session) {}
+  // Returns true on success, false on failure.
+  virtual bool ModelNeutralExecuteImpl(sessions::SyncSession* session) {
+    return true;
+  }
 
   // Abstract method to be implemented by subclasses to handle logic that
   // operates on the model.  This is invoked with a SyncSession ModelSafeGroup
