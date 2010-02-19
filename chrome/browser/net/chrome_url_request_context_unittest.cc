@@ -59,7 +59,6 @@ TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
     GURL pac_url;
     net::ProxyConfig::ProxyRules proxy_rules;
     const char* proxy_bypass_list;  // newline separated
-    bool bypass_local_names;
   } tests[] = {
     {
       TEST_DESC("Empty command line"),
@@ -71,7 +70,6 @@ TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
       GURL(),                                             // pac_url
       net::ProxyConfig::ProxyRules(),                     // proxy_rules
       "",                                                 // proxy_bypass_list
-      false                                               // bypass_local_names
     },
     {
       TEST_DESC("No proxy"),
@@ -83,7 +81,6 @@ TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
       GURL(),                                             // pac_url
       net::ProxyConfig::ProxyRules(),                     // proxy_rules
       "",                                                 // proxy_bypass_list
-      false                                               // bypass_local_names
     },
     {
       TEST_DESC("No proxy with extra parameters."),
@@ -95,7 +92,6 @@ TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
       GURL(),                                             // pac_url
       net::ProxyConfig::ProxyRules(),                     // proxy_rules
       "",                                                 // proxy_bypass_list
-      false                                               // bypass_local_names
     },
     {
       TEST_DESC("Single proxy."),
@@ -107,7 +103,6 @@ TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
       GURL(),                                             // pac_url
       net::MakeSingleProxyRules("http://proxy:8888"),     // proxy_rules
       "",                                                 // proxy_bypass_list
-      false                                               // bypass_local_names
     },
     {
       TEST_DESC("Per scheme proxy."),
@@ -121,7 +116,6 @@ TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
                                    "",
                                    "ftpproxy:8889"),      // proxy_rules
       "",                                                 // proxy_bypass_list
-      false                                               // bypass_local_names
     },
     {
       TEST_DESC("Per scheme proxy with bypass URLs."),
@@ -134,8 +128,8 @@ TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
       net::MakeProxyPerSchemeRules("httpproxy:8888",
                                    "",
                                    "ftpproxy:8889"),      // proxy_rules
-      "*.google.com\n*foo.com:99\n1.2.3.4:22\n127.0.0.1/8\n",
-      false                                               // bypass_local_names
+      // TODO(eroman): 127.0.0.1/8 is unsupported, so it was dropped
+      "*.google.com\nfoo.com:99\n1.2.3.4:22\n",
     },
     {
       TEST_DESC("Pac URL with proxy bypass URLs"),
@@ -146,8 +140,8 @@ TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
       false,                                              // auto_detect
       GURL("http://wpad/wpad.dat"),                       // pac_url
       net::ProxyConfig::ProxyRules(),                     // proxy_rules
-      "*.google.com\n*foo.com:99\n1.2.3.4:22\n127.0.0.1/8\n",
-      false                                               // bypass_local_names
+      // TODO(eroman): 127.0.0.1/8 is unsupported, so it was dropped
+      "*.google.com\nfoo.com:99\n1.2.3.4:22\n",
     },
     {
       TEST_DESC("Autodetect"),
@@ -159,7 +153,6 @@ TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
       GURL(),                                             // pac_url
       net::ProxyConfig::ProxyRules(),                     // proxy_rules
       "",                                                 // proxy_bypass_list
-      false                                               // bypass_local_names
     }
   };
 
@@ -176,8 +169,7 @@ TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
       EXPECT_EQ(tests[i].auto_detect, config->auto_detect);
       EXPECT_EQ(tests[i].pac_url, config->pac_url);
       EXPECT_EQ(tests[i].proxy_bypass_list,
-                net::FlattenProxyBypass(config->proxy_bypass));
-      EXPECT_EQ(tests[i].bypass_local_names, config->proxy_bypass_local_names);
+                net::FlattenProxyBypass(config->bypass_rules));
       EXPECT_EQ(tests[i].proxy_rules, config->proxy_rules);
     }
   }

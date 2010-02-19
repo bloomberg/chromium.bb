@@ -537,7 +537,8 @@ const char kProxyAutoDetect[]               = "proxy-auto-detect";
 // Specify a list of hosts for whom we bypass proxy settings and use direct
 // connections. Ignored if --proxy-auto-detect or --no-proxy-server are
 // also specified.
-// TODO(robertshield): Specify host format.
+// This is a comma separated list of bypass rules. See:
+// "net/proxy/proxy_bypass_rules.h" for the format of these rules.
 const char kProxyBypassList[]               = "proxy-bypass-list";
 
 // Use the pac script at the given URL

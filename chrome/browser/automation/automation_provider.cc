@@ -1331,7 +1331,7 @@ class SetProxyConfigTask : public Task {
     }
     std::string proxy_bypass_list;
     if (dict.GetString(automation::kJSONProxyBypassList, &proxy_bypass_list)) {
-      pc->ParseNoProxyList(proxy_bypass_list);
+      pc->bypass_rules.ParseFromString(proxy_bypass_list);
     }
     std::string proxy_server;
     if (dict.GetString(automation::kJSONProxyServer, &proxy_server)) {

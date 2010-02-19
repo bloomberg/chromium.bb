@@ -948,7 +948,7 @@ net::ProxyConfig* CreateProxyConfig(const CommandLine& command_line) {
   }
 
   if (command_line.HasSwitch(switches::kProxyBypassList)) {
-    proxy_config->ParseNoProxyList(
+    proxy_config->bypass_rules.ParseFromString(
         WideToASCII(command_line.GetSwitchValue(
             switches::kProxyBypassList)));
   }
