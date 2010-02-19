@@ -911,6 +911,10 @@
         // 'isKindofClass' check is necessary.
         [targetController locationBarBridge]->Revert();
       }
+      NSUInteger modifierFlags = [[NSApp currentEvent] modifierFlags];
+      if (modifierFlags & NSShiftKeyMask) {
+        tag = IDC_RELOAD_IGNORING_CACHE;
+      }
       break;
   }
   DCHECK(targetController->browser_.get());
