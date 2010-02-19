@@ -163,6 +163,3 @@ PREFIX : std::basic_string<wchar_t,std::char_traits<wchar_t>,std::allocator<wcha
 # 35467
 SUBSTRING : webcore::scriptcontroller::processingusergesture___webcore::frameloader::requestframe___webcore::htmlframeelementbase::openurl___webcore::htmlframeelementbase::setlocation
 
-#36188
-SUBSTRING : webplugindelegateimpl::onthrottlemessage
-

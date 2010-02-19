@@ -60,7 +60,8 @@ const int kWindowedPluginPopupTimerMs = 50;
 // The current instance of the plugin which entered the modal loop.
 WebPluginDelegateImpl* g_current_plugin_instance = NULL;
 
-base::LazyInstance<std::list<MSG> > g_throttle_queue(base::LINKER_INITIALIZED);
+typedef std::deque<MSG> ThrottleQueue;
+base::LazyInstance<ThrottleQueue> g_throttle_queue(base::LINKER_INITIALIZED);
 
 // Helper object for patching the TrackPopupMenu API.
 base::LazyInstance<iat_patch::IATPatchFunction> g_iat_patch_track_popup_menu(
@@ -511,9 +512,9 @@ void WebPluginDelegateImpl::WindowedDestroyWindow() {
 // the queue.
 // static
 void WebPluginDelegateImpl::ClearThrottleQueueForWindow(HWND window) {
-  std::list<MSG>* throttle_queue = g_throttle_queue.Pointer();
+  ThrottleQueue* throttle_queue = g_throttle_queue.Pointer();
 
-  std::list<MSG>::iterator it;
+  ThrottleQueue::iterator it;
   for (it = throttle_queue->begin(); it != throttle_queue->end(); ) {
     if (it->hwnd == window) {
       it = throttle_queue->erase(it);
@@ -530,28 +531,35 @@ void WebPluginDelegateImpl::OnThrottleMessage() {
   // The current algorithm walks the list and processes the first
   // message it finds for each plugin.  It is important to service
   // all active plugins with each pass through the throttle, otherwise
-  // we see video jankiness.
-  std::list<MSG>* throttle_queue = g_throttle_queue.Pointer();
-  std::map<HWND, int> processed;
+  // we see video jankiness.  Copy the set to notify before notifying
+  // since we may re-enter OnThrottleMessage from CallWindowProc!
+  ThrottleQueue* throttle_queue = g_throttle_queue.Pointer();
+  ThrottleQueue notify_queue;
+  std::set<HWND> processed;
 
-  std::list<MSG>::iterator it = throttle_queue->begin();
+  ThrottleQueue::iterator it = throttle_queue->begin();
   while (it != throttle_queue->end()) {
     const MSG& msg = *it;
     if (processed.find(msg.hwnd) == processed.end()) {
-      WNDPROC proc = reinterpret_cast<WNDPROC>(msg.time);
-      // It is possible that the window was closed after we queued
-      // this message.  This is a rare event; just verify the window
-      // is alive.  (see also bug 1259488)
-      if (IsWindow(msg.hwnd))
-          CallWindowProc(proc, msg.hwnd, msg.message, msg.wParam, msg.lParam);
-      processed[msg.hwnd] = 1;
+      processed.insert(msg.hwnd);
+      notify_queue.push_back(msg);
       it = throttle_queue->erase(it);
     } else {
       it++;
     }
   }
 
-  if (throttle_queue->size() > 0) {
+  for (it = notify_queue.begin(); it != notify_queue.end(); ++it) {
+    const MSG& msg = *it;
+    WNDPROC proc = reinterpret_cast<WNDPROC>(msg.time);
+    // It is possible that the window was closed after we queued
+    // this message.  This is a rare event; just verify the window
+    // is alive.  (see also bug 1259488)
+    if (IsWindow(msg.hwnd))
+      CallWindowProc(proc, msg.hwnd, msg.message, msg.wParam, msg.lParam);
+  }
+
+  if (!throttle_queue->empty()) {
     MessageLoop::current()->PostDelayedTask(FROM_HERE,
         NewRunnableFunction(&WebPluginDelegateImpl::OnThrottleMessage),
         kFlashWMUSERMessageThrottleDelayMs);
@@ -570,7 +578,7 @@ void WebPluginDelegateImpl::ThrottleMessage(WNDPROC proc, HWND hwnd,
   msg.wParam = wParam;
   msg.lParam = lParam;
 
-  std::list<MSG>* throttle_queue = g_throttle_queue.Pointer();
+  ThrottleQueue* throttle_queue = g_throttle_queue.Pointer();
 
   throttle_queue->push_back(msg);
 
