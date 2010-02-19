@@ -602,6 +602,10 @@ const char kSearchInOmniboxHint[]           = "search-in-omnibox-hint";
 // See kHideIcons.
 const char kShowIcons[]                     = "show-icons";
 
+// Renders a border around composited Render Layers to help debug and study
+// layer compositing.
+const char kShowCompositedLayerBorders[]    = "show-composited-layer-borders";
+
 // Visibly render a border around paint rects in the web page to help debug
 // and study painting behavior.
 const char kShowPaintRects[]                = "show-paint-rects";

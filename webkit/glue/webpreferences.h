@@ -56,13 +56,11 @@ struct WebPreferences {
   // load the style sheet using a request without a frame.
   bool user_style_sheet_enabled;
   GURL user_style_sheet_location;
-
   bool allow_universal_access_from_file_urls;
   bool allow_file_access_from_file_urls;
-
   bool experimental_webgl_enabled;
-
   bool geolocation_enabled;
+  bool show_composited_layer_borders;
 
   // We try to keep the default values the same as the default values in
   // chrome, except for the cases where it would require lots of extra work for
@@ -103,7 +101,8 @@ struct WebPreferences {
         allow_universal_access_from_file_urls(false),
         allow_file_access_from_file_urls(false),
         experimental_webgl_enabled(false),
-        geolocation_enabled(false) {
+        geolocation_enabled(false),
+        show_composited_layer_borders(false) {
   }
 
   void Apply(WebKit::WebView* web_view) const;

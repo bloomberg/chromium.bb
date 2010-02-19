@@ -89,6 +89,10 @@ void WebPreferences::Apply(WebView* web_view) const {
   // compiled in.
   settings->setGeolocationEnabled(geolocation_enabled);
 
+  // Display colored borders around composited render layers if requested
+  // on command line.
+  settings->setShowDebugBorders(show_composited_layer_borders);
+
   // Web inspector settings need to be passed in differently.
   web_view->setInspectorSettings(WebString::fromUTF8(inspector_settings));
 

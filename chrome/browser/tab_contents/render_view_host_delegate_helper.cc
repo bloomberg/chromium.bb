@@ -190,6 +190,8 @@ WebPreferences RenderViewHostDelegateHelper::GetWebkitPrefs(
       command_line.HasSwitch(switches::kEnableGeolocation);
     web_prefs.allow_file_access_from_file_urls =
       command_line.HasSwitch(switches::kAllowFileAccessFromFiles);
+    web_prefs.show_composited_layer_borders =
+      command_line.HasSwitch(switches::kShowCompositedLayerBorders);
   }
 
   web_prefs.uses_universal_detector =
