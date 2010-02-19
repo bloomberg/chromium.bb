@@ -10,6 +10,7 @@
 #include "app/gfx/font.h"
 #include "app/gfx/text_elider.h"
 #include "app/gtk_dnd_util.h"
+#include "app/menus/simple_menu_model.h"
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
 #include "base/basictypes.h"
@@ -77,6 +78,7 @@ static const double kDownloadItemLuminanceMod = 0.8;
 // DownloadShelfContextMenuGtk -------------------------------------------------
 
 class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
+                                    public menus::SimpleMenuModel::Delegate,
                                     public MenuGtk::Delegate {
  public:
   // The constructor creates the menu and immediately pops it up.
@@ -87,7 +89,6 @@ class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
                               DownloadItemGtk* download_item)
       : DownloadShelfContextMenu(model),
         download_item_(download_item),
-        menu_is_for_complete_download_(false),
         method_factory_(this) {
   }
 
@@ -97,29 +98,41 @@ class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
   void Popup(GtkWidget* widget, GdkEvent* event) {
     // Create the menu if we have not created it yet or we created it for
     // an in-progress download that has since completed.
-    bool download_is_complete = download_->state() == DownloadItem::COMPLETE;
-    if (menu_.get() == NULL ||
-        (download_is_complete && !menu_is_for_complete_download_)) {
-      menu_.reset(new MenuGtk(this, download_is_complete ?
-          finished_download_menu : in_progress_download_menu));
-      menu_is_for_complete_download_ = download_is_complete;
-    }
+    if (download_->state() == DownloadItem::COMPLETE)
+      menu_.reset(new MenuGtk(this, GetFinishedMenuModel(this)));
+    else
+      menu_.reset(new MenuGtk(this, GetInProgressMenuModel(this)));
     menu_->Popup(widget, event);
   }
 
-  // MenuGtk::Delegate implementation ------------------------------------------
-  virtual bool IsCommandEnabled(int id) const {
-    return IsItemCommandEnabled(id);
+  // menus::SimpleMenuModel::Delegate implementation:
+  virtual bool IsCommandIdEnabled(int command_id) const {
+    return IsItemCommandEnabled(command_id);
   }
 
-  virtual bool IsItemChecked(int id) const {
-    return ItemIsChecked(id);
+  virtual bool IsCommandIdChecked(int command_id) const {
+    return ItemIsChecked(command_id);
   }
 
-  virtual void ExecuteCommandById(int id) {
-    ExecuteItemCommand(id);
+  virtual void ExecuteCommand(int command_id) {
+    ExecuteItemCommand(command_id);
   }
 
+  virtual bool GetAcceleratorForCommandId(int command_id,
+                                          menus::Accelerator* accelerator) {
+    return false;
+  }
+
+  bool IsLabelForCommandIdDynamic(int command_id) const {
+    return command_id == TOGGLE_PAUSE;
+  }
+
+  string16 GetLabelForCommandId(int command_id) const {
+    DCHECK(command_id == TOGGLE_PAUSE);
+    return WideToUTF16(GetItemLabel(command_id));
+  }
+
+  // MenuGtk::Delegate implementation:
   virtual void StoppedShowing() {
     download_item_->menu_showing_ = false;
     gtk_widget_queue_draw(download_item_->menu_button_);
@@ -136,40 +149,7 @@ class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
   // The download item that created us.
   DownloadItemGtk* download_item_;
 
-  // If true, the MenuGtk in |menu_| refers to a finished download menu.
-  bool menu_is_for_complete_download_;
-
-  // We show slightly different menus if the download is in progress vs. if the
-  // download has finished.
-  static MenuCreateMaterial in_progress_download_menu[];
-
-  static MenuCreateMaterial finished_download_menu[];
-
   ScopedRunnableMethodFactory<DownloadShelfContextMenuGtk> method_factory_;
-};
-
-MenuCreateMaterial DownloadShelfContextMenuGtk::finished_download_menu[] = {
-  { MENU_NORMAL, OPEN_WHEN_COMPLETE, IDS_DOWNLOAD_MENU_OPEN, 0, NULL },
-  { MENU_CHECKBOX, ALWAYS_OPEN_TYPE, IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE,
-    0, NULL},
-  { MENU_SEPARATOR, 0, 0, 0, NULL },
-  { MENU_NORMAL, SHOW_IN_FOLDER, IDS_DOWNLOAD_MENU_SHOW, 0, NULL},
-  { MENU_SEPARATOR, 0, 0, 0, NULL },
-  { MENU_NORMAL, CANCEL, IDS_DOWNLOAD_MENU_CANCEL, 0, NULL},
-  { MENU_END, 0, 0, 0, NULL },
-};
-
-MenuCreateMaterial DownloadShelfContextMenuGtk::in_progress_download_menu[] = {
-  { MENU_CHECKBOX, OPEN_WHEN_COMPLETE, IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE,
-    0, NULL },
-  { MENU_CHECKBOX, ALWAYS_OPEN_TYPE, IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE,
-    0, NULL},
-  { MENU_SEPARATOR, 0, 0, 0, NULL },
-  { MENU_CHECKBOX, TOGGLE_PAUSE, IDS_DOWNLOAD_MENU_PAUSE_ITEM, 0, NULL},
-  { MENU_NORMAL, SHOW_IN_FOLDER, IDS_DOWNLOAD_MENU_SHOW, 0, NULL},
-  { MENU_SEPARATOR, 0, 0, 0, NULL },
-  { MENU_NORMAL, CANCEL, IDS_DOWNLOAD_MENU_CANCEL, 0, NULL},
-  { MENU_END, 0, 0, 0, NULL },
 };
 
 // DownloadItemGtk -------------------------------------------------------------

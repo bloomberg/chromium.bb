@@ -113,3 +113,47 @@ void DownloadShelfContextMenu::ExecuteItemCommand(int id) {
       NOTREACHED();
   }
 }
+
+menus::SimpleMenuModel* DownloadShelfContextMenu::GetInProgressMenuModel(
+    menus::SimpleMenuModel::Delegate* delegate) {
+  if (in_progress_download_menu_model_.get())
+    return in_progress_download_menu_model_.get();
+
+  in_progress_download_menu_model_.reset(new menus::SimpleMenuModel(delegate));
+
+  in_progress_download_menu_model_->AddCheckItemWithStringId(
+      OPEN_WHEN_COMPLETE, IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE);
+  in_progress_download_menu_model_->AddCheckItemWithStringId(
+      ALWAYS_OPEN_TYPE, IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE);
+  in_progress_download_menu_model_->AddSeparator();
+  in_progress_download_menu_model_->AddCheckItemWithStringId(
+      TOGGLE_PAUSE, IDS_DOWNLOAD_MENU_PAUSE_ITEM);
+  in_progress_download_menu_model_->AddItemWithStringId(
+      SHOW_IN_FOLDER, IDS_DOWNLOAD_MENU_SHOW);
+  in_progress_download_menu_model_->AddSeparator();
+  in_progress_download_menu_model_->AddItemWithStringId(
+      CANCEL, IDS_DOWNLOAD_MENU_CANCEL);
+
+  return in_progress_download_menu_model_.get();
+}
+
+menus::SimpleMenuModel* DownloadShelfContextMenu::GetFinishedMenuModel(
+    menus::SimpleMenuModel::Delegate* delegate) {
+  if (finished_download_menu_model_.get())
+    return finished_download_menu_model_.get();
+
+  finished_download_menu_model_.reset(new menus::SimpleMenuModel(delegate));
+
+  finished_download_menu_model_->AddItemWithStringId(
+      OPEN_WHEN_COMPLETE, IDS_DOWNLOAD_MENU_OPEN);
+  finished_download_menu_model_->AddCheckItemWithStringId(
+      ALWAYS_OPEN_TYPE, IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE);
+  finished_download_menu_model_->AddSeparator();
+  finished_download_menu_model_->AddItemWithStringId(
+      SHOW_IN_FOLDER, IDS_DOWNLOAD_MENU_SHOW);
+  finished_download_menu_model_->AddSeparator();
+  finished_download_menu_model_->AddItemWithStringId(
+      CANCEL, IDS_DOWNLOAD_MENU_CANCEL);
+
+  return finished_download_menu_model_.get();
+}

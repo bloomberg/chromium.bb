@@ -24,7 +24,7 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/native_button.h"
-#include "views/controls/menu/menu.h"
+#include "views/controls/menu/menu_2.h"
 #include "views/widget/root_view.h"
 #include "views/widget/widget.h"
 
@@ -60,7 +60,6 @@ static const int kButtonPadding = 5;  // Pixels.
 static const int kLabelPadding = 4;  // Pixels.
 
 static const SkColor kFileNameDisabledColor = SkColorSetRGB(171, 192, 212);
-static const SkColor kStatusColor = SkColorSetRGB(123, 141, 174);
 
 // How long the 'download complete' animation should last for.
 static const int kCompleteAnimationDurationMs = 2500;
@@ -77,38 +76,26 @@ static const double kDownloadItemLuminanceMod = 0.8;
 // DownloadShelfContextMenuWin -------------------------------------------------
 
 class DownloadShelfContextMenuWin : public DownloadShelfContextMenu,
-                                    public views::Menu::Delegate {
+                                    public menus::SimpleMenuModel::Delegate {
  public:
   explicit DownloadShelfContextMenuWin(BaseDownloadItemModel* model)
       : DownloadShelfContextMenu(model) {
     DCHECK(model);
   }
 
-  void Run(gfx::NativeView window, const gfx::Point& point) {
-    // The menu's anchor point is determined based on the UI layout.
-    views::Menu::AnchorPoint anchor_point;
-    if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
-      anchor_point = views::Menu::TOPRIGHT;
+  void Run(const gfx::Point& point) {
+    if (download_->state() == DownloadItem::COMPLETE)
+      menu_.reset(new views::Menu2(GetFinishedMenuModel(this)));
     else
-      anchor_point = views::Menu::TOPLEFT;
+      menu_.reset(new views::Menu2(GetInProgressMenuModel(this)));
 
-    scoped_ptr<views::Menu> context_menu(
-        views::Menu::Create(this, anchor_point, window));
-    if (download_->state() == DownloadItem::COMPLETE) {
-      context_menu->AppendMenuItem(OPEN_WHEN_COMPLETE, L"",
-                                   views::Menu::NORMAL);
-    } else {
-      context_menu->AppendMenuItem(OPEN_WHEN_COMPLETE, L"",
-                                   views::Menu::CHECKBOX);
-    }
-    context_menu->AppendMenuItem(ALWAYS_OPEN_TYPE, L"", views::Menu::CHECKBOX);
-    context_menu->AppendSeparator();
-    if (download_->state() == DownloadItem::IN_PROGRESS)
-      context_menu->AppendMenuItem(TOGGLE_PAUSE, L"", views::Menu::NORMAL);
-    context_menu->AppendMenuItem(SHOW_IN_FOLDER, L"", views::Menu::NORMAL);
-    context_menu->AppendSeparator();
-    context_menu->AppendMenuItem(CANCEL, L"", views::Menu::NORMAL);
-    context_menu->RunMenuAt(point.x(), point.y());
+    // The menu's alignment is determined based on the UI layout.
+    views::Menu2::Alignment alignment;
+    if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
+      alignment = views::Menu2::ALIGN_TOPRIGHT;
+    else
+      alignment = views::Menu2::ALIGN_TOPLEFT;
+    menu_->RunMenuAt(point, alignment);
   }
 
   // This method runs when the caller has been deleted and we should not attempt
@@ -118,42 +105,42 @@ class DownloadShelfContextMenuWin : public DownloadShelfContextMenu,
     model_ = NULL;
   }
 
-  // Menu::Delegate implementation ---------------------------------------------
+  // Overriden from menus::SimpleMenuModel::Delegate:
 
-  virtual bool IsItemChecked(int id) const {
+  virtual bool IsCommandIdChecked(int command_id) const {
     if (!download_)
       return false;
-    return ItemIsChecked(id);
+    return ItemIsChecked(command_id);
   }
 
-  virtual bool IsItemDefault(int id) const {
+  virtual bool IsCommandIdEnabled(int command_id) const {
     if (!download_)
       return false;
-    return ItemIsDefault(id);
+    return IsItemCommandEnabled(command_id);
   }
 
-  virtual std::wstring GetLabel(int id) const {
-    if (!download_)
-      return std::wstring();
-    return GetItemLabel(id);
+  virtual bool GetAcceleratorForCommandId(
+      int command_id,
+      menus::Accelerator* accelerator) {
+    return false;
   }
 
-  virtual bool SupportsCommand(int id) const {
-    if (!download_)
-      return false;
-    return id > 0 && id < MENU_LAST;
+  bool IsLabelForCommandIdDynamic(int command_id) const {
+    return command_id == TOGGLE_PAUSE;
   }
 
-  virtual bool IsCommandEnabled(int id) const {
-    if (!download_)
-      return false;
-    return IsItemCommandEnabled(id);
+  string16 GetLabelForCommandId(int command_id) const {
+    DCHECK(command_id == TOGGLE_PAUSE);
+    return WideToUTF16(GetItemLabel(command_id));
   }
 
-  virtual void ExecuteCommand(int id) {
+  virtual void ExecuteCommand(int command_id) {
     if (download_)
-      ExecuteItemCommand(id);
+      ExecuteItemCommand(command_id);
   }
+
+ private:
+  scoped_ptr<views::Menu2> menu_;
 };
 
 // DownloadItemView ------------------------------------------------------------
@@ -179,8 +166,7 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
     dangerous_download_label_sized_(false),
     disabled_while_opening_(false),
     creation_time_(base::Time::Now()),
-    ALLOW_THIS_IN_INITIALIZER_LIST(reenable_method_factory_(this)),
-    active_menu_(NULL) {
+    ALLOW_THIS_IN_INITIALIZER_LIST(reenable_method_factory_(this)) {
   DCHECK(download_);
   download_->AddObserver(this);
 
@@ -352,9 +338,8 @@ DownloadItemView::DownloadItemView(DownloadItem* download,
 }
 
 DownloadItemView::~DownloadItemView() {
-  if (active_menu_) {
-    active_menu_->Stop();
-    active_menu_ = NULL;
+  if (context_menu_.get()) {
+    context_menu_->Stop();
   }
   icon_consumer_.CancelAllRequests();
   StopDownloadProgress();
@@ -864,18 +849,14 @@ bool DownloadItemView::OnMousePressed(const views::MouseEvent& event) {
       point.set_x(drop_down_x_left_);
 
     views::View::ConvertPointToScreen(this, &point);
-    DownloadShelfContextMenuWin menu(model_.get());
 
-    // Protect against deletion while the menu is running. This can happen if
-    // the menu is showing when an auto-opened download completes and the user
-    // chooses a menu entry.
-    active_menu_ = &menu;
-    menu.Run(GetWidget()->GetNativeView(), point);
+    if (!context_menu_.get())
+      context_menu_.reset(new DownloadShelfContextMenuWin(model_.get()));
+    context_menu_->Run(point);
 
     // If the menu action was to remove the download, this view will also be
     // invalid so we must not access 'this' in this case.
-    if (menu.download()) {
-      active_menu_ = NULL;
+    if (context_menu_->download()) {
       drop_down_pressed_ = false;
       // Showing the menu blocks. Here we revert the state.
       SetState(NORMAL, NORMAL);

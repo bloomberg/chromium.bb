@@ -247,7 +247,7 @@ class DownloadItemView : public views::ButtonListener,
   ScopedRunnableMethodFactory<DownloadItemView> reenable_method_factory_;
 
   // The currently running download context menu.
-  DownloadShelfContextMenuWin* active_menu_;
+  scoped_ptr<DownloadShelfContextMenuWin> context_menu_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadItemView);
 };
