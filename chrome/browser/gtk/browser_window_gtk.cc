@@ -1830,10 +1830,18 @@ gboolean BrowserWindowGtk::OnButtonPressEvent(GtkWidget* widget,
         if (click_time > static_cast<guint32>(double_click_time) ||
             click_move_x > double_click_distance ||
             click_move_y > double_click_distance) {
-          gtk_window_begin_move_drag(window->window_, event->button,
-                                     static_cast<gint>(event->x_root),
-                                     static_cast<gint>(event->y_root),
-                                     event->time);
+          // Ignore drag requests if the window is the size of the screen.
+          // We do this to avoid triggering fullscreen mode in metacity
+          // (without the --no-force-fullscreen flag) and in compiz (with
+          // Legacy Fullscreen Mode enabled).
+          GdkScreen* screen = gtk_window_get_screen(window->window_);
+          if (window->bounds_.width() != gdk_screen_get_width(screen) ||
+              window->bounds_.height() != gdk_screen_get_height(screen)) {
+            gtk_window_begin_move_drag(window->window_, event->button,
+                                       static_cast<gint>(event->x_root),
+                                       static_cast<gint>(event->y_root),
+                                       event->time);
+          }
           return TRUE;
         }
       } else if (has_hit_edge) {
