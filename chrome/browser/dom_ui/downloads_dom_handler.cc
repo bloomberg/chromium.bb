@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/singleton.h"
 #include "base/string_piece.h"
 #include "base/thread.h"

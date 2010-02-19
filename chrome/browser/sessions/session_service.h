@@ -8,6 +8,7 @@
 #include <map>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/defaults.h"

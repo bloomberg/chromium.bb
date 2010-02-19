@@ -11,6 +11,7 @@
 
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/keyboard_codes.h"
 #include "base/logging.h"

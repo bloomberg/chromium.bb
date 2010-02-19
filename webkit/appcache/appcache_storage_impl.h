@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/file_path.h"
+#include "base/task.h"
 #include "net/disk_cache/disk_cache.h"
 #include "webkit/appcache/appcache_database.h"
 #include "webkit/appcache/appcache_storage.h"

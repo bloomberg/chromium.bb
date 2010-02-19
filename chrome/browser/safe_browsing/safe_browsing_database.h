@@ -10,9 +10,10 @@
 #include <set>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/scoped_ptr.h"
-#include "base/task.h"
+#include "base/time.h"
 #include "chrome/browser/safe_browsing/safe_browsing_util.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 

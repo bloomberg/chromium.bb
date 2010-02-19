@@ -5,6 +5,8 @@
 #ifndef NET_BASE_COOKIE_POLICY_H_
 #define NET_BASE_COOKIE_POLICY_H_
 
+#include <string>
+
 #include "net/base/completion_callback.h"
 
 class GURL;

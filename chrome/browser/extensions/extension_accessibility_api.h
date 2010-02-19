@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/singleton.h"
 #include "chrome/browser/extensions/extension_function.h"
 #include "chrome/common/accessibility_events.h"

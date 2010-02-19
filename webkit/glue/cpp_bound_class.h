@@ -23,8 +23,8 @@
 
 #include "webkit/glue/cpp_variant.h"
 
+#include "base/callback.h"
 #include "base/scoped_ptr.h"
-#include "base/task.h"
 
 namespace WebKit {
 class WebFrame;

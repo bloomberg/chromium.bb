@@ -4,6 +4,7 @@
 
 #include "webkit/glue/webmediaplayer_impl.h"
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "media/base/media_format.h"
 #include "media/base/media_switches.h"

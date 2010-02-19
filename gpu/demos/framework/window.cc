@@ -4,6 +4,7 @@
 
 #include "gpu/demos/framework/window.h"
 
+#include "base/callback.h"
 #include "gpu/command_buffer/client/gles2_implementation.h"
 #include "gpu/command_buffer/client/gles2_lib.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"

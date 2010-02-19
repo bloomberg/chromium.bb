@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/ref_counted_memory.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/cancelable_request.h"

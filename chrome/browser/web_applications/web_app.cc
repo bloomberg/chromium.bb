@@ -8,6 +8,7 @@
 #include <ShellAPI.h>
 #endif  // defined(OS_WIN)
 
+#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/md5.h"
 #include "base/message_loop.h"

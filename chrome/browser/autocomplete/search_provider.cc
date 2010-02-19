@@ -5,6 +5,7 @@
 #include "chrome/browser/autocomplete/search_provider.h"
 
 #include "app/l10n_util.h"
+#include "base/callback.h"
 #include "base/i18n/icu_string_conversions.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"

@@ -4,6 +4,7 @@
 
 #include "chrome/browser/autocomplete/history_contents_provider.h"
 
+#include "base/callback.h"
 #include "base/histogram.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"

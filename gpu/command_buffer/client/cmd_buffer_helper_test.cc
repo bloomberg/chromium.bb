@@ -5,6 +5,7 @@
 // Tests for the Command Buffer Helper.
 
 #include "base/at_exit.h"
+#include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/scoped_nsautorelease_pool.h"
 #include "gpu/command_buffer/client/cmd_buffer_helper.h"

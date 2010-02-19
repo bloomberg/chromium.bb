@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 #include "chrome_frame/test/automation_client_mock.h"
 
+#include "base/callback.h"
 #include "net/base/net_errors.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
 

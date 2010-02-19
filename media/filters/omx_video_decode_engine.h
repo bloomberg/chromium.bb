@@ -9,6 +9,7 @@
 #include <list>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/lock.h"
 #include "base/task.h"
 #include "media/filters/video_decode_engine.h"

@@ -5,9 +5,9 @@
 #ifndef WEBKIT_APPCACHE_APPCACHE_HOST_H_
 #define WEBKIT_APPCACHE_APPCACHE_HOST_H_
 
+#include "base/callback.h"
 #include "base/observer_list.h"
 #include "base/ref_counted.h"
-#include "base/task.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 #include "webkit/appcache/appcache_group.h"

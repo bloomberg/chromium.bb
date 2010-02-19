@@ -5,6 +5,7 @@
 #include "chrome/browser/dom_ui/most_visited_handler.h"
 
 #include "app/l10n_util.h"
+#include "base/callback.h"
 #include "base/md5.h"
 #include "base/singleton.h"
 #include "base/string_util.h"

@@ -4,6 +4,7 @@
 
 #include "testing/gtest/include/gtest/gtest.h"
 
+#include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"

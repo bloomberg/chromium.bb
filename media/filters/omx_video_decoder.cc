@@ -4,6 +4,7 @@
 
 #include "media/filters/omx_video_decoder.h"
 
+#include "base/callback.h"
 #include "base/waitable_event.h"
 #include "media/ffmpeg/ffmpeg_common.h"
 #include "media/filters/omx_video_decode_engine.h"

@@ -15,6 +15,7 @@
 #include "app/gfx/codec/png_codec.h"
 #include "app/gfx/icon_util.h"
 #include "app/l10n_util.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/path_service.h"

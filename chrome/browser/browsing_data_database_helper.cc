@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browsing_data_database_helper.h"
 
+#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "chrome/browser/chrome_thread.h"

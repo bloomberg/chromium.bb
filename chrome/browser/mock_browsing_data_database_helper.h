@@ -7,6 +7,8 @@
 
 #include <map>
 
+#include "base/callback.h"
+
 #include "chrome/browser/browsing_data_database_helper.h"
 
 // Mock for BrowsingDataDatabaseHelper.

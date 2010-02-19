@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 //
 // An abstract class to define the behavior of an output buffer sink for
 // media::OmxCodec. It is responsible for negotiation of buffer allocation
@@ -82,7 +82,7 @@
 
 #include <vector>
 
-#include "base/task.h"
+#include "base/callback.h"
 #include "third_party/openmax/il/OMX_Core.h"
 
 // TODO(hclam): This is just to get the build going. Remove this when we

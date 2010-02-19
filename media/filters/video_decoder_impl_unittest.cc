@@ -4,6 +4,7 @@
 
 #include <deque>
 
+#include "base/callback.h"
 #include "base/singleton.h"
 #include "base/string_util.h"
 #include "media/base/data_buffer.h"

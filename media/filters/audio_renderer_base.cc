@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/callback.h"
 #include "media/base/filter_host.h"
 #include "media/filters/audio_renderer_algorithm_ola.h"
 

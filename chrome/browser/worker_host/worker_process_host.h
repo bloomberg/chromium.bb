@@ -8,7 +8,7 @@
 #include <list>
 
 #include "base/basictypes.h"
-#include "base/task.h"
+#include "base/callback.h"
 #include "chrome/browser/worker_host/worker_document_set.h"
 #include "chrome/common/child_process_host.h"
 #include "googleurl/src/gurl.h"

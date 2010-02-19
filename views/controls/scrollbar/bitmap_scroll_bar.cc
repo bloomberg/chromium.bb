@@ -10,6 +10,7 @@
 
 #include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/keyboard_codes.h"
 #include "base/message_loop.h"

@@ -10,6 +10,7 @@
 #ifndef CHROME_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_NOTIFICATION_TASK_H_
 #define CHROME_BROWSER_RENDERER_HOST_RENDER_VIEW_HOST_NOTIFICATION_TASK_H_
 
+#include "base/callback.h"
 #include "base/task.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/render_view_host.h"

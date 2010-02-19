@@ -4,6 +4,9 @@
 
 #include "chrome/browser/mock_browsing_data_local_storage_helper.h"
 
+#include "base/callback.h"
+#include "base/logging.h"
+
 MockBrowsingDataLocalStorageHelper::MockBrowsingDataLocalStorageHelper(
   Profile* profile)
   : BrowsingDataLocalStorageHelper(profile),

@@ -7,6 +7,7 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "chrome/browser/cancelable_request.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 

@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_SYNC_UTIL_CLOSURE_H_
 #define CHROME_BROWSER_SYNC_UTIL_CLOSURE_H_
 
-#include "base/task.h"
+#include "base/callback.h"
 
 typedef CallbackRunner<Tuple0> Closure;
 

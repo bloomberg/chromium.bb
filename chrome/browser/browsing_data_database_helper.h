@@ -8,8 +8,8 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/scoped_ptr.h"
-#include "base/task.h"
 #include "webkit/database/database_tracker.h"
 
 class Profile;

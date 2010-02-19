@@ -6,6 +6,7 @@
 #define CHROME_BROWSER_VIEWS_TABS_DRAGGED_TAB_VIEW_H_
 
 #include "app/slide_animation.h"
+#include "base/callback.h"
 #include "base/gfx/point.h"
 #include "base/gfx/size.h"
 #include "base/task.h"

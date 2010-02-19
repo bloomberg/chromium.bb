@@ -12,6 +12,7 @@
 
 #include "base/at_exit.h"
 
+#include "base/callback.h"
 #include "base/scoped_ptr.h"
 #include "build/build_config.h"
 #include "chrome/browser/sync/engine/conflict_resolver.h"

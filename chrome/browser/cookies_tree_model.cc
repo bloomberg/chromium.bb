@@ -12,6 +12,7 @@
 #include "app/resource_bundle.h"
 #include "app/table_model_observer.h"
 #include "app/tree_node_model.h"
+#include "base/callback.h"
 #include "base/linked_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"

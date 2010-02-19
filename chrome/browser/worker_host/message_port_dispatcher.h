@@ -10,6 +10,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/singleton.h"
 #include "base/string16.h"
 #include "base/task.h"

@@ -5,6 +5,7 @@
 #include "chrome/browser/gtk/options/general_page_gtk.h"
 
 #include "app/l10n_util.h"
+#include "base/callback.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/gtk/keyword_editor_view.h"

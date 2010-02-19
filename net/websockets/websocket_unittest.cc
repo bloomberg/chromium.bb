@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "base/task.h"
+#include "base/callback.h"
 #include "net/base/completion_callback.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mock_host_resolver.h"

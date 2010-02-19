@@ -4,6 +4,7 @@
 
 #include "chrome/common/appcache/appcache_dispatcher_host.h"
 
+#include "base/callback.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
 // TODO(eroman): uh oh, depending on stuff outside of common/
 #include "chrome/browser/net/chrome_url_request_context.h"

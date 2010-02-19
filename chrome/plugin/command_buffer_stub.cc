@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/callback.h"
 #include "base/process_util.h"
 #include "base/shared_memory.h"
 #include "chrome/common/command_buffer_messages.h"

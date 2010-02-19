@@ -6,6 +6,7 @@
 
 #include <limits>
 
+#include "base/callback.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"
 
 using ::base::SharedMemory;

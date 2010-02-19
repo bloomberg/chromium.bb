@@ -19,6 +19,7 @@
 
 #include "media/filters/omx_video_decode_engine.h"
 
+#include "base/callback.h"
 #include "base/message_loop.h"
 #include "media/base/callback.h"
 #include "media/ffmpeg/ffmpeg_common.h"

@@ -8,6 +8,7 @@
 #include <iterator>
 #include <map>
 
+#include "base/callback.h"
 #include "base/scoped_vector.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/browser_list.h"

@@ -5,8 +5,8 @@
 #ifndef CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_H_
 #define CHROME_BROWSER_WEB_APPLICATIONS_WEB_APP_H_
 
+#include "base/callback.h"
 #include "base/file_path.h"
-#include "base/task.h"
 #include "chrome/browser/shell_integration.h"
 #include "webkit/glue/dom_operations.h"
 

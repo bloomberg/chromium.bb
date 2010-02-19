@@ -5,6 +5,7 @@
 #include "chrome/browser/shell_dialogs.h"
 
 #include "app/l10n_util.h"
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/json/json_reader.h"
 #include "base/scoped_ptr.h"

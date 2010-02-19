@@ -90,6 +90,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/cancellation_flag.h"
 #include "base/lock.h"
 #include "base/logging.h"

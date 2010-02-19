@@ -4,6 +4,7 @@
 
 #include "chrome/browser/worker_host/message_port_dispatcher.h"
 
+#include "base/callback.h"
 #include "base/singleton.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/resource_message_filter.h"

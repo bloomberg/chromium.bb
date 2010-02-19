@@ -4,6 +4,7 @@
 
 #include "chrome/browser/dom_ui/html_dialog_ui.h"
 
+#include "base/callback.h"
 #include "base/singleton.h"
 #include "base/values.h"
 #include "chrome/browser/tab_contents/tab_contents.h"

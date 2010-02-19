@@ -10,6 +10,7 @@
 #include <string>
 #include <map>
 #include <build/build_config.h>  // NOLINT
+#include "base/callback.h"
 #include "base/linked_ptr.h"
 #include "base/scoped_ptr.h"
 #define GLES2_GPU_SERVICE 1

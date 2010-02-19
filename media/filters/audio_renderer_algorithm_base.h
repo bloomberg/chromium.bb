@@ -25,9 +25,9 @@
 
 #include <deque>
 
+#include "base/callback.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "base/task.h"
 #include "media/base/buffer_queue.h"
 
 namespace media {

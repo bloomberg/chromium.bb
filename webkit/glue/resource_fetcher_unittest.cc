@@ -4,6 +4,7 @@
 
 #include "webkit/glue/resource_fetcher.h"
 
+#include "base/callback.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURLResponse.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebView.h"

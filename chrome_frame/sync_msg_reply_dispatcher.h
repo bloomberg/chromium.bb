@@ -7,6 +7,7 @@
 
 #include <deque>
 
+#include "base/callback.h"
 #include "base/lock.h"
 #include "ipc/ipc_channel_proxy.h"
 

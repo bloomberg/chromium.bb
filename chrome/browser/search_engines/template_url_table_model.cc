@@ -8,6 +8,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/table_model_observer.h"
+#include "base/callback.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/favicon_service.h"
 #include "chrome/browser/profile.h"

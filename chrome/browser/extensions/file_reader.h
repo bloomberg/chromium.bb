@@ -7,8 +7,8 @@
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/ref_counted.h"
-#include "base/task.h"
 #include "chrome/common/extensions/extension_resource.h"
 
 class MessageLoop;

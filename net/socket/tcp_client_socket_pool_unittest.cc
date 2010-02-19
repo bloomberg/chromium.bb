@@ -4,6 +4,7 @@
 
 #include "net/socket/tcp_client_socket_pool.h"
 
+#include "base/callback.h"
 #include "base/compiler_specific.h"
 #include "base/message_loop.h"
 #include "net/base/mock_host_resolver.h"

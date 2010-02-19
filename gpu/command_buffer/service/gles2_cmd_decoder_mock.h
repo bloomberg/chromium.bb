@@ -8,6 +8,7 @@
 #define GPU_COMMAND_BUFFER_SERVICE_GLES2_CMD_DECODER_MOCK_H_
 
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
+#include "base/callback.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
 namespace gpu {

@@ -8,7 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/task.h"
+#include "base/callback.h"
 #include "chrome/browser/history/history.h"
 #include "chrome/common/gtk_tree.h"
 

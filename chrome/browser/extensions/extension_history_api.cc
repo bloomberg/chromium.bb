@@ -4,6 +4,7 @@
 
 #include "chrome/browser/extensions/extension_history_api.h"
 
+#include "base/callback.h"
 #include "base/json/json_writer.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"

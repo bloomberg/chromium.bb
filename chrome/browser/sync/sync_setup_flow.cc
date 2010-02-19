@@ -6,6 +6,7 @@
 
 #include "app/gfx/font.h"
 #include "app/gfx/font_util.h"
+#include "base/callback.h"
 #include "base/histogram.h"
 #include "base/json/json_reader.h"
 #include "base/json/json_writer.h"

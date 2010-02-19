@@ -5,6 +5,7 @@
 #include "chrome/browser/dom_ui/new_tab_page_sync_handler.h"
 
 #include "app/l10n_util.h"
+#include "base/callback.h"
 #include "base/string_util.h"
 #include "base/utf_string_conversions.h"
 #include "base/values.h"

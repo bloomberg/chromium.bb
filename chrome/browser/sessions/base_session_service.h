@@ -6,9 +6,9 @@
 #define CHROME_BROWSER_SESSIONS_BASE_SESSION_SERVICE_H_
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/ref_counted.h"
-#include "base/task.h"
 #include "chrome/browser/cancelable_request.h"
 #include "chrome/browser/sessions/session_id.h"
 

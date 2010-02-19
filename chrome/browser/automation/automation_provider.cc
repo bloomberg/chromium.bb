@@ -8,6 +8,7 @@
 
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
+#include "base/callback.h"
 #include "base/file_version_info.h"
 #include "base/json/json_reader.h"
 #include "base/keyboard_codes.h"

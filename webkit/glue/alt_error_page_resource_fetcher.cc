@@ -4,6 +4,7 @@
 
 #include "webkit/glue/alt_error_page_resource_fetcher.h"
 
+#include "base/callback.h"
 #include "webkit/glue/resource_fetcher.h"
 
 using WebKit::WebFrame;

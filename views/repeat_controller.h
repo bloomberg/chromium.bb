@@ -5,6 +5,7 @@
 #ifndef VIEWS_REPEAT_CONTROLLER_H_
 #define VIEWS_REPEAT_CONTROLLER_H_
 
+#include "base/callback.h"
 #include "base/scoped_ptr.h"
 #include "base/timer.h"
 

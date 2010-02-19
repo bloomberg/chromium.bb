@@ -6,6 +6,7 @@
 
 #include "app/gfx/codec/jpeg_codec.h"
 #include "app/resource_bundle.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/thumbnail_store.h"

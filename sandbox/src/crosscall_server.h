@@ -7,6 +7,7 @@
 
 #include <string>
 #include <vector>
+#include "base/callback.h"
 #include "sandbox/src/crosscall_params.h"
 
 // This is the IPC server interface for CrossCall: The  IPC for the Sandbox

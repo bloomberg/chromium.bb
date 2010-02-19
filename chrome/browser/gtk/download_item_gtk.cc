@@ -13,6 +13,7 @@
 #include "app/resource_bundle.h"
 #include "app/slide_animation.h"
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "chrome/browser/browser.h"

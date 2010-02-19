@@ -1,12 +1,13 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef MEDIA_BASE_MOCK_READER_H_
 #define MEDIA_BASE_MOCK_READER_H_
 
 #include <string>
 
+#include "base/callback.h"
 #include "base/ref_counted.h"
 #include "base/waitable_event.h"
 #include "media/base/filters.h"

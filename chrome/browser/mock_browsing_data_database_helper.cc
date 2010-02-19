@@ -4,6 +4,8 @@
 
 #include "chrome/browser/mock_browsing_data_database_helper.h"
 
+#include "base/callback.h"
+
 MockBrowsingDataDatabaseHelper::MockBrowsingDataDatabaseHelper(
     Profile* profile)
     : BrowsingDataDatabaseHelper(profile),

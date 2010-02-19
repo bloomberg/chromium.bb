@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/callback.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/tabs/dragged_tab_gtk.h"

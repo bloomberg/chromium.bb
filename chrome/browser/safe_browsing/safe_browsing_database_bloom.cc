@@ -5,6 +5,7 @@
 #include "chrome/browser/safe_browsing/safe_browsing_database_bloom.h"
 
 #include "base/auto_reset.h"
+#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/process_util.h"

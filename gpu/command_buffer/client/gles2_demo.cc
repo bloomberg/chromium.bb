@@ -13,6 +13,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include "base/at_exit.h"
+#include "base/callback.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "base/shared_memory.h"

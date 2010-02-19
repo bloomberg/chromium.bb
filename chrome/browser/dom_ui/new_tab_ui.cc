@@ -9,6 +9,7 @@
 #include <set>
 
 #include "app/l10n_util.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/histogram.h"
 #include "base/singleton.h"

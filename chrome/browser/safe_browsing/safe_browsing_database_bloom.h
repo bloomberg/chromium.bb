@@ -10,7 +10,9 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/lock.h"
+#include "base/task.h"
 #include "chrome/browser/safe_browsing/safe_browsing_database.h"
 
 namespace base {

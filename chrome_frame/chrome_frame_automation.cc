@@ -4,6 +4,7 @@
 
 #include "chrome_frame/chrome_frame_automation.h"
 
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/compiler_specific.h"
 #include "base/file_util.h"

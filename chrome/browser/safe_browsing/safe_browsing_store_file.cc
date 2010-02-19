@@ -4,6 +4,8 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_store_file.h"
 
+#include "base/callback.h"
+
 namespace {
 
 // NOTE(shess): kFileMagic should not be a byte-wise palindrome, so

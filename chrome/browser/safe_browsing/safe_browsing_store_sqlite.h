@@ -8,6 +8,7 @@
 #include <set>
 #include <vector>
 
+#include "base/callback.h"
 #include "chrome/browser/safe_browsing/safe_browsing_store.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 

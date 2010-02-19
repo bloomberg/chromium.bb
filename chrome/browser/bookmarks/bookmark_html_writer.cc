@@ -6,6 +6,7 @@
 
 #include "app/l10n_util.h"
 #include "base/base64.h"
+#include "base/callback.h"
 #include "base/file_path.h"
 #include "base/message_loop.h"
 #include "base/platform_file.h"

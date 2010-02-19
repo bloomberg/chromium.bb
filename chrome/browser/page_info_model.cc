@@ -5,6 +5,7 @@
 #include "chrome/browser/page_info_model.h"
 
 #include "app/l10n_util.h"
+#include "base/callback.h"
 #include "base/i18n/time_formatting.h"
 #include "chrome/browser/cert_store.h"
 #include "chrome/browser/profile.h"

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/callback.h"
 #include "base/ref_counted.h"
 #include "base/thread.h"
 #include "chrome/browser/sync/engine/syncapi.h"

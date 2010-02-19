@@ -6,6 +6,7 @@
 
 #include <deque>
 
+#include "base/callback.h"
 #include "base/message_loop.h"
 #include "media/base/mock_filters.h"
 #include "media/omx/mock_omx.h"

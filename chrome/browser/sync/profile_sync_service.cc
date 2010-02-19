@@ -5,6 +5,7 @@
 #include "chrome/browser/sync/profile_sync_service.h"
 
 #include "app/l10n_util.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_path.h"
 #include "base/file_util.h"

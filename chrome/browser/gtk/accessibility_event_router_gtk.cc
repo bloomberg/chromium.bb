@@ -5,6 +5,7 @@
 #include "chrome/browser/gtk/accessibility_event_router_gtk.h"
 
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/stl_util-inl.h"
 #include "chrome/browser/extensions/extension_accessibility_api.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"

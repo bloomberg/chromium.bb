@@ -11,6 +11,7 @@
 #include "app/sql/statement.h"
 #include "app/sql/transaction.h"
 #include "base/basictypes.h"
+#include "base/callback.h"
 #include "base/file_util.h"
 #include "base/md5.h"
 #include "base/string_util.h"

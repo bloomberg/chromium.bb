@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/callback.h"
 #include "base/scoped_nsautorelease_pool.h"
 #include "base/thread.h"
 #include "gpu/command_buffer/common/cmd_buffer_common.h"

@@ -6,6 +6,7 @@
 
 #include "app/clipboard/clipboard.h"
 #include "app/gfx/native_widget_types.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/histogram.h"

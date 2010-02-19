@@ -10,6 +10,7 @@
 #include "base/i18n/word_iterator.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "base/callback.h"
 #include "base/file_version_info.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/browser_list.h"

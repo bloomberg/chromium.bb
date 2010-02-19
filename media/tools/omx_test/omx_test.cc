@@ -1,6 +1,6 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 // A test program that drives an OpenMAX video decoder module. This program
 // will take video in elementary stream and read into the decoder.
@@ -9,6 +9,7 @@
 // ./omx_test
 
 #include "base/at_exit.h"
+#include "base/callback.h"
 #include "base/command_line.h"
 #include "base/message_loop.h"
 #include "base/scoped_ptr.h"

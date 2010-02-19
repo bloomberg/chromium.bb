@@ -4,6 +4,7 @@
 
 #include "chrome/browser/browsing_data_remover.h"
 
+#include "base/callback.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/history/history.h"

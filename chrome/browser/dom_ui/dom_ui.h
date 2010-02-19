@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
+#include "base/callback.h"
 #include "base/string16.h"
-#include "base/task.h"
 #include "chrome/common/page_transition_types.h"
 
 class DictionaryValue;

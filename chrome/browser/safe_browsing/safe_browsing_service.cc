@@ -5,6 +5,7 @@
 
 #include "chrome/browser/safe_browsing/safe_browsing_service.h"
 
+#include "base/callback.h"
 #include "base/path_service.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser_process.h"

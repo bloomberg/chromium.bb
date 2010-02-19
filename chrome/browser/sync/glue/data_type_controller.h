@@ -7,7 +7,7 @@
 
 #include <map>
 
-#include "base/task.h"
+#include "base/callback.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 

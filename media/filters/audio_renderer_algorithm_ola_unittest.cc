@@ -8,6 +8,7 @@
 // correct rate.  We always pass in a very large destination buffer with the
 // expectation that FillBuffer() will fill as much as it can but no more.
 
+#include "base/callback.h"
 #include "media/base/data_buffer.h"
 #include "media/filters/audio_renderer_algorithm_ola.h"
 #include "testing/gmock/include/gmock/gmock.h"

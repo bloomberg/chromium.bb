@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/cocoa/history_menu_bridge.h"
+#include "base/callback.h"
 #include "base/sys_string_conversions.h"
 #include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"  // IDC_HISTORY_MENU

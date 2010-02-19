@@ -11,7 +11,7 @@
 #if defined(OS_WIN)
 #include <windows.h>
 #endif
-#include "base/task.h"
+#include "base/callback.h"
 #include "gpu/command_buffer/service/common_decoder.h"
 
 namespace gpu {
