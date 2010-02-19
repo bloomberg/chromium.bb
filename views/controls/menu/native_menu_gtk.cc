@@ -9,6 +9,7 @@
 
 #include "app/gfx/gtk_util.h"
 #include "app/menus/menu_model.h"
+#include "base/keyboard_code_conversion_gtk.h"
 #include "base/keyboard_codes.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
@@ -20,6 +21,7 @@
 namespace {
 
 const char kPositionString[] = "position";
+const char kAccelGroupString[] = "accel_group";
 
 // Data passed to the MenuPositionFunc from gtk_menu_popup
 struct Position {
@@ -124,6 +126,20 @@ void NativeMenuGtk::Rebuild() {
 
   ResetMenu();
 
+  // Try to retrieve accelerator group as data from menu_; if null, create new
+  // one and store it as data into menu_.
+  // We store it as data so as to use the destroy notifier to get rid of initial
+  // reference count.  For some reason, when we unref it ourselves (even in
+  // destructor), it would cause random crashes, depending on when gtk tries to
+  // access it.
+  GtkAccelGroup* accel_group = static_cast<GtkAccelGroup*>(
+      g_object_get_data(G_OBJECT(menu_), kAccelGroupString));
+  if (!accel_group) {
+    accel_group = gtk_accel_group_new();
+    g_object_set_data_full(G_OBJECT(menu_), kAccelGroupString, accel_group,
+        g_object_unref);
+  }
+
   std::map<int, GtkRadioMenuItem*> radio_groups_;
   for (int i = 0; i < model_->GetItemCount(); ++i) {
     menus::MenuModel::ItemType type = model_->GetTypeAt(i);
@@ -134,15 +150,15 @@ void NativeMenuGtk::Rebuild() {
       std::map<int, GtkRadioMenuItem*>::const_iterator iter
           = radio_groups_.find(radio_group_id);
       if (iter == radio_groups_.end()) {
-        GtkWidget* new_menu_item = AddMenuItemAt(i, NULL);
+        GtkWidget* new_menu_item = AddMenuItemAt(i, NULL, accel_group);
         // |new_menu_item| is the first menu item for |radio_group_id| group.
         radio_groups_.insert(
             std::make_pair(radio_group_id, GTK_RADIO_MENU_ITEM(new_menu_item)));
       } else {
-        AddMenuItemAt(i, iter->second);
+        AddMenuItemAt(i, iter->second, accel_group);
       }
     } else {
-      AddMenuItemAt(i, NULL);
+      AddMenuItemAt(i, NULL, accel_group);
     }
   }
 }
@@ -176,7 +192,8 @@ void NativeMenuGtk::AddSeparatorAt(int index) {
 }
 
 GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
-                                        GtkRadioMenuItem* radio_group) {
+                                        GtkRadioMenuItem* radio_group,
+                                        GtkAccelGroup* accel_group) {
   GtkWidget* menu_item = NULL;
   std::string label = ConvertAcceleratorsFromWindowsStyle(UTF16ToUTF8(
       model_->GetLabelAt(index)));
@@ -223,9 +240,19 @@ GtkWidget* NativeMenuGtk::AddMenuItemAt(int index,
   }
 
   views::Accelerator accelerator(base::VKEY_UNKNOWN, false, false, false);
-  if (model_->GetAcceleratorAt(index, &accelerator)) {
-    // TODO(beng): accelerators w/gtk_widget_add_accelerator.
+  if (accel_group && model_->GetAcceleratorAt(index, &accelerator)) {
+    int gdk_modifiers = 0;
+    if (accelerator.IsShiftDown())
+      gdk_modifiers |= GDK_SHIFT_MASK;
+    if (accelerator.IsCtrlDown())
+      gdk_modifiers |= GDK_CONTROL_MASK;
+    if (accelerator.IsAltDown())
+      gdk_modifiers |= GDK_MOD1_MASK;
+    gtk_widget_add_accelerator(menu_item, "activate", accel_group,
+        base::GdkKeyCodeForWindowsKeyCode(accelerator.GetKeyCode(), false),
+        static_cast<GdkModifierType>(gdk_modifiers), GTK_ACCEL_VISIBLE);
   }
+
   g_object_set_data(G_OBJECT(menu_item), kPositionString,
                              reinterpret_cast<void*>(index));
   g_signal_connect(menu_item, "activate", G_CALLBACK(CallActivate), this);

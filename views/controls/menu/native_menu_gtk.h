@@ -41,7 +41,8 @@ class NativeMenuGtk : public MenuWrapper {
   static void OnMenuHidden(GtkWidget* widget, NativeMenuGtk* menu);
 
   void AddSeparatorAt(int index);
-  GtkWidget* AddMenuItemAt(int index, GtkRadioMenuItem* radio_group);
+  GtkWidget* AddMenuItemAt(int index, GtkRadioMenuItem* radio_group,
+                           GtkAccelGroup* accel_group);
 
   void ResetMenu();
 
