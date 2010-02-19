@@ -118,33 +118,33 @@ void ImporterList::DetectIEProfiles() {
 
 void ImporterList::DetectFirefoxProfiles() {
   DictionaryValue root;
-  std::wstring ini_file = GetProfilesINI().ToWStringHack();
+  FilePath ini_file = GetProfilesINI();
   ParseProfileINI(ini_file, &root);
 
-  std::wstring source_path;
+  FilePath source_path;
   for (int i = 0; ; ++i) {
-    std::wstring current_profile = L"Profile" + IntToWString(i);
-    if (!root.HasKey(current_profile)) {
+    std::string current_profile = "Profile" + IntToString(i);
+    if (!root.HasKeyASCII(current_profile)) {
       // Profiles are continuously numbered. So we exit when we can't
       // find the i-th one.
       break;
     }
-    std::wstring is_relative, path, profile_path;
-    if (root.GetString(current_profile + L".IsRelative", &is_relative) &&
-        root.GetString(current_profile + L".Path", &path)) {
+    std::string is_relative;
+    string16 path16;
+    FilePath profile_path;
+    if (root.GetStringASCII(current_profile + ".IsRelative", &is_relative) &&
+        root.GetString(current_profile + ".Path", &path16)) {
 #if defined(OS_WIN)
-      string16 path16 = WideToUTF16Hack(path);
       ReplaceSubstringsAfterOffset(
           &path16, 0, ASCIIToUTF16("/"), ASCIIToUTF16("\\"));
-      path.assign(UTF16ToWideHack(path16));
 #endif
+      FilePath path = FilePath::FromWStringHack(UTF16ToWide(path16));
 
       // IsRelative=1 means the folder path would be relative to the
       // path of profiles.ini. IsRelative=0 refers to a custom profile
       // location.
-      if (is_relative == L"1") {
-        profile_path = file_util::GetDirectoryFromPath(ini_file);
-        file_util::AppendToPath(&profile_path, path);
+      if (is_relative == "1") {
+        profile_path = ini_file.DirName().Append(path);
       } else {
         profile_path = path;
       }
@@ -152,12 +152,12 @@ void ImporterList::DetectFirefoxProfiles() {
       // We only import the default profile when multiple profiles exist,
       // since the other profiles are used mostly by developers for testing.
       // Otherwise, Profile0 will be imported.
-      std::wstring is_default;
-      if ((root.GetString(current_profile + L".Default", &is_default) &&
-           is_default == L"1") || i == 0) {
+      std::string is_default;
+      if ((root.GetStringASCII(current_profile + ".Default", &is_default) &&
+           is_default == "1") || i == 0) {
         source_path = profile_path;
         // We break out of the loop when we have found the default profile.
-        if (is_default == L"1")
+        if (is_default == "1")
           break;
       }
     }
@@ -165,7 +165,7 @@ void ImporterList::DetectFirefoxProfiles() {
 
   // Detects which version of Firefox is installed.
   ProfileType firefox_type;
-  std::wstring app_path;
+  FilePath app_path;
   int version = 0;
 #if defined(OS_WIN)
   version = GetCurrentFirefoxMajorVersionFromRegistry();
@@ -186,12 +186,12 @@ void ImporterList::DetectFirefoxProfiles() {
     ProfileInfo* firefox = new ProfileInfo();
     firefox->description = l10n_util::GetString(IDS_IMPORT_FROM_FIREFOX);
     firefox->browser_type = firefox_type;
-    firefox->source_path = source_path;
+    firefox->source_path = source_path.ToWStringHack();
 #if defined(OS_WIN)
     firefox->app_path = GetFirefoxInstallPathFromRegistry();
 #endif
     if (firefox->app_path.empty())
-      firefox->app_path = app_path;
+      firefox->app_path = app_path.ToWStringHack();
     firefox->services_supported = HISTORY | FAVORITES | COOKIES | PASSWORDS |
         SEARCH_ENGINES;
     source_profiles_.push_back(firefox);

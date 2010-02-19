@@ -37,9 +37,9 @@ FilePath GetFirefoxDylibPath();
 #endif  // OS_MACOSX
 
 // Detects version of Firefox and installation path from given Firefox profile
-bool GetFirefoxVersionAndPathFromProfile(const std::wstring& profile_path,
+bool GetFirefoxVersionAndPathFromProfile(const FilePath& profile_path,
                                          int* version,
-                                         std::wstring* app_path);
+                                         FilePath* app_path);
 
 // Gets the full path of the profiles.ini file. This file records
 // the profiles that can be used by Firefox.  Returns an empty
@@ -58,7 +58,7 @@ FilePath GetProfilesINI();
 //   Path=Profiles/abcdefeg.default
 // We set "[value]" in path "<Section>.<Key>". For example, the path
 // "Genenral.StartWithLastProfile" has the value "1".
-void ParseProfileINI(std::wstring file, DictionaryValue* root);
+void ParseProfileINI(const FilePath& file, DictionaryValue* root);
 
 // Returns true if we want to add the URL to the history. We filter
 // out the URL with a unsupported scheme.

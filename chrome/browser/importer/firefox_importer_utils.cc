@@ -40,12 +40,11 @@ class FirefoxURLParameterFilter : public TemplateURLParser::ParameterFilter {
 };
 }  // namespace
 
-bool GetFirefoxVersionAndPathFromProfile(const std::wstring& profile_path,
+bool GetFirefoxVersionAndPathFromProfile(const FilePath& profile_path,
                                          int* version,
-                                         std::wstring* app_path) {
+                                         FilePath* app_path) {
   bool ret = false;
-  std::wstring compatibility_file(profile_path);
-  file_util::AppendToPath(&compatibility_file, L"compatibility.ini");
+  FilePath compatibility_file = profile_path.AppendASCII("compatibility.ini");
   std::string content;
   file_util::ReadFileToString(compatibility_file, &content);
   ReplaceSubstringsAfterOffset(&content, 0, "\r\n", "\n");
@@ -63,14 +62,19 @@ bool GetFirefoxVersionAndPathFromProfile(const std::wstring& profile_path,
         *version = line.substr(equal + 1)[0] - '0';
         ret = true;
       } else if (key == "LastAppDir") {
-        *app_path = UTF8ToWide(line.substr(equal + 1));
+        // TODO(evanm): If the path in question isn't convertible to
+        // UTF-8, what does Firefox do?  If it puts raw bytes in the
+        // file, we could go straight from bytes -> filepath;
+        // otherwise, we're out of luck here.
+        *app_path = FilePath::FromWStringHack(
+            UTF8ToWide(line.substr(equal + 1)));
       }
     }
   }
   return ret;
 }
 
-void ParseProfileINI(std::wstring file, DictionaryValue* root) {
+void ParseProfileINI(const FilePath& file, DictionaryValue* root) {
   // Reads the whole INI file.
   std::string content;
   file_util::ReadFileToString(file, &content);
