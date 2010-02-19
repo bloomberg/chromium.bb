@@ -107,9 +107,10 @@ LocationProviderBase* NewNetworkLocationProvider(
     AccessTokenStore* access_token_store,
     URLRequestContextGetter* context,
     const GURL& url,
+    const string16& access_token,
     const string16& host_name) {
-  return new NetworkLocationProvider(access_token_store, context,
-                                     url, host_name);
+  return new NetworkLocationProvider(
+      access_token_store, context, url, access_token, host_name);
 }
 
 // NetworkLocationProvider
@@ -117,6 +118,7 @@ NetworkLocationProvider::NetworkLocationProvider(
     AccessTokenStore* access_token_store,
     URLRequestContextGetter* url_context_getter,
     const GURL& url,
+    const string16& access_token,
     const string16& host_name)
     : access_token_store_(access_token_store),
       radio_data_provider_(NULL),
@@ -124,6 +126,7 @@ NetworkLocationProvider::NetworkLocationProvider(
       is_radio_data_complete_(false),
       is_wifi_data_complete_(false),
       device_data_updated_timestamp_(kint64min),
+      access_token_(access_token),
       is_new_data_available_(false),
       ALLOW_THIS_IN_INITIALIZER_LIST(delayed_start_task_(this)) {
   // Create the position cache.
@@ -193,7 +196,7 @@ void NetworkLocationProvider::LocationResponseAvailable(
   // Record access_token if it's set.
   if (!access_token.empty() && access_token_ != access_token) {
     access_token_ = access_token;
-    access_token_store_->SetAccessToken(access_token);
+    access_token_store_->SaveAccessToken(request_->url(), access_token);
   }
 
   // If new data arrived whilst request was pending reissue the request.
@@ -269,9 +272,6 @@ void NetworkLocationProvider::RequestPosition() {
     return;
 
   is_new_data_available_ = false;
-
-  if (access_token_.empty())
-    access_token_store_->GetAccessToken(&access_token_);
 
   AutoLock data_lock(data_mutex_);
   request_->MakeRequest(access_token_, radio_data_, wifi_data_,

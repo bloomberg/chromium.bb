@@ -108,7 +108,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
  public:
   virtual void SetUp() {
     URLFetcher::set_factory(&url_fetcher_factory_);
-    access_token_store_ = new FakeAccessTokenStore(test_server_url_);
+    access_token_store_ = new FakeAccessTokenStore;
   }
 
   virtual void TearDown() {
@@ -123,6 +123,7 @@ class GeolocationNetworkProviderTest : public testing::Test {
         access_token_store_.get(),
         NULL,  // No URLContextGetter needed, as using test urlfecther factory.
         test_server_url_,
+        access_token_store_->access_token_set_[test_server_url_],
         ASCIIToUTF16(kTestHost));
   }
 
@@ -292,11 +293,8 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
       ResponseCookies(), kNoFixNetworkResponse);
 
   // This should have set the access token anyhow
-  EXPECT_EQ(access_token_store_->access_token_set_,
-            ASCIIToUTF16(REFERENCE_ACCESS_TOKEN));
-  string16 token;
-  EXPECT_TRUE(access_token_store_->GetAccessToken(&token));
-  EXPECT_EQ(REFERENCE_ACCESS_TOKEN, UTF16ToUTF8(token));
+  EXPECT_EQ(UTF8ToUTF16(REFERENCE_ACCESS_TOKEN),
+            access_token_store_->access_token_set_[test_server_url_]);
 
   Geoposition position;
   provider->GetPosition(&position);
@@ -339,8 +337,8 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   EXPECT_TRUE(position.IsValidFix());
 
   // Token should still be in the store.
-  EXPECT_TRUE(access_token_store_->GetAccessToken(&token));
-  EXPECT_EQ(REFERENCE_ACCESS_TOKEN, UTF16ToUTF8(token));
+  EXPECT_EQ(UTF8ToUTF16(REFERENCE_ACCESS_TOKEN),
+            access_token_store_->access_token_set_[test_server_url_]);
 
   // Wifi updated again, with one less AP. This is 'close enough' to the
   // previous scan, so no new request made.

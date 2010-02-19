@@ -118,6 +118,7 @@ LocationProviderBase* NewNetworkLocationProvider(
     AccessTokenStore* access_token_store,
     URLRequestContextGetter* context,
     const GURL& url,
+    const string16& access_token,
     const string16& host_name);
 
 #endif  // CHROME_BROWSER_GEOLOCATION_LOCATION_PROVIDER_H_

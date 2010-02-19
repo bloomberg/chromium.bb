@@ -18,41 +18,73 @@ const char* kRefServerUrl2 = "http://another.domain.example/foo?id=bar.bar#2";
 }  // namespace
 
 class GeolocationAccessTokenStoreTest
-    : public InProcessBrowserTest,
-      public AccessTokenStoreFactory::Delegate,
-      public base::SupportsWeakPtr<GeolocationAccessTokenStoreTest> {
- protected:
+    : public InProcessBrowserTest {
+ public:
   GeolocationAccessTokenStoreTest()
       : token_to_expect_(NULL), token_to_set_(NULL) {}
 
-  void StartThreadAndWaitForResults(
+  void DoTestStepAndWaitForResults(
       const char* ref_url, const string16* token_to_expect,
       const string16* token_to_set);
 
-  // AccessTokenStoreFactory::Delegate
-  virtual void OnAccessTokenStoresCreated(
-        const AccessTokenStoreFactory::TokenStoreSet& access_token_store);
+  void OnAccessTokenStoresLoaded(
+        AccessTokenStore::AccessTokenSet access_token_set);
+
+  scoped_refptr<AccessTokenStore> token_store_;
+  CancelableRequestConsumer request_consumer_;
   GURL ref_url_;
   const string16* token_to_expect_;
   const string16* token_to_set_;
 };
 
-namespace {
-// A WeakPtr may only be used on the thread in which it is created, hence we
-// defer the call to delegate->AsWeakPtr() into this function rather than pass
-// WeakPtr& in.
-void StartTestFromClientThread(
-    GeolocationAccessTokenStoreTest* delegate,
-    const GURL& ref_url) {
+void StartTestStepFromClientThread(
+    scoped_refptr<AccessTokenStore>* store,
+    CancelableRequestConsumerBase* consumer,
+    AccessTokenStore::LoadAccessTokensCallbackType* callback) {
   ASSERT_TRUE(ChromeThread::CurrentlyOn(kExpectedClientThreadId));
-
-  scoped_refptr<AccessTokenStoreFactory> store =
-      NewChromePrefsAccessTokenStoreFactory();
-  store->CreateAccessTokenStores(delegate->AsWeakPtr(), ref_url);
+  if (*store == NULL)
+    (*store) = NewChromePrefsAccessTokenStore();
+  (*store)->LoadAccessTokens(consumer, callback);
 }
-}  // namespace
 
-void GeolocationAccessTokenStoreTest::StartThreadAndWaitForResults(
+struct TokenLoadClientForTest {
+  void NotReachedCallback(AccessTokenStore::AccessTokenSet /*tokens*/) {
+    NOTREACHED() << "This request should have been canceled before callback";
+  }
+};
+
+void RunCancelTestInClientTread() {
+  ASSERT_TRUE(ChromeThread::CurrentlyOn(kExpectedClientThreadId));
+  scoped_refptr<AccessTokenStore> store = NewChromePrefsAccessTokenStore();
+  CancelableRequestConsumer consumer;
+  TokenLoadClientForTest load_client;
+
+  // Single request, canceled explicitly
+  CancelableRequestProvider::Handle first_handle =
+      store->LoadAccessTokens(&consumer, NewCallback(
+          &load_client, &TokenLoadClientForTest::NotReachedCallback));
+  EXPECT_TRUE(consumer.HasPendingRequests());
+  // Test this handle is valid.
+  consumer.GetClientData(store.get(), first_handle);
+  store->CancelRequest(first_handle);
+  EXPECT_FALSE(consumer.HasPendingRequests());
+
+  // 2 requests, canceled globally.
+  store->LoadAccessTokens(&consumer, NewCallback(
+      &load_client, &TokenLoadClientForTest::NotReachedCallback));
+  store->LoadAccessTokens(&consumer, NewCallback(
+      &load_client, &TokenLoadClientForTest::NotReachedCallback));
+  EXPECT_TRUE(consumer.HasPendingRequests());
+  EXPECT_EQ(2u, consumer.PendingRequestCount());
+  consumer.CancelAllRequests();
+  EXPECT_FALSE(consumer.HasPendingRequests());
+  EXPECT_EQ(0u, consumer.PendingRequestCount());
+
+  ChromeThread::PostTask(
+      ChromeThread::UI, FROM_HERE, new MessageLoop::QuitTask);
+}
+
+void GeolocationAccessTokenStoreTest::DoTestStepAndWaitForResults(
     const char* ref_url, const string16* token_to_expect,
     const string16* token_to_set) {
   ref_url_ = GURL(ref_url);
@@ -61,61 +93,57 @@ void GeolocationAccessTokenStoreTest::StartThreadAndWaitForResults(
 
   ChromeThread::PostTask(
       kExpectedClientThreadId, FROM_HERE, NewRunnableFunction(
-          &StartTestFromClientThread, this, ref_url_));
+          &StartTestStepFromClientThread, &token_store_, &request_consumer_,
+          NewCallback(this,
+              &GeolocationAccessTokenStoreTest::OnAccessTokenStoresLoaded)));
   ui_test_utils::RunMessageLoop();
 }
 
-void GeolocationAccessTokenStoreTest::OnAccessTokenStoresCreated(
-      const AccessTokenStoreFactory::TokenStoreSet& access_token_store) {
+void GeolocationAccessTokenStoreTest::OnAccessTokenStoresLoaded(
+    AccessTokenStore::AccessTokenSet access_token_set) {
   ASSERT_TRUE(ChromeThread::CurrentlyOn(kExpectedClientThreadId))
       << "Callback from token factory should be from the same thread as the "
-         "CreateAccessTokenStores request was made on";
+         "LoadAccessTokenStores request was made on";
   EXPECT_TRUE(token_to_set_ || token_to_expect_) << "No work to do?";
-  DCHECK_GE(access_token_store.size(), size_t(1));
-
-  AccessTokenStoreFactory::TokenStoreSet::const_iterator item =
-      access_token_store.find(ref_url_);
-  ASSERT_TRUE(item != access_token_store.end());
-  scoped_refptr<AccessTokenStore> store = item->second;
-  ASSERT_TRUE(NULL != store);
-  string16 token;
-  bool read_ok = store->GetAccessToken(&token);
+  AccessTokenStore::AccessTokenSet::const_iterator item =
+      access_token_set.find(ref_url_);
   if (!token_to_expect_) {
-    EXPECT_FALSE(read_ok);
-    EXPECT_TRUE(token.empty());
+    EXPECT_TRUE(item == access_token_set.end());
   } else {
-    ASSERT_TRUE(read_ok);
-    EXPECT_EQ(*token_to_expect_, token);
+    EXPECT_FALSE(item == access_token_set.end());
+    EXPECT_EQ(*token_to_expect_, item->second);
   }
 
   if (token_to_set_) {
-    store->SetAccessToken(*token_to_set_);
+    scoped_refptr<AccessTokenStore> store =
+        NewChromePrefsAccessTokenStore();
+    store->SaveAccessToken(ref_url_, *token_to_set_);
   }
   ChromeThread::PostTask(
       ChromeThread::UI, FROM_HERE, new MessageLoop::QuitTask);
 }
 
-#if !defined(OS_WIN)
-// TODO(joth): Crashes on Linux and Mac. See http://crbug.com/36068.
-#define MAYBE_SetAcrossInstances DISABLED_SetAcrossInstances
-#else
-#define MAYBE_SetAcrossInstances SetAcrossInstances
-#endif
-
-IN_PROC_BROWSER_TEST_F(GeolocationAccessTokenStoreTest, MAYBE_SetAcrossInstances) {
+IN_PROC_BROWSER_TEST_F(GeolocationAccessTokenStoreTest, SetAcrossInstances) {
   const string16 ref_token1 = ASCIIToUTF16("jksdfo90,'s#\"#1*(");
   const string16 ref_token2 = ASCIIToUTF16("\1\2\3\4\5\6\7\10\11\12=023");
   ASSERT_TRUE(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
-  StartThreadAndWaitForResults(kRefServerUrl1, NULL, &ref_token1);
+  DoTestStepAndWaitForResults(kRefServerUrl1, NULL, &ref_token1);
   // Check it was set, and change to new value.
-  StartThreadAndWaitForResults(kRefServerUrl1, &ref_token1, &ref_token2);
+  DoTestStepAndWaitForResults(kRefServerUrl1, &ref_token1, &ref_token2);
   // And change back.
-  StartThreadAndWaitForResults(kRefServerUrl1, &ref_token2, &ref_token1);
-  StartThreadAndWaitForResults(kRefServerUrl1, &ref_token1, NULL);
+  DoTestStepAndWaitForResults(kRefServerUrl1, &ref_token2, &ref_token1);
+  DoTestStepAndWaitForResults(kRefServerUrl1, &ref_token1, NULL);
 
   // Set a second server URL
-  StartThreadAndWaitForResults(kRefServerUrl2, NULL, &ref_token2);
-  StartThreadAndWaitForResults(kRefServerUrl2, &ref_token2, NULL);
-  StartThreadAndWaitForResults(kRefServerUrl1, &ref_token1, NULL);
+  DoTestStepAndWaitForResults(kRefServerUrl2, NULL, &ref_token2);
+  DoTestStepAndWaitForResults(kRefServerUrl2, &ref_token2, NULL);
+  DoTestStepAndWaitForResults(kRefServerUrl1, &ref_token1, NULL);
+}
+
+IN_PROC_BROWSER_TEST_F(GeolocationAccessTokenStoreTest, CancelRequest) {
+  ChromeThread::PostTask(
+      kExpectedClientThreadId, FROM_HERE, NewRunnableFunction(
+          RunCancelTestInClientTread));
+  ui_test_utils::RunMessageLoop();
 }

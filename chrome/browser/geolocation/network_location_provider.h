@@ -27,6 +27,7 @@ class NetworkLocationProvider
   NetworkLocationProvider(AccessTokenStore* access_token_store,
                           URLRequestContextGetter* context,
                           const GURL& url,
+                          const string16& access_token,
                           const string16& host_name);
   virtual ~NetworkLocationProvider();
 

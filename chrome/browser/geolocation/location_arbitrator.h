@@ -5,7 +5,7 @@
 #ifndef CHROME_BROWSER_GEOLOCATION_LOCATION_ARBITRATOR_H_
 #define CHROME_BROWSER_GEOLOCATION_LOCATION_ARBITRATOR_H_
 
-class AccessTokenStoreFactory;
+class AccessTokenStore;
 class URLRequestContextGetter;
 struct Geoposition;
 
@@ -21,7 +21,7 @@ class GeolocationArbitrator {
  public:
   // Creates and returns a new instance of the location arbitrator.
   static GeolocationArbitrator* New(
-      AccessTokenStoreFactory* access_token_store_factory,
+      AccessTokenStore* access_token_store,
       URLRequestContextGetter* context_getter);
 
   class Delegate {

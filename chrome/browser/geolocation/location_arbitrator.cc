@@ -24,10 +24,9 @@ const char* kDefaultNetworkProviderUrl = "https://www.google.com/loc/json";
 class GeolocationArbitratorImpl
     : public GeolocationArbitrator,
       public LocationProviderBase::ListenerInterface,
-      public AccessTokenStoreFactory::Delegate,
       public NonThreadSafe {
  public:
-  GeolocationArbitratorImpl(AccessTokenStoreFactory* access_token_store_factory,
+  GeolocationArbitratorImpl(AccessTokenStore* access_token_store,
                             URLRequestContextGetter* context_getter);
   virtual ~GeolocationArbitratorImpl();
 
@@ -41,15 +40,14 @@ class GeolocationArbitratorImpl
   virtual void LocationUpdateAvailable(LocationProviderBase* provider);
   virtual void MovementDetected(LocationProviderBase* provider);
 
-  // AccessTokenStoreFactory::Delegate
-  virtual void OnAccessTokenStoresCreated(
-      const AccessTokenStoreFactory::TokenStoreSet& access_token_store);
+  void OnAccessTokenStoresLoaded(
+      AccessTokenStore::AccessTokenSet access_token_store);
 
  private:
   void CreateProviders();
   bool HasHighAccuracyObserver();
 
-  scoped_refptr<AccessTokenStoreFactory> access_token_store_factory_;
+  scoped_refptr<AccessTokenStore> access_token_store_;
   scoped_refptr<URLRequestContextGetter> context_getter_;
 
   const GURL default_url_;
@@ -58,18 +56,16 @@ class GeolocationArbitratorImpl
   typedef std::map<GeolocationArbitrator::Delegate*, UpdateOptions> DelegateMap;
   DelegateMap observers_;
 
-  base::WeakPtrFactory<GeolocationArbitratorImpl> weak_ptr_factory_;
-
+  CancelableRequestConsumer request_consumer_;
   bool use_mock_;
 };
 
 GeolocationArbitratorImpl::GeolocationArbitratorImpl(
-    AccessTokenStoreFactory* access_token_store_factory,
+    AccessTokenStore* access_token_store,
     URLRequestContextGetter* context_getter)
-    : access_token_store_factory_(access_token_store_factory),
+    : access_token_store_(access_token_store),
       context_getter_(context_getter),
       default_url_(kDefaultNetworkProviderUrl),
-      ALLOW_THIS_IN_INITIALIZER_LIST(weak_ptr_factory_(this)),
       use_mock_(false) {
   DCHECK(default_url_.is_valid());
 }
@@ -123,22 +119,23 @@ void GeolocationArbitratorImpl::MovementDetected(
   DCHECK(CalledOnValidThread());
 }
 
-void GeolocationArbitratorImpl::OnAccessTokenStoresCreated(
-    const AccessTokenStoreFactory::TokenStoreSet& access_token_store) {
-  DCHECK(provider_ == NULL);
-  // TODO(joth): Once we have arbitration implementation, iterate the whole set
-  // rather than cherry-pick our defaul url.
-  AccessTokenStoreFactory::TokenStoreSet::const_iterator item =
-      access_token_store.find(default_url_);
-  DCHECK(item != access_token_store.end());
-  DCHECK(item->second != NULL);
+void GeolocationArbitratorImpl::OnAccessTokenStoresLoaded(
+    AccessTokenStore::AccessTokenSet access_token_set) {
+  DCHECK(provider_ == NULL)
+      << "OnAccessTokenStoresLoaded : has existing location "
+      << "provider. Race condition caused repeat load of tokens?";
   if (use_mock_) {
     provider_.reset(NewMockLocationProvider());
   } else {
+    // TODO(joth): Once we have arbitration implementation, iterate the whole
+    // set rather than cherry-pick our defaul url.
+    const AccessTokenStore::AccessTokenSet::const_iterator token =
+        access_token_set.find(default_url_);
     // TODO(joth): Check with GLS folks what hostname they'd like sent.
     provider_.reset(NewNetworkLocationProvider(
-        item->second, context_getter_.get(),
-        default_url_, ASCIIToUTF16("chromium.org")));
+        access_token_store_.get(), context_getter_.get(), default_url_,
+        token != access_token_set.end() ? token->second : string16(),
+        ASCIIToUTF16("chromium.org")));
   }
   DCHECK(provider_ != NULL);
   provider_->RegisterListener(this);
@@ -149,9 +146,11 @@ void GeolocationArbitratorImpl::OnAccessTokenStoresCreated(
 void GeolocationArbitratorImpl::CreateProviders() {
   DCHECK(CalledOnValidThread());
   DCHECK(!observers_.empty());
-  if (provider_ == NULL) {
-    access_token_store_factory_->CreateAccessTokenStores(
-        weak_ptr_factory_.GetWeakPtr(), default_url_);
+  if (provider_ == NULL && !request_consumer_.HasPendingRequests()) {
+    access_token_store_->LoadAccessTokens(
+        &request_consumer_,
+        NewCallback(this,
+                    &GeolocationArbitratorImpl::OnAccessTokenStoresLoaded));
   }
   // TODO(joth): Use high accuracy flag to conditionally create GPS provider.
 }
@@ -167,9 +166,9 @@ bool GeolocationArbitratorImpl::HasHighAccuracyObserver() {
 }
 
 GeolocationArbitrator* GeolocationArbitrator::New(
-    AccessTokenStoreFactory* access_token_store_factory,
+    AccessTokenStore* access_token_store,
     URLRequestContextGetter* context_getter) {
-  return new GeolocationArbitratorImpl(access_token_store_factory,
+  return new GeolocationArbitratorImpl(access_token_store,
                                        context_getter);
 }
 

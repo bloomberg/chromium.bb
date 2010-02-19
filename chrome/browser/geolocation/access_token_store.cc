@@ -15,144 +15,95 @@
 namespace {
 class ChromePrefsAccessTokenStore : public AccessTokenStore {
  public:
-  ChromePrefsAccessTokenStore(
-      const GURL& url, bool token_valid, const string16& initial_access_token);
+  ChromePrefsAccessTokenStore();
 
  private:
+  void LoadDictionaryStoreInUIThread(
+      scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request);
+
   // AccessTokenStore
-  virtual void DoSetAccessToken(const string16& access_token);
+  virtual void DoLoadAccessTokens(
+      scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request);
+  virtual void SaveAccessToken(
+      const GURL& server_url, const string16& access_token);
+
+  DISALLOW_COPY_AND_ASSIGN(ChromePrefsAccessTokenStore);
 };
 
-
-class ChromePrefsAccessTokenStoreFactory : public AccessTokenStoreFactory {
- private:
-  void LoadDictionaryStoreInUIThread(ChromeThread::ID client_thread_id,
-                                     const GURL& default_url);
-  void NotifyDelegateInClientThread(const TokenStoreSet& token_stores);
-
-  // AccessTokenStoreFactory
-  virtual void CreateAccessTokenStores(
-      const base::WeakPtr<AccessTokenStoreFactory::Delegate>& delegate,
-      const GURL& default_url);
-
-  base::WeakPtr<AccessTokenStoreFactory::Delegate> delegate_;
-};
-
-ChromePrefsAccessTokenStore::ChromePrefsAccessTokenStore(
-      const GURL& url, bool token_valid, const string16& initial_access_token)
-    : AccessTokenStore(url, token_valid, initial_access_token) {
+ChromePrefsAccessTokenStore::ChromePrefsAccessTokenStore() {
 }
 
-void ChromePrefsAccessTokenStore::DoSetAccessToken(
-    const string16& access_token) {
-  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE, NewRunnableMethod(
-            this, &ChromePrefsAccessTokenStore::DoSetAccessToken,
-            access_token));
+void ChromePrefsAccessTokenStore::LoadDictionaryStoreInUIThread(
+      scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request) {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  if (request->canceled())
     return;
+  const DictionaryValue* token_dictionary =
+          g_browser_process->local_state()->GetDictionary(
+              prefs::kGeolocationAccessToken);
+
+  AccessTokenStore::AccessTokenSet access_token_set;
+  // The dictionary value could be NULL if the pref has never been set.
+  if (token_dictionary != NULL) {
+    for (DictionaryValue::key_iterator it = token_dictionary->begin_keys();
+        it != token_dictionary->end_keys(); ++it) {
+      GURL url(WideToUTF8(*it));
+      if (!url.is_valid())
+        continue;
+      token_dictionary->GetStringAsUTF16WithoutPathExpansion(
+          *it, &access_token_set[url]);
+    }
   }
+  request->ForwardResultAsync(MakeTuple(access_token_set));
+}
+
+void ChromePrefsAccessTokenStore::DoLoadAccessTokens(
+    scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request) {
+  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE, NewRunnableMethod(
+      this, &ChromePrefsAccessTokenStore::LoadDictionaryStoreInUIThread,
+      request));
+}
+
+void SetAccessTokenOnUIThread(const GURL& server_url, const string16& token) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   DictionaryValue* access_token_dictionary =
       g_browser_process->local_state()->GetMutableDictionary(
           prefs::kGeolocationAccessToken);
   access_token_dictionary->SetWithoutPathExpansion(
-      UTF8ToWide(server_url().spec()),
-      Value::CreateStringValueFromUTF16(access_token));
+      UTF8ToWide(server_url.spec()),
+      Value::CreateStringValueFromUTF16(token));
 }
 
-void ChromePrefsAccessTokenStoreFactory::LoadDictionaryStoreInUIThread(
-    ChromeThread::ID client_thread_id, const GURL& default_url) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  const DictionaryValue* token_dictionary =
-      g_browser_process->local_state()->GetDictionary(
-          prefs::kGeolocationAccessToken);
-  TokenStoreSet token_stores;
-  // Careful: The returned value could be NULL if the pref has never been set.
-  if (token_dictionary != NULL) {
-    for (DictionaryValue::key_iterator it = token_dictionary->begin_keys();
-        it != token_dictionary->end_keys(); ++it) {
-      GURL this_url(WideToUTF8(*it));
-      if (!this_url.is_valid())
-        continue;
-      string16 token;
-      const bool token_valid =
-          token_dictionary->GetStringAsUTF16WithoutPathExpansion(*it, &token);
-      token_stores[this_url] =
-          new ChromePrefsAccessTokenStore(this_url, token_valid, token);
-    }
-  }
-  if (default_url.is_valid() && token_stores[default_url] == NULL) {
-    token_stores[default_url] =
-        new ChromePrefsAccessTokenStore(default_url, false, string16());
-  }
-  ChromeThread::PostTask(
-      client_thread_id, FROM_HERE, NewRunnableMethod(
-          this,
-          &ChromePrefsAccessTokenStoreFactory::NotifyDelegateInClientThread,
-          token_stores));
-}
-
-void ChromePrefsAccessTokenStoreFactory::NotifyDelegateInClientThread(
-    const TokenStoreSet& token_stores) {
-  if (delegate_ != NULL) {
-    delegate_->OnAccessTokenStoresCreated(token_stores);
-  }
-}
-
-void ChromePrefsAccessTokenStoreFactory::CreateAccessTokenStores(
-    const base::WeakPtr<AccessTokenStoreFactory::Delegate>& delegate,
-    const GURL& default_url) {
-  // Capture the thread that created the factory, in order to make callbacks
-  // on the same thread. We could capture a MessageLoop* but in practice we only
-  // expect to be called from well-known chrome threads, so this is sufficient.
-  ChromeThread::ID client_thread_id;
-  bool ok = ChromeThread::GetCurrentThreadIdentifier(&client_thread_id);
-  CHECK(ok);
-  DCHECK_NE(ChromeThread::UI, client_thread_id)
-      << "If I'm only used from the UI thread I don't need to post tasks";
-  delegate_ = delegate;
-  ChromeThread::PostTask(
-      ChromeThread::UI, FROM_HERE, NewRunnableMethod(
-          this,
-          &ChromePrefsAccessTokenStoreFactory::LoadDictionaryStoreInUIThread,
-          client_thread_id, default_url));
+void ChromePrefsAccessTokenStore::SaveAccessToken(
+      const GURL& server_url, const string16& access_token) {
+  ChromeThread::PostTask(ChromeThread::UI, FROM_HERE, NewRunnableFunction(
+      &SetAccessTokenOnUIThread, server_url, access_token));
 }
 }  // namespace
 
-void AccessTokenStore::RegisterPrefs(PrefService* prefs) {
-  prefs->RegisterDictionaryPref(prefs::kGeolocationAccessToken);
-}
-
-AccessTokenStore::AccessTokenStore(
-      const GURL& url, bool token_valid, const string16& initial_access_token)
-    : url_(url), access_token_valid_(token_valid),
-      access_token_(initial_access_token) {
+AccessTokenStore::AccessTokenStore() {
 }
 
 AccessTokenStore::~AccessTokenStore() {
 }
 
-GURL AccessTokenStore::server_url() const {
-  return url_;
+void AccessTokenStore::RegisterPrefs(PrefService* prefs) {
+  prefs->RegisterDictionaryPref(prefs::kGeolocationAccessToken);
 }
 
-void AccessTokenStore::SetAccessToken(const string16& access_token) {
-  access_token_ = access_token;
-  access_token_valid_ = true;
-  DoSetAccessToken(access_token);
-}
+AccessTokenStore::Handle AccessTokenStore::LoadAccessTokens(
+    CancelableRequestConsumerBase* consumer,
+    LoadAccessTokensCallbackType* callback) {
+  scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request =
+      new CancelableRequest<LoadAccessTokensCallbackType>(callback);
+  AddRequest(request, consumer);
+  DCHECK(request->handle());
 
-bool AccessTokenStore::GetAccessToken(string16* access_token) const {
-  DCHECK(access_token);
-  *access_token = access_token_;
-  return access_token_valid_;
-}
-
-AccessTokenStoreFactory::~AccessTokenStoreFactory() {
+  DoLoadAccessTokens(request);
+  return request->handle();
 }
 
 // Creates a new access token store backed by the global chome prefs.
-AccessTokenStoreFactory* NewChromePrefsAccessTokenStoreFactory() {
-  return new ChromePrefsAccessTokenStoreFactory;
+AccessTokenStore* NewChromePrefsAccessTokenStore() {
+  return new ChromePrefsAccessTokenStore;
 }

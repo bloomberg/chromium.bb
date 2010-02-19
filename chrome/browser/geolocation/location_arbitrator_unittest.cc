@@ -41,8 +41,8 @@ void SetReferencePosition(Geoposition* position) {
 class GeolocationLocationArbitratorTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    access_token_factory_ = new FakeAccessTokenStoreFactory;
-    arbitrator_.reset(GeolocationArbitrator::New(access_token_factory_.get(),
+    access_token_store_ = new FakeAccessTokenStore;
+    arbitrator_.reset(GeolocationArbitrator::New(access_token_store_.get(),
                                                  NULL));
     arbitrator_->SetUseMockProvider(true);
   }
@@ -50,31 +50,31 @@ class GeolocationLocationArbitratorTest : public testing::Test {
   virtual void TearDown() {
   }
 
-  scoped_refptr<FakeAccessTokenStoreFactory> access_token_factory_;
+  scoped_refptr<FakeAccessTokenStore> access_token_store_;
   scoped_ptr<GeolocationArbitrator> arbitrator_;
 };
 
 TEST_F(GeolocationLocationArbitratorTest, CreateDestroy) {
-  EXPECT_TRUE(access_token_factory_);
+  EXPECT_TRUE(access_token_store_);
   EXPECT_TRUE(arbitrator_ != NULL);
   arbitrator_.reset();
   SUCCEED();
 }
 
 TEST_F(GeolocationLocationArbitratorTest, NormalUsage) {
-  ASSERT_TRUE(access_token_factory_);
+  ASSERT_TRUE(access_token_store_);
   ASSERT_TRUE(arbitrator_ != NULL);
 
-  EXPECT_FALSE(access_token_factory_->default_url_.is_valid());
-  EXPECT_FALSE(access_token_factory_->delegate_);
+  EXPECT_TRUE(access_token_store_->access_token_set_.empty());
+  EXPECT_FALSE(access_token_store_->request_);
   MockLocationObserver observer;
   arbitrator_->AddObserver(&observer, GeolocationArbitrator::UpdateOptions());
 
-  EXPECT_TRUE(access_token_factory_->default_url_.is_valid());
-  ASSERT_TRUE(access_token_factory_->delegate_);
+  EXPECT_TRUE(access_token_store_->access_token_set_.empty());
+  ASSERT_TRUE(access_token_store_->request_);
 
   EXPECT_FALSE(MockLocationProvider::instance_);
-  access_token_factory_->NotifyDelegateStoreCreated();
+  access_token_store_->NotifyDelegateTokensLoaded();
   ASSERT_TRUE(MockLocationProvider::instance_);
   EXPECT_TRUE(MockLocationProvider::instance_->has_listeners());
   EXPECT_EQ(1, MockLocationProvider::instance_->started_count_);
@@ -95,7 +95,7 @@ TEST_F(GeolocationLocationArbitratorTest, MultipleListener) {
   MockLocationObserver observer2;
   arbitrator_->AddObserver(&observer2, GeolocationArbitrator::UpdateOptions());
 
-  access_token_factory_->NotifyDelegateStoreCreated();
+  access_token_store_->NotifyDelegateTokensLoaded();
   ASSERT_TRUE(MockLocationProvider::instance_);
   EXPECT_FALSE(observer1.last_position_.IsInitialized());
   EXPECT_FALSE(observer2.last_position_.IsInitialized());

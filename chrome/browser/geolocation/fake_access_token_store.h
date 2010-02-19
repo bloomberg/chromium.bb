@@ -11,38 +11,34 @@
 // A fake (non-persisted) access token store instance useful for testing.
 class FakeAccessTokenStore : public AccessTokenStore {
  public:
-  explicit FakeAccessTokenStore(const GURL& url)
-      : AccessTokenStore(url, false, string16()) {}
+  FakeAccessTokenStore() {}
 
-  virtual void DoSetAccessToken(const string16& access_token) {
-    access_token_set_ = access_token;
+  void NotifyDelegateTokensLoaded() {
+    CHECK(request_ != NULL);
+    request_->ForwardResult(MakeTuple(access_token_set_));
+    request_ = NULL;
   }
 
-  string16 access_token_set_;
+  // AccessTokenStore
+  virtual void DoLoadAccessTokens(
+      scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request) {
+    DCHECK(request_ == NULL)
+        << "Fake token store currently only allows one request at a time";
+    request_ = request;
+  }
+  virtual void SaveAccessToken(
+      const GURL& server_url, const string16& access_token) {
+    DCHECK(server_url.is_valid());
+    access_token_set_[server_url] = access_token;
+  }
+
+  AccessTokenSet access_token_set_;
+  scoped_refptr<CancelableRequest<LoadAccessTokensCallbackType> > request_;
 
  private:
   virtual ~FakeAccessTokenStore() {}
-};
 
-class FakeAccessTokenStoreFactory : public AccessTokenStoreFactory {
- public:
-  void NotifyDelegateStoreCreated() {
-    ASSERT_TRUE(delegate_ != NULL);
-    AccessTokenStoreFactory::TokenStoreSet token_stores;
-    token_stores[default_url_] = new FakeAccessTokenStore(default_url_);
-    delegate_->OnAccessTokenStoresCreated(token_stores);
-  }
-
-  // AccessTokenStoreFactory
-  virtual void CreateAccessTokenStores(
-      const base::WeakPtr<AccessTokenStoreFactory::Delegate>& delegate,
-      const GURL& default_url) {
-    delegate_ = delegate;
-    default_url_ = default_url;
-  }
-
-  base::WeakPtr<AccessTokenStoreFactory::Delegate> delegate_;
-  GURL default_url_;
+  DISALLOW_COPY_AND_ASSIGN(FakeAccessTokenStore);
 };
 
 #endif  // CHROME_BROWSER_GEOLOCATION_FAKE_ACCESS_TOKEN_STORE_H_
