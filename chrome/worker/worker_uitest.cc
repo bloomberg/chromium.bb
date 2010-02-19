@@ -112,8 +112,7 @@ class WorkerTest : public UILayoutTest {
 };
 
 
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_SingleWorker) {
+TEST_F(WorkerTest, SingleWorker) {
   RunTest(L"single_worker.html");
 }
 
@@ -123,18 +122,15 @@ TEST_F(WorkerTest, DISABLED_SingleWorker) {
 #define MultipleWorkers DISABLED_MultipleWorkers
 #endif
 
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_MultipleWorkers) {
+TEST_F(WorkerTest, MultipleWorkers) {
   RunTest(L"multi_worker.html");
 }
 
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_SingleSharedWorker) {
+TEST_F(WorkerTest, SingleSharedWorker) {
   RunTest(L"single_worker.html?shared=true");
 }
 
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_MultipleSharedWorkers) {
+TEST_F(WorkerTest, MultipleSharedWorkers) {
   RunTest(L"multi_worker.html?shared=true");
 }
 
@@ -143,8 +139,7 @@ TEST_F(WorkerTest, DISABLED_MultipleSharedWorkers) {
 #endif
 
 // Incognito windows should not share workers with non-incognito windows
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_IncognitoSharedWorkers) {
+TEST_F(WorkerTest, IncognitoSharedWorkers) {
   // Load a non-incognito tab and have it create a shared worker
   RunTest(L"incognito_worker.html");
   // Incognito worker should not share with non-incognito
@@ -161,8 +156,7 @@ const wchar_t kDocRoot[] = L"chrome/test/data/workers";
 #endif
 
 // Make sure that auth dialog is displayed from worker context.
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_WorkerHttpAuth) {
+TEST_F(WorkerTest, WorkerHttpAuth) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
 
@@ -173,8 +167,7 @@ TEST_F(WorkerTest, DISABLED_WorkerHttpAuth) {
 }
 
 // Make sure that auth dialog is displayed from shared worker context.
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_SharedWorkerHttpAuth) {
+TEST_F(WorkerTest, SharedWorkerHttpAuth) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
@@ -208,13 +201,11 @@ TEST_F(WorkerTest, WorkerCall) {
 #define WorkerClonePort DISABLED_WorkerClonePort
 #endif
 
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_WorkerClonePort) {
+TEST_F(WorkerTest, WorkerClonePort) {
   RunWorkerFastLayoutTest("worker-cloneport.html");
 }
 
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_WorkerCloseFast) {
+TEST_F(WorkerTest, WorkerCloseFast) {
   RunWorkerFastLayoutTest("worker-close.html");
 }
 
@@ -222,8 +213,7 @@ TEST_F(WorkerTest, WorkerConstructor) {
   RunWorkerFastLayoutTest("worker-constructor.html");
 }
 
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_WorkerContextGc) {
+TEST_F(WorkerTest, WorkerContextGc) {
   RunWorkerFastLayoutTest("worker-context-gc.html");
 }
 
@@ -232,60 +222,48 @@ TEST_F(WorkerTest, DISABLED_WorkerContextGc) {
 #define WorkerContextMultiPort DISABLED_WorkerContextMultiPort
 #endif
 
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_WorkerContextMultiPort) {
+TEST_F(WorkerTest, WorkerContextMultiPort) {
   RunWorkerFastLayoutTest("worker-context-multi-port.html");
 }
 
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_WorkerEventListener) {
+TEST_F(WorkerTest, WorkerEventListener) {
   RunWorkerFastLayoutTest("worker-event-listener.html");
 }
 
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_WorkerGC) {
+TEST_F(WorkerTest, WorkerGC) {
   RunWorkerFastLayoutTest("worker-gc.html");
 }
 
 // worker-lifecycle.html relies on layoutTestController.workerThreadCount
 // which is not currently implemented.
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
 TEST_F(WorkerTest, DISABLED_WorkerLifecycle) {
   RunWorkerFastLayoutTest("worker-lifecycle.html");
 }
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_WorkerLocation) {
+TEST_F(WorkerTest, WorkerLocation) {
   RunWorkerFastLayoutTest("worker-location.html");
 }
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_WorkerMessagePort) {
+TEST_F(WorkerTest, WorkerMessagePort) {
   RunWorkerFastLayoutTest("worker-messageport.html");
 }
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_WorkerMessagePortGC) {
+TEST_F(WorkerTest, WorkerMessagePortGC) {
   RunWorkerFastLayoutTest("worker-messageport-gc.html");
 }
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_WorkerMultiPort) {
+TEST_F(WorkerTest, WorkerMultiPort) {
   RunWorkerFastLayoutTest("worker-multi-port.html");
 }
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_WorkerNavigator) {
+TEST_F(WorkerTest, WorkerNavigator) {
   RunWorkerFastLayoutTest("worker-navigator.html");
 }
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_WorkerReplaceGlobalConstructor) {
+TEST_F(WorkerTest, WorkerReplaceGlobalConstructor) {
   RunWorkerFastLayoutTest("worker-replace-global-constructor.html");
 }
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_WorkerReplaceSelf) {
+TEST_F(WorkerTest, WorkerReplaceSelf) {
   RunWorkerFastLayoutTest("worker-replace-self.html");
 }
 TEST_F(WorkerTest, WorkerScriptError) {
   RunWorkerFastLayoutTest("worker-script-error.html");
 }
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_WorkerTerminate) {
+TEST_F(WorkerTest, WorkerTerminate) {
   RunWorkerFastLayoutTest("worker-terminate.html");
 }
 TEST_F(WorkerTest, WorkerTimeout) {
@@ -299,8 +277,7 @@ TEST_F(WorkerTest, WorkerTimeout) {
 #define SharedWorkerFastLayoutTests FLAKY_SharedWorkerFastLayoutTests
 #endif
 
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_SharedWorkerFastLayoutTests) {
+TEST_F(WorkerTest, SharedWorkerFastLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "shared-worker-constructor.html",
     "shared-worker-context-gc.html",
@@ -401,8 +378,7 @@ TEST_F(WorkerTest, FLAKY_WorkerWebSocketLayoutTests) {
   StopWebSocketServer();
 }
 
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_WorkerXhrHttpLayoutTests) {
+TEST_F(WorkerTest, WorkerXhrHttpLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "abort-exception-assert.html",
 #if defined(OS_WIN)
@@ -525,8 +501,7 @@ TEST_F(WorkerTest, LimitTotal) {
 #endif
 }
 
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_WorkerClose) {
+TEST_F(WorkerTest, WorkerClose) {
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
   GURL url = GetTestUrl(L"workers", L"worker_close.html");
@@ -537,8 +512,7 @@ TEST_F(WorkerTest, DISABLED_WorkerClose) {
   ASSERT_TRUE(WaitForProcessCountToBe(1, 0));
 }
 
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerShutdown) {
+TEST_F(WorkerTest, QueuedSharedWorkerShutdown) {
   // Tests to make sure that queued shared workers are started up when
   // shared workers shut down.
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
@@ -554,8 +528,7 @@ TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerShutdown) {
   ASSERT_TRUE(WaitForProcessCountToBe(1, max_workers_per_tab));
 }
 
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_MultipleTabsQueuedSharedWorker) {
+TEST_F(WorkerTest, MultipleTabsQueuedSharedWorker) {
   // Tests to make sure that only one instance of queued shared workers are
   // started up even when those instances are on multiple tabs.
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
@@ -584,8 +557,7 @@ TEST_F(WorkerTest, DISABLED_MultipleTabsQueuedSharedWorker) {
   ASSERT_TRUE(WaitForProcessCountToBe(3, max_workers_per_tab));
 }
 
-// failed after WebKit roll to r54996 (http://crbug.com/36247)
-TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerStartedFromOtherTab) {
+TEST_F(WorkerTest, QueuedSharedWorkerStartedFromOtherTab) {
   // Tests to make sure that queued shared workers are started up when
   // an instance is launched from another tab.
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
