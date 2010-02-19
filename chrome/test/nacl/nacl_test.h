@@ -31,6 +31,13 @@ class NaClTest : public UITest {
  private:
   void PrepareSrpcHwTest(FilePath test_root_dir);
   void PrepareServerTest(FilePath test_root_dir);
+  void PrepareSrpcBasicTest(FilePath test_root_dir);
+  void PrepareSrpcSockAddrTest(FilePath test_root_dir);
+  void PrepareSrpcShmTest(FilePath test_root_dir);
+  void PrepareSrpcPluginTest(FilePath test_root_dir);
+  void PrepareSrpcNrdXferTest(FilePath test_root_dir);
+
+  FilePath GetTestBinariesDir();
 };
 
 #endif  // CHROME_TEST_NACL_NACL_TEST_H_
