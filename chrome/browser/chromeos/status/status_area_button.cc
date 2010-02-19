@@ -23,26 +23,21 @@ StatusAreaButton::StatusAreaButton(views::ViewMenuDelegate* menu_delegate)
 }
 
 void StatusAreaButton::Paint(gfx::Canvas* canvas, bool for_drag) {
-  int bitmap_id;
-
-  switch (state()) {
-    case BS_NORMAL:
-      bitmap_id = IDR_STATUSBAR_CONTAINER;
-      break;
-    case BS_HOT:
-      bitmap_id = IDR_STATUSBAR_CONTAINER_HOVER;
-      break;
-    case BS_PUSHED:
-      bitmap_id = IDR_STATUSBAR_CONTAINER_PRESSED;
-      break;
-    default:
-      bitmap_id = IDR_STATUSBAR_CONTAINER;
-      NOTREACHED();
+  if (state() == BS_PUSHED) {
+    canvas->DrawBitmapInt(*ResourceBundle::GetSharedInstance().
+                              GetBitmapNamed(IDR_STATUSBAR_PRESSED), 0, 0);
   }
-  SkBitmap* container =
-      ResourceBundle::GetSharedInstance().GetBitmapNamed(bitmap_id);
-  canvas->DrawBitmapInt(*container, 0, 0);
   DrawIcon(canvas);
+}
+
+gfx::Size StatusAreaButton::GetPreferredSize() {
+  // icons are 24x24
+  static const int kIconWidth = 24;
+  static const int kIconHeight = 24;
+  gfx::Insets insets = GetInsets();
+  gfx::Size prefsize(kIconWidth + insets.width(),
+                     kIconHeight + insets.height());
+  return prefsize;
 }
 
 void StatusAreaButton::DrawIcon(gfx::Canvas* canvas) {

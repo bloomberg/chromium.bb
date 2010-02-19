@@ -46,6 +46,10 @@ class PowerMenuButton : public StatusAreaButton,
   // PowerLibrary::Observer implementation.
   virtual void PowerChanged(PowerLibrary* obj);
 
+ protected:
+  // StatusAreaButton implementation.
+  virtual void DrawIcon(gfx::Canvas* canvas);
+
  private:
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);

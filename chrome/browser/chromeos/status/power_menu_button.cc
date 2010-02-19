@@ -4,6 +4,7 @@
 
 #include "chrome/browser/chromeos/status/power_menu_button.h"
 
+#include "app/gfx/canvas.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/time.h"
@@ -16,7 +17,7 @@ namespace chromeos {
 // PowerMenuButton
 
 // static
-const int PowerMenuButton::kNumPowerImages = 16;
+const int PowerMenuButton::kNumPowerImages = 12;
 
 PowerMenuButton::PowerMenuButton()
     : StatusAreaButton(this),
@@ -97,6 +98,17 @@ void PowerMenuButton::RunMenu(views::View* source, const gfx::Point& pt) {
 
 void PowerMenuButton::PowerChanged(PowerLibrary* obj) {
   UpdateIcon();
+}
+
+////////////////////////////////////////////////////////////////////////////////
+// PowerMenuButton, StatusAreaButton implementation:
+
+void PowerMenuButton::DrawIcon(gfx::Canvas* canvas) {
+  // Draw the battery icon 6 pixels down to center it.
+  // Because the status icon is 24x24 but the images are 24x16.
+  // But since the images are shifted up by 4 pixels, we draw at 6 pixels down.
+  static const int kIconVerticalPadding = 6;
+  canvas->DrawBitmapInt(icon(), 0, kIconVerticalPadding);
 }
 
 void PowerMenuButton::UpdateIcon() {

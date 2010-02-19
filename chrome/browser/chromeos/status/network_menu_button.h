@@ -128,9 +128,10 @@ class NetworkMenuButton : public StatusAreaButton,
   };
   typedef std::vector<MenuItem> MenuItemVector;
 
-  static SkBitmap IconForWifiStrength(int strength);
-
-  static SkBitmap IconForCellularStrength(int strength);
+  // Returns the Icon for a network strength between 0 and 100.
+  // |black| is used to specify whether to return a black icon for display
+  // on a light background or a white icon for display on a dark background.
+  static SkBitmap IconForNetworkStrength(int strength, bool black);
 
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
@@ -143,21 +144,6 @@ class NetworkMenuButton : public StatusAreaButton,
 
   // The number of wifi strength images.
   static const int kNumWifiImages;
-
-  // The minimum opacity of the wifi bars.
-  static const int kMinOpacity;
-
-  // The maximum opacity of the wifi bars.
-  static const int kMaxOpacity;
-
-  // The wifi icons used in menu. These are built on initialization.
-  static SkBitmap* menu_wifi_icons_;
-
-  // The ethernet icon used in menu,
-  static SkBitmap* menu_wired_icon_;
-
-  // The disconnected icon used in menu,
-  static SkBitmap* menu_disconnected_icon_;
 
   // Our menu items.
   MenuItemVector menu_items_;
@@ -173,12 +159,6 @@ class NetworkMenuButton : public StatusAreaButton,
 
   // The throb animation that does the wifi connecting animation.
   ThrobAnimation animation_connecting_;
-
-  // The throb animation that does the downloading animation.
-  ThrobAnimation animation_downloading_;
-
-  // The throb animation that does the uploading animation.
-  ThrobAnimation animation_uploading_;
 
   // The duration of the icon throbbing in milliseconds.
   static const int kThrobDuration;

@@ -22,48 +22,16 @@ namespace chromeos {
 // NetworkMenuButton
 
 // static
-const int NetworkMenuButton::kNumWifiImages = 3;
-const int NetworkMenuButton::kMinOpacity = 50;
-const int NetworkMenuButton::kMaxOpacity = 256;
+const int NetworkMenuButton::kNumWifiImages = 9;
 const int NetworkMenuButton::kThrobDuration = 1000;
-SkBitmap* NetworkMenuButton::menu_wifi_icons_ = NULL;
-SkBitmap* NetworkMenuButton::menu_wired_icon_ = NULL;
-SkBitmap* NetworkMenuButton::menu_disconnected_icon_ = NULL;
 
 NetworkMenuButton::NetworkMenuButton(gfx::NativeWindow parent_window)
     : StatusAreaButton(this),
       ALLOW_THIS_IN_INITIALIZER_LIST(network_menu_(this)),
       parent_window_(parent_window),
-      ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(animation_downloading_(this)),
-      ALLOW_THIS_IN_INITIALIZER_LIST(animation_uploading_(this)) {
-  // Initialize the static menu icons.
-  static bool initialized = false;
-  if (!initialized) {
-    ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-    menu_wired_icon_ = new SkBitmap(SkBitmapOperations::CreateInvertedBitmap(
-        *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED)));
-    menu_disconnected_icon_ = new SkBitmap(
-        SkBitmapOperations::CreateInvertedBitmap(
-            *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED)));
-    menu_wifi_icons_ = new SkBitmap[kNumWifiImages + 1];
-    SkBitmap icon = *rb.GetBitmapNamed(IDR_STATUSBAR_WIFI_DOT);
-    menu_wifi_icons_[0] = SkBitmapOperations::CreateInvertedBitmap(icon);
-    for (int i = 0; i < kNumWifiImages; i++) {
-      icon = SkBitmapOperations::CreateSuperimposedBitmap(icon,
-          *rb.GetBitmapNamed(IDR_STATUSBAR_WIFI_UP1 + i));
-      icon = SkBitmapOperations::CreateSuperimposedBitmap(icon,
-          *rb.GetBitmapNamed(IDR_STATUSBAR_WIFI_DOWN1 + i));
-      menu_wifi_icons_[i + 1] = SkBitmapOperations::CreateInvertedBitmap(icon);
-    }
-    initialized = true;
-  }
+      ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)) {
   animation_connecting_.SetThrobDuration(kThrobDuration);
   animation_connecting_.SetTweenType(SlideAnimation::NONE);
-  animation_downloading_.SetThrobDuration(kThrobDuration);
-  animation_downloading_.SetTweenType(SlideAnimation::NONE);
-  animation_uploading_.SetThrobDuration(kThrobDuration);
-  animation_uploading_.SetTweenType(SlideAnimation::NONE);
   NetworkChanged(NetworkLibrary::Get());
   NetworkLibrary::Get()->AddObserver(this);
 }
@@ -163,22 +131,59 @@ bool NetworkMenuButton::OnPasswordDialogAccept(const std::string& ssid,
 // NetworkMenuButton, AnimationDelegate implementation:
 
 void NetworkMenuButton::AnimationProgressed(const Animation* animation) {
-  if (animation == &animation_connecting_ ||
-      animation == &animation_downloading_ ||
-      animation == &animation_uploading_)
+  if (animation == &animation_connecting_) {
+    // Figure out which image to draw. We want a value between 0-100.
+    // 0 reperesents no signal and 100 represents full signal strength.
+    int value = static_cast<int>(animation_connecting_.GetCurrentValue()*100.0);
+    if (value < 0)
+      value = 0;
+    else if (value > 100)
+      value = 100;
+    SetIcon(IconForNetworkStrength(value, false));
     SchedulePaint();
-  else
+  } else {
     MenuButton::AnimationProgressed(animation);
+  }
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuButton, StatusAreaButton implementation:
 
+void NetworkMenuButton::DrawIcon(gfx::Canvas* canvas) {
+  // Draw the network icon 4 pixels down to center it.
+  // Because the status icon is 24x24 but the images are 24x16.
+  static const int kIconVerticalPadding = 4;
+  canvas->DrawBitmapInt(icon(), 0, kIconVerticalPadding);
+
+  // Draw badge at (14,14) if there is one.
+  static const int x = 14;
+  static const int y = 14;
+  NetworkLibrary* cros = NetworkLibrary::Get();
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+  if (cros->EnsureLoaded()) {
+    if (!cros->Connected()) {
+      canvas->DrawBitmapInt(
+          *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED), x, y);
+    } else if (cros->cellular_connecting() || cros->cellular_connected()) {
+      // TODO(chocobo): Check cellular network 3g/edge.
+      canvas->DrawBitmapInt(
+          *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_3G), x, y);
+//      canvas->DrawBitmapInt(
+//          *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_EDGE), x, y);
+    }
+  } else {
+    canvas->DrawBitmapInt(
+        *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_WARNING), x, y);
+  }
+}
+
 // Override the DrawIcon method to draw the wifi icon.
 // The wifi icon is composed of 1 or more alpha-blended icons to show the
 // network strength. We also draw an animation for when there's upload/download
 // traffic.
+/* TODO(chocobo): Add this code back in when UI is finalized.
 void NetworkMenuButton::DrawIcon(gfx::Canvas* canvas) {
+
   // First draw the base icon.
   canvas->DrawBitmapInt(icon(), 0, 0);
 
@@ -261,43 +266,43 @@ void NetworkMenuButton::DrawIcon(gfx::Canvas* canvas) {
     }
   }
 }
-
+*/
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuButton, NetworkLibrary::Observer implementation:
 
 void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
-  int id = IDR_STATUSBAR_WARNING;
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
   if (cros->EnsureLoaded()) {
-    id = IDR_STATUSBAR_NETWORK_DISCONNECTED;
-    if (cros->wifi_connecting()) {
+    if (cros->wifi_connecting() || cros->cellular_connecting()) {
       // Start the connecting animation if not running.
       if (!animation_connecting_.IsAnimating()) {
         animation_connecting_.Reset();
         animation_connecting_.StartThrobbing(std::numeric_limits<int>::max());
+        SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS1));
       }
-      // Stop network traffic animation when we are connecting.
-      animation_downloading_.Stop();
-      animation_uploading_.Stop();
-
-      id = IDR_STATUSBAR_WIFI_DOT;
     } else {
       // Stop connecting animation since we are not connecting.
       animation_connecting_.Stop();
 
       // Always show the higher priority connection first. Ethernet then wifi.
-      if (cros->ethernet_connected()) {
-        id = IDR_STATUSBAR_WIRED;
-      } else if (cros->wifi_connected()) {
-        id = IDR_STATUSBAR_WIFI_DOT;
-      }
+      if (cros->ethernet_connected())
+        SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_WIRED));
+      else if (cros->wifi_connected())
+        SetIcon(IconForNetworkStrength(cros->wifi_strength(), false));
+      else if (cros->cellular_connected())
+        SetIcon(IconForNetworkStrength(cros->cellular_strength(), false));
+      else
+        SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0));
     }
+  } else {
+    SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0));
   }
 
-  SetIcon(*ResourceBundle::GetSharedInstance().GetBitmapNamed(id));
   SchedulePaint();
 }
 
 void NetworkMenuButton::NetworkTraffic(NetworkLibrary* cros, int traffic_type) {
+/* TODO(chocobo): Add this code back in when network traffic UI is finalized.
   if (!cros->ethernet_connected() && cros->wifi_connected() &&
       !cros->wifi_connecting()) {
     // For downloading/uploading animation, we want to force at least one cycle
@@ -308,24 +313,21 @@ void NetworkMenuButton::NetworkTraffic(NetworkLibrary* cros, int traffic_type) {
     if (traffic_type & TRAFFIC_UPLOAD)
       animation_uploading_.StartThrobbing(2);
   }
+  */
 }
 
 // static
-SkBitmap NetworkMenuButton::IconForWifiStrength(int strength) {
+SkBitmap NetworkMenuButton::IconForNetworkStrength(int strength, bool black) {
   // Compose wifi icon by superimposing various icons.
   int index = static_cast<int>(strength / 100.0 *
-      nextafter(static_cast<float>(kNumWifiImages + 1), 0));
+      nextafter(static_cast<float>(kNumWifiImages), 0));
   if (index < 0)
     index = 0;
-  if (index > kNumWifiImages)
-    index = kNumWifiImages;
-  return menu_wifi_icons_[index];
-}
-
-// static
-SkBitmap NetworkMenuButton::IconForCellularStrength(int strength) {
-  // TODO(chocobo): need to switch to cellular icons when they are ready.
-  return IconForWifiStrength(strength);
+  if (index >= kNumWifiImages)
+    index = kNumWifiImages - 1;
+  int base = black ? IDR_STATUSBAR_NETWORK_BARS1_BLACK :
+                     IDR_STATUSBAR_NETWORK_BARS1;
+  return *ResourceBundle::GetSharedInstance().GetBitmapNamed(base + index);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -344,9 +346,7 @@ void NetworkMenuButton::InitMenuItems() {
   menu_items_.clear();
   // Populate our MenuItems with the current list of wifi networks.
   NetworkLibrary* cros = NetworkLibrary::Get();
-  // If cros is not loaded, then have an empty menu.
-  if (!cros->EnsureLoaded())
-    return;
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
 
   bool offline_mode = cros->offline_mode();
 
@@ -363,8 +363,8 @@ void NetworkMenuButton::InitMenuItems() {
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_WIFI),
           l10n_util::GetStringUTF16(status));
   SkBitmap icon = cros->wifi_connected() ?
-      IconForWifiStrength(cros->wifi_strength()) :
-      *menu_disconnected_icon_;
+      IconForNetworkStrength(cros->wifi_strength(), true) :
+      *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
   menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
       icon, WifiNetwork(), CellularNetwork(), FLAG_DISABLED));
 
@@ -419,8 +419,8 @@ void NetworkMenuButton::InitMenuItems() {
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR),
           l10n_util::GetStringUTF16(status));
   icon = cros->cellular_connected() ?
-      IconForCellularStrength(cros->cellular_strength()) :
-      *menu_disconnected_icon_;
+      IconForNetworkStrength(cros->cellular_strength(), true) :
+      *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
   menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
       icon, WifiNetwork(), CellularNetwork(), FLAG_DISABLED));
 
@@ -473,8 +473,9 @@ void NetworkMenuButton::InitMenuItems() {
   label = l10n_util::GetStringFUTF16(IDS_STATUSBAR_NETWORK_DEVICE_STATUS,
       l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET),
       l10n_util::GetStringUTF16(status));
-  icon = cros->ethernet_connected() ? *menu_wired_icon_ :
-                                      *menu_disconnected_icon_;
+  icon = cros->ethernet_connected() ?
+      *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED_BLACK) :
+      *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
   menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
       icon, WifiNetwork(), CellularNetwork(), FLAG_DISABLED));
 

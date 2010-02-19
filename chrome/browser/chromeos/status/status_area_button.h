@@ -17,6 +17,7 @@ class StatusAreaButton : public views::MenuButton {
   explicit StatusAreaButton(views::ViewMenuDelegate* menu_delegate);
   virtual ~StatusAreaButton() {}
   virtual void Paint(gfx::Canvas* canvas, bool for_drag);
+  virtual gfx::Size GetPreferredSize();
 
  protected:
   // Draws the icon for this status area button on the canvas.
