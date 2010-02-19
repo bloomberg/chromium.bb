@@ -31,6 +31,9 @@ bool CommandBufferService::Initialize(int32 size) {
   if (ring_buffer_.get())
     return false;
 
+  if (size == 0 || size > kMaxCommandBufferSize)
+    return false;
+
   size_ = size;
 
   ring_buffer_.reset(new SharedMemory);

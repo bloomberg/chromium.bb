@@ -67,6 +67,15 @@ TEST_F(CommandBufferServiceTest, InitializationSizeIsInEntriesNotBytes) {
             command_buffer_->GetRingBuffer().size);
 }
 
+TEST_F(CommandBufferServiceTest, InitializationFailsIfSizeIsZero) {
+  EXPECT_FALSE(command_buffer_->Initialize(0));
+}
+
+TEST_F(CommandBufferServiceTest, InitializationFailsIfSizeOutOfRange) {
+  EXPECT_FALSE(command_buffer_->Initialize(
+      CommandBuffer::kMaxCommandBufferSize + 1));
+}
+
 TEST_F(CommandBufferServiceTest, InitializeFailsSecondTime) {
   EXPECT_TRUE(command_buffer_->Initialize(1024));
   EXPECT_FALSE(command_buffer_->Initialize(1024));
