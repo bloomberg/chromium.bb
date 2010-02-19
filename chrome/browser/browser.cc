@@ -3069,6 +3069,16 @@ void Browser::OpenURLAtIndex(TabContents* source,
   bool source_tab_was_frontmost = (current_tab == GetSelectedTabContents());
   TabContents* new_contents = NULL;
 
+  // Opening a bookmark counts as a user gesture, so we don't need to avoid
+  // carpet-bombing here.
+  PageTransition::Type baseTransitionType =
+    PageTransition::StripQualifier(transition);
+  if (baseTransitionType == PageTransition::TYPED ||
+      baseTransitionType == PageTransition::AUTO_BOOKMARK) {
+    RenderViewHostDelegate::BrowserIntegration* delegate = current_tab;
+    delegate->OnUserGesture();
+  }
+
   // If the URL is part of the same web site, then load it in the same
   // SiteInstance (and thus the same process).  This is an optimization to
   // reduce process overhead; it is not necessary for compatibility.  (That is,
