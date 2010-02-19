@@ -124,6 +124,13 @@ void DetachSharedMemory(Display* display, XSharedMemoryId shmseg);
 // pixmap containing Skia ARGB data.
 XID CreatePictureFromSkiaPixmap(Display* display, XID pixmap);
 
+// Draws ARGB data on the given pixmap using the given GC, converting to the
+// server side visual depth as needed.  Destination is assumed to be the same
+// dimensions as |data| or larger.  |data| is also assumed to be in row order
+// with each line being exactly |width| * 4 bytes long.
+void PutARGBImage(Display* display, void* visual, int depth, XID pixmap,
+                  void* pixmap_gc, const uint8* data, int width, int height);
+
 void FreePicture(Display* display, XID picture);
 void FreePixmap(Display* display, XID pixmap);
 
