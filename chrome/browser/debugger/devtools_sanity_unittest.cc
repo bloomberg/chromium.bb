@@ -353,7 +353,8 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestPauseWhenScriptIsRunning) {
 }
 
 // Tests eval on call frame.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestEvalOnCallFrame) {
+// BUG http://crbug.com/36262
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLE_TestEvalOnCallFrame) {
   RunTest("testEvalOnCallFrame", kDebuggerTestPage);
 }
 
@@ -373,13 +374,15 @@ IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestStepIn) {
 }
 
 // Tests that scope can be expanded and contains expected variables.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestExpandScope) {
+// BUG http://crbug.com/36262
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLE_TestExpandScope) {
   RunTest("testExpandScope", kDebuggerClosurePage);
 }
 
 // Tests that intrinsic properties(__proto__, prototype, constructor) are
 // present.
-IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, TestDebugIntrinsicProperties) {
+// BUG http://crbug.com/36262
+IN_PROC_BROWSER_TEST_F(DevToolsSanityTest, DISABLE_TestDebugIntrinsicProperties) {
   RunTest("testDebugIntrinsicProperties", kDebuggerIntrinsicPropertiesPage);
 }
 
