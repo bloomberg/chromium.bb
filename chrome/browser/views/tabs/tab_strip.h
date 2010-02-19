@@ -309,9 +309,6 @@ class TabStrip : public BaseTabStrip,
   // anywhere over our containing window.
   void HandleGlobalMouseMoveEvent();
 
-  // Returns true if any of the tabs are phantom.
-  bool HasPhantomTabs() const;
-
   // -- Member Variables ------------------------------------------------------
 
   // Our model.

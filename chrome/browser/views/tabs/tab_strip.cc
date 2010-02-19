@@ -62,12 +62,6 @@ static const int kSuspendAnimationsTimeMs = 200;
 static const int kTabHOffset = -16;
 static const int kTabStripAnimationVSlop = 40;
 
-// Alpha value phantom tabs are rendered at.
-static const int kPhantomTabAlpha = 105;
-
-// Alpha value phantom tab icons are rendered at.
-static const int kPhantomTabIconAlpha = 160;
-
 // Size of the drop indicator.
 static int drop_indicator_width;
 static int drop_indicator_height;
@@ -892,53 +886,17 @@ TabStrip* TabStrip::AsTabStrip() {
 // TabStrip, views::View overrides:
 
 void TabStrip::PaintChildren(gfx::Canvas* canvas) {
-  // Tabs are painted in reverse order, so they stack to the left.
-
-  // Phantom tabs appear behind all other tabs and are rendered first. To make
-  // them slightly transparent we render them to a different layer.
-  if (HasPhantomTabs()) {
-    SkRect bounds;
-    bounds.set(0, 0, SkIntToScalar(width()), SkIntToScalar(height()));
-    canvas->saveLayerAlpha(&bounds, kPhantomTabAlpha,
-                           SkCanvas::kARGB_ClipLayer_SaveFlag);
-    canvas->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
-    for (int i = GetTabCount() - 1; i >= 0; --i) {
-      Tab* tab = GetTabAt(i);
-      if (tab->phantom())
-        tab->ProcessPaint(canvas);
-    }
-    canvas->restore();
-
-    canvas->saveLayerAlpha(&bounds, kPhantomTabIconAlpha,
-                           SkCanvas::kARGB_ClipLayer_SaveFlag);
-    canvas->drawARGB(0, 255, 255, 255, SkXfermode::kClear_Mode);
-    for (int i = GetTabCount() - 1; i >= 0; --i) {
-      Tab* tab = GetTabAt(i);
-      if (tab->phantom()) {
-        canvas->save();
-        canvas->ClipRectInt(tab->MirroredX(), tab->y(), tab->width(),
-                            tab->height());
-        canvas->TranslateInt(tab->MirroredX(), tab->y());
-        tab->PaintIcon(canvas);
-        canvas->restore();
-      }
-    }
-    canvas->restore();
-  }
-
+  // Paint the tabs in reverse order, so they stack to the left.
   Tab* selected_tab = NULL;
-
   for (int i = GetTabCount() - 1; i >= 0; --i) {
     Tab* tab = GetTabAt(i);
     // We must ask the _Tab's_ model, not ourselves, because in some situations
     // the model will be different to this object, e.g. when a Tab is being
     // removed after its TabContents has been destroyed.
-    if (!tab->phantom()) {
-      if (!tab->IsSelected()) {
-        tab->ProcessPaint(canvas);
-      } else {
-        selected_tab = tab;
-      }
+    if (!tab->IsSelected()) {
+      tab->ProcessPaint(canvas);
+    } else {
+      selected_tab = tab;
     }
   }
 
@@ -2048,12 +2006,4 @@ void TabStrip::HandleGlobalMouseMoveEvent() {
     // back over it.
     resize_layout_factory_.RevokeAll();
   }
-}
-
-bool TabStrip::HasPhantomTabs() const {
-  for (int i = 0; i < GetTabCount(); ++i) {
-    if (GetTabAt(i)->phantom())
-      return true;
-  }
-  return false;
 }

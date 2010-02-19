@@ -93,10 +93,6 @@ class TabRenderer : public views::View,
     theme_provider_ = provider;
   }
 
-  // Paints the icon. Most of the time you'll want to invoke Paint directly, but
-  // in certain situations this invoked outside of Paint.
-  void PaintIcon(gfx::Canvas* canvas);
-
   // Returns the minimum possible size of a single unselected Tab.
   static gfx::Size GetMinimumUnselectedSize();
   // Returns the minimum possible size of a selected Tab. Selected tabs must
@@ -154,9 +150,11 @@ class TabRenderer : public views::View,
 
   // Paint various portions of the Tab
   void PaintTitle(SkColor title_color, gfx::Canvas* canvas);
+  void PaintIcon(gfx::Canvas* canvas);
   void PaintTabBackground(gfx::Canvas* canvas);
   void PaintInactiveTabBackground(gfx::Canvas* canvas);
   void PaintActiveTabBackground(gfx::Canvas* canvas);
+  void PaintHoverTabBackground(gfx::Canvas* canvas, double opacity);
   void PaintLoadingAnimation(gfx::Canvas* canvas);
 
   // Returns the number of favicon-size elements that can fit in the tab's

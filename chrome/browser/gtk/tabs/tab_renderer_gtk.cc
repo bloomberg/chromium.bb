@@ -844,6 +844,9 @@ void TabRendererGtk::PaintIcon(gfx::Canvas* canvas) {
 
 void TabRendererGtk::PaintTabBackground(gfx::Canvas* canvas) {
   if (IsSelected()) {
+    // Sometimes detaching a tab quickly can result in the model reporting it
+    // as not being selected, so is_drag_clone_ ensures that we always paint
+    // the active representation for the dragged tab.
     PaintActiveTabBackground(canvas);
   } else {
     PaintInactiveTabBackground(canvas);
