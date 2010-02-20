@@ -17,8 +17,10 @@
 #include <sys/param.h>
 #include <unistd.h>
 
+#include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/trusted/nonnacl_util/sel_ldr_launcher.h"
 #include "native_client/src/trusted/desc/nacl_desc_base.h"
+
 
 using std::string;
 using std::vector;
@@ -91,7 +93,11 @@ bool SelLdrLauncher::Launch() {
 
     Close(pair[0]);
     execv(sel_ldr_.c_str(), const_cast<char**>(argv));
-    perror("exec");
+    NaClLog(LOG_ERROR, "execv failed, args were:\n");
+    for (size_t i = 0; i < command.size(); ++i) {
+      NaClLog(LOG_ERROR, "%s\n", argv[i]);
+    }
+    perror("execv");
     _exit(EXIT_FAILURE);
   }
   Close(pair[1]);
