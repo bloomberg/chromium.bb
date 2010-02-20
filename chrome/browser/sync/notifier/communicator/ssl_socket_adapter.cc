@@ -264,7 +264,7 @@ int TransportSocket::GetPeerAddress(net::AddressList* address) const {
   socket_address.ToSockAddr(&ipv4addr);
 
   struct addrinfo ai;
-  memset(&ai, sizeof(ai), 0);
+  memset(&ai, 0, sizeof(ai));
   ai.ai_family = ipv4addr.sin_family;
   ai.ai_socktype = SOCK_STREAM;
   ai.ai_protocol = IPPROTO_TCP;
