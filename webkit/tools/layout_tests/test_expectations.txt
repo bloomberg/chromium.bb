@@ -2772,7 +2772,7 @@ BUG31252 : http/tests/security/listener/xss-inactive-closure.html = TEXT
 
 // WebKit roll 52633 -> 52667
 // On Linux, sometimes the text dump matches. Not sure why.
-BUG_DIMICH RELEASE LINUX : svg/custom/resource-invalidate-on-target-update.svg = IMAGE+TEXT IMAGE
+BUG_DIMICH LINUX : svg/custom/resource-invalidate-on-target-update.svg = IMAGE+TEXT IMAGE
 
 BUG31623 WIN: http/tests/appcache/remove-cache.html = PASS TEXT TIMEOUT
 
