@@ -120,7 +120,6 @@ int main(int argc, char** argv) {
               << std::endl
               << "Optional arguments:" << std::endl
               << "  [--enable-openmax]"
-              << "  [--enable-h264-annexb-filter]"
               << "  [--audio]"
               << "  [--alsa-device=DEVICE]" << std::endl;
     return 1;

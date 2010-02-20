@@ -141,8 +141,9 @@ VideoSurface::Format OmxVideoDecodeEngine::GetSurfaceFormat() const {
 }
 
 void OmxVideoDecodeEngine::Stop(Callback0::Type* done_cb) {
-  DCHECK_EQ(message_loop_, MessageLoop::current());
   omx_codec_->Stop(done_cb);
+
+  // TODO(hclam): make sure writing to state_ is safe.
   state_ = kStopped;
 }
 
@@ -171,20 +172,21 @@ void OmxVideoDecodeEngine::StopUsingThisBuffer(int id) {
 void OmxVideoDecodeEngine::BufferReady(int buffer_id,
                                        BufferUsedCallback* callback) {
   DCHECK_EQ(message_loop_, MessageLoop::current());
-  CHECK(buffer_id != OmxCodec::kEosBuffer);
-  CHECK(callback);
+  CHECK((buffer_id == OmxCodec::kEosBuffer) || callback);
 
   // Obtain the corresponding OMX_BUFFERHEADERTYPE.
-  OmxBufferList::iterator i = FindBuffer(buffer_id);
-  uint8* buffer = i->second->pBuffer;
-  int size = i->second->nFilledLen;
+  OmxBufferList::iterator iter = FindBuffer(buffer_id);
+  if (iter != omx_buffers_.end()) {
+    uint8* buffer = iter->second->pBuffer;
+    int size = iter->second->nFilledLen;
 
-  if ((size_t)size != frame_bytes_) {
-    LOG(ERROR) << "Read completed with weird size: " << size;
+    if ((size_t)size != frame_bytes_) {
+      LOG(ERROR) << "Read completed with weird size: " << size;
+    }
+
+    // Merge the buffer into previous buffers.
+    MergeBytesFrameQueue(buffer, size);
   }
-
-  // Merge the buffer into previous buffers.
-  MergeBytesFrameQueue(buffer, size);
 
   // We assume that when we receive a read complete callback from
   // OmxCodec there was a read request made.
@@ -222,7 +224,10 @@ void OmxVideoDecodeEngine::BufferReady(int buffer_id,
   request.done_cb->Run();
 
   // Notify OmxCodec that we have finished using this buffer.
-  callback->RunWithParams(MakeTuple(buffer_id));
+  if (callback) {
+    callback->Run(buffer_id);
+    delete callback;
+  }
 }
 
 void OmxVideoDecodeEngine::OnReadComplete(
@@ -263,7 +268,6 @@ OmxVideoDecodeEngine::FindBuffer(int buffer_id) {
     if (i->first == buffer_id)
       return i;
   }
-  NOTREACHED() << "Invalid buffer id received";
   return omx_buffers_.end();
 }
 
