@@ -1527,6 +1527,17 @@ void LocationBarView::PageActionImageView::OnMouseMoved(
 
 bool LocationBarView::PageActionImageView::OnMousePressed(
     const views::MouseEvent& event) {
+  // We are interested in capturing mouse messages, but we want want to wait
+  // until mouse-up because we might show a context menu. Doing so on mouse-down
+  // causes weird bugs like http://crbug.com/33155.
+  return true;
+}
+
+void LocationBarView::PageActionImageView::OnMouseReleased(
+    const views::MouseEvent& event, bool canceled) {
+  if (canceled)
+    return;
+
   int button = -1;
   if (event.IsLeftMouseButton()) {
     button = 1;
@@ -1546,11 +1557,10 @@ bool LocationBarView::PageActionImageView::OnMousePressed(
     if (!context_menu_.get())
       context_menu_.reset(new ExtensionActionContextMenu());
     context_menu_->Run(extension, point);
-    return false;
+    return;
   }
 
   ExecuteAction(button);
-  return true;
 }
 
 void LocationBarView::PageActionImageView::ShowInfoBubble() {

@@ -432,6 +432,7 @@ class LocationBarView : public LocationBar,
     // Overridden from view.
     virtual void OnMouseMoved(const views::MouseEvent& event);
     virtual bool OnMousePressed(const views::MouseEvent& event);
+    virtual void OnMouseReleased(const views::MouseEvent& event, bool canceled);
 
     // Overridden from LocationBarImageView.
     virtual void ShowInfoBubble();
