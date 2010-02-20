@@ -4,21 +4,29 @@
 
 #include "chrome/browser/extensions/extension_bookmark_manager_api.h"
 
+#include <vector>
+
 #include "app/l10n_util.h"
+#include "base/json/json_writer.h"
+#include "base/string_util.h"
 #include "base/values.h"
+#include "chrome/browser/bookmarks/bookmark_drag_data.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
+#include "chrome/browser/extensions/extension_dom_ui.h"
+#include "chrome/browser/extensions/extension_message_service.h"
 #include "chrome/browser/importer/importer.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
 #include "grit/generated_resources.h"
-
-#include <vector>
 
 namespace keys = extension_bookmarks_module_constants;
 
 namespace {
+
+typedef RenderViewHostDelegate::BookmarkDrag::DragData DragData;
 
 // Returns a single bookmark node from the argument ID.
 // This returns NULL in case of failure.
@@ -57,6 +65,154 @@ bool GetNodesFromArguments(BookmarkModel* model, const ListValue* ids,
   return true;
 }
 
+// Recursively adds a node to a list. This is by used |BookmarkDragDataToJSON|
+// when the data comes from the current profile. In this case we have a
+// BookmarkNode since we got the data from the current profile.
+void AddNodeToList(ListValue* list, const BookmarkNode& node) {
+  DictionaryValue* dict = new DictionaryValue();
+
+  // Add id and parentId so we can associate the data with existing nodes on the
+  // client side.
+  std::string id_string = Int64ToString(node.id());
+  dict->SetString(keys::kIdKey, id_string);
+
+  std::string parent_id_string = Int64ToString(node.GetParent()->id());
+  dict->SetString(keys::kParentIdKey, parent_id_string);
+
+  if (node.is_url())
+    dict->SetString(keys::kUrlKey, node.GetURL().spec());
+
+  dict->SetString(keys::kTitleKey, node.GetTitle());
+
+  ListValue* children = new ListValue();
+  for (int i = 0; i < node.GetChildCount(); ++i)
+    AddNodeToList(children, *node.GetChild(i));
+  dict->Set(keys::kChildrenKey, children);
+
+  list->Append(dict);
+}
+
+// Recursively adds an element to a list. This is by used
+// |BookmarkDragDataToJSON| when the data comes from a different profile. When
+// the data comes from a different profile we do not have any IDs or parent IDs.
+void AddElementToList(ListValue* list,
+                      const BookmarkDragData::Element& element) {
+  DictionaryValue* dict = new DictionaryValue();
+
+  if (element.is_url)
+    dict->SetString(keys::kUrlKey, element.url.spec());
+
+  dict->SetString(keys::kTitleKey, UTF16ToWide(element.title));
+
+  ListValue* children = new ListValue();
+  for (size_t i = 0; i < element.children.size(); ++i)
+    AddElementToList(children, element.children[i]);
+  dict->Set(keys::kChildrenKey, children);
+
+  list->Append(dict);
+}
+
+// Builds the JSON structure based on the BookmarksDragData.
+void BookmarkDragDataToJSON(Profile* profile, const BookmarkDragData& data,
+                            ListValue* args) {
+  bool same_profile = data.IsFromProfile(profile);
+  DictionaryValue* value = new DictionaryValue();
+  value->SetBoolean(keys::kSameProfileKey, same_profile);
+
+  ListValue* list = new ListValue();
+  if (same_profile) {
+    std::vector<const BookmarkNode*> nodes = data.GetNodes(profile);
+    for (size_t i = 0; i < nodes.size(); ++i)
+      AddNodeToList(list, *nodes[i]);
+  } else {
+    // We do not have an node IDs when the data comes from a different profile.
+    std::vector<BookmarkDragData::Element> elements = data.elements;
+    for (size_t i = 0; i < elements.size(); ++i)
+      AddElementToList(list, elements[i]);
+  }
+  value->Set(keys::kElementsKey, list);
+
+  args->Append(value);
+}
+
+// This is the platform specific function that takes the drag data and creates
+// the BookmarkDragData as needed.
+bool GetBookmarkDragData(const DragData* data,
+                         BookmarkDragData* bookmark_drag_data) {
+#if defined(TOOLKIT_VIEWS)
+  // On TOOLKIT_VIEWS DragData is OSExchangeData.
+  return bookmark_drag_data->Read(*data);
+#else
+  NOTIMPLEMENTED();
+  return false;
+#endif
+}
+
+}  // namespace
+
+ExtensionBookmarkManagerEventRouter::ExtensionBookmarkManagerEventRouter(
+    Profile* profile, TabContents* tab_contents)
+    : profile_(profile),
+    tab_contents_(tab_contents) {
+  tab_contents_->SetBookmarkDragDelegate(this);
+}
+
+ExtensionBookmarkManagerEventRouter::~ExtensionBookmarkManagerEventRouter() {
+  if (tab_contents_->GetBookmarkDragDelegate() == this)
+    tab_contents_->SetBookmarkDragDelegate(NULL);
+}
+
+void ExtensionBookmarkManagerEventRouter::DispatchEvent(const char* event_name,
+                                                        const ListValue* args) {
+  if (!profile_->GetExtensionMessageService())
+    return;
+
+  std::string json_args;
+  base::JSONWriter::Write(args, false, &json_args);
+  profile_->GetExtensionMessageService()->
+      DispatchEventToRenderers(event_name, json_args);
+}
+
+void ExtensionBookmarkManagerEventRouter::DispatchDragEvent(
+    const DragData* data, const char* event_name) {
+  BookmarkDragData bookmark_drag_data;
+  if (::GetBookmarkDragData(data, &bookmark_drag_data)) {
+    ListValue args;
+    BookmarkDragDataToJSON(profile_, bookmark_drag_data, &args);
+    DispatchEvent(event_name, &args);
+  }
+}
+
+void ExtensionBookmarkManagerEventRouter::OnDragEnter(const DragData* data) {
+  DispatchDragEvent(data, keys::kOnBookmarkDragEnter);
+}
+
+void ExtensionBookmarkManagerEventRouter::OnDragOver(const DragData* data) {
+  // Intentionally empty since these events happens too often and floods the
+  // message queue. We do not need this event for the bookmark manager anyway.
+}
+
+void ExtensionBookmarkManagerEventRouter::OnDragLeave(const DragData* data) {
+  DispatchDragEvent(data, keys::kOnBookmarkDragLeave);
+}
+
+void ExtensionBookmarkManagerEventRouter::OnDrop(const DragData* data) {
+  DispatchDragEvent(data, keys::kOnBookmarkDrop);
+
+  // Make a copy that is owned by this instance.
+  ClearBookmarkDragData();
+  ::GetBookmarkDragData(data, &bookmark_drag_data_);
+}
+
+const BookmarkDragData*
+ExtensionBookmarkManagerEventRouter::GetBookmarkDragData() {
+  if (bookmark_drag_data_.is_valid())
+    return &bookmark_drag_data_;
+  return NULL;
+}
+
+void ExtensionBookmarkManagerEventRouter::ClearBookmarkDragData() {
+  bookmark_drag_data_.Clear();
 }
 
 bool ClipboardBookmarkManagerFunction::CopyOrCut(bool cut) {
@@ -79,9 +235,13 @@ bool CutBookmarkManagerFunction::RunImpl() {
 bool PasteBookmarkManagerFunction::RunImpl() {
   BookmarkModel* model = profile()->GetBookmarkModel();
   const BookmarkNode* parent_node = GetNodeFromArguments(model, args_.get());
-  EXTENSION_FUNCTION_VALIDATE(parent_node);
+  if (!parent_node) {
+    error_ = keys::kNoParentError;
+    return false;
+  }
   bool can_paste = bookmark_utils::CanPasteFromClipboard(parent_node);
-  EXTENSION_FUNCTION_VALIDATE(can_paste);
+  if (!can_paste)
+    return false;
   bookmark_utils::PasteFromClipboard(model, parent_node, -1);
   return true;
 }
@@ -89,7 +249,10 @@ bool PasteBookmarkManagerFunction::RunImpl() {
 bool CanPasteBookmarkManagerFunction::RunImpl() {
   BookmarkModel* model = profile()->GetBookmarkModel();
   const BookmarkNode* parent_node = GetNodeFromArguments(model, args_.get());
-  EXTENSION_FUNCTION_VALIDATE(parent_node);
+  if (!parent_node) {
+    error_ = keys::kNoParentError;
+    return false;
+  }
   bool can_paste = bookmark_utils::CanPasteFromClipboard(parent_node);
   result_.reset(Value::CreateBooleanValue(can_paste));
   SendResponse(true);
@@ -160,7 +323,10 @@ void ExportBookmarksFunction::FileSelected(const FilePath& path,
 bool SortChildrenBookmarkManagerFunction::RunImpl() {
   BookmarkModel* model = profile()->GetBookmarkModel();
   const BookmarkNode* parent_node = GetNodeFromArguments(model, args_.get());
-  EXTENSION_FUNCTION_VALIDATE(parent_node);
+  if (!parent_node) {
+    error_ = keys::kNoParentError;
+    return false;
+  }
   model->SortChildren(parent_node);
   return true;
 }
@@ -220,6 +386,61 @@ bool BookmarkManagerGetStringsFunction::RunImpl() {
       l10n_util::GetString(IDS_CONTENT_CONTEXT_DELETE));
 
   result_.reset(localized_strings);
+  SendResponse(true);
+  return true;
+}
+
+bool StartDragBookmarkManagerFunction::RunImpl() {
+  BookmarkModel* model = profile()->GetBookmarkModel();
+  std::vector<const BookmarkNode*> nodes;
+  EXTENSION_FUNCTION_VALIDATE(
+      GetNodesFromArguments(model, args_as_list(), &nodes));
+
+  bookmark_utils::DragBookmarks(profile(), nodes,
+      dispatcher()->GetExtensionDOMUI()->tab_contents()->GetNativeView());
+
+  return true;
+}
+
+bool DropBookmarkManagerFunction::RunImpl() {
+  BookmarkModel* model = profile()->GetBookmarkModel();
+
+  // TODO(arv): The arguments change between a list and a value depending on the
+  // parameters. See http://crbug.com/36301
+  int64 id;
+  std::string id_string;
+  if (args_->IsType(Value::TYPE_STRING)) {
+    EXTENSION_FUNCTION_VALIDATE(args_->GetAsString(&id_string));
+  } else {
+    EXTENSION_FUNCTION_VALIDATE(args_->IsType(Value::TYPE_LIST));
+    EXTENSION_FUNCTION_VALIDATE(args_as_list()->GetString(0, &id_string));
+  }
+  if (!StringToInt64(id_string, &id)) {
+    error_ = keys::kInvalidIdError;
+    return false;
+  }
+
+  const BookmarkNode* drop_parent = model->GetNodeByID(id);
+  if (!drop_parent) {
+    error_ = keys::kNoParentError;
+    return false;
+  }
+
+  int drop_index;
+  if (args_as_list()->GetSize() == 2)
+    EXTENSION_FUNCTION_VALIDATE(args_as_list()->GetInteger(1, &drop_index));
+  else
+    drop_index = drop_parent->GetChildCount();
+
+  ExtensionBookmarkManagerEventRouter* router = dispatcher()->
+      GetExtensionDOMUI()->extension_bookmark_manager_event_router();
+
+  DCHECK(router);
+
+  bookmark_utils::PerformBookmarkDrop(profile(), *router->GetBookmarkDragData(),
+                                      drop_parent, drop_index);
+
+  router->ClearBookmarkDragData();
   SendResponse(true);
   return true;
 }

@@ -9,6 +9,7 @@
 
 #include "base/scoped_ptr.h"
 #include "chrome/browser/dom_ui/dom_ui.h"
+#include "chrome/browser/extensions/extension_bookmark_manager_api.h"
 #include "chrome/browser/extensions/extension_function_dispatcher.h"
 #include "chrome/browser/extensions/extension_popup_host.h"
 #include "chrome/common/extensions/extension.h"
@@ -49,6 +50,11 @@ class ExtensionDOMUI
   virtual Profile* GetProfile();
   virtual gfx::NativeView GetNativeViewOfHost();
 
+  virtual ExtensionBookmarkManagerEventRouter*
+      extension_bookmark_manager_event_router() {
+    return extension_bookmark_manager_event_router_.get();
+  }
+
   // BrowserURLHandler
   static bool HandleChromeURLOverride(GURL* url, Profile* profile);
 
@@ -56,9 +62,9 @@ class ExtensionDOMUI
   // Page names are the keys, and chrome-extension: URLs are the values.
   // (e.g. { "newtab": "chrome-extension://<id>/my_new_tab.html" }
   static void RegisterChromeURLOverrides(Profile* profile,
-    const Extension::URLOverrideMap& overrides);
+      const Extension::URLOverrideMap& overrides);
   static void UnregisterChromeURLOverrides(Profile* profile,
-    const Extension::URLOverrideMap& overrides);
+      const Extension::URLOverrideMap& overrides);
   static void UnregisterChromeURLOverride(const std::string& page,
                                           Profile* profile,
                                           Value* override);
@@ -79,7 +85,12 @@ class ExtensionDOMUI
   // right one, as well as being linked to the correct URL.
   void ResetExtensionFunctionDispatcher(RenderViewHost* render_view_host);
 
+  void ResetExtensionBookmarkManagerEventRouter();
+
   scoped_ptr<ExtensionFunctionDispatcher> extension_function_dispatcher_;
+
+  scoped_ptr<ExtensionBookmarkManagerEventRouter>
+      extension_bookmark_manager_event_router_;
 };
 
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_DOM_UI_H_

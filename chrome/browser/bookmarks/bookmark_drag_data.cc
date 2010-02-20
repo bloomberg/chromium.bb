@@ -261,6 +261,11 @@ const BookmarkNode* BookmarkDragData::GetFirstNode(Profile* profile) const {
   return nodes.size() == 1 ? nodes[0] : NULL;
 }
 
+void BookmarkDragData::Clear() {
+  profile_path_.clear();
+  elements.clear();
+}
+
 bool BookmarkDragData::IsFromProfile(Profile* profile) const {
   // An empty path means the data is not associated with any profile.
   return (!profile_path_.empty() &&

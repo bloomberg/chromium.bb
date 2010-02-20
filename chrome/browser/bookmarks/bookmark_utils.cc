@@ -32,6 +32,13 @@
 #include "net/base/net_util.h"
 #include "views/event.h"
 
+#if defined(TOOLKIT_VIEWS)
+#include "app/os_exchange_data.h"
+#include "views/drag_utils.h"
+#include "views/widget/root_view.h"
+#include "views/widget/widget.h"
+#endif
+
 using base::Time;
 
 namespace {
@@ -245,11 +252,14 @@ int PerformBookmarkDrop(Profile* profile,
                         const BookmarkDragData& data,
                         const BookmarkNode* parent_node,
                         int index) {
-  const BookmarkNode* dragged_node = data.GetFirstNode(profile);
+  const std::vector<const BookmarkNode*> dragged_nodes = data.GetNodes(profile);
   BookmarkModel* model = profile->GetBookmarkModel();
-  if (dragged_node) {
-    // Drag from same profile, do a move.
-    model->Move(dragged_node, parent_node, index);
+  if (!dragged_nodes.empty()) {
+    // Drag from same profile. Move nodes.
+    for (size_t i = 0; i < dragged_nodes.size(); ++i) {
+      model->Move(dragged_nodes[i], parent_node, index);
+      index = parent_node->IndexOfChild(dragged_nodes[i]) + 1;
+    }
     return DragDropTypes::DRAG_MOVE;
   } else if (data.has_single_url()) {
     // New URL, add it at the specified location.
@@ -312,6 +322,36 @@ void CloneDragData(BookmarkModel* model,
   }
   for (size_t i = 0; i < elements.size(); ++i)
     CloneDragDataImpl(model, elements[i], parent, index_to_add_at + i);
+}
+
+
+// Bookmark dragging
+void DragBookmarks(Profile* profile,
+                   const std::vector<const BookmarkNode*>& nodes,
+                   gfx::NativeView view) {
+  DCHECK(!nodes.empty());
+
+#if defined(TOOLKIT_VIEWS)
+  // Set up our OLE machinery
+  OSExchangeData data;
+  BookmarkDragData drag_data(nodes);
+  drag_data.Write(profile, &data);
+
+  views::RootView* root_view = views::Widget::GetWidgetFromNativeView(view)->GetRootView();
+
+  // Allow nested message loop so we get DnD events as we drag this around.
+  bool was_nested = MessageLoop::current()->IsNested();
+  MessageLoop::current()->SetNestableTasksAllowed(true);
+
+  root_view->StartDragForViewFromMouseEvent(NULL, data,
+      DragDropTypes::DRAG_COPY | DragDropTypes::DRAG_MOVE |
+      DragDropTypes::DRAG_LINK);
+
+  MessageLoop::current()->SetNestableTasksAllowed(was_nested);
+#else
+  // TODO(arv): Implement for GTK and Cocoa.
+  NOTIMPLEMENTED();
+#endif
 }
 
 void OpenAll(gfx::NativeWindow parent,

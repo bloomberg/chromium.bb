@@ -124,6 +124,9 @@ struct BookmarkDragData {
   // Number of elements.
   size_t size() const { return elements.size(); }
 
+  // Clears the data.
+  void Clear();
+
   // Returns true if this data is from the specified profile.
   bool IsFromProfile(Profile* profile) const;
 

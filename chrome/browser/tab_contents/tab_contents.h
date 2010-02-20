@@ -663,6 +663,16 @@ class TabContents : public PageNavigator,
   virtual TabContents* AsTabContents() { return this; }
   virtual ExtensionHost* AsExtensionHost() { return NULL; }
 
+  // The BookmarkDragDelegate is used to forward bookmark drag and drop events
+  // to extensions.
+  virtual RenderViewHostDelegate::BookmarkDrag* GetBookmarkDragDelegate();
+
+  // It is up to callers to call SetBookmarkDragDelegate(NULL) when
+  // |bookmark_drag| is deleted since this class does not take ownership of
+  // |bookmark_drag|.
+  virtual void SetBookmarkDragDelegate(
+      RenderViewHostDelegate::BookmarkDrag* bookmark_drag);
+
  private:
   friend class NavigationController;
   // Used to access the child_windows_ (ConstrainedWindowList) for testing
@@ -1011,6 +1021,9 @@ class TabContents : public PageNavigator,
 
   // PluginInstaller, lazily created.
   scoped_ptr<PluginInstaller> plugin_installer_;
+
+  // Handles drag and drop event forwarding to extensions.
+  BookmarkDrag* bookmark_drag_;
 
   // Handles downloading favicons.
   FavIconHelper fav_icon_helper_;

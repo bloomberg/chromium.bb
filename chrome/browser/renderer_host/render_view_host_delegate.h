@@ -16,12 +16,14 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebDragOperation.h"
 #include "webkit/glue/window_open_disposition.h"
 
+struct BookmarkDragData;
 struct ContextMenuParams;
 class FilePath;
 struct FormData;
 class GURL;
 struct NativeWebKeyboardEvent;
 class NavigationEntry;
+class OSExchangeData;
 class Profile;
 struct RendererPreferences;
 class RenderProcessHost;
@@ -414,6 +416,28 @@ class RenderViewHostDelegate {
                                       const string16& label) = 0;
   };
 
+  // BookmarkDrag --------------------------------------------------------------
+  // Interface for forwarding bookmark drag and drop to extenstions.
+
+  class BookmarkDrag {
+   public:
+
+#if defined(TOOLKIT_VIEWS)
+    typedef OSExchangeData DragData;
+#elif defined(OS_LINUX)
+     // TODO(arv): GtkSelectionData?
+    class DragData {};
+#else
+    // TODO(arv): NSDraggingInfo?
+    class DragData {};
+#endif
+
+    virtual void OnDragEnter(const DragData* data) = 0;
+    virtual void OnDragOver(const DragData* data) = 0;
+    virtual void OnDragLeave(const DragData* data) = 0;
+    virtual void OnDrop(const DragData* data) = 0;
+  };
+
   // ---------------------------------------------------------------------------
 
   // Returns the current delegate associated with a feature. May return NULL if
@@ -427,6 +451,7 @@ class RenderViewHostDelegate {
   virtual FavIcon* GetFavIconDelegate();
   virtual FormFieldHistory* GetFormFieldHistoryDelegate();
   virtual AutoFill* GetAutoFillDelegate();
+  virtual BookmarkDrag* GetBookmarkDragDelegate();
 
   // Gets the URL that is currently being displayed, if there is one.
   virtual const GURL& GetURL() const;

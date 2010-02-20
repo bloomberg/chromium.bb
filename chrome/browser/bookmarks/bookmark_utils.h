@@ -71,6 +71,11 @@ void CloneDragData(BookmarkModel* model,
                    const BookmarkNode* parent,
                    int index_to_add_at);
 
+// Begins dragging a group of bookmarks.
+void DragBookmarks(Profile* profile,
+                   const std::vector<const BookmarkNode*>& nodes,
+                   gfx::NativeView view);
+
 // Recursively opens all bookmarks. |initial_disposition| dictates how the
 // first URL is opened, all subsequent URLs are opened as background tabs.
 // |navigator| is used to open the URLs. If |navigator| is NULL the last

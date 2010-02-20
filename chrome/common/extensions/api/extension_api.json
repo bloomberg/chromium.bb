@@ -1955,7 +1955,47 @@
   {
     "namespace": "experimental.bookmarkManager",
     "nodoc": true,
-    "types": [],
+    "types": [
+      {
+        "id": "BookmarkDragDataElement",
+        "nodoc": true,
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "optional": true,
+            "description": "The ID of the bookmark. This is only provided if the data is from the same profile."
+          },
+          "parentId": {
+            "type": "string",
+            "optional": true,
+            "description": "The ID of the parent of the bookmark. This is only provided if the data is from the same profile."
+          },
+          "title": {"type": "string"},
+          "url": {
+            "type": "string",
+            "optional": true
+          },
+          "children": {
+            "type": "array",
+            "items": {"$ref": "BookmarkDragDataElement"}
+          }
+        }
+      },
+      {
+        "id": "BookmarkDragData",
+        "nodoc": true,
+        "type": "object",
+        "description": "Information about the drag and drop data for use with drag and drop events.",
+        "properties": {
+          "sameProfile": {"type": "boolean"},
+          "elements": {
+            "type": "array",
+            "items": {"$ref": "BookmarkDragDataElement"}
+          }
+        }
+      }
+    ],
     "functions": [
       {
         "name": "copy",
@@ -2056,6 +2096,41 @@
             ]
           }
         ]
+      },
+      {
+        "name": "startDrag",
+        "type": "function",
+        "description": "Begins dragging a set of bookmarks",
+        "nodoc": "true",
+        "parameters": [
+          {
+            "name": "idList",
+            "description": "An array of string-valued ids",
+            "type": "array",
+            "items": {"type": "string"},
+            "minItems": 1
+          }
+        ]
+      },
+      {
+        "name": "drop",
+        "type": "function",
+        "description": "Performs the drop action of the drag and drop session",
+        "nodoc": "true",
+        "parameters": [
+          {
+            "name": "parentId",
+            "description": "The ID of the folder that the drop was made",
+            "type": "string"
+          },
+          {
+            "name": "index",
+            "description": "The index of the position to drop at. If left out the dropped items will be placed at the end of the existing children",
+            "type": "integer",
+            "minimum": 0,
+            "optional": true
+          }
+        ]
       }
     ],
     "events": [
@@ -2074,8 +2149,31 @@
         "parameters": [
           {}
         ]
+      },
+      {
+        "name": "onDragEnter",
+        "type": "function",
+        "description": "Fired when dragging bookmarks over the document",
+        "parameters": [
+          {"$ref": "BookmarkDragData"}
+        ]
+      },
+      {
+        "name": "onDragLeave",
+        "type": "function",
+        "description": "Fired when the drag and drop leaves the document",
+        "parameters": [
+          {"$ref": "BookmarkDragData"}
+        ]
+      },
+      {
+        "name": "onDrop",
+        "type": "function",
+        "description": "Fired when the user drops bookmarks on the document",
+        "parameters": [
+          {"$ref": "BookmarkDragData"}
+        ]
       }
-
     ]
   },
   {

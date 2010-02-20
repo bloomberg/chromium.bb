@@ -118,6 +118,13 @@ DWORD WebDropTarget::OnDragEnter(IDataObject* data_object,
       gfx::Point(cursor_position.x, cursor_position.y),
       WebDragOperationCopy);  // FIXME(snej): Send actual operation
 
+  // This is non-null if tab_contents_ is showing an ExtensionDOMUI with
+  // support for (at the moment experimental) drag and drop extensions.
+  if (tab_contents_->GetBookmarkDragDelegate()) {
+    OSExchangeData os_exchange_data(new OSExchangeDataProviderWin(data_object));
+    tab_contents_->GetBookmarkDragDelegate()->OnDragEnter(&os_exchange_data);
+  }
+
   // We lie here and always return a DROPEFFECT because we don't want to
   // wait for the IPC call to return.
   return GetPreferredDropEffect(effect);
@@ -141,6 +148,11 @@ DWORD WebDropTarget::OnDragOver(IDataObject* data_object,
       gfx::Point(cursor_position.x, cursor_position.y),
       WebDragOperationCopy);  // FIXME(snej): Send actual operation
 
+  if (tab_contents_->GetBookmarkDragDelegate()) {
+    OSExchangeData os_exchange_data(new OSExchangeDataProviderWin(data_object));
+    tab_contents_->GetBookmarkDragDelegate()->OnDragOver(&os_exchange_data);
+  }
+
   if (!is_drop_target_)
     return DROPEFFECT_NONE;
 
@@ -156,6 +168,11 @@ void WebDropTarget::OnDragLeave(IDataObject* data_object) {
     interstitial_drop_target_->OnDragLeave(data_object);
   } else {
     tab_contents_->render_view_host()->DragTargetDragLeave();
+  }
+
+  if (tab_contents_->GetBookmarkDragDelegate()) {
+    OSExchangeData os_exchange_data(new OSExchangeDataProviderWin(data_object));
+    tab_contents_->GetBookmarkDragDelegate()->OnDragLeave(&os_exchange_data);
   }
 }
 
@@ -178,6 +195,11 @@ DWORD WebDropTarget::OnDrop(IDataObject* data_object,
   tab_contents_->render_view_host()->DragTargetDrop(
       gfx::Point(client_pt.x, client_pt.y),
       gfx::Point(cursor_position.x, cursor_position.y));
+
+  if (tab_contents_->GetBookmarkDragDelegate()) {
+    OSExchangeData os_exchange_data(new OSExchangeDataProviderWin(data_object));
+    tab_contents_->GetBookmarkDragDelegate()->OnDrop(&os_exchange_data);
+  }
 
   current_rvh_ = NULL;
 

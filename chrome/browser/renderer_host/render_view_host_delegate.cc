@@ -57,6 +57,11 @@ RenderViewHostDelegate::GetAutoFillDelegate() {
   return NULL;
 }
 
+RenderViewHostDelegate::BookmarkDrag*
+RenderViewHostDelegate::GetBookmarkDragDelegate() {
+  return NULL;
+}
+
 const GURL& RenderViewHostDelegate::GetURL() const {
   return GURL::EmptyGURL();
 }

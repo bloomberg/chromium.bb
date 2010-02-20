@@ -18,6 +18,9 @@ const wchar_t kChildIdsKey[] = L"childIds";
 const wchar_t kRecursiveKey[] = L"recursive";
 const wchar_t kDateAddedKey[] = L"dateAdded";
 const wchar_t kDateGroupModifiedKey[] = L"dateGroupModified";
+// TODO(arv): Move bookmark manager related constants out of this file.
+const wchar_t kSameProfileKey[] = L"sameProfile";
+const wchar_t kElementsKey[] = L"elements";
 
 const char kNoNodeError[] = "Can't find bookmark for id.";
 const char kNoParentError[] = "Can't find parent bookmark for id.";
@@ -33,8 +36,15 @@ const char kOnBookmarkRemoved[] = "bookmarks.onRemoved";
 const char kOnBookmarkChanged[] = "bookmarks.onChanged";
 const char kOnBookmarkMoved[] = "bookmarks.onMoved";
 const char kOnBookmarkChildrenReordered[] = "bookmarks.onChildrenReordered";
+// TODO(arv): Move bookmark manager related constants out of this file.
 const char kOnBookmarkImportBegan[] =
     "experimental.bookmarkManager.onImportBegan";
 const char kOnBookmarkImportEnded[] =
     "experimental.bookmarkManager.onImportEnded";
+const char kOnBookmarkDragEnter[] =
+    "experimental.bookmarkManager.onDragEnter";
+const char kOnBookmarkDragLeave[] =
+    "experimental.bookmarkManager.onDragLeave";
+const char kOnBookmarkDrop[] =
+    "experimental.bookmarkManager.onDrop";
 }  // namespace extension_bookmarks_module_constants

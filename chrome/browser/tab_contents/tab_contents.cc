@@ -2067,6 +2067,15 @@ RenderViewHostDelegate::AutoFill* TabContents::GetAutoFillDelegate() {
   return autofill_manager_.get();
 }
 
+RenderViewHostDelegate::BookmarkDrag* TabContents::GetBookmarkDragDelegate() {
+  return bookmark_drag_;
+}
+
+void TabContents::SetBookmarkDragDelegate(
+    RenderViewHostDelegate::BookmarkDrag* bookmark_drag) {
+  bookmark_drag_ = bookmark_drag;
+}
+
 RendererPreferences TabContents::GetRendererPrefs(Profile* profile) const {
   return renderer_preferences_;
 }

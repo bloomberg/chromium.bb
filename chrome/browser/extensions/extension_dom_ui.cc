@@ -7,12 +7,14 @@
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/extensions/extension_bookmark_manager_api.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/bindings_policy.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/url_constants.h"
 
 namespace {
@@ -48,12 +50,22 @@ void ExtensionDOMUI::ResetExtensionFunctionDispatcher(
       new ExtensionFunctionDispatcher(render_view_host, this, url));
 }
 
+void ExtensionDOMUI::ResetExtensionBookmarkManagerEventRouter() {
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableExperimentalExtensionApis)) {
+    extension_bookmark_manager_event_router_.reset(
+        new ExtensionBookmarkManagerEventRouter(GetProfile(), tab_contents()));
+  }
+}
+
 void ExtensionDOMUI::RenderViewCreated(RenderViewHost* render_view_host) {
   ResetExtensionFunctionDispatcher(render_view_host);
+  ResetExtensionBookmarkManagerEventRouter();
 }
 
 void ExtensionDOMUI::RenderViewReused(RenderViewHost* render_view_host) {
   ResetExtensionFunctionDispatcher(render_view_host);
+  ResetExtensionBookmarkManagerEventRouter();
 }
 
 void ExtensionDOMUI::ProcessDOMUIMessage(const std::string& message,
