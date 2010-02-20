@@ -37,6 +37,10 @@ class CommandBufferStub : public IPC::Channel::Listener,
 
   int route_id() const { return route_id_; }
 
+  // Notify the client that it must repaint due to the window becoming invalid
+  // or a lost context.
+  void NotifyRepaint();
+
  private:
   // Message handlers:
   void OnInitialize(int32 size, base::SharedMemoryHandle* ring_buffer);
@@ -49,6 +53,13 @@ class CommandBufferStub : public IPC::Channel::Listener,
   void OnGetTransferBuffer(int32 id,
                            base::SharedMemoryHandle* transfer_buffer,
                            uint32* size);
+
+  // Destroy all owned objects.
+  void Destroy();
+
+  bool InitializePlatformSpecific();
+  void DestroyPlatformSpecific();
+
 #if defined(OS_MACOSX)
   void OnSetWindowSize(int32 width, int32 height);
   void SwapBuffersCallback();

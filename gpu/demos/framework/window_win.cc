@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "gpu/demos/framework/demo.h"
 #include "gpu/demos/framework/window.h"
 
 namespace {
@@ -52,7 +53,8 @@ void Window::MainLoop() {
       ::DispatchMessage(&msg);
     }
     // Message queue is empty and application has not quit yet - keep painting.
-    if (!done) ::InvalidateRect(window_handle_, NULL, FALSE);
+    if (!done && demo_->IsAnimated())
+      ::InvalidateRect(window_handle_,NULL, FALSE);
   }
 }
 

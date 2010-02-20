@@ -37,6 +37,8 @@ CommandBufferProxy::~CommandBufferProxy() {
 void CommandBufferProxy::OnMessageReceived(const IPC::Message& message) {
   IPC_BEGIN_MESSAGE_MAP(CommandBufferProxy, message)
     IPC_MESSAGE_HANDLER(CommandBufferMsg_UpdateState, OnUpdateState);
+    IPC_MESSAGE_HANDLER(CommandBufferMsg_NotifyRepaint,
+                        OnNotifyRepaint);
     IPC_MESSAGE_UNHANDLED_ERROR()
   IPC_END_MESSAGE_MAP()
 }
@@ -142,16 +144,7 @@ Buffer CommandBufferProxy::GetTransferBuffer(int32 id) {
   }
 
   // Cache the transfer buffer shared memory object client side.
-#if defined(OS_WIN)
-  // TODO(piman): Does Windows needs this version of the constructor ? It
-  // duplicates the handle, but I'm not sure why it is necessary - it was
-  // already duped by the CommandBufferStub.
-  base::SharedMemory* shared_memory =
-      new base::SharedMemory(handle, false, base::GetCurrentProcessHandle());
-#else
-  base::SharedMemory* shared_memory =
-      new base::SharedMemory(handle, false);
-#endif
+  base::SharedMemory* shared_memory = new base::SharedMemory(handle, false);
 
   // Map the shared memory on demand.
   if (!shared_memory->memory()) {
@@ -173,6 +166,12 @@ Buffer CommandBufferProxy::GetTransferBuffer(int32 id) {
 void CommandBufferProxy::SetToken(int32 token) {
   // Not implemented in proxy.
   NOTREACHED();
+}
+
+void CommandBufferProxy::OnNotifyRepaint() {
+  if (notify_repaint_task_.get())
+    MessageLoop::current()->PostNonNestableTask(
+        FROM_HERE, notify_repaint_task_.release());
 }
 
 void CommandBufferProxy::SetParseError(

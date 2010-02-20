@@ -422,7 +422,7 @@ void PluginObject::Initialize3D() {
   // Initialize the demo GL state.
   pglMakeCurrent(pgl_context_);
   GLFromCPPInit();
-  pglMakeCurrent(NULL);
+  pglMakeCurrent(PGL_NO_CONTEXT);
 #endif  // INDEPENDENT_PLUGIN
 }
 
@@ -458,7 +458,7 @@ void PluginObject::Draw3D() {
   glViewport(0, 0, width_, height_);
   GLFromCPPDraw();
   pglSwapBuffers();
-  pglMakeCurrent(NULL);
+  pglMakeCurrent(PGL_NO_CONTEXT);
 
   // Async flushes just to see them working.
   context3d_.waitForProgress = true;

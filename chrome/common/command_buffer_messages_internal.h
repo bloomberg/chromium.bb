@@ -55,6 +55,10 @@ IPC_BEGIN_MESSAGES(CommandBuffer)
                              base::SharedMemoryHandle /* transfer_buffer */,
                              uint32 /* size */)
 
+  // Send from command buffer stub to proxy when window is invalid and must be
+  // repainted.
+  IPC_MESSAGE_ROUTED0(CommandBufferMsg_NotifyRepaint)
+
 #if defined(OS_MACOSX)
   // On Mac OS X the GPU plugin must be offscreen, because there is no
   // true cross-process window hierarchy. For this reason we must send

@@ -223,7 +223,7 @@ PGLBoolean pglDestroyContext(PGLContext pgl_context) {
     return PGL_FALSE;
 
   if (pgl_context == pglGetCurrentContext())
-    pglMakeCurrent(NULL);
+    pglMakeCurrent(PGL_NO_CONTEXT);
 
   delete static_cast<PGLContextImpl*>(pgl_context);
   return PGL_TRUE;

@@ -150,9 +150,12 @@ class WebPluginDelegatePepper : public webkit_glue::WebPluginDelegate {
       NPAPI::PluginInstance *instance);
   ~WebPluginDelegatePepper();
 
-  // Tells the plugin about the current state of the window.
-  // See NPAPI NPP_SetWindow for more information.
-  void WindowlessSetWindow(bool force_set_window);
+  // Set a task that calls the repaint callback the next time the window
+  // is invalid and needs to be repainted.
+  void ScheduleHandleRepaint(NPP npp, NPDeviceContext3D* context);
+
+  void ForwardHandleRepaint(NPP npp, NPDeviceContext3D* context);
+  void ForwardSetWindow();
 
   //-----------------------------------------
   // used for windowed and windowless plugins
