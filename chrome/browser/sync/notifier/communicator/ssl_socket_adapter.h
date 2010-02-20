@@ -42,7 +42,7 @@ class TransportSocket : public net::ClientSocket, public sigslot::has_slots<> {
   virtual void Disconnect();
   virtual bool IsConnected() const;
   virtual bool IsConnectedAndIdle() const;
-  virtual int GetPeerName(struct sockaddr* name, socklen_t* namelen);
+  virtual int GetPeerAddress(net::AddressList* address) const;
 
   // net::Socket implementation
 

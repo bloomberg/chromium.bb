@@ -8,8 +8,10 @@
 #include "base/message_loop.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/profile.h"
+#include "net/base/address_list.h"
 #include "net/base/net_errors.h"
 #include "net/base/ssl_config_service.h"
+#include "net/base/sys_addrinfo.h"
 #include "net/socket/client_socket_factory.h"
 #include "net/url_request/url_request_context.h"
 
@@ -254,10 +256,23 @@ bool TransportSocket::IsConnectedAndIdle() const {
   return false;
 }
 
-int TransportSocket::GetPeerName(struct sockaddr* name, socklen_t* namelen) {
-  talk_base::SocketAddress address = socket_->GetRemoteAddress();
-  address.ToSockAddr(reinterpret_cast<sockaddr_in *>(name));
-  return 0;
+int TransportSocket::GetPeerAddress(net::AddressList* address) const {
+  talk_base::SocketAddress socket_address = socket_->GetRemoteAddress();
+
+  // libjingle supports only IPv4 addresses.
+  sockaddr_in ipv4addr;
+  socket_address.ToSockAddr(&ipv4addr);
+
+  struct addrinfo ai;
+  memset(&ai, sizeof(ai), 0);
+  ai.ai_family = ipv4addr.sin_family;
+  ai.ai_socktype = SOCK_STREAM;
+  ai.ai_protocol = IPPROTO_TCP;
+  ai.ai_addr = reinterpret_cast<struct sockaddr*>(&ipv4addr);
+  ai.ai_addrlen = sizeof(ipv4addr);
+
+  address->Copy(&ai, false);
+  return net::OK;
 }
 
 int TransportSocket::Read(net::IOBuffer* buf, int buf_len,

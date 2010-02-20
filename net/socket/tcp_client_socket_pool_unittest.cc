@@ -43,7 +43,7 @@ class MockClientSocket : public ClientSocket {
   virtual bool IsConnectedAndIdle() const {
     return connected_;
   }
-  virtual int GetPeerName(struct sockaddr* name, socklen_t* namelen) {
+  virtual int GetPeerAddress(AddressList* address) const {
     return ERR_UNEXPECTED;
   }
 
@@ -80,7 +80,7 @@ class MockFailingClientSocket : public ClientSocket {
   virtual bool IsConnectedAndIdle() const {
     return false;
   }
-  virtual int GetPeerName(struct sockaddr* name, socklen_t* namelen) {
+  virtual int GetPeerAddress(AddressList* address) const {
     return ERR_UNEXPECTED;
   }
 
@@ -122,7 +122,7 @@ class MockPendingClientSocket : public ClientSocket {
   virtual bool IsConnectedAndIdle() const {
     return is_connected_;
   }
-  virtual int GetPeerName(struct sockaddr* name, socklen_t* namelen) {
+  virtual int GetPeerAddress(AddressList* address) const{
     return ERR_UNEXPECTED;
   }
 

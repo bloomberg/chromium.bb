@@ -5,20 +5,11 @@
 #ifndef NET_SOCKET_CLIENT_SOCKET_H_
 #define NET_SOCKET_CLIENT_SOCKET_H_
 
-#include "build/build_config.h"
-
-// For struct sockaddr and socklen_t.
-#if defined(OS_POSIX)
-#include <sys/types.h>
-#include <sys/socket.h>
-#elif defined(OS_WIN)
-#include <ws2tcpip.h>
-#endif
-
 #include "net/socket/socket.h"
 
 namespace net {
 
+class AddressList;
 class LoadLog;
 
 class ClientSocket : public Socket {
@@ -57,9 +48,8 @@ class ClientSocket : public Socket {
   // have been received.
   virtual bool IsConnectedAndIdle() const = 0;
 
-  // Identical to BSD socket call getpeername().
-  // Needed by ssl_client_socket_nss and ssl_client_socket_mac.
-  virtual int GetPeerName(struct sockaddr* name, socklen_t* namelen) = 0;
+  // Copies the peer address to |address| and returns a network error code.
+  virtual int GetPeerAddress(AddressList* address) const = 0;
 };
 
 }  // namespace net
