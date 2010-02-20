@@ -117,7 +117,7 @@ void RenderViewContextMenu::InitMenu() {
 
   if (params_.is_editable)
     AppendEditableItems();
-  else if (has_selection || has_link)
+  else if (has_selection)
     AppendCopyItem();
 
   if (has_selection)
@@ -428,6 +428,9 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
         return false;
       return true;
 
+    case IDS_CONTENT_CONTEXT_COPYIMAGE:
+      return !params_.is_image_blocked;
+
     case IDS_CONTENT_CONTEXT_FULLSCREEN:
       // TODO(ajwong): Enable fullscreen after we actually implement this.
       return false;
@@ -515,7 +518,6 @@ bool RenderViewContextMenu::IsItemCommandEnabled(int id) const {
     case IDS_CONTENT_CONTEXT_ADD_TO_DICTIONARY:
       return !params_.misspelled_word.empty();
 
-    case IDS_CONTENT_CONTEXT_COPYIMAGE:
 #if !defined(OS_CHROMEOS)
     case IDS_CONTENT_CONTEXT_PRINT:
 #endif

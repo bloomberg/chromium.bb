@@ -1071,6 +1071,7 @@ struct ParamTraits<ContextMenuParams> {
     WriteParam(m, p.link_url);
     WriteParam(m, p.unfiltered_link_url);
     WriteParam(m, p.src_url);
+    WriteParam(m, p.is_image_blocked);
     WriteParam(m, p.page_url);
     WriteParam(m, p.frame_url);
     WriteParam(m, p.media_flags);
@@ -1097,6 +1098,7 @@ struct ParamTraits<ContextMenuParams> {
       ReadParam(m, iter, &p->link_url) &&
       ReadParam(m, iter, &p->unfiltered_link_url) &&
       ReadParam(m, iter, &p->src_url) &&
+      ReadParam(m, iter, &p->is_image_blocked) &&
       ReadParam(m, iter, &p->page_url) &&
       ReadParam(m, iter, &p->frame_url) &&
       ReadParam(m, iter, &p->media_flags) &&

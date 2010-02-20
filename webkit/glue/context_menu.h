@@ -42,6 +42,9 @@ struct ContextMenuParams {
   // video.
   GURL src_url;
 
+  // This is true if the context menu was invoked on a blocked image.
+  bool is_image_blocked;
+
   // This is the URL of the top level page that the context menu was invoked
   // on.
   GURL page_url;
@@ -102,6 +105,7 @@ struct ContextMenuParams {
         link_url(data.linkURL),
         unfiltered_link_url(data.linkURL),
         src_url(data.srcURL),
+        is_image_blocked(data.isImageBlocked),
         page_url(data.pageURL),
         frame_url(data.frameURL),
         media_flags(data.mediaFlags),
