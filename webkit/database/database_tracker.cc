@@ -27,7 +27,7 @@ const FilePath::CharType kTrackerDatabaseFileName[] =
     FILE_PATH_LITERAL("Databases.db");
 const int kCurrentVersion = 2;
 const int kCompatibleVersion = 1;
-const int64 kDefaultExtensionQuota = 50 * 1024 * 1024;
+const int64 kDefaultExtensionQuota = 1024 * 1024 * 1024;
 const char* kExtensionOriginIdentifierPrefix = "chrome-extension_";
 
 DatabaseTracker::DatabaseTracker(const FilePath& profile_path)
