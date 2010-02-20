@@ -4,12 +4,13 @@
 
 #import <Cocoa/Cocoa.h>
 
+#import "chrome/browser/cocoa/keyword_editor_cocoa_controller.h"
+
 #import "base/mac_util.h"
 #include "base/singleton.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/cocoa/edit_search_engine_cocoa_controller.h"
-#import "chrome/browser/cocoa/keyword_editor_cocoa_controller.h"
 #import "chrome/browser/cocoa/window_size_autosaver.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -253,6 +254,11 @@ typedef std::map<Profile*,KeywordEditorCocoaController*> ProfileControllerMap;
   DCHECK_EQ([selection count], 1U);
   int row = [self indexInModelForRow:[selection firstIndex]];
   controller_->MakeDefaultTemplateURL(row);
+}
+
+// Called when the user hits the escape key. Closes the window.
+- (void)cancel:(id)sender {
+  [[self window] performClose:self];
 }
 
 // Table View Data Source -----------------------------------------------------
