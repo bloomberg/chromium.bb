@@ -10,6 +10,8 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#include "native_client/src/trusted/service_runtime/nacl_syscall_common.h"
+
 #include "native_client/src/include/portability_string.h"
 #include "native_client/src/include/nacl_platform.h"
 #include "native_client/src/include/nacl_macros.h"
@@ -1386,7 +1388,7 @@ cleanup:
 }
 
 int32_t NaClCommonSysImc_MakeBoundSock(struct NaClAppThread *natp,
-                                       int                  *sap) {
+                                       int32_t              *sap) {
   /*
    * Create a bound socket descriptor and a socket address descriptor.
    */
@@ -1416,8 +1418,8 @@ int32_t NaClCommonSysImc_MakeBoundSock(struct NaClAppThread *natp,
     goto cleanup;
   }
 
-  ((int *) sys_sap)[0] = NaClSetAvail(natp->nap, pair[0]);
-  ((int *) sys_sap)[1] = NaClSetAvail(natp->nap, pair[1]);
+  ((int32_t *) sys_sap)[0] = NaClSetAvail(natp->nap, pair[0]);
+  ((int32_t *) sys_sap)[1] = NaClSetAvail(natp->nap, pair[1]);
   retval = 0;
 cleanup:
   NaClSysCommonThreadSyscallLeave(natp);
@@ -1580,7 +1582,7 @@ int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread         *natp,
   } else {
     sysaddr = NaClUserToSysAddrRange(natp->nap,
                                      (uintptr_t) kern_nanimh.descv,
-                                     kern_nanimh.desc_length * sizeof(int));
+                                     kern_nanimh.desc_length * sizeof(int32_t));
     if (kNaClBadAddress == sysaddr) {
       retval = -NACL_ABI_EFAULT;
       goto cleanup;
@@ -1591,11 +1593,14 @@ int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread         *natp,
      * exactly once.
      */
     for (i = 0; i < kern_nanimh.desc_length; ++i) {
-      if (kKnownInvalidDescNumber == ((int *) sysaddr)[i]) {
+      int32_t user_desc = ((volatile int32_t *) sysaddr)[i];
+      /* fetch it once */
+
+      if (kKnownInvalidDescNumber == user_desc) {
         kern_desc[i] = (struct NaClDesc *) NaClDescInvalidMake();
       } else {
         /* NaCl modules are ILP32, so this works on ILP32 and LP64 systems */
-        kern_desc[i] = NaClGetDesc(natp->nap, ((int *) sysaddr)[i]);
+        kern_desc[i] = NaClGetDesc(natp->nap, user_desc);
       }
       if (NULL == kern_desc[i]) {
         retval = -NACL_ABI_EBADF;
@@ -1738,7 +1743,7 @@ int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread         *natp,
   if (kern_nanimh.desc_length > 0) {
     sysaddr = NaClUserToSysAddrRange(natp->nap,
                                      (uintptr_t) kern_nanimh.descv,
-                                     kern_nanimh.desc_length * sizeof(int));
+                                     kern_nanimh.desc_length * sizeof(int32_t));
     if (kNaClBadAddress == sysaddr) {
       retval = -NACL_ABI_EFAULT;
       goto cleanup_leave;
@@ -1902,7 +1907,7 @@ int32_t NaClCommonSysImc_SocketPair(struct NaClAppThread *natp,
     goto cleanup;
   }
 
-  d_out = (int *) sysaddr;
+  d_out = (int32_t *) sysaddr;
   retval = NaClCommonDescSocketPair(pair);
   if (0 != retval) {
     goto cleanup;

@@ -36,12 +36,9 @@
 
 #include "native_client/src/include/portability.h"
 
-static int const kBitsPerWord = 32;
-static int const kWordIndexShift = 5;  /* 2**kWordIndexShift==kBitsPerWord */
-
 struct DynArray {
   /* public */
-  int       num_entries;
+  size_t    num_entries;
   /*
    * note num_entries has a somewhat unusual property.  if valid
    * entries are written to index 10, the num_entries is 11 even if
@@ -50,23 +47,23 @@ struct DynArray {
 
   /* protected */
   void      **ptr_array;  /* we *could* sort/bsearch this */
-  int       ptr_array_space;
+  size_t    ptr_array_space;
   uint32_t  *available;
-  int       avail_ix;
+  size_t    avail_ix;
 };
 
 int DynArrayCtor(struct DynArray  *dap,
-                 int              initial_size);
+                 size_t           initial_size);
 
 void DynArrayDtor(struct DynArray *dap);
 
 void *DynArrayGet(struct DynArray *dap,
-                  int             idx);
+                  size_t          idx);
 
 int DynArraySet(struct DynArray *dap,
-                int             idx,
+                size_t          idx,
                 void            *ptr);
 
-int DynArrayFirstAvail(struct DynArray *dap);
+size_t DynArrayFirstAvail(struct DynArray *dap);
 
 #endif

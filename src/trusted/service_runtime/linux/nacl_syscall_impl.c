@@ -463,7 +463,7 @@ int32_t NaClSysSrpc_Get_Fd(struct NaClAppThread *natp) {
 }
 
 int32_t NaClSysImc_MakeBoundSock(struct NaClAppThread *natp,
-                                 int                  *sap) {
+                                 int32_t              *sap) {
   return NaClCommonSysImc_MakeBoundSock(natp, sap);
 }
 
@@ -477,22 +477,22 @@ int32_t NaClSysImc_Connect(struct NaClAppThread *natp,
   return NaClCommonSysImc_Connect(natp, d);
 }
 
-int32_t NaClSysImc_Sendmsg(struct NaClAppThread *natp,
-                       int                  d,
-                       struct NaClImcMsgHdr *nimhp,
-                       int                  flags) {
-  return NaClCommonSysImc_Sendmsg(natp, d, nimhp, flags);
+int32_t NaClSysImc_Sendmsg(struct NaClAppThread         *natp,
+                           int                          d,
+                           struct NaClAbiNaClImcMsgHdr  *nanimhp,
+                           int                          flags) {
+  return NaClCommonSysImc_Sendmsg(natp, d, nanimhp, flags);
 }
 
-int32_t NaClSysImc_Recvmsg(struct NaClAppThread *natp,
-                           int                  d,
-                           struct NaClImcMsgHdr *nimhp,
-                           int                  flags) {
+int32_t NaClSysImc_Recvmsg(struct NaClAppThread         *natp,
+                           int                          d,
+                           struct NaClAbiNaClImcMsgHdr  *nimhp,
+                           int                          flags) {
   return NaClCommonSysImc_Recvmsg(natp, d, nimhp, flags);
 }
 
 int32_t NaClSysImc_Mem_Obj_Create(struct NaClAppThread  *natp,
-                                  size_t                size) {
+                                  nacl_abi_size_t       size) {
   return NaClCommonSysImc_Mem_Obj_Create(natp, size);
 }
 

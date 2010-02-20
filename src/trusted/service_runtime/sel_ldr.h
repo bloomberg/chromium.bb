@@ -361,8 +361,8 @@ void NaClSetDesc(struct NaClApp   *nap,
                  struct NaClDesc  *ndp);
 
 
-int NaClSetAvail(struct NaClApp   *nap,
-                 struct NaClDesc  *ndp);
+int32_t NaClSetAvail(struct NaClApp   *nap,
+                     struct NaClDesc  *ndp);
 
 /*
  * Versions that are called while already holding the desc_mu lock
@@ -374,8 +374,8 @@ void NaClSetDescMu(struct NaClApp   *nap,
                    int              d,
                    struct NaClDesc  *ndp);
 
-int NaClSetAvailMu(struct NaClApp   *nap,
-                   struct NaClDesc  *ndp);
+int32_t NaClSetAvailMu(struct NaClApp   *nap,
+                       struct NaClDesc  *ndp);
 
 
 int NaClAddThread(struct NaClApp        *nap,

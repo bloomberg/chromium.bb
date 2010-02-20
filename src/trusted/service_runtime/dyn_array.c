@@ -22,24 +22,28 @@
 #include "native_client/src/trusted/service_runtime/dyn_array.h"
 
 
-static INLINE int BitsToAllocWords(int nbits) {
+static int const kBitsPerWord = 32;
+static int const kWordIndexShift = 5;  /* 2**kWordIndexShift==kBitsPerWord */
+
+
+static INLINE size_t BitsToAllocWords(size_t nbits) {
   return (nbits + kBitsPerWord - 1) >> kWordIndexShift;
 }
 
 
-static INLINE int BitsToIndex(int nbits) {
+static INLINE size_t BitsToIndex(size_t nbits) {
   return nbits >> kWordIndexShift;
 }
 
 
-static INLINE int BitsToOffset(int nbits) {
+static INLINE size_t BitsToOffset(size_t nbits) {
   return nbits & (kBitsPerWord - 1);
 }
 
 
 int DynArrayCtor(struct DynArray  *dap,
-                 int              initial_size) {
-  if (initial_size <= 0) {
+                 size_t           initial_size) {
+  if (initial_size == 0) {
     initial_size = 32;
   }
   dap->num_entries = 0u;
@@ -72,8 +76,8 @@ void DynArrayDtor(struct DynArray *dap) {
 
 
 void *DynArrayGet(struct DynArray *dap,
-                  int             idx) {
-  if ((unsigned) idx < (unsigned) dap->num_entries) {
+                  size_t          idx) {
+  if (idx < dap->num_entries) {
     return dap->ptr_array[idx];
   }
   return NULL;
@@ -81,18 +85,18 @@ void *DynArrayGet(struct DynArray *dap,
 
 
 int DynArraySet(struct DynArray *dap,
-                int             idx,
+                size_t          idx,
                 void            *ptr) {
-  int desired_space;
-  int tmp;
-  int ix;
+  size_t desired_space;
+  size_t tmp;
+  size_t ix;
 
   for (desired_space = dap->ptr_array_space;
        idx >= desired_space;
        desired_space = tmp) {
     tmp = 2 * desired_space;
     if (tmp < desired_space) {
-      return 0;
+      return 0;  /* failed */
     }
   }
   if (desired_space != dap->ptr_array_space) {
@@ -130,7 +134,8 @@ int DynArraySet(struct DynArray *dap,
   dap->ptr_array[idx] = ptr;
   ix = BitsToIndex(idx);
 #if DYN_ARRAY_DEBUG
-  NaClLog(4, "Set(%d,%p) @ix %d: 0x%08x\n", idx, ptr, ix, dap->available[ix]);
+  NaClLog(4, "Set(%"PRIuS",%p) @ix %"PRIuS": 0x%08x\n",
+          idx, ptr, ix, dap->available[ix]);
 #endif
   if (NULL != ptr) {
     dap->available[ix] |= (1 << BitsToOffset(idx));
@@ -141,7 +146,7 @@ int DynArraySet(struct DynArray *dap,
     }
   }
 #if DYN_ARRAY_DEBUG
-  NaClLog(4, "After @ix %d: 0x%08x, avail_ix %d\n",
+  NaClLog(4, "After @ix %"PRIuS": 0x%08x, avail_ix %"PRIuS"\n",
           ix, dap->available[ix], dap->avail_ix);
 #endif
   if (dap->num_entries <= idx) {
@@ -151,22 +156,22 @@ int DynArraySet(struct DynArray *dap,
 }
 
 
-int DynArrayFirstAvail(struct DynArray *dap) {
-  int ix;
-  int last_ix;
-  int avail_pos;
+size_t DynArrayFirstAvail(struct DynArray *dap) {
+  size_t ix;
+  size_t last_ix;
+  size_t avail_pos;
 
   last_ix = BitsToAllocWords(dap->ptr_array_space);
 
 #if DYN_ARRAY_DEBUG
   for (ix = 0; ix < last_ix; ++ix) {
-    NaClLog(4, "ix %d: 0x%08x\n", ix, dap->available[ix]);
+    NaClLog(4, "ix %"PRIuS": 0x%08x\n", ix, dap->available[ix]);
   }
 #endif
   for (ix = dap->avail_ix; ix < last_ix; ++ix) {
     if (0U != ~dap->available[ix]) {
 #if DYN_ARRAY_DEBUG
-      NaClLog(4, "found first not-all-ones ix %d\n", ix);
+      NaClLog(4, "found first not-all-ones ix %"PRIuS"\n", ix);
 #endif
       dap->avail_ix = ix;
       break;

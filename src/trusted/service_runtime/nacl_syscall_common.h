@@ -23,6 +23,7 @@
 
 EXTERN_C_BEGIN
 
+struct NaClAbiNaClImcMsgHdr;
 struct NaClApp;
 struct NaClAppThread;
 struct NaClSocketAddress;
@@ -114,8 +115,8 @@ void NaClCommonUtilUpdateAddrMap(struct NaClAppThread *natp,
                                  size_t               nbytes,
                                  int                  sysprot,
                                  struct NaClDesc      *backing_desc,
-                                 size_t               backing_bytes,
-                                 off_t                offset_bytes,
+                                 nacl_off64_t         backing_bytes,
+                                 nacl_off64_t         offset_bytes,
                                  int                  delete_mem);
 
 /* bool */
@@ -149,7 +150,7 @@ int32_t NaClCommonSysGetdents(struct NaClAppThread  *natp,
                               size_t                count);
 
 int32_t NaClCommonSysImc_MakeBoundSock(struct NaClAppThread *natp,
-                                       int                  *sap);
+                                       int32_t              *sap);
 
 int32_t NaClCommonSysImc_Accept(struct NaClAppThread  *natp,
                                 int                   d);
@@ -157,15 +158,15 @@ int32_t NaClCommonSysImc_Accept(struct NaClAppThread  *natp,
 int32_t NaClCommonSysImc_Connect(struct NaClAppThread *natp,
                                  int                  d);
 
-int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread *natp,
-                                 int                  d,
-                                 struct NaClImcMsgHdr *nimhp,
-                                 int                  flags);
+int32_t NaClCommonSysImc_Sendmsg(struct NaClAppThread         *natp,
+                                 int                          d,
+                                 struct NaClAbiNaClImcMsgHdr  *nanimhp,
+                                 int                          flags);
 
-int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread *natp,
-                                 int                  d,
-                                 struct NaClImcMsgHdr *nimhp,
-                                 int                  flags);
+int32_t NaClCommonSysImc_Recvmsg(struct NaClAppThread         *natp,
+                                 int                          d,
+                                 struct NaClAbiNaClImcMsgHdr  *nanimhp,
+                                 int                          flags);
 
 int32_t NaClCommonSysImc_Mem_Obj_Create(struct NaClAppThread  *natp,
                                         size_t                size);

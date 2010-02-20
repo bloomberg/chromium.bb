@@ -130,7 +130,7 @@ cleanup_none:
 }
 
 void NaClAppDtor(struct NaClApp  *nap) {
-  int                   i;
+  size_t                i;
   struct NaClDesc       *ndp;
   struct NaClAppThread  *natp;
 
@@ -139,18 +139,19 @@ void NaClAppDtor(struct NaClApp  *nap) {
 #endif
 
   NaClLog(2,
-          "NaClAppDtor: there are %d threads alive; thread table size %d\n",
+          ("NaClAppDtor: there are %d threads alive;"
+           " thread table size %"PRIuS"\n"),
           nap->num_threads,
           nap->threads.num_entries);
   for (i = 0; i < nap->threads.num_entries; ++i) {
     int                   refcount;
     enum NaClThreadState  state;
 
-    NaClLog(2, "Checking thread %d\n", i);
+    NaClLog(2, "Checking thread %"PRIuS"\n", i);
     if (NULL == (natp = NaClGetThreadMu(nap, i))) {
       continue;
     }
-    NaClLog(2, "Extracting state for thread %d\n", i);
+    NaClLog(2, "Extracting state for thread %"PRIuS"\n", i);
     NaClXMutexLock(&natp->mu);
     state = natp->state;
     NaClLog(2, "state %d\n", state);
@@ -161,19 +162,20 @@ void NaClAppDtor(struct NaClApp  *nap) {
 
     if (state != NACL_APP_THREAD_DEAD) {
       NaClLog(LOG_WARNING,
-              ("NaClAppDtor: thread %d still running when NaCl app"
+              ("NaClAppDtor: thread %"PRIuS" still running when NaCl app"
                " is being destroyed?!?\n"),
               i);
     }
     if (refcount != 0) {
       NaClLog(LOG_WARNING,
-              ("NaClAppDtor: thread %d refcount not 0 when NaCl app"
+              ("NaClAppDtor: thread %"PRIuS" refcount not 0 when NaCl app"
                " is being destroyed?!?\n"),
               i);
     }
   }
 
-  NaClLog(4, "There are %d descriptor entries\n", nap->desc_tbl.num_entries);
+  NaClLog(4, "There are %"PRIuS" descriptor entries\n",
+          nap->desc_tbl.num_entries);
 
   for (i = 0; i < nap->desc_tbl.num_entries; ++i) {
     ndp = (struct NaClDesc *) DynArrayGet(&nap->desc_tbl, i);
@@ -605,19 +607,21 @@ void NaClSetDescMu(struct NaClApp   *nap,
   }
 }
 
-int NaClSetAvailMu(struct NaClApp  *nap,
-                   struct NaClDesc *ndp) {
-  int pos;
+int32_t NaClSetAvailMu(struct NaClApp  *nap,
+                       struct NaClDesc *ndp) {
+  size_t pos;
 
   pos = DynArrayFirstAvail(&nap->desc_tbl);
-  if (pos < 0) {
+
+  if (pos > INT32_MAX) {
     NaClLog(LOG_FATAL,
-            ("NaClSetAvailMu: DynArrayFirstAvail returned a negative"
-             " number as first available position\n"));
+            ("NaClSetAvailMu: DynArrayFirstAvail returned a value"
+             " that is greather than 2**31-1.\n"));
   }
+
   NaClSetDescMu(nap, pos, ndp);
 
-  return pos;
+  return (int32_t) pos;
 }
 
 struct NaClDesc *NaClGetDesc(struct NaClApp *nap,
@@ -638,9 +642,9 @@ void NaClSetDesc(struct NaClApp   *nap,
   NaClXMutexUnlock(&nap->desc_mu);
 }
 
-int NaClSetAvail(struct NaClApp  *nap,
+int32_t NaClSetAvail(struct NaClApp  *nap,
                  struct NaClDesc *ndp) {
-  int pos;
+  int32_t pos;
 
   NaClXMutexLock(&nap->desc_mu);
   pos = NaClSetAvailMu(nap, ndp);
@@ -651,17 +655,13 @@ int NaClSetAvail(struct NaClApp  *nap,
 
 int NaClAddThreadMu(struct NaClApp        *nap,
                     struct NaClAppThread  *natp) {
-  int pos;
+  size_t pos;
 
   pos = DynArrayFirstAvail(&nap->threads);
-  if (pos < 0) {
-    NaClLog(LOG_FATAL,
-            ("NaClAddThreadMu: DynArrayFirstAvail returned a negative"
-             " number as first available position\n"));
-  }
+
   if (!DynArraySet(&nap->threads, pos, natp)) {
     NaClLog(LOG_FATAL,
-            "NaClAddThreadMu: DynArraySet at position %d failed\n",
+            "NaClAddThreadMu: DynArraySet at position %"PRIuS" failed\n",
             pos);
   }
   ++nap->num_threads;
