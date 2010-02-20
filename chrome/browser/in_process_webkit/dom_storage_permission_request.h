@@ -35,11 +35,11 @@ class DOMStoragePermissionRequest : public CookiePromptModalDialogDelegate {
   static void PromptUser(DOMStoragePermissionRequest* request);
 
   // CookiesPromptViewDelegate methods:
-  virtual void AllowSiteData(bool remember, bool session_expire);
-  virtual void BlockSiteData(bool remember);
+  virtual void AllowSiteData(bool session_expire);
+  virtual void BlockSiteData();
 
  private:
-  void SendResponse(ContentSetting content_setting, bool remember);
+  void SendResponse(ContentSetting content_setting);
 
   // The URL we need to get permission for.
   const GURL url_;

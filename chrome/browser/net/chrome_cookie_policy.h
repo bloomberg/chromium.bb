@@ -68,8 +68,7 @@ class ChromeCookiePolicy
 
   int CheckPolicy(const GURL& url) const;
   void PromptForSetCookie(const GURL& url, const std::string& cookie_line);
-  void DidPromptForSetCookie(const std::string& host, int result,
-                             bool remember);
+  void DidPromptForSetCookie(const std::string& host, int result);
 
   // A map from hostname to callbacks awaiting a cookie policy response.
   // This map is only accessed on the IO thread.

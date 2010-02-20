@@ -31,30 +31,29 @@ class ChromeCookiePolicy::PromptDelegate
   }
 
   // CookiesPromptViewDelegate methods:
-  virtual void AllowSiteData(bool remember, bool session_expire);
-  virtual void BlockSiteData(bool remember);
+  virtual void AllowSiteData(bool session_expire);
+  virtual void BlockSiteData();
 
  private:
-  void NotifyDone(int policy, bool remember);
+  void NotifyDone(int policy);
 
   scoped_refptr<ChromeCookiePolicy> cookie_policy_;
   std::string host_;
 };
 
-void ChromeCookiePolicy::PromptDelegate::AllowSiteData(bool remember,
-                                                       bool session_expire) {
+void ChromeCookiePolicy::PromptDelegate::AllowSiteData(bool session_expire) {
   int policy = net::OK;
   if (session_expire)
     policy = net::OK_FOR_SESSION_ONLY;
-  NotifyDone(policy, remember);
+  NotifyDone(policy);
 }
 
-void ChromeCookiePolicy::PromptDelegate::BlockSiteData(bool remember) {
-  NotifyDone(net::ERR_ACCESS_DENIED, remember);
+void ChromeCookiePolicy::PromptDelegate::BlockSiteData() {
+  NotifyDone(net::ERR_ACCESS_DENIED);
 }
 
-void ChromeCookiePolicy::PromptDelegate::NotifyDone(int policy, bool remember) {
-  cookie_policy_->DidPromptForSetCookie(host_, policy, remember);
+void ChromeCookiePolicy::PromptDelegate::NotifyDone(int policy) {
+  cookie_policy_->DidPromptForSetCookie(host_, policy);
   delete this;
 }
 
@@ -164,42 +163,34 @@ void ChromeCookiePolicy::PromptForSetCookie(const GURL& url,
   // The policy may have changed (due to the "remember" option)
   int policy = CheckPolicy(url);
   if (policy != net::ERR_IO_PENDING) {
-    DidPromptForSetCookie(host, policy, false);
+    DidPromptForSetCookie(host, policy);
     return;
   }
 
   // Show the prompt on top of the current tab.
   Browser* browser = BrowserList::GetLastActive();
   if (!browser || !browser->GetSelectedTabContents()) {
-    DidPromptForSetCookie(host, net::ERR_ACCESS_DENIED, false);
+    DidPromptForSetCookie(host, net::ERR_ACCESS_DENIED);
     return;
   }
 
 #if defined(OS_WIN)
-  RunCookiePrompt(browser->GetSelectedTabContents(), url, cookie_line,
+  RunCookiePrompt(browser->GetSelectedTabContents(),
+                  host_content_settings_map_, url, cookie_line,
                   new PromptDelegate(this, host));
 #else
   // TODO(darin): Enable prompting for other ports.
-  DidPromptForSetCookie(host, net::ERR_ACCESS_DENIED, false);
+  DidPromptForSetCookie(host, net::ERR_ACCESS_DENIED);
 #endif
 }
 
 void ChromeCookiePolicy::DidPromptForSetCookie(const std::string& host,
-                                               int policy, bool remember) {
+                                               int policy) {
   if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    // Process the remember flag immediately.
-    if (remember) {
-      ContentSetting content_setting = CONTENT_SETTING_BLOCK;
-      if (policy == net::OK || policy == net::OK_FOR_SESSION_ONLY)
-        content_setting = CONTENT_SETTING_ALLOW;
-      host_content_settings_map_->SetContentSetting(
-          host, CONTENT_SETTINGS_TYPE_COOKIES, content_setting);
-    }
-
     ChromeThread::PostTask(
         ChromeThread::IO, FROM_HERE,
         NewRunnableMethod(this, &ChromeCookiePolicy::DidPromptForSetCookie,
-                          host, policy, remember));
+                          host, policy));
     return;
   }
 

@@ -7,11 +7,13 @@
 
 #include <string>
 
+#include "base/ref_counted.h"
 #include "chrome/browser/app_modal_dialog.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/browser/cookie_prompt_modal_dialog_delegate.h"
 #include "googleurl/src/gurl.h"
 
+class HostContentSettingsMap;
 class PrefService;
 
 // A controller+model class for cookie and local storage warning prompt.
@@ -28,19 +30,22 @@ class CookiePromptModalDialog : public AppModalDialog {
   // A union of data necessary to determine the type of message box to
   // show.
   CookiePromptModalDialog(TabContents* tab_contents,
+                          HostContentSettingsMap* host_content_settings_map,
                           const GURL& origin,
                           const std::string& cookie_line,
                           CookiePromptModalDialogDelegate* delegate);
   CookiePromptModalDialog(TabContents* tab_contents,
+                          HostContentSettingsMap* host_content_settings_map,
                           const GURL& origin,
                           const string16& key,
                           const string16& value,
                           CookiePromptModalDialogDelegate* delegate);
   CookiePromptModalDialog(TabContents* tab_contents,
+                          HostContentSettingsMap* host_content_settings_map,
                           const GURL& origin,
                           const string16& database_name,
                           CookiePromptModalDialogDelegate* delegate);
-  virtual ~CookiePromptModalDialog() {}
+  virtual ~CookiePromptModalDialog();
 
   static void RegisterPrefs(PrefService* prefs);
 
@@ -70,6 +75,10 @@ class CookiePromptModalDialog : public AppModalDialog {
 #endif
 
  private:
+  // Used to verify our request is still necessary and when the response should
+  // persist.
+  scoped_refptr<HostContentSettingsMap> host_content_settings_map_;
+
   const DialogType dialog_type_;
 
   // The origin connected to this request.

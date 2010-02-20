@@ -60,31 +60,36 @@ void RunBeforeUnloadDialog(TabContents* tab_contents,
 
 #if defined(OS_WIN)
 void RunCookiePrompt(TabContents* tab_contents,
+                     HostContentSettingsMap* host_content_settings_map,
                      const GURL& origin,
                      const std::string& cookie_line,
                      CookiePromptModalDialogDelegate* delegate) {
   Singleton<AppModalDialogQueue>()->AddDialog(
-      new CookiePromptModalDialog(tab_contents, origin, cookie_line, delegate));
+      new CookiePromptModalDialog(tab_contents, host_content_settings_map,
+                                  origin, cookie_line, delegate));
 }
 
 void RunLocalStoragePrompt(
     TabContents* tab_contents,
+    HostContentSettingsMap* host_content_settings_map,
     const GURL& origin,
     const string16& key,
     const string16& value,
     CookiePromptModalDialogDelegate* delegate) {
   Singleton<AppModalDialogQueue>()->AddDialog(
-      new CookiePromptModalDialog(tab_contents, origin, key, value, delegate));
+      new CookiePromptModalDialog(tab_contents, host_content_settings_map,
+                                  origin, key, value, delegate));
 }
 
 void RunDatabasePrompt(
     TabContents* tab_contents,
+    HostContentSettingsMap* host_content_settings_map,
     const GURL& origin,
     const string16& database_name,
     CookiePromptModalDialogDelegate* delegate) {
   Singleton<AppModalDialogQueue>()->AddDialog(
-      new CookiePromptModalDialog(tab_contents, origin, database_name,
-                                  delegate));
+      new CookiePromptModalDialog(tab_contents, host_content_settings_map,
+                                  origin, database_name, delegate));
 }
 #endif
 

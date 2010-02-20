@@ -11,13 +11,11 @@
 // deleted.
 class CookiePromptModalDialogDelegate {
  public:
-  // Allow site data to be set. If |remember| is true, record this decision
-  // for this host.
-  virtual void AllowSiteData(bool remember, bool session_expire) = 0;
+  // Allow site data to be set.
+  virtual void AllowSiteData(bool session_expire) = 0;
 
-  // Block site data from being stored. If |remember| is true, record this
-  // decision for this host.
-  virtual void BlockSiteData(bool remember) = 0;
+  // Block site data from being stored.
+  virtual void BlockSiteData() = 0;
 
  protected:
   virtual ~CookiePromptModalDialogDelegate() {}

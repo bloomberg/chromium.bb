@@ -15,6 +15,7 @@
 
 class CookiePromptModalDialogDelegate;
 class GURL;
+class HostContentSettingsMap;
 class JavaScriptMessageBoxClient;
 class TabContents;
 
@@ -46,6 +47,7 @@ void RunBeforeUnloadDialog(TabContents* tab_contents,
 // user to accept or reject the cookie. The caller should pass |delegate|
 // that will handle the reply from the dialog.
 void RunCookiePrompt(TabContents* tab_contents,
+                     HostContentSettingsMap* host_content_settings_map,
                      const GURL& origin,
                      const std::string& cookie_line,
                      CookiePromptModalDialogDelegate* delegate);
@@ -55,6 +57,7 @@ void RunCookiePrompt(TabContents* tab_contents,
 // that will handle the reply from the dialog.
 void RunLocalStoragePrompt(
     TabContents* tab_contents,
+    HostContentSettingsMap* host_content_settings_map,
     const GURL& origin,
     const string16& key,
     const string16& value,
@@ -65,6 +68,7 @@ void RunLocalStoragePrompt(
 // that will handle the reply from the dialog.
 void RunDatabasePrompt(
     TabContents* tab_contents,
+    HostContentSettingsMap* host_content_settings_map,
     const GURL& origin,
     const string16& database_name,
     CookiePromptModalDialogDelegate* delegate);

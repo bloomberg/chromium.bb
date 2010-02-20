@@ -59,7 +59,6 @@ CookiePromptView::CookiePromptView(
 }
 
 CookiePromptView::~CookiePromptView() {
-  delete parent_;
 }
 
 ///////////////////////////////////////////////////////////////////////////////

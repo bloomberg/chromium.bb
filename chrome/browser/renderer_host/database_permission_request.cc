@@ -41,13 +41,13 @@ void DatabasePermissionRequest::RequestPermission() {
   ContentSetting setting = host_content_settings_map_->GetContentSetting(
       url_, CONTENT_SETTINGS_TYPE_COOKIES);
   if (setting != CONTENT_SETTING_ASK) {
-    SendResponse(setting, false);
+    SendResponse(setting);
     return;
   }
 
   Browser* browser = BrowserList::GetLastActive();
   if (!browser || !browser->GetSelectedTabContents()) {
-    BlockSiteData(false);
+    BlockSiteData();
     return;
   }
 
@@ -55,30 +55,23 @@ void DatabasePermissionRequest::RequestPermission() {
   self_ref_ = this;
   // Will call either AllowSiteData or BlockSiteData which will NULL out our
   // self reference.
-  RunDatabasePrompt(browser->GetSelectedTabContents(), url_,
-                    database_name_, this);
+  RunDatabasePrompt(browser->GetSelectedTabContents(),
+                    host_content_settings_map_, url_, database_name_, this);
 #else
   // TODO(jorlow): Enable prompting for other ports.
-  BlockSiteData(false);
+  BlockSiteData();
 #endif
 }
 
-void DatabasePermissionRequest::AllowSiteData(bool remember,
-                                              bool session_expire) {
-  SendResponse(CONTENT_SETTING_ALLOW, remember);
+void DatabasePermissionRequest::AllowSiteData(bool session_expire) {
+  SendResponse(CONTENT_SETTING_ALLOW);
 }
 
-void DatabasePermissionRequest::BlockSiteData(bool remember) {
-  SendResponse(CONTENT_SETTING_BLOCK, remember);
+void DatabasePermissionRequest::BlockSiteData() {
+  SendResponse(CONTENT_SETTING_BLOCK);
 }
 
-void DatabasePermissionRequest::SendResponse(ContentSetting content_setting,
-                                             bool remember) {
-  if (remember) {
-    host_content_settings_map_->SetContentSetting(
-        url_.host(), CONTENT_SETTINGS_TYPE_COOKIES, content_setting);
-  }
-
+void DatabasePermissionRequest::SendResponse(ContentSetting content_setting) {
   if (content_setting == CONTENT_SETTING_ALLOW) {
     ChromeThread::PostTask(ChromeThread::IO, FROM_HERE, on_allow_.release());
   } else {

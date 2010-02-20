@@ -109,7 +109,7 @@ class CookiePromptView : public views::View,
   std::wstring title_;
 
   // A pointer to the AppModalDialog that created us. We own this.
-  CookiePromptModalDialog* parent_;
+  scoped_ptr<CookiePromptModalDialog> parent_;
 
   gfx::NativeWindow root_window_;
 
