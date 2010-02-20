@@ -73,13 +73,17 @@ bool CookiePromptModalDialog::IsValid() {
 
 void CookiePromptModalDialog::AllowSiteData(bool remember,
                                             bool session_expire) {
-  delegate_->AllowSiteData(remember, session_expire);
-  delegate_ = NULL;  // It can be deleted at any point now.
+  if (delegate_) {
+    delegate_->AllowSiteData(remember, session_expire);
+    delegate_ = NULL;  // It can be deleted at any point now.
+  }
 }
 
 void CookiePromptModalDialog::BlockSiteData(bool remember) {
-  delegate_->BlockSiteData(remember);
-  delegate_ = NULL;  // It can be deleted at any point now.
+  if (delegate_) {
+    delegate_->BlockSiteData(remember);
+    delegate_ = NULL;  // It can be deleted at any point now.
+  }
 }
 
 // static
