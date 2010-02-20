@@ -607,7 +607,7 @@
       <!-- The width and height of the Content Settings Exceptions dialog box in -->
       <!-- characters and lines (See above). -->
       <message name="IDS_CONTENT_EXCEPTION_DIALOG_WIDTH_CHARS" use_name_for_id="true">
-        86
+        90
       </message>
       <message name="IDS_CONTENT_EXCEPTION_DIALOG_HEIGHT_LINES" use_name_for_id="true">
         16

@@ -54,7 +54,7 @@ void CookieFilterPageView::InitControlLayout() {
   const int single_column_set_id = 0;
   views::ColumnSet* column_set = layout->AddColumnSet(single_column_set_id);
   column_set->AddPaddingColumn(0, kRelatedControlVerticalSpacing);
-  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+  column_set->AddColumn(GridLayout::FILL, GridLayout::CENTER, 1,
                         GridLayout::USE_PREF, 0, 0);
 
   views::Label* title_label = new views::Label(
@@ -113,7 +113,7 @@ void CookieFilterPageView::InitControlLayout() {
 
   layout->StartRow(0, single_column_set_id);
   layout->AddView(exceptions_button_, 1, 1, GridLayout::LEADING,
-                  GridLayout::FILL);
+                  GridLayout::CENTER);
   layout->AddPaddingRow(0, kUnrelatedControlLargeVerticalSpacing);
 
   block_3rdparty_check_ = new views::Checkbox(
@@ -130,6 +130,7 @@ void CookieFilterPageView::InitControlLayout() {
 
   clear_on_close_check_ = new views::Checkbox(
       l10n_util::GetString(IDS_COOKIES_CLEAR_WHEN_CLOSE_CHKBOX));
+  clear_on_close_check_->SetMultiLine(true);
   clear_on_close_check_->set_listener(this);
 
   layout->StartRow(0, single_column_set_id);
