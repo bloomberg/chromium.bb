@@ -26,10 +26,6 @@ class Plugin : public NPObject {
   NPP npp() const { return npp_; }
   void New(NPMIMEType pluginType, int16 argc, char* argn[], char* argv[]);
   void SetWindow(const NPWindow& window);
-  int32 HandleEvent(const NPPepperEvent& event);
-
-  // Called continuously for animated demos.
-  void Tick();
 
   // Called by the browser to paint the window.
   void Paint();

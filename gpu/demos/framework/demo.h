@@ -33,10 +33,6 @@ class Demo {
   // a rendering context has already been created and made current.
   virtual bool InitGL() = 0;
 
-  // Returns whether the demo is animated. Animated demos are drawn
-  // continuously. Unanimated demos are only drawn when the window is invalid.
-  virtual bool IsAnimated();
-
   // This function is called by the framework to perform OpenGL rendering.
   // When this function is called, it is assumed that the rendering context
   // has been made current.

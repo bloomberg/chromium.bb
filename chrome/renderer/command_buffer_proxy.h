@@ -51,12 +51,6 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   virtual void SetToken(int32 token);
   virtual void SetParseError(gpu::error::Error error);
 
-  // Set a task that will be invoked the next time the window becomes invalid
-  // and needs to be repainted. Takes ownership of task.
-  void SetNotifyRepaintTask(Task* task) {
-    notify_repaint_task_.reset(task);
-  }
-
 #if defined(OS_MACOSX)
   virtual void SetWindowSize(int32 width, int32 height);
 #endif
@@ -77,7 +71,6 @@ class CommandBufferProxy : public gpu::CommandBuffer,
  private:
   // Message handlers:
   void OnUpdateState(gpu::CommandBuffer::State state);
-  void OnNotifyRepaint();
 
   // As with the service, the client takes ownership of the ring buffer.
   int32 size_;
@@ -96,8 +89,6 @@ class CommandBufferProxy : public gpu::CommandBuffer,
   // Pending asynchronous flush callbacks.
   typedef std::queue<linked_ptr<Task> > AsyncFlushTaskQueue;
   AsyncFlushTaskQueue pending_async_flush_tasks_;
-
-  scoped_ptr<Task> notify_repaint_task_;
 
   DISALLOW_COPY_AND_ASSIGN(CommandBufferProxy);
 };

@@ -295,11 +295,6 @@ typedef enum _NPDeviceContext3DError {
   NPDeviceContext3DError_GenericError
 } NPDeviceContext3DError;
 
-typedef struct _NPDeviceContext3D NPDeviceContext3D;
-
-typedef void (*NPDeviceContext3DRepaintPtr)(NPP npp,
-                                            NPDeviceContext3D* context);
-
 typedef struct _NPDeviceContext3D
 {
   void* reserved;
@@ -326,11 +321,6 @@ typedef struct _NPDeviceContext3D
 
   // Last processed token. Synchronized on flush.
   int32 token;
-
-  // Callback invoked on the main thread when the context must be repainted.
-  // TODO(apatrick): move this out of the context struct like the rest of the
-  // fields.
-  NPDeviceContext3DRepaintPtr repaintCallback;
 
   // Error status. Synchronized on flush.
   NPDeviceContext3DError error;

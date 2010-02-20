@@ -529,8 +529,7 @@
           'sources': [
             'plugin/command_buffer_stub.cc',
             'plugin/command_buffer_stub.h',
-            'plugin/command_buffer_stub_win.cc',
-           ],
+          ],
         },],
         ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
           'dependencies': [

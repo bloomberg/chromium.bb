@@ -8,10 +8,8 @@
 #include "npapi.h"
 #include "npapi_extensions.h"
 
-#define PGL_TRUE          1
-#define PGL_FALSE         0
-
-#define PGL_NO_CONTEXT    ((PGLContext) 0)
+#define PGL_TRUE 1
+#define PGL_FALSE 0
 
 #ifdef __cplusplus
 extern "C" {
@@ -23,11 +21,11 @@ typedef int32 PGLInt;
 
 // These are the same error codes as used by EGL.
 enum {
-  PGL_SUCCESS             = 0x3000,
-  PGL_NOT_INITIALIZED     = 0x3001,
-  PGL_BAD_CONTEXT         = 0x3006,
-  PGL_BAD_PARAMETER       = 0x300C,
-  PGL_CONTEXT_LOST        = 0x300E
+  PGL_SUCCESS = 0x3000,
+  PGL_NOT_INITIALIZED = 0x3001,
+  PGL_BAD_CONTEXT = 0x3006,
+  PGL_BAD_PARAMETER = 0x300C,
+  PGL_CONTEXT_LOST = 0x300E
 };
 
 // Initialize the PGL library. This must have completed before any other PGL

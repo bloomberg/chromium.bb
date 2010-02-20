@@ -90,11 +90,6 @@ void NPP_Print(NPP instance, NPPrint* platformPrint) {
 }
 
 int16 NPP_HandleEvent(NPP instance, void* event) {
-  Plugin* plugin = static_cast<Plugin*>(instance->pdata);
-
-  if (plugin)
-    return plugin->HandleEvent(*static_cast<NPPepperEvent*>(event));
-
   return 0;
 }
 

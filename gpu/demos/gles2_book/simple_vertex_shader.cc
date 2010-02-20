@@ -22,10 +22,6 @@ class SimpleVertexShader : public Example<SVSUserData> {
   const wchar_t* Title() const {
     return L"Simple Vertex Shader";
   }
-
-  virtual bool IsAnimated() {
-    return true;
-  }
 };
 }  // namespace gles2_book
 

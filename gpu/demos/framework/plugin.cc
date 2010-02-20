@@ -74,13 +74,8 @@ NPClass plugin_class = {
   PluginSetProperty,
 };
 
-void TickCallback(void* data) {
-  reinterpret_cast<gpu::demos::Plugin*>(data)->Tick();
-}
-
-void RepaintCallback(NPP npp, NPDeviceContext3D* /* context */) {
-  Plugin* plugin = static_cast<Plugin*>(npp->pdata);
-  plugin->Paint();
+void PaintCallback(void* data) {
+  reinterpret_cast<gpu::demos::Plugin*>(data)->Paint();
 }
 }
 
@@ -101,7 +96,7 @@ Plugin::~Plugin() {
   // Destroy demo while GL context is current and before it is destroyed.
   pglMakeCurrent(pgl_context_);
   demo_.reset();
-  pglMakeCurrent(PGL_NO_CONTEXT);
+  pglMakeCurrent(NULL);
 
   DestroyContext();
 }
@@ -126,22 +121,10 @@ void Plugin::SetWindow(const NPWindow& window) {
 
   if (!pgl_context_) {
     CreateContext();
-
-    // Schedule first call to Tick.
-    if (demo_->IsAnimated())
-      g_browser->pluginthreadasynccall(npp_, TickCallback, this);
   }
-}
 
-int32 Plugin::HandleEvent(const NPPepperEvent& event) {
-  return 0;
-}
-
-void Plugin::Tick() {
-  Paint();
-
-  // Schedule another call to Tick.
-  g_browser->pluginthreadasynccall(npp_, TickCallback, this);
+  // Schedule the first call to Draw.
+  g_browser->pluginthreadasynccall(npp_, PaintCallback, this);
 }
 
 void Plugin::Paint() {
@@ -153,7 +136,10 @@ void Plugin::Paint() {
 
   demo_->Draw();
   pglSwapBuffers();
-  pglMakeCurrent(PGL_NO_CONTEXT);
+  pglMakeCurrent(NULL);
+
+  // Schedule another call to Paint.
+  g_browser->pluginthreadasynccall(npp_, PaintCallback, this);
 }
 
 void Plugin::CreateContext() {
@@ -163,7 +149,6 @@ void Plugin::CreateContext() {
   NPDeviceContext3DConfig config;
   config.commandBufferSize = kCommandBufferSize;
   device3d_->initializeContext(npp_, &config, &context3d_);
-  context3d_.repaintCallback = RepaintCallback;
 
   // Create a PGL context.
   pgl_context_ = pglCreateContext(npp_, device3d_, &context3d_);
@@ -171,7 +156,7 @@ void Plugin::CreateContext() {
   // Initialize demo.
   pglMakeCurrent(pgl_context_);
   CHECK(demo_->InitGL());
-  pglMakeCurrent(PGL_NO_CONTEXT);
+  pglMakeCurrent(NULL);
 }
 
 void Plugin::DestroyContext() {

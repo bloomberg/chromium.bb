@@ -3,7 +3,7 @@
 // found in the LICENSE file.
 
 #include "base/callback.h"
-#include "base/scoped_open_process.h"
+#include "base/process_util.h"
 #include "base/shared_memory.h"
 #include "chrome/common/command_buffer_messages.h"
 #include "chrome/common/plugin_messages.h"
@@ -23,7 +23,6 @@ CommandBufferStub::CommandBufferStub(PluginChannel* channel,
 }
 
 CommandBufferStub::~CommandBufferStub() {
-  Destroy();
   channel_->RemoveRoute(route_id_);
 }
 
@@ -68,54 +67,35 @@ void CommandBufferStub::OnInitialize(int32 size,
 
   // Assume service is responsible for duplicating the handle from the calling
   // process.
-  base::ScopedOpenProcess peer_process;
-  if (!peer_process.Open(channel_->peer_pid()))
+  base::ProcessHandle peer_handle;
+  if (!base::OpenProcessHandle(channel_->peer_pid(), &peer_handle))
     return;
 
   command_buffer_.reset(new gpu::CommandBufferService);
 
-  // Initialize the CommandBufferService.
-  if (!command_buffer_->Initialize(size)) {
-    Destroy();
-    return;
-  }
-
-  // Get the ring buffer.
-  Buffer buffer = command_buffer_->GetRingBuffer();
-  if (!buffer.shared_memory) {
-    Destroy();
-    return;
-  }
-
-  // Initialize the GPUProcessor.
-  processor_ = new gpu::GPUProcessor(command_buffer_.get());
-  if (!processor_->Initialize(window_)) {
-    Destroy();
-    return;
-  }
-
-  // Perform platform specific initialization.
-  if (!InitializePlatformSpecific()) {
-    Destroy();
-    return;
-  }
-
-  // Share the ring buffer to the client process.
-  if (!buffer.shared_memory->ShareToProcess(peer_process.handle(),
-                                            ring_buffer)) {
-    Destroy();
-    return;
-  }
-
-  // Setup callbacks for events.
-  command_buffer_->SetPutOffsetChangeCallback(
-      NewCallback(processor_.get(),
-                  &gpu::GPUProcessor::ProcessCommands));
+  // Initialize the CommandBufferService and GPUProcessor.
+  if (command_buffer_->Initialize(size)) {
+    Buffer buffer = command_buffer_->GetRingBuffer();
+    if (buffer.shared_memory) {
+      processor_ = new gpu::GPUProcessor(command_buffer_.get());
+      if (processor_->Initialize(window_)) {
+        command_buffer_->SetPutOffsetChangeCallback(
+            NewCallback(processor_.get(),
+                        &gpu::GPUProcessor::ProcessCommands));
 #if defined(OS_MACOSX)
-  processor_->SetSwapBuffersCallback(
-      NewCallback(this,
-                  &CommandBufferStub::SwapBuffersCallback));
+        processor_->SetSwapBuffersCallback(
+            NewCallback(this,
+                        &CommandBufferStub::SwapBuffersCallback));
 #endif
+        buffer.shared_memory->ShareToProcess(peer_handle, ring_buffer);
+      } else {
+        processor_ = NULL;
+        command_buffer_.reset();
+      }
+    }
+  }
+
+  base::CloseProcessHandle(peer_handle);
 }
 
 void CommandBufferStub::OnGetState(gpu::CommandBuffer::State* state) {
@@ -166,22 +146,6 @@ void CommandBufferStub::OnGetTransferBuffer(
 
   base::CloseProcessHandle(peer_handle);
 }
-
-void CommandBufferStub::Destroy() {
-  processor_ = NULL;
-  command_buffer_.reset();
-
-  DestroyPlatformSpecific();
-}
-
-#if !defined(OS_WIN)
-bool CommandBufferStub::InitializePlatformSpecific() {
-  return true;
-}
-
-void CommandBufferStub::DestroyPlatformSpecific() {
-}
-#endif  // defined(OS_WIN)
 
 #if defined(OS_MACOSX)
 void CommandBufferStub::OnSetWindowSize(int32 width, int32 height) {

@@ -31,9 +31,5 @@ void Demo::Draw() {
   Render(elapsed_sec);
 }
 
-bool Demo::IsAnimated() {
-  return false;
-}
-
 }  // namespace demos
 }  // namespace gpu
