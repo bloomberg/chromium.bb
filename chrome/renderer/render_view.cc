@@ -573,6 +573,8 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
                         OnAutoFillSuggestionsReturned)
     IPC_MESSAGE_HANDLER(ViewMsg_AutocompleteSuggestionsReturned,
                         OnAutocompleteSuggestionsReturned)
+    IPC_MESSAGE_HANDLER(ViewMsg_AutoFillFormDataFilled,
+                        OnAutoFillFormDataFilled)
     IPC_MESSAGE_HANDLER(ViewMsg_PopupNotificationVisibilityChanged,
                         OnPopupNotificationVisibilityChanged)
     IPC_MESSAGE_HANDLER(ViewMsg_MoveOrResizeStarted, OnMoveOrResizeStarted)
@@ -1463,6 +1465,13 @@ void RenderView::OnAutocompleteSuggestionsReturned(
   autofill_query_node_.reset();
 }
 
+void RenderView::OnAutoFillFormDataFilled(int query_id, const FormData& form) {
+  if (query_id != autofill_query_id_)
+    return;
+
+  form_manager_.FillForm(form);
+}
+
 void RenderView::OnPopupNotificationVisibilityChanged(bool visible) {
   popup_notification_visible_ = visible;
 }
@@ -1971,6 +1980,22 @@ void RenderView::queryAutofillSuggestions(const WebNode& node,
 void RenderView::removeAutofillSuggestions(const WebString& name,
                                            const WebString& value) {
   Send(new ViewHostMsg_RemoveAutofillEntry(routing_id_, name, value));
+}
+
+void RenderView::didAcceptAutoFillSuggestion(
+      const WebKit::WebNode& node,
+      const WebKit::WebString& name,
+      const WebKit::WebString& label) {
+  static int query_counter = 0;
+  autofill_query_id_ = query_counter++;
+
+  FormData form;
+  const WebInputElement element = node.toConstElement<WebInputElement>();
+  if (!form_manager_.FindForm(element, &form))
+    return;
+
+  Send(new ViewHostMsg_FillAutoFillFormData(
+      routing_id_, autofill_query_id_, form, name, label));
 }
 
 // WebKit::WebWidgetClient ----------------------------------------------------
@@ -2599,6 +2624,7 @@ void RenderView::didFinishDocumentLoad(WebFrame* frame) {
   // The document has now been fully loaded.  Scan for forms to be sent up to
   // the browser.
   // TODO(jhawkins): Make these use the FormManager.
+  form_manager_.ExtractForms(frame);
   SendForms(frame);
   SendPasswordForms(frame);
 

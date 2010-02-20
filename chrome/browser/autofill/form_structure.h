@@ -14,6 +14,8 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "googleurl/src/gurl.h"
 
+struct FormData;
+
 namespace webkit_glue {
 class FormFieldValues;
 }
@@ -58,11 +60,14 @@ class FormStructure {
     return fields_.end();
   }
 
+  bool operator!=(const FormData& form) const;
+
  private:
   // Associates the field with the heuristic type for each of the field views.
   void GetHeuristicFieldInfo(FieldTypeMap* field_types_map);
 
   // The name of the form.
+  // TODO(jhawkins): string16
   std::string form_name_;
 
   // The source URL.

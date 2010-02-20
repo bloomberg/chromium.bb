@@ -34,6 +34,7 @@
 #include "chrome/renderer/dom_ui_bindings.h"
 #include "chrome/renderer/extensions/extension_process_bindings.h"
 #include "chrome/renderer/external_host_bindings.h"
+#include "chrome/renderer/form_manager.h"
 #include "chrome/renderer/notification_provider.h"
 #include "chrome/renderer/render_widget.h"
 #include "chrome/renderer/render_view_visitor.h"
@@ -260,6 +261,10 @@ class RenderView : public RenderWidget,
       const WebKit::WebString& value);
   virtual void removeAutofillSuggestions(
       const WebKit::WebString& name, const WebKit::WebString& value);
+  virtual void didAcceptAutoFillSuggestion(
+      const WebKit::WebNode& node,
+      const WebKit::WebString& name,
+      const WebKit::WebString& label);
 
   virtual WebKit::WebNotificationPresenter* GetNotificationPresenter() {
     return notification_provider_.get();
@@ -707,6 +712,9 @@ class RenderView : public RenderWidget,
       const std::vector<string16>& suggestions,
       int default_suggestions_index);
 
+  // Notification that we have received AutoFill form data.
+  void OnAutoFillFormDataFilled(int query_id, const FormData& form);
+
   // Message that the popup notification has been shown or hidden.
   void OnPopupNotificationVisibilityChanged(bool visible);
 
@@ -1103,6 +1111,9 @@ class RenderView : public RenderWidget,
   // Page translation related objects.
   TextTranslatorImpl text_translator_;
   scoped_ptr<PageTranslator> page_translator_;
+
+  // The FormManager for this RenderView.
+  FormManager form_manager_;
 
 #if defined(OS_MACOSX)
   // All the currently active plugin delegates for this RenderView; kept so that

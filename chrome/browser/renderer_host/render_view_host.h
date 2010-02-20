@@ -400,6 +400,9 @@ class RenderViewHost : public RenderWidgetHost {
       const std::vector<string16>& suggestions,
       int default_suggestion_index);
 
+  // Called by the AutoFillManager when the FormData has been filled out.
+  void AutoFillFormDataFilled(int query_id, const FormData& form);
+
   // Notifies the Renderer that a move or resize of its containing window has
   // started (this is used to hide the autocomplete popups if any).
   void WindowMoveOrResizeStarted();
@@ -589,6 +592,10 @@ class RenderViewHost : public RenderWidgetHost {
                                 const webkit_glue::FormField& field);
   void OnRemoveAutofillEntry(const string16& field_name,
                              const string16& value);
+  void OnFillAutoFillFormData(int query_id,
+                              const FormData& form,
+                              const string16& name,
+                              const string16& label);
 
   void OnShowDesktopNotification(const GURL& source_origin,
                                  const GURL& url, int notification_id);

@@ -628,6 +628,12 @@ IPC_BEGIN_MESSAGES(View)
                       std::vector<string16> /* suggestions */,
                       int /* index of default suggestion */)
 
+  // Reply to the ViewHostMsg_FillAutoFillFormData message with the
+  // AutoFill form data.
+  IPC_MESSAGE_ROUTED2(ViewMsg_AutoFillFormDataFilled,
+                      int /* id of the request message */,
+                      FormData /* form data */)
+
   // Sent by the Browser process to alert a window about whether a blocked
   // popup notification is visible. The renderer assumes every new window is a
   // blocked popup until notified otherwise.
@@ -1752,6 +1758,14 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED2(ViewHostMsg_QueryFormFieldAutofill,
                       int /* id of this message */,
                       webkit_glue::FormField /* the form field */)
+
+  // Instructs the browser to fill in the values for a form using AutoFill
+  // profile data.
+  IPC_MESSAGE_ROUTED4(ViewHostMsg_FillAutoFillFormData,
+                      int /* id of this message */,
+                      FormData /* the form  */,
+                      string16 /* profile name */,
+                      string16 /* profile label */)
 
   // Instructs the browser to remove the specified autofill-entry from the
   // database.

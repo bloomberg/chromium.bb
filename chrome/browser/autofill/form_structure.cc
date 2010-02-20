@@ -12,6 +12,7 @@
 #include "chrome/browser/autofill/field_types.h"
 #include "chrome/browser/autofill/form_field.h"
 #include "third_party/libjingle/files/talk/xmllite/xmlelement.h"
+#include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/form_field_values.h"
 
@@ -200,6 +201,20 @@ const AutoFillField* FormStructure::field(int index) const {
 size_t FormStructure::field_count() const {
   // Don't count the NULL terminator.
   return fields_.size() - 1;
+}
+
+bool FormStructure::operator!=(const FormData& form) const {
+  // TODO(jhawkins): Is this enough to differentiate a form?
+  if (UTF8ToUTF16(form_name_) != form.name ||
+      source_url_ != form.origin ||
+      target_url_ != form.action) {
+    return true;
+  }
+
+  // TODO(jhawkins): Compare field names, IDs and labels once we have labels
+  // set up.
+
+  return false;
 }
 
 void FormStructure::GetHeuristicFieldInfo(FieldTypeMap* field_type_map) {

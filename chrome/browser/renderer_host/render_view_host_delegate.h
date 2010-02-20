@@ -18,8 +18,8 @@
 
 struct ContextMenuParams;
 class FilePath;
+struct FormData;
 class GURL;
-class Value;
 struct NativeWebKeyboardEvent;
 class NavigationEntry;
 class Profile;
@@ -31,6 +31,7 @@ class ResourceRequestDetails;
 class SkBitmap;
 class TabContents;
 struct ThumbnailScore;
+class Value;
 struct ViewHostMsg_DidPrintPage_Params;
 struct ViewHostMsg_FrameNavigate_Params;
 struct WebDropData;
@@ -403,6 +404,14 @@ class RenderViewHostDelegate {
     // RenderViewHost::AutoFillSuggestionsReturned has been called.
     virtual bool GetAutoFillSuggestions(
         int query_id, const webkit_glue::FormField& field) = 0;
+
+    // Called to fill the FormData object with AutoFill profile information that
+    // matches the |name|, |label| key.  Returns true to indicate that
+    // RenderViewHost::AutoFillFormDataFilled has been called.
+    virtual bool FillAutoFillFormData(int query_id,
+                                      const FormData& form,
+                                      const string16& name,
+                                      const string16& label) = 0;
   };
 
   // ---------------------------------------------------------------------------

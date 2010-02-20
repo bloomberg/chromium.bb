@@ -5,6 +5,7 @@
 #include "chrome/renderer/form_manager.h"
 
 #include "base/logging.h"
+#include "base/string_util.h"
 #include "base/stl_util-inl.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
@@ -42,7 +43,9 @@ void FormManager::ExtractForms(WebFrame* frame) {
     form_elements->form_element.getInputElements(input_elements);
     for (size_t j = 0; j < input_elements.size(); ++j) {
       WebInputElement element = input_elements[j];
-      form_elements->input_elements[element.nameForAutofill()] = element;
+      // TODO(jhawkins): Remove this check when we have labels.
+      if (!element.nameForAutofill().isEmpty())
+        form_elements->input_elements[element.nameForAutofill()] = element;
     }
 
     form_elements_map_[frame].push_back(form_elements);
@@ -120,7 +123,7 @@ bool FormManager::FillForm(const FormData& form) {
   for (FormInputElementMap::iterator iter =
            form_element->input_elements.begin();
       iter != form_element->input_elements.end(); ++iter, ++i) {
-    DCHECK(iter->second.nameForAutofill() == form.elements[i]);
+    DCHECK_EQ(form.elements[i], iter->second.nameForAutofill());
 
     iter->second.setValue(form.values[i]);
     iter->second.setAutofilled(true);

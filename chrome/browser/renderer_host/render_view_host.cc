@@ -801,6 +801,8 @@ void RenderViewHost::OnMessageReceived(const IPC::Message& msg) {
                         OnQueryFormFieldAutofill)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RemoveAutofillEntry,
                         OnRemoveAutofillEntry)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_FillAutoFillFormData,
+                        OnFillAutoFillFormData)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowDesktopNotification,
                         OnShowDesktopNotification)
     IPC_MESSAGE_HANDLER(ViewHostMsg_ShowDesktopNotificationText,
@@ -1590,6 +1592,18 @@ void RenderViewHost::OnRemoveAutofillEntry(const string16& field_name,
     formfield_history_delegate->RemoveFormFieldHistoryEntry(field_name, value);
 }
 
+void RenderViewHost::OnFillAutoFillFormData(int query_id,
+                                            const FormData& form,
+                                            const string16& name,
+                                            const string16& label) {
+  RenderViewHostDelegate::AutoFill* autofill_delegate =
+      delegate_->GetAutoFillDelegate();
+  if (!autofill_delegate)
+    return;
+
+  autofill_delegate->FillAutoFillFormData(query_id, form, name, label);
+}
+
 void RenderViewHost::AutoFillSuggestionsReturned(
     int query_id,
     const std::vector<string16>& names,
@@ -1605,6 +1619,11 @@ void RenderViewHost::AutocompleteSuggestionsReturned(
   Send(new ViewMsg_AutocompleteSuggestionsReturned(
       routing_id(), query_id, suggestions, -1));
   // Default index -1 means no default suggestion.
+}
+
+void RenderViewHost::AutoFillFormDataFilled(int query_id,
+                                            const FormData& form) {
+  Send(new ViewMsg_AutoFillFormDataFilled(routing_id(), query_id, form));
 }
 
 void RenderViewHost::WindowMoveOrResizeStarted() {

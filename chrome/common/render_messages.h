@@ -1547,6 +1547,7 @@ template <>
 struct ParamTraits<FormData> {
   typedef FormData param_type;
   static void Write(Message* m, const param_type& p) {
+    WriteParam(m, p.name);
     WriteParam(m, p.origin);
     WriteParam(m, p.action);
     WriteParam(m, p.elements);
@@ -1555,6 +1556,7 @@ struct ParamTraits<FormData> {
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
     return
+      ReadParam(m, iter, &p->name) &&
       ReadParam(m, iter, &p->origin) &&
       ReadParam(m, iter, &p->action) &&
       ReadParam(m, iter, &p->elements) &&

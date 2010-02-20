@@ -16,6 +16,7 @@
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
+#include "webkit/glue/form_data.h"
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/form_field_values.h"
 
@@ -144,6 +145,65 @@ bool AutoFillManager::GetAutoFillSuggestions(
   // TODO(jhawkins): If the default profile is in this list, set it as the
   // default suggestion index.
   host->AutoFillSuggestionsReturned(query_id, names, labels, -1);
+  return true;
+}
+
+bool AutoFillManager::FillAutoFillFormData(int query_id,
+                                           const FormData& form,
+                                           const string16& name,
+                                           const string16& label) {
+  // TODO(jhawkins): Use the autofill preference.
+  if (!CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kEnableNewAutoFill))
+    return false;
+
+  RenderViewHost* host = tab_contents_->render_view_host();
+  if (!host)
+    return false;
+
+  const std::vector<AutoFillProfile*>& profiles = personal_data_->profiles();
+  if (profiles.empty())
+    return false;
+
+  const AutoFillProfile* profile = NULL;
+  for (std::vector<AutoFillProfile*>::const_iterator iter = profiles.begin();
+       iter != profiles.end(); ++iter) {
+    if ((*iter)->Label() != label)
+      continue;
+
+    if ((*iter)->GetFieldText(AutoFillType(NAME_FIRST)) != name &&
+        (*iter)->GetFieldText(AutoFillType(NAME_FULL)) != name)
+      continue;
+
+    profile = *iter;
+    break;
+  }
+
+  if (!profile)
+    return false;
+
+  FormData result = form;
+  for (std::vector<FormStructure*>::const_iterator iter =
+           form_structures_.begin();
+       iter != form_structures_.end(); ++iter) {
+    const FormStructure* form_structure = *iter;
+    if (*form_structure != form)
+      continue;
+
+    for (size_t i = 0; i < form_structure->field_count(); ++i) {
+      const AutoFillField* field = form_structure->field(i);
+
+      for (size_t j = 0; j < result.values.size(); ++j) {
+        if (field->name() == result.elements[j]) {
+          result.values[j] =
+              profile->GetFieldText(AutoFillType(field->heuristic_type()));
+          break;
+        }
+      }
+    }
+  }
+
+  host->AutoFillFormDataFilled(query_id, result);
   return true;
 }
 
