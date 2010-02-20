@@ -1379,11 +1379,25 @@ ExtensionResource Extension::GetIconPath(Icons icon) {
   return GetResource(iter->second);
 }
 
-bool Extension::CanAccessHost(const GURL& url) const {
+bool Extension::CanExecuteScriptOnHost(const GURL& url,
+                                       std::string* error) const {
+  // No extensions are allowed to execute script on the gallery because that
+  // would allow extensions to manipulate their own install pages.
+  if (url.host() == GURL(extension_urls::kGalleryBrowsePrefix).host()) {
+    if (error)
+      *error = errors::kCannotScriptGallery;
+    return false;
+  }
+
   for (URLPatternList::const_iterator host = host_permissions_.begin();
        host != host_permissions_.end(); ++host) {
     if (host->MatchesUrl(url))
       return true;
+  }
+
+  if (error) {
+    *error = ExtensionErrorUtils::FormatErrorMessage(errors::kCannotAccessPage,
+                                                     url.spec());
   }
 
   return false;

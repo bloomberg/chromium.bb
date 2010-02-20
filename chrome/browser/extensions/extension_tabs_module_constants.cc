@@ -45,10 +45,6 @@ const char kInvalidUrlError[] = "Invalid url: \"*\".";
 const char kInternalVisibleTabCaptureError[] =
     "Internal error while trying to capture visible region of the current tab";
 const char kNotImplementedError[] = "This call is not yet implemented";
-const char kCannotAccessPageError[] = "Cannot access contents of url \"*\". "
-    "Extension manifest must request permission to access this host.";
-const char kCannotScriptGalleryError[] = "The extensions gallery cannot be "
-    "scripted.";
 const char kSupportedInWindowsOnlyError[] = "Supported in Windows only";
 
 const char kNoCodeOrFileToExecuteError[] = "No source code or file specified.";

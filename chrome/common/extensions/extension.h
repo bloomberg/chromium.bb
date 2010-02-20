@@ -221,9 +221,11 @@ class Extension {
     return host_permissions_;
   }
 
-  // Returns true if the extension has permission to access the host for the
-  // specified URL.
-  bool CanAccessHost(const GURL& url) const;
+  // Returns true if the extension has permission to execute script on a
+  // particular host.
+  // TODO(aa): Also use this in the renderer, for normal content script
+  // injection. Currently, that has its own copy of this code.
+  bool CanExecuteScriptOnHost(const GURL& url, std::string* error) const;
 
   // Returns true if the extension has the specified API permission.
   bool HasApiPermission(const std::string& permission) const {

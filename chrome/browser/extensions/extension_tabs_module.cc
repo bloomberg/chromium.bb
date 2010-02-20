@@ -592,11 +592,8 @@ bool UpdateTabFunction::RunImpl() {
     // JavaScript URLs can do the same kinds of things as cross-origin XHR, so
     // we need to check host permissions before allowing them.
     if (new_gurl.SchemeIs(chrome::kJavaScriptScheme)) {
-      if (!GetExtension()->CanAccessHost(contents->GetURL())) {
-        error_ = ExtensionErrorUtils::FormatErrorMessage(
-            keys::kCannotAccessPageError, contents->GetURL().spec());
+      if (!GetExtension()->CanExecuteScriptOnHost(contents->GetURL(), &error_))
         return false;
-      }
 
       // TODO(aa): How does controller queue URLs? Is there any chance that this
       // JavaScript URL will end up applying to something other than

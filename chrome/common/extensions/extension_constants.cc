@@ -217,6 +217,9 @@ const char* kInvalidOptionsPage =
     "Invalid value for 'options_page'.";
 const char* kReservedMessageFound =
     "Reserved key * found in message catalog.";
+const char* kCannotAccessPage = "Cannot access contents of url \"*\". "
+    "Extension manifest must request permission to access this host.";
+const char* kCannotScriptGallery = "The extensions gallery cannot be scripted.";
 }  // namespace extension_manifest_errors
 
 namespace extension_urls {

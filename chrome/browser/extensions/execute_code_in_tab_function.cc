@@ -66,23 +66,10 @@ bool ExecuteCodeInTabFunction::RunImpl() {
   DCHECK(browser);
   DCHECK(contents);
 
-  // Disallow executeScript when the target contents is a gallery page.
-  // This mirrors a check in UserScriptSlave::InjectScripts
   // NOTE: This can give the wrong answer due to race conditions, but it is OK,
   // we check again in the renderer.
-  if (contents->GetURL().host() ==
-      GURL(extension_urls::kGalleryBrowsePrefix).host()) {
-    error_ = keys::kCannotScriptGalleryError;
+  if (!GetExtension()->CanExecuteScriptOnHost(contents->GetURL(), &error_))
     return false;
-  }
-
-  // NOTE: This can give the wrong answer due to race conditions, but it is OK,
-  // we check again in the renderer.
-  if (!GetExtension()->CanAccessHost(contents->GetURL())) {
-    error_ = ExtensionErrorUtils::FormatErrorMessage(
-        keys::kCannotAccessPageError, contents->GetURL().spec());
-    return false;
-  }
 
   if (script_info->HasKey(keys::kAllFramesKey)) {
     if (!script_info->GetBoolean(keys::kAllFramesKey, &all_frames_))

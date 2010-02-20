@@ -145,6 +145,8 @@ namespace extension_manifest_errors {
   extern const char* kLocalesMessagesFileMissing;
   extern const char* kInvalidOptionsPage;
   extern const char* kReservedMessageFound;
+  extern const char* kCannotAccessPage;
+  extern const char* kCannotScriptGallery;
 }  // namespace extension_manifest_errors
 
 namespace extension_urls {
