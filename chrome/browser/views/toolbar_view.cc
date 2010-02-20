@@ -233,6 +233,12 @@ void ToolbarView::ButtonPressed(
       // ongoing user edits, since it doesn't realize this is a user-initiated
       // action.
       location_bar_->Revert();
+      // Shift-clicking or Ctrl-clicking the reload button means we should
+      // ignore any cached content.
+      // TODO(avayvod): eliminate duplication of this logic in
+      // CompactLocationBarView.
+      if (id == IDC_RELOAD && (event.IsShiftDown() || event.IsControlDown()))
+        id = IDC_RELOAD_IGNORING_CACHE;
       break;
   }
   browser_->ExecuteCommandWithDisposition(
