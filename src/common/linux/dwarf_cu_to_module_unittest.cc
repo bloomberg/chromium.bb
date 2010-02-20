@@ -756,6 +756,24 @@ TEST_F(Simple, InlineFunctionSignedAttribute) {
                0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL);
 }
 
+// Any DIE with an DW_AT_inline attribute can be cited by
+// DW_AT_abstract_origin attributes --- even if the value of the
+// DW_AT_inline attribute is DW_INL_not_inlined.
+TEST_F(Simple, AbstractOriginNotInlined) {
+  PushLine(0x2805c4531be6ca0eULL, 0x686b52155a8d4d2cULL, "line-file", 6111581);
+
+  StartCU();
+  AbstractInstanceDIE(&root_handler_, 0x93e9cdad52826b39ULL,
+                      dwarf2reader::DW_INL_not_inlined, 0, "abstract-instance");
+  DefineInlineInstanceDIE(&root_handler_, "", 0x93e9cdad52826b39ULL,
+                          0x2805c4531be6ca0eULL, 0x686b52155a8d4d2cULL);
+  root_handler_.Finish();
+
+  TestFunctionCount(1);
+  TestFunction(0, "abstract-instance",
+               0x2805c4531be6ca0eULL, 0x686b52155a8d4d2cULL);
+}
+
 TEST_F(Simple, UnknownAbstractOrigin) {
   EXPECT_CALL(reporter_, UnknownAbstractOrigin(_, 1ULL)).WillOnce(Return());
   PushLine(0x1758a0f941b71efbULL, 0x1cf154f1f545e146ULL, "line-file", 75173118);

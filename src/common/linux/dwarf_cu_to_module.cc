@@ -327,16 +327,11 @@ void DwarfCUToModule::FuncHandler::ProcessAttributeUnsigned(
     enum DwarfForm form,
     uint64 data) {
   switch (attr) {
-    case dwarf2reader::DW_AT_inline:
-      switch(data) {
-        case dwarf2reader::DW_INL_inlined:
-        case dwarf2reader::DW_INL_declared_not_inlined:
-        case dwarf2reader::DW_INL_declared_inlined:
-          inline_  = true; break;
-        default:
-          break;
-      }
-      break;
+    // If this attribute is present at all --- even if its value is
+    // DW_INL_not_inlined --- then GCC may cite it as someone else's
+    // DW_AT_abstract_origin attribute.
+    case dwarf2reader::DW_AT_inline:      inline_  = true; break;
+
     case dwarf2reader::DW_AT_low_pc:      low_pc_  = data; break;
     case dwarf2reader::DW_AT_high_pc:     high_pc_ = data; break;
     default:
@@ -350,16 +345,11 @@ void DwarfCUToModule::FuncHandler::ProcessAttributeSigned(
     enum DwarfForm form,
     int64 data) {
   switch (attr) {
-    case dwarf2reader::DW_AT_inline:
-      switch(data) {
-        case dwarf2reader::DW_INL_inlined:
-        case dwarf2reader::DW_INL_declared_not_inlined:
-        case dwarf2reader::DW_INL_declared_inlined:
-          inline_ = true; break;
-        default:
-          break;
-      }
-      break;
+    // If this attribute is present at all --- even if its value is
+    // DW_INL_not_inlined --- then GCC may cite it as someone else's
+    // DW_AT_abstract_origin attribute.
+    case dwarf2reader::DW_AT_inline:      inline_  = true; break;
+
     default:
       break;
   }
