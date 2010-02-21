@@ -5,6 +5,7 @@
 #import "chrome/browser/app_controller_mac.h"
 
 #include "app/l10n_util_mac.h"
+#include "base/auto_reset.h"
 #include "base/command_line.h"
 #include "base/mac_util.h"
 #include "base/message_loop.h"
@@ -58,9 +59,52 @@
 @end
 #endif
 
-@interface AppController(PRIVATE)
+namespace {
+
+// True while AppController is calling Browser::OpenEmptyWindow(). We need a
+// global flag here, analogue to BrowserInit::InProcessStartup() because
+// otherwise the SessionService will try to restore sessions when we make a new
+// window while there are no other active windows.
+bool g_is_opening_new_window = false;
+
+// Activates a browser window having the given profile (the last one active) if
+// possible and returns a pointer to the activate |Browser| or NULL if this was
+// not possible. If the last active browser is minimized (in particular, if
+// there are only minimized windows), it will unminimize it.
+Browser* ActivateBrowser(Profile* profile) {
+  Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
+  if (browser)
+    browser->window()->Activate();
+  return browser;
+}
+
+// Creates an empty browser window with the given profile and returns a pointer
+// to the new |Browser|.
+Browser* CreateBrowser(Profile* profile) {
+  {
+    AutoReset auto_reset_in_run(&g_is_opening_new_window, true);
+    Browser::OpenEmptyWindow(profile);
+  }
+
+  Browser* browser = BrowserList::GetLastActive();
+  CHECK(browser);
+  return browser;
+}
+
+// Activates a browser window having the given profile (the last one active) if
+// possible or creates an empty one if necessary. Returns a pointer to the
+// activated/new |Browser|.
+Browser* ActivateOrCreateBrowser(Profile* profile) {
+  if (Browser* browser = ActivateBrowser(profile))
+    return browser;
+  return CreateBrowser(profile);
+}
+
+}  // anonymous namespace
+
+@interface AppController(Private)
 - (void)initMenuState;
-- (void)openURLs:(const std::vector<GURL>&)urls;
+- (void)openUrls:(const std::vector<GURL>&)urls;
 - (void)getUrl:(NSAppleEventDescriptor*)event
      withReply:(NSAppleEventDescriptor*)reply;
 - (void)windowLayeringDidChange:(NSNotification*)inNotification;
@@ -70,12 +114,6 @@
                          page:(OptionsPage)page
                       profile:(Profile*)profile;
 @end
-
-// True while AppController is calling Browser::OpenEmptyWindow(). We need a
-// global flag here, analogue to BrowserInit::InProcessStartup() because
-// otherwise the SessionService will try to restore sessions when we make a new
-// window while there are no other active windows.
-static bool g_is_opening_new_window = false;
 
 @implementation AppController
 
@@ -352,9 +390,9 @@ static bool g_is_opening_new_window = false;
   // TODO(viettrungluu): This is very temporary, since this should be done "in"
   // |BrowserMain()|, i.e., this list of startup URLs should be appended to the
   // (probably-empty) list of URLs from the command line.
-  if (startupURLs_.size()) {
-    [self openURLs:startupURLs_];
-    [self clearStartupURLs];
+  if (startupUrls_.size()) {
+    [self openUrls:startupUrls_];
+    [self clearStartupUrls];
   }
 }
 
@@ -523,8 +561,8 @@ static bool g_is_opening_new_window = false;
 // Called when the user picks a menu item when there are no key windows, or when
 // there is no foreground browser window. Calls through to the browser object to
 // execute the command. This assumes that the command is supported and doesn't
-// check, otherwise it would have been disabled in the UI in
-// validateUserInterfaceItem:.
+// check, otherwise it should have been disabled in the UI in
+// |-validateUserInterfaceItem:|.
 - (void)commandDispatch:(id)sender {
   Profile* defaultProfile = [self defaultProfile];
 
@@ -542,17 +580,22 @@ static bool g_is_opening_new_window = false;
   NSInteger tag = [sender tag];
   switch (tag) {
     case IDC_NEW_TAB:
+      // Create a new tab in an existing browser window (which we activate) if
+      // possible.
+      if (Browser* browser = ActivateBrowser(defaultProfile)) {
+        browser->ExecuteCommand(IDC_NEW_TAB);
+        break;
+      }
+      // Else fall through to create new window.
     case IDC_NEW_WINDOW:
+      CreateBrowser(defaultProfile);
+      break;
     case IDC_FOCUS_LOCATION:
-      g_is_opening_new_window = true;
-      Browser::OpenEmptyWindow(defaultProfile);
-      g_is_opening_new_window = false;
+      ActivateOrCreateBrowser(defaultProfile)->
+          ExecuteCommand(IDC_FOCUS_LOCATION);
       break;
     case IDC_FOCUS_SEARCH:
-      g_is_opening_new_window = true;
-      Browser::OpenEmptyWindow(defaultProfile);
-      g_is_opening_new_window = false;
-      BrowserList::GetLastActive()->FocusSearch();
+      ActivateOrCreateBrowser(defaultProfile)->ExecuteCommand(IDC_FOCUS_SEARCH);
       break;
     case IDC_NEW_INCOGNITO_WINDOW:
       Browser::OpenEmptyWindow(defaultProfile->GetOffTheRecordProfile());
@@ -561,11 +604,7 @@ static bool g_is_opening_new_window = false;
       Browser::OpenWindowWithRestoredTabs(defaultProfile);
       break;
     case IDC_OPEN_FILE:
-      g_is_opening_new_window = true;
-      Browser::OpenEmptyWindow(defaultProfile);
-      g_is_opening_new_window = false;
-      BrowserList::GetLastActive()->
-          ExecuteCommandWithDisposition(IDC_OPEN_FILE, CURRENT_TAB);
+      CreateBrowser(defaultProfile)->ExecuteCommand(IDC_OPEN_FILE);
       break;
     case IDC_CLEAR_BROWSING_DATA: {
       // There may not be a browser open, so use the default profile.
@@ -584,25 +623,37 @@ static bool g_is_opening_new_window = false;
       [BookmarkManagerController showBookmarkManager:defaultProfile];
       break;
     case IDC_SHOW_HISTORY:
-      Browser::OpenHistoryWindow(defaultProfile);
+      if (Browser* browser = ActivateBrowser(defaultProfile))
+        browser->ShowHistoryTab();
+      else
+        Browser::OpenHistoryWindow(defaultProfile);
       break;
     case IDC_SHOW_DOWNLOADS:
-      Browser::OpenDownloadsWindow(defaultProfile);
+      if (Browser* browser = ActivateBrowser(defaultProfile))
+        browser->ShowDownloadsTab();
+      else
+        Browser::OpenDownloadsWindow(defaultProfile);
       break;
     case IDC_MANAGE_EXTENSIONS:
-      Browser::OpenExtensionsWindow(defaultProfile);
+      if (Browser* browser = ActivateBrowser(defaultProfile))
+        browser->ShowExtensionsTab();
+      else
+        Browser::OpenExtensionsWindow(defaultProfile);
       break;
     case IDC_HELP_PAGE:
-      Browser::OpenHelpWindow(defaultProfile);
+      if (Browser* browser = ActivateBrowser(defaultProfile))
+        browser->OpenHelpTab();
+      else
+        Browser::OpenHelpWindow(defaultProfile);
       break;
     case IDC_REPORT_BUG: {
       Browser* browser = BrowserList::GetLastActive();
-      TabContents* current_tab = (browser != NULL) ?
-          browser->GetSelectedTabContents() : NULL;
+      TabContents* currentTab =
+          browser ? browser->GetSelectedTabContents() : NULL;
       BugReportWindowController* controller =
           [[BugReportWindowController alloc]
-          initWithTabContents:current_tab
-                      profile:[self defaultProfile]];
+              initWithTabContents:currentTab
+                          profile:[self defaultProfile]];
       [controller runModalDialog];
       break;
     }
@@ -616,7 +667,7 @@ static bool g_is_opening_new_window = false;
       UserMetrics::RecordAction("TaskManager", defaultProfile);
       TaskManagerMac::Show();
       break;
-  };
+  }
 }
 
 // Same as |-commandDispatch:|, but executes commands using a disposition
@@ -645,9 +696,10 @@ static bool g_is_opening_new_window = false;
     return YES;
 
   // Otherwise open a new window.
-  g_is_opening_new_window = true;
-  Browser::OpenEmptyWindow([self defaultProfile]);
-  g_is_opening_new_window = false;
+  {
+    AutoReset auto_reset_in_run(&g_is_opening_new_window, true);
+    Browser::OpenEmptyWindow([self defaultProfile]);
+  }
 
   // We've handled the reopen event, so return NO to tell AppKit not
   // to do anything.
@@ -689,10 +741,10 @@ static bool g_is_opening_new_window = false;
 // the ProcessSingleton, and it calls BrowserInit. It's best to bottleneck the
 // openings through that for uniform handling.
 
-- (void)openURLs:(const std::vector<GURL>&)urls {
+- (void)openUrls:(const std::vector<GURL>&)urls {
   // If the browser hasn't started yet, just queue up the URLs.
   if (!startupComplete_) {
-    startupURLs_.insert(startupURLs_.end(), urls.begin(), urls.end());
+    startupUrls_.insert(startupUrls_.end(), urls.begin(), urls.end());
     return;
   }
 
@@ -717,7 +769,7 @@ static bool g_is_opening_new_window = false;
   std::vector<GURL> gurlVector;
   gurlVector.push_back(gurl);
 
-  [self openURLs:gurlVector];
+  [self openUrls:gurlVector];
 }
 
 - (void)application:(NSApplication*)sender
@@ -728,7 +780,7 @@ static bool g_is_opening_new_window = false;
     gurlVector.push_back(gurl);
   }
   if (!gurlVector.empty())
-    [self openURLs:gurlVector];
+    [self openUrls:gurlVector];
   else
     NOTREACHED() << "Nothing to open!";
 
@@ -836,15 +888,15 @@ static bool g_is_opening_new_window = false;
   return dockMenu;
 }
 
-- (const std::vector<GURL>&)startupURLs {
-  return startupURLs_;
+- (const std::vector<GURL>&)startupUrls {
+  return startupUrls_;
 }
 
-- (void)clearStartupURLs {
-  startupURLs_.clear();
+- (void)clearStartupUrls {
+  startupUrls_.clear();
 }
 
-@end
+@end  // @implementation AppController
 
 //---------------------------------------------------------------------------
 

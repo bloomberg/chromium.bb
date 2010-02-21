@@ -35,8 +35,8 @@ class Profile;
 
   // If we're told to open URLs (in particular, via |-application:openFiles:| by
   // Launch Services) before we've launched the browser, we queue them up in
-  // |startupURLs_| so that they can go in the first browser window/tab.
-  std::vector<GURL> startupURLs_;
+  // |startupUrls_| so that they can go in the first browser window/tab.
+  std::vector<GURL> startupUrls_;
   BOOL startupComplete_;
 
   // Outlets for the close tab/window menu items so that we can adjust the
@@ -68,10 +68,10 @@ class Profile;
 - (NSMenu*)applicationDockMenu:(NSApplication*)sender;
 
 // Get the URLs that Launch Services expects the browser to open at startup.
-- (const std::vector<GURL>&)startupURLs;
+- (const std::vector<GURL>&)startupUrls;
 
 // Clear the list of startup URLs.
-- (void)clearStartupURLs;
+- (void)clearStartupUrls;
 
 @end
 
