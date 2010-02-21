@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_list.h"
 #import "chrome/browser/cocoa/autocomplete_text_field.h"
 #import "chrome/browser/cocoa/autocomplete_text_field_cell.h"
+#import "chrome/browser/cocoa/content_blocked_bubble_controller.h"
 #include "chrome/browser/cocoa/event_utils.h"
 #import "chrome/browser/cocoa/extensions/extension_action_context_menu.h"
 #import "chrome/browser/cocoa/extensions/extension_popup_controller.h"
@@ -32,6 +33,8 @@
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_action.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/pref_names.h"
+#include "net/base/net_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "skia/ext/skia_utils_mac.h"
@@ -857,9 +860,33 @@ LocationBarViewMac::ContentBlockedImageView::ContentBlockedImageView(
 LocationBarViewMac::ContentBlockedImageView::~ContentBlockedImageView() {}
 
 void LocationBarViewMac::ContentBlockedImageView::OnMousePressed(NSRect bounds)
-    {
-  // TODO(thakis): Implement.
-  NOTIMPLEMENTED();
+{
+  // Get host. This should be shared shared on linux/win/osx medium-term.
+  TabContents* tabContents =
+      BrowserList::GetLastActive()->GetSelectedTabContents();
+  if (!tabContents)
+    return;
+  GURL url = tabContents->GetURL();
+  std::wstring displayHost;
+  net::AppendFormattedHost(url,
+      profile_->GetPrefs()->GetString(prefs::kAcceptLanguages), &displayHost,
+      NULL, NULL);
+
+  // Transform mouse coordinates to content-view space.
+  AutocompleteTextField* textField = owner_->GetAutocompleteTextField();  
+  NSWindow* window = [textField window];
+  bounds = [[window contentView] convertRect:bounds
+                                    fromView:textField];
+
+  // Open bubble.
+  NSPoint anchor = NSMakePoint(NSMidX(bounds) + 1, NSMinY(bounds));
+  [[ContentBlockedBubbleController showForType:settings_type_
+                                  parentWindow:window
+                                    anchoredAt:anchor
+                                          host:url.host()
+                                displayHost:base::SysWideToNSString(displayHost)
+                                   tabContents:tabContents
+                                       profile:profile_] showWindow:nil];
 }
 
 const NSString* LocationBarViewMac::ContentBlockedImageView::GetToolTip() {
@@ -867,7 +894,7 @@ const NSString* LocationBarViewMac::ContentBlockedImageView::GetToolTip() {
 }
 
 void LocationBarViewMac::ContentBlockedImageView::SetToolTip(NSString* tooltip)
-    {
+{
   tooltip_.reset([tooltip retain]);
 }
 

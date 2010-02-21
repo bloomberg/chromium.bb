@@ -59,6 +59,11 @@
   [self setShowsBorderOnlyWhileMouseInside:YES];
 }
 
+- (void)setControlSize:(NSControlSize)size {
+  [super setControlSize:size];
+  [self customizeButtonCell];  // recompute |font|.
+}
+
 // Creates the NSDictionary of attributes for the attributed string.
 - (NSDictionary*)linkAttributes {
   NSUInteger underlineMask = NSUnderlinePatternSolid | NSUnderlineStyleSingle;
