@@ -2957,3 +2957,20 @@ BUG35923 LINUX : fast/backgrounds/animated-gif-as-background.html = IMAGE
 // Failed with roll to r54937 (incorrect color of hovered item)
 BUG36113 WIN LINUX : fast/css/first-letter-first-line-hover.html = IMAGE+TEXT
 BUG36113 MAC : fast/css/first-letter-first-line-hover.html = IMAGE
+
+// Failed with roll to r55080 (sandboxed iframes)
+BUG36437 : fast/frames/sandboxed-iframe-attribute-parsing.html = TEXT
+BUG36437 : fast/frames/sandboxed-iframe-forms.html = TEXT
+BUG36437 : fast/frames/sandboxed-iframe-navigation-allowed.html = TEXT
+BUG36437 : fast/frames/sandboxed-iframe-navigation-parent.html = TEXT
+BUG36437 : fast/frames/sandboxed-iframe-navigation-targetlink.html = TEXT
+BUG36437 : fast/frames/sandboxed-iframe-navigation-windowopen.html = TEXT
+BUG36437 : fast/frames/sandboxed-iframe-scripting.html = TEXT
+BUG36437 : fast/frames/sandboxed-iframe-storage.html = TEXT
+BUG36437 : http/tests/security/sandboxed-iframe-document-cookie.html = TEXT
+BUG36437 : http/tests/security/sandboxed-iframe-modify-self.html = TEXT
+BUG36437 : http/tests/security/sandboxed-iframe-origin-add.html = TEXT
+BUG36437 : http/tests/security/sandboxed-iframe-origin-remove.html = TEXT
+BUG36437 : http/tests/security/xss-DENIED-sandboxed-iframe.html = TEXT
+BUG36437 : http/tests/xmlhttprequest/access-control-sandboxed-iframe-denied-without-wildcard.html = TEXT
+BUG36437 : http/tests/xmlhttprequest/access-control-sandboxed-iframe-denied.html = TEXT
