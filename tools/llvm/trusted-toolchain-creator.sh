@@ -140,78 +140,83 @@ InstallMissingHeaders() {
 # TODO: switch to the equivalent of these from a ubuntu karmic repo
 #
 # NOTE: We always need the libssl static lib and X11 headers
+#
 #       The rest is for SDL support (sdl=armlocal)
+#
+# We are using ubuntu jaunty packages here, c.f.
+#
 # ----------------------------------------------------------------------
-readonly REPO=http://repository.maemo.org/pool/maemo4.0.1/free
+readonly PACKAGES_NEEDED="libssl-dev\
+                          libssl0.9.8\
+                          libsdl1.2-dev\
+                          libsdl1.2debian-alsa\
+                          libx11-dev\
+                          libx11-6\
+                          x11proto-core-dev\
+                          libxt-dev\
+                          libxt6\
+                          libxext-dev\
+                          libxext6\
+                          libxau-dev\
+                          libxau6\
+                          libxss-dev\
+                          libxss1\
+                          libxdmcp-dev\
+                          libxdmcp6\
+                          libcaca0\
+                          libaa1\
+                          libdirectfb-1.2-0\
+                          libasound2\
+                          libxcb1"
 
-readonly LIBSSL_DEV=${REPO}/o/openssl/libssl-dev_0.9.7e-4.osso2+3sarge3.osso6_armel.deb
-readonly LIBSDL_DEV=${REPO}/libs/libsdl1.2/libsdl1.2-dev_1.2.8-23_armel.deb
-readonly LIBX11_DEV=${REPO}/libx/libx11/libx11-dev_1.1.1-1osso3_armel.deb
-readonly LIBXT_DEV=${REPO}/libx/libxt/libxt-dev_1.0.5-2osso1_armel.deb
-readonly LIBXEXT_DEV=${REPO}/libx/libxext/libxext-dev_1.0.3-2osso1_armel.deb
-readonly LIBXAU_DEV=${REPO}/libx/libxau/libxau-dev_1.0.3-2osso1_armel.deb
-readonly LIBXDMCP_DEV=${REPO}/libx/libxdmcp/libxdmcp-dev_1.0.2-2osso1_armel.deb
+
+readonly REPO=http://ports.ubuntu.com/ubuntu-ports
+
+
+# NOTE: the DEP_FILES_NEEDED_* string is obtained by running
+#       "trusted-toolchain-creator.sh package_list"
+#       Since the output will differ over time we freeze one here:
+readonly DEP_FILES_NEEDED_KARMIC="\
+    pool/main/o/openssl/libssl-dev_0.9.8g-16ubuntu3_armel.deb\
+    pool/main/o/openssl/libssl0.9.8_0.9.8g-16ubuntu3_armel.deb\
+    pool/main/libs/libsdl1.2/libsdl1.2-dev_1.2.13-4ubuntu4_armel.deb\
+    pool/main/libs/libsdl1.2/libsdl1.2debian-alsa_1.2.13-4ubuntu4_armel.deb\
+    pool/main/libx/libx11/libx11-dev_1.2.2-1ubuntu1_armel.deb\
+    pool/main/libx/libx11/libx11-6_1.2.2-1ubuntu1_armel.deb\
+    pool/main/x/x11proto-core/x11proto-core-dev_7.0.15-1_all.deb\
+    pool/main/libx/libxt/libxt-dev_1.0.5-3ubuntu1_armel.deb\
+    pool/main/libx/libxt/libxt6_1.0.5-3ubuntu1_armel.deb\
+    pool/main/libx/libxext/libxext-dev_1.0.99.1-0ubuntu4_armel.deb\
+    pool/main/libx/libxext/libxext6_1.0.99.1-0ubuntu4_armel.deb\
+    pool/main/libx/libxau/libxau-dev_1.0.4-2_armel.deb\
+    pool/main/libx/libxau/libxau6_1.0.4-2_armel.deb\
+    pool/main/libx/libxss/libxss-dev_1.1.3-1_armel.deb\
+    pool/main/libx/libxss/libxss1_1.1.3-1_armel.deb\
+    pool/main/libx/libxdmcp/libxdmcp-dev_1.0.2-3_armel.deb\
+    pool/main/libx/libxdmcp/libxdmcp6_1.0.2-3_armel.deb\
+    pool/main/libc/libcaca/libcaca0_0.99.beta16-1_armel.deb\
+    pool/main/a/aalib/libaa1_1.4p5-38_armel.deb\
+    pool/main/d/directfb/libdirectfb-1.2-0_1.2.7-2ubuntu1_armel.deb\
+    pool/main/a/alsa-lib/libasound2_1.0.20-3ubuntu6_armel.deb\
+    pool/main/libx/libxcb/libxcb1_1.4-1_armel.deb"
 
 
 InstallMissingLibraries() {
-  Banner "installing xdmcp"
-  local package="${TMP}/${LIBXDMCP_DEV##*/}"
-  DownloadOrCopy ${LIBXDMCP_DEV} ${package}
-  SubBanner "extracting to ${JAIL}"
-  dpkg --fsys-tarfile ${package}\
+  for file in ${DEP_FILES_NEEDED_KARMIC} ; do
+    local package="${TMP}/${file##*/}"
+    Banner "installing ${file}"
+    DownloadOrCopy ${REPO}/${file} ${package}
+    SubBanner "extracting to ${JAIL}"
+    dpkg --fsys-tarfile ${package}\
       | tar -xvf - --exclude=./usr/share -C ${JAIL}
-  rm -f ${JAIL}/usr/lib/libXdmcp.so
+  done
 
-  Banner "installing xau"
-  local package="${TMP}/${LIBXAU_DEV##*/}"
-  DownloadOrCopy ${LIBXAU_DEV} ${package}
-  SubBanner "extracting to ${JAIL}"
-  dpkg --fsys-tarfile ${package}\
-      | tar -xvf - --exclude=./usr/share -C ${JAIL}
-  rm -f ${JAIL}/usr/lib/libXau.so
+  Banner "some cleanup"
+  save=$(pwd)
+  cd  ${JAIL}/usr/lib/
+  cleanlinks > /dev/null 2> /dev/null
+  cd ${save}
 
-
-  Banner "installing xext"
-  local package="${TMP}/${LIBXEXT_DEV##*/}"
-  DownloadOrCopy ${LIBXEXT_DEV} ${package}
-  SubBanner "extracting to ${JAIL}"
-  dpkg --fsys-tarfile ${package}\
-      | tar -xvf - --exclude=./usr/share -C ${JAIL}
-  rm -f ${JAIL}/usr/lib/libXext.so
-
-  Banner "installing x11"
-  local package="${TMP}/${LIBX11_DEV##*/}"
-  DownloadOrCopy ${LIBX11_DEV} ${package}
-  SubBanner "extracting to ${JAIL}"
-  dpkg --fsys-tarfile ${package}\
-      | tar -xvf - --exclude=./usr/share -C ${JAIL}
-  rm -f ${JAIL}/usr/lib/libX11.so
-
-  Banner "installing xt"
-  local package="${TMP}/${LIBXT_DEV##*/}"
-  DownloadOrCopy ${LIBXT_DEV} ${package}
-  SubBanner "extracting to ${JAIL}"
-  dpkg --fsys-tarfile ${package}\
-      | tar -xvf - --exclude=./usr/share -C ${JAIL}
-  rm -f ${JAIL}/usr/lib/libXt.so
-
-  Banner "installing libsdl"
-  local package="${TMP}/${LIBSDL_DEV##*/}"
-  DownloadOrCopy ${LIBSDL_DEV} ${package}
-  SubBanner "extracting to ${JAIL}"
-  dpkg --fsys-tarfile ${package}\
-      | tar -xvf - --exclude=./usr/share -C ${JAIL}
-  rm -f ${JAIL}/usr/lib/libSDL.so
-
-  Banner "installing libcrypto"
-  local package="${TMP}/${LIBSSL_DEV##*/}"
-  DownloadOrCopy ${LIBSSL_DEV} ${package}
-  SubBanner "extracting"
-  dpkg --fsys-tarfile ${package}\
-      | tar -xf - -C ${TMP} ./usr/lib/libcrypto.a
-  cp ${TMP}/usr/lib/libcrypto.a ${JAIL}/usr/lib/
-  rm -f ./usr/lib/libcrypto*so
-  rm -f ./lib/libcrypto*
 }
 
 
@@ -314,6 +319,25 @@ if [ ${MODE} = 'tar' ] ; then
   CreateTarBall $1
   exit 0
 fi
+
+#@
+#@ package_list
+#@
+#@   regenerate package list
+if [ ${MODE} = 'package_list' ] ; then
+  readonly PACKAGE_LIST_JAUNTY=http://ports.ubuntu.com/ubuntu-ports/dists/jaunty/main/binary-armel/Packages.bz2
+  readonly PACKAGE_LIST_KARMIC=http://ports.ubuntu.com/ubuntu-ports/dists/karmic/main/binary-armel/Packages.bz2
+  mkdir -p  ${TMP}
+  DownloadOrCopy ${PACKAGE_LIST_KARMIC} ${TMP}/Packages.bz2
+  bzcat ${TMP}/Packages.bz2 | egrep '^(Package:|Filename:)' > ${TMP}/Packages
+  echo "# BEGIN: update for DEP_FILES_NEEDED"
+  for pkg in ${PACKAGES_NEEDED} ; do
+    egrep -A 1 "${pkg}\$" ${TMP}/Packages | egrep -o "pool/.*"
+  done
+  echo "# END: update for DEP_FILES_NEEDED"
+  exit 0
+fi
+
 
 echo "ERROR: unknown mode ${MODE}"
 exit -1
