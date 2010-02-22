@@ -25,6 +25,8 @@
           # Test files are not included.
           'common/accessibility_events.h',
           'common/accessibility_events.cc',
+          'common/app_mode_constants_mac.h',
+          'common/app_mode_constants_mac.mm',
           'common/bindings_policy.h',
           'common/child_process.cc',
           'common/child_process.h',

@@ -17,6 +17,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_shutdown.h"
 #include "chrome/browser/browser_window.h"
+#include "chrome/browser/chrome_thread.h"
 #import "chrome/browser/cocoa/about_window_controller.h"
 #import "chrome/browser/cocoa/bookmark_manager_controller.h"
 #import "chrome/browser/cocoa/bookmark_menu_bridge.h"
@@ -42,6 +43,8 @@
 #include "chrome/browser/sync/sync_ui_util.h"
 #include "chrome/browser/sync/sync_ui_util_mac.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/common/app_mode_constants_mac.h"
+#include "chrome/common/chrome_paths_internal.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/pref_names.h"
@@ -98,6 +101,37 @@ Browser* ActivateOrCreateBrowser(Profile* profile) {
   if (Browser* browser = ActivateBrowser(profile))
     return browser;
   return CreateBrowser(profile);
+}
+
+// This task synchronizes preferences (under "org.chromium.Chromium" or
+// "com.google.Chrome"), in particular, writes them out to disk.
+class PrefsSyncTask : public Task {
+ public:
+  PrefsSyncTask() {}
+  virtual ~PrefsSyncTask() {}
+  virtual void Run() {
+    if (!CFPreferencesAppSynchronize(app_mode::kAppPrefsID))
+      LOG(WARNING) << "Error recording application bundle path.";
+  }
+};
+
+// Record the location of the application bundle (containing the main framework)
+// from which Chromium was loaded. This is used by app mode shims to find
+// Chromium.
+void RecordLastRunAppBundlePath() {
+  // Going up three levels from |chrome::GetVersionedDirectory()| gives the
+  // real, user-visible app bundle directory. (The alternatives give either the
+  // framework's path or the initial app's path, which may be an app mode shim
+  // or a unit test.)
+  FilePath appBundlePath =
+      chrome::GetVersionedDirectory().DirName().DirName().DirName();
+  CFPreferencesSetAppValue(app_mode::kLastRunAppBundlePathPrefsKey,
+                           base::SysUTF8ToCFStringRef(appBundlePath.value()),
+                           app_mode::kAppPrefsID);
+
+  // Sync after a delay avoid I/O contention on startup; 1500 ms is plenty.
+  ChromeThread::PostDelayedTask(ChromeThread::FILE, FROM_HERE,
+                                new PrefsSyncTask(), 1500);
 }
 
 }  // anonymous namespace
@@ -384,6 +418,10 @@ Browser* ActivateOrCreateBrowser(Profile* profile) {
   // menu is the Help so it can add the search item to it.
   if (helpMenu_ && [NSApp respondsToSelector:@selector(setHelpMenu:)])
     [NSApp setHelpMenu:helpMenu_];
+
+  // Record the path to the (browser) app bundle; this is used by the app mode
+  // shim.
+  RecordLastRunAppBundlePath();
 
   startupComplete_ = YES;
 
