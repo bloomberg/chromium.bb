@@ -33,16 +33,17 @@ class ThrobControllerGtk : public AnimationDelegate {
   GtkWidget* button() { return button_; }
 
   // Throb for |cycles| cycles. This will override the current remaining
-  // number of cycles.
+  // number of cycles. Note that a "cycle" is (somewhat unintuitively) half of
+  // a complete throb revolution.
   void StartThrobbing(int cycles);
 
   // Get the ThrobControllerGtk for a given GtkChromeButton*. It is an error
   // to call this on a widget that is not a GtkChromeButton*.
   static ThrobControllerGtk* GetThrobControllerGtk(GtkWidget* button);
 
-  // Make |button| throb. It is an error to try to have two ThrobControllerGtk
-  // instances for one GtkChromeButton*.
-  static void ThrobFor(GtkWidget* button);
+  // Make |button| throb for |cycles| cycles. It is an error to try to have
+  // two ThrobControllerGtk instances for one GtkChromeButton*.
+  static void ThrobFor(GtkWidget* button, int cycles);
 
   // Stop throbbing and delete |this|.
   void Destroy();

@@ -38,14 +38,13 @@ ThrobControllerGtk* ThrobControllerGtk::GetThrobControllerGtk(
 }
 
 // static
-void ThrobControllerGtk::ThrobFor(GtkWidget* button) {
+void ThrobControllerGtk::ThrobFor(GtkWidget* button, int cycles) {
   if (!GTK_IS_CHROME_BUTTON(button)) {
     NOTREACHED();
     return;
   }
 
-  (new ThrobControllerGtk(button))->
-      StartThrobbing(std::numeric_limits<int>::max());
+  (new ThrobControllerGtk(button))->StartThrobbing(cycles);
 }
 
 void ThrobControllerGtk::Destroy() {

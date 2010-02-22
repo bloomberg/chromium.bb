@@ -754,7 +754,7 @@ void BookmarkBarGtk::SetThrobbingWidget(GtkWidget* widget) {
     g_signal_connect(throbbing_widget_, "destroy",
                      G_CALLBACK(OnThrobbingWidgetDestroy), this);
 
-    ThrobControllerGtk::ThrobFor(throbbing_widget_);
+    ThrobControllerGtk::ThrobFor(throbbing_widget_, 4);
   }
 }
 
