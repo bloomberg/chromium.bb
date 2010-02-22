@@ -8,6 +8,7 @@ GENERAL:   generator_flags: []
 GENERAL:   generator_output: None
 GENERAL:   formats: ['gypd']
 GENERAL:   debug: ['variables', 'general']
+GENERAL:   circular_check: True
 GENERAL:   check: None
 GENERAL:   defines: None
 GENERAL: cmdline_default_variables: {}
