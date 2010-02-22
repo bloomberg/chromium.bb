@@ -32,19 +32,94 @@
 #
 # This test just statically exercises each of the types that can be passed.
 # Further testing will fuzz the input values, the string lengths, etc.
-
-
 set -o nounset
 set -o errexit
+trap 'echo "TEST FAILED" ; exit 1' HUP INT QUIT TERM ERR
 
-SEL_LDR=../../service_runtime/sel_ldr
-SEL_UNIVERSAL="../../service_runtime/sel_universal -p $SEL_LDR"
-TMP=/tmp/$(basename $0).output
+readonly PROG="$(basename $0)"
+readonly SCRIPTDIR="$(dirname $0)"
+readonly SCONSOUT="${SCRIPTDIR}/../../scons-out"
 
-RunSelUniversal () {
-  ${SEL_UNIVERSAL} -f $1
+usage () {
+  cat 1>&2 <<EOF
+usage: ${PROG} [mode platform]
+Statically exercise each of the types that can be passed via SRPC.
+The "mode platform" can be
+   mode platform: e.g. opt-linux  x86-32
+   mode-platform: e.g. opt-linux-x86-32
+   nothing:  If there is only one possible directory under
+             ${SCONSOUT}, use that directory as mode-platform
+EOF
+  exit 1
 }
 
+# Get the mode and platform to be tested.
+mode=""
+platform=""
+mode_platform=""
+dirlist=""
+if [ "$#" -eq "2" ] ; then
+  # E.g.: $0 opt-linux x86-32
+  mode="${1}"
+  platform="${2}"
+elif [ "$#" -eq "1" ] ; then
+  # E.g.: $0 opt-linux-x86-32
+  mode_platform="${1}"
+elif [ "$#" -eq "0" ] ; then
+  # Get a default mode and platform, assuming there is only one built right
+  # now.
+  dirlist=$(ls -1 "${SCONSOUT}" | grep -v '^[.]' | grep -v '^nacl')
+  dircount=$(echo "${dirlist}" | wc -l | tr -d ' ')
+  if [ "${dircount}" = "1" ] ; then
+    mode_platform="${dirlist}"
+  fi
+fi
+
+# If we know mode-platform, split into mode and platform.
+if [ "X${mode_platform}" != "X" ] ; then
+  mode=$(echo "${mode_platform}" | sed -e 's/-[^-]*-[^-]*$//')
+  platform=$(echo "${mode_platform}" | sed -e 's/^[^-]*-[^-]*-//')
+  if [ "X${mode}" = "X${mode_platform}" -o \
+       "X${platform}" = "X${mode_platform}" ] ; then
+    mode=""
+    platform=""
+  fi
+fi
+
+# Were we able to determine the mode and platform?
+if [ "X${mode}" = "X" -o "X${platform}" = "X" ] ; then
+  if [ "$#" -gt "0" ] ; then
+    echo "${PROG}: Cannot determine the mode and platform from: $*" 1>&2
+  else
+    echo "${PROG}: Cannot guess mode-platform, contents of ${SCONSOUT}:" 1>&2
+    echo "${dirlist}" 1>&2
+  fi
+  usage
+fi
+mode_platform="${mode}-${platform}"
+echo "Testing mode='${mode}' and platform='${platform}'."
+
+# Make sure all the test inputs exist.
+readonly STAGING="${SCONSOUT}/${mode_platform}/staging"
+readonly NACLSTAGING="${SCONSOUT}/nacl-${platform}/staging"
+readonly SEL_UNIVERSAL="${STAGING}/sel_universal"
+readonly TMP="/tmp/${PROG}.output"
+
+if [ ! -d "${STAGING}" ] ; then
+  echo "${PROG}: Platform staging directory does not exist: ${STAGING}" 1>&2
+  exit 1
+fi
+if [ ! -d "${NACLSTAGING}" ] ; then
+  echo "${PROG}: NaCl staging directory does not exist: ${NACLSTAGING}" 1>&2
+  exit 1
+fi
+if [ ! -x "${SEL_UNIVERSAL}" ] ; then
+  echo "${PROG}: sel_universal does not exist at ${SEL_UNIVERSAL}" 1>&2
+  exit 1
+fi
+
+
+# Run the test.
 
 Banner () {
   echo "# ============================================================"
@@ -53,36 +128,11 @@ Banner () {
 }
 
 Banner "# Running srpc_test"
-RunSelUniversal srpc_test.nexe <<EOF  >$TMP
-service
-rpc bool b(0) * b(0)
-rpc double d(3.1415926) * d(0)
-rpc int i(-1216) * i(0)
-rpc string s("a tale, told by an idiot") * i(0)
-rpc char_array C(9,abcdefghi) * C(9)
-rpc double_array D(5,1,.5,.25,.125,.0625) * D(5)
-rpc int_array I(6,1,1,2,3,5,8) * I(6)
-EOF
+${SEL_UNIVERSAL} -f "${NACLSTAGING}/srpc_test.nexe" \
+  <"${SCRIPTDIR}/srpc_basic_test.stdin" >"${TMP}"
+echo ""
 
 Banner "# Checking srpc_test"
-diff --ignore-space-change  $TMP - <<EOF
-RPC Name                 Input args Output args
-  0 service_discovery               C
-  1 bool                 b          b
-  2 double               d          d
-  3 int                  i          i
-  4 string               s          i
-  5 char_array           C          C
-  6 double_array         D          D
-  7 int_array            I          I
-bool RESULTS:   b(1)
-double RESULTS:   d(-3.141593)
-int RESULTS:   i(1216)
-string RESULTS:   i(24)
-char_array RESULTS:   ihgfedcba
-double_array RESULTS:   D(5,0.062500,0.125000,0.250000,0.500000,1.000000)
-int_array RESULTS:   I(6,8,5,3,2,1,1)
-EOF
-
+diff --ignore-space-change  "${SCRIPTDIR}/srpc_basic_test.stdout" "${TMP}"
 
 echo "TEST PASSED"
