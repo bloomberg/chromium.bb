@@ -23,6 +23,7 @@
 #include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
+#include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
@@ -35,90 +36,12 @@ using browser_sync::ChangeProcessor;
 using browser_sync::ModelAssociator;
 using browser_sync::SyncBackendHost;
 
-class TestProfileSyncFactory : public ProfileSyncFactory {
+class TestBookmarkModelAssociator :
+    public TestModelAssociator<BookmarkModelAssociator> {
  public:
-  TestProfileSyncFactory(ProfileSyncService* profile_sync_service,
-                         AssociatorInterface* model_associator,
-                         ChangeProcessor* change_processor)
-      : profile_sync_service_(profile_sync_service),
-        model_associator_(model_associator),
-        change_processor_(change_processor) {}
-  virtual ~TestProfileSyncFactory() {}
-
-  virtual ProfileSyncService* CreateProfileSyncService() {
-    return profile_sync_service_.release();
+  explicit TestBookmarkModelAssociator(ProfileSyncService* service)
+      : TestModelAssociator<BookmarkModelAssociator>(service) {
   }
-
-  virtual SyncComponents CreateBookmarkSyncComponents(
-      ProfileSyncService* service) {
-    return SyncComponents(model_associator_.release(),
-                          change_processor_.release());
-  }
-
-  virtual SyncComponents CreatePreferenceSyncComponents(
-      ProfileSyncService* service) {
-    return SyncComponents(NULL, NULL);
-  }
-
- private:
-  scoped_ptr<ProfileSyncService> profile_sync_service_;
-  scoped_ptr<AssociatorInterface> model_associator_;
-  scoped_ptr<ChangeProcessor> change_processor_;
-
-  DISALLOW_COPY_AND_ASSIGN(TestProfileSyncFactory);
-};
-
-class TestModelAssociator : public BookmarkModelAssociator {
- public:
-  explicit TestModelAssociator(ProfileSyncService* service)
-      : BookmarkModelAssociator(service) {
-  }
-
-  virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id) {
-    std::wstring tag_wide;
-    if (!UTF8ToWide(tag.c_str(), tag.length(), &tag_wide)) {
-      NOTREACHED() << "Unable to convert UTF8 to wide for string: " << tag;
-      return false;
-    }
-
-    sync_api::WriteTransaction trans(
-        sync_service()->backend()->GetUserShareHandle());
-    sync_api::ReadNode root(&trans);
-    root.InitByRootLookup();
-
-    // First, try to find a node with the title among the root's children.
-    // This will be the case if we are testing model persistence, and
-    // are reloading a sync repository created earlier in the test.
-    int64 last_child_id = sync_api::kInvalidId;
-    for (int64 id = root.GetFirstChildId(); id != sync_api::kInvalidId; /***/) {
-      sync_api::ReadNode child(&trans);
-      child.InitByIdLookup(id);
-      last_child_id = id;
-      if (tag_wide == child.GetTitle()) {
-        *sync_id = id;
-        return true;
-      }
-      id = child.GetSuccessorId();
-    }
-
-    sync_api::ReadNode predecessor_node(&trans);
-    sync_api::ReadNode* predecessor = NULL;
-    if (last_child_id != sync_api::kInvalidId) {
-      predecessor_node.InitByIdLookup(last_child_id);
-      predecessor = &predecessor_node;
-    }
-    sync_api::WriteNode node(&trans);
-    // Create new fake tagged nodes at the end of the ordering.
-    node.InitByCreation(syncable::BOOKMARKS, root, predecessor);
-    node.SetIsFolder(true);
-    node.SetTitle(tag_wide);
-    node.SetExternalId(0);
-    *sync_id = node.GetId();
-    return true;
-  }
-
- private:
-  ~TestModelAssociator() {}
 };
 
 // FakeServerChange constructs a list of sync_api::ChangeRecords while modifying
@@ -302,7 +225,7 @@ class ProfileSyncServiceTest : public testing::Test {
       service_.reset(new TestProfileSyncService(profile_.get(), false));
 
       // Register the bookmark data type.
-      model_associator_ = new TestModelAssociator(service_.get());
+      model_associator_ = new TestBookmarkModelAssociator(service_.get());
       change_processor_ = new BookmarkChangeProcessor(model_associator_,
                                                       service_.get());
       factory_.reset(new TestProfileSyncFactory(NULL,
@@ -493,7 +416,7 @@ class ProfileSyncServiceTest : public testing::Test {
   scoped_ptr<TestingProfile> profile_;
   scoped_ptr<TestProfileSyncFactory> factory_;
   BookmarkModel* model_;
-  TestModelAssociator* model_associator_;
+  TestBookmarkModelAssociator* model_associator_;
   BookmarkChangeProcessor* change_processor_;
 };
 
@@ -1376,7 +1299,7 @@ TEST_F(ProfileSyncServiceTestWithData, MAYBE_TestStartupWithOldSyncData) {
     service_.reset(new TestProfileSyncService(profile_.get(), false));
     profile_->GetPrefs()->SetBoolean(prefs::kSyncHasSetupCompleted, false);
 
-    model_associator_ = new TestModelAssociator(service_.get());
+    model_associator_ = new TestBookmarkModelAssociator(service_.get());
     change_processor_ = new BookmarkChangeProcessor(model_associator_,
                                                     service_.get());
     factory_.reset(new TestProfileSyncFactory(NULL,

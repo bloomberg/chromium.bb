@@ -34,11 +34,19 @@ bool PreferenceModelAssociator::AssociateModels() {
 
   // TODO(albertb): Attempt to load the model association from storage.
   PrefService* pref_service = sync_service_->profile()->GetPrefs();
+
+  int64 root_id;
+  if (!GetSyncIdForTaggedNode(kPreferencesTag, &root_id)) {
+    sync_service_->OnUnrecoverableError();
+    LOG(ERROR) << "Server did not create the top-level preferences node. We "
+               << "might be running against an out-of-date server.";
+    return false;
+  }
+
   sync_api::WriteTransaction trans(
       sync_service()->backend()->GetUserShareHandle());
-
   sync_api::ReadNode root(&trans);
-  if (!root.InitByTagLookup(kPreferencesTag)) {
+  if (!root.InitByIdLookup(root_id)) {
     sync_service_->OnUnrecoverableError();
     LOG(ERROR) << "Server did not create the top-level preferences node. We "
                << "might be running against an out-of-date server.";

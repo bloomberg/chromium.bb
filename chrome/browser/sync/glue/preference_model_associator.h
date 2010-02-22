@@ -78,7 +78,7 @@ class PreferenceModelAssociator
 
   // Returns whether a node with the given permanent tag was found and update
   // |sync_id| with that node's id.
-  bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id);
+  virtual bool GetSyncIdForTaggedNode(const std::string& tag, int64* sync_id);
 
  protected:
   // Returns sync service instance.

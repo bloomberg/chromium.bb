@@ -257,8 +257,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
  private:
   friend class ProfileSyncServiceTest;
+  friend class ProfileSyncServicePreferenceTest;
   friend class ProfileSyncServiceTestHarness;
-  friend class TestModelAssociator;
   FRIEND_TEST(ProfileSyncServiceTest, UnrecoverableErrorSuspendsService);
 
   // Initializes the various settings from the command line.

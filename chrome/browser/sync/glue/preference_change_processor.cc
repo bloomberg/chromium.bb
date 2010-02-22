@@ -39,7 +39,7 @@ void PreferenceChangeProcessor::Observe(NotificationType type,
   DCHECK(preference);
 
   sync_api::WriteTransaction trans(share_handle());
-  sync_api::WriteNode sync_node(&trans);
+  sync_api::WriteNode node(&trans);
 
   int64 sync_id = model_associator_->GetSyncIdFromChromeId(*name);
   if (sync_api::kInvalidId == sync_id) {
@@ -47,14 +47,14 @@ void PreferenceChangeProcessor::Observe(NotificationType type,
     error_handler()->OnUnrecoverableError();
     return;
   } else {
-    if (!sync_node.InitByIdLookup(sync_id)) {
+    if (!node.InitByIdLookup(sync_id)) {
       LOG(ERROR) << "Preference node lookup failed.";
       error_handler()->OnUnrecoverableError();
       return;
     }
   }
 
-  if (!WritePreference(&sync_node, WideToUTF8(*name),
+  if (!WritePreference(&node, WideToUTF8(*name),
                        preference->GetValue())) {
     LOG(ERROR) << "Failed to update preference node.";
     error_handler()->OnUnrecoverableError();
@@ -70,17 +70,8 @@ void PreferenceChangeProcessor::ApplyChangesFromSyncModel(
     return;
   StopObserving();
 
-  // TODO(sync): Remove this once per-datatype filtering is working.
-  sync_api::ReadNode root_node(trans);
-  if (!root_node.InitByTagLookup(kPreferencesTag)) {
-    LOG(ERROR) << "Preference root node lookup failed.";
-    error_handler()->OnUnrecoverableError();
-    return;
-  }
-
-  std::string name;
   for (int i = 0; i < change_count; ++i) {
-    sync_api::ReadNode sync_node(trans);
+    sync_api::ReadNode node(trans);
     // TODO(ncarter): Can't look up the name for deletions: lookup of
     // deleted items fails at the syncapi layer.  However, the node should
     // generally still exist in the syncable database; we just need to
@@ -92,22 +83,22 @@ void PreferenceChangeProcessor::ApplyChangesFromSyncModel(
       continue;
     }
 
-    if (!sync_node.InitByIdLookup(changes[i].id)) {
+    if (!node.InitByIdLookup(changes[i].id)) {
       LOG(ERROR) << "Preference node lookup failed.";
       error_handler()->OnUnrecoverableError();
       return;
     }
+    DCHECK(syncable::PREFERENCES == node.GetModelType());
 
-    // Check that the changed node is a child of the preferences folder.
-    DCHECK(root_node.GetId() == sync_node.GetParentId());
-    DCHECK(syncable::PREFERENCES == sync_node.GetModelType());
-
-    scoped_ptr<Value> value(ReadPreference(&sync_node, &name));
+    std::string name;
+    scoped_ptr<Value> value(ReadPreference(&node, &name));
     if (sync_api::SyncManager::ChangeRecord::ACTION_DELETE ==
         changes[i].action) {
       pref_service_->ClearPref(UTF8ToWide(name).c_str());
     } else {
-      if (value.get() && pref_service_->HasPrefPath(UTF8ToWide(name).c_str())) {
+      const PrefService::Preference* preference =
+          pref_service_->FindPreference(UTF8ToWide(name).c_str());
+      if (value.get() && preference) {
         pref_service_->Set(UTF8ToWide(name).c_str(), *value);
       }
     }
