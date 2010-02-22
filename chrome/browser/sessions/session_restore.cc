@@ -194,7 +194,10 @@ class SessionRestoreImpl : public NotificationObserver {
     session_service->GetLastSession(&request_consumer_, callback);
 
     if (synchronous_) {
+      bool old_state = MessageLoop::current()->NestableTasksAllowed();
+      MessageLoop::current()->SetNestableTasksAllowed(true);
       MessageLoop::current()->Run();
+      MessageLoop::current()->SetNestableTasksAllowed(old_state);
       ProcessSessionWindows(&windows_);
       delete this;
       return;
