@@ -544,6 +544,12 @@ void ExtensionHost::ShowContextMenu(const ContextMenuParams& params) {
 
 void ExtensionHost::StartDragging(const WebDropData& drop_data,
     WebDragOperationsMask operation_mask) {
+  // We're not going to do any drag & drop, but we have to tell the renderer the
+  // drag & drop ended, othewise the renderer thinks the drag operation is
+  // underway and mouse events won't work.  See bug 34061.
+  // TODO(twiz) Implement drag & drop support for ExtensionHost instances.
+  // See feature issue 36288.
+  render_view_host()->DragSourceSystemDragEnded();
 }
 
 void ExtensionHost::UpdateDragCursor(WebDragOperation operation) {
