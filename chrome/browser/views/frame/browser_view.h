@@ -201,12 +201,16 @@ class BrowserView : public BrowserBubbleHost,
     return browser_->type() == Browser::TYPE_NORMAL;
   }
 
+  // Returns true if the Browser object associated with this BrowserView is a
+  // app panel window.
   bool IsBrowserTypePanel() const {
     return browser_->type() == Browser::TYPE_APP_PANEL;
   }
 
+  // Returns true if the Browser object associated with this BrowserView is a
+  // popup window.
   bool IsBrowserTypePopup() const {
-    return browser_->type() == Browser::TYPE_POPUP;
+    return browser_->type() & Browser::TYPE_POPUP;
   }
 
   // Returns true if the frame containing this BrowserView should show the

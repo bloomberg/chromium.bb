@@ -17,6 +17,13 @@ class BrowserFrameChromeos : public BrowserFrameGtk {
   // BrowserFrameGtk overrides.
   virtual void Init();
 
+  // views::WindowGtk overrides.
+  virtual bool IsMaximized() const;
+
+ private:
+  // Returns true if the browser instance is for panel/popup window.
+  bool IsPanel() const;
+
   DISALLOW_COPY_AND_ASSIGN(BrowserFrameChromeos);
 };
 

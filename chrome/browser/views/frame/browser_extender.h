@@ -20,18 +20,11 @@ class BrowserView;
 // standard_extender.cc for Chrome browser.
 class BrowserExtender {
  public:
-  // Factory method to create a BrowserExtender for given
-  // BrowserView object. Please see the class description for details.
-  static BrowserExtender* Create(BrowserView* browser_view);
+  BrowserExtender()
+      : can_close_(true) {
+  }
 
   virtual ~BrowserExtender() {}
-
-  // Returns true if the window should be in the maximized state.
-  virtual bool ShouldForceMaximizedWindow() = 0;
-
-  // Returns the main menu's width.  This is used in the opaque frame
-  // to layout otr icons and tabstrips.
-  virtual int GetMainMenuWidth() const = 0;
 
   // Tells if the browser can be closed.
   bool can_close() const {
@@ -43,9 +36,6 @@ class BrowserExtender {
   void set_can_close(bool b) {
     can_close_ = b;
   }
-
- protected:
-  BrowserExtender();
 
  private:
   // True if the browser can be closed. See set_can_close method for setails.

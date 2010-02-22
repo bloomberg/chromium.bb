@@ -1671,7 +1671,7 @@ void BrowserView::Init() {
   }
 #endif
 
-  browser_extender_.reset(BrowserExtender::Create(this));
+  browser_extender_.reset(new BrowserExtender());
 }
 
 #if defined(OS_WIN)

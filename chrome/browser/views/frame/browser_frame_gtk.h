@@ -43,6 +43,10 @@ class BrowserFrameGtk : public BrowserFrame,
   virtual void IsActiveChanged();
 
  protected:
+  void set_browser_frame_view(BrowserNonClientFrameView* browser_frame_view) {
+    browser_frame_view_ = browser_frame_view;
+  }
+
   // Overridden from views::WidgetGtk:
   virtual views::RootView* CreateRootView();
   virtual bool GetAccelerator(int cmd_id, menus::Accelerator* accelerator);
@@ -52,7 +56,11 @@ class BrowserFrameGtk : public BrowserFrame,
                                       GdkEventWindowState* event);
   virtual gboolean OnConfigureEvent(GtkWidget* widget,
                                     GdkEventConfigure* event);
-  virtual bool IsMaximized() const;
+
+ protected:
+  BrowserView* browser_view() const {
+    return browser_view_;
+  }
 
  private:
   // The BrowserView is our ClientView. This is a pointer to it.

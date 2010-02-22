@@ -85,11 +85,6 @@ class BrowserView : public ::BrowserView,
   // Shows the compact location bar under the selected tab.
   void ShowCompactLocationBarUnderSelectedTab();
 
-  // The following methods are temporarily defined for refactroing, and
-  // will be removed soon. See BrowserExtender class for the description.
-  bool ShouldForceMaximizedWindow() const;
-  int GetMainMenuWidth() const;
-
   // Returns true if the ui style is in Compact mode.
   bool is_compact_style() const {
     return ui_style_ == CompactStyle;
@@ -123,6 +118,9 @@ class BrowserView : public ::BrowserView,
   // A spacer under the tap strip used when the compact navigation bar
   // is active.
   views::View* spacer_;
+
+  // Off the record icon.
+  views::ImageView* otr_avatar_icon_;
 
   // Menu button shown in status area when browser is in compact mode.
   StatusAreaButton* menu_view_;

@@ -4,6 +4,9 @@
 
 #include "chrome/browser/chromeos/frame/browser_frame_chromeos.h"
 
+#include "chrome/browser/chromeos/frame/normal_browser_frame_view.h"
+#include "chrome/browser/views/frame/browser_view.h"
+
 // static (Factory method.)
 BrowserFrame* BrowserFrame::Create(BrowserView* browser_view,
                                    Profile* profile) {
@@ -24,8 +27,22 @@ BrowserFrameChromeos::~BrowserFrameChromeos() {
 }
 
 void BrowserFrameChromeos::Init() {
-  // TODO(oshima)::Create chromeos specific frame view.
+  // TODO(oshima): handle app panels. This currently uses the default
+  // implementation, which opens Chrome's app panel instead of
+  // ChromeOS's panel.
+  if (!IsPanel()) {
+    set_browser_frame_view(new NormalBrowserFrameView(this, browser_view()));
+  }
   BrowserFrameGtk::Init();
+}
+
+bool BrowserFrameChromeos::IsMaximized() const {
+  return !IsPanel() || WindowGtk::IsMaximized();
+}
+
+bool BrowserFrameChromeos::IsPanel() const {
+  return browser_view()->IsBrowserTypePanel() ||
+      browser_view()->IsBrowserTypePopup();
 }
 
 }  // namespace chromeos

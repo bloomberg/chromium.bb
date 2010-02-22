@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_FRAME_OPAQUE_BROWSER_FRAME_VIEW_H_
-#define CHROME_BROWSER_VIEWS_FRAME_OPAQUE_BROWSER_FRAME_VIEW_H_
+#ifndef CHROME_BROWSER_CHROMEOS_FRAME_NORMAL_BROWSER_FRAME_VIEW_H_
+#define CHROME_BROWSER_CHROMEOS_FRAME_NORMAL_BROWSER_FRAME_VIEW_H_
 
 #include "chrome/browser/views/frame/browser_frame.h"
 #include "chrome/browser/views/frame/browser_non_client_frame_view.h"
@@ -22,13 +22,14 @@ class ImageButton;
 class ImageView;
 }
 
-class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
-                               public views::ButtonListener,
+namespace chromeos {
+
+class NormalBrowserFrameView : public BrowserNonClientFrameView,
                                public TabIconView::TabIconViewModel {
  public:
   // Constructs a non-client view for an BrowserFrame.
-  OpaqueBrowserFrameView(BrowserFrame* frame, BrowserView* browser_view);
-  virtual ~OpaqueBrowserFrameView();
+  NormalBrowserFrameView(BrowserFrame* frame, BrowserView* browser_view);
+  virtual ~NormalBrowserFrameView();
 
   // Overridden from BrowserNonClientFrameView:
   virtual gfx::Rect GetBoundsForTabStrip(BaseTabStrip* tabstrip) const;
@@ -57,9 +58,6 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   virtual bool GetAccessibleName(std::wstring* name);
   virtual void SetAccessibleName(const std::wstring& name);
 
-  // Overridden from views::ButtonListener:
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
-
   // Overridden from TabIconView::TabIconViewModel:
   virtual bool ShouldTabIconViewAnimate() const;
   virtual SkBitmap GetFavIconForTabIconView();
@@ -81,61 +79,20 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // frame, any title area, and any connected client edge.
   int NonClientTopBorderHeight() const;
 
-  // Returns the y-coordinate of the caption buttons.
-  int CaptionButtonY() const;
-
-  // Returns the thickness of the nonclient portion of the 3D edge along the
-  // bottom of the titlebar.
-  int TitlebarBottomThickness() const;
-
-  // Returns the right edge. This is the end the close button starts at (if a
-  // close button is shown).
+  // Returns the right edge.
   int RightEdge() const;
-
-  // Returns the size of the titlebar icon.  This is used even when the icon is
-  // not shown, e.g. to set the titlebar height.
-  int IconSize() const;
-
-  // Returns the bounds of the titlebar icon (or where the icon would be if
-  // there was one).
-  gfx::Rect IconBounds() const;
 
   // Paint various sub-components of this view.  The *FrameBorder() functions
   // also paint the background of the titlebar area, since the top frame border
   // and titlebar background are a contiguous component.
-  void PaintRestoredFrameBorder(gfx::Canvas* canvas);
   void PaintMaximizedFrameBorder(gfx::Canvas* canvas);
-  void PaintTitleBar(gfx::Canvas* canvas);
   void PaintToolbarBackground(gfx::Canvas* canvas);
-  void PaintRestoredClientEdge(gfx::Canvas* canvas);
 
   // Layout various sub-components of this view.
-  void LayoutWindowControls();
-  void LayoutDistributorLogo();
-  void LayoutTitleBar();
-  void LayoutOTRAvatar();
   void LayoutClientView();
 
   // Returns the bounds of the client area for the specified view size.
   gfx::Rect CalculateClientAreaBounds(int width, int height) const;
-
-  // The layout rect of the title, if visible.
-  gfx::Rect title_bounds_;
-
-  // The distributor logo.
-  views::ImageView* logo_icon_;
-
-  // Off the record avatar icon.
-  views::ImageView* otr_avatar_icon_;
-
-  // Window controls.
-  views::ImageButton* minimize_button_;
-  views::ImageButton* maximize_button_;
-  views::ImageButton* restore_button_;
-  views::ImageButton* close_button_;
-
-  // The Window icon.
-  TabIconView* window_icon_;
 
   // The frame that hosts this view.
   BrowserFrame* frame_;
@@ -149,10 +106,9 @@ class OpaqueBrowserFrameView : public BrowserNonClientFrameView,
   // The accessible name of this view.
   std::wstring accessible_name_;
 
-  static void InitClass();
-  static SkBitmap* distributor_logo_;
-
-  DISALLOW_EVIL_CONSTRUCTORS(OpaqueBrowserFrameView);
+  DISALLOW_EVIL_CONSTRUCTORS(NormalBrowserFrameView);
 };
 
-#endif  // CHROME_BROWSER_VIEWS_FRAME_OPAQUE_BROWSER_FRAME_VIEW_H_
+}  // namespace chromeos
+
+#endif  // CHROME_BROWSER_CHROMEOS_FRAME_NORMAL_BROWSER_FRAME_VIEW_H_

@@ -209,10 +209,9 @@ OpaqueBrowserFrameView::~OpaqueBrowserFrameView() {
 
 gfx::Rect OpaqueBrowserFrameView::GetBoundsForTabStrip(
     BaseTabStrip* tabstrip) const {
-  int x_offset = browser_view_->browser_extender()->GetMainMenuWidth();
   int tabstrip_x = browser_view_->ShouldShowOffTheRecordAvatar() ?
       (otr_avatar_icon_->bounds().right() + kOTRSideSpacing) :
-      NonClientBorderThickness() + x_offset;
+      NonClientBorderThickness();
   int tabstrip_width = minimize_button_->x() - tabstrip_x -
       (frame_->GetWindow()->IsMaximized() ?
       kNewTabCaptionMaximizedSpacing : kNewTabCaptionRestoredSpacing);
@@ -1038,9 +1037,8 @@ void OpaqueBrowserFrameView::LayoutOTRAvatar() {
     visible = false;
   }
   otr_avatar_icon_->SetVisible(visible);
-  int x_offset = browser_view_->browser_extender()->GetMainMenuWidth();
   otr_avatar_icon_->SetBounds(NonClientBorderThickness() + kOTRSideSpacing +
-                              x_offset,
+                              0,
                               top_height + tabstrip_height - otr_height,
                               preferred_size.width(), otr_height);
 }

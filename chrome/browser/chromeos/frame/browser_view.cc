@@ -10,7 +10,6 @@
 #include "app/gfx/canvas.h"
 #include "app/menus/simple_menu_model.h"
 #include "app/theme_provider.h"
-#include "base/command_line.h"
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/chromeos/compact_location_bar_host.h"
 #include "chrome/browser/chromeos/compact_navigation_bar.h"
@@ -29,8 +28,6 @@
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/browser/views/toolbar_view.h"
 #include "chrome/browser/views/toolbar_star_toggle.h"
-#include "chrome/common/chrome_switches.h"
-#include "chrome/common/x11_util.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/controls/button/button.h"
@@ -41,7 +38,17 @@
 
 namespace {
 
-const char* kChromeOsWindowManagerName = "chromeos-wm";
+// The OTR avatar ends 2 px above the bottom of the tabstrip (which, given the
+// way the tabstrip draws its bottom edge, will appear like a 1 px gap to the
+// user).
+const int kOTRBottomSpacing = 2;
+
+// There are 2 px on each side of the OTR avatar (between the frame border and
+// it on the left, and between it and the tabstrip on the right).
+const int kOTRSideSpacing = 2;
+
+// The size of the space between the content area and the tabstrip that is
+// inserted in compact nvaigation bar mode.
 const int kCompactNavbarSpaceHeight = 3;
 
 // A space we insert between the tabstrip and the content in
@@ -108,6 +115,7 @@ enum ChromeOSViewIds {
   VIEW_ID_COMPACT_NAV_BAR,
   VIEW_ID_STATUS_AREA,
   VIEW_ID_SPACER,
+  VIEW_ID_OTR_AVATAR,
 };
 
 }  // namespace
@@ -115,7 +123,10 @@ enum ChromeOSViewIds {
 namespace chromeos {
 
 // LayoutManager for BrowserView, which layouts extra components such as
-// main menu, stataus views.
+// main menu, stataus views as follows:
+//                  ____  __ __
+//      [MainMenu] /    \   \  \     [StatusArea]
+//
 class BrowserViewLayout : public ::BrowserViewLayout {
  public:
   BrowserViewLayout() : ::BrowserViewLayout() {}
@@ -148,35 +159,33 @@ class BrowserViewLayout : public ::BrowserViewLayout {
       case VIEW_ID_COMPACT_NAV_BAR:
         compact_navigation_bar_ = view;
         break;
+      case VIEW_ID_OTR_AVATAR:
+        otr_avatar_icon_ = view;
+        break;
     }
   }
 
+  // In the normal and the compact navigation bar mode, ChromeOS
+  // layouts compact navigation buttons and status views in the title
+  // area. See Layout
   virtual int LayoutTabStrip() {
-    if (!browser_view_->IsTabStripVisible()) {
+    if (browser_view_->IsFullscreen() ||
+        !browser_view_->IsTabStripVisible()) {
+      main_menu_->SetVisible(false);
+      compact_navigation_bar_->SetVisible(false);
+      status_area_->SetVisible(false);
+      otr_avatar_icon_->SetVisible(false);
       tabstrip_->SetVisible(false);
       tabstrip_->SetBounds(0, 0, 0, 0);
       return 0;
     } else {
       gfx::Rect layout_bounds =
           browser_view_->frame()->GetBoundsForTabStrip(tabstrip_);
-      gfx::Rect toolbar_bounds = browser_view_->GetToolbarBounds();
-      tabstrip_->SetBackgroundOffset(
-          gfx::Point(layout_bounds.x() - toolbar_bounds.x(),
-                     layout_bounds.y()));
       gfx::Point tabstrip_origin = layout_bounds.origin();
       views::View::ConvertPointToView(browser_view_->GetParent(), browser_view_,
                                       &tabstrip_origin);
       layout_bounds.set_origin(tabstrip_origin);
-      tabstrip_->SetVisible(true);
-      tabstrip_->SetBounds(layout_bounds);
-
-      int bottom = 0;
-      gfx::Rect tabstrip_bounds;
-      LayoutCompactNavigationBar(
-          layout_bounds, &tabstrip_bounds, &bottom);
-      tabstrip_->SetVisible(true);
-      tabstrip_->SetBounds(tabstrip_bounds);
-      return bottom;
+      return LayoutTitlebarComponents(layout_bounds);
     }
   }
 
@@ -199,7 +208,7 @@ class BrowserViewLayout : public ::BrowserViewLayout {
     return static_cast<chromeos::BrowserView*>(browser_view_);
   }
 
-  // Test if the point is on one of views that are within the
+  // Tests if the point is on one of views that are within the
   // considered title bar area of client view.
   bool IsPointInViewsInTitleArea(const gfx::Point& point)
       const {
@@ -225,29 +234,22 @@ class BrowserViewLayout : public ::BrowserViewLayout {
     return false;
   }
 
-  void LayoutCompactNavigationBar(const gfx::Rect& bounds,
-                                  gfx::Rect* tabstrip_bounds,
-                                  int* bottom) {
-    if (browser_view_->IsTabStripVisible()) {
-      *bottom = bounds.bottom();
-    } else {
-      *bottom = 0;
+  // Layouts components in the title bar area (given by
+  // |bounds|). These include the main menu, the compact navigation
+  // buttons (in compact navbar mode), the otr avatar icon (in
+  // incognito window), the tabstrip and the the status area.
+  int LayoutTitlebarComponents(const gfx::Rect& bounds) {
+    if (bounds.IsEmpty()) {
+      return 0;
     }
-    // Skip if there is no space to layout, or if the browser is in
-    // fullscreen mode.
-    if (bounds.IsEmpty() || browser_view_->IsFullscreen()) {
-      main_menu_->SetVisible(false);
-      compact_navigation_bar_->SetVisible(false);
-      status_area_->SetVisible(false);
-      tabstrip_bounds->SetRect(bounds.x(), bounds.y(),
-                               bounds.width(), bounds.height());
-      return;
-    } else {
-      main_menu_->SetVisible(true);
-      compact_navigation_bar_->SetVisible(
-          chromeos_browser_view()->is_compact_style());
-      status_area_->SetVisible(true);
-    }
+    main_menu_->SetVisible(true);
+    compact_navigation_bar_->SetVisible(
+        chromeos_browser_view()->is_compact_style());
+    tabstrip_->SetVisible(true);
+    otr_avatar_icon_->SetVisible(browser_view_->ShouldShowOffTheRecordAvatar());
+    status_area_->SetVisible(true);
+
+    int bottom = bounds.bottom();
 
     /* TODO(oshima):
      * Disabling the ability to update location bar on re-layout bacause
@@ -264,12 +266,6 @@ class BrowserViewLayout : public ::BrowserViewLayout {
 
     // Layout main menu before tab strip.
     gfx::Size main_menu_size = main_menu_->GetPreferredSize();
-
-    // TODO(oshima): Use 0 for x position for now as this is
-    // sufficient for chromeos where the window is always
-    // maximized. The correct value is
-    // OpaqueBrowserFrameView::NonClientBorderThickness() and we will
-    // consider exposing it once we settle on the UI.
     main_menu_->SetBounds(0, bounds.y(),
                           main_menu_size.width(), bounds.height());
 
@@ -279,8 +275,9 @@ class BrowserViewLayout : public ::BrowserViewLayout {
     status_area_->SetBounds(bounds.x() + bounds.width() - status_size.width(),
                             bounds.y(), status_size.width(),
                             status_size.height());
-    int curx = bounds.x();
-    int remaining_width = bounds.width() - status_size.width();
+    LayoutOTRAvatar(bounds);
+
+    int curx = bounds.x() + main_menu_size.width();
 
     if (compact_navigation_bar_->IsVisible()) {
       gfx::Size cnb_size = compact_navigation_bar_->GetPreferredSize();
@@ -292,19 +289,41 @@ class BrowserViewLayout : public ::BrowserViewLayout {
       compact_navigation_bar_->SetBounds(
           cnb_bounds.Intersect(browser_view_->GetVisibleBounds()));
       curx += cnb_bounds.width();
-      remaining_width -= cnb_bounds.width();
 
       spacer_->SetVisible(true);
-      spacer_->SetBounds(0, *bottom, browser_view_->width(),
+      spacer_->SetBounds(0, bottom, browser_view_->width(),
                          kCompactNavbarSpaceHeight);
-      *bottom += kCompactNavbarSpaceHeight;
+      bottom += kCompactNavbarSpaceHeight;
     } else {
+      compact_navigation_bar_->SetBounds(curx, bounds.y(), 0, 0);
       spacer_->SetVisible(false);
     }
-    // In case there is no space left.
-    remaining_width = std::max(0, remaining_width);
-    tabstrip_bounds->SetRect(curx, bounds.y(),
-                             remaining_width, bounds.height());
+    int remaining_width = std::max(
+        0,  // In case there is no space left.
+        otr_avatar_icon_->bounds().x() -
+        compact_navigation_bar_->bounds().right());
+    tabstrip_->SetBounds(curx, bounds.y(), remaining_width, bounds.height());
+
+    gfx::Rect toolbar_bounds = browser_view_->GetToolbarBounds();
+    tabstrip_->SetBackgroundOffset(
+        gfx::Point(curx - toolbar_bounds.x(),
+                   bounds.y()));
+    return bottom;
+  }
+
+  // Layouts OTR avatar within the given |bounds|.
+  void LayoutOTRAvatar(const gfx::Rect& bounds) {
+    gfx::Rect status_bounds = status_area_->bounds();
+    if (!otr_avatar_icon_->IsVisible()) {
+      otr_avatar_icon_->SetBounds(status_bounds.x(), status_bounds.y(), 0, 0);
+    } else {
+      gfx::Size preferred_size = otr_avatar_icon_->GetPreferredSize();
+
+      int y = bounds.bottom() - preferred_size.height() - kOTRBottomSpacing;
+      int x = status_bounds.x() - kOTRSideSpacing - preferred_size.width();
+      otr_avatar_icon_->SetBounds(x, y, preferred_size.width(),
+                                  preferred_size.height());
+    }
   }
 
 
@@ -312,6 +331,7 @@ class BrowserViewLayout : public ::BrowserViewLayout {
   chromeos::StatusAreaView* status_area_;
   views::View* compact_navigation_bar_;
   views::View* spacer_;
+  views::View* otr_avatar_icon_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserViewLayout);
 };
@@ -324,7 +344,9 @@ BrowserView::BrowserView(Browser* browser)
       // Standard style is default.
       // TODO(oshima): Get this info from preference.
       ui_style_(StandardStyle),
-      force_maximized_window_(false) {
+      force_maximized_window_(false),
+      spacer_(NULL),
+      otr_avatar_icon_(new views::ImageView()) {
 }
 
 BrowserView::~BrowserView() {
@@ -374,17 +396,9 @@ void BrowserView::Init() {
   BrowserFrameGtk* gtk_frame = static_cast<BrowserFrameGtk*>(frame());
   gtk_frame->GetNonClientView()->SetContextMenuController(this);
 
-  if (browser()->type() == Browser::TYPE_NORMAL) {
-    std::string wm_name;
-    bool wm_name_valid = x11_util::GetWindowManagerName(&wm_name);
-    // NOTE: On Chrome OS the wm and Chrome are started in parallel. This
-    // means it's possible for us not to be able to get the name of the window
-    // manager. We assume that when this happens we're on Chrome OS.
-    force_maximized_window_ = (!wm_name_valid ||
-                               wm_name == kChromeOsWindowManagerName ||
-                               CommandLine::ForCurrentProcess()->HasSwitch(
-                                   switches::kChromeosFrame));
-  }
+  otr_avatar_icon_->SetImage(GetOTRAvatarIcon());
+  otr_avatar_icon_->SetID(VIEW_ID_OTR_AVATAR);
+  AddChildView(otr_avatar_icon_);
 }
 
 void BrowserView::Show() {
@@ -492,14 +506,6 @@ void BrowserView::ShowCompactLocationBarUnderSelectedTab() {
     return;
   int index = browser()->selected_index();
   compact_location_bar_host_->Update(index, true);
-}
-
-bool BrowserView::ShouldForceMaximizedWindow() const {
-  return force_maximized_window_;
-}
-
-int BrowserView::GetMainMenuWidth() const {
-  return main_menu_->GetPreferredSize().width();
 }
 
 ////////////////////////////////////////////////////////////////////////////////

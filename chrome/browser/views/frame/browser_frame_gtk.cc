@@ -154,11 +154,6 @@ void BrowserFrameGtk::IsActiveChanged() {
   views::WidgetGtk::IsActiveChanged();
 }
 
-bool BrowserFrameGtk::IsMaximized() const {
-  return browser_view_->browser_extender()->ShouldForceMaximizedWindow() ||
-      WindowGtk::IsMaximized();
-}
-
 bool BrowserFrameGtk::GetAccelerator(int cmd_id,
                                      menus::Accelerator* accelerator) {
   return browser_view_->GetAccelerator(cmd_id, accelerator);
