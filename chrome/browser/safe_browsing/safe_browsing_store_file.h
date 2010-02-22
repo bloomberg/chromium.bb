@@ -202,25 +202,6 @@ class SafeBrowsingStoreFile : public SafeBrowsingStore {
   // Close all files and clear all buffers.
   bool Close();
 
-  // Helpers to read/write the various data sets.  Excepting
-  // ReadChunksToSet(), which is called too early, the readers skip
-  // items from deleted chunks (listed in add_del_cache_ and
-  // sub_del_cache_).
-  bool ReadChunksToSet(FILE* fp, std::set<int32>* chunks, int count);
-  bool WriteChunksFromSet(const std::set<int32>& chunks);
-  bool ReadAddPrefixes(FILE* fp,
-                       std::vector<SBAddPrefix>* add_prefixes, int count);
-  bool WriteAddPrefixes(const std::vector<SBAddPrefix>& add_prefixes);
-  bool ReadSubPrefixes(FILE* fp,
-                       std::vector<SBSubPrefix>* sub_prefixes, int count);
-  bool WriteSubPrefixes(std::vector<SBSubPrefix>& sub_prefixes);
-  bool ReadAddHashes(FILE* fp,
-                     std::vector<SBAddFullHash>* add_hashes, int count);
-  bool WriteAddHashes(const std::vector<SBAddFullHash>& add_hashes);
-  bool ReadSubHashes(FILE* fp,
-                     std::vector<SBSubFullHash>* sub_hashes, int count);
-  bool WriteSubHashes(std::vector<SBSubFullHash>& sub_hashes);
-
   // Calls |corruption_callback_| if non-NULL, always returns false as
   // a convenience to the caller.
   bool OnCorruptDatabase();
