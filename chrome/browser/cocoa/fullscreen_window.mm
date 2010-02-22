@@ -54,7 +54,6 @@
 
   if (shouldClose) {
     [self close];
-    mac_util::ReleaseFullScreen();
   }
 }
 

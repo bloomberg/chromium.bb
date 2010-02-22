@@ -423,17 +423,14 @@ willPositionSheet:(NSWindow*)sheet
   [self layoutSubviews];
 }
 
+// TODO(rohitrao): This function has shrunk into uselessness, and
+// |-setFullscreen:| has grown rather large.  Find a good way to break up
+// |-setFullscreen:| into smaller pieces.  http://crbug.com/36449
 - (void)adjustUIForFullscreen:(BOOL)fullscreen {
-  if (fullscreen) {
-    mac_util::RequestFullScreen();
-
-    // Create the floating bar backing view if necessary.
-    if (!floatingBarBackingView_.get()) {
-      floatingBarBackingView_.reset(
-          [[FloatingBarBackingView alloc] initWithFrame:NSZeroRect]);
-    }
-  } else {
-    mac_util::ReleaseFullScreen();
+  // Create the floating bar backing view if necessary.
+  if (fullscreen && !floatingBarBackingView_.get()) {
+    floatingBarBackingView_.reset(
+        [[FloatingBarBackingView alloc] initWithFrame:NSZeroRect]);
   }
 }
 

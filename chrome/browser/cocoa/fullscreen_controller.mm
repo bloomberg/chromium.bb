@@ -6,6 +6,7 @@
 
 #include <algorithm>
 
+#include "base/mac_util.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 
@@ -126,6 +127,8 @@ const NSTimeInterval kDropdownHideDelay = 0.2;
 
 @implementation FullscreenController
 
+@synthesize isFullscreen = isFullscreen_;
+
 - (id)initWithBrowserController:(BrowserWindowController*)controller {
   if ((self == [super init])) {
     browserController_ = controller;
@@ -150,6 +153,22 @@ const NSTimeInterval kDropdownHideDelay = 0.2;
   DCHECK(isFullscreen_);
   [self cleanup];
   isFullscreen_ = NO;
+}
+
+- (void)windowDidBecomeMain {
+  if (!windowIsMain_) {
+    mac_util::RequestFullScreen();
+    windowIsMain_ = YES;
+  }
+  // TODO(rohitrao): Insert the Exit Fullscreen button.  http://crbug.com/35956
+}
+
+- (void)windowDidResignMain {
+  if (windowIsMain_) {
+    mac_util::ReleaseFullScreen();
+    windowIsMain_ = NO;
+  }
+  // TODO(rohitrao): Remove the Exit Fullscreen button.  http://crbug.com/35956
 }
 
 - (void)overlayFrameChanged:(NSRect)frame {
@@ -476,6 +495,11 @@ const NSTimeInterval kDropdownHideDelay = 0.2;
   [browserController_ releaseBarVisibilityForOwner:self
                                      withAnimation:NO
                                              delay:NO];
+
+  // Call the main status resignation code to perform the associated cleanup,
+  // since we will no longer be receiving actual status resignation
+  // notifications.
+  [self windowDidResignMain];
 }
 
 @end

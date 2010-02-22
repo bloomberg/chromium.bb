@@ -56,7 +56,16 @@
   // currently nil.  Used to restore the tracking area when an animation
   // completes.
   NSRect trackingAreaBounds_;
+
+  // If YES, we currently think the window has main status and therefore have
+  // hidden the menubar.  While this should generally match the actual main
+  // status of the window, it can get out of sync if we miss a notification
+  // (which can happen when a fullscreen window is closed).  Used to make sure
+  // we properly restore the menubar when this controller is destroyed.
+  BOOL windowIsMain_;
 }
+
+@property(readonly, nonatomic) BOOL isFullscreen;
 
 // Designated initializer.
 - (id)initWithBrowserController:(BrowserWindowController*)controller;
@@ -81,6 +90,11 @@
 
 // Cancels any running animation and timers.
 - (void)cancelAnimationAndTimers;
+
+// Called when the fullscreen window becomes or resigns main status.  Used to
+// update the menubar hidden state, the exit fullscreen button, etc.
+- (void)windowDidBecomeMain;
+- (void)windowDidResignMain;
 
 @end
 
