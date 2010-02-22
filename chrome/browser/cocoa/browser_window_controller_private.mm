@@ -62,6 +62,15 @@ const CGFloat kFullscreenVerticalBarOffset = 14;
 
   // Window positions are stored relative to the origin of the primary monitor.
   NSRect monitorFrame = [[[NSScreen screens] objectAtIndex:0] frame];
+  NSScreen* windowScreen = [window screen];
+
+  // |windowScreen| can be nil (for example, if the monitor arrangement was
+  // changed while in fullscreen mode).  If we see a nil screen, return without
+  // saving.
+  // TODO(rohitrao): We should just not save anything for fullscreen windows.
+  // http://crbug.com/36479.
+  if (!windowScreen)
+    return;
 
   // Start with the window's frame, which is in virtual coordinates.
   // Do some y twiddling to flip the coordinate system.
@@ -69,7 +78,7 @@ const CGFloat kFullscreenVerticalBarOffset = 14;
   bounds.set_y(monitorFrame.size.height - bounds.y() - bounds.height());
 
   // We also need to save the current work area, in flipped coordinates.
-  gfx::Rect workArea(NSRectToCGRect([[window screen] visibleFrame]));
+  gfx::Rect workArea(NSRectToCGRect([windowScreen visibleFrame]));
   workArea.set_y(monitorFrame.size.height - workArea.y() - workArea.height());
 
   DictionaryValue* windowPreferences = prefs->GetMutableDictionary(
