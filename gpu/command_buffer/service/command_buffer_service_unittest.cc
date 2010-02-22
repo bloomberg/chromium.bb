@@ -76,6 +76,10 @@ TEST_F(CommandBufferServiceTest, InitializationFailsIfSizeOutOfRange) {
       CommandBuffer::kMaxCommandBufferSize + 1));
 }
 
+TEST_F(CommandBufferServiceTest, InitializationFailsIfSizeIsNegative) {
+  EXPECT_FALSE(command_buffer_->Initialize(-1));
+}
+
 TEST_F(CommandBufferServiceTest, InitializeFailsSecondTime) {
   EXPECT_TRUE(command_buffer_->Initialize(1024));
   EXPECT_FALSE(command_buffer_->Initialize(1024));

@@ -31,7 +31,7 @@ bool CommandBufferService::Initialize(int32 size) {
   if (ring_buffer_.get())
     return false;
 
-  if (size == 0 || size > kMaxCommandBufferSize)
+  if (size <= 0 || size > kMaxCommandBufferSize)
     return false;
 
   size_ = size;
@@ -43,6 +43,7 @@ bool CommandBufferService::Initialize(int32 size) {
       return true;
   }
 
+  size_ = 0;
   ring_buffer_.reset();
   return false;
 }
