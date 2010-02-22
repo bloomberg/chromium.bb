@@ -131,8 +131,3 @@ TEST_F(WebDropTargetTest, Data) {
 
   [pboard releaseGlobally];
 }
-
-TEST_F(WebDropTargetTest, EnterExitDrop) {
-  // TODO(pinkerton): Call enter/exit/drop and see what happens. This is a bit
-  // harder to test.
-}

@@ -10,10 +10,6 @@
 #include "chrome/browser/tab_menu_model.h"
 
 // The loading/waiting state of the tab.
-// TODO(pinkerton): this really doesn't belong here, but something needs to
-// know the state and another parallel array in TabStripController doesn't seem
-// like the right place either. In a perfect world, this class shouldn't know
-// anything about states that are specific to a browser.
 enum TabLoadingState {
   kTabDone,
   kTabLoading,

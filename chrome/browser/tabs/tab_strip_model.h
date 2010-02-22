@@ -151,10 +151,6 @@ class TabStripModelDelegate {
   // be docked as identified by |dock_info|. Returns the Browser object
   // representing the newly created window and tab strip. This does not
   // show the window, it's up to the caller to do so.
-  // TODO(pinkerton): I really don't like the fact that this is returning a
-  // Browser object, there may be some better abstraction we can achieve that
-  // the Browser implements, but for now, we'll experiment with returning
-  // that type.
   virtual Browser* CreateNewStripWithContents(TabContents* contents,
                                               const gfx::Rect& window_bounds,
                                               const DockInfo& dock_info) = 0;

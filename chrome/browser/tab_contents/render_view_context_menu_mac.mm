@@ -86,9 +86,9 @@ void RenderViewContextMenuMac::DoInit() {
   }
 }
 
-// Do things like remove the windows accelerators.
-// TODO(pinkerton): Do we want to do anything like make a maximum string width
-// and middle-truncate?
+// Do things like remove the windows accelerators. Since we control the
+// contents of this context menu, we don't need to worry about maximum string
+// lengths or middle-truncation.
 NSString* RenderViewContextMenuMac::PrepareLabelForDisplay(
     const string16& label) {
   NSString* title = l10n_util::FixUpWindowsStyleLabel(label);
