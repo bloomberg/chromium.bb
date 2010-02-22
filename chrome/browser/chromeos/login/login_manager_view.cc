@@ -22,6 +22,8 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/login/google_authenticator.h"
+#include "chrome/browser/chromeos/login/pam_google_authenticator.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
 #include "chrome/browser/chromeos/login/user_manager.h"
@@ -78,7 +80,13 @@ LoginManagerView::LoginManagerView(chromeos::ScreenObserver* observer)
       observer_(observer),
       error_id_(-1),
       ALLOW_THIS_IN_INITIALIZER_LIST(focus_grabber_factory_(this)),
-      focus_delayed_(false) {
+      focus_delayed_(false),
+      ALLOW_THIS_IN_INITIALIZER_LIST(
+          authenticator_(new PamGoogleAuthenticator(this))) {
+  if (kStubOutLogin)
+    authenticator_.reset(new StubAuthenticator(this));
+  if (CommandLine::ForCurrentProcess()->HasSwitch(switches::kInChromeAuth))
+    authenticator_.reset(new GoogleAuthenticator(this));
 }
 
 LoginManagerView::~LoginManagerView() {
@@ -269,25 +277,42 @@ void LoginManagerView::ButtonPressed(
   Login();
 }
 
-bool LoginManagerView::Authenticate(const std::string& username,
-                                    const std::string& password) {
-  if (kStubOutLogin) {
-    return true;
-  }
+void LoginManagerView::OnLoginFailure() {
+  LOG(INFO) << "LoginManagerView: OnLoginFailure()";
+  chromeos::NetworkLibrary* network = chromeos::NetworkLibrary::Get();
+  // Check networking after trying to login in case user is
+  // cached locally or the local admin account.
+  if (!network || !network->EnsureLoaded())
+    ShowError(IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY);
+  else if (!network->Connected())
+    ShowError(IDS_LOGIN_ERROR_NETWORK_NOT_CONNECTED);
+  else
+    ShowError(IDS_LOGIN_ERROR_AUTHENTICATING);
+}
 
-  base::ProcessHandle handle;
-  std::vector<std::string> argv;
-  // TODO(cmasone): we'll want this to be configurable.
-  argv.push_back("/opt/google/chrome/session");
-  argv.push_back(username);
-  argv.push_back(password);
+void LoginManagerView::OnLoginSuccess(const std::string& username) {
+  LOG(INFO) << "LoginManagerView: OnLoginSuccess()";
+  // TODO(cmasone): something sensible if errors occur.
+  SetupSession(username);
+  chromeos::UserManager::Get()->UserLoggedIn(username);
 
-  base::environment_vector no_env;
-  base::file_handle_mapping_vector no_files;
-  base::LaunchApp(argv, no_env, no_files, false, &handle);
-  int child_exit_code;
-  return base::WaitForExitCode(handle, &child_exit_code) &&
-         child_exit_code == 0;
+  // Now launch the initial browser window.
+  BrowserInit browser_init;
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+  FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  // The default profile will have been changed because the ProfileManager
+  // will process the notification that the UserManager sends out.
+  Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
+  int return_code;
+
+  LOG(INFO) << "OnLoginSuccess: Preparing to launch browser";
+  browser_init.LaunchBrowser(command_line,
+                             profile,
+                             std::wstring(),
+                             true,
+                             &return_code);
 }
 
 void LoginManagerView::SetupSession(const std::string& username) {
@@ -320,40 +345,7 @@ void LoginManagerView::Login() {
     username_field_->SetText(UTF8ToUTF16(username));
   }
 
-  // Set up credentials to prepare for authentication.
-  if (Authenticate(username, password)) {
-    // TODO(cmasone): something sensible if errors occur.
-    SetupSession(username);
-    chromeos::UserManager::Get()->UserLoggedIn(username);
-
-    // Now launch the initial browser window.
-    BrowserInit browser_init;
-    const CommandLine& command_line = *CommandLine::ForCurrentProcess();
-    FilePath user_data_dir;
-    PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
-    ProfileManager* profile_manager = g_browser_process->profile_manager();
-    // The default profile will have been changed because the ProfileManager
-    // will process the notification that the UserManager sends out.
-    Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
-    int return_code;
-
-    browser_init.LaunchBrowser(
-        command_line,
-        profile,
-        std::wstring(),
-        true,
-        &return_code);
-  } else {
-    chromeos::NetworkLibrary* network = chromeos::NetworkLibrary::Get();
-    // Check networking after trying to login in case user is
-    // cached locally or the local admin account.
-    if (!network || !network->EnsureLoaded())
-      ShowError(IDS_LOGIN_ERROR_NO_NETWORK_LIBRARY);
-    else if (!network->Connected())
-      ShowError(IDS_LOGIN_ERROR_NETWORK_NOT_CONNECTED);
-    else
-      ShowError(IDS_LOGIN_ERROR_AUTHENTICATING);
-  }
+  authenticator_->Authenticate(username, password);
 }
 
 void LoginManagerView::ShowError(int error_id) {

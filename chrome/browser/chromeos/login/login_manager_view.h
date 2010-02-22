@@ -6,7 +6,9 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_LOGIN_MANAGER_VIEW_H_
 
 #include <string>
-#include "base/task.h"
+#include "base/scoped_ptr.h"
+#include "chrome/browser/chromeos/login/authenticator.h"
+#include "chrome/browser/chromeos/login/login_status_consumer.h"
 #include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "views/accelerator.h"
@@ -24,7 +26,8 @@ class Label;
 class NativeButton;
 }  // namespace views
 
-class LoginManagerView : public WizardScreen,
+class LoginManagerView : public LoginStatusConsumer,
+                         public WizardScreen,
                          public views::WindowDelegate,
                          public views::Textfield::Controller,
                          public views::ButtonListener {
@@ -53,6 +56,10 @@ class LoginManagerView : public WizardScreen,
 
   // Overriden from views::ButtonListener.
   virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+
+  // Overriden from LoginStatusConsumer.
+  virtual void OnLoginFailure();
+  virtual void OnLoginSuccess(const std::string& username);
 
  protected:
   // views::View overrides:
@@ -118,6 +125,8 @@ class LoginManagerView : public WizardScreen,
   // Indicates that this view was created when focus manager was unavailable
   // (on the hidden tab, for example).
   bool focus_delayed_;
+
+  scoped_ptr<Authenticator> authenticator_;
 
   DISALLOW_COPY_AND_ASSIGN(LoginManagerView);
 };

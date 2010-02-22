@@ -214,11 +214,11 @@ extern const char kZygoteProcess[];
 extern const char kCookiePipe[];
 extern const char kEnableGView[];
 extern const char kLoginManager[];
+extern const char kInChromeAuth[];
 // TODO(avayvod): Remove this flag when it's unnecessary for testing
 // purposes.
 extern const char kFirstLoginScreenName[];
 extern const char kLoginScreenSize[];
-extern const char kSessionManagerPipe[];
 extern const char kTestLoadLibcros[];
 extern const char kProfile[];
 extern const char kLoginProfile[];

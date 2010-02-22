@@ -741,13 +741,14 @@ const char kCookiePipe[]                    = "cookie-pipe";
 // Document Viewer.
 const char kEnableGView[]                   = "enable-gview";
 
-// Enable experimental Chrome-as-a-login-manager behavior.
+// Enable Chrome-as-a-login-manager behavior.
 const char kLoginManager[]                  = "login-manager";
+// Enable Chrome to do ClientLogin on its own in the login-manager context.
+const char kInChromeAuth[]                  = "in-chrome-auth";
 // Enables to override the first login screen.
 const char kFirstLoginScreenName[]          = "first-login-screen-name";
 // Allows control over the initial login screen size. Pass width,height.
 const char kLoginScreenSize[]               = "login-screen-size";
-const char kSessionManagerPipe[]            = "session-manager-pipe";
 
 // Attempts to load libcros and validate it, then exits. A nonzero return code
 // means the library could not be loaded correctly.
