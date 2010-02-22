@@ -156,6 +156,8 @@ static const char* const g_executables[] = {
   "py",
   "rb",
   "sh",
+  "deb",
+  "rpm",
 #endif
 };
 
