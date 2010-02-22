@@ -9,6 +9,8 @@
 #include "chrome/browser/autofill/autofill_type.h"
 #include "chrome/browser/autofill/field_types.h"
 
+#define U(x) (UTF16ToUTF8(x).c_str())
+
 static const string16 kAddressSplitChars = ASCIIToUTF16("-,#. ");
 
 static const AutoFillType::FieldTypeSubGroup kAutoFillAddressTypes[] = {
@@ -24,6 +26,15 @@ static const int kAutoFillAddressLength = arraysize(kAutoFillAddressTypes);
 
 void Address::GetPossibleFieldTypes(const string16& text,
                                     FieldTypeSet* possible_types) const {
+  DCHECK(possible_types);
+  if (!possible_types)
+    return;
+
+  // If the text to match against the field types is empty, then no results will
+  // match.
+  if (text.empty())
+    return;
+
   if (IsLine1(text))
     possible_types->insert(GetLine1Type());
 
@@ -134,6 +145,19 @@ void Address::Clone(const Address& address) {
   set_zip_code(address.zip_code());
 }
 
+Address::Address(const Address& address)
+    : FormGroup(),
+      line1_tokens_(address.line1_tokens_),
+      line2_tokens_(address.line2_tokens_),
+      line1_(address.line1_),
+      line2_(address.line2_),
+      apt_num_(address.apt_num_),
+      city_(address.city_),
+      state_(address.state_),
+      country_(address.country_),
+      zip_code_(address.zip_code_) {
+}
+
 void Address::set_line1(const string16& line1) {
   line1_ = line1;
   line1_tokens_.clear();
@@ -152,19 +176,6 @@ void Address::set_line2(const string16& line2) {
     *iter = StringToLowerASCII(*iter);
 }
 
-Address::Address(const Address& address)
-    : FormGroup(),
-      line1_tokens_(address.line1_tokens_),
-      line2_tokens_(address.line2_tokens_),
-      line1_(address.line1_),
-      line2_(address.line2_),
-      apt_num_(address.apt_num_),
-      city_(address.city_),
-      state_(address.state_),
-      country_(address.country_),
-      zip_code_(address.zip_code_) {
-}
-
 bool Address::IsLine1(const string16& text) const {
   return IsLineMatch(text, line1_tokens_);
 }
@@ -174,19 +185,19 @@ bool Address::IsLine2(const string16& text) const {
 }
 
 bool Address::IsAptNum(const string16& text) const {
-  return (StringToLowerASCII(apt_num_) == text);
+  return (StringToLowerASCII(apt_num_) == StringToLowerASCII(text));
 }
 
 bool Address::IsCity(const string16& text) const {
-  return (StringToLowerASCII(city_) == text);
+  return (StringToLowerASCII(city_) == StringToLowerASCII(text));
 }
 
 bool Address::IsState(const string16& text) const {
-  return (StringToLowerASCII(state_) == text);
+  return (StringToLowerASCII(state_) == StringToLowerASCII(text));
 }
 
 bool Address::IsCountry(const string16& text) const {
-  return (StringToLowerASCII(country_) == text);
+  return (StringToLowerASCII(country_) == StringToLowerASCII(text));
 }
 
 bool Address::IsZipCode(const string16& text) const {
@@ -258,7 +269,7 @@ bool Address::IsWordInLine(const string16& word,
                            const LineTokens& line_tokens) const {
   LineTokens::const_iterator iter;
   for (iter = line_tokens.begin(); iter != line_tokens.end(); ++iter) {
-    if (word == *iter)
+    if (StringToLowerASCII(word) == *iter)
       return true;
   }
 

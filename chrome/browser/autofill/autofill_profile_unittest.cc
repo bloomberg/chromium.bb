@@ -9,18 +9,9 @@
 
 namespace {
 
-// Unit tests for autofill |AutoFillProfile| class.
-class AutoFillProfileTest : public testing::Test {
- protected:
-  AutoFillProfileTest() {
-  }
- private:
-  DISALLOW_COPY_AND_ASSIGN(AutoFillProfileTest);
-};
-
 // Tests different possibilities for summary string generation.
 // Based on existence of first name, last name, and address line 1.
-TEST_F(AutoFillProfileTest, PreviewSummaryString) {
+TEST(AutoFillProfileTest, PreviewSummaryString) {
   // Case 0/null: ""
   AutoFillProfile profile0(string16(), 0);
   string16 summary0 = profile0.PreviewSummary();

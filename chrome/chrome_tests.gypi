@@ -530,6 +530,7 @@
         'browser/autofill/autofill_common_unittest.h',
         'browser/autofill/autofill_dialog_controller_mac_unittest.mm',
         'browser/autofill/autofill_profile_unittest.cc',
+        'browser/autofill/billing_address_unittest.cc',
         'browser/autofill/credit_card_unittest.cc',
         'browser/autofill/personal_data_manager_unittest.cc',
         'browser/automation/automation_provider_unittest.cc',

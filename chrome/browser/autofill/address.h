@@ -10,8 +10,6 @@
 #include "base/string16.h"
 #include "chrome/browser/autofill/form_group.h"
 
-typedef std::vector<string16> LineTokens;
-
 // A form group that stores address information.
 class Address : public FormGroup {
  public:
@@ -34,6 +32,13 @@ class Address : public FormGroup {
   // Sets the values of this object to the values in |address|.
   void Clone(const Address& address);
 
+ protected:
+  explicit Address(const Address& address);
+
+ private:
+  // Vector of tokens in an address line.
+  typedef std::vector<string16> LineTokens;
+
   string16 line1() const { return line1_; }
   string16 line2() const { return line2_; }
   string16 apt_num() const { return apt_num_; }
@@ -50,8 +55,6 @@ class Address : public FormGroup {
   void set_country(const string16& country) { country_ = country; }
   void set_zip_code(const string16& zip_code) { zip_code_ = zip_code; }
 
- protected:
-  explicit Address(const Address& address);
   void operator=(const Address& address);
 
   // The following functions match |text| against the various values of the
@@ -80,6 +83,13 @@ class Address : public FormGroup {
                              const string16& info,
                              string16* match) const;
 
+  // Returns true if all of the tokens in |text| match the tokens in
+  // |line_tokens|.
+  bool IsLineMatch(const string16& text, const LineTokens& line_tokens) const;
+
+  // Returns true if |word| is one of the tokens in |line_tokens|.
+  bool IsWordInLine(const string16& word, const LineTokens& line_tokens) const;
+
   // List of tokens in each part of |line1_| and |line2_|.
   LineTokens line1_tokens_;
   LineTokens line2_tokens_;
@@ -92,14 +102,6 @@ class Address : public FormGroup {
   string16 state_;
   string16 country_;
   string16 zip_code_;
-
- private:
-  // Returns true if all of the tokens in |text| match the tokens in
-  // |line_tokens|.
-  bool IsLineMatch(const string16& text, const LineTokens& line_tokens) const;
-
-  // Returns true if |word| is one of the tokens in |line_tokens|.
-  bool IsWordInLine(const string16& word, const LineTokens& line_tokens) const;
 };
 
 #endif  // CHROME_BROWSER_AUTOFILL_ADDRESS_H_
