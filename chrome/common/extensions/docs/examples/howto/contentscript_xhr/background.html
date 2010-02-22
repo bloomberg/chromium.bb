@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<!--
+ * Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
+ * source code is governed by a BSD-style license that can be found in the
+ * LICENSE file.
+-->
+<html>
+  <head>
+  </head>
+  <body>
+    <script>
+      /**
+       * Performs an XMLHttpRequest to Twitter's API to get trending topics.
+       * @param callback Function If the response from fetching url has a
+       *     HTTP status of 200, this function is called with a JSON decoded
+       *     response.  Otherwise, this function is called with null.
+       */
+      function fetchTwitterFeed(callback) {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function(data) {
+          if (xhr.readyState == 4) {
+            if (xhr.status == 200) {
+              var data = JSON.parse(xhr.responseText);
+              callback(data);
+            } else {
+              callback(null);
+            }
+          }
+        }
+        // Note that any URL fetched here must be matched by a permission in
+        // the manifest.json file!
+        var url = 'http://search.twitter.com/trends/current.json?exclude=hashtags';
+        xhr.open('GET', url, true);
+        xhr.send();
+      };
+
+      /**
+       * Handles data sent via chrome.extension.sendRequest().
+       * @param request Object Data sent in the request.
+       * @param sender Object Origin of the request.
+       * @param callback Function The method to call when the request completes.
+       */
+      function onRequest(request, sender, callback) {
+        // Only supports the 'fetchTwitterFeed' method, although this could be
+        // generalized into a more robust RPC system.
+        if (request.action == 'fetchTwitterFeed') {
+          fetchTwitterFeed(callback);
+        }
+      };
+
+      // Wire up the listener.
+      chrome.extension.onRequest.addListener(onRequest);
+    </script>
+  </body>
+</html>

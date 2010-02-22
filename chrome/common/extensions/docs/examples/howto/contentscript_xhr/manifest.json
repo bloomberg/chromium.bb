@@ -1,0 +1,19 @@
+{
+  "name": "Cross-domain XMLHttpRequest from a content script",
+  "version": "1.0.0",
+  "description": "Demonstrates a method to make a cross-domain XMLHttpRequest fetch from a content script.  This extension fetches the current trending topics from Twitter and inserts them in an overlay at the top of Google News.  Visit http://news.google.com to test this extension.",
+  "permissions": [
+    "http://search.twitter.com/*"
+  ],
+  "icons": {
+    "48" : "sample-48.png",
+    "128" : "sample-128.png"
+  },
+  "background_page" : "background.html",
+  "content_scripts": [
+    {
+      "matches": ["http://news.google.com/*"],
+      "js" : ["contentscript.js"]
+    }
+  ]
+}
