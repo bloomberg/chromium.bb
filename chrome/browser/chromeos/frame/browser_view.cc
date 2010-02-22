@@ -17,6 +17,7 @@
 #include "chrome/browser/chromeos/frame/panel_browser_view.h"
 #include "chrome/browser/chromeos/main_menu.h"
 #include "chrome/browser/chromeos/status/browser_status_area_view.h"
+#include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
 #include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/view_ids.h"
@@ -471,7 +472,10 @@ bool BrowserView::ShouldOpenButtonOptions(
 }
 
 void BrowserView::OpenButtonOptions(const views::View* button_view) const {
-  browser()->OpenSystemOptionsDialog();
+  if (button_view == status_area_->network_view())
+    browser()->OpenInternetOptionsDialog();
+  else
+    browser()->OpenSystemOptionsDialog();
 }
 
 bool BrowserView::IsButtonVisible(const views::View* button_view) const {

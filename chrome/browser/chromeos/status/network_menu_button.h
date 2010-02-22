@@ -24,6 +24,8 @@ class Canvas;
 
 namespace chromeos {
 
+class StatusAreaHost;
+
 // The network menu button in the status area.
 // This class will handle getting the wifi networks and populating the menu.
 // It will also handle the status icon changing and connecting to another
@@ -57,7 +59,7 @@ class NetworkMenuButton : public StatusAreaButton,
                           public PasswordDialogDelegate,
                           public NetworkLibrary::Observer {
  public:
-  explicit NetworkMenuButton(gfx::NativeWindow parent_window);
+  explicit NetworkMenuButton(StatusAreaHost* host);
   virtual ~NetworkMenuButton();
 
   // menus::MenuModel implementation.
@@ -106,6 +108,7 @@ class NetworkMenuButton : public StatusAreaButton,
     FLAG_ETHERNET          = 1 << 6,
     FLAG_WIFI              = 1 << 7,
     FLAG_CELLULAR          = 1 << 8,
+    FLAG_OPTIONS           = 1 << 9,
   };
 
   struct MenuItem {
@@ -154,11 +157,11 @@ class NetworkMenuButton : public StatusAreaButton,
   // The activated wifi network.
   WifiNetwork activated_wifi_network_;
 
+  // The status area host,
+  StatusAreaHost* host_;
+
   // The network menu.
   views::Menu2 network_menu_;
-
-  // Our parent window
-  gfx::NativeWindow parent_window_;
 
   // The throb animation that does the wifi connecting animation.
   ThrobAnimation animation_connecting_;

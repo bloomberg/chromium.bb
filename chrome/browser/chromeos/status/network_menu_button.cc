@@ -11,6 +11,7 @@
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/string_util.h"
+#include "chrome/browser/chromeos/status/status_area_host.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 #include "views/widget/widget.h"
@@ -25,10 +26,10 @@ namespace chromeos {
 const int NetworkMenuButton::kNumWifiImages = 9;
 const int NetworkMenuButton::kThrobDuration = 1000;
 
-NetworkMenuButton::NetworkMenuButton(gfx::NativeWindow parent_window)
+NetworkMenuButton::NetworkMenuButton(StatusAreaHost* host)
     : StatusAreaButton(this),
+      host_(host),
       ALLOW_THIS_IN_INITIALIZER_LIST(network_menu_(this)),
-      parent_window_(parent_window),
       ALLOW_THIS_IN_INITIALIZER_LIST(animation_connecting_(this)) {
   animation_connecting_.SetThrobDuration(kThrobDuration);
   animation_connecting_.SetTweenType(SlideAnimation::NONE);
@@ -88,7 +89,9 @@ void NetworkMenuButton::ActivatedAt(int index) {
 
   NetworkLibrary* cros = NetworkLibrary::Get();
 
-  if (menu_items_[index].flags & FLAG_TOGGLE_ETHERNET) {
+  if (menu_items_[index].flags & FLAG_OPTIONS) {
+    host_->OpenButtonOptions(this);
+  } else if (menu_items_[index].flags & FLAG_TOGGLE_ETHERNET) {
     cros->EnableEthernetNetworkDevice(!cros->ethernet_enabled());
   } else if (menu_items_[index].flags & FLAG_TOGGLE_WIFI) {
     cros->EnableWifiNetworkDevice(!cros->wifi_enabled());
@@ -111,14 +114,14 @@ void NetworkMenuButton::ActivatedAt(int index) {
     } else {
       PasswordDialogView* dialog = new PasswordDialogView(this,
          activated_wifi_network_.ssid);
-      views::Window* window = views::Window::CreateChromeWindow(parent_window_,
-          gfx::Rect(), dialog);
+      views::Window* window = views::Window::CreateChromeWindow(
+          host_->GetNativeWindow(), gfx::Rect(), dialog);
       // Draw the password dialog right below this button and right aligned.
       gfx::Size size = dialog->GetPreferredSize();
       gfx::Rect rect = bounds();
       gfx::Point point = gfx::Point(rect.width() - size.width(), rect.height());
       ConvertPointToScreen(this, &point);
-      window->SetBounds(gfx::Rect(point, size), parent_window_);
+      window->SetBounds(gfx::Rect(point, size), host_->GetNativeWindow());
       window->Show();
     }
   } else if (menu_items_[index].flags & FLAG_CELLULAR) {
@@ -432,6 +435,17 @@ void NetworkMenuButton::InitMenuItems() {
           l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR));
   menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
       SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_TOGGLE_CELLULAR));
+
+  if (host_->ShouldOpenButtonOptions(this)) {
+    // Separator.
+    menu_items_.push_back(MenuItem());
+
+    // Network settings.
+    label =
+        l10n_util::GetStringUTF16(IDS_STATUSBAR_NETWORK_OPEN_OPTIONS_DIALOG);
+    menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
+        SkBitmap(), WifiNetwork(), CellularNetwork(), FLAG_OPTIONS));
+  }
 
   // IP address
   if (cros->Connected()) {

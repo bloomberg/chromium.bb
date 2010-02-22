@@ -52,8 +52,7 @@ void StatusAreaView::Init() {
   AddChildView(power_view_);
 
   // Network.
-  network_view_ = new NetworkMenuButton(
-      host_->GetNativeWindow());
+  network_view_ = new NetworkMenuButton(host_);
   AddChildView(network_view_);
 }
 
