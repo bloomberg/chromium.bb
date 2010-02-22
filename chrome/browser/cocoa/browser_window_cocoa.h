@@ -12,8 +12,9 @@
 class Browser;
 @class BrowserWindowController;
 @class FindBarCocoaController;
-@class NSWindow;
+@class NSEvent;
 @class NSMenu;
+@class NSWindow;
 
 // An implementation of BrowserWindow for Cocoa. Bridges between C++ and
 // the Cocoa NSWindow. Cross-platform code will interact with this object when

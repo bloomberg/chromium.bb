@@ -5040,9 +5040,6 @@ Keep your key file in a safe place. You will need it to create new versions of y
           Block All Cookies
         </message>
       </if>
-      <message name="IDS_OPTIONS_COOKIES_SHOWCOOKIES_WEBSITE_PERMISSIONS" desc="The label of the 'Show Cookies and Website Permissions' button. Website Permissions means you can set permissions for individual websites, such as google.com can do this, yahoo.com can do that.">
-        Show cookies and website permissions
-      </message>
       <message name="IDS_OPTIONS_SAFEBROWSING_ENABLEPROTECTION" desc="The label of the 'Enable phishing and malware protection' checkbox">
         Enable phishing and malware protection
       </message>

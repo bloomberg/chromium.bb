@@ -2,13 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/cocoa/content_blocked_bubble_controller.h"
+
 #include "app/l10n_util.h"
 #include "base/logging.h"
 #include "base/mac_util.h"
 #include "base/string_util.h"
 #include "base/sys_string_conversions.h"
 #include "chrome/browser/blocked_popup_container.h"
-#import "chrome/browser/cocoa/content_blocked_bubble_controller.h"
+#import "chrome/browser/cocoa/content_settings_dialog_controller.h"
 #import "chrome/browser/cocoa/hyperlink_button_cell.h"
 #import "chrome/browser/cocoa/info_bubble_view.h"
 #include "chrome/browser/host_content_settings_map.h"
@@ -374,8 +376,12 @@ static NSString* ReplaceNSStringPlaceholders(NSString* formatString,
 }
 
 - (IBAction)manageBlocking:(id)sender {
-  // TODO(thakis): Implement, http://crbug.com/34894
-  NOTIMPLEMENTED();
+  if (tabContents_) {
+    tabContents_->delegate()->ShowContentSettingsWindow(settingsType_);
+  } else {
+    [ContentSettingsDialogController showContentSettingsForType:settingsType_
+                                                        profile:profile_];
+  }
 }
 
 - (void)popupLinkClicked:(id)sender {

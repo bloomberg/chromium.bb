@@ -1,16 +1,20 @@
-// Copyright (c) 2009-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import "chrome/browser/cocoa/clear_browsing_data_controller.h"
 
+#include "app/l10n_util.h"
 #include "base/mac_util.h"
 #include "base/scoped_nsobject.h"
 #include "base/singleton.h"
+#include "chrome/browser/browser.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/browsing_data_remover.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
 #include "chrome/common/pref_names.h"
+#include "grit/locale_settings.h"
 
 NSString* const kClearBrowsingDataControllerDidDelete =
     @"kClearBrowsingDataControllerDidDelete";
@@ -150,6 +154,18 @@ typedef std::map<Profile*, ClearBrowsingDataController*> ProfileControllerMap;
 // the modal session.
 - (IBAction)cancel:(id)sender {
   [self closeDialog];
+}
+
+// Called when the user clicks the "Flash Player storage settings" button.
+- (IBAction)openFlashPlayerSettings:(id)sender {
+  // The "Clear Data" dialog is app-modal on OS X. Hence, close it before
+  // opening a tab with flash settings.
+  [self closeDialog];
+
+  Browser* browser = Browser::Create(profile_);
+  browser->OpenURL(GURL(l10n_util::GetStringUTF8(IDS_FLASH_STORAGE_URL)),
+                   GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
+  browser->window()->Show();
 }
 
 - (void)closeDialog {

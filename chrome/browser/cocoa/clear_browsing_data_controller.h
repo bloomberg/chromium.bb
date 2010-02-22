@@ -1,4 +1,4 @@
-// Copyright (c) 2009-2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -58,6 +58,7 @@ extern NSString* const kClearBrowsingDataControllerRemoveMask;
 // IBActions for the dialog buttons
 - (IBAction)clearData:(id)sender;
 - (IBAction)cancel:(id)sender;
+- (IBAction)openFlashPlayerSettings:(id)sender;
 
 // Properties for bindings
 @property BOOL clearBrowsingHistory;

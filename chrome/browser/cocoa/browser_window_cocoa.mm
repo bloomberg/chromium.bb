@@ -2,6 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/cocoa/browser_window_cocoa.h"
+
 #include "app/l10n_util_mac.h"
 #include "base/gfx/rect.h"
 #include "base/keyboard_codes.h"
@@ -11,11 +13,11 @@
 #include "chrome/browser/bookmarks/bookmark_utils.h"
 #include "chrome/browser/browser_list.h"
 #import "chrome/browser/cocoa/bookmark_manager_controller.h"
-#include "chrome/browser/cocoa/browser_window_cocoa.h"
 #import "chrome/browser/cocoa/browser_window_controller.h"
 #import "chrome/browser/cocoa/bug_report_window_controller.h"
-#import "chrome/browser/cocoa/clear_browsing_data_controller.h"
 #import "chrome/browser/cocoa/chrome_browser_window.h"
+#import "chrome/browser/cocoa/clear_browsing_data_controller.h"
+#import "chrome/browser/cocoa/content_settings_dialog_controller.h"
 #import "chrome/browser/cocoa/download_shelf_controller.h"
 #import "chrome/browser/cocoa/html_dialog_window_controller.h"
 #import "chrome/browser/cocoa/import_settings_dialog.h"
@@ -317,9 +319,10 @@ void BrowserWindowCocoa::ShowRepostFormWarningDialog(
 }
 
 void BrowserWindowCocoa::ShowContentSettingsWindow(
-    ContentSettingsType content_type,
+    ContentSettingsType settings_type,
     Profile* profile) {
-  NOTIMPLEMENTED();
+  [ContentSettingsDialogController showContentSettingsForType:settings_type
+                                                      profile:profile];
 }
 
 void BrowserWindowCocoa::ShowProfileErrorDialog(int message_id) {

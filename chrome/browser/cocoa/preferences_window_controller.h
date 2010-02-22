@@ -10,7 +10,6 @@
 #include "chrome/browser/pref_member.h"
 
 class PersonalDataManagerObserver;
-@class CookiesWindowController;
 @class CustomHomePagesModel;
 @class FontLanguageSettingsController;
 class PrefObserverBridge;
@@ -94,12 +93,13 @@ class ProfileSyncService;
   // Under the hood panel
   IBOutlet NSView* underTheHoodContentView_;
   IBOutlet NSScrollView* underTheHoodScroller_;
+  IBOutlet NSButton* contentSettingsButton_;
+  IBOutlet NSButton* clearDataButton_;
   BooleanPrefMember alternateErrorPages_;
   BooleanPrefMember useSuggest_;
   BooleanPrefMember dnsPrefetch_;
   BooleanPrefMember safeBrowsing_;
   BooleanPrefMember metricsRecording_;
-  IntegerPrefMember cookieBehavior_;
   IBOutlet NSPathControl* downloadLocationControl_;
   IBOutlet NSButton* downloadLocationButton_;
   StringPrefMember defaultDownloadLocation_;
@@ -131,15 +131,15 @@ class ProfileSyncService;
 - (IBAction)showSavedPasswords:(id)sender;
 - (IBAction)showAutoFillSettings:(id)sender;
 - (IBAction)importData:(id)sender;
-- (IBAction)clearData:(id)sender;
 - (IBAction)resetThemeToDefault:(id)sender;
 - (IBAction)themesGallery:(id)sender;
 - (IBAction)doSyncAction:(id)sender;
 - (IBAction)doSyncReauthentication:(id)sender;
 
 // Under the hood
-- (IBAction)showCookies:(id)sender;
 - (IBAction)browseDownloadLocation:(id)sender;
+- (IBAction)clearData:(id)sender;
+- (IBAction)showContentSettings:(id)sender;
 - (IBAction)privacyLearnMore:(id)sender;
 - (IBAction)changeFontAndLanguageSettings:(id)sender;
 - (IBAction)showCertificates:(id)sender;

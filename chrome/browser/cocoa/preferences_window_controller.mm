@@ -5,6 +5,7 @@
 #import "chrome/browser/cocoa/preferences_window_controller.h"
 
 #include <algorithm>
+
 #include "app/l10n_util.h"
 #include "app/l10n_util_mac.h"
 #include "base/logging.h"
@@ -19,7 +20,7 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #import "chrome/browser/cocoa/clear_browsing_data_controller.h"
-#import "chrome/browser/cocoa/cookies_window_controller.h"
+#import "chrome/browser/cocoa/content_settings_dialog_controller.h"
 #import "chrome/browser/cocoa/custom_home_pages_model.h"
 #import "chrome/browser/cocoa/font_language_settings_controller.h"
 #import "chrome/browser/cocoa/import_settings_dialog.h"
@@ -311,8 +312,12 @@ void RemoveGroupFromView(NSView* view, NSArray* toRemove) {
 
 // Helper to tweak the layout of the "Under the Hood" content by autosizing all
 // the views and moving things up vertically.  Special case the two controls for
-// download location as they are horizontal, and should fill the row.
+// download location as they are horizontal, and should fill the row. Special
+// case "Content Settings" and "Clear browsing data" as they are horizontal as
+// well.
 CGFloat AutoSizeUnderTheHoodContent(NSView* view,
+                                    NSButton* contentSettingsButton,
+                                    NSButton* clearDataButton,
                                     NSPathControl* downloadLocationControl,
                                     NSButton* downloadLocationButton) {
   CGFloat verticalShift = 0.0;
@@ -329,6 +334,13 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
       [view setFrameOrigin:origin];
     }
     verticalShift += delta.height;
+
+    // "Content Settings" and "Clear Browsing Data" are horizontally aligned.
+    if (view == contentSettingsButton) {
+      NSPoint origin = [clearDataButton frame].origin;
+      origin.x += delta.width;
+      [clearDataButton setFrameOrigin:origin];
+    }
 
     // The Download Location controls go in a row with the button aligned to the
     // right edge and the path control using all the rest of the space.
@@ -377,7 +389,6 @@ CGFloat AutoSizeUnderTheHoodContent(NSView* view,
 - (void)setDnsPrefetch:(BOOL)value;
 - (void)setSafeBrowsing:(BOOL)value;
 - (void)setMetricsRecording:(BOOL)value;
-- (void)setCookieBehavior:(NSInteger)value;
 - (void)setAskForSaveLocation:(BOOL)value;
 - (void)displayPreferenceViewForPage:(OptionsPage)page
                              animate:(BOOL)animate;
@@ -716,6 +727,8 @@ void PersonalDataManagerObserver::ShowAutoFillDialog(
   // Now that Under the Hood is the right width, auto-size to the new width to
   // get the final height.
   verticalShift = AutoSizeUnderTheHoodContent(underTheHoodContentView_,
+                                              contentSettingsButton_,
+                                              clearDataButton_,
                                               downloadLocationControl_,
                                               downloadLocationButton_);
   [GTMUILocalizerAndLayoutTweaker
@@ -791,7 +804,6 @@ void PersonalDataManagerObserver::ShowAutoFillDialog(
     local = prefs_;
   metricsRecording_.Init(prefs::kMetricsReportingEnabled,
                          local, observer_.get());
-  cookieBehavior_.Init(prefs::kCookieBehavior, prefs_, observer_.get());
   defaultDownloadLocation_.Init(prefs::kDownloadDefaultDirectory, prefs_,
                                 observer_.get());
   askForSaveLocation_.Init(prefs::kPromptForDownload, prefs_, observer_.get());
@@ -1256,13 +1268,6 @@ const int kDisabledIndex = 1;
   [ImportSettingsDialogController showImportSettingsDialogForProfile:profile_];
 }
 
-// Called to clear user's browsing data. This puts up an application-modal
-// dialog to guide the user through clearing the data.
-- (IBAction)clearData:(id)sender {
-  [ClearBrowsingDataController
-      showClearBrowsingDialogForProfile:profile_];
-}
-
 - (IBAction)resetThemeToDefault:(id)sender {
   [self recordUserAction:"Options_ThemesReset"];
   profile_->ClearTheme();
@@ -1394,9 +1399,6 @@ const int kDisabledIndex = 1;
   else if (*prefName == prefs::kMetricsReportingEnabled) {
     [self setMetricsRecording:metricsRecording_.GetValue() ? YES : NO];
   }
-  else if (*prefName == prefs::kCookieBehavior) {
-    [self setCookieBehavior:cookieBehavior_.GetValue()];
-  }
   else if (*prefName == prefs::kPromptForDownload) {
     [self setAskForSaveLocation:askForSaveLocation_.GetValue() ? YES : NO];
   }
@@ -1415,20 +1417,6 @@ const int kDisabledIndex = 1;
   }
 }
 
-// Shows the cookies controller.
-- (IBAction)showCookies:(id)sender {
-  // The controller will clean itself up.
-  BrowsingDataDatabaseHelper* databaseHelper =
-      new BrowsingDataDatabaseHelper(profile_);
-  BrowsingDataLocalStorageHelper* storageHelper =
-      new BrowsingDataLocalStorageHelper(profile_);
-  CookiesWindowController* controller =
-      [[CookiesWindowController alloc] initWithProfile:profile_
-                                        databaseHelper:databaseHelper
-                                         storageHelper:storageHelper];
-  [controller attachSheetTo:[self window]];
-}
-
 // Bring up an open panel to allow the user to set a new downloads location.
 - (void)browseDownloadLocation:(id)sender {
   NSOpenPanel* panel = [NSOpenPanel openPanel];
@@ -1443,6 +1431,20 @@ const int kDisabledIndex = 1;
                   modalDelegate:self
                  didEndSelector:@selector(downloadPathPanelDidEnd:code:context:)
                     contextInfo:NULL];
+}
+
+// Called to clear user's browsing data. This puts up an application-modal
+// dialog to guide the user through clearing the data.
+- (IBAction)clearData:(id)sender {
+  [ClearBrowsingDataController
+      showClearBrowsingDialogForProfile:profile_];
+}
+
+// Opens the "Content Settings" dialog.
+- (IBAction)showContentSettings:(id)sender {
+  [ContentSettingsDialogController
+      showContentSettingsForType:CONTENT_SETTINGS_TYPE_DEFAULT
+                         profile:profile_];
 }
 
 - (IBAction)privacyLearnMore:(id)sender {
@@ -1562,17 +1564,6 @@ const int kDisabledIndex = 1;
   // TODO(pinkerton): windows shows a dialog here telling the user they need to
   // restart for this to take effect. http://crbug.com/34653
   metricsRecording_.SetValue(enabled);
-}
-
-// Returns the index of the cookie popup based on the preference.
-- (NSInteger)cookieBehavior {
-  return cookieBehavior_.GetValue();
-}
-
-// Sets the backend pref for whether or not to accept cookies based on |index|.
-- (void)setCookieBehavior:(NSInteger)index {
-  // TODO(darin): Remove everything else related to this setter.
-  // http://crbug.com/34656
 }
 
 - (NSURL*)defaultDownloadLocation {
