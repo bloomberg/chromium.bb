@@ -37,6 +37,8 @@
             'python', '<(_inputs)', '<@(_outputs)',
           ],
           'process_outputs_as_sources': 1,
+          # Allows the test to run without hermetic cygwin on windows.
+          'msvs_cygwin_shell': 0,
         },
       ],
     },
@@ -63,6 +65,8 @@
           'action': [
             'python', '<(_inputs)', 'actions-out/action-counter.txt', '2',
           ],
+          # Allows the test to run without hermetic cygwin on windows.
+          'msvs_cygwin_shell': 0,
         },
       ],
     },

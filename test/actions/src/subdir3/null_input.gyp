@@ -20,6 +20,8 @@
             # TODO:  we can't just use <(_outputs) here?!
             'python', 'generate_main.py', '<(INTERMEDIATE_DIR)/main.c',
           ],
+          # Allows the test to run without hermetic cygwin on windows.
+          'msvs_cygwin_shell': 0,
         },
       ],
     },

@@ -29,6 +29,8 @@
           'action': [
             'python', 'subdir1/counter.py', '<(_outputs)',
           ],
+          # Allows the test to run without hermetic cygwin on windows.
+          'msvs_cygwin_shell': 0,
         },
       ],
     },
