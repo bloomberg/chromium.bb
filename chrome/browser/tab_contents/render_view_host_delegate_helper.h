@@ -30,11 +30,11 @@ class RenderViewHostDelegateViewHelper {
  public:
   RenderViewHostDelegateViewHelper() {}
 
-  virtual void CreateNewWindow(int route_id,
-                               Profile* profile,
-                               SiteInstance* site,
-                               DOMUITypeID domui_type,
-                               TabContents* old_tab_contents);
+  virtual TabContents* CreateNewWindow(int route_id,
+                                       Profile* profile,
+                                       SiteInstance* site,
+                                       DOMUITypeID domui_type,
+                                       TabContents* old_tab_contents);
   virtual RenderWidgetHostView* CreateNewWidget(int route_id, bool activatable,
                                                 RenderProcessHost* process);
   virtual TabContents* GetCreatedWindow(int route_id);

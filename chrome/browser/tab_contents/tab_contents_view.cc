@@ -31,9 +31,12 @@ void TabContentsView::UpdatePreferredSize(const gfx::Size& pref_size) {
 }
 
 void TabContentsView::CreateNewWindow(int route_id) {
-  delegate_view_helper_.CreateNewWindow(
+  TabContents* new_contents = delegate_view_helper_.CreateNewWindow(
       route_id, tab_contents_->profile(), tab_contents_->GetSiteInstance(),
       DOMUIFactory::GetDOMUIType(tab_contents_->GetURL()), tab_contents_);
+
+  if (tab_contents_->delegate())
+    tab_contents_->delegate()->TabContentsCreated(new_contents);
 }
 
 void TabContentsView::CreateNewWidget(int route_id, bool activatable) {

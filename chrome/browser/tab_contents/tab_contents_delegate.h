@@ -278,6 +278,10 @@ class TabContentsDelegate {
   // Returns the native window framing the view containing the tab contents.
   virtual gfx::NativeWindow GetFrameNativeWindow() { return NULL; }
 
+  // Notifies the delegate about the creation of a new TabContents. This
+  // typically happens when popups are created.
+  virtual void TabContentsCreated(TabContents* new_contents) {}
+
  protected:
   ~TabContentsDelegate() {}
 };

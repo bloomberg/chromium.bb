@@ -196,6 +196,8 @@ class ExternalTabContainer : public TabContentsDelegate,
   // InfoBarContainer::Delegate overrides
   virtual void InfoBarSizeChanged(bool is_animating);
 
+  virtual void TabContentsCreated(TabContents* new_contents);
+
  protected:
   // Overridden from views::WidgetWin:
   virtual LRESULT OnCreate(LPCREATESTRUCT create_struct);

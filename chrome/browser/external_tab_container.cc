@@ -163,8 +163,12 @@ void ExternalTabContainer::Uninitialize() {
   registrar_.RemoveAll();
   if (tab_contents_) {
     RenderViewHost* rvh = tab_contents_->render_view_host();
-    if (rvh && DevToolsManager::GetInstance()) {
-      DevToolsManager::GetInstance()->UnregisterDevToolsClientHostFor(rvh);
+    if (rvh) {
+      if (DevToolsManager::GetInstance())
+        DevToolsManager::GetInstance()->UnregisterDevToolsClientHostFor(rvh);
+
+      AutomationResourceMessageFilter::UnRegisterRenderView(
+          rvh->process()->id(), rvh->routing_id());
     }
 
     NotificationService::current()->Notify(
@@ -351,17 +355,6 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
 
     new_container->set_pending(true);
 
-    RenderViewHost* rvh = new_contents->render_view_host();
-    DCHECK(rvh != NULL);
-    if (rvh) {
-      // Register this render view as a pending render view, i.e. any network
-      // requests initiated by this render view would be serviced when the
-      // external host connects to the new external tab instance.
-      AutomationResourceMessageFilter::RegisterRenderView(
-          rvh->process()->id(), rvh->routing_id(),
-          tab_handle_, automation_resource_message_filter_,
-          true);
-    }
     automation_->Send(new AutomationMsg_AttachExternalTab(
         0,
         tab_handle_,
@@ -369,6 +362,20 @@ void ExternalTabContainer::AddNewContents(TabContents* source,
         disposition));
   } else {
     NOTREACHED();
+  }
+}
+
+void ExternalTabContainer::TabContentsCreated(TabContents* new_contents) {
+  RenderViewHost* rvh = new_contents->render_view_host();
+  DCHECK(rvh != NULL);
+  if (rvh) {
+    // Register this render view as a pending render view, i.e. any network
+    // requests initiated by this render view would be serviced when the
+    // external host connects to the new external tab instance.
+    AutomationResourceMessageFilter::RegisterRenderView(
+        rvh->process()->id(), rvh->routing_id(),
+        tab_handle_, automation_resource_message_filter_,
+        true);
   }
 }
 

@@ -20,7 +20,7 @@
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 
-void RenderViewHostDelegateViewHelper::CreateNewWindow(
+TabContents* RenderViewHostDelegateViewHelper::CreateNewWindow(
     int route_id,
     Profile* profile,
     SiteInstance* site,
@@ -42,6 +42,7 @@ void RenderViewHostDelegateViewHelper::CreateNewWindow(
 
   // Save the created window associated with the route so we can show it later.
   pending_contents_[route_id] = new_contents;
+  return new_contents;
 }
 
 RenderWidgetHostView* RenderViewHostDelegateViewHelper::CreateNewWidget(
