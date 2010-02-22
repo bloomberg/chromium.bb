@@ -130,7 +130,7 @@
         'chrome_exe_target': 1,
       },
       'conditions': [
-        ['OS=="linux" or OS=="freebsd"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
           'actions': [
             {
               'action_name': 'manpage',

@@ -2232,7 +2232,7 @@
             }],
           ],
         }],
-        ['OS=="freebsd"', {
+        ['OS=="freebsd" or OS=="openbsd"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
             '../build/linux/system.gyp:nss',
