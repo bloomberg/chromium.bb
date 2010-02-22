@@ -1,4 +1,4 @@
-LIBRARY   npo3dautoplugin
+LIBRARY   @@@PluginNpapiFilename@@@
 
 EXPORTS
   NP_GetEntryPoints   @1

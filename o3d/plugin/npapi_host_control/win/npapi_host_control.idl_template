@@ -73,7 +73,7 @@ interface INPObjectProxy : IDispatchEx {
 };
 
 [
-  uuid(D4F6E31C-E952-48FE-9833-6AE308BD79C6),
+  uuid(@@@PluginActiveXTypeLibClsid@@@),
   version(1.0),
   helpstring("npapi_host2 1.0 Type Library")
 ]
@@ -81,7 +81,7 @@ library npapi_host_controlLib
 {
   importlib("stdole2.tlb");
   [
-    uuid(9666A772-407E-4F90-BC37-982E8160EB2D),
+    uuid(@@@PluginActiveXHostControlClsid@@@),
     //control,
     helpstring("HostControl Class")
   ]

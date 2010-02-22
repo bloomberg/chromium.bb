@@ -10,6 +10,6 @@ resource 'STR#' (127) { {
 } };
 
 resource 'STR#' (128) { {
-    "@@@PluginMimeType@@@",
+    "@@@PluginNpapiMimeType@@@",
     ""
 } };

@@ -8,12 +8,18 @@
   },
   'includes': [
     '../build/common.gypi',
+    '../plugin/branding.gypi',
   ],
   'target_defaults': {
     'include_dirs': [
       '..',
       '../..',
       '../../breakpad/src',
+    ],
+    'defines': [
+      'O3D_PLUGIN_INSTALLDIR_CSIDL=<(plugin_installdir_csidl)',
+      'O3D_PLUGIN_VENDOR_DIRECTORY="<(plugin_vendor_directory)"',
+      'O3D_PLUGIN_PRODUCT_DIRECTORY="<(plugin_product_directory)"',
     ],
   },
   'conditions': [

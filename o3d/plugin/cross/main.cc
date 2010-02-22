@@ -170,7 +170,7 @@ NPError EXPORT_SYMBOL OSCALL NP_GetEntryPoints(NPPluginFuncs *pluginFuncs) {
 }
 
 char* NP_GetMIMEDescription(void) {
-  return const_cast<char*>(O3D_PLUGIN_MIME_TYPE "::O3D MIME");
+  return const_cast<char*>(O3D_PLUGIN_NPAPI_MIMETYPE "::O3D MIME");
 }
 
 }  // namespace o3d / extern "C"

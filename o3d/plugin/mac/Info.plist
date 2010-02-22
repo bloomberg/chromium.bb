@@ -30,7 +30,7 @@
 	<string>@@@PluginDescription@@@</string>
 	<key>WebPluginMIMETypes</key>
 	<dict>
-		<key>@@@PluginMimeType@@@</key>
+		<key>@@@PluginNpapiMimeType@@@</key>
 		<dict>
 			<key>WebPluginTypeDescription</key>
 			<string>@@@PluginName@@@ Type</string>

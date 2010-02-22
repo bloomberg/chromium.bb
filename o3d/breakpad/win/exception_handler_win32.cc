@@ -148,13 +148,15 @@ static bool MinidumpCallback(const wchar_t *minidump_folder,
 
   HRESULT result = SHGetFolderPath(
       NULL,
-      CSIDL_APPDATA,
+      O3D_PLUGIN_INSTALLDIR_CSIDL,
       NULL,
       0,
       reporterPath);
 
   if (result == 0) {
-    PathAppend(reporterPath, _T("Google\\O3D\\reporter.exe"));
+    PathAppend(reporterPath,
+      _T(O3D_PLUGIN_VENDOR_DIRECTORY) _T("\\")
+      _T(O3D_PLUGIN_PRODUCT_DIRECTORY) _T("\\reporter.exe"));
   }
 
   if (PathFileExists(reporterPath)) {

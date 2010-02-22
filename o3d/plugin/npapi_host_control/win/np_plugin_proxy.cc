@@ -44,9 +44,12 @@
 
 namespace {
 
-const wchar_t kPluginName[] = L"npo3dautoplugin.dll";
+#define WIDE(s) WIDE2(s)
+#define WIDE2(s) L##s
+
+const wchar_t kPluginName[] = WIDE(O3D_PLUGIN_NPAPI_FILENAME) L".dll";
 const wchar_t kAppDataPluginLocation[] =
-    L"Mozilla\\plugins\\npo3dautoplugin.dll";
+    L"Mozilla\\plugins\\" WIDE(O3D_PLUGIN_NPAPI_FILENAME) L".dll";
 
 // Returns the path to the O3D plug-in located in the current user's
 // Application Data directory.  Returns NULL on failure.
@@ -83,7 +86,7 @@ const wchar_t* GetMozillaPluginPath() {
 }
 
 const wchar_t kProgramFilesPluginLocation[] =
-    L"Mozilla Firefox\\plugins\\npo3dautoplugin.dll";
+    L"Mozilla Firefox\\plugins\\" WIDE(O3D_PLUGIN_NPAPI_FILENAME) L".dll";
 
 // Returns the path to the O3D plug-in located in the Program
 // Files directory.  Returns NULL on failure.

@@ -1,0 +1,42 @@
+HKCU
+{
+  Software
+  {
+    Classes
+    {
+      @@@PluginActiveXHostControlName@@@.O3DHostControl.1 = s 'O3DHostControl Class'
+      {
+        CLSID = s '{@@@PluginActiveXHostControlClsid@@@}'
+        'Insertable'
+      }
+      @@@PluginActiveXHostControlName@@@.O3DHostControl = s 'O3DHostControl Class'
+      {
+        CLSID = s '{@@@PluginActiveXHostControlClsid@@@}'
+        CurVer = s '@@@PluginActiveXHostControlName@@@.O3DHostControl.1'
+      }
+      NoRemove CLSID
+      {
+        ForceRemove {@@@PluginActiveXHostControlClsid@@@} = s 'O3DHostControl Class'
+        {
+          ProgID = s '@@@PluginActiveXHostControlName@@@.O3DHostControl.1'
+          VersionIndependentProgID = s '@@@PluginActiveXHostControlName@@@.O3DHostControl'
+          ForceRemove 'Programmable'
+          InprocServer32 = s '%MODULE%'
+          {
+            val ThreadingModel = s 'Apartment'
+          }
+          val AppID = s '%APPID%'
+          ForceRemove 'Control'
+          ForceRemove 'Insertable'
+          ForceRemove 'ToolboxBitmap32' = s '%MODULE%, 102'
+          'MiscStatus' = s '0'
+          {
+            '1' = s '%OLEMISC%'
+          }
+          'TypeLib' = s '{@@@PluginActiveXTypeLibClsid@@@}'
+          'Version' = s '1.0'
+        }
+      }
+    }
+  }
+}

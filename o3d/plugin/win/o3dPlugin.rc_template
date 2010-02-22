@@ -70,15 +70,15 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             // This value must not change format as it is used by javascript
-            // to find the plugin. See o3d/main.scons
+            // to find the plugin.
             VALUE "FileDescription", "@@@PluginDescription@@@"
             VALUE "FileVersion", "@@@ProductVersionCommas@@@"
-            VALUE "InternalName", "npo3dautoplugin"
+            VALUE "InternalName", "@@@PluginNpapiFilename@@@"
             VALUE "LegalCopyright", "Copyright (C) 2007"
-            VALUE "MIMEType", "@@@PluginMimeType@@@"
-            VALUE "OriginalFilename", "npo3dautoplugin.dll"
+            VALUE "MIMEType", "@@@PluginNpapiMimeType@@@"
+            VALUE "OriginalFilename", "@@@PluginNpapiFilename@@@.dll"
             // This value must not change as it is used by javascript
-            // to find the plugin. See o3d/main.scons
+            // to find the plugin.
             VALUE "ProductName", "@@@PluginName@@@"
             VALUE "ProductVersion", "@@@ProductVersionCommas@@@"
         END

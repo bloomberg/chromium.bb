@@ -104,7 +104,7 @@ bool OpenDriverBlacklistFile(std::ifstream *input_file) {
   TCHAR app_data_path[MAX_PATH];
   HRESULT result = SHGetFolderPath(
       NULL,
-      CSIDL_APPDATA,
+      O3D_PLUGIN_INSTALLDIR_CSIDL,
       NULL,
       0,
       app_data_path);
@@ -113,7 +113,9 @@ bool OpenDriverBlacklistFile(std::ifstream *input_file) {
     return false;
   }
 
-  PathAppend(app_data_path, _T("Google\\O3D\\driver_blacklist.txt"));
+  PathAppend(app_data_path,
+      _T(O3D_PLUGIN_VENDOR_DIRECTORY) _T("\\")
+      _T(O3D_PLUGIN_PRODUCT_DIRECTORY) _T("\\driver_blacklist.txt"));
   if (!PathFileExists(app_data_path)) {
     return false;
   }

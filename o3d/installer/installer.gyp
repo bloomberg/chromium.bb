@@ -8,33 +8,44 @@
   },
   'includes': [
     '../build/common.gypi',
+    '../plugin/branding.gypi',
   ],
   'targets': [
     {
       'target_name': 'installer',
       'type': 'none',
       'conditions': [
-        ['OS=="win"',
+        # We suppress building the installers for third parties using custom
+        # branding, because they contain a lot of hard-coded logic that assumes
+        # the official branding. A rebranded build must instead be shipped
+        # as part of some third-party's own installer.
+        ['<(plugin_rebranded) == 0',
           {
-            'dependencies': [
-              'win/installer.gyp:installer',
-              'win/installer.gyp:extras_installer',
+          'conditions': [
+            ['OS=="win"',
+              {
+                'dependencies': [
+                  'win/installer.gyp:installer',
+                  'win/installer.gyp:extras_installer',
+                ],
+              },
             ],
-          },
-        ],
-        ['OS=="mac"',
-          {
-            'dependencies': [
-              'mac/installer.gyp:disk_image',
+            ['OS=="mac"',
+              {
+                'dependencies': [
+                  'mac/installer.gyp:disk_image',
+                ],
+              },
             ],
-          },
-        ],
-        ['OS=="linux"',
-          {
-            'dependencies': [
-              'linux/installer.gyp:installer',
+            ['OS=="linux"',
+              {
+                'dependencies': [
+                  'linux/installer.gyp:installer',
+                ],
+              },
             ],
-          },
+          ],
+          }
         ],
       ],
     },
