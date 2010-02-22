@@ -556,9 +556,13 @@ bool TabStripModel::IsContextMenuCommandEnabled(
       } else {
         return false;
       }
-    case CommandCloseOtherTabs:
+    case CommandCloseOtherTabs: {
+      int mini_tab_count = IndexOfFirstNonMiniTab();
+          int non_mini_tab_count = count() - mini_tab_count;
       // Close other doesn't effect mini-tabs.
-      return count() > 1 && count() > IndexOfFirstNonMiniTab();
+      return non_mini_tab_count > 1 ||
+          (non_mini_tab_count == 1 && context_index != mini_tab_count);
+    }
     case CommandCloseTabsToRight:
       // Close doesn't effect mini-tabs.
       return count() != IndexOfFirstNonMiniTab() &&
