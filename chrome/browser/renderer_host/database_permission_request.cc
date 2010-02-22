@@ -59,6 +59,7 @@ void DatabasePermissionRequest::RequestPermission() {
                     host_content_settings_map_, url_, database_name_, this);
 #else
   // TODO(jorlow): Enable prompting for other ports.
+  NOTIMPLEMENTED();
   BlockSiteData();
 #endif
 }

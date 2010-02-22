@@ -50,6 +50,7 @@ void DOMStoragePermissionRequest::PromptUser(
                         request->key_, request->value_, request);
 #else
   // TODO(darin): Enable prompting for other ports.
+  NOTIMPLEMENTED();
   request->SendResponse(CONTENT_SETTING_BLOCK);
 #endif
 }

@@ -180,6 +180,7 @@ void ChromeCookiePolicy::PromptForSetCookie(const GURL& url,
                   new PromptDelegate(this, host));
 #else
   // TODO(darin): Enable prompting for other ports.
+  NOTIMPLEMENTED();
   DidPromptForSetCookie(host, net::ERR_ACCESS_DENIED);
 #endif
 }

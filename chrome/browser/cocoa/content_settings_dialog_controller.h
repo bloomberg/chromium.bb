@@ -14,8 +14,10 @@ class Profile;
 // settings for several content setting types.
 @interface ContentSettingsDialogController
     : NSWindowController<NSWindowDelegate> {
+ @private
   Profile* profile_;  // weak
   IntegerPrefMember lastSelectedTab_;
+  BooleanPrefMember clearSiteDataOnExit_;
 }
 
 // Show the content settings dialog associated with the given profile (or the
@@ -25,7 +27,7 @@ class Profile;
 +(id)showContentSettingsForType:(ContentSettingsType)settingsType
                         profile:(Profile*)profile;
 
-// Shows the cookies controller.
 - (IBAction)showCookies:(id)sender;
+- (IBAction)openFlashPlayerSettings:(id)sender;
 
 @end

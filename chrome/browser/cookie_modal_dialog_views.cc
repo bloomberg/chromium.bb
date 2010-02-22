@@ -43,6 +43,7 @@ NativeDialog CookiePromptModalDialog::CreateNativeDialog() {
                               tab_contents_->GetMessageBoxRootWindow(),
                               tab_contents_->profile());
 #else
+  NOTIMPLEMENTED();
   return NULL;
 #endif
 }
