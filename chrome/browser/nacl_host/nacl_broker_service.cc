@@ -39,11 +39,12 @@ bool NaClBrokerService::StartBroker() {
 
 bool NaClBrokerService::LaunchLoader(NaClProcessHost* nacl_process_host,
                                      const std::wstring& loader_channel_id) {
+  // Add task to the list
+  pending_launches_[loader_channel_id] = nacl_process_host;
   if (broker_started_) {
+    // If the broker is not ready yet
+    // we will call LaunchLoader in OnBrokerStarted
     broker_host_->LaunchLoader(loader_channel_id);
-  } else {
-    // Add task to the list
-    pending_launches_[loader_channel_id] = nacl_process_host;
   }
   return true;
 }
