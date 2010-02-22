@@ -6391,8 +6391,11 @@ Keep your key file in a safe place. You will need it to create new versions of y
         <message name="IDS_STOP_MENU_MAC" desc="The Mac menu item stop in the view menu.">
           Stop
         </message>
-        <message name="IDS_RELOAD_MENU_MAC" desc="The Mac menu item reload in the view menu.">
+        <message name="IDS_RELOAD_MENU_MAC" desc="The Mac menu item to reload the current page in the view menu.">
           Reload This Page
+        </message>
+        <message name="IDS_RELOAD_IGNORING_CACHE_MENU_MAC" desc="The Mac menu item to force reload the current page (ignoring cache) in the view menu.">
+          Force Reload This Page
         </message>
         <message name="IDS_FULLSCREEN_MAC" desc="The Mac menu item to go into fullscreen mode in the view menu.">
           Full Screen
