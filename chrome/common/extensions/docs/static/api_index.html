@@ -20,45 +20,11 @@ Here are the supported chrome.* APIs:
 <h2 id="experimental">Experimental APIs</h2>
 
 <p>
-We'd like your <a href="http://groups.google.com/a/chromium.org/group/chromium-extensions/topics">feedback</a>
-on the following experimental APIs:
+Google Chrome also has some
+<a href="http://code.google.com/chrome/extensions/dev/experimental.html">experimental APIs</a>,
+which give you access to
+functionality such as process information and history.
 </p>
-
-<ul>
-  <li jsselect="experimentalAPIs();"><a jsvalues=".href: $this + '.html'" jscontent="$this" href="experimental.history.html" js>experimental.history</a></li>
-</ul>
-
-<p class="caution">
-<b>Caution:</b>
-Don't depend on these experimental APIs.
-They might disappear,
-and they <em>will</em> change.
-Also, the extension gallery doesn't allow you to
-upload extensions that use experimental APIs.
-</p>
-
-<p>
-To use an experimental API, you must specify the "experimental"
-<a href="manifest.html#permissions">permission</a>
-in your extension's manifest, like this:
-</p>
-
-<pre>
-"permissions": [
-  <b>"experimental"</b>,
-  ...
-],
-</pre>
-
-<p>
-You must also specify the <b>--enable-experimental-extension-apis</b> flag
-when you launch the browser. On Windows, you can do this by modifying
-the properties of the shortcut that you use to launch Google Chrome.
-For example:
-</p>
-
-<pre>
-<em>path_to_chrome.exe</em> <b>--enable-experimental-extension-apis</b></pre>
 
 <h2 id="conventions">API conventions</h2>
 

@@ -38,7 +38,7 @@ They <b>cannot</b>:
     Use variables or functions defined by web pages or by other content scripts
   </li>
   <li>
-    Make cross-site XMLHttpRequests
+    Make <a href="xhr.html">cross-site XMLHttpRequests</a>
   </li>
 </ul>
 
@@ -273,10 +273,14 @@ document.getElementById("someImage").src = imgURL;
 <h2 id="examples"> Examples </h2>
 
 <p>
-You can find simple examples of communication via messages in the
+The 
+<a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/howto/contentscript_xhr">contentscript_xhr</a> example
+shows how an extension can perform
+cross-site requests for its content script.
+You can find other simple examples of communication via messages in the
 <a href="http://src.chromium.org/viewvc/chrome/trunk/src/chrome/common/extensions/docs/examples/api/messaging/">examples/api/messaging</a>
 directory.
-For other examples and for help in viewing the source code, see
+For more examples and for help in viewing the source code, see
 <a href="samples.html">Samples</a>.
 </p>
 
