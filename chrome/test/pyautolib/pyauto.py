@@ -78,3 +78,15 @@ class PyUITest(PyUITestSuite, unittest.TestCase):
     self.SetUp()     # Open a browser window
     unittest.TestCase.run(self, result)
     self.TearDown()  # Destroy the browser window
+
+  def GetState(self):
+    """Get a state dictionary.
+
+    The state dictionary contains properties of windows and tabs. Note that
+    it's a snapshot so you need to fetch a new state everytime you expect a
+    change.
+    """
+    out = {}
+    out['user_data_dir'] = self.user_data_dir().value()
+    out['browser_running'] = self.IsBrowserRunning()
+    return out
