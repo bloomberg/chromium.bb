@@ -93,6 +93,8 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
    public:
     virtual WebKit::WebString getFontFamilyForCharacters(
         const WebKit::WebUChar* characters, size_t numCharacters);
+    virtual void getRenderStyleForStrike(
+        const char* family, int sizeAndStyle, WebKit::WebFontRenderStyle* out);
 
    private:
     // WebKit likes to ask us for the correct font family to use for a set of
