@@ -61,7 +61,11 @@ cr.define('bmm', function() {
         cr.dispatchSimpleEvent(this, 'invalidId');
         return;
       }
-      listLookup = {};
+      // Remove all fields without recreating the object since other code
+      // references it.
+      for (var id in listLookup){
+        delete listLookup[id];
+      }
       this.clear();
       var showFolder = this.showFolder();
       items.forEach(function(item) {

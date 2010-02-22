@@ -9,22 +9,6 @@ found in the LICENSE file.
 
 This is work in progress:
 
-i18n: Expose a chrome.experimental.bookmarkManager.getLocalStrings
-
-import/export: Expose in experimental extension API.
-
-Internal DnD: Buggy when dragging multiple items (the order of the dropped items
-is not correct.
-
-External DnD: Chrome doesn't follow HTML5 and it limits the data types to text
-and a single URL. Fixing Chrome is unreasonable given our current time frame.
-There are two options here. Disable external DnD or expose enough hooks in the
-experimental bookmarks manager extension API.
-
-Clipboard: Once again Chrome does not correctly implement HTML5 and it only
-allows text and url. We can either disable the clipboard actions, only allow
-internal clipboard or expose the hooks in the extension api.
-
 Favicons: chrome-extension: is not allowed to access chrome://favicon. We need
 to whitelist it or expose a way to get the data URI for the favicon (slow and
 sucky).
@@ -67,7 +51,6 @@ html, body {
   margin: 0;
   width: 100%;
   height: 100%;
-  /*-webkit-user-select: none;*/
   cursor: default;
   font: 13px arial;
 }
@@ -453,9 +436,6 @@ tree.addEventListener('change', function() {
   navigateTo(tree.selectedItem.bookmarkId);
 });
 
-</script>
-<script>
-
 /**
  * Navigates to a bookmark ID.
  * @param {string} id The ID to navigate to.
@@ -677,14 +657,11 @@ tree.addEventListener('load', function(e) {
 tree.buildTree();
 addBookmarkModelListeners();
 
-</script>
-<script>
-
 var dnd = {
+  DND_EFFECT_COPY: 'copy',
+  DND_EFFECT_MOVE: cr.isMac ? 'move' : 'copy', // http://crbug.com/14654
 
-  DND_EFFECT: cr.isMac ? 'move' : 'copy', // http://crbug.com/14654
-
-  dragBookmarkNodes: [],
+  dragData: null,
 
   getBookmarkElement: function(el) {
     while (el && !el.bookmarkNode) {
@@ -699,17 +676,24 @@ var dnd = {
     return (list.isRecent() || list.isSearch()) && list.contains(overElement);
   },
 
-  checkEvery_: function(f, dragBookmarkNodes, overBookmarkNode, overElement) {
-    return dragBookmarkNodes.every(function(dragBookmarkNode) {
-      return f.call(this, dragBookmarkNode, overBookmarkNode, overElement);
+  checkEvery_: function(f, overBookmarkNode, overElement) {
+    return this.dragData.elements.every(function(element) {
+      return f.call(this, element, overBookmarkNode, overElement);
     }, this);
+  },
+
+  /**
+   * @return {boolean} Whether we are currently dragging any folders.
+   */
+  isDraggingFolders: function() {
+    return !!this.dragData && this.dragData.elements.some(function(node) {
+      return !node.url;
+    });
   },
 
   /**
    * This is a first pass wether we can drop the dragged items.
    *
-   * @param {!Array.<BookmarkTreeNode>} dragBookmarkNodes The bookmarks that are
-   *     currently being dragged.
    * @param {!BookmarkTreeNode} overBookmarkNode The bookmark that we are
    *     currently dragging over.
    * @param {!HTMLElement} overElement The element that we are currently
@@ -718,27 +702,32 @@ var dnd = {
    *     the items. If it returns true we still have to call canDropOn,
    *     canDropAbove and canDropBelow.
    */
-  canDrop: function(dragBookmarkNodes, overBookmarkNode, overElement) {
-    return this.checkEvery_(this.canDrop_, dragBookmarkNodes,
-                            overBookmarkNode, overElement);
+  canDrop: function(overBookmarkNode, overElement) {
+    var dragData = this.dragData;
+    if (!dragData)
+      return false;
+    if (!dragData.sameProfile)
+      return true;
+
+    return this.checkEvery_(this.canDrop_, overBookmarkNode, overElement);
   },
 
   /**
    * Helper for canDrop that only checks one bookmark node.
    * @private
    */
-  canDrop_: function(dragBookmarkNode, overBookmarkNode, overElement) {
-    if (overBookmarkNode.id == dragBookmarkNode.id)
+  canDrop_: function(dragNode, overBookmarkNode, overElement) {
+    var dragId = dragNode.id;
+
+    if (overBookmarkNode.id == dragId)
       return false;
 
     if (this.isOverRecentOrSearch(overElement))
       return false;
 
-    if (dragBookmarkNode.id == overBookmarkNode.id)
-      return false;
-
     // If we are dragging a folder we cannot drop it on any of its descendants
-    if (bmm.isFolder(dragBookmarkNode) &&
+    var dragBookmarkNode = bmm.treeLookup[dragId];
+    if (dragBookmarkNode && bmm.isFolder(dragBookmarkNode) &&
         bmm.contains(dragBookmarkNode, overBookmarkNode)) {
       return false;
     }
@@ -749,8 +738,6 @@ var dnd = {
   /**
    * Whether we can drop the dragged items above the drop target.
    *
-   * @param {!Array.<BookmarkTreeNode>} dragBookmarkNodes The bookmarks that are
-   *     currently being dragged.
    * @param {!BookmarkTreeNode} overBookmarkNode The bookmark that we are
    *     currently dragging over.
    * @param {!HTMLElement} overElement The element that we are currently
@@ -758,32 +745,37 @@ var dnd = {
    * @return {boolean} Whether we can drop the dragged items above the drop
    *     target.
    */
-  canDropAbove: function(dragBookmarkNodes, overBookmarkNode, overElement) {
-    return this.checkEvery_(this.canDropAbove_, dragBookmarkNodes,
-                            overBookmarkNode, overElement);
-  },
-
-  /**
-   * Helper for canDropAbove that only checks one bookmark node.
-   * @private
-   */
-  canDropAbove_: function(dragBookmarkNode, overBookmarkNode, overElement) {
+  canDropAbove: function(overBookmarkNode, overElement) {
     if (overElement instanceof BookmarkList)
-      return false;
-
-    // If dragBookmarkNode is a non folder and overElement is a tree item we
-    // cannot drop it above or below.
-    if (!bmm.isFolder(dragBookmarkNode) && overElement instanceof TreeItem)
       return false;
 
     // We cannot drop between Bookmarks bar and Other bookmarks
     if (overBookmarkNode.parentId == ROOT_ID)
       return false;
 
+    var isOverTreeItem = overElement instanceof TreeItem;
+
+    // We can only drop between items in the tree if we have any folders.
+    if (isOverTreeItem && !this.isDraggingFolders())
+      return false;
+
+    if (!this.dragData.sameProfile)
+      return this.isDraggingFolders() || !isOverTreeItem;
+
+    return this.checkEvery_(this.canDropAbove_, overBookmarkNode, overElement);
+  },
+
+  /**
+   * Helper for canDropAbove that only checks one bookmark node.
+   * @private
+   */
+  canDropAbove_: function(dragNode, overBookmarkNode, overElement) {
+    var dragId = dragNode.id;
+
     // We cannot drop above if the item below is already in the drag source
     var previousElement = overElement.previousElementSibling;
     if (previousElement &&
-        previousElement.bookmarkNode.id == dragBookmarkNode.id)
+        previousElement.bookmarkId == dragId)
       return false;
 
     return true;
@@ -792,8 +784,6 @@ var dnd = {
   /**
    * Whether we can drop the dragged items below the drop target.
    *
-   * @param {!Array.<BookmarkTreeNode>} dragBookmarkNodes The bookmarks that are
-   *     currently being dragged.
    * @param {!BookmarkTreeNode} overBookmarkNode The bookmark that we are
    *     currently dragging over.
    * @param {!HTMLElement} overElement The element that we are currently
@@ -801,37 +791,42 @@ var dnd = {
    * @return {boolean} Whether we can drop the dragged items below the drop
    *     target.
    */
-  canDropBelow: function(dragBookmarkNodes, overBookmarkNode, overElement) {
-    return this.checkEvery_(this.canDropBelow_, dragBookmarkNodes,
-                            overBookmarkNode, overElement);
-  },
-
-  /**
-   * Helper for canDropBelow that only checks one bookmark node.
-   * @private
-   */
-  canDropBelow_: function(dragBookmarkNode, overBookmarkNode, overElement) {
+  canDropBelow: function(overBookmarkNode, overElement) {
     if (overElement instanceof BookmarkList)
-      return false;
-
-    // The tree can only hold folders so if we are over a tree item we cannot
-    // drop a non folder.
-    if (!bmm.isFolder(dragBookmarkNode) && overElement instanceof TreeItem)
       return false;
 
     // We cannot drop between Bookmarks bar and Other bookmarks
     if (overBookmarkNode.parentId == ROOT_ID)
       return false;
 
-    // We cannot drop below if the item below is already in the drag source
-    var nextElement = overElement.nextElementSibling;
-    if (nextElement &&
-        nextElement.bookmarkNode.id == dragBookmarkNode.id)
+    // We can only drop between items in the tree if we have any folders.
+    if (!this.isDraggingFolders() && overElement instanceof TreeItem)
       return false;
+
+    var isOverTreeItem = overElement instanceof TreeItem;
 
     // Don't allow dropping below an expanded tree item since it is confusing
     // to the user anyway.
-    if (overElement instanceof TreeItem && overElement.expanded)
+    if (isOverTreeItem && overElement.expanded)
+      return false;
+
+    if (!this.dragData.sameProfile)
+      return this.isDraggingFolders() || !isOverTreeItem;
+
+    return this.checkEvery_(this.canDropBelow_, overBookmarkNode, overElement);
+  },
+
+  /**
+   * Helper for canDropBelow that only checks one bookmark node.
+   * @private
+   */
+  canDropBelow_: function(dragNode, overBookmarkNode, overElement) {
+    var dragId = dragNode.id;
+
+    // We cannot drop below if the item below is already in the drag source
+    var nextElement = overElement.nextElementSibling;
+    if (nextElement &&
+        nextElement.bookmarkId == dragId)
       return false;
 
     return true;
@@ -840,8 +835,6 @@ var dnd = {
   /**
    * Whether we can drop the dragged items on the drop target.
    *
-   * @param {!Array.<BookmarkTreeNode>} dragBookmarkNodes The bookmarks that are
-   *     currently being dragged.
    * @param {!BookmarkTreeNode} overBookmarkNode The bookmark that we are
    *     currently dragging over.
    * @param {!HTMLElement} overElement The element that we are currently
@@ -849,19 +842,23 @@ var dnd = {
    * @return {boolean} Whether we can drop the dragged items on the drop
    *     target.
    */
-  canDropOn: function(dragBookmarkNodes, overBookmarkNode, overElement) {
-    return this.checkEvery_(this.canDropOn_, dragBookmarkNodes,
-                            overBookmarkNode, overElement);
+  canDropOn: function(overBookmarkNode, overElement) {
+    // We can only drop on a folder.
+    if (!bmm.isFolder(overBookmarkNode))
+      return false;
+
+    if (!this.dragData.sameProfile)
+      return true;
+
+    return this.checkEvery_(this.canDropOn_, overBookmarkNode, overElement);
   },
 
   /**
    * Helper for canDropOn that only checks one bookmark node.
    * @private
    */
-  canDropOn_: function(dragBookmarkNode, overBookmarkNode, overElement) {
-    // We can only drop on a folder...
-    if (!bmm.isFolder(overBookmarkNode))
-      return false;
+  canDropOn_: function(dragNode, overBookmarkNode, overElement) {
+    var dragId = dragNode.id;
 
     if (overElement instanceof BookmarkList) {
       // We are trying to drop an item after the last item in the list. This
@@ -869,13 +866,13 @@ var dnd = {
       var listItems = list.items;
       var len = listItems.length;
       if (len == 0 ||
-          listItems[len - 1].bookmarkNode.id != dragBookmarkNode.id) {
+          listItems[len - 1].bookmarkId != dragId) {
         return true;
       }
     }
 
-    // Cannot drop on current parent
-    if (overBookmarkNode.id == dragBookmarkNode.parentId)
+    // Cannot drop on current parent.
+    if (overBookmarkNode.id == dragNode.parentId)
       return false;
 
     return true;
@@ -898,19 +895,26 @@ var dnd = {
       draggedItems.push(target);
     }
 
-    this.dragBookmarkNodes = draggedItems.map(function(item) {
-      return item.bookmarkNode;
-    });
+    // We manage starting the drag by using the extension API.
+    e.preventDefault();
 
-    // console.log(draggedItems, this.dragBookmarkNodes)
+    if (draggedItems.length) {
+      // If we are dragging a single link we can do the *Link* effect, otherwise
+      // we only allow copy and move.
+      var effectAllowed;
+      if (draggedItems.length == 1 &&
+          !bmm.isFolder(draggedItems[0].bookmarkNode)) {
+        effectAllowed = 'copyMoveLink';
+      } else {
+        effectAllowed = 'copyMove';
+      }
+      e.dataTransfer.effectAllowed = effectAllowed;
 
-    // TODO(arv): Fix this once we expose DnD in the extension API
-    // Mac requires setData to be called
-    e.dataTransfer.setData('text/uri-list', 'http://www.google.com/');
-    e.dataTransfer.effectAllowed = this.DND_EFFECT;
+      var ids = draggedItems.map(function(el) {
+        return el.bookmarkId;
+      });
 
-    if (!this.dragBookmarkNodes.length) {
-      e.preventDefault();
+      chrome.experimental.bookmarkManager.startDrag(ids);
     }
   },
 
@@ -927,7 +931,11 @@ var dnd = {
   handleDragOver: function(e) {
     // console.log(e.type);
 
-    if (!this.dragBookmarkNodes.length)
+    // The default operation is to allow dropping links etc to do navigation.
+    // We never want to do that for the bookmark manager.
+    e.preventDefault();
+
+    if (!this.dragData)
       return;
 
     var overElement = this.getBookmarkElement(e.target);
@@ -937,20 +945,16 @@ var dnd = {
     if (!overElement)
       return;
 
-    var dragBookmarkNodes = this.dragBookmarkNodes;
     var overBookmarkNode = overElement.bookmarkNode;
 
-    if (!this.canDrop(dragBookmarkNodes, overBookmarkNode, overElement))
+    if (!this.canDrop(overBookmarkNode, overElement))
       return;
 
     var bookmarkNode = overElement.bookmarkNode;
 
-    var canDropAbove = this.canDropAbove(dragBookmarkNodes, overBookmarkNode,
-                                         overElement);
-    var canDropOn = this.canDropOn(dragBookmarkNodes, overBookmarkNode,
-                                   overElement);
-    var canDropBelow = this.canDropBelow(dragBookmarkNodes, overBookmarkNode,
-                                         overElement);
+    var canDropAbove = this.canDropAbove(overBookmarkNode, overElement);
+    var canDropOn = this.canDropOn(overBookmarkNode, overElement);
+    var canDropBelow = this.canDropBelow(overBookmarkNode, overElement);
 
     if (!canDropAbove && !canDropOn && !canDropBelow)
       return;
@@ -959,9 +963,9 @@ var dnd = {
     // below based on mouse position etc.
 
     var dropPos;
-    e.preventDefault();
-    // TODO(arv): Fix this once we expose DnD in the extension API
-    e.dataTransfer.dropEffect = this.DND_EFFECT;
+
+    e.dataTransfer.dropEffect = this.dragData.sameProfile ?
+        this.DND_EFFECT_MOVE : this.DND_EFFECT_COPY;
 
     var rect;
     if (overElement instanceof TreeItem) {
@@ -972,26 +976,28 @@ var dnd = {
       rect = overElement.getBoundingClientRect();
     }
 
-    if (canDropAbove && !canDropOn && !canDropBelow) {
-      dropPos = 'above';
-    } else if (!canDropAbove && canDropOn && !canDropBelow) {
-      dropPos = 'on';
-    } else if (!canDropAbove && !canDropOn && canDropBelow) {
-      dropPos = 'below';
-    } else {
-      // We need to compare the mouse position with the element rect.
+    var dy = e.clientY - rect.top;
+    var yRatio = dy / rect.height;
 
-      var dy = e.clientY - rect.top;
-      var yRatio = dy / rect.height;
-      if (!canDropOn) {
-        dropPos = yRatio < .5 ? 'above' : 'below';
-      } else if (!canDropAbove) {
-        dropPos = yRatio < .5 ? 'on' : 'below';
-      } else if (!canDropBelow) {
-        dropPos = yRatio < .5 ? 'above' : 'on';
-      } else {
-        dropPos = yRatio < .25 ? 'above' : yRatio > .75 ? 'below' : 'on';
-      }
+    //  above
+    if (canDropAbove &&
+        (yRatio <= .25 || yRatio <= .5 && !(canDropBelow && canDropOn))) {
+      dropPos = 'above';
+
+    // below
+    } else if (canDropBelow &&
+               (yRatio > .75 || yRatio > .5 && !(canDropAbove && canDropOn))) {
+      dropPos = 'below';
+
+    // on
+    } else if (canDropOn) {
+      dropPos = 'on';
+
+    // none
+    } else {
+      // No drop can happen. Exit now.
+      e.dataTransfer.dropEffect = 'none';
+      return;
     }
 
     function cloneClientRect(rect) {
@@ -1004,7 +1010,7 @@ var dnd = {
 
     // If we are dropping above or below a tree item adjust the width so
     // that it is clearer where the item will be dropped.
-    if ((dropPos == 'above' || dropPos == 'below' ) &&
+    if ((dropPos == 'above' || dropPos == 'below') &&
         overElement instanceof TreeItem) {
       // ClientRect is read only so clone in into a read-write object.
       rect = cloneClientRect(rect);
@@ -1043,7 +1049,6 @@ var dnd = {
 
     this.showDropOverlay_(rect, overlayType);
 
-    // TODO(arv): Multiple selection DnD.
     this.dropDestination = {
       dropPos: dropPos,
       relatedNode: overElement.bookmarkNode
@@ -1104,33 +1109,21 @@ var dnd = {
   handleDrop: function(e) {
     // console.log(e.type);
 
-    if (this.dropDestination && this.dragBookmarkNodes.length) {
-      // console.log('Drop', this.dragBookmarkNodes, this.dropDestination);
-
+    if (this.dropDestination && this.dragData) {
       var dropPos = this.dropDestination.dropPos;
       var relatedNode = this.dropDestination.relatedNode;
       var parentId = dropPos == 'on' ? relatedNode.id : relatedNode.parentId;
 
-      var moveInfo = {
-        parentId: parentId
-      };
+      var index;
+      if (dropPos == 'above')
+        index = relatedNode.index;
+      else if (dropPos == 'below')
+        index = relatedNode.index + 1;
 
-      if (dropPos == 'above') {
-        moveInfo.index = relatedNode.index;
-      } else if (dropPos == 'below') {
-        moveInfo.index = relatedNode.index + 1;
-      }
-
-      // TODO(arv): Add support for multiple move in bookmarks API?
-      this.dragBookmarkNodes.forEach(function(bookmarkNode) {
-        var id = bookmarkNode.id;
-        // console.info('Calling move', id, moveInfo.index, bookmarkNode);
-        chrome.bookmarks.move(id, moveInfo,
-            function(result) {
-              // console.log('chrome.bookmarks.move', arguments);
-            });
-        moveInfo.index++;
-      });
+      if (index != undefined)
+        chrome.experimental.bookmarkManager.drop(parentId, index);
+      else
+        chrome.experimental.bookmarkManager.drop(parentId);
 
       // TODO(arv): Select the newly dropped items.
     }
@@ -1149,9 +1142,12 @@ var dnd = {
     // Chromium Win incorrectly fires the dragend event before the drop event.
     // http://code.google.com/p/chromium/issues/detail?id=31292
     window.setTimeout(function() {
-      self.dragBookmarkNodes = [];
-      self = null;
+      self.dragData = null;
     }, 1)
+  },
+
+  handleChromeDragEnter: function(dragData) {
+    this.dragData = dragData;
   },
 
   init: function() {
@@ -1162,12 +1158,14 @@ var dnd = {
     document.addEventListener('drop', cr.bind(this.handleDrop, this));
     document.addEventListener('dragend', cr.bind(this.handleDragEnd, this));
     document.addEventListener('drag', cr.bind(this.handleDrag, this));
+
+    chrome.experimental.bookmarkManager.onDragEnter.addListener(cr.bind(
+        this.handleChromeDragEnter, this));
   }
 
 };
 
 dnd.init();
-
 
 </script>
 

@@ -2,6 +2,9 @@
   "name": "Bookmark Manager",
   "version": "0.1",
   "description": "Bookmark Manager",
+  "icons": {
+    "16": "images/bookmarks_favicon.png"
+  },
   "permissions": [
     "bookmarks",
     "experimental",
