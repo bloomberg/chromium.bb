@@ -484,8 +484,11 @@ void TextInputSection::InitContents(GridLayout* layout) {
     checkbox->SetChecked(language_is_active);
     checkbox->set_listener(this);
 
+    // We use two columns. Start a column if the counter is an even number.
+    if (i % 2 == 0) {
+      layout->StartRow(0, double_column_view_set_id());
+    }
     // Add the checkbox to the layout manager.
-    layout->StartRow(0, single_column_view_set_id());
     layout->AddView(checkbox);
   }
 
