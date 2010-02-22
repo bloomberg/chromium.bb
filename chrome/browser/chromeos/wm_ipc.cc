@@ -1,8 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/views/tabs/tab_overview_types.h"
+#include "chrome/browser/chromeos/wm_ipc.h"
 
 #include <gdk/gdkx.h>
 extern "C" {
@@ -14,43 +14,32 @@ extern "C" {
 #include "base/scoped_ptr.h"
 #include "chrome/common/x11_util.h"
 
+namespace chromeos {
+
 namespace {
 
 // A value from the Atom enum and the actual name that should be used to
 // look up its ID on the X server.
 struct AtomInfo {
-  TabOverviewTypes::AtomType atom;
+  WmIpc::AtomType atom;
   const char* name;
 };
 
 // Each value from the Atom enum must be present here.
 static const AtomInfo kAtomInfos[] = {
-  { TabOverviewTypes::ATOM_CHROME_WINDOW_TYPE,
-    "_CHROME_WINDOW_TYPE" },
-  { TabOverviewTypes::ATOM_CHROME_WM_MESSAGE,
-    "_CHROME_WM_MESSAGE" },
-  { TabOverviewTypes::ATOM_MANAGER,
-    "MANAGER" },
-  { TabOverviewTypes::ATOM_NET_SUPPORTING_WM_CHECK,
-    "_NET_SUPPORTING_WM_CHECK" },
-  { TabOverviewTypes::ATOM_NET_WM_NAME,
-    "_NET_WM_NAME" },
-  { TabOverviewTypes::ATOM_PRIMARY,
-    "PRIMARY" },
-  { TabOverviewTypes::ATOM_STRING,
-    "STRING" },
-  { TabOverviewTypes::ATOM_UTF8_STRING,
-    "UTF8_STRING" },
-  { TabOverviewTypes::ATOM_WM_NORMAL_HINTS,
-    "WM_NORMAL_HINTS" },
-  { TabOverviewTypes::ATOM_WM_S0,
-    "WM_S0" },
-  { TabOverviewTypes::ATOM_WM_STATE,
-    "WM_STATE" },
-  { TabOverviewTypes::ATOM_WM_TRANSIENT_FOR,
-    "WM_TRANSIENT_FOR" },
-  { TabOverviewTypes::ATOM_WM_SYSTEM_METRICS,
-    "WM_SYSTEM_METRICS" },
+  { WmIpc::ATOM_CHROME_WINDOW_TYPE,      "_CHROME_WINDOW_TYPE" },
+  { WmIpc::ATOM_CHROME_WM_MESSAGE,       "_CHROME_WM_MESSAGE" },
+  { WmIpc::ATOM_MANAGER,                 "MANAGER" },
+  { WmIpc::ATOM_NET_SUPPORTING_WM_CHECK, "_NET_SUPPORTING_WM_CHECK" },
+  { WmIpc::ATOM_NET_WM_NAME,             "_NET_WM_NAME" },
+  { WmIpc::ATOM_PRIMARY,                 "PRIMARY" },
+  { WmIpc::ATOM_STRING,                  "STRING" },
+  { WmIpc::ATOM_UTF8_STRING,             "UTF8_STRING" },
+  { WmIpc::ATOM_WM_NORMAL_HINTS,         "WM_NORMAL_HINTS" },
+  { WmIpc::ATOM_WM_S0,                   "WM_S0" },
+  { WmIpc::ATOM_WM_STATE,                "WM_STATE" },
+  { WmIpc::ATOM_WM_TRANSIENT_FOR,        "WM_TRANSIENT_FOR" },
+  { WmIpc::ATOM_WM_SYSTEM_METRICS,       "WM_SYSTEM_METRICS" },
 };
 
 bool SetIntProperty(XID xid, Atom xatom, const std::vector<int>& values) {
@@ -72,17 +61,16 @@ bool SetIntProperty(XID xid, Atom xatom, const std::vector<int>& values) {
 }  // namespace
 
 // static
-TabOverviewTypes* TabOverviewTypes::instance() {
-  static TabOverviewTypes* instance = NULL;
+WmIpc* WmIpc::instance() {
+  static WmIpc* instance = NULL;
   if (!instance)
-    instance = Singleton<TabOverviewTypes>::get();
+    instance = Singleton<WmIpc>::get();
   return instance;
 }
 
-bool TabOverviewTypes::SetWindowType(
-    GtkWidget* widget,
-    WindowType type,
-    const std::vector<int>* params) {
+bool WmIpc::SetWindowType(GtkWidget* widget,
+                          WindowType type,
+                          const std::vector<int>* params) {
   std::vector<int> values;
   values.push_back(type);
   if (params)
@@ -91,7 +79,7 @@ bool TabOverviewTypes::SetWindowType(
                         type_to_atom_[ATOM_CHROME_WINDOW_TYPE], values);
 }
 
-void TabOverviewTypes::SendMessage(const Message& msg) {
+void WmIpc::SendMessage(const Message& msg) {
   XEvent e;
   e.xclient.type = ClientMessage;
   e.xclient.window = wm_;
@@ -112,8 +100,8 @@ void TabOverviewTypes::SendMessage(const Message& msg) {
              &e);
 }
 
-bool TabOverviewTypes::DecodeMessage(const GdkEventClient& event,
-                                     Message* msg) {
+bool WmIpc::DecodeMessage(const GdkEventClient& event,
+                          Message* msg) {
   if (wm_message_atom_ != gdk_x11_atom_to_xatom(event.message_type))
     return false;
 
@@ -140,8 +128,8 @@ bool TabOverviewTypes::DecodeMessage(const GdkEventClient& event,
   return true;
 }
 
-bool TabOverviewTypes::DecodeStringMessage(const GdkEventProperty& event,
-                                           std::string* msg) {
+bool WmIpc::DecodeStringMessage(const GdkEventProperty& event,
+                                std::string* msg) {
   DCHECK(NULL != msg);
   if (type_to_atom_[ATOM_WM_SYSTEM_METRICS] !=
       gdk_x11_atom_to_xatom(event.atom))
@@ -193,8 +181,7 @@ bool TabOverviewTypes::DecodeStringMessage(const GdkEventProperty& event,
   return true;
 }
 
-void TabOverviewTypes::HandleNonChromeClientMessageEvent(
-    const GdkEventClient& event) {
+void WmIpc::HandleNonChromeClientMessageEvent(const GdkEventClient& event) {
   // Only do these lookups once; they should never change.
   static GdkAtom manager_gdk_atom =
       gdk_x11_xatom_to_atom(type_to_atom_[ATOM_MANAGER]);
@@ -206,7 +193,7 @@ void TabOverviewTypes::HandleNonChromeClientMessageEvent(
   }
 }
 
-TabOverviewTypes::TabOverviewTypes() {
+WmIpc::WmIpc() {
   scoped_array<char*> names(new char*[kNumAtoms]);
   scoped_array<Atom> atoms(new Atom[kNumAtoms]);
 
@@ -237,14 +224,16 @@ TabOverviewTypes::TabOverviewTypes() {
   InitWmInfo();
 }
 
-void TabOverviewTypes::InitWmInfo() {
+void WmIpc::InitWmInfo() {
   wm_ = XGetSelectionOwner(x11_util::GetXDisplay(), type_to_atom_[ATOM_WM_S0]);
 
   // Let the window manager know which version of the IPC messages we support.
   Message msg(Message::WM_NOTIFY_IPC_VERSION);
-  // TODO: The version number is the latest listed in tab_overview_types.h --
+  // TODO: The version number is the latest listed in wm_ipc.h --
   // ideally, once this header is shared between Chrome and the Chrome OS window
   // manager, we'll just define the version statically in the header.
   msg.set_param(0, 1);
   SendMessage(msg);
 }
+
+}  // namespace chromeos

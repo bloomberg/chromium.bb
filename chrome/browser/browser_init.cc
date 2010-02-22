@@ -62,7 +62,7 @@
 #include "chrome/browser/chromeos/cros/mount_library.h"
 #include "chrome/browser/chromeos/gview_request_interceptor.h"
 #include "chrome/browser/chromeos/usb_mount_observer.h"
-#include "chrome/browser/views/tabs/tab_overview_message_listener.h"
+#include "chrome/browser/chromeos/wm_message_listener.h"
 #endif
 
 namespace {
@@ -365,9 +365,9 @@ bool BrowserInit::LaunchBrowser(
   }
 
 #if defined(OS_CHROMEOS)
-  // Create the TabOverviewMessageListener so that it can listen for messages
-  // regardless of what window has focus.
-  TabOverviewMessageListener::instance();
+  // Create the WmMessageListener so that it can listen for messages regardless
+  // of what window has focus.
+  chromeos::WmMessageListener::instance();
 
   // Install the GView request interceptor that will redirect requests
   // of compatible documents (PDF, etc) to the GView document viewer.

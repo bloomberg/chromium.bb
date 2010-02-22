@@ -15,8 +15,8 @@
 #include "views/widget/root_view.h"
 #include "views/window/window.h"
 
-#if defined(OS_LINUX)
-#include "chrome/browser/views/tabs/tab_overview_types.h"
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/wm_ipc.h"
 #endif
 
 // Background color of the bubble.
@@ -240,10 +240,12 @@ void InfoBubble::Init(views::Window* parent,
   MakeTransparent();
   make_transient_to_parent();
   WidgetGtk::Init(GTK_WIDGET(parent->GetNativeWindow()), gfx::Rect());
-  TabOverviewTypes::instance()->SetWindowType(
+#if defined(OS_CHROMEOS)
+  chromeos::WmIpc::instance()->SetWindowType(
       GetNativeView(),
-      TabOverviewTypes::WINDOW_TYPE_CHROME_INFO_BUBBLE,
+      chromeos::WmIpc::WINDOW_TYPE_CHROME_INFO_BUBBLE,
       NULL);
+#endif
 #endif
 
   // Create a View to hold the contents of the main window.

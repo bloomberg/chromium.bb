@@ -21,6 +21,7 @@
 #include "chrome/browser/bubble_positioner.h"
 #include "chrome/browser/chromeos/frame/browser_view.h"
 #include "chrome/browser/chromeos/status/status_area_view.h"
+#include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/in_process_webkit/dom_storage_context.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/profile.h"
@@ -32,7 +33,6 @@
 #include "chrome/browser/renderer_preferences_util.h"
 #include "chrome/browser/tab_contents/render_view_host_delegate_helper.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/browser/views/tabs/tab_overview_types.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
@@ -296,9 +296,9 @@ MainMenu::MainMenu()
   // The background image has transparency, so we make the window transparent.
   menu_popup->MakeTransparent();
   popup_->Init(NULL, gfx::Rect());
-  TabOverviewTypes::instance()->SetWindowType(
+  WmIpc::instance()->SetWindowType(
       popup_->GetNativeView(),
-      TabOverviewTypes::WINDOW_TYPE_CHROME_INFO_BUBBLE,
+      WmIpc::WINDOW_TYPE_CHROME_INFO_BUBBLE,
       NULL);
 
   views::Painter* painter = views::Painter::CreateImagePainter(

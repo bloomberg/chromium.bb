@@ -12,7 +12,7 @@
 #include "base/scoped_ptr.h"
 #include "base/string_util.h"
 #include "chrome/browser/browser.h"
-#include "chrome/browser/views/tabs/tab_overview_types.h"
+#include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/common/x11_util.h"
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
@@ -97,17 +97,16 @@ void PanelController::Init(const gfx::Rect window_bounds) {
   title_ = title_window_->GetNativeView();
   title_xid_ = x11_util::GetX11WindowFromGtkWidget(title_);
 
-  TabOverviewTypes* tab_overview = TabOverviewTypes::instance();
-  tab_overview->SetWindowType(
+  WmIpc::instance()->SetWindowType(
       title_,
-      TabOverviewTypes::WINDOW_TYPE_CHROME_PANEL_TITLEBAR,
+      WmIpc::WINDOW_TYPE_CHROME_PANEL_TITLEBAR,
       NULL);
   std::vector<int> type_params;
   type_params.push_back(title_xid_);
   type_params.push_back(expanded_ ? 1 : 0);
-  tab_overview->SetWindowType(
+  WmIpc::instance()->SetWindowType(
       GTK_WIDGET(panel_),
-      TabOverviewTypes::WINDOW_TYPE_CHROME_PANEL_CONTENT,
+      WmIpc::WINDOW_TYPE_CHROME_PANEL_CONTENT,
       &type_params);
 
   g_signal_connect(panel_, "client-event",
@@ -167,16 +166,14 @@ void PanelController::TitleMouseReleased(
 
   mouse_down_ = false;
   if (!dragging_) {
-    TabOverviewTypes::Message msg(
-        TabOverviewTypes::Message::WM_SET_PANEL_STATE);
+    WmIpc::Message msg(WmIpc::Message::WM_SET_PANEL_STATE);
     msg.set_param(0, panel_xid_);
     msg.set_param(1, expanded_ ? 0 : 1);
-    TabOverviewTypes::instance()->SendMessage(msg);
+    WmIpc::instance()->SendMessage(msg);
   } else {
-    TabOverviewTypes::Message msg(
-        TabOverviewTypes::Message::WM_NOTIFY_PANEL_DRAG_COMPLETE);
+    WmIpc::Message msg(WmIpc::Message::WM_NOTIFY_PANEL_DRAG_COMPLETE);
     msg.set_param(0, panel_xid_);
-    TabOverviewTypes::instance()->SendMessage(msg);
+    WmIpc::instance()->SendMessage(msg);
     dragging_ = false;
   }
 }
@@ -201,12 +198,11 @@ bool PanelController::TitleMouseDragged(const views::MouseEvent& event) {
     }
   }
   if (dragging_) {
-    TabOverviewTypes::Message msg(
-        TabOverviewTypes::Message::WM_NOTIFY_PANEL_DRAGGED);
+    WmIpc::Message msg(WmIpc::Message::WM_NOTIFY_PANEL_DRAGGED);
     msg.set_param(0, panel_xid_);
     msg.set_param(1, last_motion_event.x_root - mouse_down_offset_x_);
     msg.set_param(2, last_motion_event.y_root - mouse_down_offset_y_);
-    TabOverviewTypes::instance()->SendMessage(msg);
+    WmIpc::instance()->SendMessage(msg);
   }
   gdk_event_free(gdk_event);
   return true;
@@ -231,9 +227,9 @@ void PanelController::OnFocusOut() {
 }
 
 bool PanelController::PanelClientEvent(GdkEventClient* event) {
-  TabOverviewTypes::Message msg;
-  TabOverviewTypes::instance()->DecodeMessage(*event, &msg);
-  if (msg.type() == TabOverviewTypes::Message::CHROME_NOTIFY_PANEL_STATE) {
+  WmIpc::Message msg;
+  WmIpc::instance()->DecodeMessage(*event, &msg);
+  if (msg.type() == WmIpc::Message::CHROME_NOTIFY_PANEL_STATE) {
     expanded_ = msg.param(0);
   }
   return true;

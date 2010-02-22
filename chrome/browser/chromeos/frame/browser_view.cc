@@ -18,13 +18,13 @@
 #include "chrome/browser/chromeos/main_menu.h"
 #include "chrome/browser/chromeos/status/browser_status_area_view.h"
 #include "chrome/browser/chromeos/status/status_area_button.h"
+#include "chrome/browser/chromeos/wm_ipc.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/browser/views/frame/browser_extender.h"
 #include "chrome/browser/views/frame/browser_frame_gtk.h"
 #include "chrome/browser/views/frame/browser_view.h"
 #include "chrome/browser/views/frame/browser_view_layout.h"
 #include "chrome/browser/views/tabs/tab.h"
-#include "chrome/browser/views/tabs/tab_overview_types.h"
 #include "chrome/browser/views/tabs/tab_strip.h"
 #include "chrome/browser/views/toolbar_view.h"
 #include "chrome/browser/views/toolbar_star_toggle.h"
@@ -390,9 +390,9 @@ void BrowserView::Show() {
   bool was_visible = frame()->GetWindow()->IsVisible();
   ::BrowserView::Show();
   if (!was_visible) {
-    TabOverviewTypes::instance()->SetWindowType(
+    WmIpc::instance()->SetWindowType(
         GTK_WIDGET(frame()->GetWindow()->GetNativeWindow()),
-        TabOverviewTypes::WINDOW_TYPE_CHROME_TOPLEVEL,
+        WmIpc::WINDOW_TYPE_CHROME_TOPLEVEL,
         NULL);
   }
 }

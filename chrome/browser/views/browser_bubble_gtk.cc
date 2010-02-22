@@ -8,7 +8,9 @@
 #include "views/widget/widget_gtk.h"
 #include "views/window/window.h"
 
-#include "chrome/browser/views/tabs/tab_overview_types.h"
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/wm_ipc.h"
+#endif
 
 namespace {
 
@@ -84,10 +86,12 @@ void BrowserBubble::InitPopup() {
   pop->SetOpacity(0xFF);
   pop->make_transient_to_parent();
   pop->Init(frame_->GetNativeView(), bounds_);
-  TabOverviewTypes::instance()->SetWindowType(
+#if defined(OS_CHROMEOS)
+  chromeos::WmIpc::instance()->SetWindowType(
       pop->GetNativeView(),
-      TabOverviewTypes::WINDOW_TYPE_CHROME_INFO_BUBBLE,
+      chromeos::WmIpc::WINDOW_TYPE_CHROME_INFO_BUBBLE,
       NULL);
+#endif
   pop->SetContentsView(view_);
   popup_ = pop;
   Reposition();

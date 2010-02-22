@@ -1,9 +1,9 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_VIEWS_TABS_TAB_OVERVIEW_TYPES_H_
-#define CHROME_BROWSER_VIEWS_TABS_TAB_OVERVIEW_TYPES_H_
+#ifndef CHROME_BROWSER_CHROMEOS_WM_IPC_H_
+#define CHROME_BROWSER_CHROMEOS_WM_IPC_H_
 
 #include <gtk/gtk.h>
 #include <map>
@@ -16,8 +16,9 @@
 typedef unsigned long Atom;
 typedef unsigned long XID;
 
-// TODO(sky): move and rename.
-class TabOverviewTypes {
+namespace chromeos {
+
+class WmIpc {
  public:
   enum AtomType {
     ATOM_CHROME_WINDOW_TYPE = 0,
@@ -228,8 +229,8 @@ class TabOverviewTypes {
     long params_[4];
   };
 
-  // Returns the single instance of TabOverviewTypes.
-  static TabOverviewTypes* instance();
+  // Returns the single instance of WmIpc.
+  static WmIpc* instance();
 
   // Get or set a property describing a window's type.  Type-specific
   // parameters may also be supplied ('params' is mandatory for
@@ -258,9 +259,9 @@ class TabOverviewTypes {
   void HandleNonChromeClientMessageEvent(const GdkEventClient& event);
 
  private:
-  friend struct DefaultSingletonTraits<TabOverviewTypes>;
+  friend struct DefaultSingletonTraits<WmIpc>;
 
-  TabOverviewTypes();
+  WmIpc();
 
   // Initialize 'wm_' and send the window manager a message telling it the
   // version of the IPC protocol that we support.  This is called in our
@@ -280,7 +281,9 @@ class TabOverviewTypes {
   // Handle to the wm. Used for sending messages.
   XID wm_;
 
-  DISALLOW_COPY_AND_ASSIGN(TabOverviewTypes);
+  DISALLOW_COPY_AND_ASSIGN(WmIpc);
 };
 
-#endif  // CHROME_BROWSER_VIEWS_TABS_TAB_OVERVIEW_TYPES_H_
+}  // namespace chromeos
+
+#endif  // CHROME_BROWSER_CHROMEOS_WM_IPC_H_

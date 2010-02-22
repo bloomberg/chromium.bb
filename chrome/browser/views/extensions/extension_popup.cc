@@ -19,8 +19,11 @@
 #include "views/window/window.h"
 
 #if defined(OS_LINUX)
-#include "chrome/browser/views/tabs/tab_overview_types.h"
 #include "views/widget/widget_gtk.h"
+#endif
+
+#if defined(OS_CHROMEOS)
+#include "chrome/browser/chromeos/wm_ipc.h"
 #endif
 
 using views::Widget;
@@ -80,10 +83,10 @@ ExtensionPopup::ExtensionPopup(ExtensionHost* host,
                                                Widget::DeleteOnDestroy);
 #endif
     border_widget_->Init(native_window, bounds());
-#if defined(OS_LINUX)
-    TabOverviewTypes::instance()->SetWindowType(
+#if defined(OS_CHROMEOS)
+    chromeos::WmIpc::instance()->SetWindowType(
         border_widget_->GetNativeView(),
-        TabOverviewTypes::WINDOW_TYPE_CHROME_INFO_BUBBLE,
+        chromeos::WmIpc::WINDOW_TYPE_CHROME_INFO_BUBBLE,
         NULL);
 #endif
 
