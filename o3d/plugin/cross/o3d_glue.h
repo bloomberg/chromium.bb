@@ -356,7 +356,11 @@ class PluginObject: public NPObject {
   // called by the platform-specific event-handling code if the region set by
   // SetFullscreenClickRegion is clicked.  It requests the mode previously set
   // by SetFullscreenClickRegion(), and fails if there wasn't one.
+#ifdef OS_LINUX
+  bool RequestFullscreenDisplay(guint32 timestamp);
+#else
   bool RequestFullscreenDisplay();
+#endif
 
   // Make a region of the plugin area that will invoke fullscreen mode if
   // clicked.  The app developer is responsible for communicating this to the

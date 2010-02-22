@@ -473,7 +473,7 @@ static gboolean GtkHandleMouseButton(GtkWidget *widget,
   }
   if (event.in_plugin() && event.type() == Event::TYPE_MOUSEDOWN &&
       obj->HitFullscreenClickRegion(event.x(), event.y())) {
-    obj->RequestFullscreenDisplay();
+    obj->RequestFullscreenDisplay(button_event->time);
   }
   return TRUE;
 }
@@ -910,7 +910,7 @@ bool PluginObject::GetDisplayMode(int id, o3d::DisplayMode *mode) {
 
 // TODO: Where should this really live?  It's platform-specific, but in
 // PluginObject, which mainly lives in cross/o3d_glue.h+cc.
-bool PluginObject::RequestFullscreenDisplay() {
+bool PluginObject::RequestFullscreenDisplay(guint32 timestamp) {
   if (fullscreen_ || fullscreen_pending_) {
     return false;
   }
@@ -953,7 +953,11 @@ bool PluginObject::RequestFullscreenDisplay() {
   g_signal_connect(window, "delete-event",
                    G_CALLBACK(GtkDeleteEventCallback), this);
   gtk_fullscreen_container_ = widget;
-  gtk_widget_show(widget);
+  // The timestamp here is optional, but its inclusion is preferred.
+  gtk_window_present_with_time(window, timestamp);
+  // Explicitly set focus, otherwise we may not get it depending on the window
+  // manager's policy for present.
+  gdk_window_focus(widget->window, timestamp);
   // We defer switching to the new window until it gets displayed and assigned
   // it's final dimensions in the configure-event.
   fullscreen_pending_ = true;
