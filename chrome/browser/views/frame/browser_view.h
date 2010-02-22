@@ -210,7 +210,7 @@ class BrowserView : public BrowserBubbleHost,
   // Returns true if the Browser object associated with this BrowserView is a
   // popup window.
   bool IsBrowserTypePopup() const {
-    return browser_->type() & Browser::TYPE_POPUP != 0;
+    return (browser_->type() & Browser::TYPE_POPUP) != 0;
   }
 
   // Returns true if the frame containing this BrowserView should show the
