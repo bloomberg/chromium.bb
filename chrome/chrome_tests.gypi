@@ -1841,7 +1841,8 @@
         },
       ]},  # 'targets'
     ],  # OS=="win"
-    ['OS=="mac" or (OS=="linux" and linux_fpic==1)', {
+    # Build on linux x86_64 only if linux_fpic==1
+    ['OS=="mac" or (OS=="linux" and (host_arch!="x86_64" or linux_fpic==1))', {
       'targets': [
         # TODO(nirnimesh): enable for win - crbug.com/32285
         {
