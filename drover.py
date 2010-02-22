@@ -24,6 +24,10 @@ Valid parameters:
 --merge <revision> --branch <branch_num>
 Example: %(app)s --merge 12345 --branch 187
 
+[Merge from trunk to local copy]
+--merge <revision> --local
+Example: %(app)s --merge 12345 --local
+
 [Merge from branch to branch]
 --merge <revision> --sbranch <branch_num> --branch <branch_num> 
 Example: %(app)s --merge 12345 --sbranch 248 --branch 249
@@ -96,6 +100,19 @@ def getSVNInfo(url, revision):
 
   return info
 
+def isSVNDirty():
+  command = 'svn status'
+  svn_status = subprocess.Popen(command,
+                                shell=True,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE).stdout.readlines()
+  for line in svn_status:
+    match = re.search(r"^[^X?]", line)
+    if match:
+      return True
+
+  return False
+
 def getAuthor(url, revision):
   info = getSVNInfo(url, revision)
   if (info.has_key("Last Changed Author")):
@@ -114,6 +131,16 @@ def isSVNDirectory(url, revision):
   if (info.has_key("Node Kind")):
     if (info["Node Kind"] == "directory"):
       return True
+  return False
+
+def inCheckoutRoot(path):
+  info = getSVNInfo(path, "HEAD")
+  if (not info.has_key("Repository Root")):
+    return False
+  repo_root = info["Repository Root"];
+  info = getSVNInfo(os.path.dirname(os.path.abspath(path)), "HEAD")
+  if (info.get("Repository Root", None) != repo_root):
+    return True
   return False
 
 def getRevisionLog(url, revision):
@@ -442,26 +469,37 @@ def main(options, args):
 
   working = options.workdir or DEFAULT_WORKING
 
+  if options.local:
+    working = os.getcwd()
+    if not inCheckoutRoot(working):
+      print "'%s' appears not to be the root of a working copy" % working
+      sys.exit(1)
+    if isSVNDirty():
+      print "Working copy contains uncommitted files"
+      sys.exit(1)
+
   command = 'svn log ' + url + " -r "+str(revision) + " -v"
   os.system(command)
 
   if not (options.revertbot or prompt("Is this the correct revision?")):
     sys.exit(0)
 
-  if (os.path.exists(working)):
+  if (os.path.exists(working)) and not options.local:
     if not (options.revertbot or SKIP_CHECK_WORKING or
         prompt("Working directory: '%s' already exists, clobber?" % working)):
       sys.exit(0)
     deltree(working)
 
-  os.makedirs(working)
-  os.chdir(working)
+  if not options.local:
+    os.makedirs(working)
+    os.chdir(working)
 
   if options.merge:
     action = "Merge"
-    branch_url = BRANCH_URL.replace("$branch", options.branch)
-    # Checkout everything but stuff that got added into a new dir
-    checkoutRevision(url, revision, branch_url)
+    if not options.local:
+      branch_url = BRANCH_URL.replace("$branch", options.branch)
+      # Checkout everything but stuff that got added into a new dir
+      checkoutRevision(url, revision, branch_url)
     # Merge everything that changed
     mergeRevision(url, revision)
     # "Export" files that were added from the source and add them to branch
@@ -498,6 +536,10 @@ def main(options, args):
     change_cmd += ' --silent'
   runGcl(change_cmd)
   os.unlink(filename)
+
+  if options.local:
+    sys.exit(0)
+
   print author
   print revision
   print ("gcl upload " + str(revision) +
@@ -532,6 +574,8 @@ if __name__ == "__main__":
                            help='Revision to merge from trunk to branch')
   option_parser.add_option('-b', '--branch',
                            help='Branch to revert or merge from')
+  option_parser.add_option('-l', '--local', action='store_true',
+                           help='Local working copy to merge to')
   option_parser.add_option('-s', '--sbranch',
                            help='Source branch for merge')
   option_parser.add_option('-r', '--revert', type="int",
@@ -551,8 +595,12 @@ if __name__ == "__main__":
     option_parser.error("You need at least --merge or --revert")
     sys.exit(1)
 
-  if options.merge and not options.branch:
-    option_parser.error("--merge requires a --branch")
+  if options.merge and not options.branch and not options.local:
+    option_parser.error("--merge requires either --branch or --local")
+    sys.exit(1)
+
+  if options.local and (options.revert or options.branch):
+    option_parser.error("--local cannot be used with --revert or --branch")
     sys.exit(1)
 
   sys.exit(main(options, args))
