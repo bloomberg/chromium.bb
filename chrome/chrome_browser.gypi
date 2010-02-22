@@ -1508,7 +1508,6 @@
         'browser/printing/print_job_worker_owner.h',
         'browser/printing/print_view_manager.cc',
         'browser/printing/print_view_manager.h',
-        'browser/printing/printer_query_linux.cc',
         'browser/printing/printer_query.cc',
         'browser/printing/printer_query.h',
         'browser/privacy_blacklist/blacklist.h',
@@ -2212,10 +2211,6 @@
             '../base/base.gyp:linux_versioninfo',
           ],
           'sources!': [
-             # Exclude most of printing, it's not ported yet.
-            'browser/printing/print_job_worker_owner.h',
-            'browser/printing/printer_query.cc',
-            'browser/printing/printer_query.h',
              # Exclude extension shelf for toolstrips.
             'browser/views/extensions/extension_shelf.cc',
             'browser/views/extensions/extension_shelf.h',
