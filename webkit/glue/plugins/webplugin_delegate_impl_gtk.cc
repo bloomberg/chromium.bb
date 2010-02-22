@@ -116,9 +116,9 @@ bool WebPluginDelegateImpl::WindowedCreatePlugin() {
   DCHECK(!windowed_handle_);
   DCHECK(!plug_);
 
-  // NPP_GetValue() will write 4 bytes of data to this variable.  Don't use a
-  // single byte bool, use an int instead.
-  int xembed;
+  // NPP_GetValue() might write 4 bytes of data to this variable.  Don't use a
+  // single byte bool, use an int instead and make sure it is initialized.
+  int xembed = 0;
   NPError err = instance_->NPP_GetValue(NPPVpluginNeedsXEmbed, &xembed);
   if (err != NPERR_NO_ERROR || !xembed) {
     NOTIMPLEMENTED() << " windowed plugin but without xembed.";
