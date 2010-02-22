@@ -39,6 +39,8 @@ static void DefineX87Ax(const OpcodePrefix  prefix,
 /* Define an x87 instruction with no operands, but is extended using
  * the modrm byte.
  */
+#if (0 == 1)
+/* TODO(kschimpf): Delete this function if unneeded. */
 static void DefineX87MrmNoOperands(const OpcodePrefix prefix,
                                    const uint8_t opcode,
                                    const OperandKind opcode_in_modrm,
@@ -48,9 +50,23 @@ static void DefineX87MrmNoOperands(const OpcodePrefix prefix,
   DefineOperand(opcode_in_modrm, OpFlag(OperandExtendsOpcode));
   ResetToDefaultOpcodePrefix();
 }
+#endif
 
 /* Define an x87 instruction that uses a single argument st0 */
 static void DefineX87St0(const OpcodePrefix prefix,
+                         const uint8_t opcode,
+                         const OperandKind opcode_in_modrm,
+                         InstMnemonic mnemonic,
+                         const OperandFlags st0_flags) {
+  DefineOpcodePrefix(prefix);
+  DefineOpcode(opcode, NACLi_X87, EmptyInstFlags, mnemonic);
+  DefineOperand(RegST0, st0_flags);
+  ResetToDefaultOpcodePrefix();
+}
+
+#if (0 == 1)
+/* TODO(kschimpf): Delete this function if unneeded. */
+static void BrokenOldDefineX87St0(const OpcodePrefix prefix,
                          const uint8_t opcode,
                          const OperandKind opcode_in_modrm,
                          InstMnemonic mnemonic,
@@ -61,6 +77,7 @@ static void DefineX87St0(const OpcodePrefix prefix,
   DefineOperand(RegST0, st0_flags);
   ResetToDefaultOpcodePrefix();
 }
+#endif
 
 /* Define an x87 instruction that uses a single memory pointer. */
 static void DefineX87LtC0Mem(const OpcodePrefix prefix,
@@ -371,20 +388,23 @@ void DefineX87Opcodes() {
 
   DefineX87StiGroup(PrefixD9, 0xc0, InstFld, OpFlag(OpUse));
   DefineX87ExchangeSt0StiGroup(PrefixD9, 0xc8, InstFxch);
-  DefineX87MrmNoOperands(PrefixD9, 0xd0, Opcode0, InstFnop);
-  DefineX87St0(PrefixD9, 0xe0,Opcode0, InstFchs,
+  DefineX87NoOperands(PrefixD9, 0xd0, InstFnop);
+  DefineX87St0(PrefixD9, 0xe0, Opcode0, InstFchs,
             OpFlag(OpSet) | OpFlag(OpUse));
-  DefineX87St0(PrefixD9, 0xe0, Opcode1, InstFabs,
+  DefineX87St0(PrefixD9, 0xe1, Opcode1, InstFabs,
             OpFlag(OpSet) | OpFlag(OpUse));
-  DefineX87St0(PrefixD9, 0xe0, Opcode4, InstFtst, OpFlag(OpUse));
-  DefineX87St0(PrefixD9, 0xe0, Opcode5, InstFxam, OpFlag(OpUse));
-  DefineX87MrmNoOperands(PrefixD9, 0xe8, Opcode0, InstFld1);
-  DefineX87MrmNoOperands(PrefixD9, 0xe8, Opcode1, InstFldl2t);
-  DefineX87MrmNoOperands(PrefixD9, 0xe8, Opcode2, InstFldl2e);
-  DefineX87MrmNoOperands(PrefixD9, 0xe8, Opcode3, InstFldpi);
-  DefineX87MrmNoOperands(PrefixD9, 0xe8, Opcode4, InstFldlg2);
-  DefineX87MrmNoOperands(PrefixD9, 0xe8, Opcode5, InstFldln2);
-  DefineX87MrmNoOperands(PrefixD9, 0xe8, Opcode6, InstFldz);
+  /* 0xe2 and 0xe3 are not defined */
+  DefineX87St0(PrefixD9, 0xe4, Opcode4, InstFtst, OpFlag(OpUse));
+  DefineX87St0(PrefixD9, 0xe5, Opcode5, InstFxam, OpFlag(OpUse));
+  /* 0xe6 and 0xe7 are not defined */
+  DefineX87ModifySt0(PrefixD9, 0xe8, InstFld1);
+  DefineX87ModifySt0(PrefixD9, 0xe9, InstFldl2t);
+  DefineX87ModifySt0(PrefixD9, 0xea, InstFldl2e);
+  DefineX87ModifySt0(PrefixD9, 0xeb, InstFldpi);
+  DefineX87ModifySt0(PrefixD9, 0xec, InstFldlg2);
+  DefineX87ModifySt0(PrefixD9, 0xed, InstFldln2);
+  DefineX87ModifySt0(PrefixD9, 0xee, InstFldz);
+  /* 0xef is not defined */
   DefineX87ModifySt0(PrefixD9, 0xf0, InstF2m1);
   DefineX87BinopSt1St0(PrefixD9, 0xf1, InstFyl2x);
   DefineX87ModifySt0(PrefixD9, 0xf2, InstFptan);
