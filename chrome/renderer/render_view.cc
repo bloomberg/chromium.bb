@@ -1564,6 +1564,9 @@ WebWidget* RenderView::createPopupMenu(bool activatable) {
   RenderWidget* widget = RenderWidget::Create(routing_id_,
                                               render_thread_,
                                               activatable);
+  showing_popup_menu_ = true;
+  widget->SetPopupMenuOwnerWidget(this);
+
   return widget->webwidget();
 }
 
@@ -1571,6 +1574,9 @@ WebWidget* RenderView::createPopupMenu(const WebPopupMenuInfo& info) {
   RenderWidget* widget = RenderWidget::Create(routing_id_,
                                               render_thread_,
                                               true);
+  showing_popup_menu_ = true;
+  widget->SetPopupMenuOwnerWidget(this);
+
   widget->ConfigureAsExternalPopupMenu(info);
   return widget->webwidget();
 }
