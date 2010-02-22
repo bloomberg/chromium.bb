@@ -10,6 +10,7 @@
 #include "base/values.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/common/geoposition.h"
+#include "net/base/load_flags.h"
 #include "net/url_request/url_request_status.h"
 
 namespace {
@@ -92,6 +93,10 @@ bool NetworkLocationRequest::MakeRequest(const string16& access_token,
       url_, URLFetcher::POST, this));
   url_fetcher_->set_upload_data(kMimeApplicationJson, post_body);
   url_fetcher_->set_request_context(url_context_);
+  url_fetcher_->set_load_flags(
+      net::LOAD_BYPASS_CACHE | net::LOAD_DISABLE_CACHE |
+      net::LOAD_DO_NOT_SAVE_COOKIES | net::LOAD_DO_NOT_SEND_COOKIES |
+      net::LOAD_DO_NOT_SEND_AUTH_DATA);
   url_fetcher_->Start();
   return true;
 }
@@ -144,17 +149,7 @@ bool FormRequestBody(const string16& host_name,
   AddRadioData(radio_data, &body_object);
   AddWifiData(wifi_data, &body_object);
 
-  // TODO(joth): Do we need to mess with locales?
-  // We always use the platform independent 'C' locale when writing the JSON
-  // request, irrespective of the browser's locale. This avoids the need for
-  // the network location provider to determine the locale of the request and
-  // parse the JSON accordingly.
-//  char* current_locale = setlocale(LC_NUMERIC, "C");
-
   base::JSONWriter::Write(&body_object, false, data);
-
-//  setlocale(LC_NUMERIC, current_locale);
-
   DLOG(INFO) << "NetworkLocationRequest::FormRequestBody(): Formed body "
              << data << ".\n";
   return true;
@@ -282,17 +277,9 @@ bool ParseServerResponse(const std::string& response_body,
              << response_body << ".\n";
 
   // Parse the response, ignoring comments.
-  // TODO(joth): Gears version stated: The JSON reponse from the network
-  // location provider should always use the 'C' locale.
-  // Chromium JSON parser works in UTF8 so hopefully we can ignore setlocale?
-
-//  char* current_locale = setlocale(LC_NUMERIC, "C");
   std::string error_msg;
   scoped_ptr<Value> response_value(base::JSONReader::ReadAndReturnError(
       response_body, false, &error_msg));
-
-//  setlocale(LC_NUMERIC, current_locale);
-
   if (response_value == NULL) {
     LOG(WARNING) << "ParseServerResponse() : JSONReader failed : "
                  << error_msg << ".\n";
