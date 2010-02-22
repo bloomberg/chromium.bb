@@ -61,6 +61,12 @@ int HttpAuthHandlerNegotiate::GenerateDefaultAuthToken(
   return ERR_NOT_IMPLEMENTED;
 }
 
+HttpAuthHandlerNegotiate::Factory::Factory() {
+}
+
+HttpAuthHandlerNegotiate::Factory::~Factory() {
+}
+
 int HttpAuthHandlerNegotiate::Factory::CreateAuthHandler(
     HttpAuth::ChallengeTokenizer* challenge,
     HttpAuth::Target target,
