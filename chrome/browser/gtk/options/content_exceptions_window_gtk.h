@@ -69,8 +69,8 @@ class ContentExceptionsWindowGtk : public gtk_tree::TableAdapter::Delegate,
                          ContentExceptionsWindowGtk* window);
   static void OnWindowDestroy(GtkWidget* widget,
                               ContentExceptionsWindowGtk* window);
-  static void OnSelectionChanged(GtkTreeSelection *selection,
-                                 ContentExceptionsWindowGtk* languages_page);
+  static void OnSelectionChanged(GtkTreeSelection* selection,
+                                 ContentExceptionsWindowGtk* window);
 
   // The list presented in |treeview_|; a gobject instead of a C++ object.
   GtkListStore* list_store_;

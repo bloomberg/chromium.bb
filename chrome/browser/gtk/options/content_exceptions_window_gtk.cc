@@ -264,7 +264,7 @@ void ContentExceptionsWindowGtk::OnWindowDestroy(
 
 // static
 void ContentExceptionsWindowGtk::OnSelectionChanged(
-    GtkTreeSelection *selection,
-    ContentExceptionsWindowGtk* languages_page) {
-  languages_page->UpdateButtonState();
+    GtkTreeSelection* selection,
+    ContentExceptionsWindowGtk* window) {
+  window->UpdateButtonState();
 }
