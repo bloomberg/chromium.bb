@@ -1,7 +1,7 @@
 vars = {
   "webkit_trunk":
     "http://svn.webkit.org/repository/webkit/trunk",
-  "webkit_revision": "55033",
+  "webkit_revision": "55080",
   "ffmpeg_revision": "39607",
   "skia_revision": "490",
   "chromium_git": "http://src.chromium.org/git",
@@ -68,9 +68,6 @@ deps = {
 
   "src/third_party/WebKit/WebKitTools/Scripts":
     Var("webkit_trunk") + "/WebKitTools/Scripts@" + Var("webkit_revision"),
-
-  "src/third_party/WebKit/WebKitTools/simplejson":
-    Var("webkit_trunk") + "/WebKitTools/simplejson@" + Var("webkit_revision"),
 
   "src/third_party/ots":
     "http://ots.googlecode.com/svn/trunk@26",
