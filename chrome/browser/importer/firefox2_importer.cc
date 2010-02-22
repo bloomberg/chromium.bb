@@ -41,8 +41,8 @@ void Firefox2Importer::StartImport(ProfileInfo profile_info,
                                    uint16 items,
                                    ImporterBridge* bridge) {
   bridge_ = bridge;
-  source_path_ = profile_info.source_path;
-  app_path_ = profile_info.app_path;
+  source_path_ = FilePath::FromWStringHack(profile_info.source_path);
+  app_path_ = FilePath::FromWStringHack(profile_info.app_path);
 
   parsing_bookmarks_html_file_ = (profile_info.browser_type == BOOKMARKS_HTML);
 
@@ -79,18 +79,17 @@ void Firefox2Importer::StartImport(ProfileInfo profile_info,
 }
 
 // static
-void Firefox2Importer::LoadDefaultBookmarks(const std::wstring& app_path,
+void Firefox2Importer::LoadDefaultBookmarks(const FilePath& app_path,
                                             std::set<GURL> *urls) {
-  FilePath file = FilePath::FromWStringHack(app_path);
-  file = file.AppendASCII("defaults");
-  file = file.AppendASCII("profile");
-  file = file.AppendASCII("bookmarks.html");
+  FilePath file = app_path.AppendASCII("defaults")
+                      .AppendASCII("profile")
+                      .AppendASCII("bookmarks.html");
 
   urls->clear();
 
   // Read the whole file.
   std::string content;
-  file_util::ReadFileToString(file.ToWStringHack(), &content);
+  file_util::ReadFileToString(file, &content);
   std::vector<std::string> lines;
   SplitString(content, '\n', &lines);
 
@@ -136,7 +135,7 @@ TemplateURL* Firefox2Importer::CreateTemplateURL(const std::wstring& title,
 
 // static
 void Firefox2Importer::ImportBookmarksFile(
-    const std::wstring& file_path,
+    const FilePath& file_path,
     const std::set<GURL>& default_urls,
     bool import_to_bookmark_bar,
     const std::wstring& first_folder_name,
@@ -250,9 +249,9 @@ void Firefox2Importer::ImportBookmarks() {
   std::vector<ProfileWriter::BookmarkEntry> bookmarks, toolbar_bookmarks;
   std::vector<TemplateURL*> template_urls;
   std::vector<history::ImportedFavIconUsage> favicons;
-  std::wstring file = source_path_;
+  FilePath file = source_path_;
   if (!parsing_bookmarks_html_file_)
-    file_util::AppendToPath(&file, L"bookmarks.html");
+    file = file.AppendASCII("bookmarks.html");
   std::wstring first_folder_name;
   if (parsing_bookmarks_html_file_)
     first_folder_name = l10n_util::GetString(IDS_BOOKMARK_GROUP);
@@ -284,17 +283,18 @@ void Firefox2Importer::ImportBookmarks() {
 void Firefox2Importer::ImportPasswords() {
   // Initializes NSS3.
   NSSDecryptor decryptor;
-  if (!decryptor.Init(source_path_, source_path_) &&
-      !decryptor.Init(app_path_, source_path_))
+  if (!decryptor.Init(source_path_.ToWStringHack(),
+                      source_path_.ToWStringHack()) &&
+      !decryptor.Init(app_path_.ToWStringHack(),
+                      source_path_.ToWStringHack())) {
     return;
+  }
 
   // Firefox 2 uses signons2.txt to store the pssswords. If it doesn't
   // exist, we try to find its older version.
-  std::wstring file = source_path_;
-  file_util::AppendToPath(&file, L"signons2.txt");
-  if (!file_util::PathExists(FilePath::FromWStringHack(file))) {
-    file = source_path_;
-    file_util::AppendToPath(&file, L"signons.txt");
+  FilePath file = source_path_.AppendASCII("signons2.txt");
+  if (!file_util::PathExists(file)) {
+    file = source_path_.AppendASCII("signons.txt");
   }
 
   std::string content;
@@ -310,13 +310,12 @@ void Firefox2Importer::ImportPasswords() {
 }
 
 void Firefox2Importer::ImportHistory() {
-  std::wstring file = source_path_;
-  file_util::AppendToPath(&file, L"history.dat");
+  FilePath file = source_path_.AppendASCII("history.dat");
   ImportHistoryFromFirefox2(file, bridge_);
 }
 
 void Firefox2Importer::ImportSearchEngines() {
-  std::vector<std::wstring> files;
+  std::vector<FilePath> files;
   GetSearchEnginesXMLFiles(&files);
 
   std::vector<TemplateURL*> search_engines;
@@ -335,17 +334,15 @@ void Firefox2Importer::ImportHomepage() {
 }
 
 void Firefox2Importer::GetSearchEnginesXMLFiles(
-    std::vector<std::wstring>* files) {
+    std::vector<FilePath>* files) {
   // Search engines are contained in XML files in a searchplugins directory that
   // can be found in 2 locations:
   // - Firefox install dir (default search engines)
   // - the profile dir (user added search engines)
-  std::wstring dir(app_path_);
-  file_util::AppendToPath(&dir, L"searchplugins");
+  FilePath dir = app_path_.AppendASCII("searchplugins");
   FindXMLFilesInDir(dir, files);
 
-  std::wstring profile_dir = source_path_;
-  file_util::AppendToPath(&profile_dir, L"searchplugins");
+  FilePath profile_dir = source_path_.AppendASCII("searchplugins");
   FindXMLFilesInDir(profile_dir, files);
 }
 
@@ -535,15 +532,15 @@ void Firefox2Importer::HTMLUnescape(std::wstring *text) {
 
 // static
 void Firefox2Importer::FindXMLFilesInDir(
-    const std::wstring& dir,
-    std::vector<std::wstring>* xml_files) {
-  file_util::FileEnumerator file_enum(FilePath::FromWStringHack(dir), false,
+    const FilePath& dir,
+    std::vector<FilePath>* xml_files) {
+  file_util::FileEnumerator file_enum(dir, false,
                                       file_util::FileEnumerator::FILES,
                                       FILE_PATH_LITERAL("*.xml"));
-  std::wstring file(file_enum.Next().ToWStringHack());
+  FilePath file(file_enum.Next());
   while (!file.empty()) {
     xml_files->push_back(file);
-    file = file_enum.Next().ToWStringHack();
+    file = file_enum.Next();
   }
 }
 

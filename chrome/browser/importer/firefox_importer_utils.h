@@ -66,22 +66,22 @@ bool CanImportURL(const GURL& url);
 
 // Parses the OpenSearch XML files in |xml_files| and populates |search_engines|
 // with the resulting TemplateURLs.
-void ParseSearchEnginesFromXMLFiles(const std::vector<std::wstring>& xml_files,
+void ParseSearchEnginesFromXMLFiles(const std::vector<FilePath>& xml_files,
                                     std::vector<TemplateURL*>* search_engines);
 
 // Returns the index of the default search engine in the |search_engines| list.
 // If none is found, -1 is returned.
 int GetFirefoxDefaultSearchEngineIndex(
     const std::vector<TemplateURL*>& search_engines,
-    const std::wstring& profile_path);
+    const FilePath& profile_path);
 
 // Returns the home page set in Firefox in a particular profile.
-GURL GetHomepage(const std::wstring& profile_path);
+GURL GetHomepage(const FilePath& profile_path);
 
 // Checks to see if this home page is a default home page, as specified by
 // the resource file browserconfig.properties in the Firefox application
 // directory.
-bool IsDefaultHomepage(const GURL& homepage, const std::wstring& app_path);
+bool IsDefaultHomepage(const GURL& homepage, const FilePath& app_path);
 
 
 #endif  // CHROME_BROWSER_IMPORTER_FIREFOX_IMPORTER_UTILS_H_

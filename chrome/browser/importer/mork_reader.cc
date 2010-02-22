@@ -115,8 +115,7 @@ MorkReader::~MorkReader() {
     delete i->second;
 }
 
-bool MorkReader::Read(const std::wstring& filename) {
-  FilePath path = FilePath::FromWStringHack(filename);
+bool MorkReader::Read(const FilePath& path) {
   stream_.open(path.value().c_str());
   if (!stream_.is_open())
     return false;
@@ -546,8 +545,7 @@ void AddToHistory(MorkReader::ColumnDataList* column_values,
 
 // It sets up the file stream and loops over the lines in the file to
 // parse them, then adds the resulting row set to history.
-void ImportHistoryFromFirefox2(const std::wstring& file,
-                               ImporterBridge* bridge) {
+void ImportHistoryFromFirefox2(const FilePath& file, ImporterBridge* bridge) {
   MorkReader reader;
   reader.Read(file);
 

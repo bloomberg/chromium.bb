@@ -30,8 +30,8 @@ void Firefox3Importer::StartImport(ProfileInfo profile_info,
                                    uint16 items,
                                    ImporterBridge* bridge) {
   bridge_ = bridge;
-  source_path_ = profile_info.source_path;
-  app_path_ = profile_info.app_path;
+  source_path_ = FilePath::FromWStringHack(profile_info.source_path);
+  app_path_ = FilePath::FromWStringHack(profile_info.app_path);
 
 
   // The order here is important!
@@ -67,14 +67,15 @@ void Firefox3Importer::StartImport(ProfileInfo profile_info,
 }
 
 void Firefox3Importer::ImportHistory() {
-  std::wstring file = source_path_;
-  file_util::AppendToPath(&file, L"places.sqlite");
-  if (!file_util::PathExists(FilePath::FromWStringHack(file)))
+  FilePath file = source_path_.AppendASCII("places.sqlite");
+  if (!file_util::PathExists(file))
     return;
 
   sqlite3* sqlite;
-  if (sqlite3_open(WideToUTF8(file).c_str(), &sqlite) != SQLITE_OK)
+  if (sqlite3_open(WideToUTF8(file.ToWStringHack()).c_str(),
+                   &sqlite) != SQLITE_OK) {
     return;
+  }
   sqlite_utils::scoped_sqlite_db_ptr db(sqlite);
 
   SQLStatement s;
@@ -115,14 +116,15 @@ void Firefox3Importer::ImportHistory() {
 }
 
 void Firefox3Importer::ImportBookmarks() {
-  std::wstring file = source_path_;
-  file_util::AppendToPath(&file, L"places.sqlite");
-  if (!file_util::PathExists(FilePath::FromWStringHack(file)))
+  FilePath file = source_path_.AppendASCII("places.sqlite");
+  if (!file_util::PathExists(file))
     return;
 
   sqlite3* sqlite;
-  if (sqlite3_open(WideToUTF8(file).c_str(), &sqlite) != SQLITE_OK)
+  if (sqlite3_open(WideToUTF8(file.ToWStringHack()).c_str(),
+                   &sqlite) != SQLITE_OK) {
     return;
+  }
   sqlite_utils::scoped_sqlite_db_ptr db(sqlite);
 
   // Get the bookmark folders that we are interested in.
@@ -265,12 +267,15 @@ void Firefox3Importer::ImportBookmarks() {
 void Firefox3Importer::ImportPasswords() {
   // Initializes NSS3.
   NSSDecryptor decryptor;
-  if (!decryptor.Init(source_path_, source_path_) &&
-      !decryptor.Init(app_path_, source_path_))
+  if (!decryptor.Init(source_path_.ToWStringHack(),
+                      source_path_.ToWStringHack()) &&
+      !decryptor.Init(app_path_.ToWStringHack(),
+                      source_path_.ToWStringHack())) {
     return;
+  }
 
   std::vector<PasswordForm> forms;
-  FilePath source_path = FilePath::FromWStringHack(source_path_);
+  FilePath source_path = source_path_;
   FilePath file = source_path.AppendASCII("signons.sqlite");
   if (file_util::PathExists(file)) {
     // Since Firefox 3.1, passwords are in signons.sqlite db.
@@ -294,7 +299,7 @@ void Firefox3Importer::ImportPasswords() {
 }
 
 void Firefox3Importer::ImportSearchEngines() {
-  std::vector<std::wstring> files;
+  std::vector<FilePath> files;
   GetSearchEnginesXMLFiles(&files);
 
   std::vector<TemplateURL*> search_engines;
@@ -312,15 +317,16 @@ void Firefox3Importer::ImportHomepage() {
 }
 
 void Firefox3Importer::GetSearchEnginesXMLFiles(
-    std::vector<std::wstring>* files) {
-  std::wstring file = source_path_;
-  file_util::AppendToPath(&file, L"search.sqlite");
-  if (!file_util::PathExists(FilePath::FromWStringHack(file)))
+    std::vector<FilePath>* files) {
+  FilePath file = source_path_.AppendASCII("search.sqlite");
+  if (!file_util::PathExists(file))
     return;
 
   sqlite3* sqlite;
-  if (sqlite3_open(WideToUTF8(file).c_str(), &sqlite) != SQLITE_OK)
+  if (sqlite3_open(WideToUTF8(file.ToWStringHack()).c_str(),
+                   &sqlite) != SQLITE_OK) {
     return;
+  }
   sqlite_utils::scoped_sqlite_db_ptr db(sqlite);
 
   SQLStatement s;
@@ -333,10 +339,8 @@ void Firefox3Importer::GetSearchEnginesXMLFiles(
   if (s.prepare(db.get(), stmt) != SQLITE_OK)
     return;
 
-  std::wstring app_path = app_path_;
-  file_util::AppendToPath(&app_path, L"searchplugins");
-  std::wstring profile_path = source_path_;
-  file_util::AppendToPath(&profile_path, L"searchplugins");
+  FilePath app_path = app_path_.AppendASCII("searchplugins");
+  FilePath profile_path = source_path_.AppendASCII("searchplugins");
 
   // Firefox doesn't store a search engine in its sqlite database unless
   // the user has changed the default definition of engine. So we get search
@@ -345,7 +349,7 @@ void Firefox3Importer::GetSearchEnginesXMLFiles(
     const std::wstring kAppPrefix = L"[app]/";
     const std::wstring kProfilePrefix = L"[profile]/";
     do {
-      std::wstring file;
+      FilePath file;
       std::wstring engine = UTF8ToWide(s.column_string(0));
 
       // The string contains [app]/<name>.xml or [profile]/<name>.xml where
@@ -354,30 +358,27 @@ void Firefox3Importer::GetSearchEnginesXMLFiles(
       size_t index = engine.find(kAppPrefix);
       if (index != std::wstring::npos) {
         // Remove '[app]/'.
-        file = app_path;
-        file_util::AppendToPath(&file,
-                                engine.substr(index + kAppPrefix.length()));
+        file = app_path.Append(FilePath::FromWStringHack(
+                                   engine.substr(index + kAppPrefix.length())));
       } else if ((index = engine.find(kProfilePrefix)) != std::wstring::npos) {
         // Remove '[profile]/'.
-        file = profile_path;
-        file_util::AppendToPath(&file,
-                                engine.substr(index + kProfilePrefix.length()));
+          file = profile_path.Append(
+              FilePath::FromWStringHack(
+                  engine.substr(index + kProfilePrefix.length())));
       } else {
         // Looks like absolute path to the file.
-        file = engine;
+        file = FilePath::FromWStringHack(engine);
       }
       files->push_back(file);
     } while (s.step() == SQLITE_ROW && !cancelled());
   }
 
   // Get search engine definition from file system.
-  file_util::FileEnumerator engines(FilePath::FromWStringHack(app_path),
-                                    false,
+  file_util::FileEnumerator engines(app_path, false,
                                     file_util::FileEnumerator::FILES);
   for (FilePath engine_path = engines.Next(); !engine_path.value().empty();
        engine_path = engines.Next()) {
-    std::wstring enginew = engine_path.ToWStringHack();
-    files->push_back(enginew);
+    files->push_back(engine_path);
   }
 }
 

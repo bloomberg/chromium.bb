@@ -50,6 +50,7 @@
 
 #include "base/basictypes.h"
 
+class FilePath;
 class ImporterBridge;
 class MessageLoop;
 class ProfileWriter;
@@ -93,7 +94,7 @@ class MorkReader {
 
   // Read in the given mork file. Returns true on success.
   // Note: currently, only single-table mork files are supported
-  bool Read(const std::wstring& filename);
+  bool Read(const FilePath& filename);
 
   // Returns the list of columns in the current table.
   const MorkColumnList& columns() const { return columns_; }
@@ -161,7 +162,6 @@ class MorkReader {
 };
 
 // ImportHistoryFromFirefox2 is the main entry point to the importer.
-void ImportHistoryFromFirefox2(const std::wstring& file,
-                               ImporterBridge* bridge);
+void ImportHistoryFromFirefox2(const FilePath& file, ImporterBridge* bridge);
 
 #endif  // CHROME_BROWSER_IMPORTER_MORK_READER_H__

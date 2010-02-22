@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/file_path.h"
 #include "chrome/browser/importer/importer.h"
 #include "googleurl/src/gurl.h"
 
@@ -40,7 +41,7 @@ class Firefox3Importer : public Importer {
   // Import the user's home page, unless it is set to default home page as
   // defined in browserconfig.properties.
   void ImportHomepage();
-  void GetSearchEnginesXMLFiles(std::vector<std::wstring>* files);
+  void GetSearchEnginesXMLFiles(std::vector<FilePath>* files);
 
   // The struct stores the information about a bookmark item.
   struct BookmarkItem {
@@ -76,8 +77,8 @@ class Firefox3Importer : public Importer {
                     const FaviconMap& favicon_map,
                     std::vector<history::ImportedFavIconUsage>* favicons);
 
-  std::wstring source_path_;
-  std::wstring app_path_;
+  FilePath source_path_;
+  FilePath app_path_;
 
   DISALLOW_COPY_AND_ASSIGN(Firefox3Importer);
 };
