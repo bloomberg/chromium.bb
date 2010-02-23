@@ -34,6 +34,8 @@ ACCEPTABLE_ARGUMENTS = {
     'PROGRESS': None,
     'SILENT': None,
     'SYMBOLS': None,
+    # Inherit environment variables instead of scrubbing environment.
+    'USE_ENVIRON': None,
     # enable building of apps that use multi media function
     'build_av_apps': None,
     # set build platform
@@ -88,6 +90,12 @@ pre_base_env = Environment(
     LIBS_STRICT = True,
     LIBS_DO_SUBST = True,
 )
+
+# Scons normally wants to scrub the environment.  However, sometimes
+# we want to allow PATH and other variables through so that Scons
+# scripts can find nacl-gcc without needing a Scons-specific argument.
+if int(ARGUMENTS.get('USE_ENVIRON', '0')):
+  pre_base_env['ENV'] = os.environ.copy()
 
 # ----------------------------------------------------------
 # Method to make sure -pedantic, etc, are not stripped from the
