@@ -12,6 +12,7 @@
 #include "base/message_loop.h"
 #include "base/singleton.h"
 #include "base/string_util.h"
+#include "chrome/common/platform_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_shutdown.h"
@@ -437,10 +438,7 @@ std::wstring ExtensionHost::GetMessageBoxTitle(const GURL& frame_url,
 }
 
 gfx::NativeWindow ExtensionHost::GetMessageBoxRootWindow() {
-  TabContents* active_tab = GetBrowser()->GetSelectedTabContents();
-  if (active_tab)
-    return active_tab->view()->GetTopLevelNativeWindow();
-  return NULL;
+  return platform_util::GetTopLevel(GetNativeViewOfHost());
 }
 
 void ExtensionHost::OnMessageBoxClosed(IPC::Message* reply_msg,

@@ -848,7 +848,7 @@ void BrowserActionsContainer::BubbleLostFocus(BrowserBubble* bubble,
     return;
 
 #if defined(OS_WIN)
-  // Don't hide when we are loosing focus to a child window.  This is the case
+  // Don't hide when we are losing focus to a child window.  This is the case
   // with select popups.
   // TODO(jcampan): http://crbugs.com/29131 make that work on toolkit views
   //                so this #if defined can be removed.
@@ -858,6 +858,11 @@ void BrowserActionsContainer::BubbleLostFocus(BrowserBubble* bubble,
     if (parent == popup_native_view)
       return;
   }
+
+  // Don't close when we are losing focus to a window we own.
+  // This is the case with JavaScript message boxes (such as alerts).
+  if (::GetWindow(focused_view, GW_OWNER) == popup_native_view)
+    return;
 #endif
 
   // This is a bit annoying.  If you click on the button that generated the
