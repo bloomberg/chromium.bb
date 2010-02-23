@@ -151,7 +151,6 @@ void JavaScriptAppModalDialog::CreateAndShowDialog() {
     [[alert window] makeFirstResponder:field];
 }
 
-// The functions below are used by the (windows-only) automation framework.
 int JavaScriptAppModalDialog::GetDialogButtons() {
   NOTIMPLEMENTED();
   return 0;
@@ -165,7 +164,6 @@ void JavaScriptAppModalDialog::CancelWindow() {
   NOTIMPLEMENTED();
 }
 
-// This is only used by the app-modal dialog machinery on windows.
 NativeDialog JavaScriptAppModalDialog::CreateNativeDialog() {
   NOTIMPLEMENTED();
   return nil;

@@ -50,9 +50,6 @@ class CookiePromptModalDialog : public AppModalDialog {
   static void RegisterPrefs(PrefService* prefs);
 
   // AppModalDialog overrides.
-#if defined(OS_LINUX) || defined(OS_MACOSX)
-  virtual void CreateAndShowDialog();
-#endif
   virtual int GetDialogButtons();
   virtual void AcceptWindow();
   virtual void CancelWindow();
