@@ -356,6 +356,10 @@ bool CreateShortcutTask::CreateShortcut() {
      shortcut_info_.extension_id);
   std::wstring wide_switchs(UTF8ToWide(switches));
 
+  // Sanitize description
+  if (shortcut_info_.description.length() >= MAX_PATH)
+    shortcut_info_.description.resize(MAX_PATH - 1);
+
   // Generates app id from web app url and profile path.
   std::wstring app_id = ShellIntegration::GetAppId(
       web_app::GenerateApplicationNameFromURL(shortcut_info_.url).c_str(),
@@ -598,6 +602,10 @@ void UpdateShortcutWorker::UpdateShortcutsOnFileThread() {
     std::wstring app_id = ShellIntegration::GetAppId(
         web_app::GenerateApplicationNameFromURL(shortcut_info_.url).c_str(),
         profile_path_);
+
+    // Sanitize description
+    if (shortcut_info_.description.length() >= MAX_PATH)
+      shortcut_info_.description.resize(MAX_PATH - 1);
 
     for (size_t i = 0; i < shortcut_files_.size(); ++i) {
       file_util::UpdateShortcutLink(NULL,
