@@ -69,13 +69,26 @@
           'framework/main_pepper.cc',
         ],
         'run_as': {
-          'action': [
-            '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)chrome<(EXECUTABLE_SUFFIX)',
-            '--no-sandbox',
-            '--internal-pepper',
-            '--enable-gpu-plugin',
-            '--load-plugin=$(TargetPath)',
-            'file://$(ProjectDir)pepper_gpu_demo.html',
+          'conditions': [
+            ['OS=="mac"', {
+              'action': [
+                '<(PRODUCT_DIR)/Chromium.app/Contents/MacOS/Chromium',
+                '--no-sandbox',
+                '--internal-pepper',
+                '--enable-gpu-plugin',
+                '--load-plugin=<(PRODUCT_DIR)/$(PRODUCT_NAME).plugin',
+                'file://$(SOURCE_ROOT)/pepper_gpu_demo.html',
+              ],
+             }, { # OS != "mac"
+              'action': [
+                '<(PRODUCT_DIR)/<(EXECUTABLE_PREFIX)chrome<(EXECUTABLE_SUFFIX)',
+                '--no-sandbox',
+                '--internal-pepper',
+                '--enable-gpu-plugin',
+                '--load-plugin=$(TargetPath)',
+                'file://$(ProjectDir)pepper_gpu_demo.html',
+              ],
+            }],
           ],
         },
         'conditions': [
@@ -88,6 +101,16 @@
           ['OS=="linux"', {
             # -gstabs, used in the official builds, causes an ICE. Remove it.
             'cflags!': ['-gstabs'],
+          }],
+          ['OS=="mac"', {
+            'sources': [
+              'framework/Plugin_Info.plist',
+            ],
+            'xcode_settings': {
+              'INFOPLIST_FILE': 'framework/Plugin_Info.plist',
+            },
+            'mac_bundle': 1,
+            'product_extension': 'plugin',
           }],
         ],
       },
@@ -182,7 +205,7 @@
       'targets': [
         {
           'target_name': 'hello_triangle_pepper',
-          'type': 'shared_library',
+          'type': 'loadable_module',
           'dependencies': [
             'gpu_demo_framework_pepper',
             '../../third_party/gles2_book/gles2_book.gyp:hello_triangle',
@@ -194,7 +217,7 @@
         },
         {
           'target_name': 'mip_map_2d_pepper',
-          'type': 'shared_library',
+          'type': 'loadable_module',
           'dependencies': [
             'gpu_demo_framework_pepper',
             '../../third_party/gles2_book/gles2_book.gyp:mip_map_2d',
@@ -206,7 +229,7 @@
         },
         {
           'target_name': 'simple_texture_2d_pepper',
-          'type': 'shared_library',
+          'type': 'loadable_module',
           'dependencies': [
             'gpu_demo_framework_pepper',
             '../../third_party/gles2_book/gles2_book.gyp:simple_texture_2d',
@@ -218,7 +241,7 @@
         },
         {
           'target_name': 'simple_texture_cubemap_pepper',
-          'type': 'shared_library',
+          'type': 'loadable_module',
           'dependencies': [
             'gpu_demo_framework_pepper',
             '../../third_party/gles2_book/gles2_book.gyp:simple_texture_cubemap',
@@ -230,7 +253,7 @@
         },
         {
           'target_name': 'simple_vertex_shader_pepper',
-          'type': 'shared_library',
+          'type': 'loadable_module',
           'dependencies': [
             'gpu_demo_framework_pepper',
             '../../third_party/gles2_book/gles2_book.gyp:simple_vertex_shader',
@@ -242,7 +265,7 @@
         },
         {
           'target_name': 'stencil_test_pepper',
-          'type': 'shared_library',
+          'type': 'loadable_module',
           'dependencies': [
             'gpu_demo_framework_pepper',
             '../../third_party/gles2_book/gles2_book.gyp:stencil_test',
@@ -254,7 +277,7 @@
         },
         {
           'target_name': 'texture_wrap_pepper',
-          'type': 'shared_library',
+          'type': 'loadable_module',
           'dependencies': [
             'gpu_demo_framework_pepper',
             '../../third_party/gles2_book/gles2_book.gyp:texture_wrap',
