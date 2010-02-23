@@ -2955,3 +2955,6 @@ BUG36019 : fast/images/svg-as-tiled-background.html = IMAGE
 
 // Started failing with r54823
 BUG35923 LINUX : fast/backgrounds/animated-gif-as-background.html = IMAGE
+
+// Test was changed in WebKit's r55103. Needs a rebaseline on all platforms
+BUG36554 LINUX MAC : fast/encoding/invalid-UTF-8.html = IMAGE+TEXT
