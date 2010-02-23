@@ -407,7 +407,6 @@ struct ViewMsg_DatabaseOpenFileResponse_Params {
 #if defined(OS_POSIX)
   base::FileDescriptor dir_handle;    // DB directory handle
 #endif
-  bool blocked;    // DB access was blocked.
 };
 
 // Parameters to describe a rendered page.

@@ -181,15 +181,13 @@ void DatabaseDispatcherHost::OnDatabaseOpenFile(const string16& vfs_file_name,
 static void SetOpenFileResponseParams(
     ViewMsg_DatabaseOpenFileResponse_Params* params,
     base::PlatformFile file_handle,
-    base::PlatformFile dir_handle,
-    bool is_blocked) {
+    base::PlatformFile dir_handle) {
 #if defined(OS_WIN)
   params->file_handle = file_handle;
 #elif defined(OS_POSIX)
   params->file_handle = base::FileDescriptor(file_handle, true);
   params->dir_handle = base::FileDescriptor(dir_handle, true);
 #endif
-  params->blocked = is_blocked;
 }
 
 // Scheduled by the IO thread on the file thread.
@@ -221,8 +219,7 @@ void DatabaseDispatcherHost::DatabaseOpenFile(const string16& vfs_file_name,
   }
 
   ViewMsg_DatabaseOpenFileResponse_Params response_params;
-  SetOpenFileResponseParams(&response_params, target_handle, target_dir_handle,
-      false /* blocked */);
+  SetOpenFileResponseParams(&response_params, target_handle, target_dir_handle);
   ChromeThread::PostTask(
       ChromeThread::IO, FROM_HERE,
       NewRunnableMethod(this,
@@ -479,8 +476,7 @@ void DatabaseDispatcherHost::OnDatabaseOpenFileBlocked(int32 message_id) {
   ViewMsg_DatabaseOpenFileResponse_Params response_params;
   SetOpenFileResponseParams(&response_params,
                             base::kInvalidPlatformFileValue,
-                            base::kInvalidPlatformFileValue,
-                            true /* blocked */);
+                            base::kInvalidPlatformFileValue);
   SendMessage(new ViewMsg_DatabaseOpenFileResponse(message_id,
                                                    response_params));
 }

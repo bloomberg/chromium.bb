@@ -350,22 +350,6 @@ WebKitClient::FileHandle RendererWebKitClientImpl::databaseOpenFile(
               vfs_file_name, desired_flags, message_id),
           message_id, default_response);
 
-  if (result.blocked) {
-    // RoutingIDForCurrentContext scans the render thread's stack for a
-    // ScriptExecutionContext. However, we are running on the database thread.
-    // The reason why this works is that the render thread blocks in
-    // third_party/WebKit/WebCore/storage/Database.cpp:openAndVerifyVersion,
-    // and therefore, the latest ScriptExecutionContext on the render thread
-    // is the context in which this database open was requested.
-    //
-    // TODO(jochen): either obtain the routing ID in a less fragile way or
-    // figure out a way to pass the content blocked message to the caller.
-    int32 routing_id = RenderThread::RoutingIDForCurrentContext();
-    CHECK(routing_id != MSG_ROUTING_CONTROL);
-    db_message_filter->Send(new ViewHostMsg_ContentBlocked(
-        routing_id, CONTENT_SETTINGS_TYPE_COOKIES));
-  }
-
 #if defined(OS_WIN)
   if (dir_handle) {
     *dir_handle = base::kInvalidPlatformFileValue;
