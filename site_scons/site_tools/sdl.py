@@ -142,9 +142,7 @@ def _ARMLocalSDL(env):
   env.SetDefault(
       SDL_CPPPATH=code_sourcery_jail + '/usr/include/SDL',
       SDL_LIBPATH=code_sourcery_jail + '/usr/lib',
-      SDL_LIBS=['SDL', 'SDLmain',
-                # additional deps which become visible when linking statically
-                'X11', 'dl', 'pthread', 'Xext', 'Xau', 'Xdmcp'],
+      SDL_LIBS=['SDL', 'SDLmain'],
       SDL_VALIDATE_PATHS=[
       (code_sourcery_jail + '/usr/lib/libSDL.a',
              ('You are missing SDL on your system.',

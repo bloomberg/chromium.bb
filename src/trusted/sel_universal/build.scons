@@ -57,13 +57,15 @@ env.ComponentProgram('sel_universal',
 #       The idea is to remove all the sdl cruft from sel_ldr once this
 #       become more mature
 ######################################################################
+if ARGUMENTS.get('sdl', 'hermetic') == 'none':
+  Return()
 
 # only linux support is tested for now
 if not env.Bit('linux'):
   Return()
 
-# only x86 support is tested for now
-if env['TARGET_ARCHITECTURE'] != 'x86' or env['TARGET_SUBARCH'] != '32':
+# x86/64 has not been tested
+if env['TARGET_SUBARCH'] == '64':
   Return()
 
 def ReplicateDlls(sdl_dll):
@@ -93,6 +95,9 @@ def ReplicateDlls(sdl_dll):
 
 
 def AddSdlRequirements(sdl_env, target):
+  # TODO(robetrm): reinvestigate this
+  if sdl_env['TARGET_ARCHITECTURE'] == 'arm':
+    return
   if not sdl_env.Bit('linux'):
     return
   if ARGUMENTS.get('sdl', 'hermetic') == 'none':
@@ -102,6 +107,8 @@ def AddSdlRequirements(sdl_env, target):
 
 
 def MakeSdlEnv(env):
+  # TODO(robertm): consider always using SDL here and get rid of
+  #                this function
   if not env.Bit('linux'):
     return env
   if ARGUMENTS.get('sdl', 'hermetic') == 'none':
@@ -118,10 +125,13 @@ def MakeSdlEnv(env):
   print '=' * 70
   return sdl_env
 
+
 sdl_env = MakeSdlEnv(env)
 # work around a cast warning in multimedia_handler.cc
 sdl_env.Append(CCFLAGS=['-fno-strict-aliasing'])
-
+# NOTE: on arm we typically try to build static but we cannot build
+#       anything containing SDL static
+sdl_env.FilterOut(LINKFLAGS=['-static'])
 # NOTE: we need Cocoa because of the GetPluginDir() implementation
 #       on mac (nonnacl_util_c)
 
