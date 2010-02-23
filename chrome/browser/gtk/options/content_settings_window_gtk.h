@@ -8,7 +8,6 @@
 #include <gtk/gtk.h>
 
 #include "base/scoped_ptr.h"
-#include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/gtk/options/cookie_filter_page_gtk.h"
 #include "chrome/browser/gtk/options/content_filter_page_gtk.h"
 #include "chrome/browser/pref_member.h"
@@ -60,7 +59,8 @@ class ContentSettingsWindowGtk {
   ContentFilterPageGtk plugin_page_;
   ContentFilterPageGtk popup_page_;
 
-  scoped_ptr<AccessibleWidgetHelper> accessibility_widget_helper_;
+  // Helper object to manage accessibility metadata.
+  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentSettingsWindowGtk);
 };

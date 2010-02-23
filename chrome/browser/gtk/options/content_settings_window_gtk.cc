@@ -4,10 +4,13 @@
 
 #include "chrome/browser/gtk/options/content_settings_window_gtk.h"
 
+#include <string>
+
 #include "app/l10n_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/pref_service.h"
 #include "chrome/browser/profile.h"
@@ -45,15 +48,6 @@ void ContentSettingsWindowGtk::Show(GtkWindow* parent,
     profile->ResumeAccessibilityEvents();
   }
   settings_window->ShowContentSettingsTab(page);
-
-  std::string name = l10n_util::GetStringUTF8(
-      IDS_CONTENT_SETTINGS_TITLE);
-  AccessibilityWindowInfo info(profile, name);
-
-  NotificationService::current()->Notify(
-      NotificationType::ACCESSIBILITY_WINDOW_OPENED,
-      Source<Profile>(profile),
-      Details<AccessibilityWindowInfo>(&info));
 }
 
 ContentSettingsWindowGtk::ContentSettingsWindowGtk(GtkWindow* parent,
@@ -68,22 +62,26 @@ ContentSettingsWindowGtk::ContentSettingsWindowGtk(GtkWindow* parent,
   last_selected_page_.Init(prefs::kContentSettingsWindowLastTabIndex,
                            profile->GetPrefs(), NULL);
 
+  std::string dialog_name = l10n_util::GetStringUTF8(
+      IDS_CONTENT_SETTINGS_TITLE);
   dialog_ = gtk_dialog_new_with_buttons(
-      l10n_util::GetStringUTF8(IDS_CONTENT_SETTINGS_TITLE).c_str(),
+      dialog_name.c_str(),
       parent,
       static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
       GTK_STOCK_CLOSE,
       GTK_RESPONSE_CLOSE,
       NULL);
+
+  accessible_widget_helper_.reset(new AccessibleWidgetHelper(
+      dialog_, profile_));
+  accessible_widget_helper_->SendOpenWindowNotification(dialog_name);
+
   gtk_window_set_default_size(GTK_WINDOW(dialog_), 500, -1);
   // Allow browser windows to go in front of the options dialog in metacity.
   gtk_window_set_type_hint(GTK_WINDOW(dialog_), GDK_WINDOW_TYPE_HINT_NORMAL);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
   gtk_util::SetWindowIcon(GTK_WINDOW(dialog_));
-
-  accessibility_widget_helper_.reset(new AccessibleWidgetHelper(
-      dialog_, profile));
 
   notebook_ = gtk_notebook_new();
 

@@ -4,10 +4,13 @@
 
 #include "chrome/browser/gtk/clear_browsing_data_dialog_gtk.h"
 
+#include <string>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browsing_data_remover.h"
+#include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/gtk/browser_window_gtk.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/pref_service.h"
@@ -26,13 +29,19 @@ ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
                                                        Profile* profile) :
     profile_(profile), remover_(NULL) {
   // Build the dialog.
+  std::string dialog_name = l10n_util::GetStringUTF8(
+      IDS_CLEAR_BROWSING_DATA_TITLE);
   GtkWidget* dialog = gtk_dialog_new_with_buttons(
-      l10n_util::GetStringUTF8(IDS_CLEAR_BROWSING_DATA_TITLE).c_str(),
+      dialog_name.c_str(),
       parent,
       (GtkDialogFlags) (GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
       GTK_STOCK_CLOSE,
       GTK_RESPONSE_REJECT,
       NULL);
+
+  accessible_widget_helper_.reset(new AccessibleWidgetHelper(dialog, profile));
+  accessible_widget_helper_->SendOpenWindowNotification(dialog_name);
+
   gtk_widget_realize(dialog);
   gtk_util::SetWindowSizeFromResources(GTK_WINDOW(dialog),
                                        IDS_CLEARDATA_DIALOG_WIDTH_CHARS,
@@ -162,6 +171,9 @@ ClearBrowsingDataDialogGtk::ClearBrowsingDataDialogGtk(GtkWindow* parent,
   g_signal_connect(dialog, "response",
                    G_CALLBACK(HandleOnResponseDialog), this);
   gtk_widget_show_all(dialog);
+}
+
+ClearBrowsingDataDialogGtk::~ClearBrowsingDataDialogGtk() {
 }
 
 void ClearBrowsingDataDialogGtk::OnDialogResponse(GtkWidget* widget,

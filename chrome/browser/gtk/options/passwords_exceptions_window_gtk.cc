@@ -6,9 +6,12 @@
 
 #include <gtk/gtk.h>
 
+#include <string>
+
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
 #include "chrome/browser/browser_process.h"
+#include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/gtk/options/passwords_exceptions_page_gtk.h"
 #include "chrome/browser/gtk/options/passwords_page_gtk.h"
 #include "chrome/browser/options_window.h"
@@ -49,6 +52,9 @@ class PasswordsExceptionsWindowGtk {
   // The exceptions page.
   PasswordsExceptionsPageGtk exceptions_page_;
 
+  // Helper object to manage accessibility metadata.
+  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
+
   DISALLOW_COPY_AND_ASSIGN(PasswordsExceptionsWindowGtk);
 };
 
@@ -62,8 +68,10 @@ PasswordsExceptionsWindowGtk::PasswordsExceptionsWindowGtk(Profile* profile)
     : profile_(profile),
       passwords_page_(profile_),
       exceptions_page_(profile_) {
+  std::string dialog_name = l10n_util::GetStringUTF8(
+      IDS_PASSWORDS_EXCEPTIONS_WINDOW_TITLE);
   dialog_ = gtk_dialog_new_with_buttons(
-      l10n_util::GetStringUTF8(IDS_PASSWORDS_EXCEPTIONS_WINDOW_TITLE).c_str(),
+      dialog_name.c_str(),
       // Passwords and exceptions window is shared between all browser windows.
       NULL,
       // Non-modal.
@@ -73,6 +81,10 @@ PasswordsExceptionsWindowGtk::PasswordsExceptionsWindowGtk(Profile* profile)
       NULL);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
+
+  accessible_widget_helper_.reset(new AccessibleWidgetHelper(
+      dialog_, profile));
+  accessible_widget_helper_->SendOpenWindowNotification(dialog_name);
 
   notebook_ = gtk_notebook_new();
 

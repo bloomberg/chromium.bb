@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -10,6 +10,7 @@
 #include "app/resource_bundle.h"
 #include "base/message_loop.h"
 #include "base/string_util.h"
+#include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/search_engines/edit_search_engine_controller.h"
@@ -63,20 +64,26 @@ EditSearchEngineDialog::EditSearchEngineDialog(
     Profile* profile)
     : controller_(new EditSearchEngineController(template_url, delegate,
                                                  profile)) {
-  Init(parent_window);
+  Init(parent_window, profile);
 }
 
-void EditSearchEngineDialog::Init(GtkWindow* parent_window) {
+void EditSearchEngineDialog::Init(GtkWindow* parent_window, Profile* profile) {
+  std::string dialog_name = l10n_util::GetStringUTF8(
+      controller_->template_url() ?
+      IDS_SEARCH_ENGINES_EDITOR_EDIT_WINDOW_TITLE :
+      IDS_SEARCH_ENGINES_EDITOR_NEW_WINDOW_TITLE);
+
   dialog_ = gtk_dialog_new_with_buttons(
-      l10n_util::GetStringUTF8(
-          controller_->template_url() ?
-          IDS_SEARCH_ENGINES_EDITOR_EDIT_WINDOW_TITLE :
-          IDS_SEARCH_ENGINES_EDITOR_NEW_WINDOW_TITLE).c_str(),
+      dialog_name.c_str(),
       parent_window,
       static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
       GTK_STOCK_CANCEL,
       GTK_RESPONSE_CANCEL,
       NULL);
+
+  accessible_widget_helper_.reset(new AccessibleWidgetHelper(
+      dialog_, profile));
+  accessible_widget_helper_->SendOpenWindowNotification(dialog_name);
 
   ok_button_ = gtk_dialog_add_button(GTK_DIALOG(dialog_),
                                      controller_->template_url() ?
@@ -110,6 +117,9 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window) {
   gtk_entry_set_activates_default(GTK_ENTRY(title_entry_), TRUE);
   g_signal_connect(title_entry_, "changed",
                    G_CALLBACK(OnEntryChanged), this);
+  accessible_widget_helper_->SetWidgetName(
+      title_entry_,
+      IDS_SEARCH_ENGINES_EDITOR_DESCRIPTION_LABEL);
 
   keyword_entry_ = gtk_entry_new();
   gtk_entry_set_activates_default(GTK_ENTRY(keyword_entry_), TRUE);
@@ -117,11 +127,17 @@ void EditSearchEngineDialog::Init(GtkWindow* parent_window) {
                    G_CALLBACK(OnEntryChanged), this);
   g_signal_connect(keyword_entry_, "insert-text",
                    G_CALLBACK(LowercaseInsertTextHandler), NULL);
+  accessible_widget_helper_->SetWidgetName(
+      keyword_entry_,
+      IDS_SEARCH_ENGINES_EDITOR_KEYWORD_LABEL);
 
   url_entry_ = gtk_entry_new();
   gtk_entry_set_activates_default(GTK_ENTRY(url_entry_), TRUE);
   g_signal_connect(url_entry_, "changed",
                    G_CALLBACK(OnEntryChanged), this);
+  accessible_widget_helper_->SetWidgetName(
+      url_entry_,
+      IDS_SEARCH_ENGINES_EDITOR_URL_LABEL);
 
   title_image_ = gtk_image_new_from_pixbuf(NULL);
   keyword_image_ = gtk_image_new_from_pixbuf(NULL);

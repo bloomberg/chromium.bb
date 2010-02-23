@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -12,6 +12,7 @@
 #include "chrome/browser/history/history.h"
 #include "chrome/common/gtk_tree.h"
 
+class AccessibleWidgetHelper;
 class GURL;
 class Profile;
 class PossibleURLModel;
@@ -91,6 +92,9 @@ class UrlPickerDialogGtk : public gtk_tree::TableAdapter::Delegate {
 
   // Called if the user selects an url.
   UrlPickerCallback* callback_;
+
+  // Helper object to manage accessibility metadata.
+  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(UrlPickerDialogGtk);
 };

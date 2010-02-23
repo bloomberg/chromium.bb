@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,6 +8,7 @@
 #include "base/callback.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/gtk/keyword_editor_view.h"
 #include "chrome/browser/gtk/list_store_favicon_loader.h"
 #include "chrome/browser/gtk/options/options_layout_gtk.h"
@@ -64,6 +65,10 @@ GeneralPageGtk::GeneralPageGtk(Profile* profile)
       default_browser_worker_(
           new ShellIntegration::DefaultBrowserWorker(this)) {
   OptionsLayoutBuilderGtk options_builder;
+  page_ = options_builder.get_page_widget();
+  accessible_widget_helper_.reset(new AccessibleWidgetHelper(
+      page_, profile));
+
   options_builder.AddOptionGroup(
       l10n_util::GetStringUTF8(IDS_OPTIONS_STARTUP_GROUP_NAME),
       InitStartupGroup(), true);
@@ -78,7 +83,6 @@ GeneralPageGtk::GeneralPageGtk(Profile* profile)
       l10n_util::GetStringUTF8(IDS_OPTIONS_DEFAULTBROWSER_GROUP_NAME),
       InitDefaultBrowserGroup(), false);
 #endif
-  page_ = options_builder.get_page_widget();
 
   profile->GetPrefs()->AddPrefObserver(prefs::kRestoreOnStartup, this);
   profile->GetPrefs()->AddPrefObserver(prefs::kURLsToRestoreOnStartup, this);
@@ -323,6 +327,8 @@ GtkWidget* GeneralPageGtk::InitDefaultSearchGroup() {
   g_signal_connect(default_search_engine_combobox_, "changed",
                    G_CALLBACK(OnDefaultSearchEngineChanged), this);
   gtk_container_add(GTK_CONTAINER(hbox), default_search_engine_combobox_);
+  accessible_widget_helper_->SetWidgetName(
+      default_search_engine_combobox_, IDS_OPTIONS_DEFAULTSEARCH_GROUP_NAME);
 
   GtkCellRenderer* renderer = gtk_cell_renderer_text_new();
   gtk_cell_layout_pack_start(GTK_CELL_LAYOUT(default_search_engine_combobox_),

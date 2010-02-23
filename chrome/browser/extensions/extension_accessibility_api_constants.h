@@ -33,6 +33,7 @@ extern const char kTypeButton[];
 extern const char kTypeCheckbox[];
 extern const char kTypeComboBox[];
 extern const char kTypeLink[];
+extern const char kTypeListBox[];
 extern const char kTypeRadioButton[];
 extern const char kTypeTab[];
 extern const char kTypeTextBox[];

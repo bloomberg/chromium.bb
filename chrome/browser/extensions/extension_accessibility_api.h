@@ -47,7 +47,7 @@ class ExtensionAccessibilityEventRouter : public NotificationObserver {
 
   ExtensionAccessibilityEventRouter()
       : enabled_(false) {}
-  virtual ~ExtensionAccessibilityEventRouter() {}
+  virtual ~ExtensionAccessibilityEventRouter();
 
   // NotificationObserver::Observe.
   virtual void Observe(NotificationType type,

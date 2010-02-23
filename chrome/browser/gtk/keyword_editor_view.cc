@@ -1,12 +1,15 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/gtk/keyword_editor_view.h"
 
+#include <string>
+
 #include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
+#include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/gtk/edit_search_engine_dialog.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -75,14 +78,20 @@ KeywordEditorView::KeywordEditorView(Profile* profile)
 }
 
 void KeywordEditorView::Init() {
+  std::string dialog_name =
+      l10n_util::GetStringUTF8(IDS_SEARCH_ENGINES_EDITOR_WINDOW_TITLE);
   dialog_ = gtk_dialog_new_with_buttons(
-      l10n_util::GetStringUTF8(IDS_SEARCH_ENGINES_EDITOR_WINDOW_TITLE).c_str(),
+      dialog_name.c_str(),
       NULL,
       // Non-modal.
       GTK_DIALOG_NO_SEPARATOR,
       GTK_STOCK_CLOSE,
       GTK_RESPONSE_CLOSE,
       NULL);
+
+  accessible_widget_helper_.reset(new AccessibleWidgetHelper(
+      dialog_, profile_));
+  accessible_widget_helper_->SendOpenWindowNotification(dialog_name);
 
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
@@ -368,7 +377,7 @@ void KeywordEditorView::OnItemsRemoved(int start, int length) {
   // This is quite likely not correct with removing multiple in one call, but
   // that shouldn't happen since we only can select and modify/remove one at a
   // time.
-  DCHECK(length == 1);
+  DCHECK_EQ(length, 1);
   for (int i = 0; i < length; ++i) {
     int row = GetListStoreRowForModelRow(start + i);
     GtkTreeIter iter;

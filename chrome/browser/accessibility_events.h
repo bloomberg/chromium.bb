@@ -88,7 +88,8 @@ class AccessibilityRadioButtonInfo : public AccessibilityControlInfo {
       : AccessibilityControlInfo(profile, name),
         checked_(checked),
         item_index_(item_index),
-        item_count_(item_count) { }
+        item_count_(item_count) {
+  }
 
   virtual void SerializeToDict(DictionaryValue *dict) const;
 
@@ -109,7 +110,8 @@ class AccessibilityCheckboxInfo : public AccessibilityControlInfo {
                             std::string name,
                             bool checked)
       : AccessibilityControlInfo(profile, name),
-        checked_(checked) { }
+        checked_(checked) {
+  }
 
   virtual void SerializeToDict(DictionaryValue *dict) const;
 
@@ -129,7 +131,8 @@ class AccessibilityTabInfo : public AccessibilityControlInfo {
                        int tab_count)
       : AccessibilityControlInfo(profile, tab_name),
         tab_index_(tab_index),
-        tab_count_(tab_count) { }
+        tab_count_(tab_count) {
+  }
 
   virtual void SerializeToDict(DictionaryValue *dict) const;
 
@@ -156,7 +159,8 @@ class AccessibilityComboBoxInfo : public AccessibilityControlInfo {
       : AccessibilityControlInfo(profile, name),
         value_(value),
         item_index_(item_index),
-        item_count_(item_count) { }
+        item_count_(item_count) {
+  }
 
   virtual void SerializeToDict(DictionaryValue *dict) const;
 
@@ -168,7 +172,7 @@ class AccessibilityComboBoxInfo : public AccessibilityControlInfo {
  private:
   std::string value_;
   // The 0-based index of the current item and the number of total items.
-  // If the value is not one of the drop-down options, item_index_ should
+  // If the value is not one of the drop-down options, |item_index_| should
   // be -1.
   int item_index_;
   int item_count_;
@@ -185,7 +189,8 @@ class AccessibilityTextBoxInfo : public AccessibilityControlInfo {
         value_(""),
         password_(password),
         selection_start_(0),
-        selection_end_(0) { }
+        selection_end_(0) {
+  }
 
   virtual void SerializeToDict(DictionaryValue *dict) const;
 
@@ -200,6 +205,37 @@ class AccessibilityTextBoxInfo : public AccessibilityControlInfo {
   bool password_;
   int selection_start_;
   int selection_end_;
+};
+
+// Accessibility information about a combo box passed to onControlFocused
+// and onControlAction event listeners.
+class AccessibilityListBoxInfo : public AccessibilityControlInfo {
+ public:
+  AccessibilityListBoxInfo(Profile* profile,
+                           std::string name,
+                           std::string value,
+                           int item_index,
+                           int item_count)
+      : AccessibilityControlInfo(profile, name),
+        value_(value),
+        item_index_(item_index),
+        item_count_(item_count) {
+  }
+
+  virtual void SerializeToDict(DictionaryValue *dict) const;
+
+  void SetValue(int item_index, std::string value) {
+    item_index_ = item_index;
+    value_ = value;
+  }
+
+ private:
+  std::string value_;
+  // The 0-based index of the current item and the number of total items.
+  // If the value is not one of the drop-down options, |item_index_| should
+  // be -1.
+  int item_index_;
+  int item_count_;
 };
 
 #endif  // CHROME_BROWSER_ACCESSIBILITY_EVENTS_H_

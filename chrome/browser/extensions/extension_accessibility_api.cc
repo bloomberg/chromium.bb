@@ -5,6 +5,7 @@
 #include "chrome/browser/extensions/extension_tabs_module.h"
 
 #include "base/json/json_writer.h"
+#include "base/stl_util-inl.h"
 #include "base/string_util.h"
 #include "base/values.h"
 #include "chrome/browser/browser.h"
@@ -36,6 +37,11 @@ std::string ControlInfoToJsonString(const AccessibilityControlInfo* info) {
 ExtensionAccessibilityEventRouter*
     ExtensionAccessibilityEventRouter::GetInstance() {
   return Singleton<ExtensionAccessibilityEventRouter>::get();
+}
+
+ExtensionAccessibilityEventRouter::~ExtensionAccessibilityEventRouter() {
+  STLDeleteElements(&on_enabled_listeners_);
+  STLDeleteElements(&on_disabled_listeners_);
 }
 
 void ExtensionAccessibilityEventRouter::ObserveProfile(Profile* profile) {

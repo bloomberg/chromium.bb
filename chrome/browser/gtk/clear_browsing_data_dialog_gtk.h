@@ -6,10 +6,12 @@
 #define CHROME_BROWSER_GTK_CLEAR_BROWSING_DATA_DIALOG_GTK_H_
 
 #include "base/basictypes.h"
+#include "base/scoped_ptr.h"
 
 typedef struct _GtkWidget GtkWidget;
 typedef struct _GtkWindow GtkWindow;
 
+class AccessibleWidgetHelper;
 class BrowsingDataRemover;
 class Profile;
 
@@ -20,7 +22,7 @@ class ClearBrowsingDataDialogGtk {
 
  private:
   ClearBrowsingDataDialogGtk(GtkWindow* parent, Profile* profile);
-  ~ClearBrowsingDataDialogGtk() { }
+  ~ClearBrowsingDataDialogGtk();
 
   // Handler to respond to Ok and Cancel responses from the dialog.
   static void HandleOnResponseDialog(GtkWidget* widget,
@@ -58,6 +60,9 @@ class ClearBrowsingDataDialogGtk {
   // If non-null it means removal is in progress. BrowsingDataRemover takes care
   // of deleting itself when done.
   BrowsingDataRemover* remover_;
+
+  // Helper object to manage accessibility metadata.
+  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(ClearBrowsingDataDialogGtk);
 };

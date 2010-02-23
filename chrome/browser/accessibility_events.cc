@@ -79,3 +79,11 @@ void AccessibilityTextBoxInfo::SerializeToDict(DictionaryValue *dict) const {
   dict->SetInteger(keys::kSelectionStartKey, selection_start_);
   dict->SetInteger(keys::kSelectionEndKey, selection_end_);
 }
+
+void AccessibilityListBoxInfo::SerializeToDict(DictionaryValue *dict) const {
+  AccessibilityControlInfo::SerializeToDict(dict);
+  dict->SetString(keys::kTypeKey, keys::kTypeListBox);
+  dict->SetString(keys::kValueKey, value_);
+  dict->SetInteger(keys::kItemIndexKey, item_index_);
+  dict->SetInteger(keys::kItemCountKey, item_count_);
+}

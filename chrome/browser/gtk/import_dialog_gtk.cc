@@ -1,11 +1,14 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/gtk/import_dialog_gtk.h"
 
+#include <string>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
+#include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/common/gtk_util.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -34,13 +37,20 @@ ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile,
       importer_host_(new ImporterHost()),
       initial_state_(initial_state) {
   // Build the dialog.
+  std::string dialog_name = l10n_util::GetStringUTF8(
+      IDS_IMPORT_SETTINGS_TITLE);
   dialog_ = gtk_dialog_new_with_buttons(
-      l10n_util::GetStringUTF8(IDS_IMPORT_SETTINGS_TITLE).c_str(),
+      dialog_name.c_str(),
       parent,
       (GtkDialogFlags) (GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
       GTK_STOCK_CANCEL,
       GTK_RESPONSE_REJECT,
       NULL);
+
+  accessible_widget_helper_.reset(new AccessibleWidgetHelper(
+      dialog_, profile));
+  accessible_widget_helper_->SendOpenWindowNotification(dialog_name);
+
   gtk_widget_realize(dialog_);
   gtk_util::SetWindowSizeFromResources(GTK_WINDOW(dialog_),
                                        IDS_IMPORT_DIALOG_WIDTH_CHARS,
@@ -126,6 +136,9 @@ ImportDialogGtk::ImportDialogGtk(GtkWindow* parent, Profile* profile,
   g_signal_connect(dialog_, "response",
                    G_CALLBACK(HandleOnResponseDialog), this);
   gtk_widget_show_all(dialog_);
+}
+
+ImportDialogGtk::~ImportDialogGtk() {
 }
 
 void ImportDialogGtk::OnDialogResponse(GtkWidget* widget, int response) {

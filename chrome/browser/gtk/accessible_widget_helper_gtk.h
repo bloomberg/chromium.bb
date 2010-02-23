@@ -38,6 +38,11 @@ class AccessibleWidgetHelper {
 
   virtual ~AccessibleWidgetHelper();
 
+  // Send a notification that a new window was opened now, and a
+  // corresponding close window notification when this object
+  // goes out of scope.
+  void SendOpenWindowNotification(const std::string& window_title);
+
   // Do not send accessibility events for this widget
   void IgnoreWidget(GtkWidget* widget);
 
@@ -51,7 +56,9 @@ class AccessibleWidgetHelper {
 
  private:
   AccessibilityEventRouter* accessibility_event_router_;
+  Profile* profile_;
   GtkWidget* root_widget_;
+  std::string window_title_;
   std::vector<GtkWidget*> managed_widgets_;
 };
 

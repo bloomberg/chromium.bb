@@ -17,6 +17,7 @@
 #include "chrome/browser/shell_integration.h"
 #include "googleurl/src/gurl.h"
 
+class AccessibleWidgetHelper;
 class Profile;
 class ListStoreFavIconLoader;
 
@@ -180,6 +181,9 @@ class GeneralPageGtk : public OptionsPageBase,
 
   // The helper object that performs default browser set/check tasks.
   scoped_refptr<ShellIntegration::DefaultBrowserWorker> default_browser_worker_;
+
+  // Helper object to manage accessibility metadata.
+  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(GeneralPageGtk);
 };

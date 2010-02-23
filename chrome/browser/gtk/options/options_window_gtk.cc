@@ -72,7 +72,7 @@ class OptionsWindowGtk {
   // The last page the user was on when they opened the Options window.
   IntegerPrefMember last_selected_page_;
 
-  scoped_ptr<AccessibleWidgetHelper> accessibility_widget_helper_;
+  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
 
   DISALLOW_COPY_AND_ASSIGN(OptionsWindowGtk);
 };
@@ -96,9 +96,12 @@ OptionsWindowGtk::OptionsWindowGtk(Profile* profile)
   last_selected_page_.Init(prefs::kOptionsWindowLastTabIndex,
                            g_browser_process->local_state(), NULL);
 
+  std::string dialog_name =
+      l10n_util::GetStringFUTF8(
+          IDS_OPTIONS_DIALOG_TITLE,
+          WideToUTF16(l10n_util::GetString(IDS_PRODUCT_NAME)));
   dialog_ = gtk_dialog_new_with_buttons(
-      l10n_util::GetStringFUTF8(IDS_OPTIONS_DIALOG_TITLE,
-          WideToUTF16(l10n_util::GetString(IDS_PRODUCT_NAME))).c_str(),
+      dialog_name.c_str(),
       // Prefs window is shared between all browser windows.
       NULL,
       // Non-modal.
@@ -106,14 +109,16 @@ OptionsWindowGtk::OptionsWindowGtk(Profile* profile)
       GTK_STOCK_CLOSE,
       GTK_RESPONSE_CLOSE,
       NULL);
+
+  accessible_widget_helper_.reset(new AccessibleWidgetHelper(
+      dialog_, profile));
+  accessible_widget_helper_->SendOpenWindowNotification(dialog_name);
+
   gtk_window_set_default_size(GTK_WINDOW(dialog_), 500, -1);
   // Allow browser windows to go in front of the options dialog in metacity.
   gtk_window_set_type_hint(GTK_WINDOW(dialog_), GDK_WINDOW_TYPE_HINT_NORMAL);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
-
-  accessibility_widget_helper_.reset(new AccessibleWidgetHelper(
-      dialog_, profile));
 
   notebook_ = gtk_notebook_new();
 
@@ -250,14 +255,4 @@ void ShowOptionsWindow(OptionsPage page,
     profile->ResumeAccessibilityEvents();
   }
   options_window->ShowOptionsPage(page, highlight_group);
-
-  std::string name = l10n_util::GetStringFUTF8(
-      IDS_OPTIONS_DIALOG_TITLE,
-      WideToUTF16(l10n_util::GetString(IDS_PRODUCT_NAME)));
-  AccessibilityWindowInfo info(profile, name);
-
-  NotificationService::current()->Notify(
-      NotificationType::ACCESSIBILITY_WINDOW_OPENED,
-      Source<Profile>(profile),
-      Details<AccessibilityWindowInfo>(&info));
 }

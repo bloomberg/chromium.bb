@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -13,6 +13,7 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
 
+class AccessibleWidgetHelper;
 class KeywordEditorController;
 class Profile;
 class TemplateURLTableModel;
@@ -146,6 +147,9 @@ class KeywordEditorView : public TableModelObserver,
   // but we need the old value to know which row to remove from the
   // |list_store_|.
   int model_second_group_index_;
+
+  // Helper object to manage accessibility metadata.
+  scoped_ptr<AccessibleWidgetHelper> accessible_widget_helper_;
 
   friend class KeywordEditorViewTest;
   FRIEND_TEST(KeywordEditorViewTest, Empty);

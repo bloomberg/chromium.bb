@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,7 @@
 #include "app/gfx/gtk_util.h"
 #include "app/l10n_util.h"
 #include "base/message_loop.h"
+#include "chrome/browser/gtk/accessible_widget_helper_gtk.h"
 #include "chrome/browser/gtk/options/url_picker_dialog_gtk.h"
 #include "chrome/browser/net/url_fixer_upper.h"
 #include "chrome/browser/possible_url_model.h"
@@ -41,13 +42,17 @@ UrlPickerDialogGtk::UrlPickerDialogGtk(UrlPickerCallback* callback,
                                        GtkWindow* parent)
     : profile_(profile),
       callback_(callback) {
+  std::string dialog_name = l10n_util::GetStringUTF8(IDS_ASI_ADD_TITLE);
   dialog_ = gtk_dialog_new_with_buttons(
-      l10n_util::GetStringUTF8(IDS_ASI_ADD_TITLE).c_str(),
+      dialog_name.c_str(),
       parent,
       static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
       GTK_STOCK_CANCEL,
       GTK_RESPONSE_CANCEL,
       NULL);
+  accessible_widget_helper_.reset(new AccessibleWidgetHelper(
+      dialog_, profile));
+  accessible_widget_helper_->SendOpenWindowNotification(dialog_name);
 
   add_button_ = gtk_dialog_add_button(GTK_DIALOG(dialog_),
                                       GTK_STOCK_ADD, GTK_RESPONSE_OK);
@@ -62,6 +67,7 @@ UrlPickerDialogGtk::UrlPickerDialogGtk(UrlPickerCallback* callback,
   gtk_box_pack_start(GTK_BOX(url_hbox), url_label,
                      FALSE, FALSE, 0);
   url_entry_ = gtk_entry_new();
+  accessible_widget_helper_->SetWidgetName(url_entry_, IDS_ASI_URL);
   gtk_entry_set_activates_default(GTK_ENTRY(url_entry_), TRUE);
   g_signal_connect(url_entry_, "changed",
                    G_CALLBACK(OnUrlEntryChanged), this);
@@ -103,6 +109,8 @@ UrlPickerDialogGtk::UrlPickerDialogGtk(UrlPickerCallback* callback,
   gtk_tree_sortable_set_sort_func(GTK_TREE_SORTABLE(history_list_sort_),
                                   COL_DISPLAY_URL, CompareURL, this, NULL);
   history_tree_ = gtk_tree_view_new_with_model(history_list_sort_);
+  accessible_widget_helper_->SetWidgetName(
+      history_tree_, IDS_ASI_DESCRIPTION);
   g_object_unref(history_list_store_);
   g_object_unref(history_list_sort_);
   gtk_container_add(GTK_CONTAINER(scroll_window), history_tree_);

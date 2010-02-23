@@ -30,6 +30,7 @@ extern const char kTypeButton[] = "button";
 extern const char kTypeCheckbox[] = "checkbox";
 extern const char kTypeComboBox[] = "combobox";
 extern const char kTypeLink[] = "link";
+extern const char kTypeListBox[] = "listbox";
 extern const char kTypeRadioButton[] = "radiobutton";
 extern const char kTypeTab[] = "tab";
 extern const char kTypeTextBox[] = "textbox";

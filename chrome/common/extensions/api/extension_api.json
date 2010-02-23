@@ -252,6 +252,16 @@
         }
       },
       {
+        "id": "ListBoxDetails",
+        "type": "object",
+        "description": "Information about the state of a list box.",
+        "properties": {
+          "value": {"type": "string", "description": "The value of the list box."},
+          "itemCount": {"type": "integer", "description": "The number of items in the list."},
+          "itemIndex": {"type": "integer", "description": "The 0-based index of the selected value, or -1 if no items are selected."}
+        }
+      },
+      {
         "id": "RadioButtonDetails",
         "type": "object",
         "description": "Information about the state of a radio button.",

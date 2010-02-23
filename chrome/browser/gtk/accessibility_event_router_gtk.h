@@ -13,6 +13,7 @@
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/singleton.h"
+#include "base/task.h"
 #include "chrome/browser/accessibility_events.h"
 
 class Profile;
@@ -26,6 +27,14 @@ struct hash<GtkWidget*> {
   }
 };
 }  // namespace __gnu_cxx
+
+// Struct to keep track of event listener hook ids to remove them later.
+struct InstalledHook {
+  InstalledHook(guint _signal_id, gulong _hook_id)
+      : signal_id(_signal_id), hook_id(_hook_id) { }
+  guint signal_id;
+  gulong hook_id;
+};
 
 // Singleton class that adds a signal emission hook to many gtk events, and
 // then sends an accessibility notification whenever a relevant event is
@@ -43,6 +52,8 @@ class AccessibilityEventRouter {
   // Internal information about a particular widget to override the
   // information we get directly from gtk.
   struct WidgetInfo {
+    WidgetInfo() : ignore(false) { }
+
     // If nonempty, will use this name instead of the widget's label.
     std::string name;
 
@@ -89,25 +100,46 @@ class AccessibilityEventRouter {
   void DispatchAccessibilityNotification(
       GtkWidget* widget, NotificationType type);
 
+  // Post a task to call DispatchAccessibilityNotification the next time
+  // through the event loop.
+  void PostDispatchAccessibilityNotification(
+      GtkWidget* widget, NotificationType type);
+
   // Each of these methods constructs an AccessibilityControlInfo object
   // and sends a notification of a specific accessibility event.
-  void SendRadioButtonNotification(
+  void SendButtonNotification(
       GtkWidget* widget, NotificationType type, Profile* profile);
   void SendCheckboxNotification(
       GtkWidget* widget, NotificationType type, Profile* profile);
-  void SendButtonNotification(
+  void SendComboBoxNotification(
       GtkWidget* widget, NotificationType type, Profile* profile);
-  void SendTextBoxNotification(
+  void SendListBoxNotification(
+      GtkWidget* widget, NotificationType type, Profile* profile);
+  void SendRadioButtonNotification(
       GtkWidget* widget, NotificationType type, Profile* profile);
   void SendTabNotification(
+      GtkWidget* widget, NotificationType type, Profile* profile);
+  void SendTextBoxNotification(
       GtkWidget* widget, NotificationType type, Profile* profile);
 
   void InstallEventListeners();
   void RemoveEventListeners();
 
+  // Start and stop listening to signals.
+  void StartListening();
+  void StopListening();
+
  private:
   AccessibilityEventRouter();
-  virtual ~AccessibilityEventRouter() {}
+  virtual ~AccessibilityEventRouter();
+
+  // Add a signal emission hook for one particular signal name and
+  // widget type, and save the hook_id in installed_hooks so we can
+  // remove it later.
+  void InstallEventListener(
+      const char *signal_name,
+      GType widget_type,
+      GSignalEmissionHook hook_func);
 
   friend struct DefaultSingletonTraits<AccessibilityEventRouter>;
 
@@ -119,12 +151,13 @@ class AccessibilityEventRouter {
   base::hash_map<GtkWidget*, WidgetInfo> widget_info_map_;
 
   // Installed event listener hook ids so we can remove them later.
-  gulong focus_hook_;
-  gulong click_hook_;
-  gulong toggle_hook_;
-  gulong switch_page_hook_;
+  std::vector<InstalledHook> installed_hooks_;
 
-  std::vector<gulong> event_listener_hook_ids_;
+  // True if we are currently listening to signals.
+  bool listening_;
+
+  // Used to schedule invocations of StartListening().
+  ScopedRunnableMethodFactory<AccessibilityEventRouter> method_factory_;
 };
 
 #endif  // CHROME_BROWSER_GTK_ACCESSIBILITY_EVENT_ROUTER_GTK_H_
