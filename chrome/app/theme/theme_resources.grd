@@ -365,10 +365,10 @@
         <include name="IDR_COMPACTNAV_SEPARATOR" file="compactnav_separator.png" type="BINDATA" />
  
         <include name="IDR_STATUSBAR_MENU" file="statusbar_menu.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_PRESSED" file="statusbar_pressed.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_CHARGED" file="statusbar_battery_charged.png" type="BINDATA" />
-        <include name="IDR_STATUSBAR_BATTERY_UNKNOWN" file="statusbar_battery_unknown.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_MISSING" file="statusbar_battery_missing.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_BATTERY_PRESSED" file="statusbar_battery_pressed.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_BATTERY_UNKNOWN" file="statusbar_battery_unknown.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_CHARGING_1" file="statusbar_battery1c.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_CHARGING_2" file="statusbar_battery2c.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_BATTERY_CHARGING_3" file="statusbar_battery3c.png" type="BINDATA" />
@@ -413,10 +413,13 @@
         <include name="IDR_STATUSBAR_NETWORK_BARS7_BLACK" file="statusbar_network_bars7b.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS8_BLACK" file="statusbar_network_bars8b.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_BARS9_BLACK" file="statusbar_network_bars9b.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_BARS_PRESSED" file="statusbar_network_bars_pressed.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_DISCONNECTED" file="statusbar_network_disconnected.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_WARNING" file="statusbar_network_warning.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_SECURE" file="statusbar_network_secure.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_EDGE" file="statusbar_network_edge.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_NETWORK_3G" file="statusbar_network_3g.png" type="BINDATA" />
+        <include name="IDR_STATUSBAR_NETWORK_WIRED_PRESSED" file="statusbar_network_wired_pressed.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WIRED" file="statusbar_wired.png" type="BINDATA" />
         <include name="IDR_STATUSBAR_WIRED_BLACK" file="statusbar_wiredb.png" type="BINDATA" />
         <include name="IDR_FILEBROWSER_BACK" file="filebrowse_back.png" type="BINDATA" />

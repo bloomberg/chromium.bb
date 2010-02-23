@@ -93,12 +93,22 @@ class NetworkMenuButton : public StatusAreaButton,
   virtual void NetworkChanged(NetworkLibrary* obj);
   virtual void NetworkTraffic(NetworkLibrary* cros, int traffic_type);
 
+  // Returns the Icon for a network strength between 0 and 100.
+  // |black| is used to specify whether to return a black icon for display
+  // on a light background or a white icon for display on a dark background.
+  static SkBitmap IconForNetworkStrength(int strength, bool black);
+
+  // This method will convert the |icon| bitmap to the correct size for display.
+  // If the |badge| icon is not empty, it will draw that on top of the icon.
+  static SkBitmap IconForDisplay(SkBitmap icon, SkBitmap badge);
+
   // Sets the badge icon.
   void SetBadge(const SkBitmap& badge);
   SkBitmap badge() const { return badge_; }
 
  protected:
   // StatusAreaButton implementation.
+  virtual void DrawPressed(gfx::Canvas* canvas);
   virtual void DrawIcon(gfx::Canvas* canvas);
 
  private:
@@ -137,15 +147,6 @@ class NetworkMenuButton : public StatusAreaButton,
     int flags;
   };
   typedef std::vector<MenuItem> MenuItemVector;
-
-  // Returns the Icon for a network strength between 0 and 100.
-  // |black| is used to specify whether to return a black icon for display
-  // on a light background or a white icon for display on a dark background.
-  static SkBitmap IconForNetworkStrength(int strength, bool black);
-
-  // This method will convert the |icon| bitmap to the correct size for display.
-  // If the |badge| icon is not empty, it will draw that on top of the icon.
-  static SkBitmap IconForDisplay(SkBitmap icon, SkBitmap badge);
 
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);

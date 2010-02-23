@@ -103,12 +103,21 @@ void PowerMenuButton::PowerChanged(PowerLibrary* obj) {
 ////////////////////////////////////////////////////////////////////////////////
 // PowerMenuButton, StatusAreaButton implementation:
 
+void PowerMenuButton::DrawPressed(gfx::Canvas* canvas) {
+  DrawPowerIcon(canvas, *ResourceBundle::GetSharedInstance().
+      GetBitmapNamed(IDR_STATUSBAR_BATTERY_PRESSED));
+}
+
 void PowerMenuButton::DrawIcon(gfx::Canvas* canvas) {
+  DrawPowerIcon(canvas, icon());
+}
+
+void PowerMenuButton::DrawPowerIcon(gfx::Canvas* canvas, SkBitmap icon) {
   // Draw the battery icon 6 pixels down to center it.
   // Because the status icon is 24x24 but the images are 24x16.
   // But since the images are shifted up by 4 pixels, we draw at 6 pixels down.
   static const int kIconVerticalPadding = 6;
-  canvas->DrawBitmapInt(icon(), 0, kIconVerticalPadding);
+  canvas->DrawBitmapInt(icon, 0, kIconVerticalPadding);
 }
 
 void PowerMenuButton::UpdateIcon() {

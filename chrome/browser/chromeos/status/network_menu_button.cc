@@ -69,10 +69,7 @@ bool NetworkMenuButton::IsItemCheckedAt(int index) const {
 
 bool NetworkMenuButton::GetIconAt(int index, SkBitmap* icon) const {
   if (!menu_items_[index].icon.empty()) {
-    // Make icon smaller (if necessary) to look better in the menu.
-    static const int kMinSize = 8;
-    *icon = SkBitmapOperations::DownsampleByTwoUntilSize(
-                menu_items_[index].icon, kMinSize, kMinSize);
+    *icon = menu_items_[index].icon;
     return true;
   }
   return false;
@@ -165,6 +162,22 @@ void NetworkMenuButton::AnimationProgressed(const Animation* animation) {
 
 ////////////////////////////////////////////////////////////////////////////////
 // NetworkMenuButton, StatusAreaButton implementation:
+
+void NetworkMenuButton::DrawPressed(gfx::Canvas* canvas) {
+  // If ethernet connected and not current connecting, then show ethernet
+  // pressed icon. Otherwise, show the bars pressed icon.
+  if (NetworkLibrary::Get()->ethernet_connected() &&
+      !animation_connecting_.IsAnimating())
+    canvas->DrawBitmapInt(IconForDisplay(
+        *ResourceBundle::GetSharedInstance().
+            GetBitmapNamed(IDR_STATUSBAR_NETWORK_WIRED_PRESSED), SkBitmap()),
+        0, 0);
+  else
+    canvas->DrawBitmapInt(IconForDisplay(
+        *ResourceBundle::GetSharedInstance().
+            GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS_PRESSED), SkBitmap()),
+        0, 0);
+}
 
 void NetworkMenuButton::DrawIcon(gfx::Canvas* canvas) {
   canvas->DrawBitmapInt(IconForDisplay(icon(), badge()), 0, 0);
@@ -394,10 +407,12 @@ void NetworkMenuButton::InitMenuItems() {
   for (size_t i = 0; i < wifi_networks.size(); ++i) {
     label = ASCIIToUTF16(wifi_networks[i].ssid);
     SkBitmap icon = IconForNetworkStrength(wifi_networks[i].strength, true);
+    SkBitmap badge = wifi_networks[i].encrypted ?
+        *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_SECURE) : SkBitmap();
     flag = (wifi_networks[i].ssid == cros->wifi_ssid()) ?
         FLAG_WIFI | FLAG_ASSOCIATED : FLAG_WIFI;
     menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-        IconForDisplay(icon, SkBitmap()), wifi_networks[i], CellularNetwork(),
+        IconForDisplay(icon, badge), wifi_networks[i], CellularNetwork(),
         flag));
   }
 

@@ -9,10 +9,13 @@
 #include "app/combobox_model.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/options/ip_config_view.h"
+#include "chrome/browser/chromeos/status/network_menu_button.h"
 #include "chrome/browser/chromeos/status/password_dialog_view.h"
 #include "grit/generated_resources.h"
+#include "grit/theme_resources.h"
 #include "views/controls/button/native_button.h"
 #include "views/controls/combobox/combobox.h"
+#include "views/controls/image_view.h"
 #include "views/window/window.h"
 
 namespace chromeos {
@@ -93,6 +96,11 @@ class NetworkSection : public SettingsPageSection,
 
   // This method will change the combobox selection to the passed in wifi ssid.
   void SelectWifi(const std::string& wifi_ssid);
+
+  // Network icons
+  views::ImageView* ethernet_icon_;
+  views::ImageView* wifi_icon_;
+  views::ImageView* cellular_icon_;
 
   // Status labels
   views::Label* ethernet_status_label_;
@@ -196,7 +204,15 @@ bool NetworkSection::OnPasswordDialogAccept(const std::string& ssid,
 }
 
 void NetworkSection::NetworkChanged(NetworkLibrary* obj) {
+  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
+
   // Ethernet status.
+  SkBitmap ethernet_icon = *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED_BLACK);
+  SkBitmap ethernet_badge =
+      obj->ethernet_connecting() || obj->ethernet_connected() ?
+      SkBitmap() : *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
+  ethernet_icon_->SetImage(NetworkMenuButton::IconForDisplay(ethernet_icon,
+                                                             ethernet_badge));
   int status;
   if (obj->ethernet_connecting())
     status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
@@ -209,6 +225,13 @@ void NetworkSection::NetworkChanged(NetworkLibrary* obj) {
   ethernet_status_label_->SetText(l10n_util::GetString(status));
 
   // Wifi status.
+  SkBitmap wifi_icon = obj->wifi_connecting() || obj->wifi_connected() ?
+      NetworkMenuButton::IconForNetworkStrength(obj->wifi_strength(), true) :
+      *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0);
+  SkBitmap wifi_badge = obj->wifi_connecting() || obj->wifi_connected() ?
+      SkBitmap() : *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
+  wifi_icon_->SetImage(NetworkMenuButton::IconForDisplay(wifi_icon,
+                                                         wifi_badge));
   if (obj->wifi_connecting())
     status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
   else if (obj->wifi_connected())
@@ -220,6 +243,15 @@ void NetworkSection::NetworkChanged(NetworkLibrary* obj) {
   wifi_status_label_->SetText(l10n_util::GetString(status));
 
   // Cellular status.
+  SkBitmap cellular_icon =
+      obj->cellular_connecting() || obj->cellular_connected() ?
+      NetworkMenuButton::IconForNetworkStrength(obj->cellular_strength(), true)
+      : *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0);
+  SkBitmap cellular_badge =
+      obj->cellular_connecting() || obj->cellular_connected() ?
+      SkBitmap() : *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
+  cellular_icon_->SetImage(NetworkMenuButton::IconForDisplay(cellular_icon,
+                                                             cellular_badge));
   status = IDS_STATUSBAR_NETWORK_DEVICE_DISABLED;
   if (obj->cellular_connecting())
     status = IDS_STATUSBAR_NETWORK_DEVICE_CONNECTING;
@@ -238,6 +270,9 @@ void NetworkSection::NetworkChanged(NetworkLibrary* obj) {
 void NetworkSection::InitContents(GridLayout* layout) {
   int quad_column_view_set_id = 1;
   ColumnSet* column_set = layout->AddColumnSet(quad_column_view_set_id);
+  // icon
+  column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
+                        GridLayout::USE_PREF, 0, 0);
   // device
   column_set->AddColumn(GridLayout::FILL, GridLayout::FILL, 1,
                         GridLayout::USE_PREF, 0, 0);
@@ -256,6 +291,8 @@ void NetworkSection::InitContents(GridLayout* layout) {
 
   // Ethernet
   layout->StartRow(0, quad_column_view_set_id);
+  ethernet_icon_ = new views::ImageView();
+  layout->AddView(ethernet_icon_, 1, 2);
   views::Label* label = new views::Label(l10n_util::GetString(
       IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET));
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -266,6 +303,7 @@ void NetworkSection::InitContents(GridLayout* layout) {
   layout->AddView(ethernet_options_button_, 1, 2);
 
   layout->StartRow(0, quad_column_view_set_id);
+  layout->SkipColumns(1);
   ethernet_status_label_ = new views::Label();
   ethernet_status_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
   ethernet_status_label_->SetColor(SK_ColorLTGRAY);
@@ -275,6 +313,8 @@ void NetworkSection::InitContents(GridLayout* layout) {
 
   // Wifi
   layout->StartRow(0, quad_column_view_set_id);
+  wifi_icon_ = new views::ImageView();
+  layout->AddView(wifi_icon_, 1, 2);
   label = new views::Label(l10n_util::GetString(
       IDS_STATUSBAR_NETWORK_DEVICE_WIFI));
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -289,6 +329,7 @@ void NetworkSection::InitContents(GridLayout* layout) {
   layout->AddView(wifi_options_button_, 1, 2);
 
   layout->StartRow(0, quad_column_view_set_id);
+  layout->SkipColumns(1);
   wifi_status_label_ = new views::Label();
   wifi_status_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
   wifi_status_label_->SetColor(SK_ColorLTGRAY);
@@ -298,6 +339,8 @@ void NetworkSection::InitContents(GridLayout* layout) {
 
   // Cellular
   layout->StartRow(0, quad_column_view_set_id);
+  cellular_icon_ = new views::ImageView();
+  layout->AddView(cellular_icon_, 1, 2);
   label = new views::Label(l10n_util::GetString(
       IDS_STATUSBAR_NETWORK_DEVICE_CELLULAR));
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
@@ -308,6 +351,7 @@ void NetworkSection::InitContents(GridLayout* layout) {
   layout->AddView(cellular_options_button_, 1, 2);
 
   layout->StartRow(0, quad_column_view_set_id);
+  layout->SkipColumns(1);
   cellular_status_label_ = new views::Label();
   cellular_status_label_->SetFont(rb.GetFont(ResourceBundle::SmallFont));
   cellular_status_label_->SetColor(SK_ColorLTGRAY);

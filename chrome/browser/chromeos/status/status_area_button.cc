@@ -24,8 +24,7 @@ StatusAreaButton::StatusAreaButton(views::ViewMenuDelegate* menu_delegate)
 
 void StatusAreaButton::Paint(gfx::Canvas* canvas, bool for_drag) {
   if (state() == BS_PUSHED) {
-    canvas->DrawBitmapInt(*ResourceBundle::GetSharedInstance().
-                              GetBitmapNamed(IDR_STATUSBAR_PRESSED), 0, 0);
+    DrawPressed(canvas);
   }
   DrawIcon(canvas);
 }

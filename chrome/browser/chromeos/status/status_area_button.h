@@ -20,6 +20,11 @@ class StatusAreaButton : public views::MenuButton {
   virtual gfx::Size GetPreferredSize();
 
  protected:
+  // Draws the pressed icon. This is called before DrawIcon if the state is
+  // pressed. Subclasses should override this method if they need to draw a
+  // pressed icon.
+  virtual void DrawPressed(gfx::Canvas* canvas) {}
+
   // Draws the icon for this status area button on the canvas.
   // Subclasses should override this method if they need to draw their own icon.
   // Otherwise, just call SetIcon() and the it will be handled for you.

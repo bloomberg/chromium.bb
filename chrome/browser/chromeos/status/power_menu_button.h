@@ -48,11 +48,15 @@ class PowerMenuButton : public StatusAreaButton,
 
  protected:
   // StatusAreaButton implementation.
+  virtual void DrawPressed(gfx::Canvas* canvas);
   virtual void DrawIcon(gfx::Canvas* canvas);
 
  private:
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
+
+  // This method will draw the |icon| in the appropriate place on the |canvas|.
+  void DrawPowerIcon(gfx::Canvas* canvas, SkBitmap icon);
 
   // Update the power icon depending on the power status.
   void UpdateIcon();
