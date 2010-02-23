@@ -165,7 +165,7 @@ std::string FormStructure::FormSignature() const {
 }
 
 bool FormStructure::IsAutoFillable() const {
-  if (fields_.size() == 0)
+  if (field_count() == 0)
     return false;
 
   // Rule out http(s)://*/search?...
@@ -175,7 +175,7 @@ bool FormStructure::IsAutoFillable() const {
     return false;
 
   // Disqualify all forms that are likely to be search boxes (like google.com).
-  if (fields_.size() == 1) {
+  if (field_count() == 1) {
     std::string name = UTF16ToUTF8(fields_[0]->name());
     if (name == "q")
       return false;
@@ -188,7 +188,7 @@ bool FormStructure::IsAutoFillable() const {
 }
 
 void FormStructure::set_possible_types(int index, const FieldTypeSet& types) {
-  int num_fields = static_cast<int>(fields_.size());
+  int num_fields = static_cast<int>(field_count());
   DCHECK(index >= 0 && index < num_fields);
   if (index >= 0 && index < num_fields)
     fields_[index]->set_possible_types(types);
@@ -200,7 +200,8 @@ const AutoFillField* FormStructure::field(int index) const {
 
 size_t FormStructure::field_count() const {
   // Don't count the NULL terminator.
-  return fields_.size() - 1;
+  size_t field_size = fields_.size();
+  return (field_size == 0) ? 0 : field_size - 1;
 }
 
 bool FormStructure::operator!=(const FormData& form) const {
