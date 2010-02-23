@@ -2258,7 +2258,7 @@ each locale. -->
       <message name="IDS_CREATE_SHORTCUTS_QUICK_LAUNCH_BAR_CHKBOX" desc="Label of the checkbox to create an application shortcut in quick launch bar.">
         Quick launch bar
       </message>
-      <if expr="os == 'linux2'">
+      <if expr="os == 'linux2' or os == 'openbsd4' or os=='freebsd6'">
         <message name="IDS_CREATE_SHORTCUTS_ERROR_TITLE" desc="Title of the error dialog box when creating an application shortcut failed.">
           Failed to create application shortcut
         </message>
@@ -4971,7 +4971,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_THEMES_GROUP_NAME" desc="The title of the themes group">
         Themes:
       </message>
-      <if expr="os == 'linux2'">
+      <if expr="os == 'linux2' or os == 'openbsd4' or os == 'freebsd6'">
         <message name="IDS_APPEARANCE_GROUP_NAME" desc="In Title Case and without trailing colon: The title of the themes group">
           Appearance
         </message>
