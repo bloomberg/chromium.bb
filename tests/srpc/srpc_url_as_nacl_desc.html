@@ -15,90 +15,115 @@
     <script type="application/x-javascript">
       //<![CDATA[
 var server = 0;
-var log_element = 0;
-var test_timeout_handler = 0;
-var module_loaded = false;
-var test_complete = false;
-var test_passed = false;
-var test_error_msg = '';
+var logElement = 0;
+var testTimeoutHandler = 0;
+var testPassed = false;
+var testErrorMsg = '';
 
-var GeneralLog = function(str) {
-  log_element.textContent += str + '\n';
+// testState normally assumes these state values in this order:
+// 'initializing'=>'loading valid file'=>'loading invalid file'=>'complete'
+var testState = '';
+
+// Puts text from 'str' into the logElement on the page.
+function generalLog(str) {
+  logElement.textContent += str + '\n';
 }
 
-var ClearTestTimeoutHandler = function() {
-  if (0 != test_timeout_handler) {
-    clearTimeout(test_timeout_handler);
-    test_timeout_handler = 0;
+// Clears the test watchdog timer.
+function clearTestTimeoutHandler() {
+  if (0 != testTimeoutHandler) {
+    clearTimeout(testTimeoutHandler);
+    testTimeoutHandler = 0;
   }
 }
 
-var AllTestsComplete = function(msg) {
-  ClearTestTimeoutHandler();
-  test_complete = true;
-  test_error_msg = msg;
-  if (test_passed) {
-    log_element.className = 'pass';
+// Sets all test status information and cleans up after testing.
+// 'msg' is the error message or '' for success.
+function allTestsComplete(msg) {
+  clearTestTimeoutHandler();
+  testState = 'complete';
+  testErrorMsg = msg;
+  if (testPassed) {
+    logElement.className = 'pass';
   } else {
-    log_element.className = 'fail';
+    logElement.className = 'fail';
   }
 }
 
-var InvalidFileLoadCallback = function() {
+// Test Stage 4: Verifies that a cross-domain file cannot be loaded.
+function invalidFileLoadCallback() {
   this.onload = function(nacl_desc) {
     // Should not have been able to load a cross-domain file.
-    GeneralLog('ERROR: InvalidFileLoadCallback onload invoked.');
-    GeneralLog('Loading from the wrong domain should have been an error.');
-    AllTestsComplete('Load of invalid file succeeded (incorrectly).');
+    generalLog('ERROR: invalidFileLoadCallback onload invoked.');
+    generalLog('Loading from the wrong domain should have been an error.');
+    allTestsComplete('Load of invalid file succeeded (incorrectly).');
   }
   this.onfail = function(object) {
     // Correctly invoked the onfail handler for attempting to read a
     // cross-domain file.  Everything is working as expected.
-    GeneralLog('InvalidFileLoadCallback onfail correctly invoked: ' + object);
-    test_passed = true;
-    AllTestsComplete('');
+    generalLog('invalidFileLoadCallback onfail correctly invoked: ' + object);
+    testPassed = true;
+    allTestsComplete('');
   }
 }
 
-var StartInvalidFileLoad = function() {
+// Test Stage 3: Starts a load of a cross-domain file (which should not work).
+function startInvalidFileLoad() {
+  testState = 'loading invalid file';
   var url = 'http://www.google.com/robots.txt';
-  GeneralLog('Loading URL ' + url);
-  GeneralLog('Expecting to see same origin violation.');
-  server.__urlAsNaClDesc(url, new InvalidFileLoadCallback());
+  generalLog('Loading URL ' + url);
+  generalLog('Expecting to see same origin violation.');
+  server.__urlAsNaClDesc(url, new invalidFileLoadCallback());
 }
 
-var ValidFileLoadCallback = function() {
+// Test Stage 2: Verifies that an existing file can be loaded.
+function validFileLoadCallback() {
   this.onload = function(nacl_desc) {
     // Get the data that was loaded from the file.
-    GeneralLog('ValidFileLoadCallback onload correctly invoked.');
+    generalLog('validFileLoadCallback onload correctly invoked.');
     var msg = server.cat(nacl_desc, 4096);
-    GeneralLog('cat returned, converting to string.');
+    generalLog('cat returned, converting to string.');
     var str = '';
     var len = msg.length;
     var byte;
     for (var i = 0; i < len && (byte = msg[i]) != 0; i++) {
       str += String.fromCharCode(byte);
     }
-    GeneralLog(str);
+    generalLog(str);
 
-    // Start a load from the wrong domain.
-    StartInvalidFileLoad();
+    // Note that the Selenium framework returns a list of all files that
+    // *could* be opened if the requested file could not be opened.
+    // Check for getting the real data from the test file, not just the
+    // list of all existing files.
+    var expected_text = 'TEST PASSED';
+    if (str.indexOf(expected_text) >= 0) {
+      // Start a load from the wrong domain.
+      startInvalidFileLoad();
+    } else {
+      generalLog('ERROR: validFileLoadCallback did not find expected text: ' +
+                 expected_text);
+      allTestsComplete('File load test did not find text: ' + expected_text);
+    }
   }
   this.onfail = function(object) {
-    GeneralLog('ERROR: ValidFileLoadCallback onfail invoked: ' + object);
-    AllTestsComplete('File load test failed: ' + object);
+    generalLog('ERROR: validFileLoadCallback onfail invoked: ' + object);
+    allTestsComplete('File load test failed: ' + object);
   }
 }
 
-var StartValidFileLoad = function() {
+// Test Stage 1: Starts a load of a valid file.
+function startValidFileLoad() {
+  testState = 'loading valid file';
   var url = 'srpc_url_as_nacl_desc_success.html';
-  GeneralLog('Loading URL ' + url);
-  server.__urlAsNaClDesc(url, new ValidFileLoadCallback());
+  generalLog('Loading URL ' + url);
+  server.__urlAsNaClDesc(url, new validFileLoadCallback());
 }
 
-var TestTimeoutHandler = function() {
-  GeneralLog('The test did not finish in the allotted time.');
-  AllTestsComplete('Test timed out.');
+// Test watchdog timer. Makes sure the test does not run too long if
+// something hangs.
+function handleTestTimeout() {
+  generalLog('The test did not finish in the allotted time.');
+  allTestsComplete('Test timed out, testState=' + testState);
 }
       //]]>
     </script>
@@ -145,18 +170,23 @@ var TestTimeoutHandler = function() {
                                 document.getElementById('status'),
                                 100);
 
+      // Returns true ("wait") to the NaclLib test driver until all of the
+      // tests are complete.  I.e., either all of the file load callbacks have
+      // completed successfully or an error has occurred.
       nacllib.wait = function() {
-        if (!module_loaded) {
-          // The module has successfully loaded. Get set up and start testing.
-          module_loaded = true;
-          server = document.getElementById('nacl_server');
-          log_element = document.getElementById('GeneralOutput');
-          GeneralLog('Module loaded.');
+        if ('' == testState) {
+          // The module has successfully loaded and this code is being
+          // called for the first time. Get set up and start testing.
+          testState = 'initializing';
 
-          test_timeout_handler = setTimeout('TestTimeoutHandler()', 10000);
-          StartValidFileLoad();
+          server = document.getElementById('nacl_server');
+          logElement = document.getElementById('GeneralOutput');
+          generalLog('Module loaded.');
+
+          testTimeoutHandler = setTimeout('handleTestTimeout()', 10000);
+          startValidFileLoad();
           return true;
-        } else if (!test_complete) {
+        } else if ('complete' != testState) {
           // Continue to return true until all testing is complete. This tells
           // the test driver to wait before calling the test() method.
           return true;
@@ -166,14 +196,17 @@ var TestTimeoutHandler = function() {
         }
       }
 
+      // Returns the test status to the NaclLib test driver.  This is called
+      // by the NaclLib test driver after the wait() method has returned false.
+      // I.e., this is called only after all tests are complete.
       nacllib.test = function() {
         // The actual testing is all finished by the time this method is
         // called, so just return the test results.
-        if (!module_loaded) {
+        if ('' == testState) {
           return 'The module did not load.';
-        } else if (!test_passed && '' != test_error_msg) {
-          return test_error_msg;
-        } else if (!test_passed) {
+        } else if (!testPassed && '' != testErrorMsg) {
+          return testErrorMsg;
+        } else if (!testPassed) {
           return 'Generic test failure.';
         } else {
           document.cookie = 'status=OK';
