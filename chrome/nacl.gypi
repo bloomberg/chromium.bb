@@ -47,7 +47,10 @@
   'targets': [
     {
       'target_name': 'nacl',
-      'type': '<(library)',
+      # The TLS (Thread Local Storage) access used by NaCl on x86-64
+      # on Linux/ELF can't be linked into a shared library, so we
+      # can't use '<(library)' here.  See http://crbug.com/35829.
+      'type': 'static_library',
       'msvs_guid': '83E86DAF-5763-4711-AD34-5FDAE395560C',
       'variables': {
         'nacl_target': 1,
