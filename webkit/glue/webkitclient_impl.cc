@@ -101,6 +101,7 @@ static int ToMessageID(WebLocalizedString::Name name) {
 WebKitClientImpl::WebKitClientImpl()
     : main_loop_(MessageLoop::current()),
       shared_timer_func_(NULL),
+      shared_timer_fire_time_(0.0),
       shared_timer_suspended_(0) {
 }
 
@@ -257,6 +258,7 @@ void WebKitClientImpl::setSharedTimerFiredFunction(void (*func)()) {
 }
 
 void WebKitClientImpl::setSharedTimerFireTime(double fire_time) {
+  shared_timer_fire_time_ = fire_time;
   if (shared_timer_suspended_)
     return;
 
@@ -403,8 +405,9 @@ void WebKitClientImpl::SuspendSharedTimer() {
 }
 
 void WebKitClientImpl::ResumeSharedTimer() {
-  if (--shared_timer_suspended_ == 0)
-    setSharedTimerFireTime(currentTime());
+  // The shared timer may have fired or been adjusted while we were suspended.
+  if (--shared_timer_suspended_ == 0 && !shared_timer_.IsRunning())
+    setSharedTimerFireTime(shared_timer_fire_time_);
 }
 
 }  // namespace webkit_glue

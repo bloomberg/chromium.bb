@@ -87,6 +87,7 @@ class WebKitClientImpl : public WebKit::WebKitClient {
   MessageLoop* main_loop_;
   base::OneShotTimer<WebKitClientImpl> shared_timer_;
   void (*shared_timer_func_)();
+  double shared_timer_fire_time_;
   int shared_timer_suspended_;  // counter
 
 #if defined(OS_WIN)
