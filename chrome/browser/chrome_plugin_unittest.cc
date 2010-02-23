@@ -140,6 +140,7 @@ void ChromePluginTest::LoadPlugin() {
   PathService::Get(base::DIR_EXE, &path);
   path = path.AppendASCII(kPluginFilename);
   plugin_ = ChromePluginLib::Create(path, GetCPBrowserFuncsForBrowser());
+  ASSERT_TRUE(plugin_);
 
   // Exchange test APIs with the plugin.
   TestFuncParams params;
@@ -147,8 +148,6 @@ void ChromePluginTest::LoadPlugin() {
   params.bfuncs.invoke_later = CPT_InvokeLater;
   EXPECT_EQ(CPERR_SUCCESS, plugin_->CP_Test(&params));
   test_funcs_ = params.pfuncs;
-
-  EXPECT_TRUE(plugin_);
 }
 
 void ChromePluginTest::UnloadPlugin() {
@@ -213,11 +212,9 @@ void ChromePluginTest::OnURLRequestComplete() {
   // main loop returns and this thread subsequently goes out of scope.
 }
 
-};  // namespace
-
 // Tests that the plugin can intercept URLs.
 TEST_F(ChromePluginTest, DoesIntercept) {
-  for (int i = 0; i < arraysize(kChromeTestPluginPayloads); ++i) {
+  for (size_t i = 0; i < arraysize(kChromeTestPluginPayloads); ++i) {
     RunTest(GURL(kChromeTestPluginPayloads[i].url),
             &kChromeTestPluginPayloads[i]);
   }
@@ -300,3 +297,6 @@ TEST_F(ChromePluginTest, DoesNotInterceptOwnRequest) {
 
   MessageLoop::current()->Run();
 }
+
+}  // namespace
+

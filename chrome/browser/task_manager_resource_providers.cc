@@ -24,6 +24,7 @@
 #include "chrome/app/chrome_dll_resource.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/child_process_host.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/extensions/extension_process_manager.h"
@@ -33,7 +34,6 @@
 #include "chrome/browser/renderer_host/resource_message_filter.h"
 #include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
-#include "chrome/common/child_process_host.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
@@ -166,7 +166,7 @@ TaskManager::Resource* TaskManagerTabContentsResourceProvider::GetResource(
       tab_util::GetTabContentsByID(render_process_host_id, routing_id);
   if (!tab_contents)  // Not one of our resource.
     return NULL;
-  
+
   base::ProcessHandle process_handle =
       tab_contents->GetRenderProcessHost()->GetHandle();
   if (!process_handle) {

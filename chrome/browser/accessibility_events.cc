@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/accessibility_events.h"
+
 #include "chrome/browser/extensions/extension_accessibility_api_constants.h"
 #include "chrome/browser/profile.h"
-#include "chrome/common/accessibility_events.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 

@@ -8,7 +8,7 @@
 #include "build/build_config.h"
 
 #include "base/ref_counted.h"
-#include "chrome/common/child_process_host.h"
+#include "chrome/browser/child_process_host.h"
 #include "chrome/common/nacl_types.h"
 #include "native_client/src/shared/imc/nacl_imc.h"
 

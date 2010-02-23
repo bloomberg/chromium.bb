@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_CHILD_PROCESS_HOST_H_
-#define CHROME_COMMON_CHILD_PROCESS_HOST_H_
+#ifndef CHROME_BROWSER_CHILD_PROCESS_HOST_H_
+#define CHROME_BROWSER_CHILD_PROCESS_HOST_H_
 
 #include <list>
 #include <string>
@@ -151,4 +151,4 @@ class ChildProcessHost : public ResourceDispatcherHost::Receiver,
   scoped_ptr<ChildProcessLauncher> child_process_;
 };
 
-#endif  // CHROME_COMMON_CHILD_PROCESS_HOST_H_
+#endif  // CHROME_BROWSER_CHILD_PROCESS_HOST_H_

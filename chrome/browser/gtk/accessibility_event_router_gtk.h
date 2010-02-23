@@ -13,7 +13,7 @@
 #include "base/basictypes.h"
 #include "base/hash_tables.h"
 #include "base/singleton.h"
-#include "chrome/common/accessibility_events.h"
+#include "chrome/browser/accessibility_events.h"
 
 class Profile;
 

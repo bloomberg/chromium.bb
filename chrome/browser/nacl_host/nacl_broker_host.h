@@ -7,7 +7,7 @@
 
 #include "base/basictypes.h"
 #include "base/process.h"
-#include "chrome/common/child_process_host.h"
+#include "chrome/browser/child_process_host.h"
 #include "ipc/ipc_message.h"
 
 class NaClBrokerHost : public ChildProcessHost {

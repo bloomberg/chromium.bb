@@ -23,8 +23,6 @@
           # .cc, .h, and .mm files under chrome/common that are used on all
           # platforms, including both 32-bit and 64-bit Windows.
           # Test files are not included.
-          'common/accessibility_events.h',
-          'common/accessibility_events.cc',
           'common/app_mode_constants_mac.h',
           'common/app_mode_constants_mac.mm',
           'common/bindings_policy.h',
@@ -190,8 +188,6 @@
         'common/appcache/chrome_appcache_service.h',
         'common/automation_constants.cc',
         'common/automation_constants.h',
-        'common/child_process_host.cc',
-        'common/child_process_host.h',
         'common/chrome_descriptors.h',
         'common/chrome_plugin_api.h',
         'common/chrome_plugin_lib.cc',

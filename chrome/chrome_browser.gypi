@@ -40,6 +40,8 @@
       'sources': [
         # All .cc, .h, .m, and .mm files under browser except for tests and
         # mocks.
+        'browser/accessibility_events.h',
+        'browser/accessibility_events.cc',
         'browser/alternate_nav_url_fetcher.cc',
         'browser/alternate_nav_url_fetcher.h',
         'browser/app_controller_cppsafe_mac.h',
@@ -262,6 +264,8 @@
         'browser/cert_store.h',
         'browser/character_encoding.cc',
         'browser/character_encoding.h',
+        'browser/child_process_host.cc',
+        'browser/child_process_host.h',
         'browser/child_process_launcher.cc',
         'browser/child_process_launcher.h',
         'browser/child_process_security_policy.cc',
