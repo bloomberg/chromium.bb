@@ -93,6 +93,10 @@ class NetworkMenuButton : public StatusAreaButton,
   virtual void NetworkChanged(NetworkLibrary* obj);
   virtual void NetworkTraffic(NetworkLibrary* cros, int traffic_type);
 
+  // Sets the badge icon.
+  void SetBadge(const SkBitmap& badge);
+  SkBitmap badge() const { return badge_; }
+
  protected:
   // StatusAreaButton implementation.
   virtual void DrawIcon(gfx::Canvas* canvas);
@@ -104,7 +108,7 @@ class NetworkMenuButton : public StatusAreaButton,
     FLAG_TOGGLE_WIFI       = 1 << 2,
     FLAG_TOGGLE_CELLULAR   = 1 << 3,
     FLAG_TOGGLE_OFFLINE    = 1 << 4,
-    FLAG_BOLD              = 1 << 5,
+    FLAG_ASSOCIATED        = 1 << 5,
     FLAG_ETHERNET          = 1 << 6,
     FLAG_WIFI              = 1 << 7,
     FLAG_CELLULAR          = 1 << 8,
@@ -139,6 +143,10 @@ class NetworkMenuButton : public StatusAreaButton,
   // on a light background or a white icon for display on a dark background.
   static SkBitmap IconForNetworkStrength(int strength, bool black);
 
+  // This method will convert the |icon| bitmap to the correct size for display.
+  // If the |badge| icon is not empty, it will draw that on top of the icon.
+  static SkBitmap IconForDisplay(SkBitmap icon, SkBitmap badge);
+
   // views::ViewMenuDelegate implementation.
   virtual void RunMenu(views::View* source, const gfx::Point& pt);
 
@@ -162,6 +170,9 @@ class NetworkMenuButton : public StatusAreaButton,
 
   // The network menu.
   views::Menu2 network_menu_;
+
+  // A badge icon displayed on top of the icon.
+  SkBitmap badge_;
 
   // The throb animation that does the wifi connecting animation.
   ThrobAnimation animation_connecting_;

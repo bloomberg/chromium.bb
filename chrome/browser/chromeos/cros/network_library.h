@@ -174,6 +174,9 @@ class NetworkLibrary : public URLRequestJobTracker::JobObserver {
   // Return true if any network is currently connected.
   bool Connected() const;
 
+  // Return true if any network is currently connecting.
+  bool Connecting() const;
+
   // Returns the current IP address if connected. If not, returns empty string.
   const std::string& IPAddress() const;
 

@@ -57,7 +57,7 @@ string16 NetworkMenuButton::GetLabelAt(int index) const {
 }
 
 const gfx::Font* NetworkMenuButton::GetLabelFontAt(int index) const {
-  return (menu_items_[index].flags & FLAG_BOLD) ?
+  return (menu_items_[index].flags & FLAG_ASSOCIATED) ?
       &ResourceBundle::GetSharedInstance().GetFont(ResourceBundle::BoldFont) :
       NULL;
 }
@@ -167,31 +167,7 @@ void NetworkMenuButton::AnimationProgressed(const Animation* animation) {
 // NetworkMenuButton, StatusAreaButton implementation:
 
 void NetworkMenuButton::DrawIcon(gfx::Canvas* canvas) {
-  // Draw the network icon 4 pixels down to center it.
-  // Because the status icon is 24x24 but the images are 24x16.
-  static const int kIconVerticalPadding = 4;
-  canvas->DrawBitmapInt(icon(), 0, kIconVerticalPadding);
-
-  // Draw badge at (14,14) if there is one.
-  static const int x = 14;
-  static const int y = 14;
-  NetworkLibrary* cros = NetworkLibrary::Get();
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  if (cros->EnsureLoaded()) {
-    if (!cros->Connected()) {
-      canvas->DrawBitmapInt(
-          *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED), x, y);
-    } else if (cros->cellular_connecting() || cros->cellular_connected()) {
-      // TODO(chocobo): Check cellular network 3g/edge.
-      canvas->DrawBitmapInt(
-          *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_3G), x, y);
-//      canvas->DrawBitmapInt(
-//          *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_EDGE), x, y);
-    }
-  } else {
-    canvas->DrawBitmapInt(
-        *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_WARNING), x, y);
-  }
+  canvas->DrawBitmapInt(IconForDisplay(icon(), badge()), 0, 0);
 }
 
 // Override the DrawIcon method to draw the wifi icon.
@@ -311,8 +287,20 @@ void NetworkMenuButton::NetworkChanged(NetworkLibrary* cros) {
       else
         SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0));
     }
+
+    if (!cros->Connected() && !cros->Connecting()) {
+      SetBadge(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED));
+    } else if (!cros->ethernet_connected() && !cros->wifi_connected() &&
+        (cros->cellular_connecting() || cros->cellular_connected())) {
+      // TODO(chocobo): Check cellular network 3g/edge.
+      SetBadge(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_3G));
+//      SetBadge(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_EDGE));
+    } else {
+      SetBadge(SkBitmap());
+    }
   } else {
     SetIcon(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_BARS0));
+    SetBadge(*rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_WARNING));
   }
 
   SchedulePaint();
@@ -333,6 +321,10 @@ void NetworkMenuButton::NetworkTraffic(NetworkLibrary* cros, int traffic_type) {
   */
 }
 
+void NetworkMenuButton::SetBadge(const SkBitmap& badge) {
+  badge_ = badge;
+}
+
 // static
 SkBitmap NetworkMenuButton::IconForNetworkStrength(int strength, bool black) {
   // Compose wifi icon by superimposing various icons.
@@ -345,6 +337,26 @@ SkBitmap NetworkMenuButton::IconForNetworkStrength(int strength, bool black) {
   int base = black ? IDR_STATUSBAR_NETWORK_BARS1_BLACK :
                      IDR_STATUSBAR_NETWORK_BARS1;
   return *ResourceBundle::GetSharedInstance().GetBitmapNamed(base + index);
+}
+
+// static
+SkBitmap NetworkMenuButton::IconForDisplay(SkBitmap icon, SkBitmap badge) {
+  // Icons are 24x24.
+  static const int kIconWidth = 24;
+  static const int kIconHeight = 24;
+  // Draw the network icon 4 pixels down to center it.
+  // Because the status icon is 24x24 but the images are 24x16.
+  static const int kIconX = 0;
+  static const int kIconY = 4;
+  // Draw badge at (14,14).
+  static const int kBadgeX = 14;
+  static const int kBadgeY = 14;
+
+  gfx::Canvas canvas(kIconWidth, kIconHeight, false);
+  canvas.DrawBitmapInt(icon, kIconX, kIconY);
+  if (!badge.empty())
+    canvas.DrawBitmapInt(badge, kBadgeX, kBadgeY);
+  return canvas.ExtractBitmap();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -368,24 +380,25 @@ void NetworkMenuButton::InitMenuItems() {
   // Ethernet
   string16 label = l10n_util::GetStringUTF16(
                        IDS_STATUSBAR_NETWORK_DEVICE_ETHERNET);
-  SkBitmap icon = cros->ethernet_connecting() || cros->ethernet_connected() ?
-      *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED_BLACK) :
-      *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
+  SkBitmap icon = *rb.GetBitmapNamed(IDR_STATUSBAR_WIRED_BLACK);
+  SkBitmap badge = cros->ethernet_connecting() || cros->ethernet_connected() ?
+      SkBitmap() : *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_DISCONNECTED);
   int flag = (cros->ethernet_connecting() || cros->ethernet_connected()) ?
-      FLAG_ETHERNET & FLAG_BOLD : FLAG_ETHERNET;
+      FLAG_ETHERNET | FLAG_ASSOCIATED : FLAG_ETHERNET;
   menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-      icon, WifiNetwork(), CellularNetwork(), flag));
+      IconForDisplay(icon, badge), WifiNetwork(), CellularNetwork(), flag));
 
   // Wifi
   const WifiNetworkVector& wifi_networks = cros->wifi_networks();
   // Wifi networks ssids.
   for (size_t i = 0; i < wifi_networks.size(); ++i) {
     label = ASCIIToUTF16(wifi_networks[i].ssid);
+    SkBitmap icon = IconForNetworkStrength(wifi_networks[i].strength, true);
     flag = (wifi_networks[i].ssid == cros->wifi_ssid()) ?
-        FLAG_WIFI & FLAG_BOLD : FLAG_WIFI;
+        FLAG_WIFI | FLAG_ASSOCIATED : FLAG_WIFI;
     menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-        IconForNetworkStrength(wifi_networks[i].strength, true),
-        wifi_networks[i], CellularNetwork(), flag));
+        IconForDisplay(icon, SkBitmap()), wifi_networks[i], CellularNetwork(),
+        flag));
   }
 
   // Cellular
@@ -393,11 +406,14 @@ void NetworkMenuButton::InitMenuItems() {
   // Cellular networks ssids.
   for (size_t i = 0; i < cell_networks.size(); ++i) {
     label = ASCIIToUTF16(cell_networks[i].name);
+    SkBitmap icon = IconForNetworkStrength(cell_networks[i].strength, true);
+    // TODO(chocobo): Check cellular network 3g/edge.
+    SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_3G);
+//    SkBitmap badge = *rb.GetBitmapNamed(IDR_STATUSBAR_NETWORK_EDGE);
     flag = (cell_networks[i].name == cros->cellular_name()) ?
-        FLAG_CELLULAR & FLAG_BOLD : FLAG_CELLULAR;
+        FLAG_CELLULAR | FLAG_ASSOCIATED : FLAG_CELLULAR;
     menu_items_.push_back(MenuItem(menus::MenuModel::TYPE_COMMAND, label,
-        IconForNetworkStrength(cell_networks[i].strength, true),
-        WifiNetwork(), cell_networks[i], flag));
+        IconForDisplay(icon, badge), WifiNetwork(), cell_networks[i], flag));
   }
 
   // No networks available message.

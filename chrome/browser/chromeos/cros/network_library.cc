@@ -387,6 +387,10 @@ bool NetworkLibrary::Connected() const {
   return ethernet_connected() || wifi_connected() || cellular_connected();
 }
 
+bool NetworkLibrary::Connecting() const {
+  return ethernet_connecting() || wifi_connecting() || cellular_connecting();
+}
+
 const std::string& NetworkLibrary::IPAddress() const {
   // Returns highest priority IP address.
   if (ethernet_connected())
