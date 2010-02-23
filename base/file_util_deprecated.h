@@ -54,6 +54,21 @@ int ReadFile(const std::wstring& filename, char* data, int size);
 int WriteFile(const std::wstring& filename, const char* data, int size);
 bool GetCurrentDirectory(std::wstring* path);
 
+// Successfully deprecated on non-Windows, but Win-specific callers remain.
+#if defined(OS_WIN)
+// Returns the directory component of a path, without the trailing
+// path separator, or an empty string on error. The function does not
+// check for the existence of the path, so if it is passed a directory
+// without the trailing \, it will interpret the last component of the
+// path as a file and chomp it. This does not support relative paths.
+// Examples:
+// path == "C:\pics\jojo.jpg",     returns "C:\pics"
+// path == "C:\Windows\system32\", returns "C:\Windows\system32"
+// path == "C:\Windows\system32",  returns "C:\Windows"
+// Deprecated. Use FilePath's DirName() instead.
+std::wstring GetDirectoryFromPath(const std::wstring& path);
+#endif
+
 }
 
 #endif  // BASE_FILE_UTIL_DEPRECATED_H_
