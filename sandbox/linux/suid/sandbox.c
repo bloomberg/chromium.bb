@@ -23,6 +23,7 @@
 #include <sys/stat.h>
 #include <sys/time.h>
 #include <sys/types.h>
+#include <sys/vfs.h>
 #include <unistd.h>
 
 #include "linux_util.h"
@@ -31,6 +32,28 @@
 
 #if !defined(CLONE_NEWPID)
 #define CLONE_NEWPID 0x20000000
+#endif
+
+#if !defined(BTRFS_SUPER_MAGIC)
+#define BTRFS_SUPER_MAGIC 0x9123683E
+#endif
+#if !defined(EXT2_SUPER_MAGIC)
+#define EXT2_SUPER_MAGIC 0xEF53
+#endif
+#if !defined(EXT3_SUPER_MAGIC)
+#define EXT3_SUPER_MAGIC 0xEF53
+#endif
+#if !defined(EXT4_SUPER_MAGIC)
+#define EXT4_SUPER_MAGIC 0xEF53
+#endif
+#if !defined(REISERFS_SUPER_MAGIC)
+#define REISERFS_SUPER_MAGIC 0x52654973
+#endif
+#if !defined(TMPFS_MAGIC)
+#define TMPFS_MAGIC 0x01021994
+#endif
+#if !defined(XFS_SUPER_MAGIC)
+#define XFS_SUPER_MAGIC 0x58465342
 #endif
 
 static const char kSandboxDescriptorEnvironmentVarName[] = "SBX_D";
@@ -60,10 +83,40 @@ static int CloneChrootHelperProcess() {
     return -1;
   }
 
+  // Some people mount /tmp on a non-POSIX filesystem (e.g. NFS). This
+  // breaks all sorts of assumption in our code. So, if we don't recognize the
+  // filesystem, we will try to use an alternative location for our temp
+  // directory.
+  char tempDirectoryTemplate[80] = "/tmp/chrome-sandbox-chroot-XXXXXX";
+  struct statfs sfs;
+  if (!statfs("/tmp", &sfs) &&
+      sfs.f_type != BTRFS_SUPER_MAGIC &&
+      sfs.f_type != EXT2_SUPER_MAGIC &&
+      sfs.f_type != EXT3_SUPER_MAGIC &&
+      sfs.f_type != EXT4_SUPER_MAGIC &&
+      sfs.f_type != REISERFS_SUPER_MAGIC &&
+      sfs.f_type != TMPFS_MAGIC &&
+      sfs.f_type != XFS_SUPER_MAGIC) {
+    // If /dev/shm exists, it is supposed to be a tmpfs filesystem. While we
+    // are not actually using it for shared memory, moving our temp directory
+    // into a known tmpfs filesystem is preferable over using a potentially
+    // unreliable non-POSIX filesystem.
+    if (!statfs("/dev/shm", &sfs) && sfs.f_type == TMPFS_MAGIC) {
+      *tempDirectoryTemplate = '\000';
+      strncat(tempDirectoryTemplate, "/dev/shm/chrome-sandbox-chroot-XXXXXX",
+              sizeof(tempDirectoryTemplate) - 1);
+    } else {
+      // Neither /tmp is a well-known POSIX filesystem, nor /dev/shm is a
+      // tmpfs. After all, we now use /tmp as the location of our temp
+      // directory, but we quite likely fail the moment we try to access it
+      // through chroot_dir_fd. If so, we will print a verbose error message
+      // (see below)
+    }
+  }
+
   // We create a temp directory for our chroot. Nobody should ever write into
   // it, so it's root:root mode 000.
-  char kTempDirectoryTemplate[] = "/tmp/chrome-sandbox-chroot-XXXXXX";
-  const char* temp_dir = mkdtemp(kTempDirectoryTemplate);
+  const char* temp_dir = mkdtemp(tempDirectoryTemplate);
   if (!temp_dir) {
     perror("Failed to create temp directory for chroot");
     return -1;
@@ -90,7 +143,9 @@ static int CloneChrootHelperProcess() {
   }
 
   if (fchown(chroot_dir_fd, 0 /* root */, 0 /* root */)) {
-    perror("fchown");
+    fprintf(stderr, "Could not set up sandbox work directory. Maybe, /tmp is "
+                    "a non-POSIX filesystem and /dev/shm doesn't exist "
+                    "either. Consider mounting a \"tmpfs\" on /tmp.\n");
     return -1;
   }
 
