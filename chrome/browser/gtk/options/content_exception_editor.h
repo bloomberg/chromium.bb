@@ -51,6 +51,10 @@ class ContentExceptionEditor {
   ContentSetting SettingForIndex(int index);
   int IndexForSetting(ContentSetting setting);
 
+  bool IsHostValid(const std::string& host) const;
+
+  void UpdateImage(GtkWidget* image, bool is_valid);
+
   // GTK callbacks
   static void OnEntryChanged(GtkEditable* entry,
                              ContentExceptionEditor* window);
@@ -72,6 +76,7 @@ class ContentExceptionEditor {
   // UI widgets.
   GtkWidget* dialog_;
   GtkWidget* entry_;
+  GtkWidget* host_image_;
   GtkWidget* action_combo_;
 
   DISALLOW_COPY_AND_ASSIGN(ContentExceptionEditor);

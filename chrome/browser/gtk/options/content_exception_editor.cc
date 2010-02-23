@@ -5,25 +5,27 @@
 #include "chrome/browser/gtk/options/content_exception_editor.h"
 
 #include "app/l10n_util.h"
+#include "app/resource_bundle.h"
 #include "base/message_loop.h"
 #include "chrome/browser/content_exceptions_table_model.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "chrome/common/gtk_util.h"
 #include "googleurl/src/url_canon.h"
 #include "googleurl/src/url_parse.h"
+#include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 
 namespace {
 
 // The settings shown in the combobox if show_ask_ is false;
-static const ContentSetting kNoAskSettings[] = { CONTENT_SETTING_ALLOW,
-                                                 CONTENT_SETTING_BLOCK };
+const ContentSetting kNoAskSettings[] = { CONTENT_SETTING_ALLOW,
+                                          CONTENT_SETTING_BLOCK };
 
 // The settings shown in the combobox if show_ask_ is true;
-static const ContentSetting kAskSettings[] = { CONTENT_SETTING_ALLOW,
-                                               CONTENT_SETTING_ASK,
-                                               CONTENT_SETTING_BLOCK };
+const ContentSetting kAskSettings[] = { CONTENT_SETTING_ALLOW,
+                                        CONTENT_SETTING_ASK,
+                                        CONTENT_SETTING_BLOCK };
 
 // Returns true if the host name is valid.
 bool ValidHost(const std::string& host) {
@@ -32,6 +34,13 @@ bool ValidHost(const std::string& host) {
 
   url_canon::CanonHostInfo host_info;
   return !net::CanonicalizeHost(host, &host_info).empty();
+}
+
+GtkWidget* CreateEntryImageHBox(GtkWidget* entry, GtkWidget* image) {
+  GtkWidget* hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
+  gtk_box_pack_start(GTK_BOX(hbox), entry, TRUE, TRUE, 0);
+  gtk_box_pack_start(GTK_BOX(hbox), image, FALSE, FALSE, 0);
+  return hbox;
 }
 
 }  // namespace
@@ -68,6 +77,8 @@ ContentExceptionEditor::ContentExceptionEditor(
   g_signal_connect(entry_, "changed", G_CALLBACK(OnEntryChanged), this);
   gtk_entry_set_activates_default(GTK_ENTRY(entry_), TRUE);
 
+  host_image_ = gtk_image_new_from_pixbuf(NULL);
+
   action_combo_ = gtk_combo_box_new_text();
   for (int i = 0; i < GetItemCount(); ++i) {
     gtk_combo_box_append_text(GTK_COMBO_BOX(action_combo_),
@@ -79,7 +90,7 @@ ContentExceptionEditor::ContentExceptionEditor(
   GtkWidget* table = gtk_util::CreateLabeledControlsGroup(
       NULL,
       l10n_util::GetStringUTF8(IDS_EXCEPTION_EDITOR_HOST_TITLE).c_str(),
-      entry_,
+      CreateEntryImageHBox(entry_, host_image_),
       l10n_util::GetStringUTF8(IDS_EXCEPTION_EDITOR_ACTION_TITLE).c_str(),
       action_combo_,
       NULL);
@@ -124,23 +135,28 @@ int ContentExceptionEditor::IndexForSetting(ContentSetting setting) {
   return 0;
 }
 
+bool ContentExceptionEditor::IsHostValid(const std::string& host) const {
+  bool is_valid_host = ValidHost(host) &&
+      (model_->IndexOfExceptionByHost(host) == -1);
+
+  return is_new() ? is_valid_host : (!host.empty() &&
+      ((host_ == host) || is_valid_host));
+}
+
+void ContentExceptionEditor::UpdateImage(GtkWidget* image, bool is_valid) {
+  return gtk_image_set_from_pixbuf(GTK_IMAGE(image),
+      ResourceBundle::GetSharedInstance().GetPixbufNamed(
+          is_valid ? IDR_INPUT_GOOD : IDR_INPUT_ALERT));
+}
+
 // static
 void ContentExceptionEditor::OnEntryChanged(GtkEditable* entry,
                                             ContentExceptionEditor* window) {
-  bool can_accept = false;
   std::string new_host = gtk_entry_get_text(GTK_ENTRY(window->entry_));
-  if (window->is_new()) {
-    can_accept = ValidHost(new_host) &&
-                 (window->model_->IndexOfExceptionByHost(new_host) == -1);
-  } else {
-    can_accept = !new_host.empty() &&
-        (window->host_ == new_host ||
-         (ValidHost(new_host) &&
-          window->model_->IndexOfExceptionByHost(new_host) == -1));
-  }
-
+  bool is_valid = window->IsHostValid(new_host);
   gtk_dialog_set_response_sensitive(GTK_DIALOG(window->dialog_),
-                                    GTK_RESPONSE_OK, can_accept);
+                                    GTK_RESPONSE_OK, is_valid);
+  window->UpdateImage(window->host_image_, is_valid);
 }
 
 // static
