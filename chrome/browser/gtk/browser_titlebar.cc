@@ -52,14 +52,7 @@ const int kNormalVerticalOffset = kTitlebarHeight + kTabOuterThickness;
 // A linux specific menu item for toggling window decorations.
 const int kShowWindowDecorationsCommand = 200;
 
-// The following OTR constants copied from opaque_browser_frame_view.cc:
-// In maximized mode, the OTR avatar starts 2 px below the top of the screen, so
-// that it doesn't extend into the "3D edge" portion of the titlebar.
-const int kOTRMaximizedTopSpacing = 2;
-// The OTR avatar ends 2 px above the bottom of the tabstrip (which, given the
-// way the tabstrip draws its bottom edge, will appear like a 1 px gap to the
-// user).
-const int kOTRBottomSpacing = 2;
+const int kOTRBottomSpacing = 1;
 // There are 2 px on each side of the OTR avatar (between the frame border and
 // it on the left, and between it and the tabstrip on the right).
 const int kOTRSideSpacing = 2;
@@ -190,7 +183,7 @@ void BrowserTitlebar::Init() {
     GtkWidget* spy_frame = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
     // We use this alignment rather than setting padding on the GtkImage because
     // the image's intrinsic padding doesn't clip the pixbuf during painting.
-    gtk_alignment_set_padding(GTK_ALIGNMENT(spy_frame), kOTRMaximizedTopSpacing,
+    gtk_alignment_set_padding(GTK_ALIGNMENT(spy_frame), 0,
         kOTRBottomSpacing, kOTRSideSpacing, kOTRSideSpacing);
     gtk_widget_set_size_request(spy_guy, -1, 0);
     gtk_container_add(GTK_CONTAINER(spy_frame), spy_guy);
