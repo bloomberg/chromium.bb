@@ -2372,9 +2372,3 @@
    fun:_ZN2v88internal6Object23GetPropertyWithCallbackEPS1_S2_PNS0_6StringES2_
    obj:*
 }
-{
-   bug_366062
-   Memcheck:Cond
-   fun:_ZNK2v88internal16CallOptimization31GetPrototypeDepthOfExpectedTypeEPNS0_8JSObjectES3_
-}
-
