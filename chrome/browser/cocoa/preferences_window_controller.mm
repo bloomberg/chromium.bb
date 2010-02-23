@@ -477,24 +477,33 @@ void PersonalDataManagerObserver::OnPersonalDataLoaded() {
   PersonalDataManagerObserver::ShowAutoFillDialog(personal_data_manager_);
 }
 
+// Dispatches request to show the autofill dialog.  If there are no profiles
+// in the |personal_data_manager| the we create a new one here.  Similary with
+// credit card info.
 void PersonalDataManagerObserver::ShowAutoFillDialog(
     PersonalDataManager* personal_data_manager) {
-  // TODO(dhollowa): Need "n" of these.  Create single entry for now.
-  // See http://crbug.com/33029.
-  std::vector<AutoFillProfile*> profiles;
+  if (!personal_data_manager)
+    return;
+
+  std::vector<AutoFillProfile*> profiles = personal_data_manager->profiles();
   AutoFillProfile profile(ASCIIToUTF16(""), 0);
-  profiles.push_back(&profile);
+  if (profiles.size() == 0) {
+    string16 new_profile_name =
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_NEW_ADDRESS);
+    profile.set_label(new_profile_name);
+    profiles.push_back(&profile);
+  }
 
-  // TODO(dhollowa): Need "n" of these.  Create single entry for now.
-  // See http://crbug.com/33029.
-  std::vector<CreditCard*> creditCards;
-  CreditCard creditCard(ASCIIToUTF16(""), 0);
-  creditCards.push_back(&creditCard);
+  std::vector<CreditCard*> credit_cards = personal_data_manager->credit_cards();
+  CreditCard credit_card(ASCIIToUTF16(""), 0);
+  if (credit_cards.size() == 0) {
+    string16 new_credit_card_name =
+        l10n_util::GetStringUTF16(IDS_AUTOFILL_NEW_CREDITCARD);
+    credit_card.set_label(new_credit_card_name);
+    credit_cards.push_back(&credit_card);
+  }
 
-  // TODO(dhollowa): There are outstanding assertions in autofill back end.
-  // Hooking up with UI only until those issues are resolved.
-  // See http://crbug.com/33029.
-  ::ShowAutoFillDialog(NULL, profiles, creditCards);
+  ::ShowAutoFillDialog(personal_data_manager, profiles, credit_cards);
 }
 
 
@@ -572,6 +581,12 @@ void PersonalDataManagerObserver::ShowAutoFillDialog(
                                green:0x9a/255.0
                                 blue:0x9a/255.0
                                alpha:1.0] retain]);
+
+    // Disable the |autoFillSettingsButton_| if we have no
+    // |personalDataManager|.
+    PersonalDataManager* personalDataManager =
+        profile_->GetPersonalDataManager();
+    [autoFillSettingsButton_ setHidden:(personalDataManager == NULL)];
   }
   return self;
 }
@@ -1241,12 +1256,12 @@ const int kDisabledIndex = 1;
 // Called to show the Auto Fill Settings dialog.
 - (IBAction)showAutoFillSettings:(id)sender {
   [self recordUserAction:"Options_ShowAutoFillSettings"];
+
   PersonalDataManager* personalDataManager = profile_->GetPersonalDataManager();
   if (!personalDataManager) {
     // Should not reach here because button is disabled when
     // |personalDataManager| is NULL.
-    // TODO(dhollowa): Need to disable button when personalDataManager == NULL.
-    // See http://crbug.com/33029.
+    NOTREACHED();
     return;
   }
 

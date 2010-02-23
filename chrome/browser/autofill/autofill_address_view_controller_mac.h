@@ -9,6 +9,7 @@
 #import "chrome/browser/cocoa/disclosure_view_controller.h"
 
 @class AutoFillAddressModel;
+@class AutoFillDialogController;
 class AutoFillProfile;
 
 // A class that coordinates the |addressModel| and the associated view
@@ -20,14 +21,29 @@ class AutoFillProfile;
   // The primary model for this controller.  The model is instantiated
   // from within |initWithProfile:|.  We do not hold it as a scoped_nsobject
   // because it is exposed as a KVO compliant property.
-  AutoFillAddressModel* addressModel_;  // strong reference
+  // Strong reference.
+  AutoFillAddressModel* addressModel_;
+
+  // A reference to our parent controller.  Used for notifying parent if/when
+  // deletion occurs.  Also used to notify parent when the label of the address
+  // changes.  May be not be nil.
+  // Weak reference, owns us.
+  AutoFillDialogController* parentController_;
 }
 
 @property (nonatomic, retain) AutoFillAddressModel* addressModel;
 
 // Designated initializer.  Takes a copy of the data in |profile|,
 // it is not held as a reference.
-- (id)initWithProfile:(const AutoFillProfile&)profile;
+- (id)initWithProfile:(const AutoFillProfile&)profile
+    disclosure:(NSCellStateValue)disclosureState
+    controller:(AutoFillDialogController*) parentController;
+
+// Action to remove this address from the dialog.  Forwards the request to
+// |parentController_| which does all the actual work.  We have the action
+// here so that the delete button in the AutoFillAddressViewFormView.xib has
+// something to call.
+- (IBAction)deleteAddress:(id)sender;
 
 // Copy data from internal model to |profile|.
 - (void)copyModelToProfile:(AutoFillProfile*)profile;

@@ -37,16 +37,16 @@ void SetCreditCardInfo(CreditCard* credit_card,
     const char* billing_address, const char* shipping_address) {
   credit_card->set_label(ASCIIToUTF16(label));
   credit_card->SetInfo(AutoFillType(CREDIT_CARD_NAME),
-                   ASCIIToUTF16(name_on_card));
+      ASCIIToUTF16(name_on_card));
   credit_card->SetInfo(AutoFillType(CREDIT_CARD_TYPE), ASCIIToUTF16(type));
   credit_card->SetInfo(AutoFillType(CREDIT_CARD_NUMBER),
-                   ASCIIToUTF16(card_number));
+      ASCIIToUTF16(card_number));
   credit_card->SetInfo(AutoFillType(CREDIT_CARD_EXP_MONTH),
-                   ASCIIToUTF16(expiration_month));
+      ASCIIToUTF16(expiration_month));
   credit_card->SetInfo(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR),
-                   ASCIIToUTF16(expiration_year));
+      ASCIIToUTF16(expiration_year));
   credit_card->SetInfo(AutoFillType(CREDIT_CARD_VERIFICATION_CODE),
-                   ASCIIToUTF16(verification_code));
+      ASCIIToUTF16(verification_code));
   credit_card->set_billing_address(ASCIIToUTF16(billing_address));
   credit_card->set_shipping_address(ASCIIToUTF16(shipping_address));
 }

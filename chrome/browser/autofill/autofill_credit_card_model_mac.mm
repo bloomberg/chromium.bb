@@ -46,6 +46,10 @@
         creditCard.GetFieldText(AutoFillType(CREDIT_CARD_EXP_4_DIGIT_YEAR)))];
     [self setCvcCode:SysUTF16ToNSString(
         creditCard.GetFieldText(AutoFillType(CREDIT_CARD_VERIFICATION_CODE)))];
+    [self setBillingAddress:SysUTF16ToNSString(
+        creditCard.billing_address())];
+    [self setShippingAddress:SysUTF16ToNSString(
+        creditCard.shipping_address())];
   }
   return self;
 }
@@ -82,6 +86,10 @@
       base::SysNSStringToUTF16([self expirationYear]));
   creditCard->SetInfo(AutoFillType(CREDIT_CARD_VERIFICATION_CODE),
       base::SysNSStringToUTF16([self cvcCode]));
+  creditCard->set_billing_address(
+      base::SysNSStringToUTF16([self billingAddress]));
+  creditCard->set_shipping_address(
+      base::SysNSStringToUTF16([self shippingAddress]));
 }
 
 @end

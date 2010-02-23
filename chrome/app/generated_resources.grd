@@ -4845,13 +4845,13 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Change autofill settings
       </message>
       <message name="IDS_AUTOFILL_INFOBAR_ACCEPT" desc="Text to show for the autofill request infobar accept button.">
-        Set up AutoFill...
+        Set up Autofill...
       </message>
       <message name="IDS_AUTOFILL_INFOBAR_DENY" desc="Text to show for the autofill request infobar deny button.">
         Nope
       </message>
       <message name="IDS_AUTOFILL_DIALOG_TITLE" desc="The title of the AutoFill dialog.">
-        AutoFill Profiles
+        Autofill Profiles
       </message>
       <message name="IDS_AUTOFILL_ADDRESSES_GROUP_NAME" desc="The name of the Addresses group of the AutoFill dialog.">
         Addresses

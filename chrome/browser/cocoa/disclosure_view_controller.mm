@@ -6,7 +6,6 @@
 #include "base/logging.h"
 
 namespace {
-const NSCellStateValue kInitialDisclosureState = NSOffState;
 const NSInteger kClosedBoxHeight = 20;
 const CGFloat kDisclosureAnimationDurationSeconds = .2;
 NSString* const kKVODisclosedKey = @"disclosed";
@@ -27,7 +26,7 @@ NSString* const kKVODisclosedKey = @"disclosed";
 
 @interface DisclosureViewController(PrivateMethods)
 
-- (void)initDisclosureState:(NSCellStateValue)state;
+- (void)initFrameSize:(NSCellStateValue)state;
 - (NSRect)openStateFrameSize:(NSRect)startFrame;
 - (NSRect)closedStateFrameSize:(NSRect)startFrame;
 - (void)startAnimations:(NSView*)view
@@ -52,14 +51,14 @@ NSString* const kKVODisclosedKey = @"disclosed";
 
   // Set up the initial disclosure state before we install the observer.
   // We don't want our animations firing before we're done initializing.
-  [disclosureState_ setValue:[NSNumber numberWithInt:kInitialDisclosureState]
-           forKey:kKVODisclosedKey];
+  [disclosureState_ setValue:[NSNumber numberWithInt:initialDisclosureState_]
+      forKey:kKVODisclosedKey];
 
   // Pick up "open" height from the initial state of the view in the nib.
   openHeight_ = [[self view] frame].size.height;
 
   // Set frame size according to initial disclosure state.
-  [self initDisclosureState:kInitialDisclosureState];
+  [self initFrameSize:initialDisclosureState_];
 
   // Set content visibility according to initial disclosure state.
   [self setContentViewVisibility];
@@ -67,8 +66,17 @@ NSString* const kKVODisclosedKey = @"disclosed";
   // Setup observers so that when disclosure state changes we resize frame
   // accordingly.
   [disclosureState_ addObserver:self forKeyPath:kKVODisclosedKey
-             options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld
-             context:nil];
+      options:NSKeyValueObservingOptionNew|NSKeyValueObservingOptionOld
+      context:nil];
+}
+
+- (id)initWithNibName:(NSString *)nibNameOrNil
+               bundle:(NSBundle *)nibBundleOrNil
+           disclosure:(NSCellStateValue)disclosureState {
+  if ((self = [super initWithNibName:nibNameOrNil bundle:nibBundleOrNil])) {
+    initialDisclosureState_ = disclosureState;
+  }
+  return self;
 }
 
 - (void)dealloc {
@@ -87,7 +95,7 @@ NSString* const kKVODisclosedKey = @"disclosed";
 // If the |state| is NSOffState then the frame size corresponds to "closed".
 // The |origin.x| and |size.width| remain unchanged, but the |origin.y| and
 // |size.height| may vary.
-- (void)initDisclosureState:(NSCellStateValue)state {
+- (void)initFrameSize:(NSCellStateValue)state {
   if (state == NSOnState) {
     [[self view] setFrame:[self openStateFrameSize:[[self view] frame]]];
   }

@@ -83,6 +83,7 @@ class ProfileSyncService;
   BooleanPrefMember formAutofill_;
   // Manages PersonalDataManager loading.
   scoped_ptr<PersonalDataManagerObserver> personalDataManagerObserver_;
+  IBOutlet NSButton* autoFillSettingsButton_;
   IBOutlet NSButton* syncButton_;
   IBOutlet NSTextField* syncStatus_;
   IBOutlet NSButton* syncLink_;

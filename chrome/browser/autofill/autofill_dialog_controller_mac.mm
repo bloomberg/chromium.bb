@@ -3,6 +3,7 @@
 // found in the LICENSE file.
 
 #import "chrome/browser/autofill/autofill_dialog_controller_mac.h"
+#include "app/l10n_util.h"
 #include "base/mac_util.h"
 #import "chrome/browser/autofill/autofill_address_model_mac.h"
 #import "chrome/browser/autofill/autofill_address_view_controller_mac.h"
@@ -11,6 +12,7 @@
 #import "chrome/browser/cocoa/disclosure_view_controller.h"
 #import "chrome/browser/cocoa/section_separator_view.h"
 #include "chrome/browser/profile.h"
+#include "grit/generated_resources.h"
 
 @interface AutoFillDialogController (PrivateMethods)
 - (void)runModalDialog;
@@ -44,12 +46,35 @@
   [self autorelease];
 }
 
-
 // Called when the user clicks the save button.
 - (IBAction)save:(id)sender {
+  // Call |makeFirstResponder:| to commit pending text field edits.
+  [[self window] makeFirstResponder:[self window]];
+
+  // If we have an |observer_| then communicate the changes back.
   if (observer_) {
-    [addressFormViewController_ copyModelToProfile:&profiles_[0]];
-    [creditCardFormViewController_ copyModelToCreditCard:&creditCards_[0]];
+    profiles_.clear();
+    profiles_.resize([addressFormViewControllers_ count]);
+    int i = 0;
+    for (AutoFillAddressViewController* addressFormViewController in
+        addressFormViewControllers_.get()) {
+      // Initialize the profile here.  The default initializer does not fully
+      // initialize.
+      profiles_[i] = AutoFillProfile(ASCIIToUTF16(""), 0);
+      [addressFormViewController copyModelToProfile:&profiles_[i]];
+      i++;
+    }
+    creditCards_.clear();
+    creditCards_.resize([creditCardFormViewControllers_ count]);
+    int j = 0;
+    for (AutoFillCreditCardViewController* creditCardFormViewController in
+        creditCardFormViewControllers_.get()) {
+      // Initialize the credit card here.  The default initializer does not
+      // fully initialize.
+      creditCards_[j] = CreditCard(ASCIIToUTF16(""), 0);
+      [creditCardFormViewController copyModelToCreditCard:&creditCards_[j]];
+      j++;
+    }
     observer_->OnAutoFillDialogApply(&profiles_, &creditCards_);
   }
   [self closeDialog];
@@ -59,6 +84,119 @@
 // the modal session.
 - (IBAction)cancel:(id)sender {
   [self closeDialog];
+}
+
+// Adds new address to bottom of list.  A new address controller is created
+// and its view is inserted into the view heirarchy.
+- (IBAction)addNewAddress:(id)sender {
+  // Insert relative to top of section, or below last address.
+  NSView* insertionPoint;
+  NSUInteger count = [addressFormViewControllers_.get() count];
+  if (count == 0) {
+    insertionPoint = addressSection_;
+  } else {
+    insertionPoint = [[addressFormViewControllers_.get()
+        objectAtIndex:[addressFormViewControllers_.get() count] - 1] view];
+  }
+
+  // Create a new default address, and add it to our array of controllers.
+  string16 new_address_name = l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_NEW_ADDRESS);
+  AutoFillProfile newProfile(new_address_name, 0);
+  AutoFillAddressViewController* addressViewController =
+      [[AutoFillAddressViewController alloc]
+          initWithProfile:newProfile
+               disclosure:NSOffState
+               controller:self];
+  [addressFormViewControllers_.get() addObject:addressViewController];
+
+  // Embed the new address into our target view.
+  [childView_ addSubview:[addressViewController view]
+      positioned:NSWindowBelow relativeTo:insertionPoint];
+  [[addressViewController view] setFrameOrigin:NSMakePoint(0, 0)];
+
+  [self notifyAddressChange:self];
+}
+
+// Adds new credit card to bottom of list.  A new credit card controller is
+// created and its view is inserted into the view heirarchy.
+- (IBAction)addNewCreditCard:(id)sender {
+  // Insert relative to top of section, or below last address.
+  NSView* insertionPoint;
+  NSUInteger count = [creditCardFormViewControllers_.get() count];
+  if (count == 0) {
+    insertionPoint = creditCardSection_;
+  } else {
+    insertionPoint = [[creditCardFormViewControllers_.get()
+        objectAtIndex:[creditCardFormViewControllers_.get() count] - 1] view];
+  }
+
+  // Create a new default credit card, and add it to our array of controllers.
+  string16 new_credit_card_name = l10n_util::GetStringUTF16(
+      IDS_AUTOFILL_NEW_CREDITCARD);
+  CreditCard newCreditCard(new_credit_card_name, 0);
+  AutoFillCreditCardViewController* creditCardViewController =
+      [[AutoFillCreditCardViewController alloc]
+          initWithCreditCard:newCreditCard
+                  disclosure:NSOffState
+                  controller:self];
+  [creditCardFormViewControllers_.get() addObject:creditCardViewController];
+
+  // Embed the new address into our target view.
+  [childView_ addSubview:[creditCardViewController view]
+      positioned:NSWindowBelow relativeTo:insertionPoint];
+  [[creditCardViewController view] setFrameOrigin:NSMakePoint(0, 0)];
+}
+
+- (IBAction)deleteAddress:(id)sender {
+  NSUInteger i = [addressFormViewControllers_.get() indexOfObject:sender];
+  DCHECK(i != NSNotFound);
+
+  // Remove controller's view from superview and remove from list of
+  // controllers.  Note on lifetime: removing view from super view decrements
+  // refcount of view, removing controller from array decrements refcount of
+  // controller which in-turn decrement refcount of view.  Both should dealloc
+  // at this point.
+  [[sender view] removeFromSuperview];
+  [addressFormViewControllers_.get() removeObjectAtIndex:i];
+
+  [self notifyAddressChange:self];
+}
+
+- (IBAction)deleteCreditCard:(id)sender {
+  NSUInteger i = [creditCardFormViewControllers_.get() indexOfObject:sender];
+  DCHECK(i != NSNotFound);
+
+  // Remove controller's view from superview and remove from list of
+  // controllers.  Note on lifetime: removing view from super view decrements
+  // refcount of view, removing controller from array decrements refcount of
+  // controller which in-turn decrement refcount of view.  Both should dealloc
+  // at this point.
+  [[sender view] removeFromSuperview];
+  [creditCardFormViewControllers_.get() removeObjectAtIndex:i];
+}
+
+// Credit card controllers are dependent upon the address labels.  So we notify
+// them here that something has changed.
+- (IBAction)notifyAddressChange:(id)sender {
+  for (AutoFillCreditCardViewController* creditCardFormViewController in
+      creditCardFormViewControllers_.get()) {
+      [creditCardFormViewController onAddressesChanged:self];
+  }
+}
+
+// Returns an array of strings representing the addresses in the
+// |addressFormViewControllers_|.
+- (NSArray*)addressStrings {
+  NSUInteger capacity = [addressFormViewControllers_ count];
+  NSMutableArray* array = [NSMutableArray arrayWithCapacity:capacity];
+
+  for (AutoFillAddressViewController* addressFormViewController in
+      addressFormViewControllers_.get()) {
+    [array addObject:[[addressFormViewController addressModel] label]];
+  }
+
+  return array;
 }
 
 @end
@@ -102,6 +240,12 @@
     std::vector<CreditCard*>::const_iterator j;
     for (j = creditCards.begin(); j != creditCards.end(); ++j)
       creditCards_.push_back(**j);
+
+    // Initialize array of sub-controllers.
+    addressFormViewControllers_.reset([[NSMutableArray array] retain]);
+
+    // Initialize array of sub-controllers.
+    creditCardFormViewControllers_.reset([[NSMutableArray array] retain]);
   }
   return self;
 }
@@ -112,12 +256,12 @@
   [NSApp stopModal];
 }
 
-- (AutoFillAddressViewController*)addressFormViewController {
-  return addressFormViewController_.get();
+- (NSMutableArray*)addressFormViewControllers {
+  return addressFormViewControllers_.get();
 }
 
-- (AutoFillCreditCardViewController*)creditCardFormViewController {
-  return creditCardFormViewController_.get();
+- (NSMutableArray*)creditCardFormViewControllers {
+  return creditCardFormViewControllers_.get();
 }
 
 @end
@@ -135,27 +279,39 @@
 // into the |childView_| but we hold onto the controllers and release them in
 // our dealloc once the dialog closes.
 - (void)installChildViews {
-  if (profiles_.size() > 0) {
-    AutoFillAddressViewController* autoFillAddressViewController =
-        [[AutoFillAddressViewController alloc] initWithProfile:profiles_[0]];
-    addressFormViewController_.reset(autoFillAddressViewController);
+  NSView* insertionPoint;
+  insertionPoint = addressSection_;
+  for (size_t i = 0; i < profiles_.size(); i++) {
+    // Special case for first address, we want to show full contents.
+    NSCellStateValue disclosureState = (i == 0) ? NSOnState : NSOffState;
+    AutoFillAddressViewController* addressViewController =
+        [[AutoFillAddressViewController alloc]
+            initWithProfile:profiles_[i]
+                 disclosure:disclosureState
+                 controller:self];
+    [addressFormViewControllers_.get() addObject:addressViewController];
 
     // Embed the child view into our (owned by us) target view.
-    [childView_ addSubview:[addressFormViewController_ view]
-                positioned:NSWindowBelow relativeTo:addressSection_];
-    [[addressFormViewController_ view] setFrameOrigin:NSMakePoint(0, 0)];
+    [childView_ addSubview:[addressViewController view]
+                positioned:NSWindowBelow relativeTo:insertionPoint];
+    insertionPoint = [addressViewController view];
+    [[addressViewController view] setFrameOrigin:NSMakePoint(0, 0)];
   }
 
-  if (creditCards_.size() > 0) {
-    AutoFillCreditCardViewController* autoFillCreditCardViewController =
+  insertionPoint = creditCardSection_;
+  for (size_t i = 0; i < creditCards_.size(); i++) {
+    AutoFillCreditCardViewController* creditCardViewController =
         [[AutoFillCreditCardViewController alloc]
-            initWithCreditCard:creditCards_[0]];
-    creditCardFormViewController_.reset(autoFillCreditCardViewController);
+            initWithCreditCard:creditCards_[i]
+                    disclosure:NSOffState
+                    controller:self];
+    [creditCardFormViewControllers_.get() addObject:creditCardViewController];
 
     // Embed the child view into our (owned by us) target view.
-    [childView_ addSubview:[creditCardFormViewController_ view]
-                positioned:NSWindowBelow relativeTo:creditCardSection_];
-    [[creditCardFormViewController_ view] setFrameOrigin:NSMakePoint(0, 0)];
+    [childView_ addSubview:[creditCardViewController view]
+                positioned:NSWindowBelow relativeTo:insertionPoint];
+    insertionPoint = [creditCardViewController view];
+    [[creditCardViewController view] setFrameOrigin:NSMakePoint(0, 0)];
   }
 }
 

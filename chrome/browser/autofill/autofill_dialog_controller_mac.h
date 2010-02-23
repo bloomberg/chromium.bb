@@ -26,18 +26,17 @@
   IBOutlet SectionSeparatorView* addressSectionBox_;
   IBOutlet NSView* creditCardSection_;
 
-  // TODO(dhollowa): one each of these for now.  Will be n of each
-  // controller eventually, for n addresses and n credit cards.
   // Note on ownership: the controllers are strongly owned by the dialog
   // controller.  Their views are inserted into the dialog's view hierarcy
   // but are retained by these controllers as well.
-  // See http://crbug.com/33029.
-  scoped_nsobject<AutoFillAddressViewController>
-      addressFormViewController_;
-  scoped_nsobject<AutoFillCreditCardViewController>
-      creditCardFormViewController_;
 
-  AutoFillDialogObserver* observer_;  // (weak) not retained
+  // Array of |AutoFillAddressViewController|.
+  scoped_nsobject<NSMutableArray> addressFormViewControllers_;
+
+  // Array of |AutoFillCreditCardViewController|.
+  scoped_nsobject<NSMutableArray> creditCardFormViewControllers_;
+
+  AutoFillDialogObserver* observer_;  // Weak, not retained.
   std::vector<AutoFillProfile> profiles_;
   std::vector<CreditCard> creditCards_;
 }
@@ -59,6 +58,22 @@
 - (IBAction)save:(id)sender;
 - (IBAction)cancel:(id)sender;
 
+// IBActions for adding new items.
+- (IBAction)addNewAddress:(id)sender;
+- (IBAction)addNewCreditCard:(id)sender;
+
+// IBActions for deleting items.  |sender| is expected to be either a
+// |AutoFillAddressViewController| or a |AutoFillCreditCardViewController|.
+- (IBAction)deleteAddress:(id)sender;
+- (IBAction)deleteCreditCard:(id)sender;
+
+// IBAction for sender to alert dialog that an address label has changed.
+- (IBAction)notifyAddressChange:(id)sender;
+
+// Returns an array of strings representing the addresses in the
+// |addressFormViewControllers_|.
+- (NSArray*)addressStrings;
+
 @end
 
 // Interface exposed for unit testing.
@@ -74,8 +89,8 @@
 - (id)initWithObserver:(AutoFillDialogObserver*)observer
       autoFillProfiles:(const std::vector<AutoFillProfile*>&)profiles
            creditCards:(const std::vector<CreditCard*>&)creditCards;
-- (AutoFillAddressViewController*)addressFormViewController;
-- (AutoFillCreditCardViewController*)creditCardFormViewController;
+- (NSMutableArray*)addressFormViewControllers;
+- (NSMutableArray*)creditCardFormViewControllers;
 - (void)closeDialog;
 @end
 

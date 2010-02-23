@@ -28,13 +28,25 @@
   // We do not hold it as a scoped_nsobject because it is exposed as a KVO
   // compliant property.
   DisclosureViewState* disclosureState_;  // strong reference
+
+  // Open height determines the height of the disclosed view.  This value
+  // is derived from the initial height specified in the nib.
   CGFloat openHeight_;
+
+  // Value passed in to the designated initializer.  Used to set up
+  // initial view state when we |awakeFromNib|.
+  NSCellStateValue initialDisclosureState_;
 
   // Animation object for view disclosure transitions.
   scoped_nsobject<NSViewAnimation> animation_;
 }
 
 @property (nonatomic, retain) DisclosureViewState* disclosureState;
+
+// Designated initializer.  Sets the initial disclosure state.
+- (id)initWithNibName:(NSString *)nibNameOrNil
+               bundle:(NSBundle *)nibBundleOrNil
+           disclosure:(NSCellStateValue)disclosureState;
 
 @end
 
