@@ -23,6 +23,7 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chrome_thread.h"
+#include "chrome/browser/defaults.h"
 #include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/memory_details.h"
@@ -842,6 +843,9 @@ void AboutMemoryHandler::OnDetailsAvailable() {
     else
       AppendProcess(child_data, &process.processes[index]);
   }
+
+  root.SetBoolean(L"show_other_browsers",
+      browser_defaults::kShowOtherBrowsersInAboutMemory);
 
   // Get about_memory.html
   static const base::StringPiece memory_html(

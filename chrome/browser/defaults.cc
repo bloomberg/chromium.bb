@@ -24,6 +24,7 @@ const bool kOSSupportsOtherBrowsers = false;
 const bool kDownloadPageHasShowInFolder = false;
 const bool kSizeTabButtonToTopOfTabStrip = true;
 const bool kBootstrapSyncAuthentication = true;
+const bool kShowOtherBrowsersInAboutMemory = false;
 
 #elif defined(OS_LINUX)
 
@@ -69,6 +70,7 @@ const bool kShowAboutMenuItem = true;
 const bool kOSSupportsOtherBrowsers = true;
 const bool kSizeTabButtonToTopOfTabStrip = false;
 const bool kBootstrapSyncAuthentication = false;
+const bool kShowOtherBrowsersInAboutMemory = true;
 
 #endif
 

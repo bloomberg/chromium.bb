@@ -69,6 +69,9 @@ extern const bool kBootstrapSyncAuthentication;
 // field.
 extern const bool kEnablePinnedTabs;
 
+// Should other browsers be shown in about:memory page?
+extern const bool kShowOtherBrowsersInAboutMemory;
+
 }  // namespace browser_defaults
 
 #endif  // CHROME_BROWSER_DEFAULTS_H_
