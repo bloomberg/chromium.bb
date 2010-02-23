@@ -2953,8 +2953,5 @@ BUG36019 : fast/borders/svg-as-border-image-2.html = IMAGE
 BUG36019 : fast/borders/svg-as-border-image.html = IMAGE
 BUG36019 : fast/images/svg-as-tiled-background.html = IMAGE
 
-// Added in WebKit's r55159, will get baselines from the bots.
-BUG36585 WIN LINUX DEFER : fast/repaint/repaint-during-scroll.html = FAIL
-
 // Flaky tests
 BUG36603 WIN RELEASE : svg/text/text-text-05-t.svg = CRASH PASS
