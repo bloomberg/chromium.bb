@@ -85,10 +85,6 @@ void WebPreferences::Apply(WebView* web_view) const {
   // and support is compiled in.
   settings->setExperimentalWebGLEnabled(experimental_webgl_enabled);
 
-  // Enable geolocation support if requested on command line and support is
-  // compiled in.
-  settings->setGeolocationEnabled(geolocation_enabled);
-
   // Display colored borders around composited render layers if requested
   // on command line.
   settings->setShowDebugBorders(show_composited_layer_borders);

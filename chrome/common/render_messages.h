@@ -1785,7 +1785,6 @@ struct ParamTraits<WebPreferences> {
     WriteParam(m, p.allow_universal_access_from_file_urls);
     WriteParam(m, p.allow_file_access_from_file_urls);
     WriteParam(m, p.experimental_webgl_enabled);
-    WriteParam(m, p.geolocation_enabled);
     WriteParam(m, p.show_composited_layer_borders);
   }
   static bool Read(const Message* m, void** iter, param_type* p) {
@@ -1827,7 +1826,6 @@ struct ParamTraits<WebPreferences> {
         ReadParam(m, iter, &p->allow_universal_access_from_file_urls) &&
         ReadParam(m, iter, &p->allow_file_access_from_file_urls) &&
         ReadParam(m, iter, &p->experimental_webgl_enabled) &&
-        ReadParam(m, iter, &p->geolocation_enabled) &&
         ReadParam(m, iter, &p->show_composited_layer_borders);
   }
   static void Log(const param_type& p, std::wstring* l) {
