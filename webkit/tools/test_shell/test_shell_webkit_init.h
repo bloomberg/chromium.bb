@@ -66,6 +66,9 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
     WebKit::WebRuntimeFeatures::enableMediaPlayer(
         PathService::Get(base::DIR_MODULE, &module_path) &&
         media::InitializeMediaLibrary(module_path));
+    // TODO(joth): Make a dummy geolocation service implemenation for
+    // test_shell, and set this to true. http://crbug.com/36451
+    WebKit::WebRuntimeFeatures::enableGeolocation(false);
 
     // Construct and initialize an appcache system for this scope.
     // A new empty temp directory is created to house any cached
