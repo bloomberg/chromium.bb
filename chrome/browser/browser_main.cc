@@ -611,19 +611,21 @@ int BrowserMain(const MainFunctionParams& parameters) {
   gtk_util::SetDefaultWindowIcon();
 #endif
 
-#if defined(OS_WIN)
-  // This is experimental code. See first_run_win.cc for more info.
   std::string try_chrome =
       parsed_command_line.GetSwitchValueASCII(switches::kTryChromeAgain);
   if (!try_chrome.empty()) {
+#if defined(OS_WIN)
     Upgrade::TryResult answer =
         Upgrade::ShowTryChromeDialog(StringToInt(try_chrome));
     if (answer == Upgrade::TD_NOT_NOW)
       return ResultCodes::NORMAL_EXIT_CANCEL;
     if (answer == Upgrade::TD_UNINSTALL_CHROME)
       return ResultCodes::NORMAL_EXIT_EXP2;
+#else
+    // We don't support retention experiments on Mac or Linux.
+    return ResultCodes::NORMAL_EXIT;
+#endif  // defined(OS_WIN)
   }
-#endif  // OS_WIN
 
   BrowserInit browser_init;
 

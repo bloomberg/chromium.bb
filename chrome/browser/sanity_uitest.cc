@@ -10,6 +10,7 @@
 #include "base/basictypes.h"
 #include "base/file_path.h"
 #include "base/platform_thread.h"
+#include "chrome/common/chrome_switches.h"
 
 class GoogleTest : public UITest {
  protected:
@@ -45,5 +46,24 @@ TEST_F(ColumnLayout, Crash) {
   // Make sure the navigation succeeded.
   EXPECT_EQ(page_title, GetActiveTabTitle());
 
-  // UIText will check if this crashed.
+  // UITest will check if this crashed.
+}
+
+// By passing kTryChromeAgain with a magic value > 10000 we cause chrome
+// to exit fairly early. This was the cause of crashes. See bug 34799.
+class EarlyReturnTest : public UITest {
+ public:
+  EarlyReturnTest() {
+    wait_for_initial_loads_ = false;
+    // We don't depend on these timeouts, they are set to the minimum so
+    // the automation server waits the minimun amount possible for the
+    // handshake that will never come.
+    set_command_execution_timeout_ms(1);
+    set_action_timeout_ms(1);
+    launch_arguments_.AppendSwitchWithValue(switches::kTryChromeAgain, "10001");
+  }
+};
+
+TEST_F(EarlyReturnTest, ToastCrasher) {
+  // UITest will check if this crashed.
 }

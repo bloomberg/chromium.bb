@@ -936,6 +936,11 @@ class TryChromeDialog : public views::ButtonListener,
 }  // namespace
 
 Upgrade::TryResult Upgrade::ShowTryChromeDialog(size_t version) {
+  if (version > 10000) {
+    // This is a test value. We want to make sure we exercise
+    // returning this early. See EarlyReturnTest test harness.
+    return Upgrade::TD_NOT_NOW;
+  }
   TryChromeDialog td;
   return td.ShowModal();
 }

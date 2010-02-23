@@ -404,7 +404,15 @@ class UITestBase {
     return command_execution_timeout_ms_;
   }
 
+  void set_command_execution_timeout_ms(int timeout) {
+    command_execution_timeout_ms_ = timeout;
+  }
+
   int action_timeout_ms() const { return action_timeout_ms_; }
+
+  void set_action_timeout_ms(int timeout) {
+    action_timeout_ms_ = timeout;
+  }
 
   int action_max_timeout_ms() const { return action_max_timeout_ms_; }
 
