@@ -1024,7 +1024,8 @@ void SavePackage::SetShouldPromptUser(bool should_prompt) {
 
 // static.
 FilePath SavePackage::GetSuggestedNameForSaveAs(const FilePath& name,
-                                                bool can_save_as_complete) {
+    bool can_save_as_complete,
+    const FilePath::StringType& contents_mime_type) {
   // If the name is a URL, try to use the last path component or if there is
   // none, the domain as the file name.
   FilePath name_with_proper_ext = name;
@@ -1046,6 +1047,9 @@ FilePath SavePackage::GetSuggestedNameForSaveAs(const FilePath& name,
   }
 
   // Ask user for getting final saving name.
+  name_with_proper_ext = EnsureMimeExtension(name_with_proper_ext,
+                                             contents_mime_type);
+  // Adjust extension for complete types.
   if (can_save_as_complete)
     name_with_proper_ext = EnsureHtmlExtension(name_with_proper_ext);
 
@@ -1066,6 +1070,45 @@ FilePath SavePackage::EnsureHtmlExtension(const FilePath& name) {
   }
   return name;
 }
+
+FilePath SavePackage::EnsureMimeExtension(const FilePath& name,
+    const FilePath::StringType& contents_mime_type) {
+  // Start extension at 1 to skip over period if non-empty.
+  FilePath::StringType ext = name.Extension().length() ?
+      name.Extension().substr(1) : name.Extension();
+  FilePath::StringType suggested_extension =
+      ExtensionForMimeType(contents_mime_type);
+  std::string mime_type;
+  if (!suggested_extension.empty() &&
+      (!net::GetMimeTypeFromExtension(ext, &mime_type) ||
+      !IsSavableContents(mime_type))) {
+    // Extension is absent or needs to be updated.
+    return FilePath(name.value() + FILE_PATH_LITERAL(".") +
+                    suggested_extension);
+  }
+  return name;
+}
+
+const FilePath::CharType *SavePackage::ExtensionForMimeType(
+    const FilePath::StringType& contents_mime_type) {
+  static const struct {
+    const FilePath::CharType *mime_type;
+    const FilePath::CharType *suggested_extension;
+  } extensions[] = {
+    { FILE_PATH_LITERAL("text/html"), kDefaultHtmlExtension },
+    { FILE_PATH_LITERAL("text/xml"), FILE_PATH_LITERAL("xml") },
+    { FILE_PATH_LITERAL("application/xhtml+xml"), FILE_PATH_LITERAL("xhtml") },
+    { FILE_PATH_LITERAL("text/plain"), FILE_PATH_LITERAL("txt") },
+    { FILE_PATH_LITERAL("text/css"), FILE_PATH_LITERAL("css") },
+  };
+  for (uint32 i = 0; i < ARRAYSIZE_UNSAFE(extensions); ++i) {
+    if (contents_mime_type == extensions[i].mime_type)
+      return extensions[i].suggested_extension;
+  }
+  return FILE_PATH_LITERAL("");
+}
+
+
 
 // static.
 // Check whether the preference has the preferred directory for saving file. If
@@ -1119,19 +1162,40 @@ void SavePackage::ContinueGetSaveInfo(FilePath save_dir) {
 
   FilePath title =
       FilePath::FromWStringHack(UTF16ToWideHack(tab_contents_->GetTitle()));
+
+#if defined(OS_POSIX)
+  FilePath::StringType mime_type(save_params->current_tab_mime_type);
+#elif defined(OS_WIN)
+  FilePath::StringType mime_type(
+      UTF8ToWide(save_params->current_tab_mime_type));
+#endif  // OS_WIN
+
   FilePath suggested_path =
-      save_dir.Append(GetSuggestedNameForSaveAs(title, can_save_as_complete));
+      save_dir.Append(GetSuggestedNameForSaveAs(title, can_save_as_complete,
+      mime_type));
 
   // If the contents can not be saved as complete-HTML, do not show the
   // file filters.
   if (can_save_as_complete) {
+    bool add_extra_extension = false;
+    FilePath::StringType extra_extension;
+    if (!suggested_path.Extension().empty() &&
+        suggested_path.Extension().compare(FILE_PATH_LITERAL("htm")) &&
+        suggested_path.Extension().compare(FILE_PATH_LITERAL("html"))) {
+      add_extra_extension = true;
+      extra_extension = suggested_path.Extension().substr(1);
+    }
     file_type_info.extensions.resize(2);
     file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("htm"));
     file_type_info.extensions[0].push_back(FILE_PATH_LITERAL("html"));
+    if (add_extra_extension)
+      file_type_info.extensions[0].push_back(extra_extension);
     file_type_info.extension_description_overrides.push_back(
         WideToUTF16(l10n_util::GetString(IDS_SAVE_PAGE_DESC_HTML_ONLY)));
     file_type_info.extensions[1].push_back(FILE_PATH_LITERAL("htm"));
     file_type_info.extensions[1].push_back(FILE_PATH_LITERAL("html"));
+    if (add_extra_extension)
+      file_type_info.extensions[1].push_back(extra_extension);
     file_type_info.extension_description_overrides.push_back(
         WideToUTF16(l10n_util::GetString(IDS_SAVE_PAGE_DESC_COMPLETE)));
     file_type_info.include_all_files = false;
@@ -1228,7 +1292,8 @@ bool SavePackage::IsSavableContents(const std::string& contents_mime_type) {
 
 // Static
 bool SavePackage::CanSaveAsComplete(const std::string& contents_mime_type) {
-  return contents_mime_type == "text/html";
+  return contents_mime_type == "text/html" ||
+         contents_mime_type == "application/xhtml+xml";
 }
 
 // Static

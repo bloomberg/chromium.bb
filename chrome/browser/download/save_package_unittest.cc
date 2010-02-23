@@ -92,9 +92,16 @@ class SavePackageTest : public testing::Test {
     return SavePackage::EnsureHtmlExtension(name);
   }
 
+  FilePath EnsureMimeExtension(const FilePath& name,
+                               const FilePath::StringType& content_mime_type) {
+    return SavePackage::EnsureMimeExtension(name, content_mime_type);
+  }
+
   FilePath GetSuggestedNameForSaveAs(const FilePath& title,
-                                     bool ensure_html_extension) {
-    return SavePackage::GetSuggestedNameForSaveAs(title, ensure_html_extension);
+      bool ensure_html_extension,
+      const FilePath::StringType& contents_mime_type) {
+    return SavePackage::GetSuggestedNameForSaveAs(title, ensure_html_extension,
+                                                  contents_mime_type);
   }
 
  private:
@@ -199,6 +206,8 @@ static const struct {
   // Extension is preserved if it is already proper for HTML.
   {FPL("filename.html"), FPL("filename.html")},
   {FPL("filename.HTML"), FPL("filename.HTML")},
+  {FPL("filename.XHTML"), FPL("filename.XHTML")},
+  {FPL("filename.xhtml"), FPL("filename.xhtml")},
   {FPL("filename.htm"), FPL("filename.htm")},
   // ".htm" is added if the extension is improper for HTML.
   {FPL("hello.world"), FPL("hello.world") FPL_HTML_EXTENSION},
@@ -216,6 +225,45 @@ TEST_F(SavePackageTest, TestEnsureHtmlExtension) {
     FilePath actual = EnsureHtmlExtension(original);
     EXPECT_EQ(expected.value(), actual.value()) << "Failed for page title: " <<
         kExtensionTestCases[i].page_title;
+  }
+}
+
+TEST_F(SavePackageTest, TestEnsureMimeExtension) {
+  static const struct {
+    const FilePath::CharType* page_title;
+    const FilePath::CharType* expected_name;
+    const FilePath::CharType* contents_mime_type;
+  } kExtensionTests[] = {
+    { FPL("filename.html"), FPL("filename.html"), FPL("text/html") },
+    { FPL("filename.htm"), FPL("filename.htm"), FPL("text/html") },
+    { FPL("filename.xhtml"), FPL("filename.xhtml"), FPL("text/html") },
+#if defined(OS_WIN)
+    { FPL("filename"), FPL("filename.htm"), FPL("text/html") },
+#else  // defined(OS_WIN)
+    { FPL("filename"), FPL("filename.html"), FPL("text/html") },
+#endif  // defined(OS_WIN)
+    { FPL("filename.html"), FPL("filename.html"), FPL("text/xml") },
+    { FPL("filename.xml"), FPL("filename.xml"), FPL("text/xml") },
+    { FPL("filename"), FPL("filename.xml"), FPL("text/xml") },
+    { FPL("filename.xhtml"), FPL("filename.xhtml"),
+      FPL("application/xhtml+xml") },
+    { FPL("filename.html"), FPL("filename.html"),
+      FPL("application/xhtml+xml") },
+    { FPL("filename"), FPL("filename.xhtml"), FPL("application/xhtml+xml") },
+    { FPL("filename.txt"), FPL("filename.txt"), FPL("text/plain") },
+    { FPL("filename"), FPL("filename.txt"), FPL("text/plain") },
+    { FPL("filename.css"), FPL("filename.css"), FPL("text/css") },
+    { FPL("filename"), FPL("filename.css"), FPL("text/css") },
+    { FPL("filename.abc"), FPL("filename.abc"), FPL("unknown/unknown") },
+    { FPL("filename"), FPL("filename"), FPL("unknown/unknown") },
+  };
+  for (uint32 i = 0; i < ARRAYSIZE_UNSAFE(kExtensionTests); ++i) {
+    FilePath original = FilePath(kExtensionTests[i].page_title);
+    FilePath expected = FilePath(kExtensionTests[i].expected_name);
+    FilePath::StringType mime_type(kExtensionTests[i].contents_mime_type);
+    FilePath actual = EnsureMimeExtension(original, mime_type);
+    EXPECT_EQ(expected.value(), actual.value()) << "Failed for page title: " <<
+        kExtensionTests[i].page_title << " MIME:" << mime_type;
   }
 }
 
@@ -243,7 +291,8 @@ TEST_F(SavePackageTest, TestSuggestedSaveNames) {
     FilePath title = FilePath(kSuggestedSaveNames[i].page_title);
     FilePath save_name =
         GetSuggestedNameForSaveAs(title,
-                                  kSuggestedSaveNames[i].ensure_html_extension);
+                                  kSuggestedSaveNames[i].ensure_html_extension,
+                                  FilePath::StringType());
     EXPECT_EQ(save_name.value(), kSuggestedSaveNames[i].expected_name);
   }
 }

@@ -251,11 +251,22 @@ class SavePackage : public base::RefCountedThreadSafe<SavePackage>,
   // Helper function for preparing suggested name for the SaveAs Dialog. The
   // suggested name is determined by the web document's title.
   static FilePath GetSuggestedNameForSaveAs(const FilePath& name,
-                                            bool can_save_as_complete);
+      bool can_save_as_complete,
+      const FilePath::StringType& contents_mime_type);
 
-  // Ensure that the file name has a proper extension for HTML by adding ".htm"
+  // Ensures that the file name has a proper extension for HTML by adding ".htm"
   // if necessary.
   static FilePath EnsureHtmlExtension(const FilePath& name);
+
+  // Ensures that the file name has a proper extension for supported formats
+  // if necessary.
+  static FilePath EnsureMimeExtension(const FilePath& name,
+      const FilePath::StringType& contents_mime_type);
+
+  // Returns extension for supported MIME types (for example, for "text/plain"
+  // it returns "txt").
+  static const FilePath::CharType* ExtensionForMimeType(
+      const FilePath::StringType& contents_mime_type);
 
   typedef std::queue<SaveItem*> SaveItemQueue;
   // A queue for items we are about to start saving.
