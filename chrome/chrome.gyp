@@ -1338,7 +1338,6 @@
             '../media/media.gyp:*',
             '../net/net.gyp:*',
             '../printing/printing.gyp:*',
-            '../rlz/rlz.gyp:*',
             '../sdch/sdch.gyp:*',
             '../skia/skia.gyp:*',
             '../testing/gmock.gyp:*',
