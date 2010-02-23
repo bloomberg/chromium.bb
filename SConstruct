@@ -1073,6 +1073,12 @@ if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
       EMULATOR  = EMULATOR,
       )
 
+if not GetOption('brief_comstr'):
+  nacl_env['LINKCOM'] += '&& $PYTHON -c "import os; import sys;\
+      print(sys.argv[1] + sys.argv[2] + \
+            str(os.stat(sys.argv[1])[6]) + sys.argv[3])" \
+      $TARGET " is " " bytes"'
+
 environment_list.append(nacl_env)
 
 nacl_env.Append(
