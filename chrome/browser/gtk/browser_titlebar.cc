@@ -43,6 +43,12 @@ namespace {
 // The space above the titlebars.
 const int kTitlebarHeight = 14;
 
+// The thickness in pixels of the tab border.
+const int kTabOuterThickness = 1;
+
+// Amount to offset the tab images relative to the background.
+const int kNormalVerticalOffset = kTitlebarHeight + kTabOuterThickness;
+
 // A linux specific menu item for toggling window decorations.
 const int kShowWindowDecorationsCommand = 200;
 
@@ -379,6 +385,13 @@ void BrowserTitlebar::UpdateTitlebarAlignment() {
     } else {
       gtk_alignment_set_padding(GTK_ALIGNMENT(titlebar_alignment_), 0, 0,
                                 kTabStripLeftPadding, 0);
+    }
+
+    if (using_custom_frame_) {
+      browser_window_->tabstrip()->SetVerticalOffset(
+          browser_window_->IsMaximized() ? 0 : kNormalVerticalOffset);
+    } else {
+      browser_window_->tabstrip()->SetVerticalOffset(kNormalVerticalOffset);
     }
   } else {
     if (using_custom_frame_ && !browser_window_->IsFullscreen()) {

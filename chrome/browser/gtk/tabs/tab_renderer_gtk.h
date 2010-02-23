@@ -204,6 +204,8 @@ class TabRendererGtk : public AnimationDelegate,
   void StartPinnedTabTitleAnimation();
   void StopPinnedTabTitleAnimation();
 
+  void set_vertical_offset(int offset) { background_offset_y_ = offset; }
+
  protected:
   const gfx::Rect& title_bounds() const { return title_bounds_; }
   const gfx::Rect& close_button_bounds() const { return close_button_bounds_; }
@@ -404,6 +406,11 @@ class TabRendererGtk : public AnimationDelegate,
 
   // The offset used to paint the tab theme images.
   int background_offset_x_;
+
+  // The vertical offset used to paint the tab theme images. Controlled by the
+  // tabstrip and plumbed here to offset the theme image by the size of the
+  // alignment in the BrowserTitlebar.
+  int background_offset_y_;
 
   GtkThemeProvider* theme_provider_;
 

@@ -514,6 +514,7 @@ TabStripGtk::TabStripGtk(TabStripModel* model, BrowserWindowGtk* window)
       current_selected_width_(TabGtk::GetStandardSize().width()),
       available_width_for_tabs_(-1),
       needs_resize_layout_(false),
+      tab_vertical_offset_(0),
       model_(model),
       window_(window),
       theme_provider_(GtkThemeProvider::GetFrom(model->profile())),
@@ -612,6 +613,7 @@ void TabStripGtk::Layout() {
     const gfx::Rect& bounds = tab_data_.at(i).ideal_bounds;
     TabGtk* tab = GetTabAt(i);
     tab->set_animating_pinned_change(false);
+    tab->set_vertical_offset(tab_vertical_offset_);
     SetTabBounds(tab, bounds);
     tab_right = bounds.right();
     tab_right += GetTabHOffset(i + 1);
@@ -700,6 +702,11 @@ void TabStripGtk::DestroyDraggedSourceTab(TabGtk* tab) {
 gfx::Rect TabStripGtk::GetIdealBounds(int index) {
   DCHECK(index >= 0 && index < GetTabCount());
   return tab_data_.at(index).ideal_bounds;
+}
+
+void TabStripGtk::SetVerticalOffset(int offset) {
+  tab_vertical_offset_ = offset;
+  Layout();
 }
 
 gfx::Point TabStripGtk::GetTabStripOriginForWidget(GtkWidget* target) {

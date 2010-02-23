@@ -37,7 +37,8 @@ const int kFavIconTitleSpacing = 4;
 const int kTitleCloseButtonSpacing = 5;
 const int kStandardTitleWidth = 175;
 const int kDropShadowOffset = 2;
-const int kInactiveTabBackgroundOffsetY = 20;
+const int kInactiveTabBackgroundOffsetY = 15;
+
 // When a non-pinned tab is pinned the width of the tab animates. If the width
 // of a pinned tab is >= kPinnedTabRendererAsTabWidth then the tab is rendered
 // as a normal tab. This is done to avoid having the title immediately
@@ -244,6 +245,7 @@ TabRendererGtk::TabRendererGtk(ThemeProvider* theme_provider)
       should_display_crashed_favicon_(false),
       loading_animation_(theme_provider),
       background_offset_x_(0),
+      background_offset_y_(kInactiveTabBackgroundOffsetY),
       close_button_color_(NULL) {
   InitResources();
 
@@ -390,7 +392,7 @@ void TabRendererGtk::PaintFavIconArea(GdkEventExpose* event) {
       theme_id = IDR_THEME_TAB_BACKGROUND_INCOGNITO;
     }
     if (!theme_provider_->HasCustomImage(theme_id))
-      offset_y = kInactiveTabBackgroundOffsetY;
+      offset_y = background_offset_y_;
   }
   SkBitmap* tab_bg = theme_provider_->GetBitmapNamed(theme_id);
   canvas.TileImageInt(*tab_bg,
@@ -877,7 +879,7 @@ void TabRendererGtk::PaintInactiveTabBackground(gfx::Canvas* canvas) {
   // should be at the top of the tab. Otherwise, we assume that the background
   // image is a composited foreground + frame image.
   int offset_y = theme_provider_->HasCustomImage(tab_id) ?
-      0 : kInactiveTabBackgroundOffsetY;
+      0 : background_offset_y_;
 
   // Draw left edge.
   SkBitmap* theme_l = GetMaskedBitmap(tab_alpha_.image_l, tab_bg, offset_x,
