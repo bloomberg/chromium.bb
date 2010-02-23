@@ -30,32 +30,40 @@ void PyUITestSuite::NavigateToURL(const char* url_string) {
   UITestBase::NavigateToURL(url);
 }
 
+void PyUITestSuite::NavigateToURL(
+    const char* url_string, int window_index, int tab_index) {
+  GURL url(url_string);
+  UITestBase::NavigateToURL(url, window_index, tab_index);
+}
+
 bool PyUITestSuite::AppendTab(const GURL& tab_url, int window_index) {
   scoped_refptr<BrowserProxy> browser_proxy =
-    automation()->GetBrowserWindow(window_index);
+      automation()->GetBrowserWindow(window_index);
   return browser_proxy->AppendTab(tab_url);
 }
 
 bool PyUITestSuite::ApplyAccelerator(int id, int window_index) {
   scoped_refptr<BrowserProxy> browser_proxy =
-    automation()->GetBrowserWindow(window_index);
+      automation()->GetBrowserWindow(window_index);
   return browser_proxy->ApplyAccelerator(id);
 }
 
 bool PyUITestSuite::ActivateTab(int tab_index, int window_index) {
   scoped_refptr<BrowserProxy> browser_proxy =
-    automation()->GetBrowserWindow(window_index);
+      automation()->GetBrowserWindow(window_index);
   return browser_proxy->ActivateTab(tab_index);
 }
 
-void PyUITestSuite::SetShelfVisible(bool is_visible) {
-  scoped_refptr<BrowserProxy> browser_proxy = automation()->GetBrowserWindow(0);
+void PyUITestSuite::SetDownloadShelfVisible(bool is_visible, int window_index) {
+  scoped_refptr<BrowserProxy> browser_proxy =
+      automation()->GetBrowserWindow(window_index);
   ASSERT_TRUE(browser_proxy.get());
   EXPECT_TRUE(browser_proxy->SetShelfVisible(is_visible));
 }
 
-bool PyUITestSuite::IsShelfVisible() {
-  scoped_refptr<BrowserProxy> browser_proxy = automation()->GetBrowserWindow(0);
+bool PyUITestSuite::IsDownloadShelfVisible(int window_index) {
+  scoped_refptr<BrowserProxy> browser_proxy =
+      automation()->GetBrowserWindow(window_index);
   EXPECT_TRUE(browser_proxy.get());
   if (!browser_proxy.get())
     return false;
@@ -64,18 +72,24 @@ bool PyUITestSuite::IsShelfVisible() {
   return visible;
 }
 
-GURL PyUITestSuite::GetActiveTabURL() {
-  return UITestBase::GetActiveTabURL();
+int PyUITestSuite::GetTabCount(int window_index) {
+  return UITestBase::GetTabCount(window_index);
 }
 
-void PyUITestSuite::OpenFindInPage() {
-  scoped_refptr<BrowserProxy> browser_proxy = automation()->GetBrowserWindow(0);
+GURL PyUITestSuite::GetActiveTabURL(int window_index) {
+  return UITestBase::GetActiveTabURL(window_index);
+}
+
+void PyUITestSuite::OpenFindInPage(int window_index) {
+  scoped_refptr<BrowserProxy> browser_proxy =
+      automation()->GetBrowserWindow(window_index);
   ASSERT_TRUE(browser_proxy.get());
   EXPECT_TRUE(browser_proxy->OpenFindInPage());
 }
 
-bool PyUITestSuite::IsFindInPageVisible() {
-  scoped_refptr<BrowserProxy> browser_proxy = automation()->GetBrowserWindow(0);
+bool PyUITestSuite::IsFindInPageVisible(int window_index) {
+  scoped_refptr<BrowserProxy> browser_proxy =
+      automation()->GetBrowserWindow(window_index);
   EXPECT_TRUE(browser_proxy.get());
   if (!browser_proxy.get())
     return false;

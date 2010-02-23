@@ -88,63 +88,84 @@ class PyUITestSuite {
            "Closes all windows and destroys the browser.") TearDown;
   virtual void TearDown();
 
-  %feature("docstring", "Navigate to the given url in the active tab. "
-           "Blocks until page has loaded.") NavigateToURL;
+  // Navigation Methods
+  %feature("docstring", "Navigate to the given url in the given tab and given "
+           "window (or active tab in first window if indexes not given). "
+           "Note that this method also activates the corresponding tab/window "
+           "if it's not active already. Blocks until page has loaded.")
+      NavigateToURL;
   void NavigateToURL(const char* url_string);
+  void NavigateToURL(const char* url_string, int window_index, int tab_index);
 
   // BrowserProxy methods
-  %feature("docstring", "Set download shelf visibility.") SetShelfVisible;
-  void SetShelfVisible(bool is_visible);
-  %feature("docstring", "Create a new tab at the end of given or first browser "
-           "window and activate it. Blocks until the page is loaded. "
-           "Returns True on success.") AppendTab;
-  bool AppendTab(const GURL& tab_url, int window_index=0);
-  %feature("docstring", "Activate the tab at the given zero-based index in "
-           "the given or first window. Returns True on success.") ActivateTab;
-  bool ActivateTab(int tab_index, int window_index=0);
   %feature("docstring", "Apply the accelerator with given id "
            "(IDC_BACK, IDC_NEWTAB ...) to the given or first window. "
            "The list can be found at chrome/app/chrome_dll_resource.h. "
+           "Note that this method just schedules the accelerator, but does "
+           "not wait for it to actually finish doing anything."
            "Returns True on success.")
       ApplyAccelerator;
   bool ApplyAccelerator(int id, int window_index=0);
 
-  // TabProxy methods
-  %feature("docstring",
-           "Determine if the download shelf is visible.") IsShelfVisible;
-  bool IsShelfVisible();
-  %feature("docstring", "Open the Find box.") OpenFindInPage;
-  void OpenFindInPage();
-  %feature("docstring",
-           "Determine if the find box is visible.") IsFindInPageVisible;
-  bool IsFindInPageVisible();
+  // Get/fetch properties
   %feature("docstring",
            "Get the path to download directory.") GetDownloadDirectory;
   std::string GetDownloadDirectory();
 
-  // AutomationProxy methods
+  %feature("docstring", "Get the path to profile directory.") user_data_dir;
+  FilePath user_data_dir() const;
+
+  %feature("docstring", "Set download shelf visibility for the given or "
+           "first browser window.") SetDownloadShelfVisible;
+  void SetDownloadShelfVisible(bool is_visible, int window_index=0);
+
+  %feature("docstring", "Determine if the download shelf is visible in the "
+           "given or first browser window.") IsDownloadShelfVisible;
+  bool IsDownloadShelfVisible(int window_index=0);
+
+  %feature("docstring", "Open the Find box in the given or first browser "
+           "window.") OpenFindInPage;
+  void OpenFindInPage(int window_index=0);
+
+  %feature("docstring", "Determine if the find box is visible in the "
+           "given or first browser window.") IsFindInPageVisible;
+  bool IsFindInPageVisible(int window_index=0);
+
+  // Tabs and windows methods
   %feature("docstring", "Open a new browser window.") OpenNewBrowserWindow;
   bool OpenNewBrowserWindow(bool show);
-  %feature("docstring", "Install an extension from the given file. Returns "
-           "True if successfully installed and loaded.") InstallExtension;
-  bool InstallExtension(const FilePath& crx_file);
 
-  // UITestBase methods
-  %feature("docstring", "Path to download directory.") user_data_dir;
-  FilePath user_data_dir() const;
-  %feature("docstring", "Get the index of the active tab.") GetActiveTabIndex;
-  int GetActiveTabIndex();
-  %feature("docstring", "Get the title of the active tab.") GetActiveTabTitle;
-  std::wstring GetActiveTabTitle();
-  %feature("docstring", "Get the URL for the active tab. "
-           "Returns an instance of GURL") GetActiveTabURL;
-  GURL GetActiveTabURL();
+  %feature("docstring", "Get the index of the active tab in the given or "
+           "first window. Indexes are zero-based.") GetActiveTabIndex;
+  int GetActiveTabIndex(int window_index=0);
+  %feature("docstring", "Activate the tab at the given zero-based index in "
+           "the given or first window. Returns True on success.") ActivateTab;
+  bool ActivateTab(int tab_index, int window_index=0);
+
+  %feature("docstring", "Get the title of the active tab for the given or "
+           "first window.") GetActiveTabTitle;
+  std::wstring GetActiveTabTitle(int window_index=0);
+
+  %feature("docstring", "Get the URL for the active tab. for the given or "
+           "first window. Returns an instance of GURL") GetActiveTabURL;
+  GURL GetActiveTabURL(int window_index=0);
+
+  %feature("docstring", "Count of the number of tabs in the given or "
+           "first window.") GetTabCount;
+  int GetTabCount(int window_index=0);
+  %feature("docstring", "Create a new tab at the end of given or first browser "
+           "window and activate it. Blocks until the page is loaded. "
+           "Returns True on success.") AppendTab;
+  bool AppendTab(const GURL& tab_url, int window_index=0);
+
+  // Misc methods
   %feature("docstring", "Determine if the browser is running. "
            "Returns False if user closed the window or if the browser died")
       IsBrowserRunning;
   bool IsBrowserRunning();
-  %feature("docstring",
-           "Count of the number of tabs in the front window.") GetTabCount;
-  int GetTabCount();
+
+  %feature("docstring", "Install an extension from the given file. Returns "
+           "True if successfully installed and loaded.") InstallExtension;
+  bool InstallExtension(const FilePath& crx_file);
 };
 

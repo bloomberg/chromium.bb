@@ -535,12 +535,38 @@ void UITestBase::NavigateToURLAsync(const GURL& url) {
 }
 
 void UITestBase::NavigateToURL(const GURL& url) {
-  NavigateToURLBlockUntilNavigationsComplete(url, 1);
+  NavigateToURL(url, 0, GetActiveTabIndex(0));
+}
+
+void UITestBase::NavigateToURL(const GURL& url, int window_index, int
+    tab_index) {
+  NavigateToURLBlockUntilNavigationsComplete(url, 1, window_index, tab_index);
 }
 
 void UITestBase::NavigateToURLBlockUntilNavigationsComplete(
     const GURL& url, int number_of_navigations) {
   scoped_refptr<TabProxy> tab_proxy(GetActiveTab());
+  ASSERT_TRUE(tab_proxy.get());
+  if (!tab_proxy.get())
+    return;
+
+  bool is_timeout = true;
+  ASSERT_TRUE(tab_proxy->NavigateToURLWithTimeout(
+      url, number_of_navigations, command_execution_timeout_ms(),
+      &is_timeout)) << url.spec();
+  ASSERT_FALSE(is_timeout) << url.spec();
+}
+
+void UITestBase::NavigateToURLBlockUntilNavigationsComplete(
+    const GURL& url, int number_of_navigations, int window_index,
+    int tab_index) {
+  scoped_refptr<BrowserProxy> window =
+    automation()->GetBrowserWindow(window_index);
+  ASSERT_TRUE(window.get());
+  if (!window.get())
+    return;
+
+  scoped_refptr<TabProxy> tab_proxy(window->GetTab(tab_index));
   ASSERT_TRUE(tab_proxy.get());
   if (!tab_proxy.get())
     return;
@@ -684,12 +710,18 @@ DictionaryValue* UITestBase::GetDefaultProfilePreferences() {
 }
 
 int UITestBase::GetTabCount() {
-  scoped_refptr<BrowserProxy> first_window(automation()->GetBrowserWindow(0));
-  if (!first_window.get())
+  return GetTabCount(0);
+}
+
+int UITestBase::GetTabCount(int window_index) {
+  scoped_refptr<BrowserProxy> window(
+      automation()->GetBrowserWindow(window_index));
+  EXPECT_TRUE(window.get());
+  if (!window.get())
     return 0;
 
   int result = 0;
-  EXPECT_TRUE(first_window->GetTabCount(&result));
+  EXPECT_TRUE(window->GetTabCount(&result));
 
   return result;
 }

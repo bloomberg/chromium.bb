@@ -12,6 +12,13 @@
 #include "chrome/test/ui/ui_test.h"
 #include "chrome/test/ui/ui_test_suite.h"
 
+// The C++ style guide forbids using default arguments but I'm taking the
+// liberty of allowing it in this file. The sole purpose of this (and the
+// .cc) is to support the python interface, and default args are allowed in
+// python. Strictly adhering to the guide here would mean having to re-define
+// all methods in python just for the sake of providing default args. This
+// seems cumbersome and unwanted.
+
 // TODO(nirnimesh): separate out the UITestSuite and UITestBase parts
 //                  crbug.com/32292
 
@@ -27,15 +34,17 @@ class PyUITestSuite : public UITestSuite, public UITestBase {
   virtual void SetUp();
   virtual void TearDown();
 
+  // Navigate to the given URL in the active tab. Blocks until page loaded.
   void NavigateToURL(const char* url_string);
 
+  // Navigate to the given URL in given tab in the given window.
+  // Blocks until page loaded.
+  void NavigateToURL(const char* url_string, int window_index, int tab_index);
+
   // Get the URL of the active tab.
-  GURL GetActiveTabURL();
+  GURL GetActiveTabURL(int window_index = 0);
 
-  // BrowserProxy methods
-
-  // Shows or hides the download shelf.
-  void SetShelfVisible(bool is_visible);
+  int GetTabCount(int window_index = 0);
 
   // Appends a new tab with the given URL in the given or first browser window.
   bool AppendTab(const GURL& tab_url, int window_index = 0);
@@ -50,14 +59,17 @@ class PyUITestSuite : public UITestSuite, public UITestBase {
   // Returns true if the call was successful.
   bool ApplyAccelerator(int id, int window_index = 0);
 
+  // Shows or hides the download shelf.
+  void SetDownloadShelfVisible(bool is_visible, int window_index = 0);
+
   // Determines the visibility of the download shelf
-  bool IsShelfVisible();
+  bool IsDownloadShelfVisible(int window_index = 0);
 
   // Open the Find box
-  void OpenFindInPage();
+  void OpenFindInPage(int window_index = 0);
 
   // Determines the visibility of the Find box
-  bool IsFindInPageVisible();
+  bool IsFindInPageVisible(int window_index = 0);
 
   // Get the path to the downloads directory
   std::string GetDownloadDirectory();

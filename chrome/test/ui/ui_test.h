@@ -100,12 +100,19 @@ class UITestBase {
   // This method doesn't return until the navigation is complete.
   void NavigateToURL(const GURL& url);
 
+  // Same as above, except in the given tab and window.
+  void NavigateToURL(const GURL& url, int window_index, int tab_index);
+
   // Tells the browser to navigate to the given URL in the active tab
   // of the first app window.
   // This method doesn't return until the |number_of_navigations| navigations
   // complete.
   void NavigateToURLBlockUntilNavigationsComplete(const GURL& url,
                                                   int number_of_navigations);
+
+  // Same as above, except in the given tab and window.
+  void NavigateToURLBlockUntilNavigationsComplete(const GURL& url,
+      int number_of_navigations, int tab_index, int window_index);
 
   // Returns the URL of the currently active tab. Only looks in the first
   // window, for backward compatibility. If there is no active tab, or some
@@ -142,6 +149,9 @@ class UITestBase {
   // Returns the number of tabs in the first window.  If no windows exist,
   // causes a test failure and returns 0.
   int GetTabCount();
+
+  // Same as GetTabCount(), except with the window at the given index.
+  int GetTabCount(int window_index);
 
   // Polls the tab for the cookie_name cookie and returns once one of the
   // following conditions hold true:
