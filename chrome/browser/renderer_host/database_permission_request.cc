@@ -51,17 +51,11 @@ void DatabasePermissionRequest::RequestPermission() {
     return;
   }
 
-#if defined(OS_WIN)
   self_ref_ = this;
   // Will call either AllowSiteData or BlockSiteData which will NULL out our
   // self reference.
   RunDatabasePrompt(browser->GetSelectedTabContents(),
                     host_content_settings_map_, url_, database_name_, this);
-#else
-  // TODO(jorlow): Enable prompting for other ports.
-  NOTIMPLEMENTED();
-  BlockSiteData();
-#endif
 }
 
 void DatabasePermissionRequest::AllowSiteData(bool session_expire) {

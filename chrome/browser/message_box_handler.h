@@ -41,8 +41,6 @@ void RunBeforeUnloadDialog(TabContents* tab_contents,
                            const std::wstring& message_text,
                            IPC::Message* reply_msg);
 
-// TODO(zelidrag): bug 32719, implement these modal dialogs on Linux and Mac.
-#if defined(OS_WIN)
 // This will display a modal dialog box with cookie information asking
 // user to accept or reject the cookie. The caller should pass |delegate|
 // that will handle the reply from the dialog.
@@ -72,7 +70,6 @@ void RunDatabasePrompt(
     const GURL& origin,
     const string16& database_name,
     CookiePromptModalDialogDelegate* delegate);
-#endif
 
 #endif  // CHROME_BROWSER_MESSAGE_BOX_HANDLER_H_
 

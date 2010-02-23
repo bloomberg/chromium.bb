@@ -44,15 +44,9 @@ void DOMStoragePermissionRequest::PromptUser(
     return;
   }
 
-#if defined(OS_WIN)
   RunLocalStoragePrompt(browser->GetSelectedTabContents(),
                         request->host_content_settings_map_, request->url_,
                         request->key_, request->value_, request);
-#else
-  // TODO(darin): Enable prompting for other ports.
-  NOTIMPLEMENTED();
-  request->SendResponse(CONTENT_SETTING_BLOCK);
-#endif
 }
 
 void DOMStoragePermissionRequest::AllowSiteData(bool session_expire) {
