@@ -156,17 +156,22 @@ const NSTimeInterval kDropdownHideDelay = 0.2;
 }
 
 - (void)windowDidBecomeMain {
-  if (!windowIsMain_) {
-    mac_util::RequestFullScreen();
-    windowIsMain_ = YES;
+  if (!menubarIsHidden_) {
+    // Only hide the menubar if our window is on the main screen.
+    NSScreen* screen = [[browserController_ window] screen];
+    NSScreen* mainScreen = [[NSScreen screens] objectAtIndex:0];
+    if (screen == mainScreen) {
+      mac_util::RequestFullScreen();
+      menubarIsHidden_ = YES;
+    }
   }
   // TODO(rohitrao): Insert the Exit Fullscreen button.  http://crbug.com/35956
 }
 
 - (void)windowDidResignMain {
-  if (windowIsMain_) {
+  if (menubarIsHidden_) {
     mac_util::ReleaseFullScreen();
-    windowIsMain_ = NO;
+    menubarIsHidden_ = NO;
   }
   // TODO(rohitrao): Remove the Exit Fullscreen button.  http://crbug.com/35956
 }

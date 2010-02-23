@@ -57,12 +57,12 @@
   // completes.
   NSRect trackingAreaBounds_;
 
-  // If YES, we currently think the window has main status and therefore have
-  // hidden the menubar.  While this should generally match the actual main
-  // status of the window, it can get out of sync if we miss a notification
-  // (which can happen when a fullscreen window is closed).  Used to make sure
-  // we properly restore the menubar when this controller is destroyed.
-  BOOL windowIsMain_;
+  // YES if we are currently hiding the menubar.  While this should generally
+  // match the window's main status, it can get out of sync if we miss a
+  // notification (which can happen when a fullscreen window is closed).  Used
+  // to make sure we properly restore the menubar when this controller is
+  // destroyed.
+  BOOL menubarIsHidden_;
 }
 
 @property(readonly, nonatomic) BOOL isFullscreen;
