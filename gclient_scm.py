@@ -165,7 +165,7 @@ class GitWrapper(SCMWrapper, scm.GIT):
     if args:
       raise gclient_utils.Error("Unsupported argument(s): %s" % ",".join(args))
 
-    self._CheckMinVersion("1.6")
+    self._CheckMinVersion("1.6.6")
 
     default_rev = "refs/heads/master"
     url, revision = gclient_utils.SplitUrlRevision(self.url)
