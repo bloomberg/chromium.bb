@@ -799,4 +799,29 @@
    fun:-[NSView displayIfNeeded]
    fun:-[NSWindow displayIfNeeded]
 }
+Suppression:
+{
+   bug_36605
+   Memcheck:Leak
+   fun:malloc
+   fun:realloc
+   fun:new_sem_from_pool
+   fun:_pthread_cond_wait
+   fun:pthread_cond_wait$UNIX2003
+   fun:_ZN17ConditionVariable4WaitEv
+   fun:_ZN4base13WaitableEvent9TimedWaitERKNS_9TimeDeltaE
+   fun:_ZN4base13WaitableEvent4WaitEv
+   fun:_ZN4base6Thread16StartWithOptionsERKNS0_7OptionsE
+   fun:_ZN4base6Thread5StartEv
+   fun:_ZN14HistoryService4InitERK8FilePathP15BookmarkServiceb
+   fun:_ZN14TestingProfile20CreateHistoryServiceEbb
+   fun:_ZN12_GLOBAL__N_127HistoryContentsProviderTest5SetUpEv
+   fun:_ZN7testing4Test3RunEv
+   fun:_ZN7testing8internal12TestInfoImpl3RunEv
+   fun:_ZN7testing8TestCase3RunEv
+   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+   fun:_ZN7testing8UnitTest3RunEv
+   fun:_ZN9TestSuite3RunEv
+   fun:main
+}
 
