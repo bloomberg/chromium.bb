@@ -2953,8 +2953,5 @@ BUG36019 : fast/borders/svg-as-border-image-2.html = IMAGE
 BUG36019 : fast/borders/svg-as-border-image.html = IMAGE
 BUG36019 : fast/images/svg-as-tiled-background.html = IMAGE
 
-// Started failing with r54823
-BUG35923 LINUX : fast/backgrounds/animated-gif-as-background.html = IMAGE
-
 // Added in WebKit's r55159, will get baselines from the bots.
 BUG36585 WIN LINUX DEFER : fast/repaint/repaint-during-scroll.html = FAIL
