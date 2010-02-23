@@ -2207,6 +2207,12 @@
             '../build/linux/system.gyp:nss',
             '../base/base.gyp:linux_versioninfo',
           ],
+          'link_settings': {
+            'libraries': [
+              # For dlsym() in 'browser/zygote_main_linux.cc'
+              '-ldl',
+            ],
+          },
           'sources!': [
              # Exclude extension shelf for toolstrips.
             'browser/views/extensions/extension_shelf.cc',

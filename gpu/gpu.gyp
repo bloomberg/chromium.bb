@@ -62,6 +62,8 @@
               ],
               'libraries': [
                 '-lX11',
+                # For dlsym() in '../third_party/glew/src/glew.c'
+                '-ldl',
               ],
             },
           },
