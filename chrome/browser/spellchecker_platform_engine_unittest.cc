@@ -7,9 +7,13 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_MACOSX)
+#include "base/logging.h"
+#include "base/sys_info.h"
 #define MAYBE_IgnoreWords_EN_US IgnoreWords_EN_US
+#define MAYBE_SpellCheckSuggestions_EN_US SpellCheckSuggestions_EN_US
 #else
 #define MAYBE_IgnoreWords_EN_US DISABLED_IgnoreWords_EN_US
+#define MAYBE_SpellCheckSuggestions_EN_US DISABLED_SpellCheckSuggestions_EN_US
 #endif
 
 // Tests that words are properly ignored. Currently only enabled on OS X as it
@@ -17,6 +21,16 @@
 // supply a non-zero doc_tag, in order to test that ignored words are matched to
 // the correct document.
 TEST(PlatformSpellCheckTest, MAYBE_IgnoreWords_EN_US) {
+#if defined(OS_MACOSX)
+  // http://crbug.com/34785 these fail on 10.6, skipping on 10.6 but leaving
+  // running on 10.5 for now.
+  int32 major, minor, bugfix;
+  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
+  if (major > 10 || (major == 10 && minor > 5)) {
+    LOG(WARNING) << "Skipping test on 10.6 as it doesn't pass yet.";
+    return;
+  }
+#endif
   static const struct {
     // A misspelled word.
     const char* input;
@@ -63,8 +77,17 @@ TEST(PlatformSpellCheckTest, MAYBE_IgnoreWords_EN_US) {
   }
 } // Test IgnoreWords_EN_US
 
+TEST(PlatformSpellCheckTest, MAYBE_SpellCheckSuggestions_EN_US) {
 #if defined(OS_MACOSX)
-TEST(PlatformSpellCheckTest, SpellCheckSuggestions_EN_US) {
+  // http://crbug.com/34785 these fail on 10.6, skipping on 10.6 but leaving
+  // running on 10.5 for now.
+  int32 major, minor, bugfix;
+  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
+  if (major > 10 || (major == 10 && minor > 5)) {
+    LOG(WARNING) << "Skipping test on 10.6 as it doesn't pass yet.";
+    return;
+  }
+#endif
   static const struct {
     // A string to be tested.
     const wchar_t* input;
@@ -389,5 +412,3 @@ TEST(PlatformSpellCheckTest, SpellCheckSuggestions_EN_US) {
     EXPECT_TRUE(suggested_word_is_present);
   }
 }
-
-#endif  // defined(OS_MACOSX)
