@@ -18,8 +18,8 @@
 // Schema -------------------------------------------------------------------
 namespace {
 
-const int kCurrentVersion = 1;
-const int kCompatibleVersion = 0;
+const int kCurrentVersion = 2;
+const int kCompatibleVersion = 2;
 
 const char* kGroupsTable = "Groups";
 const char* kCachesTable = "Caches";
@@ -35,7 +35,9 @@ const struct {
   { kGroupsTable,
     "(group_id INTEGER PRIMARY KEY,"
     " origin TEXT,"
-    " manifest_url TEXT)" },
+    " manifest_url TEXT,"
+    " creation_time INTEGER,"
+    " last_access_time INTEGER)" },
 
   { kCachesTable,
     "(cache_id INTEGER PRIMARY KEY,"
@@ -248,7 +250,9 @@ bool AppCacheDatabase::FindGroup(int64 group_id, GroupRecord* record) {
     return false;
 
   const char* kSql =
-      "SELECT group_id, origin, manifest_url FROM Groups WHERE group_id = ?";
+      "SELECT group_id, origin, manifest_url,"
+      "       creation_time, last_access_time"
+      "  FROM Groups WHERE group_id = ?";
 
   sql::Statement statement;
   if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
@@ -270,8 +274,9 @@ bool AppCacheDatabase::FindGroupForManifestUrl(
     return false;
 
   const char* kSql =
-      "SELECT group_id, origin, manifest_url FROM Groups"
-      "  WHERE manifest_url = ?";
+      "SELECT group_id, origin, manifest_url,"
+      "       creation_time, last_access_time"
+      "  FROM Groups WHERE manifest_url = ?";
 
   sql::Statement statement;
   if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
@@ -293,7 +298,9 @@ bool AppCacheDatabase::FindGroupsForOrigin(
     return false;
 
   const char* kSql =
-      "SELECT group_id, origin, manifest_url FROM Groups WHERE origin = ?";
+      "SELECT group_id, origin, manifest_url,"
+      "       creation_time, last_access_time"
+      "   FROM Groups WHERE origin = ?";
 
   sql::Statement statement;
   if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
@@ -315,7 +322,9 @@ bool AppCacheDatabase::FindGroupForCache(int64 cache_id, GroupRecord* record) {
     return false;
 
   const char* kSql =
-      "SELECT g.group_id, g.origin, g.manifest_url FROM Groups g, Caches c"
+      "SELECT g.group_id, g.origin, g.manifest_url,"
+      "       g.creation_time, g.last_access_time"
+      "  FROM Groups g, Caches c"
       "  WHERE c.cache_id = ? AND c.group_id = g.group_id";
 
   sql::Statement statement;
@@ -330,13 +339,31 @@ bool AppCacheDatabase::FindGroupForCache(int64 cache_id, GroupRecord* record) {
   return true;
 }
 
+bool AppCacheDatabase::UpdateGroupLastAccessTime(
+    int64 group_id, base::Time time) {
+  if (!LazyOpen(true))
+    return false;
+
+  const char* kSql =
+      "UPDATE Groups SET last_access_time = ? WHERE group_id = ?";
+
+  sql::Statement statement;
+  if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
+    return false;
+
+  statement.BindInt64(0, time.ToInternalValue());
+  statement.BindInt64(1, group_id);
+  return statement.Run() && db_->GetLastChangeCount();
+}
+
 bool AppCacheDatabase::InsertGroup(const GroupRecord* record) {
   if (!LazyOpen(true))
     return false;
 
   const char* kSql =
-      "INSERT INTO Groups (group_id, origin, manifest_url)"
-      "  VALUES(?, ?, ?)";
+      "INSERT INTO Groups"
+      "  (group_id, origin, manifest_url, creation_time, last_access_time)"
+      "  VALUES(?, ?, ?, ?, ?)";
 
   sql::Statement statement;
   if (!PrepareCachedStatement(SQL_FROM_HERE, kSql, &statement))
@@ -345,6 +372,8 @@ bool AppCacheDatabase::InsertGroup(const GroupRecord* record) {
   statement.BindInt64(0, record->group_id);
   statement.BindString(1, record->origin.spec());
   statement.BindString(2, record->manifest_url.spec());
+  statement.BindInt64(3, record->creation_time.ToInternalValue());
+  statement.BindInt64(4, record->last_access_time.ToInternalValue());
   return statement.Run();
 }
 
@@ -438,15 +467,8 @@ bool AppCacheDatabase::InsertCache(const CacheRecord* record) {
   statement.BindInt64(0, record->cache_id);
   statement.BindInt64(1, record->group_id);
   statement.BindBool(2, record->online_wildcard);
-
-  // There are no convinient methods to convert TimeTicks to or
-  // from microseconds directly, so we compute TimeDelta's
-  // as an intermediary step.
-  statement.BindInt64(3,
-    (record->update_time - base::TimeTicks()).InMicroseconds());
-
+  statement.BindInt64(3, record->update_time.ToInternalValue());
   statement.BindInt64(4, record->cache_size);
-
   return statement.Run();
 }
 
@@ -901,6 +923,10 @@ void AppCacheDatabase::ReadGroupRecord(
   record->group_id = statement.ColumnInt64(0);
   record->origin = GURL(statement.ColumnString(1));
   record->manifest_url = GURL(statement.ColumnString(2));
+  record->creation_time =
+      base::Time::FromInternalValue(statement.ColumnInt64(3));
+  record->last_access_time =
+      base::Time::FromInternalValue(statement.ColumnInt64(4));
 }
 
 void AppCacheDatabase::ReadCacheRecord(
@@ -908,13 +934,8 @@ void AppCacheDatabase::ReadCacheRecord(
   record->cache_id = statement.ColumnInt64(0);
   record->group_id = statement.ColumnInt64(1);
   record->online_wildcard = statement.ColumnBool(2);
-
-  // There are no convinient methods to convert TimeTicks to or
-  // from microseconds directly, so we compute TimeDelta's
-  // as an intermediary step.
-  record->update_time = base::TimeTicks() +
-      base::TimeDelta::FromMicroseconds(statement.ColumnInt64(3));
-
+  record->update_time =
+      base::Time::FromInternalValue(statement.ColumnInt64(3));
   record->cache_size = statement.ColumnInt64(4);
 }
 

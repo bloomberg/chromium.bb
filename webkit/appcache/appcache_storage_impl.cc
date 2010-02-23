@@ -268,6 +268,10 @@ void AppCacheStorageImpl::CacheLoadTask::Run() {
       database_->FindCache(cache_id_, &cache_record_) &&
       database_->FindGroup(cache_record_.group_id, &group_record_) &&
       FindRelatedCacheRecords(cache_id_);
+
+  if (success_)
+    database_->UpdateGroupLastAccessTime(group_record_.group_id,
+                                         base::Time::Now());
 }
 
 void AppCacheStorageImpl::CacheLoadTask::RunCompleted() {
@@ -302,6 +306,10 @@ void AppCacheStorageImpl::GroupLoadTask::Run() {
       database_->FindGroupForManifestUrl(manifest_url_, &group_record_) &&
       database_->FindCacheForGroup(group_record_.group_id, &cache_record_) &&
       FindRelatedCacheRecords(cache_record_.cache_id);
+
+  if (success_)
+    database_->UpdateGroupLastAccessTime(group_record_.group_id,
+                                         base::Time::Now());
 }
 
 void AppCacheStorageImpl::GroupLoadTask::RunCompleted() {
@@ -366,11 +374,16 @@ void AppCacheStorageImpl::StoreGroupAndCacheTask::Run() {
   AppCacheDatabase::GroupRecord existing_group;
   success_ = database_->FindGroup(group_record_.group_id, &existing_group);
   if (!success_) {
+    group_record_.creation_time = base::Time::Now();
+    group_record_.last_access_time = base::Time::Now();
     success_ = database_->InsertGroup(&group_record_);
   } else {
     DCHECK(group_record_.group_id == existing_group.group_id);
     DCHECK(group_record_.manifest_url == existing_group.manifest_url);
     DCHECK(group_record_.origin == existing_group.origin);
+
+    database_->UpdateGroupLastAccessTime(group_record_.group_id,
+                                         base::Time::Now());
 
     AppCacheDatabase::CacheRecord cache;
     if (database_->FindCacheForGroup(group_record_.group_id, &cache)) {
@@ -685,8 +698,10 @@ class AppCacheStorageImpl::GetDeletableResponseIdsTask : public DatabaseTask {
  public:
   GetDeletableResponseIdsTask(AppCacheStorageImpl* storage, int64 max_rowid)
       : DatabaseTask(storage), max_rowid_(max_rowid) {}
+
   virtual void Run();
   virtual void RunCompleted();
+
   int64 max_rowid_;
   std::vector<int64> response_ids_;
 };
@@ -729,6 +744,25 @@ class AppCacheStorageImpl::DeleteDeletableResponseIdsTask
 
 void AppCacheStorageImpl::DeleteDeletableResponseIdsTask::Run() {
   database_->DeleteDeletableResponseIds(response_ids_);
+}
+
+// UpdateGroupLastAccessTimeTask -------
+
+class AppCacheStorageImpl::UpdateGroupLastAccessTimeTask
+    : public DatabaseTask {
+ public:
+  UpdateGroupLastAccessTimeTask(
+      AppCacheStorageImpl* storage, int64 group_id, base::Time time)
+      : DatabaseTask(storage), group_id_(group_id), last_access_time_(time) {}
+
+  virtual void Run();
+
+  int64 group_id_;
+  base::Time last_access_time_;
+};
+
+void AppCacheStorageImpl::UpdateGroupLastAccessTimeTask::Run() {
+  database_->UpdateGroupLastAccessTime(group_id_, last_access_time_);
 }
 
 
@@ -780,9 +814,20 @@ void AppCacheStorageImpl::Disable() {
 
 void AppCacheStorageImpl::LoadCache(int64 id, Delegate* delegate) {
   DCHECK(delegate);
+  if (is_disabled_) {
+    delegate->OnCacheLoaded(NULL, id);
+    return;
+  }
+
   AppCache* cache = working_set_.GetCache(id);
-  if (cache || is_disabled_) {
+  if (cache) {
     delegate->OnCacheLoaded(cache, id);
+    if (cache->owning_group()) {
+      scoped_refptr<DatabaseTask> update_task =
+          new UpdateGroupLastAccessTimeTask(
+              this, cache->owning_group()->group_id(), base::Time::Now());
+      update_task->Schedule();
+    }
     return;
   }
   scoped_refptr<CacheLoadTask> task = GetPendingCacheLoadTask(id);
@@ -799,9 +844,18 @@ void AppCacheStorageImpl::LoadCache(int64 id, Delegate* delegate) {
 void AppCacheStorageImpl::LoadOrCreateGroup(
     const GURL& manifest_url, Delegate* delegate) {
   DCHECK(delegate);
+  if (is_disabled_) {
+    delegate->OnGroupLoaded(NULL, manifest_url);
+    return;
+  }
+
   AppCacheGroup* group = working_set_.GetGroup(manifest_url);
-  if (group || is_disabled_) {
+  if (group) {
     delegate->OnGroupLoaded(group, manifest_url);
+    scoped_refptr<DatabaseTask> update_task =
+        new UpdateGroupLastAccessTimeTask(
+            this, group->group_id(), base::Time::Now());
+    update_task->Schedule();
     return;
   }
 

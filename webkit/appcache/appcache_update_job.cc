@@ -770,7 +770,7 @@ void AppCacheUpdateJob::StoreGroupAndCache() {
     newest_cache.swap(inprogress_cache_);
   else
     newest_cache = group_->newest_complete_cache();
-  newest_cache->set_update_time(base::TimeTicks::Now());
+  newest_cache->set_update_time(base::Time::Now());
   service_->storage()->StoreGroupAndNewestCache(group_, newest_cache,
                                                 this);  // async
 }

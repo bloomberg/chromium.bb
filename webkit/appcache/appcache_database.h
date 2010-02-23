@@ -34,6 +34,8 @@ class AppCacheDatabase {
     int64 group_id;
     GURL origin;
     GURL manifest_url;
+    base::Time creation_time;
+    base::Time last_access_time;
     GroupRecord() : group_id(0) {}
   };
 
@@ -41,7 +43,7 @@ class AppCacheDatabase {
     int64 cache_id;
     int64 group_id;
     bool online_wildcard;
-    base::TimeTicks update_time;
+    base::Time update_time;
     int64 cache_size;  // the sum of all response sizes in this cache
     CacheRecord()
         : cache_id(0), group_id(0), online_wildcard(false), cache_size(0) {}
@@ -91,6 +93,8 @@ class AppCacheDatabase {
   bool FindGroupsForOrigin(
       const GURL& origin, std::vector<GroupRecord>* records);
   bool FindGroupForCache(int64 cache_id, GroupRecord* record);
+  bool UpdateGroupLastAccessTime(
+      int64 group_id, base::Time last_access_time);
   bool InsertGroup(const GroupRecord* record);
   bool DeleteGroup(int64 group_id);
 

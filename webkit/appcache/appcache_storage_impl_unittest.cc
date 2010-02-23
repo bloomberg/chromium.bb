@@ -22,7 +22,7 @@ namespace appcache {
 
 namespace {
 
-const base::TimeTicks kZeroTimeTicks;
+const base::Time kZeroTime;
 const GURL kManifestUrl("http://blah/manifest");
 const GURL kManifestUrl2("http://blah/manifest2");
 const GURL kEntryUrl("http://blah/entry");
@@ -491,7 +491,7 @@ class AppCacheStorageImplTest : public testing::Test {
     MakeCacheAndGroup(kManifestUrl, 1, 1, true);
 
     // Change the cache.
-    base::TimeTicks now = base::TimeTicks::Now();
+    base::Time now = base::Time::Now();
     cache_->AddEntry(kEntryUrl, AppCacheEntry(AppCacheEntry::MASTER, 1, 100));
     cache_->set_update_time(now);
 
@@ -506,7 +506,7 @@ class AppCacheStorageImplTest : public testing::Test {
   }
 
   void Verify_StoreExistingGroupExistingCache(
-      base::TimeTicks expected_update_time) {
+      base::Time expected_update_time) {
     EXPECT_TRUE(delegate()->stored_group_success_);
     EXPECT_EQ(cache_, group_->newest_complete_cache());
 
@@ -947,7 +947,7 @@ class AppCacheStorageImplTest : public testing::Test {
       cache_record.cache_id = cache_id;
       cache_record.group_id = group_id;
       cache_record.online_wildcard = false;
-      cache_record.update_time = kZeroTimeTicks;
+      cache_record.update_time = kZeroTime;
       EXPECT_TRUE(database()->InsertCache(&cache_record));
       storage()->origins_with_groups_.insert(manifest_url.GetOrigin());
     }

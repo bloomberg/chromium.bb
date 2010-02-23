@@ -69,6 +69,7 @@ class AppCacheStorageImpl : public AppCacheStorage {
   class GetDeletableResponseIdsTask;
   class InsertDeletableResponseIdsTask;
   class DeleteDeletableResponseIdsTask;
+  class UpdateGroupLastAccessTimeTask;
 
   typedef std::deque<DatabaseTask*> DatabaseTaskQueue;
   typedef std::map<int64, CacheLoadTask*> PendingCacheLoads;

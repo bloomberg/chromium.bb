@@ -12,7 +12,7 @@
 
 namespace {
 
-const base::TimeTicks kZeroTimeTicks;
+const base::Time kZeroTime;
 
 class TestErrorDelegate : public sql::ErrorDelegate {
  public:
@@ -166,7 +166,7 @@ TEST(AppCacheDatabaseTest, CacheRecords) {
   record.cache_id = 1;
   record.group_id = 1;
   record.online_wildcard = true;
-  record.update_time = kZeroTimeTicks;
+  record.update_time = kZeroTime;
   record.cache_size = 100;
   EXPECT_TRUE(db.InsertCache(&record));
   EXPECT_FALSE(db.InsertCache(&record));
@@ -176,7 +176,7 @@ TEST(AppCacheDatabaseTest, CacheRecords) {
   EXPECT_EQ(1, record.cache_id);
   EXPECT_EQ(1, record.group_id);
   EXPECT_TRUE(record.online_wildcard);
-  EXPECT_TRUE(kZeroTimeTicks == record.update_time);
+  EXPECT_TRUE(kZeroTime == record.update_time);
   EXPECT_EQ(100, record.cache_size);
 
   record = kZeroRecord;
@@ -184,7 +184,7 @@ TEST(AppCacheDatabaseTest, CacheRecords) {
   EXPECT_EQ(1, record.cache_id);
   EXPECT_EQ(1, record.group_id);
   EXPECT_TRUE(record.online_wildcard);
-  EXPECT_TRUE(kZeroTimeTicks == record.update_time);
+  EXPECT_TRUE(kZeroTime == record.update_time);
   EXPECT_EQ(100, record.cache_size);
 
   EXPECT_TRUE(db.DeleteCache(1));
@@ -204,6 +204,9 @@ TEST(AppCacheDatabaseTest, GroupRecords) {
 
   const GURL kManifestUrl("http://blah/manifest");
   const GURL kOrigin(kManifestUrl.GetOrigin());
+  const base::Time kLastAccessTime = base::Time::Now();
+  const base::Time kCreationTime =
+      kLastAccessTime - base::TimeDelta::FromDays(7);
 
   const AppCacheDatabase::GroupRecord kZeroRecord;
   AppCacheDatabase::GroupRecord record;
@@ -220,6 +223,8 @@ TEST(AppCacheDatabaseTest, GroupRecords) {
   record.group_id = 1;
   record.manifest_url = kManifestUrl;
   record.origin = kOrigin;
+  record.last_access_time = kLastAccessTime;
+  record.creation_time = kCreationTime;
   EXPECT_TRUE(db.InsertGroup(&record));
   EXPECT_FALSE(db.InsertGroup(&record));
 
@@ -231,16 +236,26 @@ TEST(AppCacheDatabaseTest, GroupRecords) {
   EXPECT_EQ(1, record.group_id);
   EXPECT_EQ(kManifestUrl, record.manifest_url);
   EXPECT_EQ(kOrigin, record.origin);
+  EXPECT_EQ(kCreationTime.ToInternalValue(),
+            record.creation_time.ToInternalValue());
+  EXPECT_EQ(kLastAccessTime.ToInternalValue(),
+            record.last_access_time.ToInternalValue());
 
   record = kZeroRecord;
   EXPECT_TRUE(db.FindGroupForManifestUrl(kManifestUrl, &record));
   EXPECT_EQ(1, record.group_id);
   EXPECT_EQ(kManifestUrl, record.manifest_url);
   EXPECT_EQ(kOrigin, record.origin);
+  EXPECT_EQ(kCreationTime.ToInternalValue(),
+            record.creation_time.ToInternalValue());
+  EXPECT_EQ(kLastAccessTime.ToInternalValue(),
+            record.last_access_time.ToInternalValue());
 
   record.group_id = 2;
   record.manifest_url = kOrigin;
   record.origin = kOrigin;
+  record.last_access_time = kLastAccessTime;
+  record.creation_time = kCreationTime;
   EXPECT_TRUE(db.InsertGroup(&record));
 
   record = kZeroRecord;
@@ -248,6 +263,10 @@ TEST(AppCacheDatabaseTest, GroupRecords) {
   EXPECT_EQ(2, record.group_id);
   EXPECT_EQ(kOrigin, record.manifest_url);
   EXPECT_EQ(kOrigin, record.origin);
+  EXPECT_EQ(kCreationTime.ToInternalValue(),
+            record.creation_time.ToInternalValue());
+  EXPECT_EQ(kLastAccessTime.ToInternalValue(),
+            record.last_access_time.ToInternalValue());
 
   EXPECT_TRUE(db.FindGroupsForOrigin(kOrigin, &records));
   EXPECT_EQ(2U, records.size());
@@ -266,6 +285,10 @@ TEST(AppCacheDatabaseTest, GroupRecords) {
   EXPECT_EQ(2, records[0].group_id);
   EXPECT_EQ(kOrigin, records[0].manifest_url);
   EXPECT_EQ(kOrigin, records[0].origin);
+  EXPECT_EQ(kCreationTime.ToInternalValue(),
+            record.creation_time.ToInternalValue());
+  EXPECT_EQ(kLastAccessTime.ToInternalValue(),
+            record.last_access_time.ToInternalValue());
 
   std::set<GURL> origins;
   EXPECT_TRUE(db.FindOriginsWithGroups(&origins));
@@ -289,7 +312,7 @@ TEST(AppCacheDatabaseTest, GroupRecords) {
   cache_record.cache_id = 1;
   cache_record.group_id = 1;
   cache_record.online_wildcard = true;
-  cache_record.update_time = kZeroTimeTicks;
+  cache_record.update_time = kZeroTime;
   EXPECT_TRUE(db.InsertCache(&cache_record));
 
   record = kZeroRecord;
@@ -546,7 +569,7 @@ TEST(AppCacheDatabaseTest, Quotas) {
   cache_record.cache_id = 1;
   cache_record.group_id = 1;
   cache_record.online_wildcard = true;
-  cache_record.update_time = kZeroTimeTicks;
+  cache_record.update_time = kZeroTime;
   cache_record.cache_size = 100;
   EXPECT_TRUE(db.InsertCache(&cache_record));
 
@@ -559,7 +582,7 @@ TEST(AppCacheDatabaseTest, Quotas) {
   cache_record.cache_id = 2;
   cache_record.group_id = 2;
   cache_record.online_wildcard = true;
-  cache_record.update_time = kZeroTimeTicks;
+  cache_record.update_time = kZeroTime;
   cache_record.cache_size = 1000;
   EXPECT_TRUE(db.InsertCache(&cache_record));
 
@@ -572,7 +595,7 @@ TEST(AppCacheDatabaseTest, Quotas) {
   cache_record.cache_id = 3;
   cache_record.group_id = 3;
   cache_record.online_wildcard = true;
-  cache_record.update_time = kZeroTimeTicks;
+  cache_record.update_time = kZeroTime;
   cache_record.cache_size = 5000;
   EXPECT_TRUE(db.InsertCache(&cache_record));
 

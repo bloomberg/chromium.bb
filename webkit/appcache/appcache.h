@@ -59,6 +59,8 @@ class AppCache : public base::RefCounted<AppCache> {
   AppCacheHosts& associated_hosts() { return associated_hosts_; }
 
   bool IsNewerThan(AppCache* cache) const {
+    // TODO(michaeln): revisit, the system clock can be set
+    // back in time which would confuse this logic.
     if (update_time_ > cache->update_time_)
       return true;
 
@@ -69,8 +71,8 @@ class AppCache : public base::RefCounted<AppCache> {
     return false;
   }
 
-  base::TimeTicks update_time() const { return update_time_; }
-  void set_update_time(base::TimeTicks ticks) { update_time_ = ticks; }
+  base::Time update_time() const { return update_time_; }
+  void set_update_time(base::Time ticks) { update_time_ = ticks; }
 
   // Initializes the cache with information in the manifest.
   // Do not use the manifest after this call.
@@ -131,7 +133,7 @@ class AppCache : public base::RefCounted<AppCache> {
   bool is_complete_;
 
   // when this cache was last updated
-  base::TimeTicks update_time_;
+  base::Time update_time_;
 
   // to notify service when cache is deleted
   AppCacheService* service_;

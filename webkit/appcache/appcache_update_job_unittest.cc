@@ -1965,7 +1965,7 @@ class AppCacheUpdateJobTest : public testing::Test,
 
     // Reset the update time to null so we can verify it gets
     // modified in this test case by the UpdateJob.
-    cache->set_update_time(base::TimeTicks());
+    cache->set_update_time(base::Time());
 
     MockFrontend* frontend2 = MakeMockFrontend();
     AppCacheHost* host2 = MakeHost(2, frontend2);
@@ -2582,7 +2582,7 @@ class AppCacheUpdateJobTest : public testing::Test,
   AppCache* MakeCacheForGroup(int64 cache_id, int64 manifest_response_id) {
     AppCache* cache = new AppCache(service_.get(), cache_id);
     cache->set_complete(true);
-    cache->set_update_time(base::TimeTicks::Now());
+    cache->set_update_time(base::Time::Now());
     group_->AddCache(cache);
 
     // Add manifest entry to cache.
@@ -2753,7 +2753,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
     EXPECT_TRUE(cache->online_whitelist_all_);
 
-    EXPECT_TRUE(cache->update_time_ > base::TimeTicks());
+    EXPECT_TRUE(cache->update_time_ > base::Time());
   }
 
   void VerifyManifestMergedTypes(AppCache* cache) {
@@ -2785,7 +2785,7 @@ class AppCacheUpdateJobTest : public testing::Test,
                   http_server_->TestServerPage("files/online1")));
     EXPECT_FALSE(cache->online_whitelist_all_);
 
-    EXPECT_TRUE(cache->update_time_ > base::TimeTicks());
+    EXPECT_TRUE(cache->update_time_ > base::Time());
   }
 
   void VerifyEmptyManifest(AppCache* cache) {
@@ -2800,7 +2800,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
     EXPECT_FALSE(cache->online_whitelist_all_);
 
-    EXPECT_TRUE(cache->update_time_ > base::TimeTicks());
+    EXPECT_TRUE(cache->update_time_ > base::Time());
   }
 
   void VerifyEmptyFileManifest(AppCache* cache) {
@@ -2820,7 +2820,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
     EXPECT_FALSE(cache->online_whitelist_all_);
 
-    EXPECT_TRUE(cache->update_time_ > base::TimeTicks());
+    EXPECT_TRUE(cache->update_time_ > base::Time());
   }
 
   void VerifyMasterEntryNoUpdate(AppCache* cache) {
@@ -2846,7 +2846,7 @@ class AppCacheUpdateJobTest : public testing::Test,
     EXPECT_TRUE(cache->online_whitelist_namespaces_.empty());
     EXPECT_FALSE(cache->online_whitelist_all_);
 
-    EXPECT_TRUE(cache->update_time_ > base::TimeTicks());
+    EXPECT_TRUE(cache->update_time_ > base::Time());
   }
 
  private:

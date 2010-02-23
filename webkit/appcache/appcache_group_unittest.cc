@@ -79,38 +79,38 @@ TEST(AppCacheGroupTest, AddRemoveCache) {
   scoped_refptr<AppCacheGroup> group =
       new AppCacheGroup(&service, GURL("http://foo.com"), 111);
 
-  base::TimeTicks ticks = base::TimeTicks::Now();
+  base::Time now = base::Time::Now();
 
   scoped_refptr<AppCache> cache1 = new AppCache(&service, 111);
   cache1->set_complete(true);
-  cache1->set_update_time(ticks);
+  cache1->set_update_time(now);
   group->AddCache(cache1);
   EXPECT_EQ(cache1, group->newest_complete_cache());
 
   // Adding older cache does not change newest complete cache.
   scoped_refptr<AppCache> cache2 = new AppCache(&service, 222);
   cache2->set_complete(true);
-  cache2->set_update_time(ticks - base::TimeDelta::FromDays(1));
+  cache2->set_update_time(now - base::TimeDelta::FromDays(1));
   group->AddCache(cache2);
   EXPECT_EQ(cache1, group->newest_complete_cache());
 
   // Adding newer cache does change newest complete cache.
   scoped_refptr<AppCache> cache3 = new AppCache(&service, 333);
   cache3->set_complete(true);
-  cache3->set_update_time(ticks + base::TimeDelta::FromDays(1));
+  cache3->set_update_time(now + base::TimeDelta::FromDays(1));
   group->AddCache(cache3);
   EXPECT_EQ(cache3, group->newest_complete_cache());
 
   // Adding cache with same update time uses one with larger ID.
   scoped_refptr<AppCache> cache4 = new AppCache(&service, 444);
   cache4->set_complete(true);
-  cache4->set_update_time(ticks + base::TimeDelta::FromDays(1));  // same as 3
+  cache4->set_update_time(now + base::TimeDelta::FromDays(1));  // same as 3
   group->AddCache(cache4);
   EXPECT_EQ(cache4, group->newest_complete_cache());
 
   scoped_refptr<AppCache> cache5 = new AppCache(&service, 55);  // smaller id
   cache5->set_complete(true);
-  cache5->set_update_time(ticks + base::TimeDelta::FromDays(1));  // same as 4
+  cache5->set_update_time(now + base::TimeDelta::FromDays(1));  // same as 4
   group->AddCache(cache5);
   EXPECT_EQ(cache4, group->newest_complete_cache());  // no change
 
@@ -152,11 +152,11 @@ TEST(AppCacheGroupTest, CleanupUnusedGroup) {
   AppCacheHost host1(1, &frontend, &service);
   AppCacheHost host2(2, &frontend, &service);
 
-  base::TimeTicks ticks = base::TimeTicks::Now();
+  base::Time now = base::Time::Now();
 
   AppCache* cache1 = new AppCache(&service, 111);
   cache1->set_complete(true);
-  cache1->set_update_time(ticks);
+  cache1->set_update_time(now);
   group->AddCache(cache1);
   EXPECT_EQ(cache1, group->newest_complete_cache());
 
@@ -172,7 +172,7 @@ TEST(AppCacheGroupTest, CleanupUnusedGroup) {
 
   AppCache* cache2 = new AppCache(&service, 222);
   cache2->set_complete(true);
-  cache2->set_update_time(ticks + base::TimeDelta::FromDays(1));
+  cache2->set_update_time(now + base::TimeDelta::FromDays(1));
   group->AddCache(cache2);
   EXPECT_EQ(cache2, group->newest_complete_cache());
 
