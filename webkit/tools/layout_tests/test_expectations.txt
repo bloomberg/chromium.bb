@@ -91,7 +91,7 @@ BUG24182 WIN RELEASE SLOW : http/tests/incremental/split-hex-entities.pl = PASS
 BUG24182 WIN RELEASE SLOW : http/tests/xmlhttprequest/XMLHttpRequestException.html = PASS
 BUG24182 WIN RELEASE SLOW : http/tests/xmlhttprequest/connection-error-sync.html = PASS
 BUG24182 WIN RELEASE SLOW : http/tests/loading/onload-vs-immediate-refresh.pl = PASS
-//BUG24182 SLOW DEBUG : editing/selection/extend-selection.html = PASS
+BUG24182 SLOW WIN DEBUG : editing/selection/extend-selection.html = PASS
 BUG24182 SLOW WIN : fast/images/svg-as-background.html = PASS
 BUG24182 SLOW WIN : fast/backgrounds/svg-as-background-5.html = PASS
 BUG24182 SLOW DEBUG : svg/css/getComputedStyle-basic.xhtml = PASS
@@ -2955,3 +2955,6 @@ BUG36019 : fast/images/svg-as-tiled-background.html = IMAGE
 
 // Added in WebKit's r55159, will get baselines from the bots.
 BUG36585 WIN LINUX DEFER : fast/repaint/repaint-during-scroll.html = FAIL
+
+// Flaky tests
+BUG36603 WIN RELEASE : svg/text/text-text-05-t.svg = CRASH PASS
