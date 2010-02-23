@@ -22,6 +22,7 @@
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/chromeos/cros/login_library.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
+#include "chrome/browser/chromeos/external_cookie_handler.h"
 #include "chrome/browser/chromeos/login/google_authenticator.h"
 #include "chrome/browser/chromeos/login/pam_google_authenticator.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
@@ -307,6 +308,7 @@ void LoginManagerView::OnLoginSuccess(const std::string& username) {
   Profile* profile = profile_manager->GetDefaultProfile(user_data_dir);
   int return_code;
 
+  chromeos::ExternalCookieHandler::GetCookies(command_line, profile);
   LOG(INFO) << "OnLoginSuccess: Preparing to launch browser";
   browser_init.LaunchBrowser(command_line,
                              profile,

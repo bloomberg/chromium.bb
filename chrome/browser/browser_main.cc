@@ -126,7 +126,6 @@
 
 #if defined(OS_CHROMEOS)
 #include "chrome/browser/chromeos/cros/cros_library.h"
-#include "chrome/browser/chromeos/external_cookie_handler.h"
 #include "chrome/browser/chromeos/external_metrics.h"
 #include "chrome/browser/views/browser_dialogs.h"
 #endif
@@ -976,10 +975,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   HandleTestParameters(parsed_command_line);
   Platform::RecordBreakpadStatusUMA(metrics);
-
-#if defined(OS_CHROMEOS)
-  chromeos::ExternalCookieHandler::GetCookies(parsed_command_line, profile);
-#endif
 
   // Stat the directory with the inspector's files so that we can know if we
   // should display the entry in the context menu or not.
