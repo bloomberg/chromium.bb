@@ -7,10 +7,8 @@
 #include "base/scoped_nsobject.h"
 
 // A view class that looks like a "bubble" with rounded corners and displays
-// text inside. Can be themed with a GTMTheme object. To put flush
-// against the sides of a window, the corner flags can be adjusted.
-
-@protocol GTMThemeDelegate;
+// text inside. Can be themed. To put flush against the sides of a window, the
+// corner flags can be adjusted.
 
 // Constants that define where the bubble will have a rounded corner. If
 // not set, the corner will be square.

@@ -46,7 +46,7 @@ const NSTimeInterval kDownloadShelfCloseDuration = 0.12;
 - (void)closed;
 
 - (void)updateTheme;
-- (void)themeDidChangeNotification:(NSNotification*)aNotification;
+- (void)themeDidChangeNotification:(NSNotification*)notification;
 @end
 
 

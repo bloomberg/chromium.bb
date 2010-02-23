@@ -9,23 +9,10 @@
 #import "chrome/browser/cocoa/bubble_view.h"
 #import "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
-#import "chrome/browser/cocoa/GTMTheme.h"
 #import "chrome/browser/cocoa/status_bubble_mac.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
-
-@interface StatusBubbleMacTestWindowDelegate : NSObject <GTMThemeDelegate>
-@end
-@implementation StatusBubbleMacTestWindowDelegate
-- (GTMTheme*)gtm_themeForWindow:(NSWindow*)window {
-  return [[[GTMTheme alloc] init] autorelease];
-}
-
-- (NSPoint)gtm_themePatternPhaseForWindow:(NSWindow*)window {
-  return NSZeroPoint;
-}
-@end
 
 // The test delegate records all of the status bubble object's state
 // transitions.
@@ -122,14 +109,6 @@ class StatusBubbleMacTest : public CocoaTest {
   scoped_nsobject<StatusBubbleMacTestDelegate> delegate_;
   StatusBubbleMac* bubble_;  // Strong.
 };
-
-TEST_F(StatusBubbleMacTest, Theme) {
-  bubble_->SetStatus(L"Theme test");  // Creates the window
-  [GetParent() setDelegate:
-      [[[StatusBubbleMacTestWindowDelegate alloc] init] autorelease]];
-  EXPECT_TRUE([GetParent() gtm_theme] != nil);
-  EXPECT_TRUE([[GetWindow() contentView] gtm_theme] != nil);
-}
 
 TEST_F(StatusBubbleMacTest, SetStatus) {
   bubble_->SetStatus(L"");

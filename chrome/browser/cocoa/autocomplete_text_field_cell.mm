@@ -7,7 +7,6 @@
 #include "app/gfx/font.h"
 #include "app/resource_bundle.h"
 #include "base/logging.h"
-#import "chrome/browser/cocoa/GTMTheme.h"
 
 namespace {
 

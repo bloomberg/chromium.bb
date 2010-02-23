@@ -223,6 +223,12 @@ class TabStripModelObserverBridge;
 // Shows or hides the docked web inspector depending on |contents|'s state.
 - (void)updateDevToolsForContents:(TabContents*)contents;
 
+// Gets the current theme provider.
+- (ThemeProvider*)themeProvider;
+
+// Gets the pattern phase for the window.
+- (NSPoint)themePatternPhase;
+
 @end  // @interface BrowserWindowController
 
 

@@ -14,6 +14,7 @@
 #include "chrome/app/chrome_dll_resource.h"  // IDC_*
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_theme_provider.h"
 #include "chrome/browser/dock_info.h"
 #include "chrome/browser/encoding_menu_controller.h"
 #include "chrome/browser/location_bar.h"
@@ -42,6 +43,7 @@
 #import "chrome/browser/cocoa/tab_strip_controller.h"
 #import "chrome/browser/cocoa/tab_strip_view.h"
 #import "chrome/browser/cocoa/tab_view.h"
+#import "chrome/browser/cocoa/themed_window.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
 #include "chrome/browser/sync/profile_sync_service.h"
@@ -1307,6 +1309,14 @@
 }
 
 - (NSPoint)gtm_themePatternPhaseForWindow:(NSWindow*)window {
+  return [self themePatternPhase];
+}
+
+- (ThemeProvider*)themeProvider {
+  return browser_->profile()->GetThemeProvider();
+}
+
+- (NSPoint)themePatternPhase {
   // Our patterns want to be drawn from the upper left hand corner of the view.
   // Cocoa wants to do it from the lower left of the window.
   //
@@ -1318,7 +1328,7 @@
   const CGFloat kPatternHorizontalOffset = -5;
   NSView* tabStripView = [self tabStripView];
   NSRect tabStripViewWindowBounds = [tabStripView bounds];
-  NSView* windowChromeView = [[window contentView] superview];
+  NSView* windowChromeView = [[[self window] contentView] superview];
   tabStripViewWindowBounds =
       [tabStripView convertRect:tabStripViewWindowBounds
                          toView:windowChromeView];

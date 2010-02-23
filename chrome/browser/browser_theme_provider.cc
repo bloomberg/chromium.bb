@@ -65,7 +65,11 @@ const SkColor kDefaultColorFrameInactive = SkColorSetRGB(152, 188, 233);
 const SkColor kDefaultColorFrameIncognito = SkColorSetRGB(83, 106, 139);
 const SkColor kDefaultColorFrameIncognitoInactive =
     SkColorSetRGB(126, 139, 156);
+#if defined(OS_MACOSX)
+const SkColor kDefaultColorToolbar = SkColorSetRGB(230, 230, 230);
+#else
 const SkColor kDefaultColorToolbar = SkColorSetRGB(210, 225, 246);
+#endif
 const SkColor kDefaultColorTabText = SK_ColorBLACK;
 const SkColor kDefaultColorBackgroundTabText = SkColorSetRGB(64, 64, 64);
 const SkColor kDefaultColorBookmarkText = SkColorSetRGB(18, 50, 114);
@@ -88,6 +92,13 @@ const SkColor kDefaultColorNTPSectionText = SK_ColorBLACK;
 const SkColor kDefaultColorNTPSectionLink = SkColorSetRGB(6, 55, 116);
 const SkColor kDefaultColorControlBackground = SkColorSetARGB(0, 0, 0, 0);
 const SkColor kDefaultColorButtonBackground = SkColorSetARGB(0, 0, 0, 0);
+#if defined(OS_MACOSX)
+const SkColor kDefaultColorToolbarButtonStroke = SkColorSetARGB(75, 81, 81, 81);
+const SkColor kDefaultColorToolbarButtonStrokeInactive =
+    SkColorSetARGB(75, 99, 99, 99);
+const SkColor kDefaultColorToolbarStroke = SkColorSetRGB(103, 103, 103);
+const SkColor kDefaultColorToolbarStrokeInactive = SkColorSetRGB(123, 123, 123);
+#endif
 
 // Default tints.
 const color_utils::HSL kDefaultTintButtons = { -1, -1, -1 };
@@ -445,6 +456,16 @@ SkColor BrowserThemeProvider::GetDefaultColor(int id) {
       return kDefaultColorControlBackground;
     case COLOR_BUTTON_BACKGROUND:
       return kDefaultColorButtonBackground;
+#if defined(OS_MACOSX)
+    case COLOR_TOOLBAR_BUTTON_STROKE:
+      return kDefaultColorToolbarButtonStroke;
+    case COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE:
+      return kDefaultColorToolbarButtonStrokeInactive;
+    case COLOR_TOOLBAR_STROKE:
+      return kDefaultColorToolbarStroke;
+    case COLOR_TOOLBAR_STROKE_INACTIVE:
+      return kDefaultColorToolbarStrokeInactive;
+#endif
     default:
       // Return a debugging red color.
       return 0xffff0000;

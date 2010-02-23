@@ -4,7 +4,8 @@
 
 #import "chrome/browser/cocoa/bubble_view.h"
 
-#import "chrome/browser/cocoa/GTMTheme.h"
+#include "chrome/browser/browser_theme_provider.h"
+#import "chrome/browser/cocoa/themed_window.h"
 #import "third_party/GTM/AppKit/GTMNSBezierPath+RoundRect.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 
@@ -51,16 +52,6 @@ const float kWindowEdge = 0.7f;
   return [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
 }
 
-// Asks the given theme provider for its theme. If there isn't one specified,
-// check the window we are in. May still return nil if the window doesn't
-// support themeing.
-- (GTMTheme*)gtm_theme {
-  GTMTheme* theme = [themeProvider_ gtm_theme];
-  if (!theme)
-    theme = [[self window] gtm_theme];
-  return theme;
-}
-
 // Draws the themed background and the text. Will draw a gray bg if no theme.
 - (void)drawRect:(NSRect)rect {
   float topLeftRadius =
@@ -72,7 +63,7 @@ const float kWindowEdge = 0.7f;
   float bottomRightRadius =
       cornerFlags_ & kRoundedBottomRightCorner ? kBubbleCornerRadius : 0;
 
-  GTMTheme* theme = [self gtm_theme];
+  ThemeProvider* themeProvider = [themeProvider_ themeProvider];
 
   // Background / Edge
 
@@ -85,26 +76,18 @@ const float kWindowEdge = 0.7f;
                          bottomLeftCornerRadius:bottomLeftRadius
                         bottomRightCornerRadius:bottomRightRadius];
 
-  NSColor* color =
-      [theme backgroundColorForStyle:GTMThemeStyleToolBar
-                               state:GTMThemeStateActiveWindow];
-
-  // workaround for default theme
-  // TODO(alcor) next GTM update return nil for background color if not set;
-  // http://crbug.com/25196
-  if ([color isEqual:[NSColor colorWithCalibratedWhite:0.5 alpha:1.0]])
-    color = nil;
-  if (!color)
-    color = [NSColor colorWithCalibratedWhite:0.9 alpha:1.0];
-  [color set];
+  if (themeProvider)
+    [themeProvider->GetNSColor(BrowserThemeProvider::COLOR_TOOLBAR, true) set];
   [border fill];
 
   [[NSColor colorWithDeviceWhite:kWindowEdge alpha:1.0f] set];
   [border stroke];
 
   // Text
-  NSColor* textColor = [theme textColorForStyle:GTMThemeStyleTabBarSelected
-                                          state:GTMThemeStateActiveWindow];
+  NSColor* textColor = [NSColor blackColor];
+  if (themeProvider)
+    textColor = themeProvider->GetNSColor(BrowserThemeProvider::COLOR_TAB_TEXT,
+                                          true);
   NSFont* textFont = [self font];
   scoped_nsobject<NSShadow> textShadow([[NSShadow alloc] init]);
   [textShadow setShadowBlurRadius:0.0f];

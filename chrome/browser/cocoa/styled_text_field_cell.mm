@@ -7,7 +7,9 @@
 #include "app/gfx/font.h"
 #include "app/resource_bundle.h"
 #include "base/logging.h"
-#import "chrome/browser/cocoa/GTMTheme.h"
+#include "chrome/browser/browser_theme_provider.h"
+#import "chrome/browser/cocoa/themed_window.h"
+#include "grit/theme_resources.h"
 
 @implementation StyledTextFieldCell
 
@@ -56,13 +58,17 @@
 
   // Paint button background image if there is one (otherwise the border won't
   // look right).
-  GTMTheme* theme = [controlView gtm_theme];
-  NSImage* backgroundImage =
-      [theme backgroundImageForStyle:GTMThemeStyleToolBarButton state:YES];
+  ThemeProvider* themeProvider = [[controlView window] themeProvider];
+  NSImage* backgroundImage = nil;
+  if (themeProvider) {
+    backgroundImage =
+        themeProvider->GetNSImageNamed(IDR_THEME_BUTTON_BACKGROUND, false);
+  }
   if (backgroundImage) {
     NSColor* patternColor = [NSColor colorWithPatternImage:backgroundImage];
     [patternColor set];
     // Set the phase to match window.
+    // TODO(avi) http://crbug.com/36485; base != window
     NSRect trueRect = [controlView convertRectToBase:cellFrame];
     [[NSGraphicsContext currentContext]
         setPatternPhase:NSMakePoint(NSMinX(trueRect), NSMaxY(trueRect))];
@@ -71,7 +77,13 @@
 
   // Draw the outer stroke (over the background).
   BOOL active = [[controlView window] isMainWindow];
-  [[theme strokeColorForStyle:GTMThemeStyleToolBarButton state:active] set];
+  if (themeProvider) {
+    NSColor* strokeColor = themeProvider->GetNSColor(
+        active ? BrowserThemeProvider::COLOR_TOOLBAR_BUTTON_STROKE :
+                 BrowserThemeProvider::COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE,
+        true);
+    [strokeColor set];
+  }
   NSFrameRectWithWidthUsingOperation(frame, 1, NSCompositeSourceOver);
 
   // Draw the background for the interior.

@@ -87,6 +87,13 @@ class BrowserThemeProvider : public NonThreadSafe,
     NTP_BACKGROUND_ALIGNMENT,
     NTP_BACKGROUND_TILING,
     NTP_LOGO_ALTERNATE
+#if defined(OS_MACOSX)
+    ,
+    COLOR_TOOLBAR_BUTTON_STROKE = 1000,
+    COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE,
+    COLOR_TOOLBAR_STROKE,
+    COLOR_TOOLBAR_STROKE_INACTIVE
+#endif  // OS_MACOSX
   };
 
   // A bitfield mask for alignments.

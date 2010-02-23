@@ -4,11 +4,12 @@
 
 #include "app/l10n_util_mac.h"
 #include "base/mac_util.h"
-#import "chrome/browser/cocoa/GTMTheme.h"
+#import "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/menu_controller.h"
 #import "chrome/browser/cocoa/tab_controller.h"
 #import "chrome/browser/cocoa/tab_controller_target.h"
 #import "chrome/browser/cocoa/tab_view.h"
+#import "chrome/browser/cocoa/themed_window.h"
 #include "grit/generated_resources.h"
 
 @implementation TabController
@@ -88,7 +89,7 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
                         object:[self view]];
     [defaultCenter addObserver:self
                       selector:@selector(themeChangedNotification:)
-                          name:kGTMThemeDidChangeNotification
+                          name:kBrowserThemeDidChangeNotification
                         object:nil];
   }
   return self;
@@ -273,15 +274,16 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
 
 - (void)updateTitleColor {
   NSColor* titleColor = nil;
-  GTMTheme* theme = [[self view] gtm_theme];
-  if (![self selected]) {
-    titleColor = [theme textColorForStyle:GTMThemeStyleTabBarDeselected
-                                    state:GTMThemeStateActiveWindow];
+  ThemeProvider* theme = [[[self view] window] themeProvider];
+  if (theme && ![self selected]) {
+    titleColor =
+        theme->GetNSColor(BrowserThemeProvider::COLOR_BACKGROUND_TAB_TEXT,
+                          true);
   }
   // Default to the selected text color unless told otherwise.
-  if (!titleColor) {
-    titleColor = [theme textColorForStyle:GTMThemeStyleTabBarSelected
-                                    state:GTMThemeStateActiveWindow];
+  if (theme && !titleColor) {
+    titleColor = theme->GetNSColor(BrowserThemeProvider::COLOR_TAB_TEXT,
+                                   true);
   }
   [titleView_ setTextColor:titleColor ? titleColor : [NSColor textColor]];
 }
@@ -295,11 +297,7 @@ class MenuDelegate : public menus::SimpleMenuModel::Delegate {
 }
 
 - (void)themeChangedNotification:(NSNotification*)notification {
-  GTMTheme* theme = [notification object];
-  NSView* view = [self view];
-  if ([theme isEqual:[view gtm_theme]]) {
-    [self updateTitleColor];
-  }
+  [self updateTitleColor];
 }
 
 // Called by the tabs to determine whether we are in rapid (tab) closure mode.
