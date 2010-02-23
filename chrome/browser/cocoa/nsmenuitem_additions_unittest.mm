@@ -4,12 +4,11 @@
 
 #import "chrome/browser/cocoa/nsmenuitem_additions.h"
 
-#include <iostream>
 #include <Carbon/Carbon.h>
 
-#include "base/logging.h"
+#include <iostream>
+
 #include "base/scoped_nsobject.h"
-#include "base/sys_info.h"
 #include "base/sys_string_conversions.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
@@ -26,7 +25,7 @@ NSEvent* KeyEvent(const NSUInteger modifierFlags,
                         characters:chars
        charactersIgnoringModifiers:charsNoMods
                          isARepeat:NO
-                          keyCode:keyCode];
+                           keyCode:keyCode];
 }
 
 NSMenuItem* MenuItem(NSString* equiv, NSUInteger mask) {
@@ -47,7 +46,7 @@ std::ostream& operator<<(std::ostream& out, NSMenuItem* item) {
 }
 
 void ExpectKeyFiresItemEq(bool result, NSEvent* key, NSMenuItem* item,
-    bool compareCocoa ) {
+    bool compareCocoa) {
   EXPECT_EQ(result, [item cr_firesForKeyEvent:key]) << key << '\n' << item;
 
   // Make sure that Cocoa does in fact agree with our expectations. However,
@@ -308,16 +307,8 @@ NSString* keyCodeToCharacter(NSUInteger keyCode,
 }
 
 TEST(NSMenuItemAdditionsTest, TestMOnDifferentLayouts) {
-  // http://crbug.com/34784 these fail on 10.6, skipping on 10.6 but leaving
-  // running on 10.5 for now.
-  int32 major, minor, bugfix;
-  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
-  if (major > 10 || (major == 10 && minor > 5)) {
-    LOG(WARNING) << "Skipping test on 10.6 as it doesn't pass yet.";
-    return;
-  }
   // There's one key -- "m" -- that has the same keycode on most keyboard
-  //layouts. This function tests a menu item with cmd-m as key equivalent
+  // layouts. This function tests a menu item with cmd-m as key equivalent
   // can be fired on all layouts.
   NSMenuItem* item = MenuItem(@"m", 0x100000);
 
@@ -332,7 +323,7 @@ TEST(NSMenuItemAdditionsTest, TestMOnDifferentLayouts) {
   for (id layout in list) {
     TISInputSourceRef ref = (TISInputSourceRef)layout;
 
-    NSUInteger keyCode = 0x2e;  // "m" on a us layout and most other layouts.
+    NSUInteger keyCode = 0x2e;  // "m" on a US layout and most other layouts.
 
     // On a few layouts, "m" has a different key code.
     NSString* layoutId = (NSString*)TISGetInputSourceProperty(
@@ -340,10 +331,15 @@ TEST(NSMenuItemAdditionsTest, TestMOnDifferentLayouts) {
     if ([layoutId isEqualToString:@"com.apple.keylayout.Belgian"] ||
         [layoutId isEqualToString:@"com.apple.keylayout.French"] ||
         [layoutId isEqualToString:@"com.apple.keylayout.French-numerical"] ||
-        [layoutId isEqualToString:@"com.apple.keylayout.Italian"])
+        [layoutId isEqualToString:@"com.apple.keylayout.Italian"]) {
       keyCode = 0x29;
-    else if ([layoutId isEqualToString:@"com.apple.keylayout.Turkish"])
+    } else if ([layoutId isEqualToString:@"com.apple.keylayout.Turkish"]) {
       keyCode = 0x28;
+    } else if ([layoutId isEqualToString:@"com.apple.keylayout.Dvorak-Left"]) {
+      keyCode = 0x16;
+    } else if ([layoutId isEqualToString:@"com.apple.keylayout.Dvorak-Right"]) {
+      keyCode = 0x1a;
+    }
 
     EventModifiers modifiers = cmdKey >> 8;
     NSString* chars = keyCodeToCharacter(keyCode, modifiers, ref);
