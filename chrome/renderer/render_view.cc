@@ -4131,12 +4131,11 @@ void RenderView::DumpLoadHistograms() const {
   static bool use_dns_histogram(FieldTrialList::Find("DnsImpact") &&
       !FieldTrialList::Find("DnsImpact")->group_name().empty());
   if (use_dns_histogram) {
+    UMA_HISTOGRAM_ENUMERATION(FieldTrial::MakeName(
+        "Renderer4.LoadType", "DnsImpact"),
+        load_type, NavigationState::kLoadTypeMax);
     switch (load_type) {
       case NavigationState::NORMAL_LOAD:
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinishDoc_NormalLoad", "DnsImpact"),
-            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
-            kBeginToFinishDocBucketCount);
         UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
             "Renderer4.BeginToFinish_NormalLoad", "DnsImpact"),
             begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
@@ -4144,29 +4143,17 @@ void RenderView::DumpLoadHistograms() const {
         break;
       case NavigationState::LINK_LOAD_NORMAL:
         UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinishDoc_LinkLoadNormal", "DnsImpact"),
-            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
-            kBeginToFinishDocBucketCount);
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
             "Renderer4.BeginToFinish_LinkLoadNormal", "DnsImpact"),
             begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
             kBeginToFinishBucketCount);
         break;
       case NavigationState::LINK_LOAD_RELOAD:
         UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinishDoc_LinkLoadReload", "DnsImpact"),
-            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
-            kBeginToFinishDocBucketCount);
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
             "Renderer4.BeginToFinish_LinkLoadReload", "DnsImpact"),
             begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
             kBeginToFinishBucketCount);
         break;
       case NavigationState::LINK_LOAD_CACHE_STALE_OK:
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinishDoc_LinkLoadStaleOk", "DnsImpact"),
-            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
-            kBeginToFinishDocBucketCount);
         UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
             "Renderer4.BeginToFinish_LinkLoadStaleOk", "DnsImpact"),
             begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
@@ -4180,64 +4167,39 @@ void RenderView::DumpLoadHistograms() const {
   static bool use_sdch_histogram(FieldTrialList::Find("GlobalSdch") &&
       !FieldTrialList::Find("GlobalSdch")->group_name().empty());
   if (use_sdch_histogram) {
+    UMA_HISTOGRAM_ENUMERATION(
+        FieldTrial::MakeName("Renderer4.LoadType", "GlobalSdch"),
+        load_type, NavigationState::kLoadTypeMax);
     switch (load_type) {
       case NavigationState::NORMAL_LOAD:
         UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinishDoc_NormalLoad", "GlobalSdch"),
-            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
-            kBeginToFinishDocBucketCount);
+            "Renderer4.BeginToFinish_NormalLoad", "GlobalSdch"),
+            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
+            kBeginToFinishBucketCount);
         break;
       case NavigationState::LINK_LOAD_NORMAL:
         UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinishDoc_LinkLoadNormal", "GlobalSdch"),
-            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
-            kBeginToFinishDocBucketCount);
+            "Renderer4.BeginToFinish_LinkLoadNormal", "GlobalSdch"),
+            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
+            kBeginToFinishBucketCount);
         break;
       case NavigationState::LINK_LOAD_RELOAD:
         UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinishDoc_LinkLoadReload", "GlobalSdch"),
-            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
-            kBeginToFinishDocBucketCount);
+            "Renderer4.BeginToFinish_LinkLoadReload", "GlobalSdch"),
+            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
+            kBeginToFinishBucketCount);
         break;
       case NavigationState::LINK_LOAD_CACHE_STALE_OK:
         UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinishDoc_LinkLoadCacheStaleOk", "GlobalSdch"),
-            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
-            kBeginToFinishDocBucketCount);
+            "Renderer4.BeginToFinish_LinkLoadStaleOk", "GlobalSdch"),
+            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
+            kBeginToFinishBucketCount);
         break;
       case NavigationState::LINK_LOAD_CACHE_ONLY:
         UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinishDoc_LinkLoadCacheOnly", "GlobalSdch"),
-            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
-            kBeginToFinishDocBucketCount);
-        break;
-      default:
-        break;
-    }
-  }
-
-  static bool use_socket_late_binding_histogram =
-      FieldTrialList::Find("SocketLateBinding") &&
-      !FieldTrialList::Find("SocketLateBinding")->group_name().empty();
-  if (use_socket_late_binding_histogram) {
-    switch (load_type) {
-      case NavigationState::NORMAL_LOAD:
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinishDoc_NormalLoad", "SocketLateBinding"),
-            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
-            kBeginToFinishDocBucketCount);
-        break;
-      case NavigationState::LINK_LOAD_NORMAL:
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinishDoc_LinkLoadNormal", "SocketLateBinding"),
-            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
-            kBeginToFinishDocBucketCount);
-        break;
-      case NavigationState::LINK_LOAD_RELOAD:
-        UMA_HISTOGRAM_CUSTOM_TIMES(FieldTrial::MakeName(
-            "Renderer4.BeginToFinishDoc_LinkLoadReload", "SocketLateBinding"),
-            begin_to_finish_doc, kBeginToFinishDocMin, kBeginToFinishDocMax,
-            kBeginToFinishDocBucketCount);
+            "Renderer4.BeginToFinish_LinkLoadCacheOnly", "GlobalSdch"),
+            begin_to_finish, kBeginToFinishMin, kBeginToFinishMax,
+            kBeginToFinishBucketCount);
         break;
       default:
         break;
