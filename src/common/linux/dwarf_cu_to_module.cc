@@ -456,7 +456,7 @@ void DwarfCUToModule::WarningReporter::UnknownSpecification(uint64 offset,
   CUHeading();
   fprintf(stderr, "%s: the DIE at offset 0x%llx has a DW_AT_specification"
           " attribute referring to the die at offset 0x%llx, which either"
-          " was not marked as a declaration, or comes later in the file",
+          " was not marked as a declaration, or comes later in the file\n",
           filename_.c_str(), offset, target);
 }
 
@@ -465,7 +465,7 @@ void DwarfCUToModule::WarningReporter::UnknownAbstractOrigin(uint64 offset,
   CUHeading();
   fprintf(stderr, "%s: the DIE at offset 0x%llx has a DW_AT_abstract_origin"
           " attribute referring to the die at offset 0x%llx, which either"
-          " was not marked as an inline, or comes later in the file",
+          " was not marked as an inline, or comes later in the file\n",
           filename_.c_str(), offset, target);
 }
 
