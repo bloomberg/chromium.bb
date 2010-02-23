@@ -5,22 +5,16 @@
 # found in the LICENSE file.
 
 """
-Test that environment variables are ignored when --ignore-environment is
-specified.
+Test variable expansion of '<!()' syntax commands.
 """
 
 import os
 
 import TestGyp
 
-os.environ['GYP_DEFINES'] = 'FOO=BAR'
-os.environ['GYP_GENERATORS'] = 'foo'
-os.environ['GYP_GENERATOR_FLAGS'] = 'genflag=foo'
-os.environ['GYP_GENERATOR_OUTPUT'] = 'somedir'
-
 test = TestGyp.TestGyp(format='gypd')
 
-expect = test.read('commands.gyp.ignore-env.stdout')
+expect = test.read('commands.gyp.stdout').replace('\r', '')
 
 # Set $HOME so that gyp doesn't read the user's actual
 # ~/.gyp/include.gypi file, which may contain variables
@@ -29,7 +23,6 @@ os.environ['HOME'] = test.workpath()
 
 test.run_gyp('commands.gyp',
              '--debug', 'variables', '--debug', 'general',
-             '--ignore-environment',
              stdout=expect)
 
 # Verify the commands.gypd against the checked-in expected contents.
@@ -41,11 +34,11 @@ test.run_gyp('commands.gyp',
 # massage the Windows line endings ('\r\n') in the output to the
 # checked-in UNIX endings ('\n').
 
-contents = test.read('commands.gypd').replace('\r\n', '\n')
-expect = test.read('commands.gypd.golden')
+contents = test.read('commands.gypd').replace('\r', '')
+expect = test.read('commands.gypd.golden').replace('\r', '')
 if not test.match(contents, expect):
   print "Unexpected contents of `commands.gypd'"
-  self.diff(expect, contents, 'commands.gypd ')
+  test.diff(expect, contents, 'commands.gypd ')
   test.fail_test()
 
 test.pass_test()
