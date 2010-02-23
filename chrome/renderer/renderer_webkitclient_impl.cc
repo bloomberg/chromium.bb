@@ -131,6 +131,12 @@ WebString RendererWebKitClientImpl::cookies(
   // when there is no active script context.
   int32 routing_id = RenderThread::RoutingIDForCurrentContext();
 
+  // TODO(darin): This means that network load completions may run within the
+  // context of a document.cookie call.  This violates the "run to completion"
+  // gaurantee of JS.  This is just here as a temporary measure to isolate a
+  // performance regression.
+  RenderThread::current()->DoNotNotifyWebKitOfModalLoop();
+
   std::string value_utf8;
   RenderThread::current()->SendAndRunNestedMessageLoop(
       new ViewHostMsg_GetCookies(routing_id, url, first_party_for_cookies,
