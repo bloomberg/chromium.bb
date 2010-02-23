@@ -51,18 +51,20 @@ class MockDeviceDataProviderImpl
     : public DeviceDataProviderImplBase<DataType> {
  public:
   // Factory method for use with DeviceDataProvider::SetFactory.
-  static DeviceDataProviderImplBase<DataType>* Create() {
-    return new MockDeviceDataProviderImpl<DataType>();
-  }
-  static MockDeviceDataProviderImpl<DataType>* instance() {
-    CHECK(instance_ != NULL);
+  static DeviceDataProviderImplBase<DataType>* GetInstance() {
+    CHECK(instance_);
     return instance_;
   }
 
-  MockDeviceDataProviderImpl() {
-    CHECK(instance_ == NULL);
-    instance_ = this;
+  static MockDeviceDataProviderImpl<DataType>* CreateInstance() {
+    CHECK(!instance_);
+    instance_ = new MockDeviceDataProviderImpl<DataType>;
+    return instance_;
   }
+
+  MockDeviceDataProviderImpl() : got_data_(true) {
+  }
+
   virtual ~MockDeviceDataProviderImpl() {
     CHECK(this == instance_);
     instance_ = NULL;
@@ -75,26 +77,25 @@ class MockDeviceDataProviderImpl
   virtual void StopDataProvider() {}
   virtual bool GetData(DataType* data_out) {
     CHECK(data_out);
-    AutoLock lock(data_mutex_);
     *data_out = data_;
-    // We always have all the data we can get, so return true.
-    return true;
+    return got_data_;
   }
 
   void SetData(const DataType& new_data) {
-    data_mutex_.Acquire();
+    got_data_ = true;
     const bool differs = data_.DiffersSignificantly(new_data);
     data_ = new_data;
-    data_mutex_.Release();
     if (differs)
       this->NotifyListeners();
   }
+
+  void set_got_data(bool got_data) { got_data_ = got_data; }
 
  private:
   static MockDeviceDataProviderImpl<DataType>* instance_;
 
   DataType data_;
-  Lock data_mutex_;
+  bool got_data_;
 
   DISALLOW_COPY_AND_ASSIGN(MockDeviceDataProviderImpl);
 };
@@ -109,6 +110,10 @@ class GeolocationNetworkProviderTest : public testing::Test {
   virtual void SetUp() {
     URLFetcher::set_factory(&url_fetcher_factory_);
     access_token_store_ = new FakeAccessTokenStore;
+    radio_data_provider_ =
+        MockDeviceDataProviderImpl<RadioData>::CreateInstance();
+    wifi_data_provider_ =
+        MockDeviceDataProviderImpl<WifiData>::CreateInstance();
   }
 
   virtual void TearDown() {
@@ -132,9 +137,19 @@ class GeolocationNetworkProviderTest : public testing::Test {
     // TODO(joth): Really these should be in SetUp, not here, but they take no
     // effect on Mac OS Release builds if done there. I kid not. Figure out why.
     RadioDataProvider::SetFactory(
-        MockDeviceDataProviderImpl<RadioData>::Create);
+        MockDeviceDataProviderImpl<RadioData>::GetInstance);
     WifiDataProvider::SetFactory(
-        MockDeviceDataProviderImpl<WifiData>::Create);
+        MockDeviceDataProviderImpl<WifiData>::GetInstance);
+  }
+
+  // Returns the current url fetcher (if any) and advances the id ready for the
+  // next test step.
+  TestURLFetcher* advance_url_fetcher_id() {
+    TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(
+            NetworkLocationRequest::url_fetcher_id_for_tests);
+    if (fetcher)
+      ++NetworkLocationRequest::url_fetcher_id_for_tests;
+    return fetcher;
   }
 
   static int IndexToChannal(int index) { return index + 4; }
@@ -233,6 +248,8 @@ class GeolocationNetworkProviderTest : public testing::Test {
   MessageLoop main_message_loop_;
   scoped_refptr<FakeAccessTokenStore> access_token_store_;
   TestURLFetcherFactory url_fetcher_factory_;
+  scoped_refptr<MockDeviceDataProviderImpl<RadioData> > radio_data_provider_;
+  scoped_refptr<MockDeviceDataProviderImpl<WifiData> > wifi_data_provider_;
 };
 
 
@@ -248,7 +265,7 @@ TEST_F(GeolocationNetworkProviderTest, CreateDestroy) {
 TEST_F(GeolocationNetworkProviderTest, StartProvider) {
   scoped_ptr<LocationProviderBase> provider(CreateProvider());
   EXPECT_TRUE(provider->StartProvider());
-  TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
+  TestURLFetcher* fetcher = advance_url_fetcher_id();
   ASSERT_TRUE(fetcher != NULL);
 
   EXPECT_EQ(test_server_url_, fetcher->original_url());
@@ -277,7 +294,7 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   scoped_ptr<LocationProviderBase> provider(CreateProvider());
   EXPECT_TRUE(provider->StartProvider());
 
-  TestURLFetcher* fetcher = url_fetcher_factory_.GetFetcherByID(0);
+  TestURLFetcher* fetcher = advance_url_fetcher_id();
   ASSERT_TRUE(fetcher != NULL);
   CheckEmptyRequestIsValid(fetcher->upload_data());
   // Complete the network request with bad position fix (using #define so we
@@ -300,12 +317,11 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   provider->GetPosition(&position);
   EXPECT_FALSE(position.IsValidFix());
 
-  // Now wifi data arrives
+  // Now wifi data arrives -- SetData will notify listeners.
   const int kFirstScanAps = 6;
-  MockDeviceDataProviderImpl<WifiData>::instance()->SetData(
-      CreateReferenceWifiScanData(kFirstScanAps));  // Will notify listeners
+  wifi_data_provider_->SetData(CreateReferenceWifiScanData(kFirstScanAps));
   main_message_loop_.RunAllPending();
-  fetcher = url_fetcher_factory_.GetFetcherByID(kFirstScanAps);
+  fetcher = advance_url_fetcher_id();
   ASSERT_TRUE(fetcher != NULL);
   // The request should have access token (set previously) and the wifi data.
   CheckRequestIsValid(fetcher->upload_data(),
@@ -343,10 +359,9 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   // Wifi updated again, with one less AP. This is 'close enough' to the
   // previous scan, so no new request made.
   const int kSecondScanAps = kFirstScanAps - 1;
-  MockDeviceDataProviderImpl<WifiData>::instance()->SetData(
-      CreateReferenceWifiScanData(kSecondScanAps));
+  wifi_data_provider_->SetData(CreateReferenceWifiScanData(kSecondScanAps));
   main_message_loop_.RunAllPending();
-  fetcher = url_fetcher_factory_.GetFetcherByID(kSecondScanAps);
+  fetcher = advance_url_fetcher_id();
   EXPECT_FALSE(fetcher);
 
   provider->GetPosition(&position);
@@ -356,10 +371,9 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
 
   // Now a third scan with more than twice the original amount -> new request.
   const int kThirdScanAps = kFirstScanAps * 2 + 1;
-  MockDeviceDataProviderImpl<WifiData>::instance()->SetData(
-      CreateReferenceWifiScanData(kThirdScanAps));
+  wifi_data_provider_->SetData(CreateReferenceWifiScanData(kThirdScanAps));
   main_message_loop_.RunAllPending();
-  fetcher = url_fetcher_factory_.GetFetcherByID(kThirdScanAps);
+  fetcher = advance_url_fetcher_id();
   EXPECT_TRUE(fetcher);
   // ...reply with a network error.
   fetcher->delegate()->OnURLFetchComplete(
@@ -374,13 +388,9 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   EXPECT_FALSE(position.IsValidFix());
 
   // Wifi scan returns to original set: should be serviced from cache.
-  const TestURLFetcher* orig_fetcher =
-      url_fetcher_factory_.GetFetcherByID(kFirstScanAps);
-  MockDeviceDataProviderImpl<WifiData>::instance()->SetData(
-      CreateReferenceWifiScanData(kFirstScanAps));
+  wifi_data_provider_->SetData(CreateReferenceWifiScanData(kFirstScanAps));
   main_message_loop_.RunAllPending();
-  fetcher = url_fetcher_factory_.GetFetcherByID(kFirstScanAps);
-  EXPECT_EQ(orig_fetcher, fetcher);  // No new request created.
+  EXPECT_FALSE(advance_url_fetcher_id());  // No new request created.
 
   provider->GetPosition(&position);
   EXPECT_EQ(51.0, position.latitude);
@@ -388,5 +398,33 @@ TEST_F(GeolocationNetworkProviderTest, MultipleWifiScansComplete) {
   EXPECT_TRUE(position.IsValidFix());
 }
 
-// TODO(joth): Add tests for corner cases around the 2 second startup delay
-//            (e.g. timer firing, or being pre-empted by data arriving)
+TEST_F(GeolocationNetworkProviderTest, NoRequestOnStartupUntilWifiData) {
+  MessageLoopQuitListener listener;
+  wifi_data_provider_->set_got_data(false);
+  scoped_ptr<LocationProviderBase> provider(CreateProvider());
+  EXPECT_TRUE(provider->StartProvider());
+  provider->RegisterListener(&listener);
+
+  main_message_loop_.RunAllPending();
+  EXPECT_FALSE(advance_url_fetcher_id())
+      << "Network request should not be created right away on startup when "
+         "wifi data has not yet arrived";
+
+  wifi_data_provider_->SetData(CreateReferenceWifiScanData(1));
+  main_message_loop_.RunAllPending();
+  EXPECT_TRUE(advance_url_fetcher_id());
+}
+
+TEST_F(GeolocationNetworkProviderTest, NewDataReplacesExistingNetworkRequest) {
+  // Send initial request with empty device data
+  scoped_ptr<LocationProviderBase> provider(CreateProvider());
+  EXPECT_TRUE(provider->StartProvider());
+  TestURLFetcher* fetcher = advance_url_fetcher_id();
+  EXPECT_TRUE(fetcher);
+
+  // Now wifi data arrives; new request should be sent.
+  wifi_data_provider_->SetData(CreateReferenceWifiScanData(4));
+  main_message_loop_.RunAllPending();
+  fetcher = advance_url_fetcher_id();
+  EXPECT_TRUE(fetcher);
+}

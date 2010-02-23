@@ -61,6 +61,8 @@ void AddRadioData(const RadioData& radio_data, DictionaryValue* body_object);
 void AddWifiData(const WifiData& wifi_data, DictionaryValue* body_object);
 }  // namespace
 
+int NetworkLocationRequest::url_fetcher_id_for_tests = 0;
+
 NetworkLocationRequest::NetworkLocationRequest(URLRequestContextGetter* context,
                                                const GURL& url,
                                                const string16& host_name,
@@ -89,8 +91,7 @@ bool NetworkLocationRequest::MakeRequest(const string16& access_token,
   timestamp_ = timestamp;
 
   url_fetcher_.reset(URLFetcher::Create(
-      wifi_data.access_point_data.size(),  // Used for testing
-      url_, URLFetcher::POST, this));
+      url_fetcher_id_for_tests, url_, URLFetcher::POST, this));
   url_fetcher_->set_upload_data(kMimeApplicationJson, post_body);
   url_fetcher_->set_request_context(url_context_);
   url_fetcher_->set_load_flags(
@@ -184,8 +185,7 @@ void GetLocationFromResponse(bool http_post_result,
     FormatPositionError(server_url, L"No response received", position);
     return;
   }
-  if (status_code != 200) {  // XXX is '200' in a constant? Can't see it
-    // The response was bad.
+  if (status_code != 200) {  // HTTP OK.
     std::wstring message = L"Returned error code ";
     message += IntToWString(status_code);
     FormatPositionError(server_url, message, position);

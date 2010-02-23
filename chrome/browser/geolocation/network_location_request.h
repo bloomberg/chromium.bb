@@ -21,6 +21,8 @@ struct Position;
 // It performs formatting of the request and interpretation of the response.
 class NetworkLocationRequest : private URLFetcher::Delegate {
  public:
+  // ID passed to URLFetcher::Create(). Used for testing.
+  static int url_fetcher_id_for_tests;
   // Interface for receiving callbacks from a NetworkLocationRequest object.
   class ListenerInterface {
    public:

@@ -8,7 +8,6 @@
 #include <string>
 
 #include "base/basictypes.h"
-#include "base/lock.h"
 #include "base/string16.h"
 #include "base/thread.h"
 #include "chrome/browser/geolocation/device_data_provider.h"
@@ -61,25 +60,21 @@ class NetworkLocationProvider
   RadioDataProvider* radio_data_provider_;
   WifiDataProvider* wifi_data_provider_;
 
-  // The radio and wifi data, flags to indicate if each data set is complete,
-  // and their guarding mutex.
+  // The radio and wifi data, flags to indicate if each data set is complete.
   RadioData radio_data_;
   WifiData wifi_data_;
   bool is_radio_data_complete_;
   bool is_wifi_data_complete_;
-  Lock data_mutex_;
 
   // The timestamp for the latest device data update.
   int64 device_data_updated_timestamp_;
 
   string16 access_token_;
 
-  // The current best position estimate and its guarding mutex
+  // The current best position estimate.
   Geoposition position_;
-  Lock position_mutex_;
 
   bool is_new_data_available_;
-
 
   // The network location request object, and the url it uses.
   scoped_ptr<NetworkLocationRequest> request_;

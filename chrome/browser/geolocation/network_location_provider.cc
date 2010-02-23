@@ -146,7 +146,6 @@ NetworkLocationProvider::~NetworkLocationProvider() {
 // LocationProviderBase implementation
 void NetworkLocationProvider::GetPosition(Geoposition *position) {
   DCHECK(position);
-  AutoLock lock(position_mutex_);
   *position = position_;
 }
 
@@ -159,21 +158,15 @@ void NetworkLocationProvider::UpdatePosition() {
 // DeviceDataProviderInterface::ListenerInterface implementation.
 void NetworkLocationProvider::DeviceDataUpdateAvailable(
     RadioDataProvider* provider) {
-  {
-    AutoLock lock(data_mutex_);
-    DCHECK(provider == radio_data_provider_);
-    is_radio_data_complete_ = radio_data_provider_->GetData(&radio_data_);
-  }
+  DCHECK(provider == radio_data_provider_);
+  is_radio_data_complete_ = radio_data_provider_->GetData(&radio_data_);
   OnDeviceDataUpdated();
 }
 
 void NetworkLocationProvider::DeviceDataUpdateAvailable(
     WifiDataProvider* provider) {
-  {
-    AutoLock lock(data_mutex_);
-    DCHECK(provider == wifi_data_provider_);
-    is_wifi_data_complete_ = wifi_data_provider_->GetData(&wifi_data_);
-  }
+  DCHECK(provider == wifi_data_provider_);
+  is_wifi_data_complete_ = wifi_data_provider_->GetData(&wifi_data_);
   OnDeviceDataUpdated();
 }
 
@@ -184,12 +177,8 @@ void NetworkLocationProvider::LocationResponseAvailable(
     const string16& access_token) {
   DCHECK(CalledOnValidThread());
   // Record the position and update our cache.
-  {
-    AutoLock position_lock(position_mutex_);
-    position_ = position;
-  }
+  position_ = position;
   if (position.IsValidFix()) {
-    AutoLock lock(data_mutex_);
     position_cache_->CachePosition(radio_data_, wifi_data_, position);
   }
 
@@ -199,8 +188,6 @@ void NetworkLocationProvider::LocationResponseAvailable(
     access_token_store_->SaveAccessToken(request_->url(), access_token);
   }
 
-  // If new data arrived whilst request was pending reissue the request.
-  UpdatePosition();
   // Let listeners know that we now have a position available.
   UpdateListeners();
 }
@@ -225,12 +212,9 @@ bool NetworkLocationProvider::StartProvider() {
       delayed_start_task_.NewRunnableMethod(
           &NetworkLocationProvider::RequestPosition),
       kDataCompleteWaitPeriod);
-  {
   // Get the device data.
-  AutoLock lock(data_mutex_);
   is_radio_data_complete_ = radio_data_provider_->GetData(&radio_data_);
   is_wifi_data_complete_ = wifi_data_provider_->GetData(&wifi_data_);
-  }
   if (is_radio_data_complete_ || is_wifi_data_complete_)
     OnDeviceDataUpdated();
   return true;
@@ -242,38 +226,34 @@ void NetworkLocationProvider::RequestPosition() {
 
   delayed_start_task_.RevokeAll();
   const Geoposition* cached_position;
-  {
-    AutoLock lock(data_mutex_);
-    cached_position = position_cache_->FindPosition(radio_data_, wifi_data_);
-  }
+  cached_position = position_cache_->FindPosition(radio_data_, wifi_data_);
   DCHECK_NE(device_data_updated_timestamp_, kint64min) <<
     "Timestamp must be set before looking up position";
   if (cached_position) {
     DCHECK(cached_position->IsValidFix());
     // Record the position and update its timestamp.
-    {
-      AutoLock lock(position_mutex_);
-      position_ = *cached_position;
-      // The timestamp of a position fix is determined by the timestamp
-      // of the source data update. (The value of position_.timestamp from
-      // the cache could be from weeks ago!)
-      position_.timestamp = device_data_updated_timestamp_;
-    }
+    position_ = *cached_position;
+    // The timestamp of a position fix is determined by the timestamp
+    // of the source data update. (The value of position_.timestamp from
+    // the cache could be from weeks ago!)
+    position_.timestamp = device_data_updated_timestamp_;
     is_new_data_available_ = false;
     // Let listeners know that we now have a position available.
     UpdateListeners();
     return;
   }
 
-  DCHECK(request_ != NULL);
-
-  // TODO(joth): Consider timing out any pending request.
-  if (request_->is_request_pending())
-    return;
-
   is_new_data_available_ = false;
 
-  AutoLock data_lock(data_mutex_);
+  // TODO(joth): Rather than cancel pending requests, we should create a new
+  // NetworkLocationRequest for each and hold a set of pending requests. This
+  // means the associated wifi data, timestamps etc. could be tagged onto each
+  // request allowing self-consistent cache update when each request completes.
+  if (request_->is_request_pending()) {
+    LOG(INFO) << "NetworkLocationProvider - pre-empting pending network request"
+              << "with new data. Wifi APs: "
+              << wifi_data_.access_point_data.size();
+  }
   request_->MakeRequest(access_token_, radio_data_, wifi_data_,
                         device_data_updated_timestamp_);
 }
@@ -282,9 +262,9 @@ void NetworkLocationProvider::OnDeviceDataUpdated() {
   DCHECK(CalledOnValidThread());
   device_data_updated_timestamp_ = GetCurrentTimeMillis();
 
-  is_new_data_available_ = is_radio_data_complete_ || is_radio_data_complete_;
+  is_new_data_available_ = is_radio_data_complete_ || is_wifi_data_complete_;
   if (delayed_start_task_.empty() ||
-      (is_radio_data_complete_ && is_radio_data_complete_)) {
+      (is_radio_data_complete_ && is_wifi_data_complete_)) {
     UpdatePosition();
   }
 }
