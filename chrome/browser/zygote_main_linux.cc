@@ -513,10 +513,10 @@ static bool EnterSandbox() {
 
     PreSandboxInit();
 
-    static const char kChrootMe = 'C';
-    static const char kChrootMeSuccess = 'O';
+    static const char kMsgChrootMe = 'C';
+    static const char kMsgChrootSuccessful = 'O';
 
-    if (HANDLE_EINTR(write(fd, &kChrootMe, 1)) != 1) {
+    if (HANDLE_EINTR(write(fd, &kMsgChrootMe, 1)) != 1) {
       LOG(ERROR) << "Failed to write to chroot pipe: " << errno;
       return false;
     }
@@ -530,7 +530,7 @@ static bool EnterSandbox() {
       return false;
     }
 
-    if (reply != kChrootMeSuccess) {
+    if (reply != kMsgChrootSuccessful) {
       LOG(ERROR) << "Error code reply from chroot helper";
       return false;
     }
