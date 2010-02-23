@@ -997,8 +997,8 @@ bool WebDatabase::GetAllAutofillEntries(std::vector<AutofillEntry>* entries) {
   }
 
   bool first_entry = true;
-  AutofillKey* current_key_ptr;
-  std::vector<base::Time>* timestamps_ptr;
+  AutofillKey* current_key_ptr = NULL;
+  std::vector<base::Time>* timestamps_ptr = NULL;
   string16 name, value;
   base::Time time;
   while (s.Step()) {
