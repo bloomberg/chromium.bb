@@ -2236,7 +2236,7 @@
    fun:ocsp_CreateCertID
    fun:CERT_CreateOCSPCertID
    fun:PKIX_PL_OcspCertID_Create
-   fun:pkix_OcspChecker_CheckExternal
+   ...
    fun:PKIX_RevocationChecker_Check
    fun:pkix_CheckChain
 }
@@ -2266,7 +2266,7 @@
    obj:*
    fun:find_objects
    fun:find_objects_by_template
-   fun:nssToken_FindCertificatesBySubject
+   fun:nssToken_*
 }
 {
    bug_33427
