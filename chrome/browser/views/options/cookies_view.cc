@@ -187,6 +187,7 @@ void CookiesView::ViewHierarchyChanged(bool is_add,
 // CookiesView, views::TreeViewController overrides:
 
 void CookiesView::OnTreeViewSelectionChanged(views::TreeView* tree_view) {
+  UpdateRemoveButtonsState();
   CookieTreeNode::DetailedInfo detailed_info =
       static_cast<CookieTreeNode*>(tree_view->GetSelectedNode())->
       GetDetailedInfo();
@@ -342,9 +343,9 @@ void CookiesView::UpdateForEmptyState() {
 
 void CookiesView::UpdateRemoveButtonsState() {
   remove_button_->SetEnabled(cookies_tree_model_->GetRoot()->
-      GetTotalNodeCount() > 1);
+      GetTotalNodeCount() > 1 && cookies_tree_->GetSelectedNode());
   remove_all_button_->SetEnabled(cookies_tree_model_->GetRoot()->
-      GetTotalNodeCount() > 1);
+      GetTotalNodeCount() > 1 && cookies_tree_->GetSelectedNode());
 }
 
 void CookiesView::UpdateVisibleDetailedInfo(views::View* view) {
