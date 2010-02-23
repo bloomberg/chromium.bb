@@ -303,13 +303,13 @@ class AutocompleteEditViewGtk : public AutocompleteEditView,
 
   static void HandleWidgetDirectionChangedThunk(
       GtkWidget* widget, GtkTextDirection previous_direction, gpointer self) {
-    return reinterpret_cast<AutocompleteEditViewGtk*>(self)->
+    reinterpret_cast<AutocompleteEditViewGtk*>(self)->
         AdjustTextJustification();
   }
 
   static void HandleKeymapDirectionChangedThunk(GdkKeymap* keymap,
                                                 gpointer self) {
-    return reinterpret_cast<AutocompleteEditViewGtk*>(self)->
+    reinterpret_cast<AutocompleteEditViewGtk*>(self)->
         AdjustTextJustification();
   }
 

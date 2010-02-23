@@ -102,6 +102,11 @@ class FindBarGtk : public FindBar,
   // coordinates). The returned value is relative to the browser window.
   gfx::Rect GetDialogPosition(gfx::Rect avoid_overlapping_rect);
 
+  // Adjust the text alignment according to the text direction of the widget
+  // and |text_entry_|'s content, to make sure the real text alignment is
+  // always in sync with the UI language direction.
+  void AdjustTextAlignment();
+
   static void OnParentSet(GtkWidget* widget, GtkObject* old_parent,
                           FindBarGtk* find_bar);
 
@@ -141,6 +146,23 @@ class FindBarGtk : public FindBar,
 
   // Handles Enter key.
   static void OnActivate(GtkEntry* entry, FindBarGtk* bar);
+
+  static void OnWidgetDirectionChanged(GtkWidget* widget,
+                                       GtkTextDirection previous_direction,
+                                       FindBarGtk* find_bar) {
+    find_bar->AdjustTextAlignment();
+  }
+
+  static void OnKeymapDirectionChanged(GdkKeymap* keymap,
+                                       FindBarGtk* find_bar) {
+    find_bar->AdjustTextAlignment();
+  }
+
+  static gboolean OnFocusIn(GtkWidget* entry, GdkEventFocus* event,
+                            FindBarGtk* find_bar);
+
+  static gboolean OnFocusOut(GtkWidget* entry, GdkEventFocus* event,
+                             FindBarGtk* find_bar);
 
   Browser* browser_;
   BrowserWindowGtk* window_;

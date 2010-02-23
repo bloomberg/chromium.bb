@@ -194,6 +194,12 @@ FindBarGtk::FindBarGtk(Browser* browser)
                    G_CALLBACK(OnButtonPress), this);
   g_signal_connect(text_entry_, "move-cursor", G_CALLBACK(OnMoveCursor), this);
   g_signal_connect(text_entry_, "activate", G_CALLBACK(OnActivate), this);
+  g_signal_connect(text_entry_, "direction-changed",
+                   G_CALLBACK(OnWidgetDirectionChanged), this);
+  g_signal_connect(text_entry_, "focus-in-event",
+                   G_CALLBACK(OnFocusIn), this);
+  g_signal_connect(text_entry_, "focus-out-event",
+                   G_CALLBACK(OnFocusOut), this);
   g_signal_connect(container_, "expose-event",
                    G_CALLBACK(OnExpose), this);
 }
@@ -614,6 +620,34 @@ bool FindBarGtk::MaybeForwardKeyEventToRenderer(GdkEventKey* event) {
   return true;
 }
 
+void FindBarGtk::AdjustTextAlignment() {
+  PangoDirection content_dir =
+      pango_find_base_dir(gtk_entry_get_text(GTK_ENTRY(text_entry_)), -1);
+
+  GtkTextDirection widget_dir = gtk_widget_get_direction(text_entry_);
+
+  // Use keymap or widget direction if content does not have strong direction.
+  // It matches the behavior of GtkEntry.
+  if (content_dir == PANGO_DIRECTION_NEUTRAL) {
+    if (GTK_WIDGET_HAS_FOCUS(text_entry_)) {
+      content_dir = gdk_keymap_get_direction(
+        gdk_keymap_get_for_display(gtk_widget_get_display(text_entry_)));
+    } else {
+      if (widget_dir == GTK_TEXT_DIR_RTL)
+        content_dir = PANGO_DIRECTION_RTL;
+      else
+        content_dir = PANGO_DIRECTION_LTR;
+    }
+  }
+
+  if ((widget_dir == GTK_TEXT_DIR_RTL && content_dir == PANGO_DIRECTION_LTR) ||
+      (widget_dir == GTK_TEXT_DIR_LTR && content_dir == PANGO_DIRECTION_RTL)) {
+    gtk_entry_set_alignment(GTK_ENTRY(text_entry_), 1.0);
+  } else {
+    gtk_entry_set_alignment(GTK_ENTRY(text_entry_), 0.0);
+  }
+}
+
 // static
 void FindBarGtk::OnParentSet(GtkWidget* widget, GtkObject* old_parent,
                              FindBarGtk* find_bar) {
@@ -647,8 +681,11 @@ void FindBarGtk::OnSetFloatingPosition(
 
 // static
 gboolean FindBarGtk::OnChanged(GtkWindow* window, FindBarGtk* find_bar) {
+  find_bar->AdjustTextAlignment();
+
   if (!find_bar->ignore_changed_signal_)
     find_bar->FindEntryTextInContents(true);
+
   return FALSE;
 }
 
@@ -828,6 +865,7 @@ gboolean FindBarGtk::OnButtonPress(GtkWidget* text_entry, GdkEventButton* e,
   return FALSE;
 }
 
+// static
 void FindBarGtk::OnMoveCursor(GtkEntry* entry, GtkMovementStep step, gint count,
                               gboolean selection, FindBarGtk* bar) {
   static guint signal_id = g_signal_lookup("move-cursor", GTK_TYPE_ENTRY);
@@ -843,6 +881,30 @@ void FindBarGtk::OnMoveCursor(GtkEntry* entry, GtkMovementStep step, gint count,
   }
 }
 
+// static
 void FindBarGtk::OnActivate(GtkEntry* entry, FindBarGtk* bar) {
   bar->FindEntryTextInContents(true);
+}
+
+// static
+gboolean FindBarGtk::OnFocusIn(GtkWidget* entry, GdkEventFocus* event,
+                               FindBarGtk* find_bar) {
+  g_signal_connect(
+      gdk_keymap_get_for_display(gtk_widget_get_display(entry)),
+      "direction-changed",
+      G_CALLBACK(&OnKeymapDirectionChanged), find_bar);
+
+  find_bar->AdjustTextAlignment();
+
+  return FALSE;  // Continue propagation.
+}
+
+// static
+gboolean FindBarGtk::OnFocusOut(GtkWidget* entry, GdkEventFocus* event,
+                                FindBarGtk* find_bar) {
+  g_signal_handlers_disconnect_by_func(
+      gdk_keymap_get_for_display(gtk_widget_get_display(entry)),
+      reinterpret_cast<gpointer>(&OnKeymapDirectionChanged), find_bar);
+
+  return FALSE;  // Continue propagation.
 }
