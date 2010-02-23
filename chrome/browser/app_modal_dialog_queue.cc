@@ -28,10 +28,8 @@ void AppModalDialogQueue::ActivateModalDialog() {
 }
 
 void AppModalDialogQueue::ShowModalDialog(AppModalDialog* dialog) {
-  // Must happen before |ShowModalDialog()| is called, because
-  // |ShowModalDialog()| might end up calling |ShowNextDialog()|.
-  active_dialog_ = dialog;
   dialog->ShowModalDialog();
+  active_dialog_ = dialog;
 }
 
 AppModalDialog* AppModalDialogQueue::GetNextDialog() {
