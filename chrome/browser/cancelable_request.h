@@ -41,7 +41,7 @@
 //     typedef Callback1<int>::Type RequestCallbackType;
 //
 //     Handle StartRequest(int some_input1, int some_input2,
-//                         CancelableRequestConsumer* consumer,
+//                         CancelableRequestConsumerBase* consumer,
 //                         RequestCallbackType* callback) {
 //       scoped_refptr<CancelableRequest<RequestCallbackType> > request(
 //           new CancelableRequest<RequestCallbackType>(callback));
@@ -137,13 +137,13 @@ class CancelableRequestProvider {
   void RequestCompleted(Handle handle);
 
  private:
-  // Only call this when you already have acquired pending_request_lock_.
-  void CancelRequestLocked(Handle handle);
-
-  friend class CancelableRequestBase;
-
   typedef std::map<Handle, scoped_refptr<CancelableRequestBase> >
       CancelableRequestMap;
+
+  // Only call this when you already have acquired pending_request_lock_.
+  void CancelRequestLocked(const CancelableRequestMap::iterator& item);
+
+  friend class CancelableRequestBase;
 
   Lock pending_request_lock_;
 

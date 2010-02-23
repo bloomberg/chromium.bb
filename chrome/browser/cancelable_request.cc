@@ -15,7 +15,7 @@ CancelableRequestProvider::~CancelableRequestProvider() {
   // then the Profile is deleted.
   AutoLock lock(pending_request_lock_);
   while (!pending_requests_.empty())
-    CancelRequestLocked(pending_requests_.begin()->first);
+    CancelRequestLocked(pending_requests_.begin());
 }
 
 CancelableRequestProvider::Handle CancelableRequestProvider::AddRequest(
@@ -38,19 +38,20 @@ CancelableRequestProvider::Handle CancelableRequestProvider::AddRequest(
 
 void CancelableRequestProvider::CancelRequest(Handle handle) {
   AutoLock lock(pending_request_lock_);
-  CancelRequestLocked(handle);
+  CancelRequestLocked(pending_requests_.find(handle));
 }
 
-void CancelableRequestProvider::CancelRequestLocked(Handle handle) {
-  CancelableRequestMap::iterator i = pending_requests_.find(handle);
-  if (i == pending_requests_.end()) {
+void CancelableRequestProvider::CancelRequestLocked(
+    const CancelableRequestMap::iterator& item) {
+  pending_request_lock_.AssertAcquired();
+  if (item == pending_requests_.end()) {
     NOTREACHED() << "Trying to cancel an unknown request";
     return;
   }
 
-  i->second->consumer()->OnRequestRemoved(this, handle);
-  i->second->set_canceled();
-  pending_requests_.erase(i);
+  item->second->consumer()->OnRequestRemoved(this, item->first);
+  item->second->set_canceled();
+  pending_requests_.erase(item);
 }
 
 void CancelableRequestProvider::RequestCompleted(Handle handle) {
