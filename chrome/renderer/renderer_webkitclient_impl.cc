@@ -131,12 +131,8 @@ WebString RendererWebKitClientImpl::cookies(
   // when there is no active script context.
   int32 routing_id = RenderThread::RoutingIDForCurrentContext();
 
-  // TODO(darin): We should use SendAndRunNestedMessageLoop here to avoid dead-
-  // locking the browser, but this causes a performance regression.  Switching
-  // back to Send to verify.  See http://crbug.com/36310.
-
   std::string value_utf8;
-  RenderThread::current()->Send(
+  RenderThread::current()->SendAndRunNestedMessageLoop(
       new ViewHostMsg_GetCookies(routing_id, url, first_party_for_cookies,
                                  &value_utf8));
 

@@ -350,7 +350,7 @@ void SyncChannel::SyncContext::OnWaitableEventSignaled(WaitableEvent* event) {
   } else {
     // We got the reply, timed out or the process shutdown.
     DCHECK(event == GetSendDoneEvent());
-    MessageLoop::current()->Quit();
+    MessageLoop::current()->QuitNow();
   }
 }
 
