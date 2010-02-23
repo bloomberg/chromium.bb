@@ -36,8 +36,6 @@ class EmailField : public FormField {
     return NULL;
   }
 
-  virtual int priority() const { return 1; }
-
  private:
   explicit EmailField(AutoFillField *field) : field_(field) {}
 

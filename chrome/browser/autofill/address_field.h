@@ -16,7 +16,6 @@ class AddressField : public FormField {
  public:
   virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const;
   virtual FormFieldType GetFormFieldType() const { return kAddressType; }
-  virtual int priority() const { return 3; }
 
   static AddressField* Parse(std::vector<AutoFillField*>::const_iterator* iter,
                              bool is_ecml);

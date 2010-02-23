@@ -81,10 +81,6 @@ class FormField {
   // Returns the type of form field of the class implementing this interface.
   virtual FormFieldType GetFormFieldType() const { return kOtherFieldType; }
 
-  // TODO(jhawkins): I'm pretty sure this is not necessary in AutoFill++ because
-  // we use a static dialog setup.
-  virtual int priority() const = 0;
-
   // Returns true if |field| contains the regexp |pattern| in the name or label.
   static bool Match(AutoFillField* field, const string16& pattern);
 
@@ -129,13 +125,6 @@ class FormField {
 class FormFieldSet : public std::vector<FormField*> {
  public:
   explicit FormFieldSet(FormStructure* form);
-
-  class FormFieldSorter {
-  public:
-    bool operator() (FormField *v1, FormField *v2) {
-      return v1->priority() < v2->priority();
-    }
-  };
 
   ~FormFieldSet() {
     for (iterator i = begin(); i != end(); ++i)

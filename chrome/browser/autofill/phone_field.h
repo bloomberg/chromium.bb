@@ -25,8 +25,6 @@ class PhoneField : public FormField {
 
   virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const;
 
-  virtual int priority() const { return 2; }
-
  protected:
   PhoneField();
 

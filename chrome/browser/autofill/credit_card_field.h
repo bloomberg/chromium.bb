@@ -16,7 +16,6 @@ class CreditCardField : public FormField {
   // FormField implementation:
   virtual bool GetFieldInfo(FieldTypeMap* field_type_map) const;
   virtual FormFieldType GetFormFieldType() const { return kCreditCardType; }
-  virtual int priority() const { return 4; }
 
   static CreditCardField* Parse(
       std::vector<AutoFillField*>::const_iterator* iter,

@@ -17,8 +17,6 @@ class NameField : public FormField {
   static NameField* Parse(std::vector<AutoFillField*>::const_iterator* iter,
                           bool is_ecml);
 
-  virtual int priority() const { return 0; }
-
  protected:
   NameField() {}
 
