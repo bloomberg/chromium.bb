@@ -2955,4 +2955,4 @@ BUG36019 : fast/images/svg-as-tiled-background.html = IMAGE
 BUG35923 LINUX : fast/backgrounds/animated-gif-as-background.html = IMAGE
 
 // Failed with roll to r54937 (incorrect color of hovered item)
-BUG36113 WIN LINUX : fast/css/first-letter-first-line-hover.html = IMAGE+TEXT
+BUG36113 LINUX : fast/css/first-letter-first-line-hover.html = IMAGE+TEXT
