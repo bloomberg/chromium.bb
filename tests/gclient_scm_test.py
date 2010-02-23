@@ -10,9 +10,10 @@ from os import rename
 from shutil import rmtree
 from subprocess import Popen, PIPE, STDOUT
 import tempfile
+import __builtin__
 
 # Fixes include path.
-from super_mox import mox, SuperMoxBaseTestBase
+from super_mox import mox, SuperMoxBaseTestBase, SuperMoxTestBase
 
 import gclient_scm
 from gclient_test import BaseTestCase as GCBaseTestCase
@@ -353,6 +354,14 @@ from :3
           cwd=path).communicate(input=git_import)
     Popen(['git', 'checkout'], stdout=PIPE, stderr=STDOUT,
           cwd=path).communicate()
+    Popen(['git', 'remote', 'add', '-f', 'origin', '.'], stdout=PIPE,
+          stderr=STDOUT, cwd=path).communicate()
+    Popen(['git', 'checkout', '-b', 'new', 'origin/master'], stdout=PIPE,
+          stderr=STDOUT, cwd=path).communicate()
+    Popen(['git', 'push', 'origin', 'origin/origin:origin/master'], stdout=PIPE,
+          stderr=STDOUT, cwd=path).communicate()
+    Popen(['git', 'config', '--unset', 'remote.origin.fetch'], stdout=PIPE,
+          stderr=STDOUT, cwd=path).communicate()
     return True
 
   def setUp(self):
@@ -512,6 +521,20 @@ from :3
     self.assertEquals(scm.revinfo(options, (), None),
                       'a7142dc9f0009350b96a11f372b6ea658592aa95')
 
+  def testUpdateUnstagedConflict(self):
+    if not self.enabled:
+      return
+    options = self.Options()
+    scm = gclient_scm.CreateSCM(url=self.url, root_dir=self.root_dir,
+                                relpath=self.relpath)
+    file_path = gclient_scm.os.path.join(self.base_path, 'b')
+    f = open(file_path, 'w').writelines('conflict\n')
+    exception = (
+        "error: Your local changes to 'b' would be overwritten by merge.  "
+        "Aborting.\n"
+        "Please, commit your changes or stash them before you can merge.\n")
+    self.assertRaisesError(exception, scm.update, options, (), [])
+
   def testUpdateConflict(self):
     if not self.enabled:
       return
@@ -521,14 +544,19 @@ from :3
     file_path = gclient_scm.os.path.join(self.base_path, 'b')
     f = open(file_path, 'w').writelines('conflict\n')
     scm._Run(['commit', '-am', 'test'])
+    self.mox.StubOutWithMock(__builtin__, 'raw_input')
+    __builtin__.raw_input.__call__(mox.StrContains('Cannot fast-forward merge, '
+                                                   'attempt to rebase? (y)es / '
+                                                   '(q)uit / (s)kip : ')
+                                   ).AndReturn('y')
+    self.mox.ReplayAll()
     exception = \
-        '\n____ .\n' \
-        '\nConflict while rebasing this branch.\n' \
+        'Conflict while rebasing this branch.\n' \
         'Fix the conflict and run gclient again.\n' \
-        'See man git-rebase for details.\n'
+        "See 'man git-rebase' for details.\n"
     self.assertRaisesError(exception, scm.update, options, (), [])
     exception = \
-        '\n____ .\n' \
+        '\n____ . at refs/heads/master\n' \
         '\tAlready in a conflict, i.e. (no branch).\n' \
         '\tFix the conflict and run gclient again.\n' \
         '\tOr to abort run:\n\t\tgit-rebase --abort\n' \
@@ -544,7 +572,7 @@ from :3
     git_path = gclient_scm.os.path.join(self.base_path, '.git')
     rename(git_path, git_path + 'foo')
     exception = \
-        '\n____ .\n' \
+        '\n____ . at refs/heads/master\n' \
         '\tPath is not a git repo. No .git dir.\n' \
         '\tTo resolve:\n' \
         '\t\trm -rf .\n' \

@@ -167,41 +167,44 @@ class GitWrapper(SCMWrapper, scm.GIT):
 
     self._CheckMinVersion("1.6")
 
+    default_rev = "refs/heads/master"
     url, revision = gclient_utils.SplitUrlRevision(self.url)
     rev_str = ""
     if options.revision:
       # Override the revision number.
       revision = str(options.revision)
-    if revision:
-      rev_str = ' at %s' % revision
+    if not revision:
+      revision = default_rev
 
+    rev_str = ' at %s' % revision
+    files = []
+
+    printed_path = False
+    verbose = []
     if options.verbose:
       print("\n_____ %s%s" % (self.relpath, rev_str))
+      verbose = ['--verbose']
+      printed_path = True
+
+    if revision.startswith('refs/heads/'):
+      rev_type = "branch"
+    elif revision.startswith('origin/'):
+      # For compatability with old naming, translate 'origin' to 'refs/heads'
+      revision = revision.replace('origin/', 'refs/heads/')
+      rev_type = "branch"
+    else:
+      # hash is also a tag, only make a distinction at checkout
+      rev_type = "hash"
+
 
     if not os.path.exists(self.checkout_path):
-      # Cloning
-      for i in range(3):
-        try:
-          self._Run(['clone', url, self.checkout_path],
-                    cwd=self._root_dir, redirect_stdout=False)
-          break
-        except gclient_utils.Error, e:
-          # TODO(maruel): Hackish, should be fixed by moving _Run() to
-          # CheckCall().
-          # Too bad we don't have access to the actual output.
-          # We should check for "transfer closed with NNN bytes remaining to
-          # read". In the meantime, just make sure .git exists.
-          if (e.args[0] == 'git command clone returned 128' and
-              os.path.exists(os.path.join(self.checkout_path, '.git'))):
-            print str(e)
-            print "Retrying..."
-            continue
-          raise e
-
-      if revision:
-        self._Run(['reset', '--hard', revision], redirect_stdout=False)
+      self._Clone(rev_type, revision, url, options.verbose)
       files = self._Run(['ls-files']).split()
       file_list.extend([os.path.join(self.checkout_path, f) for f in files])
+      if not verbose:
+        # Make the output a little prettier. It's nice to have some whitespace
+        # between projects when cloning.
+        print ""
       return
 
     if not os.path.exists(os.path.join(self.checkout_path, '.git')):
@@ -212,9 +215,6 @@ class GitWrapper(SCMWrapper, scm.GIT):
                                 '\tAnd run gclient sync again\n'
                                 % (self.relpath, rev_str, self.relpath))
 
-    new_base = 'origin'
-    if revision:
-      new_base = revision
     cur_branch = self._GetCurrentBranch()
 
     # Check if we are in a rebase conflict
@@ -226,18 +226,140 @@ class GitWrapper(SCMWrapper, scm.GIT):
                                 '\tSee man git-rebase for details.\n'
                                  % (self.relpath, rev_str))
 
-    # TODO(maruel): Do we need to do an automatic retry here? Probably overkill
-    merge_base = self._Run(['merge-base', 'HEAD', new_base])
-    self._Run(['remote', 'update'], redirect_stdout=False)
-    files = self._Run(['diff', new_base, '--name-only']).split()
-    file_list.extend([os.path.join(self.checkout_path, f) for f in files])
+    # Cases:
+    # 1) current branch based on a hash (could be git-svn)
+    #   - try to rebase onto the new upstream (hash or branch)
+    # 2) current branch based on a remote branch with local committed changes,
+    #    but the DEPS file switched to point to a hash
+    #   - rebase those changes on top of the hash
+    # 3) current branch based on a remote with or without changes, no switch
+    #   - see if we can FF, if not, prompt the user for rebase, merge, or stop
+    # 4) current branch based on a remote, switches to a new remote
+    #   - exit
+
+    # GetUpstream returns something like 'refs/remotes/origin/master' for a
+    # tracking branch
+    # or 'master' if not a tracking branch (it's based on a specific rev/hash)
+    # or it returns None if it couldn't find an upstream
+    upstream_branch = self.GetUpstream(self.checkout_path)
+    if not upstream_branch or not upstream_branch.startswith('refs/remotes'):
+      current_type = "hash"
+      logging.debug("Current branch is based off a specific rev and is not "
+                    "tracking an upstream.")
+    elif upstream_branch.startswith('refs/remotes'):
+      current_type = "branch"
+    else:
+      raise gclient_utils.Error('Invalid Upstream')
+
+    # Update the remotes first so we have all the refs
+    remote_output, remote_err = self.Capture(['remote'] + verbose + ['update'],
+                                             self.checkout_path,
+                                             print_error=False)
+    if verbose:
+      print remote_output.strip()
+      # git remote update prints to stderr when used with --verbose
+      print remote_err.strip()
+
+    # This is a big hammer, debatable if it should even be here...
     if options.force or options.reset:
-      self._Run(['reset', '--hard', merge_base], redirect_stdout=False)
-    try:
-      self._Run(['rebase', '-v', '--onto', new_base, merge_base, cur_branch],
-                  redirect_stdout=False)
-    except gclient_utils.Error:
-      pass
+      self._Run(['reset', '--hard', 'HEAD'], redirect_stdout=False)
+
+    if current_type is 'hash':
+      # case 1
+      if self.IsGitSvn(self.checkout_path) and upstream_branch is not None:
+        # Our git-svn branch (upstream_branch) is our upstream
+        self._AttemptRebase(upstream_branch, files, verbose=options.verbose,
+                            newbase=revision, printed_path=printed_path)
+        printed_path = True
+      else:
+        # Can't find a merge-base since we don't know our upstream. That makes
+        # this command VERY likely to produce a rebase failure. For now we
+        # assume origin is our upstream since that's what the old behavior was.
+        self._AttemptRebase('origin', files=files, verbose=options.verbose,
+                            printed_path=printed_path)
+        printed_path = True
+    elif rev_type is 'hash':
+      # case 2
+      self._AttemptRebase(upstream_branch, files, verbose=options.verbose,
+                          newbase=revision, printed_path=printed_path)
+      printed_path = True
+    elif revision.replace('heads', 'remotes/origin') != upstream_branch:
+      # case 4
+      new_base = revision.replace('heads', 'remotes/origin')
+      if not printed_path:
+        print("\n_____ %s%s" % (self.relpath, rev_str))
+      switch_error = ("Switching upstream branch from %s to %s\n"
+                     % (upstream_branch, new_base) +
+                     "Please merge or rebase manually:\n" +
+                     "cd %s; git rebase %s\n" % (self.checkout_path, new_base) +
+                     "OR git checkout -b <some new branch> %s" % new_base)
+      raise gclient_utils.Error(switch_error)
+    else:
+      # case 3 - the default case
+      files = self._Run(['diff', upstream_branch, '--name-only']).split()
+      if verbose:
+        print "Trying fast-forward merge to branch : %s" % upstream_branch
+      try:
+        merge_output, merge_err = self.Capture(['merge', '--ff-only',
+                                                upstream_branch],
+                                               self.checkout_path,
+                                               print_error=False)
+      except gclient_utils.CheckCallError, e:
+        if re.match('fatal: Not possible to fast-forward, aborting.', e.stderr):
+          if not printed_path:
+            print("\n_____ %s%s" % (self.relpath, rev_str))
+            printed_path = True
+          while True:
+            try:
+              action = str(raw_input("Cannot fast-forward merge, attempt to "
+                                     "rebase? (y)es / (q)uit / (s)kip : "))
+            except ValueError:
+              gclient_utils.Error('Invalid Character')
+              continue
+            if re.match(r'yes|y', action, re.I):
+              self._AttemptRebase(upstream_branch, files,
+                                  verbose=options.verbose,
+                                  printed_path=printed_path)
+              printed_path = True
+              break
+            elif re.match(r'quit|q', action, re.I):
+              raise gclient_utils.Error("Can't fast-forward, please merge or "
+                                        "rebase manually.\n"
+                                        "cd %s && git " % self.checkout_path
+                                        + "rebase %s" % upstream_branch)
+            elif re.match(r'skip|s', action, re.I):
+              print "Skipping %s" % self.relpath
+              return
+            else:
+              print "Input not recognized"
+        elif re.match("error: Your local changes to '.*' would be "
+                      "overwritten by merge.  Aborting.\nPlease, commit your "
+                      "changes or stash them before you can merge.\n",
+                      e.stderr):
+          if not printed_path:
+            print("\n_____ %s%s" % (self.relpath, rev_str))
+            printed_path = True
+          raise gclient_utils.Error(e.stderr)
+        else:
+          # Some other problem happened with the merge
+          logging.error("Error during fast-forward merge in %s!" % self.relpath)
+          print e.stderr
+          raise
+      else:
+        # Fast-forward merge was successful
+        if not re.match('Already up-to-date.', merge_output) or verbose:
+          if not printed_path:
+            print("\n_____ %s%s" % (self.relpath, rev_str))
+            printed_path = True
+          print merge_output.strip()
+          if merge_err:
+            print "Merge produced error output:\n%s" % merge_err.strip()
+          if not verbose:
+            # Make the output a little prettier. It's nice to have some
+            # whitespace between projects when syncing.
+            print ""
+
+    file_list.extend([os.path.join(self.checkout_path, f) for f in files])
 
     # If the rebase generated a conflict, abort and ask user to fix
     if self._GetCurrentBranch() is None:
@@ -247,7 +369,8 @@ class GitWrapper(SCMWrapper, scm.GIT):
                                 'See man git-rebase for details.\n'
                                 % (self.relpath, rev_str))
 
-    print "Checked out revision %s." % self.revinfo(options, (), None)
+    if verbose:
+      print "Checked out revision %s" % self.revinfo(options, (), None)
 
   def revert(self, options, args, file_list):
     """Reverts local modifications.
@@ -292,6 +415,128 @@ class GitWrapper(SCMWrapper, scm.GIT):
     # Equivalent to unix basename
     base_url = self.url
     return base_url[:base_url.rfind('/')] + url
+
+  def _Clone(self, rev_type, revision, url, verbose=False):
+    """Clone a git repository from the given URL.
+
+    Once we've cloned the repo, we checkout a working branch based off the
+    specified revision."""
+    if not verbose:
+      # git clone doesn't seem to insert a newline properly before printing
+      # to stdout
+      print ""
+
+    clone_cmd = ['clone']
+    if verbose:
+      clone_cmd.append('--verbose')
+    clone_cmd.extend([url, self.checkout_path])
+
+    for i in range(3):
+      try:
+        self._Run(clone_cmd, cwd=self._root_dir, redirect_stdout=False)
+        break
+      except gclient_utils.Error, e:
+        # TODO(maruel): Hackish, should be fixed by moving _Run() to
+        # CheckCall().
+        # Too bad we don't have access to the actual output.
+        # We should check for "transfer closed with NNN bytes remaining to
+        # read". In the meantime, just make sure .git exists.
+        if (e.args[0] == 'git command clone returned 128' and
+            os.path.exists(os.path.join(self.checkout_path, '.git'))):
+          print str(e)
+          print "Retrying..."
+          continue
+        raise e
+
+    if rev_type is "branch":
+      short_rev = revision.replace('refs/heads/', '')
+      new_branch = revision.replace('heads', 'remotes/origin')
+    elif revision.startswith('refs/tags/'):
+      short_rev = revision.replace('refs/tags/', '')
+      new_branch = revision
+    else:
+      # revision is a specific sha1 hash
+      short_rev = revision
+      new_branch = revision
+
+    cur_branch = self._GetCurrentBranch()
+    if cur_branch != short_rev:
+      self._Run(['checkout', '-b', short_rev, new_branch],
+                redirect_stdout=False)
+
+  def _AttemptRebase(self, upstream, files, verbose=False, newbase=None,
+                     branch=None, printed_path=False):
+    """Attempt to rebase onto either upstream or, if specified, newbase."""
+    files.extend(self._Run(['diff', upstream, '--name-only']).split())
+    revision = upstream
+    if newbase:
+      revision = newbase
+    if not printed_path:
+      print "\n_____ %s : Attempting rebase onto %s..." % (self.relpath,
+                                                           revision)
+      printed_path = True
+    else:
+      print "Attempting rebase onto %s..." % revision
+
+    # Build the rebase command here using the args
+    # git rebase [options] [--onto <newbase>] <upstream> [<branch>]
+    rebase_cmd = ['rebase']
+    if verbose:
+      rebase_cmd.append('--verbose')
+    if newbase:
+      rebase_cmd.extend(['--onto', newbase])
+    rebase_cmd.append(upstream)
+    if branch:
+      rebase_cmd.append(branch)
+
+    try:
+      rebase_output, rebase_err = self.Capture(rebase_cmd, self.checkout_path,
+                                               print_error=False)
+    except gclient_utils.CheckCallError, e:
+      if re.match(r'cannot rebase: you have unstaged changes', e.stderr) or \
+         re.match(r'cannot rebase: your index contains uncommitted changes',
+                  e.stderr):
+        while True:
+          rebase_action = str(raw_input("Cannot rebase because of unstaged "
+                                        "changes.\n'git reset --hard HEAD' ?\n"
+                                        "WARNING: destroys any uncommitted "
+                                        "work in your current branch!"
+                                        " (y)es / (q)uit / (s)how : "))
+          if re.match(r'yes|y', rebase_action, re.I):
+            self._Run(['reset', '--hard', 'HEAD'], redirect_stdout=False)
+            # Should this be recursive?
+            rebase_output, rebase_err = self.Capture(rebase_cmd,
+                                                     self.checkout_path)
+            break
+          elif re.match(r'quit|q', rebase_action, re.I):
+            raise gclient_utils.Error("Please merge or rebase manually\n"
+                                      "cd %s && git " % self.checkout_path
+                                      + "%s" % ' '.join(rebase_cmd))
+          elif re.match(r'show|s', rebase_action, re.I):
+            print "\n%s" % e.stderr.strip()
+            continue
+          else:
+            gclient_utils.Error("Input not recognized")
+            continue
+      elif re.search(r'^CONFLICT', e.stdout, re.M):
+        raise gclient_utils.Error("Conflict while rebasing this branch.\n"
+                                  "Fix the conflict and run gclient again.\n"
+                                  "See 'man git-rebase' for details.\n")
+      else:
+        print e.stdout.strip()
+        print "Rebase produced error output:\n%s" % e.stderr.strip()
+        raise gclient_utils.Error("Unrecognized error, please merge or rebase "
+                                  "manually.\ncd %s && git " %
+                                  self.checkout_path
+                                  + "%s" % ' '.join(rebase_cmd))
+
+    print rebase_output.strip()
+    if rebase_err:
+      print "Rebase produced error output:\n%s" % rebase_err.strip()
+    if not verbose:
+      # Make the output a little prettier. It's nice to have some
+      # whitespace between projects when syncing.
+      print ""
 
   def _CheckMinVersion(self, min_version):
     def only_int(val):
