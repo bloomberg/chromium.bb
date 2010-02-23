@@ -111,6 +111,8 @@ BUG18702 MAC WIN : http/tests/xmlhttprequest/supported-xml-content-types.html = 
 
 BUG34759 WIN DEBUG SLOW : inspector/console-log-before-inspector-open.html = PASS
 
+BUG36539 SLOW : http/tests/misc/uncacheable-script-repeated.html = PASS
+
 // -----------------------------------------------------------------
 // SKIPPED TESTS
 // -----------------------------------------------------------------
