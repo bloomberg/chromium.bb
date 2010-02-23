@@ -31,7 +31,6 @@
 
 #include "native_client/src/trusted/handle_pass/browser_handle.h"
 #include "native_client/src/trusted/plugin/nacl_entry_points.h"
-#include "webkit/glue/plugins/nphostapi.h"
 #include "webkit/glue/plugins/plugin_list.h"
 
 // This code inside the ifdef is copied from

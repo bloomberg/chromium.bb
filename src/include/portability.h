@@ -214,12 +214,24 @@ struct timezone {
 # endif
 #endif
 
+#if !defined(PRIdS)
 #define PRIdS __PRIS_PREFIX "d"
+#endif
+#if !defined(PRIiS)
 #define PRIiS __PRIS_PREFIX "i"
+#endif
+#if !defined(PRIoS)
 #define PRIoS __PRIS_PREFIX "o"
+#endif
+#if !defined (PRIuS)
 #define PRIuS __PRIS_PREFIX "u"
+#endif
+#if !defined(PRIxS)
 #define PRIxS __PRIS_PREFIX "x"
+#endif
+#if !defined(PRIXS)
 #define PRIXS __PRIS_PREFIX "X"
+#endif
 
 /*
  * printf macros for intptr_t and uintptr_t, int{8,16,32,64}
@@ -281,12 +293,24 @@ struct timezone {
 
 # define __PRI64_PREFIX "I64"
 
+#if !defined(PRId64)
 # define PRId64 __PRI64_PREFIX "d"
+#endif
+#if !defined(PRIi64)
 # define PRIi64 __PRI64_PREFIX "i"
+#endif
+#if !defined(PRIo64)
 # define PRIo64 __PRI64_PREFIX "o"
+#endif
+#if !defined(PRIu64)
 # define PRIu64 __PRI64_PREFIX "u"
+#endif
+#if !defined(PRIx64)
 # define PRIx64 __PRI64_PREFIX "x"
+#endif
+#if !defined(PRIX64)
 # define PRIX64 __PRI64_PREFIX "X"
+#endif
 
 #endif
 
