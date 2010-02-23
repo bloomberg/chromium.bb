@@ -14,6 +14,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/bookmarks/bookmark_html_writer.h"
 #include "chrome/browser/bookmarks/bookmark_utils.h"
+#include "chrome/browser/dom_ui/chrome_url_data_manager.h"
 #include "chrome/browser/extensions/extension_bookmarks_module_constants.h"
 #include "chrome/browser/extensions/extension_dom_ui.h"
 #include "chrome/browser/extensions/extension_message_service.h"
@@ -384,6 +385,8 @@ bool BookmarkManagerGetStringsFunction::RunImpl() {
       l10n_util::GetString(IDS_CONTENT_CONTEXT_PASTE));
   localized_strings->SetString(L"delete",
       l10n_util::GetString(IDS_CONTENT_CONTEXT_DELETE));
+
+  ChromeURLDataManager::DataSource::SetFontAndTextDirection(localized_strings);
 
   result_.reset(localized_strings);
   SendResponse(true);
