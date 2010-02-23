@@ -256,9 +256,6 @@ const char kEnableNaClOnMac[]                    = "enable-nacl-on-mac";
 // Enable Native Web Worker support.
 const char kEnableNativeWebWorkers[]        = "enable-native-web-workers";
 
-// Enable AutoFill++.
-const char kEnableNewAutoFill[]             = "enable-new-autofill";
-
 // Enable Privacy Blacklists.
 const char kEnablePrivacyBlacklists[]       = "enable-privacy-blacklists";
 
@@ -730,7 +727,7 @@ const char kWorkerStartupDialog[]           = "worker-startup-dialog";
 const char kZygoteCmdPrefix[]               = "zygote-cmd-prefix";
 
 // Causes the process to run as a renderer zygote.
-const char kZygoteProcess[]                 = "zygote"; //
+const char kZygoteProcess[]                 = "zygote";
 
 #if defined(OS_CHROMEOS)
 // The name of the pipe over which the Chrome OS login manager will send

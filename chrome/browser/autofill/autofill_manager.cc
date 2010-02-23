@@ -39,11 +39,6 @@ void AutoFillManager::RegisterUserPrefs(PrefService* prefs) {
 
 void AutoFillManager::FormFieldValuesSubmitted(
     const webkit_glue::FormFieldValues& form) {
-  // TODO(jhawkins): Remove this switch when AutoFill++ is fully implemented.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableNewAutoFill))
-    return;
-
   // Grab a copy of the form data.
   upload_form_structure_.reset(new FormStructure(form));
 
@@ -78,9 +73,7 @@ void AutoFillManager::FormsSeen(
 
 bool AutoFillManager::GetAutoFillSuggestions(
     int query_id, const webkit_glue::FormField& field) {
-  // TODO(jhawkins): Use the autofill preference.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableNewAutoFill))
+  if (!IsAutoFillEnabled())
     return false;
 
   RenderViewHost* host = tab_contents_->render_view_host();
@@ -152,9 +145,7 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
                                            const FormData& form,
                                            const string16& name,
                                            const string16& label) {
-  // TODO(jhawkins): Use the autofill preference.
-  if (!CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kEnableNewAutoFill))
+  if (!IsAutoFillEnabled())
     return false;
 
   RenderViewHost* host = tab_contents_->render_view_host();
@@ -280,4 +271,18 @@ void AutoFillManager::UploadFormData() {
 
 void AutoFillManager::Reset() {
   upload_form_structure_.reset();
+}
+
+bool AutoFillManager::IsAutoFillEnabled() {
+  PrefService* prefs = tab_contents_->profile()->GetPrefs();
+
+  // Migrate obsolete autofill pref.
+  if (prefs->HasPrefPath(prefs::kFormAutofillEnabled)) {
+    bool enabled = prefs->GetBoolean(prefs::kFormAutofillEnabled);
+    prefs->ClearPref(prefs::kFormAutofillEnabled);
+    prefs->SetBoolean(prefs::kAutoFillEnabled, enabled);
+    return enabled;
+  }
+
+  return prefs->GetBoolean(prefs::kAutoFillEnabled);
 }

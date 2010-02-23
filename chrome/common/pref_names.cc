@@ -104,9 +104,10 @@ const wchar_t kShowBookmarkBar[] = L"bookmark_bar.show_on_all_tabs";
 // passwords and fill in known passwords).
 const wchar_t kPasswordManagerEnabled[] = L"profile.password_manager_enabled";
 
-// Boolean that is true if the form autofill is on (will record values entered
-// in text inputs in forms and shows them in a popup when user type in a text
-// input with the same name later on).
+// OBSOLETE.  Boolean that is true if the form autofill is on (will record
+// values entered in text inputs in forms and shows them in a popup when user
+// type in a text input with the same name later on).  This has been superseded
+// by kAutoFillEnabled.
 const wchar_t kFormAutofillEnabled[] = L"profile.form_autofill_enabled";
 
 // Boolean that is true when SafeBrowsing is enabled.

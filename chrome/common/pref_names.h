@@ -45,7 +45,7 @@ extern const wchar_t kWebKitUsesUniversalDetector[];
 extern const wchar_t kWebKitTextAreasAreResizable[];
 extern const wchar_t kWebKitJavaEnabled[];
 extern const wchar_t kPasswordManagerEnabled[];
-extern const wchar_t kFormAutofillEnabled[];
+extern const wchar_t kFormAutofillEnabled[];  // OBSOLETE
 extern const wchar_t kSafeBrowsingEnabled[];
 extern const wchar_t kSearchSuggestEnabled[];
 extern const wchar_t kCookieBehavior[];  // OBSOLETE

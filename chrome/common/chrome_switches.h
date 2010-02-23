@@ -90,7 +90,6 @@ extern const char kEnableNativeWebWorkers[];
 // TODO(dspringer): remove this when NaCl x86-32 security issues are fixed
 extern const char kEnableNaClOnMac[];
 #endif
-extern const char kEnableNewAutoFill[];
 extern const char kEnablePrivacyBlacklists[];
 extern const char kEnableRendererAccessibility[];
 extern const char kEnableSeccompSandbox[];

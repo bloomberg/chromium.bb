@@ -76,6 +76,9 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   // Resets the stored form data.
   void Reset();
 
+  // Returns the value of the AutoFillEnabled pref.
+  bool IsAutoFillEnabled();
+
  private:
   // The TabContents hosting this AutoFillManager.
   TabContents* tab_contents_;
