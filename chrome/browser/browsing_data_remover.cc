@@ -21,6 +21,7 @@
 #include "chrome/common/url_constants.h"
 #include "net/base/cookie_monster.h"
 #include "net/base/net_errors.h"
+#include "net/base/transport_security_state.h"
 #include "net/disk_cache/disk_cache.h"
 #include "net/http/http_cache.h"
 #include "net/url_request/url_request_context.h"
@@ -122,6 +123,9 @@ void BrowsingDataRemover::Remove(int remove_mask) {
         profile_->GetRequestContext()->GetCookieStore()->GetCookieMonster();
     if (cookie_monster)
       cookie_monster->DeleteAllCreatedBetween(delete_begin_, delete_end_, true);
+
+    // REMOVE_COOKIES is actually "cookies and other site data" so we make sure
+    // to remove other data such local databases, STS state, etc.
     profile_->GetWebKitContext()->DeleteDataModifiedSince(
         delete_begin_, chrome::kExtensionScheme);
 
@@ -135,6 +139,10 @@ void BrowsingDataRemover::Remove(int remove_mask) {
               &BrowsingDataRemover::ClearDatabasesOnFILEThread,
               delete_begin_));
     }
+
+    net::TransportSecurityState* ts_state =
+        profile_->GetTransportSecurityState();
+    ts_state->DeleteSince(delete_begin_);
   }
 
   if (remove_mask & REMOVE_PASSWORDS) {

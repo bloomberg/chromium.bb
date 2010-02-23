@@ -33,14 +33,22 @@ void TransportSecurityPersister::Initialize(
 }
 
 void TransportSecurityPersister::LoadState() {
-  AutoLock locked_(lock_);
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::FILE));
+  bool dirty = false;
+  {
+    AutoLock locked_(lock_);
 
-  std::string state;
-  if (!file_util::ReadFileToString(state_file_, &state))
-    return;
+    std::string state;
+    if (!file_util::ReadFileToString(state_file_, &state))
+      return;
 
-  transport_security_state_->Deserialise(state);
+    if (!transport_security_state_->Deserialise(state, &dirty)) {
+      LOG(ERROR) << "Failed to deserialize state: " << state;
+      return;
+    }
+  }
+  if (dirty)
+    StateIsDirty(transport_security_state_);
 }
 
 void TransportSecurityPersister::StateIsDirty(
