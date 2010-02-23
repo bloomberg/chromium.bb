@@ -67,9 +67,6 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   // Called by the AutoFillInfoBarDelegate when the user accepts the infobar.
   void OnInfoBarAccepted();
 
-  // Saves the form data to the web database.
-  void SaveFormData();
-
   // Uploads the form data to the autofill server.
   void UploadFormData();
 

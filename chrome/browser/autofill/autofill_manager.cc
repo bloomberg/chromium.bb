@@ -257,10 +257,6 @@ void AutoFillManager::OnInfoBarAccepted() {
     OnPersonalDataLoaded();
 }
 
-void AutoFillManager::SaveFormData() {
-  // TODO(jhawkins): Save the form data to the web database.
-}
-
 void AutoFillManager::UploadFormData() {
   std::string xml;
   bool ok = upload_form_structure_->EncodeUploadRequest(false, &xml);

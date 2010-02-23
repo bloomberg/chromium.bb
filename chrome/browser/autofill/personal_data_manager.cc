@@ -54,7 +54,7 @@ void PersonalDataManager::OnWebDataServiceRequestDone(
   // If both requests have responded, then all personal data is loaded.
   if (pending_profiles_query_ == 0 && pending_creditcards_query_ == 0) {
     is_data_loaded_ = true;
-    // Copy is needed as observer can unsubsribe itself when notified.
+    // Copy is needed as observer can unsubscribe itself when notified.
     std::vector<PersonalDataManager::Observer*> temporary_copy;
     temporary_copy.resize(observers_.size());
     std::copy(observers_.begin(), observers_.end(), temporary_copy.begin());
@@ -185,8 +185,6 @@ bool PersonalDataManager::ImportFormData(
 
   if (importable_credit_card_fields == 0)
     imported_credit_card_.reset();
-
-  // TODO(jhawkins): Alert the AutoFillManager that we have data.
 
   return true;
 }
