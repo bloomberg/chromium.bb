@@ -197,11 +197,13 @@ TEST_F(WorkerTest, WorkerCall) {
   RunWorkerFastLayoutTest("worker-call.html");
 }
 
+// Crashy, http://crbug.com/35965.
 #if defined(OS_LINUX) || defined(OS_MACOSX)
-#define WorkerClonePort DISABLED_WorkerClonePort
+#define FLAKY_WorkerClonePort DISABLED_WorkerClonePort
 #endif
 
-TEST_F(WorkerTest, WorkerClonePort) {
+// Flaky, http://crbug.com/36555.
+TEST_F(WorkerTest, FLAKY_WorkerClonePort) {
   RunWorkerFastLayoutTest("worker-cloneport.html");
 }
 
