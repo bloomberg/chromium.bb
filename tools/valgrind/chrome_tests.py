@@ -17,6 +17,16 @@ import sys
 import google.logging_utils
 import google.path_utils
 
+# Import the platform_utils up in the layout tests which have been modified to
+# work under non-Windows platforms instead of the ones that are in the
+# tools/python/google directory. (See chrome_tests.sh which sets PYTHONPATH
+# correctly.)
+#
+# TODO(erg): Copy/Move the relevant functions from the layout_package version
+# of platform_utils back up to google.platform_utils
+# package. http://crbug.com/6164
+import layout_package.path_utils
+
 import common
 import valgrind_test
 
@@ -90,8 +100,9 @@ class ChromeTests:
     # relative to the top of the tree.
     self._source_dir = os.path.dirname(os.path.dirname(script_dir))
     # since this path is used for string matching, make sure it's always
-    # an absolute Unix-style path
-    self._source_dir = os.path.abspath(self._source_dir).replace('\\', '/')
+    # an absolute Windows-style path
+    self._source_dir = layout_package.path_utils.get_absolute_path(
+        self._source_dir)
     valgrind_test_script = os.path.join(script_dir, "valgrind_test.py")
     self._command_preamble = [valgrind_test_script,
                               "--source_dir=%s" % (self._source_dir)]
@@ -276,14 +287,14 @@ class ChromeTests:
     #
     # Build the ginormous commandline in 'cmd'.
     # It's going to be roughly
-    #  python valgrind_test.py ... python run-chromium-webkit-tests ...
+    #  python valgrind_test.py ... python run_webkit_tests.py ...
     # but we'll use the --indirect flag to valgrind_test.py
     # to avoid valgrinding python.
     # Start by building the valgrind_test.py commandline.
     cmd = self._DefaultCommand("webkit")
     cmd.append("--trace_children")
     cmd.append("--indirect")
-    # Now build script_cmd, the run_chromium-webkits_tests commandline
+    # Now build script_cmd, the run_webkits_tests.py commandline
     # Store each chunk in its own directory so that we can find the data later
     chunk_dir = os.path.join("layout", "chunk_%05d" % chunk_num)
     test_shell = os.path.join(self._options.build_dir, "test_shell")
@@ -295,14 +306,14 @@ class ChromeTests:
         os.remove(f)
     else:
       os.makedirs(out_dir)
-    script = os.path.join(self._source_dir, "third_party", "WebKit",
-                 "WebKitTools", "Scripts", "run-chromium-webkit-tests")
+    script = os.path.join(self._source_dir, "webkit", "tools", "layout_tests",
+                          "run_webkit_tests.py")
     script_cmd = ["python", script, "--run-singly", "-v",
                   "--noshow-results", "--time-out-ms=200000",
                   "--nocheck-sys-deps"]
-    # Pass build mode to run-chromium-webkit-tests. We aren't passed it
-    # directly, so parse it out of build_dir. run-chromium-webkit-tests
-    # can only handle the two values "Release" and "Debug".
+    # Pass build mode to run_webkit_tests.py.  We aren't passed it directly,
+    # so parse it out of build_dir.  run_webkit_tests.py can only handle
+    # the two values "Release" and "Debug".
     # TODO(Hercules): unify how all our scripts pass around build mode
     # (--mode / --target / --build_dir / --debug)
     if self._options.build_dir.endswith("Debug"):

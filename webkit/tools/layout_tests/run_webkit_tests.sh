@@ -5,7 +5,6 @@
 # found in the LICENSE file.
 
 exec_dir=$(dirname $0)
-script_dir=${exec_dir}/../../../third_party/WebKit/WebKitTools/Scripts
 
 if [ "$OSTYPE" = "cygwin" ]; then
   system_root=`cygpath "$SYSTEMROOT"`
@@ -14,7 +13,10 @@ if [ "$OSTYPE" = "cygwin" ]; then
   PYTHON_PROG="$exec_dir/../../../third_party/python_24/python.exe"
 else
   PYTHON_PROG=python
+  # Specifically, run_webkit_tests needs the paths in:
+  # third_party/python_24/Lib/site-packages/google.pth
+  PYTHONPATH="${exec_dir}/../../../tools/python:$PYTHONPATH"
   export PYTHONPATH
 fi
 
-"$PYTHON_PROG" "$script_dir/run-chromium-webkit-tests" "$@"
+"$PYTHON_PROG" "$exec_dir/run_webkit_tests.py" "$@"
