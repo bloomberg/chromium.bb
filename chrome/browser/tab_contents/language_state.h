@@ -27,7 +27,7 @@ class LanguageState {
 
   // Should be called when the page did a new navigation (whether it is a main
   // frame or sub-frame navigation).
-  void DidNavigate(bool reload);
+  void DidNavigate(bool reload, bool in_page_navigation);
 
   // Should be called when the language of the page has been determined.
   void LanguageDetermined(const std::string& page_language);
@@ -55,6 +55,10 @@ class LanguageState {
   // Whether the user has already declined to translate the page.
   bool translation_declined() const { return translation_declined_; }
   void set_translation_declined(bool value) { translation_declined_ = value; }
+
+  // Whether the current page was navigated through an in-page (fragment)
+  // navigation.
+  bool in_page_navigation() const { return in_page_navigation_; }
 
  private:
   // The languages this page is in. Note that current_lang_ is different from
@@ -85,6 +89,9 @@ class LanguageState {
   // for example).  This is necessary as a new infobar could be shown if a new
   // load happens in the page after the user closed the infobar.
   bool translation_declined_;
+
+  // Whether the current navigation is a fragment navigation (in page).
+  bool in_page_navigation_;
 
   DISALLOW_COPY_AND_ASSIGN(LanguageState);
 };

@@ -1522,7 +1522,8 @@ void TabContents::DidNavigateAnyFramePostCommit(
 
   // Let the LanguageState clear its state.
   language_state_.DidNavigate(details.entry->transition_type() ==
-                              PageTransition::RELOAD);
+                                  PageTransition::RELOAD,
+                              details.is_in_page);
 }
 
 void TabContents::CloseConstrainedWindows() {

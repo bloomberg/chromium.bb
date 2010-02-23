@@ -170,11 +170,6 @@ void SSLManager::DidCommitProvisionalLoad(
   NavigationController::LoadCommittedDetails* details =
       Details<NavigationController::LoadCommittedDetails>(in_details).ptr();
 
-  // Ignore in-page navigations, they should not change the security style or
-  // the info-bars.
-  if (details->is_in_page)
-    return;
-
   NavigationEntry* entry = controller_->GetActiveEntry();
 
   if (details->is_main_frame) {

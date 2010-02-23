@@ -252,6 +252,9 @@ class RenderViewHostTestHarness : public testing::Test {
   // emulates what happens on a new navigation.
   void NavigateAndCommit(const GURL& url);
 
+  // Simulates a reload of the current page.
+  void Reload();
+
  protected:
   // testing::Test
   virtual void SetUp();

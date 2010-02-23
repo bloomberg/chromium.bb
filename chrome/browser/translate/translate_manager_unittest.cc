@@ -8,6 +8,8 @@
 #include "chrome/browser/translate/translate_infobars_delegates.h"
 #include "chrome/browser/translate/translate_manager.h"
 #include "chrome/common/ipc_test_sink.h"
+#include "chrome/common/notification_registrar.h"
+#include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
 
 class TestTranslateManager : public TranslateManager {
@@ -15,8 +17,11 @@ class TestTranslateManager : public TranslateManager {
   TestTranslateManager() {}
 };
 
-class TranslateManagerTest : public RenderViewHostTestHarness {
+class TranslateManagerTest : public RenderViewHostTestHarness,
+                             public NotificationObserver {
  public:
+  TranslateManagerTest() {}
+
   // Simluates navigating to a page and getting teh page contents and language
   // for that navigation.
   void SimulateNavigation(const GURL& url, int page_id,
@@ -48,24 +53,98 @@ class TranslateManagerTest : public RenderViewHostTestHarness {
     return true;
   }
 
+  // Returns the translate infobar if there is 1 infobar and it is a translate
+  // infobar.
+  TranslateInfoBarDelegate* GetTranslateInfoBar() {
+    if (contents()->infobar_delegate_count() != 1)
+      return NULL;
+    return contents()->GetInfoBarDelegateAt(0)->AsTranslateInfoBarDelegate();
+  }
+
+  // If there is 1 infobar and it is a translate infobar, closes it and returns
+  // true.  Returns false otherwise.
+  bool CloseTranslateInfoBar() {
+    TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
+    if (!infobar)
+      return false;
+    infobar->InfoBarDismissed();  // Simulates closing the infobar.
+    contents()->RemoveInfoBar(infobar);
+    return true;
+  }
+
+  // Checks whether |infobar| has been removed and clears the removed infobar
+  // list.
+  bool CheckInfoBarRemovedAndReset(InfoBarDelegate* infobar) {
+    bool found = std::find(removed_infobars_.begin(), removed_infobars_.end(),
+                           infobar) != removed_infobars_.end();
+    removed_infobars_.clear();
+    return found;
+  }
+
+  // Returns true if at least one infobar was closed.
+  bool InfoBarRemoved() {
+    return !removed_infobars_.empty();
+  }
+
+  // If there is 1 infobar and it is a translate infobar, deny translation and
+  // returns true.  Returns false otherwise.
+  bool DenyTranslation() {
+    TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
+    if (!infobar)
+      return false;
+    infobar->TranslationDeclined();
+    contents()->RemoveInfoBar(infobar);
+    return true;
+  }
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    DCHECK(type == NotificationType::TAB_CONTENTS_INFOBAR_REMOVED);
+    removed_infobars_.push_back(Details<InfoBarDelegate>(details).ptr());
+  }
+
  protected:
   virtual void SetUp() {
-    RenderViewHostTestHarness::SetUp();
-
     TranslateManager::set_test_enabled(true);
     // This must be created after set_test_enabled() has been called to register
-    // notifications properly.
+    // notifications properly.  Note that we do this before calling
+    // RenderViewHostTestHarness::SetUp() to match what's done in Chrome, where
+    // the TranslateManager is created before the TabContents.  This matters for
+    // as they both register for similar events and we want the notifications
+    // to happen in the same sequence (TranslateManager first, TabContents
+    // second).
     translate_manager_.reset(new TestTranslateManager());
+
+    RenderViewHostTestHarness::SetUp();
+
+    notification_registrar_.Add(
+        this,
+        NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
+        Source<TabContents>(contents()));
   }
 
   virtual void TearDown() {
+    notification_registrar_.Remove(
+        this,
+        NotificationType::TAB_CONTENTS_INFOBAR_REMOVED,
+        Source<TabContents>(contents()));
+
     RenderViewHostTestHarness::TearDown();
 
     TranslateManager::set_test_enabled(false);
   }
 
  private:
+  NotificationRegistrar notification_registrar_;
+
   scoped_ptr<TestTranslateManager> translate_manager_;
+
+  // The list of infobars that have been removed.
+  // WARNING: the pointers points to deleted objects, use only for comparison.
+  std::vector<InfoBarDelegate*> removed_infobars_;
+
+  DISALLOW_COPY_AND_ASSIGN(TranslateManagerTest);
 };
 
 TEST_F(TranslateManagerTest, NormalTranslate) {
@@ -73,15 +152,14 @@ TEST_F(TranslateManagerTest, NormalTranslate) {
   SimulateNavigation(GURL("http://www.google.fr"), 0, L"Le Google", "fr");
 
   // We should have an info-bar.
-  ASSERT_EQ(1, contents()->infobar_delegate_count());
-  TranslateInfoBarDelegate* infobar =
-      contents()->GetInfoBarDelegateAt(0)->AsTranslateInfoBarDelegate();
+  TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
   EXPECT_EQ(TranslateInfoBarDelegate::kBeforeTranslate, infobar->state());
 
   // Simulate clicking translate.
   process()->sink().ClearMessages();
   infobar->Translate();
+  EXPECT_FALSE(InfoBarRemoved());
 
   // Test that we sent the right message to the renderer.
   int page_id = 0;
@@ -91,9 +169,8 @@ TEST_F(TranslateManagerTest, NormalTranslate) {
   EXPECT_EQ("fr", original_lang);
   EXPECT_EQ("en", target_lang);
 
-  // The infobar should now be in the translating state.
-  ASSERT_EQ(1, contents()->infobar_delegate_count());
-  ASSERT_EQ(infobar, contents()->GetInfoBarDelegateAt(0));  // Same instance.
+  // The infobar should still be there but in the translating state.
+  ASSERT_EQ(infobar, GetTranslateInfoBar());  // Same instance.
   // TODO(jcampan): the state is not set if the button is not clicked.
   //                Refactor the infobar code so we can simulate the click.
   // EXPECT_EQ(TranslateInfoBarDelegate::kTranslating, infobar->state());
@@ -102,8 +179,8 @@ TEST_F(TranslateManagerTest, NormalTranslate) {
   rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "fr", "en"));
 
   // The infobar should have changed to the after state.
-  ASSERT_EQ(1, contents()->infobar_delegate_count());
-  ASSERT_EQ(infobar, contents()->GetInfoBarDelegateAt(0));
+  EXPECT_FALSE(InfoBarRemoved());
+  ASSERT_EQ(infobar, GetTranslateInfoBar());
   // TODO(jcampan): the TranslateInfoBar is listening for the PAGE_TRANSLATED
   //                notification. Since in unit-test, no actual info-bar is
   //                created, it does not get the notification and does not
@@ -133,9 +210,7 @@ TEST_F(TranslateManagerTest, AutoTranslateOnNavigate) {
   SimulateNavigation(GURL("http://www.google.fr"), 0, L"Le Google", "fr");
 
   // Simulate the user translating.
-  ASSERT_EQ(1, contents()->infobar_delegate_count());
-  TranslateInfoBarDelegate* infobar =
-      contents()->GetInfoBarDelegateAt(0)->AsTranslateInfoBarDelegate();
+  TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
   ASSERT_TRUE(infobar != NULL);
   infobar->Translate();
   rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "fr", "en"));
@@ -166,12 +241,7 @@ TEST_F(TranslateManagerTest, MultipleOnPageContents) {
   SimulateNavigation(GURL("http://www.google.fr"), 0, L"Le Google", "fr");
 
   // Simulate clicking 'Nope' (don't translate).
-  ASSERT_EQ(1, contents()->infobar_delegate_count());
-  TranslateInfoBarDelegate* infobar =
-      contents()->GetInfoBarDelegateAt(0)->AsTranslateInfoBarDelegate();
-  ASSERT_TRUE(infobar != NULL);
-  infobar->TranslationDeclined();
-  contents()->RemoveInfoBar(infobar);
+  EXPECT_TRUE(DenyTranslation());
   EXPECT_EQ(0, contents()->infobar_delegate_count());
 
   // Send a new PageContents, we should not show an infobar.
@@ -180,12 +250,113 @@ TEST_F(TranslateManagerTest, MultipleOnPageContents) {
 
   // Do the same steps but simulate closing the infobar this time.
   SimulateNavigation(GURL("http://www.youtube.fr"), 1, L"Le YouTube", "fr");
-  ASSERT_EQ(1, contents()->infobar_delegate_count());
-  infobar = contents()->GetInfoBarDelegateAt(0)->AsTranslateInfoBarDelegate();
-  ASSERT_TRUE(infobar != NULL);
-  infobar->InfoBarDismissed();  // Simulates closing the infobar.
-  contents()->RemoveInfoBar(infobar);
+  EXPECT_TRUE(CloseTranslateInfoBar());
   EXPECT_EQ(0, contents()->infobar_delegate_count());
   SimulateOnPageContents(GURL("http://www.youtube.fr"), 1, L"Le YouTube", "fr");
   EXPECT_EQ(0, contents()->infobar_delegate_count());
+}
+
+// Test that reloading the page brings back the infobar.
+TEST_F(TranslateManagerTest, Reload) {
+  // Simulate navigating to a page and gettings its language.
+  SimulateNavigation(GURL("http://www.google.fr"), 0, L"Le Google", "fr");
+
+  // Close the infobar.
+  EXPECT_TRUE(CloseTranslateInfoBar());
+
+  // Reload should bring back the infobar.
+  Reload();
+  // The TranslateManager class processes the navigation entry committed
+  // notification in a posted task; process that task.
+  MessageLoop::current()->RunAllPending();
+  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+}
+
+// Tests that a close translate infobar does not reappear when navigating
+// in-page.
+TEST_F(TranslateManagerTest, CloseInfoBarInPageNavigation) {
+  // Simulate navigating to a page and gettings its language.
+  SimulateNavigation(GURL("http://www.google.fr"), 0, L"Le Google", "fr");
+
+  // Close the infobar.
+  EXPECT_TRUE(CloseTranslateInfoBar());
+
+  // Navigate in page, no infobar should be shown.
+  SimulateNavigation(GURL("http://www.google.fr/#ref1"), 0, L"Le Google", "fr");
+  EXPECT_TRUE(GetTranslateInfoBar() == NULL);
+
+  // Navigate out of page, a new infobar should show.
+  SimulateNavigation(GURL("http://www.google.fr/foot"), 0, L"Le Google", "fr");
+  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+}
+
+// Tests that denying translation is sticky when navigating in page.
+TEST_F(TranslateManagerTest, DenyTranslateInPageNavigation) {
+  // Simulate navigating to a page and gettings its language.
+  SimulateNavigation(GURL("http://www.google.fr"), 0, L"Le Google", "fr");
+
+  // Simulate clicking 'Nope' (don't translate).
+  EXPECT_TRUE(DenyTranslation());
+
+  // Navigate in page, no infobar should be shown.
+  SimulateNavigation(GURL("http://www.google.fr/#ref1"), 0, L"Le Google", "fr");
+  EXPECT_TRUE(GetTranslateInfoBar() == NULL);
+
+  // Navigate out of page, a new infobar should show.
+  SimulateNavigation(GURL("http://www.google.fr/foot"), 0, L"Le Google", "fr");
+  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+}
+
+// Tests that after translating and closing the infobar, the infobar does not
+// return when navigating in page.
+TEST_F(TranslateManagerTest, TranslateCloseInfoBarInPageNavigation) {
+  // Simulate navigating to a page and gettings its language.
+  SimulateNavigation(GURL("http://www.google.fr"), 0, L"Le Google", "fr");
+
+  // Simulate the user translating.
+  TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
+  infobar->Translate();
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "fr", "en"));
+
+  // Close the infobar.
+  EXPECT_TRUE(CloseTranslateInfoBar());
+
+  // Navigate in page, no infobar should be shown.
+  SimulateNavigation(GURL("http://www.google.fr/#ref1"), 0, L"Le Google", "fr");
+  EXPECT_TRUE(GetTranslateInfoBar() == NULL);
+
+  // Navigate out of page, a new infobar should show.
+  // Note that we navigate to a page in a different language so we don't trigger
+  // the auto-translate feature (it would translate the page automatically and
+  // the before translate inforbar would not be shown).
+  SimulateNavigation(GURL("http://www.google.de"), 0, L"Das Google", "de");
+  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+}
+
+// Tests that the after translate the infobar still shows when navigating
+// in-page.
+TEST_F(TranslateManagerTest, TranslateInPageNavigation) {
+  // Simulate navigating to a page and gettings its language.
+  SimulateNavigation(GURL("http://www.google.fr"), 0, L"Le Google", "fr");
+
+  // Simulate the user translating.
+  TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
+  ASSERT_TRUE(infobar != NULL);
+  infobar->Translate();
+  rvh()->TestOnMessageReceived(ViewHostMsg_PageTranslated(0, 0, "fr", "en"));
+
+  // Navigate in page, the same infobar should still be shown.
+  SimulateNavigation(GURL("http://www.google.fr/#ref1"), 0, L"Le Google", "fr");
+  EXPECT_FALSE(InfoBarRemoved());
+  EXPECT_EQ(infobar, GetTranslateInfoBar());
+
+  // Navigate out of page, a new infobar should show.
+  // See note in TranslateCloseInfoBarInPageNavigation test on why it is
+  // important to navigate to a page in a different language for this test.
+  SimulateNavigation(GURL("http://www.google.de"), 0, L"Das Google", "de");
+  // The old infobar is gone.
+  EXPECT_TRUE(CheckInfoBarRemovedAndReset(infobar));
+  // And there is a new one.
+  EXPECT_TRUE(GetTranslateInfoBar() != NULL);
 }

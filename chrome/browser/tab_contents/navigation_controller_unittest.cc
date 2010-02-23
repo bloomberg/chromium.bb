@@ -1065,6 +1065,7 @@ TEST_F(NavigationControllerTest, InPage) {
   EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       NotificationType::NAV_ENTRY_COMMITTED));
+  EXPECT_TRUE(details.is_in_page);
   EXPECT_EQ(2, controller().entry_count());
 
   // Go back one.
@@ -1075,6 +1076,9 @@ TEST_F(NavigationControllerTest, InPage) {
   EXPECT_TRUE(controller().RendererDidNavigate(back_params, 0, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       NotificationType::NAV_ENTRY_COMMITTED));
+  // is_in_page is false in that case but should be true.
+  // See comment in AreURLsInPageNavigation() in navigation_controller.cc
+  // EXPECT_TRUE(details.is_in_page);
   EXPECT_EQ(2, controller().entry_count());
   EXPECT_EQ(0, controller().GetCurrentEntryIndex());
   EXPECT_EQ(back_params.url, controller().GetActiveEntry()->url());
@@ -1087,6 +1091,7 @@ TEST_F(NavigationControllerTest, InPage) {
   EXPECT_TRUE(controller().RendererDidNavigate(forward_params, 0, &details));
   EXPECT_TRUE(notifications.Check1AndReset(
       NotificationType::NAV_ENTRY_COMMITTED));
+  EXPECT_TRUE(details.is_in_page);
   EXPECT_EQ(2, controller().entry_count());
   EXPECT_EQ(1, controller().GetCurrentEntryIndex());
   EXPECT_EQ(forward_params.url,
@@ -1102,6 +1107,16 @@ TEST_F(NavigationControllerTest, InPage) {
   EXPECT_TRUE(controller().RendererDidNavigate(forward_params, 0, &details));
   EXPECT_EQ(forward_params.url,
             controller().GetActiveEntry()->url());
+
+  // Finally, navigate to an unrelated URL to make sure in_page is not sticky.
+  const GURL url3("http:////bar");
+  params.page_id = 2;
+  params.url = url3;
+  notifications.Reset();
+  EXPECT_TRUE(controller().RendererDidNavigate(params, 0, &details));
+  EXPECT_TRUE(notifications.Check1AndReset(
+      NotificationType::NAV_ENTRY_COMMITTED));
+  EXPECT_FALSE(details.is_in_page);
 }
 
 // NotificationObserver implementation used in verifying we've received the

@@ -121,6 +121,13 @@ void RenderViewHostTestHarness::NavigateAndCommit(const GURL& url) {
   rvh()->SendNavigate(process()->max_page_id() + 1, url);
 }
 
+void RenderViewHostTestHarness::Reload() {
+  NavigationEntry* entry = controller().GetLastCommittedEntry();
+  DCHECK(entry);
+  controller().Reload(false);
+  rvh()->SendNavigate(entry->page_id(), entry->url());
+}
+
 void RenderViewHostTestHarness::SetUp() {
   // See comment above profile_ decl for why we check for NULL here.
   if (!profile_.get())

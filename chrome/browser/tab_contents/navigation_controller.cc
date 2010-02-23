@@ -86,8 +86,15 @@ void ConfigureEntriesForRestore(
 
 // See NavigationController::IsURLInPageNavigation for how this works and why.
 bool AreURLsInPageNavigation(const GURL& existing_url, const GURL& new_url) {
-  if (existing_url == new_url || !new_url.has_ref())
+  if (existing_url == new_url || !new_url.has_ref()) {
+    // TODO(jcampan): what about when navigating back from a ref URL to the top
+    // non ref URL? Nothing is loaded in that case but we return false here.
+    // The user could also navigate from the ref URL to the non ref URL by
+    // entering the non ref URL in the location bar or through a bookmark, in
+    // which case there would be a load.  I am not sure if the non-load/load
+    // scenarios can be differentiated with the TransitionType.
     return false;
+  }
 
   url_canon::Replacements<char> replacements;
   replacements.ClearRef();
@@ -468,6 +475,9 @@ bool NavigationController::RendererDidNavigate(
     pending_entry_->set_restore_type(NavigationEntry::RESTORE_NONE);
   }
 
+  // is_in_page must be computed before the entry gets committed.
+  details->is_in_page = IsURLInPageNavigation(params.url);
+
   // Do navigation-type specific actions. These will make and commit an entry.
   details->type = ClassifyNavigation(params);
   switch (details->type) {
@@ -519,7 +529,6 @@ bool NavigationController::RendererDidNavigate(
 
   // Now prep the rest of the details for the notification and broadcast.
   details->entry = GetActiveEntry();
-  details->is_in_page = IsURLInPageNavigation(params.url);
   details->is_main_frame = PageTransition::IsMainFrame(params.transition);
   details->serialized_security_info = params.security_info;
   details->is_content_filtered = params.is_content_filtered;
