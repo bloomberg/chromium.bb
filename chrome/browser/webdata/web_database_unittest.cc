@@ -59,6 +59,10 @@ std::ostream& operator<<(std::ostream& os, const AutofillChange& change) {
 class WebDatabaseTest : public testing::Test {
  protected:
   typedef std::vector<AutofillChange> AutofillChangeList;
+  typedef std::set<AutofillEntry,
+    bool (*)(const AutofillEntry&, const AutofillEntry&)> AutofillEntrySet;
+  typedef std::set<AutofillEntry, bool (*)(const AutofillEntry&,
+    const AutofillEntry&)>::iterator AutofillEntrySetIterator;
   virtual void SetUp() {
     PathService::Get(chrome::DIR_TEST_DATA, &file_);
     const std::string test_db = "TestWebDatabase" +
@@ -1020,72 +1024,199 @@ TEST_F(WebDatabaseTest, CreditCard) {
                                         &db_creditcard));
 }
 
-TEST_F(WebDatabaseTest, GetAllAutofillEntries) {
+bool CompareAutofillEntries(const AutofillEntry& a, const AutofillEntry& b) {
+  string16 aNameValue = a.key().name() + a.key().value();
+  string16 bNameValue = b.key().name() + b.key().value();
+
+  std::set<base::Time> timestamps1(a.timestamps().begin(),
+                                    a.timestamps().end());
+  std::set<base::Time> timestamps2(b.timestamps().begin(),
+                                    b.timestamps().end());
+
+  int compVal = a.key().name().compare(b.key().name());
+  if (compVal != 0) {
+    return compVal < 0;
+  }
+
+  compVal = a.key().value().compare(b.key().value());
+  if (compVal != 0) {
+    return compVal < 0;
+  }
+
+  if (timestamps1.size() != timestamps2.size()) {
+    return timestamps1.size() < timestamps2.size();
+  }
+
+  std::set<base::Time>::iterator it;
+  for (it = timestamps1.begin(); it != timestamps1.end(); it++) {
+    timestamps2.erase(*it);
+  }
+
+  return timestamps2.size() != 0U;
+}
+
+TEST_F(WebDatabaseTest, Autofill_GetAllAutofillEntries_NoResults) {
   WebDatabase db;
 
   ASSERT_EQ(sql::INIT_OK, db.Init(file_));
 
-  // Simulate the submission of a handful of entries in a field called "Name",
-  // some more often than others.
+  std::vector<AutofillEntry> entries;
+  ASSERT_TRUE(db.GetAllAutofillEntries(&entries));
+
+  EXPECT_EQ(0U, entries.size());
+}
+
+TEST_F(WebDatabaseTest, Autofill_GetAllAutofillEntries_OneResult) {
+  WebDatabase db;
+
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
   AutofillChangeList changes;
-  EXPECT_TRUE(db.AddFormFieldValue(
+  std::map<std::string, std::vector<base::Time> > name_value_times_map;
+
+  time_t start = 0;
+  std::vector<base::Time> timestamps1;
+  EXPECT_TRUE(db.AddFormFieldValueTime(
       FormField(string16(),
                 ASCIIToUTF16("Name"),
                 ASCIIToUTF16("Superman"),
                 string16(),
                 WebKit::WebInputElement::Text),
-      &changes));
-  for (int i = 0; i < 5; i++) {
-    EXPECT_TRUE(db.AddFormFieldValue(
-        FormField(string16(),
-                  ASCIIToUTF16("Name"),
-                  ASCIIToUTF16("Clark Kent"),
-                  string16(),
-                  WebKit::WebInputElement::Text),
-        &changes));
-  }
-  for (int i = 0; i < 3; i++) {
-    EXPECT_TRUE(db.AddFormFieldValue(
-        FormField(string16(),
-                  ASCIIToUTF16("Name"),
-                  ASCIIToUTF16("Clark Sutter"),
-                  string16(),
-                  WebKit::WebInputElement::Text),
-        &changes));
-  }
-  for (int i = 0; i < 2; i++) {
-    EXPECT_TRUE(db.AddFormFieldValue(
-        FormField(string16(),
-                  ASCIIToUTF16("Favorite Color"),
-                  ASCIIToUTF16("Green"),
-                  string16(),
-                  WebKit::WebInputElement::Text),
-        &changes));
-  }
+      &changes,
+      Time::FromTimeT(start)));
+  timestamps1.push_back(Time::FromTimeT(start));
+  std::string key1("NameSuperman");
+  name_value_times_map.insert(std::pair<std::string,
+    std::vector<base::Time> > (key1, timestamps1));
 
-  // we should get something along the lines of: [("Name", "Superman"),
-  // ("Name", "Clark Kent"), ("Name", "Clark Sutter"),
-  // ("Favorite Color", "Green")]
-  std::list<AutofillEntry> expected_entries;
+  AutofillEntrySet expected_entries(CompareAutofillEntries);
   AutofillKey ak1(ASCIIToUTF16("Name"), ASCIIToUTF16("Superman"));
-  AutofillKey ak2(ASCIIToUTF16("Name"), ASCIIToUTF16("Clark Kent"));
-  AutofillKey ak3(ASCIIToUTF16("Name"), ASCIIToUTF16("Clark Sutter"));
-  AutofillKey ak4(ASCIIToUTF16("Favorite Color"), ASCIIToUTF16("Green"));
-  AutofillEntry ae1(ak1);
-  AutofillEntry ae2(ak2);
-  AutofillEntry ae3(ak3);
-  AutofillEntry ae4(ak4);
-  expected_entries.push_back(ae1);
-  expected_entries.push_back(ae2);
-  expected_entries.push_back(ae3);
-  expected_entries.push_back(ae4);
+  AutofillEntry ae1(ak1, timestamps1);
+
+  expected_entries.insert(ae1);
 
   std::vector<AutofillEntry> entries;
-  EXPECT_TRUE(db.GetAllAutofillEntries(&entries));
+  ASSERT_TRUE(db.GetAllAutofillEntries(&entries));
+  AutofillEntrySet entry_set(entries.begin(), entries.end(),
+    CompareAutofillEntries);
 
-  for (unsigned int i = 0; i < entries.size(); i++) {
-    expected_entries.remove(entries[i]);
+  // make sure the lists of entries match
+  ASSERT_EQ(expected_entries.size(), entry_set.size());
+  AutofillEntrySetIterator it;
+  for (it = entry_set.begin(); it != entry_set.end(); it++) {
+    expected_entries.erase(*it);
   }
 
   EXPECT_EQ(0U, expected_entries.size());
 }
+
+TEST_F(WebDatabaseTest, Autofill_GetAllAutofillEntries_TwoDistinct) {
+  WebDatabase db;
+
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  AutofillChangeList changes;
+  std::map<std::string, std::vector<base::Time> > name_value_times_map;
+  time_t start = 0;
+
+  std::vector<base::Time> timestamps1;
+  EXPECT_TRUE(db.AddFormFieldValueTime(
+      FormField(string16(),
+                ASCIIToUTF16("Name"),
+                ASCIIToUTF16("Superman"),
+                string16(),
+                WebKit::WebInputElement::Text),
+      &changes,
+      Time::FromTimeT(start)));
+  timestamps1.push_back(Time::FromTimeT(start));
+  std::string key1("NameSuperman");
+  name_value_times_map.insert(std::pair<std::string,
+    std::vector<base::Time> > (key1, timestamps1));
+
+  start++;
+  std::vector<base::Time> timestamps2;
+  EXPECT_TRUE(db.AddFormFieldValueTime(
+      FormField(string16(),
+                ASCIIToUTF16("Name"),
+                ASCIIToUTF16("Clark Kent"),
+                string16(),
+                WebKit::WebInputElement::Text),
+      &changes,
+      Time::FromTimeT(start)));
+  timestamps2.push_back(Time::FromTimeT(start));
+  std::string key2("NameClark Kent");
+  name_value_times_map.insert(std::pair<std::string,
+    std::vector<base::Time> > (key2, timestamps2));
+
+  AutofillEntrySet expected_entries(CompareAutofillEntries);
+  AutofillKey ak1(ASCIIToUTF16("Name"), ASCIIToUTF16("Superman"));
+  AutofillKey ak2(ASCIIToUTF16("Name"), ASCIIToUTF16("Clark Kent"));
+  AutofillEntry ae1(ak1, timestamps1);
+  AutofillEntry ae2(ak2, timestamps2);
+
+  expected_entries.insert(ae1);
+  expected_entries.insert(ae2);
+
+  std::vector<AutofillEntry> entries;
+  ASSERT_TRUE(db.GetAllAutofillEntries(&entries));
+  AutofillEntrySet entry_set(entries.begin(), entries.end(),
+    CompareAutofillEntries);
+
+  // make sure the lists of entries match
+  ASSERT_EQ(expected_entries.size(), entry_set.size());
+  AutofillEntrySetIterator it;
+  for (it = entry_set.begin(); it != entry_set.end(); it++) {
+    expected_entries.erase(*it);
+  }
+
+  EXPECT_EQ(0U, expected_entries.size());
+}
+
+TEST_F(WebDatabaseTest, Autofill_GetAllAutofillEntries_TwoSame) {
+  WebDatabase db;
+
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  AutofillChangeList changes;
+  std::map<std::string, std::vector<base::Time> > name_value_times_map;
+
+  time_t start = 0;
+  std::vector<base::Time> timestamps;
+  for (int i = 0; i < 2; i++) {
+    EXPECT_TRUE(db.AddFormFieldValueTime(
+        FormField(string16(),
+                  ASCIIToUTF16("Name"),
+                  ASCIIToUTF16("Superman"),
+                  string16(),
+                  WebKit::WebInputElement::Text),
+        &changes,
+        Time::FromTimeT(start)));
+    timestamps.push_back(Time::FromTimeT(start));
+    start++;
+  }
+
+  std::string key("NameSuperman");
+  name_value_times_map.insert(std::pair<std::string,
+      std::vector<base::Time> > (key, timestamps));
+
+  AutofillEntrySet expected_entries(CompareAutofillEntries);
+  AutofillKey ak1(ASCIIToUTF16("Name"), ASCIIToUTF16("Superman"));
+  AutofillEntry ae1(ak1, timestamps);
+
+  expected_entries.insert(ae1);
+
+  std::vector<AutofillEntry> entries;
+  ASSERT_TRUE(db.GetAllAutofillEntries(&entries));
+  AutofillEntrySet entry_set(entries.begin(), entries.end(),
+    CompareAutofillEntries);
+
+  // make sure the lists of entries match
+  ASSERT_EQ(expected_entries.size(), entry_set.size());
+  AutofillEntrySetIterator it;
+  for (it = entry_set.begin(); it != entry_set.end(); it++) {
+    expected_entries.erase(*it);
+  }
+
+  EXPECT_EQ(0U, expected_entries.size());
+}
+

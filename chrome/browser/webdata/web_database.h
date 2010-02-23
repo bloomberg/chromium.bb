@@ -20,6 +20,7 @@ class AutofillEntry;
 class AutoFillProfile;
 class CreditCard;
 class FilePath;
+class WebDatabaseTest;
 
 namespace base {
 class Time;
@@ -255,7 +256,9 @@ class WebDatabase {
   FRIEND_TEST(WebDatabaseTest, Autofill);
   FRIEND_TEST(WebDatabaseTest, Autofill_AddChanges);
   FRIEND_TEST(WebDatabaseTest, Autofill_RemoveBetweenChanges);
-
+  FRIEND_TEST(WebDatabaseTest, Autofill_GetAllAutofillEntries_OneResult);
+  FRIEND_TEST(WebDatabaseTest, Autofill_GetAllAutofillEntries_TwoDistinct);
+  FRIEND_TEST(WebDatabaseTest, Autofill_GetAllAutofillEntries_TwoSame);
   // Methods for adding autofill entries at a specified time.  For
   // testing only.
   bool AddFormFieldValuesTime(

@@ -987,17 +987,55 @@ bool WebDatabase::GetCountOfFormElement(int64 pair_id, int* count) {
 
 bool WebDatabase::GetAllAutofillEntries(std::vector<AutofillEntry>* entries) {
   DCHECK(entries);
-  sql::Statement s(db_.GetUniqueStatement("SELECT name, value FROM autofill"));
+  sql::Statement s(db_.GetUniqueStatement(
+      "SELECT name, value, date_created FROM autofill a JOIN "
+      "autofill_dates ad ON a.pair_id=ad.pair_id"));
+
   if (!s) {
     NOTREACHED() << "Statement prepare failed";
     return false;
   }
 
+  bool first_entry = true;
+  AutofillKey* current_key_ptr;
+  std::vector<base::Time>* timestamps_ptr;
+  string16 name, value;
+  base::Time time;
   while (s.Step()) {
-    AutofillKey key(UTF8ToUTF16(s.ColumnString(0)),
-                    UTF8ToUTF16(s.ColumnString(1)));
-    AutofillEntry entry(key);
+    name = ASCIIToUTF16(s.ColumnString(0));
+    value = ASCIIToUTF16(s.ColumnString(1));
+    time = Time::FromTimeT(s.ColumnInt64(2));
+
+    if (first_entry) {
+      current_key_ptr = new AutofillKey(name, value);
+
+      timestamps_ptr = new std::vector<base::Time>;
+      timestamps_ptr->push_back(time);
+
+      first_entry = false;
+    } else {
+      // we've encountered the next entry
+      if (current_key_ptr->name().compare(name) != 0 ||
+          current_key_ptr->value().compare(value) != 0) {
+        AutofillEntry entry(*current_key_ptr, *timestamps_ptr);
+        entries->push_back(entry);
+
+        delete current_key_ptr;
+        delete timestamps_ptr;
+
+        current_key_ptr = new AutofillKey(name, value);
+        timestamps_ptr = new std::vector<base::Time>;
+      }
+      timestamps_ptr->push_back(time);
+    }
+  }
+  // If there is at least one result returned, first_entry will be false.
+  // For this case we need to do a final cleanup step.
+  if (!first_entry) {
+    AutofillEntry entry(*current_key_ptr, *timestamps_ptr);
     entries->push_back(entry);
+    delete current_key_ptr;
+    delete timestamps_ptr;
   }
 
   return s.Succeeded();

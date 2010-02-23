@@ -5,7 +5,9 @@
 #ifndef CHROME_BROWSER_WEBDATA_AUTOFILL_ENTRY_H__
 #define CHROME_BROWSER_WEBDATA_AUTOFILL_ENTRY_H__
 
+#include <vector>
 #include "base/string16.h"
+#include "base/time.h"
 
 class AutofillKey {
  public:
@@ -29,13 +31,19 @@ class AutofillKey {
 
 class AutofillEntry {
  public:
-  explicit AutofillEntry(const AutofillKey& key) : key_(key) {}
+  AutofillEntry(const AutofillKey& key,
+                const std::vector<base::Time>& timestamps)
+      : key_(key),
+        timestamps_(timestamps) {}
 
   const AutofillKey& key() const { return key_; }
+  const std::vector<base::Time>& timestamps() const { return timestamps_; }
 
   bool operator==(const AutofillEntry& entry) const;
+
  private:
   AutofillKey key_;
+  std::vector<base::Time> timestamps_;
 };
 
 #endif  // CHROME_BROWSER_WEBDATA_AUTOFILL_ENTRY_H__
