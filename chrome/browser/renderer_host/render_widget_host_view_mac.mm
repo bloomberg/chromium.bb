@@ -503,10 +503,6 @@ void RenderWidgetHostViewMac::KillSelf() {
 
 gfx::PluginWindowHandle
 RenderWidgetHostViewMac::AllocateFakePluginWindowHandle() {
-  // We currently only support the GPU plugin on 10.6 and later.
-  if (!IOSurfaceSupport::Initialize())
-    return 0;
-
   // If we don't already have a GPUPluginLayer allocated for our view,
   // set one up now.
   if (gpu_plugin_layer_.get() == nil) {
@@ -544,10 +540,21 @@ void RenderWidgetHostViewMac::GPUPluginSetIOSurface(
     int32 width,
     int32 height,
     uint64 io_surface_identifier) {
-  plugin_container_manager_.SetSizeAndBackingStore(window,
+  plugin_container_manager_.SetSizeAndIOSurface(window,
+                                                width,
+                                                height,
+                                                io_surface_identifier);
+}
+
+void RenderWidgetHostViewMac::GPUPluginSetTransportDIB(
+    gfx::PluginWindowHandle window,
+    int32 width,
+    int32 height,
+    TransportDIB::Handle transport_dib) {
+  plugin_container_manager_.SetSizeAndTransportDIB(window,
                                                    width,
                                                    height,
-                                                   io_surface_identifier);
+                                                   transport_dib);
 }
 
 void RenderWidgetHostViewMac::GPUPluginBuffersSwapped(

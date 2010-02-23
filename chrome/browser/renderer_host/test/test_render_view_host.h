@@ -85,6 +85,10 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
                                      int32 width,
                                      int32 height,
                                      uint64 io_surface_identifier);
+  virtual void GPUPluginSetTransportDIB(gfx::PluginWindowHandle window,
+                                        int32 width,
+                                        int32 height,
+                                        TransportDIB::Handle transport_dib);
   virtual void GPUPluginBuffersSwapped(gfx::PluginWindowHandle window);
   virtual void DrawGPUPluginInstances(CGLContextObj context);
 #endif

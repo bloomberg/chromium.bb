@@ -12,7 +12,11 @@
 #include <windows.h>
 #endif
 #include "base/callback.h"
+#if defined(OS_MACOSX)
+#include "chrome/common/transport_dib.h"
+#endif
 #include "gpu/command_buffer/service/common_decoder.h"
+
 
 namespace gpu {
 // Forward-declared instead of including x_utils.h, because including glx.h
@@ -57,7 +61,12 @@ class GLES2Decoder : public CommonDecoder {
     return hwnd_;
   }
 #elif defined(OS_MACOSX)
-  virtual uint64 SetWindowSize(int32 width, int32 height) = 0;
+  virtual uint64 SetWindowSizeForIOSurface(int32 width, int32 height) = 0;
+  virtual TransportDIB::Handle SetWindowSizeForTransportDIB(int32 width,
+                                                            int32 height) = 0;
+  virtual void SetTransportDIBAllocAndFree(
+      Callback2<size_t, TransportDIB::Handle*>::Type* allocator,
+      Callback1<TransportDIB::Id>::Type* deallocator) = 0;
 #endif
 
   // Initializes the graphics context.

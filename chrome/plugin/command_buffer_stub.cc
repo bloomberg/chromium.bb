@@ -86,6 +86,9 @@ void CommandBufferStub::OnInitialize(int32 size,
         processor_->SetSwapBuffersCallback(
             NewCallback(this,
                         &CommandBufferStub::SwapBuffersCallback));
+        processor_->SetTransportDIBAllocAndFree(
+            NewCallback(this, &CommandBufferStub::AllocTransportDIB),
+            NewCallback(this, &CommandBufferStub::FreeTransportDIB));
 #endif
         buffer.shared_memory->ShareToProcess(peer_handle, ring_buffer);
       } else {
@@ -149,18 +152,44 @@ void CommandBufferStub::OnGetTransferBuffer(
 
 #if defined(OS_MACOSX)
 void CommandBufferStub::OnSetWindowSize(int32 width, int32 height) {
-  uint64 new_backing_store = processor_->SetWindowSize(width, height);
+  // Try using the IOSurface version first.
+  uint64 new_backing_store = processor_->SetWindowSizeForIOSurface(width,
+                                                                   height);
   if (new_backing_store) {
     Send(new PluginHostMsg_GPUPluginSetIOSurface(plugin_host_route_id_,
                                                  window_,
                                                  width,
                                                  height,
                                                  new_backing_store));
+  } else {
+    // If |new_backing_store| is 0, it might mean that the IOSurface APIs are
+    // not available.  In this case, see if TransportDIBs are supported.
+    TransportDIB::Handle transport_dib =
+        processor_->SetWindowSizeForTransportDIB(width, height);
+    if (TransportDIB::is_valid(transport_dib)) {
+      Send(new PluginHostMsg_GPUPluginSetTransportDIB(plugin_host_route_id_,
+                                                      window_,
+                                                      width,
+                                                      height,
+                                                      transport_dib));
+    }
   }
 }
 
 void CommandBufferStub::SwapBuffersCallback() {
   Send(new PluginHostMsg_GPUPluginBuffersSwapped(plugin_host_route_id_,
                                                  window_));
+}
+
+void CommandBufferStub::AllocTransportDIB(const size_t size,
+                                          TransportDIB::Handle* dib_handle) {
+  Send(new PluginHostMsg_AllocTransportDIB(plugin_host_route_id_,
+                                           size,
+                                           dib_handle));
+}
+
+void CommandBufferStub::FreeTransportDIB(TransportDIB::Id dib_id) {
+  Send(new PluginHostMsg_FreeTransportDIB(plugin_host_route_id_,
+                                          dib_id));
 }
 #endif

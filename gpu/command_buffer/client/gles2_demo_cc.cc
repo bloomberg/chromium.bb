@@ -5,9 +5,12 @@
 // This file is here so other GLES2 related files can have a common set of
 // includes where appropriate.
 
+#include "gpu/command_buffer/client/gles2_demo_cc.h"
+
 #include <math.h>
 #include <GLES2/gl2.h>
-#include "gpu/command_buffer/client/gles2_demo_cc.h"
+
+#include <string>
 
 namespace {
 
@@ -19,14 +22,18 @@ GLuint g_vbo = 0;
 GLsizei g_texCoordOffset = 0;
 int g_angle = 0;
 
-void CheckGLError() {
-  GLenum error = glGetError();
-  if (error != GL_NO_ERROR) {
-    DLOG(ERROR) << "GL Error: " << error;
+void CheckGLError(const char* func_name, int line_no) {
+#ifndef NDEBUG
+  GLenum error = GL_NO_ERROR;
+  while ((error = glGetError()) != GL_NO_ERROR) {
+    DLOG(ERROR) << "GL Error in " << func_name << " at line " << line_no
+        << ": " << error;
   }
+#endif
 }
 
 GLuint LoadShader(GLenum type, const char* shaderSrc) {
+  CheckGLError("LoadShader", __LINE__);
   GLuint shader = glCreateShader(type);
   if (shader == 0) {
     return 0;
@@ -70,6 +77,7 @@ void InitShaders() {
     "  gl_FragColor = texture2D(tex, texCoord);\n"
     "}\n";
 
+  CheckGLError("InitShaders", __LINE__);
   GLuint vertexShader = LoadShader(GL_VERTEX_SHADER, vShaderStr);
   GLuint fragmentShader = LoadShader(GL_FRAGMENT_SHADER, fShaderStr);
   // Create the program object
@@ -127,10 +135,11 @@ void InitShaders() {
   glBufferSubData(GL_ARRAY_BUFFER, 0, sizeof(vertices), vertices);
   glBufferSubData(GL_ARRAY_BUFFER, g_texCoordOffset,
                   sizeof(texCoords), texCoords);
-  CheckGLError();
+  CheckGLError("InitShaders", __LINE__);
 }
 
 GLuint CreateCheckerboardTexture() {
+  CheckGLError("CreateCheckerboardTexture", __LINE__);
   static unsigned char pixels[] = {
     255, 255, 255,
     0,   0,   0,
@@ -147,20 +156,24 @@ GLuint CreateCheckerboardTexture() {
   glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
   glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2, 2, 0, GL_RGB, GL_UNSIGNED_BYTE,
                pixels);
+  CheckGLError("CreateCheckerboardTexture", __LINE__);
   return texture;
 }
 
 }  // anonymous namespace.
 
 void GLFromCPPInit() {
+  CheckGLError("GLFromCPPInit", __LINE__);
   glClearColor(0.f, 0.f, .7f, 1.f);
   g_texture = CreateCheckerboardTexture();
   InitShaders();
+  CheckGLError("GLFromCPPInit", __LINE__);
 }
 
 void GLFromCPPDraw() {
   const float kPi = 3.1415926535897932384626433832795f;
 
+  CheckGLError("GLFromCPPDraw", __LINE__);
   // TODO(kbr): base the angle on time rather than on ticks
   g_angle = (g_angle + 1) % 360;
   // Rotate about the Z axis
@@ -191,10 +204,10 @@ void GLFromCPPDraw() {
   // Note: the viewport is automatically set up to cover the entire Canvas.
   // Clear the color buffer
   glClear(GL_COLOR_BUFFER_BIT);
-  CheckGLError();
+  CheckGLError("GLFromCPPDraw", __LINE__);
   // Use the program object
   glUseProgram(g_programObject);
-  CheckGLError();
+  CheckGLError("GLFromCPPDraw", __LINE__);
   // Set up the model matrix
   glUniformMatrix4fv(g_worldMatrixLoc, 1, GL_FALSE, rot_matrix);
 
@@ -205,14 +218,14 @@ void GLFromCPPDraw() {
   glEnableVertexAttribArray(1);
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 0,
                         reinterpret_cast<const void*>(g_texCoordOffset));
-  CheckGLError();
+  CheckGLError("GLFromCPPDraw", __LINE__);
   // Bind the texture to texture unit 0
   glBindTexture(GL_TEXTURE_2D, g_texture);
-  CheckGLError();
+  CheckGLError("GLFromCPPDraw", __LINE__);
   // Point the uniform sampler to texture unit 0
   glUniform1i(g_textureLoc, 0);
-  CheckGLError();
+  CheckGLError("GLFromCPPDraw", __LINE__);
   glDrawArrays(GL_TRIANGLES, 0, 6);
-  CheckGLError();
+  CheckGLError("GLFromCPPDraw", __LINE__);
   glFlush();
 }

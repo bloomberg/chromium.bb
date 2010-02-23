@@ -4,6 +4,7 @@
 
 #include "webkit/glue/plugins/mac_gpu_plugin_container.h"
 
+#include "base/logging.h"
 #include "webkit/glue/webplugin.h"
 #include "webkit/glue/plugins/mac_gpu_plugin_container_manager.h"
 #include "chrome/common/io_surface_support_mac.h"
@@ -28,7 +29,7 @@ void MacGPUPluginContainer::ReleaseIOSurface() {
   }
 }
 
-void MacGPUPluginContainer::SetSizeAndBackingStore(
+void MacGPUPluginContainer::SetSizeAndIOSurface(
     int32 width,
     int32 height,
     uint64 io_surface_identifier,
@@ -38,6 +39,19 @@ void MacGPUPluginContainer::SetSizeAndBackingStore(
   if (io_surface_support) {
     surface_ = io_surface_support->IOSurfaceLookup(
         static_cast<uint32>(io_surface_identifier));
+    EnqueueTextureForDeletion(manager);
+    width_ = width;
+    height_ = height;
+  }
+}
+
+void MacGPUPluginContainer::SetSizeAndTransportDIB(
+    int32 width,
+    int32 height,
+    TransportDIB::Handle transport_dib,
+    MacGPUPluginContainerManager* manager) {
+  if (TransportDIB::is_valid(transport_dib)) {
+    transport_dib_.reset(TransportDIB::Map(transport_dib));
     EnqueueTextureForDeletion(manager);
     width_ = width;
     height_ = height;
@@ -54,26 +68,60 @@ void MacGPUPluginContainer::MoveTo(
 
 void MacGPUPluginContainer::Draw(CGLContextObj context) {
   IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
-  if (!io_surface_support)
-    return;
-
   GLenum target = GL_TEXTURE_RECTANGLE_ARB;
-  if (!texture_ && surface_) {
+  if (!texture_) {
+    if ((io_surface_support && !surface_) || transport_dib_.get() == NULL)
+      return;
     glGenTextures(1, &texture_);
     glBindTexture(target, texture_);
     glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    // Don't think we need to identify a plane.
-    GLuint plane = 0;
-    io_surface_support->CGLTexImageIOSurface2D(context,
-                                               target,
-                                               GL_RGBA,
-                                               width_,
-                                               height_,
-                                               GL_BGRA,
-                                               GL_UNSIGNED_INT_8_8_8_8_REV,
-                                               surface_,
-                                               plane);
+    // When using an IOSurface, the texture does not need to be repeatedly
+    // uploaded, so bind the IOSurface once during texture gen in this case.
+    if (io_surface_support) {
+      DCHECK(surface_);
+      // Don't think we need to identify a plane.
+      GLuint plane = 0;
+      io_surface_support->CGLTexImageIOSurface2D(context,
+                                                 target,
+                                                 GL_RGBA,
+                                                 width_,
+                                                 height_,
+                                                 GL_BGRA,
+                                                 GL_UNSIGNED_INT_8_8_8_8_REV,
+                                                 surface_,
+                                                 plane);
+    } else {
+      // Reserve space on the card for the actual texture upload, done with the
+      // glTexSubImage2D() call, below.
+      glTexImage2D(target,
+                   0,  // mipmap level 0
+                   GL_RGBA,  // internal format
+                   width_,
+                   height_,
+                   0,  // no border
+                   GL_BGRA,  // The GPU plugin read BGRA pixels
+                   GL_UNSIGNED_INT_8_8_8_8_REV,
+                   NULL);  // No data, this call just reserves room.
+    }
+  }
+
+  // If using TransportDIBs, the texture needs to be uploaded every frame.
+  if (transport_dib_.get() != NULL) {
+    void* pixel_memory = transport_dib_->memory();
+    if (pixel_memory) {
+      glBindTexture(target, texture_);
+      glPixelStorei(GL_UNPACK_ALIGNMENT, 1);  // Needed for NPOT textures.
+      glTexSubImage2D(target,
+                      0,  // mipmap level 0
+                      0,  // x-offset
+                      0,  // y-offset
+                      width_,
+                      height_,
+                      GL_BGRA,  // The GPU plugin gave us BGRA pixels
+                      GL_UNSIGNED_INT_8_8_8_8_REV,
+                      pixel_memory);
+    }
   }
 
   if (texture_) {
@@ -96,8 +144,8 @@ void MacGPUPluginContainer::Draw(CGLContextObj context) {
     glVertex3f(x, y + clipHeight, 0);
     glTexCoord2f(clipX + clipWidth, height_ - clipY - clipHeight);
     glVertex3f(x + clipWidth, y + clipHeight, 0);
-    glDisable(target);
     glEnd();
+    glDisable(target);
   }
 }
 

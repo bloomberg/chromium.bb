@@ -403,6 +403,17 @@ IPC_BEGIN_MESSAGES(PluginHost)
   IPC_MESSAGE_ROUTED1(PluginHostMsg_UpdateGeometry_ACK,
                       int /* ack_key */)
 
+  // This message, used in Mac OS X 10.5 and earlier, is sent from the
+  // plug-in process to the renderer process to indicate that the GPU
+  // plug-in allocated a new TransportDIB that holds the GPU's rendered
+  // image.  This information is then forwarded to the browser process via
+  // a similar message.
+  IPC_MESSAGE_ROUTED4(PluginHostMsg_GPUPluginSetTransportDIB,
+                      gfx::PluginWindowHandle /* window */,
+                      int32 /* width */,
+                      int32 /* height */,
+                      TransportDIB::Handle /* handle to the TransportDIB */)
+
   // This message, used only on 10.6 and later, is sent from the
   // plug-in process to the renderer process to indicate that the GPU
   // plugin allocated a new IOSurface object of the given width and
@@ -418,11 +429,24 @@ IPC_BEGIN_MESSAGES(PluginHost)
                       int32 /* height */,
                       uint64 /* identifier for IOSurface */)
 
-  // This message, currently used only on 10.6 and later, notifies the
-  // renderer process (and from there the browser process) that the
-  // GPU plugin swapped the buffers associated with the given
-  // "window", which should cause the browser to redraw the various
-  // GPU plugins' contents.
+
+  // On the Mac, shared memory can't be allocated in the sandbox, so
+  // the TransportDIB used by the GPU process for rendering has to be allocated
+  // and managed by the browser.  This is a synchronous message, use with care.
+  IPC_SYNC_MESSAGE_ROUTED1_1(PluginHostMsg_AllocTransportDIB,
+                             size_t /* requested memory size */,
+                             TransportDIB::Handle /* output: DIB handle */)
+
+  // Since the browser keeps handles to the allocated transport DIBs, this
+  // message is sent to tell the browser that it may release them when the
+  // renderer is finished with them.
+  IPC_MESSAGE_ROUTED1(PluginHostMsg_FreeTransportDIB,
+                      TransportDIB::Id /* DIB id */)
+
+  // This message notifies the renderer process (and from there the
+  // browser process) that the  GPU plugin swapped the buffers associated
+  // with the given "window", which should cause the browser to redraw
+  // the various GPU plugins' contents.
   IPC_MESSAGE_ROUTED1(PluginHostMsg_GPUPluginBuffersSwapped,
                       gfx::PluginWindowHandle /* window */)
 #endif

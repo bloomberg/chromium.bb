@@ -11,6 +11,7 @@
 
 #include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
+#include "chrome/common/transport_dib.h"
 
 namespace webkit_glue {
 struct WebPluginGeometry;
@@ -31,11 +32,18 @@ class MacGPUPluginContainerManager {
   // Destroys a fake PluginWindowHandle and associated storage.
   void DestroyFakePluginWindowHandle(gfx::PluginWindowHandle id);
 
-  // Sets the size and backing store of the plugin instance.
-  void SetSizeAndBackingStore(gfx::PluginWindowHandle id,
+  // Sets the size and backing store of the plugin instance.  There are two
+  // versions: the IOSurface version is used on systems where the IOSurface
+  // API is supported (Mac OS X 10.6 and later); the TransportDIB is used on
+  // Mac OS X 10.5 and earlier.
+  void SetSizeAndIOSurface(gfx::PluginWindowHandle id,
+                          int32 width,
+                          int32 height,
+                          uint64 io_surface_identifier);
+  void SetSizeAndTransportDIB(gfx::PluginWindowHandle id,
                               int32 width,
                               int32 height,
-                              uint64 io_surface_identifier);
+                              TransportDIB::Handle transport_dib);
 
   // Takes an update from WebKit about a plugin's position and size and moves
   // the plugin accordingly.

@@ -11,6 +11,7 @@
 
 #include "app/gfx/native_widget_types.h"
 #include "base/shared_memory.h"
+#include "chrome/common/transport_dib.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "webkit/glue/webplugin.h"
 
@@ -187,6 +188,10 @@ class RenderWidgetHostView {
                                      int32 width,
                                      int32 height,
                                      uint64 io_surface_identifier) = 0;
+  virtual void GPUPluginSetTransportDIB(gfx::PluginWindowHandle window,
+                                        int32 width,
+                                        int32 height,
+                                        TransportDIB::Handle transport_dib) = 0;
   virtual void GPUPluginBuffersSwapped(gfx::PluginWindowHandle window) = 0;
   // Draws the current GPU plugin instances into the given context.
   virtual void DrawGPUPluginInstances(CGLContextObj context) = 0;

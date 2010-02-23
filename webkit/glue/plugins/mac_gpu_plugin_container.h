@@ -30,7 +30,9 @@
 
 #include "app/gfx/native_widget_types.h"
 #include "base/basictypes.h"
+#include "base/scoped_ptr.h"
 #include "base/gfx/rect.h"
+#include "chrome/common/transport_dib.h"
 
 namespace webkit_glue {
 struct WebPluginGeometry;
@@ -43,10 +45,17 @@ class MacGPUPluginContainer {
   MacGPUPluginContainer();
   virtual ~MacGPUPluginContainer();
 
-  // Sets the backing store and size of this plugin container.
-  void SetSizeAndBackingStore(int32 width,
+  // Sets the backing store and size of this plugin container.  There are two
+  // versions: the IOSurface version is used on systems where the IOSurface
+  // API is supported (Mac OS X 10.6 and later); the TransportDIB is used on
+  // Mac OS X 10.5 and earlier.
+  void SetSizeAndIOSurface(int32 width,
+                           int32 height,
+                           uint64 io_surface_identifier,
+                           MacGPUPluginContainerManager* manager);
+  void SetSizeAndTransportDIB(int32 width,
                               int32 height,
-                              uint64 io_surface_identifier,
+                              TransportDIB::Handle transport_dib,
                               MacGPUPluginContainerManager* manager);
 
   // Tells the plugin container that it has moved relative to the
@@ -78,6 +87,11 @@ class MacGPUPluginContainer {
   // This is held as a CFTypeRef because we can't refer to the
   // IOSurfaceRef type when building on 10.5.
   CFTypeRef surface_;
+
+  // The TransportDIB which is used in pre-10.6 systems where the IOSurface
+  // API is not supported.  This is a weak reference to the actual TransportDIB
+  // whic is owned by the GPU process.
+  scoped_ptr<TransportDIB> transport_dib_;
 
   // The width and height of the surface.
   int32 width_;

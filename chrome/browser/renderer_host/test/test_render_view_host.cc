@@ -108,6 +108,13 @@ void TestRenderWidgetHostView::GPUPluginSetIOSurface(
     uint64 io_surface_identifier) {
 }
 
+void TestRenderWidgetHostView::GPUPluginSetTransportDIB(
+    gfx::PluginWindowHandle window,
+    int32 width,
+    int32 height,
+    TransportDIB::Handle transport_dib) {
+}
+
 void TestRenderWidgetHostView::GPUPluginBuffersSwapped(
     gfx::PluginWindowHandle window) {
 }

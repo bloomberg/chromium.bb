@@ -452,6 +452,10 @@ class RenderWidgetHost : public IPC::Channel::Listener,
                                int32 width,
                                int32 height,
                                uint64 mach_port);
+  void OnGPUPluginSetTransportDIB(gfx::PluginWindowHandle window,
+                                  int32 width,
+                                  int32 height,
+                                  TransportDIB::Handle transport_dib);
   void OnGPUPluginBuffersSwapped(gfx::PluginWindowHandle window);
 #endif
 

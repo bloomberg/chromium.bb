@@ -4531,6 +4531,27 @@ void RenderView::GPUPluginSetIOSurface(gfx::PluginWindowHandle window,
       routing_id(), window, width, height, io_surface_identifier));
 }
 
+void RenderView::GPUPluginSetTransportDIB(gfx::PluginWindowHandle window,
+                                          int32 width,
+                                          int32 height,
+                                          TransportDIB::Handle transport_dib) {
+  Send(new ViewHostMsg_GPUPluginSetTransportDIB(
+      routing_id(), window, width, height, transport_dib));
+}
+
+TransportDIB::Handle RenderView::GPUPluginAllocTransportDIB(size_t size) {
+  TransportDIB::Handle dib_handle;
+  // Assume this is a synchronous RPC.
+  if (Send(new ViewHostMsg_AllocTransportDIB(size, &dib_handle)))
+    return dib_handle;
+  // Return an invalid handle if Send() fails.
+  return TransportDIB::DefaultHandleValue();
+}
+
+void RenderView::GPUPluginFreeTransportDIB(TransportDIB::Id dib_id) {
+  Send(new ViewHostMsg_FreeTransportDIB(dib_id));
+}
+
 void RenderView::GPUPluginBuffersSwapped(gfx::PluginWindowHandle window) {
   Send(new ViewHostMsg_GPUPluginBuffersSwapped(routing_id(), window));
 }

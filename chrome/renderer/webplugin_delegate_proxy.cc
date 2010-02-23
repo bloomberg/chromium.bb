@@ -4,11 +4,11 @@
 
 #include "chrome/renderer/webplugin_delegate_proxy.h"
 
-#include <algorithm>
-
 #if defined(OS_LINUX)
 #include <gtk/gtk.h>
 #endif
+
+#include <algorithm>
 
 #include "app/gfx/blit.h"
 #include "app/gfx/canvas.h"
@@ -398,9 +398,16 @@ void WebPluginDelegateProxy::OnMessageReceived(const IPC::Message& msg) {
 #if defined(OS_MACOSX)
     IPC_MESSAGE_HANDLER(PluginHostMsg_UpdateGeometry_ACK,
                         OnUpdateGeometry_ACK)
-    // Used only on 10.6 and later
+    // Used only on 10.6 and later.
     IPC_MESSAGE_HANDLER(PluginHostMsg_GPUPluginSetIOSurface,
                         OnGPUPluginSetIOSurface)
+    // Used on 10.5 and earlier.
+    IPC_MESSAGE_HANDLER(PluginHostMsg_GPUPluginSetTransportDIB,
+                        OnGPUPluginSetTransportDIB)
+    IPC_MESSAGE_HANDLER(PluginHostMsg_AllocTransportDIB,
+                        OnGPUPluginAllocTransportDIB)
+    IPC_MESSAGE_HANDLER(PluginHostMsg_FreeTransportDIB,
+                        OnGPUPluginFreeTransportDIB)
     IPC_MESSAGE_HANDLER(PluginHostMsg_GPUPluginBuffersSwapped,
                         OnGPUPluginBuffersSwapped)
 #endif
@@ -503,8 +510,7 @@ void WebPluginDelegateProxy::UpdateGeometry(const gfx::Rect& window_rect,
     // scripts the plugin to start playing while it's in the middle of handling
     // an update geometry message, videos don't play.  See urls in bug 20260.
     msg = new PluginMsg_UpdateGeometrySync(instance_id_, param);
-  }
-  else
+  } else  // NO_LINT
 #endif
   {
     msg = new PluginMsg_UpdateGeometry(instance_id_, param);
@@ -1323,6 +1329,31 @@ void WebPluginDelegateProxy::OnGPUPluginSetIOSurface(
   if (render_view_)
     render_view_->GPUPluginSetIOSurface(window, width, height,
                                         io_surface_identifier);
+}
+
+void WebPluginDelegateProxy::OnGPUPluginSetTransportDIB(
+    gfx::PluginWindowHandle window,
+    int32 width,
+    int32 height,
+    TransportDIB::Handle transport_dib) {
+  if (render_view_)
+    render_view_->GPUPluginSetTransportDIB(window, width, height,
+                                           transport_dib);
+}
+
+void WebPluginDelegateProxy::OnGPUPluginAllocTransportDIB(
+    size_t size,
+    TransportDIB::Handle* dib_handle) {
+  if (render_view_)
+    *dib_handle = render_view_->GPUPluginAllocTransportDIB(size);
+  else
+    *dib_handle = TransportDIB::DefaultHandleValue();
+}
+
+void WebPluginDelegateProxy::OnGPUPluginFreeTransportDIB(
+    TransportDIB::Id dib_id) {
+  if (render_view_)
+    render_view_->GPUPluginFreeTransportDIB(dib_id);
 }
 
 void WebPluginDelegateProxy::OnGPUPluginBuffersSwapped(

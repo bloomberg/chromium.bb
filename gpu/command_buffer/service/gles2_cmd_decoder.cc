@@ -6,6 +6,7 @@
 
 #include <stdio.h>
 
+#include <algorithm>
 #include <vector>
 #include <string>
 #include <map>
@@ -297,7 +298,22 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
 #if defined(OS_MACOSX)
   // Overridden from GLES2Decoder.
-  virtual uint64 SetWindowSize(int32 width, int32 height);
+
+  // The recommended usage is to call SetWindowSizeForIOSurface() first, and if
+  // that returns 0, try calling SetWindowSizeForTransportDIB().  A return value
+  // of 0 from SetWindowSizeForIOSurface() might mean the IOSurface API is not
+  // available, which is true if you are not running on Max OS X 10.6 or later.
+  // If SetWindowSizeForTransportDIB() also returns a NULL handle, then an
+  // error has occured.
+  virtual uint64 SetWindowSizeForIOSurface(int32 width, int32 height);
+  virtual TransportDIB::Handle SetWindowSizeForTransportDIB(int32 width,
+                                                            int32 height);
+  // |allocator| sends a message to the renderer asking for a new
+  // TransportDIB big enough to hold the rendered bits.  The parameters to the
+  // call back are the size of the DIB and the handle (filled in on return).
+  virtual void SetTransportDIBAllocAndFree(
+      Callback2<size_t, TransportDIB::Handle*>::Type* allocator,
+      Callback1<TransportDIB::Id>::Type* deallocator);
 #endif
 
   virtual void SetSwapBuffersCallback(Callback0::Type* callback);
@@ -516,6 +532,10 @@ class GLES2DecoderImpl : public GLES2Decoder {
       case GL_TEXTURE_CUBE_MAP_POSITIVE_Z:
       case GL_TEXTURE_CUBE_MAP_NEGATIVE_Z:
         return bound_texture_cube_map_;
+      // Note: If we ever support TEXTURE_RECTANGLE as a target, be sure to
+      // track |texture_| with the currently bound TEXTURE_RECTANGLE texture,
+      // because |texture_| is used by the FBO rendering mechanism for readback
+      // to the bits that get sent to the browser.
       default:
         NOTREACHED();
         return 0;
@@ -540,6 +560,20 @@ class GLES2DecoderImpl : public GLES2Decoder {
   GLES2_COMMAND_LIST(GLES2_CMD_OP)
 
   #undef GLES2_CMD_OP
+
+#if defined(OS_MACOSX)
+  // Helper function to generate names for the backing texture, render buffers
+  // and FBO.  On return, the resulting buffer names can be attached to |fbo_|.
+  // |target| is the target type for the color buffer.
+  void AllocateRenderBuffers(GLenum target, int32 width, int32 height);
+
+  // Helper function to attach the buffers previously allocated by a call to
+  // AllocateRenderBuffers().  On return, |fbo_| can be used for
+  // rendering.  |target| must be the same value as used in the call to
+  // AllocateRenderBuffers().  Returns |true| if the resulting framebuffer
+  // object is valid.
+  bool SetupFrameBufferObject(GLenum target);
+#endif
 
   // Current GL error bits.
   uint32 error_bits_;
@@ -595,16 +629,30 @@ class GLES2DecoderImpl : public GLES2Decoder {
 #elif defined(OS_MACOSX)
   CGLContextObj gl_context_;
   CGLPBufferObj pbuffer_;
+  // Either |io_surface_| or |transport_dib_| is a valid pointer, but not both.
+  // |io_surface_| is non-NULL if the IOSurface APIs are supported (Mac OS X
+  // 10.6 and later).
+  // TODO(dspringer,kbr): Should the GPU backing store be encapsulated in its
+  // own class so all this implementation detail is hidden?
   scoped_cftyperef<CFTypeRef> io_surface_;
+  // TODO(dspringer): If we end up keeping this TransportDIB mechanism, this
+  // should really be a scoped_ptr_malloc<>, with a deallocate functor that
+  // runs |dib_free_callback_|.  I was not able to figure out how to
+  // make this work (or even compile).
+  scoped_ptr<TransportDIB> transport_dib_;
   int32 surface_width_;
   int32 surface_height_;
   GLuint texture_;
   GLuint fbo_;
-  GLuint depth_renderbuffer_;
+  GLuint depth_stencil_renderbuffer_;
   // For tracking whether the default framebuffer / renderbuffer or
   // ones created by the end user are currently bound
   GLuint bound_fbo_;
   GLuint bound_renderbuffer_;
+  // Allocate a TransportDIB in the renderer.
+  scoped_ptr<Callback2<size_t, TransportDIB::Handle*>::Type>
+      dib_alloc_callback_;
+  scoped_ptr<Callback1<TransportDIB::Id>::Type> dib_free_callback_;
 #endif
 
   bool anti_aliased_;
@@ -641,7 +689,7 @@ GLES2DecoderImpl::GLES2DecoderImpl()
       surface_height_(0),
       texture_(0),
       fbo_(0),
-      depth_renderbuffer_(0),
+      depth_stencil_renderbuffer_(0),
       bound_fbo_(0),
       bound_renderbuffer_(0),
 #endif
@@ -1144,7 +1192,70 @@ static void AddIntegerValue(CFMutableDictionaryRef dictionary,
 }
 #endif  // !defined(UNIT_TEST)
 
-uint64 GLES2DecoderImpl::SetWindowSize(int32 width, int32 height) {
+void GLES2DecoderImpl::AllocateRenderBuffers(GLenum target,
+                                             int32 width, int32 height) {
+  if (!texture_) {
+    // Generate the texture object.
+    glGenTextures(1, &texture_);
+    glBindTexture(target, texture_);
+    glTexParameteri(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    // Generate and bind the framebuffer object.
+    glGenFramebuffersEXT(1, &fbo_);
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_);
+    bound_fbo_ = fbo_;
+    // Generate (but don't bind) the depth buffer -- we don't need
+    // this bound in order to do offscreen rendering.
+    glGenRenderbuffersEXT(1, &depth_stencil_renderbuffer_);
+  }
+
+  // Reallocate the depth buffer.
+  glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depth_stencil_renderbuffer_);
+  glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT,
+                           GL_DEPTH24_STENCIL8_EXT,
+                           width,
+                           height);
+
+  // Unbind the renderbuffers.
+  glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, bound_renderbuffer_);
+
+  // Make sure that subsequent set-up code affects the render texture.
+  glBindTexture(target, texture_);
+}
+
+bool GLES2DecoderImpl::SetupFrameBufferObject(GLenum target) {
+  if (bound_fbo_ != fbo_) {
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_);
+  }
+  GLenum fbo_status;
+  glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
+                            GL_COLOR_ATTACHMENT0_EXT,
+                            target,
+                            texture_,
+                            0);
+  fbo_status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+  if (fbo_status == GL_FRAMEBUFFER_COMPLETE_EXT) {
+    glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
+                                 GL_DEPTH_ATTACHMENT_EXT,
+                                 GL_RENDERBUFFER_EXT,
+                                 depth_stencil_renderbuffer_);
+    fbo_status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+  }
+  // Attach the depth and stencil buffer.
+  if (fbo_status == GL_FRAMEBUFFER_COMPLETE_EXT) {
+    glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
+                                 GL_STENCIL_ATTACHMENT,
+                                 GL_RENDERBUFFER_EXT,
+                                 depth_stencil_renderbuffer_);
+    fbo_status = glCheckFramebufferStatusEXT(GL_FRAMEBUFFER_EXT);
+  }
+  if (bound_fbo_ != fbo_) {
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, bound_fbo_);
+  }
+  return fbo_status == GL_FRAMEBUFFER_COMPLETE_EXT;
+}
+
+uint64 GLES2DecoderImpl::SetWindowSizeForIOSurface(int32 width, int32 height) {
 #if defined(UNIT_TEST)
   return 0;
 #else
@@ -1156,7 +1267,7 @@ uint64 GLES2DecoderImpl::SetWindowSize(int32 width, int32 height) {
 
   IOSurfaceSupport* io_surface_support = IOSurfaceSupport::Initialize();
   if (!io_surface_support)
-    return 0;
+    return 0;  // Caller can try using SetWindowSizeForTransportDIB().
 
   if (!MakeCurrent())
     return 0;
@@ -1164,21 +1275,7 @@ uint64 GLES2DecoderImpl::SetWindowSize(int32 width, int32 height) {
   // GL_TEXTURE_RECTANGLE_ARB is the best supported render target on
   // Mac OS X and is required for IOSurface interoperability.
   GLenum target = GL_TEXTURE_RECTANGLE_ARB;
-
-  if (!texture_) {
-    // Generate the texture object.
-    glGenTextures(1, &texture_);
-    glBindTexture(target, texture_);
-    glTexParameterf(target, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameterf(target, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    // Generate and bind the framebuffer object.
-    glGenFramebuffersEXT(1, &fbo_);
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_);
-    bound_fbo_ = fbo_;
-    // Generate (but don't bind) the depth buffer -- we don't need
-    // this bound in order to do offscreen rendering.
-    glGenRenderbuffersEXT(1, &depth_renderbuffer_);
-  }
+  AllocateRenderBuffers(target, width, height);
 
   // Allocate a new IOSurface, which is the GPU resource that can be
   // shared across processes.
@@ -1200,16 +1297,6 @@ uint64 GLES2DecoderImpl::SetWindowSize(int32 width, int32 height) {
   // ultimately reference counted by the operating system.
   io_surface_.reset(io_surface_support->IOSurfaceCreate(properties));
 
-  // Reallocate the depth buffer.
-  glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, depth_renderbuffer_);
-  glRenderbufferStorageEXT(GL_RENDERBUFFER_EXT,
-                           GL_DEPTH_COMPONENT,
-                           width,
-                           height);
-  glBindRenderbufferEXT(GL_RENDERBUFFER_EXT, bound_renderbuffer_);
-
-  // Reallocate the texture object.
-  glBindTexture(target, texture_);
   // Don't think we need to identify a plane.
   GLuint plane = 0;
   io_surface_support->CGLTexImageIOSurface2D(gl_context_,
@@ -1221,24 +1308,8 @@ uint64 GLES2DecoderImpl::SetWindowSize(int32 width, int32 height) {
                                              GL_UNSIGNED_INT_8_8_8_8_REV,
                                              io_surface_.get(),
                                              plane);
-
   // Set up the frame buffer object.
-  if (bound_fbo_ != fbo_) {
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_);
-  }
-  glFramebufferTexture2DEXT(GL_FRAMEBUFFER_EXT,
-                            GL_COLOR_ATTACHMENT0_EXT,
-                            target,
-                            texture_,
-                            0);
-  glFramebufferRenderbufferEXT(GL_FRAMEBUFFER_EXT,
-                               GL_DEPTH_ATTACHMENT_EXT,
-                               GL_RENDERBUFFER_EXT,
-                               depth_renderbuffer_);
-  if (bound_fbo_ != fbo_) {
-    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, bound_fbo_);
-  }
-
+  SetupFrameBufferObject(target);
   surface_width_ = width;
   surface_height_ = height;
 
@@ -1252,6 +1323,68 @@ uint64 GLES2DecoderImpl::SetWindowSize(int32 width, int32 height) {
   return io_surface_support->IOSurfaceGetID(io_surface_);
 #endif  // !defined(UNIT_TEST)
 }
+
+TransportDIB::Handle GLES2DecoderImpl::SetWindowSizeForTransportDIB(
+    int32 width, int32 height) {
+#if defined(UNIT_TEST)
+  return TransportDIB::DefaultHandleValue();
+#else
+  if (surface_width_ == width && surface_height_ == height) {
+    // Return an invalid handle to indicate to the caller that no new backing
+    // store allocation occurred.
+    return TransportDIB::DefaultHandleValue();
+  }
+  surface_width_ = width;
+  surface_height_ = height;
+
+  // Release the old TransportDIB in the browser.
+  if (dib_free_callback_.get() && transport_dib_.get()) {
+    dib_free_callback_->Run(transport_dib_->id());
+  }
+  transport_dib_.reset();
+
+  // Ask the renderer to create a TransportDIB.
+  size_t dib_size = width * 4 * height;  // 4 bytes per pixel.
+  TransportDIB::Handle dib_handle;
+  if (dib_alloc_callback_.get()) {
+    dib_alloc_callback_->Run(dib_size, &dib_handle);
+  }
+  if (!TransportDIB::is_valid(dib_handle)) {
+    // If the allocator fails, it means the DIB was not created in the browser,
+    // so there is no need to run the deallocator here.
+    return TransportDIB::DefaultHandleValue();
+  }
+  transport_dib_.reset(TransportDIB::Map(dib_handle));
+  if (transport_dib_.get() == NULL) {
+    // TODO(dspringer): if the Map() fails, should the deallocator be run so
+    // that the DIB is deallocated in the browser?
+    return TransportDIB::DefaultHandleValue();
+  }
+
+  // Set up the render buffers and reserve enough space on the card for the
+  // framebuffer texture.
+  GLenum target = GL_TEXTURE_RECTANGLE_ARB;
+  AllocateRenderBuffers(target, width, height);
+  glTexImage2D(target,
+               0,  // mipmap level 0
+               GL_RGBA8,  // internal pixel format
+               width,
+               height,
+               0,  // 0 border
+               GL_BGRA,  // Used for consistency
+               GL_UNSIGNED_INT_8_8_8_8_REV,
+               NULL);  // No data, just reserve room on the card.
+  SetupFrameBufferObject(target);
+  return transport_dib_->handle();
+#endif  // !defined(UNIT_TEST)
+}
+
+void GLES2DecoderImpl::SetTransportDIBAllocAndFree(
+    Callback2<size_t, TransportDIB::Handle*>::Type* allocator,
+    Callback1<TransportDIB::Id>::Type* deallocator) {
+  dib_alloc_callback_.reset(allocator);
+  dib_free_callback_.reset(deallocator);
+}
 #endif  // defined(OS_MACOSX)
 
 void GLES2DecoderImpl::SetSwapBuffersCallback(Callback0::Type* callback) {
@@ -1264,6 +1397,11 @@ void GLES2DecoderImpl::Destroy() {
   DCHECK(window());
   window()->Destroy();
 #elif defined(OS_MACOSX)
+  // Release the old TransportDIB in the browser.
+  if (dib_free_callback_.get() && transport_dib_.get()) {
+    dib_free_callback_->Run(transport_dib_->id());
+  }
+  transport_dib_.reset();
   if (gl_context_)
     CGLDestroyContext(gl_context_);
   if (pbuffer_)
@@ -1481,12 +1619,36 @@ void GLES2DecoderImpl::DoSwapBuffers() {
   DCHECK(window());
   window()->SwapBuffers();
 #elif defined(OS_MACOSX)
-  if (bound_fbo_ == fbo_) {
+  if (bound_fbo_ != fbo_) {
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_);
+  }
+  if (io_surface_.get() != NULL) {
     // Bind and unbind the framebuffer to make changes to the
     // IOSurface show up in the other process.
     glFlush();
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, 0);
     glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, fbo_);
+  } else if (transport_dib_.get() != NULL) {
+    // Pre-Mac OS X 10.6, fetch the rendered image from the FBO and copy it
+    // into the TransportDIB.
+    // TODO(dspringer): There are a couple of options that can speed this up.
+    // First is to use async reads into a PBO, second is to use SPI that
+    // allows many tasks to access the same CGSSurface.
+    void* pixel_memory = transport_dib_->memory();
+    if (pixel_memory) {
+      // Note that glReadPixels does an implicit glFlush().
+      glReadBuffer(GL_COLOR_ATTACHMENT0_EXT);
+      glReadPixels(0,
+                   0,
+                   surface_width_,
+                   surface_height_,
+                   GL_BGRA,  // This pixel format should have no conversion.
+                   GL_UNSIGNED_INT_8_8_8_8_REV,
+                   pixel_memory);
+    }
+  }
+  if (bound_fbo_ != fbo_) {
+    glBindFramebufferEXT(GL_FRAMEBUFFER_EXT, bound_fbo_);
   }
 #endif
   if (swap_buffers_callback_.get()) {

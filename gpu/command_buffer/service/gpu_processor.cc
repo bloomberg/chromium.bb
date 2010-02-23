@@ -84,8 +84,19 @@ int32 GPUProcessor::GetGetOffset() {
 }
 
 #if defined(OS_MACOSX)
-uint64 GPUProcessor::SetWindowSize(int32 width, int32 height) {
-  return decoder_->SetWindowSize(width, height);
+uint64 GPUProcessor::SetWindowSizeForIOSurface(int32 width, int32 height) {
+  return decoder_->SetWindowSizeForIOSurface(width, height);
+}
+
+TransportDIB::Handle GPUProcessor::SetWindowSizeForTransportDIB(int32 width,
+                                                                int32 height) {
+  return decoder_->SetWindowSizeForTransportDIB(width, height);
+}
+
+void GPUProcessor::SetTransportDIBAllocAndFree(
+      Callback2<size_t, TransportDIB::Handle*>::Type* allocator,
+      Callback1<TransportDIB::Id>::Type* deallocator) {
+  decoder_->SetTransportDIBAllocAndFree(allocator, deallocator);
 }
 #endif
 

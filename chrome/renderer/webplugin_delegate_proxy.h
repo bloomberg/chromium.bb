@@ -152,6 +152,13 @@ class WebPluginDelegateProxy
                                int32 width,
                                int32 height,
                                uint64 io_surface_identifier);
+  void OnGPUPluginSetTransportDIB(gfx::PluginWindowHandle window,
+                                  int32 width,
+                                  int32 height,
+                                  TransportDIB::Handle transport_dib);
+  void OnGPUPluginAllocTransportDIB(size_t size,
+                                    TransportDIB::Handle* dib_handle);
+  void OnGPUPluginFreeTransportDIB(TransportDIB::Id dib_id);
   void OnGPUPluginBuffersSwapped(gfx::PluginWindowHandle window);
 #endif
 

@@ -9,6 +9,7 @@
 
 #include "app/gfx/native_widget_types.h"
 #include "base/ref_counted.h"
+#include "chrome/common/transport_dib.h"
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/service/command_buffer_service.h"
 #include "gpu/command_buffer/service/gpu_processor.h"
@@ -52,6 +53,8 @@ class CommandBufferStub : public IPC::Channel::Listener,
 #if defined(OS_MACOSX)
   void OnSetWindowSize(int32 width, int32 height);
   void SwapBuffersCallback();
+  void AllocTransportDIB(const size_t size, TransportDIB::Handle* dib_handle);
+  void FreeTransportDIB(TransportDIB::Id dib_id);
 #endif
 
   scoped_refptr<PluginChannel> channel_;

@@ -1859,7 +1859,18 @@ IPC_BEGIN_MESSAGES(ViewHost)
   IPC_MESSAGE_ROUTED1(ViewHostMsg_DestroyFakePluginWindowHandle,
                       gfx::PluginWindowHandle /* id */)
 
-  // This message is sent from the renderer to the browser on behalf
+  // This message, used on Mac OS X 10.5 and earlier (no IOSurface support),
+  // is sent from the renderer to the browser on behalf of the GPU plugin
+  // to indicate that a new backing store was allocated for that GPU plugin
+  // instance.
+  IPC_MESSAGE_ROUTED4(ViewHostMsg_GPUPluginSetTransportDIB,
+                      gfx::PluginWindowHandle /* window */,
+                      int32 /* width */,
+                      int32 /* height */,
+                      TransportDIB::Handle /* handle for the DIB */)
+
+  // This message, used on Mac OS X 10.6 and later (where IOSurface is
+  // supported), is sent from the renderer to the browser on behalf
   // of the GPU plugin to indicate that a new backing store was
   // allocated for that GPU plugin instance.
   //

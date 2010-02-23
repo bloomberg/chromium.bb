@@ -48,8 +48,15 @@ class GPUProcessor : public base::RefCounted<GPUProcessor>,
   // Needed only on Mac OS X, which does not render into an on-screen
   // window and therefore requires the backing store to be resized
   // manually. Returns an opaque identifier for the new backing store.
-  virtual uint64 SetWindowSize(int32 width, int32 height);
-
+  // There are two versions of this method: one for use with the IOSurface
+  // available in Mac OS X 10.6; and, one for use with the
+  // TransportDIB-based version used on Mac OS X 10.5.
+  virtual uint64 SetWindowSizeForIOSurface(int32 width, int32 height);
+  virtual TransportDIB::Handle SetWindowSizeForTransportDIB(int32 width,
+                                                            int32 height);
+  virtual void SetTransportDIBAllocAndFree(
+      Callback2<size_t, TransportDIB::Handle*>::Type* allocator,
+      Callback1<TransportDIB::Id>::Type* deallocator);
 #endif
 
   // Sets a callback which is called when a SwapBuffers command is processed.

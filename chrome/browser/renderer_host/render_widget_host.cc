@@ -150,6 +150,8 @@ void RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
                         OnDestroyFakePluginWindowHandle)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GPUPluginSetIOSurface,
                         OnGPUPluginSetIOSurface)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_GPUPluginSetTransportDIB,
+                        OnGPUPluginSetTransportDIB)
     IPC_MESSAGE_HANDLER(ViewHostMsg_GPUPluginBuffersSwapped,
                         OnGPUPluginBuffersSwapped)
 #endif
@@ -911,6 +913,16 @@ void RenderWidgetHost::OnGPUPluginSetIOSurface(gfx::PluginWindowHandle window,
                                                uint64 mach_port) {
   if (view_) {
     view_->GPUPluginSetIOSurface(window, width, height, mach_port);
+  }
+}
+
+void RenderWidgetHost::OnGPUPluginSetTransportDIB(
+    gfx::PluginWindowHandle window,
+    int32 width,
+    int32 height,
+    TransportDIB::Handle transport_dib) {
+  if (view_) {
+    view_->GPUPluginSetTransportDIB(window, width, height, transport_dib);
   }
 }
 

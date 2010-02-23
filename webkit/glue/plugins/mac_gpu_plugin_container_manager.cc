@@ -29,15 +29,26 @@ void MacGPUPluginContainerManager::DestroyFakePluginWindowHandle(
   plugin_window_to_container_map_.erase(id);
 }
 
-void MacGPUPluginContainerManager::SetSizeAndBackingStore(
+void MacGPUPluginContainerManager::SetSizeAndIOSurface(
     gfx::PluginWindowHandle id,
     int32 width,
     int32 height,
     uint64 io_surface_identifier) {
   MacGPUPluginContainer* container = MapIDToContainer(id);
   if (container)
-    container->SetSizeAndBackingStore(width, height,
+    container->SetSizeAndIOSurface(width, height,
                                       io_surface_identifier, this);
+}
+
+void MacGPUPluginContainerManager::SetSizeAndTransportDIB(
+    gfx::PluginWindowHandle id,
+    int32 width,
+    int32 height,
+    TransportDIB::Handle transport_dib) {
+  MacGPUPluginContainer* container = MapIDToContainer(id);
+  if (container)
+    container->SetSizeAndTransportDIB(width, height,
+                                      transport_dib, this);
 }
 
 void MacGPUPluginContainerManager::MovePluginContainer(
