@@ -220,7 +220,11 @@ class ChromeTests:
 
     # Sets LD_LIBRARY_PATH to the build folder so external libraries can be
     # loaded.
-    os.putenv("LD_LIBRARY_PATH", self._options.build_dir)
+    if (os.getenv("LD_LIBRARY_PATH")):
+      os.putenv("LD_LIBRARY_PATH", "%s:%s" % (os.getenv("LD_LIBRARY_PATH"),
+                                              self._options.build_dir))
+    else:
+      os.putenv("LD_LIBRARY_PATH", self._options.build_dir)
     return valgrind_test.RunTool(cmd, module)
 
   def TestBase(self):
