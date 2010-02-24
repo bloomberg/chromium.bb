@@ -146,6 +146,9 @@ const char kDisablePromptOnRepost[]         = "disable-prompt-on-repost";
 // this option is specified or not.
 const char kDisableRemoteFonts[]            = "disable-remote-fonts";
 
+// Disable session storage.
+const char kDisableSessionStorage[]         = "disable-session-storage";
+
 // Enable shared workers. Functionality not yet complete.
 const char kDisableSharedWorkers[]          = "disable-shared-workers";
 
@@ -265,9 +268,6 @@ const char kEnableRendererAccessibility[]   = "enable-renderer-accessibility";
 
 // Enable the seccomp sandbox (Linux only)
 const char kEnableSeccompSandbox[]          = "enable-seccomp-sandbox";
-
-// Enable session storage.  Still buggy.
-const char kEnableSessionStorage[]          = "enable-session-storage";
 
 // Enables StatsTable, logging statistics to a global named shared memory table.
 const char kEnableStatsTable[]              = "enable-stats-table";

@@ -48,7 +48,6 @@ class DOMStorageTest : public UILayoutTest {
 
   virtual void SetUp() {
     launch_arguments_.AppendSwitch(switches::kDisablePopupBlocking);
-    launch_arguments_.AppendSwitch(switches::kEnableSessionStorage);
     UILayoutTest::SetUp();
   }
 

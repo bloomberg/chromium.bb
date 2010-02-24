@@ -761,7 +761,7 @@ void RenderThread::EnsureWebKitInitialized() {
   WebRuntimeFeatures::enableLocalStorage(
       !command_line.HasSwitch(switches::kDisableLocalStorage));
   WebRuntimeFeatures::enableSessionStorage(
-      command_line.HasSwitch(switches::kEnableSessionStorage));
+      !command_line.HasSwitch(switches::kDisableSessionStorage));
 
   WebRuntimeFeatures::enableIndexedDatabase(
       command_line.HasSwitch(switches::kEnableIndexedDatabase));
