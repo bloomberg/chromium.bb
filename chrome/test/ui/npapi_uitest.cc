@@ -428,7 +428,7 @@ TEST_F(NPAPIVisiblePluginTester, PluginReferrerTest) {
 }
 
 #if defined(OS_MACOSX)
-TEST_F(NPAPIVisiblePluginTester, PluginConvertPointTest) {
+TEST_F(NPAPIVisiblePluginTester, FLAKY_PluginConvertPointTest) {
   if (UITest::in_process_renderer())
     return;
 
