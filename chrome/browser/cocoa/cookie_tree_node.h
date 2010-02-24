@@ -17,8 +17,11 @@ enum CocoaCookieTreeNodeType {
   // A cookie node.
   kCocoaCookieTreeNodeTypeCookie = 1,
 
+  // A HTML5 database storage node.
+  kCocoaCookieTreeNodeTypeDatabaseStorage = 2,
+
   // A local storage node.
-  kCocoaCookieTreeNodeTypeLocalStorage = 2
+  kCocoaCookieTreeNodeTypeLocalStorage = 3
 };
 
 // This class is used by CookiesWindowController and represents a node in the
@@ -41,12 +44,18 @@ enum CocoaCookieTreeNodeType {
   scoped_nsobject<NSString> created_;
   scoped_nsobject<NSString> expires_;
 
-  // These members are only set for kCocoaCookieTreeNodeTypeLocalStorage nodes.
+  // These members are only set for kCocoaCookieTreeNodeTypeLocalStorage
+  // and kCocoaCookieTreeNodeTypeDatabaseStorage nodes.
   scoped_nsobject<NSString> fileSize_;
   scoped_nsobject<NSString> lastModified_;
 
-  // These members are set for both of the two specialized node types.
+  // These members are only set for kCocoaCookieTreeNodeTypeCookie and
+  // kCocoaCookieTreeNodeTypeLocalStorage nodes.
   scoped_nsobject<NSString> domain_;
+
+  // These members are used only for nodes of type
+  // kCocoaCookieTreeNodeTypeDatabaseStorage.
+  scoped_nsobject<NSString> databaseDescription_;
 }
 
 // Designated initializer.
@@ -75,8 +84,12 @@ enum CocoaCookieTreeNodeType {
 - (NSString*)created;
 - (NSString*)expires;
 
-// Used by kCocoaCookieTreeNodeTypeLocalStorage nodes. Nil for other types.
+// Used by kCocoaCookieTreeNodeTypeLocalStorage and
+// kCocoaCookieTreeNodeTypeDatabaseStorage nodes. Nil for other types.
 - (NSString*)fileSize;
 - (NSString*)lastModified;
+
+// Used by kCocoaCookieTreeNodeTypeDatabaseStorage nodes. Nil for other types.
+- (NSString*)databaseDescription;
 
 @end

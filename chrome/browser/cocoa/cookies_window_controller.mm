@@ -327,6 +327,12 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
   if (count != 1U) {
     DCHECK_LT(count, 1U) << "User was able to select more than 1 cookie node!";
     [self setRemoveButtonEnabled:NO];
+
+    // Make sure that the cookie info pane is shown when there is no selection.
+    // That's what windows does.
+    [cookieInfo_ setHidden:NO];
+    [localStorageInfo_ setHidden:YES];
+    [databaseInfo_ setHidden:YES];
     return;
   }
 
@@ -346,13 +352,15 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
 
   [self setRemoveButtonEnabled:YES];
   CocoaCookieTreeNodeType nodeType = [[selectedObjects lastObject] nodeType];
-  if (nodeType == kCocoaCookieTreeNodeTypeLocalStorage) {
-    [cookieInfo_ setHidden:YES];
-    [localStorageInfo_ setHidden:NO];
-  } else {
-    [cookieInfo_ setHidden:NO];
-    [localStorageInfo_ setHidden:YES];
-  }
+  bool hideCookieInfoView = nodeType != kCocoaCookieTreeNodeTypeCookie &&
+      nodeType != kCocoaCookieTreeNodeTypeFolder;
+  bool hideLocaStorageInfoView =
+      nodeType != kCocoaCookieTreeNodeTypeLocalStorage;
+  bool hideDatabaseInfoView =
+      nodeType != kCocoaCookieTreeNodeTypeDatabaseStorage;
+  [cookieInfo_ setHidden:hideCookieInfoView];
+  [localStorageInfo_ setHidden:hideLocaStorageInfoView];
+  [databaseInfo_ setHidden:hideDatabaseInfoView];
 }
 
 #pragma mark Unit Testing
@@ -371,6 +379,10 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
 
 - (NSView*)localStorageInfoView {
   return localStorageInfo_;
+}
+
+- (NSView*)databaseInfoView {
+  return databaseInfo_;
 }
 
 // Re-initializes the |treeModel_|, creates a new observer for it, and re-

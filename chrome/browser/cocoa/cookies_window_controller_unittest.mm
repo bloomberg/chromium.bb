@@ -243,7 +243,7 @@ TEST_F(CookiesWindowControllerTest, TreeNodesRemoved) {
 
   controller_.reset(
       [[CookiesWindowController alloc] initWithProfile:profile
-                                         databaseHelper:database_helper_
+                                        databaseHelper:database_helper_
                                          storageHelper:local_storage_helper_]);
 
   // Root --> foo.com --> Cookies.
@@ -578,6 +578,62 @@ TEST_F(CookiesWindowControllerTest, UpdateFilter)
   [field setStringValue:@"aa"];
   [controller_ updateFilter:field];
   EXPECT_EQ(1U, [[[controller_ cocoaTreeModel] children] count]);
+}
+
+TEST_F(CookiesWindowControllerTest, CreateDatabaseStorageNodes) {
+  TestingProfile* profile = browser_helper_.profile();
+  database_helper_ = new MockBrowsingDataDatabaseHelper(profile);
+  local_storage_helper_ = new MockBrowsingDataLocalStorageHelper(profile);
+  database_helper_->AddDatabaseSamples();
+  controller_.reset(
+      [[CookiesWindowController alloc] initWithProfile:profile
+                                        databaseHelper:database_helper_
+                                         storageHelper:local_storage_helper_]);
+  database_helper_->Notify();
+
+  ASSERT_EQ(2U, [[[controller_ cocoaTreeModel] children] count]);
+
+  // Root --> gdbhost1.
+  CocoaCookieTreeNode* node =
+      [[[controller_ cocoaTreeModel] children] objectAtIndex:0];
+  EXPECT_TRUE([@"gdbhost1" isEqualToString:[node title]]);
+  EXPECT_EQ(kCocoaCookieTreeNodeTypeFolder, [node nodeType]);
+  EXPECT_EQ(1U, [[node children] count]);
+
+  // host1 --> Web Databases.
+  node = [[node children] lastObject];
+  EXPECT_TRUE([@"Web Databases" isEqualToString:[node title]]);
+  EXPECT_EQ(kCocoaCookieTreeNodeTypeFolder, [node nodeType]);
+  EXPECT_EQ(1U, [[node children] count]);
+
+  // Database Storage --> db1.
+  node = [[node children] lastObject];
+  EXPECT_TRUE([@"db1" isEqualToString:[node title]]);
+  EXPECT_EQ(kCocoaCookieTreeNodeTypeDatabaseStorage, [node nodeType]);
+  EXPECT_TRUE([@"description 1" isEqualToString:[node databaseDescription]]);
+  EXPECT_TRUE([node lastModified]);
+  EXPECT_TRUE([node fileSize]);
+
+  // Root --> gdbhost2.
+  node =
+      [[[controller_ cocoaTreeModel] children] objectAtIndex:1];
+  EXPECT_TRUE([@"gdbhost2" isEqualToString:[node title]]);
+  EXPECT_EQ(kCocoaCookieTreeNodeTypeFolder, [node nodeType]);
+  EXPECT_EQ(1U, [[node children] count]);
+
+  // host1 --> Web Databases.
+  node = [[node children] lastObject];
+  EXPECT_TRUE([@"Web Databases" isEqualToString:[node title]]);
+  EXPECT_EQ(kCocoaCookieTreeNodeTypeFolder, [node nodeType]);
+  EXPECT_EQ(1U, [[node children] count]);
+
+  // Database Storage --> db2.
+  node = [[node children] lastObject];
+  EXPECT_TRUE([@"db2" isEqualToString:[node title]]);
+  EXPECT_EQ(kCocoaCookieTreeNodeTypeDatabaseStorage, [node nodeType]);
+  EXPECT_TRUE([@"description 2" isEqualToString:[node databaseDescription]]);
+  EXPECT_TRUE([node lastModified]);
+  EXPECT_TRUE([node fileSize]);
 }
 
 TEST_F(CookiesWindowControllerTest, CreateLocalStorageNodes) {

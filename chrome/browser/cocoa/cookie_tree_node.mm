@@ -56,6 +56,17 @@
       sendFor_.reset([l10n_util::GetNSStringWithFixup(
           IDS_COOKIES_COOKIE_SENDFOR_ANY) retain]);
     }
+  } else if (nodeType == CookieTreeNode::DetailedInfo::TYPE_DATABASE) {
+    const BrowsingDataDatabaseHelper::DatabaseInfo* databaseInfo =
+        info.database_info;
+    nodeType_ = kCocoaCookieTreeNodeTypeDatabaseStorage;
+    databaseDescription_.reset([base::SysUTF8ToNSString(
+        databaseInfo->description) retain]);
+    fileSize_.reset([base::SysWideToNSString(FormatBytes(databaseInfo->size,
+        GetByteDisplayUnits(databaseInfo->size), true)) retain]);
+    lastModified_.reset([base::SysWideToNSString(
+        base::TimeFormatFriendlyDateAndTime(
+            databaseInfo->last_modified)) retain]);
   } else if (nodeType == CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE) {
     const BrowsingDataLocalStorageHelper::LocalStorageInfo* storageInfo =
         info.local_storage_info;
@@ -140,7 +151,7 @@
   return expires_.get();
 }
 
-#pragma mark Local Storage Accessors
+#pragma mark Local Storage and Database Accessors
 
 - (NSString*)fileSize {
   return fileSize_.get();
@@ -148,6 +159,12 @@
 
 - (NSString*)lastModified {
   return lastModified_.get();
+}
+
+#pragma mark Database Accessors
+
+- (NSString*)databaseDescription {
+  return databaseDescription_.get();
 }
 
 @end
