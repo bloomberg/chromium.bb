@@ -428,6 +428,7 @@ TEST_F(NPAPIVisiblePluginTester, PluginReferrerTest) {
 }
 
 #if defined(OS_MACOSX)
+// http://crbug.com/36670 - failes on 10.6
 TEST_F(NPAPIVisiblePluginTester, FLAKY_PluginConvertPointTest) {
   if (UITest::in_process_renderer())
     return;
