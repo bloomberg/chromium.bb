@@ -22,21 +22,20 @@ class WebFrame;
 //
 // The intent of this mechanism is to prevent user scripts from slowing down
 // fast pages (run after load), while still allowing them to run relatively
-// timelily for pages with lots of slow subresources.
+// timely for pages with lots of slow subresources.
 class UserScriptIdleScheduler {
  public:
   UserScriptIdleScheduler(RenderView* view, WebKit::WebFrame* frame);
 
   bool has_run() { return has_run_; }
 
+  void set_has_run(bool has_run) { has_run_ = has_run; }
+
   // Called when the DOM has been completely constructed.
   void DidFinishDocumentLoad();
 
   // Called when the document has completed loading.
   void DidFinishLoad();
-
-  // Called when the document has navigated to a fragment.
-  void DidChangeLocationWithinPage();
 
   // Called when the client has gone away and we should no longer run scripts.
   void Cancel();

@@ -1,0 +1,10 @@
+{
+  "name": "execute_script_fragment_navigation",
+  "version": "1.0",
+  "description": "Tests execute script running after navigation to a fragments within a page",
+  "background_page": "background.html",
+  "permissions": ["tabs", "http://*/*"],
+  "content_scripts": [
+    {"matches": ["http://*/*"], "js": ["content_script.js"]}
+  ]
+}

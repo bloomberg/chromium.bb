@@ -2681,6 +2681,13 @@ void RenderView::didFinishLoad(WebFrame* frame) {
 
 void RenderView::didChangeLocationWithinPage(
     WebFrame* frame, bool is_new_navigation) {
+
+  // Determine if the UserScriptIdleScheduler already ran scripts on this page,
+  // since a new one gets created by didCreateDataSource.
+  NavigationState* state =
+    NavigationState::FromDataSource(frame->dataSource());
+  bool idle_scheduler_ran = state->user_script_idle_scheduler()->has_run();
+
   // If this was a reference fragment navigation that we initiated, then we
   // could end up having a non-null pending navigation state.  We just need to
   // update the ExtraData on the datasource so that others who read the
@@ -2690,13 +2697,16 @@ void RenderView::didChangeLocationWithinPage(
   // DidCreateDataSource conveniently takes care of this for us.
   didCreateDataSource(frame, frame->dataSource());
 
+  if (idle_scheduler_ran) {
+    // Update the new UserScriptIdleScheduler so we don't re-run scripts.
+    NavigationState* new_state =
+        NavigationState::FromDataSource(frame->dataSource());
+    new_state->user_script_idle_scheduler()->set_has_run(true);
+  }
+
   didCommitProvisionalLoad(frame, is_new_navigation);
 
   UpdateTitle(frame, frame->view()->mainFrame()->dataSource()->pageTitle());
-
-  NavigationState* navigation_state = NavigationState::FromDataSource(
-      frame->dataSource());
-  navigation_state->user_script_idle_scheduler()->DidChangeLocationWithinPage();
 }
 
 void RenderView::didUpdateCurrentHistoryItem(WebFrame* frame) {
