@@ -213,8 +213,8 @@ char* Maps::allocNearAddr(char* addr_target, size_t size, int prot) const {
               // the GROWS_DOWN region.  Pick the farthest away region that
               // is still within the gap.
 
-              if (addr < kMaxDistance ||  // Underflow protection.
-                  addr - kMaxDistance < gap_start) {
+              if (static_cast<unsigned long>(addr) < kMaxDistance ||  // Underflow protection.
+                  static_cast<unsigned long>(addr) - kMaxDistance < gap_start) {
                 position = gap_start;
               } else {
                 position = addr - kMaxDistance;
