@@ -334,6 +334,9 @@ each locale. -->
         <message name="IDS_CONTENT_CONTEXT_RELOAD" desc="The name of the Reload command in the content area context menu">
           Re&amp;load
         </message>
+        <message name="IDS_CONTENT_CONTEXT_TRANSLATE" desc="The name of the Translate command in the content area context menu">
+          &amp;Translate to <ph name="LANGUAGE">$1<ex>English</ex></ph>
+        </message>
 
         <message name="IDS_CONTENT_CONTEXT_RELOADFRAME" desc="The name of the Reload Frame command in the content area context menu">
           Reload frame
@@ -490,6 +493,9 @@ each locale. -->
         <message name="IDS_CONTENT_CONTEXT_INPUT_METHODS_MENU" desc="The name of the input method submenu in the content area context menu">
           Input &amp;methods
         </message>
+        <message name="IDS_CONTENT_CONTEXT_TRANSLATE_SELECTION" desc="The name of the Translate 'string' to English command of the content area context menu">
+          &amp;Translate '<ph name="TEXT">$1<ex>les fleurs bleues</ex></ph>' to <ph name="LANGUAGE">$2<ex>English</ex></ph>
+        </message>
       </if>
       <if expr="pp_ifdef('use_titlecase')">
         <message name="IDS_CONTENT_CONTEXT_BACK" desc="In Title Case: The name of the Back command in the content area context menu">
@@ -515,6 +521,9 @@ each locale. -->
         </message>
         <message name="IDS_CONTENT_CONTEXT_RELOAD" desc="In Title Case: The name of the Reload command in the content area context menu">
           Re&amp;load
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_TRANSLATE" desc="In Title Case: The name of the Translate command in the content area context menu">
+          &amp;Translate to <ph name="LANGUAGE">$1<ex>English</ex></ph>
         </message>
 
         <message name="IDS_CONTENT_CONTEXT_RELOADFRAME" desc="In Title Case: The name of the Reload Frame command in the content area context menu">
@@ -671,6 +680,9 @@ each locale. -->
         </message>
         <message name="IDS_CONTENT_CONTEXT_INPUT_METHODS_MENU" desc="In Title Case: The name of the input method submenu in the content area context menu">
           Input &amp;Methods
+        </message>
+        <message name="IDS_CONTENT_CONTEXT_TRANSLATE_SELECTION" desc="In Title Case: The name of the Translate 'string' to English command of the content area context menu">
+          &amp;Translate '<ph name="TEXT">$1<ex>les fleurs bleues</ex></ph>' to <ph name="LANGUAGE">$2<ex>English</ex></ph>
         </message>
       </if>
 
@@ -4798,6 +4810,10 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Change Gears settings
       </message>
 
+      <message name="IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE" desc="The label of the check-box that enables page translate">
+        Offer to translate pages that aren't in a language I read.
+      </message>
+
       <message name="IDS_OPTIONS_CERTIFICATES_LABEL" desc="The info label for the 'Manage certificates' button">
         Select trusted SSL certificates.
       </message>
@@ -5782,6 +5798,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_NETWORK">
         Network
       </message>
+      <message name="IDS_OPTIONS_ADVANCED_SECTION_TRANSLATE">
+        Translate
+      </message>
 
       <!-- Script Timeout Dialog -->
       <message name="IDS_SCRIPT_TIMEOUT_DIALOG_TITLE" desc="Title of the script timeout dialog.">
@@ -6158,7 +6177,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Your login details are out of date. Click to re-enter your password.
       </message>
 
-      <!-- Translate Info Bar-->
+      <!-- Translate Info Bar -->
       <message name="IDS_TRANSLATE_INFOBAR_OPTIONS" desc="Text to show for the translate infobar options menu button">
         Options
       </message>
@@ -6184,7 +6203,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
         Nope
       </message>
       <message name="IDS_TRANSLATE_INFOBAR_TRANSLATING" desc="Text shown when page is currently being translated by servers">
-        Loading...
+        Translating...
       </message>
       <message name="IDS_TRANSLATE_INFOBAR_PRIVACY_TITLE" desc="Title for translation warning.">
         Translation Warning
