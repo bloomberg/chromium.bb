@@ -94,7 +94,11 @@ ContentExceptionEditor::ContentExceptionEditor(
       l10n_util::GetStringUTF8(IDS_EXCEPTION_EDITOR_ACTION_TITLE).c_str(),
       action_combo_,
       NULL);
-  gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), table);
+  gtk_box_pack_start(GTK_BOX(GTK_DIALOG(dialog_)->vbox), table,
+                     FALSE, FALSE, 0);
+
+  gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
+                      gtk_util::kContentAreaSpacing);
 
   // Prime the state of the buttons.
   OnEntryChanged(GTK_EDITABLE(entry_), this);
