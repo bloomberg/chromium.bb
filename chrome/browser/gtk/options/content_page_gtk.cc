@@ -252,20 +252,16 @@ GtkWidget* ContentPageGtk::InitFormAutofillGroup() {
 }
 
 GtkWidget* ContentPageGtk::InitBrowsingDataGroup() {
-  GtkWidget* vbox = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
-
-  // Horizontal two button layout.
-  GtkWidget* button_hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
-  gtk_container_add(GTK_CONTAINER(vbox), button_hbox);
+  GtkWidget* button_box = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
 
   // Import button.
   GtkWidget* import_button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_OPTIONS_IMPORT_DATA_BUTTON).c_str());
   g_signal_connect(import_button, "clicked",
                    G_CALLBACK(OnImportButtonClicked), this);
-  gtk_box_pack_start(GTK_BOX(button_hbox), import_button, FALSE, FALSE, 0);
+  gtk_box_pack_start(GTK_BOX(button_box), import_button, FALSE, FALSE, 0);
 
-  return vbox;
+  return button_box;
 }
 
 GtkWidget* ContentPageGtk::InitThemesGroup() {
