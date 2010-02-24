@@ -131,7 +131,7 @@
     'history': ['brettw+cc@chromium.org'],
     'renderer': ['darin-cc@chromium.org',
                  'brettw+cc@chromium.org',
-                 'jam@chromium.org'],
+                 'jam+cc@chromium.org'],
     'safe_browsing': ['paul@chromium.org'],
     'tab_contents': ['brettw+cc@chromium.org'],
     'webkit': ['darin-cc@chromium.org'],
