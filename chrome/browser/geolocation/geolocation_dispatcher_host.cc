@@ -51,7 +51,7 @@ bool GeolocationDispatcherHost::OnMessageReceived(
 
 void GeolocationDispatcherHost::NotifyPositionUpdated(
     const Geoposition& geoposition) {
-  if (!ChromeThread::CurrentlyOn(ChromeThread::UI)) {
+  if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE,
         NewRunnableMethod(
@@ -59,14 +59,14 @@ void GeolocationDispatcherHost::NotifyPositionUpdated(
             geoposition));
     return;
   }
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   for (std::set<GeolocationServiceRenderId>::iterator geo =
        geolocation_renderers_.begin();
        geo != geolocation_renderers_.end();
        ++geo) {
     IPC::Message* message;
-    if (geoposition.error_code != Geoposition::ERROR_CODE_NONE) {
+    if (geoposition.error_code == Geoposition::ERROR_CODE_NONE) {
       message = new ViewMsg_Geolocation_PositionUpdated(
           geo->route_id, geoposition);
     } else {

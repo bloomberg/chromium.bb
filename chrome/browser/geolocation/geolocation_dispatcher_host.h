@@ -68,7 +68,7 @@ class GeolocationDispatcherHost
              route_id < rhs.route_id;
     }
   };
-  // Only used on the UI thread.
+  // Only used on the IO thread.
   std::set<GeolocationServiceRenderId> geolocation_renderers_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationDispatcherHost);

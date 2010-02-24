@@ -18,6 +18,7 @@
 #include "chrome/browser/renderer_host/render_view_host_notification_task.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/tab_contents/tab_util.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/render_messages.h"
 #include "grit/generated_resources.h"
@@ -217,20 +218,13 @@ void GeolocationPermissionContext::RequestPermissionFromUI(
   }
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile_);
-  for (int i = 0; i < browser->tab_count(); ++i) {
-    TabContents* tab_contents = browser->GetTabContentsAt(i);
-    RenderViewHost* render_view_host = tab_contents->render_view_host();
-    if (render_view_host->process()->id() == render_process_id &&
-        render_view_host->routing_id() == render_view_id &&
-        tab_contents->GetURL().GetOrigin() == origin) {
-      tab_contents->AddInfoBar(
-          new GeolocationConfirmInfoBarDelegate(
-              tab_contents, this, render_process_id, render_view_id,
-              bridge_id, origin));
-      break;
-    }
-  }
+  TabContents* tab_contents =
+      tab_util::GetTabContentsByID(render_process_id, render_view_id);
+  DCHECK(tab_contents);
+  tab_contents->AddInfoBar(
+      new GeolocationConfirmInfoBarDelegate(
+          tab_contents, this, render_process_id, render_view_id,
+          bridge_id, origin));
 }
 
 void GeolocationPermissionContext::NotifyPermissionSet(
