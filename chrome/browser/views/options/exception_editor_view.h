@@ -15,6 +15,7 @@
 #include "views/controls/textfield/textfield.h"
 
 namespace views {
+class ImageView;
 class Label;
 }
 
@@ -96,6 +97,10 @@ class ExceptionEditorView : public views::View,
   // Returns true if we're adding a new item.
   bool is_new() const { return index_ == -1; }
 
+  bool IsHostValid(const std::string& host) const;
+
+  void UpdateImageView(views::ImageView* image_view, bool is_valid);
+
   Delegate* delegate_;
   ContentExceptionsTableModel* model_;
   ActionComboboxModel cb_model_;
@@ -106,6 +111,7 @@ class ExceptionEditorView : public views::View,
   const ContentSetting setting_;
 
   views::Textfield* host_tf_;
+  views::ImageView* host_iv_;
   views::Combobox* action_cb_;
 
   DISALLOW_COPY_AND_ASSIGN(ExceptionEditorView);

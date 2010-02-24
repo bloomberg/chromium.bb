@@ -5,34 +5,41 @@
 #include "chrome/browser/views/options/exception_editor_view.h"
 
 #include "app/l10n_util.h"
+#include "app/resource_bundle.h"
 #include "chrome/browser/content_exceptions_table_model.h"
 #include "chrome/browser/host_content_settings_map.h"
 #include "googleurl/src/url_canon.h"
 #include "googleurl/src/url_parse.h"
+#include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 #include "net/base/net_util.h"
 #include "views/grid_layout.h"
+#include "views/controls/image_view.h"
 #include "views/controls/label.h"
 #include "views/standard_layout.h"
 #include "views/window/window.h"
 
-// The settings shown in the combobox if show_ask_ is false;
-static const ContentSetting kNoAskSettings[] = { CONTENT_SETTING_ALLOW,
-                                                 CONTENT_SETTING_BLOCK };
+namespace {
 
-// The settings shown in the combobox if show_ask_ is true;
-static const ContentSetting kAskSettings[] = { CONTENT_SETTING_ALLOW,
-                                               CONTENT_SETTING_ASK,
-                                               CONTENT_SETTING_BLOCK };
+// The settings shown in the combobox if show_ask_ is false.
+const ContentSetting kNoAskSettings[] = { CONTENT_SETTING_ALLOW,
+                                          CONTENT_SETTING_BLOCK };
+
+// The settings shown in the combobox if show_ask_ is true.
+const ContentSetting kAskSettings[] = { CONTENT_SETTING_ALLOW,
+                                        CONTENT_SETTING_ASK,
+                                        CONTENT_SETTING_BLOCK };
 
 // Returns true if the host name is valid.
-static bool ValidHost(const std::string& host) {
+bool ValidHost(const std::string& host) {
   if (host.empty())
     return false;
 
   url_canon::CanonHostInfo host_info;
   return !net::CanonicalizeHost(host, &host_info).empty();
 }
+
+}  // namespace
 
 int ExceptionEditorView::ActionComboboxModel::GetItemCount() {
   return show_ask_ ? arraysize(kAskSettings) : arraysize(kNoAskSettings);
@@ -101,15 +108,7 @@ std::wstring ExceptionEditorView::GetWindowTitle() const {
 bool ExceptionEditorView::IsDialogButtonEnabled(
     MessageBoxFlags::DialogButton button) const {
   if (button == MessageBoxFlags::DIALOGBUTTON_OK) {
-    std::string new_host = UTF16ToUTF8(host_tf_->text());
-    if (is_new()) {
-      return ValidHost(new_host) &&
-          (model_->IndexOfExceptionByHost(new_host) == -1);
-    }
-    return !new_host.empty() &&
-        (host_ == new_host ||
-         (ValidHost(new_host) &&
-          model_->IndexOfExceptionByHost(new_host) == -1));
+    return IsHostValid(UTF16ToUTF8(host_tf_->text()));
   }
   return true;
 }
@@ -133,6 +132,7 @@ views::View* ExceptionEditorView::GetContentsView() {
 void ExceptionEditorView::ContentsChanged(views::Textfield* sender,
                                           const std::wstring& new_contents) {
   GetDialogClientView()->UpdateDialogButtons();
+  UpdateImageView(host_iv_, IsHostValid(UTF16ToUTF8(host_tf_->text())));
 }
 
 bool ExceptionEditorView::HandleKeystroke(
@@ -147,6 +147,10 @@ void ExceptionEditorView::Init() {
   host_tf_ = new views::Textfield();
   host_tf_->SetText(UTF8ToUTF16(host_));
   host_tf_->SetController(this);
+
+  host_iv_ = new views::ImageView;
+
+  UpdateImageView(host_iv_, IsHostValid(UTF16ToUTF8(host_tf_->text())));
 
   action_cb_ = new views::Combobox(&cb_model_);
   if (!is_new())
@@ -170,6 +174,7 @@ void ExceptionEditorView::Init() {
   layout->StartRow(0, 1);
   layout->AddView(CreateLabel(IDS_EXCEPTION_EDITOR_HOST_TITLE));
   layout->AddView(host_tf_);
+  layout->AddView(host_iv_);
 
   layout->StartRowWithPadding(0, 1, 0, kRelatedControlVerticalSpacing);
   layout->AddView(CreateLabel(IDS_EXCEPTION_EDITOR_ACTION_TITLE));
@@ -180,4 +185,19 @@ views::Label* ExceptionEditorView::CreateLabel(int message_id) {
   views::Label* label = new views::Label(l10n_util::GetString(message_id));
   label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
   return label;
+}
+
+bool ExceptionEditorView::IsHostValid(const std::string& host) const {
+  bool is_valid_host = ValidHost(host) &&
+      (model_->IndexOfExceptionByHost(host) == -1);
+
+  return is_new() ? is_valid_host : (!host.empty() &&
+      ((host_ == host) ||  is_valid_host));
+}
+
+void ExceptionEditorView::UpdateImageView(views::ImageView* image_view,
+                                          bool is_valid) {
+   return image_view->SetImage(
+       ResourceBundle::GetSharedInstance().GetBitmapNamed(
+           is_valid ? IDR_INPUT_GOOD : IDR_INPUT_ALERT));
 }
