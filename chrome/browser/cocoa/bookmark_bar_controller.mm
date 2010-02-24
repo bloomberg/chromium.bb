@@ -10,7 +10,7 @@
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
-#import "chrome/browser/browser_theme_provider.h"
+#include "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/background_gradient_view.h"
 #import "chrome/browser/cocoa/bookmark_bar_bridge.h"
 #import "chrome/browser/cocoa/bookmark_bar_constants.h"
@@ -25,7 +25,6 @@
 #import "chrome/browser/cocoa/bookmark_name_folder_controller.h"
 #import "chrome/browser/cocoa/event_utils.h"
 #import "chrome/browser/cocoa/menu_button.h"
-#import "chrome/browser/cocoa/themed_window.h"
 #import "chrome/browser/cocoa/toolbar_controller.h"
 #import "chrome/browser/cocoa/view_resizer.h"
 #include "chrome/browser/metrics/user_metrics.h"
@@ -204,7 +203,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
   [defaultCenter addObserver:self
                     selector:@selector(themeDidChangeNotification:)
-                        name:kBrowserThemeDidChangeNotification
+                        name:kGTMThemeDidChangeNotification
                       object:nil];
 
     // This call triggers an awakeFromNib, which builds the bar, which
@@ -242,12 +241,11 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 // because our trigger is an [NSView viewWillMoveToWindow:], which the
 // controller doesn't normally know about.  Otherwise we don't have
 // access to the theme before we know what window we will be on.
-- (void)updateTheme:(ThemeProvider*)themeProvider {
-  if (!themeProvider)
+- (void)updateTheme:(GTMTheme*)theme {
+  if (!theme)
     return;
-  NSColor* color =
-      themeProvider->GetNSColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT,
-                                true);
+  NSColor* color = [theme textColorForStyle:GTMThemeStyleBookmarksBarButton
+                                      state:GTMThemeStateActiveWindow];
   for (BookmarkButton* button in buttons_.get()) {
     BookmarkButtonCell* cell = [button cell];
     [cell setTextColor:color];
@@ -257,9 +255,8 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 
 // Called after the current theme has changed.
 - (void)themeDidChangeNotification:(NSNotification*)aNotification {
-  ThemeProvider* themeProvider =
-      static_cast<ThemeProvider*>([[aNotification object] pointerValue]);
-  [self updateTheme:themeProvider];
+  GTMTheme* theme = [aNotification object];
+  [self updateTheme:theme];
 }
 
 - (void)awakeFromNib {
@@ -1213,7 +1210,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   [self clearBookmarkBar];
   [self addNodesToButtonList:node];
   [self createOtherBookmarksButton];
-  [self updateTheme:[[[self view] window] themeProvider]];
+  [self updateTheme:[[self view] gtm_theme]];
   [self resizeButtons];
   [self positionOffTheSideButton];
   [self addNonBookmarkButtonsToView];

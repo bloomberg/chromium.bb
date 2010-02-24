@@ -3,9 +3,7 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/cocoa/infobar_gradient_view.h"
-
-#import "chrome/browser/browser_theme_provider.h"
-#import "chrome/browser/cocoa/themed_window.h"
+#import "chrome/browser/cocoa/GTMTheme.h"
 
 const double kBackgroundColorTop[3] =
     {255.0 / 255.0, 242.0 / 255.0, 183.0 / 255.0};
@@ -45,15 +43,8 @@ const double kBackgroundColorBottom[3] =
 }
 
 - (NSColor*)strokeColor {
-  ThemeProvider* themeProvider = [[self window] themeProvider];
-  if (!themeProvider)
-    return [NSColor blackColor];
-
-  BOOL active = [[self window] isMainWindow];
-  return themeProvider->GetNSColor(
-      active ? BrowserThemeProvider::COLOR_TOOLBAR_STROKE :
-               BrowserThemeProvider::COLOR_TOOLBAR_STROKE_INACTIVE,
-      true);
+  return [[self gtm_theme] strokeColorForStyle:GTMThemeStyleToolBar
+                                         state:[[self window] isKeyWindow]];
 }
 
 - (void)drawRect:(NSRect)rect {

@@ -242,7 +242,7 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 - (NSButton*)offTheSideButton;
 - (NSButton*)otherBookmarksButton;
 - (BookmarkNode*)nodeFromMenuItem:(id)sender;
-- (void)updateTheme:(ThemeProvider*)themeProvider;
+- (void)updateTheme:(GTMTheme*)theme;
 @end
 
 // The (internal) |NSPasteboard| type string for bookmark button drags, used for

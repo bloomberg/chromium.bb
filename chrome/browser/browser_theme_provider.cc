@@ -72,11 +72,7 @@ const SkColor kDefaultColorToolbar = SkColorSetRGB(210, 225, 246);
 #endif
 const SkColor kDefaultColorTabText = SK_ColorBLACK;
 const SkColor kDefaultColorBackgroundTabText = SkColorSetRGB(64, 64, 64);
-#if defined (OS_MACOSX)
-const SkColor kDefaultColorBookmarkText = SkColorSetRGB(0, 0, 0);
-#else
 const SkColor kDefaultColorBookmarkText = SkColorSetRGB(18, 50, 114);
-#endif
 #if defined(OS_WIN)
 const SkColor kDefaultColorNTPBackground =
     color_utils::GetSysSkColor(COLOR_WINDOW);

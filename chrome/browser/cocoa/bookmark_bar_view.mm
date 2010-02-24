@@ -4,15 +4,14 @@
 
 #import "chrome/browser/cocoa/bookmark_bar_view.h"
 
-#import "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #import "chrome/browser/cocoa/bookmark_button.h"
-#import "chrome/browser/cocoa/themed_window.h"
+#import "chrome/browser/cocoa/GTMTheme.h"
 #import "third_party/mozilla/include/NSPasteboard+Utils.h"
 
 @interface BookmarkBarView (Private)
 - (void)themeDidChangeNotification:(NSNotification*)aNotification;
-- (void)updateTheme:(ThemeProvider*)themeProvider;
+- (void)updateTheme:(GTMTheme*)theme;
 @end
 
 @implementation BookmarkBarView
@@ -28,7 +27,7 @@
   NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
   [defaultCenter addObserver:self
                     selector:@selector(themeDidChangeNotification:)
-                        name:kBrowserThemeDidChangeNotification
+                        name:kGTMThemeDidChangeNotification
                       object:nil];
 
   DCHECK(controller_ && "Expected this to be hooked up via Interface Builder");
@@ -45,27 +44,21 @@
 // controller desn't have access to it until it's placed in the view
 // hierarchy.  This is the spot where we close the loop.
 - (void)viewWillMoveToWindow:(NSWindow*)window {
-  ThemeProvider* themeProvider = [window themeProvider];
-  [self updateTheme:themeProvider];
-  [controller_ updateTheme:themeProvider];
+  [self updateTheme:[window gtm_theme]];
+  [controller_ updateTheme:[window gtm_theme]];
 }
 
 // Called after the current theme has changed.
 - (void)themeDidChangeNotification:(NSNotification*)aNotification {
-  ThemeProvider* themeProvider =
-      static_cast<ThemeProvider*>([[aNotification object] pointerValue]);
-  [self updateTheme:themeProvider];
+  GTMTheme* theme = [aNotification object];
+  [self updateTheme:theme];
 }
 
 // Adapt appearance to the current theme. Called after theme changes and before
 // this is shown for the first time.
-- (void)updateTheme:(ThemeProvider*)themeProvider {
-  if (!themeProvider)
-    return;
-
-  NSColor* color =
-      themeProvider->GetNSColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT,
-                                true);
+- (void)updateTheme:(GTMTheme*)theme {
+  NSColor* color = [theme textColorForStyle:GTMThemeStyleBookmarksBarButton
+                                      state:GTMThemeStateActiveWindow];
   [noItemTextfield_ setTextColor:color];
 }
 
@@ -95,8 +88,9 @@
     NSRect uglyBlackBar =
         NSMakeRect(xLeft, kBarVertPad,
                    kBarWidth, NSHeight([self bounds]) - 2 * kBarVertPad);
-    NSColor* uglyBlackBarColor = [[self window] themeProvider]->
-        GetNSColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT, true);
+    NSColor* uglyBlackBarColor =
+        [[self gtm_theme] textColorForStyle:GTMThemeStyleBookmarksBarButton
+                                      state:GTMThemeStateActiveWindow];
     [[uglyBlackBarColor colorWithAlphaComponent:kBarOpacity] setFill];
     [[NSBezierPath bezierPathWithRect:uglyBlackBar] fill];
   }

@@ -9,12 +9,11 @@
 #include "app/resource_bundle.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
-#import "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/download_item_button.h"
 #import "chrome/browser/cocoa/download_item_cell.h"
 #include "chrome/browser/cocoa/download_item_mac.h"
 #import "chrome/browser/cocoa/download_shelf_controller.h"
-#import "chrome/browser/cocoa/themed_window.h"
+#import "chrome/browser/cocoa/GTMTheme.h"
 #import "chrome/browser/cocoa/ui_localizer.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_shelf.h"
@@ -70,7 +69,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 @interface DownloadItemController (Private)
 - (void)themeDidChangeNotification:(NSNotification*)aNotification;
-- (void)updateTheme:(ThemeProvider*)themeProvider;
+- (void)updateTheme:(GTMTheme*)theme;
 - (void)setState:(DownoadItemState)state;
 @end
 
@@ -89,7 +88,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
     NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
     [defaultCenter addObserver:self
                       selector:@selector(themeDidChangeNotification:)
-                          name:kBrowserThemeDidChangeNotification
+                          name:kGTMThemeDidChangeNotification
                         object:nil];
 
     shelf_ = shelf;
@@ -188,7 +187,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 - (void)updateVisibility:(id)sender {
   if ([[self view] window])
-    [self updateTheme:[[[self view] window] themeProvider]];
+    [self updateTheme:[[self view] gtm_theme]];
 
   // TODO(thakis): Make this prettier, by fading the items out or overlaying
   // the partial visible one with a horizontal alpha gradient -- crbug.com/17830
@@ -241,16 +240,15 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
 
 // Called after the current theme has changed.
 - (void)themeDidChangeNotification:(NSNotification*)aNotification {
-  ThemeProvider* themeProvider =
-      static_cast<ThemeProvider*>([[aNotification object] pointerValue]);
-  [self updateTheme:themeProvider];
+  GTMTheme* theme = [aNotification object];
+  [self updateTheme:theme];
 }
 
 // Adapt appearance to the current theme. Called after theme changes and before
 // this is shown for the first time.
-- (void)updateTheme:(ThemeProvider*)themeProvider {
-  NSColor* color =
-      themeProvider->GetNSColor(BrowserThemeProvider::COLOR_TAB_TEXT, true);
+- (void)updateTheme:(GTMTheme*)theme {
+  NSColor* color = [theme textColorForStyle:GTMThemeStyleTabBarSelected
+                                      state:GTMThemeStateActiveWindow];
   [dangerousDownloadLabel_ setTextColor:color];
 }
 

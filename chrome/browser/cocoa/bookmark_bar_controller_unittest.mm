@@ -4,7 +4,6 @@
 
 #import <Cocoa/Cocoa.h>
 
-#include "app/theme_provider.h"
 #include "base/basictypes.h"
 #include "base/scoped_nsobject.h"
 #include "base/sys_string_conversions.h"
@@ -81,28 +80,25 @@
 
 @end
 
-class FakeTheme : public ThemeProvider {
- public:
-  FakeTheme(NSColor* color) : color_(color) { }
+@interface FakeTheme : GTMTheme {
   scoped_nsobject<NSColor> color_;
+}
+@end
 
-  virtual void Init(Profile* profile) { }
-  virtual SkBitmap* GetBitmapNamed(int id) const { return nil; }
-  virtual SkColor GetColor(int id) const { return SkColor(); }
-  virtual bool GetDisplayProperty(int id, int* result) const { return false; }
-  virtual bool ShouldUseNativeFrame() const { return false; }
-  virtual bool HasCustomImage(int id) const { return false; }
-  virtual RefCountedMemory* GetRawData(int id) const { return NULL; }
-  virtual NSImage* GetNSImageNamed(int id, bool allow_default) const {
-    return nil;
+@implementation FakeTheme
+- (id)initWithColor:(NSColor*)color {
+  if ((self = [super init])) {
+    color_.reset([color retain]);
   }
-  virtual NSColor* GetNSColor(int id, bool allow_default) const {
-    return color_.get();
-  }
-  virtual NSColor* GetNSColorTint(int id, bool allow_default) const {
-    return nil;
-  }
-};
+  return self;
+}
+
+- (NSColor*)textColorForStyle:(GTMThemeStyle)style
+                        state:(GTMThemeState)state {
+  return color_.get();
+}
+@end
+
 
 
 namespace {
@@ -885,8 +881,8 @@ TEST_F(BookmarkBarControllerTest, TestThemedButton) {
                                               [NSColor blueColor],
                                               nil];
   for (NSColor* color in colors) {
-    FakeTheme theme(color);
-    [bar_ updateTheme:&theme];
+    scoped_nsobject<FakeTheme> theme([[FakeTheme alloc] initWithColor:color]);
+    [bar_ updateTheme:theme.get()];
     NSAttributedString* astr = [button attributedTitle];
     EXPECT_TRUE(astr);
     EXPECT_TRUE([[astr string] isEqual:@"small"]);
