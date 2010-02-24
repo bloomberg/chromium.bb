@@ -36,7 +36,7 @@ struct NaClThreadContext {
   /*          0x90 */
   void        *tls_base;
   /*          0x98 */
-  uint64_t    tls_idx;
+  uint32_t    tls_idx;
   /* 0xa0 */
 };
 /* 0xa8 */

@@ -27,7 +27,7 @@ NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap) {
           "NaClAllocAddrSpace: calling NaClAllocateSpace(*,0x%016"PRIxS")\n",
           ((size_t) 1 << nap->addr_bits));
 
-  rv = NaClAllocateSpace(&mem, (size_t) 1U << nap->addr_bits);
+  rv = NaClAllocateSpace(&mem, (uintptr_t) 1U << nap->addr_bits);
   if (LOAD_OK != rv) {
     return rv;
   }
@@ -68,7 +68,6 @@ NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap) {
                           MADV_DONTNEED)) {
       return LOAD_MADVISE_FAIL;
     }
-
     NaClLog(2,
             "mprotecting 0x%08"PRIxPTR", 0x%08"PRIxS", PROT_NONE\n",
             nap->mem_start + hole_start, hole_size);
@@ -88,7 +87,7 @@ NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap) {
  */
 NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
   uintptr_t start_addr;
-  uint32_t  region_size;
+  size_t    region_size;
   int       err;
 
   /*
@@ -118,7 +117,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
   region_size = NaClRoundPage(nap->static_text_end - NACL_SYSCALL_START_ADDR);
   NaClLog(3,
           ("Trampoline/text region start 0x%08"PRIxPTR","
-           " size 0x%08"PRIx32", end 0x%08"PRIxPTR"\n"),
+           " size 0x%08"PRIxS", end 0x%08"PRIxPTR"\n"),
           start_addr, region_size,
           start_addr + region_size);
   if (0 != (err = NaCl_mprotect((void *) start_addr,
@@ -126,7 +125,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                                 PROT_READ | PROT_EXEC))) {
     NaClLog(LOG_ERROR,
             ("NaClMemoryProtection:"
-             " NaCl_mprotect(0x%08"PRIxPTR", 0x%08"PRIx32", 0x%x) failed,"
+             " NaCl_mprotect(0x%08"PRIxPTR", 0x%08"PRIxS", 0x%x) failed,"
              " error %d (trampoline)\n"),
             start_addr, region_size, PROT_READ | PROT_EXEC,
             err);
@@ -153,7 +152,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
   region_size = NaClRoundPage(NaClRoundAllocPage(nap->data_end)
                               + nap->mem_start - start_addr);
   NaClLog(3,
-          ("RW data region start 0x%08"PRIxPTR", size 0x%08"PRIx32","
+          ("RW data region start 0x%08"PRIxPTR", size 0x%08"PRIxS","
            " end 0x%08"PRIxPTR"\n"),
           start_addr, region_size,
           start_addr + region_size);
@@ -162,7 +161,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                                 PROT_READ | PROT_WRITE))) {
     NaClLog(LOG_ERROR,
             ("NaClMemoryProtection:"
-             " NaCl_mprotect(0x%08"PRIxPTR", 0x%08"PRIx32", 0x%x) failed,"
+             " NaCl_mprotect(0x%08"PRIxPTR", 0x%08"PRIxS", 0x%x) failed,"
              " error %d (data)\n"),
             start_addr, region_size, PROT_READ | PROT_WRITE,
             err);
@@ -184,7 +183,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                 + NaClTruncAllocPage(((uintptr_t) 1U << nap->addr_bits)
                                      - nap->stack_size));
   NaClLog(3,
-          ("RW stack region start 0x%08"PRIxPTR", size 0x%08"PRIx32","
+          ("RW stack region start 0x%08"PRIxPTR", size 0x%08"PRIxS","
            " end 0x%08"PRIxPTR"\n"),
           start_addr, region_size,
           start_addr + region_size);
@@ -193,7 +192,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
                                 PROT_READ | PROT_WRITE))) {
     NaClLog(LOG_ERROR,
             ("NaClMemoryProtection:"
-             " NaCl_mprotect(0x%08"PRIxPTR", 0x%08"PRIx32", 0x%x) failed,"
+             " NaCl_mprotect(0x%08"PRIxPTR", 0x%08"PRIxS", 0x%x) failed,"
              " error %d (stack)\n"),
             start_addr, region_size, PROT_READ | PROT_WRITE,
             err);

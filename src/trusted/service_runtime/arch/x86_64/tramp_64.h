@@ -17,7 +17,8 @@
  * but it doesn't really matter since we convert their addresses to
  * uintptr_t at every use.
  */
-extern char   NaCl_trampoline_code, NaCl_trampoline_code_end;
+extern char   NaCl_trampoline_code;
+extern char   NaCl_trampoline_code_end;
 extern char   NaCl_trampoline_call_target;
 
 #endif

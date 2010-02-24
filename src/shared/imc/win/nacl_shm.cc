@@ -9,6 +9,7 @@
 
 #include <windows.h>
 #include "native_client/src/shared/imc/nacl_imc.h"
+#include "native_client/src/shared/platform/nacl_log.h"
 
 namespace nacl {
 
@@ -52,7 +53,10 @@ void* Map(void* start, size_t length, int prot, int flags,
 
   start = MapViewOfFileEx(memory, desired_access, 0, offset, length,
                           (flags & kMapFixed) ? start : 0);
-  return start ? start : kMapFailed;
+  if (NULL == start) {
+    NaClLog(LOG_ERROR, "MapViewOfFileEx failed, error 0x%x", GetLastError());
+  }
+  return (NULL != start) ? start : kMapFailed;
 }
 
 int Unmap(void* start, size_t length) {

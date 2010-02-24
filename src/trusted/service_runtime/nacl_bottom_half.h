@@ -37,7 +37,13 @@ void NaClClosureResultDone(struct NaClClosureResult *self,
 void NaClStartAsyncOp(struct NaClAppThread  *natp,
                       struct NaClClosure    *ncp);
 
-int32_t NaClWaitForAsyncOp(struct NaClAppThread *natp) NACL_WUR;
+void *NaClWaitForAsyncOp(struct NaClAppThread *natp) NACL_WUR;
+
+/*
+ * Casts return value from NaClWaitForAsyncOp into something that
+ * can be returned from a syscall
+ */
+int32_t NaClWaitForAsyncOpSysRet(struct NaClAppThread *natp) NACL_WUR;
 
 #if defined(HAVE_SDL)
 

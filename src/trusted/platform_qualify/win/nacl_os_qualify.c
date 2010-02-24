@@ -42,17 +42,22 @@ int NaClOsIsSupported() {
      */
     return 0;
   }
+#ifndef _WIN64
   if (NaClOsIs64BitWindows()) {
-    /* For now, all 64-bit Windows versions are not supported. */
+    /*
+     * Must run 64-bit nacl on 64-bit Windows. 32-bit modules won't work
+     * due to lack of support for segment register modification.
+     */
     return 0;
   }
+#endif
   return 1;
 }
 
 
 /*
  * Returns 1 if the operating system is a 64-bit version of
- * Windows.  For now, all of these versions are not supported.
+ * Windows.
  */
 int NaClOsIs64BitWindows() {
   SYSTEM_INFO system_info;

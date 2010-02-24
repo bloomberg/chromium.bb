@@ -210,7 +210,6 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   }
 
   NaClFillEndOfTextRegion(nap);
-
 #if 0 == NACL_DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX
   NaClLog(2, "Validating image\n");
   subret = NaClValidateImage(nap);
@@ -285,8 +284,8 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   int                   i;
   char                  *p;
   char                  *strp;
-  int                   *argv_len;
-  int                   *envv_len;
+  size_t                *argv_len;
+  size_t                *envv_len;
   struct NaClAppThread  *natp;
   uintptr_t             stack_ptr;
 
@@ -378,8 +377,8 @@ int NaClCreateMainThread(struct NaClApp     *nap,
   }
 
   /* write strings and char * arrays to stack */
+  stack_ptr = (nap->mem_start + ((uintptr_t) 1U << nap->addr_bits) - size);
 
-  stack_ptr = (nap->mem_start + ((uintptr_t) 1 << nap->addr_bits) - size);
   NaClLog(2, "setting stack to : %016"PRIxPTR"\n", stack_ptr);
 
   VCHECK(0 == (stack_ptr & NACL_STACK_ALIGN_MASK),

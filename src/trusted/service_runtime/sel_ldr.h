@@ -75,7 +75,7 @@ struct NaClApp {
   /*
    * public, user settable.
    */
-  uintptr_t                 addr_bits;
+  uint8_t                   addr_bits;
   uintptr_t                 max_data_alloc;
   uintptr_t                 stack_size;
   /*
@@ -458,11 +458,10 @@ struct NaClPatchInfo {
   struct NaClPatch    *abs64;
   size_t              num_abs64;
 
-  uintptr_t           *rel16;
-  size_t              num_rel16;
-
+#if NACL_TARGET_SUBARCH == 32
   uintptr_t           *rel32;
   size_t              num_rel32;
+#endif
 
   uintptr_t           *rel64;
   size_t              num_rel64;
@@ -476,7 +475,7 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           struct NaClApp            *nap,
                           nacl_reg_t                prog_ctr,
                           nacl_reg_t                stack_ptr,
-                          nacl_reg_t                tls_info);
+                          uint32_t                  tls_info);
 
 void NaClThreadContextDtor(struct NaClThreadContext *ntcp);
 

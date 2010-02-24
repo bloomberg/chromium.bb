@@ -26,6 +26,7 @@
  * using MS Studio (NACL_WINDOWS).
  */
         .text
+        .globl  IDENTIFIER(NaClGetStackPtr)
         .globl  IDENTIFIER(NaClSyscallSeg)
         HIDDEN(NaClSyscallSeg)
 IDENTIFIER(NaClSyscallSeg):
@@ -63,14 +64,38 @@ IDENTIFIER(NaClSyscallSeg):
         /* Linux uses TLS. */
         movl    %fs:nacl_thread_index@TPOFF, %eax
 #elif NACL_WINDOWS
-        /* TODO(ilewis): add TLS access code here */
+       /*
+        * The Windows linker won't insert the correct offset for
+        * nacl_thread_index. Instead, it inserts a 64-bit address, the
+        * bottom 12 bits of which appear to correspond to the TLS
+        * index of the variable.
+        *
+        * TODO(ilewis): replace this hack with code that assembles and links
+        *               correctly.
+        *
+        * NOTE: This code must match the code in platform/win/test_tls.S !!
+        *       If you change this code, please update that file as well.
+        */
+        leaq nacl_thread_index(%rip), %rax
+        mov $0x00000fff, %edx
+        and %edx, %eax
+        mov %eax, %edx
+
+        /*
+         * The rest of this code is exactly the same as what
+         * the Microsoft compiler generates--yes, it really is
+         * that complicated.
+         */
+        mov _tls_index(%rip), %ecx
+        movq %gs:0x58, %rax
+        movq (%rax,%rcx,8), %rax
+        movq (%rdx,%rax), %rax
 #elif NACL_OSX
-# error "64-bit NaCl for OSX is not supported"
+# error "64-bit OSX is not a supported NaCl runtime target platform"
 #else
 # error "What OS/compiler is the service runtime being compiled with?"
 #endif
         /* check NaClThreadContext in sel_rt_64.h for the offsets */
-
         leaq    IDENTIFIER(nacl_user)(%rip), %rdx
         leaq    (%rdx,%rax,8), %rdx
         movq    0x0(%rdx), %rdx
@@ -133,3 +158,11 @@ IDENTIFIER(NaClSyscallSeg):
          */
 
         /* noret */
+
+#if NACL_WINDOWS && defined(_WIN64)
+/* On Windows64 this has to be done via out-of-line assembly code */
+        HIDDEN(NaClGetStackPtr)
+IDENTIFIER(NaClGetStackPtr):
+        movq %rsp, %rax
+        ret
+#endif

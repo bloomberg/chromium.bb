@@ -43,7 +43,7 @@ int main(int  argc,
    * the loop.
    */
   for (ix = 0; ix < NACL_ARRAY_SIZE(buffer); ++ix) {
-    buffer[ix] = ix;
+    buffer[ix] = (char) ix;
   }
   return (buffer[10] + buffer[4095] == 0);  /* loop was not dead code! */
 }

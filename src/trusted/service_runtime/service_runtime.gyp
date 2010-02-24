@@ -52,36 +52,129 @@
   'includes': [
     '../../../build/common.gypi',
   ],
+  'target_defaults': {
+    'variables':{
+      'target_base': 'none',
+    },
+    'target_conditions': [
+      ['target_base=="sel"', {
+        'sources': [
+          'dyn_array.c',
+          'env_cleanser.c',
+          'nacl_all_modules.c',
+          'nacl_app_thread.c',
+          'nacl_bottom_half.c',
+          'nacl_closure.c',
+          'nacl_globals.c',
+          'nacl_memory_object.c',
+          'nacl_sync_queue.c',
+          'nacl_syscall_common.c',
+          'nacl_syscall_hook.c',
+          'nacl_text.c',
+          'sel_addrspace.c',
+          'sel_ldr.c',
+          'sel_ldr-inl.c',
+          'sel_ldr_standard.c',
+          'elf_util.c',
+          'sel_mem.c',
+          'sel_util.c',
+          'sel_util-inl.c',
+          'web_worker_stub.c',
+        ],
+        'sources!': [
+           '<(syscall_handler)',
+        ],
+        'actions': [
+          {
+            'action_name': 'nacl_syscall_handler',
+            'inputs': [
+              'nacl_syscall_handlers_gen2.py',
+              '<(syscall_handler)',
+            ],
+            'action':
+              # TODO(gregoryd): find out how to generate a file
+              # in such a location that can be found in both
+              # NaCl and Chrome builds.
+              ['<@(python_exe)', 'nacl_syscall_handlers_gen2.py', '-c',
+               '-f', 'Video',
+               '-f', 'Audio',
+               '-f', 'Multimedia',
+               '-i', '<@(syscall_handler)',
+               '-o', '<@(_outputs)'],
+
+            'msvs_cygwin_shell': 0,
+            'msvs_quote_cmd': 0,
+            'outputs': [
+              '<(INTERMEDIATE_DIR)/nacl_syscall_handlers.c',
+            ],
+            'process_outputs_as_sources': 1,
+            'message': 'Creating nacl_syscall_handlers.c',
+          },
+        ],
+        'conditions': [
+            ['OS=="mac"', {
+              'sources': [
+                'osx/nacl_ldt.c',
+                'linux/sel_memory.c',
+                'linux/x86/sel_segments.c',
+                'osx/nacl_thread_nice.c',
+              ],
+            }],
+            ['OS=="win"', {
+              'sources': [
+                'win/nacl_ldt.c',
+                'win/sel_memory.c',
+                'win/sel_segments.c',
+                'win/nacl_thread_nice.c',
+              ],
+            }],
+            # TODO(gregoryd): move arm-specific stuff into a separate gyp file.
+            ['target_arch=="arm"', {
+              'sources': [
+                'arch/arm/nacl_app.c',
+                'arch/arm/nacl_switch_to_app_arm.c',
+                'arch/arm/sel_rt.c',
+                'arch/arm/nacl_tls.c',
+                'arch/arm/sel_ldr_arm.c',
+                'arch/arm/sel_addrspace_arm.c',
+                'arch/arm/sel_validate_image.c',
+                'arch/arm/nacl_switch.S',
+                'arch/arm/nacl_syscall.S',
+                'arch/arm/nacl_tls_tramp.S',
+                'arch/arm/springboard.S',
+                'arch/arm/tramp_arm.S',
+              ],
+            }],
+            ['OS=="linux"', {
+              'sources': [
+                'linux/sel_memory.c',
+                'linux/nacl_thread_nice.c',
+              ],
+              'conditions': [
+                ['target_arch=="ia32" or target_arch=="x64"', {
+                  'sources': [
+                    'linux/x86/nacl_ldt.c',
+                    'linux/x86/sel_segments.c',
+                  ],
+                }],
+                ['target_arch=="arm"', {
+                  'sources': [
+                    'linux/arm/sel_segments.c',
+                  ],
+                }],
+              ],
+            }],
+          ],
+        }],
+      ],
+   },
   'targets': [
     {
       'target_name': 'sel',
       'type': 'static_library',
-      'sources': [
-        'dyn_array.c',
-        'env_cleanser.c',
-        'nacl_all_modules.c',
-        'nacl_app_thread.c',
-        'nacl_bottom_half.c',
-        'nacl_closure.c',
-        'nacl_globals.c',
-        'nacl_memory_object.c',
-        'nacl_sync_queue.c',
-        'nacl_syscall_common.c',
-        'nacl_syscall_hook.c',
-        'nacl_text.c',
-        'sel_addrspace.c',
-        'sel_ldr.c',
-        'sel_ldr-inl.c',
-        'sel_ldr_standard.c',
-        'elf_util.c',
-        'sel_mem.c',
-        'sel_util.c',
-        'sel_util-inl.c',
-        'web_worker_stub.c',
-      ],
-      'sources!': [
-         '<(syscall_handler)',
-      ],
+      'variables': {
+        'target_base': 'sel',
+      },
       'dependencies': [
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
         '<(DEPTH)/native_client/src/trusted/gio/gio.gyp:gio',
@@ -95,7 +188,7 @@
         }],
         ['target_arch=="ia32" or target_arch=="x64"', {
           'dependencies': [
-            'arch/x86/service_runtime_x86.gyp:service_runtime_x86',
+            'arch/x86/service_runtime_x86.gyp:service_runtime_x86_common',
             '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate',
           ],
         }],
@@ -109,90 +202,16 @@
             'arch/x86_64/service_runtime_x86_64.gyp:service_runtime_x86_64',
           ],
         }],
-        # TODO(gregoryd): move arm-specific stuff into a separate gyp file.
-        ['target_arch=="arm"', {
-          'sources': [
-            'arch/arm/nacl_app.c',
-            'arch/arm/nacl_switch_to_app_arm.c',
-            'arch/arm/sel_rt.c',
-            'arch/arm/nacl_tls.c',
-            'arch/arm/sel_ldr_arm.c',
-            'arch/arm/sel_addrspace_arm.c',
-            'arch/arm/sel_validate_image.c',
-            'arch/arm/nacl_switch.S',
-            'arch/arm/nacl_syscall.S',
-            'arch/arm/nacl_tls_tramp.S',
-            'arch/arm/springboard.S',
-            'arch/arm/tramp_arm.S',
-          ],
-        }],
-        ['OS=="linux"', {
-          'sources': [
-            'linux/sel_memory.c',
-            'linux/nacl_thread_nice.c',
-          ],
-          'conditions': [
-            ['target_arch=="ia32" or target_arch=="x64"', {
-              'sources': [
-                'linux/x86/nacl_ldt.c',
-                'linux/x86/sel_segments.c',
-              ],
-            }],
-            ['target_arch=="arm"', {
-              'sources': [
-                'linux/arm/sel_segments.c',
-              ],
-            }],
-          ],
-        }],
-        ['OS=="mac"', {
-          'sources': [
-            'osx/nacl_ldt.c',
-            'linux/sel_memory.c',
-            'linux/x86/sel_segments.c',
-            'osx/nacl_thread_nice.c',
-          ],
-        }],
-        ['OS=="win"', {
-          'sources': [
-            'win/nacl_ldt.c',
-            'win/sel_memory.c',
-            'win/sel_segments.c',
-            'win/nacl_thread_nice.c',
-          ],
-        }],
         ['nacl_standalone==0 and OS=="win"', {
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:ldrhandle',
           ],
         }],
-      ],
-      'actions': [
-        {
-          'action_name': 'nacl_syscall_handler',
-          'inputs': [
-            'nacl_syscall_handlers_gen2.py',
-            '<(syscall_handler)',
+        ['nacl_breakpad==1', {
+          'dependencies': [
+            '<(DEPTH)/native_client/src/trusted/nacl_breakpad/nacl_breakpad.gyp:nacl_breakpad',
           ],
-          'action':
-            # TODO(gregoryd): find out how to generate a file
-            # in such a location that can be found in both
-            # NaCl and Chrome builds.
-            ['<@(python_exe)', 'nacl_syscall_handlers_gen2.py', '-c',
-             '-f', 'Video',
-             '-f', 'Audio',
-             '-f', 'Multimedia',
-             '-i', '<@(syscall_handler)',
-             '-o', '<@(_outputs)'],
-
-          'msvs_cygwin_shell': 0,
-          'msvs_quote_cmd': 0,
-          'outputs': [
-            '<(INTERMEDIATE_DIR)/nacl_syscall_handlers.c',
-          ],
-          'process_outputs_as_sources': 1,
-          'message': 'Creating nacl_syscall_handlers.c',
-        },
+        }]
       ],
     }, {
       'target_name': 'container',
@@ -206,17 +225,6 @@
       'sources': [
         'expiration.c',
       ],
-    }, {
-      'target_name': 'expiration64',
-      'type': 'static_library',
-      'sources': [
-        'expiration.c',
-      ],
-      'configurations': {
-        'Common_Base': {
-          'msvs_target_platform': 'x64',
-        },
-      },
     }, {
       'target_name': 'nacl_xdr',
       'type': 'static_library',
@@ -239,7 +247,86 @@
         'sel_main.c',
       ],
     },
-
     # TODO(bsy): no tests are built; see build.scons
   ],
+  'conditions': [
+    ['OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'sel64',
+          'type': 'static_library',
+          'variables': {
+            'target_base': 'sel',
+            'win_target': 'x64',
+          },
+          'dependencies': [
+            '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
+            '<(DEPTH)/native_client/src/trusted/gio/gio.gyp:gio64',
+            '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate64',
+            '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc64',
+            'arch/x86/service_runtime_x86.gyp:service_runtime_x86_common64',
+            'arch/x86_64/service_runtime_x86_64.gyp:service_runtime_x86_64',
+          ],
+          'conditions': [
+            ['nacl_standalone==0 and OS=="win"', {
+              'dependencies': [
+                '<(DEPTH)/native_client/src/trusted/handle_pass/handle_pass.gyp:ldrhandle64',
+              ],
+            }],
+            ['nacl_breakpad==1', {
+              'dependencies': [
+                '<(DEPTH)/native_client/src/trusted/nacl_breakpad/nacl_breakpad.gyp:nacl_breakpad64',
+              ],
+            }]
+          ],
+        }, {
+          'target_name': 'container64',
+          'type': 'static_library',
+          'variables': {
+            'win_target': 'x64',
+          },
+          'sources': [
+            'generic_container/container.c',
+          ],
+        }, {
+          'target_name': 'expiration64',
+          'type': 'static_library',
+          'variables': {
+            'win_target': 'x64',
+          },
+          'sources': [
+            'expiration.c',
+          ],
+        }, {
+          'target_name': 'nacl_xdr64',
+          'type': 'static_library',
+          'variables': {
+            'win_target': 'x64',
+          },
+          'sources': [
+            'fs/xdr.c',
+            'fs/obj_proxy.c',
+          ],
+        },
+        {
+          'target_name': 'sel_ldr64',
+          'type': 'executable',
+          'variables': {
+            'win_target': 'x64',
+          },
+          # TODO(gregoryd): currently building sel_ldr without SDL
+          'dependencies': [
+            'expiration64',
+            'sel64',
+            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
+            '<(DEPTH)/native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib64',
+          ],
+          'sources': [
+            'sel_main.c',
+          ],
+        },
+        # TODO(bsy): no tests are built; see build.scons
+      ],
+    }],
+  ]
 }

@@ -37,7 +37,6 @@ static INLINE intptr_t NaClXlateSysRet(intptr_t rv) {
 
 static INLINE intptr_t NaClXlateSysRetAddr(struct NaClApp *nap,
                                            intptr_t       rv) {
-  /* if rv is a bad address, we abort */
   return (rv != -1) ? NaClSysToUser(nap, rv) : -NaClXlateErrno(errno);
 }
 

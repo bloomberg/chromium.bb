@@ -21,6 +21,8 @@
 #include "native_client/src/trusted/service_runtime/sel_memory.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 
+#define MSGWIDTH  "25"
+
 /*
  * NaCl_page_free: free pages allocated with NaCl_page_alloc.
  * Must start at allocation granularity (NACL_MAP_PAGESIZE) and
@@ -33,9 +35,11 @@ void  NaCl_page_free(void     *p,
   end_addr = (void *) (((char *) p) + num_bytes);
   while (p < end_addr) {
     if (!VirtualFree(p, 0, MEM_RELEASE)) {
+      DWORD err = GetLastError();
       NaClLog(0,
-              "NaCl_page_free: VirtualFree(0x%08x, 0, MEM_RELEASE) failed\n",
-              (uintptr_t) p);
+              "NaCl_page_free: VirtualFree(0x%08x, 0, MEM_RELEASE) failed "
+              "with error 0x%X\n",
+              (uintptr_t) p, err);
     }
     p = (void *) (((char *) p) + NACL_MAP_PAGESIZE);
   }
@@ -237,13 +241,24 @@ int   NaCl_mprotect(void          *addr,
        cur_addr < end_addr;
        cur_addr += cur_chunk_size,
            cur_chunk_size = NaClProtectChunkSize(cur_addr, end_addr)) {
-    NaClLog(4, "NaCl_mprotect: VirtualProtect(0x%08x, 0x%x, 0x%x, *)\n",
+    NaClLog(5, "NaCl_mprotect: VirtualProtect(0x%08x, 0x%x, 0x%x, *)\n",
             cur_addr, cur_chunk_size, newProtection);
-    res = VirtualProtect((void*) cur_addr, cur_chunk_size,
-                         newProtection, &oldProtection);
+
+    res = VirtualProtect((void*) cur_addr,
+                         cur_chunk_size,
+                         newProtection,
+                         &oldProtection);
     if (!res) {
-      NaClLog(2, "NaCl_mprotect: ... failed\n");
-      return -NaClXlateSystemError(GetLastError());
+      void *p;
+      NaClLog(5, "NaCl_mprotect: ... failed; trying VirtualAlloc instead\n");
+      p = VirtualAlloc((void*) cur_addr,
+                       cur_chunk_size,
+                       MEM_COMMIT,
+                       newProtection);
+      if (p != (void*) cur_addr) {
+        NaClLog(2, "NaCl_mprotect: ... failed\n");
+        return -NaClXlateSystemError(GetLastError());
+      }
     }
   }
   NaClLog(2, "NaCl_mprotect: done\n");
@@ -287,10 +302,17 @@ int   NaCl_madvise(void           *start,
                 ("NaCl_madvise: MADV_DONTNEED"
                  " -> VirtualAlloc(0x%08x, 0x%x, MEM_RESET, PAGE_NOACCESS)\n"),
                 cur_addr, cur_chunk_size);
-        if (NULL == VirtualAlloc((void*) cur_addr, cur_chunk_size, MEM_RESET,
-                                 PAGE_NOACCESS)) {
+
+        /*
+         * Decommit (but do not release) the page. This allows the kernel to
+         * release backing store, but does not release the VA space. Should be
+         * fairly close to the behavior we'd get from the Linux madvise()
+         * function.
+         */
+        if (NULL == VirtualAlloc((void *) cur_addr,
+                                 cur_chunk_size, MEM_RESET, PAGE_READONLY)) {
           err = NaClXlateSystemError(GetLastError());
-          NaClLog(2, "NaCl_madvise: VirtualAlloc failed: 0x%x\n", err);
+          NaClLog(2, "NaCl_madvise: VirtualFree failed: 0x%x\n", err);
           return -err;
         }
       }
@@ -307,10 +329,60 @@ int   NaCl_madvise(void           *start,
 
 
 void *NaClAllocatePow2AlignedMemory(size_t mem_sz, size_t log_alignment) {
-  UNREFERENCED_PARAMETER(mem_sz);
-  UNREFERENCED_PARAMETER(log_alignment);
-  /*
-   * TODO(bsy,ilewis): implement this function in terms of VirtualAlloc.
-   */
-  return NULL;
+  uintptr_t pow2align;
+  size_t    request_sz;
+  uintptr_t mem_ptr;
+  uintptr_t orig_addr;
+  uintptr_t rounded_addr;
+  size_t    extra;
+  BOOL ok;
+
+  pow2align = ((uintptr_t) 1) << log_alignment;
+
+  request_sz = mem_sz + pow2align;
+
+  NaClLog(LOG_INFO,
+          "%"MSGWIDTH"s %016zx\n",
+          " Ask:",
+          request_sz);
+
+  mem_ptr = (uintptr_t) VirtualAlloc(NULL,
+                                    request_sz,
+                                    MEM_RESERVE,
+                                    PAGE_READWRITE);
+
+  orig_addr = (uintptr_t) mem_ptr;
+
+  NaClLog(LOG_INFO,
+          "%"MSGWIDTH"s %016"PRIxPTR"\n",
+          "orig memory at",
+          orig_addr);
+
+  rounded_addr = (orig_addr + (pow2align - 1)) & ~(pow2align - 1);
+  extra = rounded_addr - orig_addr;
+
+  ok = VirtualFree((void *) orig_addr, 0, MEM_RELEASE);
+  if (!ok) {
+    NaClLog(LOG_FATAL,"VirtualFree failed for address %"PRIxPTR"\n",
+            orig_addr);
+  }
+
+  for (mem_ptr = rounded_addr;
+       mem_ptr < rounded_addr + mem_sz;
+       mem_ptr += NACL_MAP_PAGESIZE) {
+    void *p = VirtualAlloc((void *) mem_ptr,
+                           NACL_MAP_PAGESIZE,
+                           MEM_RESERVE,
+                           PAGE_READWRITE);
+    if ((uintptr_t) p != mem_ptr) {
+      NaClLog(LOG_FATAL, "Failed to reserve page at %"PRIxPTR"\n", p);
+    }
+  }
+
+  NaClLog(LOG_INFO,
+          "%"MSGWIDTH"s %016"PRIxPTR"\n",
+          "Aligned memory:",
+          rounded_addr);
+
+  return (void *) rounded_addr;
 }

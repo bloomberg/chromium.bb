@@ -31,17 +31,43 @@
   'includes': [
     '../../../../../build/common.gypi',
   ],
+  'target_defaults': {
+    'variables':{
+      'target_base': 'none',
+    },
+    'target_conditions': [
+      ['target_base=="srt_x86_cmn"', {
+        'sources': [
+          'nacl_ldt_x86.c',
+          'sel_validate_image.c',
+        ],
+        'include_dirs': [
+          '<(INTERMEDIATE_DIR)',
+        ],
+      }],
+    ],
+  },
   'targets': [
     {
-      'target_name': 'service_runtime_x86',
+      'target_name': 'service_runtime_x86_common',
       'type': 'static_library',
-      'sources': [
-        'nacl_ldt_x86.c',
-        'sel_validate_image.c',
-      ],
-      'include_dirs': [
-        '<(INTERMEDIATE_DIR)',
-      ],
+      'variables': {
+        'target_base': 'srt_x86_cmn',
+      },
     },
+  ],
+  'conditions': [
+    ['OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'service_runtime_x86_common64',
+          'type': 'static_library',
+          'variables': {
+            'target_base': 'srt_x86_cmn',
+            'win_target': 'x64',
+          },
+        },
+      ],
+    }],
   ],
 }

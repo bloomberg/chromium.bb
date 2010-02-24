@@ -163,7 +163,7 @@ void NaClContainerHashTblDtor(struct NaClContainer *vself);
 struct NaClContainerHashTblIter {
   struct NaClContainerIter    base;
   struct NaClContainerHashTbl *htbl;
-  unsigned int                idx;
+  uintptr_t                   idx;
 };
 
 int NaClContainerHashTblIterCtor(struct NaClContainer     *vself,

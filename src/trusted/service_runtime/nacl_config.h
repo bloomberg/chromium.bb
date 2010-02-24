@@ -104,19 +104,33 @@
  * to different C -> asm name mangling conventions and other platform-specific
  * requirements
  */
-#if NACL_WINDOWS || NACL_OSX
+#if NACL_OSX
 # define IDENTIFIER(n)  _##n
-#else /* Linux */
+#elif NACL_LINUX
 # define IDENTIFIER(n)  n
+#elif NACL_WINDOWS
+# if _WIN64
+#   define IDENTIFIER(n)  n
+# else
+#   define IDENTIFIER(n)  _##n
+# endif
+#elif defined(__native_client__)
+# define IDENTIFIER(n)  n
+#else
+# error "Unrecognized OS"
 #endif
 
 #if NACL_OSX
 # define HIDDEN(n)  .private_extern IDENTIFIER(n)
 #elif NACL_LINUX
 # define HIDDEN(n)  .hidden IDENTIFIER(n)
-#else /* Windows */
+#elif NACL_WINDOWS
 /* On Windows, symbols are hidden by default. */
 # define HIDDEN(n)
+#elif defined(__native_client__)
+# define HIDDEN(n)  .hidden IDENTIFIER(n)
+#else
+# error "Unrecognized OS"
 #endif
 
 #define DEFINE_GLOBAL_HIDDEN_IDENTIFIER(n) \

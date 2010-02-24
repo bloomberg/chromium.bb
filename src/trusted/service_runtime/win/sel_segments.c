@@ -12,7 +12,7 @@
 #include "native_client/src/trusted/service_runtime/sel_ldr.h"
 #include "native_client/src/trusted/service_runtime/sel_util.h"
 
-
+#ifndef _WIN64
 uint16_t NaClGetCs(void) {
   uint16_t seg1;
 
@@ -96,7 +96,7 @@ uint32_t NaClGetEbx(void) {
   _asm mov result, ebx;
   return result;
 }
-
+#endif
 
 /*
  * this function is OS-independent as well as all above; however, because of
@@ -104,11 +104,12 @@ uint32_t NaClGetEbx(void) {
  */
 tick_t get_ticks() {
   tick_t  t = 0;
-  uint32_t  t_high, t_low;
 
-  __asm rdtsc;
-  __asm mov t_high, edx;
-  __asm mov t_low, eax;
-  t = (((tick_t) t_high) << 32) | t_low;
+  /* TODO: replace rdtsc with a more reliable performance counter,
+   * e.g. QueryPerformanceCounter().
+   * (See msdn.microsoft.com/en-us/library/ee418872(VS.85).aspx#Use_of_RDTSC)
+   */
+  t = __rdtsc();
+
   return t;
 }

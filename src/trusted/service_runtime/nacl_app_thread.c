@@ -9,6 +9,11 @@
  */
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 #include "native_client/src/trusted/desc/nacl_desc_effector_ldr.h"
+
+#ifdef NACL_BREAKPAD
+#include "native_client/src/trusted/nacl_breakpad/nacl_breakpad.h"
+#endif
+
 #include "native_client/src/trusted/service_runtime/nacl_globals.h"
 #include "native_client/src/trusted/service_runtime/nacl_tls.h"
 #include "native_client/src/trusted/service_runtime/nacl_switch_to_app.h"
@@ -16,6 +21,10 @@
 
 void WINAPI NaClThreadLauncher(void *state) {
   struct NaClAppThread  *natp;
+
+#ifdef NACL_BREAKPAD
+  NaClBreakpadInit();
+#endif
 
   NaClLog(4, "NaClThreadLauncher: entered\n");
   natp = (struct NaClAppThread *) state;
@@ -46,6 +55,10 @@ void WINAPI NaClThreadLauncher(void *state) {
   WINDOWS_EXCEPTION_TRY;
   NaClStartThreadInApp(natp, natp->user.prog_ctr);
   WINDOWS_EXCEPTION_CATCH;
+
+#ifdef NACL_BREAKPAD
+  NaClBreakpadTeardown();
+#endif
 }
 
 int NaClAppThreadCtor(struct NaClAppThread  *natp,
@@ -56,7 +69,7 @@ int NaClAppThreadCtor(struct NaClAppThread  *natp,
                       uint32_t              tls_idx,
                       uintptr_t             sys_tdb) {
   int                         rv;
-  uint32_t                    thread_idx;
+  uint64_t                    thread_idx;
   struct NaClDescEffectorLdr  *effp;
 
   NaClLog(4, "         natp = 0x%016"PRIxPTR"\n", (uintptr_t) natp);
@@ -147,6 +160,14 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
                               uintptr_t             sys_tdb_base,
                               size_t                tdb_size) {
   uint32_t  tls_idx;
+  uint32_t  tdb_size32;
+
+  if (tdb_size > UINT32_MAX) {
+    NaClLog(LOG_ERROR, "Requested TDB size is too large");
+    return 0;
+  } else {
+    tdb_size32 = (uint32_t) tdb_size;
+  }
 
   /*
    * Even though we don't know what segment base/range should gs/r9/nacl_tls_idx
@@ -156,10 +177,11 @@ int NaClAppThreadAllocSegCtor(struct NaClAppThread  *natp,
    * main or much of libc can run).  Other threads are spawned with the tdb
    * address and size as a parameter.
    */
-  tls_idx = NaClTlsAllocate(natp, (void *) sys_tdb_base, tdb_size);
+  tls_idx = NaClTlsAllocate(natp, (void *) sys_tdb_base, tdb_size32);
 
   NaClLog(4,
-        "NaClAppThreadAllocSegCtor: stack_ptr 0x%08"PRIxPTR", tls_idx 0x%02x\n",
+        "NaClAppThreadAllocSegCtor: stack_ptr 0x%08"PRIxPTR
+        ", tls_idx 0x%02"PRIx32"\n",
          usr_stack_ptr, tls_idx);
 
   if (0 == tls_idx) {

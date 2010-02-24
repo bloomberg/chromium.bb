@@ -13,6 +13,10 @@
 #if NACL_WINDOWS
 extern "C" {
   int TestFFS();
+
+# ifdef _WIN64
+  int TestTlsAccess();
+# endif
 }
 #endif
 
@@ -173,5 +177,10 @@ int main(int ,
 #endif
 
   printf("---------- Final error count = %d\n", errors);
+
+#if NACL_WINDOWS && defined(_WIN64)
+  errors += TestTlsAccess();
+#endif
+
   return errors;
 }

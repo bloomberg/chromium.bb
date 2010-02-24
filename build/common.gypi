@@ -110,7 +110,7 @@
           ],
         }],
       ],
-
+    'nacl_breakpad%': 0,
   },
 
   'target_defaults': {
@@ -196,9 +196,14 @@
                         '-fprofile-arcs'],
             'link_settings': { 'libraries': [ '-lgcov' ] },
           }],
-        ]},
+        ],
       # TODO(jrg): options for code coverage on Windows
-      ],
+      }],
+      ['nacl_breakpad==1', {
+        'defines': [
+          'NACL_BREAKPAD=1',
+        ]
+      }]
     ],
     'default_configuration': 'Debug',
     'configurations': {

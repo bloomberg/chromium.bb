@@ -301,8 +301,8 @@ int NaClContainerHashTblCheckLoad(struct NaClContainerHashTbl *self) {
 }
 
 
-static unsigned int HashNext(unsigned int  idx,
-                             unsigned int  modulus) {
+static uintptr_t HashNext(uintptr_t     idx,
+                          unsigned int  modulus) {
   idx += HASH_TABLE_STRIDE;
   while (idx >= modulus) idx -= modulus;
   return idx;
@@ -312,7 +312,7 @@ static unsigned int HashNext(unsigned int  idx,
 int NaClContainerHashTblInsert(struct NaClContainer *vself,
                                void                 *obj) {
   struct NaClContainerHashTbl *self = (struct NaClContainerHashTbl *) vself;
-  unsigned int                idx;
+  uintptr_t                   idx;
 
   for (idx = (*self->hash_functor->vtbl->Hash)(self->hash_functor,
                                                obj) % self->num_buckets;
@@ -338,7 +338,7 @@ struct NaClContainerIter *NaClContainerHashTblFind(
     struct NaClContainerIter  *vout) {
   struct NaClContainerHashTbl     *self
       = (struct NaClContainerHashTbl *) vself;
-  unsigned int                    idx;
+  uintptr_t                       idx;
   struct NaClContainerHashTblIter *out
       = (struct NaClContainerHashTblIter *) vout;
 

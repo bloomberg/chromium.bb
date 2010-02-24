@@ -205,7 +205,7 @@ NaClErrorCode NaClElfImageValidateElfHeader(struct NaClElfImage *image) {
                    static_text_end and max_vaddr */
 NaClErrorCode NaClElfImageValidateProgramHeaders(
   struct NaClElfImage *image,
-  uintptr_t           addr_bits,
+  uint8_t             addr_bits,
   uintptr_t           *static_text_end,
   uintptr_t           *rodata_start,
   uintptr_t           *rodata_end,
@@ -411,8 +411,13 @@ struct NaClElfImage *NaClElfImageNew(struct Gio     *gp,
     return 0;
   }
 
+  /*
+   * NB: cast from e_phoff to off_t may not be valid, since off_t can be
+   * smaller than Elf64_off, but since invalid values will be rejected
+   * by Seek() the cast is safe (cf bsy)
+   */
   if ((*gp->vtbl->Seek)(gp,
-                        image.ehdr.e_phoff,
+                        (off_t) image.ehdr.e_phoff,
                         SEEK_SET) == (size_t) -1) {
     if (NULL != err_code) {
       *err_code = LOAD_READ_ERROR;
@@ -455,7 +460,7 @@ struct NaClElfImage *NaClElfImageNew(struct Gio     *gp,
 
 NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
                                struct Gio          *gp,
-                               uint32_t            addr_bits,
+                               uint8_t             addr_bits,
                                uintptr_t           mem_start) {
   int               segnum;
   uintptr_t         paddr;
@@ -490,7 +495,12 @@ NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
             "Seek to position %"PRIdElf_Off" (0x%"PRIxElf_Off").\n",
             php->p_offset,
             php->p_offset);
-    if ((*gp->vtbl->Seek)(gp, php->p_offset, SEEK_SET) == (size_t) -1) {
+
+    /*
+     * NB: php->p_offset may not be a valid off_t on 64-bit systems, but
+     * in that case Seek() will error out.
+     */
+    if ((*gp->vtbl->Seek)(gp, (off_t) php->p_offset, SEEK_SET) == (size_t) -1) {
       NaClLog(LOG_ERROR, "seek failure segment %d", segnum);
       return LOAD_SEGMENT_BAD_PARAM;
     }
@@ -517,7 +527,7 @@ void NaClElfImageDelete(struct NaClElfImage *image) {
 }
 
 
-uint32_t NaClElfImageGetEntryPoint(struct NaClElfImage *image) {
+uintptr_t NaClElfImageGetEntryPoint(struct NaClElfImage *image) {
   return image->ehdr.e_entry;
 }
 

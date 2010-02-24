@@ -55,7 +55,7 @@ void NaClVmmapDebug(struct NaClVmmap  *self,
  */
 struct NaClVmmapIter {
   struct NaClVmmap      *vmmap;
-  unsigned int          entry_ix;
+  size_t                 entry_ix;
 };
 
 int                   NaClVmmapIterAtEnd(struct NaClVmmapIter *nvip);

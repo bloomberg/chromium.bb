@@ -13,7 +13,7 @@
 struct NaClElfImage;
 struct Gio;
 
-uint32_t NaClElfImageGetEntryPoint(struct NaClElfImage *image);
+uintptr_t NaClElfImageGetEntryPoint(struct NaClElfImage *image);
 
 int NaClElfImageGetBundleSize(struct NaClElfImage *image);
 
@@ -23,7 +23,7 @@ NaClErrorCode NaClElfImageValidateElfHeader(struct NaClElfImage *image);
 
 NaClErrorCode NaClElfImageValidateProgramHeaders(
   struct NaClElfImage *image,
-  uintptr_t           addr_bits,
+  uint8_t             addr_bits,
   uintptr_t           *static_text_end,
   uintptr_t           *rodata_start,
   uintptr_t           *rodata_end,
@@ -33,7 +33,7 @@ NaClErrorCode NaClElfImageValidateProgramHeaders(
 
 NaClErrorCode NaClElfImageLoad(struct NaClElfImage *image,
                                struct Gio          *gp,
-                               uint32_t            addr_bits,
+                               uint8_t             addr_bits,
                                uintptr_t           mem_start);
 
 

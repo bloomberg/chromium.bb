@@ -148,7 +148,7 @@ void NaClAppDtor(struct NaClApp  *nap) {
     enum NaClThreadState  state;
 
     NaClLog(2, "Checking thread %"PRIuS"\n", i);
-    if (NULL == (natp = NaClGetThreadMu(nap, i))) {
+    if (NULL == (natp = NaClGetThreadMu(nap, (int) i))) {
       continue;
     }
     NaClLog(2, "Extracting state for thread %"PRIuS"\n", i);
@@ -157,7 +157,7 @@ void NaClAppDtor(struct NaClApp  *nap) {
     NaClLog(2, "state %d\n", state);
     NaClXMutexUnlock(&natp->mu);
 
-    NaClRemoveThreadMu(nap, i);
+    NaClRemoveThreadMu(nap, (int) i);
     refcount = NaClAppThreadDecRef(natp);
 
     if (state != NACL_APP_THREAD_DEAD) {
@@ -259,16 +259,13 @@ size_t  NaClAlignPad(size_t val, size_t align) {
 static uint64_t NaClLoadMem(uintptr_t addr,
                             size_t    user_nbytes) {
   uint64_t      value = 0;
-  int           nbytes;
 
-  CHECK(user_nbytes <= 8);
+  CHECK(0 != user_nbytes && user_nbytes <= 8);
 
-  nbytes = user_nbytes;  /* rename register */
-
-  while (--nbytes >= 0) {  /* this is where we use signedness */
+  do {
     value = value << 8;
-    value |= ((uint8_t *) addr)[nbytes];
-  }
+    value |= ((uint8_t *) addr)[--user_nbytes];
+  } while (user_nbytes > 0);
   return value;
 }
 
@@ -277,8 +274,9 @@ static uint64_t NaClLoadMem(uintptr_t addr,
     return (uint ## bits ## _t) NaClLoadMem(addr, sizeof(uint ## bits ## _t)); \
   }
 
-GENERIC_LOAD(16)
+#if NACL_TARGET_SUBARCH == 32
 GENERIC_LOAD(32)
+#endif
 GENERIC_LOAD(64)
 
 #undef GENERIC_LOAD
@@ -325,12 +323,13 @@ struct NaClPatchInfo *NaClPatchInfoCtor(struct NaClPatchInfo *self) {
 void  NaClApplyPatchToMemory(struct NaClPatchInfo  *patch) {
   size_t    i;
   size_t    offset;
-  size_t    reloc;
+  int64_t   reloc;
   uintptr_t target_addr;
 
   memcpy((void *) patch->dst, (void *) patch->src, patch->nbytes);
 
   reloc = patch->dst - patch->src;
+
 
   for (i = 0; i < patch->num_abs64; ++i) {
     offset = patch->abs64[i].target - patch->src;
@@ -356,17 +355,24 @@ void  NaClApplyPatchToMemory(struct NaClPatchInfo  *patch) {
     NaClStore64(target_addr, NaClLoad64(target_addr) - reloc);
   }
 
+  /*
+   * rel32 is only supported on 32-bit architectures. The range of a relative
+   * relocation in untrusted space is +/- 4GB. This can be represented as
+   * an unsigned 32-bit value mod 2^32, which is handy on a 32 bit system since
+   * all 32-bit pointer arithmetic is implicitly mod 2^32. On a 64 bit system,
+   * however, pointer arithmetic is implicitly modulo 2^64, which isn't as
+   * helpful for our purposes. We could simulate the 32-bit behavior by
+   * explicitly modding all relative addresses by 2^32, but that seems like an
+   * expensive way to save a few bytes per reloc.
+   */
+#if NACL_TARGET_SUBARCH == 32
   for (i = 0; i < patch->num_rel32; ++i) {
     offset = patch->rel32[i] - patch->src;
     target_addr = patch->dst + offset;
-    NaClStore32(target_addr, (uint32_t) NaClLoad32(target_addr) - reloc);
+    NaClStore32(target_addr,
+      (uint32_t) NaClLoad32(target_addr) - (int32_t) reloc);
   }
-
-  for (i = 0; i < patch->num_rel16; ++i) {
-    offset = patch->rel16[i] - patch->src;
-    target_addr = patch->dst + offset;
-    NaClStore16(target_addr, (uint16_t) NaClLoad16(target_addr) - reloc);
-  }
+#endif
 }
 
 
@@ -619,7 +625,7 @@ int32_t NaClSetAvailMu(struct NaClApp  *nap,
              " that is greather than 2**31-1.\n"));
   }
 
-  NaClSetDescMu(nap, pos, ndp);
+  NaClSetDescMu(nap, (int) pos, ndp);
 
   return (int32_t) pos;
 }
@@ -665,7 +671,7 @@ int NaClAddThreadMu(struct NaClApp        *nap,
             pos);
   }
   ++nap->num_threads;
-  return pos;
+  return (int) pos;
 }
 
 int NaClAddThread(struct NaClApp        *nap,
@@ -770,7 +776,7 @@ void NaClAppVmmapUpdate(struct NaClApp    *nap,
 
 uintptr_t NaClAppVmmapFindSpace(struct NaClApp  *nap,
                                 int             num_pages) {
-  int rv;
+  uintptr_t rv;
 
   NaClXMutexLock(&nap->mu);
   rv = NaClVmmapFindSpace(&nap->mem_map,
@@ -781,7 +787,7 @@ uintptr_t NaClAppVmmapFindSpace(struct NaClApp  *nap,
 
 uintptr_t NaClAppVmmapFindMapSpace(struct NaClApp *nap,
                                    int            num_pages) {
-  int rv;
+  uintptr_t rv;
 
   NaClXMutexLock(&nap->mu);
   rv = NaClVmmapFindMapSpace(&nap->mem_map,

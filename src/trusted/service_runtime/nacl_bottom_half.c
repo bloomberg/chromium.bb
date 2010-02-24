@@ -78,13 +78,33 @@ void NaClStartAsyncOp(struct NaClAppThread  *natp,
   NaClLog(4, "Done\n");
 }
 
-int32_t NaClWaitForAsyncOp(struct NaClAppThread *natp) {
+
+void *NaClWaitForAsyncOp( struct NaClAppThread *natp ) {
   NaClLog(4, "NaClWaitForAsyncOp(0x%08"PRIxPTR")\n",
           (uintptr_t) natp);
 
-  return (uintptr_t) NaClClosureResultWait(&natp->result);
+  return NaClClosureResultWait(&natp->result);
 }
 
+int32_t NaClWaitForAsyncOpSysRet(struct NaClAppThread *natp) {
+  uintptr_t result;
+  int32_t result32;
+  NaClLog(4, "NaClWaitForAsyncOp(0x%08"PRIxPTR")\n",
+          (uintptr_t) natp);
+
+  result = (uintptr_t) NaClClosureResultWait(&natp->result);
+  result32 = (int32_t) result;
+
+  if (result != (uintptr_t) result) {
+    NaClLog(LOG_ERROR,
+            ("Overflow in NaClWaitForAsyncOpSysRet: return value is "
+            "%"PRIxPTR"\n"),
+            result);
+    result32 = -NACL_ABI_EOVERFLOW;
+  }
+
+  return result32;
+}
 
 #if defined(HAVE_SDL)
 
@@ -681,7 +701,7 @@ int32_t NaClSliceSysAudio_Stream(struct NaClAppThread *natp,
   if (kNaClBadAddress == sysaddr) {
     NaClLog(LOG_FATAL, "NaClSliceSysAudio_Stream: size address invalid\n");
   }
-  syssize = (size_t *)sysaddr;
+  syssize = (size_t *) sysaddr;
 
   if (nacl_multimedia.audio.first) {
     /* don't copy data on first call... */
@@ -707,7 +727,7 @@ int32_t NaClSliceSysAudio_Stream(struct NaClAppThread *natp,
 
     /* copy the audio data into the sdl audio buffer */
     memcpy(nacl_multimedia.audio.stream,
-           (void *)sysaddr, nacl_multimedia.audio.size);
+           (void *) sysaddr, nacl_multimedia.audio.size);
   }
 
   /* callback synchronization */

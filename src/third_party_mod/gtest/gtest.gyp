@@ -32,35 +32,61 @@
   'includes': [
     '../../../build/common.gypi',
   ],
+  'target_defaults': {
+    'variables': {
+      'target_base': 'none',
+    },
+    'target_conditions': [
+      ['target_base=="gtest"', {
+        'include_dirs': [
+          '<(DEPTH)/testing/gtest/',
+          '<(DEPTH)/testing/gtest/include',
+        ],
+        'cflags_cc!': ['-fno-rtti'],
+        'cflags!': [
+          '-pedantic',
+          '-Wswitch-enum'
+        ],
+        'xcode_settings': {
+          'WARNING_CFLAGS!': [
+            '-pedantic',
+            '-Wswitch-enum'
+          ]
+        },
+        'sources': [
+          '<(DEPTH)/testing/gtest/src/gtest-all.cc',
+        ],
+        'conditions': [
+          ['OS=="mac"', {
+            'xcode_settings': {
+              'GCC_ENABLE_CPP_RTTI': 'YES',   # override -fno-rtti
+            },
+          }],
+        ],
+      }]
+    ],
+  },
   'targets': [
     {
       'target_name': 'gtest',
       'type': 'static_library',
-      'include_dirs': [
-        '<(DEPTH)/testing/gtest/',
-        '<(DEPTH)/testing/gtest/include',
-      ],
-      'cflags_cc!': ['-fno-rtti'],
-      'cflags!': [
-        '-pedantic',
-        '-Wswitch-enum'
-      ],
-      'xcode_settings': {
-        'WARNING_CFLAGS!': [
-          '-pedantic',
-          '-Wswitch-enum'
-        ]
+      'variables': {
+        'target_base': 'gtest',
       },
-      'sources': [
-        '<(DEPTH)/testing/gtest/src/gtest-all.cc',
-      ],
-      'conditions': [
-        ['OS=="mac"', {
-          'xcode_settings': {
-            'GCC_ENABLE_CPP_RTTI': 'YES',              # override -fno-rtti
-          },
-        }],
-      ],
     },
+  ],
+  'conditions': [
+    ['OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'gtest64',
+          'type': 'static_library',
+          'variables': {
+            'target_base': 'gtest',
+            'win_target': 'x64',
+          },
+        },
+      ],
+    }],
   ],
 }

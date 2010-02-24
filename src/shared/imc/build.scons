@@ -70,11 +70,11 @@ env.ComponentLibrary('google_nacl_imc_c', common_objs + nacl_imc_c_inputs)
 
 env.ComponentProgram('client',
                      'nacl_imc_test_client.cc',
-                     EXTRA_LIBS=['google_nacl_imc'])
+                     EXTRA_LIBS=['google_nacl_imc', 'platform', 'gio'])
 
 env.ComponentProgram('server',
                      'nacl_imc_test_server.cc',
-                     EXTRA_LIBS=['google_nacl_imc'])
+                     EXTRA_LIBS=['google_nacl_imc', 'platform', 'gio'])
 
 
 sigpipe_test_exe = env.ComponentProgram(

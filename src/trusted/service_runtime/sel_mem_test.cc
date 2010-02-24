@@ -162,14 +162,14 @@ TEST_F(SelMemTest, FindPageTest) {
 
 TEST_F(SelMemTest, FindSpaceTest) {
   struct NaClVmmap mem_map;
-  int ret_code;
+  uintptr_t ret_code;
 
   ret_code = NaClVmmapCtor(&mem_map);
-  EXPECT_EQ(1, ret_code);
+  EXPECT_EQ(1U, ret_code);
 
   // no entry
   ret_code = NaClVmmapFindSpace(&mem_map, 32);
-  EXPECT_EQ(0, ret_code);
+  EXPECT_EQ(0U, ret_code);
 
   EXPECT_EQ(1, NaClVmmapAdd(&mem_map,
                             32,
@@ -179,33 +179,33 @@ TEST_F(SelMemTest, FindSpaceTest) {
   EXPECT_EQ(1, static_cast<int>(mem_map.nvalid));
   // one entry only
   ret_code = NaClVmmapFindSpace(&mem_map, 2);
-  EXPECT_EQ(0, ret_code);
+  EXPECT_EQ(0U, ret_code);
 
   EXPECT_EQ(1, NaClVmmapAdd(&mem_map,
                             64,
                             10,
                             PROT_READ | PROT_EXEC,
                             (struct NaClMemObj *) NULL));
-  EXPECT_EQ(2, static_cast<int>(mem_map.nvalid));
+  EXPECT_EQ(2U, mem_map.nvalid);
 
   // the space is [32, 42], [64, 74]
   ret_code = NaClVmmapFindSpace(&mem_map, 32);
-  EXPECT_EQ(0, ret_code);
+  EXPECT_EQ(0U, ret_code);
 
   ret_code = NaClVmmapFindSpace(&mem_map, 2);
-  EXPECT_EQ(62, ret_code);
+  EXPECT_EQ(62U, ret_code);
 
   EXPECT_EQ(1, NaClVmmapAdd(&mem_map,
                             96,
                             10,
                             PROT_READ | PROT_EXEC,
                             (struct NaClMemObj *) NULL));
-  EXPECT_EQ(3, static_cast<int>(mem_map.nvalid));
+  EXPECT_EQ(3U, mem_map.nvalid);
 
   // vmmap is [32, 42], [64, 74], [96, 106]
   // the search is from high address down
   ret_code = NaClVmmapFindSpace(&mem_map, 22);
-  EXPECT_EQ(74, ret_code);
+  EXPECT_EQ(74U, ret_code);
 
   NaClVmmapDtor(&mem_map);
 }

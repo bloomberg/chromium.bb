@@ -207,6 +207,9 @@
           'variables': {
             'target_base': 'platform_tests',
           },
+          'sources': [
+            'win/test_tls.S',
+          ],
           'dependencies': [
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
             '<(DEPTH)/native_client/src/trusted/gio/gio.gyp:gio64',

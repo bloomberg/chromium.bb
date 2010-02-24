@@ -129,7 +129,7 @@ static int NaClVmmapCmpEntries(void const  *vleft,
   struct NaClVmmapEntry const *const *right =
       (struct NaClVmmapEntry const *const *) vright;
 
-  return ((*left)->page_num - (*right)->page_num);
+  return (int) ((*left)->page_num - (*right)->page_num);
 }
 
 
@@ -257,8 +257,8 @@ int NaClVmmapAdd(struct NaClVmmap   *self,
            " 0x%08"PRIxPTR")\n"),
           (uintptr_t) self, page_num, npages, prot, (uintptr_t) nmop);
   if (self->nvalid == self->size) {
-    int                     new_size = 2 * self->size;
-    struct NaClVmmapEntry   **new_map;
+    size_t                    new_size = 2 * self->size;
+    struct NaClVmmapEntry     **new_map;
 
     new_map = realloc(self->vmentry, new_size * sizeof *new_map);
     if (NULL == new_map) {
@@ -451,8 +451,8 @@ void  NaClVmmapVisit(struct NaClVmmap *self,
                      void             (*fn)(void                  *state,
                                             struct NaClVmmapEntry *entry),
                      void             *state) {
-  int i;
-  int nentries;
+  size_t i;
+  size_t nentries;
 
   NaClVmmapMakeSorted(self);
   for (i = 0, nentries = self->nvalid; i < nentries; ++i) {

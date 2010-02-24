@@ -37,8 +37,8 @@ void NaClTlsFini();
  * being created via NaClAppThreadAllocSegCtor()
  */
 uint32_t NaClTlsAllocate(struct NaClAppThread *natp,
-                         void *tdb,
-                         uint32_t size) NACL_WUR;
+                         void                 *tdb,
+                         uint32_t             size) NACL_WUR;
 
 /*
  * Free a tls descriptor (almost a nop on ARM).
@@ -62,8 +62,8 @@ void NaClTlsSetIdx(uint32_t tls_idx);
  * It installs tls descriptor for the main thread and also returns it.
  */
 uint32_t NaClTlsChange(struct NaClAppThread *natp,
-                       void *tdb,
-                       uint32_t size) NACL_WUR;
+                       void                 *tdb,
+                       uint32_t             size) NACL_WUR;
 
 /*
  * Get the current thread index which is used to look up information in a

@@ -40,44 +40,87 @@
     '../../../build/common.gypi',
   ],
   'target_defaults': {
-    'cflags_cc!': ['-fno-rtti'],
-    'conditions': [
+    'variables': {
+      'target_base': 'none',
+    },
+    'target_conditions': [
       ['OS=="mac"', {
         'xcode_settings': {
           'GCC_ENABLE_CPP_RTTI': 'YES',              # override -fno-rtti
         },
       }],
+      ['target_base=="srt_tests"', {
+        'include_dirs': [
+          '<(DEPTH)/testing/gtest/include',
+        ],
+        'sources': [
+          'unittest_main.cc',
+          'sel_memory_unittest.cc',
+          'nacl_sync_unittest.cc',
+          'sel_mem_test.cc',
+          'sel_ldr_test.cc',
+        ],
+        # because of: gtest-typed-test.h:236:46: error:
+        # anonymous variadic macros were introduced in C99
+        'cflags!': [
+          '-pedantic',
+        ],
+        'xcode_settings': {
+          'WARNING_CFLAGS!': [
+            '-pedantic',
+          ],
+        },
+      }],
     ],
+    'cflags_cc!': ['-fno-rtti'],
   },
+  'conditions': [
+    ['OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'service_runtime_tests64',
+          'type': 'executable',
+          'variables': {
+            'target_base': 'srt_tests',
+            'win_target': 'x64'
+          },
+          'dependencies': [
+            'service_runtime.gyp:sel64',
+            '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
+            '<(DEPTH)/native_client/src/third_party_mod/gtest/gtest.gyp:gtest64',
+          ],
+        },
+        # TODO(gregoryd): The tests below should be moved into platform directory.
+        # Keeping them here for now for consistency with scons.
+        {
+          'target_name': 'mmap_test64',
+          'type': 'executable',
+          'dependencies': [
+            '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
+            'service_runtime.gyp:sel64',
+          ],
+          'variables': {
+            'win_target': 'x64'
+          },
+          'sources': [
+            'mmap_test.c',
+          ],
+        },
+      ],
+    }],
+  ],
   'targets': [
     {
       'target_name': 'service_runtime_tests',
       'type': 'executable',
+      'variables': {
+        'target_base': 'srt_tests',
+      },
       'dependencies': [
         'service_runtime.gyp:sel',
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
         '<(DEPTH)/native_client/src/third_party_mod/gtest/gtest.gyp:gtest',
       ],
-      'include_dirs': [
-        '<(DEPTH)/testing/gtest/include',
-      ],
-      'sources': [
-        'unittest_main.cc',
-        'sel_memory_unittest.cc',
-        'nacl_sync_unittest.cc',
-        'sel_mem_test.cc',
-        'sel_ldr_test.cc',
-      ],
-      # because of: gtest-typed-test.h:236:46: error:
-      # anonymous variadic macros were introduced in C99
-      'cflags!': [
-        '-pedantic',
-      ],
-      'xcode_settings': {
-        'WARNING_CFLAGS!': [
-          '-pedantic',
-        ],
-      },
     },
     # TODO(gregoryd): The tests below should be moved into platform directory.
     # Keeping them here for now for consistency with scons.

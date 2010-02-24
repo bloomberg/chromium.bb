@@ -63,14 +63,13 @@ void NaClMicroSleep(int microseconds) {
     ;
 }
 
-
 NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
   struct NaClAppThread      *natp = nacl_thread[tls_idx];
   struct NaClApp            *nap = natp->nap;
   struct NaClThreadContext  *user = &natp->user;
   uintptr_t                 tramp_ret;
-  uintptr_t                 user_ret;
-  uint32_t                  sysnum;
+  nacl_reg_t                user_ret;
+  size_t                    sysnum;
   uintptr_t                 sp_user;
   uintptr_t                 sp_sys;
 
@@ -109,7 +108,7 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
       >> NACL_SYSCALL_BLOCK_SHIFT;
 
 #if !BENCHMARK
-  NaClLog(4, "system call %d\n", sysnum);
+  NaClLog(4, "system call %"PRIuS"\n", sysnum);
 #endif
 
   /*
@@ -127,11 +126,11 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
   NaClSetThreadCtxSp(user, sp_user);
 
   if (sysnum >= NACL_MAX_SYSCALLS) {
-    NaClLog(2, "INVALID system call %d\n", sysnum);
+    NaClLog(2, "INVALID system call %"PRIdS"\n", sysnum);
     natp->sysret = -NACL_ABI_EINVAL;
   } else {
 #if !BENCHMARK
-    NaClLog(4, "making system call %d, handler 0x%08"PRIxPTR"\n",
+    NaClLog(4, "making system call %"PRIdS", handler 0x%08"PRIxPTR"\n",
             sysnum, (uintptr_t) nacl_syscall[sysnum].handler);
 #endif
     /*
@@ -148,11 +147,11 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
   }
 #if !BENCHMARK
   NaClLog(4,
-          ("returning from system call %d, return value %"PRId32
+          ("returning from system call %"PRIdS", return value %"PRId32
            " (0x%"PRIx32")\n"),
           sysnum, natp->sysret, natp->sysret);
 
-  NaClLog(4, "return target 0x%08"PRIxPTR"\n", user_ret);
+  NaClLog(4, "return target 0x%08"PRIxNACL_REG"\n", user_ret);
   NaClLog(4, "user sp %"PRIxPTR"\n", sp_user);
 #endif
   if (-1 == NaClArtificialDelay) {
@@ -172,7 +171,7 @@ NORETURN void NaClSyscallCSegHook(int32_t tls_idx) {
    * before switching back to user module, we need to make sure that the
    * user_ret is properly sandboxed.
    */
-  user_ret = NaClSandboxCodeAddr(nap, user_ret);
+  user_ret = (nacl_reg_t) NaClSandboxCodeAddr(nap, (uintptr_t)user_ret);
 
   NaClSwitchToApp(natp, user_ret);
  /* NOTREACHED */

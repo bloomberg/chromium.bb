@@ -29,7 +29,7 @@ int NaClThreadContextCtor(struct NaClThreadContext  *ntcp,
                           struct NaClApp            *nap,
                           nacl_reg_t                prog_ctr,
                           nacl_reg_t                stack_ptr,
-                          nacl_reg_t                tls_idx) {
+                          uint32_t                  tls_idx) {
   ntcp->rax = 0;
   ntcp->rbx = 0;
   ntcp->rcx = 0;

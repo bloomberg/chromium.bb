@@ -10,37 +10,61 @@
     '../../../build/common.gypi',
   ],
   'target_defaults': {
+    'variables':{
+      'target_base': 'none',
+    },
+    'target_conditions': [
+      ['target_base=="pqlib"', {
+        'sources': [
+          'nacl_cpuwhitelist.c',
+          'nacl_cpuwhitelist.h',
+          'nacl_os_qualify.h',
+          'vcpuid.h',
+        ],
+        'conditions': [
+          ['OS=="linux"', {
+            'sources': [
+              'linux/nacl_os_qualify.c',
+              'linux/sysv_shm_and_mmap.c',
+            ],
+          }],
+          ['OS=="mac"', {
+            'sources': [
+              'osx/nacl_os_qualify.c',
+            ],
+          }],
+          ['OS=="win"', {
+            'sources': [
+              'win/nacl_os_qualify.c',
+            ],
+          }],
+        ],
+      }],
+    ],
   },
   'targets': [
     {
       'target_name': 'platform_qual_lib',
       'type': 'static_library',
-      'sources': [
-        'nacl_cpuwhitelist.c',
-        'nacl_cpuwhitelist.h',
-        'nacl_os_qualify.h',
-        'vcpuid.h',
-      ],
-      'conditions': [
-        ['OS=="linux"', {
-          'sources': [
-            'linux/nacl_os_qualify.c',
-            'linux/sysv_shm_and_mmap.c',
-          ],
-        }],
-        ['OS=="mac"', {
-          'sources': [
-            'osx/nacl_os_qualify.c',
-          ],
-        }],
-        ['OS=="win"', {
-          'sources': [
-            'win/nacl_os_qualify.c',
-          ],
-        }],
-      ],
+      'variables': {
+        'target_base': 'pqlib',
+      },
     },
-  ]
+  ],
+  'conditions': [
+    ['OS=="win"', {
+      'targets': [
+        {
+          'target_name': 'platform_qual_lib64',
+          'type': 'static_library',
+          'variables': {
+            'target_base': 'pqlib',
+            'win_target': 'x64',
+          },
+        },
+      ],
+    }],
+  ],
 }
 
 # TODO:

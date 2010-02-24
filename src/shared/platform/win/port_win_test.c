@@ -8,6 +8,7 @@
 #include <stdio.h>
 
 #include "native_client/src/include/portability.h"
+uint64_t test_tls_asm();
 
 int loop_ffs(int v) {
   int rv = 1;
@@ -43,3 +44,44 @@ int TestFFS() {
   }
   return errors;
 }
+
+/*
+ * Since the Win64 version of nacl_syscall.S uses handcoded assembly to
+ * retrieve TLS values, we need to test that assembly to ensure we don't
+ * get surprised by undocumented changes.
+ *
+ * TODO(ilewis): expand this into a full (and cross-platform) test of
+ *               TLS behavior. This small test is only adequate to verify
+ *               that the linker trick we use in nacl_syscal_64.S is still
+ *               valid.
+ */
+#ifdef _WIN64
+THREAD uint64_t tlsValue;
+
+uint64_t test_tls_c() {
+  return tlsValue;
+}
+
+int TestTlsAccess() {
+  int errors = 0;
+  const uint64_t kFoo = 0xF000F000F000F000;
+  const uint64_t kBar = 0xBAAABAAABAAABAAA;
+  uint64_t testValue;
+
+  tlsValue = kFoo;
+
+  testValue = test_tls_c();
+  if (kFoo != testValue) {
+    ++errors;
+  }
+
+  tlsValue = kBar;
+
+  testValue = test_tls_asm();
+  if (kBar != testValue) {
+    ++errors;
+  }
+  return errors;
+}
+#endif
+

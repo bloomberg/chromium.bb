@@ -27,8 +27,14 @@ static int gNaClThreadIdxInUse[NACL_THREAD_MAX];  /* bool */
 
 
 static void NaClThreadStartupCheck() {
+  /* Verify that the thread context size is what we expect */
   CHECK(sizeof(struct NaClThreadContext) == 0xa8);
-  CHECK(sizeof(void *) >= sizeof(nacl_reg_t));  /* really only needed for OSX */
+
+  /*
+   * really only needed for OSX -- make sure that the register
+   * size does not exceed the size of a void*.
+   */
+  CHECK(sizeof(void *) >= sizeof ((struct NaClThreadContext *) 0)->prog_ctr);
 }
 
 
@@ -72,8 +78,7 @@ static int NaClThreadIdxAllocate() {
   return -1;
 }
 
-static void NaClThreadIdxFree(int i) {
-  CHECK(0 <= i);
+static void NaClThreadIdxFree(uint32_t i) {
   CHECK(i < NACL_THREAD_MAX);
 
   NaClXMutexLock(&gNaClTlsMu);
@@ -202,7 +207,7 @@ uint32_t NaClTlsChange(struct NaClAppThread *natp,
 #elif NACL_LINUX || NACL_WINDOWS
 
 
-THREAD int nacl_thread_index;
+THREAD uint32_t nacl_thread_index;
 /* encoded index; 0 is used to indicate error */
 
 int NaClTlsInit() {
@@ -263,20 +268,20 @@ void NaClTlsSetIdx(uint32_t tls_idx) {
   nacl_thread_index = tls_idx;
 }
 
-int NaClTlsGetIdx(void) {
+uint32_t NaClTlsGetIdx(void) {
   return nacl_thread_index;
 }
 
 void NaClTlsFree(struct NaClAppThread *natp) {
-  int tls_idx;
+                 uint32_t             tls_idx;
 
   tls_idx = NaClGetThreadIdx(natp);
   NaClThreadIdxFree(tls_idx - 1);
 }
 
-uint32_t NaClTlsChange(struct NaClAppThread *natp,
-                       void                 *base_addr,
-                       uint32_t             size) {
+uint32_t NaClTlsChange(struct NaClAppThread   *natp,
+                       void                   *base_addr,
+                       uint32_t               size) {
   UNREFERENCED_PARAMETER(size);
 
   natp->user.tls_base = base_addr;

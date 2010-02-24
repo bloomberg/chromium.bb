@@ -35,6 +35,9 @@
     {
       'target_name': 'service_runtime_x86_64',
       'type': 'static_library',
+      'variables': {
+        'win_target': 'x64',
+      },
       'sources': [
         'nacl_app_64.c',
         'nacl_switch_64.S',
