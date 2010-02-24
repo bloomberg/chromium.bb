@@ -63,13 +63,12 @@ void RunCookiePrompt(TabContents* tab_contents,
                      const GURL& origin,
                      const std::string& cookie_line,
                      CookiePromptModalDialogDelegate* delegate) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   Singleton<AppModalDialogQueue>()->AddDialog(
       new CookiePromptModalDialog(tab_contents, host_content_settings_map,
                                   origin, cookie_line, delegate));
 #else
   // Linux: http://crbug.com/35178
-  // Mac: http://crbug.com/34894
   NOTIMPLEMENTED();
   delegate->BlockSiteData();
 #endif
@@ -82,13 +81,12 @@ void RunLocalStoragePrompt(
     const string16& key,
     const string16& value,
     CookiePromptModalDialogDelegate* delegate) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   Singleton<AppModalDialogQueue>()->AddDialog(
       new CookiePromptModalDialog(tab_contents, host_content_settings_map,
                                   origin, key, value, delegate));
 #else
   // Linux: http://crbug.com/35178
-  // Mac: http://crbug.com/34894
   NOTIMPLEMENTED();
   delegate->BlockSiteData();
 #endif
@@ -100,13 +98,12 @@ void RunDatabasePrompt(
     const GURL& origin,
     const string16& database_name,
     CookiePromptModalDialogDelegate* delegate) {
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
   Singleton<AppModalDialogQueue>()->AddDialog(
       new CookiePromptModalDialog(tab_contents, host_content_settings_map,
                                   origin, database_name, delegate));
 #else
   // Linux: http://crbug.com/35178
-  // Mac: http://crbug.com/34894
   NOTIMPLEMENTED();
   delegate->BlockSiteData();
 #endif
