@@ -126,6 +126,13 @@
           },
         }],
       ],
+      'configurations': {
+        'Debug_Base': {
+          'defines': [
+            'DEBUG',
+          ],
+        },
+      },
     },
   ],
 }
