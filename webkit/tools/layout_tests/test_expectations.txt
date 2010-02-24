@@ -2940,9 +2940,8 @@ BUG35858 MAC : media/video-src-change.html = CRASH PASS
 BUG35858 MAC : media/video-src-source.html = CRASH PASS
 BUG35858 MAC : media/video-timeupdate-during-playback.html = CRASH PASS
 
-// Newly added in r54826 - may just need baselines.
-BUG35922 MAC : media/video-replaces-poster.html = IMAGE
-BUG35922 WIN LINUX : media/video-replaces-poster.html = IMAGE+TEXT
+// Newly added in r54826.
+BUG35922 : media/video-replaces-poster.html = IMAGE
 
 // Started failing during roll from 54848 -> 54898
 // Started failing with 54865. No rebaselines upstream but they don't run pixel tests.
