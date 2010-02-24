@@ -799,7 +799,6 @@
    fun:-[NSView displayIfNeeded]
    fun:-[NSWindow displayIfNeeded]
 }
-Suppression:
 {
    bug_36605
    Memcheck:Leak
