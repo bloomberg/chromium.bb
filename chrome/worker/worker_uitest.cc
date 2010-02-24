@@ -266,9 +266,12 @@ TEST_F(WorkerTest, WorkerReplaceSelf) {
 TEST_F(WorkerTest, WorkerScriptError) {
   RunWorkerFastLayoutTest("worker-script-error.html");
 }
-TEST_F(WorkerTest, WorkerTerminate) {
+
+// http://crbug.com/36630.
+TEST_F(WorkerTest, DISABLED_WorkerTerminate) {
   RunWorkerFastLayoutTest("worker-terminate.html");
 }
+
 TEST_F(WorkerTest, WorkerTimeout) {
   RunWorkerFastLayoutTest("worker-timeout.html");
 }
