@@ -102,6 +102,14 @@ void DwarfLineToModule::AddLine(uint64 address, uint64 length,
   if (address + length < address)
     length = -address;
 
+  // Should we omit this line? (See the comments for omitted_line_end_.)
+  if (address == 0 || address == omitted_line_end_) {
+    omitted_line_end_ = address + length;
+    return;
+  } else {
+    omitted_line_end_ = 0;
+  }
+
   // Find the source file being referred to.
   Module::File *file = files_[file_num];
   if (!file) {

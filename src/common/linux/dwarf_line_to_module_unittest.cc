@@ -265,3 +265,75 @@ TEST(Errors, BigLine) {
   ASSERT_EQ(1U, lines.size());
   EXPECT_EQ(1U, lines[0].size);
 }  
+
+// The 'Omitted' tests verify that we correctly omit line information
+// for code in sections that the linker has dropped. See "GNU
+// toolchain omitted sections support" at the top of the
+// DwarfLineToModule class.
+
+TEST(Omitted, DroppedThenGood) {
+  Module m("name", "os", "architecture", "id");
+  vector<Module::Line> lines;
+  DwarfLineToModule h(&m, &lines);
+
+  h.DefineFile("filename1", 1, 0, 0, 0);
+  h.AddLine(0,  10, 1, 83816211, 0);   // should be omitted
+  h.AddLine(20, 10, 1, 13059195, 0);   // should be recorded
+
+  ASSERT_EQ(1U, lines.size());
+  EXPECT_EQ(13059195, lines[0].number);
+}
+
+TEST(Omitted, GoodThenDropped) {
+  Module m("name", "os", "architecture", "id");
+  vector<Module::Line> lines;
+  DwarfLineToModule h(&m, &lines);
+
+  h.DefineFile("filename1", 1, 0, 0, 0);
+  h.AddLine(0x9dd6a372, 10, 1, 41454594, 0);   // should be recorded
+  h.AddLine(0,  10, 1, 44793413, 0);           // should be omitted
+
+  ASSERT_EQ(1U, lines.size());
+  EXPECT_EQ(41454594, lines[0].number);
+}
+
+TEST(Omitted, Mix1) {
+  Module m("name", "os", "architecture", "id");
+  vector<Module::Line> lines;
+  DwarfLineToModule h(&m, &lines);
+
+  h.DefineFile("filename1", 1, 0, 0, 0);
+  h.AddLine(0x679ed72f,  10,   1, 58932642, 0);   // should be recorded
+  h.AddLine(0xdfb5a72d,  10,   1, 39847385, 0);   // should be recorded
+  h.AddLine(0,           0x78, 1, 23053829, 0);   // should be omitted
+  h.AddLine(0x78,        0x6a, 1, 65317783, 0);   // should be omitted
+  h.AddLine(0x78 + 0x6a, 0x2a, 1, 77601423, 0);   // should be omitted
+  h.AddLine(0x9fe0cea5,  10,   1, 91806582, 0);   // should be recorded
+  h.AddLine(0x7e41a109,  10,   1, 56169221, 0);   // should be recorded
+
+  ASSERT_EQ(4U, lines.size());
+  EXPECT_EQ(58932642, lines[0].number);
+  EXPECT_EQ(39847385, lines[1].number);
+  EXPECT_EQ(91806582, lines[2].number);
+  EXPECT_EQ(56169221, lines[3].number);
+}
+
+TEST(Omitted, Mix2) {
+  Module m("name", "os", "architecture", "id");
+  vector<Module::Line> lines;
+  DwarfLineToModule h(&m, &lines);
+
+  h.DefineFile("filename1", 1, 0, 0, 0);
+  h.AddLine(0,           0xf2, 1, 58802211, 0);   // should be omitted
+  h.AddLine(0xf2,        0xb9, 1, 78958222, 0);   // should be omitted
+  h.AddLine(0xf2 + 0xb9, 0xf7, 1, 64861892, 0);   // should be omitted
+  h.AddLine(0x4e4d271e,  9,    1, 67355743, 0);   // should be recorded
+  h.AddLine(0xdfb5a72d,  30,   1, 23365776, 0);   // should be recorded
+  h.AddLine(0,           0x64, 1, 76196762, 0);   // should be omitted
+  h.AddLine(0x64,        0x33, 1, 71066611, 0);   // should be omitted
+  h.AddLine(0x64 + 0x33, 0xe3, 1, 61749337, 0);   // should be omitted
+
+  ASSERT_EQ(2U, lines.size());
+  EXPECT_EQ(67355743, lines[0].number);
+  EXPECT_EQ(23365776, lines[1].number);
+}
