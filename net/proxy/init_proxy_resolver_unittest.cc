@@ -167,7 +167,7 @@ TEST(InitProxyResolverTest, CustomPacSucceeds) {
   RuleBasedProxyScriptFetcher fetcher(&rules);
 
   ProxyConfig config;
-  config.pac_url = GURL("http://custom/proxy.pac");
+  config.set_pac_url(GURL("http://custom/proxy.pac"));
 
   Rules::Rule rule = rules.AddSuccessRule("http://custom/proxy.pac");
 
@@ -199,7 +199,7 @@ TEST(InitProxyResolverTest, CustomPacFails1) {
   RuleBasedProxyScriptFetcher fetcher(&rules);
 
   ProxyConfig config;
-  config.pac_url = GURL("http://custom/proxy.pac");
+  config.set_pac_url(GURL("http://custom/proxy.pac"));
 
   rules.AddFailDownloadRule("http://custom/proxy.pac");
 
@@ -227,7 +227,7 @@ TEST(InitProxyResolverTest, CustomPacFails2) {
   RuleBasedProxyScriptFetcher fetcher(&rules);
 
   ProxyConfig config;
-  config.pac_url = GURL("http://custom/proxy.pac");
+  config.set_pac_url(GURL("http://custom/proxy.pac"));
 
   rules.AddFailParsingRule("http://custom/proxy.pac");
 
@@ -243,7 +243,7 @@ TEST(InitProxyResolverTest, HasNullProxyScriptFetcher) {
   RuleBasedProxyResolver resolver(&rules, true /*expects_pac_bytes*/);
 
   ProxyConfig config;
-  config.pac_url = GURL("http://custom/proxy.pac");
+  config.set_pac_url(GURL("http://custom/proxy.pac"));
 
   TestCompletionCallback callback;
   InitProxyResolver init(&resolver, NULL);
@@ -258,7 +258,7 @@ TEST(InitProxyResolverTest, AutodetectSuccess) {
   RuleBasedProxyScriptFetcher fetcher(&rules);
 
   ProxyConfig config;
-  config.auto_detect = true;
+  config.set_auto_detect(true);
 
   Rules::Rule rule = rules.AddSuccessRule("http://wpad/wpad.dat");
 
@@ -275,8 +275,8 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess1) {
   RuleBasedProxyScriptFetcher fetcher(&rules);
 
   ProxyConfig config;
-  config.auto_detect = true;
-  config.pac_url = GURL("http://custom/proxy.pac");
+  config.set_auto_detect(true);
+  config.set_pac_url(GURL("http://custom/proxy.pac"));
 
   rules.AddFailDownloadRule("http://wpad/wpad.dat");
   Rules::Rule rule = rules.AddSuccessRule("http://custom/proxy.pac");
@@ -294,8 +294,8 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess2) {
   RuleBasedProxyScriptFetcher fetcher(&rules);
 
   ProxyConfig config;
-  config.auto_detect = true;
-  config.pac_url = GURL("http://custom/proxy.pac");
+  config.set_auto_detect(true);
+  config.set_pac_url(GURL("http://custom/proxy.pac"));
 
   rules.AddFailParsingRule("http://wpad/wpad.dat");
   Rules::Rule rule = rules.AddSuccessRule("http://custom/proxy.pac");
@@ -338,8 +338,8 @@ TEST(InitProxyResolverTest, AutodetectFailCustomFails1) {
   RuleBasedProxyScriptFetcher fetcher(&rules);
 
   ProxyConfig config;
-  config.auto_detect = true;
-  config.pac_url = GURL("http://custom/proxy.pac");
+  config.set_auto_detect(true);
+  config.set_pac_url(GURL("http://custom/proxy.pac"));
 
   rules.AddFailDownloadRule("http://wpad/wpad.dat");
   rules.AddFailDownloadRule("http://custom/proxy.pac");
@@ -357,8 +357,8 @@ TEST(InitProxyResolverTest, AutodetectFailCustomFails2) {
   RuleBasedProxyScriptFetcher fetcher(&rules);
 
   ProxyConfig config;
-  config.auto_detect = true;
-  config.pac_url = GURL("http://custom/proxy.pac");
+  config.set_auto_detect(true);
+  config.set_pac_url(GURL("http://custom/proxy.pac"));
 
   rules.AddFailDownloadRule("http://wpad/wpad.dat");
   rules.AddFailParsingRule("http://custom/proxy.pac");
@@ -378,8 +378,8 @@ TEST(InitProxyResolverTest, AutodetectFailCustomSuccess2_NoFetch) {
   RuleBasedProxyScriptFetcher fetcher(&rules);
 
   ProxyConfig config;
-  config.auto_detect = true;
-  config.pac_url = GURL("http://custom/proxy.pac");
+  config.set_auto_detect(true);
+  config.set_pac_url(GURL("http://custom/proxy.pac"));
 
   rules.AddFailParsingRule("");  // Autodetect.
   Rules::Rule rule = rules.AddSuccessRule("http://custom/proxy.pac");

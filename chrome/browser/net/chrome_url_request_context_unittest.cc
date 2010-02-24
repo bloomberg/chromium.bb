@@ -57,8 +57,7 @@ TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
     bool is_null;
     bool auto_detect;
     GURL pac_url;
-    net::ProxyConfig::ProxyRules proxy_rules;
-    const char* proxy_bypass_list;  // newline separated
+    net::ProxyRulesExpectation proxy_rules;
   } tests[] = {
     {
       TEST_DESC("Empty command line"),
@@ -68,8 +67,7 @@ TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
       true,                                               // is_null
       false,                                              // auto_detect
       GURL(),                                             // pac_url
-      net::ProxyConfig::ProxyRules(),                     // proxy_rules
-      "",                                                 // proxy_bypass_list
+      net::ProxyRulesExpectation::Empty(),
     },
     {
       TEST_DESC("No proxy"),
@@ -79,8 +77,7 @@ TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
       false,                                              // is_null
       false,                                              // auto_detect
       GURL(),                                             // pac_url
-      net::ProxyConfig::ProxyRules(),                     // proxy_rules
-      "",                                                 // proxy_bypass_list
+      net::ProxyRulesExpectation::Empty(),
     },
     {
       TEST_DESC("No proxy with extra parameters."),
@@ -90,8 +87,7 @@ TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
       false,                                              // is_null
       false,                                              // auto_detect
       GURL(),                                             // pac_url
-      net::ProxyConfig::ProxyRules(),                     // proxy_rules
-      "",                                                 // proxy_bypass_list
+      net::ProxyRulesExpectation::Empty(),
     },
     {
       TEST_DESC("Single proxy."),
@@ -101,8 +97,9 @@ TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
       false,                                              // is_null
       false,                                              // auto_detect
       GURL(),                                             // pac_url
-      net::MakeSingleProxyRules("http://proxy:8888"),     // proxy_rules
-      "",                                                 // proxy_bypass_list
+      net::ProxyRulesExpectation::Single(
+          "proxy:8888",  // single proxy
+          ""),           // bypass rules
     },
     {
       TEST_DESC("Per scheme proxy."),
@@ -112,10 +109,11 @@ TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
       false,                                              // is_null
       false,                                              // auto_detect
       GURL(),                                             // pac_url
-      net::MakeProxyPerSchemeRules("httpproxy:8888",
-                                   "",
-                                   "ftpproxy:8889"),      // proxy_rules
-      "",                                                 // proxy_bypass_list
+      net::ProxyRulesExpectation::PerScheme(
+          "httpproxy:8888",  // http
+          "",                // https
+          "ftpproxy:8889",   // ftp
+          ""),               // bypass rules
     },
     {
       TEST_DESC("Per scheme proxy with bypass URLs."),
@@ -125,11 +123,12 @@ TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
       false,                                              // is_null
       false,                                              // auto_detect
       GURL(),                                             // pac_url
-      net::MakeProxyPerSchemeRules("httpproxy:8888",
-                                   "",
-                                   "ftpproxy:8889"),      // proxy_rules
-      // TODO(eroman): 127.0.0.1/8 is unsupported, so it was dropped
-      "*.google.com\nfoo.com:99\n1.2.3.4:22\n",
+      net::ProxyRulesExpectation::PerScheme(
+          "httpproxy:8888",  // http
+          "",                // https
+          "ftpproxy:8889",   // ftp
+          // TODO(eroman): 127.0.0.1/8 is unsupported, so it was dropped
+          "*.google.com,foo.com:99,1.2.3.4:22"),
     },
     {
       TEST_DESC("Pac URL with proxy bypass URLs"),
@@ -139,9 +138,9 @@ TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
       false,                                              // is_null
       false,                                              // auto_detect
       GURL("http://wpad/wpad.dat"),                       // pac_url
-      net::ProxyConfig::ProxyRules(),                     // proxy_rules
-      // TODO(eroman): 127.0.0.1/8 is unsupported, so it was dropped
-      "*.google.com\nfoo.com:99\n1.2.3.4:22\n",
+      net::ProxyRulesExpectation::EmptyWithBypass(
+          // TODO(eroman): 127.0.0.1/8 is unsupported, so it was dropped
+          "*.google.com,foo.com:99,1.2.3.4:22"),
     },
     {
       TEST_DESC("Autodetect"),
@@ -151,8 +150,7 @@ TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
       false,                                              // is_null
       true,                                               // auto_detect
       GURL(),                                             // pac_url
-      net::ProxyConfig::ProxyRules(),                     // proxy_rules
-      "",                                                 // proxy_bypass_list
+      net::ProxyRulesExpectation::Empty(),
     }
   };
 
@@ -166,11 +164,9 @@ TEST(ChromeUrlRequestContextTest, CreateProxyConfigTest) {
       EXPECT_TRUE(config == NULL);
     } else {
       EXPECT_TRUE(config != NULL);
-      EXPECT_EQ(tests[i].auto_detect, config->auto_detect);
-      EXPECT_EQ(tests[i].pac_url, config->pac_url);
-      EXPECT_EQ(tests[i].proxy_bypass_list,
-                net::FlattenProxyBypass(config->bypass_rules));
-      EXPECT_EQ(tests[i].proxy_rules, config->proxy_rules);
+      EXPECT_EQ(tests[i].auto_detect, config->auto_detect());
+      EXPECT_EQ(tests[i].pac_url, config->pac_url());
+      EXPECT_TRUE(tests[i].proxy_rules.Matches(config->proxy_rules()));
     }
   }
 }

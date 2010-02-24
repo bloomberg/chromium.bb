@@ -934,21 +934,21 @@ net::ProxyConfig* CreateProxyConfig(const CommandLine& command_line) {
   if (command_line.HasSwitch(switches::kProxyServer)) {
     const std::wstring& proxy_server =
         command_line.GetSwitchValue(switches::kProxyServer);
-    proxy_config->proxy_rules.ParseFromString(WideToASCII(proxy_server));
+    proxy_config->proxy_rules().ParseFromString(WideToASCII(proxy_server));
   }
 
   if (command_line.HasSwitch(switches::kProxyPacUrl)) {
-    proxy_config->pac_url =
+    proxy_config->set_pac_url(
         GURL(WideToASCII(command_line.GetSwitchValue(
-            switches::kProxyPacUrl)));
+            switches::kProxyPacUrl))));
   }
 
   if (command_line.HasSwitch(switches::kProxyAutoDetect)) {
-    proxy_config->auto_detect = true;
+    proxy_config->set_auto_detect(true);
   }
 
   if (command_line.HasSwitch(switches::kProxyBypassList)) {
-    proxy_config->bypass_rules.ParseFromString(
+    proxy_config->proxy_rules().bypass_rules.ParseFromString(
         WideToASCII(command_line.GetSwitchValue(
             switches::kProxyBypassList)));
   }

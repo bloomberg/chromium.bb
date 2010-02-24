@@ -64,13 +64,13 @@ int InitProxyResolver::Init(const ProxyConfig& config,
 InitProxyResolver::UrlList InitProxyResolver::BuildPacUrlsFallbackList(
     const ProxyConfig& config) const {
   UrlList pac_urls;
-  if (config.auto_detect) {
+  if (config.auto_detect()) {
      GURL pac_url = resolver_->expects_pac_bytes() ?
         GURL("http://wpad/wpad.dat") : GURL();
      pac_urls.push_back(pac_url);
   }
-  if (config.pac_url.is_valid())
-    pac_urls.push_back(config.pac_url);
+  if (config.has_pac_url())
+    pac_urls.push_back(config.pac_url());
   return pac_urls;
 }
 

@@ -1323,19 +1323,19 @@ class SetProxyConfigTask : public Task {
     }
     bool auto_config;
     if (dict.GetBoolean(automation::kJSONProxyAutoconfig, &auto_config)) {
-      pc->auto_detect = true;
+      pc->set_auto_detect(true);
     }
     std::string pac_url;
     if (dict.GetString(automation::kJSONProxyPacUrl, &pac_url)) {
-      pc->pac_url = GURL(pac_url);
+      pc->set_pac_url(GURL(pac_url));
     }
     std::string proxy_bypass_list;
     if (dict.GetString(automation::kJSONProxyBypassList, &proxy_bypass_list)) {
-      pc->bypass_rules.ParseFromString(proxy_bypass_list);
+      pc->proxy_rules().bypass_rules.ParseFromString(proxy_bypass_list);
     }
     std::string proxy_server;
     if (dict.GetString(automation::kJSONProxyServer, &proxy_server)) {
-      pc->proxy_rules.ParseFromString(proxy_server);
+      pc->proxy_rules().ParseFromString(proxy_server);
     }
   }
 

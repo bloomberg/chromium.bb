@@ -14,7 +14,7 @@
 class MockProxyConfigService : public net::ProxyConfigService {
  public:
   virtual int GetProxyConfig(net::ProxyConfig* results) {
-    results->pac_url = GURL("http://pac");
+    results->set_pac_url(GURL("http://pac"));
     return net::OK;
   }
 };
