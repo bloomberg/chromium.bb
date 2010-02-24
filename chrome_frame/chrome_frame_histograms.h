@@ -48,6 +48,9 @@ class ChromeFrameHistogramSnapshots {
   // histogram) so that we can send only the delta with the next log.
   LoggedSampleMap logged_samples_;
 
+  // Synchronizes the histogram gathering operation.
+  Lock lock_;
+
   DISALLOW_COPY_AND_ASSIGN(ChromeFrameHistogramSnapshots);
 };
 
