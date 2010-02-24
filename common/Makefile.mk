@@ -168,7 +168,7 @@ endif
 
 # process release vs debug options here
 ifeq (release,$(filter release,$(args)))
-  OPT ?= -O3 -mfpmath=sse -msse -fomit-frame-pointer
+  OPT ?= -O3 -fomit-frame-pointer
   DBG ?=
   OUTPUT_NAME :=$(RELEASE_NAME)
 else

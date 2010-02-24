@@ -292,30 +292,30 @@ BUILD/stamp-pregcc: BUILD/stamp-gcc-$(GCC_VERSION) Makefile
 	      --disable-libstdcxx-pch \
 	      --disable-shared \
 	      --target=$(CROSSARCH)
-	if [ "x$(GCC_VERSION)" = "x4.4.2" ] ; then \
+	if [ "x$(GCC_VERSION)" = "x4.4.2" -o "x$(GCC_VERSION)" = "x4.4.3" ] ; then \
 	PATH=$(BUILDPATH) \
 	  $(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) \
-		  CFLAGS_FOR_TARGET="-O2 -g" \
-		  CXXFLAGS_FOR_TARGET="-O2 -g" \
+		  CFLAGS_FOR_TARGET="-O2" \
+		  CXXFLAGS_FOR_TARGET="-O2" \
 	    all-gcc all-target-libgcc ; \
 	else \
 	PATH=$(BUILDPATH) \
 	  $(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) \
-		  CFLAGS_FOR_TARGET="-O2 -g" \
-		  CXXFLAGS_FOR_TARGET="-O2 -g" \
+		  CFLAGS_FOR_TARGET="-O2" \
+		  CXXFLAGS_FOR_TARGET="-O2" \
 	    all-gcc ; \
 	fi
-	if [ "x$(GCC_VERSION)" = "x4.4.2" ] ; then \
+	if [ "x$(GCC_VERSION)" = "x4.4.2" -o "x$(GCC_VERSION)" = "x4.4.3" ] ; then \
 	PATH=$(BUILDPATH) \
 	  $(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) \
-		  CFLAGS_FOR_TARGET="-O2 -g" \
-		  CXXFLAGS_FOR_TARGET="-O2 -g" \
+		  CFLAGS_FOR_TARGET="-O2" \
+		  CXXFLAGS_FOR_TARGET="-O2" \
 	    DESTDIR=$(DESTDIR) install-gcc install-target-libgcc ; \
 	else \
 	PATH=$(BUILDPATH) \
 	  $(MAKE) -C BUILD/build-pregcc-$(CROSSARCH) \
-		  CFLAGS_FOR_TARGET="-O2 -g" \
-		  CXXFLAGS_FOR_TARGET="-O2 -g" \
+		  CFLAGS_FOR_TARGET="-O2" \
+		  CXXFLAGS_FOR_TARGET="-O2" \
 	    DESTDIR=$(DESTDIR) install-gcc ; \
 	fi
 	cp $(DESTDIR)$(SDKROOT)/lib/gcc/$(CROSSARCH)/$(GCC_VERSION)/libgcc.a \
@@ -340,7 +340,7 @@ BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
 	if [ "x$(CROSSARCH)" = "xnacl64" ] ; then \
 	  cd BUILD/build-newlib-$(CROSSARCH) && \
 	    PATH=$(BUILDPATH) \
-		  CFLAGS="-march=x86-64" \
+		  CFLAGS="-m64 -O2" \
 	      ../newlib-$(NEWLIB_VERSION)/configure \
 			  --enable-newlib-io-long-long \
 			  --enable-newlib-io-c99-formats \
@@ -350,13 +350,13 @@ BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
 	  PATH=$(BUILDPATH) \
 	    $(MAKE) -C BUILD/build-newlib-$(CROSSARCH) \
 	                    CCASFLAGS="-D_I386MACH_ALLOW_HW_INTERRUPTS" \
-		    CFLAGS_FOR_TARGET="-march=x86-64 -O2" \
-	          CXXFLAGS_FOR_TARGET="-march=x86-64 -O2" \
+		    CFLAGS_FOR_TARGET="-m64 -O2" \
+	          CXXFLAGS_FOR_TARGET="-m64 -O2" \
 	      all ; \
 	else \
 	  cd BUILD/build-newlib-$(CROSSARCH) && \
 	    PATH=$(BUILDPATH) \
-		  CFLAGS="-m32 -march=i486 -msse2 -mfpmath=sse" \
+		  CFLAGS="-m32 -O2" \
 	      ../newlib-$(NEWLIB_VERSION)/configure \
 			  --enable-newlib-io-long-long \
 			  --enable-newlib-io-c99-formats \
@@ -365,8 +365,8 @@ BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
 	  cd ../.. ; \
 	  PATH=$(BUILDPATH) \
 	    $(MAKE) -C BUILD/build-newlib-$(CROSSARCH) \
-		    CFLAGS_FOR_TARGET="-m32 -march=i486 -msse2 -mfpmath=sse -O2" \
-	          CXXFLAGS_FOR_TARGET="-m32 -march=i486 -msse2 -mfpmath=sse -O2" \
+		    CFLAGS_FOR_TARGET="-m32 -O2" \
+	          CXXFLAGS_FOR_TARGET="-m32 -O2" \
 	      all ; \
 	fi
 	PATH=$(BUILDPATH) \

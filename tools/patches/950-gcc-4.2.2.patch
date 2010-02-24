@@ -1,0 +1,67 @@
+diff -uNr gcc-4.2.2.orig/gcc/config/i386/i386.h gcc-4.2.2/gcc/config/i386/i386.h
+--- gcc-4.2.2.orig/gcc/config/i386/i386.c	2010-02-21 00:03:26.000000000 +0100
++++ gcc-4.2.2/gcc/config/i386/i386.c	2010-02-21 00:06:13.000000000 +0100
+@@ -1611,7 +1611,7 @@
+ 	     "-mtune=generic instead as appropriate.");
+ 
+   if (!ix86_arch_string)
+-    ix86_arch_string = TARGET_64BIT ? "x86-64" : "i386";
++    ix86_arch_string = TARGET_64BIT ? "x86-64" : "i686";
+   if (!strcmp (ix86_arch_string, "generic"))
+     error ("generic CPU can be used only for -mtune= switch");
+   if (!strncmp (ix86_arch_string, "generic", 7))
+diff -uNr gcc-4.2.2.orig/gcc/config/i386/i386.h gcc-4.2.2/gcc/config/i386/i386.h
+--- gcc-4.2.2.orig/gcc/config/i386/i386.h	2007-09-01 17:28:30.000000000 +0200
++++ gcc-4.2.2/gcc/config/i386/i386.h	2010-02-20 23:44:58.000000000 +0100
+@@ -522,7 +522,22 @@
+ 
+ /* target machine storage layout */
+ 
+-#define LONG_DOUBLE_TYPE_SIZE 80
++#define LONG_DOUBLE_TYPE_SIZE (TARGET_80387 ? 80 : 64)
++
++/* With SSE2 but no 80387 we can not use 80bit long double but with 80387 we
++   must use 80bit long double in registers - hardware limitation in both cases */
++
++#undef GET_MODE_WIDER_MODE
++#define GET_MODE_WIDER_MODE(MODE) \
++	(TARGET_80387 ? mode_wider[MODE] : \
++	 ((MODE) != DFmode && (MODE) != XFmode && (MODE) != V4DFmode && \
++	  (MODE) != DCmode && (MODE) != XCmode) ? mode_wider[MODE] : \
++						  VOIDmode)
++#undef GET_MODE_2XWIDER_MODE
++#define GET_MODE_2XWIDER_MODE(MODE) \
++	(TARGET_80387 ? mode_2xwider[MODE] : \
++	 ((MODE) != DFmode && (MODE) != XFmode) ? mode_2xwider[MODE] : \
++						  VOIDmode)
+ 
+ /* Set the value of FLT_EVAL_METHOD in float.h.  When using only the
+    FPU, assume that the fpcw is set to extended precision; when using
+diff -uNr gcc-4.2.2.orig/gcc/config/i386/nacl.h gcc-4.2.2/gcc/config/i386/nacl.h
+--- gcc-4.2.2.orig/gcc/config/i386/nacl.h	2010-02-20 23:40:52.000000000 +0100
++++ gcc-4.2.2/gcc/config/i386/nacl.h	2010-02-20 23:45:21.000000000 +0100
+@@ -74,3 +74,6 @@
+ 	builtin_define ("__native_client__=1");		\
+   }							\
+   while (0)
++
++#undef LONG_DOUBLE_TYPE_SIZE
++#define LONG_DOUBLE_TYPE_SIZE 64
+diff -uNr gcc-4.2.2.orig/gcc/machmode.h gcc-4.2.2/gcc/machmode.h
+--- gcc-4.2.2.orig/gcc/machmode.h	2007-09-01 17:28:30.000000000 +0200
++++ gcc-4.2.2/gcc/machmode.h	2010-02-20 23:41:28.000000000 +0100
+@@ -125,10 +125,14 @@
+ /* Get the next wider natural mode (eg, QI -> HI -> SI -> DI -> TI).  */
+ 
+ extern const unsigned char mode_wider[NUM_MACHINE_MODES];
++#ifndef GET_MODE_WIDER_MODE
+ #define GET_MODE_WIDER_MODE(MODE) mode_wider[MODE]
++#endif
+ 
+ extern const unsigned char mode_2xwider[NUM_MACHINE_MODES];
++#ifndef GET_MODE_2XWIDER_MODE
+ #define GET_MODE_2XWIDER_MODE(MODE) mode_2xwider[MODE]
++#endif
+ 
+ /* Return the mode for data of a given size SIZE and mode class CLASS.
+    If LIMIT is nonzero, then don't use modes bigger than MAX_FIXED_MODE_SIZE.

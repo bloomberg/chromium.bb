@@ -1031,27 +1031,6 @@ nacl_env = pre_base_env.Clone(
     LIBS = ['${EXTRA_LIBS}'],
 )
 
-# limit the majority of test to x86 for now
-if (nacl_env['BUILD_ARCHITECTURE'] == 'x86' and
-    nacl_env['TARGET_ARCHITECTURE'] == 'x86'):
-  nacl_env.Append(
-      CCFLAGS = ['-mfpmath=sse',
-                 '-msse',
-# NOTE: The flags below would make explicit it completely explciit
-#       which include directories the nacl tool chains is using.
-#       They have been verified to work.
-#                 '-nostdinc',
-#                 '-isystem',
-#                 '${NACL_SDK_INCLUDE}/../../lib/gcc/nacl/4.2.2/include',
-#                 '-isystem',
-#                 '${NACL_SDK_INCLUDE}',
-#                 '-isystem',
-#                 '${NACL_SDK_INCLUDE}/c++/4.2.2',
-#                 '-isystem',
-#                 '${NACL_SDK_INCLUDE}/c++/4.2.2/nacl',
-                 ]
-      )
-
 if (nacl_env['BUILD_ARCHITECTURE'] == 'arm' and
     nacl_env['TARGET_ARCHITECTURE'] == 'arm'):
   # TODO(robertm): remove this ASAP, we currently have llvm issue with c++
