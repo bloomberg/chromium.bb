@@ -122,6 +122,13 @@ const NSTimeInterval kDropdownHideDelay = 0.2;
 // code shared by |-exitFullscreen| and |-dealloc|.
 - (void)cleanup;
 
+// Shows and hides the UI associated with this window being active (having main
+// status).  This includes hiding the menubar and displaying the "Exit
+// Fullscreen" button.  These functions are called when the window gains or
+// loses main status as well as in |-cleanup|.
+- (void)showActiveWindowUI;
+- (void)hideActiveWindowUI;
+
 @end
 
 
@@ -147,6 +154,24 @@ const NSTimeInterval kDropdownHideDelay = 0.2;
   isFullscreen_ = YES;
   contentView_ = contentView;
   [browserController_ setFloatingBarShownFraction:(showDropdown ? 1 : 0)];
+
+  // Register for notifications.  Self is removed as an observer in |-cleanup|.
+  NSNotificationCenter* nc = [NSNotificationCenter defaultCenter];
+  NSWindow* window = [browserController_ window];
+  [nc addObserver:self
+         selector:@selector(windowDidChangeScreen:)
+             name:NSWindowDidChangeScreenNotification
+           object:window];
+
+  [nc addObserver:self
+         selector:@selector(windowDidBecomeMain:)
+             name:NSWindowDidBecomeMainNotification
+           object:window];
+
+  [nc addObserver:self
+         selector:@selector(windowDidResignMain:)
+             name:NSWindowDidResignMainNotification
+           object:window];
 }
 
 - (void)exitFullscreen {
@@ -155,25 +180,16 @@ const NSTimeInterval kDropdownHideDelay = 0.2;
   isFullscreen_ = NO;
 }
 
-- (void)windowDidBecomeMain {
-  if (!menubarIsHidden_) {
-    // Only hide the menubar if our window is on the main screen.
-    NSScreen* screen = [[browserController_ window] screen];
-    NSScreen* mainScreen = [[NSScreen screens] objectAtIndex:0];
-    if (screen == mainScreen) {
-      mac_util::RequestFullScreen();
-      menubarIsHidden_ = YES;
-    }
-  }
-  // TODO(rohitrao): Insert the Exit Fullscreen button.  http://crbug.com/35956
+- (void)windowDidChangeScreen:(NSNotification*)notification {
+  [browserController_ resizeFullscreenWindow];
 }
 
-- (void)windowDidResignMain {
-  if (menubarIsHidden_) {
-    mac_util::ReleaseFullScreen();
-    menubarIsHidden_ = NO;
-  }
-  // TODO(rohitrao): Remove the Exit Fullscreen button.  http://crbug.com/35956
+- (void)windowDidBecomeMain:(NSNotification*)notification {
+  [self showActiveWindowUI];
+}
+
+- (void)windowDidResignMain:(NSNotification*)notification {
+  [self hideActiveWindowUI];
 }
 
 - (void)overlayFrameChanged:(NSRect)frame {
@@ -490,6 +506,7 @@ const NSTimeInterval kDropdownHideDelay = 0.2;
 - (void)cleanup {
   [self cancelMouseExitCheck];
   [self cancelAnimationAndTimers];
+  [[NSNotificationCenter defaultCenter] removeObserver:self];
 
   [contentView_ removeTrackingArea:trackingArea_];
   contentView_ = nil;
@@ -504,7 +521,28 @@ const NSTimeInterval kDropdownHideDelay = 0.2;
   // Call the main status resignation code to perform the associated cleanup,
   // since we will no longer be receiving actual status resignation
   // notifications.
-  [self windowDidResignMain];
+  [self hideActiveWindowUI];
+}
+
+- (void)showActiveWindowUI {
+  if (!menubarIsHidden_) {
+    // Only hide the menubar if our window is on the main screen.
+    NSScreen* screen = [[browserController_ window] screen];
+    NSScreen* mainScreen = [[NSScreen screens] objectAtIndex:0];
+    if (screen == mainScreen) {
+      mac_util::RequestFullScreen();
+      menubarIsHidden_ = YES;
+    }
+  }
+  // TODO(rohitrao): Insert the Exit Fullscreen button.  http://crbug.com/35956
+}
+
+- (void)hideActiveWindowUI {
+  if (menubarIsHidden_) {
+    mac_util::ReleaseFullScreen();
+    menubarIsHidden_ = NO;
+  }
+  // TODO(rohitrao): Remove the Exit Fullscreen button.  http://crbug.com/35956
 }
 
 @end

@@ -91,11 +91,6 @@
 // Cancels any running animation and timers.
 - (void)cancelAnimationAndTimers;
 
-// Called when the fullscreen window becomes or resigns main status.  Used to
-// update the menubar hidden state, the exit fullscreen button, etc.
-- (void)windowDidBecomeMain;
-- (void)windowDidResignMain;
-
 @end
 
 #endif  // CHROME_BROWSER_COCOA_FULLSCREEN_CONTROLLER_H_

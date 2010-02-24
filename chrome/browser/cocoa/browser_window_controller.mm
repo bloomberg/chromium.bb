@@ -311,6 +311,10 @@
   browser_->CloseAllTabs();
   [downloadShelfController_ exiting];
 
+  // Explicitly release |fullscreenController_| here, as it may call back to
+  // this BWC in |-dealloc|.
+  fullscreenController_.reset();
+
   // Under certain testing configurations we may not actually own the browser.
   if (ownsBrowser_ == NO)
     browser_.release();
@@ -428,10 +432,8 @@
   [[self window] setViewsNeedDisplay:YES];
 
   // TODO(viettrungluu): For some reason, the above doesn't suffice.
-  if ([self isFullscreen]) {
+  if ([self isFullscreen])
     [floatingBarBackingView_ setNeedsDisplay:YES];
-    [fullscreenController_ windowDidBecomeMain];
-  }
 }
 
 - (void)windowDidResignMain:(NSNotification*)notification {
@@ -440,10 +442,8 @@
   [[self window] setViewsNeedDisplay:YES];
 
   // TODO(viettrungluu): For some reason, the above doesn't suffice.
-  if ([self isFullscreen]) {
+  if ([self isFullscreen])
     [floatingBarBackingView_ setNeedsDisplay:YES];
-    [fullscreenController_ windowDidResignMain];
-  }
 }
 
 // Called when we are activated (when we gain focus).
@@ -1716,6 +1716,16 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 
 - (BOOL)isFullscreen {
   return fullscreenController_.get() && [fullscreenController_ isFullscreen];
+}
+
+- (void)resizeFullscreenWindow {
+  DCHECK([self isFullscreen]);
+  if (![self isFullscreen])
+    return;
+
+  NSWindow* window = [self window];
+  [window setFrame:[[window screen] frame] display:YES];
+  [self layoutSubviews];
 }
 
 - (CGFloat)floatingBarShownFraction {

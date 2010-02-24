@@ -275,6 +275,11 @@ class TabStripModelObserverBridge;
 // Returns fullscreen state.
 - (BOOL)isFullscreen;
 
+// Resizes the fullscreen window to fit the screen it's currently on.  Called by
+// the FullscreenController when there is a change in monitor placement or
+// resolution.
+- (void)resizeFullscreenWindow;
+
 // Gets or sets the fraction of the floating bar (fullscreen overlay) that is
 // shown.  0 is completely hidden, 1 is fully shown.
 - (CGFloat)floatingBarShownFraction;
