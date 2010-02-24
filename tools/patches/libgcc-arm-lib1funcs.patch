@@ -469,8 +469,11 @@
 >   add curbit, pc, curbit, lsl #4  ; \
 >   add curbit, curbit, #8  ; \
 >   sfi_bxne curbit         ; \
-674a1078,1079
->   nop
+674c1077,1079
+< 	subcs	dividend, dividend, divisor, lsl #shift
+---
+> 	subcs	dividend, dividend, divisor, lsl #shift ; \
+>   nop ; \
 >   nop
 680,681c1085,1088
 < 	addne	pc, pc, order, lsl #3				; \
