@@ -21,6 +21,7 @@ class WebSharedWorkerStub : public WebWorkerStubBase {
 
   // IPC::Channel::Listener implementation.
   virtual void OnMessageReceived(const IPC::Message& message);
+  virtual void OnChannelError();
 
  private:
   virtual ~WebSharedWorkerStub();

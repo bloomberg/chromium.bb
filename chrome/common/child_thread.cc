@@ -71,6 +71,7 @@ ChildThread::~ChildThread() {
 }
 
 void ChildThread::OnChannelError() {
+  set_on_channel_error_called(true);
   MessageLoop::current()->Quit();
 }
 
@@ -160,7 +161,7 @@ ChildThread* ChildThread::current() {
 }
 
 void ChildThread::OnProcessFinalRelease() {
-  if (!check_with_browser_before_shutdown_) {
+  if (on_channel_error_called_ || !check_with_browser_before_shutdown_) {
     MessageLoop::current()->Quit();
     return;
   }
