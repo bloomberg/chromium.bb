@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,8 @@
 #include "chrome/common/plugin_messages.h"
 #include "chrome/plugin/npobject_proxy.h"
 #include "chrome/plugin/plugin_channel_base.h"
+#include "third_party/npapi/bindings/nphostapi.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebBindings.h"
-#include "webkit/glue/plugins/nphostapi.h"
 #include "webkit/glue/plugins/plugin_host.h"
 #include "webkit/glue/webkit_glue.h"
 

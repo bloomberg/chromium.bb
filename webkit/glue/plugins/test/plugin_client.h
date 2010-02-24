@@ -5,8 +5,8 @@
 #ifndef WEBKIT_PORT_PLUGINS_TEST_PLUGIN_CLIENT_H__
 #define WEBKIT_PORT_PLUGINS_TEST_PLUGIN_CLIENT_H__
 
-#include "webkit/glue/plugins/nphostapi.h"
 #include "third_party/npapi/bindings/npapi.h"
+#include "third_party/npapi/bindings/nphostapi.h"
 
 namespace NPAPIClient {
 

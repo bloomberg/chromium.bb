@@ -8,8 +8,8 @@
 #include <string>
 
 #include "base/string_util.h"
-#include "webkit/glue/plugins/nphostapi.h"
 #include "third_party/npapi/bindings/npapi.h"
+#include "third_party/npapi/bindings/nphostapi.h"
 
 namespace NPAPIClient {
 
