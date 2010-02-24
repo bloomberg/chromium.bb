@@ -474,9 +474,24 @@ void Sandbox::startSandbox() {
     // Intercept system calls in libraries that are known to have them.
     for (Maps::const_iterator iter = maps.begin(); iter != maps.end(); ++iter){
       Library* library = *iter;
+      const char* mapping = iter.name().c_str();
+
+      // Find the actual base name of the mapped library by skipping past any
+      // SPC and forward-slashes. We don't want to accidentally find matches,
+      // because the directory name included part of our well-known lib names.
+      //
+      // Typically, prior to pruning, entries would look something like this:
+      // 08:01 2289011 /lib/libc-2.7.so
+      for (const char *delim = " /"; *delim; ++delim) {
+        const char* skip = strrchr(mapping, *delim);
+        if (skip) {
+          mapping = skip + 1;
+        }
+      }
+
       for (const char **ptr = libs; *ptr; ptr++) {
-        const char *name = strstr(iter.name().c_str(), *ptr);
-        if (name) {
+        const char *name = strstr(mapping, *ptr);
+        if (name == mapping) {
           char ch = name[strlen(*ptr)];
           if (ch < 'A' || (ch > 'Z' && ch < 'a') || ch > 'z') {
             if (library->parseElf()) {
