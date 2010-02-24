@@ -30,3 +30,5 @@ WebSocketTest.*
 # These tests die because of unhandled shm_unlink call
 # (see http://crbug.com/36657)
 DiskCacheBackendTest.*InvalidRankings*
+DiskCacheBackendTest.*DisableSuccess*
+DiskCacheBackendTest.*DisableFailure*
