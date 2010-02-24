@@ -538,6 +538,29 @@ bool ShowRebootDialog() {
   return true;
 }
 
+// Class to manage COM initialization and uninitialization
+class AutoCom {
+ public:
+  AutoCom() : initialized_(false) { }
+  ~AutoCom() {
+    if (initialized_) CoUninitialize();
+  }
+  bool Init(bool system_install) {
+    if (CoInitializeEx(NULL, COINIT_APARTMENTTHREADED) != S_OK) {
+      LOG(ERROR) << "COM initialization failed.";
+      InstallUtil::WriteInstallerResult(system_install,
+                                        installer_util::OS_ERROR,
+                                        IDS_INSTALL_OS_ERROR_BASE, NULL);
+      return false;
+    }
+    initialized_ = true;
+    return true;
+  }
+
+ private:
+  bool initialized_;
+};
+
 }  // namespace
 
 int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
@@ -571,11 +594,8 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   }
 
   // Initialize COM for use later.
-  if (CoInitializeEx(NULL, COINIT_APARTMENTTHREADED) != S_OK) {
-    LOG(ERROR) << "COM initialization failed.";
-    InstallUtil::WriteInstallerResult(system_install,
-                                      installer_util::OS_ERROR,
-                                      IDS_INSTALL_OS_ERROR_BASE, NULL);
+  AutoCom auto_com;
+  if (!auto_com.Init(system_install)) {
     return installer_util::OS_ERROR;
   }
 
@@ -583,6 +603,25 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
   if (HandleNonInstallCmdLineOptions(parsed_command_line, system_install,
                                      exit_code))
     return exit_code;
+
+  // Some command line options don't work with SxS install/uninstall
+  if (InstallUtil::IsChromeSxSProcess()) {
+    if (system_install ||
+        parsed_command_line.HasSwitch(
+            installer_util::switches::kForceUninstall) ||
+        parsed_command_line.HasSwitch(
+            installer_util::switches::kMakeChromeDefault) ||
+        parsed_command_line.HasSwitch(
+            installer_util::switches::kRegisterChromeBrowser) ||
+        parsed_command_line.HasSwitch(
+            installer_util::switches::kRemoveChromeRegistration) ||
+        parsed_command_line.HasSwitch(
+            installer_util::switches::kInactiveUserToast) ||
+        parsed_command_line.HasSwitch(
+            installer_util::switches::kSystemLevelToast)) {
+      return installer_util::SXS_OPTION_NOT_SUPPORTED;
+    }
+  }
 
   if (system_install && !IsUserAnAdmin()) {
     if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA &&
@@ -644,7 +683,6 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
     }
   }
 
-  CoUninitialize();
   // Note that we allow the status installer_util::UNINSTALL_REQUIRES_REBOOT
   // to pass through, since this is only returned on uninstall which is never
   // invoked directly by Google Update.

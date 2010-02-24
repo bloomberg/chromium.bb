@@ -43,7 +43,9 @@ enum InstallStatus {
   UNINSTALL_REQUIRES_REBOOT, // Uninstallation required a reboot.
   IN_USE_UPDATED,        // Chrome successfully updated but old version running
   SAME_VERSION_REPAIR_FAILED, // Chrome repair failed as Chrome was running
-  REENTRY_SYS_UPDATE     // Setup has been re-lauched as the interactive user
+  REENTRY_SYS_UPDATE,    // Setup has been re-lauched as the interactive user
+  SXS_OPTION_NOT_SUPPORTED  // The chrome-sxs option provided does not work
+                            // with other command line options.
 };
 
 namespace switches {
