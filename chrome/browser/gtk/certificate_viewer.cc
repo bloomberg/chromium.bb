@@ -260,26 +260,9 @@ std::string ProcessSubjectPublicKeyInfo(CERTSubjectPublicKeyInfo* spki) {
 ////////////////////////////////////////////////////////////////////////////////
 // Gtk utility functions.
 
-GtkWidget* LeftAlign(GtkWidget* label) {
-  gtk_misc_set_alignment(GTK_MISC(label), 0, 0.5);
-  return label;
-}
-
-const char kOptionGroupTitleMarkup[] = "<span weight='bold'>%s</span>";
-
-GtkWidget* BoldLabel(const std::string& text) {
-  GtkWidget* label = gtk_label_new(NULL);
-  char* markup = g_markup_printf_escaped(kOptionGroupTitleMarkup,
-                                         text.c_str());
-  gtk_label_set_markup(GTK_LABEL(label), markup);
-  g_free(markup);
-
-  return LeftAlign(label);
-}
-
 void AddTitle(GtkTable* table, int row, const std::string& text) {
   gtk_table_attach_defaults(table,
-                            BoldLabel(text),
+                            gtk_util::CreateBoldLabel(text),
                             0, 2,
                             row, row + 1);
 }
@@ -288,11 +271,12 @@ void AddKeyValue(GtkTable* table, int row, const std::string& text,
                  const std::string& value) {
   gtk_table_attach_defaults(
       table,
-      gtk_util::IndentWidget(LeftAlign(gtk_label_new(text.c_str()))),
+      gtk_util::IndentWidget(
+          gtk_util::LeftAlignMisc(gtk_label_new(text.c_str()))),
       0, 1, row, row + 1);
   gtk_table_attach_defaults(
       table,
-      LeftAlign(gtk_label_new(value.c_str())),
+      gtk_util::LeftAlignMisc(gtk_label_new(value.c_str())),
       1, 2, row, row + 1);
 }
 
@@ -435,7 +419,8 @@ void CertificateViewer::InitGeneralPage() {
   gtk_box_pack_start(GTK_BOX(general_page_vbox_), uses_vbox, FALSE, FALSE, 0);
   gtk_box_pack_start(
       GTK_BOX(uses_vbox),
-      BoldLabel(l10n_util::GetStringUTF8(IDS_CERT_INFO_VERIFIED_USAGES_GROUP)),
+      gtk_util::CreateBoldLabel(
+          l10n_util::GetStringUTF8(IDS_CERT_INFO_VERIFIED_USAGES_GROUP)),
       FALSE, FALSE, 0);
 
   SECCertificateUsage usages = 0;
@@ -463,7 +448,7 @@ void CertificateViewer::InitGeneralPage() {
       if (usages & usageStringMap[i].usage)
         gtk_box_pack_start(
             GTK_BOX(uses_vbox),
-            gtk_util::IndentWidget(LeftAlign(gtk_label_new(
+            gtk_util::IndentWidget(gtk_util::LeftAlignMisc(gtk_label_new(
                 l10n_util::GetStringUTF8(
                     usageStringMap[i].string_id).c_str()))),
             FALSE, FALSE, 0);
@@ -749,7 +734,7 @@ void CertificateViewer::InitDetailsPage() {
                      FALSE, FALSE, 0);
 
   gtk_box_pack_start(GTK_BOX(hierarchy_vbox),
-                     BoldLabel(l10n_util::GetStringUTF8(
+                     gtk_util::CreateBoldLabel(l10n_util::GetStringUTF8(
                          IDS_CERT_DETAILS_CERTIFICATE_HIERARCHY_LABEL)),
                      FALSE, FALSE, 0);
 
@@ -786,7 +771,7 @@ void CertificateViewer::InitDetailsPage() {
   gtk_box_pack_start(GTK_BOX(details_page_vbox_), fields_vbox,
                      TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(fields_vbox),
-                     BoldLabel(l10n_util::GetStringUTF8(
+                     gtk_util::CreateBoldLabel(l10n_util::GetStringUTF8(
                          IDS_CERT_DETAILS_CERTIFICATE_FIELDS_LABEL)),
                      FALSE, FALSE, 0);
 
@@ -816,7 +801,7 @@ void CertificateViewer::InitDetailsPage() {
   gtk_box_pack_start(GTK_BOX(details_page_vbox_), value_vbox,
                      TRUE, TRUE, 0);
   gtk_box_pack_start(GTK_BOX(value_vbox),
-                     BoldLabel(l10n_util::GetStringUTF8(
+                     gtk_util::CreateBoldLabel(l10n_util::GetStringUTF8(
                          IDS_CERT_DETAILS_CERTIFICATE_FIELD_VALUE_LABEL)),
                      FALSE, FALSE, 0);
 

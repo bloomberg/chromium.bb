@@ -23,9 +23,6 @@
 
 namespace {
 
-// Style for dialog group titles.
-const char kDialogGroupTitleMarkup[] = "<span weight='bold'>%s</span>";
-
 // The name of the object property used to store an entry widget pointer on
 // another widget.
 const char kButtonDataKey[] = "label-entry";
@@ -617,13 +614,8 @@ GtkWidget* AutoFillDialog::InitGroup(int name_id,
   GtkWidget* vbox = gtk_vbox_new(false, gtk_util::kControlSpacing);
 
   // Group label.
-  GtkWidget* label = gtk_label_new(NULL);
-  char* markup = g_markup_printf_escaped(
-      kDialogGroupTitleMarkup,
-      l10n_util::GetStringUTF8(name_id).c_str());
-  gtk_label_set_markup(GTK_LABEL(label), markup);
-  g_free(markup);
-  gtk_misc_set_alignment(GTK_MISC(label), 0, 0);
+  GtkWidget* label = gtk_util::CreateBoldLabel(
+      l10n_util::GetStringUTF8(name_id));
   gtk_box_pack_start(GTK_BOX(vbox),
                      IndentWidget(label, kAutoFillDialogIndent),
                      FALSE, FALSE, 0);

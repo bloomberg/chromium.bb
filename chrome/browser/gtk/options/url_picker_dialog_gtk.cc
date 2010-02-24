@@ -24,9 +24,6 @@
 
 namespace {
 
-// Style for recent history label.
-const char kHistoryLabelMarkup[] = "<span weight='bold'>%s</span>";
-
 // Column ids for |history_list_store_|.
 enum {
   COL_FAVICON,
@@ -79,15 +76,9 @@ UrlPickerDialogGtk::UrlPickerDialogGtk(UrlPickerCallback* callback,
   // Recent history description label.
   GtkWidget* history_vbox = gtk_vbox_new(FALSE, gtk_util::kLabelSpacing);
   gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), history_vbox);
-  GtkWidget* history_label = gtk_label_new(NULL);
-  char* markup = g_markup_printf_escaped(kHistoryLabelMarkup,
-      l10n_util::GetStringUTF8(IDS_ASI_DESCRIPTION).c_str());
-  gtk_label_set_markup(GTK_LABEL(history_label), markup);
-  g_free(markup);
-  GtkWidget* history_label_alignment = gtk_alignment_new(0.0, 0.5, 0.0, 0.0);
-  gtk_container_add(GTK_CONTAINER(history_label_alignment), history_label);
-  gtk_box_pack_start(GTK_BOX(history_vbox), history_label_alignment,
-                     FALSE, FALSE, 0);
+  GtkWidget* history_label = gtk_util::CreateBoldLabel(
+      l10n_util::GetStringUTF8(IDS_ASI_DESCRIPTION));
+  gtk_box_pack_start(GTK_BOX(history_vbox), history_label, FALSE, FALSE, 0);
 
   // Recent history list.
   GtkWidget* scroll_window = gtk_scrolled_window_new(NULL, NULL);

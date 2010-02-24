@@ -24,6 +24,8 @@
 
 namespace {
 
+const char kBoldLabelMarkup[] = "<span weight='bold'>%s</span>";
+
 // Callback used in RemoveAllChildren.
 void RemoveWidget(GtkWidget* widget, gpointer container) {
   gtk_container_remove(GTK_CONTAINER(container), widget);
@@ -182,6 +184,20 @@ GtkWidget* CreateGtkBorderBin(GtkWidget* child, const GdkColor* color,
   gtk_container_add(GTK_CONTAINER(alignment), child);
   gtk_container_add(GTK_CONTAINER(ebox), alignment);
   return ebox;
+}
+
+GtkWidget* LeftAlignMisc(GtkWidget* misc) {
+  gtk_misc_set_alignment(GTK_MISC(misc), 0, 0.5);
+  return misc;
+}
+
+GtkWidget* CreateBoldLabel(const std::string& text) {
+  GtkWidget* label = gtk_label_new(NULL);
+  char* markup = g_markup_printf_escaped(kBoldLabelMarkup, text.c_str());
+  gtk_label_set_markup(GTK_LABEL(label), markup);
+  g_free(markup);
+
+  return LeftAlignMisc(label);
 }
 
 void GetWidgetSizeFromResources(GtkWidget* widget, int width_chars,

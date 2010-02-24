@@ -72,6 +72,12 @@ GtkWidget* CreateLabeledControlsGroup(
 GtkWidget* CreateGtkBorderBin(GtkWidget* child, const GdkColor* color,
                               int top, int bottom, int left, int right);
 
+// Left-align the given GtkMisc and return the same pointer.
+GtkWidget* LeftAlignMisc(GtkWidget* misc);
+
+// Create a left-aligned label with the given text in bold.
+GtkWidget* CreateBoldLabel(const std::string& text);
+
 // Calculates the size of given widget based on the size specified in
 // number of characters/lines (in locale specific resource file) and
 // font metrics.
