@@ -54,7 +54,7 @@ class AppModalDialogQueue {
  private:
   friend struct DefaultSingletonTraits<AppModalDialogQueue>;
 
-  AppModalDialogQueue() : active_dialog_(NULL) {}
+  AppModalDialogQueue() : active_dialog_(NULL), showing_modal_dialog_(false) {}
 
   // Shows |dialog| and notifies the BrowserList that a modal dialog is showing.
   void ShowModalDialog(AppModalDialog* dialog);
@@ -72,6 +72,10 @@ class AppModalDialogQueue {
   // The currently active app-modal dialog box's delegate. NULL if there is no
   // active app-modal dialog box.
   AppModalDialog* active_dialog_;
+
+  // Stores if |ShowModalDialog()| is currently being called on an app-modal
+  // dialog.
+  bool showing_modal_dialog_;
 
   DISALLOW_COPY_AND_ASSIGN(AppModalDialogQueue);
 };
