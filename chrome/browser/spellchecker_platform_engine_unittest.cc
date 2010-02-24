@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,8 +7,6 @@
 #include "testing/gtest/include/gtest/gtest.h"
 
 #if defined(OS_MACOSX)
-#include "base/logging.h"
-#include "base/sys_info.h"
 #define MAYBE_IgnoreWords_EN_US IgnoreWords_EN_US
 #define MAYBE_SpellCheckSuggestions_EN_US SpellCheckSuggestions_EN_US
 #else
@@ -21,25 +19,15 @@
 // supply a non-zero doc_tag, in order to test that ignored words are matched to
 // the correct document.
 TEST(PlatformSpellCheckTest, MAYBE_IgnoreWords_EN_US) {
-#if defined(OS_MACOSX)
-  // http://crbug.com/34785 these fail on 10.6, skipping on 10.6 but leaving
-  // running on 10.5 for now.
-  int32 major, minor, bugfix;
-  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
-  if (major > 10 || (major == 10 && minor > 5)) {
-    LOG(WARNING) << "Skipping test on 10.6 as it doesn't pass yet.";
-    return;
-  }
-#endif
   static const struct {
     // A misspelled word.
     const char* input;
     bool input_result;
   } kTestCases[] = {
     {"teh"},
-    {"moer"},
+    {"morblier"},
     {"watre"},
-    {"noen"},
+    {"noooen"},
   };
 
   for (size_t i = 0; i < ARRAYSIZE_UNSAFE(kTestCases); ++i) {
@@ -78,16 +66,6 @@ TEST(PlatformSpellCheckTest, MAYBE_IgnoreWords_EN_US) {
 } // Test IgnoreWords_EN_US
 
 TEST(PlatformSpellCheckTest, MAYBE_SpellCheckSuggestions_EN_US) {
-#if defined(OS_MACOSX)
-  // http://crbug.com/34785 these fail on 10.6, skipping on 10.6 but leaving
-  // running on 10.5 for now.
-  int32 major, minor, bugfix;
-  base::SysInfo::OperatingSystemVersionNumbers(&major, &minor, &bugfix);
-  if (major > 10 || (major == 10 && minor > 5)) {
-    LOG(WARNING) << "Skipping test on 10.6 as it doesn't pass yet.";
-    return;
-  }
-#endif
   static const struct {
     // A string to be tested.
     const wchar_t* input;
@@ -103,21 +81,22 @@ TEST(PlatformSpellCheckTest, MAYBE_SpellCheckSuggestions_EN_US) {
     // These words come from the wikipedia page of the most commonly
     // misspelled words in english.
     // (http://en.wikipedia.org/wiki/Commonly_misspelled_words).
+    // However, 10.6 loads multiple dictionaries and enables many non-English
+    // dictionaries by default. As a result, we have removed from the list any
+    // word that is marked as correct because it is correct in another
+    // language.
     {L"absense", L"absence"},
     {L"acceptible", L"acceptable"},
     {L"accidentaly", L"accidentally"},
-    {L"accomodate", L"accommodate"},
     {L"acheive", L"achieve"},
     {L"acknowlege", L"acknowledge"},
     {L"acquaintence", L"acquaintance"},
     {L"aquire", L"acquire"},
     {L"aquit", L"acquit"},
     {L"acrage", L"acreage"},
-    {L"adress", L"address"},
     {L"adultary", L"adultery"},
     {L"advertize", L"advertise"},
     {L"adviseable", L"advisable"},
-    {L"agression", L"aggression"},
     {L"alchohol", L"alcohol"},
     {L"alege", L"allege"},
     {L"allegaince", L"allegiance"},
@@ -149,7 +128,6 @@ TEST(PlatformSpellCheckTest, MAYBE_SpellCheckSuggestions_EN_US) {
     {L"briliant", L"brilliant"},
     {L"burgler", L"burglar"},
     {L"camoflage", L"camouflage"},
-    {L"carrer", L"career"},
     {L"carefull", L"careful"},
     {L"Carribean", L"Caribbean"},
     {L"catagory", L"category"},
@@ -178,18 +156,15 @@ TEST(PlatformSpellCheckTest, MAYBE_SpellCheckSuggestions_EN_US) {
     {L"dicide", L"decide"},
     {L"definate", L"definite"},
     {L"definitly", L"definitely"},
-    {L"deposite", L"deposit"},
     {L"desparate", L"desperate"},
     {L"develope", L"develop"},
     {L"diffrence", L"difference"},
-    {L"dilema", L"dilemma"},
     {L"disapear", L"disappear"},
     {L"disapoint", L"disappoint"},
     {L"disasterous", L"disastrous"},
     {L"disipline", L"discipline"},
     {L"drunkeness", L"drunkenness"},
     {L"dumbell", L"dumbbell"},
-    {L"durring", L"during"},
     {L"easely", L"easily"},
     {L"eigth", L"eight"},
     {L"embarass", L"embarrass"},
@@ -197,7 +172,6 @@ TEST(PlatformSpellCheckTest, MAYBE_SpellCheckSuggestions_EN_US) {
     {L"equiped", L"equipped"},
     {L"equiptment", L"equipment"},
     {L"exagerate", L"exaggerate"},
-    {L"excede", L"exceed"},
     {L"exellent", L"excellent"},
     {L"exsept", L"except"},
     {L"exercize", L"exercise"},
@@ -206,8 +180,6 @@ TEST(PlatformSpellCheckTest, MAYBE_SpellCheckSuggestions_EN_US) {
     {L"experiance", L"experience"},
     {L"experament", L"experiment"},
     {L"explaination", L"explanation"},
-    {L"extreem", L"extreme"},
-    {L"familier", L"familiar"},
     {L"facinating", L"fascinating"},
     {L"firey", L"fiery"},
     {L"finaly", L"finally"},
@@ -216,12 +188,10 @@ TEST(PlatformSpellCheckTest, MAYBE_SpellCheckSuggestions_EN_US) {
     {L"fourty", L"forty"},
     {L"foreward", L"forward"},
     {L"freind", L"friend"},
-    {L"fullfil", L"fulfill"},
     {L"fundemental", L"fundamental"},
     {L"guage", L"gauge"},
     {L"generaly", L"generally"},
     {L"goverment", L"government"},
-    {L"grammer", L"grammar"},
     {L"gratefull", L"grateful"},
     {L"garantee", L"guarantee"},
     {L"guidence", L"guidance"},
@@ -247,11 +217,9 @@ TEST(PlatformSpellCheckTest, MAYBE_SpellCheckSuggestions_EN_US) {
     {L"interuption", L"interruption"},
     {L"irrelevent", L"irrelevant"},
     {L"irritible", L"irritable"},
-    {L"iland", L"island"},
     {L"jellous", L"jealous"},
     {L"knowlege", L"knowledge"},
     {L"labratory", L"laboratory"},
-    {L"liesure", L"leisure"},
     {L"lenght", L"length"},
     {L"liason", L"liaison"},
     {L"libary", L"library"},
@@ -263,9 +231,6 @@ TEST(PlatformSpellCheckTest, MAYBE_SpellCheckSuggestions_EN_US) {
     {L"marrige", L"marriage"},
     {L"mathmatics", L"mathematics"},
     {L"medcine", L"medicine"},
-    {L"medeval", L"medieval"},
-    {L"momento", L"memento"},
-    {L"millenium", L"millennium"},
     {L"miniture", L"miniature"},
     {L"minite", L"minute"},
     {L"mischevous", L"mischievous"},
@@ -283,12 +248,8 @@ TEST(PlatformSpellCheckTest, MAYBE_SpellCheckSuggestions_EN_US) {
     {L"occasionaly", L"occasionally"},
     {L"occurrance", L"occurrence"},
     {L"occured", L"occurred"},
-    {L"oficial", L"official"},
-    {L"offen", L"often"},
     {L"ommision", L"omission"},
-    {L"oprate", L"operate"},
     {L"oppurtunity", L"opportunity"},
-    {L"orignal", L"original"},
     {L"outragous", L"outrageous"},
     {L"parrallel", L"parallel"},
     {L"parliment", L"parliament"},
@@ -299,7 +260,6 @@ TEST(PlatformSpellCheckTest, MAYBE_SpellCheckSuggestions_EN_US) {
     {L"pernament", L"permanent"},
     {L"perseverence", L"perseverance"},
     {L"personaly", L"personally"},
-    {L"personell", L"personnel"},
     {L"persaude", L"persuade"},
     {L"pichure", L"picture"},
     {L"peice", L"piece"},
@@ -317,7 +277,6 @@ TEST(PlatformSpellCheckTest, MAYBE_SpellCheckSuggestions_EN_US) {
     // This one should probably work. It does in FF and Hunspell.
     // {L"probly", L"probably"},
     {L"proffesional", L"professional"},
-    {L"professer", L"professor"},
     {L"promiss", L"promise"},
     {L"pronounciation", L"pronunciation"},
     {L"prufe", L"proof"},
@@ -344,7 +303,6 @@ TEST(PlatformSpellCheckTest, MAYBE_SpellCheckSuggestions_EN_US) {
     {L"saftey", L"safety"},
     {L"sissors", L"scissors"},
     {L"secratary", L"secretary"},
-    {L"sieze", L"seize"},
     {L"seperate", L"separate"},
     {L"sargent", L"sergeant"},
     {L"shineing", L"shining"},
@@ -353,14 +311,12 @@ TEST(PlatformSpellCheckTest, MAYBE_SpellCheckSuggestions_EN_US) {
     {L"speach", L"speech"},
     {L"stoping", L"stopping"},
     {L"strenght", L"strength"},
-    {L"succede", L"succeed"},
     {L"succesful", L"successful"},
     {L"supercede", L"supersede"},
     {L"surelly", L"surely"},
     {L"suprise", L"surprise"},
     {L"temperture", L"temperature"},
     {L"temprary", L"temporary"},
-    {L"tomatos", L"tomatoes"},
     {L"tommorrow", L"tomorrow"},
     {L"tounge", L"tongue"},
     {L"truely", L"truly"},
