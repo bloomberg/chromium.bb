@@ -35,10 +35,6 @@ const CGFloat kLocBarLeftRightInset = 1;
 const CGFloat kLocBarTopInset = 0;
 const CGFloat kLocBarBottomInset = 1;
 
-// The amount by which the floating bar is offset downwards (to avoid the menu)
-// in fullscreen mode.
-const CGFloat kFullscreenVerticalBarOffset = 14;
-
 }  // end namespace
 
 
@@ -224,7 +220,7 @@ willPositionSheet:(NSWindow*)sheet
   if (![self isFullscreen])
     return 0;
 
-  CGFloat totalHeight = kFullscreenVerticalBarOffset;
+  CGFloat totalHeight = [fullscreenController_ tabStripVerticalOffset];
 
   if ([self hasTabStrip])
     totalHeight += NSHeight([[self tabStripView] frame]);
@@ -254,7 +250,7 @@ willPositionSheet:(NSWindow*)sheet
   // In fullscreen mode, push the tab strip down so that the main menu (which
   // also slides down) doesn't run it over.
   if (fullscreen)
-    maxY -= kFullscreenVerticalBarOffset;
+    maxY -= [fullscreenController_ tabStripVerticalOffset];
   maxY -= tabStripHeight;
   [tabStripView setFrame:NSMakeRect(0, maxY, width, tabStripHeight)];
 

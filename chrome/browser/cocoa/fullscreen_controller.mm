@@ -20,6 +20,11 @@ const NSTimeInterval kMouseExitCheckDelay = 0.1;
 // This show delay attempts to match the delay for the main menu.
 const NSTimeInterval kDropdownShowDelay = 0.3;
 const NSTimeInterval kDropdownHideDelay = 0.2;
+
+// The amount by which the floating bar is offset downwards (to avoid the menu)
+// in fullscreen mode.
+const CGFloat kTabStripVerticalOffset = 14;
+
 }  // end namespace
 
 
@@ -81,6 +86,9 @@ const NSTimeInterval kDropdownHideDelay = 0.2;
 
 
 @interface FullscreenController (PrivateMethods)
+
+// Returns YES if the fullscreen window is on the primary screen.
+- (BOOL)isWindowOnPrimaryScreen;
 
 // Change the overlay to the given fraction, with or without animation. Only
 // guaranteed to work properly with |fraction == 0| or |fraction == 1|. This
@@ -190,6 +198,10 @@ const NSTimeInterval kDropdownHideDelay = 0.2;
 
 - (void)windowDidResignMain:(NSNotification*)notification {
   [self hideActiveWindowUI];
+}
+
+- (CGFloat)tabStripVerticalOffset {
+  return [self isWindowOnPrimaryScreen] ? kTabStripVerticalOffset : 0;
 }
 
 - (void)overlayFrameChanged:(NSRect)frame {
@@ -355,6 +367,12 @@ const NSTimeInterval kDropdownHideDelay = 0.2;
 
 
 @implementation FullscreenController (PrivateMethods)
+
+- (BOOL)isWindowOnPrimaryScreen {
+  NSScreen* screen = [[browserController_ window] screen];
+  NSScreen* primaryScreen = [[NSScreen screens] objectAtIndex:0];
+  return (screen == primaryScreen);
+}
 
 - (void)changeOverlayToFraction:(CGFloat)fraction
                   withAnimation:(BOOL)animate {
@@ -526,10 +544,8 @@ const NSTimeInterval kDropdownHideDelay = 0.2;
 
 - (void)showActiveWindowUI {
   if (!menubarIsHidden_) {
-    // Only hide the menubar if our window is on the main screen.
-    NSScreen* screen = [[browserController_ window] screen];
-    NSScreen* mainScreen = [[NSScreen screens] objectAtIndex:0];
-    if (screen == mainScreen) {
+    // Only hide the menubar if the window is on the primary screen.
+    if ([self isWindowOnPrimaryScreen]) {
       mac_util::RequestFullScreen();
       menubarIsHidden_ = YES;
     }
