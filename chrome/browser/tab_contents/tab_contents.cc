@@ -1458,10 +1458,7 @@ void TabContents::DidNavigateMainFramePostCommit(
 
   // Clear all page actions, blocked content notifications and browser actions
   // for this tab, unless this is an in-page navigation.
-  url_canon::Replacements<char> replacements;
-  replacements.ClearRef();
-  if (params.url.ReplaceComponents(replacements) !=
-      params.referrer.ReplaceComponents(replacements)) {
+  if (!details.is_in_page) {
     ExtensionsService* service = profile()->GetExtensionsService();
     if (service) {
       for (size_t i = 0; i < service->extensions()->size(); ++i) {

@@ -43,8 +43,12 @@ const std::wstring kValidFeedNoLinks = L"files/feeds/feed_nolinks.xml";
 const std::wstring kInvalidFeed1 = L"files/feeds/feed_invalid1.xml";
 const std::wstring kInvalidFeed2 = L"files/feeds/feed_invalid2.xml";
 const std::wstring kLocalization =
-    L"file/extensions/browsertest/title_localized_pa/simple.html";
-const std::wstring kTestFile = L"file/extensions/test_file.html";
+    L"files/extensions/browsertest/title_localized_pa/simple.html";
+const std::wstring kHashPageA =
+    L"files/extensions/api_test/page_action/hash_change/test_page_A.html";
+const std::wstring kHashPageAHash = kHashPageA + L"#asdf";
+const std::wstring kHashPageB =
+    L"files/extensions/api_test/page_action/hash_change/test_page_B.html";
 
 // Looks for an ExtensionHost whose URL has the given path component (including
 // leading slash).  Also verifies that the expected number of hosts are loaded.
@@ -225,6 +229,31 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageAction) {
   GURL no_feed = server->TestServerPageW(kNoFeedPage);
   ui_test_utils::NavigateToURL(browser(), no_feed);
   // Make sure the page action goes away.
+  ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
+}
+
+// Tests that we don't lose the page action icon on in-page navigations.
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, PageActionInPageNavigation) {
+  HTTPTestServer* server = StartHTTPServer();
+
+  FilePath extension_path(test_data_dir_.AppendASCII("api_test")
+                                        .AppendASCII("page_action")
+                                        .AppendASCII("hash_change"));
+  ASSERT_TRUE(LoadExtension(extension_path));
+
+  // Page action should become visible when we navigate here.
+  GURL feed_url = server->TestServerPageW(kHashPageA);
+  ui_test_utils::NavigateToURL(browser(), feed_url);
+  ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
+
+  // In-page navigation, page action should remain.
+  feed_url = server->TestServerPageW(kHashPageAHash);
+  ui_test_utils::NavigateToURL(browser(), feed_url);
+  ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(1));
+
+  // Not an in-page navigation, page action should go away.
+  feed_url = server->TestServerPageW(kHashPageB);
+  ui_test_utils::NavigateToURL(browser(), feed_url);
   ASSERT_TRUE(WaitForPageActionVisibilityChangeTo(0));
 }
 
