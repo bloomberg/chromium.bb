@@ -19,22 +19,23 @@ ScopedClassSwizzler::~ScopedClassSwizzler() {
 
 namespace test_event_utils {
 
-NSEvent* MakeMouseEvent(NSEventType type, NSUInteger modifiers) {
+NSEvent* MouseEventAtPoint(NSPoint point, NSEventType type,
+                           NSUInteger modifiers) {
   if (type == NSOtherMouseUp) {
     // To synthesize middle clicks we need to create a CGEvent with the
     // "center" button flags so that our resulting NSEvent will have the
     // appropriate buttonNumber field. NSEvent provides no way to create a
     // mouse event with a buttonNumber directly.
-    CGPoint location = { 0, 0 };
+    CGPoint location = { point.x, point.y };
     CGEventRef cg_event = CGEventCreateMouseEvent(NULL, kCGEventOtherMouseUp,
-                                                 location,
-                                                 kCGMouseButtonCenter);
+                                                  location,
+                                                  kCGMouseButtonCenter);
     NSEvent* event = [NSEvent eventWithCGEvent:cg_event];
     CFRelease(cg_event);
     return event;
   }
   return [NSEvent mouseEventWithType:type
-                            location:NSMakePoint(0, 0)
+                            location:point
                        modifierFlags:modifiers
                            timestamp:0
                         windowNumber:0
@@ -44,16 +45,24 @@ NSEvent* MakeMouseEvent(NSEventType type, NSUInteger modifiers) {
                             pressure:1.0];
 }
 
-NSEvent* LeftMouseDownAtPoint(NSPoint point) {
+NSEvent* MakeMouseEvent(NSEventType type, NSUInteger modifiers) {
+  return MouseEventAtPoint(NSMakePoint(0, 0), type, modifiers);
+}
+
+NSEvent* LeftMouseDownAtPointInWindow(NSPoint point, NSWindow* window) {
   return [NSEvent mouseEventWithType:NSLeftMouseDown
                             location:point
                        modifierFlags:0
                            timestamp:0
-                        windowNumber:0
+                        windowNumber:[window windowNumber]
                              context:nil
                          eventNumber:0
                           clickCount:1
                             pressure:1.0];
+}
+
+NSEvent* LeftMouseDownAtPoint(NSPoint point) {
+  return LeftMouseDownAtPointInWindow(point, nil);
 }
 
 }  // namespace test_event_utils

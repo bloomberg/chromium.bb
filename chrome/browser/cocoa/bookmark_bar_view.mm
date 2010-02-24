@@ -17,11 +17,19 @@
 
 @implementation BookmarkBarView
 
+@synthesize dropIndicatorShown = dropIndicatorShown_;
+@synthesize dropIndicatorPosition = dropIndicatorPosition_;
+
 - (void)dealloc {
   [[NSNotificationCenter defaultCenter] removeObserver:self];
   // This probably isn't strictly necessary, but can't hurt.
   [self unregisterDraggedTypes];
   [super dealloc];
+
+  // To be clear, our controller_ is an IBOutlet and owns us, so we
+  // don't deallocate it explicitly.  It is owned by the browser
+  // window controller, so gets deleted with a browser window is
+  // closed.
 }
 
 - (void)awakeFromNib {
@@ -48,6 +56,10 @@
   ThemeProvider* themeProvider = [window themeProvider];
   [self updateTheme:themeProvider];
   [controller_ updateTheme:themeProvider];
+}
+
+- (void)viewDidMoveToWindow {
+  [controller_ viewDidMoveToWindow];
 }
 
 // Called after the current theme has changed.
@@ -77,6 +89,10 @@
 
 -(NSTextField*)noItemTextfield {
   return noItemTextfield_;
+}
+
+- (BookmarkBarController*)controller {
+  return controller_;
 }
 
 -(void)drawRect:(NSRect)dirtyRect {
@@ -113,18 +129,31 @@
       // Find the position of the drop indicator.
       BookmarkButton* button = nil;
       [data getBytes:&button length:sizeof(button)];
-      CGFloat x =
-          [controller_ indicatorPosForDragOfButton:button
-                                           toPoint:[info draggingLocation]];
 
-      // Need an update if the indicator wasn't previously shown or if it has
-      // moved.
-      if (!dropIndicatorShown_ || dropIndicatorPosition_ != x) {
-        dropIndicatorShown_ = YES;
-        dropIndicatorPosition_ = x;
-        [self setNeedsDisplay:YES];
+      // We only show the drop indicator if we're not in a position to
+      // perform a hover-open since it doesn't make sense to do both.
+      BOOL showIt =
+          [controller_ shouldShowIndicatorShownForPoint:
+              [info draggingLocation]];
+      if (!showIt) {
+        if (dropIndicatorShown_) {
+          dropIndicatorShown_ = NO;
+          [self setNeedsDisplay:YES];
+        }
+      } else {
+        CGFloat x =
+            [controller_ indicatorPosForDragOfButton:button
+                                             toPoint:[info draggingLocation]];
+        // Need an update if the indicator wasn't previously shown or if it has
+        // moved.
+        if (!dropIndicatorShown_ || dropIndicatorPosition_ != x) {
+          dropIndicatorShown_ = YES;
+          dropIndicatorPosition_ = x;
+          [self setNeedsDisplay:YES];
+        }
       }
 
+      [controller_ draggingEntered:info];  // allow hover-open to work.
       return NSDragOperationMove;
     }
     // Fall through otherwise.
@@ -210,13 +239,8 @@
   return NO;
 }
 
-@end  // @implementation BookmarkBarView
-
-
-@implementation BookmarkBarView(TestingAPI)
-
 - (void)setController:(id)controller {
   controller_ = controller;
 }
 
-@end  // @implementation BookmarkBarView(TestingAPI)
+@end  // @implementation BookmarkBarView

@@ -10,17 +10,31 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
 
+namespace {
+const CGFloat kFakeIndicatorPos = 7.0;
+};
+
 // Fake DraggingInfo, fake BookmarkBarController, fake pasteboard...
 @interface FakeBookmarkDraggingInfo : NSObject {
+ @public
   scoped_nsobject<NSData> data_;
   BOOL pong_;
+  BOOL dropIndicatorShown_;
+  BOOL draggingEnteredCalled_;
 }
+@property (readwrite) BOOL dropIndicatorShown;
+@property (readwrite) BOOL draggingEnteredCalled;
 @end
 
 @implementation FakeBookmarkDraggingInfo
 
+@synthesize dropIndicatorShown = dropIndicatorShown_;
+@synthesize draggingEnteredCalled = draggingEnteredCalled_;
+
 - (id)init {
   if ((self = [super init])) {
+    dropIndicatorShown_ = YES;
+    draggingEnteredCalled_ = NO;
     data_.reset([[NSData dataWithBytes:&self length:sizeof(self)] retain]);
   }
   return self;
@@ -63,7 +77,16 @@
 
 - (CGFloat)indicatorPosForDragOfButton:(BookmarkButton*)sourceButton
                                toPoint:(NSPoint)point {
-  return 0;
+  return kFakeIndicatorPos;
+}
+
+- (BOOL)shouldShowIndicatorShownForPoint:(NSPoint)point {
+  return dropIndicatorShown_;
+}
+
+- (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info {
+  draggingEnteredCalled_ = YES;
+  return NSDragOperationNone;
 }
 
 @end
@@ -92,6 +115,22 @@ TEST_F(BookmarkBarViewTest, BookmarkButtonDragAndDrop) {
   EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
   EXPECT_TRUE([view_ performDragOperation:(id)info.get()]);
   EXPECT_TRUE([info dragButtonToPong]);
+}
+
+TEST_F(BookmarkBarViewTest, BookmarkButtonDropIndicator) {
+  scoped_nsobject<FakeBookmarkDraggingInfo>
+      info([[FakeBookmarkDraggingInfo alloc] init]);
+
+  [view_ setController:info.get()];
+  EXPECT_FALSE([info draggingEnteredCalled]);
+  EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
+  EXPECT_TRUE([info draggingEnteredCalled]);  // Ensure controller pingged.
+  EXPECT_TRUE([view_ dropIndicatorShown]);
+  EXPECT_EQ([view_ dropIndicatorPosition], kFakeIndicatorPos);
+
+  [info setDropIndicatorShown:NO];
+  EXPECT_EQ([view_ draggingEntered:(id)info.get()], NSDragOperationMove);
+  EXPECT_FALSE([view_ dropIndicatorShown]);
 }
 
 }  // namespace

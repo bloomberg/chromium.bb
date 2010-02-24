@@ -2,9 +2,10 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/cocoa/bookmark_button.h"
 #include "base/logging.h"
 #import "base/scoped_nsobject.h"
-#import "chrome/browser/cocoa/bookmark_button.h"
+#include "chrome/browser/bookmarks/bookmark_model.h"
 #import "chrome/browser/cocoa/bookmark_button_cell.h"
 
 // The opacity of the bookmark button drag image.
@@ -17,22 +18,42 @@ static const CGFloat kDragImageOpacity = 0.7;
 
 @end  // @interface BookmarkButton(Private)
 
+
 @implementation BookmarkButton
 
 @synthesize delegate = delegate_;
 
+- (const BookmarkNode*)bookmarkNode {
+  return [[self cell] bookmarkNode];
+}
+
+- (BOOL)isFolder {
+  const BookmarkNode* node = [self bookmarkNode];
+  return (node && node->is_folder());
+}
+
+- (BOOL)isEmpty {
+  return [self bookmarkNode] ? NO : YES;
+}
+
 // By default, NSButton ignores middle-clicks.
+// But we want them.
 - (void)otherMouseUp:(NSEvent*)event {
   [self performClick:self];
 }
 
 // Overridden from DraggableButton.
 - (void)beginDrag:(NSEvent*)event {
-  if (delegate_) {
+  // Don't allow a drag of the empty node.
+  // The empty node is a placeholder for "(empty)", to be revisited.
+  if ([self isEmpty])
+    return;
+
+  if ([self delegate]) {
     // Ask our delegate to fill the pasteboard for us.
     NSPasteboard* pboard = [NSPasteboard pasteboardWithName:NSDragPboard];
 
-    [delegate_ fillPasteboard:pboard forDragOfButton:self];
+    [[self delegate] fillPasteboard:pboard forDragOfButton:self];
 
     // At the moment, moving bookmarks causes their buttons (like me!)
     // to be destroyed and rebuilt.  Make sure we don't go away while on
@@ -44,7 +65,7 @@ static const CGFloat kDragImageOpacity = 0.7;
     [self dragImage:[self dragImage] at:NSMakePoint(0, yAt) offset:dragOffset
               event:event pasteboard:pboard source:self slideBack:YES];
 
-    // And we're done.	
+    // And we're done.
     [self autorelease];
   } else {
     // Avoid blowing up, but we really shouldn't get here.
@@ -61,6 +82,21 @@ static const CGFloat kDragImageOpacity = 0.7;
 - (NSDragOperation)draggingSourceOperationMaskForLocal:(BOOL)isLocal {
   return isLocal ? NSDragOperationCopy | NSDragOperationMove
                  : NSDragOperationCopy;
+}
+
+// mouseEntered: and mouseExited: are called from our
+// BookmarkButtonCell.  We redirect this information to our delegate.
+// The controller can then perform menu-like actions (e.g. "hover over
+// to open menu").
+- (void)mouseEntered:(NSEvent*)event {
+  [delegate_ mouseEnteredButton:self event:event];
+  [super mouseEntered:event];
+}
+
+// See comments above mouseEntered:.
+- (void)mouseExited:(NSEvent*)event {
+  [delegate_ mouseExitedButton:self event:event];
+  [super mouseExited:event];
 }
 
 @end

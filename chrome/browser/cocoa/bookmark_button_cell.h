@@ -8,11 +8,23 @@
 #import "base/cocoa_protocols_mac.h"
 #import "chrome/browser/cocoa/gradient_button_cell.h"
 
-// A button cell that handles drawing/highlighting of buttons in the
-// bookmark bar.
+class BookmarkNode;
 
+// A button cell that handles drawing/highlighting of buttons in the
+// bookmark bar.  This cell forwards mouseEntered/mouseExited events
+// to its control view so that pseudo-menu operations
+// (e.g. hover-over to open) can be implemented.
 @interface BookmarkButtonCell : GradientButtonCell<NSMenuDelegate> {
+ @private
+  BOOL empty_;  // is this an "empty" button placeholder button cell?
 }
+
+@property (readwrite, assign) const BookmarkNode* bookmarkNode;
+
+- (id)initTextCell:(NSString*)string;  // Designated initializer
+- (BOOL)empty;  // returns YES if empty.
+- (void)setEmpty:(BOOL)empty;
+
 // |-setBookmarkCellText:image:| is used to set the text and image of
 // a BookmarkButtonCell, and align the image to the left (NSImageLeft)
 // if there is text in the title, and centered (NSImageCenter) if

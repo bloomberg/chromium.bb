@@ -10,8 +10,10 @@
 #include "base/sys_string_conversions.h"
 #import "chrome/browser/cocoa/bookmark_bar_constants.h"
 #import "chrome/browser/cocoa/bookmark_bar_controller.h"
+#import "chrome/browser/cocoa/bookmark_bar_folder_window.h"
 #import "chrome/browser/cocoa/bookmark_bar_view.h"
 #import "chrome/browser/cocoa/bookmark_button.h"
+#import "chrome/browser/cocoa/bookmark_button_cell.h"
 #import "chrome/browser/cocoa/bookmark_menu.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
@@ -145,6 +147,9 @@ class BookmarkBarControllerTest : public CocoaTest {
     NSRect frame = [[[bar view] superview] frame];
     frame.origin.y = 100;
     [[[bar view] superview] setFrame:frame];
+
+    // Make sure it's on in a window so viewDidMoveToWindow is called
+    [[test_window() contentView] addSubview:parent_view_];
 
     // Make sure it's open so certain things aren't no-ops.
     [bar updateAndShowNormalBar:YES
@@ -434,8 +439,9 @@ TEST_F(BookmarkBarControllerTest, OpenBookmark) {
   GURL gurl("http://walla.walla.ding.dong.com");
   scoped_ptr<BookmarkNode> node(new BookmarkNode(gurl));
 
-  scoped_nsobject<NSButtonCell> cell([[NSButtonCell alloc] init]);
-  scoped_nsobject<NSButton> button([[NSButton alloc] init]);
+  scoped_nsobject<BookmarkButtonCell> cell([[BookmarkButtonCell alloc] init]);
+  [cell setBookmarkNode:node.get()];
+  scoped_nsobject<BookmarkButton> button([[BookmarkButton alloc] init]);
   [button setCell:cell.get()];
   [cell setRepresentedObject:[NSValue valueWithPointer:node.get()]];
 
@@ -651,6 +657,13 @@ TEST_F(BookmarkBarControllerTest, Cell) {
   EXPECT_TRUE(cell);
   EXPECT_TRUE([[cell title] isEqual:@"supertitle"]);
   EXPECT_EQ(node, [[cell representedObject] pointerValue]);
+  EXPECT_TRUE([cell menu]);
+
+  // Empty cells have no menu.
+  cell = [bar_ cellForBookmarkNode:nil];
+  EXPECT_FALSE([cell menu]);
+  // Even empty cells have a title (of "(empty)")
+  EXPECT_TRUE([cell title]);
 
   // cell is autoreleased; no need to release here
 }
@@ -931,6 +944,129 @@ TEST_F(BookmarkBarControllerTest, TestClearOnDealloc) {
     EXPECT_FALSE([button action]);
   }
 }
+
+TEST_F(BookmarkBarControllerTest, TestFolders) {
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+
+  // Create some folder buttons.
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  const BookmarkNode* folder = model->AddGroup(parent,
+                                               parent->GetChildCount(),
+                                               L"group");
+  model->AddURL(folder, folder->GetChildCount(),
+                L"f1", GURL("http://framma-lamma.com"));
+  folder = model->AddGroup(parent, parent->GetChildCount(), L"empty");
+
+  EXPECT_EQ([[bar_ buttons] count], 2U);
+  BookmarkButton* button = [[bar_ buttons] objectAtIndex:0];  // full one
+
+  EXPECT_FALSE([bar_ folderController]);
+  [bar_ openBookmarkFolderFromButton:button];
+  BookmarkBarFolderController* bbfc = [bar_ folderController];
+  EXPECT_TRUE(bbfc);
+
+  // Make sure a 2nd open on the same button closes things.
+  [bar_ openBookmarkFolderFromButton:button];
+  EXPECT_FALSE([bar_ folderController]);
+
+  // Next open is a different button.
+  [bar_ openBookmarkFolderFromButton:[[bar_ buttons] objectAtIndex:1]];
+  EXPECT_TRUE([bar_ folderController]);
+  EXPECT_NE(bbfc, [bar_ folderController]);
+
+  // Finally confirm a close removes the folder controller.
+  [bar_ closeBookmarkFolder:nil];
+  EXPECT_FALSE([bar_ folderController]);
+
+  // Next part of the test: similar actions but with mouseEntered/mouseExited.
+
+  // First confirm mouseEntered does nothing if "menus" aren't active.
+  NSEvent* event = test_event_utils::MakeMouseEvent(NSOtherMouseUp, 0);
+  [bar_ mouseEnteredButton:[[bar_ buttons] objectAtIndex:0] event:event];
+  EXPECT_FALSE([bar_ folderController]);
+
+  // Make one active.  Entering it is now a no-op.
+  [bar_ openBookmarkFolderFromButton:[[bar_ buttons] objectAtIndex:0]];
+  bbfc = [bar_ folderController];
+  EXPECT_TRUE(bbfc);
+  [bar_ mouseEnteredButton:[[bar_ buttons] objectAtIndex:0] event:event];
+  EXPECT_EQ(bbfc, [bar_ folderController]);
+
+  // Enter a different one; a new folderController is active.
+  [bar_ mouseEnteredButton:[[bar_ buttons] objectAtIndex:1] event:event];
+  EXPECT_NE(bbfc, [bar_ folderController]);
+
+  // Confirm exited is a no-op.
+  [bar_ mouseExitedButton:[[bar_ buttons] objectAtIndex:1] event:event];
+  EXPECT_NE(bbfc, [bar_ folderController]);
+
+  // Clean up.
+  [bar_ closeBookmarkFolder:nil];
+}
+
+TEST_F(BookmarkBarControllerTest, ClickOutsideCheck) {
+  NSEvent* event = test_event_utils::MakeMouseEvent(NSMouseMoved, 0);
+  EXPECT_FALSE([bar_ isEventAClickOutside:event]);
+
+  BookmarkBarFolderWindow* folderWindow = [[[BookmarkBarFolderWindow alloc]
+                                             init] autorelease];
+  [[[bar_ view] window] addChildWindow:folderWindow
+                               ordered:NSWindowAbove];
+  event = test_event_utils::LeftMouseDownAtPointInWindow(NSMakePoint(1,1),
+                                                         folderWindow);
+  EXPECT_FALSE([bar_ isEventAClickOutside:event]);
+
+  event = test_event_utils::LeftMouseDownAtPointInWindow(NSMakePoint(100,100),
+                                                         test_window());
+  EXPECT_TRUE([bar_ isEventAClickOutside:event]);
+  [[[bar_ view] window] removeChildWindow:folderWindow];
+}
+
+TEST_F(BookmarkBarControllerTest, DropDestination) {
+  // Make some buttons.
+  BookmarkModel* model = helper_.profile()->GetBookmarkModel();
+  const BookmarkNode* parent = model->GetBookmarkBarNode();
+  model->AddGroup(parent, parent->GetChildCount(), L"group 1");
+  model->AddGroup(parent, parent->GetChildCount(), L"group 2");
+  EXPECT_EQ([[bar_ buttons] count], 2U);
+
+  // Confirm "off to left" and "off to right" match nothing.
+  NSPoint p = NSMakePoint(-1, 2);
+  EXPECT_FALSE([bar_ buttonForDroppingOnAtPoint:p]);
+  EXPECT_TRUE([bar_ shouldShowIndicatorShownForPoint:p]);
+  p = NSMakePoint(50000, 10);
+  EXPECT_FALSE([bar_ buttonForDroppingOnAtPoint:p]);
+  EXPECT_TRUE([bar_ shouldShowIndicatorShownForPoint:p]);
+
+  // Confirm "right in the center" (give or take a pixel) is a match,
+  // and confirm "just barely in the button" is not.  Anything more
+  // specific seems likely to be tweaked.
+  for (BookmarkButton* button in [bar_ buttons]) {
+    CGFloat x = NSMidX([button frame]);
+    // Somewhere near the center: a match
+    EXPECT_EQ(button,
+              [bar_ buttonForDroppingOnAtPoint:NSMakePoint(x-1, 10)]);
+    EXPECT_EQ(button,
+              [bar_ buttonForDroppingOnAtPoint:NSMakePoint(x+1, 10)]);
+    EXPECT_FALSE([bar_ shouldShowIndicatorShownForPoint:NSMakePoint(x, 10)]);;
+
+    // On the very edges: NOT a match
+    x = NSMinX([button frame]);
+    EXPECT_NE(button,
+              [bar_ buttonForDroppingOnAtPoint:NSMakePoint(x, 9)]);
+    x = NSMaxX([button frame]);
+    EXPECT_NE(button,
+              [bar_ buttonForDroppingOnAtPoint:NSMakePoint(x, 11)]);
+  }
+}
+
+// TODO(jrg): draggingEntered: and draggingExited: trigger timers so
+// they are hard to test.  Factor out "fire timers" into routines
+// which can be overridden to fire immediately to make behavior
+// confirmable.
+
+// TODO(jrg): add unit test to make sure "Other Bookmarks" responds
+// properly to a hover open.
 
 // TODO(viettrungluu): figure out how to test animations.
 

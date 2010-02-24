@@ -8,6 +8,7 @@
 #import <Cocoa/Cocoa.h>
 #include <map>
 
+#import "base/chrome_application_mac.h"
 #include "base/scoped_nsobject.h"
 #include "base/scoped_ptr.h"
 #include "chrome/browser/cocoa/bookmark_bar_bridge.h"
@@ -18,6 +19,7 @@
 #include "webkit/glue/window_open_disposition.h"
 
 @class BookmarkBarController;
+@class BookmarkBarFolderController;
 @class BookmarkBarView;
 @class BookmarkButton;
 class BookmarkModel;
@@ -35,12 +37,53 @@ class TabContents;
 namespace bookmarks {
 
 // Magic numbers from Cole
+// TODO(jrg): create an objc-friendly version of bookmark_bar_constants.h?
+
 const CGFloat kDefaultBookmarkWidth = 150.0;
 const CGFloat kBookmarkVerticalPadding = 2.0;
 const CGFloat kBookmarkHorizontalPadding = 1.0;
 
 const CGFloat kNoBookmarksHorizontalOffset = 5.0;
 const CGFloat kNoBookmarksVerticalOffset = 6.0;
+
+// (end magic numbers from Cole)
+
+// Delay before opening a subfolder (and closing the previous one)
+// when hovering over a folder button.
+const NSTimeInterval kHoverOpenDelay = 0.3;
+
+// Delay on hover before a submenu opens when dragging.
+// Experimentally a drag hover open delay needs to be bigger than a
+// normal (non-drag) menu hover open such as used in the bookmark folder.
+//  TODO(jrg): confirm feel of this constant with ui-team.
+//  http://crbug.com/36276
+const NSTimeInterval kDragHoverOpenDelay = 0.7;
+
+// Notes on use of kDragHoverCloseDelay in
+// -[BookmarkBarFolderController draggingEntered:].
+//
+// We have an implicit delay on stop-hover-open before a submenu
+// closes.  This cannot be zero since it's nice to move the mouse in a
+// direct line from "current position" to "position of item in
+// submenu".  However, by doing so, it's possible to overlap a
+// different button on the current menu.  Example:
+//
+//  Folder1
+//  Folder2  ---> Sub1
+//  Folder3       Sub2
+//                Sub3
+//
+// If you hover over the F in Folder2 to open the sub, and then want to
+// select Sub3, a direct line movement of the mouse may cross over
+// Folder3.  Without this delay, that'll cause Sub to be closed before
+// you get there, since a "hover over" of Folder3 gets activated.
+// It's subtle but without the delay it feels broken.
+//
+// This is only really a problem with vertical menu --> vertical menu
+// movement; the bookmark bar (horizontal menu, sort of) seems fine,
+// perhaps because mouse move direction is purely vertical so there is
+// no opportunity for overlap.
+const NSTimeInterval kDragHoverCloseDelay = 0.4;
 
 }  // namespace bookmarks
 
@@ -69,7 +112,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 @interface BookmarkBarController :
     NSViewController<BookmarkBarState,
                      BookmarkBarToolbarViewController,
-                     BookmarkButtonDelegate> {
+                     BookmarkButtonDelegate,
+                     BookmarkButtonControllerProtocol,
+                     CrApplicationEventHookProtocol> {
  @private
   // The visual state of the bookmark bar. If an animation is running, this is
   // set to the "destination" and |lastVisualState_| is set to the "original"
@@ -118,6 +163,13 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   // Delegate that can resize us.
   id<ViewResizer> resizeDelegate_;  // weak
 
+  // A controller for a pop-up bookmark folder window (custom menu).
+  // This is not a scoped_nsobject because it owns itself (when its
+  // window closes the controller gets autoreleased).
+  BookmarkBarFolderController* folderController_;
+
+  BOOL watchingForClickOutside_;  // Are watching for a "click outside"?
+
   IBOutlet BookmarkBarView* buttonView_;
   IBOutlet MenuButton* offTheSideButton_;  // aka the chevron
   IBOutlet NSMenu* buttonContextMenu_;
@@ -128,6 +180,13 @@ willAnimateFromState:(bookmarks::VisualState)oldState
   // We have a special menu for folder buttons.  This starts as a copy
   // of the bar menu.
   scoped_nsobject<BookmarkMenu> buttonFolderContextMenu_;
+
+  // When doing a drag, this is folder button "hovered over" which we
+  // may want to open after a short delay.  There are cases where a
+  // mouse-enter can open a folder (e.g. if the menus are "active")
+  // but that doesn't use this variable or need a delay so "hover" is
+  // the wrong term.
+  scoped_nsobject<BookmarkButton> hoverButton_;
 }
 
 @property(readonly, nonatomic) bookmarks::VisualState visualState;
@@ -170,22 +229,13 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 // need it for animations. Try not to propagate its use.
 - (void)layoutSubviews;
 
-// Complete a drag of a bookmark button to the given point (given in window
-// coordinates) on the main bar.
-// TODO(jrg): submenu DnD.
-// Returns YES on success.
-- (BOOL)dragButton:(BookmarkButton*)sourceButton to:(NSPoint)point;
-
-// The x-coordinate of (the middle of) the indicator to draw for a drag of the
-// source button to the given point (given in window coordinates).
-// TODO(viettrungluu,jrg): instead of this, make buttons move around.
-- (CGFloat)indicatorPosForDragOfButton:(BookmarkButton*)sourceButton
-                               toPoint:(NSPoint)point;
+// Called by our view when it is moved to a window.
+- (void)viewDidMoveToWindow;
 
 // Actions for manipulating bookmarks.
-// From a button, ...
+// Open a normal bookmark or folder from a button, ...
 - (IBAction)openBookmark:(id)sender;
-- (IBAction)openFolderMenuFromButton:(id)sender;
+- (IBAction)openBookmarkFolderFromButton:(id)sender;
 // From a context menu over the button, ...
 - (IBAction)openBookmarkInNewForegroundTab:(id)sender;
 - (IBAction)openBookmarkInNewWindow:(id)sender;
@@ -243,6 +293,9 @@ willAnimateFromState:(bookmarks::VisualState)oldState
 - (NSButton*)otherBookmarksButton;
 - (BookmarkNode*)nodeFromMenuItem:(id)sender;
 - (void)updateTheme:(ThemeProvider*)themeProvider;
+- (BookmarkBarFolderController*)folderController;
+- (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point;
+- (BOOL)isEventAClickOutside:(NSEvent*)event;
 @end
 
 // The (internal) |NSPasteboard| type string for bookmark button drags, used for

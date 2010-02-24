@@ -28,6 +28,15 @@
   return self;
 }
 
+- (BOOL)empty {
+  return empty_;
+}
+
+- (void)setEmpty:(BOOL)empty {
+  empty_ = empty;
+  [self setShowsBorderOnlyWhileMouseInside:!empty];
+}
+
 - (NSSize)cellSizeForBounds:(NSRect)aRect {
   NSSize size = [super cellSizeForBounds:aRect];
   size.width += 2;
@@ -58,10 +67,21 @@
     [self setTitle:title];
 }
 
+- (void)setBookmarkNode:(const BookmarkNode*)node {
+  [self setRepresentedObject:[NSValue valueWithPointer:node]];
+}
+
+- (const BookmarkNode*)bookmarkNode {
+  return static_cast<const BookmarkNode*>([[self representedObject]
+                                            pointerValue]);
+}
+
 // We share the context menu among all bookmark buttons.  To allow us
 // to disambiguate when needed (e.g. "open bookmark"), we set the
 // menu's associated node to be our represented object.
 - (NSMenu*)menu {
+  if (empty_)
+    return nil;
   BookmarkMenu* menu = (BookmarkMenu*)[super menu];
   [menu setRepresentedObject:[self representedObject]];
   return menu;
@@ -70,6 +90,13 @@
 // Unfortunately, NSCell doesn't already have something like this.
 // TODO(jrg): consider placing in GTM.
 - (void)setTextColor:(NSColor*)color {
+
+  // We can't properly set the cell's text color without a control.
+  // In theory we could just save the next for later and wait until
+  // the cell is moved to a control, but there is no obvious way to
+  // accomplish that (e.g. no "cellDidMoveToControl" notification.)
+  DCHECK([self controlView]);
+
   scoped_nsobject<NSMutableParagraphStyle> style([NSMutableParagraphStyle new]);
   [style setAlignment:NSCenterTextAlignment];
   NSDictionary* dict = [NSDictionary
@@ -86,6 +113,20 @@
     DCHECK([button isKindOfClass:[NSButton class]]);
     [button setAttributedTitle:ats.get()];
   }
+}
+
+// To implement "hover open a bookmark button to open the folder"
+// which feels like menus, we override NSButtonCell's mouseEntered:
+// and mouseExited:, then and pass them along to our owning control.
+- (void)mouseEntered:(NSEvent*)event {
+  [super mouseEntered:event];
+  [[self controlView] mouseEntered:event];
+}
+
+// See comment above mouseEntered:, above.
+- (void)mouseExited:(NSEvent*)event {
+  [super mouseExited:event];
+  [[self controlView] mouseExited:event];
 }
 
 @end

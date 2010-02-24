@@ -28,9 +28,27 @@
   return app;
 }
 
+- (id)init {
+  if ((self = [super init])) {
+    eventHooks_.reset([[NSMutableArray alloc] init]);
+  }
+  return self;
+}
+
 - (void)sendEvent:(NSEvent*)event {
   chrome_application_mac::ScopedSendingEvent sendingEventScoper;
+  for (id<CrApplicationEventHookProtocol> handler in eventHooks_.get()) {
+    [handler hookForEvent:event];
+  }
   [super sendEvent:event];
+}
+
+- (void)addEventHook:(id<CrApplicationEventHookProtocol>)handler {
+  [eventHooks_ addObject:handler];
+}
+
+- (void)removeEventHook:(id<CrApplicationEventHookProtocol>)handler {
+  [eventHooks_ removeObject:handler];
 }
 
 @end

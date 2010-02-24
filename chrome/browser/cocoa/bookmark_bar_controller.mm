@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#import "chrome/browser/cocoa/bookmark_bar_controller.h"
 #include "app/l10n_util_mac.h"
 #include "app/resource_bundle.h"
 #include "base/mac_util.h"
@@ -14,7 +15,8 @@
 #import "chrome/browser/cocoa/background_gradient_view.h"
 #import "chrome/browser/cocoa/bookmark_bar_bridge.h"
 #import "chrome/browser/cocoa/bookmark_bar_constants.h"
-#import "chrome/browser/cocoa/bookmark_bar_controller.h"
+#import "chrome/browser/cocoa/bookmark_bar_folder_controller.h"
+#import "chrome/browser/cocoa/bookmark_bar_folder_window.h"
 #import "chrome/browser/cocoa/bookmark_bar_toolbar_view.h"
 #import "chrome/browser/cocoa/bookmark_bar_view.h"
 #import "chrome/browser/cocoa/bookmark_button.h"
@@ -171,6 +173,8 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 - (NSImage*)getFavIconForNode:(const BookmarkNode*)node;
 - (void)setNodeForBarMenu;
 
+- (void)watchForClickOutside:(BOOL)watch;
+
 @end
 
 @implementation BookmarkBarController
@@ -200,12 +204,12 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
     folderImage_.reset([rb.GetNSImageNamed(IDR_BOOKMARK_BAR_FOLDER) retain]);
     defaultImage_.reset([rb.GetNSImageNamed(IDR_DEFAULT_FAVICON) retain]);
 
-  // Register for theme changes.
-  NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
-  [defaultCenter addObserver:self
-                    selector:@selector(themeDidChangeNotification:)
-                        name:kBrowserThemeDidChangeNotification
-                      object:nil];
+    // Register for theme changes.
+    NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
+    [defaultCenter addObserver:self
+                      selector:@selector(themeDidChangeNotification:)
+                          name:kBrowserThemeDidChangeNotification
+                        object:nil];
 
     // This call triggers an awakeFromNib, which builds the bar, which
     // might uses folderImage_.  So make sure it happens after
@@ -224,6 +228,10 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   //TODO(dmaclach): Remove -- http://crbug.com/25845
   [[self view] removeFromSuperview];
 
+  // Be sure there is no dangling pointer.
+  if ([[self view] respondsToSelector:@selector(setController:)])
+    [[self view] performSelector:@selector(setController:) withObject:nil];
+
   // For safety, make sure the buttons can no longer call us.
   for (BookmarkButton* button in buttons_.get()) {
     [button setDelegate:nil];
@@ -233,6 +241,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 
   bridge_.reset(NULL);
   [[NSNotificationCenter defaultCenter] removeObserver:self];
+  [self watchForClickOutside:NO];
   [super dealloc];
 }
 
@@ -253,6 +262,11 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
     [cell setTextColor:color];
   }
   [[otherBookmarksButton_ cell] setTextColor:color];
+}
+
+// Exposed purely for testing.
+- (BookmarkBarFolderController*)folderController {
+  return folderController_;
 }
 
 // Called after the current theme has changed.
@@ -288,14 +302,30 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   // no longer visible), or add/remove the "off the side" menu.
   [[self view] setPostsFrameChangedNotifications:YES];
   [[NSNotificationCenter defaultCenter]
-      addObserver:self
-         selector:@selector(frameDidChange)
-             name:NSViewFrameDidChangeNotification
-           object:[self view]];
+    addObserver:self
+       selector:@selector(frameDidChange)
+           name:NSViewFrameDidChangeNotification
+         object:[self view]];
 
   // Don't pass ourself along (as 'self') until our init is completely
   // done.  Thus, this call is (almost) last.
   bridge_.reset(new BookmarkBarBridge(self, bookmarkModel_));
+}
+
+// Called by our main view (a BookmarkBarView) when it gets moved to a
+// window.  We perform operations which need to know the relevant
+// window (e.g. watch for a window close) so they can't be performed
+// earlier (such as in awakeFromNib).
+- (void)viewDidMoveToWindow {
+  NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
+  [defaultCenter addObserver:self
+                    selector:@selector(parentWindowWillClose:)
+                        name:NSWindowWillCloseNotification
+                      object:[[self view] window]];
+  [defaultCenter addObserver:self
+                    selector:@selector(parentWindowDidResignKey:)
+                        name:NSWindowDidResignKeyNotification
+                      object:[[self view] window]];
 }
 
 // (Private) Method is the same as [self view], but is provided to be explicit.
@@ -315,7 +345,8 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   NSRect frame = [offTheSideButton_ frame];
   if (otherBookmarksButton_.get()) {
     frame.origin.x = ([otherBookmarksButton_ frame].origin.x -
-                      (frame.size.width + bookmarks::kBookmarkHorizontalPadding));
+                      (frame.size.width +
+                       bookmarks::kBookmarkHorizontalPadding));
     [offTheSideButton_ setFrame:frame];
   }
 }
@@ -348,6 +379,121 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   [self addButtonsToView];
   [self showOrHideOffTheSideButton];
   [self centerNoItemsLabel];
+}
+
+// Close all bookmark folders.  "Folder" here is the fake menu for
+// bookmark folders, not a button context menu.
+- (void)closeAllBookmarkFolders {
+  [self watchForClickOutside:NO];
+  [[folderController_ window] close];
+  folderController_ = nil;
+}
+
+- (void)closeBookmarkFolder:(id)sender {
+  // We're the top level, so close one means close them all.
+  [self closeAllBookmarkFolders];
+}
+
+- (BookmarkModel*)bookmarkModel {
+  return bookmarkModel_;
+}
+
+// NSNotificationCenter callback.
+- (void)parentWindowWillClose:(NSNotification*)notification {
+  [self closeAllBookmarkFolders];
+}
+
+// NSNotificationCenter callback.
+- (void)parentWindowDidResignKey:(NSNotification*)notification {
+  [self closeAllBookmarkFolders];
+}
+
+// BookmarkButtonDelegate protocol implementation.  When menus are
+// "active" (e.g. you clicked to open one), moving the mouse over
+// another folder button should close the 1st and open the 2nd (like
+// real menus).  We detect and act here.
+- (void)mouseEnteredButton:(id)sender event:(NSEvent*)event {
+  DCHECK([sender isKindOfClass:[BookmarkButton class]]);
+  // If nothing is open, do nothing.  Different from
+  // BookmarkBarFolderController since we default to NOT being enabled.
+  if (!folderController_)
+    return;
+
+  // From here down: same logic as BookmarkBarFolderController.
+  // TODO(jrg): find a way to share these 4 non-comment lines?
+  // http://crbug.com/35966
+
+  // If already opened, then we exited but re-entered the button, so do nothing.
+  if ([folderController_ parentButton] == sender)
+    return;
+  // Else open a new one if it makes sense to do so.
+  if ([sender bookmarkNode]->is_folder())
+    [self openBookmarkFolderFromButton:sender];
+}
+
+// BookmarkButtonDelegate protocol implementation.
+- (void)mouseExitedButton:(id)sender event:(NSEvent*)event {
+  // Don't care; do nothing.
+  // This is different behavior that the folder menus.
+}
+
+// Begin (or end) watching for a click outside this window.  Unlike
+// normal NSWindows, bookmark folder "fake menu" windows do not become
+// key or main.  Thus, traditional notification (e.g. WillResignKey)
+// won't work.  Our strategy is to watch (at the app level) for a
+// "click outside" these windows to detect when they logically lose
+// focus.
+- (void)watchForClickOutside:(BOOL)watch {
+  CrApplication* app = static_cast<CrApplication*>([NSApplication
+                                                       sharedApplication]);
+  DCHECK([app isKindOfClass:[CrApplication class]]);
+  if (watch) {
+    if (!watchingForClickOutside_)
+      [app addEventHook:self];
+  } else {
+    if (watchingForClickOutside_)
+      [app removeEventHook:self];
+  }
+  watchingForClickOutside_ = watch;
+}
+
+// Implementation of CrApplicationEventHookProtocol.
+// NOT an override of a standard Cocoa call made to NSViewControllers.
+- (void)hookForEvent:(NSEvent*)theEvent {
+  if ([self isEventAClickOutside:theEvent]) {
+    [self watchForClickOutside:NO];
+    [self closeAllBookmarkFolders];
+  }
+}
+
+// Return YES if the event represents a "click outside" of the area we
+// are watching.  At this time we are watching the area that includes
+// all popup bookmark folder windows.
+- (BOOL)isEventAClickOutside:(NSEvent*)event {
+  NSWindow* eventWindow = [event window];
+  NSWindow* myWindow = [[self view] window];
+  switch ([event type]) {
+    case NSLeftMouseDown:
+    case NSRightMouseDown:
+      // If a click in my window and NOT in the bookmark bar,
+      // then is a click outside.
+      if ((eventWindow == myWindow) &&
+          ([[eventWindow contentView]
+                hitTest:[event locationInWindow]] != [self view])) {
+          return YES;
+      }
+      // If a click in a bookmark bar folder window and that isn't
+      // one of my bookmark bar folders, YES is click outside.
+      if (([eventWindow isKindOfClass:[BookmarkBarFolderWindow
+                                          class]]) &&
+          ([eventWindow parentWindow] != myWindow)) {
+        return YES;
+      }
+      break;
+    default:
+      break;
+  }
+  return NO;
 }
 
 // Keep the "no items" label centered in response to a frame size change.
@@ -525,13 +671,6 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
                     toPoint:(NSPoint)point {
   DCHECK([sourceButton isKindOfClass:[BookmarkButton class]]);
 
-  void* pointer = [[[sourceButton cell] representedObject] pointerValue];
-  const BookmarkNode* sourceNode = static_cast<const BookmarkNode*>(pointer);
-  if (!sourceNode) {
-    NOTREACHED();
-    return -1;
-  }
-
   // Identify which buttons we are between.  For now, assume a button
   // location is at the center point of its view, and that an exact
   // match means "place before".
@@ -540,8 +679,8 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   NSPoint dropLocation =
       [[self view] convertPoint:point
                        fromView:[[[self view] window] contentView]];
-  NSButton* buttonToTheRightOfDraggedButton = nil;
-  for (NSButton* button in buttons_.get()) {
+  BookmarkButton* buttonToTheRightOfDraggedButton = nil;
+  for (BookmarkButton* button in buttons_.get()) {
     CGFloat midpoint = NSMidX([button frame]);
     if (dropLocation.x <= midpoint) {
       buttonToTheRightOfDraggedButton = button;
@@ -549,26 +688,28 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
     }
   }
   if (buttonToTheRightOfDraggedButton) {
-    pointer = [[[buttonToTheRightOfDraggedButton cell]
-                 representedObject] pointerValue];
-    const BookmarkNode* afterNode = static_cast<const BookmarkNode*>(pointer);
+    const BookmarkNode* afterNode =
+        [buttonToTheRightOfDraggedButton bookmarkNode];
+    DCHECK(afterNode);
     return afterNode->GetParent()->IndexOfChild(afterNode);
   }
 
   // If nothing is to my right I am at the end!
-  return sourceNode->GetParent()->GetChildCount();
+  return [buttons_ count];
 }
 
 - (BOOL)dragButton:(BookmarkButton*)sourceButton to:(NSPoint)point {
   DCHECK([sourceButton isKindOfClass:[BookmarkButton class]]);
 
-  void* pointer = [[[sourceButton cell] representedObject] pointerValue];
-  const BookmarkNode* sourceNode = static_cast<const BookmarkNode*>(pointer);
+  const BookmarkNode* sourceNode = [sourceButton bookmarkNode];
   DCHECK(sourceNode);
 
   int destIndex = [self indexForDragOfButton:sourceButton toPoint:point];
   if (destIndex >= 0 && sourceNode) {
-    bookmarkModel_->Move(sourceNode, sourceNode->GetParent(), destIndex);
+    // Our destination parent is not sourceNode->GetParent()!
+    bookmarkModel_->Move(sourceNode,
+                         bookmarkModel_->GetBookmarkBarNode(),
+                         destIndex);
   } else {
     NOTREACHED();
   }
@@ -579,6 +720,121 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   return YES;
 }
 
+// Find something like std::is_between<T>?  I can't believe one doesn't exist.
+static BOOL ValueInRangeInclusive(CGFloat low, CGFloat value, CGFloat high) {
+  return ((value >= low) && (value <= high));
+}
+
+// Return the proposed drop target for a hover open button from the
+// given array, or nil if none.  We use this for distinguishing
+// between a hover-open candidate or drop-indicator draw.
+// Helper for buttonForDroppingOnAtPoint:.
+// Get UI review on "middle half" ness.
+// http://crbug.com/36276
+- (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point
+                                    fromArray:(NSArray*)array {
+  for (BookmarkButton* button in array) {
+    // Break early if we've gone too far.
+    if (NSMinX([button frame]) > point.x)
+      return nil;
+    // Careful -- this only applies to the bar with horiz buttons.
+    // Intentionally NOT using NSPointInRect() so that scrolling into
+    // a submenu doesn't cause it to be closed.
+    if (ValueInRangeInclusive(NSMinX([button frame]),
+                              point.x,
+                              NSMaxX([button frame]))) {
+      // Over a button but let's be a little more specific (make sure
+      // it's over the middle half, not just over it.)
+      NSRect frame = [button frame];
+      NSRect middleHalfOfButton = NSInsetRect(frame, frame.size.width / 4, 0);
+      if (ValueInRangeInclusive(NSMinX(middleHalfOfButton),
+                                point.x,
+                                NSMaxX(middleHalfOfButton))) {
+        // It makes no sense to drop on a non-folder; there is no hover.
+        if (![button isFolder])
+          return nil;
+        // Got it!
+        return button;
+      } else {
+        // Over a button but not over the middle half.
+        return nil;
+      }
+    }
+  }
+  // Not hovering over a button.
+  return nil;
+}
+
+// Return the proposed drop target for a hover open button, or nil if
+// none.  Works with both the bookmark buttons and the "Other
+// Bookmarks" button.  Point is in [self view] coordinates.
+- (BookmarkButton*)buttonForDroppingOnAtPoint:(NSPoint)point {
+  BookmarkButton* button = [self buttonForDroppingOnAtPoint:point
+                                                  fromArray:buttons_.get()];
+  // One more chance -- try "Other Bookmarks".
+  // This is different than BookmarkBarFolderController.
+  if (!button) {
+    NSArray* array = [NSArray arrayWithObject:otherBookmarksButton_];
+    button = [self buttonForDroppingOnAtPoint:point
+                                    fromArray:array];
+  }
+  return button;
+}
+
+// TODO(jrg): much of this logic is duped with
+// [BookmarkBarFolderController draggingEntered:] except when noted.
+// http://crbug.com/35966
+- (NSDragOperation)draggingEntered:(id<NSDraggingInfo>)info {
+  NSPoint point = [info draggingLocation];
+  BookmarkButton* button = [self buttonForDroppingOnAtPoint:point];
+  if ([button isFolder]) {
+    if (hoverButton_ == button) {
+      return NSDragOperationMove;  // already open or timed to open
+    }
+    if (hoverButton_) {
+      // Oops, another one triggered or open.
+      [NSObject cancelPreviousPerformRequestsWithTarget:[hoverButton_
+                                                            target]];
+      // Unlike BookmarkBarFolderController, we do not delay the close
+      // of the previous one.  Given the lack of diagonal movement,
+      // there is no need, and it feels awkward to do so.  See
+      // comments about kDragHoverCloseDelay in
+      // bookmark_bar_folder_controller.mm for more details.
+      [[hoverButton_ target] closeBookmarkFolder:hoverButton_];
+      hoverButton_.reset();
+    }
+    hoverButton_.reset([button retain]);
+    [[hoverButton_ target]
+            performSelector:@selector(openBookmarkFolderFromButton:)
+                 withObject:hoverButton_
+                 afterDelay:bookmarks::kDragHoverOpenDelay];
+  }
+  if (!button) {
+    if (hoverButton_) {
+      [NSObject cancelPreviousPerformRequestsWithTarget:[hoverButton_ target]];
+      [[hoverButton_ target] closeBookmarkFolder:hoverButton_];
+      hoverButton_.reset();
+    }
+  }
+
+  // Thrown away but kept to be consistent with the draggingEntered: interface.
+  return NSDragOperationMove;
+}
+
+- (void)draggingExited:(id<NSDraggingInfo>)info {
+  // NOT the same as a cancel --> we may have moved the mouse into the submenu.
+  if (hoverButton_) {
+    [NSObject cancelPreviousPerformRequestsWithTarget:[hoverButton_ target]];
+    hoverButton_.reset();
+  }
+}
+
+// Return YES if we should show the drop indicator, else NO.
+- (BOOL)shouldShowIndicatorShownForPoint:(NSPoint)point {
+  return ![self buttonForDroppingOnAtPoint:point];
+}
+
+// Return the x position for a drop indicator.
 - (CGFloat)indicatorPosForDragOfButton:(BookmarkButton*)sourceButton
                                toPoint:(NSPoint)point {
   CGFloat x = 0;
@@ -617,6 +873,11 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   return x;
 }
 
+// Return the parent window for all BookmarkBarFolderController windows.
+- (NSWindow*)parentWindow {
+  return [[self view] window];
+}
+
 - (int)currentTabContentsHeight {
   return browser_->GetSelectedTabContents() ?
       browser_->GetSelectedTabContents()->view()->GetContainerSize().height() :
@@ -625,14 +886,6 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 
 - (ThemeProvider*)themeProvider {
   return browser_->profile()->GetThemeProvider();
-}
-
-- (BookmarkNode*)nodeFromButton:(id)button {
-  NSCell* cell = [button cell];
-  BookmarkNode* node = static_cast<BookmarkNode*>(
-      [[cell representedObject] pointerValue]);
-  DCHECK(node);
-  return node;
 }
 
 // Enable or disable items.  We are the menu delegate for both the bar
@@ -695,7 +948,9 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 }
 
 - (IBAction)openBookmark:(id)sender {
-  BookmarkNode* node = [self nodeFromButton:sender];
+  [self closeAllBookmarkFolders];
+  DCHECK([sender respondsToSelector:@selector(bookmarkNode)]);
+  const BookmarkNode* node = [sender bookmarkNode];
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
   [self openURL:node->GetURL() disposition:disposition];
@@ -801,14 +1056,31 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   return menu;
 }
 
-// Called from a Folder bookmark button.
-- (IBAction)openFolderMenuFromButton:(id)sender {
-  NSMenu* menu = [self menuForFolderNode:[self nodeFromButton:sender]];
-  if (menu) {
-    [NSMenu popUpContextMenu:menu
-                   withEvent:[NSApp currentEvent]
-                     forView:sender];
+// Heuristics:
+// 1: click and hold (without moving much): opens it
+// 2: click and release (normal button push): opens it.
+// This is called on the second one.
+//
+// Called from a Folder bookmark button to open the folder.
+- (IBAction)openBookmarkFolderFromButton:(id)sender {
+  DCHECK(sender);
+  if (folderController_) {
+    // closeAllBookmarkFolders sets folderController_ to nil
+    // so we need the SAME check to happen first.
+    BOOL same = ([folderController_ parentButton] == sender);
+    [self closeAllBookmarkFolders];
+    // If click on same folder, close it and be done.
+    // Else we clicked on a different folder so more work to do.
+    if (same)
+      return;
   }
+
+  // Folder controller, like many window controllers, owns itself.
+  folderController_ = [[BookmarkBarFolderController alloc]
+                            initWithParentButton:sender
+                                parentController:self];
+  [folderController_ showWindow:self];
+  [self watchForClickOutside:YES];
 }
 
 // Rebuild the off-the-side menu, taking into account which buttons are
@@ -827,9 +1099,9 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
     [menu removeItemAtIndex:i];
 
   // Add items corresponding to buttons which aren't displayed.
-  for (NSButton* button in buttons_.get()) {
+  for (BookmarkButton* button in buttons_.get()) {
     if (![button superview])
-      [self addNode:[self nodeFromButton:button] toMenu:menu];
+      [self addNode:[button bookmarkNode] toMenu:menu];
   }
 }
 
@@ -903,6 +1175,9 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   BookmarkNode* node = [self nodeFromMenuItem:sender];
   bookmarkModel_->Remove(node->GetParent(),
                          node->GetParent()->IndexOfChild(node));
+  // TODO(jrg): don't close; rebuild.
+  // http://crbug.com/36614
+  [self closeAllBookmarkFolders];
 }
 
 // An ObjC version of bookmark_utils::OpenAllImpl().
@@ -986,19 +1261,29 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 // Return an autoreleased NSCell suitable for a bookmark button.
 // TODO(jrg): move much of the cell config into the BookmarkButtonCell class.
 - (NSCell*)cellForBookmarkNode:(const BookmarkNode*)node {
-  NSString* title = base::SysWideToNSString(node->GetTitle());
   BookmarkButtonCell* cell =
     [[[BookmarkButtonCell alloc] initTextCell:nil]
       autorelease];
   DCHECK(cell);
-  [cell setRepresentedObject:[NSValue valueWithPointer:node]];
+  [cell setBookmarkNode:node];
 
-  NSImage* image = [self getFavIconForNode:node];
-  [cell setBookmarkCellText:title image:image];
-  if (node->is_folder())
-    [cell setMenu:buttonFolderContextMenu_];
-  else
-    [cell setMenu:buttonContextMenu_];
+  if (node) {
+    NSString* title = base::SysWideToNSString(node->GetTitle());
+    NSImage* image = [self getFavIconForNode:node];
+    [cell setBookmarkCellText:title image:image];
+    if (node->is_folder())
+      [cell setMenu:buttonFolderContextMenu_];
+    else
+      [cell setMenu:buttonContextMenu_];
+  } else {
+    [cell setEmpty:YES];
+    [cell setBookmarkCellText:l10n_util::GetNSString(IDS_MENU_EMPTY_SUBMENU)
+                        image:nil];
+  }
+
+  // Note: a quirk of setting a cell's text color is that it won't work
+  // until the cell is associated with a button, so we can't theme the cell yet.
+
   return cell;
 }
 
@@ -1101,7 +1386,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 
     if (child->is_folder()) {
       [button setTarget:self];
-      [button setAction:@selector(openFolderMenuFromButton:)];
+      [button setAction:@selector(openBookmarkFolderFromButton:)];
     } else {
       // Make the button do something
       [button setTarget:self];
@@ -1193,7 +1478,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
   [button setCell:cell];
   [button setDelegate:self];
   [button setTarget:self];
-  [button setAction:@selector(openFolderMenuFromButton:)];
+  [button setAction:@selector(openBookmarkFolderFromButton:)];
   [buttonView_ addSubview:button];
 
   // Now that it's here, move the chevron over.
@@ -1269,13 +1554,11 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 // favicons will eventually load.
 - (void)nodeFavIconLoaded:(BookmarkModel*)model
                      node:(const BookmarkNode*)node {
-  for (NSButton* button in buttons_.get()) {
-    BookmarkButtonCell* cell = [button cell];
-    void* pointer = [[cell representedObject] pointerValue];
-    const BookmarkNode* cellnode = static_cast<const BookmarkNode*>(pointer);
+  for (BookmarkButton* button in buttons_.get()) {
+    const BookmarkNode* cellnode = [button bookmarkNode];
     if (cellnode == node) {
-      [cell setBookmarkCellText:nil
-                          image:[self getFavIconForNode:node]];
+      [[button cell] setBookmarkCellText:nil
+                                   image:[self getFavIconForNode:node]];
       // Adding an image means we might need more room for the
       // bookmark.  Test for it by growing the button (if needed)
       // and shifting everything else over.
@@ -1502,7 +1785,7 @@ const NSTimeInterval kBookmarkBarAnimationDuration = 0.12;
 // (BookmarkButtonDelegate protocol)
 - (void)fillPasteboard:(NSPasteboard*)pboard
        forDragOfButton:(BookmarkButton*)button {
-  if (BookmarkNode* node = [self nodeFromButton:button]) {
+  if (const BookmarkNode* node = [button bookmarkNode]) {
     // Put the bookmark information into the pasteboard, and then write our own
     // data for |kBookmarkButtonDragType|.
     [self copyBookmarkNode:node

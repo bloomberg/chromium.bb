@@ -25,10 +25,15 @@ class ScopedClassSwizzler {
 
 namespace test_event_utils {
 
-// Create synthetic mouse events for testing. Currently these are very basic,
-// flesh out as needed.
+// Create synthetic mouse events for testing. Currently these are very
+// basic, flesh out as needed.  Points are all in window coordinates;
+// where the window is not specified, coordinate system is undefined
+// (but will be repeated when the event is queried).
 NSEvent* MakeMouseEvent(NSEventType type, NSUInteger modifiers);
+NSEvent* MouseEventAtPoint(NSPoint point, NSEventType type,
+                           NSUInteger modifiers);
 NSEvent* LeftMouseDownAtPoint(NSPoint point);
+NSEvent* LeftMouseDownAtPointInWindow(NSPoint point, NSWindow* window);
 
 }  // namespace test_event_utils
 
