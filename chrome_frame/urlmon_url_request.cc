@@ -50,8 +50,12 @@ UrlmonUrlRequest::~UrlmonUrlRequest() {
 bool UrlmonUrlRequest::Start() {
   thread_ = PlatformThread::CurrentId();
   status_.Start();
+  // The UrlmonUrlRequest instance can get destroyed in the context of
+  // StartAsyncDownload if BindToStorage finishes synchronously with an error.
+  // Grab a reference to protect against this.
+  scoped_refptr<UrlmonUrlRequest> ref(this);
   HRESULT hr = StartAsyncDownload();
-  if (FAILED(hr)) {
+  if (FAILED(hr) && status_.get_state() != UrlmonUrlRequest::Status::DONE) {
     status_.Done();
     status_.set_result(URLRequestStatus::FAILED, HresultToNetError(hr));
     NotifyDelegateAndDie();
@@ -169,6 +173,11 @@ STDMETHODIMP UrlmonUrlRequest::OnLowResource(DWORD reserved) {
 STDMETHODIMP UrlmonUrlRequest::OnProgress(ULONG progress, ULONG max_progress,
     ULONG status_code, LPCWSTR status_text) {
   DCHECK_EQ(thread_, PlatformThread::CurrentId());
+
+  if (status_.get_state() != Status::WORKING) {
+    return S_OK;
+  }
+
   switch (status_code) {
     case BINDSTATUS_REDIRECTING: {
       DLOG(INFO) << "URL: " << url() << " redirected to " << status_text;
