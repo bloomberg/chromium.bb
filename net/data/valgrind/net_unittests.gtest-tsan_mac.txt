@@ -27,6 +27,7 @@ SocketStreamTest.BasicAuthProxy
 # TODO(glider): investigate this.
 WebSocketTest.*
 
-# This test dies because of unhandled shm_unlink call
+# These tests die because of unhandled shm_unlink call
 # (see http://crbug.com/36657)
 DiskCacheBackendTest.NewEvictionInvalidRankings2
+DiskCacheBackendTest.InvalidRankingsSuccess
