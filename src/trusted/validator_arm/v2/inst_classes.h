@@ -486,30 +486,84 @@ class StoreExclusive : public ClassDecoder {
 };
 
 /*
- * The most common class of loads, where
- *  - The destination register is 15:12
- *  - The address in 19:16 is written when bit 21 is set
- *  - No flags changes or anything weird.
+ * Abstract base class for single- and double-register load instructions,
+ * below.  These instructions have common characteristics:
+ * - They aren't permitted to alter PC.
+ * - They produce a result in reg(15:12).
+ */
+class AbstractLoad : public ClassDecoder {
+ public:
+  virtual ~AbstractLoad() {}
+
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+
+ protected:
+  bool writeback(Instruction i) const;
+};
+
+/*
+ * Loads using a register displacement, which may affect Rt (the destination)
+ * and Rn (the base address, if writeback is used).
  *
  * Notice we do not care about the width of the loaded value, because it doesn't
  * affect addressing.
  */
-class Load : public ClassDecoder {
+class LoadRegister : public AbstractLoad {
  public:
-  virtual ~Load() {}
+  virtual ~LoadRegister() {}
 
-  virtual SafetyLevel safety(Instruction i) const;
   virtual RegisterList defs(Instruction i) const;
+};
+
+/*
+ * Loads using an immediate displacement, which may affect Rt (the destination)
+ * and Rn (the base address, if writeback is used).
+ *
+ * Notice we do not care about the width of the loaded value, because it doesn't
+ * affect addressing.
+ */
+class LoadImmediate : public AbstractLoad {
+ public:
+  virtual ~LoadImmediate() {}
+
   virtual RegisterList immediate_addressing_defs(Instruction i) const;
 };
 
 /*
- * A less common class of loads, which have all the side effects of Load, but
- * also write register 15:12 + 1.
+ * Two-register immediate-offset load, which also writes Rt+1.
  */
-class LoadDouble : public Load {
+class LoadDoubleI : public LoadImmediate {
  public:
-  virtual ~LoadDouble() {}
+  virtual ~LoadDoubleI() {}
+
+  virtual RegisterList defs(Instruction i) const;
+};
+
+/*
+ * Two-register register-offset load, which also writes Rt+1.
+ */
+class LoadDoubleR : public LoadRegister {
+ public:
+  virtual ~LoadDoubleR() {}
+
+  virtual RegisterList defs(Instruction i) const;
+};
+
+/*
+ * LDREX and friends, where writeback is unavailable.
+ */
+class LoadExclusive : public AbstractLoad {
+ public:
+  virtual ~LoadExclusive() {}
+};
+
+/*
+ * LDREXD, which also writes Rt+1.
+ */
+class LoadDoubleExclusive : public LoadExclusive {
+ public:
+  virtual ~LoadDoubleExclusive() {}
 
   virtual RegisterList defs(Instruction i) const;
 };

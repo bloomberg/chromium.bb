@@ -15,12 +15,20 @@
 namespace nacl_arm_dec {
 
 
+/*
+ * Breakpoint
+ */
+
 bool Breakpoint::is_literal_pool_head(const Instruction i) const {
   return i.condition() == Instruction::AL
       && i.bits(19, 8) == 0x777
       && i.bits(3, 0) == 0x7;
 }
 
+
+/*
+ * Data processing and arithmetic
+ */
 
 SafetyLevel DataProc::safety(const Instruction i) const {
   if (defs(i)[kRegisterPc]) {
@@ -90,11 +98,19 @@ RegisterList SatAddSub::defs(const Instruction i) const {
 }
 
 
+/*
+ * MSR
+ */
+
 RegisterList MoveToStatusRegister::defs(const Instruction i) const {
   UNREFERENCED_PARAMETER(i);
   return kRegisterFlags;
 }
 
+
+/*
+ * Stores
+ */
 
 SafetyLevel StoreImmediate::safety(const Instruction i) const {
   // Don't let addressing writeback alter PC.
@@ -137,29 +153,62 @@ Register StoreExclusive::base_address_register(const Instruction i) const {
 }
 
 
-SafetyLevel Load::safety(const Instruction i) const {
+/*
+ * Loads
+ */
+
+bool AbstractLoad::writeback(const Instruction i) const {
+  // Algorithm defined in pseudocode in ARM instruction set spec
+  // Valid for LDR, LDR[BH], LDRD
+  // Not valid for LDREX and kin
+  bool p = i.bit(24);
+  bool w = i.bit(21);
+  return !p | w;
+}
+
+SafetyLevel AbstractLoad::safety(const Instruction i) const {
   if (defs(i)[kRegisterPc]) return FORBIDDEN_OPERANDS;
 
   return MAY_BE_SAFE;
 }
 
-RegisterList Load::defs(const Instruction i) const {
+RegisterList AbstractLoad::defs(const Instruction i) const {
   return i.reg(15, 12) + immediate_addressing_defs(i);
 }
 
-RegisterList Load::immediate_addressing_defs(const Instruction i) const {
-  bool p = i.bit(24);
-  bool w = i.bit(21);
-  if (!p) return i.reg(19, 16);
-  if (w) return i.reg(19, 16);
-  return kRegisterNone;
+
+RegisterList LoadRegister::defs(const Instruction i) const {
+  if (writeback(i)) {
+    Register rn(i.bits(19, 16));
+    return AbstractLoad::defs(i) + rn;
+  } else {
+    return AbstractLoad::defs(i);
+  }
 }
 
 
-RegisterList LoadDouble::defs(const Instruction i) const {
-  // For rN in bits 15:12, this writes both rN and rN + 1
-  return i.reg(15, 12) + Register(i.bits(15, 12) + 1)
-      + immediate_addressing_defs(i);
+RegisterList LoadImmediate::immediate_addressing_defs(const Instruction i)
+    const {
+  if (writeback(i)) {
+    Register rn(i.bits(19, 16));
+    return rn;
+  } else {
+    return kRegisterNone;
+  }
+}
+
+
+RegisterList LoadDoubleI::defs(const Instruction i) const {
+  return AbstractLoad::defs(i) + Register(i.bits(15, 12) + 1);
+}
+
+
+RegisterList LoadDoubleR::defs(const Instruction i) const {
+  return AbstractLoad::defs(i) + Register(i.bits(15, 12) + 1);
+}
+
+RegisterList LoadDoubleExclusive::defs(const Instruction i) const {
+  return LoadExclusive::defs(i) + Register(i.bits(15, 12) + 1);
 }
 
 
@@ -186,6 +235,10 @@ RegisterList LoadMultiple::immediate_addressing_defs(
   return i.bit(21)? i.reg(19, 16) : kRegisterNone;
 }
 
+
+/*
+ * Vector load/stores
+ */
 
 SafetyLevel VectorLoad::safety(Instruction i) const {
   if (defs(i)[kRegisterPc]) return FORBIDDEN_OPERANDS;
@@ -228,6 +281,10 @@ Register VectorStore::base_address_register(Instruction i) const {
 }
 
 
+/*
+ * Coprocessors
+ */
+
 SafetyLevel CoprocessorOp::safety(Instruction i) const {
   if (defs(i)[kRegisterPc]) return FORBIDDEN_OPERANDS;
   uint32_t cpid = i.bits(11, 8);
@@ -264,15 +321,6 @@ Register StoreCoprocessor::base_address_register(Instruction i) const {
 }
 
 
-RegisterList BxBlx::defs(const Instruction i) const {
-  return kRegisterPc + (i.bit(5)? kRegisterLink : kRegisterNone);
-}
-
-Register BxBlx::branch_target_register(const Instruction i) const {
-  return i.reg(3, 0);
-}
-
-
 RegisterList MoveFromCoprocessor::defs(Instruction i) const {
   Register rd = i.reg(15, 12);
   if (rd == kRegisterPc) {
@@ -285,6 +333,19 @@ RegisterList MoveFromCoprocessor::defs(Instruction i) const {
 
 RegisterList MoveDoubleFromCoprocessor::defs(Instruction i) const {
   return i.reg(15, 12) + i.reg(19, 16);
+}
+
+
+/*
+ * Control flow
+ */
+
+RegisterList BxBlx::defs(const Instruction i) const {
+  return kRegisterPc + (i.bit(5)? kRegisterLink : kRegisterNone);
+}
+
+Register BxBlx::branch_target_register(const Instruction i) const {
+  return i.reg(3, 0);
 }
 
 

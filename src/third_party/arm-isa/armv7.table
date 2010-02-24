@@ -130,38 +130,38 @@ op1(22:21) op(5)
 
 -- extra_load_store (See Section A5.2.8)
 op2(6:5) op1(24:20) Rn(19:16)
-01       xx0x0      -         =Forbidden  # STRH(register)
-"        xx0x1      -         =Load  # LDRH(register)
-"        xx1x0      -         =StoreImmediate  # STRH(immediate)
-"        xx1x1      ~1111     =Load  # LDRH(immediate)
-"        "          1111      =Load  # LDRH(literal)
-10       xx0x0      -         =LoadDouble(v5TE)  # LDRD(register)
-"        xx0x1      -         =Load  # LDRSB(register)
-"        xx1x0      ~1111     =LoadDouble(v5TE)  # LDRD(immediate)
-"        "          1111      =LoadDouble(v5TE)  # LDRD(literal)
-"        xx1x1      ~1111     =Load  # LDRSB(immediate)
-"        "          1111      =Load  # LDRSB(literal)
-11       xx0x0      -         =Forbidden  # STRD(register)
-"        xx0x1      -         =Load  # LDRSH(register)
-"        xx1x0      -         =StoreImmediate  # STRD(immediate)
-"        xx1x1      ~1111     =Load  # LDRSH(immediate)
-"        "          1111      =Load  # LDRSH(literal)
+01       xx0x0      -         =Forbidden          # STRH(register)
+"        xx0x1      -         =LoadRegister       # LDRH(register)
+"        xx1x0      -         =StoreImmediate     # STRH(immediate)
+"        xx1x1      ~1111     =LoadImmediate      # LDRH(immediate)
+"        "          1111      =LoadImmediate      # LDRH(literal)
+10       xx0x0      -         =LoadDoubleR(v5TE)  # LDRD(register)
+"        xx0x1      -         =LoadRegister       # LDRSB(register)
+"        xx1x0      ~1111     =LoadDoubleI(v5TE)  # LDRD(immediate)
+"        "          1111      =LoadDoubleI(v5TE)  # LDRD(literal)
+"        xx1x1      ~1111     =LoadImmediate      # LDRSB(immediate)
+"        "          1111      =LoadImmediate      # LDRSB(literal)
+11       xx0x0      -         =Forbidden          # STRD(register)
+"        xx0x1      -         =LoadRegister       # LDRSH(register)
+"        xx1x0      -         =StoreImmediate     # STRD(immediate)
+"        xx1x1      ~1111     =LoadImmediate      # LDRSH(immediate)
+"        "          1111      =LoadImmediate      # LDRSH(literal)
 
 # Unprivileged load-store table omitted: modeled as Forbidden.
 # They are not expected in user code.
 
 -- sync (See Section A5.2.10)
 op(23:20)
-0x00      =Deprecated      # SWP, SWPB  TODO(cbiffle): model these
-1000      =StoreExclusive(v6)  # STREX
-1001      =Load(v6)            # LDREX
-1010      =StoreExclusive(v6K)  # STREXD
-1011      =LoadDouble(v6K)      # LDREXD
-1100      =StoreExclusive(v6K)  # STREXB
-1101      =Load(v6K)            # LDREXB
-1110      =StoreExclusive(v6K)  # STREXH
-1111      =Load(v6K)            # LDREXH
--         =Undefined(v6K)       # Note on page A5-16
+0x00      =Deprecated      # SWP, SWPB  TODO(cbiffle): model these?
+1000      =StoreExclusive(v6)        # STREX
+1001      =LoadExclusive(v6)         # LDREX
+1010      =StoreExclusive(v6K)       # STREXD
+1011      =LoadDoubleExclusive(v6K)  # LDREXD
+1100      =StoreExclusive(v6K)       # STREXB
+1101      =LoadExclusive(v6K)        # LDREXB
+1110      =StoreExclusive(v6K)       # STREXH
+1111      =LoadExclusive(v6K)        # LDREXH
+-         =Undefined(v6K)            # Note on page A5-16
 
 -- msr_and_hints (See Section A5.2.11)
 op(22) op1(19:16) op2(7:0)
@@ -202,18 +202,18 @@ A(25) op1(24:20) B(4) Rn(19:16)
 1     xx0x0      0    -        =Forbidden       # STR(register)
 0     0x010      -    -        =Forbidden       # STRT
 1     0x010      0    -        "
-0     xx0x1      -    ~1111    =Load            # LDR(immediate)
-"     "          "    1111     =Load            # LDR(literal)
-1     xx0x1      0    -        =Load            # LDR(register)
+0     xx0x1      -    ~1111    =LoadImmediate   # LDR(immediate)
+"     "          "    1111     =LoadImmediate   # LDR(literal)
+1     xx0x1      0    -        =LoadRegister    # LDR(register)
 0     0x011      -    -        =Forbidden       # LDRT
 1     0x011      0    -        "
 0     xx1x0      -    -        =StoreImmediate  # STRB(immediate)
 1     xx1x0      0    -        =Forbidden       # STRB(register)
 0     0x110      -    -        =Forbidden       # STRBT
 1     0x110      0    -        "
-0     xx1x1      -    ~1111    =Load            # LDRB(immediate)
-"     "          "    1111     =Load            # LDRB(literal)
-1     xx1x1      0    -        =Load            # LDRB(register)
+0     xx1x1      -    ~1111    =LoadImmediate   # LDRB(immediate)
+"     "          "    1111     =LoadImmediate   # LDRB(literal)
+1     xx1x1      0    -        =LoadRegister    # LDRB(register)
 0     0x111      -    -        =Forbidden       # LDRBT
 1     0x111      0    -        "
 

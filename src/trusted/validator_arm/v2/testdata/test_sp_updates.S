@@ -43,3 +43,10 @@ bundle3:
 
 bundle4:
   bic sp, sp, #MASK         @ ...broken across bundle (ERROR).
+
+  .align 4
+bundle5:
+  ldr r0, [sp], r1        @ Attempt to update SP using register displacement,
+  nop                     @ without immediately masking afterwards: ERROR.
+  ldr r0, [sp], r1        @ Same SP update,
+  bic sp, sp, #0xC0000000 @ with mask, should pass.

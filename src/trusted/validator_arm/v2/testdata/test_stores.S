@@ -45,3 +45,6 @@ bundle3:
 bundle4:
   bic r2, r2, #0          @ Mask incorrectly and
   strex r0, r1, [r2]      @ use it in a store-exclusive, for an ERROR.
+  nop
+  nop
+

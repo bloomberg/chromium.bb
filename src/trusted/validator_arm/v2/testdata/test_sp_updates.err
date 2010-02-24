@@ -2,3 +2,4 @@ ncval: 70000078 6 kProblemUnsafeDataWrite 00000000
 ncval: 70000088 6 kProblemUnsafeDataWrite 00000000
 ncval: 7000008C 6 kProblemPatternCrossesBundle 00000000
 ncval: 7000009C 6 kProblemPatternCrossesBundle 00000000
+ncval: 700000B0 6 kProblemUnsafeDataWrite 00000000

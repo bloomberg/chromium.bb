@@ -61,21 +61,24 @@ xxxxxxxxx10xxxxxxxxxxxxxxxxxxxxx  =LongMultiply(v5TE)
 
 -- extra_load_store (See Section A5.2.8)
 pat0(31:0)                        pat1(31:0)                        
-xxxxxxxxxxxxxxxxxxxxxxxxxx1xxxxx  xxxxxxxxx1x0xxxxxxxxxxxxxxxxxxxx  =StoreImmediate
-xxxxxxxxxxxxxxxxxxxxxxxxx10xxxxx  xxxxxxxxxxx1xxxxxxxxxxxxxxxxxxxx  =Load
-xxxxxxxxxxxxxxxxxxxxxxxxxx1xxxxx  xxxxxxxxxxx1xxxxxxxxxxxxxxxxxxxx  =Load
-xxxxxxxxxxxxxxxxxxxxxxxxx10xxxxx  xxxxxxxxxxx0xxxxxxxxxxxxxxxxxxxx  =LoadDouble(v5TE)
 xxxxxxxxxxxxxxxxxxxxxxxxxx1xxxxx  xxxxxxxxx0x0xxxxxxxxxxxxxxxxxxxx  =Forbidden
+xxxxxxxxxxxxxxxxxxxxxxxxx10xxxxx  xxxxxxxxx0x1xxxxxxxxxxxxxxxxxxxx  =LoadRegister
+xxxxxxxxxxxxxxxxxxxxxxxxxx1xxxxx  xxxxxxxxx0x1xxxxxxxxxxxxxxxxxxxx  =LoadRegister
+xxxxxxxxxxxxxxxxxxxxxxxxx10xxxxx  xxxxxxxxx0x0xxxxxxxxxxxxxxxxxxxx  =LoadDoubleR(v5TE)
+xxxxxxxxxxxxxxxxxxxxxxxxxx1xxxxx  xxxxxxxxx1x0xxxxxxxxxxxxxxxxxxxx  =StoreImmediate
+xxxxxxxxxxxxxxxxxxxxxxxxx10xxxxx  xxxxxxxxx1x1xxxxxxxxxxxxxxxxxxxx  =LoadImmediate
+xxxxxxxxxxxxxxxxxxxxxxxxxx1xxxxx  xxxxxxxxx1x1xxxxxxxxxxxxxxxxxxxx  =LoadImmediate
+xxxxxxxxxxxxxxxxxxxxxxxxx10xxxxx  xxxxxxxxx1x0xxxxxxxxxxxxxxxxxxxx  =LoadDoubleI(v5TE)
 
 -- sync (See Section A5.2.10)
 pat0(31:0)                        
 xxxxxxxx0x00xxxxxxxxxxxxxxxxxxxx  =Deprecated
+xxxxxxxx11x1xxxxxxxxxxxxxxxxxxxx  =LoadExclusive(v6K)
+xxxxxxxx1011xxxxxxxxxxxxxxxxxxxx  =LoadDoubleExclusive(v6K)
 xxxxxxxx1100xxxxxxxxxxxxxxxxxxxx  =StoreExclusive(v6K)
 xxxxxxxx1x10xxxxxxxxxxxxxxxxxxxx  =StoreExclusive(v6K)
-xxxxxxxx1001xxxxxxxxxxxxxxxxxxxx  =Load(v6)
+xxxxxxxx1001xxxxxxxxxxxxxxxxxxxx  =LoadExclusive(v6)
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  =Undefined(v6K)
-xxxxxxxx11x1xxxxxxxxxxxxxxxxxxxx  =Load(v6K)
-xxxxxxxx1011xxxxxxxxxxxxxxxxxxxx  =LoadDouble(v6K)
 xxxxxxxx1000xxxxxxxxxxxxxxxxxxxx  =StoreExclusive(v6)
 
 -- msr_and_hints (See Section A5.2.11)
@@ -110,12 +113,12 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxx
 
 -- load_store_word_byte (See Section A5.3)
 pat0(31:0)                        pat1(31:0)                        pat2(31:0)                        
+xxxxxx1xxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxx1xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxx0xxxx  =LoadRegister
 xxxxxx0xxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxx0xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  =StoreImmediate
 xxxxxx1xxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxx0xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxx0xxxx  =Forbidden
 xxxxxx0xxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxx0xx1xxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  =Forbidden
 xxxxxx1xxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxx0xx1xxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxx0xxxx  =Forbidden
-xxxxxx1xxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxx1xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxx0xxxx  =Load
-xxxxxx0xxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxx1xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  =Load
+xxxxxx0xxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxx1xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  =LoadImmediate
 
 -- media (See Section A5.4)
 pat0(31:0)                        pat1(31:0)                        
