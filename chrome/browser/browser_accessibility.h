@@ -126,12 +126,13 @@ class ATL_NO_VTABLE BrowserAccessibility
   int routing_id() const { return routing_id_; }
 
  private:
-  // Creates an empty VARIANT. Used as the equivalent of a NULL (unused) input
-  // parameter.
-  VARIANT EmptyVariant() const {
-    VARIANT empty;
-    empty.vt = VT_EMPTY;
-    return empty;
+  // Creates a VARIANT that will reference the current accessibility
+  // object, not a child accessibility object.
+  VARIANT ChildSelfVariant() const {
+    VARIANT var;
+    V_VT(&var) = VT_I4;
+    V_I4(&var) = CHILDID_SELF;
+    return var;
   }
 
   // Wrapper functions, calling through to singleton instance of

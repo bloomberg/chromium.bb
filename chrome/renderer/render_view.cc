@@ -1285,8 +1285,8 @@ void RenderView::UpdateURL(WebFrame* frame) {
 
 #if defined(OS_WIN)
   if (accessibility_.get()) {
-    // Clear accessibility info cache.
-    accessibility_->clear();
+    // Remove accessibility info cache.
+    accessibility_.reset();
   }
 #else
   // TODO(port): accessibility not yet implemented. See http://crbug.com/8288.
@@ -3660,9 +3660,10 @@ void RenderView::OnGetAccessibilityInfo(
     accessibility_->initialize(webview());
   }
 
-  webkit_glue::WebAccessibility::GetAccObjInfo(accessibility_.get(),
-                                               in_params,
-                                               out_params);
+  out_params->return_code =
+      webkit_glue::WebAccessibility::GetAccObjInfo(accessibility_.get(),
+                                                  in_params,
+                                                  out_params);
 
 #else  // defined(OS_WIN)
   // TODO(port): accessibility not yet implemented

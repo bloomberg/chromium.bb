@@ -145,11 +145,9 @@ long ConvertState(const WebAccessibilityObject& o) {
   return state;
 }
 
-
-bool WebAccessibility::GetAccObjInfo(WebAccessibilityCache* cache,
+int32 WebAccessibility::GetAccObjInfo(WebAccessibilityCache* cache,
   const WebAccessibility::InParams& in_params,
   WebAccessibility::OutParams* out_params) {
-
   // Find object requested by |object_id|.
   WebAccessibilityObject active_acc_obj;
 
@@ -167,20 +165,20 @@ bool WebAccessibility::GetAccObjInfo(WebAccessibilityCache* cache,
 
     active_acc_obj = cache->getObjectById(in_params.object_id);
     if (active_acc_obj.isNull())
-      return false;
+      return RETURNCODE_FAIL;
 
     // child_id == 0 means self. Otherwise, it's a local child - 1.
     if (in_params.child_id > 0) {
       unsigned index = in_params.child_id - 1;
       if (index >= active_acc_obj.childCount())
-        return false;
+        return RETURNCODE_FAIL;
 
       active_acc_obj = active_acc_obj.childAt(index);
     }
   }
 
   if (active_acc_obj.isNull())
-    return false;
+    return RETURNCODE_FAIL;
 
   // Temp paramters for holding output information.
   WebAccessibilityObject out_acc_obj;
@@ -189,14 +187,14 @@ bool WebAccessibility::GetAccObjInfo(WebAccessibilityCache* cache,
   switch (in_params.function_id) {
     case WebAccessibility::FUNCTION_DODEFAULTACTION: {
       if (!active_acc_obj.performDefaultAction())
-        return false;
+        return RETURNCODE_FALSE;
       break;
     }
     case WebAccessibility::FUNCTION_HITTEST: {
       WebPoint point(in_params.input_long1, in_params.input_long2);
       out_acc_obj = active_acc_obj.hitTest(point);
       if (out_acc_obj.isNull())
-        return false;
+        return RETURNCODE_FALSE;
       break;
     }
     case WebAccessibility::FUNCTION_LOCATION: {
@@ -216,13 +214,13 @@ bool WebAccessibility::GetAccObjInfo(WebAccessibilityCache* cache,
         case WebAccessibility::DIRECTION_LEFT:
         case WebAccessibility::DIRECTION_RIGHT:
           // These directions are not implemented, matching Mozilla and IE.
-          return false;
+          return RETURNCODE_FALSE;
         case WebAccessibility::DIRECTION_LASTCHILD:
         case WebAccessibility::DIRECTION_FIRSTCHILD:
           // MSDN states that navigating to first/last child can only be from
           // self.
           if (!local_child)
-            return false;
+            return RETURNCODE_FALSE;
 
           if (dir == WebAccessibility::DIRECTION_FIRSTCHILD) {
             out_acc_obj = active_acc_obj.firstChild();
@@ -240,10 +238,12 @@ bool WebAccessibility::GetAccObjInfo(WebAccessibilityCache* cache,
           break;
         }
         default:
-          return false;
+          return RETURNCODE_FALSE;
       }
+
       if (out_acc_obj.isNull())
-        return false;
+        return RETURNCODE_FALSE;
+
       break;
     }
     case WebAccessibility::FUNCTION_GETCHILD: {
@@ -258,13 +258,13 @@ bool WebAccessibility::GetAccObjInfo(WebAccessibilityCache* cache,
     case WebAccessibility::FUNCTION_DEFAULTACTION: {
       out_string = active_acc_obj.actionVerb();
       if (out_string.empty())
-        return false;
+        return RETURNCODE_FALSE;
       break;
     }
     case WebAccessibility::FUNCTION_DESCRIPTION: {
       out_string = active_acc_obj.accessibilityDescription();
       if (out_string.empty())
-        return false;
+        return RETURNCODE_FALSE;
       // From the Mozilla MSAA implementation:
       // "Signal to screen readers that this description is speakable and is not
       // a formatted positional information description. Don't localize the
@@ -276,31 +276,31 @@ bool WebAccessibility::GetAccObjInfo(WebAccessibilityCache* cache,
     case WebAccessibility::FUNCTION_GETFOCUSEDCHILD: {
       out_acc_obj = active_acc_obj.focusedChild();
       if (out_acc_obj.isNull())
-        return false;
+        return RETURNCODE_FALSE;
       break;
     }
     case WebAccessibility::FUNCTION_HELPTEXT: {
       out_string = active_acc_obj.helpText();
       if (out_string.empty())
-        return false;
+        return RETURNCODE_FALSE;
       break;
     }
     case WebAccessibility::FUNCTION_KEYBOARDSHORTCUT: {
       out_string = active_acc_obj.keyboardShortcut();
       if (out_string.empty())
-        return false;
+        return RETURNCODE_FALSE;
       break;
     }
     case WebAccessibility::FUNCTION_NAME: {
       out_string = active_acc_obj.title();
       if (out_string.empty())
-        return false;
+        return RETURNCODE_FALSE;
       break;
     }
     case WebAccessibility::FUNCTION_GETPARENT: {
       out_acc_obj = active_acc_obj.parentObject();
       if (out_acc_obj.isNull())
-        return false;
+        return RETURNCODE_FALSE;
       break;
     }
     case WebAccessibility::FUNCTION_ROLE: {
@@ -314,12 +314,12 @@ bool WebAccessibility::GetAccObjInfo(WebAccessibilityCache* cache,
     case WebAccessibility::FUNCTION_VALUE: {
       out_string = active_acc_obj.stringValue();
       if (out_string.empty())
-        return false;
+        return RETURNCODE_FALSE;
       break;
     }
     default:
       // Non-supported function id.
-      return false;
+      return RETURNCODE_FAIL;
   }
 
   // Output and hashmap assignments, as appropriate.
@@ -327,14 +327,14 @@ bool WebAccessibility::GetAccObjInfo(WebAccessibilityCache* cache,
     out_params->output_string = out_string;
 
   if (out_acc_obj.isNull())
-    return true;
+    return RETURNCODE_TRUE;
 
   int id = cache->addOrGetId(out_acc_obj);
   out_params->object_id = id;
   out_params->output_long1 = -1;
 
-  // TODO(klink): Handle simple objects returned.
-  return true;
+  // TODO(ctguil): Handle simple objects returned.
+  return RETURNCODE_TRUE;
 }
 
 }  // namespace webkit_glue

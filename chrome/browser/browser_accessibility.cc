@@ -29,7 +29,7 @@ HRESULT BrowserAccessibility::Initialize(int iaccessible_id, int routing_id,
 HRESULT BrowserAccessibility::accDoDefaultAction(VARIANT var_id) {
   if (!instance_active()) {
     // Instance no longer active, fail gracefully.
-    // TODO(klink): Once we have MSAA events, change these fails to having
+    // TODO(ctguil): Once we have MSAA events, change these fails to having
     // BrowserAccessibilityManager firing the right event.
     return E_FAIL;
   }
@@ -42,7 +42,7 @@ HRESULT BrowserAccessibility::accDoDefaultAction(VARIANT var_id) {
     return E_FAIL;
   }
 
-  if (!response().return_code)
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE)
     return S_FALSE;
 
   return S_OK;
@@ -69,11 +69,11 @@ STDMETHODIMP BrowserAccessibility::accHitTest(LONG x_left, LONG y_top,
   ::ScreenToClient(parent_hwnd_, &p);
 
   if (!RequestAccessibilityInfo(WebAccessibility::FUNCTION_HITTEST,
-                                EmptyVariant(), p.x, p.y)) {
+                                ChildSelfVariant(), p.x, p.y)) {
     return E_FAIL;
   }
 
-  if (!response().return_code) {
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE) {
     // The point is outside of the object's boundaries.
     child->vt = VT_EMPTY;
     return S_FALSE;
@@ -156,7 +156,7 @@ STDMETHODIMP BrowserAccessibility::accNavigate(LONG nav_dir, VARIANT start,
     return E_FAIL;
   }
 
-  if (!response().return_code) {
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE) {
     // No screen element was found in the specified direction.
     end->vt = VT_EMPTY;
     return S_FALSE;
@@ -198,7 +198,8 @@ STDMETHODIMP BrowserAccessibility::get_accChild(VARIANT var_child,
     return E_FAIL;
   }
 
-  if (!response().return_code) {
+  // TODO(ctguil): Figure out when the return code would be false
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE) {
     // When at a leaf, children are handled by the parent object.
     *disp_child = NULL;
     return S_FALSE;
@@ -226,7 +227,7 @@ STDMETHODIMP BrowserAccessibility::get_accChildCount(LONG* child_count) {
     return E_INVALIDARG;
 
   if (!RequestAccessibilityInfo(WebAccessibility::FUNCTION_CHILDCOUNT,
-                                EmptyVariant(), NULL, NULL)) {
+                                ChildSelfVariant(), NULL, NULL)) {
     return E_FAIL;
   }
 
@@ -249,7 +250,7 @@ STDMETHODIMP BrowserAccessibility::get_accDefaultAction(VARIANT var_id,
     return E_FAIL;
   }
 
-  if (!response().return_code) {
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE) {
     // No string found.
     return S_FALSE;
   }
@@ -275,7 +276,7 @@ STDMETHODIMP BrowserAccessibility::get_accDescription(VARIANT var_id,
     return E_FAIL;
   }
 
-  if (!response().return_code) {
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE) {
     // No string found.
     return S_FALSE;
   }
@@ -296,11 +297,11 @@ STDMETHODIMP BrowserAccessibility::get_accFocus(VARIANT* focus_child) {
     return E_INVALIDARG;
 
   if (!RequestAccessibilityInfo(WebAccessibility::FUNCTION_GETFOCUSEDCHILD,
-                                EmptyVariant(), NULL, NULL)) {
+                                ChildSelfVariant(), NULL, NULL)) {
     return E_FAIL;
   }
 
-  if (!response().return_code) {
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE) {
     // The window that contains this object is not the active window.
     focus_child->vt = VT_EMPTY;
     return S_FALSE;
@@ -337,7 +338,8 @@ STDMETHODIMP BrowserAccessibility::get_accHelp(VARIANT var_id, BSTR* help) {
     return E_FAIL;
   }
 
-  if (!response().return_code || response().output_string.empty()) {
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE ||
+      response().output_string.empty()) {
     // No string found.
     return S_FALSE;
   }
@@ -363,7 +365,7 @@ STDMETHODIMP BrowserAccessibility::get_accKeyboardShortcut(VARIANT var_id,
     return E_FAIL;
   }
 
-  if (!response().return_code) {
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE) {
     // No string found.
     return S_FALSE;
   }
@@ -388,7 +390,7 @@ STDMETHODIMP BrowserAccessibility::get_accName(VARIANT var_id, BSTR* name) {
     return E_FAIL;
   }
 
-  if (!response().return_code) {
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE) {
     // No string found.
     return S_FALSE;
   }
@@ -425,11 +427,11 @@ STDMETHODIMP BrowserAccessibility::get_accParent(IDispatch** disp_parent) {
   }
 
   if (!RequestAccessibilityInfo(WebAccessibility::FUNCTION_GETPARENT,
-                                EmptyVariant(), NULL, NULL)) {
+                                ChildSelfVariant(), NULL, NULL)) {
     return E_FAIL;
   }
 
-  if (!response().return_code) {
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE) {
     // No parent exists for this object.
     return S_FALSE;
   }
@@ -499,7 +501,8 @@ STDMETHODIMP BrowserAccessibility::get_accValue(VARIANT var_id, BSTR* value) {
     return E_FAIL;
   }
 
-  if (!response().return_code || response().output_string.empty()) {
+  if (response().return_code == WebAccessibility::RETURNCODE_FALSE ||
+      response().output_string.empty()) {
     // No string found.
     return S_FALSE;
   }
@@ -540,17 +543,20 @@ STDMETHODIMP BrowserAccessibility::CreateInstance(REFIID iid,
 bool BrowserAccessibility::RequestAccessibilityInfo(int iaccessible_func_id,
                                                     VARIANT var_id, LONG input1,
                                                     LONG input2) {
+  DCHECK(V_VT(&var_id) == VT_I4);
+
   // Create and populate IPC message structure, for retrieval of accessibility
   // information from the renderer.
   WebAccessibility::InParams in_params;
   in_params.object_id = iaccessible_id_;
   in_params.function_id = iaccessible_func_id;
-  in_params.child_id = var_id.lVal;
+  in_params.child_id = V_I4(&var_id);
   in_params.input_long1 = input1;
   in_params.input_long2 = input2;
 
   return BrowserAccessibilityManager::GetInstance()->
-      RequestAccessibilityInfo(&in_params, routing_id_, process_id_);
+           RequestAccessibilityInfo(&in_params, routing_id_, process_id_) &&
+         response().return_code != WebAccessibility::RETURNCODE_FAIL;
 }
 
 const WebAccessibility::OutParams& BrowserAccessibility::response() {
