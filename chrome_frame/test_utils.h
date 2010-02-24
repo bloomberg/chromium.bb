@@ -15,7 +15,8 @@
 extern const wchar_t kChromeFrameDllName[];
 
 // Helper class used to register different chrome frame DLLs while running
-// tests. At construction, this registers the DLL found in the build path.
+// tests. The default constructor registers the DLL found in the build path.
+
 // At destruction, again registers the DLL found in the build path if another
 // DLL has since been registered. Triggers GTEST asserts on failure.
 //
@@ -24,6 +25,7 @@ extern const wchar_t kChromeFrameDllName[];
 class ScopedChromeFrameRegistrar {
  public:
   ScopedChromeFrameRegistrar();
+  ScopedChromeFrameRegistrar(const std::wstring& path);
   virtual ~ScopedChromeFrameRegistrar();
 
   void RegisterChromeFrameAtPath(const std::wstring& path);

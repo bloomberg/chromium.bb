@@ -25,10 +25,21 @@ const wchar_t kChromeFrameDllName[] = L"npchrome_frame.dll";
 FilePath ScopedChromeFrameRegistrar::GetChromeFrameBuildPath() {
   FilePath build_path;
   PathService::Get(chrome::DIR_APP, &build_path);
-  build_path = build_path.Append(L"servers").
-                          Append(kChromeFrameDllName);
-  file_util::PathExists(build_path);
-  return build_path;
+
+  FilePath dll_path = build_path.Append(L"servers").
+                                 Append(kChromeFrameDllName);
+
+  if (!file_util::PathExists(dll_path)) {
+    // Well, dang.. try looking in the current directory.
+    dll_path = build_path.Append(kChromeFrameDllName);
+  }
+
+  if (!file_util::PathExists(dll_path)) {
+    // No luck, return something empty.
+    dll_path = FilePath();
+  }
+
+  return dll_path;
 }
 
 void ScopedChromeFrameRegistrar::RegisterDefaults() {
@@ -62,6 +73,12 @@ void ScopedChromeFrameRegistrar::RegisterAtPath(
 }
 
 // Non-statics
+
+ScopedChromeFrameRegistrar::ScopedChromeFrameRegistrar(
+    const std::wstring& path) {
+  original_dll_path_ = path;
+  RegisterChromeFrameAtPath(original_dll_path_);
+}
 
 ScopedChromeFrameRegistrar::ScopedChromeFrameRegistrar() {
   original_dll_path_ = GetChromeFrameBuildPath().ToWStringHack();
