@@ -2952,3 +2952,7 @@ BUG36019 : fast/images/svg-as-tiled-background.html = IMAGE
 // Flaky tests
 BUG36603 WIN RELEASE : svg/text/text-text-05-t.svg = CRASH PASS
 BUG36603 WIN RELEASE : svg/text/text-text-06-t.svg = CRASH PASS
+
+// WebKit roll 55161 to 55193
+BUG36681 : java/argument-to-object-type.html = TEXT
+BUG36681 : java/array-return.html = TEXT
