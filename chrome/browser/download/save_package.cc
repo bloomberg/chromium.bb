@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -304,7 +304,8 @@ bool SavePackage::Init() {
 
   // Create the fake DownloadItem and display the view.
   download_ = new DownloadItem(1, saved_main_file_path_, 0, page_url_, GURL(),
-      "", FilePath(), Time::Now(), 0, -1, -1, false, false, false, false);
+      "", FilePath(), Time::Now(), 0, -1, -1, false, false,
+      profile->IsOffTheRecord(), false, false);
   download_->set_manager(tab_contents_->profile()->GetDownloadManager());
   tab_contents_->OnStartDownload(download_);
 

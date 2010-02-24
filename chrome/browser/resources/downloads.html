@@ -228,6 +228,11 @@ function Downloads() {
  * @param {Object} download A backend download object (see downloads_ui.cc)
  */
 Downloads.prototype.updated = function(download) {
+  // For now, simply don't display off the record downloads.
+  // http://crbug.com/36587
+  if (download.otr)
+    return;
+
   var id = download.id;
   if (!!this.downloads_[id]) {
     this.downloads_[id].update(download);

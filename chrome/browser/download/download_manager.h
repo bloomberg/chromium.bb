@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 //
@@ -121,6 +121,7 @@ class DownloadItem {
                int request_id,
                bool is_dangerous,
                bool save_as,
+               bool is_otr,
                bool is_extension_install,
                bool is_temporary);
 
@@ -222,6 +223,7 @@ class DownloadItem {
   FilePath original_name() const { return original_name_; }
   void set_original_name(const FilePath& name) { original_name_ = name; }
   bool save_as() const { return save_as_; }
+  bool is_otr() const { return is_otr_; }
   bool is_extension_install() const { return is_extension_install_; }
   bool name_finalized() const { return name_finalized_; }
   void set_name_finalized(bool name_finalized) {
@@ -314,6 +316,9 @@ class DownloadItem {
   // True if the item was downloaded as a result of 'save as...'
   bool save_as_;
 
+  // True if the download was initiated in an incognito window.
+  bool is_otr_;
+
   // True if the item was downloaded for an extension installation.
   bool is_extension_install_;
 
@@ -353,17 +358,28 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
     // own the individual DownloadItems, when this call is made.
     virtual void SetDownloads(std::vector<DownloadItem*>& downloads) = 0;
 
+    // Called when the DownloadManager is being destroyed to prevent Observers
+    // from calling back to a stale pointer.
+    virtual void ManagerGoingDown() {}
+
    protected:
     virtual ~Observer() {}
   };
 
   // Public API
 
+  // If this download manager has an incognito profile, find all incognito
+  // downloads and pass them along to the parent profile's download manager
+  // via DoGetDownloads. Otherwise, just call DoGetDownloads().
+  void GetDownloads(Observer* observer,
+                    const std::wstring& search_text);
+
   // Begin a search for all downloads matching 'search_text'. If 'search_text'
   // is empty, return all known downloads. The results are returned in the
   // 'SetDownloads' observer callback.
-  void GetDownloads(Observer* observer,
-                    const std::wstring& search_text);
+  void DoGetDownloads(Observer* observer,
+                      const std::wstring& search_text,
+                      std::vector<DownloadItem*>& otr_downloads);
 
   // Return all temporary downloads that reside in the specified directory.
   void GetTemporaryDownloads(Observer* observer,
@@ -509,7 +525,6 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
                                FilePath* generated_name);
 
  private:
-
   class FakeDbHandleGenerator {
    public:
     explicit FakeDbHandleGenerator(int64 start_value) : value_(start_value) {}
@@ -519,7 +534,30 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
     int64 value_;
   };
 
+  // This class is used to let an incognito DownloadManager observe changes to
+  // a normal DownloadManager, to propagate ModelChanged() calls from the parent
+  // DownloadManager to the observers of the incognito DownloadManager.
+  class OtherDownloadManagerObserver : public Observer {
+   public:
+    explicit OtherDownloadManagerObserver(
+        DownloadManager* observing_download_manager);
+    virtual ~OtherDownloadManagerObserver();
+
+    // Observer interface.
+    virtual void ModelChanged();
+    virtual void SetDownloads(std::vector<DownloadItem*>& downloads);
+    virtual void ManagerGoingDown();
+
+   private:
+    // The incognito download manager.
+    DownloadManager* observing_download_manager_;
+
+    // The original profile's download manager.
+    DownloadManager* observed_download_manager_;
+  };
+
   friend class base::RefCountedThreadSafe<DownloadManager>;
+  friend class OtherDownloadManagerObserver;
 
   ~DownloadManager();
 
@@ -608,6 +646,9 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   // the change to the history system.
   void RenameDownload(DownloadItem* download, const FilePath& new_path);
 
+  // Inform observers that the model has changed.
+  void NotifyModelChanged();
+
   // 'downloads_' is map of all downloads in this profile. The key is the handle
   // returned by the history system, which is unique across sessions. This map
   // owns all the DownloadItems once they have been created in the history
@@ -688,6 +729,8 @@ class DownloadManager : public base::RefCountedThreadSafe<DownloadManager>,
   // Downloads are expected to have unique handles, so FakeDbHandleGenerator
   // automatically decrement the handle value on every use.
   FakeDbHandleGenerator fake_db_handle_;
+
+  scoped_ptr<OtherDownloadManagerObserver> other_download_manager_observer_;
 
   DISALLOW_COPY_AND_ASSIGN(DownloadManager);
 };

@@ -319,6 +319,7 @@ DictionaryValue* CreateDownloadItemValue(DownloadItem* download, int id) {
     l10n_util::WrapStringWithLTRFormatting(&file_name);
   file_value->SetString(L"file_name", file_name);
   file_value->SetString(L"url", download->url().spec());
+  file_value->SetBoolean(L"otr", download->is_otr());
 
   if (download->state() == DownloadItem::IN_PROGRESS) {
     if (download->safety_state() == DownloadItem::DANGEROUS) {

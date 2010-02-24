@@ -116,6 +116,11 @@ static bool DownloadPathIsDangerous(const FilePath& download_path) {
   return (download_path == desktop_dir);
 }
 
+// Used to sort download items based on descending start time.
+bool CompareStartTime(DownloadItem* first, DownloadItem* second) {
+  return first->start_time() > second->start_time();
+}
+
 }  // namespace
 
 // DownloadItem implementation -------------------------------------------------
@@ -142,6 +147,7 @@ DownloadItem::DownloadItem(const DownloadCreateInfo& info)
       render_process_id_(-1),
       request_id_(-1),
       save_as_(false),
+      is_otr_(false),
       is_extension_install_(info.is_extension_install),
       name_finalized_(false),
       is_temporary_(false) {
@@ -164,6 +170,7 @@ DownloadItem::DownloadItem(int32 download_id,
                            int request_id,
                            bool is_dangerous,
                            bool save_as,
+                           bool is_otr,
                            bool is_extension_install,
                            bool is_temporary)
     : id_(download_id),
@@ -187,6 +194,7 @@ DownloadItem::DownloadItem(int32 download_id,
       render_process_id_(render_process_id),
       request_id_(request_id),
       save_as_(save_as),
+      is_otr_(is_otr),
       is_extension_install_(is_extension_install),
       name_finalized_(false),
       is_temporary_(is_temporary) {
@@ -377,6 +385,8 @@ DownloadManager::DownloadManager()
 }
 
 DownloadManager::~DownloadManager() {
+  FOR_EACH_OBSERVER(Observer, observers_, ManagerGoingDown());
+
   if (shutdown_needed_)
     Shutdown();
 }
@@ -453,17 +463,41 @@ void DownloadManager::Shutdown() {
 // is empty, return all downloads that we know about.
 void DownloadManager::GetDownloads(Observer* observer,
                                    const std::wstring& search_text) {
+  std::vector<DownloadItem*> otr_downloads;
+
+  if (profile_->IsOffTheRecord() && search_text.empty()) {
+    // List all incognito downloads and add that to the downloads the parent
+    // profile lists.
+    otr_downloads.reserve(downloads_.size());
+    for (DownloadMap::iterator it = downloads_.begin();
+         it != downloads_.end(); ++it) {
+      DownloadItem* download = it->second;
+      if (download->is_otr() && !download->is_extension_install() &&
+          !download->is_temporary()) {
+        otr_downloads.push_back(download);
+      }
+    }
+  }
+
+  profile_->GetOriginalProfile()->GetDownloadManager()->
+    DoGetDownloads(observer, search_text, otr_downloads);
+}
+
+void DownloadManager::DoGetDownloads(
+    Observer* observer,
+    const std::wstring& search_text,
+    std::vector<DownloadItem*>& otr_downloads) {
   DCHECK(observer);
 
   // Return a empty list if we've not yet received the set of downloads from the
   // history system (we'll update all observers once we get that list in
   // OnQueryDownloadEntriesComplete), or if there are no downloads at all.
-  std::vector<DownloadItem*> download_copy;
   if (downloads_.empty()) {
-    observer->SetDownloads(download_copy);
+    observer->SetDownloads(otr_downloads);
     return;
   }
 
+  std::vector<DownloadItem*> download_copy;
   // We already know all the downloads and there is no filter, so just return a
   // copy to the observer.
   if (search_text.empty()) {
@@ -474,10 +508,19 @@ void DownloadManager::GetDownloads(Observer* observer,
         download_copy.push_back(it->second);
     }
 
+    // Merge sort based on start time.
+    std::vector<DownloadItem*> merged_downloads;
+    std::merge(otr_downloads.begin(), otr_downloads.end(),
+               download_copy.begin(), download_copy.end(),
+               std::back_inserter(merged_downloads),
+               CompareStartTime);
+
     // We retain ownership of the DownloadItems.
-    observer->SetDownloads(download_copy);
+    observer->SetDownloads(merged_downloads);
     return;
   }
+
+  DCHECK(otr_downloads.empty());
 
   // Issue a request to the history service for a list of downloads matching
   // our search text.
@@ -557,6 +600,9 @@ bool DownloadManager::Init(Profile* profile) {
         FilePath::FromWStringHack(extensions[i])))
       auto_open_.insert(FilePath::FromWStringHack(extensions[i]).value());
   }
+
+  other_download_manager_observer_.reset(
+      new OtherDownloadManagerObserver(this));
 
   return true;
 }
@@ -747,6 +793,7 @@ void DownloadManager::ContinueStartDownload(DownloadCreateInfo* info,
                                 info->request_id,
                                 info->is_dangerous,
                                 info->save_as,
+                                profile_->IsOffTheRecord(),
                                 info->is_extension_install,
                                 !info->save_info.file_path.empty());
     download->set_manager(this);
@@ -781,7 +828,7 @@ void DownloadManager::ContinueStartDownload(DownloadCreateInfo* info,
   // handles, so we use a negative value. Eventually, they could overlap, but
   // you'd have to do enough downloading that your ISP would likely stab you in
   // the neck first. YMMV.
-  if (profile_->IsOffTheRecord() || download->is_extension_install() ||
+  if (download->is_otr() || download->is_extension_install() ||
       download->is_temporary()) {
     OnCreateDownloadEntryComplete(*info, fake_db_handle_.GetNext());
   } else {
@@ -1144,7 +1191,7 @@ void DownloadManager::RemoveDownload(int64 download_handle) {
     dangerous_finished_.erase(it);
 
   // Tell observers to refresh their views.
-  FOR_EACH_OBSERVER(Observer, observers_, ModelChanged());
+  NotifyModelChanged();
 
   delete download;
 }
@@ -1171,6 +1218,7 @@ int DownloadManager::RemoveDownloadsBetween(const base::Time remove_begin,
         dangerous_finished_.erase(dit);
 
       pending_deletes.push_back(download);
+    // Observer interface.
 
       continue;
     }
@@ -1181,7 +1229,7 @@ int DownloadManager::RemoveDownloadsBetween(const base::Time remove_begin,
   // Tell observers to refresh their views.
   int num_deleted = static_cast<int>(pending_deletes.size());
   if (num_deleted > 0)
-    FOR_EACH_OBSERVER(Observer, observers_, ModelChanged());
+    NotifyModelChanged();
 
   // Delete the download items after updating the observers.
   STLDeleteContainerPointers(pending_deletes.begin(), pending_deletes.end());
@@ -1638,7 +1686,7 @@ void DownloadManager::OnQueryDownloadEntriesComplete(
     downloads_[download->db_handle()] = download;
     download->set_manager(this);
   }
-  FOR_EACH_OBSERVER(Observer, observers_, ModelChanged());
+  NotifyModelChanged();
 }
 
 // Once the new DownloadItem's creation info has been committed to the history
@@ -1670,7 +1718,7 @@ void DownloadManager::OnCreateDownloadEntryComplete(DownloadCreateInfo info,
   ShowDownloadInBrowser(info, download);
 
   // Inform interested objects about the new download.
-  FOR_EACH_OBSERVER(Observer, observers_, ModelChanged());
+  NotifyModelChanged();
 
   // If this download has been completed before we've received the db handle,
   // post one final message to the history service so that it can be properly
@@ -1729,4 +1777,41 @@ void DownloadManager::ShowDownloadInBrowser(const DownloadCreateInfo& info,
 // Clears the last download path, used to initialize "save as" dialogs.
 void DownloadManager::ClearLastDownloadPath() {
   last_download_path_ = FilePath();
+}
+
+void DownloadManager::NotifyModelChanged() {
+  FOR_EACH_OBSERVER(Observer, observers_, ModelChanged());
+}
+
+// DownloadManager::OtherDownloadManagerObserver implementation ----------------
+
+DownloadManager::OtherDownloadManagerObserver::OtherDownloadManagerObserver(
+    DownloadManager* observing_download_manager)
+    : observing_download_manager_(observing_download_manager),
+      observed_download_manager_(NULL) {
+  if (observing_download_manager->profile_->GetOriginalProfile() ==
+      observing_download_manager->profile_) {
+    return;
+  }
+
+  observed_download_manager_ = observing_download_manager_->
+      profile_->GetOriginalProfile()->GetDownloadManager();
+  observed_download_manager_->AddObserver(this);
+}
+
+DownloadManager::OtherDownloadManagerObserver::~OtherDownloadManagerObserver() {
+  if (observed_download_manager_)
+    observed_download_manager_->RemoveObserver(this);
+}
+
+void DownloadManager::OtherDownloadManagerObserver::ModelChanged() {
+  observing_download_manager_->NotifyModelChanged();
+}
+
+void DownloadManager::OtherDownloadManagerObserver::SetDownloads(
+    std::vector<DownloadItem*>& downloads) {
+}
+
+void DownloadManager::OtherDownloadManagerObserver::ManagerGoingDown() {
+  observed_download_manager_ = NULL;
 }
