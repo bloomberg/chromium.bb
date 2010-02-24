@@ -2955,3 +2955,4 @@ BUG36019 : fast/images/svg-as-tiled-background.html = IMAGE
 
 // Flaky tests
 BUG36603 WIN RELEASE : svg/text/text-text-05-t.svg = CRASH PASS
+BUG36603 WIN RELEASE : svg/text/text-text-06-t.svg = CRASH PASS
