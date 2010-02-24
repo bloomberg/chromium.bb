@@ -10,6 +10,7 @@
 #include "base/scoped_cftyperef.h"
 #include "base/scoped_nsobject.h"
 #include "base/string_util.h"
+#include "base/sys_string_conversions.h"
 #include "chrome/browser/chrome_thread.h"
 #include "grit/generated_resources.h"
 #include "net/base/x509_certificate.h"
@@ -38,6 +39,9 @@ void SSLClientAuthHandler::DoSelectCertificate() {
   // Create and set up a system choose-identity panel.
   scoped_nsobject<SFChooseIdentityPanel> panel (
       [[SFChooseIdentityPanel alloc] init]);
+  NSString* domain = base::SysUTF8ToNSString(
+      "https://" + cert_request_info_->host_and_port);
+  [panel setDomain:domain];
   [panel setInformativeText:message];
   [panel setAlternateButtonTitle:l10n_util::GetNSString(IDS_CANCEL)];
   SecPolicyRef sslPolicy;
