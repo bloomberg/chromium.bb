@@ -2352,7 +2352,6 @@
    fun:_ZN2v88internal6Object23GetPropertyWithCallbackEPS1_S2_PNS0_6StringES2_
    obj:*
 }
-Suppression:
 {
    bug_36616
    Memcheck:Cond
