@@ -121,10 +121,21 @@ bool DownloadFile::Rename(const FilePath& new_path) {
   if (!file_util::RenameFileAndResetSecurityDescriptor(full_path_, new_path))
     return false;
 #elif defined(OS_POSIX)
-  // TODO(estade): Move() falls back to copying and deleting when a simple
-  // rename fails. Copying sucks for large downloads. crbug.com/8737
-  if (!file_util::Move(full_path_, new_path))
+  {
+    // Similarly, on Unix, we're moving a temp file created with permissions
+    // 600 to |new_path|. Here, we try to fix up the destination file with
+    // appropriate permissions.
+    struct stat st;
+    bool stat_succeeded = (stat(new_path.value().c_str(), &st) == 0);
+
+    // TODO(estade): Move() falls back to copying and deleting when a simple
+    // rename fails. Copying sucks for large downloads. crbug.com/8737
+    if (!file_util::Move(full_path_, new_path))
       return false;
+
+    if (stat_succeeded)
+      chmod(new_path.value().c_str(), st.st_mode);
+  }
 #endif
 
   full_path_ = new_path;
