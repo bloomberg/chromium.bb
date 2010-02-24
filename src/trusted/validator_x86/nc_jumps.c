@@ -301,6 +301,9 @@ static void AddRegisterJumpIndirect64(NcValidatorState* state,
   ExprNodeVector* nodes;
   ExprNode* node;
   jump_reg = GetNodeRegister(reg);
+  DEBUG(fprintf(stderr, "checking indirect jump: ");
+        PrintNcInstStateInstruction(stderr, inst);
+        fprintf(stderr, "jump_reg = %s\n", OperandKindName(jump_reg)));
 
   /* Do the following block exactly once. Use loop so that "break" can
    * be used for premature exit of block.
@@ -309,32 +312,44 @@ static void AddRegisterJumpIndirect64(NcValidatorState* state,
     /* Check and in 3 instruction sequence. */
     if (!NcInstIterHasLookbackState(iter, 2)) break;
     and_inst = NcInstIterGetLookbackState(iter, 2);
+    DEBUG(fprintf(stderr, "and?: ");
+          PrintNcInstStateInstruction(stderr, and_inst));
     and_opcode = NcInstStateOpcode(and_inst);
     if (0x83 != and_opcode->opcode[0] || InstAnd != and_opcode->name) break;
+    DEBUG(fprintf(stderr, "and instruction\n"));
 
     /* Extract the values of the two operands for the and. */
     if (!ExtractBinaryOperandIndices(and_inst, &op_1, &op_2)) break;
+    DEBUG(fprintf(stderr, "binary and\n"));
 
     /* Extract the destination register of the and. */
     nodes = NcInstStateNodeVector(and_inst);
     node = &nodes->node[op_1];
     if (ExprRegister != node->kind) break;
     and_reg = GetNodeRegister(node);
+    DEBUG(fprintf(stderr, "and_reg = %s\n", OperandKindName(and_reg)));
     and_64_reg = NcGet64For32BitRegister(and_reg);
+    DEBUG(fprintf(stderr, "and_64_reg = %s\n", OperandKindName(and_64_reg)));
     if (RegUnknown == and_64_reg) break;
+    DEBUG(fprintf(stderr, "registers match!\n"));
 
     /* Check that the mask is ok. */
     mask = NcGetJumpMask(state);
+    DEBUG(fprintf(stderr, "mask = %"PRIx8"\n", mask));
     assert(0 != mask);  /* alignment must be either 16 or 32. */
     node = &nodes->node[op_2];
     if (ExprConstant != node->kind || mask != node->value) break;
+    DEBUG(fprintf(stderr, "is mask constant\n"));
 
     /* Check middle (i.e. lea/add) instruction in 3 instruction sequence. */
     middle_inst = NcInstIterGetLookbackState(iter, 1);
+    DEBUG(fprintf(stderr, "middle inst: ");
+          PrintNcInstStateInstruction(stderr, middle_inst));
     middle_opcode = NcInstStateOpcode(middle_inst);
 
     /* Extract the values of the two operands for the lea/add instruction. */
     if (!ExtractBinaryOperandIndices(middle_inst, &op_1, &op_2)) break;
+    DEBUG(fprintf(stderr, "middle is binary, op_1 index = %d\n", op_1));
 
     /* Extract the destination register of the lea/and, and verify that
      * it is a register.
@@ -345,6 +360,7 @@ static void AddRegisterJumpIndirect64(NcValidatorState* state,
 
     /* Compare the middle destination register to the jump register. */
     middle_reg = GetNodeRegister(node);
+    DEBUG(fprintf(stderr, "middle reg = %s\n", OperandKindName(middle_reg)));
     if (middle_reg != jump_reg) break;
 
     if (InstLea == middle_opcode->name) {
@@ -470,6 +486,8 @@ static void AddExprJumpTarget(NcValidatorState* state,
                               JumpSets* jump_sets) {
   uint32_t i;
   ExprNodeVector* vector = NcInstStateNodeVector(inst);
+  DEBUG(fprintf(stderr, "jump checking: ");
+        PrintNcInstStateInstruction(stderr, inst));
   for (i = 0; i < vector->number_expr_nodes; ++i) {
     if (vector->node[i].flags & ExprFlag(ExprJumpTarget)) {
       switch (vector->node[i].kind) {
