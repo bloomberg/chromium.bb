@@ -280,6 +280,7 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
   // of Fitts' Law.
   if (frame_->GetWindow()->IsMaximized())
     sysmenu_rect.SetRect(0, 0, sysmenu_rect.right(), sysmenu_rect.bottom());
+  sysmenu_rect.set_x(MirroredLeftPointForRect(sysmenu_rect));
   bool in_sysmenu = sysmenu_rect.Contains(point);
 
   int frame_component =
@@ -305,9 +306,6 @@ int OpaqueBrowserFrameView::NonClientHitTest(const gfx::Point& point) {
       minimize_button_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(
       point))
     return HTMINBUTTON;
-  if (window_icon_ &&
-      window_icon_->GetBounds(APPLY_MIRRORING_TRANSFORMATION).Contains(point))
-    return HTSYSMENU;
 
   int window_component = GetHTComponentForFrame(point, TopResizeHeight(),
       NonClientBorderThickness(), kResizeAreaCornerSize, kResizeAreaCornerSize,
