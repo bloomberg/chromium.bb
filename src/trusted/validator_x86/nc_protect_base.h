@@ -47,9 +47,9 @@ void NcBaseRegisterValidator(struct NcValidatorState* state,
                              struct NcInstIter* iter,
                              struct NcBaseRegisterLocals* locals);
 
-/* Validator summarization function. */
-void NcBaseRegisterSummarize(FILE* f,
-                             struct NcValidatorState* state,
+/* Post iteration validator summarization function. */
+void NcBaseRegisterSummarize(struct NcValidatorState* state,
+                             struct NcInstIter* iter,
                              struct NcBaseRegisterLocals* locals);
 
 

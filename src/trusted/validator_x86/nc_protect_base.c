@@ -344,8 +344,8 @@ void NcBaseRegisterValidator(struct NcValidatorState* state,
   MaybeReportPreviousBad(state, locals);
 }
 
-void NcBaseRegisterSummarize(FILE* f,
-                             struct NcValidatorState* state,
+void NcBaseRegisterSummarize(struct NcValidatorState* state,
+                             struct NcInstIter* iter,
                              struct NcBaseRegisterLocals* locals) {
   /* Check if problems in last instruction of segment. */
   MaybeReportPreviousBad(state, locals);

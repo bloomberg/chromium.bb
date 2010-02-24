@@ -95,30 +95,35 @@ int NcRunValidator(int argc, const char* argv[],
 
   NcRegisterNcValidator(
       (NcValidator) NcJumpValidator,
+      (NcValidatorPostValidate) NULL,
       (NcValidatorPrintStats) NcJumpValidatorSummarize,
       (NcValidatorMemoryCreate) NcJumpValidatorCreate,
       (NcValidatorMemoryDestroy) NcJumpValidatorDestroy);
 
   NcRegisterNcValidator(
       (NcValidator) NcCpuCheck,
+      (NcValidatorPostValidate) NULL,
       (NcValidatorPrintStats) NcCpuCheckSummary,
       (NcValidatorMemoryCreate) NcCpuCheckMemoryCreate,
       (NcValidatorMemoryDestroy) NcCpuCheckMemoryDestroy);
 
   NcRegisterNcValidator(
       (NcValidator) NcValidateInstructionLegal,
+      (NcValidatorPostValidate) NULL,
       (NcValidatorPrintStats) NULL,
       (NcValidatorMemoryCreate) NULL,
       (NcValidatorMemoryDestroy) NULL);
 
   NcRegisterNcValidator(
       (NcValidator) NcBaseRegisterValidator,
-      (NcValidatorPrintStats) NcBaseRegisterSummarize,
+      (NcValidatorPostValidate) NcBaseRegisterSummarize,
+      (NcValidatorPrintStats) NULL,
       (NcValidatorMemoryCreate) NcBaseRegisterMemoryCreate,
       (NcValidatorMemoryDestroy) NcBaseRegisterMemoryDestroy);
 
   NcRegisterNcValidator(
       (NcValidator) NcStoreValidator,
+      (NcValidatorPostValidate) NULL,
       (NcValidatorPrintStats) NULL,
       (NcValidatorMemoryCreate) NULL,
       (NcValidatorMemoryDestroy) NULL);
@@ -126,6 +131,7 @@ int NcRunValidator(int argc, const char* argv[],
   if (FLAGS_opcode_histogram) {
     NcRegisterNcValidator(
         (NcValidator) NcOpcodeHistogramRecord,
+        (NcValidatorPostValidate) NULL,
         (NcValidatorPrintStats) NcOpcodeHistogramPrintStats,
         (NcValidatorMemoryCreate) NcOpcodeHistogramMemoryCreate,
         (NcValidatorMemoryDestroy) NcOpcodeHistogramMemoryDestroy);

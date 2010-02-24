@@ -147,6 +147,11 @@ void NcValidatorInstMessage(int level,
 typedef struct ValidatorDefinition {
   /* The validator function to apply. */
   NcValidator validator;
+  /* The post iterator validator function to apply, after iterating
+   * through all instructions in a segment. If non-null, called to
+   * do corresponding post processing.
+   */
+  NcValidatorPostValidate post_validate;
   /* The corresponding statistic print function associated with the validator
    * function (may be NULL).
    */
@@ -168,6 +173,7 @@ static ValidatorDefinition validators[MAX_NCVALIDATORS];
 static int g_num_validators = 0;
 
 void NcRegisterNcValidator(NcValidator validator,
+                           NcValidatorPostValidate post_validate,
                            NcValidatorPrintStats print_stats,
                            NcValidatorMemoryCreate create_memory,
                            NcValidatorMemoryDestroy destroy_memory) {
@@ -180,6 +186,7 @@ void NcRegisterNcValidator(NcValidator validator,
   }
   defn = &validators[g_num_validators++];
   defn->validator = validator;
+  defn->post_validate = post_validate;
   defn->print_stats = print_stats;
   defn->create_memory = create_memory;
   defn->destroy_memory = destroy_memory;
@@ -250,6 +257,19 @@ static void ApplyValidators(NcValidatorState* state, NcInstIter* iter) {
   }
 }
 
+/* Given that we have just iterated through all instructions in a segment,
+ * apply post validators rules (before we collect the iterator).
+ */
+static void ApplyPostValidators(NcValidatorState* state, NcInstIter* iter) {
+  int i;
+  DEBUG(printf("applying post validators...\n"));
+  for (i = 0; i < state->number_validators; ++i) {
+    if (NULL != validators[i].post_validate) {
+      validators[i].post_validate(state, iter, state->local_memory[i]);
+    }
+  }
+}
+
 /* The maximum lookback for the instruction iterator of the segment. */
 static const size_t kLookbackSize = 4;
 
@@ -263,6 +283,7 @@ void NcValidateSegment(uint8_t* mbase, PcAddress vbase, MemorySize size,
        NcInstIterAdvance(iter)) {
     ApplyValidators(state, iter);
   }
+  ApplyPostValidators(state, iter);
   NcInstIterDestroy(iter);
 }
 
