@@ -31,12 +31,12 @@
       'ENABLE_XSLT=1',
       'ENABLE_XPATH=1',
       'ENABLE_SHARED_WORKERS=1',
-      'ENABLE_SVG=1',
-      'ENABLE_SVG_ANIMATION=1',
-      'ENABLE_SVG_AS_IMAGE=1',
-      'ENABLE_SVG_USE=1',
-      'ENABLE_SVG_FOREIGN_OBJECT=1',
-      'ENABLE_SVG_FONTS=1',
+      'ENABLE_SVG=<(enable_svg)',
+      'ENABLE_SVG_ANIMATION=<(enable_svg)',
+      'ENABLE_SVG_AS_IMAGE=<(enable_svg)',
+      'ENABLE_SVG_USE=<(enable_svg)',
+      'ENABLE_SVG_FOREIGN_OBJECT=<(enable_svg)',
+      'ENABLE_SVG_FONTS=<(enable_svg)',
       'ENABLE_VIDEO=1',
       'ENABLE_WEB_SOCKETS=1',
       'ENABLE_WORKERS=1',
@@ -44,9 +44,11 @@
     # We have to nest variables inside variables so that they can be overridden
     # through GYP_DEFINES.
     'variables': {
-      'use_accelerated_compositing%':0,
+      'use_accelerated_compositing%': 0,
+      'enable_svg%': 1,
     },
     'use_accelerated_compositing%': '<(use_accelerated_compositing)',
+    'enable_svg%': '<(enable_svg)',
     'conditions': [
       ['use_accelerated_compositing==1', {
         'feature_defines': ['WTF_USE_ACCELERATED_COMPOSITING=1'],
