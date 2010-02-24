@@ -2,7 +2,6 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include <limits>
 #include <new>
 #ifndef NACL_STANDALONE
@@ -24,6 +23,7 @@
 #if defined(NACL_LINUX)
 #include "native_client/src/trusted/desc/linux/nacl_desc_sysv_shm.h"
 #endif  // defined(NACL_LINUX)
+#include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
 #include "native_client/src/trusted/desc/nrd_xfer.h"
 #include "native_client/src/trusted/desc/nrd_xfer_effector.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
