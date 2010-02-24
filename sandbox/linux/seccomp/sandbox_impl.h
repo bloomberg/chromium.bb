@@ -112,6 +112,12 @@ class Sandbox {
   STATIC int sandbox_ipc(unsigned, int, int, int, void*, long)
                                           asm("playground$sandbox_ipc");
   #endif
+  STATIC int sandbox_lstat(const char* path, void* buf)
+                                          asm("playground$sandbox_lstat");
+  #if defined(__NR_lstat64)
+  STATIC int sandbox_lstat64(const char *path, void* b)
+                                          asm("playground$sandbox_lstat64");
+  #endif
   STATIC int sandbox_madvise(void*, size_t, int)
                                           asm("playground$sandbox_madvise");
   STATIC void *sandbox_mmap(void* start, size_t length, int prot, int flags,

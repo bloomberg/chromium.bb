@@ -73,6 +73,10 @@ const struct SyscallTable syscallTable[] __attribute__((
   [ __NR__llseek         ] = { UNRESTRICTED_SYSCALL,     0                   },
   #endif
   [ __NR_lseek           ] = { UNRESTRICTED_SYSCALL,     0                   },
+  [ __NR_lstat           ] = { (void*)&sandbox_lstat,    process_stat        },
+  #if defined(__NR_lstat64)
+  [ __NR_lstat64         ] = { (void*)&sandbox_lstat64,  process_stat        },
+  #endif
   [ __NR_madvise         ] = { (void*)&sandbox_madvise,  process_madvise     },
   #if defined(__NR_mmap2)
   [ __NR_mmap2           ] =
