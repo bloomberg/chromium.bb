@@ -105,12 +105,16 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   NaClLog(4, "data_end   = %08"PRIxPTR"\n", data_end);
   NaClLog(4, "max_vaddr  = %08"PRIxPTR"\n", max_vaddr);
 
+#if 0 == NACL_DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX
   nap->bundle_size = NaClElfImageGetBundleSize(image);
   if (nap->bundle_size == 0) {
     ret = LOAD_BAD_ABI;
     goto done;
   }
-
+#else
+  /* pick some reasonable default for an un-sandboxed nexe */
+  nap->bundle_size = 32;
+#endif
   nap->entry_pt = NaClElfImageGetEntryPoint(image);
 
   NaClLog(2,

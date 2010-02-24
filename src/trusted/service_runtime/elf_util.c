@@ -539,7 +539,9 @@ int NaClElfImageGetBundleSize(struct NaClElfImage *image) {
    case EF_NACL_ALIGN_32:
     return 32;
    default:
+#if 0 == NACL_DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX
     NaClLog(LOG_FATAL, "strange alignment");
+#endif
     return 0;
   }
 }
