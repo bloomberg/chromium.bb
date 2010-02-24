@@ -44,7 +44,8 @@ class GtkDndUtil {
 
   // Creates a target list from the given mask. The mask should be an OR of
   // CHROME_* values. The target list is returned with ref count 1; the caller
-  // is responsible for unreffing it when it is no longer needed.
+  // is responsible for calling gtk_target_list_unref() when it is no longer
+  // needed.
   // Since the MIME type for WEBDROP_FILE_CONTENTS depends on the file's
   // contents, that flag is ignored by this function. It is the responsibility
   // of the client code to do the right thing.

@@ -1048,6 +1048,8 @@
         'browser/gtk/download_in_progress_dialog_gtk.h',
         'browser/gtk/download_item_gtk.cc',
         'browser/gtk/download_item_gtk.h',
+        'browser/gtk/download_item_drag.cc',
+        'browser/gtk/download_item_drag.h',
         'browser/gtk/download_shelf_gtk.cc',
         'browser/gtk/download_shelf_gtk.h',
         'browser/gtk/download_started_animation_gtk.cc',

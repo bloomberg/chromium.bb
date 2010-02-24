@@ -34,10 +34,14 @@
 #include "views/drag_utils.h"
 #endif
 
-#if defined(TOOLKIT_VIEWS) && defined(OS_LINUX)
+#if defined(OS_LINUX)
+#if defined(TOOLKIT_VIEWS)
 #include "app/drag_drop_types.h"
 #include "views/widget/widget_gtk.h"
-#endif
+#elif defined(TOOLKIT_GTK)
+#include "chrome/browser/gtk/download_item_drag.h"
+#endif  // defined(TOOLKIT_GTK)
+#endif  // defined(OS_LINUX)
 
 #if defined(OS_WIN)
 #include "app/os_exchange_data_provider_win.h"
@@ -294,7 +298,7 @@ void DragDownload(const DownloadItem* download,
 void DragDownload(const DownloadItem* download,
                   SkBitmap* icon,
                   gfx::NativeView view) {
-  NOTIMPLEMENTED();
+  DownloadItemDrag::BeginDrag(download, icon);
 }
 #endif  // OS_LINUX
 
