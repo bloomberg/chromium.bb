@@ -3290,6 +3290,11 @@ void RenderView::OnFind(int request_id, const string16& search_text,
 
 // static
 std::string RenderView::DetermineTextLanguage(const std::wstring& text) {
+  // Text with less than 100 bytes will probably not provide good results.
+  // Report it as unknown language.
+  if (text.length() < 100)
+    return kUnknownLanguageCode;
+
   std::string language = kUnknownLanguageCode;
   int num_languages = 0;
   bool is_reliable = false;
@@ -3297,8 +3302,8 @@ std::string RenderView::DetermineTextLanguage(const std::wstring& text) {
   Language cld_language =
       DetectLanguageOfUnicodeText(NULL, input.c_str(), true, &is_reliable,
                                   &num_languages, NULL);
-  if (cld_language != NUM_LANGUAGES && cld_language != UNKNOWN_LANGUAGE &&
-      cld_language != TG_UNKNOWN_LANGUAGE) {
+  if (is_reliable && cld_language != NUM_LANGUAGES &&
+      cld_language != UNKNOWN_LANGUAGE && cld_language != TG_UNKNOWN_LANGUAGE) {
     // We should not use LanguageCode_ISO_639_1 because it does not cover all
     // the languages CLD can detect. As a result, it'll return the invalid
     // language code for tradtional Chinese among others.
