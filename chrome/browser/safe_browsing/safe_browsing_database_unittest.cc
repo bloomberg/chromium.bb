@@ -1192,7 +1192,7 @@ namespace {
 
 // Construct the shared base path used by the GetOld* functions.
 FilePath BasePath() {
-  return FilePath().AppendASCII("old");
+  return FilePath(FILE_PATH_LITERAL("old"));
 }
 
 FilePath GetOldSafeBrowsingPath() {
