@@ -719,13 +719,9 @@ void TranslateInfoBar::OnLanguageModified(views::MenuButton* menu_button,
   SchedulePaint();
   // Clear options menu model so that it'll be created with new language.
   options_menu_model_.reset();
-  // If necessary, update state and translate.
-  TranslateInfoBarDelegate::TranslateState state = GetDelegate()->state();
-  if (state != TranslateInfoBarDelegate::kTranslating) {
-    if (state == TranslateInfoBarDelegate::kBeforeTranslate)
-      UpdateState(TranslateInfoBarDelegate::kTranslating);
+  // If necessary, trigger translation.
+  if (GetDelegate()->state() == TranslateInfoBarDelegate::kAfterTranslate)
     GetDelegate()->Translate();
-  }
 }
 
 inline TranslateInfoBarDelegate* TranslateInfoBar::GetDelegate() const {
