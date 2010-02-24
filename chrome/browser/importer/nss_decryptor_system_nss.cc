@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/importer/nss_decryptor_linux.h"
+#include "chrome/browser/importer/nss_decryptor_system_nss.h"
 
 #include <pk11pub.h>
 #include <pk11sdr.h>

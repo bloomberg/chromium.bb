@@ -1297,10 +1297,10 @@
         'browser/importer/mork_reader.h',
         'browser/importer/nss_decryptor.cc',
         'browser/importer/nss_decryptor.h',
-        'browser/importer/nss_decryptor_linux.cc',
-        'browser/importer/nss_decryptor_linux.h',
         'browser/importer/nss_decryptor_mac.h',
         'browser/importer/nss_decryptor_mac.mm',
+        'browser/importer/nss_decryptor_system_nss.cc',
+        'browser/importer/nss_decryptor_system_nss.h',
         'browser/importer/nss_decryptor_win.cc',
         'browser/importer/nss_decryptor_win.h',
         'browser/importer/safari_importer.h',
@@ -2262,6 +2262,7 @@
         ['OS=="freebsd" or OS=="openbsd"', {
           'dependencies': [
             '../build/linux/system.gyp:gtk',
+            '../build/linux/system.gyp:gtkprint',
             '../build/linux/system.gyp:nss',
           ],
         }],
@@ -2271,6 +2272,8 @@
             'browser/bookmarks/bookmark_context_menu.cc',
             'browser/bookmarks/bookmark_drop_info.cc',
             'browser/dock_info.cc',
+            'browser/importer/nss_decryptor_system_nss.cc',
+            'browser/importer/nss_decryptor_system_nss.h',
             'browser/jankometer.cc',
             'browser/password_manager/password_store_gnome.h',
             'browser/password_manager/password_store_gnome.cc',
@@ -2436,6 +2439,8 @@
           'sources!': [
             'browser/browser_list_stub.cc',
             'browser/history/history_publisher_none.cc',
+            'browser/importer/nss_decryptor_system_nss.cc',
+            'browser/importer/nss_decryptor_system_nss.h',
             'browser/password_manager/password_store_gnome.h',
             'browser/password_manager/password_store_gnome.cc',
             'browser/password_manager/password_store_kwallet.h',

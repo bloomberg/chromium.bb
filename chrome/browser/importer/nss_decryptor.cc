@@ -8,10 +8,10 @@
 #include "build/build_config.h"
 #include "chrome/common/sqlite_utils.h"
 
-#if defined(OS_LINUX)
+#if defined(USE_NSS)
 #include <pk11pub.h>
 #include <pk11sdr.h>
-#endif  // defined(OS_LINUX)
+#endif  // defined(USE_NSS)
 
 #include "base/base64.h"
 #include "base/utf_string_conversions.h"
@@ -84,11 +84,11 @@ string16 NSSDecryptor::Decrypt(const std::string& crypt) const {
     SECItem reply;
     reply.data = NULL;
     reply.len = 0;
-#if defined(OS_LINUX)
+#if defined(USE_NSS)
     result = PK11SDR_DecryptWithSlot(slot, &request, &reply, NULL);
 #else
     result = PK11SDR_Decrypt(&request, &reply, NULL);
-#endif  // defined(OS_LINUX)
+#endif  // defined(USE_NSS)
     if (result == SECSuccess)
       plain.assign(reinterpret_cast<char*>(reply.data), reply.len);
 

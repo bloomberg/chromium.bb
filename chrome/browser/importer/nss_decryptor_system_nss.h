@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_BROWSER_IMPORTER_NSS_DECRYPTOR_LINUX_H_
-#define CHROME_BROWSER_IMPORTER_NSS_DECRYPTOR_LINUX_H_
+#ifndef CHROME_BROWSER_IMPORTER_NSS_DECRYPTOR_SYSTEM_NSS_H_
+#define CHROME_BROWSER_IMPORTER_NSS_DECRYPTOR_SYSTEM_NSS_H_
 
 #include <secmodt.h>
 #include <string>
@@ -56,4 +56,4 @@ class NSSDecryptor {
   DISALLOW_COPY_AND_ASSIGN(NSSDecryptor);
 };
 
-#endif  // CHROME_BROWSER_IMPORTER_NSS_DECRYPTOR_LINUX_H_
+#endif  // CHROME_BROWSER_IMPORTER_NSS_DECRYPTOR_SYSTEM_NSS_H_
