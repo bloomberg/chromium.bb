@@ -116,6 +116,9 @@
   [[addressViewController view] setFrameOrigin:NSMakePoint(0, 0)];
 
   [self notifyAddressChange:self];
+
+  // Recalculate key view loop to account for change in view tree.
+  [[self window] recalculateKeyViewLoop];
 }
 
 // Adds new credit card to bottom of list.  A new credit card controller is
@@ -146,6 +149,9 @@
   [childView_ addSubview:[creditCardViewController view]
       positioned:NSWindowBelow relativeTo:insertionPoint];
   [[creditCardViewController view] setFrameOrigin:NSMakePoint(0, 0)];
+
+  // Recalculate key view loop to account for change in view tree.
+  [[self window] recalculateKeyViewLoop];
 }
 
 - (IBAction)deleteAddress:(id)sender {
@@ -161,6 +167,9 @@
   [addressFormViewControllers_.get() removeObjectAtIndex:i];
 
   [self notifyAddressChange:self];
+
+  // Recalculate key view loop to account for change in view tree.
+  [[self window] recalculateKeyViewLoop];
 }
 
 - (IBAction)deleteCreditCard:(id)sender {
@@ -174,6 +183,9 @@
   // at this point.
   [[sender view] removeFromSuperview];
   [creditCardFormViewControllers_.get() removeObjectAtIndex:i];
+
+  // Recalculate key view loop to account for change in view tree.
+  [[self window] recalculateKeyViewLoop];
 }
 
 // Credit card controllers are dependent upon the address labels.  So we notify

@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/scoped_nsobject.h"
 #import "chrome/browser/autofill/autofill_address_view_controller_mac.h"
 #include "chrome/browser/autofill/autofill_profile.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
@@ -21,13 +22,12 @@ TEST_F(AutoFillAddressViewControllerTest, Basic) {
   // A basic test that creates a new instance and releases.
   // Aids valgrind leak detection.
   AutoFillProfile profile(ASCIIToUTF16("Home"), 0);
-  AutoFillAddressViewController* controller =
+  scoped_nsobject<AutoFillAddressViewController> controller(
       [[AutoFillAddressViewController alloc]
           initWithProfile:profile
                disclosure:NSOffState
-               controller:nil];
-  [controller release];
-  ASSERT_TRUE(true);
+               controller:nil]);
+  EXPECT_TRUE(controller.get());
 }
 
 }

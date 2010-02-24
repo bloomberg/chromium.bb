@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/scoped_nsobject.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/cocoa/disclosure_view_controller.h"
@@ -19,10 +20,10 @@ class DisclosureViewControllerTest : public CocoaTest {
 TEST_F(DisclosureViewControllerTest, Basic) {
   // A basic test that creates a new instance and releases.
   // Aids valgrind leak detection.
-  DisclosureViewController* controller = [[DisclosureViewController alloc]
-      initWithNibName:@"" bundle:nil disclosure:NSOnState];
-  [controller release];
-  ASSERT_TRUE(true);
+  scoped_nsobject<DisclosureViewController> controller(
+      [[DisclosureViewController alloc]
+      initWithNibName:@"" bundle:nil disclosure:NSOnState]);
+  EXPECT_TRUE(controller.get());
 }
 
 }

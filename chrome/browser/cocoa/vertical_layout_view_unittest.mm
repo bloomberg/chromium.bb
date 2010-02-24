@@ -2,6 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/scoped_nsobject.h"
 #include "chrome/browser/cocoa/browser_test_helper.h"
 #import "chrome/browser/cocoa/cocoa_test_helper.h"
 #import "chrome/browser/cocoa/vertical_layout_view.h"
@@ -19,10 +20,9 @@ class VerticalLayoutViewTest : public CocoaTest {
 TEST_F(VerticalLayoutViewTest, Basic) {
   // A basic test that creates a new instance and releases.
   // Aids valgrind leak detection.
-  VerticalLayoutView* view = [[VerticalLayoutView alloc]
-      initWithFrame:NSMakeRect(0, 0, 10, 10)];
-  [view release];
-  ASSERT_TRUE(true);
+  scoped_nsobject<VerticalLayoutView> view([[VerticalLayoutView alloc]
+      initWithFrame:NSMakeRect(0, 0, 10, 10)]);
+  EXPECT_TRUE(view.get());
 }
 
 }
