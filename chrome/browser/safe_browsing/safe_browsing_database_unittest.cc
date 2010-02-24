@@ -1038,14 +1038,14 @@ void PrintStat(const char* name) {
   LOG(INFO) << StringPrintf("%s %d", name, value);
 }
 
-FilePath GetFullSBDataPath(const std::wstring& path) {
+FilePath GetFullSBDataPath(const FilePath& path) {
   FilePath full_path;
   CHECK(PathService::Get(base::DIR_SOURCE_ROOT, &full_path));
   full_path = full_path.AppendASCII("chrome");
   full_path = full_path.AppendASCII("test");
   full_path = full_path.AppendASCII("data");
   full_path = full_path.AppendASCII("safe_browsing");
-  full_path = full_path.Append(FilePath::FromWStringHack(path));
+  full_path = full_path.Append(path);
   CHECK(file_util::PathExists(full_path));
   return full_path;
 }
@@ -1055,9 +1055,9 @@ struct ChunksInfo {
   std::string listname;
 };
 
-void PeformUpdate(const std::wstring& initial_db,
-                  const std::vector<ChunksInfo>& chunks,
-                  std::vector<SBChunkDelete>* deletes) {
+void PerformUpdate(const FilePath& initial_db,
+                   const std::vector<ChunksInfo>& chunks,
+                   std::vector<SBChunkDelete>* deletes) {
   IoCounters before, after;
 
   FilePath path;
@@ -1122,9 +1122,9 @@ void PeformUpdate(const std::wstring& initial_db,
   delete database;
 }
 
-void UpdateDatabase(const std::wstring& initial_db,
-                    const std::wstring& response_path,
-                    const std::wstring& updates_path) {
+void UpdateDatabase(const FilePath& initial_db,
+                    const FilePath& response_path,
+                    const FilePath& updates_path) {
   // First we read the chunks from disk, so that this isn't counted in IO bytes.
   std::vector<ChunksInfo> chunks;
 
@@ -1185,27 +1185,26 @@ void UpdateDatabase(const std::wstring& initial_db,
     }
   }
 
-  PeformUpdate(initial_db, chunks, deletes);
+  PerformUpdate(initial_db, chunks, deletes);
 }
 
 namespace {
 
-std::wstring GetOldSafeBrowsingPath() {
-  std::wstring path = L"old";
-  file_util::AppendToPath(&path, L"SafeBrowsing");
-  return path;
+// Construct the shared base path used by the GetOld* functions.
+FilePath BasePath() {
+  return FilePath().AppendASCII("old");
 }
 
-std::wstring GetOldResponsePath() {
-  std::wstring path = L"old";
-  file_util::AppendToPath(&path, L"response");
-  return path;
+FilePath GetOldSafeBrowsingPath() {
+  return BasePath().AppendASCII("SafeBrowsing");
 }
 
-std::wstring GetOldUpdatesPath() {
-  std::wstring path = L"old";
-  file_util::AppendToPath(&path, L"updates");
-  return path;
+FilePath GetOldResponsePath() {
+  return BasePath().AppendASCII("response");
+}
+
+FilePath GetOldUpdatesPath() {
+  return BasePath().AppendASCII("updates");
 }
 
 }  // namespace
@@ -1214,7 +1213,7 @@ std::wstring GetOldUpdatesPath() {
 // test\data\safe_browsing\download_update.py was used to fetch the add/sub
 // chunks that are read, in order to get repeatable runs.
 TEST(SafeBrowsingDatabase, DISABLED_DatabaseInitialIO) {
-  UpdateDatabase(L"", L"", L"initial");
+  UpdateDatabase(FilePath(), FilePath(), FilePath().AppendASCII("initial"));
 }
 
 // TODO(port): For now on Linux the test below would fail with error below:
@@ -1235,12 +1234,12 @@ TEST(SafeBrowsingDatabase, DISABLED_DatabaseOldIO) {
 //
 // Like DatabaseOldIO but only the deletes.
 TEST(SafeBrowsingDatabase, DISABLED_DatabaseOldDeletesIO) {
-  UpdateDatabase(GetOldSafeBrowsingPath(), GetOldResponsePath(), L"");
+  UpdateDatabase(GetOldSafeBrowsingPath(), GetOldResponsePath(), FilePath());
 }
 
 // Like DatabaseOldIO but only the updates.
 TEST(SafeBrowsingDatabase, DISABLED_DatabaseOldUpdatesIO) {
-  UpdateDatabase(GetOldSafeBrowsingPath(), L"", GetOldUpdatesPath());
+  UpdateDatabase(GetOldSafeBrowsingPath(), FilePath(), GetOldUpdatesPath());
 }
 
 // TODO(port): For now on Linux the test below would fail with error below:
@@ -1256,5 +1255,5 @@ TEST(SafeBrowsingDatabase, DISABLED_DatabaseOldLotsofDeletesIO) {
   del.list_name = safe_browsing_util::kMalwareList;
   del.chunk_del.push_back(ChunkRange(3539, 3579));
   deletes->push_back(del);
-  PeformUpdate(GetOldSafeBrowsingPath(), chunks, deletes);
+  PerformUpdate(GetOldSafeBrowsingPath(), chunks, deletes);
 }
