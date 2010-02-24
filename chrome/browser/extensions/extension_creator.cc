@@ -13,9 +13,9 @@
 #include "base/scoped_handle.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
-#include "chrome/browser/extensions/extension_file_util.h"
 #include "chrome/browser/extensions/sandboxed_extension_unpacker.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/zip.h"
 
 namespace {

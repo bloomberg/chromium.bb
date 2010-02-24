@@ -2,8 +2,8 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_HISTOGRAM_SYNCHRONIZER_H_
-#define CHROME_COMMON_HISTOGRAM_SYNCHRONIZER_H_
+#ifndef CHROME_BROWSER_METRICS_HISTOGRAM_SYNCHRONIZER_H_
+#define CHROME_BROWSER_METRICS_HISTOGRAM_SYNCHRONIZER_H_
 
 #include <string>
 #include <vector>
@@ -25,8 +25,6 @@ class HistogramSynchronizer : public
     ASYNC_HISTOGRAMS,
     SYNCHRONOUS_HISTOGRAMS
   };
-
-  static const int kReservedSequenceNumber = 0;
 
   HistogramSynchronizer();
 
@@ -144,4 +142,4 @@ class HistogramSynchronizer : public
   DISALLOW_COPY_AND_ASSIGN(HistogramSynchronizer);
 };
 
-#endif  // CHROME_COMMON_HISTOGRAM_SYNCHRONIZER_H_
+#endif  // CHROME_BROWSER_METRICS_HISTOGRAM_SYNCHRONIZER_H_

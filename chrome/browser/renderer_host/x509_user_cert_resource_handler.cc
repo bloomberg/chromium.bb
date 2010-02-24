@@ -10,6 +10,7 @@
 #include "chrome/browser/download/download_file.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
+#include "chrome/common/resource_response.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/cert_database.h"
 #include "net/base/io_buffer.h"

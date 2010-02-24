@@ -10,6 +10,7 @@
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/download/save_file_manager.h"
 #include "net/base/io_buffer.h"
+#include "net/url_request/url_request_status.h"
 
 SaveFileResourceHandler::SaveFileResourceHandler(int render_process_host_id,
                                                  int render_view_id,

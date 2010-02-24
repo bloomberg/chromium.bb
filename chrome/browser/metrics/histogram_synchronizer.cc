@@ -2,13 +2,14 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/histogram_synchronizer.h"
+#include "chrome/browser/metrics/histogram_synchronizer.h"
 
 #include "base/histogram.h"
 #include "base/logging.h"
 #include "base/thread.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/common/chrome_constants.h"
 #include "chrome/common/render_messages.h"
 
 using base::Time;
@@ -240,9 +241,13 @@ int HistogramSynchronizer::GetNextAvaibleSequenceNumber(
     RendererHistogramRequester requester) {
   AutoLock auto_lock(lock_);
   ++next_available_sequence_number_;
-  if (0 > next_available_sequence_number_)  // We wrapped around.
-    next_available_sequence_number_ = kReservedSequenceNumber + 1;
-  DCHECK(next_available_sequence_number_ != kReservedSequenceNumber);
+  if (0 > next_available_sequence_number_) {
+    // We wrapped around.
+    next_available_sequence_number_ =
+        chrome::kHistogramSynchronizerReservedSequenceNumber + 1;
+  }
+  DCHECK_NE(next_available_sequence_number_,
+            chrome::kHistogramSynchronizerReservedSequenceNumber);
   if (requester == ASYNC_HISTOGRAMS) {
     async_sequence_number_ = next_available_sequence_number_;
     async_renderers_pending_ = 0;

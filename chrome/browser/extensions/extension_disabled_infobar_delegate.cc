@@ -6,12 +6,12 @@
 
 #include "app/l10n_util.h"
 #include "chrome/browser/chrome_thread.h"
-#include "chrome/browser/extensions/extension_file_util.h"
 #include "chrome/browser/extensions/extension_install_ui.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/tab_contents/infobar_delegate.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/browser_list.h"
+#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"

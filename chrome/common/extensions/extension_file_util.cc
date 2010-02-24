@@ -2,15 +2,13 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/browser/extensions/extension_file_util.h"
+#include "chrome/common/extensions/extension_file_util.h"
 
 #include "app/l10n_util.h"
 #include "base/file_util.h"
 #include "base/logging.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string_util.h"
-#include "chrome/browser/browser_process.h"
-#include "chrome/browser/extensions/extension_prefs.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/extensions/extension_constants.h"

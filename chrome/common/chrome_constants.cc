@@ -129,6 +129,8 @@ const bool kRecordModeEnabled = true;
 const bool kRecordModeEnabled = false;
 #endif
 
+const int kHistogramSynchronizerReservedSequenceNumber = 0;
+
 }  // namespace chrome
 
 #undef FPL

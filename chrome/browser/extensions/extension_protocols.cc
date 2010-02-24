@@ -5,9 +5,9 @@
 #include "chrome/browser/extensions/extension_protocols.h"
 
 #include "base/string_util.h"
-#include "chrome/browser/extensions/extension_file_util.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/common/extensions/extension.h"
+#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/extensions/extension_resource.h"
 #include "chrome/common/url_constants.h"
 #include "googleurl/src/url_util.h"

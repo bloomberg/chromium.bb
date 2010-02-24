@@ -15,6 +15,7 @@
 #include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
 #include "chrome/browser/renderer_host/x509_user_cert_resource_handler.h"
 #include "chrome/common/extensions/user_script.h"
+#include "chrome/common/resource_response.h"
 #include "chrome/common/url_constants.h"
 #include "net/base/io_buffer.h"
 #include "net/base/mime_sniffer.h"

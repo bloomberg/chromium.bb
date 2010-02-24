@@ -4,7 +4,6 @@
 
 #include "base/message_loop.h"
 #include "base/thread.h"
-#include "chrome/browser/extensions/extension_file_util.h"
 #include "chrome/browser/extensions/extensions_service_unittest.h"
 #include "chrome/browser/extensions/user_script_listener.h"
 #include "chrome/browser/renderer_host/global_request_id.h"
@@ -12,6 +11,7 @@
 #include "chrome/browser/renderer_host/resource_handler.h"
 #include "chrome/browser/renderer_host/resource_queue.h"
 #include "chrome/common/chrome_paths.h"
+#include "chrome/common/extensions/extension_file_util.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "net/url_request/url_request.h"

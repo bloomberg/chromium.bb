@@ -77,6 +77,8 @@ extern const size_t kMaxURLChars;
 
 extern const bool kRecordModeEnabled;
 
+extern const int kHistogramSynchronizerReservedSequenceNumber;
+
 }  // namespace chrome
 
 #endif  // CHROME_COMMON_CHROME_CONSTANTS_H_

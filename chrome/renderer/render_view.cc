@@ -29,7 +29,6 @@
 #include "chrome/common/child_process_logging.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/chrome_constants.h"
-#include "chrome/common/histogram_synchronizer.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/jstemplate_builder.h"
 #include "chrome/common/page_zoom.h"
@@ -4261,7 +4260,7 @@ void RenderView::DumpLoadHistograms() const {
   // the next load.
   if (RenderThread::current()) {
     RenderThread::current()->SendHistograms(
-        HistogramSynchronizer::kReservedSequenceNumber);
+        chrome::kHistogramSynchronizerReservedSequenceNumber);
   }
 }
 

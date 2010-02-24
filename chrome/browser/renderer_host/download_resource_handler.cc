@@ -10,6 +10,7 @@
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/renderer_host/global_request_id.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
+#include "chrome/common/resource_response.h"
 #include "net/base/io_buffer.h"
 #include "net/url_request/url_request_context.h"
 
