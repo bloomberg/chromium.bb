@@ -113,6 +113,9 @@ CFTypeRef GetValueFromDictionary(CFDictionaryRef dict,
                                  CFStringRef key,
                                  CFTypeID expected_type);
 
+// Sets the process name as displayed in Activity Monitor to process_name.
+void SetProcessName(CFStringRef process_name);
+
 }  // namespace mac_util
 
 #endif  // BASE_MAC_UTIL_H_

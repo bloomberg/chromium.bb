@@ -27,6 +27,15 @@
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
 
+#if defined(OS_MACOSX)
+#include <CoreFoundation/CoreFoundation.h>
+#include "app/l10n_util.h"
+#include "base/mac_util.h"
+#include "base/scoped_cftyperef.h"
+#include "base/sys_string_conversions.h"
+#include "grit/chromium_strings.h"
+#endif
+
 static base::LazyInstance<base::ThreadLocalPointer<PluginThread> > lazy_tls(
     base::LINKER_INITIALIZED);
 
@@ -78,6 +87,17 @@ PluginThread::PluginThread()
   if (plugin.get()) {
     plugin->NP_Initialize();
   }
+
+#if defined(OS_MACOSX)
+  scoped_cftyperef<CFStringRef> plugin_name(base::SysWideToCFStringRef(
+      plugin->plugin_info().name));
+  scoped_cftyperef<CFStringRef> app_name(base::SysUTF16ToCFStringRef(
+      l10n_util::GetStringUTF16(IDS_SHORT_PLUGIN_APP_NAME)));
+  scoped_cftyperef<CFStringRef> process_name(CFStringCreateWithFormat(
+      kCFAllocatorDefault, NULL, CFSTR("%@ (%@)"),
+      plugin_name.get(), app_name.get()));
+  mac_util::SetProcessName(process_name);
+#endif
 
   // Certain plugins, such as flash, steal the unhandled exception filter
   // thus we never get crash reports when they fault. This call fixes it.

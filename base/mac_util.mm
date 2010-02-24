@@ -318,4 +318,71 @@ CFTypeRef GetValueFromDictionary(CFDictionaryRef dict,
   return value;
 }
 
+void SetProcessName(CFStringRef process_name) {
+  // Warning: here be dragons! This is SPI reverse-engineered from WebKit's
+  // plugin host, and could break at any time (although realistically it's only
+  // likely to break in a new major release).
+  // When 10.7 is available, check that this still works, and update this
+  // comment for 10.8.
+
+  // Private CFType used in these LaunchServices calls.
+  typedef CFTypeRef PrivateLSASN;
+  typedef PrivateLSASN (*LSGetCurrentApplicationASNType)();
+  typedef OSStatus (*LSSetApplicationInformationItemType)(int, PrivateLSASN,
+                                                          CFStringRef,
+                                                          CFStringRef,
+                                                          CFDictionaryRef*);
+
+  static LSGetCurrentApplicationASNType ls_get_current_application_asn_func =
+      NULL;
+  static LSSetApplicationInformationItemType
+      ls_set_application_information_item_func = NULL;
+  static CFStringRef ls_display_name_key = NULL;
+
+  static bool did_symbol_lookup = false;
+  if (!did_symbol_lookup) {
+    did_symbol_lookup = true;
+    CFBundleRef launch_services_bundle =
+        CFBundleGetBundleWithIdentifier(CFSTR("com.apple.LaunchServices"));
+    if (!launch_services_bundle) {
+      LOG(ERROR) << "Failed to look up LaunchServices bundle";
+      return;
+    }
+
+    ls_get_current_application_asn_func =
+        reinterpret_cast<LSGetCurrentApplicationASNType>(
+            CFBundleGetFunctionPointerForName(
+                launch_services_bundle, CFSTR("_LSGetCurrentApplicationASN")));
+    if (!ls_get_current_application_asn_func)
+      LOG(ERROR) << "Could not find _LSGetCurrentApplicationASN";
+
+    ls_set_application_information_item_func =
+        reinterpret_cast<LSSetApplicationInformationItemType>(
+            CFBundleGetFunctionPointerForName(
+                launch_services_bundle,
+                CFSTR("_LSSetApplicationInformationItem")));
+    if (!ls_set_application_information_item_func)
+      LOG(ERROR) << "Could not find _LSSetApplicationInformationItem";
+
+    const CFStringRef* key_pointer = reinterpret_cast<const CFStringRef*>(
+        CFBundleGetDataPointerForName(launch_services_bundle,
+                                      CFSTR("_kLSDisplayNameKey")));
+    ls_display_name_key = key_pointer ? *key_pointer : NULL;
+    if (!ls_display_name_key)
+      LOG(ERROR) << "Could not find _kLSDisplayNameKey";
+  }
+  if (!ls_get_current_application_asn_func ||
+      !ls_set_application_information_item_func ||
+      !ls_display_name_key) {
+    return;
+  }
+
+  PrivateLSASN asn = ls_get_current_application_asn_func();
+  // Constant used by WebKit; what exactly it means is unknown.
+  const int magic_session_constant = -2;
+  ls_set_application_information_item_func(magic_session_constant, asn,
+                                           ls_display_name_key, process_name,
+                                           NULL /* optional out param */);
+}
+
 }  // namespace mac_util

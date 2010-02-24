@@ -348,8 +348,9 @@ void CommonSubprocessInit() {
 // and resources loaded.
 bool SubprocessNeedsResourceBundle(const std::string& process_type) {
   return
-#if defined(OS_WIN)
+#if defined(OS_WIN) || defined(OS_MACOSX)
       // Windows needs resources for the default/null plugin.
+      // Mac needs them for the plugin process name.
       process_type == switches::kPluginProcess ||
 #endif
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
