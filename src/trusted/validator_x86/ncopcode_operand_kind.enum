@@ -47,14 +47,19 @@ Ev_Operand
 # operand. Intel's notation is r/m64.
 Eo_Operand
 
+# Models a 128-bit double-quadword register or memory
+# operand.
+Edq_Operand
+
 # Note: The instruction decoder may count on the fact that the G_Operand
 # values are contiguous, in the order specified.
 
-# Models a general purpose register operand.
-# Size is defined by the computed operand size.
+# Models a general purpose register or memory operand in the
+# Modrm Byte. Size is defined by the computed operand size.
 G_Operand
 
-# Models an 8-bit general purpose register operand.
+# Models an 8-bit general purpose register or memory operand in
+# in the Modrm byte.
 # Intel's notation is r8.
 Gb_Operand
 
@@ -69,6 +74,9 @@ Gv_Operand
 # Models a 64 bit general-purpose register operand.
 # Intel's notation is r64.
 Go_Operand
+
+# Models a 128-bit general purpose register or memory operand.
+Gdq_Operand
 
 # Models a G operand which is combined with ES to generate a segment address
 ES_G_Operand
@@ -169,8 +177,14 @@ Mmx_G_Operand
 # Like E_Operand, but uses XMM registers instead.
 Xmm_E_Operand
 
+# A 64-bit Xmm value, as defined by Xmm_E_Operand
+Xmm_Eo_Operand
+
 # Like G_Operand, but uses XMM registers instead.
 Xmm_G_Operand
+
+# A 64-bit Xmm value, as defined by Xmm_G_operand.
+Xmm_Go_Operand,
 
 # Note: The instruction decoder may count on the fact that the O_Operand
 # values are contiguous, in the order specified.
@@ -306,7 +320,7 @@ RegREDX
 RegREIP
 # Use EBP or RBP, based on 32/64 bit model.
 RegREBP
-# Use DS:(E)SI, like that specified in movsb, movsw, and movsd, and movsq instructions.
+# Use DS:(E)DI, like that specified in movsb, movsw, and movsd, and movsq instructions.
 RegDS_EDI
 # Use ES:(E)DI, like that specified in the insb, insw, and insd instructions.
 RegES_EDI

@@ -110,6 +110,7 @@ env.Requires(ncdecode_table, crt)
 ncdecode_tablegen = env_decode_table.ComponentProgram(
     'ncdecode_tablegen',
     ['ncdecode_tablegen.c',
+     'ncdecode_forms.c',
      'ncdecode_onebyte.c',
      'ncdecode_OF.c',
      'ncdecode_sse.c',

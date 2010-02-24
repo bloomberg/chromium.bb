@@ -2532,7 +2532,7 @@ ExprNodeVector[2] = {
     InstMovd,
     2, {
       { Mmx_G_Operand, OpFlag(OpSet) },
-      { E_Operand, OpFlag(OpUse) },
+      { Edq_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[8] = {
   { OperandReference[1] , 0, 0 },
@@ -2551,7 +2551,7 @@ ExprNodeVector[8] = {
     InstMovd,
     2, {
       { Mmx_G_Operand, OpFlag(OpSet) },
-      { E_Operand, OpFlag(OpUse) },
+      { Edq_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[8] = {
   { OperandReference[1] , 0, 0 },
@@ -2570,7 +2570,7 @@ ExprNodeVector[8] = {
     InstMovd,
     2, {
       { Xmm_G_Operand, OpFlag(OpSet) },
-      { Xmm_E_Operand, OpFlag(OpUse) },
+      { Edq_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[8] = {
   { OperandReference[1] , 0, 0 },
@@ -2588,7 +2588,7 @@ ExprNodeVector[8] = {
     InstFlag(OpcodeUsesModRm),
     InstMovd,
     2, {
-      { E_Operand, OpFlag(OpSet) },
+      { Edq_Operand, OpFlag(OpSet) },
       { Mmx_G_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[8] = {
@@ -2607,7 +2607,7 @@ ExprNodeVector[8] = {
     InstFlag(OpcodeUsesModRm),
     InstMovd,
     2, {
-      { E_Operand, OpFlag(OpSet) },
+      { Edq_Operand, OpFlag(OpSet) },
       { Mmx_G_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[8] = {
@@ -2764,7 +2764,7 @@ ExprNodeVector[4] = {
     InstMovd,
     2, {
       { Mmx_G_Operand, OpFlag(OpSet) },
-      { E_Operand, OpFlag(OpUse) },
+      { Edq_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[4] = {
   { OperandReference[1] , 0, 0 },
@@ -2835,7 +2835,7 @@ ExprNodeVector[8] = {
     InstFlag(OpcodeUsesModRm),
     InstMovntq,
     2, {
-      { M_Operand, OpFlag(OpSet) },
+      { Mo_Operand, OpFlag(OpSet) },
       { Mmx_G_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[8] = {
@@ -3486,4 +3486,74 @@ ExprNodeVector[8] = {
   { ExprConstant[0] , 0, ExprSize8 },
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %esp, ExprUsed | ExprSize32 },
+};
+0000000000000000: 66 0f 78 c1 02 04                            extrq %xmm0, 0x2, 0x4
+  { 2, { 0x0f, 0x78, 0x00 },
+    NACLi_SSE4A,
+    InstFlag(OpcodeInModRm) | InstFlag(OpcodeHasImmed_b) | InstFlag(OpcodeHasImmed2_b),
+    InstExtrq,
+    4, {
+      { Opcode0, OpFlag(OperandExtendsOpcode) },
+      { Xmm_G_Operand, OpFlag(OpUse) | OpFlag(OpSet) | OpFlag(AllowGOperandWithOpcodeInModRm) },
+      { I_Operand, OpFlag(OpUse) },
+      { I2_Operand, OpFlag(OpUse) },
+  } };
+ExprNodeVector[6] = {
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %xmm0, ExprSet | ExprUsed },
+  { OperandReference[1] , 2, 0 },
+  { ExprConstant[0] , 0x2, ExprUsed | ExprSize8 | ExprUnsignedHex },
+  { OperandReference[1] , 3, 0 },
+  { ExprConstant[0] , 0x4, ExprUsed | ExprSize8 | ExprUnsignedHex },
+};
+0000000000000000: f2 0f 78 ca 02 04                            insertq %xmm1, %xmm2, 0x2, 0x4
+  { 2, { 0x0f, 0x78, 0x00 },
+    NACLi_SSE4A,
+    InstFlag(OpcodeUsesModRm) | InstFlag(OpcodeHasImmed_b) | InstFlag(OpcodeHasImmed2_b),
+    InstInsertq,
+    4, {
+      { Xmm_G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Xmm_E_Operand, OpFlag(OpUse) },
+      { I_Operand, OpFlag(OpUse) },
+      { I2_Operand, OpFlag(OpUse) },
+  } };
+ExprNodeVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %xmm1, ExprSet | ExprUsed },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %xmm2, ExprUsed },
+  { OperandReference[1] , 2, 0 },
+  { ExprConstant[0] , 0x2, ExprUsed | ExprSize8 | ExprUnsignedHex },
+  { OperandReference[1] , 3, 0 },
+  { ExprConstant[0] , 0x4, ExprUsed | ExprSize8 | ExprUnsignedHex },
+};
+0000000000000000: 66 0f 79 ca                                  extrq %xmm1, %xmm2
+  { 2, { 0x0f, 0x79, 0x00 },
+    NACLi_SSE4A,
+    InstFlag(OpcodeUsesModRm),
+    InstExtrq,
+    2, {
+      { Xmm_G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Xmm_E_Operand, OpFlag(OpUse) },
+  } };
+ExprNodeVector[4] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %xmm1, ExprSet | ExprUsed },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %xmm2, ExprUsed },
+};
+0000000000000000: f2 0f 79 ca                                  insertq %xmm1, %xmm2
+  { 2, { 0x0f, 0x79, 0x00 },
+    NACLi_SSE4A,
+    InstFlag(OpcodeUsesModRm),
+    InstInsertq,
+    2, {
+      { Xmm_G_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
+      { Xmm_E_Operand, OpFlag(OpUse) },
+  } };
+ExprNodeVector[4] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %xmm1, ExprSet | ExprUsed },
+  { OperandReference[1] , 1, 0 },
+  { ExprRegister[0] , %xmm2, ExprUsed },
 };

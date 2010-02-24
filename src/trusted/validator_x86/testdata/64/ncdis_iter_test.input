@@ -224,3 +224,7 @@
 -i=0fa320                                #0000000000000000: 0f a3 20                                     bt [%eax], %esp; *NACL Disallows!*
 -i=0fbb20                                #0000000000000000: 0f bb 20                                     btc [%eax], %esp; *NACL Disallows!*
 -i=0fab20                                #0000000000000000: 0f ab 20                                     bts [%eax], %esp; *NACL Disallows!*
+-i=660F78C10204                          #0000000000000000: 66 0f 78 c1 02 04                            extrq %xmm0, 0x2, 0x4
+-i=F20F78CA0204                          #0000000000000000: f2 0f 78 ca 02 04                            insertq %xmm1, %xmm2, 0x2, 0x4
+-i=660F79CA                              #0000000000000000: 66 0f 79 ca                                  extrq %xmm1, %xmm2
+-i=F20F79CA                              #0000000000000000: f2 0f 79 ca                                  insertq %xmm1, %xmm2

@@ -62,6 +62,7 @@ Comiss
 Cqo
 Cvtdq2ps
 Cvtpd2pi
+Cvtpd2ps
 Cvtpi2pd
 Cvtpi2ps
 Cvtps2dq
@@ -92,6 +93,7 @@ Divsd
 Divss
 Emms
 Enter
+Extrq
 Fabs
 Fadd
 Faddp
@@ -189,6 +191,7 @@ In
 Inc
 Insb
 Insd
+Insertq
 Insw
 Int
 Int0
@@ -242,6 +245,7 @@ Movddup
 Movdq
 Movdqa
 Movdqu
+Movdq2q
 Movhpd
 Movhps
 Movlpd
@@ -253,8 +257,10 @@ Movnti
 Movntpd
 Movntps
 Movntq
+Movntsd
 Movntss
 Movq
+Movq2dq
 Movsb
 Movsd
 Movshdup
@@ -424,11 +430,13 @@ Pushfq
 Pxor
 Rcl
 Rcpps
+Rcpss
 Rcr
 Ret
 Rol
 Ror
 Rsqrtps
+Rsqrtss
 Sahf
 Sar
 Sbb

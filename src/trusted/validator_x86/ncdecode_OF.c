@@ -144,8 +144,6 @@ void Define0FOpcodes() {
   DefineOperand(RegRCX, OpFlag(OpSet) | OpFlag(OpImplicit));
   DefineOperand(RegRIP, OpFlag(OpSet) | OpFlag(OpUse) | OpFlag(OpImplicit));
 
-  DefineOpcode(0x77, NACLi_MMX, 0, InstEmms);
-
   /* JMPcc */
   DefineJmp0FPair(0x80, InstJo);
   DefineJmp0FPair(0x81, InstJno);

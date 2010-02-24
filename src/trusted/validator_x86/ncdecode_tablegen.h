@@ -100,6 +100,14 @@ void DefinePrefixOpcodeMrmChoices_32_64(const OpcodePrefix prefix,
                                         const int count_32,
                                         const int count_64);
 
+/* By default, sanity checks are applied as each defining
+ * call is made. When this is called, these sanity checks
+ * are turned off until the explicit call to ApplySanityChecks.
+ */
+void DelaySanityChecks();
+
+void ApplySanityChecks();
+
 /* Define the next opcode (instruction), initializing with
  * no operands.
  */
@@ -109,11 +117,19 @@ void DefineOpcode(
     OpcodeFlags flags,
     const InstMnemonic name);
 
+/* Add additional opcode flags to the current instruction being processed. */
+void AddOpcodeFlags(OpcodeFlags more_flags);
+
 /*
  * Define the next operand of the current opcode to have the given kind
  * and flags.
  */
 void DefineOperand(OperandKind kind, OperandFlags flags);
+
+/* Add additional operand flags to the indexed operand of the current
+ * instruction being processed (index is 0 based).
+ */
+void AddOperandFlags(uint8_t operand_index, OperandFlags more_flags);
 
 
 /* Defines one byte opcodes. */

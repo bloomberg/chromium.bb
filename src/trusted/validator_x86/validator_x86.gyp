@@ -314,6 +314,7 @@
       'target_name': 'ncdecode_tablegen',
       'type': 'executable',
       'sources': ['ncdecode_tablegen.c',
+                  'ncdecode_forms.c',
                   'ncdecode_onebyte.c',
                   'ncdecode_OF.c',
                   'ncdecode_sse.c',

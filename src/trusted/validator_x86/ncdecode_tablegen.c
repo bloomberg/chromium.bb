@@ -78,6 +78,9 @@ MrmOpcode* current_opcode_mrm = NULL;
 /* Holds the opcode to model instructions that can't be parsed. */
 static Opcode* undefined_opcode = NULL;
 
+/* True if we are to apply sanity checks as we define operantions. */
+static Bool apply_sanity_checks = TRUE;
+
 /* Holds all defined opcodes. */
 static Opcode* OpcodeTable[NCDTABLESIZE][OpcodePrefixEnumSize];
 
@@ -115,8 +118,12 @@ static void FatalOpcode(const char* message) {
  * error message. Then aborts the execution of the program.
  */
 static void FatalOperand(int index, const char* message) {
-  fprintf(stderr, "On operand %d: %s\n", index,
-          OperandKindName(current_opcode->operands[index].kind));
+  if (0 <= index && index <= current_opcode->num_operands) {
+    fprintf(stderr, "On operand %d: %s\n", index,
+            OperandKindName(current_opcode->operands[index].kind));
+  } else {
+    fprintf(stderr, "On operand %d:\n", index);
+  }
   FatalOpcode(message);
 }
 
@@ -167,12 +174,16 @@ static void CheckIfEOperandRepeated(int index) {
   for (i = 0; i < index; ++i) {
     Operand* operand = &current_opcode->operands[i];
     switch (operand->kind) {
+      case Mmx_E_Operand:
+      case Xmm_E_Operand:
+      case Xmm_Eo_Operand:
       case E_Operand:
       case Eb_Operand:
       case Ew_Operand:
       case Ev_Operand:
       case Eo_Operand:
-        FatalOperand(index, "Can't use E_Operand more than once");
+      case Edq_Operand:
+        FatalOperand(index, "Can't use E Operand more than once");
         break;
       default:
         break;
@@ -185,9 +196,11 @@ static void CheckIfEOperandRepeated(int index) {
  * sense in such cases.
  */
 static void CheckIfOpcodeInModRm(int index) {
-  if (current_opcode->flags & InstFlag(OpcodeInModRm)) {
+  if ((current_opcode->flags & InstFlag(OpcodeInModRm)) &&
+      ((OperandFlags) 0 == (current_opcode->operands[index].flags &
+                            InstFlag(AllowGOperandWithOpcodeInModRm)))) {
     FatalOperand(index,
-                 "Can't use G_Operand, bits being used for opcode in modrm");
+                 "Can't use G Operand, bits being used for opcode in modrm");
   }
 }
 
@@ -202,12 +215,14 @@ static void CheckIfGOperandRepeated(int index) {
     switch (operand->kind) {
       case Mmx_G_Operand:
       case Xmm_G_Operand:
+      case Xmm_Go_Operand:
       case G_Operand:
       case Gb_Operand:
       case Gw_Operand:
       case Gv_Operand:
       case Go_Operand:
-        FatalOperand(index, "Can't use G_Operand more than once");
+      case Gdq_Operand:
+        FatalOperand(index, "Can't use G Operand more than once");
         break;
       default:
         break;
@@ -248,6 +263,8 @@ static void CheckIfIOperandRepeated(int index) {
  */
 static void ApplySanityChecksToOperand(int index) {
   Operand* operand = &current_opcode->operands[index];
+
+  if (!apply_sanity_checks) return;
 
   /* Check special cases for operand 0. */
   if (index == 0) {
@@ -318,6 +335,21 @@ static void ApplySanityChecksToOperand(int index) {
       }
       CheckIfEOperandRepeated(index);
       break;
+    case Edq_Operand:
+      CheckIfEOperandRepeated(index);
+      break;
+    case Mmx_E_Operand:
+    case Xmm_E_Operand:
+      CheckIfEOperandRepeated(index);
+      break;
+    case Xmm_Eo_Operand:
+      if (current_opcode->flags & InstFlag(OperandSize_o)) {
+        FatalOperand
+            (index,
+             "Size implied by OperandSize_o, use Xmm_E_Operand instead");
+      }
+      CheckIfEOperandRepeated(index);
+      break;
     case G_Operand:
       CheckIfGOperandRepeated(index);
       CheckIfOpcodeInModRm(index);
@@ -354,8 +386,21 @@ static void ApplySanityChecksToOperand(int index) {
       CheckIfGOperandRepeated(index);
       CheckIfOpcodeInModRm(index);
       break;
+    case Gdq_Operand:
+      CheckIfGOperandRepeated(index);
+      CheckIfOpcodeInModRm(index);
+      break;
     case Mmx_G_Operand:
     case Xmm_G_Operand:
+      CheckIfGOperandRepeated(index);
+      CheckIfOpcodeInModRm(index);
+      break;
+    case Xmm_Go_Operand:
+      if (current_opcode->flags & InstFlag(OperandSize_o)) {
+        FatalOperand
+            (index,
+             "Size implied by OperandSize_o, use Xmm_G_Operand instead");
+      }
       CheckIfGOperandRepeated(index);
       CheckIfOpcodeInModRm(index);
       break;
@@ -484,6 +529,16 @@ static void MoveCurrentToMrmIndex(int mrm_index) {
   InstallCurrentIntoOpcodeMrm(current_opcode_prefix, opcode, mrm_index);
 }
 
+static void PrintlnOperandFlags(OperandFlags flags) {
+  int i;
+  for (i = 0; i < OperandFlagEnumSize; ++i) {
+    if (flags & OpFlag(i)) {
+      printf(" %s", OperandFlagName(i));
+    }
+  }
+  printf("\n");
+}
+
 /* Same as previous function, except that sanity checks
  * are applied to see if inconsistent information is
  * being defined.
@@ -491,15 +546,12 @@ static void MoveCurrentToMrmIndex(int mrm_index) {
 void DefineOperand(
     OperandKind kind,
     OperandFlags flags) {
-  int i;
   int index = current_opcode->num_operands;
   DEBUG(printf("  %s:", OperandKindName(kind));
-        for (i = 0; i < OperandFlagEnumSize; ++i) {
-          if (flags & OpFlag(i)) {
-            printf(" %s", OperandFlagName(i));
-          }
-        }
-        printf("\n"));
+        PrintlnOperandFlags(flags));
+  if (MAX_NUM_OPERANDS <= index) {
+    FatalOperand(index, "Opcode defines too many operands...\n");
+  }
   /* Readjust counts if opcode appears in modrm. */
   if (index == 0) {
     switch (kind) {
@@ -522,6 +574,17 @@ void DefineOperand(
   ApplySanityChecksToOperand(index);
 }
 
+void AddOperandFlags(uint8_t operand_index, OperandFlags more_flags) {
+  DEBUG(printf("Adding flags:");
+        PrintlnOperandFlags(more_flags));
+  if (operand_index <= current_opcode->num_operands) {
+    current_opcode->operands[operand_index].flags |= more_flags;
+    ApplySanityChecksToOperand(operand_index);
+  } else {
+    FatalOperand((int) operand_index, "AddOperandFlags: index out of range\n");
+  }
+}
+
 /* Returns true if the given opcode flags are consistent
  * with the value of FLAGS_run_mode.
  */
@@ -540,6 +603,7 @@ static Bool OpcodeFlagsMatchesRunMode(OpcodeFlags flags) {
 
 /* Check that the flags defined for an opcode make sense. */
 static void ApplySanityChecksToOpcode() {
+  if (!apply_sanity_checks) return;
   if ((current_opcode->flags & InstFlag(OpcodeInModRm)) &&
       (current_opcode->flags & InstFlag(OpcodeUsesModRm))) {
     FatalOpcode("OpcodeInModRm automatically implies OpcodeUsesModRm");
@@ -758,6 +822,16 @@ void DefinePrefixOpcodeChoices_32_64(const OpcodePrefix prefix,
                                      count_32, count_64);
 }
 
+static void PrintlnOpcodeFlags(OpcodeFlags flags) {
+  int i;
+  for (i = 0; i < OpcodeFlagEnumSize; ++i) {
+    if (flags & InstFlag(i)) {
+      printf(" %s", OpcodeFlagName(i));
+    }
+  }
+  printf("\n");
+}
+
 /* Define the next opcode (instruction), initializing with
  * no operands.
  */
@@ -782,12 +856,7 @@ void DefineOpcode(
   DEBUG(printf("Define %s %"PRIx8": %s(%d)",
                OpcodePrefixName(current_opcode_prefix),
                opcode, InstMnemonicName(name), name);
-        for (i = 0; i < OpcodeFlagEnumSize; ++i) {
-          if (flags & InstFlag(i)) {
-            printf(" %s", OpcodeFlagName(i));
-          }
-        }
-        printf("\n"));
+        PrintlnOpcodeFlags(flags));
 
   if (InstMnemonicEnumSize <= name) {
     fatal("Badly defined mnemonic name");
@@ -838,6 +907,28 @@ void DefineOpcode(
   /* Install assuming no modrm opcode. Let DefineOperand move if needed. */
   InstallCurrentIntoOpcodeMrm(current_opcode_prefix, opcode,
                               NO_MODRM_OPCODE_INDEX);
+}
+
+void AddOpcodeFlags(OpcodeFlags more_flags) {
+  DEBUG(printf("Adding opcode flags:");
+        PrintlnOpcodeFlags(more_flags));
+  current_opcode->flags |= more_flags;
+  ApplySanityChecksToOpcode();
+}
+
+void DelaySanityChecks() {
+  apply_sanity_checks = FALSE;
+}
+
+void ApplySanityChecks() {
+  apply_sanity_checks = TRUE;
+  if (NULL != current_opcode) {
+    int i;
+    ApplySanityChecksToOpcode();
+    for (i = 0; i < current_opcode->num_operands; i++) {
+      ApplySanityChecksToOperand(i);
+    }
+  }
 }
 
 static void InitializeOpcodeTables() {

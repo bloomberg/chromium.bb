@@ -24,3 +24,5 @@ OperandRelative
 OperandZeroExtends_v
 # Operand sign-extends 32-bit register results to 64-bits.
 OperandSignExtends_v
+# Allow both G operand and opcode in modrm, as special case.
+AllowGOperandWithOpcodeInModRm

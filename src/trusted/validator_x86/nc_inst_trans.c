@@ -537,12 +537,20 @@ static RegisterTableGroup* const RegisterTable[] = {
 
 /* Define possible register categories. */
 typedef enum {
+  /* Note: the following all have register tables
+   * for the corresponding general purpose registers.
+   */
   RegSize8,
   RegSize16,
   RegSize32,
   RegSize64,
   RegMMX,
   RegXMM,
+  /* Note: sizes below this point don't define general
+   * purpose registers, and hence, don't have a lookup
+   * value in the register tables.
+   */
+  RegSize128,
   RegUndefined,   /* Always returns RegUnknown. */
 } RegKind;
 
@@ -553,6 +561,7 @@ static const char* const g_RegKindName[] = {
   "RegSize64",
   "RegMMX",
   "RegXMM",
+  "RegSize128",
   "RegUndefined"
 };
 
@@ -613,7 +622,12 @@ static RegKind GetOperandKindRegKind(OperandKind kind) {
     case Mo_Operand:
     case Mpo_Operand:
     case Oo_Operand:
+    case Xmm_Eo_Operand:
+    case Xmm_Go_Operand:
       return RegSize64;
+    case Edq_Operand:
+    case Gdq_Operand:
+      return RegSize128;
     default:
       return RegUndefined;
   }
@@ -625,7 +639,7 @@ static OperandKind LookupRegister(NcInstState* state,
                state->rexprefix, RegKindName(kind), reg_index));
   if (32 == NACL_TARGET_SUBARCH && kind == RegSize64) {
     FatallyLost("Architecture doesn't define 64 bit registers");
-  } else if (RegUndefined == kind) {
+  } else if (RegSize128 <= kind) {
     return RegUnknown;
   }
   if (64 == NACL_TARGET_SUBARCH && kind == RegSize8 && state->rexprefix) {
@@ -1432,6 +1446,7 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
     case Ew_Operand:
     case Ev_Operand:
     case Eo_Operand:
+    case Edq_Operand:
       /* TODO(karl) Should we add limitations that simple registers
        * not allowed in M_Operand cases?
        */
@@ -1454,6 +1469,7 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
     case Gw_Operand:
     case Gv_Operand:
     case Go_Operand:
+    case Gdq_Operand:
       return AppendOperandRegister(state, operand, GetGenRegRegister(state),
                                    ModRmGeneral);
 
@@ -1484,9 +1500,11 @@ static ExprNode* AppendOperand(NcInstState* state, Operand* operand) {
     case Mmx_E_Operand:
       return AppendEffectiveAddress(state, operand, ModRmMmx);
     case Xmm_G_Operand:
+    case Xmm_Go_Operand:
       return AppendOperandRegister(state, operand, GetGenRegRegister(state),
                                    ModRmXmm);
     case Xmm_E_Operand:
+    case Xmm_Eo_Operand:
       return AppendEffectiveAddress(state, operand, ModRmXmm);
     case O_Operand:
     case Ob_Operand:
