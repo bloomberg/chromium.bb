@@ -31,3 +31,4 @@ WebSocketTest.*
 # (see http://crbug.com/36657)
 DiskCacheBackendTest.NewEvictionInvalidRankings2
 DiskCacheBackendTest.InvalidRankingsSuccess
+DiskCacheBackendTest.NewEvictionInvalidRankingsSuccess
