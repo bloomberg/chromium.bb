@@ -297,7 +297,6 @@ void GLES2Implementation::TexSubImage2D(
     GLsizei height, GLenum format, GLenum type, const void* pixels) {
   const int8* source = static_cast<const int8*>(pixels);
   GLsizeiptr max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
-
   GLsizeiptr unpadded_row_size = GLES2Util::ComputeImageDataSize(
       width, 1, format, type, unpack_alignment_);
   GLsizeiptr padded_row_size = GLES2Util::ComputeImageDataSize(
@@ -489,9 +488,64 @@ void GLES2Implementation::GetUniformiv(
 }
 
 void GLES2Implementation::ReadPixels(
-    GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, GLenum type,
-    void* pixels) {
-  // TODO(gman): implement.
+    GLint xoffset, GLint yoffset, GLsizei width, GLsizei height, GLenum format,
+    GLenum type, void* pixels) {
+  // Note: Negative widths and heights are not handled here but are handled
+  // by the service side so the glGetError wrapping works.
+  if (width == 0 || height == 0) {
+    return;
+  }
+  int8* dest = reinterpret_cast<int8*>(pixels);
+  GLsizeiptr max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
+  GLsizeiptr unpadded_row_size = GLES2Util::ComputeImageDataSize(
+      width, 1, format, type, pack_alignment_);
+  GLsizeiptr padded_row_size = GLES2Util::ComputeImageDataSize(
+      width, 2, format, type, pack_alignment_) - unpadded_row_size;
+  if (padded_row_size <= max_size) {
+    // Transfer by rows.
+    GLint max_rows = max_size / padded_row_size;
+    while (height) {
+      GLint num_rows = std::min(height, max_rows);
+      GLsizeiptr part_size = num_rows * padded_row_size;
+      void* buffer = transfer_buffer_.Alloc(part_size);
+      // TODO(gman): handle errors.
+      helper_->ReadPixels(
+          xoffset, yoffset, width, num_rows, format, type,
+          transfer_buffer_id_, transfer_buffer_.GetOffset(buffer));
+      memcpy(dest, buffer, part_size);
+      transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
+      yoffset += num_rows;
+      dest += part_size;
+      height -= num_rows;
+    }
+  } else {
+    // Transfer by sub rows. Beacuse GL has no maximum texture dimensions.
+    GLsizeiptr element_size = GLES2Util::ComputeImageDataSize(
+       1, 1, format, type, pack_alignment_);
+    max_size -= max_size % element_size;
+    GLint max_sub_row_pixels = max_size / element_size;
+    for (; height; --height) {
+      GLint temp_width = width;
+      GLint temp_xoffset = xoffset;
+      int8* row_dest = dest;
+      while (temp_width) {
+        GLint num_pixels = std::min(width, max_sub_row_pixels);
+        GLsizeiptr part_size = num_pixels * element_size;
+        void* buffer = transfer_buffer_.Alloc(part_size);
+        // TODO(gman): handle errors.
+        helper_->ReadPixels(
+            temp_xoffset, yoffset, temp_width, 1, format, type,
+            transfer_buffer_id_, transfer_buffer_.GetOffset(buffer));
+        memcpy(row_dest, buffer, part_size);
+        transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
+        row_dest += part_size;
+        temp_xoffset += num_pixels;
+        temp_width -= num_pixels;
+      }
+      ++yoffset;
+      dest += padded_row_size;
+    }
+  }
 }
 
 }  // namespace gles2
