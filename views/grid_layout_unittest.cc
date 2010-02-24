@@ -512,3 +512,39 @@ TEST_F(GridLayoutTest, FixedViewHeight) {
   layout->Layout(&host);
   ExpectViewBoundsEquals(0, 0, 30, 10, view);
 }
+
+// Make sure that for views that span columns the underlying columns are resized
+// based on the resize percent of the column.
+TEST_F(GridLayoutTest, ColumnSpanResizing) {
+  views::ColumnSet* set = layout->AddColumnSet(0);
+
+  set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
+                 2, views::GridLayout::USE_PREF, 0, 0);
+  set->AddColumn(views::GridLayout::FILL, views::GridLayout::CENTER,
+                 4, views::GridLayout::USE_PREF, 0, 0);
+
+  layout->StartRow(0, 0);
+  // span_view spans two columns and is twice as big the views added below.
+  View* span_view = new SettableSizeView(gfx::Size(12, 40));
+  layout->AddView(span_view, 2, 1, GridLayout::LEADING, GridLayout::LEADING);
+
+  layout->StartRow(0, 0);
+  View* view1 = new SettableSizeView(gfx::Size(2, 40));
+  View* view2 = new SettableSizeView(gfx::Size(4, 40));
+  layout->AddView(view1);
+  layout->AddView(view2);
+
+  host.SetBounds(0, 0, 12, 80);
+  layout->Layout(&host);
+
+  ExpectViewBoundsEquals(0, 0, 12, 40, span_view);
+
+  // view1 should be 4 pixels wide
+  // column_pref + (remaining_width * column_resize / total_column_resize) =
+  // 2 + (6 * 2 / 6).
+  ExpectViewBoundsEquals(0, 40, 4, 40, view1);
+
+  // And view2 should be 8 pixels wide:
+  // 4 + (6 * 4 / 6).
+  ExpectViewBoundsEquals(4, 40, 8, 40, view2);
+}

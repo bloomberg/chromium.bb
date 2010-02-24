@@ -545,8 +545,10 @@ void ColumnSet::DistributeRemainingWidth(ViewState* view_state) {
   int pref_size_columns = 0;
   int start_col = view_state->start_col;
   int max_col = view_state->start_col + view_state->col_span;
+  float total_resize = 0;
   for (int i = start_col; i < max_col; ++i) {
     if (columns_[i]->IsResizable()) {
+      total_resize += columns_[i]->ResizePercent();
       resizable_columns++;
     } else if (columns_[i]->size_type_ == GridLayout::USE_PREF) {
       pref_size_columns++;
@@ -554,16 +556,17 @@ void ColumnSet::DistributeRemainingWidth(ViewState* view_state) {
   }
 
   if (resizable_columns > 0) {
-    // There are resizable columns, give the remaining width to them.
-    int to_distribute = width / resizable_columns;
-    for (int i = start_col; i < max_col; ++i) {
+    // There are resizable columns, give them the remaining width. The extra
+    // width is distributed using the resize values of each column.
+    int remaining_width = width;
+    for (int i = start_col, resize_i = 0; i < max_col; ++i) {
       if (columns_[i]->IsResizable()) {
-        width -= to_distribute;
-        if (width < to_distribute) {
-          // Give all slop to the last column.
-          to_distribute += width;
-        }
-        columns_[i]->SetSize(columns_[i]->Size() + to_distribute);
+        resize_i++;
+        int delta = (resize_i == resizable_columns) ? remaining_width :
+            static_cast<int>(width * columns_[i]->ResizePercent() /
+                             total_resize);
+        remaining_width -= delta;
+        columns_[i]->SetSize(columns_[i]->Size() + delta);
       }
     }
   } else if (pref_size_columns > 0) {
