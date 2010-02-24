@@ -530,7 +530,6 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_CSSInsertRequest, OnCSSInsertRequest)
     IPC_MESSAGE_HANDLER(ViewMsg_AddMessageToConsole, OnAddMessageToConsole)
     IPC_MESSAGE_HANDLER(ViewMsg_ReservePageIDRange, OnReservePageIDRange)
-    IPC_MESSAGE_HANDLER(ViewMsg_FormFill, OnFormFill)
     IPC_MESSAGE_HANDLER(ViewMsg_FillPasswordForm, OnFillPasswordForm)
     IPC_MESSAGE_HANDLER(ViewMsg_DragTargetDragEnter, OnDragTargetDragEnter)
     IPC_MESSAGE_HANDLER(ViewMsg_DragTargetDragOver, OnDragTargetDragOver)
@@ -3483,10 +3482,6 @@ void RenderView::OnDragSourceEndedOrMoved(const gfx::Point& client_point,
 
 void RenderView::OnDragSourceSystemDragEnded() {
   webview()->dragSourceSystemDragEnded();
-}
-
-void RenderView::OnFormFill(const FormData& form) {
-  webkit_glue::FillForm(this->webview(), form);
 }
 
 void RenderView::OnFillPasswordForm(

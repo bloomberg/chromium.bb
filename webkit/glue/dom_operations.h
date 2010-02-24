@@ -7,6 +7,7 @@
 
 #include <string>
 #include <map>
+#include <vector>
 
 #include "base/gfx/size.h"
 #include "googleurl/src/gurl.h"
@@ -16,13 +17,8 @@ namespace WebKit {
 class WebView;
 }
 
-struct FormData;
-
 // A collection of operations that access the underlying WebKit DOM directly.
 namespace webkit_glue {
-
-// Fill in a form identified by form |data|.
-bool FillForm(WebKit::WebView* view, const FormData& data);
 
 // Fill matching password forms and trigger autocomplete in the case of multiple
 // matching logins.

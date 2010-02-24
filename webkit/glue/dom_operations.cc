@@ -203,7 +203,7 @@ static bool FillFormImpl(FormElements* fe, const FormData& data, bool submit) {
 
 // Helper to search the given form element for the specified input elements
 // in |data|, and add results to |result|.
-static bool FindFormInputElements(WebFormElement& fe,
+static bool FindFormInputElements(WebFormElement* fe,
                                   const FormData& data,
                                   FormElements* result) {
   // Loop through the list of elements we need to find on the form in
@@ -211,7 +211,7 @@ static bool FindFormInputElements(WebFormElement& fe,
   // processing this form; it can't be the right one.
   for (size_t j = 0; j < data.elements.size(); j++) {
     WebVector<WebNode> temp_elements;
-    fe.getNamedElements(data.elements[j], temp_elements);
+    fe->getNamedElements(data.elements[j], temp_elements);
     if (temp_elements.isEmpty()) {
       // We didn't find a required element. This is not the right form.
       // Make sure no input elements from a partially matched form
@@ -266,7 +266,7 @@ static void FindFormElements(WebView* view,
         continue;
 
       scoped_ptr<FormElements> curr_elements(new FormElements);
-      if (!FindFormInputElements(fe, data, curr_elements.get()))
+      if (!FindFormInputElements(&fe, data, curr_elements.get()))
         continue;
 
       // We found the right element.
@@ -275,21 +275,6 @@ static void FindFormElements(WebView* view,
       results->push_back(curr_elements.release());
     }
   }
-}
-
-bool FillForm(WebView* view, const FormData& data) {
-  FormElementsList forms;
-  FindFormElements(view, data, &forms);
-  bool success = false;
-  if (!forms.empty())
-    success = FillFormImpl(forms[0], data, false);
-
-  // TODO(timsteele): Move STLDeleteElements to base/ and have FormElementsList
-  // use that.
-  FormElementsList::iterator iter;
-  for (iter = forms.begin(); iter != forms.end(); ++iter)
-    delete *iter;
-  return success;
 }
 
 void FillPasswordForm(WebView* view,
@@ -351,7 +336,7 @@ WebString GetSubResourceLinkFromElement(const WebElement& element) {
   } else if (element.hasTagName("link")) {
     // If the link element is not linked to css, ignore it.
     if (LowerCaseEqualsASCII(element.getAttribute("type"), "text/css")) {
-      // TODO(jnd). Add support for extracting links of sub-resources which
+      // TODO(jnd): Add support for extracting links of sub-resources which
       // are inside style-sheet such as @import, url(), etc.
       // See bug: http://b/issue?id=1111667.
       attribute_name = "href";
@@ -363,7 +348,7 @@ WebString GetSubResourceLinkFromElement(const WebElement& element) {
   // If value has content and not start with "javascript:" then return it,
   // otherwise return NULL.
   if (!value.isNull() && !value.isEmpty() &&
-      !StartsWithASCII(value.utf8(),"javascript:", false))
+      !StartsWithASCII(value.utf8(), "javascript:", false))
     return value;
 
   return WebString();
@@ -614,4 +599,4 @@ int NumberOfActiveAnimations(WebView* view) {
   return controller->numberOfActiveAnimations();
 }
 
-} // webkit_glue
+}  // webkit_glue

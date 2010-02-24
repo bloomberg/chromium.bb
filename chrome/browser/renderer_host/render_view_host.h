@@ -221,9 +221,6 @@ class RenderViewHost : public RenderWidgetHost {
   // alternate error pages.
   void SetAlternateErrorPageURL(const GURL& url);
 
-  // Fill out a form within the page with the specified data.
-  void FillForm(const FormData& form_data);
-
   // Fill out a password form and trigger DOM autocomplete in the case
   // of multiple matching logins.
   void FillPasswordForm(

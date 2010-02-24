@@ -411,10 +411,6 @@ void RenderViewHost::SetAlternateErrorPageURL(const GURL& url) {
   Send(new ViewMsg_SetAltErrorPageURL(routing_id(), url));
 }
 
-void RenderViewHost::FillForm(const FormData& form_data) {
-  Send(new ViewMsg_FormFill(routing_id(), form_data));
-}
-
 void RenderViewHost::FillPasswordForm(
     const PasswordFormDomManager::FillData& form_data) {
   Send(new ViewMsg_FillPasswordForm(routing_id(), form_data));

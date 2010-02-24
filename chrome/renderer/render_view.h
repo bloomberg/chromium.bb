@@ -632,7 +632,6 @@ class RenderView : public RenderWidget,
       const std::vector<GURL>& links,
       const std::vector<FilePath>& local_paths,
       const FilePath& local_directory_name);
-  void OnFormFill(const FormData& form);
   void OnFillPasswordForm(
       const webkit_glue::PasswordFormDomManager::FillData& form_data);
   void OnDragTargetDragEnter(const WebDropData& drop_data,
