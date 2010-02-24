@@ -67,6 +67,31 @@ WidgetWin* WidgetWin::GetWidget(HWND hwnd) {
   return reinterpret_cast<WidgetWin*>(win_util::GetWindowUserData(hwnd));
 }
 
+// static
+WidgetWin* WidgetWin::GetRootWidget(HWND hwnd) {
+  // First, check if the top-level window is a Widget.
+  HWND root = ::GetAncestor(hwnd, GA_ROOT);
+  if (!root)
+    return NULL;
+
+  WidgetWin* widget = WidgetWin::GetWidget(root);
+  if (widget)
+    return widget;
+
+  // Second, try to locate the last Widget window in the parent hierarchy.
+  HWND parent_hwnd = hwnd;
+  WidgetWin* parent_widget;
+  do {
+    parent_widget = WidgetWin::GetWidget(parent_hwnd);
+    if (parent_widget) {
+      widget = parent_widget;
+      parent_hwnd = ::GetAncestor(parent_hwnd, GA_PARENT);
+    }
+  } while (parent_hwnd != NULL && parent_widget != NULL);
+
+  return widget;
+}
+
 void WidgetWin::SetUseLayeredBuffer(bool use_layered_buffer) {
   if (use_layered_buffer_ == use_layered_buffer)
     return;
@@ -103,8 +128,10 @@ void WidgetWin::Init(gfx::NativeView parent, const gfx::Rect& bounds) {
 
   drop_target_ = new DropTargetWin(root_view_.get());
 
-  if ((window_style() & WS_CHILD) == 0) {
-    // Top-level widgets get a FocusManager.
+  if ((window_style() & WS_CHILD) == 0 ||
+      WidgetWin::GetRootWidget(parent) == NULL) {
+    // Top-level widgets and child widgets who do not have a top-level widget
+    // ancestor get a FocusManager.
     focus_manager_.reset(new FocusManager(this));
   }
 
@@ -296,8 +323,7 @@ RootView* WidgetWin::GetRootView() {
 }
 
 Widget* WidgetWin::GetRootWidget() const {
-  return reinterpret_cast<WidgetWin*>(
-      win_util::GetWindowUserData(GetAncestor(hwnd(), GA_ROOT)));
+  return GetRootWidget(hwnd());
 }
 
 bool WidgetWin::IsVisible() const {

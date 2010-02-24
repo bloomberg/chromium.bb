@@ -76,6 +76,9 @@ class WidgetWin : public app::WindowImpl,
   // Returns the Widget associated with the specified HWND (if any).
   static WidgetWin* GetWidget(HWND hwnd);
 
+  // Returns the root Widget associated with the specified HWND (if any).
+  static WidgetWin* GetRootWidget(HWND hwnd);
+
   void set_delete_on_destroy(bool delete_on_destroy) {
     delete_on_destroy_ = delete_on_destroy;
   }

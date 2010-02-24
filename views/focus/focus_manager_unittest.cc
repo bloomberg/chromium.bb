@@ -1306,4 +1306,63 @@ TEST_F(FocusManagerTest, IgnoreKeyupForAccelerators) {
 }
 #endif
 
+#if defined(OS_WIN)
+// Test that the focus manager is created successfully for the first view
+// window parented to a native dialog.
+TEST_F(FocusManagerTest, CreationForNativeRoot) {
+  // Create a window class.
+  WNDCLASSEX class_ex;
+  memset(&class_ex, 0, sizeof(class_ex));
+  class_ex.cbSize = sizeof(WNDCLASSEX);
+  class_ex.lpfnWndProc = &DefWindowProc;
+  class_ex.lpszClassName = L"TestWindow";
+  ATOM atom = RegisterClassEx(&class_ex);
+  ASSERT_TRUE(atom);
+
+  // Create a native dialog window.
+  HWND hwnd = CreateWindowEx(0, class_ex.lpszClassName, NULL,
+                             WS_OVERLAPPEDWINDOW, 0, 0, 200, 200,
+                             NULL, NULL, NULL, NULL);
+  ASSERT_TRUE(hwnd);
+
+  // Create a view window parented to native dialog.
+  WidgetWin window1;
+  window1.set_delete_on_destroy(false);
+  window1.set_window_style(WS_CHILD);
+  window1.Init(hwnd, gfx::Rect(0, 0, 100, 100));
+
+  // Get the focus manager directly from the first window.  Should exist
+  // because the first window is the root widget.
+  views::FocusManager* focus_manager_member1 = window1.GetFocusManager();
+  EXPECT_TRUE(focus_manager_member1);
+
+  // Create another view window parented to the first view window.
+  WidgetWin window2;
+  window2.set_delete_on_destroy(false);
+  window2.set_window_style(WS_CHILD);
+  window2.Init(window1.GetNativeView(), gfx::Rect(0, 0, 100, 100));
+
+  // Get the focus manager directly from the second window. Should return the
+  // first window's focus manager.
+  views::FocusManager* focus_manager_member2 = window2.GetFocusManager();
+  EXPECT_EQ(focus_manager_member2, focus_manager_member1);
+
+  // Get the focus manager indirectly using the first window handle. Should
+  // return the first window's focus manager.
+  views::FocusManager* focus_manager_indirect =
+      views::FocusManager::GetFocusManagerForNativeView(
+          window1.GetNativeView());
+  EXPECT_EQ(focus_manager_indirect, focus_manager_member1);
+
+  // Get the focus manager indirectly using the second window handle. Should
+  // return the first window's focus manager.
+  focus_manager_indirect =
+      views::FocusManager::GetFocusManagerForNativeView(
+          window2.GetNativeView());
+  EXPECT_EQ(focus_manager_indirect, focus_manager_member1);
+
+  DestroyWindow(hwnd);
+}
+#endif
+
 }  // namespace views
