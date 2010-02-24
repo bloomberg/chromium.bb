@@ -359,16 +359,9 @@ int main(int argc, char* argv[]) {
       // Flush any remaining messages before we kill ourselves.
       // http://code.google.com/p/chromium/issues/detail?id=9500
       MessageLoop::current()->RunAllPending();
-
-      delete shell;
     } else {
       MessageLoop::current()->Run();
     }
-
-    // Flush any remaining messages.  This ensures that any accumulated
-    // Task objects get destroyed before we exit, which avoids noise in
-    // purify leak-test results.
-    MessageLoop::current()->RunAllPending();
 
     if (record_mode)
       base::EventRecorder::current()->StopRecording();
