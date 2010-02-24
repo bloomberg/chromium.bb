@@ -268,9 +268,15 @@ bool WebPluginDelegateProxy::Initialize(const GURL& url,
   params.arg_names = arg_names;
   params.arg_values = arg_values;
   params.host_render_view_routing_id = render_view_->routing_id();
+
+  bool flash =
+      LowerCaseEqualsASCII(mime_type_, "application/x-shockwave-flash");
+  bool silverlight =
+      StartsWithASCII(mime_type_, "application/x-silverlight", false);
   for (size_t i = 0; i < arg_names.size(); ++i) {
-    if (LowerCaseEqualsASCII(arg_names[i], "wmode") &&
-        LowerCaseEqualsASCII(arg_values[i], "transparent")) {
+    if ((flash && LowerCaseEqualsASCII(arg_names[i], "wmode") &&
+        LowerCaseEqualsASCII(arg_values[i], "transparent")) ||
+        (silverlight && LowerCaseEqualsASCII(arg_names[i], "background"))) {
       transparent_ = true;
     }
   }
