@@ -5,6 +5,7 @@
 #import "chrome/browser/cocoa/fullscreen_window.h"
 
 #include "base/mac_util.h"
+#include "chrome/browser/browser_theme_provider.h"
 
 @implementation FullscreenWindow
 
@@ -75,6 +76,14 @@
     return YES;
 
   return [super validateUserInterfaceItem:item];
+}
+
+- (ThemeProvider*)themeProvider {
+  return [[self windowController] themeProvider];
+}
+
+- (NSPoint)themePatternPhase {
+  return [[self windowController] themePatternPhase];
 }
 
 @end
