@@ -14,6 +14,8 @@
 #include "app/resource_bundle.h"
 #include "base/linux_util.h"
 #include "base/logging.h"
+#include "chrome/browser/browser_list.h"
+#include "chrome/browser/browser_window.h"
 #include "chrome/browser/gtk/cairo_cached_surface.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/common/renderer_preferences.h"
@@ -293,6 +295,80 @@ void CenterOverWindow(GtkWindow* window, GtkWindow* parent) {
         x11_util::GetX11WindowFromGtkWidget(GTK_WIDGET(window)),
         x11_util::GetX11WindowFromGtkWidget(GTK_WIDGET(parent)));
   }
+}
+
+void MakeAppModalWindowGroup() {
+#if GTK_CHECK_VERSION(2, 14, 0)
+  // Older versions of GTK+ don't give us gtk_window_group_list() which is what
+  // we need to add current non-browser modal dialogs to the list. If
+  // we have 2.14+ we can do things the correct way.
+  GtkWindowGroup* window_group = gtk_window_group_new();
+  for (BrowserList::const_iterator it = BrowserList::begin();
+       it != BrowserList::end(); ++it) {
+    // List all windows in this current group
+    GtkWindowGroup* old_group =
+        gtk_window_get_group((*it)->window()->GetNativeHandle());
+
+    GList* all_windows = gtk_window_group_list_windows(old_group);
+    for (GList* window = all_windows; window; window = window->next) {
+      gtk_window_group_add_window(window_group, GTK_WINDOW(window->data));
+    }
+    g_list_free(all_windows);
+  }
+  g_object_unref(window_group);
+#else
+  // Otherwise just grab all browser windows and be slightly broken.
+  GtkWindowGroup* window_group = gtk_window_group_new();
+  for (BrowserList::const_iterator it = BrowserList::begin();
+       it != BrowserList::end(); ++it) {
+    gtk_window_group_add_window(window_group,
+                                (*it)->window()->GetNativeHandle());
+  }
+  g_object_unref(window_group);
+#endif
+}
+
+void AppModalDismissedUngroupWindows() {
+#if GTK_CHECK_VERSION(2, 14, 0)
+  if (BrowserList::begin() != BrowserList::end()) {
+    std::vector<GtkWindow*> transient_windows;
+
+    // All windows should be part of one big modal group right now.
+    GtkWindowGroup* window_group = gtk_window_get_group(
+        (*BrowserList::begin())->window()->GetNativeHandle());
+    GList* windows = gtk_window_group_list_windows(window_group);
+
+    for (GList* item = windows; item; item = item->next) {
+      GtkWindow* window = GTK_WINDOW(item->data);
+      GtkWindow* transient_for = gtk_window_get_transient_for(window);
+      if (transient_for) {
+        transient_windows.push_back(window);
+      } else {
+        GtkWindowGroup* window_group = gtk_window_group_new();
+        gtk_window_group_add_window(window_group, window);
+        g_object_unref(window_group);
+      }
+    }
+
+    // Put each transient window in the same group as its transient parent.
+    for (std::vector<GtkWindow*>::iterator it = transient_windows.begin();
+         it != transient_windows.end(); ++it) {
+      GtkWindow* transient_parent = gtk_window_get_transient_for(*it);
+      GtkWindowGroup* group = gtk_window_get_group(transient_parent);
+      gtk_window_group_add_window(group, *it);
+    }
+  }
+#else
+  // This is slightly broken in the case where a different window had a dialog,
+  // but its the best we can do since we don't have newer gtk stuff.
+  for (BrowserList::const_iterator it = BrowserList::begin();
+       it != BrowserList::end(); ++it) {
+    GtkWindowGroup* window_group = gtk_window_group_new();
+    gtk_window_group_add_window(window_group,
+                                (*it)->window()->GetNativeHandle());
+    g_object_unref(window_group);
+  }
+#endif
 }
 
 void RemoveAllChildren(GtkWidget* container) {

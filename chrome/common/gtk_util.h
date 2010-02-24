@@ -59,7 +59,7 @@ const int kFormControlSpacing = 10;
 // be NULL to get the system default.
 //
 // For example:
-// controls = CreateLabeledControlsGroup(NULL, &gfx::kGdkBlack,
+// controls = CreateLabeledControlsGroup(NULL,
 //                                       "Name:", title_entry_,
 //                                       "Folder:", folder_combobox_,
 //                                       NULL);
@@ -105,6 +105,14 @@ void SetWindowSizeFromResources(GtkWindow* window,
 // options window and content settings window; otherwise you should be using
 // transient_for.
 void CenterOverWindow(GtkWindow* window, GtkWindow* parent);
+
+// Puts all browser windows in one window group; this will make any dialog
+// spawned app modal.
+void MakeAppModalWindowGroup();
+
+// Called after an app modal dialog that used MakeAppModalWindowGroup() was
+// dismissed. Returns each browser window to its own window group.
+void AppModalDismissedUngroupWindows();
 
 // Remove all children from this container.
 void RemoveAllChildren(GtkWidget* container);

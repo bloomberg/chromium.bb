@@ -102,6 +102,11 @@ class CookiePromptModalDialog : public AppModalDialog {
   // delegate could be deleted
   CookiePromptModalDialogDelegate* delegate_;
 
+#if defined(OS_LINUX)
+  // The "remember this choice" radio button in the dialog.
+  GtkWidget* remember_radio_;
+#endif
+
   DISALLOW_COPY_AND_ASSIGN(CookiePromptModalDialog);
 };
 
