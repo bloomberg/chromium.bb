@@ -495,6 +495,8 @@ void GLES2Implementation::ReadPixels(
   if (width == 0 || height == 0) {
     return;
   }
+  typedef gles2::ReadPixels::Result Result;
+  Result* result = static_cast<Result*>(result_buffer_);
   int8* dest = reinterpret_cast<int8*>(pixels);
   GLsizeiptr max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
   GLsizeiptr unpadded_row_size = GLES2Util::ComputeImageDataSize(
@@ -508,12 +510,18 @@ void GLES2Implementation::ReadPixels(
       GLint num_rows = std::min(height, max_rows);
       GLsizeiptr part_size = num_rows * padded_row_size;
       void* buffer = transfer_buffer_.Alloc(part_size);
-      // TODO(gman): handle errors.
+      *result = 0;  // mark as failed.
       helper_->ReadPixels(
           xoffset, yoffset, width, num_rows, format, type,
-          transfer_buffer_id_, transfer_buffer_.GetOffset(buffer));
+          transfer_buffer_id_, transfer_buffer_.GetOffset(buffer),
+          result_shm_id(), result_shm_offset());
+      WaitForCmd();
+      // If it was not marked as successful exit.
+      if (*result == 0) {
+        return;
+      }
       memcpy(dest, buffer, part_size);
-      transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
+      transfer_buffer_.Free(buffer);
       yoffset += num_rows;
       dest += part_size;
       height -= num_rows;
@@ -532,12 +540,18 @@ void GLES2Implementation::ReadPixels(
         GLint num_pixels = std::min(width, max_sub_row_pixels);
         GLsizeiptr part_size = num_pixels * element_size;
         void* buffer = transfer_buffer_.Alloc(part_size);
-        // TODO(gman): handle errors.
+        *result = 0;  // mark as failed.
         helper_->ReadPixels(
             temp_xoffset, yoffset, temp_width, 1, format, type,
-            transfer_buffer_id_, transfer_buffer_.GetOffset(buffer));
+            transfer_buffer_id_, transfer_buffer_.GetOffset(buffer),
+            result_shm_id(), result_shm_offset());
+        WaitForCmd();
+        // If it was not marked as successful exit.
+        if (*result == 0) {
+          return;
+        }
         memcpy(row_dest, buffer, part_size);
-        transfer_buffer_.FreePendingToken(buffer, helper_->InsertToken());
+        transfer_buffer_.Free(buffer);
         row_dest += part_size;
         temp_xoffset += num_pixels;
         temp_width -= num_pixels;

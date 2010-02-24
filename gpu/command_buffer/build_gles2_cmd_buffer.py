@@ -820,6 +820,7 @@ _ENUM_LISTS = {
 # This table specifies types and other special data for the commands that
 # will be generated.
 #
+# cmd_comment:  A comment added to the cmd format.
 # type:         defines which handler will be used to generate code.
 # DecoderFunc:  defines which function to call in the decoder to execute the
 #               corresponding GL command. If not specified the GL command will
@@ -832,6 +833,8 @@ _ENUM_LISTS = {
 # immediate:    Whether or not to generate an immediate command for the GL
 #               function. The default is if there is exactly 1 pointer argument
 #               in the GL function an immediate command is generated.
+# impl_func:    Whether or not to generate the GLES2Implementation part of this
+#               command.
 # needs_size:   If true a data_size field is added to the command.
 # data_type:    The type of data the command uses. For PUTn or PUT types.
 # count:        The number of units per element. For PUTn or PUT types.
@@ -872,8 +875,8 @@ _FUNCTION_INFO = {
     'cmd_args': 'GLenum mode, GLsizei count, GLenum type, GLuint index_offset',
   },
   'EnableVertexAttribArray': {'DecoderFunc': 'DoEnableVertexAttribArray'},
-  'Finish': {'ImplFunc': False},
-  'Flush': {'ImplFunc': False},
+  'Finish': {'impl_func': False},
+  'Flush': {'impl_func': False},
   'FramebufferRenderbuffer': {'DecoderFunc': 'glFramebufferRenderbufferEXT'},
   'FramebufferTexture2D': {'DecoderFunc': 'glFramebufferTexture2DEXT'},
   'GenerateMipmap': {
@@ -988,7 +991,20 @@ _FUNCTION_INFO = {
   'LinkProgram': {'DecoderFunc': 'DoLinkProgram'},
   'PixelStorei': {'type': 'Manual'},
   'RenderbufferStorage': {'DecoderFunc': 'glRenderbufferStorageEXT'},
-  'ReadPixels': {'type': 'Custom', 'immediate': False},
+  'ReadPixels': {
+    'cmd_comment':
+        '// ReadPixels has the result separated from the pixel buffer so that\n'
+        '// it is easier to specify the result going to some specific place\n'
+        '// that exactly fits the rectangle of pixels.\n',
+    'type': 'Custom',
+    'immediate': False,
+    'impl_func': False,
+    'cmd_args':
+        'GLint x, GLint y, GLsizei width, GLsizei height, GLenum format, '
+        'GLenum type, uint32 pixels_shm_id, uint32 pixels_shm_offset, '
+        'uint32 result_shm_id, uint32 result_shm_offset',
+    'result': ['uint32'],
+  },
   'ReleaseShaderCompiler': {'type': 'Noop'},
   'ShaderBinary': {'type': 'Noop'},
   'ShaderSource': {
@@ -1024,7 +1040,7 @@ _FUNCTION_INFO = {
                   'GLsizei stride, GLuint offset',
   },
   'SwapBuffers': {
-    'ImplFunc': False,
+    'impl_func': False,
     'DecoderFunc': 'DoSwapBuffers',
     'unit_test': False,
   },
@@ -1149,6 +1165,9 @@ class TypeHandler(object):
 
   def WriteStruct(self, func, file):
     """Writes a structure that matches the arguments to a function."""
+    comment = func.GetInfo('cmd_comment')
+    if not comment == None:
+      file.Write(comment)
     file.Write("struct %s {\n" % func.name)
     file.Write("  typedef %s ValueType;\n" % func.name)
     file.Write("  static const CommandId kCmdId = k%s;\n" % func.name)
@@ -1413,7 +1432,7 @@ TEST_F(GLES2DecoderTest, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
 
   def WriteGLES2ImplementationHeader(self, func, file):
     """Writes the GLES2 Implemention declaration."""
-    impl_func = func.GetInfo('ImplFunc')
+    impl_func = func.GetInfo('impl_func')
     if func.can_auto_generate and (impl_func == None or impl_func == True):
       file.Write("%s %s(%s) {\n" %
                  (func.return_type, func.original_name,

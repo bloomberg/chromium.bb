@@ -4705,10 +4705,15 @@ COMPILE_ASSERT(offsetof(PolygonOffset, factor) == 4,
 COMPILE_ASSERT(offsetof(PolygonOffset, units) == 8,
                OffsetOf_PolygonOffset_units_not_8);
 
+// ReadPixels has the result separated from the pixel buffer so that
+// it is easier to specify the result going to some specific place
+// that exactly fits the rectangle of pixels.
 struct ReadPixels {
   typedef ReadPixels ValueType;
   static const CommandId kCmdId = kReadPixels;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  typedef uint32 Result;
 
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
@@ -4720,7 +4725,8 @@ struct ReadPixels {
 
   void Init(
       GLint _x, GLint _y, GLsizei _width, GLsizei _height, GLenum _format,
-      GLenum _type, uint32 _pixels_shm_id, uint32 _pixels_shm_offset) {
+      GLenum _type, uint32 _pixels_shm_id, uint32 _pixels_shm_offset,
+      uint32 _result_shm_id, uint32 _result_shm_offset) {
     SetHeader();
     x = _x;
     y = _y;
@@ -4730,16 +4736,19 @@ struct ReadPixels {
     type = _type;
     pixels_shm_id = _pixels_shm_id;
     pixels_shm_offset = _pixels_shm_offset;
+    result_shm_id = _result_shm_id;
+    result_shm_offset = _result_shm_offset;
   }
 
   void* Set(
       void* cmd, GLint _x, GLint _y, GLsizei _width, GLsizei _height,
       GLenum _format, GLenum _type, uint32 _pixels_shm_id,
-      uint32 _pixels_shm_offset) {
+      uint32 _pixels_shm_offset, uint32 _result_shm_id,
+      uint32 _result_shm_offset) {
     static_cast<ValueType*>(
         cmd)->Init(
             _x, _y, _width, _height, _format, _type, _pixels_shm_id,
-            _pixels_shm_offset);
+            _pixels_shm_offset, _result_shm_id, _result_shm_offset);
     return NextCmdAddress<ValueType>(cmd);
   }
 
@@ -4752,10 +4761,12 @@ struct ReadPixels {
   uint32 type;
   uint32 pixels_shm_id;
   uint32 pixels_shm_offset;
+  uint32 result_shm_id;
+  uint32 result_shm_offset;
 };
 
-COMPILE_ASSERT(sizeof(ReadPixels) == 36,
-               Sizeof_ReadPixels_is_not_36);
+COMPILE_ASSERT(sizeof(ReadPixels) == 44,
+               Sizeof_ReadPixels_is_not_44);
 COMPILE_ASSERT(offsetof(ReadPixels, header) == 0,
                OffsetOf_ReadPixels_header_not_0);
 COMPILE_ASSERT(offsetof(ReadPixels, x) == 4,
@@ -4774,6 +4785,10 @@ COMPILE_ASSERT(offsetof(ReadPixels, pixels_shm_id) == 28,
                OffsetOf_ReadPixels_pixels_shm_id_not_28);
 COMPILE_ASSERT(offsetof(ReadPixels, pixels_shm_offset) == 32,
                OffsetOf_ReadPixels_pixels_shm_offset_not_32);
+COMPILE_ASSERT(offsetof(ReadPixels, result_shm_id) == 36,
+               OffsetOf_ReadPixels_result_shm_id_not_36);
+COMPILE_ASSERT(offsetof(ReadPixels, result_shm_offset) == 40,
+               OffsetOf_ReadPixels_result_shm_offset_not_40);
 
 struct RenderbufferStorage {
   typedef RenderbufferStorage ValueType;

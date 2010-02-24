@@ -1942,19 +1942,31 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
   GLsizei height = c.height;
   GLenum format = c.format;
   GLenum type = c.type;
+  // TODO(gman): Handle out of range rectangles.
+  typedef gles2::ReadPixels::Result Result;
   uint32 pixels_size = GLES2Util::ComputeImageDataSize(
       width, height, format, type, pack_alignment_);
   void* pixels = GetSharedMemoryAs<void*>(
       c.pixels_shm_id, c.pixels_shm_offset, pixels_size);
-  if (!pixels) {
+  Result* result = GetSharedMemoryAs<Result*>(
+        c.result_shm_id, c.result_shm_offset, sizeof(*result));
+  if (!pixels || !result) {
     return error::kOutOfBounds;
   }
+
   if (!ValidateGLenumReadPixelFormat(format) ||
       !ValidateGLenumPixelType(type)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
+  CopyRealGLErrorsToWrapper();
   glReadPixels(x, y, width, height, format, type, pixels);
+  GLenum error = glGetError();
+  if (error == GL_NO_ERROR) {
+    *result = true;
+  } else {
+    SetGLError(error);
+  }
   return error::kNoError;
 }
 

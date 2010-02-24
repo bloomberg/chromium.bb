@@ -667,10 +667,12 @@
 
   void ReadPixels(
       GLint x, GLint y, GLsizei width, GLsizei height, GLenum format,
-      GLenum type, uint32 pixels_shm_id, uint32 pixels_shm_offset) {
+      GLenum type, uint32 pixels_shm_id, uint32 pixels_shm_offset,
+      uint32 result_shm_id, uint32 result_shm_offset) {
     gles2::ReadPixels& c = GetCmdSpace<gles2::ReadPixels>();
     c.Init(
-        x, y, width, height, format, type, pixels_shm_id, pixels_shm_offset);
+        x, y, width, height, format, type, pixels_shm_id, pixels_shm_offset,
+        result_shm_id, result_shm_offset);
   }
 
   void RenderbufferStorage(
