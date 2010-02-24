@@ -168,17 +168,7 @@ void WebPluginDelegatePepper::UpdateGeometry(
   if (!instance())
     return;
 
-  // TODO(sehr): do we need all this?
-  window_.clipRect.top = clip_rect_.y();
-  window_.clipRect.left = clip_rect_.x();
-  window_.clipRect.bottom = clip_rect_.y() + clip_rect_.height();
-  window_.clipRect.right = clip_rect_.x() + clip_rect_.width();
-  window_.height = window_rect_.height();
-  window_.width = window_rect_.width();
-  window_.x = window_rect_.x();
-  window_.y = window_rect_.y();
-  window_.type = NPWindowTypeDrawable;
-  instance()->NPP_SetWindow(&window_);
+  ForwardSetWindow();
 }
 
 NPObject* WebPluginDelegatePepper::GetPluginScriptableObject() {
@@ -373,7 +363,10 @@ NPError WebPluginDelegatePepper::Device3DInitializeContext(
         Buffer ring_buffer = command_buffer_->GetRingBuffer();
         context->commandBuffer = ring_buffer.ptr;
         context->commandBufferSize = state.size;
+        context->repaintCallback = NULL;
         Synchronize3DContext(context, state);
+
+        ScheduleHandleRepaint(instance_->npp(), context);
 
         // Ensure the service knows the window size before rendering anything.
         nested_delegate_->UpdateGeometry(window_rect_, clip_rect_);
@@ -646,6 +639,19 @@ WebPluginDelegatePepper::~WebPluginDelegatePepper() {
   DestroyInstance();
 }
 
+void WebPluginDelegatePepper::ForwardSetWindow() {
+  window_.clipRect.top = clip_rect_.y();
+  window_.clipRect.left = clip_rect_.x();
+  window_.clipRect.bottom = clip_rect_.y() + clip_rect_.height();
+  window_.clipRect.right = clip_rect_.x() + clip_rect_.width();
+  window_.height = window_rect_.height();
+  window_.width = window_rect_.width();
+  window_.x = window_rect_.x();
+  window_.y = window_rect_.y();
+  window_.type = NPWindowTypeDrawable;
+  instance()->NPP_SetWindow(&window_);
+}
+
 void WebPluginDelegatePepper::PluginDestroyed() {
   delete this;
 }
@@ -799,6 +805,21 @@ bool WebPluginDelegatePepper::HandleInputEvent(const WebInputEvent& event,
 }
 
 #if defined(ENABLE_GPU)
+
+void WebPluginDelegatePepper::ScheduleHandleRepaint(
+    NPP npp, NPDeviceContext3D* context) {
+  command_buffer_->SetNotifyRepaintTask(method_factory3d_.NewRunnableMethod(
+      &WebPluginDelegatePepper::ForwardHandleRepaint,
+      npp,
+      context));
+}
+
+void WebPluginDelegatePepper::ForwardHandleRepaint(
+    NPP npp, NPDeviceContext3D* context) {
+  context->repaintCallback(npp, context);
+  ScheduleHandleRepaint(npp, context);
+}
+
 void WebPluginDelegatePepper::Synchronize3DContext(
     NPDeviceContext3D* context,
     gpu::CommandBuffer::State state) {
@@ -819,6 +840,7 @@ void WebPluginDelegatePepper::Device3DUpdateState(
       callback(npp, context, NPERR_NO_ERROR, user_data);
   }
 }
+
 #endif  // ENABLE_GPU
 
 void WebPluginDelegatePepper::SendNestedDelegateGeometryToBrowser(
