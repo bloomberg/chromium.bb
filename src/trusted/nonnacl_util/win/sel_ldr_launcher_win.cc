@@ -38,8 +38,13 @@ SelLdrLauncher::~SelLdrLauncher() {
 
 string SelLdrLauncher::GetSelLdrPathName() {
   char buffer[FILENAME_MAX];
+#ifdef _WIN64
+  const char* const kSelLdrBasename = "\\sel_ldr64.exe";
+#else
+  const char* const kSelLdrBasename = "\\sel_ldr.exe";
+#endif
   GetPluginDirectory(buffer, sizeof(buffer));
-  return string(buffer) + "\\sel_ldr.exe";
+  return string(buffer) + kSelLdrBasename;
 }
 
 // TODO(sehr): document what this is supposed to do exactly

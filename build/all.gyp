@@ -19,6 +19,7 @@
         '../src/trusted/nonnacl_util/nonnacl_util.gyp:*',
         '../src/trusted/platform_qualify/platform_qualify.gyp:*',
         '../src/trusted/plugin/plugin.gyp:*',
+        '../src/trusted/sel_universal/sel_universal.gyp:*',
         '../src/trusted/service_runtime/service_runtime.gyp:*',
         # Tests
         '../src/trusted/service_runtime/service_runtime_tests.gyp:*',
