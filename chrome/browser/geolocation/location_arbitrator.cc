@@ -56,6 +56,9 @@ class GeolocationArbitratorImpl
   typedef std::map<GeolocationArbitrator::Delegate*, UpdateOptions> DelegateMap;
   DelegateMap observers_;
 
+  // The current best estimate of our position.
+  Geoposition position_;
+
   CancelableRequestConsumer request_consumer_;
   bool use_mock_;
 };
@@ -80,7 +83,11 @@ void GeolocationArbitratorImpl::AddObserver(
     const UpdateOptions& update_options) {
   DCHECK(CalledOnValidThread());
   observers_[delegate] = update_options;
-  CreateProviders();
+  if (provider_ == NULL) {
+    CreateProviders();
+  } else if (position_.IsInitialized()) {
+    delegate->OnLocationUpdate(position_);
+  }
 }
 
 bool GeolocationArbitratorImpl::RemoveObserver(
@@ -105,12 +112,15 @@ void GeolocationArbitratorImpl::LocationUpdateAvailable(
     LocationProviderBase* provider) {
   DCHECK(CalledOnValidThread());
   DCHECK(provider);
-  Geoposition position;
-  provider->GetPosition(&position);
+  provider->GetPosition(&position_);
+  DCHECK(position_.IsInitialized());
   // TODO(joth): Arbitrate.
-  for (DelegateMap::const_iterator it = observers_.begin();
-      it != observers_.end(); ++it) {
-    it->first->OnLocationUpdate(position);
+  DelegateMap::const_iterator it = observers_.begin();
+  while (it != observers_.end()) {
+    // Advance iterator before callback to guard against synchronous deregister.
+    Delegate* delegate = it->first;
+    ++it;
+    delegate->OnLocationUpdate(position_);
   }
 }
 
@@ -131,7 +141,8 @@ void GeolocationArbitratorImpl::OnAccessTokenStoresLoaded(
     // set rather than cherry-pick our defaul url.
     const AccessTokenStore::AccessTokenSet::const_iterator token =
         access_token_set.find(default_url_);
-    // TODO(joth): Check with GLS folks what hostname they'd like sent.
+    // TODO(joth): Follow up with GLS folks if they have a plan for replacing
+    // the hostname field. Sending chromium.org is a stop-gap.
     provider_.reset(NewNetworkLocationProvider(
         access_token_store_.get(), context_getter_.get(), default_url_,
         token != access_token_set.end() ? token->second : string16(),
@@ -146,7 +157,8 @@ void GeolocationArbitratorImpl::OnAccessTokenStoresLoaded(
 void GeolocationArbitratorImpl::CreateProviders() {
   DCHECK(CalledOnValidThread());
   DCHECK(!observers_.empty());
-  if (provider_ == NULL && !request_consumer_.HasPendingRequests()) {
+  DCHECK(provider_ == NULL);
+  if (!request_consumer_.HasPendingRequests()) {
     access_token_store_->LoadAccessTokens(
         &request_consumer_,
         NewCallback(this,
@@ -165,7 +177,13 @@ bool GeolocationArbitratorImpl::HasHighAccuracyObserver() {
   return false;
 }
 
-GeolocationArbitrator* GeolocationArbitrator::New(
+GeolocationArbitrator* GeolocationArbitrator::Create(
+    URLRequestContextGetter* context_getter) {
+  return new GeolocationArbitratorImpl(NewChromePrefsAccessTokenStore(),
+                                       context_getter);
+}
+
+GeolocationArbitrator* GeolocationArbitrator::Create(
     AccessTokenStore* access_token_store,
     URLRequestContextGetter* context_getter) {
   return new GeolocationArbitratorImpl(access_token_store,

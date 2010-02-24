@@ -42,8 +42,8 @@ class GeolocationLocationArbitratorTest : public testing::Test {
  protected:
   virtual void SetUp() {
     access_token_store_ = new FakeAccessTokenStore;
-    arbitrator_.reset(GeolocationArbitrator::New(access_token_store_.get(),
-                                                 NULL));
+    arbitrator_.reset(GeolocationArbitrator::Create(access_token_store_.get(),
+                                                    NULL));
     arbitrator_->SetUseMockProvider(true);
   }
 
@@ -122,13 +122,34 @@ TEST_F(GeolocationLocationArbitratorTest, MultipleListener) {
   EXPECT_TRUE(arbitrator_->RemoveObserver(&observer3));
 }
 
-TEST_F(GeolocationLocationArbitratorTest, MultipleRegistrations) {
+TEST_F(GeolocationLocationArbitratorTest,
+       MultipleAddObserverCallsFromSameListener) {
   MockLocationObserver observer;
-  arbitrator_->AddObserver(&observer, GeolocationArbitrator::UpdateOptions());
-  GeolocationArbitrator::UpdateOptions high_accuracy_options;
-  high_accuracy_options.use_high_accuracy = true;
+  arbitrator_->AddObserver(
+      &observer, GeolocationArbitrator::UpdateOptions(false));
   // TODO(joth): Check this causes the GPS provider to fire up.
-  arbitrator_->AddObserver(&observer, high_accuracy_options);
+  arbitrator_->AddObserver(
+      &observer, GeolocationArbitrator::UpdateOptions(true));
   EXPECT_TRUE(arbitrator_->RemoveObserver(&observer));
   EXPECT_FALSE(arbitrator_->RemoveObserver(&observer));
+}
+
+TEST_F(GeolocationLocationArbitratorTest, RegistrationAfterFixArrives) {
+  MockLocationObserver observer1;
+  arbitrator_->AddObserver(&observer1, GeolocationArbitrator::UpdateOptions());
+
+  access_token_store_->NotifyDelegateTokensLoaded();
+  ASSERT_TRUE(MockLocationProvider::instance_);
+  EXPECT_FALSE(observer1.last_position_.IsInitialized());
+  SetReferencePosition(&MockLocationProvider::instance_->position_);
+  MockLocationProvider::instance_->UpdateListeners();
+  EXPECT_TRUE(observer1.last_position_.IsValidFix());
+
+  MockLocationObserver observer2;
+  EXPECT_FALSE(observer2.last_position_.IsValidFix());
+  arbitrator_->AddObserver(&observer2, GeolocationArbitrator::UpdateOptions());
+  EXPECT_TRUE(observer2.last_position_.IsValidFix());
+
+  EXPECT_TRUE(arbitrator_->RemoveObserver(&observer1));
+  EXPECT_TRUE(arbitrator_->RemoveObserver(&observer2));
 }

@@ -19,8 +19,12 @@ struct Geoposition;
 // moment.
 class GeolocationArbitrator {
  public:
-  // Creates and returns a new instance of the location arbitrator.
-  static GeolocationArbitrator* New(
+  // Creates and returns a new instance of the location arbitrator. Will use
+  // the default access token store implementation bound to Chrome Prefs.
+  static GeolocationArbitrator* Create(URLRequestContextGetter* context_getter);
+  // Creates and returns a new instance of the location arbitrator. As above
+  // but allows injectino of the access token store, for testing.
+  static GeolocationArbitrator* Create(
       AccessTokenStore* access_token_store,
       URLRequestContextGetter* context_getter);
 
@@ -36,6 +40,8 @@ class GeolocationArbitrator {
   };
   struct UpdateOptions {
     UpdateOptions() : use_high_accuracy(false) {}
+    explicit UpdateOptions(bool high_accuracy)
+        : use_high_accuracy(high_accuracy) {}
     bool use_high_accuracy;
   };
 
