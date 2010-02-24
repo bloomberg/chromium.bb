@@ -18,8 +18,6 @@ AutomationResourceProxy::AutomationResourceProxy(
 }
 
 AutomationResourceProxy::~AutomationResourceProxy() {
-  if (tracker_)
-    tracker_->Remove(this);
 }
 
 AutomationHandleTracker::~AutomationHandleTracker() {
@@ -38,11 +36,11 @@ void AutomationHandleTracker::Add(AutomationResourceProxy* proxy) {
 }
 
 void AutomationHandleTracker::Remove(AutomationResourceProxy* proxy) {
-  AutoLock lock(map_lock_);
   HandleToObjectMap::iterator iter = handle_to_object_.find(proxy->handle());
   if (iter != handle_to_object_.end()) {
+    AutomationHandle proxy_handle = proxy->handle();
     handle_to_object_.erase(iter);
-    sender_->Send(new AutomationMsg_HandleUnused(0, proxy->handle()));
+    sender_->Send(new AutomationMsg_HandleUnused(0, proxy_handle));
   }
 }
 
@@ -52,6 +50,7 @@ void AutomationHandleTracker::InvalidateHandle(AutomationHandle handle) {
   HandleToObjectMap::iterator iter = handle_to_object_.find(handle);
   if (iter != handle_to_object_.end()) {
     iter->second->Invalidate();
+    Remove(iter->second);
   }
 }
 

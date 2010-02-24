@@ -96,7 +96,8 @@ class AutomationHandleTracker {
   AutomationResourceProxy* GetResource(AutomationHandle handle);
  private:
   typedef
-    std::map<AutomationHandle, AutomationResourceProxy*> HandleToObjectMap;
+    std::map<AutomationHandle, scoped_refptr<AutomationResourceProxy> >
+        HandleToObjectMap;
   typedef std::pair<AutomationHandle, AutomationResourceProxy*> MapEntry;
 
   HandleToObjectMap handle_to_object_;
