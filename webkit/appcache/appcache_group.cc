@@ -215,13 +215,7 @@ void AppCacheGroup::RunQueuedUpdates() {
 
 bool AppCacheGroup::FindObserver(UpdateObserver* find_me,
     const ObserverList<UpdateObserver>& observer_list) {
-  ObserverList<UpdateObserver>::Iterator it(observer_list);
-  UpdateObserver* obs;
-  while ((obs = it.GetNext()) != NULL) {
-    if (obs == find_me)
-      return true;
-  }
-  return false;
+  return observer_list.HasObserver(find_me);
 }
 
 void AppCacheGroup::ScheduleUpdateRestart(int delay_ms) {

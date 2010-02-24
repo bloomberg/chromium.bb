@@ -86,11 +86,7 @@ bool TabStripModel::HasNonPhantomTabs() const {
 }
 
 bool TabStripModel::HasObserver(TabStripModelObserver* observer) {
-  for (size_t i = 0; i < observers_.size(); ++i) {
-    if (observers_.GetElementAt(i) == observer)
-      return true;
-  }
-  return false;
+  return observers_.HasObserver(observer);
 }
 
 bool TabStripModel::ContainsIndex(int index) const {

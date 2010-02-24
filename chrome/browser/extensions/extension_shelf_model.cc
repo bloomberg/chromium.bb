@@ -44,8 +44,7 @@ ExtensionShelfModel::~ExtensionShelfModel() {
   FOR_EACH_OBSERVER(ExtensionShelfModelObserver, observers_,
                     ShelfModelDeleting());
 
-  while (observers_.size())
-    observers_.RemoveObserver(observers_.GetElementAt(0));
+  observers_.Clear();
 
   for (iterator t = toolstrips_.begin(); t != toolstrips_.end(); ++t)
     delete t->host;
