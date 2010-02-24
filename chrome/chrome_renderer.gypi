@@ -68,6 +68,8 @@
         'renderer/about_handler.h',
         'renderer/audio_message_filter.cc',
         'renderer/audio_message_filter.h',
+        'renderer/cookie_message_filter.cc',
+        'renderer/cookie_message_filter.h',
         'renderer/devtools_agent.cc',
         'renderer/devtools_agent.h',
         'renderer/devtools_agent_filter.cc',

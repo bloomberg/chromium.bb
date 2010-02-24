@@ -24,6 +24,7 @@
 #include "ipc/ipc_platform_file.h"
 
 class AppCacheDispatcher;
+class CookieMessageFilter;
 class DBMessageFilter;
 class DevToolsAgentFilter;
 class FilePath;
@@ -105,14 +106,6 @@ class RenderThread : public RenderThreadBase,
   virtual void WidgetHidden();
   virtual void WidgetRestored();
 
-  // Send a synchronous message and run a nested message loop, while waiting
-  // for a reply.
-  //
-  // NOTE: Only use this method if the handler for the message may need to show
-  // UI before replying.
-  //
-  bool SendAndRunNestedMessageLoop(IPC::SyncMessage* message);
-
   // These methods modify how the next message is sent.  Normally, when sending
   // a synchronous message that runs a nested message loop, we need to suspend
   // callbacks into WebKit.  This involves disabling timers and deferring
@@ -135,6 +128,10 @@ class RenderThread : public RenderThreadBase,
 
   SpellCheck* spellchecker() const {
     return spellchecker_.get();
+  }
+
+  CookieMessageFilter* cookie_message_filter() const {
+    return cookie_message_filter_.get();
   }
 
   bool plugin_refresh_allowed() const { return plugin_refresh_allowed_; }
@@ -240,6 +237,7 @@ class RenderThread : public RenderThreadBase,
 
   // Used on the renderer and IPC threads.
   scoped_refptr<DBMessageFilter> db_message_filter_;
+  scoped_refptr<CookieMessageFilter> cookie_message_filter_;
 
 #if defined(OS_POSIX)
   scoped_refptr<IPC::ChannelProxy::MessageFilter>

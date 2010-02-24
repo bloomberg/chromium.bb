@@ -299,6 +299,11 @@ IPC_BEGIN_MESSAGES(View)
                       URLRequestStatus /* status */,
                       std::string /* security info */)
 
+  // Sent when user prompting is required before a ViewHostMsg_GetCookies
+  // message can complete.  This message indicates that the renderer should
+  // pump messages while waiting for cookies.
+  IPC_MESSAGE_CONTROL0(ViewMsg_SignalCookiePromptEvent)
+
   // Request for the renderer to evaluate an xpath to a frame and execute a
   // javascript: url in that frame's context. The message is completely
   // asynchronous and no corresponding response message is sent back.

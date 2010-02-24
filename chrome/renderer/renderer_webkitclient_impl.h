@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef CHROME_RENDERER_RENDERER_WEBKITCLIENT_IMPL_H_
 #define CHROME_RENDERER_RENDERER_WEBKITCLIENT_IMPL_H_
@@ -19,6 +19,10 @@
 #include "base/lock.h"
 #include "third_party/WebKit/WebKit/chromium/public/linux/WebSandboxSupport.h"
 #endif
+
+namespace IPC {
+class SyncMessage;
+}
 
 class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
  public:
@@ -105,6 +109,8 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
     std::map<std::string, std::string> unicode_font_families_;
   };
 #endif
+
+  void SendCookieMessage(IPC::SyncMessage* message);
 
   webkit_glue::WebClipboardImpl clipboard_;
 

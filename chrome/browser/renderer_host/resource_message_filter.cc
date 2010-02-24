@@ -629,8 +629,10 @@ void ResourceMessageFilter::OnGetCookies(const GURL& url,
   if (context->cookie_policy()) {
     policy = context->cookie_policy()->CanGetCookies(
         url, first_party_for_cookies, callback);
-    if (policy == net::ERR_IO_PENDING)
+    if (policy == net::ERR_IO_PENDING) {
+      Send(new ViewMsg_SignalCookiePromptEvent());
       return;
+    }
   }
   callback->Run(policy);
 }
@@ -660,8 +662,10 @@ void ResourceMessageFilter::OnGetRawCookies(
   if (context->cookie_policy()) {
     policy = context->cookie_policy()->CanGetCookies(
        url, first_party_for_cookies, callback);
-    if (policy == net::ERR_IO_PENDING)
+    if (policy == net::ERR_IO_PENDING) {
+      Send(new ViewMsg_SignalCookiePromptEvent());
       return;
+    }
   }
   callback->Run(policy);
 }
