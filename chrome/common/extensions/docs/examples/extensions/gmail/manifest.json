@@ -1,6 +1,6 @@
 {
-  "name": "__MSG_name__",
-  "description": "__MSG_description__",
+  "name": "__MSG_gmailcheck_name__",
+  "description": "__MSG_gmailcheck_description__",
   "version": "3",
   "background_page": "background.html",
   "options_page": "options.html",
