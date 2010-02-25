@@ -17,29 +17,17 @@ namespace {
 // Singletons for each possible exception window.
 ContentExceptionsWindowGtk* instances[CONTENT_SETTINGS_NUM_TYPES] = { NULL };
 
-// Response ids for our custom buttons.
-enum {
-  RESPONSE_ADD = 1,
-  RESPONSE_EDIT,
-  RESPONSE_REMOVE,
-  RESPONSE_REMOVE_ALL
-};
-
 GtkWidget* BuildDialogButton(GtkWidget* dialog, int ids_id,
-                             const gchar* stock_id, gint response_id) {
-  GtkWidget* widget = gtk_util::AddButtonToDialog(
-      dialog,
+                             const gchar* stock_id) {
+  GtkWidget* button = gtk_button_new_with_label(
       gtk_util::ConvertAcceleratorsFromWindowsStyle(
-          l10n_util::GetStringUTF8(ids_id)).c_str(),
-      stock_id,
-      response_id);
-  gtk_button_set_use_underline(GTK_BUTTON(widget), TRUE);
-  gtk_button_box_set_child_secondary(
-      GTK_BUTTON_BOX(GTK_DIALOG(dialog)->action_area),
-      widget,
-      TRUE);
+          l10n_util::GetStringUTF8(ids_id)).c_str());
+  gtk_button_set_image(GTK_BUTTON(button),
+                       gtk_image_new_from_stock(stock_id,
+                                                GTK_ICON_SIZE_BUTTON));
+  gtk_button_set_use_underline(GTK_BUTTON(button), TRUE);
 
-  return widget;
+  return button;
 }
 
 }  // namespace
@@ -108,10 +96,14 @@ ContentExceptionsWindowGtk::ContentExceptionsWindowGtk(
       GTK_STOCK_CLOSE,
       GTK_RESPONSE_CLOSE,
       NULL);
+  gtk_window_set_default_size(GTK_WINDOW(dialog_), 500, -1);
   // Allow browser windows to go in front of the options dialog in metacity.
   gtk_window_set_type_hint(GTK_WINDOW(dialog_), GDK_WINDOW_TYPE_HINT_NORMAL);
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
+
+  GtkWidget* hbox = gtk_hbox_new(FALSE, gtk_util::kControlSpacing);
+  gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), hbox);
 
   // Create a scrolled window to wrap the treeview widget in order to have a
   // frame.
@@ -120,26 +112,44 @@ ContentExceptionsWindowGtk::ContentExceptionsWindowGtk(
                                       GTK_SHADOW_ETCHED_IN);
   gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled),
                                  GTK_POLICY_AUTOMATIC, GTK_POLICY_AUTOMATIC);
-  gtk_container_add(GTK_CONTAINER(GTK_DIALOG(dialog_)->vbox), scrolled);
-
-  // Add the main tree view to the scrolled window.
   gtk_container_add(GTK_CONTAINER(scrolled), treeview_);
+  gtk_box_pack_start(GTK_BOX(hbox), scrolled, TRUE, TRUE, 0);
 
-  BuildDialogButton(dialog_, IDS_EXCEPTIONS_ADD_BUTTON,
-                    GTK_STOCK_ADD, RESPONSE_ADD);
+  GtkWidget* button_box = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+
+  GtkWidget* add_button = BuildDialogButton(dialog_, IDS_EXCEPTIONS_ADD_BUTTON,
+                                            GTK_STOCK_ADD);
+  g_signal_connect(add_button, "clicked",
+                   G_CALLBACK(&ContentExceptionsWindowGtk::AddThunk), this);
+  gtk_box_pack_start(GTK_BOX(button_box), add_button, FALSE, FALSE, 0);
+
   edit_button_ = BuildDialogButton(dialog_, IDS_EXCEPTIONS_EDIT_BUTTON,
-                                   GTK_STOCK_EDIT, RESPONSE_EDIT);
+                                   GTK_STOCK_EDIT);
+  g_signal_connect(edit_button_, "clicked",
+                   G_CALLBACK(&ContentExceptionsWindowGtk::EditThunk), this);
+  gtk_box_pack_start(GTK_BOX(button_box), edit_button_, FALSE, FALSE, 0);
+
   remove_button_ = BuildDialogButton(dialog_, IDS_EXCEPTIONS_REMOVE_BUTTON,
-                                     GTK_STOCK_REMOVE, RESPONSE_REMOVE);
-  remove_all_button_ = BuildDialogButton(
-      dialog_, IDS_EXCEPTIONS_REMOVEALL_BUTTON,
-      GTK_STOCK_CLEAR, RESPONSE_REMOVE_ALL);
+                                     GTK_STOCK_REMOVE);
+  g_signal_connect(remove_button_, "clicked",
+                   G_CALLBACK(&ContentExceptionsWindowGtk::RemoveThunk), this);
+  gtk_box_pack_start(GTK_BOX(button_box), remove_button_, FALSE, FALSE, 0);
+
+  remove_all_button_ = BuildDialogButton(dialog_,
+                                         IDS_EXCEPTIONS_REMOVEALL_BUTTON,
+                                         GTK_STOCK_CLEAR);
+  g_signal_connect(remove_all_button_, "clicked",
+                   G_CALLBACK(&ContentExceptionsWindowGtk::RemoveAllThunk),
+                   this);
+  gtk_box_pack_start(GTK_BOX(button_box), remove_all_button_, FALSE, FALSE, 0);
+
+  gtk_box_pack_start(GTK_BOX(hbox), button_box, FALSE, FALSE, 0);
 
   UpdateButtonState();
 
   gtk_widget_show_all(dialog_);
 
-  g_signal_connect(dialog_, "response", G_CALLBACK(OnResponse), this);
+  g_signal_connect(dialog_, "response", G_CALLBACK(gtk_widget_destroy), NULL);
   g_signal_connect(dialog_, "destroy", G_CALLBACK(OnWindowDestroy), this);
 }
 
@@ -234,24 +244,6 @@ std::string ContentExceptionsWindowGtk::GetWindowTitle() const {
       NOTREACHED();
   }
   return std::string();
-}
-
-// static
-void ContentExceptionsWindowGtk::OnResponse(
-    GtkDialog* dialog,
-    int response_id,
-    ContentExceptionsWindowGtk* window) {
-  if (response_id == RESPONSE_ADD) {
-    window->Add();
-  } else if (response_id == RESPONSE_EDIT) {
-    window->Edit();
-  } else if (response_id == RESPONSE_REMOVE) {
-    window->Remove();
-  } else if (response_id == RESPONSE_REMOVE_ALL) {
-    window->RemoveAll();
-  } else {
-    gtk_widget_destroy(window->dialog_);
-  }
 }
 
 // static

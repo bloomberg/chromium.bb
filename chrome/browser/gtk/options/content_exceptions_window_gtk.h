@@ -54,9 +54,21 @@ class ContentExceptionsWindowGtk : public gtk_tree::TableAdapter::Delegate,
   void UpdateButtonState();
 
   // Callbacks for the buttons.
+  static void AddThunk(GtkButton* unused, gpointer self) {
+    reinterpret_cast<ContentExceptionsWindowGtk*>(self)->Add();
+  }
   void Add();
+  static void EditThunk(GtkButton* unused, gpointer self) {
+    reinterpret_cast<ContentExceptionsWindowGtk*>(self)->Edit();
+  }
   void Edit();
+  static void RemoveThunk(GtkButton* unused, gpointer self) {
+    reinterpret_cast<ContentExceptionsWindowGtk*>(self)->Remove();
+  }
   void Remove();
+  static void RemoveAllThunk(GtkButton* unused, gpointer self) {
+    reinterpret_cast<ContentExceptionsWindowGtk*>(self)->RemoveAll();
+  }
   void RemoveAll();
 
   // Returns the title of the window (changes based on what ContentSettingsType
@@ -64,9 +76,6 @@ class ContentExceptionsWindowGtk : public gtk_tree::TableAdapter::Delegate,
   std::string GetWindowTitle() const;
 
   // GTK Callbacks
-  static void OnResponse(GtkDialog* dialog,
-                         int response_id,
-                         ContentExceptionsWindowGtk* window);
   static void OnWindowDestroy(GtkWidget* widget,
                               ContentExceptionsWindowGtk* window);
   static void OnSelectionChanged(GtkTreeSelection* selection,
