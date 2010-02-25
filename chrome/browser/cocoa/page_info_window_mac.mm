@@ -83,14 +83,14 @@ void PageInfoWindowMac::ShowCertDialog(int) {
   for (size_t i = 0; i < ca_certs.size(); ++i)
     CFArrayAppendValue(certificates, ca_certs[i]);
 
-  [[SFCertificatePanel sharedCertificatePanel]
+  [[[SFCertificatePanel alloc] init]
       beginSheetForWindow:[controller_ window]
             modalDelegate:nil
            didEndSelector:NULL
               contextInfo:NULL
              certificates:reinterpret_cast<NSArray*>(certificates.get())
-                showGroup:YES
-  ];
+                showGroup:YES];
+  // The SFCertificatePanel releases itself when the sheet is dismissed.
 }
 
 void PageInfoWindowMac::LayoutSections() {
