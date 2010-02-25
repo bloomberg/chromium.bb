@@ -10,7 +10,7 @@
 /* Defines the internal data structure for the validator state. */
 
 #include "native_client/src/shared/utils/types.h"
-#include "native_client/src/trusted/gio/gio.h"
+#include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/trusted/validator_x86/nacl_cpuid.h"
 
 /* Defines the maximum number of validators that can be registered. */
