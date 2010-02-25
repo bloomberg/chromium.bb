@@ -184,7 +184,7 @@
                 'app/nibs/AutoFillDialog.xib',
                 'app/nibs/BookmarkAllTabs.xib',
                 'app/nibs/BookmarkBar.xib',
-		'app/nibs/BookmarkBarFolderWindow.xib',
+                'app/nibs/BookmarkBarFolderWindow.xib',
                 'app/nibs/BookmarkBubble.xib',
                 'app/nibs/BookmarkEditor.xib',
                 'app/nibs/BookmarkManager.xib',
@@ -505,7 +505,7 @@
             # if we still need them and/or how to update to gyp.
             #'app/check_dependents.bat',
             #'app/chrome.dll.deps',
-            
+
             # Stub entry points for process types that are not supported
             # by NaCl Win64 executable
             'app/dummy_main_functions.cc',
