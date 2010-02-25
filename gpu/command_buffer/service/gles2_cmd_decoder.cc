@@ -332,10 +332,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // Template to help call glGenXXX functions.
   template <void gl_gen_function(GLES2DecoderImpl*, GLsizei, GLuint*)>
   bool GenGLObjects(GLsizei n, const GLuint* client_ids) {
-    if (n < 0) {
-      SetGLError(GL_INVALID_VALUE);
-      return true;
-    }
+    DCHECK_GE(n, 0);
     if (!ValidateIdsAreUnused(n, client_ids)) {
       return false;
     }
@@ -347,6 +344,7 @@ class GLES2DecoderImpl : public GLES2Decoder {
   // Template to help call glDeleteXXX functions.
   template <void gl_delete_function(GLES2DecoderImpl*, GLsizei, GLuint*)>
   bool DeleteGLObjects(GLsizei n, const GLuint* client_ids) {
+    DCHECK_GE(n, 0);
     scoped_array<GLuint>temp(new GLuint[n]);
     UnregisterObjects(n, client_ids, temp.get());
     gl_delete_function(this, n, temp.get());
@@ -1951,8 +1949,10 @@ error::Error GLES2DecoderImpl::HandleDrawElements(
     GLsizei count = c.count;
     GLenum type = c.type;
     int32 offset = c.index_offset;
-    if (!ValidateGLenumDrawMode(mode) ||
-        !ValidateGLenumIndexType(type)) {
+    if (count < 0) {
+      SetGLError(GL_INVALID_VALUE);
+    } else if (!ValidateGLenumDrawMode(mode) ||
+               !ValidateGLenumIndexType(type)) {
       SetGLError(GL_INVALID_ENUM);
     } else {
       GLsizeiptr buffer_size = bound_element_array_buffer_->size();
@@ -2075,9 +2075,13 @@ error::Error GLES2DecoderImpl::HandleVertexAttribPointer(
     GLsizei offset = c.offset;
     const void* ptr = reinterpret_cast<const void*>(offset);
     if (!ValidateGLenumVertexAttribType(type) ||
-        !ValidateGLintVertexAttribSize(size) ||
-        indx >= group_->max_vertex_attribs() ||
-        stride < 0) {
+        !ValidateGLintVertexAttribSize(size)) {
+      SetGLError(GL_INVALID_ENUM);
+      return error::kNoError;
+    }
+    if (indx >= group_->max_vertex_attribs() ||
+        stride < 0 ||
+        offset < 0) {
       SetGLError(GL_INVALID_VALUE);
       return error::kNoError;
     }
@@ -2123,6 +2127,10 @@ error::Error GLES2DecoderImpl::HandleReadPixels(
 
   if (!ValidateGLenumReadPixelFormat(format) ||
       !ValidateGLenumPixelType(type)) {
+    SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
+  }
+  if (width < 0 || height < 0) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -2141,8 +2149,11 @@ error::Error GLES2DecoderImpl::HandlePixelStorei(
     uint32 immediate_data_size, const gles2::PixelStorei& c) {
   GLenum pname = c.pname;
   GLenum param = c.param;
-  if (!ValidateGLenumPixelStore(pname) ||
-      !ValidateGLintPixelStoreAlignment(param)) {
+  if (!ValidateGLenumPixelStore(pname)) {
+    SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
+  }
+  if (!ValidateGLintPixelStoreAlignment(param)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -2282,6 +2293,10 @@ error::Error GLES2DecoderImpl::HandleBufferData(
   }
   if (!ValidateGLenumBufferTarget(target) ||
       !ValidateGLenumBufferUsage(usage)) {
+    SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
+  }
+  if (size < 0) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -2320,6 +2335,10 @@ error::Error GLES2DecoderImpl::HandleBufferDataImmediate(
   GLenum usage = static_cast<GLenum>(c.usage);
   if (!ValidateGLenumBufferTarget(target) ||
       !ValidateGLenumBufferUsage(usage)) {
+    SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
+  }
+  if (size < 0) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }

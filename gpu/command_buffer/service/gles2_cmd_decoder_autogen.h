@@ -11,7 +11,7 @@
 error::Error GLES2DecoderImpl::HandleActiveTexture(
     uint32 immediate_data_size, const gles2::ActiveTexture& c) {
   GLenum texture = static_cast<GLenum>(c.texture);
-  glActiveTexture(texture);
+  DoActiveTexture(texture);
   return error::kNoError;
 }
 
@@ -224,6 +224,10 @@ error::Error GLES2DecoderImpl::HandleBufferSubData(
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
   }
+  if (size < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (data == NULL) {
     return error::kOutOfBounds;
   }
@@ -241,6 +245,10 @@ error::Error GLES2DecoderImpl::HandleBufferSubDataImmediate(
       c, data_size, immediate_data_size);
   if (!ValidateGLenumBufferTarget(target)) {
     SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
+  }
+  if (size < 0) {
+    SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
   if (data == NULL) {
@@ -330,6 +338,18 @@ error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2D(
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
   }
+  if (width < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  if (height < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  if (imageSize < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (data == NULL) {
     return error::kOutOfBounds;
   }
@@ -356,6 +376,18 @@ error::Error GLES2DecoderImpl::HandleCompressedTexSubImage2DImmediate(
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
   }
+  if (width < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  if (height < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  if (imageSize < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (data == NULL) {
     return error::kOutOfBounds;
   }
@@ -378,6 +410,14 @@ error::Error GLES2DecoderImpl::HandleCopyTexImage2D(
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
   }
+  if (width < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  if (height < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   glCopyTexImage2D(target, level, internalformat, x, y, width, height, border);
   return error::kNoError;
 }
@@ -394,6 +434,14 @@ error::Error GLES2DecoderImpl::HandleCopyTexSubImage2D(
   GLsizei height = static_cast<GLsizei>(c.height);
   if (!ValidateGLenumTextureTarget(target)) {
     SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
+  }
+  if (width < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  if (height < 0) {
+    SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
   glCopyTexSubImage2D(target, level, xoffset, yoffset, x, y, width, height);
@@ -436,6 +484,10 @@ error::Error GLES2DecoderImpl::HandleDeleteBuffers(
   uint32 data_size = n * sizeof(GLuint);
   const GLuint* buffers = GetSharedMemoryAs<const GLuint*>(
       c.buffers_shm_id, c.buffers_shm_offset, data_size);
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (buffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -449,6 +501,10 @@ error::Error GLES2DecoderImpl::HandleDeleteBuffersImmediate(
   uint32 data_size = n * sizeof(GLuint);
   const GLuint* buffers = GetImmediateDataAs<const GLuint*>(
       c, data_size, immediate_data_size);
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (buffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -462,6 +518,10 @@ error::Error GLES2DecoderImpl::HandleDeleteFramebuffers(
   uint32 data_size = n * sizeof(GLuint);
   const GLuint* framebuffers = GetSharedMemoryAs<const GLuint*>(
       c.framebuffers_shm_id, c.framebuffers_shm_offset, data_size);
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (framebuffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -475,6 +535,10 @@ error::Error GLES2DecoderImpl::HandleDeleteFramebuffersImmediate(
   uint32 data_size = n * sizeof(GLuint);
   const GLuint* framebuffers = GetImmediateDataAs<const GLuint*>(
       c, data_size, immediate_data_size);
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (framebuffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -488,6 +552,10 @@ error::Error GLES2DecoderImpl::HandleDeleteRenderbuffers(
   uint32 data_size = n * sizeof(GLuint);
   const GLuint* renderbuffers = GetSharedMemoryAs<const GLuint*>(
       c.renderbuffers_shm_id, c.renderbuffers_shm_offset, data_size);
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (renderbuffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -501,6 +569,10 @@ error::Error GLES2DecoderImpl::HandleDeleteRenderbuffersImmediate(
   uint32 data_size = n * sizeof(GLuint);
   const GLuint* renderbuffers = GetImmediateDataAs<const GLuint*>(
       c, data_size, immediate_data_size);
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (renderbuffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -514,6 +586,10 @@ error::Error GLES2DecoderImpl::HandleDeleteTextures(
   uint32 data_size = n * sizeof(GLuint);
   const GLuint* textures = GetSharedMemoryAs<const GLuint*>(
       c.textures_shm_id, c.textures_shm_offset, data_size);
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (textures == NULL) {
     return error::kOutOfBounds;
   }
@@ -527,6 +603,10 @@ error::Error GLES2DecoderImpl::HandleDeleteTexturesImmediate(
   uint32 data_size = n * sizeof(GLuint);
   const GLuint* textures = GetImmediateDataAs<const GLuint*>(
       c, data_size, immediate_data_size);
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (textures == NULL) {
     return error::kOutOfBounds;
   }
@@ -601,6 +681,10 @@ error::Error GLES2DecoderImpl::HandleDrawArrays(
   GLsizei count = static_cast<GLsizei>(c.count);
   if (!ValidateGLenumDrawMode(mode)) {
     SetGLError(GL_INVALID_ENUM);
+    return error::kNoError;
+  }
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
   DoDrawArrays(mode, first, count);
@@ -708,6 +792,10 @@ error::Error GLES2DecoderImpl::HandleGenBuffers(
   uint32 data_size = n * sizeof(GLuint);
   GLuint* buffers = GetSharedMemoryAs<GLuint*>(
       c.buffers_shm_id, c.buffers_shm_offset, data_size);
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (buffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -723,6 +811,10 @@ error::Error GLES2DecoderImpl::HandleGenBuffersImmediate(
   uint32 data_size = n * sizeof(GLuint);
   GLuint* buffers = GetImmediateDataAs<GLuint*>(
       c, data_size, immediate_data_size);
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (buffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -749,6 +841,10 @@ error::Error GLES2DecoderImpl::HandleGenFramebuffers(
   uint32 data_size = n * sizeof(GLuint);
   GLuint* framebuffers = GetSharedMemoryAs<GLuint*>(
       c.framebuffers_shm_id, c.framebuffers_shm_offset, data_size);
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (framebuffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -764,6 +860,10 @@ error::Error GLES2DecoderImpl::HandleGenFramebuffersImmediate(
   uint32 data_size = n * sizeof(GLuint);
   GLuint* framebuffers = GetImmediateDataAs<GLuint*>(
       c, data_size, immediate_data_size);
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (framebuffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -779,6 +879,10 @@ error::Error GLES2DecoderImpl::HandleGenRenderbuffers(
   uint32 data_size = n * sizeof(GLuint);
   GLuint* renderbuffers = GetSharedMemoryAs<GLuint*>(
       c.renderbuffers_shm_id, c.renderbuffers_shm_offset, data_size);
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (renderbuffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -794,6 +898,10 @@ error::Error GLES2DecoderImpl::HandleGenRenderbuffersImmediate(
   uint32 data_size = n * sizeof(GLuint);
   GLuint* renderbuffers = GetImmediateDataAs<GLuint*>(
       c, data_size, immediate_data_size);
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (renderbuffers == NULL) {
     return error::kOutOfBounds;
   }
@@ -809,6 +917,10 @@ error::Error GLES2DecoderImpl::HandleGenTextures(
   uint32 data_size = n * sizeof(GLuint);
   GLuint* textures = GetSharedMemoryAs<GLuint*>(
       c.textures_shm_id, c.textures_shm_offset, data_size);
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (textures == NULL) {
     return error::kOutOfBounds;
   }
@@ -824,6 +936,10 @@ error::Error GLES2DecoderImpl::HandleGenTexturesImmediate(
   uint32 data_size = n * sizeof(GLuint);
   GLuint* textures = GetImmediateDataAs<GLuint*>(
       c, data_size, immediate_data_size);
+  if (n < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (textures == NULL) {
     return error::kOutOfBounds;
   }
@@ -984,6 +1100,10 @@ error::Error GLES2DecoderImpl::HandleGetProgramInfoLog(
   }
   char* infolog = GetSharedMemoryAs<char*>(
       c.infolog_shm_id, c.infolog_shm_offset, bufsize);
+  if (bufsize < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (infolog == NULL) {
     return error::kOutOfBounds;
   }
@@ -1059,6 +1179,10 @@ error::Error GLES2DecoderImpl::HandleGetShaderInfoLog(
   }
   char* infolog = GetSharedMemoryAs<char*>(
       c.infolog_shm_id, c.infolog_shm_offset, bufsize);
+  if (bufsize < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (infolog == NULL) {
     return error::kOutOfBounds;
   }
@@ -1086,6 +1210,10 @@ error::Error GLES2DecoderImpl::HandleGetShaderSource(
   }
   char* source = GetSharedMemoryAs<char*>(
       c.source_shm_id, c.source_shm_offset, bufsize);
+  if (bufsize < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (source == NULL) {
     return error::kOutOfBounds;
   }
@@ -1339,6 +1467,14 @@ error::Error GLES2DecoderImpl::HandleRenderbufferStorage(
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
   }
+  if (width < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  if (height < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   glRenderbufferStorageEXT(target, internalformat, width, height);
   return error::kNoError;
 }
@@ -1357,6 +1493,14 @@ error::Error GLES2DecoderImpl::HandleScissor(
   GLint y = static_cast<GLint>(c.y);
   GLsizei width = static_cast<GLsizei>(c.width);
   GLsizei height = static_cast<GLsizei>(c.height);
+  if (width < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  if (height < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   glScissor(x, y, width, height);
   return error::kNoError;
 }
@@ -1602,6 +1746,14 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2D(
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
   }
+  if (width < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  if (height < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (!ValidateGLenumTextureFormat(format)) {
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
@@ -1636,6 +1788,14 @@ error::Error GLES2DecoderImpl::HandleTexSubImage2DImmediate(
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
   }
+  if (width < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  if (height < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (!ValidateGLenumTextureFormat(format)) {
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
@@ -1668,6 +1828,10 @@ error::Error GLES2DecoderImpl::HandleUniform1fv(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 1);
   const GLfloat* v = GetSharedMemoryAs<const GLfloat*>(
       c.v_shm_id, c.v_shm_offset, data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -1683,6 +1847,10 @@ error::Error GLES2DecoderImpl::HandleUniform1fvImmediate(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 1);
   const GLfloat* v = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -1706,6 +1874,10 @@ error::Error GLES2DecoderImpl::HandleUniform1iv(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLint), 1);
   const GLint* v = GetSharedMemoryAs<const GLint*>(
       c.v_shm_id, c.v_shm_offset, data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -1721,6 +1893,10 @@ error::Error GLES2DecoderImpl::HandleUniform1ivImmediate(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLint), 1);
   const GLint* v = GetImmediateDataAs<const GLint*>(
       c, data_size, immediate_data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -1745,6 +1921,10 @@ error::Error GLES2DecoderImpl::HandleUniform2fv(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 2);
   const GLfloat* v = GetSharedMemoryAs<const GLfloat*>(
       c.v_shm_id, c.v_shm_offset, data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -1760,6 +1940,10 @@ error::Error GLES2DecoderImpl::HandleUniform2fvImmediate(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 2);
   const GLfloat* v = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -1784,6 +1968,10 @@ error::Error GLES2DecoderImpl::HandleUniform2iv(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLint), 2);
   const GLint* v = GetSharedMemoryAs<const GLint*>(
       c.v_shm_id, c.v_shm_offset, data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -1799,6 +1987,10 @@ error::Error GLES2DecoderImpl::HandleUniform2ivImmediate(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLint), 2);
   const GLint* v = GetImmediateDataAs<const GLint*>(
       c, data_size, immediate_data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -1824,6 +2016,10 @@ error::Error GLES2DecoderImpl::HandleUniform3fv(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 3);
   const GLfloat* v = GetSharedMemoryAs<const GLfloat*>(
       c.v_shm_id, c.v_shm_offset, data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -1839,6 +2035,10 @@ error::Error GLES2DecoderImpl::HandleUniform3fvImmediate(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 3);
   const GLfloat* v = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -1864,6 +2064,10 @@ error::Error GLES2DecoderImpl::HandleUniform3iv(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLint), 3);
   const GLint* v = GetSharedMemoryAs<const GLint*>(
       c.v_shm_id, c.v_shm_offset, data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -1879,6 +2083,10 @@ error::Error GLES2DecoderImpl::HandleUniform3ivImmediate(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLint), 3);
   const GLint* v = GetImmediateDataAs<const GLint*>(
       c, data_size, immediate_data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -1905,6 +2113,10 @@ error::Error GLES2DecoderImpl::HandleUniform4fv(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 4);
   const GLfloat* v = GetSharedMemoryAs<const GLfloat*>(
       c.v_shm_id, c.v_shm_offset, data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -1920,6 +2132,10 @@ error::Error GLES2DecoderImpl::HandleUniform4fvImmediate(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 4);
   const GLfloat* v = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -1946,6 +2162,10 @@ error::Error GLES2DecoderImpl::HandleUniform4iv(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLint), 4);
   const GLint* v = GetSharedMemoryAs<const GLint*>(
       c.v_shm_id, c.v_shm_offset, data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -1961,6 +2181,10 @@ error::Error GLES2DecoderImpl::HandleUniform4ivImmediate(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLint), 4);
   const GLint* v = GetImmediateDataAs<const GLint*>(
       c, data_size, immediate_data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (v == NULL) {
     return error::kOutOfBounds;
   }
@@ -1977,6 +2201,10 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix2fv(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 4);
   const GLfloat* value = GetSharedMemoryAs<const GLfloat*>(
       c.value_shm_id, c.value_shm_offset, data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (!ValidateGLbooleanFalse(transpose)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
@@ -1997,6 +2225,10 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix2fvImmediate(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 4);
   const GLfloat* value = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (!ValidateGLbooleanFalse(transpose)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
@@ -2017,6 +2249,10 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix3fv(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 9);
   const GLfloat* value = GetSharedMemoryAs<const GLfloat*>(
       c.value_shm_id, c.value_shm_offset, data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (!ValidateGLbooleanFalse(transpose)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
@@ -2037,6 +2273,10 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix3fvImmediate(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 9);
   const GLfloat* value = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (!ValidateGLbooleanFalse(transpose)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
@@ -2057,6 +2297,10 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix4fv(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 16);
   const GLfloat* value = GetSharedMemoryAs<const GLfloat*>(
       c.value_shm_id, c.value_shm_offset, data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (!ValidateGLbooleanFalse(transpose)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
@@ -2077,6 +2321,10 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix4fvImmediate(
       ComputeImmediateDataSize(immediate_data_size, 1, sizeof(GLfloat), 16);
   const GLfloat* value = GetImmediateDataAs<const GLfloat*>(
       c, data_size, immediate_data_size);
+  if (count < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   if (!ValidateGLbooleanFalse(transpose)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
@@ -2266,6 +2514,14 @@ error::Error GLES2DecoderImpl::HandleViewport(
   GLint y = static_cast<GLint>(c.y);
   GLsizei width = static_cast<GLsizei>(c.width);
   GLsizei height = static_cast<GLsizei>(c.height);
+  if (width < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
+  if (height < 0) {
+    SetGLError(GL_INVALID_VALUE);
+    return error::kNoError;
+  }
   glViewport(x, y, width, height);
   return error::kNoError;
 }

@@ -43,6 +43,7 @@ TEST_F(GLES2DecoderTest1, BindBufferInvalidArgs0_0) {
   BindBuffer cmd;
   cmd.Init(GL_RENDERBUFFER, client_buffer_id_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, BindFramebufferValidArgs) {
@@ -76,6 +77,7 @@ TEST_F(GLES2DecoderTest1, BindTextureInvalidArgs0_0) {
   BindTexture cmd;
   cmd.Init(GL_TEXTURE_1D, client_texture_id_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, BindTextureInvalidArgs0_1) {
@@ -84,6 +86,7 @@ TEST_F(GLES2DecoderTest1, BindTextureInvalidArgs0_1) {
   BindTexture cmd;
   cmd.Init(GL_TEXTURE_3D, client_texture_id_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, BlendColorValidArgs) {
@@ -108,6 +111,7 @@ TEST_F(GLES2DecoderTest1, BlendEquationInvalidArgs0_0) {
   BlendEquation cmd;
   cmd.Init(GL_MIN);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, BlendEquationInvalidArgs0_1) {
@@ -116,6 +120,7 @@ TEST_F(GLES2DecoderTest1, BlendEquationInvalidArgs0_1) {
   BlendEquation cmd;
   cmd.Init(GL_MAX);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, BlendEquationSeparateValidArgs) {
@@ -132,6 +137,7 @@ TEST_F(GLES2DecoderTest1, BlendEquationSeparateInvalidArgs0_0) {
   BlendEquationSeparate cmd;
   cmd.Init(GL_MIN, GL_FUNC_ADD);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, BlendEquationSeparateInvalidArgs0_1) {
@@ -140,6 +146,7 @@ TEST_F(GLES2DecoderTest1, BlendEquationSeparateInvalidArgs0_1) {
   BlendEquationSeparate cmd;
   cmd.Init(GL_MAX, GL_FUNC_ADD);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, BlendEquationSeparateInvalidArgs1_0) {
@@ -148,6 +155,7 @@ TEST_F(GLES2DecoderTest1, BlendEquationSeparateInvalidArgs1_0) {
   BlendEquationSeparate cmd;
   cmd.Init(GL_FUNC_ADD, GL_MIN);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, BlendEquationSeparateInvalidArgs1_1) {
@@ -156,6 +164,7 @@ TEST_F(GLES2DecoderTest1, BlendEquationSeparateInvalidArgs1_1) {
   BlendEquationSeparate cmd;
   cmd.Init(GL_FUNC_ADD, GL_MAX);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, BlendFuncValidArgs) {
@@ -253,6 +262,25 @@ TEST_F(GLES2DecoderTest1, CopyTexImage2DInvalidArgs0_0) {
   CopyTexImage2D cmd;
   cmd.Init(GL_PROXY_TEXTURE_CUBE_MAP, 2, 3, 4, 5, 6, 7, 8);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest1, CopyTexImage2DInvalidArgs5_0) {
+  EXPECT_CALL(*gl_, CopyTexImage2D(_, _, _, _, _, _, _, _)).Times(0);
+  SpecializedSetup<CopyTexImage2D, 0>();
+  CopyTexImage2D cmd;
+  cmd.Init(GL_TEXTURE_2D, 2, 3, 4, 5, -1, 7, 8);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest1, CopyTexImage2DInvalidArgs6_0) {
+  EXPECT_CALL(*gl_, CopyTexImage2D(_, _, _, _, _, _, _, _)).Times(0);
+  SpecializedSetup<CopyTexImage2D, 0>();
+  CopyTexImage2D cmd;
+  cmd.Init(GL_TEXTURE_2D, 2, 3, 4, 5, 6, -1, 8);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, CopyTexSubImage2DValidArgs) {
@@ -269,6 +297,25 @@ TEST_F(GLES2DecoderTest1, CopyTexSubImage2DInvalidArgs0_0) {
   CopyTexSubImage2D cmd;
   cmd.Init(GL_PROXY_TEXTURE_CUBE_MAP, 2, 3, 4, 5, 6, 7, 8);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest1, CopyTexSubImage2DInvalidArgs6_0) {
+  EXPECT_CALL(*gl_, CopyTexSubImage2D(_, _, _, _, _, _, _, _)).Times(0);
+  SpecializedSetup<CopyTexSubImage2D, 0>();
+  CopyTexSubImage2D cmd;
+  cmd.Init(GL_TEXTURE_2D, 2, 3, 4, 5, 6, -1, 8);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
+}
+
+TEST_F(GLES2DecoderTest1, CopyTexSubImage2DInvalidArgs7_0) {
+  EXPECT_CALL(*gl_, CopyTexSubImage2D(_, _, _, _, _, _, _, _)).Times(0);
+  SpecializedSetup<CopyTexSubImage2D, 0>();
+  CopyTexSubImage2D cmd;
+  cmd.Init(GL_TEXTURE_2D, 2, 3, 4, 5, 6, 7, -1);
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, CreateProgramValidArgs) {
@@ -541,6 +588,7 @@ TEST_F(GLES2DecoderTest1, DisableInvalidArgs0_0) {
   Disable cmd;
   cmd.Init(GL_CLIP_PLANE0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, DisableInvalidArgs0_1) {
@@ -549,6 +597,7 @@ TEST_F(GLES2DecoderTest1, DisableInvalidArgs0_1) {
   Disable cmd;
   cmd.Init(GL_POINT_SPRITE);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, DisableVertexAttribArrayValidArgs) {
@@ -576,6 +625,7 @@ TEST_F(GLES2DecoderTest1, EnableInvalidArgs0_0) {
   Enable cmd;
   cmd.Init(GL_CLIP_PLANE0);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, EnableInvalidArgs0_1) {
@@ -584,6 +634,7 @@ TEST_F(GLES2DecoderTest1, EnableInvalidArgs0_1) {
   Enable cmd;
   cmd.Init(GL_POINT_SPRITE);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, EnableVertexAttribArrayValidArgs) {
@@ -644,6 +695,7 @@ TEST_F(GLES2DecoderTest1, FramebufferTexture2DInvalidArgs2_0) {
       GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_PROXY_TEXTURE_CUBE_MAP,
       client_texture_id_, 5);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, FrontFaceValidArgs) {
@@ -709,6 +761,7 @@ TEST_F(GLES2DecoderTest1, GenerateMipmapInvalidArgs0_0) {
   GenerateMipmap cmd;
   cmd.Init(GL_TEXTURE_1D);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, GenerateMipmapInvalidArgs0_1) {
@@ -717,6 +770,7 @@ TEST_F(GLES2DecoderTest1, GenerateMipmapInvalidArgs0_1) {
   GenerateMipmap cmd;
   cmd.Init(GL_TEXTURE_3D);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, GenFramebuffersValidArgs) {
@@ -901,6 +955,7 @@ TEST_F(GLES2DecoderTest1, GetBufferParameterivInvalidArgs0_0) {
       GL_RENDERBUFFER, GL_BUFFER_SIZE, shared_memory_id_,
       shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, GetBufferParameterivInvalidArgs1_0) {
@@ -911,6 +966,7 @@ TEST_F(GLES2DecoderTest1, GetBufferParameterivInvalidArgs1_0) {
       GL_ARRAY_BUFFER, GL_PIXEL_PACK_BUFFER, shared_memory_id_,
       shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, GetBufferParameterivInvalidArgs2_0) {
@@ -1157,6 +1213,7 @@ TEST_F(GLES2DecoderTest1, GetTexParameterfvInvalidArgs0_0) {
       GL_PROXY_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
       shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, GetTexParameterfvInvalidArgs1_0) {
@@ -1167,6 +1224,7 @@ TEST_F(GLES2DecoderTest1, GetTexParameterfvInvalidArgs1_0) {
       GL_TEXTURE_2D, GL_GENERATE_MIPMAP, shared_memory_id_,
       shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, GetTexParameterfvInvalidArgs2_0) {
@@ -1208,6 +1266,7 @@ TEST_F(GLES2DecoderTest1, GetTexParameterivInvalidArgs0_0) {
       GL_PROXY_TEXTURE_CUBE_MAP, GL_TEXTURE_MAG_FILTER, shared_memory_id_,
       shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, GetTexParameterivInvalidArgs1_0) {
@@ -1218,6 +1277,7 @@ TEST_F(GLES2DecoderTest1, GetTexParameterivInvalidArgs1_0) {
       GL_TEXTURE_2D, GL_GENERATE_MIPMAP, shared_memory_id_,
       shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest1, GetTexParameterivInvalidArgs2_0) {

@@ -1393,10 +1393,12 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
       for value_index in range(0, num_invalid_values):
         arg_strings = []
         parse_result = "kNoError"
+        gl_error = None
         count = 0
         for arg in func.GetOriginalArgs():
           if count == arg_index:
-            (arg_string, parse_result) = arg.GetInvalidArg(count, value_index)
+            (arg_string, parse_result, gl_error) = arg.GetInvalidArg(
+                count, value_index)
           else:
             arg_string = arg.GetValidArg(count, 0)
           arg_strings.append(arg_string)
@@ -1407,6 +1409,10 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
           gl_arg_strings.append("_")
           count += 1
         gl_func_name = func.GetGLTestFunctionName()
+        gl_error_test = ''
+        if not gl_error == None:
+          gl_error_test = '\n  EXPECT_EQ(%s, GetGLError());' % gl_error
+
         vars = {
           'test_name': 'GLES2DecoderTest%d' % file.file_num ,
           'name': func.name,
@@ -1417,6 +1423,7 @@ COMPILE_ASSERT(offsetof(%(cmd_name)s::Result, %(field_name)s) == %(offset)d,
           'all_but_last_args': ", ".join(arg_strings[:-1]),
           'gl_args': ", ".join(gl_arg_strings),
           'parse_result': parse_result,
+            'gl_error_test': gl_error_test,
         }
         vars.update(extra)
         file.Write(test % vars)
@@ -1441,7 +1448,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   SpecializedSetup<%(name)s, 0>();
   %(name)s cmd;
   cmd.Init(%(args)s);
-  EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));
+  EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));%(gl_error_test)s
 }
 """
     self.WriteInvalidUnitTest(func, file, invalid_test)
@@ -1993,7 +2000,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   SpecializedSetup<%(name)s, 0>();
   %(name)s cmd;
   cmd.Init(%(args)s%(comma)skNewClientId);
-  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
+  EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));%(gl_error_test)s
 }
 """
     self.WriteInvalidUnitTest(func, file, invalid_test, {
@@ -2315,7 +2322,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   %(data_type)s temp[%(data_count)s] = { 0, };
   cmd.Init(%(all_but_last_args)s, &temp[0]);
   EXPECT_EQ(error::%(parse_result)s,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+            ExecuteImmediateCmd(cmd, sizeof(temp)));%(gl_error_test)s
 }
 """
     self.WriteInvalidUnitTest(func, file, invalid_test, extra)
@@ -2486,7 +2493,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   %(data_type)s temp[%(data_count)s * 2] = { 0, };
   cmd.Init(%(all_but_last_args)s, &temp[0]);
   EXPECT_EQ(error::%(parse_result)s,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
+            ExecuteImmediateCmd(cmd, sizeof(temp)));%(gl_error_test)s
 }
 """
     self.WriteInvalidUnitTest(func, file, invalid_test, extra)
@@ -3007,7 +3014,7 @@ TEST_F(%(test_name)s, %(name)sInvalidArgs%(arg_index)d_%(value_index)d) {
   SpecializedSetup<%(name)s, 0>();
   %(name)s cmd;
   cmd.Init(%(args)s%(comma)sshared_memory_id_, shared_memory_offset_);
-  EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));
+  EXPECT_EQ(error::%(parse_result)s, ExecuteCmd(cmd));%(gl_error_test)s
 }
 """
     self.WriteInvalidUnitTest(func, file, invalid_test, {
@@ -3168,7 +3175,7 @@ class Argument(object):
 
   def GetInvalidArg(self, offset, index):
     """returns an invalid value and expected parse result by index."""
-    return ("---ERROR0---", "---ERROR2---")
+    return ("---ERROR0---", "---ERROR2---", None)
 
   def WriteGetCode(self, file):
     """Writes the code to get an argument from a command structure."""
@@ -3177,7 +3184,11 @@ class Argument(object):
 
   def WriteValidationCode(self, file):
     """Writes the validation code for an argument."""
-    pass
+    if self.type == 'GLsizei' or self.type == 'GLsizeiptr':
+      file.Write("  if (%s < 0) {\n" % self.name)
+      file.Write("    SetGLError(GL_INVALID_VALUE);\n")
+      file.Write("    return error::kNoError;\n")
+      file.Write("  }\n")
 
   def WriteGetAddress(self, file):
     """Writes the code to get the address this argument refers to."""
@@ -3186,6 +3197,21 @@ class Argument(object):
   def GetImmediateVersion(self):
     """Gets the immediate version of this argument."""
     return self
+
+
+class SizeArgument(Argument):
+
+  def __init__(self, name, type):
+    Argument.__init__(self, name, type)
+
+  def GetNumInvalidValues(self):
+    """overridden from Argument."""
+    return 1
+
+  def GetInvalidArg(self, offset, index):
+    """returns an invalid value and expected parse result by index."""
+    return ("-1", "kNoError", "GL_INVALID_VALUE")
+
 
 class EnumBaseArgument(Argument):
   """Base calss for EnumArgument, IntArgument and BoolArgument"""
@@ -3230,8 +3256,8 @@ class EnumBaseArgument(Argument):
       num_invalid = len(invalid)
       if index >= num_invalid:
         index = num_invalid - 1
-      return (invalid[index], "kNoError")
-    return ("---ERROR1---", "kNoError")
+      return (invalid[index], "kNoError", "GL_INVALID_ENUM")
+    return ("---ERROR1---", "kNoError", "GL_INVALID_ENUM")
 
 
 class EnumArgument(EnumBaseArgument):
@@ -3319,10 +3345,10 @@ class PointerArgument(Argument):
   def GetInvalidArg(self, offset, index):
     """Overridden from Argument."""
     if index == 0:
-      return ("kInvalidSharedMemoryId, 0", "kOutOfBounds")
+      return ("kInvalidSharedMemoryId, 0", "kOutOfBounds", None)
     else:
       return ("shared_memory_id_, kInvalidSharedMemoryOffset",
-              "kOutOfBounds")
+              "kOutOfBounds", None)
 
   def AddCmdArgs(self, args):
     """Overridden from Argument."""
@@ -3691,6 +3717,8 @@ def CreateArg(arg_string):
   elif (arg_parts[0].startswith('GLint') and len(arg_parts[0]) > 5 and
         arg_parts[0] != "GLintptr"):
     return IntArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
+  elif arg_parts[0].startswith('GLsize'):
+    return SizeArgument(arg_parts[-1], " ".join(arg_parts[0:-1]))
   else:
     return Argument(arg_parts[-1], " ".join(arg_parts[0:-1]))
 
