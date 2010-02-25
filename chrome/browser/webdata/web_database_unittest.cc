@@ -56,6 +56,34 @@ std::ostream& operator<<(std::ostream& os, const AutofillChange& change) {
   return os << " " << change.key();
 }
 
+bool CompareAutofillEntries(const AutofillEntry& a, const AutofillEntry& b) {
+  std::set<base::Time> timestamps1(a.timestamps().begin(),
+                                    a.timestamps().end());
+  std::set<base::Time> timestamps2(b.timestamps().begin(),
+                                    b.timestamps().end());
+
+  int compVal = a.key().name().compare(b.key().name());
+  if (compVal != 0) {
+    return compVal < 0;
+  }
+
+  compVal = a.key().value().compare(b.key().value());
+  if (compVal != 0) {
+    return compVal < 0;
+  }
+
+  if (timestamps1.size() != timestamps2.size()) {
+    return timestamps1.size() < timestamps2.size();
+  }
+
+  std::set<base::Time>::iterator it;
+  for (it = timestamps1.begin(); it != timestamps1.end(); it++) {
+    timestamps2.erase(*it);
+  }
+
+  return timestamps2.size() != 0U;
+}
+
 class WebDatabaseTest : public testing::Test {
  protected:
   typedef std::vector<AutofillChange> AutofillChangeList;
@@ -118,6 +146,19 @@ class WebDatabaseTest : public testing::Test {
 
   static void set_prepopulate_id(TemplateURL* url, int id) {
     url->set_prepopulate_id(id);
+  }
+
+  static AutofillEntry MakeAutofillEntry(const char* name,
+                                         const char* value,
+                                         time_t timestamp0,
+                                         time_t timestamp1) {
+    std::vector<base::Time> timestamps;
+    if (timestamp0 >= 0)
+      timestamps.push_back(Time::FromTimeT(timestamp0));
+    if (timestamp1 >= 0)
+      timestamps.push_back(Time::FromTimeT(timestamp1));
+    return AutofillEntry(
+        AutofillKey(ASCIIToUTF16(name), ASCIIToUTF16(value)), timestamps);
   }
 
   FilePath file_;
@@ -698,6 +739,148 @@ TEST_F(WebDatabaseTest, Autofill_AddChanges) {
             changes[0]);
 }
 
+TEST_F(WebDatabaseTest, Autofill_UpdateOneWithOneTimestamp) {
+  WebDatabase db;
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  AutofillEntry entry(MakeAutofillEntry("foo", "bar", 1, -1));
+  std::vector<AutofillEntry> entries;
+  entries.push_back(entry);
+  ASSERT_TRUE(db.UpdateAutofillEntries(entries));
+
+  FormField field(string16(),
+                  ASCIIToUTF16("foo"),
+                  ASCIIToUTF16("bar"),
+                  string16(),
+                  WebKit::WebInputElement::Text);
+  int64 pair_id;
+  int count;
+  ASSERT_TRUE(db.GetIDAndCountOfFormElement(field, &pair_id, &count));
+  EXPECT_LE(0, pair_id);
+  EXPECT_EQ(1, count);
+
+  std::vector<AutofillEntry> all_entries;
+  ASSERT_TRUE(db.GetAllAutofillEntries(&all_entries));
+  ASSERT_EQ(1U, all_entries.size());
+  EXPECT_TRUE(entry == all_entries[0]);
+}
+
+TEST_F(WebDatabaseTest, Autofill_UpdateOneWithTwoTimestamps) {
+  WebDatabase db;
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  AutofillEntry entry(MakeAutofillEntry("foo", "bar", 1, 2));
+  std::vector<AutofillEntry> entries;
+  entries.push_back(entry);
+  ASSERT_TRUE(db.UpdateAutofillEntries(entries));
+
+  FormField field(string16(),
+                  ASCIIToUTF16("foo"),
+                  ASCIIToUTF16("bar"),
+                  string16(),
+                  WebKit::WebInputElement::Text);
+  int64 pair_id;
+  int count;
+  ASSERT_TRUE(db.GetIDAndCountOfFormElement(field, &pair_id, &count));
+  EXPECT_LE(0, pair_id);
+  EXPECT_EQ(2, count);
+
+  std::vector<AutofillEntry> all_entries;
+  ASSERT_TRUE(db.GetAllAutofillEntries(&all_entries));
+  ASSERT_EQ(1U, all_entries.size());
+  EXPECT_TRUE(entry == all_entries[0]);
+}
+
+TEST_F(WebDatabaseTest, Autofill_UpdateTwo) {
+  WebDatabase db;
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  AutofillEntry entry0(MakeAutofillEntry("foo", "bar0", 1, -1));
+  AutofillEntry entry1(MakeAutofillEntry("foo", "bar1", 2, 3));
+  std::vector<AutofillEntry> entries;
+  entries.push_back(entry0);
+  entries.push_back(entry1);
+  ASSERT_TRUE(db.UpdateAutofillEntries(entries));
+
+  FormField field0(string16(),
+                  ASCIIToUTF16("foo"),
+                  ASCIIToUTF16("bar0"),
+                  string16(),
+                  WebKit::WebInputElement::Text);
+  int64 pair_id;
+  int count;
+  ASSERT_TRUE(db.GetIDAndCountOfFormElement(field0, &pair_id, &count));
+  EXPECT_LE(0, pair_id);
+  EXPECT_EQ(1, count);
+
+  FormField field1(string16(),
+                  ASCIIToUTF16("foo"),
+                  ASCIIToUTF16("bar1"),
+                  string16(),
+                  WebKit::WebInputElement::Text);
+  ASSERT_TRUE(db.GetIDAndCountOfFormElement(field1, &pair_id, &count));
+  EXPECT_LE(0, pair_id);
+  EXPECT_EQ(2, count);
+}
+
+TEST_F(WebDatabaseTest, Autofill_UpdateReplace) {
+  WebDatabase db;
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  AutofillChangeList changes;
+  // Add a form field.  This will be replaced.
+  EXPECT_TRUE(db.AddFormFieldValue(
+      FormField(string16(),
+                ASCIIToUTF16("Name"),
+                ASCIIToUTF16("Superman"),
+                string16(),
+                WebKit::WebInputElement::Text),
+      &changes));
+
+  AutofillEntry entry(MakeAutofillEntry("Name", "Superman", 1, 2));
+  std::vector<AutofillEntry> entries;
+  entries.push_back(entry);
+  ASSERT_TRUE(db.UpdateAutofillEntries(entries));
+
+  std::vector<AutofillEntry> all_entries;
+  ASSERT_TRUE(db.GetAllAutofillEntries(&all_entries));
+  ASSERT_EQ(1U, all_entries.size());
+  EXPECT_TRUE(entry == all_entries[0]);
+}
+
+TEST_F(WebDatabaseTest, Autofill_UpdateDontReplace) {
+  WebDatabase db;
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  Time t = Time::Now();
+  AutofillEntry existing(
+      MakeAutofillEntry("Name", "Superman", t.ToTimeT(), -1));
+
+  AutofillChangeList changes;
+  // Add a form field.  This will NOT be replaced.
+  EXPECT_TRUE(db.AddFormFieldValueTime(
+      FormField(string16(),
+                existing.key().name(),
+                existing.key().value(),
+                string16(),
+                WebKit::WebInputElement::Text),
+      &changes,
+      t));
+  AutofillEntry entry(MakeAutofillEntry("Name", "Clark Kent", 1, 2));
+  std::vector<AutofillEntry> entries;
+  entries.push_back(entry);
+  ASSERT_TRUE(db.UpdateAutofillEntries(entries));
+
+  std::vector<AutofillEntry> all_entries;
+  ASSERT_TRUE(db.GetAllAutofillEntries(&all_entries));
+  ASSERT_EQ(2U, all_entries.size());
+  AutofillEntrySet expected_entries(all_entries.begin(),
+                                    all_entries.end(),
+                                    CompareAutofillEntries);
+  EXPECT_EQ(1U, expected_entries.count(existing));
+  EXPECT_EQ(1U, expected_entries.count(entry));
+}
+
 static bool AddTimestampedLogin(WebDatabase* db, std::string url,
                                 const std::string& unique_string,
                                 const Time& time) {
@@ -1024,37 +1207,6 @@ TEST_F(WebDatabaseTest, CreditCard) {
                                         &db_creditcard));
 }
 
-bool CompareAutofillEntries(const AutofillEntry& a, const AutofillEntry& b) {
-  string16 aNameValue = a.key().name() + a.key().value();
-  string16 bNameValue = b.key().name() + b.key().value();
-
-  std::set<base::Time> timestamps1(a.timestamps().begin(),
-                                    a.timestamps().end());
-  std::set<base::Time> timestamps2(b.timestamps().begin(),
-                                    b.timestamps().end());
-
-  int compVal = a.key().name().compare(b.key().name());
-  if (compVal != 0) {
-    return compVal < 0;
-  }
-
-  compVal = a.key().value().compare(b.key().value());
-  if (compVal != 0) {
-    return compVal < 0;
-  }
-
-  if (timestamps1.size() != timestamps2.size()) {
-    return timestamps1.size() < timestamps2.size();
-  }
-
-  std::set<base::Time>::iterator it;
-  for (it = timestamps1.begin(); it != timestamps1.end(); it++) {
-    timestamps2.erase(*it);
-  }
-
-  return timestamps2.size() != 0U;
-}
-
 TEST_F(WebDatabaseTest, Autofill_GetAllAutofillEntries_NoResults) {
   WebDatabase db;
 
@@ -1219,4 +1371,3 @@ TEST_F(WebDatabaseTest, Autofill_GetAllAutofillEntries_TwoSame) {
 
   EXPECT_EQ(0U, expected_entries.size());
 }
-

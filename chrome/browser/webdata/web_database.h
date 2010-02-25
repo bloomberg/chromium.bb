@@ -201,6 +201,14 @@ class WebDatabase {
   // Removes row from the autofill tables for the given |name| |value| pair.
   bool RemoveFormElement(const string16& name, const string16& value);
 
+  // Retrieves all of the entries in the autofill table.
+  bool GetAllAutofillEntries(std::vector<AutofillEntry>* entries);
+
+  // Replaces existing autofill entries with the entries supplied in
+  // the argument.  If the entry does not already exist, it will be
+  // added.
+  bool UpdateAutofillEntries(const std::vector<AutofillEntry>& entries);
+
   // Records a single AutoFill profile in the autofill_profiles table.
   bool AddAutoFillProfile(const AutoFillProfile& profile);
 
@@ -235,9 +243,6 @@ class WebDatabase {
   // Retrieves all profiles in the database.  Caller owns the returned profiles.
   bool GetCreditCards(std::vector<CreditCard*>* profiles);
 
-  // Retrieves all of the entries in the autofill table.
-  bool GetAllAutofillEntries(std::vector<AutofillEntry>* entries);
-
   //////////////////////////////////////////////////////////////////////////////
   //
   // Web Apps
@@ -259,6 +264,7 @@ class WebDatabase {
   FRIEND_TEST(WebDatabaseTest, Autofill_GetAllAutofillEntries_OneResult);
   FRIEND_TEST(WebDatabaseTest, Autofill_GetAllAutofillEntries_TwoDistinct);
   FRIEND_TEST(WebDatabaseTest, Autofill_GetAllAutofillEntries_TwoSame);
+  FRIEND_TEST(WebDatabaseTest, Autofill_UpdateDontReplace);
   // Methods for adding autofill entries at a specified time.  For
   // testing only.
   bool AddFormFieldValuesTime(
@@ -274,6 +280,9 @@ class WebDatabase {
   // TODO(jcampan): http://crbug.com/7564 remove when we think all users have
   //                run this code.
   bool ClearAutofillEmptyValueElements();
+
+  // Insert a single AutofillEntry into the autofill/autofill_dates tables.
+  bool InsertAutofillEntry(const AutofillEntry& entry);
 
   bool InitKeywordsTable();
   bool InitLoginsTable();

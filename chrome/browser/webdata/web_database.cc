@@ -1041,6 +1041,66 @@ bool WebDatabase::GetAllAutofillEntries(std::vector<AutofillEntry>* entries) {
   return s.Succeeded();
 }
 
+bool WebDatabase::UpdateAutofillEntries(
+    const std::vector<AutofillEntry>& entries) {
+  if (!entries.size())
+    return true;
+
+  // Remove all existing entries.
+  for (size_t i = 0; i < entries.size(); i++) {
+    std::string sql = "SELECT pair_id FROM autofill "
+                      "WHERE name = ? AND value = ?";
+    sql::Statement s(db_.GetUniqueStatement(sql.c_str()));
+    if (!s.is_valid()) {
+      NOTREACHED() << "Statement prepare failed";
+      return false;
+    }
+
+    s.BindString(0, UTF16ToUTF8(entries[i].key().name()));
+    s.BindString(1, UTF16ToUTF8(entries[i].key().value()));
+    if (s.Step()) {
+      if (!RemoveFormElementForID(s.ColumnInt64(0)))
+        return false;
+    }
+  }
+
+  // Insert all the supplied autofill entries.
+  for (size_t i = 0; i < entries.size(); i++) {
+    if (!InsertAutofillEntry(entries[i]))
+      return false;
+  }
+
+  return true;
+}
+
+bool WebDatabase::InsertAutofillEntry(const AutofillEntry& entry) {
+  std::string sql = "INSERT INTO autofill (name, value, value_lower, count) "
+                    "VALUES (?, ?, ?, ?)";
+  sql::Statement s(db_.GetUniqueStatement(sql.c_str()));
+  if (!s.is_valid()) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  s.BindString(0, UTF16ToUTF8(entry.key().name()));
+  s.BindString(1, UTF16ToUTF8(entry.key().value()));
+  s.BindString(2, UTF16ToUTF8(l10n_util::ToLower(entry.key().value())));
+  s.BindInt(3, entry.timestamps().size());
+
+  if (!s.Run()) {
+    NOTREACHED();
+    return false;
+  }
+
+  int64 pair_id = db_.GetLastInsertRowId();
+  for (size_t i = 0; i < entry.timestamps().size(); i++) {
+    if (!InsertPairIDAndDate(pair_id, entry.timestamps()[i]))
+      return false;
+  }
+
+  return true;
+}
+
 bool WebDatabase::InsertFormElement(const FormField& element,
                                     int64* pair_id) {
   sql::Statement s(db_.GetUniqueStatement(
