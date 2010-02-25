@@ -2007,11 +2007,6 @@ BUG10435 MAC : editing/selection/designmode-no-caret.html = FAIL
 BUG10441 WIN DEBUG : transitions/transition-end-event-transform.html = FAIL PASS
 BUG10441 MAC WIN RELEASE : transitions/transition-end-event-transform.html = FAIL PASS
 
-// The text extends outside the selection on linux (was happening before the
-// merge).
-BUG10446 LINUX : editing/execCommand/selectAll.html = FAIL
-
-
 // This test hits a stack-overflow exception earlier in debug mode than in
 // release mode on Windows.
 //
