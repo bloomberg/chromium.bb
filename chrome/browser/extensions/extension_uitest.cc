@@ -71,6 +71,9 @@ class ExtensionUITest : public ExternalTabUITest {
 
   void SetUp() {
     ExternalTabUITest::SetUp();
+    // TabProxy::NavigateInExternalTab is a sync call and can cause a deadlock
+    // if host window is visible.
+    mock_->host_window_style_ &= ~WS_VISIBLE;
     tab_ = mock_->CreateTabWithUrl(GURL());
     tab_->SetEnableExtensionAutomation(functions_enabled_);
   }
@@ -125,6 +128,8 @@ TEST_F(ExtensionTestSimpleApiCall, RunTest) {
 
   ASSERT_THAT(mock_, testing::NotNull());
   EXPECT_CALL(*mock_, OnDidNavigate(_, _)).Times(1);
+  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _, _))
+      .Times(testing::AnyNumber());
 
   std::string message_received;
   EXPECT_CALL(*mock_, OnForwardMessageToExternalHost(
@@ -259,6 +264,9 @@ TEST_F(ExtensionTestRoundtripApiCall, RunTest) {
 
   ASSERT_THAT(mock_, testing::NotNull());
   EXPECT_CALL(*mock_, OnDidNavigate(_, _)).Times(1);
+  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _, _))
+      .Times(testing::AnyNumber());
+  EXPECT_CALL(*mock_, OnLoad(_, _)).Times(testing::AnyNumber());
 
   EXPECT_CALL(*mock_, OnForwardMessageToExternalHost(
     _, _, keys::kAutomationOrigin, keys::kAutomationRequestTarget))
@@ -444,6 +452,9 @@ TEST_F(ExtensionTestBrowserEvents, RunTest) {
 
   ASSERT_THAT(mock_, testing::NotNull());
   EXPECT_CALL(*mock_, OnDidNavigate(_, _)).Times(1);
+  EXPECT_CALL(*mock_, OnNavigationStateChanged(_, _, _))
+      .Times(testing::AnyNumber());
+  EXPECT_CALL(*mock_, OnLoad(_, _)).Times(testing::AnyNumber());
 
   EXPECT_CALL(*mock_, OnForwardMessageToExternalHost(
     _, _, keys::kAutomationOrigin, _))

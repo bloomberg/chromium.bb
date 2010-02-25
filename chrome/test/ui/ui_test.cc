@@ -120,6 +120,33 @@ UITestBase::UITestBase()
   PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
 }
 
+UITestBase::UITestBase(MessageLoop::Type msg_loop_type)
+    : launch_arguments_(CommandLine::ARGUMENTS_ONLY),
+      expected_errors_(0),
+      expected_crashes_(0),
+      homepage_(L"about:blank"),
+      wait_for_initial_loads_(true),
+      dom_automation_enabled_(false),
+      process_(0),  // NULL on Windows, 0 PID on POSIX.
+      process_id_(-1),
+      show_window_(false),
+      clear_profile_(true),
+      include_testing_id_(true),
+      use_existing_browser_(default_use_existing_browser_),
+      enable_file_cookies_(true),
+      profile_type_(UITestBase::DEFAULT_THEME),
+      test_start_time_(base::Time::NowFromSystemTime()),
+      message_loop_(msg_loop_type),
+      command_execution_timeout_ms_(kMaxTestExecutionTime),
+      action_timeout_ms_(kWaitForActionMsec),
+      action_max_timeout_ms_(kWaitForActionMaxMsec),
+      sleep_timeout_ms_(kWaitForActionMsec),
+      terminate_timeout_ms_(kWaitForTerminateMsec) {
+  PathService::Get(chrome::DIR_APP, &browser_directory_);
+  PathService::Get(chrome::DIR_TEST_DATA, &test_data_directory_);
+
+}
+
 UITestBase::~UITestBase() {
 }
 

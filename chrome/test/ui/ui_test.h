@@ -53,6 +53,7 @@ class UITestBase {
 
   // Constructor
   UITestBase();
+  explicit UITestBase(MessageLoop::Type msg_loop_type);
 
   virtual ~UITestBase();
 
@@ -618,6 +619,10 @@ class UITestBase {
 
 class UITest : public UITestBase, public PlatformTest {
  protected:
+  UITest() {}
+  explicit UITest(MessageLoop::Type msg_loop_type)
+    : UITestBase(msg_loop_type), PlatformTest() {
+  }
   virtual void SetUp();
   virtual void TearDown();
 };
