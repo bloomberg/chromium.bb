@@ -253,7 +253,7 @@ struct _FcExprPage {
   FcExprPage *next_page;
   FcExpr *next;
   FcExpr exprs[(1024 - 2/* two pointers */ - 2/* malloc overhead */) * sizeof (void *) / sizeof (FcExpr)];
-  FcExpr end[0];
+  FcExpr end[];
 };
 
 typedef enum _FcQual {
