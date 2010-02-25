@@ -39,7 +39,7 @@ const NSInteger kKeywordHintImageBaseline = -6;
 const NSInteger kIconHorizontalPad = 3;
 
 // How far to shift bounding box of hint icon label down from top of field.
-const NSInteger kIconLabelYOffset = 7;
+const NSInteger kIconLabelYOffset = 5;
 
 // How far the editor insets itself, for purposes of determining if
 // decorations need to be trimmed.
