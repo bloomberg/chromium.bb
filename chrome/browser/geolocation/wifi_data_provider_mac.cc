@@ -7,97 +7,84 @@
 // osx_wifi_.h. This file is taken from the iStumbler project
 // (http://www.istumbler.net).
 
-// TODO(joth): port to chromium
-#if 0
-
-#include "gears/geolocation/wifi_data_provider_osx.h"
+#include "chrome/browser/geolocation/wifi_data_provider_mac.h"
 
 #include <dlfcn.h>
 #include <stdio.h>
-#include "gears/base/common/string_utils.h"
-#include "gears/geolocation/wifi_data_provider_common.h"
+#include "base/lock.h"
+#include "base/utf_string_conversions.h"
+#include "chrome/browser/geolocation/osx_wifi.h"
+#include "chrome/browser/geolocation/wifi_data_provider_common.h"
 
+namespace {
 // The time periods, in milliseconds, between successive polls of the wifi data.
-extern const int kDefaultPollingInterval = 120000;  // 2 mins
-extern const int kNoChangePollingInterval = 300000;  // 5 mins
-extern const int kTwoNoChangePollingInterval = 600000;  // 10 mins
+const int kDefaultPollingInterval = 120000;  // 2 mins
+const int kNoChangePollingInterval = 300000;  // 5 mins
+const int kTwoNoChangePollingInterval = 600000;  // 10 mins
 
-// static
-template<>
-WifiDataProviderImplBase *WifiDataProvider::DefaultFactoryFunction() {
-  return new OsxWifiDataProvider();
+class OsxWlanApi : public WifiDataProviderCommon::WlanApiInterface {
+ public:
+  OsxWlanApi();
+  virtual ~OsxWlanApi();
+
+  bool Init();
+
+  // WlanApiInterface
+  virtual bool GetAccessPointData(WifiData::AccessPointDataSet* data);
+
+ private:
+  // Handle, context and function pointers for Apple80211 library.
+  void* apple_80211_library_;
+  WirelessContext* wifi_context_;
+  WirelessAttachFunction WirelessAttach_function_;
+  WirelessScanSplitFunction WirelessScanSplit_function_;
+  WirelessDetachFunction WirelessDetach_function_;
+
+  WifiData wifi_data_;
+  Lock data_mutex_;
+};
+
+OsxWlanApi::OsxWlanApi()
+    : apple_80211_library_(NULL), wifi_context_(NULL),
+      WirelessAttach_function_(NULL), WirelessScanSplit_function_(NULL),
+      WirelessDetach_function_(NULL) {
 }
 
-
-OsxWifiDataProvider::OsxWifiDataProvider() : is_first_scan_complete_(false) {
-  Start();
+OsxWlanApi::~OsxWlanApi() {
+  if (WirelessDetach_function_)
+    (*WirelessDetach_function_)(wifi_context_);
+  dlclose(apple_80211_library_);
 }
 
-OsxWifiDataProvider::~OsxWifiDataProvider() {
-  stop_event_.Signal();
-  Join();
-}
-
-bool OsxWifiDataProvider::GetData(WifiData *data) {
-  DCHECK(data);
-  MutexLock lock(&data_mutex_);
-  *data = wifi_data_;
-  // If we've successfully completed a scan, indicate that we have all of the
-  // data we can get.
-  return is_first_scan_complete_;
-}
-
-// Thread implementation
-void OsxWifiDataProvider::Run() {
-  void *apple_80211_library = dlopen(
+bool OsxWlanApi::Init() {
+  apple_80211_library_ = dlopen(
       "/System/Library/PrivateFrameworks/Apple80211.framework/Apple80211",
       RTLD_LAZY);
-  if (!apple_80211_library) {
-    is_first_scan_complete_ = true;
-    return;
-  }
+  if (!apple_80211_library_)
+    return false;
 
   WirelessAttach_function_ = reinterpret_cast<WirelessAttachFunction>(
-      dlsym(apple_80211_library, "WirelessAttach"));
+      dlsym(apple_80211_library_, "WirelessAttach"));
   WirelessScanSplit_function_ = reinterpret_cast<WirelessScanSplitFunction>(
-      dlsym(apple_80211_library, "WirelessScanSplit"));
+      dlsym(apple_80211_library_, "WirelessScanSplit"));
   WirelessDetach_function_ = reinterpret_cast<WirelessDetachFunction>(
-      dlsym(apple_80211_library, "WirelessDetach"));
-  DCHECK(WirelessAttach_function_ &&
-         WirelessScanSplit_function_ &&
-         WirelessDetach_function_);
+      dlsym(apple_80211_library_, "WirelessDetach"));
+  DCHECK(WirelessAttach_function_);
+  DCHECK(WirelessScanSplit_function_);
+  DCHECK(WirelessDetach_function_);
 
-  if ((*WirelessAttach_function_)(&wifi_context_, 0) != noErr) {
-    is_first_scan_complete_ = true;
-    return;
+  if (!WirelessAttach_function_ || !WirelessScanSplit_function_ ||
+      !WirelessDetach_function_) {
+    return false;
   }
 
-  // Regularly get the access point data.
-  int polling_interval = kDefaultPollingInterval;
-  do {
-    WifiData new_data;
-    GetAccessPointData(&new_data.access_point_data);
-    bool update_available;
-    data_mutex_.Lock();
-    update_available = wifi_data_.DiffersSignificantly(new_data);
-    wifi_data_ = new_data;
-    data_mutex_.Unlock();
-    polling_interval =
-        UpdatePollingInterval(polling_interval, update_available);
-    if (update_available) {
-      is_first_scan_complete_ = true;
-      NotifyListeners();
-    }
-  } while (!stop_event_.WaitWithTimeout(polling_interval));
-
-  (*WirelessDetach_function_)(wifi_context_);
-
-  dlclose(apple_80211_library);
+  if ((*WirelessAttach_function_)(&wifi_context_, 0) != noErr)
+    return false;
+  return true;
 }
 
-void OsxWifiDataProvider::GetAccessPointData(
-    WifiData::AccessPointDataSet *access_points) {
-  DCHECK(access_points);
+bool OsxWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
+  DCHECK(data);
   DCHECK(WirelessScanSplit_function_);
   CFArrayRef managed_access_points = NULL;
   CFArrayRef adhoc_access_points = NULL;
@@ -105,16 +92,15 @@ void OsxWifiDataProvider::GetAccessPointData(
                                      &managed_access_points,
                                      &adhoc_access_points,
                                      0) != noErr) {
-    return;
+    return false;
   }
 
-  if (managed_access_points == NULL) {
-    return;
-  }
+  if (managed_access_points == NULL)
+    return false;
 
   int num_access_points = CFArrayGetCount(managed_access_points);
   for (int i = 0; i < num_access_points; ++i) {
-    const WirelessNetworkInfo *access_point_info =
+    const WirelessNetworkInfo* access_point_info =
         reinterpret_cast<const WirelessNetworkInfo*>(
         CFDataGetBytePtr(
         reinterpret_cast<const CFDataRef>(
@@ -132,15 +118,41 @@ void OsxWifiDataProvider::GetAccessPointData(
     // WirelessNetworkInfo::noise appears to be noise floor in dBm.
     access_point_data.signal_to_noise = access_point_info->signal -
                                         access_point_info->noise;
-    string16 ssid;
-    if (UTF8ToString16(reinterpret_cast<const char*>(access_point_info->name),
-                       access_point_info->nameLen,
-                       &ssid)) {
-      access_point_data.ssid = ssid;
+    if (!UTF8ToUTF16(reinterpret_cast<const char*>(access_point_info->name),
+                     access_point_info->nameLen,
+                     &access_point_data.ssid)) {
+      access_point_data.ssid.clear();
     }
 
-    access_points->insert(access_point_data);
+    data->insert(access_point_data);
   }
+  return true;
+}
+}  // namespace
+
+// static
+template<>
+WifiDataProviderImplBase* WifiDataProvider::DefaultFactoryFunction() {
+  return new OsxWifiDataProvider();
 }
 
-#endif  // 0
+OsxWifiDataProvider::OsxWifiDataProvider() {
+}
+
+OsxWifiDataProvider::~OsxWifiDataProvider() {
+}
+
+OsxWifiDataProvider::WlanApiInterface* OsxWifiDataProvider::NewWlanApi() {
+  scoped_ptr<OsxWlanApi> wlan_api(new OsxWlanApi);
+  if (!wlan_api->Init()) {
+   DLOG(INFO) << "OsxWifiDataProvider : failed to initialize wlan api";
+   return NULL;
+  }
+  return wlan_api.release();
+}
+
+PollingPolicyInterface* OsxWifiDataProvider::NewPolicyPolicy() {
+  return new GenericPollingPolicy<kDefaultPollingInterval,
+                                  kNoChangePollingInterval,
+                                  kTwoNoChangePollingInterval>;
+}

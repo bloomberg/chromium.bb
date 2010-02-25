@@ -4,14 +4,15 @@
 
 #include "chrome/browser/geolocation/empty_device_data_provider.h"
 
+// No platform has (cellular) radio data provider yet.
 // static
 template<>
 RadioDataProviderImplBase* RadioDataProvider::DefaultFactoryFunction() {
   return new EmptyDeviceDataProvider<RadioData>();
 }
 
-// Windows has a real wifi data provider.
-#if !defined(OS_WIN)
+// Only define for platforms that lack a real wifi data provider.
+#if !defined(OS_WIN) && !defined(OS_MACOSX)
 // static
 template<>
 WifiDataProviderImplBase* WifiDataProvider::DefaultFactoryFunction() {

@@ -977,6 +977,7 @@
         'browser/geolocation/network_location_provider.h',
         'browser/geolocation/network_location_request.cc',
         'browser/geolocation/network_location_request.h',
+        'browser/geolocation/osx_wifi.h',
         'browser/geolocation/wifi_data_provider_common.cc',
         'browser/geolocation/wifi_data_provider_common.h',
         'browser/geolocation/wifi_data_provider_common_win.cc',
