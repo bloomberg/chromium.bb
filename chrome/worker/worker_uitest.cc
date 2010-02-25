@@ -149,15 +149,11 @@ TEST_F(WorkerTest, IncognitoSharedWorkers) {
 
 const wchar_t kDocRoot[] = L"chrome/test/data/workers";
 
-#if defined(OS_WIN)
+// http://crbug.com/36630 termination issues, disabled on all platforms.
 // http://crbug.com/33344 - NavigateAndWaitForAuth times out on the Windows
 // build bots.
-#define WorkerHttpAuth DISABLED_WorkerHttpAuth
-#define SharedWorkerHttpAuth DISABLED_SharedWorkerHttpAuth
-#endif
-
 // Make sure that auth dialog is displayed from worker context.
-TEST_F(WorkerTest, WorkerHttpAuth) {
+TEST_F(WorkerTest, DISABLED_WorkerHttpAuth) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
 
@@ -167,8 +163,11 @@ TEST_F(WorkerTest, WorkerHttpAuth) {
   EXPECT_TRUE(NavigateAndWaitForAuth(tab, url));
 }
 
+// http://crbug.com/36630 termination issues, disabled on all platforms.
+// http://crbug.com/33344 - NavigateAndWaitForAuth times out on the Windows
+// build bots.
 // Make sure that auth dialog is displayed from shared worker context.
-TEST_F(WorkerTest, SharedWorkerHttpAuth) {
+TEST_F(WorkerTest, DISABLED_SharedWorkerHttpAuth) {
   scoped_refptr<HTTPTestServer> server =
       HTTPTestServer::CreateServer(kDocRoot, NULL);
   ASSERT_TRUE(NULL != server.get());
@@ -277,14 +276,11 @@ TEST_F(WorkerTest, WorkerTimeout) {
   RunWorkerFastLayoutTest("worker-timeout.html");
 }
 
-#if defined(OS_WIN) || defined(OS_MACOSX)
 // http://crbug.com/27636 - incorrect URL_MISMATCH exceptions sometimes get
-// generated on the windows try bots.
+// generated on the windows try bots. FLAKY on Win.
 // http://crbug.com/28445 - flakiness on mac
-#define SharedWorkerFastLayoutTests FLAKY_SharedWorkerFastLayoutTests
-#endif
-
-TEST_F(WorkerTest, SharedWorkerFastLayoutTests) {
+// http://crbug.com/36630 - termination issues, disabled on all platforms.
+TEST_F(WorkerTest, DISABLED_SharedWorkerFastLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "shared-worker-constructor.html",
     "shared-worker-context-gc.html",
@@ -361,7 +357,8 @@ TEST_F(WorkerTest, FLAKY_WorkerHttpLayoutTests) {
 
 // This test has been marked flaky as it fails randomly on the builders.
 // http://code.google.com/p/chromium/issues/detail?id=33247
-TEST_F(WorkerTest, FLAKY_WorkerWebSocketLayoutTests) {
+// http://crbug.com/36630 termination issues, disabled on all platforms.
+TEST_F(WorkerTest, DISABLED_WorkerWebSocketLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "worker-simple.html",
     "shared-worker-simple.html",
@@ -461,15 +458,10 @@ TEST_F(WorkerTest, FLAKY_MessagePorts) {
     RunLayoutTest(kLayoutTestFiles[i], kNoHttpPort);
 }
 
-#if defined(OS_LINUX)
-// http://crbug.com/30307
-#define LimitPerPage DISABLED_LimitPerPage
-#elif defined(OS_WIN)
+// http://crbug.com/30307, disabled on Linux
 // This has been flaky on Windows since r39931. http://crbug.com/36800
-#define LimitPerPage FLAKY_LimitPerPage
-#endif
-
-TEST_F(WorkerTest, LimitPerPage) {
+// http://crbug.com/36630. Termination issues, disabled on all platforms.
+TEST_F(WorkerTest, DISABLED_LimitPerPage) {
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   GURL url = GetTestUrl(L"workers", L"many_workers.html");
   url = GURL(url.spec() + StringPrintf("?count=%d", max_workers_per_tab + 1));
@@ -482,10 +474,9 @@ TEST_F(WorkerTest, LimitPerPage) {
 }
 
 // Doesn't crash, but on all platforms, it sometimes fails.
-// http://crbug.com/28445
-#define LimitTotal FLAKY_LimitTotal
-
-TEST_F(WorkerTest, LimitTotal) {
+// http://crbug.com/28445. Made FLAKY
+// http://crbug.com/36630. Termination issues, disabled on all platforms.
+TEST_F(WorkerTest, DISABLED_LimitTotal) {
 #if !defined(OS_LINUX)
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
   int total_workers = WorkerService::kMaxWorkersWhenSeparate;
@@ -511,7 +502,8 @@ TEST_F(WorkerTest, LimitTotal) {
 #endif
 }
 
-TEST_F(WorkerTest, WorkerClose) {
+// http://crbug.com/36630 termination issues, disabled on all paltforms.
+TEST_F(WorkerTest, DISABLED_WorkerClose) {
   scoped_refptr<TabProxy> tab(GetActiveTab());
   ASSERT_TRUE(tab.get());
   GURL url = GetTestUrl(L"workers", L"worker_close.html");
@@ -567,7 +559,8 @@ TEST_F(WorkerTest, MultipleTabsQueuedSharedWorker) {
   ASSERT_TRUE(WaitForProcessCountToBe(3, max_workers_per_tab));
 }
 
-TEST_F(WorkerTest, QueuedSharedWorkerStartedFromOtherTab) {
+// http://crbug.com/36630 termination issues, disabled on all paltforms.
+TEST_F(WorkerTest, DISABLED_QueuedSharedWorkerStartedFromOtherTab) {
   // Tests to make sure that queued shared workers are started up when
   // an instance is launched from another tab.
   int max_workers_per_tab = WorkerService::kMaxWorkersPerTabWhenSeparate;
