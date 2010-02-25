@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <limits.h>
-#include <sys/types.h>
+// #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 
@@ -26,13 +26,13 @@
  * only be changed prior to going multithreaded.
  */
 
+#include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_log_intern.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/shared/platform/nacl_timestamp.h"
 
-#include "native_client/src/trusted/gio/gio.h"
 /*
  * All logging is protected by this mutex.
  */

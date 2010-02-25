@@ -9,8 +9,8 @@
  * This file defines nacl target machine dependent types.
  */
 
-#ifndef SERVICE_RUNTIME_INCLUDE_MACHINE__TYPES_H_
-#define SERVICE_RUNTIME_INCLUDE_MACHINE__TYPES_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_MACHINE__TYPES_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_MACHINE__TYPES_H_
 
 #ifdef __native_client__
 # include <stdint.h>

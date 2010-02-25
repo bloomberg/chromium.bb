@@ -177,7 +177,7 @@
       },
       'dependencies': [
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
-        '<(DEPTH)/native_client/src/trusted/gio/gio.gyp:gio',
+        '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
         '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
       ],
       'conditions': [
@@ -261,7 +261,7 @@
           },
           'dependencies': [
             '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
-            '<(DEPTH)/native_client/src/trusted/gio/gio.gyp:gio64',
+            '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',
             '<(DEPTH)/native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate64',
             '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc64',
             'arch/x86/service_runtime_x86.gyp:service_runtime_x86_common64',

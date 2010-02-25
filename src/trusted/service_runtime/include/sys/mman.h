@@ -8,8 +8,8 @@
  * NaCl Service Runtime.  IMC API.
  */
 
-#ifndef NATIVE_CLIENT_SERVICE_RUNTIME_INCLUDE_SYS_MMAN_H_
-#define NATIVE_CLIENT_SERVICE_RUNTIME_INCLUDE_SYS_MMAN_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_MMAN_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_MMAN_H_
 
 #include "native_client/src/trusted/service_runtime/include/bits/mman.h"
 

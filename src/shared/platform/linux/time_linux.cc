@@ -13,6 +13,32 @@
 
 #include "native_client/src/shared/platform/time.h"
 
+// Newlib does not have a timegm function.
+namespace {
+
+// BUG(sehr): this function is not thread safe, because it modifies and uses the
+// TZ environment variable, as do other time-related functions.
+time_t nacl_timegm(struct tm *tm) {
+  time_t return_time;
+  char *timezone;
+
+  // Reset the TZ to default.
+  timezone = getenv("TZ");
+  setenv("TZ", "", 1);
+  tzset();
+  // Convert the time.
+  return_time = mktime(tm);
+  // And restore the timezone.
+  if (NULL != timezone) {
+    setenv("TZ", timezone, 1);
+  } else {
+    unsetenv("TZ");
+  }
+  return return_time;
+}
+
+}  // namespace
+
 // The Time routines in this file use standard POSIX routines, or almost-
 // standard routines in the case of timegm.
 // The TimeTicks routines are Mach-specific.
@@ -48,14 +74,17 @@ NaCl::Time NaCl::Time::FromExploded(bool is_local, const Exploded& exploded) {
   timestruct.tm_wday   = exploded.day_of_week;  // mktime/timegm ignore this
   timestruct.tm_yday   = 0;     // mktime/timegm ignore this
   timestruct.tm_isdst  = -1;    // attempt to figure it out
+#ifndef __native_client__
   timestruct.tm_gmtoff = 0;     // not a POSIX field, so mktime/timegm ignore
   timestruct.tm_zone   = NULL;  // not a POSIX field, so mktime/timegm ignore
+#endif  // __native_client__
 
+  tzset();
   time_t seconds;
   if (is_local)
     seconds = mktime(&timestruct);
   else
-    seconds = timegm(&timestruct);
+    seconds = nacl_timegm(&timestruct);
   // DCHECK(seconds >= 0) << "mktime/timegm could not convert from exploded";
 
   uint64 milliseconds = seconds * kMillisecondsPerSecond + exploded.millisecond;

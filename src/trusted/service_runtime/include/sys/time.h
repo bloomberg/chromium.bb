@@ -8,8 +8,8 @@
  * NaCl Service Runtime API.  Time types.
  */
 
-#ifndef NATIVE_CLIENT_SERVICE_RUNTIME_INCLUDE_SYS_TIME_H_
-#define NATIVE_CLIENT_SERVICE_RUNTIME_INCLUDE_SYS_TIME_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_TIME_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_TIME_H_
 
 #include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 

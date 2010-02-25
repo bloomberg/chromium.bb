@@ -8,14 +8,14 @@
       'type': 'none',
       # NOTE: Chrome-specific targets should not be part of this project
       'dependencies': [
-        '../src/shared/npruntime/npruntime.gyp:*',
+        '../src/shared/gio/gio.gyp:*',
         '../src/shared/imc/imc.gyp:*',
+        '../src/shared/npruntime/npruntime.gyp:*',
         '../src/shared/platform/platform.gyp:*',
 #        '../src/shared/platform/platform_tests.gyp:*',
         '../src/shared/srpc/srpc.gyp:*',
         '../src/shared/utils/utils.gyp:*',
         '../src/trusted/desc/desc.gyp:*',
-        '../src/trusted/gio/gio.gyp:*',
         '../src/trusted/nonnacl_util/nonnacl_util.gyp:*',
         '../src/trusted/platform_qualify/platform_qualify.gyp:*',
         '../src/trusted/plugin/plugin.gyp:*',

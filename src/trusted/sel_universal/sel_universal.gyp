@@ -44,7 +44,7 @@
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
         '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc',
         '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer',
-        '<(DEPTH)/native_client/src/trusted/gio/gio.gyp:gio',
+        '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
         '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util_c',
       ],
       'conditions': [
@@ -75,7 +75,7 @@
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
             '<(DEPTH)/native_client/src/shared/srpc/srpc.gyp:nonnacl_srpc64',
             '<(DEPTH)/native_client/src/trusted/desc/desc.gyp:nrd_xfer64',
-            '<(DEPTH)/native_client/src/trusted/gio/gio.gyp:gio64',
+            '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',
             '<(DEPTH)/native_client/src/trusted/nonnacl_util/nonnacl_util.gyp:nonnacl_util_c64',
           ],
         },

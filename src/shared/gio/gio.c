@@ -9,7 +9,7 @@
  */
 #include "native_client/src/include/portability.h"
 
-#include "native_client/src/trusted/gio/gio.h"
+#include "native_client/src/shared/gio/gio.h"
 
 struct GioVtbl const    kGioFileVtbl = {
   GioFileRead,

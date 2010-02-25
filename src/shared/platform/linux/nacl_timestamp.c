@@ -27,6 +27,6 @@ char  *NaClTimeStampString(char   *buffer,
   (void) localtime_r(&tv.tv_sec, &bdt);
   /* suseconds_t holds at most 10**6 < 16**6 = (2**4)**6 = 2**24 < 2**32 */
   snprintf(buffer, buffer_size, "%02d:%02d:%02d.%06d",
-           bdt.tm_hour, bdt.tm_min, bdt.tm_sec, (int32_t) tv.tv_usec);
+           bdt.tm_hour, bdt.tm_min, bdt.tm_sec, (int) tv.tv_usec);
   return buffer;
 }

@@ -5,7 +5,7 @@
  */
 
 
-#include "native_client/src/trusted/gio/gio.h"
+#include "native_client/src/shared/gio/gio.h"
 #include "gtest/gtest.h"
 
 namespace {

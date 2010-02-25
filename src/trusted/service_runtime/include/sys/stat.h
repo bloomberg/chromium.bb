@@ -8,8 +8,8 @@
  * NaCl kernel / service run-time system call ABI.  stat/fstat.
  */
 
-#ifndef SERVICE_RUNTIME_INCLUDE_SYS_STAT_H_
-#define SERVICE_RUNTIME_INCLUDE_SYS_STAT_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_STAT_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_STAT_H_
 
 #ifdef __native_client__
 #include <sys/types.h>

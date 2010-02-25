@@ -420,7 +420,7 @@ class TimeTicks {
   bool operator>=(TimeTicks other) const {
     return ticks_ >= other.ticks_;
   }
-#if NACL_LINUX || NACL_OSX
+#if NACL_LINUX || NACL_OSX || defined(__native_client__)
   void InitTimespec(struct timespec *ts) const;
 #endif
   int64 ticks_for_testing() const { return ticks_; }

@@ -9,8 +9,8 @@
  */
 
 
-#ifndef NATIVE_CLIENT_SERVICE_RUNTIME_INCLUDE_BITS_WORDSIZE_H_
-#define NATIVE_CLIENT_SERVICE_RUNTIME_INCLUDE_BITS_WORDSIZE_H_
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_BITS_WORDSIZE_H_
+#define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_BITS_WORDSIZE_H_
 
 #if defined(__powerpc64__) || defined(__s390x__) || defined(__arch64__) || \
     defined(__sparcv9) || defined(__x86_64__) || defined(_AMD64_) || \

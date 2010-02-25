@@ -4,8 +4,8 @@
  * be found in the LICENSE file.
  */
 
-#ifndef NACL_ABI__SYS_DIRENT_H
-#define NACL_ABI__SYS_DIRENT_H
+#ifndef NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_DIRENT_H
+#define NATIVE_CLIENT_SRC_TRUSTED_SERVICE_RUNTIME_INCLUDE_SYS_DIRENT_H
 
 #ifdef __native_client__
 #include "native_client/src/trusted/service_runtime/include/sys/types.h"

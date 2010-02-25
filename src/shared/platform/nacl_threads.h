@@ -11,12 +11,17 @@
 #ifndef NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_THREADS_H_
 #define NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_THREADS_H_
 
+/*
+ * We cannot include this header file from an installation that does not
+ * have the native_client source tree.
+ * TODO(sehr): use export_header.py to copy these files out.
+ */
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/include/portability.h"
 
 EXTERN_C_BEGIN
 
-#if NACL_LINUX || NACL_OSX
+#if NACL_LINUX || NACL_OSX || defined(__native_client__)
 # include "native_client/src/shared/platform/linux/nacl_threads_types.h"
 #elif NACL_WINDOWS
 /*

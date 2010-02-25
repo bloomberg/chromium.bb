@@ -646,10 +646,10 @@ base_env.Append(
 
 base_env.Append(
   BUILD_SCONSCRIPTS = [
-    'src/trusted/gio/build.scons',
     'src/trusted/sel_universal/build.scons',
     'src/trusted/service_runtime/build.scons',
     'src/trusted/base/build.scons',
+    'src/shared/gio/build.scons',
     'src/shared/imc/build.scons',
     'src/shared/npruntime/build.scons',
     'src/shared/platform/build.scons',
@@ -1083,6 +1083,7 @@ nacl_env.Append(
     'tests/libc_free_hello_world/nacl.scons',
     'tests/mandel/nacl.scons',
     'tests/mmap/nacl.scons',
+    'tests/nacl_log/nacl.scons',
     'tests/nanosleep/nacl.scons',
     'tests/native_worker/nacl.scons',
     'tests/noop/nacl.scons',
@@ -1239,6 +1240,8 @@ nacl_extra_sdk_env.Append(
     BUILD_SCONSCRIPTS = [
       ####  ALPHABETICALLY SORTED ####
       'src/include/nacl/nacl.scons',
+      'src/shared/gio/nacl.scons',
+      'src/shared/platform/nacl.scons',
       'src/shared/srpc/nacl.scons',
       'src/untrusted/av/nacl.scons',
       'src/untrusted/nacl/nacl.scons',

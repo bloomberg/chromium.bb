@@ -12,7 +12,7 @@
 #include <string.h>
 #include <errno.h>
 
-#include "native_client/src/trusted/gio/gio.h"
+#include "native_client/src/shared/gio/gio.h"
 
 /*
  * Memory file is just read/write from/to an in-memory buffer.  Once

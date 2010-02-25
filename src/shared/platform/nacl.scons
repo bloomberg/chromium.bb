@@ -1,0 +1,32 @@
+# -*- python -*-
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+env.Append(CCFLAGS=['-Wno-long-long'])
+
+platform_inputs = [
+    'nacl_check.c',
+    'nacl_log.c',
+    'linux/condition_variable.cc',
+    'linux/lock.cc',
+    'linux/nacl_threads.c',
+    'linux/nacl_timestamp.c',
+    'linux/time_linux.cc',
+    'nacl_sync.cc',
+    'time.cc',
+    ]
+
+env.ComponentLibrary('google_nacl_platform', platform_inputs)
+
+headers = [
+    'nacl_check.h',
+    'nacl_log.h',
+    'nacl_threads.h',
+    ]
+
+header_install = env.AddHeaderToSdk(headers)
+env.AddLibraryToSdk(['google_nacl_platform'])
+
+env.Requires('google_nacl_platform', header_install)

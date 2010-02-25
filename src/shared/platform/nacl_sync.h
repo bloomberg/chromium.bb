@@ -8,10 +8,11 @@
  * NaCl Server Runtime mutex and condition variable abstraction layer.
  * This is the host-OS-independent interface.
  */
-#ifndef NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_SYNC_H_
-#define NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_SYNC_H_
+#ifndef NATIVE_CLIENT_SRC_SHARED_PLATFORM_NACL_SYNC_H_
+#define NATIVE_CLIENT_SRC_SHARED_PLATFORM_NACL_SYNC_H_
 
 #include "native_client/src/include/nacl_base.h"
+#include "native_client/src/trusted/service_runtime/include/machine/_types.h"
 #include "native_client/src/trusted/service_runtime/include/sys/time.h"
 
 EXTERN_C_BEGIN
@@ -77,4 +78,4 @@ NaClSyncStatus NaClCondVarTimedWaitAbsolute(
 EXTERN_C_END
 
 
-#endif  /* NATIVE_CLIENT_SRC_TRUSTED_PLATFORM_NACL_SYNC_H_ */
+#endif  /* NATIVE_CLIENT_SRC_SHARED_PLATFORM_NACL_SYNC_H_ */

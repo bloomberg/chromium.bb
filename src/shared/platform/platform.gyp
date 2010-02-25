@@ -180,7 +180,7 @@
       },
       'dependencies': [
         '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform',
-        '<(DEPTH)/native_client/src/trusted/gio/gio.gyp:gio',
+        '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio',
       ],
     },
   ],
@@ -212,7 +212,7 @@
           ],
           'dependencies': [
             '<(DEPTH)/native_client/src/shared/platform/platform.gyp:platform64',
-            '<(DEPTH)/native_client/src/trusted/gio/gio.gyp:gio64',
+            '<(DEPTH)/native_client/src/shared/gio/gio.gyp:gio64',
           ],
           'configurations': {
             'Common_Base': {

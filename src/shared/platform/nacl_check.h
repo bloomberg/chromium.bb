@@ -11,6 +11,11 @@
 #ifndef NATIVE_CLIENT_SRC_SHARED_PLATFORM_NACL_CHECK_H_
 #define NATIVE_CLIENT_SRC_SHARED_PLATFORM_NACL_CHECK_H_
 
+/*
+ * We cannot include this header file from an installation that does not
+ * have the native_client source tree.
+ * TODO(sehr): use export_header.py to copy these files out.
+ */
 #include "native_client/src/include/nacl_base.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 

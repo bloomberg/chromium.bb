@@ -20,6 +20,7 @@
 #include <malloc.h>
 #endif
 
+#include "native_client/src/shared/gio/gio.h"
 #include "native_client/src/shared/imc/nacl_imc_c.h"
 #include "native_client/src/shared/platform/nacl_log.h"
 #include "native_client/src/shared/platform/nacl_sync.h"
@@ -28,7 +29,6 @@
 
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 
-#include "native_client/src/trusted/gio/gio.h"
 #include "native_client/src/trusted/service_runtime/env_cleanser.h"
 #include "native_client/src/trusted/service_runtime/expiration.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"

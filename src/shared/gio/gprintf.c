@@ -11,7 +11,7 @@
 
 #include <stdlib.h>
 
-#include "native_client/src/trusted/gio/gio.h"
+#include "native_client/src/shared/gio/gio.h"
 
 size_t gvprintf(struct Gio *gp,
              char const *fmt,

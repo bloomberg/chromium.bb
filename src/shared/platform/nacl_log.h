@@ -13,8 +13,13 @@
 
 #include <stdarg.h>
 
+/*
+ * We cannot include this header file from an installation that does not
+ * have the native_client source tree.
+ * TODO(sehr): use export_header.py to copy these files out.
+ */
 #include "native_client/src/include/nacl_base.h"
-#include "native_client/src/trusted/gio/gio.h"
+#include "native_client/src/shared/gio/gio.h"
 
 EXTERN_C_BEGIN
 

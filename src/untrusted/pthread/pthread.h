@@ -363,6 +363,7 @@ typedef uint32_t pthread_t;
 /** A structure representing thread attributes. */
 typedef struct {
   int joinable; /**< 1 if the thread is joinable, 0 otherwise */
+  size_t stacksize; /**< The requested thread stack size in bytes. */
 } pthread_attr_t;
 
 
@@ -370,6 +371,9 @@ typedef struct {
 #define PTHREAD_CREATE_JOINABLE 1
 /** Detached thread type; for use with pthread_attr_setdetachstate(). */
 #define PTHREAD_CREATE_DETACHED 0
+
+/** Minimum stack size; for use with pthread_attr_setstacksize(). */
+#define PTHREAD_STACK_MIN (512 * 1024)
 
 /* Thread functions  */
 
@@ -466,6 +470,19 @@ extern int pthread_detach(pthread_t th);
 */
 extern int nacl_thread_nice(const int nice);
 
+/** @nqPosix
+* Sends a signal to a thread.  (Currently only a stub implementation.)
+*
+* @linkPthread
+*
+* @param thread_id The identifier of the thread to receive the signal.
+* @param sig The signal value to send.
+*
+* @return 0 for success, non-zero error code otherwise.
+*/
+extern int pthread_kill(pthread_t thread_id,
+                        int sig);
+
 /* Functions for handling thread attributes.  */
 /** @nqPosix
 * Initializes thread attributes structure attr with default attributes
@@ -516,6 +533,33 @@ extern int pthread_attr_setdetachstate(pthread_attr_t *attr,
 */
 extern int pthread_attr_getdetachstate(pthread_attr_t *attr,
                                        int *detachstate);
+
+/** @nqPosix
+* Sets the stacksize attribute in thread attributes.  Has no effect if the
+* size is less than PTHREAD_STACK_MIN.
+*
+* @linkPthread
+*
+* @param attr Pointer to thread attributes structure.
+* @param stacksize Value to be set, determines the minimum stack size.
+*
+* @return 0 on success, non-zero error code otherwise.
+*/
+extern int pthread_attr_setstacksize(pthread_attr_t *attr,
+                                     size_t stacksize);
+
+/** @nqPosix
+* Gets the stacksize attribute in thread attributes.
+*
+* @linkPthread
+*
+* @param attr Pointer to thread attributes structure.
+* @param stacksize Value to be set, determines the minimum stack size.
+*
+* @return 0 on success, non-zero error code otherwise.
+*/
+extern int pthread_attr_getstacksize(pthread_attr_t *attr,
+                                     size_t *stacksize);
 
 /* Functions for handling thread-specific data.  */
 

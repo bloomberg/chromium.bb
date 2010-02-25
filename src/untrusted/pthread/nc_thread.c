@@ -42,6 +42,8 @@ typedef uint32_t return_addr_t;
 # error "What target architecture are we running the NaCl module on?"
 #endif
 
+static const int kStackAlignment = 32;
+
 /* Thread management global variables */
 const int __nc_kMaxCachedMemoryBlocks = 50;
 
@@ -165,10 +167,10 @@ void nc_thread_starter(nc_thread_function func,
 }
 
 static nc_thread_memory_block_t* nc_allocate_memory_block_mu(
-    nc_thread_memory_block_type_t type) {
+    nc_thread_memory_block_type_t type,
+    int required_size) {
   struct tailhead *head;
   nc_thread_memory_block_t *node;
-  int required_size;
   /* assume the lock is held!!! */
   if (type >= MAX_MEMORY_TYPE)
     return NULL;
@@ -177,15 +179,13 @@ static nc_thread_memory_block_t* nc_allocate_memory_block_mu(
   /* We need to know the size even if we find a free node - to memset it to 0 */
   switch (type) {
      case THREAD_STACK_MEMORY:
-       required_size = __nacl_thread_stack_size(1);
+       required_size = required_size + kStackAlignment - 1;
        break;
      case TLS_AND_TDB_MEMORY:
-       required_size =
-         __nacl_tls_combined_size(sizeof(nc_thread_descriptor_t), 1);
        break;
      case MAX_MEMORY_TYPE:
      default:
-     return NULL;
+       return NULL;
   }
 
   if (!STAILQ_EMPTY(head)) {
@@ -239,7 +239,7 @@ static nc_thread_memory_block_t* nc_allocate_memory_block_mu(
 }
 
 static void nc_free_memory_block_mu(nc_thread_memory_block_type_t type,
-                                 nc_thread_memory_block_t* node) {
+                                    nc_thread_memory_block_t* node) {
   /* assume the lock is held !!! */
   struct tailhead *head = &__nc_thread_memory_blocks[type];
   STAILQ_INSERT_TAIL(head, node, entries);
@@ -436,6 +436,7 @@ int pthread_create(pthread_t *thread_id,
   nc_thread_descriptor_t *new_tdb = NULL;
   nc_basic_thread_data_t *new_basic_data = NULL;
   nc_thread_memory_block_t *tls_node = NULL;
+  size_t stacksize = PTHREAD_STACK_MIN;
 
   /* TODO(gregoryd) - right now a single lock is used, try to optimize? */
   pthread_mutex_lock(&__nc_thread_management_lock);
@@ -443,7 +444,9 @@ int pthread_create(pthread_t *thread_id,
   do {
     /* Allocate the tls block */
 
-    tls_node = nc_allocate_memory_block_mu(TLS_AND_TDB_MEMORY);
+    tls_node = nc_allocate_memory_block_mu(
+        TLS_AND_TDB_MEMORY,
+         __nacl_tls_combined_size(sizeof(nc_thread_descriptor_t), 1));
     if (NULL == tls_node)
       break;
 
@@ -474,10 +477,11 @@ int pthread_create(pthread_t *thread_id,
     new_tdb->state = arg;
     if (attr != NULL) {
       new_tdb->joinable = attr->joinable;
+      stacksize = attr->stacksize;
     }
 
     /* Allocate the stack for the thread */
-    stack_node = nc_allocate_memory_block_mu(THREAD_STACK_MEMORY);
+    stack_node = nc_allocate_memory_block_mu(THREAD_STACK_MEMORY, stacksize);
     if (NULL == stack_node) {
       retval = -1;
       break;
@@ -499,8 +503,7 @@ int pthread_create(pthread_t *thread_id,
    * We subtract sizeof(return_addr_t) since thread_stack is 0 mod 16
    * aligned and the stack size is a multiple of 16.
    */
-  esp = (void*) (thread_stack + __nacl_thread_stack_size(0)
-                 - sizeof(return_addr_t));
+  esp = (void*) (thread_stack + stacksize - sizeof(return_addr_t));
 
   /*
    * Put 0 on the stack as a return address - it is needed to satisfy
@@ -723,6 +726,13 @@ int nacl_thread_nice(const int nice) {
   return NACL_SYSCALL(thread_nice)(nice);
 }
 
+int pthread_kill(pthread_t thread_id,
+                 int sig) {
+  /* This function is currently unimplemented. */
+  errno = EINVAL;
+  return -1;
+}
+
 pthread_t pthread_self() {
   /* get the tdb pointer from gs and use it to return the thread handle*/
   nc_thread_descriptor_t *tdb = nc_get_tdb();
@@ -820,6 +830,7 @@ int pthread_attr_init (pthread_attr_t *attr) {
     return EINVAL;
   }
   attr->joinable = PTHREAD_CREATE_JOINABLE;
+  attr->stacksize = PTHREAD_STACK_MIN;
   return 0;
 }
 
@@ -846,6 +857,27 @@ int pthread_attr_getdetachstate (pthread_attr_t *attr,
     return EINVAL;
   }
   return attr->joinable;
+}
+
+int pthread_attr_setstacksize(pthread_attr_t *attr,
+                              size_t stacksize) {
+  if (NULL == attr) {
+    return EINVAL;
+  }
+  if (PTHREAD_STACK_MIN < stacksize) {
+    attr->stacksize = stacksize;
+  } else {
+    attr->stacksize = PTHREAD_STACK_MIN;
+  }
+  return 0;
+}
+
+int pthread_attr_getstacksize(pthread_attr_t *attr,
+                              size_t *stacksize) {
+  if (NULL == attr) {
+    return EINVAL;
+  }
+  return attr->stacksize;
 }
 
 void __local_lock_init(_LOCK_T* lock);
