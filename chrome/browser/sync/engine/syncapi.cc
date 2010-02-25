@@ -399,7 +399,7 @@ std::string BaseNode::GenerateSyncableHash(
   std::string hash_input;
   serialized_type.AppendToString(&hash_input);
   hash_input.append(client_tag);
-  return base::SHA1HashString(hash_input);
+  return HexEncode(hash_input.data(), hash_input.length());
 }
 
 int64 BaseNode::GetParentId() const {

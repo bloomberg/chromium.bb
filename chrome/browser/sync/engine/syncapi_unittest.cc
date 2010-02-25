@@ -85,7 +85,9 @@ std::string HashToHex(const std::string& hash) {
 }
 }  // namespace
 
-TEST_F(SyncApiTest, GenerateSyncableHash) {
+// TODO(chron): Finalize the hash format. Renable test. http://crbug.com/36827
+TEST_F(SyncApiTest, DISABLED_GenerateSyncableHash) {
+/*
   EXPECT_EQ("3B2697579984CEB3D2E306E8826B4ABD17DE9002",
       HashToHex(BaseNode::GenerateSyncableHash(syncable::BOOKMARKS, "tag1")));
   EXPECT_EQ("88D150B511506FE219727D642942446430E42ECE",
@@ -100,6 +102,7 @@ TEST_F(SyncApiTest, GenerateSyncableHash) {
           BaseNode::GenerateSyncableHash(syncable::PREFERENCES, "tag2")));
   EXPECT_EQ("185896CE8E4D1A18CB94DF8EC827E1CB6F032534",
       HashToHex(BaseNode::GenerateSyncableHash(syncable::AUTOFILL, "tag2")));
+*/
 }
 
 TEST_F(SyncApiTest, ModelTypesSiloed) {
