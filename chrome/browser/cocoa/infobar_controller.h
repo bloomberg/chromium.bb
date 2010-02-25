@@ -5,8 +5,10 @@
 #import <Cocoa/Cocoa.h>
 
 @class AnimatableView;
+@class HoverCloseButton;
 @protocol InfoBarContainer;
 class InfoBarDelegate;
+@class InfoBarGradientView;
 
 // A controller for an infobar in the browser window.  There is one
 // controller per infobar view.  The base InfoBarController is able to
@@ -19,11 +21,12 @@ class InfoBarDelegate;
 
  @protected
   InfoBarDelegate* delegate_;  // weak
-  IBOutlet NSView* infoBarView_;
+  IBOutlet InfoBarGradientView* infoBarView_;
   IBOutlet NSImageView* image_;
   IBOutlet NSTextField* label_;
   IBOutlet NSButton* okButton_;
   IBOutlet NSButton* cancelButton_;
+  IBOutlet HoverCloseButton* closeButton_;
 };
 
 // Initializes a new InfoBarController.

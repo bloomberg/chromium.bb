@@ -719,7 +719,8 @@ void TranslateInfoBar::OnLanguageModified(views::MenuButton* menu_button,
   SchedulePaint();
   // Clear options menu model so that it'll be created with new language.
   options_menu_model_.reset();
-  // If necessary, trigger translation.
+  // Selecting an item from the "from language" menu in the before translate
+  // phase shouldn't trigger translation - http://crbug.com/36666
   if (GetDelegate()->state() == TranslateInfoBarDelegate::kAfterTranslate)
     GetDelegate()->Translate();
 }

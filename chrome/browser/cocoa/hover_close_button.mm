@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#import "hover_close_button.h"
+#import "chrome/browser/cocoa/hover_close_button.h"
 
 #include "app/l10n_util.h"
 #include "base/nsimage_cache_mac.h"

@@ -700,6 +700,8 @@
         'browser/cocoa/toolbar_controller.mm',
         'browser/cocoa/toolbar_view.h',
         'browser/cocoa/toolbar_view.mm',
+        'browser/cocoa/translate_infobar.h',
+        'browser/cocoa/translate_infobar.mm',
         'browser/cocoa/ui_localizer.h',
         'browser/cocoa/ui_localizer.mm',
         'browser/cocoa/url_drop_target.h',

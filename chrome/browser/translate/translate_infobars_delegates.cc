@@ -146,7 +146,7 @@ void TranslateInfoBarDelegate::ToggleLanguageBlacklist() {
     else
       prefs_.RemoveLanguageFromBlacklist(original_lang_code());
   } else {
-    NOTREACHED() << "Invalid mehod called for translate state";
+    NOTREACHED() << "Invalid method called for translate state";
   }
 }
 
@@ -211,7 +211,7 @@ string16 TranslateInfoBarDelegate::GetDisplayNameForLocale(
       language_code, g_browser_process->GetApplicationLocale(), true);
 }
 
-#if !defined(TOOLKIT_VIEWS)
+#if !defined(TOOLKIT_VIEWS) && !defined(OS_MACOSX)
 // TranslateInfoBarDelegate: InfoBarDelegate overrides: ------------------------
 
 InfoBar* TranslateInfoBarDelegate::CreateInfoBar() {

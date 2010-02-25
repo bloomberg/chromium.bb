@@ -824,12 +824,12 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   process_singleton.Create();
 
-#if defined(OS_WIN)
+#if !defined(OS_LINUX)
   // Create the TranslateManager singleton.
-  // TODO(jcampan): enable on non Windows platforms when the info-bars are
-  //                implemented.
+  // TODO(jcampan): enable on Linux when the info-bars are implemented.
+  // http://crbug.com/36714
   Singleton<TranslateManager>::get();
-#endif
+#endif  // !OS_LINUX
 
   // Show the First Run UI if this is the first time Chrome has been run on
   // this computer, or we're being compelled to do so by a command line flag.
