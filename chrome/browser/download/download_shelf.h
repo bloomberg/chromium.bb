@@ -45,7 +45,7 @@ class DownloadShelf {
 
 // Logic for the download shelf context menu. Platform specific subclasses are
 // responsible for creating and running the menu.
-class DownloadShelfContextMenu {
+class DownloadShelfContextMenu : public menus::SimpleMenuModel::Delegate {
  public:
   virtual ~DownloadShelfContextMenu();
 
@@ -63,18 +63,19 @@ class DownloadShelfContextMenu {
  protected:
   explicit DownloadShelfContextMenu(BaseDownloadItemModel* download_model);
 
-  bool ItemIsChecked(int id) const;
-  bool ItemIsDefault(int id) const;
-  std::wstring GetItemLabel(int id) const;
-  bool IsItemCommandEnabled(int id) const;
-  void ExecuteItemCommand(int id);
-
-  menus::SimpleMenuModel* GetInProgressMenuModel(
-      menus::SimpleMenuModel::Delegate* delegate);
-  menus::SimpleMenuModel* GetFinishedMenuModel(
-      menus::SimpleMenuModel::Delegate* delegate);
+  menus::SimpleMenuModel* GetInProgressMenuModel();
+  menus::SimpleMenuModel* GetFinishedMenuModel();
   // Information source.
   DownloadItem* download_;
+
+  // menus::SimpleMenuModel::Delegate implementation:
+  virtual bool IsCommandIdEnabled(int command_id) const;
+  virtual bool IsCommandIdChecked(int command_id) const;
+  virtual void ExecuteCommand(int command_id);
+  virtual bool GetAcceleratorForCommandId(int command_id,
+                                          menus::Accelerator* accelerator);
+  virtual bool IsLabelForCommandIdDynamic(int command_id) const;
+  virtual string16 GetLabelForCommandId(int command_id) const;
 
   // A model to control the cancel behavior.
   BaseDownloadItemModel* model_;

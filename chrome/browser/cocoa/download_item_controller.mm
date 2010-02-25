@@ -57,9 +57,9 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
   DownloadShelfContextMenuMac(BaseDownloadItemModel* model)
       : DownloadShelfContextMenu(model) { }
 
-  using DownloadShelfContextMenu::ExecuteItemCommand;
-  using DownloadShelfContextMenu::ItemIsChecked;
-  using DownloadShelfContextMenu::IsItemCommandEnabled;
+  using DownloadShelfContextMenu::ExecuteCommand;
+  using DownloadShelfContextMenu::IsCommandIdChecked;
+  using DownloadShelfContextMenu::IsCommandIdEnabled;
 
   using DownloadShelfContextMenu::SHOW_IN_FOLDER;
   using DownloadShelfContextMenu::OPEN_WHEN_COMPLETE;
@@ -297,30 +297,30 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
     return YES;
   }
 
-  if (menuBridge_->ItemIsChecked(actionId))
+  if (menuBridge_->IsCommandIdChecked(actionId))
     [item setState:NSOnState];
   else
     [item setState:NSOffState];
 
-  return menuBridge_->IsItemCommandEnabled(actionId) ? YES : NO;
+  return menuBridge_->IsCommandIdEnabled(actionId) ? YES : NO;
 }
 
 - (IBAction)handleOpen:(id)sender {
-  menuBridge_->ExecuteItemCommand(
+  menuBridge_->ExecuteCommand(
       DownloadShelfContextMenuMac::OPEN_WHEN_COMPLETE);
 }
 
 - (IBAction)handleAlwaysOpen:(id)sender {
-  menuBridge_->ExecuteItemCommand(
+  menuBridge_->ExecuteCommand(
       DownloadShelfContextMenuMac::ALWAYS_OPEN_TYPE);
 }
 
 - (IBAction)handleReveal:(id)sender {
-  menuBridge_->ExecuteItemCommand(DownloadShelfContextMenuMac::SHOW_IN_FOLDER);
+  menuBridge_->ExecuteCommand(DownloadShelfContextMenuMac::SHOW_IN_FOLDER);
 }
 
 - (IBAction)handleCancel:(id)sender {
-  menuBridge_->ExecuteItemCommand(DownloadShelfContextMenuMac::CANCEL);
+  menuBridge_->ExecuteCommand(DownloadShelfContextMenuMac::CANCEL);
 }
 
 - (IBAction)handleTogglePause:(id)sender {
@@ -331,7 +331,7 @@ class DownloadShelfContextMenuMac : public DownloadShelfContextMenu {
     [sender setTitle:l10n_util::GetNSStringWithFixup(
         IDS_DOWNLOAD_MENU_RESUME_ITEM)];
   }
-  menuBridge_->ExecuteItemCommand(DownloadShelfContextMenuMac::TOGGLE_PAUSE);
+  menuBridge_->ExecuteCommand(DownloadShelfContextMenuMac::TOGGLE_PAUSE);
 }
 
 @end

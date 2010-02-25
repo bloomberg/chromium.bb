@@ -77,7 +77,6 @@ static const double kDownloadItemLuminanceMod = 0.8;
 // DownloadShelfContextMenuGtk -------------------------------------------------
 
 class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
-                                    public menus::SimpleMenuModel::Delegate,
                                     public MenuGtk::Delegate {
  public:
   // The constructor creates the menu and immediately pops it up.
@@ -98,37 +97,10 @@ class DownloadShelfContextMenuGtk : public DownloadShelfContextMenu,
     // Create the menu if we have not created it yet or we created it for
     // an in-progress download that has since completed.
     if (download_->state() == DownloadItem::COMPLETE)
-      menu_.reset(new MenuGtk(this, GetFinishedMenuModel(this)));
+      menu_.reset(new MenuGtk(this, GetFinishedMenuModel()));
     else
-      menu_.reset(new MenuGtk(this, GetInProgressMenuModel(this)));
+      menu_.reset(new MenuGtk(this, GetInProgressMenuModel()));
     menu_->Popup(widget, event);
-  }
-
-  // menus::SimpleMenuModel::Delegate implementation:
-  virtual bool IsCommandIdEnabled(int command_id) const {
-    return IsItemCommandEnabled(command_id);
-  }
-
-  virtual bool IsCommandIdChecked(int command_id) const {
-    return ItemIsChecked(command_id);
-  }
-
-  virtual void ExecuteCommand(int command_id) {
-    ExecuteItemCommand(command_id);
-  }
-
-  virtual bool GetAcceleratorForCommandId(int command_id,
-                                          menus::Accelerator* accelerator) {
-    return false;
-  }
-
-  bool IsLabelForCommandIdDynamic(int command_id) const {
-    return command_id == TOGGLE_PAUSE;
-  }
-
-  string16 GetLabelForCommandId(int command_id) const {
-    DCHECK(command_id == TOGGLE_PAUSE);
-    return WideToUTF16(GetItemLabel(command_id));
   }
 
   // MenuGtk::Delegate implementation:

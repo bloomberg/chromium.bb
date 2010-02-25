@@ -75,8 +75,7 @@ static const double kDownloadItemLuminanceMod = 0.8;
 
 // DownloadShelfContextMenuWin -------------------------------------------------
 
-class DownloadShelfContextMenuWin : public DownloadShelfContextMenu,
-                                    public menus::SimpleMenuModel::Delegate {
+class DownloadShelfContextMenuWin : public DownloadShelfContextMenu {
  public:
   explicit DownloadShelfContextMenuWin(BaseDownloadItemModel* model)
       : DownloadShelfContextMenu(model) {
@@ -85,9 +84,9 @@ class DownloadShelfContextMenuWin : public DownloadShelfContextMenu,
 
   void Run(const gfx::Point& point) {
     if (download_->state() == DownloadItem::COMPLETE)
-      menu_.reset(new views::Menu2(GetFinishedMenuModel(this)));
+      menu_.reset(new views::Menu2(GetFinishedMenuModel()));
     else
-      menu_.reset(new views::Menu2(GetInProgressMenuModel(this)));
+      menu_.reset(new views::Menu2(GetInProgressMenuModel()));
 
     // The menu's alignment is determined based on the UI layout.
     views::Menu2::Alignment alignment;
@@ -102,41 +101,6 @@ class DownloadShelfContextMenuWin : public DownloadShelfContextMenu,
   // to access |download_|.
   void Stop() {
     download_ = NULL;
-    model_ = NULL;
-  }
-
-  // Overriden from menus::SimpleMenuModel::Delegate:
-
-  virtual bool IsCommandIdChecked(int command_id) const {
-    if (!download_)
-      return false;
-    return ItemIsChecked(command_id);
-  }
-
-  virtual bool IsCommandIdEnabled(int command_id) const {
-    if (!download_)
-      return false;
-    return IsItemCommandEnabled(command_id);
-  }
-
-  virtual bool GetAcceleratorForCommandId(
-      int command_id,
-      menus::Accelerator* accelerator) {
-    return false;
-  }
-
-  bool IsLabelForCommandIdDynamic(int command_id) const {
-    return command_id == TOGGLE_PAUSE;
-  }
-
-  string16 GetLabelForCommandId(int command_id) const {
-    DCHECK(command_id == TOGGLE_PAUSE);
-    return WideToUTF16(GetItemLabel(command_id));
-  }
-
-  virtual void ExecuteCommand(int command_id) {
-    if (download_)
-      ExecuteItemCommand(command_id);
   }
 
  private:

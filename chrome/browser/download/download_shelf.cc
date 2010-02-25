@@ -26,8 +26,8 @@ DownloadShelfContextMenu::DownloadShelfContextMenu(
 DownloadShelfContextMenu::~DownloadShelfContextMenu() {
 }
 
-bool DownloadShelfContextMenu::ItemIsChecked(int id) const {
-  switch (id) {
+bool DownloadShelfContextMenu::IsCommandIdChecked(int command_id) const {
+  switch (command_id) {
     case OPEN_WHEN_COMPLETE: {
       return download_->open_when_complete();
     }
@@ -35,43 +35,36 @@ bool DownloadShelfContextMenu::ItemIsChecked(int id) const {
       return download_->manager()->ShouldOpenFileBasedOnExtension(
           download_->full_path());
     }
-    case TOGGLE_PAUSE: {
-      return download_->is_paused();
-    }
   }
   return false;
 }
 
-bool DownloadShelfContextMenu::ItemIsDefault(int id) const {
-  return id == OPEN_WHEN_COMPLETE;
-}
-
-std::wstring DownloadShelfContextMenu::GetItemLabel(int id) const {
-  switch (id) {
+string16 DownloadShelfContextMenu::GetLabelForCommandId(int command_id) const {
+  switch (command_id) {
     case SHOW_IN_FOLDER:
-      return l10n_util::GetString(IDS_DOWNLOAD_MENU_SHOW);
+      return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_SHOW);
     case OPEN_WHEN_COMPLETE:
       if (download_->state() == DownloadItem::IN_PROGRESS)
-        return l10n_util::GetString(IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE);
-      return l10n_util::GetString(IDS_DOWNLOAD_MENU_OPEN);
+        return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE);
+      return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_OPEN);
     case ALWAYS_OPEN_TYPE:
-      return l10n_util::GetString(IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE);
+      return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE);
     case CANCEL:
-      return l10n_util::GetString(IDS_DOWNLOAD_MENU_CANCEL);
+      return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_CANCEL);
     case TOGGLE_PAUSE: {
       if (download_->is_paused())
-        return l10n_util::GetString(IDS_DOWNLOAD_MENU_RESUME_ITEM);
+        return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_RESUME_ITEM);
       else
-        return l10n_util::GetString(IDS_DOWNLOAD_MENU_PAUSE_ITEM);
+        return l10n_util::GetStringUTF16(IDS_DOWNLOAD_MENU_PAUSE_ITEM);
     }
     default:
       NOTREACHED();
   }
-  return std::wstring();
+  return string16();
 }
 
-bool DownloadShelfContextMenu::IsItemCommandEnabled(int id) const {
-  switch (id) {
+bool DownloadShelfContextMenu::IsCommandIdEnabled(int command_id) const {
+  switch (command_id) {
     case SHOW_IN_FOLDER:
     case OPEN_WHEN_COMPLETE:
       return download_->state() != DownloadItem::CANCELLED;
@@ -82,12 +75,12 @@ bool DownloadShelfContextMenu::IsItemCommandEnabled(int id) const {
     case TOGGLE_PAUSE:
       return download_->state() == DownloadItem::IN_PROGRESS;
     default:
-      return id > 0 && id < MENU_LAST;
+      return command_id > 0 && command_id < MENU_LAST;
   }
 }
 
-void DownloadShelfContextMenu::ExecuteItemCommand(int id) {
-  switch (id) {
+void DownloadShelfContextMenu::ExecuteCommand(int command_id) {
+  switch (command_id) {
     case SHOW_IN_FOLDER:
       download_->manager()->ShowDownloadInShell(download_);
       break;
@@ -96,7 +89,7 @@ void DownloadShelfContextMenu::ExecuteItemCommand(int id) {
       break;
     case ALWAYS_OPEN_TYPE: {
       download_->manager()->OpenFilesBasedOnExtension(
-          download_->full_path(), !ItemIsChecked(ALWAYS_OPEN_TYPE));
+          download_->full_path(), !IsCommandIdChecked(ALWAYS_OPEN_TYPE));
       break;
     }
     case CANCEL:
@@ -114,19 +107,28 @@ void DownloadShelfContextMenu::ExecuteItemCommand(int id) {
   }
 }
 
-menus::SimpleMenuModel* DownloadShelfContextMenu::GetInProgressMenuModel(
-    menus::SimpleMenuModel::Delegate* delegate) {
+bool DownloadShelfContextMenu::GetAcceleratorForCommandId(
+    int command_id, menus::Accelerator* accelerator) {
+  return false;
+}
+
+bool DownloadShelfContextMenu::IsLabelForCommandIdDynamic(
+    int command_id) const {
+  return command_id == TOGGLE_PAUSE;
+}
+
+menus::SimpleMenuModel* DownloadShelfContextMenu::GetInProgressMenuModel() {
   if (in_progress_download_menu_model_.get())
     return in_progress_download_menu_model_.get();
 
-  in_progress_download_menu_model_.reset(new menus::SimpleMenuModel(delegate));
+  in_progress_download_menu_model_.reset(new menus::SimpleMenuModel(this));
 
   in_progress_download_menu_model_->AddCheckItemWithStringId(
       OPEN_WHEN_COMPLETE, IDS_DOWNLOAD_MENU_OPEN_WHEN_COMPLETE);
   in_progress_download_menu_model_->AddCheckItemWithStringId(
       ALWAYS_OPEN_TYPE, IDS_DOWNLOAD_MENU_ALWAYS_OPEN_TYPE);
   in_progress_download_menu_model_->AddSeparator();
-  in_progress_download_menu_model_->AddCheckItemWithStringId(
+  in_progress_download_menu_model_->AddItemWithStringId(
       TOGGLE_PAUSE, IDS_DOWNLOAD_MENU_PAUSE_ITEM);
   in_progress_download_menu_model_->AddItemWithStringId(
       SHOW_IN_FOLDER, IDS_DOWNLOAD_MENU_SHOW);
@@ -137,12 +139,11 @@ menus::SimpleMenuModel* DownloadShelfContextMenu::GetInProgressMenuModel(
   return in_progress_download_menu_model_.get();
 }
 
-menus::SimpleMenuModel* DownloadShelfContextMenu::GetFinishedMenuModel(
-    menus::SimpleMenuModel::Delegate* delegate) {
+menus::SimpleMenuModel* DownloadShelfContextMenu::GetFinishedMenuModel() {
   if (finished_download_menu_model_.get())
     return finished_download_menu_model_.get();
 
-  finished_download_menu_model_.reset(new menus::SimpleMenuModel(delegate));
+  finished_download_menu_model_.reset(new menus::SimpleMenuModel(this));
 
   finished_download_menu_model_->AddItemWithStringId(
       OPEN_WHEN_COMPLETE, IDS_DOWNLOAD_MENU_OPEN);
