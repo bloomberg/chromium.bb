@@ -26,15 +26,6 @@
 #include "native_client/src/untrusted/pthread/pthread.h"
 #include "native_client/src/untrusted/pthread/pthread_types.h"
 
-#if NACL_ARCH(NACL_TARGET_ARCH) == NACL_arm
-/* TODO(robertm): we should not included trusted stuff here - reorg headers */
-/* sel_ldr.h is  required for TRAMP_GET_TLS */
-#define NACL_NO_INLINE 1
-#include "native_client/src/trusted/service_runtime/sel_ldr.h"
-#include "native_client/src/trusted/service_runtime/nacl_config.h"
-#endif
-
-
 #define FUN_TO_VOID_PTR(a) ((void*)((uintptr_t) a))
 
 #if NACL_ARCH(NACL_TARGET_ARCH) == NACL_x86
@@ -103,25 +94,13 @@ static inline nc_thread_descriptor_t *nc_get_tdb() {
 #endif
 
 #elif NACL_ARCH(NACL_TARGET_ARCH) == NACL_arm
-static INLINE nc_thread_descriptor_t *nc_get_tdb() {
-  typedef nc_thread_descriptor_t *(*TRAMP_GET_TLS_TYPE)();
+static nc_thread_descriptor_t *nc_get_tdb() {
   /*
-   * when we create a thread service runtime places the TDB address in R9
-   * register or its TLS region. This is defined by USE_R9_AS_TLS_REG in service
-   * runtime.
+   * NOTE: if this turns out to be a performance issue, the code can be
+   *       replaced with a read and mask from r9.
+   *       c.f. src/untrusted/stubs/crt1_arm.S::__aeabi_read_tp
    */
-
-  /*
-   * service runtime provides a helper function for obtaining the TLB address.
-   * This function is placed in a trampoline region, a slot previous to
-   * springboard
-   */
-
-  /* TODO: move this definition to a header file */
-  TRAMP_GET_TLS_TYPE tramp_get_tls =
-    (TRAMP_GET_TLS_TYPE) (NACL_TRAMPOLINE_END - 2 * NACL_SYSCALL_BLOCK_SIZE);
-
-  return tramp_get_tls();
+  return NACL_SYSCALL(tls_get)();
 }
 #else
 #error "unknown platform"
