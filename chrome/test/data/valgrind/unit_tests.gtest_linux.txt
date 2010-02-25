@@ -1,0 +1,2 @@
+# Fails under Valgrind; see http://crbug.com/36770
+URLFetcherBadHTTPSTest.BadHTTPSTest
