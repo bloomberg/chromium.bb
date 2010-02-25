@@ -119,10 +119,9 @@
 
   'WATCHLISTS': {
     'this_file': ['nirnimesh@chromium.org'],
-    'valgrind': ['dank@chromium.org',
-                 'timurrrr@chromium.org',
+    'valgrind': ['timurrrr@chromium.org',
                  'stuartmorgan@chromium.org',
-                 'ramosian.glider@gmail.com'],
+                 'glider@chromium.org'],
     'mac': ['jrg@chromium.org', 'pam+watch@chromium.org'],
     'base': ['brettw+cc@chromium.org'],
     'views': ['ben+cc@chromium.org'],
