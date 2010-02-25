@@ -2024,7 +2024,6 @@ BUG10457 DEBUG WIN SLOW : fast/js/large-expressions.html = FAIL
 // instead work upstream to improve tests so that they don't fail.
 // Linux-only failures
 BUG10458 LINUX : editing/inserting/6633727.html = FAIL
-BUG10458 MAC : fast/dom/java-applet-calls.html = FAIL
 // Just need rebaseline
 BUG10458 LINUX : fast/forms/textarea-width.html = FAIL
 
