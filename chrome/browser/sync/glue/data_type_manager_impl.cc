@@ -103,7 +103,7 @@ void DataTypeManagerImpl::TypeStartCallback(
   // callback.
   LOG(INFO) << "Failed " << controllers_[type]->name();
   FinishStop();
-  StartResult start_result;
+  StartResult start_result = DataTypeManager::ABORTED;
   switch(result) {
     case DataTypeController::ABORTED:
       start_result = DataTypeManager::ABORTED;
