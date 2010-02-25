@@ -11,6 +11,8 @@
     'gpu_source_files': [
       'command_buffer/service/buffer_manager.h',
       'command_buffer/service/buffer_manager.cc',
+      'command_buffer/service/context_group.h',
+      'command_buffer/service/context_group.cc',
       'command_buffer/service/gles2_cmd_decoder.h',
       'command_buffer/service/gles2_cmd_decoder_autogen.h',
       'command_buffer/service/gles2_cmd_decoder.cc',
@@ -242,6 +244,7 @@
       },
       'dependencies': [
         'command_buffer_common',
+        'gl_libs',
       ],
       'sources': [
         'command_buffer/service/common_decoder.cc',
@@ -269,7 +272,6 @@
               'command_buffer/service/x_utils.h',
             ],
             'dependencies': [
-              'gl_libs',
               '../build/linux/system.gyp:gtk',
             ]
           },
@@ -320,8 +322,9 @@
           'command_buffer/common/gles2_cmd_id_test.cc',
           'command_buffer/common/gles2_cmd_id_test_autogen.h',
           'command_buffer/service/buffer_manager_unittest.cc',
+          'command_buffer/service/context_group_unittest.cc',
           'command_buffer/service/cmd_parser_test.cc',
-          'command_buffer/service/command_buffer_service_unittest.cc',
+          'command_buffer/service/cmd_parser_test.cc',
           'command_buffer/service/common_decoder_unittest.cc',
           'command_buffer/service/gpu_processor_unittest.cc',
           'command_buffer/service/resource_test.cc',
@@ -329,8 +332,13 @@
           'command_buffer/service/gl_interface.cc',
           'command_buffer/service/gl_mock.h',
           'command_buffer/service/gl_mock.cc',
+          'command_buffer/service/gles2_cmd_decoder_unittest_base.h',
+          'command_buffer/service/gles2_cmd_decoder_unittest_base.cc',
           'command_buffer/service/gles2_cmd_decoder_unittest.cc',
-          'command_buffer/service/gles2_cmd_decoder_unittest_autogen.h',
+          'command_buffer/service/gles2_cmd_decoder_unittest_1.cc',
+          'command_buffer/service/gles2_cmd_decoder_unittest_1_autogen.h',
+          'command_buffer/service/gles2_cmd_decoder_unittest_2.cc',
+          'command_buffer/service/gles2_cmd_decoder_unittest_2_autogen.h',
           'command_buffer/service/id_manager_unittest.cc',
           'command_buffer/service/program_manager_unittest.cc',
           'command_buffer/service/shader_manager_unittest.cc',

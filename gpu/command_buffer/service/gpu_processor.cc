@@ -14,7 +14,7 @@ GPUProcessor::GPUProcessor(CommandBuffer* command_buffer)
     : command_buffer_(command_buffer),
       commands_per_update_(100) {
   DCHECK(command_buffer);
-  decoder_.reset(gles2::GLES2Decoder::Create());
+  decoder_.reset(gles2::GLES2Decoder::Create(&group_));
   decoder_->set_engine(this);
 }
 

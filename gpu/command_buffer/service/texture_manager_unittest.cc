@@ -127,6 +127,15 @@ class TextureInfoTest : public testing::Test {
   TextureManager::TextureInfo* info_;
 };
 
+TEST_F(TextureInfoTest, Basic) {
+  EXPECT_EQ(0, info_->target());
+  EXPECT_FALSE(info_->texture_complete());
+  EXPECT_FALSE(info_->cube_complete());
+  EXPECT_FALSE(info_->CanGenerateMipmaps());
+  EXPECT_FALSE(info_->npot());
+  EXPECT_FALSE(info_->CanRender());
+}
+
 TEST_F(TextureInfoTest, POT2D) {
   manager_.SetInfoTarget(info_, GL_TEXTURE_2D);
   EXPECT_EQ(GL_TEXTURE_2D, info_->target());
@@ -135,22 +144,32 @@ TEST_F(TextureInfoTest, POT2D) {
       GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
   EXPECT_FALSE(info_->npot());
   EXPECT_FALSE(info_->texture_complete());
+  EXPECT_FALSE(info_->CanRender());
+  // Set filters to something that will work with a single mip.
+  info_->SetParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  EXPECT_TRUE(info_->CanRender());
+  // Set them back.
+  info_->SetParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+
   EXPECT_TRUE(info_->CanGenerateMipmaps());
   // Make mips.
-  info_->MarkMipmapsGenerated();
+  EXPECT_TRUE(info_->MarkMipmapsGenerated());
   EXPECT_TRUE(info_->texture_complete());
+  EXPECT_TRUE(info_->CanRender());
   // Change a mip.
   info_->SetLevelInfo(
       GL_TEXTURE_2D, 1, GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
   EXPECT_FALSE(info_->npot());
   EXPECT_FALSE(info_->texture_complete());
   EXPECT_TRUE(info_->CanGenerateMipmaps());
+  EXPECT_FALSE(info_->CanRender());
   // Set a level past the number of mips that would get generated.
   info_->SetLevelInfo(
       GL_TEXTURE_2D, 3, GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
   EXPECT_TRUE(info_->CanGenerateMipmaps());
   // Make mips.
-  info_->MarkMipmapsGenerated();
+  EXPECT_TRUE(info_->MarkMipmapsGenerated());
+  EXPECT_FALSE(info_->CanRender());
   EXPECT_FALSE(info_->texture_complete());
 }
 
@@ -163,6 +182,13 @@ TEST_F(TextureInfoTest, NPOT2D) {
   EXPECT_TRUE(info_->npot());
   EXPECT_FALSE(info_->texture_complete());
   EXPECT_FALSE(info_->CanGenerateMipmaps());
+  EXPECT_FALSE(info_->CanRender());
+  info_->SetParameter(GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+  EXPECT_FALSE(info_->CanRender());
+  info_->SetParameter(GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+  EXPECT_FALSE(info_->CanRender());
+  info_->SetParameter(GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+  EXPECT_TRUE(info_->CanRender());
   // Change it to POT.
   info_->SetLevelInfo(
       GL_TEXTURE_2D, 0, GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
@@ -182,6 +208,7 @@ TEST_F(TextureInfoTest, POTCubeMap) {
   EXPECT_FALSE(info_->texture_complete());
   EXPECT_FALSE(info_->cube_complete());
   EXPECT_FALSE(info_->CanGenerateMipmaps());
+  EXPECT_FALSE(info_->CanRender());
   info_->SetLevelInfo(
       GL_TEXTURE_CUBE_MAP_NEGATIVE_X,
       0, GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
@@ -189,6 +216,7 @@ TEST_F(TextureInfoTest, POTCubeMap) {
   EXPECT_FALSE(info_->texture_complete());
   EXPECT_FALSE(info_->cube_complete());
   EXPECT_FALSE(info_->CanGenerateMipmaps());
+  EXPECT_FALSE(info_->CanRender());
   info_->SetLevelInfo(
       GL_TEXTURE_CUBE_MAP_POSITIVE_Y,
       0, GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
@@ -196,12 +224,14 @@ TEST_F(TextureInfoTest, POTCubeMap) {
   EXPECT_FALSE(info_->texture_complete());
   EXPECT_FALSE(info_->cube_complete());
   EXPECT_FALSE(info_->CanGenerateMipmaps());
+  EXPECT_FALSE(info_->CanRender());
   info_->SetLevelInfo(
       GL_TEXTURE_CUBE_MAP_NEGATIVE_Y,
       0, GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
   EXPECT_FALSE(info_->npot());
   EXPECT_FALSE(info_->texture_complete());
   EXPECT_FALSE(info_->cube_complete());
+  EXPECT_FALSE(info_->CanRender());
   EXPECT_FALSE(info_->CanGenerateMipmaps());
   info_->SetLevelInfo(
       GL_TEXTURE_CUBE_MAP_POSITIVE_Z,
@@ -210,6 +240,7 @@ TEST_F(TextureInfoTest, POTCubeMap) {
   EXPECT_FALSE(info_->texture_complete());
   EXPECT_FALSE(info_->cube_complete());
   EXPECT_FALSE(info_->CanGenerateMipmaps());
+  EXPECT_FALSE(info_->CanRender());
   info_->SetLevelInfo(
       GL_TEXTURE_CUBE_MAP_NEGATIVE_Z,
       0, GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
@@ -217,9 +248,10 @@ TEST_F(TextureInfoTest, POTCubeMap) {
   EXPECT_FALSE(info_->texture_complete());
   EXPECT_TRUE(info_->cube_complete());
   EXPECT_TRUE(info_->CanGenerateMipmaps());
+  EXPECT_FALSE(info_->CanRender());
 
   // Make mips.
-  info_->MarkMipmapsGenerated();
+  EXPECT_TRUE(info_->MarkMipmapsGenerated());
   EXPECT_TRUE(info_->texture_complete());
   EXPECT_TRUE(info_->cube_complete());
 
@@ -237,7 +269,7 @@ TEST_F(TextureInfoTest, POTCubeMap) {
       3, GL_RGBA, 4, 4, 1, 0, GL_RGBA, GL_UNSIGNED_BYTE);
   EXPECT_TRUE(info_->CanGenerateMipmaps());
   // Make mips.
-  info_->MarkMipmapsGenerated();
+  EXPECT_TRUE(info_->MarkMipmapsGenerated());
   EXPECT_FALSE(info_->texture_complete());
   EXPECT_TRUE(info_->cube_complete());
 }

@@ -8,6 +8,7 @@
 #include <map>
 #include <string>
 #include "base/basictypes.h"
+#include "base/ref_counted.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 
 namespace gpu {
@@ -23,10 +24,12 @@ class ShaderManager {
   // to emluate GLES2 the shaders will have to be re-written before passed to
   // the underlying OpenGL. But, when the user calls glGetShaderSource they
   // should get the source they passed in, not the re-written source.
-  class ShaderInfo {
+  class ShaderInfo : public base::RefCounted<ShaderInfo> {
    public:
-    explicit ShaderInfo(GLuint shader)
-        : shader_(shader) {
+    typedef scoped_refptr<ShaderInfo> Ref;
+
+    explicit ShaderInfo(GLuint shader_id)
+        : shader_id_(shader_id) {
     }
 
     void Update(const std::string& source) {
@@ -37,29 +40,42 @@ class ShaderManager {
       return source_;
     }
 
+    bool IsDeleted() {
+      return shader_id_ == 0;
+    }
+
    private:
+    friend class base::RefCounted<ShaderInfo>;
+    friend class ShaderManager;
+    ~ShaderInfo() { }
+
+    void MarkAsDeleted() {
+      shader_id_ = 0;
+    }
+
     // The shader this ShaderInfo is tracking.
-    GLuint shader_;
+    GLuint shader_id_;
 
     // The shader source as passed to glShaderSource.
     std::string source_;
   };
 
-  ShaderManager() { };
+  ShaderManager() {
+  }
 
   // Creates a shader info for the given shader ID.
-  void CreateShaderInfo(GLuint shader);
+  void CreateShaderInfo(GLuint shader_id);
 
   // Gets an existing shader info for the given shader ID. Returns NULL if none
   // exists.
-  ShaderInfo* GetShaderInfo(GLuint shader);
+  ShaderInfo* GetShaderInfo(GLuint shader_id);
 
   // Deletes the shader info for the given shader.
-  void RemoveShaderInfo(GLuint shader);
+  void RemoveShaderInfo(GLuint shader_id);
 
  private:
   // Info for each shader by service side shader Id.
-  typedef std::map<GLuint, ShaderInfo> ShaderInfoMap;
+  typedef std::map<GLuint, ShaderInfo::Ref> ShaderInfoMap;
   ShaderInfoMap shader_infos_;
 
   DISALLOW_COPY_AND_ASSIGN(ShaderManager);

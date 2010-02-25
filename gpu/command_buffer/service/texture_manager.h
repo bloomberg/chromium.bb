@@ -8,7 +8,8 @@
 #include <map>
 #include <vector>
 #include "base/basictypes.h"
-#include "base/linked_ptr.h"
+#include "base/logging.h"
+#include "base/ref_counted.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 
 namespace gpu {
@@ -22,21 +23,36 @@ namespace gles2 {
 class TextureManager {
  public:
   // Info about Textures currently in the system.
-  class TextureInfo {
+  class TextureInfo : public base::RefCounted<TextureInfo> {
    public:
-    explicit TextureInfo(GLuint texture)
-        : texture_(texture),
+    typedef scoped_refptr<TextureInfo> Ref;
+
+    explicit TextureInfo(GLuint texture_id)
+        : texture_id_(texture_id),
           target_(0),
+          min_filter_(GL_NEAREST_MIPMAP_LINEAR),
+          mag_filter_(GL_LINEAR),
+          wrap_s_(GL_REPEAT),
+          wrap_t_(GL_REPEAT),
           max_level_set_(-1),
           texture_complete_(false),
           cube_complete_(false),
           npot_(false) {
     }
 
+    // True if this texture meets all the GLES2 criteria for rendering.
+    // See section 3.8.2 of the GLES2 spec.
+    bool CanRender() const;
+
+    // The service side OpenGL id of the texture.
+    GLuint texture_id() const {
+      return texture_id_;
+    }
+
     // Returns the target this texure was first bound to or 0 if it has not
     // been bound. Once a texture is bound to a specific target it can never be
     // bound to a different target.
-    GLenum target() {
+    GLenum target() const {
       return target_;
     }
 
@@ -62,7 +78,7 @@ class TextureManager {
     bool CanGenerateMipmaps() const;
 
     // Makes each of the mip levels as though they were generated.
-    void MarkMipmapsGenerated();
+    bool MarkMipmapsGenerated();
 
     // Set the info for a particular level.
     void SetLevelInfo(
@@ -76,8 +92,19 @@ class TextureManager {
         GLenum format,
         GLenum type);
 
+    // Sets a texture parameter.
+    // TODO(gman): Expand to SetParameteri,f,iv,fv
+    void SetParameter(GLenum pname, GLint param);
+
+    bool IsDeleted() const {
+      return texture_id_ == 0;
+    }
+
    private:
     friend class TextureManager;
+    friend class base::RefCounted<TextureInfo>;
+
+    ~TextureInfo() { }
 
     struct LevelInfo {
       LevelInfo()
@@ -101,6 +128,14 @@ class TextureManager {
       GLenum type;
     };
 
+    void MarkAsDeleted() {
+      texture_id_ = 0;
+    }
+
+    bool NeedsMips() const {
+      return min_filter_ != GL_NEAREST && min_filter_ != GL_LINEAR;
+    }
+
     // Sets the TextureInfo's target
     // Parameters:
     //   target: GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP
@@ -122,10 +157,16 @@ class TextureManager {
     std::vector<std::vector<LevelInfo> > level_infos_;
 
     // The id of the texure
-    GLuint texture_;
+    GLuint texture_id_;
 
     // The target. 0 if unset, otherwise GL_TEXTURE_2D or GL_TEXTURE_CUBE_MAP.
     GLenum target_;
+
+    // Texture parameters.
+    GLenum min_filter_;
+    GLenum mag_filter_;
+    GLenum wrap_s_;
+    GLenum wrap_t_;
 
     // The maximum level that has been set.
     GLint max_level_set_;
@@ -142,7 +183,8 @@ class TextureManager {
     DISALLOW_COPY_AND_ASSIGN(TextureInfo);
   };
 
-  TextureManager(GLsizei max_texture_size, GLsizei max_cube_map_texture_size);
+  TextureManager(GLsizei max_texture_size,
+                 GLsizei max_cube_map_texture_size);
 
   // Returns the maximum number of levels.
   GLint MaxLevelsForTarget(GLenum target) const {
@@ -182,10 +224,10 @@ class TextureManager {
   }
 
   // Creates a new texture info.
-  void CreateTextureInfo(GLuint texture);
+  void CreateTextureInfo(GLuint texture_id);
 
   // Gets the texture info for the given texture.
-  TextureInfo* GetTextureInfo(GLuint texture);
+  TextureInfo* GetTextureInfo(GLuint texture_id);
 
   // Removes a texture info.
   void RemoveTextureInfo(GLuint texture_id);
@@ -193,7 +235,7 @@ class TextureManager {
  private:
   // Info for each texture in the system.
   // TODO(gman): Choose a faster container.
-  typedef std::map<GLuint, linked_ptr<TextureInfo> > TextureInfoMap;
+  typedef std::map<GLuint, TextureInfo::Ref> TextureInfoMap;
   TextureInfoMap texture_infos_;
 
   GLsizei max_texture_size_;

@@ -7,6 +7,7 @@
 
 #include <map>
 #include "base/basictypes.h"
+#include "base/ref_counted.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 
 namespace gpu {
@@ -20,10 +21,17 @@ namespace gles2 {
 class BufferManager {
  public:
   // Info about Buffers currently in the system.
-  class BufferInfo {
+  class BufferInfo : public base::RefCounted<BufferInfo> {
    public:
-    BufferInfo()
-        : size_(0) {
+    typedef scoped_refptr<BufferInfo> Ref;
+
+    explicit BufferInfo(GLuint buffer_id)
+        : buffer_id_(buffer_id),
+          size_(0) {
+    }
+
+    GLuint buffer_id() const {
+      return buffer_id_;
     }
 
     GLsizeiptr size() const {
@@ -38,17 +46,31 @@ class BufferManager {
     // interpreted as the given type.
     GLuint GetMaxValueForRange(GLuint offset, GLsizei count, GLenum type);
 
+    bool IsDeleted() {
+      return buffer_id_ == 0;
+    }
+
    private:
+    friend class BufferManager;
+    friend class base::RefCounted<BufferInfo>;
+
+    ~BufferInfo() { }
+
+    void MarkAsDeleted() {
+      buffer_id_ = 0;
+    }
+
+    GLuint buffer_id_;
     GLsizeiptr size_;
   };
 
-  BufferManager() { };
+  BufferManager() { }
 
   // Creates a BufferInfo for the given buffer.
-  void CreateBufferInfo(GLuint buffer);
+  void CreateBufferInfo(GLuint buffer_id);
 
   // Gets the buffer info for the given buffer.
-  BufferInfo* GetBufferInfo(GLuint buffer);
+  BufferInfo* GetBufferInfo(GLuint buffer_id);
 
   // Removes a buffer info for the given buffer.
   void RemoveBufferInfo(GLuint buffer_id);
@@ -56,7 +78,7 @@ class BufferManager {
  private:
   // Info for each buffer in the system.
   // TODO(gman): Choose a faster container.
-  typedef std::map<GLuint, BufferInfo> BufferInfoMap;
+  typedef std::map<GLuint, BufferInfo::Ref> BufferInfoMap;
   BufferInfoMap buffer_infos_;
 
   DISALLOW_COPY_AND_ASSIGN(BufferManager);

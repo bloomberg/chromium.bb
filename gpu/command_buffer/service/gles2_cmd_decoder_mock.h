@@ -14,9 +14,11 @@
 namespace gpu {
 namespace gles2 {
 
+class ContextGroup;
 class MockGLES2Decoder : public GLES2Decoder {
  public:
-  MockGLES2Decoder() {
+  explicit MockGLES2Decoder(ContextGroup* group)
+      : GLES2Decoder(group) {
     ON_CALL(*this, GetCommandName(testing::_))
       .WillByDefault(testing::Return(""));
     ON_CALL(*this, MakeCurrent())

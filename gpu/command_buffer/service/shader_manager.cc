@@ -8,20 +8,22 @@
 namespace gpu {
 namespace gles2 {
 
-void ShaderManager::CreateShaderInfo(GLuint shader) {
+void ShaderManager::CreateShaderInfo(GLuint shader_id) {
   std::pair<ShaderInfoMap::iterator, bool> result =
-      shader_infos_.insert(std::make_pair(shader, ShaderInfo(shader)));
+      shader_infos_.insert(std::make_pair(
+          shader_id, ShaderInfo::Ref(new ShaderInfo(shader_id))));
   DCHECK(result.second);
 }
 
-ShaderManager::ShaderInfo* ShaderManager::GetShaderInfo(GLuint shader) {
-  ShaderInfoMap::iterator it = shader_infos_.find(shader);
-  return it != shader_infos_.end() ? &it->second : NULL;
+ShaderManager::ShaderInfo* ShaderManager::GetShaderInfo(GLuint shader_id) {
+  ShaderInfoMap::iterator it = shader_infos_.find(shader_id);
+  return it != shader_infos_.end() ? it->second : NULL;
 }
 
-void ShaderManager::RemoveShaderInfo(GLuint shader) {
-  ShaderInfoMap::iterator it = shader_infos_.find(shader);
+void ShaderManager::RemoveShaderInfo(GLuint shader_id) {
+  ShaderInfoMap::iterator it = shader_infos_.find(shader_id);
   if (it != shader_infos_.end()) {
+    it->second->MarkAsDeleted();
     shader_infos_.erase(it);
   }
 }

@@ -25,11 +25,13 @@ namespace gles2 {
 
 class ProgramManagerTest : public testing::Test {
  public:
-  ProgramManagerTest() {
-  }
+  ProgramManagerTest() { }
 
  protected:
   virtual void SetUp() {
+  }
+
+  virtual void TearDown() {
   }
 
   ProgramManager manager_;

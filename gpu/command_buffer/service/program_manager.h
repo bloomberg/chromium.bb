@@ -10,6 +10,7 @@
 #include <vector>
 #include "base/basictypes.h"
 #include "base/logging.h"
+#include "base/ref_counted.h"
 #include "gpu/command_buffer/service/gl_utils.h"
 
 namespace gpu {
@@ -24,13 +25,20 @@ class ProgramManager {
   // This is used to track which attributes a particular program needs
   // so we can verify at glDrawXXX time that every attribute is either disabled
   // or if enabled that it points to a valid source.
-  class ProgramInfo {
+  class ProgramInfo : public base::RefCounted<ProgramInfo> {
    public:
+    typedef scoped_refptr<ProgramInfo> Ref;
+
     struct UniformInfo {
+      bool IsSampler() const {
+        return type == GL_SAMPLER_2D || type == GL_SAMPLER_CUBE;
+      }
+
       GLsizei size;
       GLenum type;
       std::string name;
       std::vector<GLint> element_locations;
+      std::vector<GLuint> texture_units;
     };
     struct VertexAttribInfo {
       GLsizei size;
@@ -41,9 +49,14 @@ class ProgramManager {
 
     typedef std::vector<UniformInfo> UniformInfoVector;
     typedef std::vector<VertexAttribInfo> AttribInfoVector;
+    typedef std::vector<int> SamplerIndices;
 
-    explicit ProgramInfo(GLuint program)
-        : program_(program) {
+    explicit ProgramInfo(GLuint program_id)
+        : program_id_(program_id) {
+    }
+
+    const SamplerIndices& sampler_indices() {
+      return sampler_indices_;
     }
 
     void Update();
@@ -64,13 +77,29 @@ class ProgramManager {
          &uniform_infos_[index] : NULL;
     }
 
+    // Gets the location of a uniform by name.
     GLint GetUniformLocation(const std::string& name);
 
+    // Gets the type of a uniform by location.
     bool GetUniformTypeByLocation(GLint location, GLenum* type) const;
 
+    // Sets the sampler values for a uniform.
+    // This is safe to call for any location. If the location is not
+    // a sampler uniform nothing will happen.
+    bool SetSamplers(GLint location, GLsizei count, const GLint* value);
+
+    bool IsDeleted() {
+      return program_id_ == 0;
+    }
+
    private:
-    void SetNumAttributes(int num_attribs) {
-      attrib_infos_.resize(num_attribs);
+    friend class base::RefCounted<ProgramInfo>;
+    friend class ProgramManager;
+
+    ~ProgramInfo() { }
+
+    void MarkAsDeleted() {
+      program_id_ = 0;
     }
 
     void SetAttributeInfo(
@@ -84,33 +113,35 @@ class ProgramManager {
       info.location = location;
     }
 
-    void SetNumUniforms(int num_uniforms) {
-      uniform_infos_.resize(num_uniforms);
-    }
-
     void SetUniformInfo(
         GLint index, GLsizei size, GLenum type, GLint location,
         const std::string& name);
 
     AttribInfoVector attrib_infos_;
 
-    // Uniform info by info.
+    // Uniform info by index.
     UniformInfoVector uniform_infos_;
 
+    // Uniform location to index.
+    std::vector<GLint> location_to_index_map_;
+
+    // The indices of the uniforms that are samplers.
+    SamplerIndices sampler_indices_;
+
     // The program this ProgramInfo is tracking.
-    GLuint program_;
+    GLuint program_id_;
   };
 
-  ProgramManager() { };
+  ProgramManager() { }
 
   // Creates a new program info.
-  void CreateProgramInfo(GLuint program);
+  void CreateProgramInfo(GLuint program_id);
 
   // Gets a program info
-  ProgramInfo* GetProgramInfo(GLuint program);
+  ProgramInfo* GetProgramInfo(GLuint program_id);
 
   // Deletes the program info for the given program.
-  void RemoveProgramInfo(GLuint program);
+  void RemoveProgramInfo(GLuint program_id);
 
   // Returns true if prefix is invalid for gl.
   static bool IsInvalidPrefix(const char* name, size_t length);
@@ -118,7 +149,7 @@ class ProgramManager {
  private:
   // Info for each "successfully linked" program by service side program Id.
   // TODO(gman): Choose a faster container.
-  typedef std::map<GLuint, ProgramInfo> ProgramInfoMap;
+  typedef std::map<GLuint, ProgramInfo::Ref> ProgramInfoMap;
   ProgramInfoMap program_infos_;
 
   DISALLOW_COPY_AND_ASSIGN(ProgramManager);

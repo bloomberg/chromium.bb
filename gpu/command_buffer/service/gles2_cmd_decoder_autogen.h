@@ -18,12 +18,12 @@ error::Error GLES2DecoderImpl::HandleActiveTexture(
 error::Error GLES2DecoderImpl::HandleAttachShader(
     uint32 immediate_data_size, const gles2::AttachShader& c) {
   GLuint program;
-  if (!id_manager_->GetServiceId(c.program, &program)) {
+  if (!id_manager()->GetServiceId(c.program, &program)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
   GLuint shader;
-  if (!id_manager_->GetServiceId(c.shader, &shader)) {
+  if (!id_manager()->GetServiceId(c.shader, &shader)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -34,7 +34,7 @@ error::Error GLES2DecoderImpl::HandleAttachShader(
 error::Error GLES2DecoderImpl::HandleBindAttribLocation(
     uint32 immediate_data_size, const gles2::BindAttribLocation& c) {
   GLuint program;
-  if (!id_manager_->GetServiceId(c.program, &program)) {
+  if (!id_manager()->GetServiceId(c.program, &program)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -53,7 +53,7 @@ error::Error GLES2DecoderImpl::HandleBindAttribLocation(
 error::Error GLES2DecoderImpl::HandleBindAttribLocationImmediate(
     uint32 immediate_data_size, const gles2::BindAttribLocationImmediate& c) {
   GLuint program;
-  if (!id_manager_->GetServiceId(c.program, &program)) {
+  if (!id_manager()->GetServiceId(c.program, &program)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -73,7 +73,7 @@ error::Error GLES2DecoderImpl::HandleBindBuffer(
     uint32 immediate_data_size, const gles2::BindBuffer& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLuint buffer;
-  if (!id_manager_->GetServiceId(c.buffer, &buffer)) {
+  if (!id_manager()->GetServiceId(c.buffer, &buffer)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -89,7 +89,7 @@ error::Error GLES2DecoderImpl::HandleBindFramebuffer(
     uint32 immediate_data_size, const gles2::BindFramebuffer& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLuint framebuffer;
-  if (!id_manager_->GetServiceId(c.framebuffer, &framebuffer)) {
+  if (!id_manager()->GetServiceId(c.framebuffer, &framebuffer)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -105,7 +105,7 @@ error::Error GLES2DecoderImpl::HandleBindRenderbuffer(
     uint32 immediate_data_size, const gles2::BindRenderbuffer& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLuint renderbuffer;
-  if (!id_manager_->GetServiceId(c.renderbuffer, &renderbuffer)) {
+  if (!id_manager()->GetServiceId(c.renderbuffer, &renderbuffer)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -121,7 +121,7 @@ error::Error GLES2DecoderImpl::HandleBindTexture(
     uint32 immediate_data_size, const gles2::BindTexture& c) {
   GLenum target = static_cast<GLenum>(c.target);
   GLuint texture;
-  if (!id_manager_->GetServiceId(c.texture, &texture)) {
+  if (!id_manager()->GetServiceId(c.texture, &texture)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -305,7 +305,7 @@ error::Error GLES2DecoderImpl::HandleColorMask(
 error::Error GLES2DecoderImpl::HandleCompileShader(
     uint32 immediate_data_size, const gles2::CompileShader& c) {
   GLuint shader;
-  if (!id_manager_->GetServiceId(c.shader, &shader)) {
+  if (!id_manager()->GetServiceId(c.shader, &shader)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -563,12 +563,12 @@ error::Error GLES2DecoderImpl::HandleDepthRangef(
 error::Error GLES2DecoderImpl::HandleDetachShader(
     uint32 immediate_data_size, const gles2::DetachShader& c) {
   GLuint program;
-  if (!id_manager_->GetServiceId(c.program, &program)) {
+  if (!id_manager()->GetServiceId(c.program, &program)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
   GLuint shader;
-  if (!id_manager_->GetServiceId(c.shader, &shader)) {
+  if (!id_manager()->GetServiceId(c.shader, &shader)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -643,7 +643,7 @@ error::Error GLES2DecoderImpl::HandleFramebufferRenderbuffer(
   GLenum attachment = static_cast<GLenum>(c.attachment);
   GLenum renderbuffertarget = static_cast<GLenum>(c.renderbuffertarget);
   GLuint renderbuffer;
-  if (!id_manager_->GetServiceId(c.renderbuffer, &renderbuffer)) {
+  if (!id_manager()->GetServiceId(c.renderbuffer, &renderbuffer)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -670,7 +670,7 @@ error::Error GLES2DecoderImpl::HandleFramebufferTexture2D(
   GLenum attachment = static_cast<GLenum>(c.attachment);
   GLenum textarget = static_cast<GLenum>(c.textarget);
   GLuint texture;
-  if (!id_manager_->GetServiceId(c.texture, &texture)) {
+  if (!id_manager()->GetServiceId(c.texture, &texture)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -943,7 +943,7 @@ error::Error GLES2DecoderImpl::HandleGetIntegerv(
 error::Error GLES2DecoderImpl::HandleGetProgramiv(
     uint32 immediate_data_size, const gles2::GetProgramiv& c) {
   GLuint program;
-  if (!id_manager_->GetServiceId(c.program, &program)) {
+  if (!id_manager()->GetServiceId(c.program, &program)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -967,7 +967,7 @@ error::Error GLES2DecoderImpl::HandleGetProgramiv(
 error::Error GLES2DecoderImpl::HandleGetProgramInfoLog(
     uint32 immediate_data_size, const gles2::GetProgramInfoLog& c) {
   GLuint program;
-  if (!id_manager_->GetServiceId(c.program, &program)) {
+  if (!id_manager()->GetServiceId(c.program, &program)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -1018,7 +1018,7 @@ error::Error GLES2DecoderImpl::HandleGetRenderbufferParameteriv(
 error::Error GLES2DecoderImpl::HandleGetShaderiv(
     uint32 immediate_data_size, const gles2::GetShaderiv& c) {
   GLuint shader;
-  if (!id_manager_->GetServiceId(c.shader, &shader)) {
+  if (!id_manager()->GetServiceId(c.shader, &shader)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -1042,7 +1042,7 @@ error::Error GLES2DecoderImpl::HandleGetShaderiv(
 error::Error GLES2DecoderImpl::HandleGetShaderInfoLog(
     uint32 immediate_data_size, const gles2::GetShaderInfoLog& c) {
   GLuint shader;
-  if (!id_manager_->GetServiceId(c.shader, &shader)) {
+  if (!id_manager()->GetServiceId(c.shader, &shader)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -1069,7 +1069,7 @@ error::Error GLES2DecoderImpl::HandleGetShaderInfoLog(
 error::Error GLES2DecoderImpl::HandleGetShaderSource(
     uint32 immediate_data_size, const gles2::GetShaderSource& c) {
   GLuint shader;
-  if (!id_manager_->GetServiceId(c.shader, &shader)) {
+  if (!id_manager()->GetServiceId(c.shader, &shader)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -1211,7 +1211,7 @@ error::Error GLES2DecoderImpl::HandleHint(
 error::Error GLES2DecoderImpl::HandleIsBuffer(
     uint32 immediate_data_size, const gles2::IsBuffer& c) {
   GLuint buffer;
-  if (!id_manager_->GetServiceId(c.buffer, &buffer)) {
+  if (!id_manager()->GetServiceId(c.buffer, &buffer)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -1237,7 +1237,7 @@ error::Error GLES2DecoderImpl::HandleIsEnabled(
 error::Error GLES2DecoderImpl::HandleIsFramebuffer(
     uint32 immediate_data_size, const gles2::IsFramebuffer& c) {
   GLuint framebuffer;
-  if (!id_manager_->GetServiceId(c.framebuffer, &framebuffer)) {
+  if (!id_manager()->GetServiceId(c.framebuffer, &framebuffer)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -1250,7 +1250,7 @@ error::Error GLES2DecoderImpl::HandleIsFramebuffer(
 error::Error GLES2DecoderImpl::HandleIsProgram(
     uint32 immediate_data_size, const gles2::IsProgram& c) {
   GLuint program;
-  if (!id_manager_->GetServiceId(c.program, &program)) {
+  if (!id_manager()->GetServiceId(c.program, &program)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -1263,7 +1263,7 @@ error::Error GLES2DecoderImpl::HandleIsProgram(
 error::Error GLES2DecoderImpl::HandleIsRenderbuffer(
     uint32 immediate_data_size, const gles2::IsRenderbuffer& c) {
   GLuint renderbuffer;
-  if (!id_manager_->GetServiceId(c.renderbuffer, &renderbuffer)) {
+  if (!id_manager()->GetServiceId(c.renderbuffer, &renderbuffer)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -1276,7 +1276,7 @@ error::Error GLES2DecoderImpl::HandleIsRenderbuffer(
 error::Error GLES2DecoderImpl::HandleIsShader(
     uint32 immediate_data_size, const gles2::IsShader& c) {
   GLuint shader;
-  if (!id_manager_->GetServiceId(c.shader, &shader)) {
+  if (!id_manager()->GetServiceId(c.shader, &shader)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -1289,7 +1289,7 @@ error::Error GLES2DecoderImpl::HandleIsShader(
 error::Error GLES2DecoderImpl::HandleIsTexture(
     uint32 immediate_data_size, const gles2::IsTexture& c) {
   GLuint texture;
-  if (!id_manager_->GetServiceId(c.texture, &texture)) {
+  if (!id_manager()->GetServiceId(c.texture, &texture)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -1309,7 +1309,7 @@ error::Error GLES2DecoderImpl::HandleLineWidth(
 error::Error GLES2DecoderImpl::HandleLinkProgram(
     uint32 immediate_data_size, const gles2::LinkProgram& c) {
   GLuint program;
-  if (!id_manager_->GetServiceId(c.program, &program)) {
+  if (!id_manager()->GetServiceId(c.program, &program)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -1471,7 +1471,7 @@ error::Error GLES2DecoderImpl::HandleTexParameterf(
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
   }
-  glTexParameterf(target, pname, param);
+  DoTexParameterf(target, pname, param);
   return error::kNoError;
 }
 
@@ -1494,7 +1494,7 @@ error::Error GLES2DecoderImpl::HandleTexParameterfv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
-  glTexParameterfv(target, pname, params);
+  DoTexParameterfv(target, pname, params);
   return error::kNoError;
 }
 
@@ -1517,7 +1517,7 @@ error::Error GLES2DecoderImpl::HandleTexParameterfvImmediate(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
-  glTexParameterfv(target, pname, params);
+  DoTexParameterfv(target, pname, params);
   return error::kNoError;
 }
 
@@ -1534,7 +1534,7 @@ error::Error GLES2DecoderImpl::HandleTexParameteri(
     SetGLError(GL_INVALID_ENUM);
     return error::kNoError;
   }
-  glTexParameteri(target, pname, param);
+  DoTexParameteri(target, pname, param);
   return error::kNoError;
 }
 
@@ -1557,7 +1557,7 @@ error::Error GLES2DecoderImpl::HandleTexParameteriv(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
-  glTexParameteriv(target, pname, params);
+  DoTexParameteriv(target, pname, params);
   return error::kNoError;
 }
 
@@ -1580,7 +1580,7 @@ error::Error GLES2DecoderImpl::HandleTexParameterivImmediate(
   if (params == NULL) {
     return error::kOutOfBounds;
   }
-  glTexParameteriv(target, pname, params);
+  DoTexParameteriv(target, pname, params);
   return error::kNoError;
 }
 
@@ -1694,7 +1694,7 @@ error::Error GLES2DecoderImpl::HandleUniform1i(
     uint32 immediate_data_size, const gles2::Uniform1i& c) {
   GLint location = static_cast<GLint>(c.location);
   GLint x = static_cast<GLint>(c.x);
-  glUniform1i(location, x);
+  DoUniform1i(location, x);
   return error::kNoError;
 }
 
@@ -1709,7 +1709,7 @@ error::Error GLES2DecoderImpl::HandleUniform1iv(
   if (v == NULL) {
     return error::kOutOfBounds;
   }
-  glUniform1iv(location, count, v);
+  DoUniform1iv(location, count, v);
   return error::kNoError;
 }
 
@@ -1724,7 +1724,7 @@ error::Error GLES2DecoderImpl::HandleUniform1ivImmediate(
   if (v == NULL) {
     return error::kOutOfBounds;
   }
-  glUniform1iv(location, count, v);
+  DoUniform1iv(location, count, v);
   return error::kNoError;
 }
 
@@ -2091,7 +2091,7 @@ error::Error GLES2DecoderImpl::HandleUniformMatrix4fvImmediate(
 error::Error GLES2DecoderImpl::HandleUseProgram(
     uint32 immediate_data_size, const gles2::UseProgram& c) {
   GLuint program;
-  if (!id_manager_->GetServiceId(c.program, &program)) {
+  if (!id_manager()->GetServiceId(c.program, &program)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }
@@ -2102,7 +2102,7 @@ error::Error GLES2DecoderImpl::HandleUseProgram(
 error::Error GLES2DecoderImpl::HandleValidateProgram(
     uint32 immediate_data_size, const gles2::ValidateProgram& c) {
   GLuint program;
-  if (!id_manager_->GetServiceId(c.program, &program)) {
+  if (!id_manager()->GetServiceId(c.program, &program)) {
     SetGLError(GL_INVALID_VALUE);
     return error::kNoError;
   }

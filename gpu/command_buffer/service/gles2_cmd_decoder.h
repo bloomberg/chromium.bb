@@ -25,6 +25,8 @@ class XWindowWrapper;
 
 namespace gles2 {
 
+class ContextGroup;
+
 // This class implements the AsyncAPIInterface interface, decoding GLES2
 // commands and calling GL.
 class GLES2Decoder : public CommonDecoder {
@@ -32,10 +34,9 @@ class GLES2Decoder : public CommonDecoder {
   typedef error::Error Error;
 
   // Creates a decoder.
-  static GLES2Decoder* Create();
+  static GLES2Decoder* Create(ContextGroup* group);
 
-  virtual ~GLES2Decoder() {
-  }
+  virtual ~GLES2Decoder();
 
   bool debug() const {
     return debug_;
@@ -87,7 +88,9 @@ class GLES2Decoder : public CommonDecoder {
   virtual void SetSwapBuffersCallback(Callback0::Type* callback) = 0;
 
  protected:
-  GLES2Decoder();
+  explicit GLES2Decoder(ContextGroup* group);
+
+  ContextGroup* group_;
 
  private:
   bool debug_;

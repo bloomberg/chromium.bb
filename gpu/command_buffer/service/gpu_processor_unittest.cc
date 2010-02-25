@@ -6,10 +6,11 @@
 #include "base/message_loop.h"
 #include "base/scoped_nsautorelease_pool.h"
 #include "gpu/command_buffer/common/command_buffer_mock.h"
-#include "gpu/command_buffer/service/mocks.h"
+#include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gpu_processor.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder_mock.h"
+#include "gpu/command_buffer/service/mocks.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/gmock/include/gmock/gmock.h"
 
@@ -48,7 +49,7 @@ class GPUProcessorTest : public testing::Test {
 
     async_api_.reset(new StrictMock<AsyncAPIMock>);
 
-    decoder_ = new gles2::MockGLES2Decoder();
+    decoder_ = new gles2::MockGLES2Decoder(&group_);
 
     parser_ = new CommandParser(buffer_,
                                 kRingBufferEntries,
@@ -80,6 +81,7 @@ class GPUProcessorTest : public testing::Test {
   scoped_ptr<base::SharedMemory> shared_memory_;
   Buffer shared_memory_buffer_;
   int32* buffer_;
+  gles2::ContextGroup group_;
   gles2::MockGLES2Decoder* decoder_;
   CommandParser* parser_;
   scoped_ptr<AsyncAPIMock> async_api_;

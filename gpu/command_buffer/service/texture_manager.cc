@@ -4,6 +4,8 @@
 
 #include "gpu/command_buffer/service/texture_manager.h"
 #include "base/bits.h"
+#include "gpu/command_buffer/service/context_group.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
 namespace gpu {
 namespace gles2 {
@@ -55,8 +57,31 @@ static size_t FaceIndexToGLTarget(size_t index) {
   }
 }
 
-void TextureManager::TextureInfo::MarkMipmapsGenerated() {
-  DCHECK(CanGenerateMipmaps());
+bool TextureManager::TextureInfo::CanRender() const {
+  if (target_ == 0 || IsDeleted()) {
+    return false;
+  }
+  bool needs_mips = NeedsMips();
+  if (npot()) {
+    return !needs_mips &&
+           wrap_s_ == GL_CLAMP_TO_EDGE &&
+           wrap_t_ == GL_CLAMP_TO_EDGE;
+  }
+  if (needs_mips) {
+    if (target_ == GL_TEXTURE_2D) {
+      return texture_complete();
+    } else {
+      return texture_complete() && cube_complete();
+    }
+  } else {
+    return true;
+  }
+}
+
+bool TextureManager::TextureInfo::MarkMipmapsGenerated() {
+  if (!CanGenerateMipmaps()) {
+    return false;
+  }
   for (size_t ii = 0; ii < level_infos_.size(); ++ii) {
     const TextureInfo::LevelInfo& info1 = level_infos_[ii][0];
     GLsizei width = info1.width;
@@ -79,10 +104,11 @@ void TextureManager::TextureInfo::MarkMipmapsGenerated() {
                    info1.type);
     }
   }
+  return true;
 }
 
 bool TextureManager::TextureInfo::CanGenerateMipmaps() const {
-  if (npot()) {
+  if (npot() || level_infos_.empty()) {
     return false;
   }
   const TextureInfo::LevelInfo& first = level_infos_[0][0];
@@ -132,6 +158,26 @@ void TextureManager::TextureInfo::SetLevelInfo(
   info.type = type;
   max_level_set_ = std::max(max_level_set_, level);
   Update();
+}
+
+void TextureManager::TextureInfo::SetParameter(GLenum pname, GLint param) {
+  switch (pname) {
+    case GL_TEXTURE_MIN_FILTER:
+      min_filter_ = param;
+      break;
+    case GL_TEXTURE_MAG_FILTER:
+      mag_filter_ = param;
+      break;
+    case GL_TEXTURE_WRAP_S:
+      wrap_s_ = param;
+      break;
+    case GL_TEXTURE_WRAP_T:
+      wrap_t_ = param;
+      break;
+    default:
+      NOTREACHED();
+      break;
+  }
 }
 
 void TextureManager::TextureInfo::Update() {
@@ -194,7 +240,8 @@ void TextureManager::TextureInfo::Update() {
 }
 
 TextureManager::TextureManager(
-    GLint max_texture_size, GLint max_cube_map_texture_size)
+    GLint max_texture_size,
+    GLint max_cube_map_texture_size)
     : max_texture_size_(max_texture_size),
       max_cube_map_texture_size_(max_cube_map_texture_size),
       max_levels_(ComputeMipMapCount(max_texture_size,
@@ -205,22 +252,26 @@ TextureManager::TextureManager(
                                               max_cube_map_texture_size)) {
 }
 
-void TextureManager::CreateTextureInfo(GLuint texture) {
-  TextureInfo* info = new TextureInfo(texture);
+void TextureManager::CreateTextureInfo(GLuint texture_id) {
   std::pair<TextureInfoMap::iterator, bool> result =
       texture_infos_.insert(
-          std::make_pair(texture, linked_ptr<TextureInfo>(info)));
+          std::make_pair(texture_id,
+                         TextureInfo::Ref(new TextureInfo(texture_id))));
   DCHECK(result.second);
 }
 
 TextureManager::TextureInfo* TextureManager::GetTextureInfo(
-    GLuint texture) {
-  TextureInfoMap::iterator it = texture_infos_.find(texture);
-  return it != texture_infos_.end() ? &(*it->second) : NULL;
+    GLuint texture_id) {
+  TextureInfoMap::iterator it = texture_infos_.find(texture_id);
+  return it != texture_infos_.end() ? it->second : NULL;
 }
 
 void TextureManager::RemoveTextureInfo(GLuint texture_id) {
-  texture_infos_.erase(texture_id);
+  TextureInfoMap::iterator it = texture_infos_.find(texture_id);
+  if (it != texture_infos_.end()) {
+    it->second->MarkAsDeleted();
+    texture_infos_.erase(texture_id);
+  }
 }
 
 }  // namespace gles2

@@ -4,24 +4,31 @@
 
 #include "gpu/command_buffer/service/buffer_manager.h"
 #include "base/logging.h"
+#include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
 namespace gpu {
 namespace gles2 {
 
-void BufferManager::CreateBufferInfo(GLuint buffer) {
+void BufferManager::CreateBufferInfo(GLuint buffer_id) {
   std::pair<BufferInfoMap::iterator, bool> result =
-      buffer_infos_.insert(std::make_pair(buffer, BufferInfo()));
+      buffer_infos_.insert(
+          std::make_pair(buffer_id,
+                         BufferInfo::Ref(new BufferInfo(buffer_id))));
   DCHECK(result.second);
 }
 
 BufferManager::BufferInfo* BufferManager::GetBufferInfo(
-    GLuint buffer) {
-  BufferInfoMap::iterator it = buffer_infos_.find(buffer);
-  return it != buffer_infos_.end() ? &it->second : NULL;
+    GLuint buffer_id) {
+  BufferInfoMap::iterator it = buffer_infos_.find(buffer_id);
+  return it != buffer_infos_.end() ? it->second : NULL;
 }
 
 void BufferManager::RemoveBufferInfo(GLuint buffer_id) {
-  buffer_infos_.erase(buffer_id);
+  BufferInfoMap::iterator it = buffer_infos_.find(buffer_id);
+  if (it != buffer_infos_.end()) {
+    it->second->MarkAsDeleted();
+    buffer_infos_.erase(buffer_id);
+  }
 }
 
 GLuint BufferManager::BufferInfo::GetMaxValueForRange(

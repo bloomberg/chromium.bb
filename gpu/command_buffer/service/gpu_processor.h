@@ -13,6 +13,7 @@
 #include "gpu/command_buffer/common/command_buffer.h"
 #include "gpu/command_buffer/service/cmd_buffer_engine.h"
 #include "gpu/command_buffer/service/cmd_parser.h"
+#include "gpu/command_buffer/service/context_group.h"
 #include "gpu/command_buffer/service/gles2_cmd_decoder.h"
 
 namespace gpu {
@@ -73,6 +74,7 @@ class GPUProcessor : public base::RefCounted<GPUProcessor>,
   scoped_ptr< ::base::SharedMemory> mapped_ring_buffer_;
   int commands_per_update_;
 
+  gles2::ContextGroup group_;
   scoped_ptr<gles2::GLES2Decoder> decoder_;
   scoped_ptr<CommandParser> parser_;
 };
