@@ -8,6 +8,7 @@
 #include <string>
 
 #include "base/basictypes.h"
+#include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/common/notification_observer.h"
@@ -15,12 +16,15 @@
 
 class AppModalDialog;
 class Browser;
+class CommandLine;
 class DownloadManager;
+class FilePath;
 class GURL;
 class MessageLoop;
 class NavigationController;
 class Profile;
 class RenderViewHost;
+class ScopedTempDir;
 class TabContents;
 class Value;
 
@@ -176,6 +180,42 @@ class TimedMessageLoopRunner {
   bool quit_loop_invoked_;
 
   DISALLOW_COPY_AND_ASSIGN(TimedMessageLoopRunner);
+};
+
+// This is a utility class for running a python websocket server
+// during tests. The server is started during the construction of the
+// object, and is stopped when the destructor is called. Note that
+// because of the underlying script that is used:
+//
+//    webkit/tools/layout_tests/webkitpy/layout_tests/layout_package/
+//        websocket_server.py
+//
+// Only *_wsh.py handlers found under "websocket/tests" from the
+// |root_directory| will be found and active while running the test
+// server.
+class TestWebSocketServer {
+ public:
+  // Creates and starts a python websocket server with |root_directory|.
+  explicit TestWebSocketServer(const FilePath& root_directory);
+
+  // Destroys and stops the server.
+  ~TestWebSocketServer();
+
+ private:
+  // Creates a CommandLine for invoking the python interpreter.
+  CommandLine* CreatePythonCommandLine();
+
+  // Creates a CommandLine for invoking the python websocker server.
+  CommandLine* CreateWebSocketServerCommandLine();
+
+  // A Scoped temporary directory for holding the python pid file.
+  ScopedTempDir temp_dir_;
+
+  // Used to close the same python interpreter when server falls out
+  // scope.
+  FilePath websocket_pid_file_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestWebSocketServer);
 };
 
 }  // namespace ui_test_utils

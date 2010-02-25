@@ -484,11 +484,6 @@ class UITestBase {
                                const std::wstring& port);
   void StopHttpServer();
 
-  // Synchronously launches local websocket server used to run LayoutTests.
-  void StartWebSocketServer(const FilePath& root_directory);
-
-  void StopWebSocketServer();
-
   // Prints IO performance data for use by perf graphs.
   void PrintIOPerfInfo(const char* test_name);
 

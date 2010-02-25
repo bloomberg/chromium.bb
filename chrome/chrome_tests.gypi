@@ -1164,6 +1164,7 @@
         'browser/extensions/extension_tabs_apitest.cc',
         'browser/extensions/extension_toolbar_model_unittest.cc',
         'browser/extensions/extension_toolstrip_apitest.cc',
+        'browser/extensions/extension_websocket_apitest.cc',
         'browser/extensions/fragment_navigation_apitest.cc',
         'browser/extensions/incognito_noscript_apitest.cc',
         'browser/extensions/isolated_world_apitest.cc',

@@ -29,6 +29,7 @@
 #endif
 #include "googleurl/src/gurl.h"
 #include "net/base/net_util.h"
+#include "testing/gtest/include/gtest/gtest.h"
 
 namespace ui_test_utils {
 
@@ -570,6 +571,61 @@ void TimedMessageLoopRunner::Quit() {
 void TimedMessageLoopRunner::QuitAfter(int ms) {
   quit_loop_invoked_ = true;
   loop_->PostDelayedTask(FROM_HERE, new MessageLoop::QuitTask, ms);
+}
+
+TestWebSocketServer::TestWebSocketServer(const FilePath& root_directory) {
+  scoped_ptr<CommandLine> cmd_line(CreateWebSocketServerCommandLine());
+  cmd_line->AppendSwitchWithValue("server", "start");
+  cmd_line->AppendSwitch("register_cygwin");
+  cmd_line->AppendSwitchWithValue("root", root_directory.ToWStringHack());
+  temp_dir_.CreateUniqueTempDir();
+  websocket_pid_file_ = temp_dir_.path().AppendASCII("websocket.pid");
+  cmd_line->AppendSwitchWithValue("pidfile",
+                                  websocket_pid_file_.ToWStringHack());
+  base::LaunchApp(*cmd_line.get(), true, false, NULL);
+}
+
+CommandLine* TestWebSocketServer::CreatePythonCommandLine() {
+#if defined(OS_WIN)
+  // Get path to python interpreter
+  FilePath python_runtime;
+  if (!PathService::Get(base::DIR_SOURCE_ROOT, &python_runtime))
+    return NULL;
+  python_runtime = python_runtime
+    .Append(FILE_PATH_LITERAL("third_party"))
+    .Append(FILE_PATH_LITERAL("python_24"))
+    .Append(FILE_PATH_LITERAL("python.exe"));
+  return new CommandLine(python_runtime);
+#elif defined(OS_POSIX)
+  return new CommandLine(FilePath("python"));
+#endif
+}
+
+CommandLine* TestWebSocketServer::CreateWebSocketServerCommandLine() {
+  FilePath src_path;
+  // Get to 'src' dir.
+  PathService::Get(base::DIR_SOURCE_ROOT, &src_path);
+
+  FilePath script_path(src_path);
+  script_path = script_path.AppendASCII("webkit");
+  script_path = script_path.AppendASCII("tools");
+  script_path = script_path.AppendASCII("layout_tests");
+  script_path = script_path.AppendASCII("webkitpy");
+  script_path = script_path.AppendASCII("layout_tests");
+  script_path = script_path.AppendASCII("layout_package");
+  script_path = script_path.AppendASCII("websocket_server.py");
+
+  CommandLine* cmd_line = CreatePythonCommandLine();
+  cmd_line->AppendLooseValue(script_path.ToWStringHack());
+  return cmd_line;
+}
+
+TestWebSocketServer::~TestWebSocketServer() {
+  scoped_ptr<CommandLine> cmd_line(CreateWebSocketServerCommandLine());
+  cmd_line->AppendSwitchWithValue("server", "stop");
+  cmd_line->AppendSwitchWithValue("pidfile",
+                                  websocket_pid_file_.ToWStringHack());
+  base::LaunchApp(*cmd_line.get(), true, false, NULL);
 }
 
 }  // namespace ui_test_utils

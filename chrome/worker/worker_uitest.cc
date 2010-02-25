@@ -9,6 +9,7 @@
 #include "chrome/test/automation/browser_proxy.h"
 #include "chrome/test/automation/tab_proxy.h"
 #include "chrome/test/ui/ui_layout_test.h"
+#include "chrome/test/ui_test_utils.h"
 #include "net/url_request/url_request_unittest.h"
 
 static const char kTestCompleteCookie[] = "status";
@@ -378,10 +379,10 @@ TEST_F(WorkerTest, FLAKY_WorkerWebSocketLayoutTests) {
   test_case_dir_ = test_case_dir_.AppendASCII("tests");
   test_case_dir_ = test_case_dir_.AppendASCII("workers");
 
-  StartWebSocketServer(temp_test_dir_.AppendASCII("LayoutTests"));
+  ui_test_utils::TestWebSocketServer websocket_server(
+      temp_test_dir_.AppendASCII("LayoutTests"));
   for (size_t i = 0; i < arraysize(kLayoutTestFiles); ++i)
     RunLayoutTest(kLayoutTestFiles[i], kWebSocketPort);
-  StopWebSocketServer();
 }
 
 TEST_F(WorkerTest, WorkerXhrHttpLayoutTests) {
