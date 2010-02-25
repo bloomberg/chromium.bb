@@ -1464,6 +1464,7 @@ void TabContents::DidNavigateMainFramePostCommit(
     if (blocked_popups_) {
       AutoReset auto_reset(&dont_notify_render_view_, true);
       blocked_popups_->Destroy();
+      blocked_popups_ = NULL;
     }
 
     // Clear "blocked" flags.

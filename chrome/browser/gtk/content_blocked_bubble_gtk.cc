@@ -88,6 +88,7 @@ void ContentBlockedBubbleGtk::BuildBubble() {
 
   if (content_type_ == CONTENT_SETTINGS_TYPE_POPUPS) {
     BlockedPopupContainer::BlockedContents blocked_contents;
+    DCHECK(tab_contents_);
     DCHECK(tab_contents_->blocked_popup_container());
     tab_contents_->blocked_popup_container()->GetBlockedContents(
         &blocked_contents);
