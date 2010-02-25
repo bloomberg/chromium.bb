@@ -293,6 +293,12 @@ each locale. -->
       <message name="IDS_ABORT" desc="Abort operation">
         Abort
       </message>
+      <message name="IDS_CLOSE" desc="A generic term for Close on buttons and menus.">
+        Close
+      </message>
+      <message name="IDS_DONE" desc="A generic term for Done on buttons and menus.">
+        Done
+      </message>
 
       <!-- content area context menus -->
       <if expr="os == 'darwin'">
@@ -923,11 +929,6 @@ each locale. -->
           R&amp;eopen Closed Window
         </message>
       </if>
-
-      <!-- This really belongs under Generic Terms above. -->
-      <message name="IDS_CLOSE" desc="A generic term for Close on buttons and menus.">
-        Close
-      </message>
 
       <!-- XPFrame buttons tooltips -->
       <message name="IDS_XPFRAME_MINIMIZE_TOOLTIP" desc="The tooltip used for the minimize button">
