@@ -54,8 +54,7 @@ void PreferenceChangeProcessor::Observe(NotificationType type,
     }
   }
 
-  if (!WritePreference(&node, WideToUTF8(*name),
-                       preference->GetValue())) {
+  if (!WritePreference(&node, *name, preference->GetValue())) {
     LOG(ERROR) << "Failed to update preference node.";
     error_handler()->OnUnrecoverableError();
     return;
@@ -108,7 +107,7 @@ void PreferenceChangeProcessor::ApplyChangesFromSyncModel(
 
 bool PreferenceChangeProcessor::WritePreference(
     sync_api::WriteNode* node,
-    const std::string& name,
+    const std::wstring& name,
     const Value* value) {
   std::string serialized;
   JSONStringValueSerializer json(&serialized);
@@ -119,9 +118,10 @@ bool PreferenceChangeProcessor::WritePreference(
   }
 
   sync_pb::PreferenceSpecifics preference;
-  preference.set_name(name);
+  preference.set_name(WideToUTF8(name));
   preference.set_value(serialized);
   node->SetPreferenceSpecifics(preference);
+  node->SetTitle(name);
   return true;
 }
 

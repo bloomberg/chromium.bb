@@ -111,6 +111,7 @@ bool PreferenceModelAssociator::AssociateModels() {
       preference.set_name(tag);
       preference.set_value(serialized);
       node.SetPreferenceSpecifics(preference);
+      node.SetTitle(*it);
       Associate(pref, node.GetId());
     }
   }

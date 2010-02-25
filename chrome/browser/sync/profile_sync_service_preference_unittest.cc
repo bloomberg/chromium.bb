@@ -26,7 +26,7 @@ using sync_api::SyncManager;
 class TestPreferenceModelAssociator
     : public TestModelAssociator<PreferenceModelAssociator> {
  public:
-  TestPreferenceModelAssociator(ProfileSyncService* service)
+  explicit TestPreferenceModelAssociator(ProfileSyncService* service)
       : TestModelAssociator<PreferenceModelAssociator>(service) {
   }
 };
@@ -87,6 +87,7 @@ class ProfileSyncServicePreferenceTest : public testing::Test {
     int64 node_id = model_associator_->GetSyncIdFromChromeId(name);
     EXPECT_NE(sync_api::kInvalidId, node_id);
     EXPECT_TRUE(node.InitByIdLookup(node_id));
+    EXPECT_EQ(name, node.GetTitle());
 
     const sync_pb::PreferenceSpecifics& specifics(
         node.GetPreferenceSpecifics());
@@ -113,6 +114,7 @@ class ProfileSyncServicePreferenceTest : public testing::Test {
     preference.set_name(WideToUTF8(name));
     preference.set_value(serialized);
     node.SetPreferenceSpecifics(preference);
+    node.SetTitle(name);
 
     SyncManager::ChangeRecord* record = new SyncManager::ChangeRecord();
     record->action = SyncManager::ChangeRecord::ACTION_UPDATE;
