@@ -464,6 +464,9 @@ TEST_F(WorkerTest, FLAKY_MessagePorts) {
 #if defined(OS_LINUX)
 // http://crbug.com/30307
 #define LimitPerPage DISABLED_LimitPerPage
+#elif defined(OS_WIN)
+// This has been flaky on Windows since r39931. http://crbug.com/36800
+#define LimitPerPage FLAKY_LimitPerPage
 #endif
 
 TEST_F(WorkerTest, LimitPerPage) {
