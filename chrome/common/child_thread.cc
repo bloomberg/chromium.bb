@@ -24,7 +24,8 @@ ChildThread::ChildThread() {
 }
 
 ChildThread::ChildThread(const std::string& channel_name)
-    : channel_name_(channel_name) {
+    : channel_name_(channel_name),
+      on_channel_error_called_(false) {
   Init();
 }
 
