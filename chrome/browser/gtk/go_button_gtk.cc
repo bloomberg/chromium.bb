@@ -30,7 +30,6 @@ GoButtonGtk::GoButtonGtk(LocationBarViewGtk* location_bar, Browser* browser)
       stop_timer_(this),
       intended_mode_(MODE_GO),
       visible_mode_(MODE_GO),
-      state_(BS_NORMAL),
       theme_provider_(browser ?
                       GtkThemeProvider::GetFrom(browser->profile()) : NULL),
       go_(theme_provider_, IDR_GO, IDR_GO_P, IDR_GO_H, 0, IDR_GO_MASK),
@@ -39,14 +38,10 @@ GoButtonGtk::GoButtonGtk(LocationBarViewGtk* location_bar, Browser* browser)
   gtk_widget_set_size_request(widget_.get(), go_.Width(), go_.Height());
 
   gtk_widget_set_app_paintable(widget_.get(), TRUE);
-  // We effectively double-buffer by virtue of having only one image...
-  gtk_widget_set_double_buffered(widget_.get(), FALSE);
 
   g_signal_connect(widget_.get(), "expose-event",
                    G_CALLBACK(OnExpose), this);
-  g_signal_connect(widget_.get(), "enter",
-                   G_CALLBACK(OnEnter), this);
-  g_signal_connect(widget_.get(), "leave",
+  g_signal_connect(widget_.get(), "leave-notify-event",
                    G_CALLBACK(OnLeave), this);
   g_signal_connect(widget_.get(), "clicked",
                    G_CALLBACK(OnClicked), this);
@@ -56,6 +51,7 @@ GoButtonGtk::GoButtonGtk(LocationBarViewGtk* location_bar, Browser* browser)
   g_signal_connect(widget_.get(), "query-tooltip",
                    G_CALLBACK(OnQueryTooltipThunk), this);
 
+  hover_controller_.Init(widget());
   gtk_util::SetButtonTriggersNavigation(widget());
 
   if (theme_provider_) {
@@ -76,8 +72,9 @@ void GoButtonGtk::ChangeMode(Mode mode, bool force) {
   // If the change is forced, or the user isn't hovering the icon, or it's safe
   // to change it to the other image type, make the change immediately;
   // otherwise we'll let it happen later.
-  if (force || (state() != BS_HOT) || ((mode == MODE_STOP) ?
-      stop_timer_.empty() : (visible_mode_ != MODE_STOP))) {
+  if (force || GTK_WIDGET_STATE(widget()) == GTK_STATE_NORMAL ||
+      ((mode == MODE_STOP) ?
+        stop_timer_.empty() : (visible_mode_ != MODE_STOP))) {
     stop_timer_.RevokeAll();
     visible_mode_ = mode;
     gtk_widget_queue_draw(widget_.get());
@@ -112,34 +109,21 @@ gboolean GoButtonGtk::OnExpose(GtkWidget* widget,
   if (button->theme_provider_ && button->theme_provider_->UseGtkTheme()) {
     return FALSE;
   } else {
+    double hover_state = button->hover_controller_.GetCurrentValue();
     if (button->visible_mode_ == MODE_GO) {
-      return button->go_.OnExpose(widget, e);
+      return button->go_.OnExpose(widget, e, hover_state);
     } else {
-      return button->stop_.OnExpose(widget, e);
+      return button->stop_.OnExpose(widget, e, hover_state);
     }
   }
 }
 
 // static
-gboolean GoButtonGtk::OnEnter(GtkButton* widget, GoButtonGtk* button) {
-  DCHECK_EQ(BS_NORMAL, button->state());
-  button->state_ = BS_HOT;
-  return TRUE;
-}
-
-// static
-gboolean GoButtonGtk::OnLeave(GtkButton* widget, GoButtonGtk* button) {
-  // It's possible on shutdown for a "leave" event to be emitted twice in a row
-  // for this button.  I'm not sure if this is a gtk quirk or something wrong
-  // with our usage, but it's harmless.  I'm commenting out this DCHECK for now.
-  // and adding a LOG(WARNING) instead.
-  // See http://www.crbug.com/10851 for details.
-  // DCHECK_EQ(BS_HOT, button->state());
-  if (button->state() != BS_HOT)
-    LOG(WARNING) << "Button state should be BS_HOT when leaving.";
-  button->state_ = BS_NORMAL;
+gboolean GoButtonGtk::OnLeave(GtkWidget* widget,
+                              GdkEventCrossing* event,
+                              GoButtonGtk* button) {
   button->ChangeMode(button->intended_mode_, true);
-  return TRUE;
+  return FALSE;
 }
 
 // static

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -19,15 +19,18 @@ class GoButtonGtkPeer {
     return &go_->stop_timer_;
   }
 
+  void SetState(GtkStateType state) {
+    gtk_widget_set_state(go_->widget(), state);
+  }
+
   // mutators for internal state
-  void set_state(GoButtonGtk::ButtonState state) { go_->state_ = state; }
   void set_intended_mode(GoButtonGtk::Mode mode) { go_->intended_mode_ = mode; }
   void set_visible_mode(GoButtonGtk::Mode mode) { go_->visible_mode_ = mode; }
 
   // forwarders to private methods
   Task* CreateButtonTimerTask() { return go_->CreateButtonTimerTask(); }
   gboolean OnLeave() {
-    return GoButtonGtk::OnLeave(GTK_BUTTON(go_->widget()), go_);
+    return GoButtonGtk::OnLeave(go_->widget(), NULL, go_);
   }
 
   gboolean OnClicked() {
@@ -63,7 +66,7 @@ TEST_F(GoButtonGtkTest, ChangeModeStop) {
 
 TEST_F(GoButtonGtkTest, ScheduleChangeModeNormalGo) {
   peer_.set_visible_mode(GoButtonGtk::MODE_STOP);
-  peer_.set_state(GoButtonGtk::BS_NORMAL);
+  peer_.SetState(GTK_STATE_NORMAL);
   go_.ChangeMode(GoButtonGtk::MODE_GO, false);
   EXPECT_EQ(GoButtonGtk::MODE_GO, peer_.intended_mode());
   EXPECT_EQ(GoButtonGtk::MODE_GO, peer_.visible_mode());
@@ -71,7 +74,7 @@ TEST_F(GoButtonGtkTest, ScheduleChangeModeNormalGo) {
 
 TEST_F(GoButtonGtkTest, ScheduleChangeModeHotGo) {
   peer_.set_visible_mode(GoButtonGtk::MODE_STOP);
-  peer_.set_state(GoButtonGtk::BS_HOT);
+  peer_.SetState(GTK_STATE_PRELIGHT);
   go_.ChangeMode(GoButtonGtk::MODE_GO, false);
   EXPECT_EQ(GoButtonGtk::MODE_GO, peer_.intended_mode());
   EXPECT_EQ(GoButtonGtk::MODE_STOP, peer_.visible_mode());
@@ -79,7 +82,7 @@ TEST_F(GoButtonGtkTest, ScheduleChangeModeHotGo) {
 
 TEST_F(GoButtonGtkTest, ScheduleChangeModeNormalStop) {
   peer_.set_visible_mode(GoButtonGtk::MODE_GO);
-  peer_.set_state(GoButtonGtk::BS_NORMAL);
+  peer_.SetState(GTK_STATE_NORMAL);
   go_.ChangeMode(GoButtonGtk::MODE_STOP, false);
   EXPECT_EQ(GoButtonGtk::MODE_STOP, peer_.intended_mode());
   EXPECT_EQ(GoButtonGtk::MODE_STOP, peer_.visible_mode());
@@ -87,7 +90,7 @@ TEST_F(GoButtonGtkTest, ScheduleChangeModeNormalStop) {
 
 TEST_F(GoButtonGtkTest, ScheduleChangeModeHotStop) {
   peer_.set_visible_mode(GoButtonGtk::MODE_GO);
-  peer_.set_state(GoButtonGtk::BS_HOT);
+  peer_.SetState(GTK_STATE_PRELIGHT);
   go_.ChangeMode(GoButtonGtk::MODE_STOP, false);
   EXPECT_EQ(GoButtonGtk::MODE_STOP, peer_.intended_mode());
   EXPECT_EQ(GoButtonGtk::MODE_STOP, peer_.visible_mode());
@@ -95,7 +98,7 @@ TEST_F(GoButtonGtkTest, ScheduleChangeModeHotStop) {
 
 TEST_F(GoButtonGtkTest, ScheduleChangeModeTimerHotStop) {
   peer_.set_visible_mode(GoButtonGtk::MODE_GO);
-  peer_.set_state(GoButtonGtk::BS_HOT);
+  peer_.SetState(GTK_STATE_PRELIGHT);
   scoped_ptr<Task> task(peer_.CreateButtonTimerTask());
   go_.ChangeMode(GoButtonGtk::MODE_STOP, false);
   EXPECT_EQ(GoButtonGtk::MODE_STOP, peer_.intended_mode());
@@ -103,19 +106,19 @@ TEST_F(GoButtonGtkTest, ScheduleChangeModeTimerHotStop) {
 }
 
 TEST_F(GoButtonGtkTest, OnLeaveIntendedStop) {
-  peer_.set_state(GoButtonGtk::BS_HOT);
+  peer_.SetState(GTK_STATE_PRELIGHT);
   peer_.set_visible_mode(GoButtonGtk::MODE_GO);
   peer_.set_intended_mode(GoButtonGtk::MODE_STOP);
-  EXPECT_TRUE(peer_.OnLeave());
+  peer_.OnLeave();
   EXPECT_EQ(GoButtonGtk::MODE_STOP, peer_.visible_mode());
   EXPECT_EQ(GoButtonGtk::MODE_STOP, peer_.intended_mode());
 }
 
 TEST_F(GoButtonGtkTest, OnLeaveIntendedGo) {
-  peer_.set_state(GoButtonGtk::BS_HOT);
+  peer_.SetState(GTK_STATE_PRELIGHT);
   peer_.set_visible_mode(GoButtonGtk::MODE_STOP);
   peer_.set_intended_mode(GoButtonGtk::MODE_GO);
-  EXPECT_TRUE(peer_.OnLeave());
+  peer_.OnLeave();
   EXPECT_EQ(GoButtonGtk::MODE_GO, peer_.visible_mode());
   EXPECT_EQ(GoButtonGtk::MODE_GO, peer_.intended_mode());
 }

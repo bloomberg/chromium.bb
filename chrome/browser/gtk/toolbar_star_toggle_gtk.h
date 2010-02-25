@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -68,8 +68,9 @@ class ToolbarStarToggleGtk : public NotificationObserver {
 
   CustomDrawButtonBase unstarred_;
   CustomDrawButtonBase starred_;
+  CustomDrawHoverController hover_controller_;
 
-  DISALLOW_EVIL_CONSTRUCTORS(ToolbarStarToggleGtk);
+  DISALLOW_COPY_AND_ASSIGN(ToolbarStarToggleGtk);
 };
 
 #endif  // CHROME_BROWSER_GTK_TOOLBAR_STAR_TOGGLE_GTK_H_

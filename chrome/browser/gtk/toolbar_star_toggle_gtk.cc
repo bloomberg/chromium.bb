@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -36,7 +36,7 @@ ToolbarStarToggleGtk::ToolbarStarToggleGtk(BrowserToolbarGtk* host)
 
   g_signal_connect(widget(), "expose-event",
                    G_CALLBACK(OnExpose), this);
-  GTK_WIDGET_UNSET_FLAGS(widget_.get(), GTK_CAN_FOCUS);
+  GTK_WIDGET_UNSET_FLAGS(widget(), GTK_CAN_FOCUS);
 
   gtk_drag_source_set(widget(), GDK_BUTTON1_MASK, NULL, 0,
       static_cast<GdkDragAction>(GDK_ACTION_COPY | GDK_ACTION_LINK));
@@ -51,6 +51,8 @@ ToolbarStarToggleGtk::ToolbarStarToggleGtk(BrowserToolbarGtk* host)
   registrar_.Add(this,
                  NotificationType::BROWSER_THEME_CHANGED,
                  NotificationService::AllSources());
+
+  hover_controller_.Init(widget());
 }
 
 ToolbarStarToggleGtk::~ToolbarStarToggleGtk() {
@@ -89,11 +91,11 @@ gboolean ToolbarStarToggleGtk::OnExpose(GtkWidget* widget, GdkEventExpose* e,
   if (button->theme_provider_->UseGtkTheme()) {
     return FALSE;
   } else {
-    if (button->is_starred_) {
-      return button->starred_.OnExpose(widget, e);
-    } else {
-      return button->unstarred_.OnExpose(widget, e);
-    }
+    double hover_state = button->hover_controller_.GetCurrentValue();
+    if (button->is_starred_)
+      return button->starred_.OnExpose(widget, e, hover_state);
+    else
+      return button->unstarred_.OnExpose(widget, e, hover_state);
   }
 }
 

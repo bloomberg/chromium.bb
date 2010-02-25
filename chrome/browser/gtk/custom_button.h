@@ -9,6 +9,7 @@
 
 #include <string>
 
+#include "app/slide_animation.h"
 #include "base/gfx/rect.h"
 #include "base/scoped_ptr.h"
 #include "chrome/common/notification_observer.h"
@@ -42,7 +43,7 @@ class CustomDrawButtonBase : public NotificationObserver {
   int Width() const;
   int Height() const;
 
-  gboolean OnExpose(GtkWidget* widget, GdkEventExpose* e);
+  gboolean OnExpose(GtkWidget* widget, GdkEventExpose* e, gdouble hover_state);
 
   void set_paint_override(int state) { paint_override_ = state; }
   int paint_override() const { return paint_override_; }
@@ -56,6 +57,9 @@ class CustomDrawButtonBase : public NotificationObserver {
                        const NotificationDetails& details);
 
  private:
+  // Get the CairoCachedSurface from |surfaces_| for |state|.
+  CairoCachedSurface* PixbufForState(int state);
+
   // We store one surface for each possible state of the button;
   // INSENSITIVE is the last available state;
   scoped_ptr<CairoCachedSurface> surfaces_[GTK_STATE_INSENSITIVE + 1];
@@ -79,6 +83,35 @@ class CustomDrawButtonBase : public NotificationObserver {
   NotificationRegistrar registrar_;
 
   DISALLOW_COPY_AND_ASSIGN(CustomDrawButtonBase);
+};
+
+// CustomDrawHoverController is a convenience class that eases the common task
+// of controlling the hover state of a button. The "hover state" refers to the
+// percent opacity of a button's PRELIGHT. The PRELIGHT is animated such that
+// when a user moves a mouse over a button the PRELIGHT fades in.
+class CustomDrawHoverController : public AnimationDelegate {
+ public:
+  explicit CustomDrawHoverController(GtkWidget* widget);
+  CustomDrawHoverController();
+
+  virtual ~CustomDrawHoverController();
+
+  void Init(GtkWidget* widget);
+
+  double GetCurrentValue() {
+    return slide_animation_.GetCurrentValue();
+  }
+
+ private:
+  virtual void AnimationProgressed(const Animation* animation);
+
+  static gboolean OnEnter(GtkWidget* widget, GdkEventCrossing* event,
+                          CustomDrawHoverController* controller);
+  static gboolean OnLeave(GtkWidget* widget, GdkEventCrossing* event,
+                          CustomDrawHoverController* controller);
+
+  SlideAnimation slide_animation_;
+  GtkWidget* widget_;
 };
 
 // CustomDrawButton is a plain button where all its various states are drawn
@@ -129,7 +162,7 @@ class CustomDrawButton : public NotificationObserver {
   // Set the background details.
   void SetBackground(SkColor color, SkBitmap* image, SkBitmap* mask);
 
-  // Provide NotificationObserver implementation.
+  // NotificationObserver implementation.
   virtual void Observe(NotificationType type,
                        const NotificationSource& source,
                        const NotificationDetails& details);
@@ -151,6 +184,8 @@ class CustomDrawButton : public NotificationObserver {
   OwnedWidgetGtk widget_;
 
   CustomDrawButtonBase button_base_;
+
+  CustomDrawHoverController hover_controller_;
 
   // Our theme provider.
   GtkThemeProvider* theme_provider_;

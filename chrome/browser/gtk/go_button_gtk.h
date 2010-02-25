@@ -22,13 +22,11 @@ class Task;
 class GoButtonGtk : public NotificationObserver {
  public:
   enum Mode { MODE_GO = 0, MODE_STOP };
-  enum ButtonState { BS_NORMAL = 0, BS_HOT };
 
   GoButtonGtk(LocationBarViewGtk* location_bar, Browser* browser);
   ~GoButtonGtk();
 
   GtkWidget* widget() const { return widget_.get(); }
-  ButtonState state() const { return state_; }
 
   // Ask for a specified button state.  If |force| is true this will be applied
   // immediately.
@@ -46,8 +44,8 @@ class GoButtonGtk : public NotificationObserver {
   static gboolean OnExpose(GtkWidget* widget,
                            GdkEventExpose* e,
                            GoButtonGtk* button);
-  static gboolean OnEnter(GtkButton* widget, GoButtonGtk* button);
-  static gboolean OnLeave(GtkButton* widget, GoButtonGtk* button);
+  static gboolean OnLeave(GtkWidget* widget, GdkEventCrossing* event,
+                          GoButtonGtk* button);
   static gboolean OnClicked(GtkButton* widget, GoButtonGtk* button);
   static gboolean OnQueryTooltipThunk(GtkWidget* widget,
                                       gint x, gint y, gboolean keyboard_mode,
@@ -82,12 +80,11 @@ class GoButtonGtk : public NotificationObserver {
   // The currently-visible mode - this may different from the intended mode.
   Mode visible_mode_;
 
-  ButtonState state_;
-
   GtkThemeProvider* theme_provider_;
 
   CustomDrawButtonBase go_;
   CustomDrawButtonBase stop_;
+  CustomDrawHoverController hover_controller_;
 
   OwnedWidgetGtk widget_;
 
