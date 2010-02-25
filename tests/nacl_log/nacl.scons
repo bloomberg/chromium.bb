@@ -5,6 +5,10 @@
 
 Import('env')
 
+# TODO(robertm): fix this (might be just a C++ issue)
+if env['TARGET_ARCHITECTURE'] == 'arm':
+  Return()
+
 # NOTE: make sure we can compile these benchmarks without libsrpc
 #       sadly this does not do anything on x86 since libsrpc
 #       is added by the driver
