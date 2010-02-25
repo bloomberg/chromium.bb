@@ -66,7 +66,9 @@ DownloadOrCopy() {
 ######################################################################
 
 # some sanity checks to make sure this script is run from the right place
-PathSanityCheck() {
+# with the right tools
+SanityCheck() {
+  Banner "Sanity Checks"
   if [[ $(basename $(pwd)) != "native_client" ]] ; then
     echo "ERROR: run this script from the native_client/ dir"
     exit -1
@@ -76,6 +78,14 @@ PathSanityCheck() {
      echo "ERROR: ${INSTALL_ROOT} does not exist"
     exit -1
   fi
+
+  for tool in cleanlinks wget ; do
+    if ! which ${tool} ; then
+      echo "Required binary $tool not found."
+      echo "Exiting."
+      exit 1
+    fi
+  done
 }
 
 
@@ -279,7 +289,7 @@ fi
 #@   create trusted sdk tarball
 if [ ${MODE} = 'trusted_sdk' ] ; then
   mkdir -p ${TMP}
-  PathSanityCheck
+  SanityCheck
   ClearInstallDir
   DownloadOrCopyAndInstallCodeSourceryTarball
   InstallTrustedLinkerScript
@@ -317,6 +327,15 @@ fi
 #@   tar everything up
 if [ ${MODE} = 'tar' ] ; then
   CreateTarBall $1
+  exit 0
+fi
+
+#@
+#@ sanity
+#@
+#@   run sanity checks
+if [ ${MODE} = 'sanity' ] ; then
+  SanityCheck
   exit 0
 fi
 
