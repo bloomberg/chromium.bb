@@ -15,8 +15,8 @@
 
 class BookmarkBarFolderControllerTest : public CocoaTest {
  public:
-  scoped_nsobject<BookmarkBarController> parentBarController_;
   BrowserTestHelper helper_;
+  scoped_nsobject<BookmarkBarController> parentBarController_;
 
   BookmarkBarFolderControllerTest() {
     BookmarkModel* model = helper_.profile()->GetBookmarkModel();
