@@ -19,6 +19,9 @@ class ProfileSyncFactoryImpl : public ProfileSyncFactory {
   // ProfileSyncFactory interface.
   virtual ProfileSyncService* CreateProfileSyncService();
 
+  virtual browser_sync::DataTypeManager* CreateDataTypeManager(
+      const browser_sync::DataTypeController::TypeMap& controllers);
+
   virtual SyncComponents CreateBookmarkSyncComponents(
       ProfileSyncService* profile_sync_service);
 

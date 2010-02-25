@@ -21,6 +21,8 @@
 #include "chrome/browser/search_engines/template_url_model.h"
 #include "net/base/cookie_monster.h"
 
+class ProfileSyncFactory;
+class ProfileSyncService;
 class SessionService;
 
 class TestingProfile : public Profile {
@@ -267,6 +269,9 @@ class TestingProfile : public Profile {
 
   // The BookmarkModel. Only created if CreateBookmarkModel is invoked.
   scoped_ptr<BookmarkModel> bookmark_bar_model_;
+
+  // The ProfileSyncFactory.  Created by CreateProfileSyncService.
+  scoped_ptr<ProfileSyncFactory> profile_sync_factory_;
 
   // The ProfileSyncService.  Created by CreateProfileSyncService.
   scoped_ptr<ProfileSyncService> profile_sync_service_;

@@ -7,12 +7,14 @@
 
 #include <utility>
 #include "base/task.h"
+#include "chrome/browser/sync/glue/change_processor.h"
+#include "chrome/browser/sync/glue/data_type_controller.h"
+#include "chrome/browser/sync/glue/model_associator.h"
 
 class ProfileSyncService;
 
 namespace browser_sync {
-class AssociatorInterface;
-class ChangeProcessor;
+class DataTypeManager;
 }
 
 // Factory class for all profile sync related classes.
@@ -36,6 +38,11 @@ class ProfileSyncFactory {
   // data types are registered with the service.  The return pointer
   // is owned by the caller.
   virtual ProfileSyncService* CreateProfileSyncService() = 0;
+
+  // Instantiates a new DataTypeManager with a list of data type
+  // controllers.  The return pointer is owned by the caller.
+  virtual browser_sync::DataTypeManager* CreateDataTypeManager(
+      const browser_sync::DataTypeController::TypeMap& controllers) = 0;
 
   // Instantiates both a model associator and change processor for the
   // bookmark data type.  The pointers in the return struct are owned

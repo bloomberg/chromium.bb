@@ -15,12 +15,15 @@
 #include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
+#include "chrome/browser/sync/glue/data_type_manager.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
 #include "chrome/browser/sync/syncable/model_type.h"
 #include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
+
+class ProfileSyncFactory;
 
 namespace browser_sync {
 
@@ -86,7 +89,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
     MAX_SYNC_EVENT_CODE
   };
 
-  ProfileSyncService(Profile* profile, bool bootstrap_sync_authentication);
+  ProfileSyncService(ProfileSyncFactory* factory_,
+                     Profile* profile,
+                     bool bootstrap_sync_authentication);
   virtual ~ProfileSyncService();
 
   // Initializes the object. This should be called every time an object of this
@@ -236,10 +241,8 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   void RegisterPreferences();
   void ClearPreferences();
 
-  void BookmarkStartCallback(
-      browser_sync::DataTypeController::StartResult result);
-  void PreferenceStartCallback(
-      browser_sync::DataTypeController::StartResult result);
+  void DataTypeManagerStartCallback(
+      browser_sync::DataTypeManager::StartResult result);
 
   // Tests need to override this.  If |delete_sync_data_folder| is true, then
   // this method will delete all previous "Sync Data" folders. (useful if the
@@ -271,14 +274,14 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
   // store to bootstrap the authentication process.
   virtual std::string GetLsidForAuthBootstraping();
 
-  // Stops a data type.
-  void StopDataType(syncable::ModelType model_type);
-
   // Time at which we begin an attempt a GAIA authorization.
   base::TimeTicks auth_start_time_;
 
   // Time at which error UI is presented for the new tab page.
   base::TimeTicks auth_error_time_;
+
+  // Factory used to create various dependent objects.
+  ProfileSyncFactory* factory_;
 
   // The profile whose data we are synchronizing.
   Profile* profile_;
@@ -338,6 +341,9 @@ class ProfileSyncService : public browser_sync::SyncFrontend,
 
   // Which peer-to-peer notification method to use.
   browser_sync::NotificationMethod notification_method_;
+
+  // Manages the start and stop of the various data types.
+  scoped_ptr<browser_sync::DataTypeManager> data_type_manager_;
 
   ObserverList<Observer> observers_;
 

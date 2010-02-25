@@ -9,14 +9,16 @@
 
 #include "base/message_loop.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/test/sync/test_http_bridge_factory.h"
 
 class TestProfileSyncService : public ProfileSyncService {
  public:
-  explicit TestProfileSyncService(Profile* profile,
+  explicit TestProfileSyncService(ProfileSyncFactory* factory,
+                                  Profile* profile,
                                   bool bootstrap_sync_authentication)
-      : ProfileSyncService(profile, bootstrap_sync_authentication) {
+      : ProfileSyncService(factory, profile, bootstrap_sync_authentication) {
     RegisterPreferences();
     SetSyncSetupCompleted();
   }

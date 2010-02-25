@@ -825,6 +825,8 @@
         'browser/ssl/ssl_host_state_unittest.cc',
         'browser/sync/glue/change_processor_mock.h',
         'browser/sync/glue/data_type_controller_mock.h',
+        'browser/sync/glue/data_type_manager_impl_unittest.cc',
+        'browser/sync/glue/data_type_manager_mock.h',
         'browser/sync/glue/database_model_worker_unittest.cc',
         'browser/sync/glue/http_bridge_unittest.cc',
         'browser/sync/glue/ui_model_worker_unittest.cc',

@@ -8,12 +8,14 @@
 #include "chrome/browser/sync/glue/preference_data_type_controller.h"
 #include "chrome/browser/sync/glue/preference_model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
+#include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/common/json_value_serializer.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
+#include "testing/gmock/include/gmock/gmock.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 using base::JSONReader;
@@ -22,6 +24,8 @@ using browser_sync::PreferenceDataTypeController;
 using browser_sync::PreferenceModelAssociator;
 using browser_sync::SyncBackendHost;
 using sync_api::SyncManager;
+using testing::_;
+using testing::Return;
 
 class TestPreferenceModelAssociator
     : public TestModelAssociator<PreferenceModelAssociator> {
@@ -50,18 +54,22 @@ class ProfileSyncServicePreferenceTest : public testing::Test {
 
   void StartSyncService() {
     if (!service_.get()) {
-      service_.reset(new TestProfileSyncService(profile_.get(), false));
+      service_.reset(new TestProfileSyncService(&factory_,
+                                                profile_.get(),
+                                                false));
 
       // Register the preference data type.
       model_associator_ = new TestPreferenceModelAssociator(service_.get());
       change_processor_ = new PreferenceChangeProcessor(model_associator_,
                                                         service_.get());
-      factory_.reset(new TestProfileSyncFactory(NULL,
-                                                model_associator_,
-                                                change_processor_));
+      EXPECT_CALL(factory_, CreatePreferenceSyncComponents(_)).
+          WillOnce(Return(ProfileSyncFactory::SyncComponents(
+              model_associator_, change_processor_)));
+      EXPECT_CALL(factory_, CreateDataTypeManager(_)).
+          WillOnce(MakeDataTypeManager());
 
       service_->RegisterDataTypeController(
-          new PreferenceDataTypeController(factory_.get(),
+          new PreferenceDataTypeController(&factory_,
                                            service_.get()));
       service_->Initialize();
     }
@@ -122,7 +130,7 @@ class ProfileSyncServicePreferenceTest : public testing::Test {
 
   scoped_ptr<TestProfileSyncService> service_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<TestProfileSyncFactory> factory_;
+  ProfileSyncFactoryMock factory_;
 
   PreferenceModelAssociator* model_associator_;
   PreferenceChangeProcessor* change_processor_;

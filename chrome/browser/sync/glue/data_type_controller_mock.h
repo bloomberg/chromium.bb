@@ -16,6 +16,7 @@ class DataTypeControllerMock : public DataTypeController {
   MOCK_METHOD0(Stop, void());
   MOCK_METHOD0(enabled, bool());
   MOCK_METHOD0(type, syncable::ModelType());
+  MOCK_CONST_METHOD0(name, const char*());
   MOCK_METHOD0(model_safe_group, browser_sync::ModelSafeGroup());
   MOCK_METHOD0(state, State());
 };
