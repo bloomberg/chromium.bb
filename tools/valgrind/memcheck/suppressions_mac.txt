@@ -849,4 +849,16 @@
    fun:_ZN9TestSuite3RunEv
    fun:main
 }
-
+{
+   bug_36763
+   Memcheck:Addr4
+   ...
+   fun:_ZN13BookmarkModel14RemoveObserverEP21BookmarkModelObserver
+   fun:_ZN17BookmarkBarBridgeD0Ev
+   fun:_ZN10scoped_ptrI17BookmarkBarBridgeE5resetEPS0_
+   fun:-[BookmarkBarController dealloc]
+   fun:-[NSViewController release]
+   ...
+   fun:_ZN31BookmarkBarFolderControllerTestD2Ev
+   ...
+}
