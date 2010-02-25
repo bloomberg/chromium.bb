@@ -45,8 +45,8 @@ OpcodeHasImmed2_b
 OpcodeHasImmed2_w
 OpcodeHasImmed2_v
 
-# In 32-bit mode, same as OpcodeHasImmed_v, In 64-bit mode, same as
-# OpcodeHasImmed_o.
+# Define the size of the immediate value that must follow the opcode, but
+# uses the address size instead of the operand size.
 OpcodeHasImmed_Addr
 
 # Defines a register code, from 0 through 7, added to the hexadecimal byte

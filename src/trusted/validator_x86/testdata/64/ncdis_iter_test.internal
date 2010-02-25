@@ -3557,3 +3557,22 @@ ExprNodeVector[4] = {
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %xmm2, ExprUsed },
 };
+0000000000000000: 67 40 a0 00 01 02 03                         mov %al, [0x3020100]
+  { 1, { 0xa0, 0x00, 0x00 },
+    NACLi_386,
+    InstFlag(OpcodeHasImmed_Addr) | InstFlag(OperandSize_b),
+    InstMov,
+    2, {
+      { RegAL, OpFlag(OpSet) },
+      { O_Operand, OpFlag(OpUse) },
+  } };
+ExprNodeVector[8] = {
+  { OperandReference[1] , 0, 0 },
+  { ExprRegister[0] , %al, ExprSet | ExprSize8 },
+  { OperandReference[1] , 1, 0 },
+  { ExprMemOffset[4] , 0, ExprUsed },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprRegister[0] , %unknown, 0 },
+  { ExprConstant[0] , 1, ExprSize8 },
+  { ExprConstant[0] , 0x3020100, ExprSize32 | ExprUnsignedHex },
+};

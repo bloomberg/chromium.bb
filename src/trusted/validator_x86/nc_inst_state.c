@@ -552,7 +552,7 @@ static int GetNumImmediateBytes(NcInstState* state) {
   } else if (state->opcode->flags & InstFlag(OpcodeHasImmed_o)) {
     return 8;
   } else if (state->opcode->flags & InstFlag(OpcodeHasImmed_Addr)) {
-    return NACL_TARGET_SUBARCH == 64 ? 8 : 4;
+    return ExtractAddressSize(state) / 8;
   } else {
     return 0;
   }
