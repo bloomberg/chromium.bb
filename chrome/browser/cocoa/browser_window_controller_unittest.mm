@@ -585,7 +585,9 @@ class BrowserWindowFullScreenControllerTest : public CocoaTest {
 - (BOOL)supportsFullscreen;
 @end
 
-TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreen) {
+// Disabled because it fails (and later crashes) the tsan bot.
+// http://crbug.com/36736
+TEST_F(BrowserWindowFullScreenControllerTest, DISABLED_TestFullscreen) {
   EXPECT_FALSE([controller_ isFullscreen]);
   [controller_ setFullscreen:YES];
   EXPECT_TRUE([controller_ isFullscreen]);
@@ -593,7 +595,9 @@ TEST_F(BrowserWindowFullScreenControllerTest, TestFullscreen) {
   EXPECT_FALSE([controller_ isFullscreen]);
 }
 
-TEST_F(BrowserWindowFullScreenControllerTest, TestActivate) {
+// Disabled because it fails (and later crashes) the tsan bot.
+// http://crbug.com/36736
+TEST_F(BrowserWindowFullScreenControllerTest, DISABLED_TestActivate) {
   EXPECT_FALSE([controller_ isFullscreen]);
 
   [controller_ activate];
