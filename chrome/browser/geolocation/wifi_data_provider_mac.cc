@@ -11,7 +11,6 @@
 
 #include <dlfcn.h>
 #include <stdio.h>
-#include "base/lock.h"
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/geolocation/osx_wifi.h"
 #include "chrome/browser/geolocation/wifi_data_provider_common.h"
@@ -41,7 +40,6 @@ class OsxWlanApi : public WifiDataProviderCommon::WlanApiInterface {
   WirelessDetachFunction WirelessDetach_function_;
 
   WifiData wifi_data_;
-  Lock data_mutex_;
 };
 
 OsxWlanApi::OsxWlanApi()
@@ -57,12 +55,14 @@ OsxWlanApi::~OsxWlanApi() {
 }
 
 bool OsxWlanApi::Init() {
+  DLOG(INFO) << "OsxWlanApi::Init";
   apple_80211_library_ = dlopen(
       "/System/Library/PrivateFrameworks/Apple80211.framework/Apple80211",
       RTLD_LAZY);
-  if (!apple_80211_library_)
+  if (!apple_80211_library_) {
+    DLOG(WARNING) << "Could not open Apple80211 library";
     return false;
-
+  }
   WirelessAttach_function_ = reinterpret_cast<WirelessAttachFunction>(
       dlsym(apple_80211_library_, "WirelessAttach"));
   WirelessScanSplit_function_ = reinterpret_cast<WirelessScanSplitFunction>(
@@ -75,30 +75,42 @@ bool OsxWlanApi::Init() {
 
   if (!WirelessAttach_function_ || !WirelessScanSplit_function_ ||
       !WirelessDetach_function_) {
+    DLOG(WARNING) << "Symbol error. Attach: " << !!WirelessAttach_function_
+        << " Split: " << !!WirelessScanSplit_function_
+        << " Detach: " << !!WirelessDetach_function_;
     return false;
   }
 
-  if ((*WirelessAttach_function_)(&wifi_context_, 0) != noErr)
+  WIErr err = (*WirelessAttach_function_)(&wifi_context_, 0);
+  if (err != noErr) {
+    DLOG(WARNING) << "Error attaching: " << err;
     return false;
+  }
   return true;
 }
 
 bool OsxWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
+  DLOG(INFO) << "OsxWlanApi::GetAccessPointData";
   DCHECK(data);
   DCHECK(WirelessScanSplit_function_);
   CFArrayRef managed_access_points = NULL;
   CFArrayRef adhoc_access_points = NULL;
-  if ((*WirelessScanSplit_function_)(wifi_context_,
-                                     &managed_access_points,
-                                     &adhoc_access_points,
-                                     0) != noErr) {
+  WIErr err = (*WirelessScanSplit_function_)(wifi_context_,
+                                             &managed_access_points,
+                                             &adhoc_access_points,
+                                             0);
+  if (err != noErr) {
+    DLOG(WARNING) << "Error spliting scan: " << err;
     return false;
   }
 
-  if (managed_access_points == NULL)
+  if (managed_access_points == NULL) {
+    DLOG(WARNING) << "managed_access_points == NULL";
     return false;
+  }
 
   int num_access_points = CFArrayGetCount(managed_access_points);
+  DLOG(INFO) << "Found " << num_access_points << " managed access points:-";
   for (int i = 0; i < num_access_points; ++i) {
     const WirelessNetworkInfo* access_point_info =
         reinterpret_cast<const WirelessNetworkInfo*>(
@@ -124,6 +136,9 @@ bool OsxWlanApi::GetAccessPointData(WifiData::AccessPointDataSet* data) {
       access_point_data.ssid.clear();
     }
 
+    DLOG(INFO) << "  AP " << i
+        << " mac: " << access_point_data.mac_address
+        << " ssid: " << access_point_data.ssid;
     data->insert(access_point_data);
   }
   return true;

@@ -62,7 +62,9 @@ void WifiDataProviderCommon::Init() {
   polling_policy_.reset(NewPolicyPolicy());
   DCHECK(polling_policy_ != NULL);
 
-  ScheduleNextScan();
+  // Perform first scan ASAP regardless of the polling policy. If this scan
+  // fails we'll retry at a rate in line with the polling policy.
+  ScheduleNextScan(0);
 }
 
 void WifiDataProviderCommon::CleanUp() {
@@ -72,23 +74,26 @@ void WifiDataProviderCommon::CleanUp() {
 }
 
 void WifiDataProviderCommon::DoWifiScanTask() {
+  bool update_available = false;
   WifiData new_data;
   if (wlan_api_->GetAccessPointData(&new_data.access_point_data)) {
-    data_mutex_.Acquire();
-    bool update_available = wifi_data_.DiffersSignificantly(new_data);
-    wifi_data_ = new_data;
-    data_mutex_.Release();
-    polling_policy_->UpdatePollingInterval(update_available);
+    {
+      AutoLock lock(data_mutex_);
+      update_available = wifi_data_.DiffersSignificantly(new_data);
+      wifi_data_ = new_data;
+    }
     if (update_available || !is_first_scan_complete_) {
       is_first_scan_complete_ = true;
       NotifyListeners();
     }
   }
-  ScheduleNextScan();
+  polling_policy_->UpdatePollingInterval(update_available);
+  ScheduleNextScan(polling_policy_->PollingInterval());
 }
 
-void WifiDataProviderCommon::ScheduleNextScan() {
-  message_loop()->PostDelayedTask(FROM_HERE,
+void WifiDataProviderCommon::ScheduleNextScan(int interval) {
+  message_loop()->PostDelayedTask(
+      FROM_HERE,
       task_factory_.NewRunnableMethod(&WifiDataProviderCommon::DoWifiScanTask),
-      polling_policy_->PollingInterval());
+      interval);
 }

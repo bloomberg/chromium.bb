@@ -97,7 +97,7 @@ class WifiDataProviderCommon
   void DoWifiScanTask();
 
   // Will schedule a scan; i.e. enqueue DoWifiScanTask deferred task.
-  void ScheduleNextScan();
+  void ScheduleNextScan(int interval);
 
   WifiData wifi_data_;
   Lock data_mutex_;
