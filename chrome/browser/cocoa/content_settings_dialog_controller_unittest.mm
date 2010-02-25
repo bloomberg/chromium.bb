@@ -26,7 +26,7 @@ TEST_F(ContentSettingsDialogControllerTest, CreateDialog) {
           showContentSettingsForType:CONTENT_SETTINGS_TYPE_DEFAULT
                              profile:profile];
   EXPECT_TRUE(sharedInstance);
-  [sharedInstance close]; 
+  [sharedInstance close];
 }
 
 }  // namespace

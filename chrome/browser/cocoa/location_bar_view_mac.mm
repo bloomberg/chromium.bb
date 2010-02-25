@@ -873,7 +873,7 @@ void LocationBarViewMac::ContentBlockedImageView::OnMousePressed(NSRect bounds)
       NULL, NULL);
 
   // Transform mouse coordinates to content-view space.
-  AutocompleteTextField* textField = owner_->GetAutocompleteTextField();  
+  AutocompleteTextField* textField = owner_->GetAutocompleteTextField();
   NSWindow* window = [textField window];
   bounds = [[window contentView] convertRect:bounds
                                     fromView:textField];

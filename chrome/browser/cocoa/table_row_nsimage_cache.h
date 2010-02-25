@@ -30,7 +30,7 @@ class TableRowNSImageCache {
 
   // Lazily converts the image at the given row and caches it in |icon_images_|.
   NSImage* GetImageForRow(int row);
-   
+
   // Call these functions every time the table changes, to update the cache.
   void OnModelChanged();
   void OnItemsChanged(int start, int length);

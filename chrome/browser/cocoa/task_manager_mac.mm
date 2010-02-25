@@ -137,7 +137,7 @@ static const struct ColumnWidth {
 
   NSFont* font = [NSFont systemFontOfSize:[NSFont smallSystemFontSize]];
   [[column.get() dataCell] setFont:font];
-  
+
   [column.get() setHidden:!isVisible];
   [column.get() setEditable:NO];
 

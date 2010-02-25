@@ -7,7 +7,7 @@
 #include "base/logging.h"
 #include "skia/ext/skia_utils_mac.h"
 
-TableRowNSImageCache::TableRowNSImageCache(Table* model) 
+TableRowNSImageCache::TableRowNSImageCache(Table* model)
     : model_(model),
       icon_images_([[NSPointerArray alloc] initWithOptions:
           NSPointerFunctionsStrongMemory |

@@ -324,7 +324,7 @@ static NSString* ReplaceNSStringPlaceholders(NSString* formatString,
 // showWindow:. Thus, we have our own version.
 - (void)showWindow:(id)sender {
   NSWindow* window = [self window];  // completes nib load
-  
+
   NSPoint origin = [parentWindow_ convertBaseToScreen:anchor_];
   origin.x -= NSWidth([window frame]) - kBubbleArrowXOffset -
       kBubbleArrowWidth / 2;

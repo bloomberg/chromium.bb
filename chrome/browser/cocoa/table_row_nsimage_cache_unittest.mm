@@ -49,7 +49,7 @@ TEST(TableRowNSImageCacheTest, Basics) {
   // Check that invalidating the second icon only invalidates the second icon
   cache.OnItemsChanged(/* start =*/1, /* length =*/1);
   EXPECT_EQ(first_image, cache.GetImageForRow(0));
-  
+
   EXPECT_CALL(table, GetIcon(1)).WillOnce(Return(first_bitmap));
   NSImage* new_second_image = cache.GetImageForRow(1);
   EXPECT_EQ(40, [new_second_image size].width);
