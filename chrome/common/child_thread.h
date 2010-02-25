@@ -70,10 +70,6 @@ class ChildThread : public IPC::Channel::Listener,
 
   IPC::SyncChannel* channel() { return channel_.get(); }
 
-  void set_on_channel_error_called(bool on_channel_error_called) {
-    on_channel_error_called_ = on_channel_error_called;
-  }
-
  private:
   void Init();
 
@@ -97,10 +93,6 @@ class ChildThread : public IPC::Channel::Listener,
   // conditions if the process refcount is 0 but there's an IPC message inflight
   // that would addref it.
   bool check_with_browser_before_shutdown_;
-
-  // The OnChannelError() callback was invoked - the channel is dead, don't
-  // attempt to communicate.
-  bool on_channel_error_called_;
 
   MessageLoop* message_loop_;
 

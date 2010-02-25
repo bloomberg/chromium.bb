@@ -62,22 +62,3 @@ void WorkerThread::OnCreateWorker(const GURL& url,
   else
     new WebWorkerStub(url, route_id);
 }
-
-// The browser process is likely dead. Terminate all workers.
-void WorkerThread::OnChannelError() {
-  set_on_channel_error_called(true);
-
-  for (WorkerStubsList::iterator it = worker_stubs_.begin();
-       it != worker_stubs_.end(); ++it) {
-    (*it)->OnChannelError();
-  }
-}
-
-void WorkerThread::RemoveWorkerStub(WebWorkerStubBase* stub) {
-  worker_stubs_.erase(stub);
-}
-
-void WorkerThread::AddWorkerStub(WebWorkerStubBase* stub) {
-  worker_stubs_.insert(stub);
-}
-

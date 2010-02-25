@@ -24,8 +24,7 @@ ChildThread::ChildThread() {
 }
 
 ChildThread::ChildThread(const std::string& channel_name)
-    : channel_name_(channel_name),
-      on_channel_error_called_(false) {
+    : channel_name_(channel_name) {
   Init();
 }
 
@@ -72,7 +71,6 @@ ChildThread::~ChildThread() {
 }
 
 void ChildThread::OnChannelError() {
-  set_on_channel_error_called(true);
   MessageLoop::current()->Quit();
 }
 
@@ -162,7 +160,7 @@ ChildThread* ChildThread::current() {
 }
 
 void ChildThread::OnProcessFinalRelease() {
-  if (on_channel_error_called_ || !check_with_browser_before_shutdown_) {
+  if (!check_with_browser_before_shutdown_) {
     MessageLoop::current()->Quit();
     return;
   }

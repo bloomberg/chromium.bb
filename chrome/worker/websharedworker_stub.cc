@@ -34,10 +34,6 @@ void WebSharedWorkerStub::OnMessageReceived(const IPC::Message& message) {
   IPC_END_MESSAGE_MAP()
 }
 
-void WebSharedWorkerStub::OnChannelError() {
-    OnTerminateWorkerContext();
-}
-
 void WebSharedWorkerStub::OnStartWorkerContext(
     const GURL& url, const string16& user_agent, const string16& source_code) {
   // Ignore multiple attempts to start this worker (can happen if two pages

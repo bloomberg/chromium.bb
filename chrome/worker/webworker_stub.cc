@@ -48,10 +48,6 @@ WebWorkerStub::~WebWorkerStub() {
   impl_->clientDestroyed();
 }
 
-void WebWorkerStub::OnChannelError() {
-    OnTerminateWorkerContext();
-}
-
 void WebWorkerStub::OnMessageReceived(const IPC::Message& message) {
   if (!impl_)
     return;
