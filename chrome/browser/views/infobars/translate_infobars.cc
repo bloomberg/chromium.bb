@@ -299,6 +299,8 @@ void TranslateInfoBar::UpdateState(
       break;
 
     case TranslateInfoBarDelegate::kTranslating:
+      if (!label_1_)
+        CreateLabels();
       if (!translating_label_) {
         translating_label_ = new views::Label(
             l10n_util::GetString(IDS_TRANSLATE_INFOBAR_TRANSLATING));
