@@ -126,9 +126,12 @@ static NSString* const kFolderColIdent = @"folder";
 // Returns the selected/right-clicked item(s) for a command to act on.
 - (NSArray*)actionItems {
   int row = [outline_ clickedRow];
-  if (row >= 0 && ![outline_ isRowSelected:row])
-    return [NSArray arrayWithObject:[outline_ itemAtRow:row]];
-
+  if (row >= 0 && ![outline_ isRowSelected:row]) {
+    BookmarkItem* item = [outline_ itemAtRow:row];
+    if (!item)
+      return nil;   // clickedRow can occasionally return a nonexistent row
+    return [NSArray arrayWithObject:item];
+  }
   return [self selectedItems];
 }
 
