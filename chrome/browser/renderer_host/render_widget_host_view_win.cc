@@ -227,6 +227,31 @@ BOOL CALLBACK DetachPluginWindowsCallback(HWND window, LPARAM param) {
   return TRUE;
 }
 
+// Draw the contents of |backing_store_dc| onto |paint_rect| with a 70% grey
+// filter.
+void DrawDeemphasized(const gfx::Rect& paint_rect,
+                      HDC backing_store_dc,
+                      HDC paint_dc) {
+  gfx::Canvas canvas(paint_rect.width(), paint_rect.height(), false);
+  HDC dc = canvas.beginPlatformPaint();
+  BitBlt(dc,
+         0,
+         0,
+         paint_rect.width(),
+         paint_rect.height(),
+         backing_store_dc,
+         paint_rect.x(),
+         paint_rect.y(),
+         SRCCOPY);
+  canvas.endPlatformPaint();
+  // 178 is 70% grey.
+  canvas.FillRectInt(SkColorSetARGB(178, 0, 0, 0), 0, 0,
+                     paint_rect.width(), paint_rect.height());
+  canvas.getTopPlatformDevice().drawToHDC(paint_dc, paint_rect.x(),
+                                          paint_rect.y(), NULL);
+
+}
+
 }  // namespace
 
 // RenderWidgetHostView --------------------------------------------------------
@@ -253,7 +278,8 @@ RenderWidgetHostViewWin::RenderWidgetHostViewWin(RenderWidgetHost* widget)
       tooltip_showing_(false),
       shutdown_factory_(this),
       parent_hwnd_(NULL),
-      is_loading_(false) {
+      is_loading_(false),
+      visually_deemphasized_(false) {
   render_widget_host_->set_view(this);
   renderer_accessible_ =
       CommandLine::ForCurrentProcess()->HasSwitch(
@@ -749,7 +775,7 @@ bool RenderWidgetHostViewWin::ContainsNativeView(
 }
 
 void RenderWidgetHostViewWin::SetVisuallyDeemphasized(bool deemphasized) {
-  NOTIMPLEMENTED() << "http://crbug.com/32399";
+  visually_deemphasized_ = deemphasized;
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -854,15 +880,19 @@ void RenderWidgetHostViewWin::OnPaint(HDC unused_dc) {
       gfx::Rect paint_rect = bitmap_rect.Intersect(gfx::Rect(region_rects[i]));
       if (!paint_rect.IsEmpty()) {
         DrawResizeCorner(paint_rect, backing_store->hdc());
-        BitBlt(paint_dc.m_hDC,
-               paint_rect.x(),
-               paint_rect.y(),
-               paint_rect.width(),
-               paint_rect.height(),
-               backing_store->hdc(),
-               paint_rect.x(),
-               paint_rect.y(),
-               SRCCOPY);
+        if (visually_deemphasized_) {
+          DrawDeemphasized(paint_rect, backing_store->hdc(), paint_dc.m_hDC);
+        } else {
+          BitBlt(paint_dc.m_hDC,
+                 paint_rect.x(),
+                 paint_rect.y(),
+                 paint_rect.width(),
+                 paint_rect.height(),
+                 backing_store->hdc(),
+                 paint_rect.x(),
+                 paint_rect.y(),
+                 SRCCOPY);
+        }
       }
     }
 

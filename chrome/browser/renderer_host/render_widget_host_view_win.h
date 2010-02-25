@@ -306,6 +306,10 @@ class RenderWidgetHostViewWin
   // The time it took after this view was selected for it to be fully painted.
   base::TimeTicks tab_switch_paint_time_;
 
+  // True if we are showing a constrained window. We will grey out the view
+  // whenever we paint.
+  bool visually_deemphasized_;
+
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHostViewWin);
 };
 

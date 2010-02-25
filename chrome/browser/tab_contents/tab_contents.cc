@@ -842,6 +842,9 @@ ConstrainedWindow* TabContents::CreateConstrainedDialog(
 }
 
 void TabContents::BlockTabContent(bool blocked) {
+  RenderWidgetHostView* rwhv = GetRenderWidgetHostView();
+  if (rwhv)
+    rwhv->SetVisuallyDeemphasized(blocked);
   render_view_host()->set_ignore_input_events(blocked);
   if (delegate_)
     delegate_->SetTabContentBlocked(this, blocked);
