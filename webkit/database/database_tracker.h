@@ -205,7 +205,7 @@ class DatabaseTracker
   scoped_ptr<DatabasesTable> databases_table_;
   scoped_ptr<QuotaTable> quota_table_;
   scoped_ptr<sql::MetaTable> meta_table_;
-  ObserverList<Observer> observers_;
+  ObserverList<Observer, true> observers_;
   std::map<string16, CachedOriginInfo> origins_info_map_;
   DatabaseConnections database_connections_;
 

@@ -40,7 +40,6 @@ DatabaseTracker::DatabaseTracker(const FilePath& profile_path)
 }
 
 DatabaseTracker::~DatabaseTracker() {
-  DCHECK(observers_.size() == 0);
   DCHECK(dbs_to_be_deleted_.empty());
   DCHECK(deletion_callbacks_.empty());
 }
