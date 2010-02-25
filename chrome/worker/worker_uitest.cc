@@ -385,7 +385,7 @@ TEST_F(WorkerTest, FLAKY_WorkerWebSocketLayoutTests) {
     RunLayoutTest(kLayoutTestFiles[i], kWebSocketPort);
 }
 
-TEST_F(WorkerTest, WorkerXhrHttpLayoutTests) {
+TEST_F(WorkerTest, DISABLED_WorkerXhrHttpLayoutTests) {
   static const char* kLayoutTestFiles[] = {
     "abort-exception-assert.html",
 #if defined(OS_WIN)
