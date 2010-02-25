@@ -32,12 +32,13 @@ class MockThemeProvider : public ThemeProvider {
   MOCK_CONST_METHOD2(GetDisplayProperty, bool(int, int*));
   MOCK_CONST_METHOD0(ShouldUseNativeFrame, bool());
   MOCK_CONST_METHOD1(HasCustomImage, bool(int));
-  MOCK_CONST_METHOD1(GetRawData,  RefCountedMemory*(int));
+  MOCK_CONST_METHOD1(GetRawData, RefCountedMemory*(int));
 
   // OSX stuff
   MOCK_CONST_METHOD2(GetNSImageNamed, NSImage*(int, bool));
   MOCK_CONST_METHOD2(GetNSColor, NSColor*(int, bool));
   MOCK_CONST_METHOD2(GetNSColorTint, NSColor*(int, bool));
+  MOCK_CONST_METHOD1(GetNSGradient, NSGradient*(int));
 };
 
 // Allows us to inject our fake controller below.

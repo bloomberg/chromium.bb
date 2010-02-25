@@ -89,10 +89,16 @@ class BrowserThemeProvider : public NonThreadSafe,
     NTP_LOGO_ALTERNATE
 #if defined(OS_MACOSX)
     ,
-    COLOR_TOOLBAR_BUTTON_STROKE = 1000,
+    COLOR_TOOLBAR_STROKE = 1000,
+    COLOR_TOOLBAR_STROKE_INACTIVE,
+    COLOR_TOOLBAR_BUTTON_STROKE,
     COLOR_TOOLBAR_BUTTON_STROKE_INACTIVE,
-    COLOR_TOOLBAR_STROKE,
-    COLOR_TOOLBAR_STROKE_INACTIVE
+    GRADIENT_TOOLBAR,
+    GRADIENT_TOOLBAR_INACTIVE,
+    GRADIENT_TOOLBAR_BUTTON,
+    GRADIENT_TOOLBAR_BUTTON_INACTIVE,
+    GRADIENT_TOOLBAR_BUTTON_PRESSED,
+    GRADIENT_TOOLBAR_BUTTON_PRESSED_INACTIVE
 #endif  // OS_MACOSX
   };
 
@@ -128,6 +134,7 @@ class BrowserThemeProvider : public NonThreadSafe,
   virtual NSImage* GetNSImageNamed(int id, bool allow_default) const;
   virtual NSColor* GetNSColor(int id, bool allow_default) const;
   virtual NSColor* GetNSColorTint(int id, bool allow_default) const;
+  virtual NSGradient* GetNSGradient(int id) const;
 #endif
 
   // Set the current theme to the theme defined in |extension|.
@@ -234,9 +241,13 @@ class BrowserThemeProvider : public NonThreadSafe,
 #elif defined(OS_MACOSX)
   typedef std::map<int, NSImage*> NSImageMap;
   mutable NSImageMap nsimage_cache_;
+
   // The bool member of the pair is whether the color is a default color.
   typedef std::map<int, std::pair<NSColor*, bool> > NSColorMap;
   mutable NSColorMap nscolor_cache_;
+
+  typedef std::map<int, NSGradient*> NSGradientMap;
+  mutable NSGradientMap nsgradient_cache_;
 #endif
 
   ResourceBundle& rb_;

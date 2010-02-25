@@ -4,6 +4,10 @@
 
 #include "chrome/browser/cocoa/background_gradient_view.h"
 
+#import "chrome/browser/browser_theme_provider.h"
+#import "chrome/browser/cocoa/themed_window.h"
+#include "grit/theme_resources.h"
+
 #define kToolbarTopOffset 12
 #define kToolbarMaxHeight 100
 
@@ -29,43 +33,50 @@
 
 - (void)drawBackground {
   BOOL isKey = [[self window] isKeyWindow];
-  GTMTheme* theme = [[self window] gtm_theme];
-  NSImage* backgroundImage =
-      [theme backgroundImageForStyle:GTMThemeStyleToolBar
-                               state:GTMThemeStateActiveWindow];
-  if (backgroundImage) {
-    NSColor* color = [NSColor colorWithPatternImage:backgroundImage];
-    [color set];
-    NSRectFill([self bounds]);
-  } else {
-    CGFloat winHeight = NSHeight([[self window] frame]);
-    NSGradient* gradient = [theme gradientForStyle:GTMThemeStyleToolBar
-                                             state:isKey];
-    NSPoint startPoint =
-        [self convertPoint:NSMakePoint(0, winHeight - kToolbarTopOffset)
-                  fromView:nil];
-    NSPoint endPoint =
-        NSMakePoint(0, winHeight - kToolbarTopOffset - kToolbarMaxHeight);
-    endPoint = [self convertPoint:endPoint fromView:nil];
+  ThemeProvider* themeProvider = [[self window] themeProvider];
+  if (themeProvider) {
+    NSImage* backgroundImage =
+        themeProvider->GetNSImageNamed(IDR_THEME_TOOLBAR, false);
+    if (backgroundImage) {
+      NSColor* color = [NSColor colorWithPatternImage:backgroundImage];
+      [color set];
+      NSRectFill([self bounds]);
+    } else {
+      CGFloat winHeight = NSHeight([[self window] frame]);
+      NSGradient* gradient = themeProvider->GetNSGradient(
+          isKey ? BrowserThemeProvider::GRADIENT_TOOLBAR :
+                  BrowserThemeProvider::GRADIENT_TOOLBAR_INACTIVE);
+      NSPoint startPoint =
+          [self convertPoint:NSMakePoint(0, winHeight - kToolbarTopOffset)
+                    fromView:nil];
+      NSPoint endPoint =
+          NSMakePoint(0, winHeight - kToolbarTopOffset - kToolbarMaxHeight);
+      endPoint = [self convertPoint:endPoint fromView:nil];
 
-    [gradient drawFromPoint:startPoint
-                    toPoint:endPoint
-                    options:(NSGradientDrawsBeforeStartingLocation |
-                             NSGradientDrawsAfterEndingLocation)];
-  }
+      [gradient drawFromPoint:startPoint
+                      toPoint:endPoint
+                      options:(NSGradientDrawsBeforeStartingLocation |
+                               NSGradientDrawsAfterEndingLocation)];
+    }
 
-  if (showsDivider_) {
-    // Draw bottom stroke
-    [[self strokeColor] set];
-    NSRect borderRect, contentRect;
-    NSDivideRect([self bounds], &borderRect, &contentRect, 1, NSMinYEdge);
-    NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
+    if (showsDivider_) {
+      // Draw bottom stroke
+      [[self strokeColor] set];
+      NSRect borderRect, contentRect;
+      NSDivideRect([self bounds], &borderRect, &contentRect, 1, NSMinYEdge);
+      NSRectFillUsingOperation(borderRect, NSCompositeSourceOver);
+    }
   }
 }
 
 - (NSColor*)strokeColor {
-  return [[self gtm_theme] strokeColorForStyle:GTMThemeStyleToolBar
-                                         state:[[self window] isKeyWindow]];
+  BOOL isKey = [[self window] isKeyWindow];
+  ThemeProvider* themeProvider = [[self window] themeProvider];
+  if (!themeProvider)
+    return [NSColor blackColor];
+  return themeProvider->GetNSColor(
+      isKey ? BrowserThemeProvider::COLOR_TOOLBAR_STROKE :
+              BrowserThemeProvider::COLOR_TOOLBAR_STROKE_INACTIVE, true);
 }
 
 @end

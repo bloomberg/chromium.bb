@@ -9,7 +9,7 @@
 
 #include "base/scoped_nsobject.h"
 
-@class GTMTheme;
+class ThemeProvider;
 
 // Base class for button cells for toolbar and bookmark bar.
 //
@@ -43,7 +43,7 @@ typedef NSInteger ButtonType;
 // Turn off theming.  Temporary work-around.
 - (void)setShouldTheme:(BOOL)shouldTheme;
 
-- (void)drawBorderAndFillForTheme:(GTMTheme*)theme
+- (void)drawBorderAndFillForTheme:(ThemeProvider*)themeProvider
                       controlView:(NSView*)controlView
                         innerPath:(NSBezierPath*)innerPath
               showClickedGradient:(BOOL)showClickedGradient

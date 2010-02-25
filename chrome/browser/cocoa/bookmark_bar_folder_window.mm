@@ -5,7 +5,7 @@
 #import "chrome/browser/cocoa/bookmark_bar_folder_window.h"
 
 #import "chrome/browser/cocoa/bookmark_bar_folder_controller.h"
-#import "chrome/browser/cocoa/GTMTheme.h"
+#import "chrome/browser/cocoa/themed_window.h"
 
 @implementation BookmarkBarFolderWindow
 
@@ -19,8 +19,8 @@
                               defer:deferCreation];
 }
 
-- (GTMTheme*)gtm_theme {
-  return [[self windowController] gtm_theme];
+- (ThemeProvider*)themeProvider {
+  return [[self windowController] themeProvider];
 }
 
 @end

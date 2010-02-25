@@ -13,9 +13,11 @@
 #if defined(OS_MACOSX)
 #ifdef __OBJC__
 @class NSColor;
+@class NSGradient;
 @class NSImage;
 #else
 class NSColor;
+class NSGradient;
 class NSImage;
 #endif  // __OBJC__
 #elif !defined(OS_WIN)
@@ -88,6 +90,9 @@ class ThemeProvider {
   // that id, if |allow_default| is true, then the default tint will be
   // returned, else this function will return nil.
   virtual NSColor* GetNSColorTint(int id, bool allow_default) const = 0;
+
+  // Gets the NSGradient with the specified |id|.
+  virtual NSGradient* GetNSGradient(int id) const = 0;
 #elif defined(OS_POSIX) && !defined(TOOLKIT_VIEWS)
   // Gets the GdkPixbuf with the specified |id|.  Returns a pointer to a shared
   // instance of the GdkPixbuf.  This shared GdkPixbuf is owned by the theme

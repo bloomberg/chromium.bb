@@ -5,7 +5,8 @@
 #import "chrome/browser/cocoa/info_bubble_view.h"
 
 #include "base/logging.h"
-#import "chrome/browser/cocoa/GTMTheme.h"
+#include "base/scoped_nsobject.h"
+#import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 
 // TODO(andybons): confirm constants with UI dudes.
 extern const CGFloat kBubbleArrowHeight = 8.0;
@@ -63,10 +64,28 @@ extern const CGFloat kBubbleCornerRadius = 8.0;
 
   // Then fill the inside depending on the type of bubble.
   if (bubbleType_ == kGradientInfoBubble) {
-    GTMTheme *theme = [GTMTheme defaultTheme];
-    NSGradient *gradient = [theme gradientForStyle:GTMThemeStyleToolBar
-                                             state:NO];
-    [gradient drawInBezierPath:bezier angle:0.0];
+    NSColor* base_color = [NSColor colorWithCalibratedWhite:0.5 alpha:1.0];
+    NSColor* startColor =
+        [base_color gtm_colorAdjustedFor:GTMColorationLightHighlight
+                                   faded:YES];
+    NSColor* midColor =
+        [base_color gtm_colorAdjustedFor:GTMColorationLightMidtone
+                                   faded:YES];
+    NSColor* endColor =
+        [base_color gtm_colorAdjustedFor:GTMColorationLightShadow
+                                   faded:YES];
+    NSColor* glowColor =
+        [base_color gtm_colorAdjustedFor:GTMColorationLightPenumbra
+                                   faded:YES];
+
+    scoped_nsobject<NSGradient> gradient(
+        [[NSGradient alloc] initWithColorsAndLocations:startColor, 0.0,
+                                                       midColor, 0.25,
+                                                       endColor, 0.5,
+                                                       glowColor, 0.75,
+                                                       nil]);
+
+    [gradient.get() drawInBezierPath:bezier angle:0.0];
   } else if (bubbleType_ == kWhiteInfoBubble) {
     [[NSColor whiteColor] set];
     [bezier fill];

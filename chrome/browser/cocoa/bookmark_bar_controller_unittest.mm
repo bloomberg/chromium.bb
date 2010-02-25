@@ -104,6 +104,9 @@ class FakeTheme : public ThemeProvider {
   virtual NSColor* GetNSColorTint(int id, bool allow_default) const {
     return nil;
   }
+  virtual NSGradient* GetNSGradient(int id) const {
+    return nil;
+  }
 };
 
 

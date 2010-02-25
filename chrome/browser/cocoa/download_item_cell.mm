@@ -9,11 +9,13 @@
 #include "app/l10n_util.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
+#import "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/download_item_cell.h"
+#import "chrome/browser/cocoa/themed_window.h"
 #include "chrome/browser/download/download_item_model.h"
 #include "chrome/browser/download/download_manager.h"
 #include "chrome/browser/download/download_util.h"
-#import "chrome/browser/cocoa/GTMTheme.h"
+#include "grit/theme_resources.h"
 #import "third_party/GTM/AppKit/GTMNSAnimation+Duration.h"
 #import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 
@@ -82,6 +84,76 @@ const int kCompleteAnimationDuration = 2.5;
                 animationCurve:(NSAnimationCurve)animationCurve;
 @end
 
+class BackgroundTheme : public ThemeProvider {
+public:
+  BackgroundTheme(ThemeProvider* provider);
+
+  virtual void Init(Profile* profile) { }
+  virtual SkBitmap* GetBitmapNamed(int id) const { return nil; }
+  virtual SkColor GetColor(int id) const { return SkColor(); }
+  virtual bool GetDisplayProperty(int id, int* result) const { return false; }
+  virtual bool ShouldUseNativeFrame() const { return false; }
+  virtual bool HasCustomImage(int id) const { return false; }
+  virtual RefCountedMemory* GetRawData(int id) const { return NULL; }
+  virtual NSImage* GetNSImageNamed(int id, bool allow_default) const;
+  virtual NSColor* GetNSColor(int id, bool allow_default) const;
+  virtual NSColor* GetNSColorTint(int id, bool allow_default) const;
+  virtual NSGradient* GetNSGradient(int id) const;
+
+private:
+  ThemeProvider* provider_;
+  scoped_nsobject<NSGradient> buttonGradient_;
+  scoped_nsobject<NSGradient> buttonPressedGradient_;
+  scoped_nsobject<NSColor> borderColor_;
+};
+
+BackgroundTheme::BackgroundTheme(ThemeProvider* provider) :
+    provider_(provider) {
+  NSColor* bgColor = [NSColor colorWithCalibratedRed:241/255.0
+                                               green:245/255.0
+                                                blue:250/255.0
+                                               alpha:77/255.0];
+  NSColor* clickedColor = [NSColor colorWithCalibratedRed:239/255.0
+                                                    green:245/255.0
+                                                     blue:252/255.0
+                                                    alpha:51/255.0];
+
+  borderColor_.reset(
+      [[NSColor colorWithCalibratedWhite:0 alpha:36/255.0] retain]);
+  buttonGradient_.reset([[NSGradient alloc]
+      initWithColors:[NSArray arrayWithObject:bgColor]]);
+  buttonPressedGradient_.reset([[NSGradient alloc]
+      initWithColors:[NSArray arrayWithObject:clickedColor]]);
+}
+
+NSImage* BackgroundTheme::GetNSImageNamed(int id, bool allow_default) const {
+  return nil;
+}
+
+NSColor* BackgroundTheme::GetNSColor(int id, bool allow_default) const {
+  return provider_->GetNSColor(id, allow_default);
+}
+
+NSColor* BackgroundTheme::GetNSColorTint(int id, bool allow_default) const {
+  if (id == BrowserThemeProvider::TINT_BUTTONS)
+    return borderColor_.get();
+
+  return provider_->GetNSColorTint(id, allow_default);
+}
+
+NSGradient* BackgroundTheme::GetNSGradient(int id) const {
+  switch (id) {
+    case BrowserThemeProvider::GRADIENT_TOOLBAR_BUTTON:
+    case BrowserThemeProvider::GRADIENT_TOOLBAR_BUTTON_INACTIVE:
+      return buttonGradient_.get();
+    case BrowserThemeProvider::GRADIENT_TOOLBAR_BUTTON_PRESSED:
+    case BrowserThemeProvider::GRADIENT_TOOLBAR_BUTTON_PRESSED_INACTIVE:
+      return buttonPressedGradient_.get();
+    default:
+      return provider_->GetNSGradient(id);
+  }
+}
+
 @interface DownloadItemCell(Private)
 - (void)updateTrackingAreas:(id)sender;
 - (void)hideSecondaryTitle;
@@ -89,7 +161,7 @@ const int kCompleteAnimationDuration = 2.5;
        progressed:(NSAnimationProgress)progress;
 - (NSString*)elideTitle:(int)availableWidth;
 - (NSString*)elideStatus:(int)availableWidth;
-- (GTMTheme*)backgroundTheme:(NSView*)controlView;
+- (ThemeProvider*)backgroundThemeWrappingProvider:(ThemeProvider*)provider;
 - (BOOL)pressedWithDefaultThemeOnPart:(DownloadItemMousePosition)part;
 - (NSColor*)titleColorForPart:(DownloadItemMousePosition)part;
 - (void)drawSecondaryTitleInRect:(NSRect)innerFrame;
@@ -327,61 +399,28 @@ const int kCompleteAnimationDuration = 2.5;
       availableWidth));
 }
 
-- (GTMTheme*)backgroundTheme:(NSView*)controlView {
-  if (!theme_) {
-    theme_.reset([[GTMTheme alloc] init]);
-    NSColor* bgColor = [NSColor colorWithCalibratedRed:241/255.0
-                                                 green:245/255.0
-                                                  blue:250/255.0
-                                                 alpha:77/255.0];
-    NSColor* clickedColor = [NSColor colorWithCalibratedRed:239/255.0
-                                                      green:245/255.0
-                                                       blue:252/255.0
-                                                      alpha:51/255.0];
-
-    NSColor* borderColor = [NSColor colorWithCalibratedWhite:0 alpha:36/255.0];
-    scoped_nsobject<NSGradient> bgGradient([[NSGradient alloc]
-        initWithColors:[NSArray arrayWithObject:bgColor]]);
-    scoped_nsobject<NSGradient> clickedGradient([[NSGradient alloc]
-        initWithColors:[NSArray arrayWithObject:clickedColor]]);
-
-    GTMThemeState states[] = {
-        GTMThemeStateActiveWindow, GTMThemeStateInactiveWindow
-    };
-
-    for (size_t i = 0; i < arraysize(states); ++i) {
-      [theme_.get() setValue:bgGradient
-                forAttribute:@"gradient"
-                       style:GTMThemeStyleToolBarButton
-                       state:states[i]];
-
-      [theme_.get() setValue:clickedGradient
-                forAttribute:@"gradient"
-                       style:GTMThemeStyleToolBarButtonPressed
-                       state:states[i]];
-
-      [theme_.get() setValue:borderColor
-                forAttribute:@"iconColor"
-                       style:GTMThemeStyleToolBarButton
-                       state:states[i]];
-    }
+- (ThemeProvider*)backgroundThemeWrappingProvider:(ThemeProvider*)provider {
+  if (!themeProvider_.get()) {
+    themeProvider_.reset(new BackgroundTheme(provider));
   }
-  return theme_.get();
+
+  return themeProvider_.get();
 }
 
 // Returns if |part| was pressed while the default theme was active.
 - (BOOL)pressedWithDefaultThemeOnPart:(DownloadItemMousePosition)part {
-  GTMTheme* theme = [[self controlView] gtm_theme];
-  bool isDefaultTheme = [theme
-      backgroundImageForStyle:GTMThemeStyleToolBarButton state:YES] == nil;
+  ThemeProvider* themeProvider = [[[self controlView] window] themeProvider];
+  bool isDefaultTheme =
+      !themeProvider->HasCustomImage(IDR_THEME_BUTTON_BACKGROUND);
   return isDefaultTheme && [self isHighlighted] && mousePosition_ == part;
 }
 
 // Returns the text color that should be used to draw text on |part|.
 - (NSColor*)titleColorForPart:(DownloadItemMousePosition)part {
-  NSColor* themeTextColor = [[[self controlView] gtm_theme]
-      textColorForStyle:GTMThemeStyleBookmarksBarButton
-                  state:GTMThemeStateActiveWindow];
+  ThemeProvider* themeProvider = [[[self controlView] window] themeProvider];
+  NSColor* themeTextColor =
+      themeProvider->GetNSColor(BrowserThemeProvider::COLOR_BOOKMARK_TEXT,
+                                true);
   return [self pressedWithDefaultThemeOnPart:part]
       ? [NSColor alternateSelectedControlTextColor] : themeTextColor;
 }
@@ -427,15 +466,16 @@ const int kCompleteAnimationDuration = 2.5;
   // with a background that looks like windows (some transparent white) if a
   // theme is used. Use custom theme object with a white color gradient to trick
   // the superclass into drawing what we want.
-  GTMTheme* theme = [controlView gtm_theme];
-  bool isDefaultTheme = [theme
-      backgroundImageForStyle:GTMThemeStyleToolBarButton state:YES] == nil;
+  ThemeProvider* themeProvider = [[[self controlView] window] themeProvider];
+  bool isDefaultTheme =
+      !themeProvider->HasCustomImage(IDR_THEME_BUTTON_BACKGROUND);
 
   NSGradient* bgGradient = nil;
   if (!isDefaultTheme) {
-    theme = [self backgroundTheme:controlView];
-    bgGradient = [theme gradientForStyle:GTMThemeStyleToolBarButton
-                                   state:active];
+    themeProvider = [self backgroundThemeWrappingProvider:themeProvider];
+    bgGradient = themeProvider->GetNSGradient(
+        active ? BrowserThemeProvider::GRADIENT_TOOLBAR_BUTTON :
+                 BrowserThemeProvider::GRADIENT_TOOLBAR_BUTTON_INACTIVE);
   }
 
   NSRect buttonDrawRect, dropdownDrawRect;
@@ -456,7 +496,7 @@ const int kCompleteAnimationDuration = 2.5;
     [self drawSecondaryTitleInRect:innerFrame];
 
   // Stroke the borders and appropriate fill gradient.
-  [self drawBorderAndFillForTheme:theme
+  [self drawBorderAndFillForTheme:themeProvider
                       controlView:controlView
                         innerPath:buttonInnerPath
               showClickedGradient:[self isButtonPartPressed]
@@ -466,7 +506,7 @@ const int kCompleteAnimationDuration = 2.5;
                         cellFrame:cellFrame
                   defaultGradient:bgGradient];
 
-  [self drawBorderAndFillForTheme:theme
+  [self drawBorderAndFillForTheme:themeProvider
                       controlView:controlView
                         innerPath:dropdownInnerPath
               showClickedGradient:[self isDropdownPartPressed]

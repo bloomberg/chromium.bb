@@ -10,6 +10,7 @@
 #include "base/logging.h"
 #include "chrome/browser/browser_theme_pack.h"
 #include "skia/ext/skia_utils_mac.h"
+#import "third_party/GTM/AppKit/GTMNSColor+Luminance.h"
 
 NSString* const kBrowserThemeDidChangeNotification =
     @"BrowserThemeDidChangeNotification";
@@ -103,12 +104,10 @@ NSColor* BrowserThemeProvider::GetNSColor(int id,
                        alpha:SkColorGetA(sk_color)/255.0];
 
   // We loaded successfully.  Cache the color.
-  if (color) {
+  if (color)
     nscolor_cache_[id] = std::make_pair([color retain], is_default);
-    return color;
-  }
 
-  return nil;
+  return color;
 }
 
 NSColor* BrowserThemeProvider::GetNSColorTint(int id,
@@ -135,21 +134,100 @@ NSColor* BrowserThemeProvider::GetNSColorTint(int id,
   if (is_default && !allow_default)
     return nil;
 
-  CGFloat hue, saturation, brightness;
-  HSLToHSB(tint, &hue, &saturation, &brightness);
+  NSColor* tint_color = nil;
+  if (tint.h == -1 && tint.s == -1 && tint.l == -1) {
+    tint_color = [NSColor blackColor];
+  } else {
+    CGFloat hue, saturation, brightness;
+    HSLToHSB(tint, &hue, &saturation, &brightness);
 
-  NSColor* tint_color = [NSColor colorWithCalibratedHue:hue
-                                             saturation:saturation
-                                             brightness:brightness
-                                                  alpha:1.0];
-
-  // We loaded successfully.  Cache the color.
-  if (tint_color) {
-    nscolor_cache_[id] = std::make_pair([tint_color retain], is_default);
-    return tint_color;
+    tint_color = [NSColor colorWithCalibratedHue:hue
+                                      saturation:saturation
+                                      brightness:brightness
+                                           alpha:1.0];
   }
 
-  return nil;
+  // We loaded successfully.  Cache the color.
+  if (tint_color)
+    nscolor_cache_[id] = std::make_pair([tint_color retain], is_default);
+
+  return tint_color;
+}
+
+NSGradient* BrowserThemeProvider::GetNSGradient(int id) const {
+  DCHECK(CalledOnValidThread());
+
+  // Check to see if we already have the gradient in the cache.
+  NSGradientMap::const_iterator nsgradient_iter = nsgradient_cache_.find(id);
+  if (nsgradient_iter != nsgradient_cache_.end())
+    return nsgradient_iter->second;
+
+  NSGradient* gradient = nil;
+
+  // Note that we are not leaking when we assign a retained object to
+  // |gradient|; in all cases we cache it before we return.
+  switch (id) {
+    case GRADIENT_TOOLBAR:
+    case GRADIENT_TOOLBAR_INACTIVE: {
+      NSColor* base_color = [NSColor colorWithCalibratedWhite:0.5 alpha:1.0];
+      BOOL faded = (id == GRADIENT_TOOLBAR_INACTIVE ) ||
+                   (id == GRADIENT_TOOLBAR_BUTTON_INACTIVE);
+      NSColor* start_color =
+          [base_color gtm_colorAdjustedFor:GTMColorationLightHighlight
+                                     faded:faded];
+      NSColor* mid_color =
+          [base_color gtm_colorAdjustedFor:GTMColorationLightMidtone
+                                     faded:faded];
+      NSColor* end_color =
+          [base_color gtm_colorAdjustedFor:GTMColorationLightShadow
+                                     faded:faded];
+      NSColor* glow_color =
+          [base_color gtm_colorAdjustedFor:GTMColorationLightPenumbra
+                                     faded:faded];
+
+      gradient =
+          [[NSGradient alloc] initWithColorsAndLocations:start_color, 0.0,
+                                                         mid_color, 0.25,
+                                                         end_color, 0.5,
+                                                         glow_color, 0.75,
+                                                         nil];
+      break;
+    }
+
+    case GRADIENT_TOOLBAR_BUTTON:
+    case GRADIENT_TOOLBAR_BUTTON_INACTIVE: {
+      NSColor* start_color = [NSColor colorWithCalibratedWhite:1.0 alpha:0.0];
+      NSColor* end_color = [NSColor colorWithCalibratedWhite:1.0 alpha:0.3];
+      gradient = [[NSGradient alloc] initWithStartingColor:start_color
+                                               endingColor:end_color];
+      break;
+    }
+    case GRADIENT_TOOLBAR_BUTTON_PRESSED:
+    case GRADIENT_TOOLBAR_BUTTON_PRESSED_INACTIVE: {
+      NSColor* base_color = [NSColor colorWithCalibratedWhite:0.5 alpha:1.0];
+      BOOL faded = id == GRADIENT_TOOLBAR_BUTTON_PRESSED_INACTIVE;
+      NSColor* start_color =
+          [base_color gtm_colorAdjustedFor:GTMColorationBaseShadow
+                                     faded:faded];
+      NSColor* end_color =
+          [base_color gtm_colorAdjustedFor:GTMColorationBaseMidtone
+                                     faded:faded];
+
+      gradient = [[NSGradient alloc] initWithStartingColor:start_color
+                                               endingColor:end_color];
+      break;
+    }
+    default:
+      LOG(WARNING) << "Gradient request with unknown id " << id;
+      NOTREACHED();  // Want to assert in debug mode.
+      break;
+  }
+
+  // We loaded successfully.  Cache the gradient.
+  if (gradient)
+    nsgradient_cache_[id] = gradient;  // created retained
+
+  return gradient;
 }
 
 // Let all the browser views know that themes have changed in a platform way.
@@ -175,4 +253,11 @@ void BrowserThemeProvider::FreePlatformCaches() {
     [i->second.first release];
   }
   nscolor_cache_.clear();
+
+  // Free gradients.
+  for (NSGradientMap::iterator i = nsgradient_cache_.begin();
+       i != nsgradient_cache_.end(); i++) {
+    [i->second release];
+  }
+  nsgradient_cache_.clear();
 }

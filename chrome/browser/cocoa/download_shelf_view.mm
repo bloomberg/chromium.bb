@@ -5,22 +5,26 @@
 #import "chrome/browser/cocoa/download_shelf_view.h"
 
 #include "base/scoped_nsobject.h"
-#import "chrome/browser/cocoa/GTMTheme.h"
+#include "chrome/browser/browser_theme_provider.h"
+#import "chrome/browser/cocoa/themed_window.h"
+#include "grit/theme_resources.h"
 
 @implementation DownloadShelfView
 
 - (NSColor*)strokeColor {
-  return [[self gtm_theme] strokeColorForStyle:GTMThemeStyleToolBar
-                                         state:[[self window] isKeyWindow]];
+  BOOL isKey = [[self window] isKeyWindow];
+  ThemeProvider* themeProvider = [[self window] themeProvider];
+  return themeProvider->GetNSColor(
+      isKey ? BrowserThemeProvider::COLOR_TOOLBAR_STROKE :
+              BrowserThemeProvider::COLOR_TOOLBAR_STROKE_INACTIVE, true);
 }
 
 - (void)drawRect:(NSRect)rect {
   BOOL isKey = [[self window] isKeyWindow];
+  ThemeProvider* themeProvider = [[self window] themeProvider];
 
-  GTMTheme* theme = [self gtm_theme];
-
-  NSImage* backgroundImage = [theme backgroundImageForStyle:GTMThemeStyleToolBar
-                                               state:GTMThemeStateActiveWindow];
+  NSImage* backgroundImage = themeProvider->GetNSImageNamed(IDR_THEME_TOOLBAR,
+                                                            false);
   if (backgroundImage) {
     // We want our backgrounds for the shelf to be phased from the upper
     // left hand corner of the view.
@@ -30,8 +34,9 @@
     [color set];
     NSRectFill([self bounds]);
   } else {
-    NSGradient* gradient = [theme gradientForStyle:GTMThemeStyleToolBar
-                                             state:isKey];
+    NSGradient* gradient = themeProvider->GetNSGradient(
+        isKey ? BrowserThemeProvider::GRADIENT_TOOLBAR :
+                BrowserThemeProvider::GRADIENT_TOOLBAR_INACTIVE);
     // TODO(avi) http://crbug.com/36485; base != window
     NSPoint startPoint = [self convertPointFromBase:NSMakePoint(0, 0)];
     NSPoint endPoint = [self convertPointFromBase:
