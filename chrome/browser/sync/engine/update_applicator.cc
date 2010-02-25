@@ -85,7 +85,8 @@ void UpdateApplicator::Advance() {
 }
 
 bool UpdateApplicator::SkipUpdate(const syncable::MutableEntry& entry) {
-  ModelSafeGroup g = GetGroupForModelType(entry.GetModelType(), routing_info_);
+  ModelSafeGroup g =
+      GetGroupForModelType(entry.GetServerModelType(), routing_info_);
   if (g != group_filter_)
     return true;
   return false;
