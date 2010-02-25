@@ -33,6 +33,11 @@
       'defines': [
         '<@(nacl_defines)',
       ],
+      'direct_dependent_settings': {
+        'defines': [
+          '<@(nacl_defines)',
+        ],
+      },
       'sources': [
         # TODO(jrg): to link ipc_tests, these files need to be in renderer.a.
         # But app/ is the wrong directory for them.

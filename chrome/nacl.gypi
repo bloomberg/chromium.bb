@@ -35,9 +35,15 @@
               '__STD_C',
               '_CRT_SECURE_NO_DEPRECATE',
               '_SCL_SECURE_NO_DEPRECATE',
+              '__STDC_LIMIT_MACROS=1',
             ],
             'include_dirs': [
               'third_party/wtl/include',
+            ],
+          },],
+          ['OS=="linux"', {
+            'defines': [
+              '__STDC_LIMIT_MACROS=1',
             ],
           },],
         ],
@@ -69,6 +75,13 @@
         '../native_client/src/trusted/validator_x86/validator_x86.gyp:ncvalidate',
         '../native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib',
       ],
+      'direct_dependent_settings': {
+        'defines': [
+          'NACL_BLOCK_SHIFT=5',
+          'NACL_BLOCK_SIZE=32',
+          '<@(nacl_defines)',
+        ],
+      },
     },
   ],
   'conditions': [
@@ -88,6 +101,9 @@
             'chrome_resources',
             'chrome_strings',
             'common_nacl_win64',
+            '../native_client/src/trusted/plugin/plugin.gyp:npGoogleNaClPluginChrome64',
+            '../native_client/src/trusted/service_runtime/service_runtime.gyp:sel64',
+            '../native_client/src/trusted/platform_qualify/platform_qualify.gyp:platform_qual_lib64',
           ],
           'sources': [
             'nacl/broker_thread.cc',
@@ -100,6 +116,13 @@
             'Common_Base': {
               'msvs_target_platform': 'x64',
             },
+          },
+          'direct_dependent_settings': {
+            'defines': [
+              'NACL_BLOCK_SHIFT=5',
+              'NACL_BLOCK_SIZE=32',
+              '<@(nacl_defines)',
+            ],
           },
         },
       ],

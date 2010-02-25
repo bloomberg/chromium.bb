@@ -6,6 +6,7 @@ vars = {
   "skia_revision": "504",
   "chromium_git": "http://src.chromium.org/git",
   "swig_revision": "37274",
+  "nacl_revision": "1569",
 }
 
 deps = {
@@ -43,7 +44,7 @@ deps = {
     "http://v8.googlecode.com/svn/trunk@3944",
 
   "src/native_client":
-    "http://nativeclient.googlecode.com/svn/trunk/src/native_client@1511",
+    "http://nativeclient.googlecode.com/svn/trunk/src/native_client@" + Var("nacl_revision"),
 
   "src/third_party/skia/src":
     "http://skia.googlecode.com/svn/trunk/src@" + Var("skia_revision"),
@@ -141,6 +142,11 @@ deps_os = {
 
     "src/third_party/swig/win":
       "/trunk/deps/third_party/swig/win@" + Var("swig_revision"),
+
+    "src/third_party/mingw-w64/mingw/bin":
+      ("http://nativeclient.googlecode.com/svn/trunk/src/third_party/mingw-w64/mingw/bin@" +
+       Var("nacl_revision")),
+
   },
   "mac": {
     "src/chrome/tools/test/reference_build/chrome_mac":

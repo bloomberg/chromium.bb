@@ -37,6 +37,11 @@
       'defines': [
         '<@(nacl_defines)',
       ],
+      'direct_dependent_settings': {
+        'defines': [
+          '<@(nacl_defines)',
+        ],
+      },
       'sources': [
         # All .cc, .h, .m, and .mm files under browser except for tests and
         # mocks.
