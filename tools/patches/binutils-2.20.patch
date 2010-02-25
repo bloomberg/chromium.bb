@@ -1751,6 +1751,15 @@ diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.c binutils-2.20/gas/conf
 diff -Naur ../PRISTINE/binutils-2.20/gas/config/tc-i386.h binutils-2.20/gas/config/tc-i386.h
 --- ../PRISTINE/binutils-2.20/gas/config/tc-i386.h	2009-09-02 00:24:20.000000000 -0700
 +++ binutils-2.20/gas/config/tc-i386.h	2010-01-05 13:21:03.566222000 -0800
+@@ -193,7 +193,7 @@
+ extern void i386_align_code (fragS *, int);
+ 
+ #define HANDLE_ALIGN(fragP)						\
+-if (fragP->fr_type == rs_align_code) 					\
++if (fragP->fr_type == rs_align_code && optimize_align_code) 		\
+   i386_align_code (fragP, (fragP->fr_next->fr_address			\
+ 			   - fragP->fr_address				\
+ 			   - fragP->fr_fix));
 @@ -297,4 +297,12 @@
  /* X_add_symbol:X_op_symbol (Intel mode only) */
  #define O_full_ptr O_md2
