@@ -1,0 +1,14 @@
+# -*- python -*-
+# Copyright (c) 2010 The Native Client Authors. All rights reserved.
+# Use of this source code is governed by a BSD-style license that can be
+# found in the LICENSE file.
+
+Import('env')
+
+env.ComponentLibrary('gio',
+                     ['gio.c',
+                      'gio_mem.c',
+                      'gprintf.c',
+                      'gio_mem_snapshot.c',
+                      ])
+env.AddLibraryToSdk(['gio'])
