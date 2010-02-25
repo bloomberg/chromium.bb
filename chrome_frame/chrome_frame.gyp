@@ -91,7 +91,7 @@
           'action': [
             '<@(python)',
             'combine_libs.py',
-            '-o <(_outputs)',
+            '-o', '<@(_outputs)',
             '-r (icu_|_icu.obj)',
             '<@(_inputs)'],
         },
