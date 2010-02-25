@@ -2034,8 +2034,8 @@ BUG27486 RELEASE LINUX : fast/forms/listbox-hit-test-zoomed.html = FAIL
 BUG27486 LINUX DEBUG : fast/forms/listbox-hit-test-zoomed.html = FAIL
 BUG27486 WIN LINUX : fast/forms/slider-zoomed.html = FAIL
 
-// Needs rebaseline. See WebKit 41948
-BUG10468 MAC : fast/replaced/border-radius-clip.html = FAIL
+// See WebKit 41948
+BUG10468 MAC : fast/replaced/border-radius-clip.html = IMAGE
 
 // Mac flaky failures.
 BUG10472 MAC : svg/css/glyph-orientation-rounding-test.xhtml = FAIL PASS
@@ -2088,8 +2088,6 @@ BUG9798 SLOW WIN DEBUG : fast/dom/Window/slow-unload-handler.html = PASS
 BUG9798 LINUX DEBUG SLOW : fast/frames/calculate-round.html = CRASH PASS
 
 // Was flaky. Became a consistent failure.
-BUG9798 WIN DEBUG : fast/replaced/border-radius-clip.html = FAIL
-BUG9798 SLOW WIN RELEASE : fast/replaced/border-radius-clip.html = FAIL
 BUG9798 MAC WIN : http/tests/loading/preload-img-test.html = TIMEOUT PASS
 BUG9798 WIN DEBUG : http/tests/local/style-access-before-stylesheet-loaded.html = FAIL PASS
 BUG9798 LINUX MAC : http/tests/misc/BOM-override-script.html = TIMEOUT PASS
@@ -2368,7 +2366,6 @@ BUG24119 LINUX DEBUG : tables/mozilla/bugs/bug1220.html = PASS FAIL
 // WebKit roll 49405:49413
 BUG28409 : http/tests/xmlhttprequest/logout.html = FAIL
 
-BUG24862 LINUX : fast/replaced/border-radius-clip.html = FAIL
 
 // WebKit roll 49583:49597
 BUG24930 MAC DEBUG : editing/selection/editable-html-element.html = FAIL PASS
