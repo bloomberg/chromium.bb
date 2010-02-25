@@ -3,20 +3,40 @@
 # Use of this source code is governed by a BSD-style license that can
 # be found in the LICENSE file.
 
+import atexit
 import glob
 import os
 import stat
 import sys
 sys.path.append("./common")
 import sets
-from SCons.Errors import UserError
 
+from SCons.Errors import UserError
+from SCons.Script import GetBuildFailures
 
 # NOTE: Underlay for  src/third_party_mod/gtest
 # TODO: try to eliminate this hack
 Dir('src/third_party_mod/gtest').addRepository(
     Dir('#/../testing/gtest'))
 
+
+# ----------------------------------------------------------
+# REPORT
+# ----------------------------------------------------------
+def PrintFinalReport():
+  failures = GetBuildFailures()
+  if not failures:
+    return
+
+  print
+  print '*' * 70
+  print 'ERROR REPORT: %d failures' % len(failures)
+  print '*' * 70
+  print
+  for f in failures:
+    print "%s failed: %s\n" % (f.node, f.errstr)
+
+atexit.register(PrintFinalReport)
 
 # ----------------------------------------------------------
 # SANITY CHECKS
