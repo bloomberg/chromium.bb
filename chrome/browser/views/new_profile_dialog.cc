@@ -8,8 +8,10 @@
 
 #include "app/l10n_util.h"
 #include "app/message_box_flags.h"
-#include "base/logging.h"
+#include "base/file_util.h"
 #include "base/i18n/file_util_icu.h"
+#include "base/logging.h"
+#include "base/path_service.h"
 #include "chrome/browser/user_data_manager.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
@@ -18,6 +20,10 @@
 #include "views/controls/textfield/textfield.h"
 #include "views/view.h"
 #include "views/window/window.h"
+
+#if defined(OS_WIN)
+#include "base/win_util.h"
+#endif  // defined(OS_WIN)
 
 namespace browser {
 
@@ -99,9 +105,26 @@ bool NewProfileDialog::Accept() {
     return true;
   }
   // Create a desktop shortcut if the corresponding checkbox is checked.
-  if (message_box_view_->IsCheckBoxSelected())
+  if (message_box_view_->IsCheckBoxSelected()) {
     UserDataManager::Get()->CreateDesktopShortcutForProfile(
         profile_name);
+  } else {
+#if defined(OS_WIN)
+    if (win_util::GetWinVersion() >= win_util::WINVERSION_WIN7) {
+      // For Win7, we need to have a shortcut in a place that Windows would
+      // index to provide correct relaunch info.
+      // See http://crbug.com/32106
+      FilePath temp_path;
+      if (PathService::Get(base::DIR_APP_DATA, &temp_path)) {
+        temp_path = temp_path.Append(
+            L"Microsoft\\Internet Explorer\\Quick Launch\\User Pinned");
+        UserDataManager::Get()->CreateShortcutForProfileInFolder(
+            temp_path,
+            profile_name);
+      }
+    }
+#endif  // defined(OS_WIN)
+  }
 
   UserDataManager::Get()->LaunchChromeForProfile(profile_name);
   UserDataManager::Get()->RefreshUserDataDirProfiles();

@@ -264,13 +264,12 @@ void UserDataManager::GetProfiles(std::vector<std::wstring>* profiles) const {
   }
 }
 
-bool UserDataManager::CreateDesktopShortcutForProfile(
+bool UserDataManager::CreateShortcutForProfileInFolder(
+    const FilePath& folder,
     const std::wstring& profile_name) const {
 #if defined(OS_WIN)
   std::wstring exe_path;
-  std::wstring shortcut_path;
-  if (!PathService::Get(base::FILE_EXE, &exe_path) ||
-      !ShellUtil::GetDesktopPath(false, &shortcut_path))
+  if (!PathService::Get(base::FILE_EXE, &exe_path))
     return false;
 
   // Working directory.
@@ -290,7 +289,8 @@ bool UserDataManager::CreateDesktopShortcutForProfile(
       IDS_START_IN_PROFILE_SHORTCUT_NAME,
       profile_name);
   shortcut_name.append(L".lnk");
-  file_util::AppendToPath(&shortcut_path, shortcut_name);
+
+  std::wstring shortcut_path = folder.Append(shortcut_name).ToWStringHack();
 
   // Profile path from user_data_dir.
   FilePath profile_path = FilePath(user_data_dir).Append(
@@ -305,6 +305,20 @@ bool UserDataManager::CreateDesktopShortcutForProfile(
       exe_path.c_str(),
       0,
       ShellIntegration::GetChromiumAppId(profile_path).c_str());
+#else
+  NOTIMPLEMENTED();
+  return false;
+#endif
+}
+
+bool UserDataManager::CreateDesktopShortcutForProfile(
+    const std::wstring& profile_name) const {
+#if defined(OS_WIN)
+  std::wstring desktop_path;
+  if (!ShellUtil::GetDesktopPath(false, &desktop_path))
+    return false;
+
+  return CreateShortcutForProfileInFolder(FilePath(desktop_path), profile_name);
 #else
   // TODO(port): should probably use freedesktop.org standard for desktop files.
   NOTIMPLEMENTED();

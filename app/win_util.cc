@@ -837,7 +837,7 @@ gfx::Font GetWindowTitleFont() {
 
 void SetAppIdForWindow(const std::wstring& app_id, HWND hwnd) {
   // This functionality is only available on Win7+.
-  if (win_util::GetWinVersion() != win_util::WINVERSION_WIN7)
+  if (win_util::GetWinVersion() < win_util::WINVERSION_WIN7)
     return;
 
   // Load Shell32.dll into memory.

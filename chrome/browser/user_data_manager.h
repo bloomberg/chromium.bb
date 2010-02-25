@@ -14,6 +14,7 @@
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
 
+class FilePath;
 class MessageLoop;
 
 // Provides an abstraction of profiles on top of the user data directory
@@ -50,6 +51,11 @@ class UserDataManager {
   // Populates the given vector with a list of all the profiles.
   // This function should be called on the file thread.
   void GetProfiles(std::vector<std::wstring>* profiles) const;
+
+  // Creates a shortcut for the given profile name in |folder|.
+  // Returns false if the shortcut creation fails; true otherwise.
+  bool CreateShortcutForProfileInFolder(const FilePath& folder,
+      const std::wstring& profile_name) const;
 
   // Creates a desktop shortcut for the given profile name.
   // Returns false if the shortcut creation fails; true otherwise.
