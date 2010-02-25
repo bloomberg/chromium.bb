@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,10 +16,11 @@
 #include "webkit/glue/form_field.h"
 #include "webkit/glue/form_field_values.h"
 
-const char* kFormMethodGet = "get";
+namespace {
+
 const char* kFormMethodPost = "post";
 
-// XML attribute names
+// XML attribute names.
 const char* const kAttributeClientVersion = "clientversion";
 const char* const kAttributeAutoFillUsed = "autofillused";
 const char* const kAttributeSignature = "signature";
@@ -30,7 +31,11 @@ const char* const kXMLElementForm = "form";
 const char* const kXMLElementField = "field";
 const char* const kAttributeAutoFillType = "autofilltype";
 
-namespace {
+// The only form control type we handle currently.
+const char* const kControlTypeText = "text";
+
+// The number of fillable fields necessary for a form to be fillable.
+const size_t kRequiredFillableFields = 3;
 
 static std::string Hash64Bit(const std::string& str) {
   std::string hash_bin = base::SHA1HashString(str);
@@ -58,6 +63,11 @@ FormStructure::FormStructure(const webkit_glue::FormFieldValues& values)
   std::vector<webkit_glue::FormField>::const_iterator field;
   for (field = values.elements.begin();
        field != values.elements.end(); field++) {
+    // We currently only handle text fields.  This prevents us from thinking we
+    // can autofill other types of controls, e.g., select, password, hidden.
+    if (!LowerCaseEqualsASCII(field->form_control_type(), kControlTypeText))
+      continue;
+
     // Generate a unique name for this field by appending a counter to the name.
     string16 unique_name = field->name() + IntToString16(fields_.size() + 1);
     fields_.push_back(new AutoFillField(*field, unique_name));
@@ -165,7 +175,7 @@ std::string FormStructure::FormSignature() const {
 }
 
 bool FormStructure::IsAutoFillable() const {
-  if (field_count() == 0)
+  if (field_count() < kRequiredFillableFields)
     return false;
 
   // Rule out http(s)://*/search?...
@@ -173,13 +183,6 @@ bool FormStructure::IsAutoFillable() const {
   //       http://search.yahoo.com/search?p=...
   if (target_url_.path() == "/search")
     return false;
-
-  // Disqualify all forms that are likely to be search boxes (like google.com).
-  if (field_count() == 1) {
-    std::string name = UTF16ToUTF8(fields_[0]->name());
-    if (name == "q")
-      return false;
-  }
 
   if (method_ == GET)
     return false;
