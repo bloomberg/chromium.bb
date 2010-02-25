@@ -495,6 +495,7 @@ const CGFloat kRapidCloseDist = 2.5;
     TabView* draggedTabView = (TabView*)[draggedController_ selectedTabView];
     NSRect tabFrame = [draggedTabView frame];
     tabFrame.origin = [dragWindow_ convertBaseToScreen:tabFrame.origin];
+    // TODO(avi) http://crbug.com/36485; base != window
     tabFrame.origin = [[targetController_ window]
                         convertScreenToBase:tabFrame.origin];
     tabFrame = [[targetController_ tabStripView]

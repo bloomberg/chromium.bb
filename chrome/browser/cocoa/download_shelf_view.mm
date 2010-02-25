@@ -32,6 +32,7 @@
   } else {
     NSGradient* gradient = [theme gradientForStyle:GTMThemeStyleToolBar
                                              state:isKey];
+    // TODO(avi) http://crbug.com/36485; base != window
     NSPoint startPoint = [self convertPointFromBase:NSMakePoint(0, 0)];
     NSPoint endPoint = [self convertPointFromBase:
         NSMakePoint(0, [self frame].size.height)];

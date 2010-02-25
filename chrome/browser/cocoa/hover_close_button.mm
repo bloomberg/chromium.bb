@@ -103,6 +103,7 @@ const NSString* kPressedImageString = @"close_bar_p.pdf";
   if (closeTrackingArea_.get()) {
     // Update the close buttons if the tab has moved.
     NSPoint mouseLoc = [[self window] mouseLocationOutsideOfEventStream];
+    // TODO(avi) http://crbug.com/36485; base != window
     mouseLoc = [self convertPointFromBase:mouseLoc];
     NSString* name = NSPointInRect(mouseLoc, [self bounds]) ?
         kHoverImageString : kNormalImageString;

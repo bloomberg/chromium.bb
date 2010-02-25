@@ -285,6 +285,7 @@ namespace {
   if (![self isMainWindow]) {
     if ([event type] == NSLeftMouseDown) {
       NSView* frameView = [self frameView];
+      // TODO(avi) http://crbug.com/36485; base != window
       NSPoint mouse = [frameView convertPointFromBase:[event locationInWindow]];
       if (NSPointInRect(mouse, [closeButton_ frame])) {
         [closeButton_ mouseDown:event];

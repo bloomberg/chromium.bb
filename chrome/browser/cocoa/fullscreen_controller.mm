@@ -225,6 +225,7 @@ const CGFloat kTabStripVerticalOffset = 14;
     return;
 
   NSWindow* window = [browserController_ window];
+  // TODO(avi) http://crbug.com/36485; base != window
   NSPoint mouseLoc =
       [contentView_ convertPointFromBase:
                       [window mouseLocationOutsideOfEventStream]];
@@ -432,6 +433,7 @@ const CGFloat kTabStripVerticalOffset = 14;
 - (BOOL)mouseInsideTrackingRect {
   NSWindow* window = [browserController_ window];
   NSPoint mouseLoc = [window mouseLocationOutsideOfEventStream];
+  // TODO(avi) http://crbug.com/36485; base != window
   NSPoint mousePos = [contentView_ convertPointFromBase:mouseLoc];
   return NSMouseInRect(mousePos, trackingAreaBounds_, [contentView_ isFlipped]);
 }

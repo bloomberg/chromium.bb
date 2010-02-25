@@ -44,6 +44,7 @@
   NSDragOperation dragOp = [self getDragOperation:sender];
   if (dragOp == NSDragOperationCopy) {
     // Just tell the window controller to update the indicator.
+    // TODO(avi) http://crbug.com/36485; base != window
     NSPoint hoverPoint = [view_ convertPointFromBase:[sender draggingLocation]];
     [[view_ urlDropController] indicateDropURLsInView:view_ at:hoverPoint];
   }
@@ -65,6 +66,7 @@
 
     if ([urls count]) {
       // Tell the window controller about the dropped URL(s).
+      // TODO(avi) http://crbug.com/36485; base != window
       NSPoint dropPoint =
           [view_ convertPointFromBase:[sender draggingLocation]];
       [[view_ urlDropController] dropURLs:urls inView:view_ at:dropPoint];
