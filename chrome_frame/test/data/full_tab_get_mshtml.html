@@ -1,0 +1,21 @@
+<html>
+  <head>
+    <title>FullTab mode GET test</title>
+  </head>
+
+  <script type="text/javascript" src="chrome_frame_tester_helpers.js"></script>
+
+  <script type="text/javascript">
+    function onLoad() {
+      if (isRunningInChrome()) {
+        location.href = "/quit?unexpectedly_running_in_chrome";
+      } else {
+        document.getElementById("clickme").click();
+      }
+    }
+  </script>
+
+  <body onload="onLoad();">
+    <a href="full_tab_get_target_cf.html" id="clickme">Click me!</a>
+  </body>
+</html>

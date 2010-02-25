@@ -127,13 +127,22 @@ SimpleWebServer::SimpleWebServer(int port) {
 
 SimpleWebServer::~SimpleWebServer() {
   ConnectionList::const_iterator it;
-  for (it = connections_.begin(); it != connections_.end(); it++)
+  for (it = connections_.begin(); it != connections_.end(); ++it)
     delete (*it);
   connections_.clear();
 }
 
 void SimpleWebServer::AddResponse(Response* response) {
   responses_.push_back(response);
+}
+
+void SimpleWebServer::DeleteAllResponses() {
+  std::list<Response*>::const_iterator it;
+  for (it = responses_.begin(); it != responses_.end(); ++it) {
+    if ((*it) != &quit_)
+      delete (*it);
+  }
+  connections_.clear();
 }
 
 Response* SimpleWebServer::FindResponse(const Request& request) const {

@@ -278,12 +278,20 @@ class SimpleWebServer : public ListenSocket::ListenSocketDelegate {
 
   void AddResponse(Response* response);
 
+  // Ownership of response objects is by default assumed to be outside
+  // of the SimpleWebServer class.
+  // However, if the caller doesn't wish to maintain a list of response objects
+  // but rather let this class hold the only references to those objects,
+  // the caller can call this method to delete the objects as part of
+  // the cleanup process.
+  void DeleteAllResponses();
+
   // ListenSocketDelegate overrides.
   virtual void DidAccept(ListenSocket* server, ListenSocket* connection);
   virtual void DidRead(ListenSocket* connection, const std::string& data);
   virtual void DidClose(ListenSocket* sock);
 
-  const ConnectionList& connections() {
+  const ConnectionList& connections() const {
     return connections_;
   }
 

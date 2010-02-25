@@ -9,7 +9,6 @@
 #include "chrome/installer/util/helper.h"
 #include "chrome_frame/utils.h"
 #include "chrome_frame/test/chrome_frame_test_utils.h"
-#include "chrome_frame/test/test_server.h"
 
 const wchar_t kDocRoot[] = L"chrome_frame\\test\\data";
 const int kLongWaitTimeout = 60 * 1000;
@@ -49,6 +48,11 @@ void ChromeFrameTestWithWebServer::SetUp() {
 
   // Make sure that we are not accidently enabling gcf protocol.
   SetConfigBool(kEnableGCFProtocol, false);
+
+  PathService::Get(base::DIR_SOURCE_ROOT, &test_file_path_);
+  test_file_path_ = test_file_path_.Append(FILE_PATH_LITERAL("chrome_frame"))
+      .Append(FILE_PATH_LITERAL("test"))
+      .Append(FILE_PATH_LITERAL("data"));
 
   server_.SetUp();
   results_dir_ = server_.GetDataDir();
@@ -776,11 +780,8 @@ TEST_F(ChromeFrameTestWithWebServer,
 TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_TestPostReissue) {
   // Test whether POST-ing a form from an mshtml page to a CF page will cause
   // the request to get reissued.  It should not.
-  FilePath source_path;
-  PathService::Get(base::DIR_SOURCE_ROOT, &source_path);
-  source_path = source_path.Append(FILE_PATH_LITERAL("chrome_frame"))
-                           .Append(FILE_PATH_LITERAL("test"))
-                           .Append(FILE_PATH_LITERAL("data"));
+
+  MessageLoopForUI loop;  // must come before the server.
 
   // The order of pages in this array is assumed to be mshtml, cf, script.
   const wchar_t* kPages[] = {
@@ -789,41 +790,57 @@ TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_TestPostReissue) {
     L"chrome_frame_tester_helpers.js",
   };
 
-  scoped_ptr<test_server::FileResponse> responses[arraysize(kPages)];
+  SimpleWebServerTest server(46664);
+  server.PopulateStaticFileList(kPages, arraysize(kPages), GetCFTestFilePath());
 
-  MessageLoopForUI loop;  // must come before the server.
-  test_server::SimpleWebServer server(46664);
-
-  for (int i = 0; i < arraysize(kPages); ++i) {
-    responses[i].reset(new test_server::FileResponse(
-        StringPrintf("/%ls", kPages[i]).c_str(),
-        source_path.Append(kPages[i])));
-    server.AddResponse(responses[i].get());
-  }
-
-  ASSERT_TRUE(LaunchBrowser(IE,
-      StringPrintf(L"http://localhost:46664/%ls", kPages[0]).c_str()));
+  ASSERT_TRUE(LaunchBrowser(IE, server.FormatHttpPath(kPages[0]).c_str()));
 
   loop.MessageLoop::Run();
 
   // Check if the last request to /quit gave us the OK signal.
-  const test_server::ConnectionList& connections = server.connections();
-  const test_server::Connection* c = connections.back();
-  EXPECT_EQ("OK", c->request().arguments());
+  const test_server::Request& r = server.last_request();
+  EXPECT_EQ("OK", r.arguments());
 
-  if (c->request().arguments().compare("OK") == 0) {
-    // Check how many requests we got for the cf page.
-    test_server::ConnectionList::const_iterator it;
-    int requests_for_cf_page = 0;
-    for (it = connections.begin(); it != connections.end(); ++it) {
-      c = (*it);
-      const test_server::Request& r = c->request();
-      if (ASCIIToWide(r.path().substr(1)).compare(kPages[1]) == 0) {
-        EXPECT_EQ("POST", r.method());
-        requests_for_cf_page++;
-      }
-    }
-    EXPECT_EQ(1, requests_for_cf_page);
+  if (r.arguments().compare("OK") == 0) {
+    // Check how many requests we got for the cf page.  Also expect it to be
+    // a POST.
+    int requests = server.GetRequestCountForPage(kPages[1], "POST");
+    EXPECT_EQ(1, requests);
+  }
+}
+
+// DISABLED as it currently fails for both approaches for switching
+// renderers (httpequiv and IInternetProtocol).
+// TODO(tommi): Enable this test once the issue has been fixed.
+TEST_F(ChromeFrameTestWithWebServer, DISABLED_FullTabModeIE_TestMultipleGet) {
+  // Test whether following a link from an mshtml page to a CF page will cause
+  // multiple network requests.  It should not.
+
+  MessageLoopForUI loop;  // must come before the server.
+
+  // The order of pages in this array is assumed to be mshtml, cf, script.
+  const wchar_t* kPages[] = {
+    L"full_tab_get_mshtml.html",
+    L"full_tab_get_target_cf.html",
+    L"chrome_frame_tester_helpers.js",
+  };
+
+  SimpleWebServerTest server(46664);
+  server.PopulateStaticFileList(kPages, arraysize(kPages), GetCFTestFilePath());
+
+  ASSERT_TRUE(LaunchBrowser(IE, server.FormatHttpPath(kPages[0]).c_str()));
+
+  loop.MessageLoop::Run();
+
+  // Check if the last request to /quit gave us the OK signal.
+  const test_server::Request& r = server.last_request();
+  EXPECT_EQ("OK", r.arguments());
+
+  if (r.arguments().compare("OK") == 0) {
+    // Check how many requests we got for the cf page and check that it was
+    // a GET.
+    int requests = server.GetRequestCountForPage(kPages[1], "GET");
+    EXPECT_EQ(1, requests);
   }
 }
 

@@ -8,6 +8,7 @@
 #include <string>
 
 #include "chrome_frame/test/http_server.h"
+#include "chrome_frame/test/test_server.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 // Include without path to make GYP build see it.
@@ -61,6 +62,10 @@ class ChromeFrameTestWithWebServer: public testing::Test {
   bool CheckResultFile(const std::wstring& file_name,
                        const std::string& expected_result);
 
+  const FilePath& GetCFTestFilePath() {
+    return test_file_path_;
+  }
+
   virtual void SetUp();
   virtual void TearDown();
 
@@ -88,6 +93,66 @@ class ChromeFrameTestWithWebServer: public testing::Test {
   std::wstring results_dir_;
   ScopedHandle browser_handle_;
   ChromeFrameHTTPServer server_;
+  // The on-disk path to our html test files.
+  FilePath test_file_path_;
+};
+
+// A helper class for doing some bookkeeping when using the
+// SimpleWebServer class.
+class SimpleWebServerTest {
+ public:
+  SimpleWebServerTest(int port) : server_(port), port_(port) {
+  }
+
+  ~SimpleWebServerTest() {
+    server_.DeleteAllResponses();
+  }
+
+  void PopulateStaticFileList(const wchar_t* pages[], int count,
+                              const FilePath& directory) {
+    for (int i = 0; i < count; ++i) {
+      server_.AddResponse(new test_server::FileResponse(
+          StringPrintf("/%ls", pages[i]).c_str(), directory.Append(pages[i])));
+    }
+  }
+
+  std::wstring FormatHttpPath(const wchar_t* document_path) {
+    return StringPrintf(L"http://localhost:%i/%ls", port_, document_path);
+  }
+
+  // Returns the last client request object.
+  // Under normal circumstances this will be the request for /quit.
+  const test_server::Request& last_request() const {
+    const test_server::ConnectionList& connections = server_.connections();
+    DCHECK(connections.size());
+    const test_server::Connection* c = connections.back();
+    return c->request();
+  }
+
+  // Counts the number of times a page was requested.
+  // Optionally checks if the request method for each is equal to
+  // |expected_method|.  If expected_method is NULL no such check is made.
+  int GetRequestCountForPage(const wchar_t* page, const char* expected_method) {
+    // Check how many requests we got for the cf page.
+    test_server::ConnectionList::const_iterator it;
+    int requests = 0;
+    const test_server::ConnectionList& connections = server_.connections();
+    for (it = connections.begin(); it != connections.end(); ++it) {
+      const test_server::Connection* c = (*it);
+      const test_server::Request& r = c->request();
+      if (ASCIIToWide(r.path().substr(1)).compare(page) == 0) {
+        if (expected_method) {
+          EXPECT_EQ(expected_method, r.method());
+        }
+        requests++;
+      }
+    }
+    return requests;
+  }
+
+ protected:
+  test_server::SimpleWebServer server_;
+  int port_;
 };
 
 #endif  // CHROME_FRAME_TEST_WITH_WEB_SERVER_H_
