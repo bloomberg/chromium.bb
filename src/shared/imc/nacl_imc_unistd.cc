@@ -76,7 +76,7 @@ Handle CreateMemoryObject(size_t length) {
     snprintf(name, sizeof name, "%s-%u.%u", kShmPrefix,
              getpid(),
              static_cast<uint32_t>(AtomicIncrement(&memory_object_count, 1)));
-    int m = shm_open(name, O_RDWR | O_CREAT | O_EXCL, 0666);
+    int m = shm_open(name, O_RDWR | O_CREAT | O_EXCL, 0600);
     if (0 <= m) {
       if (ftruncate(m, length) == -1) {
         close(m);
