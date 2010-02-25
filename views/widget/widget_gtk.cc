@@ -180,7 +180,6 @@ void WidgetGtk::DoDrag(const OSExchangeData& data, int operation) {
       static_cast<const OSExchangeDataProviderGtk&>(data.provider());
   GtkTargetList* targets = data_provider.GetTargetList();
   GdkEvent* current_event = gtk_get_current_event();
-  DCHECK(current_event);
   const OSExchangeDataProviderGtk& provider(
       static_cast<const OSExchangeDataProviderGtk&>(data.provider()));
 
@@ -198,7 +197,8 @@ void WidgetGtk::DoDrag(const OSExchangeData& data, int operation) {
                              provider.drag_image(),
                              provider.cursor_offset_x(),
                              provider.cursor_offset_y());
-  gdk_event_free(current_event);
+  if (current_event)
+    gdk_event_free(current_event);
   gtk_target_list_unref(targets);
 
   drag_data_ = &data_provider;
