@@ -105,8 +105,8 @@ install-data-local: fonts.conf
 	  $(INSTALL_DATA) fonts.conf $(DESTDIR)$(configdir)/fonts.conf; \
 	fi; fi
 	@(if $(RUN_FC_CACHE_TEST); then \
-	    echo " $(bindir)/fc-cache -s -f -v"; \
-	    $(bindir)/fc-cache -s -f -v; \
+	    echo "fc-cache$(EXEEXT) -s -f -v"; \
+	    fc-cache/fc-cache$(EXEEXT) -s -f -v; \
 	else \
 	    echo "***"; \
 	    echo "*** Warning: fonts.cache not built"; \
