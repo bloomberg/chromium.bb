@@ -471,7 +471,7 @@
         {
           'target_name': 'chrome_dll_nacl_win64',
           'type': 'shared_library',
-          'product_name': 'chrome_nacl_win64',
+          'product_name': 'nacl64',
           'msvs_guid': 'F5B2D851-1279-4CE1-9386-AB7C6433551B',
           'variables': {
             'chrome_dll_target': 1,
@@ -512,8 +512,8 @@
           ],
           'msvs_settings': {
             'VCLinkerTool': {
-              'ImportLibrary': '$(OutDir)\\lib\\chrome_dll_nacl_win64.lib',
-              'ProgramDatabaseFile': '$(OutDir)\\chrome_dll_nacl_win64.pdb',
+              'ImportLibrary': '$(OutDir)\\lib\\nacl64_dll.lib',
+              'ProgramDatabaseFile': '$(OutDir)\\nacl64_dll.pdb',
             },
           },
           'configurations': {

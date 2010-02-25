@@ -487,7 +487,7 @@
         {
           'target_name': 'chrome_nacl_win64',
           'type': 'executable',
-          'product_name': 'nacl',
+          'product_name': 'nacl64',
           'msvs_guid': 'BB1AE956-038B-4092-96A2-951D2B418548',
           'variables': {
             'chrome_exe_target': 1,
@@ -514,8 +514,8 @@
           ],
           'msvs_settings': {
             'VCLinkerTool': {
-              'ImportLibrary': '$(OutDir)\\lib\\nacl_exe.lib',
-              'ProgramDatabaseFile': '$(OutDir)\\nacl_exe.pdb',
+              'ImportLibrary': '$(OutDir)\\lib\\nacl64_exe.lib',
+              'ProgramDatabaseFile': '$(OutDir)\\nacl64_exe.pdb',
             },
           },
           'configurations': {
