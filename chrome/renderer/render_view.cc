@@ -138,6 +138,7 @@ using WebKit::WebColor;
 using WebKit::WebColorName;
 using WebKit::WebConsoleMessage;
 using WebKit::WebContextMenuData;
+using WebKit::WebCookieJar;
 using WebKit::WebCString;
 using WebKit::WebData;
 using WebKit::WebDataSource;
@@ -319,7 +320,8 @@ RenderView::RenderView(RenderThreadBase* render_thread,
       document_tag_(0),
       webkit_preferences_(webkit_preferences),
       session_storage_namespace_id_(session_storage_namespace_id),
-      ALLOW_THIS_IN_INITIALIZER_LIST(text_translator_(this)) {
+      ALLOW_THIS_IN_INITIALIZER_LIST(text_translator_(this)),
+      ALLOW_THIS_IN_INITIALIZER_LIST(cookie_jar_(this)) {
   ClearBlockedContentSettings();
   page_translator_.reset(new PageTranslator(&text_translator_, this));
 }
@@ -2139,6 +2141,10 @@ WebMediaPlayer* RenderView::createMediaPlayer(
   return new webkit_glue::WebMediaPlayerImpl(client, factory);
 }
 
+WebCookieJar* RenderView::cookieJar() {
+  return &cookie_jar_;
+}
+
 void RenderView::willClose(WebFrame* frame) {
   if (!frame->parent()) {
     const GURL& url = frame->url();
@@ -3044,13 +3050,6 @@ void RenderView::DidStopLoadingForPlugin() {
   didStopLoading();
 }
 
-void RenderView::PageTranslated(int page_id,
-                                const std::string& original_lang,
-                                const std::string& target_lang) {
-  Send(new ViewHostMsg_PageTranslated(routing_id_, page_id_,
-                                      original_lang, target_lang));
-}
-
 void RenderView::ShowModalHTMLDialogForPlugin(
     const GURL& url,
     const gfx::Size& size,
@@ -3059,6 +3058,17 @@ void RenderView::ShowModalHTMLDialogForPlugin(
   SendAndRunNestedMessageLoop(new ViewHostMsg_ShowModalHTMLDialog(
       routing_id_, url, size.width(), size.height(), json_arguments,
       json_retval));
+}
+
+WebCookieJar* RenderView::GetCookieJar() {
+  return &cookie_jar_;
+}
+
+void RenderView::PageTranslated(int page_id,
+                                const std::string& original_lang,
+                                const std::string& target_lang) {
+  Send(new ViewHostMsg_PageTranslated(routing_id_, page_id_,
+                                      original_lang, target_lang));
 }
 
 void RenderView::SyncNavigationState() {

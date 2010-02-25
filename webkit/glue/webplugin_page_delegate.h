@@ -9,6 +9,10 @@
 
 class GURL;
 
+namespace WebKit {
+class WebCookieJar;
+}
+
 namespace webkit_glue {
 
 class WebPluginDelegate;
@@ -55,6 +59,9 @@ class WebPluginPageDelegate {
       const gfx::Size& size,
       const std::string& json_arguments,
       std::string* json_retval) = 0;
+
+  // The WebCookieJar to use for this plugin.
+  virtual WebKit::WebCookieJar* GetCookieJar() = 0;
 };
 
 }  // namespace webkit_glue

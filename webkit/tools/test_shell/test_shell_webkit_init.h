@@ -1,6 +1,6 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
-// source code is governed by a BSD-style license that can be found in the
-// LICENSE file.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
 
 #ifndef WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_WEBKIT_INIT_H_
 #define WEBKIT_TOOLS_TEST_SHELL_TEST_SHELL_WEBKIT_INIT_H_
@@ -34,6 +34,7 @@
 #include "webkit/tools/test_shell/simple_appcache_system.h"
 #include "webkit/tools/test_shell/simple_database_system.h"
 #include "webkit/tools/test_shell/simple_resource_loader_bridge.h"
+#include "webkit/tools/test_shell/simple_webcookiejar_impl.h"
 #include "v8/include/v8.h"
 
 #if defined(OS_WIN)
@@ -111,6 +112,10 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
     return NULL;
   }
 
+  virtual WebKit::WebCookieJar* cookieJar() {
+    return &cookie_jar_;
+  }
+
   virtual bool sandboxEnabled() {
     return true;
   }
@@ -156,20 +161,6 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
 
   virtual WebKit::WebMessagePortChannel* createMessagePortChannel() {
     return NULL;
-  }
-
-  virtual void setCookies(const WebKit::WebURL& url,
-                          const WebKit::WebURL& first_party_for_cookies,
-                          const WebKit::WebString& value) {
-    SimpleResourceLoaderBridge::SetCookie(
-        url, first_party_for_cookies, value.utf8());
-  }
-
-  virtual WebKit::WebString cookies(
-      const WebKit::WebURL& url,
-      const WebKit::WebURL& first_party_for_cookies) {
-    return WebKit::WebString::fromUTF8(SimpleResourceLoaderBridge::GetCookies(
-        url, first_party_for_cookies));
   }
 
   virtual void prefetchHostName(const WebKit::WebString&) {
@@ -238,6 +229,7 @@ class TestShellWebKitInit : public webkit_glue::WebKitClientImpl {
   ScopedTempDir appcache_dir_;
   SimpleAppCacheSystem appcache_system_;
   SimpleDatabaseSystem database_system_;
+  SimpleWebCookieJarImpl cookie_jar_;
 
 #if defined(OS_WIN)
   WebKit::WebThemeEngine* active_theme_engine_;

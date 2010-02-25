@@ -19,14 +19,12 @@
 #include "chrome/common/render_messages.h"
 #include "chrome/common/webmessageportchannel_impl.h"
 #include "chrome/plugin/npobject_util.h"
-#include "chrome/renderer/cookie_message_filter.h"
 #include "chrome/renderer/net/render_dns_master.h"
 #include "chrome/renderer/render_thread.h"
 #include "chrome/renderer/render_view.h"
 #include "chrome/renderer/renderer_webstoragenamespace_impl.h"
 #include "chrome/renderer/visitedlink_slave.h"
 #include "googleurl/src/gurl.h"
-#include "third_party/WebKit/WebKit/chromium/public/WebCookie.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebStorageEventDispatcher.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebString.h"
@@ -45,7 +43,6 @@
 
 using WebKit::WebApplicationCacheHost;
 using WebKit::WebApplicationCacheHostClient;
-using WebKit::WebCookie;
 using WebKit::WebFrame;
 using WebKit::WebKitClient;
 using WebKit::WebStorageArea;
@@ -71,6 +68,11 @@ WebKit::WebSandboxSupport* RendererWebKitClientImpl::sandboxSupport() {
 #else
   return NULL;
 #endif
+}
+
+WebKit::WebCookieJar* RendererWebKitClientImpl::cookieJar() {
+  NOTREACHED() << "Use WebFrameClient::cookieJar() instead!";
+  return NULL;
 }
 
 bool RendererWebKitClientImpl::sandboxEnabled() {
@@ -110,84 +112,6 @@ bool RendererWebKitClientImpl::isLinkVisited(unsigned long long link_hash) {
 WebKit::WebMessagePortChannel*
 RendererWebKitClientImpl::createMessagePortChannel() {
   return new WebMessagePortChannelImpl();
-}
-
-void RendererWebKitClientImpl::setCookies(const WebURL& url,
-                                          const WebURL& first_party_for_cookies,
-                                          const WebString& value) {
-  // TODO(darin): Modify WebKit to pass the WebFrame.  This code may be reached
-  // when there is no active script context.
-  int32 routing_id = RenderThread::RoutingIDForCurrentContext();
-
-  std::string value_utf8;
-  UTF16ToUTF8(value.data(), value.length(), &value_utf8);
-  RenderThread::current()->Send(
-      new ViewHostMsg_SetCookie(routing_id, url, first_party_for_cookies,
-                                value_utf8));
-}
-
-WebString RendererWebKitClientImpl::cookies(
-    const WebURL& url, const WebURL& first_party_for_cookies) {
-  // TODO(darin): Modify WebKit to pass the WebFrame.  This code may be reached
-  // when there is no active script context.
-  int32 routing_id = RenderThread::RoutingIDForCurrentContext();
-
-  // TODO(darin): We should use SendAndRunNestedMessageLoop here to avoid dead-
-  // locking the browser, but this causes a performance regression.  Switching
-  // back to Send to verify.  See http://crbug.com/36310.
-
-  std::string value_utf8;
-  SendCookieMessage(
-      new ViewHostMsg_GetCookies(routing_id, url, first_party_for_cookies,
-                                 &value_utf8));
-
-  return WebString::fromUTF8(value_utf8);
-}
-
-bool RendererWebKitClientImpl::rawCookies(
-    const WebURL& url,
-    const WebURL& first_party_for_cookies,
-    WebVector<WebKit::WebCookie>* raw_cookies) {
-  // TODO(darin): Modify WebKit to pass the WebFrame.  This code may be reached
-  // when there is no active script context.
-  int32 routing_id = RenderThread::RoutingIDForCurrentContext();
-
-  std::vector<webkit_glue::WebCookie> cookies;
-  SendCookieMessage(
-      new ViewHostMsg_GetRawCookies(routing_id, url, first_party_for_cookies,
-                                    &cookies));
-
-  WebVector<WebKit::WebCookie> result(cookies.size());
-  int i = 0;
-  for (std::vector<webkit_glue::WebCookie>::iterator it = cookies.begin();
-       it != cookies.end(); ++it)
-     result[i++] = WebKit::WebCookie(WebString::fromUTF8(it->name),
-                                     WebString::fromUTF8(it->value),
-                                     WebString::fromUTF8(it->domain),
-                                     WebString::fromUTF8(it->path),
-                                     it->expires,
-                                     it->http_only,
-                                     it->secure,
-                                     it->session);
-  raw_cookies->assign(result);
-  return true;
-}
-
-void RendererWebKitClientImpl::deleteCookie(const WebURL& url,
-                                            const WebString& cookie_name) {
-  std::string cookie_name_utf8;
-  UTF16ToUTF8(cookie_name.data(), cookie_name.length(), &cookie_name_utf8);
-  RenderThread::current()->Send(
-      new ViewHostMsg_DeleteCookie(url, cookie_name_utf8));
-}
-
-bool RendererWebKitClientImpl::cookiesEnabled(
-    const WebKit::WebURL& url, const WebKit::WebURL& first_party_for_cookies) {
-  bool enabled;
-  RenderThread::current()->Send(
-      new ViewHostMsg_GetCookiesEnabled(
-            url, first_party_for_cookies, &enabled));
-  return enabled;
 }
 
 void RendererWebKitClientImpl::prefetchHostName(const WebString& hostname) {
@@ -413,22 +337,4 @@ WebKit::WebString RendererWebKitClientImpl::signedPublicKeyAndChallengeString(
       GURL(url),
       &signed_public_key));
   return WebString::fromUTF8(signed_public_key);
-}
-
-//------------------------------------------------------------------------------
-
-void RendererWebKitClientImpl::SendCookieMessage(IPC::SyncMessage* message) {
-  RenderThread* render_thread = RenderThread::current();
-
-  CookieMessageFilter* filter = render_thread->cookie_message_filter();
-  message->set_pump_messages_event(filter->pump_messages_event());
-  render_thread->Send(message);
-
-  // We may end up nesting calls to SendCookieMessage, so we defer the reset
-  // until we return to the top-most message loop.
-  if (filter->pump_messages_event()->IsSignaled()) {
-    MessageLoop::current()->PostNonNestableTask(FROM_HERE,
-        NewRunnableMethod(filter,
-                          &CookieMessageFilter::ResetPumpMessagesEvent));
-  }
 }

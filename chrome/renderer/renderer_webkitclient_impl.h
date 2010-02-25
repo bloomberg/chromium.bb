@@ -32,24 +32,13 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
   virtual WebKit::WebClipboard* clipboard();
   virtual WebKit::WebMimeRegistry* mimeRegistry();
   virtual WebKit::WebSandboxSupport* sandboxSupport();
+  virtual WebKit::WebCookieJar* cookieJar();
   virtual bool sandboxEnabled();
   virtual bool getFileSize(const WebKit::WebString& path, long long& result);
   virtual unsigned long long visitedLinkHash(
       const char* canonicalURL, size_t length);
   virtual bool isLinkVisited(unsigned long long linkHash);
   virtual WebKit::WebMessagePortChannel* createMessagePortChannel();
-  virtual void setCookies(const WebKit::WebURL& url,
-                          const WebKit::WebURL& first_party_for_cookies,
-                          const WebKit::WebString&);
-  virtual WebKit::WebString cookies(
-      const WebKit::WebURL& url, const WebKit::WebURL& first_party_for_cookies);
-  virtual bool rawCookies(const WebKit::WebURL& url,
-                          const WebKit::WebURL& first_party_for_cookies,
-                          WebKit::WebVector<WebKit::WebCookie>* raw_cookies);
-  virtual void deleteCookie(const WebKit::WebURL& url,
-                            const WebKit::WebString& cookie_name);
-  virtual bool cookiesEnabled(const WebKit::WebURL& url,
-                              const WebKit::WebURL& first_party_for_cookies);
   virtual void prefetchHostName(const WebKit::WebString&);
   virtual WebKit::WebString defaultLocale();
   virtual void suddenTerminationChanged(bool enabled);
@@ -109,8 +98,6 @@ class RendererWebKitClientImpl : public webkit_glue::WebKitClientImpl {
     std::map<std::string, std::string> unicode_font_families_;
   };
 #endif
-
-  void SendCookieMessage(IPC::SyncMessage* message);
 
   webkit_glue::WebClipboardImpl clipboard_;
 

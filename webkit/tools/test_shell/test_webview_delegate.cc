@@ -26,6 +26,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebHistoryItem.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebFrame.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebKit.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebKitClient.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebNode.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPoint.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebPopupMenu.h"
@@ -67,6 +68,7 @@ using appcache::WebApplicationCacheHostImpl;
 using WebKit::WebAccessibilityObject;
 using WebKit::WebConsoleMessage;
 using WebKit::WebContextMenuData;
+using WebKit::WebCookieJar;
 using WebKit::WebData;
 using WebKit::WebDataSource;
 using WebKit::WebDragData;
@@ -590,6 +592,11 @@ int TestWebViewDelegate::historyForwardListCount() {
   return shell_->navigation_controller()->GetEntryCount() - current_index - 1;
 }
 
+void TestWebViewDelegate::focusAccessibilityObject(
+    const WebAccessibilityObject& object) {
+  shell_->accessibility_controller()->SetFocusedElement(object);
+}
+
 // WebWidgetClient -----------------------------------------------------------
 
 void TestWebViewDelegate::didInvalidateRect(const WebRect& rect) {
@@ -1013,9 +1020,10 @@ bool TestWebViewDelegate::allowScript(WebFrame* frame,
   return enabled_per_settings && shell_->allow_scripts();
 }
 
-void TestWebViewDelegate::focusAccessibilityObject(
-    const WebAccessibilityObject& object) {
-  shell_->accessibility_controller()->SetFocusedElement(object);
+// WebPluginPageDelegate -----------------------------------------------------
+
+WebCookieJar* TestWebViewDelegate::GetCookieJar() {
+  return WebKit::webKitClient()->cookieJar();
 }
 
 // Public methods ------------------------------------------------------------

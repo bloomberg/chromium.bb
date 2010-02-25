@@ -225,6 +225,7 @@ class TestWebViewDelegate : public WebKit::WebViewClient,
       const gfx::Size& size,
       const std::string& json_arguments,
       std::string* json_retval) {}
+  virtual WebKit::WebCookieJar* GetCookieJar();
 
   TestWebViewDelegate(TestShell* shell);
   ~TestWebViewDelegate();

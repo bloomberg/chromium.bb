@@ -121,6 +121,8 @@
         'renderer/renderer_main_platform_delegate_win.cc',
         'renderer/renderer_sandbox_support_linux.cc',
         'renderer/renderer_sandbox_support_linux.h',
+        'renderer/renderer_webcookiejar_impl.cc',
+        'renderer/renderer_webcookiejar_impl.h',
         'renderer/renderer_webkitclient_impl.cc',
         'renderer/renderer_webkitclient_impl.h',
         'renderer/renderer_webstoragearea_impl.cc',
