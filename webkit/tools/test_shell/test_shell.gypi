@@ -138,7 +138,7 @@
             'npapi_test_plugin',
           ],
         }],
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
           'dependencies': [
             'test_shell_resources',
             '<(DEPTH)/build/linux/system.gyp:gtk',
@@ -147,7 +147,7 @@
           # for:  test_shell_gtk.cc
           'cflags': ['-Wno-multichar'],
         }],
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
           # See below TODO in the Windows branch.
           'copies': [
             {
@@ -292,7 +292,7 @@
             '<(SHARED_INTERMEDIATE_DIR)/webkit/webkit_strings_en-US.rc',
           ],
         }],
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
           'conditions': [
             ['linux_use_tcmalloc==1', {
               'dependencies': [
@@ -445,7 +445,7 @@
           ],
           'sources': [ '<@(test_shell_windows_resource_files)' ],
         }],
-        ['OS=="linux" or OS=="freebsd" or OS=="openbsd"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
           'dependencies': [
             'test_shell_pak',
             '<(DEPTH)/build/linux/system.gyp:gtk',
@@ -481,7 +481,7 @@
             '../../../skia/ext/vector_canvas_unittest.cc',
           ],
         }],
-        ['OS=="linux" or OS=="freebsd"', {
+        ['OS=="linux" or OS=="freebsd" or OS=="solaris"', {
           'conditions': [
             ['linux_use_tcmalloc==1', {
               'dependencies': [
@@ -567,7 +567,7 @@
             ],
           },
         }],
-        ['(OS=="linux" or OS=="freebsd" or OS=="openbsd") and (target_arch=="x64" or target_arch=="arm")', {
+        ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris") and (target_arch=="x64" or target_arch=="arm")', {
           # Shared libraries need -fPIC on x86-64
           'cflags': ['-fPIC']
         }],
@@ -672,7 +672,7 @@
                 '../../glue/plugins/test/plugin_windowless_test.cc',
               ],
             }],
-            ['(OS=="linux" or OS=="freebsd" or OS=="openbsd") and (target_arch=="x64" or target_arch=="arm")', {
+            ['(OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris") and (target_arch=="x64" or target_arch=="arm")', {
               # Shared libraries need -fPIC on x86-64
               'cflags': ['-fPIC']
             }],
@@ -680,7 +680,7 @@
         },
       ],
     }],
-    ['OS=="linux"  or OS=="freebsd" or OS=="openbsd"', {
+    ['OS=="linux"  or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
       'targets': [
         {
           'target_name': 'test_shell_resources',
