@@ -364,6 +364,7 @@ class RenderView : public RenderWidget,
   virtual void didRunInsecureContent(
       WebKit::WebFrame* frame, const WebKit::WebSecurityOrigin& origin);
   virtual bool allowScript(WebKit::WebFrame* frame, bool enabled_per_settings);
+  virtual void didNotAllowScript(WebKit::WebFrame* frame);
   virtual void didExhaustMemoryAvailableForScript(WebKit::WebFrame* frame);
   virtual void didCreateScriptContext(WebKit::WebFrame* frame);
   virtual void didDestroyScriptContext(WebKit::WebFrame* frame);
@@ -857,10 +858,11 @@ class RenderView : public RenderWidget,
   static std::string DetermineTextLanguage(const std::wstring& text);
 
   // Helper method that returns if the user wants to block content of type
-  // |content_type| and sends an IPC message to the browser if content will be
-  // blocked.
-  bool AllowContentType(ContentSettingsType settings_type,
-                        bool enabled_per_settings);
+  // |content_type|.
+  bool AllowContentType(ContentSettingsType settings_type);
+
+  // Sends an IPC notification that the specified content type was blocked.
+  void DidBlockContentType(ContentSettingsType settings_type);
 
   // Resets the |content_blocked_| array.
   void ClearBlockedContentSettings();

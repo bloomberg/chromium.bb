@@ -2152,11 +2152,23 @@ void RenderView::willClose(WebFrame* frame) {
 }
 
 bool RenderView::allowPlugins(WebFrame* frame, bool enabled_per_settings) {
-  return AllowContentType(CONTENT_SETTINGS_TYPE_PLUGINS, enabled_per_settings);
+  if (!enabled_per_settings)
+    return false;
+  if (!AllowContentType(CONTENT_SETTINGS_TYPE_PLUGINS)) {
+    DidBlockContentType(CONTENT_SETTINGS_TYPE_PLUGINS);
+    return false;
+  }
+  return true;
 }
 
 bool RenderView::allowImages(WebFrame* frame, bool enabled_per_settings) {
-  return AllowContentType(CONTENT_SETTINGS_TYPE_IMAGES, enabled_per_settings);
+  if (!enabled_per_settings)
+    return false;
+  if (!AllowContentType(CONTENT_SETTINGS_TYPE_IMAGES)) {
+    DidBlockContentType(CONTENT_SETTINGS_TYPE_IMAGES);
+    return false;
+  }
+  return true;
 }
 
 void RenderView::loadURLExternally(
@@ -2824,10 +2836,8 @@ void RenderView::didRunInsecureContent(
 }
 
 bool RenderView::allowScript(WebFrame* frame, bool enabled_per_settings) {
-  if (enabled_per_settings) {
-    return AllowContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT,
-                            enabled_per_settings);
-  }
+  if (enabled_per_settings)
+      return AllowContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
 
   WebSecurityOrigin origin = frame->securityOrigin();
   if (origin.isEmpty())
@@ -2848,6 +2858,10 @@ bool RenderView::allowScript(WebFrame* frame, bool enabled_per_settings) {
   }
 
   return false;  // Other protocols fall through here.
+}
+
+void RenderView::didNotAllowScript(WebKit::WebFrame* frame) {
+  DidBlockContentType(CONTENT_SETTINGS_TYPE_JAVASCRIPT);
 }
 
 void RenderView::didExhaustMemoryAvailableForScript(WebFrame* frame) {
@@ -3323,20 +3337,17 @@ std::string RenderView::DetermineTextLanguage(const std::wstring& text) {
   return language;
 }
 
-bool RenderView::AllowContentType(ContentSettingsType settings_type,
-                                  bool enabled_per_settings) {
-  if (!enabled_per_settings)
-    return false;
+bool RenderView::AllowContentType(ContentSettingsType settings_type) {
   // CONTENT_SETTING_ASK is only valid for cookies.
-  if (current_content_settings_.settings[settings_type] ==
-      CONTENT_SETTING_BLOCK) {
-    if (!content_blocked_[settings_type]) {
-      content_blocked_[settings_type] = true;
-      Send(new ViewHostMsg_ContentBlocked(routing_id_, settings_type));
-    }
-    return false;
+  return current_content_settings_.settings[settings_type] !=
+    CONTENT_SETTING_BLOCK;
+}
+
+void RenderView::DidBlockContentType(ContentSettingsType settings_type) {
+  if (!content_blocked_[settings_type]) {
+    content_blocked_[settings_type] = true;
+    Send(new ViewHostMsg_ContentBlocked(routing_id_, settings_type));
   }
-  return true;
 }
 
 void RenderView::ClearBlockedContentSettings() {
