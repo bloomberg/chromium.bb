@@ -29,7 +29,7 @@
 
 - (void)drawBackground {
   BOOL isKey = [[self window] isKeyWindow];
-  GTMTheme* theme = [self gtm_theme];
+  GTMTheme* theme = [[self window] gtm_theme];
   NSImage* backgroundImage =
       [theme backgroundImageForStyle:GTMThemeStyleToolBar
                                state:GTMThemeStateActiveWindow];

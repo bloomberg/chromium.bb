@@ -4,6 +4,9 @@
 
 #import "chrome/browser/cocoa/bookmark_bar_folder_window.h"
 
+#import "chrome/browser/cocoa/bookmark_bar_folder_controller.h"
+#import "chrome/browser/cocoa/GTMTheme.h"
+
 @implementation BookmarkBarFolderWindow
 
 - (id)initWithContentRect:(NSRect)contentRect
@@ -14,6 +17,10 @@
                           styleMask:NSBorderlessWindowMask // override
                             backing:bufferingType
                               defer:deferCreation];
+}
+
+- (GTMTheme*)gtm_theme {
+  return [[self windowController] gtm_theme];
 }
 
 @end

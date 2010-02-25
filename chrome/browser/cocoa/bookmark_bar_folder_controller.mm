@@ -224,6 +224,10 @@
   return [parentController_ themeProvider];
 }
 
+- (GTMTheme*)gtm_theme {
+  return [[parentController_ parentWindow] gtm_theme];
+}
+
 // Recursively close all bookmark folders.
 - (void)closeAllBookmarkFolders {
   // Closing the top level implicitly closes all children.
