@@ -36,7 +36,8 @@ bool ExtensionDevToolsBridge::RegisterAsDevToolsClientHost() {
   TabStripModel* tab_strip;
   TabContents* contents;
   int tab_index;
-  if (ExtensionTabUtil::GetTabById(tab_id_, profile_, &browser, &tab_strip,
+  if (ExtensionTabUtil::GetTabById(tab_id_, profile_, true,
+                                   &browser, &tab_strip,
                                    &contents, &tab_index)) {
     DevToolsManager* devtools_manager = DevToolsManager::GetInstance();
     devtools_manager->RegisterDevToolsClientHostFor(
@@ -63,8 +64,8 @@ void ExtensionDevToolsBridge::InspectedTabClosing() {
   // TODO(knorton): Remove this event in favor of the standard tabs.onRemoved
   // event in extensions.
   std::string json("[{}]");
-  profile_->GetExtensionMessageService()->
-      DispatchEventToRenderers(on_tab_close_event_name_, json);
+  profile_->GetExtensionMessageService()->DispatchEventToRenderers(
+      on_tab_close_event_name_, json, profile_->IsOffTheRecord());
 
   // This may result in this object being destroyed.
   extension_devtools_manager_->BridgeClosingForTab(tab_id_);
@@ -87,7 +88,7 @@ void ExtensionDevToolsBridge::OnRpcMessage(const DevToolsMessageData& data) {
       && data.method_name == kApuPageEventMessageName) {
     std::string json = StringPrintf("[%s]", data.arguments[0].c_str());
     profile_->GetExtensionMessageService()->DispatchEventToRenderers(
-        on_page_event_name_, json);
+        on_page_event_name_, json, profile_->IsOffTheRecord());
   }
 }
 

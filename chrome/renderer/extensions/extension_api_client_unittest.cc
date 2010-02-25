@@ -80,7 +80,7 @@ TEST_F(ExtensionAPIClientTest, CallbackDispatching) {
     "function callback(result) {"
     "  assert(typeof result == 'object', 'result not object');"
     "  assert(JSON.stringify(result) == '{\"id\":1,\"index\":1,\"windowId\":1,"
-                                        "\"selected\":true,"
+                                        "\"selected\":true,\"incognito\":false,"
                                         "\"url\":\"http://www.google.com/\"}',"
     "         'incorrect result');"
     "  console.log('pass')"
@@ -103,7 +103,7 @@ TEST_F(ExtensionAPIClientTest, CallbackDispatching) {
   // Now send the callback a response
   ExtensionProcessBindings::HandleResponse(
     callback_id, true, "{\"id\":1,\"index\":1,\"windowId\":1,\"selected\":true,"
-                       "\"url\":\"http://www.google.com/\"}", "");
+    "\"incognito\":false,\"url\":\"http://www.google.com/\"}", "");
 
   // And verify that it worked
   ASSERT_EQ("pass", GetConsoleMessage());

@@ -31,6 +31,7 @@
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/tab_contents/tab_contents.h"
 #include "chrome/browser/tab_contents/tab_contents_view.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
 #include "chrome/common/extensions/extension_error_reporter.h"
@@ -100,6 +101,12 @@ void ExtensionsUIHTMLSource::StartDataRequest(const std::string& path,
       l10n_util::GetString(IDS_EXTENSIONS_DISABLE));
   localized_strings.SetString(L"enable",
       l10n_util::GetString(IDS_EXTENSIONS_ENABLE));
+  localized_strings.SetString(L"disableIncognito",
+      l10n_util::GetString(IDS_EXTENSIONS_DISABLE_INCOGNITO));
+  localized_strings.SetString(L"enableIncognito",
+      l10n_util::GetString(IDS_EXTENSIONS_ENABLE_INCOGNITO));
+  localized_strings.SetString(L"enableIncognitoWarning",
+      l10n_util::GetString(IDS_EXTENSIONS_ENABLE_INCOGNITO_WARNING));
   localized_strings.SetString(L"reload",
       l10n_util::GetString(IDS_EXTENSIONS_RELOAD));
   localized_strings.SetString(L"uninstall",
@@ -251,6 +258,8 @@ void ExtensionsDOMHandler::RegisterMessages() {
       NewCallback(this, &ExtensionsDOMHandler::HandleReloadMessage));
   dom_ui_->RegisterMessageCallback("enable",
       NewCallback(this, &ExtensionsDOMHandler::HandleEnableMessage));
+  dom_ui_->RegisterMessageCallback("enableIncognito",
+      NewCallback(this, &ExtensionsDOMHandler::HandleEnableIncognitoMessage));
   dom_ui_->RegisterMessageCallback("uninstall",
       NewCallback(this, &ExtensionsDOMHandler::HandleUninstallMessage));
   dom_ui_->RegisterMessageCallback("options",
@@ -284,6 +293,7 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
     // themes.
     if (!(*extension)->IsTheme()) {
       extensions_list->Append(CreateExtensionDetailValue(
+          extensions_service_.get(),
           *extension, GetActivePagesForExtension((*extension)->id()), true));
       extension_icons->push_back(PickExtensionIcon(*extension));
     }
@@ -293,6 +303,7 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
        extension != extensions->end(); ++extension) {
     if (!(*extension)->IsTheme()) {
       extensions_list->Append(CreateExtensionDetailValue(
+          extensions_service_.get(),
           *extension, GetActivePagesForExtension((*extension)->id()), false));
       extension_icons->push_back(PickExtensionIcon(*extension));
     }
@@ -302,6 +313,10 @@ void ExtensionsDOMHandler::HandleRequestExtensionsData(const Value* value) {
   bool developer_mode = dom_ui_->GetProfile()->GetPrefs()
       ->GetBoolean(prefs::kExtensionsUIDeveloperMode);
   results->SetBoolean(L"developerMode", developer_mode);
+
+  results->SetBoolean(L"experimentalIncognito",
+      CommandLine::ForCurrentProcess()->HasSwitch(
+          switches::kEnableExperimentalExtensionApis));
 
   if (icon_loader_.get())
     icon_loader_->Cancel();
@@ -400,6 +415,17 @@ void ExtensionsDOMHandler::HandleEnableMessage(const Value* value) {
   } else {
     extensions_service_->DisableExtension(extension_id);
   }
+}
+
+void ExtensionsDOMHandler::HandleEnableIncognitoMessage(const Value* value) {
+  CHECK(value->IsType(Value::TYPE_LIST));
+  const ListValue* list = static_cast<const ListValue*>(value);
+  CHECK(list->GetSize() == 2);
+  std::string extension_id, enable_str;
+  CHECK(list->GetString(0, &extension_id));
+  CHECK(list->GetString(1, &enable_str));
+  extensions_service_->SetIsIncognitoEnabled(extension_id,
+                                             (enable_str == "true"));
 }
 
 void ExtensionsDOMHandler::HandleUninstallMessage(const Value* value) {
@@ -657,8 +683,8 @@ DictionaryValue* ExtensionsDOMHandler::CreateContentScriptDetailValue(
 
 // Static
 DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
-    const Extension *extension, const std::vector<ExtensionPage>& pages,
-    bool enabled) {
+    ExtensionsService* service, const Extension *extension,
+    const std::vector<ExtensionPage>& pages, bool enabled) {
   DictionaryValue* extension_data = new DictionaryValue();
 
   extension_data->SetString(L"id", extension->id());
@@ -666,6 +692,10 @@ DictionaryValue* ExtensionsDOMHandler::CreateExtensionDetailValue(
   extension_data->SetString(L"description", extension->description());
   extension_data->SetString(L"version", extension->version()->GetString());
   extension_data->SetBoolean(L"enabled", enabled);
+  extension_data->SetBoolean(L"enabledIncognito",
+      service ? service->IsIncognitoEnabled(extension->id()) : false);
+  extension_data->SetBoolean(L"incognitoSafe",
+      extension->HasApiPermission(Extension::kIncognitoPermission));
   extension_data->SetBoolean(L"allow_reload",
                              extension->location() == Extension::LOAD);
 

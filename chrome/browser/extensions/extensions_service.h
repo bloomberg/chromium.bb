@@ -106,10 +106,9 @@ class ExtensionsService
                               const base::Time& time);
   virtual base::Time LastPingDay(const std::string& extension_id);
 
-  // Returns true if this extension can run in an incognito window. The
-  // decision is based on both user consent and the extension having the right
-  // permission.
+  // Whether this extension can run in an incognito window.
   bool IsIncognitoEnabled(const std::string& extension_id);
+  void SetIsIncognitoEnabled(const std::string& extension_id, bool enabled);
 
   const FilePath& install_directory() const { return install_directory_; }
 

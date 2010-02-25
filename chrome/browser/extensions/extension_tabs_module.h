@@ -45,7 +45,8 @@ class ExtensionTabUtil {
                             int* tab_id);
   // Any out parameter (|browser|, |tab_strip|, |contents|, & |tab_index|) may
   // be NULL and will not be set within the function.
-  static bool GetTabById(int tab_id, Profile* profile, Browser** browser,
+  static bool GetTabById(int tab_id, Profile* profile, bool incognito_enabled,
+                         Browser** browser,
                          TabStripModel** tab_strip,
                          TabContents** contents,
                          int* tab_index);

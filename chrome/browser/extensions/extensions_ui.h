@@ -106,9 +106,11 @@ class ExtensionsDOMHandler
   virtual void RegisterMessages();
 
   // Extension Detail JSON Struct for page. (static for ease of testing).
+  // Note: service can be NULL in unit tests.
   static DictionaryValue* CreateExtensionDetailValue(
-      const Extension *extension,
-      const std::vector<ExtensionPage>&,
+      ExtensionsService* service,
+      const Extension* extension,
+      const std::vector<ExtensionPage>& pages,
       bool enabled);
 
   // ContentScript JSON Struct for page. (static for ease of testing).
@@ -142,6 +144,9 @@ class ExtensionsDOMHandler
 
   // Callback for "enable" message.
   void HandleEnableMessage(const Value* value);
+
+  // Callback for "enableIncognito" message.
+  void HandleEnableIncognitoMessage(const Value* value);
 
   // Callback for "uninstall" message.
   void HandleUninstallMessage(const Value* value);

@@ -483,8 +483,8 @@ void ExtensionHost::ProcessDOMUIMessage(const std::string& message,
                                         int request_id,
                                         bool has_callback) {
   if (extension_function_dispatcher_.get()) {
-    extension_function_dispatcher_->HandleRequest(message, content, request_id,
-                                                  has_callback);
+    extension_function_dispatcher_->HandleRequest(
+        message, content, request_id, has_callback);
   }
 }
 
@@ -612,19 +612,28 @@ void ExtensionHost::HandleMouseLeave() {
 #endif
 }
 
-Browser* ExtensionHost::GetBrowser() const {
+Browser* ExtensionHost::GetBrowser(bool include_incognito) const {
+  Browser* browser = NULL;
+
   if (view_.get())
-    return view_->browser();
+    browser = view_->browser();
 
-  Profile* profile = render_view_host()->process()->profile();
-  Browser* browser = BrowserList::GetLastActiveWithProfile(profile);
+  if (!browser ||
+      (browser->profile()->IsOffTheRecord() && !include_incognito)) {
+    Profile* profile = render_view_host()->process()->profile();
+    // Make sure we don't return an incognito browser without proper access.
+    if (!include_incognito)
+      profile = profile->GetOriginalProfile();
 
-  // It's possible for a browser to exist, but to have never been active.
-  // This can happen if you launch the browser on a machine without an active
-  // desktop (a headless buildbot) or if you quickly give another app focus
-  // at launch time.  This is easy to do with browser_tests.
-  if (!browser)
-    browser = BrowserList::FindBrowserWithProfile(profile);
+    browser = BrowserList::GetLastActiveWithProfile(profile);
+
+    // It's possible for a browser to exist, but to have never been active.
+    // This can happen if you launch the browser on a machine without an active
+    // desktop (a headless buildbot) or if you quickly give another app focus
+    // at launch time.  This is easy to do with browser_tests.
+    if (!browser)
+      browser = BrowserList::FindBrowserWithProfile(profile);
+  }
 
   // TODO(erikkay): can this still return NULL?  Is Rafael's comment still
   // valid here?

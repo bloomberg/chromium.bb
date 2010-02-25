@@ -34,7 +34,10 @@ class ExtensionFunctionDispatcher {
  public:
   class Delegate {
    public:
-    virtual Browser* GetBrowser() const = 0;
+    // Returns the browser that this delegate is associated with. If the browser
+    // is incognito, but |include_incognito_windows| is false, we fall back to
+    // the toplevel browser in the original profile.
+    virtual Browser* GetBrowser(bool include_incognito_windows) const = 0;
 
     // Returns the gfx::NativeWindow that contains the view hosting the
     // environment in which the function dispatcher resides.
@@ -89,7 +92,9 @@ class ExtensionFunctionDispatcher {
 
   // Gets the browser extension functions should operate relative to. For
   // example, for positioning windows, or alert boxes, or creating tabs.
-  Browser* GetBrowser();
+  // If |include_incognito| is false, and the appropriate browser is incognito,
+  // we will fall back to a regular browser window or NULL if unavailable.
+  Browser* GetBrowser(bool include_incognito);
 
   // Get the extension popup hosting environment for the ExtensionHost
   // or ExtensionDOMUI associted with this dispatcher.

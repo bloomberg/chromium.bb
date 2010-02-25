@@ -180,6 +180,9 @@ class RenderThread : public RenderThreadBase,
   void OnExtensionSetHostPermissions(
       const GURL& extension_url,
       const std::vector<URLPattern>& permissions);
+  void OnExtensionSetIncognitoEnabled(
+      const std::string& extension_id,
+      bool enabled);
   void OnSetNextPageID(int32 next_page_id);
   void OnSetCSSColors(const std::vector<CSSColors::CSSColorMapping>& colors);
   void OnCreateNewView(const ViewMsg_New_Params& params);

@@ -47,11 +47,6 @@ class UserScriptMaster : public base::RefCountedThreadSafe<UserScriptMaster>,
   // Returns the path to the directory user scripts are stored in.
   FilePath user_script_dir() const { return user_script_dir_; }
 
-  // Note: this is only for testing. This will reload the scripts associated
-  // with the given extension. This is only temporary until we get better
-  // machinery in place for toggling incognito-enabled extensions.
-  void ReloadExtensionForTesting(Extension* extension);
-
  protected:
   friend class base::RefCountedThreadSafe<UserScriptMaster>;
 

@@ -424,7 +424,8 @@
           "left": {"type": "integer", "description": "The offset of the window from the left edge of the screen in pixels."},
           "width": {"type": "integer", "description": "The width of the window in pixels."},
           "height": {"type": "integer", "description": "The height of the window in pixels."},
-          "tabs": {"type": "array", "items": { "$ref": "Tab" }, "optional": true, "description": "Array of <a href='tabs.html#type-Tab'>Tab</a> objects representing the current tabs in the window."}
+          "tabs": {"type": "array", "items": { "$ref": "Tab" }, "optional": true, "description": "Array of <a href='tabs.html#type-Tab'>Tab</a> objects representing the current tabs in the window."},
+          "incognito": {"type": "boolean", "description": "Whether the window is incognito."}
         }
       }
     ],
@@ -615,7 +616,8 @@
           "url": {"type": "string", "description": "The URL the tab is displaying."},
           "title": {"type": "string", "optional": true, "description": "The title of the tab. This may not be available if the tab is loading."},
           "favIconUrl": {"type": "string", "optional": true, "description": "The URL of the tab's favicon. This may not be available if the tab is loading."},
-          "status": {"type": "string", "optional": true, "description": "Either <em>loading</em> or <em>complete</em>."}
+          "status": {"type": "string", "optional": true, "description": "Either <em>loading</em> or <em>complete</em>."},
+          "incognito": {"type": "boolean", "description": "Whether the tab is in an incognito window."}
         }
       }
     ],
@@ -2286,6 +2288,14 @@
         "description": "Logs a message during internal unit testing.",
         "parameters": [
           {"type": "string", "name": "message"}
+        ]
+      },
+      {
+        "name": "createIncognitoTab",
+        "type": "function",
+        "description": "Creates an incognito tab during internal testing. Succeeds even if the extension is not enabled in incognito mode.",
+        "parameters": [
+          {"type": "string", "name": "url"}
         ]
       }
     ],

@@ -82,7 +82,8 @@ class ExtensionMessageService
 
   // Send an event to every registered extension renderer.
   void DispatchEventToRenderers(
-      const std::string& event_name, const std::string& event_args);
+      const std::string& event_name, const std::string& event_args,
+      bool has_incognito_data);
 
   // Given an extension ID, opens a channel between the given
   // automation "port" or DevTools service and that extension. the

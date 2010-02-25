@@ -155,7 +155,7 @@ bool PopupShowFunction::RunImpl() {
   BubbleBorder::ArrowLocation arrow_location =
       (NULL != dispatcher()->GetExtensionHost()) ? BubbleBorder::BOTTOM_LEFT :
                                                    BubbleBorder::TOP_LEFT;
-  popup_ = ExtensionPopup::Show(url, dispatcher()->GetBrowser(),
+  popup_ = ExtensionPopup::Show(url, GetBrowser(),
                                 dispatcher()->profile(),
                                 dispatcher()->GetFrameNativeWindow(),
                                 rect,
@@ -238,5 +238,6 @@ void PopupEventRouter::OnPopupClosed(Profile* profile,
 
   profile->GetExtensionMessageService()->DispatchEventToRenderers(
       full_event_name,
-      base::JSONWriter::kEmptyArray);
+      base::JSONWriter::kEmptyArray,
+      profile->IsOffTheRecord());
 }

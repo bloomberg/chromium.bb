@@ -88,8 +88,8 @@ static void DispatchEvent(Profile* profile,
                           const char* event_name,
                           const std::string json_args) {
   if (profile->GetExtensionMessageService()) {
-    profile->GetExtensionMessageService()->
-        DispatchEventToRenderers(event_name, json_args);
+    profile->GetExtensionMessageService()->DispatchEventToRenderers(
+        event_name, json_args, profile->IsOffTheRecord());
   }
 }
 
@@ -437,8 +437,8 @@ void ExtensionBrowserEventRouter::PageActionExecuted(
   DispatchOldPageActionEvent(profile, extension_id, page_action_id, tab_id, url,
                              button);
   TabContents* tab_contents = NULL;
-  if (!ExtensionTabUtil::GetTabById(tab_id, profile, NULL, NULL, &tab_contents,
-                                    NULL)) {
+  if (!ExtensionTabUtil::GetTabById(tab_id, profile, profile->IsOffTheRecord(),
+                                    NULL, NULL, &tab_contents, NULL)) {
     return;
   }
   std::string event_name = std::string("pageAction/") + extension_id;

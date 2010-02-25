@@ -92,10 +92,12 @@ static void DispatchOnMessage(const ExtensionMessageService::MessagePort& port,
 
 static void DispatchEvent(const ExtensionMessageService::MessagePort& port,
                           const std::string& event_name,
-                          const std::string& event_args) {
+                          const std::string& event_args,
+                          bool has_incognito_data) {
   ListValue args;
   args.Set(0, Value::CreateStringValue(event_name));
   args.Set(1, Value::CreateStringValue(event_args));
+  args.Set(2, Value::CreateBooleanValue(has_incognito_data));
   port.sender->Send(new ViewMsg_ExtensionMessageInvoke(
       port.routing_id, ExtensionMessageService::kDispatchEvent, args));
 }
@@ -283,7 +285,7 @@ void ExtensionMessageService::OpenChannelToTabOnUIThread(
   TabContents* contents = NULL;
   MessagePort receiver;
   receiver.debug_info = 2;
-  if (ExtensionTabUtil::GetTabById(tab_id, source->profile(),
+  if (ExtensionTabUtil::GetTabById(tab_id, source->profile(), true,
                                    NULL, NULL, &contents, NULL)) {
     receiver.sender = contents->render_view_host();
     receiver.routing_id = contents->render_view_host()->routing_id();
@@ -451,7 +453,8 @@ void ExtensionMessageService::PostMessageFromRenderer(
 }
 
 void ExtensionMessageService::DispatchEventToRenderers(
-    const std::string& event_name, const std::string& event_args) {
+    const std::string& event_name, const std::string& event_args,
+    bool has_incognito_data) {
   DCHECK_EQ(MessageLoop::current()->type(), MessageLoop::TYPE_UI);
 
   std::set<int>& pids = listeners_[event_name];
@@ -467,7 +470,7 @@ void ExtensionMessageService::DispatchEventToRenderers(
       continue;
     }
 
-    DispatchEvent(renderer, event_name, event_args);
+    DispatchEvent(renderer, event_name, event_args, has_incognito_data);
   }
 }
 

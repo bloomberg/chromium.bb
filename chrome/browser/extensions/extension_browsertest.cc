@@ -51,7 +51,8 @@ void ExtensionBrowserTest::SetUpCommandLine(CommandLine* command_line) {
   command_line->AppendSwitch(switches::kEnableExtensionToolstrips);
 }
 
-bool ExtensionBrowserTest::LoadExtension(const FilePath& path) {
+bool ExtensionBrowserTest::LoadExtensionImpl(const FilePath& path,
+                                             bool incognito_enabled) {
   ExtensionsService* service = browser()->profile()->GetExtensionsService();
   size_t num_before = service->extensions()->size();
   {
@@ -67,7 +68,20 @@ bool ExtensionBrowserTest::LoadExtension(const FilePath& path) {
   if (num_after != (num_before + 1))
     return false;
 
+  if (incognito_enabled) {
+    Extension* extension = service->extensions()->at(num_after - 1);
+    service->SetIsIncognitoEnabled(extension->id(), true);
+  }
+
   return WaitForExtensionHostsToLoad();
+}
+
+bool ExtensionBrowserTest::LoadExtension(const FilePath& path) {
+  return LoadExtensionImpl(path, false);
+}
+
+bool ExtensionBrowserTest::LoadExtensionIncognito(const FilePath& path) {
+  return LoadExtensionImpl(path, true);
 }
 
 // This class is used to simulate an installation abort by the user.

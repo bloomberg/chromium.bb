@@ -48,7 +48,7 @@ bool ExecuteCodeInTabFunction::RunImpl() {
   Value* tab_value = NULL;
   EXTENSION_FUNCTION_VALIDATE(args->Get(0, &tab_value));
   if (tab_value->IsType(Value::TYPE_NULL)) {
-    browser = dispatcher()->GetBrowser();
+    browser = GetBrowser();
     if (!browser) {
       error_ = keys::kNoCurrentWindowError;
       return false;
@@ -57,8 +57,9 @@ bool ExecuteCodeInTabFunction::RunImpl() {
       return false;
   } else {
     EXTENSION_FUNCTION_VALIDATE(tab_value->GetAsInteger(&execute_tab_id_));
-    if (!ExtensionTabUtil::GetTabById(execute_tab_id_, profile(), &browser,
-                                      NULL, &contents, NULL)) {
+    if (!ExtensionTabUtil::GetTabById(execute_tab_id_, profile(),
+                                      include_incognito(),
+                                      &browser, NULL, &contents, NULL)) {
       return false;
     }
   }
@@ -127,7 +128,8 @@ void ExecuteCodeInTabFunction::DidLoadFile(bool success,
 bool ExecuteCodeInTabFunction::Execute(const std::string& code_string) {
   TabContents* contents = NULL;
   Browser* browser = NULL;
-  if (!ExtensionTabUtil::GetTabById(execute_tab_id_, profile(), &browser, NULL,
+  if (!ExtensionTabUtil::GetTabById(execute_tab_id_, profile(),
+                                    include_incognito(), &browser, NULL,
                                     &contents, NULL) && contents && browser) {
     SendResponse(false);
     return false;

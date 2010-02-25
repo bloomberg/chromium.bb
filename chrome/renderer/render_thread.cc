@@ -457,6 +457,11 @@ void RenderThread::OnExtensionSetHostPermissions(
   ExtensionProcessBindings::SetHostPermissions(extension_url, permissions);
 }
 
+void RenderThread::OnExtensionSetIncognitoEnabled(
+    const std::string& extension_id, bool enabled) {
+  ExtensionProcessBindings::SetIncognitoEnabled(extension_id, enabled);
+}
+
 void RenderThread::OnDOMStorageEvent(
     const ViewMsg_DOMStorageEvent_Params& params) {
   if (!dom_storage_event_dispatcher_.get())
@@ -511,6 +516,8 @@ void RenderThread::OnControlMessageReceived(const IPC::Message& msg) {
                         OnExtensionSetAPIPermissions)
     IPC_MESSAGE_HANDLER(ViewMsg_Extension_SetHostPermissions,
                         OnExtensionSetHostPermissions)
+    IPC_MESSAGE_HANDLER(ViewMsg_Extension_ExtensionSetIncognitoEnabled,
+                        OnExtensionSetIncognitoEnabled)
     IPC_MESSAGE_HANDLER(ViewMsg_DOMStorageEvent,
                         OnDOMStorageEvent)
 #if defined(IPC_MESSAGE_LOG_ENABLED)

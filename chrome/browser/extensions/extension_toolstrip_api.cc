@@ -40,7 +40,7 @@ bool ToolstripFunction::RunImpl() {
     error_ = kNotAToolstripError;
     return false;
   }
-  Browser* browser = dispatcher()->GetBrowser();
+  Browser* browser = GetBrowser();
   if (!browser) {
     error_ = kNotAToolstripError;
     return false;
@@ -133,8 +133,8 @@ void ToolstripEventRouter::DispatchEvent(Profile *profile,
     std::string json_args;
     base::JSONWriter::Write(&json, false, &json_args);
     std::string full_event_name = StringPrintf(event_name, routing_id);
-    profile->GetExtensionMessageService()->
-        DispatchEventToRenderers(full_event_name, json_args);
+    profile->GetExtensionMessageService()->DispatchEventToRenderers(
+        full_event_name, json_args, profile->IsOffTheRecord());
   }
 }
 

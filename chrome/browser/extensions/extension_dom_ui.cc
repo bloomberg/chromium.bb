@@ -76,11 +76,19 @@ void ExtensionDOMUI::ProcessDOMUIMessage(const std::string& message,
                                                 has_callback);
 }
 
-Browser* ExtensionDOMUI::GetBrowser() const {
+Browser* ExtensionDOMUI::GetBrowser(bool include_incognito) const {
+  Browser* browser = NULL;
   TabContentsDelegate* tab_contents_delegate = tab_contents()->delegate();
-  if (tab_contents_delegate)
-    return tab_contents_delegate->GetBrowser();
-  return NULL;
+  if (tab_contents_delegate) {
+    browser = tab_contents_delegate->GetBrowser();
+    if (browser && browser->profile()->IsOffTheRecord() && !include_incognito) {
+      // Fall back to the toplevel regular browser if we don't want to include
+      // incognito browsers.
+      browser = BrowserList::GetLastActiveWithProfile(
+          browser->profile()->GetOriginalProfile());
+    }
+  }
+  return browser;
 }
 
 Profile* ExtensionDOMUI::GetProfile() {

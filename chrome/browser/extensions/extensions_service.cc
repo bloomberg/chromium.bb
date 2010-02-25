@@ -530,13 +530,19 @@ base::Time ExtensionsService::LastPingDay(const std::string& extension_id) {
 }
 
 bool ExtensionsService::IsIncognitoEnabled(const std::string& extension_id) {
-  Extension* extension = GetExtensionById(extension_id, true);
-  if (!extension)
-    return false;
+  return extension_prefs_->IsIncognitoEnabled(extension_id);
+}
 
-  return extension_prefs_->IsIncognitoEnabled(extension_id) &&
-      extension->HasApiPermission(Extension::kExperimentalPermission) &&
-      extension->HasApiPermission(Extension::kIncognitoPermission);
+void ExtensionsService::SetIsIncognitoEnabled(const std::string& extension_id,
+                                              bool enabled) {
+  Extension* extension = GetExtensionByIdInternal(extension_id, true, true);
+  extension_prefs_->SetIsIncognitoEnabled(extension_id, enabled);
+
+  std::pair<Extension*, bool> details(extension, enabled);
+  NotificationService::current()->Notify(
+      NotificationType::EXTENSION_INCOGNITO_CHANGED,
+      Source<Profile>(profile_),
+      Details<std::pair<Extension*, bool> >(&details));
 }
 
 void ExtensionsService::CheckForExternalUpdates() {

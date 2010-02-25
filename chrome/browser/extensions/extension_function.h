@@ -68,6 +68,9 @@ class ExtensionFunction : public base::RefCounted<ExtensionFunction> {
   void set_has_callback(bool has_callback) { has_callback_ = has_callback; }
   bool has_callback() { return has_callback_; }
 
+  void set_include_incognito(bool include) { include_incognito_ = include; }
+  bool include_incognito() { return include_incognito_; }
+
   // Execute the API. Clients should call set_raw_args() and
   // set_request_id() before calling this method. Derived classes should be
   // ready to return raw_result() and error() before returning from this
@@ -88,6 +91,10 @@ class ExtensionFunction : public base::RefCounted<ExtensionFunction> {
       return NULL;
   }
 
+  Browser* GetBrowser() {
+    return dispatcher()->GetBrowser(include_incognito_);
+  }
+
   // The peer to the dispatcher that will service this extension function call.
   scoped_refptr<ExtensionFunctionDispatcher::Peer> peer_;
 
@@ -100,6 +107,9 @@ class ExtensionFunction : public base::RefCounted<ExtensionFunction> {
   // True if the js caller provides a callback function to receive the response
   // of this call.
   bool has_callback_;
+
+  // True if this callback should include information from incognito contexts.
+  bool include_incognito_;
 
   DISALLOW_COPY_AND_ASSIGN(ExtensionFunction);
 };

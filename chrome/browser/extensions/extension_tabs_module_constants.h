@@ -36,6 +36,7 @@ extern const wchar_t kTopKey[];
 extern const wchar_t kUrlKey[];
 extern const wchar_t kWidthKey[];
 extern const wchar_t kWindowIdKey[];
+extern const wchar_t kIncognitoKey[];
 
 // Value consts.
 extern const char kStatusValueComplete[];

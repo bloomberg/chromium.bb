@@ -50,8 +50,8 @@ namespace {
 
     // Produce test output.
     scoped_ptr<DictionaryValue> actual_output_data(
-        ExtensionsDOMHandler::CreateExtensionDetailValue(&extension, pages,
-                                                         true));
+        ExtensionsDOMHandler::CreateExtensionDetailValue(NULL, &extension,
+                                                         pages, true));
 
     // Compare the outputs.
     return expected_output_data->Equals(actual_output_data.get());

@@ -70,7 +70,8 @@ bool PageActionFunction::SetPageActionEnabled(bool enable) {
 
   // Find the TabContents that contains this tab id.
   TabContents* contents = NULL;
-  ExtensionTabUtil::GetTabById(tab_id, profile(), NULL, NULL, &contents, NULL);
+  ExtensionTabUtil::GetTabById(tab_id, profile(), include_incognito(),
+                               NULL, NULL, &contents, NULL);
   if (!contents) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(kNoTabError,
                                                      IntToString(tab_id));
@@ -102,7 +103,8 @@ bool PageActionFunction::InitCommon(int tab_id) {
 
   // Find the TabContents that contains this tab id.
   contents_ = NULL;
-  ExtensionTabUtil::GetTabById(tab_id, profile(), NULL, NULL, &contents_, NULL);
+  ExtensionTabUtil::GetTabById(tab_id, profile(), include_incognito(),
+                               NULL, NULL, &contents_, NULL);
   if (!contents_) {
     error_ = ExtensionErrorUtils::FormatErrorMessage(kNoTabError,
                                                      IntToString(tab_id));

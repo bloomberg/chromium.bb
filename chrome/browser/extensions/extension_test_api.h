@@ -31,4 +31,10 @@ class ExtensionTestQuotaResetFunction : public SyncExtensionFunction {
   DECLARE_EXTENSION_FUNCTION_NAME("test.resetQuota")
 };
 
+class ExtensionTestCreateIncognitoTabFunction : public SyncExtensionFunction {
+  ~ExtensionTestCreateIncognitoTabFunction() {}
+  virtual bool RunImpl();
+  DECLARE_EXTENSION_FUNCTION_NAME("test.createIncognitoTab")
+};
+
 #endif  // CHROME_BROWSER_EXTENSIONS_EXTENSION_TEST_API_H_

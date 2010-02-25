@@ -196,10 +196,11 @@ class ExtensionHost : public ExtensionPopupHost::PopupDelegate,
   // If this ExtensionHost has a view, this returns the Browser that view is a
   // part of.  If this is a global background page, we use the active Browser
   // instead.
-  virtual Browser* GetBrowser() const;
+  virtual Browser* GetBrowser(bool include_incognito) const;
   virtual ExtensionHost* GetExtensionHost() { return this; }
 
   // ExtensionPopupHost::Delegate
+  virtual Browser* GetBrowser() const { return GetBrowser(true); }
   virtual RenderViewHost* GetRenderViewHost() { return render_view_host(); }
   virtual gfx::NativeView GetNativeViewOfHost() {
     return view()->native_view();

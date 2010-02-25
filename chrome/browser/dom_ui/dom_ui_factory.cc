@@ -35,11 +35,13 @@ DOMUI* NewDOMUI(TabContents* contents, const GURL& url) {
 // Special case for extensions.
 template<>
 DOMUI* NewDOMUI<ExtensionDOMUI>(TabContents* contents, const GURL& url) {
-  // Don't use a DOMUI for non-existent extensions.
+  // Don't use a DOMUI for non-existent extensions or for incognito tabs. The
+  // latter restriction is because we require extensions to run within a single
+  // process.
   ExtensionsService* service = contents->profile()->GetExtensionsService();
   bool valid_extension =
       (service && service->GetExtensionById(url.host(), false));
-  if (valid_extension)
+  if (valid_extension && !contents->profile()->IsOffTheRecord())
     return new ExtensionDOMUI(contents);
   return NULL;
 }

@@ -722,6 +722,12 @@ IPC_BEGIN_MESSAGES(View)
       GURL /* source extension's origin */,
       std::vector<URLPattern> /* URLPatterns the extension can access */)
 
+  // Tell the renderer process that the given extension is enabled or disabled
+  // for incognito mode.
+  IPC_MESSAGE_CONTROL2(ViewMsg_Extension_ExtensionSetIncognitoEnabled,
+                       std::string /* extension_id */,
+                       bool /* enabled */)
+
   // Tell the renderer process all known page action ids for a particular
   // extension.
   IPC_MESSAGE_CONTROL2(ViewMsg_Extension_UpdatePageActions,

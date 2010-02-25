@@ -5,7 +5,8 @@
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_window.h"
-#include "chrome/browser/extensions/extension_browsertest.h"
+#include "chrome/browser/extensions/browser_action_test_util.h"
+#include "chrome/browser/extensions/extension_apitest.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/user_script_master.h"
 #include "chrome/browser/profile.h"
@@ -24,7 +25,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoNoScript) {
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
-      .AppendASCII("incognito_no_script")));
+      .AppendASCII("incognito").AppendASCII("content_scripts")));
 
   // Open incognito window and navigate to test page.
   ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
@@ -56,20 +57,12 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoYesScript) {
   // that loads to "modified".
   CommandLine::ForCurrentProcess()->AppendSwitch(
       switches::kEnableExperimentalExtensionApis);
-  ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
-      .AppendASCII("incognito_no_script")));
+  ASSERT_TRUE(LoadExtensionIncognito(test_data_dir_.AppendASCII("api_test")
+      .AppendASCII("incognito").AppendASCII("content_scripts")));
 
   // Dummy extension #2.
   ASSERT_TRUE(LoadExtension(test_data_dir_.AppendASCII("api_test")
       .AppendASCII("content_scripts").AppendASCII("isolated_world1")));
-
-  // Now enable the incognito_no_script extension in incognito mode, and ensure
-  // that page titles are modified.
-  ExtensionsService* service = browser()->profile()->GetExtensionsService();
-  service->extension_prefs()->SetIsIncognitoEnabled(
-      service->extensions()->at(1)->id(), true);
-  browser()->profile()->GetUserScriptMaster()->ReloadExtensionForTesting(
-      service->extensions()->at(1));
 
   // Open incognito window and navigate to test page.
   ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
@@ -85,4 +78,67 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, IncognitoYesScript) {
       L"window.domAutomationController.send(document.title == 'modified')",
       &result);
   EXPECT_TRUE(result);
+}
+
+// Tests that the APIs in an incognito-enabled extension work properly.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, Incognito) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  StartHTTPServer();
+
+  ResultCatcher catcher;
+
+  // Open incognito window and navigate to test page.
+  ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
+      GURL("http://www.example.com:1337/files/extensions/test_file.html"));
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+  ASSERT_TRUE(LoadExtensionIncognito(test_data_dir_
+      .AppendASCII("incognito").AppendASCII("apis")));
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+// Tests that the APIs in an incognito-disabled extension don't see incognito
+// events or callbacks.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoDisabled) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  StartHTTPServer();
+
+  ResultCatcher catcher;
+
+  // Open incognito window and navigate to test page.
+  ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
+      GURL("http://www.example.com:1337/files/extensions/test_file.html"));
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+  ASSERT_TRUE(LoadExtension(test_data_dir_
+      .AppendASCII("incognito").AppendASCII("apis_disabled")));
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
+}
+
+// Test that opening a popup from an incognito browser window works properly.
+IN_PROC_BROWSER_TEST_F(ExtensionApiTest, IncognitoPopup) {
+  host_resolver()->AddRule("*", "127.0.0.1");
+  StartHTTPServer();
+
+  ResultCatcher catcher;
+
+  CommandLine::ForCurrentProcess()->AppendSwitch(
+      switches::kEnableExperimentalExtensionApis);
+  ASSERT_TRUE(LoadExtensionIncognito(test_data_dir_
+      .AppendASCII("incognito").AppendASCII("popup")));
+
+  // Open incognito window and navigate to test page.
+  ui_test_utils::OpenURLOffTheRecord(browser()->profile(),
+      GURL("http://www.example.com:1337/files/extensions/test_file.html"));
+  Browser* incognito_browser = BrowserList::FindBrowserWithType(
+      browser()->profile()->GetOffTheRecordProfile(), Browser::TYPE_NORMAL);
+
+  // Simulate the incognito's browser action being clicked.
+  BrowserActionTestUtil(incognito_browser).Press(0);
+
+  EXPECT_TRUE(catcher.GetNextResult()) << catcher.message();
 }

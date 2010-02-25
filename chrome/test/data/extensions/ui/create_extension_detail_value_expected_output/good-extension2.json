@@ -7,6 +7,8 @@
   "permissions": [],
   "allow_reload": false,
   "order": 2,
+  "enabledIncognito": false,
+  "incognitoSafe": false,
   "content_scripts": [],
   "views": [
     {

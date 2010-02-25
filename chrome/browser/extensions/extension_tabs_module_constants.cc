@@ -32,6 +32,7 @@ const wchar_t kTopKey[] = L"top";
 const wchar_t kUrlKey[] = L"url";
 const wchar_t kWidthKey[] = L"width";
 const wchar_t kWindowIdKey[] = L"windowId";
+const wchar_t kIncognitoKey[] = L"incognito";
 
 const char kStatusValueComplete[] = "complete";
 const char kStatusValueLoading[] = "loading";

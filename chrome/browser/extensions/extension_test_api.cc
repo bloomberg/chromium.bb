@@ -2,10 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "chrome/browser/extensions/extension_test_api.h"
+
+#include "chrome/browser/browser.h"
 #include "chrome/browser/profile.h"
 #include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/extensions/extensions_quota_service.h"
-#include "chrome/browser/extensions/extension_test_api.h"
 #include "chrome/common/notification_service.h"
 
 bool ExtensionTestPassFunction::RunImpl() {
@@ -39,5 +41,12 @@ bool ExtensionTestQuotaResetFunction::RunImpl() {
   ExtensionsQuotaService* quota = service->quota_service();
   quota->Purge();
   quota->violators_.clear();
+  return true;
+}
+
+bool ExtensionTestCreateIncognitoTabFunction::RunImpl() {
+  std::string url;
+  EXTENSION_FUNCTION_VALIDATE(args_->GetAsString(&url));
+  Browser::OpenURLOffTheRecord(profile(), GURL(url));
   return true;
 }

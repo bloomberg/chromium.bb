@@ -174,6 +174,7 @@ void FactoryRegistry::ResetFunctions() {
   RegisterFunction<ExtensionTestFailFunction>();
   RegisterFunction<ExtensionTestLogFunction>();
   RegisterFunction<ExtensionTestQuotaResetFunction>();
+  RegisterFunction<ExtensionTestCreateIncognitoTabFunction>();
 
   // Accessibility.
   RegisterFunction<GetFocusedControlFunction>();
@@ -212,7 +213,7 @@ ExtensionFunction* FactoryRegistry::NewFunction(const std::string& name) {
 
 gfx::NativeWindow ExtensionFunctionDispatcher::Delegate::
     GetFrameNativeWindow() {
-  Browser* browser = GetBrowser();
+  Browser* browser = GetBrowser(true);
   // If a browser is bound to this dispatcher, then return the widget hosting
   // the window.  Extensions hosted in ExternalTabContainer objects may not
   // have a running browser instance.
@@ -266,6 +267,9 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
   epm->RegisterExtensionProcess(extension_id(),
                                 render_view_host->process()->id());
 
+  bool incognito_enabled =
+      profile()->GetExtensionsService()->IsIncognitoEnabled(extension->id());
+
   // Update the extension permissions. Doing this each time we create an EFD
   // ensures that new processes are informed of permissions for newly installed
   // extensions.
@@ -273,6 +277,8 @@ ExtensionFunctionDispatcher::ExtensionFunctionDispatcher(
       extension->id(), extension->api_permissions()));
   render_view_host->Send(new ViewMsg_Extension_SetHostPermissions(
       extension->url(), extension->host_permissions()));
+  render_view_host->Send(new ViewMsg_Extension_ExtensionSetIncognitoEnabled(
+      extension->id(), incognito_enabled));
 }
 
 ExtensionFunctionDispatcher::~ExtensionFunctionDispatcher() {
@@ -280,8 +286,8 @@ ExtensionFunctionDispatcher::~ExtensionFunctionDispatcher() {
   peer_->dispatcher_ = NULL;
 }
 
-Browser* ExtensionFunctionDispatcher::GetBrowser() {
-  return delegate_->GetBrowser();
+Browser* ExtensionFunctionDispatcher::GetBrowser(bool include_incognito) {
+  return delegate_->GetBrowser(include_incognito);
 }
 
 ExtensionPopupHost* ExtensionFunctionDispatcher::GetPopupHost() {
@@ -324,6 +330,8 @@ void ExtensionFunctionDispatcher::HandleRequest(const std::string& name,
   function->SetArgs(args);
   function->set_request_id(request_id);
   function->set_has_callback(has_callback);
+  function->set_include_incognito(
+      profile()->GetExtensionsService()->IsIncognitoEnabled(extension_id()));
 
   ExtensionsService* service = profile()->GetExtensionsService();
   DCHECK(service);

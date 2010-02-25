@@ -232,6 +232,19 @@ void ExtensionProcessManager::Observe(NotificationType type,
       break;
     }
 
+    case NotificationType::EXTENSION_INCOGNITO_CHANGED: {
+      Extension* extension =
+          Details<std::pair<Extension*, bool> >(details).ptr()->first;
+      bool incognito_enabled =
+          Details<std::pair<Extension*, bool> >(details).ptr()->second;
+      RenderProcessHost* rph = GetExtensionProcess(extension->id());
+      if (rph) {
+        rph->Send(new ViewMsg_Extension_ExtensionSetIncognitoEnabled(
+            extension->id(), incognito_enabled));
+      }
+      break;
+    }
+
     case NotificationType::EXTENSION_HOST_DESTROYED: {
       ExtensionHost* host = Details<ExtensionHost>(details).ptr();
       all_hosts_.erase(host);

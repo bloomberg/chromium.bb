@@ -36,11 +36,14 @@ namespace keys = extension_tabs_module_constants;
 // message if the window cannot be found by id.
 static Browser* GetBrowserInProfileWithId(Profile* profile,
                                           const int window_id,
+                                          bool include_incognito,
                                           std::string* error_message);
 
-// |error_message| can optionally be passed in a will be set with an appropriate
-// message if the tab cannot be found by id.
-static bool GetTabById(int tab_id, Profile* profile, Browser** browser,
+// |error_message| can optionally be passed in and will be set with an
+// appropriate message if the tab cannot be found by id.
+static bool GetTabById(int tab_id, Profile* profile,
+                       bool include_incognito,
+                       Browser** browser,
                        TabStripModel** tab_strip,
                        TabContents** contents,
                        int* tab_index, std::string* error_message);
@@ -117,6 +120,8 @@ DictionaryValue* ExtensionTabUtil::CreateTabValue(
   result->SetBoolean(keys::kSelectedKey,
                      tab_strip && tab_index == tab_strip->selected_index());
   result->SetString(keys::kTitleKey, UTF16ToWide(contents->GetTitle()));
+  result->SetBoolean(keys::kIncognitoKey,
+                     contents->profile()->IsOffTheRecord());
 
   if (status != TAB_LOADING) {
     NavigationEntry* entry = contents->controller().GetActiveEntry();
@@ -140,6 +145,8 @@ DictionaryValue* ExtensionTabUtil::CreateWindowValue(const Browser* browser,
   if (browser->window())
     focused = browser->window()->IsActive();
 
+  result->SetBoolean(keys::kIncognitoKey,
+                     browser->profile()->IsOffTheRecord());
   result->SetBoolean(keys::kFocusedKey, focused);
   gfx::Rect bounds = browser->window()->GetRestoredBounds();
 
@@ -173,6 +180,7 @@ bool ExtensionTabUtil::GetDefaultTab(Browser* browser, TabContents** contents,
 }
 
 bool ExtensionTabUtil::GetTabById(int tab_id, Profile* profile,
+                                  bool include_incognito,
                                   Browser** browser,
                                   TabStripModel** tab_strip,
                                   TabContents** contents,
@@ -180,10 +188,13 @@ bool ExtensionTabUtil::GetTabById(int tab_id, Profile* profile,
   Browser* target_browser;
   TabStripModel* target_tab_strip;
   TabContents* target_contents;
+  Profile* incognito_profile =
+      include_incognito ? profile->GetOffTheRecordProfile() : NULL;
   for (BrowserList::const_iterator iter = BrowserList::begin();
        iter != BrowserList::end(); ++iter) {
     target_browser = *iter;
-    if (target_browser->profile() == profile) {
+    if (target_browser->profile() == profile ||
+        target_browser->profile() == incognito_profile) {
       target_tab_strip = target_browser->tabstrip_model();
       for (int i = 0; i < target_tab_strip->count(); ++i) {
         target_contents = target_tab_strip->GetTabContentsAt(i);
@@ -210,7 +221,8 @@ bool GetWindowFunction::RunImpl() {
   int window_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetAsInteger(&window_id));
 
-  Browser* browser = GetBrowserInProfileWithId(profile(), window_id, &error_);
+  Browser* browser = GetBrowserInProfileWithId(profile(), window_id,
+                                               include_incognito(), &error_);
   if (!browser)
     return false;
 
@@ -219,7 +231,7 @@ bool GetWindowFunction::RunImpl() {
 }
 
 bool GetCurrentWindowFunction::RunImpl() {
-  Browser* browser = dispatcher()->GetBrowser();
+  Browser* browser = GetBrowser();
   if (!browser) {
     error_ = keys::kNoCurrentWindowError;
     return false;
@@ -250,10 +262,13 @@ bool GetAllWindowsFunction::RunImpl() {
   }
 
   result_.reset(new ListValue());
+  Profile* incognito_profile =
+      include_incognito() ? profile()->GetOffTheRecordProfile() : NULL;
   for (BrowserList::const_iterator browser = BrowserList::begin();
     browser != BrowserList::end(); ++browser) {
       // Only examine browsers in the current profile.
-      if ((*browser)->profile() == profile()) {
+      if ((*browser)->profile() == profile() ||
+          (*browser)->profile() == incognito_profile) {
         static_cast<ListValue*>(result_.get())->
           Append(ExtensionTabUtil::CreateWindowValue(*browser, populate_tabs));
       }
@@ -297,7 +312,7 @@ bool CreateWindowFunction::RunImpl() {
   // NOTE(rafaelw): It's ok if dispatcher_->GetBrowser() returns NULL here.
   // GetBrowserWindowBounds will default to saved "default" values for the app.
   WindowSizer::GetBrowserWindowBounds(std::wstring(), empty_bounds,
-                                      dispatcher()->GetBrowser(), &bounds,
+                                      GetBrowser(), &bounds,
                                       &maximized);
 
   // Any part of the bounds can optionally be set by the caller.
@@ -351,7 +366,8 @@ bool UpdateWindowFunction::RunImpl() {
   DictionaryValue* update_props;
   EXTENSION_FUNCTION_VALIDATE(args->GetDictionary(1, &update_props));
 
-  Browser* browser = GetBrowserInProfileWithId(profile(), window_id, &error_);
+  Browser* browser = GetBrowserInProfileWithId(profile(), window_id,
+                                               include_incognito(), &error_);
   if (!browser)
     return false;
 
@@ -397,7 +413,8 @@ bool RemoveWindowFunction::RunImpl() {
   int window_id;
   EXTENSION_FUNCTION_VALIDATE(args_->GetAsInteger(&window_id));
 
-  Browser* browser = GetBrowserInProfileWithId(profile(), window_id, &error_);
+  Browser* browser = GetBrowserInProfileWithId(profile(), window_id,
+                                               include_incognito(), &error_);
   if (!browser)
     return false;
 
@@ -415,9 +432,10 @@ bool GetSelectedTabFunction::RunImpl() {
 
   if (!args_->IsType(Value::TYPE_NULL)) {
     EXTENSION_FUNCTION_VALIDATE(args_->GetAsInteger(&window_id));
-    browser = GetBrowserInProfileWithId(profile(), window_id, &error_);
+    browser = GetBrowserInProfileWithId(profile(), window_id,
+                                        include_incognito(), &error_);
   } else {
-    browser = dispatcher()->GetBrowser();
+    browser = GetBrowser();
     if (!browser)
       error_ = keys::kNoCurrentWindowError;
   }
@@ -441,9 +459,10 @@ bool GetAllTabsInWindowFunction::RunImpl() {
   int window_id = -1;
   if (!args_->IsType(Value::TYPE_NULL)) {
     EXTENSION_FUNCTION_VALIDATE(args_->GetAsInteger(&window_id));
-    browser = GetBrowserInProfileWithId(profile(), window_id, &error_);
+    browser = GetBrowserInProfileWithId(profile(), window_id,
+                                        include_incognito(), &error_);
   } else {
-    browser = dispatcher()->GetBrowser();
+    browser = GetBrowser();
     if (!browser)
       error_ = keys::kNoCurrentWindowError;
   }
@@ -465,9 +484,10 @@ bool CreateTabFunction::RunImpl() {
   if (args->HasKey(keys::kWindowIdKey)) {
     EXTENSION_FUNCTION_VALIDATE(args->GetInteger(
         keys::kWindowIdKey, &window_id));
-    browser = GetBrowserInProfileWithId(profile(), window_id, &error_);
+    browser = GetBrowserInProfileWithId(profile(), window_id,
+                                        include_incognito(), &error_);
   } else {
-    browser = dispatcher()->GetBrowser();
+    browser = GetBrowser();
     if (!browser)
       error_ = keys::kNoCurrentWindowError;
   }
@@ -536,8 +556,8 @@ bool GetTabFunction::RunImpl() {
   TabStripModel* tab_strip = NULL;
   TabContents* contents = NULL;
   int tab_index = -1;
-  if (!GetTabById(tab_id, profile(), NULL, &tab_strip, &contents, &tab_index,
-      &error_))
+  if (!GetTabById(tab_id, profile(), include_incognito(),
+                  NULL, &tab_strip, &contents, &tab_index, &error_))
     return false;
 
   result_.reset(ExtensionTabUtil::CreateTabValue(contents, tab_strip,
@@ -556,8 +576,8 @@ bool UpdateTabFunction::RunImpl() {
   TabStripModel* tab_strip = NULL;
   TabContents* contents = NULL;
   int tab_index = -1;
-  if (!GetTabById(tab_id, profile(), NULL, &tab_strip, &contents, &tab_index,
-      &error_))
+  if (!GetTabById(tab_id, profile(), include_incognito(),
+                  NULL, &tab_strip, &contents, &tab_index, &error_))
     return false;
 
   if (tab_strip->IsTabPinned(tab_index)) {
@@ -645,8 +665,9 @@ bool MoveTabFunction::RunImpl() {
   TabStripModel* source_tab_strip = NULL;
   TabContents* contents = NULL;
   int tab_index = -1;
-  if (!GetTabById(tab_id, profile(), &source_browser, &source_tab_strip,
-      &contents, &tab_index, &error_))
+  if (!GetTabById(tab_id, profile(), include_incognito(),
+                  &source_browser, &source_tab_strip, &contents,
+                  &tab_index, &error_))
     return false;
 
   if (update_props->HasKey(keys::kWindowIdKey)) {
@@ -655,7 +676,7 @@ bool MoveTabFunction::RunImpl() {
     EXTENSION_FUNCTION_VALIDATE(update_props->GetInteger(
         keys::kWindowIdKey, &window_id));
     target_browser = GetBrowserInProfileWithId(profile(), window_id,
-        &error_);
+                                               include_incognito(), &error_);
     if (!target_browser)
       return false;
 
@@ -708,7 +729,8 @@ bool RemoveTabFunction::RunImpl() {
 
   Browser* browser = NULL;
   TabContents* contents = NULL;
-  if (!GetTabById(tab_id, profile(), &browser, NULL, &contents, NULL, &error_))
+  if (!GetTabById(tab_id, profile(), include_incognito(),
+                  &browser, NULL, &contents, NULL, &error_))
     return false;
 
   int tab_index = browser->GetIndexOfController(&contents->controller());
@@ -734,9 +756,10 @@ bool CaptureVisibleTabFunction::RunImpl() {
 
   if (!args_->IsType(Value::TYPE_NULL)) {
     EXTENSION_FUNCTION_VALIDATE(args_->GetAsInteger(&window_id));
-    browser = GetBrowserInProfileWithId(profile(), window_id, &error_);
+    browser = GetBrowserInProfileWithId(profile(), window_id,
+                                        include_incognito(), &error_);
   } else {
-    browser = dispatcher()->GetBrowser();
+    browser = GetBrowser();
   }
 
   if (!browser) {
@@ -856,14 +879,14 @@ bool DetectTabLanguageFunction::RunImpl() {
   // in the current window.
   if (!args_->IsType(Value::TYPE_NULL)) {
     EXTENSION_FUNCTION_VALIDATE(args_->GetAsInteger(&tab_id));
-    if (!GetTabById(tab_id, profile(), &browser, NULL, &contents, NULL,
-        &error_)) {
+    if (!GetTabById(tab_id, profile(), include_incognito(),
+                    &browser, NULL, &contents, NULL, &error_)) {
       return false;
     }
     if (!browser || !contents)
       return false;
   } else {
-    browser = dispatcher()->GetBrowser();
+    browser = GetBrowser();
     if (!browser)
       return false;
     contents = browser->tabstrip_model()->GetSelectedTabContents();
@@ -924,10 +947,14 @@ void DetectTabLanguageFunction::GotLanguage(const std::string& language) {
 
 static Browser* GetBrowserInProfileWithId(Profile* profile,
                                           const int window_id,
+                                          bool include_incognito,
                                           std::string* error_message) {
+  Profile* incognito_profile =
+      include_incognito ? profile->GetOffTheRecordProfile() : NULL;
   for (BrowserList::const_iterator browser = BrowserList::begin();
-      browser != BrowserList::end(); ++browser) {
-    if ((*browser)->profile() == profile &&
+       browser != BrowserList::end(); ++browser) {
+    if (((*browser)->profile() == profile ||
+         (*browser)->profile() == incognito_profile) &&
         ExtensionTabUtil::GetWindowId(*browser) == window_id)
       return *browser;
   }
@@ -939,13 +966,15 @@ static Browser* GetBrowserInProfileWithId(Profile* profile,
   return NULL;
 }
 
-static bool GetTabById(int tab_id, Profile* profile, Browser** browser,
+static bool GetTabById(int tab_id, Profile* profile,
+                       bool include_incognito,
+                       Browser** browser,
                        TabStripModel** tab_strip,
                        TabContents** contents,
                        int* tab_index,
                        std::string* error_message) {
-  if (ExtensionTabUtil::GetTabById(tab_id, profile, browser, tab_strip,
-                                   contents, tab_index))
+  if (ExtensionTabUtil::GetTabById(tab_id, profile, include_incognito,
+                                   browser, tab_strip, contents, tab_index))
     return true;
 
   if (error_message)

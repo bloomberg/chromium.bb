@@ -24,8 +24,8 @@ bool GetProcessForTabFunction::RunImpl() {
 
   TabContents* contents = NULL;
   int tab_index = -1;
-  if (!ExtensionTabUtil::GetTabById(tab_id, profile(), NULL, NULL,
-      &contents, &tab_index))
+  if (!ExtensionTabUtil::GetTabById(tab_id, profile(), include_incognito(),
+                                    NULL, NULL, &contents, &tab_index))
     return false;
 
   int process_id = contents->GetRenderProcessHost()->id();

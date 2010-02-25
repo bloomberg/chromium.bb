@@ -218,8 +218,10 @@ public:
       tab_dict.SetInteger(extension_tabs_module_constants::kIndexKey, 1);
       tab_dict.SetInteger(extension_tabs_module_constants::kWindowIdKey, 1);
       tab_dict.SetBoolean(extension_tabs_module_constants::kSelectedKey, true);
+      tab_dict.SetBoolean(extension_tabs_module_constants::kIncognitoKey,
+                          false);
       tab_dict.SetString(extension_tabs_module_constants::kUrlKey,
-        "http://www.google.com");
+                         "http://www.google.com");
 
       std::string tab_json;
       base::JSONWriter::Write(&tab_dict, false, &tab_json);
@@ -327,7 +329,7 @@ class ExtensionTestBrowserEvents : public ExtensionUITest {
 const char* ExtensionTestBrowserEvents::events_[] = {
   // Window events.
   "[\"windows.onCreated\", \"[{'id':42,'focused':true,'top':0,'left':0,"
-      "'width':100,'height':100}]\"]",
+      "'width':100,'height':100,'incognito':false}]\"]",
 
   "[\"windows.onRemoved\", \"[42]\"]",
 
@@ -335,11 +337,11 @@ const char* ExtensionTestBrowserEvents::events_[] = {
 
   // Tab events.
   "[\"tabs.onCreated\", \"[{'id':42,'index':1,'windowId':1,"
-      "'selected':true,'url':'http://www.google.com'}]\"]",
+      "'selected':true,'url':'http://www.google.com','incognito':false}]\"]",
 
   "[\"tabs.onUpdated\", \"[42, {'status': 'complete',"
       "'url':'http://www.google.com'}, {'id':42,'index':1,'windowId':1,"
-      "'selected':true,'url':'http://www.google.com'}]\"]",
+      "'selected':true,'url':'http://www.google.com','incognito':false}]\"]",
 
   "[\"tabs.onMoved\", \"[42, {'windowId':1,'fromIndex':1,'toIndex':2}]\"]",
 

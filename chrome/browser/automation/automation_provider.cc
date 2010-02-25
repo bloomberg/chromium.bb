@@ -1787,8 +1787,8 @@ bool AutomationProvider::InterceptBrowserEventMessageFromExternalHost(
   }
 
   if (profile()->GetExtensionMessageService()) {
-    profile()->GetExtensionMessageService()->
-        DispatchEventToRenderers(event_name.c_str(), json_args);
+    profile()->GetExtensionMessageService()->DispatchEventToRenderers(
+        event_name, json_args, profile()->IsOffTheRecord());
   }
 
   return true;

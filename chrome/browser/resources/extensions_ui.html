@@ -349,6 +349,7 @@ var extensionDataFormat = {
       "description": "Extension long format description",
       "version": "1.0.231",
       "enabled": "true",
+      "enabledIncognito": "false",
       "allow_reload": true,
       "order": 1,
       "options_url": "options.html",
@@ -388,6 +389,7 @@ var extensionDataFormat = {
       "description": "Extension long format description",
       "version": "1.0.231",
       "enabled": "true",
+      "enabledIncognito": "false",
       "allow_reload": false,
       "order": 2,
       "icon": "",
@@ -426,6 +428,9 @@ function toggleDevModeExpanded() {
   devModeExpanded = !devModeExpanded;
   chrome.send('toggleDeveloperMode', []);
 }
+
+// Experimental flag that enables toggling an extension as incognito enabled.
+var experimentalIncognito = false;
 
 /**
  * Takes the |extensionsData| input argument which represents data about the
@@ -475,6 +480,7 @@ var rendered_once_ = false;
 function returnExtensionsData(extensionsData){
   domui_responded_ = true;
   devModeExpanded = extensionsData.developerMode;
+  experimentalIncognito = extensionsData.experimentalIncognito;
 
   var bodyContainer = document.getElementById('body-container');
   var body = document.getElementsByTagName('body')[0];
@@ -545,6 +551,19 @@ function handleReloadExtension(node) {
 function handleEnableExtension(node, enable) {
   // Tell the C++ ExtensionDOMHandler to reload the extension.
   chrome.send('enable', [node.extensionId, String(enable)]);
+  requestExtensionsData();
+}
+
+/**
+ * Handles a 'enableIncognito' or 'disableIncognito' button getting clicked.
+ */
+function handleEnableExtensionIncognito(node, enable) {
+  // Tell the C++ ExtensionDOMHandler to reload the extension.
+  if (enable && !node.incognitoSafe) {
+    if (!confirm(templateData["enableIncognitoWarning"]))
+      return;
+  }
+  chrome.send('enableIncognito', [node.extensionId, String(enable)]);
   requestExtensionsData();
 }
 
@@ -814,6 +833,21 @@ function autoUpdate() {
                   i18n-content="reload"
                   >RELOAD</a>
                 <span jsdisplay="enabled && allow_reload">-</span>
+                <a
+                  jsvalues=".extensionId:id;.enabled:enabled"
+                  jsdisplay="enabled && enabledIncognito && experimentalIncognito"
+                  onclick="handleEnableExtensionIncognito(this, false)"
+                  href="javascript:void();"
+                  i18n-content="disableIncognito"
+                  >DISABLE INCOGNITO</a>
+                <a
+                  jsvalues=".extensionId:id;.enabled=enabled"
+                  jsdisplay="enabled && !enabledIncognito && experimentalIncognito"
+                  onclick="handleEnableExtensionIncognito(this, true)"
+                  href="javascript:void();"
+                  i18n-content="enableIncognito"
+                  >ENABLE INCOGNITO</a>
+                <span jsdisplay="enabled && experimentalIncognito">-</span>
                 <a
                   jsvalues=".extensionId:id"
                   jsdisplay="enabled"

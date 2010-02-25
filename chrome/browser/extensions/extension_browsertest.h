@@ -25,6 +25,9 @@ class ExtensionBrowserTest
   virtual void SetUpCommandLine(CommandLine* command_line);
   bool LoadExtension(const FilePath& path);
 
+  // Same as above, but enables the extension in incognito mode first.
+  bool LoadExtensionIncognito(const FilePath& path);
+
   // |expected_change| indicates how many extensions should be installed (or
   // disabled, if negative).
   // 1 means you expect a new install, 0 means you expect an upgrade, -1 means
@@ -93,6 +96,7 @@ class ExtensionBrowserTest
   bool InstallOrUpdateExtension(const std::string& id, const FilePath& path,
                                 bool should_cancel,
                                 int expected_change);
+  bool LoadExtensionImpl(const FilePath& path, bool incognito_enabled);
 
   bool WaitForExtensionHostsToLoad();
 
