@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -170,7 +170,7 @@ struct FormElements {
 typedef std::vector<FormElements*> FormElementsList;
 
 // Internal implementation of FillForm API.
-static bool FillFormImpl(FormElements* fe, const FormData& data, bool submit) {
+static bool FillFormImpl(FormElements* fe, const FormData& data) {
   if (!fe->form_element.autoComplete())
     return false;
 
@@ -179,14 +179,8 @@ static bool FillFormImpl(FormElements* fe, const FormData& data, bool submit) {
     data_map[data.elements[i]] = data.values[i];
   }
 
-  bool submit_found = false;
   for (FormInputElementMap::iterator it = fe->input_elements.begin();
        it != fe->input_elements.end(); ++it) {
-    if (it->first == data.submit) {
-      it->second.setActivatedSubmit(true);
-      submit_found = true;
-      continue;
-    }
     if (!it->second.value().isEmpty())  // Don't overwrite pre-filled values.
       continue;
     it->second.setValue(data_map[it->first]);
@@ -194,10 +188,6 @@ static bool FillFormImpl(FormElements* fe, const FormData& data, bool submit) {
     it->second.dispatchFormControlChangeEvent();
   }
 
-  if (submit && submit_found) {
-    fe->form_element.submit();
-    return true;
-  }
   return false;
 }
 
@@ -288,11 +278,10 @@ void FillPasswordForm(WebView* view,
     // FormElementsList use that.
     scoped_ptr<FormElements> form_elements(*iter);
 
-    // False param to FillFormByAction is so we don't auto-submit password
-    // forms. If wait_for_username is true, we don't want to initially fill
-    // the form until the user types in a valid username.
+    // If wait_for_username is true, we don't want to initially fill the form
+    // until the user types in a valid username.
     if (!data.wait_for_username)
-      FillFormImpl(form_elements.get(), data.basic_data, false);
+      FillFormImpl(form_elements.get(), data.basic_data);
 
     // Attach autocomplete listener to enable selecting alternate logins.
     // First, get pointers to username element.
