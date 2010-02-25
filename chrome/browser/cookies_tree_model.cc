@@ -357,6 +357,8 @@ void CookiesTreeModel::GetIcons(std::vector<SkBitmap>* icons) {
       IDR_DEFAULT_FAVICON));
   icons->push_back(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
       IDR_COOKIE_ICON));
+  icons->push_back(*ResourceBundle::GetSharedInstance().GetBitmapNamed(
+      IDR_COOKIE_STORAGE_ICON));
 }
 
 // Returns the index of the icon to use for |node|. Return -1 to use the
@@ -372,9 +374,13 @@ int CookiesTreeModel::GetIconIndex(TreeModelNode* node) {
       return COOKIE;
       break;
     case CookieTreeNode::DetailedInfo::TYPE_DATABASE:
-      // TODO(jochen): add an icon for databases.
+      return DATABASE;
+      break;
     case CookieTreeNode::DetailedInfo::TYPE_LOCAL_STORAGE:
-      // TODO(bulach): add an icon for local storage.
+      // The differences between local storage and HTML5 databases are semantic
+      // enough that the user will not likely care if they share an icon.
+      return DATABASE;
+      break;
     default:
       return -1;
   }
