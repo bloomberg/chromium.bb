@@ -2947,3 +2947,6 @@ BUG36603 WIN RELEASE : svg/text/text-text-06-t.svg = CRASH PASS
 // WebKit roll 55161 to 55193
 BUG36681 : java/argument-to-object-type.html = TEXT
 BUG36681 : java/array-return.html = TEXT
+
+// WebKit roll 55241 to 55250
+BUG36846 : java/java-and-plugins.html = TEXT
