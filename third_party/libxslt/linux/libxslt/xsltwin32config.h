@@ -23,21 +23,21 @@ extern "C" {
  *
  * the version string like "1.2.3"
  */
-#define LIBXSLT_DOTTED_VERSION "1.1.24"
+#define LIBXSLT_DOTTED_VERSION "1.1.26"
 
 /**
  * LIBXSLT_VERSION:
  *
  * the version number: 1.2.3 value is 1002003
  */
-#define LIBXSLT_VERSION 10124
+#define LIBXSLT_VERSION 10126
 
 /**
  * LIBXSLT_VERSION_STRING:
  *
  * the version number string, 1.2.3 value is "1002003"
  */
-#define LIBXSLT_VERSION_STRING "10124"
+#define LIBXSLT_VERSION_STRING "10126"
 
 /**
  * LIBXSLT_VERSION_EXTRA:
@@ -62,11 +62,11 @@ extern "C" {
  *
  * Whether module support is configured into libxslt
  */
-#if 1
+#if 0
 #ifndef WITH_MODULES
 #define WITH_MODULES
 #endif
-#define LIBXSLT_PLUGINS_PATH() getenv("LIBXSLT_PLUGINS_PATH")
+#define LIBXSLT_PLUGINS_PATH() NULL
 #endif
 
 #if 0

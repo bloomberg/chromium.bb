@@ -47,6 +47,7 @@ var withIconv = true;
 var withZlib = false;
 var withCrypto = true;
 var withModules = false;
+var withLocale = true;
 /* Win32 build options. */
 var dirSep = "\\";
 var compiler = "msvc";
@@ -106,6 +107,7 @@ function usage()
 	txt += "  zlib:       Use zlib library (" + (withZlib? "yes" : "no") + ")\n";
 	txt += "  crypto:     Enable Crypto support (" + (withCrypto? "yes" : "no") + ")\n";
 	txt += "  modules:    Enable Module support (" + (withModules? "yes" : "no") + ")\n";
+	txt += "  locale:     Enable Locale support, requires unicode OS support (" + (withLocale? "yes" : "no") + ")\n";
 	txt += "\nWin32 build options, default value given in parentheses:\n\n";
 	txt += "  compiler:   Compiler to be used [msvc|mingw] (" + compiler + ")\n";
 	txt += "  cruntime:   C-runtime compiler option (only msvc) (" + cruntime + ")\n";
@@ -240,6 +242,10 @@ function configureXslt()
 			of.WriteLine(s.replace(/\@WITH_DEBUGGER\@/, withDebugger? "1" : "0"));
 		} else if (s.search(/\@WITH_MODULES\@/) != -1) {
 			of.WriteLine(s.replace(/\@WITH_MODULES\@/, withModules? "1" : "0"));
+		} else if (s.search(/\@XSLT_LOCALE_XLOCALE\@/) != -1) {
+			of.WriteLine(s.replace(/\@XSLT_LOCALE_XLOCALE\@/, "0"));
+		} else if (s.search(/\@XSLT_LOCALE_WINAPI\@/) != -1) {
+			of.WriteLine(s.replace(/\@XSLT_LOCALE_WINAPI\@/, withLocale? "1" : "0"));
 		} else if (s.search(/\@LIBXSLT_DEFAULT_PLUGINS_PATH\@/) != -1) {
 			of.WriteLine(s.replace(/\@LIBXSLT_DEFAULT_PLUGINS_PATH\@/, "NULL"));
 		} else
@@ -343,6 +349,8 @@ for (i = 0; (i < WScript.Arguments.length) && (error == 0); i++) {
 			withCrypto = strToBool(arg.substring(opt.length + 1, arg.length));
 		else if (opt == "modules")
 			withModules = strToBool(arg.substring(opt.length + 1, arg.length));
+		else if (opt == "locale")
+			withLocale = strToBool(arg.substring(opt.length + 1, arg.length));
 		else if (opt == "compiler")
 			compiler = arg.substring(opt.length + 1, arg.length);
  		else if (opt == "cruntime")
@@ -456,8 +464,8 @@ if (compiler == "mingw")
 var new_makefile = ".\\Makefile";
 var f = fso.FileExists(new_makefile);
 if (f) {
-	var t = fso.GetFile(new_makefile);
-	t.Attributes =0;
+       var t = fso.GetFile(new_makefile);
+       t.Attributes =0;
 }
 fso.CopyFile(makefile, new_makefile, true);
 WScript.Echo("Created Makefile.");
@@ -483,6 +491,7 @@ txtOut += "         Use iconv: " + boolToStr(withIconv) + "\n";
 txtOut += "         With zlib: " + boolToStr(withZlib) + "\n";
 txtOut += "            Crypto: " + boolToStr(withCrypto) + "\n";
 txtOut += "           Modules: " + boolToStr(withModules) + "\n";
+txtOut += "            Locale: " + boolToStr(withLocale) + "\n";
 txtOut += "\n";
 txtOut += "Win32 build configuration\n";
 txtOut += "-------------------------\n";

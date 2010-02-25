@@ -76,7 +76,6 @@ xsltEvalXPathPredicate
 xsltEvalXPathString
 xsltEvalXPathStringNs
 xsltExtElementLookup
-/*xsltExtFunctionLookup*/
 xsltExtModuleElementLookup
 xsltExtModuleElementPreComputeLookup
 xsltExtModuleFunctionLookup
@@ -98,6 +97,7 @@ xsltFreeDocuments
 xsltFreeExts
 xsltFreeGlobalVariables
 xsltFreeKeys
+xsltFreeLocale
 xsltFreeNamespaceAliasHashes
 xsltFreeRVTs
 xsltFreeSecurityPrefs
@@ -134,6 +134,7 @@ xsltInitCtxtExts
 xsltInitCtxtKey
 xsltInitCtxtKeys
 xsltInitElemPreComp
+xsltInitGlobals
 xsltIsBlank
 xsltKeyFunction
 xsltLoadDocument
@@ -141,12 +142,14 @@ xsltLoadStyleDocument
 xsltLoadStylesheetPI
 xsltLocalVariablePop
 xsltLocalVariablePush
+xsltLocaleStrcmp
 /*xsltMatchPattern*/
 xsltMessage
 xsltNamespaceAlias
 xsltNeedElemSpaceHandling
 xsltNewDocument
 xsltNewElemPreComp
+xsltNewLocale
 xsltNewSecurityPrefs
 xsltNewStyleDocument
 xsltNewStylesheet
@@ -177,6 +180,7 @@ xsltPointerListCreate
 xsltPointerListFree
 xsltPreComputeExtModuleElement
 xsltPrintErrorContext
+xsltProcessOneNode
 xsltProcessingInstruction
 xsltProfileStylesheet
 xsltQuoteOneUserParam
@@ -227,6 +231,7 @@ xsltShutdownCtxtExts
 xsltShutdownExts
 xsltSort
 xsltSplitQName
+xsltStrxfrm
 xsltStyleGetExtData
 xsltStylePreCompute
 xsltStyleStylesheetLevelGetExtData

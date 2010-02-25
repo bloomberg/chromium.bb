@@ -87,6 +87,7 @@ XSLT_OBJS = $(XSLT_INTDIR)/attributes.o\
 	$(XSLT_INTDIR)/transform.o\
 	$(XSLT_INTDIR)/variables.o\
 	$(XSLT_INTDIR)/xslt.o\
+	$(XSLT_INTDIR)/xsltlocale.o\
 	$(XSLT_INTDIR)/xsltutils.o
 XSLT_SRCS = $(subst .o,.c,$(subst $(XSLT_INTDIR),$(XSLT_SRCDIR),$(XSLT_OBJS)))
 
@@ -107,6 +108,7 @@ XSLT_OBJS_A = $(XSLT_INTDIR_A)/attributes.o\
 	$(XSLT_INTDIR_A)/transform.o\
 	$(XSLT_INTDIR_A)/variables.o\
 	$(XSLT_INTDIR_A)/xslt.o\
+	$(XSLT_INTDIR_A)/xsltlocale.o\
 	$(XSLT_INTDIR_A)/xsltutils.o
 
 # Libexslt object files.

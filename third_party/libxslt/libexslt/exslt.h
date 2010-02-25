@@ -3,8 +3,9 @@
 #define __EXSLT_H__
 
 #include <libxml/tree.h>
+#include <libxml/xpath.h>
 #include "exsltexports.h"
-#include "exsltconfig.h"
+#include <libexslt/exsltconfig.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -84,6 +85,15 @@ EXSLTPUBFUN void EXSLTCALL exsltSaxonRegister (void);
 EXSLTPUBFUN void EXSLTCALL exsltDynRegister(void);
 
 EXSLTPUBFUN void EXSLTCALL exsltRegisterAll (void);
+
+EXSLTPUBFUN int EXSLTCALL exsltDateXpathCtxtRegister (xmlXPathContextPtr ctxt,
+                                                      const xmlChar *prefix);
+EXSLTPUBFUN int EXSLTCALL exsltMathXpathCtxtRegister (xmlXPathContextPtr ctxt,
+                                                      const xmlChar *prefix);
+EXSLTPUBFUN int EXSLTCALL exsltSetsXpathCtxtRegister (xmlXPathContextPtr ctxt,
+                                                      const xmlChar *prefix);
+EXSLTPUBFUN int EXSLTCALL exsltStrXpathCtxtRegister (xmlXPathContextPtr ctxt,
+                                                     const xmlChar *prefix);
 
 #ifdef __cplusplus
 }

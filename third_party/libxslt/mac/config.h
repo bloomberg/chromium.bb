@@ -148,7 +148,7 @@
 #define STDC_HEADERS 1
 
 /* Version number of package */
-#define VERSION "1.1.24"
+#define VERSION "1.1.26"
 
 /* Using the Win32 Socket implementation */
 /* #undef _WINSOCKAPI_ */

@@ -24,6 +24,7 @@ const int exsltLibxmlVersion = LIBXML_VERSION;
  */
 void
 exsltRegisterAll (void) {
+    xsltInitGlobals();
     exsltCommonRegister();
 #ifdef EXSLT_CRYPTO_ENABLED
     exsltCryptoRegister();

@@ -76,6 +76,8 @@
             'libxslt/xsltconfig.h',
             'libxslt/xsltexports.h',
             'libxslt/xsltInternals.h',
+            'libxslt/xsltlocale.c',
+            'libxslt/xsltlocale.h',
             'libxslt/xsltutils.c',
             'libxslt/xsltutils.h',
             'libxslt/xsltwin32config.h',

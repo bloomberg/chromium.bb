@@ -53,6 +53,7 @@ CPPFLAGS = /nologo
 CC = cl.exe
 CFLAGS = /nologo /D "WIN32" /D "_WINDOWS" /D "_MBCS" /W3 $(CRUNTIME) /D "_REENTRANT"
 CFLAGS = $(CFLAGS) /I$(BASEDIR) /I$(XSLT_SRCDIR) /I$(INCPREFIX)
+CFLAGS = $(CFLAGS) /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE
 
 # The linker and its options.
 LD = link.exe
@@ -90,6 +91,7 @@ XSLT_OBJS = $(XSLT_INTDIR)\attributes.obj\
 	$(XSLT_INTDIR)\transform.obj\
 	$(XSLT_INTDIR)\variables.obj\
 	$(XSLT_INTDIR)\xslt.obj\
+	$(XSLT_INTDIR)\xsltlocale.obj\
 	$(XSLT_INTDIR)\xsltutils.obj\
 	$(XSLT_INTDIR)\attrvt.obj
 
@@ -110,6 +112,7 @@ XSLT_OBJS_A = $(XSLT_INTDIR_A)\attributes.obj\
 	$(XSLT_INTDIR_A)\transform.obj\
 	$(XSLT_INTDIR_A)\variables.obj\
 	$(XSLT_INTDIR_A)\xslt.obj\
+	$(XSLT_INTDIR_A)\xsltlocale.obj\
 	$(XSLT_INTDIR_A)\xsltutils.obj\
 	$(XSLT_INTDIR_A)\attrvt.obj
 

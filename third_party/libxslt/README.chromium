@@ -1,10 +1,39 @@
 This directory contains a partial snapshot of the libxslt library from
 http://xmlsoft.org/XSLT, with the following modification:
-* Modified win32/configure.js to be able to clobber a read-only Makefile
-* Modified libxslt/security.c to use GetFileAttributesA instead of GetFileAttributes. 
-* Modified configure to not generate Makefiles.
 
-Current version: 1.1.24
+1) Modified win32/configure.js to be able to clobber a read-only Makefile
+This consists of:
+replace ---
+fso.CopyFile(makefile, ".\\Makefile", true);
+with ---
+var new_makefile = ".\\Makefile";
+var f = fso.FileExists(new_makefile);
+if (f) {
+       var t = fso.GetFile(new_makefile);
+       t.Attributes =0;
+}
+fso.CopyFile(makefile, new_makefile, true);
+done ---
+
+2) Modified libxslt/security.c to use GetFileAttributesA instead of GetFileAttributes. 
+
+3) Modified configure to not generate Makefiles.
+This consists of:
+replace ---
+ac_config_files="$ac_config_files Makefile....
+with ---
+ac_config_files="$ac_config_files libxslt/xsltconfig.h libxslt/xsltwin32config.h libexslt/exsltconfig.h xslt-config"
+done ---
+
+4) Modified xsltconfig.h options:
+- Change LIBXSLT_VERSION_EXTRA define to ""
+- Change the DEBUG_MEMORY define to #if 0
+- Change the WITH_MODULES define to #if 0
+- Change the "Locale support" section to #if 0
+- For good measure, change the LIBXSLT_DEFAULT_PLUGINS_PATH() define to "NULL"
+
+Current version: 1.1.26
+
 
 To import a new snapshot of libxslt:
 
@@ -20,3 +49,6 @@ To import a new snapshot of libxslt:
   to re-generate configuration headers.
 - Perform the modification above.
 - Update this README to reflect the new version number.
+- When creating your CL, make sure to "svn add" any new source files, but
+don't ever add in the files not needed for the Chromium build. (e.g.
+Changelog, configure, etc) -- these are just bloat.

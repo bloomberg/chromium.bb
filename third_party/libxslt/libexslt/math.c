@@ -972,22 +972,22 @@ exsltMathAtan2 (double y, double x) {
  */
 static void
 exsltMathAtan2Function (xmlXPathParserContextPtr ctxt, int nargs) {
-    double ret, y;
+    double ret, x;
 
     if (nargs != 2) {
 	xmlXPathSetArityError(ctxt);
 	return;
     }
-    y = xmlXPathPopNumber(ctxt);
+    x = xmlXPathPopNumber(ctxt);
     if (xmlXPathCheckError(ctxt))
 	return;
 
-    /* x */
+    /* y */
     ret = xmlXPathPopNumber(ctxt);
     if (xmlXPathCheckError(ctxt))
 	return;
 
-    ret = exsltMathAtan2(y, ret);
+    ret = exsltMathAtan2(ret, x);
 
     xmlXPathReturnNumber(ctxt, ret);
 }
@@ -1105,4 +1105,98 @@ exsltMathRegister (void) {
 				   EXSLT_MATH_NAMESPACE,
 				   exsltMathExpFunction);
 #endif
+}
+
+/**
+ * exsltMathXpathCtxtRegister:
+ *
+ * Registers the EXSLT - Math module for use outside XSLT
+ */
+int
+exsltMathXpathCtxtRegister (xmlXPathContextPtr ctxt, const xmlChar *prefix)
+{
+    if (ctxt
+        && prefix
+        && !xmlXPathRegisterNs(ctxt,
+                               prefix,
+                               (const xmlChar *) EXSLT_MATH_NAMESPACE)
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "min",
+                                   (const xmlChar *) EXSLT_MATH_NAMESPACE,
+                                   exsltMathMinFunction)
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "max",
+                                   (const xmlChar *) EXSLT_MATH_NAMESPACE,
+                                   exsltMathMaxFunction)
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "highest",
+                                   (const xmlChar *) EXSLT_MATH_NAMESPACE,
+                                   exsltMathHighestFunction)
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "lowest",
+                                   (const xmlChar *) EXSLT_MATH_NAMESPACE,
+                                   exsltMathLowestFunction)
+#ifdef HAVE_STDLIB_H
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "random",
+                                   (const xmlChar *) EXSLT_MATH_NAMESPACE,
+                                   exsltMathRandomFunction)
+#endif
+#if HAVE_MATH_H
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "abs",
+                                   (const xmlChar *) EXSLT_MATH_NAMESPACE,
+                                   exsltMathAbsFunction)
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "sqrt",
+                                   (const xmlChar *) EXSLT_MATH_NAMESPACE,
+                                   exsltMathSqrtFunction)
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "power",
+                                   (const xmlChar *) EXSLT_MATH_NAMESPACE,
+                                   exsltMathPowerFunction)
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "log",
+                                   (const xmlChar *) EXSLT_MATH_NAMESPACE,
+                                   exsltMathLogFunction)
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "sin",
+                                   (const xmlChar *) EXSLT_MATH_NAMESPACE,
+                                   exsltMathSinFunction)
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "cos",
+                                   (const xmlChar *) EXSLT_MATH_NAMESPACE,
+                                   exsltMathCosFunction)
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "tan",
+                                   (const xmlChar *) EXSLT_MATH_NAMESPACE,
+                                   exsltMathTanFunction)
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "asin",
+                                   (const xmlChar *) EXSLT_MATH_NAMESPACE,
+                                   exsltMathAsinFunction)
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "acos",
+                                   (const xmlChar *) EXSLT_MATH_NAMESPACE,
+                                   exsltMathAcosFunction)
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "atan",
+                                   (const xmlChar *) EXSLT_MATH_NAMESPACE,
+                                   exsltMathAtanFunction)
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "atan2",
+                                   (const xmlChar *) EXSLT_MATH_NAMESPACE,
+                                   exsltMathAtan2Function)
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "exp",
+                                   (const xmlChar *) EXSLT_MATH_NAMESPACE,
+                                   exsltMathExpFunction)
+#endif
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "constant",
+                                   (const xmlChar *) EXSLT_MATH_NAMESPACE,
+                                   exsltMathConstantFunction)) {
+        return 0;
+    }
+    return -1;
 }

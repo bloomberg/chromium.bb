@@ -290,3 +290,45 @@ exsltSetsRegister (void) {
 				   EXSLT_SETS_NAMESPACE,
 				   exsltSetsTrailingFunction);
 }
+
+/**
+ * exsltSetsXpathCtxtRegister:
+ *
+ * Registers the EXSLT - Sets module for use outside XSLT
+ */
+int
+exsltSetsXpathCtxtRegister (xmlXPathContextPtr ctxt, const xmlChar *prefix)
+{
+    if (ctxt
+        && prefix
+        && !xmlXPathRegisterNs(ctxt,
+                               prefix,
+                               (const xmlChar *) EXSLT_SETS_NAMESPACE)
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "difference",
+                                   (const xmlChar *) EXSLT_SETS_NAMESPACE,
+                                   exsltSetsDifferenceFunction)
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "intersection",
+                                   (const xmlChar *) EXSLT_SETS_NAMESPACE,
+                                   exsltSetsIntersectionFunction)
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "distinct",
+                                   (const xmlChar *) EXSLT_SETS_NAMESPACE,
+                                   exsltSetsDistinctFunction)
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "has-same-node",
+                                   (const xmlChar *) EXSLT_SETS_NAMESPACE,
+                                   exsltSetsHasSameNodesFunction)
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "leading",
+                                   (const xmlChar *) EXSLT_SETS_NAMESPACE,
+                                   exsltSetsLeadingFunction)
+        && !xmlXPathRegisterFuncNS(ctxt,
+                                   (const xmlChar *) "trailing",
+                                   (const xmlChar *) EXSLT_SETS_NAMESPACE,
+                                   exsltSetsTrailingFunction)) {
+        return 0;
+    }
+    return -1;
+}
