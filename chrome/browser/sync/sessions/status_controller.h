@@ -4,16 +4,37 @@
 
 // StatusController handles all counter and status related number crunching and
 // state tracking on behalf of a SyncSession.  It 'controls' the model data
-// defined in session_state.h.  It can track if changes occur to certain parts
-// of state so that various parts of the sync engine can avoid broadcasting
-// notifications if no changes occurred.  It also separates transient state
-// from long-lived SyncSession state for explicitness and to facilitate
-// resetting transient state.
+// defined in session_state.h.  The most important feature of StatusController
+// is the ScopedModelSafetyRestriction. When one of these is active, the
+// underlying data set exposed via accessors is swapped out to the appropriate
+// set for the restricted ModelSafeGroup behind the scenes.  For example, if
+// GROUP_UI is set, then accessors such as conflict_progress() and commit_ids()
+// are implicitly restricted to returning only data pertaining to GROUP_UI.
+// You can see which parts of status fall into this "restricted" category, the
+// global "shared" category for all model types, or the single per-model type
+// category by looking at the struct declarations in session_state.h.
+// If these accessors are invoked without a restriction in place, this is a
+// violation and will cause debug assertions to surface improper use of the API
+// in development.  Likewise for invocation of "shared" accessors when a
+// restriction is in place; for safety's sake, an assertion will fire.
+//
+// NOTE: There is no concurrent access protection provided by this class. It
+// assumes one single thread is accessing this class for each unique
+// ModelSafeGroup, and also only one single thread (in practice, the
+// SyncerThread) responsible for all "shared" access when no restriction is in
+// place. Thus, every bit of data is to be accessed mutually exclusively with
+// respect to threads.
+//
+// StatusController can also track if changes occur to certain parts of state
+// so that various parts of the sync engine can avoid broadcasting
+// notifications if no changes occurred.
 
 #ifndef CHROME_BROWSER_SYNC_SESSIONS_STATUS_CONTROLLER_H_
 #define CHROME_BROWSER_SYNC_SESSIONS_STATUS_CONTROLLER_H_
 
-#include "base/scoped_ptr.h"
+#include <map>
+
+#include "base/stl_util-inl.h"
 #include "chrome/browser/sync/sessions/ordered_commit_set.h"
 #include "chrome/browser/sync/sessions/session_state.h"
 
@@ -22,80 +43,112 @@ namespace sessions {
 
 class StatusController {
  public:
-  StatusController();
+  explicit StatusController(const ModelSafeRoutingInfo& routes);
 
   // Returns true if some portion of the session state has changed (is dirty)
   // since it was created or was last reset.
   bool TestAndClearIsDirty();
 
-  ConflictProgress const* conflict_progress() const {
-    return &conflict_progress_;
+  // Progress counters.
+  const ConflictProgress& conflict_progress() {
+    return GetOrCreateModelSafeGroupState(true,
+        group_restriction_)->conflict_progress;
   }
   ConflictProgress* mutable_conflict_progress() {
-    return &conflict_progress_;
+    return &GetOrCreateModelSafeGroupState(true,
+        group_restriction_)->conflict_progress;
   }
   const UpdateProgress& update_progress() {
-    return transient_->value()->update_progress;
+    return GetOrCreateModelSafeGroupState(true,
+        group_restriction_)->update_progress;
   }
   UpdateProgress* mutable_update_progress() {
-    return &transient_->value()->update_progress;
+    return &GetOrCreateModelSafeGroupState(true,
+        group_restriction_)->update_progress;
   }
+  // Some unrestricted, non-ModelChangingSyncerCommand commands need to store
+  // meta information about updates.
+  UpdateProgress* GetUnrestrictedUpdateProgress(ModelSafeGroup group) {
+    return &GetOrCreateModelSafeGroupState(false, group)->update_progress;
+  }
+
+  // ClientToServer messages.
   ClientToServerMessage* mutable_commit_message() {
-    return &transient_->value()->commit_message;
+    return &shared_.commit_message;
   }
   const ClientToServerResponse& commit_response() const {
-    return transient_->value()->commit_response;
+    return shared_.commit_response;
   }
   ClientToServerResponse* mutable_commit_response() {
-    return &transient_->value()->commit_response;
+    return &shared_.commit_response;
   }
   const ClientToServerResponse& updates_response() {
-    return transient_->value()->updates_response;
+    return shared_.updates_response;
   }
   ClientToServerResponse* mutable_updates_response() {
-    return &transient_->value()->updates_response;
+    return &shared_.updates_response;
   }
+
+  // Errors and SyncerStatus.
   const ErrorCounters& error_counters() const {
-    return error_counters_.value();
+    return shared_.error_counters.value();
   }
   const SyncerStatus& syncer_status() const {
-    return syncer_status_.value();
+    return shared_.syncer_status.value();
   }
-  const ChangelogProgress& change_progress() const {
-    return change_progress_.value();
+
+  // Changelog related state.
+  int64 num_server_changes_remaining() const {
+    return shared_.num_server_changes_remaining.value();
   }
+  // Aggregate max over all data type timestamps, used for UI reporting.
+  int64 ComputeMaxLocalTimestamp() const;
+
+  // Commit path data.
   const std::vector<syncable::Id>& commit_ids() const {
     DCHECK(!group_restriction_in_effect_) << "Group restriction in effect!";
-    return commit_set_.GetAllCommitIds();
+    return shared_.commit_set.GetAllCommitIds();
   }
   const OrderedCommitSet::Projection& commit_id_projection() {
     DCHECK(group_restriction_in_effect_)
         << "No group restriction for projection.";
-    return commit_set_.GetCommitIdProjection(group_restriction_);
+    return shared_.commit_set.GetCommitIdProjection(group_restriction_);
   }
   const syncable::Id& GetCommitIdAt(size_t index) {
     DCHECK(CurrentCommitIdProjectionHasIndex(index));
-    return commit_set_.GetCommitIdAt(index);
+    return shared_.commit_set.GetCommitIdAt(index);
   }
   const syncable::ModelType GetCommitIdModelTypeAt(size_t index) {
     DCHECK(CurrentCommitIdProjectionHasIndex(index));
-    return commit_set_.GetModelTypeAt(index);
+    return shared_.commit_set.GetModelTypeAt(index);
   }
   const std::vector<int64>& unsynced_handles() const {
-    return transient_->value()->unsynced_handles;
+    DCHECK(!group_restriction_in_effect_)
+        << "unsynced_handles is unrestricted.";
+    return shared_.unsynced_handles.value();
   }
+
+  // Control parameters for sync cycles.
   bool conflict_sets_built() const {
-    return transient_->value()->conflict_sets_built;
+    return shared_.control_params.conflict_sets_built;
   }
   bool conflicts_resolved() const {
-    return transient_->value()->conflicts_resolved;
+    return shared_.control_params.conflicts_resolved;
   }
-  bool timestamp_dirty() const {
-    return transient_->value()->timestamp_dirty;
+  bool got_new_timestamp() const {
+    return shared_.control_params.got_new_timestamp;
   }
   bool did_commit_items() const {
-    return transient_->value()->items_committed;
+    return shared_.control_params.items_committed;
   }
+
+  // If a GetUpdates for any data type resulted in downloading an update that
+  // is in conflict, this method returns true.
+  bool HasConflictingUpdates() const;
+
+  // Aggregate sum of ConflictingItemSize() over all ConflictProgress objects
+  // (one for each ModelSafeGroup currently in-use).
+  int TotalNumConflictingItems() const;
 
   // Returns the number of updates received from the sync server.
   int64 CountUpdates() const;
@@ -103,10 +156,14 @@ class StatusController {
   // Returns true iff any of the commit ids added during this session are
   // bookmark related.
   bool HasBookmarkCommitActivity() const {
-    return commit_set_.HasBookmarkCommitId();
+    return shared_.commit_set.HasBookmarkCommitId();
   }
 
   bool got_zero_updates() const { return CountUpdates() == 0; }
+
+  ModelSafeGroup group_restriction() const {
+    return group_restriction_;
+  }
 
   // A toolbelt full of methods for updating counters and flags.
   void increment_num_conflicting_commits_by(int value);
@@ -116,23 +173,24 @@ class StatusController {
   void set_num_consecutive_errors(int value);
   void increment_num_consecutive_errors();
   void increment_num_consecutive_errors_by(int value);
-  void set_current_sync_timestamp(int64 current_timestamp);
+  void set_got_new_timestamp();
+  void set_current_sync_timestamp(syncable::ModelType model,
+                                  int64 current_timestamp);
   void set_num_server_changes_remaining(int64 changes_remaining);
   void set_over_quota(bool over_quota);
   void set_invalid_store(bool invalid_store);
   void set_syncer_stuck(bool syncer_stuck);
   void set_syncing(bool syncing);
-  void set_num_successful_commits(int value);
   void set_num_successful_bookmark_commits(int value);
   void increment_num_successful_commits();
   void increment_num_successful_bookmark_commits();
   void set_unsynced_handles(const std::vector<int64>& unsynced_handles);
 
   void set_commit_set(const OrderedCommitSet& commit_set);
-  void set_conflict_sets_built(bool built);
-  void set_conflicts_resolved(bool resolved);
-  void set_items_committed(bool items_committed);
-  void set_timestamp_dirty(bool dirty);
+  void update_conflict_sets_built(bool built);
+  void update_conflicts_resolved(bool resolved);
+  void reset_conflicts_resolved();
+  void set_items_committed();
 
  private:
   friend class ScopedModelSafeGroupRestriction;
@@ -141,45 +199,54 @@ class StatusController {
   // references position |index| into the full set of commit ids in play.
   bool CurrentCommitIdProjectionHasIndex(size_t index);
 
-  // Dirtyable keeps a dirty bit that can be set, cleared, and checked to
-  // determine if a notification should be sent due to state change.
-  // This is useful when applied to any session state object if you want to know
-  // that some part of that object changed.
-  template <typename T>
-  class Dirtyable {
-   public:
-    Dirtyable() : dirty_(false) {}
-    void set_dirty() { dirty_ = true; }
-    bool TestAndClearIsDirty();
-    T* value() { return &t_; }
-    const T& value() const { return t_; }
-   private:
-    T t_;
-    bool dirty_;
-  };
+  // Helper to lazily create objects for per-ModelSafeGroup state.
+  PerModelSafeGroupState* GetOrCreateModelSafeGroupState(bool restrict,
+                                                         ModelSafeGroup group);
+  // Helper to lazily create objects for per-model type state.
+  PerModelTypeState* GetOrCreateModelTypeState(bool restrict,
+                                               syncable::ModelType model);
 
-  OrderedCommitSet commit_set_;
+  AllModelTypeState shared_;
+  std::map<ModelSafeGroup, PerModelSafeGroupState*> per_model_group_;
+  std::map<syncable::ModelType, PerModelTypeState*> per_model_type_;
 
-  // Various pieces of state we track dirtiness of.
-  Dirtyable<ChangelogProgress> change_progress_;
-  Dirtyable<SyncerStatus> syncer_status_;
-  Dirtyable<ErrorCounters> error_counters_;
+  STLValueDeleter<std::map<ModelSafeGroup, PerModelSafeGroupState*> >
+      per_model_group_deleter_;
+  STLValueDeleter<std::map<syncable::ModelType, PerModelTypeState*> >
+      per_model_type_deleter_;
 
-  // The transient parts of a sync session that can be reset during the session.
-  // For some parts of this state, we want to track whether changes occurred so
-  // we allocate a Dirtyable version.
-  // TODO(tim): Get rid of transient state since it has no valid use case
-  // anymore.
-  scoped_ptr<Dirtyable<TransientState> > transient_;
-
-  ConflictProgress conflict_progress_;
+  // Set to true if any DirtyOnWrite pieces of state we maintain are changed.
+  // Reset to false by TestAndClearIsDirty.
+  bool is_dirty_;
 
   // Used to fail read/write operations on state that don't obey the current
   // active ModelSafeWorker contract.
   bool group_restriction_in_effect_;
   ModelSafeGroup group_restriction_;
 
+  const ModelSafeRoutingInfo routing_info_;
+
   DISALLOW_COPY_AND_ASSIGN(StatusController);
+};
+
+// A utility to restrict access to only those parts of the given
+// StatusController that pertain to the specified ModelSafeGroup.
+class ScopedModelSafeGroupRestriction {
+ public:
+  ScopedModelSafeGroupRestriction(StatusController* to_restrict,
+                                  ModelSafeGroup restriction)
+      : status_(to_restrict) {
+    DCHECK(!status_->group_restriction_in_effect_);
+    status_->group_restriction_ = restriction;
+    status_->group_restriction_in_effect_ = true;
+  }
+  ~ScopedModelSafeGroupRestriction() {
+    DCHECK(status_->group_restriction_in_effect_);
+    status_->group_restriction_in_effect_ = false;
+  }
+ private:
+  StatusController* status_;
+  DISALLOW_COPY_AND_ASSIGN(ScopedModelSafeGroupRestriction);
 };
 
 }

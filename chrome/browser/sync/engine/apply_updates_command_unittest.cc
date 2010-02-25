@@ -30,6 +30,14 @@ class ApplyUpdatesCommandTest : public SyncerCommandTest {
   ApplyUpdatesCommandTest() : next_revision_(1) {}
   virtual ~ApplyUpdatesCommandTest() {}
 
+  virtual void SetUp() {
+    workers()->clear();
+    mutable_routing_info()->clear();
+    workers()->push_back(new ModelSafeWorker());  // GROUP_PASSIVE worker.
+    (*mutable_routing_info())[syncable::BOOKMARKS] = GROUP_PASSIVE;
+    SyncerCommandTest::SetUp();
+  }
+
   // Create a new unapplied update.
   void CreateUnappliedNewItemWithParent(const string& item_id,
                                         const string& parent_id) {
@@ -62,12 +70,14 @@ TEST_F(ApplyUpdatesCommandTest, Simple) {
   CreateUnappliedNewItemWithParent("parent", root_server_id);
   CreateUnappliedNewItemWithParent("child", "parent");
 
-  apply_updates_command_.ModelChangingExecuteImpl(session());
+  apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->status_controller();
+
+  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
   EXPECT_EQ(2, status->update_progress().AppliedUpdatesSize())
       << "All updates should have been attempted";
-  EXPECT_EQ(0, status->conflict_progress()->ConflictingItemsSize())
+  EXPECT_EQ(0, status->conflict_progress().ConflictingItemsSize())
       << "Simple update shouldn't result in conflicts";
   EXPECT_EQ(2, status->update_progress().SuccessfullyAppliedUpdateCount())
       << "All items should have been successfully applied";
@@ -83,12 +93,13 @@ TEST_F(ApplyUpdatesCommandTest, UpdateWithChildrenBeforeParents) {
   CreateUnappliedNewItemWithParent("a_child_created_second", "parent");
   CreateUnappliedNewItemWithParent("x_child_created_second", "parent");
 
-  apply_updates_command_.ModelChangingExecuteImpl(session());
+  apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->status_controller();
+  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
   EXPECT_EQ(5, status->update_progress().AppliedUpdatesSize())
       << "All updates should have been attempted";
-  EXPECT_EQ(0, status->conflict_progress()->ConflictingItemsSize())
+  EXPECT_EQ(0, status->conflict_progress().ConflictingItemsSize())
       << "Simple update shouldn't result in conflicts, even if out-of-order";
   EXPECT_EQ(5, status->update_progress().SuccessfullyAppliedUpdateCount())
       << "All updates should have been successfully applied";
@@ -99,12 +110,13 @@ TEST_F(ApplyUpdatesCommandTest, NestedItemsWithUnknownParent) {
   CreateUnappliedNewItemWithParent("some_item", "unknown_parent");
   CreateUnappliedNewItemWithParent("some_other_item", "some_item");
 
-  apply_updates_command_.ModelChangingExecuteImpl(session());
+  apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->status_controller();
+  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
   EXPECT_EQ(2, status->update_progress().AppliedUpdatesSize())
       << "All updates should have been attempted";
-  EXPECT_EQ(2, status->conflict_progress()->ConflictingItemsSize())
+  EXPECT_EQ(2, status->conflict_progress().ConflictingItemsSize())
       << "All updates with an unknown ancestors should be in conflict";
   EXPECT_EQ(0, status->update_progress().SuccessfullyAppliedUpdateCount())
       << "No item with an unknown ancestor should be applied";
@@ -120,12 +132,13 @@ TEST_F(ApplyUpdatesCommandTest, ItemsBothKnownAndUnknown) {
   CreateUnappliedNewItemWithParent("third_known_item", "fourth_known_item");
   CreateUnappliedNewItemWithParent("fourth_known_item", root_server_id);
 
-  apply_updates_command_.ModelChangingExecuteImpl(session());
+  apply_updates_command_.ExecuteImpl(session());
 
   sessions::StatusController* status = session()->status_controller();
+  sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
   EXPECT_EQ(6, status->update_progress().AppliedUpdatesSize())
       << "All updates should have been attempted";
-  EXPECT_EQ(2, status->conflict_progress()->ConflictingItemsSize())
+  EXPECT_EQ(2, status->conflict_progress().ConflictingItemsSize())
       << "The updates with unknown ancestors should be in conflict";
   EXPECT_EQ(4, status->update_progress().SuccessfullyAppliedUpdateCount())
       << "The updates with known ancestors should be successfully applied";

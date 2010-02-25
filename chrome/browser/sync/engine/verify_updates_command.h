@@ -7,6 +7,7 @@
 
 #include "base/basictypes.h"
 
+#include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/engine/syncer_command.h"
 #include "chrome/browser/sync/engine/syncproto.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
@@ -27,9 +28,14 @@ class VerifyUpdatesCommand : public SyncerCommand {
   // SyncerCommand implementation.
   virtual void ExecuteImpl(sessions::SyncSession* session);
 
-  VerifyResult VerifyUpdate(syncable::WriteTransaction* trans,
-                            const SyncEntity& entry);
  private:
+  struct VerifyUpdateResult {
+    VerifyResult value;
+    ModelSafeGroup placement;
+  };
+  VerifyUpdateResult VerifyUpdate(syncable::WriteTransaction* trans,
+                                  const SyncEntity& entry,
+                                  const ModelSafeRoutingInfo& routes);
   DISALLOW_COPY_AND_ASSIGN(VerifyUpdatesCommand);
 };
 

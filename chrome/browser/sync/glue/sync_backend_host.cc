@@ -60,6 +60,7 @@ void SyncBackendHost::Initialize(
   // when a new type is synced as the worker may already exist and you just
   // need to update routing_info_.
   registrar_.workers[GROUP_UI] = new UIModelWorker(frontend_loop_);
+  registrar_.workers[GROUP_PASSIVE] = new ModelSafeWorker();
 
   // Any datatypes that we want the syncer to pull down must
   // be in the routing_info map.  We set them to group passive, meaning that
@@ -121,7 +122,9 @@ void SyncBackendHost::Shutdown(bool sync_disabled) {
 
   registrar_.routing_info.clear();
   registrar_.workers[GROUP_UI] = NULL;
+  registrar_.workers[GROUP_PASSIVE] = NULL;
   registrar_.workers.erase(GROUP_UI);
+  registrar_.workers.erase(GROUP_PASSIVE);
   frontend_ = NULL;
   core_ = NULL;  // Releases reference to core_.
 }

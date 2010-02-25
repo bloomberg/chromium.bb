@@ -82,7 +82,7 @@ class SyncSession {
   SyncSessionContext* context() { return context_; }
   Delegate* delegate() { return delegate_; }
   syncable::WriteTransaction* write_transaction() { return write_transaction_; }
-  StatusController* status_controller() { return &status_controller_; }
+  StatusController* status_controller() { return status_controller_.get(); }
 
   const ExtensionsActivityMonitor::Records& extensions_activity() const {
     return extensions_activity_;
@@ -124,7 +124,7 @@ class SyncSession {
   Delegate* delegate_;
 
   // Our controller for various status and error counters.
-  StatusController status_controller_;
+  scoped_ptr<StatusController> status_controller_;
 
   // The set of active ModelSafeWorkers for the duration of this session.
   const std::vector<ModelSafeWorker*> workers_;
@@ -153,27 +153,6 @@ class ScopedSetSessionWriteTransaction {
  private:
   SyncSession* session_;
   DISALLOW_COPY_AND_ASSIGN(ScopedSetSessionWriteTransaction);
-};
-
-// A utility to restrict access to only those parts of the given SyncSession
-// that pertain to the specified ModelSafeGroup.  See
-// SyncSession::ModelSafetyRestriction.
-class ScopedModelSafeGroupRestriction {
- public:
-  ScopedModelSafeGroupRestriction(SyncSession* to_restrict,
-                               ModelSafeGroup restriction)
-      : session_(to_restrict) {
-    DCHECK(!session_->status_controller()->group_restriction_in_effect_);
-    session_->status_controller()->group_restriction_ = restriction;
-    session_->status_controller()->group_restriction_in_effect_ = true;
-  }
-  ~ScopedModelSafeGroupRestriction() {
-    DCHECK(session_->status_controller()->group_restriction_in_effect_);
-    session_->status_controller()->group_restriction_in_effect_ = false;
-  }
- private:
-  SyncSession* session_;
-  DISALLOW_COPY_AND_ASSIGN(ScopedModelSafeGroupRestriction);
 };
 
 }  // namespace sessions

@@ -13,6 +13,7 @@
 #define CHROME_BROWSER_SYNC_SESSIONS_SESSION_STATE_H_
 
 #include <set>
+#include <vector>
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync/engine/syncer_types.h"
@@ -28,19 +29,12 @@ namespace sessions {
 
 class UpdateProgress;
 
-// Data describing the progress made relative to the changelog on the server.
-struct ChangelogProgress {
-  ChangelogProgress() : current_sync_timestamp(0),
-                        num_server_changes_remaining(0) {}
-  int64 current_sync_timestamp;
-  int64 num_server_changes_remaining;
-};
-
 // Data pertaining to the status of an active Syncer object.
 struct SyncerStatus {
   SyncerStatus()
       : over_quota(false), invalid_store(false), syncer_stuck(false),
         syncing(false), num_successful_commits(0) {}
+
   bool over_quota;
   // True when we get such an INVALID_STORE error from the server.
   bool invalid_store;
@@ -74,12 +68,18 @@ struct ErrorCounters {
 struct SyncSessionSnapshot {
   SyncSessionSnapshot(const SyncerStatus& syncer_status,
       const ErrorCounters& errors,
-      const ChangelogProgress& changelog_progress, bool is_share_usable,
-      bool more_to_sync, bool is_silenced, int64 unsynced_count,
-      int num_conflicting_updates, bool did_commit_items)
+      int64 num_server_changes_remaining,
+      int64 max_local_timestamp,
+      bool is_share_usable,
+      bool more_to_sync,
+      bool is_silenced,
+      int64 unsynced_count,
+      int num_conflicting_updates,
+      bool did_commit_items)
       : syncer_status(syncer_status),
         errors(errors),
-        changelog_progress(changelog_progress),
+        num_server_changes_remaining(num_server_changes_remaining),
+        max_local_timestamp(max_local_timestamp),
         is_share_usable(is_share_usable),
         has_more_to_sync(more_to_sync),
         is_silenced(is_silenced),
@@ -88,7 +88,8 @@ struct SyncSessionSnapshot {
         did_commit_items(did_commit_items) {}
   const SyncerStatus syncer_status;
   const ErrorCounters errors;
-  const ChangelogProgress changelog_progress;
+  const int64 num_server_changes_remaining;
+  const int64 max_local_timestamp;
   const bool is_share_usable;
   const bool has_more_to_sync;
   const bool is_silenced;
@@ -100,7 +101,7 @@ struct SyncSessionSnapshot {
 // Tracks progress of conflicts and their resolution using conflict sets.
 class ConflictProgress {
  public:
-  ConflictProgress() : progress_changed_(false) {}
+  explicit ConflictProgress(bool* dirty_flag) : dirty_(dirty_flag) {}
   ~ConflictProgress() { CleanupSets(); }
   // Various iterators, size, and retrieval functions for conflict sets.
   IdToConflictSetMap::const_iterator IdToConflictSetBegin() const;
@@ -124,8 +125,6 @@ class ConflictProgress {
   void MergeSets(const syncable::Id& set1, const syncable::Id& set2);
   void CleanupSets();
 
-  bool progress_changed() const { return progress_changed_; }
-  void reset_progress_changed() { progress_changed_ = false; }
  private:
   // TODO(sync): move away from sets if it makes more sense.
   std::set<syncable::Id> conflicting_item_ids_;
@@ -133,8 +132,9 @@ class ConflictProgress {
   std::set<ConflictSet*> conflict_sets_;
 
   // Whether a conflicting item was added or removed since
-  // the last call to reset_progress_changed(), if any.
-  bool progress_changed_;
+  // the last call to reset_progress_changed(), if any. In practice this
+  // points to StatusController::is_dirty_.
+  bool* dirty_;
 };
 
 typedef std::pair<VerifyResult, sync_pb::SyncEntity> VerifiedUpdate;
@@ -181,25 +181,87 @@ class UpdateProgress {
   std::vector<AppliedUpdate> applied_updates_;
 };
 
-// Transient state is a physical grouping of session state that can be reset
-// while that session is in flight.  This is useful when multiple
-// SyncShare operations take place during a session.
-struct TransientState {
-  TransientState()
-    : conflict_sets_built(false),
-      conflicts_resolved(false),
-      items_committed(false),
-      timestamp_dirty(false) {}
-  UpdateProgress update_progress;
+struct SyncCycleControlParameters {
+  SyncCycleControlParameters() : conflict_sets_built(false),
+                                 conflicts_resolved(false),
+                                 items_committed(false),
+                                 got_new_timestamp(false) {}
+  // Set to true by BuildAndProcessConflictSetsCommand if the RESOLVE_CONFLICTS
+  // step is needed.
+  bool conflict_sets_built;
+
+  // Set to true by ResolveConflictsCommand if any forward progress was made.
+  bool conflicts_resolved;
+
+  // Set to true by PostCommitMessageCommand if any commits were successful.
+  bool items_committed;
+
+  // The server sent us updates and a newer timestamp as part of the session.
+  bool got_new_timestamp;
+};
+
+// DirtyOnWrite wraps a value such that any write operation will update a
+// specified dirty bit, which can be used to determine if a notification should
+// be sent due to state change.
+template <typename T>
+class DirtyOnWrite {
+ public:
+  explicit DirtyOnWrite(bool* dirty) : dirty_(dirty) {}
+  DirtyOnWrite(bool* dirty, const T& t) : t_(t), dirty_(dirty) {}
+  T* mutate() {
+    *dirty_ = true;
+    return &t_;
+  }
+  const T& value() const { return t_; }
+ private:
+  T t_;
+  bool* dirty_;
+};
+
+// The next 3 structures declare how all the state involved in running a sync
+// cycle is divided between global scope (applies to all model types),
+// ModelSafeGroup scope (applies to all data types in a group), and single
+// model type scope.  Within this breakdown, each struct declares which bits
+// of state are dirty-on-write and should incur dirty bit updates if changed.
+
+// Grouping of all state that applies to all model types.  Note that some
+// components of the global grouping can internally implement finer grained
+// scope control (such as OrderedCommitSet), but the top level entity is still
+// a singleton with respect to model types.
+struct AllModelTypeState {
+  explicit AllModelTypeState(bool* dirty_flag)
+      : unsynced_handles(dirty_flag),
+        syncer_status(dirty_flag),
+        error_counters(dirty_flag),
+        num_server_changes_remaining(dirty_flag, 0),
+        commit_set(ModelSafeRoutingInfo()) {}
+  // Commits for all model types are bundled together into a single message.
   ClientToServerMessage commit_message;
   ClientToServerResponse commit_response;
+  // We GetUpdates for all desired types at once.
   ClientToServerResponse updates_response;
-  std::vector<int64> unsynced_handles;
-  std::vector<syncable::Id> commit_ids;
-  bool conflict_sets_built;
-  bool conflicts_resolved;
-  bool items_committed;
-  bool timestamp_dirty;
+  // Used to build the shared commit message.
+  DirtyOnWrite<std::vector<int64> > unsynced_handles;
+  DirtyOnWrite<SyncerStatus> syncer_status;
+  DirtyOnWrite<ErrorCounters> error_counters;
+  SyncCycleControlParameters control_params;
+  DirtyOnWrite<int64> num_server_changes_remaining;
+  OrderedCommitSet commit_set;
+};
+
+// Grouping of all state that applies to a single ModelSafeGroup.
+struct PerModelSafeGroupState {
+  explicit PerModelSafeGroupState(bool* dirty_flag)
+      : conflict_progress(dirty_flag) {}
+  UpdateProgress update_progress;
+  ConflictProgress conflict_progress;
+};
+
+// Grouping of all state that applies to a single ModelType.
+struct PerModelTypeState {
+  explicit PerModelTypeState(bool* dirty_flag)
+      : current_sync_timestamp(dirty_flag, 0) {}
+  DirtyOnWrite<int64> current_sync_timestamp;
 };
 
 }  // namespace sessions

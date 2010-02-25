@@ -1159,7 +1159,11 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
   StatusController* status = session_->status_controller();
 
   // Id 3 should be in conflict now.
-  EXPECT_TRUE(1 == status->conflict_progress()->ConflictingItemsSize());
+  EXPECT_EQ(1, status->TotalNumConflictingItems());
+  {
+    sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
+    EXPECT_EQ(1, status->conflict_progress().ConflictingItemsSize());
+  }
 
   // These entries will be used in the second set of updates.
   mock_server_->AddUpdateDirectory(4, 0, "newer_version", 20, 10);
@@ -1172,7 +1176,12 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
   syncer_->SyncShare(session_.get());
   // The three items with an unresolved parent should be unapplied (3, 9, 100).
   // The name clash should also still be in conflict.
-  EXPECT_TRUE(3 ==  status->conflict_progress()->ConflictingItemsSize());
+  EXPECT_EQ(3, status->TotalNumConflictingItems());
+  {
+    sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
+    EXPECT_EQ(3, status->conflict_progress().ConflictingItemsSize());
+  }
+
   {
     WriteTransaction trans(dir, UNITTEST, __FILE__, __LINE__);
     // Even though it has the same name, it should work.
@@ -1260,7 +1269,11 @@ TEST_F(SyncerTest, IllegalAndLegalUpdates) {
   }
 
   EXPECT_TRUE(0 == syncer_events_.size());
-  EXPECT_TRUE(4 == status->conflict_progress()->ConflictingItemsSize());
+  EXPECT_EQ(4, status->TotalNumConflictingItems());
+  {
+    sessions::ScopedModelSafeGroupRestriction r(status, GROUP_PASSIVE);
+    EXPECT_EQ(4, status->conflict_progress().ConflictingItemsSize());
+  }
 }
 
 TEST_F(SyncerTest, CommitTimeRename) {
@@ -1938,9 +1951,7 @@ TEST_F(SyncerTest, UnappliedUpdateDuringCommit) {
   }
   syncer_->SyncShare(session_.get());
   syncer_->SyncShare(session_.get());
-  const ConflictProgress* progress =
-      session_->status_controller()->conflict_progress();
-  EXPECT_TRUE(0 == progress->ConflictingItemsSize());
+  EXPECT_TRUE(0 == session_->status_controller()->TotalNumConflictingItems());
   syncer_events_.clear();
 }
 
@@ -3432,12 +3443,14 @@ TEST(SyncerSyncProcessState, MergeSetsTest) {
   for (int i = 1; i < 7; i++) {
     id[i] = id_factory.NewServerId();
   }
-  ConflictProgress c;
+  bool is_dirty = false;
+  ConflictProgress c(&is_dirty);
   c.MergeSets(id[1], id[2]);
   c.MergeSets(id[2], id[3]);
   c.MergeSets(id[4], id[5]);
   c.MergeSets(id[5], id[6]);
   EXPECT_TRUE(6 == c.IdToConflictSetSize());
+  EXPECT_FALSE(is_dirty);
   for (int i = 1; i < 7; i++) {
     EXPECT_TRUE(NULL != c.IdToConflictSetGet(id[i]));
     EXPECT_TRUE(c.IdToConflictSetGet(id[(i & ~3) + 1]) ==
@@ -3450,10 +3463,11 @@ TEST(SyncerSyncProcessState, MergeSetsTest) {
   }
 
   // Check dupes don't cause double sets.
-  ConflictProgress identical_set;
+  ConflictProgress identical_set(&is_dirty);
   identical_set.MergeSets(id[1], id[1]);
   EXPECT_TRUE(identical_set.IdToConflictSetSize() == 1);
   EXPECT_TRUE(identical_set.IdToConflictSetGet(id[1])->size() == 1);
+  EXPECT_FALSE(is_dirty);
 }
 
 // Bug Synopsis:

@@ -25,6 +25,7 @@ namespace browser_sync {
 //
 // Postconditions - All of the verified SyncEntity data will be copied to
 //                  the server fields of the corresponding syncable entries.
+// TODO(tim): This should not be ModelChanging (bug 36592).
 class ProcessUpdatesCommand : public ModelChangingSyncerCommand {
  public:
   ProcessUpdatesCommand();

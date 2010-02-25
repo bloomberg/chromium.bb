@@ -25,7 +25,7 @@ void ResolveConflictsCommand::ModelChangingExecuteImpl(
   if (!dir.good())
     return;
   sessions::StatusController* status = session->status_controller();
-  status->set_conflicts_resolved(resolver->ResolveConflicts(dir, status));
+  status->update_conflicts_resolved(resolver->ResolveConflicts(dir, status));
 }
 
 }  // namespace browser_sync

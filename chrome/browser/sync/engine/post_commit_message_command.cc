@@ -43,7 +43,7 @@ void PostCommitMessageCommand::ExecuteImpl(sessions::SyncSession* session) {
     }
     return;
   } else {
-    status->set_items_committed(true);
+    status->set_items_committed();
   }
   status->mutable_commit_response()->CopyFrom(response);
 }

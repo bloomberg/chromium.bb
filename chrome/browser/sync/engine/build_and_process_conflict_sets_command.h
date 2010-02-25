@@ -9,6 +9,7 @@
 
 #include "base/basictypes.h"
 #include "chrome/browser/sync/engine/model_changing_syncer_command.h"
+#include "chrome/browser/sync/engine/model_safe_worker.h"
 
 namespace syncable {
 class BaseTransaction;
@@ -40,11 +41,12 @@ class BuildAndProcessConflictSetsCommand : public ModelChangingSyncerCommand {
 
   bool ProcessSingleDirectionConflictSets(
       syncable::WriteTransaction* trans, ConflictResolver* resolver,
-      sessions::StatusController* status);
+      sessions::StatusController* status, const ModelSafeRoutingInfo& routes);
   bool ApplyUpdatesTransactionally(
       syncable::WriteTransaction* trans,
       const std::vector<syncable::Id>* const update_set,
       ConflictResolver* resolver,
+      const ModelSafeRoutingInfo& routes,
       sessions::StatusController* status);
   void BuildConflictSets(syncable::BaseTransaction* trans,
                          sessions::ConflictProgress* conflict_progress);

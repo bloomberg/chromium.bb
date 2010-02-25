@@ -16,6 +16,7 @@
 
 #include "base/basictypes.h"
 #include "base/port.h"
+#include "chrome/browser/sync/engine/model_safe_worker.h"
 #include "chrome/browser/sync/syncable/syncable.h"
 
 namespace browser_sync {
@@ -34,7 +35,9 @@ class UpdateApplicator {
 
   UpdateApplicator(ConflictResolver* resolver,
                    const UpdateIterator& begin,
-                   const UpdateIterator& end);
+                   const UpdateIterator& end,
+                   const ModelSafeRoutingInfo& routes,
+                   ModelSafeGroup group_filter);
 
   // returns true if there's more we can do.
   bool AttemptOneApplication(syncable::WriteTransaction* trans);
@@ -50,13 +53,22 @@ class UpdateApplicator {
       sessions::UpdateProgress* update_progress);
 
  private:
+  // If true, AttemptOneApplication will skip over |entry| and return true.
+  bool SkipUpdate(const syncable::MutableEntry& entry);
+
+  // Adjusts the UpdateIterator members to move ahead by one update.
+  void Advance();
+
   // Used to resolve conflicts when trying to apply updates.
   ConflictResolver* const resolver_;
 
   UpdateIterator const begin_;
   UpdateIterator end_;
   UpdateIterator pointer_;
+  ModelSafeGroup group_filter_;
   bool progress_;
+
+  const ModelSafeRoutingInfo routing_info_;
 
   // Track the result of the various items.
   std::vector<syncable::Id> conflicting_ids_;

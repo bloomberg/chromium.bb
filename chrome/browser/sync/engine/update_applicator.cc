@@ -18,12 +18,16 @@ namespace browser_sync {
 
 UpdateApplicator::UpdateApplicator(ConflictResolver* resolver,
                                    const UpdateIterator& begin,
-                                   const UpdateIterator& end)
+                                   const UpdateIterator& end,
+                                   const ModelSafeRoutingInfo& routes,
+                                   ModelSafeGroup group_filter)
     : resolver_(resolver),
       begin_(begin),
       end_(end),
       pointer_(begin),
-      progress_(false) {
+      group_filter_(group_filter),
+      progress_(false),
+      routing_info_(routes) {
     size_t item_count = end - begin;
     LOG(INFO) << "UpdateApplicator created for " << item_count << " items.";
     successful_ids_.reserve(item_count);
@@ -47,12 +51,17 @@ bool UpdateApplicator::AttemptOneApplication(
     conflicting_ids_.clear();
   }
   syncable::MutableEntry entry(trans, syncable::GET_BY_HANDLE, *pointer_);
+
+  if (SkipUpdate(entry)) {
+    Advance();
+    return true;
+  }
+
   UpdateAttemptResponse updateResponse =
       SyncerUtil::AttemptToUpdateEntry(trans, &entry, resolver_);
   switch (updateResponse) {
     case SUCCESS:
-      --end_;
-      *pointer_ = *end_;
+      Advance();
       progress_ = true;
       successful_ids_.push_back(entry.Get(syncable::ID));
       break;
@@ -68,6 +77,18 @@ bool UpdateApplicator::AttemptOneApplication(
             << " is " << updateResponse;
 
   return true;
+}
+
+void UpdateApplicator::Advance() {
+  --end_;
+  *pointer_ = *end_;
+}
+
+bool UpdateApplicator::SkipUpdate(const syncable::MutableEntry& entry) {
+  ModelSafeGroup g = GetGroupForModelType(entry.GetModelType(), routing_info_);
+  if (g != group_filter_)
+    return true;
+  return false;
 }
 
 bool UpdateApplicator::AllUpdatesApplied() const {

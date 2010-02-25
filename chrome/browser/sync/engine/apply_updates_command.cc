@@ -29,7 +29,8 @@ void ApplyUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
   dir->GetUnappliedUpdateMetaHandles(&trans, &handles);
 
   UpdateApplicator applicator(session->context()->resolver(), handles.begin(),
-                              handles.end());
+      handles.end(), session->routing_info(),
+      session->status_controller()->group_restriction());
   while (applicator.AttemptOneApplication(&trans)) {}
   applicator.SaveProgressIntoSessionState(
       session->status_controller()->mutable_conflict_progress(),

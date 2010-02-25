@@ -386,7 +386,7 @@ bool ConflictResolver::LogAndSignalIfConflictStuck(
   }
 
   // Don't signal stuck if we're not up to date.
-  if (status->change_progress().num_server_changes_remaining > 0) {
+  if (status->num_server_changes_remaining() > 0) {
     return false;
   }
 
@@ -412,16 +412,16 @@ bool ConflictResolver::ResolveSimpleConflicts(const ScopedDirLookup& dir,
                                               StatusController* status) {
   WriteTransaction trans(dir, syncable::SYNCER, __FILE__, __LINE__);
   bool forward_progress = false;
-  ConflictProgress const* progress = status->conflict_progress();
+  const ConflictProgress& progress = status->conflict_progress();
   // First iterate over simple conflict items (those that belong to no set).
   set<Id>::const_iterator conflicting_item_it;
-  for (conflicting_item_it = progress->ConflictingItemsBeginConst();
-       conflicting_item_it != progress->ConflictingItemsEnd();
+  for (conflicting_item_it = progress.ConflictingItemsBeginConst();
+       conflicting_item_it != progress.ConflictingItemsEnd();
        ++conflicting_item_it) {
     Id id = *conflicting_item_it;
     map<Id, ConflictSet*>::const_iterator item_set_it =
-        progress->IdToConflictSetFind(id);
-    if (item_set_it == progress->IdToConflictSetEnd() ||
+        progress.IdToConflictSetFind(id);
+    if (item_set_it == progress.IdToConflictSetEnd() ||
         0 == item_set_it->second) {
       // We have a simple conflict.
       switch (ProcessSimpleConflict(&trans, id)) {
@@ -451,7 +451,7 @@ bool ConflictResolver::ResolveSimpleConflicts(const ScopedDirLookup& dir,
 
 bool ConflictResolver::ResolveConflicts(const ScopedDirLookup& dir,
                                         StatusController* status) {
-  ConflictProgress const* progress = status->conflict_progress();
+  const ConflictProgress& progress = status->conflict_progress();
   bool rv = false;
   if (ResolveSimpleConflicts(dir, status))
     rv = true;
@@ -459,8 +459,8 @@ bool ConflictResolver::ResolveConflicts(const ScopedDirLookup& dir,
   set<Id> children_of_dirs_merged_last_round;
   std::swap(children_of_merged_dirs_, children_of_dirs_merged_last_round);
   set<ConflictSet*>::const_iterator set_it;
-  for (set_it = progress->ConflictSetsBegin();
-       set_it != progress->ConflictSetsEnd();
+  for (set_it = progress.ConflictSetsBegin();
+       set_it != progress.ConflictSetsEnd();
        set_it++) {
     ConflictSet* conflict_set = *set_it;
     ConflictSetCountMapKey key = GetSetKey(conflict_set);

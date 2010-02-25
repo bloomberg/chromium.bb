@@ -221,10 +221,11 @@ void Syncer::SyncShare(sessions::SyncSession* session,
           pre_conflict_resolution_closure_->Run();
         }
 
+        StatusController* status = session->status_controller();
+        status->reset_conflicts_resolved();
         ResolveConflictsCommand resolve_conflicts_command;
         resolve_conflicts_command.Execute(session);
-        StatusController* status = session->status_controller();
-        if (status->update_progress().HasConflictingUpdates())
+        if (status->HasConflictingUpdates())
           next_step = APPLY_UPDATES_TO_RESOLVE_CONFLICTS;
         else
           next_step = SYNCER_END;
@@ -232,14 +233,13 @@ void Syncer::SyncShare(sessions::SyncSession* session,
       }
       case APPLY_UPDATES_TO_RESOLVE_CONFLICTS: {
         StatusController* status = session->status_controller();
-        const ConflictProgress* progress = status->conflict_progress();
         LOG(INFO) << "Applying updates to resolve conflicts";
         ApplyUpdatesCommand apply_updates;
-        int num_conflicting_updates = progress->ConflictingItemsSize();
+        int before_conflicting_updates = status->TotalNumConflictingItems();
         apply_updates.Execute(session);
-        int post_facto_conflicting_updates = progress->ConflictingItemsSize();
-        status->set_conflicts_resolved(status->conflicts_resolved() ||
-            num_conflicting_updates > post_facto_conflicting_updates);
+        int after_conflicting_updates = status->TotalNumConflictingItems();
+        status->update_conflicts_resolved(before_conflicting_updates >
+                                          after_conflicting_updates);
         if (status->conflicts_resolved())
           next_step = RESOLVE_CONFLICTS;
         else

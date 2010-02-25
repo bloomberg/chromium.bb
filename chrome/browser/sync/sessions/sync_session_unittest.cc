@@ -129,7 +129,7 @@ TEST_F(SyncSessionTest, MoreToSyncIfUnsyncedGreaterThanCommitted) {
 TEST_F(SyncSessionTest, MoreToSyncIfConflictSetsBuilt) {
   // If we built conflict sets, then we need to loop back and try
   // to get updates & commit again.
-  status()->set_conflict_sets_built(true);
+  status()->update_conflict_sets_built(true);
   EXPECT_TRUE(session_->HasMoreToSync());
 }
 
@@ -149,7 +149,7 @@ TEST_F(SyncSessionTest, MoreToSyncIfConflictsResolved) {
   // Conflict resolution happens after get updates and commit,
   // so we need to loop back and get updates / commit again now
   // that we have made forward progress.
-  status()->set_conflicts_resolved(true);
+  status()->update_conflicts_resolved(true);
   EXPECT_TRUE(session_->HasMoreToSync());
 }
 
@@ -157,8 +157,8 @@ TEST_F(SyncSessionTest, MoreToSyncIfTimestampDirty) {
   // If there are more changes on the server that weren't processed during this
   // GetUpdates request, the client should send another GetUpdates request and
   // use new_timestamp as the from_timestamp value within GetUpdatesMessage.
-  status()->set_timestamp_dirty(true);
-  status()->set_conflicts_resolved(true);
+  status()->set_got_new_timestamp();
+  status()->update_conflicts_resolved(true);
   EXPECT_TRUE(session_->HasMoreToSync());
 }
 

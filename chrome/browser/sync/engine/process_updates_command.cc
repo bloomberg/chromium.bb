@@ -54,7 +54,7 @@ void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
     if (0 == update_count) {
       if (new_timestamp > dir->last_sync_timestamp()) {
         dir->set_last_sync_timestamp(new_timestamp);
-        status->set_timestamp_dirty(true);
+        status->set_got_new_timestamp();
       }
       return;
     }
@@ -104,11 +104,14 @@ void ProcessUpdatesCommand::ModelChangingExecuteImpl(SyncSession* session) {
 
   if (new_timestamp > dir->last_sync_timestamp()) {
     dir->set_last_sync_timestamp(new_timestamp);
-    status->set_timestamp_dirty(true);
+    status->set_got_new_timestamp();
   }
 
   status->set_num_consecutive_errors(0);
-  status->set_current_sync_timestamp(dir->last_sync_timestamp());
+  // TODO(tim): Related to bug 30665, the Directory needs last sync timestamp
+  // per data type.  Until then, use UNSPECIFIED.
+  status->set_current_sync_timestamp(syncable::UNSPECIFIED,
+                                     dir->last_sync_timestamp());
   status->set_syncing(true);
   return;
 }

@@ -40,6 +40,7 @@ class ModelChangingSyncerCommand : public SyncerCommand {
   // safe.  This will be called once, prior to ModelChangingExecuteImpl,
   // *without* a ModelSafeGroup restriction in place on the SyncSession.
   // Returns true on success, false on failure.
+  // TODO(tim): Remove this (bug 36594).
   virtual bool ModelNeutralExecuteImpl(sessions::SyncSession* session) {
     return true;
   }

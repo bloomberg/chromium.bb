@@ -3,15 +3,23 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/sync/sessions/sync_session.h"
+#include "chrome/test/sync/engine/test_id_factory.h"
 #include "testing/gtest/include/gtest/gtest.h"
 
 namespace browser_sync {
 namespace sessions {
 
-typedef testing::Test StatusControllerTest;
+class StatusControllerTest : public testing::Test {
+ public:
+  virtual void SetUp() {
+    routes_[syncable::BOOKMARKS] = GROUP_UI;
+  }
+ protected:
+  ModelSafeRoutingInfo routes_;
+};
 
 TEST_F(StatusControllerTest, GetsDirty) {
-  StatusController status;
+  StatusController status(routes_);
   status.increment_num_conflicting_commits_by(1);
   EXPECT_TRUE(status.TestAndClearIsDirty());
   EXPECT_FALSE(status.TestAndClearIsDirty());  // Test that it actually resets.
@@ -39,8 +47,11 @@ TEST_F(StatusControllerTest, GetsDirty) {
   status.increment_num_consecutive_errors_by(0);
   EXPECT_FALSE(status.TestAndClearIsDirty());
 
-  status.set_current_sync_timestamp(100);
-  EXPECT_TRUE(status.TestAndClearIsDirty());
+  {
+    ScopedModelSafeGroupRestriction r(&status, GROUP_UI);
+    status.set_current_sync_timestamp(syncable::BOOKMARKS, 100);
+    EXPECT_TRUE(status.TestAndClearIsDirty());
+  }
 
   status.set_num_server_changes_remaining(30);
   EXPECT_TRUE(status.TestAndClearIsDirty());
@@ -70,6 +81,12 @@ TEST_F(StatusControllerTest, GetsDirty) {
   status.increment_num_successful_commits();
   EXPECT_TRUE(status.TestAndClearIsDirty());
 
+  {
+    ScopedModelSafeGroupRestriction r(&status, GROUP_UI);
+    status.mutable_conflict_progress()->AddConflictingItemById(syncable::Id());
+  }
+  EXPECT_TRUE(status.TestAndClearIsDirty());
+
   std::vector<int64> v;
   v.push_back(1);
   status.set_unsynced_handles(v);
@@ -81,19 +98,18 @@ TEST_F(StatusControllerTest, GetsDirty) {
 }
 
 TEST_F(StatusControllerTest, StaysClean) {
-  StatusController status;
-  status.set_conflict_sets_built(true);
+  StatusController status(routes_);
+  status.update_conflict_sets_built(true);
   EXPECT_FALSE(status.TestAndClearIsDirty());
-  status.set_conflicts_resolved(true);
+  status.update_conflicts_resolved(true);
   EXPECT_FALSE(status.TestAndClearIsDirty());
-  status.set_timestamp_dirty(true);
-  EXPECT_FALSE(status.TestAndClearIsDirty());
-  status.set_items_committed(true);
+  status.set_got_new_timestamp();
   EXPECT_FALSE(status.TestAndClearIsDirty());
 
-  ModelSafeRoutingInfo routes;
-  routes[syncable::BOOKMARKS] = GROUP_UI;
-  OrderedCommitSet commits(routes);
+  status.set_items_committed();
+  EXPECT_FALSE(status.TestAndClearIsDirty());
+
+  OrderedCommitSet commits(routes_);
   commits.AddCommitItem(0, syncable::Id(), syncable::BOOKMARKS);
   status.set_commit_set(commits);
   EXPECT_FALSE(status.TestAndClearIsDirty());
@@ -103,7 +119,7 @@ TEST_F(StatusControllerTest, StaysClean) {
 // nature of status_controller.cc (we have had bugs in the past where a set_foo
 // method was actually setting |bar_| instead!).
 TEST_F(StatusControllerTest, ReadYourWrites) {
-  StatusController status;
+  StatusController status(routes_);
   status.increment_num_conflicting_commits_by(1);
   EXPECT_EQ(1, status.error_counters().num_conflicting_commits);
 
@@ -121,11 +137,14 @@ TEST_F(StatusControllerTest, ReadYourWrites) {
   status.increment_num_consecutive_errors_by(2);
   EXPECT_EQ(11, status.error_counters().consecutive_errors);
 
-  status.set_current_sync_timestamp(12);
-  EXPECT_EQ(12, status.change_progress().current_sync_timestamp);
+  {
+    ScopedModelSafeGroupRestriction r(&status, GROUP_UI);
+    status.set_current_sync_timestamp(syncable::BOOKMARKS, 12);
+    EXPECT_EQ(12, status.ComputeMaxLocalTimestamp());
+  }
 
   status.set_num_server_changes_remaining(13);
-  EXPECT_EQ(13, status.change_progress().num_server_changes_remaining);
+  EXPECT_EQ(13, status.num_server_changes_remaining());
 
   EXPECT_FALSE(status.syncer_status().over_quota);
   status.set_over_quota(true);
@@ -143,10 +162,9 @@ TEST_F(StatusControllerTest, ReadYourWrites) {
   status.set_syncing(true);
   EXPECT_TRUE(status.syncer_status().syncing);
 
-  status.set_num_successful_commits(14);
+  for (int i = 0; i < 14; i++)
+    status.increment_num_successful_commits();
   EXPECT_EQ(14, status.syncer_status().num_successful_commits);
-  status.increment_num_successful_commits();
-  EXPECT_EQ(15, status.syncer_status().num_successful_commits);
 
   std::vector<int64> v;
   v.push_back(16);
@@ -155,15 +173,28 @@ TEST_F(StatusControllerTest, ReadYourWrites) {
 }
 
 TEST_F(StatusControllerTest, HasConflictingUpdates) {
-  StatusController status;
-  EXPECT_FALSE(status.update_progress().HasConflictingUpdates());
-  status.mutable_update_progress()->AddAppliedUpdate(SUCCESS, syncable::Id());
-  status.mutable_update_progress()->AddAppliedUpdate(CONFLICT, syncable::Id());
-  EXPECT_TRUE(status.update_progress().HasConflictingUpdates());
+  StatusController status(routes_);
+  EXPECT_FALSE(status.HasConflictingUpdates());
+  {
+    ScopedModelSafeGroupRestriction r(&status, GROUP_UI);
+    EXPECT_FALSE(status.update_progress().HasConflictingUpdates());
+    status.mutable_update_progress()->AddAppliedUpdate(SUCCESS,
+        syncable::Id());
+    status.mutable_update_progress()->AddAppliedUpdate(CONFLICT,
+        syncable::Id());
+    EXPECT_TRUE(status.update_progress().HasConflictingUpdates());
+  }
+
+  EXPECT_TRUE(status.HasConflictingUpdates());
+
+  {
+    ScopedModelSafeGroupRestriction r(&status, GROUP_PASSIVE);
+    EXPECT_FALSE(status.update_progress().HasConflictingUpdates());
+  }
 }
 
 TEST_F(StatusControllerTest, CountUpdates) {
-  StatusController status;
+  StatusController status(routes_);
   EXPECT_EQ(0, status.CountUpdates());
   EXPECT_TRUE(status.got_zero_updates());
   ClientToServerResponse* response(status.mutable_updates_response());
@@ -172,6 +203,47 @@ TEST_F(StatusControllerTest, CountUpdates) {
   ASSERT_TRUE(entity1 != NULL && entity2 != NULL);
   EXPECT_EQ(2, status.CountUpdates());
   EXPECT_FALSE(status.got_zero_updates());
+}
+
+// Test TotalNumConflictingItems
+TEST_F(StatusControllerTest, TotalNumConflictingItems) {
+  StatusController status(routes_);
+  TestIdFactory f;
+  {
+    ScopedModelSafeGroupRestriction r(&status, GROUP_UI);
+    status.mutable_conflict_progress()->AddConflictingItemById(f.NewLocalId());
+    status.mutable_conflict_progress()->AddConflictingItemById(f.NewLocalId());
+    EXPECT_EQ(2, status.conflict_progress().ConflictingItemsSize());
+  }
+  EXPECT_EQ(2, status.TotalNumConflictingItems());
+  {
+    ScopedModelSafeGroupRestriction r(&status, GROUP_DB);
+    EXPECT_EQ(0, status.conflict_progress().ConflictingItemsSize());
+    status.mutable_conflict_progress()->AddConflictingItemById(f.NewLocalId());
+    status.mutable_conflict_progress()->AddConflictingItemById(f.NewLocalId());
+    EXPECT_EQ(2, status.conflict_progress().ConflictingItemsSize());
+  }
+  EXPECT_EQ(4, status.TotalNumConflictingItems());
+}
+
+// Basic test that non group-restricted state accessors don't cause violations.
+TEST_F(StatusControllerTest, Unrestricted) {
+  StatusController status(routes_);
+  status.GetUnrestrictedUpdateProgress(
+      GROUP_UI)->SuccessfullyAppliedUpdateCount();
+  status.mutable_commit_message();
+  status.commit_response();
+  status.mutable_commit_response();
+  status.updates_response();
+  status.mutable_updates_response();
+  status.error_counters();
+  status.syncer_status();
+  status.num_server_changes_remaining();
+  status.ComputeMaxLocalTimestamp();
+  status.commit_ids();
+  status.HasBookmarkCommitActivity();
+  status.got_zero_updates();
+  status.group_restriction();
 }
 
 }  // namespace sessions

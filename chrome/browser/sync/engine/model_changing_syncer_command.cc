@@ -6,6 +6,7 @@
 
 #include "base/callback.h"
 #include "chrome/browser/sync/engine/model_safe_worker.h"
+#include "chrome/browser/sync/sessions/status_controller.h"
 #include "chrome/browser/sync/sessions/sync_session.h"
 #include "chrome/browser/sync/util/closure.h"
 
@@ -21,7 +22,8 @@ void ModelChangingSyncerCommand::ExecuteImpl(sessions::SyncSession* session) {
     ModelSafeWorker* worker = session->workers()[i];
     ModelSafeGroup group = worker->GetModelSafeGroup();
 
-    sessions::ScopedModelSafeGroupRestriction r(work_session_, group);
+    sessions::StatusController* status = work_session_->status_controller();
+    sessions::ScopedModelSafeGroupRestriction r(status, group);
     scoped_ptr<Closure> c(NewCallback(this,
         &ModelChangingSyncerCommand::StartChangingModel));
     worker->DoWorkAndWaitUntilDone(c.get());

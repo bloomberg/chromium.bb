@@ -10,7 +10,11 @@ ModelSafeGroup GetGroupForModelType(const syncable::ModelType type,
                                     const ModelSafeRoutingInfo& routes) {
   ModelSafeRoutingInfo::const_iterator it = routes.find(type);
   if (it == routes.end()) {
-    NOTREACHED() << "Entry does not belong to active ModelSafeGroup!";
+    // TODO(tim): We shouldn't end up here for TOP_LEVEL_FOLDER, but an issue
+    // with the server's PermanentItemPopulator is causing TLF updates in
+    // some cases.  See bug 36735.
+    if (type != syncable::UNSPECIFIED && type != syncable::TOP_LEVEL_FOLDER)
+      NOTREACHED() << "Entry does not belong to active ModelSafeGroup!";
     return GROUP_PASSIVE;
   }
   return it->second;

@@ -68,12 +68,14 @@ ConflictProgress::ConflictingItemsEnd() const {
 void ConflictProgress::AddConflictingItemById(const syncable::Id& the_id) {
   std::pair<std::set<syncable::Id>::iterator, bool> ret =
     conflicting_item_ids_.insert(the_id);
-  progress_changed_ |= ret.second;
+  if (ret.second)
+    *dirty_ = true;
 }
 
 void ConflictProgress::EraseConflictingItemById(const syncable::Id& the_id) {
   int items_erased = conflicting_item_ids_.erase(the_id);
-  progress_changed_ = items_erased != 0;
+  if (items_erased != 0)
+    *dirty_ = true;
 }
 
 void ConflictProgress::MergeSets(const syncable::Id& id1,

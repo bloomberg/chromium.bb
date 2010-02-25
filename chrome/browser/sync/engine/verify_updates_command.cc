@@ -52,8 +52,10 @@ void VerifyUpdatesCommand::ExecuteImpl(sessions::SyncSession* session) {
     // Affix IDs properly prior to inputting data into server entry.
     SyncerUtil::AttemptReuniteClientTag(&trans, entry);
 
-    VerifyResult result = VerifyUpdate(&trans, entry);
-    status->mutable_update_progress()->AddVerifyResult(result, entry);
+    VerifyUpdateResult result = VerifyUpdate(&trans, entry,
+                                             session->routing_info());
+    status->GetUnrestrictedUpdateProgress(
+        result.placement)->AddVerifyResult(result.value, entry);
   }
 }
 
@@ -73,9 +75,11 @@ VerifyResult VerifyTagConsistency(const SyncEntity& entry,
 }
 }  // namespace
 
-VerifyResult VerifyUpdatesCommand::VerifyUpdate(
-    syncable::WriteTransaction* trans, const SyncEntity& entry) {
+VerifyUpdatesCommand::VerifyUpdateResult VerifyUpdatesCommand::VerifyUpdate(
+    syncable::WriteTransaction* trans, const SyncEntity& entry,
+    const ModelSafeRoutingInfo& routes) {
   syncable::Id id = entry.id();
+  VerifyUpdateResult result = {VERIFY_FAIL, GROUP_PASSIVE};
 
   const bool deleted = entry.has_deleted() && entry.deleted();
   const bool is_directory = entry.IsFolder();
@@ -83,44 +87,47 @@ VerifyResult VerifyUpdatesCommand::VerifyUpdate(
 
   if (!id.ServerKnows()) {
     LOG(ERROR) << "Illegal negative id in received updates";
-    return VERIFY_FAIL;
+    return result;
   }
   if (!entry.parent_id().ServerKnows()) {
     LOG(ERROR) << "Illegal parent id in received updates";
-    return VERIFY_FAIL;
+    return result;
   }
   {
     const std::string name = SyncerProtoUtil::NameFromSyncEntity(entry);
     if (name.empty() && !deleted) {
       LOG(ERROR) << "Zero length name in non-deleted update";
-      return VERIFY_FAIL;
+      return result;
     }
   }
 
   syncable::MutableEntry same_id(trans, GET_BY_ID, id);
-  VerifyResult result = VERIFY_UNDECIDED;
-  result = SyncerUtil::VerifyNewEntry(entry, &same_id, deleted);
+  result.value = SyncerUtil::VerifyNewEntry(entry, &same_id, deleted);
 
-  if (VERIFY_UNDECIDED == result) {
-    result = VerifyTagConsistency(entry, same_id);
+  syncable::ModelType placement_type = !deleted ? entry.GetModelType()
+    : same_id.good() ? same_id.GetModelType() : syncable::UNSPECIFIED;
+  result.placement = GetGroupForModelType(placement_type, routes);
+
+  if (VERIFY_UNDECIDED == result.value) {
+    result.value = VerifyTagConsistency(entry, same_id);
   }
 
-  if (VERIFY_UNDECIDED == result) {
+  if (VERIFY_UNDECIDED == result.value) {
     if (deleted)
-      result = VERIFY_SUCCESS;
+      result.value = VERIFY_SUCCESS;
   }
 
   // If we have an existing entry, we check here for updates that break
   // consistency rules.
-  if (VERIFY_UNDECIDED == result) {
-    result = SyncerUtil::VerifyUpdateConsistency(trans, entry, &same_id,
+  if (VERIFY_UNDECIDED == result.value) {
+    result.value = SyncerUtil::VerifyUpdateConsistency(trans, entry, &same_id,
         deleted, is_directory, model_type);
   }
 
-  if (VERIFY_UNDECIDED == result)
-    return VERIFY_SUCCESS;  // No news is good news.
-  else
-    return result;  // This might be VERIFY_SUCCESS as well
+  if (VERIFY_UNDECIDED == result.value)
+    result.value = VERIFY_SUCCESS;  // No news is good news.
+
+  return result;  // This might be VERIFY_SUCCESS as well
 }
 
 }  // namespace browser_sync

@@ -112,9 +112,8 @@ AllStatus::Status AllStatus::CalcSyncing(const SyncerEvent &event) const {
   if (errors.consecutive_transient_error_commits > 100)
     status.server_broken = true;
 
-  const sessions::ChangelogProgress& progress(snapshot->changelog_progress);
-  status.updates_available += progress.num_server_changes_remaining;
-  status.updates_received += progress.current_sync_timestamp;
+  status.updates_available += snapshot->num_server_changes_remaining;
+  status.updates_received += snapshot->max_local_timestamp;
   return status;
 }
 

@@ -18,17 +18,7 @@ SyncSession::SyncSession(SyncSessionContext* context, Delegate* delegate)
       const_cast<std::vector<ModelSafeWorker*>*>(&workers_));
   context_->registrar()->GetModelSafeRoutingInfo(
       const_cast<ModelSafeRoutingInfo*>(&routing_info_));
-
-  // TODO(tim): Use ModelSafeRoutingInfo to silo parts of the session status by
-  // ModelSafeGroup;
-  // e.g. have a map<class, commit_ids>, map<class, ConflictProgress> etc.
-  // The routing will be used to map multiple model types into the right silo.
-  // The routing info can't change throughout a session, so we're assured that
-  // (for example) commit_ids for syncable::AUTOFILL items that were being
-  // processed as part of the GROUP_PASSIVE run (because they weren't being
-  // synced) *continue* to be for this whole session, even though the
-  // ModelSafeWorkerRegistrar may be configured to route syncable::AUTOFILL to
-  // GROUP_DB now.
+  status_controller_.reset(new StatusController(routing_info_));
 }
 
 SyncSessionSnapshot SyncSession::TakeSnapshot() const {
@@ -39,15 +29,16 @@ SyncSessionSnapshot SyncSession::TakeSnapshot() const {
 
   const bool is_share_usable = dir->initial_sync_ended();
   return SyncSessionSnapshot(
-      status_controller_.syncer_status(),
-      status_controller_.error_counters(),
-      status_controller_.change_progress(),
+      status_controller_->syncer_status(),
+      status_controller_->error_counters(),
+      status_controller_->num_server_changes_remaining(),
+      status_controller_->ComputeMaxLocalTimestamp(),
       is_share_usable,
       HasMoreToSync(),
       delegate_->IsSyncingCurrentlySilenced(),
-      status_controller_.unsynced_handles().size(),
-      status_controller_.conflict_progress()->ConflictingItemsSize(),
-      status_controller_.did_commit_items());
+      status_controller_->unsynced_handles().size(),
+      status_controller_->TotalNumConflictingItems(),
+      status_controller_->did_commit_items());
 }
 
 sync_pb::GetUpdatesCallerInfo::GetUpdatesSource
@@ -58,15 +49,15 @@ sync_pb::GetUpdatesCallerInfo::GetUpdatesSource
 }
 
 bool SyncSession::HasMoreToSync() const {
-  const StatusController& status = status_controller_;
-  return ((status.commit_ids().size() < status.unsynced_handles().size()) &&
-      status.syncer_status().num_successful_commits > 0) ||
-      status.conflict_sets_built() ||
-      status.conflicts_resolved() ||
+  const StatusController* status = status_controller_.get();
+  return ((status->commit_ids().size() < status->unsynced_handles().size()) &&
+      status->syncer_status().num_successful_commits > 0) ||
+      status->conflict_sets_built() ||
+      status->conflicts_resolved() ||
       // Or, we have conflicting updates, but we're making progress on
       // resolving them...
-      !status.got_zero_updates() ||
-      status.timestamp_dirty();
+      !status->got_zero_updates() ||
+      status->got_new_timestamp();
 }
 
 }  // namespace sessions
