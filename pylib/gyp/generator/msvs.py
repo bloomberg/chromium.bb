@@ -228,6 +228,9 @@ def _PrepareActionRaw(spec, cmd, cygwin_shell, has_input_path, quote_cmd):
                  'cmd': direct_cmd}
     return cmd
   else:
+    # Convert cat --> type to mimic unix.
+    if cmd[0] == 'cat':
+      cmd = ['type'] + cmd[1:]
     if quote_cmd:
       # Support a mode for using cmd directly.
       # Convert any paths to native form (first element is used directly).

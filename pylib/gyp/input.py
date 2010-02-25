@@ -449,16 +449,23 @@ def IsStrCanonicalInt(string):
   return True
 
 
-early_variable_re = re.compile('(?P<replace>(?P<type><!?@?)'
+early_variable_re = re.compile('(?P<replace>(?P<type><((!?@?)|\|)?)'
                                '\((?P<is_array>\s*\[?)'
                                '(?P<content>.*?)(\]?)\))')
-late_variable_re = re.compile('(?P<replace>(?P<type>>!?@?)'
+late_variable_re = re.compile('(?P<replace>(?P<type>>((!?@?)|\|)?)'
                               '\((?P<is_array>\s*\[?)'
                               '(?P<content>.*?)(\]?)\))')
 
 # Global cache of results from running commands so they don't have to be run
 # more then once.
 cached_command_results = {}
+
+
+def FixupPlatformCommand(cmd):
+  if sys.platform == 'win32':
+    cmd = re.sub('^cat ', 'type ', cmd)
+  return cmd
+
 
 def ExpandVariables(input, is_late, variables, build_file):
   # Look for the pattern that gets expanded into variables
@@ -486,13 +493,16 @@ def ExpandVariables(input, is_late, variables, build_file):
       gyp.DebugOutput(gyp.DEBUG_VARIABLES,
                       "Matches: %s" % repr(match))
       # match['replace'] is the substring to look for, match['type']
-      # is the character code for the replacement type (< > <! >! <@
+      # is the character code for the replacement type (< > <! >! <| >| <@
       # >@ <!@ >!@), match['is_array'] contains a '[' for command
       # arrays, and match['content'] is the name of the variable (< >)
       # or command to run (<! >!).
 
       # run_command is true if a ! variant is used.
       run_command = '!' in match['type']
+
+      # file_list is true if a | variant is used.
+      file_list = '|' in match['type']
 
       # Capture these now so we can adjust them later.
       replace_start = match_group.start('replace')
@@ -516,8 +526,19 @@ def ExpandVariables(input, is_late, variables, build_file):
       contents_end = replace_end - 1
       contents = input_str[contents_start:contents_end]
 
-      # Recurse to expand variables in the contents
-      contents = ExpandVariables(contents, is_late, variables, build_file)
+      # Do filter substitution now for <|().
+      # Admittedly, this is different than the evaluation order in other
+      # contexts. However, since filtration has no chance to run on <|(),
+      # this seems like the only obvious way to give them access to filters.
+      if file_list:
+        processed_variables = copy.deepcopy(variables)
+        ProcessListFiltersInDict(contents, processed_variables)
+        # Recurse to expand variables in the contents
+        contents = ExpandVariables(contents, is_late,
+                                   processed_variables, build_file)
+      else:
+        # Recurse to expand variables in the contents
+        contents = ExpandVariables(contents, is_late, variables, build_file)
 
       # Strip off leading/trailing whitespace so that variable matches are
       # simpler below (and because they are rarely needed).
@@ -531,8 +552,9 @@ def ExpandVariables(input, is_late, variables, build_file):
       # expansion in the input string.
       expand_to_list = '@' in match['type'] and input_str == replacement
 
-      if run_command:
-        # Run the command in the build file's directory.
+      if run_command or file_list:
+        # Find the build file's directory, so commands can be run or file lists
+        # generated relative to it.
         build_file_dir = os.path.dirname(build_file)
         if build_file_dir == '':
           # If build_file is just a leaf filename indicating a file in the
@@ -541,12 +563,32 @@ def ExpandVariables(input, is_late, variables, build_file):
           # command in the current directory.
           build_file_dir = None
 
+      # Support <|(listfile.txt ...) which generates a file
+      # containing items from a gyp list, generated at gyp time.
+      # This works around actions/rules which have more inputs than will
+      # fit on the command line.
+      if file_list:
+        if type(contents) == list:
+          contents_list = contents
+        else:
+          contents_list = contents.split(' ')
+        replacement = contents_list[0]
+        path = replacement
+        if not os.path.isabs(path):
+          path = os.path.join(build_file_dir, path)
+        f = gyp.common.WriteOnDiff(path)
+        for i in contents_list[1:]:
+          f.write('%s\n' % i)
+        f.close()
+
+      elif run_command:
         use_shell = True
         if match['is_array']:
           contents = eval(contents)
           use_shell = False
 
-        # Check for a cached value to avoid executing commands more than once.
+        # Check for a cached value to avoid executing commands, or generating
+        # file lists more than once.
         # TODO(http://code.google.com/p/gyp/issues/detail?id=112): It is
         # possible that the command being invoked depends on the current
         # directory. For that case the syntax needs to be extended so that the
@@ -563,22 +605,24 @@ def ExpandVariables(input, is_late, variables, build_file):
                           "Executing command '%s' in directory '%s'" %
                           (contents,build_file_dir))
 
-          p = subprocess.Popen(contents, shell=use_shell,
-                               stdout=subprocess.PIPE,
-                               stderr=subprocess.PIPE,
-                               stdin=subprocess.PIPE,
-                               cwd=build_file_dir)
+            # Fix up command with platform specific workarounds.
+            contents = FixupPlatformCommand(contents)
+            p = subprocess.Popen(contents, shell=use_shell,
+                                 stdout=subprocess.PIPE,
+                                 stderr=subprocess.PIPE,
+                                 stdin=subprocess.PIPE,
+                                 cwd=build_file_dir)
 
-          (p_stdout, p_stderr) = p.communicate('')
+            (p_stdout, p_stderr) = p.communicate('')
 
-          if p.wait() != 0 or p_stderr:
-            sys.stderr.write(p_stderr)
-            # Simulate check_call behavior, since check_call only exists
-            # in python 2.5 and later.
-            raise Exception("Call to '%s' returned exit status %d." %
-                            (contents, p.returncode))
+            if p.wait() != 0 or p_stderr:
+              sys.stderr.write(p_stderr)
+              # Simulate check_call behavior, since check_call only exists
+              # in python 2.5 and later.
+              raise Exception("Call to '%s' returned exit status %d." %
+                              (contents, p.returncode))
+            replacement = p_stdout.rstrip()
 
-          replacement = p_stdout.rstrip()
           cached_command_results[cache_key] = replacement
         else:
           gyp.DebugOutput(gyp.DEBUG_VARIABLES,
