@@ -24,7 +24,6 @@
 
 #include "native_client/src/untrusted/av/nacl_av_priv.h"
 
-
 using nacl::DescWrapperFactory;
 using nacl::DescWrapper;
 
@@ -34,8 +33,42 @@ const int kMaxArgs = 5;
 
 // Two ugly globals
 IMultimedia* g_mm;
+// NOTE: this shared memory struct is defined in src/untrusted/av/nacl_av_priv.h
 NaClVideoShare* g_video_share;
 
+static bool EventQueueIsFull() {
+  const int next_write_pos = (g_video_share->u.h.event_write_index + 1) %
+                             NACL_EVENT_RING_BUFFER_SIZE;
+  return next_write_pos == g_video_share->u.h.event_read_index;
+}
+
+// TODO(robertm): there maybe some subtle theoretical race conditions here
+//                consumer is src/untrusted/av/nacl_av.c
+static void EventQueuePut(const NaClMultimediaEvent& event) {
+  const int write_pos = g_video_share->u.h.event_write_index %
+                       NACL_EVENT_RING_BUFFER_SIZE;
+  // NOTE: structure assignment
+  g_video_share->u.h.event_queue[write_pos] = event;
+  g_video_share->u.h.event_write_index = (write_pos + 1) %
+                                         NACL_EVENT_RING_BUFFER_SIZE;
+}
+
+static void EventQueueRefill(int max_events) {
+  NaClMultimediaEvent event;
+  for (int i = 0; i < max_events; ++i) {
+    if (EventQueueIsFull()) {
+      NaClLog(1, "event queue has filled up\n");
+      return;
+    }
+
+    g_mm->EventPoll(&event);
+    if (event.type == NACL_EVENT_NOT_USED) {
+      return;
+    }
+
+    EventQueuePut(event);
+  }
+}
 
 static NaClSrpcError handleUpcall(NaClSrpcChannel* channel,
                                   NaClSrpcArg** ins,
@@ -44,6 +77,9 @@ static NaClSrpcError handleUpcall(NaClSrpcChannel* channel,
   UNREFERENCED_PARAMETER(ins);
   UNREFERENCED_PARAMETER(outs);
   g_mm->VideoUpdate(g_video_share->video_pixels);
+  // NOTE: this is major hack: we piggyback on the video update
+  //       to fill the event queue
+  EventQueueRefill(NACL_EVENT_RING_BUFFER_SIZE);
   return NACL_SRPC_RESULT_OK;
 }
 

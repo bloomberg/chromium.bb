@@ -19,6 +19,8 @@
 #include "native_client/src/shared/platform/nacl_sync.h"
 #include "native_client/src/shared/platform/nacl_sync_checked.h"
 
+// TODO(robertm): the next include file should be moved to src/untrusted
+#include "native_client/src/trusted/service_runtime/include/sys/audio_video.h"
 #include "native_client/src/trusted/service_runtime/include/sys/errno.h"
 #include "native_client/src/trusted/sel_universal/multimedia.h"
 #include "native_client/src/trusted/sel_universal/workqueue.h"
@@ -121,10 +123,6 @@ class JobSdlQuit: public Job {
 
 
 class JobSdlUpdate: public Job {
- private:
-  SDLInfo* info_;
-  const void* data_;
-
  public:
   JobSdlUpdate(SDLInfo* info, const void* data) : info_(info), data_(data) {}
 
@@ -166,16 +164,93 @@ class JobSdlUpdate: public Job {
 
     SDL_FreeSurface(image);
   }
+
+ private:
+  SDLInfo* info_;
+  const void* data_;
 };
 
+
+class JobSdlEventPoll: public Job {
+ public:
+  JobSdlEventPoll(SDLInfo* info, NaClMultimediaEvent* event)
+    : info_(info), event_(event) {}
+
+  virtual void Action() {
+    NaClLog(3, "JobSdlEventPoll::Action\n");
+
+    if (!info_->initialized_sdl) {
+      NaClLog(LOG_FATAL, "MultimediaEventPoll: sdl not initialized\n");
+    }
+
+    for (;;) {
+      SDL_Event sdl_event;
+      const int32_t result = SDL_PollEvent(&sdl_event);
+      if (result == 0) {
+        event_->type = NACL_EVENT_NOT_USED;
+        return;
+      }
+
+      switch (sdl_event.type) {
+       case SDL_ACTIVEEVENT:
+        event_->type = NACL_EVENT_ACTIVE;
+        event_->active.gain = sdl_event.active.gain;
+        event_->active.state = sdl_event.active.state;
+        return;
+       case SDL_VIDEOEXPOSE:
+        event_->type = NACL_EVENT_EXPOSE;
+        return;
+       case SDL_KEYDOWN:
+       case SDL_KEYUP:
+        // NOTE: we exploit the fact NACL keysym == SDK keysyms
+        event_->type = (SDL_KEYUP == sdl_event.type) ?
+                       NACL_EVENT_KEY_UP : NACL_EVENT_KEY_DOWN;
+        event_->key.which = sdl_event.key.which;
+        event_->key.state = sdl_event.key.state;
+        event_->key.keysym.scancode = sdl_event.key.keysym.scancode;
+        event_->key.keysym.sym = sdl_event.key.keysym.sym;
+        event_->key.keysym.mod = sdl_event.key.keysym.mod;
+        event_->key.keysym.unicode = sdl_event.key.keysym.unicode;
+        return;
+       case SDL_MOUSEMOTION:
+        event_->type = NACL_EVENT_MOUSE_MOTION;
+        event_->motion.which = sdl_event.motion.which;
+        event_->motion.state = sdl_event.motion.state;
+        event_->motion.x = sdl_event.motion.x;
+        event_->motion.y = sdl_event.motion.y;
+        event_->motion.xrel = sdl_event.motion.xrel;
+        event_->motion.yrel = sdl_event.motion.yrel;
+        return;
+       case SDL_MOUSEBUTTONDOWN:
+       case SDL_MOUSEBUTTONUP:
+        event_->type = (SDL_MOUSEBUTTONUP == sdl_event.type) ?
+                        NACL_EVENT_MOUSE_BUTTON_UP :
+                        NACL_EVENT_MOUSE_BUTTON_DOWN;
+        event_->button.which = sdl_event.button.which;
+        event_->button.button = sdl_event.button.button;
+        event_->button.state = sdl_event.button.state;
+        event_->button.x = sdl_event.button.x;
+        event_->button.y = sdl_event.button.y;
+        return;
+       case SDL_QUIT:
+        event_->type = NACL_EVENT_QUIT;
+        return;
+       default:
+        /* an sdl event happened, but we don't support it
+           so move along and try polling again */
+        break;
+      }
+    }
+  }
+
+ private:
+  SDLInfo* info_;
+  NaClMultimediaEvent* event_;
+};
 
 // Again, the issue that all this wrapping magic is trying to work around
 // is that SDL requires certain calls to be made from the same thread
 class MultimediaSDL : public IMultimedia {
- private:
-  ThreadedWorkQueue sdl_workqueue_;
-  SDLInfo sdl_info_;
-
  public:
   MultimediaSDL(int width, int heigth, const char* title) {
     NaClLog(2, "MultimediaSDL::Constructor\n");
@@ -203,6 +278,16 @@ class MultimediaSDL : public IMultimedia {
     sdl_workqueue_.JobPut(&job);
     job.Wait();
   }
+
+  virtual void EventPoll(NaClMultimediaEvent* event) {
+    JobSdlEventPoll job(&sdl_info_, event);
+    sdl_workqueue_.JobPut(&job);
+    job.Wait();
+  }
+
+ private:
+  ThreadedWorkQueue sdl_workqueue_;
+  SDLInfo sdl_info_;
 };
 
 // Factor, so we can hide class MultimediaSDL from the outside world

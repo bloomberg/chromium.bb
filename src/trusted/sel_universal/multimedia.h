@@ -10,12 +10,15 @@
 /* Abstract multimedia interface */
 /* NOTE: currently only video is supported */
 
+union NaClMultimediaEvent;
+
 class IMultimedia {
  public:
   virtual ~IMultimedia() {}
 
   virtual int VideoBufferSize() = 0;
   virtual void VideoUpdate(const void* data) = 0;
+  virtual void EventPoll(NaClMultimediaEvent* event) = 0;
 };
 
 /* Currently, there is only an SDL implementation */
