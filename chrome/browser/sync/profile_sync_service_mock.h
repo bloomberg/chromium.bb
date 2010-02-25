@@ -15,7 +15,7 @@
 
 class ProfileSyncServiceMock : public ProfileSyncService {
  public:
-  ProfileSyncServiceMock() : ProfileSyncService(NULL, NULL, false) {}
+  ProfileSyncServiceMock() : ProfileSyncService(NULL, false) {}
   virtual ~ProfileSyncServiceMock() {}
 
   MOCK_METHOD0(EnableForUser, void());

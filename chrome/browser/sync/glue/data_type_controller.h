@@ -71,9 +71,6 @@ class DataTypeController {
   // Unique model type for this data type controller.
   virtual syncable::ModelType type() = 0;
 
-  // Name of this data type.  For logging purposes only.
-  virtual const char* name() const = 0;
-
   // The model safe group of this data type.  This should reflect the
   // thread that should be used to modify the data type's native
   // model.

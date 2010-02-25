@@ -9,17 +9,43 @@
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
 #include "chrome/browser/sync/glue/change_processor.h"
-#include "chrome/browser/sync/glue/data_type_manager_impl.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/test/sync/test_http_bridge_factory.h"
-#include "testing/gmock/include/gmock/gmock.h"
 
-// This action is used to mock out the ProfileSyncFactory
-// CreateDataTypeManager method.
-ACTION(MakeDataTypeManager) {
-  return new browser_sync::DataTypeManagerImpl(arg0);
-}
+class TestProfileSyncFactory : public ProfileSyncFactory {
+ public:
+  TestProfileSyncFactory(ProfileSyncService* profile_sync_service,
+                         browser_sync::AssociatorInterface* model_associator,
+                         browser_sync::ChangeProcessor* change_processor)
+      : profile_sync_service_(profile_sync_service),
+        model_associator_(model_associator),
+        change_processor_(change_processor) {}
+  virtual ~TestProfileSyncFactory() {}
+
+  virtual ProfileSyncService* CreateProfileSyncService() {
+    return profile_sync_service_.release();
+  }
+
+  virtual SyncComponents CreateBookmarkSyncComponents(
+      ProfileSyncService* service) {
+    return SyncComponents(model_associator_.release(),
+                          change_processor_.release());
+  }
+
+  virtual SyncComponents CreatePreferenceSyncComponents(
+      ProfileSyncService* service) {
+    return SyncComponents(model_associator_.release(),
+                          change_processor_.release());
+  }
+
+ private:
+  scoped_ptr<ProfileSyncService> profile_sync_service_;
+  scoped_ptr<browser_sync::AssociatorInterface> model_associator_;
+  scoped_ptr<browser_sync::ChangeProcessor> change_processor_;
+
+  DISALLOW_COPY_AND_ASSIGN(TestProfileSyncFactory);
+};
 
 template <class ModelAssociatorImpl>
 class TestModelAssociator : public ModelAssociatorImpl {

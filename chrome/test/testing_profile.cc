@@ -5,14 +5,12 @@
 #include "chrome/test/testing_profile.h"
 
 #include "build/build_config.h"
-#include "base/command_line.h"
 #include "base/string_util.h"
 #include "chrome/browser/bookmarks/bookmark_model.h"
 #include "chrome/browser/dom_ui/ntp_resource_cache.h"
 #include "chrome/browser/history/history_backend.h"
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/sessions/session_service.h"
-#include "chrome/browser/sync/profile_sync_factory_impl.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/common/chrome_constants.h"
 #include "chrome/common/notification_service.h"
@@ -298,11 +296,7 @@ void TestingProfile::BlockUntilHistoryProcessesPendingRequests() {
 
 void TestingProfile::CreateProfileSyncService() {
   if (!profile_sync_service_.get()) {
-    profile_sync_factory_.reset(
-        new ProfileSyncFactoryImpl(this,
-                                   CommandLine::ForCurrentProcess()));
-    profile_sync_service_.reset(
-        profile_sync_factory_->CreateProfileSyncService());
+    profile_sync_service_.reset(new ProfileSyncService(this, false));
     profile_sync_service_->Initialize();
   }
 }

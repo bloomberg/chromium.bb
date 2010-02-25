@@ -18,8 +18,6 @@
 #include "chrome/browser/sync/engine/syncapi.h"
 #include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/data_type_controller.h"
-#include "chrome/browser/sync/glue/data_type_manager.h"
-#include "chrome/browser/sync/profile_sync_factory.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/time_format.h"
@@ -29,7 +27,6 @@
 
 using browser_sync::ChangeProcessor;
 using browser_sync::DataTypeController;
-using browser_sync::DataTypeManager;
 using browser_sync::SyncBackendHost;
 
 typedef GoogleServiceAuthError AuthError;
@@ -37,11 +34,9 @@ typedef GoogleServiceAuthError AuthError;
 // Default sync server URL.
 static const char kSyncServerUrl[] = "https://clients4.google.com/chrome-sync";
 
-ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
-                                       Profile* profile,
+ProfileSyncService::ProfileSyncService(Profile* profile,
                                        bool bootstrap_sync_authentication)
     : last_auth_error_(AuthError::None()),
-      factory_(factory),
       profile_(profile),
       bootstrap_sync_authentication_(bootstrap_sync_authentication),
       sync_service_url_(kSyncServerUrl),
@@ -181,14 +176,12 @@ void ProfileSyncService::Shutdown(bool sync_disabled) {
   if (backend_.get())
     backend_->Shutdown(sync_disabled);
 
-  // Stop all data type controllers, if needed.
-  if (data_type_manager_.get() &&
-      data_type_manager_->state() != DataTypeManager::STOPPED) {
-    data_type_manager_->Stop();
-  }
+  // Stop all data type controllers.
+  // TODO(skrul): Change this to support multiple data type controllers.
+  StopDataType(syncable::BOOKMARKS);
+  StopDataType(syncable::PREFERENCES);
 
   backend_.reset();
-  data_type_manager_.reset();
 
   // Clear various flags.
   is_auth_in_progress_ = false;
@@ -241,9 +234,9 @@ void ProfileSyncService::UpdateLastSyncedTime() {
 void ProfileSyncService::OnUnrecoverableError() {
   unrecoverable_error_detected_ = true;
 
-  // Shut all data types down.
-  if (data_type_manager_.get())
-    data_type_manager_->Stop();
+  // TODO(skrul): Change this to support multiple data type controllers.
+  StopDataType(syncable::BOOKMARKS);
+  StopDataType(syncable::PREFERENCES);
 
   // Tell the wizard so it can inform the user only if it is already open.
   wizard_.Step(SyncSetupWizard::FATAL_ERROR);
@@ -358,6 +351,14 @@ string16 ProfileSyncService::GetAuthenticatedUsername() const {
   return backend_->GetAuthenticatedUsername();
 }
 
+void ProfileSyncService::StopDataType(syncable::ModelType model_type) {
+  if (data_type_controllers_.count(model_type) &&
+      data_type_controllers_[model_type]->state() !=
+        DataTypeController::NOT_RUNNING) {
+    data_type_controllers_[model_type]->Stop();
+  }
+}
+
 void ProfileSyncService::OnUserSubmittedAuth(
     const std::string& username, const std::string& password,
     const std::string& captcha) {
@@ -370,8 +371,12 @@ void ProfileSyncService::OnUserSubmittedAuth(
 }
 
 void ProfileSyncService::OnUserAcceptedMergeAndSync() {
-  // TODO(skrul): Remove this.
-  NOTREACHED();
+  // Start each data type with "merge_allowed" to correspond to the
+  // user's acceptance of merge.
+  // TODO(skrul): Change this to support multiple data type controllers.
+  data_type_controllers_[syncable::BOOKMARKS]->Start(
+      true,
+      NewCallback(this, &ProfileSyncService::BookmarkStartCallback));
 }
 
 void ProfileSyncService::OnUserCancelledDialog() {
@@ -388,27 +393,89 @@ void ProfileSyncService::StartProcessingChangesIfReady() {
   DCHECK(backend_initialized_);
   startup_had_first_time_ = false;
 
+  // If the user has completed sync setup, we are always allowed to
+  // merge data.
+  bool merge_allowed =
+      profile_->GetPrefs()->GetBoolean(prefs::kSyncHasSetupCompleted);
+
   // If we're running inside Chromium OS, always allow merges and
   // consider the sync setup complete.
   if (bootstrap_sync_authentication_) {
+    merge_allowed = true;
     SetSyncSetupCompleted();
   }
 
-  data_type_manager_.reset(
-      factory_->CreateDataTypeManager(data_type_controllers_));
-  data_type_manager_->Start(
-      NewCallback(this, &ProfileSyncService::DataTypeManagerStartCallback));
+  // Start data types.
+  // TODO(skrul): Change this to support multiple data type controllers.
+  if (data_type_controllers_.count(syncable::BOOKMARKS)) {
+    data_type_controllers_[syncable::BOOKMARKS]->Start(
+        merge_allowed,
+        NewCallback(this, &ProfileSyncService::BookmarkStartCallback));
+  } else {
+    if (data_type_controllers_.count(syncable::PREFERENCES)) {
+      data_type_controllers_[syncable::PREFERENCES]->Start(
+          true,
+          NewCallback(this, &ProfileSyncService::PreferenceStartCallback));
+    }
+  }
 }
 
-void ProfileSyncService::DataTypeManagerStartCallback(
-    DataTypeManager::StartResult result) {
-  if (result != DataTypeManager::OK) {
-    OnUnrecoverableError();
-    return;
-  }
+void ProfileSyncService::BookmarkStartCallback(
+    DataTypeController::StartResult result) {
+  switch (result) {
+    case DataTypeController::OK:
+    case DataTypeController::OK_FIRST_RUN: {
+      startup_had_first_time_ |= result == DataTypeController::OK_FIRST_RUN;
 
-  wizard_.Step(SyncSetupWizard::DONE);
-  FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+      // If the preference data type was registered, start it here.
+      // Since we only care about presenting the merge warning dialog
+      // for bookmarks, pass a "true" for merge_allowed so preferences
+      // will always start.  If preferences is not registered, just
+      // call the callback directly so we can finish startup.
+      // TODO(skrul): Change this to support multiple data type
+      // controllers.
+      if (data_type_controllers_.count(syncable::PREFERENCES)) {
+        data_type_controllers_[syncable::PREFERENCES]->Start(
+            true,
+            NewCallback(this, &ProfileSyncService::PreferenceStartCallback));
+      } else {
+        PreferenceStartCallback(DataTypeController::OK);
+      }
+      break;
+    }
+
+    case DataTypeController::NEEDS_MERGE: {
+      ProfileSyncService::SyncEvent(MERGE_AND_SYNC_NEEDED);
+      wizard_.Step(SyncSetupWizard::MERGE_AND_SYNC);
+      break;
+    }
+
+    default: {
+      LOG(ERROR) << "Bookmark start failed";
+      OnUnrecoverableError();
+      break;
+    }
+  }
+}
+
+void ProfileSyncService::PreferenceStartCallback(
+    DataTypeController::StartResult result) {
+  switch (result) {
+    case DataTypeController::OK:
+    case DataTypeController::OK_FIRST_RUN: {
+      startup_had_first_time_ |= result == DataTypeController::OK_FIRST_RUN;
+
+      wizard_.Step(startup_had_first_time_ ? SyncSetupWizard:: DONE_FIRST_TIME :
+                   SyncSetupWizard::DONE);
+      FOR_EACH_OBSERVER(Observer, observers_, OnStateChanged());
+      break;
+    }
+    default: {
+      LOG(ERROR) << "Preference start failed";
+      OnUnrecoverableError();
+      break;
+    }
+  }
 }
 
 void ProfileSyncService::ActivateDataType(
@@ -444,14 +511,26 @@ bool ProfileSyncService::IsSyncEnabled() {
 }
 
 bool ProfileSyncService::ShouldPushChanges() {
-  // True only after all bootstrapping has succeeded: the sync backend
-  // is initialized, all enabled data types are consistent with one
-  // another, and no unrecoverable error has transpired.
-  if (unrecoverable_error_detected_)
+  // True only after all bootstrapping has succeeded: the bookmark model is
+  // loaded, the sync backend is initialized, the two domains are
+  // consistent with one another, and no unrecoverable error has transpired.
+
+  // Don't push changes if there are no data type controllers registered.
+  if (data_type_controllers_.size() == 0)
     return false;
 
-  if (!data_type_manager_.get())
-    return false;
+  // TODO: make this size_t
+  DataTypeController::TypeMap::size_type running_data_type_controllers = 0;
+  if (data_type_controllers_.count(syncable::BOOKMARKS) &&
+      data_type_controllers_[syncable::BOOKMARKS]->state() ==
+      DataTypeController::RUNNING)
+    running_data_type_controllers++;
 
-  return data_type_manager_->state() == DataTypeManager::STARTED;
+  if (data_type_controllers_.count(syncable::PREFERENCES) &&
+      data_type_controllers_[syncable::PREFERENCES]->state() ==
+      DataTypeController::RUNNING)
+    running_data_type_controllers++;
+
+  // Return true only if all data type controllers are running.
+  return data_type_controllers_.size() == running_data_type_controllers;
 }

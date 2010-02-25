@@ -5,25 +5,23 @@
 #include "base/command_line.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/sync/glue/change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
-#include "chrome/browser/sync/glue/data_type_manager_impl.h"
 #include "chrome/browser/sync/glue/preference_change_processor.h"
 #include "chrome/browser/sync/glue/preference_data_type_controller.h"
 #include "chrome/browser/sync/glue/preference_model_associator.h"
+#include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
 #include "chrome/common/chrome_switches.h"
 
-using browser_sync::BookmarkChangeProcessor;
 using browser_sync::BookmarkDataTypeController;
-using browser_sync::BookmarkModelAssociator;
-using browser_sync::DataTypeController;
-using browser_sync::DataTypeManager;
-using browser_sync::DataTypeManagerImpl;
-using browser_sync::PreferenceChangeProcessor;
 using browser_sync::PreferenceDataTypeController;
+using browser_sync::BookmarkChangeProcessor;
+using browser_sync::BookmarkModelAssociator;
+using browser_sync::PreferenceChangeProcessor;
 using browser_sync::PreferenceModelAssociator;
 
 ProfileSyncFactoryImpl::ProfileSyncFactoryImpl(
@@ -34,8 +32,7 @@ ProfileSyncFactoryImpl::ProfileSyncFactoryImpl(
 
 ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService() {
   ProfileSyncService* pss =
-      new ProfileSyncService(this,
-                             profile_,
+      new ProfileSyncService(profile_,
                              browser_defaults::kBootstrapSyncAuthentication);
 
   // Bookmark sync is enabled by default.  Register unless explicitly
@@ -53,11 +50,6 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService() {
   }
 
   return pss;
-}
-
-DataTypeManager* ProfileSyncFactoryImpl::CreateDataTypeManager(
-    const DataTypeController::TypeMap& controllers) {
-  return new DataTypeManagerImpl(controllers);
 }
 
 ProfileSyncFactory::SyncComponents

@@ -11,7 +11,6 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/google_service_auth_error.h"
 #include "chrome/browser/pref_service.h"
-#include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/sync_setup_flow.h"
 #include "chrome/browser/sync/sync_setup_wizard.h"
@@ -30,8 +29,8 @@ typedef GoogleServiceAuthError AuthError;
 // A PSS subtype to inject.
 class ProfileSyncServiceForWizardTest : public ProfileSyncService {
  public:
-  ProfileSyncServiceForWizardTest(ProfileSyncFactory* factory, Profile* profile)
-      : ProfileSyncService(factory, profile, false),
+  explicit ProfileSyncServiceForWizardTest(Profile* profile)
+      : ProfileSyncService(profile, false),
         user_accepted_merge_and_sync_(false),
         user_cancelled_dialog_(false) {
     RegisterPreferences();
@@ -84,14 +83,13 @@ class ProfileSyncServiceForWizardTest : public ProfileSyncService {
 class TestingProfileWithSyncService : public TestingProfile {
  public:
   TestingProfileWithSyncService() {
-    sync_service_.reset(new ProfileSyncServiceForWizardTest(&factory_, this));
+    sync_service_.reset(new ProfileSyncServiceForWizardTest(this));
   }
 
   virtual ProfileSyncService* GetProfileSyncService() {
     return sync_service_.get();
   }
  private:
-  ProfileSyncFactoryMock factory_;
   scoped_ptr<ProfileSyncService> sync_service_;
 };
 
