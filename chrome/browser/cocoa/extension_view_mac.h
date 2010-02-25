@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -48,6 +48,15 @@ class ExtensionViewMac {
   // Method for the ExtensionHost to notify us when the RenderViewHost has a
   // connection.
   void RenderViewCreated();
+
+  // The minimum/maximum dimensions of the popup.
+  // The minimum is just a little larger than the size of the button itself.
+  // The maximum is an arbitrary number that should be smaller than most
+  // screens.
+  static const CGFloat kMinWidth;
+  static const CGFloat kMinHeight;
+  static const CGFloat kMaxWidth;
+  static const CGFloat kMaxHeight;
 
  private:
   RenderViewHost* render_view_host() const;

@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -7,6 +7,12 @@
 #include "chrome/browser/extensions/extension_host.h"
 #include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
+
+// The minimum/maximum dimensions of the popup.
+const CGFloat ExtensionViewMac::kMinWidth = 25.0;
+const CGFloat ExtensionViewMac::kMinHeight = 25.0;
+const CGFloat ExtensionViewMac::kMaxWidth = 800.0;
+const CGFloat ExtensionViewMac::kMaxHeight = 600.0;
 
 ExtensionViewMac::ExtensionViewMac(ExtensionHost* extension_host,
                                    Browser* browser)
@@ -69,6 +75,14 @@ void ExtensionViewMac::UpdatePreferredSize(const gfx::Size& new_size) {
 }
 
 void ExtensionViewMac::RenderViewCreated() {
+  // Do not allow webkit to draw scroll bars on views smaller than
+  // the largest size view allowed.  The view will be resized to make
+  // scroll bars unnecessary.  Scroll bars change the height of the
+  // view, so not drawing them is necessary to avoid infinite resizing.
+  gfx::Size largest_popup_size(
+      CGSizeMake(ExtensionViewMac::kMaxWidth, ExtensionViewMac::kMaxHeight));
+  extension_host_->DisableScrollbarsForSmallWindows(largest_popup_size);
+
   if (!pending_background_.empty() && render_view_host()->view()) {
     render_widget_host_view_->SetBackground(pending_background_);
     pending_background_.reset();

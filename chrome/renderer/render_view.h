@@ -677,6 +677,8 @@ class RenderView : public RenderWidget,
   void OnFileChooserResponse(const std::vector<FilePath>& file_names);
   void OnEnableViewSourceMode();
   void OnEnablePreferredSizeChangedMode();
+  void OnDisableScrollbarsForSmallWindows(
+      const gfx::Size& disable_scrollbars_size_limit);
   void OnSetRendererPrefs(const RendererPreferences& renderer_prefs);
   void OnMediaPlayerActionAt(const gfx::Point& location,
                              const WebKit::WebMediaPlayerAction& action);
@@ -1052,6 +1054,17 @@ class RenderView : public RenderWidget,
   // so we must poll it. See also:
   // https://bugs.webkit.org/show_bug.cgi?id=32807.
   base::RepeatingTimer<RenderView> preferred_size_change_timer_;
+
+  // If non-empty, and |send_preferred_size_changes_| is true, disable drawing
+  // scroll bars on windows smaller than this size.  Used for windows that the
+  // browser resizes to the size of the content, such as browser action popups.
+  // If a render view is set to the minimum size of its content, webkit may add
+  // scroll bars.  This makes sense for fixed sized windows, but it does not
+  // make sense when the size of the view was chosen to fit the content.
+  // This setting ensures that no scroll bars are drawn.  The size limit exists
+  // because if the view grows beyond a size known to the browser, scroll bars
+  // should be drawn.
+  gfx::Size disable_scrollbars_size_limit_;
 
   // The text selection the last time DidChangeSelection got called.
   std::string last_selection_;

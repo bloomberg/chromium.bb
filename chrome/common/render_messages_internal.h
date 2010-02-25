@@ -750,6 +750,11 @@ IPC_BEGIN_MESSAGES(View)
   // Used to instruct the RenderView to send back updates to the preferred size.
   IPC_MESSAGE_ROUTED0(ViewMsg_EnablePreferredSizeChangedMode)
 
+  // Used to tell the renderer not to add scrollbars with height and
+  // width below a threshold.
+  IPC_MESSAGE_ROUTED1(ViewMsg_DisableScrollbarsForSmallWindows,
+                      gfx::Size /* disable_scrollbar_size_limit */)
+
   // Used to inform the renderer that the browser has displayed its
   // requested notification.
   IPC_MESSAGE_ROUTED1(ViewMsg_PostDisplayToNotificationObject,

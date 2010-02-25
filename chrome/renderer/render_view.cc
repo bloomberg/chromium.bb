@@ -585,6 +585,8 @@ void RenderView::OnMessageReceived(const IPC::Message& message) {
     IPC_MESSAGE_HANDLER(ViewMsg_SetBackground, OnSetBackground)
     IPC_MESSAGE_HANDLER(ViewMsg_EnablePreferredSizeChangedMode,
                         OnEnablePreferredSizeChangedMode)
+    IPC_MESSAGE_HANDLER(ViewMsg_DisableScrollbarsForSmallWindows,
+                        OnDisableScrollbarsForSmallWindows)
     IPC_MESSAGE_HANDLER(ViewMsg_SetRendererPrefs, OnSetRendererPrefs)
     IPC_MESSAGE_HANDLER(ViewMsg_UpdateBrowserWindowId,
                         OnUpdateBrowserWindowId)
@@ -3628,6 +3630,11 @@ void RenderView::OnEnablePreferredSizeChangedMode() {
   }
 }
 
+void RenderView::OnDisableScrollbarsForSmallWindows(
+    const gfx::Size& disable_scrollbar_size_limit) {
+  disable_scrollbars_size_limit_ = disable_scrollbar_size_limit;
+}
+
 void RenderView::OnSetRendererPrefs(const RendererPreferences& renderer_prefs) {
   renderer_preferences_ = renderer_prefs;
   UpdateFontRenderingFromRendererPrefs();
@@ -3922,8 +3929,20 @@ void RenderView::OnMoveOrResizeStarted() {
 
 void RenderView::OnResize(const gfx::Size& new_size,
                           const gfx::Rect& resizer_rect) {
-  if (webview())
+  if (webview()) {
     webview()->hideSuggestionsPopup();
+
+    if (send_preferred_size_changes_) {
+      // If resizing to a size larger than |disable_scrollbars_size_limit_| in
+      // either width or height, allow scroll bars.
+      bool allow_scrollbars = (
+          disable_scrollbars_size_limit_.width() <= new_size.width() ||
+          disable_scrollbars_size_limit_.height() <= new_size.height()
+          );
+      webview()->mainFrame()->setCanHaveScrollbars(allow_scrollbars);
+    }
+  }
+
   RenderWidget::OnResize(new_size, resizer_rect);
 }
 
@@ -4555,4 +4574,3 @@ WebKit::WebGeolocationServiceInterface* RenderView::getGeolocationService() {
     geolocation_dispatcher_.reset(new GeolocationDispatcher(this));
   return geolocation_dispatcher_.get();
 }
-

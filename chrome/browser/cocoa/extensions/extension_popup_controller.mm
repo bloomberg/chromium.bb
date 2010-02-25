@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -15,21 +15,19 @@
 #include "chrome/browser/profile.h"
 #include "chrome/common/notification_service.h"
 
-// The minimum/maximum dimensions of the popup.
-// The minimum is just a little larger than the size of the button itself.
-// The maximum is an arbitrary number that should be smaller than most screens.
 namespace {
-const CGFloat kMinWidth = 25;
-const CGFloat kMinHeight = 25;
-const CGFloat kMaxWidth = 800;
-const CGFloat kMaxHeight = 600;
-
 // The duration for any animations that might be invoked by this controller.
 const NSTimeInterval kAnimationDuration = 0.2;
 
 // There should only be one extension popup showing at one time. Keep a
 // reference to it here.
 static ExtensionPopupController* gPopup;
+
+// Given a value and a rage, clamp the value into the range.
+CGFloat Clamp(CGFloat value, CGFloat min, CGFloat max) {
+  return std::max(min, std::min(max, value));
+}
+
 }  // namespace
 
 @interface ExtensionPopupController(Private)
@@ -179,8 +177,12 @@ static ExtensionPopupController* gPopup;
   extensionFrame_ = [extensionView_ frame];
   // Constrain the size of the view.
   [extensionView_ setFrameSize:NSMakeSize(
-      std::max(kMinWidth, std::min(kMaxWidth, NSWidth(extensionFrame_))),
-      std::max(kMinHeight, std::min(kMaxHeight, NSHeight(extensionFrame_))))];
+      Clamp(NSWidth(extensionFrame_),
+            ExtensionViewMac::kMinWidth,
+            ExtensionViewMac::kMaxWidth),
+      Clamp(NSHeight(extensionFrame_),
+            ExtensionViewMac::kMinHeight,
+            ExtensionViewMac::kMaxHeight))];
 
   // Pad the window by half of the rounded corner radius to prevent the
   // extension's view from bleeding out over the corners.
@@ -238,13 +240,13 @@ static ExtensionPopupController* gPopup;
 
 // Private (TestingAPI)
 + (NSSize)minPopupSize {
-  NSSize minSize = {kMinWidth, kMinHeight};
+  NSSize minSize = {ExtensionViewMac::kMinWidth, ExtensionViewMac::kMinHeight};
   return minSize;
 }
 
 // Private (TestingAPI)
 + (NSSize)maxPopupSize {
-  NSSize maxSize = {kMaxWidth, kMaxHeight};
+  NSSize maxSize = {ExtensionViewMac::kMaxWidth, ExtensionViewMac::kMaxHeight};
   return maxSize;
 }
 

@@ -356,6 +356,12 @@ void ExtensionHost::InsertThemeCSS() {
   render_view_host()->InsertCSSInWebFrame(L"", css, "ToolstripThemeCSS");
 }
 
+void ExtensionHost::DisableScrollbarsForSmallWindows(
+    const gfx::Size& size_limit) {
+  render_view_host()->Send(new ViewMsg_DisableScrollbarsForSmallWindows(
+      render_view_host()->routing_id(), size_limit));
+}
+
 void ExtensionHost::DidStopLoading() {
   bool notify = !did_stop_loading_;
   did_stop_loading_ = true;

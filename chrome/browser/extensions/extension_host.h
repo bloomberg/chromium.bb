@@ -100,6 +100,10 @@ class ExtensionHost : public ExtensionPopupHost::PopupDelegate,
   // Insert the theme CSS for a toolstrip/mole.
   void InsertThemeCSS();
 
+  // Tell the renderer not to draw scrollbars on windows smaller than
+  // |size_limit| in both width and height.
+  void DisableScrollbarsForSmallWindows(const gfx::Size& size_limit);
+
   // RenderViewHostDelegate implementation.
   virtual RenderViewHostDelegate::View* GetViewDelegate();
   virtual const GURL& GetURL() const { return url_; }
