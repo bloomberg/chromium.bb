@@ -2127,7 +2127,7 @@
    fun:_ZN3net15X509Certificate16CreateFromHandleEP18CERTCertificateStrNS0_6SourceE
    fun:_ZN3net18SSLClientSocketNSS16UpdateServerCertEv
    fun:_ZN3net18SSLClientSocketNSS17HandshakeCallbackEP10PRFileDescPv
-   fun:ssl3_HandleFinished
+   ...
    fun:ssl3_HandleHandshakeMessage
    fun:ssl3_HandleHandshake
    fun:ssl3_HandleRecord
@@ -2376,4 +2376,3 @@
    fun:_ZN7WebCore14V8GCController10gcPrologueEv
    fun:_ZN2v88internal4Heap24PerformGarbageCollectionENS0_15AllocationSpaceENS0_16GarbageCollectorEPNS0_8GCTracerE
 }
-
