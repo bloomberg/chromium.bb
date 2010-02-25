@@ -198,8 +198,6 @@ bool SortedCollectionsIntersect(Iterator1 begin1, Iterator1 end1,
   return false;
 }
 // Utility function declarations.
-void SplitServerInformationIntoNewEntry(syncable::WriteTransaction* trans,
-                                        syncable::MutableEntry* entry);
 void CopyServerFields(syncable::Entry* src, syncable::MutableEntry* dest);
 void ClearServerData(syncable::MutableEntry* entry);
 
