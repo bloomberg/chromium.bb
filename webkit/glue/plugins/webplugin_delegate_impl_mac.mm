@@ -217,8 +217,9 @@ void WebPluginDelegateImpl::PlatformInitialize() {
   // destroyPlugin in WebNetscapePluginView.mm, for examples).
   quirks_ |= PLUGIN_QUIRK_DONT_SET_NULL_WINDOW_HANDLE_ON_DESTROY;
 
-  // Silverlight doesn't always unload cleanly, so don't unload it at shutdown.
-  if (instance()->mime_type().find("x-silverlight") != std::string::npos)
+  // Some plugins don't always unload cleanly, so don't unload them at shutdown.
+  if (instance()->mime_type().find("x-silverlight") != std::string::npos ||
+      instance()->mime_type().find("audio/x-pn-realaudio") != std::string::npos)
     instance()->plugin_lib()->PreventLibraryUnload();
 
 #ifndef NP_NO_CARBON
