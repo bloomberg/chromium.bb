@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,6 +16,7 @@
 #include "chrome/browser/plugin_process_host.h"
 #include "chrome/browser/renderer_host/backing_store_mac.h"
 #include "chrome/browser/renderer_host/render_process_host.h"
+#include "chrome/browser/renderer_host/render_view_host.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/spellchecker_platform_engine.h"
 #include "chrome/common/native_web_keyboard_event.h"
@@ -1082,6 +1083,19 @@ bool RenderWidgetHostViewMac::ContainsNativeView(
 - (BOOL)validateUserInterfaceItem:(id<NSValidatedUserInterfaceItem>)item {
   SEL action = [item action];
 
+  // For now, these actions are always enabled for render view,
+  // this is sub-optimal.
+  // TODO(suzhe): Plumb the "can*" methods up from WebCore.
+  if (action == @selector(undo:) ||
+      action == @selector(redo:) ||
+      action == @selector(cut:) ||
+      action == @selector(copy:) ||
+      action == @selector(copyToFindPboard:) ||
+      action == @selector(paste:) ||
+      action == @selector(pasteAsPlainText:)) {
+    return renderWidgetHostView_->render_widget_host_->IsRenderView();
+  }
+
   return editCommand_helper_->IsMenuItemEnabled(action, self);
 }
 
@@ -1581,6 +1595,55 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
       lastWindow_ = newWindow;
       renderWidgetHostView_->WindowFrameChanged();
     }
+  }
+}
+
+- (void)undo:(id)sender {
+  if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
+    static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
+      Undo();
+  }
+}
+
+- (void)redo:(id)sender {
+  if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
+    static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
+      Redo();
+  }
+}
+
+- (void)cut:(id)sender {
+  if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
+    static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
+      Cut();
+  }
+}
+
+- (void)copy:(id)sender {
+  if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
+    static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
+      Copy();
+  }
+}
+
+- (void)copyToFindPboard:(id)sender {
+  if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
+    static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
+      CopyToFindPboard();
+  }
+}
+
+- (void)paste:(id)sender {
+  if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
+    static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
+      Paste();
+  }
+}
+
+- (void)pasteAsPlainText:(id)sender {
+  if (renderWidgetHostView_->render_widget_host_->IsRenderView()) {
+    static_cast<RenderViewHost*>(renderWidgetHostView_->render_widget_host_)->
+      ForwardEditCommand("PasteAndMatchStyle", "");
   }
 }
 

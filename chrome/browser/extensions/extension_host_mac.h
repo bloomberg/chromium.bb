@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -21,6 +21,8 @@ class ExtensionHostMac : public ExtensionHost {
   virtual void ShowCreatedWidgetInternal(RenderWidgetHostView* widget_host_view,
                                          const gfx::Rect& initial_pos);
  private:
+  virtual void UnhandledKeyboardEvent(const NativeWebKeyboardEvent& event);
+
   DISALLOW_COPY_AND_ASSIGN(ExtensionHostMac);
 };
 

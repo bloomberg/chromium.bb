@@ -1,10 +1,12 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/extensions/extension_host_mac.h"
 
+#import "chrome/browser/cocoa/chrome_event_processing_window.h"
 #include "chrome/browser/renderer_host/render_widget_host_view_mac.h"
+#include "chrome/common/native_web_keyboard_event.h"
 
 RenderWidgetHostView* ExtensionHostMac::CreateNewWidgetInternal(
     int route_id,
@@ -34,4 +36,17 @@ void ExtensionHostMac::ShowCreatedWidgetInternal(
   RenderWidgetHostViewMac* widget_view_mac =
       static_cast<RenderWidgetHostViewMac*>(widget_host_view);
   [widget_view_mac->native_view() release];
+}
+
+void ExtensionHostMac::UnhandledKeyboardEvent(
+    const NativeWebKeyboardEvent& event) {
+  if (event.skip_in_browser || event.type == NativeWebKeyboardEvent::Char ||
+      extension_host_type() != ViewType::EXTENSION_POPUP) {
+    return;
+  }
+
+  ChromeEventProcessingWindow* event_window =
+      static_cast<ChromeEventProcessingWindow*>([view()->native_view() window]);
+  DCHECK([event_window isKindOfClass:[ChromeEventProcessingWindow class]]);
+  [event_window redispatchKeyEvent:event.os_event];
 }

@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -366,41 +366,9 @@ void TabContentsViewMac::Observe(NotificationType type,
   return NO;
 }
 
-// In the Windows version, we always have cut/copy/paste enabled. This is sub-
-// optimal, but we do it too. TODO(avi): Plumb the "can*" methods up from
-// WebCore.
-
-- (void)cut:(id)sender {
-  [self tabContents]->Cut();
-}
-
-- (void)copy:(id)sender {
-  [self tabContents]->Copy();
-}
-
-- (void)copyToFindPboard:(id)sender {
-  [self tabContents]->CopyToFindPboard();
-}
-
-- (void)paste:(id)sender {
-  [self tabContents]->Paste();
-}
-
-- (void)pasteAsPlainText:(id)sender {
-  [self tabContents]->PasteAndMatchStyle();
-}
-
 - (void)pasteboard:(NSPasteboard*)sender provideDataForType:(NSString*)type {
   [dragSource_ lazyWriteToPasteboard:sender
                              forType:type];
-}
-
-- (void)undo:(id)sender {
-  [self tabContents]->render_view_host()->Undo();
-}
-
-- (void)redo:(id)sender {
-  [self tabContents]->render_view_host()->Redo();
 }
 
 - (void)startDragWithDropData:(const WebDropData&)dropData

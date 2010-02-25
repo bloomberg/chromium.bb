@@ -1,12 +1,14 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #import <Cocoa/Cocoa.h>
 
+#import "chrome/browser/cocoa/chrome_event_processing_window.h"
+
 // A rounded window with an arrow used for example when you click on the STAR
 // button or that pops up within our first-run UI.
-@interface InfoBubbleWindow : NSWindow {
+@interface InfoBubbleWindow : ChromeEventProcessingWindow {
  @private
   // Is self in the process of closing.
   BOOL closing_;

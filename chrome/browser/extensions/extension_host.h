@@ -81,6 +81,8 @@ class ExtensionHost : public ExtensionPopupHost::PopupDelegate,
   }
   Profile* profile() const { return profile_; }
 
+  ViewType::Type extension_host_type() const { return extension_host_type_; }
+
   // Sets the the ViewType of this host (e.g. mole, toolstrip).
   void SetRenderViewType(ViewType::Type type);
 
@@ -198,6 +200,11 @@ class ExtensionHost : public ExtensionPopupHost::PopupDelegate,
   virtual gfx::NativeView GetNativeViewOfHost() {
     return view()->native_view();
   }
+
+  // Handles keyboard events that were not handled by HandleKeyboardEvent().
+  // Platform specific implementation may override this method to handle the
+  // event in platform specific way.
+  virtual void UnhandledKeyboardEvent(const NativeWebKeyboardEvent& event) {}
 
   // Returns true if we're hosting a background page.
   // This isn't valid until CreateRenderView is called.

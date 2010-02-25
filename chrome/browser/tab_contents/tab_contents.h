@@ -327,23 +327,6 @@ class TabContents : public PageNavigator,
   // Stop any pending navigation.
   virtual void Stop();
 
-  // TODO(erg): HACK ALERT! This was thrown together for beta and
-  // needs to be completely removed after we ship it. Right now, the
-  // cut/copy/paste menu items are always enabled and will send a
-  // cut/copy/paste command to the currently visible
-  // TabContents. Post-beta, this needs to be replaced with a unified
-  // interface for supporting cut/copy/paste, and managing who has
-  // cut/copy/paste focus. (http://b/1117225)
-  virtual void Cut();
-  virtual void Copy();
-#if defined(OS_MACOSX)
-  virtual void CopyToFindPboard();
-#endif
-  virtual void Paste();
-#if defined(OS_MACOSX)
-  virtual void PasteAndMatchStyle();
-#endif
-
   // Called on a TabContents when it isn't a popup, but a new window.
   virtual void DisassociateFromPopupCount();
 

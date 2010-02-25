@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -69,6 +69,11 @@ typedef int (*KeyToCommandMapper)(bool, bool, bool, bool, int, unichar);
   NSResponder* r = [self firstResponder];
   if ([r isKindOfClass:[RenderWidgetHostViewCocoa class]])
     return [r performKeyEquivalent:event];
+
+  // If the delegate does not implement the BrowserCommandExecutor protocol,
+  // then we don't need to handle browser specific shortcut keys.
+  if (![[self delegate] conformsToProtocol:@protocol(BrowserCommandExecutor)])
+    return [super performKeyEquivalent:event];
 
   // Handle per-window shortcuts like cmd-1, but do not handle browser-level
   // shortcuts like cmd-left (else, cmd-left would do history navigation even

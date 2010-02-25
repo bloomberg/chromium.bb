@@ -570,6 +570,7 @@ void ExtensionHost::TakeFocus(bool reverse) {
 bool ExtensionHost::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
                                            bool* is_keyboard_shortcut) {
   if (extension_host_type_ == ViewType::EXTENSION_POPUP &&
+      event.type == NativeWebKeyboardEvent::RawKeyDown &&
       event.windowsKeyCode == base::VKEY_ESCAPE) {
     DCHECK(is_keyboard_shortcut != NULL);
     *is_keyboard_shortcut = true;
@@ -578,13 +579,17 @@ bool ExtensionHost::PreHandleKeyboardEvent(const NativeWebKeyboardEvent& event,
 }
 
 void ExtensionHost::HandleKeyboardEvent(const NativeWebKeyboardEvent& event) {
-  if (extension_host_type_ == ViewType::EXTENSION_POPUP &&
-      event.windowsKeyCode == base::VKEY_ESCAPE) {
-    NotificationService::current()->Notify(
-        NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
-        Source<Profile>(profile_),
-        Details<ExtensionHost>(this));
+  if (extension_host_type_ == ViewType::EXTENSION_POPUP) {
+    if (event.type == NativeWebKeyboardEvent::RawKeyDown &&
+        event.windowsKeyCode == base::VKEY_ESCAPE) {
+      NotificationService::current()->Notify(
+          NotificationType::EXTENSION_HOST_VIEW_SHOULD_CLOSE,
+          Source<Profile>(profile_),
+          Details<ExtensionHost>(this));
+      return;
+    }
   }
+  UnhandledKeyboardEvent(event);
 }
 
 void ExtensionHost::HandleMouseEvent() {
