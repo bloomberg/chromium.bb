@@ -89,8 +89,8 @@ template <typename NativeType, typename WireType> class NPWireOwner {
     (*to_wire_map_)[native] = wire;
   }
 
-  static std::map<NativeType, WireType>* to_wire_map_;
-  static std::map<WireType, NativeType>* to_native_map_;
+  std::map<NativeType, WireType>* to_wire_map_;
+  std::map<WireType, NativeType>* to_native_map_;
 };
 
 // The browser typically passes the values into the NaCl module, and they
