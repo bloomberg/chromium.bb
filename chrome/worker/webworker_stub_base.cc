@@ -12,13 +12,19 @@ WebWorkerStubBase::WebWorkerStubBase(int route_id)
     : route_id_(route_id),
       ALLOW_THIS_IN_INITIALIZER_LIST(client_(route_id, this)) {
 
+  WorkerThread* workerThread = WorkerThread::current();
+  DCHECK(workerThread);
+  workerThread->AddWorkerStub(this);
   // Start processing incoming IPCs for this worker.
-  WorkerThread::current()->AddRoute(route_id_, this);
+  workerThread->AddRoute(route_id_, this);
   ChildProcess::current()->AddRefProcess();
 }
 
 WebWorkerStubBase::~WebWorkerStubBase() {
-  WorkerThread::current()->RemoveRoute(route_id_);
+  WorkerThread* workerThread = WorkerThread::current();
+  DCHECK(workerThread);
+  workerThread->RemoveWorkerStub(this);
+  workerThread->RemoveRoute(route_id_);
   ChildProcess::current()->ReleaseProcess();
 }
 

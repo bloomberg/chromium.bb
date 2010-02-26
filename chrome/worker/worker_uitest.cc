@@ -180,8 +180,8 @@ TEST_F(WorkerTest, DISABLED_SharedWorkerHttpAuth) {
 }
 
 
-// All kinds of crashes on Linux and Mac http://crbug.com/22898
-#if defined(OS_LINUX) || defined(OS_MACOSX)
+// http://crbug.com/35963
+#if defined(OS_LINUX)
 #define StressJSExecution DISABLED_StressJSExecution
 #endif
 
