@@ -340,7 +340,7 @@ BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
 	if [ "x$(CROSSARCH)" = "xnacl64" ] ; then \
 	  cd BUILD/build-newlib-$(CROSSARCH) && \
 	    PATH=$(BUILDPATH) \
-		  CFLAGS="-m64 -O2" \
+		  CFLAGS="-O2" \
 	      ../newlib-$(NEWLIB_VERSION)/configure \
 			  --enable-newlib-io-long-long \
 			  --enable-newlib-io-c99-formats \
@@ -356,7 +356,7 @@ BUILD/stamp-newlib: BUILD/stamp-newlib-$(NEWLIB_VERSION) Makefile
 	else \
 	  cd BUILD/build-newlib-$(CROSSARCH) && \
 	    PATH=$(BUILDPATH) \
-		  CFLAGS="-m32 -O2" \
+		  CFLAGS="-O2" \
 	      ../newlib-$(NEWLIB_VERSION)/configure \
 			  --enable-newlib-io-long-long \
 			  --enable-newlib-io-c99-formats \
