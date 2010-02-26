@@ -164,7 +164,7 @@ class CFACMockTest : public testing::Test {
 
   virtual void SetUp() {
     dummy_sender_.ForwardTo(&proxy_);
-    tracker_.reset(new AutomationHandleTracker(&dummy_sender_));
+    tracker_.reset(new AutomationHandleTracker());
 
     client_ = new ChromeFrameAutomationClient;
     client_->set_proxy_factory(&factory_);

@@ -230,6 +230,10 @@ class AutomationProxy : public IPC::Channel::Listener,
     perform_version_check_ = perform_version_check;
   }
 
+  // These functions set and reset the IPC::Channel pointer on the tracker.
+  void SetChannel(IPC::Channel* channel);
+  void ResetChannel();
+
  protected:
   template <class T> scoped_refptr<T> ProxyObjectFromHandle(int handle);
   void InitializeChannelID();
@@ -264,6 +268,8 @@ class AutomationProxy : public IPC::Channel::Listener,
 
   // Delay to let the browser execute the command.
   base::TimeDelta command_execution_timeout_;
+
+  PlatformThreadId listener_thread_id_;
 
   DISALLOW_COPY_AND_ASSIGN(AutomationProxy);
 };

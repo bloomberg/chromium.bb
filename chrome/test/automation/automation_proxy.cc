@@ -55,6 +55,14 @@ class AutomationMessageFilter : public IPC::ChannelProxy::MessageFilter {
     return handled;
   }
 
+  virtual void OnFilterAdded(IPC::Channel* channel) {
+    server_->SetChannel(channel);
+  }
+
+  virtual void OnFilterRemoved() {
+    server_->ResetChannel();
+  }
+
   void NewTabLoaded(int load_time) {
     server_->SignalNewTabUITab(load_time);
   }
@@ -87,11 +95,13 @@ AutomationProxy::AutomationProxy(int command_execution_timeout_ms)
       app_launch_signaled_(0),
       perform_version_check_(false),
       command_execution_timeout_(
-          TimeDelta::FromMilliseconds(command_execution_timeout_ms)) {
+          TimeDelta::FromMilliseconds(command_execution_timeout_ms)),
+      listener_thread_id_(0) {
   // base::WaitableEvent::TimedWait() will choke if we give it a negative value.
   // Zero also seems unreasonable, since we need to wait for IPC, but at
   // least it is legal... ;-)
   DCHECK_GE(command_execution_timeout_ms, 0);
+  listener_thread_id_ = PlatformThread::CurrentId();
   InitializeChannelID();
   InitializeHandleTracker();
   InitializeThread();
@@ -151,7 +161,7 @@ void AutomationProxy::InitializeChannel() {
 }
 
 void AutomationProxy::InitializeHandleTracker() {
-  tracker_.reset(new AutomationHandleTracker(this));
+  tracker_.reset(new AutomationHandleTracker());
 }
 
 AutomationLaunchResult AutomationProxy::WaitForAppLaunch() {
@@ -462,6 +472,8 @@ bool AutomationProxy::Send(IPC::Message* message) {
 
 bool AutomationProxy::SendWithTimeout(IPC::Message* message, int timeout,
                                       bool* is_timeout) {
+  //DCHECK_EQ(listener_thread_id_, PlatformThread::CurrentId());
+
   if (is_timeout)
     *is_timeout = false;
 
@@ -534,3 +546,14 @@ template <class T> scoped_refptr<T> AutomationProxy::ProxyObjectFromHandle(
   result.swap(&p);
   return result;
 }
+
+void AutomationProxy::SetChannel(IPC::Channel* channel) {
+  if (tracker_.get())
+    tracker_->put_channel(channel);
+}
+
+void AutomationProxy::ResetChannel() {
+  if (tracker_.get())
+    tracker_->put_channel(NULL);
+}
+
