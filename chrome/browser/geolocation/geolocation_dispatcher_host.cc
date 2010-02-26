@@ -23,6 +23,8 @@ GeolocationDispatcherHost::GeolocationDispatcherHost(
 }
 
 GeolocationDispatcherHost::~GeolocationDispatcherHost() {
+  if (location_arbitrator_)
+    location_arbitrator_->RemoveObserver(this);
 }
 
 bool GeolocationDispatcherHost::OnMessageReceived(
@@ -49,16 +51,8 @@ bool GeolocationDispatcherHost::OnMessageReceived(
   return handled;
 }
 
-void GeolocationDispatcherHost::NotifyPositionUpdated(
+void GeolocationDispatcherHost::OnLocationUpdate(
     const Geoposition& geoposition) {
-  if (!ChromeThread::CurrentlyOn(ChromeThread::IO)) {
-    ChromeThread::PostTask(
-        ChromeThread::UI, FROM_HERE,
-        NewRunnableMethod(
-            this, &GeolocationDispatcherHost::NotifyPositionUpdated,
-            geoposition));
-    return;
-  }
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::IO));
 
   for (std::set<GeolocationServiceRenderId>::iterator geo =
@@ -99,12 +93,17 @@ void GeolocationDispatcherHost::OnRequestPermission(
 void GeolocationDispatcherHost::OnStartUpdating(
     int route_id, int bridge_id, bool high_accuracy) {
   LOG(INFO) << "start updating" << route_id;
-  // TODO(bulach): connect this with GeolocationServiceProvider.
+  if (!location_arbitrator_)
+    location_arbitrator_ = GeolocationArbitrator::GetInstance();
+  location_arbitrator_->AddObserver(
+      this, GeolocationArbitrator::UpdateOptions(high_accuracy));
 }
 
 void GeolocationDispatcherHost::OnStopUpdating(int route_id, int bridge_id) {
   LOG(INFO) << "stop updating" << route_id;
-  // TODO(bulach): connect this with GeolocationServiceProvider.
+  if (location_arbitrator_)
+    location_arbitrator_->RemoveObserver(this);
+  location_arbitrator_ = NULL;
 }
 
 void GeolocationDispatcherHost::OnSuspend(int route_id, int bridge_id) {

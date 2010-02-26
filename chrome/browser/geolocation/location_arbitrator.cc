@@ -14,11 +14,14 @@
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/browser/geolocation/access_token_store.h"
 #include "chrome/browser/geolocation/location_provider.h"
+#include "chrome/browser/profile.h"
 #include "chrome/common/geoposition.h"
 #include "googleurl/src/gurl.h"
 
 namespace {
 const char* kDefaultNetworkProviderUrl = "https://www.google.com/loc/json";
+bool g_use_mock_provider = false;
+static GeolocationArbitrator* g_instance_ = NULL;
 }  // namespace
 
 class GeolocationArbitratorImpl
@@ -34,7 +37,6 @@ class GeolocationArbitratorImpl
   virtual void AddObserver(GeolocationArbitrator::Delegate* delegate,
                            const UpdateOptions& update_options);
   virtual bool RemoveObserver(GeolocationArbitrator::Delegate* delegate);
-  virtual void SetUseMockProvider(bool use_mock);
 
   // ListenerInterface
   virtual void LocationUpdateAvailable(LocationProviderBase* provider);
@@ -60,7 +62,6 @@ class GeolocationArbitratorImpl
   Geoposition position_;
 
   CancelableRequestConsumer request_consumer_;
-  bool use_mock_;
 };
 
 GeolocationArbitratorImpl::GeolocationArbitratorImpl(
@@ -68,14 +69,17 @@ GeolocationArbitratorImpl::GeolocationArbitratorImpl(
     URLRequestContextGetter* context_getter)
     : access_token_store_(access_token_store),
       context_getter_(context_getter),
-      default_url_(kDefaultNetworkProviderUrl),
-      use_mock_(false) {
+      default_url_(kDefaultNetworkProviderUrl) {
   DCHECK(default_url_.is_valid());
+  DCHECK(NULL == g_instance_);
+  g_instance_ = this;
 }
 
 GeolocationArbitratorImpl::~GeolocationArbitratorImpl() {
   DCHECK(CalledOnValidThread());
   DCHECK(observers_.empty()) << "Not all observers have unregistered";
+  DCHECK(this == g_instance_);
+  g_instance_ = NULL;
 }
 
 void GeolocationArbitratorImpl::AddObserver(
@@ -100,12 +104,6 @@ bool GeolocationArbitratorImpl::RemoveObserver(
     provider_.reset();
   }
   return remove > 0;
-}
-
-void GeolocationArbitratorImpl::SetUseMockProvider(bool use_mock) {
-  DCHECK(CalledOnValidThread());
-  DCHECK(provider_ == NULL);
-  use_mock_ = use_mock;
 }
 
 void GeolocationArbitratorImpl::LocationUpdateAvailable(
@@ -134,7 +132,7 @@ void GeolocationArbitratorImpl::OnAccessTokenStoresLoaded(
   DCHECK(provider_ == NULL)
       << "OnAccessTokenStoresLoaded : has existing location "
       << "provider. Race condition caused repeat load of tokens?";
-  if (use_mock_) {
+  if (g_use_mock_provider) {
     provider_.reset(NewMockLocationProvider());
   } else {
     // TODO(joth): Once we have arbitration implementation, iterate the whole
@@ -178,16 +176,30 @@ bool GeolocationArbitratorImpl::HasHighAccuracyObserver() {
 }
 
 GeolocationArbitrator* GeolocationArbitrator::Create(
-    URLRequestContextGetter* context_getter) {
-  return new GeolocationArbitratorImpl(NewChromePrefsAccessTokenStore(),
-                                       context_getter);
-}
-
-GeolocationArbitrator* GeolocationArbitrator::Create(
     AccessTokenStore* access_token_store,
     URLRequestContextGetter* context_getter) {
-  return new GeolocationArbitratorImpl(access_token_store,
-                                       context_getter);
+  DCHECK(!g_instance_);
+  return new GeolocationArbitratorImpl(access_token_store, context_getter);
+}
+
+GeolocationArbitrator* GeolocationArbitrator::GetInstance() {
+  if (!g_instance_) {
+    // Construct the arbitrator using default token store and url context. We
+    // get the url context getter from the default profile as it's not
+    // particularly important which profile it is attached to: the network
+    // request implementation disables cookies anyhow.
+    Create(NewChromePrefsAccessTokenStore(),
+           Profile::GetDefaultRequestContext());
+    DCHECK(g_instance_);
+  }
+  return g_instance_;
+}
+
+void GeolocationArbitrator::SetUseMockProvider(bool use_mock) {
+  g_use_mock_provider = use_mock;
+}
+
+GeolocationArbitrator::GeolocationArbitrator() {
 }
 
 GeolocationArbitrator::~GeolocationArbitrator() {

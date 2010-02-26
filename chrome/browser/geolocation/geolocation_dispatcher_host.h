@@ -9,18 +9,21 @@
 
 #include "base/basictypes.h"
 #include "base/ref_counted.h"
+#include "chrome/browser/geolocation/location_arbitrator.h"
 #include "ipc/ipc_message.h"
 
 class GeolocationPermissionContext;
-struct Geoposition;
 class GURL;
 class ResourceMessageFilter;
+class URLRequestContextGetter;
+struct Geoposition;
 
 // GeolocationDispatcherHost is a delegate for Geolocation messages used by
 // ResourceMessageFilter.
 // It's the complement of GeolocationDispatcher (owned by RenderView).
 class GeolocationDispatcherHost
-    : public base::RefCountedThreadSafe<GeolocationDispatcherHost> {
+    : public base::RefCountedThreadSafe<GeolocationDispatcherHost>,
+      public GeolocationArbitrator::Delegate {
  public:
   GeolocationDispatcherHost(
       int resource_message_filter_process_id,
@@ -30,8 +33,8 @@ class GeolocationDispatcherHost
   // handled. Called in the browser process.
   bool OnMessageReceived(const IPC::Message& msg, bool* msg_was_ok);
 
-  // Tells the render view that a new geolocation position is available.
-  void NotifyPositionUpdated(const Geoposition& geoposition);
+  // GeolocationArbitrator::Delegate
+  virtual void OnLocationUpdate(const Geoposition& position);
 
  private:
   friend class base::RefCountedThreadSafe<GeolocationDispatcherHost>;
@@ -70,6 +73,8 @@ class GeolocationDispatcherHost
   };
   // Only used on the IO thread.
   std::set<GeolocationServiceRenderId> geolocation_renderers_;
+  // Only set whilst we are registered with the arbitrator.
+  scoped_refptr<GeolocationArbitrator> location_arbitrator_;
 
   DISALLOW_COPY_AND_ASSIGN(GeolocationDispatcherHost);
 };

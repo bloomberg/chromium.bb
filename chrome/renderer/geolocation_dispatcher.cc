@@ -39,27 +39,27 @@ bool GeolocationDispatcher::OnMessageReceived(const IPC::Message& message) {
 void GeolocationDispatcher::requestPermissionForFrame(
     int bridge_id, const WebKit::WebURL& url) {
   render_view_->Send(new ViewHostMsg_Geolocation_RequestPermission(
-      bridge_id, render_view_->routing_id(), GURL(url).GetOrigin()));
+      render_view_->routing_id(), bridge_id, GURL(url).GetOrigin()));
 }
 
 void GeolocationDispatcher::startUpdating(int bridge_id, bool hasHighAccuracy) {
   render_view_->Send(new ViewHostMsg_Geolocation_StartUpdating(
-      bridge_id, render_view_->routing_id(), hasHighAccuracy));
+      render_view_->routing_id(), bridge_id, hasHighAccuracy));
 }
 
 void GeolocationDispatcher::stopUpdating(int bridge_id) {
   render_view_->Send(new ViewHostMsg_Geolocation_StopUpdating(
-      bridge_id, render_view_->routing_id()));
+      render_view_->routing_id(), bridge_id));
 }
 
 void GeolocationDispatcher::suspend(int bridge_id) {
   render_view_->Send(new ViewHostMsg_Geolocation_Suspend(
-      bridge_id, render_view_->routing_id()));
+      render_view_->routing_id(), bridge_id));
 }
 
 void GeolocationDispatcher::resume(int bridge_id) {
   render_view_->Send(new ViewHostMsg_Geolocation_Resume(
-      bridge_id, render_view_->routing_id()));
+      render_view_->routing_id(), bridge_id));
 }
 
 int GeolocationDispatcher::attachBridge(

@@ -5,6 +5,8 @@
 #ifndef CHROME_BROWSER_GEOLOCATION_LOCATION_ARBITRATOR_H_
 #define CHROME_BROWSER_GEOLOCATION_LOCATION_ARBITRATOR_H_
 
+#include "base/ref_counted.h"
+
 class AccessTokenStore;
 class URLRequestContextGetter;
 struct Geoposition;
@@ -17,16 +19,18 @@ struct Geoposition;
 // This class is responsible for handling updates from multiple underlying
 // providers and resolving them to a single 'best' location fix at any given
 // moment.
-class GeolocationArbitrator {
+class GeolocationArbitrator : public base::RefCounted<GeolocationArbitrator> {
  public:
-  // Creates and returns a new instance of the location arbitrator. Will use
-  // the default access token store implementation bound to Chrome Prefs.
-  static GeolocationArbitrator* Create(URLRequestContextGetter* context_getter);
-  // Creates and returns a new instance of the location arbitrator. As above
-  // but allows injectino of the access token store, for testing.
+  // Creates and returns a new instance of the location arbitrator. Allows
+  // injection of the access token store and url getter context, for testing.
   static GeolocationArbitrator* Create(
       AccessTokenStore* access_token_store,
       URLRequestContextGetter* context_getter);
+
+  // Gets a pointer to the singleton instance of the location arbitrator, which
+  // is in turn bound to the browser's global context objects. Ownership is NOT
+  // returned.
+  static GeolocationArbitrator* GetInstance();
 
   class Delegate {
    public:
@@ -45,8 +49,6 @@ class GeolocationArbitrator {
     bool use_high_accuracy;
   };
 
-  virtual ~GeolocationArbitrator();
-
   // Must be called from the same thread as the arbitrator was created on.
   // The update options passed are used as a 'hint' for the provider preferences
   // for this particular observer, however the delegate could receive callbacks
@@ -62,7 +64,16 @@ class GeolocationArbitrator {
 
   // TODO(joth): This is a stop-gap for testing; once we have decoupled
   // provider factory we should extract mock creation from the arbitrator.
-  virtual void SetUseMockProvider(bool use_mock) = 0;
+  static void SetUseMockProvider(bool use_mock);
+
+ protected:
+  friend class base::RefCounted<GeolocationArbitrator>;
+  GeolocationArbitrator();
+  // RefCounted object; no not delete directly.
+  virtual ~GeolocationArbitrator();
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(GeolocationArbitrator);
 };
 
 #endif  // CHROME_BROWSER_GEOLOCATION_LOCATION_ARBITRATOR_H_

@@ -42,22 +42,22 @@ class GeolocationLocationArbitratorTest : public testing::Test {
  protected:
   virtual void SetUp() {
     access_token_store_ = new FakeAccessTokenStore;
-    arbitrator_.reset(GeolocationArbitrator::Create(access_token_store_.get(),
-                                                    NULL));
-    arbitrator_->SetUseMockProvider(true);
+    GeolocationArbitrator::SetUseMockProvider(true);
+    arbitrator_ = GeolocationArbitrator::Create(access_token_store_.get(),
+                                                NULL);
   }
 
   virtual void TearDown() {
   }
 
   scoped_refptr<FakeAccessTokenStore> access_token_store_;
-  scoped_ptr<GeolocationArbitrator> arbitrator_;
+  scoped_refptr<GeolocationArbitrator> arbitrator_;
 };
 
 TEST_F(GeolocationLocationArbitratorTest, CreateDestroy) {
   EXPECT_TRUE(access_token_store_);
   EXPECT_TRUE(arbitrator_ != NULL);
-  arbitrator_.reset();
+  arbitrator_ = NULL;
   SUCCEED();
 }
 
