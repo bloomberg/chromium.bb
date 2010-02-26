@@ -270,10 +270,10 @@ void PrintedDocument::DebugDump(const PrintedPage& page) {
   file_util::ReplaceIllegalCharactersInPath(&narrow_filename, '_');
   filename = UTF8ToWide(narrow_filename);
 #endif
-  std::wstring path(g_debug_dump_info->debug_dump_path);
-  file_util::AppendToPath(&path, filename);
+  FilePath path = FilePath::FromWStringHack(
+      g_debug_dump_info->debug_dump_path);
 #if defined(OS_WIN)
-  page.native_metafile()->SaveTo(path);
+  page.native_metafile()->SaveTo(path.Append(filename).ToWStringHack());
 #else  // OS_WIN
   NOTIMPLEMENTED();
 #endif  // OS_WIN

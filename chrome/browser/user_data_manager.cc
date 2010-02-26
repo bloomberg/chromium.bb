@@ -221,9 +221,10 @@ std::wstring UserDataManager::GetFolderNameFromProfileName(
 std::wstring UserDataManager::GetUserDataFolderForProfile(
     const std::wstring& profile_name) const {
   std::wstring folder_name = GetFolderNameFromProfileName(profile_name);
-  std::wstring folder_path(user_data_root_);
-  file_util::AppendToPath(&folder_path, folder_name);
-  return folder_path;
+  FilePath folder_path =
+    FilePath::FromWStringHack(user_data_root_)
+        .Append(FilePath::FromWStringHack(folder_name));
+  return folder_path.ToWStringHack();
 }
 
 void UserDataManager::LaunchChromeForProfile(
@@ -289,8 +290,7 @@ bool UserDataManager::CreateShortcutForProfileInFolder(
       IDS_START_IN_PROFILE_SHORTCUT_NAME,
       profile_name);
   shortcut_name.append(L".lnk");
-
-  std::wstring shortcut_path = folder.Append(shortcut_name).ToWStringHack();
+  FilePath shortcut_path = folder.Append(shortcut_name);
 
   // Profile path from user_data_dir.
   FilePath profile_path = FilePath(user_data_dir).Append(
@@ -298,7 +298,7 @@ bool UserDataManager::CreateShortcutForProfileInFolder(
 
   return file_util::CreateShortcutLink(
       cmd.c_str(),
-      shortcut_path.c_str(),
+      shortcut_path.value().c_str(),
       exe_folder.c_str(),
       args.c_str(),
       NULL,
@@ -306,6 +306,9 @@ bool UserDataManager::CreateShortcutForProfileInFolder(
       0,
       ShellIntegration::GetChromiumAppId(profile_path).c_str());
 #else
+  // TODO(port): should probably use freedesktop.org standard for desktop files.
+  // See shell_integration.h for an implementation; but this code is reportedly
+  // obsolete.
   NOTIMPLEMENTED();
   return false;
 #endif
@@ -321,6 +324,8 @@ bool UserDataManager::CreateDesktopShortcutForProfile(
   return CreateShortcutForProfileInFolder(FilePath(desktop_path), profile_name);
 #else
   // TODO(port): should probably use freedesktop.org standard for desktop files.
+  // See shell_integration.h for an implementation; but this code is reportedly
+  // obsolete.
   NOTIMPLEMENTED();
   return false;
 #endif

@@ -422,11 +422,13 @@ int STDCALL CPB_GetBrowsingContextInfo(
     if (buf_size < sizeof(char*))
       return sizeof(char*);
 
-    std::wstring wretval = CommandLine::ForCurrentProcess()->
-        GetSwitchValue(switches::kPluginDataDir);
-    DCHECK(!wretval.empty());
-    file_util::AppendToPath(&wretval, chrome::kChromePluginDataDirname);
-    *static_cast<char**>(buf) = CPB_StringDup(CPB_Alloc, WideToUTF8(wretval));
+    FilePath path = CommandLine::ForCurrentProcess()->
+                    GetSwitchValuePath(switches::kPluginDataDir);
+    DCHECK(!path.empty());
+    std::string retval = WideToUTF8(
+        path.Append(chrome::kChromePluginDataDirname).ToWStringHack());
+    *static_cast<char**>(buf) = CPB_StringDup(CPB_Alloc, retval);
+
     return CPERR_SUCCESS;
     }
   case CPBROWSINGCONTEXT_UI_LOCALE_PTR: {
