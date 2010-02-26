@@ -1710,7 +1710,7 @@ void RenderViewHost::OnShowDesktopNotification(const GURL& source_origin,
       process()->profile()->GetDesktopNotificationService();
   service->ShowDesktopNotification(source_origin, url, process()->id(),
       routing_id(), DesktopNotificationService::PageNotification,
-      notification_id);
+      notification_id, false);
 }
 
 void RenderViewHost::OnShowDesktopNotificationText(const GURL& source_origin,
@@ -1720,7 +1720,7 @@ void RenderViewHost::OnShowDesktopNotificationText(const GURL& source_origin,
       process()->profile()->GetDesktopNotificationService();
   service->ShowDesktopNotificationText(source_origin, icon, title, text,
       process()->id(), routing_id(),
-      DesktopNotificationService::PageNotification, notification_id);
+      DesktopNotificationService::PageNotification, notification_id, false);
 }
 
 void RenderViewHost::OnCancelDesktopNotification(int notification_id) {

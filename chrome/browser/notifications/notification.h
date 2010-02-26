@@ -18,18 +18,21 @@ class Notification {
  public:
   Notification(const GURL& origin_url, const GURL& content_url,
                const std::wstring& display_source,
-               NotificationObjectProxy* proxy)
+               NotificationObjectProxy* proxy,
+               bool sticky)
       : origin_url_(origin_url),
         content_url_(content_url),
         display_source_(display_source),
-        proxy_(proxy) {
+        proxy_(proxy),
+        sticky_(sticky) {
   }
 
   Notification(const Notification& notification)
       : origin_url_(notification.origin_url()),
         content_url_(notification.content_url()),
         display_source_(notification.display_source()),
-        proxy_(notification.proxy()) {
+        proxy_(notification.proxy()),
+        sticky_(notification.sticky()) {
   }
 
   // The URL (may be data:) containing the contents for the notification.
@@ -44,6 +47,10 @@ class Notification {
   void Display() const { proxy()->Display(); }
   void Error() const { proxy()->Error(); }
   void Close(bool by_user) const { proxy()->Close(by_user); }
+
+  bool sticky() const {
+    return sticky_;
+  }
 
   bool IsSame(const Notification& other) const {
     return (*proxy_).IsSame(*(other.proxy()));
@@ -66,6 +73,10 @@ class Notification {
   // A proxy object that allows access back to the JavaScript object that
   // represents the notification, for firing events.
   scoped_refptr<NotificationObjectProxy> proxy_;
+
+  // A sticky flag. A sticky notification cannot be dismissed by a
+  // user.
+  bool sticky_;
 
   // Disallow assign.  Copy constructor written above.
   void operator=(const Notification&);

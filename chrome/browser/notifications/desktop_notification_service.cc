@@ -332,20 +332,21 @@ bool DesktopNotificationService::CancelDesktopNotification(
   scoped_refptr<NotificationObjectProxy> proxy(
       new NotificationObjectProxy(process_id, route_id, notification_id,
                                   false));
-  Notification notif(GURL(), GURL(), L"", proxy);
+  Notification notif(GURL(), GURL(), L"", proxy, false);
   return ui_manager_->Cancel(notif);
 }
 
 
 bool DesktopNotificationService::ShowDesktopNotification(
     const GURL& origin, const GURL& url, int process_id, int route_id,
-    DesktopNotificationSource source, int notification_id) {
+    DesktopNotificationSource source, int notification_id,
+    bool sticky) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   NotificationObjectProxy* proxy =
       new NotificationObjectProxy(process_id, route_id,
                                   notification_id,
                                   source == WorkerNotification);
-  Notification notif(origin, url, DisplayNameForOrigin(origin), proxy);
+  Notification notif(origin, url, DisplayNameForOrigin(origin), proxy, sticky);
   ShowNotification(notif);
   return true;
 }
@@ -353,7 +354,8 @@ bool DesktopNotificationService::ShowDesktopNotification(
 bool DesktopNotificationService::ShowDesktopNotificationText(
     const GURL& origin, const GURL& icon, const string16& title,
     const string16& text, int process_id, int route_id,
-    DesktopNotificationSource source, int notification_id) {
+    DesktopNotificationSource source, int notification_id,
+    bool sticky) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
   NotificationObjectProxy* proxy =
       new NotificationObjectProxy(process_id, route_id,
@@ -362,7 +364,7 @@ bool DesktopNotificationService::ShowDesktopNotificationText(
   // "upconvert" the string parameters to a data: URL.
   string16 data_url = CreateDataUrl(icon, title, text);
   Notification notif(
-      origin, GURL(data_url), DisplayNameForOrigin(origin), proxy);
+      origin, GURL(data_url), DisplayNameForOrigin(origin), proxy, sticky);
   ShowNotification(notif);
   return true;
 }

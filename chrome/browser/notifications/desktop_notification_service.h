@@ -49,13 +49,16 @@ class DesktopNotificationService : public NotificationObserver {
   // is the origin of the script.  |source| indicates whether the
   // script is in a worker or page.  |notification_id| is an opaque
   // value to be passed back to the process when events occur on
-  // this notification.
+  // this notification. |sticky| is used to indicate that the notification
+  // is sticky and cannot be dismissed by a user.
   bool ShowDesktopNotification(const GURL& origin, const GURL& url,
       int process_id, int route_id, DesktopNotificationSource source,
-      int notification_id);
+      int notification_id,
+      bool sticky);
   bool ShowDesktopNotificationText(const GURL& origin, const GURL& icon,
       const string16& title, const string16& text, int process_id,
-      int route_id, DesktopNotificationSource source, int notification_id);
+      int route_id, DesktopNotificationSource source, int notification_id,
+      bool sticky);
 
   // Cancels a notification.  If it has already been shown, it will be
   // removed from the screen.  If it hasn't been shown yet, it won't be
