@@ -650,6 +650,22 @@ GetStat('nosuch') = 42
     # In the real os.walk() call this prunes the walk.
     self.assertEqual(self.mock_walk_return[0][1], ['subdir'])
 
+
+  def testEmptyTreeStats(self):
+    """Make sure we don't choke when absolutely nothing happened.
+
+    How we might hit this: bot compile error."""
+    c = self.cov_minimal
+    t = c.tree
+    t.stats_by_group['all'].AddDefaults()
+    self.assertEqual(t.stats_by_group, {
+        'all': { 'files_covered': 0,
+                 'files_instrumented': 0,
+                 'files_executable': 0,
+                 'lines_covered': 0,
+                 'lines_instrumented': 0,
+                 'lines_executable': 0 }})
+
   def testUpdateTreeStats(self):
     """Test UpdateTreeStats()."""
 

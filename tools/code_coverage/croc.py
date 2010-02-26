@@ -52,6 +52,14 @@ class CrocStatError(CrocError):
 class CoverageStats(dict):
   """Coverage statistics."""
 
+  # Default dictionary values for this stat.
+  DEFAULTS = { 'files_covered': 0,
+               'files_instrumented': 0,
+               'files_executable': 0,
+               'lines_covered': 0,
+               'lines_instrumented': 0,
+               'lines_executable': 0 }
+
   def Add(self, coverage_stats):
     """Adds a contribution from another coverage stats dict.
 
@@ -62,6 +70,15 @@ class CoverageStats(dict):
       if k in self:
         self[k] += v
       else:
+        self[k] = v
+
+  def AddDefaults(self):
+    """Add some default stats which might be assumed present.
+
+    Do not clobber if already present.  Adds resilience when evaling a
+    croc file which expects certain stats to exist."""
+    for k, v in self.DEFAULTS.iteritems():
+      if not k in self:
         self[k] = v
 
 #------------------------------------------------------------------------------
@@ -399,6 +416,10 @@ class Coverage(object):
         return default
 
     stats = self.tree.stats_by_group[group]
+    # Unit tests use real dicts, not CoverageStats objects,
+    # so we can't AddDefaults() on them.
+    if group == 'all' and hasattr(stats, 'AddDefaults'):
+      stats.AddDefaults()
     try:
       return eval(stat, {'__builtins__': {'S': self.GetStat}}, stats)
     except Exception, e:
