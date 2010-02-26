@@ -1,12 +1,12 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "skia/ext/skia_utils_gtk.h"
+#include "app/gfx/skia_utils_gtk.h"
 
 #include <gdk/gdkcolor.h>
 
-namespace skia {
+namespace gfx {
 
 const int kSkiaToGDKMultiplier = 257;
 
@@ -29,4 +29,4 @@ GdkColor SkColorToGdkColor(SkColor color) {
   return gdk_color;
 }
 
-}  // namespace
+}  // namespace gfx

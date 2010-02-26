@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,8 +33,8 @@
 #include "net/base/escape.h"
 
 #if defined(TOOLKIT_VIEWS)
+#include "app/gfx/skia_utils_gtk.h"
 #include "chrome/browser/views/location_bar_view.h"
-#include "skia/ext/skia_utils_gtk.h"
 #else
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/location_bar_view_gtk.h"
@@ -595,7 +595,7 @@ void AutocompleteEditViewGtk::SetBaseColor() {
                  &style->text[GTK_STATE_NORMAL], NULL);
   } else {
 #if defined(TOOLKIT_VIEWS)
-    const GdkColor background_color = skia::SkColorToGdkColor(
+    const GdkColor background_color = gfx::SkColorToGdkColor(
         LocationBarView::GetColor(is_secure, LocationBarView::BACKGROUND));
     gtk_widget_modify_base(text_view_, GTK_STATE_NORMAL,
         &background_color);

@@ -8,6 +8,7 @@
 #include "app/gfx/canvas_paint.h"
 #include "app/gfx/color_utils.h"
 #include "app/gfx/font.h"
+#include "app/gfx/skia_utils_gtk.h"
 #include "app/gfx/text_elider.h"
 #include "app/menus/simple_menu_model.h"
 #include "app/resource_bundle.h"
@@ -32,7 +33,6 @@
 #include "chrome/common/notification_service.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "skia/ext/skia_utils_gtk.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
 namespace {
@@ -511,7 +511,7 @@ void DownloadItemGtk::UpdateStatusLabel(GtkWidget* status_label,
     // Lighten the color by blending it with the download item body color. These
     // values are taken from IDR_DOWNLOAD_BUTTON.
     SkColor blend_color = SkColorSetRGB(241, 245, 250);
-    text_color = skia::SkColorToGdkColor(
+    text_color = gfx::SkColorToGdkColor(
         color_utils::AlphaBlend(blend_color, color, 77));
   }
 

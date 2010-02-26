@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -16,11 +16,11 @@
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/font.h"
+#include "app/gfx/skia_utils_gtk.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "base/keyboard_codes.h"
 #include "grit/app_strings.h"
-#include "skia/ext/skia_utils_gtk.h"
 #include "views/controls/button/native_button.h"
 #include "views/standard_layout.h"
 #include "views/window/dialog_delegate.h"
@@ -300,7 +300,7 @@ void DialogClientView::Paint(gfx::Canvas* canvas) {
   GtkWidget* widget = GetWidget()->GetNativeView();
   if (GTK_IS_WINDOW(widget)) {
     GtkStyle* window_style = gtk_widget_get_style(widget);
-    canvas->FillRectInt(skia::GdkColorToSkColor(
+    canvas->FillRectInt(gfx::GdkColorToSkColor(
                             window_style->bg[GTK_STATE_NORMAL]),
                         0, 0, width(), height());
   }

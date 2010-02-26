@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,11 +8,11 @@
 
 #include "app/gfx/canvas.h"
 #include "app/gfx/font.h"
+#include "app/gfx/skia_utils_gtk.h"
 #include "app/resource_bundle.h"
 #include "base/logging.h"
 #include "base/stl_util-inl.h"
 #include "base/string_util.h"
-#include "skia/ext/skia_utils_gtk.h"
 #include "views/background.h"
 #include "views/controls/tabbed_pane/tabbed_pane.h"
 #include "views/fill_layout.h"
@@ -145,7 +145,7 @@ void NativeTabbedPaneGtk::DoAddTabAtIndex(int index, const std::wstring& title,
         gtk_widget_get_style(page_container->GetNativeView());
     contents->set_background(
         Background::CreateSolidBackground(
-            skia::GdkColorToSkColor(window_style->bg[GTK_STATE_NORMAL])));
+            gfx::GdkColorToSkColor(window_style->bg[GTK_STATE_NORMAL])));
   }
 
   GtkWidget* page = page_container->GetNativeView();

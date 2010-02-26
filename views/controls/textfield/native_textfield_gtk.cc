@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -8,8 +8,8 @@
 
 #include "app/gfx/insets.h"
 #include "app/gfx/gtk_util.h"
+#include "app/gfx/skia_utils_gtk.h"
 #include "base/string_util.h"
-#include "skia/ext/skia_utils_gtk.h"
 #include "views/controls/textfield/textfield.h"
 
 namespace views {
@@ -97,7 +97,7 @@ void NativeTextfieldGtk::UpdateTextColor() {
     gtk_widget_modify_text(native_view(), GTK_STATE_NORMAL, NULL);
     return;
   }
-  GdkColor gdk_color = skia::SkColorToGdkColor(textfield_->text_color());
+  GdkColor gdk_color = gfx::SkColorToGdkColor(textfield_->text_color());
   gtk_widget_modify_text(native_view(), GTK_STATE_NORMAL, &gdk_color);
 }
 
@@ -108,7 +108,7 @@ void NativeTextfieldGtk::UpdateBackgroundColor() {
     gtk_widget_modify_base(native_view(), GTK_STATE_NORMAL, NULL);
     return;
   }
-  GdkColor gdk_color = skia::SkColorToGdkColor(textfield_->background_color());
+  GdkColor gdk_color = gfx::SkColorToGdkColor(textfield_->background_color());
   gtk_widget_modify_base(native_view(), GTK_STATE_NORMAL, &gdk_color);
 }
 

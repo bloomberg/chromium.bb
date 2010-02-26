@@ -10,6 +10,7 @@
 
 #include "app/gfx/color_utils.h"
 #include "app/gfx/gtk_util.h"
+#include "app/gfx/skia_utils_gtk.h"
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "app/theme_provider.h"
@@ -84,7 +85,6 @@
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
-#include "skia/ext/skia_utils_gtk.h"
 
 namespace {
 
@@ -256,7 +256,7 @@ GdkCursorType GdkWindowEdgeToGdkCursorType(GdkWindowEdge edge) {
 }
 
 GdkColor SkColorToGdkColor(const SkColor& color) {
-  return skia::SkColorToGdkColor(color);
+  return gfx::SkColorToGdkColor(color);
 }
 
 // A helper method for setting the GtkWindow size that should be used in place

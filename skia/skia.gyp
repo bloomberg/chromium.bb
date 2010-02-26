@@ -1,4 +1,4 @@
-# Copyright (c) 2009 The Chromium Authors. All rights reserved.
+# Copyright (c) 2010 The Chromium Authors. All rights reserved.
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
@@ -522,8 +522,6 @@
         'ext/platform_device_win.cc',
         'ext/platform_device_win.h',
         'ext/SkMemory_new_handler.cpp',
-        'ext/skia_utils_gtk.cc',
-        'ext/skia_utils_gtk.h',
         'ext/skia_utils_mac.mm',
         'ext/skia_utils_mac.h',
         'ext/skia_utils_win.cc',

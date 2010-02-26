@@ -1,10 +1,10 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
 #include "chrome/browser/chromeos/options/settings_page_view.h"
 
-#include "skia/ext/skia_utils_gtk.h"
+#include "app/gfx/skia_utils_gtk.h"
 #include "views/controls/label.h"
 #include "views/fill_layout.h"
 #include "views/widget/widget_gtk.h"
@@ -24,7 +24,7 @@ GtkWidget* SettingsPageView::WrapInGtkWidget() {
   // Set to a solid background with the same color as the widget's bg color.
   GtkStyle* window_style = gtk_widget_get_style(widget->GetNativeView());
   set_background(views::Background::CreateSolidBackground(
-      skia::GdkColorToSkColor(window_style->bg[GTK_STATE_NORMAL])));
+      gfx::GdkColorToSkColor(window_style->bg[GTK_STATE_NORMAL])));
   widget->Show();
   // Removing the widget from the container results in unref'ing the widget. We
   // need to ref here otherwise the removal deletes the widget. The caller ends
