@@ -1797,8 +1797,6 @@ BUG23489 MAC : fast/table/empty-section-crash.html = IMAGE
 
 // Selection glow is thinner than expected
 BUG23485 MAC : editing/style/apply-through-end-of-document.html = IMAGE
-BUG23485 MAC : fast/forms/textarea-scrollbar.html = IMAGE
-BUG23485 MAC : fast/forms/textarea-scrolled-type.html = IMAGE
 
 // Extra space at the end of the table cell
 BUG23484 MAC : editing/pasteboard/5387578.html = IMAGE
@@ -2151,10 +2149,6 @@ BUG10861 MAC DEBUG : http/tests/plugins/post-url-file.html = PASS FAIL
 // to go back. in test_shell history.back() does not go back,
 // so the test timeouts.
 BUG11001 LINUX MAC WIN : http/tests/history/back-to-post.php = TIMEOUT
-
-// Need Linux rebaselines from WebKit Merge 42805:42932
-BUG11123 LINUX : fast/forms/textarea-scrollbar.html = FAIL
-BUG11123 LINUX : fast/forms/textarea-scrolled-type.html = FAIL
 
 // Regressions from WebKit Merge 42932:42994 due to text metric changes.
 BUG11251 WIN DEBUG : fast/forms/textarea-width.html = FAIL
