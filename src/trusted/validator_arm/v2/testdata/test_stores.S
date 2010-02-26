@@ -45,6 +45,12 @@ bundle3:
 bundle4:
   bic r2, r2, #0          @ Mask incorrectly and
   strex r0, r1, [r2]      @ use it in a store-exclusive, for an ERROR.
+
   nop
   nop
 
+bundle5:
+  bic r0, r0, #0xC0000000 @ Mask a register, and
+  str r1, [r0], r2        @ use it in register post-index store: should pass.
+  nop                     @ Don't mask, and
+  str r1, [r0], r2        @ use it in register post-index store: ERROR.

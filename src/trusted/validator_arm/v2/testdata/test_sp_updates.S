@@ -50,3 +50,15 @@ bundle5:
   nop                     @ without immediately masking afterwards: ERROR.
   ldr r0, [sp], r1        @ Same SP update,
   bic sp, sp, #0xC0000000 @ with mask, should pass.
+
+bundle6:
+  str r0, [sp], r1        @ Attempt to update SP using reg+reg: ERROR.
+  str r0, [sp], #42       @ Update SP using immediate post-inc: should pass.
+  str r0, [sp], r1        @ Same SP update,
+  bic sp, sp, #0xC0000000 @ with mask, should pass.
+
+bundle7:
+  smlad sp, r0, r1, r2    @ Attempt to write SP using a MAC instruction,
+  nop                     @ without a mask: ERROR.
+  smlad sp, r0, r1, r2    @ Attempt to write SP using a MAC instruction,
+  bic sp, sp, #0xC0000000 @ with a mask: ERROR - affects flags

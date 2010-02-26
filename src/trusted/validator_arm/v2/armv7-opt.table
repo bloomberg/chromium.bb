@@ -61,7 +61,7 @@ xxxxxxxxx10xxxxxxxxxxxxxxxxxxxxx  =LongMultiply(v5TE)
 
 -- extra_load_store (See Section A5.2.8)
 pat0(31:0)                        pat1(31:0)                        
-xxxxxxxxxxxxxxxxxxxxxxxxxx1xxxxx  xxxxxxxxx0x0xxxxxxxxxxxxxxxxxxxx  =Forbidden
+xxxxxxxxxxxxxxxxxxxxxxxxxx1xxxxx  xxxxxxxxx0x0xxxxxxxxxxxxxxxxxxxx  =StoreRegister
 xxxxxxxxxxxxxxxxxxxxxxxxx10xxxxx  xxxxxxxxx0x1xxxxxxxxxxxxxxxxxxxx  =LoadRegister
 xxxxxxxxxxxxxxxxxxxxxxxxxx1xxxxx  xxxxxxxxx0x1xxxxxxxxxxxxxxxxxxxx  =LoadRegister
 xxxxxxxxxxxxxxxxxxxxxxxxx10xxxxx  xxxxxxxxx0x0xxxxxxxxxxxxxxxxxxxx  =LoadDoubleR(v5TE)
@@ -115,9 +115,9 @@ xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxx
 pat0(31:0)                        pat1(31:0)                        pat2(31:0)                        
 xxxxxx1xxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxx1xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxx0xxxx  =LoadRegister
 xxxxxx0xxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxx0xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  =StoreImmediate
-xxxxxx1xxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxx0xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxx0xxxx  =Forbidden
 xxxxxx0xxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxx0xx1xxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  =Forbidden
 xxxxxx1xxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxx0xx1xxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxx0xxxx  =Forbidden
+xxxxxx1xxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxx0xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxx0xxxx  =StoreRegister
 xxxxxx0xxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxx1xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  =LoadImmediate
 
 -- media (See Section A5.4)
@@ -157,11 +157,9 @@ xxxxxxxxxx11xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxx011xxxxx  =PackSatRev(
 
 -- signed_mult (See Section A5.4.4)
 pat0(31:0)                        pat1(31:0)                        pat2(31:0)                        
-xxxxxxxxx000xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxx00xxxxxx  ~xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx =LongMultiply15_8(v6T2)
-xxxxxxxxx000xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxx00xxxxxx  xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx  =Multiply(v6T2)
 xxxxxxxxx000xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxx01xxxxxx  ~xxxxxxxxxxxxxxxx1111xxxxxxxxxxxx =Multiply(v6T2)
-xxxxxxxxx000xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxx01xxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  =Multiply(v6T2)
 xxxxxxxxx101xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxx11xxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  =Multiply(v6T2)
+xxxxxxxxx000xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxx0xxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  =Multiply(v6T2)
 xxxxxxxxx101xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxx00xxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  =Multiply(v6T2)
 xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  =Undefined
 xxxxxxxxx100xxxxxxxxxxxxxxxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxx0xxxxxxx  xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx  =LongMultiply(v6T2)

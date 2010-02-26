@@ -130,7 +130,7 @@ op1(22:21) op(5)
 
 -- extra_load_store (See Section A5.2.8)
 op2(6:5) op1(24:20) Rn(19:16)
-01       xx0x0      -         =Forbidden          # STRH(register)
+01       xx0x0      -         =StoreRegister      # STRH(register)
 "        xx0x1      -         =LoadRegister       # LDRH(register)
 "        xx1x0      -         =StoreImmediate     # STRH(immediate)
 "        xx1x1      ~1111     =LoadImmediate      # LDRH(immediate)
@@ -141,7 +141,7 @@ op2(6:5) op1(24:20) Rn(19:16)
 "        "          1111      =LoadDoubleI(v5TE)  # LDRD(literal)
 "        xx1x1      ~1111     =LoadImmediate      # LDRSB(immediate)
 "        "          1111      =LoadImmediate      # LDRSB(literal)
-11       xx0x0      -         =Forbidden          # STRD(register)
+11       xx0x0      -         =StoreRegister      # STRD(register)
 "        xx0x1      -         =LoadRegister       # LDRSH(register)
 "        xx1x0      -         =StoreImmediate     # STRD(immediate)
 "        xx1x1      ~1111     =LoadImmediate      # LDRSH(immediate)
@@ -199,7 +199,7 @@ op2(6:4) op(22:21) op1(19:16)
 # evaluate patterns in order of specificity, not table order.
 A(25) op1(24:20) B(4) Rn(19:16)
 0     xx0x0      -    -        =StoreImmediate  # STR(immediate)
-1     xx0x0      0    -        =Forbidden       # STR(register)
+1     xx0x0      0    -        =StoreRegister   # STR(register)
 0     0x010      -    -        =Forbidden       # STRT
 1     0x010      0    -        "
 0     xx0x1      -    ~1111    =LoadImmediate   # LDR(immediate)
@@ -208,7 +208,7 @@ A(25) op1(24:20) B(4) Rn(19:16)
 0     0x011      -    -        =Forbidden       # LDRT
 1     0x011      0    -        "
 0     xx1x0      -    -        =StoreImmediate  # STRB(immediate)
-1     xx1x0      0    -        =Forbidden       # STRB(register)
+1     xx1x0      0    -        =StoreRegister   # STRB(register)
 0     0x110      -    -        =Forbidden       # STRBT
 1     0x110      0    -        "
 0     xx1x1      -    ~1111    =LoadImmediate   # LDRB(immediate)
@@ -287,7 +287,7 @@ op1(22:20) op2(7:5) A(19:16)
 
 -- signed_mult (See Section A5.4.4)
 op1(22:20) op2(7:5) A(15:12)
-000        00x      ~1111    =LongMultiply15_8(v6T2)  # SMLAD
+000        00x      ~1111    =Multiply(v6T2)          # SMLAD
 "          "        1111     =Multiply(v6T2)          # SMUAD
 "          01x      ~1111    =Multiply(v6T2)          # SMLSD
 "          "        -        =Multiply(v6T2)          # SMUSD

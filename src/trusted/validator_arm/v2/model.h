@@ -58,7 +58,7 @@ class Register {
   inline bool operator!=(const Register &) const;
 
  private:
-  uint32_t _bits;
+  uint32_t _number;
 };
 
 /*
@@ -66,10 +66,10 @@ class Register {
  * is not used.  This is specially chosen to ensure that bitmask() == 0, so
  * it can be added to any RegisterList with no effect.
  *
- * Note that -1 can't be used here because C++ doesn't define a portable meaning
- * for negative shift distances.
+ * Note that -1 or 32 can't be used here because C++ doesn't define a portable
+ * meaning for such shift distances.
  */
-const Register kRegisterNone(32);
+const Register kRegisterNone(31);
 
 // The APSR (flags register) is modeled as r16.
 const Register kRegisterFlags(16);

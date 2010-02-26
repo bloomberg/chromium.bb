@@ -13,17 +13,19 @@
 
 namespace nacl_arm_dec {
 
-Register::Register(uint32_t bits) : _bits(bits) {}
+Register::Register(uint32_t number) : _number(number) {}
 uint32_t Register::bitmask() const {
-  return (1 << _bits);
+  if (_number == 31) return 0;
+
+  return (1 << _number);
 }
 
 bool Register::operator==(const Register &other) const {
-  return _bits == other._bits;
+  return _number == other._number;
 }
 
 bool Register::operator!=(const Register &other) const {
-  return _bits != other._bits;
+  return _number != other._number;
 }
 
 

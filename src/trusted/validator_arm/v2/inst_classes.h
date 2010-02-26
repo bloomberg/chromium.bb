@@ -468,6 +468,24 @@ class StoreImmediate : public ClassDecoder {
 };
 
 /*
+ * A base+register store, of unspecified width.  (We don't care whether it
+ * stores one byte or 64.)  Note that only register-post-indexing will pass
+ * safety checks -- register pre-indexing is unpredictable to us.
+ */
+class StoreRegister : public ClassDecoder {
+ public:
+  virtual ~StoreRegister() {}
+
+  virtual SafetyLevel safety(Instruction i) const;
+  virtual RegisterList defs(Instruction i) const;
+  virtual bool writes_memory(Instruction i) const {
+    UNREFERENCED_PARAMETER(i);
+    return true;
+  }
+  virtual Register base_address_register(Instruction i) const;
+};
+
+/*
  * STREX - a lot like a store, but with restricted addressing modes and more
  * register writes.  Unfortunately the encodings aren't compatible, so they
  * don't share code.

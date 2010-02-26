@@ -137,6 +137,33 @@ Register StoreImmediate::base_address_register(const Instruction i) const {
 }
 
 
+SafetyLevel StoreRegister::safety(const Instruction i) const {
+  bool pre_index = i.bit(24);
+  if (pre_index) {
+    // Computes base address by adding two registers -- cannot predict!
+    return FORBIDDEN;
+  }
+
+  // Don't let addressing writeback alter PC.
+  if (defs(i)[kRegisterPc]) return FORBIDDEN_OPERANDS;
+
+  return MAY_BE_SAFE;
+}
+
+RegisterList StoreRegister::defs(const Instruction i) const {
+  /*
+   * Only one form of register-register store doesn't writeback its base:
+   *   str rT, [rN, rM]
+   * We ban this form.  Thus, every safe form alters its base address reg.
+   */
+  return base_address_register(i);
+}
+
+Register StoreRegister::base_address_register(const Instruction i) const {
+  return i.reg(19, 16);
+}
+
+
 SafetyLevel StoreExclusive::safety(const Instruction i) const {
   // Don't let addressing writeback alter PC.
   if (defs(i)[kRegisterPc]) return FORBIDDEN_OPERANDS;
