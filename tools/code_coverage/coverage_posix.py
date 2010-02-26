@@ -236,7 +236,8 @@ class Coverage(object):
     # Instrument binaries
     for fulltest in self.tests:
       if os.path.exists(fulltest):
-        cmdlist = [self.instrument, '/COVERAGE', fulltest]
+        # See http://support.microsoft.com/kb/939818 for details on args
+        cmdlist = [self.instrument, '/d:ignorecverr', '/COVERAGE', fulltest]
         self.Run(cmdlist, ignore_retcode=4,
                  explanation='OK with a multiple-instrument')
     # Start new counters
