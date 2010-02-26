@@ -263,12 +263,6 @@ TranslateInfoBar::~TranslateInfoBar() {
 
 void TranslateInfoBar::UpdateState(
     TranslateInfoBarDelegate::TranslateState new_state) {
-  // If this is not a call for initialization (i.e. called from Constructor),
-  // only proceed with state has changed.
-  if (label_1_ && GetDelegate()->state() == new_state)
-    return;
-  GetDelegate()->UpdateState(new_state);
-
   // Create and initialize state-dependent controls if necessary.
   switch (new_state) {
     case TranslateInfoBarDelegate::kAfterTranslate:
@@ -599,8 +593,8 @@ void TranslateInfoBar::ExecuteCommand(int command_id) {
 void TranslateInfoBar::ButtonPressed(
     views::Button* sender, const views::Event& event) {
   if (sender == accept_button_) {
-    UpdateState(TranslateInfoBarDelegate::kTranslating);
     GetDelegate()->Translate();
+    UpdateState(GetDelegate()->state());
   } else if (sender == deny_button_) {
     GetDelegate()->TranslationDeclined();
     RemoveInfoBar();
@@ -618,7 +612,9 @@ void TranslateInfoBar::Observe(NotificationType type,
   TabContents* tab = Source<TabContents>(source).ptr();
   if (tab != GetDelegate()->tab_contents())
     return;
-  UpdateState(TranslateInfoBarDelegate::kAfterTranslate);
+  if (!target_language_menu_button_ ||
+      !target_language_menu_button_->IsVisible())
+    UpdateState(TranslateInfoBarDelegate::kAfterTranslate);
 }
 
 // TranslateInfoBar, private: --------------------------------------------------

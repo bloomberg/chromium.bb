@@ -97,6 +97,8 @@ void TranslateInfoBarDelegate::GetAvailableTargetLanguages(
 }
 
 void TranslateInfoBarDelegate::Translate() {
+  if (state_ == kBeforeTranslate)
+    UpdateState(kTranslating);
   tab_contents_->TranslatePage(original_lang_code(), target_lang_code());
 }
 

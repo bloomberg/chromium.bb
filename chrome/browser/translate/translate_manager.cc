@@ -75,13 +75,17 @@ void TranslateManager::Observe(NotificationType type,
     }
     case NotificationType::PAGE_TRANSLATED: {
       // Only add translate infobar if it doesn't exist; if it already exists,
-      // it would have received the same notification and acted accordingly.
+      // just update the state, the actual infobar would have received the same
+      //  notification and update the visual display accordingly.
       TabContents* tab = Source<TabContents>(source).ptr();
       int i;
       for (i = 0; i < tab->infobar_delegate_count(); ++i) {
-        InfoBarDelegate* info_bar = tab->GetInfoBarDelegateAt(i);
-        if (info_bar->AsTranslateInfoBarDelegate())
+        TranslateInfoBarDelegate* info_bar =
+            tab->GetInfoBarDelegateAt(i)->AsTranslateInfoBarDelegate();
+        if (info_bar) {
+          info_bar->UpdateState(TranslateInfoBarDelegate::kAfterTranslate);
           break;
+        }
       }
       if (i == tab->infobar_delegate_count()) {
         NavigationEntry* entry = tab->controller().GetActiveEntry();
