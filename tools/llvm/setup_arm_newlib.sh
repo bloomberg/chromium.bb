@@ -23,22 +23,58 @@ readonly SCRATCH_ROOT="$(mktemp -d "${TMPDIR:-/tmp}/newlib.arm.XXXXXX")"
 
 readonly LLVM_PREFIX=/usr/local/crosstool-untrusted/arm-none-linux-gnueabi/llvm-fake-
 
-readonly CC_FOR_TARGET="${LLVM_PREFIX}sfigcc"
-readonly CXX_FOR_TARGET="${LLVM_PREFIX}sfig++"
-# NOTE: c.f. setup_arm_untrusted_toolchain.sh for switching to codesourcery
-#readonly CC_FOR_TARGET="${CS_BIN_PREFIX}gcc"
-#readonly CXX_FOR_TARGET="${CS_BIN_PREFIX}g++"
-
 readonly OBJ_ROOT="${SCRATCH_ROOT}/build"
 readonly SRC_ROOT="${SCRATCH_ROOT}/newlib-1.17.0"
 
-readonly AS_FOR_TARGET="${CS_BIN_PREFIX}as"
-readonly LD_FOR_TARGET="${CS_BIN_PREFIX}ld"
-readonly AR_FOR_TARGET="${CS_BIN_PREFIX}ar"
-readonly NM_FOR_TARGET="${CS_BIN_PREFIX}nm"
-readonly OBJDUMP_FOR_TARGET="${CS_BIN_PREFIX}objdump"
-readonly RANLIB_FOR_TARGET="${CS_BIN_PREFIX}ranlib"
-readonly STRIP_FOR_TARGET="${CS_BIN_PREFIX}strip"
+
+# we do not expect newlib to build any binaries
+readonly LD_FOR_TARGET="${LLVM_PREFIX}illegal"
+
+# we do not expect newlib to use objdump
+readonly OBJDUMP_FOR_TARGET="${LLVM_PREFIX}illegal"
+
+# we do not expect newlib to use the assembler
+readonly AS_FOR_TARGET="${LLVM_PREFIX}illegal"
+
+# we do not expect newlib to use strip
+readonly STRIP_FOR_TARGET="${LLVM_PREFIX}illegal"
+
+# This config generates native sandboxed libraries
+ConfigSfi() {
+  readonly CC_FOR_TARGET="${LLVM_PREFIX}sfigcc"
+  readonly CXX_FOR_TARGET="${LLVM_PREFIX}sfig++"
+
+  readonly AR_FOR_TARGET="${CS_BIN_PREFIX}ar"
+  readonly NM_FOR_TARGET="${CS_BIN_PREFIX}nm"
+  readonly RANLIB_FOR_TARGET="${CS_BIN_PREFIX}ranlib"
+}
+
+# NOTE: c.f. setup_arm_untrusted_toolchain.sh for switching to codesourcery
+#       This was used before we had a working sfi toolchain
+
+ConfigRegular() {
+  readonly CC_FOR_TARGET="${CS_BIN_PREFIX}gcc"
+  readonly CXX_FOR_TARGET="${CS_BIN_PREFIX}g++"
+
+  readonly AR_FOR_TARGET="${CS_BIN_PREFIX}ar"
+  readonly NM_FOR_TARGET="${CS_BIN_PREFIX}nm"
+  readonly RANLIB_FOR_TARGET="${CS_BIN_PREFIX}ranlib"
+}
+
+# This config generates bitcode libraries
+ConfigBitcode() {
+  readonly CC_FOR_TARGET="${LLVM_PREFIX}bcgcc"
+  readonly CXX_FOR_TARGET="${LLVM_PREFIX}bcg++"
+
+  readonly AR_FOR_TARGET="${LLVM_PREFIX}bcar"
+  readonly NM_FOR_TARGET="${LLVM_PREFIX}nop"
+  readonly RANLIB_FOR_TARGET="${LLVM_PREFIX}nop"
+}
+
+# NOTE: pick one!
+#ConfigBitcode
+#ConfigRegular
+ConfigSfi
 
 readonly MAKE_OPTS="${MAKE_OPTS:--j6}"
 
@@ -59,9 +95,14 @@ runCommand() {
   local log=$2
   shift 2
   Banner "${msg}; log in ${log}"
-  echo "=> Running: $*"
-  $*  2>&1 | tee ${log}
+  echo "=> Running: $@"
+  "$@"  2>&1 | tee ${log}
+  if [[ ${PIPESTATUS[0]} != 0 ]] ; then
+    echo "runCommand failed"
+    exit -1
+  fi
 }
+
 
 ######################################################################
 #
@@ -139,6 +180,12 @@ patchNewlib() {
   mv ${patch2} ${patch2}.orig
   sed -e 's/-fshort-enums//' < ${patch2}.orig >  ${patch2}
 
+  # replace setjmp assembler code with an empty file
+  readonly patch3="${SRC_ROOT}/newlib/libc/machine/arm/Makefile.in"
+  mv ${patch3} ${patch3}.orig
+  sed -e 's/setjmp.S/setjmp.c/g'  < ${patch3}.orig >  ${patch3}
+  touch ${SRC_ROOT}/newlib/libc/machine/arm/setjmp.c
+
   # patch some more files using the traditional patch tool
   patch -d "${SRC_ROOT}" -p1 < ${patch_file}
 
@@ -155,16 +202,18 @@ configureNewlib() {
   cd ${OBJ_ROOT}
   # NOTE: there were quoting issues with this which is why
   #       it is handled separately from the other env vars
-  export CFLAGS_FOR_TARGET="-march=${NEWLIB_MARCH} \
-                            -nostdinc \
-                            -DMISSING_SYSCALL_NAMES=1 \
-                            -ffixed-r9 \
-                            -D__native_client__=1 \
-                            -isystem ${NEWLIB_EXTRA_HEADER}"
+  local CFLAGS_FOR_TARGET="-march=${NEWLIB_MARCH} \
+                           -nostdinc \
+                           -DMISSING_SYSCALL_NAMES=1 \
+                           -ffixed-r9 \
+                           -D__native_client__=1 \
+                           -isystem ${NEWLIB_EXTRA_HEADER}"
 
   runCommand "Configuring newlib" \
     ${OBJ_ROOT}/configure.log \
-    env \
+    env -i \
+    PATH="/usr/bin:/bin" \
+    CFLAGS_FOR_TARGET="${CFLAGS_FOR_TARGET}" \
     CC_FOR_TARGET="${CC_FOR_TARGET}" \
     CXX_FOR_TARGET="${CXX_FOR_TARGET}" \
     AS_FOR_TARGET="${AS_FOR_TARGET}" \
