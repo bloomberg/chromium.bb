@@ -232,8 +232,9 @@ int SpdyNetworkTransaction::DoInitConnection() {
   connection_group.append(host);
 
   HostResolver::RequestInfo resolve_info(host, port);
+  HostPortPair host_port_pair(host, port);
 
-  spdy_ = session_->spdy_session_pool()->Get(resolve_info, session_);
+  spdy_ = session_->spdy_session_pool()->Get(host_port_pair, session_);
   DCHECK(spdy_);
 
   return spdy_->Connect(
