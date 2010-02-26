@@ -117,7 +117,7 @@ usage (char *program, int error)
 static FcStrSet *processed_dirs;
 
 static int
-scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, FcBool verbose)
+scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, FcBool verbose, int *changed)
 {
     int		    ret = 0;
     const FcChar8   *dir;
@@ -190,6 +190,7 @@ scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, 
 	
 	if (!cache)
 	{
+	    (*changed)++;
 	    cache = FcDirCacheRead (dir, FcTrue, config);
 	    if (!cache)
 	    {
@@ -241,7 +242,7 @@ scanDirs (FcStrList *list, FcConfig *config, FcBool force, FcBool really_force, 
 	    continue;
 	}
 	FcStrSetAdd (processed_dirs, dir);
-	ret += scanDirs (sublist, config, force, really_force, verbose);
+	ret += scanDirs (sublist, config, force, really_force, verbose, changed);
     }
     FcStrListDone (list);
     return ret;
@@ -369,6 +370,7 @@ main (int argc, char **argv)
     FcBool	systemOnly = FcFalse;
     FcConfig	*config;
     int		i;
+    int		changed;
     int		ret;
 #if HAVE_GETOPT_LONG || HAVE_GETOPT
     int		c;
@@ -446,7 +448,8 @@ main (int argc, char **argv)
 	return 1;
     }
 	
-    ret = scanDirs (list, config, force, really_force, verbose);
+    changed = 0;
+    ret = scanDirs (list, config, force, really_force, verbose, &changed);
 
     FcStrSetDestroy (processed_dirs);
 
@@ -461,7 +464,8 @@ main (int argc, char **argv)
      */
     FcConfigDestroy (config);
     FcFini ();
-    sleep (2);
+    if (changed)
+	sleep (2);
     if (verbose)
 	printf ("%s: %s\n", argv[0], ret ? "failed" : "succeeded");
     return ret;
