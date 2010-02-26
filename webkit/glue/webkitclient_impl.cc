@@ -118,18 +118,6 @@ WebThemeEngine* WebKitClientImpl::themeEngine() {
 #endif
 }
 
-bool WebKitClientImpl::rawCookies(const WebURL& url,
-                                  const WebURL& first_party_for_cookies,
-                                  WebVector<WebCookie>* raw_cookies) {
-  NOTREACHED();
-  return false;
-}
-
-void WebKitClientImpl::deleteCookie(const WebURL& url,
-                                    const WebString& cookie_name) {
-  NOTREACHED();
-}
-
 WebURLLoader* WebKitClientImpl::createURLLoader() {
   return new WebURLLoaderImpl();
 }

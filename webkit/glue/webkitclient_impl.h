@@ -50,11 +50,6 @@ class WebKitClientImpl : public WebKit::WebKitClient {
       unsigned key_size_index, const WebKit::WebString& challenge,
       const WebKit::WebURL& url);
   virtual size_t memoryUsageMB();
-  virtual bool rawCookies(const WebKit::WebURL& url,
-                          const WebKit::WebURL& first_party_for_cookies,
-                          WebKit::WebVector<WebKit::WebCookie>*);
-  virtual void deleteCookie(const WebKit::WebURL& url,
-                            const WebKit::WebString& cookie_name);
   virtual WebKit::WebURLLoader* createURLLoader();
   virtual WebKit::WebSocketStreamHandle* createSocketStreamHandle();
   virtual WebKit::WebString userAgent(const WebKit::WebURL& url);
