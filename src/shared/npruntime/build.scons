@@ -98,5 +98,6 @@ NACL_NPRUNTIME_INPUTS = [
     npnavigator_rpc_cc,
     'npmodule_rpc_impl.cc',
     'npstub_rpc_impl.cc',
+    'pointer_translations.cc',
 ]
 env.ComponentLibrary('google_nacl_npruntime', NACL_NPRUNTIME_INPUTS)

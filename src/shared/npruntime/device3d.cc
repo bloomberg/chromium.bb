@@ -20,10 +20,15 @@
 #include "native_client/src/include/portability_string.h"
 #include "gen/native_client/src/shared/npruntime/npmodule_rpc.h"
 #include "native_client/src/shared/npruntime/npnavigator.h"
+#include "native_client/src/shared/npruntime/pointer_translations.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 
+using nacl::NPNavigator;
+using nacl::NPPToWireFormat;
+
 namespace {
+
 static const int kInvalidDesc = -1;
 
 static const intptr_t kInt32Max = std::numeric_limits<int32_t>::max();
@@ -76,12 +81,12 @@ static NPError InitializeContext(NPP instance,
   context3d->putOffset = -1;
 
   // Make the SRPC to request the setup for the context.
-  nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
+  NPNavigator* nav = NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
   NaClSrpcError retval =
       Device3DRpcClient::Device3DInitialize(
           channel,
-          nacl::NPNavigator::GetPluginNPP(instance),
+          NPPToWireFormat(instance),
           config3d->commandBufferSize,
           &shm_desc,
           &context3d->commandBufferSize,
@@ -114,7 +119,7 @@ static NPError InitializeContext(NPP instance,
   context3d->commandBuffer = map_addr;
   return NPERR_NO_ERROR;
 
-cleanup:
+ cleanup:
   if (MAP_FAILED != map_addr) {
     munmap(map_addr, size);
   }
@@ -129,7 +134,7 @@ static NPError GetStateContext(NPP instance,
                                NPDeviceContext* context,
                                int32 state,
                                intptr_t *value) {
-  nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
+  NPNavigator* nav = NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
   // Value is only intptr_t to allow passing of the TransportDIB function
   // pointer.  Otherwise they're all int32_t.
@@ -137,7 +142,7 @@ static NPError GetStateContext(NPP instance,
   NaClSrpcError retval =
       Device3DRpcClient::Device3DGetState(
           channel,
-          nacl::NPNavigator::GetPluginNPP(instance),
+          NPPToWireFormat(instance),
           state,
           &value32);
   if (NACL_SRPC_RESULT_OK != retval) {
@@ -151,7 +156,7 @@ static NPError SetStateContext(NPP instance,
                                NPDeviceContext* context,
                                int32 state,
                                intptr_t value) {
-  nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
+  NPNavigator* nav = NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
   // Value is only intptr_t to allow passing of the TransportDIB function
   // pointer.  Otherwise they're all int32_t.  Verify anyway.
@@ -163,7 +168,7 @@ static NPError SetStateContext(NPP instance,
   NaClSrpcError retval =
       Device3DRpcClient::Device3DSetState(
           channel,
-          nacl::NPNavigator::GetPluginNPP(instance),
+          NPPToWireFormat(instance),
           state,
           value32);
   if (NACL_SRPC_RESULT_OK != retval) {
@@ -177,13 +182,13 @@ static NPError FlushContext(NPP instance,
                             NPDeviceFlushContextCallbackPtr callback,
                             void* userData) {
   NPDeviceContext3D* context3d = reinterpret_cast<NPDeviceContext3D*>(context);
-  nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
+  NPNavigator* nav = NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
   int32_t error;
   NaClSrpcError retval =
       Device3DRpcClient::Device3DFlush(
           channel,
-          nacl::NPNavigator::GetPluginNPP(instance),
+          NPPToWireFormat(instance),
           context3d->putOffset,
           &context3d->getOffset,
           &context3d->token,
@@ -216,12 +221,12 @@ static NPError DestroyContext(NPP instance, NPDeviceContext* context) {
   if (kInvalidDesc != impl->shared_memory_desc) {
     close(impl->shared_memory_desc);
   }
-  nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
+  NPNavigator* nav = NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
   NaClSrpcError retval =
       Device3DRpcClient::Device3DDestroy(
           channel,
-          nacl::NPNavigator::GetPluginNPP(instance));
+          NPPToWireFormat(instance));
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
   }
@@ -232,7 +237,7 @@ NPError CreateBuffer(NPP instance,
                      NPDeviceContext* context,
                      size_t size,
                      int32* id) {
-  nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
+  NPNavigator* nav = NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
   NPDeviceContext3D* context3d = reinterpret_cast<NPDeviceContext3D*>(context);
   Device3DImpl* impl = reinterpret_cast<Device3DImpl*>(context3d->reserved);
@@ -248,7 +253,7 @@ NPError CreateBuffer(NPP instance,
   retval =
       Device3DRpcClient::Device3DCreateBuffer(
           channel,
-          nacl::NPNavigator::GetPluginNPP(instance),
+          NPPToWireFormat(instance),
           static_cast<int32_t>(size),
           &shm_desc,
           id);
@@ -263,7 +268,7 @@ NPError CreateBuffer(NPP instance,
   impl->id_map[*id] = buffer_impl;
   return NPERR_NO_ERROR;
 
-cleanup:
+ cleanup:
   if (NULL != buffer_impl) {
     delete buffer_impl;
   }
@@ -304,7 +309,7 @@ NPError DestroyBuffer(NPP instance,
   impl->id_map.erase(id);
   return NPERR_NO_ERROR;
 
-error:
+ error:
   return NPERR_GENERIC_ERROR;
 }
 
@@ -354,7 +359,7 @@ NPError MapBuffer(NPP instance,
   buffer->size = buffer_impl->size_;
   return NPERR_NO_ERROR;
 
-error:
+ error:
   return NPERR_GENERIC_ERROR;
 }
 

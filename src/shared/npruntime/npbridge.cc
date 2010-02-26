@@ -20,33 +20,23 @@
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npobject_proxy.h"
 #include "native_client/src/shared/npruntime/npobject_stub.h"
+#include "native_client/src/shared/npruntime/pointer_translations.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 
 namespace nacl {
 
-#if NACL_BUILD_SUBARCH == 64
-std::map<NPP, int32_t>* NPBridge::npp_64_32_map = NULL;
-std::map<int32_t, NPP>* NPBridge::npp_32_64_map = NULL;
-std::map<NPIdentifier, int32_t>* NPBridge::npident_int_map = NULL;
-std::map<int32_t, NPIdentifier>* NPBridge::int_npident_map = NULL;
-#endif  // NACL_BUILD_SUBARCH
+int NPBridge::number_bridges_alive = 0;
 
 NPBridge::NPBridge()
-    : peer_pid_(-1),
-      peer_npvariant_size_(0),  // Must be set later
-      channel_(NULL) {
-#if NACL_BUILD_SUBARCH == 64
-  // The mappings from NPP to integers and back for interchange with NaCl
-  // modules
-  if (NULL == npp_64_32_map || NULL == npp_32_64_map) {
-    npp_64_32_map = new(std::nothrow) std::map<NPP, int32_t>;
-    npp_32_64_map = new(std::nothrow) std::map<int32_t, NPP>;
+    : channel_(NULL),
+      peer_pid_(-1),
+      peer_npvariant_size_(0) {
+  // Set up the translations for NPP, NPIdentifier, etc.
+  if (0 == number_bridges_alive) {
+    WireFormatInit();
   }
-  if (NULL == npident_int_map || NULL == int_npident_map) {
-    npident_int_map = new(std::nothrow) std::map<NPIdentifier, int32_t>;
-    int_npident_map = new(std::nothrow) std::map<int32_t, NPIdentifier>;
-  }
-#endif  // NACL_BUILD_SUBARCH
+  ++number_bridges_alive;
+  // Set up the proxy lookup table.
   NPObjectStub::AddBridge();
 }
 
@@ -54,80 +44,12 @@ NPBridge::~NPBridge() {
   // TODO(sehr): parameter should be set to true unless NPN_Invalidate was
   // called.
   NPObjectStub::RemoveBridge(false);
-}
 
-int32_t NPBridge::NppToInt(NPP npp) {
-#if NACL_BUILD_SUBARCH == 64
-  static int32_t next_npp_int = 0;
-  if (NULL == npp_64_32_map || NULL == npp_32_64_map) {
-    // Translation called without proper setup.
-    return -1;
+  --number_bridges_alive;
+  if (0 == number_bridges_alive) {
+    // Delete the translations for NPP, NPIdentifier, etc.
+    WireFormatFini();
   }
-  if (npp_64_32_map->end() == npp_64_32_map->find(npp)) {
-    if (-1 == next_npp_int) {
-      // We have wrapped around and consumed all the identifiers.
-      return -1;
-    }
-    (*npp_32_64_map)[next_npp_int] = npp;
-    (*npp_64_32_map)[npp] = next_npp_int++;
-  }
-  return (*npp_64_32_map)[npp];
-#else
-  return reinterpret_cast<int32_t>(npp);
-#endif  // NACL_BUILD_SUBARCH
-}
-
-NPP NPBridge::IntToNpp(int32_t npp_int) {
-#if NACL_BUILD_SUBARCH == 64
-  if (NULL == npp_64_32_map || NULL == npp_32_64_map) {
-    // Translation called without proper setup.
-    return NULL;
-  }
-  if (npp_32_64_map->end() == npp_32_64_map->find(npp_int)) {
-    // No mapping was created for this value.
-    return NULL;
-  }
-  return (*npp_32_64_map)[npp_int];
-#else
-  return reinterpret_cast<NPP>(npp_int);
-#endif  // NACL_BUILD_SUBARCH
-}
-
-int32_t NPBridge::NpidentifierToInt(NPIdentifier npident) {
-#if NACL_BUILD_SUBARCH == 64
-  static int32_t next_npident_int = 0;
-  if (NULL == npident_int_map || NULL == int_npident_map) {
-    // Translation called without proper setup.
-    return -1;
-  }
-  if (npident_int_map->end() == npident_int_map->find(npident)) {
-    if (-1 == next_npident_int) {
-      // We have wrapped around and consumed all the identifiers.
-      return -1;
-    }
-    (*int_npident_map)[next_npident_int] = npident;
-    (*npident_int_map)[npident] = next_npident_int++;
-  }
-  return (*npident_int_map)[npident];
-#else
-  return reinterpret_cast<int32_t>(npident);
-#endif  // NACL_BUILD_SUBARCH
-}
-
-NPIdentifier NPBridge::IntToNpidentifier(int32_t npident_int) {
-#if NACL_BUILD_SUBARCH == 64
-  if (NULL == npident_int_map || NULL == int_npident_map) {
-    // Translation called without proper setup.
-    return NULL;
-  }
-  if (int_npident_map->end() == int_npident_map->find(npident_int)) {
-    // No mapping was created for this value.
-    return NULL;
-  }
-  return (*int_npident_map)[npident_int];
-#else
-  return reinterpret_cast<NPIdentifier>(npident_int);
-#endif  // NACL_BUILD_SUBARCH
 }
 
 NPObject* NPBridge::CreateProxy(NPP npp, const NPCapability& capability) {

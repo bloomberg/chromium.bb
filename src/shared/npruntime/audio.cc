@@ -21,10 +21,16 @@
 #include "native_client/src/include/portability_string.h"
 #include "gen/native_client/src/shared/npruntime/npmodule_rpc.h"
 #include "native_client/src/shared/npruntime/npnavigator.h"
+#include "native_client/src/shared/npruntime/pointer_translations.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 
+using nacl::NPClosureTable;
+using nacl::NPNavigator;
+using nacl::NPPToWireFormat;
+
 namespace {
+
 static const int kInvalidDesc = -1;
 
 struct AudioImpl {
@@ -101,9 +107,9 @@ static NPError InitializeContext(NPP instance,
   // the implementation and then invoke the user-supplied callback with
   // the context.
   uint32_t id;
-  nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
-  nacl::NPClosureTable::FunctionPointer func =
-      reinterpret_cast<nacl::NPClosureTable::FunctionPointer>(
+  NPNavigator* nav = NPNavigator::GetNavigator();
+  NPClosureTable::FunctionPointer func =
+      reinterpret_cast<NPClosureTable::FunctionPointer>(
           context_audio->config.callback);
   if (NULL == nav->closure_table() ||
       !nav->closure_table()->Add(func,
@@ -116,7 +122,7 @@ static NPError InitializeContext(NPP instance,
   NaClSrpcError retval =
       AudioRpcClient::AudioInitialize(
           channel,
-          nacl::NPNavigator::GetPluginNPP(instance),
+          NPPToWireFormat(instance),
           id,
           sample_rate,
           sample_type,
@@ -135,7 +141,7 @@ static NPError GetStateContext(NPP instance,
                                int32 state,
                                intptr_t *value) {
   // UNREFERENCED_PARAMETER(context);
-  nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
+  NPNavigator* nav = NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
   // Value is only intptr_t to allow passing of the TransportDIB function
   // pointer.  Otherwise they're all int32_t.
@@ -143,7 +149,7 @@ static NPError GetStateContext(NPP instance,
   NaClSrpcError retval =
       AudioRpcClient::AudioGetState(
           channel,
-          nacl::NPNavigator::GetPluginNPP(instance),
+          NPPToWireFormat(instance),
           state,
           &value32);
   if (NACL_SRPC_RESULT_OK != retval) {
@@ -158,7 +164,7 @@ static NPError SetStateContext(NPP instance,
                                int32 state,
                                intptr_t value) {
   // UNREFERENCED_PARAMETER(context);
-  nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
+  NPNavigator* nav = NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
   // Value is only intptr_t to allow passing of the TransportDIB function
   // pointer.  Otherwise they're all int32_t.  Verify anyway.
@@ -170,7 +176,7 @@ static NPError SetStateContext(NPP instance,
   NaClSrpcError retval =
       AudioRpcClient::AudioSetState(
           channel,
-          nacl::NPNavigator::GetPluginNPP(instance),
+          NPPToWireFormat(instance),
           state,
           value32);
   if (NACL_SRPC_RESULT_OK != retval) {
@@ -185,13 +191,13 @@ static NPError FlushContext(NPP instance,
                             void* userData) {
   NPDeviceContextAudio* context_audio =
       reinterpret_cast<NPDeviceContextAudio*>(context);
-  nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
+  NPNavigator* nav = NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
   int32_t error;
   NaClSrpcError retval =
       AudioRpcClient::AudioFlush(
           channel,
-          nacl::NPNavigator::GetPluginNPP(instance),
+          NPPToWireFormat(instance),
           &error);
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
@@ -229,12 +235,12 @@ static NPError DestroyContext(NPP instance, NPDeviceContext* context) {
   delete impl;
   context_audio->reserved = NULL;
   // And destroy the corresponding structure in the renderer.
-  nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
+  NPNavigator* nav = NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
   NaClSrpcError retval =
       AudioRpcClient::AudioDestroy(
           channel,
-          nacl::NPNavigator::GetPluginNPP(instance));
+          NPPToWireFormat(instance));
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
   }
@@ -285,13 +291,13 @@ const NPDevice* GetAudio() {
   return &deviceAudio;
 }
 
-bool DoAudioCallback(nacl::NPClosureTable* closure_table,
+bool DoAudioCallback(NPClosureTable* closure_table,
                      int32_t number,
                      int shm_desc,
                      int32_t shm_size,
                      int sync_desc) {
   uint32_t id = static_cast<uint32_t>(number);
-  nacl::NPClosureTable::FunctionPointer func;
+  NPClosureTable::FunctionPointer func;
   void* user_data;
   if (NULL == closure_table ||
       !closure_table->Remove(id, &func, &user_data) ||

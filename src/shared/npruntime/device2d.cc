@@ -19,9 +19,14 @@
 #include "gen/native_client/src/shared/npruntime/npmodule_rpc.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "native_client/src/shared/npruntime/npnavigator.h"
+#include "native_client/src/shared/npruntime/pointer_translations.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 
+using nacl::NPNavigator;
+using nacl::NPPToWireFormat;
+
 namespace {
+
 static const int kInvalidDesc = -1;
 
 struct Device2DImpl {
@@ -57,12 +62,12 @@ static NPError InitializeContext(NPP instance,
   // NOTE: The config struct is empty, so don't do anything with it.
 
   // Make the SRPC to request the setup for the context.
-  nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
+  NPNavigator* nav = NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
   NaClSrpcError retval =
       Device2DRpcClient::Device2DInitialize(
           channel,
-          nacl::NPNavigator::GetPluginNPP(instance),
+          NPPToWireFormat(instance),
           &shm_desc,
           &context2d->stride,
           &context2d->dirty.left,
@@ -96,7 +101,7 @@ static NPError InitializeContext(NPP instance,
   context2d->region = map_addr;
   return NPERR_NO_ERROR;
 
-cleanup:
+ cleanup:
   if (MAP_FAILED != map_addr) {
     munmap(map_addr, size);
   }
@@ -128,12 +133,12 @@ static NPError FlushContext(NPP instance,
                             NPDeviceFlushContextCallbackPtr callback,
                             void* userData) {
   NPDeviceContext2D* context2d = reinterpret_cast<NPDeviceContext2D*>(context);
-  nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
+  NPNavigator* nav = NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
   NaClSrpcError retval =
       Device2DRpcClient::Device2DFlush(
           channel,
-          nacl::NPNavigator::GetPluginNPP(instance),
+          NPPToWireFormat(instance),
           &context2d->stride,
           &context2d->dirty.left,
           &context2d->dirty.top,
@@ -166,12 +171,12 @@ static NPError DestroyContext(NPP instance, NPDeviceContext* context) {
   if (kInvalidDesc != impl->shared_memory_desc) {
     close(impl->shared_memory_desc);
   }
-  nacl::NPNavigator* nav = nacl::NPNavigator::GetNavigator();
+  NPNavigator* nav = NPNavigator::GetNavigator();
   NaClSrpcChannel* channel = nav->channel();
   NaClSrpcError retval =
       Device2DRpcClient::Device2DDestroy(
           channel,
-          nacl::NPNavigator::GetPluginNPP(instance));
+          NPPToWireFormat(instance));
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
   }

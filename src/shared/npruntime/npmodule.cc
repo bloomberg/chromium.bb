@@ -15,6 +15,7 @@
 #include "native_client/src/shared/npruntime/nacl_npapi.h"
 #include "native_client/src/shared/npruntime/npobject_proxy.h"
 #include "native_client/src/shared/npruntime/npobject_stub.h"
+#include "native_client/src/shared/npruntime/pointer_translations.h"
 #include "native_client/src/shared/platform/nacl_threads.h"
 #include "native_client/src/trusted/desc/nacl_desc_invalid.h"
 #include "native_client/src/trusted/desc/nacl_desc_wrapper.h"
@@ -75,8 +76,8 @@ NPModule::~NPModule() {
   // TODO(sehr): release contexts, etc., here.
 }
 
-NPModule* NPModule::GetModule(int32_t int_npp) {
-  NPP npp = NPBridge::IntToNpp(int_npp);
+NPModule* NPModule::GetModule(int32_t wire_npp) {
+  NPP npp = WireFormatToNPP(wire_npp);
   return static_cast<NPModule*>(NPBridge::LookupBridge(npp));
 }
 
@@ -119,7 +120,7 @@ static NaClSrpcError handleAsyncCall(NaClSrpcChannel* channel,
   UNREFERENCED_PARAMETER(channel);
   UNREFERENCED_PARAMETER(outputs);
   DebugPrintf("handleAsyncCall\n");
-  NPP npp = NPBridge::IntToNpp(inputs[0]->u.ival);
+  NPP npp = WireFormatToNPP(inputs[0]->u.ival);
   NPModule* module = static_cast<NPModule*>(NPBridge::LookupBridge(npp));
   uint32_t number = static_cast<uint32_t>(inputs[1]->u.ival);
 
@@ -276,7 +277,7 @@ NPError NPModule::New(char* mimetype,
   }
   NaClSrpcError retval = NPNavigatorRpcClient::NPP_New(channel(),
                                                        mimetype,
-                                                       NPBridge::NppToInt(npp),
+                                                       NPPToWireFormat(npp),
                                                        argc,
                                                        argn_size,
                                                        argn_serial,
@@ -299,7 +300,7 @@ NPError NPModule::Destroy(NPP npp, NPSavedData** save) {
   int nperr;
   NaClSrpcError retval =
       NPNavigatorRpcClient::NPP_Destroy(channel(),
-                                        NPBridge::NppToInt(npp),
+                                        NPPToWireFormat(npp),
                                         &nperr);
   if (NACL_SRPC_RESULT_OK != retval) {
     return NPERR_GENERIC_ERROR;
@@ -314,7 +315,7 @@ NPError NPModule::SetWindow(NPP npp, NPWindow* window) {
   int nperr;
   NaClSrpcError retval =
       NPNavigatorRpcClient::NPP_SetWindow(channel(),
-                                          NPBridge::NppToInt(npp),
+                                          NPPToWireFormat(npp),
                                           window->height,
                                           window->width,
                                           &nperr);
@@ -353,7 +354,7 @@ int16_t NPModule::HandleEvent(NPP npp, void* event) {
 
   NaClSrpcError retval =
       NPNavigatorRpcClient::NPP_HandleEvent(channel(),
-                                            NPBridge::NppToInt(npp),
+                                            NPPToWireFormat(npp),
                                             kEventSize,
                                             reinterpret_cast<char*>(event),
                                             &return_int16);
@@ -373,7 +374,7 @@ NPObject* NPModule::GetScriptableInstance(NPP npp) {
     char* cap_ptr = reinterpret_cast<char*>(&capability);
     NaClSrpcError retval =
         NPNavigatorRpcClient::NPP_GetScriptableInstance(channel(),
-                                                        NPBridge::NppToInt(npp),
+                                                        NPPToWireFormat(npp),
                                                         &cap_size,
                                                         cap_ptr);
     if (NACL_SRPC_RESULT_OK != retval) {
@@ -404,7 +405,7 @@ NPError NPModule::NewStream(NPP npp,
 
 void NPModule::StreamAsFile(NPP npp, NaClDesc* file, char* fname) {
   NPNavigatorRpcClient::NPP_StreamAsFile(channel(),
-                                         NPBridge::NppToInt(npp),
+                                         NPPToWireFormat(npp),
                                          file,
                                          fname);
 }

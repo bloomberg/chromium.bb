@@ -15,6 +15,7 @@
 #include "native_client/src/shared/npruntime/npnavigator.h"
 #include "native_client/src/shared/npruntime/npobject_proxy.h"
 #include "native_client/src/shared/npruntime/npobject_stub.h"
+#include "native_client/src/shared/npruntime/pointer_translations.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 
 using nacl::RpcArg;
@@ -22,6 +23,32 @@ using nacl::NPObjectStub;
 using nacl::NPBridge;
 using nacl::NPNavigator;
 using nacl::NPCapability;
+using nacl::WireFormatToNPP;
+
+namespace {
+
+NPP TranslateOrSetLocalNPP(int32_t wire_npp, nacl::NPNavigator* nav) {
+  // Look up the NaCl NPP copy corresponding to the wire_npp and set the local
+  // copy if needed.  Setting the local copy should only need to be done by
+  // NPP_New, but we apparently get calls to NPP_SetWindow before that.
+  // TODO(sehr): we shouldn't be calling NPP_SetWindow before NPP_New.
+  NPP npp = WireFormatToNPP(wire_npp);
+  if (NULL == npp) {
+    // Allocate a new NPP for the NaCl module.
+    npp = new(std::nothrow) NPP_t;
+    if (NULL == npp) {
+      nacl::DebugPrintf("No memory to allocate NPP.\n");
+      return NULL;
+    }
+    // Attach the NPNavigator to the NPP.
+    npp->ndata = static_cast<void*>(nav);
+    // Set it to be the local copy used in translations.
+    nacl::SetLocalNPP(wire_npp, npp);
+  }
+  return npp;
+}
+
+}  // namespace
 
 //
 // The following methods are the SRPC dispatchers for npnavigator.
@@ -72,7 +99,7 @@ NaClSrpcError NPNavigatorRpcServer::NP_Initialize(
 
 NaClSrpcError NPNavigatorRpcServer::NPP_New(NaClSrpcChannel* channel,
                                             char* mimetype,
-                                            int32_t int_npp,
+                                            int32_t wire_npp,
                                             int32_t arg_count,
                                             nacl_abi_size_t argn_bytes,
                                             char* argn_in,
@@ -81,8 +108,14 @@ NaClSrpcError NPNavigatorRpcServer::NPP_New(NaClSrpcChannel* channel,
                                             int32_t* nperr) {
   NPNavigator* nav = NPNavigator::GetNavigator();
 
+  NPP npp = TranslateOrSetLocalNPP(wire_npp, nav);
+  if (NULL == npp) {
+    *nperr = NPERR_OUT_OF_MEMORY_ERROR;
+    return NACL_SRPC_RESULT_OK;
+  }
+
   return nav->New(mimetype,
-                  NPNavigator::GetNaClNPP(int_npp, true),
+                  npp,
                   static_cast<uint32_t>(arg_count),
                   argn_bytes,
                   argn_in,
@@ -92,37 +125,39 @@ NaClSrpcError NPNavigatorRpcServer::NPP_New(NaClSrpcChannel* channel,
 }
 
 NaClSrpcError NPNavigatorRpcServer::NPP_SetWindow(NaClSrpcChannel* channel,
-                                                  int32_t int_npp,
+                                                  int32_t wire_npp,
                                                   int32_t height,
                                                   int32_t width,
                                                   int32_t* nperr) {
   NPNavigator* nav = NPNavigator::GetNavigator();
 
-  *nperr =
-      nav->SetWindow(NPNavigator::GetNaClNPP(int_npp, true),
-                     height,
-                     width);
+  NPP npp = TranslateOrSetLocalNPP(wire_npp, nav);
+  if (NULL == npp) {
+    *nperr = NPERR_OUT_OF_MEMORY_ERROR;
+    return NACL_SRPC_RESULT_OK;
+  }
+
+  *nperr = nav->SetWindow(npp, height, width);
 
   return NACL_SRPC_RESULT_OK;
 }
 
 NaClSrpcError NPNavigatorRpcServer::NPP_Destroy(NaClSrpcChannel* channel,
-                                                int32_t int_npp,
+                                                int32_t wire_npp,
                                                 int32_t* nperr) {
   NPNavigator* nav = NPNavigator::GetNavigator();
 
-  *nperr =
-      nav->Destroy(NPNavigator::GetNaClNPP(int_npp, false));
+  *nperr = nav->Destroy(WireFormatToNPP(wire_npp));
 
   return NACL_SRPC_RESULT_OK;
 }
 
 NaClSrpcError NPNavigatorRpcServer::NPP_GetScriptableInstance(
     NaClSrpcChannel* channel,
-    int32_t int_npp,
+    int32_t wire_npp,
     nacl_abi_size_t* cap_bytes,
     char* cap) {
-  NPP npp = NPNavigator::GetNaClNPP(int_npp, false);
+  NPP npp = WireFormatToNPP(wire_npp);
   NPNavigator* nav = NPNavigator::GetNavigator();
   NPCapability* capability = nav->GetScriptableInstance(npp);
   RpcArg ret(npp, cap, *cap_bytes);
@@ -132,36 +167,38 @@ NaClSrpcError NPNavigatorRpcServer::NPP_GetScriptableInstance(
 
 NaClSrpcError NPNavigatorRpcServer::NPP_HandleEvent(
     NaClSrpcChannel* channel,
-    int32_t int_npp,
+    int32_t wire_npp,
     nacl_abi_size_t npevent_bytes,
     char* npevent,
     int32_t* return_int16) {
-  NPP npp = NPNavigator::GetNaClNPP(int_npp, false);
   NPNavigator* nav = NPNavigator::GetNavigator();
 
-  return nav->HandleEvent(npp, npevent_bytes, npevent, return_int16);
+  return nav->HandleEvent(WireFormatToNPP(wire_npp),
+                          npevent_bytes,
+                          npevent,
+                          return_int16);
 }
 
 NaClSrpcError NPNavigatorRpcServer::NPP_StreamAsFile(NaClSrpcChannel* channel,
-                                                     int32_t int_npp,
+                                                     int32_t wire_npp,
                                                      NaClSrpcImcDescType file,
                                                      char* fname) {
   nacl::DebugPrintf("NPP_URLNotify\n");
 
   NPNavigator* nav = NPNavigator::GetNavigator();
-  nav->StreamAsFile(NPNavigator::GetNaClNPP(int_npp, false), file, fname);
+  nav->StreamAsFile(WireFormatToNPP(wire_npp), file, fname);
 
   return NACL_SRPC_RESULT_OK;
 }
 
 NaClSrpcError NPNavigatorRpcServer::NPP_URLNotify(NaClSrpcChannel* channel,
-                                                  int32_t int_npp,
+                                                  int32_t wire_npp,
                                                   NaClSrpcImcDescType str,
                                                   int32_t reason) {
   // TODO(sehr): what happens when we fail to get a URL?
   nacl::DebugPrintf("NPP_URLNotify\n");
 
-  NPP npp = NPNavigator::GetNaClNPP(int_npp, false);
+  NPP npp = WireFormatToNPP(wire_npp);
   NPNavigator* nav = NPNavigator::GetNavigator();
   nav->URLNotify(npp, str, reason);
 

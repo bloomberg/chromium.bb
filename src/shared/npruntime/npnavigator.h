@@ -48,20 +48,6 @@ class NPNavigator : public NPBridge {
 
   NPClosureTable* closure_table() { return closure_table_; }
 
-  // Get the NaCl module NPP from the browser NPP.  Since this is always used
-  // with an NPP passed from the plugin (NPModule), we take it in the form
-  // used by SRPC.
-  static NPP GetNaClNPP(int32_t plugin_npp_int, bool add_to_map);
-  // Get the plugin NPP from the NaCl module NPP.  Since this is always used
-  // to pass the NPP back to the plugin (NPModule), we return it in the form
-  // for use by SRPC.
-  static int32_t GetPluginNPP(NPP nacl_npp);
-
-  // Sets up recognition of the services exported from the browser.
-  static NaClSrpcError SetUpcallServices(NaClSrpcChannel *channel,
-                                         NaClSrpcArg **in_args,
-                                         NaClSrpcArg **out_args);
-
   // Processes NP_Initialize request from the plugin.
   NaClSrpcError Initialize(NaClSrpcChannel* channel,
                            NaClSrpcImcDescType upcall_desc);
@@ -138,14 +124,6 @@ class NPNavigator : public NPBridge {
 
   // The one navigator in this NaCl module.
   static NPNavigator* navigator;
-
-  // The lookup table from browser NPP to NaCl module NPP.
-  static std::map<NPP, NPP> *nacl_npp_map;
-  // The lookup table from NaCl module NPP to browser plugin NPP.
-  static std::map<NPP, NPP> *plugin_npp_map;
-
-  // The SRPC methods the navigator exports to the browser plugin.
-  static NACL_SRPC_METHOD_ARRAY(srpc_methods);
 
   // NPIdentifiers:
   // The browser controls the master identifier representation.

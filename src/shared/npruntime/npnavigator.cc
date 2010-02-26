@@ -20,6 +20,7 @@
 #include "native_client/src/shared/npruntime/npn_gate.h"
 #include "native_client/src/shared/npruntime/nprpc.h"
 #include "native_client/src/shared/npruntime/npobject_stub.h"
+#include "native_client/src/shared/npruntime/pointer_translations.h"
 #include "native_client/src/shared/srpc/nacl_srpc.h"
 #include "third_party/npapi/bindings/npapi_extensions.h"
 
@@ -57,8 +58,6 @@ namespace nacl {
 
 // Class static member declarations.
 NPNavigator* NPNavigator::navigator = NULL;
-std::map<NPP, NPP>* NPNavigator::nacl_npp_map = NULL;
-std::map<NPP, NPP>* NPNavigator::plugin_npp_map = NULL;
 std::map<int32_t, NPIdentifier>* NPNavigator::int_id_map = NULL;
 std::map<NPIdentifier, int32_t>* NPNavigator::id_int_map = NULL;
 std::map<const NPUTF8*, NPIdentifier>* NPNavigator::string_id_map = NULL;
@@ -73,16 +72,14 @@ NPNavigator::NPNavigator(NaClSrpcChannel* channel,
                          int32_t peer_npvariant_size)
     : NPBridge(),
       upcall_channel_(NULL) {
-  DebugPrintf("NPNavigator(%u, %u)\n",
+  DebugPrintf("NPNavigator(%p, %u, %u)\n",
+              static_cast<void*>(this),
               static_cast<unsigned>(peer_pid),
               static_cast<unsigned>(peer_npvariant_size));
   set_channel(channel);
   set_peer_pid(peer_pid);
   set_peer_npvariant_size(peer_npvariant_size);
   navigator = this;
-  // Set up the browser NPP to/from NaCl module NPP mapping.
-  nacl_npp_map = new(std::nothrow) std::map<NPP, NPP>;
-  plugin_npp_map = new(std::nothrow) std::map<NPP, NPP>;
   // Set up the canonical identifier string table.
   string_set = new(std::nothrow) std::set<const NPUTF8*, StringCompare>;
   // Set up the identifier mappings.
@@ -102,46 +99,6 @@ NPNavigator::~NPNavigator() {
   delete closure_table_;
   // Note that all the mappings are per-module and only cleaned up on
   // shutdown.
-}
-
-NPP NPNavigator::GetNaClNPP(int32_t plugin_npp_int, bool add_to_map) {
-  if (NULL == nacl_npp_map) {
-    DebugPrintf("No NPP map allocated.\n");
-    return NULL;
-  }
-  NPP plugin_npp = NPBridge::IntToNpp(plugin_npp_int);
-  std::map<NPP, NPP>::iterator i = nacl_npp_map->find(plugin_npp);
-  if (nacl_npp_map->end() == i) {
-    if (add_to_map) {
-      // Allocate a new NPP for the NaCl module.
-      NPP nacl_npp = static_cast<NPP>(malloc(sizeof(*nacl_npp)));
-      if (NULL == nacl_npp) {
-        DebugPrintf("No memory to allocate entry in NPP map.\n");
-        return NULL;
-      }
-      nacl_npp->ndata = static_cast<void*>(GetNavigator());
-      // And set up the mappings between them.
-      (*nacl_npp_map)[plugin_npp] = nacl_npp;
-      (*plugin_npp_map)[nacl_npp] = plugin_npp;
-    } else {
-      DebugPrintf("No entry in NPP map.\n");
-      return NULL;
-    }
-  }
-  return (*nacl_npp_map)[plugin_npp];
-}
-
-int32_t NPNavigator::GetPluginNPP(NPP nacl_npp) {
-  if (NULL == plugin_npp_map) {
-    DebugPrintf("No NPP map allocated.\n");
-    return 0;
-  }
-  std::map<NPP, NPP>::iterator i = nacl_npp_map->find(nacl_npp);
-  if (plugin_npp_map->end() == i) {
-    DebugPrintf("No entry in NPP map.\n");
-    return 0;
-  }
-  return reinterpret_cast<int32_t>((*plugin_npp_map)[nacl_npp]);
 }
 
 NaClSrpcError NPNavigator::Initialize(NaClSrpcChannel* channel,
@@ -243,8 +200,8 @@ NaClSrpcError NPNavigator::HandleEvent(NPP npp,
 NPError NPNavigator::SetWindow(NPP npp,
                                int height,
                                int width) {
-  DebugPrintf("NPP_SetWindow: npp=%d, height=%d, width=%d\n",
-              npp, height, width);
+  DebugPrintf("NPP_SetWindow: npp=%p, height=%d, width=%d\n",
+              reinterpret_cast<void*>(npp), height, width);
 
   if (NULL == plugin_funcs.setwindow) {
     return NPERR_GENERIC_ERROR;
@@ -266,7 +223,7 @@ NPError NPNavigator::Destroy(NPP npp) {
 }
 
 NPCapability* NPNavigator::GetScriptableInstance(NPP npp) {
-  DebugPrintf("SII:\n");
+  DebugPrintf("SII: npp=%p\n", reinterpret_cast<void*>(npp));
   NPObject* object = NPP_GetScriptableInstance(npp);
   DebugPrintf("SII: %p\n", reinterpret_cast<void*>(object));
   if (NULL != object) {
@@ -290,7 +247,7 @@ NPError NPNavigator::GetUrl(NPP npp, const char* url, const char* target) {
   int32_t nperr;
   NaClSrpcError retval =
       NPModuleRpcClient::NPN_GetURL(channel(),
-                                    GetPluginNPP(npp),
+                                    NPPToWireFormat(npp),
                                     const_cast<char*>(url),
                                     const_cast<char*>(target),
                                     &nperr);
@@ -314,7 +271,7 @@ NPError NPNavigator::GetUrlNotify(NPP npp,
   int32_t nperr;
   NaClSrpcError retval =
       NPModuleRpcClient::NPN_GetURL(channel(),
-                                    GetPluginNPP(npp),
+                                    NPPToWireFormat(npp),
                                     const_cast<char*>(url),
                                     const_cast<char*>(target),
                                     &nperr);
@@ -352,7 +309,7 @@ void NPNavigator::URLNotify(NPP npp,
 
 void NPNavigator::SetStatus(NPP npp, const char* message) {
   NPModuleRpcClient::NPN_SetStatus(channel(),
-                                   GetPluginNPP(npp),
+                                   NPPToWireFormat(npp),
                                    const_cast<char*>(message));
 }
 
@@ -364,7 +321,7 @@ NPError NPNavigator::GetValue(NPP npp, NPNVariable variable, void* value) {
   if (NACL_SRPC_RESULT_OK !=
       NPModuleRpcClient::NPN_GetValue(
           channel(),
-          GetPluginNPP(npp),
+          NPPToWireFormat(npp),
           static_cast<int32_t>(variable),
           &error_code,
           &bufsize,
@@ -382,13 +339,13 @@ NPError NPNavigator::GetValue(NPP npp, NPNVariable variable, void* value) {
 void NPNavigator::InvalidateRect(NPP npp, NPRect* invalid_rect) {
   NPModuleRpcClient::NPN_InvalidateRect(
       channel(),
-      GetPluginNPP(npp),
+      NPPToWireFormat(npp),
       static_cast<nacl_abi_size_t>(sizeof(*invalid_rect)),
       reinterpret_cast<char*>(invalid_rect));
 }
 
 void NPNavigator::ForceRedraw(NPP npp) {
-  NPModuleRpcClient::NPN_ForceRedraw(channel(), GetPluginNPP(npp));
+  NPModuleRpcClient::NPN_ForceRedraw(channel(), NPPToWireFormat(npp));
 }
 
 NPObject* NPNavigator::CreateArray(NPP npp) {
@@ -398,7 +355,7 @@ NPObject* NPNavigator::CreateArray(NPP npp) {
   if (NACL_SRPC_RESULT_OK !=
       NPModuleRpcClient::NPN_CreateArray(
           channel(),
-          GetPluginNPP(npp),
+          NPPToWireFormat(npp),
           &success,
           &bufsize,
           buf)) {
@@ -579,7 +536,7 @@ void NPNavigator::PluginThreadAsyncCall(NPP instance,
   NaClSrpcInvokeByName(
       upcall_channel_,
       "NPN_PluginThreadAsyncCall",
-      GetPluginNPP(instance),
+      NPPToWireFormat(instance),
       static_cast<int32_t>(id));
   pthread_mutex_unlock(&upcall_mu_);
 }

@@ -78,6 +78,7 @@ env.ComponentLibrary('google_nacl_npruntime',
                       'npobject_stub.cc',
                       'nprpc.cc',
                       'npstub_rpc_impl.cc',
+                      'pointer_translations.cc',
                       ])
 
 headers = [

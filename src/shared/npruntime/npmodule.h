@@ -32,7 +32,7 @@ class NPModule : public NPBridge {
   explicit NPModule(NaClSrpcChannel* channel);
   ~NPModule();
 
-  static NPModule* GetModule(int32_t int_npp);
+  static NPModule* GetModule(int32_t wire_npp);
 
   static bool IsWebkit() { return is_webkit; }
 
@@ -153,9 +153,6 @@ class NPModule : public NPBridge {
 
   // There are some identifier differences if the browser is based on WebKit.
   static bool is_webkit;
-
-  // The SRPC methods exported visible to the NaCl module.
-  static NACL_SRPC_METHOD_ARRAY(srpc_methods);
 
   // Extension state.
   NPExtensions* extensions_;

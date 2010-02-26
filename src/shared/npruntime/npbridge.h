@@ -40,36 +40,6 @@ class NPCapability;
 // for example), or more than one page in a renderer.  Hence, there can be
 // more than one NPModule instance.
 class NPBridge {
-  // The process ID of the remote peer.
-  int peer_pid_;
-  // The size of NPVariant in the remote peer.
-  size_t peer_npvariant_size_;
-
-  // The map of NPCapability to NPObjectProxy
-  std::map<const NPCapability, NPObjectProxy*> proxy_map_;
-
-#if NACL_BUILD_SUBARCH == 64
-  // The map used for 64-bit plugins to convert NPP pointers to integers for
-  // use by 32-bit NaCl modules.
-  static std::map<NPP, int32_t>* npp_64_32_map;
-  // Convert back from integer to NPP.
-  static std::map<int32_t, NPP>* npp_32_64_map;
-
-  // The map used for 64-bit plugins to convert NPIdentifiers to integers for
-  // use by 32-bit NaCl modules.
-  static std::map<NPIdentifier, int32_t>* npident_int_map;
-  // Convert back from integer to NPIdentifier.
-  static std::map<int32_t, NPIdentifier>* int_npident_map;
-#endif  // NACL_BUILD_SUBARCH == 64
-
- private:
-  // Adds the specified proxy to the map of NPCapability to NPObjectProxy
-  void AddProxy(NPObjectProxy* proxy);
-
- protected:
-  // The srpc channel to the remote peer.
-  NaClSrpcChannel* channel_;
-
  public:
   // The maximum number of arguments passed from the plugin to the
   // NPP_New in the NaCl module.
@@ -99,14 +69,6 @@ class NPBridge {
   static inline NPBridge* LookupBridge(NaClSrpcChannel* channel) {
     return reinterpret_cast<NPBridge*>(channel->server_instance_data);
   }
-
-  // Converting NPPs to/from integers
-  static int32_t NppToInt(NPP npp);
-  static NPP IntToNpp(int32_t npp_int);
-
-  // Converting NPIdentifiers to/from integers
-  static int32_t NpidentifierToInt(NPIdentifier npident);
-  static NPIdentifier IntToNpidentifier(int32_t npident_int);
 
   int peer_pid() const {
     return peer_pid_;
@@ -139,6 +101,26 @@ class NPBridge {
 
   // Removes the specified proxy from the map of NPCapability to NPObjectProxy
   void RemoveProxy(NPObjectProxy* proxy);
+
+ protected:
+  // The srpc channel to the remote peer.
+  NaClSrpcChannel* channel_;
+
+ private:
+  // Adds the specified proxy to the map of NPCapability to NPObjectProxy
+  void AddProxy(NPObjectProxy* proxy);
+
+  // The process ID of the remote peer.
+  int peer_pid_;
+  // The size of NPVariant in the remote peer.
+  size_t peer_npvariant_size_;
+
+  // The map of NPCapability to NPObjectProxy
+  std::map<const NPCapability, NPObjectProxy*> proxy_map_;
+
+  // The number of bridge instances currently alive.  This is used to
+  // determine when to free the WireFormat translation data structures.
+  static int number_bridges_alive;
 };
 
 }  // namespace nacl

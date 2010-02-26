@@ -5,7 +5,8 @@
 {
   'variables': {
     'SRPCGEN': '<(DEPTH)/native_client/tools/srpcgen.py',
-    'NPRUNTIME_DIR': '<(INTERMEDIATE_DIR)/gen/native_client/src/shared/npruntime',
+    'NPRUNTIME_DIR':
+    '<(INTERMEDIATE_DIR)/gen/native_client/src/shared/npruntime',
   },
   'includes': [
     '../../../build/common.gypi',
@@ -44,6 +45,8 @@
         'nprpc.h',
         'npmodule_rpc_impl.cc',
         'npstub_rpc_impl.cc',
+        'pointer_translations.cc',
+        'pointer_translations.h',
         ],
       }],
     ],
