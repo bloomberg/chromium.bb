@@ -47,6 +47,15 @@ class MinidumpTest: public testing::Test {
   }
 
   virtual void SetUp() {
+    // Make sure URLMon isn't loaded into our process.
+    ASSERT_EQ(NULL, ::GetModuleHandle(L"urlmon.dll"));
+
+    // Then load and unload it to ensure we have something to
+    // stock the unloaded module list with.
+    HMODULE urlmon = ::LoadLibrary(L"urlmon.dll");
+    ASSERT_TRUE(urlmon != NULL);
+    ASSERT_TRUE(::FreeLibrary(urlmon));
+
     ASSERT_TRUE(file_util::CreateTemporaryFile(&dump_file_));
     dump_file_handle_.Set(::CreateFile(dump_file_.value().c_str(),
                                        GENERIC_WRITE | GENERIC_READ,
@@ -122,6 +131,9 @@ class MinidumpTest: public testing::Test {
                                       &ex_info,
                                       NULL,
                                       NULL);
+    LOG(INFO) << "Flags: " << flags << " mindump size: " <<
+        ::GetFileSize(dump_file_handle_.Get(), NULL);
+
     return result == TRUE;
   }
 
@@ -384,7 +396,7 @@ TEST_F(MinidumpTest, LargerDump) {
   EXPECT_FALSE(DumpHasStream(TokenStream));
 }
 
-TEST_F(MinidumpTest, LargeDump) {
+TEST_F(MinidumpTest, FullDump) {
   ASSERT_TRUE(WriteDump(kFullDumpType));
 
   // The dump should have all of these streams.
@@ -420,10 +432,6 @@ TEST_F(MinidumpTest, LargeDump) {
 int main(int argc, char** argv) {
   testing::InitGoogleTest(&argc, argv);
   CommandLine::Init(argc, argv);
-
-  // CoInitialize and uninitialize to load and unload some modules.
-  ::CoInitialize(NULL);
-  ::CoUninitialize();
 
   logging::InitLogging(L"CON",
                        logging::LOG_TO_BOTH_FILE_AND_SYSTEM_DEBUG_LOG,
