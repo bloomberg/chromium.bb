@@ -17,7 +17,7 @@ import sys
 
 # enable this for manual debugging of this script only
 VERBOSE = 0
-
+TOLERATE_COMPILATION_OF_ASM_CODE = 1
 BASE = '/usr/local/crosstool-untrusted'
 
 
@@ -70,6 +70,7 @@ OPT = [BASE + '/arm-none-linux-gnueabi/llvm/bin/opt',
 AS = ([BASE + '/codesourcery/arm-2007q3/bin/arm-none-linux-gnueabi-as', ] +
       LLVM_GCC_ASSEMBLER_FLAGS)
 
+AR = BASE + '/codesourcery/arm-2007q3/bin/arm-none-linux-gnueabi-ar'
 
 # Note: this works around an assembler bug that has been fixed only recently
 # We probably can drop this once we have switched to codesourcery 2009Q4
@@ -201,35 +202,58 @@ def Link(argv, llvm_binary, is_sfi):
     PatchAbiVersionIntoElfHeader(argv[link_pos])
 
 
+def IsDiagnosticMode(argv):
+  return ('--v' in argv or
+          '-print-search-dirs' in argv or
+          '-print-libgcc-file-name' in argv)
+
+
 def Compile(argv, llvm_binary, is_sfi):
   """ Compile to .o file."""
+  # TODO(robertm): channel linking through separate program
   link_pos = FindLinkPos(argv)
   if link_pos:
     Link(argv, llvm_binary, is_sfi)
     return
 
-  obj_pos = FindObjectFilePos(argv)
   argv[0] = llvm_binary
-  if obj_pos:
-    # TODO(robertm): remove support for .S files
-    if HasAssemblerFiles(argv):
-      Run(argv + LLVM_GCC_ASSEMBLER_FLAGS)
-    else:
-      SfiCompile(argv, obj_pos, is_sfi)
 
+  obj_pos = FindObjectFilePos(argv)
+
+  if not obj_pos:
+    assert IsDiagnosticMode(argv)
+    Run(argv)
     return
-  Run(argv)
+
+  # TODO(robertm): remove support for .S files
+  if HasAssemblerFiles(argv):
+    assert TOLERATE_COMPILATION_OF_ASM_CODE
+    Run(argv + LLVM_GCC_ASSEMBLER_FLAGS)
+    return
+
+  SfiCompile(argv, obj_pos, is_sfi)
+
 
 
 def CompileToBitcode(argv, llvm_binary):
   """Compile to .o file which really is a bitcode files."""
-  if HasAssemblerFiles(argv):
-    print 'ERROR: cannot compile .S files to bitcode', repr(argv)
-  assert not HasAssemblerFiles(argv)
   assert not FindLinkPos(argv)
-  assert FindObjectFilePos(argv)
 
   argv[0] = llvm_binary
+
+  obj_pos = FindObjectFilePos(argv)
+
+  if not obj_pos:
+    assert IsDiagnosticMode(argv)
+    Run(argv)
+    return
+
+  # TODO(robertm): remove support for .S files
+  if HasAssemblerFiles(argv):
+    assert TOLERATE_COMPILATION_OF_ASM_CODE
+    Run(argv + LLVM_GCC_ASSEMBLER_FLAGS)
+    return
+
   argv.append('--emit-llvm')
   Run(argv)
 
@@ -267,6 +291,14 @@ def Incarnation_illegal(argv):
   raise Exception, "UNEXPECTED " + repr(argv)
 
 
+def Incarnation_as(argv):
+  raise Exception, "UNEXPECTED " + repr(argv)
+
+
+def Incarnation_sfiar(argv):
+  argv[0] = AR
+  Run(argv)
+
 def Incarnation_bcar(argv):
   """Emulate the behavior or ar on .o files with llvm-link on .bc files."""
   print '@' * 70
@@ -285,7 +317,7 @@ def Incarnation_bcar(argv):
     assert argv[1].startswith('c') or argv[1].startswith('rc')
     # NOTE: the incomming command looks something like
     # ..../llvm-fake-bcar cru lib.a dummy.o add.o sep.o
-    Run([LLVM_LINK, '-o'] + argv[2:]
+    Run([LLVM_LINK, '-o'] + argv[2:])
 
 
 INCARNATIONS = {
@@ -298,7 +330,13 @@ INCARNATIONS = {
    'llvm-fake-bcgcc': Incarnation_bcgcc,
    'llvm-fake-bcg++': Incarnation_bcgplusplus,
 
+   'llvm-fake-sfiar': Incarnation_sfiar,
    'llvm-fake-bcar': Incarnation_bcar,
+
+   'llvm-fake-sfiranlib': Incarnation_nop,
+   'llvm-fake-bcranlib': Incarnation_nop,
+
+   'llvm-fake-as': Incarnation_as,
 
    'llvm-fake-nop': Incarnation_nop,
    'llvm-fake-illegal': Incarnation_illegal,
