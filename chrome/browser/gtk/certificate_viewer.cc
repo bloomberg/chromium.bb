@@ -7,7 +7,6 @@
 #include <cert.h>
 #include <gtk/gtk.h>
 #include <hasht.h>
-#include <prprf.h>
 #include <sechash.h>
 
 #include <algorithm>
@@ -20,7 +19,12 @@
 #include "base/utf_string_conversions.h"
 #include "chrome/browser/cert_store.h"
 #include "chrome/common/gtk_util.h"
+#include "chrome/third_party/mozilla_security_manager/nsNSSCertHelper.h"
+#include "chrome/third_party/mozilla_security_manager/nsNSSCertificate.h"
 #include "grit/generated_resources.h"
+
+// PSM = Mozilla's Personal Security Manager.
+namespace psm = mozilla_security_manager;
 
 namespace {
 
@@ -64,182 +68,8 @@ std::string HashCert(CERTCertificate* cert, HASH_HashType algorithm, int len) {
   return Stringize(CERT_Hexify(&fingerprint_item, TRUE));
 }
 
-// Format a SECItem as a space separated string, with 16 bytes on each line.
-std::string ProcessRawBytes(SECItem* data) {
-  static const char kHexChars[] = "0123456789ABCDEF";
-
-  // Each input byte creates two output hex characters + a space or newline,
-  // except for the last byte.
-  std::string ret(std::max(0u, data->len * 3 - 1), '\0');
-
-  for (size_t i = 0; i < data->len; ++i) {
-    unsigned char b = data->data[i];
-    ret[i * 3] = kHexChars[(b >> 4) & 0xf];
-    ret[i * 3 + 1] = kHexChars[b & 0xf];
-    if (i + 1 < data->len) {
-      if ((i + 1) % 16 == 0)
-        ret[i * 3 + 2] = '\n';
-      else
-        ret[i * 3 + 2] = ' ';
-    }
-  }
-  return ret;
-}
-
-// For fields which have the length specified in bits, rather than bytes.
-std::string ProcessRawBits(SECItem* data) {
-  SECItem bytedata;
-  bytedata.data = data->data;
-  bytedata.len = data->len / 8;
-  return ProcessRawBytes(&bytedata);
-}
-
-// Based on mozilla/source/security/manager/ssl/src/nsNSSCertificate.cpp:
-// nsNSSCertificate::GetWindowTitle.
-std::string GetCertTitle(CERTCertificate* cert) {
-  std::string rv;
-  if (cert->nickname) {
-    rv = cert->nickname;
-  } else {
-    char* cn = CERT_GetCommonName(&cert->subject);
-    if (cn) {
-      rv = Stringize(cn);
-    } else if (cert->subjectName) {
-      rv = cert->subjectName;
-    } else if (cert->emailAddr) {
-      rv = cert->emailAddr;
-    }
-  }
-  // TODO(mattm): Should we return something other than an empty string when all
-  // the checks fail?
-  return rv;
-}
-
-std::string GetOIDText(SECItem* oid) {
-  int string_id;
-  switch (SECOID_FindOIDTag(oid)) {
-    case SEC_OID_AVA_COMMON_NAME:
-      string_id = IDS_CERT_OID_AVA_COMMON_NAME;
-      break;
-    case SEC_OID_AVA_STATE_OR_PROVINCE:
-      string_id = IDS_CERT_OID_AVA_STATE_OR_PROVINCE;
-      break;
-    case SEC_OID_AVA_ORGANIZATION_NAME:
-      string_id = IDS_CERT_OID_AVA_ORGANIZATION_NAME;
-      break;
-    case SEC_OID_AVA_ORGANIZATIONAL_UNIT_NAME:
-      string_id = IDS_CERT_OID_AVA_ORGANIZATIONAL_UNIT_NAME;
-      break;
-    case SEC_OID_AVA_DN_QUALIFIER:
-      string_id = IDS_CERT_OID_AVA_DN_QUALIFIER;
-      break;
-    case SEC_OID_AVA_COUNTRY_NAME:
-      string_id = IDS_CERT_OID_AVA_COUNTRY_NAME;
-      break;
-    case SEC_OID_AVA_SERIAL_NUMBER:
-      string_id = IDS_CERT_OID_AVA_SERIAL_NUMBER;
-      break;
-    case SEC_OID_AVA_LOCALITY:
-      string_id = IDS_CERT_OID_AVA_LOCALITY;
-      break;
-    case SEC_OID_AVA_DC:
-      string_id = IDS_CERT_OID_AVA_DC;
-      break;
-    case SEC_OID_RFC1274_MAIL:
-      string_id = IDS_CERT_OID_RFC1274_MAIL;
-      break;
-    case SEC_OID_RFC1274_UID:
-      string_id = IDS_CERT_OID_RFC1274_UID;
-      break;
-    case SEC_OID_PKCS9_EMAIL_ADDRESS:
-      string_id = IDS_CERT_OID_PKCS9_EMAIL_ADDRESS;
-      break;
-    case SEC_OID_PKCS1_RSA_ENCRYPTION:
-      string_id = IDS_CERT_OID_PKCS1_RSA_ENCRYPTION;
-      break;
-    case SEC_OID_PKCS1_MD2_WITH_RSA_ENCRYPTION:
-      string_id = IDS_CERT_OID_PKCS1_MD2_WITH_RSA_ENCRYPTION;
-      break;
-    case SEC_OID_PKCS1_MD4_WITH_RSA_ENCRYPTION:
-      string_id = IDS_CERT_OID_PKCS1_MD4_WITH_RSA_ENCRYPTION;
-      break;
-    case SEC_OID_PKCS1_MD5_WITH_RSA_ENCRYPTION:
-      string_id = IDS_CERT_OID_PKCS1_MD5_WITH_RSA_ENCRYPTION;
-      break;
-    case SEC_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION:
-      string_id = IDS_CERT_OID_PKCS1_SHA1_WITH_RSA_ENCRYPTION;
-      break;
-    case SEC_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION:
-      string_id = IDS_CERT_OID_PKCS1_SHA256_WITH_RSA_ENCRYPTION;
-      break;
-    case SEC_OID_PKCS1_SHA384_WITH_RSA_ENCRYPTION:
-      string_id = IDS_CERT_OID_PKCS1_SHA384_WITH_RSA_ENCRYPTION;
-      break;
-    case SEC_OID_PKCS1_SHA512_WITH_RSA_ENCRYPTION:
-      string_id = IDS_CERT_OID_PKCS1_SHA512_WITH_RSA_ENCRYPTION;
-      break;
-    // There are a billionty other OIDs we could add here.  I tried to get the
-    // important ones...
-    default:
-      string_id = -1;
-      break;
-  }
-  if (string_id >= 0)
-    return l10n_util::GetStringUTF8(string_id);
-
-  char* pr_string = CERT_GetOidString(oid);
-  if (pr_string) {
-    std::string rv = pr_string;
-    PR_smprintf_free(pr_string);
-    return rv;
-  }
-
-  return ProcessRawBytes(oid);
-}
-
-// Get a display string from a Relative Distinguished Name.
-std::string ProcessRDN(CERTRDN* rdn) {
-  std::string rv;
-
-  CERTAVA** avas = rdn->avas;
-  for (size_t i = 0; avas[i] != NULL; ++i) {
-    rv += GetOIDText(&avas[i]->type);
-    SECItem* decode_item = CERT_DecodeAVAValue(&avas[i]->value);
-    if (decode_item) {
-      // TODO(mattm): Pass decode_item to CERT_RFC1485_EscapeAndQuote.
-      rv += " = ";
-      std::string value(reinterpret_cast<char*>(decode_item->data),
-                        decode_item->len);
-      rv += value;
-      SECITEM_FreeItem(decode_item, PR_TRUE);
-    }
-    rv += '\n';
-  }
-
-  return rv;
-}
-
-std::string ProcessName(CERTName* name) {
-  std::string rv;
-  CERTRDN** last_rdn;
-
-  // Find last non-NULL rdn.
-  for (last_rdn = name->rdns; last_rdn[0]; last_rdn++) {}
-  last_rdn--;
-
-  for (CERTRDN** rdn = last_rdn; rdn >= name->rdns; rdn--)
-    rv += ProcessRDN(*rdn);
-  return rv;
-}
-
 std::string ProcessSecAlgorithm(SECAlgorithmID* algorithm_id) {
-  return GetOIDText(&algorithm_id->algorithm);
-}
-
-std::string ProcessExtensionData(SECItem* extension_data) {
-  // TODO(mattm): should display extension-specific info here (see
-  // ProcessExtensionData in nsNSSCertHelper.cpp)
-  return ProcessRawBytes(extension_data);
+  return psm::GetOIDText(&algorithm_id->algorithm);
 }
 
 std::string ProcessExtension(CERTCertExtension* extension) {
@@ -248,13 +78,14 @@ std::string ProcessExtension(CERTCertExtension* extension) {
   if (extension->critical.data && extension->critical.data[0])
     criticality = IDS_CERT_EXTENSION_CRITICAL;
   rv = l10n_util::GetStringUTF8(criticality) + "\n" +
-      ProcessExtensionData(&extension->value);
+      psm::ProcessExtensionData(SECOID_FindOIDTag(&extension->id),
+                                &extension->value);
   return rv;
 }
 
 std::string ProcessSubjectPublicKeyInfo(CERTSubjectPublicKeyInfo* spki) {
   // TODO(mattm): firefox decodes the key and displays modulus and exponent.
-  return ProcessRawBits(&spki->subjectPublicKey);
+  return psm::ProcessRawBits(&spki->subjectPublicKey);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -321,9 +152,9 @@ class CertificateViewer {
   static GtkTreeStore* CreateFieldsTreeStore(CERTCertificate* cert);
 
   // Callbacks for user selecting elements in the trees.
-  static void OnHierarchySelectionChanged(GtkTreeSelection *selection,
+  static void OnHierarchySelectionChanged(GtkTreeSelection* selection,
                                           CertificateViewer* viewer);
-  static void OnFieldsSelectionChanged(GtkTreeSelection *selection,
+  static void OnFieldsSelectionChanged(GtkTreeSelection* selection,
                                        CertificateViewer* viewer);
 
   // The certificate hierarchy (leaf cert first).
@@ -359,7 +190,7 @@ void OnDestroy(GtkDialog* dialog, CertificateViewer* cert_viewer) {
 CertificateViewer::CertificateViewer(gfx::NativeWindow parent,
                                      CERTCertList* cert_chain_list)
     : cert_chain_list_(cert_chain_list) {
-  CERTCertListNode *node;
+  CERTCertListNode* node;
   for (node = CERT_LIST_HEAD(cert_chain_list_);
        !CERT_LIST_END(node, cert_chain_list_);
        node = CERT_LIST_NEXT(node)) {
@@ -369,7 +200,7 @@ CertificateViewer::CertificateViewer(gfx::NativeWindow parent,
   dialog_ = gtk_dialog_new_with_buttons(
       l10n_util::GetStringFUTF8(
           IDS_CERT_INFO_DIALOG_TITLE,
-          UTF8ToUTF16(GetCertTitle(cert_chain_.front()))).c_str(),
+          UTF8ToUTF16(psm::GetCertTitle(cert_chain_.front()))).c_str(),
       parent,
       // Non-modal.
       GTK_DIALOG_NO_SEPARATOR,
@@ -379,6 +210,7 @@ CertificateViewer::CertificateViewer(gfx::NativeWindow parent,
   gtk_box_set_spacing(GTK_BOX(GTK_DIALOG(dialog_)->vbox),
                       gtk_util::kContentAreaSpacing);
 
+  psm::RegisterDynamicOids();
   InitGeneralPage();
   InitDetailsPage();
 
@@ -430,10 +262,10 @@ void CertificateViewer::InitGeneralPage() {
                                 NULL, &usages) == SECSuccess) {
     // List of usages to display is borrowed from
     // mozilla/source/security/manager/ssl/src/nsUsageArrayHelper.cpp
-    struct {
+    static const struct {
       SECCertificateUsage usage;
       int string_id;
-    } usageStringMap[] = {
+    } usage_string_map[] = {
       {certificateUsageSSLClient, IDS_CERT_USAGE_SSL_CLIENT},
       {certificateUsageSSLServer, IDS_CERT_USAGE_SSL_SERVER},
       {certificateUsageSSLServerWithStepUp,
@@ -444,13 +276,13 @@ void CertificateViewer::InitGeneralPage() {
       {certificateUsageSSLCA, IDS_CERT_USAGE_SSL_CA},
       {certificateUsageStatusResponder, IDS_CERT_USAGE_STATUS_RESPONDER},
     };
-    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(usageStringMap); ++i) {
-      if (usages & usageStringMap[i].usage)
+    for (size_t i = 0; i < ARRAYSIZE_UNSAFE(usage_string_map); ++i) {
+      if (usages & usage_string_map[i].usage)
         gtk_box_pack_start(
             GTK_BOX(uses_vbox),
             gtk_util::IndentWidget(gtk_util::LeftAlignMisc(gtk_label_new(
                 l10n_util::GetStringUTF8(
-                    usageStringMap[i].string_id).c_str()))),
+                    usage_string_map[i].string_id).c_str()))),
             FALSE, FALSE, 0);
     }
   }
@@ -542,7 +374,7 @@ void CertificateViewer::FillHierarchyStore(GtkTreeStore* hierarchy_store,
     GtkTreeStore* fields_store = CreateFieldsTreeStore(*i);
     gtk_tree_store_set(
         hierarchy_store, &iter,
-        HIERARCHY_NAME, GetCertTitle(*i).c_str(),
+        HIERARCHY_NAME, psm::GetCertTitle(*i).c_str(),
         HIERARCHY_OBJECT, fields_store,
         -1);
     g_object_unref(fields_store);
@@ -559,7 +391,7 @@ void CertificateViewer::FillTreeStoreWithCertFields(GtkTreeStore* store,
   gtk_tree_store_append(store, &top, NULL);
   gtk_tree_store_set(
       store, &top,
-      FIELDS_NAME, GetCertTitle(cert).c_str(),
+      FIELDS_NAME, psm::GetCertTitle(cert).c_str(),
       FIELDS_VALUE, "",
       -1);
 
@@ -608,7 +440,7 @@ void CertificateViewer::FillTreeStoreWithCertFields(GtkTreeStore* store,
       store, &iter,
       FIELDS_NAME,
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_ISSUER).c_str(),
-      FIELDS_VALUE, ProcessName(&cert->issuer).c_str(),
+      FIELDS_VALUE, psm::ProcessName(&cert->issuer).c_str(),
       -1);
 
   GtkTreeIter validity_iter;
@@ -648,7 +480,7 @@ void CertificateViewer::FillTreeStoreWithCertFields(GtkTreeStore* store,
       store, &iter,
       FIELDS_NAME,
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_SUBJECT).c_str(),
-      FIELDS_VALUE, ProcessName(&cert->subject).c_str(),
+      FIELDS_VALUE, psm::ProcessName(&cert->subject).c_str(),
       -1);
 
   GtkTreeIter subject_public_key_iter;
@@ -692,7 +524,7 @@ void CertificateViewer::FillTreeStoreWithCertFields(GtkTreeStore* store,
       gtk_tree_store_append(store, &iter, &extensions_iter);
       gtk_tree_store_set(
           store, &iter,
-          FIELDS_NAME, GetOIDText(&cert->extensions[i]->id).c_str(),
+          FIELDS_NAME, psm::GetOIDText(&cert->extensions[i]->id).c_str(),
           FIELDS_VALUE, ProcessExtension(cert->extensions[i]).c_str(),
           -1);
     }
@@ -712,7 +544,7 @@ void CertificateViewer::FillTreeStoreWithCertFields(GtkTreeStore* store,
       store, &iter,
       FIELDS_NAME,
       l10n_util::GetStringUTF8(IDS_CERT_DETAILS_CERTIFICATE_SIG_VALUE).c_str(),
-      FIELDS_VALUE, ProcessRawBits(&cert->signatureWrap.signature).c_str(),
+      FIELDS_VALUE, psm::ProcessRawBits(&cert->signatureWrap.signature).c_str(),
       -1);
 }
 
@@ -836,7 +668,7 @@ void CertificateViewer::InitDetailsPage() {
 
 // static
 void CertificateViewer::OnHierarchySelectionChanged(
-    GtkTreeSelection *selection, CertificateViewer* viewer) {
+    GtkTreeSelection* selection, CertificateViewer* viewer) {
   GtkTreeIter iter;
   GtkTreeModel* model;
   if (gtk_tree_selection_get_selected(selection, &model, &iter)) {
@@ -851,7 +683,7 @@ void CertificateViewer::OnHierarchySelectionChanged(
 }
 
 // static
-void CertificateViewer::OnFieldsSelectionChanged(GtkTreeSelection *selection,
+void CertificateViewer::OnFieldsSelectionChanged(GtkTreeSelection* selection,
                                                  CertificateViewer* viewer) {
   GtkTreeIter iter;
   GtkTreeModel* model;

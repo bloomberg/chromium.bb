@@ -2255,6 +2255,10 @@
           'sources': [
             'browser/crash_handler_host_linux.h',
             'browser/net/ssl_config_service_manager_pref.cc',
+            'third_party/mozilla_security_manager/nsNSSCertHelper.cpp',
+            'third_party/mozilla_security_manager/nsNSSCertHelper.h',
+            'third_party/mozilla_security_manager/nsNSSCertificate.cpp',
+            'third_party/mozilla_security_manager/nsNSSCertificate.h',
           ],
           'conditions': [
             ['linux_breakpad==1', {

@@ -16,6 +16,7 @@ include_rules = [
 
   # Other libraries.
   "+chrome/third_party/hunspell",
+  "+chrome/third_party/mozilla_security_manager",
   "+libxml", # For search engine definition parsing.
   "+media/audio", # Chrome's lightweight audio library.
   "+media/base",

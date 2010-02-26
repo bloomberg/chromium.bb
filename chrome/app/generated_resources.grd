@@ -2692,11 +2692,200 @@ each locale. -->
         PKCS #1 SHA-512 With RSA Encryption
       </message>
 
+      <message name="IDS_CERT_EXT_NS_CERT_TYPE" desc="description of extension Netscape Certificate Type">
+        Netscape Certificate Type
+      </message>
+      <message name="IDS_CERT_EXT_NS_CERT_TYPE_EMAIL" desc="description of a certificate type for email">
+        Email Certificate
+      </message>
+      <message name="IDS_CERT_EXT_NS_CERT_TYPE_EMAIL_CA" desc="description of a certificate type for email certificate authority">
+        Email Certificate Authority
+      </message>
+      <message name="IDS_CERT_EXT_NS_CERT_BASE_URL" desc="description of extension Netscape Certificate Base URL">
+        Netscape Certificate Base URL
+      </message>
+      <message name="IDS_CERT_EXT_NS_CERT_REVOCATION_URL" desc="description of extension Netscape Certificate Revocation URL">
+        Netscape Certificate Revocation URL
+      </message>
+      <message name="IDS_CERT_EXT_NS_CA_REVOCATION_URL" desc="description of extension Netscape Certificate Authority Revocation URL">
+        Netscape Certificate Authority Revocation URL
+      </message>
+      <message name="IDS_CERT_EXT_NS_CERT_RENEWAL_URL" desc="description of extension Netscape Certificate Renewal URL">
+        Netscape Certificate Renewal URL
+      </message>
+      <message name="IDS_CERT_EXT_NS_CA_POLICY_URL" desc="description of extension Netscape Certificate Authority Policy URL">
+        Netscape Certificate Authority Policy URL
+      </message>
+      <message name="IDS_CERT_EXT_NS_SSL_SERVER_NAME" desc="description of extension Netscape Certificate SSL Server Name">
+        Netscape Certificate SSL Server Name
+      </message>
+      <message name="IDS_CERT_EXT_NS_COMMENT" desc="description of extension Netscape Certificate Comment">
+        Netscape Certificate Comment
+      </message>
+      <message name="IDS_CERT_EXT_NS_LOST_PASSWORD_URL" desc="description of extension Netscape Lost Password URL">
+        Netscape Lost Password URL
+      </message>
+      <message name="IDS_CERT_EXT_NS_CERT_RENEWAL_TIME" desc="description of extension Netscape Certificate Renewal Time">
+        Netscape Certificate Renewal Time
+      </message>
+      <message name="IDS_CERT_X509_SUBJECT_DIRECTORY_ATTR" desc="description of extension Certificate Subject Directory Attributes">
+        Certificate Subject Directory Attributes
+      </message>
+      <message name="IDS_CERT_X509_SUBJECT_KEYID" desc="description of extension Certificate Subject Key ID">
+        Certificate Subject Key ID
+      </message>
+      <message name="IDS_CERT_KEYID_FORMAT" desc="format for key id in certificate extensions details">
+        Key ID: <ph name="KEY_ID">$1<ex>19 EB 8E 93</ex></ph>
+      </message>
+      <message name="IDS_CERT_ISSUER_FORMAT" desc="format for issuer in certificate extensions details">
+        Issuer: <ph name="CERTIFICATE_AUTHORITY">$1<ex>VeriSign</ex></ph>
+      </message>
+      <message name="IDS_CERT_SERIAL_NUMBER_FORMAT" desc="format for serial number in certificate extensions details">
+        Serial Number: <ph name="Serail Number">$1<ex>19 EB 8E 93</ex></ph>
+      </message>
+      <message name="IDS_CERT_X509_KEY_USAGE" desc="description of extension Certificate Key Usage">
+        Certificate Key Usage
+      </message>
+      <message name="IDS_CERT_X509_SUBJECT_ALT_NAME" desc="description of extension Certificate Subject Alternative Name">
+        Certificate Subject Alternative Name
+      </message>
+      <message name="IDS_CERT_X509_ISSUER_ALT_NAME" desc="description of extension Certificate Issuer Alternative Name">
+        Certificate Issuer Alternative Name
+      </message>
+      <message name="IDS_CERT_X509_BASIC_CONSTRAINTS" desc="description of extension Certificate Basic Constraints">
+        Certificate Basic Constraints
+      </message>
+      <message name="IDS_CERT_X509_NAME_CONSTRAINTS" desc="description of extension Certificate Name Constraints">
+        Certificate Name Constraints
+      </message>
+      <message name="IDS_CERT_X509_CRL_DIST_POINTS" desc="description of extension CRL Distribution Points">
+        CRL Distribution Points
+      </message>
+      <message name="IDS_CERT_X509_CERT_POLICIES" desc="description of extension Certificate Policies">
+        Certificate Policies
+      </message>
+      <message name="IDS_CERT_X509_POLICY_MAPPINGS" desc="description of extension Certificate Policy Mappings">
+        Certificate Policy Mappings
+      </message>
+      <message name="IDS_CERT_X509_POLICY_CONSTRAINTS" desc="description of extension Certificate Policy Constraints">
+        Certificate Policy Constraints
+      </message>
+      <message name="IDS_CERT_X509_AUTH_KEYID" desc="description of extension Certificate Authority Key Identifier">
+        Certificate Authority Key ID
+      </message>
+      <message name="IDS_CERT_X509_EXT_KEY_USAGE" desc="description of extension Extended Key Usage">
+        Extended Key Usage
+      </message>
+      <message name="IDS_CERT_X509_AUTH_INFO_ACCESS" desc="description of extension Authority Information Access">
+        Authority Information Access
+      </message>
+      <message name="IDS_CERT_X509_KEY_USAGE_SIGNING" desc="description of certificate usage Signing">
+        Signing
+      </message>
+      <message name="IDS_CERT_X509_KEY_USAGE_NONREP" desc="description of certificate usage Non-repudiation">
+        Non-repudiation
+      </message>
+      <message name="IDS_CERT_X509_KEY_USAGE_ENCIPHERMENT" desc="description of certificate usage Key Encipherment">
+        Key Encipherment
+      </message>
+      <message name="IDS_CERT_X509_KEY_USAGE_DATA_ENCIPHERMENT" desc="description of certificate usage Data Encipherment">
+        Data Encipherment
+      </message>
+      <message name="IDS_CERT_X509_KEY_USAGE_KEY_AGREEMENT" desc="description of certificate usage Key Agreement">
+        Key Agreement
+      </message>
+      <message name="IDS_CERT_X509_KEY_USAGE_CERT_SIGNER" desc="description of certificate usage Certificate Signer">
+        Certificate Signer
+      </message>
+      <message name="IDS_CERT_X509_KEY_USAGE_CRL_SIGNER" desc="description of certificate usage CRL Signer">
+        CRL Signer
+      </message>
+      <message name="IDS_CERT_X509_BASIC_CONSTRAINT_IS_CA" desc="description of certificate constraint Is a Certificate Authority">
+        Is a Certificate Authority
+      </message>
+      <message name="IDS_CERT_X509_BASIC_CONSTRAINT_IS_NOT_CA" desc="description of certificate constraint Is not a Certificate Authority">
+        Is not a Certificate Authority
+      </message>
+      <message name="IDS_CERT_X509_BASIC_CONSTRAINT_PATH_LEN" desc="description of certificate constraint Maximum number of intermediate CAs: %S">
+        Maximum number of intermediate CAs: <ph name="NUM_INTERMEDIATE_CA">$1<ex>5</ex></ph>
+      </message>
+      <message name="IDS_CERT_X509_BASIC_CONSTRAINT_PATH_LEN_UNLIMITED" desc="value NUM_INTERMEDIATE_CA when there is no limit">
+        unlimited
+      </message>
+      <message name="IDS_CERT_REVOCATION_REASON_UNUSED" desc="description of certificate revocation for reason Unused">
+        Unused
+      </message>
+      <message name="IDS_CERT_REVOCATION_REASON_KEY_COMPROMISE" desc="description of certificate revocation for reason Key Compromise">
+        Key Compromise
+      </message>
+      <message name="IDS_CERT_REVOCATION_REASON_CA_COMPROMISE" desc="description of certificate revocation for reason CA Compromise">
+        CA Compromise
+      </message>
+      <message name="IDS_CERT_REVOCATION_REASON_AFFILIATION_CHANGED" desc="description of certificate revocation for reason Affiliation Changed">
+        Affiliation Changed
+      </message>
+      <message name="IDS_CERT_REVOCATION_REASON_SUPERSEDED" desc="description of certificate revocation for reason Superseded">
+        Superseded
+      </message>
+      <message name="IDS_CERT_REVOCATION_REASON_CESSATION_OF_OPERATION" desc="description of certificate revocation for reason Cessation of Operation">
+        Cessation of Operation
+      </message>
+      <message name="IDS_CERT_REVOCATION_REASON_CERTIFICATE_HOLD" desc="description of certificate revocation for reason Certificate Hold">
+        Certificate on Hold
+      </message>
+      <message name="IDS_CERT_OCSP_RESPONDER_FORMAT" desc="format for info about OCSP responder">
+        OCSP Responder: <ph name="LOCATION">$1<ex>Foo</ex></ph>
+      </message>
+      <message name="IDS_CERT_CA_ISSUERS_FORMAT" desc="format for info about CA Issuers">
+        CA Issuers: <ph name="LOCATION">$1<ex>Foo</ex></ph>
+      </message>
+      <message name="IDS_CERT_UNKNOWN_OID_INFO_FORMAT" desc="format for info about an OID we don't have a specific format for">
+        <ph name="OID">$1<ex>OID.1.23.45.6</ex></ph>: <ph name="INFO">$2<ex>Foo</ex></ph>
+      </message>
+      <message name="IDS_CERT_GENERAL_NAME_RFC822_NAME" desc="label for the certRFC822Name general name type">
+        Email Address
+      </message>
+      <message name="IDS_CERT_GENERAL_NAME_DNS_NAME" desc="label for the certDNSName general name type">
+        DNS Name
+      </message>
+      <message name="IDS_CERT_GENERAL_NAME_X400_ADDRESS" desc="label for the certX400Address general name type">
+        X.400 Address
+      </message>
+      <message name="IDS_CERT_GENERAL_NAME_DIRECTORY_NAME" desc="label for the certDirectoryName general name type">
+        X.500 Name
+      </message>
+      <message name="IDS_CERT_GENERAL_NAME_EDI_PARTY_NAME" desc="label for the certEDIPartyName general name type">
+        EDI Party Name
+      </message>
+      <message name="IDS_CERT_GENERAL_NAME_URI" desc="label for the certURI general name type">
+        URI
+      </message>
+      <message name="IDS_CERT_GENERAL_NAME_IP_ADDRESS" desc="label for the certIPAddress general name type">
+        IP Address
+      </message>
+      <message name="IDS_CERT_GENERAL_NAME_REGISTERED_ID" desc="label for the certRegisteredID general name type">
+        Registered OID
+      </message>
+      <message name="IDS_CERT_EXT_MS_CERT_TYPE" desc="description of extension Microsoft Certificate Template Name">
+        Microsoft Certificate Template Name
+      </message>
+      <message name="IDS_CERT_EXT_MS_CA_VERSION" desc="description of extension Microsoft CA Version">
+        Microsoft CA Version
+      </message>
+      <message name="IDS_CERT_EXT_MS_NT_PRINCIPAL_NAME" desc="description of extension Microsoft Principal Name">
+        Microsoft Principal Name
+      </message>
+      <message name="IDS_CERT_EXT_MS_NTDS_REPLICATION" desc="description of extension Microsoft Domain GUID">
+        Microsoft Domain GUID
+      </message>
       <message name="IDS_CERT_EXTENSION_CRITICAL" desc="The text displayed in the certificate details dialog for a given extension which is critical">
         Critical
       </message>
       <message name="IDS_CERT_EXTENSION_NON_CRITICAL" desc="The text displayed in the certificate details dialog for a given extension which is not critical">
         Not Critical
+      </message>
+      <message name="IDS_CERT_EXTENSION_DUMP_ERROR" desc="The text displayed in the certificate details dialog for a given extension which could not be decoded">
+        Error: Unable to decode extension
       </message>
 
       <!-- Certificate manager dialog strings.  These are only used on platforms that don't have a native certificate manager dialog, such as Linux. -->
