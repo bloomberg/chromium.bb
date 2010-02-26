@@ -1,4 +1,4 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -23,17 +23,22 @@ const int kTextSize = 9;
 const int kBottomMargin = 0;
 const int kPadding = 2;
 const int kTopTextPadding = 0;
+#elif defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
+const int kTextSize = 8;
+const int kBottomMargin = 5;
+const int kPadding = 2;
+const int kTopTextPadding = 1;
 #elif defined(OS_MACOSX)
 const int kTextSize = 9;
 const int kBottomMargin = 5;
 const int kPadding = 2;
 const int kTopTextPadding = 0;
 #else
-const int kTextSize = 8;
+const int kTextSize = 7;
 const int kBottomMargin = 5;
 const int kPadding = 2;
 // The padding between the top of the badge and the top of the text.
-const int kTopTextPadding = 1;
+const int kTopTextPadding = 2;
 #endif
 
 const int kBadgeHeight = 11;
