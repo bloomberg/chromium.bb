@@ -182,8 +182,8 @@ class FieldReadAccessor {
     return *reinterpret_cast<T*>(reinterpret_cast<char*>(data_) + offset_ +
         stride_ * (translated_index + real_start_index_));
   }
-  void Initialize(const Field& field, unsigned int start_index,
-      unsigned int length) {
+  virtual void Initialize(const Field& field, unsigned int start_index,
+                          unsigned int length) {
     buffer_ = field.buffer();
     locked_ = false;
     data_ = NULL;
@@ -225,6 +225,42 @@ class FieldReadAccessor {
   DISALLOW_COPY_AND_ASSIGN(FieldReadAccessor);
 };
 
+// Specialization which pads out the fetched coordinates with zeros,
+// to be able to handle 2D Position streams.
+class FieldReadAccessorPoint3 : public FieldReadAccessor<Point3> {
+ public:
+  FieldReadAccessorPoint3()
+      : FieldReadAccessor<Point3>(),
+        num_components_(0),
+        cache_index_(0) { }
+
+  virtual void Initialize(const Field& field, unsigned int start_index,
+                          unsigned int length) {
+    FieldReadAccessor<Point3>::Initialize(field, start_index, length);
+    num_components_ = field.num_components();
+  }
+
+  virtual Point3& operator[](unsigned int translated_index) {
+    Point3& tmp = FieldReadAccessor<Point3>::operator[](translated_index);
+    Point3& cur = cache_[cache_index_];
+    cache_index_ = (cache_index_ + 1) % 3;
+    for (unsigned int i = 0; i < num_components_; i++) {
+      cur[i] = tmp[i];
+    }
+    for (unsigned int i = num_components_; i < 3; i++) {
+      cur[i] = 0;
+    }
+    return cur;
+  }
+
+ protected:
+  unsigned int num_components_;
+  // We need a cache of the three most recently fetched vertices to
+  // match the usage elsewhere in this file
+  int cache_index_;
+  Point3 cache_[3];
+};
+
 class FieldReadAccessorUnsignedInt : public FieldReadAccessor<unsigned int> {
  public:
   FieldReadAccessorUnsignedInt()
@@ -257,18 +293,18 @@ class FieldReadAccessorUnsignedInt : public FieldReadAccessor<unsigned int> {
 };
 
 // Attempts to initialize a FieldReadAccessor for the stream of vertices of
-// the primitive.  Returns success.
-bool GetVerticesAccessor(const Primitive* primitive,
-                         int position_stream_index,
-                         FieldReadAccessor<Point3>* accessor) {
-  if (!(accessor && primitive))
-    return false;
+// the primitive.  Returns newly allocated accessor which must be deleted
+// by caller, or NULL upon failure.
+FieldReadAccessor<Point3>* GetVerticesAccessor(const Primitive* primitive,
+                                               int position_stream_index) {
+  if (!primitive)
+    return NULL;
 
   const StreamBank* stream_bank = primitive->stream_bank();
   if (!stream_bank) {
     O3D_ERROR(primitive->service_locator())
         << "No stream bank on Primitive '" << primitive->name() << "'";
-    return false;
+    return NULL;
   }
 
   const Stream* vertex_stream = stream_bank->GetVertexStream(
@@ -279,28 +315,33 @@ bool GetVerticesAccessor(const Primitive* primitive,
     O3D_ERROR(primitive->service_locator())
         << "No POSITION stream index "
         << position_stream_index;
-    return false;
+    return NULL;
   }
 
   const Field& field = vertex_stream->field();
 
   if (!field.buffer()) {
     O3D_ERROR(primitive->service_locator()) << "Vertex Buffer not set";
-    return false;
+    return NULL;
   }
 
   if (!field.IsA(FloatField::GetApparentClass())) {
     O3D_ERROR(primitive->service_locator()) << "POSITION stream index "
                                             << position_stream_index
                                             << " is not a FLOAT stream";
-    return false;
+    return NULL;
   }
 
-  if (field.num_components() != 3) {
-    O3D_ERROR(primitive->service_locator())
-        << "POSITION stream index " << position_stream_index
-        << " does not have 3 components";
-    return false;
+  // Don't even try to lock fields that don't have any data
+  if (vertex_stream->GetMaxVertices() == 0) {
+    return NULL;
+  }
+
+  FieldReadAccessor<Point3>* accessor;
+  if (field.num_components() == 3) {
+    accessor = new FieldReadAccessor<Point3>();
+  } else {
+    accessor = new FieldReadAccessorPoint3();
   }
 
   accessor->Initialize(field, vertex_stream->start_index(),
@@ -309,10 +350,11 @@ bool GetVerticesAccessor(const Primitive* primitive,
   if (!accessor->Valid()) {
     O3D_ERROR(primitive->service_locator())
         << "Could not lock vertex buffer";
-    return false;
+    delete accessor;
+    return NULL;
   }
 
-  return true;
+  return accessor;
 }
 
 // Attempts to initialize a FieldReadAccessor for the stream of indices of
@@ -347,11 +389,12 @@ bool Primitive::WalkPolygons(
     PolygonFunctor* polygon_functor) const {
   DLOG_ASSERT(polygon_functor);
 
-  FieldReadAccessor<Point3> vertices;
   FieldReadAccessorUnsignedInt indices;
-
-  if (!GetVerticesAccessor(this, position_stream_index, &vertices))
+  scoped_ptr<FieldReadAccessor<Point3> > vertices_pointer(
+      GetVerticesAccessor(this, position_stream_index));
+  if (vertices_pointer.get() == NULL)
     return false;
+  FieldReadAccessor<Point3>& vertices = *vertices_pointer;
 
   unsigned int index_count;
   if (indexed()) {

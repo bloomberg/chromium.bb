@@ -1,0 +1,119 @@
+/*
+ * Copyright 2010, Google Inc.
+ * All rights reserved.
+ *
+ * Redistribution and use in source and binary forms, with or without
+ * modification, are permitted provided that the following conditions are
+ * met:
+ *
+ *     * Redistributions of source code must retain the above copyright
+ * notice, this list of conditions and the following disclaimer.
+ *     * Redistributions in binary form must reproduce the above
+ * copyright notice, this list of conditions and the following disclaimer
+ * in the documentation and/or other materials provided with the
+ * distribution.
+ *     * Neither the name of Google Inc. nor the names of its
+ * contributors may be used to endorse or promote products derived from
+ * this software without specific prior written permission.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS
+ * "AS IS" AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT
+ * LIMITED TO, THE IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR
+ * A PARTICULAR PURPOSE ARE DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT
+ * OWNER OR CONTRIBUTORS BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL,
+ * SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES (INCLUDING, BUT NOT
+ * LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES; LOSS OF USE,
+ * DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON ANY
+ * THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
+ * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ */
+
+namespace o3d {
+
+%[
+  A ProcessedPath holds a series of 2D vector drawing commands (i.e.,
+  move-to, line-to, quad-to, cubic-to) and the results of processing
+  this series of commands into a triangle mesh for rendering on the
+  GPU. It is only an internal class; this functionality is exposed via
+  the o3djs.gpu2d library.
+%]
+
+[nocpp, include="core/cross/processed_path.h"] class ProcessedPath
+    : ObjectBase {
+  %[
+    Clears out all of the curve segments that have been added to this
+    path.
+  %]
+  [nodocs]
+  void Clear();
+
+  %[
+    Moves the pen to the given absolute X,Y coordinates. If a contour
+    isn't currently open on this path, one is opened.
+    \param x the x coordinate to move to
+    \param y the y coordinate to move to
+  %]
+  [nodocs]
+  void MoveTo(float x, float y);
+
+  %[
+    Draws a line from the current coordinates to the given absolute
+    X,Y coordinates.
+    \param x the x coordinate to draw a line to
+    \param y the y coordinate to draw a line to
+  %]
+  [nodocs]
+  void LineTo(float x, float y);
+
+  %[
+    Draws a quadratic curve from the current coordinates through the
+    given control point and end point, specified in absolute
+    coordinates.
+    \param cx the x coordinate of the quadratic's control point
+    \param cy the y coordinate of the quadratic's control point
+    \param x the x coordinate of the quadratic's end point
+    \param y the y coordinate of the quadratic's end point
+  %]
+  [nodocs]
+  void QuadraticTo(float cx, float cy, float x, float y);
+
+  %[
+    Draws a cubic curve from the current coordinates through the
+    given control points and end point, specified in absolute
+    coordinates.
+    \param c0x the x coordinate of the cubic's first control point
+    \param c0y the y coordinate of the cubic's first control point
+    \param c1x the x coordinate of the cubic's second control point
+    \param c1y the y coordinate of the cubic's second control point
+    \param x the x coordinate of the cubic's end point
+    \param y the y coordinate of the cubic's end point
+  %]
+  [nodocs]
+  void CubicTo(float c0x, float c0y,
+               float c1x, float c1y,
+               float x, float y);
+
+  %[
+    Closes the currently open contour on this path.
+  %]
+  [nodocs]
+  void Close();
+
+  %[
+    Creates the triangle mesh which will render the given curve
+    segments. There are two regions: exterior and interior. The
+    exterior region covers the portions containing the curve
+    segments. It has two associated fields: a 2D floating point field
+    for the positions, and a 3D floating point field for the
+    Loop/Blinn texture coordinates. The interior region has one 2D
+    floating point field for the positions. The contents of the fields
+    are organized for rendering as non-indexed triangles.
+  %]
+  [nodocs]
+  void CreateMesh(Field exterior_positions,
+                  Field exterior_texture_coordinates,
+                  Field interior_positions);
+};
+
+}  // namespace o3d

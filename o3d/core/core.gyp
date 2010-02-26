@@ -79,6 +79,7 @@
         '../../<(pngdir)/libpng.gyp:libpng',
         '../../<(zlibdir)/zlib.gyp:zlib',
         '../../skia/skia.gyp:skia',
+        '../third_party/glu/libtess.gyp:libtess',
       ],
       'sources': [
         'cross/bitmap.cc',
@@ -207,6 +208,8 @@
         'cross/precompile.h',
         'cross/primitive.cc',
         'cross/primitive.h',
+        'cross/processed_path.cc',
+        'cross/processed_path.h',
         'cross/profiler.cc',
         'cross/profiler.h',
         'cross/ray_intersection_info.cc',
@@ -279,6 +282,10 @@
         'cross/gpu2d/interval_tree.h',
         'cross/gpu2d/local_triangulator.cc',
         'cross/gpu2d/local_triangulator.h',
+        'cross/gpu2d/path_cache.cc',
+        'cross/gpu2d/path_cache.h',
+        'cross/gpu2d/path_processor.cc',
+        'cross/gpu2d/path_processor.h',
         'cross/gpu2d/red_black_tree.h',
       ],
       'direct_dependent_settings': {

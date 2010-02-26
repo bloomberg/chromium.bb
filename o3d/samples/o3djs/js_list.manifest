@@ -38,6 +38,7 @@
   'error.js',
   'event.js',
   'fps.js',
+  'gpu2d.js',
   'io.js',
   'loader.js',
   'material.js',

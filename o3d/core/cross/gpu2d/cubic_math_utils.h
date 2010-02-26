@@ -96,6 +96,17 @@ bool PointInTriangle(float px, float py,
                      float bx, float by,
                      float cx, float cy);
 
+// Determines whether the triangles defined by the points (a1, b1, c1)
+// and (a2, b2, c2) overlap. The definition of this function is that
+// if the two triangles only share an adjacent edge or vertex, they
+// are not considered to overlap.
+bool TrianglesOverlap(float a1x, float a1y,
+                      float b1x, float b1y,
+                      float c1x, float c1y,
+                      float a2x, float a2y,
+                      float b2x, float b2y,
+                      float c2x, float c2y);
+
 }  // namespace cubic
 }  // namespace gpu2d
 }  // namespace o3d

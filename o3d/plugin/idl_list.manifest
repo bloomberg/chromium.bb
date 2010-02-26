@@ -63,6 +63,7 @@
   'idl/param_operation.idl',
   'idl/plugin.idl',
   'idl/primitive.idl',
+  'idl/processed_path.idl',
   'idl/ray_intersection_info.idl',
   'idl/render_event.idl',
   'idl/render_node.idl',

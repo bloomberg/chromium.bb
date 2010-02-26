@@ -54,6 +54,7 @@
 #include "core/cross/param_array.h"
 #include "core/cross/param_operation.h"
 #include "core/cross/primitive.h"
+#include "core/cross/processed_path.h"
 #include "core/cross/render_surface_set.h"
 #include "core/cross/sampler.h"
 #include "core/cross/shape.h"
@@ -157,6 +158,7 @@ ClassManager::ClassManager(ServiceLocator* service_locator)
   AddTypedClass<ParamArray>();
   AddTypedClass<ParamObject>();
   AddTypedClass<Primitive>();
+  AddTypedClass<ProcessedPath>();
   AddTypedClass<RenderFrameCounter>();
   AddTypedClass<RenderNode>();
   AddTypedClass<RenderSurfaceSet>();
