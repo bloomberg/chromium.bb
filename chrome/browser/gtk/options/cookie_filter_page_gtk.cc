@@ -210,6 +210,8 @@ void CookieFilterPageGtk::OnShowCookiesClicked(
                     new BrowsingDataDatabaseHelper(
                         cookie_page->profile()),
                     new BrowsingDataLocalStorageHelper(
+                        cookie_page->profile()),
+                    new BrowsingDataAppCacheHelper(
                         cookie_page->profile()));
 }
 

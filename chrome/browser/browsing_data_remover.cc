@@ -143,6 +143,8 @@ void BrowsingDataRemover::Remove(int remove_mask) {
     net::TransportSecurityState* ts_state =
         profile_->GetTransportSecurityState();
     ts_state->DeleteSince(delete_begin_);
+
+    // TODO(michaeln): clear appcaches created in the date range
   }
 
   if (remove_mask & REMOVE_PASSWORDS) {

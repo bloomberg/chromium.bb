@@ -25,6 +25,7 @@ class NativeButton;
 }  // namespace views
 
 
+class AppCacheInfoView;
 class CookieInfoView;
 class CookiesTreeModel;
 class CookiesTreeView;
@@ -107,6 +108,8 @@ class CookiesView : public TreeModelObserver,
                                     views::View* child);
 
  private:
+  class InfoPanelView;
+
   // Use the static factory method to show.
   explicit CookiesView(Profile* profile);
 
@@ -118,15 +121,6 @@ class CookiesView : public TreeModelObserver,
 
   // Update the UI when there are no cookies.
   void UpdateForEmptyState();
-
-  // Update the UI when a cookie is selected.
-  void UpdateForCookieState();
-
-  // Update the UI when a database is selected.
-  void UpdateForDatabaseState();
-
-  // Update the UI when a local storage is selected.
-  void UpdateForLocalStorageState();
 
   // Enable or disable the remove and remove all buttons.
   void UpdateRemoveButtonsState();
@@ -140,9 +134,11 @@ class CookiesView : public TreeModelObserver,
   views::NativeButton* clear_search_button_;
   views::Label* description_label_;
   CookiesTreeView* cookies_tree_;
+  InfoPanelView* info_panel_;
   CookieInfoView* cookie_info_view_;
   DatabaseInfoView* database_info_view_;
   LocalStorageInfoView* local_storage_info_view_;
+  AppCacheInfoView* appcache_info_view_;
   views::NativeButton* remove_button_;
   views::NativeButton* remove_all_button_;
 

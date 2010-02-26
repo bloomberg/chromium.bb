@@ -86,8 +86,10 @@ void BrowsingDataDatabaseHelper::NotifyInUIThread() {
   DCHECK(is_fetching_);
   // Note: completion_callback_ mutates only in the UI thread, so it's safe to
   // test it here.
-  if (completion_callback_ != NULL)
+  if (completion_callback_ != NULL) {
     completion_callback_->Run(database_info_);
+    completion_callback_.reset();
+  }
   is_fetching_ = false;
   database_info_.clear();
 }

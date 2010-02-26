@@ -12,6 +12,7 @@
 #include "base/basictypes.h"
 #include "base/scoped_ptr.h"
 #include "base/task.h"
+#include "chrome/browser/browsing_data_appcache_helper.h"
 #include "chrome/browser/browsing_data_database_helper.h"
 #include "chrome/browser/browsing_data_local_storage_helper.h"
 #include "chrome/common/gtk_tree.h"
@@ -37,7 +38,8 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
       GtkWindow* parent,
       Profile* profile,
       BrowsingDataDatabaseHelper* browsing_data_database_helper,
-      BrowsingDataLocalStorageHelper* browsing_data_local_storage_helper);
+      BrowsingDataLocalStorageHelper* browsing_data_local_storage_helper,
+      BrowsingDataAppCacheHelper* browsing_data_appcache_helper);
 
   // gtk_tree::TreeAdapter::Delegate implementation.
   virtual void OnAnyModelUpdateStart();
@@ -48,7 +50,8 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
       GtkWindow* parent,
       Profile* profile,
       BrowsingDataDatabaseHelper* browsing_data_database_helper,
-      BrowsingDataLocalStorageHelper* browsing_data_local_storage_helper);
+      BrowsingDataLocalStorageHelper* browsing_data_local_storage_helper,
+      BrowsingDataAppCacheHelper* browsing_data_appcache_helper);
 
   // Initialize the dialog contents and layout.
   void Init(GtkWindow* parent);
@@ -75,6 +78,9 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
   // Set sensitivity of local storage details.
   void SetLocalStorageDetailsSensitivity(gboolean enabled);
 
+  // Set sensitivity of appcache details.
+  void SetAppCacheDetailsSensitivity(gboolean enabled);
+
   // Show the details of the currently selected cookie.
   void PopulateCookieDetails(const std::string& domain,
                              const net::CookieMonster::CanonicalCookie& cookie);
@@ -87,6 +93,10 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
   void PopulateLocalStorageDetails(
       const BrowsingDataLocalStorageHelper::LocalStorageInfo&
       local_storage_info);
+
+  // Show the details of the currently selected appcache.
+  void PopulateAppCacheDetails(
+      const BrowsingDataAppCacheHelper::AppCacheInfo& info);
 
   // Reset the cookie details display.
   void ClearCookieDetails();
@@ -151,6 +161,7 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
 
   // The database details widgets.
   GtkWidget* database_details_table_;
+  GtkWidget* database_name_entry_;
   GtkWidget* database_description_entry_;
   GtkWidget* database_size_entry_;
   GtkWidget* database_last_modified_entry_;
@@ -161,15 +172,19 @@ class CookiesView : public gtk_tree::TreeAdapter::Delegate {
   GtkWidget* local_storage_size_entry_;
   GtkWidget* local_storage_last_modified_entry_;
 
-  // The profile.
+  // The appcache details widgets.
+  GtkWidget* appcache_details_table_;
+  GtkWidget* appcache_manifest_entry_;
+  GtkWidget* appcache_size_entry_;
+  GtkWidget* appcache_created_entry_;
+  GtkWidget* appcache_last_accessed_entry_;
+
+  // The profile and related helpers.
   Profile* profile_;
-
-  // Database Helper.
   scoped_refptr<BrowsingDataDatabaseHelper> browsing_data_database_helper_;
-
-  // Local Storage Helper.
   scoped_refptr<BrowsingDataLocalStorageHelper>
       browsing_data_local_storage_helper_;
+  scoped_refptr<BrowsingDataAppCacheHelper> browsing_data_appcache_helper_;
 
   // A factory to construct Runnable Methods so that we can be called back to
   // re-evaluate the model after the search query string changes.

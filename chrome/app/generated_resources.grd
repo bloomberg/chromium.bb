@@ -5358,6 +5358,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_COOKIES_WEB_DATABASE_DESCRIPTION_LABEL" desc="The Database Description label">
         Description:
       </message>
+      <message name="IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME" desc="The the name displayed for a Database with an empty name attribute.">
+        &lt;unnamed&gt;
+      </message>
       <message name="IDS_COOKIES_LOCAL_STORAGE_ORIGIN_LABEL" desc="The Local Storage Origin label">
         Origin:
       </message>
@@ -5411,6 +5414,9 @@ Keep your key file in a safe place. You will need it to create new versions of y
       </message>
       <message name="IDS_COOKIES_LOCAL_STORAGE" desc="Label for local storage (name of a HTML standard)">
         Local Storage
+      </message>
+      <message name="IDS_COOKIES_LAST_ACCESSED_LABEL" desc="The last access date label">
+        Last accessed:
       </message>
 
       <!-- New Tab -->

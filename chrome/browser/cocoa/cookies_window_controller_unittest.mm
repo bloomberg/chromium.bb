@@ -135,7 +135,7 @@ TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeCookie) {
   net::CookieMonster* cm = browser_helper_.profile()->GetCookieMonster();
   cm->SetCookie(GURL("http://foo.com"), "A=B");
   CookiesTreeModel model(browser_helper_.profile(), database_helper_,
-      local_storage_helper_);
+      local_storage_helper_, nil);
 
   // Root --> foo.com --> Cookies --> A. Create node for 'A'.
   TreeModelNode* node = model.GetRoot()->GetChild(0)->GetChild(0)->GetChild(0);
@@ -157,7 +157,7 @@ TEST_F(CookiesWindowControllerTest, CocoaNodeFromTreeNodeRecursive) {
   net::CookieMonster* cm = browser_helper_.profile()->GetCookieMonster();
   cm->SetCookie(GURL("http://foo.com"), "A=B");
   CookiesTreeModel model(browser_helper_.profile(), database_helper_,
-      local_storage_helper_);
+      local_storage_helper_, nil);
 
   // Root --> foo.com --> Cookies --> A. Create node for 'foo.com'.
   CookieTreeNode* node = model.GetRoot()->GetChild(0);

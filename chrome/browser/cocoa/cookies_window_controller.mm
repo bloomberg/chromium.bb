@@ -391,7 +391,7 @@ bool CookiesTreeModelObserverBridge::HasCocoaModel() {
 // clobbered, we rebuild the icon cache for safety (though they do not change).
 - (void)loadTreeModelFromProfile {
   treeModel_.reset(new CookiesTreeModel(profile_, databaseHelper_,
-                   storageHelper_));
+                   storageHelper_, nil));
   modelObserver_.reset(new CookiesTreeModelObserverBridge(self));
   treeModel_->AddObserver(modelObserver_.get());
 

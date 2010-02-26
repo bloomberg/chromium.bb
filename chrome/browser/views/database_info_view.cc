@@ -23,7 +23,8 @@ static const int kDatabaseInfoViewInsetSize = 3;
 // DatabaseInfoView, public:
 
 DatabaseInfoView::DatabaseInfoView()
-    : description_value_field_(NULL),
+    : name_value_field_(NULL),
+      description_value_field_(NULL),
       size_value_field_(NULL),
       last_modified_value_field_(NULL) {
 }
@@ -33,6 +34,9 @@ DatabaseInfoView::~DatabaseInfoView() {
 
 void DatabaseInfoView::SetDatabaseInfo(
     const BrowsingDataDatabaseHelper::DatabaseInfo& database_info) {
+  name_value_field_->SetText(database_info.database_name.empty() ?
+      l10n_util::GetString(IDS_COOKIES_WEB_DATABASE_UNNAMED_NAME) :
+      UTF8ToWide(database_info.database_name));
   description_value_field_->SetText(UTF8ToWide(database_info.description));
   size_value_field_->SetText(
       FormatBytes(database_info.size,
@@ -44,17 +48,17 @@ void DatabaseInfoView::SetDatabaseInfo(
 }
 
 void DatabaseInfoView::EnableDatabaseDisplay(bool enabled) {
+  name_value_field_->SetEnabled(enabled);
   description_value_field_->SetEnabled(enabled);
   size_value_field_->SetEnabled(enabled);
   last_modified_value_field_->SetEnabled(enabled);
 }
 
 void DatabaseInfoView::ClearDatabaseDisplay() {
-  std::wstring no_cookie_string =
-      l10n_util::GetString(IDS_COOKIES_COOKIE_NONESELECTED);
-  description_value_field_->SetText(no_cookie_string);
-  size_value_field_->SetText(no_cookie_string);
-  last_modified_value_field_->SetText(no_cookie_string);
+  const std::wstring kEmpty;
+  description_value_field_->SetText(kEmpty);
+  size_value_field_->SetText(kEmpty);
+  last_modified_value_field_->SetText(kEmpty);
   EnableDatabaseDisplay(false);
 }
 
@@ -77,6 +81,9 @@ void DatabaseInfoView::Init() {
       kDatabaseInfoViewBorderSize, border_color);
   set_border(border);
 
+  views::Label* name_label = new views::Label(
+      l10n_util::GetString(IDS_COOKIES_COOKIE_NAME_LABEL));
+  name_value_field_ = new views::Textfield;
   views::Label* description_label = new views::Label(
       l10n_util::GetString(IDS_COOKIES_WEB_DATABASE_DESCRIPTION_LABEL));
   description_value_field_ = new views::Textfield;
@@ -105,6 +112,9 @@ void DatabaseInfoView::Init() {
                         GridLayout::USE_PREF, 0, 0);
 
   layout->StartRow(0, three_column_layout_id);
+  layout->AddView(name_label);
+  layout->AddView(name_value_field_);
+  layout->StartRow(0, three_column_layout_id);
   layout->AddView(description_label);
   layout->AddView(description_value_field_);
   layout->AddPaddingRow(0, kRelatedControlSmallVerticalSpacing);
@@ -119,6 +129,9 @@ void DatabaseInfoView::Init() {
   // Color these borderless text areas the same as the containing dialog.
   SkColor text_area_background = color_utils::GetSysSkColor(COLOR_3DFACE);
   // Now that the Textfields are in the view hierarchy, we can initialize them.
+  name_value_field_->SetReadOnly(true);
+  name_value_field_->RemoveBorder();
+  name_value_field_->SetBackgroundColor(text_area_background);
   description_value_field_->SetReadOnly(true);
   description_value_field_->RemoveBorder();
   description_value_field_->SetBackgroundColor(text_area_background);
