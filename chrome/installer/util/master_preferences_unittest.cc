@@ -14,18 +14,21 @@ namespace {
 class MasterPreferencesTest : public testing::Test {
  protected:
   virtual void SetUp() {
-    // Currently no setup required.
+    ASSERT_TRUE(file_util::CreateTemporaryFile(&prefs_file_));
   }
 
   virtual void TearDown() {
-    // Currently no tear down required.
+    EXPECT_TRUE(file_util::Delete(prefs_file_, false));
   }
+
+  const FilePath& prefs_file() const { return prefs_file_; }
+
+ private:
+  FilePath prefs_file_;
 };
 }  // namespace
 
-TEST(MasterPreferencesTest, ParseDistroParams) {
-  FilePath prefs_file;
-  ASSERT_TRUE(file_util::CreateTemporaryFile(&prefs_file));
+TEST_F(MasterPreferencesTest, ParseDistroParams) {
   const char text[] =
     "{ \n"
     "  \"distribution\": { \n"
@@ -52,9 +55,9 @@ TEST(MasterPreferencesTest, ParseDistroParams) {
     "  }\n"
     "} \n";
 
-  EXPECT_TRUE(file_util::WriteFile(prefs_file, text, sizeof(text)));
+  EXPECT_TRUE(file_util::WriteFile(prefs_file(), text, sizeof(text)));
   scoped_ptr<DictionaryValue> prefs(
-      installer_util::ParseDistributionPreferences(prefs_file));
+      installer_util::ParseDistributionPreferences(prefs_file()));
   EXPECT_TRUE(prefs.get() != NULL);
   bool value = true;
   EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
@@ -115,12 +118,9 @@ TEST(MasterPreferencesTest, ParseDistroParams) {
   EXPECT_TRUE(installer_util::GetDistroIntegerPreference(prefs.get(),
       installer_util::master_preferences::kDistroPingDelay, &ping_delay));
   EXPECT_EQ(ping_delay, 40);
-  EXPECT_TRUE(file_util::Delete(prefs_file, false));
 }
 
-TEST(MasterPreferencesTest, ParseMissingDistroParams) {
-  FilePath prefs_file;
-  ASSERT_TRUE(file_util::CreateTemporaryFile(&prefs_file));
+TEST_F(MasterPreferencesTest, ParseMissingDistroParams) {
   const char text[] =
     "{ \n"
     "  \"distribution\": { \n"
@@ -133,9 +133,9 @@ TEST(MasterPreferencesTest, ParseMissingDistroParams) {
     "  }\n"
     "} \n";
 
-  EXPECT_TRUE(file_util::WriteFile(prefs_file, text, sizeof(text)));
+  EXPECT_TRUE(file_util::WriteFile(prefs_file(), text, sizeof(text)));
   scoped_ptr<DictionaryValue> prefs(
-      installer_util::ParseDistributionPreferences(prefs_file));
+      installer_util::ParseDistributionPreferences(prefs_file()));
   EXPECT_TRUE(prefs.get() != NULL);
   bool value = false;
   EXPECT_TRUE(installer_util::GetDistroBooleanPreference(prefs.get(),
@@ -178,12 +178,9 @@ TEST(MasterPreferencesTest, ParseMissingDistroParams) {
   EXPECT_FALSE(installer_util::GetDistroIntegerPreference(prefs.get(),
       installer_util::master_preferences::kDistroPingDelay, &ping_delay));
   EXPECT_EQ(ping_delay, 90);
-  EXPECT_TRUE(file_util::Delete(prefs_file, false));
 }
 
-TEST(MasterPreferencesTest, FirstRunTabs) {
-  FilePath prefs_file;
-  ASSERT_TRUE(file_util::CreateTemporaryFile(&prefs_file));
+TEST_F(MasterPreferencesTest, FirstRunTabs) {
   const char text[] =
     "{ \n"
     "  \"distribution\": { \n"
@@ -196,9 +193,9 @@ TEST(MasterPreferencesTest, FirstRunTabs) {
     "  ]\n"
     "} \n";
 
-  EXPECT_TRUE(file_util::WriteFile(prefs_file, text, sizeof(text)));
+  EXPECT_TRUE(file_util::WriteFile(prefs_file(), text, sizeof(text)));
   scoped_ptr<DictionaryValue> prefs(
-      installer_util::ParseDistributionPreferences(prefs_file));
+      installer_util::ParseDistributionPreferences(prefs_file()));
   EXPECT_TRUE(prefs.get() != NULL);
 
   typedef std::vector<std::wstring> TabsVector;
@@ -207,5 +204,28 @@ TEST(MasterPreferencesTest, FirstRunTabs) {
   EXPECT_EQ(L"http://google.com/f1", tabs[0]);
   EXPECT_EQ(L"https://google.com/f2", tabs[1]);
   EXPECT_EQ(L"new_tab_page", tabs[2]);
-  EXPECT_TRUE(file_util::Delete(prefs_file, false));
+}
+
+TEST_F(MasterPreferencesTest, FirstRunBookMarks) {
+  const char text[] =
+    "{ \n"
+    "  \"distribution\": { \n"
+    "     \"something here\": true\n"
+    "  },\n"
+    "  \"default_bookmarks\": [\n"
+    "     \"http://google.com/b1\",\n"
+    "     \"https://google.com/b2\"\n"
+    "  ]\n"
+    "} \n";
+
+  EXPECT_TRUE(file_util::WriteFile(prefs_file(), text, sizeof(text)));
+  scoped_ptr<DictionaryValue> prefs(
+      installer_util::ParseDistributionPreferences(prefs_file()));
+  EXPECT_TRUE(prefs.get() != NULL);
+
+  typedef std::vector<std::wstring> BookmarksVector;
+  BookmarksVector bookmarks = installer_util::GetDefaultBookmarks(prefs.get());
+  ASSERT_EQ(2, bookmarks.size());
+  EXPECT_EQ(L"http://google.com/b1", bookmarks[0]);
+  EXPECT_EQ(L"https://google.com/b2", bookmarks[1]);
 }

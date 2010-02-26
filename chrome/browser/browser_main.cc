@@ -310,10 +310,24 @@ void AddFirstRunNewTabs(BrowserInit* browser_init,
       browser_init->AddFirstRunTab(url);
   }
 }
+
+void AddDefaultBookmarks(BrowserInit* browser_init,
+                         const std::vector<std::wstring>& bookmarks) {
+  for (std::vector<std::wstring>::const_iterator it = bookmarks.begin();
+       it != bookmarks.end(); ++it) {
+    GURL url(*it);
+    if (url.is_valid())
+      browser_init->AddDefaultBookmark(url);
+  }
+}
 #else
 // TODO(cpu): implement first run experience for other platforms.
 void AddFirstRunNewTabs(BrowserInit* browser_init,
                         const std::vector<std::wstring>& new_tabs) {
+}
+
+void AddDefaultBookmarks(BrowserInit* browser_init,
+                         const std::vector<std::wstring>& bookmarks) {
 }
 #endif
 
@@ -606,25 +620,22 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   BrowserInit browser_init;
 
-#if defined(OS_WIN)
-  int rlz_ping_delay = 0;
-#endif
-  bool homepage_defined = false;
-  int import_items = 0;
-  int dont_import_items = 0;
+  FirstRun::MasterPrefs master_prefs = {0};
   bool first_run_ui_bypass = false;
   if (is_first_run) {
 #if defined(OS_WIN)
     // On first run, we need to process the master preferences before the
     // browser's profile_manager object is created, but after ResourceBundle
     // is initialized.
-    std::vector<std::wstring> first_run_tabs;
-    first_run_ui_bypass = !FirstRun::ProcessMasterPreferences(user_data_dir,
-        FilePath(), &first_run_tabs, &rlz_ping_delay, &homepage_defined,
-        &import_items, &dont_import_items);
+    first_run_ui_bypass =
+        !FirstRun::ProcessMasterPreferences(user_data_dir,
+                                            FilePath(), &master_prefs);
     // The master prefs might specify a set of urls to display.
-    if (first_run_tabs.size())
-      AddFirstRunNewTabs(&browser_init, first_run_tabs);
+    if (master_prefs.new_tabs.size())
+      AddFirstRunNewTabs(&browser_init, master_prefs.new_tabs);
+    // The master prefs might specify a set of initial bookmarks.
+    if (master_prefs.bookmarks.size())
+      AddDefaultBookmarks(&browser_init, master_prefs.bookmarks);
 #endif  // OS_WIN
 
     // If we are running in App mode, we do not want to show the importer
@@ -837,8 +848,11 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // touches reads preferences.
   if (is_first_run) {
     if (!first_run_ui_bypass) {
-      if (!OpenFirstRunDialog(profile, homepage_defined, import_items,
-                              dont_import_items, &process_singleton)) {
+      if (!OpenFirstRunDialog(profile,
+                              master_prefs.homepage_defined,
+                              master_prefs.do_import_items,
+                              master_prefs.dont_import_items,
+                              &process_singleton)) {
         // The user cancelled the first run dialog box, we should exit Chrome.
         return ResultCodes::NORMAL_EXIT;
       }
@@ -852,6 +866,7 @@ int BrowserMain(const MainFunctionParams& parameters) {
         local_state->SetBoolean(prefs::kMetricsReportingEnabled, true);
 #endif  // OS_POSIX
     }
+
     Browser::SetNewHomePagePrefs(user_prefs);
   }
 
@@ -876,7 +891,8 @@ int BrowserMain(const MainFunctionParams& parameters) {
   // Init the RLZ library. This just binds the dll and schedules a task on the
   // file thread to be run sometime later. If this is the first run we record
   // the installation event.
-  RLZTracker::InitRlzDelayed(base::DIR_MODULE, is_first_run, rlz_ping_delay);
+  RLZTracker::InitRlzDelayed(base::DIR_MODULE, is_first_run,
+                             master_prefs.ping_delay);
 #endif
 
   // Configure the network module so it has access to resources.

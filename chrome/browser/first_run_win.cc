@@ -177,11 +177,7 @@ bool FirstRun::CreateChromeQuickLaunchShortcut() {
 
 bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
                                         const FilePath& master_prefs_path,
-                                        std::vector<std::wstring>* new_tabs,
-                                        int* ping_delay,
-                                        bool* homepage_defined,
-                                        int* do_import_items,
-                                        int* dont_import_items) {
+                                        MasterPrefs* out_prefs) {
   DCHECK(!user_data_dir.empty());
   FilePath master_prefs = master_prefs_path;
   if (master_prefs.empty()) {
@@ -197,20 +193,18 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
   if (!prefs.get())
     return true;
 
-  if (new_tabs)
-    *new_tabs = installer_util::GetFirstRunTabs(prefs.get());
-  if (ping_delay) {
-    if (!installer_util::GetDistroIntegerPreference(prefs.get(),
-        installer_util::master_preferences::kDistroPingDelay, ping_delay)) {
-      // 90 seconds is the default that we want to use in case master
-      // preferences is missing, corrupt or ping_delay is missing.
-      *ping_delay = 90;
-    }
+  out_prefs->new_tabs = installer_util::GetFirstRunTabs(prefs.get());
+
+  if (!installer_util::GetDistroIntegerPreference(prefs.get(),
+      installer_util::master_preferences::kDistroPingDelay,
+      &out_prefs->ping_delay)) {
+    // 90 seconds is the default that we want to use in case master
+    // preferences is missing, corrupt or ping_delay is missing.
+    out_prefs->ping_delay = 90;
   }
-  if (homepage_defined) {
-    std::string not_used;
-    *homepage_defined = prefs->GetString(prefs::kHomePage, &not_used);
-  }
+
+  std::string not_used;
+  out_prefs->homepage_defined = prefs->GetString(prefs::kHomePage, &not_used);
 
   bool value = false;
   if (installer_util::GetDistroBooleanPreference(prefs.get(),
@@ -262,10 +256,9 @@ bool FirstRun::ProcessMasterPreferences(const FilePath& user_data_dir,
       installer_util::master_preferences::kDistroImportSearchPref, &value)) {
     if (value) {
       import_items += SEARCH_ENGINES;
-      if (do_import_items)
-        *do_import_items += SEARCH_ENGINES;
-    } else if (dont_import_items) {
-        *dont_import_items += SEARCH_ENGINES;
+      out_prefs->do_import_items += SEARCH_ENGINES;
+    } else {
+      out_prefs->dont_import_items += SEARCH_ENGINES;
     }
   }
 

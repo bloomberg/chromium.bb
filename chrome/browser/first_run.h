@@ -28,6 +28,15 @@ class ProcessSingleton;
 // install work for this user. After that the sentinel file is created.
 class FirstRun {
  public:
+  // See ProcessMasterPreferences for more info about this structure.
+  struct MasterPrefs {
+    int ping_delay;
+    bool homepage_defined;
+    int do_import_items;
+    int dont_import_items;
+    std::vector<std::wstring> new_tabs;
+    std::vector<std::wstring> bookmarks;
+  };
 #if defined(OS_WIN)
   // Creates the desktop shortcut to chrome for the current user. Returns
   // false if it fails. It will overwrite the shortcut if it exists.
@@ -40,6 +49,7 @@ class FirstRun {
   // FirstRun::ImportSettings(). This function might or might not show
   // a visible UI depending on the cmdline parameters.
   static int ImportNow(Profile* profile, const CommandLine& cmdline);
+
   // The master preferences is a JSON file with the same entries as the
   // 'Default\Preferences' file. This function locates this file from
   // master_pref_path or if that path is empty from the default location
@@ -57,11 +67,7 @@ class FirstRun {
   // 'master_preferences' file.
   static bool ProcessMasterPreferences(const FilePath& user_data_dir,
                                        const FilePath& master_prefs_path,
-                                       std::vector<std::wstring>* new_tabs,
-                                       int* ping_delay,
-                                       bool* homepage_defined,
-                                       int* do_import_items,
-                                       int* dont_import_items);
+                                       MasterPrefs* out_prefs);
 #endif  // OS_WIN
 
   // Returns true if this is the first time chrome is run for this user.

@@ -31,6 +31,13 @@ class BrowserInit {
     first_run_tabs_.push_back(url);
   }
 
+  // Adds a url that will become a bookmark during first run, just as if the
+  // user had done it. A network request is generated. Icon and title will
+  // be provided by the server.
+  void AddDefaultBookmark(const GURL& url) {
+    default_bookmarks_.push_back(url);
+  }
+
   // This function is equivalent to ProcessCommandLine but should only be
   // called during actual process startup.
   bool Start(const CommandLine& cmd_line, const std::wstring& cur_dir,
@@ -150,6 +157,8 @@ class BrowserInit {
 
   // Additional tabs to open during first run.
   std::vector<GURL> first_run_tabs_;
+  // Additional bookmarks to set during first run.
+  std::vector<GURL> default_bookmarks_;
 
   DISALLOW_COPY_AND_ASSIGN(BrowserInit);
 };

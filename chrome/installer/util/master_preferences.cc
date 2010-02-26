@@ -11,6 +11,27 @@
 
 namespace {
 const wchar_t* kDistroDict = L"distribution";
+
+std::vector<std::wstring> GetNamedList(const wchar_t* name,
+                                       const DictionaryValue* prefs) {
+  std::vector<std::wstring> list;
+  if (!prefs)
+    return list;
+  ListValue* value_list = NULL;
+  if (!prefs->GetList(name, &value_list))
+    return list;
+  for (size_t i = 0; i < value_list->GetSize(); ++i) {
+    Value* entry;
+    std::wstring str_entry;
+    if (!value_list->Get(i, &entry) || !entry->GetAsString(&str_entry)) {
+      NOTREACHED();
+      break;
+    }
+    list.push_back(str_entry);
+  }
+  return list;
+}
+
 }
 
 namespace installer_util {
@@ -92,22 +113,11 @@ DictionaryValue* ParseDistributionPreferences(
 }
 
 std::vector<std::wstring> GetFirstRunTabs(const DictionaryValue* prefs) {
-  std::vector<std::wstring> launch_tabs;
-  if (!prefs)
-    return launch_tabs;
-  ListValue* tabs_list = NULL;
-  if (!prefs->GetList(L"first_run_tabs", &tabs_list))
-    return launch_tabs;
-  for (size_t i = 0; i < tabs_list->GetSize(); ++i) {
-    Value* entry;
-    std::wstring tab_entry;
-    if (!tabs_list->Get(i, &entry) || !entry->GetAsString(&tab_entry)) {
-      NOTREACHED();
-      break;
-    }
-    launch_tabs.push_back(tab_entry);
-  }
-  return launch_tabs;
+  return GetNamedList(L"first_run_tabs", prefs);
+}
+
+std::vector<std::wstring> GetDefaultBookmarks(const DictionaryValue* prefs) {
+  return GetNamedList(L"default_bookmarks", prefs);
 }
 
 bool SetDistroBooleanPreference(DictionaryValue* prefs,

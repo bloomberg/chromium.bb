@@ -140,6 +140,22 @@ DictionaryValue* ParseDistributionPreferences(
 // preferences file does not contain such list the vector is empty.
 std::vector<std::wstring> GetFirstRunTabs(const DictionaryValue* prefs);
 
+// As part of the master preferences an optional section indicates the
+// pre-installed bookmarks. An example is the following:
+//
+//  {
+//    "default_bookmarks": [
+//       "http://google.com/b1",
+//       "https://google.com/b2"
+//    ]
+//  }
+//
+// Note that the entries need to be urls.
+//
+// This function retuns the list as a vector of strings. If the master
+// preferences file does not contain such list the vector is empty.
+std::vector<std::wstring> GetDefaultBookmarks(const DictionaryValue* prefs);
+
 // Sets the value of given boolean preference |name| in "distribution"
 // dictionary inside |prefs| dictionary.
 bool SetDistroBooleanPreference(DictionaryValue* prefs,
