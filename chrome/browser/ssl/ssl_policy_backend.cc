@@ -15,8 +15,6 @@
 #include "grit/generated_resources.h"
 #include "grit/theme_resources.h"
 
-using WebKit::WebConsoleMessage;
-
 class SSLInfoBarDelegate : public ConfirmInfoBarDelegate {
  public:
   SSLInfoBarDelegate(TabContents* contents,

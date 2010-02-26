@@ -34,8 +34,6 @@
 #include "net/base/ssl_info.h"
 #include "webkit/glue/resource_type.h"
 
-using WebKit::WebConsoleMessage;
-
 SSLPolicy::SSLPolicy(SSLPolicyBackend* backend)
     : backend_(backend) {
   DCHECK(backend_);
