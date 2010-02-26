@@ -742,8 +742,12 @@ const char kEnableGView[]                   = "enable-gview";
 const char kLoginManager[]                  = "login-manager";
 // Enable Chrome to do ClientLogin on its own in the login-manager context.
 const char kInChromeAuth[]                  = "in-chrome-auth";
-// Enables to override the first login screen.
-const char kFirstLoginScreenName[]          = "first-login-screen-name";
+// Allows to override the first login screen. The value should be the name
+// of the first login screen to show (see
+// chrome/browser/chromeos/login/login_wizard_view.cc for actual names).
+// Ignored if kLoginManager is not specified.
+// TODO(avayvod): Remove when the switch is no longer needed for testing.
+const char kLoginScreen[]          = "login-screen";
 // Allows control over the initial login screen size. Pass width,height.
 const char kLoginScreenSize[]               = "login-screen-size";
 

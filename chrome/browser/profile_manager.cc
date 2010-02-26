@@ -38,6 +38,15 @@ void ProfileManager::ShutdownSessionServices() {
     (*i)->ShutdownSessionService();
 }
 
+// static
+Profile* ProfileManager::GetLoginWizardProfile() {
+  FilePath user_data_dir;
+  PathService::Get(chrome::DIR_USER_DATA, &user_data_dir);
+  ProfileManager* profile_manager = g_browser_process->profile_manager();
+  return profile_manager->GetDefaultProfile(
+      user_data_dir)->GetOffTheRecordProfile();
+}
+
 ProfileManager::ProfileManager() : logged_in_(false) {
   SystemMonitor::Get()->AddObserver(this);
 #if defined(OS_CHROMEOS)

@@ -61,7 +61,7 @@ class AvailableProfile {
   std::wstring id_;  // Profile identifier
   FilePath directory_;  // Subdirectory containing profile (not full path)
 
-  DISALLOW_EVIL_CONSTRUCTORS(AvailableProfile);
+  DISALLOW_COPY_AND_ASSIGN(AvailableProfile);
 };
 
 class ProfileManager : public NonThreadSafe,
@@ -73,6 +73,9 @@ class ProfileManager : public NonThreadSafe,
 
   // Invokes ShutdownSessionService() on all profiles.
   static void ShutdownSessionServices();
+
+  // Returns profile to use for Chrome in login wizard mode.
+  static Profile* GetLoginWizardProfile();
 
   // Returns the default profile.  This adds the profile to the
   // ProfileManager if it doesn't already exist.  This method returns NULL if

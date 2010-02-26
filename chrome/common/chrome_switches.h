@@ -216,7 +216,7 @@ extern const char kLoginManager[];
 extern const char kInChromeAuth[];
 // TODO(avayvod): Remove this flag when it's unnecessary for testing
 // purposes.
-extern const char kFirstLoginScreenName[];
+extern const char kLoginScreen[];
 extern const char kLoginScreenSize[];
 extern const char kTestLoadLibcros[];
 extern const char kProfile[];

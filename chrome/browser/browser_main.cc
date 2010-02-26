@@ -584,28 +584,6 @@ int BrowserMain(const MainFunctionParams& parameters) {
 #endif  // !defined(OS_MACOSX)
   }
 
-#if defined(OS_CHROMEOS)
-  if (parsed_command_line.HasSwitch(switches::kLoginManager)) {
-    std::string first_screen =
-        parsed_command_line.GetSwitchValueASCII(
-            switches::kFirstLoginScreenName);
-    std::string size_arg =
-        parsed_command_line.GetSwitchValueASCII(
-            switches::kLoginScreenSize);
-    gfx::Size size(0, 0);
-    // Allow the size of the login window to be set explicitly. If not set,
-    // default to the entire screen. This is mostly useful for testing.
-    if (size_arg.size()) {
-      std::vector<std::string> dimensions;
-      SplitString(size_arg, ',', &dimensions);
-      if (dimensions.size() == 2) {
-        size.SetSize(StringToInt(dimensions[0]), StringToInt(dimensions[1]));
-      }
-    }
-    browser::ShowLoginWizard(first_screen, size);
-  }
-#endif  // OS_CHROMEOS
-
 #if defined(OS_POSIX) && !defined(OS_MACOSX)
   gtk_util::SetDefaultWindowIcon();
 #endif
@@ -777,6 +755,27 @@ int BrowserMain(const MainFunctionParams& parameters) {
 
   PrefService* user_prefs = profile->GetPrefs();
   DCHECK(user_prefs);
+
+#if defined(OS_CHROMEOS)
+  if (parsed_command_line.HasSwitch(switches::kLoginManager)) {
+    std::string first_screen =
+        parsed_command_line.GetSwitchValueASCII(switches::kLoginScreen);
+    std::string size_arg =
+        parsed_command_line.GetSwitchValueASCII(
+            switches::kLoginScreenSize);
+    gfx::Size size(0, 0);
+    // Allow the size of the login window to be set explicitly. If not set,
+    // default to the entire screen. This is mostly useful for testing.
+    if (size_arg.size()) {
+      std::vector<std::string> dimensions;
+      SplitString(size_arg, ',', &dimensions);
+      if (dimensions.size() == 2) {
+        size.SetSize(StringToInt(dimensions[0]), StringToInt(dimensions[1]));
+      }
+    }
+    browser::ShowLoginWizard(first_screen, size);
+  }
+#endif  // OS_CHROMEOS
 
   // Importing other browser settings is done in a browser-like process
   // that exits when this task has finished.
