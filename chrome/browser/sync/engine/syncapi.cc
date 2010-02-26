@@ -29,6 +29,7 @@
 #include <vector>
 
 #include "base/basictypes.h"
+#include "base/base64.h"
 #include "base/lock.h"
 #include "base/platform_thread.h"
 #include "base/scoped_ptr.h"
@@ -399,7 +400,10 @@ std::string BaseNode::GenerateSyncableHash(
   std::string hash_input;
   serialized_type.AppendToString(&hash_input);
   hash_input.append(client_tag);
-  return HexEncode(hash_input.data(), hash_input.length());
+
+  std::string encode_output;
+  CHECK(base::Base64Encode(base::SHA1HashString(hash_input), &encode_output));
+  return encode_output;
 }
 
 int64 BaseNode::GetParentId() const {
