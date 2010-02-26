@@ -39,6 +39,9 @@ const char kAppId[]                         = "app-id";
 // panel window.
 const char kAppLaunchAsPanel[]              = "app-launch-as-panel";
 
+// Authentication white list for servers
+const char kAuthServerWhitelist[]           = "auth-server-whitelist";
+
 // The value of this switch tells the app to listen for and broadcast
 // automation-related messages on IPC channel with the given ID.
 const char kAutomationClientChannelID[]     = "automation-channel";

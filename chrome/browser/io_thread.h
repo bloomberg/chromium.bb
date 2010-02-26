@@ -60,6 +60,8 @@ class IOThread : public BrowserProcessSubThread {
   virtual void CleanUp();
 
  private:
+  net::HttpAuthHandlerFactory* CreateDefaultAuthHandlerFactory();
+
   void InitDnsMasterOnIOThread(
       bool prefetching_enabled,
       base::TimeDelta max_queue_delay,

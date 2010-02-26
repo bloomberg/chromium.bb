@@ -17,6 +17,7 @@
 #include "net/base/host_resolver_impl.h"
 #include "net/base/net_util.h"
 #include "net/base/network_change_notifier.h"
+#include "net/http/http_auth_filter.h"
 #include "net/http/http_auth_handler_factory.h"
 #include "net/url_request/url_request.h"
 
@@ -127,8 +128,7 @@ void IOThread::Init() {
       net::NetworkChangeNotifier::CreateDefaultNetworkChangeNotifier());
   globals_->host_resolver =
       CreateGlobalHostResolver(globals_->network_change_notifier.get());
-  globals_->http_auth_handler_factory.reset(
-      net::HttpAuthHandlerFactory::CreateDefault());
+  globals_->http_auth_handler_factory.reset(CreateDefaultAuthHandlerFactory());
 }
 
 void IOThread::CleanUp() {
@@ -174,6 +174,32 @@ void IOThread::CleanUp() {
   base::LeakTracker<URLRequest>::CheckForLeaks();
 
   BrowserProcessSubThread::CleanUp();
+}
+
+net::HttpAuthHandlerFactory* IOThread::CreateDefaultAuthHandlerFactory() {
+  net::HttpAuthHandlerRegistryFactory* registry_factory =
+      net::HttpAuthHandlerFactory::CreateDefault();
+
+  // Get the whitelist information from the command line, create an
+  // HttpAuthFilterWhitelist, and attach it to the HttpAuthHandlerFactory.
+  const CommandLine& command_line = *CommandLine::ForCurrentProcess();
+
+  // Set the NTLM and Negotiate filters (from the same whitelist)
+  if (command_line.HasSwitch(switches::kAuthServerWhitelist)) {
+    std::string ntlm_server_whitelist =
+        command_line.GetSwitchValueASCII(switches::kAuthServerWhitelist);
+    net::HttpAuthFilterWhitelist* ntlm_whitelist =
+        new net::HttpAuthFilterWhitelist();
+    net::HttpAuthFilterWhitelist* negotiate_whitelist =
+        new net::HttpAuthFilterWhitelist();
+
+    ntlm_whitelist->SetFilters(ntlm_server_whitelist);
+    negotiate_whitelist->SetFilters(ntlm_server_whitelist);
+    registry_factory->SetFilter("ntlm", ntlm_whitelist);
+    registry_factory->SetFilter("negotiate", negotiate_whitelist);
+  }
+
+  return registry_factory;
 }
 
 void IOThread::InitDnsMasterOnIOThread(
