@@ -85,7 +85,7 @@ if (OAuthSimple === undefined)
         if (shared_secret == undefined)
             throw("Missing argument: shared_secret (shared secret) for OAuthSimple. This is usually provided by the hosting site.");
 */      this._secrets={};
-
+        this._parameters={};
 
         // General configuration options.
         if (consumer_key !== undefined) {
@@ -284,7 +284,7 @@ if (OAuthSimple === undefined)
             var result = 'OAuth ';
             for (var pName in this._parameters)
             {
-                if (pName.match(/^oauth/) === undefined) {
+                if (!pName.match(/^oauth/)) {
                     continue;
                     }
                 if ((this._parameters[pName]) instanceof Array)

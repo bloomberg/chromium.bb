@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2009 The Chromium Authors. All rights reserved.  Use of this
+ * Copyright (c) 2010 The Chromium Authors. All rights reserved.  Use of this
  * source code is governed by a BSD-style license that can be found in the
  * LICENSE file.
  */
@@ -56,11 +56,14 @@ function ChromeExOAuth(url_request_token, url_auth_token, url_access_token,
 ChromeExOAuth.initBackgroundPage = function(oauth_config) {
   window.chromeExOAuthConfig = oauth_config;
   window.chromeExOAuth = ChromeExOAuth.fromConfig(oauth_config);
+  window.chromeExOAuthRedirectStarted = false;
 
   var url_match = chrome.extension.getURL(window.chromeExOAuth.callback_page);
   chrome.tabs.onUpdated.addListener(function(tabId, changeInfo, tab) {
     if (changeInfo.url &&
-        changeInfo.url.substr(0, url_match.length) === url_match) {
+        changeInfo.url.substr(0, url_match.length) === url_match &&
+        !window.chromeExOAuthRedirectStarted) {
+      window.chromeExOAuthRedirectStarted = true;
       chrome.tabs.create({ 'url' : changeInfo.url }, function() {
         chrome.tabs.remove(tabId);
       });
@@ -72,7 +75,7 @@ ChromeExOAuth.initBackgroundPage = function(oauth_config) {
 
 /**
  * Authorizes the current user with the configued API.  You must call this
- * before calling makeSignedRequest.
+ * before calling sendSignedRequest.
  * @param {Function} callback A function to call once an access token has
  *     been obtained.  This callback will be passed the following arguments:
  *         token {String} The OAuth access token.
@@ -114,8 +117,7 @@ ChromeExOAuth.prototype.hasToken = function() {
  *     should be omitted.
  * @param {Function} callback A function to be called once the request is
  *     completed.  This callback will be passed the following arguments:
- *         responseText {String} The text response, if a 200 HTTP code is
- *             returned.
+ *         responseText {String} The text response.
  *         xhr {XMLHttpRequest} The XMLHttpRequest object which was used to
  *             send the request.  Useful if you need to check response status
  *             code, etc.
@@ -124,35 +126,20 @@ ChromeExOAuth.prototype.hasToken = function() {
  *         "method" {String} The HTTP method to use.  Defaults to "GET".
  *         "body" {String} A request body to send.  Defaults to null.
  *         "parameters" {Object} Query parameters to include in the request.
+ *         "headers" {Object} Additional headers to include in the request.
  */
 ChromeExOAuth.prototype.sendSignedRequest = function(url, callback,
                                                      opt_params) {
-  var token = this.getToken();
-  var secret = this.getTokenSecret();
-  if (!token || !secret) {
-    throw new Error("No oauth token or token secret");
-  }
-
   var method = opt_params && opt_params['method'] || 'GET';
   var body = opt_params && opt_params['body'] || null;
   var params = opt_params && opt_params['parameters'] || {};
-  params["oauth_token"] = token;
+  var headers = opt_params && opt_params['headers'] || {};
 
-  var result = OAuthSimple().sign({
-    path : url,
-    parameters : params,
-    signatures: {
-      consumer_key : this.consumer_key,
-      shared_secret : this.consumer_secret,
-      oauth_secret : secret
-    }
-  });
-  var signed_url = result.signed_url;
+  var signedUrl = this.signURL(url, method, params);
 
-  ChromeExOAuth.sendRequest(method, signed_url, null, body, function (xhr) {
+  ChromeExOAuth.sendRequest(method, signedUrl, headers, body, function (xhr) {
     if (xhr.readyState == 4) {
-      var responseText = (xhr.status == 200) ? xhr.responseText : null;
-      callback(responseText, xhr);
+      callback(xhr.responseText, xhr);
     }
   });
 };
@@ -161,11 +148,12 @@ ChromeExOAuth.prototype.sendSignedRequest = function(url, callback,
  * Adds the required OAuth parameters to the given url and returns the
  * result.  Useful if you need a signed url but don't want to make an XHR
  * request.
+ * @param {String} method The http method to use.
  * @param {String} url The base url of the resource you are querying.
  * @param {Object} opt_params Query parameters to include in the request.
  * @return {String} The base url plus any query params plus any OAuth params.
  */
-ChromeExOAuth.prototype.signURL = function(url, opt_params) {
+ChromeExOAuth.prototype.signURL = function(url, method, opt_params) {
   var token = this.getToken();
   var secret = this.getTokenSecret();
   if (!token || !secret) {
@@ -173,19 +161,49 @@ ChromeExOAuth.prototype.signURL = function(url, opt_params) {
   }
 
   var params = opt_params || {};
-  params["oauth_token"] = token;
 
   var result = OAuthSimple().sign({
+    action : method,
     path : url,
     parameters : params,
     signatures: {
       consumer_key : this.consumer_key,
       shared_secret : this.consumer_secret,
-      oauth_secret : secret
+      oauth_secret : secret,
+      oauth_token: token
     }
   });
 
   return result.signed_url;
+};
+
+/**
+ * Generates the Authorization header based on the oauth parameters.
+ * @param {String} url The base url of the resource you are querying.
+ * @param {Object} opt_params Query parameters to include in the request.
+ * @return {String} An Authorization header containing the oauth_* params.
+ */
+ChromeExOAuth.prototype.getAuthorizationHeader = function(url, method,
+                                                          opt_params) {
+  var token = this.getToken();
+  var secret = this.getTokenSecret();
+  if (!token || !secret) {
+    throw new Error("No oauth token or token secret");
+  }
+
+  var params = opt_params || {};
+
+  return OAuthSimple().getHeaderString({
+    action: method,
+    path : url,
+    parameters : params,
+    signatures: {
+      consumer_key : this.consumer_key,
+      shared_secret : this.consumer_secret,
+      oauth_secret : secret,
+      oauth_token: token
+    }
+  });
 };
 
 /*******************************************************************************
@@ -231,6 +249,7 @@ ChromeExOAuth.initCallbackPage = function() {
   oauth.initOAuthFlow(function (token, secret) {
     var background_page = chrome.extension.getBackgroundPage();
     background_page.chromeExOAuthOnAuthorize(token, secret);
+    background_page.chromeExOAuthRedirectStarted = false;
     window.close();
   });
 };

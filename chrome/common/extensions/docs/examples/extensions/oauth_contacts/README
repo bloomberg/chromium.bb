@@ -42,8 +42,8 @@ either case, the callback will be called with the resulting token and secret.
       
 There is no need to store the token and secret, as this library already stores
 these values in localStorage.  Once the callback you specified is called, you
-can call the makeSignedRequest function to send OAuth-signed requests to the
-API.  The makeSignedRequest call takes an url to fetch, a callback function,
+can call the sendSignedRequest function to send OAuth-signed requests to the
+API.  The sendSignedRequest call takes an url to fetch, a callback function,
 and an optional parameter object as its arguments.  The callback is passed
 the response text as well as the XMLHttpRequest object which was used to 
 make the request as its arguments.
@@ -60,7 +60,7 @@ make the request as its arguments.
              <Any request parameters as key : value pairs>
           }
         }
-        oauth.makeSignedRequest(url, callback, request);
+        oauth.sendSignedRequest(url, callback, request);
       };
       oauth.authorize(onAuthorized);
       
