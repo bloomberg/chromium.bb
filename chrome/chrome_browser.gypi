@@ -880,6 +880,8 @@
         'browser/extensions/extension_install_ui.h',
         'browser/extensions/extension_message_service.cc',
         'browser/extensions/extension_message_service.h',
+        'browser/extensions/extension_metrics_module.cc',
+        'browser/extensions/extension_metrics_module.h',
         'browser/extensions/extension_page_actions_module.cc',
         'browser/extensions/extension_page_actions_module.h',
         'browser/extensions/extension_page_actions_module_constants.cc',

@@ -1160,6 +1160,7 @@
         'browser/extensions/extension_javascript_url_apitest.cc',
         'browser/extensions/extension_management_tests.cc',
         'browser/extensions/extension_messages_apitest.cc',
+        'browser/extensions/extension_metrics_apitest.cc',
         'browser/extensions/extension_override_apitest.cc',
         'browser/extensions/extension_processes_apitest.cc',
         'browser/extensions/extension_startup_unittest.cc',

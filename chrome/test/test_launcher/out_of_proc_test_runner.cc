@@ -84,7 +84,7 @@ class OutOfProcTestRunnerFactory : public tests::TestRunnerFactory {
 void PrintUsage() {
   fprintf(stdout, "Runs tests using the gtest framework, each test being run in"
       " its own process.\nAny gtest flags can be specified.\n"
-      "  --single-process\n    Runs the tests and the launcher in the same "
+      "  --single_process\n    Runs the tests and the launcher in the same "
       "process. Useful for debugging a\n    specific test in a debugger\n  "
       "--help\n    Shows this message.\n  --gtest_help\n    Shows the gtest "
       "help message\n");
@@ -101,6 +101,12 @@ int main(int argc, char** argv) {
     return 0;
   }
 
+  if (command_line->HasSwitch(kSingleProcessFlag)) {
+    fprintf(stdout,
+            "\n  Did you mean --%s instead? (note underscore)\n\n",
+            kSingleProcessAltFlag);
+  }
+
   if (command_line->HasSwitch(kChildProcessFlag) ||
       command_line->HasSwitch(kSingleProcessFlag) ||
       command_line->HasSwitch(kSingleProcessAltFlag) ||
@@ -112,7 +118,7 @@ int main(int argc, char** argv) {
   fprintf(stdout,
           "Starting tests...\nIMPORTANT DEBUGGING NOTE: each test is run inside"
           " its own process.\nFor debugging a test inside a debugger, use the "
-          "--single-process and\n--gtest_filter=<your_test_name> flags.\n");
+          "--single_process and\n--gtest_filter=<your_test_name> flags.\n");
   OutOfProcTestRunnerFactory test_runner_factory;
   return tests::RunTests(test_runner_factory) ? 0 : 1;
 }

@@ -250,6 +250,7 @@ var chrome = chrome || {};
       "experimental.history",
       "experimental.popup",
       "experimental.processes",
+      "metrics",
       "pageAction",
       "pageActions",
       "tabs",
