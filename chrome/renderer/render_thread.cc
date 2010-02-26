@@ -277,8 +277,8 @@ int32 RenderThread::RoutingIDForCurrentContext() {
   if (v8::Context::InContext()) {
     RenderView* view =
         RenderView::FromWebView(WebFrame::frameForCurrentContext()->view());
-    DCHECK(view);
-    routing_id = view->routing_id();
+    if (view)
+      routing_id = view->routing_id();
   } else {
     DLOG(WARNING) << "Not called within a script context!";
   }
