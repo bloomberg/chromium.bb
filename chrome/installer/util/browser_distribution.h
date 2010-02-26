@@ -27,6 +27,8 @@ class BrowserDistribution {
 
   virtual std::wstring GetApplicationName();
 
+  virtual std::wstring GetAppShortCutName();
+
   virtual std::wstring GetAlternateApplicationName();
 
   virtual std::wstring GetInstallSubDir();

@@ -219,7 +219,7 @@ bool CreateOrUpdateChromeShortcuts(const std::wstring& exe_path,
 
   // The location of Start->Programs->Google Chrome folder
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-  const std::wstring& product_name = dist->GetApplicationName();
+  const std::wstring& product_name = dist->GetAppShortCutName();
   const std::wstring& product_desc = dist->GetAppDescription();
   shortcut_path = shortcut_path.Append(product_name);
 
@@ -551,7 +551,7 @@ installer_util::InstallStatus InstallNewVersion(
   AddInstallerCopyTasks(exe_path, archive_path, temp_dir, install_path,
                         new_version.GetString(), install_list.get(),
                         (reg_root == HKEY_LOCAL_MACHINE));
-  std::wstring product_name = dist->GetApplicationName();
+  std::wstring product_name = dist->GetAppShortCutName();
   AddUninstallShortcutWorkItems(reg_root, exe_path, install_path,
       product_name, new_version.GetString(), install_list.get());
 

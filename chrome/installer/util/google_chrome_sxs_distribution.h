@@ -7,6 +7,7 @@
 
 #include "chrome/installer/util/browser_distribution.h"
 #include "chrome/installer/util/google_chrome_distribution.h"
+#include "chrome/installer/util/l10n_string_util.h"
 #include "chrome/installer/util/util_constants.h"
 
 
@@ -18,6 +19,7 @@
 // system level install and setting as default browser.
 class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
  public:
+  virtual std::wstring GetAppShortCutName();
   virtual std::wstring GetInstallSubDir();
   virtual std::wstring GetUninstallRegPath();
 

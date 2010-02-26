@@ -511,7 +511,7 @@ std::wstring ShellUtil::GetChromeShellOpenCmd(const std::wstring& chrome_exe) {
 bool ShellUtil::GetChromeShortcutName(std::wstring* shortcut, bool alternate) {
   BrowserDistribution* dist = BrowserDistribution::GetDistribution();
   shortcut->assign(alternate ? dist->GetAlternateApplicationName() :
-                               dist->GetApplicationName());
+                               dist->GetAppShortCutName());
   shortcut->append(L".lnk");
   return true;
 }

@@ -6,6 +6,7 @@
 
 #include "chrome/installer/util/google_chrome_sxs_distribution.h"
 
+#include "installer_util_strings.h"
 
 namespace {
 
@@ -15,6 +16,12 @@ const wchar_t kChromeSxSGuid[] = L"{4ea16ac7-fd5a-47c3-875b-dbf4a2008c20}";
 
 GoogleChromeSxSDistribution::GoogleChromeSxSDistribution() {
   GoogleChromeDistribution::set_product_guid(kChromeSxSGuid);
+}
+
+std::wstring GoogleChromeSxSDistribution::GetAppShortCutName() {
+  const std::wstring& shortcut_name =
+      installer_util::GetLocalizedString(IDS_SXS_SHORTCUT_NAME_BASE);
+  return shortcut_name;
 }
 
 std::wstring GoogleChromeSxSDistribution::GetInstallSubDir() {

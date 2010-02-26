@@ -63,6 +63,10 @@ std::wstring BrowserDistribution::GetApplicationName() {
   return L"Chromium";
 }
 
+std::wstring BrowserDistribution::GetAppShortCutName() {
+  return GetApplicationName();
+}
+
 std::wstring BrowserDistribution::GetAlternateApplicationName() {
   return L"The Internet";
 }

@@ -110,7 +110,7 @@ void DeleteChromeShortcuts(bool system_uninstall) {
     LOG(ERROR) << "Failed to get location for shortcut.";
   } else {
     BrowserDistribution* dist = BrowserDistribution::GetDistribution();
-    shortcut_path = shortcut_path.Append(dist->GetApplicationName());
+    shortcut_path = shortcut_path.Append(dist->GetAppShortCutName());
     LOG(INFO) << "Deleting shortcut " << shortcut_path.value();
     if (!file_util::Delete(shortcut_path, true))
       LOG(ERROR) << "Failed to delete folder: " << shortcut_path.value();
