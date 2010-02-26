@@ -12,6 +12,10 @@
   return NULL;
 }
 
+- (BOOL)themeIsIncognito {
+  return NO;
+}
+
 - (NSPoint)themePatternPhase {
   return NSZeroPoint;
 }

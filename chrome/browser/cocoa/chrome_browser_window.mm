@@ -347,6 +347,10 @@ namespace {
   return [[self windowController] themeProvider];
 }
 
+- (BOOL)themeIsIncognito {
+  return [[self windowController] themeIsIncognito];
+}
+
 - (NSPoint)themePatternPhase {
   return [[self windowController] themePatternPhase];
 }

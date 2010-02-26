@@ -6,8 +6,11 @@
 
 #include "base/logging.h"
 #include "base/nsimage_cache_mac.h"
+#include "chrome/browser/browser_theme_provider.h"
 #import "chrome/browser/cocoa/tab_controller.h"
 #import "chrome/browser/cocoa/tab_window_controller.h"
+#import "chrome/browser/cocoa/themed_window.h"
+#include "grit/theme_resources.h"
 
 namespace {
 
@@ -57,8 +60,7 @@ const CGFloat kRapidCloseDist = 2.5;
   self = [super initWithFrame:frame];
   if (self) {
     [self setShowsDivider:NO];
-    // TODO(alcor): register for theming, either here or the cell
-    // [self gtm_registerForThemeNotifications];
+    // TODO(alcor): register for theming
   }
   return self;
 }
@@ -642,30 +644,28 @@ const CGFloat kRapidCloseDist = 2.5;
   [path lineToPoint:NSMakePoint(bottomRight.x + 1, bottomRight.y)];
   [path lineToPoint:NSMakePoint(bottomRight.x + 1, bottomRight.y - 2)];
 
-  GTMTheme* theme = [self gtm_theme];
+  ThemeProvider* themeProvider = [[self window] themeProvider];
 
   // Set the pattern phase.
-  NSPoint phase = [self gtm_themePatternPhase];
+  NSPoint phase = [[self window] themePatternPhase];
   [context setPatternPhase:phase];
 
   // Don't draw the window/tab bar background when selected, since the tab
   // background overlay drawn over it (see below) will be fully opaque.
   if (!selected) {
-    NSColor* windowColor =
-        [theme backgroundPatternColorForStyle:GTMThemeStyleWindow
-                                        state:GTMThemeStateActiveWindow];
-    if (!windowColor)
-      windowColor = [NSColor windowBackgroundColor];
-    [windowColor set];
-    [path fill];
-
-    NSColor* tabColor =
-        [theme backgroundPatternColorForStyle:GTMThemeStyleTabBarDeselected
-                                        state:GTMThemeStateActiveWindow];
-    if (!tabColor)
-      tabColor = [NSColor colorWithCalibratedWhite:1.0 alpha:0.3];
-    [tabColor set];
-    [path fill];
+    NSImage* backgroundImage =
+        themeProvider ? themeProvider->GetNSImageNamed(IDR_THEME_TAB_BACKGROUND,
+                                                       false) :
+        nil;
+    if (backgroundImage) {
+      [[NSColor colorWithPatternImage:backgroundImage] set];
+      [path fill];
+    } else {
+      [[NSColor windowBackgroundColor] set];
+      [path fill];
+      [[NSColor colorWithCalibratedWhite:1.0 alpha:0.3] set];
+      [path fill];
+    }
   }
 
   [context saveGraphicsState];
@@ -693,10 +693,10 @@ const CGFloat kRapidCloseDist = 2.5;
     [super drawBackground];
     [context restoreGraphicsState];
 
-    // Draw a mouse hover gradient for the default themes
+    // Draw a mouse hover gradient for the default themes.
     if (!selected && hoverAlpha > 0) {
-      if (![theme backgroundImageForStyle:GTMThemeStyleTabBarDeselected
-                                    state:GTMThemeStateActiveWindow]) {
+      if (themeProvider &&
+          !themeProvider->HasCustomImage(IDR_THEME_TAB_BACKGROUND)) {
         scoped_nsobject<NSGradient> glow([NSGradient alloc]);
         [glow initWithStartingColor:[NSColor colorWithCalibratedWhite:1.0
                                         alpha:1.0 * hoverAlpha]

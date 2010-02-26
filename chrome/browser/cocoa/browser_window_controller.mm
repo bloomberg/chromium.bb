@@ -194,8 +194,6 @@
     if ([window respondsToSelector:@selector(setBottomCornerRounded:)])
       [window setBottomCornerRounded:NO];
 
-    [self setTheme];
-
     // Get the most appropriate size for the window, then enforce the
     // minimum width and height. The window shim will handle flipping
     // the coordinates for us so we can use it to save some code.
@@ -1295,25 +1293,17 @@
 }
 
 - (void)userChangedTheme {
-  [self setTheme];
-  NSNotificationCenter* defaultCenter = [NSNotificationCenter defaultCenter];
-  [defaultCenter postNotificationName:kGTMThemeDidChangeNotification
-                               object:theme_];
   // TODO(dmaclach): Instead of redrawing the whole window, views that care
   // about the active window state should be registering for notifications.
   [[self window] setViewsNeedDisplay:YES];
 }
 
-- (GTMTheme*)gtm_themeForWindow:(NSWindow*)window {
-  return theme_ ? theme_ : [GTMTheme defaultTheme];
-}
-
-- (NSPoint)gtm_themePatternPhaseForWindow:(NSWindow*)window {
-  return [self themePatternPhase];
-}
-
 - (ThemeProvider*)themeProvider {
   return browser_->profile()->GetThemeProvider();
+}
+
+- (BOOL)themeIsIncognito {
+  return browser_->profile()->IsOffTheRecord();
 }
 
 - (NSPoint)themePatternPhase {
@@ -1324,7 +1314,7 @@
   // will phase their patterns relative to this so all the views look right.
   //
   // To line up the background pattern with the pattern in the browser window
-  // the  background pattern for the tabs needs to be moved left by 5 pixels.
+  // the background pattern for the tabs needs to be moved left by 5 pixels.
   const CGFloat kPatternHorizontalOffset = -5;
   NSView* tabStripView = [self tabStripView];
   NSRect tabStripViewWindowBounds = [tabStripView bounds];

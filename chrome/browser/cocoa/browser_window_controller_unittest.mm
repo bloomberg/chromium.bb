@@ -122,11 +122,6 @@ TEST_F(BrowserWindowControllerTest, TestNormal) {
   [controller close];
 }
 
-@interface GTMTheme (BrowserThemeProviderInitialization)
-+ (GTMTheme *)themeWithBrowserThemeProvider:(BrowserThemeProvider *)provider
-                             isOffTheRecord:(BOOL)isOffTheRecord;
-@end
-
 TEST_F(BrowserWindowControllerTest, TestTheme) {
   [controller_ userChangedTheme];
 }

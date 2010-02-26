@@ -19,7 +19,6 @@
 #import "chrome/browser/cocoa/bookmark_bubble_controller.h"
 #import "chrome/browser/cocoa/browser_command_executor.h"
 #import "chrome/browser/cocoa/url_drop_target.h"
-#import "chrome/browser/cocoa/GTMTheme.h"
 #import "chrome/browser/cocoa/view_resizer.h"
 #include "chrome/browser/sync/sync_ui_util.h"
 
@@ -48,8 +47,7 @@ class TabStripModelObserverBridge;
   TabWindowController<NSUserInterfaceValidations,
                       BookmarkBarControllerDelegate,
                       BrowserCommandExecutor,
-                      ViewResizer,
-                      GTMThemeDelegate> {
+                      ViewResizer> {
  @private
   // The ordering of these members is important as it determines the order in
   // which they are destroyed. |browser_| needs to be destroyed last as most of
@@ -75,7 +73,6 @@ class TabStripModelObserverBridge;
   StatusBubbleMac* statusBubble_;
 
   BookmarkBubbleController* bookmarkBubbleController_;  // Weak.
-  scoped_nsobject<GTMTheme> theme_;
   BOOL initializing_;  // YES while we are currently in initWithBrowser:
   BOOL ownsBrowser_;  // Only ever NO when testing
   CGFloat verticalOffsetForStatusBubble_;
@@ -225,6 +222,9 @@ class TabStripModelObserverBridge;
 
 // Gets the current theme provider.
 - (ThemeProvider*)themeProvider;
+
+// Gets whether the current theme is incognito.
+- (BOOL)themeIsIncognito;
 
 // Gets the pattern phase for the window.
 - (NSPoint)themePatternPhase;

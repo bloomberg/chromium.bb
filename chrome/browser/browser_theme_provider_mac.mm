@@ -167,6 +167,42 @@ NSGradient* BrowserThemeProvider::GetNSGradient(int id) const {
   // Note that we are not leaking when we assign a retained object to
   // |gradient|; in all cases we cache it before we return.
   switch (id) {
+    case GRADIENT_FRAME_INCOGNITO:
+    case GRADIENT_FRAME_INCOGNITO_INACTIVE: {
+      // TODO(avi): can we simplify this?
+      BOOL active = id == GRADIENT_FRAME_INCOGNITO;
+      NSColor* base_color = [NSColor colorWithCalibratedRed:83/255.0
+                                                      green:108.0/255.0
+                                                       blue:140/255.0
+                                                      alpha:1.0];
+
+      CGFloat luminance = [base_color gtm_luminance];
+
+      // Adjust luminance so it never hits black.
+      if (luminance < 0.5) {
+        CGFloat adjustment = (0.5 - luminance) / 1.5;
+        base_color = [base_color gtm_colorByAdjustingLuminance:adjustment];
+      }
+
+      NSColor *start_color =
+          [base_color gtm_colorAdjustedFor:GTMColorationBaseMidtone
+                                     faded:!active];
+      NSColor *end_color =
+          [base_color gtm_colorAdjustedFor:GTMColorationBaseShadow
+                                     faded:!active];
+
+      if (!active) {
+        start_color = [start_color gtm_colorByAdjustingLuminance:0.1
+                                                      saturation:0.5];
+        end_color = [end_color gtm_colorByAdjustingLuminance:0.1
+                                                  saturation:0.5];
+      }
+
+      gradient = [[NSGradient alloc] initWithStartingColor:start_color
+                                               endingColor:end_color];
+      break;
+    }
+
     case GRADIENT_TOOLBAR:
     case GRADIENT_TOOLBAR_INACTIVE: {
       NSColor* base_color = [NSColor colorWithCalibratedWhite:0.5 alpha:1.0];

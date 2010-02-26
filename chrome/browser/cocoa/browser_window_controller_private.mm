@@ -10,7 +10,6 @@
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/browser_theme_provider.h"
-#import "chrome/browser/cocoa/browser_theme_provider_init.h"
 #import "chrome/browser/cocoa/chrome_browser_window.h"
 #import "chrome/browser/cocoa/fast_resize_view.h"
 #import "chrome/browser/cocoa/find_bar_cocoa_controller.h"
@@ -119,19 +118,6 @@ willPositionSheet:(NSWindow*)sheet
       NOTREACHED();
   }
   return defaultSheetRect;
-}
-
-- (void)setTheme {
-  ThemeProvider* theme_provider = browser_->profile()->GetThemeProvider();
-  BrowserThemeProvider* browser_theme_provider =
-     static_cast<BrowserThemeProvider*>(theme_provider);
-  if (browser_theme_provider) {
-    bool offtheRecord = browser_->profile()->IsOffTheRecord();
-    GTMTheme* theme =
-        [GTMTheme themeWithBrowserThemeProvider:browser_theme_provider
-                                 isOffTheRecord:offtheRecord];
-    theme_.reset([theme retain]);
-  }
 }
 
 - (void)layoutSubviews {

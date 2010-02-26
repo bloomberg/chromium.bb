@@ -13,6 +13,7 @@ class ThemeProvider;
 
 @interface NSWindow (ThemeProvider)
 - (ThemeProvider*)themeProvider;
+- (BOOL)themeIsIncognito;
 - (NSPoint)themePatternPhase;
 @end
 

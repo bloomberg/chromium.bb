@@ -49,4 +49,10 @@
 // check that everything is safe, and attempt to fallback gracefully if it is
 // not.
 @interface BrowserFrameView : NSView
+
+// Draws the window theme into the specified rect.
++ (void)drawWindowThemeInDirtyRect:(NSRect)dirtyRect
+                           forView:(NSView*)view
+                            bounds:(NSRect)bounds;
+
 @end

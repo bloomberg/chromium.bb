@@ -4,6 +4,8 @@
 
 #import "chrome/browser/cocoa/find_bar_view.h"
 
+#import "chrome/browser/cocoa/themed_window.h"
+
 namespace {
 CGFloat kCurveSize = 8;
 }  // end namespace
@@ -53,7 +55,7 @@ CGFloat kCurveSize = 8;
   [path addClip];
 
   // Set the pattern phase
-  NSPoint phase = [self gtm_themePatternPhase];
+  NSPoint phase = [[self window] themePatternPhase];
 
   [context setPatternPhase:phase];
   [super drawBackground];

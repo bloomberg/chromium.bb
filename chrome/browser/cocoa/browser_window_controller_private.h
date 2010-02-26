@@ -28,9 +28,6 @@
     willPositionSheet:(NSWindow*)sheet
             usingRect:(NSRect)defaultSheetRect;
 
-// Assign a theme to the window.
-- (void)setTheme;
-
 // Repositions the window's subviews. From the top down: toolbar, normal
 // bookmark bar (if shown), infobar, NTP detached bookmark bar (if shown),
 // content area, download shelf (if any).

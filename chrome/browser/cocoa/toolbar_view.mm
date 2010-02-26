@@ -4,6 +4,8 @@
 
 #import "chrome/browser/cocoa/toolbar_view.h"
 
+#import "chrome/browser/cocoa/themed_window.h"
+
 @implementation ToolbarView
 
 @synthesize dividerOpacity = dividerOpacity_;
@@ -16,7 +18,7 @@
 - (void)drawRect:(NSRect)rect {
   // The toolbar's background pattern is phased relative to the
   // tab strip view's background pattern.
-  NSPoint phase = [self gtm_themePatternPhase];
+  NSPoint phase = [[self window] themePatternPhase];
   [[NSGraphicsContext currentContext] setPatternPhase:phase];
   [self drawBackground];
 }

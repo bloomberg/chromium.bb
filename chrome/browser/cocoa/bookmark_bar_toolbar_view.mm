@@ -32,7 +32,7 @@ const CGFloat kBorderRadius = 3.0;
       [controller_ isAnimatingFromState:bookmarks::kDetachedState]) {
     [self drawRectAsBubble:rect];
   } else {
-    NSPoint phase = [self gtm_themePatternPhase];
+    NSPoint phase = [[self window] themePatternPhase];
     [[NSGraphicsContext currentContext] setPatternPhase:phase];
     [self drawBackground];
   }
@@ -100,7 +100,7 @@ const CGFloat kBorderRadius = 3.0;
   CGContextRef cgContext = (CGContextRef)[context graphicsPort];
   CGContextBeginTransparencyLayer(cgContext, NULL);
   CGContextSetAlpha(cgContext, 1 - morph);
-  [context setPatternPhase:[self gtm_themePatternPhase]];
+  [context setPatternPhase:[[self window] themePatternPhase]];
   [self drawBackground];
   CGContextEndTransparencyLayer(cgContext);
   [context restoreGraphicsState];
