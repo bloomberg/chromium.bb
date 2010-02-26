@@ -1349,24 +1349,16 @@ void DefineOneByteOpcodes() {
   DefineOperand(J_Operand, OpFlag(OpUse) | OpFlag(OperandNear) |
                 OpFlag(OperandRelative));
 
-  DefineOpcodeChoices_32_64(0xe9, 3, 2);
   DefineOpcode(0xe9, NACLi_JMPZ,
                InstFlag(Opcode32Only) | InstFlag(OpcodeHasImmed) |
-               InstFlag(OperandSize_w),
+               InstFlag(OperandSize_w) | InstFlag(OperandSize_v),
                InstJmp);
   DefineOperand(RegEIP, OpFlag(OpSet) | OpFlag(OpImplicit));
   DefineOperand(J_Operand, OpFlag(OpUse) | OpFlag(OperandNear) |
                 OpFlag(OperandRelative));
 
   DefineOpcode(0xe9, NACLi_JMPZ,
-               InstFlag(OpcodeHasImmed) | InstFlag(OperandSize_v),
-               InstJmp);
-  DefineOperand(RegREIP, OpFlag(OpSet) | OpFlag(OpImplicit));
-  DefineOperand(J_Operand, OpFlag(OpUse) | OpFlag(OperandNear) |
-                OpFlag(OperandRelative));
-
-  DefineOpcode(0xe9, NACLi_JMPZ,
-               InstFlag(OpcodeHasImmed) | InstFlag(OperandSize_w),
+               InstFlag(Opcode64Only) | InstFlag(OpcodeHasImmed_v),
                InstJmp);
   DefineOperand(RegREIP, OpFlag(OpSet) | OpFlag(OpImplicit));
   DefineOperand(J_Operand, OpFlag(OpUse) | OpFlag(OperandNear) |

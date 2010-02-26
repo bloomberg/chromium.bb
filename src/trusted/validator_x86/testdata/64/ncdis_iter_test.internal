@@ -265,7 +265,7 @@ ExprNodeVector[4] = {
 0000000000400403: e9 e0 ff ff ff                               jmp 0x4003e8
   { 1, { 0xe9, 0x00, 0x00 },
     NACLi_JMPZ,
-    InstFlag(OpcodeHasImmed) | InstFlag(OperandSize_v),
+    InstFlag(OpcodeHasImmed_v) | InstFlag(Opcode64Only),
     InstJmp,
     2, {
       { RegREIP, OpFlag(OpSet) | OpFlag(OpImplicit) },
@@ -3556,6 +3556,21 @@ ExprNodeVector[4] = {
   { ExprRegister[0] , %xmm1, ExprSet | ExprUsed },
   { OperandReference[1] , 1, 0 },
   { ExprRegister[0] , %xmm2, ExprUsed },
+};
+0000000000000000: 66 e9 00 00 01 02                            jmp 0x2010006
+  { 1, { 0xe9, 0x00, 0x00 },
+    NACLi_JMPZ,
+    InstFlag(OpcodeHasImmed_v) | InstFlag(Opcode64Only),
+    InstJmp,
+    2, {
+      { RegREIP, OpFlag(OpSet) | OpFlag(OpImplicit) },
+      { J_Operand, OpFlag(OpUse) | OpFlag(OperandNear) | OpFlag(OperandRelative) },
+  } };
+ExprNodeVector[4] = {
+  { OperandReference[1] , 0, ExprImplicit },
+  { ExprRegister[0] , %rip, ExprSet | ExprSize64 },
+  { OperandReference[1] , 1, 0 },
+  { ExprConstant[0] , 0x2010006, ExprUsed | ExprUnsignedHex | ExprJumpTarget },
 };
 0000000000000000: 67 40 a0 00 01 02 03                         mov %al, [0x3020100]
   { 1, { 0xa0, 0x00, 0x00 },
