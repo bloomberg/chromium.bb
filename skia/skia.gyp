@@ -577,8 +577,12 @@
         }],
         [ 'armv7 == 1', {
           'defines': [
-            '__ARM_HAVE_NEON',
             '__ARM_ARCH__=7',
+          ],
+        }],
+        [ 'armv7 == 1 and arm_neon == 1', {
+          'defines': [
+            '__ARM_HAVE_NEON',
           ],
         }],
         [ 'target_arch == "arm"', {
@@ -702,12 +706,16 @@
         },
         {  # arm
           'conditions': [
-            ['armv7 == 1', {
+            [ 'armv7 == 1', {
               'defines': [
-                '__ARM_HAVE_NEON',
                 '__ARM_ARCH__=7',
               ],
-            }]
+            }],
+            [ 'armv7 == 1 and arm_neon == 1', {
+              'defines': [
+                '__ARM_HAVE_NEON',
+              ],
+            }],
           ],
           # The assembly uses the frame pointer register (r7 in Thumb/r11 in
           # ARM), the compiler doesn't like that.

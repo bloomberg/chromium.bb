@@ -35,6 +35,12 @@
       },{  # else chromeos==0, assume Chrome/Chromium.
         'ffmpeg_branding%': '<(branding)',
       }],
+      ['armv7==1 and arm_neon==1', {
+        # Need a separate config for arm+neon vs arm
+        'ffmpeg_config%': 'arm-neon',
+      }, {
+        'ffmpeg_config%': '<(target_arch)',
+      }],
     ],
     'ffmpeg_variant%': '<(target_arch)',
 
@@ -131,11 +137,11 @@
             'source/patched-ffmpeg-mt/libavutil/pixdesc.c', # TODO(fbarchard): Review this file.
             'source/patched-ffmpeg-mt/libavutil/rational.c',
             # Config file for the OS and architecture.
-            'source/config/<(ffmpeg_branding)/<(OS)/<(target_arch)/config.h',
+            'source/config/<(ffmpeg_branding)/<(OS)/<(ffmpeg_config)/config.h',
             'source/config/libavutil/avconfig.h',
           ],
           'include_dirs': [
-            'source/config/<(ffmpeg_branding)/<(OS)/<(target_arch)',
+            'source/config/<(ffmpeg_branding)/<(OS)/<(ffmpeg_config)',
             'source/patched-ffmpeg-mt',
 	    'source/config',
           ],
@@ -273,10 +279,6 @@
               ],
               'cflags': [
                 '-fPIC',
-                '-march=armv7-a',
-                '-mtune=cortex-a8',
-                '-mfpu=neon',
-                '-mfloat-abi=softfp',
               ],
               'sources': [
                 'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_arm.S',
@@ -284,19 +286,24 @@
                 'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_init_arm.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_init_armv5te.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_init_armv6.c',
-                'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_init_neon.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_init_vfp.c',
-                'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_neon.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_vfp.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/fft_init_arm.c', # TODO(fbarchard): Review this file.
-                'source/patched-ffmpeg-mt/libavcodec/arm/fft_neon.S', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/arm/jrevdct_arm.S',
-                'source/patched-ffmpeg-mt/libavcodec/arm/mdct_neon.S', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_arm.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_armv5te.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_armv6.S',
-                'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_neon.S',
-                'source/patched-ffmpeg-mt/libavcodec/arm/vp3dsp_neon.S', # TODO(fbarchard): Review this file.
+              ],
+              'conditions': [
+                ['arm_neon==1', {
+                  'sources': [
+                    'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_init_neon.c',
+                    'source/patched-ffmpeg-mt/libavcodec/arm/dsputil_neon.S',
+                    'source/patched-ffmpeg-mt/libavcodec/arm/fft_neon.S', # TODO(fbarchard): Review this file.
+                    'source/patched-ffmpeg-mt/libavcodec/arm/simple_idct_neon.S',
+                    'source/patched-ffmpeg-mt/libavcodec/arm/vp3dsp_neon.S', # TODO(fbarchard): Review this file.
+                  ],
+                }],
               ],
             }],  # target_arch=="arm"
             ['target_arch=="arm" and (ffmpeg_branding=="Chrome" or ffmpeg_branding=="ChromeOS")', {
@@ -304,13 +311,19 @@
 	        # TODO(fbarchard): dsputil_neon code should be used by chromium
 		# for ogg, but with h264 references only if CONFIG_H264_DECODER
 		# is enabled.
-                'source/patched-ffmpeg-mt/libavcodec/arm/h264dsp_neon.S',
-                'source/patched-ffmpeg-mt/libavcodec/arm/h264idct_neon.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/h264pred_init_arm.c',
-                'source/patched-ffmpeg-mt/libavcodec/arm/h264pred_neon.S',
                 'source/patched-ffmpeg-mt/libavcodec/arm/mpegvideo_arm.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/mpegvideo_armv5te.c',
                 'source/patched-ffmpeg-mt/libavcodec/arm/mpegvideo_armv5te_s.S',
+              ],
+              'conditions': [
+                ['arm_neon==1', {
+                  'sources': [
+                    'source/patched-ffmpeg-mt/libavcodec/arm/h264dsp_neon.S',
+                    'source/patched-ffmpeg-mt/libavcodec/arm/h264idct_neon.S',
+                    'source/patched-ffmpeg-mt/libavcodec/arm/h264pred_neon.S',
+                  ],
+                }],
               ],
             }],
            ['target_arch=="arm" and ffmpeg_branding=="ChromeOS"', {
