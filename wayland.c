@@ -186,26 +186,16 @@ wl_client_create(struct wl_display *display, int fd)
 
 	wl_display_post_range(display, client);
 
-	global = container_of(display->global_list.next,
-			      struct wl_global, link);
-	while (&global->link != &display->global_list) {
+	wl_list_for_each(global, &display->global_list, link)
 		wl_client_post_event(client, &client->display->base,
 				     WL_DISPLAY_GLOBAL,
 				     global->object,
 				     global->object->interface->name,
 				     global->object->interface->version);
-		global = container_of(global->link.next,
-				      struct wl_global, link);
-	}
 
-	global = container_of(display->global_list.next,
-			      struct wl_global, link);
-	while (&global->link != &display->global_list) {
+	wl_list_for_each(global, &display->global_list, link)
 		if (global->func)
 			global->func(client, global->object);
-		global = container_of(global->link.next,
-				      struct wl_global, link);
-	}
 
 	return client;
 }
@@ -384,15 +374,9 @@ wl_display_post_frame(struct wl_display *display,
 {
 	struct wl_client *client;
 
-	client = container_of(display->pending_frame_list.next,
-			      struct wl_client, link);
-
-	while (&client->link != &display->pending_frame_list) {
+	wl_list_for_each(client, &display->pending_frame_list, link)
 		wl_client_post_event(client, &compositor->base,
 				     WL_COMPOSITOR_FRAME, frame, msecs);
-		client = container_of(client->link.next,
-				      struct wl_client, link);
-	}
 
 	wl_list_remove(&display->pending_frame_list);
 	wl_list_init(&display->pending_frame_list);

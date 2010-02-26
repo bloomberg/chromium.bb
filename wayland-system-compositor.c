@@ -133,7 +133,6 @@ struct wlsc_compositor {
 	struct wl_event_source *drm_source;
 
 	uint32_t modifier_state;
-	struct wl_list animate_list;
 };
 
 #define MODIFIER_CTRL	(1 << 8)
@@ -141,13 +140,6 @@ struct wlsc_compositor {
 
 struct wlsc_vector {
 	GLdouble x, y, z;
-};
-
-struct wlsc_animate {
-	struct wl_list link;
-	void (*animate)(struct wlsc_animate *animate, 
-			struct wlsc_compositor *compositor,
-			uint32_t frame, uint32_t msecs);
 };
 
 struct wlsc_surface {
@@ -193,8 +185,7 @@ screenshooter_shoot(struct wl_client *client, struct screenshooter *shooter)
 	int i, j;
 
 	i = 0;
-	output = container_of(ec->output_list.next, struct wlsc_output, link);
-	while (&output->link != &ec->output_list) {
+	wl_list_for_each(output, &ec->output_list, link) {
 		snprintf(buffer, sizeof buffer, "wayland-screenshot-%d.png", i++);
 		data = malloc(output->width * output->height * 4);
 		if (data == NULL) {
@@ -219,9 +210,6 @@ screenshooter_shoot(struct wl_client *client, struct screenshooter *shooter)
 		gdk_pixbuf_unref(normal);
 		gdk_pixbuf_unref(pixbuf);
 		free(data);
-
-		output = container_of(output->link.next,
-				      struct wlsc_output, link);
 	}
 }
 
@@ -368,19 +356,14 @@ static void
 wlsc_surface_destroy(struct wlsc_surface *surface,
 		     struct wlsc_compositor *compositor)
 {
-	struct wlsc_listener *l, *next;
+	struct wlsc_listener *l;
 
 	wl_list_remove(&surface->link);
 	glDeleteTextures(1, &surface->texture);
 	wl_client_remove_surface(surface->base.client, &surface->base);
 
-	l = container_of(compositor->surface_destroy_listener_list.next,
-			 struct wlsc_listener, link);
-	while (&l->link != &compositor->surface_destroy_listener_list) {
-		next = container_of(l->link.next, struct wlsc_listener, link);
+	wl_list_for_each(l, &compositor->surface_destroy_listener_list, link)
 		l->func(l, surface);
-		l = next;
-	}
 
 	free(surface);
 }
@@ -578,7 +561,6 @@ page_flip_handler(int fd, unsigned int frame,
 		  unsigned int sec, unsigned int usec, void *data)
 {
 	struct wlsc_output *output = data;
-	struct wlsc_animate *animate, *next;
 	struct wlsc_compositor *compositor = output->compositor;
 	uint32_t msecs;
 
@@ -589,14 +571,6 @@ page_flip_handler(int fd, unsigned int frame,
 
 	wl_event_source_timer_update(compositor->timer_source, 5);
 	compositor->repaint_on_timeout = 1;
-
-	animate = container_of(compositor->animate_list.next, struct wlsc_animate, link);
-	while (&animate->link != &compositor->animate_list) {
-		next = container_of(animate->link.next,
-				    struct wlsc_animate, link);
-		animate->animate(animate, compositor, compositor->current_frame, msecs);
-		animate = next;
-	}
 
 	compositor->current_frame++;
 }
@@ -626,22 +600,11 @@ repaint_output(struct wlsc_output *output)
 	else
 		glClear(GL_COLOR_BUFFER_BIT);
 
-	es = container_of(ec->surface_list.next,
-			  struct wlsc_surface, link);
-	while (&es->link != &ec->surface_list) {
+	wl_list_for_each(es, &ec->surface_list, link)
 		wlsc_surface_draw(es);
-		es = container_of(es->link.next,
-				  struct wlsc_surface, link);
-	}
 
-	eid = container_of(ec->input_device_list.next,
-			   struct wlsc_input_device, link);
-	while (&eid->link != &ec->input_device_list) {
+	wl_list_for_each(eid, &ec->input_device_list, link)
 		wlsc_surface_draw(eid->sprite);
-
-		eid = container_of(eid->link.next,
-				   struct wlsc_input_device, link);
-	}
 
 	fd = eglGetDisplayFD(ec->display);
 	output->current ^= 1;
@@ -666,12 +629,8 @@ repaint(void *data)
 		return;
 	}
 
-	output = container_of(ec->output_list.next, struct wlsc_output, link);
-	while (&output->link != &ec->output_list) {
+	wl_list_for_each(output, &ec->output_list, link)
 		repaint_output(output);
-		output = container_of(output->link.next,
-				      struct wlsc_output, link);
-	}
 
 	ec->repaint_needed = 0;
 }
@@ -687,15 +646,10 @@ wlsc_compositor_schedule_repaint(struct wlsc_compositor *compositor)
 		return;
 
 	fd = eglGetDisplayFD(compositor->display);
-	output = container_of(compositor->output_list.next,
-			      struct wlsc_output, link);
-	while (&output->link != &compositor->output_list) {
+	wl_list_for_each(output, &compositor->output_list, link)
 		drmModePageFlip(fd, output->crtc_id,
 				output->fb_id[output->current ^ 1],
 				DRM_MODE_PAGE_FLIP_EVENT, output);
-		output = container_of(output->link.next,
-				      struct wlsc_output, link);
-	}
 }
 
 static void
@@ -876,9 +830,7 @@ pick_surface(struct wlsc_input_device *device, int32_t *sx, int32_t *sy)
 		return device->grab_surface;
 	}
 
-	es = container_of(ec->surface_list.prev,
-			  struct wlsc_surface, link);
-	while (&es->link != &ec->surface_list) {
+	wl_list_for_each(es, &ec->surface_list, link)
 		if (es->map.x <= device->x &&
 		    device->x < es->map.x + es->map.width &&
 		    es->map.y <= device->y &&
@@ -886,11 +838,6 @@ pick_surface(struct wlsc_input_device *device, int32_t *sx, int32_t *sy)
 			wlsc_surface_transform(es, device->x, device->y, sx, sy);
 			return es;
 		}
-
-		es = container_of(es->link.prev,
-				  struct wlsc_surface, link);
-
-	}
 
 	return NULL;
 }
@@ -1333,17 +1280,13 @@ static void on_enter_vt(int signal_number, void *data)
 	ioctl(ec->tty_fd, VT_RELDISP, VT_ACKACQ);
 	ec->vt_active = TRUE;
 
-	output = container_of(ec->output_list.next, struct wlsc_output, link);
-	while (&output->link != &ec->output_list) {
+	wl_list_for_each(output, &ec->output_list, link) {
 		ret = drmModeSetCrtc(fd, output->crtc_id,
 				     output->fb_id[output->current ^ 1], 0, 0,
 				     &output->connector_id, 1, &output->mode);
 		if (ret)
 			fprintf(stderr, "failed to set mode for connector %d: %m\n",
 				output->connector_id);
-
-		output = container_of(output->link.next,
-				      struct wlsc_output, link);
 	}
 }
 
@@ -1523,8 +1466,6 @@ wlsc_compositor_create(struct wl_display *display)
 
 	ec->timer_source = wl_event_loop_add_timer(loop, repaint, ec);
 	wlsc_compositor_schedule_repaint(ec);
-
-	wl_list_init(&ec->animate_list);
 
 	return ec;
 }

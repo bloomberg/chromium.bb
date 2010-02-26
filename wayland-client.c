@@ -152,15 +152,9 @@ wl_display_add_global_listener(struct wl_display *display,
 
 	/* FIXME: Need a destructor for void *data? */
 
-	global = container_of(display->global_list.next,
-			      struct wl_global, link);
-	while (&global->link != &display->global_list) {
+	wl_list_for_each(global, &display->global_list, link)
 		if (global->proxy != NULL)
 			(*handler)(display, &global->proxy->base, data);
-
-		global = container_of(global->link.next,
-				      struct wl_global, link);
-	}
 
 	return listener;
 }
@@ -192,13 +186,8 @@ wl_proxy_create_for_global(struct wl_display *display,
 	wl_list_init(&proxy->listener_list);
 	wl_hash_insert(display->objects, &proxy->base);
 
-	listener = container_of(display->global_listener_list.next,
-				struct wl_global_listener, link);
-	while (&listener->link != &display->global_listener_list) {
+	wl_list_for_each(listener, &display->global_listener_list, link)
 		(*listener->handler)(display, &proxy->base, listener->data);
-		listener = container_of(listener->link.next,
-					struct wl_global_listener, link);
-	}
 
 	return proxy;
 }
@@ -427,16 +416,10 @@ wl_display_get_object_id(struct wl_display *display,
 {
 	struct wl_global *global;
 
-	global = container_of(display->global_list.next,
-			      struct wl_global, link);
-	while (&global->link != &display->global_list) {
+	wl_list_for_each(global, &display->global_list, link)
 		if (strcmp(global->interface, interface) == 0 &&
 		    global->version >= version)
 			return global->id;
-
-		global = container_of(global->link.next,
-				      struct wl_global, link);
-	}
 
 	return 0;
 }
@@ -473,10 +456,7 @@ handle_event(struct wl_display *display,
 			       id, opcode);
 		}
 
-		listener = container_of(proxy->listener_list.next,
-					struct wl_listener, link);
-		while (&listener->link != &proxy->listener_list) {
-
+		wl_list_for_each(listener, &proxy->listener_list, link)
 			wl_connection_demarshal(display->connection,
 						size,
 						display->objects,
@@ -485,9 +465,6 @@ handle_event(struct wl_display *display,
 						&proxy->base, 
 						&proxy->base.interface->events[opcode]);
 
-			listener = container_of(listener->link.next,
-						struct wl_listener, link);
-		}
 	}
 
 	wl_connection_consume(display->connection, size);

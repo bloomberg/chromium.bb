@@ -82,6 +82,15 @@ void wl_list_remove(struct wl_list *elm);
 int wl_list_length(struct wl_list *list);
 int wl_list_empty(struct wl_list *list);
 
+#define __container_of(ptr, sample, member)				\
+	(void *)((char *)(ptr)	-					\
+		 ((char *)&(sample)->member - (char *)(sample)))
+
+#define wl_list_for_each(pos, head, member)				\
+	for (pos = __container_of((head)->next, pos, member);		\
+	     &pos->member != (head);					\
+	     pos = __container_of(pos->member.next, pos, member))
+
 struct wl_array {
 	uint32_t size;
 	uint32_t alloc;
