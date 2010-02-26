@@ -654,6 +654,15 @@
    fun:_ZN3net13TCPConnectJob13DoResolveHostEv
 }
 {
+   # ditto, but tweak to match the chromeos's stack.
+   bug_16089d
+   Memcheck:Leak
+   fun:*
+   fun:_ZN4base22LinuxDynamicThreadPool8PostTaskEP4Task
+   ...
+   fun:_ZN3net16HostResolverImpl3Job5StartEv
+}
+{
    # very common in ui tests
    bug_16091
    Memcheck:Leak
@@ -1906,31 +1915,6 @@
    fun:PR_Calloc
    fun:error_get_my_stack
    fun:nss_ClearErrorStack
-}
-{
-   bug_32089
-   Memcheck:Leak
-   fun:_Znw*
-   fun:_ZN4base22LinuxDynamicThreadPool8PostTaskEP4Task
-   ...
-   fun:_ZN10WorkerPool8PostTaskERKN15tracked_objects8LocationEP4Taskb
-   fun:_ZN3net16HostResolverImpl3Job5StartEv
-   fun:_ZN3net16HostResolverImpl17CreateAndStartJobEPNS0_7RequestE
-   fun:_ZN3net16HostResolverImpl7ResolveERKNS_12HostResolver11RequestInfoEPNS_11AddressListEP14CallbackRunnerI6Tuple1IiEEPPvPNS_7LoadLogE
-   fun:_ZN3net20MockHostResolverBase7ResolveERKNS_12HostResolver11RequestInfoEPNS_11AddressListEP14CallbackRunnerI6Tuple1IiEEPPvPNS_7LoadLogE
-   fun:_ZN3net25SingleRequestHostResolver7ResolveERKNS_12HostResolver11RequestInfoEPNS_11AddressListEP14CallbackRunnerI6Tuple1IiEEPNS_7LoadLogE
-   fun:_ZN18chrome_browser_net9DnsMaster13LookupRequest5StartEv
-   fun:_ZN18chrome_browser_net9DnsMaster26StartSomeQueuedResolutionsEv
-   fun:_ZN18chrome_browser_net9DnsMaster23AppendToResolutionQueueERKSsNS_11DnsHostInfo20ResolutionMotivationE
-   fun:_ZN18chrome_browser_net9DnsMaster11ResolveListERKSt6vectorISsSaISsEENS_11DnsHostInfo20ResolutionMotivationE
-   ...
-   fun:_ZN7testing4Test3RunEv
-   fun:_ZN7testing8internal12TestInfoImpl3RunEv
-   fun:_ZN7testing8TestCase3RunEv
-   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
-   fun:_ZN7testing8UnitTest3RunEv
-   fun:_ZN9TestSuite3RunEv
-   fun:main
 }
 {
    bug_32140
