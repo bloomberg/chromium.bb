@@ -40,6 +40,11 @@ class PreferenceDataTypeController : public DataTypeController {
     return browser_sync::GROUP_UI;
   }
 
+  virtual const char* name() const {
+    // For logging only.
+    return "preference";
+  }
+
   virtual State state() {
     return state_;
   }

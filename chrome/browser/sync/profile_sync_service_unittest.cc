@@ -18,23 +18,29 @@
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
+#include "chrome/browser/sync/glue/data_type_controller.h"
 #include "chrome/browser/sync/glue/model_associator.h"
 #include "chrome/browser/sync/glue/sync_backend_host.h"
 #include "chrome/browser/sync/notification_method.h"
 #include "chrome/browser/sync/profile_sync_factory.h"
+#include "chrome/browser/sync/profile_sync_factory_mock.h"
 #include "chrome/browser/sync/test_profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_test_util.h"
 #include "chrome/common/chrome_switches.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/test/testing_profile.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 using std::vector;
 using browser_sync::AssociatorInterface;
 using browser_sync::BookmarkChangeProcessor;
 using browser_sync::BookmarkModelAssociator;
 using browser_sync::ChangeProcessor;
+using browser_sync::DataTypeController;
 using browser_sync::ModelAssociator;
 using browser_sync::SyncBackendHost;
+using testing::_;
+using testing::Return;
 
 class TestBookmarkModelAssociator :
     public TestModelAssociator<BookmarkModelAssociator> {
@@ -222,17 +228,22 @@ class ProfileSyncServiceTest : public testing::Test {
 
   void StartSyncService() {
     if (!service_.get()) {
-      service_.reset(new TestProfileSyncService(profile_.get(), false));
+      service_.reset(new TestProfileSyncService(&factory_,
+                                                profile_.get(),
+                                                false));
 
       // Register the bookmark data type.
       model_associator_ = new TestBookmarkModelAssociator(service_.get());
       change_processor_ = new BookmarkChangeProcessor(model_associator_,
                                                       service_.get());
-      factory_.reset(new TestProfileSyncFactory(NULL,
-                                                model_associator_,
-                                                change_processor_));
+      EXPECT_CALL(factory_, CreateBookmarkSyncComponents(_)).
+          WillOnce(Return(ProfileSyncFactory::SyncComponents(
+              model_associator_, change_processor_)));
+      EXPECT_CALL(factory_, CreateDataTypeManager(_)).
+          WillOnce(MakeDataTypeManager());
+
       service_->RegisterDataTypeController(
-          new browser_sync::BookmarkDataTypeController(factory_.get(),
+          new browser_sync::BookmarkDataTypeController(&factory_,
                                                        profile_.get(),
                                                        service_.get()));
       service_->Initialize();
@@ -414,7 +425,7 @@ class ProfileSyncServiceTest : public testing::Test {
 
   scoped_ptr<TestProfileSyncService> service_;
   scoped_ptr<TestingProfile> profile_;
-  scoped_ptr<TestProfileSyncFactory> factory_;
+  ProfileSyncFactoryMock factory_;
   BookmarkModel* model_;
   TestBookmarkModelAssociator* model_associator_;
   BookmarkChangeProcessor* change_processor_;
@@ -1296,17 +1307,21 @@ TEST_F(ProfileSyncServiceTestWithData, MAYBE_TestStartupWithOldSyncData) {
 
   LoadBookmarkModel(LOAD_FROM_STORAGE, SAVE_TO_STORAGE);
   if (!service_.get()) {
-    service_.reset(new TestProfileSyncService(profile_.get(), false));
+    service_.reset(
+        new TestProfileSyncService(&factory_, profile_.get(), false));
     profile_->GetPrefs()->SetBoolean(prefs::kSyncHasSetupCompleted, false);
 
     model_associator_ = new TestBookmarkModelAssociator(service_.get());
     change_processor_ = new BookmarkChangeProcessor(model_associator_,
                                                     service_.get());
-    factory_.reset(new TestProfileSyncFactory(NULL,
-                                              model_associator_,
-                                              change_processor_));
+    EXPECT_CALL(factory_, CreateBookmarkSyncComponents(_)).
+        WillOnce(Return(ProfileSyncFactory::SyncComponents(
+            model_associator_, change_processor_)));
+    EXPECT_CALL(factory_, CreateDataTypeManager(_)).
+        WillOnce(MakeDataTypeManager());
+
     service_->RegisterDataTypeController(
-        new browser_sync::BookmarkDataTypeController(factory_.get(),
+        new browser_sync::BookmarkDataTypeController(&factory_,
                                                      profile_.get(),
                                                      service_.get()));
 

@@ -20,6 +20,7 @@
 #include "chrome/common/notification_source.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/test/testing_profile.h"
+#include "testing/gmock/include/gmock/gmock.h"
 
 using browser_sync::BookmarkDataTypeController;
 using browser_sync::ChangeProcessorMock;

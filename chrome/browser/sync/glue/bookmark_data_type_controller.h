@@ -50,6 +50,11 @@ class BookmarkDataTypeController : public DataTypeController,
     return browser_sync::GROUP_UI;
   }
 
+  virtual const char* name() const {
+    // For logging only.
+    return "bookmark";
+  }
+
   virtual State state() {
     return state_;
   }
