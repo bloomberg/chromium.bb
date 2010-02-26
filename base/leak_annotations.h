@@ -5,7 +5,9 @@
 #ifndef BASE_LEAK_ANNOTATIONS_H_
 #define BASE_LEAK_ANNOTATIONS_H_
 
-#if defined(LINUX_USE_TCMALLOC)
+#include "build/build_config.h"
+
+#if defined(OS_LINUX) && defined(USE_TCMALLOC)
 
 #include "third_party/tcmalloc/chromium/src/google/heap-checker.h"
 

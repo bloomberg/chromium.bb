@@ -7,6 +7,7 @@
 #include <v8.h>
 
 #include <algorithm>
+#include <limits>
 #include <map>
 #include <vector>
 
@@ -372,7 +373,7 @@ void RenderThread::WidgetHidden() {
 }
 
 void RenderThread::WidgetRestored() {
-  DCHECK(hidden_widget_count_ > 0);
+  DCHECK_GT(hidden_widget_count_, 0);
   hidden_widget_count_--;
   if (!is_extension_process())
     idle_timer_.Stop();
@@ -779,7 +780,7 @@ void RenderThread::EnsureWebKitInitialized() {
 }
 
 void RenderThread::IdleHandler() {
-#if defined(OS_WIN) && defined(USE_TCMALLOC)
+#if (defined(OS_WIN) || defined(OS_LINUX)) && defined(USE_TCMALLOC)
   MallocExtension::instance()->ReleaseFreeMemory();
 #endif
 
@@ -853,7 +854,7 @@ void RenderThread::OnPurgeMemory() {
   while (!v8::V8::IdleNotification()) {
   }
 
-#if defined(OS_WIN) && defined(USE_TCMALLOC)
+#if (defined(OS_WIN) || defined(OS_LINUX)) && defined(USE_TCMALLOC)
   // Tell tcmalloc to release any free pages it's still holding.
   MallocExtension::instance()->ReleaseFreeMemory();
 #endif

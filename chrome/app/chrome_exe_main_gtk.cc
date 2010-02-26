@@ -17,12 +17,11 @@
 extern "C" {
 int ChromeMain(int argc, const char** argv);
 
-#if defined(LINUX_USE_TCMALLOC)
+#if defined(OS_LINUX) && defined(USE_TCMALLOC)
 
 int tc_set_new_mode(int mode);
 
-#endif  // defined(LINUX_USE_TCMALLOC)
-
+#endif  // defined(OS_LINUX) && defined(USE_TCMALLOC)
 }
 
 int main(int argc, const char** argv) {
@@ -35,7 +34,7 @@ int main(int argc, const char** argv) {
   // dependency on TCMalloc.  Really, we ought to have our allocator shim code
   // implement this EnableTerminationOnOutOfMemory() function.  Whateverz.  This
   // works for now.
-#if defined(LINUX_USE_TCMALLOC)
+#if defined(OS_LINUX) && defined(USE_TCMALLOC)
   // For tcmalloc, we need to tell it to behave like new.
   tc_set_new_mode(1);
 #endif
@@ -44,10 +43,6 @@ int main(int argc, const char** argv) {
   // Win has one here, but we assert with multiples from BrowserMain() if we
   // keep it.
   // base::AtExitManager exit_manager;
-
-#if defined(GOOGLE_CHROME_BUILD)
-  // TODO(tc): init crash reporter
-#endif
 
   return ChromeMain(argc, argv);
 }

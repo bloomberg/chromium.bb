@@ -4,6 +4,8 @@
 
 #include "chrome/browser/memory_purger.h"
 
+#include <set>
+
 #include "base/thread.h"
 #include "chrome/browser/browser_list.h"
 #include "chrome/browser/browser_process.h"
@@ -135,7 +137,7 @@ void MemoryPurger::PurgeBrowser() {
   // * Purge AppCache memory.  Not yet implemented sufficiently.
   // * Browser-side DatabaseTracker.  Not implemented sufficiently.
 
-#if defined(OS_WIN) && defined(USE_TCMALLOC)
+#if (defined(OS_WIN) || defined(OS_LINUX)) && defined(USE_TCMALLOC)
   // Tell tcmalloc to release any free pages it's still holding.
   //
   // TODO(pkasting): A lot of the above calls kick off actions on other threads.
