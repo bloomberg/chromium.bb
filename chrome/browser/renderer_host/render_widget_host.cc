@@ -1016,7 +1016,10 @@ void RenderWidgetHost::ProcessKeyboardEventAck(int type, bool processed) {
     NativeWebKeyboardEvent front_item = key_queue_.front();
     key_queue_.pop_front();
 
-    if (!processed) {
+    // We only send unprocessed key event upwards if we are not hidden,
+    // because the user has moved away from us and no longer expect any effect
+    // of this key event.
+    if (!processed && !is_hidden_) {
       UnhandledKeyboardEvent(front_item);
 
       // WARNING: This RenderWidgetHost can be deallocated at this point
