@@ -91,7 +91,9 @@ struct ContextInfo {
 };
 typedef std::list< linked_ptr<ContextInfo> > ContextList;
 
-// Returns a mutable reference to the ContextList.
+// Returns a mutable reference to the ContextList. Note: be careful using this.
+// Calling into javascript may result in the list being modified, so don't rely
+// on iterators remaining valid between calls to javascript.
 ContextList& GetContexts();
 
 // Returns a (copied) list of contexts that have the given extension_id.
