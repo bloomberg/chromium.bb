@@ -151,6 +151,8 @@ class RenderWidget : public IPC::Channel::Listener,
   virtual void OnWasHidden();
   virtual void OnWasRestored(bool needs_repainting);
   void OnUpdateRectAck();
+  void OnCreateVideoAck(int32 video_id);
+  void OnUpdateVideoAck(int32 video_id);
   void OnRequestMoveAck();
   void OnHandleInputEvent(const IPC::Message& message);
   void OnMouseCaptureLost();

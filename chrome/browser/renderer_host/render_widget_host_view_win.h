@@ -136,6 +136,7 @@ class RenderWidgetHostViewWin
   virtual void Destroy();
   virtual void SetTooltipText(const std::wstring& tooltip_text);
   virtual BackingStore* AllocBackingStore(const gfx::Size& size);
+  virtual VideoLayer* AllocVideoLayer(const gfx::Size& size);
   virtual void SetBackground(const SkBitmap& background);
   virtual bool ContainsNativeView(gfx::NativeView native_view) const;
   virtual void SetVisuallyDeemphasized(bool deemphasized);

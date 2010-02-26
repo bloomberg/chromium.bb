@@ -38,6 +38,7 @@ class RenderProcessHost;
 class RenderWidgetHostView;
 class RenderWidgetHostPaintingObserver;
 class TransportDIB;
+class VideoLayer;
 class WebCursor;
 struct ViewHostMsg_ShowPopup_Params;
 struct ViewHostMsg_UpdateRect_Params;
@@ -219,6 +220,9 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // when it is done with the DIB. We will then forward a message to the
   // renderer to send another paint.
   void DonePaintingToBackingStore();
+
+  // Returns the video layer if it exists, NULL otherwise.
+  VideoLayer* const video_layer() { return video_layer_.get(); }
 
   // Checks to see if we can give up focus to this widget through a JS call.
   virtual bool CanBlur() const { return true; }
@@ -427,6 +431,9 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   void OnMsgClose();
   void OnMsgRequestMove(const gfx::Rect& pos);
   void OnMsgUpdateRect(const ViewHostMsg_UpdateRect_Params& params);
+  void OnMsgCreateVideo(const gfx::Size& size);
+  void OnMsgUpdateVideo(TransportDIB::Id bitmap, const gfx::Rect& bitmap_rect);
+  void OnMsgDestroyVideo();
   void OnMsgInputEventAck(const IPC::Message& message);
   void OnMsgFocus();
   void OnMsgBlur();
@@ -475,6 +482,12 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // is the newly painted pixels by the renderer.
   void ScrollBackingStoreRect(int dx, int dy, const gfx::Rect& clip_rect,
                               const gfx::Size& view_size);
+
+  // Paints the entire given bitmap into the current video layer, if it exists.
+  // |bitmap_rect| specifies the destination size and absolute location of the
+  // bitmap on the backing store.
+  void PaintVideoLayer(TransportDIB::Id bitmap,
+                       const gfx::Rect& bitmap_rect);
 
   // Called by OnMsgInputEventAck() to process a keyboard event ack message.
   void ProcessKeyboardEventAck(int type, bool processed);
@@ -612,6 +625,9 @@ class RenderWidgetHost : public IPC::Channel::Listener,
   // switching back to the original tab, because the content may already be
   // changed.
   bool suppress_next_char_events_;
+
+  // Optional video YUV layer for used for out-of-process compositing.
+  scoped_ptr<VideoLayer> video_layer_;
 
   DISALLOW_COPY_AND_ASSIGN(RenderWidgetHost);
 };

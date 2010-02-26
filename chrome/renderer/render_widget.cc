@@ -140,6 +140,8 @@ IPC_DEFINE_MESSAGE_MAP(RenderWidget)
   IPC_MESSAGE_HANDLER(ViewMsg_WasHidden, OnWasHidden)
   IPC_MESSAGE_HANDLER(ViewMsg_WasRestored, OnWasRestored)
   IPC_MESSAGE_HANDLER(ViewMsg_UpdateRect_ACK, OnUpdateRectAck)
+  IPC_MESSAGE_HANDLER(ViewMsg_CreateVideo_ACK, OnCreateVideoAck)
+  IPC_MESSAGE_HANDLER(ViewMsg_UpdateVideo_ACK, OnUpdateVideoAck)
   IPC_MESSAGE_HANDLER(ViewMsg_HandleInputEvent, OnHandleInputEvent)
   IPC_MESSAGE_HANDLER(ViewMsg_MouseCaptureLost, OnMouseCaptureLost)
   IPC_MESSAGE_HANDLER(ViewMsg_SetFocus, OnSetFocus)
@@ -275,6 +277,14 @@ void RenderWidget::OnUpdateRectAck() {
 
   // Continue painting if necessary...
   CallDoDeferredUpdate();
+}
+
+void RenderWidget::OnCreateVideoAck(int32 video_id) {
+  // TODO(scherkus): handle CreateVideo_ACK with a message filter.
+}
+
+void RenderWidget::OnUpdateVideoAck(int32 video_id) {
+  // TODO(scherkus): handle UpdateVideo_ACK with a message filter.
 }
 
 void RenderWidget::OnHandleInputEvent(const IPC::Message& message) {

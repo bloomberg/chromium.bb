@@ -69,6 +69,7 @@ class TestRenderWidgetHostView : public RenderWidgetHostView {
   virtual void PrepareToDestroy() {}
   virtual void SetTooltipText(const std::wstring& tooltip_text) {}
   virtual BackingStore* AllocBackingStore(const gfx::Size& size);
+  virtual VideoLayer* AllocVideoLayer(const gfx::Size& size);
 #if defined(OS_MACOSX)
   virtual void ShowPopupWithItems(gfx::Rect bounds,
                                   int item_height,

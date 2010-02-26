@@ -44,6 +44,7 @@
 #include "webkit/glue/media/buffered_data_source.h"
 #include "webkit/glue/media/media_resource_loader_bridge_factory.h"
 #include "webkit/glue/media/simple_data_source.h"
+#include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webplugin_impl.h"
 #include "webkit/glue/webpreferences.h"
@@ -667,7 +668,8 @@ WebMediaPlayer* TestWebViewDelegate::createMediaPlayer(
                                                      bridge_factory);
   factory->AddFactory(buffered_data_source_factory);
   factory->AddFactory(simple_data_source_factory);
-  return new webkit_glue::WebMediaPlayerImpl(client, factory);
+  return new webkit_glue::WebMediaPlayerImpl(
+      client, factory, new webkit_glue::VideoRendererImpl::FactoryFactory());
 }
 
 bool TestWebViewDelegate::allowPlugins(WebFrame* frame,

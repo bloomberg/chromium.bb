@@ -30,6 +30,7 @@
 #include "chrome/browser/renderer_host/gtk_im_context_wrapper.h"
 #include "chrome/browser/renderer_host/gtk_key_bindings_handler.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
+#include "chrome/browser/renderer_host/video_layer_x.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/native_web_keyboard_event.h"
 #include "chrome/common/x11_util.h"
@@ -635,6 +636,17 @@ BackingStore* RenderWidgetHostViewGtk::AllocBackingStore(
                            gtk_widget_get_visual(view_.get())->depth);
 }
 
+VideoLayer* RenderWidgetHostViewGtk::AllocVideoLayer(const gfx::Size& size) {
+  if (kUseGPURendering) {
+    NOTIMPLEMENTED();
+    return NULL;
+  }
+
+  return new VideoLayerX(host_, size,
+                         x11_util::GetVisualFromGtkWidget(view_.get()),
+                         gtk_widget_get_visual(view_.get())->depth);
+}
+
 void RenderWidgetHostViewGtk::SetBackground(const SkBitmap& background) {
   RenderWidgetHostView::SetBackground(background);
   host_->Send(new ViewMsg_SetBackground(host_->routing_id(), background));
@@ -675,6 +687,14 @@ void RenderWidgetHostViewGtk::Paint(const gfx::Rect& damage_rect) {
         // we don't need to double buffer.
         backing_store->XShowRect(
             paint_rect, x11_util::GetX11WindowFromGtkWidget(view_.get()));
+
+        // Paint the video layer using XCopyArea.
+        // TODO(scherkus): implement VideoLayerX::CairoShow() for grey
+        // blending.
+        VideoLayerX* video_layer = static_cast<VideoLayerX*>(
+            host_->video_layer());
+        if (video_layer)
+          video_layer->XShow(x11_util::GetX11WindowFromGtkWidget(view_.get()));
       } else {
         // If the grey blend is showing, we make two drawing calls. Use double
         // buffering to prevent flicker. Use CairoShowRect because XShowRect

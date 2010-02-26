@@ -14,6 +14,7 @@
 #include "chrome/browser/renderer_host/render_widget_helper.h"
 #include "chrome/browser/renderer_host/render_widget_host_painting_observer.h"
 #include "chrome/browser/renderer_host/render_widget_host_view.h"
+#include "chrome/browser/renderer_host/video_layer.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
 #include "webkit/glue/webcursor.h"
@@ -127,6 +128,9 @@ void RenderWidgetHost::OnMessageReceived(const IPC::Message &msg) {
     IPC_MESSAGE_HANDLER(ViewHostMsg_Close, OnMsgClose)
     IPC_MESSAGE_HANDLER(ViewHostMsg_RequestMove, OnMsgRequestMove)
     IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateRect, OnMsgUpdateRect)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_CreateVideo, OnMsgCreateVideo)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_UpdateVideo, OnMsgUpdateVideo)
+    IPC_MESSAGE_HANDLER(ViewHostMsg_DestroyVideo, OnMsgDestroyVideo)
     IPC_MESSAGE_HANDLER(ViewHostMsg_HandleInputEvent_ACK, OnMsgInputEventAck)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Focus, OnMsgFocus)
     IPC_MESSAGE_HANDLER(ViewHostMsg_Blur, OnMsgBlur)
@@ -769,6 +773,27 @@ void RenderWidgetHost::OnMsgUpdateRect(
   UMA_HISTOGRAM_TIMES("MPArch.RWH_OnMsgUpdateRect", delta);
 }
 
+void RenderWidgetHost::OnMsgCreateVideo(const gfx::Size& size) {
+  DCHECK(!video_layer_.get());
+
+  video_layer_.reset(view_->AllocVideoLayer(size));
+
+  // TODO(scherkus): support actual video ids!
+  Send(new ViewMsg_CreateVideo_ACK(routing_id_, -1));
+}
+
+void RenderWidgetHost::OnMsgUpdateVideo(TransportDIB::Id bitmap,
+                                        const gfx::Rect& bitmap_rect) {
+  PaintVideoLayer(bitmap, bitmap_rect);
+
+  // TODO(scherkus): support actual video ids!
+  Send(new ViewMsg_UpdateVideo_ACK(routing_id_, -1));
+}
+
+void RenderWidgetHost::OnMsgDestroyVideo() {
+  video_layer_.reset();
+}
+
 void RenderWidgetHost::OnMsgInputEventAck(const IPC::Message& message) {
   // Log the time delta for processing an input event.
   TimeDelta delta = TimeTicks::Now() - input_event_start_time_;
@@ -985,6 +1010,26 @@ void RenderWidgetHost::ScrollBackingStoreRect(int dx, int dy,
   if (!backing_store || (backing_store->size() != view_size))
     return;
   backing_store->ScrollBackingStore(dx, dy, clip_rect, view_size);
+}
+
+void RenderWidgetHost::PaintVideoLayer(TransportDIB::Id bitmap,
+                                       const gfx::Rect& bitmap_rect) {
+  if (is_hidden_ || !video_layer_.get())
+    return;
+
+  video_layer_->CopyTransportDIB(process(), bitmap, bitmap_rect);
+
+  // Don't update the view if we're hidden or if the view has been destroyed.
+  if (is_hidden_ || !view_)
+    return;
+
+  // Trigger a paint for the updated video layer bitmap.
+  std::vector<gfx::Rect> copy_rects;
+  copy_rects.push_back(bitmap_rect);
+
+  view_being_painted_ = true;
+  view_->DidPaintBackingStoreRects(copy_rects);
+  view_being_painted_ = false;
 }
 
 void RenderWidgetHost::ToggleSpellPanel(bool is_currently_visible) {

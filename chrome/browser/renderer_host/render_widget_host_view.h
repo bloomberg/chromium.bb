@@ -26,6 +26,7 @@ class Message;
 class BackingStore;
 class RenderProcessHost;
 class RenderWidgetHost;
+class VideoLayer;
 class WebCursor;
 struct WebMenuItem;
 
@@ -152,6 +153,9 @@ class RenderWidgetHostView {
 
   // Allocate a backing store for this view
   virtual BackingStore* AllocBackingStore(const gfx::Size& size) = 0;
+
+  // Allocate a video layer for this view.
+  virtual VideoLayer* AllocVideoLayer(const gfx::Size& size) = 0;
 
 #if defined(OS_MACOSX)
   // Display a native control popup menu for WebKit.

@@ -292,6 +292,10 @@ const char kEnableUserDataDirProfiles[]     = "enable-udd-profiles";
 // browser window.
 const char kEnableVerticalTabs[]            = "enable-vertical-tabs";
 
+// Enables video layering where video is rendered as a separate layer outside
+// of the backing store.
+const char kEnableVideoLayering[]           = "enable-video-layering";
+
 // Spawn threads to watch for excessive delays in specified message loops.
 // User should set breakpoints on Alarm() to examine problematic thread.
 // Usage:   -enable-watchdog=[ui][io]

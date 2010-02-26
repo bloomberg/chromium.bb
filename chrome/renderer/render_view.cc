@@ -47,6 +47,7 @@
 #include "chrome/renderer/geolocation_dispatcher.h"
 #include "chrome/renderer/localized_error.h"
 #include "chrome/renderer/media/audio_renderer_impl.h"
+#include "chrome/renderer/media/ipc_video_renderer.h"
 #include "chrome/renderer/navigation_state.h"
 #include "chrome/renderer/notification_provider.h"
 #include "chrome/renderer/plugin_channel_host.h"
@@ -110,6 +111,7 @@
 #include "webkit/glue/password_form.h"
 #include "webkit/glue/plugins/plugin_list.h"
 #include "webkit/glue/plugins/webplugin_delegate_impl.h"
+#include "webkit/glue/media/video_renderer_impl.h"
 #include "webkit/glue/webdropdata.h"
 #include "webkit/glue/webkit_glue.h"
 #include "webkit/glue/webmediaplayer_impl.h"
@@ -2140,7 +2142,15 @@ WebMediaPlayer* RenderView::createMediaPlayer(
     factory->AddFactory(buffered_data_source_factory);
     factory->AddFactory(simple_data_source_factory);
   }
-  return new webkit_glue::WebMediaPlayerImpl(client, factory);
+
+  webkit_glue::WebVideoRendererFactoryFactory* factory_factory = NULL;
+  if (cmd_line->HasSwitch(switches::kEnableVideoLayering)) {
+    factory_factory = new IPCVideoRenderer::FactoryFactory(routing_id_);
+  } else {
+    factory_factory = new webkit_glue::VideoRendererImpl::FactoryFactory();
+  }
+
+  return new webkit_glue::WebMediaPlayerImpl(client, factory, factory_factory);
 }
 
 WebCookieJar* RenderView::cookieJar() {

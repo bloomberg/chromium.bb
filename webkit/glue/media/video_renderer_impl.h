@@ -6,10 +6,6 @@
 // inside video renderer thread and also WebKit's main thread. We need to be
 // extra careful about members shared by two different threads, especially
 // video frame buffers.
-//
-// Methods called from WebKit's main thread:
-//   Paint()
-//   SetRect()
 
 #ifndef WEBKIT_GLUE_MEDIA_VIDEO_RENDERER_IMPL_H_
 #define WEBKIT_GLUE_MEDIA_VIDEO_RENDERER_IMPL_H_
@@ -17,37 +13,40 @@
 #include "base/gfx/rect.h"
 #include "base/gfx/size.h"
 #include "media/base/buffers.h"
-#include "media/base/factory.h"
 #include "media/base/filters.h"
 #include "media/filters/video_renderer_base.h"
 #include "skia/ext/platform_canvas.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebMediaPlayer.h"
+#include "webkit/glue/media/web_video_renderer.h"
 #include "webkit/glue/webmediaplayer_impl.h"
 
 namespace webkit_glue {
 
-class VideoRendererImpl : public media::VideoRendererBase {
+class VideoRendererImpl : public WebVideoRenderer {
  public:
-  // Methods for painting called by the WebMediaPlayerImpl::Proxy
-
-  // This method is called with the same rect as the Paint method and could
-  // be used by future implementations to implement an improved color space +
-  // scale code on a separate thread.  Since we always do the stretch on the
-  // same thread as the Paint method, we just ignore the call for now.
+  // WebVideoRenderer implementation.
   virtual void SetRect(const gfx::Rect& rect);
-
-  // Paint the current front frame on the |canvas| stretching it to fit the
-  // |dest_rect|
   virtual void Paint(skia::PlatformCanvas* canvas, const gfx::Rect& dest_rect);
 
   // Static method for creating factory for this object.
-  static media::FilterFactory* CreateFactory(WebMediaPlayerImpl::Proxy* proxy) {
-    return new media::FilterFactoryImpl1<VideoRendererImpl,
-                                         WebMediaPlayerImpl::Proxy*>(proxy);
-  }
+  static media::FilterFactory* CreateFactory(WebMediaPlayerImpl::Proxy* proxy);
 
   // FilterFactoryImpl1 implementation.
   static bool IsMediaFormatSupported(const media::MediaFormat& media_format);
+
+  // TODO(scherkus): remove this mega-hack, see http://crbug.com/28207
+  class FactoryFactory : public webkit_glue::WebVideoRendererFactoryFactory {
+   public:
+    FactoryFactory() : webkit_glue::WebVideoRendererFactoryFactory() {}
+
+    virtual media::FilterFactory* CreateFactory(
+        webkit_glue::WebMediaPlayerImpl::Proxy* proxy) {
+      return VideoRendererImpl::CreateFactory(proxy);
+    }
+
+   private:
+    DISALLOW_COPY_AND_ASSIGN(FactoryFactory);
+  };
 
  protected:
   // Method called by VideoRendererBase during initialization.

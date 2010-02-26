@@ -18,6 +18,13 @@ namespace webkit_glue {
 }
 
 // static
+media::FilterFactory* VideoRendererImpl::CreateFactory(
+    WebMediaPlayerImpl::Proxy* proxy) {
+  return new media::FilterFactoryImpl1<VideoRendererImpl,
+                                       WebMediaPlayerImpl::Proxy*>(proxy);
+}
+
+// static
 bool VideoRendererImpl::IsMediaFormatSupported(
     const media::MediaFormat& media_format) {
   int width = 0;

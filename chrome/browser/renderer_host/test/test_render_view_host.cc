@@ -79,6 +79,12 @@ BackingStore* TestRenderWidgetHostView::AllocBackingStore(
   return new TestBackingStore(rwh_, size);
 }
 
+VideoLayer* TestRenderWidgetHostView::AllocVideoLayer(
+    const gfx::Size& size) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 #if defined(OS_MACOSX)
 gfx::Rect TestRenderWidgetHostView::GetWindowRect() {
   return gfx::Rect();

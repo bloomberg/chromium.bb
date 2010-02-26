@@ -1,4 +1,4 @@
-// Copyright (c) 2008-2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -18,6 +18,7 @@
 #include "third_party/WebKit/WebKit/chromium/public/WebSize.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebURL.h"
 #include "webkit/glue/media/video_renderer_impl.h"
+#include "webkit/glue/media/web_video_renderer.h"
 
 using WebKit::WebCanvas;
 using WebKit::WebRect;
@@ -80,7 +81,7 @@ void WebMediaPlayerImpl::Proxy::Repaint() {
 }
 
 void WebMediaPlayerImpl::Proxy::SetVideoRenderer(
-    VideoRendererImpl* video_renderer) {
+    WebVideoRenderer* video_renderer) {
   video_renderer_ = video_renderer;
 }
 
@@ -181,7 +182,9 @@ void WebMediaPlayerImpl::Proxy::NetworkEventTask() {
 // WebMediaPlayerImpl implementation
 
 WebMediaPlayerImpl::WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
-                                       media::FilterFactoryCollection* factory)
+                                       media::FilterFactoryCollection* factory,
+                                       WebVideoRendererFactoryFactory*
+                                           video_renderer_factory)
     : network_state_(WebKit::WebMediaPlayer::Empty),
       ready_state_(WebKit::WebMediaPlayer::HaveNothing),
       main_loop_(NULL),
@@ -193,6 +196,10 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
   // Saves the current message loop.
   DCHECK(!main_loop_);
   main_loop_ = MessageLoop::current();
+
+  // Make sure this gets deleted.
+  scoped_ptr<WebVideoRendererFactoryFactory>
+      scoped_video_renderer_factory(video_renderer_factory);
 
   // Create the pipeline and its thread.
   if (!pipeline_thread_.Start()) {
@@ -225,7 +232,7 @@ WebMediaPlayerImpl::WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
   }
   filter_factory_->AddFactory(media::FFmpegVideoDecoder::CreateFactory());
   filter_factory_->AddFactory(media::NullAudioRenderer::CreateFilterFactory());
-  filter_factory_->AddFactory(VideoRendererImpl::CreateFactory(proxy_));
+  filter_factory_->AddFactory(video_renderer_factory->CreateFactory(proxy_));
 }
 
 WebMediaPlayerImpl::~WebMediaPlayerImpl() {

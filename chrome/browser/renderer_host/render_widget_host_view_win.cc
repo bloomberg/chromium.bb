@@ -751,6 +751,12 @@ BackingStore* RenderWidgetHostViewWin::AllocBackingStore(
   return new BackingStoreWin(render_widget_host_, size);
 }
 
+VideoLayer* RenderWidgetHostViewWin::AllocVideoLayer(
+    const gfx::Size& size) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 void RenderWidgetHostViewWin::SetBackground(const SkBitmap& background) {
   RenderWidgetHostView::SetBackground(background);
   Send(new ViewMsg_SetBackground(render_widget_host_->routing_id(),

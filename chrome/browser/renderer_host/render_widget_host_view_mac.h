@@ -105,6 +105,7 @@ class RenderWidgetHostViewMac : public RenderWidgetHostView {
   virtual void Destroy();
   virtual void SetTooltipText(const std::wstring& tooltip_text);
   virtual BackingStore* AllocBackingStore(const gfx::Size& size);
+  virtual VideoLayer* AllocVideoLayer(const gfx::Size& size);
   virtual void ShowPopupWithItems(gfx::Rect bounds,
                                   int item_height,
                                   int selected_item,

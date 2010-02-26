@@ -425,6 +425,12 @@ BackingStore* RenderWidgetHostViewMac::AllocBackingStore(
   return new BackingStoreMac(render_widget_host_, size);
 }
 
+VideoLayer* RenderWidgetHostViewMac::AllocVideoLayer(
+    const gfx::Size& size) {
+  NOTIMPLEMENTED();
+  return NULL;
+}
+
 // Display a popup menu for WebKit using Cocoa widgets.
 void RenderWidgetHostViewMac::ShowPopupWithItems(
     gfx::Rect bounds,

@@ -1,7 +1,7 @@
-// Copyright (c) 2008-2009 The Chromium Authors. All rights reserved.
-// Use of this source code is governed by a BSD-style license that can be found
-// in the LICENSE file.
-//
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Use of this source code is governed by a BSD-style license that can be
+// found in the LICENSE file.
+
 // Delegate calls from WebCore::MediaPlayerPrivate to Chrome's video player.
 // It contains PipelineImpl which is the actual media player pipeline, it glues
 // the media player pipeline, data source, audio renderer and renderer.
@@ -14,7 +14,7 @@
 // media::PipelineImpl
 //   The media playback pipeline.
 //
-// VideoRendererImpl
+// WebVideoRenderer
 //   Video renderer object.
 //
 // WebMediaPlayerImpl::Proxy
@@ -29,7 +29,7 @@
 // WebMediaPlayerImpl ------> PipelineImpl
 //    |            ^               | r
 //    |            |               v
-//    |            |        VideoRendererImpl
+//    |            |        WebVideoRenderer
 //    |            |          ^ r
 //    |            |          |
 //    |      r     |    r     |
@@ -39,7 +39,7 @@
 //    v
 // WebMediaPlayerClient
 //
-// Notice that Proxy and VideoRendererImpl are referencing each other. This
+// Notice that Proxy and WebVideoRenderer are referencing each other. This
 // interdependency has to be treated carefully.
 //
 // Other issues:
@@ -60,6 +60,7 @@
 #include "base/lock.h"
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
+#include "ipc/ipc_message.h"
 #include "media/base/filters.h"
 #include "media/base/pipeline_impl.h"
 #include "skia/ext/platform_canvas.h"
@@ -74,7 +75,8 @@ class FilterFactoryCollection;
 
 namespace webkit_glue {
 
-class VideoRendererImpl;
+class WebVideoRenderer;
+class WebVideoRendererFactoryFactory;
 
 class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
                            public MessageLoop::DestructionObserver {
@@ -94,7 +96,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
 
     // Public methods called from the video renderer.
     void Repaint();
-    void SetVideoRenderer(VideoRendererImpl* video_renderer);
+    void SetVideoRenderer(WebVideoRenderer* video_renderer);
 
     // Public methods called from WebMediaPlayerImpl.
     void Paint(skia::PlatformCanvas* canvas, const gfx::Rect& dest_rect);
@@ -108,6 +110,9 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
     void PipelineEndedCallback();
     void PipelineErrorCallback();
     void NetworkEventCallback();
+
+    // Returns the message loop used by the proxy.
+    MessageLoop* message_loop() { return render_loop_; }
 
    private:
     friend class base::RefCountedThreadSafe<Proxy>;
@@ -135,7 +140,7 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
     // The render message loop where WebKit lives.
     MessageLoop* render_loop_;
     WebMediaPlayerImpl* webmediaplayer_;
-    scoped_refptr<VideoRendererImpl> video_renderer_;
+    scoped_refptr<WebVideoRenderer> video_renderer_;
 
     Lock lock_;
     int outstanding_repaints_;
@@ -161,8 +166,12 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
   // audio renderer is a fake audio device that plays silence. Provider of the
   // |factory| can override the default filters by adding extra filters to
   // |factory| before calling this method.
+  //
+  // |video_renderer_factory| is used to construct a factory that should create
+  // a subclass of WebVideoRenderer.  Is deleted by WebMediaPlayerImpl.
   WebMediaPlayerImpl(WebKit::WebMediaPlayerClient* client,
-                     media::FilterFactoryCollection* factory);
+                     media::FilterFactoryCollection* factory,
+                     WebVideoRendererFactoryFactory* video_renderer_factory);
   virtual ~WebMediaPlayerImpl();
 
   virtual void load(const WebKit::WebURL& url);
@@ -294,6 +303,29 @@ class WebMediaPlayerImpl : public WebKit::WebMediaPlayer,
 
   DISALLOW_COPY_AND_ASSIGN(WebMediaPlayerImpl);
 };
+
+// TODO(scherkus): WebMediaPlayerImpl creates and injects its Proxy into a
+// video renderer factory, so we need to (unfortunately) have a factory of a
+// factory so we can receive the proxy pointer without violating the
+// separation of renderer code from webkit glue code.  This is part of a
+// longer-term plan to rethink our FilterFactory strategy (refer to
+// http://crbug.com/28207).
+//
+// Either that or we rethink this Proxy business as a short-term solution.
+class WebVideoRendererFactoryFactory {
+ public:
+  WebVideoRendererFactoryFactory() {}
+  virtual ~WebVideoRendererFactoryFactory() {}
+
+  // Creates a FilterFactory which should be capable of creating a
+  // WebVideoRenderer subclass.
+  virtual media::FilterFactory* CreateFactory(
+      WebMediaPlayerImpl::Proxy* proxy) = 0;
+
+ private:
+  DISALLOW_COPY_AND_ASSIGN(WebVideoRendererFactoryFactory);
+};
+
 
 }  // namespace webkit_glue
 
