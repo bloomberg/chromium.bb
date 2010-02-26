@@ -176,7 +176,7 @@ const char* kInvalidToolstrips =
     "Invalid value for 'toolstrips'.";
 const char* kInvalidVersion =
     "Required value 'version' is missing or invalid. It must be between 1-4 "
-    "dot-separated integers.";
+    "dot-separated integers each between 0 and 65536.";
 const char* kInvalidZipHash =
     "Required key 'zip_hash' is missing or invalid.";
 const char* kManifestParseError =
