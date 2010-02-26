@@ -38,7 +38,7 @@ class GeolocationDispatcherHost
 
  private:
   friend class base::RefCountedThreadSafe<GeolocationDispatcherHost>;
-  ~GeolocationDispatcherHost();
+  virtual ~GeolocationDispatcherHost();
 
   void OnRegisterDispatcher(int route_id);
   void OnUnregisterDispatcher(int route_id);

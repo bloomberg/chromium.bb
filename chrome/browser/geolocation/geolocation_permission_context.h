@@ -42,7 +42,7 @@ class GeolocationPermissionContext
 
  private:
   friend class base::RefCountedThreadSafe<GeolocationPermissionContext>;
-  ~GeolocationPermissionContext();
+  virtual ~GeolocationPermissionContext();
 
   // This is initially called on the IO thread by the public API
   // RequestGeolocationPermission when there's no data available in the
