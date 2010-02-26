@@ -312,7 +312,7 @@ class Segment {
   SkPoint get_interior_vertex(int index) const {
     DCHECK(index >= 0 && index < num_interior_vertices());
     if (kind_ == kCubic) {
-      SkPoint res;
+      SkPoint res = { 0 };
       if (triangulator_) {
         LocalTriangulator::Vertex* vertex =
             triangulator_->get_interior_vertex(index);
@@ -635,8 +635,8 @@ void PathProcessor::BuildContours(const SkPath& path) {
   SkPoint pts[4];
   SkPath::Verb verb;
   Contour* contour = NULL;
-  SkPoint cur_pt;
-  SkPoint move_to_pt;
+  SkPoint cur_pt = { 0 };
+  SkPoint move_to_pt = { 0 };
   do {
     verb = iter.next(pts);
     if (verb != SkPath::kMove_Verb) {
