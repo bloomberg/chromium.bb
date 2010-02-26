@@ -2472,11 +2472,22 @@
           ],
           'conditions': [
             ['OS=="linux" and (toolkit_views==1 or chromeos==1)',{
+              'dependencies': [
+                '../views/views.gyp:views',
+              ],
+              'include_dirs': [
+                '<(INTERMEDIATE_DIR)',
+                '<(INTERMEDIATE_DIR)/chrome',
+              ],
               'sources/': [
+                ['include', '^browser/back_forward_menu_model_views.cc'],
+                ['include', '^browser/back_forward_menu_model_views.h'],
                 ['include', '^browser/dock_info_gtk.cc'],
                 ['include', '^browser/dock_info.cc'],
                 ['include', '^browser/dock_info.h'],
                 ['include', '^browser/extensions/'],
+                ['include', '^browser/views/about_chrome_view.cc'],
+                ['include', '^browser/views/about_chrome_view.h'],
                 ['include', '^browser/views/accelerator_table_gtk.cc'],
                 ['include', '^browser/views/accelerator_table_gtk.h'],
                 ['include', '^browser/views/accessible_toolbar_view.cc'],
@@ -2505,6 +2516,8 @@
                 ['include', '^browser/views/browser_bubble.h'],
                 ['include', '^browser/views/bubble_border.cc'],
                 ['include', '^browser/views/bubble_border.h'],
+                ['include', '^browser/views/bug_report_view.cc'],
+                ['include', '^browser/views/bug_report_view.h'],
                 ['include', '^browser/views/chrome_views_delegate.cc'],
                 ['include', '^browser/views/clear_browsing_data.cc'],
                 ['include', '^browser/views/clear_browsing_data.h'],
@@ -2579,7 +2592,17 @@
                 ['include', '^browser/views/info_bubble.h'],
                 ['include', '^browser/views/location_bar_view.cc'],
                 ['include', '^browser/views/location_bar_view.h'],
+                ['include', '^browser/views/options/options_page_view.cc'],
+                ['include', '^browser/views/options/options_page_view.h'],
                 ['include', '^browser/views/page_info_window_view.cc'],
+                ['include', '^browser/views/panel_controller.cc'],
+                ['include', '^browser/views/panel_controller.h'],
+                ['include', '^browser/views/panels/panel_container.cc'],
+                ['include', '^browser/views/panels/panel_container.h'],
+                ['include', '^browser/views/panels/panel_scroller.cc'],
+                ['include', '^browser/views/panels/panel_scroller.h'],
+                ['include', '^browser/views/panels/panel_scroller_header.cc'],
+                ['include', '^browser/views/panels/panel_scroller_header.h'],
                 ['include', '^browser/views/modal_dialog_delegate.cc'],
                 ['include', '^browser/views/modal_dialog_delegate.h'],
                 ['include', '^browser/views/notifications/balloon_view_host.cc'],
@@ -2643,8 +2666,6 @@
 
                 # Exclude all of browser/gtk, then include the things we want.
                 ['exclude', '^browser/gtk'],
-                ['include', '^browser/gtk/about_chrome_dialog.cc'],
-                ['include', '^browser/gtk/about_chrome_dialog.h'],
                 ['include', '^browser/gtk/accessibility_event_router_gtk.cc'],
                 ['include', '^browser/gtk/accessibility_event_router_gtk.h'],
                 ['include', '^browser/gtk/accessible_widget_helper_gtk.cc'],
@@ -2726,6 +2747,7 @@
                 ['include', '^browser/views/notifications/balloon_view.h'],
               ],
             }],
+            # GTK build only
             ['OS=="linux" and chromeos==0 and toolkit_views==0', {
               'sources/': [
                 ['include', '^browser/printing/print_dialog_gtk.cc'],
@@ -2734,37 +2756,6 @@
                 ['exclude', '^browser/bookmarks/bookmark_drop_info.cc'],
                 ['exclude', '^browser/views/autocomplete/autocomplete_popup_gtk.cc'],
                 ['exclude', '^browser/views/autocomplete/autocomplete_popup_gtk.h'],
-              ],
-            }],
-            ['OS=="linux" and (chromeos==1 or toolkit_views==1)',{
-              'dependencies': [
-                '../views/views.gyp:views',
-              ],
-              'include_dirs': [
-                '<(INTERMEDIATE_DIR)',
-                '<(INTERMEDIATE_DIR)/chrome',
-              ],
-              'sources/': [
-                ['include', 'browser/back_forward_menu_model_views.cc'],
-                ['include', 'browser/back_forward_menu_model_views.h'],
-                ['exclude', 'browser/gtk/about_chrome_dialog.cc'],
-                ['exclude', 'browser/gtk/about_chrome_dialog.h'],
-                ['include', 'browser/views/about_chrome_view.cc'],
-                ['include', 'browser/views/about_chrome_view.h'],
-                ['include', 'browser/views/bug_report_view.cc'],
-                ['include', 'browser/views/bug_report_view.h'],
-                ['include', 'browser/views/event_utils.cc'],
-                ['include', 'browser/views/event_utils.h'],
-                ['include', 'browser/views/options/options_page_view.cc'],
-                ['include', 'browser/views/options/options_page_view.h'],
-                ['include', 'browser/views/panel_controller.cc'],
-                ['include', 'browser/views/panel_controller.h'],
-                ['include', 'browser/views/panels/panel_container.cc'],
-                ['include', 'browser/views/panels/panel_container.h'],
-                ['include', 'browser/views/panels/panel_scroller.cc'],
-                ['include', 'browser/views/panels/panel_scroller.h'],
-                ['include', 'browser/views/panels/panel_scroller_header.cc'],
-                ['include', 'browser/views/panels/panel_scroller_header.h'],
               ],
             }],
             ['OS=="linux" and chromeos==1',{
