@@ -687,7 +687,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf64-x86-64.c binutils-2.20/bfd/elf64-
  	    }
  	}
      }
-@@ -4397,8 +4484,16 @@
+@@ -4397,13 +4484,26 @@
    { NULL,	                0,          0, 0,            0 }
  };
  
@@ -704,7 +704,17 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf64-x86-64.c binutils-2.20/bfd/elf64-
  #define ELF_ARCH			    bfd_arch_i386
  #define ELF_MACHINE_CODE		    EM_X86_64
  #define ELF_MAXPAGESIZE			    0x200000
-@@ -4470,6 +4565,66 @@
++#ifdef ELF64_NACL_C
++#define ELF_MINPAGESIZE			    0x10000
++#define ELF_COMMONPAGESIZE		    0x10000
++#else
+ #define ELF_MINPAGESIZE			    0x1000
+ #define ELF_COMMONPAGESIZE		    0x1000
++#endif
+ 
+ #define elf_backend_can_gc_sections	    1
+ #define elf_backend_can_refcount	    1
+@@ -4470,6 +4570,63 @@
  #undef  elf_backend_post_process_headers
  #define elf_backend_post_process_headers  _bfd_elf_set_osabi
  
@@ -759,10 +769,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf64-x86-64.c binutils-2.20/bfd/elf64-
 +                                           bfd_boolean linker ATTRIBUTE_UNUSED)
 +{
 +  elf_elfheader (abfd)->e_ident[EI_OSABI] = ELFOSABI_NACL;
-+  /* We really want the following, but until stable, we will use zero.
-+   * elf_elfheader (abfd)->e_ident[EI_ABIVERSION] = EF_NACL_ABIVERSION;
-+   */
-+  elf_elfheader (abfd)->e_ident[EI_ABIVERSION] = 0;
++  elf_elfheader (abfd)->e_ident[EI_ABIVERSION] = EF_NACL_ABIVERSION;
 +  elf_elfheader (abfd)->e_flags |= previous_ibfd_e_flags;
 +}
 +
@@ -771,7 +778,7 @@ diff -Naur ../PRISTINE/binutils-2.20/bfd/elf64-x86-64.c binutils-2.20/bfd/elf64-
  #include "elf64-target.h"
  
  /* FreeBSD support.  */
-@@ -4536,3 +4691,4 @@
+@@ -4536,3 +4693,4 @@
  #define elf_backend_post_process_headers  _bfd_elf_set_osabi
  
  #include "elf64-target.h"
@@ -2272,7 +2279,7 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/ldlex.l binutils-2.20/ld/ldlex.l
 diff -Naur ../PRISTINE/binutils-2.20/ld/scripttempl/naclelf.sc binutils-2.20/ld/scripttempl/naclelf.sc
 --- ../PRISTINE/binutils-2.20/ld/scripttempl/naclelf.sc	1969-12-31 16:00:00.000000000 -0800
 +++ binutils-2.20/ld/scripttempl/naclelf.sc	2010-01-05 13:21:03.846110000 -0800
-@@ -0,0 +1,610 @@
+@@ -0,0 +1,624 @@
 +#
 +# Unusual variables checked by this code:
 +#	NOP - four byte opcode for no-op (defaults to 0)
@@ -2379,6 +2386,8 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/scripttempl/naclelf.sc binutils-2.20/ld/
 +DATA_SEGMENT_ALIGN="ALIGN(${SEGMENT_SIZE}) + (. & (${MAXPAGESIZE} - 1))"
 +DATA_SEGMENT_RELRO_END=""
 +DATA_SEGMENT_END=""
++LBRACE="{"
++RBRACE="}"
 +if test -n "${COMMONPAGESIZE}"; then
 +  DATA_SEGMENT_ALIGN="ALIGN (${SEGMENT_SIZE}) - ((${MAXPAGESIZE} - .) & (${MAXPAGESIZE} - 1)); . = DATA_SEGMENT_ALIGN (${MAXPAGESIZE}, ${COMMONPAGESIZE})"
 +  DATA_SEGMENT_END=". = DATA_SEGMENT_END (.);"
@@ -2695,7 +2704,19 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/scripttempl/naclelf.sc binutils-2.20/ld/
 +  ${RELOCATING+PROVIDE (__nacl_and_mask =
 +                          DEFINED (__executable_start) ?
 +                            NACL_MASK (. - __executable_start) : 0xffffffff);}
-+  ${RELOCATING+. = ALIGN(${MAXPAGESIZE});} /* nacl wants page alignment */
++  ${RELOCATING+.hlt_fill       :
++  $LBRACE
++    /* reserve at least 32 HLTs */
++    BYTE(0xf4) BYTE(0xf4) BYTE(0xf4) BYTE(0xf4)
++    BYTE(0xf4) BYTE(0xf4) BYTE(0xf4) BYTE(0xf4)
++    BYTE(0xf4) BYTE(0xf4) BYTE(0xf4) BYTE(0xf4)
++    BYTE(0xf4) BYTE(0xf4) BYTE(0xf4) BYTE(0xf4)
++    BYTE(0xf4) BYTE(0xf4) BYTE(0xf4) BYTE(0xf4)
++    BYTE(0xf4) BYTE(0xf4) BYTE(0xf4) BYTE(0xf4)
++    BYTE(0xf4) BYTE(0xf4) BYTE(0xf4) BYTE(0xf4)
++    BYTE(0xf4) BYTE(0xf4) BYTE(0xf4) BYTE(0xf4)
++    . = ALIGN(CONSTANT (MAXPAGESIZE)); /* nacl wants page alignment */
++  $RBRACE =0xf4f4f4f4}
 +  ${WRITABLE_RODATA-${RODATA}} :rodata
 +  .rodata1      ${RELOCATING-0} : { *(.rodata1) }
 +  .nacl_rpc_methods : { *(.nacl_rpc_methods) }
