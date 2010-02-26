@@ -4,7 +4,13 @@
 
 #include "webkit/glue/webkitclient_impl.h"
 
+#if defined(OS_LINUX)
+#include <malloc.h>
+#endif
+
 #include <math.h>
+
+#include <vector>
 
 #include "base/file_path.h"
 #include "base/file_util.h"
@@ -30,6 +36,10 @@
 #include "webkit/glue/webplugininfo.h"
 #include "webkit/glue/websocketstreamhandle_impl.h"
 #include "webkit/glue/weburlloader_impl.h"
+
+#if defined(OS_LINUX)
+#include "v8/include/v8.h"
+#endif
 
 using WebKit::WebApplicationCacheHost;
 using WebKit::WebApplicationCacheHostClient;
@@ -143,7 +153,7 @@ void WebKitClientImpl::getPluginList(bool refresh,
         WideToUTF16Hack(plugin.desc),
         FilePathStringToWebString(plugin.path.BaseName().value()));
 
-    for (size_t j = 0; j < plugin.mime_types.size(); ++ j) {
+    for (size_t j = 0; j < plugin.mime_types.size(); ++j) {
       const WebPluginMimeType& mime_type = plugin.mime_types[j];
 
       builder->addMediaTypeToLastPlugin(
@@ -309,19 +319,55 @@ WebKit::WebString WebKitClientImpl::signedPublicKeyAndChallengeString(
   return WebKit::WebString();
 }
 
-size_t WebKitClientImpl::memoryUsageMB() {
+#if defined(OS_LINUX)
+static size_t memoryUsageMBLinux() {
+  struct mallinfo minfo = mallinfo();
+  uint64_t mem_usage =
+#if defined(USE_TCMALLOC)
+      minfo.uordblks
+#else
+      (minfo.hblkhd + minfo.arena)
+#endif
+      >> 20;
+
+  v8::HeapStatistics stat;
+  v8::V8::GetHeapStatistics(&stat);
+  mem_usage += static_cast<uint64_t>(stat.total_heap_size()) >> 20;
+  return mem_usage;
+}
+#endif
+
+#if defined(OS_MACOSX)
+static size_t memoryUsageMBMac() {
   using base::ProcessMetrics;
   static ProcessMetrics* process_metrics =
-#if !defined(OS_MACOSX)
-      ProcessMetrics::CreateProcessMetrics(base::GetCurrentProcessHandle());
-#else
       // The default port provider is sufficient to get data for the current
       // process.
       ProcessMetrics::CreateProcessMetrics(base::GetCurrentProcessHandle(),
                                            NULL);
-#endif
   DCHECK(process_metrics);
   return process_metrics->GetPagefileUsage() >> 20;
+}
+#endif
+
+#if !defined(OS_LINUX) && !defined(OS_MACOSX)
+static size_t memoryUsageMBGeneric() {
+  using base::ProcessMetrics;
+  static ProcessMetrics* process_metrics =
+      ProcessMetrics::CreateProcessMetrics(base::GetCurrentProcessHandle());
+  DCHECK(process_metrics);
+  return process_metrics->GetPagefileUsage() >> 20;
+}
+#endif
+
+size_t WebKitClientImpl::memoryUsageMB() {
+#if defined(OS_LINUX)
+  return memoryUsageMBLinux();
+#elif defined(OS_MACOSX)
+  return memoryUsageMBMac();
+#else
+  return memoryUsageMBGeneric();
+#endif
 }
 
 bool WebKitClientImpl::fileExists(const WebKit::WebString& path) {
