@@ -2181,9 +2181,6 @@ BUG24229 LINUX : svg/transforms/text-with-pattern-with-svg-transform.svg = FAIL
 BUG11613 LINUX : editing/deleting/5168598.html = FAIL
 BUG11613 LINUX : editing/inserting/5607069-2.html = FAIL
 
-// This needs to be rebaselined.  See http://trac.webkit.org/changeset/43378
-BUG11669 LINUX : fast/layers/remove-only-this-layer-update.html = FAIL
-
 // Already baselined for chromium-win, may need to be done for mac/linux as well.
 BUG11796 LINUX : fast/forms/search-styled.html = FAIL
 
