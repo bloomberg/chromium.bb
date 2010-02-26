@@ -2279,7 +2279,7 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/ldlex.l binutils-2.20/ld/ldlex.l
 diff -Naur ../PRISTINE/binutils-2.20/ld/scripttempl/naclelf.sc binutils-2.20/ld/scripttempl/naclelf.sc
 --- ../PRISTINE/binutils-2.20/ld/scripttempl/naclelf.sc	1969-12-31 16:00:00.000000000 -0800
 +++ binutils-2.20/ld/scripttempl/naclelf.sc	2010-01-05 13:21:03.846110000 -0800
-@@ -0,0 +1,624 @@
+@@ -0,0 +1,612 @@
 +#
 +# Unusual variables checked by this code:
 +#	NOP - four byte opcode for no-op (defaults to 0)
@@ -2386,8 +2386,6 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/scripttempl/naclelf.sc binutils-2.20/ld/
 +DATA_SEGMENT_ALIGN="ALIGN(${SEGMENT_SIZE}) + (. & (${MAXPAGESIZE} - 1))"
 +DATA_SEGMENT_RELRO_END=""
 +DATA_SEGMENT_END=""
-+LBRACE="{"
-+RBRACE="}"
 +if test -n "${COMMONPAGESIZE}"; then
 +  DATA_SEGMENT_ALIGN="ALIGN (${SEGMENT_SIZE}) - ((${MAXPAGESIZE} - .) & (${MAXPAGESIZE} - 1)); . = DATA_SEGMENT_ALIGN (${MAXPAGESIZE}, ${COMMONPAGESIZE})"
 +  DATA_SEGMENT_END=". = DATA_SEGMENT_END (.);"
@@ -2705,18 +2703,8 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/scripttempl/naclelf.sc binutils-2.20/ld/
 +                          DEFINED (__executable_start) ?
 +                            NACL_MASK (. - __executable_start) : 0xffffffff);}
 +  ${RELOCATING+.hlt_fill       :
-+  $LBRACE
-+    /* reserve at least 32 HLTs */
-+    BYTE(0xf4) BYTE(0xf4) BYTE(0xf4) BYTE(0xf4)
-+    BYTE(0xf4) BYTE(0xf4) BYTE(0xf4) BYTE(0xf4)
-+    BYTE(0xf4) BYTE(0xf4) BYTE(0xf4) BYTE(0xf4)
-+    BYTE(0xf4) BYTE(0xf4) BYTE(0xf4) BYTE(0xf4)
-+    BYTE(0xf4) BYTE(0xf4) BYTE(0xf4) BYTE(0xf4)
-+    BYTE(0xf4) BYTE(0xf4) BYTE(0xf4) BYTE(0xf4)
-+    BYTE(0xf4) BYTE(0xf4) BYTE(0xf4) BYTE(0xf4)
-+    BYTE(0xf4) BYTE(0xf4) BYTE(0xf4) BYTE(0xf4)
-+    . = ALIGN(CONSTANT (MAXPAGESIZE)); /* nacl wants page alignment */
-+  $RBRACE =0xf4f4f4f4}
++  . = . + 32; /* reserve space for HLTs */
++  . = ALIGN(CONSTANT (MAXPAGESIZE)); /* nacl wants page alignment */
 +  ${WRITABLE_RODATA-${RODATA}} :rodata
 +  .rodata1      ${RELOCATING-0} : { *(.rodata1) }
 +  .nacl_rpc_methods : { *(.nacl_rpc_methods) }
