@@ -236,7 +236,7 @@ InstallMiscTools() {
 InstallDriver() {
   Banner "installing driver adaptors"
   cp tools/llvm/llvm-fake.py ${INSTALL_ROOT}/arm-none-linux-gnueabi/
-  for s in gcc sfigcc g++ sfig++ ; do
+  for s in gcc sfigcc bcgcc g++ sfig++ bcg++ as sfiar sfiranlib bcranlib bcar bclink sfilink illegal nop ; do
     local t="llvm-fake-$s"
     echo "$t"
     ln -fs llvm-fake.py ${INSTALL_ROOT}/arm-none-linux-gnueabi/$t
