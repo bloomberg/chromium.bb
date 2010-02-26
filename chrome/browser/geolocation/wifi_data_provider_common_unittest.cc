@@ -56,7 +56,7 @@ class WifiDataProviderCommonWithMock : public WifiDataProviderCommon {
     CHECK(new_wlan_api_ != NULL);
     return new_wlan_api_.release();
   }
-  virtual PollingPolicyInterface* NewPolicyPolicy() {
+  virtual PollingPolicyInterface* NewPollingPolicy() {
     return new GenericPollingPolicy<1, 2, 3>;
   }
 

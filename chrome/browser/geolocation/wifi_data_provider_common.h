@@ -86,7 +86,7 @@ class WifiDataProviderCommon
   virtual WlanApiInterface* NewWlanApi() = 0;
 
   // Returns ownership. Will be called from the worker thread.
-  virtual PollingPolicyInterface* NewPolicyPolicy() = 0;
+  virtual PollingPolicyInterface* NewPollingPolicy() = 0;
 
  private:
   // Thread implementation

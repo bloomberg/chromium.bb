@@ -152,7 +152,7 @@ bool FormRequestBody(const string16& host_name,
 
   base::JSONWriter::Write(&body_object, false, data);
   DLOG(INFO) << "NetworkLocationRequest::FormRequestBody(): Formed body "
-             << data << ".\n";
+             << *data << ".\n";
   return true;
 }
 

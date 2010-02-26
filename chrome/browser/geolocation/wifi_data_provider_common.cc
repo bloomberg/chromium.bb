@@ -59,7 +59,7 @@ void WifiDataProviderCommon::Init() {
   }
 
   DCHECK(polling_policy_ == NULL);
-  polling_policy_.reset(NewPolicyPolicy());
+  polling_policy_.reset(NewPollingPolicy());
   DCHECK(polling_policy_ != NULL);
 
   // Perform first scan ASAP regardless of the polling policy. If this scan

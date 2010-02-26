@@ -16,7 +16,7 @@ class OsxWifiDataProvider : public WifiDataProviderCommon {
 
   // WifiDataProviderCommon
   virtual WlanApiInterface* NewWlanApi();
-  virtual PollingPolicyInterface* NewPolicyPolicy();
+  virtual PollingPolicyInterface* NewPollingPolicy();
 
   DISALLOW_COPY_AND_ASSIGN(OsxWifiDataProvider);
 };

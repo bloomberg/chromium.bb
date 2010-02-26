@@ -175,7 +175,7 @@ WifiDataProviderCommon::WlanApiInterface* Win32WifiDataProvider::NewWlanApi() {
   return WindowsNdisApi::Create();
 }
 
-PollingPolicyInterface* Win32WifiDataProvider::NewPolicyPolicy() {
+PollingPolicyInterface* Win32WifiDataProvider::NewPollingPolicy() {
   return new GenericPollingPolicy<kDefaultPollingInterval,
                                   kNoChangePollingInterval,
                                   kTwoNoChangePollingInterval>;

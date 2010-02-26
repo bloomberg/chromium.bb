@@ -166,7 +166,7 @@ OsxWifiDataProvider::WlanApiInterface* OsxWifiDataProvider::NewWlanApi() {
   return wlan_api.release();
 }
 
-PollingPolicyInterface* OsxWifiDataProvider::NewPolicyPolicy() {
+PollingPolicyInterface* OsxWifiDataProvider::NewPollingPolicy() {
   return new GenericPollingPolicy<kDefaultPollingInterval,
                                   kNoChangePollingInterval,
                                   kTwoNoChangePollingInterval>;
