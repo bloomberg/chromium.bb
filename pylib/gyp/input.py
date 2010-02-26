@@ -463,7 +463,10 @@ cached_command_results = {}
 
 def FixupPlatformCommand(cmd):
   if sys.platform == 'win32':
-    cmd = re.sub('^cat ', 'type ', cmd)
+    if type(cmd) == list:
+      cmd = [re.sub('^cat ', 'type ', cmd[0])] + cmd[1:]
+    else:
+      cmd = re.sub('^cat ', 'type ', cmd)
   return cmd
 
 
@@ -605,23 +608,23 @@ def ExpandVariables(input, is_late, variables, build_file):
                           "Executing command '%s' in directory '%s'" %
                           (contents,build_file_dir))
 
-            # Fix up command with platform specific workarounds.
-            contents = FixupPlatformCommand(contents)
-            p = subprocess.Popen(contents, shell=use_shell,
-                                 stdout=subprocess.PIPE,
-                                 stderr=subprocess.PIPE,
-                                 stdin=subprocess.PIPE,
-                                 cwd=build_file_dir)
+          # Fix up command with platform specific workarounds.
+          contents = FixupPlatformCommand(contents)
+          p = subprocess.Popen(contents, shell=use_shell,
+                               stdout=subprocess.PIPE,
+                               stderr=subprocess.PIPE,
+                               stdin=subprocess.PIPE,
+                               cwd=build_file_dir)
 
-            (p_stdout, p_stderr) = p.communicate('')
+          (p_stdout, p_stderr) = p.communicate('')
 
-            if p.wait() != 0 or p_stderr:
-              sys.stderr.write(p_stderr)
-              # Simulate check_call behavior, since check_call only exists
-              # in python 2.5 and later.
-              raise Exception("Call to '%s' returned exit status %d." %
-                              (contents, p.returncode))
-            replacement = p_stdout.rstrip()
+          if p.wait() != 0 or p_stderr:
+            sys.stderr.write(p_stderr)
+            # Simulate check_call behavior, since check_call only exists
+            # in python 2.5 and later.
+            raise Exception("Call to '%s' returned exit status %d." %
+                            (contents, p.returncode))
+          replacement = p_stdout.rstrip()
 
           cached_command_results[cache_key] = replacement
         else:

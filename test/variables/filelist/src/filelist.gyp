@@ -50,5 +50,44 @@
         },
       ],
     },
+    {
+      'target_name': 'bar',
+      'type': 'none',
+      'sources': [
+        'John',
+        'Jacob',
+        'Astor',
+        'Jingleheimer',
+        'Jerome',
+        'Schmidt',
+        'Schultz',
+      ],
+      'sources!': [
+        'Astor',
+      ],
+      'sources/': [
+        ['exclude', 'Sch.*'],
+        ['include', '.*dt'],
+        ['exclude', 'Jer.*'],
+      ],
+      'variables': {
+        'sources_listfile': '<|(sources.txt <@(_sources))',
+      },
+      'actions': [
+        {
+          'action_name': 'test_action',
+          'inputs' : [
+            '<(sources_listfile)',
+            '<!@(cat <(sources_listfile))',
+          ],
+          'outputs': [
+            'dummy_foo',
+          ],
+          'action': [
+            'python', 'dummy.py', '<(sources_listfile)',
+          ],
+        },
+      ],
+    },
   ],
 }
