@@ -3,6 +3,7 @@ vars = {
 
   "native_client_trunk": "http://nativeclient.googlecode.com/svn/trunk",
   "o3d_trunk": "http://o3d.googlecode.com/svn/trunk",
+  "breakpad_rev": "452",
   "chrome_rev": "39744",
   "nacl_sdk_rev": "1520",
   "gyp_rev": "770",
@@ -24,6 +25,8 @@ deps = {
   "third_party/binutils":
     (Var("native_client_trunk") + "/src/third_party/binutils@" +
      Var("tools_rev")),
+  "native_client/src/third_party/breakpad/src":
+    "http://google-breakpad.googlecode.com/svn/trunk/src@" + Var("breakpad_rev"),
   "third_party/gcc":
     Var("native_client_trunk") + "/src/third_party/gcc@" + Var("tools_rev"),
   "third_party/gdb":

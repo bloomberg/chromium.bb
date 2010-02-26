@@ -29,6 +29,9 @@
 
 #include "native_client/src/trusted/platform_qualify/nacl_os_qualify.h"
 
+#ifdef NACL_BREAKPAD
+#include "native_client/src/trusted/nacl_breakpad/nacl_breakpad.h"
+#endif
 #include "native_client/src/trusted/service_runtime/env_cleanser.h"
 #include "native_client/src/trusted/service_runtime/expiration.h"
 #include "native_client/src/trusted/service_runtime/nacl_app.h"
@@ -230,6 +233,10 @@ int main(int  ac,
   struct NaClEnvCleanser        filtered_env;
 
   const char* sandbox_fd_string;
+
+#ifdef NACL_BREAKPAD
+  NaClBreakpadInit();
+#endif
 
 #if NACL_ARCH(NACL_BUILD_ARCH) == NACL_arm
   /* TODO(bsy): look into this */
@@ -714,5 +721,8 @@ int main(int  ac,
 
   WINDOWS_EXCEPTION_CATCH;
 
+#ifdef NACL_BREAKPAD
+  NaClBreakpadTeardown();
+#endif
   _exit(ret_code);
 }
