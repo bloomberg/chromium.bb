@@ -745,8 +745,8 @@ BUG13907 BUG25094 LINUX DEBUG : media = PASS FAIL TIMEOUT
 
 // These tests should be passing.  Remove them once confirmed they're not flaky.
 BUG9798 BUG13907 : media/video-currentTime-set.html = PASS FAIL
-BUG9798 BUG13907 SLOW WIN : media/video-played-collapse.html = PASS FAIL
-BUG9798 BUG13907 SLOW LINUX MAC : media/video-played-collapse.html = PASS
+BUG9798 BUG13907 SLOW WIN LINUX : media/video-played-collapse.html = PASS FAIL
+BUG9798 BUG13907 SLOW MAC : media/video-played-collapse.html = PASS
 
 // We output an extra playing event and video durations are different.
 BUG13907 SKIP : media/video-loop.html = FAIL
@@ -2845,7 +2845,7 @@ BUG33099 : media/video-reverse-play-duration.html = TIMEOUT
 BUG33099 : media/video-timeupdate-reverse-play.html = TIMEOUT
 
 // Flaky storage tests
-BUG33343 LINUX MAC : storage/database-lock-after-reload.html = CRASH TEXT PASS
+BUG33343 : storage/database-lock-after-reload.html = CRASH TEXT PASS
 BUG33343 DEBUG : storage/multiple-databases-garbage-collection.html = CRASH PASS
 
 BUG21852 DEFER SKIP LINUX WIN : fast/canvas/webgl = CRASH
