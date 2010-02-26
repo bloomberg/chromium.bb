@@ -68,7 +68,17 @@ elif [ "$#" -eq "1" ] ; then
 elif [ "$#" -eq "0" ] ; then
   # Get a default mode and platform, assuming there is only one built right
   # now.
-  dirlist=$(ls -1 "${SCONSOUT}" | grep -v '^[.]' | grep -v '^nacl')
+  if [ "${OSTYPE:0:5}" = "linux" ] ; then
+    host_os_name="linux"
+  elif [ "${OSTYPE:0:6}" = "darwin" ] ; then
+    host_os_name="mac"
+  elif [ "${OSTYPE:0:6}" = "cygwin" ] ; then
+    host_os_name="win"
+  fi
+  dirlist=$(ls -1 "${SCONSOUT}" \
+    | grep -v '^[.]' \
+    | grep -v '^nacl' \
+    | grep "[-]${host_os_name}-")
   dircount=$(echo "${dirlist}" | wc -l | tr -d ' ')
   if [ "${dircount}" = "1" ] ; then
     mode_platform="${dirlist}"
