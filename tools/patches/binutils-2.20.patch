@@ -2126,12 +2126,13 @@ diff -Naur ../PRISTINE/binutils-2.20/ld/Makefile.in binutils-2.20/ld/Makefile.in
 diff -Naur ../PRISTINE/binutils-2.20/ld/configure.tgt binutils-2.20/ld/configure.tgt
 --- ../PRISTINE/binutils-2.20/ld/configure.tgt	2009-08-06 10:38:03.000000000 -0700
 +++ binutils-2.20/ld/configure.tgt	2010-01-05 13:21:03.757202000 -0800
-@@ -230,6 +230,8 @@
+@@ -230,6 +230,9 @@
  			targ_extra_ofiles="deffilep.o pe-dll.o" ;;
  i[3-7]86-*-netbsd*)	targ_emul=i386nbsd
  			targ_extra_emuls=elf_i386 ;;
 +i[3-7]86-*-nacl*)	targ_emul=elf_nacl ;;
-+x86_64-*-nacl*)		targ_emul=elf64_nacl ;;
++x86_64-*-nacl*)		targ_emul=elf64_nacl
++			targ_extra_emuls=elf_nacl ;;
  x86_64-*-netbsd*)	targ_emul=elf_x86_64
  			targ_extra_emuls="elf_i386 i386nbsd elf_l1om"
  			tdir_elf_i386=`echo ${targ_alias} | \
