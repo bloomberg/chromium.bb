@@ -294,6 +294,12 @@ HRESULT HttpNegotiatePatch::StartBinding(
     if (!IS_PATCHED(IInternetProtocolSink)) {
       hr = vtable_patch::PatchInterfaceMethods(protocol_sink,
                                                IInternetProtocolSink_PatchInfo);
+      DCHECK(SUCCEEDED(hr));
+      // Now that we've gotten to the protocol sink,
+      // we don't need this patch anymore.
+      HRESULT hr_unpatch = vtable_patch::UnpatchInterfaceMethods(
+          IBindStatusCallback_PatchInfo);
+      DCHECK(SUCCEEDED(hr_unpatch));
     }
 
     DLOG_IF(WARNING, FAILED(hr))
