@@ -179,12 +179,6 @@ TEST_F(WorkerTest, DISABLED_SharedWorkerHttpAuth) {
   // dialogs displayed by non-navigating tabs.
 }
 
-
-// http://crbug.com/35963
-#if defined(OS_LINUX)
-#define StressJSExecution DISABLED_StressJSExecution
-#endif
-
 TEST_F(WorkerTest, StressJSExecution) {
   RunWorkerFastLayoutTest("stress-js-execution.html");
 }
