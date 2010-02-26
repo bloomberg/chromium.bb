@@ -7,6 +7,8 @@
 #include <gdk/gdkkeysyms.h>
 
 #include <algorithm>
+#include <set>
+#include <utility>
 #include <vector>
 
 #include "app/gfx/gtk_util.h"
@@ -14,12 +16,15 @@
 #include "app/menus/simple_menu_model.h"
 #include "app/resource_bundle.h"
 #include "base/auto_reset.h"
+#include "base/command_line.h"
 #include "base/logging.h"
 #include "chrome/browser/browser_process.h"
 #include "chrome/browser/gtk/gtk_chrome_link_button.h"
 #include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/browser/gtk/menu_gtk.h"
+#include "chrome/browser/memory_purger.h"
 #include "chrome/browser/pref_service.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/common/gtk_tree.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/pref_names.h"
@@ -38,6 +43,9 @@ const gint kTaskManagerResponseKill = 1;
 
 // The resource id for the 'Stats for nerds' link button.
 const gint kTaskManagerAboutMemoryLink = 2;
+
+// The resource id for the 'Purge Memory' button
+const gint kTaskManagerPurgeMemory = 3;
 
 enum TaskManagerColumn {
   kTaskManagerIcon,
@@ -365,8 +373,6 @@ void TaskManagerGtk::Init() {
       // Task Manager window is shared between all browsers.
       NULL,
       GTK_DIALOG_NO_SEPARATOR,
-      l10n_util::GetStringUTF8(IDS_TASK_MANAGER_KILL).c_str(),
-      kTaskManagerResponseKill,
       NULL);
 
   // Allow browser windows to go in front of the task manager dialog in
@@ -377,6 +383,17 @@ void TaskManagerGtk::Init() {
   // because the selection is initially empty.
   gtk_dialog_set_response_sensitive(GTK_DIALOG(dialog_),
                                     kTaskManagerResponseKill, FALSE);
+
+  if (CommandLine::ForCurrentProcess()->HasSwitch(
+      switches::kPurgeMemoryButton)) {
+    gtk_dialog_add_button(GTK_DIALOG(dialog_),
+        l10n_util::GetStringUTF8(IDS_TASK_MANAGER_PURGE_MEMORY).c_str(),
+        kTaskManagerPurgeMemory);
+  }
+
+  gtk_dialog_add_button(GTK_DIALOG(dialog_),
+      l10n_util::GetStringUTF8(IDS_TASK_MANAGER_KILL).c_str(),
+      kTaskManagerResponseKill);
 
   GtkWidget* link = gtk_chrome_link_button_new(
       l10n_util::GetStringUTF8(IDS_TASK_MANAGER_ABOUT_MEMORY_LINK).c_str());
@@ -776,6 +793,8 @@ void TaskManagerGtk::OnResponse(GtkDialog* dialog, gint response_id,
     task_manager->KillSelectedProcesses();
   } else if (response_id == kTaskManagerAboutMemoryLink) {
     task_manager->OnLinkActivated();
+  } else if (response_id == kTaskManagerPurgeMemory) {
+    MemoryPurger::PurgeAll();
   }
 }
 

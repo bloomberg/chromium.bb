@@ -365,8 +365,10 @@ void TaskManagerView::Init() {
   SetContextMenuController(this);
   // If we're running with --purge-memory-button, add a "Purge memory" button.
   if (CommandLine::ForCurrentProcess()->HasSwitch(
-      switches::kPurgeMemoryButton))
-    purge_memory_button_ = new views::NativeButton(this, L"Purge memory");
+      switches::kPurgeMemoryButton)) {
+    purge_memory_button_ = new views::NativeButton(this,
+        l10n_util::GetString(IDS_TASK_MANAGER_PURGE_MEMORY));
+  }
   kill_button_ = new views::NativeButton(
       this, l10n_util::GetString(IDS_TASK_MANAGER_KILL));
   kill_button_->AddAccelerator(views::Accelerator(base::VKEY_E,
@@ -683,4 +685,3 @@ void ShowTaskManager() {
 }
 
 }  // namespace browser
-
