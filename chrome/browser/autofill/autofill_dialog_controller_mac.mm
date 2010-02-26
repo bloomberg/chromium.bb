@@ -9,9 +9,12 @@
 #import "chrome/browser/autofill/autofill_address_view_controller_mac.h"
 #import "chrome/browser/autofill/autofill_credit_card_model_mac.h"
 #import "chrome/browser/autofill/autofill_credit_card_view_controller_mac.h"
+#include "chrome/browser/browser_process.h"
 #import "chrome/browser/cocoa/disclosure_view_controller.h"
 #import "chrome/browser/cocoa/section_separator_view.h"
+#import "chrome/browser/cocoa/window_size_autosaver.h"
 #include "chrome/browser/profile.h"
+#include "chrome/common/pref_names.h"
 #include "grit/generated_resources.h"
 
 @interface AutoFillDialogController (PrivateMethods)
@@ -106,7 +109,7 @@
   AutoFillAddressViewController* addressViewController =
       [[AutoFillAddressViewController alloc]
           initWithProfile:newProfile
-               disclosure:NSOffState
+               disclosure:NSOnState
                controller:self];
   [addressFormViewControllers_.get() addObject:addressViewController];
 
@@ -141,7 +144,7 @@
   AutoFillCreditCardViewController* creditCardViewController =
       [[AutoFillCreditCardViewController alloc]
           initWithCreditCard:newCreditCard
-                  disclosure:NSOffState
+                  disclosure:NSOnState
                   controller:self];
   [creditCardFormViewControllers_.get() addObject:creditCardViewController];
 
@@ -282,6 +285,15 @@
 
 // Run application modal.
 - (void)runModalDialog {
+  // Use stored window geometry if it exists.
+  if (g_browser_process && g_browser_process->local_state()) {
+    sizeSaver_.reset([[WindowSizeAutosaver alloc]
+        initWithWindow:[self window]
+           prefService:g_browser_process->local_state()
+                  path:prefs::kAutoFillDialogPlacement
+                 state:kSaveWindowPos]);
+  }
+
   [NSApp runModalForWindow:[self window]];
 }
 

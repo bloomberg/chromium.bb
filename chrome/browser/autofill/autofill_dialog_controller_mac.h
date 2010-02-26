@@ -15,6 +15,7 @@
 @class AutoFillAddressViewController;
 @class AutoFillCreditCardViewController;
 @class SectionSeparatorView;
+@class WindowSizeAutosaver;
 
 // A window controller for managing the autofill options dialog.
 // Application modally presents a dialog allowing the user to store
@@ -39,6 +40,8 @@
   AutoFillDialogObserver* observer_;  // Weak, not retained.
   std::vector<AutoFillProfile> profiles_;
   std::vector<CreditCard> creditCards_;
+
+  scoped_nsobject<WindowSizeAutosaver> sizeSaver_;
 }
 
 // Main interface for displaying an application modal autofill dialog on screen.

@@ -38,8 +38,8 @@
 			<object class="NSWindowTemplate" id="1005">
 				<int key="NSWindowStyleMask">9</int>
 				<int key="NSWindowBacking">2</int>
-				<string key="NSWindowRect">{{990, 893}, {570, 544}}</string>
-				<int key="NSWTFlags">538968064</int>
+				<string key="NSWindowRect">{{1022, 661}, {570, 544}}</string>
+				<int key="NSWTFlags">544735232</int>
 				<string key="NSWindowTitle">^IDS_AUTOFILL_DIALOG_TITLE</string>
 				<string key="NSWindowClass">NSWindow</string>
 				<nil key="NSViewClass"/>

@@ -34,6 +34,9 @@ class AutoFillManager : public RenderViewHostDelegate::AutoFill,
   explicit AutoFillManager(TabContents* tab_contents);
   virtual ~AutoFillManager();
 
+  // Registers our browser prefs.
+  static void RegisterBrowserPrefs(PrefService* prefs);
+
   // Registers our Enable/Disable AutoFill pref.
   static void RegisterUserPrefs(PrefService* prefs);
 

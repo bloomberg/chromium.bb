@@ -83,6 +83,7 @@ void RegisterLocalState(PrefService* local_state) {
   CookiePromptModalDialog::RegisterPrefs(local_state);
 #endif
   geolocation::RegisterPrefs(local_state);
+  AutoFillManager::RegisterBrowserPrefs(local_state);
 }
 
 void RegisterUserPrefs(PrefService* user_prefs) {
