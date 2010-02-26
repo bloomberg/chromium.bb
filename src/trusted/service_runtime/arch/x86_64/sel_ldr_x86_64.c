@@ -79,12 +79,3 @@ void NaClLoadSpringboard(struct NaClApp  *nap) {
    */
   UNREFERENCED_PARAMETER(nap);
 }
-
-
-void NaClLoadTlsHook(struct NaClApp  *nap) {
-  /*
-   * x86 does not require TLS hook to be loaded in trampoline region, that is
-   * why it must be empty.
-   */
-  UNREFERENCED_PARAMETER(nap);
-}

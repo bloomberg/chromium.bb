@@ -215,11 +215,3 @@ void NaClLoadSpringboard(struct NaClApp  *nap) {
   nap->springboard_addr += NACL_HALT_LEN; /* skip the hlt */
 }
 
-
-void NaClLoadTlsHook(struct NaClApp  *nap) {
-  /*
-   * x86 does not require TLS hook to be loaded in trampoline region, that is
-   * why it must be empty.
-   */
-  UNREFERENCED_PARAMETER(nap);
-}

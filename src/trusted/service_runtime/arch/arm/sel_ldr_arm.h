@@ -27,7 +27,4 @@ uint32_t NaClGetThreadCombinedDescriptor(struct NaClThreadContext *user);
 void NaClSetThreadCombinedDescriptor(struct NaClThreadContext *user,
                                      uint32_t tls_idx);
 
-extern char NaClReadTP_start;
-extern char NaClReadTP_end;
-
 #endif /* SERVICE_RUNTIME_ARCH_ARM_SEL_LDR_H__ */

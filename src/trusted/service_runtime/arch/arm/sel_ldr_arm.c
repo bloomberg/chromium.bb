@@ -86,29 +86,6 @@ void NaClFillEndOfTextRegion(struct NaClApp *nap) {
 }
 
 /*
- * patch a tls hook, which is used by nacl module for obtaining its tls pointer,
- * to the end of trampoline region minus one slot.
- * The code being patched is from nacl_tls_tramp.S
- */
-void NaClLoadTlsHook(struct NaClApp *nap) {
-  struct NaClPatchInfo  patch_info;
-  const uintptr_t       tls_hook_addr = NACL_TRAMPOLINE_END -
-                                        2 * NACL_SYSCALL_BLOCK_SIZE;
-  NaClLog(2, "Installing tls hook at 0x%08"PRIxPTR"\n", tls_hook_addr);
-
-  NaClPatchInfoCtor(&patch_info);
-
-  patch_info.dst = nap->mem_start + tls_hook_addr;
-  patch_info.src = (uintptr_t) &NaClReadTP_start;
-  patch_info.nbytes = ((uintptr_t) &NaClReadTP_end
-                       - (uintptr_t) &NaClReadTP_start);
-
-  CHECK(patch_info.nbytes <= NACL_SYSCALL_BLOCK_SIZE);
-
-  NaClApplyPatchToMemory(&patch_info);
-}
-
-/*
  * patch in springboard.S code into space in place of
  * the last syscall in the trampoline region.
  * The code being patched is from springboard.S

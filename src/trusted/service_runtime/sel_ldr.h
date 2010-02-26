@@ -334,8 +334,6 @@ int32_t NaClCreateAdditionalThread(struct NaClApp *nap,
 
 void NaClLoadTrampoline(struct NaClApp *nap);
 
-void NaClLoadTlsHook(struct NaClApp *nap);
-
 void NaClLoadSpringboard(struct NaClApp  *nap);
 
 static const uintptr_t kNaClBadAddress = (uintptr_t) -1;

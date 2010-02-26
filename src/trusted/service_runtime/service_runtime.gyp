@@ -140,7 +140,6 @@
                 'arch/arm/sel_validate_image.c',
                 'arch/arm/nacl_switch.S',
                 'arch/arm/nacl_syscall.S',
-                'arch/arm/nacl_tls_tramp.S',
                 'arch/arm/springboard.S',
                 'arch/arm/tramp_arm.S',
               ],
