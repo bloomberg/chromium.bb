@@ -33,10 +33,10 @@ const int kArrowToContentPadding = -6;
 const int kCornerSize = 3;
 
 // Margins around the content.
-const int kTopMargin = kArrowSize + kCornerSize + 6;
-const int kBottomMargin = kCornerSize + 6;
-const int kLeftMargin = kCornerSize + 6;
-const int kRightMargin = kCornerSize + 6;
+const int kTopMargin = kArrowSize + kCornerSize - 1;
+const int kBottomMargin = kCornerSize - 1;
+const int kLeftMargin = kCornerSize - 1;
+const int kRightMargin = kCornerSize - 1;
 
 const GdkColor kBackgroundColor = GDK_COLOR_RGB(0xff, 0xff, 0xff);
 const GdkColor kFrameColor = GDK_COLOR_RGB(0x63, 0x63, 0x63);

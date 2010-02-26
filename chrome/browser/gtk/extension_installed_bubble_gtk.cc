@@ -29,7 +29,10 @@ const int kIconSize = 43;
 const int kTextColumnVerticalSpacing = 7;
 const int kTextColumnWidth = 350;
 
-}
+// Padding between content and edge of info bubble.
+const int kContentBorder = 7;
+
+}  // namespace
 
 void ExtensionInstalledBubbleGtk::Show(Extension *extension, Browser *browser,
                                        SkBitmap icon) {
@@ -116,6 +119,7 @@ void ExtensionInstalledBubbleGtk::ShowInternal() {
 
   // Setup the InfoBubble content.
   GtkWidget* bubble_content = gtk_hbox_new(FALSE, kHorizontalColumnSpacing);
+  gtk_container_set_border_width(GTK_CONTAINER(bubble_content), kContentBorder);
 
   // Scale icon down to 43x43, but allow smaller icons (don't scale up).
   GdkPixbuf* pixbuf = gfx::GdkPixbufFromSkBitmap(&icon_);

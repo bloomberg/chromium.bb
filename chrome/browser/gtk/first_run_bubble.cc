@@ -24,6 +24,9 @@ const char kSearchLabelMarkup[] = "<big><b>%s</b></big>";
 // Padding for the buttons on first run bubble.
 const int kButtonPadding = 4;
 
+// Padding between content and edge of info bubble.
+const int kContentBorder = 7;
+
 string16 GetDefaultSearchEngineName(Profile* profile) {
   if (!profile) {
     NOTREACHED();
@@ -108,6 +111,7 @@ FirstRunBubble::FirstRunBubble(Profile* profile,
       l10n_util::GetStringUTF8(IDS_FR_BUBBLE_CHANGE).c_str());
 
   content_ = gtk_vbox_new(FALSE, 5);
+  gtk_container_set_border_width(GTK_CONTAINER(content_), kContentBorder);
 
   // We compute the widget's size using the parent window -- |content_| is
   // unrealized at this point.

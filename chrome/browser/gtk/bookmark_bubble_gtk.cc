@@ -33,6 +33,9 @@ BookmarkBubbleGtk* g_bubble = NULL;
 // Max number of most recently used folders.
 const size_t kMaxMRUFolders = 5;
 
+// Padding between content and edge of info bubble.
+const int kContentBorder = 7;
+
 std::vector<const BookmarkNode*> PopulateFolderCombo(BookmarkModel* model,
                                                      const GURL& url,
                                                      GtkWidget* folder_combo) {
@@ -171,6 +174,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* toplevel_window,
   // portion with the name entry and the folder combo.  |bottom| is the final
   // row with a spacer, and the edit... and close buttons on the right.
   GtkWidget* content = gtk_vbox_new(FALSE, 5);
+  gtk_container_set_border_width(GTK_CONTAINER(content), kContentBorder);
   GtkWidget* top = gtk_hbox_new(FALSE, 0);
 
   gtk_misc_set_alignment(GTK_MISC(label), 0, 1);

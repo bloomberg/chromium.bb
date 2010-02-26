@@ -20,6 +20,9 @@
 #include "grit/app_resources.h"
 #include "grit/generated_resources.h"
 
+// Padding between content and edge of info bubble.
+static const int kContentBorder = 7;
+
 ContentBlockedBubbleGtk::ContentBlockedBubbleGtk(
     GtkWindow* toplevel_window,
     const gfx::Rect& bounds,
@@ -71,6 +74,7 @@ void ContentBlockedBubbleGtk::BuildBubble() {
   GtkThemeProvider* theme_provider = GtkThemeProvider::GetFrom(profile_);
 
   GtkWidget* bubble_content = gtk_vbox_new(FALSE, gtk_util::kControlSpacing);
+  gtk_container_set_border_width(GTK_CONTAINER(bubble_content), kContentBorder);
 
   // Add the content label.
   static const int kTitleIDs[CONTENT_SETTINGS_NUM_TYPES] = {
