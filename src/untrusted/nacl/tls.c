@@ -95,13 +95,6 @@ size_t __nacl_tls_combined_size(size_t tdb_size, int add_fluff) {
 }
 
 
-size_t __nacl_thread_stack_size(int add_fluff) {
-  int fluff = 0;
-  if (add_fluff) fluff = STACK_ALIGNMENT - 1;
-  return fluff + THREAD_STACK_SIZE;
-}
-
-
 char *__nacl_thread_stack_align(void* p) {
   return (char *) Align((uint32_t) p, STACK_ALIGNMENT);
 }
@@ -211,4 +204,3 @@ int __pthread_shutdown() {
   /* No shutdown is required when pthread library is not used */
   return 0;
 }
-
