@@ -2257,6 +2257,7 @@
   },
   {
     "namespace": "metrics",
+    "nodoc": true,
     "types": [
       {
         "id": "MetricType",
