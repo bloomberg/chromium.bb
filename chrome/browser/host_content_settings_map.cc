@@ -213,6 +213,7 @@ void HostContentSettingsMap::SetContentSetting(const std::string& host,
                                                ContentSetting setting) {
   DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
 
+  bool early_exit = false;
   std::wstring wide_host(UTF8ToWide(host));
   DictionaryValue* all_settings_dictionary =
       profile_->GetPrefs()->GetMutableDictionary(
@@ -227,25 +228,30 @@ void HostContentSettingsMap::SetContentSetting(const std::string& host,
     if (AllDefault(settings)) {
       host_content_settings_.erase(i);
       all_settings_dictionary->RemoveWithoutPathExpansion(wide_host, NULL);
-      return;
+
+      // We can't just return because |NotifyObservers()| needs to be called,
+      // without |lock_| being held.
+      early_exit = true;
     }
   }
 
-  DictionaryValue* host_settings_dictionary;
-  bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
-      wide_host, &host_settings_dictionary);
-  if (!found) {
-    host_settings_dictionary = new DictionaryValue;
-    all_settings_dictionary->SetWithoutPathExpansion(
-        wide_host, host_settings_dictionary);
-    DCHECK_NE(setting, CONTENT_SETTING_DEFAULT);
-  }
-  std::wstring dictionary_path(kTypeNames[content_type]);
-  if (setting == CONTENT_SETTING_DEFAULT) {
-    host_settings_dictionary->RemoveWithoutPathExpansion(dictionary_path, NULL);
-  } else {
-    host_settings_dictionary->SetWithoutPathExpansion(
-        dictionary_path, Value::CreateIntegerValue(setting));
+  if (!early_exit) {
+    DictionaryValue* host_settings_dictionary;
+    bool found = all_settings_dictionary->GetDictionaryWithoutPathExpansion(
+        wide_host, &host_settings_dictionary);
+    if (!found) {
+      host_settings_dictionary = new DictionaryValue;
+      all_settings_dictionary->SetWithoutPathExpansion(
+          wide_host, host_settings_dictionary);
+      DCHECK_NE(setting, CONTENT_SETTING_DEFAULT);
+    }
+    std::wstring dictionary_path(kTypeNames[content_type]);
+    if (setting == CONTENT_SETTING_DEFAULT) {
+      host_settings_dictionary->RemoveWithoutPathExpansion(dictionary_path, NULL);
+    } else {
+      host_settings_dictionary->SetWithoutPathExpansion(
+          dictionary_path, Value::CreateIntegerValue(setting));
+    }
   }
 
   NotifyObservers(host);

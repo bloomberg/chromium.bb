@@ -284,6 +284,9 @@ static NSString* ReplaceNSStringPlaceholders(NSString* formatString,
 }
 
 - (void)awakeFromNib {
+  DCHECK([self window]);
+  DCHECK_EQ(self, [[self window] delegate]);
+
   [bubble_ setBubbleType:kWhiteInfoBubble];
   [bubble_ setArrowLocation:kTopRight];
 

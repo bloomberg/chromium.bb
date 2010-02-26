@@ -52,7 +52,7 @@ class CookiesTreeModelObserverBridge : public TreeModelObserver {
  private:
   friend class ::CookiesWindowControllerTest;
 
-  // Creates an CocoaCookieTreeNodefrom a platform-independent one.
+  // Creates a CocoaCookieTreeNode from a platform-independent one.
   // Return value is autoreleased. This creates child nodes recusively.
   CocoaCookieTreeNode* CocoaNodeFromTreeNode(TreeModelNode* node);
 

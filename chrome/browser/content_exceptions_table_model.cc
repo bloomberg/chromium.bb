@@ -39,7 +39,8 @@ void ContentExceptionsTableModel::RemoveAll() {
   int old_row_count = RowCount();
   entries_.clear();
   map_->ClearSettingsForOneType(content_type_);
-  observer_->OnItemsRemoved(0, old_row_count);
+  if (observer_)
+    observer_->OnItemsRemoved(0, old_row_count);
 }
 
 int ContentExceptionsTableModel::IndexOfExceptionByHost(

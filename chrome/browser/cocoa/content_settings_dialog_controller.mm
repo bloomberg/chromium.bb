@@ -10,6 +10,7 @@
 #include "base/mac_util.h"
 #include "chrome/browser/browser.h"
 #include "chrome/browser/browser_window.h"
+#import "chrome/browser/cocoa/content_exceptions_window_controller.h"
 #import "chrome/browser/cocoa/cookies_window_controller.h"
 #import "chrome/browser/host_content_settings_map.h"
 #include "chrome/browser/profile.h"
@@ -37,6 +38,7 @@ ContentSettingsDialogController* g_instance = nil;
 
 @interface ContentSettingsDialogController(Private)
 - (id)initWithProfile:(Profile*)profile;
+- (void)showExceptionsForType:(ContentSettingsType)settingsType;
 
 // Properties that the radio groups and checkboxes are bound to.
 @property(assign, nonatomic) NSInteger cookieSettingIndex;
@@ -95,6 +97,11 @@ ContentSettingsDialogController* g_instance = nil;
                           profile->GetPrefs(), NULL);
   }
   return self;
+}
+
+- (void)awakeFromNib {
+  DCHECK([self window]);
+  DCHECK_EQ(self, [[self window] delegate]);
 }
 
 - (void)windowWillClose:(NSNotification*)notification {
@@ -171,6 +178,32 @@ ContentSettingsDialogController* g_instance = nil;
   browser->OpenURL(GURL(l10n_util::GetStringUTF8(IDS_FLASH_STORAGE_URL)),
                    GURL(), NEW_FOREGROUND_TAB, PageTransition::LINK);
   browser->window()->Show();
+}
+
+- (IBAction)showCookieExceptions:(id)sender {
+  [self showExceptionsForType:CONTENT_SETTINGS_TYPE_COOKIES];
+}
+
+- (IBAction)showImagesExceptions:(id)sender {
+  [self showExceptionsForType:CONTENT_SETTINGS_TYPE_IMAGES];
+}
+
+- (IBAction)showJavaScriptExceptions:(id)sender {
+  [self showExceptionsForType:CONTENT_SETTINGS_TYPE_JAVASCRIPT];
+}
+
+- (IBAction)showPluginsExceptions:(id)sender {
+  [self showExceptionsForType:CONTENT_SETTINGS_TYPE_PLUGINS];
+}
+
+- (IBAction)showPopupsExceptions:(id)sender {
+  [self showExceptionsForType:CONTENT_SETTINGS_TYPE_POPUPS];
+}
+
+- (void)showExceptionsForType:(ContentSettingsType)settingsType {
+  HostContentSettingsMap* settingsMap = profile_->GetHostContentSettingsMap();
+  [ContentExceptionsWindowController showForType:settingsType
+                                     settingsMap:settingsMap];
 }
 
 - (void)setImagesEnabledIndex:(NSInteger)value {

@@ -30,4 +30,10 @@ class Profile;
 - (IBAction)showCookies:(id)sender;
 - (IBAction)openFlashPlayerSettings:(id)sender;
 
+- (IBAction)showCookieExceptions:(id)sender;
+- (IBAction)showImagesExceptions:(id)sender;
+- (IBAction)showJavaScriptExceptions:(id)sender;
+- (IBAction)showPluginsExceptions:(id)sender;
+- (IBAction)showPopupsExceptions:(id)sender;
+
 @end

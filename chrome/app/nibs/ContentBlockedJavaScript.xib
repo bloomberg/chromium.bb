@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="28"/>
+			<integer value="4"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -94,12 +94,13 @@
 									<int key="NSvFlags">292</int>
 									<string key="NSFrame">{{20, 54}, {276, 38}}</string>
 									<reference key="NSSuperview" ref="301729179"/>
+									<bool key="NSEnabled">YES</bool>
 									<int key="NSNumRows">2</int>
 									<int key="NSNumCols">1</int>
 									<object class="NSMutableArray" key="NSCells">
 										<bool key="EncodedWithXMLCoder">YES</bool>
 										<object class="NSButtonCell" id="193088222">
-											<int key="NSCellFlags">604110336</int>
+											<int key="NSCellFlags">67239424</int>
 											<int key="NSCellFlags2">131072</int>
 											<string key="NSContents">^IDS_BLOCKED_JAVASCRIPT_UNBLOCK</string>
 											<reference key="NSSupport" ref="26"/>
@@ -116,7 +117,7 @@
 											<int key="NSPeriodicInterval">25</int>
 										</object>
 										<object class="NSButtonCell" id="619648789">
-											<int key="NSCellFlags">-1543373312</int>
+											<int key="NSCellFlags">-2080244224</int>
 											<int key="NSCellFlags2">131072</int>
 											<string key="NSContents">^IDS_BLOCKED_JAVASCRIPT_NO_ACTION</string>
 											<reference key="NSSupport" ref="26"/>
@@ -230,7 +231,7 @@ QXBwbGUgQ29tcHV0ZXIsIEluYy4sIDIwMDUAAAAAA</bytes>
 									<int key="NSMatrixFlags">1151868928</int>
 									<string key="NSCellClass">NSActionCell</string>
 									<object class="NSButtonCell" key="NSProtoCell" id="789299084">
-										<int key="NSCellFlags">604110336</int>
+										<int key="NSCellFlags">67239424</int>
 										<int key="NSCellFlags2">131072</int>
 										<string key="NSContents">Radio</string>
 										<reference key="NSSupport" ref="26"/>

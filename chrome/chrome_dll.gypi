@@ -200,6 +200,7 @@
                 'app/nibs/ContentBlockedJavaScript.xib',
                 'app/nibs/ContentBlockedPlugins.xib',
                 'app/nibs/ContentBlockedPopups.xib',
+                'app/nibs/ContentExceptionsWindow.xib',
                 'app/nibs/ContentSettings.xib',
                 'app/nibs/DownloadItem.xib',
                 'app/nibs/DownloadShelf.xib',
