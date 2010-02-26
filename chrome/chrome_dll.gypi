@@ -172,6 +172,9 @@
                 'app/chrome_dll_resource.h',
                 'app/chrome_exe_main.mm',
               ],
+              'include_dirs': [
+                '<(grit_out_dir)',
+              ],
               # TODO(mark): Come up with a fancier way to do this.  It should
               # only be necessary to list framework-Info.plist once, not the
               # three times it is listed here.

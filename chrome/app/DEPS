@@ -2,6 +2,7 @@ include_rules = [
   "+breakpad",
   "+chrome/browser",
   "+chrome/installer",
+  "+grit",  # For generated headers
   "+sandbox",
   "+tools/memory_watcher",
 ]

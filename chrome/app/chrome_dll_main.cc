@@ -67,9 +67,11 @@
 #endif
 
 #if defined(OS_MACOSX)
+#include "app/l10n_util_mac.h"
 #include "base/mac_util.h"
 #include "chrome/common/chrome_paths_internal.h"
 #include "chrome/app/breakpad_mac.h"
+#include "grit/chromium_strings.h"
 #include "third_party/WebKit/WebKit/mac/WebCoreSupport/WebSystemInterface.h"
 #endif
 
@@ -362,6 +364,28 @@ bool SubprocessNeedsResourceBundle(const std::string& process_type) {
       process_type == switches::kUtilityProcess;
 }
 
+#if defined(OS_MACOSX)
+// Update the name shown in Activity Monitor so users are less likely to ask
+// why Chrome has so many processes.
+void SetMacProcessName(const std::string& process_type) {
+  // Don't worry about the browser process, its gets the stock name.
+  int name_id = 0;
+  if (process_type == switches::kRendererProcess) {
+    name_id = IDS_RENDERER_APP_NAME;
+  } else if (process_type == switches::kPluginProcess) {
+    name_id = IDS_PLUGIN_APP_NAME;
+  } else if (process_type == switches::kExtensionProcess) {
+    name_id = IDS_WORKER_APP_NAME;
+  } else if (process_type == switches::kUtilityProcess) {
+    name_id = IDS_UTILITY_APP_NAME;
+  }
+  if (name_id) {
+    NSString* app_name = l10n_util::GetNSString(name_id);
+    mac_util::SetProcessName(reinterpret_cast<CFStringRef>(app_name));
+  }
+}
+#endif  // defined(OS_MACOSX)
+
 }  // namespace
 
 #if defined(OS_WIN)
@@ -636,6 +660,13 @@ int ChromeMain(int argc, char** argv) {
     DCHECK(parsed_command_line.HasSwitch(switches::kLang) ||
            process_type == switches::kZygoteProcess);
     ResourceBundle::InitSharedInstance(std::wstring());
+
+#if defined(OS_MACOSX)
+    // Update the process name (need resources to get the strings, so
+    // only do this when ResourcesBundle has been initialized).
+    SetMacProcessName(process_type);
+#endif // defined(OS_MACOSX)
+
   }
 
   if (!process_type.empty())
