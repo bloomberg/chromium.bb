@@ -50,7 +50,7 @@ void wl_connection_vmarshal(struct wl_connection *connection,
 
 void wl_connection_demarshal(struct wl_connection *connection,
 			     uint32_t size,
-			     struct wl_hash *objects,
+			     struct wl_hash_table *objects,
 			     void (*func)(void),
 			     void *data, struct wl_object *target,
 			     const struct wl_message *message);

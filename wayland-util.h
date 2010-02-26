@@ -23,6 +23,8 @@
 #ifndef WAYLAND_UTIL_H
 #define WAYLAND_UTIL_H
 
+#include <inttypes.h>
+
 /* GCC visibility */
 #if defined(__GNUC__) && __GNUC__ >= 4
 #define WL_EXPORT __attribute__ ((visibility("default")))
@@ -64,12 +66,13 @@ struct wl_object {
 	uint32_t id;
 };
 
-struct wl_hash;
-struct wl_hash *wl_hash_create(void);
-void wl_hash_destroy(struct wl_hash *hash);
-int wl_hash_insert(struct wl_hash *hash, struct wl_object *object);
-struct wl_object *wl_hash_lookup(struct wl_hash *hash, uint32_t id);
-void wl_hash_remove(struct wl_hash *hash, struct wl_object *object);
+struct wl_hash_table;
+struct wl_hash_table *wl_hash_table_create(void);
+void wl_hash_table_destroy(struct wl_hash_table *ht);
+void *wl_hash_table_lookup(struct wl_hash_table *ht, uint32_t hash);
+int wl_hash_table_insert(struct wl_hash_table *ht, uint32_t hash, void *data);
+void wl_hash_table_remove(struct wl_hash_table *ht, uint32_t hash);
+
 
 struct wl_list {
 	struct wl_list *prev;

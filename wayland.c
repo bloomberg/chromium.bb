@@ -50,7 +50,7 @@ struct wl_client {
 struct wl_display {
 	struct wl_object base;
 	struct wl_event_loop *loop;
-	struct wl_hash *objects;
+	struct wl_hash_table *objects;
 
 	struct wl_list pending_frame_list;
 	uint32_t client_id_range;
@@ -109,7 +109,7 @@ wl_client_connection_data(int fd, uint32_t mask, void *data)
 		if (len < size)
 			break;
 
-		object = wl_hash_lookup(client->display->objects, p[0]);
+		object = wl_hash_table_lookup(client->display->objects, p[0]);
 		if (object == NULL) {
 			wl_client_post_event(client, &client->display->base,
 					     WL_DISPLAY_INVALID_OBJECT, p[0]);
@@ -247,7 +247,7 @@ wl_client_add_surface(struct wl_client *client,
 	surface->base.implementation = (void (**)(void)) implementation;
 	surface->client = client;
 
-	wl_hash_insert(display->objects, &surface->base);
+	wl_hash_table_insert(display->objects, id, surface);
 	wl_list_insert(client->surface_list.prev, &surface->link);
 
 	return 0;
@@ -259,7 +259,7 @@ wl_client_remove_surface(struct wl_client *client,
 {
 	struct wl_display *display = client->display;
 
-	wl_hash_remove(display->objects, &surface->base);
+	wl_hash_table_remove(display->objects, surface->base.id);
 	wl_list_remove(&surface->link);
 }
 
@@ -305,7 +305,7 @@ wl_display_create(void)
 		return NULL;
 	}
 
-	display->objects = wl_hash_create();
+	display->objects = wl_hash_table_create();
 	if (display->objects == NULL) {
 		free(display);
 		return NULL;
@@ -333,7 +333,7 @@ WL_EXPORT void
 wl_display_add_object(struct wl_display *display, struct wl_object *object)
 {
 	object->id = display->id++;
-	wl_hash_insert(display->objects, object);
+	wl_hash_table_insert(display->objects, object->id, object);
 }
 
 WL_EXPORT int

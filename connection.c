@@ -280,7 +280,7 @@ wl_connection_vmarshal(struct wl_connection *connection,
 void
 wl_connection_demarshal(struct wl_connection *connection,
 			uint32_t size,
-			struct wl_hash *objects,
+			struct wl_hash_table *objects,
 			void (*func)(void),
 			void *data, struct wl_object *target,
 			const struct wl_message *message)
@@ -342,7 +342,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 			break;
 		case 'o':
 			types[i] = &ffi_type_pointer;
-			object = wl_hash_lookup(objects, *p);
+			object = wl_hash_table_lookup(objects, *p);
 			if (object == NULL && *p != 0)
 				printf("unknown object (%d)\n", *p);
 			values[i].object = object;
@@ -351,7 +351,7 @@ wl_connection_demarshal(struct wl_connection *connection,
 		case 'n':
 			types[i] = &ffi_type_uint32;
 			values[i].new_id = *p;
-			object = wl_hash_lookup(objects, *p);
+			object = wl_hash_table_lookup(objects, *p);
 			if (object != NULL)
 				printf("object already exists (%d)\n", *p);
 			p++;

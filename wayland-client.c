@@ -95,7 +95,7 @@ struct wl_display {
 	int fd;
 	uint32_t id, id_count, next_range;
 	uint32_t mask;
-	struct wl_hash *objects;
+	struct wl_hash_table *objects;
 	struct wl_list global_list;
 	struct wl_listener listener;
 	struct wl_list global_listener_list;
@@ -184,7 +184,7 @@ wl_proxy_create_for_global(struct wl_display *display,
 	proxy->display = display;
 	global->proxy = proxy;
 	wl_list_init(&proxy->listener_list);
-	wl_hash_insert(display->objects, &proxy->base);
+	wl_hash_table_insert(display->objects, proxy->base.id, proxy);
 
 	wl_list_for_each(listener, &display->global_listener_list, link)
 		(*listener->handler)(display, &proxy->base, listener->data);
@@ -311,7 +311,8 @@ display_handle_global(void *data,
 	wl_list_insert(display->global_list.prev, &global->link);
 
 	if (strcmp(global->interface, "display") == 0)
-		wl_hash_insert(display->objects, &display->proxy.base);
+		wl_hash_table_insert(display->objects,
+				     id, &display->proxy.base);
 	else if (strcmp(global->interface, "compositor") == 0)
 		display->compositor = (struct wl_compositor *) 
 			wl_proxy_create_for_global(display, global,
@@ -383,7 +384,7 @@ wl_display_create(const char *name, size_t name_size)
 		return NULL;
 	}
 
-	display->objects = wl_hash_create();
+	display->objects = wl_hash_table_create();
 	wl_list_init(&display->global_list);
 	wl_list_init(&display->global_listener_list);
 
@@ -448,7 +449,8 @@ handle_event(struct wl_display *display,
 	if (id == 1)
 		proxy = &display->proxy;
 	else
-		proxy = (struct wl_proxy *) wl_hash_lookup(display->objects, id);
+		proxy = (struct wl_proxy *)
+			wl_hash_table_lookup(display->objects, id);
 
 	if (proxy != NULL) {
 		if (wl_list_empty(&proxy->listener_list)) {
@@ -544,7 +546,8 @@ wl_compositor_create_surface(struct wl_compositor *compositor)
 	surface->proxy.base.interface = &wl_surface_interface;
 	surface->proxy.base.id = wl_display_allocate_id(compositor->proxy.display);
 	surface->proxy.display = compositor->proxy.display;
-	wl_hash_insert(compositor->proxy.display->objects, &surface->proxy.base);
+	wl_hash_table_insert(compositor->proxy.display->objects,
+			     surface->proxy.base.id, surface);
 	wl_proxy_marshal(&compositor->proxy,
 			  WL_COMPOSITOR_CREATE_SURFACE, surface);
 

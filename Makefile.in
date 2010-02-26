@@ -17,12 +17,14 @@ libwayland-server.so :				\
 	event-loop.o				\
 	connection.o				\
 	wayland-util.o				\
+	wayland-hash.o				\
 	wayland-protocol.o
 
 libwayland.so :					\
 	wayland-client.o			\
 	connection.o				\
 	wayland-util.o				\
+	wayland-hash.o				\
 	wayland-protocol.o
 
 $(libs) : CFLAGS += -fPIC @FFI_CFLAGS@
