@@ -10,13 +10,13 @@
     <property name="build" value="build" />
     <property name="test" value="test" />
     <path id="antlr.classpath">
-      <pathelement location="../../third_party/antlr3/lib/antlr-3.1.1.jar" />
+      <pathelement location="../../../third_party/antlr3/lib/antlr-3.1.1.jar" />
     </path>
     <path id="antlr.runtime.classpath">
-      <pathelement location="../../third_party/antlr3/lib/antlr-runtime-3.1.1.jar" />
+      <pathelement location="../../../third_party/antlr3/lib/antlr-runtime-3.1.1.jar" />
     </path>
     <path id="test.classpath">
-      <pathelement location="../../third_party/antlr3/lib/antlr-runtime-3.1.1.jar" />
+      <pathelement location="../../../third_party/antlr3/lib/antlr-runtime-3.1.1.jar" />
       <pathelement location="${build}" />
     </path>
   </target>
@@ -25,7 +25,7 @@
     <mkdir dir="${build}" />
     <mkdir dir="${build}/glsl_es" />
     <!-- Run ANTLR on the grammar -->
-    <java classname="org.antlr.Tool">
+    <java classname="org.antlr.Tool" failonerror="true">
       <classpath refid="antlr.classpath" />
       <arg value="glsl_es/GLSL_ES.g" />
       <arg value="-fo" />
@@ -45,8 +45,28 @@
       <arg value="shaders/ambient.frag" />
       <arg value="shaders/diffuse.vert" />
       <arg value="shaders/diffuse.frag" />
+      <arg value="shaders/many-planets-deep.vert" />
+      <arg value="shaders/many-planets-deep.frag" />
+      <arg value="shaders/nvidia-vertex-buffer-object.vert" />
+      <arg value="shaders/nvidia-vertex-buffer-object.frag" />
       <arg value="shaders/texture_mapping.vert" />
       <arg value="shaders/texture_mapping.frag" />
+      <arg value="shaders/particles-2d.vert" />
+      <arg value="shaders/particles-3d.vert" />
+      <arg value="shaders/particles.frag" />
+      <arg value="shaders/san-angeles-flat.vert" />
+      <arg value="shaders/san-angeles-lit.vert" />
+      <arg value="shaders/san-angeles-flat.frag" />
+      <arg value="shaders/shiny-teapot.vert" />
+      <arg value="shaders/shiny-teapot.frag" />
+      <arg value="shaders/spirit-box.vert" />
+      <arg value="shaders/spirit-box.frag" />
+      <arg value="shaders/spore-view.vert" />
+      <arg value="shaders/spore-view.frag" />
+      <arg value="shaders/teapot-per-pixel.vert" />
+      <arg value="shaders/teapot-per-pixel.frag" />
+      <arg value="shaders/teapot-per-vertex.vert" />
+      <arg value="shaders/teapot-per-vertex.frag" />
     </java>
   </target>
 

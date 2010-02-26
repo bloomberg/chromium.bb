@@ -36,7 +36,7 @@ grammar GLSL_ES;
 
 options {
     language = Java;
- }
+}
 
 @lexer::header  { package glsl_es; }
 @parser::header { package glsl_es; }
@@ -97,17 +97,19 @@ function_call_header
   : function_identifier LEFT_PAREN
   ;
 
+// NOTE: change compared to GLSL ES grammar, because constructor_identifier
+// has IDENTIFIER (=TYPE_NAME) as one of its arms.
 function_identifier
   : constructor_identifier
-  | IDENTIFIER
+//  | IDENTIFIER
   ;
 
 // Grammar Note: Constructors look like functions, but lexical analysis recognized most of them as 
 // keywords.
 //
-// FIXME: do we need to register declared struct types in a dictionary
-// and look them up in order to be able to handle the TYPE_NAME
-// constructor identifier type?
+// TODO(kbr): do we need to register declared struct types in a dictionary
+// and look them up in order to be able to handle the TYPE_NAME constructor
+// identifier type?
 
 constructor_identifier
   : FLOAT
@@ -126,6 +128,7 @@ constructor_identifier
   | MAT3
   | MAT4
 //  | TYPE_NAME
+  | IDENTIFIER
   ;
 
 unary_expression
@@ -243,7 +246,7 @@ function_header
   ;
 
 parameter_declaration
-  : (type_qualifier (parameter_qualifier)? )?
+  : (type_qualifier)? (parameter_qualifier)?
     ( type_specifier
       // parameter_declarator
       (IDENTIFIER)?
@@ -324,6 +327,7 @@ type_specifier_no_prec
   | SAMPLERCUBE
   | struct_specifier
 //  | TYPE_NAME
+  | IDENTIFIER
   ;
 
 precision_qualifier
@@ -366,6 +370,7 @@ statement_no_new_scope
   ;
 
 simple_statement
+options { backtrack=true; }
   : declaration_statement
   | expression_statement
   | selection_statement
@@ -412,6 +417,7 @@ iteration_statement
   ;
 
 for_init_statement
+options { backtrack=true; }
   : expression_statement
   | declaration_statement
   ;
@@ -487,7 +493,7 @@ IDENTIFIER
   ;
 
 /*
-// FIXME: it isn't clear whether we need to support the TYPE_NAME
+// TODO(kbr): it isn't clear whether we need to support the TYPE_NAME
 // token type; that may only be needed if typedef is supported
 TYPE_NAME
   : IDENTIFIER
@@ -531,7 +537,7 @@ fragment BOOLCONSTANT
   | FALSE
   ;
 
-// FIXME: this needs much more work
+// TODO(kbr): this needs much more work
 field_selection
   : IDENTIFIER
   ;

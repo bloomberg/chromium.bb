@@ -84,7 +84,7 @@ translation_unit
   : external_declaration
   | translation_unit external_declaration
 
-/* FIXME: this requires much more work */
+/* TODO(kbr): this requires much more work */
 FIELD_SELECTION
   : IDENTIFIER
   ;
@@ -153,10 +153,16 @@ function_call_header
   : function_identifier LEFT_PAREN
   ;
 
+// NOTE: change compared to GLSL ES grammar, because constructor_identifier
+// has IDENTIFIER (=TYPE_NAME) as one of its arms.
 function_identifier
   : constructor_identifier
   | IDENTIFIER
   ;
+
+// TODO(kbr): do we need to register declared struct types in a dictionary
+// and look them up in order to be able to handle the TYPE_NAME constructor
+// identifier type?
 
 constructor_identifier
   : FLOAT
@@ -175,6 +181,7 @@ constructor_identifier
   | MAT3
   | MAT4
 //  | TYPE_NAME
+//  | IDENTIFIER
   ;
 
 unary_expression
@@ -291,7 +298,7 @@ conditional_expression
   | logical_or_expression conditional_expression_1
   ;
 
-/* NOTE (FIXME): difference between Mesa's grammar and GLSL ES spec;
+/* NOTE (TODO(kbr)): difference between Mesa's grammar and GLSL ES spec;
    Mesa uses conditional_expression after the colon, GLSL ES uses assignment_expression */
 conditional_expression_1
   : QUESTION expression COLON assignment_expression
@@ -457,6 +464,7 @@ type_specifier_no_prec
   | SAMPLERCUBE
   | struct_specifier
 //  | TYPE_NAME
+//  | IDENTIFIER
   ;
 
 precision_qualifier
@@ -535,7 +543,7 @@ compound_statement_no_new_scope
   | LEFT_BRACE statement_list RIGHT_BRACE
   ;
 
-/* FIXME: may need refactoring */
+/* TODO(kbr): may need refactoring */
 statement_list
   : statement_no_new_scope
   | statement_list statement_no_new_scope
