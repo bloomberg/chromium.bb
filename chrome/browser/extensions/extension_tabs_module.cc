@@ -580,12 +580,6 @@ bool UpdateTabFunction::RunImpl() {
                   NULL, &tab_strip, &contents, &tab_index, &error_))
     return false;
 
-  if (tab_strip->IsTabPinned(tab_index)) {
-    // Don't allow changing the url of pinned tabs.
-    error_ = keys::kCannotUpdatePinnedTab;
-    return false;
-  }
-
   NavigationController& controller = contents->controller();
 
   // TODO(rafaelw): handle setting remaining tab properties:
@@ -618,6 +612,12 @@ bool UpdateTabFunction::RunImpl() {
       // TODO(aa): How does controller queue URLs? Is there any chance that this
       // JavaScript URL will end up applying to something other than
       // controller->GetURL()?
+    }
+
+    if (tab_strip->IsTabPinned(tab_index)) {
+      // Don't allow changing the url of pinned tabs.
+      error_ = keys::kCannotUpdatePinnedTab;
+      return false;
     }
 
     controller.LoadURL(new_gurl, GURL(), PageTransition::LINK);
