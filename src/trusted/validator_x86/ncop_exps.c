@@ -8,6 +8,7 @@
 #include <ctype.h>
 #include <string.h>
 #include <assert.h>
+#include <sys/stat.h>
 
 #include "native_client/src/trusted/validator_x86/ncop_exps.h"
 #include "native_client/src/trusted/validator_x86/nc_inst_state.h"
@@ -331,6 +332,61 @@ void PrintNcInstStateInstruction(FILE* file, NcInstState* state) {
     fprintf(file, "; *NACL Disallows!*");
   }
   putc('\n', file);
+}
+
+char* PrintNcInstStateInstructionToString(NcInstState* state) {
+  FILE* file;
+  char* out_string;
+  struct stat st;
+  size_t file_size;
+  size_t bytes_read;
+  size_t bytes_read_now;
+
+  file = fopen("out_file", "w");
+
+  if (file == NULL)
+    goto cleanup;
+
+#if NACL_LINUX || NACL_OSX
+  chmod("out_file", S_IRUSR | S_IWUSR);
+#endif
+
+  PrintNcInstStateInstruction(file, state);
+  fclose(file);
+
+  if (stat("out_file", &st))
+    goto cleanup;
+
+  file_size = (size_t) st.st_size;
+  if (file_size == 0)
+    goto cleanup;
+
+  out_string = (char*) malloc(file_size + 1);
+  if (out_string == NULL)
+    goto cleanup;
+
+  file = fopen("out_file", "r");
+  if (file == NULL)
+    goto cleanup;
+
+  bytes_read = 0;
+  bytes_read_now = 0;
+  while (bytes_read_now != 0) {
+    bytes_read_now = fread(out_string, file_size - bytes_read, 1, file);
+    bytes_read += bytes_read_now;
+  }
+
+  out_string[bytes_read+1] = 0;
+
+  fclose(file);
+  unlink("out_file");
+  return out_string;
+
+ cleanup:
+  if (file != NULL)
+    fclose(file);
+  unlink("out_file");
+  return NULL;
 }
 
 int ExprNodeWidth(ExprNodeVector* vector, int node) {

@@ -102,4 +102,11 @@ void PrintExprNodeVector(FILE* file, ExprNodeVector* vector);
 /* Print out the disassembled instruction in the given instruction state. */
 void PrintNcInstStateInstruction(FILE* file, struct NcInstState* state);
 
+/* Same functionality as PrintInstStateInstruction(), but puts the
+ * result in a string. This fct is to be used for comparing output on
+ * an instruction-at-a-time granularity. Do not use this fct except
+ * for testing purposes.
+ */
+char* PrintNcInstStateInstructionToString(struct NcInstState* state);
+
 #endif  /* NATIVE_CLIENT_SRC_TRUSTED_VALIDATOR_X86_NCOP_EXPS_H_ */
