@@ -22,7 +22,7 @@
 # however, r300 and via need their reg headers installed in order to build.
 # better solutions are welcome.
 
-klibdrmincludedir = ${includedir}/drm
+klibdrmincludedir = ${includedir}/libdrm
 klibdrminclude_HEADERS = \
 	drm.h \
 	drm_mode.h \

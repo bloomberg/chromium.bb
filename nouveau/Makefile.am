@@ -34,7 +34,7 @@ libdrm_nouveaucommoninclude_HEADERS = \
 				nouveau_reloc.h
 
 
-libdrm_nouveauincludedir = ${includedir}/drm
+libdrm_nouveauincludedir = ${includedir}/libdrm
 libdrm_nouveauinclude_HEADERS = \
 				nouveau_drmif.h
 
