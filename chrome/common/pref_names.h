@@ -129,6 +129,7 @@ extern const wchar_t kAutoFillEnabled[];
 extern const wchar_t kAutoFillDialogPlacement[];
 extern const wchar_t kPrivacyFilterRules[];
 extern const wchar_t kUseVerticalTabs[];
+extern const wchar_t kEnableTranslate[];
 
 // Local state
 extern const wchar_t kMetricsClientID[];

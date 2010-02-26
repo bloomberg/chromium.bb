@@ -5808,7 +5808,7 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_NETWORK">
         Network
       </message>
-      <message name="IDS_OPTIONS_ADVANCED_SECTION_TRANSLATE">
+      <message name="IDS_OPTIONS_ADVANCED_SECTION_TITLE_TRANSLATE">
         Translate
       </message>
 

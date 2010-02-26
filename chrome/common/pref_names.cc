@@ -337,6 +337,9 @@ const wchar_t kPrivacyFilterRules[] = L"profile.privacy_filter_rules";
 // side of the browser window.
 const wchar_t kUseVerticalTabs[] = L"tabs.use_vertical_tabs";
 
+// Boolean that is true when the translate feature is enabled.
+const wchar_t kEnableTranslate[] = L"translate.enabled";
+
 // *************** LOCAL STATE ***************
 // These are attached to the machine/installation
 

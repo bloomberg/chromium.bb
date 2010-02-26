@@ -243,9 +243,9 @@ class AdvancedSection : public OptionsPageView {
   // Convenience helpers for adding controls to specific layouts in an
   // aesthetically pleasing way.
   void AddWrappingCheckboxRow(views::GridLayout* layout,
-                             views::Checkbox* checkbox,
-                             int id,
-                             bool related_follows);
+                              views::Checkbox* checkbox,
+                              int id,
+                              bool related_follows);
   void AddWrappingLabelRow(views::GridLayout* layout,
                            views::Label* label,
                            int id,
@@ -1228,6 +1228,71 @@ void DownloadSection::UpdateDownloadDirectoryDisplay() {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+// TranslateSection
+
+class TranslateSection : public AdvancedSection,
+                         public views::ButtonListener {
+ public:
+  explicit TranslateSection(Profile* profile);
+  virtual ~TranslateSection() {}
+
+  // Overridden from views::ButtonListener:
+  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+
+ protected:
+  // OptionsPageView overrides:
+  virtual void InitControlLayout();
+  virtual void NotifyPrefChanged(const std::wstring* pref_name);
+
+ private:
+  // Control for this section:
+  views::Checkbox* enable_translate_checkbox_;
+
+  // Preferences for this section:
+  BooleanPrefMember enable_translate_;
+
+  DISALLOW_COPY_AND_ASSIGN(TranslateSection );
+};
+
+TranslateSection::TranslateSection(Profile* profile)
+    : enable_translate_checkbox_(NULL),
+      AdvancedSection(profile,
+          l10n_util::GetString(IDS_OPTIONS_ADVANCED_SECTION_TITLE_TRANSLATE)) {
+}
+
+void TranslateSection::ButtonPressed(
+    views::Button* sender, const views::Event& event) {
+  DCHECK(sender == enable_translate_checkbox_);
+  bool enabled = enable_translate_checkbox_->checked();
+  UserMetricsRecordAction(enabled ? "Options_Translate_Enable" :
+                                    "Options_Translate_Disable",
+                          profile()->GetPrefs());
+  enable_translate_.SetValue(enabled);
+}
+
+void TranslateSection::InitControlLayout() {
+  AdvancedSection::InitControlLayout();
+
+  GridLayout* layout = new GridLayout(contents_);
+  contents_->SetLayoutManager(layout);
+
+  AddIndentedColumnSet(layout, 0);
+
+  enable_translate_checkbox_ = new views::Checkbox(
+      l10n_util::GetString(IDS_OPTIONS_TRANSLATE_ENABLE_TRANSLATE));
+  enable_translate_checkbox_->set_listener(this);
+  AddWrappingCheckboxRow(layout, enable_translate_checkbox_, 0, false);
+
+  // Init member pref so we can update the controls if prefs change.
+  enable_translate_.Init(prefs::kEnableTranslate, profile()->GetPrefs(), this);
+}
+
+void TranslateSection::NotifyPrefChanged(const std::wstring* pref_name) {
+  if (!pref_name || *pref_name == prefs::kEnableTranslate)
+    enable_translate_checkbox_->SetChecked(enable_translate_.GetValue());
+}
+
+////////////////////////////////////////////////////////////////////////////////
 // AdvancedContentsView
 
 class AdvancedContentsView : public OptionsPageView {
@@ -1316,6 +1381,8 @@ void AdvancedContentsView::InitControlLayout() {
   layout->AddView(new PrivacySection(profile()));
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(new NetworkSection(profile()));
+  layout->StartRow(0, single_column_view_set_id);
+  layout->AddView(new TranslateSection(profile()));
   layout->StartRow(0, single_column_view_set_id);
   layout->AddView(new DownloadSection(profile()));
   layout->StartRow(0, single_column_view_set_id);

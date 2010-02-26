@@ -1431,6 +1431,7 @@ void Browser::RegisterUserPrefs(PrefService* prefs) {
   prefs->RegisterBooleanPref(prefs::kWebAppCreateInAppsMenu, true);
   prefs->RegisterBooleanPref(prefs::kWebAppCreateInQuickLaunchBar, true);
   prefs->RegisterBooleanPref(prefs::kUseVerticalTabs, true);
+  prefs->RegisterBooleanPref(prefs::kEnableTranslate, true);
 }
 
 // static

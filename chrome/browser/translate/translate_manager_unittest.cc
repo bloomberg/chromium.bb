@@ -10,6 +10,7 @@
 #include "chrome/common/ipc_test_sink.h"
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
+#include "chrome/common/pref_names.h"
 #include "chrome/common/render_messages.h"
 
 class TestTranslateManager : public TranslateManager {
@@ -359,4 +360,33 @@ TEST_F(TranslateManagerTest, TranslateInPageNavigation) {
   EXPECT_TRUE(CheckInfoBarRemovedAndReset(infobar));
   // And there is a new one.
   EXPECT_TRUE(GetTranslateInfoBar() != NULL);
+}
+
+// Tests that the translate preference is honored.
+TEST_F(TranslateManagerTest, TranslatePref) {
+  // Make sure the pref allows translate.
+  PrefService* prefs = contents()->profile()->GetPrefs();
+  prefs->SetBoolean(prefs::kEnableTranslate, true);
+
+  // Simulate navigating to a page and gettings its language.
+  SimulateNavigation(GURL("http://www.google.fr"), 0, L"Le Google", "fr");
+
+  // An infobar should be shown.
+  TranslateInfoBarDelegate* infobar = GetTranslateInfoBar();
+  EXPECT_TRUE(infobar != NULL);
+
+  // Disable translate.
+  prefs->SetBoolean(prefs::kEnableTranslate, false);
+
+  // Navigate to a new page, that should close the previous infobar.
+  GURL url("http://www.youtube.fr");
+  NavigateAndCommit(url);
+  infobar = GetTranslateInfoBar();
+  EXPECT_TRUE(infobar == NULL);
+
+  // Simulate getting the page contents and language, that should not trigger
+  // a translate infobar.
+  SimulateOnPageContents(url, 1, L"Le YouTube", "fr");
+  infobar = GetTranslateInfoBar();
+  EXPECT_TRUE(infobar == NULL);
 }

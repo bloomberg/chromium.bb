@@ -134,6 +134,9 @@ TranslateManager::TranslateManager()
 void TranslateManager::InitiateTranslation(TabContents* tab,
                                            const std::string& page_lang) {
   PrefService* prefs = tab->profile()->GetPrefs();
+  if (!prefs->GetBoolean(prefs::kEnableTranslate))
+    return;
+
   NavigationEntry* entry = tab->controller().GetActiveEntry();
   if (!entry) {
     NOTREACHED();
