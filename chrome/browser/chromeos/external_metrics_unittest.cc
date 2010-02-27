@@ -103,7 +103,7 @@ TEST(ExternalMetricsTest, ParseExternalMetricsFile) {
 
   // Sends a malformed message (first string is not null-terminated).
   i = 100 + sizeof(i);
-  int fd = open(path, O_CREAT | O_WRONLY);
+  int fd = open(path, O_CREAT | O_WRONLY, 0666);
   EXPECT_GT(fd, 0);
   EXPECT_EQ(write(fd, &i, sizeof(i)), static_cast<int>(sizeof(i)));
   EXPECT_EQ(write(fd, b, i), i);
@@ -114,7 +114,7 @@ TEST(ExternalMetricsTest, ParseExternalMetricsFile) {
 
   // Sends a malformed message (second string is not null-terminated).
   b[50] = '\0';
-  fd = open(path, O_CREAT | O_WRONLY);
+  fd = open(path, O_CREAT | O_WRONLY, 0666);
   EXPECT_GT(fd, 0);
   EXPECT_EQ(write(fd, &i, sizeof(i)), static_cast<int>(sizeof(i)));
   EXPECT_EQ(write(fd, b, i), i);
