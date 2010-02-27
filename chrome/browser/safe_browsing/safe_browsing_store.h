@@ -43,6 +43,7 @@ struct SBAddPrefix {
   SBPrefix prefix;
 
   SBAddPrefix(int32 id, SBPrefix p) : chunk_id(id), prefix(p) {}
+  SBAddPrefix() : chunk_id(), prefix() {}
 
   int32 GetAddChunkId() const { return chunk_id; }
   SBPrefix GetAddPrefix() const { return prefix; }
@@ -55,6 +56,7 @@ struct SBSubPrefix {
 
   SBSubPrefix(int32 id, int32 add_id, int prefix)
       : chunk_id(id), add_chunk_id(add_id), add_prefix(prefix) {}
+  SBSubPrefix() : chunk_id(), add_chunk_id(), add_prefix() {}
 
   int32 GetAddChunkId() const { return add_chunk_id; }
   SBPrefix GetAddPrefix() const { return add_prefix; }
@@ -76,6 +78,8 @@ struct SBAddFullHash {
   SBAddFullHash(int32 id, int32 r, SBFullHash h)
       : chunk_id(id), received(r), full_hash(h) {}
 
+  SBAddFullHash() : chunk_id(), received(), full_hash() {}
+
   int32 GetAddChunkId() const { return chunk_id; }
   SBPrefix GetAddPrefix() const { return full_hash.prefix; }
 };
@@ -87,6 +91,7 @@ struct SBSubFullHash {
 
   SBSubFullHash(int32 id, int32 add_id, SBFullHash h)
       : chunk_id(id), add_chunk_id(add_id), full_hash(h) {}
+  SBSubFullHash() : chunk_id(), add_chunk_id(), full_hash() {}
 
   int32 GetAddChunkId() const { return add_chunk_id; }
   SBPrefix GetAddPrefix() const { return full_hash.prefix; }
