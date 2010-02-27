@@ -143,7 +143,7 @@ class FocusManagerTest : public testing::Test, public WindowDelegate {
     return static_cast<WindowWin*>(window_)->GetFocusManager();
 #elif defined(OS_LINUX)
     return static_cast<WindowGtk*>(window_)->GetFocusManager();
-#elif
+#else
     NOTIMPLEMENTED();
 #endif
   }
