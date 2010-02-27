@@ -192,7 +192,7 @@ class LocalTriangulator {
                    bool fill_right_side);
 
   // Number of triangles computed by Triangulate().
-  int num_triangles() {
+  int num_triangles() const {
     return num_triangles_;
   }
 
@@ -205,7 +205,7 @@ class LocalTriangulator {
 
   // Number of vertices facing the inside of the shape, if
   // compute_inside_edges was true when Triangulate() was called.
-  int num_interior_vertices() {
+  int num_interior_vertices() const {
     return num_interior_vertices_;
   }
 
