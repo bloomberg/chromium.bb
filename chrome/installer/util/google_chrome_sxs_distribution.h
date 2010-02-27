@@ -22,6 +22,7 @@ class GoogleChromeSxSDistribution : public GoogleChromeDistribution {
   virtual std::wstring GetAppShortCutName();
   virtual std::wstring GetInstallSubDir();
   virtual std::wstring GetUninstallRegPath();
+  virtual bool CanSetAsDefault();
 
  private:
   friend class BrowserDistribution;

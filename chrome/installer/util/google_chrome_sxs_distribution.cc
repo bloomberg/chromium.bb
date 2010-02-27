@@ -33,3 +33,7 @@ std::wstring GoogleChromeSxSDistribution::GetUninstallRegPath() {
   return GoogleChromeDistribution::GetUninstallRegPath().append(
       installer_util::kSxSSuffix);
 }
+
+bool GoogleChromeSxSDistribution::CanSetAsDefault() {
+  return false;
+}

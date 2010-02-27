@@ -40,6 +40,7 @@
 #include "chrome/common/pref_names.h"
 #include "chrome/common/result_codes.h"
 #include "chrome/common/url_constants.h"
+#include "chrome/installer/util/browser_distribution.h"
 #include "grit/chromium_strings.h"
 #include "grit/generated_resources.h"
 #include "grit/locale_settings.h"
@@ -193,6 +194,10 @@ class CheckDefaultBrowserTask : public Task {
   virtual void Run() {
     if (ShellIntegration::IsDefaultBrowser())
       return;
+#if defined(OS_WIN)
+    if (!BrowserDistribution::GetDistribution()->CanSetAsDefault())
+      return;
+#endif
 
     ChromeThread::PostTask(
         ChromeThread::UI, FROM_HERE, new NotifyNotDefaultBrowserTask());

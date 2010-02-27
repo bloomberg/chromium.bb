@@ -599,11 +599,6 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
     return installer_util::OS_ERROR;
   }
 
-  int exit_code = 0;
-  if (HandleNonInstallCmdLineOptions(parsed_command_line, system_install,
-                                     exit_code))
-    return exit_code;
-
   // Some command line options don't work with SxS install/uninstall
   if (InstallUtil::IsChromeSxSProcess()) {
     if (system_install ||
@@ -622,6 +617,11 @@ int WINAPI wWinMain(HINSTANCE instance, HINSTANCE prev_instance,
       return installer_util::SXS_OPTION_NOT_SUPPORTED;
     }
   }
+
+  int exit_code = 0;
+  if (HandleNonInstallCmdLineOptions(parsed_command_line, system_install,
+                                     exit_code))
+    return exit_code;
 
   if (system_install && !IsUserAnAdmin()) {
     if (win_util::GetWinVersion() >= win_util::WINVERSION_VISTA &&

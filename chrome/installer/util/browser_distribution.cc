@@ -134,6 +134,10 @@ std::wstring BrowserDistribution::GetVersionKey() {
   return L"Software\\Chromium";
 }
 
+bool BrowserDistribution::CanSetAsDefault() {
+  return true;
+}
+
 void BrowserDistribution::UpdateDiffInstallStatus(bool system_install,
     bool incremental_install, installer_util::InstallStatus install_status) {
 }

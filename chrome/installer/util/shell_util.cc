@@ -600,6 +600,9 @@ bool ShellUtil::GetUserSpecificDefaultBrowserSuffix(std::wstring* entry) {
 bool ShellUtil::MakeChromeDefault(int shell_change,
                                   const std::wstring& chrome_exe,
                                   bool elevate_if_not_admin) {
+  if (!BrowserDistribution::GetDistribution()->CanSetAsDefault())
+    return false;
+
   ShellUtil::RegisterChromeBrowser(chrome_exe, L"", elevate_if_not_admin);
 
   bool ret = true;
@@ -657,6 +660,9 @@ bool ShellUtil::MakeChromeDefault(int shell_change,
 bool ShellUtil::RegisterChromeBrowser(const std::wstring& chrome_exe,
                                       const std::wstring& unique_suffix,
                                       bool elevate_if_not_admin) {
+  if (!BrowserDistribution::GetDistribution()->CanSetAsDefault())
+    return false;
+
   // First figure out we need to append a suffix to the registry entries to
   // make them unique.
   std::wstring suffix;

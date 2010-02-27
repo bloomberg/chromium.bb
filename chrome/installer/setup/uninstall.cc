@@ -339,6 +339,11 @@ installer_util::InstallStatus IsChromeActiveOrUserCancelled(
 bool installer_setup::DeleteChromeRegistrationKeys(HKEY root,
     const std::wstring& browser_entry_suffix,
     installer_util::InstallStatus& exit_code) {
+  if (!BrowserDistribution::GetDistribution()->CanSetAsDefault()) {
+    // We should have never set those keys.
+    return true;
+  }
+
   RegKey key(root, L"", KEY_ALL_ACCESS);
 
   // Delete Software\Classes\ChromeHTML,
@@ -509,12 +514,15 @@ installer_util::InstallStatus installer_setup::UninstallChrome(
   // Delete shared registry keys as well (these require admin rights) if
   // remove_all option is specified.
   if (remove_all) {
-    // Delete media player registry key that exists only in HKLM.
-    RegKey hklm_key(HKEY_LOCAL_MACHINE, L"", KEY_ALL_ACCESS);
-    std::wstring reg_path(installer::kMediaPlayerRegPath);
-    file_util::AppendToPath(&reg_path, installer_util::kChromeExe);
-    DeleteRegistryKey(hklm_key, reg_path);
-    hklm_key.Close();
+    if (!InstallUtil::IsChromeSxSProcess()) {
+      // Delete media player registry key that exists only in HKLM.
+      // We don't delete this key in SxS uninstall.
+      RegKey hklm_key(HKEY_LOCAL_MACHINE, L"", KEY_ALL_ACCESS);
+      std::wstring reg_path(installer::kMediaPlayerRegPath);
+      file_util::AppendToPath(&reg_path, installer_util::kChromeExe);
+      DeleteRegistryKey(hklm_key, reg_path);
+      hklm_key.Close();
+    }
 
     if (installed_version.get()) {
       // Unregister any dll servers that we may have registered.

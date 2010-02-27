@@ -58,6 +58,8 @@ class BrowserDistribution {
 
   virtual std::wstring GetVersionKey();
 
+  virtual bool CanSetAsDefault();
+
   virtual void UpdateDiffInstallStatus(bool system_install,
       bool incremental_install, installer_util::InstallStatus install_status);
 
