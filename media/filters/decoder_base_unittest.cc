@@ -82,7 +82,7 @@ class MockReadCallback {
 //   \ ReadCallback() -> client
 // - DecodeCallback() -> DecoderBase
 //   \ ReadCallback() -> client
-TEST(DecoderBaseTest, FlowControl) {
+TEST(DecoderBaseTest, DISABLED_FlowControl) {
   MessageLoop message_loop;
   scoped_refptr<MockDecoderImpl> decoder = new MockDecoderImpl();
   scoped_refptr<MockDemuxerStream> demuxer_stream = new MockDemuxerStream();
