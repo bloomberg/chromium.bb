@@ -334,8 +334,6 @@
         'browser/chromeos/login/authenticator.h',
         'browser/chromeos/login/google_authenticator.cc',
         'browser/chromeos/login/google_authenticator.h',
-        'browser/chromeos/login/image_background.h',
-        'browser/chromeos/login/ipc_message.h',
         'browser/chromeos/login/pam_google_authenticator.cc',
         'browser/chromeos/login/pam_google_authenticator.h',
         'browser/chromeos/login/login_manager_view.cc',
