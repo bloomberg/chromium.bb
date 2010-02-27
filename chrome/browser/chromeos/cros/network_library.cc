@@ -205,7 +205,7 @@ void NetworkLibrary::ParseNetworks(
     bool connected = service.state == chromeos::STATE_READY;
     // if connected, get ip config
     std::string ip_address;
-    if (connected) {
+    if (connected && service.device_path) {
       chromeos::IPConfigStatus* ipconfig_status =
           chromeos::ListIPConfigs(service.device_path);
       if (ipconfig_status) {
@@ -230,10 +230,13 @@ void NetworkLibrary::ParseNetworks(
     if (service.type == chromeos::TYPE_ETHERNET) {
       ethernet->connecting = connecting;
       ethernet->connected = connected;
-      ethernet->device_path = service.device_path;
+      ethernet->device_path = service.device_path ? service.device_path :
+                                                    std::string();
       ethernet->ip_address = ip_address;
     } else if (service.type == chromeos::TYPE_WIFI) {
-      wifi_networks->push_back(WifiNetwork(service.device_path,
+      wifi_networks->push_back(WifiNetwork(service.device_path ?
+                                               service.device_path :
+                                               std::string(),
                                            service.ssid,
                                            service.needs_passphrase,
                                            service.encryption,
@@ -242,7 +245,9 @@ void NetworkLibrary::ParseNetworks(
                                            connected,
                                            ip_address));
     } else if (service.type == chromeos::TYPE_CELLULAR) {
-      cellular_networks->push_back(CellularNetwork(service.device_path,
+      cellular_networks->push_back(CellularNetwork(service.device_path ?
+                                                       service.device_path :
+                                                       std::string(),
                                                    service.ssid,
                                                    service.signal_strength,
                                                    connecting,
