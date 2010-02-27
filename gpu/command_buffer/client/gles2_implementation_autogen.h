@@ -103,14 +103,6 @@ void CompressedTexSubImage2D(
 void CopyTexImage2D(
     GLenum target, GLint level, GLenum internalformat, GLint x, GLint y,
     GLsizei width, GLsizei height, GLint border) {
-  if (width < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return;
-  }
-  if (height < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return;
-  }
   helper_->CopyTexImage2D(
       target, level, internalformat, x, y, width, height, border);
 }
@@ -118,14 +110,6 @@ void CopyTexImage2D(
 void CopyTexSubImage2D(
     GLenum target, GLint level, GLint xoffset, GLint yoffset, GLint x, GLint y,
     GLsizei width, GLsizei height) {
-  if (width < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return;
-  }
-  if (height < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return;
-  }
   helper_->CopyTexSubImage2D(
       target, level, xoffset, yoffset, x, y, width, height);
 }
@@ -201,10 +185,6 @@ void DisableVertexAttribArray(GLuint index) {
 }
 
 void DrawArrays(GLenum mode, GLint first, GLsizei count) {
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return;
-  }
   helper_->DrawArrays(mode, first, count);
 }
 
@@ -294,7 +274,11 @@ void GetBufferParameteriv(GLenum target, GLenum pname, GLint* params) {
   memcpy(params, result_buffer_, num_values * sizeof(*params));
 }
 
-GLenum GetError();
+GLenum GetError() {
+  helper_->GetError(result_shm_id(), result_shm_offset());
+  WaitForCmd();
+  return GetResultAs<GLenum>();
+}
 
 void GetFloatv(GLenum pname, GLfloat* params) {
   helper_->GetFloatv(pname, result_shm_id(), result_shm_offset());
@@ -330,21 +314,10 @@ void GetProgramiv(GLuint program, GLenum pname, GLint* params) {
   memcpy(params, result_buffer_, num_values * sizeof(*params));
 }
 
+// TODO(gman): Implement this
 void GetProgramInfoLog(
-    GLuint program, GLsizei bufsize, GLsizei* length, char* infolog) {
-  helper_->SetBucketSize(kResultBucketId, 0);
-  helper_->GetProgramInfoLog(program, kResultBucketId);
-  std::string str;
-  if (GetBucketAsString(kResultBucketId, &str)) {
-    GLsizei max_size =
-        std::min(static_cast<size_t>(bufsize) - 1, str.size());
-    if (length != NULL) {
-      *length = max_size;
-    }
-    memcpy(infolog, str.c_str(), max_size);
-    infolog[max_size] = '\0';
-  }
-}
+    GLuint program, GLsizei bufsize, GLsizei* length, char* infolog);
+
 void GetRenderbufferParameteriv(GLenum target, GLenum pname, GLint* params) {
   helper_->GetRenderbufferParameteriv(
       target, pname, result_shm_id(), result_shm_offset());
@@ -362,39 +335,17 @@ void GetShaderiv(GLuint shader, GLenum pname, GLint* params) {
   memcpy(params, result_buffer_, num_values * sizeof(*params));
 }
 
+// TODO(gman): Implement this
 void GetShaderInfoLog(
-    GLuint shader, GLsizei bufsize, GLsizei* length, char* infolog) {
-  helper_->SetBucketSize(kResultBucketId, 0);
-  helper_->GetShaderInfoLog(shader, kResultBucketId);
-  std::string str;
-  if (GetBucketAsString(kResultBucketId, &str)) {
-    GLsizei max_size =
-        std::min(static_cast<size_t>(bufsize) - 1, str.size());
-    if (length != NULL) {
-      *length = max_size;
-    }
-    memcpy(infolog, str.c_str(), max_size);
-    infolog[max_size] = '\0';
-  }
-}
+    GLuint shader, GLsizei bufsize, GLsizei* length, char* infolog);
+
 void GetShaderPrecisionFormat(
     GLenum shadertype, GLenum precisiontype, GLint* range, GLint* precision);
 
+// TODO(gman): Implement this
 void GetShaderSource(
-    GLuint shader, GLsizei bufsize, GLsizei* length, char* source) {
-  helper_->SetBucketSize(kResultBucketId, 0);
-  helper_->GetShaderSource(shader, kResultBucketId);
-  std::string str;
-  if (GetBucketAsString(kResultBucketId, &str)) {
-    GLsizei max_size =
-        std::min(static_cast<size_t>(bufsize) - 1, str.size());
-    if (length != NULL) {
-      *length = max_size;
-    }
-    memcpy(source, str.c_str(), max_size);
-    source[max_size] = '\0';
-  }
-}
+    GLuint shader, GLsizei bufsize, GLsizei* length, char* source);
+
 const GLubyte* GetString(GLenum name);
 
 void GetTexParameterfv(GLenum target, GLenum pname, GLfloat* params) {
@@ -446,66 +397,45 @@ void Hint(GLenum target, GLenum mode) {
 }
 
 GLboolean IsBuffer(GLuint buffer) {
-  typedef IsBuffer::Result Result;
-  Result* result = GetResultAs<Result*>();
-  *result = 0;
   helper_->IsBuffer(buffer, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  return *result;
+  return GetResultAs<GLboolean>();
 }
 
 GLboolean IsEnabled(GLenum cap) {
-  typedef IsEnabled::Result Result;
-  Result* result = GetResultAs<Result*>();
-  *result = 0;
   helper_->IsEnabled(cap, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  return *result;
+  return GetResultAs<GLboolean>();
 }
 
 GLboolean IsFramebuffer(GLuint framebuffer) {
-  typedef IsFramebuffer::Result Result;
-  Result* result = GetResultAs<Result*>();
-  *result = 0;
   helper_->IsFramebuffer(framebuffer, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  return *result;
+  return GetResultAs<GLboolean>();
 }
 
 GLboolean IsProgram(GLuint program) {
-  typedef IsProgram::Result Result;
-  Result* result = GetResultAs<Result*>();
-  *result = 0;
   helper_->IsProgram(program, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  return *result;
+  return GetResultAs<GLboolean>();
 }
 
 GLboolean IsRenderbuffer(GLuint renderbuffer) {
-  typedef IsRenderbuffer::Result Result;
-  Result* result = GetResultAs<Result*>();
-  *result = 0;
   helper_->IsRenderbuffer(renderbuffer, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  return *result;
+  return GetResultAs<GLboolean>();
 }
 
 GLboolean IsShader(GLuint shader) {
-  typedef IsShader::Result Result;
-  Result* result = GetResultAs<Result*>();
-  *result = 0;
   helper_->IsShader(shader, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  return *result;
+  return GetResultAs<GLboolean>();
 }
 
 GLboolean IsTexture(GLuint texture) {
-  typedef IsTexture::Result Result;
-  Result* result = GetResultAs<Result*>();
-  *result = 0;
   helper_->IsTexture(texture, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  return *result;
+  return GetResultAs<GLboolean>();
 }
 
 void LineWidth(GLfloat width) {
@@ -528,14 +458,6 @@ void ReadPixels(
 
 void RenderbufferStorage(
     GLenum target, GLenum internalformat, GLsizei width, GLsizei height) {
-  if (width < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return;
-  }
-  if (height < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return;
-  }
   helper_->RenderbufferStorage(target, internalformat, width, height);
 }
 
@@ -544,14 +466,6 @@ void SampleCoverage(GLclampf value, GLboolean invert) {
 }
 
 void Scissor(GLint x, GLint y, GLsizei width, GLsizei height) {
-  if (width < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return;
-  }
-  if (height < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return;
-  }
   helper_->Scissor(x, y, width, height);
 }
 
@@ -731,14 +645,6 @@ void VertexAttribPointer(
     const void* ptr);
 
 void Viewport(GLint x, GLint y, GLsizei width, GLsizei height) {
-  if (width < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return;
-  }
-  if (height < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return;
-  }
   helper_->Viewport(x, y, width, height);
 }
 

@@ -491,9 +491,14 @@
     c.Init(program, pname, params_shm_id, params_shm_offset);
   }
 
-  void GetProgramInfoLog(GLuint program, uint32 bucket_id) {
+  void GetProgramInfoLog(
+      GLuint program, GLsizei bufsize, uint32 length_shm_id,
+      uint32 length_shm_offset, uint32 infolog_shm_id,
+      uint32 infolog_shm_offset) {
     gles2::GetProgramInfoLog& c = GetCmdSpace<gles2::GetProgramInfoLog>();
-    c.Init(program, bucket_id);
+    c.Init(
+        program, bufsize, length_shm_id, length_shm_offset, infolog_shm_id,
+        infolog_shm_offset);
   }
 
   void GetRenderbufferParameteriv(
@@ -511,9 +516,14 @@
     c.Init(shader, pname, params_shm_id, params_shm_offset);
   }
 
-  void GetShaderInfoLog(GLuint shader, uint32 bucket_id) {
+  void GetShaderInfoLog(
+      GLuint shader, GLsizei bufsize, uint32 length_shm_id,
+      uint32 length_shm_offset, uint32 infolog_shm_id,
+      uint32 infolog_shm_offset) {
     gles2::GetShaderInfoLog& c = GetCmdSpace<gles2::GetShaderInfoLog>();
-    c.Init(shader, bucket_id);
+    c.Init(
+        shader, bufsize, length_shm_id, length_shm_offset, infolog_shm_id,
+        infolog_shm_offset);
   }
 
   void GetShaderPrecisionFormat(
@@ -524,14 +534,19 @@
     c.Init(shadertype, precisiontype, result_shm_id, result_shm_offset);
   }
 
-  void GetShaderSource(GLuint shader, uint32 bucket_id) {
+  void GetShaderSource(
+      GLuint shader, GLsizei bufsize, uint32 length_shm_id,
+      uint32 length_shm_offset, uint32 source_shm_id,
+      uint32 source_shm_offset) {
     gles2::GetShaderSource& c = GetCmdSpace<gles2::GetShaderSource>();
-    c.Init(shader, bucket_id);
+    c.Init(
+        shader, bufsize, length_shm_id, length_shm_offset, source_shm_id,
+        source_shm_offset);
   }
 
-  void GetString(GLenum name, uint32 bucket_id) {
+  void GetString(GLenum name) {
     gles2::GetString& c = GetCmdSpace<gles2::GetString>();
-    c.Init(name, bucket_id);
+    c.Init(name);
   }
 
   void GetTexParameterfv(

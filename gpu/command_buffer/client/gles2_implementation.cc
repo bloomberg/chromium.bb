@@ -29,8 +29,7 @@ GLES2Implementation::GLES2Implementation(
       transfer_buffer_(transfer_buffer_size, helper, transfer_buffer),
       transfer_buffer_id_(transfer_buffer_id),
       pack_alignment_(4),
-      unpack_alignment_(4),
-      error_bits_(0) {
+      unpack_alignment_(4) {
   // Eat 1 id so we start at 1 instead of 0.
   GLuint eat;
   MakeIds(1, &eat);
@@ -59,47 +58,12 @@ void GLES2Implementation::WaitForCmd() {
   helper_->CommandBufferHelper::Finish();
 }
 
-GLenum GLES2Implementation::GetError() {
-  return GetGLError();
-}
-
-GLenum GLES2Implementation::GetGLError() {
-  // Check the GL error first, then our wrapped error.
-  typedef gles2::GetError::Result Result;
-  Result* result = GetResultAs<Result*>();
-  *result = GL_NO_ERROR;
-  helper_->GetError(result_shm_id(), result_shm_offset());
-  WaitForCmd();
-  GLenum error = *result;
-  if (error == GL_NO_ERROR && error_bits_ != 0) {
-    for (uint32 mask = 1; mask != 0; mask = mask << 1) {
-      if ((error_bits_ & mask) != 0) {
-        error = GLES2Util::GLErrorBitToGLError(mask);
-        break;
-      }
-    }
-  }
-
-  if (error != GL_NO_ERROR) {
-    // There was an error, clear the corresponding wrapped error.
-    error_bits_ &= ~GLES2Util::GLErrorToErrorBit(error);
-  }
-  return error;
-}
-
-void GLES2Implementation::SetGLError(GLenum error) {
-  error_bits_ |= GLES2Util::GLErrorToErrorBit(error);
-}
-
 void GLES2Implementation::GetBucketContents(uint32 bucket_id,
                                             std::vector<int8>* data) {
   DCHECK(data);
-  typedef cmd::GetBucketSize::Result Result;
-  Result* result = GetResultAs<Result*>();
-  *result = 0;
   helper_->GetBucketSize(bucket_id, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  uint32 size = *result;
+  uint32 size = GetResultAs<cmd::GetBucketSize::Result>();
   data->resize(size);
   if (size > 0u) {
     uint32 max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
@@ -144,25 +108,15 @@ void GLES2Implementation::SetBucketContents(
   }
 }
 
-bool GLES2Implementation::GetBucketAsString(
-    uint32 bucket_id, std::string* str) {
-  DCHECK(str);
+std::string GLES2Implementation::GetBucketAsString(uint32 bucket_id) {
   std::vector<int8> data;
-  // NOTE: strings are passed NULL terminated. That means the empty
-  // string will have a size of 1 and no-string will have a size of 0
   GetBucketContents(bucket_id, &data);
-  if (data.empty()) {
-    return false;
-  }
-  str->assign(&data[0], &data[0] + data.size() - 1);
-  return true;
+  return std::string(reinterpret_cast<char*>(&data[0]), data.size());
 }
 
 void GLES2Implementation::SetBucketAsString(
     uint32 bucket_id, const std::string& str) {
-  // NOTE: strings are passed NULL terminated. That means the empty
-  // string will have a size of 1 and no-string will have a size of 0
-  SetBucketContents(bucket_id, str.c_str(), str.size() + 1);
+  SetBucketContents(bucket_id, str.c_str(), str.size());
 }
 
 void GLES2Implementation::DrawElements(
@@ -203,24 +157,18 @@ void GLES2Implementation::GetVertexAttribPointerv(
 
 GLint GLES2Implementation::GetAttribLocation(
     GLuint program, const char* name) {
-  typedef cmd::GetBucketSize::Result Result;
-  Result* result = GetResultAs<Result*>();
-  *result = -1;
   helper_->GetAttribLocationImmediate(
       program, name, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  return *result;
+  return GetResultAs<GLint>();
 }
 
 GLint GLES2Implementation::GetUniformLocation(
     GLuint program, const char* name) {
-  typedef cmd::GetBucketSize::Result Result;
-  Result* result = GetResultAs<Result*>();
-  *result = -1;
   helper_->GetUniformLocationImmediate(
       program, name, result_shm_id(), result_shm_offset());
   WaitForCmd();
-  return *result;
+  return GetResultAs<GLint>();
 }
 
 void GLES2Implementation::PixelStorei(GLenum pname, GLint param) {
@@ -247,10 +195,6 @@ void GLES2Implementation::VertexAttribPointer(
 
 void GLES2Implementation::ShaderSource(
     GLuint shader, GLsizei count, const char** source, const GLint* length) {
-  if (count < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return;
-  }
   // TODO(gman): change to use buckets and check that there is enough room.
 
   // Compute the total size.
@@ -289,15 +233,6 @@ void GLES2Implementation::BufferData(
 
 void GLES2Implementation::BufferSubData(
     GLenum target, GLintptr offset, GLsizeiptr size, const void* data) {
-  if (size == 0) {
-    return;
-  }
-
-  if (size < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return;
-  }
-
   const int8* source = static_cast<const int8*>(data);
   GLsizeiptr max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
   while (size) {
@@ -317,11 +252,7 @@ void GLES2Implementation::BufferSubData(
 void GLES2Implementation::CompressedTexImage2D(
     GLenum target, GLint level, GLenum internalformat, GLsizei width,
     GLsizei height, GLint border, GLsizei image_size, const void* data) {
-  if (width < 0 || height < 0 || level < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return;
-  }
-  // TODO(gman): Switch to use buckets always or at least if no room in shared
+  // TODO(gman): Switch to use buckets alwayst or at least if no room in shared
   //    memory.
   DCHECK_LE(image_size,
             static_cast<GLsizei>(
@@ -337,11 +268,7 @@ void GLES2Implementation::CompressedTexImage2D(
 void GLES2Implementation::CompressedTexSubImage2D(
     GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
     GLsizei height, GLenum format, GLsizei image_size, const void* data) {
-  if (width < 0 || height < 0 || level < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return;
-  }
-  // TODO(gman): Switch to use buckets always or at least if no room in shared
+  // TODO(gman): Switch to use buckets alwayst or at least if no room in shared
   //    memory.
   DCHECK_LE(image_size,
             static_cast<GLsizei>(
@@ -358,10 +285,6 @@ void GLES2Implementation::TexImage2D(
     GLenum target, GLint level, GLint internalformat, GLsizei width,
     GLsizei height, GLint border, GLenum format, GLenum type,
     const void* pixels) {
-  if (level < 0 || height < 0 || width < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return;
-  }
   helper_->TexImage2D(
       target, level, internalformat, width, height, border, format, type, 0, 0);
   if (pixels) {
@@ -372,10 +295,6 @@ void GLES2Implementation::TexImage2D(
 void GLES2Implementation::TexSubImage2D(
     GLenum target, GLint level, GLint xoffset, GLint yoffset, GLsizei width,
     GLsizei height, GLenum format, GLenum type, const void* pixels) {
-  if (level < 0 || height < 0 || width < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return;
-  }
   const int8* source = static_cast<const int8*>(pixels);
   GLsizeiptr max_size = transfer_buffer_.GetLargestFreeOrPendingSize();
   GLsizeiptr unpadded_row_size = GLES2Util::ComputeImageDataSize(
@@ -436,16 +355,8 @@ GLenum GLES2Implementation::CheckFramebufferStatus(GLenum target) {
 void GLES2Implementation::GetActiveAttrib(
     GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size,
     GLenum* type, char* name) {
-  if (bufsize < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return;
-  }
-  // Clear the bucket so if we the command fails nothing will be in it.
-  helper_->SetBucketSize(kResultBucketId, 0);
   typedef gles2::GetActiveAttrib::Result Result;
   Result* result = static_cast<Result*>(result_buffer_);
-  // Set as failed so if the command fails we'll recover.
-  result->success = false;
   helper_->GetActiveAttrib(program, index, kResultBucketId,
                            result_shm_id(), result_shm_offset());
   WaitForCmd();
@@ -475,16 +386,8 @@ void GLES2Implementation::GetActiveAttrib(
 void GLES2Implementation::GetActiveUniform(
     GLuint program, GLuint index, GLsizei bufsize, GLsizei* length, GLint* size,
     GLenum* type, char* name) {
-  if (bufsize < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return;
-  }
-  // Clear the bucket so if we the command fails nothing will be in it.
-  helper_->SetBucketSize(kResultBucketId, 0);
   typedef gles2::GetActiveUniform::Result Result;
   Result* result = static_cast<Result*>(result_buffer_);
-  // Set as failed so if the command fails we'll recover.
-  result->success = false;
   helper_->GetActiveUniform(program, index, kResultBucketId,
                             result_shm_id(), result_shm_offset());
   WaitForCmd();
@@ -513,10 +416,6 @@ void GLES2Implementation::GetActiveUniform(
 
 void GLES2Implementation::GetAttachedShaders(
     GLuint program, GLsizei maxcount, GLsizei* count, GLuint* shaders) {
-  if (maxcount < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return;
-  }
   typedef gles2::GetAttachedShaders::Result Result;
   uint32 size = Result::ComputeSize(maxcount);
   Result* result = transfer_buffer_.AllocTyped<Result>(size);
@@ -532,6 +431,16 @@ void GLES2Implementation::GetAttachedShaders(
   }
   result->CopyResult(shaders);
   transfer_buffer_.FreePendingToken(result, token);
+}
+
+void GLES2Implementation::GetProgramInfoLog(
+    GLuint program, GLsizei bufsize, GLsizei* length, char* infolog) {
+  // TODO(gman): implement.
+}
+
+void GLES2Implementation::GetShaderInfoLog(
+    GLuint shader, GLsizei bufsize, GLsizei* length, char* infolog) {
+  // TODO(gman): implement.
 }
 
 void GLES2Implementation::GetShaderPrecisionFormat(
@@ -552,26 +461,14 @@ void GLES2Implementation::GetShaderPrecisionFormat(
   }
 }
 
+void GLES2Implementation::GetShaderSource(
+    GLuint shader, GLsizei bufsize, GLsizei* length, char* source) {
+  // TODO(gman): implement.
+}
+
 const GLubyte* GLES2Implementation::GetString(GLenum name) {
-  const char* result;
-  GLStringMap::const_iterator it = gl_strings_.find(name);
-  if (it != gl_strings_.end()) {
-    result = it->second.c_str();
-  } else {
-    // Clear the bucket so if we the command fails nothing will be in it.
-    helper_->SetBucketSize(kResultBucketId, 0);
-    helper_->GetString(name, kResultBucketId);
-    std::string str;
-    if (GetBucketAsString(kResultBucketId, &str)) {
-      std::pair<GLStringMap::const_iterator, bool> insert_result =
-          gl_strings_.insert(std::make_pair(name, str));
-      DCHECK(insert_result.second);
-      result = insert_result.first->second.c_str();
-    } else {
-      result = NULL;
-    }
-  }
-  return reinterpret_cast<const GLubyte*>(result);
+  // TODO(gman): implement.
+  return 0;
 }
 
 void GLES2Implementation::GetUniformfv(
@@ -595,10 +492,6 @@ void GLES2Implementation::ReadPixels(
     GLenum type, void* pixels) {
   // Note: Negative widths and heights are not handled here but are handled
   // by the service side so the glGetError wrapping works.
-  if (width < 0 || height < 0) {
-    SetGLError(GL_INVALID_VALUE);
-    return;
-  }
   if (width == 0 || height == 0) {
     return;
   }
