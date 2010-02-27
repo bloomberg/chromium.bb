@@ -93,8 +93,6 @@ struct GetAttribLocation {
   static const CommandId kCmdId = kGetAttribLocation;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
-  typedef GLint Result;
-
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
@@ -158,8 +156,6 @@ struct GetAttribLocationImmediate {
   static const CommandId kCmdId = kGetAttribLocationImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
 
-  typedef GLint Result;
-
   static uint32 ComputeDataSize(const char* s) {
     return strlen(s);
   }
@@ -216,8 +212,6 @@ struct GetUniformLocation {
   typedef GetUniformLocation ValueType;
   static const CommandId kCmdId = kGetUniformLocation;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
-
-  typedef GLint Result;
 
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
@@ -281,8 +275,6 @@ struct GetUniformLocationImmediate {
   typedef GetUniformLocationImmediate ValueType;
   static const CommandId kCmdId = kGetUniformLocationImmediate;
   static const cmd::ArgFlags kArgFlags = cmd::kAtLeastN;
-
-  typedef GLint Result;
 
   static uint32 ComputeDataSize(const char* s) {
     return strlen(s);

@@ -26,7 +26,6 @@ typedef unsigned int     GLuint;
 typedef khronos_float_t  GLfloat;
 typedef khronos_float_t  GLclampf;
 typedef khronos_int32_t  GLfixed;
-typedef char             GLchar;
 
 /* GL types for handling large vertex buffer objects */
 typedef khronos_intptr_t GLintptr;

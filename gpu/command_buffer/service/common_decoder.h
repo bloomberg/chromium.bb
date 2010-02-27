@@ -57,7 +57,7 @@ class CommonDecoder : public AsyncAPIInterface {
 
     // Gets a pointer to a section the bucket. Returns NULL if offset or size is
     // out of range.
-    void* GetData(size_t offset, size_t size) const;
+    const void* GetData(size_t offset, size_t size) const;
 
     template <typename T>
     T GetDataAs(size_t offset, size_t size) const {
@@ -71,8 +71,7 @@ class CommonDecoder : public AsyncAPIInterface {
     // Returns false if offset or size is out of range.
     bool SetData(const void* src, size_t offset, size_t size);
 
-    // Sets the bucket data from a string. Strings are passed NULL terminated to
-    // distinguish between empty string and no string.
+    // Sets the bucket data from a string.
     void SetFromString(const std::string& str);
 
    private:

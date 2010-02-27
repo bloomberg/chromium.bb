@@ -103,6 +103,53 @@ const CommandInfo g_command_info[] = {
   #undef GLES2_CMD_OP
 };
 
+namespace GLErrorBit {
+enum GLErrorBit {
+  kNoError = 0,
+  kInvalidEnum = (1 << 0),
+  kInvalidValue = (1 << 1),
+  kInvalidOperation = (1 << 2),
+  kOutOfMemory = (1 << 3),
+  kInvalidFrameBufferOperation = (1 << 4),
+};
+}
+
+uint32 GLErrorToErrorBit(GLenum error) {
+  switch (error) {
+    case GL_INVALID_ENUM:
+      return GLErrorBit::kInvalidEnum;
+    case GL_INVALID_VALUE:
+      return GLErrorBit::kInvalidValue;
+    case GL_INVALID_OPERATION:
+      return GLErrorBit::kInvalidOperation;
+    case GL_OUT_OF_MEMORY:
+      return GLErrorBit::kOutOfMemory;
+    case GL_INVALID_FRAMEBUFFER_OPERATION:
+      return GLErrorBit::kInvalidFrameBufferOperation;
+    default:
+      DCHECK(false);
+      return GLErrorBit::kNoError;
+  }
+}
+
+GLenum GLErrorBitToGLError(uint32 error_bit) {
+  switch (error_bit) {
+    case GLErrorBit::kInvalidEnum:
+      return GL_INVALID_ENUM;
+    case GLErrorBit::kInvalidValue:
+      return GL_INVALID_VALUE;
+    case GLErrorBit::kInvalidOperation:
+      return GL_INVALID_OPERATION;
+    case GLErrorBit::kOutOfMemory:
+      return GL_OUT_OF_MEMORY;
+    case GLErrorBit::kInvalidFrameBufferOperation:
+      return GL_INVALID_FRAMEBUFFER_OPERATION;
+    default:
+      DCHECK(false);
+      return GL_NO_ERROR;
+  }
+}
+
 // }  // anonymous namespace.
 
 GLES2Decoder::GLES2Decoder(ContextGroup* group)
@@ -440,9 +487,6 @@ class GLES2DecoderImpl : public GLES2Decoder {
 
   // Wrapper for glGenerateMipmap
   void DoGenerateMipmap(GLenum target);
-
-  // Wrapper for glGetShaderiv
-  void DoGetShaderiv(GLuint shader, GLenum pname, GLint* params);
 
   // Wrapper for glGetShaderSource.
   void DoGetShaderSource(
@@ -1758,7 +1802,7 @@ GLenum GLES2DecoderImpl::GetGLError() {
   if (error == GL_NO_ERROR && error_bits_ != 0) {
     for (uint32 mask = 1; mask != 0; mask = mask << 1) {
       if ((error_bits_ & mask) != 0) {
-        error = GLES2Util::GLErrorBitToGLError(mask);
+        error = GLErrorBitToGLError(mask);
         break;
       }
     }
@@ -1766,13 +1810,13 @@ GLenum GLES2DecoderImpl::GetGLError() {
 
   if (error != GL_NO_ERROR) {
     // There was an error, clear the corresponding wrapped error.
-    error_bits_ &= ~GLES2Util::GLErrorToErrorBit(error);
+    error_bits_ &= ~GLErrorToErrorBit(error);
   }
   return error;
 }
 
 void GLES2DecoderImpl::SetGLError(GLenum error) {
-  error_bits_ |= GLES2Util::GLErrorToErrorBit(error);
+  error_bits_ |= GLErrorToErrorBit(error);
 }
 
 void GLES2DecoderImpl::CopyRealGLErrorsToWrapper() {
@@ -2004,20 +2048,6 @@ void GLES2DecoderImpl::DoCompileShader(GLuint shader) {
   glCompileShader(shader);
 };
 
-void GLES2DecoderImpl::DoGetShaderiv(
-    GLuint shader, GLenum pname, GLint* params) {
-  ShaderManager::ShaderInfo* info = GetShaderInfo(shader);
-  if (!info) {
-    SetGLError(GL_INVALID_OPERATION);
-    return;
-  }
-  if (pname == GL_SHADER_SOURCE_LENGTH) {
-    *params = info->source().size();
-  } else {
-    glGetShaderiv(shader, pname, params);
-  }
-}
-
 void GLES2DecoderImpl::DoGetShaderSource(
       GLuint shader, GLsizei bufsize, GLsizei* length, char* dst) {
   ShaderManager::ShaderInfo* info = GetShaderInfo(shader);
@@ -2247,18 +2277,6 @@ error::Error GLES2DecoderImpl::HandleGetUniformLocationImmediate(
   return error::kNoError;
 }
 
-error::Error GLES2DecoderImpl::HandleGetString(
-    uint32 immediate_data_size, const gles2::GetString& c) {
-  GLenum name = static_cast<GLenum>(c.name);
-  if (!ValidateGLenumStringType(name)) {
-    SetGLError(GL_INVALID_ENUM);
-    return error::kNoError;
-  }
-  Bucket* bucket = CreateBucket(c.bucket_id);
-  bucket->SetFromString(reinterpret_cast<const char*>(glGetString(name)));
-  return error::kNoError;
-}
-
 error::Error GLES2DecoderImpl::HandleBufferData(
     uint32 immediate_data_size, const gles2::BufferData& c) {
   GLenum target = static_cast<GLenum>(c.target);
@@ -2418,6 +2436,8 @@ error::Error GLES2DecoderImpl::HandleCompressedTexImage2DImmediate(
   return DoCompressedTexImage2D(
       target, level, internal_format, width, height, border, image_size, data);
 }
+
+// TODO(gman): handle CopyTexImage2D because we need to track what was created.
 
 error::Error GLES2DecoderImpl::DoTexImage2D(
   GLenum target,

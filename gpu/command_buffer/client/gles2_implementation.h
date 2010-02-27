@@ -5,7 +5,6 @@
 #ifndef GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_H_
 #define GPU_COMMAND_BUFFER_CLIENT_GLES2_IMPLEMENTATION_H_
 
-#include <map>
 #include <string>
 #include <vector>
 #include "gpu/command_buffer/common/gles2_cmd_utils.h"
@@ -63,14 +62,8 @@ class GLES2Implementation {
   // Gets the value of the result.
   template <typename T>
   T GetResultAs() const {
-    return static_cast<T>(result_buffer_);
+    return *static_cast<T*>(result_buffer_);
   }
-
-  // Gets the GLError through our wrapper.
-  GLenum GetGLError();
-
-  // Sets our wrapper for the GLError.
-  void SetGLError(GLenum error);
 
   // Waits for all commands to execute.
   void WaitForCmd();
@@ -85,9 +78,8 @@ class GLES2Implementation {
   // Sets the contents of a bucket.
   void SetBucketContents(uint32 bucket_id, const void* data, size_t size);
 
-  // Gets the contents of a bucket as a string. Returns false if there is no
-  // string available which is a separate case from the empty string.
-  bool GetBucketAsString(uint32 bucket_id, std::string* str);
+  // Gets the contents of a bucket as a string.
+  std::string GetBucketAsString(uint32 bucket_id);
 
   // Sets the contents of a bucket as a string.
   void SetBucketAsString(uint32 bucket_id, const std::string& str);
@@ -110,16 +102,9 @@ class GLES2Implementation {
   // unpack alignment as last set by glPixelStorei
   GLint unpack_alignment_;
 
-  // Current GL error bits.
-  uint32 error_bits_;
-
-  // Map of GLenum to Strings for glGetString.  We need to cache these because
-  // the pointer passed back to the client has to remain valid for eternity.
-  typedef std::map<uint32, std::string> GLStringMap;
-  GLStringMap gl_strings_;
-
   DISALLOW_COPY_AND_ASSIGN(GLES2Implementation);
 };
+
 
 }  // namespace gles2
 }  // namespace gpu
