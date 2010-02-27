@@ -207,7 +207,7 @@ void ContentBlockedBubbleGtk::BuildBubble() {
   gtk_box_pack_start(GTK_BOX(bottom_box), manage_link, FALSE, FALSE, 0);
 
   GtkWidget* button = gtk_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_CLOSE).c_str());
+      l10n_util::GetStringUTF8(IDS_DONE).c_str());
   g_signal_connect(button, "clicked", G_CALLBACK(OnCloseButtonClicked), this);
   gtk_box_pack_end(GTK_BOX(bottom_box), button, FALSE, FALSE, 0);
 

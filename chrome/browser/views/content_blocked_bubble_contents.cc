@@ -303,6 +303,6 @@ void ContentBlockedBubbleContents::InitControlLayout() {
   layout->AddView(manage_link_);
 
   close_button_ =
-      new views::NativeButton(this, l10n_util::GetString(IDS_CLOSE));
+      new views::NativeButton(this, l10n_util::GetString(IDS_DONE));
   layout->AddView(close_button_);
 }

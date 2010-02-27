@@ -8,7 +8,7 @@
 		<string key="IBDocument.HIToolboxVersion">353.00</string>
 		<object class="NSMutableArray" key="IBDocument.EditedObjectIDs">
 			<bool key="EncodedWithXMLCoder">YES</bool>
-			<integer value="4"/>
+			<integer value="29"/>
 		</object>
 		<object class="NSArray" key="IBDocument.PluginDependencies">
 			<bool key="EncodedWithXMLCoder">YES</bool>
@@ -282,7 +282,8 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 										<int key="NSPeriodicDelay">400</int>
 										<int key="NSPeriodicInterval">75</int>
 									</object>
-									<reference key="NSSelectedCell" ref="193088222"/>
+									<int key="NSSelectedRow">1</int>
+									<reference key="NSSelectedCell" ref="619648789"/>
 									<reference key="NSBackgroundColor" ref="657398381"/>
 									<object class="NSColor" key="NSCellBackgroundColor" id="968406066">
 										<int key="NSColorSpace">3</int>
@@ -365,7 +366,7 @@ AAMAAAABAAEAAAFTAAMAAAAEAAAFwgAAAAAACAAIAAgACAABAAEAAQABA</bytes>
 											<object class="NSButtonCell" key="NSCell" id="255173005">
 												<int key="NSCellFlags">67239424</int>
 												<int key="NSCellFlags2">134348800</int>
-												<string key="NSContents">^IDS_CLOSE</string>
+												<string key="NSContents">^IDS_DONE</string>
 												<reference key="NSSupport" ref="26"/>
 												<reference key="NSControlView" ref="433059244"/>
 												<int key="NSButtonFlags">-2038284033</int>

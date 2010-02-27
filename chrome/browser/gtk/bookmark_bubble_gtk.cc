@@ -167,7 +167,7 @@ BookmarkBubbleGtk::BookmarkBubbleGtk(GtkWindow* toplevel_window,
   GtkWidget* edit_button = gtk_button_new_with_label(
       l10n_util::GetStringUTF8(IDS_BOOMARK_BUBBLE_OPTIONS).c_str());
   GtkWidget* close_button = gtk_button_new_with_label(
-      l10n_util::GetStringUTF8(IDS_CLOSE).c_str());
+      l10n_util::GetStringUTF8(IDS_DONE).c_str());
 
   // Our content is arranged in 3 rows.  |top| contains a left justified
   // message, and a right justified remove link button.  |table| is the middle

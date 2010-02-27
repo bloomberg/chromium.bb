@@ -242,7 +242,7 @@ void BookmarkBubbleView::Init() {
   edit_button_ = new NativeButton(
       this, l10n_util::GetString(IDS_BOOMARK_BUBBLE_OPTIONS));
 
-  close_button_ = new NativeButton(this, l10n_util::GetString(IDS_CLOSE));
+  close_button_ = new NativeButton(this, l10n_util::GetString(IDS_DONE));
   close_button_->SetIsDefault(true);
 
   parent_combobox_ = new Combobox(&parent_model_);
