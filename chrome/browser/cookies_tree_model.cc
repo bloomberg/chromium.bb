@@ -15,6 +15,7 @@
 #include "base/callback.h"
 #include "base/linked_ptr.h"
 #include "base/string_util.h"
+#include "chrome/browser/extensions/extensions_service.h"
 #include "chrome/browser/in_process_webkit/webkit_context.h"
 #include "chrome/browser/net/chrome_url_request_context.h"
 #include "chrome/browser/profile.h"
@@ -26,6 +27,7 @@
 #include "net/url_request/url_request_context.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 
+static const char kFileOriginNodeName[] = "file://";
 
 ///////////////////////////////////////////////////////////////////////////////
 // CookieTreeNode, public:
@@ -378,14 +380,14 @@ void CookiesTreeModel::LoadCookiesWithFilter(const std::wstring& filter) {
   all_cookies_ = cookie_monster->GetAllCookies();
   CookieTreeRootNode* root = static_cast<CookieTreeRootNode*>(GetRoot());
   for (CookieList::iterator it = all_cookies_.begin();
-       it != all_cookies_.end();
-       ++it) {
-    // Get the origin cookie
+       it != all_cookies_.end(); ++it) {
+    std::wstring origin_node_name = UTF8ToWide(it->first);
     if (!filter.size() ||
-        (UTF8ToWide(it->first).find(filter) != std::wstring::npos)) {
-      CookieTreeOriginNode* origin =
-          root->GetOrCreateOriginNode(UTF8ToWide(it->first));
-      CookieTreeCookiesNode* cookies_node = origin->GetOrCreateCookiesNode();
+        (origin_node_name.find(filter) != std::wstring::npos)) {
+      CookieTreeOriginNode* origin_node =
+          root->GetOrCreateOriginNode(origin_node_name);
+      CookieTreeCookiesNode* cookies_node =
+          origin_node->GetOrCreateCookiesNode();
       CookieTreeCookieNode* new_cookie = new CookieTreeCookieNode(&*it);
       cookies_node->AddCookieNode(new_cookie);
     }
@@ -433,12 +435,13 @@ void CookiesTreeModel::PopulateAppCacheInfoWithFilter(
   for (AppCacheInfoList::const_iterator info =
            appcache_helper_->info_list().begin();
        info != appcache_helper_->info_list().end(); ++info) {
-    std::wstring host = UTF8ToWide(info->manifest_url.host());
-    if (filter.empty() || (host.find(filter) != std::wstring::npos)) {
-      CookieTreeOriginNode* host_node =
-          root->GetOrCreateOriginNode(host);
+    std::wstring origin_node_name = UTF8ToWide(info->manifest_url.host());
+    if (filter.empty() ||
+        (origin_node_name.find(filter) != std::wstring::npos)) {
+      CookieTreeOriginNode* origin_node =
+          root->GetOrCreateOriginNode(origin_node_name);
       CookieTreeAppCachesNode* appcaches_node =
-          host_node->GetOrCreateAppCachesNode();
+          origin_node->GetOrCreateAppCachesNode();
       appcaches_node->AddAppCacheNode(
           new CookieTreeAppCacheNode(&(*info)));
     }
@@ -460,12 +463,19 @@ void CookiesTreeModel::PopulateDatabaseInfoWithFilter(
   for (DatabaseInfoList::iterator database_info = database_info_list_.begin();
        database_info != database_info_list_.end();
        ++database_info) {
-    std::string origin = database_info->host.empty() ?
-        database_info->origin_identifier : database_info->host;
+    // Determine which 'origin' node to place each 'info' in.
+    std::wstring origin_node_name;
+    if (database_info->IsFileSchemeData())
+      origin_node_name = UTF8ToWide(kFileOriginNodeName);
+    else if (database_info->IsExtensionSchemeData())
+      origin_node_name = FormExtensionNodeName(database_info->host);
+    else
+      origin_node_name = UTF8ToWide(database_info->host);
+
     if (!filter.size() ||
-        (UTF8ToWide(origin).find(filter) != std::wstring::npos)) {
-      CookieTreeOriginNode* origin_node = root->GetOrCreateOriginNode(
-          UTF8ToWide(database_info->host));
+        (origin_node_name.find(filter) != std::wstring::npos)) {
+      CookieTreeOriginNode* origin_node =
+          root->GetOrCreateOriginNode(origin_node_name);
       CookieTreeDatabasesNode* databases_node =
           origin_node->GetOrCreateDatabasesNode();
       databases_node->AddDatabaseNode(
@@ -490,12 +500,19 @@ void CookiesTreeModel::PopulateLocalStorageInfoWithFilter(
        local_storage_info_list_.begin();
        local_storage_info != local_storage_info_list_.end();
        ++local_storage_info) {
-    std::string origin = local_storage_info->host.empty() ?
-        local_storage_info->database_identifier : local_storage_info->host;
+    // Determine which 'origin' node to place each 'info' in.
+    std::wstring origin_node_name;
+    if (local_storage_info->IsFileSchemeData())
+      origin_node_name = UTF8ToWide(kFileOriginNodeName);
+    else if (local_storage_info->IsExtensionSchemeData())
+      origin_node_name = FormExtensionNodeName(local_storage_info->host);
+    else
+      origin_node_name = UTF8ToWide(local_storage_info->host);
+
     if (!filter.size() ||
-        (UTF8ToWide(origin).find(filter) != std::wstring::npos)) {
-      CookieTreeOriginNode* origin_node = root->GetOrCreateOriginNode(
-          UTF8ToWide(local_storage_info->host));
+        (origin_node_name.find(filter) != std::wstring::npos)) {
+      CookieTreeOriginNode* origin_node =
+          root->GetOrCreateOriginNode(origin_node_name);
       CookieTreeLocalStoragesNode* local_storages_node =
           origin_node->GetOrCreateLocalStoragesNode();
       local_storages_node->AddLocalStorageNode(
@@ -503,4 +520,24 @@ void CookiesTreeModel::PopulateLocalStorageInfoWithFilter(
     }
   }
   NotifyObserverTreeNodeChanged(root);
+}
+
+std::wstring CookiesTreeModel::FormExtensionNodeName(
+    const std::string& extension_id) {
+  Extension* extension =
+      profile_->GetExtensionsService()->GetExtensionById(extension_id, true);
+  std::wstring extension_name = extension ?
+      UTF8ToWide(extension->name()) :
+      l10n_util::GetString(IDS_UNKNOWN_PLUGIN_NAME);
+
+  // Since the extension_name will be concatenated with a prefix, we need
+  // to explicitly set the extension_name to be LTR format if there is no
+  // strong RTL charater in it. Otherwise, if the prefix is an RTL word,
+  // the concatenated result might be wrong. For extension named
+  // "Great Extension!" the concatenated result would be something like
+  // "!Great Extension :NOISNETXE", in which capital letters "NOISNETXE"
+  // stand for the Hebrew word for "extension".
+  l10n_util::AdjustStringForLocaleDirection(extension_name, &extension_name);
+  return l10n_util::GetStringF(IDS_TASK_MANAGER_EXTENSION_PREFIX,
+                               extension_name);
 }

@@ -394,6 +394,8 @@ class CookiesTreeModel : public TreeNodeModel<CookieTreeNode> {
   void PopulateDatabaseInfoWithFilter(const std::wstring& filter);
   void PopulateLocalStorageInfoWithFilter(const std::wstring& filter);
 
+  std::wstring FormExtensionNodeName(const std::string& extension_id);
+
   // The profile from which this model sources cookies.
   Profile* profile_;
   CookieList all_cookies_;
