@@ -1,7 +1,7 @@
 vars = {
   "webkit_trunk":
     "http://svn.webkit.org/repository/webkit/trunk",
-  "webkit_revision": "55310",
+  "webkit_revision": "55250",
   "ffmpeg_revision": "39607",
   "skia_revision": "504",
   "chromium_git": "http://src.chromium.org/git",
@@ -63,6 +63,9 @@ deps = {
 
   "src/third_party/WebKit/WebKit/chromium":
     Var("webkit_trunk") + "/WebKit/chromium@" + Var("webkit_revision"),
+
+  "src/third_party/WebKit/WebKitTools/pywebsocket":
+    Var("webkit_trunk") + "/WebKitTools/pywebsocket@" + Var("webkit_revision"),
 
   "src/third_party/WebKit/WebKitTools/Scripts":
     Var("webkit_trunk") + "/WebKitTools/Scripts@" + Var("webkit_revision"),

@@ -117,12 +117,10 @@ class PyWebSocket(http_server.Lighttpd):
 
         python_interp = sys.executable
         pywebsocket_base = path_utils.path_from_base(
-            'third_party', 'WebKit', 'WebKitTools', 'Scripts',
-            'webkitpy', 'thirdparty', 'pywebsocket')
+            'third_party', 'WebKit', 'WebKitTools', 'pywebsocket')
         pywebsocket_script = path_utils.path_from_base(
-            'third_party', 'WebKit', 'WebKitTools', 'Scripts',
-            'webkitpy', 'thirdparty', 'pywebsocket', 'mod_pywebsocket',
-            'standalone.py')
+            'third_party', 'WebKit', 'WebKitTools', 'pywebsocket',
+            'mod_pywebsocket', 'standalone.py')
         start_cmd = [
             python_interp, pywebsocket_script,
             '-p', str(self._port),
