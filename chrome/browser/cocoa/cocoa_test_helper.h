@@ -81,16 +81,22 @@ class CocoaTest : public PlatformTest {
   CocoaTestHelperWindow* test_window();
 
  private:
-  // Return a vector of currently open windows. Note that it is a vector
-  // instead of an NSArray because we don't want any retains placed on the
-  // windows in it and that the windows in this list may no longer be valid
-  // NSWindows any time after this returns. You can only use the pointer values
-  // in the vector for comparison purposes.
-  static std::vector<NSWindow*> ApplicationWindows();
+  // Return a set of currently open windows. Avoiding NSArray so
+  // contents aren't retained, the pointer values can only be used for
+  // comparison purposes.  Using std::set to make progress-checking
+  // convenient.
+  static std::set<NSWindow*> ApplicationWindows();
+
+  // Return a set of windows which are in |ApplicationWindows()| but
+  // not |initial_windows_|.
+  std::set<NSWindow*> WindowsLeft();
 
   bool called_tear_down_;
   base::ScopedNSAutoreleasePool pool_;
-  std::vector<NSWindow*> initial_windows_;
+
+  // Windows which existed at the beginning of the test.
+  std::set<NSWindow*> initial_windows_;
+
   // Strong. Lazily created. This isn't wrapped in a scoped_nsobject because
   // we want to call [close] to destroy it rather than calling [release]. We
   // want to verify that [close] is actually removing our window and that it's

@@ -80,68 +80,102 @@ void CocoaTest::TearDown() {
 
   // Recycle the pool to clean up any stuff that was put on the
   // autorelease pool due to window or windowcontroller closures.
-  // Note that many controls (NSTextFields, NSComboboxes etc) may call
-  // performSelector:withDelay: to clean up drag handlers and other things.
-  // We must spin the event loop a bit to make sure that everything gets cleaned
-  // up correctly. We will wait up to one second for windows to clean themselves
-  // up (normally only takes one to two loops through the event loop).
-  // Radar 5851458 "Closing a window with a NSTextView in it should get rid of
-  // it immediately"
   pool_.Recycle();
-  NSDate *start_date = [NSDate date];
-  const std::vector<NSWindow*> windows_waiting(ApplicationWindows());
 
-  bool loop = windows_waiting.size() > 0;
-  while (loop) {
-    {
-      // Need an autorelease pool to wrap our event loop.
-      base::ScopedNSAutoreleasePool pool;
-      NSEvent *next_event = [NSApp nextEventMatchingMask:NSAnyEventMask
-                                               untilDate:nil
-                                                  inMode:NSDefaultRunLoopMode
-                                                 dequeue:YES];
-      [NSApp sendEvent:next_event];
-      [NSApp updateWindows];
-    }
-    // Check the windows after we have released the event loop pool so that
-    // all retains are cleaned up.
-    const std::vector<NSWindow*> current_windows(ApplicationWindows());
-    std::vector<NSWindow*> windows_left;
-    std::set_difference(current_windows.begin(),
-                        current_windows.end(),
-                        initial_windows_.begin(),
-                        initial_windows_.end(),
-                        inserter(windows_left, windows_left.begin()));
+  // Some controls (NSTextFields, NSComboboxes etc) use
+  // performSelector:withDelay: to clean up drag handlers and other
+  // things (Radar 5851458 "Closing a window with a NSTextView in it
+  // should get rid of it immediately").  The event loop must be spun
+  // to get everything cleaned up correctly.  It normally only takes
+  // one to two spins through the event loop to see a change.
 
-    if (windows_left.size() == 0) {
-      // All our windows are closed.
-      break;
+  // NOTE(shess): Under valgrind, -nextEventMatchingMask:* in one test
+  // needed to run twice, once taking .2 seconds, the next time .6
+  // seconds.  The loop exit condition attempts to be scalable.
+
+  // Get the set of windows which weren't present when the test
+  // started.
+  std::set<NSWindow*> windows_left(WindowsLeft());
+
+  while (windows_left.size() > 0) {
+    // Cover delayed actions by spinning the loop at least once after
+    // this timeout.
+    const NSTimeInterval kCloseTimeout = 1.0;
+
+    // Cover chains of delayed actions by spinning the loop at least
+    // this many times.
+    const int kCloseSpins = 2;
+
+    // Track the set of remaining windows so that everything can be
+    // reset if progress is made.
+    std::set<NSWindow*> still_left = windows_left;
+
+    NSDate* start_date = [NSDate date];
+    bool one_more_time = true;
+    int spins = 0;
+    while (still_left.size() == windows_left.size() &&
+           (spins < kCloseSpins || one_more_time)) {
+      // Check the timeout before pumping events, so that we'll spin
+      // the loop once after the timeout.
+      one_more_time = ([start_date timeIntervalSinceNow] > -kCloseTimeout);
+
+      // Autorelease anything thrown up by the event loop.
+      {
+        base::ScopedNSAutoreleasePool pool;
+        ++spins;
+        NSEvent *next_event = [NSApp nextEventMatchingMask:NSAnyEventMask
+                                                 untilDate:nil
+                                                    inMode:NSDefaultRunLoopMode
+                                                   dequeue:YES];
+        [NSApp sendEvent:next_event];
+        [NSApp updateWindows];
+      }
+
+      // Refresh the outstanding windows.
+      still_left = WindowsLeft();
     }
-    if ([start_date timeIntervalSinceNow] < -1.0) {
-      // Took us over a second to shut down, and windows still exist.
-      // Log a failure and continue.
+
+    // If no progress is being made, log a failure and continue.
+    if (still_left.size() == windows_left.size()) {
+      // NOTE(shess): Failing this expectation means that the test
+      // opened windows which have not been fully released.  Either
+      // there is a leak, or perhaps one of |kCloseTimeout| or
+      // |kCloseSpins| needs adjustment.
       EXPECT_EQ(0U, windows_left.size());
-      for (size_t i = 0; i < windows_left.size(); ++i) {
-        const char* desc = [[windows_left[i] description] UTF8String];
+      for (std::set<NSWindow*>::iterator iter = windows_left.begin();
+           iter != windows_left.end(); ++iter) {
+        const char* desc = [[*iter description] UTF8String];
         LOG(WARNING) << "Didn't close window " << desc;
       }
       break;
     }
+
+    windows_left = still_left;
   }
   PlatformTest::TearDown();
 }
 
-std::vector<NSWindow*> CocoaTest::ApplicationWindows() {
+std::set<NSWindow*> CocoaTest::ApplicationWindows() {
   // This must NOT retain the windows it is returning.
-  std::vector<NSWindow*> windows;
+  std::set<NSWindow*> windows;
+
   // Must create a pool here because [NSApp windows] has created an array
   // with retains on all the windows in it.
   base::ScopedNSAutoreleasePool pool;
   NSArray *appWindows = [NSApp windows];
   for (NSWindow *window in appWindows) {
-    windows.push_back(window);
+    windows.insert(window);
   }
   return windows;
+}
+
+std::set<NSWindow*> CocoaTest::WindowsLeft() {
+  const std::set<NSWindow*> windows(ApplicationWindows());
+  std::set<NSWindow*> windows_left;
+  std::set_difference(windows.begin(), windows.end(),
+                      initial_windows_.begin(), initial_windows_.end(),
+                      std::inserter(windows_left, windows_left.begin()));
+  return windows_left;
 }
 
 CocoaTestHelperWindow* CocoaTest::test_window() {
