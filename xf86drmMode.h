@@ -181,7 +181,7 @@ typedef struct _drmModeModeInfo {
 	uint16_t hdisplay, hsync_start, hsync_end, htotal, hskew;
 	uint16_t vdisplay, vsync_start, vsync_end, vtotal, vscan;
 
-	uint32_t vrefresh; /* vertical refresh * 1000 */
+	uint32_t vrefresh;
 
 	uint32_t flags;
 	uint32_t type;

@@ -81,8 +81,8 @@ int printMode(struct drm_mode_modeinfo *mode)
 		printf("\tvrefresh    : %i\n", mode->vrefresh);
 		printf("\tflags       : %i\n", mode->flags);
 	} else {
-		printf("Mode: \"%s\" %ix%i %.0f\n", mode->name,
-				mode->hdisplay, mode->vdisplay, mode->vrefresh / 1000.0);
+		printf("Mode: \"%s\" %ix%i %i\n", mode->name,
+				mode->hdisplay, mode->vdisplay, mode->vrefresh);
 	}
 	return 0;
 }

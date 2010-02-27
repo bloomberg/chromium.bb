@@ -143,9 +143,9 @@ void dump_encoders(void)
 
 void dump_mode(drmModeModeInfo *mode)
 {
-	printf("  %s %.02f %d %d %d %d %d %d %d %d\n",
+	printf("  %s %d %d %d %d %d %d %d %d %d\n",
 	       mode->name,
-	       (float)mode->vrefresh / 1000,
+	       mode->vrefresh,
 	       mode->hdisplay,
 	       mode->hsync_start,
 	       mode->hsync_end,
