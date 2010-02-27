@@ -208,13 +208,13 @@ class DecoderBase : public Decoder {
 
     // Enqueue the callback and attempt to fulfill it immediately.
     read_queue_.push_back(read_callback);
-    FulfillPendingRead();
+    if (FulfillPendingRead())
+      return;
 
-    // Issue reads as necessary.
-    while (pending_reads_ < read_queue_.size()) {
-      demuxer_stream_->Read(NewCallback(this, &DecoderBase::OnReadComplete));
-      ++pending_reads_;
-    }
+    // Since we can't fulfill a read request now then submit a read
+    // request to the demuxer stream.
+    demuxer_stream_->Read(NewCallback(this, &DecoderBase::OnReadComplete));
+    ++pending_reads_;
   }
 
   void ReadCompleteTask(scoped_refptr<Buffer> buffer) {
@@ -239,17 +239,16 @@ class DecoderBase : public Decoder {
   void OnDecodeComplete() {
     // Attempt to fulfill a pending read callback and schedule additional reads
     // if necessary.
-    FulfillPendingRead();
+    bool fulfilled = FulfillPendingRead();
 
     // Issue reads as necessary.
     //
     // Note that it's possible for us to decode but not produce a frame, in
     // which case |pending_reads_| will remain less than |read_queue_| so we
     // need to schedule an additional read.
-    // TODO(hclam): Enable this line again to make sure we don't break the
-    // flow control. (BUG=32947)
-    // DCHECK_LE(pending_reads_, read_queue_.size());
-    while (pending_reads_ < read_queue_.size()) {
+    DCHECK_LE(pending_reads_, read_queue_.size());
+    if (!fulfilled) {
+      DCHECK_LT(pending_reads_, read_queue_.size());
       demuxer_stream_->Read(NewCallback(this, &DecoderBase::OnReadComplete));
       ++pending_reads_;
     }
@@ -257,10 +256,12 @@ class DecoderBase : public Decoder {
 
   // Attempts to fulfill a single pending read by dequeuing a buffer and read
   // callback pair and executing the callback.
-  void FulfillPendingRead() {
+  //
+  // Return true if one read request is fulfilled.
+  bool FulfillPendingRead() {
     DCHECK_EQ(MessageLoop::current(), this->message_loop());
     if (read_queue_.empty() || result_queue_.empty()) {
-      return;
+      return false;
     }
 
     // Dequeue a frame and read callback pair.
@@ -271,6 +272,7 @@ class DecoderBase : public Decoder {
 
     // Execute the callback!
     read_callback->Run(output);
+    return true;
   }
 
   // Tracks the number of asynchronous reads issued to |demuxer_stream_|.
