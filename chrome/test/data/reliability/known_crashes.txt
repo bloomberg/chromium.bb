@@ -136,6 +136,9 @@ REGEX : ^malloc$
 # 29149
 PREFIX : malloc___webplugindelegateimpl::flashwindowlesswndproc___npapi::plugininstance::npp_write
 
+# 36964
+SUBSTRING : urlrequest::getuserdata___resourcedispatcherhost::infoforrequest___bufferedresourcehandler::onpluginsloaded
+
 # 29758
 PREFIX : webplugindelegateimpl::nativewndproc___webplugindelegateimpl::nativewndproc___base::messagepumpforui::processmessagehelper
 PREFIX : malloc___webplugindelegateimpl::flashwindowlesswndproc___npapi::plugininstance::npp_write___npapi::pluginstream::trywritetoplugin___
