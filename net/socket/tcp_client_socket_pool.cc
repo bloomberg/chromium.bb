@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -33,14 +33,14 @@ static const int kTCPConnectJobTimeoutInSeconds = 240; // 4 minutes.
 
 TCPConnectJob::TCPConnectJob(
     const std::string& group_name,
-    const HostResolver::RequestInfo& resolve_info,
+    const TCPSocketParams& params,
     base::TimeDelta timeout_duration,
     ClientSocketFactory* client_socket_factory,
     HostResolver* host_resolver,
     Delegate* delegate,
     LoadLog* load_log)
     : ConnectJob(group_name, timeout_duration, delegate, load_log),
-      resolve_info_(resolve_info),
+      params_(params),
       client_socket_factory_(client_socket_factory),
       ALLOW_THIS_IN_INITIALIZER_LIST(
           callback_(this,
@@ -112,7 +112,8 @@ int TCPConnectJob::DoLoop(int result) {
 
 int TCPConnectJob::DoResolveHost() {
   next_state_ = kStateResolveHostComplete;
-  return resolver_.Resolve(resolve_info_, &addresses_, &callback_, load_log());
+  return resolver_.Resolve(params_.destination(), &addresses_, &callback_,
+                           load_log());
 }
 
 int TCPConnectJob::DoResolveHostComplete(int result) {
@@ -182,24 +183,24 @@ TCPClientSocketPool::~TCPClientSocketPool() {}
 
 int TCPClientSocketPool::RequestSocket(
     const std::string& group_name,
-    const void* resolve_info,
+    const void* params,
     RequestPriority priority,
     ClientSocketHandle* handle,
     CompletionCallback* callback,
     LoadLog* load_log) {
-  const HostResolver::RequestInfo* casted_resolve_info =
-      static_cast<const HostResolver::RequestInfo*>(resolve_info);
+  const TCPSocketParams* casted_params =
+      static_cast<const TCPSocketParams*>(params);
 
   if (LoadLog::IsUnbounded(load_log)) {
     LoadLog::AddString(
         load_log,
         StringPrintf("Requested TCP socket to: %s [port %d]",
-                     casted_resolve_info->hostname().c_str(),
-                     casted_resolve_info->port()));
+                     casted_params->destination().hostname().c_str(),
+                     casted_params->destination().port()));
   }
 
-  return base_.RequestSocket(
-      group_name, *casted_resolve_info, priority, handle, callback, load_log);
+  return base_.RequestSocket(group_name, *casted_params, priority, handle,
+                             callback, load_log);
 }
 
 void TCPClientSocketPool::CancelRequest(

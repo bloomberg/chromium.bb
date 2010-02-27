@@ -17,6 +17,7 @@
 #include "net/http/http_network_session.h"
 #include "net/http/http_request_info.h"
 #include "net/http/http_response_info.h"
+#include "net/socket/tcp_client_socket_pool.h"
 #include "net/spdy/spdy_stream.h"
 
 using base::Time;
@@ -231,14 +232,15 @@ int SpdyNetworkTransaction::DoInitConnection() {
   std::string connection_group = "spdy.";
   connection_group.append(host);
 
-  HostResolver::RequestInfo resolve_info(host, port);
+  TCPSocketParams tcp_params(host, port, request_->priority, request_->referrer,
+                             false);
   HostPortPair host_port_pair(host, port);
 
   spdy_ = session_->spdy_session_pool()->Get(host_port_pair, session_);
   DCHECK(spdy_);
 
   return spdy_->Connect(
-      connection_group, resolve_info, request_->priority, load_log_);
+      connection_group, tcp_params, request_->priority, load_log_);
 }
 
 int SpdyNetworkTransaction::DoInitConnectionComplete(int result) {

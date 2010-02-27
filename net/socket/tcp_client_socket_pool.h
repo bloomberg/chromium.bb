@@ -1,4 +1,4 @@
-// Copyright (c) 2006-2008 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -20,12 +20,32 @@ namespace net {
 
 class ClientSocketFactory;
 
+class TCPSocketParams {
+ public:
+  TCPSocketParams(const std::string& host, int port, RequestPriority priority,
+                  const GURL& referrer, bool disable_resolver_cache)
+      :  destination_(host, port) {
+    // The referrer is used by the DNS prefetch system to correlate resolutions
+    // with the page that triggered them. It doesn't impact the actual addresses
+    // that we resolve to.
+    destination_.set_referrer(referrer);
+    destination_.set_priority(priority);
+    if (disable_resolver_cache)
+      destination_.set_allow_cached_response(false);
+  }
+
+  HostResolver::RequestInfo destination() const { return destination_; }
+
+ private:
+  HostResolver::RequestInfo destination_;
+};
+
 // TCPConnectJob handles the host resolution necessary for socket creation
 // and the tcp connect.
 class TCPConnectJob : public ConnectJob {
  public:
   TCPConnectJob(const std::string& group_name,
-                const HostResolver::RequestInfo& resolve_info,
+                const TCPSocketParams& params,
                 base::TimeDelta timeout_duration,
                 ClientSocketFactory* client_socket_factory,
                 HostResolver* host_resolver,
@@ -60,7 +80,7 @@ class TCPConnectJob : public ConnectJob {
   int DoTCPConnect();
   int DoTCPConnectComplete(int result);
 
-  const HostResolver::RequestInfo resolve_info_;
+  const TCPSocketParams params_;
   ClientSocketFactory* const client_socket_factory_;
   CompletionCallbackImpl<TCPConnectJob> callback_;
   SingleRequestHostResolver resolver_;
@@ -115,7 +135,7 @@ class TCPClientSocketPool : public ClientSocketPool {
   virtual ~TCPClientSocketPool();
 
  private:
-  typedef ClientSocketPoolBase<HostResolver::RequestInfo> PoolBase;
+  typedef ClientSocketPoolBase<TCPSocketParams> PoolBase;
 
   class TCPConnectJobFactory
       : public PoolBase::ConnectJobFactory {
@@ -147,7 +167,7 @@ class TCPClientSocketPool : public ClientSocketPool {
   DISALLOW_COPY_AND_ASSIGN(TCPClientSocketPool);
 };
 
-REGISTER_SOCKET_PARAMS_FOR_POOL(TCPClientSocketPool, HostResolver::RequestInfo)
+REGISTER_SOCKET_PARAMS_FOR_POOL(TCPClientSocketPool, TCPSocketParams)
 
 }  // namespace net
 
