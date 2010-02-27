@@ -136,13 +136,6 @@ gfx::NativeWindow GetTopLevel(gfx::NativeView view) {
   return GetAncestor(view, GA_ROOT);
 }
 
-string16 GetWindowTitle(gfx::NativeWindow window_handle) {
-  std::wstring result;
-  int length = ::GetWindowTextLength(window_handle) + 1;
-  ::GetWindowText(window_handle, WriteInto(&result, length), length);
-  return WideToUTF16(result);
-}
-
 bool IsWindowActive(gfx::NativeWindow window) {
   return ::GetForegroundWindow() == window;
 }

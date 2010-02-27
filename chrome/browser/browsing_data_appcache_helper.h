@@ -10,7 +10,7 @@
 
 #include "base/scoped_ptr.h"
 #include "base/task.h"
-#include "chrome/common/appcache/chrome_appcache_service.h"
+#include "chrome/browser/appcache/chrome_appcache_service.h"
 
 class Profile;
 

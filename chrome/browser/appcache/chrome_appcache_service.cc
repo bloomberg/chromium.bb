@@ -2,7 +2,7 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/appcache/chrome_appcache_service.h"
+#include "chrome/browser/appcache/chrome_appcache_service.h"
 
 #include "base/file_path.h"
 #include "base/file_util.h"

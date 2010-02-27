@@ -516,3 +516,11 @@ void AutomationProvider::OnBrowserMoved(int tab_handle) {
       "AutomationProvider::OnBrowserMoved called with invalid tab handle.";
   }
 }
+
+void AutomationProvider::GetWindowTitle(int handle, string16* text) {
+  gfx::NativeWindow window = window_tracker_->GetResource(handle);
+  std::wstring result;
+  int length = ::GetWindowTextLength(window) + 1;
+  ::GetWindowText(window, WriteInto(&result, length), length);
+  text->assign(WideToUTF16(result));
+}

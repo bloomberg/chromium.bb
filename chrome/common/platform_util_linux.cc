@@ -9,7 +9,6 @@
 #include "base/file_util.h"
 #include "base/process_util.h"
 #include "base/string_util.h"
-#include "chrome/browser/gtk/gtk_theme_provider.h"
 #include "chrome/common/gtk_util.h"
 #include "chrome/common/process_watcher.h"
 #include "googleurl/src/gurl.h"
@@ -71,11 +70,6 @@ gfx::NativeWindow GetTopLevel(gfx::NativeView view) {
   // assume that the query for toplevel will return a window.
   GtkWidget* toplevel = gtk_widget_get_ancestor(view, GTK_TYPE_WINDOW);
   return GTK_IS_WINDOW(toplevel) ? GTK_WINDOW(toplevel) : NULL;
-}
-
-string16 GetWindowTitle(gfx::NativeWindow window) {
-  const gchar* title = gtk_window_get_title(window);
-  return UTF8ToUTF16(title);
 }
 
 bool IsWindowActive(gfx::NativeWindow window) {

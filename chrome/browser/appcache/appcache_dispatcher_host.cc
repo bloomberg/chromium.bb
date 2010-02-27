@@ -2,13 +2,12 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#include "chrome/common/appcache/appcache_dispatcher_host.h"
+#include "chrome/browser/appcache/appcache_dispatcher_host.h"
 
 #include "base/callback.h"
+#include "chrome/browser/appcache/chrome_appcache_service.h"
 #include "chrome/browser/renderer_host/browser_render_process_host.h"
-// TODO(eroman): uh oh, depending on stuff outside of common/
 #include "chrome/browser/net/chrome_url_request_context.h"
-#include "chrome/common/appcache/chrome_appcache_service.h"
 #include "chrome/common/render_messages.h"
 
 AppCacheDispatcherHost::AppCacheDispatcherHost(

@@ -2,15 +2,15 @@
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
-#ifndef CHROME_COMMON_APPCACHE_APPCACHE_DISPATCHER_HOST_H_
-#define CHROME_COMMON_APPCACHE_APPCACHE_DISPATCHER_HOST_H_
+#ifndef CHROME_BROWSER_APPCACHE_APPCACHE_DISPATCHER_HOST_H_
+#define CHROME_BROWSER_APPCACHE_APPCACHE_DISPATCHER_HOST_H_
 
 #include <vector>
 
 #include "base/process.h"
 #include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
-#include "chrome/common/appcache/appcache_frontend_proxy.h"
+#include "chrome/browser/appcache/appcache_frontend_proxy.h"
 #include "ipc/ipc_message.h"
 #include "webkit/appcache/appcache_backend_impl.h"
 
@@ -75,4 +75,4 @@ class AppCacheDispatcherHost {
   DISALLOW_COPY_AND_ASSIGN(AppCacheDispatcherHost);
 };
 
-#endif  // CHROME_COMMON_APPCACHE_APPCACHE_DISPATCHER_HOST_H_
+#endif  // CHROME_BROWSER_APPCACHE_APPCACHE_DISPATCHER_HOST_H_

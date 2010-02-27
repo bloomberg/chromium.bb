@@ -5,9 +5,15 @@
 #include "chrome/browser/automation/automation_provider.h"
 
 #import <Cocoa/Cocoa.h>
+
+#include "app/l10n_util.h"
+#include "app/l10n_util_mac.h"
 #include "base/gfx/point.h"
 #include "base/gfx/rect.h"
+#include "base/sys_string_conversions.h"
+#include "chrome/browser/cocoa/tab_window_controller.h"
 #include "chrome/test/automation/automation_messages.h"
+#include "grit/generated_resources.h"
 
 void AutomationProvider::SetWindowBounds(int handle, const gfx::Rect& bounds,
                                          bool* success) {
@@ -138,3 +144,24 @@ void AutomationProvider::GetWindowBounds(int handle, gfx::Rect* bounds,
   *result = false;
   NOTIMPLEMENTED();
 }
+
+void AutomationProvider::GetWindowTitle(int handle, string16* text) {
+  gfx::NativeWindow window = window_tracker_->GetResource(handle);
+  NSString* title = nil;
+  if ([[window delegate] isKindOfClass:[TabWindowController class]]) {
+    TabWindowController* delegate =
+        reinterpret_cast<TabWindowController*>([window delegate]);
+    title = [delegate selectedTabTitle];
+  } else {
+    title = [window title];
+  }
+  // If we don't yet have a title, use "Untitled".
+  if (![title length]) {
+    text->assign(WideToUTF16(l10n_util::GetString(
+        IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED)));
+    return;
+  }
+
+  text->assign(base::SysNSStringToUTF16(title));
+}
+

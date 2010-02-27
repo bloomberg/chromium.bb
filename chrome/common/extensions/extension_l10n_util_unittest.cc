@@ -10,8 +10,6 @@
 #include "base/scoped_ptr.h"
 #include "base/scoped_temp_dir.h"
 #include "base/values.h"
-#include "chrome/browser/renderer_host/resource_dispatcher_host_request_info.h"
-#include "chrome/browser/renderer_host/resource_handler.h"
 #include "chrome/common/chrome_paths.h"
 #include "chrome/common/extensions/extension.h"
 #include "chrome/common/extensions/extension_constants.h"
@@ -380,101 +378,6 @@ TEST(ExtensionL10nUtil, ShouldRelocalizeManifestDifferentCurrentLocale) {
   ExtensionInfo info(&manifest, "", FilePath(), Extension::LOAD);
 
   EXPECT_TRUE(extension_l10n_util::ShouldRelocalizeManifest(info));
-}
-
-class DummyResourceHandler : public ResourceHandler {
- public:
-  DummyResourceHandler() {}
-
-  bool OnRequestRedirected(int request_id, const GURL& url,
-                           ResourceResponse* response, bool* defer) {
-    return true;
-  }
-
-  bool OnResponseStarted(int request_id, ResourceResponse* response) {
-    return true;
-  }
-
-  bool OnWillRead(
-      int request_id, net::IOBuffer** buf, int* buf_size, int min_size) {
-    return true;
-  }
-
-  bool OnReadCompleted(int request_id, int* bytes_read) { return true; }
-
-  bool OnResponseCompleted(
-    int request_id, const URLRequestStatus& status, const std::string& info) {
-    return true;
-  }
-
- private:
-  DISALLOW_COPY_AND_ASSIGN(DummyResourceHandler);
-};
-
-class ApplyMessageFilterPolicyTest : public testing::Test {
- protected:
-  void SetUp() {
-    url_.reset(new GURL(
-        "chrome-extension://behllobkkfkfnphdnhnkndlbkcpglgmj/popup.html"));
-    resource_type_ = ResourceType::STYLESHEET;
-    resource_handler_.reset(new DummyResourceHandler());
-    request_info_.reset(CreateNewResourceRequestInfo());
-  }
-
-  ResourceDispatcherHostRequestInfo* CreateNewResourceRequestInfo() {
-    return new ResourceDispatcherHostRequestInfo(
-        resource_handler_.get(), ChildProcessInfo::RENDER_PROCESS, 0, 0, 0,
-        "not important", "not important",
-        ResourceType::STYLESHEET, 0U, false, false, -1, -1);
-  }
-
-  scoped_ptr<GURL> url_;
-  ResourceType::Type resource_type_;
-  scoped_ptr<DummyResourceHandler> resource_handler_;
-  scoped_ptr<ResourceDispatcherHostRequestInfo> request_info_;
-};
-
-TEST_F(ApplyMessageFilterPolicyTest, WrongScheme) {
-  url_.reset(new GURL("html://behllobkkfkfnphdnhnkndlbkcpglgmj/popup.html"));
-  extension_l10n_util::ApplyMessageFilterPolicy(
-      *url_, resource_type_, request_info_.get());
-
-  EXPECT_EQ(FilterPolicy::DONT_FILTER, request_info_->filter_policy());
-}
-
-TEST_F(ApplyMessageFilterPolicyTest, GoodScheme) {
-  extension_l10n_util::ApplyMessageFilterPolicy(
-      *url_, resource_type_, request_info_.get());
-
-  EXPECT_EQ(FilterPolicy::FILTER_EXTENSION_MESSAGES,
-            request_info_->filter_policy());
-}
-
-TEST_F(ApplyMessageFilterPolicyTest, GoodSchemeWithSecurityFilter) {
-  request_info_->set_filter_policy(FilterPolicy::FILTER_ALL_EXCEPT_IMAGES);
-  extension_l10n_util::ApplyMessageFilterPolicy(
-      *url_, resource_type_, request_info_.get());
-
-  EXPECT_EQ(FilterPolicy::FILTER_ALL_EXCEPT_IMAGES,
-            request_info_->filter_policy());
-}
-
-TEST_F(ApplyMessageFilterPolicyTest, GoodSchemeWrongResourceType) {
-  resource_type_ = ResourceType::MAIN_FRAME;
-  extension_l10n_util::ApplyMessageFilterPolicy(
-      *url_, resource_type_, request_info_.get());
-
-  EXPECT_EQ(FilterPolicy::DONT_FILTER, request_info_->filter_policy());
-}
-
-TEST_F(ApplyMessageFilterPolicyTest, WrongSchemeResourceAndFilter) {
-  url_.reset(new GURL("html://behllobkkfkfnphdnhnkndlbkcpglgmj/popup.html"));
-  resource_type_ = ResourceType::MEDIA;
-  request_info_->set_filter_policy(FilterPolicy::FILTER_ALL);
-  extension_l10n_util::ApplyMessageFilterPolicy(
-      *url_, resource_type_, request_info_.get());
-
-  EXPECT_EQ(FilterPolicy::FILTER_ALL, request_info_->filter_policy());
 }
 
 }  // namespace

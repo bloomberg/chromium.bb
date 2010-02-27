@@ -95,12 +95,6 @@ ExtensionMessageBundle* LoadMessageCatalogs(
     const std::set<std::string>& valid_locales,
     std::string* error);
 
-// Applies FilterPolicy::FILTER_EXTENSION_MESSAGES to all text/css requests
-// that have "chrome-extension://" scheme.
-void ApplyMessageFilterPolicy(const GURL& url,
-                              const ResourceType::Type& resource_type,
-                              ResourceDispatcherHostRequestInfo* request_info);
-
 }  // namespace extension_l10n_util
 
 #endif  // CHROME_COMMON_EXTENSIONS_EXTENSION_L10N_UTIL_H_

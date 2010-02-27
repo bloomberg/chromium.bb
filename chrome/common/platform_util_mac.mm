@@ -12,7 +12,6 @@
 #include "base/logging.h"
 #include "base/mac_util.h"
 #include "base/sys_string_conversions.h"
-#include "chrome/browser/cocoa/tab_window_controller.h"
 #include "googleurl/src/gurl.h"
 #include "grit/generated_resources.h"
 
@@ -43,23 +42,6 @@ void OpenExternal(const GURL& url) {
 
 gfx::NativeWindow GetTopLevel(gfx::NativeView view) {
   return [view window];
-}
-
-string16 GetWindowTitle(gfx::NativeWindow window) {
-  NSString* title = nil;
-  if ([[window delegate] isKindOfClass:[TabWindowController class]]) {
-    TabWindowController* delegate =
-        reinterpret_cast<TabWindowController*>([window delegate]);
-    title = [delegate selectedTabTitle];
-  } else {
-    title = [window title];
-  }
-  // If we don't yet have a title, use "Untitled".
-  if (![title length])
-    return WideToUTF16(l10n_util::GetString(
-        IDS_BROWSER_WINDOW_MAC_TAB_UNTITLED));
-
-  return base::SysNSStringToUTF16(title);
 }
 
 bool IsWindowActive(gfx::NativeWindow window) {

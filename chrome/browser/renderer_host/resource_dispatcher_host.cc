@@ -51,9 +51,9 @@
 #include "chrome/browser/ssl/ssl_manager.h"
 #include "chrome/browser/worker_host/worker_service.h"
 #include "chrome/common/chrome_switches.h"
-#include "chrome/common/extensions/extension_l10n_util.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/render_messages.h"
+#include "chrome/common/url_constants.h"
 #include "net/base/auth.h"
 #include "net/base/cert_status_flags.h"
 #include "net/base/load_flags.h"
@@ -467,8 +467,9 @@ void ResourceDispatcherHost::BeginRequest(
           ResourceType::IsFrame(request_data.resource_type), // allow_download
           request_data.host_renderer_id,
           request_data.host_render_view_id);
-  extension_l10n_util::ApplyMessageFilterPolicy(
-      request_data.url, request_data.resource_type, extra_info);
+  ApplyExtensionMessageFilterPolicy(request_data.url,
+                                    request_data.resource_type,
+                                    extra_info);
   SetRequestInfo(request, extra_info);  // Request takes ownership.
   chrome_browser_net::SetOriginProcessUniqueIDForRequest(
       request_data.origin_child_id, request);
@@ -1738,6 +1739,7 @@ void ResourceDispatcherHost::ProcessBlockedRequestsForRoute(
   delete requests;
 }
 
+// static
 bool ResourceDispatcherHost::IsResourceDispatcherHostMessage(
     const IPC::Message& message) {
   switch (message.type()) {
@@ -1756,4 +1758,18 @@ bool ResourceDispatcherHost::IsResourceDispatcherHostMessage(
   }
 
   return false;
+}
+
+// static
+void ResourceDispatcherHost::ApplyExtensionMessageFilterPolicy(
+    const GURL& url,
+    const ResourceType::Type& resource_type,
+    ResourceDispatcherHostRequestInfo* request_info) {
+  // Apply filter only to chrome extension css files that don't have
+  // security filter already set.
+  if (url.SchemeIs(chrome::kExtensionScheme) &&
+      request_info->filter_policy() == FilterPolicy::DONT_FILTER &&
+      resource_type == ResourceType::STYLESHEET) {
+    request_info->set_filter_policy(FilterPolicy::FILTER_EXTENSION_MESSAGES);
+  }
 }

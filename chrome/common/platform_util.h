@@ -26,9 +26,6 @@ void OpenExternal(const GURL& url);
 // Get the top level window for the native view. This can return NULL.
 gfx::NativeWindow GetTopLevel(gfx::NativeView view);
 
-// Get the title of the window.
-string16 GetWindowTitle(gfx::NativeWindow window);
-
 // Returns true if |window| is the foreground top level window.
 bool IsWindowActive(gfx::NativeWindow window);
 

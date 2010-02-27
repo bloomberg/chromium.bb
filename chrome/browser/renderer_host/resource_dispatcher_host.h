@@ -274,6 +274,14 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
               IncrementOutstandingRequestsMemoryCost);
   FRIEND_TEST(ResourceDispatcherHostTest,
               CalculateApproximateMemoryCost);
+  FRIEND_TEST(ApplyExtensionMessageFilterPolicyTest, WrongScheme);
+  FRIEND_TEST(ApplyExtensionMessageFilterPolicyTest, GoodScheme);
+  FRIEND_TEST(ApplyExtensionMessageFilterPolicyTest,
+              GoodSchemeWithSecurityFilter);
+  FRIEND_TEST(ApplyExtensionMessageFilterPolicyTest,
+              GoodSchemeWrongResourceType);
+  FRIEND_TEST(ApplyExtensionMessageFilterPolicyTest,
+              WrongSchemeResourceAndFilter);
 
   class ShutdownTask;
 
@@ -401,6 +409,13 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
 
   // Returns true if the message passed in is a resource related message.
   static bool IsResourceDispatcherHostMessage(const IPC::Message&);
+
+  // Applies FilterPolicy::FILTER_EXTENSION_MESSAGES to all text/css requests
+  // that have "chrome-extension://" scheme.
+  static void ApplyExtensionMessageFilterPolicy(
+      const GURL& url,
+      const ResourceType::Type& resource_type,
+      ResourceDispatcherHostRequestInfo* request_info);
 
   PendingRequestList pending_requests_;
 
