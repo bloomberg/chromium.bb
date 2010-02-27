@@ -435,20 +435,21 @@ void ResourceDispatcherHost::BeginRequest(
                                            this);
   }
 
+  // Insert a buffered event handler before the actual one.
+  handler = new BufferedResourceHandler(handler, this, request);
+
+  // Insert safe browsing at the front of the chain, so it gets to decide
+  // on policies first.
   if (safe_browsing_->enabled() &&
       safe_browsing_->CanCheckUrl(request_data.url)) {
     handler = new SafeBrowsingResourceHandler(handler,
                                               child_id,
                                               route_id,
-                                              request_data.url,
                                               request_data.resource_type,
                                               safe_browsing_,
                                               this,
                                               receiver_);
   }
-
-  // Insert a buffered event handler before the actual one.
-  handler = new BufferedResourceHandler(handler, this, request);
 
   // Make extra info and read footer (contains request ID).
   ResourceDispatcherHostRequestInfo* extra_info =
@@ -605,7 +606,6 @@ void ResourceDispatcherHost::BeginDownload(
     handler = new SafeBrowsingResourceHandler(handler,
                                               child_id,
                                               route_id,
-                                              url,
                                               ResourceType::MAIN_FRAME,
                                               safe_browsing_,
                                               this,
@@ -726,6 +726,24 @@ void ResourceDispatcherHost::FollowDeferredRedirect(
   if (has_new_first_party_for_cookies)
     i->second->set_first_party_for_cookies(new_first_party_for_cookies);
   i->second->FollowDeferredRedirect();
+}
+
+void ResourceDispatcherHost::StartDeferredRequest(int process_unique_id,
+                                                  int request_id) {
+  GlobalRequestID global_id(process_unique_id, request_id);
+  PendingRequestList::iterator i = pending_requests_.find(global_id);
+  if (i == pending_requests_.end()) {
+    // The request may have been destroyed
+    LOG(WARNING) << "Trying to resume a non-existent request ("
+                 << process_unique_id << ", " << request_id << ")";
+    return;
+  }
+
+  // TODO(eroman): are there other considerations for paused or blocked
+  //               requests?
+
+  URLRequest* request = i->second;
+  InsertIntoResourceQueue(request, *InfoForRequest(request));
 }
 
 bool ResourceDispatcherHost::WillSendData(int child_id,
@@ -1187,7 +1205,35 @@ void ResourceDispatcherHost::BeginRequestInternal(URLRequest* request) {
 
   GlobalRequestID global_id(info->child_id(), info->request_id());
   pending_requests_[global_id] = request;
-  resource_queue_.AddRequest(request, *info);
+
+  // Give the resource handlers an opportunity to delay the URLRequest from
+  // being started.
+  //
+  // There are three cases:
+  //
+  //   (1) if OnWillStart() returns false, the request is cancelled (regardless
+  //       of whether |defer_start| was set).
+  //   (2) If |defer_start| was set to true, then the request is not added
+  //       into the resource queue, and will only be started in response to
+  //       calling StartDeferredRequest().
+  //   (3) If |defer_start| is not set, then the request is inserted into
+  //       the resource_queue_ (which may pause it further, or start it).
+  bool defer_start = false;
+  if (!info->resource_handler()->OnWillStart(
+          info->request_id(), request->url(),
+          &defer_start)) {
+    CancelRequest(info->child_id(), info->request_id(), false);
+    return;
+  }
+
+  if (!defer_start)
+    InsertIntoResourceQueue(request, *info);
+}
+
+void ResourceDispatcherHost::InsertIntoResourceQueue(
+    URLRequest* request,
+    const ResourceDispatcherHostRequestInfo& request_info) {
+  resource_queue_.AddRequest(request, request_info);
 
   // Make sure we have the load state monitor running
   if (!update_load_states_timer_.IsRunning()) {

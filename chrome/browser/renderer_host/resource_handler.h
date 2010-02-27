@@ -49,6 +49,18 @@ class ResourceHandler
   virtual bool OnResponseStarted(int request_id,
                                  ResourceResponse* response) = 0;
 
+  // Called before the URLRequest for |request_id| (whose url is |url|) is to be
+  // started. If the handler returns false, then the request is cancelled.
+  // Otherwise if the return value is true, the ResourceHandler can delay the
+  // request from starting by setting |*defer = true|. A deferred request will
+  // not have called URLRequest::Start(), and will not resume until someone
+  // calls ResourceDispatcherHost::StartDeferredRequest().
+  virtual bool OnWillStart(int request_id, const GURL& url, bool* defer) {
+    // TODO(eroman): This should be a pure virtual method (no default
+    //               implementation).
+    return true;
+  }
+
   // Data will be read for the response.  Upon success, this method places the
   // size and address of the buffer where the data is to be written in its
   // out-params.  This call will be followed by either OnReadCompleted or

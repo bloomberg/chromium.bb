@@ -20,6 +20,9 @@
 #include "testing/gtest/include/gtest/gtest.h"
 #include "webkit/appcache/appcache_interfaces.h"
 
+// TODO(eroman): Write unit tests for SafeBrowsing that exercise
+//               SafeBrowsingResourceHandler.
+
 namespace {
 
 // Returns the resource response header structure for this request.

@@ -139,6 +139,9 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
                               bool has_new_first_party_for_cookies,
                               const GURL& new_first_party_for_cookies);
 
+  // Starts a request that was deferred during ResourceHandler::OnWillStart().
+  void StartDeferredRequest(int process_unique_id, int request_id);
+
   // Returns true if it's ok to send the data. If there are already too many
   // data messages pending, it pauses the request and returns false. In this
   // case the caller should not send the data.
@@ -317,6 +320,11 @@ class ResourceDispatcherHost : public URLRequest::Delegate {
 
   // Helper function for regular and download requests.
   void BeginRequestInternal(URLRequest* request);
+
+  // Helper function that inserts |request| into the resource queue.
+  void InsertIntoResourceQueue(
+      URLRequest* request,
+      const ResourceDispatcherHostRequestInfo& request_info);
 
   // Updates the "cost" of outstanding requests for |process_unique_id|.
   // The "cost" approximates how many bytes are consumed by all the in-memory
