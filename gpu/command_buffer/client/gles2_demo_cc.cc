@@ -47,7 +47,7 @@ GLuint LoadShader(GLenum type, const char* shaderSrc) {
   glGetShaderiv(shader, GL_COMPILE_STATUS, &value);
   if (value == 0) {
     char buffer[1024];
-    GLsizei length;
+    GLsizei length = 0;
     glGetShaderInfoLog(shader, sizeof(buffer), &length, buffer);
     std::string log(buffer, length);
     DLOG(ERROR) << "Error compiling shader:" << log;
