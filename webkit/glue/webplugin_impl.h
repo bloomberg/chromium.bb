@@ -229,7 +229,7 @@ class WebPluginImpl : public WebPlugin,
                                    WebPluginResourceClient* client);
 
   void HandleURLRequestInternal(const char* url,
-                                const char *method,
+                                const char* method,
                                 const char* target,
                                 const char* buf,
                                 unsigned int len,

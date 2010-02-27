@@ -108,7 +108,7 @@ class WebPluginProxy : public webkit_glue::WebPlugin {
                          webkit_glue::WebPluginResourceClient* client);
 
   void HandleURLRequest(const char* url,
-                        const char *method,
+                        const char* method,
                         const char* target,
                         const char* buf,
                         unsigned int len,

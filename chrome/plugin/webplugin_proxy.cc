@@ -257,7 +257,7 @@ void WebPluginProxy::OnResourceCreated(int resource_id,
 }
 
 void WebPluginProxy::HandleURLRequest(const char* url,
-                                      const char *method,
+                                      const char* method,
                                       const char* target,
                                       const char* buf,
                                       unsigned int len,

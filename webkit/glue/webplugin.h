@@ -117,7 +117,7 @@ class WebPlugin {
   // by plugins.  If the plugin wants notification of the result, notify_id will
   // be non-zero.
   virtual void HandleURLRequest(const char* url,
-                                const char *method,
+                                const char* method,
                                 const char* target,
                                 const char* buf,
                                 unsigned int len,
