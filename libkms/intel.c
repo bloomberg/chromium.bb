@@ -44,9 +44,7 @@
 struct intel_bo
 {
 	struct kms_bo base;
-	unsigned handle;
 	unsigned map_count;
-	int mapped;
 };
 
 static int
