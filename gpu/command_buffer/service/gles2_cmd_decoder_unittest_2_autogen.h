@@ -667,17 +667,6 @@ TEST_F(GLES2DecoderTest2, Uniform1fvImmediateValidArgs) {
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
-
-TEST_F(GLES2DecoderTest2, Uniform1fvImmediateInvalidArgs1_0) {
-  Uniform1fvImmediate& cmd = *GetImmediateAs<Uniform1fvImmediate>();
-  EXPECT_CALL(*gl_, Uniform1fv(_, _, _)).Times(0);
-  SpecializedSetup<Uniform1fvImmediate, 0>();
-  GLfloat temp[1 * 2] = { 0, };
-  cmd.Init(1, -1, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-}
 // TODO(gman): Uniform1i
 // TODO(gman): Uniform1iv
 // TODO(gman): Uniform1ivImmediate
@@ -738,17 +727,6 @@ TEST_F(GLES2DecoderTest2, Uniform2fvImmediateValidArgs) {
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
-TEST_F(GLES2DecoderTest2, Uniform2fvImmediateInvalidArgs1_0) {
-  Uniform2fvImmediate& cmd = *GetImmediateAs<Uniform2fvImmediate>();
-  EXPECT_CALL(*gl_, Uniform2fv(_, _, _)).Times(0);
-  SpecializedSetup<Uniform2fvImmediate, 0>();
-  GLfloat temp[2 * 2] = { 0, };
-  cmd.Init(1, -1, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-}
-
 TEST_F(GLES2DecoderTest2, Uniform2iValidArgs) {
   EXPECT_CALL(*gl_, Uniform2i(1, 2, 3));
   SpecializedSetup<Uniform2i, 0>();
@@ -803,17 +781,6 @@ TEST_F(GLES2DecoderTest2, Uniform2ivImmediateValidArgs) {
   cmd.Init(1, 2, &temp[0]);
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
-}
-
-TEST_F(GLES2DecoderTest2, Uniform2ivImmediateInvalidArgs1_0) {
-  Uniform2ivImmediate& cmd = *GetImmediateAs<Uniform2ivImmediate>();
-  EXPECT_CALL(*gl_, Uniform2iv(_, _, _)).Times(0);
-  SpecializedSetup<Uniform2ivImmediate, 0>();
-  GLint temp[2 * 2] = { 0, };
-  cmd.Init(1, -1, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, Uniform3fValidArgs) {
@@ -872,17 +839,6 @@ TEST_F(GLES2DecoderTest2, Uniform3fvImmediateValidArgs) {
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
-TEST_F(GLES2DecoderTest2, Uniform3fvImmediateInvalidArgs1_0) {
-  Uniform3fvImmediate& cmd = *GetImmediateAs<Uniform3fvImmediate>();
-  EXPECT_CALL(*gl_, Uniform3fv(_, _, _)).Times(0);
-  SpecializedSetup<Uniform3fvImmediate, 0>();
-  GLfloat temp[3 * 2] = { 0, };
-  cmd.Init(1, -1, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-}
-
 TEST_F(GLES2DecoderTest2, Uniform3iValidArgs) {
   EXPECT_CALL(*gl_, Uniform3i(1, 2, 3, 4));
   SpecializedSetup<Uniform3i, 0>();
@@ -937,17 +893,6 @@ TEST_F(GLES2DecoderTest2, Uniform3ivImmediateValidArgs) {
   cmd.Init(1, 2, &temp[0]);
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
-}
-
-TEST_F(GLES2DecoderTest2, Uniform3ivImmediateInvalidArgs1_0) {
-  Uniform3ivImmediate& cmd = *GetImmediateAs<Uniform3ivImmediate>();
-  EXPECT_CALL(*gl_, Uniform3iv(_, _, _)).Times(0);
-  SpecializedSetup<Uniform3ivImmediate, 0>();
-  GLint temp[3 * 2] = { 0, };
-  cmd.Init(1, -1, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, Uniform4fValidArgs) {
@@ -1006,17 +951,6 @@ TEST_F(GLES2DecoderTest2, Uniform4fvImmediateValidArgs) {
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
-TEST_F(GLES2DecoderTest2, Uniform4fvImmediateInvalidArgs1_0) {
-  Uniform4fvImmediate& cmd = *GetImmediateAs<Uniform4fvImmediate>();
-  EXPECT_CALL(*gl_, Uniform4fv(_, _, _)).Times(0);
-  SpecializedSetup<Uniform4fvImmediate, 0>();
-  GLfloat temp[4 * 2] = { 0, };
-  cmd.Init(1, -1, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-}
-
 TEST_F(GLES2DecoderTest2, Uniform4iValidArgs) {
   EXPECT_CALL(*gl_, Uniform4i(1, 2, 3, 4, 5));
   SpecializedSetup<Uniform4i, 0>();
@@ -1073,17 +1007,6 @@ TEST_F(GLES2DecoderTest2, Uniform4ivImmediateValidArgs) {
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
-TEST_F(GLES2DecoderTest2, Uniform4ivImmediateInvalidArgs1_0) {
-  Uniform4ivImmediate& cmd = *GetImmediateAs<Uniform4ivImmediate>();
-  EXPECT_CALL(*gl_, Uniform4iv(_, _, _)).Times(0);
-  SpecializedSetup<Uniform4ivImmediate, 0>();
-  GLint temp[4 * 2] = { 0, };
-  cmd.Init(1, -1, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-}
-
 TEST_F(GLES2DecoderTest2, UniformMatrix2fvValidArgs) {
   EXPECT_CALL(
       *gl_, UniformMatrix2fv(
@@ -1110,7 +1033,7 @@ TEST_F(GLES2DecoderTest2, UniformMatrix2fvInvalidArgs2_0) {
   UniformMatrix2fv cmd;
   cmd.Init(1, 2, true, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, UniformMatrix2fvInvalidArgs3_0) {
@@ -1143,18 +1066,6 @@ TEST_F(GLES2DecoderTest2, UniformMatrix2fvImmediateValidArgs) {
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
-TEST_F(GLES2DecoderTest2, UniformMatrix2fvImmediateInvalidArgs1_0) {
-  UniformMatrix2fvImmediate& cmd =
-      *GetImmediateAs<UniformMatrix2fvImmediate>();
-  EXPECT_CALL(*gl_, UniformMatrix2fv(_, _, _, _)).Times(0);
-  SpecializedSetup<UniformMatrix2fvImmediate, 0>();
-  GLfloat temp[4 * 2] = { 0, };
-  cmd.Init(1, -1, false, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-}
-
 TEST_F(GLES2DecoderTest2, UniformMatrix2fvImmediateInvalidArgs2_0) {
   UniformMatrix2fvImmediate& cmd =
       *GetImmediateAs<UniformMatrix2fvImmediate>();
@@ -1164,7 +1075,7 @@ TEST_F(GLES2DecoderTest2, UniformMatrix2fvImmediateInvalidArgs2_0) {
   cmd.Init(1, 2, true, &temp[0]);
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, UniformMatrix3fvValidArgs) {
@@ -1193,7 +1104,7 @@ TEST_F(GLES2DecoderTest2, UniformMatrix3fvInvalidArgs2_0) {
   UniformMatrix3fv cmd;
   cmd.Init(1, 2, true, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, UniformMatrix3fvInvalidArgs3_0) {
@@ -1226,18 +1137,6 @@ TEST_F(GLES2DecoderTest2, UniformMatrix3fvImmediateValidArgs) {
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
-TEST_F(GLES2DecoderTest2, UniformMatrix3fvImmediateInvalidArgs1_0) {
-  UniformMatrix3fvImmediate& cmd =
-      *GetImmediateAs<UniformMatrix3fvImmediate>();
-  EXPECT_CALL(*gl_, UniformMatrix3fv(_, _, _, _)).Times(0);
-  SpecializedSetup<UniformMatrix3fvImmediate, 0>();
-  GLfloat temp[9 * 2] = { 0, };
-  cmd.Init(1, -1, false, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-}
-
 TEST_F(GLES2DecoderTest2, UniformMatrix3fvImmediateInvalidArgs2_0) {
   UniformMatrix3fvImmediate& cmd =
       *GetImmediateAs<UniformMatrix3fvImmediate>();
@@ -1247,7 +1146,7 @@ TEST_F(GLES2DecoderTest2, UniformMatrix3fvImmediateInvalidArgs2_0) {
   cmd.Init(1, 2, true, &temp[0]);
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, UniformMatrix4fvValidArgs) {
@@ -1276,7 +1175,7 @@ TEST_F(GLES2DecoderTest2, UniformMatrix4fvInvalidArgs2_0) {
   UniformMatrix4fv cmd;
   cmd.Init(1, 2, true, shared_memory_id_, shared_memory_offset_);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 
 TEST_F(GLES2DecoderTest2, UniformMatrix4fvInvalidArgs3_0) {
@@ -1309,18 +1208,6 @@ TEST_F(GLES2DecoderTest2, UniformMatrix4fvImmediateValidArgs) {
             ExecuteImmediateCmd(cmd, sizeof(temp)));
 }
 
-TEST_F(GLES2DecoderTest2, UniformMatrix4fvImmediateInvalidArgs1_0) {
-  UniformMatrix4fvImmediate& cmd =
-      *GetImmediateAs<UniformMatrix4fvImmediate>();
-  EXPECT_CALL(*gl_, UniformMatrix4fv(_, _, _, _)).Times(0);
-  SpecializedSetup<UniformMatrix4fvImmediate, 0>();
-  GLfloat temp[16 * 2] = { 0, };
-  cmd.Init(1, -1, false, &temp[0]);
-  EXPECT_EQ(error::kNoError,
-            ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
-}
-
 TEST_F(GLES2DecoderTest2, UniformMatrix4fvImmediateInvalidArgs2_0) {
   UniformMatrix4fvImmediate& cmd =
       *GetImmediateAs<UniformMatrix4fvImmediate>();
@@ -1330,7 +1217,7 @@ TEST_F(GLES2DecoderTest2, UniformMatrix4fvImmediateInvalidArgs2_0) {
   cmd.Init(1, 2, true, &temp[0]);
   EXPECT_EQ(error::kNoError,
             ExecuteImmediateCmd(cmd, sizeof(temp)));
-  EXPECT_EQ(GL_INVALID_ENUM, GetGLError());
+  EXPECT_EQ(GL_INVALID_VALUE, GetGLError());
 }
 // TODO(gman): UseProgram
 

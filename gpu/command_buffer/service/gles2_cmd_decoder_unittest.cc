@@ -853,6 +853,7 @@ TEST_F(GLES2DecoderTest, CompileShaderInvalidArgs) {
 }
 
 TEST_F(GLES2DecoderTest, ShaderSourceAndGetShaderSourceValidArgs) {
+  const uint32 kBucketId = 123;
   const char kSource[] = "hello";
   const uint32 kSourceSize = sizeof(kSource) - 1;
   memcpy(shared_memory_address_, kSource, kSourceSize);
@@ -861,15 +862,14 @@ TEST_F(GLES2DecoderTest, ShaderSourceAndGetShaderSourceValidArgs) {
            kSharedMemoryId, kSharedMemoryOffset, kSourceSize);
   EXPECT_EQ(error::kNoError, ExecuteCmd(cmd));
   memset(shared_memory_address_, 0, kSourceSize);
-  // TODO(gman): GetShaderSource has to change format so result is always set.
   GetShaderSource get_cmd;
-  get_cmd.Init(client_shader_id_, kSourceSize + 1,
-               kSharedMemoryId, kSharedMemoryOffset,
-               kSharedMemoryId, kSharedMemoryOffset + sizeof(kSourceSize));
+  get_cmd.Init(client_shader_id_, kBucketId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(get_cmd));
-  EXPECT_EQ(kSourceSize, *GetSharedMemoryAs<uint32*>());
-  EXPECT_EQ(0, memcmp(GetSharedMemoryAsWithOffset<void*>(sizeof(kSourceSize)),
-                      kSource, kSourceSize));
+  CommonDecoder::Bucket* bucket = decoder_->GetBucket(kBucketId);
+  ASSERT_TRUE(bucket != NULL);
+  EXPECT_EQ(kSourceSize + 1, bucket->size());
+  EXPECT_EQ(0, memcmp(bucket->GetData(0, bucket->size()), kSource,
+                      bucket->size()));
 }
 
 TEST_F(GLES2DecoderTest, ShaderSourceInvalidArgs) {
@@ -897,6 +897,7 @@ TEST_F(GLES2DecoderTest, ShaderSourceInvalidArgs) {
 }
 
 TEST_F(GLES2DecoderTest, ShaderSourceImmediateAndGetShaderSourceValidArgs) {
+  const uint32 kBucketId = 123;
   const char kSource[] = "hello";
   const uint32 kSourceSize = sizeof(kSource) - 1;
   ShaderSourceImmediate& cmd = *GetImmediateAs<ShaderSourceImmediate>();
@@ -906,13 +907,13 @@ TEST_F(GLES2DecoderTest, ShaderSourceImmediateAndGetShaderSourceValidArgs) {
   memset(shared_memory_address_, 0, kSourceSize);
   // TODO(gman): GetShaderSource has to change format so result is always set.
   GetShaderSource get_cmd;
-  get_cmd.Init(client_shader_id_, kSourceSize + 1,
-               kSharedMemoryId, kSharedMemoryOffset,
-               kSharedMemoryId, kSharedMemoryOffset + sizeof(kSourceSize));
+  get_cmd.Init(client_shader_id_, kBucketId);
   EXPECT_EQ(error::kNoError, ExecuteCmd(get_cmd));
-  EXPECT_EQ(kSourceSize, *GetSharedMemoryAs<uint32*>());
-  EXPECT_EQ(0, memcmp(GetSharedMemoryAsWithOffset<void*>(sizeof(kSourceSize)),
-                      kSource, kSourceSize));
+  CommonDecoder::Bucket* bucket = decoder_->GetBucket(kBucketId);
+  ASSERT_TRUE(bucket != NULL);
+  EXPECT_EQ(kSourceSize + 1, bucket->size());
+  EXPECT_EQ(0, memcmp(bucket->GetData(0, bucket->size()), kSource,
+                      bucket->size()));
 }
 
 TEST_F(GLES2DecoderTest, ShaderSourceImmediateInvalidArgs) {
