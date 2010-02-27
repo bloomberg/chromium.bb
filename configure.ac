@@ -154,6 +154,9 @@ if test "x$VMWGFX" = xyes; then
 fi
 
 AM_CONDITIONAL(HAVE_NOUVEAU, [test "x$NOUVEAU" = xyes])
+if test "x$NOUVEAU" = xyes; then
+	AC_DEFINE(HAVE_NOUVEAU, 1, [Have nouveau (nvidia) support])
+fi
 
 AM_CONDITIONAL(HAVE_RADEON, [test "x$RADEON" = xyes])
 
