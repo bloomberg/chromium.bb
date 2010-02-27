@@ -3217,6 +3217,8 @@ struct GetError {
   static const CommandId kCmdId = kGetError;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
+  typedef GLenum Result;
+
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
@@ -3462,55 +3464,30 @@ struct GetProgramInfoLog {
     header.SetCmd<ValueType>();
   }
 
-  void Init(
-      GLuint _program, GLsizei _bufsize, uint32 _length_shm_id,
-      uint32 _length_shm_offset, uint32 _infolog_shm_id,
-      uint32 _infolog_shm_offset) {
+  void Init(GLuint _program, uint32 _bucket_id) {
     SetHeader();
     program = _program;
-    bufsize = _bufsize;
-    length_shm_id = _length_shm_id;
-    length_shm_offset = _length_shm_offset;
-    infolog_shm_id = _infolog_shm_id;
-    infolog_shm_offset = _infolog_shm_offset;
+    bucket_id = _bucket_id;
   }
 
-  void* Set(
-      void* cmd, GLuint _program, GLsizei _bufsize, uint32 _length_shm_id,
-      uint32 _length_shm_offset, uint32 _infolog_shm_id,
-      uint32 _infolog_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _program, _bufsize, _length_shm_id, _length_shm_offset,
-            _infolog_shm_id, _infolog_shm_offset);
+  void* Set(void* cmd, GLuint _program, uint32 _bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_program, _bucket_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
   uint32 program;
-  int32 bufsize;
-  uint32 length_shm_id;
-  uint32 length_shm_offset;
-  uint32 infolog_shm_id;
-  uint32 infolog_shm_offset;
+  uint32 bucket_id;
 };
 
-COMPILE_ASSERT(sizeof(GetProgramInfoLog) == 28,
-               Sizeof_GetProgramInfoLog_is_not_28);
+COMPILE_ASSERT(sizeof(GetProgramInfoLog) == 12,
+               Sizeof_GetProgramInfoLog_is_not_12);
 COMPILE_ASSERT(offsetof(GetProgramInfoLog, header) == 0,
                OffsetOf_GetProgramInfoLog_header_not_0);
 COMPILE_ASSERT(offsetof(GetProgramInfoLog, program) == 4,
                OffsetOf_GetProgramInfoLog_program_not_4);
-COMPILE_ASSERT(offsetof(GetProgramInfoLog, bufsize) == 8,
-               OffsetOf_GetProgramInfoLog_bufsize_not_8);
-COMPILE_ASSERT(offsetof(GetProgramInfoLog, length_shm_id) == 12,
-               OffsetOf_GetProgramInfoLog_length_shm_id_not_12);
-COMPILE_ASSERT(offsetof(GetProgramInfoLog, length_shm_offset) == 16,
-               OffsetOf_GetProgramInfoLog_length_shm_offset_not_16);
-COMPILE_ASSERT(offsetof(GetProgramInfoLog, infolog_shm_id) == 20,
-               OffsetOf_GetProgramInfoLog_infolog_shm_id_not_20);
-COMPILE_ASSERT(offsetof(GetProgramInfoLog, infolog_shm_offset) == 24,
-               OffsetOf_GetProgramInfoLog_infolog_shm_offset_not_24);
+COMPILE_ASSERT(offsetof(GetProgramInfoLog, bucket_id) == 8,
+               OffsetOf_GetProgramInfoLog_bucket_id_not_8);
 
 struct GetRenderbufferParameteriv {
   typedef GetRenderbufferParameteriv ValueType;
@@ -3627,55 +3604,30 @@ struct GetShaderInfoLog {
     header.SetCmd<ValueType>();
   }
 
-  void Init(
-      GLuint _shader, GLsizei _bufsize, uint32 _length_shm_id,
-      uint32 _length_shm_offset, uint32 _infolog_shm_id,
-      uint32 _infolog_shm_offset) {
+  void Init(GLuint _shader, uint32 _bucket_id) {
     SetHeader();
     shader = _shader;
-    bufsize = _bufsize;
-    length_shm_id = _length_shm_id;
-    length_shm_offset = _length_shm_offset;
-    infolog_shm_id = _infolog_shm_id;
-    infolog_shm_offset = _infolog_shm_offset;
+    bucket_id = _bucket_id;
   }
 
-  void* Set(
-      void* cmd, GLuint _shader, GLsizei _bufsize, uint32 _length_shm_id,
-      uint32 _length_shm_offset, uint32 _infolog_shm_id,
-      uint32 _infolog_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _shader, _bufsize, _length_shm_id, _length_shm_offset,
-            _infolog_shm_id, _infolog_shm_offset);
+  void* Set(void* cmd, GLuint _shader, uint32 _bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_shader, _bucket_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
   uint32 shader;
-  int32 bufsize;
-  uint32 length_shm_id;
-  uint32 length_shm_offset;
-  uint32 infolog_shm_id;
-  uint32 infolog_shm_offset;
+  uint32 bucket_id;
 };
 
-COMPILE_ASSERT(sizeof(GetShaderInfoLog) == 28,
-               Sizeof_GetShaderInfoLog_is_not_28);
+COMPILE_ASSERT(sizeof(GetShaderInfoLog) == 12,
+               Sizeof_GetShaderInfoLog_is_not_12);
 COMPILE_ASSERT(offsetof(GetShaderInfoLog, header) == 0,
                OffsetOf_GetShaderInfoLog_header_not_0);
 COMPILE_ASSERT(offsetof(GetShaderInfoLog, shader) == 4,
                OffsetOf_GetShaderInfoLog_shader_not_4);
-COMPILE_ASSERT(offsetof(GetShaderInfoLog, bufsize) == 8,
-               OffsetOf_GetShaderInfoLog_bufsize_not_8);
-COMPILE_ASSERT(offsetof(GetShaderInfoLog, length_shm_id) == 12,
-               OffsetOf_GetShaderInfoLog_length_shm_id_not_12);
-COMPILE_ASSERT(offsetof(GetShaderInfoLog, length_shm_offset) == 16,
-               OffsetOf_GetShaderInfoLog_length_shm_offset_not_16);
-COMPILE_ASSERT(offsetof(GetShaderInfoLog, infolog_shm_id) == 20,
-               OffsetOf_GetShaderInfoLog_infolog_shm_id_not_20);
-COMPILE_ASSERT(offsetof(GetShaderInfoLog, infolog_shm_offset) == 24,
-               OffsetOf_GetShaderInfoLog_infolog_shm_offset_not_24);
+COMPILE_ASSERT(offsetof(GetShaderInfoLog, bucket_id) == 8,
+               OffsetOf_GetShaderInfoLog_bucket_id_not_8);
 
 struct GetShaderPrecisionFormat {
   typedef GetShaderPrecisionFormat ValueType;
@@ -3757,55 +3709,30 @@ struct GetShaderSource {
     header.SetCmd<ValueType>();
   }
 
-  void Init(
-      GLuint _shader, GLsizei _bufsize, uint32 _length_shm_id,
-      uint32 _length_shm_offset, uint32 _source_shm_id,
-      uint32 _source_shm_offset) {
+  void Init(GLuint _shader, uint32 _bucket_id) {
     SetHeader();
     shader = _shader;
-    bufsize = _bufsize;
-    length_shm_id = _length_shm_id;
-    length_shm_offset = _length_shm_offset;
-    source_shm_id = _source_shm_id;
-    source_shm_offset = _source_shm_offset;
+    bucket_id = _bucket_id;
   }
 
-  void* Set(
-      void* cmd, GLuint _shader, GLsizei _bufsize, uint32 _length_shm_id,
-      uint32 _length_shm_offset, uint32 _source_shm_id,
-      uint32 _source_shm_offset) {
-    static_cast<ValueType*>(
-        cmd)->Init(
-            _shader, _bufsize, _length_shm_id, _length_shm_offset,
-            _source_shm_id, _source_shm_offset);
+  void* Set(void* cmd, GLuint _shader, uint32 _bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_shader, _bucket_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
   uint32 shader;
-  int32 bufsize;
-  uint32 length_shm_id;
-  uint32 length_shm_offset;
-  uint32 source_shm_id;
-  uint32 source_shm_offset;
+  uint32 bucket_id;
 };
 
-COMPILE_ASSERT(sizeof(GetShaderSource) == 28,
-               Sizeof_GetShaderSource_is_not_28);
+COMPILE_ASSERT(sizeof(GetShaderSource) == 12,
+               Sizeof_GetShaderSource_is_not_12);
 COMPILE_ASSERT(offsetof(GetShaderSource, header) == 0,
                OffsetOf_GetShaderSource_header_not_0);
 COMPILE_ASSERT(offsetof(GetShaderSource, shader) == 4,
                OffsetOf_GetShaderSource_shader_not_4);
-COMPILE_ASSERT(offsetof(GetShaderSource, bufsize) == 8,
-               OffsetOf_GetShaderSource_bufsize_not_8);
-COMPILE_ASSERT(offsetof(GetShaderSource, length_shm_id) == 12,
-               OffsetOf_GetShaderSource_length_shm_id_not_12);
-COMPILE_ASSERT(offsetof(GetShaderSource, length_shm_offset) == 16,
-               OffsetOf_GetShaderSource_length_shm_offset_not_16);
-COMPILE_ASSERT(offsetof(GetShaderSource, source_shm_id) == 20,
-               OffsetOf_GetShaderSource_source_shm_id_not_20);
-COMPILE_ASSERT(offsetof(GetShaderSource, source_shm_offset) == 24,
-               OffsetOf_GetShaderSource_source_shm_offset_not_24);
+COMPILE_ASSERT(offsetof(GetShaderSource, bucket_id) == 8,
+               OffsetOf_GetShaderSource_bucket_id_not_8);
 
 struct GetString {
   typedef GetString ValueType;
@@ -3820,26 +3747,30 @@ struct GetString {
     header.SetCmd<ValueType>();
   }
 
-  void Init(GLenum _name) {
+  void Init(GLenum _name, uint32 _bucket_id) {
     SetHeader();
     name = _name;
+    bucket_id = _bucket_id;
   }
 
-  void* Set(void* cmd, GLenum _name) {
-    static_cast<ValueType*>(cmd)->Init(_name);
+  void* Set(void* cmd, GLenum _name, uint32 _bucket_id) {
+    static_cast<ValueType*>(cmd)->Init(_name, _bucket_id);
     return NextCmdAddress<ValueType>(cmd);
   }
 
   gpu::CommandHeader header;
   uint32 name;
+  uint32 bucket_id;
 };
 
-COMPILE_ASSERT(sizeof(GetString) == 8,
-               Sizeof_GetString_is_not_8);
+COMPILE_ASSERT(sizeof(GetString) == 12,
+               Sizeof_GetString_is_not_12);
 COMPILE_ASSERT(offsetof(GetString, header) == 0,
                OffsetOf_GetString_header_not_0);
 COMPILE_ASSERT(offsetof(GetString, name) == 4,
                OffsetOf_GetString_name_not_4);
+COMPILE_ASSERT(offsetof(GetString, bucket_id) == 8,
+               OffsetOf_GetString_bucket_id_not_8);
 
 struct GetTexParameterfv {
   typedef GetTexParameterfv ValueType;
@@ -4247,6 +4178,8 @@ struct IsBuffer {
   static const CommandId kCmdId = kIsBuffer;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
+  typedef uint32 Result;
+
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
@@ -4292,6 +4225,8 @@ struct IsEnabled {
   static const CommandId kCmdId = kIsEnabled;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
+  typedef uint32 Result;
+
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
@@ -4336,6 +4271,8 @@ struct IsFramebuffer {
   typedef IsFramebuffer ValueType;
   static const CommandId kCmdId = kIsFramebuffer;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  typedef uint32 Result;
 
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
@@ -4383,6 +4320,8 @@ struct IsProgram {
   static const CommandId kCmdId = kIsProgram;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
+  typedef uint32 Result;
+
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
@@ -4428,6 +4367,8 @@ struct IsRenderbuffer {
   typedef IsRenderbuffer ValueType;
   static const CommandId kCmdId = kIsRenderbuffer;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  typedef uint32 Result;
 
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
@@ -4475,6 +4416,8 @@ struct IsShader {
   static const CommandId kCmdId = kIsShader;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
 
+  typedef uint32 Result;
+
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT
   }
@@ -4519,6 +4462,8 @@ struct IsTexture {
   typedef IsTexture ValueType;
   static const CommandId kCmdId = kIsTexture;
   static const cmd::ArgFlags kArgFlags = cmd::kFixed;
+
+  typedef uint32 Result;
 
   static uint32 ComputeSize() {
     return static_cast<uint32>(sizeof(ValueType));  // NOLINT

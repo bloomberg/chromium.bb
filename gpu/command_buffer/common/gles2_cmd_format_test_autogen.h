@@ -1284,22 +1284,14 @@ TEST(GLES2FormatTest, GetProgramInfoLog) {
   void* next_cmd = cmd.Set(
       &cmd,
       static_cast<GLuint>(11),
-      static_cast<GLsizei>(12),
-      static_cast<uint32>(13),
-      static_cast<uint32>(14),
-      static_cast<uint32>(15),
-      static_cast<uint32>(16));
+      static_cast<uint32>(12));
   EXPECT_EQ(static_cast<uint32>(GetProgramInfoLog::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<char*>(next_cmd),
             reinterpret_cast<char*>(&cmd) + sizeof(cmd));
   EXPECT_EQ(static_cast<GLuint>(11), cmd.program);
-  EXPECT_EQ(static_cast<GLsizei>(12), cmd.bufsize);
-  EXPECT_EQ(static_cast<uint32>(13), cmd.length_shm_id);
-  EXPECT_EQ(static_cast<uint32>(14), cmd.length_shm_offset);
-  EXPECT_EQ(static_cast<uint32>(15), cmd.infolog_shm_id);
-  EXPECT_EQ(static_cast<uint32>(16), cmd.infolog_shm_offset);
+  EXPECT_EQ(static_cast<uint32>(12), cmd.bucket_id);
 }
 
 TEST(GLES2FormatTest, GetRenderbufferParameteriv) {
@@ -1345,22 +1337,14 @@ TEST(GLES2FormatTest, GetShaderInfoLog) {
   void* next_cmd = cmd.Set(
       &cmd,
       static_cast<GLuint>(11),
-      static_cast<GLsizei>(12),
-      static_cast<uint32>(13),
-      static_cast<uint32>(14),
-      static_cast<uint32>(15),
-      static_cast<uint32>(16));
+      static_cast<uint32>(12));
   EXPECT_EQ(static_cast<uint32>(GetShaderInfoLog::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<char*>(next_cmd),
             reinterpret_cast<char*>(&cmd) + sizeof(cmd));
   EXPECT_EQ(static_cast<GLuint>(11), cmd.shader);
-  EXPECT_EQ(static_cast<GLsizei>(12), cmd.bufsize);
-  EXPECT_EQ(static_cast<uint32>(13), cmd.length_shm_id);
-  EXPECT_EQ(static_cast<uint32>(14), cmd.length_shm_offset);
-  EXPECT_EQ(static_cast<uint32>(15), cmd.infolog_shm_id);
-  EXPECT_EQ(static_cast<uint32>(16), cmd.infolog_shm_offset);
+  EXPECT_EQ(static_cast<uint32>(12), cmd.bucket_id);
 }
 
 TEST(GLES2FormatTest, GetShaderPrecisionFormat) {
@@ -1387,35 +1371,29 @@ TEST(GLES2FormatTest, GetShaderSource) {
   void* next_cmd = cmd.Set(
       &cmd,
       static_cast<GLuint>(11),
-      static_cast<GLsizei>(12),
-      static_cast<uint32>(13),
-      static_cast<uint32>(14),
-      static_cast<uint32>(15),
-      static_cast<uint32>(16));
+      static_cast<uint32>(12));
   EXPECT_EQ(static_cast<uint32>(GetShaderSource::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<char*>(next_cmd),
             reinterpret_cast<char*>(&cmd) + sizeof(cmd));
   EXPECT_EQ(static_cast<GLuint>(11), cmd.shader);
-  EXPECT_EQ(static_cast<GLsizei>(12), cmd.bufsize);
-  EXPECT_EQ(static_cast<uint32>(13), cmd.length_shm_id);
-  EXPECT_EQ(static_cast<uint32>(14), cmd.length_shm_offset);
-  EXPECT_EQ(static_cast<uint32>(15), cmd.source_shm_id);
-  EXPECT_EQ(static_cast<uint32>(16), cmd.source_shm_offset);
+  EXPECT_EQ(static_cast<uint32>(12), cmd.bucket_id);
 }
 
 TEST(GLES2FormatTest, GetString) {
   GetString cmd = { { 0 } };
   void* next_cmd = cmd.Set(
       &cmd,
-      static_cast<GLenum>(11));
+      static_cast<GLenum>(11),
+      static_cast<uint32>(12));
   EXPECT_EQ(static_cast<uint32>(GetString::kCmdId),
             cmd.header.command);
   EXPECT_EQ(sizeof(cmd), cmd.header.size * 4u);
   EXPECT_EQ(static_cast<char*>(next_cmd),
             reinterpret_cast<char*>(&cmd) + sizeof(cmd));
   EXPECT_EQ(static_cast<GLenum>(11), cmd.name);
+  EXPECT_EQ(static_cast<uint32>(12), cmd.bucket_id);
 }
 
 TEST(GLES2FormatTest, GetTexParameterfv) {

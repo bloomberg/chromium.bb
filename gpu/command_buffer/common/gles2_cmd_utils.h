@@ -34,6 +34,10 @@ class GLES2Util {
 
   static size_t GetGLTypeSizeForTexturesAndBuffers(uint32 type);
 
+  static uint32 GLErrorToErrorBit(uint32 gl_error);
+
+  static uint32 GLErrorBitToGLError(uint32 error_bit);
+
  private:
   int num_compressed_texture_formats_;
 };

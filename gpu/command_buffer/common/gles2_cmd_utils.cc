@@ -11,6 +11,17 @@
 namespace gpu {
 namespace gles2 {
 
+namespace gl_error_bit {
+enum GLErrorBit {
+  kNoError = 0,
+  kInvalidEnum = (1 << 0),
+  kInvalidValue = (1 << 1),
+  kInvalidOperation = (1 << 2),
+  kOutOfMemory = (1 << 3),
+  kInvalidFrameBufferOperation = (1 << 4),
+};
+}
+
 int GLES2Util::GLGetNumValuesReturned(int id) const {
   switch (id) {
     // -- glGetBooleanv, glGetFloatv, glGetIntergerv
@@ -401,6 +412,41 @@ size_t GLES2Util::GetGLTypeSizeForTexturesAndBuffers(uint32 type) {
   }
 }
 
+uint32 GLES2Util::GLErrorToErrorBit(uint32 error) {
+  switch (error) {
+    case GL_INVALID_ENUM:
+      return gl_error_bit::kInvalidEnum;
+    case GL_INVALID_VALUE:
+      return gl_error_bit::kInvalidValue;
+    case GL_INVALID_OPERATION:
+      return gl_error_bit::kInvalidOperation;
+    case GL_OUT_OF_MEMORY:
+      return gl_error_bit::kOutOfMemory;
+    case GL_INVALID_FRAMEBUFFER_OPERATION:
+      return gl_error_bit::kInvalidFrameBufferOperation;
+    default:
+      NOTREACHED();
+      return gl_error_bit::kNoError;
+  }
+}
+
+uint32 GLES2Util::GLErrorBitToGLError(uint32 error_bit) {
+  switch (error_bit) {
+    case gl_error_bit::kInvalidEnum:
+      return GL_INVALID_ENUM;
+    case gl_error_bit::kInvalidValue:
+      return GL_INVALID_VALUE;
+    case gl_error_bit::kInvalidOperation:
+      return GL_INVALID_OPERATION;
+    case gl_error_bit::kOutOfMemory:
+      return GL_OUT_OF_MEMORY;
+    case gl_error_bit::kInvalidFrameBufferOperation:
+      return GL_INVALID_FRAMEBUFFER_OPERATION;
+    default:
+      NOTREACHED();
+      return GL_NO_ERROR;
+  }
+}
 
 }  // namespace gles2
 }  // namespace gpu
