@@ -4,7 +4,7 @@
 # Use of this source code is governed by a BSD-style license that can be
 # found in the LICENSE file.
 
-"""code generator for GL command buffers."""
+"""code generator for GLES2 command buffers."""
 
 import os
 import os.path
