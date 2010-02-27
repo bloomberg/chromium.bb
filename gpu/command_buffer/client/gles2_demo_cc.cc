@@ -99,7 +99,7 @@ void InitShaders() {
   glGetProgramiv(programObject, GL_LINK_STATUS, &linked);
   if (linked == 0) {
     char buffer[1024];
-    GLsizei length;
+    GLsizei length = 0;
     glGetProgramInfoLog(programObject, sizeof(buffer), &length, buffer);
     std::string log(buffer, length);
     DLOG(ERROR) << "Error linking program:" << log;
