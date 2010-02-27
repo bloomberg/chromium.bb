@@ -137,6 +137,10 @@ bool SafeBrowsingResourceHandler::OnResponseCompleted(
   return next_handler_->OnResponseCompleted(request_id, status, security_info);
 }
 
+void SafeBrowsingResourceHandler::OnRequestClosed() {
+  next_handler_->OnRequestClosed();
+}
+
 // SafeBrowsingService::Client implementation, called on the IO thread once
 // the URL has been classified.
 void SafeBrowsingResourceHandler::OnUrlCheckResult(

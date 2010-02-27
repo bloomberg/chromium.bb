@@ -61,6 +61,7 @@ class SafeBrowsingResourceHandler : public ResourceHandler,
   bool OnResponseCompleted(int request_id,
                            const URLRequestStatus& status,
                            const std::string& security_info);
+  virtual void OnRequestClosed();
 
   // SafeBrowsingService::Client implementation, called on the IO thread once
   // the URL has been classified.
