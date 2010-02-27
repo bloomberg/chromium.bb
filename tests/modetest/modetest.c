@@ -206,10 +206,10 @@ void dump_connectors(void)
 		for (j = 0; j < connector->count_modes; j++)
 			dump_mode(&connector->modes[j]);
 
-		drmModeFreeConnector(connector);
-
 		printf("  props:\n");
 		dump_props(connector);
+
+		drmModeFreeConnector(connector);
 	}
 	printf("\n");
 }
