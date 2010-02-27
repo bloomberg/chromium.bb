@@ -727,15 +727,6 @@ BUG20226 DEFER : fast/forms/input-selectedoption.html = FAIL
 // Add support for inspector layout tests.
 BUG26734 LINUX MAC SKIP : inspector = PASS
 BUG26734 LINUX MAC SKIP : http/tests/inspector = PASS
-BUG26734 SKIP : inspector/console-format-collections.html = TEXT
-BUG26734 SKIP : inspector/console-format.html = TEXT
-BUG36986 SKIP : inspector/timeline-enum-stability.html = TEXT
-BUG36986 SKIP : inspector/timeline-event-dispatch.html = TEXT
-BUG36986 SKIP : inspector/timeline-mark-timeline.html = TEXT
-BUG36986 SKIP : inspector/timeline-network-resource.html = TEXT
-BUG36986 SKIP : inspector/timeline-paint.html = TEXT
-BUG36986 SKIP : inspector/timeline-parse-html.html = TEXT
-
 
 // These tests are disabled until <audio> and <video> tags are supported.
 // Disable <video> and <audio> tests for mac and linux until there is
@@ -2940,3 +2931,7 @@ BUG36681 : java/array-return.html = TEXT
 
 // WebKit roll 55241 to 55250
 BUG36846 : java/java-and-plugins.html = TEXT
+
+// WebKit roll 55250 to 55339
+BUG36966 : fast/loader/about-blank-hash-kept.html = FAIL
+BUG36967 : java/array-sort.html = FAIL
