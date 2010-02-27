@@ -4,9 +4,11 @@
 
 #include "chrome/browser/extensions/extensions_service.h"
 
+#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/histogram.h"
+#include "base/string16.h"
 #include "base/string_util.h"
 #include "base/time.h"
 #include "base/values.h"
@@ -38,6 +40,8 @@
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
 #include "chrome/common/url_constants.h"
+#include "webkit/database/database_tracker.h"
+#include "webkit/database/database_util.h"
 
 #if defined(OS_WIN)
 #include "chrome/browser/extensions/external_registry_extension_provider_win.h"
@@ -461,6 +465,19 @@ void ExtensionsService::NotifyExtensionLoaded(Extension* extension) {
                   extension->default_locale(),
                   extension->app_extent(),
                   extension->api_permissions())));
+    }
+
+    // Check if this permission requires unlimited storage quota
+    if (extension->HasApiPermission(Extension::kUnlimitedStoragePermission)) {
+      string16 origin_identifier =
+          webkit_database::DatabaseUtil::GetOriginIdentifier(extension->url());
+      ChromeThread::PostTask(
+          ChromeThread::FILE, FROM_HERE,
+          NewRunnableMethod(
+              profile_->GetDatabaseTracker(),
+              &webkit_database::DatabaseTracker::SetOriginQuotaInMemory,
+              origin_identifier,
+              kint64max));
     }
   }
 

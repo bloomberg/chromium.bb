@@ -124,7 +124,10 @@ class DatabaseTracker
 
   bool GetAllOriginsInfo(std::vector<OriginInfo>* origins_info);
   void SetOriginQuota(const string16& origin_identifier, int64 new_quota);
+  void SetOriginQuotaInMemory(const string16& origin_identifier,
+                              int64 new_quota);
 
+  int64 GetDefaultQuota() { return default_quota_; }
   // Sets the default quota for all origins. Should be used in tests only.
   void SetDefaultQuota(int64 quota);
 
@@ -215,6 +218,10 @@ class DatabaseTracker
 
   // Default quota for all origins; changed only by tests
   int64 default_quota_;
+
+  // Store quotas for extensions in memory, in order to prevent writing a row
+  // to quota_table_ every time an extention is loaded.
+  std::map<string16, int64> in_memory_quotas_;
 
   FRIEND_TEST(DatabaseTrackerTest, TestIt);
 };

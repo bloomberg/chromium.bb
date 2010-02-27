@@ -5,6 +5,8 @@
 #include "webkit/database/database_util.h"
 
 #include "base/string_util.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebSecurityOrigin.h"
+#include "third_party/WebKit/WebKit/chromium/public/WebString.h"
 #include "webkit/database/database_tracker.h"
 #include "webkit/database/vfs_backend.h"
 
@@ -62,6 +64,11 @@ FilePath DatabaseUtil::GetFullFilePathForVfsFile(
           FilePath::StringType::npos)
     return FilePath();
   return full_path;
+}
+
+string16 DatabaseUtil::GetOriginIdentifier(const GURL& url) {
+  string16 spec = UTF8ToUTF16(url.spec());
+  return WebKit::WebSecurityOrigin::createFromString(spec).databaseIdentifier();
 }
 
 }  // namespace webkit_database

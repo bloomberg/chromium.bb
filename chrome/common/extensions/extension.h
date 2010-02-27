@@ -80,6 +80,7 @@ class Extension {
   static const char* kNotificationPermission;
   static const char* kExperimentalPermission;
   static const char* kIncognitoPermission;
+  static const char* kUnlimitedStoragePermission;
 
   static const char* kPermissionNames[];
   static const size_t kNumPermissions;

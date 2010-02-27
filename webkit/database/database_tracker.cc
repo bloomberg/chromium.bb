@@ -17,7 +17,6 @@
 #include "net/base/net_errors.h"
 #include "webkit/database/databases_table.h"
 #include "webkit/database/quota_table.h"
-#include "webkit/glue/webkit_glue.h"
 
 namespace webkit_database {
 
@@ -27,7 +26,6 @@ const FilePath::CharType kTrackerDatabaseFileName[] =
     FILE_PATH_LITERAL("Databases.db");
 const int kCurrentVersion = 2;
 const int kCompatibleVersion = 1;
-const int64 kDefaultExtensionQuota = 1024 * 1024 * 1024;
 const char* kExtensionOriginIdentifierPrefix = "chrome-extension_";
 
 DatabaseTracker::DatabaseTracker(const FilePath& profile_path)
@@ -158,6 +156,7 @@ FilePath DatabaseTracker::GetFullDBFilePath(
     const string16& database_name) const {
   DCHECK(!origin_identifier.empty());
   DCHECK(!database_name.empty());
+
   int64 id = databases_table_->GetDatabaseID(
       origin_identifier, database_name);
   if (id < 0)
@@ -194,14 +193,26 @@ bool DatabaseTracker::GetAllOriginsInfo(std::vector<OriginInfo>* origins_info) {
 
 void DatabaseTracker::SetOriginQuota(const string16& origin_identifier,
                                      int64 new_quota) {
+  if (!LazyInit())
+    return;
+
   if (quota_table_->SetOriginQuota(origin_identifier, new_quota) &&
       (origins_info_map_.find(origin_identifier) != origins_info_map_.end())) {
     origins_info_map_[origin_identifier].SetQuota(new_quota);
   }
 }
 
+void DatabaseTracker::SetOriginQuotaInMemory(const string16& origin_identifier,
+                                             int64 new_quota) {
+  DCHECK(new_quota >= 0);
+  in_memory_quotas_[origin_identifier] = new_quota;
+}
+
 bool DatabaseTracker::DeleteClosedDatabase(const string16& origin_identifier,
                                            const string16& database_name) {
+  if (!LazyInit())
+    return false;
+
   // Check if the database is opened by any renderer.
   if (database_connections_.IsDatabaseOpened(origin_identifier, database_name))
     return false;
@@ -225,6 +236,9 @@ bool DatabaseTracker::DeleteClosedDatabase(const string16& origin_identifier,
 }
 
 bool DatabaseTracker::DeleteOrigin(const string16& origin_identifier) {
+  if (!LazyInit())
+    return false;
+
   // Check if any database in this origin is opened by any renderer.
   if (database_connections_.IsOriginUsed(origin_identifier))
     return false;
@@ -354,15 +368,14 @@ DatabaseTracker::CachedOriginInfo* DatabaseTracker::GetCachedOriginInfo(
       origin_info.SetDatabaseDescription(it->database_name, it->description);
     }
 
-    int64 origin_quota = quota_table_->GetOriginQuota(origin_identifier);
-    if (origin_quota > 0) {
-      origin_info.SetQuota(origin_quota);
-    } else if (StartsWith(origin_identifier,
-                          ASCIIToUTF16(kExtensionOriginIdentifierPrefix),
-                          true)) {
-      origin_info.SetQuota(kDefaultExtensionQuota);
+    if (in_memory_quotas_.find(origin_identifier) != in_memory_quotas_.end()) {
+      origin_info.SetQuota(in_memory_quotas_[origin_identifier]);
     } else {
-      origin_info.SetQuota(default_quota_);
+      int64 origin_quota = quota_table_->GetOriginQuota(origin_identifier);
+      if (origin_quota > 0)
+        origin_info.SetQuota(origin_quota);
+      else
+        origin_info.SetQuota(default_quota_);
     }
   }
 

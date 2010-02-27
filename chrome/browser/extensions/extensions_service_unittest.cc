@@ -7,12 +7,15 @@
 #include <algorithm>
 #include <vector>
 
+#include "base/basictypes.h"
 #include "base/command_line.h"
 #include "base/file_util.h"
 #include "base/json/json_reader.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/string16.h"
 #include "base/string_util.h"
+#include "base/task.h"
 #include "chrome/browser/extensions/crx_installer.h"
 #include "chrome/browser/extensions/extension_creator.h"
 #include "chrome/browser/extensions/extensions_service.h"
@@ -29,9 +32,13 @@
 #include "chrome/common/notification_service.h"
 #include "chrome/common/notification_type.h"
 #include "chrome/common/pref_names.h"
+#include "chrome/common/url_constants.h"
 #include "chrome/test/testing_profile.h"
+#include "googleurl/src/gurl.h"
 #include "testing/gtest/include/gtest/gtest.h"
 #include "testing/platform_test.h"
+#include "webkit/database/database_tracker.h"
+#include "webkit/database/database_util.h"
 
 namespace keys = extension_manifest_keys;
 
@@ -1632,4 +1639,48 @@ TEST(ExtensionsServiceTestSimple, Enabledness) {
   service->Init();
   loop.RunAllPending();
   EXPECT_TRUE(recorder.ready());
+}
+
+// Test loading extensions that require limited and unlimited storage quotas.
+TEST_F(ExtensionsServiceTest, StorageQuota) {
+  InitializeEmptyExtensionsService();
+
+  FilePath extensions_path;
+  ASSERT_TRUE(PathService::Get(chrome::DIR_TEST_DATA, &extensions_path));
+  extensions_path = extensions_path.AppendASCII("extensions")
+      .AppendASCII("storage_quota");
+
+  FilePath limited_quota_ext = extensions_path.AppendASCII("limited_quota")
+      .AppendASCII("1.0");
+  FilePath unlimited_quota_ext = extensions_path.AppendASCII("unlimited_quota")
+      .AppendASCII("1.0");
+  service_->LoadExtension(limited_quota_ext);
+  service_->LoadExtension(unlimited_quota_ext);
+  loop_.RunAllPending();
+
+  EXPECT_EQ(2u, loaded_.size());
+  EXPECT_TRUE(profile_.get());
+  EXPECT_FALSE(profile_->IsOffTheRecord());
+
+  // Open a database in each origin to make the tracker aware
+  // of the existance of these origins and to get their quotas.
+  int64 limited_quota = -1;
+  int64 unlimited_quota = -1;
+  string16 limited_quota_identifier =
+      webkit_database::DatabaseUtil::GetOriginIdentifier(loaded_[0]->url());
+  string16 unlimited_quota_identifier =
+      webkit_database::DatabaseUtil::GetOriginIdentifier(loaded_[1]->url());
+  string16 db_name = UTF8ToUTF16("db");
+  string16 description = UTF8ToUTF16("db_description");
+  int64 database_size;
+  webkit_database::DatabaseTracker* db_tracker = profile_->GetDatabaseTracker();
+  db_tracker->DatabaseOpened(limited_quota_identifier, db_name, description,
+                             1, &database_size, &limited_quota);
+  db_tracker->DatabaseClosed(limited_quota_identifier, db_name);
+  db_tracker->DatabaseOpened(unlimited_quota_identifier, db_name, description,
+                             1, &database_size, &unlimited_quota);
+  db_tracker->DatabaseClosed(unlimited_quota_identifier, db_name);
+
+  EXPECT_EQ(profile_->GetDatabaseTracker()->GetDefaultQuota(), limited_quota);
+  EXPECT_EQ(kint64max, unlimited_quota);
 }

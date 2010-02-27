@@ -7,6 +7,7 @@
 
 #include "base/file_path.h"
 #include "base/string16.h"
+#include "googleurl/src/gurl.h"
 
 namespace webkit_database {
 
@@ -22,7 +23,7 @@ class DatabaseUtil {
                                string16* sqlite_suffix);
   static FilePath GetFullFilePathForVfsFile(DatabaseTracker* db_tracker,
                                             const string16& vfs_file_name);
-
+  static string16 GetOriginIdentifier(const GURL& url);
 };
 
 }  // namespace webkit_database
