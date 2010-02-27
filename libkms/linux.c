@@ -107,6 +107,10 @@ linux_from_sysfs(int fd, struct kms_driver **out)
 	else if (!strcmp(name, "vmwgfx"))
 		ret = vmwgfx_create(fd, out);
 #endif
+#ifdef HAVE_NOUVEAU
+	else if (!strcmp(name, "nouveau"))
+		ret = nouveau_create(fd, out);
+#endif
 	else
 		ret = -ENOSYS;
 

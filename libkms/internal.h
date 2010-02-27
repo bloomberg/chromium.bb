@@ -68,4 +68,6 @@ int vmwgfx_create(int fd, struct kms_driver **out);
 
 int intel_create(int fd, struct kms_driver **out);
 
+int nouveau_create(int fd, struct kms_driver **out);
+
 #endif

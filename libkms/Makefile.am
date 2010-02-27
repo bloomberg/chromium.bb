@@ -21,6 +21,10 @@ if HAVE_VMWGFX
 libkms_la_SOURCES += vmwgfx.c
 endif
 
+if HAVE_NOUVEAU
+libkms_la_SOURCES += nouveau.c
+endif
+
 libkmsincludedir = ${includedir}/libkms
 libkmsinclude_HEADERS = libkms.h
 
