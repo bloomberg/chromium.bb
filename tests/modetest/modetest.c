@@ -680,7 +680,7 @@ int main(int argc, char **argv)
 	int c;
 	int encoders = 0, connectors = 0, crtcs = 0, framebuffers = 0;
 	int test_vsync = 0;
-	char *modules[] = { "i915", "radeon" };
+	char *modules[] = { "i915", "radeon", "nouveau" };
 	char *modeset = NULL;
 	int i, count = 0;
 	struct connector con_args[2];

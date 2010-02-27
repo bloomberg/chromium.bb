@@ -59,6 +59,7 @@ int test_bo(struct kms_driver *kms)
 char *drivers[] = {
 	"i915",
 	"radeon",
+	"nouveau",
 	"vmwgfx",
 	NULL
 };
