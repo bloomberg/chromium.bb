@@ -386,7 +386,9 @@ HRESULT ChromeActiveDocument::IOleObject_SetClientSite(
     }
 
     ScopedComPtr<IDocHostUIHandler> doc_host_handler;
-    doc_host_handler.QueryFrom(doc_site_);
+    if (doc_site_) {
+      doc_host_handler.QueryFrom(doc_site_);
+    }
 
     if (doc_host_handler.get()) {
       doc_host_handler->HideUI();
