@@ -616,7 +616,8 @@ TEST_F(ChromeFrameTestWithWebServer,
 
 const wchar_t kInHeadPage[] = L"files/in_head.html";
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_InHead) {
+// Flaky on build bots. See http://crbug.com/37009
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_InHead) {
   SimpleBrowserTest(FIREFOX, kInHeadPage, L"InHead");
 }
 
