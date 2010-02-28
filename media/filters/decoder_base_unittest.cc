@@ -55,7 +55,7 @@ class MockDecoderImpl : public DecoderBase<MockDecoder, MockOutput> {
   MOCK_METHOD2(DoDecode, void(Buffer* input, Task* done_cb));
 
  private:
-  FRIEND_TEST(DecoderBaseTest, FlowControl);
+  FRIEND_TEST(DecoderBaseTest, DISABLED_FlowControl);
 
   DISALLOW_COPY_AND_ASSIGN(MockDecoderImpl);
 };
