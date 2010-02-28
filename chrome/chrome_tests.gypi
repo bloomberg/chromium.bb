@@ -865,6 +865,7 @@
         'common/bzip2_unittest.cc',
         'common/child_process_logging_mac_unittest.mm',
         'common/common_param_traits_unittest.cc',
+        'common/extensions/api/extension_api_json_validity_unittest.cc',
         'common/extensions/extension_action_unittest.cc',
         'common/extensions/extension_file_util_unittest.cc',
         'common/extensions/extension_l10n_util_unittest.cc',
