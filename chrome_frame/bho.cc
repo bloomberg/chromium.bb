@@ -280,6 +280,8 @@ void Bho::OnBeginningTransaction(IWebBrowser2* browser, const wchar_t* url,
       referrer_.clear();
       const wchar_t* both_headers[] = { headers, additional_headers };
       for (int i = 0; referrer_.empty() && i < arraysize(both_headers); ++i) {
+        if (!both_headers[i])
+          continue;
         std::string raw_headers_utf8 = WideToUTF8(both_headers[i]);
         std::string http_headers =
             net::HttpUtil::AssembleRawHeaders(raw_headers_utf8.c_str(),
