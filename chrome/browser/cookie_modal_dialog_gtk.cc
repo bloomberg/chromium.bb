@@ -48,23 +48,23 @@ NativeDialog CookiePromptModalDialog::CreateNativeDialog() {
           IDS_COOKIE_ALERT_TITLE : IDS_DATA_ALERT_TITLE,
           UTF8ToUTF16(origin().host())).c_str(),
       window,
-      GTK_DIALOG_MODAL,
+      static_cast<GtkDialogFlags>(GTK_DIALOG_MODAL | GTK_DIALOG_NO_SEPARATOR),
       l10n_util::GetStringUTF8(IDS_COOKIE_ALERT_BLOCK_BUTTON).c_str(),
       GTK_RESPONSE_REJECT,
       l10n_util::GetStringUTF8(IDS_COOKIE_ALERT_ALLOW_BUTTON).c_str(),
       GTK_RESPONSE_ACCEPT,
       NULL);
+  gtk_window_set_resizable(GTK_WINDOW(dialog), FALSE);
 
   GtkWidget* content_area = GTK_DIALOG(dialog)->vbox;
   gtk_box_set_spacing(GTK_BOX(content_area), gtk_util::kContentAreaSpacing);
 
   string16 display_host = UTF8ToUTF16(origin().host());
-  GtkWidget* label = gtk_label_new(
+  GtkWidget* label = gtk_util::LeftAlignMisc(gtk_label_new(
       l10n_util::GetStringFUTF8(
           type == CookiePromptModalDialog::DIALOG_TYPE_COOKIE ?
           IDS_COOKIE_ALERT_LABEL : IDS_DATA_ALERT_LABEL,
-          display_host).c_str());
-
+          display_host).c_str()));
   gtk_box_pack_start(GTK_BOX(content_area), label, FALSE, FALSE, 0);
 
   // Create a vbox for all the radio buttons so they aren't too far away from
