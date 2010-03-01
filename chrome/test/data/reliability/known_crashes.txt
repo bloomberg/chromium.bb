@@ -54,6 +54,9 @@ PREFIX : base::subtle::refcountedthreadsafebase::release___messageloop::posttask
 
 # End mysterious crash section.
 
+# 15620
+PREFIX : browser::processpendingtabs___browser::clearunloadstate
+
 # 9615
 SUBSTRING : history::historybackend::~historybackend
 
