@@ -220,24 +220,11 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSExpiredCertAndDontProceed) {
   CheckUnauthenticatedState(tab);
 }
 
-#if defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
-// TODO(jcampan|oshima): On linux/views, the WaitForLoadStop call
-// below sometimes waits forever because LOAD_STOP notification can
-// happen before WaitLorLoadStop is called. Marking this test as Flaky.
-// See http://crbug.com/28098.
-#define MAYBE_TestHTTPSErrorWithNoNavEntry FLAKY_TestHTTPSErrorWithNoNavEntry
-#elif defined(OS_MACOSX)
-// Also flaky on Mac. http://crbug.com/29992
-#define MAYBE_TestHTTPSErrorWithNoNavEntry FLAKY_TestHTTPSErrorWithNoNavEntry
-#else
-#define MAYBE_TestHTTPSErrorWithNoNavEntry TestHTTPSErrorWithNoNavEntry
-#endif
-
 // Open a page with a HTTPS error in a tab with no prior navigation (through a
 // link with a blank target).  This is to test that the lack of navigation entry
 // does not cause any problems (it was causing a crasher, see
 // http://crbug.com/19941).
-IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSErrorWithNoNavEntry) {
+IN_PROC_BROWSER_TEST_F(SSLUITest, TestHTTPSErrorWithNoNavEntry) {
   scoped_refptr<HTTPTestServer> http_server = PlainServer();
   ASSERT_TRUE(http_server.get() != NULL);
   scoped_refptr<HTTPSTestServer> bad_https_server = BadCertServer();
@@ -249,6 +236,10 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSErrorWithNoNavEntry) {
       L"files/ssl/page_with_blank_target.html"));
 
   bool success = false;
+
+  ui_test_utils::WindowedNotificationObserver<NavigationController>
+      load_stop_signal(NotificationType::LOAD_STOP, NULL);
+
   // Simulate clicking the link (and therefore navigating to that new page).
   // This will causes a new tab to be created.
   EXPECT_TRUE(ui_test_utils::ExecuteJavaScriptAndExtractBool(
@@ -265,7 +256,7 @@ IN_PROC_BROWSER_TEST_F(SSLUITest, MAYBE_TestHTTPSErrorWithNoNavEntry) {
   // Since the navigation was initiated by the renderer (when we clicked on the
   // link) and since the main page network request failed, we won't get a
   // navigation entry committed.  So we'll just wait for the load to stop.
-  ui_test_utils::WaitForLoadStop(
+  load_stop_signal.WaitFor(
       &(browser()->GetSelectedTabContents()->controller()));
 
   // We should have an interstitial page showing.

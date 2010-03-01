@@ -6,13 +6,17 @@
 #define CHROME_TEST_UI_TEST_UTILS_H_
 
 #include <string>
+#include <set>
 
 #include "base/basictypes.h"
+#include "base/message_loop.h"
 #include "base/scoped_temp_dir.h"
 #include "base/string16.h"
 #include "chrome/browser/view_ids.h"
 #include "chrome/common/notification_observer.h"
+#include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_type.h"
+#include "chrome/common/notification_service.h"
 
 class AppModalDialog;
 class Browser;
@@ -216,6 +220,103 @@ class TestWebSocketServer {
   FilePath websocket_pid_file_;
 
   DISALLOW_COPY_AND_ASSIGN(TestWebSocketServer);
+};
+
+// A WindowedNotificationObserver allows code to watch for a notification
+// over a window of time. Typically testing code will need to do something
+// like this:
+//   PerformAction()
+//   WaitForCompletionNotification()
+// This leads to flakiness as there's a window between PerformAction returning
+// and the observers getting registered, where a notification will be missed.
+//
+// Rather, one can do this:
+//   WindowedNotificationObserver<type> signal(...)
+//   PerformAction()
+//   wait_for_signal.Wait()
+template <class T>
+class WindowedNotificationObserver : public NotificationObserver {
+ public:
+  /* Register to listen for notifications of the given type from either
+   * a specific source, of from all sources if |source| is NULL */
+  WindowedNotificationObserver(NotificationType notification_type,
+                               T* source)
+      : seen_(false),
+        running_(false),
+        waiting_for_(source) {
+    if (source) {
+      registrar_.Add(this, notification_type, waiting_for_);
+    } else {
+      registrar_.Add(this, notification_type,
+                     NotificationService::AllSources());
+    }
+  }
+
+  /* Wait sleeps until the specified notification occurs. You must have
+   * specified a source in the arguments to the constructor in order to
+   * use this function. Otherwise, you should use WaitFor. */
+  void Wait() {
+    if (!waiting_for_.ptr()) {
+      LOG(FATAL) << "Wait called when monitoring all sources. You must use "
+                 << "WaitFor in this case.";
+    }
+
+    if (seen_)
+      return;
+
+    running_ = true;
+    ui_test_utils::RunMessageLoop();
+  }
+
+  /* WaitFor waits until the given notification type is received from the
+   * given object. If the notification was emitted between the construction of
+   * this object and this call then it returns immediately.
+   *
+   * Beware that this is inheriently plagued by ABA issues. Consider:
+   *   WindowedNotificationObserver is created with NULL source
+   *   Object A is created with address x and fires a notification
+   *   Object A is freed
+   *   Object B is created with the same address
+   *   WaitFor is called with the address of B
+   *
+   * In this case, WaitFor will return immediately because of the
+   * notification from A (because they shared an address), despite being
+   * different objects.
+   */
+  void WaitFor(T* source) {
+    if (waiting_for_.ptr()) {
+      LOG(FATAL) << "WaitFor called when already waiting on a specific "
+                 << "source. Use Wait in this case.";
+    }
+
+    waiting_for_ = Source<T>(source);
+    if (sources_seen_.count(waiting_for_.map_key()) > 0)
+      return;
+
+    running_ = true;
+    ui_test_utils::RunMessageLoop();
+  }
+
+  virtual void Observe(NotificationType type,
+                       const NotificationSource& source,
+                       const NotificationDetails& details) {
+    if (waiting_for_ == source) {
+      seen_ = true;
+      if (running_)
+        MessageLoopForUI::current()->Quit();
+    } else {
+      sources_seen_.insert(source.map_key());
+    }
+  }
+
+ private:
+  bool seen_;
+  bool running_;
+  std::set<uintptr_t> sources_seen_;
+  Source<T> waiting_for_;
+  NotificationRegistrar registrar_;
+
+  DISALLOW_COPY_AND_ASSIGN(WindowedNotificationObserver);
 };
 
 }  // namespace ui_test_utils
