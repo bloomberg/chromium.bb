@@ -304,6 +304,12 @@ std::wstring ElideText(const std::wstring& text,
 
   // Pango will return 0 width for absurdly long strings. Cut the string in
   // half and try again.
+  // This is caused by an int overflow in Pango (specifically, in
+  // pango_glyph_string_extents_range). It's actually more subtle than just
+  // returning 0, since on super absurdly long strings, the int can wrap and
+  // return positive numbers again. Detecting that is probably not worth it
+  // (eliding way too much from a ridiculous string is probably still
+  // ridiculous), but we should check other widths for bogus values as well.
   if (current_text_pixel_width <= 0 && !text.empty()) {
     return ElideText(text.substr(0, text.length() / 2), font,
                      available_pixel_width);
@@ -324,6 +330,12 @@ std::wstring ElideText(const std::wstring& text,
     // handle kerning/ligatures/etc. correctly.
     std::wstring guess_str = text.substr(0, guess) + kEllipsis;
     int guess_length = font.GetStringWidth(guess_str);
+    // Check again that we didn't hit a Pango width overflow. If so, cut the
+    // current string in half and start over.
+    if (guess_length <= 0) {
+      return ElideText(guess_str.substr(0, guess_str.length() / 2), font,
+                       available_pixel_width);
+    }
     if (guess_length > available_pixel_width) {
       if (hi == guess)
         break;
