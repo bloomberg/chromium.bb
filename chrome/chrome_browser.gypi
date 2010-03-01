@@ -2388,7 +2388,6 @@
                   'app/nibs/AutoFillDialog.xib',
                   'app/nibs/BookmarkAllTabs.xib',
                   'app/nibs/BookmarkBar.xib',
-                  'app/nibs/BookmarkBarFolderWindow.xib',
                   'app/nibs/BookmarkBubble.xib',
                   'app/nibs/BookmarkEditor.xib',
                   'app/nibs/BookmarkManager.xib',
