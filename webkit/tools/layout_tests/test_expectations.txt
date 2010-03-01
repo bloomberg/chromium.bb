@@ -2942,3 +2942,6 @@ BUG36967 : java/array-sort.html = FAIL
 
 // httponly-cookie.pl fails because it fails to be serveed as cgi script on Win
 BUG37049 WIN SKIP : websocket/tests/cookies/httponly-cookie.pl = PASS
+
+// WebKit roll 55339 to 55365
+BUG37059 : plugins/private-browsing-mode-2.html = TEXT
