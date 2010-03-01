@@ -21,5 +21,6 @@ include_rules = [
   "+net/socket",
   "+net/socket_stream",
   "+net/url_request",
+  "+net/websockets",
   "+third_party/npapi/bindings",
 ]
