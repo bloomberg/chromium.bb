@@ -91,9 +91,6 @@
             'source/patched-ffmpeg-mt/libavcodec/eval.c',
             'source/patched-ffmpeg-mt/libavcodec/faanidct.c',
             'source/patched-ffmpeg-mt/libavcodec/fft.c',
-            'source/patched-ffmpeg-mt/libavcodec/flac.c', # TODO(fbarchard): Review for stripping.
-            'source/patched-ffmpeg-mt/libavcodec/flacdata.c', # TODO(fbarchard): Review for stripping.
-            'source/patched-ffmpeg-mt/libavcodec/flacdec.c', # TODO(fbarchard): Review for stripping.
             'source/patched-ffmpeg-mt/libavcodec/golomb.c', # TODO(fbarchard): Move to Chrome
             'source/patched-ffmpeg-mt/libavcodec/imgconvert.c',
             'source/patched-ffmpeg-mt/libavcodec/jrevdct.c',
@@ -121,7 +118,6 @@
             'source/patched-ffmpeg-mt/libavformat/metadata_compat.c',
             'source/patched-ffmpeg-mt/libavformat/oggdec.c',
             'source/patched-ffmpeg-mt/libavformat/oggparsedirac.c', # TODO(fbarchard): Review this file.
-            'source/patched-ffmpeg-mt/libavformat/oggparseflac.c', # TODO(fbarchard): Review this file.
             'source/patched-ffmpeg-mt/libavformat/oggparseogm.c',
             'source/patched-ffmpeg-mt/libavformat/oggparsespeex.c', # TODO(fbarchard): Review this file.
             'source/patched-ffmpeg-mt/libavformat/oggparsetheora.c',
