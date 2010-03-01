@@ -136,7 +136,7 @@ const char kLsidCookieDomain[] = "www.google.com";
 const char kLsidCookieName[]   = "LSID";
 
 std::string ProfileSyncService::GetLsidForAuthBootstraping() {
-  if (bootstrap_sync_authentication_) {
+  if (bootstrap_sync_authentication_ && profile()->GetRequestContext()) {
     // If we're running inside Chromium OS, bootstrap the sync authentication by
     // using the LSID cookie provided by the Chromium OS login manager.
     net::CookieMonster::CookieList cookies = profile()->GetRequestContext()->
