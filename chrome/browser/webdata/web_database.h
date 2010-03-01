@@ -10,6 +10,7 @@
 #include "app/sql/connection.h"
 #include "app/sql/init_status.h"
 #include "app/sql/meta_table.h"
+#include "base/scoped_ptr.h"
 #include "chrome/browser/search_engines/template_url.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "testing/gtest/include/gtest/gtest_prod.h"
@@ -20,6 +21,7 @@ class AutofillEntry;
 class AutoFillProfile;
 class CreditCard;
 class FilePath;
+class NotificationService;
 class WebDatabaseTest;
 
 namespace base {
@@ -204,6 +206,11 @@ class WebDatabase {
   // Retrieves all of the entries in the autofill table.
   bool GetAllAutofillEntries(std::vector<AutofillEntry>* entries);
 
+  // Retrieves a single entry from the autofill table.
+  bool GetAutofillTimestamps(const string16& name,
+                             const string16& value,
+                             std::vector<base::Time>* timestamps);
+
   // Replaces existing autofill entries with the entries supplied in
   // the argument.  If the entry does not already exist, it will be
   // added.
@@ -297,6 +304,8 @@ class WebDatabase {
 
   sql::Connection db_;
   sql::MetaTable meta_table_;
+
+  scoped_ptr<NotificationService> notification_service_;
 
   DISALLOW_COPY_AND_ASSIGN(WebDatabase);
 };

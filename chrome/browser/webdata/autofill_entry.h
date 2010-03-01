@@ -11,6 +11,7 @@
 
 class AutofillKey {
  public:
+  AutofillKey() {}
   AutofillKey(const string16& name, const string16& value)
       : name_(name),
         value_(value) {}
@@ -23,6 +24,7 @@ class AutofillKey {
   const string16& value() const { return value_; }
 
   bool operator==(const AutofillKey& key) const;
+  bool operator<(const AutofillKey& key) const;
 
  private:
   string16 name_;
@@ -40,6 +42,7 @@ class AutofillEntry {
   const std::vector<base::Time>& timestamps() const { return timestamps_; }
 
   bool operator==(const AutofillEntry& entry) const;
+  bool operator<(const AutofillEntry& entry) const;
 
  private:
   AutofillKey key_;

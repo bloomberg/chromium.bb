@@ -48,6 +48,7 @@
 #include "chrome/browser/sync/engine/syncer_thread.h"
 #include "chrome/browser/sync/notifier/listener/talk_mediator.h"
 #include "chrome/browser/sync/notifier/listener/talk_mediator_impl.h"
+#include "chrome/browser/sync/protocol/autofill_specifics.pb.h"
 #include "chrome/browser/sync/protocol/bookmark_specifics.pb.h"
 #include "chrome/browser/sync/protocol/preference_specifics.pb.h"
 #include "chrome/browser/sync/protocol/service_constants.h"
@@ -466,6 +467,11 @@ int64 BaseNode::GetExternalId() const {
   return GetEntry()->Get(syncable::LOCAL_EXTERNAL_ID);
 }
 
+const sync_pb::AutofillSpecifics& BaseNode::GetAutofillSpecifics() const {
+  DCHECK(GetModelType() == syncable::AUTOFILL);
+  return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::autofill);
+}
+
 const sync_pb::BookmarkSpecifics& BaseNode::GetBookmarkSpecifics() const {
   DCHECK(GetModelType() == syncable::BOOKMARKS);
   return GetEntry()->Get(SPECIFICS).GetExtension(sync_pb::bookmark);
@@ -507,6 +513,19 @@ void WriteNode::SetURL(const GURL& url) {
   sync_pb::BookmarkSpecifics new_value = GetBookmarkSpecifics();
   new_value.set_url(url.spec());
   SetBookmarkSpecifics(new_value);
+}
+
+void WriteNode::SetAutofillSpecifics(
+    const sync_pb::AutofillSpecifics& new_value) {
+  DCHECK(GetModelType() == syncable::AUTOFILL);
+  PutAutofillSpecificsAndMarkForSyncing(new_value);
+}
+
+void WriteNode::PutAutofillSpecificsAndMarkForSyncing(
+    const sync_pb::AutofillSpecifics& new_value) {
+  sync_pb::EntitySpecifics entity_specifics;
+  entity_specifics.MutableExtension(sync_pb::autofill)->CopyFrom(new_value);
+  PutSpecificsAndMarkForSyncing(entity_specifics);
 }
 
 void WriteNode::SetBookmarkSpecifics(

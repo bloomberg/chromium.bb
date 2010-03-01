@@ -37,7 +37,6 @@ class DataTypeManagerImplTest : public testing::Test {
       : ui_thread_(ChromeThread::UI, &message_loop_) {}
 
   virtual ~DataTypeManagerImplTest() {
-    STLDeleteValues(&controllers_);
   }
 
  protected:

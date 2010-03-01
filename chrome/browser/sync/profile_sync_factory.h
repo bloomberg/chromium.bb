@@ -15,6 +15,7 @@ class ProfileSyncService;
 
 namespace browser_sync {
 class DataTypeManager;
+class UnrecoverableErrorHandler;
 }
 
 // Factory class for all profile sync related classes.
@@ -43,6 +44,13 @@ class ProfileSyncFactory {
   // controllers.  The return pointer is owned by the caller.
   virtual browser_sync::DataTypeManager* CreateDataTypeManager(
       const browser_sync::DataTypeController::TypeMap& controllers) = 0;
+
+  // Instantiates both a model associator and change processor for the
+  // autofill data type.  The pointers in the return struct are owned
+  // by the caller.
+  virtual SyncComponents CreateAutofillSyncComponents(
+      ProfileSyncService* profile_sync_service,
+      browser_sync::UnrecoverableErrorHandler* error_handler) = 0;
 
   // Instantiates both a model associator and change processor for the
   // bookmark data type.  The pointers in the return struct are owned

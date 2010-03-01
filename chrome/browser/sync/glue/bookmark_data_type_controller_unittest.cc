@@ -56,10 +56,10 @@ class BookmarkDataTypeControllerTest : public testing::Test {
     profile_sync_factory_.reset(
         new ProfileSyncFactoryMock(model_associator_,
                                    change_processor_));
-    bookmark_dtc_.reset(
+    bookmark_dtc_ =
         new BookmarkDataTypeController(profile_sync_factory_.get(),
                                        &profile_,
-                                       &service_));
+                                       &service_);
   }
 
  protected:
@@ -87,7 +87,7 @@ class BookmarkDataTypeControllerTest : public testing::Test {
 
   MessageLoopForUI message_loop_;
   ChromeThread ui_thread_;
-  scoped_ptr<BookmarkDataTypeController> bookmark_dtc_;
+  scoped_refptr<BookmarkDataTypeController> bookmark_dtc_;
   scoped_ptr<ProfileSyncFactoryMock> profile_sync_factory_;
   ProfileMock profile_;
   BookmarkModelMock bookmark_model_;

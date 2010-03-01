@@ -13,7 +13,11 @@
 
 namespace browser_sync {
 
-class DataTypeController {
+// Data type controllers need to be refcounted threadsafe, as they may
+// need to run model associator or change processor on other threads.
+class DataTypeController
+    : public base::RefCountedThreadSafe<DataTypeController,
+                                        ChromeThread::DeleteOnUIThread> {
  public:
   enum State {
     NOT_RUNNING,    // The controller has never been started or has
@@ -45,9 +49,8 @@ class DataTypeController {
 
   typedef Callback1<StartResult>::Type StartCallback;
 
-  typedef std::map<syncable::ModelType, DataTypeController*> TypeMap;
-
-  virtual ~DataTypeController() {}
+  typedef std::map<syncable::ModelType,
+                   scoped_refptr<DataTypeController> > TypeMap;
 
   // Begins asynchronous start up of this data type.  Start up will
   // wait for all other dependent services to be available, then
@@ -81,6 +84,17 @@ class DataTypeController {
 
   // Current state of the data type controller.
   virtual State state() = 0;
+
+  // TODO(sync): Make this protected.  It currently causes a build error on
+  // Linux to do so.
+  virtual ~DataTypeController() {}
+
+ protected:
+  friend class base::RefCountedThreadSafe<DataTypeController>;
+  friend class ChromeThread;
+  friend class DeleteTask<DataTypeController>;
+  friend class ShutdownTask;
+
 };
 
 }  // namespace browser_sync

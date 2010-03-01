@@ -5,6 +5,9 @@
 #include "base/command_line.h"
 #include "chrome/browser/defaults.h"
 #include "chrome/browser/profile.h"
+#include "chrome/browser/sync/glue/autofill_change_processor.h"
+#include "chrome/browser/sync/glue/autofill_data_type_controller.h"
+#include "chrome/browser/sync/glue/autofill_model_associator.h"
 #include "chrome/browser/sync/glue/bookmark_change_processor.h"
 #include "chrome/browser/sync/glue/bookmark_data_type_controller.h"
 #include "chrome/browser/sync/glue/bookmark_model_associator.h"
@@ -14,10 +17,15 @@
 #include "chrome/browser/sync/glue/preference_model_associator.h"
 #include "chrome/browser/sync/profile_sync_service.h"
 #include "chrome/browser/sync/profile_sync_factory_impl.h"
+#include "chrome/browser/webdata/web_data_service.h"
 #include "chrome/common/chrome_switches.h"
 
+using browser_sync::AutofillChangeProcessor;
+using browser_sync::AutofillDataTypeController;
+using browser_sync::AutofillModelAssociator;
 using browser_sync::BookmarkChangeProcessor;
 using browser_sync::BookmarkDataTypeController;
+using browser_sync::BookmarkChangeProcessor;
 using browser_sync::BookmarkModelAssociator;
 using browser_sync::DataTypeController;
 using browser_sync::DataTypeManager;
@@ -37,6 +45,13 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService() {
       new ProfileSyncService(this,
                              profile_,
                              browser_defaults::kBootstrapSyncAuthentication);
+
+  // Autofill sync is disabled by default.  Register only if
+  // explicitly enabled.
+  if (command_line_->HasSwitch(switches::kEnableSyncAutofill)) {
+    pss->RegisterDataTypeController(
+        new AutofillDataTypeController(this, pss));
+  }
 
   // Bookmark sync is enabled by default.  Register unless explicitly
   // disabled.
@@ -58,6 +73,19 @@ ProfileSyncService* ProfileSyncFactoryImpl::CreateProfileSyncService() {
 DataTypeManager* ProfileSyncFactoryImpl::CreateDataTypeManager(
     const DataTypeController::TypeMap& controllers) {
   return new DataTypeManagerImpl(controllers);
+}
+
+ProfileSyncFactory::SyncComponents
+ProfileSyncFactoryImpl::CreateAutofillSyncComponents(
+    ProfileSyncService* profile_sync_service,
+    browser_sync::UnrecoverableErrorHandler* error_handler) {
+  AutofillModelAssociator* model_associator =
+      new AutofillModelAssociator(profile_sync_service,
+                                  error_handler);
+  AutofillChangeProcessor* change_processor =
+      new AutofillChangeProcessor(model_associator,
+                                  error_handler);
+  return SyncComponents(model_associator, change_processor);
 }
 
 ProfileSyncFactory::SyncComponents

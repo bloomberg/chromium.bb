@@ -13,7 +13,8 @@ namespace {
 
 static const syncable::ModelType kStartOrder[] = {
   syncable::BOOKMARKS,
-  syncable::PREFERENCES
+  syncable::PREFERENCES,
+  syncable::AUTOFILL
 };
 
 }  // namespace
@@ -104,7 +105,7 @@ void DataTypeManagerImpl::TypeStartCallback(
   LOG(INFO) << "Failed " << controllers_[type]->name();
   FinishStop();
   StartResult start_result = DataTypeManager::ABORTED;
-  switch(result) {
+  switch (result) {
     case DataTypeController::ABORTED:
       start_result = DataTypeManager::ABORTED;
       break;

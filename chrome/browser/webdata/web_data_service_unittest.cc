@@ -8,10 +8,12 @@
 #include "base/file_util.h"
 #include "base/message_loop.h"
 #include "base/path_service.h"
+#include "base/ref_counted.h"
 #include "base/scoped_ptr.h"
 #include "base/string16.h"
 #include "base/string_util.h"
 #include "base/time.h"
+#include "base/waitable_event.h"
 #include "chrome/browser/chrome_thread.h"
 #include "chrome/browser/webdata/autofill_change.h"
 #include "chrome/browser/webdata/autofill_entry.h"
@@ -29,6 +31,7 @@
 
 using base::Time;
 using base::TimeDelta;
+using base::WaitableEvent;
 using testing::_;
 using testing::ElementsAreArray;
 using testing::Pointee;
@@ -36,9 +39,8 @@ using testing::Property;
 
 typedef std::vector<AutofillChange> AutofillChangeList;
 
-ACTION(QuitUIMessageLoop) {
-  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
-  MessageLoop::current()->Quit();
+ACTION_P(SignalEvent, event) {
+  event->Signal();
 }
 
 class AutofillWebDataServiceConsumer: public WebDataServiceConsumer {
@@ -69,6 +71,49 @@ class AutofillWebDataServiceConsumer: public WebDataServiceConsumer {
   DISALLOW_COPY_AND_ASSIGN(AutofillWebDataServiceConsumer);
 };
 
+// This class will add and remove a mock notification observer from
+// the DB thread.
+class DBThreadObserverHelper :
+    public base::RefCountedThreadSafe<DBThreadObserverHelper,
+                                      ChromeThread::DeleteOnDBThread> {
+ public:
+  DBThreadObserverHelper() : done_event_(true, false) {}
+
+  void Init() {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::UI));
+    ChromeThread::PostTask(
+        ChromeThread::DB,
+        FROM_HERE,
+        NewRunnableMethod(this, &DBThreadObserverHelper::AddObserverTask));
+    done_event_.Wait();
+  }
+
+  virtual ~DBThreadObserverHelper() {
+    DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+    registrar_.Remove(&observer_,
+                      NotificationType::AUTOFILL_ENTRIES_CHANGED,
+                      NotificationService::AllSources());
+  }
+
+  NotificationObserverMock* observer() {
+    return &observer_;
+  }
+
+ private:
+  friend class base::RefCountedThreadSafe<DBThreadObserverHelper>;
+
+  void AddObserverTask() {
+    registrar_.Add(&observer_,
+                   NotificationType::AUTOFILL_ENTRIES_CHANGED,
+                   NotificationService::AllSources());
+    done_event_.Signal();
+  }
+
+  WaitableEvent done_event_;
+  NotificationRegistrar registrar_;
+  NotificationObserverMock observer_;
+};
+
 class WebDataServiceTest : public testing::Test {
  public:
   WebDataServiceTest()
@@ -78,10 +123,6 @@ class WebDataServiceTest : public testing::Test {
  protected:
   virtual void SetUp() {
     db_thread_.Start();
-    name1_ = ASCIIToUTF16("name1");
-    name2_ = ASCIIToUTF16("name2");
-    value1_ = ASCIIToUTF16("value1");
-    value2_ = ASCIIToUTF16("value2");
 
     PathService::Get(chrome::DIR_TEST_DATA, &profile_dir_);
     const std::string test_profile = "WebDataServiceTest";
@@ -102,6 +143,35 @@ class WebDataServiceTest : public testing::Test {
     MessageLoop::current()->Run();
   }
 
+  MessageLoopForUI message_loop_;
+  ChromeThread ui_thread_;
+  ChromeThread db_thread_;
+  FilePath profile_dir_;
+  scoped_refptr<WebDataService> wds_;
+};
+
+class WebDataServiceAutofillTest : public WebDataServiceTest {
+ public:
+  WebDataServiceAutofillTest()
+      : WebDataServiceTest(), done_event_(true, false) {}
+
+ protected:
+  virtual void SetUp() {
+    WebDataServiceTest::SetUp();
+    name1_ = ASCIIToUTF16("name1");
+    name2_ = ASCIIToUTF16("name2");
+    value1_ = ASCIIToUTF16("value1");
+    value2_ = ASCIIToUTF16("value2");
+    observer_helper_ = new DBThreadObserverHelper();
+    observer_helper_->Init();
+  }
+
+  virtual void TearDown() {
+    // Release this first so it can get destructed on the db thread.
+    observer_helper_ = NULL;
+    WebDataServiceTest::TearDown();
+  }
+
   void AppendFormField(const string16& name,
                        const string16& value,
                        std::vector<webkit_glue::FormField>* form_fields) {
@@ -113,20 +183,15 @@ class WebDataServiceTest : public testing::Test {
                                WebKit::WebInputElement::Text));
   }
 
-  MessageLoopForUI message_loop_;
-  ChromeThread ui_thread_;
-  ChromeThread db_thread_;
   string16 name1_;
   string16 name2_;
   string16 value1_;
   string16 value2_;
-  FilePath profile_dir_;
-  scoped_refptr<WebDataService> wds_;
-  NotificationRegistrar registrar_;
-  NotificationObserverMock observer_;
+  scoped_refptr<DBThreadObserverHelper> observer_helper_;
+  WaitableEvent done_event_;
 };
 
-TEST_F(WebDataServiceTest, AutofillAdd) {
+TEST_F(WebDataServiceAutofillTest, Add) {
   const AutofillChange expected_changes[] = {
     AutofillChange(AutofillChange::ADD, AutofillKey(name1_, value1_)),
     AutofillChange(AutofillChange::ADD, AutofillKey(name2_, value2_))
@@ -135,24 +200,20 @@ TEST_F(WebDataServiceTest, AutofillAdd) {
   // This will verify that the correct notification is triggered,
   // passing the correct list of autofill keys in the details.
   EXPECT_CALL(
-      observer_,
+      *observer_helper_->observer(),
       Observe(NotificationType(NotificationType::AUTOFILL_ENTRIES_CHANGED),
               NotificationService::AllSources(),
               Property(&Details<const AutofillChangeList>::ptr,
                        Pointee(ElementsAreArray(expected_changes))))).
-      WillOnce(QuitUIMessageLoop());
-
-  registrar_.Add(&observer_,
-                 NotificationType::AUTOFILL_ENTRIES_CHANGED,
-                 NotificationService::AllSources());
+      WillOnce(SignalEvent(&done_event_));
 
   std::vector<webkit_glue::FormField> form_fields;
   AppendFormField(name1_, value1_, &form_fields);
   AppendFormField(name2_, value2_, &form_fields);
   wds_->AddFormFieldValues(form_fields);
 
-  // The message loop will exit when the mock observer is notified.
-  MessageLoop::current()->Run();
+  // The event will be signaled when the mock observer is notified.
+  done_event_.Wait();
 
   AutofillWebDataServiceConsumer consumer;
   WebDataService::Handle handle;
@@ -168,18 +229,16 @@ TEST_F(WebDataServiceTest, AutofillAdd) {
   EXPECT_EQ(value1_, consumer.values()[0]);
 }
 
-TEST_F(WebDataServiceTest, AutofillRemoveOne) {
+TEST_F(WebDataServiceAutofillTest, RemoveOne) {
   // First add some values to autofill.
-  EXPECT_CALL(observer_, Observe(_, _, _)).WillOnce(QuitUIMessageLoop());
-  registrar_.Add(&observer_,
-                 NotificationType::AUTOFILL_ENTRIES_CHANGED,
-                 NotificationService::AllSources());
+  EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
+      WillOnce(SignalEvent(&done_event_));
   std::vector<webkit_glue::FormField> form_fields;
   AppendFormField(name1_, value1_, &form_fields);
   wds_->AddFormFieldValues(form_fields);
 
-  // The message loop will exit when the mock observer is notified.
-  MessageLoop::current()->Run();
+  // The event will be signaled when the mock observer is notified.
+  done_event_.Wait();
 
   // This will verify that the correct notification is triggered,
   // passing the correct list of autofill keys in the details.
@@ -187,33 +246,31 @@ TEST_F(WebDataServiceTest, AutofillRemoveOne) {
     AutofillChange(AutofillChange::REMOVE, AutofillKey(name1_, value1_))
   };
   EXPECT_CALL(
-      observer_,
+      *observer_helper_->observer(),
       Observe(NotificationType(NotificationType::AUTOFILL_ENTRIES_CHANGED),
               NotificationService::AllSources(),
               Property(&Details<const AutofillChangeList>::ptr,
                        Pointee(ElementsAreArray(expected_changes))))).
-      WillOnce(QuitUIMessageLoop());
+      WillOnce(SignalEvent(&done_event_));
   wds_->RemoveFormValueForElementName(name1_, value1_);
 
-  // The message loop will exit when the mock observer is notified.
-  MessageLoop::current()->Run();
+  // The event will be signaled when the mock observer is notified.
+  done_event_.Wait();
 }
 
-TEST_F(WebDataServiceTest, AutofillRemoveMany) {
+TEST_F(WebDataServiceAutofillTest,RemoveMany) {
   TimeDelta one_day(TimeDelta::FromDays(1));
   Time t = Time::Now();
 
-  EXPECT_CALL(observer_, Observe(_, _, _)).WillOnce(QuitUIMessageLoop());
-  registrar_.Add(&observer_,
-                 NotificationType::AUTOFILL_ENTRIES_CHANGED,
-                 NotificationService::AllSources());
+  EXPECT_CALL(*observer_helper_->observer(), Observe(_, _, _)).
+      WillOnce(SignalEvent(&done_event_));
   std::vector<webkit_glue::FormField> form_fields;
   AppendFormField(name1_, value1_, &form_fields);
   AppendFormField(name2_, value2_, &form_fields);
   wds_->AddFormFieldValues(form_fields);
 
-  // The message loop will exit when the mock observer is notified.
-  MessageLoop::current()->Run();
+  // The event will be signaled when the mock observer is notified.
+  done_event_.Wait();
 
   // This will verify that the correct notification is triggered,
   // passing the correct list of autofill keys in the details.
@@ -222,14 +279,14 @@ TEST_F(WebDataServiceTest, AutofillRemoveMany) {
     AutofillChange(AutofillChange::REMOVE, AutofillKey(name2_, value2_))
   };
   EXPECT_CALL(
-      observer_,
+      *observer_helper_->observer(),
       Observe(NotificationType(NotificationType::AUTOFILL_ENTRIES_CHANGED),
               NotificationService::AllSources(),
               Property(&Details<const AutofillChangeList>::ptr,
                        Pointee(ElementsAreArray(expected_changes))))).
-      WillOnce(QuitUIMessageLoop());
+      WillOnce(SignalEvent(&done_event_));
   wds_->RemoveFormElementsAddedBetween(t, t + one_day);
 
-  // The message loop will exit when the mock observer is notified.
-  MessageLoop::current()->Run();
+  // The event will be signaled when the mock observer is notified.
+  done_event_.Wait();
 }

@@ -225,6 +225,15 @@ WebDataService::Handle WebDataService::GetCreditCards(
   return request->GetHandle();
 }
 
+bool WebDataService::IsDatabaseLoaded() {
+  return db_ != NULL;
+}
+
+WebDatabase* WebDataService::GetDatabase() {
+  DCHECK(ChromeThread::CurrentlyOn(ChromeThread::DB));
+  return db_;
+}
+
 void WebDataService::RequestCompleted(Handle h) {
   pending_lock_.Acquire();
   RequestMap::iterator i = pending_requests_.find(h);
@@ -244,20 +253,6 @@ void WebDataService::RequestCompleted(Handle h) {
   if (!request->IsCancelled() && (consumer = request->GetConsumer())) {
     consumer->OnWebDataServiceRequestDone(request->GetHandle(),
                                           request->GetResult());
-  }
-
-  // If this is an autofill change request, post the notifications
-  // including the list of affected keys.
-  const WDTypedResult* result = request->GetResult();
-  if (!request->IsCancelled() && result) {
-    if (result->GetType() == AUTOFILL_CHANGES) {
-      AutofillChangeList changes =
-          static_cast<const WDResult<AutofillChangeList>*>(result)->GetValue();
-      NotificationService::current()->Notify(
-          NotificationType::AUTOFILL_ENTRIES_CHANGED,
-          NotificationService::AllSources(),
-          Details<AutofillChangeList>(&changes));
-    }
   }
 }
 
@@ -708,7 +703,16 @@ void WebDataService::AddFormFieldValuesImpl(
     request->SetResult(
         new WDResult<AutofillChangeList>(AUTOFILL_CHANGES, changes));
     ScheduleCommit();
+
+    // Post the notifications including the list of affected keys.
+    // This is sent here so that work resulting from this notification will be
+    // done on the DB thread, and not the UI thread.
+    NotificationService::current()->Notify(
+        NotificationType::AUTOFILL_ENTRIES_CHANGED,
+        NotificationService::AllSources(),
+        Details<AutofillChangeList>(&changes));
   }
+
   request->RequestComplete();
 }
 
@@ -719,8 +723,7 @@ void WebDataService::GetFormValuesForElementNameImpl(WebDataRequest* request,
     std::vector<string16> values;
     db_->GetFormValuesForElementName(name, prefix, &values, limit);
     request->SetResult(
-        new WDResult<std::vector<string16> >(AUTOFILL_VALUE_RESULT,
-            values));
+        new WDResult<std::vector<string16> >(AUTOFILL_VALUE_RESULT, values));
   }
   request->RequestComplete();
 }
@@ -736,6 +739,14 @@ void WebDataService::RemoveFormElementsAddedBetweenImpl(
       if (changes.size() > 0) {
         request->SetResult(
             new WDResult<AutofillChangeList>(AUTOFILL_CHANGES, changes));
+
+        // Post the notifications including the list of affected keys.
+        // This is sent here so that work resulting from this notification
+        // will be done on the DB thread, and not the UI thread.
+        NotificationService::current()->Notify(
+            NotificationType::AUTOFILL_ENTRIES_CHANGED,
+            NotificationService::AllSources(),
+            Details<AutofillChangeList>(&changes));
       }
       ScheduleCommit();
     }
@@ -757,6 +768,12 @@ void WebDataService::RemoveFormValueForElementNameImpl(
       request->SetResult(
           new WDResult<AutofillChangeList>(AUTOFILL_CHANGES, changes));
       ScheduleCommit();
+
+      // Post the notifications including the list of affected keys.
+      NotificationService::current()->Notify(
+          NotificationType::AUTOFILL_ENTRIES_CHANGED,
+          NotificationService::AllSources(),
+          Details<AutofillChangeList>(&changes));
     }
   }
   request->RequestComplete();

@@ -448,6 +448,9 @@ class WebDataService
   void set_failed_init(bool value) { failed_init_ = value; }
 #endif
 
+  bool IsDatabaseLoaded();
+  WebDatabase* GetDatabase();
+
  protected:
   friend class TemplateURLModelTest;
   friend class TemplateURLModelTestingProfile;

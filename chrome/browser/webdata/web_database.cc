@@ -21,6 +21,7 @@
 #include "chrome/browser/diagnostics/sqlite_diagnostics.h"
 #include "chrome/browser/history/history_database.h"
 #include "chrome/browser/webdata/autofill_change.h"
+#include "chrome/common/notification_service.h"
 #include "webkit/glue/password_form.h"
 
 // Encryptor is the *wrong* way of doing things; we need to turn it into a
@@ -180,6 +181,11 @@ void WebDatabase::CommitTransaction() {
 }
 
 sql::InitStatus WebDatabase::Init(const FilePath& db_name) {
+  // When running in unit tests, there is already a NotificationService object.
+  // Since only one can exist at a time per thread, check first.
+  if (!NotificationService::current())
+    notification_service_.reset(new NotificationService);
+
   // Set the exceptional sqlite error handler.
   db_.set_error_delegate(GetErrorHandlerForWebDb());
 
@@ -1036,6 +1042,29 @@ bool WebDatabase::GetAllAutofillEntries(std::vector<AutofillEntry>* entries) {
     entries->push_back(entry);
     delete current_key_ptr;
     delete timestamps_ptr;
+  }
+
+  return s.Succeeded();
+}
+
+bool WebDatabase::GetAutofillTimestamps(const string16& name,
+                                        const string16& value,
+                                        std::vector<base::Time>* timestamps) {
+  DCHECK(timestamps);
+  sql::Statement s(db_.GetUniqueStatement(
+      "SELECT date_created FROM autofill a JOIN "
+      "autofill_dates ad ON a.pair_id=ad.pair_id "
+      "WHERE a.name = ? AND a.value = ?"));
+
+  if (!s) {
+    NOTREACHED() << "Statement prepare failed";
+    return false;
+  }
+
+  s.BindString(0, UTF16ToUTF8(name));
+  s.BindString(1, UTF16ToUTF8(value));
+  while (s.Step()) {
+    timestamps->push_back(Time::FromTimeT(s.ColumnInt64(0)));
   }
 
   return s.Succeeded();

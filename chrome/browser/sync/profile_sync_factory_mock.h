@@ -28,6 +28,10 @@ class ProfileSyncFactoryMock : public ProfileSyncFactory {
                browser_sync::DataTypeManager*(
                    const browser_sync::DataTypeController::TypeMap&
                    controllers));
+  MOCK_METHOD2(CreateAutofillSyncComponents,
+               SyncComponents(
+                   ProfileSyncService* profile_sync_service,
+                   browser_sync::UnrecoverableErrorHandler* error_handler));
   MOCK_METHOD1(CreateBookmarkSyncComponents,
                SyncComponents(ProfileSyncService* profile_sync_service));
   MOCK_METHOD1(CreatePreferenceSyncComponents,

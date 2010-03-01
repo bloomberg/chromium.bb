@@ -791,6 +791,24 @@ TEST_F(WebDatabaseTest, Autofill_UpdateOneWithTwoTimestamps) {
   EXPECT_TRUE(entry == all_entries[0]);
 }
 
+TEST_F(WebDatabaseTest, Autofill_GetAutofillTimestamps) {
+  WebDatabase db;
+  ASSERT_EQ(sql::INIT_OK, db.Init(file_));
+
+  AutofillEntry entry(MakeAutofillEntry("foo", "bar", 1, 2));
+  std::vector<AutofillEntry> entries;
+  entries.push_back(entry);
+  ASSERT_TRUE(db.UpdateAutofillEntries(entries));
+
+  std::vector<base::Time> timestamps;
+  ASSERT_TRUE(db.GetAutofillTimestamps(ASCIIToUTF16("foo"),
+                                       ASCIIToUTF16("bar"),
+                                       &timestamps));
+  ASSERT_EQ(2U, timestamps.size());
+  EXPECT_TRUE(Time::FromTimeT(1) == timestamps[0]);
+  EXPECT_TRUE(Time::FromTimeT(2) == timestamps[1]);
+}
+
 TEST_F(WebDatabaseTest, Autofill_UpdateTwo) {
   WebDatabase db;
   ASSERT_EQ(sql::INIT_OK, db.Init(file_));

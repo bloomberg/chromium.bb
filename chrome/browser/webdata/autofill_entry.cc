@@ -9,6 +9,17 @@ bool AutofillKey::operator==(const AutofillKey& key) const {
   return name_ == key.name() && value_ == key.value();
 }
 
+bool AutofillKey::operator<(const AutofillKey& key) const {
+  int diff = name_.compare(key.name());
+  if (diff < 0) {
+    return true;
+  } else if (diff == 0) {
+    return value_.compare(key.value()) < 0;
+  } else {
+    return false;
+  }
+}
+
 bool AutofillEntry::operator==(const AutofillEntry& entry) const {
   if (!(key_ == entry.key()))
     return false;
@@ -24,4 +35,8 @@ bool AutofillEntry::operator==(const AutofillEntry& entry) const {
   }
 
   return true;
+}
+
+bool AutofillEntry::operator<(const AutofillEntry& entry) const {
+  return key_ < entry.key();
 }

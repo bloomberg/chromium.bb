@@ -22,6 +22,10 @@ class ProfileSyncFactoryImpl : public ProfileSyncFactory {
   virtual browser_sync::DataTypeManager* CreateDataTypeManager(
       const browser_sync::DataTypeController::TypeMap& controllers);
 
+  virtual SyncComponents CreateAutofillSyncComponents(
+      ProfileSyncService* profile_sync_service,
+      browser_sync::UnrecoverableErrorHandler* error_handler);
+
   virtual SyncComponents CreateBookmarkSyncComponents(
       ProfileSyncService* profile_sync_service);
 

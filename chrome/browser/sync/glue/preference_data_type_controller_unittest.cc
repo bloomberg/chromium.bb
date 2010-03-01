@@ -34,9 +34,9 @@ class PreferenceDataTypeControllerTest : public testing::Test {
 
   virtual void SetUp() {
     profile_sync_factory_.reset(new ProfileSyncFactoryMock());
-    preference_dtc_.reset(
+    preference_dtc_ =
         new PreferenceDataTypeController(profile_sync_factory_.get(),
-                                         &service_));
+                                         &service_);
   }
 
  protected:
@@ -65,7 +65,7 @@ class PreferenceDataTypeControllerTest : public testing::Test {
 
   MessageLoopForUI message_loop_;
   ChromeThread ui_thread_;
-  scoped_ptr<PreferenceDataTypeController> preference_dtc_;
+  scoped_refptr<PreferenceDataTypeController> preference_dtc_;
   scoped_ptr<ProfileSyncFactoryMock> profile_sync_factory_;
   ProfileSyncServiceMock service_;
   ModelAssociatorMock* model_associator_;

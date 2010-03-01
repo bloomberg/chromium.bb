@@ -161,6 +161,9 @@ const char kDisableSiteSpecificQuirks[]     = "disable-site-specific-quirks";
 // Disable syncing browser data to a Google Account.
 const char kDisableSync[]                   = "disable-sync";
 
+// Disable syncing of autofill.
+const char kDisableSyncAutofill[]           = "disable-sync-autofill";
+
 // Disable syncing of bookmarks.
 const char kDisableSyncBookmarks[]          = "disable-sync-bookmarks";
 
@@ -280,6 +283,9 @@ const char kEnableStatsTable[]              = "enable-stats-table";
 
 // Enable syncing browser data to a Google Account.
 const char kEnableSync[]                    = "enable-sync";
+
+// Enable syncing browser autofill.
+const char kEnableSyncAutofill[]            = "enable-sync-autofill";
 
 // Enable syncing browser bookmarks.
 const char kEnableSyncBookmarks[]           = "enable-sync-bookmarks";

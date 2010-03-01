@@ -56,7 +56,11 @@ ProfileSyncService::ProfileSyncService(ProfileSyncFactory* factory,
 
 ProfileSyncService::~ProfileSyncService() {
   Shutdown(false);
-  STLDeleteValues(&data_type_controllers_);
+  for (DataTypeController::TypeMap::iterator ix =
+       data_type_controllers_.begin();
+       ix != data_type_controllers_.end(); ++ix) {
+    ix->second->Release();
+  }
 }
 
 void ProfileSyncService::Initialize() {
@@ -80,6 +84,7 @@ void ProfileSyncService::RegisterDataTypeController(
   DCHECK(data_type_controllers_.count(data_type_controller->type()) == 0);
   data_type_controllers_[data_type_controller->type()] =
       data_type_controller;
+  data_type_controller->AddRef();
 }
 
 void ProfileSyncService::InitSettings() {
