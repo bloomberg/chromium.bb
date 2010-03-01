@@ -86,6 +86,7 @@
             'util/delete_reg_value_work_item_unittest.cc',
             'util/delete_tree_work_item_unittest.cc',
             'util/google_chrome_distribution_unittest.cc',
+            'util/google_update_settings_unittest.cc',
             'util/helper_unittest.cc',
             'util/installer_util_unittests.rc',
             'util/installer_util_unittests_resource.h',

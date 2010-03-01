@@ -25,6 +25,24 @@
 
 namespace {
 
+// Minidump with stacks, PEB, TEB, and unloaded module list.
+const MINIDUMP_TYPE kSmallDumpType = static_cast<MINIDUMP_TYPE>(
+    MiniDumpWithProcessThreadData |  // Get PEB and TEB.
+    MiniDumpWithUnloadedModules);  // Get unloaded modules when available.
+
+// Minidump with all of the above, plus memory referenced from stack.
+const MINIDUMP_TYPE kLargerDumpType = static_cast<MINIDUMP_TYPE>(
+    MiniDumpWithProcessThreadData |  // Get PEB and TEB.
+    MiniDumpWithUnloadedModules |  // Get unloaded modules when available.
+    MiniDumpWithIndirectlyReferencedMemory);  // Get memory referenced by stack.
+
+// Large dump with all process memory.
+const MINIDUMP_TYPE kFullDumpType = static_cast<MINIDUMP_TYPE>(
+    MiniDumpWithFullMemory |  // Full memory from process.
+    MiniDumpWithProcessThreadData |  // Get PEB and TEB.
+    MiniDumpWithHandleData |  // Get all handle information.
+    MiniDumpWithUnloadedModules);  // Get unloaded modules when available.
+
 const wchar_t kGoogleUpdatePipeName[] = L"\\\\.\\pipe\\GoogleCrashServices\\";
 const wchar_t kChromePipeName[] = L"\\\\.\\pipe\\ChromeCrashServices";
 
@@ -326,6 +344,8 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
   const CommandLine& command = *CommandLine::ForCurrentProcess();
   bool use_crash_service = command.HasSwitch(switches::kNoErrorDialogs) ||
                            GetEnvironmentVariable(L"CHROME_HEADLESS", NULL, 0);
+  bool is_per_user_install =
+      InstallUtil::IsPerUserInstall(info->dll_path.c_str());
 
   std::wstring pipe_name;
   if (use_crash_service) {
@@ -346,7 +366,7 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
     // System-wide install: "NamedPipe\GoogleCrashServices\S-1-5-18"
     // Per-user install: "NamedPipe\GoogleCrashServices\<user SID>"
     std::wstring user_sid;
-    if (InstallUtil::IsPerUserInstall(info->dll_path.c_str())) {
+    if (is_per_user_install) {
       if (!win_util::GetUserSidString(&user_sid)) {
         if (callback)
           InitDefaultCrashCallback();
@@ -364,8 +384,17 @@ static DWORD __stdcall InitCrashReporterThread(void* param) {
   wchar_t temp_dir[MAX_PATH] = {0};
   ::GetTempPathW(MAX_PATH, temp_dir);
 
-  bool full_dump = command.HasSwitch(switches::kFullMemoryCrashReport);
-  MINIDUMP_TYPE dump_type = full_dump ? MiniDumpWithFullMemory : MiniDumpNormal;
+  MINIDUMP_TYPE dump_type = kSmallDumpType;
+  // Capture full memory if explicitly instructed to.
+  if (command.HasSwitch(switches::kFullMemoryCrashReport)) {
+    dump_type = kFullDumpType;
+  } else {
+    // Capture more detail in crash dumps for beta and dev channel builds.
+    string16 channel_string;
+    GoogleUpdateSettings::GetChromeChannel(&channel_string);
+    if (channel_string == L"dev" || channel_string == L"beta")
+      dump_type = kLargerDumpType;
+  }
 
   g_breakpad = new google_breakpad::ExceptionHandler(temp_dir, &FilterCallback,
                    callback, NULL,

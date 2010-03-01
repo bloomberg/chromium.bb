@@ -17,6 +17,7 @@
 #include "base/registry.h"
 #include "base/scoped_comptr_win.h"
 #include "base/string_util.h"
+#include "chrome/installer/util/google_update_settings.h"
 #include "chrome/installer/util/google_update_constants.h"
 #include "googleurl/src/gurl.h"
 
@@ -151,68 +152,11 @@ void SimpleErrorBox(gfx::NativeWindow parent,
   win_util::MessageBox(parent, message, title, MB_OK | MB_SETFOREGROUND);
 }
 
-
-namespace {
-
-std::wstring CurrentChromeChannel() {
-  // Start by seeing if we can find the Clients key on the HKLM branch.
-  // For each search, require confirmation by looking for "name"
-  // inside it.  We've noticed problems cleaning up the registry on
-  // uninstall or upgrade (http://crbug.com/33532,
-  // http://crbug.com/33534), and have other reports of inconsistency
-  // (http://crbug.com/32479).
-  HKEY registry_hive = HKEY_LOCAL_MACHINE;
-  std::wstring key = google_update::kRegPathClients + std::wstring(L"\\") +
-                     google_update::kChromeUpgradeCode;
-  RegKey google_update_hklm(registry_hive, key.c_str(), KEY_READ);
-
-  if (!google_update_hklm.Valid() ||
-      !google_update_hklm.ValueExists(google_update::kRegNameField)) {
-    // HKLM failed us, try the same for the HKCU branch.
-    registry_hive = HKEY_CURRENT_USER;
-    RegKey google_update_hkcu(registry_hive, key.c_str(), KEY_READ);
-    if (!google_update_hkcu.Valid() ||
-        !google_update_hkcu.ValueExists(google_update::kRegNameField)) {
-      // Unknown.
-      registry_hive = 0;
-    }
-  }
-
-  std::wstring update_branch(L"unknown"); // the default.
-  if (registry_hive != 0) {
-    // Now that we know which hive to use, read the 'ap' key from it.
-    std::wstring key = google_update::kRegPathClientState +
-                       std::wstring(L"\\") + google_update::kChromeUpgradeCode;
-    RegKey client_state(registry_hive, key.c_str(), KEY_READ);
-    client_state.ReadValue(google_update::kRegApField, &update_branch);
-    // If the parent folder exists (we have a valid install) but the
-    // 'ap' key is empty, we necessarily are the stable channel.
-    // So we print nothing.
-    if (update_branch.empty() && client_state.Valid()) {
-      update_branch = L"";
-    }
-  }
-
-  // Map to something pithy for human consumption. There are no rules as to
-  // what the ap string can contain, but generally it will contain a number
-  // followed by a dash followed by the branch name (and then some random
-  // suffix). We fall back on empty string in case we fail to parse.
-  // Only ever return "", "unknown", "dev" or "beta".
-  if (update_branch.find(L"-beta") != std::wstring::npos)
-    update_branch = L"beta";
-  else if (update_branch.find(L"-dev") != std::wstring::npos)
-    update_branch = L"dev";
-  else if (!update_branch.empty())
-    update_branch = L"unknown";
-
-  return update_branch;
-}
-
-}  // namespace
-
 string16 GetVersionStringModifier() {
 #if defined(GOOGLE_CHROME_BUILD)
-  return CurrentChromeChannel();
+  string16 channel;
+  GoogleUpdateSettings::GetChromeChannel(&channel);
+  return channel;
 #else
   return string16();
 #endif
