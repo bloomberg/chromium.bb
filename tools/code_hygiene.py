@@ -45,7 +45,6 @@ import signal
 import subprocess
 import sys
 import time
-import platform
 
 # ======================================================================
 VERBOSE = 0
@@ -108,7 +107,8 @@ class ExternalChecker(object):
     self._commandline = commandline
     self._use_stderr = use_stderr
 
-  def FindProblems(self, filename, unused_data):
+  def FindProblems(self, props, unused_data):
+    filename = props['name']
     try:
       retcode, stdout, stderr = RunCommand(self._commandline + [filename])
     except Exception, err:
@@ -126,7 +126,7 @@ class ExternalChecker(object):
     else:
       return [stdout]
 
-  def FileFilter(self, unused_filename):
+  def FileFilter(self, unused_props):
     raise NotImplementedError()
 
 
@@ -136,8 +136,8 @@ class TidyChecker(ExternalChecker):
     ExternalChecker.__init__(self, HTML_CHECKER, use_stderr=True)
     return
 
-  def FileFilter(self, filename):
-    return filename.endswith('.html')
+  def FileFilter(self, props):
+    return '.html' in props
 
 
 class PyChecker(ExternalChecker):
@@ -146,8 +146,8 @@ class PyChecker(ExternalChecker):
     ExternalChecker.__init__(self, PYTHON_CHECKER)
     return
 
-  def FileFilter(self, filename):
-    return filename.endswith('.py')
+  def FileFilter(self, props):
+    return '.py' in props
 
 
 class CppLintChecker(ExternalChecker):
@@ -156,8 +156,8 @@ class CppLintChecker(ExternalChecker):
     ExternalChecker.__init__(self, CPP_CHECKER, use_stderr=True)
     return
 
-  def FileFilter(self, filename):
-    return filename.endswith('.cc') or filename.endswith('.h')
+  def FileFilter(self, props):
+    return '.cc' in props or '.h' in props
 
 # ======================================================================
 class GenericRegexChecker(object):
@@ -171,7 +171,7 @@ class GenericRegexChecker(object):
     self._analyze_match = analyze_match
     return
 
-  def FindProblems(self, unused_filename, data):
+  def FindProblems(self, unused_props, data):
     # speedy early out
     if not self._content_regex.search(data):
       return []
@@ -199,82 +199,102 @@ class GenericRegexChecker(object):
   def _RenderItem(self, no, line):
       return 'line %d: [%s]' % (no, repr(line))
 
-  def FileFilter(self, unused_filename):
+  def FileFilter(self, unused_props):
     raise NotImplementedError()
+
+  def IsProblemMatch(self, unused_match):
+    # NOTE: not all subclasses need to implement this
+    pass
 
 
 class OpenCurlyChecker(GenericRegexChecker):
-  """Checks for orphan opening curly braces"""
-
+  """Checks for orphan opening curly braces."""
   def __init__(self):
     GenericRegexChecker.__init__(self, r'^ *{ *$')
     return
 
-  def FileFilter(self, filename):
-    return (filename.endswith('.h') or
-            filename.endswith('.cc') or
-            filename.endswith('.c'))
+  def FileFilter(self, props):
+    return '.h' in props or '.cc' in props or '.c' in props
 
 
 class TrailingWhiteSpaceChecker(GenericRegexChecker):
-
+  """No trailing whitespaces in code we control."""
   def __init__(self):
     GenericRegexChecker.__init__(self, r' $')
     return
 
-  def FileFilter(self, filename):
-    return (not filename.endswith('.patch'))
+  def FileFilter(self, props):
+    return '.patch' not in props
+
+
+class UntrustedIfDefChecker(GenericRegexChecker):
+  """No #idef in untrusted code."""
+  def __init__(self):
+    GenericRegexChecker.__init__(self, r'^#if')
+    return
+
+  def FileFilter(self, props):
+    if 'is_untrusted' not in props: return False
+    return '.c' in props or '.cc' in props
+
+
+class UntrustedAsmChecker(GenericRegexChecker):
+  """No inline assembler in untrusted code."""
+  def __init__(self):
+    # TODO(robertm): also cope with asm
+    GenericRegexChecker.__init__(self, r'__asm__')
+    return
+
+  def FileFilter(self, props):
+    if 'is_untrusted' not in props: return False
+    return '.c' in props or '.cc' in props or '.h' in props
 
 
 class CarriageReturnChecker(GenericRegexChecker):
-
+  """Abolish windows style line terminators."""
   def __init__(self):
     GenericRegexChecker.__init__(self, r'\r')
     return
 
-  def FileFilter(self, filename):
-    return (filename.endswith('.py') or
-            filename.endswith('.h') or
-            filename.endswith('.cc') or
-            filename.endswith('.c'))
-
+  def FileFilter(self, props):
+    return '.h' in props or '.cc' in props or '.c' in props or '.py' in props
 
 class CppCommentChecker(GenericRegexChecker):
-
+  """No cpp comments in regular c files."""
   def __init__(self):
     # we tolerate http:// etc in comments
     GenericRegexChecker.__init__(self, r'(^|[^:])//')
     return
 
-  def FileFilter(self, filename):
-    return filename.endswith('.c')
+  def FileFilter(self, props):
+    return '.c' in props
 
 
 class TabsChecker(GenericRegexChecker):
-
+  """No tabs except for makefiles."""
   def __init__(self):
     GenericRegexChecker.__init__(self, r'\t')
     return
 
-  def FileFilter(self, filename):
-    return ("akefile" not in filename
-        and not filename.endswith('.patch')
-        and not filename.endswith('.valerr')
-        and not filename.endswith('.dis'))
+  def FileFilter(self, props):
+    return ('is_makefile' not in props and
+            '.patch' not in props and
+            '.valerr' not in props and
+            '.dis' not in props)
 
 
 class FixmeChecker(GenericRegexChecker):
-
+  """No FIXMEs in code we control."""
   def __init__(self):
-    GenericRegexChecker.__init__(self, r'FIXME[:]')
+    GenericRegexChecker.__init__(self, r'\bFIXME\b')
     return
 
-  def FileFilter(self, filename):
-    return (not filename.endswith('.patch'))
+  def FileFilter(self, props):
+    return '.patch' not in props
 
 
 class ExternChecker(GenericRegexChecker):
-
+  """Only c/c++ headers may have externs."""
   def __init__(self):
     GenericRegexChecker.__init__(self, r'^ *extern\s+(.*)$', analyze_match=True)
     return
@@ -287,17 +307,17 @@ class ExternChecker(GenericRegexChecker):
       return False
     return True
 
-  def FileFilter(self, filename):
-    return filename.endswith('.c') or filename.endswith('.cc')
+  def FileFilter(self, props):
+    return '.cc' in props or '.c' in props
 
 
 class RewriteChecker(GenericRegexChecker):
-
+  """No rewrite markers allowed (probaly not an issue anymore)."""
   def __init__(self):
     GenericRegexChecker.__init__(self, r'[@][@]REWRITE')
     return
 
-  def FileFilter(self, unused_filename):
+  def FileFilter(self, unused_props):
     return 1
 
 
@@ -316,7 +336,7 @@ class IncludeChecker(object):
   def __init__(self):
     pass
 
-  def FindProblems(self, unused_filename, data):
+  def FindProblems(self, unused_props, data):
     lines = data.split('\n')
     problem = []
     seen_code = False
@@ -345,19 +365,15 @@ class IncludeChecker(object):
 
     return problem
 
-  def FileFilter(self, filename):
-    return filename.endswith('.c') or filename.endswith('.cc')
+  def FileFilter(self, props):
+    return '.cc' in props or '.c' in props
 
 
 class LineLengthChecker(object):
   def __init__(self):
-    pass
+    self._dummy = None   # shut up pylint
 
-  def FindProblems(self, filename, data):
-    # Exempt golden files used in tests from line-length limits.
-    if filename.endswith('.val') or filename.endswith('.valerr'):
-      return
-
+  def FindProblems(self, unused_props, data):
     lines = data.split('\n')
     problem = []
     for no, line in enumerate(lines):
@@ -372,20 +388,103 @@ class LineLengthChecker(object):
       problem.append('line %d: [%s]' % (no + 1, repr(line)))
     return problem
 
-  def FileFilter(self, filename):
-    return (not filename.endswith('.patch'))
+  def FileFilter(self, props):
+    return ('.patch' not in props and
+            '.val' not in props and
+            '.valerr' not in props)
 
+
+class SconsGypMatchingChecker(object):
+  """Verify that gyp files are updated together with scons files.
+     We probably won't have any gyp files for the untrusted code."""
+  def __init__(self):
+    self._dummy = None   # shut up pylint
+
+  def FindProblems(self, props, unused_data):
+    filename = props['name']
+    problem = []
+    if not HasGypFileCorrespondingToSconsFile(filename, sys.argv):
+      problem.append('no matching gyp update found')
+    return problem
+
+  def FileFilter(self, props):
+    return ('is_untrusted' not in props and
+            '.scons' in props)
+
+# ======================================================================
+# 'props' (short for properties) are tags associated with checkable files.
+
+# Excpept for the 'name', props do not carry any associcated value.
+#
+# Props are used to make decissions on whether a (how) a certain check
+# is applicable.
+# Prop' are usually derived from the pathname put can also be forced
+# using the magic string  '@PROPS[prop1,prop2,...]' anywhere in the
+# first 2k of data.
+
+VALID_PROPS = {
+    'name': True,          # filename, only prop with a valie
+    'is_makefile': True,
+    'is_trusted': True,    # is trusted code
+    'is_untrusted': True,  # is untrusted code
+    'is_shared': True,     # is shared code
+    'is_scons': True,      # is scons file (not one generated by gyp)
+}
+
+
+def IsValidProp(prop):
+  if prop.startswith('.'):
+    return True
+  return prop in VALID_PROPS
+
+
+def FindProperties(data):
+  match = re.search(r'@PROPS\[([^\]]*)\]', data)
+  if match:
+    return match.group(1).split(',')
+  return []
+
+
+def FileProperties(filename, data):
+  d = {}
+  d['name'] = filename
+  _, ext = os.path.splitext(filename)
+  d[ext] = True
+
+  if 'akefile' in filename:
+    d['is_makefile'] = True
+
+  if 'src/trusted/' in filename:
+    d['is_trusted'] = True
+  elif 'src/untrusted/' in filename:
+    d['is_untrusted'] = True
+  elif 'src/shared/' in filename:
+    d['is_shared'] = True
+
+  if (filename.endswith('nacl.scons') or
+      filename.endswith('build.scons') or
+      filename.endswith('SConstruct')):
+      d['is_scons'] = True
+
+  # NOTE: look in a somewhat arbitrary region at the file beginning for
+  #       a special marker advertising addtional properties
+  for p in FindProperties(data[:2048]):
+    d[p] = True
+
+  for p in d:
+    assert IsValidProp(p)
+  return d
 
 # ======================================================================
 def IsBinary(data):
   return '\x00' in data
+
 
 def FindExemptions(data):
   match = re.search(r'@EXEMPTION\[([^\]]*)\]', data)
   if match:
     return match.group(1).split(',')
   return []
-
 
 # ======================================================================
 CHECKS = [# fatal checks
@@ -395,6 +494,9 @@ CHECKS = [# fatal checks
           (1, 'fixme', FixmeChecker()),
           (1, 'include', IncludeChecker()),
           (1, 'extern', ExternChecker()),
+          (1, 'untrusted_ifdef', UntrustedIfDefChecker()),
+          (1, 'untrusted_asm', UntrustedAsmChecker()),
+          (1, 'scons_gyp_matching', SconsGypMatchingChecker()),
           # Non fatal checks
           (0, 'open_curly', OpenCurlyChecker()),
           (0, 'line_length', LineLengthChecker()),
@@ -414,6 +516,7 @@ def EmitStatus(filename, status, details=[]):
 
 
 def CheckFile(filename, report):
+    Debug('\n' + filename)
     errors = {}
     warnings = {}
 
@@ -424,18 +527,20 @@ def CheckFile(filename, report):
       return errors, warnings
 
     exemptions = FindExemptions(data)
+    props = FileProperties(filename, data)
+    Debug('PROPS: ' + repr(props.keys()))
 
     for fatal, name, check in CHECKS:
       Debug('trying %s' % name)
 
-      if not check.FileFilter(filename):
+      if not check.FileFilter(props):
         Debug('skipping')
         continue
 
       if name in exemptions:
         Debug('exempt')
         continue
-      problems = check.FindProblems(filename, data)
+      problems = check.FindProblems(props, data)
       if problems:
         info =  '%s: %s' % (filename, name)
         items = problems[:LIMIT]
@@ -470,13 +575,6 @@ def main(argv):
       print 'hyphen in:', filename
       num_error += 1
       continue
-
-    # Verify that gyp files are updated together with scons files.
-    # We probably won't have any gyp files for the untrusted code.
-    if filename.endswith('.scons') and -1 == filename.find('untrusted'):
-      if not HasGypFileCorrespondingToSconsFile(filename, argv):
-        print 'please update the gyp file relevant for ', filename
-        num_error += 1
 
     errors, warnings = CheckFile(filename, True)
     if errors:
