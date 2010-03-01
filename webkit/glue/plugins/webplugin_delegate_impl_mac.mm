@@ -1049,40 +1049,36 @@ void WebPluginDelegateImpl::FireIdleEvent() {
   ScopedActiveDelegate active_delegate(this);
 
   if (!webkit_glue::IsPluginRunningInRendererProcess()) {
-    switch (instance()->event_model()) {
-      case NPEventModelCarbon:
-        // If the plugin is running in a subprocess, drain any pending system
-        // events so that the plugin's event handlers will get called on any
-        // windows it has created.  Filter out activate/deactivate events on
-        // the fake browser window, but pass everything else through.
-        EventRecord event;
-        while (GetNextEvent(everyEvent, &event)) {
-          if (event.what == activateEvt && cg_context_.window &&
-              reinterpret_cast<void *>(event.message) != cg_context_.window)
-            continue;
-          instance()->NPP_HandleEvent(&event);
-          // If the plugin went away during event handling, we're done.
-          if (!instance())
-            return;
-        }
-        break;
+    // If the plugin is running in a subprocess, drain any pending system
+    // events so that the plugin's event handlers will get called on any
+    // windows it has created.  Filter out activate/deactivate events on
+    // the fake browser window, but pass everything else through.
+    EventRecord event;
+    while (GetNextEvent(everyEvent, &event)) {
+      if (!instance())
+        return;
+      if (event.what == activateEvt && cg_context_.window &&
+          reinterpret_cast<void *>(event.message) != cg_context_.window)
+        continue;
+      instance()->NPP_HandleEvent(&event);
     }
+    // If the plugin went away during event handling, we're done.
+    if (!instance())
+      return;
   }
 
-  if (instance()->event_model() == NPEventModelCarbon) {
-    // Send an idle event so that the plugin can do background work
-    NPEvent np_event = {0};
-    np_event.what = nullEvent;
-    np_event.when = TickCount();
-    np_event.modifiers = GetCurrentKeyModifiers();
-    if (!Button())
-      np_event.modifiers |= btnState;
-    HIPoint mouse_location;
-    HIGetMousePosition(kHICoordSpaceScreenPixel, NULL, &mouse_location);
-    np_event.where.h = mouse_location.x;
-    np_event.where.v = mouse_location.y;
-    instance()->NPP_HandleEvent(&np_event);
-  }
+  // Send an idle event so that the plugin can do background work
+  NPEvent np_event = {0};
+  np_event.what = nullEvent;
+  np_event.when = TickCount();
+  np_event.modifiers = GetCurrentKeyModifiers();
+  if (!Button())
+    np_event.modifiers |= btnState;
+  HIPoint mouse_location;
+  HIGetMousePosition(kHICoordSpaceScreenPixel, NULL, &mouse_location);
+  np_event.where.h = mouse_location.x;
+  np_event.where.v = mouse_location.y;
+  instance()->NPP_HandleEvent(&np_event);
 
 #ifndef NP_NO_QUICKDRAW
   // Quickdraw-based plugins can draw at any time, so tell the renderer to
