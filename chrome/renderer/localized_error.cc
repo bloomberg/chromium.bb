@@ -90,10 +90,23 @@ WebErrorNetErrorMap net_error_options[] = {
   },
 };
 
+bool LocaleIsRTL() {
+#if defined(TOOLKIT_GTK)
+  // l10n_util::GetTextDirection uses the GTK text direction, which doesn't work
+  // within the renderer sandbox.
+  return l10n_util::GetICUTextDirection() == l10n_util::RIGHT_TO_LEFT;
+#else
+  return l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT;
+#endif
+}
+
 }  // namespace
 
 void GetLocalizedErrorValues(const WebURLError& error,
                              DictionaryValue* error_strings) {
+  bool rtl = LocaleIsRTL();
+  error_strings->SetString(L"textdirection", rtl ? L"rtl" : L"ltr");
+
   // Grab strings that are applicable to all error pages
   error_strings->SetString(L"detailsLink",
     l10n_util::GetString(IDS_ERRORPAGES_DETAILS_LINK));
@@ -128,7 +141,7 @@ void GetLocalizedErrorValues(const WebURLError& error,
   std::wstring failed_url(
       ASCIIToWide(std::string(error.unreachableURL.spec())));
   // URLs are always LTR.
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
+  if (rtl)
     l10n_util::WrapStringWithLTRFormatting(&failed_url);
   error_strings->SetString(L"title",
                            l10n_util::GetStringF(options.title_resource_id,
@@ -169,7 +182,7 @@ void GetLocalizedErrorValues(const WebURLError& error,
           l10n_util::GetString(IDS_ERRORPAGES_SUGGESTION_HOMEPAGE));
       std::wstring homepage(ASCIIToWide(failed_url.GetWithEmptyPath().spec()));
       // URLs are always LTR.
-      if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
+      if (rtl)
         l10n_util::WrapStringWithLTRFormatting(&homepage);
       suggest_home_page->SetString(L"homePage", homepage);
       // TODO(tc): we actually want the unicode hostname
@@ -209,9 +222,12 @@ void GetLocalizedErrorValues(const WebURLError& error,
 
 void GetFormRepostErrorValues(const GURL& display_url,
                               DictionaryValue* error_strings) {
+  bool rtl = LocaleIsRTL();
+  error_strings->SetString(L"textdirection", rtl ? L"rtl" : L"ltr");
+
   std::wstring failed_url(ASCIIToWide(display_url.spec()));
   // URLs are always LTR.
-  if (l10n_util::GetTextDirection() == l10n_util::RIGHT_TO_LEFT)
+  if (rtl)
     l10n_util::WrapStringWithLTRFormatting(&failed_url);
   error_strings->SetString(
       L"title", l10n_util::GetStringF(IDS_ERRORPAGES_TITLE_NOT_AVAILABLE,

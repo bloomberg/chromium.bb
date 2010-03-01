@@ -12,6 +12,8 @@ namespace WebKit {
 struct WebURLError;
 }
 
+// Fills |error_strings| with values to be used to build an error page used
+// on HTTP errors, like 404 or connection reset.
 void GetLocalizedErrorValues(const WebKit::WebURLError& error,
                              DictionaryValue* error_strings);
 

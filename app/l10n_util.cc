@@ -434,8 +434,8 @@ void SplitAndNormalizeLanguageList(const std::string& env_language,
 
 namespace l10n_util {
 
-// Represents the locale-specific text direction.
-static TextDirection g_text_direction = UNKNOWN_DIRECTION;
+// Represents the locale-specific ICU text direction.
+static TextDirection g_icu_text_direction = UNKNOWN_DIRECTION;
 
 std::string GetApplicationLocale(const std::wstring& pref_locale) {
 #if !defined(OS_MACOSX)
@@ -809,21 +809,21 @@ string16 ToUpper(const string16& string) {
   return result;
 }
 
-// Returns the text direction for the default ICU locale. It is assumed
-// that SetICUDefaultLocale has been called to set the default locale to
-// the UI locale of Chrome.
-TextDirection GetTextDirection() {
-  if (g_text_direction == UNKNOWN_DIRECTION) {
-#if defined(TOOLKIT_GTK)
-    GtkTextDirection gtk_dir = gtk_widget_get_default_direction();
-    g_text_direction =
-        (gtk_dir == GTK_TEXT_DIR_LTR) ? LEFT_TO_RIGHT : RIGHT_TO_LEFT;
-#else
+TextDirection GetICUTextDirection() {
+  if (g_icu_text_direction == UNKNOWN_DIRECTION) {
     const icu::Locale& locale = icu::Locale::getDefault();
-    g_text_direction = GetTextDirectionForLocale(locale.getName());
-#endif
+    g_icu_text_direction = GetTextDirectionForLocale(locale.getName());
   }
-  return g_text_direction;
+  return g_icu_text_direction;
+}
+
+TextDirection GetTextDirection() {
+#if defined(TOOLKIT_GTK)
+  GtkTextDirection gtk_dir = gtk_widget_get_default_direction();
+  return (gtk_dir == GTK_TEXT_DIR_LTR) ? LEFT_TO_RIGHT : RIGHT_TO_LEFT;
+#else
+  return GetICUTextDirection();
+#endif
 }
 
 TextDirection GetTextDirectionForLocale(const char* locale_name) {

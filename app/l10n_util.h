@@ -194,6 +194,10 @@ enum TextDirection {
 //  * LEFT_TO_RIGHT: Left-To-Right (e.g. English, Chinese, etc.);
 //  * RIGHT_TO_LEFT: Right-To-Left (e.g. Arabic, Hebrew, etc.), and;
 //  * UNKNOWN_DIRECTION: unknown (or error).
+TextDirection GetICUTextDirection();
+
+// Get the application text direction.  (This is just the ICU direction,
+// except on GTK.)
 TextDirection GetTextDirection();
 
 // Returns the text direction for |locale_name|.
