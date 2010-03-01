@@ -19,26 +19,26 @@ namespace {
 
 // Different platforms need slightly different constants to look good.
 #if defined(OS_LINUX) && !defined(TOOLKIT_VIEWS)
-const int kTextSize = 9;
+const float kTextSize = 9.0;
 const int kBottomMargin = 0;
 const int kPadding = 2;
 const int kTopTextPadding = 0;
 #elif defined(OS_LINUX) && defined(TOOLKIT_VIEWS)
-const int kTextSize = 8;
+const float kTextSize = 8.0;
 const int kBottomMargin = 5;
 const int kPadding = 2;
 const int kTopTextPadding = 1;
 #elif defined(OS_MACOSX)
-const int kTextSize = 9;
+const float kTextSize = 9.0;
 const int kBottomMargin = 5;
 const int kPadding = 2;
 const int kTopTextPadding = 0;
 #else
-const int kTextSize = 7;
+const float kTextSize = 7.5;
 const int kBottomMargin = 5;
 const int kPadding = 2;
 // The padding between the top of the badge and the top of the text.
-const int kTopTextPadding = 2;
+const int kTopTextPadding = 1;
 #endif
 
 const int kBadgeHeight = 11;
@@ -59,7 +59,7 @@ SkPaint* GetTextPaint() {
     text_paint->setAntiAlias(true);
 
     text_paint->setTextAlign(SkPaint::kLeft_Align);
-    text_paint->setTextSize(SkIntToScalar(kTextSize));
+    text_paint->setTextSize(SkFloatToScalar(kTextSize));
 
     SkTypeface* typeface = SkTypeface::CreateFromName(
         kPreferredTypeface, SkTypeface::kBold);
