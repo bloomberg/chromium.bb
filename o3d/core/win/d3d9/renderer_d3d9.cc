@@ -355,13 +355,7 @@ Renderer::InitStatus CreateDirect3D(Direct3DCreate9_Ptr d3d_create_function,
   }
 
   // Get the current monitor and adapter.
-  *monitor = MonitorFromWindow(window, MONITOR_DEFAULTTONULL);
-  if (*monitor == NULL) {
-    DLOG(ERROR) << "Failed to get monitor from window";
-    (*d3d)->Release();
-    *d3d = NULL;
-    return Renderer::INITIALIZATION_ERROR;
-  }
+  *monitor = MonitorFromWindow(window, MONITOR_DEFAULTTOPRIMARY);
   if (!GetAdapterFromMonitor(*d3d, *monitor, adapter)) {
     DLOG(WARNING) << "Failed to get adapter, use the default one";
     *adapter = D3DADAPTER_DEFAULT;
