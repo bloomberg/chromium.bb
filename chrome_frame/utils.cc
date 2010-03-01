@@ -828,6 +828,7 @@ bool IsSubFrameRequest(IUnknown* service_provider) {
       }
     }
   } else {
+    DLOG(INFO) << "IsSubFrameRequest - no IWebBrowser2";
     is_sub_frame_request = true;
   }
 
@@ -866,3 +867,8 @@ bool IsTopLevelWindow(HWND window) {
   return !parent || (parent == GetDesktopWindow());
 }
 
+std::wstring GuidToString(const GUID& guid) {
+  std::wstring ret;
+  ::StringFromGUID2(guid, WriteInto(&ret, 39), 39);
+  return ret;
+}

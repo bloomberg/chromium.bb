@@ -335,6 +335,8 @@ class STAThread : public base::Thread {
   }
 };
 
+std::wstring GuidToString(const GUID& guid);
+
 // The urls retrieved from the IMoniker interface don't contain the anchor
 // portion of the actual url navigated to. This function checks whether the
 // url passed in the bho_url parameter contains an anchor and if yes checks

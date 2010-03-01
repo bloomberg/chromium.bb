@@ -91,3 +91,16 @@ TEST(UtilTests, IsValidUrlScheme) {
     EXPECT_EQ(test.expected, IsValidUrlScheme(test.url, test.is_privileged));
   }
 }
+
+TEST(UtilTests, GuidToString) {
+  // {3C5E2125-35BA-48df-A841-5F669B9D69FC}
+  const GUID test_guid = { 0x3c5e2125, 0x35ba, 0x48df,
+      { 0xa8, 0x41, 0x5f, 0x66, 0x9b, 0x9d, 0x69, 0xfc } };
+
+  wchar_t compare[64] = {0};
+  ::StringFromGUID2(test_guid, compare, arraysize(compare));
+
+  std::wstring str_guid(GuidToString(test_guid));
+  EXPECT_EQ(0, str_guid.compare(compare));
+  EXPECT_EQ(static_cast<size_t>(lstrlenW(compare)), str_guid.length());
+}
