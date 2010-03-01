@@ -1,4 +1,4 @@
-// Copyright (c) 2010 The Chromium Authors. All rights reserved.
+// Copyright (c) 2009 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
@@ -25,8 +25,8 @@
 @end  // HistoryMenuCocoaController
 
 @interface HistoryMenuCocoaController (ExposedForUnitTests)
-- (const HistoryMenuBridge::HistoryItem*)itemForTag:(NSInteger)tag;
-- (void)openURLForItem:(const HistoryMenuBridge::HistoryItem*)node;
+- (HistoryMenuBridge::HistoryItem)itemForTag:(NSInteger)tag;
+- (void)openURLForItem:(HistoryMenuBridge::HistoryItem&)node;
 @end  // HistoryMenuCocoaController (ExposedForUnitTests)
 
 #endif  // CHROME_BROWSER_COCOA_HISTORY_MENU_COCOA_CONTROLLER_H_

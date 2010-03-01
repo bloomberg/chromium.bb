@@ -3,13 +3,9 @@
 // found in the LICENSE file.
 
 #include "chrome/browser/cocoa/history_menu_bridge.h"
-
-#include "app/gfx/codec/png_codec.h"
-#include "app/resource_bundle.h"
 #include "base/callback.h"
-#include "base/stl_util-inl.h"
-#include "base/string_util.h"
 #include "base/sys_string_conversions.h"
+#include "base/string_util.h"
 #include "chrome/app/chrome_dll_resource.h"  // IDC_HISTORY_MENU
 #import "chrome/browser/app_controller_mac.h"
 #import "chrome/browser/cocoa/history_menu_cocoa_controller.h"
@@ -19,8 +15,6 @@
 #include "chrome/common/notification_registrar.h"
 #include "chrome/common/notification_service.h"
 #include "chrome/common/url_constants.h"
-#include "grit/app_resources.h"
-#include "skia/ext/skia_utils_mac.h"
 
 namespace {
 
@@ -66,9 +60,6 @@ HistoryMenuBridge::HistoryMenuBridge(Profile* profile)
       tab_restore_service_->AddObserver(this);
   }
 
-  ResourceBundle& rb = ResourceBundle::GetSharedInstance();
-  default_favicon_.reset([rb.GetNSImageNamed(IDR_DEFAULT_FAVICON) retain]);
-
   // The service is not ready for use yet, so become notified when it does.
   if (!history_service_) {
     registrar_.Add(this,
@@ -90,15 +81,6 @@ HistoryMenuBridge::~HistoryMenuBridge() {
 
   if (tab_restore_service_)
     tab_restore_service_->RemoveObserver(this);
-
-  // Cancel any favicon requests.
-  ScopedVector<HistoryItem>::iterator it;
-  for (it = visited_results_.begin(); it != visited_results_.end(); ++it) {
-    CancelFaviconRequest(*it);
-  }
-  for (it = closed_results_.begin(); it != closed_results_.end(); ++it) {
-    CancelFaviconRequest(*it);
-  }
 }
 
 void HistoryMenuBridge::Observe(NotificationType type,
@@ -137,7 +119,7 @@ void HistoryMenuBridge::TabRestoreServiceChanged(TabRestoreService* service) {
   // what's cached, throw it away and rebuild it. It probably means
   // the browsing data was cleared by the user.
   if (entries.size() < closed_results_.size())
-    closed_results_.reset();
+    closed_results_.clear();
 
   unsigned int added_count = 0;
   for (TabRestoreService::Entries::const_iterator it = entries.begin();
@@ -166,15 +148,15 @@ void HistoryMenuBridge::TabRestoreServiceChanged(TabRestoreService* service) {
 
   // Remove extraneous/old results.
   if (closed_results_.size() > kRecentlyClosedCount)
-    STLDeleteContainerPointers(closed_results_.begin(),
-        closed_results_.end() - kRecentlyClosedCount);
+    closed_results_.erase(closed_results_.begin(),
+                          closed_results_.end() - kRecentlyClosedCount);
 
   NSInteger top_index = [menu indexOfItemWithTag:IDC_HISTORY_MENU_CLOSED] + 1;
 
   int i = 0;  // Count offsets for |tag| and |index| in AddItemToMenu().
-  for (ScopedVector<HistoryItem>::const_iterator it = closed_results_.begin();
+  for (std::vector<HistoryItem>::const_iterator it = closed_results_.begin();
       it != closed_results_.end(); ++it) {
-    HistoryItem* item = *it;
+    HistoryItem item = *it;
     NSInteger tag = IDC_HISTORY_MENU_CLOSED + 1 + i;
     AddItemToMenu(item, HistoryMenu(), tag, top_index + i);
     ++i;
@@ -194,12 +176,12 @@ Profile* HistoryMenuBridge::profile() {
   return profile_;
 }
 
-const ScopedVector<HistoryMenuBridge::HistoryItem>* const
+std::vector<HistoryMenuBridge::HistoryItem>*
     HistoryMenuBridge::visited_results() {
   return &visited_results_;
 }
 
-const ScopedVector<HistoryMenuBridge::HistoryItem>* const
+std::vector<HistoryMenuBridge::HistoryItem>*
     HistoryMenuBridge::closed_results() {
   return &closed_results_;
 }
@@ -228,14 +210,6 @@ void HistoryMenuBridge::ClearMenuSection(NSMenu* menu,
     NSMenuItem* menu_item = [menu itemAtIndex:index];
     item_tag = [menu_item tag];
     if ([menu_item action] == @selector(openHistoryMenuItem:)) {
-      // If there is a pending favicon request for this menu item, find and
-      // cancel it.
-      HistoryItem* item =
-          const_cast<HistoryItem*>([controller_ itemForTag:item_tag]);
-      if (item)
-        CancelFaviconRequest(item);
-
-      // Now remove it from the menu.
       [menu removeItemAtIndex:index];
       --count;
     }
@@ -245,12 +219,12 @@ void HistoryMenuBridge::ClearMenuSection(NSMenu* menu,
   }
 }
 
-void HistoryMenuBridge::AddItemToMenu(HistoryItem* item,
+void HistoryMenuBridge::AddItemToMenu(const HistoryItem& item,
                                       NSMenu* menu,
                                       NSInteger tag,
                                       NSInteger index) {
-  NSString* title = base::SysUTF16ToNSString(item->title);
-  std::string url_string = item->url.possibly_invalid_spec();
+  NSString* title = base::SysUTF16ToNSString(item.title);
+  std::string url_string = item.url.possibly_invalid_spec();
 
   // If we don't have a title, use the URL.
   if ([title isEqualToString:@""])
@@ -271,10 +245,6 @@ void HistoryMenuBridge::AddItemToMenu(HistoryItem* item,
   [menu_item setTarget:controller_];
   [menu_item setAction:@selector(openHistoryMenuItem:)];
   [menu_item setTag:tag];
-  if (item->icon.get())
-    [menu_item setImage:item->icon.get()];
-  else
-    [menu_item setImage:default_favicon_.get()];
 
   // Add a tooltip.
   NSString* tooltip = [NSString stringWithFormat:@"%@\n%s", full_title,
@@ -282,7 +252,6 @@ void HistoryMenuBridge::AddItemToMenu(HistoryItem* item,
   [menu_item setToolTip:tooltip];
 
   [menu insertItem:menu_item atIndex:index];
-  item->menu_item = menu_item;
 }
 
 void HistoryMenuBridge::Init() {
@@ -313,22 +282,16 @@ void HistoryMenuBridge::OnVisitedHistoryResults(
   NSInteger top_item = [menu indexOfItemWithTag:IDC_HISTORY_MENU_VISITED] + 1;
 
   ClearMenuSection(menu, IDC_HISTORY_MENU_VISITED, visited_results_.size());
-  visited_results_.reset();
+  visited_results_.clear();
 
   size_t count = results->size();
   for (size_t i = 0; i < count; ++i) {
     PageUsageData* history_item = (*results)[i];
 
-    HistoryItem* item = new HistoryItem();
-    item->title = history_item->GetTitle();
-    item->url = history_item->GetURL();
-    if (history_item->HasFavIcon()) {
-      const SkBitmap* icon = history_item->GetFavIcon();
-      item->icon.reset([gfx::SkBitmapToNSImage(*icon) retain]);
-    } else {
-      GetFaviconForHistoryItem(item);
-    }
-    visited_results_.push_back(item);  // ScopedVector takes ownership.
+    HistoryItem item;
+    item.title = history_item->GetTitle();
+    item.url = history_item->GetURL();
+    visited_results_.push_back(item);
 
     // Use the large gaps in tags assignment to create the tag for history menu
     // items.
@@ -353,62 +316,9 @@ bool HistoryMenuBridge::AddNavigationForTab(
   if (current_navigation.url() == GURL(chrome::kChromeUINewTabURL))
     return false;
 
-  HistoryItem* item = new HistoryItem();
-  item->title = current_navigation.title();
-  item->url = current_navigation.url();
-  closed_results_.push_back(item);  // ScopedVector takes ownership.
-
-  // Tab navigations don't come with icons, so we always have to request them.
-  GetFaviconForHistoryItem(item);
-
+  HistoryItem item;
+  item.title = current_navigation.title();
+  item.url = current_navigation.url();
+  closed_results_.push_back(item);
   return true;
-}
-
-void HistoryMenuBridge::GetFaviconForHistoryItem(HistoryItem* item) {
-  FaviconService* service =
-      profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
-  FaviconService::Handle handle = service->GetFaviconForURL(item->url,
-      &favicon_consumer_,
-      NewCallback(this, &HistoryMenuBridge::GotFaviconData));
-  favicon_consumer_.SetClientData(service, handle, item);
-  item->icon_handle = handle;
-  item->icon_requested = true;
-}
-
-void HistoryMenuBridge::GotFaviconData(FaviconService::Handle handle,
-                                       bool know_favicon,
-                                       scoped_refptr<RefCountedBytes> data,
-                                       bool expired,
-                                       GURL url) {
-  // Since we're going to do Cocoa-y things, make sure this is the main thread.
-  DCHECK([NSThread isMainThread]);
-
-  HistoryItem* item =
-      favicon_consumer_.GetClientData(
-          profile_->GetFaviconService(Profile::EXPLICIT_ACCESS), handle);
-  item->icon_requested = false;
-  item->icon_handle = NULL;
-
-  // Convert the raw data to Skia and then to a NSImage.
-  // TODO(rsesek): Is there an easier way to do this?
-  SkBitmap icon;
-  if (know_favicon && data.get() && data->size() &&
-      gfx::PNGCodec::Decode(data->front(), data->size(), &icon)) {
-    NSImage* image = gfx::SkBitmapToNSImage(icon);
-    if (image) {
-      // The conversion was successful.
-      item->icon.reset([image retain]);
-      [item->menu_item setImage:item->icon.get()];
-    }
-  }
-}
-
-void HistoryMenuBridge::CancelFaviconRequest(HistoryItem* item) {
-  if (item->icon_requested) {
-    FaviconService* service =
-        profile_->GetFaviconService(Profile::EXPLICIT_ACCESS);
-    service->CancelRequest(item->icon_handle);
-    item->icon_requested = false;
-    item->icon_handle = NULL;
-  }
 }
