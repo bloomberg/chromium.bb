@@ -3417,12 +3417,12 @@ ExprNodeVector[6] = {
     InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v) | InstFlag(AddressSizeDefaultIs32),
     InstBtr,
     2, {
-      { E_Operand, OpFlag(OpUse) },
+      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
       { G_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[8] = {
   { OperandReference[1] , 0, 0 },
-  { ExprMemOffset[4] , 0, ExprUsed },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -3455,12 +3455,12 @@ ExprNodeVector[8] = {
     InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v) | InstFlag(AddressSizeDefaultIs32),
     InstBtc,
     2, {
-      { E_Operand, OpFlag(OpUse) },
+      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
       { G_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[8] = {
   { OperandReference[1] , 0, 0 },
-  { ExprMemOffset[4] , 0, ExprUsed },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },
@@ -3474,12 +3474,12 @@ ExprNodeVector[8] = {
     InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) | InstFlag(OperandSize_v) | InstFlag(AddressSizeDefaultIs32),
     InstBts,
     2, {
-      { E_Operand, OpFlag(OpUse) },
+      { E_Operand, OpFlag(OpUse) | OpFlag(OpSet) },
       { G_Operand, OpFlag(OpUse) },
   } };
 ExprNodeVector[8] = {
   { OperandReference[1] , 0, 0 },
-  { ExprMemOffset[4] , 0, ExprUsed },
+  { ExprMemOffset[4] , 0, ExprSet | ExprUsed },
   { ExprRegister[0] , %eax, ExprUsed | ExprSize32 },
   { ExprRegister[0] , %unknown, 0 },
   { ExprConstant[0] , 1, ExprSize8 },

@@ -209,14 +209,14 @@ void Define0FOpcodes() {
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) |
                InstFlag(OperandSize_v) | InstFlag(AddressSizeDefaultIs32),
                InstBts);
-  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(G_Operand, OpFlag(OpUse));
 
   DefineOpcode(0xab, NACLi_ILLEGAL,
                InstFlag(Opcode64Only) | InstFlag(OpcodeUsesModRm) |
                InstFlag(OperandSize_o) | InstFlag(AddressSizeDefaultIs32),
                InstBts);
-  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(G_Operand, OpFlag(OpUse));
 
   DefineOpcode(0xae, NACLi_SSE2,
@@ -280,14 +280,14 @@ void Define0FOpcodes() {
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) |
                InstFlag(OperandSize_v) | InstFlag(AddressSizeDefaultIs32),
                InstBtr);
-  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(G_Operand, OpFlag(OpUse));
 
   DefineOpcode(0xb3, NACLi_ILLEGAL,
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_o) |
                InstFlag(Opcode64Only) | InstFlag(AddressSizeDefaultIs32),
                InstBtr);
-  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(G_Operand, OpFlag(OpUse));
 
   /* MOVZX */
@@ -331,7 +331,7 @@ void Define0FOpcodes() {
                InstFlag(OperandSize_v) | InstFlag(OpcodeHasImmed_b),
                InstBtr);
   DefineOperand(Opcode4, OpFlag(OperandExtendsOpcode));
-  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcode(0xba, NACLi_386,
@@ -340,7 +340,7 @@ void Define0FOpcodes() {
                InstFlag(OperandSize_v) | InstFlag(OpcodeHasImmed_b),
                InstBtr);
   DefineOperand(Opcode4, OpFlag(OperandExtendsOpcode));
-  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcode(0xba, NACLi_386,
@@ -358,7 +358,7 @@ void Define0FOpcodes() {
                InstFlag(OperandSize_v) | InstFlag(OpcodeHasImmed_b),
                InstBts);
   DefineOperand(Opcode5, OpFlag(OperandExtendsOpcode));
-  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcode(0xba, NACLi_386,
@@ -367,7 +367,7 @@ void Define0FOpcodes() {
                InstFlag(OperandSize_v) | InstFlag(OpcodeHasImmed_b),
                InstBts);
   DefineOperand(Opcode5, OpFlag(OperandExtendsOpcode));
-  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcode(0xba, NACLi_386,
@@ -375,7 +375,7 @@ void Define0FOpcodes() {
                InstFlag(OperandSize_o) | InstFlag(OpcodeHasImmed_b),
                InstBts);
   DefineOperand(Opcode5, OpFlag(OperandExtendsOpcode));
-  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcodeMrmChoices_32_64(0xba, Opcode6, 1, 2);
@@ -385,7 +385,7 @@ void Define0FOpcodes() {
                InstFlag(OperandSize_v) | InstFlag(OpcodeHasImmed_b),
                InstBtr);
   DefineOperand(Opcode6, OpFlag(OperandExtendsOpcode));
-  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcode(0xba, NACLi_386,
@@ -394,7 +394,7 @@ void Define0FOpcodes() {
                InstFlag(OperandSize_v) | InstFlag(OpcodeHasImmed_b),
                InstBtr);
   DefineOperand(Opcode6, OpFlag(OperandExtendsOpcode));
-  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcode(0xba, NACLi_386,
@@ -402,7 +402,7 @@ void Define0FOpcodes() {
                InstFlag(OperandSize_o) | InstFlag(OpcodeHasImmed_b),
                InstBtr);
   DefineOperand(Opcode6, OpFlag(OperandExtendsOpcode));
-  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcodeMrmChoices_32_64(0xba, Opcode7, 1, 2);
@@ -412,7 +412,7 @@ void Define0FOpcodes() {
                InstFlag(OperandSize_v) | InstFlag(OpcodeHasImmed_b),
                InstBtc);
   DefineOperand(Opcode7, OpFlag(OperandExtendsOpcode));
-  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcode(0xba, NACLi_386,
@@ -421,7 +421,7 @@ void Define0FOpcodes() {
                InstFlag(OperandSize_v) | InstFlag(OpcodeHasImmed_b),
                InstBtc);
   DefineOperand(Opcode7, OpFlag(OperandExtendsOpcode));
-  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   DefineOpcode(0xba, NACLi_386,
@@ -429,7 +429,7 @@ void Define0FOpcodes() {
                InstFlag(OperandSize_o) | InstFlag(OpcodeHasImmed_b),
                InstBtc);
   DefineOperand(Opcode7, OpFlag(OperandExtendsOpcode));
-  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(I_Operand, OpFlag(OpUse));
 
   /* ISE reviewers suggested omitting btc */
@@ -438,14 +438,14 @@ void Define0FOpcodes() {
                InstFlag(OpcodeUsesModRm) | InstFlag(OperandSize_w) |
                InstFlag(OperandSize_v) | InstFlag(AddressSizeDefaultIs32),
                InstBtc);
-  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(G_Operand, OpFlag(OpUse));
 
   DefineOpcode(0xbb, NACLi_ILLEGAL,
                InstFlag(Opcode64Only) | InstFlag(OpcodeUsesModRm) |
                InstFlag(OperandSize_o) | InstFlag(AddressSizeDefaultIs32),
                InstBtc);
-  DefineOperand(E_Operand, OpFlag(OpUse));
+  DefineOperand(E_Operand, OpFlag(OpSet) | OpFlag(OpUse));
   DefineOperand(G_Operand, OpFlag(OpUse));
 
   DefineOpcodeChoices_32_64(0xbc, 1, 2);

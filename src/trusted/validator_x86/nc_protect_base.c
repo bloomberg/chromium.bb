@@ -196,6 +196,7 @@ void NcBaseRegisterValidator(struct NcValidatorState* state,
                 case InstPush:
                 case InstCall:
                   /* case 3 (simple). */
+                  MaybeReportPreviousBad(state, locals);
                   return;
                 case InstPop: {
                     /* case (3) pop -- see above */
@@ -207,7 +208,10 @@ void NcBaseRegisterValidator(struct NcValidatorState* state,
                         (inst_opcode->operands[reg_operand->value].flags &
                          OpFlag(OpImplicit))) {
                       MaybeReportPreviousBad(state, locals);
-                      return;
+                      /* Continue to process arguments, to see if pop sets
+                       * an illegal register.
+                       */
+                      continue;
                     }
                   }
                   break;
@@ -280,15 +284,18 @@ void NcBaseRegisterValidator(struct NcValidatorState* state,
                */
               if (!NcIsMovUsingRegisters(inst_opcode, vector,
                                          RegRBP, RegRSP)) {
-                NcInstState* prev_inst = NcInstIterGetLookbackState(iter, 1);
-                if (NcIsBinarySetUsingRegisters(inst_opcode, InstAdd, vector,
-                                                RegRBP, state->base_register) &&
-                    NcAssignsRegisterWithZeroExtends(prev_inst, RegEBP)) {
-                  /* case 6. */
-                  NcMarkInstructionJumpIllegal(state, inst);
-                  locals->ebp_set_inst = NULL;
-                  MaybeReportPreviousBad(state, locals);
-                  return;
+                if (NcInstIterHasLookbackState(iter, 1)) {
+                  NcInstState* prev_inst = NcInstIterGetLookbackState(iter, 1);
+                  if (NcIsBinarySetUsingRegisters(
+                          inst_opcode, InstAdd, vector,
+                          RegRBP, state->base_register) &&
+                      NcAssignsRegisterWithZeroExtends(prev_inst, RegEBP)) {
+                    /* case 6. */
+                    NcMarkInstructionJumpIllegal(state, inst);
+                    locals->ebp_set_inst = NULL;
+                    MaybeReportPreviousBad(state, locals);
+                    return;
+                  }
                 }
                 /* If reached, not valid. */
                 NcValidatorInstMessage(
