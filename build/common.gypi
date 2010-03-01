@@ -47,7 +47,7 @@
     # Enable/disable breakpad in the nacl runtime. Breakpad does lots of
     # funky behind-the-scenes stuff, so the ability to remove it from the
     # build is nice.
-    'nacl_breakpad%': 1,
+    'nacl_breakpad%': 0,
     'linux_breakpad%': 0,
 
 
@@ -243,6 +243,19 @@
         'msvs_settings': {
           'VCLinkerTool': {
             'TargetMachine': '17', # x86 - 64
+          },
+          'VCLibrarianTool': {
+            'AdditionalLibraryDirectories!':
+              ['<(DEPTH)/third_party/platformsdk_win7/files/Lib'],
+            'AdditionalLibraryDirectories':
+              ['<(DEPTH)/third_party/platformsdk_win7/files/Lib/x64'],
+          },
+          'VCLinkerTool': {
+            'TargetMachine': '17',
+            'AdditionalLibraryDirectories!':
+              ['<(DEPTH)/third_party/platformsdk_win7/files/Lib'],
+            'AdditionalLibraryDirectories':
+              ['<(DEPTH)/third_party/platformsdk_win7/files/Lib/x64'],
           },
         },
       },
@@ -704,7 +717,7 @@
           'NACL_WINDOWS=1'
         ],
         'msvs_system_include_dirs': [
-          '<(DEPTH)/third_party/platformsdk_win2008_6_1/files/Include',
+          '<(DEPTH)/third_party/platformsdk_win7/files/Include',
           '$(VSInstallDir)/VC/atlmfc/include',
         ],
         'msvs_cygwin_dirs': ['../third_party/cygwin'],
@@ -723,7 +736,7 @@
           'VCLibrarianTool': {
             'AdditionalOptions': ['/ignore:4221'],
             'AdditionalLibraryDirectories':
-              ['<(DEPTH)/third_party/platformsdk_win2008_6_1/files/Lib'],
+              ['<(DEPTH)/third_party/platformsdk_win7/files/Lib'],
           },
           'VCLinkerTool': {
             'AdditionalOptions': [
@@ -743,7 +756,7 @@
               'dbghelp.lib',
             ],
             'AdditionalLibraryDirectories':
-              ['<(DEPTH)/third_party/platformsdk_win2008_6_1/files/Lib'],
+              ['<(DEPTH)/third_party/platformsdk_win7/files/Lib'],
             'DelayLoadDLLs': [
               'dbghelp.dll',
               'dwmapi.dll',
