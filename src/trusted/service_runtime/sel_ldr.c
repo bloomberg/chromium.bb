@@ -440,7 +440,7 @@ void  NaClAppPrintDetails(struct NaClApp  *nap,
   /*           123456789012345678901234567890 */
 
   gprintf(gp, "static_text_end:   0x%08"PRIxPTR"\n", nap->static_text_end);
-  gprintf(gp, "end-of-text:       0x%08"PRIxPTR"\n", NaClEndOfText(nap));
+  gprintf(gp, "end-of-text:       0x%08"PRIxPTR"\n", NaClEndOfStaticText(nap));
   gprintf(gp, "rodata:            0x%08"PRIxPTR"\n", nap->rodata_start);
   gprintf(gp, "data:              0x%08"PRIxPTR"\n", nap->data_start);
   gprintf(gp, "data_end:          0x%08"PRIxPTR"\n", nap->data_end);

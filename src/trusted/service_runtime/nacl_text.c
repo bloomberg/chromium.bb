@@ -143,7 +143,7 @@ NaClErrorCode NaClMakeDynamicTextShared(struct NaClApp *nap) {
    * end-of-text.  This implies that the "core" text will not be
    * backed by shm.
    */
-  shm_vaddr_base = NaClEndOfText(nap);
+  shm_vaddr_base = NaClEndOfStaticText(nap);
   NaClLog(4,
           "NaClMakeDynamicTextShared: shm_vaddr_base = %08"PRIxPTR"\n",
           shm_vaddr_base);

@@ -84,6 +84,8 @@ NaClErrorCode NaClAllocAddrSpace(struct NaClApp *nap) {
 
 /*
  * Apply memory protection to memory regions.
+ *
+ * TODO(bsy): dynamic text should be remapped as non-writable.
  */
 NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
   uintptr_t start_addr;
@@ -132,7 +134,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
     return LOAD_MPROTECT_FAIL;
   }
   if (!NaClVmmapAdd(&nap->mem_map,
-                    (start_addr - nap->mem_start) >> NACL_PAGESHIFT,
+                    NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
                     region_size >> NACL_PAGESHIFT,
                     PROT_READ | PROT_EXEC,
                     NaClMemObjMake(nap->text_shm,
@@ -144,13 +146,27 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
   }
 
   start_addr = NaClRoundPage(start_addr + region_size);
+  if (nap->use_shm_for_dynamic_text) {
+    /* dynamic text is present */
+    if (start_addr != NaClUserToSys(nap, nap->dynamic_text_start)) {
+      NaClLog(LOG_FATAL,
+              ("NaClMemoryProtection: dynamic text start is"
+               " %08"PRIxPTR", but text ended at %08"PRIxPTR"\n"),
+              nap->dynamic_text_start,
+              start_addr);
+    }
+  }
+  /*
+   * TODO(bsy): remap dynamic text shm to be non-writable.
+   */
+
   /*
    * data_end is max virtual addr seen, so start_addr <= data_end
    * must hold.
    */
 
   region_size = NaClRoundPage(NaClRoundAllocPage(nap->data_end)
-                              + nap->mem_start - start_addr);
+                              - NaClSysToUser(nap, start_addr));
   NaClLog(3,
           ("RW data region start 0x%08"PRIxPTR", size 0x%08"PRIxS","
            " end 0x%08"PRIxPTR"\n"),
@@ -168,7 +184,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
     return LOAD_MPROTECT_FAIL;
   }
   if (!NaClVmmapAdd(&nap->mem_map,
-                    (start_addr - nap->mem_start) >> NACL_PAGESHIFT,
+                    NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
                     region_size >> NACL_PAGESHIFT,
                     PROT_READ | PROT_WRITE,
                     (struct NaClMemObj *) NULL)) {
@@ -179,9 +195,10 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
 
   /* stack is read/write but not execute */
   region_size = nap->stack_size;
-  start_addr = (nap->mem_start
-                + NaClTruncAllocPage(((uintptr_t) 1U << nap->addr_bits)
-                                     - nap->stack_size));
+  start_addr = NaClUserToSys(nap,
+                             NaClTruncAllocPage(
+                                 ((uintptr_t) 1U << nap->addr_bits)
+                                 - nap->stack_size));
   NaClLog(3,
           ("RW stack region start 0x%08"PRIxPTR", size 0x%08"PRIxS","
            " end 0x%08"PRIxPTR"\n"),
@@ -200,7 +217,7 @@ NaClErrorCode NaClMemoryProtection(struct NaClApp *nap) {
   }
 
   if (!NaClVmmapAdd(&nap->mem_map,
-                    (start_addr - nap->mem_start) >> NACL_PAGESHIFT,
+                    NaClSysToUser(nap, start_addr) >> NACL_PAGESHIFT,
                     nap->stack_size >> NACL_PAGESHIFT,
                     PROT_READ | PROT_WRITE,
                     (struct NaClMemObj *) NULL)) {

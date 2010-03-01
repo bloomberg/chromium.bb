@@ -71,8 +71,9 @@ void NaClFillTrampolineRegion(struct NaClApp *nap) {
 void NaClFillEndOfTextRegion(struct NaClApp *nap) {
   size_t page_pad;
 
-  page_pad = NaClRoundPage(nap->static_text_end) - nap->static_text_end;
-  CHECK(page_pad < NACL_PAGESIZE);
+  page_pad = (NaClRoundAllocPage(nap->static_text_end + NACL_HALT_SLED_SIZE)
+              - nap->static_text_end);
+  CHECK(page_pad < NACL_MAP_PAGESIZE + NACL_HALT_SLED_SIZE);
 
   NaClLog(4,
           "Filling with halts: %08"PRIxPTR", %08"PRIxS" bytes\n",

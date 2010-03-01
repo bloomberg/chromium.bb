@@ -162,7 +162,7 @@ static INLINE uintptr_t NaClSysToUserStackAddr(struct NaClApp *nap,
 
 #endif
 
-static INLINE uintptr_t NaClEndOfText(struct NaClApp *nap) {
+static INLINE uintptr_t NaClEndOfStaticText(struct NaClApp *nap) {
   return nap->static_text_end;
 }
 

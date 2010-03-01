@@ -170,12 +170,12 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
     }
   }
   if (0 != nap->rodata_start) {
-    if (NaClRoundAllocPage(NaClEndOfText(nap)) > nap->rodata_start) {
+    if (NaClRoundAllocPage(NaClEndOfStaticText(nap)) > nap->rodata_start) {
       ret = LOAD_TEXT_OVERLAPS_RODATA;
       goto done;
     }
   } else if (0 != nap->data_start) {
-    if (NaClRoundAllocPage(NaClEndOfText(nap)) > nap->data_start) {
+    if (NaClRoundAllocPage(NaClEndOfStaticText(nap)) > nap->data_start) {
       ret = LOAD_TEXT_OVERLAPS_DATA;
       goto done;
     }
@@ -191,21 +191,24 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   /*
    * NB: mem_map object has been initialized, but is empty.
    * NaClMakeDynamicTextShared does not touch it.
+   *
+   * NaClMakeDynamicTextShared also fills the dynamic memory region
+   * with the architecture-specific halt instruction.  If/when we use
+   * memory mapping to save paging space for the dynamic region and
+   * lazily halt fill the memory as the pages become
+   * readable/executable, we must make sure that the *last*
+   * NACL_MAP_PAGESIZE chunk is nonetheless mapped and written with
+   * halts.
    */
-  NaClLog(2, "Replacing text pad region with shareable memory\n");
+  NaClLog(2,
+          ("Replacing gap between static text and"
+           " (ro)data with shareable memory\n"));
   subret = NaClMakeDynamicTextShared(nap);
   if (LOAD_OK != subret) {
     ret = subret;
     goto done;
   }
 
-  /*
-   * NaClLoadImage will fill with halt instructions the padding space
-   * after the text.  For shm-backed dynamic text space, this extends
-   * to the rodata; for non-shm-backed text space, this extend to the
-   * next page (and not allocation page).  static_text_end is
-   * updated to include the padding.
-   */
   NaClLog(2, "Loading into memory\n");
   subret = NaClElfImageLoad(image, gp, nap->addr_bits, nap->mem_start);
   if (LOAD_OK != subret) {
@@ -213,7 +216,18 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
     goto done;
   }
 
+  /*
+   * NaClFillEndOfTextRegion will fill with halt instructions the
+   * padding space after the static text region.
+   *
+   * Shm-backed dynamic text space was filled with halt instructions
+   * in NaClMakeDynamicTextShared.  This extends to the rodata.  For
+   * non-shm-backed text space, this extend to the next page (and not
+   * allocation page).  static_text_end is updated to include the
+   * padding.
+   */
   NaClFillEndOfTextRegion(nap);
+
 #if 0 == NACL_DANGEROUS_DEBUG_MODE_DISABLE_INNER_SANDBOX
   NaClLog(2, "Validating image\n");
   subret = NaClValidateImage(nap);
@@ -236,6 +250,9 @@ NaClErrorCode NaClAppLoadFile(struct Gio       *gp,
   /*
    * NaClMemoryProtect also initializes the mem_map w/ information
    * about the memory pages and their current protection value.
+   *
+   * The contents of the dynamic text region will get remapped as
+   * non-writable.
    */
   subret = NaClMemoryProtection(nap);
   if (LOAD_OK != subret) {

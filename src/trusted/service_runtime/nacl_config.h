@@ -99,6 +99,28 @@
 #define NACL_TRAMPOLINE_SHIFT   16
 #define NACL_TRAMPOLINE_SIZE    (1 << NACL_TRAMPOLINE_SHIFT)
 #define NACL_TRAMPOLINE_END     (NACL_TRAMPOLINE_START + NACL_TRAMPOLINE_SIZE)
+
+/*
+ * Extra required space at the end of static text (and dynamic text,
+ * if any).  The intent is to stop a thread from "walking off the end"
+ * of a text region into another.  Four bytes suffices for all
+ * currently supported architectures (halt is one byte on x86-32 and
+ * x86-64, and 4 bytes on ARM), but for x86 we want to provide
+ * paranoia-in-depth: if the NX bit (x86-64, arm) or the %cs segment
+ * protection (x86-32) fails on weird borderline cases and the
+ * validator also fails to detect a weird instruction sequence, we may
+ * have the following situation: a partial multi-byte instruction is
+ * placed on the end of the last page, and by "absorbing" the trailing
+ * HALT instructions (esp if there are none) as immediate data (or
+ * something similar), cause the PC to go outside of the untrusted
+ * code space, possibly into data memory.  By requiring 32 bytes of
+ * space to fill with HALT instructions, we (attempt to) ensure that
+ * such op-code absorption cannot happen, and at least one of these
+ * HALTs will cause the untrusted thread to abort, and take down the
+ * whole NaCl app.
+ */
+#define NACL_HALT_SLED_SIZE     32
+
 /*
  * macros to provide uniform access to identifiers from assembly due
  * to different C -> asm name mangling conventions and other platform-specific
