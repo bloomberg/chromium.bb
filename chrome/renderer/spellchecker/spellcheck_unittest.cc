@@ -331,6 +331,8 @@ TEST_F(SpellCheckTest, SpellCheckSuggestions_EN_US) {
     {L"jum", false, 0, 0, L"hum"},
     {L"jum", false, 0, 0, L"sum"},
     {L"jum", false, 0, 0, L"um"},
+    // A regression test for Issue 36523.
+    {L"privliged", false, 0, 0, L"privileged"},
     // TODO (Sidchat): add many more examples.
   };
 
