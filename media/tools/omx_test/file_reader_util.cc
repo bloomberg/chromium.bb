@@ -156,6 +156,12 @@ bool FFmpegFileReader::Initialize() {
   } else if (codec_context_->codec_id == CODEC_ID_MPEG4) {
     converter_.reset(new media::FFmpegBitstreamConverter(
         "mpeg4video_es", codec_context_));
+  } else if (codec_context_->codec_id == CODEC_ID_WMV3) {
+    converter_.reset(new media::FFmpegBitstreamConverter(
+        "vc1_asftorcv", codec_context_));
+  } else if (codec_context_->codec_id == CODEC_ID_VC1) {
+    converter_.reset(new media::FFmpegBitstreamConverter(
+        "vc1_asftoannexg", codec_context_));
   }
 
   if (converter_.get() && !converter_->Initialize()) {
