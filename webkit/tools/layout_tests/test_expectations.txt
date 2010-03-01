@@ -2939,3 +2939,6 @@ BUG36846 : java/java-and-plugins.html = TEXT
 // WebKit roll 55250 to 55339
 BUG36966 : fast/loader/about-blank-hash-kept.html = FAIL
 BUG36967 : java/array-sort.html = FAIL
+
+// httponly-cookie.pl fails because it fails to be serveed as cgi script on Win
+BUG37049 WIN SKIP : websocket/tests/cookies/httponly-cookie.pl = PASS
