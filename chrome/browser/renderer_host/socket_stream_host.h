@@ -9,7 +9,7 @@
 
 #include "base/ref_counted.h"
 #include "chrome/browser/renderer_host/resource_dispatcher_host.h"
-#include "net/socket_stream/socket_stream.h"
+#include "net/socket_stream/socket_stream_job.h"
 
 class GURL;
 
@@ -58,7 +58,7 @@ class SocketStreamHost {
   ResourceDispatcherHost::Receiver* receiver_;
   int socket_id_;
 
-  scoped_refptr<net::SocketStream> socket_;
+  scoped_refptr<net::SocketStreamJob> socket_;
 
   DISALLOW_COPY_AND_ASSIGN(SocketStreamHost);
 };

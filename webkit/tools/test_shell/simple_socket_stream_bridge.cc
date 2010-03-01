@@ -9,7 +9,8 @@
 #include "base/message_loop.h"
 #include "base/ref_counted.h"
 #include "googleurl/src/gurl.h"
-#include "net/socket_stream/socket_stream.h"
+#include "net/socket_stream/socket_stream_job.h"
+#include "net/websockets/websocket_job.h"
 #include "net/url_request/url_request_context.h"
 #include "third_party/WebKit/WebKit/chromium/public/WebSocketStreamHandle.h"
 #include "webkit/glue/websocketstreamhandle_bridge.h"
@@ -65,7 +66,7 @@ class WebSocketStreamHandleBridgeImpl
   WebKit::WebSocketStreamHandle* handle_;
   webkit_glue::WebSocketStreamHandleDelegate* delegate_;
 
-  scoped_refptr<net::SocketStream> socket_;
+  scoped_refptr<net::SocketStreamJob> socket_;
   // Number of pending tasks to handle net::SocketStream::Delegate methods.
   int num_pending_tasks_;
 
@@ -80,6 +81,7 @@ WebSocketStreamHandleBridgeImpl::WebSocketStreamHandleBridgeImpl(
       handle_(handle),
       delegate_(delegate),
       num_pending_tasks_(0) {
+  net::WebSocketJob::EnsureInit();
 }
 
 WebSocketStreamHandleBridgeImpl::~WebSocketStreamHandleBridgeImpl() {
@@ -154,7 +156,7 @@ void WebSocketStreamHandleBridgeImpl::OnClose(net::SocketStream* socket) {
 
 void WebSocketStreamHandleBridgeImpl::DoConnect(const GURL& url) {
   DCHECK(MessageLoop::current() == g_io_thread);
-  socket_ = new net::SocketStream(url, this);
+  socket_ = net::SocketStreamJob::CreateSocketStreamJob(url, this);
   socket_->set_context(g_request_context);
   socket_->Connect();
 }

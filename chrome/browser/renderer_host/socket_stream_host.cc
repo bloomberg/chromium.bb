@@ -9,7 +9,7 @@
 #include "chrome/browser/net/url_request_context_getter.h"
 #include "chrome/common/net/socket_stream.h"
 #include "chrome/common/render_messages.h"
-#include "net/socket_stream/socket_stream.h"
+#include "net/socket_stream/socket_stream_job.h"
 
 static const char* kSocketHostKey = "socketHost";
 
@@ -55,7 +55,7 @@ SocketStreamHost::~SocketStreamHost() {
 
 void SocketStreamHost::Connect(const GURL& url) {
   LOG(INFO) << "SocketStreamHost::Connect url=" << url;
-  socket_ = new net::SocketStream(url, delegate_);
+  socket_ = net::SocketStreamJob::CreateSocketStreamJob(url, delegate_);
   URLRequestContextGetter* context_getter = Profile::GetDefaultRequestContext();
   if (context_getter)
       socket_->set_context(context_getter->GetURLRequestContext());
