@@ -1,7 +1,8 @@
-// Copyright (c) 2009 The Chromium Authors. All rights reserved.
+// Copyright (c) 2010 The Chromium Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style license that can be
 // found in the LICENSE file.
 
+#include "base/scoped_vector.h"
 #include "chrome/app/chrome_dll_resource.h"  // IDC_HISTORY_MENU
 #include "chrome/browser/browser.h"
 #import "chrome/browser/cocoa/history_menu_cocoa_controller.h"
@@ -24,16 +25,16 @@
 }
 
 // Open the URL of the given history item in the current tab.
-- (void)openURLForItem:(HistoryMenuBridge::HistoryItem&)node {
+- (void)openURLForItem:(const HistoryMenuBridge::HistoryItem*)node {
   Browser* browser = Browser::GetOrCreateTabbedBrowser(bridge_->profile());
   WindowOpenDisposition disposition =
       event_utils::WindowOpenDispositionFromNSEvent([NSApp currentEvent]);
-  browser->OpenURL(node.url, GURL(), disposition,
+  browser->OpenURL(node->url, GURL(), disposition,
                    PageTransition::AUTO_BOOKMARK);
 }
 
-- (HistoryMenuBridge::HistoryItem)itemForTag:(NSInteger)tag {
-  std::vector<HistoryMenuBridge::HistoryItem>* results = NULL;
+- (const HistoryMenuBridge::HistoryItem*)itemForTag:(NSInteger)tag {
+  const ScopedVector<HistoryMenuBridge::HistoryItem>* results = NULL;
   NSInteger tag_base = 0;
   if (tag > IDC_HISTORY_MENU_VISITED && tag < IDC_HISTORY_MENU_CLOSED) {
     results = bridge_->visited_results();
@@ -48,14 +49,14 @@
   DCHECK(tag > tag_base);
   size_t index = tag - tag_base - 1;
   if (index >= results->size())
-    return HistoryMenuBridge::HistoryItem();
+    return NULL;
   return (*results)[index];
 }
 
 - (IBAction)openHistoryMenuItem:(id)sender {
   NSInteger tag = [sender tag];
-  HistoryMenuBridge::HistoryItem item = [self itemForTag:tag];
-  DCHECK(item.url.is_valid());
+  const HistoryMenuBridge::HistoryItem* item = [self itemForTag:tag];
+  DCHECK(item->url.is_valid());
   [self openURLForItem:item];
 }
 
