@@ -5,6 +5,8 @@
 #include "chrome/browser/renderer_host/backing_store_manager.h"
 
 #include "base/sys_info.h"
+#include "base/command_line.h"
+#include "chrome/common/chrome_switches.h"
 #include "chrome/browser/renderer_host/backing_store.h"
 #include "chrome/browser/renderer_host/render_widget_host.h"
 #include "chrome/browser/renderer_host/render_widget_host_painting_observer.h"
@@ -40,9 +42,22 @@ const size_t kMemoryMultiplier = 4 * 1920 * 1200;  // ~9MB
 // Use a minimum of 2, and add one for each 256MB of physical memory you have.
 // Cap at 5, the thinking being that even if you have a gigantic amount of
 // RAM, there's a limit to how much caching helps beyond a certain number
-// of tabs.
+// of tabs. If users *really* want unlimited stores, allow it via the
+// --disable-backing-store-limit flag.
 static size_t MaxNumberOfBackingStores() {
-  return std::min(5, 2 + (base::SysInfo::AmountOfPhysicalMemoryMB() / 256));
+  static bool unlimited = false;
+  const CommandLine& command = *CommandLine::ForCurrentProcess();
+  unlimited = command.HasSwitch(switches::kDisableBackingStoreLimit);
+
+
+  if (unlimited) {
+    // 100 isn't truly unlimited, but given that backing stores count against
+    // GDI memory, it's well past any reasonable number. Many systems will
+    // begin to fail in strange ways well before they hit 100 stores.
+    return 100;
+  } else {
+    return std::min(5, 2 + (base::SysInfo::AmountOfPhysicalMemoryMB() / 256));
+  }
 }
 
 // The maximum about of memory to use for all BackingStoreCache object combined.

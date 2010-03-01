@@ -87,6 +87,10 @@ const char kDisableApplicationCache[]       = "disable-application-cache";
 // mechanism.
 const char kDisableAudio[]                  = "disable-audio";
 
+// Disable limits on the number of backing stores. Can prevent blinking for
+// users with many windows/tabs and lots of memory.
+const char kDisableBackingStoreLimit[]      = "disable-backing-store-limit";
+
 // Disable support for cached byte-ranges.
 const char kDisableByteRangeSupport[]       = "disable-byte-range-support";
 

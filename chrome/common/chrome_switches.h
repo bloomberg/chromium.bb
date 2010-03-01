@@ -39,6 +39,7 @@ extern const char kDiagnostics[];
 extern const char kDisableAltWinstation[];
 extern const char kDisableApplicationCache[];
 extern const char kDisableAudio[];
+extern const char kDisableBackingStoreLimit[];
 extern const char kDisableByteRangeSupport[];
 extern const char kDisableCustomJumpList[];
 extern const char kDisableDatabases[];
