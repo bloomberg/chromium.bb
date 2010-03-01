@@ -197,19 +197,31 @@
             }],  # ffmpeg_branding
             ['ffmpeg_branding=="ChromeOS"', {
               'sources': [
+		'source/patched-ffmpeg-mt/libavcodec/aandcttab.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
+		'source/patched-ffmpeg-mt/libavcodec/error_resilience.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
+		'source/patched-ffmpeg-mt/libavcodec/faandct.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/h263.c',
                 'source/patched-ffmpeg-mt/libavcodec/h263_parser.c', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/h263dec.c',
+                'source/patched-ffmpeg-mt/libavcodec/h264_mp4toannexb_bsf.c', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/intrax8.c',
                 'source/patched-ffmpeg-mt/libavcodec/intrax8dsp.c',
                 'source/patched-ffmpeg-mt/libavcodec/ituh263dec.c', # TODO(fbarchard): Review this file.
+		'source/patched-ffmpeg-mt/libavcodec/ituh263enc.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
+		'source/patched-ffmpeg-mt/libavcodec/jfdctint.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
+		'source/patched-ffmpeg-mt/libavcodec/motion_est.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/mpeg4data.h', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/mpeg4video.c', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/mpeg4video.h', # TODO(fbarchard): Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/mpeg4video_parser.c',
-                'source/patched-ffmpeg-mt/libavcodec/mpeg4videodec.c', # TODO(fbarchard): Review this file.
+                'source/patched-ffmpeg-mt/libavcodec/mpeg4video_es_bsf.c', # TODO(fbarchard): Review this file.
+		'source/patched-ffmpeg-mt/libavcodec/mpeg4videoenc.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
+		'source/patched-ffmpeg-mt/libavcodec/mpeg4videodec.c', # TODO(fbarchard): Review this file.
+		'source/patched-ffmpeg-mt/libavcodec/mpegvideo.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
+		'source/patched-ffmpeg-mt/libavcodec/mpegvideo_enc.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/msmpeg4.c',
                 'source/patched-ffmpeg-mt/libavcodec/msmpeg4data.c',
+		'source/patched-ffmpeg-mt/libavcodec/ratecontrol.c', # TODO(fbarchard): For mpeg4 bsf. Review this file.
                 'source/patched-ffmpeg-mt/libavcodec/vc1.c',
                 'source/patched-ffmpeg-mt/libavcodec/vc1data.c',
                 'source/patched-ffmpeg-mt/libavcodec/vc1dec.c', # TODO(fbarchard): Review this file.
@@ -327,13 +339,6 @@
                 }],
               ],
             }],
-           ['target_arch=="arm" and ffmpeg_branding=="ChromeOS"', {
-              'sources': [
-                'source/patched-ffmpeg-mt/libavcodec/h264_mp4toannexb_bsf.c',
-# TODO(fbarchard): mpeg4video_es_bsf.c requires a patch
-#                'source/patched-ffmpeg-mt/libavcodec/mpeg4video_es_bsf.c',
-              ],
-            }],  # target_arch=="arm" and ffmpeg_branding=="ChromeOS"
             ['OS=="linux" or OS=="freebsd" or OS=="openbsd" or OS=="solaris"', {
               'defines': [
                 '_ISOC99_SOURCE',
