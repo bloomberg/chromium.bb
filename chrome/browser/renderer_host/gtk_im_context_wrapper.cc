@@ -302,11 +302,7 @@ void GtkIMContextWrapper::ProcessFilteredKeyPressEvent(
     // Prevent RenderView::UnhandledKeyboardEvent() from processing it.
     // Otherwise unexpected result may occur. For example if it's a
     // Backspace key event, the browser may go back to previous page.
-    if (wke->os_event) {
-      wke->os_event->keyval = GDK_VoidSymbol;
-      wke->os_event->hardware_keycode = 0;
-      wke->os_event->state = 0;
-    }
+    wke->skip_in_browser = true;
   }
   host_view_->ForwardKeyboardEvent(*wke);
 }
@@ -330,6 +326,7 @@ void GtkIMContextWrapper::ProcessUnfilteredKeyPressEvent(
   // see WebInputEventFactory::keyboardEvent() for details.
   if (wke->text[0]) {
     wke->type = WebKit::WebInputEvent::Char;
+    wke->skip_in_browser = true;
     host_view_->ForwardKeyboardEvent(*wke);
   }
 }
@@ -353,6 +350,7 @@ void GtkIMContextWrapper::ProcessInputMethodResult(const GdkEventKey* event,
       NativeWebKeyboardEvent char_event(commit_text_[0],
                                         event->state,
                                         base::Time::Now().ToDoubleT());
+      char_event.skip_in_browser = true;
       host_view_->ForwardKeyboardEvent(char_event);
     } else {
       committed = true;

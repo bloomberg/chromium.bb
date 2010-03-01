@@ -1064,7 +1064,7 @@ void RenderWidgetHost::ProcessKeyboardEventAck(int type, bool processed) {
     // We only send unprocessed key event upwards if we are not hidden,
     // because the user has moved away from us and no longer expect any effect
     // of this key event.
-    if (!processed && !is_hidden_) {
+    if (!processed && !is_hidden_ && !front_item.skip_in_browser) {
       UnhandledKeyboardEvent(front_item);
 
       // WARNING: This RenderWidgetHost can be deallocated at this point

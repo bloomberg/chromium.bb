@@ -815,7 +815,8 @@ void RenderWidgetHostViewGtk::ForwardKeyboardEvent(
     return;
 
   EditCommands edit_commands;
-  if (key_bindings_handler_->Match(event, &edit_commands)) {
+  if (!event.skip_in_browser &&
+      key_bindings_handler_->Match(event, &edit_commands)) {
     host_->ForwardEditCommandsForNextKeyEvent(edit_commands);
   }
   host_->ForwardKeyboardEvent(event);

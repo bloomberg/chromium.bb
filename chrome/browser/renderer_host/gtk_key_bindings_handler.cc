@@ -29,8 +29,7 @@ GtkKeyBindingsHandler::~GtkKeyBindingsHandler() {
 
 bool GtkKeyBindingsHandler::Match(const NativeWebKeyboardEvent& wke,
                                   EditCommands* edit_commands) {
-  if (!enabled_ || wke.type == WebKit::WebInputEvent::Char ||
-      !wke.os_event || wke.os_event->keyval == GDK_VoidSymbol)
+  if (!enabled_ || wke.type == WebKit::WebInputEvent::Char || !wke.os_event)
     return false;
 
   edit_commands_.clear();
