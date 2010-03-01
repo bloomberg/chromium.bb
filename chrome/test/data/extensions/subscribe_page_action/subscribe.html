@@ -5,14 +5,23 @@
 -->
 <html>
 <head>
-  <title>Subscribe to feed</title>
+  <title></title>
   <link rel="stylesheet" href="style.css" type="text/css" />
   <link rel="stylesheet" href="subscribe.css" type="text/css" />
   <script type="text/javascript" src="common.js"></script>
   <script type="text/javascript" src="subscribe.js"></script>
+  <script>
+    function init() {
+      document.title =
+        chrome.i18n.getMessage("rss_subscription_default_title");
+      main();
+      substituteMessagesForTag("span");
+      substituteMessagesForTag("button");
+    }
+  </script>
 </head>
 
-<body onload="main();">
+<body onload="init();">
 
   <table border="0" cellpadding="0" cellspacing="0" width="100%">
   <tr>
@@ -28,13 +37,15 @@
           <td align="right" valign="middle">
             <div>
               <span style="white-space: nowrap"
-                >Subscribe to this feed using:</span>
+                >__MSG_rss_subscription_subscribe_using__</span>
             </div>
           </td>
           <td valign="top">
             <div style="margin-left:2px">
               <select id="readerDropdown" onChange="onSelectChanged()"></select>
-              <button onclick="navigate();">Subscribe Now</button><br />
+              <button onclick="navigate();">
+                  __MSG_rss_subscription_subscribe_button__
+              </button><br />
             </div>
           </td>
         </tr>
@@ -43,7 +54,7 @@
           <td valign="top" colspan="2">
             <span id="alwaysUseSpan" style="display:none"><input
                 type="checkbox" id="alwaysUse" value="AlwaysUse"
-                >Always use this reader to subscribe to feeds.</span>
+                >__MSG_rss_subscription_always_use__</span>
           </td>
         </tr>
       </table>
@@ -57,8 +68,8 @@
       <span class="feedUrl"
         >[ <a id="feedUrl" class="feedUrl"
               title="The feed page currently being previewed."
-           >Feed</a> ]</span></span>
-    <span><b>Feed preview</b></span>
+           >__MSG_rss_subscription_feed_link__</a> ]</span></span>
+    <span><b>__MSG_rss_subscription_feed_preview__</b></span>
   </div>
   <div id="items"></div>
 </body>

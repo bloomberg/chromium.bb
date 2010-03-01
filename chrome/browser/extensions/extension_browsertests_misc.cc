@@ -410,7 +410,7 @@ void GetParsedFeedData(HTTPTestServer* server,
   EXPECT_STREQ(expected_error.c_str(), error.c_str());
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed1) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedValidFeed1) {
   HTTPTestServer* server = StartHTTPServer();
   GetParsedFeedData(server, kValidFeed1, browser(),
                     "Feed for 'MyFeedTitle'",
@@ -419,7 +419,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed1) {
                     "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed2) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedValidFeed2) {
   HTTPTestServer* server = StartHTTPServer();
   GetParsedFeedData(server, kValidFeed2, browser(),
                     "Feed for 'MyFeed2'",
@@ -428,7 +428,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed2) {
                     "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed3) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedValidFeed3) {
   HTTPTestServer* server = StartHTTPServer();
   GetParsedFeedData(server, kValidFeed3, browser(),
                     "Feed for 'Google Code buglist rss feed'",
@@ -437,7 +437,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed3) {
                     "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed4) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedValidFeed4) {
   HTTPTestServer* server = StartHTTPServer();
   GetParsedFeedData(server, kValidFeed4, browser(),
                     "Feed for 'Title chars <script> %23 stop'",
@@ -446,7 +446,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed4) {
                     "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed0) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedValidFeed0) {
   HTTPTestServer* server = StartHTTPServer();
   // Try a feed with a link with an onclick handler (before r27440 this would
   // trigger a NOTREACHED).
@@ -457,7 +457,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed0) {
                     "No error");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed5) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedValidFeed5) {
   HTTPTestServer* server = StartHTTPServer();
   // Feed with valid but mostly empty xml.
   GetParsedFeedData(server, kValidFeed5, browser(),
@@ -467,7 +467,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeed5) {
                     "This feed contains no entries.");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed1) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedInvalidFeed1) {
   HTTPTestServer* server = StartHTTPServer();
   // Try an empty feed.
   GetParsedFeedData(server, kInvalidFeed1, browser(),
@@ -477,7 +477,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed1) {
                     "Not a valid feed.");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed2) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedInvalidFeed2) {
   HTTPTestServer* server = StartHTTPServer();
   // Try a garbage feed.
   GetParsedFeedData(server, kInvalidFeed2, browser(),
@@ -487,7 +487,7 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed2) {
                     "Not a valid feed.");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed3) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, DISABLED_ParseFeedInvalidFeed3) {
   HTTPTestServer* server = StartHTTPServer();
   // Try a feed that doesn't exist.
   GetParsedFeedData(server, L"foo.xml", browser(),
@@ -497,7 +497,8 @@ IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedInvalidFeed3) {
                     "Not a valid feed.");
 }
 
-IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest, ParseFeedValidFeedNoLinks) {
+IN_PROC_BROWSER_TEST_F(ExtensionBrowserTest,
+                       DISABLED_ParseFeedValidFeedNoLinks) {
   HTTPTestServer* server = StartHTTPServer();
   // Valid feed but containing no links.
   GetParsedFeedData(server, kValidFeedNoLinks, browser(),

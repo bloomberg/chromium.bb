@@ -5,7 +5,7 @@
 -->
 <html>
 <head>
-<title>Edit feed readers</title>
+<title></title>
 <link rel="stylesheet" href="style.css" type="text/css" />
 <style>
 body {
@@ -109,7 +109,7 @@ body>* {
 <script>
 
   // Various text messages within the edit dialog.
-  var assistText = "Insert %s in the URL where the feed url should appear.";
+  var assistText = chrome.i18n.getMessage("rss_subscription_feed_url_assist");
 
   // Specifies the index of the item we are editing or -1 if adding new.
   var editingIndex = -1;
@@ -117,6 +117,15 @@ body>* {
   var editingDefault = false;
 
 function main() {
+  document.title =
+      chrome.i18n.getMessage("rss_subscription_edit_dialog_title");
+
+  substituteMessagesForTag("td");
+  substituteMessagesForTag("div");
+  substituteMessagesForTag("button");
+
+  substituteMessagesForTagAttribute("input", "value");
+
   // Make sure the dialog is not visible.
   document.getElementById('dialogBackground').style.display = "none";
 
@@ -131,7 +140,7 @@ function main() {
     document.getElementById('alwaysUseDefault').disabled = true;
     document.getElementById('resetList').disabled = true;
 
-    alert("LocalStorage must be enabled for changing options.");
+    alert(chrome.i18n.getMessage("rss_subscription_no_localstorage"));
     return;
   }
 
@@ -154,7 +163,7 @@ function main() {
   for (i = 0; i < feedReaderList.length; ++i) {
     var description = feedReaderList[i].description;
     if (isDefaultReader(feedReaderList[i].url))
-      description += " (default)";
+      description += " " + chrome.i18n.getMessage("rss_subscription_default");
     readerListbox.add(new Option(description, feedReaderList[i].url));
   }
 
@@ -181,8 +190,8 @@ function setDefault() {
 }
 
 function resetList() {
-  if (!confirm("Are you sure you want to undo any changes " +
-               "you've made to this list?")) {
+  if (!confirm(chrome.i18n.getMessage(
+         "rss_subscription_reset_list_confirm"))) {
     return;
   }
 
@@ -231,8 +240,9 @@ function editReader(index) {
 function removeReader() {
   var index = readerListbox.selectedIndex;
   var feedReaderList = JSON.parse(window.localStorage.readerList);
-  var reply = confirm("Are you sure you want to remove '" +
-                      feedReaderList[index].description + "'?");
+  var reply =
+    confirm(chrome.i18n.getMessage("rss_subscription_remove_confirm",
+                                   feedReaderList[index].description));
   if (reply) {
     var wasDefault = isDefaultReader(feedReaderList[index].url);
     // Remove the item from the list.
@@ -328,7 +338,7 @@ function save() {
       <img src="feed-icon-16x16.png" />
     </td>
     <td valign="middle">
-      <strong>RSS Subscription options</strong>
+      <strong>__MSG_rss_subscription_options__</strong>
     </td>
     <td>
     </td>
@@ -339,23 +349,23 @@ function save() {
             onchange="onSelectionChanged()"></select>
   </td>
   <td valign="top">
-    <button style="width:100%;" id="addReader"
-            onclick="editReader(-1)">Add</button><br />
-    <button style="width:100%;" id="editReader"
-            onclick="editReader(0)">Edit</button><br />
-    <button style="width:100%;" id="removeReader"
-            onclick="removeReader()">Remove</button><br />
-    <button style="width:100%;" id="setDefault"
-            onclick="setDefault()">Make default</button><br />
-    <button style="width:100%;" id="resetList"
-            onclick="resetList()">Reset list</button><br />
+    <button style="width:100%;" id="addReader" onclick="editReader(-1)">
+        __MSG_rss_subscription_add_reader__</button><br />
+    <button style="width:100%;" id="editReader" onclick="editReader(0)">
+        __MSG_rss_subscription_edit_reader__</button><br />
+    <button style="width:100%;" id="removeReader" onclick="removeReader()">
+        __MSG_rss_subscription_remove_reader__</button><br />
+    <button style="width:100%;" id="setDefault" onclick="setDefault()">
+        __MSG_rss_subscription_make_default_reader__</button><br />
+    <button style="width:100%;" id="resetList" onclick="resetList()">
+        __MSG_rss_subscription_reset_list__</button><br />
   </td>
   </tr>
   <tr>
   <td colspan="3">
     <input type="checkbox" id="alwaysUseDefault"
          value="alwaysUseDefault" onchange="toggleFeedPreview()"
-    >Always use my default reader when subscribing to feeds.
+    >__MSG_rss_subscription_always_use_default__
   </td>
   </tr>
   </table>
@@ -365,7 +375,7 @@ function save() {
       <div id="dialog">
 
         <div id="dialogHeader">
-          Edit feed reader
+          __MSG_rss_subscription_edit_dialog_title__
         </div>
 
         <div id="dialogBody">
@@ -376,7 +386,7 @@ function save() {
 
           <div class="dialogRow">
             <div>
-              Description:
+              __MSG_rss_subscription_feed_description__
             </div>
             <div>
               <input type="text" id="descriptionText" onkeyup="validateInput()">
@@ -385,7 +395,7 @@ function save() {
 
           <div class="dialogRow">
             <div>
-              URL:
+              __MSG_rss_subscription_feed_url__
             </div>
             <div>
               <input type="text" id="urlText" onkeyup="validateInput()">
@@ -398,10 +408,14 @@ function save() {
 
           <div class="dialogRow" id="dialogContentFooter">
             <div>
-              <input type="button" id="save" value="Save" onclick="save()">
+              <input type="button" id="save"
+                     value="__MSG_rss_subscription_save_button__"
+                     onclick="save()">
             </div>
             <div>
-              <input type="button" value="Close" onclick="hideDialog()">
+              <input type="button"
+                     value="__MSG_rss_subscription_close_button__"
+                     onclick="hideDialog()">
             </div>
           </div>
 
