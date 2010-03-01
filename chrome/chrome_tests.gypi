@@ -1863,7 +1863,7 @@
       ]},  # 'targets'
     ],  # OS=="win"
     # Build on linux x86_64 only if linux_fpic==1
-    ['OS=="mac" or (OS=="linux" and (host_arch!="x64" or linux_fpic==1))', {
+    ['OS=="mac" or (OS=="linux" and (target_arch!="x64" or linux_fpic==1))', {
       'targets': [
         # TODO(nirnimesh): enable for win - crbug.com/32285
         {
@@ -1912,14 +1912,14 @@
             ['OS=="linux"', {
               'include_dirs': [
                 '..',
-                '/usr/include/python2.5',
+                '<(sysroot)/usr/include/python<(python_ver)',
               ],
               'dependencies': [
                 '../build/linux/system.gyp:gtk',
               ],
               'link_settings': {
                 'libraries': [
-                  '-lpython2.5',
+                  '-lpython<(python_ver)',
                 ],
               },
             }],
