@@ -120,7 +120,7 @@ class ChromeTests(object):
 
     # Since this path is used for string matching, make sure it's always
     # an absolute Windows-style path.
-    self._source_dir = layout_package.path_utils.GetAbsolutePath(
+    self._source_dir = layout_package.path_utils.get_absolute_path(
         self._source_dir)
     heapcheck_test_script = os.path.join(script_dir, "heapcheck_test.py")
     self._command_preamble = [heapcheck_test_script]
