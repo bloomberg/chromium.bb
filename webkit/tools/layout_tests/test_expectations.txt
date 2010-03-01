@@ -243,6 +243,7 @@ WONTFIX : http/tests/security/cross-frame-access-private-browsing.html = FAIL
 
 // Chromium doesn't implement private browsing in the renderer.
 WONTFIX : plugins/private-browsing-mode.html = FAIL
+WONTFIX : plugins/private-browsing-mode-2.html = TEXT
 
 // We don't let anyone set status in the browser.
 WONTFIX : plugins/set-status.html = TEXT
@@ -2936,6 +2937,3 @@ BUG36967 : java/array-sort.html = FAIL
 
 // httponly-cookie.pl fails because it fails to be serveed as cgi script on Win
 BUG37049 WIN SKIP : websocket/tests/cookies/httponly-cookie.pl = PASS
-
-// WebKit roll 55339 to 55365
-BUG37059 : plugins/private-browsing-mode-2.html = TEXT
