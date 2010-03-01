@@ -44,6 +44,9 @@ void AutoFillManager::RegisterUserPrefs(PrefService* prefs) {
 
 void AutoFillManager::FormFieldValuesSubmitted(
     const webkit_glue::FormFieldValues& form) {
+  if (!IsAutoFillEnabled())
+    return;
+
   // Grab a copy of the form data.
   upload_form_structure_.reset(new FormStructure(form));
 
@@ -54,18 +57,20 @@ void AutoFillManager::FormFieldValuesSubmitted(
   DeterminePossibleFieldTypes(upload_form_structure_.get());
 
   PrefService* prefs = tab_contents_->profile()->GetPrefs();
-  bool autofill_enabled = prefs->GetBoolean(prefs::kAutoFillEnabled);
   bool infobar_shown = prefs->GetBoolean(prefs::kAutoFillInfoBarShown);
-  if (!infobar_shown && personal_data_) {
+  if (!infobar_shown) {
     // Ask the user for permission to save form information.
     infobar_.reset(new AutoFillInfoBarDelegate(tab_contents_, this));
-  } else if (autofill_enabled) {
+  } else {
     HandleSubmit();
   }
 }
 
 void AutoFillManager::FormsSeen(
     const std::vector<webkit_glue::FormFieldValues>& forms) {
+  if (!IsAutoFillEnabled())
+    return;
+
   form_structures_.reset();
   for (std::vector<webkit_glue::FormFieldValues>::const_iterator iter =
            forms.begin();
@@ -206,6 +211,8 @@ bool AutoFillManager::FillAutoFillFormData(int query_id,
 void AutoFillManager::OnAutoFillDialogApply(
     std::vector<AutoFillProfile>* profiles,
     std::vector<CreditCard>* credit_cards) {
+  DCHECK(personal_data_);
+
   // Save the personal data.
   personal_data_->SetProfiles(profiles);
   personal_data_->SetCreditCards(credit_cards);
@@ -214,6 +221,8 @@ void AutoFillManager::OnAutoFillDialogApply(
 }
 
 void AutoFillManager::OnPersonalDataLoaded() {
+  DCHECK(personal_data_);
+
   // We might have been alerted that the PersonalDataManager has loaded, so
   // remove ourselves as observer.
   personal_data_->RemoveObserver(this);
@@ -228,10 +237,6 @@ void AutoFillManager::DeterminePossibleFieldTypes(
 
   form_structure->GetHeuristicAutoFillTypes();
 
-  // OTR: We can't use the PersonalDataManager to help determine field types.
-  if (!personal_data_)
-    return;
-
   for (size_t i = 0; i < form_structure->field_count(); i++) {
     const AutoFillField* field = form_structure->field(i);
     FieldTypeSet field_types;
@@ -243,14 +248,15 @@ void AutoFillManager::DeterminePossibleFieldTypes(
 void AutoFillManager::HandleSubmit() {
   // If there wasn't enough data to import then we don't want to send an upload
   // to the server.
-  if (personal_data_ &&
-      !personal_data_->ImportFormData(form_structures_.get(), this))
+  if (!personal_data_->ImportFormData(form_structures_.get(), this))
     return;
 
   UploadFormData();
 }
 
 void AutoFillManager::OnInfoBarAccepted() {
+  DCHECK(personal_data_);
+
   PrefService* prefs = tab_contents_->profile()->GetPrefs();
   prefs->SetBoolean(prefs::kAutoFillEnabled, true);
 
@@ -275,6 +281,10 @@ void AutoFillManager::Reset() {
 }
 
 bool AutoFillManager::IsAutoFillEnabled() {
+  // The PersonalDataManager is NULL in OTR.
+  if (!personal_data_)
+    return false;
+
   PrefService* prefs = tab_contents_->profile()->GetPrefs();
 
   // Migrate obsolete autofill pref.
