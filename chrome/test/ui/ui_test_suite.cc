@@ -110,9 +110,7 @@ void UITestSuite::Shutdown() {
 }
 
 void UITestSuite::SuppressErrorDialogs() {
-#if defined(OS_WIN)
   TestSuite::SuppressErrorDialogs();
-#endif
   UITest::set_show_error_dialogs(false);
 }
 
