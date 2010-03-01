@@ -68,14 +68,15 @@ small   serialization-test
 small   math-test
 small   features-test
 small   quaternion-test
-# TODO Temporarily removing until V8 bug is fixed
 small   v8-test
 small   init-status-test
 small   quaternion-test
 small   base-test
 small   util-test
 small   pixel-perfection      screenshot pdiff_threshold(200) pdiff_threshold_mac(3000) except(*iexplore)
-medium  offscreen-test
+# Firefox opens an error dialog on this test stating that O3D failed to
+# start (issue #212). Chrome fails this test occasionally (issue #105).
+medium  offscreen-test        except(*firefox, *googlechrome)
 medium  texture-set-test      screenshot
 medium  param-array-test      screenshot
 small   render-target-clear-test screenshot

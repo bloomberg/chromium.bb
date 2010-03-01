@@ -515,7 +515,8 @@ g_suite.testV8ExceptionsInFunctionCallResultInErrorCallback = function() {
   if (!isChrome && !isSafari) {
     g_test.assertTrue(exceptionThrown);
   }
-  g_test.assertEquals('Uncaught error in function() { throw "error"; }', error);
+  g_test.assertEquals('Uncaught error in (function() { throw "error"; })',
+                      error);
 };
 
 g_suite.testV8ExceptionsInMethodCallResultInErrorCallback = function() {
@@ -611,7 +612,8 @@ g_suite.testExceptionThrownIfV8CodeIsInvalid = function() {
   } catch (e) {
     exceptionThrown = true;
   }
-  g_test.assertEquals('Uncaught SyntaxError: Unexpected token ) in +1)', error);
+  g_test.assertEquals('Uncaught SyntaxError: Unexpected token ) in (+1))',
+                      error);
   if (!isSafari && !isChrome) {
     g_test.assertTrue(exceptionThrown);
   }
