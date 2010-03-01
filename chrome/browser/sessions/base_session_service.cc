@@ -267,3 +267,20 @@ BaseSessionService::Handle BaseSessionService::ScheduleGetLastSessionCommands(
   }
   return request->handle();
 }
+
+BaseSessionService::Handle
+    BaseSessionService::ScheduleGetCurrentSessionCommands(
+        InternalGetCommandsRequest* request,
+        CancelableRequestConsumerBase* consumer) {
+  scoped_refptr<InternalGetCommandsRequest> request_wrapper(request);
+  AddRequest(request, consumer);
+  if (backend_thread()) {
+    backend_thread()->message_loop()->PostTask(FROM_HERE,
+        NewRunnableMethod(backend(),
+                          &SessionBackend::ReadCurrentSessionCommands,
+                          request_wrapper));
+  } else {
+    backend()->ReadCurrentSessionCommands(request);
+  }
+  return request->handle();
+}

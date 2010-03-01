@@ -137,7 +137,7 @@ class SessionService : public BaseSessionService,
   //
   // The time gives the time the session was closed.
   typedef Callback2<Handle, std::vector<SessionWindow*>*>::Type
-      LastSessionCallback;
+      SessionCallback;
 
   // Fetches the contents of the last session, notifying the callback when
   // done. If the callback is supplied an empty vector of SessionWindows
@@ -147,7 +147,17 @@ class SessionService : public BaseSessionService,
   // callback invokes OnGotSessionCommands from which we map the
   // SessionCommands to browser state, then notify the callback.
   Handle GetLastSession(CancelableRequestConsumerBase* consumer,
-                        LastSessionCallback* callback);
+                        SessionCallback* callback);
+
+  // Fetches the contents of the current session, notifying the callback when
+  // done. If the callback is supplied an empty vector of SessionWindows
+  // it means the session could not be restored.
+  //
+  // The created request does NOT directly invoke the callback, rather the
+  // callback invokes OnGotSessionCommands from which we map the
+  // SessionCommands to browser state, then notify the callback.
+  Handle GetCurrentSession(CancelableRequestConsumerBase* consumer,
+                           SessionCallback* callback);
 
  private:
   typedef std::map<SessionID::id_type,std::pair<int,int> > IdToRange;
@@ -211,7 +221,7 @@ class SessionService : public BaseSessionService,
   // Callback form the backend for getting the commands from the previous
   // or save file. Converts the commands in SessionWindows and notifies
   // the real callback.
-  void OnGotLastSessionCommands(
+  void OnGotSessionCommands(
       Handle handle,
       scoped_refptr<InternalGetCommandsRequest> request);
 

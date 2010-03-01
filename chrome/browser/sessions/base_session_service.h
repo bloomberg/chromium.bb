@@ -152,6 +152,12 @@ class BaseSessionService : public CancelableRequestProvider,
       InternalGetCommandsRequest* request,
       CancelableRequestConsumerBase* consumer);
 
+  // Invokes ReadCurrentSessionCommands with request on the backend thread.
+  // If testing, ReadLastSessionCommands is invoked directly.
+  Handle ScheduleGetCurrentSessionCommands(
+      InternalGetCommandsRequest* request,
+      CancelableRequestConsumerBase* consumer);
+
   // Max number of navigation entries in each direction we'll persist.
   static const int max_persist_navigation_count;
 

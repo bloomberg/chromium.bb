@@ -189,7 +189,7 @@ class SessionRestoreImpl : public NotificationObserver {
   void Restore() {
     SessionService* session_service = profile_->GetSessionService();
     DCHECK(session_service);
-    SessionService::LastSessionCallback* callback =
+    SessionService::SessionCallback* callback =
         NewCallback(this, &SessionRestoreImpl::OnGotSession);
     session_service->GetLastSession(&request_consumer_, callback);
 

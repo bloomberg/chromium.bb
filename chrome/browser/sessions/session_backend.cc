@@ -281,6 +281,24 @@ void SessionBackend::MoveCurrentSessionToLastSession() {
   ResetFile();
 }
 
+void SessionBackend::ReadCurrentSessionCommands(
+    scoped_refptr<BaseSessionService::InternalGetCommandsRequest> request) {
+  if (request->canceled())
+    return;
+  Init();
+  ReadCurrentSessionCommandsImpl(&(request->commands));
+  request->ForwardResult(
+      BaseSessionService::InternalGetCommandsRequest::TupleType(
+          request->handle(), request));
+}
+
+bool SessionBackend::ReadCurrentSessionCommandsImpl(
+    std::vector<SessionCommand*>* commands) {
+  Init();
+  SessionFileReader file_reader(GetCurrentSessionPath());
+  return file_reader.Read(type_, commands);
+}
+
 bool SessionBackend::AppendCommandsToFile(net::FileStream* file,
     const std::vector<SessionCommand*>& commands) {
   for (std::vector<SessionCommand*>::const_iterator i = commands.begin();

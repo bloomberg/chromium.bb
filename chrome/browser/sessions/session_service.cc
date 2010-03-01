@@ -67,23 +67,23 @@ namespace {
 // first and then the caller. This is done so that the SessionWindows can be
 // recreated from the SessionCommands and the SessionWindows passed to the
 // caller. The following class is used for this.
-class InternalLastSessionRequest
+class InternalSessionRequest
     : public BaseSessionService::InternalGetCommandsRequest {
  public:
-  InternalLastSessionRequest(
+  InternalSessionRequest(
       CallbackType* callback,
-      SessionService::LastSessionCallback* real_callback)
+      SessionService::SessionCallback* real_callback)
       : BaseSessionService::InternalGetCommandsRequest(callback),
         real_callback(real_callback) {
   }
 
-  // The callback supplied to GetLastSession.
-  scoped_ptr<SessionService::LastSessionCallback> real_callback;
+  // The callback supplied to GetLastSession and GetCurrentSession.
+  scoped_ptr<SessionService::SessionCallback> real_callback;
 
  private:
-  ~InternalLastSessionRequest() {}
+  ~InternalSessionRequest() {}
 
-  DISALLOW_COPY_AND_ASSIGN(InternalLastSessionRequest);
+  DISALLOW_COPY_AND_ASSIGN(InternalSessionRequest);
 };
 
 // Various payload structures.
@@ -385,11 +385,39 @@ void SessionService::SetSelectedTabInWindow(const SessionID& window_id,
 
 SessionService::Handle SessionService::GetLastSession(
     CancelableRequestConsumerBase* consumer,
-    LastSessionCallback* callback) {
+    SessionCallback* callback) {
   return ScheduleGetLastSessionCommands(
-      new InternalLastSessionRequest(
-          NewCallback(this, &SessionService::OnGotLastSessionCommands),
+      new InternalSessionRequest(
+          NewCallback(this, &SessionService::OnGotSessionCommands),
           callback), consumer);
+}
+
+SessionService::Handle SessionService::GetCurrentSession(
+    CancelableRequestConsumerBase* consumer,
+    SessionCallback* callback) {
+  if (pending_window_close_ids_.empty()) {
+    // If there are no pending window closes, we can get the current session
+    // from memory.
+    InternalSessionRequest* request = new InternalSessionRequest(
+        NewCallback(this, &SessionService::OnGotSessionCommands),
+        callback);
+    AddRequest(request, consumer);
+    IdToRange tab_to_available_range;
+    std::set<SessionID::id_type> windows_to_track;
+    BuildCommandsFromBrowsers(&(request->commands),
+                              &tab_to_available_range,
+                              &windows_to_track);
+    request->ForwardResult(
+        BaseSessionService::InternalGetCommandsRequest::TupleType(
+            request->handle(), request));
+    return request->handle();
+  } else {
+    // If there are pending window closes, read the current session from disk.
+    return ScheduleGetCurrentSessionCommands(
+        new InternalSessionRequest(
+            NewCallback(this, &SessionService::OnGotSessionCommands),
+            callback), consumer);
+  }
 }
 
 void SessionService::Init() {
@@ -650,7 +678,7 @@ SessionCommand* SessionService::CreatePinnedStateCommand(
   return command;
 }
 
-void SessionService::OnGotLastSessionCommands(
+void SessionService::OnGotSessionCommands(
     Handle handle,
     scoped_refptr<InternalGetCommandsRequest> request) {
   if (request->canceled())
@@ -658,10 +686,10 @@ void SessionService::OnGotLastSessionCommands(
   ScopedVector<SessionWindow> valid_windows;
   RestoreSessionFromCommands(
       request->commands, &(valid_windows.get()));
-  static_cast<InternalLastSessionRequest*>(request.get())->
+  static_cast<InternalSessionRequest*>(request.get())->
       real_callback->RunWithParams(
-          LastSessionCallback::TupleType(request->handle(),
-                                         &(valid_windows.get())));
+          SessionCallback::TupleType(request->handle(),
+                                     &(valid_windows.get())));
 }
 
 void SessionService::RestoreSessionFromCommands(
@@ -1045,7 +1073,7 @@ void SessionService::BuildCommandsForBrowser(
   for (int i = 0; i < browser->tab_count(); ++i) {
     TabContents* tab = browser->GetTabContentsAt(i);
     DCHECK(tab);
-    if (tab->profile() == profile()) {
+    if (tab->profile() == profile() || profile() == NULL) {
       BuildCommandsForTab(browser->session_id(), &tab->controller(), i,
                           browser->tabstrip_model()->IsTabPinned(i),
                           commands, tab_to_available_range);

@@ -62,7 +62,7 @@ class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
                       bool reset_first);
 
   // Invoked from the service to read the commands that make up the last
-  // session, invokes ReadSessionImpl to do the work.
+  // session, invokes ReadLastSessionCommandsImpl to do the work.
   void ReadLastSessionCommands(
       scoped_refptr<BaseSessionService::InternalGetCommandsRequest> request);
 
@@ -79,6 +79,17 @@ class SessionBackend : public base::RefCountedThreadSafe<SessionBackend> {
   // called during startup and if the user launchs the app and no tabbed
   // browsers are running.
   void MoveCurrentSessionToLastSession();
+
+  // Invoked from the service to read the commands that make up the current
+  // session, invokes ReadCurrentSessionCommandsImpl to do the work.
+  void ReadCurrentSessionCommands(
+      scoped_refptr<BaseSessionService::InternalGetCommandsRequest> request);
+
+  // Reads the commands from the current file.
+  //
+  // On success, the read commands are added to commands. It is up to the
+  // caller to delete the commands.
+  bool ReadCurrentSessionCommandsImpl(std::vector<SessionCommand*>* commands);
 
  private:
   friend class base::RefCountedThreadSafe<SessionBackend>;
