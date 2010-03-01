@@ -9,13 +9,12 @@
 #include "base/scoped_ptr.h"
 #include "chrome/browser/chromeos/login/authenticator.h"
 #include "chrome/browser/chromeos/login/login_status_consumer.h"
-#include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "chrome/browser/chromeos/version_loader.h"
 #include "views/accelerator.h"
 #include "views/controls/button/button.h"
 #include "views/controls/textfield/textfield.h"
+#include "views/view.h"
 #include "views/widget/widget_gtk.h"
-#include "views/window/window_delegate.h"
 
 namespace chromeos {
 class ScreenObserver;
@@ -26,16 +25,14 @@ class Label;
 class NativeButton;
 }  // namespace views
 
-class LoginManagerView : public LoginStatusConsumer,
-                         public WizardScreen,
-                         public views::WindowDelegate,
+class LoginManagerView : public views::View,
+                         public LoginStatusConsumer,
                          public views::Textfield::Controller,
                          public views::ButtonListener {
  public:
   explicit LoginManagerView(chromeos::ScreenObserver* observer);
   virtual ~LoginManagerView();
 
-  // WizardScreen implementation:
   void Init();
   void UpdateLocalizedStrings();
 

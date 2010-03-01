@@ -5,14 +5,16 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_NETWORK_SELECTION_VIEW_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_NETWORK_SELECTION_VIEW_H_
 
+#include <string>
+
 #include "app/combobox_model.h"
 #include "chrome/browser/chromeos/cros/network_library.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
-#include "chrome/browser/chromeos/login/wizard_screen.h"
 #include "chrome/browser/chromeos/network_list.h"
 #include "chrome/browser/chromeos/status/password_dialog_view.h"
 #include "views/controls/button/button.h"
 #include "views/controls/combobox/combobox.h"
+#include "views/view.h"
 #include "views/widget/widget_gtk.h"
 #include "views/window/window_delegate.h"
 
@@ -26,8 +28,7 @@ class NativeButton;
 }  // namespace views
 
 // View for the network selection/initial welcome screen.
-class NetworkSelectionView : public WizardScreen,
-                             public views::WindowDelegate,
+class NetworkSelectionView : public views::View,
                              public ComboboxModel,
                              public views::Combobox::Listener,
                              public views::ButtonListener,
@@ -37,16 +38,12 @@ class NetworkSelectionView : public WizardScreen,
   explicit NetworkSelectionView(chromeos::ScreenObserver* observer);
   virtual ~NetworkSelectionView();
 
-  // WizardScreen implementation:
-  virtual void Init();
-  virtual void UpdateLocalizedStrings();
+  void Init();
+  void UpdateLocalizedStrings();
 
   // views::View: implementation:
   virtual gfx::Size GetPreferredSize();
   virtual void Layout();
-
-  // views::WindowDelegate implementation:
-  virtual views::View* GetContentsView();
 
   // ComboboxModel implementation:
   virtual int GetItemCount();
@@ -71,7 +68,7 @@ class NetworkSelectionView : public WizardScreen,
 
  private:
   // Returns currently selected network in the combobox.
-   chromeos::NetworkList::NetworkItem* GetSelectedNetwork();
+  chromeos::NetworkList::NetworkItem* GetSelectedNetwork();
 
   // Notifies wizard on successful connection.
   void NotifyOnConnection();

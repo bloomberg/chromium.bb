@@ -7,6 +7,8 @@
 #include <signal.h>
 #include <sys/types.h>
 
+#include <string>
+
 #include "app/l10n_util.h"
 #include "app/resource_bundle.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
@@ -54,19 +56,16 @@ NetworkSelectionView::~NetworkSelectionView() {
   chromeos::NetworkLibrary::Get()->RemoveObserver(this);
 }
 
-////////////////////////////////////////////////////////////////////////////////
-// WizardScreen implementation:
-
 void NetworkSelectionView::Init() {
   // TODO(nkostylev): Add UI language and logo.
   // Use rounded rect background.
   views::Painter* painter = new chromeos::RoundedRectPainter(
-       0, 0x00000000,              // no padding
-       kShadow, kShadowColor,      // gradient shadow
-       kCornerRadius,              // corner radius
-       kBackground, kBackground);  // backgound without gradient
-   set_background(
-       views::Background::CreateBackgroundPainter(true, painter));
+      0, 0x00000000,              // no padding
+      kShadow, kShadowColor,      // gradient shadow
+      kCornerRadius,              // corner radius
+      kBackground, kBackground);  // backgound without gradient
+  set_background(
+      views::Background::CreateBackgroundPainter(true, painter));
 
   gfx::Font welcome_label_font =
       gfx::Font::CreateFont(L"Droid Sans", 20).DeriveFont(0, gfx::Font::BOLD);
@@ -144,13 +143,6 @@ void NetworkSelectionView::Layout() {
   // Need to refresh combobox layout explicitly.
   network_combobox_->Layout();
   SchedulePaint();
-}
-
-////////////////////////////////////////////////////////////////////////////////
-// views::WindowDelegate implementation:
-
-views::View* NetworkSelectionView::GetContentsView() {
-  return this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -289,7 +281,7 @@ void NetworkSelectionView::OpenPasswordDialog(chromeos::WifiNetwork network) {
 }
 
 void NetworkSelectionView::SelectNetwork(
-    chromeos::NetworkList::NetworkType type,const string16& id) {
+    chromeos::NetworkList::NetworkType type, const string16& id) {
   int index = networks_.GetNetworkIndexById(type, id);
   if (index >= 0) {
     network_combobox_->SetSelectedItem(index + 1);

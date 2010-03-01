@@ -6,86 +6,62 @@
 #define CHROME_BROWSER_CHROMEOS_LOGIN_ACCOUNT_CREATION_VIEW_H_
 
 #include <string>
-#include "chrome/browser/chromeos/login/wizard_screen.h"
-#include "views/accelerator.h"
-#include "views/controls/button/button.h"
-#include "views/controls/textfield/textfield.h"
+
+#include "chrome/browser/tab_contents/tab_contents_delegate.h"
 #include "views/view.h"
-#include "views/widget/widget_gtk.h"
-#include "views/window/window_delegate.h"
 
-namespace views {
-class GridLayout;
-class Label;
-class NativeButton;
-}  // namespace views
-
+class DelegatedDOMView;
+class SiteInstance;
 namespace chromeos {
 class ScreenObserver;
 }  // namespace chromeos
 
-class AccountCreationView : public WizardScreen,
-                            public views::WindowDelegate,
-                            public views::Textfield::Controller,
-                            public views::ButtonListener {
+class AccountCreationView : public views::View,
+                            public TabContentsDelegate {
  public:
   explicit AccountCreationView(chromeos::ScreenObserver* observer);
   virtual ~AccountCreationView();
 
-  // WizardScreen implementation:
   virtual void Init();
   virtual void UpdateLocalizedStrings();
 
-  // Overridden from views::View:
+  // views::View implementation:
   virtual gfx::Size GetPreferredSize();
+  virtual void Layout();
 
-  // Overridden from views::WindowDelegate:
-  virtual views::View* GetContentsView();
-
-  // Overridden from views::Textfield::Controller:
-  virtual bool HandleKeystroke(views::Textfield* sender,
-                               const views::Textfield::Keystroke& keystroke);
-  virtual void ContentsChanged(views::Textfield* sender,
-                               const string16& new_contents) {}
-
-  // Overriden from views::ButtonListener.
-  virtual void ButtonPressed(views::Button* sender, const views::Event& event);
+  // TabContentsDelegate implementation:
+  virtual void OpenURLFromTab(TabContents* source,
+                              const GURL& url, const GURL& referrer,
+                              WindowOpenDisposition disposition,
+                              PageTransition::Type transition);
+  virtual void NavigationStateChanged(const TabContents* source,
+                                      unsigned changed_flags) {}
+  virtual void AddNewContents(TabContents* source,
+                              TabContents* new_contents,
+                              WindowOpenDisposition disposition,
+                              const gfx::Rect& initial_pos,
+                              bool user_gesture) {}
+  virtual void ActivateContents(TabContents* contents) {}
+  virtual void LoadingStateChanged(TabContents* source) {}
+  virtual void CloseContents(TabContents* source) {}
+  virtual bool IsPopup(TabContents* source) { return false; }
+  virtual void URLStarredChanged(TabContents* source, bool starred) {}
+  virtual void UpdateTargetURL(TabContents* source, const GURL& url) {
+    LOG(INFO) << "Target URL: " << url.spec().c_str() << "\n";
+  }
+  virtual bool ShouldAddNavigationToHistory() const { return false; }
+  virtual void MoveContents(TabContents* source, const gfx::Rect& pos) {}
+  virtual void ToolbarSizeChanged(TabContents* source, bool is_animating) {}
 
  private:
   // Tries to create an account with user input.
   void CreateAccount();
 
-  // Initializers for labels and textfields.
-  void InitLabel(const gfx::Font& label_font, views::Label** label);
-  void InitTextfield(const gfx::Font& field_font,
-                     views::Textfield::StyleFlags style,
-                     views::Textfield** field);
-
-  // Initializes all controls on the screen.
-  void InitControls();
-
-  // Initializes the layout manager.
-  void InitLayout();
-
-  // Adds controls to layout manager.
-  void BuildLayout(views::GridLayout* layout);
-
-  // Controls on the view.
-  views::Textfield* firstname_field_;
-  views::Textfield* lastname_field_;
-  views::Textfield* username_field_;
-  views::Textfield* password_field_;
-  views::Textfield* reenter_password_field_;
-  views::Label* title_label_;
-  views::Label* firstname_label_;
-  views::Label* lastname_label_;
-  views::Label* username_label_;
-  views::Label* password_label_;
-  views::Label* reenter_password_label_;
-  views::NativeButton* create_account_button_;
-
   // Notifications receiver.
   chromeos::ScreenObserver* observer_;
+
+  DelegatedDOMView* dom_;
+  SiteInstance* site_instance_;
 
   DISALLOW_COPY_AND_ASSIGN(AccountCreationView);
 };

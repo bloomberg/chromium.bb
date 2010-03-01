@@ -7,78 +7,64 @@
 #include <algorithm>
 
 #include "app/gfx/canvas.h"
-#include "app/l10n_util.h"
-#include "app/resource_bundle.h"
-#include "base/keyboard_codes.h"
 #include "chrome/browser/chromeos/login/rounded_rect_painter.h"
 #include "chrome/browser/chromeos/login/screen_observer.h"
-#include "grit/generated_resources.h"
-#include "grit/theme_resources.h"
-#include "views/controls/button/native_button.h"
-#include "views/controls/label.h"
-#include "views/grid_layout.h"
-#include "views/widget/widget.h"
-#include "views/window/non_client_view.h"
-#include "views/window/window.h"
-#include "views/window/window_gtk.h"
-
-using views::Background;
-using views::Label;
-using views::Textfield;
-using views::View;
-using views::Widget;
+#include "chrome/browser/profile_manager.h"
+#include "chrome/browser/renderer_host/site_instance.h"
+#include "chrome/browser/tab_contents/tab_contents.h"
+#include "chrome/browser/views/dom_view.h"
 
 namespace {
 
 const int kCornerRadius = 12;
-const int kHorizontalPad = 10;
-const int kVerticalInset = 50;
-const int kHorizontalInset = 40;
-const int kTextfieldWidthInChars = 20;
-const SkColor kErrorColor = 0xFF8F384F;
+const int kShadow = 10;
+const int kPadding = 30;
 const SkColor kBackground = SK_ColorWHITE;
-const SkColor kLabelColor = 0xFF808080;
+const SkColor kShadowColor = 0x40223673;
 
 }  // namespace
+
+class DelegatedDOMView : public DOMView {
+ public:
+  void SetTabContentsDelegate(TabContentsDelegate* delegate) {
+    tab_contents_->set_delegate(delegate);
+  }
+};
 
 ///////////////////////////////////////////////////////////////////////////////
 // AccountCreationView, public:
 AccountCreationView::AccountCreationView(chromeos::ScreenObserver* observer)
-    : observer_(observer) {
+    : observer_(observer),
+      dom_(NULL),
+      site_instance_(NULL) {
 }
 
 AccountCreationView::~AccountCreationView() {
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// AccountCreationView, WizardScreen overrides:
 void AccountCreationView::Init() {
   // Use rounded rect background.
   views::Painter* painter = new chromeos::RoundedRectPainter(
-      0, kBackground,             // no padding
-      true, SK_ColorBLACK,        // black shadow
+      0, 0x00000000,              // no padding
+      kShadow, kShadowColor,      // gradient shadow
       kCornerRadius,              // corner radius
       kBackground, kBackground);  // backgound without gradient
   set_background(
       views::Background::CreateBackgroundPainter(true, painter));
 
-  InitControls();
-  InitLayout();
+  dom_ = new DelegatedDOMView();
+  AddChildView(dom_);
+
+  GURL url("https://www.google.com/accounts/NewAccount?btmpl=tier2_mobile");
+  Profile* profile = ProfileManager::GetLoginWizardProfile();
+  site_instance_ = SiteInstance::CreateSiteInstanceForURL(profile, url);
+  dom_->Init(profile, site_instance_);
+  dom_->SetTabContentsDelegate(this);
+  dom_->LoadURL(url);
 }
 
 void AccountCreationView::UpdateLocalizedStrings() {
-  title_label_->SetText(l10n_util::GetString(IDS_ACCOUNT_CREATION_TITLE));
-  firstname_label_->SetText(
-      l10n_util::GetString(IDS_ACCOUNT_CREATION_FIRSTNAME));
-  lastname_label_->SetText(
-      l10n_util::GetString(IDS_ACCOUNT_CREATION_LASTNAME));
-  username_label_->SetText(l10n_util::GetString(IDS_ACCOUNT_CREATION_EMAIL));
-  password_label_->SetText(
-      l10n_util::GetString(IDS_ACCOUNT_CREATION_PASSWORD));
-  reenter_password_label_->SetText(
-      l10n_util::GetString(IDS_ACCOUNT_CREATION_REENTER_PASSWORD));
-  create_account_button_->SetLabel(
-      l10n_util::GetString(IDS_ACCOUNT_CREATION_BUTTON));
+  // TODO(avayvod): Reload account creation page with the right language.
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -87,31 +73,22 @@ gfx::Size AccountCreationView::GetPreferredSize() {
   return gfx::Size(width(), height());
 }
 
-///////////////////////////////////////////////////////////////////////////////
-// AccountCreationView, views::WindowDelegate overrides:
-views::View* AccountCreationView::GetContentsView() {
-  return this;
+void AccountCreationView::Layout() {
+  dom_->SetBounds(kPadding,
+                  kPadding,
+                  width() - kPadding * 2,
+                  height() - kPadding * 2);
 }
 
 ///////////////////////////////////////////////////////////////////////////////
-// AccountCreationView, views::ButtonListener overrides:
-void AccountCreationView::ButtonPressed(
-    views::Button* sender, const views::Event& event) {
-  // TODO(avayvod): Back button.
-  CreateAccount();
-}
-
-///////////////////////////////////////////////////////////////////////////////
-// AccountCreationView, views::Textfield::Controller overrides:
-bool AccountCreationView::HandleKeystroke(views::Textfield* s,
-    const views::Textfield::Keystroke& keystroke) {
-  if (keystroke.GetKeyboardCode() == base::VKEY_RETURN) {
-    CreateAccount();
-    // Return true so that processing ends.
-    return true;
-  }
-  // Return false so that processing does not end.
-  return false;
+// AccountCreationView, TabContentsDelegate implementation:
+void AccountCreationView::OpenURLFromTab(TabContents* source,
+                                         const GURL& url,
+                                         const GURL& referrer,
+                                         WindowOpenDisposition disposition,
+                                         PageTransition::Type transition) {
+  LOG(INFO) << "Url: " << url.spec().c_str() << "\n";
+  LOG(INFO) << "Referrer: " << referrer.spec().c_str() << "\n";
 }
 
 ///////////////////////////////////////////////////////////////////////////////
@@ -122,120 +99,3 @@ void AccountCreationView::CreateAccount() {
     observer_->OnExit(chromeos::ScreenObserver::ACCOUNT_CREATED);
   }
 }
-
-void AccountCreationView::InitLabel(const gfx::Font& label_font,
-                                    views::Label** label) {
-  if (!label)
-    return;
-  scoped_ptr<views::Label> new_label(new views::Label());
-  new_label->SetHorizontalAlignment(views::Label::ALIGN_LEFT);
-  new_label->SetFont(label_font);
-  new_label->SetColor(kLabelColor);
-  AddChildView(new_label.get());
-  *label = new_label.release();
-}
-
-void AccountCreationView::InitTextfield(const gfx::Font& field_font,
-                                        views::Textfield::StyleFlags style,
-                                        views::Textfield** field) {
-  if (!field)
-    return;
-  scoped_ptr<views::Textfield> new_field(new views::Textfield(style));
-  new_field->SetFont(field_font);
-  new_field->set_default_width_in_chars(kTextfieldWidthInChars);
-  AddChildView(new_field.get());
-  new_field->SetController(this);
-  *field = new_field.release();
-}
-
-void AccountCreationView::InitControls() {
-  // Set up fonts.
-  gfx::Font title_font =
-      gfx::Font::CreateFont(L"Droid Sans", 10).DeriveFont(0, gfx::Font::BOLD);
-  gfx::Font label_font = gfx::Font::CreateFont(L"Droid Sans", 8);
-  gfx::Font button_font = label_font;
-  gfx::Font field_font = label_font;
-
-  InitLabel(title_font, &title_label_);
-
-  InitLabel(label_font, &firstname_label_);
-  InitTextfield(field_font, views::Textfield::STYLE_DEFAULT,
-                &firstname_field_);
-  InitLabel(label_font, &lastname_label_);
-  InitTextfield(field_font, views::Textfield::STYLE_DEFAULT, &lastname_field_);
-  InitLabel(label_font, &username_label_);
-  InitTextfield(field_font, views::Textfield::STYLE_DEFAULT, &username_field_);
-  InitLabel(label_font, &password_label_);
-  InitTextfield(field_font, views::Textfield::STYLE_PASSWORD,
-                &password_field_);
-  InitLabel(label_font, &reenter_password_label_);
-  InitTextfield(field_font, views::Textfield::STYLE_PASSWORD,
-                &reenter_password_field_);
-
-  create_account_button_ = new views::NativeButton(this, std::wstring());
-  create_account_button_->set_font(button_font);
-  AddChildView(create_account_button_);
-
-  UpdateLocalizedStrings();
-}
-
-void AccountCreationView::InitLayout() {
-  // Create layout for all the views.
-  views::GridLayout* layout = new views::GridLayout(this);
-  SetLayoutManager(layout);
-
-  views::ColumnSet* columns = layout->AddColumnSet(0);
-  // Column for labels.
-  columns->AddColumn(views::GridLayout::LEADING,
-                     views::GridLayout::CENTER,
-                     0,
-                     views::GridLayout::USE_PREF, 0, 0);
-  columns->AddPaddingColumn(0, kHorizontalPad);
-  // Column for text fields.
-  columns->AddColumn(views::GridLayout::LEADING,
-                     views::GridLayout::CENTER,
-                     0,
-                     views::GridLayout::USE_PREF, 0, 0);
-  columns->AddPaddingColumn(0, kHorizontalPad);
-  // Column for field status.
-  columns->AddColumn(views::GridLayout::LEADING,
-                     views::GridLayout::CENTER,
-                     1,
-                     views::GridLayout::USE_PREF, 0, 0);
-  layout->SetInsets(kHorizontalInset,
-                    kVerticalInset,
-                    kHorizontalInset,
-                    kVerticalInset);
-
-  BuildLayout(layout);
-}
-
-void AccountCreationView::BuildLayout(views::GridLayout* layout) {
-  layout->StartRow(1, 0);
-  layout->AddView(firstname_label_);
-  layout->AddView(firstname_field_);
-
-  layout->StartRow(1, 0);
-  layout->AddView(lastname_label_);
-  layout->AddView(lastname_field_);
-
-  layout->StartRow(1, 0);
-  layout->AddView(username_label_);
-  layout->AddView(username_field_);
-
-  layout->StartRow(1, 0);
-  layout->AddView(password_label_);
-  layout->AddView(password_field_);
-
-  layout->StartRow(1, 0);
-  layout->AddView(reenter_password_label_);
-  layout->AddView(reenter_password_field_);
-
-  layout->StartRow(10, 0);
-  // Skip columns for label, field and two padding columns in between.
-  layout->SkipColumns(4);
-  layout->AddView(create_account_button_, 1, 1,
-                  views::GridLayout::TRAILING,
-                  views::GridLayout::TRAILING);
-}
-

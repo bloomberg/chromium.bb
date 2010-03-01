@@ -5,19 +5,50 @@
 #ifndef CHROME_BROWSER_CHROMEOS_LOGIN_WIZARD_SCREEN_H_
 #define CHROME_BROWSER_CHROMEOS_LOGIN_WIZARD_SCREEN_H_
 
-#include "views/view.h"
+#include "app/gfx/canvas.h"
 
-// Interface that defines login wizard screens.
-class WizardScreen : public views::View {
+class WizardScreen;
+namespace chromeos {
+class ScreenObserver;
+}  // namespace chromeos
+namespace views {
+class View;
+class Window;
+}  // namespace views
+
+// Interface that login wizard exposes to its screens.
+class WizardScreenDelegate {
  public:
-  // Initialization of controls and screen itself.
-  virtual void Init() = 0;
+  // Returns top level view of the wizard.
+  virtual views::View* GetWizardView() = 0;
 
-  // Updates all localized strings on all controls on the view.
-  virtual void UpdateLocalizedStrings() = 0;
+  // Returns top level window of the wizard.
+  virtual views::Window* GetWizardWindow() = 0;
+
+  // Returns observer screen should notify.
+  virtual chromeos::ScreenObserver* GetObserver(WizardScreen* screen) = 0;
 
  protected:
+  virtual ~WizardScreenDelegate() {}
+};
+
+// Interface that defines login wizard screens.
+// Also holds a reference to a delegate.
+class WizardScreen {
+ public:
+  // Makes wizard screen visible.
+  virtual void Show() = 0;
+  // Makes wizard screen invisible.
+  virtual void Hide() = 0;
+
+ protected:
+  explicit WizardScreen(WizardScreenDelegate* delegate): delegate_(delegate) {}
   virtual ~WizardScreen() {}
+
+  WizardScreenDelegate* delegate() { return delegate_; }
+
+ private:
+  WizardScreenDelegate* delegate_;
 };
 
 #endif  // CHROME_BROWSER_CHROMEOS_LOGIN_WIZARD_SCREEN_H_

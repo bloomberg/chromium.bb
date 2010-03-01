@@ -19,6 +19,7 @@ class ScreenObserver {
   enum ExitCodes {
     LOGIN_SIGN_IN_SELECTED,
     LOGIN_BACK,
+    LOGIN_CREATE_ACCOUNT,
     NETWORK_CONNECTED,
     NETWORK_OFFLINE,
     ACCOUNT_CREATED,
