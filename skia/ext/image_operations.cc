@@ -13,9 +13,12 @@
 #include "base/logging.h"
 #include "base/stack_container.h"
 #include "base/time.h"
+#include "build/build_config.h"
 #include "skia/ext/convolver.h"
 #include "third_party/skia/include/core/SkBitmap.h"
 #include "third_party/skia/include/core/SkRect.h"
+#include "third_party/skia/include/core/SkFontHost.h"
+#include "third_party/skia/include/core/SkColorPriv.h"
 
 namespace skia {
 
@@ -256,6 +259,116 @@ SkBitmap ImageOperations::Resize(const SkBitmap& source,
                                  ResizeMethod method,
                                  int dest_width, int dest_height,
                                  const SkIRect& dest_subset) {
+  if (method == ImageOperations::RESIZE_SUBPIXEL)
+    return ResizeSubpixel(source, dest_width, dest_height, dest_subset);
+  else
+    return ResizeBasic(source, method, dest_width, dest_height, dest_subset);
+}
+
+// static
+SkBitmap ImageOperations::ResizeSubpixel(const SkBitmap& source,
+                                         int dest_width, int dest_height,
+                                         const SkIRect& dest_subset) {
+  // Currently only works on Linux because this is the only platform where
+  // SkFontHost::GetSubpixelOrder is defined.
+#if defined(OS_LINUX)
+  // Understand the display.
+  const SkFontHost::LCDOrder order = SkFontHost::GetSubpixelOrder();
+  const SkFontHost::LCDOrientation orientation =
+      SkFontHost::GetSubpixelOrientation();
+
+  // Decide on which dimension, if any, to deploy subpixel rendering.
+  int w = 1;
+  int h = 1;
+  switch (orientation) {
+    case SkFontHost::kHorizontal_LCDOrientation:
+      w = dest_width < source.width() ? 3 : 1;
+      break;
+    case SkFontHost::kVertical_LCDOrientation:
+      h = dest_height < source.height() ? 3 : 1;
+      break;
+  }
+
+  // Resize the image.
+  const int width = dest_width * w;
+  const int height = dest_height * h;
+  SkIRect subset = { dest_subset.fLeft, dest_subset.fTop,
+                     dest_subset.fLeft + dest_subset.width() * w,
+                     dest_subset.fTop + dest_subset.height() * h };
+  SkBitmap img = ResizeBasic(source, ImageOperations::RESIZE_LANCZOS3, width,
+                             height, subset);
+  const int row_words = img.rowBytes() / 4;
+  if (w == 1 && h == 1)
+    return img;
+
+  // Render into subpixels.
+  SkBitmap result;
+  result.setConfig(SkBitmap::kARGB_8888_Config, dest_subset.width(),
+                   dest_subset.height());
+  result.allocPixels();
+  SkAutoLockPixels locker(img);
+  uint32* src_row = img.getAddr32(0, 0);
+  uint32* dst_row = result.getAddr32(0, 0);
+  for (int y = 0; y < dest_subset.height(); y++) {
+    uint32* src = src_row;
+    uint32* dst = dst_row;
+    for (int x = 0; x < dest_subset.width(); x++, src += w, dst++) {
+      uint8 r, g, b, a;
+      switch (order) {
+        case SkFontHost::kRGB_LCDOrder:
+          switch (orientation) {
+            case SkFontHost::kHorizontal_LCDOrientation:
+              r = SkGetPackedR32(src[0]);
+              g = SkGetPackedG32(src[1]);
+              b = SkGetPackedB32(src[2]);
+              a = SkGetPackedA32(src[1]);
+              break;
+            case SkFontHost::kVertical_LCDOrientation:
+              r = SkGetPackedR32(src[0 * row_words]);
+              g = SkGetPackedG32(src[1 * row_words]);
+              b = SkGetPackedB32(src[2 * row_words]);
+              a = SkGetPackedA32(src[1 * row_words]);
+              break;
+          }
+          break;
+        case SkFontHost::kBGR_LCDOrder:
+          switch (orientation) {
+            case SkFontHost::kHorizontal_LCDOrientation:
+              b = SkGetPackedB32(src[0]);
+              g = SkGetPackedG32(src[1]);
+              r = SkGetPackedR32(src[2]);
+              a = SkGetPackedA32(src[1]);
+              break;
+            case SkFontHost::kVertical_LCDOrientation:
+              b = SkGetPackedB32(src[0 * row_words]);
+              g = SkGetPackedG32(src[1 * row_words]);
+              r = SkGetPackedR32(src[2 * row_words]);
+              a = SkGetPackedA32(src[1 * row_words]);
+              break;
+          }
+          break;
+      }
+      // Premultiplied alpha is very fragile.
+      a = a > r ? a : r;
+      a = a > g ? a : g;
+      a = a > b ? a : b;
+      *dst = SkPackARGB32(a, r, g, b);
+    }
+    src_row += h * row_words;
+    dst_row += result.rowBytes() / 4;
+  }
+  result.setIsOpaque(img.isOpaque());
+  return result;
+#else
+  return SkBitmap();
+#endif  // OS_LINUX
+}
+
+// static
+SkBitmap ImageOperations::ResizeBasic(const SkBitmap& source,
+                                      ResizeMethod method,
+                                      int dest_width, int dest_height,
+                                      const SkIRect& dest_subset) {
   // Time how long this takes to see if it's a problem for users.
   base::TimeTicks resize_start = base::TimeTicks::Now();
 
@@ -307,4 +420,3 @@ SkBitmap ImageOperations::Resize(const SkBitmap& source,
 }
 
 }  // namespace skia
-

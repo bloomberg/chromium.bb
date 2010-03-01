@@ -23,6 +23,10 @@ class ImageOperations {
     // 3-cycle Lanczos filter. This is tall in the middle, goes negative on
     // each side, then oscillates 2 more times. It gives nice sharp edges.
     RESIZE_LANCZOS3,
+
+    // Lanczos filter + subpixel interpolation. If subpixel rendering is not
+    // appropriate we automatically fall back to Lanczos.
+    RESIZE_SUBPIXEL,
   };
 
   // Resizes the given source bitmap using the specified resize method, so that
@@ -46,9 +50,19 @@ class ImageOperations {
 
  private:
   ImageOperations();  // Class for scoping only.
+
+  // Supports all methods except RESIZE_SUBPIXEL.
+  static SkBitmap ResizeBasic(const SkBitmap& source,
+                              ResizeMethod method,
+                              int dest_width, int dest_height,
+                              const SkIRect& dest_subset);
+
+  // Subpixel renderer.
+  static SkBitmap ResizeSubpixel(const SkBitmap& source,
+                                 int dest_width, int dest_height,
+                                 const SkIRect& dest_subset);
 };
 
 }  // namespace skia
 
 #endif  // SKIA_EXT_IMAGE_OPERATIONS_H_
-
