@@ -6833,6 +6833,12 @@ Keep your key file in a safe place. You will need it to create new versions of y
       <message name="IDS_OPTIONS_SETTINGS_SPEED_FACTOR_DESCRIPTION" desc="In the settings tab, the text next to the slider for the touchpad speed factor.">
         Speed Sensitivity:
       </message>
+      <message name="IDS_OPTIONS_SETTINGS_KEYBOARD_LAYOUT_TEXT" desc="In the settings tab, the text of the keyboard layouti label.">
+        Keyboard Layout:
+      </message>
+      <message name="IDS_OPTIONS_SETTINGS_HANGUL_IME_TEXT" desc="In the settings tab, the text of the Hangul IME label.">
+        Hangul IME:
+      </message>
       <message name="IDS_OPTIONS_SETTINGS_OPTIONS" desc="In the settings tab, the text on the button to display more options.">
         Options...
       </message>

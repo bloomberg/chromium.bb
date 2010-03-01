@@ -504,10 +504,13 @@ void TextInputSection::InitContents(GridLayout* layout) {
   UpdateHangulKeyboardCombobox();
   layout->AddPaddingRow(0, kRelatedControlVerticalSpacing);
   layout->StartRow(0, single_column_view_set_id());
-  layout->AddView(new views::Label(L"Hangul IME"), 1, 1,
-                  views::GridLayout::LEADING, views::GridLayout::LEADING);
+  layout->AddView(
+      new views::Label(
+          l10n_util::GetString(IDS_OPTIONS_SETTINGS_HANGUL_IME_TEXT)),
+      1, 1, views::GridLayout::LEADING, views::GridLayout::LEADING);
   layout->StartRow(0, double_column_view_set_id());
-  layout->AddView(new views::Label(L"Keyboard Layout"));
+  layout->AddView(new views::Label(
+      l10n_util::GetString(IDS_OPTIONS_SETTINGS_KEYBOARD_LAYOUT_TEXT)));
   layout->AddView(hangul_keyboard_combobox_);
 }
 
