@@ -2400,3 +2400,18 @@
    fun:_ZN9TestSuite3RunEv
    fun:main
 }
+{
+   bug_37138
+   Memcheck:Addr4
+   fun:_ZNK21CancelableRequestBase6handleEv
+   fun:_ZN14SessionService17GetCurrentSessionEP29CancelableRequestConsumerBaseP14CallbackRunnerI6Tuple2IiPSt6vectorIP13SessionWindowSaIS6_EEEE
+   fun:_ZN41SessionServiceTest_GetCurrentSession_Test8TestBodyEv
+   fun:_ZN7testing4Test3RunEv
+   fun:_ZN7testing8internal12TestInfoImpl3RunEv
+   fun:_ZN7testing8TestCase3RunEv
+   fun:_ZN7testing8internal12UnitTestImpl11RunAllTestsEv
+   fun:_ZN7testing8UnitTest3RunEv
+   fun:_ZN9TestSuite3RunEv
+   fun:main
+
+}
