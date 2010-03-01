@@ -858,6 +858,9 @@ bool RenderWidgetHostViewMac::ContainsNativeView(
     widgetHost->ForwardKeyboardEvent(event);
   }
 
+  currentKeyEvent_.reset([theEvent retain]);
+  textInserted_ = NO;
+
   // Dispatch a NSKeyDown event to an input method.
   // To send an onkeydown() event before an onkeypress() event, we should
   // dispatch this NSKeyDown event AFTER sending it to the renderer.
@@ -878,8 +881,7 @@ bool RenderWidgetHostViewMac::ContainsNativeView(
     // versions of chrome (however, see http://crbug.com/13891 ), but it makes
     // us behave similar to how Safari behaves.
     if ([theEvent modifierFlags] & (NSControlKeyMask | NSCommandKeyMask) &&
-        lastKeyPressedEvent_.get() != theEvent &&
-        [[theEvent characters] length] > 0 &&
+        !textInserted_ && [[theEvent characters] length] > 0 &&
         renderWidgetHostView_->render_widget_host_) {
       // Just fabricate a Char event by changing the type of the RawKeyDown
       // event, to retain all necessary informations, such as unmodifiedText.
@@ -890,6 +892,8 @@ bool RenderWidgetHostViewMac::ContainsNativeView(
       renderWidgetHostView_->render_widget_host_->ForwardKeyboardEvent(event);
     }
   }
+
+  currentKeyEvent_.reset();
 
   // Possibly autohide the cursor.
   if ([RenderWidgetHostViewCocoa shouldAutohideCursorForEvent:theEvent])
@@ -1546,15 +1550,22 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // character to onkeypress() event handlers.
   // TODO(hbono): need to handle more commands?
   if (selector == @selector(insertNewline:)) {
-    lastKeyPressedEvent_.reset([[NSApp currentEvent] retain]);
-    // Create the Char event from the NSEvent object, so that we can retain
-    // necessary informations, especially unmodifiedText.
-    NativeWebKeyboardEvent event(lastKeyPressedEvent_.get());
-    event.type = WebKit::WebInputEvent::Char;
-    event.text[0] = '\r';
-    event.text[1] = 0;
-    event.skip_in_browser = true;
-    renderWidgetHostView_->render_widget_host_->ForwardKeyboardEvent(event);
+    if (currentKeyEvent_.get()) {
+      // Create the Char event from the NSEvent object, so that we can retain
+      // necessary informations, especially unmodifiedText.
+      NativeWebKeyboardEvent event(currentKeyEvent_.get());
+      event.type = WebKit::WebInputEvent::Char;
+      event.text[0] = '\r';
+      event.text[1] = 0;
+      event.skip_in_browser = true;
+      renderWidgetHostView_->render_widget_host_->ForwardKeyboardEvent(event);
+    } else {
+      // This call is not initiated by a key event, so just executed the
+      // corresponding editor command.
+      renderWidgetHostView_->render_widget_host_->ForwardEditCommand(
+          "InsertNewline", "");
+    }
+    textInserted_ = YES;
   }
 }
 
@@ -1569,13 +1580,16 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
   // On the other hand, when we are using input methods, we should send the
   // given characters as an IME event and prevent the characters from being
   // dispatched to onkeypress() event handlers.
+  // Text inserting might be initiated by other source instead of keyboard
+  // events, such as the Characters dialog. In this case the text should be
+  // sent as an IME event as well.
   BOOL isAttributedString = [string isKindOfClass:[NSAttributedString class]];
   NSString* im_text = isAttributedString ? [string string] : string;
-  if (!renderWidgetHostView_->im_composing_ && [im_text length] == 1) {
-    lastKeyPressedEvent_.reset([[NSApp currentEvent] retain]);
+  if (!renderWidgetHostView_->im_composing_ && [im_text length] == 1 &&
+      currentKeyEvent_.get()) {
     // Create the Char event from the NSEvent object, so that we can retain
     // necessary informations, especially unmodifiedText.
-    NativeWebKeyboardEvent event(lastKeyPressedEvent_.get());
+    NativeWebKeyboardEvent event(currentKeyEvent_.get());
     event.type = WebKit::WebInputEvent::Char;
     event.text[0] = [im_text characterAtIndex:0];
     event.text[1] = 0;
@@ -1586,6 +1600,7 @@ extern NSString *NSTextInputReplacementRangeAttributeName;
         UTF8ToUTF16([im_text UTF8String]));
   }
   renderWidgetHostView_->im_composing_ = false;
+  textInserted_ = YES;
 }
 
 - (void)viewDidMoveToWindow {

@@ -45,7 +45,12 @@ class RWHVMEditCommandHelper;
   NSTrackingRectTag lastToolTipTag_;
   scoped_nsobject<NSString> toolTip_;
 
-  scoped_nsobject<NSEvent> lastKeyPressedEvent_;
+  // Set to YES if insertText: or insertNewline: get called.
+  BOOL textInserted_;
+
+  // Keep current key event when keyEvent: gets called. It's used in
+  // insertText: and insertNewline: to synthesize the corresponding Char event.
+  scoped_nsobject<NSEvent> currentKeyEvent_;
   NSWindow* lastWindow_;  // weak
 }
 
