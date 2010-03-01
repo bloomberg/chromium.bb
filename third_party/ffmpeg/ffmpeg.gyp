@@ -86,7 +86,6 @@
             'source/patched-ffmpeg-mt/libavcodec/avpacket.c',
             'source/patched-ffmpeg-mt/libavcodec/bitstream.c',
             'source/patched-ffmpeg-mt/libavcodec/bitstream_filter.c',
-            'source/patched-ffmpeg-mt/libavcodec/dirac.c', # TODO(fbarchard): Review for stripping.
             'source/patched-ffmpeg-mt/libavcodec/dsputil.c',
             'source/patched-ffmpeg-mt/libavcodec/eval.c',
             'source/patched-ffmpeg-mt/libavcodec/faanidct.c',
@@ -117,9 +116,7 @@
             'source/patched-ffmpeg-mt/libavformat/metadata.c',
             'source/patched-ffmpeg-mt/libavformat/metadata_compat.c',
             'source/patched-ffmpeg-mt/libavformat/oggdec.c',
-            'source/patched-ffmpeg-mt/libavformat/oggparsedirac.c', # TODO(fbarchard): Review this file.
             'source/patched-ffmpeg-mt/libavformat/oggparseogm.c',
-            'source/patched-ffmpeg-mt/libavformat/oggparsespeex.c', # TODO(fbarchard): Review this file.
             'source/patched-ffmpeg-mt/libavformat/oggparsetheora.c',
             'source/patched-ffmpeg-mt/libavformat/oggparsevorbis.c',
             'source/patched-ffmpeg-mt/libavformat/options.c',
