@@ -7,7 +7,9 @@
 
 #include <atlbase.h>
 #include <atlwin.h>
+#include <queue>
 
+#include "base/lock.h"
 #include "chrome/test/automation/automation_messages.h"
 #include "ipc/ipc_message.h"
 
@@ -125,15 +127,35 @@ class TaskMarshaller {
 template <class T> class TaskMarshallerThroughWindowsMessages
     : public TaskMarshaller {
  public:
+  TaskMarshallerThroughWindowsMessages() {}
   virtual void PostTask(const tracked_objects::Location& from_here,
                         Task* task) {
     task->SetBirthPlace(from_here);
     T* this_ptr = static_cast<T*>(this);
     if (this_ptr->IsWindow()) {
       this_ptr->AddRef();
+      PushTask(task);
       this_ptr->PostMessage(MSG_EXECUTE_TASK, reinterpret_cast<WPARAM>(task));
     } else {
       DLOG(INFO) << "Dropping MSG_EXECUTE_TASK message for destroyed window.";
+      delete task;
+    }
+  }
+
+
+ protected:
+  ~TaskMarshallerThroughWindowsMessages() {
+    DeleteAllPendingTasks();
+  }
+
+  void DeleteAllPendingTasks() {
+    AutoLock lock(lock_);
+    DLOG_IF(INFO, !pending_tasks_.empty()) << "Destroying " <<
+      pending_tasks_.size() << "  pending tasks";
+    while (!pending_tasks_.empty()) {
+      Task* task = pending_tasks_.front();
+      pending_tasks_.pop();
+      delete task;
     }
   }
 
@@ -146,12 +168,27 @@ template <class T> class TaskMarshallerThroughWindowsMessages
   inline LRESULT ExecuteTask(UINT, WPARAM wparam, LPARAM,
                              BOOL& handled) {  // NOLINT
     Task* task = reinterpret_cast<Task*>(wparam);
+    PopTask(task);
     task->Run();
     delete task;
     T* this_ptr = static_cast<T*>(this);
     this_ptr->Release();
     return 0;
   }
+
+  inline void PushTask(Task* task) {
+    AutoLock lock(lock_);
+    pending_tasks_.push(task);
+  }
+
+  inline void PopTask(Task* task) {
+    AutoLock lock(lock_);
+    DCHECK_EQ(task, pending_tasks_.front());
+    pending_tasks_.pop();
+  }
+
+  Lock lock_;
+  std::queue<Task*> pending_tasks_;
 };
 
 #endif  // CHROME_FRAME_CHROME_FRAME_DELEGATE_H_
