@@ -298,7 +298,8 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeOpera_NavigateURLRelative) {
 
 const wchar_t kNavigateSimpleObjectFocus[] = L"files/simple_object_focus.html";
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_ObjectFocus) {
+// http://crbug.com/37087
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_ObjectFocus) {
   SimpleBrowserTest(FIREFOX, kNavigateSimpleObjectFocus, L"ObjectFocus");
 }
 
@@ -359,7 +360,8 @@ TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceBasic) {
   SimpleBrowserTest(IE, kCFInstanceBasicTestPage, L"CFInstanceBasic");
 }
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeFF_CFInstanceBasic) {
+// http://crbug.com/37085
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeFF_CFInstanceBasic) {
   SimpleBrowserTest(FIREFOX, kCFInstanceBasicTestPage, L"CFInstanceBasic");
 }
 
@@ -391,7 +393,8 @@ TEST_F(ChromeFrameTestWithWebServer, DISABLED_WidgetModeOpera_CFInstanceDelay) {
 
 const wchar_t kCFIFallbackPage[] = L"files/CFInstance_fallback_host.html";
 
-TEST_F(ChromeFrameTestWithWebServer, WidgetModeIE_CFInstanceFallback) {
+// http://crbug.com/37088
+TEST_F(ChromeFrameTestWithWebServer, FLAKY_WidgetModeIE_CFInstanceFallback) {
   SimpleBrowserTest(IE, kCFIFallbackPage, L"CFInstanceFallback");
 }
 
